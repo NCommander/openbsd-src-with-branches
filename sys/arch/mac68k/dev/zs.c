@@ -1,4 +1,4 @@
-/*	$OpenBSD: zs.c,v 1.13 1999/11/15 06:12:49 d Exp $	*/
+/*	$OpenBSD: zs.c,v 1.14 2002/03/14 01:26:35 millert Exp $	*/
 /*	$NetBSD: zs.c,v 1.12 1996/12/18 05:04:22 scottr Exp $	*/
 
 /*
@@ -85,7 +85,7 @@ struct zschan {
 };
 /*
  * The zsdevice structure is not used on the mac68k port as the
- * chip is wired up weird. Channel B & A are interspursed with
+ * chip is wired up weird. Channel B & A are interspersed with
  * the data & control bytes
 struct zsdevice {
 	/! Yes, they are backwards. !/
