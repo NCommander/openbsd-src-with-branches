@@ -1,8 +1,9 @@
-/*	$OpenBSD: externs.h,v 1.4 2002/05/09 21:22:01 millert Exp $	*/
+/*	$OpenBSD: externs.h,v 1.5 2002/07/08 18:11:02 millert Exp $	*/
 
 /* Copyright 1993,1994 by Paul Vixie
  * All rights reserved
  */
+
 /*
  * Copyright (c) 1997,2000 by Internet Software Consortium, Inc.
  *

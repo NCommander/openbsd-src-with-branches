@@ -1,8 +1,9 @@
-/*	$OpenBSD: pathnames.h,v 1.4 2001/10/24 17:28:16 millert Exp $	*/
+/*	$OpenBSD: pathnames.h,v 1.5 2002/05/09 21:22:01 millert Exp $	*/
 
 /* Copyright 1993,1994 by Paul Vixie
  * All rights reserved
  */
+
 /*
  * Copyright (c) 1997,2000 by Internet Software Consortium, Inc.
  *

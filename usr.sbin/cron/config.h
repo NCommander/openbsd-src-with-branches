@@ -1,8 +1,9 @@
-/*	$OpenBSD: config.h,v 1.10 2001/05/29 21:41:33 millert Exp $	*/
+/*	$OpenBSD: config.h,v 1.11 2002/07/08 18:11:02 millert Exp $	*/
 
 /* Copyright 1988,1990,1993,1994 by Paul Vixie
  * All rights reserved
  */
+
 /*
  * Copyright (c) 1997,2000 by Internet Software Consortium, Inc.
  *
