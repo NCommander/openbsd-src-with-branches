@@ -1,4 +1,4 @@
-/*	$OpenBSD: supscan.c,v 1.4 1997/01/17 07:18:11 millert Exp $	*/
+/*	$OpenBSD: supscan.c,v 1.5 1997/04/01 07:35:49 todd Exp $	*/
 
 /*
  * Copyright (c) 1992 Carnegie Mellon University
@@ -82,7 +82,7 @@
 #include <c.h>
 #include <netdb.h>
 #include <setjmp.h>
-#if __STDC__
+#ifdef __STDC__
 #include <stdarg.h>
 #else
 #include <varargs.h>

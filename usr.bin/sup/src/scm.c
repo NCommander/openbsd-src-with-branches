@@ -1,4 +1,4 @@
-/*	$OpenBSD: scm.c,v 1.3 1996/08/04 12:58:26 deraadt Exp $	*/
+/*	$OpenBSD: scm.c,v 1.4 1997/04/01 07:35:22 todd Exp $	*/
 
 /*
  * Copyright (c) 1992 Carnegie Mellon University
@@ -159,7 +159,7 @@
 #include <arpa/inet.h>
 #include <net/if.h>
 #include <netdb.h>
-#if __STDC__
+#ifdef __STDC__
 #include <stdarg.h>
 #else
 #include <varargs.h>

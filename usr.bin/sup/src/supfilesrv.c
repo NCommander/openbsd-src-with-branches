@@ -1,4 +1,4 @@
-/*	$OpenBSD: supfilesrv.c,v 1.6 1997/01/17 07:18:10 millert Exp $	*/
+/*	$OpenBSD: supfilesrv.c,v 1.7 1997/04/01 07:35:43 todd Exp $	*/
 
 /*
  * Copyright (c) 1992 Carnegie Mellon University
@@ -147,7 +147,7 @@
 #include <pwd.h>
 #include <grp.h>
 #include <fcntl.h>
-#if __STDC__
+#ifdef __STDC__
 #include <stdarg.h>
 #else
 #include <varargs.h>

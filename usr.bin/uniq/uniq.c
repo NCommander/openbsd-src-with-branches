@@ -1,4 +1,4 @@
-/*	$OpenBSD: uniq.c,v 1.2 1996/06/26 05:42:13 deraadt Exp $	*/
+/*	$OpenBSD: uniq.c,v 1.3 1997/01/15 23:43:28 millert Exp $	*/
 /*	$NetBSD: uniq.c,v 1.7 1995/08/31 22:03:48 jtc Exp $	*/
 
 /*
@@ -47,7 +47,7 @@ static char copyright[] =
 #if 0
 static char sccsid[] = "@(#)uniq.c	8.3 (Berkeley) 5/4/95";
 #endif
-static char rcsid[] = "$OpenBSD: uniq.c,v 1.2 1996/06/26 05:42:13 deraadt Exp $";
+static char rcsid[] = "$OpenBSD: uniq.c,v 1.3 1997/01/15 23:43:28 millert Exp $";
 #endif /* not lint */
 
 #include <errno.h>
@@ -252,14 +252,14 @@ usage()
 	exit(1);
 }
 
-#if __STDC__
+#ifdef __STDC__
 #include <stdarg.h>
 #else
 #include <varargs.h>
 #endif
 
 void
-#if __STDC__
+#ifdef __STDC__
 err(const char *fmt, ...)
 #else
 err(fmt, va_alist)
@@ -268,7 +268,7 @@ err(fmt, va_alist)
 #endif
 {
 	va_list ap;
-#if __STDC__
+#ifdef __STDC__
 	va_start(ap, fmt);
 #else
 	va_start(ap);

@@ -1,4 +1,4 @@
-/*	$OpenBSD: lst.h,v 1.3 1996/06/26 05:36:35 deraadt Exp $	*/
+/*	$OpenBSD: lst.h,v 1.4 1996/11/30 21:08:58 millert Exp $	*/
 /*	$NetBSD: lst.h,v 1.7 1996/11/06 17:59:12 christos Exp $	*/
 
 /*
@@ -50,7 +50,7 @@
 
 #include	<sprite.h>
 #include	<sys/param.h>
-#if __STDC__
+#ifdef __STDC__
 #include	<stdlib.h>
 #endif
 

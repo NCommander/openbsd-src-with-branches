@@ -1,4 +1,4 @@
-/*	$OpenBSD: make.h,v 1.8 1997/04/01 07:28:19 millert Exp $	*/
+/*	$OpenBSD: make.h,v 1.9 1997/04/28 01:52:39 millert Exp $	*/
 /*	$NetBSD: make.h,v 1.15 1997/03/10 21:20:00 christos Exp $	*/
 
 /*
@@ -73,7 +73,7 @@
 # endif
 #endif
 
-#if __STDC__
+#ifdef __STDC__
 #include <stdlib.h>
 #include <unistd.h>
 #endif

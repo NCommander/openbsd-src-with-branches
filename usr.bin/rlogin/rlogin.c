@@ -1,4 +1,4 @@
-/*	$OpenBSD: rlogin.c,v 1.13 1997/06/23 09:15:07 deraadt Exp $	*/
+/*	$OpenBSD: rlogin.c,v 1.14 1997/06/29 11:10:37 provos Exp $	*/
 /*	$NetBSD: rlogin.c,v 1.8 1995/10/05 09:07:22 mycroft Exp $	*/
 
 /*
@@ -44,7 +44,7 @@ static char copyright[] =
 #if 0
 static char sccsid[] = "@(#)rlogin.c	8.1 (Berkeley) 6/6/93";
 #else
-static char rcsid[] = "$OpenBSD: rlogin.c,v 1.13 1997/06/23 09:15:07 deraadt Exp $";
+static char rcsid[] = "$OpenBSD: rlogin.c,v 1.14 1997/06/29 11:10:37 provos Exp $";
 #endif
 #endif /* not lint */
 
@@ -541,7 +541,7 @@ writer()
 }
 
 void
-#if __STDC__
+#ifdef __STDC__
 echo(register char c)
 #else
 echo(c)
@@ -822,7 +822,7 @@ msg(str)
 #ifdef KERBEROS
 /* VARARGS */
 void
-#if __STDC__
+#ifdef __STDC__
 warning(const char *fmt, ...)
 #else
 warning(fmt, va_alist)
