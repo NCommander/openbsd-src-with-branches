@@ -1,4 +1,4 @@
-/*	$OpenBSD: unifdef.c,v 1.3 1998/11/16 21:58:29 deraadt Exp $	*/
+/*	$OpenBSD: unifdef.c,v 1.4 2002/02/16 21:27:56 millert Exp $	*/
 /*	$NetBSD: unifdef.c,v 1.6 1998/10/08 01:31:59 wsanchez Exp $	*/
 
 /*
@@ -47,7 +47,7 @@ static char copyright[] =
 #if 0
 static char sccsid[] = "@(#)unifdef.c	8.1 (Berkeley) 6/6/93";
 #endif
-static char rcsid[] = "$OpenBSD: unifdef.c,v 1.3 1998/11/16 21:58:29 deraadt Exp $";
+static char rcsid[] = "$OpenBSD: unifdef.c,v 1.4 2002/02/16 21:27:56 millert Exp $";
 #endif				/* not lint */
 
 /*
@@ -587,6 +587,8 @@ getlin(line, maxline, inp, expandtabs)
 #endif				/* FFSPECIAL */
 	while (num + 8 < maxline) {	/* leave room for tab */
 		chr = getc(inp);
+		if (chr == EOF)
+			return EOF;
 		if (isprint(chr)) {
 #ifdef  FFSPECIAL
 	ent:
@@ -595,9 +597,6 @@ getlin(line, maxline, inp, expandtabs)
 			num++;
 		} else
 			switch (chr) {
-			case EOF:
-				return EOF;
-
 			case '\t':
 				if (expandtabs) {
 					num += tmp = 8 - (num & 7);
