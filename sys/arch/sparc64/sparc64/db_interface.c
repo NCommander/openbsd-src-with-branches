@@ -1,4 +1,4 @@
-/*	$OpenBSD: db_interface.c,v 1.13 2003/01/09 22:27:10 miod Exp $	*/
+/*	$OpenBSD: db_interface.c,v 1.14 2003/02/12 06:33:00 jason Exp $	*/
 /*	$NetBSD: db_interface.c,v 1.61 2001/07/31 06:55:47 eeh Exp $ */
 
 /*
@@ -279,9 +279,9 @@ kdb_trap(type, tf)
 	extern int trap_trace_dis;
 
 	trap_trace_dis++;
-#if NFB > 0
+
 	fb_unblank();
-#endif
+
 	switch (type) {
 	case T_BREAKPOINT:	/* breakpoint */
 		printf("kdb breakpoint at %llx\n",
