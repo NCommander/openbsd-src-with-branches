@@ -1,4 +1,4 @@
-/*	$OpenBSD: utilities.c,v 1.6 2001/11/19 19:02:16 mpech Exp $	*/
+/*	$OpenBSD: utilities.c,v 1.7 2002/02/01 06:59:17 itojun Exp $	*/
 /*	$NetBSD: utilities.c,v 1.5 1996/02/28 21:04:21 thorpej Exp $	*/
 
 /*
@@ -107,7 +107,7 @@ SetNetTrace(file)
 	fprintf(stderr, "Cannot open %s.\n", file);
     }
     NetTrace = stdout;
-    strcpy((char *)NetTraceFile, "(standard output)");
+    strlcpy((char *)NetTraceFile, "(standard output)", sizeof(NetTraceFile));
 }
 
     void
