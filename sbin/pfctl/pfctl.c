@@ -1,4 +1,4 @@
-/*	$OpenBSD: pfctl.c,v 1.140 2003/01/24 11:11:17 henning Exp $ */
+/*	$OpenBSD: pfctl.c,v 1.141 2003/01/27 15:42:29 dhartmei Exp $ */
 
 /*
  * Copyright (c) 2001 Daniel Hartmeier
@@ -973,7 +973,7 @@ pfctl_rules(int dev, char *filename, int opts)
 		pf.prule[i] = &pr[i];
 	}
 	pf.rule_nr = 0;
-	if (parse_rules(fin, &pf, opts) < 0)
+	if (parse_rules(fin, &pf) < 0)
 		errx(1, "Syntax error in file: pf rules not loaded");
 	if ((altqsupport && (loadopt & (PFCTL_FLAG_ALTQ | PFCTL_FLAG_ALL)) != 0))
 		if (check_commit_altq(dev, opts) != 0)
