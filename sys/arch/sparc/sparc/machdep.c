@@ -492,7 +492,7 @@ cpu_sysctl(name, namelen, oldp, oldlenp, newp, newlen, p)
 			led_blink((caddr_t *)0);
 #endif
 #if NLED > 0
-			led_sun4_cycle((caddr_t *)0);
+			led_cycle((caddr_t *)led_sc);
 #endif
 		}
 
