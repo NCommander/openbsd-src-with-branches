@@ -23,7 +23,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  *
- *	$OpenBSD: bundle.h,v 1.16 2000/07/07 14:47:54 brian Exp $
+ *	$OpenBSD: bundle.h,v 1.17 2000/07/11 22:13:02 brian Exp $
  */
 
 #define	PHASE_DEAD		0	/* Link is dead */
@@ -136,6 +136,7 @@ struct bundle {
 
 #ifndef NORADIUS
   struct radius radius;       /* Info retrieved from radius server */
+  struct radacct radacct;
 #endif
 };
 

@@ -23,7 +23,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  *
- *	$OpenBSD: bundle.c,v 1.45 2000/08/16 09:07:26 brian Exp $
+ *	$OpenBSD: bundle.c,v 1.46 2000/08/18 00:02:10 brian Exp $
  */
 
 #include <sys/param.h>
@@ -902,6 +902,7 @@ bundle_Destroy(struct bundle *bundle)
 
 #ifndef NORADIUS
   /* Tell the radius server the bad news */
+  log_Printf(LogDEBUG, "Radius: Destroy called from bundle_Destroy\n");
   radius_Destroy(&bundle->radius);
 #endif
 
