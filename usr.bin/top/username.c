@@ -1,4 +1,4 @@
-/*	$OpenBSD: username.c,v 1.1 1997/08/14 14:00:27 downsj Exp $	*/
+/*	$OpenBSD: username.c,v 1.2 1997/08/22 07:16:31 downsj Exp $	*/
 
 /*
  *  Top users/processes display for Unix
@@ -132,7 +132,8 @@ int wecare;		/* 1 = enter it always, 0 = nice to have */
 
     /* empty or wrong slot -- fill it with new value */
     hash_table[hashindex].uid = uid;
-    (void) strncpy(hash_table[hashindex].name, name, 8);
+    (void) strlcpy(hash_table[hashindex].name, name,
+               sizeof(hash_table[hashindex].name));
     return(hashindex);
 }
 
