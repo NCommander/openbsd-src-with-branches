@@ -1,4 +1,4 @@
-/*	$OpenBSD: creator.c,v 1.22 2002/09/10 03:18:59 jason Exp $	*/
+/*	$OpenBSD: creator.c,v 1.23 2003/03/27 18:17:58 jason Exp $	*/
 
 /*
  * Copyright (c) 2002 Jason L. Wright (jason@thought.net)
@@ -223,7 +223,7 @@ creator_ioctl(v, cmd, data, flags, p)
 
 	switch (cmd) {
 	case WSDISPLAYIO_GTYPE:
-		*(u_int *)data = WSDISPLAY_TYPE_SUN24;
+		*(u_int *)data = WSDISPLAY_TYPE_SUNFFB;
 		break;
 	case WSDISPLAYIO_SMODE:
 		sc->sc_mode = *(u_int *)data;
