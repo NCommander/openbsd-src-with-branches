@@ -1,5 +1,5 @@
 %{
-/* $OpenBSD$ */
+/* $OpenBSD: keynote-ver.l,v 1.9 2000/06/13 19:16:16 angelos Exp $ */
 /*
  * The author of this code is Angelos D. Keromytis (angelos@dsl.cis.upenn.edu)
  *
@@ -53,7 +53,7 @@
 static void mystrncpy(char *, char *, int);
 %}
 vstring		[a-zA-Z0-9][a-zA-Z0-9_]*
-litstring	\"(([^\"\n])|(\\[\"\n.]))*\"
+litstring       \"(((\\\n)|(\\.)|(\\\\)|([^\\\n\"]))*)\"
 comment         "#"[^\n]*
 %s FIRSTPART MIDDLEPART SECONDPART KEYSTATE
 %pointer
