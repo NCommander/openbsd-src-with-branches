@@ -1,4 +1,4 @@
-/*	$OpenBSD: globals.h,v 1.6 2002/06/19 15:45:39 ericj Exp $	*/
+/*	$OpenBSD: globals.h,v 1.7 2003/06/02 23:36:55 millert Exp $	*/
 
 /*-
  * Copyright (c) 1985 The Regents of the University of California.
@@ -46,6 +46,7 @@
 #include <string.h>
 #include <syslog.h>
 #include <syslog.h>
+#include <poll.h>
 #include <unistd.h>
 
 #include <protocols/timed.h>
