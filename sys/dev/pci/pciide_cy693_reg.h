@@ -1,4 +1,4 @@
-/*	$OpenBSD: pciide_cy693_reg.h,v 1.4 2003/02/21 20:10:33 grange Exp $	*/
+/*	$OpenBSD: pciide_cy693_reg.h,v 1.5 2003/09/28 21:01:43 grange Exp $	*/
 /*	$NetBSD: pciide_cy693_reg.h,v 1.4 2000/05/15 08:46:01 bouyer Exp $	*/
 
 /*
@@ -31,6 +31,9 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
  */
+
+#ifndef _DEV_PCI_PCIIDE_CY693_REG_H_
+#define _DEV_PCI_PCIIDE_CY693_REG_H_
 
 /*
  * Registers definitions for Contaq/Cypress's CY82693U PCI IDE controller.
@@ -87,3 +90,5 @@ static int8_t cy_dma_rec[] =   {7, 1, 0};
 /* Multiword DMA transfer, for CY_DMA_IDX_PRIMARY or CY_DMA_IDX_SECONDARY */
 #define CY_DMA_DATA_MODE_MASK  0x03
 #define CY_DMA_DATA_SINGLE     0x04
+
+#endif	/* !_DEV_PCI_PCIIDE_CY693_REG_H_ */
