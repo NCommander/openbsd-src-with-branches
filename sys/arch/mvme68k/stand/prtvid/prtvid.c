@@ -1,3 +1,5 @@
+/*	$OpenBSD$	*/
+
 #include <stdio.h>
 #define __DBINTERFACE_PRIVATE
 #include <db.h>

@@ -1,4 +1,4 @@
-/*	$OpenBSD: libsa.h,v 1.32 2000/10/25 18:45:53 mickey Exp $	*/
+/*	$OpenBSD: libsa.h,v 1.29.4.2 2001/04/18 16:08:44 niklas Exp $	*/
 
 /*
  * Copyright (c) 1996-1999 Michael Shalayeff
@@ -57,6 +57,7 @@ void machdep __P((void));
 extern const char bdevs[][4];
 extern const int nbdevs;
 extern u_int cnvmem, extmem; /* XXX global pass memprobe()->machdep_start() */
+extern int ps2model;
 
 /* diskprobe.c */
 extern bios_diskinfo_t bios_diskinfo[];

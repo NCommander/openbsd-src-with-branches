@@ -1,4 +1,4 @@
-/*	$OpenBSD: grf.c,v 1.9 1999/04/24 06:39:40 downsj Exp $	*/
+/*	$OpenBSD: grf.c,v 1.9.4.1 2001/07/04 10:18:26 niklas Exp $	*/
 /*	$NetBSD: grf.c,v 1.41 1997/02/24 06:20:04 scottr Exp $	*/
 
 /*
@@ -68,9 +68,6 @@
 #include <miscfs/specfs/specdev.h>
 
 #include <vm/vm.h>
-#include <vm/vm_kern.h>
-#include <vm/vm_page.h>
-#include <vm/vm_pager.h>
 
 #include <uvm/uvm.h>
 

@@ -1,3 +1,4 @@
+/*    $OpenBSD$      */
 /*    $NetBSD: if_snvar.h,v 1.8 1997/04/25 03:40:09 briggs Exp $      */
 
 /*

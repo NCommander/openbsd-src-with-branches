@@ -1,4 +1,4 @@
-/*	$OpenBSD: vme.h,v 1.5 2001/03/09 05:44:39 smurph Exp $ */
+/*	$OpenBSD: vme.h,v 1.3.4.1 2001/04/18 16:11:06 niklas Exp $ */
 
 /*
  * Copyright (c) 1995 Theo de Raadt
@@ -380,4 +380,4 @@ int vmeintr_establish __P((int vec, struct intrhand *ih));
 int vme_findvec __P((void));
 int vmescan __P((struct device *, void *, void *, int));
 
-#endif __MVEME88K_DEV_VME_H__
+#endif /* __MVEME88K_DEV_VME_H__ */

@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /*	$NetBSD: espvar.h,v 1.16 1996/10/13 02:59:50 christos Exp $	*/
 
 /*

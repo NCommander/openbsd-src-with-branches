@@ -1,4 +1,4 @@
-/*	$OpenBSD: ioapic.c,v 1.1.2.3 2001/07/16 21:39:28 niklas Exp $	*/
+/*	$OpenBSD$	*/
 /* $NetBSD: ioapic.c,v 1.1.2.4 2000/06/25 20:46:08 sommerfeld Exp $ */
 
 /*-
@@ -77,7 +77,6 @@
 #include <sys/malloc.h>
 
 #include <vm/vm.h>
-#include <vm/vm_kern.h>
 #include <vm/vm_page.h>
 
 #include <machine/bus.h>

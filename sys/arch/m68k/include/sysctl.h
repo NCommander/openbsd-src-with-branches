@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /*	$NetBSD: sysctl.h,v 1.1 1996/12/17 19:26:51 gwr Exp $	*/
 
 /*

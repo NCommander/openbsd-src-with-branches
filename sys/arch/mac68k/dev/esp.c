@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /*	$NetBSD: esp.c,v 1.59 1996/10/13 02:59:48 christos Exp $	*/
 
 /*

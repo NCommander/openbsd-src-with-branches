@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /*	$NetBSD: math_emu.h,v 1.5 1995/05/03 00:17:16 mycroft Exp $	*/
 
 /*

@@ -1,3 +1,4 @@
+/*    $OpenBSD$    */
 /*    $NetBSD: if_sn_obio.c,v 1.9 1997/04/22 20:56:15 scottr Exp $    */
 
 /*

@@ -1,4 +1,4 @@
-/*	$OpenBSD: lapic.c,v 1.1.2.3 2001/07/16 21:39:43 niklas Exp $	*/
+/*	$OpenBSD$	*/
 /* $NetBSD: lapic.c,v 1.1.2.8 2000/02/23 06:10:50 sommerfeld Exp $ */
 
 /*-
@@ -46,7 +46,6 @@
 #include <sys/device.h>
 
 #include <vm/vm.h>
-#include <vm/vm_kern.h>
 #include <vm/vm_page.h>
 
 #include <uvm/uvm_extern.h>

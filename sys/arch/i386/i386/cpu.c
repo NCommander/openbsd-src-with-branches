@@ -1,4 +1,4 @@
-/*	$OpenBSD: cpu.c,v 1.1.2.2 2001/07/15 15:10:54 ho Exp $	*/
+/*	$OpenBSD$	*/
 /* $NetBSD: cpu.c,v 1.1.2.7 2000/06/26 02:04:05 sommerfeld Exp $ */
 
 /*-
@@ -81,7 +81,6 @@
 #include <sys/device.h>
 
 #include <vm/vm.h>
-#include <vm/vm_kern.h>
 #include <vm/vm_page.h>
 
 #include <uvm/uvm_extern.h>

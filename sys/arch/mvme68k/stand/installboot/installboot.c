@@ -1,3 +1,4 @@
+/*	$OpenBSD$ */
 /*	$NetBSD: installboot.c,v 1.5 1995/11/17 23:23:50 gwr Exp $ */
 
 /*

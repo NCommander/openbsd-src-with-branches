@@ -1,4 +1,4 @@
-/*	$OpenBSD: conf.c,v 1.21.4.1 2001/04/18 16:10:08 niklas Exp $	*/
+/*	$OpenBSD: conf.c,v 1.21.4.2 2001/07/04 10:18:36 niklas Exp $	*/
 /*	$NetBSD: conf.c,v 1.41 1997/02/11 07:35:49 scottr Exp $	*/
 
 /*
@@ -49,7 +49,6 @@
 
 int	ttselect	__P((dev_t, int, struct proc *));
 
-bdev_decl(sw);
 #include "st.h"
 #include "sd.h"
 #include "cd.h"
@@ -90,7 +89,6 @@ cdev_decl(ite);
 #define mmread	mmrw
 #define mmwrite	mmrw
 cdev_decl(mm);
-cdev_decl(sw);
 #include "pty.h"
 #include "ss.h"
 cdev_decl(ss);
@@ -120,7 +118,6 @@ cdev_decl(xfs_dev);
 #endif
 
 #include "pf.h"
-cdev_decl(pf);
 
 #include <altq/altqconf.h>
 
