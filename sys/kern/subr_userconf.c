@@ -1,4 +1,4 @@
-/*	$OpenBSD: subr_userconf.c,v 1.5 1996/07/27 11:27:43 deraadt Exp $	*/
+/*	$OpenBSD: subr_userconf.c,v 1.6 1996/08/15 13:49:50 niklas Exp $	*/
 
 /*
  * Copyright (c) 1996 Mats O Jansson <moj@stacken.kth.se>
@@ -862,10 +862,11 @@ user_config()
 	userconf_init();
 	printf("User Kernel Config\n");
 	
-	printf(prompt);
-	while (getsn(userconf_cmdbuf, sizeof(userconf_cmdbuf)) != 0) {
-		if (userconf_parse(userconf_cmdbuf)) break;
+	while (1) {
 		printf(prompt);
+		if (getsn(userconf_cmdbuf, sizeof(userconf_cmdbuf)) > 0 &&
+		    userconf_parse(userconf_cmdbuf))
+			break;
 	}
 	printf("Continuing...\n");
 }
