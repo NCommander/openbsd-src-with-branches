@@ -1,4 +1,4 @@
-/*	$OpenBSD: rln.c,v 1.5 1999/08/25 07:20:29 d Exp $	*/
+/*	$OpenBSD: rln.c,v 1.6 1999/08/26 22:27:44 d Exp $	*/
 /*
  * David Leonard <d@openbsd.org>, 1999. Public Domain.
  *
@@ -770,10 +770,15 @@ rlnget(sc, hdr, totlen)
 			}
 			len = MLEN;
 		}
-		if (top && totlen >= MINCLSIZE) {
+		if (totlen >= MINCLSIZE) {
 			MCLGET(m, M_DONTWAIT);
-			if (m->m_flags & M_EXT)
+			if (m->m_flags & M_EXT) {
 				len = MCLBYTES;
+				if (!top) {
+					m->m_data += pad;
+					len -= pad;
+				}
+			}
 		}
 		len = min(totlen, len);
 		rln_rx_pdata(sc, mtod(m, u_int8_t *), len, &pd);
