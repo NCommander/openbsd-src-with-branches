@@ -1,4 +1,4 @@
-/*	$OpenBSD: lseek.c,v 1.5 2003/06/01 17:00:33 deraadt Exp $	*/
+/*	$OpenBSD: lseek.c,v 1.6 2003/06/02 23:28:09 millert Exp $	*/
 /*	$NetBSD: lseek.c,v 1.3 1996/06/21 20:09:03 pk Exp $	*/
 
 /*-
@@ -65,15 +65,12 @@
 
 off_t
 #ifndef __INTERNAL_LIBSA_CREAD
-lseek(fd, offset, where)
+lseek(int fd, off_t offset, int where)
 #else
-olseek(fd, offset, where)
+olseek(int fd, off_t offset, int where)
 #endif
-	int fd;
-	off_t offset;
-	int where;
 {
-	register struct open_file *f = &files[fd];
+	struct open_file *f = &files[fd];
 
 	if ((unsigned)fd >= SOPEN_MAX || f->f_flags == 0) {
 		errno = EBADF;

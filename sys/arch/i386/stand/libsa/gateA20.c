@@ -1,4 +1,4 @@
-/*	$OpenBSD: gateA20.c,v 1.6 2000/11/13 15:53:34 aaron Exp $	*/
+/*	$OpenBSD: gateA20.c,v 1.8 2001/08/18 15:34:17 mickey Exp $	*/
 
 /*
  * Ported to boot 386BSD by Julian Elischer (julian@tfs.com) Sept 1992
@@ -46,8 +46,7 @@
  * Gate A20 for high memory
  */
 void
-gateA20(on)
-	int on;
+gateA20(int on)
 {
 	if (ps2model == 0xf82 ||
 	    (inb(IO_KBD + KBSTATP) == 0xff && inb(IO_KBD + KBDATAP) == 0xff)) {

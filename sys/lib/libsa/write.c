@@ -1,4 +1,4 @@
-/*	$OpenBSD: write.c,v 1.4 2003/06/01 17:00:33 deraadt Exp $	*/
+/*	$OpenBSD: write.c,v 1.5 2003/06/02 23:28:10 millert Exp $	*/
 /*	$NetBSD: write.c,v 1.7 1996/06/21 20:29:30 pk Exp $	*/
 
 /*-
@@ -65,12 +65,9 @@
 #include "stand.h"
 
 ssize_t
-write(fd, dest, bcount)
-	int fd;
-	void *dest;
-	size_t bcount;
+write(int fd, void *dest, size_t bcount)
 {
-	register struct open_file *f = &files[fd];
+	struct open_file *f = &files[fd];
 	size_t resid;
 
 	if ((unsigned)fd >= SOPEN_MAX || !(f->f_flags & F_WRITE)) {

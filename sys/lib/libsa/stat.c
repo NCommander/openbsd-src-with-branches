@@ -1,4 +1,4 @@
-/*	$OpenBSD: stat.c,v 1.4 1997/04/02 05:21:48 mickey Exp $	*/
+/*	$OpenBSD: stat.c,v 1.5 2003/06/02 23:28:09 millert Exp $	*/
 /*	$NetBSD: stat.c,v 1.3 1994/10/26 05:45:07 cgd Exp $	*/
 
 /*-
@@ -35,9 +35,7 @@
 #include "stand.h"
 
 int
-stat(str, sb)
-	const char *str;
-	struct stat *sb;
+stat(const char *str, struct stat *sb)
 {
 	int fd, rv;
 

@@ -1,4 +1,4 @@
-/*	$OpenBSD: cmd.h,v 1.12 2003/06/01 17:00:27 deraadt Exp $	*/
+/*	$OpenBSD: cmd.h,v 1.13 2003/06/02 20:20:54 mickey Exp $	*/
 
 /*
  * Copyright (c) 1997 Michael Shalayeff
@@ -56,3 +56,4 @@ extern struct cmd_state cmd;
 int getcmd(void);
 int read_conf(void);
 int bootparse(int);
+void boot(dev_t);
