@@ -33,7 +33,7 @@
  */
 
 #if defined(LIBC_SCCS) && !defined(lint)
-static char rcsid[] = "$OpenBSD: getpwent.c,v 1.27 2002/07/06 03:10:23 deraadt Exp $";
+static char rcsid[] = "$OpenBSD: getpwent.c,v 1.28 2002/11/21 21:25:19 millert Exp $";
 #endif /* LIBC_SCCS and not lint */
 
 #include <sys/param.h>
@@ -421,6 +421,9 @@ again:
 				__ypmode = YPMODE_NONE;
 				goto again;
 			}
+			break;
+		case YPMODE_NONE:
+			/* NOTREACHED */
 			break;
 		}
 
