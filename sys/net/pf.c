@@ -1,4 +1,4 @@
-/*	$OpenBSD: pf.c,v 1.159 2001/09/27 17:49:12 dhartmei Exp $ */
+/*	$OpenBSD: pf.c,v 1.160 2001/09/30 03:49:18 frantzen Exp $ */
 
 /*
  * Copyright (c) 2001 Daniel Hartmeier
@@ -3911,7 +3911,7 @@ pf_test_state_icmp(struct pf_state **state, int direction, struct ifnet *ifp,
 				return (PF_DROP);
 			}
 			/* ICMP error messages don't refer to non-first fragments */
-			if (h2.ip_off & IP_OFFMASK)
+			if (ntohs(h2.ip_off) & IP_OFFMASK)
 				return (PF_DROP);
 
 			/* offset of protocol header that follows h2 */
