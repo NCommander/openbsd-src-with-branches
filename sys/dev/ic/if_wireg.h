@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_wireg.h,v 1.10 2001/04/04 20:13:12 mickey Exp $	*/
+/*	$OpenBSD: if_wireg.h,v 1.1 2001/05/15 02:40:36 millert Exp $	*/
 
 /*
  * Copyright (c) 1997, 1998, 1999
@@ -251,6 +251,9 @@
 #define WI_AUX_PAGE		0x3A
 #define WI_AUX_OFFSET		0x3C
 #define WI_AUX_DATA		0x3E
+
+#define WI_COR_OFFSET		0x3E0
+#define WI_COR_VALUE		0x41
 
 /*
  * One form of communication with the Hermes is with what Lucent calls
