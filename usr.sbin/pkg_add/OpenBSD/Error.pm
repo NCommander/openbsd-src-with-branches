@@ -23,6 +23,8 @@ our @ISA=qw(Exporter);
 our @EXPORT=qw(System VSystem Copy Fatal Warn Usage set_usage 
     try throw catch catchall rethrow);
 
+our ($FileName, $Line, $FullMessage);
+
 sub System
 {
 	my $r = system(@_);
@@ -164,9 +166,9 @@ sub dienow
 	if ($error) {
 		if ($error =~ m/^(Expected:\s+)?(.*?)(?:\s+at\s+(.*)\s+line\s+(\d+)\.?)?$/) {
 			local $_ = $2;
-			$OpenBSD::Error::FileName = $3;
-			$OpenBSD::Error::Line = $4;
-			$OpenBSD::Error::FullMessage = $error;
+			$FileName = $3;
+			$Line = $4;
+			$FullMessage = $error;
 
 			$handler->exec($error, $1, $2, $3, $4);
 		} else {
@@ -204,8 +206,6 @@ sub catchall(&)
 {
 	bless $_[0], "OpenBSD::Error::catchall";
 }
-
-our ($FileName, $Line, $FullMessage);
 
 package OpenBSD::Error::catch;
 sub exec
