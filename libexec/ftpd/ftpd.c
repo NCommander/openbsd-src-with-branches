@@ -1,4 +1,4 @@
-/*	$OpenBSD: ftpd.c,v 1.145 2003/07/29 18:39:22 deraadt Exp $	*/
+/*	$OpenBSD: ftpd.c,v 1.145.2.1 2003/11/20 20:44:27 brad Exp $	*/
 /*	$NetBSD: ftpd.c,v 1.15 1995/06/03 22:46:47 mycroft Exp $	*/
 
 /*
@@ -70,7 +70,7 @@ static const char copyright[] =
 static const char sccsid[] = "@(#)ftpd.c	8.4 (Berkeley) 4/16/94";
 #else
 static const char rcsid[] = 
-    "$OpenBSD: ftpd.c,v 1.145 2003/07/29 18:39:22 deraadt Exp $";
+    "$OpenBSD: ftpd.c,v 1.145.2.1 2003/11/20 20:44:27 brad Exp $";
 #endif
 #endif /* not lint */
 
@@ -1256,7 +1256,9 @@ getdatasock(char *mode)
 	if (data >= 0)
 		return (fdopen(data, mode));
 	sigprocmask (SIG_BLOCK, &allsigs, NULL);
+	(void) seteuid(0);
 	s = socket(ctrl_addr.su_family, SOCK_STREAM, 0);
+	(void) seteuid((uid_t)pw->pw_uid);
 	if (s < 0)
 		goto bad;
 	if (setsockopt(s, SOL_SOCKET, SO_REUSEADDR,
