@@ -32,7 +32,7 @@
  */
 
 #if defined(LIBC_SCCS) && !defined(lint)
-static char rcsid[] = "$OpenBSD: scandir.c,v 1.2 1996/08/19 08:25:41 tholo Exp $";
+static char rcsid[] = "$OpenBSD: scandir.c,v 1.3 1997/07/24 00:08:41 deraadt Exp $";
 #endif /* LIBC_SCCS and not lint */
 
 /*
@@ -106,13 +106,19 @@ scandir(dirname, namelist, select, dcomp)
 		 * realloc the maximum size.
 		 */
 		if (++nitems >= arraysz) {
+			register struct dirent **nnames;
+			
 			if (fstat(dirp->dd_fd, &stb) < 0)
 				return(-1);	/* just might have grown */
 			arraysz = stb.st_size / 12;
-			names = (struct dirent **)realloc((char *)names,
+			nnames = (struct dirent **)realloc((char *)names,
 				arraysz * sizeof(struct dirent *));
-			if (names == NULL)
+			if (nnames == NULL) {
+				if (names)
+					free(names);
 				return(-1);
+			}
+			names = nnames;
 		}
 		names[nitems-1] = p;
 	}
