@@ -1,4 +1,4 @@
-/*	$OpenBSD: udp_encap.c,v 1.10 2004/12/14 10:17:28 mcbride Exp $	*/
+/*	$OpenBSD: udp_encap.c,v 1.11 2005/03/04 16:57:34 hshoexer Exp $	*/
 
 /*
  * Copyright (c) 1998, 1999, 2001 Niklas Hallqvist.  All rights reserved.
@@ -36,7 +36,6 @@
 #include <netinet/in.h>
 #include <arpa/inet.h>
 #include <ctype.h>
-#include <err.h>
 #include <limits.h>
 #include <netdb.h>
 #include <stdlib.h>
