@@ -134,6 +134,9 @@ for hn in /etc/hostname.*; do
 	    cmd="echo ${hn}: bridges now supported via bridgename.* files"
 	    ;;
 	"dhcp")
+	    [ "$name" = "NONE" ] && name=
+	    [ "$mask" = "NONE" ] && mask=
+	    [ "$bcaddr" = "NONE" ] && bcaddr=
 	    ifconfig $if $name $mask $bcaddr $ext1 $ext2 down
 	    cmd="dhclient $if"
 	    ;;
