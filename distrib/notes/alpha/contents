@@ -1,3 +1,4 @@
+dnl	$OpenBSD$
 TopPart
 
 OpenBSDfloppy
@@ -25,6 +26,8 @@ OpenBSDdistsets
 OpenBSDbsd
 
 OpenBSDrd
+
+OpenBSDcd
 
 OpenBSDfloppydesc(two,Each,s)
 
