@@ -1,4 +1,4 @@
-/* $OpenBSD: lib.h,v 1.2 1998/09/07 22:30:16 marc Exp $ */
+/* $OpenBSD: lib.h,v 1.3 1998/10/13 23:09:53 marc Exp $ */
 
 /*
  * FreeBSD install - a package for the installation and maintainance
@@ -77,6 +77,11 @@
 
 /* The name of the "prefix" environment variable given to scripts */
 #define PKG_PREFIX_VNAME	"PKG_PREFIX"
+
+/* maximum size of comment that will fit on one line */
+#ifndef MAXINDEXSIZE
+#define MAXINDEXSIZE 60
+#endif
 
 /* enumerated constants for plist entry types */
 typedef enum pl_ent_t {

@@ -1,4 +1,4 @@
-/* $OpenBSD: info.h,v 1.1 1996/06/04 07:56:09 niklas Exp $ */
+/* $OpenBSD: info.h,v 1.2 1998/10/13 23:09:51 marc Exp $ */
 
 /*
  * FreeBSD install - a package for the installation and maintainance
@@ -22,10 +22,6 @@
 
 #ifndef _INST_INFO_H_INCLUDE
 #define _INST_INFO_H_INCLUDE
-
-#ifndef MAXINDEXSIZE
-#define MAXINDEXSIZE 60
-#endif
 
 #ifndef MAXNAMESIZE
 #define MAXNAMESIZE  20
