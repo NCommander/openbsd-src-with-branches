@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: setup.c,v 1.2 1998/08/19 07:40:45 pjanzen Exp $	*/
 /*	$NetBSD: setup.c,v 1.3 1995/03/23 08:32:59 cgd Exp $	*/
 
 /*-
@@ -38,11 +38,10 @@
 #if 0
 static char sccsid[] = "@(#)setup.c	8.1 (Berkeley) 5/31/93";
 #else
-static char rcsid[] = "$OpenBSD$";
+static char rcsid[] = "$OpenBSD: setup.c,v 1.2 1998/08/19 07:40:45 pjanzen Exp $";
 #endif
 #endif /* not lint */
 
-#include <err.h>
 #include	"hangman.h"
 
 /*
