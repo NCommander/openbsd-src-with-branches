@@ -1,4 +1,4 @@
-/*	$OpenBSD: memprobe.c,v 1.7 1997/08/05 16:26:05 weingart Exp $	*/
+/*	$OpenBSD: memprobe.c,v 1.8 1997/08/07 01:11:07 mickey Exp $	*/
 
 /*
  * Copyright (c) 1997 Tobias Weingartner
@@ -43,8 +43,7 @@ memprobe()
 {
 	int ram;
 
-	__asm volatile(DOINT(0x12) "\n\t" : "=a" (cnvmem));
-
+	__asm __volatile(DOINT(0x12) : "=a" (cnvmem) :: "%ecx", "%edx", "cc");
 	cnvmem &= 0xffff;
 
 	/* probe extended memory
