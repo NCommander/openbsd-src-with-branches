@@ -1,4 +1,4 @@
-/*	$OpenBSD: main.c,v 1.7 1997/04/04 18:41:31 deraadt Exp $	*/
+/*	$OpenBSD: main.c,v 1.8 1997/07/25 21:05:36 mickey Exp $	*/
 
 /*
  * Copyright (c) 1983, 1993
@@ -41,7 +41,7 @@ static char copyright[] =
 
 #ifndef lint
 /* from: static char sccsid[] = "@(#)main.c	8.1 (Berkeley) 6/9/93"; */
-static char *rcsid = "$OpenBSD: main.c,v 1.7 1997/04/04 18:41:31 deraadt Exp $";
+static char *rcsid = "$OpenBSD: main.c,v 1.8 1997/07/25 21:05:36 mickey Exp $";
 #endif /* not lint */
 
 #include "defs.h"
@@ -84,7 +84,7 @@ main(argc, argv)
 	char *argv[];
 {
 	register char *arg;
-	int cmdargs = 0, fd;
+	int cmdargs = 0;
 	char *dhosts[NHOSTS], **hp = dhosts;
 
 	pw = getpwuid(userid = getuid());

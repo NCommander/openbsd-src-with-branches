@@ -1,4 +1,4 @@
-/*	$OpenBSD: expand.c,v 1.5 1996/08/22 20:33:18 millert Exp $	*/
+/*	$OpenBSD: expand.c,v 1.6 1997/02/09 19:24:57 deraadt Exp $	*/
 
 /*
  * Copyright (c) 1983, 1993
@@ -35,7 +35,7 @@
 
 #ifndef lint
 /* from: static char sccsid[] = "@(#)expand.c	8.1 (Berkeley) 6/9/93"; */
-static char *rcsid = "$OpenBSD: expand.c,v 1.5 1996/08/22 20:33:18 millert Exp $";
+static char *rcsid = "$OpenBSD: expand.c,v 1.6 1997/02/09 19:24:57 deraadt Exp $";
 #endif /* not lint */
 
 #include "defs.h"
@@ -94,7 +94,7 @@ expand(list, wh)
 	char *argvbuf[GAVSIZ];
 
 	if (debug) {
-		printf("expand(%x, %d)\nlist = ", list, wh);
+		printf("expand(%lx, %d)\nlist = ", (long)list, wh);
 		prnames(list);
 	}
 
