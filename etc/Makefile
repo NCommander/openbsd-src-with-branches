@@ -1,4 +1,4 @@
-#	$OpenBSD$
+#	$OpenBSD: Makefile,v 1.11 1996/05/26 10:25:16 deraadt Exp $
 
 TZDIR=		/usr/share/zoneinfo
 LOCALTIME=	US/Pacific
@@ -59,8 +59,6 @@ distribution: distrib-dirs
 		install -c -o root -g wheel -m 644 README \
 		    ${DESTDIR}/etc/kerberosIV; \
 		install -c -o root -g wheel -m 644 krb.conf \
-		    ${DESTDIR}/etc/kerberosIV; \
-		install -c -o root -g wheel -m 644 krb.equiv \
 		    ${DESTDIR}/etc/kerberosIV; \
 		install -c -o root -g wheel -m 444 krb.realms \
 		    ${DESTDIR}/etc/kerberosIV)
