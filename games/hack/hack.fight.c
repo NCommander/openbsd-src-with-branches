@@ -1,4 +1,4 @@
-/*	$OpenBSD: hack.fight.c,v 1.5 2003/03/16 21:22:35 camield Exp $	*/
+/*	$OpenBSD: hack.fight.c,v 1.6 2003/04/06 18:50:37 deraadt Exp $	*/
 
 /*
  * Copyright (c) 1985, Stichting Centrum voor Wiskunde en Informatica,
@@ -62,7 +62,7 @@
  */
 
 #ifndef lint
-static char rcsid[] = "$OpenBSD: hack.fight.c,v 1.5 2003/03/16 21:22:35 camield Exp $";
+static char rcsid[] = "$OpenBSD: hack.fight.c,v 1.6 2003/04/06 18:50:37 deraadt Exp $";
 #endif /* not lint */
 
 #include	"hack.h"
@@ -175,7 +175,7 @@ register tlev,dam;
 register char *name;
 {
 char buf[BUFSZ];
-	setan(name,buf);
+	setan(name,buf,sizeof buf);
 	if(u.uac + tlev <= rnd(20)) {
 		if(Blind) pline("It misses.");
 		else pline("You are almost hit by %s!", buf);
