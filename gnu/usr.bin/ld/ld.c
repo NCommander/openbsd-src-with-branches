@@ -1,4 +1,4 @@
-/*	$OpenBSD: ld.c,v 1.17 2000/09/21 12:03:12 espie Exp $	*/
+/*	$OpenBSD: ld.c,v 1.18 2001/07/08 17:49:44 espie Exp $	*/
 /*	$NetBSD: ld.c,v 1.52 1998/02/20 03:12:51 jonathan Exp $	*/
 
 /*-
@@ -1039,7 +1039,7 @@ file_open(entry)
 	} else
 		fd = open(entry->filename, O_RDONLY, 0);
 
-	if (fd > 0) {
+	if (fd >= 0) {
 		input_file = entry;
 		input_desc = fd;
 		return fd;
