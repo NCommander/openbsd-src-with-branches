@@ -66,7 +66,7 @@ void
 pci_2100_a50_pickintr(acp)
 	struct apecs_config *acp;
 {
-	bus_space_tag_t iot = acp->ac_iot;
+	bus_space_tag_t iot = &acp->ac_iot;
 	pci_chipset_tag_t pc = &acp->ac_pc;
 	pcireg_t sioclass;
 	int sioII;

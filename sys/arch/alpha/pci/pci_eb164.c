@@ -124,7 +124,7 @@ void
 pci_eb164_pickintr(ccp)
 	struct cia_config *ccp;
 {
-	bus_space_tag_t iot = ccp->cc_iot;
+	bus_space_tag_t iot = &ccp->cc_iot;
 	pci_chipset_tag_t pc = &ccp->cc_pc;
 	int i;
 

@@ -149,8 +149,8 @@ apecs_init(acp, mallocsafe)
 
 	if (!acp->ac_initted) {
 		/* don't do these twice since they set up extents */
-		acp->ac_iot = apecs_bus_io_init(acp);
-		acp->ac_memt = apecs_bus_mem_init(acp);
+		apecs_bus_io_init(&acp->ac_iot, acp);
+		apecs_bus_mem_init(&acp->ac_memt, acp);
 
 #if 0
 		/*
@@ -239,8 +239,8 @@ apecsattach(parent, self, aux)
 	}
 
 	pba.pba_busname = "pci";
-	pba.pba_iot = acp->ac_iot;
-	pba.pba_memt = acp->ac_memt;
+	pba.pba_iot = &acp->ac_iot;
+	pba.pba_memt = &acp->ac_memt;
 	pba.pba_dmat =
 	    alphabus_dma_get_tag(&acp->ac_dmat_direct, ALPHA_BUS_PCI);
 	pba.pba_pc = &acp->ac_pc;

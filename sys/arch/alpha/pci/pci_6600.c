@@ -97,7 +97,7 @@ void
 pci_6600_pickintr(pcp)
 	struct tsp_config *pcp;
 {
-	bus_space_tag_t iot = pcp->pc_iot;
+	bus_space_tag_t iot = &pcp->pc_iot;
 	pci_chipset_tag_t pc = &pcp->pc_pc;
 #if 0
 	char *cp;

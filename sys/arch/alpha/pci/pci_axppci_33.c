@@ -66,7 +66,7 @@ void
 pci_axppci_33_pickintr(lcp)
 	struct lca_config *lcp;
 {
-	bus_space_tag_t iot = lcp->lc_iot;
+	bus_space_tag_t iot = &lcp->lc_iot;
 	pci_chipset_tag_t pc = &lcp->lc_pc;
 	pcireg_t sioclass;
 	int sioII;
