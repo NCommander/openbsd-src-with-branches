@@ -1,4 +1,4 @@
-/*	$OpenBSD: main.c,v 1.10 2001/01/21 22:46:37 aaron Exp $	*/
+/*	$OpenBSD: main.c,v 1.11 2001/05/25 10:24:25 hin Exp $	*/
 /*	$NetBSD: main.c,v 1.5 1996/02/28 21:04:05 thorpej Exp $	*/
 
 /*
@@ -353,6 +353,7 @@ main(argc, argv)
 
 	if (autologin == -1) {
 #if defined(AUTHENTICATION)
+	    if(check_krb4_tickets() || check_krb5_tickets())
 		autologin = 1;
 #endif
 #if defined(ENCRYPTION)
