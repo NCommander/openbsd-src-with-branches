@@ -89,3 +89,8 @@ file	dev/pci/sv.c			sv
 device	bktr: pcibus
 attach	bktr at pci
 file	dev/pci/brooktree848.c		bktr	needs-count
+
+# 3C90x
+device	xl: ether, ifnet
+attach	xl at pci
+file	dev/pci/if_xl.c			xl
