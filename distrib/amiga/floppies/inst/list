@@ -4,7 +4,7 @@
 COPY	disktab.preinstall		etc
 
 # copy the kernel
-COPY	${CURDIR}/../../../../sys/arch/amiga/compile/INSTALL/bsd	bsd
+COPY	${CURDIR}/../../../../sys/arch/amiga/compile/GENERIC/bsd	bsd
 
 # and the installation tools
 COPY	dot.profile			.profile

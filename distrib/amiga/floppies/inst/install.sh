@@ -36,7 +36,7 @@
 FSTABDIR=/mnt/etc			# /mnt/etc
 #DONTDOIT==echo
 
-VERSION=1.1
+VERSION=2.0
 FSTAB=${FSTABDIR}/fstab
 
 getresp() {
