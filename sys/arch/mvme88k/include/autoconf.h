@@ -1,4 +1,4 @@
-/*	$OpenBSD: autoconf.h,v 1.13 2004/04/24 19:51:48 miod Exp $ */
+/*	$OpenBSD: autoconf.h,v 1.14 2004/05/07 18:10:28 miod Exp $ */
 /*
  * Copyright (c) 1999, Steve Murphree, Jr.
  * Copyright (c) 1996 Nivas Madhur
@@ -60,6 +60,7 @@ struct confargs {
 /* the following are from the prom/bootblocks */
 extern paddr_t	bootaddr;	/* PA of boot device */
 extern int	bootpart;	/* boot partition (disk) */
+extern int	bootbus;	/* scsi bus (disk) */
 
 extern	struct device *bootdv; /* boot device */
 
