@@ -1,4 +1,4 @@
-/*	$OpenBSD: dir.h,v 1.4 1998/12/05 00:06:27 espie Exp $	*/
+/*	$OpenBSD: dir.h,v 1.5 2000/02/02 13:47:47 espie Exp $	*/
 /*	$NetBSD: dir.h,v 1.4 1996/11/06 17:59:05 christos Exp $	*/
 
 /*
@@ -67,7 +67,7 @@ void Dir_ClearPath __P((Lst));
 void Dir_Concat __P((Lst, Lst));
 void Dir_PrintDirectories __P((void));
 void Dir_PrintPath __P((Lst));
-void Dir_Destroy __P((ClientData));
-ClientData Dir_CopyDir __P((ClientData));
+void Dir_Destroy __P((void *));
+void *Dir_CopyDir __P((void *));
 
 #endif /* _DIR */
