@@ -1,4 +1,4 @@
-#	$OpenBSD: GENERIC,v 1.25 2001/03/08 03:37:17 itojun Exp $
+#	$OpenBSD: GENERIC,v 1.24.2.1 2001/04/18 16:05:31 niklas Exp $
 #	$NetBSD: GENERIC,v 1.23 1997/01/31 06:12:57 thorpej Exp $
 #
 # Generic kernel - one size fits all.

@@ -1,8 +1,8 @@
-#	$OpenBSD: SIMPLE,v 1.1.2.2 2000/07/03 14:19:06 niklas Exp $
+#	$OpenBSD$
 #
 #	SIMPLE - Niklas Hallqvist's SMP box
 #
 
-include "arch/i386/conf/GENERIC_APPLI"
+include "arch/i386/conf/GENERIC"
 
 option		MULTIPROCESSOR	# Multiple processor support

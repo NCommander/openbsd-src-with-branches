@@ -1,4 +1,4 @@
-/*	$OpenBSD: ite.c,v 1.10 1997/04/16 11:56:10 downsj Exp $	*/
+/*	$OpenBSD: ite.c,v 1.11 1998/03/06 17:24:12 millert Exp $	*/
 /*	$NetBSD: ite.c,v 1.38 1997/03/31 07:37:25 scottr Exp $	*/
 
 /*
@@ -473,7 +473,7 @@ itestart(tp)
 		}
 		if (hiwat) {
 			tp->t_state |= TS_TIMEOUT;
-			timeout(ttrstrt, tp, 1);
+			timeout_add(&tp->t_rstrt_to, 1);
 		}
 	}
 	tp->t_state &= ~TS_BUSY;
