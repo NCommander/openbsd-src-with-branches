@@ -1,4 +1,4 @@
-/*	$OpenBSD: cpu.h,v 1.15 2003/06/02 05:09:14 deraadt Exp $ */
+/*	$OpenBSD: cpu.h,v 1.16 2003/06/02 23:27:50 millert Exp $ */
 
 /*
  * Copyright (c) 1995 Theo de Raadt
@@ -234,6 +234,7 @@ int badvaddr(vaddr_t, int);
 void nmihand(void *);
 int intr_findvec(int, int);
 
+int cachectl(struct proc *, int, vaddr_t, int);
 void dma_cachectl(caddr_t, int);
 paddr_t kvtop(vaddr_t);
 void physaccess(vaddr_t, paddr_t, size_t, int);

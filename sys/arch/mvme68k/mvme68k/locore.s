@@ -1,4 +1,4 @@
-/*	$OpenBSD: locore.s,v 1.39 2004/03/09 00:08:13 xsa Exp $ */
+/*	$OpenBSD: locore.s,v 1.40 2004/04/24 21:09:37 miod Exp $ */
 
 /*
  * Copyright (c) 1995 Theo de Raadt
@@ -954,8 +954,9 @@ ENTRY_NOPROFILE(trap12)
 	movl	d1,sp@-			| push length
 	movl	a1,sp@-			| push addr
 	movl	d0,sp@-			| push command
+	movl	_C_LABEL(curproc),sp@-	| push proc pointer
 	jbsr	_C_LABEL(cachectl)	| do it
-	lea	sp@(12),sp		| pop args
+	lea	sp@(16),sp		| pop args
 	jra	_ASM_LABEL(rei)		| all done
 
 /*
