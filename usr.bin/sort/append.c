@@ -1,4 +1,4 @@
-/*	$OpenBSD: append.c,v 1.3 1997/06/30 05:36:15 millert Exp $	*/
+/*	$OpenBSD: append.c,v 1.4 1998/05/02 02:41:55 mickey Exp $	*/
 
 /*-
  * Copyright (c) 1993
@@ -40,7 +40,7 @@
 #if 0
 static char sccsid[] = "@(#)append.c	8.1 (Berkeley) 6/6/93";
 #else
-static char rcsid[] = "$OpenBSD: append.c,v 1.3 1997/06/30 05:36:15 millert Exp $";
+static char rcsid[] = "$OpenBSD: append.c,v 1.4 1998/05/02 02:41:55 mickey Exp $";
 #endif
 #endif /* not lint */
 
@@ -76,7 +76,7 @@ append(keylist, nelem, depth, fp, put, ftbl)
 	struct field *ftbl;
 {
 	register u_char *wts, *wts1;
-	register n, odepth;
+	register int n, odepth;
 	register u_char **cpos, **ppos, **lastkey;
 	register u_char *cend, *pend, *start;
 	register RECHEADER *crec, *prec;
