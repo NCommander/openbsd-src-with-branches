@@ -1,4 +1,4 @@
-/*	$OpenBSD: pmap.c,v 1.7 1999/05/29 04:41:46 smurph Exp $	*/
+/*	$OpenBSD: pmap.c,v 1.8 1999/07/18 16:23:47 deraadt Exp $	*/
 /*
  * Copyright (c) 1996 Nivas Madhur
  * All rights reserved.
@@ -3362,9 +3362,10 @@ pmap_collect(pmap_t pmap)
  *		cpu		CPU number
  */
 void
-pmap_activate(pmap_t pmap)
+pmap_activate(struct proc *p)
 {
 	struct pcb *pcb = &p->p_addr->u_pcb;
+	pmap_t pmap = p->p_vmspace->vm_map.pmap;
 
 #ifdef	lint
 	my_cpu++;
@@ -3387,9 +3388,10 @@ pmap_activate(pmap_t pmap)
  *		pcb		pointer to pcb
  */
 void
-pmap_deactivate(pmap_t pmap)
+pmap_deactivate(p)
 {
 	struct pcb *pcb = &p->p_addr->u_pcb;
+	pmap_t pmap = p->p_vmspace->vm_map.pmap;
 
 #ifdef	lint
 	pmap++; th++; which_cpu++;
