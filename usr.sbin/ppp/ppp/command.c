@@ -25,7 +25,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  *
- * $OpenBSD: command.c,v 1.63 2001/07/09 00:08:54 brian Exp $
+ * $OpenBSD: command.c,v 1.64 2001/07/09 07:05:03 deraadt Exp $
  */
 
 #include <sys/param.h>
@@ -1735,7 +1735,7 @@ SetVariable(struct cmdargs const *arg)
     }
 
     if (long_val == 0)
-      *change = DEF_MRU;
+      *change = 0;
     else if (long_val < MIN_MRU) {
       log_Printf(LogWARN, "MRU %ld: too small - min %d\n", long_val, MIN_MRU);
       return 1;
