@@ -1,4 +1,4 @@
-/* $OpenBSD: cpuconf.c,v 1.4 2002/01/22 21:48:43 ericj Exp $ */
+/* $OpenBSD: cpuconf.c,v 1.5 2002/01/23 03:20:41 ericj Exp $ */
 /* $NetBSD: cpuconf.c,v 1.27 2000/06/26 02:42:04 enami Exp $ */
 
 /*-
@@ -112,7 +112,7 @@ extern void dec_eb164_init __P((void));
 #ifdef DEC_EB64PLUS
 extern void dec_eb64plus_init __P((void));
 #else
-#define dec_eb64plus_init __P((void));
+#define dec_eb64plus_init	platform_not_configured
 #endif
 
 #ifdef	DEC_KN300
