@@ -1,3 +1,5 @@
+/*	$OpenBSD: scon.c,v 1.17 1999/11/25 20:24:20 aaron Exp $	*/
+
 /*
  * Copyright (c) 1992, 1995 Hellmuth Michaelis and Joerg Wunsch
  *
@@ -56,18 +58,22 @@ static char *id =
  *
  *---------------------------------------------------------------------------*/
 
-#include <stdio.h>
 #include <fcntl.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <unistd.h>
 #include <machine/pcvt_ioctl.h>
 
 #define DEFAULTFD 0
 
 int aflag = -1;
+int bflag = -1;
+unsigned int scrollback_pages = 8;
 int lflag = -1;
 int mflag = -1;
+int oflag = -1;
 int current = -1;
-int pflag = -1;
-int hflag = -1;
 int res = -1;
 char *device;
 int dflag = -1;
@@ -185,8 +191,12 @@ static struct colname {
 static void parsepopt(char *arg, unsigned *idx,
 		      unsigned *r, unsigned *g, unsigned *b);
 static void printpalette(int fd);
+void printinfo(int fd);
+void printadaptor(int fd);
+void printmonitor(int fd);
+void usage();
 
-main(argc,argv)
+int main(argc,argv)
 int argc;
 char *argv[];
 {
@@ -197,12 +207,17 @@ char *argv[];
 	int c;
 	int fd;
 	
-	while( (c = getopt(argc, argv, "ac:d:f:HVlms:t:vp:18")) != EOF)
+	while( (c = getopt(argc, argv, "ab:c:d:f:lmos:t:vp:18")) != -1)
 	{
 		switch(c)
 		{
 			case 'a':
 				aflag = 1;
+				break;
+
+			case 'b':
+				bflag = 1;
+				scrollback_pages = atoi(optarg);
 				break;
 				
 			case 'l':
@@ -227,14 +242,6 @@ char *argv[];
 				fflag = 1;
 				break;
 				
-			case 'V':
-				pflag = 1;
-				break;
-
-			case 'H':
-				hflag = 1;
-				break;
-
 			case 's':
 				if     (!strncmp(optarg, "25", 2))
 					res = SIZ_25ROWS;
@@ -252,6 +259,10 @@ char *argv[];
 
 			case 'v':
 				vflag++;
+				break;
+
+			case 'o':
+				oflag = 1;
 				break;
 
 			case 'p':
@@ -322,12 +333,9 @@ char *argv[];
 		}
 	}
 
-	if((pflag == 1) && (hflag == 1))
-		usage();
-
-	if(dflag == -1 && lflag == -1 && current == -1 && pflag == -1 &&
-	   hflag == -1 && res == -1 && Pflag == 0 && tflag == 0 && fflag == -1
-	   && colms == 0 && mflag == -1)
+	if(dflag == -1 && lflag == -1 && current == -1 &&
+	   res == -1 && Pflag == 0 && tflag == 0 && fflag == -1
+	   && colms == 0 && mflag == -1 && bflag == -1 && oflag == -1)
 	{
 		lflag = 1;
 	}
@@ -344,7 +352,7 @@ char *argv[];
 		{
 			char buffer[80];
 			strcpy(buffer,"ERROR opening ");
-			strcat(buffer,device);
+			strncat(buffer,device,sizeof(buffer) - strlen(buffer));
 			perror(buffer);
 			exit(1);
 		}
@@ -355,6 +363,31 @@ char *argv[];
 	if(aflag == 1)	/* return adaptor type */
 	{
 		printadaptor(fd);
+		exit(0);
+	}
+
+	if (bflag == 1)
+	{
+		if(vflag) {
+			printf("Setting number of scrollback buffer pages ");
+			printf("to %d.\n", scrollback_pages);
+		}
+
+		if(ioctl(fd, SETSCROLLSIZE, &scrollback_pages) < 0)
+		{
+			perror("ioctl(SETSCROLLSIZE)");
+			exit(2);
+		}
+		exit(0);
+	}
+
+	if (oflag == 1)
+	{
+		if (ioctl(fd, TOGGLEPCDISP, &oflag) < 0)
+		{
+			perror("ioctl(TOGGLEPCDISP)");
+			exit(2);
+		}
 		exit(0);
 	}
 
@@ -454,30 +487,12 @@ char *argv[];
 		if(vflag)
 			printf("processing option -c, setting current screen to %d\n",current);
 		
-		if(ioctl(1, VGASETSCREEN, &screeninfo) == -1)
+		if(ioctl(fd, VGASETSCREEN, &screeninfo) == -1)
 		{
 			perror("ioctl VGASETSCREEN failed");
 			exit(1);
 		}
 		exit(0);
-	}
-
-	if(pflag == 1)
-	{
-		if(vflag)
-			printf("processing option -V, setting emulation to pure VT220\n");
-		screeninfo.pure_vt_mode = M_PUREVT;
-	}
-	else if(hflag == 1)
-	{
-		if(vflag)
-			printf("processing option -H, setting emulation to VT220 + HP Labels\n");
-		screeninfo.pure_vt_mode = M_HPVT;
-	}
-	else
-	{
-		if(vflag)
-			printf("no change in terminal emulation\n");
 	}
 
 	if(vflag)
@@ -527,16 +542,15 @@ success:
 	exit(0);	
 }			
 
-usage()
+void usage()
 {
-	fprintf(stderr,"\nscon - screen control utility for the pcvt video driver\n");
-	fprintf(stderr,"usage: scon -a -l -m -v -c [n] -d [dev] -f [on|off] -V -H -s [n]\n");
-	fprintf(stderr,"usage: scon -p [default | list | i,r,g,b] | -t [sec] | -1 | -8\n");
+	fprintf(stderr,"usage: scon [-almv18] [-b n] [-c n] [-d dev] [-f [on|off] [-s n]\n");
+	fprintf(stderr,"            [-p [default | list | i,r,g,b]] | [-t sec]\n");
 	fprintf(stderr,"       -a              list video adaptor type (MDA,CGA,EGA or VGA)\n");
+	fprintf(stderr,"       -b <num>        set number of scrollback buffer pages to <num>\n");
 	fprintf(stderr,"       -c <screen no>  switch current virtual screen to <screen no>\n");
 	fprintf(stderr,"       -d <device>     set parameters(-V|-H|-s) for virtual device\n");
 	fprintf(stderr,"       -f <on|off>     force 24 lines in VT 25 lines and HP 28 lines mode\n");
-	fprintf(stderr,"       -H              set VT220/HP emulation mode for a virtual screen\n");
 	fprintf(stderr,"       -l              list current parameters for a virtual screen\n");
 	fprintf(stderr,"       -m              report monitor type (MONO/COLOR)\n");
 	fprintf(stderr,"       -p default      set default VGA palette\n");
@@ -548,12 +562,10 @@ usage()
 	fprintf(stderr,"       -1              set 132 columns mode\n");
 	fprintf(stderr,"       -8              set 80 columns mode\n");
 	fprintf(stderr,"       -v              verbose mode\n");
-	fprintf(stderr,"       -V              set pure VT220 emulation for a virtual screen\n");
-	fprintf(stderr,"       -?              display help (this message)\n\n");
 	exit(1);
 }
 
-printadaptor(fd)
+void printadaptor(fd)
 int fd;
 {
 	if(ioctl(fd, VGAGETSCREEN, &screeninfo) == -1)
@@ -586,7 +598,7 @@ int fd;
 	}
 }
 
-printmonitor(fd)
+void printmonitor(fd)
 int fd;
 {
 	if(ioctl(fd, VGAGETSCREEN, &screeninfo) == -1)
@@ -633,11 +645,23 @@ char *vga_type(int number)
 		"TVGA 9000",
 		"TVGA 9100",
 		"TVGA 9200",
+		"TVGA 9440",
+		"TVGA 9660",
+		"TVGA 9750 (3DImage)",
 		"Unknown TRIDENT",
 		"S3 80C911",
 		"S3 80C924",
 		"S3 80C801/80C805",
 		"S3 80C928",
+		"S3 864",
+		"S3 964",
+		"S3 732 (Trio32)",
+		"S3 764 (Trio64)",
+		"S3 866",
+		"S3 868",
+		"S3 968",
+		"S3 765 (Trio64 V+)",
+		"S3 ViRGE",
 		"Unknown S3",
  		"CL-GD5402",
  		"CL-GD5402r1",
@@ -669,7 +693,7 @@ char *vga_family(int number)
 	return(vga_tab[number]);
 }
 
-printinfo(fd)
+void printinfo(fd)
 int fd;
 {
 	if(ioctl(fd, VGAGETSCREEN, &screeninfo) == -1)
@@ -678,7 +702,7 @@ int fd;
 		exit(1);
 	}
 
-	printf( "\nVideo Adaptor Type           = ");
+	printf( "Video Adaptor Type           = ");
 	
 	switch(screeninfo.adaptor_type)
 	{
@@ -772,7 +796,7 @@ int fd;
 	printf( "Force 24 Lines               = %s",
 			screeninfo.force_24lines ? "Yes" : "No");
 
-	printf("\n\n");
+	printf("\n");
 }
 
 static const char *findname(unsigned idx)
@@ -823,7 +847,7 @@ static void printpalette(int fd)
 		const char *cp;
 		printf("%5d  %5d  %5d  %5d",
 		       idx, palette[idx].r, palette[idx].g, palette[idx].b);
-		if(cp = findname(idx))
+		if((cp = findname(idx)))
 			printf("  %s\n", cp);
 		else
 			putchar('\n');

@@ -1,3 +1,4 @@
+/*	$OpenBSD: procs.c,v 1.2 1996/03/04 10:37:16 mickey Exp $	*/
 /*	$NetBSD: procs.c,v 1.4 1994/06/29 06:41:12 cgd Exp $	*/
 
 /*
@@ -7,7 +8,7 @@
  */
 
 #include <stdio.h>
-#include <strings.h>
+#include <string.h>
 #include "malloc.h"
 #include "main.h"
 #include "debug.h"

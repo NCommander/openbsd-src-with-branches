@@ -1,4 +1,4 @@
-#	$Id: Makefile,v 1.3 1994/12/22 11:33:22 cgd Exp $
+#	$OpenBSD$
 
 BINDIR=		/usr/sbin
 PROG=		catman

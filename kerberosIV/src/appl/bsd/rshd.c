@@ -604,7 +604,7 @@ doit(struct sockaddr_in *fromp)
 	krb_afslog_uid_home(NULL, NULL, uid, homedir);
     }
     execle(shell_path, cp, "-c", cmdbuf, 0, envinit);
-    err(1, shell_path);
+    err(1, "%s", shell_path);
 }
 
 /*

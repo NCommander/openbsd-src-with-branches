@@ -1,5 +1,5 @@
 /* ====================================================================
- * Copyright (c) 1995-1998 The Apache Group.  All rights reserved.
+ * Copyright (c) 1995-1999 The Apache Group.  All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -74,9 +74,6 @@
 #include "http_core.h"
 #include "http_log.h"
 #include "http_protocol.h"
-#if defined(HAVE_CRYPT_H)
-#include <crypt.h>
-#endif
 
 typedef struct auth_config_struct {
     char *auth_pwfile;
@@ -113,7 +110,7 @@ static const command_rec auth_cmds[] =
     {"AuthAuthoritative", ap_set_flag_slot,
      (void *) XtOffsetOf(auth_config_rec, auth_authoritative),
      OR_AUTHCFG, FLAG,
-     "Set to 'no' to allow access control to be passed along to lower modules if the UserID is not known to this module"},
+     "Set to 'off' to allow access control to be passed along to lower modules if the UserID is not known to this module"},
     {NULL}
 };
 
@@ -203,6 +200,7 @@ static int authenticate_basic_user(request_rec *r)
     conn_rec *c = r->connection;
     const char *sent_pw;
     char *real_pw;
+    char *invalid_pw;
     int res;
 
     if ((res = ap_get_basic_auth_pw(r, &sent_pw)))
@@ -219,10 +217,11 @@ static int authenticate_basic_user(request_rec *r)
 	ap_note_basic_auth_failure(r);
 	return AUTH_REQUIRED;
     }
-    /* anyone know where the prototype for crypt is? */
-    if (strcmp(real_pw, (char *) crypt(sent_pw, real_pw))) {
+    invalid_pw = ap_validate_password(sent_pw, real_pw);
+    if (invalid_pw != NULL) {
 	ap_log_rerror(APLOG_MARK, APLOG_NOERRNO|APLOG_ERR, r,
-		    "user %s: password mismatch: %s", c->user, r->uri);
+		      "user %s: authentication failure for \"%s\": %s",
+		      c->user, r->uri, invalid_pw);
 	ap_note_basic_auth_failure(r);
 	return AUTH_REQUIRED;
     }
@@ -264,7 +263,7 @@ static int check_user_access(request_rec *r)
 	method_restricted = 1;
 
 	t = reqs[x].requirement;
-	w = ap_getword(r->pool, &t, ' ');
+	w = ap_getword_white(r->pool, &t);
 	if (!strcmp(w, "valid-user"))
 	    return OK;
 	if (!strcmp(w, "user")) {
@@ -283,6 +282,16 @@ static int check_user_access(request_rec *r)
 		if (ap_table_get(grpstatus, w))
 		    return OK;
 	    }
+	} else if (sec->auth_authoritative) {
+	    /* if we aren't authoritative, any require directive could be
+	     * valid even if we don't grok it.  However, if we are 
+	     * authoritative, we can warn the user they did something wrong.
+	     * That something could be a missing "AuthAuthoritative off", but
+	     * more likely is a typo in the require directive.
+	     */
+	    ap_log_rerror(APLOG_MARK, APLOG_NOERRNO|APLOG_ERR, r,
+		"access to %s failed, reason: unknown require directive:"
+		"\"%s\"", r->uri, reqs[x].requirement);
 	}
     }
 

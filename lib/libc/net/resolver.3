@@ -1,4 +1,4 @@
-.\"	$NetBSD: resolver.3,v 1.5 1995/02/25 06:21:02 cgd Exp $
+.\"	$OpenBSD: resolver.3,v 1.12 1999/07/05 04:41:00 aaron Exp $
 .\"
 .\" Copyright (c) 1985, 1991, 1993
 .\"	The Regents of the University of California.  All rights reserved.
@@ -31,11 +31,9 @@
 .\" OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 .\" SUCH DAMAGE.
 .\"
-.\"     @(#)resolver.3	8.1 (Berkeley) 6/4/93
-.\"
 .Dd June 4, 1993
 .Dt RESOLVER 3
-.Os BSD 4.3
+.Os
 .Sh NAME
 .Nm res_query ,
 .Nm res_search ,
@@ -50,6 +48,7 @@
 .Fd #include <netinet/in.h>
 .Fd #include <arpa/nameser.h>
 .Fd #include <resolv.h>
+.Ft int
 .Fo res_query
 .Fa "char *dname"
 .Fa "int class"
@@ -57,6 +56,7 @@
 .Fa "u_char *answer"
 .Fa "int anslen"
 .Fc
+.Ft int
 .Fo res_search
 .Fa "char *dname"
 .Fa "int class"
@@ -64,6 +64,7 @@
 .Fa "u_char *answer"
 .Fa "int anslen"
 .Fc
+.Ft int
 .Fo res_mkquery
 .Fa "int op"
 .Fa "char *dname"
@@ -75,13 +76,15 @@
 .Fa "char *buf"
 .Fa "int buflen"
 .Fc
+.Ft int
 .Fo res_send
 .Fa "char *msg"
 .Fa "int msglen"
 .Fa "char *answer"
 .Fa "int anslen"
 .Fc
-.Fn res_init 
+.Ft int
+.Fn res_init "void"
 .Fo dn_comp
 .Fa "char *exp_dn"
 .Fa "char *comp_dn"
@@ -89,6 +92,7 @@
 .Fa "char **dnptrs"
 .Fa "char **lastdnptr"
 .Fc
+.Ft int
 .Fo dn_expand
 .Fa "u_char *msg"
 .Fa "u_char *eomorig"
@@ -97,22 +101,23 @@
 .Fa "int length"
 .Fc
 .Sh DESCRIPTION
-These routines are used for making, sending and interpreting
+These routines are used for making, sending, and interpreting
 query and reply messages with Internet domain name servers.
 .Pp
 Global configuration and state information that is used by the
 resolver routines is kept in the structure
-.Em _res .
+.Li _res .
 Most of the values have reasonable defaults and can be ignored.
 Options
 stored in
-.Em _res.options
+.Li _res.options
 are defined in
-.Pa resolv.h
+.Aq Pa resolv.h
 and are as follows.
-Options are stored as a simple bit mask containing the bitwise ``or''
+Options are stored as a simple bit mask containing the bitwise
+.Tn OR
 of the options enabled.
-.Bl -tag -width RES_DEFNAMES
+.Bl -tag -width RES_USE_INET6
 .It Dv RES_INIT
 True if the initial name server address and default domain name are
 initialized (i.e.,
@@ -165,6 +170,12 @@ will search for host names in the current domain and in parent domains; see
 This is used by the standard host lookup routine
 .Xr gethostbyname 3 .
 This option is enabled by default.
+.It Dv RES_USE_INET6
+Enables support for IPv6-only applications.
+This causes IPv4 addresses to be returned as an IPv4 mapped address.
+For example, 10.1.1.1 will be returned as ::ffff:10.1.1.1.
+The option is not meaningful on
+.Ox .
 .El
 .Pp
 The
@@ -212,7 +223,7 @@ The query requests information of the specified
 .Fa type
 and
 .Fa class
-for the specified fully-qualified domain name
+for the specified fully qualified domain name
 .Fa dname .
 The reply message is left in the
 .Fa answer
@@ -250,7 +261,7 @@ but can be any of the query types defined in
 .Aq Pa arpa/nameser.h .
 The domain name for the query is given by
 .Fa dname .
-.Fa Newrr
+.Fa newrr
 is currently unused but is intended for making update messages.
 .Pp
 The
@@ -281,8 +292,8 @@ is given by
 The compression uses
 an array of pointers
 .Fa dnptrs
-to previously-compressed names in the current message.
-The first pointer points to
+to previously compressed names in the current message.
+The first pointer points
 to the beginning of the message and the list ends with
 .Dv NULL .
 The limit to the array is specified by
@@ -295,7 +306,8 @@ as the name is compressed.
 If
 .Em dnptr
 is
-.Dv NULL, names are not compressed.
+.Dv NULL ,
+names are not compressed.
 If
 .Fa lastdnptr
 is
@@ -319,20 +331,21 @@ The size of compressed name is returned or \-1 if there was an error.
 .Sh FILES
 .Bl -tag -width Pa
 /etc/resolv.conf
-The configuration file
+configuration file
 see
 .Xr resolv.conf 5 .
 .El
 .Sh SEE ALSO
 .Xr gethostbyname 3 ,
-.Xr named 8 ,
 .Xr resolv.conf 5 ,
 .Xr hostname 7 ,
+.Xr named 8
 .Pp
 .%T RFC1032 ,
 .%T RFC1033 ,
 .%T RFC1034 ,
 .%T RFC1035 ,
+.%T RFC1535 ,
 .%T RFC974
 .Rs
 .%T "Name Server Operations Guide for BIND"
@@ -340,5 +353,5 @@ see
 .Sh HISTORY
 The
 .Nm
-function appeared in 
+function appeared in
 .Bx 4.3 .

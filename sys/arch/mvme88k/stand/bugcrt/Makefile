@@ -1,19 +1,24 @@
-#    $Id: Makefile,v 1.1 1996/02/04 03:36:28 build Exp build $
+#	$OpenBSD: Makefile,v 1.5 1998/12/15 06:12:50 smurph Exp $
+#
+# DO NOT OPTMIZE bugcrt (i.e. no "-O2")
+#
+S=${.CURDIR}/../../../..
+CFLAGS=-I${.CURDIR}/../../include -I${.CURDIR}/../libbug -I${S}/lib/libsa \
+	-fomit-frame-pointer -save-temps
 
-CFLAGS+=-I${.CURDIR}/../../include 
+OBJS=bugcrt.o sdcrt.o
 
-.include "${MACHINE_ARCH}/Makefile.inc"
-
-.PATH:  ${.CURDIR}/${MACHINE_ARCH}
-
-OBJS=bugcrt.o
-
-CLEANFILES+=a.out
+CLEANFILES+=a.out ${OBJS}
 
 all:	${OBJS}
 
 bugcrt.o: bugcrt.c
-	${CC} ${CFLAGS} -c ${.ALLSRC}
+	${COMPILE.c} -c $<
+	${LD} -x -r ${.TARGET}
+	mv a.out ${.TARGET}
+
+sdcrt.o: sdcrt.c
+	${COMPILE.c} -c $<
 	${LD} -x -r ${.TARGET}
 	mv a.out ${.TARGET}
 

@@ -60,17 +60,15 @@
 #include <stdlib.h>
 #include <string.h>
 #include "cryptlib.h"
-#include "buffer.h"
-#include "txt_db.h"
+#include <openssl/buffer.h>
+#include <openssl/txt_db.h>
 
 #undef BUFSIZE
 #define BUFSIZE	512
 
-char *TXT_DB_version="TXT_DB part of SSLeay 0.9.0b 29-Jun-1998";
+const char *TXT_DB_version="TXT_DB" OPENSSL_VERSION_PTEXT;
 
-TXT_DB *TXT_DB_read(in,num)
-BIO *in;
-int num;
+TXT_DB *TXT_DB_read(BIO *in, int num)
 	{
 	TXT_DB *ret=NULL;
 	int er=1;
@@ -158,7 +156,7 @@ int num;
 		if ((n != num) || (*f != '\0'))
 			{
 #if !defined(NO_STDIO) && !defined(WIN16)	/* temporaty fix :-( */
-			fprintf(stderr,"wrong number of fields on line %ld\n",ln);
+			fprintf(stderr,"wrong number of fields on line %ld (looking for field %d, got %d, '%s' left)\n",ln,num,n,f);
 #endif
 			er=2;
 			goto err;
@@ -183,7 +181,7 @@ err:
 #endif
 		if (ret->data != NULL) sk_free(ret->data);
 		if (ret->index != NULL) Free(ret->index);
-		if (ret->qual != NULL) Free((char *)ret->qual);
+		if (ret->qual != NULL) Free(ret->qual);
 		if (ret != NULL) Free(ret);
 		return(NULL);
 		}
@@ -191,10 +189,7 @@ err:
 		return(ret);
 	}
 
-char **TXT_DB_get_by_index(db,idx,value)
-TXT_DB *db;
-int idx;
-char **value;
+char **TXT_DB_get_by_index(TXT_DB *db, int idx, char **value)
 	{
 	char **ret;
 	LHASH *lh;
@@ -210,17 +205,13 @@ char **value;
 		db->error=DB_ERROR_NO_INDEX;
 		return(NULL);
 		}
-	ret=(char **)lh_retrieve(lh,(char *)value);
+	ret=(char **)lh_retrieve(lh,value);
 	db->error=DB_ERROR_OK;
 	return(ret);
 	}
 
-int TXT_DB_create_index(db,field,qual,hash,cmp)
-TXT_DB *db;
-int field;
-int (*qual)();
-unsigned long (*hash)();
-int (*cmp)();
+int TXT_DB_create_index(TXT_DB *db, int field, int (*qual)(),
+	     unsigned long (*hash)(), int (*cmp)())
 	{
 	LHASH *idx;
 	char *r;
@@ -256,9 +247,7 @@ int (*cmp)();
 	return(1);
 	}
 
-long TXT_DB_write(out,db)
-BIO *out;
-TXT_DB *db;
+long TXT_DB_write(BIO *out, TXT_DB *db)
 	{
 	long i,j,n,nn,l,tot=0;
 	char *p,**pp,*f;
@@ -306,9 +295,7 @@ err:
 	return(ret);
 	}
 
-int TXT_DB_insert(db,row)
-TXT_DB *db;
-char **row;
+int TXT_DB_insert(TXT_DB *db, char **row)
 	{
 	int i;
 	char **r;
@@ -319,7 +306,7 @@ char **row;
 			{
 			if ((db->qual[i] != NULL) &&
 				(db->qual[i](row) == 0)) continue;
-			r=(char **)lh_retrieve(db->index[i],(char *)row);
+			r=(char **)lh_retrieve(db->index[i],row);
 			if (r != NULL)
 				{
 				db->error=DB_ERROR_INDEX_CLASH;
@@ -342,7 +329,7 @@ char **row;
 			{
 			if ((db->qual[i] != NULL) &&
 				(db->qual[i](row) == 0)) continue;
-			lh_insert(db->index[i],(char *)row);
+			lh_insert(db->index[i],row);
 			}
 		}
 	return(1);
@@ -350,11 +337,13 @@ err:
 	return(0);
 	}
 
-void TXT_DB_free(db)
-TXT_DB *db;
+void TXT_DB_free(TXT_DB *db)
 	{
 	int i,n;
 	char **p,*max;
+
+	if(db == NULL)
+	    return;
 
 	if (db->index != NULL)
 		{

@@ -1,3 +1,5 @@
+#	$OpenBSD$
+
 .PATH:		${.CURDIR}/..
 
 PROG=	tcfsmng
@@ -11,5 +13,5 @@ SRCS=	tcfsmng.c tcfsadduser.c tcfsrmuser.c tcfsaddgroup.c tcfsrmgroup.c
 
 .include <bsd.prog.mk>
 
-LDADD+=	-lutil -ldes
-DPADD+= ${LIBUTIL} ${LIBDES}
+LDADD+=	-lutil
+DPADD+= ${LIBUTIL}

@@ -1,3 +1,6 @@
+/*	$OpenBSD: vars.c,v 1.4 1997/07/13 23:54:03 millert Exp $	*/
+/*	$NetBSD: vars.c,v 1.4 1996/06/08 19:48:45 christos Exp $	*/
+
 /*
  * Copyright (c) 1980, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -32,8 +35,11 @@
  */
 
 #ifndef lint
-static char sccsid[] = "from: @(#)vars.c	8.1 (Berkeley) 6/6/93";
-static char rcsid[] = "$Id: vars.c,v 1.3 1994/06/29 05:09:49 deraadt Exp $";
+#if 0
+static char sccsid[] = "@(#)vars.c	8.1 (Berkeley) 6/6/93";
+#else
+static char rcsid[] = "$OpenBSD: vars.c,v 1.4 1997/07/13 23:54:03 millert Exp $";
+#endif
 #endif /* not lint */
 
 #include "rcv.h"
@@ -52,13 +58,13 @@ void
 assign(name, value)
 	char name[], value[];
 {
-	register struct var *vp;
-	register int h;
+	struct var *vp;
+	int h;
 
 	h = hash(name);
 	vp = lookup(name);
 	if (vp == NOVAR) {
-		vp = (struct var *) calloc(sizeof *vp, 1);
+		vp = (struct var *)calloc(sizeof(*vp), 1);
 		vp->v_name = vcopy(name);
 		vp->v_link = variables[h];
 		variables[h] = vp;
@@ -78,7 +84,7 @@ vfree(cp)
 	char *cp;
 {
 	if (*cp)
-		free(cp);
+		(void)free(cp);
 }
 
 /*
@@ -94,12 +100,12 @@ vcopy(str)
 	unsigned len;
 
 	if (*str == '\0')
-		return "";
+		return("");
 	len = strlen(str) + 1;
-	if ((new = malloc(len)) == NULL)
-		panic("Out of memory");
-	bcopy(str, new, (int) len);
-	return new;
+	if ((new = (char *)malloc(len)) == NULL)
+		errx(1, "Out of memory");
+	(void)memcpy(new, str, len);
+	return(new);
 }
 
 /*
@@ -111,7 +117,7 @@ char *
 value(name)
 	char name[];
 {
-	register struct var *vp;
+	struct var *vp;
 
 	if ((vp = lookup(name)) == NOVAR)
 		return(getenv(name));
@@ -125,9 +131,9 @@ value(name)
 
 struct var *
 lookup(name)
-	register char name[];
+	char name[];
 {
-	register struct var *vp;
+	struct var *vp;
 
 	for (vp = variables[hash(name)]; vp != NOVAR; vp = vp->v_link)
 		if (*vp->v_name == *name && equal(vp->v_name, name))
@@ -141,9 +147,9 @@ lookup(name)
 
 struct grouphead *
 findgroup(name)
-	register char name[];
+	char name[];
 {
-	register struct grouphead *gh;
+	struct grouphead *gh;
 
 	for (gh = groups[hash(name)]; gh != NOGRP; gh = gh->g_link)
 		if (*gh->g_name == *name && equal(gh->g_name, name))
@@ -158,8 +164,8 @@ void
 printgroup(name)
 	char name[];
 {
-	register struct grouphead *gh;
-	register struct group *gp;
+	struct grouphead *gh;
+	struct group *gp;
 
 	if ((gh = findgroup(name)) == NOGRP) {
 		printf("\"%s\": not a group\n", name);
@@ -177,9 +183,9 @@ printgroup(name)
  */
 int
 hash(name)
-	register char *name;
+	char *name;
 {
-	register h = 0;
+	int h = 0;
 
 	while (*name) {
 		h <<= 2;
@@ -187,5 +193,5 @@ hash(name)
 	}
 	if (h < 0 && (h = -h) < 0)
 		h = 0;
-	return (h % HSHSIZE);
+	return(h % HSHSIZE);
 }

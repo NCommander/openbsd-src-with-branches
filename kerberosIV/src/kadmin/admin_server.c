@@ -262,10 +262,9 @@ listen on the admin servers port for a request
 static int
 kadm_listen(void)
 {
-    int found;
     int admin_fd;
     int peer_fd;
-    fd_set mask, readfds;
+    struct pollfd pfd[1];
     struct sockaddr_in peer;
     int addrlen;
     int pid;
@@ -293,8 +292,9 @@ kadm_listen(void)
 	     sizeof(struct sockaddr_in)) < 0)
 	return KADM_NO_BIND;
     listen(admin_fd, 1);
-    FD_ZERO(&mask);
-    FD_SET(admin_fd, &mask);
+
+    pfd[0].fd = admin_fd;
+    pfd[0].events = POLLIN;
 
     for (;;) {				/* loop nearly forever */
 	if (exit_now) {
@@ -302,16 +302,12 @@ kadm_listen(void)
 	    kill_children();
 	    return(0);
 	}
-	readfds = mask;
-	if ((found = select(admin_fd+1, &readfds, 0,
-			    0, (struct timeval *)0)) == 0)
-	    continue;			/* no things read */
-	if (found < 0) {
+	if (poll(pfd, 1, -1) < 0) {
 	    if (errno != EINTR)
-		krb_log("select: %s",error_message(errno));
+		krb_log("poll: %s",error_message(errno));
 	    continue;
-	}      
-	if (FD_ISSET(admin_fd, &readfds)) {
+	}
+	if (pfd[0].revents & POLLIN) {
 	    /* accept the conn */
 	    addrlen = sizeof(peer);
 	    if ((peer_fd = accept(admin_fd, (struct sockaddr *)&peer,

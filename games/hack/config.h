@@ -19,8 +19,6 @@
  * <sys/time.h>		<time.h>
  * <sgtty.h>		<termio.h>
  * Some routines are called differently
- * index		strchr
- * rindex		strrchr
  * Also, the code for suspend and various ioctls is only given for BSD4.2
  * (I do not have access to a SYSV system.)
  */
@@ -107,7 +105,11 @@
  * will do when you have signed characters; otherwise use
  *	typedef	short int schar;
  */
+#ifdef __CHAR_UNSIGNED__
+typedef	short int	schar;
+#else
 typedef	char	schar;
+#endif
 
 /*
  * small unsigned integers (8 bits suffice - but 7 bits do not)

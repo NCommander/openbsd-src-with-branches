@@ -1,4 +1,5 @@
-/*	$NetBSD: sysv_sem.c,v 1.24 1995/10/07 06:28:42 mycroft Exp $	*/
+/*	$OpenBSD: sysv_sem.c,v 1.3 1998/06/11 18:32:16 deraadt Exp $	*/
+/*	$NetBSD: sysv_sem.c,v 1.26 1996/02/09 19:00:25 christos Exp $	*/
 
 /*
  * Implementation of SVID semaphores
@@ -19,13 +20,15 @@
 #include <sys/syscallargs.h>
 
 int	semtot = 0;
-struct	proc *semlock_holder = NULL;
 
-int
+struct sem_undo *semu_alloc __P((struct proc *));
+int semundo_adjust __P((struct proc *, struct sem_undo **, int, int, int));
+void semundo_clear __P((int, int));
+
+void
 seminit()
 {
 	register int i;
-	vm_offset_t whocares1, whocares2;
 
 	if (sema == NULL)
 		panic("sema is NULL");
@@ -41,65 +44,6 @@ seminit()
 		suptr->un_proc = NULL;
 	}
 	semu_list = NULL;
-}
-
-void
-semlock(p)
-	struct proc *p;
-{
-
-	while (semlock_holder != NULL && semlock_holder != p)
-		sleep((caddr_t)&semlock_holder, (PZERO - 4));
-}
-
-/*
- * Lock or unlock the entire semaphore facility.
- *
- * This will probably eventually evolve into a general purpose semaphore
- * facility status enquiry mechanism (I don't like the "read /dev/kmem"
- * approach currently taken by ipcs and the amount of info that we want
- * to be able to extract for ipcs is probably beyond the capability of
- * the getkerninfo facility.
- *
- * At the time that the current version of semconfig was written, ipcs is
- * the only user of the semconfig facility.  It uses it to ensure that the
- * semaphore facility data structures remain static while it fishes around
- * in /dev/kmem.
- */
-
-int
-sys_semconfig(p, v, retval)
-	struct proc *p;
-	void *v;
-	register_t *retval;
-{
-	struct sys_semconfig_args /* {
-		syscallarg(int) flag;
-	} */ *uap = v;
-	int eval = 0;
-
-	semlock(p);
-
-	switch (SCARG(uap, flag)) {
-	case SEM_CONFIG_FREEZE:
-		semlock_holder = p;
-		break;
-
-	case SEM_CONFIG_THAW:
-		semlock_holder = NULL;
-		wakeup((caddr_t)&semlock_holder);
-		break;
-
-	default:
-		printf(
-		    "semconfig: unknown flag parameter value (%d) - ignored\n",
-		    SCARG(uap, flag));
-		eval = EINVAL;
-		break;
-	}
-
-	*retval = 0;
-	return(eval);
 }
 
 /*
@@ -170,6 +114,7 @@ semu_alloc(p)
 			panic("semu_alloc - second attempt failed");
 		}
 	}
+	return NULL;
 }
 
 /*
@@ -271,10 +216,188 @@ semundo_clear(semid, semnum)
 	}
 }
 
+void
+semid_n2o(n, o)
+	struct semid_ds *n;
+	struct osemid_ds *o;
+{
+	o->sem_base = n->sem_base;
+	o->sem_nsems = n->sem_nsems;
+	o->sem_otime = n->sem_otime;
+	o->sem_pad1 = n->sem_pad1;
+	o->sem_ctime = n->sem_ctime;
+	o->sem_pad2 = n->sem_pad2;
+	bcopy(n->sem_pad3, o->sem_pad3, sizeof o->sem_pad3);
+	ipc_n2o(&n->sem_perm, &o->sem_perm);
+}
+
+int
+sys___osemctl(p, v, retval)
+	struct proc *p;
+	register void *v;
+	register_t *retval;
+{
+	register struct sys___semctl_args /* {
+		syscallarg(int) semid;
+		syscallarg(int) semnum;
+		syscallarg(int) cmd;
+		syscallarg(union semun *) arg;
+	} */ *uap = v;
+	int semid = SCARG(uap, semid);
+	int semnum = SCARG(uap, semnum);
+	int cmd = SCARG(uap, cmd);
+	union semun *arg = SCARG(uap, arg);
+	union semun real_arg;
+	struct ucred *cred = p->p_ucred;
+	int i, rval, eval;
+	struct semid_ds *semaptr;
+	struct osemid_ds osbuf;
+
+#ifdef SEM_DEBUG
+	printf("call to semctl(%d, %d, %d, %p)\n", semid, semnum, cmd, arg);
+#endif
+
+	semid = IPCID_TO_IX(semid);
+	if (semid < 0 || semid >= seminfo.semmsl)
+		return(EINVAL);
+
+	semaptr = &sema[semid];
+	if ((semaptr->sem_perm.mode & SEM_ALLOC) == 0 ||
+	    semaptr->sem_perm.seq != IPCID_TO_SEQ(SCARG(uap, semid)))
+		return(EINVAL);
+
+	eval = 0;
+	rval = 0;
+
+	switch (cmd) {
+	case IPC_RMID:
+		if ((eval = ipcperm(cred, &semaptr->sem_perm, IPC_M)) != 0)
+			return(eval);
+		semaptr->sem_perm.cuid = cred->cr_uid;
+		semaptr->sem_perm.uid = cred->cr_uid;
+		semtot -= semaptr->sem_nsems;
+		for (i = semaptr->sem_base - sem; i < semtot; i++)
+			sem[i] = sem[i + semaptr->sem_nsems];
+		for (i = 0; i < seminfo.semmni; i++) {
+			if ((sema[i].sem_perm.mode & SEM_ALLOC) &&
+			    sema[i].sem_base > semaptr->sem_base)
+				sema[i].sem_base -= semaptr->sem_nsems;
+		}
+		semaptr->sem_perm.mode = 0;
+		semundo_clear(semid, -1);
+		wakeup((caddr_t)semaptr);
+		break;
+
+	case IPC_SET:
+		if ((eval = ipcperm(cred, &semaptr->sem_perm, IPC_M)))
+			return(eval);
+		if ((eval = copyin(arg, &real_arg, sizeof(real_arg))) != 0)
+			return(eval);
+		if ((eval = copyin(real_arg.buf, (caddr_t)&osbuf,
+		    sizeof(osbuf))) != 0)
+			return(eval);
+		semaptr->sem_perm.uid = osbuf.sem_perm.uid;
+		semaptr->sem_perm.gid = osbuf.sem_perm.gid;
+		semaptr->sem_perm.mode = (semaptr->sem_perm.mode & ~0777) |
+		    (osbuf.sem_perm.mode & 0777);
+		semaptr->sem_ctime = time.tv_sec;
+		break;
+
+	case IPC_STAT:
+		if ((eval = ipcperm(cred, &semaptr->sem_perm, IPC_R)))
+			return(eval);
+		if ((eval = copyin(arg, &real_arg, sizeof(real_arg))) != 0)
+			return(eval);
+		semid_n2o(semaptr, &osbuf);
+		eval = copyout((caddr_t)&osbuf, real_arg.buf, sizeof osbuf);
+		break;
+
+	case GETNCNT:
+		if ((eval = ipcperm(cred, &semaptr->sem_perm, IPC_R)))
+			return(eval);
+		if (semnum < 0 || semnum >= semaptr->sem_nsems)
+			return(EINVAL);
+		rval = semaptr->sem_base[semnum].semncnt;
+		break;
+
+	case GETPID:
+		if ((eval = ipcperm(cred, &semaptr->sem_perm, IPC_R)))
+			return(eval);
+		if (semnum < 0 || semnum >= semaptr->sem_nsems)
+			return(EINVAL);
+		rval = semaptr->sem_base[semnum].sempid;
+		break;
+
+	case GETVAL:
+		if ((eval = ipcperm(cred, &semaptr->sem_perm, IPC_R)))
+			return(eval);
+		if (semnum < 0 || semnum >= semaptr->sem_nsems)
+			return(EINVAL);
+		rval = semaptr->sem_base[semnum].semval;
+		break;
+
+	case GETALL:
+		if ((eval = ipcperm(cred, &semaptr->sem_perm, IPC_R)))
+			return(eval);
+		if ((eval = copyin(arg, &real_arg, sizeof(real_arg))) != 0)
+			return(eval);
+		for (i = 0; i < semaptr->sem_nsems; i++) {
+			eval = copyout((caddr_t)&semaptr->sem_base[i].semval,
+			    &real_arg.array[i], sizeof(real_arg.array[0]));
+			if (eval != 0)
+				break;
+		}
+		break;
+
+	case GETZCNT:
+		if ((eval = ipcperm(cred, &semaptr->sem_perm, IPC_R)))
+			return(eval);
+		if (semnum < 0 || semnum >= semaptr->sem_nsems)
+			return(EINVAL);
+		rval = semaptr->sem_base[semnum].semzcnt;
+		break;
+
+	case SETVAL:
+		if ((eval = ipcperm(cred, &semaptr->sem_perm, IPC_W)))
+			return(eval);
+		if (semnum < 0 || semnum >= semaptr->sem_nsems)
+			return(EINVAL);
+		if ((eval = copyin(arg, &real_arg, sizeof(real_arg))) != 0)
+			return(eval);
+		semaptr->sem_base[semnum].semval = real_arg.val;
+		semundo_clear(semid, semnum);
+		wakeup((caddr_t)semaptr);
+		break;
+
+	case SETALL:
+		if ((eval = ipcperm(cred, &semaptr->sem_perm, IPC_W)))
+			return(eval);
+		if ((eval = copyin(arg, &real_arg, sizeof(real_arg))) != 0)
+			return(eval);
+		for (i = 0; i < semaptr->sem_nsems; i++) {
+			eval = copyin(&real_arg.array[i],
+			    (caddr_t)&semaptr->sem_base[i].semval,
+			    sizeof(real_arg.array[0]));
+			if (eval != 0)
+				break;
+		}
+		semundo_clear(semid, -1);
+		wakeup((caddr_t)semaptr);
+		break;
+
+	default:
+		return(EINVAL);
+	}
+
+	if (eval == 0)
+		*retval = rval;
+	return(eval);
+}
+
 int
 sys___semctl(p, v, retval)
 	struct proc *p;
-	void *v;
+	register void *v;
 	register_t *retval;
 {
 	register struct sys___semctl_args /* {
@@ -297,8 +420,6 @@ sys___semctl(p, v, retval)
 	printf("call to semctl(%d, %d, %d, %p)\n", semid, semnum, cmd, arg);
 #endif
 
-	semlock(p);
-
 	semid = IPCID_TO_IX(semid);
 	if (semid < 0 || semid >= seminfo.semmsl)
 		return(EINVAL);
@@ -313,7 +434,7 @@ sys___semctl(p, v, retval)
 
 	switch (cmd) {
 	case IPC_RMID:
-		if ((eval = ipcperm(cred, &semaptr->sem_perm, IPC_M)))
+		if ((eval = ipcperm(cred, &semaptr->sem_perm, IPC_M)) != 0)
 			return(eval);
 		semaptr->sem_perm.cuid = cred->cr_uid;
 		semaptr->sem_perm.uid = cred->cr_uid;
@@ -457,8 +578,6 @@ sys_semget(p, v, retval)
 	printf("semget(0x%x, %d, 0%o)\n", key, nsems, semflg);
 #endif
 
-	semlock(p);
-
 	if (key != IPC_PRIVATE) {
 		for (semid = 0; semid < seminfo.semmni; semid++) {
 			if ((sema[semid].sem_perm.mode & SEM_ALLOC) &&
@@ -565,18 +684,16 @@ sys_semop(p, v, retval)
 	int nsops = SCARG(uap, nsops);
 	struct sembuf sops[MAX_SOPS];
 	register struct semid_ds *semaptr;
-	register struct sembuf *sopptr;
-	register struct sem *semptr;
+	register struct sembuf *sopptr = NULL;
+	register struct sem *semptr = NULL;
 	struct sem_undo *suptr = NULL;
 	struct ucred *cred = p->p_ucred;
 	int i, j, eval;
-	int all_ok, do_wakeup, do_undos;
+	int do_wakeup, do_undos;
 
 #ifdef SEM_DEBUG
 	printf("call to semop(%d, %p, %d)\n", semid, sops, nsops);
 #endif
-
-	semlock(p);
 
 	semid = IPCID_TO_IX(semid);	/* Convert back to zero origin */
 
@@ -641,7 +758,8 @@ sys_semop(p, v, retval)
 #endif
 
 			if (sopptr->sem_op < 0) {
-				if (semptr->semval + sopptr->sem_op < 0) {
+				if ((int)(semptr->semval +
+					  sopptr->sem_op) < 0) {
 #ifdef SEM_DEBUG
 					printf("semop:  can't do it now\n");
 #endif
@@ -824,6 +942,7 @@ done:
  * Go through the undo structures for this process and apply the adjustments to
  * semaphores.
  */
+void
 semexit(p)
 	struct proc *p;
 {
@@ -842,94 +961,13 @@ semexit(p)
 	}
 
 	/*
-	 * There are a few possibilities to consider here ...
+	 * No (i.e. we are in case 1 or 2).
 	 *
-	 * 1) The semaphore facility isn't currently locked.  In this case,
-	 *    this call should proceed normally.
-	 * 2) The semaphore facility is locked by this process (i.e. the one
-	 *    that is exiting).  In this case, this call should proceed as
-	 *    usual and the facility should be unlocked at the end of this
-	 *    routine (since the locker is exiting).
-	 * 3) The semaphore facility is locked by some other process and this
-	 *    process doesn't have an undo structure allocated for it.  In this
-	 *    case, this call should proceed normally (i.e. not accomplish
-	 *    anything and, most importantly, not block since that is
-	 *    unnecessary and could result in a LOT of processes blocking in
-	 *    here if the facility is locked for a long time).
-	 * 4) The semaphore facility is locked by some other process and this
-	 *    process has an undo structure allocated for it.  In this case,
-	 *    this call should block until the facility has been unlocked since
-	 *    the holder of the lock may be examining this process's proc entry
-	 *    (the ipcs utility does this when printing out the information
-	 *    from the allocated sem undo elements).
-	 *
-	 * This leads to the conclusion that we should not block unless we
-	 * discover that the someone else has the semaphore facility locked and
-	 * this process has an undo structure.  Let's do that...
-	 *
-	 * Note that we do this in a separate pass from the one that processes
-	 * any existing undo structure since we don't want to risk blocking at
-	 * that time (it would make the actual unlinking of the element from
-	 * the chain of allocated undo structures rather messy).
+	 * If there is no undo vector, skip to the end and unlock the
+	 * semaphore facility if necessary.
 	 */
-
-	/*
-	 * Does someone else hold the semaphore facility's lock?
-	 */
-
-	if (semlock_holder != NULL && semlock_holder != p) {
-		/*
-		 * Yes (i.e. we are in case 3 or 4).
-		 *
-		 * If we didn't find an undo vector associated with this
-		 * process than we can just return (i.e. we are in case 3).
-		 *
-		 * Note that we know that someone else is holding the lock so
-		 * we don't even have to see if we're holding it...
-		 */
-
-		if (suptr == NULL)
-			return;
-
-		/*
-		 * We are in case 4.
-		 *
-		 * Go to sleep as long as someone else is locking the semaphore
-		 * facility (note that we won't get here if we are holding the
-		 * lock so we don't need to check for that possibility).
-		 */
-
-		while (semlock_holder != NULL)
-			sleep((caddr_t)&semlock_holder, (PZERO - 4));
-
-		/*
-		 * Nobody is holding the facility (i.e. we are now in case 1).
-		 * We can proceed safely according to the argument outlined
-		 * above.
-		 *
-		 * We look up the undo vector again, in case the list changed
-		 * while we were asleep, and the parent is now different.
-		 */
-
-		for (supptr = &semu_list; (suptr = *supptr) != NULL;
-		    supptr = &suptr->un_next) {
-			if (suptr->un_proc == p)
-				break;
-		}
-
-		if (suptr == NULL)
-			panic("semexit: undo vector disappeared");
-	} else {
-		/*
-		 * No (i.e. we are in case 1 or 2).
-		 *
-		 * If there is no undo vector, skip to the end and unlock the
-		 * semaphore facility if necessary.
-		 */
-
-		if (suptr == NULL)
-			goto unlock;
-	}
+	if (suptr == NULL)
+		return;
 
 	/*
 	 * We are now in case 1 or 2, and we have an undo vector for this
@@ -992,14 +1030,4 @@ semexit(p)
 #endif
 	suptr->un_proc = NULL;
 	*supptr = suptr->un_next;
-
-unlock:
-	/*
-	 * If the exiting process is holding the global semaphore facility
-	 * lock (i.e. we are in case 2) then release it.
-	 */
-	if (semlock_holder == p) {
-		semlock_holder = NULL;
-		wakeup((caddr_t)&semlock_holder);
-	}
 }

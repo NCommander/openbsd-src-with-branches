@@ -1,3 +1,4 @@
+/*	$OpenBSD: tcp_timer.h,v 1.6 1995/03/26 20:32:37 jtc Exp $	*/
 /*	$NetBSD: tcp_timer.h,v 1.6 1995/03/26 20:32:37 jtc Exp $	*/
 
 /*
@@ -122,6 +123,7 @@ char *tcptimers[] =
 }
 
 #ifdef _KERNEL
+extern int tcptv_keep_init;
 extern int tcp_keepidle;		/* time before keepalive probes begin */
 extern int tcp_keepintvl;		/* time between keepalive probes */
 extern int tcp_maxidle;			/* time to drop after starting probes */

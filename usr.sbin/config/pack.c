@@ -1,4 +1,7 @@
-/* 
+/*	$OpenBSD: pack.c,v 1.7 1996/12/11 22:36:14 niklas Exp $	*/
+/*	$NetBSD: pack.c,v 1.5 1996/08/31 21:15:11 mycroft Exp $	*/
+
+/*
  * Copyright (c) 1992, 1993
  *	The Regents of the University of California.  All rights reserved.
  *
@@ -40,7 +43,6 @@
  * SUCH DAMAGE.
  *
  *	from: @(#)pack.c	8.1 (Berkeley) 6/6/93
- *	$Id: pack.c,v 1.1 1995/04/28 06:55:20 cgd Exp $
  */
 
 #include <sys/param.h>
@@ -164,23 +166,25 @@ void
 packdevi()
 {
 	register struct devi *i, *l, *p;
-	register struct devbase *d;
+	register struct deva *d;
 	register int j, m, n;
 
 	packed = emalloc((ndevi + 1) * sizeof *packed);
 	n = 0;
-	for (d = allbases; d != NULL; d = d->d_next) {
+	for (d = alldevas; d != NULL; d = d->d_next) {
 		/*
-		 * For each instance of each device, add or collapse
+		 * For each instance of each attachment, add or collapse
 		 * all its aliases.
 		 */
-		for (i = d->d_ihead; i != NULL; i = i->i_bsame) {
+		for (i = d->d_ihead; i != NULL; i = i->i_asame) {
 			m = n;
 			for (l = i; l != NULL; l = l->i_alias) {
+				/* Skip if we already handled this one.  */
+				if (l->i_cfindex >= 0)
+					continue;
 				l->i_pvlen = 0;
 				l->i_pvoff = -1;
 				l->i_locoff = -1;
-				l->i_ivoff = -1;
 				/* try to find an equivalent for l */
 				for (j = m; j < n; j++) {
 					p = packed[j];
@@ -208,7 +212,8 @@ packdevi()
 
 /*
  * Return true if two aliases are "the same".  In this case, they need
- * to have the same config flags and the same locators.
+ * to attach via the same attribute, have the same config flags, and
+ * have the same locators.
  */
 static int
 sameas(i1, i2)
@@ -216,6 +221,8 @@ sameas(i1, i2)
 {
 	register const char **p1, **p2;
 
+	if (i1->i_atattr != i2->i_atattr)
+		return (0);
 	if (i1->i_cfflags != i2->i_cfflags)
 		return (0);
 	for (p1 = i1->i_locs, p2 = i2->i_locs; *p1 == *p2; p2++)

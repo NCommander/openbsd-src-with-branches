@@ -32,26 +32,23 @@
  * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
- *
- *	from: @(#)sigreturn.s	5.2 (Berkeley) 12/17/90"
- *	$Id: sigreturn.S,v 1.2 1993/10/21 02:19:40 jtc Exp $
  */
 
-#if defined(SYSLIBC_SCCS) && !defined(lint)
-	.text
-	.asciz "$Id: sigreturn.S,v 1.2 1993/10/21 02:19:40 jtc Exp $"
-#endif /* SYSLIBC_SCCS and not lint */
-
 #include "SYS.h"
+
+#if defined(SYSLIBC_SCCS)
+	.text
+	.asciz "$OpenBSD: sigreturn.S,v 1.4 2000/01/06 10:41:58 d Exp $"
+#endif /* SYSLIBC_SCCS */
 
 /*
  * We must preserve the state of the registers as the user has set them up.
  */
 #ifdef PROF
-#undef ENTRY
-#define	ENTRY(x) \
-	.globl _/**/x; .align 2; _/**/x:  pusha ; \
-	.data; 1:; .long 0; .text; movl $1b,%eax; call mcount; popa ; nop
+#undef _PROF_PROLOGUE
+#define _PROF_PROLOGUE \
+	pusha; \
+	.data; 1:; .long 0; .text; movl $1b,%eax; call mcount; popa ; nop ;
 #endif /* PROF */
 
 SYSCALL(sigreturn)

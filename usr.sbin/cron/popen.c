@@ -24,13 +24,20 @@
  */
 
 #ifndef lint
-static char rcsid[] = "$Id: popen.c,v 1.2 1995/04/14 19:49:35 mycroft Exp $";
+static char rcsid[] = "$Id: popen.c,v 1.6 2000/08/20 18:42:42 millert Exp $";
 static char sccsid[] = "@(#)popen.c	5.7 (Berkeley) 2/14/89";
 #endif /* not lint */
 
 #include "cron.h"
-#include <sys/signal.h>
 
+#include <signal.h>
+#include <syslog.h>
+#include <unistd.h>
+#include <grp.h>
+
+#if defined(LOGIN_CAP)
+# include <login_cap.h>
+#endif
 
 #define MAX_ARGS 100
 #define WANT_GLOBBING 0
@@ -44,8 +51,9 @@ static PID_T *pids;
 static int fds;
 
 FILE *
-cron_popen(program, type)
+cron_popen(program, type, e)
 	char *program, *type;
+	entry *e;
 {
 	register char *cp;
 	FILE *iop;
@@ -59,7 +67,11 @@ cron_popen(program, type)
 	extern char **glob(), **copyblk();
 #endif
 
-	if (*type != 'r' && *type != 'w' || type[1])
+#ifdef __GNUC__
+	(void) &iop;	/* Avoid vfork clobbering */
+#endif
+
+	if ((*type != 'r' && *type != 'w') || type[1])
 		return(NULL);
 
 	if (!pids) {
@@ -76,6 +88,7 @@ cron_popen(program, type)
 	for (argc = 0, cp = program; argc < MAX_ARGS; cp = NULL)
 		if (!(argv[argc++] = strtok(cp, " \t\n")))
 			break;
+	argv[MAX_ARGS] = NULL;
 
 #if WANT_GLOBBING
 	/* glob each piece */
@@ -101,6 +114,7 @@ cron_popen(program, type)
 		goto pfree;
 		/* NOTREACHED */
 	case 0:				/* child */
+		closelog();
 		if (*type == 'r') {
 			if (pdes[1] != 1) {
 				dup2(pdes[1], 1);
@@ -114,6 +128,30 @@ cron_popen(program, type)
 				(void)close(pdes[0]);
 			}
 			(void)close(pdes[1]);
+		}
+		if (e) {
+#if defined(LOGIN_CAP)
+			struct passwd *pwd;
+
+			pwd = getpwuid(e->uid);
+			if (pwd == NULL) {
+				fprintf(stderr, "getpwuid: couldn't get entry for %d\n", e->uid);
+				_exit(ERROR_EXIT);
+			}
+			if (setusercontext(0, pwd, e->uid, LOGIN_SETALL) < 0) {
+				fprintf(stderr, "setusercontext failed for %d\n", e->uid);
+				_exit(ERROR_EXIT);
+			}
+#else
+			if (setgid(e->gid) ||
+			    setgroups(0, NULL) ||
+			    initgroups(env_get("LOGNAME", e->envp), e->gid))
+				_exit(1);
+			setlogin(env_get("LOGNAME", e->envp));
+			if (setuid(e->uid))
+				_exit(1);
+			chdir(env_get("HOME", e->envp));
+#endif
 		}
 #if WANT_GLOBBING
 		execvp(gargv[0], gargv);

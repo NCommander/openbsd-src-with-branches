@@ -6,11 +6,7 @@
 
 #include "config.h"
 #include <string.h>
-
-#ifndef BSD
-#define	index	strchr
-#define	rindex	strrchr
-#endif BSD
+#include <fcntl.h>
 
 #define	Null(type)	((struct type *) 0)
 

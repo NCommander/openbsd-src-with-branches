@@ -1,6 +1,5 @@
-/*	$OpenBSD$	*/
 /*
- * Copyright (c) 1995, 1996, 1997, 1998 Kungliga Tekniska Högskolan
+ * Copyright (c) 1995 - 2000 Kungliga Tekniska Högskolan
  * (Royal Institute of Technology, Stockholm, Sweden).
  * All rights reserved.
  * 
@@ -41,14 +40,46 @@
  * Header with prototypes for OS-specific functions.
  */
 
-/* $KTH: subr.h,v 1.5 1998/03/24 02:43:00 assar Exp $ */
+/* $Id: subr.h,v 1.9 2000/02/12 19:14:53 assar Exp $ */
 
 #ifndef _SUBR_H_
 #define _SUBR_H_
 
+#include <fdir.h>
+
+struct write_dirent_args {
+    int fd;
+#ifdef HAVE_OFF64_T
+    off64_t off;
+#else
+    off_t off;
+#endif
+    char *buf;
+    char *ptr;
+    void *last;
+    FCacheEntry *e; 
+    CredCacheEntry *ce;
+};
+
+ino_t
+dentry2ino (const char *name, const VenusFid *fid, const FCacheEntry *parent);
+
 Result
-conv_dir (FCacheEntry *e, char *handle, size_t handle_size,
-	  CredCacheEntry *ce, u_int tokens);
+conv_dir (FCacheEntry *e, CredCacheEntry *ce, u_int tokens,
+	  xfs_cache_handle *, char *, size_t);
+
+Result
+conv_dir_sub (FCacheEntry *e, CredCacheEntry *ce, u_int tokens,
+	      xfs_cache_handle *cache_handle,
+	      char *cache_name, size_t cache_name_sz,
+	      fdir_readdir_func func,
+	      void (*flush_func)(void *),
+	      size_t blocksize);
+
+int
+dir_remove_name (FCacheEntry *e, const char *filename,
+		 xfs_cache_handle *cache_handle,
+		 char *cache_name, size_t cache_name_sz);
 
 #endif /* _SUBR_H_ */
 

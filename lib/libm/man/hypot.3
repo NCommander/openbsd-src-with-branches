@@ -1,3 +1,4 @@
+.\"	$OpenBSD: hypot.3,v 1.6 1999/07/07 10:50:06 aaron Exp $
 .\" Copyright (c) 1985, 1991 Regents of the University of California.
 .\" All rights reserved.
 .\"
@@ -30,14 +31,15 @@
 .\" SUCH DAMAGE.
 .\"
 .\"     from: @(#)hypot.3	6.7 (Berkeley) 5/6/91
-.\"	$Id: hypot.3,v 1.4 1995/04/14 18:40:12 jtc Exp $
 .\"
 .Dd May 6, 1991
 .Dt HYPOT 3
-.Os BSD 4
+.Os
 .Sh NAME
 .Nm hypot ,
-.Nm cabs
+.Nm hypotf ,
+.Nm cabs ,
+.Nm cabsf
 .Nd euclidean distance and complex absolute value functions
 .Sh SYNOPSIS
 .Fd #include <math.h>
@@ -45,9 +47,10 @@
 .Fn hypot "double x" "double y"
 .Ft float
 .Fn hypotf "float x" "float y"
-.Fd struct {double x, y;} z;
 .Ft double
-.Fn cabs z
+.Fn cabs "struct complex { double x; double y; } z"
+.Ft float
+.Fn cabsf "struct complex { double x; double y; } z"
 .Sh DESCRIPTION
 The
 .Fn hypot
@@ -114,6 +117,13 @@ the
 \*(Na is designed to
 disappear when it turns out to be irrelevant, as it does in
 .Fn hypot "\*(If" "\*(Na" .
+.Sh BUGS
+The
+.Fn cabs
+and
+.Fn cabsf
+functions use structures that are not defined in any header and need to
+be defined by the user. As such they cannot be prototyped properly.
 .Sh SEE ALSO
 .Xr math 3 ,
 .Xr sqrt 3

@@ -60,13 +60,9 @@
 #include <time.h>
 #include "cryptlib.h"
 #include "bn_lcl.h"
-#include "rand.h"
+#include <openssl/rand.h>
 
-int BN_rand(rnd, bits, top, bottom)
-BIGNUM *rnd;
-int bits;
-int top;
-int bottom;
+static int bnrand(int pseudorand, BIGNUM *rnd, int bits, int top, int bottom)
 	{
 	unsigned char *buf=NULL;
 	int ret=0,bit,bytes,mask;
@@ -85,9 +81,19 @@ int bottom;
 
 	/* make a random number and set the top and bottom bits */
 	time(&tim);
-	RAND_seed((unsigned char *)&tim,sizeof(tim));
+	RAND_add(&tim,sizeof(tim),0);
 
-	RAND_bytes(buf,(int)bytes);
+	if (pseudorand)
+		{
+		if (RAND_pseudo_bytes(buf, bytes) == -1)
+			goto err;
+		}
+	else
+		{
+		if (RAND_bytes(buf, bytes) <= 0)
+			goto err;
+		}
+
 	if (top)
 		{
 		if (bit == 0)
@@ -119,3 +125,12 @@ err:
 	return(ret);
 	}
 
+int     BN_rand(BIGNUM *rnd, int bits, int top, int bottom)
+	{
+	return bnrand(0, rnd, bits, top, bottom);
+	}
+
+int     BN_pseudo_rand(BIGNUM *rnd, int bits, int top, int bottom)
+	{
+	return bnrand(1, rnd, bits, top, bottom);
+	}

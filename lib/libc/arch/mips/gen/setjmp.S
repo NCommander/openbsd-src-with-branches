@@ -35,13 +35,13 @@
  */
 
 #include <sys/syscall.h>
-#include <machine/reg.h>
-#include <machine/machAsmDefs.h>
+#include <machine/asm.h>
+#include <machine/regnum.h>
 
-#if defined(LIBC_SCCS) && !defined(lint)
-	ASMSTR("from: @(#)setjmp.s	8.1 (Berkeley) 6/4/93")
-	ASMSTR("$Id: setjmp.S,v 1.3 1994/12/15 17:24:51 mycroft Exp $")
-#endif /* LIBC_SCCS and not lint */
+#if defined(LIBC_SCCS) 
+	.text
+	.asciz "$OpenBSD: setjmp.S,v 1.6 1997/07/23 20:55:25 kstailey Exp $"
+#endif /* LIBC_SCCS */
 
 /*
  * C library -- setjmp, longjmp
@@ -57,8 +57,12 @@
 #define SETJMP_FRAME_SIZE	(STAND_FRAME_SIZE + 12)
 
 NON_LEAF(setjmp, SETJMP_FRAME_SIZE, ra)
-	subu	sp, sp, SETJMP_FRAME_SIZE	# allocate stack frame
 	.mask	0x80000000, (STAND_RA_OFFSET - STAND_FRAME_SIZE)
+	subu	sp, sp, SETJMP_FRAME_SIZE	# allocate stack frame
+#ifdef ABICALLS
+	.cprestore 16
+#endif
+	.set	reorder
 	sw	ra, STAND_RA_OFFSET(sp)		# save state
 	sw	a0, SETJMP_FRAME_SIZE(sp)
 	move	a0, zero			# get current signal mask
@@ -67,7 +71,11 @@ NON_LEAF(setjmp, SETJMP_FRAME_SIZE, ra)
 	sw	v0, (1 * 4)(v1)			# save sc_mask = sigblock(0)
 	move	a0, zero
 	addu	a1, sp, STAND_FRAME_SIZE	# pointer to struct sigaltstack
+#ifndef _THREAD_SAFE
 	jal	_C_LABEL(sigaltstack)
+#else
+	jal	_C_LABEL(_thread_sys_sigaltstack)
+#endif
 	lw	a0, SETJMP_FRAME_SIZE(sp)	# restore jmpbuf
 	lw	v1, STAND_FRAME_SIZE+8(sp)	# get old ss_onstack
 	and	v1, v1, 1			# extract onstack flag
@@ -110,6 +118,11 @@ NON_LEAF(setjmp, SETJMP_FRAME_SIZE, ra)
 END(setjmp)
 
 LEAF(longjmp)
+#ifdef ABICALLS
+	subu	sp, sp, 32
+	.cprestore 16
+#endif
+	.set	reorder
 	sw	a1, ((V0 + 3) * 4)(a0)	# save return value in sc_regs[V0]
 	li	v0, SYS_sigreturn
 	syscall

@@ -1,4 +1,4 @@
-/*	$NetBSD: hash_bigkey.c,v 1.5 1995/02/27 13:22:16 cgd Exp $	*/
+/*	$OpenBSD: hash_bigkey.c,v 1.6 1999/02/15 05:11:24 millert Exp $	*/
 
 /*-
  * Copyright (c) 1990, 1993, 1994
@@ -40,7 +40,7 @@
 #if 0
 static char sccsid[] = "@(#)hash_bigkey.c	8.3 (Berkeley) 5/31/94";
 #else
-static char rcsid[] = "$NetBSD: hash_bigkey.c,v 1.5 1995/02/27 13:22:16 cgd Exp $";
+static char rcsid[] = "$OpenBSD: hash_bigkey.c,v 1.6 1999/02/15 05:11:24 millert Exp $";
 #endif
 #endif /* LIBC_SCCS and not lint */
 
@@ -127,7 +127,7 @@ __big_insert(hashp, bufp, key, val)
 		if (!bufp)
 			return (-1);
 		n = p[0];
-		if (!key_size)
+		if (!key_size) {
 			if (FREESPACE(p)) {
 				move_bytes = MIN(FREESPACE(p), val_size);
 				off = OFFSET(p) - move_bytes;
@@ -140,6 +140,7 @@ __big_insert(hashp, bufp, key, val)
 				OFFSET(p) = off;
 			} else
 				p[n - 2] = FULL_KEY;
+		}
 		p = (u_int16_t *)bufp->page;
 		cp = bufp->page;
 		bufp->flags |= BUF_MOD;
@@ -255,7 +256,7 @@ __big_delete(hashp, bufp)
 	bufp->flags |= BUF_MOD;
 	if (rbufp)
 		__free_ovflpage(hashp, rbufp);
-	if (last_bfp != rbufp)
+	if (last_bfp && last_bfp != rbufp)
 		__free_ovflpage(hashp, last_bfp);
 
 	hashp->NKEYS--;
@@ -437,7 +438,7 @@ __big_return(hashp, bufp, ndx, val, set_current)
 		}
 
 	val->size = collect_data(hashp, bufp, (int)len, set_current);
-	if (val->size == -1)
+	if (val->size == (size_t) -1)
 		return (-1);
 	if (save_p->addr != save_addr) {
 		/* We are pretty short on buffers. */
@@ -516,7 +517,7 @@ __big_keydata(hashp, bufp, key, val, set)
 	int set;
 {
 	key->size = collect_key(hashp, bufp, 0, val, set);
-	if (key->size == -1)
+	if (key->size == (size_t) -1)
 		return (-1);
 	key->data = (u_char *)hashp->tmp_key;
 	return (0);
@@ -596,7 +597,7 @@ __big_split(hashp, op, np, big_keyp, addr, obucket, ret)
 		return (-1);
 	change = (__call_hash(hashp, key.data, key.size) != obucket);
 
-	if (ret->next_addr = __find_last_page(hashp, &big_keyp)) {
+	if ((ret->next_addr = __find_last_page(hashp, &big_keyp))) {
 		if (!(ret->nextp =
 		    __get_buf(hashp, ret->next_addr, big_keyp, 0)))
 			return (-1);;

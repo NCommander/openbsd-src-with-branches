@@ -1,3 +1,6 @@
+/*	$OpenBSD: shlib.c,v 1.9 2000/04/24 03:33:27 form Exp $	*/
+/*	$NetBSD: shlib.c,v 1.13 1998/04/04 01:00:29 fvdl Exp $	*/
+
 /*
  * Copyright (c) 1993 Paul Kranenburg
  * All rights reserved.
@@ -27,7 +30,6 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
- *	$Id: shlib.c,v 1.11 1995/06/04 21:56:30 pk Exp $
  */
 
 #ifdef sun
@@ -40,6 +42,7 @@ int	isdigit();
 #include <sys/stat.h>
 #include <sys/file.h>
 #include <sys/time.h>
+#include <ranlib.h>
 #include <a.out.h>
 #include <ctype.h>
 #include <dirent.h>
@@ -74,26 +77,47 @@ void
 add_search_dir(name)
 	char	*name;
 {
+	int i, len;
+
+	len = strlen(name);
+
+	while (len > 1 && name[len - 1] == '/')
+		--len;
+
+	for (i = 0; i < n_search_dirs; i++)
+		if (strlen(search_dirs[i]) == len &&
+			!strncmp(search_dirs[i], name, len))
+				return;
 	n_search_dirs++;
 	search_dirs = (char **)
 		xrealloc(search_dirs, n_search_dirs * sizeof search_dirs[0]);
-	search_dirs[n_search_dirs - 1] = strdup(name);
+	search_dirs[n_search_dirs - 1] = xmalloc(++len);
+	(void)strlcpy(search_dirs[n_search_dirs - 1], name, len);
 }
 
 void
 remove_search_dir(name)
 	char	*name;
 {
-	int	n;
+	int	i, len;
 
-	for (n = 0; n < n_search_dirs; n++) {
-		if (strcmp(search_dirs[n], name))
+	len = strlen(name);
+
+	while (len > 1 && name[len - 1] == '/')
+		--len;
+
+	for (i = 0; i < n_search_dirs; i++) {
+		if (strlen(search_dirs[i]) != len ||
+		    strncmp(search_dirs[i], name, len))
 			continue;
-		free(search_dirs[n]);
-		if (n < (n_search_dirs - 1))
-			bcopy(&search_dirs[n+1], &search_dirs[n],
-			      (n_search_dirs - n - 1) * sizeof search_dirs[0]);
+		free(search_dirs[i]);
+		if (i < (n_search_dirs - 1))
+			bcopy(&search_dirs[i+1], &search_dirs[i],
+			      (n_search_dirs - i - 1) * sizeof search_dirs[0]);
 		n_search_dirs--;
+		search_dirs = (char **)xrealloc(search_dirs,
+			n_search_dirs * sizeof search_dirs[0]);
+		break;
 	}
 }
 
@@ -229,7 +253,7 @@ int	do_dot_a;
 	int		tmp[MAXDEWEY];
 	int		i;
 	int		len;
-	char		*lname, *path = NULL;
+	char		*lname;
 	int		major = *majorp, minor = *minorp;
 
 	len = strlen(name);
@@ -242,13 +266,13 @@ int	do_dot_a;
 	for (i = 0; i < n_search_dirs; i++) {
 		DIR		*dd = opendir(search_dirs[i]);
 		struct dirent	*dp;
-		int		found_dot_a = 0;
+		char 		*path = NULL;
 
 		if (dd == NULL)
 			continue;
 
 		while ((dp = readdir(dd)) != NULL) {
-			int	n, might_take_it = 0;
+			int	n;
 
 			if (do_dot_a && path == NULL &&
 					dp->d_namlen == len + 2 &&
@@ -257,7 +281,6 @@ int	do_dot_a;
 					(dp->d_name+len)[1] == 'a') {
 
 				path = concat(search_dirs[i], "/", dp->d_name);
-				found_dot_a = 1;
 			}
 
 			if (dp->d_namlen < len + 4)
@@ -270,25 +293,13 @@ int	do_dot_a;
 			if ((n = getdewey(tmp, dp->d_name+len+4)) == 0)
 				continue;
 
-			if (major != -1 && found_dot_a) { /* XXX */
-				free(path);
-				path = NULL;
-				found_dot_a = 0;
-			}
-
-			if (major == -1 && minor == -1) {
-				might_take_it = 1;
-			} else if (major != -1 && minor == -1) {
-				if (tmp[0] == major)
-					might_take_it = 1;
-			} else if (major != -1 && minor != -1) {
-				if (tmp[0] == major)
-					if (n == 1 || tmp[1] >= minor)
-						might_take_it = 1;
-			}
-
-			if (!might_take_it)
-				continue;
+			/* skip inappropriate versions. */
+			if (major != -1) {
+				if (tmp[0] != major)
+					continue;
+				if (n != 1 && minor != -1 && tmp[1] < minor)
+					continue;
+			} 
 
 			if (cmpndewey(tmp, n, dewey, ndewey) <= 0)
 				continue;
@@ -297,7 +308,6 @@ int	do_dot_a;
 			if (path)
 				free(path);
 			path = concat(search_dirs[i], "/", dp->d_name);
-			found_dot_a = 0;
 			bcopy(tmp, dewey, sizeof(dewey));
 			ndewey = n;
 			*majorp = dewey[0];
@@ -305,12 +315,12 @@ int	do_dot_a;
 		}
 		closedir(dd);
 
-		if (found_dot_a)
+		if (path != NULL)
 			/*
-			 * There's a .a archive here.
+			 * There's a lib in this dir; take it.
 			 */
 			return path;
 	}
 
-	return path;
+	return NULL;
 }

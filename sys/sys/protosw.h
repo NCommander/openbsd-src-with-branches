@@ -1,4 +1,5 @@
-/*	$NetBSD: protosw.h,v 1.7 1995/03/26 20:24:33 jtc Exp $	*/
+/*	$OpenBSD: protosw.h,v 1.3 1996/04/21 22:31:54 deraadt Exp $	*/
+/*	$NetBSD: protosw.h,v 1.10 1996/04/09 20:55:32 cgd Exp $	*/
 
 /*-
  * Copyright (c) 1982, 1986, 1993
@@ -57,24 +58,45 @@
  * The userreq routine interfaces protocols to the system and is
  * described below.
  */
+
+struct mbuf;
+struct sockaddr;
+struct socket;
+struct domain;
+
 struct protosw {
 	short	pr_type;		/* socket type used for */
 	struct	domain *pr_domain;	/* domain protocol a member of */
 	short	pr_protocol;		/* protocol number */
 	short	pr_flags;		/* see below */
+
 /* protocol-protocol hooks */
-	void	(*pr_input)();		/* input to protocol (from below) */
-	int	(*pr_output)();		/* output to protocol (from above) */
-	void	(*pr_ctlinput)();	/* control input (from below) */
-	int	(*pr_ctloutput)();	/* control output (from above) */
+	void	(*pr_input)		/* input to protocol (from below) */
+			__P((struct mbuf *, ...));
+	int	(*pr_output)		/* output to protocol (from above) */
+			__P((struct mbuf *, ...));
+	void	*(*pr_ctlinput)		/* control input (from below) */
+			__P((int, struct sockaddr *, void *));
+	int	(*pr_ctloutput)		/* control output (from above) */
+			__P((int, struct socket *, int, int, struct mbuf **));
+
 /* user-protocol hook */
-	int	(*pr_usrreq)();		/* user request: see list below */
+	int	(*pr_usrreq)		/* user request: see list below */
+			__P((struct socket *, int, struct mbuf *,
+			     struct mbuf *, struct mbuf *));
+
 /* utility hooks */
-	void	(*pr_init)();		/* initialization hook */
-	void	(*pr_fasttimo)();	/* fast timeout (200ms) */
-	void	(*pr_slowtimo)();	/* slow timeout (500ms) */
-	void	(*pr_drain)();		/* flush any excess space possible */
-	int	(*pr_sysctl)();		/* sysctl for protocol */
+	void	(*pr_init)		/* initialization hook */
+			__P((void));
+
+	void	(*pr_fasttimo)		/* fast timeout (200ms) */
+			__P((void));
+	void	(*pr_slowtimo)		/* slow timeout (500ms) */
+			__P((void));
+	void	(*pr_drain)		/* flush any excess space possible */
+			__P((void));
+	int	(*pr_sysctl)		/* sysctl for protocol */
+			__P((int *, u_int, void *, size_t *, void *, size_t));
 };
 
 #define	PR_SLOWHZ	2		/* 2 slow timeouts per second */
@@ -148,6 +170,7 @@ char *prurequests[] = {
  */
 #define	PRC_IFDOWN		0	/* interface transition */
 #define	PRC_ROUTEDEAD		1	/* select new route if possible ??? */
+#define	PRC_MTUINC		2	/* increase in mtu to host */
 #define	PRC_QUENCH2		3	/* DEC congestion bit says slow down */
 #define	PRC_QUENCH		4	/* some one said to slow down */
 #define	PRC_MSGSIZE		5	/* message size forced drop */
@@ -174,7 +197,7 @@ char *prurequests[] = {
 
 #ifdef PRCREQUESTS
 char	*prcrequests[] = {
-	"IFDOWN", "ROUTEDEAD", "#2", "DEC-BIT-QUENCH2",
+	"IFDOWN", "ROUTEDEAD", "MTUINC", "DEC-BIT-QUENCH2",
 	"QUENCH", "MSGSIZE", "HOSTDEAD", "#7",
 	"NET-UNREACH", "HOST-UNREACH", "PROTO-UNREACH", "PORT-UNREACH",
 	"#12", "SRCFAIL-UNREACH", "NET-REDIRECT", "HOST-REDIRECT",
@@ -208,5 +231,8 @@ char	*prcorequests[] = {
 #endif
 
 #ifdef _KERNEL
-extern	struct protosw *pffindproto(), *pffindtype();
+struct sockaddr;
+struct protosw *pffindproto __P((int, int, int));
+struct protosw *pffindtype __P((int, int));
+void pfctlinput __P((int, struct sockaddr *));
 #endif

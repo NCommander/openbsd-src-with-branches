@@ -1,3 +1,4 @@
+/*	$OpenBSD: gprof.c,v 1.4 1998/08/11 02:54:08 deraadt Exp $	*/
 /*	$NetBSD: gprof.c,v 1.8 1995/04/19 07:15:59 cgd Exp $	*/
 
 /*
@@ -43,7 +44,7 @@ static char copyright[] =
 #if 0
 static char sccsid[] = "@(#)gprof.c	8.1 (Berkeley) 6/6/93";
 #else
-static char rcsid[] = "$NetBSD: gprof.c,v 1.8 1995/04/19 07:15:59 cgd Exp $";
+static char rcsid[] = "$OpenBSD: gprof.c,v 1.4 1998/08/11 02:54:08 deraadt Exp $";
 #endif
 #endif /* not lint */
 
@@ -83,7 +84,7 @@ main(argc, argv)
 	    cyclethreshold = atoi( *++argv );
 	    break;
 	case 'c':
-#if defined(vax) || defined(tahoe) || defined(sparc)
+#if defined(__i386__) || defined(__vax__) || defined(__tahoe__) || defined(__sparc__)
 	    cflag = TRUE;
 #else
 	    fprintf(stderr, "gprof: -c isn't supported on this architecture yet\n");
@@ -724,13 +725,12 @@ funcsymbol( nlistp )
     }
 	/*
 	 *	can't have any `funny' characters in name,
-	 *	where `funny' includes	`.', .o file names
-	 *			and	`$', pascal labels.
+	 *	where `funny' means `.', .o file names
 	 *	need to make an exception for sparc .mul & co.
 	 *	perhaps we should just drop this code entirely...
 	 */
     name = strtab + nlistp -> n_un.n_strx;
-#ifdef sparc
+#ifdef __sparc__
     if (nlistp -> n_value & 3)
 	return FALSE;
     if ( *name == '.' ) {
@@ -743,7 +743,7 @@ funcsymbol( nlistp )
     }
 #endif
     while ( c = *name++ ) {
-	if ( c == '.' || c == '$' ) {
+	if ( c == '.' ) {
 	    return FALSE;
 	}
     }

@@ -1,4 +1,4 @@
-/*	$NetBSD: ramd.c,v 1.5 1995/08/12 20:31:02 mycroft Exp $	*/
+/*	$NetBSD: ramd.c,v 1.6 1996/01/07 22:02:06 thorpej Exp $	*/
 
 /*
  * Copyright (c) 1995 Leo Weppelman.
@@ -101,16 +101,22 @@ struct read_info {
     void	(*strat)();	/* strategy function for read		*/
 };
 
+static	struct disk ramd_disks[RAMD_NDEV];	/* XXX Ick. */
+
 /*
  * Autoconfig stuff....
  */
 static int	ramdmatch __P((struct device *, struct cfdata *, void *));
-static int	ramdprint __P((void *, char *));
+static int	ramdprint __P((void *, const char *));
 static void	ramdattach __P((struct device *, struct device *, void *));
 
 struct cfdriver ramdcd = {
 	NULL, "rd", (cfmatch_t)ramdmatch, ramdattach, DV_DULL,
 	sizeof(struct device), NULL, 0 };
+
+void	rdstrategy __P((struct buf *));
+
+struct	dkdriver ramddkdriver = { rdstrategy };
 
 static int
 ramdmatch(pdp, cfp, auxp)
@@ -129,15 +135,34 @@ struct device	*pdp, *dp;
 void		*auxp;
 {
 	int	i;
+	struct	disk *diskp;
 
-	for(i = 0; i < RAMD_NDEV; i++)
+	/*
+	 * XXX It's not really clear to me _exactly_ what's going
+	 * on here, so this might need to be adjusted.  --thorpej
+	 */
+
+	for(i = 0; i < RAMD_NDEV; i++) {
+		/*
+		 * Initialize and attach the disk structure.
+		 */
+		diskp = &ramd_disks[i];
+		bzero(diskp, sizeof(struct disk));
+		if ((diskp->dk_name = malloc(8, M_DEVBUF, M_NOWAIT)) == NULL)
+			panic("ramdattach: can't allocate space for name");
+		bzero(diskp->dk_name, 8);
+		sprintf(diskp->dk_name, "rd%d", i);
+		diskp->dk_driver = &ramddkdriver;
+		disk_attach(diskp);
+
 		config_found(dp, (void*)i, ramdprint);
+	}
 }
 
 static int
 ramdprint(auxp, pnp)
 void	*auxp;
-char	*pnp;
+const char *pnp;
 {
 	return(UNCONF);
 }

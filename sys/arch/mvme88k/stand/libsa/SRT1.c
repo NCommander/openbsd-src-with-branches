@@ -1,4 +1,4 @@
-/*	$Id: SRT1.c,v 1.2 1996/02/03 03:57:09 build Exp build $ */
+/*	$OpenBSD: SRT1.c,v 1.1.1.1 1997/03/03 19:30:35 rahnds Exp $ */
 
 /*
  * Copyright (c) 1996 Nivas Madhur

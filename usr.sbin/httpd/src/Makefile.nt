@@ -55,6 +55,13 @@ _build:
 	cd ap
 	 nmake /nologo CFG="ap - Win32 %LONG%" -f ap.mak
 	cd ..
+	cd support
+	 nmake /nologo CFG="htpasswd - Win32 %LONG%" -f htpasswd.mak
+	 nmake /nologo CFG="htdigest - Win32 %LONG%" -f htdigest.mak
+	cd ..
+	cd lib/expat-lite
+	 nmake /nologo CFG="xmlparse - Win32 %LONG%" -f xmlparse.mak
+	cd ../..
 	cd main
 	 nmake /nologo CFG="gen_uri_delims - Win32 %LONG%" -f gen_uri_delims.mak
 	 nmake /nologo CFG="gen_test_char - Win32 %LONG%" -f gen_test_char.mak
@@ -84,6 +91,7 @@ _install:
 	-mkdir $(INSTDIR)\modules
 	-mkdir $(INSTDIR)\logs
 	-mkdir $(INSTDIR)\conf
+	-mkdir $(INSTDIR)\bin
 	copy Apache%SHORT%\Apache.exe $(INSTDIR)
 	copy Core%SHORT%\ApacheCore.dll $(INSTDIR)
 	copy os\win32\ApacheModuleStatus%SHORT%\ApacheModuleStatus.dll $(INSTDIR)\modules
@@ -97,6 +105,8 @@ _install:
 	copy os\win32\ApacheModuleSpeling%SHORT%\ApacheModuleSpeling.dll $(INSTDIR)\modules
 	copy os\win32\ApacheModuleUserTrack%SHORT%\ApacheModuleUserTrack.dll $(INSTDIR)\modules
 	copy modules\proxy\%LONG%\ApacheModuleProxy.dll $(INSTDIR)\modules
+	copy support\%LONG%\htpasswd.exe $(INSTDIR)\bin
+	copy support\%LONG%\htdigest.exe $(INSTDIR)\bin
 
 _clean:
 	cd os\win32
@@ -108,6 +118,13 @@ _clean:
 	cd ap
 	 nmake /nologo CFG="ap - Win32 %LONG%" -f ap.mak clean
 	cd ..
+	cd support
+	 nmake /nologo CFG="htpasswd - Win32 %LONG%" -f htpasswd.mak clean
+	 nmake /nologo CFG="htdigest - Win32 %LONG%" -f htdigest.mak clean
+	cd ..
+	cd lib/expat-lite
+	 nmake /nologo CFG="xmlparse - Win32 %LONG%" -f xmlparse.mak clean
+	cd ../..
 	cd main
 	 nmake /nologo CFG="gen_uri_delims - Win32 %LONG%" -f gen_uri_delims.mak clean
 	 del uri_delims.h
@@ -126,6 +143,7 @@ _clean:
 	 nmake /nologo CFG="ApacheModuleHeaders - Win32 %LONG%" -f ApacheModuleHeaders.mak clean
 	 nmake /nologo CFG="ApacheModuleSpeling - Win32 %LONG%" -f ApacheModuleSpeling.mak clean
 	 nmake /nologo CFG="ApacheModuleUserTrack - Win32 %LONG%" -f ApacheModuleUserTrack.mak clean
+	 nmake /nologo CFG="ApacheModuleRewrite - Win32 %LONG%" -f ApacheModuleRewrite.mak clean
 	cd ..\..
 	cd modules\proxy
 	 nmake /nologo CFG="ApacheModuleProxy - Win32 %LONG%" -f ApacheModuleProxy.mak clean

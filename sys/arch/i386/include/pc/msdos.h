@@ -1,3 +1,4 @@
+/*	$OpenBSD: msdos.h,v 1.3 1994/10/27 04:16:37 cgd Exp $	*/
 /*	$NetBSD: msdos.h,v 1.3 1994/10/27 04:16:37 cgd Exp $	*/
 
 /*

@@ -1,4 +1,4 @@
-.\"	$NetBSD: popen.3,v 1.5 1995/02/25 08:51:29 cgd Exp $
+.\"	$OpenBSD: popen.3,v 1.7 1999/06/04 01:30:11 aaron Exp $
 .\"
 .\" Copyright (c) 1991, 1993
 .\"	The Regents of the University of California.  All rights reserved.
@@ -31,8 +31,6 @@
 .\" OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 .\" SUCH DAMAGE.
 .\"
-.\"     @(#)popen.3	8.1 (Berkeley) 6/4/93
-.\"
 .Dd June 4, 1993
 .Dt POPEN 3
 .Os
@@ -62,8 +60,8 @@ the resulting stream is correspondingly read-only or write-only.
 .Pp
 The
 .Fa command
-argument is a pointer to a null-terminated string
-containing a shell command line.
+argument is a pointer to a null-terminated
+string containing a shell command line.
 This command is passed to
 .Pa /bin/sh
 using the
@@ -71,12 +69,12 @@ using the
 flag; interpretation, if any, is performed by the shell.
 The
 .Fa mode
-argument is a pointer to a null-terminated string
-which must be either
-.Ql r
+argument is a pointer to a null-terminated
+string which must be either
+.Qq r
 for reading
 or
-.Ql w
+.Qq w
 for writing.
 .Pp
 The return value from
@@ -84,7 +82,7 @@ The return value from
 is a normal standard
 .Tn I/O
 stream in all respects
-save that it must be closed with
+except that it must be closed with
 .Fn pclose
 rather than
 .Fn fclose .
@@ -108,8 +106,8 @@ The
 function waits for the associated process to terminate
 and returns the exit status of the command
 as returned by
-.Fn wait4 .
-.Sh RETURN VALUE
+.Xr wait4 2 .
+.Sh RETURN VALUES
 The
 .Fn popen
 function returns
@@ -141,12 +139,12 @@ The
 function does not reliably set
 .Va errno .
 .Sh SEE ALSO
-.Xr fork 2 ,
 .Xr sh 1 ,
+.Xr fork 2 ,
 .Xr pipe 2 ,
 .Xr wait4 2 ,
-.Xr fflush 3 ,
 .Xr fclose 3 ,
+.Xr fflush 3 ,
 .Xr fopen 3 ,
 .Xr stdio 3 ,
 .Xr system 3
@@ -170,10 +168,9 @@ The only hint is an exit status of 127.
 .Pp
 The
 .Fn popen
-argument
-always calls
-.Xr sh ,
-never calls
+argument always calls
+.Xr sh ;
+it never calls
 .Xr csh .
 .Sh HISTORY
 A

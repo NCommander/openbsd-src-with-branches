@@ -1,6 +1,5 @@
-/*
- * $Header: /cvsroot/kame/kame/kame/kame/route6d/route6d.h,v 1.1.1.1 1999/08/08 23:31:35 itojun Exp $
- */
+/*	$OpenBSD: route6d.h,v 1.3 1999/12/16 05:34:03 itojun Exp $	*/
+/*	$KAME: route6d.h,v 1.3 2000/02/25 06:15:06 itojun Exp $	*/
 
 /*
  * Copyright (C) 1995, 1996, 1997, and 1998 WIDE Project.
@@ -35,7 +34,7 @@
 #define	ROUTE6D_CONF	"/usr/local/v6/etc/route6d.conf"
 */
 
-#define	ROUTE6D_DUMP	"/var/tmp/route6d_dump"
+#define	ROUTE6D_DUMP	"/var/run/route6d_dump"
 #define	ROUTE6D_PID	"/var/run/route6d.pid"
 
 #define	RIP6_VERSION	1

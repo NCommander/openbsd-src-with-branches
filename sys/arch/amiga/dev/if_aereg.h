@@ -1,3 +1,4 @@
+/*	$OpenBSD: if_aereg.h,v 1.2 1997/01/16 09:24:37 niklas Exp $	*/
 /*	$NetBSD: if_aereg.h,v 1.2 1995/08/18 15:53:32 chopps Exp $	*/
 
 /*
@@ -151,5 +152,5 @@ struct aereg2 {
 #define	AE_RTRY		0x0004	/* retry error */
 #define	AE_TDR_MASK	0xff03	/* time domain reflectometry counter */
 
-#define SWAP(x) (((x & 0xff) << 8 ) | (( x >> 8) & 0xff))
+#define SWAP(x) swap16(x)
 

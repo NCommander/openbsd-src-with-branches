@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1999 Todd C. Miller <Todd.Miller@courtesan.com>
+ * Copyright (c) 1999-2000 Todd C. Miller <Todd.Miller@courtesan.com>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -31,7 +31,7 @@
  * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
- * $Sudo: defaults.h,v 1.7 1999/10/11 16:24:02 millert Exp $
+ * $Sudo: defaults.h,v 1.16 2000/03/22 23:40:09 millert Exp $
  */
 
 #ifndef _SUDO_DEFAULTS_H
@@ -43,13 +43,13 @@
 struct sudo_defs_types {
     char *name;
     int type;
+    char *desc;
     union {
 	int flag;
 	char *str;
 	unsigned int ival;
 	mode_t mode;
     } sd_un;
-    char *desc;
 };
 
 /*
@@ -69,6 +69,8 @@ struct sudo_defs_types {
 #define T_LOGFAC	0x005
 #undef T_LOGPRI
 #define T_LOGPRI	0x006
+#undef T_PWFLAG
+#define T_PWFLAG	0x007
 #undef T_MASK
 #define T_MASK		0x0FF
 #undef T_BOOL
@@ -109,26 +111,41 @@ struct sudo_defs_types {
 #define I_FQDN			21
 #define I_INSULTS		22
 #define I_REQUIRETTY		23
+#define I_ENV_EDITOR		24
+#define I_ROOTPW		25
+#define I_RUNASPW		26
+#define I_TARGETPW		27
+#define I_LOGINCLASS		28
+#define I_LOGNAME		29
 
 /* Integer values */
-#define	I_LOGLEN	24	/* wrap log file line after N chars */
-#define	I_TS_TIMEOUT	25	/* timestamp stale after N minutes */
-#define	I_PW_TIMEOUT	26	/* exit if pass not entered in N minutes */
-#define	I_PW_TRIES	27	/* exit after N bad password tries */
-#define	I_UMASK		28	/* umask to use or 0777 to use user's */
+#define	I_LOGLEN	30	/* wrap log file line after N chars */
+#define	I_TS_TIMEOUT	31	/* timestamp stale after N minutes */
+#define	I_PW_TIMEOUT	32	/* exit if pass not entered in N minutes */
+#define	I_PW_TRIES	33	/* exit after N bad password tries */
+#define	I_UMASK		34	/* umask to use or 0777 to use user's */
 
 /* Strings */
-#define	I_LOGFILE	29	/* path to logfile (or NULL for none) */
-#define	I_MAILERPATH	30	/* path to sendmail or other mailer */
-#define	I_MAILERFLAGS	31	/* flags to pass to the mailer */
-#define	I_MAILTO	32	/* who to send bitch mail to */
-#define	I_MAILSUB	33	/* subject line of mail msg */
-#define	I_BADPASS_MSG	34	/* what to say when passwd is wrong */
-#define	I_TIMESTAMPDIR	35	/* path to timestamp dir */
-#define	I_EXEMPT_GRP	36	/* no password or PATH override for these */
-#define	I_PASSPROMPT	37	/* password prompt */
-#define	I_RUNAS_DEF	38	/* default user to run commands as */
-#define	I_SECURE_PATH	39	/* set $PATH to this if not NULL */
+#define	I_LOGFILE	35	/* path to logfile (or NULL for none) */
+#define	I_MAILERPATH	36	/* path to sendmail or other mailer */
+#define	I_MAILERFLAGS	37	/* flags to pass to the mailer */
+#define	I_MAILTO	38	/* who to send bitch mail to */
+#define	I_MAILSUB	39	/* subject line of mail msg */
+#define	I_BADPASS_MSG	40	/* what to say when passwd is wrong */
+#define	I_TIMESTAMPDIR	41	/* path to timestamp dir */
+#define	I_EXEMPT_GRP	42	/* no password or PATH override for these */
+#define	I_PASSPROMPT	43	/* password prompt */
+#define	I_RUNAS_DEF	44	/* default user to run commands as */
+#define	I_SECURE_PATH	45	/* set $PATH to this if not NULL */
+#define	I_EDITOR	46	/* path to editor used by visudo */
+
+/* Integer versions of list/verify options */
+#define I_LISTPW	47
+#define I_VERIFYPW	48
+
+/* String versions of list/verify options */
+#define I_LISTPWSTR	49
+#define I_VERIFYPWSTR	50
 
 /*
  * Macros for accessing sudo_defs_table.

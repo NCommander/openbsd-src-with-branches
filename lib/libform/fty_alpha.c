@@ -1,3 +1,5 @@
+/*	$OpenBSD: fty_alpha.c,v 1.4 1998/07/24 02:37:42 millert Exp $	*/
+
 
 /*
  * THIS CODE IS SPECIFICALLY EXEMPTED FROM THE NCURSES PACKAGE COPYRIGHT.
@@ -5,8 +7,15 @@
  * If you develop a field type that might be of general use, please send
  * it back to the ncurses maintainers for inclusion in the next version.
  */
+/***************************************************************************
+*                                                                          *
+*  Author : Juergen Pfeifer, juergen.pfeifer@gmx.net                       *
+*                                                                          *
+***************************************************************************/
 
 #include "form.priv.h"
+
+MODULE_ID("$From: fty_alpha.c,v 1.9 1999/05/16 17:22:58 juergen Exp $")
 
 typedef struct {
   int width;
@@ -40,14 +49,14 @@ static void *Make_Alpha_Type(va_list * ap)
 +--------------------------------------------------------------------------*/
 static void *Copy_Alpha_Type(const void * argp)
 {
-  alphaARG *ap  = (alphaARG *)argp;
-  alphaARG *new = (alphaARG *)malloc(sizeof(alphaARG));
+  const alphaARG *ap = (const alphaARG *)argp;
+  alphaARG *result = (alphaARG *)malloc(sizeof(alphaARG));
   
-  if (new)
+  if (result)
     {
-      *new = *ap;
+      *result = *ap;
     }
-  return ((void *)new);
+  return ((void *)result);
 }
 
 /*---------------------------------------------------------------------------
@@ -77,7 +86,7 @@ static void Free_Alpha_Type(void * argp)
 +--------------------------------------------------------------------------*/
 static bool Check_Alpha_Field(FIELD * field, const void * argp)
 {
-  int width = ((alphaARG *)argp)->width;
+  int width = ((const alphaARG *)argp)->width;
   unsigned char *bp  = (unsigned char *)field_buffer(field,0);
   int  l = -1;
   unsigned char *s;
@@ -107,7 +116,7 @@ static bool Check_Alpha_Field(FIELD * field, const void * argp)
 |   Return Values :  TRUE  - character is valid
 |                    FALSE - character is invalid
 +--------------------------------------------------------------------------*/
-static bool Check_Alpha_Character(int c, const void * argp)
+static bool Check_Alpha_Character(int c, const void * argp GCC_UNUSED)
 {
   return (isalpha(c) ? TRUE : FALSE);
 }

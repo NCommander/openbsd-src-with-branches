@@ -1,3 +1,5 @@
+/*	$OpenBSD: misc.c,v 1.2 1996/06/26 05:39:07 deraadt Exp $	*/
+
 /*-
  * Copyright (c) 1992 Diomidis Spinellis.
  * Copyright (c) 1992, 1993
@@ -37,7 +39,7 @@
 
 #ifndef lint
 /* from: static char sccsid[] = "@(#)misc.c	8.1 (Berkeley) 6/6/93"; */
-static char *rcsid = "$Id: misc.c,v 1.4 1994/02/03 23:44:54 cgd Exp $";
+static char *rcsid = "$OpenBSD: misc.c,v 1.2 1996/06/26 05:39:07 deraadt Exp $";
 #endif /* not lint */
 
 #include <sys/types.h>
@@ -102,7 +104,7 @@ strregerror(errcode, preg)
 	return (oe);
 }
 
-#if __STDC__
+#ifdef __STDC__
 #include <stdarg.h>
 #else
 #include <varargs.h>
@@ -111,7 +113,7 @@ strregerror(errcode, preg)
  * Error reporting function
  */
 void
-#if __STDC__
+#ifdef __STDC__
 err(int severity, const char *fmt, ...)
 #else
 err(severity, fmt, va_alist)
@@ -121,7 +123,7 @@ err(severity, fmt, va_alist)
 #endif
 {
 	va_list ap;
-#if __STDC__
+#ifdef __STDC__
 	va_start(ap, fmt);
 #else
 	va_start(ap);

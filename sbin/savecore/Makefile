@@ -1,8 +1,16 @@
-#	$NetBSD: Makefile,v 1.8 1995/03/18 15:00:59 cgd Exp $
-#	@(#)Makefile	8.2 (Berkeley) 4/17/94
+#	$OpenBSD: Makefile,v 1.15 1999/04/23 05:21:56 downsj Exp $
 
 PROG=	savecore
-SRCS=	savecore.c zopen.c
+
+# XXX Temporarily until pmax is able to use libkvm
+.if	(${MACHINE} == "pmax")
+SRCS=	savecore_old.c
+.else
+SRCS=	savecore.c
+LDADD=	-lkvm
+DPADD=	${LIBKVM}
+.endif
+SRCS+=	zopen.c
 MAN=	savecore.8
 .PATH:	${.CURDIR}/../../usr.bin/compress
 

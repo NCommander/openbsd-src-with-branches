@@ -59,14 +59,13 @@
 #include <stdio.h>
 #include <ctype.h>
 #include "cryptlib.h"
-#include "buffer.h"
+#include <openssl/buffer.h>
 #include "bn_lcl.h"
 
-static char *Hex="0123456789ABCDEF";
+static const char *Hex="0123456789ABCDEF";
 
 /* Must 'Free' the returned data */
-char *BN_bn2hex(a)
-BIGNUM *a;
+char *BN_bn2hex(const BIGNUM *a)
 	{
 	int i,j,v,z=0;
 	char *buf;
@@ -101,8 +100,7 @@ err:
 	}
 
 /* Must 'Free' the returned data */
-char *BN_bn2dec(a)
-BIGNUM *a;
+char *BN_bn2dec(const BIGNUM *a)
 	{
 	int i=0,num;
 	char *buf=NULL;
@@ -139,7 +137,7 @@ BIGNUM *a;
 			}
 		lp--;
 		/* We now have a series of blocks, BN_DEC_NUM chars
-		 * in length, where the last one needs trucation.
+		 * in length, where the last one needs truncation.
 		 * The blocks need to be reversed in order. */
 		sprintf(p,BN_DEC_FMT1,*lp);
 		while (*p) p++;
@@ -156,9 +154,7 @@ err:
 	return(buf);
 	}
 
-int BN_hex2bn(bn,a)
-BIGNUM **bn;
-char *a;
+int BN_hex2bn(BIGNUM **bn, const char *a)
 	{
 	BIGNUM *ret=NULL;
 	BN_ULONG l=0;
@@ -169,13 +165,13 @@ char *a;
 
 	if (*a == '-') { neg=1; a++; }
 
-	for (i=0; isxdigit(a[i]); i++)
+	for (i=0; isxdigit((unsigned char) a[i]); i++)
 		;
 
 	num=i+neg;
 	if (bn == NULL) return(num);
 
-	/* a is the start of the hex digets, and it is 'i' long */
+	/* a is the start of the hex digits, and it is 'i' long */
 	if (*bn == NULL)
 		{
 		if ((ret=BN_new()) == NULL) return(0);
@@ -189,7 +185,7 @@ char *a;
 	/* i is the number of hex digests; */
 	if (bn_expand(ret,i*4) == NULL) goto err;
 
-	j=i; /* least significate 'hex' */
+	j=i; /* least significant 'hex' */
 	m=0;
 	h=0;
 	while (j > 0)
@@ -224,9 +220,7 @@ err:
 	return(0);
 	}
 
-int BN_dec2bn(bn,a)
-BIGNUM **bn;
-char *a;
+int BN_dec2bn(BIGNUM **bn, const char *a)
 	{
 	BIGNUM *ret=NULL;
 	BN_ULONG l=0;
@@ -236,14 +230,14 @@ char *a;
 	if ((a == NULL) || (*a == '\0')) return(0);
 	if (*a == '-') { neg=1; a++; }
 
-	for (i=0; isdigit(a[i]); i++)
+	for (i=0; isdigit((unsigned char) a[i]); i++)
 		;
 
 	num=i+neg;
 	if (bn == NULL) return(num);
 
-	/* a is the start of the digets, and it is 'i' long.
-	 * We chop it into BN_DEC_NUM digets at a time */
+	/* a is the start of the digits, and it is 'i' long.
+	 * We chop it into BN_DEC_NUM digits at a time */
 	if (*bn == NULL)
 		{
 		if ((ret=BN_new()) == NULL) return(0);
@@ -284,11 +278,8 @@ err:
 	}
 
 #ifndef NO_BIO
-
 #ifndef NO_FP_API
-int BN_print_fp(fp, a)
-FILE *fp;
-BIGNUM *a;
+int BN_print_fp(FILE *fp, const BIGNUM *a)
 	{
 	BIO *b;
 	int ret;
@@ -302,9 +293,7 @@ BIGNUM *a;
 	}
 #endif
 
-int BN_print(bp, a)
-BIO *bp;
-BIGNUM *a;
+int BN_print(BIO *bp, const BIGNUM *a)
 	{
 	int i,j,v,z=0;
 	int ret=0;
@@ -329,5 +318,15 @@ BIGNUM *a;
 end:
 	return(ret);
 	}
+#endif
 
+#ifdef BN_DEBUG
+void bn_dump1(FILE *o, const char *a, BN_ULONG *b,int n)
+	{
+	int i;
+	fprintf(o, "%s=", a);
+	for (i=n-1;i>=0;i--)
+		fprintf(o, "%08lX", b[i]); /* assumes 32-bit BN_ULONG */
+	fprintf(o, "\n");
+	}
 #endif

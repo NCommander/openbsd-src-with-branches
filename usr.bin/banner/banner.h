@@ -1,3 +1,4 @@
+/*	$OpenBSD: banner.h,v 1.2 1995/04/09 06:00:23 cgd Exp $	*/
 /*	$NetBSD: banner.h,v 1.2 1995/04/09 06:00:23 cgd Exp $	*/
 
 /*

@@ -1,5 +1,5 @@
 /* ====================================================================
- * Copyright (c) 1995-1998 The Apache Group.  All rights reserved.
+ * Copyright (c) 1995-1999 The Apache Group.  All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -97,8 +97,13 @@
 #include "http_protocol.h"
 #include <db.h>
 
-#if defined(DB_VERSION_MAJOR) && (DB_VERSION_MAJOR == 2)
+#if defined(DB_VERSION_MAJOR)
+#if (DB_VERSION_MAJOR == 2)
 #define DB2
+#endif
+#if (DB_VERSION_MAJOR == 3)
+#define DB3
+#endif
 #endif
 
 typedef struct {
@@ -155,11 +160,17 @@ static char *get_db_pw(request_rec *r, char *user, const char *auth_dbpwfile)
     DBT d, q;
     char *pw = NULL;
 
+    memset(&d, 0, sizeof(d));
+    memset(&q, 0, sizeof(q));
+
     q.data = user;
     q.size = strlen(q.data);
 
-#ifdef DB2
-    if (db_open(auth_dbpwfile, DB_HASH, O_RDONLY, 0664, NULL, NULL,  &f) != 0) {
+#if defined(DB3)
+    if (   db_create(&f, NULL, 0) != 0 
+        || f->open(f, auth_dbpwfile, NULL, DB_HASH, DB_RDONLY, 0664) != 0) {
+#elif defined(DB2)
+    if (db_open(auth_dbpwfile, DB_HASH, DB_RDONLY, 0664, NULL, NULL, &f) != 0) {
 #else
     if (!(f = dbopen(auth_dbpwfile, O_RDONLY, 0664, DB_HASH, NULL))) {
 #endif
@@ -168,7 +179,7 @@ static char *get_db_pw(request_rec *r, char *user, const char *auth_dbpwfile)
 	return NULL;
     }
 
-#ifdef DB2
+#if defined(DB2) || defined(DB3)
     if (!((f->get) (f, NULL, &q, &d, 0))) {
 #else
     if (!((f->get) (f, &q, &d, 0))) {
@@ -178,7 +189,7 @@ static char *get_db_pw(request_rec *r, char *user, const char *auth_dbpwfile)
 	pw[d.size] = '\0';	/* Terminate the string */
     }
 
-#ifdef DB2
+#if defined(DB2) || defined(DB3)
     (f->close) (f, 0);
 #else
     (f->close) (f);
@@ -223,6 +234,7 @@ static int db_authenticate_basic_user(request_rec *r)
     conn_rec *c = r->connection;
     const char *sent_pw;
     char *real_pw, *colon_pw;
+    char *invalid_pw;
     int res;
 
     if ((res = ap_get_basic_auth_pw(r, &sent_pw)))
@@ -241,12 +253,14 @@ static int db_authenticate_basic_user(request_rec *r)
     }
     /* Password is up to first : if exists */
     colon_pw = strchr(real_pw, ':');
-    if (colon_pw)
+    if (colon_pw) {
 	*colon_pw = '\0';
-    /* anyone know where the prototype for crypt is? */
-    if (strcmp(real_pw, (char *) crypt(sent_pw, real_pw))) {
+    }
+    invalid_pw = ap_validate_password(sent_pw, real_pw);
+    if (invalid_pw != NULL) {
 	ap_log_rerror(APLOG_MARK, APLOG_NOERRNO|APLOG_ERR, r,
-		    "DB user %s: password mismatch: %s", c->user, r->uri);
+		      "DB user %s: authentication failure for \"%s\": %s",
+		      c->user, r->uri, invalid_pw);
 	ap_note_basic_auth_failure(r);
 	return AUTH_REQUIRED;
     }
@@ -281,7 +295,7 @@ static int db_check_auth(request_rec *r)
 	    continue;
 
 	t = reqs[x].requirement;
-	w = ap_getword(r->pool, &t, ' ');
+	w = ap_getword_white(r->pool, &t);
 
 	if (!strcmp(w, "group") && sec->auth_dbgrpfile) {
 	    const char *orig_groups, *groups;
@@ -298,7 +312,7 @@ static int db_check_auth(request_rec *r)
 	    }
 	    orig_groups = groups;
 	    while (t[0]) {
-		w = ap_getword(r->pool, &t, ' ');
+		w = ap_getword_white(r->pool, &t);
 		groups = orig_groups;
 		while (groups[0]) {
 		    v = ap_getword(r->pool, &groups, ',');

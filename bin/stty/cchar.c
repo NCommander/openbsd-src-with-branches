@@ -1,4 +1,5 @@
-/*	$NetBSD: cchar.c,v 1.9 1995/03/21 09:11:15 cgd Exp $	*/
+/*	$OpenBSD: cchar.c,v 1.7 1997/09/01 18:30:31 deraadt Exp $	*/
+/*	$NetBSD: cchar.c,v 1.10 1996/05/07 18:20:05 jtc Exp $	*/
 
 /*-
  * Copyright (c) 1991, 1993, 1994
@@ -37,7 +38,7 @@
 #if 0
 static char sccsid[] = "@(#)cchar.c	8.5 (Berkeley) 4/2/94";
 #else
-static char rcsid[] = "$NetBSD: cchar.c,v 1.9 1995/03/21 09:11:15 cgd Exp $";
+static char rcsid[] = "$OpenBSD: cchar.c,v 1.7 1997/09/01 18:30:31 deraadt Exp $";
 #endif
 #endif /* not lint */
 
@@ -59,7 +60,7 @@ static char rcsid[] = "$NetBSD: cchar.c,v 1.9 1995/03/21 09:11:15 cgd Exp $";
  * The first are displayed, but both are recognized on the
  * command line.
  */
-struct cchar cchars1[] = {
+const struct cchar cchars1[] = {
 	{ "discard",	VDISCARD, 	CDISCARD },
 	{ "dsusp", 	VDSUSP,		CDSUSP },
 	{ "eof",	VEOF,		CEOF },
@@ -81,7 +82,7 @@ struct cchar cchars1[] = {
 	{ NULL },
 };
 
-struct cchar cchars2[] = {
+const struct cchar cchars2[] = {
 	{ "brk",	VEOL,		CEOL },
 	{ "flush",	VDISCARD, 	CDISCARD },
 	{ "rprnt",	VREPRINT, 	CREPRINT },
@@ -90,10 +91,9 @@ struct cchar cchars2[] = {
 
 static int
 c_cchar(a, b)
-        const void *a, *b;
+	const void *a, *b;
 {
-
-        return (strcmp(((struct cchar *)a)->name, ((struct cchar *)b)->name));
+	return (strcmp(((struct cchar *)a)->name, ((struct cchar *)b)->name));
 }
 
 int
@@ -104,14 +104,14 @@ csearch(argvp, ip)
 	struct cchar *cp, tmp;
 	long val;
 	char *arg, *ep, *name;
-		
+
 	name = **argvp;
 
 	tmp.name = name;
 	if (!(cp = (struct cchar *)bsearch(&tmp, cchars1,
 	    sizeof(cchars1)/sizeof(struct cchar) - 1, sizeof(struct cchar),
-	    c_cchar)) && !(cp = (struct cchar *)bsearch(&tmp, cchars1,
-	    sizeof(cchars1)/sizeof(struct cchar) - 1, sizeof(struct cchar),
+	    c_cchar)) && !(cp = (struct cchar *)bsearch(&tmp, cchars2,
+	    sizeof(cchars2)/sizeof(struct cchar) - 1, sizeof(struct cchar),
 	    c_cchar)))
 		return (0);
 
@@ -126,12 +126,7 @@ csearch(argvp, ip)
 		ip->t.c_cc[cp->sub] = _POSIX_VDISABLE;
 	else if (cp->sub == VMIN || cp->sub == VTIME) {
 		val = strtol(arg, &ep, 10);
-		if (val == _POSIX_VDISABLE) {
-			warnx("value of %ld would disable the option -- %s",
-			    val, name);
-			usage();
-		}
-		if (val > UCHAR_MAX) {
+		if (val > UCHAR_MAX || val < 0) {
 			warnx("maximum option value is %d -- %s",
 			    UCHAR_MAX, name);
 			usage();

@@ -1,5 +1,5 @@
 #
-#	$NetBSD: FALCON,v 1.3 1995/09/30 12:48:15 leo Exp $
+#	$NetBSD: FALCON,v 1.5 1996/01/06 20:11:00 leo Exp $
 #
 # ATARI-FALCON
 #
@@ -38,7 +38,6 @@ options		CD9660		# ISO 9660 filesystem with Rock Ridge
 options		FIFO		# FIFO operations on vnodes
 
 options		SWAPPAGER	# Pager for swap device
-options		VNODEPAGER	# Pager for vnodes
 options		DEVPAGER	# Pager
 
 
@@ -51,7 +50,8 @@ options		DDB		# Kernel debugger
 #
 # Compatability options for various existing systems
 #
-options		"COMPAT_43"	# 4.3 BSD compatible system calls (required)
+options		COMPAT_43	# 4.3 BSD compatible system calls (required)
+options		COMPAT_10	# Compatibility to NetBSD1.0
 
 #
 # Support for various kernel options
@@ -86,3 +86,4 @@ pseudo-device	vnd	3	# 3 pseudo disks (see vnconfig)
 zs0	at mainbus0		# Serial support through 8530
 grf1	at grfbus0		# second graphics driver
 ite1	at grf1			# second tty
+nvr0	at mainbus0		# nvram driver

@@ -1,3 +1,6 @@
+.\"	$OpenBSD: pcl.4,v 1.4 1999/06/05 13:18:39 aaron Exp $
+.\"	$NetBSD: pcl.4,v 1.3 1996/03/03 17:13:57 thorpej Exp $
+.\"
 .\" Copyright (c) 1983, 1991 Regents of the University of California.
 .\" All rights reserved.
 .\"
@@ -30,11 +33,10 @@
 .\" SUCH DAMAGE.
 .\"
 .\"     from: @(#)pcl.4	6.3 (Berkeley) 3/27/91
-.\"	$Id: pcl.4,v 1.2 1993/08/01 07:36:05 mycroft Exp $
 .\"
 .Dd March 27, 1991
 .Dt PCL 4 vax
-.Os BSD 4.2
+.Os
 .Sh NAME
 .Nm pcl
 .Nd
@@ -44,7 +46,7 @@ Network Interface
 .Sh SYNOPSIS
 .Cd "device pcl0 at uba? csr 164200 vector pclxint pclrint"
 .Sh DESCRIPTION
-The 
+The
 .Nm pcl
 device provides an
 .Tn IP Ns -only
@@ -98,7 +100,7 @@ so this interface has assumed the ``master'' role.  This message should
 only appear at most once per
 .Tn UNIBUS INIT
 on a single system.
-Unless there is a hardware failure, only one station may be master at at time.
+Unless there is a hardware failure, only one station may be master at a time.
 .Pp
 .It pcl%d: send error, tcr=%b, tsr=%b.
 The device indicated a problem sending data on output.
@@ -124,8 +126,8 @@ message
 has been agreed upon to be 1008 bytes (same as ArpaNet message).
 .El
 .Sh SEE ALSO
-.Xr intro 4 ,
-.Xr inet 4
+.Xr inet 4 ,
+.Xr intro 4
 .Sh HISTORY
 The
 .Nm

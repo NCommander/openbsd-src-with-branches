@@ -1,5 +1,5 @@
 /* ====================================================================
- * Copyright (c) 1998 The Apache Group.  All rights reserved.
+ * Copyright (c) 1998-1999 The Apache Group.  All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -60,7 +60,9 @@
 
 #include "ap_config.h"
 
+#ifndef PLATFORM
 #define PLATFORM "Unix"
+#endif
 
 /*
  * This file in included in all Apache source code. It contains definitions
@@ -73,6 +75,9 @@
  * part of the header
  */
 #define INLINE extern ap_inline
+
+INLINE int ap_os_is_path_absolute(const char *file);
+
 #include "os-inline.c"
 
 #else
@@ -80,8 +85,13 @@
 /* Compiler does not support inline, so prototype the inlineable functions
  * as normal
  */
-extern int ap_os_is_path_absolute(const char *f);
+extern int ap_os_is_path_absolute(const char *file);
 #endif
+
+/* Other ap_os_ routines not used by this platform */
+
+#define ap_os_is_filename_valid(f)          (1)
+#define ap_os_kill(pid, sig)                kill(pid, sig)
 
 /*
  *  Abstraction layer for loading
@@ -94,10 +104,13 @@ extern int ap_os_is_path_absolute(const char *f);
 #endif
 
 /*
- * Do not use native AIX DSO support
+ * Do not use native AIX DSO support on releases of AIX prior
+ * to 4.3. 
  */
 #ifdef AIX
+#if AIX < 43
 #undef HAVE_DLFCN_H
+#endif
 #endif
 
 #ifdef HAVE_DLFCN_H
@@ -121,7 +134,9 @@ const char *dlerror(void);
 #define RTLD_GLOBAL 0
 #endif
 
-#if defined(__FreeBSD__) || defined(__OpenBSD__) || defined(__NetBSD__)
+#if (defined(__FreeBSD__) ||\
+     defined(__OpenBSD__) ||\
+     defined(__NetBSD__)     ) && !defined(__ELF__)
 #define DLSYM_NEEDS_UNDERSCORE
 #endif
 

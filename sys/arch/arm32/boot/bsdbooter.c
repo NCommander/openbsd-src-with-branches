@@ -1,3 +1,4 @@
+/* $OpenBSD: bsdbooter.c,v 1.1 1996/01/31 23:18:08 mark Exp $ */
 /* $NetBSD: bsdbooter.c,v 1.1 1996/01/31 23:18:08 mark Exp $ */
 
 /*
@@ -44,7 +45,6 @@
  *
  * Based on kate/boot/boot.c
  *
- *    $Id: bsdbooter.c,v 1.1 1996/01/31 23:18:08 mark Exp $
  */
 
 /* Include standard header files */

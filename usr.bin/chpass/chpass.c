@@ -1,4 +1,5 @@
-/*	$NetBSD: chpass.c,v 1.7 1995/07/28 07:01:32 phil Exp $	*/
+/*	$OpenBSD: chpass.c,v 1.13 1998/08/03 17:09:46 millert Exp $	*/
+/*	$NetBSD: chpass.c,v 1.8 1996/05/15 21:50:43 jtc Exp $	*/
 
 /*-
  * Copyright (c) 1988, 1993, 1994
@@ -43,7 +44,7 @@ static char copyright[] =
 #if 0
 static char sccsid[] = "@(#)chpass.c	8.4 (Berkeley) 4/2/94";
 #else 
-static char rcsid[] = "$NetBSD: chpass.c,v 1.7 1995/07/28 07:01:32 phil Exp $";
+static char rcsid[] = "$OpenBSD: chpass.c,v 1.13 1998/08/03 17:09:46 millert Exp $";
 #endif
 #endif /* not lint */
 
@@ -61,25 +62,26 @@ static char rcsid[] = "$NetBSD: chpass.c,v 1.7 1995/07/28 07:01:32 phil Exp $";
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
-
-#include <pw_scan.h>
-#include <pw_util.h>
-#include "pw_copy.h"
+#include <util.h>
 
 #include "chpass.h"
 #include "pathnames.h"
 
-char *progname = "chpass";
-char *tempname;
+char tempname[] = __CONCAT(_PATH_VARTMP,"pw.XXXXXXXX");
 uid_t uid;
+
+extern char *__progname;
 
 #ifdef	YP
 int use_yp;
 int force_yp = 0;
 extern struct passwd *ypgetpwnam(), *ypgetpwuid();
+int _yp_check __P((char **));
+int pw_yp __P((struct passwd *, uid_t));
 #endif
 
 void	baduser __P((void));
+void	tempcleanup __P((void));
 void	usage __P((void));
 
 int
@@ -89,7 +91,7 @@ main(argc, argv)
 {
 	enum { NEWSH, LOADENTRY, EDITENTRY } op;
 	struct passwd *pw, lpw;
-	int ch, pfd, tfd;
+	int ch, pfd, tfd, dfd;
 	char *arg;
 
 #ifdef	YP
@@ -97,7 +99,7 @@ main(argc, argv)
 #endif
 
 	op = EDITENTRY;
-	while ((ch = getopt(argc, argv, "a:s:ly")) != EOF)
+	while ((ch = getopt(argc, argv, "a:s:ly")) != -1)
 		switch(ch) {
 		case 'a':
 			op = LOADENTRY;
@@ -166,68 +168,60 @@ main(argc, argv)
 		/* protect p_shell -- it thinks NULL is /bin/sh */
 		if (!arg[0])
 			usage();
-		if (p_shell(arg, pw, (ENTRY *)NULL))
-			pw_error((char *)NULL, 0, 1);
+		if (p_shell(arg, pw, NULL))
+			pw_error(NULL, 0, 1);
 	}
 
 	if (op == LOADENTRY) {
 		if (uid)
 			baduser();
 		pw = &lpw;
-		if (!pw_scan(arg, pw, (int *)NULL))
+		if (!pw_scan(arg, pw, NULL))
 			exit(1);
 	}
 
-	/*
-	 * The temporary file/file descriptor usage is a little tricky here.
-	 * 1:	We start off with two fd's, one for the master password
-	 *	file (used to lock everything), and one for a temporary file.
-	 * 2:	Display() gets an fp for the temporary file, and copies the
-	 *	user's information into it.  It then gives the temporary file
-	 *	to the user and closes the fp, closing the underlying fd.
-	 * 3:	The user edits the temporary file some number of times.
-	 * 4:	Verify() gets an fp for the temporary file, and verifies the
-	 *	contents.  It can't use an fp derived from the step #2 fd,
-	 *	because the user's editor may have created a new instance of
-	 *	the file.  Once the file is verified, its contents are stored
-	 *	in a password structure.  The verify routine closes the fp,
-	 *	closing the underlying fd.
-	 * 5:	Delete the temporary file.
-	 * 6:	Get a new temporary file/fd.  Pw_copy() gets an fp for it
-	 *	file and copies the master password file into it, replacing
-	 *	the user record with a new one.  We can't use the first
-	 *	temporary file for this because it was owned by the user.
-	 *	Pw_copy() closes its fp, flushing the data and closing the
-	 *	underlying file descriptor.  We can't close the master
-	 *	password fp, or we'd lose the lock.
-	 * 7:	Call pw_mkdb() (which renames the temporary file) and exit.
-	 *	The exit closes the master passwd fp/fd.
-	 */
+	/* Get the passwd lock file and open the passwd file for reading. */
 	pw_init();
-	pfd = pw_lock();
-	tfd = pw_tmp();
-
-	if (op == EDITENTRY) {
-		display(tfd, pw);
-		edit(pw);
-		(void)unlink(tempname);
-		tfd = pw_tmp();
+	tfd = pw_lock(0);
+	if (tfd == -1 || fcntl(tfd, F_SETFD, 1) == -1) {
+		if (errno == EEXIST)
+			errx(1, "the passwd file is busy.");
+		else
+			err(1, "can't open passwd temp file");
 	}
-		
+	pfd = open(_PATH_MASTERPASSWD, O_RDONLY, 0);
+	if (pfd == -1 || fcntl(pfd, F_SETFD, 1) == -1)
+		pw_error(_PATH_MASTERPASSWD, 1, 1);
+
+	/* Edit the user passwd information if requested. */
+	if (op == EDITENTRY) {
+		dfd = mkstemp(tempname);
+		if (dfd == -1 || fcntl(dfd, F_SETFD, 1) == -1)
+			pw_error(tempname, 1, 1);
+		atexit(tempcleanup);
+		display(tempname, dfd, pw);
+		edit(tempname, pw);
+	}
+
 #ifdef	YP
 	if (use_yp) {
-		(void)unlink(tempname);
-		if (pw_yp(pw, uid))
-			pw_error((char *)NULL, 0, 1);
-		else
+		if (pw_yp(pw, uid)) {
+			pw_error(NULL, 0, 1);
+			exit(1);
+		} else {
+			pw_abort();
 			exit(0);
-	}
-	else
+		}
+	} else
 #endif	/* YP */
-	pw_copy(pfd, tfd, pw);
+	{
+		/* Copy the passwd file to the lock file, updating pw. */
+		pw_copy(pfd, tfd, pw);
 
-	if (!pw_mkdb())
-		pw_error((char *)NULL, 0, 1);
+		/* Now finish the passwd file update. */
+		if (pw_mkdb() == -1)
+			pw_error(NULL, 0, 1);
+	}
 
 	exit(0);
 }
@@ -240,13 +234,22 @@ baduser()
 }
 
 void
+tempcleanup()
+{
+
+	unlink(tempname);
+}
+
+void
 usage()
 {
 
 #ifdef	YP
-	(void)fprintf(stderr, "usage: chpass [-a list] [-s shell] [-l]%s [user]\n", use_yp?" [-y]":"");
+	(void)fprintf(stderr, "usage: %s [-a list] [-s shell] [-l]%s [user]\n",
+	    __progname, use_yp?" [-y]":"");
 #else
-	(void)fprintf(stderr, "usage: chpass [-a list] [-s shell] [user]\n");
+	(void)fprintf(stderr, "usage: %s [-a list] [-s shell] [user]\n",
+	    __progname);
 #endif
 	exit(1);
 }

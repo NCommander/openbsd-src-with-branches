@@ -1,6 +1,7 @@
-/*	$Id: i82586.h,v 1.2 1995/11/07 08:48:58 deraadt Exp $ */
+/*	$OpenBSD: i82586.h,v 1.3 1996/04/28 11:03:20 deraadt Exp $ */
 
 /*-
+ * Copyright (c) 1998 Steve Murphree, Jr. 
  * Copyright (c) 1995 Theo de Raadt
  * Copyright (c) 1992, University of Vermont and State Agricultural College.
  * Copyright (c) 1992, Garrett A. Wollman.

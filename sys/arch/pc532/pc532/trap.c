@@ -45,6 +45,7 @@
 #include <sys/param.h>
 #include <sys/systm.h>
 #include <sys/proc.h>
+#include <sys/signalvar.h>
 #include <sys/user.h>
 #include <sys/acct.h>
 #include <sys/kernel.h>
@@ -176,7 +177,7 @@ copyfault:
 		 * APDEpde (or there may be no problem with APDEpde).
 		 */
 		if (va > 0xFEBFF000) {
-			v = KERN_FAILURE;	/* becomes SIGBUS */
+			v = KERN_FAILURE;	/* becomes SIGSEGV */
 			goto nogo;
 		}
 		/*
@@ -253,7 +254,7 @@ nogo:
 			       type, tear, msr);
 			goto we_re_toast;
 		}
-		i = (rv == KERN_PROTECTION_FAILURE) ? SIGBUS : SIGSEGV;
+		i = SIGSEGV;
 		break;
 	    }
 

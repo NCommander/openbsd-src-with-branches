@@ -1,3 +1,4 @@
+/*	$OpenBSD: read.c,v 1.2 1996/06/26 05:44:26 deraadt Exp $	*/
 /*	$NetBSD: read.c,v 1.2 1995/07/03 21:24:59 cgd Exp $	*/
 
 /*
@@ -32,7 +33,7 @@
  */
 
 #ifndef lint
-static char rcsid[] = "$NetBSD: read.c,v 1.2 1995/07/03 21:24:59 cgd Exp $";
+static char rcsid[] = "$OpenBSD: read.c,v 1.2 1996/06/26 05:44:26 deraadt Exp $";
 #endif
 
 #include <stdio.h>
@@ -1069,6 +1070,7 @@ mkstatic(hte)
 	 */
 	for (nhte = hte; nhte->h_link != NULL; nhte = nhte->h_link) ;
 	nhte->h_link = xalloc(sizeof (hte_t));
+	memset(nhte->h_link, 0, sizeof (hte_t));
 	nhte = nhte->h_link;
 	nhte->h_name = hte->h_name;
 	nhte->h_static = 1;

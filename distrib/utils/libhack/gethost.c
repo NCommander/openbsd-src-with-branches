@@ -1,3 +1,4 @@
+/*	$OpenBSD: gethost.c,v 1.2 1995/10/13 18:10:25 gwr Exp $	*/
 /*	$NetBSD: gethost.c,v 1.2 1995/10/13 18:10:25 gwr Exp $	*/
 
 /*-

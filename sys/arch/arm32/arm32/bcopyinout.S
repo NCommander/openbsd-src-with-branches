@@ -1,3 +1,4 @@
+/* $OpenBSD: bcopyinout.S,v 1.3 1996/02/02 18:05:47 mycroft Exp $ */
 /* $NetBSD: bcopyinout.S,v 1.3 1996/02/02 18:05:47 mycroft Exp $ */
 
 /*
@@ -43,7 +44,6 @@
  * Created      : 16/05/95
  * Last updated : 16/05/95
  *
- *    $Id: bcopyinout.S,v 1.3 1996/02/02 18:05:47 mycroft Exp $
  */
 
 #include "assym.h"

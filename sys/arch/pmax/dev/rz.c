@@ -1,4 +1,5 @@
-/*	$NetBSD: rz.c,v 1.12 1995/09/13 19:35:56 jonathan Exp $	*/
+/*	$OpenBSD: rz.c,v 1.18 1999/07/27 08:49:47 niklas Exp $	*/
+/*	$NetBSD: rz.c,v 1.38 1998/05/08 00:05:19 simonb Exp $	*/
 
 /*
  * Copyright (c) 1992, 1993
@@ -52,83 +53,85 @@
 #include <sys/errno.h>
 #include <sys/fcntl.h>
 #include <sys/ioctl.h>
-#include <sys/dkstat.h>
 #include <sys/disklabel.h>
+#include <sys/disk.h>
 #include <sys/malloc.h>
 #include <sys/proc.h>
 #include <sys/uio.h>
 #include <sys/stat.h>
 #include <sys/syslog.h>
+#include <sys/device.h>
 
-#include <ufs/ffs/fs.h>
+#include <ufs/ffs/fs.h>		/* XXX */
 
 #include <pmax/dev/device.h>
 #include <pmax/dev/scsi.h>
 
+#include <scsi/scsi_all.h>
+#include <scsi/scsi_disk.h>
+#include <scsi/cd.h>
+#include <scsi/scsi_cd.h>
+#include <scsi/scsiconf.h>
+
 #include <machine/pte.h>
 
-extern int splbio();
-extern void splx();
-extern int physio();
+#include <sys/conf.h>
+#include <machine/conf.h>
 
-int	rzprobe();
-void	rzstrategy(), rzstart(), rzdone();
+#define	SDRETRIES	4
+#define	CDRETRIES	4
+
+struct rz_softc;
+struct scsi_mode_sense_data;
+struct disk_parms;
+
+int	rzprobe __P((void /*register struct pmax_scsi_device*/ *sd));
+void	rzgetdefaultlabel __P((struct rz_softc *, struct disklabel *lp));
+void	rzstart __P((int unit));
+void	rzdone __P((int unit, int error, int resid, int status));
+void	rzgetinfo __P((dev_t, struct rz_softc *, struct disklabel *, int));
+int	rzsize __P((dev_t dev));
+
+/* Machinery for format and drive inquiry commands. */
+int	rz_command __P((struct rz_softc *sc, 
+			struct scsi_generic *scsi_cmd, int cmdlen,
+			u_char *data_addr, int data_len,
+			int nretries,   int timeout,  
+			struct buf *bp, u_int flags));
+
+static int rz_mode_sense __P((struct rz_softc *sd,
+	struct scsi_mode_sense_data *scsi_sense,
+	int page, int pagelen, int flags));
+static	int rz_getsize __P((struct rz_softc *sc, int flags));
+void	rzgetgeom __P((struct rz_softc *, int flags));
+void	rz_setlabelgeom __P((struct disklabel *lp, struct disk_parms *dp));
+u_long	rz_cdsize __P((struct rz_softc *cd, int flags));
+
 
 struct	pmax_driver rzdriver = {
-	"rz", rzprobe, rzstart, rzdone,
+	"rz", rzprobe,
+	(void	(*) __P((struct ScsiCmd *cmd))) rzstart,
+	rzdone,
 };
 
 struct	size {
 	u_long	strtblk;
 	u_long	nblocks;
+#define RZ_END	((u_long) -1)
 };
 
-/*
- * Since the SCSI standard tends to hide the disk structure, we define
- * partitions in terms of DEV_BSIZE blocks.  The default partition table
- * (for an unlabeled disk) reserves 8K for a boot area, has an 8 meg
- * root and 32 meg of swap.  The rest of the space on the drive goes in
- * the G partition.  As usual, the C partition covers the entire disk
- * (including the boot area).
- */
-static struct size rzdefaultpart[MAXPARTITIONS] = {
-#ifdef GENERIC	/* greedy machines have 64 meg of swap */
-	        0,   32768,	/* A */
-	    32768,  131072,	/* B */
-	        0,       0,	/* C */
-	    17408,       0,	/* D */
-	   115712,       0,	/* E */
-	   218112,       0,	/* F */
-	   163840,       0,	/* G */
-	   115712,       0,	/* H */
-#else
-	        0,   16384,	/* A */
-	    16384,   65536,	/* B */
-	        0,       0,	/* C */
-	    17408,       0,	/* D */
-	   115712,       0,	/* E */
-	   218112,       0,	/* F */
-	    81920,       0,	/* G */
-	   115712,       0,	/* H */
-#endif
-};
-
-extern char *readdisklabel __P((dev_t dev, void (*strat)(),
-		  struct disklabel *lp, struct cpu_disklabel *osdep));
 
 /*
  * Ultrix disklabel declarations
  */
- #ifdef COMPAT_ULTRIX
-#include "../../stand/dec_boot.h"
+#ifdef COMPAT_ULTRIX
+#include <pmax/stand/dec_boot.h>
 
 extern char *
-compat_label __P((dev_t dev, void (*strat)(),
+compat_label __P((dev_t dev, void (*strat) __P((struct buf *bp)),
 		  struct disklabel *lp, struct cpu_disklabel *osdep));
-#endif
 
-
-#define	RAWPART		2	/* 'c' partition */	/* XXX */
+#endif /* COMPAT_ULTRIX */
 
 struct rzstats {
 	long	rzresets;
@@ -137,18 +140,19 @@ struct rzstats {
 };
 
 struct	rz_softc {
+	struct	device sc_dev;		/* new config glue */
 	struct	pmax_scsi_device *sc_sd;	/* physical unit info */
 	pid_t	sc_format_pid;		/* process using "format" mode */
-	u_long	sc_openpart;		/* partitions open */
-	u_long	sc_bopenpart;		/* block partitions open */
-	u_long	sc_copenpart;		/* character partitions open */
 	short	sc_flags;		/* see below */
 	short	sc_type;		/* drive type from INQUIRY cmd */
 	u_int	sc_blks;		/* number of blocks on device */
 	int	sc_blksize;		/* device block size in bytes */
-	int	sc_bshift;		/* convert device blocks to DEV_BSIZE */
-	u_int	sc_wpms;		/* average xfer rate in 16bit wds/sec */
-	struct	disklabel sc_label;	/* disk label for this disk */
+	struct	disk sc_dkdev;		/* generic disk device info */
+#define	sc_label	sc_dkdev.dk_label	/* XXX compat */
+#define	sc_openpart	sc_dkdev.dk_openmask	/* XXX compat */
+#define	sc_bopenpart	sc_dkdev.dk_bopenmask	/* XXX compat */
+#define	sc_copenpart	sc_dkdev.dk_copenmask	/* XXX compat */
+#define	sc_bshift	sc_dkdev.dk_blkshift	/* XXX compat */
 	struct	rzstats sc_stats;	/* statisic counts */
 	struct	buf sc_tab;		/* queue of pending operations */
 	struct	buf sc_buf;		/* buf for doing I/O */
@@ -157,7 +161,14 @@ struct	rz_softc {
 	ScsiGroup1Cmd sc_rwcmd;		/* SCSI cmd if not in "format" mode */
 	struct	scsi_fmt_cdb sc_cdb;	/* SCSI cmd if in "format" mode */
 	struct	scsi_fmt_sense sc_sense;	/* sense data from last cmd */
-	u_char	sc_capbuf[8];		/* buffer for SCSI_READ_CAPACITY */
+	struct disk_parms {
+		u_char heads;		/* number of heads */
+		u_short cyls;		/* number of cylinders */
+		u_char sectors;		/* number of sectors/track */
+		int blksize;		/* number of bytes/sector */
+		u_long disksize;	/* total number sectors */
+	} params;
+	u_char	sc_capbuf[128];		/* buffer for SCSI_READ_CAPACITY */
 } rz_softc[NRZ];
 
 /* sc_flags values */
@@ -170,6 +181,7 @@ struct	rz_softc {
 #define	RZF_REMOVEABLE		0x0040	/* disk is removable */
 #define	RZF_TRYSYNC		0x0080	/* try synchronous operation */
 #define	RZF_NOERR		0x0100	/* don't print error messages */
+#define	RZF_FAKEGEOM		0x02000	/* couldn't get geometry */
 
 #ifdef DEBUG
 #define RZB_ERROR	0x01
@@ -178,9 +190,13 @@ struct	rz_softc {
 int	rzdebug = RZB_ERROR;
 #endif
 
-#define	rzunit(x)	(minor(x) >> 3)
-#define rzpart(x)	(minor(x) & 0x7)
 #define	b_cylin		b_resid
+
+struct scsi_mode_sense_data {
+	struct scsi_mode_header header;
+	struct scsi_blk_desc blk_desc;
+	union scsi_disk_pages pages;
+};
 
 /*
  * Table of scsi commands users are allowed to access via "format" mode.
@@ -208,6 +224,12 @@ static char legal_cmds[256] = {
 };
 
 /*
+ * Private forward declarations
+ */
+static	int rzready __P((register struct rz_softc *sc));
+static void rzlblkstrat __P((register struct buf *bp, register int bsize));
+
+/*
  * Test to see if the unit is ready and if not, try to make it ready.
  * Also, find the drive capacity.
  */
@@ -215,7 +237,7 @@ static int
 rzready(sc)
 	register struct rz_softc *sc;
 {
-	register int tries, i;
+	register int tries;
 	ScsiClass7Sense *sp;
 
 	/* don't print SCSI errors */
@@ -242,6 +264,7 @@ rzready(sc)
 		else
 			sc->sc_cmd.flags = 0;
 
+		disk_busy(&sc->sc_dkdev);	/* XXX */
 		(*sc->sc_sd->sd_cdriver->d_start)(&sc->sc_cmd);
 		if (!biowait(&sc->sc_buf))
 			break;
@@ -290,12 +313,35 @@ rzready(sc)
 	/* print SCSI errors */
 	sc->sc_flags &= ~RZF_NOERR;
 
-	/* find out how big a disk this is */
+	/* find out how big a disk this is; punt on error. */
+	if (rz_getsize(sc, 0) == 0)
+		return 0;
+
+	/* XXX perhaps move to rzprobe? */
+	rzgetgeom(sc, SCSI_SILENT);
+	return (1);
+}
+
+int
+rz_getsize(sc, flags)
+	struct rz_softc *sc;
+	int flags;
+{
+	register int i;
+
+	if (sc->sc_type == SCSI_ROM_TYPE) {
+		register int cdsize;
+
+		cdsize = rz_cdsize(sc, flags);
+		sc->params.disksize = cdsize;
+		return (cdsize);
+	}
+
 	sc->sc_cdb.len = sizeof(ScsiGroup1Cmd);
 	scsiGroup1Cmd(SCSI_READ_CAPACITY, sc->sc_rwcmd.unitNumber, 0, 0,
 		(ScsiGroup1Cmd *)sc->sc_cdb.cdb);
 	sc->sc_buf.b_flags = B_BUSY | B_PHYS | B_READ;
-	sc->sc_buf.b_bcount = sizeof(sc->sc_capbuf);
+	sc->sc_buf.b_bcount = 8; /* XXX 8 was sizeof(sc->sc_capbuf). */
 	sc->sc_buf.b_un.b_addr = (caddr_t)sc->sc_capbuf;
 	sc->sc_buf.b_actf = (struct buf *)0;
 	sc->sc_tab.b_actf = &sc->sc_buf;
@@ -314,32 +360,48 @@ rzready(sc)
 		++sc->sc_bshift;
 	sc->sc_blks <<= sc->sc_bshift;
 
-	return (1);
+	return (sc->sc_blks);
 }
+
 
 /*
  * Test to see if device is present.
  * Return true if found and initialized ok.
  */
-rzprobe(sd)
-	register struct pmax_scsi_device *sd;
+int
+rzprobe(xxxsd)
+	void *xxxsd;
 {
+	register struct pmax_scsi_device *sd = xxxsd;
 	register struct rz_softc *sc = &rz_softc[sd->sd_unit];
 	register int i;
+	register struct disk_parms *dp = &sc->params;
 	ScsiInquiryData inqbuf;
-	ScsiClass7Sense *sp;
+
+	if (sd->sd_unit >= NRZ)
+		return (0);
 
 	/* init some parameters that don't change */
 	sc->sc_sd = sd;
 	sc->sc_cmd.sd = sd;
 	sc->sc_cmd.unit = sd->sd_unit;
-	sc->sc_rwcmd.unitNumber = sd->sd_slave;
+	sc->sc_rwcmd.unitNumber = sd->sd_lun;
+
+	/* XXX set up the external name */
+	bzero(&sc->sc_dev, sizeof(sc->sc_dev));			/* XXX */
+	sprintf(sc->sc_dev.dv_xname, "rz%d", sd->sd_unit);	/* XXX */
+	sc->sc_dev.dv_unit = sd->sd_unit;			/* XXX */
+	sc->sc_dev.dv_class = DV_DISK;				/* XXX */
+
+	/* Initialize the disk structure. */
+	bzero(&sc->sc_dkdev, sizeof(sc->sc_dkdev));
+	sc->sc_dkdev.dk_name = sc->sc_dev.dv_xname;
 
 	/* try to find out what type of device this is */
 	sc->sc_format_pid = 1;		/* force use of sc_cdb */
 	sc->sc_flags = RZF_NOERR;	/* don't print SCSI errors */
 	sc->sc_cdb.len = sizeof(ScsiGroup0Cmd);
-	scsiGroup0Cmd(SCSI_INQUIRY, sd->sd_slave, 0, sizeof(inqbuf),
+	scsiGroup0Cmd(SCSI_INQUIRY, sd->sd_lun, 0, sizeof(inqbuf),
 		(ScsiGroup0Cmd *)sc->sc_cdb.cdb);
 	sc->sc_buf.b_flags = B_BUSY | B_PHYS | B_READ;
 	sc->sc_buf.b_bcount = sizeof(inqbuf);
@@ -360,8 +422,12 @@ rzprobe(sd)
 	case SCSI_OPTICAL_MEM_TYPE:	/* Magneto-optical */
 		break;
 
+	case SCSI_TAPE_TYPE:		/* tape, handled by tz driver */
+		goto bad;
+
 	default:			/* not a disk */
-		printf("rz%d: unknown media code 0x%x\n", inqbuf.type);
+		printf("rz%d: unknown media code 0x%x\n",
+		       sd->sd_unit, inqbuf.type);
 		goto bad;
 	}
 	sc->sc_type = inqbuf.type;
@@ -373,10 +439,11 @@ rzprobe(sd)
 			goto bad;
 	}
 
-	printf("rz%d at %s%d drive %d slave %d", sd->sd_unit,
+	printf("rz%d at %s%d drive %d lun %d", sd->sd_unit,
 		sd->sd_cdriver->d_name, sd->sd_ctlr, sd->sd_drive,
-		sd->sd_slave);
-	if (inqbuf.version > 1 || i < 36)
+		sd->sd_lun);
+
+	if (inqbuf.version < 1 || i < 36)
 		printf(" type 0x%x, qual 0x%x, ver %d",
 			inqbuf.type, inqbuf.qualifier, inqbuf.version);
 	else {
@@ -399,7 +466,14 @@ rzprobe(sd)
 		revl[i+1] = 0;
 		printf(" %s %s rev %s", vid, pid, revl);
 	}
-	printf(", %d %d byte blocks\n", sc->sc_blks, sc->sc_blksize);
+	printf ("%s\n",
+	    (sc->sc_flags & RZF_FAKEGEOM) ? "; using fake geometry": "");
+	if (dp->blksize)
+	    printf("rz%d: %ldMB, %d cyl, %d head, %d sec, %d bytes/sec, %ld sec total\n",
+		    sd->sd_unit,
+		    dp->disksize / (1048576 / dp->blksize), dp->cyls,
+		    dp->heads, dp->sectors, dp->blksize, dp->disksize);
+
 	if (!inqbuf.rmb && sc->sc_blksize != DEV_BSIZE) {
 		if (sc->sc_blksize < DEV_BSIZE) {
 			printf("rz%d: need %d byte blocks - drive ignored\n",
@@ -407,12 +481,19 @@ rzprobe(sd)
 			goto bad;
 		}
 	}
-	sc->sc_wpms = 32 * (60 * DEV_BSIZE / 2);	/* XXX */
+
+	/* Attach the disk. */
+	disk_attach(&sc->sc_dkdev);
+
 	sc->sc_format_pid = 0;
 	sc->sc_flags |= RZF_ALIVE;
 	if (inqbuf.rmb)
 		sc->sc_flags |= RZF_REMOVEABLE;
 	sc->sc_buf.b_flags = 0;
+
+	sd->sd_devp = &sc->sc_dev;				/* XXX */
+	TAILQ_INSERT_TAIL(&alldevs, &sc->sc_dev, dv_list);	/* XXX */
+
 	return (1);
 
 bad:
@@ -451,7 +532,7 @@ rzlblkstrat(bp, bsize)
 	addr = bp->b_un.b_addr;
 #ifdef DEBUG
 	if (rzdebug & RZB_PARTIAL)
-		printf("rzlblkstrat: bp %x flags %x bn %x resid %x addr %x\n",
+		printf("rzlblkstrat: bp %p flags %lx bn %x resid %x addr %p\n",
 		       bp, bp->b_flags, bn, resid, addr);
 #endif
 
@@ -460,7 +541,7 @@ rzlblkstrat(bp, bsize)
 		register int count;
 
 		if (boff || resid < bsize) {
-			rz_softc[rzunit(bp->b_dev)].sc_stats.rzpartials++;
+			rz_softc[DISKUNIT(bp->b_dev)].sc_stats.rzpartials++;
 			count = min(resid, bsize - boff);
 			cbp->b_flags = B_BUSY | B_PHYS | B_READ;
 			cbp->b_blkno = bn - btodb(boff);
@@ -468,7 +549,7 @@ rzlblkstrat(bp, bsize)
 			cbp->b_bcount = bsize;
 #ifdef DEBUG
 			if (rzdebug & RZB_PARTIAL)
-				printf(" readahead: bn %x cnt %x off %x addr %x\n",
+				printf(" readahead: bn %x cnt %x off %x addr %p\n",
 				       cbp->b_blkno, count, boff, addr);
 #endif
 			rzstrategy(cbp);
@@ -485,7 +566,7 @@ rzlblkstrat(bp, bsize)
 			bcopy(addr, &cbuf[boff], count);
 #ifdef DEBUG
 			if (rzdebug & RZB_PARTIAL)
-				printf(" writeback: bn %x cnt %x off %x addr %x\n",
+				printf(" writeback: bn %x cnt %x off %x addr %p\n",
 				       cbp->b_blkno, count, boff, addr);
 #endif
 		} else {
@@ -495,7 +576,7 @@ rzlblkstrat(bp, bsize)
 			cbp->b_bcount = count;
 #ifdef DEBUG
 			if (rzdebug & RZB_PARTIAL)
-				printf(" fulltrans: bn %x cnt %x addr %x\n",
+				printf(" fulltrans: bn %x cnt %x addr %p\n",
 				       cbp->b_blkno, count, addr);
 #endif
 		}
@@ -513,7 +594,7 @@ done:
 		addr += count;
 #ifdef DEBUG
 		if (rzdebug & RZB_PARTIAL)
-			printf(" done: bn %x resid %x addr %x\n",
+			printf(" done: bn %x resid %x addr %p\n",
 			       bn, resid, addr);
 #endif
 	}
@@ -525,10 +606,10 @@ void
 rzstrategy(bp)
 	register struct buf *bp;
 {
-	register int unit = rzunit(bp->b_dev);
-	register int part = rzpart(bp->b_dev);
+	register int unit = DISKUNIT(bp->b_dev);
+	register int part = DISKPART(bp->b_dev);
 	register struct rz_softc *sc = &rz_softc[unit];
-	register struct partition *pp = &sc->sc_label.d_partitions[part];
+	register struct partition *pp = &sc->sc_label->d_partitions[part];
 	register daddr_t bn;
 	register long sz, s;
 
@@ -624,22 +705,22 @@ rzstart(unit)
 		sc->sc_rwcmd.midHighAddr = n >> 16;
 		sc->sc_rwcmd.midLowAddr = n >> 8;
 		sc->sc_rwcmd.lowAddr = n;
-		n = howmany(bp->b_bcount, sc->sc_blksize);
+		n = howmany(bp->b_bcount, (sc->sc_blksize) ? sc->sc_blksize :
+								DEV_BSIZE);
 		sc->sc_rwcmd.highBlockCount = n >> 8;
 		sc->sc_rwcmd.lowBlockCount = n;
 #ifdef DEBUG
 		if ((bp->b_bcount & (sc->sc_blksize - 1)) != 0)
-			printf("rz%d: partial block xfer -- %x bytes\n",
+			printf("rz%d: partial block xfer -- %lx bytes\n",
 				unit, bp->b_bcount);
 #endif
 		sc->sc_stats.rztransfers++;
-		if ((n = sc->sc_sd->sd_dk) >= 0) {
-			dk_busy |= 1 << n;
-			++dk_seek[n];
-			++dk_xfer[n];
-			dk_wds[n] += bp->b_bcount >> 6;
-		}
 	}
+
+
+	/* Instrumentation. */
+	disk_busy(&sc->sc_dkdev);
+	sc->sc_dkdev.dk_seek++;		/* XXX */
 
 	/* tell controller to start this command */
 	(*sc->sc_sd->sd_cdriver->d_start)(&sc->sc_cmd);
@@ -663,8 +744,9 @@ rzdone(unit, error, resid, status)
 		printf("rz%d: bp == NULL\n", unit);
 		return;
 	}
-	if (sd->sd_dk >= 0)
-		dk_busy &= ~(1 << sd->sd_dk);
+
+	disk_unbusy(&sc->sc_dkdev, (bp->b_bcount - resid));
+
 	if (sc->sc_flags & RZF_SENSEINPROGRESS) {
 		sc->sc_flags &= ~RZF_SENSEINPROGRESS;
 		sc->sc_tab.b_actf = bp = bp->b_actf;	/* remove sc_errbuf */
@@ -682,9 +764,17 @@ rzdone(unit, error, resid, status)
 			sc->sc_sense.sense[0] = 0x70;
 			sc->sc_sense.sense[2] = SCSI_CLASS7_NO_SENSE;
 		} else if (!(sc->sc_flags & RZF_NOERR)) {
+			ScsiClass7Sense *sp;
+
+			sp = (ScsiClass7Sense *)sc->sc_sense.sense;
 			printf("rz%d: ", unit);
-			scsiPrintSense((ScsiClass7Sense *)sc->sc_sense.sense,
-				sizeof(sc->sc_sense.sense) - resid);
+			scsiPrintSense(sp, sizeof(sc->sc_sense.sense) - resid);
+			if (sp->error7 == 0x70 &&
+			    sp->key == SCSI_CLASS7_RECOVERABLE) {
+				/* Recoverable error - clear error status */
+				bp->b_flags &= ~B_ERROR;
+				bp->b_error = 0;
+			}
 		}
 	} else if (error || (status & SCSI_STATUS_CHECKCOND)) {
 #ifdef DEBUG
@@ -707,7 +797,7 @@ rzdone(unit, error, resid, status)
 			 */
 			sc->sc_flags |= RZF_SENSEINPROGRESS;
 			sc->sc_cdb.len = sizeof(ScsiGroup0Cmd);
-			scsiGroup0Cmd(SCSI_REQUEST_SENSE, sd->sd_slave, 0,
+			scsiGroup0Cmd(SCSI_REQUEST_SENSE, sd->sd_lun, 0,
 				sizeof(sc->sc_sense.sense),
 				(ScsiGroup0Cmd *)sc->sc_cdb.cdb);
 			sc->sc_errbuf.b_flags = B_BUSY | B_PHYS | B_READ;
@@ -740,18 +830,18 @@ rzdone(unit, error, resid, status)
  * Read or constuct a disklabel
  */
 void
-rzgetinfo(dev)
+rzgetinfo(dev, sc, lp, spoofonly)
 	dev_t dev;
+	struct rz_softc *sc;
+	struct disklabel *lp;
+	int spoofonly;
 {
-	register int unit = rzunit(dev);
-	register struct rz_softc *sc = &rz_softc[unit];
-	register struct disklabel *lp = &sc->sc_label;
-	register int i;
+	register int unit = DISKUNIT(dev);
 	char *msg;
 	int part;
 	struct cpu_disklabel cd;
 
-	part = rzpart(dev);
+	part = DISKPART(dev);
 	sc->sc_flags |= RZF_HAVELABEL;
 
 	if (sc->sc_type == SCSI_ROM_TYPE) {
@@ -765,10 +855,17 @@ rzgetinfo(dev)
 		lp->d_rpm = 300;
 		lp->d_interleave = 1;
 		lp->d_flags = D_REMOVABLE;
-		lp->d_npartitions = 1;
+		/* 4.4bsd code set 'a'. Also set up 'c' for disklabel. */
+		lp->d_npartitions = 3;
 		lp->d_partitions[0].p_offset = 0;
 		lp->d_partitions[0].p_size = sc->sc_blks;
 		lp->d_partitions[0].p_fstype = FS_ISO9660;
+		lp->d_partitions[1].p_offset = 0;
+		lp->d_partitions[1].p_size = 0;
+		lp->d_partitions[2].p_offset = 0;
+		lp->d_partitions[2].p_size = sc->sc_blks;
+		lp->d_partitions[2].p_fstype = FS_ISO9660;
+
 		lp->d_magic = DISKMAGIC;
 		lp->d_magic2 = DISKMAGIC;
 		lp->d_checksum = dkcksum(lp);
@@ -785,10 +882,11 @@ rzgetinfo(dev)
 	/*
 	 * Now try to read the disklabel
 	 */
-	msg = readdisklabel(dev, rzstrategy, lp, &cd);
-	if (msg == NULL)
+	msg = readdisklabel(dev, rzstrategy, lp, &cd, spoofonly);
+	if (msg == NULL && spoofonly == 0)
 		return;
-	printf("rz%d: WARNING: %s\n", unit, msg);
+	else if (msg != NULL)
+		printf("rz%d: WARNING: %s\n", unit, msg);
 
 #ifdef	COMPAT_ULTRIX
 	/*
@@ -798,29 +896,15 @@ rzgetinfo(dev)
 	if (msg == NULL) {
 	  	printf("rz%d: WARNING: using ULTRIX partition information",
 		       unit);
+		/* Ultrix labels have no geom info. Use softc params. */
+		rz_setlabelgeom(lp, &sc->params);
 		return;
 	}
-	printf("rz%d: WARNING: Ultrix label, %s\n", unit, msg);
-#endif
+#endif	/* COMPAT_ULTRIX */
 	/*
-	 * No label found. Concoct one from compile-time default.
+	 * No label found, cons up a fake one based on disk geometry.
 	 */
-	lp->d_magic = DISKMAGIC;
-	lp->d_magic2 = DISKMAGIC;
-	lp->d_type = DTYPE_SCSI;
-	lp->d_subtype = 0;
-	lp->d_typename[0] = '\0';
-	lp->d_secsize = DEV_BSIZE;
-	lp->d_secperunit = sc->sc_blks;
-	lp->d_npartitions = MAXPARTITIONS;
-	lp->d_bbsize = BBSIZE;
-	lp->d_sbsize = SBSIZE;
-	for (i = 0; i < MAXPARTITIONS; i++) {
-		lp->d_partitions[i].p_size = rzdefaultpart[i].nblocks;
-		lp->d_partitions[i].p_offset = rzdefaultpart[i].strtblk;
-	}
-
-	lp->d_partitions[RAWPART].p_size = sc->sc_blks;
+	rzgetdefaultlabel(sc, lp);
 }
 
 int
@@ -829,62 +913,34 @@ rzopen(dev, flags, mode, p)
 	int flags, mode;
 	struct proc *p;
 {
-	register int unit = rzunit(dev);
+	register int unit = DISKUNIT(dev);
 	register struct rz_softc *sc = &rz_softc[unit];
-	register struct disklabel *lp;
 	register int i;
 	int part;
-	u_long mask;
+	int mask;
 
 	if (unit >= NRZ || !(sc->sc_flags & RZF_ALIVE))
 		return (ENXIO);
 
-	/* make sure disk is ready */
+	/* Make sure the disk is ready */
 	if (sc->sc_flags & RZF_REMOVEABLE) {
 		if (!rzready(sc))
 			return (ENXIO);
 	}
 
-	/* try to read disk label and partition table information */
-	part = rzpart(dev);
-	if (!(sc->sc_flags & RZF_HAVELABEL))
-		rzgetinfo(dev);
-
-	lp = &sc->sc_label;
-	if (part >= lp->d_npartitions || lp->d_partitions[part].p_size == 0)
-	{
-		printf("rzopen: ENXIO on rz%d%c unit %d part %d\n",
-			unit, "abcdefg"[part],  unit, part);
-		printf("# partions %d, size of %d = %d\n",
-		       lp->d_npartitions, part,
-		       lp->d_partitions[part].p_size);
-		return (ENXIO);
-	}
-
-	/*
-	 * Warn if a partition is opened that overlaps another
-	 * already open, unless either is the `raw' partition
-	 * (whole disk).
-	 */
+	/* Try to read disk label and partition table information */
+	part = DISKPART(dev);
 	mask = 1 << part;
-	if ((sc->sc_openpart & mask) == 0 && part != RAWPART) {
-		register struct partition *pp;
-		u_long start, end;
+	if (!(sc->sc_flags & RZF_HAVELABEL))
+		rzgetinfo(dev, sc, sc->sc_dkdev.dk_label, 0);
 
-		pp = &lp->d_partitions[part];
-		start = pp->p_offset;
-		end = pp->p_offset + pp->p_size;
-		for (pp = lp->d_partitions, i = 0;
-		     i < lp->d_npartitions; pp++, i++) {
-			if (pp->p_offset + pp->p_size <= start ||
-			    pp->p_offset >= end || i == RAWPART)
-				continue;
-			if (sc->sc_openpart & (1 << i))
-				log(LOG_WARNING,
-				    "rz%d%c: overlaps open partition (%c)\n",
-				    unit, part + 'a', i + 'a');
-		}
-	}
+	/* Check that the partition exists. */
+	if (part != RAW_PART &&
+	    (part >= sc->sc_label->d_npartitions ||
+	     sc->sc_label->d_partitions[part].p_fstype == FS_UNUSED))
+		return (ENXIO);
+
+	/* Ensure only one open at a time. */
 	switch (mode) {
 	case S_IFCHR:
 		sc->sc_copenpart |= mask;
@@ -894,17 +950,18 @@ rzopen(dev, flags, mode, p)
 		break;
 	}
 	sc->sc_openpart |= mask;
-	if (sc->sc_sd->sd_dk >= 0)
-		dk_wpms[sc->sc_sd->sd_dk] = sc->sc_wpms;
+
 	return (0);
 }
 
-rzclose(dev, flags, mode)
+int
+rzclose(dev, flags, mode, p)
 	dev_t dev;
 	int flags, mode;
+	struct proc *p;
 {
-	register struct rz_softc *sc = &rz_softc[rzunit(dev)];
-	u_long mask = (1 << rzpart(dev));
+	register struct rz_softc *sc = &rz_softc[DISKUNIT(dev)];
+	int mask = (1 << DISKPART(dev));
 	int s;
 
 	switch (mode) {
@@ -926,17 +983,17 @@ rzclose(dev, flags, mode)
 		while (sc->sc_tab.b_actf)
 			sleep((caddr_t)&sc->sc_tab, PZERO - 1);
 		splx(s);
-		sc->sc_flags &= ~RZF_WLABEL;
 	}
 	return (0);
 }
 
 int
-rzread(dev, uio)
+rzread(dev, uio, ioflag)
 	dev_t dev;
 	struct uio *uio;
+	int ioflag;
 {
-	register struct rz_softc *sc = &rz_softc[rzunit(dev)];
+	register struct rz_softc *sc = &rz_softc[DISKUNIT(dev)];
 
 	if (sc->sc_type == SCSI_ROM_TYPE)
 		return (EROFS);
@@ -949,11 +1006,12 @@ rzread(dev, uio)
 }
 
 int
-rzwrite(dev, uio)
+rzwrite(dev, uio, ioflag)
 	dev_t dev;
 	struct uio *uio;
+	int ioflag;
 {
-	register struct rz_softc *sc = &rz_softc[rzunit(dev)];
+	register struct rz_softc *sc = &rz_softc[DISKUNIT(dev)];
 
 	if (sc->sc_format_pid && sc->sc_format_pid != curproc->p_pid)
 		return (EPERM);
@@ -965,12 +1023,12 @@ rzwrite(dev, uio)
 int
 rzioctl(dev, cmd, data, flag, p)
 	dev_t dev;
-	int cmd;
+	u_long cmd;
 	caddr_t data;
 	int flag;
 	struct proc *p;
 {
-	register struct rz_softc *sc = &rz_softc[rzunit(dev)];
+	register struct rz_softc *sc = &rz_softc[DISKUNIT(dev)];
 	int error;
 	int flags;
 	struct cpu_disklabel cd;
@@ -1017,16 +1075,20 @@ rzioctl(dev, cmd, data, flag, p)
 		bcopy((caddr_t)&sc->sc_sense, data, sizeof(sc->sc_sense));
 		return (0);
 
+	case DIOCGPDINFO:
+		rzgetinfo(dev, sc, (struct disklabel *)data, 1);
+		return (0);
+
 	case DIOCGDINFO:
 		/* get the current disk label */
-		*(struct disklabel *)data = sc->sc_label;
+		*(struct disklabel *)data = *(sc->sc_label);
 		return (0);
 
 	case DIOCSDINFO:
 		/* set the current disk label */
 		if (!(flag & FWRITE))
 			return (EBADF);
-		error = setdisklabel(&sc->sc_label,
+		error = setdisklabel(sc->sc_label,
 				     (struct disklabel *)data,
 				     (sc->sc_flags & RZF_WLABEL) ? 0 :
 				     sc->sc_openpart, &cd);
@@ -1034,9 +1096,9 @@ rzioctl(dev, cmd, data, flag, p)
 
 	case DIOCGPART:
 		/* return the disk partition data */
-		((struct partinfo *)data)->disklab = &sc->sc_label;
+		((struct partinfo *)data)->disklab = sc->sc_label;
 		((struct partinfo *)data)->part =
-			&sc->sc_label.d_partitions[rzpart(dev)];
+			&sc->sc_label->d_partitions[DISKPART(dev)];
 		return (0);
 
 	case DIOCWLABEL:
@@ -1052,7 +1114,7 @@ rzioctl(dev, cmd, data, flag, p)
 		/* write the disk label to disk */
 		if (!(flag & FWRITE))
 			return (EBADF);
-		error = setdisklabel(&sc->sc_label,
+		error = setdisklabel(sc->sc_label,
 				     (struct disklabel *)data,
 				     (sc->sc_flags & RZF_WLABEL) ? 0 :
 				     sc->sc_openpart,
@@ -1063,7 +1125,7 @@ rzioctl(dev, cmd, data, flag, p)
 		/* simulate opening partition 0 so write succeeds */
 		flags = sc->sc_flags;
 		sc->sc_flags = RZF_ALIVE | RZF_WLABEL;
-		error = writedisklabel(dev, rzstrategy, &sc->sc_label, &cd);
+		error = writedisklabel(dev, rzstrategy, sc->sc_label, &cd);
 		sc->sc_flags = flags;
 		return (error);
 	}
@@ -1074,101 +1136,492 @@ int
 rzsize(dev)
 	dev_t dev;
 {
-	register int unit = rzunit(dev);
-	register int part = rzpart(dev);
+	register int unit = DISKUNIT(dev);
+	register int part = DISKPART(dev);
 	register struct rz_softc *sc = &rz_softc[unit];
+	int omask, size;
 
 	if (unit >= NRZ || !(sc->sc_flags & RZF_ALIVE))
 		return (-1);
 
-	/*
-	 * We get called very early on (via swapconf)
-	 * without the device being open so we need to
-	 * read the disklabel here.
-	 */
-	if (!(sc->sc_flags & RZF_HAVELABEL))
-		rzgetinfo(dev);
-
-	if (part >= sc->sc_label.d_npartitions)
+	omask = sc->sc_openpart & (1 << part);
+	if (omask == 0 && rzopen(dev, 0, S_IFBLK, NULL) != 0)
 		return (-1);
-	return (sc->sc_label.d_partitions[part].p_size);
+
+	if (part >= sc->sc_label->d_npartitions ||
+	    sc->sc_label->d_partitions[part].p_fstype != FS_SWAP)
+		size = -1;
+	else
+		size = sc->sc_label->d_partitions[part].p_size;
+
+	if (omask == 0 && rzclose(dev, 0, S_IFBLK, NULL) != 0)
+		return (-1);
+
+	return (size);
+}
+
+/*
+ * Find out from a CD-rom device what it's capacity is
+ */
+u_long
+rz_cdsize(cd, flags)
+	struct rz_softc *cd;
+	int flags;
+{
+	struct scsi_read_cd_cap_data rdcap;
+	struct scsi_read_cd_capacity scsi_cmd;
+	int blksize;
+	u_long size;
+	int error;
+
+	/*
+	 * make up a scsi command and ask the scsi driver to do
+	 * it for you.
+	 */
+	bzero(&scsi_cmd, sizeof(scsi_cmd));
+	scsi_cmd.opcode = READ_CD_CAPACITY;
+
+	/*
+	 * If the command works, interpret the result as a 4 byte
+	 * number of blocks and a blocksize
+	 */
+	error = rz_command(cd,
+	    (struct scsi_generic *)&scsi_cmd, sizeof(scsi_cmd),
+	    (u_char *)&rdcap, sizeof(rdcap), CDRETRIES, 20000, NULL,
+	    flags | SCSI_DATA_IN | SCSI_SILENT);
+	if (error != sizeof(rdcap)) {
+		/*
+		 * the drive doesn't support the READ_CD_CAPACITY command
+		 * use a fake size
+		 */
+		cd->sc_flags |= RZF_FAKEGEOM;
+		/* Must jumper CDs to 512-byte blocks to boot on pmax. */
+		cd->sc_blksize = 512;
+		cd->sc_blks = 400000 * 4;
+		return (cd->sc_blks);
+	}
+
+	blksize = _4btol(rdcap.length);
+	if ((blksize < 512) || ((blksize & 511) != 0))
+		blksize = 2048;	/* some drives lie ! */
+	cd->sc_blksize = blksize;
+
+	size = _4btol(rdcap.addr) + 1;
+	if (size < 100)
+		size = 400000;	/* ditto */
+	cd->sc_blks = size;
+	return (size);
+}
+
+/*
+ * Send a SCSI command to a target drive, using the 4.4bsd/pmax driver
+ * formatting support RZ_ALTCMD machinery.
+ * 
+ * Returns byte count returned by cmd, computed as datalen - resid
+ * or -1 on failure.
+ */
+int
+rz_command(sc, scsi_cmd, cmdlen, data_addr, datalen, nretries, timeout,
+    bp, flags)
+	struct rz_softc *sc;
+	struct scsi_generic *scsi_cmd;
+	int cmdlen;
+	u_char *data_addr;
+	int datalen;
+	int nretries;
+	int timeout;
+	struct buf *bp;
+	u_int flags;
+{
+	int retried = 0;
+	register int recvlen, savedflags;
+
+	/*
+	 * Make sure the command will fit.
+	 */
+	if (cmdlen > sizeof(sc->sc_cdb)) {
+		printf("%s: rz_commamd: command too large (%d > %d)\n",
+		    sc->sc_dev.dv_xname, cmdlen, sizeof(sc->sc_cdb));
+		return (-1);
+	}
+
+	/*
+	 * Map OpenBSD MI scsi command flags onto 4.4bsd SCSI (rz)
+	 * flags.
+	 */
+	savedflags = sc->sc_flags;
+	if (flags & SCSI_SILENT)
+		sc->sc_flags |= RZF_NOERR;
+
+	/*
+	 * Zero out the data buffer.
+	 */
+	bzero(data_addr, datalen);
+
+ again:
+	/* copy request into cdb */
+	bcopy(scsi_cmd, &sc->sc_cdb.cdb, cmdlen);
+	sc->sc_cdb.len = cmdlen;
+
+	/*
+	 * Send the command to the drive and wait for it to
+	 * complete.
+	 */
+	sc->sc_buf.b_flags = B_BUSY | B_PHYS |
+	    (flags & SCSI_DATA_IN) ? B_READ : B_WRITE;
+	sc->sc_buf.b_bcount = datalen;
+	sc->sc_buf.b_un.b_addr = (caddr_t)data_addr;
+	sc->sc_buf.b_actf = (struct buf *)0;
+	sc->sc_tab.b_actf = &sc->sc_buf;
+	sc->sc_flags |= RZF_ALTCMD;
+	rzstart(sc->sc_cmd.unit);
+	sc->sc_flags &= ~RZF_ALTCMD;
+	DELAY(timeout);
+	if (biowait(&sc->sc_buf)) {
+		recvlen = -1;
+		goto done;
+	}
+
+	recvlen = datalen - sc->sc_buf.b_resid;
+
+	if (recvlen == 0) {
+		/*
+		 * Gack, command didn't work; try again.
+		 */
+		DELAY(timeout);
+		if (retried++ < nretries) 
+			goto again;	
+	}
+
+ done:
+	sc->sc_flags = savedflags;	/* Restore flags. */
+	return (recvlen);
+}
+
+/*
+ * mode-sense code,  lifted from scsi/sd.c.
+ * Returns 0 on no error.
+ */
+static int
+rz_mode_sense(sd, scsi_sense, page, pagelen, flags)
+	struct rz_softc *sd;
+	struct scsi_mode_sense_data *scsi_sense;
+	int page, pagelen, flags;
+{
+	struct scsi_mode_sense scsi_cmd;
+	register int nbytes;
+
+	/*
+	 * Make sure the sense buffer is clean before we do
+	 * the mode sense, so that checks for bogus values of
+	 * 0 will work in case the mode sense fails.
+	 */
+	bzero(scsi_sense, sizeof(*scsi_sense));
+
+	bzero(&scsi_cmd, sizeof(scsi_cmd));
+	scsi_cmd.opcode = SCSI_MODE_SENSE;
+	scsi_cmd.page = page;
+	scsi_cmd.length = 0x20;	/* XXX verbatim from MI scsi sd.c */
+
+	/*
+	 * If the command worked, use the results to fill out
+	 * the parameter structure
+	 */
+	nbytes = rz_command(sd,
+	    (struct scsi_generic *)&scsi_cmd, sizeof(scsi_cmd),
+	    (u_char *)scsi_sense, 
+	     sizeof(*scsi_sense),	/* actual size of data buffer */
+	    SDRETRIES, 6000, NULL, flags | SCSI_DATA_IN | SCSI_SILENT);
+
+	/*
+	 * the MI scsi_cmd.len always sets cmd.length to 0x20 bytes.
+	 * sizeof(*scsip_sense) is 44, causing a 12-byte residual error
+	 *  with the pmax rz.c driver. 
+	 * So ask for sizeof(*scsi_sense) but make sure we got at least
+	 *  0x20 bytes back instead.
+	 */
+
+#if defined(RZ_DEBUG)
+	printf("rz_mode_sense: page %d,rz_command, nbytes %d\n", page, nbytes);
+#endif
+	if (nbytes <= 0)
+		return (-1);
+
+	if (nbytes < pagelen)
+		return (pagelen);
+
+	/* We got at least as much as the caller wanted. Return 0 as OK. */
+	return(0);
+}
+
+void
+rzgetgeom(sc,  flags)
+	struct rz_softc *sc;
+	int flags;
+{
+	struct disk_parms *dp = &sc->params;
+	struct scsi_mode_sense_data scsi_sense;
+	int page;
+	int error;
+
+	if ((error = rz_mode_sense(sc, &scsi_sense, page = 4, 
+		sizeof(scsi_sense.pages.rigid_geometry), flags)) == 0) {
+		SC_DEBUG(sc_link, SDEV_DB3,
+		    ("%d cyls, %d heads, %d precomp, %d red_write, %d land_zone\n",
+		    _3btol(scsi_sense.pages.rigid_geometry.ncyl),
+		    scsi_sense.pages.rigid_geometry.nheads,
+		    _2btol(scsi_sense.pages.rigid_geometry.st_cyl_wp),
+		    _2btol(scsi_sense.pages.rigid_geometry.st_cyl_rwc),
+		    _2btol(scsi_sense.pages.rigid_geometry.land_zone)));
+
+		/*
+		 * KLUDGE!! (for zone recorded disks)
+		 * give a number of sectors so that sec * trks * cyls
+		 * is <= disk_size
+		 * can lead to wasted space! THINK ABOUT THIS !
+		 */
+		dp->heads = scsi_sense.pages.rigid_geometry.nheads;
+		dp->cyls = _3btol(scsi_sense.pages.rigid_geometry.ncyl);
+		dp->blksize = _3btol(scsi_sense.blk_desc.blklen);
+
+		if (dp->heads == 0 || dp->cyls == 0)
+			goto fake_it;
+
+		if (dp->blksize == 0)
+			dp->blksize = DEV_BSIZE;
+
+		/* Our caller just called rz_getsize(sc, flags). */
+		dp->disksize = sc->sc_blks;
+		/* XXX dubious on SCSI */
+		dp->sectors = sc->sc_blks / (dp->heads * dp->cyls);
+
+		return;
+	}
+
+	if ((error = rz_mode_sense(sc, &scsi_sense, page = 5,
+		sizeof(scsi_sense.pages.flex_geometry), flags)) == 0) {
+		dp->heads = scsi_sense.pages.flex_geometry.nheads;
+		dp->cyls = _2btol(scsi_sense.pages.flex_geometry.ncyl);
+		dp->blksize = _3btol(scsi_sense.blk_desc.blklen);
+		dp->sectors = scsi_sense.pages.flex_geometry.ph_sec_tr;
+		dp->disksize = dp->heads * dp->cyls * dp->sectors;
+
+		if (dp->disksize == 0)
+			goto fake_it;
+
+		if (dp->blksize == 0)
+			dp->blksize = DEV_BSIZE;
+
+		return;
+	}
+
+fake_it:
+	sc->sc_flags |= RZF_FAKEGEOM;
+
+	/*
+	 * use adaptec standard fictitious geometry
+	 * this depends on which controller (e.g. 1542C is
+	 * different. but we have to put SOMETHING here..)
+	 */
+	dp->disksize = sc->sc_blks;
+	dp->blksize = DEV_BSIZE;
+	dp->heads = 64;
+	dp->sectors = 32;
+	dp->cyls = dp->disksize / (dp->heads * dp->sectors);
+	return;
+}
+
+/*
+ * set fake or Ultrix label geometry info from softc params.
+ */
+void
+rz_setlabelgeom(lp, dp)
+	struct disklabel *lp;
+	struct disk_parms *dp;
+{
+	lp->d_secsize = dp->blksize;
+	lp->d_nsectors =  dp->sectors;
+	lp->d_ntracks = dp->heads;
+	lp->d_ncylinders = dp->cyls;
+	lp->d_secpercyl = lp->d_ntracks * lp->d_nsectors;	/* XXX */
+	lp->d_secperunit = dp->disksize;
+	/*
+	 * We must make sure d_nsectors is a sane value.
+	 * Adjust d_ncylinders to be reasonable if we 
+	 * monkey with d_nsectors.
+	 */
+	if (lp->d_nsectors < 1) {
+		lp->d_nsectors = 32;
+		lp->d_ncylinders = lp->d_secperunit /
+		    (lp->d_ntracks * lp->d_nsectors);
+		if (lp->d_ncylinders == 0)
+			lp->d_ncylinders = dp->cyls;
+	}
+}
+
+void
+rzgetdefaultlabel(sc, lp)
+	struct rz_softc *sc;
+	struct disklabel *lp;
+{
+	register int i;
+
+	bzero(lp, sizeof(struct disklabel));
+
+	strcpy(lp->d_packname, "fictitious");
+	lp->d_magic = DISKMAGIC;
+	lp->d_magic2 = DISKMAGIC;
+	lp->d_type = DTYPE_SCSI;
+	lp->d_subtype = 0;
+	if (sc->sc_type == SCSI_ROM_TYPE)
+		strcpy(lp->d_typename, "SCSI CD-ROM");
+	else
+		strcpy(lp->d_typename, "SCSI disk");
+
+	/* set geometry info from softc info. */
+	rz_setlabelgeom(lp, &sc->params);
+	lp->d_rpm = 3600;
+	lp->d_interleave = 1;
+	lp->d_flags = 0;
+
+	/* XXX - these values for BBSIZE and SBSIZE assume ffs */
+	lp->d_bbsize = BBSIZE;
+	lp->d_sbsize = SBSIZE;
+
+	lp->d_partitions[RAW_PART].p_offset = 0;
+	lp->d_partitions[RAW_PART].p_size = lp->d_secperunit *
+	    (lp->d_secsize / DEV_BSIZE);
+	lp->d_partitions[RAW_PART].p_fstype = FS_UNUSED;
+	lp->d_npartitions = RAW_PART + 1;
+
+	lp->d_magic = DISKMAGIC;
+	lp->d_magic2 = DISKMAGIC;
+	lp->d_checksum = dkcksum(lp);
 }
 
 /*
  * Non-interrupt driven, non-dma dump routine.
  */
 int
-rzdump(dev)
+rzdump(dev, blkno, va, size)
 	dev_t dev;
+	daddr_t blkno;
+	caddr_t va;
+	size_t size;
 {
-	int part = rzpart(dev);
-	int unit = rzunit(dev);
-	register struct rz_softc *sc = &rz_softc[unit];
-	register struct pmax_scsi_device *sd = sc->sc_sd;
-	register daddr_t baddr;
-	register int maddr;
-	register int pages, i;
-	int stat;
-	extern int lowram;
+	static int rzdoingadump;/* mutex */
+	static dev_t rzreadydev = NODEV; /* hint: device already rzready()ed */
+	int sectorsize;		/* size of a disk sector */
+	int nsects;		/* number of sectors in partition */
+	int sectoff;		/* sector offset of partition */
+	int nwrt, totwrt;	/* total number of sectors left to write */
+	int unit, part;
+	int error;
+	struct rz_softc *sc;
+	struct disklabel *lp;
+	extern int cold;
+
+	/* Check for recursive dump; if so, punt. */
+	if (rzdoingadump)
+		return (EFAULT);
+	rzdoingadump = 1;
+
+	/* Decompose unit and partition. */
+	unit = DISKUNIT(dev);
+	part = DISKPART(dev);
+
+	if (unit >= NRZ)
+		return (ENXIO);
+	sc = &rz_softc[unit];
+	if ((sc->sc_flags & RZF_ALIVE) == 0)
+		return (ENXIO);
 
 	/*
-	 * Hmm... all vax drivers dump maxfree pages which is physmem minus
-	 * the message buffer.  Is there a reason for not dumping the
-	 * message buffer?  Savecore expects to read 'dumpsize' pages of
-	 * dump, where dumpsys() sets dumpsize to physmem!
+	 * XXX Prevent the tsleep() calls in biowait() in rzready() 
+	 * XXX or later here from performing a switch.
 	 */
-	pages = physmem;
+	cold = 1;
 
-	/* is drive ok? */
-	if (unit >= NRZ || (sc->sc_flags & RZF_ALIVE) == 0)
-		return (ENXIO);
-	/* dump parameters in range? */
-	if (dumplo < 0 || dumplo >= sc->sc_label.d_partitions[part].p_size)
-		return (EINVAL);
-	if (dumplo + ctod(pages) > sc->sc_label.d_partitions[part].p_size)
-		pages = dtoc(sc->sc_label.d_partitions[part].p_size - dumplo);
-	maddr = lowram;
-	baddr = dumplo + sc->sc_label.d_partitions[part].p_offset;
-
-#ifdef notdef	/*XXX -- bogus code, from Mach perhaps? */
-	/* scsi bus idle? */
-	if (!scsireq(&sc->sc_dq)) {
-		scsireset(sd->sd_ctlr);
-		sc->sc_stats.rzresets++;
-		printf("[ drive %d reset ] ", unit);
-	}
-#else
-	if (!rzready(sc)) {
-		printf("[ drive %d did not reset ] ", unit);
-		return(ENXIO);
-	}
-#endif
-	printf("[..untested..] dumping %d pages\n", pages);
-
-
-	for (i = 0; i < pages; i++) {
-#define NPGMB	(1024*1024/NBPG)
-		/* print out how many Mbs we have dumped */
-		if (i && (i % NPGMB) == 0)
-			printf("%d ", i / NPGMB);
-#undef NPBMG
-#ifdef later
-	        /*XXX*/
-		/*mapin(mmap, (u_int)vmmap, btop(maddr), PG_URKR|PG_CI|PG_V);*/
-		pmap_enter(pmap_kernel(), (vm_offset_t)vmmap, maddr,
-		   VM_PROT_READ, TRUE);
-
-		stat = scsi_tt_write(sd->sd_ctlr, sd->sd_drive, sd->sd_slave,
-				     vmmap, NBPG, baddr, sc->sc_bshift);
-		if (stat) {
-			printf("rzdump: scsi write error 0x%x\n", stat);
-			return (EIO);
+	/*
+	 * Ready drive. rzready() does geometry-sense. Cache dev_t of
+	 * last rzready()ed device to avoid seeks to modepage.
+	 */
+	if (rzreadydev != dev) {
+		if (rzready(sc) == 0) {
+			/* Drive didn't reset. */
+			rzreadydev = NODEV;
+			return (ENXIO);
 		}
-#endif
-
-		maddr += NBPG;
-		baddr += ctod(1);
+		rzreadydev = dev;
 	}
+
+	/*
+	 * Convert to disk sectors.  Request must be a multiple of size.
+	 */
+	lp = sc->sc_label;
+	sectorsize = lp->d_secsize;
+	if ((size % sectorsize) != 0)
+		return (EFAULT);
+	totwrt = size / sectorsize;
+	blkno = dbtob(blkno) / sectorsize;	/* blkno in DEV_BSIZE units */
+
+	nsects = lp->d_partitions[part].p_size;
+	sectoff = lp->d_partitions[part].p_offset;
+
+	/* Check transfer bounds against partition size. */
+	if ((blkno < 0) || (blkno + totwrt) > nsects)
+		return (EINVAL);
+
+	/* Offset block number to start of partition. */
+	blkno += sectoff;
+
+	while (totwrt > 0) {
+		nwrt = totwrt;		/* XXX */
+#ifndef RZ_DUMP_NOT_TRUSTED
+		/*
+		 * Create the SCSI command.
+		 */
+		sc->sc_rwcmd.command = SCSI_WRITE_EXT;
+		sc->sc_rwcmd.highAddr = blkno >> 24;
+		sc->sc_rwcmd.midHighAddr = blkno >> 16;
+		sc->sc_rwcmd.midLowAddr = blkno >> 8;
+		sc->sc_rwcmd.lowAddr = blkno;
+
+		sc->sc_rwcmd.highBlockCount = nwrt >> 8;
+		sc->sc_rwcmd.lowBlockCount = nwrt;
+
+		/*
+		 * ...and send it to the device.
+		 */
+		sc->sc_buf.b_flags = B_BUSY | B_PHYS | B_WRITE;
+		sc->sc_buf.b_bcount = nwrt * sectorsize;
+		sc->sc_buf.b_un.b_addr = va;
+		sc->sc_buf.b_actf = (struct buf *)0;
+		sc->sc_tab.b_actf = &sc->sc_buf;
+
+		sc->sc_cmd.flags = SCSICMD_DATA_TO_DEVICE;
+		sc->sc_cmd.cmd = (u_char *)&sc->sc_rwcmd;
+		sc->sc_cmd.cmdlen = sizeof(sc->sc_rwcmd);
+		sc->sc_cmd.buf = va;
+		sc->sc_cmd.buflen = nwrt * sectorsize;
+
+		disk_busy(&sc->sc_dkdev);	/* XXX */
+		(*sc->sc_sd->sd_cdriver->d_start)(&sc->sc_cmd);
+		if ((error = biowait(&sc->sc_buf)) != 0)
+			return (error);
+#else /* RZ_DUMP_NOT_TRUSTED */
+		/* Let's just talk about it first. */
+		printf("%s: dump addr %p, blk %d\n", sc->sc_dev.dv_xname,
+		    va, blkno);
+		delay(500 * 1000);	/* half a second */
+#endif /* RZ_DUMP_NOT_TRUSTED */
+
+		/* update block count */
+		totwrt -= nwrt;
+		blkno += nwrt;
+		va += sectorsize * nwrt;
+	}
+	rzdoingadump = 0;
 	return (0);
 }
-#endif
+#endif /* NRZ */

@@ -1,5 +1,5 @@
 /* ====================================================================
- * Copyright (c) 1995-1998 The Apache Group.  All rights reserved.
+ * Copyright (c) 1995-1999 The Apache Group.  All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -105,6 +105,15 @@ extern "C" {
 #define APLOG_MARK	__FILE__,__LINE__
 
 void ap_open_logs (server_rec *, pool *p);
+
+/* The two primary logging functions, ap_log_error and ap_log_rerror,
+ * use a printf style format string to build the log message.  It is
+ * VERY IMPORTANT that you not include any raw data from the network,
+ * such as the request-URI or request header fields, within the format
+ * string.  Doing so makes the server vulnerable to a denial-of-service
+ * attack and other messy behavior.  Instead, use a simple format string
+ * like "%s", followed by the string containing the untrusted data.
+ */
 API_EXPORT(void) ap_log_error(const char *file, int line, int level,
 			     const server_rec *s, const char *fmt, ...)
 			    __attribute__((format(printf,5,6)));
@@ -127,7 +136,7 @@ API_EXPORT(void) ap_log_reason(const char *reason, const char *fname,
 
 typedef struct piped_log {
     pool *p;
-#ifndef NO_RELIABLE_PIPED_LOGS
+#if !defined(NO_RELIABLE_PIPED_LOGS) || defined(TPF)
     char *program;
     int pid;
     int fds[2];
@@ -138,7 +147,7 @@ typedef struct piped_log {
 
 API_EXPORT(piped_log *) ap_open_piped_log (pool *p, const char *program);
 API_EXPORT(void) ap_close_piped_log (piped_log *);
-#ifndef NO_RELIABLE_PIPED_LOGS
+#if !defined(NO_RELIABLE_PIPED_LOGS) || defined(TPF)
 #define ap_piped_log_read_fd(pl)	((pl)->fds[0])
 #define ap_piped_log_write_fd(pl)	((pl)->fds[1])
 #else

@@ -1,4 +1,4 @@
-#	$OpenBSD: GENERIC,v 1.10 1996/10/01 21:26:03 pefo Exp $
+#	$OpenBSD: GENERIC,v 1.4 1997/08/24 12:01:12 pefo Exp $
 #
 #	Generic configuration file for Willowglen RISC-PC 9100
 #
@@ -46,7 +46,7 @@ options 	NFSCLIENT	# Sun NFS-compatible filesystem (client)
 
 
 # Networking options
-#options 	GATEWAY		# IP packet forwarding
+options 	GATEWAY		# IP packet forwarding
 options 	INET		# Internet protocols
 #options        NS              # XNS
 #options        IPX             # IPX+SPX
@@ -85,6 +85,8 @@ com3		at riscbus?
 asc0		at riscbus?
 scsibus* 	at asc?
 
+fl0		at riscbus?
+
 #
 #	ISA Bus.
 #
@@ -95,7 +97,7 @@ com4	at isa? port 0x3e8 irq 4
 com5	at isa? port 0x2e8 irq 3
 
 ep0	at isa? port ? irq ?           # 3C509 ethernet cards
-#ed0	at isa? port 0x280 iomem 0xd0000 irq 9  # WD/SMC, 3C503, and NE[12]000
+ed0	at isa? port 0x280 iomem 0xd0000 irq 9  # WD/SMC, 3C503, and NE[12]000
 #ed1	at isa? port 0x250 iomem 0xd8000 irq 9  #   ethernet cards
 #ed2	at isa? port 0x300 iomem 0xcc000 irq 10 #
 
@@ -122,3 +124,6 @@ pseudo-device	tb		 1	# tablet line discipline
 pseudo-device	vnd		 4	# paging to files
 #pseudo-device   ccd		 4	# concatenated disk devices
 
+# for IPv6
+pseudo-device	gif		4
+#pseudo-device	faith		1

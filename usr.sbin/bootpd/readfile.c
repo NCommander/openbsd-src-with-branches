@@ -21,7 +21,7 @@ SOFTWARE.
 ************************************************************************/
 
 #ifndef lint
-static char rcsid[] = "$Id: readfile.c,v 1.2 1994/08/22 22:15:04 gwr Exp $";
+static char rcsid[] = "$Id: readfile.c,v 1.3 1998/11/28 04:07:24 millert Exp $";
 #endif
 
 
@@ -344,7 +344,7 @@ readtab(force)
 #ifdef DEBUG
 	if (debug > 3) {
 		char timestr[28];
-		strcpy(timestr, ctime(&(st.st_mtime)));
+		strlcpy(timestr, ctime(&(st.st_mtime)), sizeof(timestr));
 		/* zap the newline */
 		timestr[24] = '\0';
 		report(LOG_INFO, "bootptab mtime: %s",
@@ -446,7 +446,7 @@ readtab(force)
 			if (hash_Insert(hwhashtable, hashcode, hwinscmp, hp, hp) < 0) {
 				report(LOG_NOTICE, "duplicate %s address: %s",
 					   netname(hp->htype),
-					   haddrtoa(hp->haddr, hp->htype));
+					   haddrtoa(hp->haddr, haddrlength(hp->htype)));
 				free_host((hash_datum *) hp);
 				continue;
 			}
@@ -796,7 +796,6 @@ eval_symbol(symbol, hp)
 {
 	char tmpstr[MAXSTRINGLEN];
 	byte *tmphaddr;
-	struct shared_string *ss;
 	struct symbolmap *symbolptr;
 	u_int32 value;
 	int32 timeoff;
@@ -820,7 +819,7 @@ eval_symbol(symbol, hp)
 	if ((*symbol)[0] == 'T') {	/* generic symbol */
 		(*symbol)++;
 		value = get_u_long(symbol);
-		sprintf(current_tagname, "T%d", value);
+		snprintf(current_tagname, sizeof(current_tagname), "T%d", value);
 		eat_whitespace(symbol);
 		if ((*symbol)[0] != '=') {
 			return E_SYNTAX_ERROR;
@@ -1271,7 +1270,7 @@ process_generic(src, dest, tagvalue)
 	if ((*src)[0] == '"') {		/* ASCII data */
 		newlength = sizeof(tmpbuf) - 2;	/* Set maximum allowed length */
 		(void) get_string(src, (char *) str, &newlength);
-		newlength++;			/* null terminator */
+		/* Do NOT include the terminating null. */
 	} else {					/* Numeric data */
 		newlength = 0;
 		while (newlength < sizeof(tmpbuf) - 2) {
@@ -1807,7 +1806,7 @@ prs_haddr(src, htype)
 
 	hap = haddr;
 	while (hap < haddr + hal) {
-		if (*p == '.')
+		if ((*p == '.') || (*p == ':'))
 			p++;
 		if (interp_byte(&p, hap++) < 0) {
 			return NULL;

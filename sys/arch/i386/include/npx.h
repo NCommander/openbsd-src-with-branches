@@ -1,3 +1,4 @@
+/*	$OpenBSD: npx.h,v 1.11 1994/10/27 04:16:11 cgd Exp $	*/
 /*	$NetBSD: npx.h,v 1.11 1994/10/27 04:16:11 cgd Exp $	*/
 
 /*-
@@ -58,6 +59,13 @@ struct	env87 {
 	long	en_fos;		/* floating operand segment selector */
 };
 
+#define EN_SW_IE	0x0001	/* invalid operation */
+#define EN_SW_DE	0x0002	/* denormal */
+#define EN_SW_ZE	0x0004	/* divide by zero */
+#define EN_SW_OE	0x0008	/* overflow */
+#define EN_SW_UE	0x0010	/* underflow */
+#define EN_SW_PE	0x0020	/* loss of precision */
+
 /* Contents of each floating point accumulator */
 struct	fpacc87 {
 #ifdef dontdef	/* too unportable */
@@ -70,14 +78,25 @@ struct	fpacc87 {
 #endif
 };
 
-/* Floating point context */
+#ifdef GPL_MATH_EMULATE
+#include <gnu/arch/i386/fpemul/math_emu.h>
+#endif
+
+/* Floating point and emulator context */
 struct	save87 {
 	struct	env87 sv_env;		/* floating point control/status */
-	struct	fpacc87	sv_ac[8];	/* accumulator contents, 0-7 */
-#ifndef dontdef
-	u_long	sv_ex_sw;	/* status word for last exception (was pad) */
-	u_long	sv_ex_tw;	/* tag word for last exception (was pad) */
-	u_char	sv_pad[8 * 2 - 2 * 4];	/* bogus historical padding */
+	struct	fpacc87 sv_ac[8];	/* accumulator contents, 0-7 */
+	u_long	sv_ex_sw;		/* status word for last exception */
+	u_long	sv_ex_tw;		/* tag word for last exception */
+};
+
+/* For the pcb. */
+union	fsave87 {
+	struct	save87 npx;
+#ifdef GPL_MATH_EMULATE
+	union i387_union gplemu;
+#else
+	u_char emupad[176];		/* sizeof(i387_union) */
 #endif
 };
 
@@ -90,7 +109,8 @@ struct	emcsts {
 
 /* Intel prefers long real (53 bit) precision */
 #define	__iBCS_NPXCW__		0x262
-#define	__NetBSD_NPXCW__	0x127f
+#define __BDE_NPXCW__		0x1272		/* FreeBSD */
+#define	__OpenBSD_NPXCW__	0x127f
 
 /*
  * The standard control word from finit is 0x37F, giving:
@@ -115,6 +135,6 @@ struct	emcsts {
  * trapping denormals.
  */
 
-#define	__INITIAL_NPXCW__	__NetBSD_NPXCW__
+#define	__INITIAL_NPXCW__	__OpenBSD_NPXCW__
 
 #endif /* !_I386_NPX_H_ */

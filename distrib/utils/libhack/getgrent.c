@@ -1,3 +1,4 @@
+/*	$OpenBSD: getgrent.c,v 1.2 1995/10/13 18:10:23 gwr Exp $	*/
 /*	$NetBSD: getgrent.c,v 1.2 1995/10/13 18:10:23 gwr Exp $	*/
 
 /*

@@ -1,4 +1,4 @@
-/*	$NetBSD: ims332.c,v 1.1 1995/09/11 08:11:24 jonathan Exp $	*/
+/*	$NetBSD: ims332.c,v 1.4 1996/10/13 13:13:57 jonathan Exp $	*/
 
 /*-
  * Copyright (c) 1992, 1993, 1995
@@ -40,6 +40,7 @@
  */
 
 #include <sys/param.h>
+#include <sys/systm.h>
 #include <sys/device.h>
 #include <sys/kernel.h>
 #include <sys/errno.h>
@@ -47,22 +48,27 @@
 #include <machine/fbio.h>
 #include <machine/fbvar.h>
 
-#include <machine/machConst.h>
 #include <pmax/dev/ims332.h>
+
+static u_int ims332_read_register (struct fbinfo *, int);
+static void ims332_write_register (struct fbinfo *, int, unsigned int);
 
 #define	assert_ims332_reset_bit(r)	*r &= ~0x40
 #define	deassert_ims332_reset_bit(r)	*r |=  0x40
 
-int ims332init(fi)
+int
+ims332init(fi)
 	struct fbinfo *fi;
 {
-	register u_int *reset = (u_int *)fi -> fi_base;
 	int i;
 
 	/*
 	 * Initialize the screen. (xcfb-specific)
 	 */
 #ifdef notdef
+	register u_int *reset = (u_int *)fi -> fi_base;
+
+
 	assert_ims332_reset_bit(reset);
 	DELAY(1);	/* specs sez 50ns.. */
 	deassert_ims332_reset_bit(reset);
@@ -95,7 +101,7 @@ int ims332init(fi)
 	ims332_write_register (fi, IMS332_REG_XFER_DELAY, 0xa);
 
 	ims332_write_register (fi, IMS332_REG_COLOR_MASK, 0xffffff);
-#endif
+#endif	/* notdef */
 
 	/* Zero out the cursor RAM... */
 	for (i = 0; i < 512; i++)
@@ -191,13 +197,13 @@ ims332LoadColorMap(fi, bits, index, count)
 
 	for (i = 0; i < count; i++) {
 		ims332_write_register (fi,
-				       IMS332_REG_LUT_BASE + i,
-				       (cmap_bits [i * 3 + 1] << 16) |
+				       IMS332_REG_LUT_BASE + i + index,
+				       (cmap_bits [i * 3 + 2] << 16) |
 				       (cmap_bits [i * 3 + 1] << 8) |
 				       (cmap_bits [i * 3]));
-		cmap [(i + index) * 3] = cmap_bits [i * 3];
-		cmap [(i + index) * 3 + 1] = cmap_bits [i * 3 + 1];
-		cmap [(i + index) * 3 + 2] = cmap_bits [i * 3 + 2];
+		cmap [i * 3] = cmap_bits [i * 3];
+		cmap [i * 3 + 1] = cmap_bits [i * 3 + 1];
+		cmap [i * 3 + 2] = cmap_bits [i * 3 + 2];
 	}
 	return 0;
 }
@@ -212,7 +218,6 @@ ims332GetColorMap(fi, bits, index, count)
 {
 	u_char *cmap_bits;
 	u_char *cmap;
-	int i;
 
 	if (index > 256 || index < 0 || index + count > 256)
 		return EINVAL;
@@ -262,7 +267,6 @@ ims332_video_on (fi)
 	struct fbinfo *fi;
 {
 	u_char *cmap;
-	int i;
 	u_int csr;
 
 	if (!fi -> fi_blanked)
@@ -294,14 +298,14 @@ ims332PosCursor(fi, x, y)
 	struct fbinfo *fi;
 	int x, y;
 {
-	if (y < 0)
-	  y = 0;
-	else if (y > fi -> fi_type.fb_width - fi -> fi_cursor.width - 1)
-	  y = fi -> fi_type.fb_width - fi -> fi_cursor.width - 1;
 	if (x < 0)
 	  x = 0;
-	else if (x > fi -> fi_type.fb_height - fi -> fi_cursor.height - 1)
-	  x = fi -> fi_type.fb_height - fi -> fi_cursor.height - 1;
+	else if (x > fi -> fi_type.fb_width - fi -> fi_cursor.width - 1)
+	  x = fi -> fi_type.fb_width - fi -> fi_cursor.width - 1;
+	if (y < 0)
+	  y = 0;
+	else if (y > fi -> fi_type.fb_height - fi -> fi_cursor.height - 1)
+	  y = fi -> fi_type.fb_height - fi -> fi_cursor.height - 1;
 
 	fi -> fi_cursor.x = x;
 	fi -> fi_cursor.y = y;
@@ -334,7 +338,7 @@ ims332CursorColor (fi, color)
 	struct fbinfo *fi;
 	unsigned int color[];
 {
-	register int i, j;
+	register int i;
 
 	for (i = 0; i < 6; i++)
 		cursor_RGB[i] = (u_char)(color[i] >> 8);

@@ -1,4 +1,5 @@
-/*	$NetBSD: device_pager.c,v 1.18 1994/10/29 07:35:04 cgd Exp $	*/
+/*	$OpenBSD: device_pager.c,v 1.4 1996/08/02 00:05:54 niklas Exp $	*/
+/*	$NetBSD: device_pager.c,v 1.24 1997/01/03 18:03:14 mrg Exp $	*/
 
 /*
  * Copyright (c) 1990 University of Utah.
@@ -49,6 +50,7 @@
 #include <sys/conf.h>
 #include <sys/mman.h>
 #include <sys/malloc.h>
+#include <sys/proc.h>
 
 #include <vm/vm.h>
 #include <vm/vm_kern.h>
@@ -108,15 +110,15 @@ dev_pager_alloc(handle, size, prot, foff)
 {
 	dev_t dev;
 	vm_pager_t pager;
-	int (*mapfunc)();
+	int (*mapfunc) __P((dev_t, int, int));
 	vm_object_t object;
 	dev_pager_t devp;
 	int npages, off;
 
 #ifdef DEBUG
 	if (dpagerdebug & DDB_FOLLOW)
-		printf("dev_pager_alloc(%x, %x, %x, %x)\n",
-		       handle, size, prot, foff);
+		printf("dev_pager_alloc(%p, %lx, %x, %lx)\n",
+		    handle, size, prot, foff);
 #endif
 #ifdef DIAGNOSTIC
 	/*
@@ -131,7 +133,9 @@ dev_pager_alloc(handle, size, prot, foff)
 	 */
 	dev = (dev_t)(long)handle;
 	mapfunc = cdevsw[major(dev)].d_mmap;
-	if (mapfunc == NULL || mapfunc == enodev || mapfunc == nullop)
+	if (mapfunc == NULL ||
+	    mapfunc == (int (*) __P((dev_t, int, int))) enodev ||
+	    mapfunc == (int (*) __P((dev_t, int, int))) nullop)
 		return(NULL);
 
 	/*
@@ -194,8 +198,8 @@ top:
 		TAILQ_INSERT_TAIL(&dev_pager_list, pager, pg_list);
 #ifdef DEBUG
 		if (dpagerdebug & DDB_ALLOC) {
-			printf("dev_pager_alloc: pager %x devp %x object %x\n",
-			       pager, devp, object);
+			printf("dev_pager_alloc: pager %p devp %p object %p\n",
+			    pager, devp, object);
 			vm_object_print(object, FALSE);
 		}
 #endif
@@ -224,7 +228,7 @@ dev_pager_dealloc(pager)
 
 #ifdef DEBUG
 	if (dpagerdebug & DDB_FOLLOW)
-		printf("dev_pager_dealloc(%x)\n", pager);
+		printf("dev_pager_dealloc(%p)\n", pager);
 #endif
 	TAILQ_REMOVE(&dev_pager_list, pager, pg_list);
 	/*
@@ -236,7 +240,7 @@ dev_pager_dealloc(pager)
 	object = devp->devp_object;
 #ifdef DEBUG
 	if (dpagerdebug & DDB_ALLOC)
-		printf("dev_pager_dealloc: devp %x object %x\n", devp, object);
+		printf("dev_pager_dealloc: devp %p object %p\n", devp, object);
 #endif
 	/*
 	 * Free up our fake pages.
@@ -260,13 +264,13 @@ dev_pager_getpage(pager, mlist, npages, sync)
 	vm_offset_t offset, paddr;
 	vm_page_t page;
 	dev_t dev;
-	int (*mapfunc)(), prot;
+	int (*mapfunc) __P((dev_t, int, int)), prot;
 	vm_page_t m;
 
 #ifdef DEBUG
 	if (dpagerdebug & DDB_FOLLOW)
-		printf("dev_pager_getpage(%x, %x, %x, %x)\n",
-		       pager, mlist, npages, sync);
+		printf("dev_pager_getpage(%p, %p, %x, %x)\n",
+		    pager, mlist, npages, sync);
 #endif
 
 	if (npages != 1)
@@ -279,7 +283,9 @@ dev_pager_getpage(pager, mlist, npages, sync)
 	prot = PROT_READ;	/* XXX should pass in? */
 	mapfunc = cdevsw[major(dev)].d_mmap;
 #ifdef DIAGNOSTIC
-	if (mapfunc == NULL || mapfunc == enodev || mapfunc == nullop)
+	if (mapfunc == NULL ||
+	    mapfunc == (int (*) __P((dev_t, int, int))) enodev ||
+	    mapfunc == (int (*) __P((dev_t, int, int))) nullop)
 		panic("dev_pager_getpage: no map function");
 #endif
 	paddr = pmap_phys_address((*mapfunc)(dev, (int)offset, prot));
@@ -316,8 +322,8 @@ dev_pager_putpage(pager, mlist, npages, sync)
 {
 #ifdef DEBUG
 	if (dpagerdebug & DDB_FOLLOW)
-		printf("dev_pager_putpage(%x, %x, %x, %x)\n",
-		       pager, mlist, npages, sync);
+		printf("dev_pager_putpage(%p, %p, %x, %x)\n",
+		    pager, mlist, npages, sync);
 #endif
 	if (pager == NULL)
 		return (FALSE);
@@ -331,7 +337,7 @@ dev_pager_haspage(pager, offset)
 {
 #ifdef DEBUG
 	if (dpagerdebug & DDB_FOLLOW)
-		printf("dev_pager_haspage(%x, %x)\n", pager, offset);
+		printf("dev_pager_haspage(%p, %lx)\n", pager, offset);
 #endif
 	return(TRUE);
 }

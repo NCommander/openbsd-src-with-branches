@@ -1,4 +1,4 @@
-/*	$OpenBSD$ */
+/*	$OpenBSD: riscbus.c,v 1.3 1997/08/24 12:01:14 pefo Exp $ */
 
 /*
  * Copyright (c) 1996 Per Fogelstrom
@@ -113,6 +113,8 @@ struct riscbus_dev wgrisc9100_cpu[] = {
 	   INT_MASK_5,	riscbus_intrnull, (void *)RISC_COM2, },
 	{{ "com",       6, 0, },
 	   INT_MASK_5,	riscbus_intrnull, (void *)RISC_COM3, },
+	{{ "fl",     7, 0, },
+	   0, NULL, (void *)NULL, },
 	{{ NULL,       -1, NULL, },
 	   0, NULL, (void *)NULL, },
 };
@@ -272,7 +274,7 @@ int
 riscbus_intrnull(val)
 	void *val;
 {
-	panic("uncaught RISCBUS interrupt for slot %d\n", val);
+	panic("uncaught RISCBUS interrupt for slot %d", val);
 }
 
 /*

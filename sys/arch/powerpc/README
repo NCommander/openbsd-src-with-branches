@@ -1,16 +1,17 @@
-NOT YET READY!!!
 
-This port is heavily based on the NetBSD powerpc port by
-Wolfgang Solfrank. All of the kernel code is derived from there.
-Some modifications have been made, primarily to support ELF.
+This port is partly based on the NetBSD powerpc port by Wolfgang Solfrank.
+The NetBSD code was imported by Dale Rahn who also added support for ELF.
 
-Until this README file states that the port is ready, it is unlikey
-that the port will build correctly.
+A lot of code has been removed and a lot of new code has been added to
+create a monolithic kernel that uses OpenFirmware or any other boot plattform
+as little possible.
 
-Currently, dont even try, go ahead and look at the code, but
-nothing has been tried since It was checked in.
+The current kernel supports PowerMac G4 and iMacs, additional machines
+may be supported to varying degrees.
 
-I hope to have this ready before Jan 1997
+
+TODO:
+	ptrace support finished (gdb can breakpoint, but not step)
 
 Dale
 rahnds@cvs.openbsd.org

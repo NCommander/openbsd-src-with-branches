@@ -90,7 +90,7 @@ struct oak_softc {
 
 int  oakprobe 	__P(( struct device *, void *, void * ));
 void oakattach 	__P(( struct device *, struct device *, void * ));
-int  oakprint   __P(( void *, char * ));
+int  oakprint   __P(( void *, const char * ));
 void oakminphys __P(( struct buf * ));
 
 #ifdef USE_OWN_PIO_ROUTINES
@@ -149,6 +149,7 @@ oakattach(parent, self, aux)
 	ncr_sc->sc_link.adapter_target = 7;
 	ncr_sc->sc_link.adapter = &oak_adapter;
 	ncr_sc->sc_link.device = &oak_device;
+	ncr_sc->sc_link.openings = 4;
 
 	ncr_sc->sci_r0 = (volatile u_char *)sc->sc_base + 0x00;
 	ncr_sc->sci_r1 = (volatile u_char *)sc->sc_base + 0x04;
@@ -194,7 +195,7 @@ oakattach(parent, self, aux)
 int
 oakprint(aux, name)
 	void *aux;
-	char *name;
+	const char *name;
 {
 	if (name != NULL)
 		printf("%s: scsibus ", name);

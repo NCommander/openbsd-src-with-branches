@@ -1,8 +1,9 @@
-/*	$NetBSD: lstAppend.c,v 1.4 1995/06/14 15:20:44 christos Exp $	*/
+/*	$OpenBSD: lstAppend.c,v 1.10 2000/06/17 14:43:38 espie Exp $	*/
+/*	$NetBSD: lstAppend.c,v 1.5 1996/11/06 17:59:31 christos Exp $	*/
 
 /*
- * Copyright (c) 1988, 1989, 1990 The Regents of the University of California.
- * All rights reserved.
+ * Copyright (c) 1988, 1989, 1990, 1993
+ *	The Regents of the University of California.  All rights reserved.
  *
  * This code is derived from software contributed to Berkeley by
  * Adam de Boor.
@@ -36,20 +37,21 @@
  * SUCH DAMAGE.
  */
 
-#ifndef lint
-#if 0
-static char sccsid[] = "@(#)lstAppend.c	5.3 (Berkeley) 6/1/90";
-#else
-static char rcsid[] = "$NetBSD: lstAppend.c,v 1.4 1995/06/14 15:20:44 christos Exp $";
-#endif
-#endif /* not lint */
-
 /*-
  * LstAppend.c --
  *	Add a new node with a new datum after an existing node
  */
 
 #include	"lstInt.h"
+#ifndef lint
+#if 0
+static char sccsid[] = "@(#)lstAppend.c	8.1 (Berkeley) 6/6/93";
+#else
+UNUSED
+static char rcsid[] = "$OpenBSD: lstAppend.c,v 1.10 2000/06/17 14:43:38 espie Exp $";
+#endif
+#endif /* not lint */
+
 
 /*-
  *-----------------------------------------------------------------------
@@ -63,57 +65,42 @@ static char rcsid[] = "$NetBSD: lstAppend.c,v 1.4 1995/06/14 15:20:44 christos E
  *	A new ListNode is created and linked in to the List. The lastPtr
  *	field of the List will be altered if ln is the last node in the
  *	list. lastPtr and firstPtr will alter if the list was empty and
- *	ln was NILLNODE.
+ *	ln was NULL.
  *
  *-----------------------------------------------------------------------
  */
-ReturnStatus
-Lst_Append (l, ln, d)
+void
+Lst_Append(l, ln, d)
     Lst	  	l;	/* affected list */
     LstNode	ln;	/* node after which to append the datum */
-    ClientData	d;	/* said datum */
+    void 	*d;	/* said datum */
 {
-    register List 	list;
-    register ListNode	lNode;
-    register ListNode	nLNode;
-    
-    if (LstValid (l) && (ln == NILLNODE && LstIsEmpty (l))) {
-	goto ok;
-    }
-    
-    if (!LstValid (l) || LstIsEmpty (l)  || ! LstNodeValid (ln, l)) {
-	return (FAILURE);
-    }
-    ok:
-    
-    list = (List)l;
-    lNode = (ListNode)ln;
+    LstNode	nLNode;
 
-    PAlloc (nLNode, ListNode);
+    if (ln == NULL && LstIsEmpty(l))
+	goto ok;
+
+    if (LstIsEmpty(l)  || ! LstNodeValid(ln, l))
+	return;
+    ok:
+
+    PAlloc(nLNode, LstNode);
     nLNode->datum = d;
     nLNode->useCount = nLNode->flags = 0;
-    
-    if (lNode == NilListNode) {
-	if (list->isCirc) {
-	    nLNode->nextPtr = nLNode->prevPtr = nLNode;
-	} else {
-	    nLNode->nextPtr = nLNode->prevPtr = NilListNode;
-	}
-	list->firstPtr = list->lastPtr = nLNode;
+
+    if (ln == NULL) {
+	nLNode->nextPtr = nLNode->prevPtr = NULL;
+	l->firstPtr = l->lastPtr = nLNode;
     } else {
-	nLNode->prevPtr = lNode;
-	nLNode->nextPtr = lNode->nextPtr;
-	
-	lNode->nextPtr = nLNode;
-	if (nLNode->nextPtr != NilListNode) {
+	nLNode->prevPtr = ln;
+	nLNode->nextPtr = ln->nextPtr;
+
+	ln->nextPtr = nLNode;
+	if (nLNode->nextPtr != NULL)
 	    nLNode->nextPtr->prevPtr = nLNode;
-	}
-	
-	if (lNode == list->lastPtr) {
-	    list->lastPtr = nLNode;
-	}
+
+	if (ln == l->lastPtr)
+	    l->lastPtr = nLNode;
     }
-    
-    return (SUCCESS);
 }
 

@@ -1,4 +1,4 @@
-/*	$OpenBSD: trap.c,v 1.6 1996/09/14 15:58:18 pefo Exp $	*/
+/*	$OpenBSD: trap.c,v 1.3 1999/01/08 00:03:00 deraadt Exp $	*/
 /*
  * Copyright (c) 1988 University of Utah.
  * Copyright (c) 1992, 1993
@@ -39,7 +39,7 @@
  * from: Utah Hdr: trap.c 1.32 91/04/06
  *
  *	from: @(#)trap.c	8.5 (Berkeley) 1/11/94
- *      $Id: trap.c,v 1.6 1996/09/14 15:58:18 pefo Exp $
+ *      $Id: trap.c,v 1.3 1999/01/08 00:03:00 deraadt Exp $
  */
 
 #include <sys/param.h>
@@ -1010,6 +1010,18 @@ interrupt(statusReg, causeReg, pc, what, args)
 			ipintr();
 		}
 #endif
+#ifdef INET6
+		if (netisr & (1 << NETISR_IPV6)) {
+			netisr &= ~(1 << NETISR_IPV6);
+			ipv6intr();
+		}
+#endif
+#ifdef NETATALK
+		if (netisr & (1 << NETISR_ATALK)) {
+			netisr &= ~(1 << NETISR_ATALK);
+			atintr();
+		}
+#endif
 #ifdef NS
 		if (netisr & (1 << NETISR_NS)) {
 			netisr &= ~(1 << NETISR_NS);
@@ -1027,6 +1039,13 @@ interrupt(statusReg, causeReg, pc, what, args)
 		if(netisr & (1 << NETISR_PPP)) {
 			netisr &= ~(1 << NETISR_PPP);
 			pppintr();
+		}
+#endif
+#include "bridge.h"
+#if NBRIDGE > 0
+		if(netisr & (1 << NETISR_BRIDGE)) {
+			netisr &= ~(1 << NETISR_BRIDGE);
+			bridgeintr();
 		}
 #endif
 	}

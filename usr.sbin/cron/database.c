@@ -16,7 +16,7 @@
  */
 
 #if !defined(lint) && !defined(LINT)
-static char rcsid[] = "$Id: database.c,v 1.1.1.4 1994/01/20 02:47:20 jtc Exp $";
+static char rcsid[] = "$Id: database.c,v 1.3 1997/12/22 08:10:42 deraadt Exp $";
 #endif
 
 /* vix 26jan87 [RCS has the log]
@@ -30,7 +30,7 @@ static char rcsid[] = "$Id: database.c,v 1.1.1.4 1994/01/20 02:47:20 jtc Exp $";
 
 
 #define TMAX(a,b) ((a)>(b)?(a):(b))
-
+#define HASH(a,b) ((a)+(b))
 
 static	void		process_crontab __P((char *, char *, char *,
 					     struct stat *,
@@ -71,7 +71,7 @@ load_database(old_db)
 	 * so is guaranteed to be different than the stat() mtime the first
 	 * time this function is called.
 	 */
-	if (old_db->mtime == TMAX(statbuf.st_mtime, syscron_stat.st_mtime)) {
+	if (old_db->mtime == HASH(statbuf.st_mtime, syscron_stat.st_mtime)) {
 		Debug(DLOAD, ("[%d] spool dir mtime unch, no load needed.\n",
 			      getpid()))
 		return;
@@ -82,7 +82,7 @@ load_database(old_db)
 	 * actually changed.  Whatever is left in the old database when
 	 * we're done is chaff -- crontabs that disappeared.
 	 */
-	new_db.mtime = TMAX(statbuf.st_mtime, syscron_stat.st_mtime);
+	new_db.mtime = HASH(statbuf.st_mtime, syscron_stat.st_mtime);
 	new_db.head = new_db.tail = NULL;
 
 	if (syscron_stat.st_mtime) {
@@ -102,7 +102,7 @@ load_database(old_db)
 
 	while (NULL != (dp = readdir(dir))) {
 		char	fname[MAXNAMLEN+1],
-			tabname[MAXNAMLEN+1];
+			tabname[MAXPATHLEN];
 
 		/* avoid file names beginning with ".".  this is good
 		 * because we would otherwise waste two guaranteed calls
@@ -113,7 +113,7 @@ load_database(old_db)
 			continue;
 
 		(void) strcpy(fname, dp->d_name);
-		sprintf(tabname, CRON_TAB(fname));
+		snprintf(tabname, sizeof tabname, CRON_TAB(fname));
 
 		process_crontab(fname, fname, tabname,
 				&statbuf, &new_db, old_db);

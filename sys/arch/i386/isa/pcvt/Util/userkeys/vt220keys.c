@@ -1,3 +1,5 @@
+/*	$OpenBSD: vt220keys.c,v 1.4 1999/01/13 07:26:07 niklas Exp $	*/
+
 /*
  *      Trivial program to load VT220 Function keys with strings,
  *      note that the values only get sent when the key is shifted
@@ -26,8 +28,10 @@
  	
 */
 
-#include <stdio.h>
 #include <ctype.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <unistd.h>
 
 /*
  *      The default toupper() macro is stupid, will toupper anything
@@ -46,30 +50,36 @@ struct keynames {
   char *name ;
   char *string ;
 } keys[] = {
-  "F6", "17",
-  "F7", "18",
-  "F8", "19",
-  "F9", "20",
-  "F10", "21",
-  "F11", "23",
-  "ESC", "23",
-  "F12", "24",
-  "BS", "24",
-  "F13", "25",
-  "LF", "25",
-  "F14", "26",
-  "HELP", "28",
-  "DO", "29",
-  "F17", "31",
-  "F18", "32",
-  "F19", "33",
-  "F20", "34",
-    NULL, NULL
+  { "F6", "17" },
+  { "F7", "18" },
+  { "F8", "19" },
+  { "F9", "20" },
+  { "F10", "21" },
+  { "F11", "23" },
+  { "ESC", "23" },
+  { "F12", "24" },
+  { "BS", "24" },
+  { "F13", "25" },
+  { "LF", "25" },
+  { "F14", "26" },
+  { "HELP", "28" },
+  { "DO", "29" },
+  { "F17", "31" },
+  { "F18", "32" },
+  { "F19", "33" },
+  { "F20", "34" },
+  { NULL, NULL }
 };
 
 char prog[BUFSIZ];
 
-main(argc,argv) 
+void usage __P((void));
+void clearkeys __P((void));
+void getinit __P((void));
+void dokey __P((char *, char *));
+void lockkeys __P((void));
+
+int main(argc,argv) 
         int argc; 
         char *argv[];
 {
@@ -83,12 +93,12 @@ main(argc,argv)
         int clearf = 0;         /* clear all keys before loading strings */
 	char *strcpy();
 
-        (void) strcpy(prog, *argv);  /* store program name               */
+        (void) strncpy(prog, *argv, sizeof(prog)); /* store program name */
 
         if(argc == 1) usage();  /* program requires options              */
 
         /* get options */
-        while ((option = getopt(argc, argv, "cli")) != EOF)
+        while ((option = getopt(argc, argv, "cli")) != -1)
         switch(option) 
         {
                 case 'c' :
@@ -142,12 +152,12 @@ main(argc,argv)
  *      for each pair, who cares, really.
  */
 
-dokey(nm,val) char *nm, *val;
+void dokey(nm,val) char *nm, *val;
 {
         register char *scr;
         register struct keynames *kp;
 
-        for(scr = nm; *scr = toupper(*scr); scr++)
+        for(scr = nm; (*scr = toupper(*scr)); scr++)
                         ;
         for(kp = keys; kp->name != NULL; kp++)
           if(strcmp(nm,kp->name) == 0) {
@@ -163,7 +173,7 @@ dokey(nm,val) char *nm, *val;
 
 /****************************************************************************/
 
-clearkeys()
+void clearkeys()
 {
         printf("%cP0;1|%c\\",ESC,ESC);
         fflush(stdout);
@@ -171,7 +181,7 @@ clearkeys()
 
 /****************************************************************************/
 
-lockkeys()
+void lockkeys()
 {
         printf("%cP1;0|%c\\",ESC,ESC);
         fflush(stdout);
@@ -179,7 +189,7 @@ lockkeys()
 
 /****************************************************************************/
 
-usage()
+void usage()
 {
         int i;
 
@@ -219,7 +229,7 @@ usage()
 #include <sys/types.h>
 #include <sys/stat.h>
 
-getinit()
+void getinit()
 {
         char *home;             /* user's home directory                */
         char path[BUFSIZ];      /* full path name of init file          */
@@ -241,9 +251,9 @@ getinit()
 
         /* construct full path name for init file */
         home = getenv("HOME");
-        (void) strcpy(path, home);
-        (void) strcat(path,"/");
-        (void) strcat(path,INITFILE);
+        (void) strncpy(path, home, sizeof(path));
+        (void) strncat(path,"/",sizeof(path) - strlen(path));
+        (void) strncat(path,INITFILE,sizeof(path) - strlen(path));
 
         /* check status if init file    */
         if (stat(path, &statbuf) != -1)

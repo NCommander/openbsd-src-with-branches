@@ -1,3 +1,4 @@
+/*	$OpenBSD: modunload.c,v 1.7 1998/11/18 16:06:43 deraadt Exp $	*/
 /*	$NetBSD: modunload.c,v 1.9 1995/05/28 05:23:05 jtc Exp $	*/
 
 /*
@@ -37,13 +38,13 @@
 #include <sys/conf.h>
 #include <sys/mount.h>
 #include <sys/lkm.h>
-#include <sys/file.h>
+#include <a.out.h>
+#include <err.h>
 #include <errno.h>
+#include <fcntl.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <err.h>
 #include <string.h>
-#include <a.out.h>
 #include <unistd.h>
 #include "pathnames.h"
 
@@ -51,8 +52,8 @@ void
 usage()
 {
 
-	fprintf(stderr, "usage:\n");
-	fprintf(stderr, "modunload [-i <module id>] [-n <module name>]\n");
+	fprintf(stderr,
+	    "usage: modunload [-i <module id>] [-n <module name>]\n");
 	exit(1);
 }
 
@@ -73,12 +74,16 @@ main(argc, argv)
 	int c;
 	int modnum = -1;
 	char *modname = NULL;
+	char *endptr;
 	struct lmc_unload ulbuf;
 
-	while ((c = getopt(argc, argv, "i:n:")) != EOF) {
+	while ((c = getopt(argc, argv, "i:n:")) != -1) {
 		switch (c) {
 		case 'i':
-			modnum = atoi(optarg);
+			modnum = strtol(optarg, &endptr, 0);
+			if (modnum == LONG_MIN || modnum == LONG_MAX ||
+			    *endptr != '\0')
+                                errx(1, "not a valid number");
 			break;	/* number */
 		case 'n':
 			modname = optarg;

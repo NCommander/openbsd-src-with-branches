@@ -36,7 +36,7 @@
  * SUCH DAMAGE.
  *
  *	from: @(#)wire.c	8.1 (Berkeley) 6/6/93
- *	$Id: wire.c,v 1.3 1994/06/13 20:48:11 mycroft Exp $
+ *	$Id: wire.c,v 1.5 2000/02/21 02:03:18 itojun Exp $
  */
 
 /*
@@ -63,8 +63,8 @@
 typedef struct addrlist addrlist;
 struct addrlist {
 	addrlist *ip_next;
-	unsigned long ip_addr;
-	unsigned long ip_mask;
+	u_int32_t ip_addr;
+	u_int32_t ip_mask;
 };
 static addrlist *localnets = 0;
 
@@ -89,9 +89,9 @@ char *getwire()
 	struct hostent *hp;
 	struct netent *np;
 	struct ifconf ifc;
-	struct ifreq *ifr;
+	struct ifreq *ifr, ifrpool;
 	caddr_t cp, cplim;
-	unsigned long address, netmask, subnet;
+	u_int32_t address, netmask, subnet;
 	char buf[GFBUFLEN], *s;
 	int sk = -1;
 	char *netname = 0;
@@ -136,7 +136,8 @@ char *getwire()
 	 */
 	for (cp = buf; cp < cplim; cp += size(ifr)) {
 		addrlist *al;
-		ifr = (struct ifreq *) cp;
+		memcpy(&ifrpool, cp, sizeof(ifrpool));
+		ifr = &ifrpool;
 
 		if (ifr->ifr_addr.sa_family != AF_INET)
 			continue;
@@ -161,6 +162,7 @@ char *getwire()
 		/*
 		 * Get the netmask of this interface
 		 */
+		((struct sockaddr_in *)&ifr->ifr_addr)->sin_addr.s_addr = address;
 		if (ioctl(sk, SIOCGIFNETMASK, (caddr_t) ifr) < 0)
 			continue;
 
@@ -176,9 +178,9 @@ char *getwire()
 		localnets = al;
 
 		if (netname == 0) {
-			unsigned long net;
-			unsigned long mask;
-			unsigned long subnetshift;
+			u_int32_t net;
+			u_int32_t mask;
+			u_int32_t subnetshift;
 			/*
 			 * Figure out the subnet's network address
 			 */
@@ -260,9 +262,9 @@ char *getwire()
  * Determine whether a network is on a local network
  * (addr) is in network byte order.
  */
-int islocalnet P((unsigned long addr));
+int islocalnet P((u_int32_t addr));
 int islocalnet(addr)
-unsigned long addr;
+u_int32_t addr;
 {
 	addrlist *al;
 

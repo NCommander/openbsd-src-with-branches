@@ -1,3 +1,4 @@
+/*	$OpenBSD: key.c,v 1.7 1997/07/23 19:26:47 kstailey Exp $	*/
 /*	$NetBSD: key.c,v 1.11 1995/09/07 06:57:11 jtc Exp $	*/
 
 /*-
@@ -37,7 +38,7 @@
 #if 0
 static char sccsid[] = "@(#)key.c	8.4 (Berkeley) 2/20/95";
 #else
-static char rcsid[] = "$NetBSD: key.c,v 1.11 1995/09/07 06:57:11 jtc Exp $";
+static char rcsid[] = "$OpenBSD: key.c,v 1.7 1997/07/23 19:26:47 kstailey Exp $";
 #endif
 #endif /* not lint */
 
@@ -60,6 +61,7 @@ void	f_dec __P((struct info *));
 void	f_everything __P((struct info *));
 void	f_extproc __P((struct info *));
 void	f_ispeed __P((struct info *));
+void	f_lcase __P((struct info *));
 void	f_nl __P((struct info *));
 void	f_ospeed __P((struct info *));
 void	f_raw __P((struct info *));
@@ -67,6 +69,8 @@ void	f_rows __P((struct info *));
 void	f_sane __P((struct info *));
 void	f_size __P((struct info *));
 void	f_speed __P((struct info *));
+void	f_ostart __P((struct info *));
+void	f_ostop __P((struct info *));
 void	f_tty __P((struct info *));
 __END_DECLS
 
@@ -86,10 +90,13 @@ static struct key {
 	{ "everything",	f_everything,	0 },
 	{ "extproc",	f_extproc,	F_OFFOK },
 	{ "ispeed",	f_ispeed,	F_NEEDARG },
+	{ "lcase", 	f_lcase,	0 },
 	{ "new",	f_tty,		0 },
 	{ "nl",		f_nl,		F_OFFOK },
 	{ "old",	f_tty,		0 },
 	{ "ospeed",	f_ospeed,	F_NEEDARG },
+	{ "ostart",	f_ostart,	0 },
+	{ "ostop",	f_ostop,	0 },
 	{ "raw",	f_raw,		F_OFFOK },
 	{ "rows",	f_rows,		F_NEEDARG },
 	{ "sane",	f_sane,		0 },
@@ -100,10 +107,10 @@ static struct key {
 
 static int
 c_key(a, b)
-        const void *a, *b;
+	const void *a, *b;
 {
 
-        return (strcmp(((struct key *)a)->name, ((struct key *)b)->name));
+	return (strcmp(((struct key *)a)->name, ((struct key *)b)->name));
 }
 
 int
@@ -126,7 +133,7 @@ ksearch(argvp, ip)
 	    sizeof(keys)/sizeof(struct key), sizeof(struct key), c_key)))
 		return (0);
 	if (!(kp->flags & F_OFFOK) && ip->off) {
-		warnx("illegal option -- %s", name);
+		warnx("illegal option -- -%s", name);
 		usage();
 	}
 	if (kp->flags & F_NEEDARG && !(ip->arg = *++*argvp)) {
@@ -216,6 +223,22 @@ f_ispeed(ip)
 }
 
 void
+f_lcase(ip)
+	struct info *ip;
+{
+	if (ip->off) {
+		ip->t.c_iflag &= ~IUCLC;
+		ip->t.c_oflag &= ~OLCUC;
+		ip->t.c_lflag &= ~XCASE;
+	} else {
+		ip->t.c_iflag |= IUCLC;
+		ip->t.c_oflag |= OLCUC;
+		ip->t.c_lflag |= XCASE;
+	}
+	ip->set = 1;
+}
+
+void
 f_nl(ip)
 	struct info *ip;
 {
@@ -301,6 +324,22 @@ f_tty(ip)
 	int tmp;
 
 	tmp = TTYDISC;
-	if (ioctl(0, TIOCSETD, &tmp) < 0)
+	if (ioctl(ip->fd, TIOCSETD, &tmp) < 0)
 		err(1, "TIOCSETD");
+}
+
+void
+f_ostart(ip)
+	struct info *ip;
+{
+	if (ioctl (ip->fd, TIOCSTART) < 0)
+		err(1, "TIOCSTART");
+}
+
+void
+f_ostop(ip)
+	struct info *ip;
+{
+	if (ioctl (ip->fd, TIOCSTOP) < 0)
+		err(1, "TIOCSTOP");
 }

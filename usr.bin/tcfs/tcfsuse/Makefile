@@ -1,3 +1,5 @@
+#	$OpenBSD$
+
 .PATH:		${.CURDIR}/..
 
 PROG=	tcfsuse
@@ -14,5 +16,5 @@ SRCS=	tcfsuse.c tcfsputkey.c tcfsrun.c tcfsrmkey.c tcfsgenkey.c tcfstat.c \
 
 .include <bsd.prog.mk>
 
-LDADD+=	-lutil -ldes
-DPADD+= ${LIBUTIL} ${LIBDES}
+LDADD+=	-lutil
+DPADD+= ${LIBUTIL}

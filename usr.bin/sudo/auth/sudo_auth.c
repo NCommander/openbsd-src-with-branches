@@ -57,7 +57,7 @@
 #include "insults.h"
 
 #ifndef lint
-static const char rcsid[] = "$Sudo: sudo_auth.c,v 1.15 1999/10/13 02:34:55 millert Exp $";
+static const char rcsid[] = "$Sudo: sudo_auth.c,v 1.19 2000/03/06 19:42:21 millert Exp $";
 #endif /* lint */
 
 sudo_auth auth_switch[] = {
@@ -67,7 +67,7 @@ sudo_auth auth_switch[] = {
 #  ifndef WITHOUT_PASSWD
     AUTH_ENTRY(0, "passwd", NULL, NULL, passwd_verify, NULL)
 #  endif
-#  if defined(HAVE_SECUREWARE) && !defined(WITHOUT_PASSWD)
+#  if defined(HAVE_GETPRPWNAM) && !defined(WITHOUT_PASSWD)
     AUTH_ENTRY(0, "secureware", secureware_init, NULL, secureware_verify, NULL)
 #  endif
 #  ifdef HAVE_AFS
@@ -95,7 +95,8 @@ sudo_auth auth_switch[] = {
 int nil_pw;		/* I hate resorting to globals like this... */
 
 void
-verify_user(prompt)
+verify_user(pw, prompt)
+    struct passwd *pw;
     char *prompt;
 {
     short counter = def_ival(I_PW_TRIES) + 1;
@@ -121,7 +122,7 @@ verify_user(prompt)
 	    if (NEEDS_USER(auth))
 		set_perms(PERM_USER, 0);
 
-	    status = (auth->init)(sudo_user.pw, &prompt, auth);
+	    status = (auth->init)(pw, &prompt, auth);
 	    if (status == AUTH_FAILURE)
 		auth->flags &= ~FLAG_CONFIGURED;
 	    else if (status == AUTH_FATAL)	/* XXX log */
@@ -139,7 +140,7 @@ verify_user(prompt)
 		if (NEEDS_USER(auth))
 		    set_perms(PERM_USER, 0);
 
-		status = (auth->setup)(sudo_user.pw, &prompt, auth);
+		status = (auth->setup)(pw, &prompt, auth);
 		if (status == AUTH_FAILURE)
 		    auth->flags &= ~FLAG_CONFIGURED;
 		else if (status == AUTH_FATAL)	/* XXX log */
@@ -155,7 +156,8 @@ verify_user(prompt)
 #ifdef AUTH_STANDALONE
 	p = prompt;
 #else
-	p = (char *) tgetpass(prompt, def_ival(I_PW_TIMEOUT) * 60, 1);
+	p = (char *) tgetpass(prompt, def_ival(I_PW_TIMEOUT) * 60,
+	    tgetpass_flags);
 	if (!p || *p == '\0')
 	    nil_pw = 1;
 #endif /* AUTH_STANDALONE */
@@ -168,7 +170,7 @@ verify_user(prompt)
 	    if (NEEDS_USER(auth))
 		set_perms(PERM_USER, 0);
 
-	    success = auth->status = (auth->verify)(sudo_user.pw, p, auth);
+	    success = auth->status = (auth->verify)(pw, p, auth);
 
 	    if (NEEDS_USER(auth))
 		set_perms(PERM_ROOT, 0);
@@ -198,7 +200,7 @@ cleanup:
 	    if (NEEDS_USER(auth))
 		set_perms(PERM_USER, 0);
 
-	    status = (auth->cleanup)(sudo_user.pw, auth);
+	    status = (auth->cleanup)(pw, auth);
 	    if (status == AUTH_FATAL)	/* XXX log */
 		exit(1);		/* assume error msg already printed */
 
@@ -224,11 +226,12 @@ pass_warn(fp)
     FILE *fp;
 {
 
-#ifdef USE_INSULTS
-    (void) fprintf(fp, "%s\n", INSULT);
-#else
-    (void) fprintf(fp, "%s\n", def_str(I_BADPASS_MSG));
-#endif /* USE_INSULTS */
+#ifdef INSULT
+    if (def_flag(I_INSULTS))
+	(void) fprintf(fp, "%s\n", INSULT);
+    else
+#endif
+	(void) fprintf(fp, "%s\n", def_str(I_BADPASS_MSG));
 }
 
 void

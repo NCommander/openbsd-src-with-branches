@@ -1,3 +1,4 @@
+/* $OpenBSD: regs.h,v 1.1 1996/01/31 23:18:21 mark Exp $ */
 /* $NetBSD: regs.h,v 1.1 1996/01/31 23:18:21 mark Exp $ */
 
 /* Copyright (c) 1994,1995 Mark Brinicombe.
@@ -42,7 +43,6 @@
  * Created      : 14/01/96
  * Last updated : 14/01/96
  *
- *	$Id: regs.h,v 1.1 1996/01/31 23:18:21 mark Exp $
  */
 
 fp	.req	r11

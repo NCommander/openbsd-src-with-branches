@@ -155,7 +155,7 @@ cpu_initclocks()
 	clockirq.ih_level = IPL_CLOCK;
 	clockirq.ih_name = "TMR0 hard clk";
 	if (irq_claim(IRQ_TIMER0, &clockirq) == -1)
-		panic("Cannot installer timer 0 IRQ handler\n");
+		panic("Cannot installer timer 0 IRQ handler");
 
 	if (stathz) {
 		setstatclockrate(stathz);
@@ -164,7 +164,7 @@ cpu_initclocks()
 		statclockirq.ih_arg = 0;
 		statclockirq.ih_level = IPL_CLOCK;
 		if (irq_claim(IRQ_TIMER1, &clockirq) == -1)
-			panic("Cannot installer timer 1 IRQ handler\n");
+			panic("Cannot installer timer 1 IRQ handler");
 	}
 }
 
@@ -210,7 +210,7 @@ microtime(tvp)
 
 /* Make sure the micro seconds don't overflow. */
 
-	while (tvp->tv_usec > 1000000) {
+	while (tvp->tv_usec >= 1000000) {
 		tvp->tv_usec -= 1000000;
 		++tvp->tv_sec;
 	}
@@ -220,7 +220,7 @@ microtime(tvp)
 	if (tvp->tv_sec == oldtv.tv_sec &&
 	    tvp->tv_usec <= oldtv.tv_usec) {
 		tvp->tv_usec = oldtv.tv_usec + 1;
-		if (tvp->tv_usec > 1000000) {
+		if (tvp->tv_usec >= 1000000) {
 			tvp->tv_usec -= 1000000;
 			++tvp->tv_sec;
 		}

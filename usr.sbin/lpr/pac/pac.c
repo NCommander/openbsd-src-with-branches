@@ -1,3 +1,6 @@
+/*	$OpenBSD: pac.c,v 1.8 1997/01/17 16:12:50 millert Exp $ */
+/*	$NetBSD: pac.c,v 1.7 1996/03/21 18:21:20 jtc Exp $	*/
+
 /*
  * Copyright (c) 1983, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -39,7 +42,11 @@ static char copyright[] =
 #endif /* not lint */
 
 #ifndef lint
+#if 0
 static char sccsid[] = "@(#)pac.c	8.1 (Berkeley) 6/6/93";
+#else
+static char rcsid[] = "$OpenBSD: pac.c,v 1.8 1997/01/17 16:12:50 millert Exp $";
+#endif
 #endif /* not lint */
 
 /*
@@ -53,6 +60,7 @@ static char sccsid[] = "@(#)pac.c	8.1 (Berkeley) 6/6/93";
 
 #include <dirent.h>
 #include <stdlib.h>
+#include <unistd.h>
 #include <stdio.h>
 #include <string.h>
 #include "lp.h"
@@ -100,7 +108,7 @@ static struct	hent *lookup __P((char []));
 static int	qucmp __P((const void *, const void *));
 static void	rewrite __P((void));
 
-void
+int
 main(argc, argv)
 	int argc;
 	char **argv;
@@ -166,8 +174,13 @@ fprintf(stderr,
 		(void) enter(--cp);
 		allflag = 0;
 	}
-	if (printer == NULL && (printer = getenv("PRINTER")) == NULL)
+	if (printer == NULL) {
+		char *p;
+
 		printer = DEFLP;
+		if ((p = getenv("PRINTER")) != NULL)
+			printer = p;
+	}
 	if (!chkprinter(printer)) {
 		printf("pac: unknown printer %s\n", printer);
 		exit(2);
@@ -210,7 +223,7 @@ account(acct)
 
 	while (fgets(linebuf, BUFSIZ, acct) != NULL) {
 		cp = linebuf;
-		while (any(*cp, " t\t"))
+		while (any(*cp, " \t"))
 			cp++;
 		t = atof(cp);
 		while (any(*cp, ".0123456789"))
@@ -221,8 +234,8 @@ account(acct)
 			;
 		ic = atoi(cp2);
 		*cp2 = '\0';
-		if (mflag && index(cp, ':'))
-		    cp = index(cp, ':') + 1;
+		if (mflag && strchr(cp, ':'))
+		    cp = strchr(cp, ':') + 1;
 		hp = lookup(cp);
 		if (hp == NULL) {
 			if (!allflag)

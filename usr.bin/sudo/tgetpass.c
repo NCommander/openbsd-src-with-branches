@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1996, 1998, 1999 Todd C. Miller <Todd.Miller@courtesan.com>
+ * Copyright (c) 1996, 1998-2000 Todd C. Miller <Todd.Miller@courtesan.com>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -73,13 +73,37 @@
 
 #include "sudo.h"
 
+#ifndef lint
+static const char rcsid[] = "$Sudo: tgetpass.c,v 1.95 2000/02/27 03:48:56 millert Exp $";
+#endif /* lint */
+
 #ifndef TCSASOFT
 #define TCSASOFT	0
 #endif /* TCSASOFT */
 
-#ifndef lint
-static const char rcsid[] = "$Sudo: tgetpass.c,v 1.90 1999/11/01 15:58:46 millert Exp $";
-#endif /* lint */
+/*
+ * Abstract method of getting at the term flags.
+ */
+#undef TERM
+#undef tflags
+#ifdef HAVE_TERMIOS_H
+# define TERM			termios
+# define tflags			c_lflag
+# define term_getattr(f, t)	tcgetattr(f, t)
+# define term_setattr(f, t)	tcsetattr(f, TCSAFLUSH|TCSASOFT, t)
+#else
+# ifdef HAVE_TERMIO_H
+# define TERM			termio
+# define tflags			c_lflag
+# define term_getattr(f, t)	ioctl(f, TCGETA, t)
+# define term_setattr(f, t)	ioctl(f, TCSETA, t)
+# else
+#  define TERM			sgttyb
+#  define tflags		sg_flags
+#  define term_getattr(f, t)	ioctl(f, TIOCGETP, t)
+#  define term_setattr(f, t)	ioctl(f, TIOCSETP, t)
+# endif /* HAVE_TERMIO_H */
+#endif /* HAVE_TERMIOS_H */
 
 static char *tgetline __P((int, char *, size_t, int));
 
@@ -87,79 +111,41 @@ static char *tgetline __P((int, char *, size_t, int));
  * Like getpass(3) but with timeout and echo flags.
  */
 char *
-tgetpass(prompt, timeout, echo_off)
+tgetpass(prompt, timeout, flags)
     const char *prompt;
     int timeout;
-    int echo_off;
+    int flags;
 {
-#ifdef HAVE_TERMIOS_H
-    struct termios term;
-#else
-#ifdef HAVE_TERMIO_H
-    struct termio term;
-#else
-    struct sgttyb ttyb;
-#endif /* HAVE_TERMIO_H */
-#endif /* HAVE_TERMIOS_H */
+    struct TERM term, oterm;
     int input, output;
     static char buf[SUDO_PASS_MAX + 1];
 
     /* Open /dev/tty for reading/writing if possible else use stdin/stderr. */
-    if ((input = output = open(_PATH_TTY, O_RDWR|O_NOCTTY)) == -1) {
+    if ((flags & TGP_STDIN) ||
+	(input = output = open(_PATH_TTY, O_RDWR|O_NOCTTY)) == -1) {
 	input = STDIN_FILENO;
 	output = STDERR_FILENO;
     }
 
     if (prompt)
-	(void) write(output, prompt, strlen(prompt) + 1);
+	(void) write(output, prompt, strlen(prompt));
 
-    if (echo_off) {
-#ifdef HAVE_TERMIOS_H
-	(void) tcgetattr(input, &term);
-	if ((echo_off = (term.c_lflag & ECHO))) {
-	    term.c_lflag &= ~ECHO;
-	    (void) tcsetattr(input, TCSAFLUSH|TCSASOFT, &term);
-	}
-#else
-#ifdef HAVE_TERMIO_H
-	(void) ioctl(input, TCGETA, &term);
-	if ((echo_off = (term.c_lflag & ECHO))) {
-	    term.c_lflag &= ~ECHO;
-	    (void) ioctl(input, TCSETA, &term);
-	}
-#else
-	(void) ioctl(input, TIOCGETP, &ttyb);
-	if ((echo_off = (ttyb.sg_flags & ECHO))) {
-	    ttyb.sg_flags &= ~ECHO;
-	    (void) ioctl(input, TIOCSETP, &ttyb);
-	}
-#endif /* HAVE_TERMIO_H */
-#endif /* HAVE_TERMIOS_H */
-    }
+    /* Turn echo off/on as specified by flags.  */
+    (void) term_getattr(input, &oterm);
+    (void) memcpy(&term, &oterm, sizeof(term));
+    if ((flags & TGP_ECHO) && !(term.tflags & ECHO))
+	term.tflags |= ECHO;
+    else if (!(flags & TGP_ECHO) && (term.tflags & ECHO))
+	term.tflags &= ~ECHO;
+    (void) term_setattr(input, &term);
 
     buf[0] = '\0';
     tgetline(input, buf, sizeof(buf), timeout);
 
-#ifdef HAVE_TERMIOS_H
-    if (echo_off) {
-	term.c_lflag |= ECHO;
-	(void) tcsetattr(input, TCSAFLUSH|TCSASOFT, &term);
-    }
-#else
-#ifdef HAVE_TERMIO_H
-    if (echo_off) {
-	term.c_lflag |= ECHO;
-	(void) ioctl(input, TCSETA, &term);
-    }
-#else
-    if (echo_off) {
-	ttyb.sg_flags |= ECHO;
-	(void) ioctl(input, TIOCSETP, &ttyb);
-    }
-#endif /* HAVE_TERMIO_H */
-#endif /* HAVE_TERMIOS_H */
+    /* Restore old tty flags.  */
+    (void) term_setattr(input, &oterm);
 
-    if (echo_off)
+    if (!(flags & TGP_ECHO))
 	(void) write(output, "\n", 1);
 
     if (input != STDIN_FILENO)
@@ -188,6 +174,9 @@ tgetline(fd, buf, bufsiz, timeout)
     if (bufsiz == 0)
 	return(NULL);			/* sanity */
 
+    cp = buf;
+    left = bufsiz;
+
     /*
      * Timeout of <= 0 means no timeout.
      */
@@ -196,29 +185,33 @@ tgetline(fd, buf, bufsiz, timeout)
 	n = howmany(fd + 1, NFDBITS) * sizeof(fd_mask);
 	readfds = (fd_set *) emalloc(n);
 	(void) memset((VOID *)readfds, 0, n);
-	FD_SET(fd, readfds);
 
 	/* Set timeout for select */
 	tv.tv_sec = timeout;
 	tv.tv_usec = 0;
 
-	/*
-	 * Make sure there is something to read or timeout
-	 */
-	while ((n = select(fd + 1, readfds, 0, 0, &tv)) == -1 &&
-	    errno == EINTR)
-	    ;
-	if (n == 0)
-	    return(NULL);		/* timeout */
-    }
-    if (readfds)
-	free(readfds);
+	while (--left) {
+	    FD_SET(fd, readfds);
 
-    /* Keep reading until out of space, EOF, error, or newline */
-    cp = buf;
-    left = bufsiz;
-    while (--left && (n = read(fd, &c, 1)) == 1 && c != '\n')
-	*cp++ = c;
+	    /* Make sure there is something to read (or timeout) */
+	    while ((n = select(fd + 1, readfds, 0, 0, &tv)) == -1 &&
+		errno == EINTR)
+		;
+	    if (n == 0)
+		return(NULL);		/* timeout */
+
+	    /* Read a character, exit loop on error, EOF or EOL */
+	    n = read(fd, &c, 1);
+	    if (n != 1 || c == '\n' || c == '\r')
+		break;
+	    *cp++ = c;
+	}
+	free(readfds);
+    } else {
+	/* Keep reading until out of space, EOF, error, or newline */
+	while (--left && (n = read(fd, &c, 1)) == 1 && c != '\n' && c != '\r')
+	    *cp++ = c;
+    }
     *cp = '\0';
 
     return(cp == buf ? NULL : buf);

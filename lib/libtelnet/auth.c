@@ -1,3 +1,5 @@
+/*	$OpenBSD: auth.c,v 1.2 1996/03/19 23:15:48 niklas Exp $	*/
+
 /*-
  * Copyright (c) 1991, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -32,9 +34,21 @@
  */
 
 #ifndef lint
-/* from: static char sccsid[] = "@(#)auth.c	8.1 (Berkeley) 6/4/93"; */
-static char *rcsid = "$Id: auth.c,v 1.4 1995/06/05 19:46:53 pk Exp $";
+/* from: static char sccsid[] = "@(#)auth.c	8.3 (Berkeley) 5/30/95" */
+/* from: static char *rcsid = "$NetBSD: auth.c,v 1.5 1996/02/24 01:15:17 jtk Exp $"; */
 #endif /* not lint */
+
+/*
+ * This source code is no longer held under any constraint of USA
+ * `cryptographic laws' since it was exported legally.  The cryptographic
+ * functions were removed from the code and a "Bones" distribution was
+ * made.  A Commodity Jurisdiction Request #012-94 was filed with the
+ * USA State Department, who handed it to the Commerce department.  The
+ * code was determined to fall under General License GTDA under ECCN 5D96G,
+ * and hence exportable.  The cryptographic interfaces were re-added by Eric
+ * Young, and then KTH proceeded to maintain the code in the free world.
+ *
+ */
 
 /*
  * Copyright (C) 1990 by the Massachusetts Institute of Technology
@@ -58,19 +72,15 @@ static char *rcsid = "$Id: auth.c,v 1.4 1995/06/05 19:46:53 pk Exp $";
 
 
 #if	defined(AUTHENTICATION)
+
 #include <stdio.h>
 #include <sys/types.h>
+#include <unistd.h>
 #include <signal.h>
 #define	AUTH_NAMES
 #include <arpa/telnet.h>
-#ifdef	__STDC__
 #include <stdlib.h>
-#endif
-#ifdef	NO_STRING_H
-#include <strings.h>
-#else
 #include <string.h>
-#endif
 
 #include "encrypt.h"
 #include "auth.h"
@@ -129,18 +139,34 @@ Authenticator authenticators[] = {
 				spx_printsub },
 #endif
 #ifdef	KRB5
+	{ AUTHTYPE_KERBEROS_V5, AUTH_WHO_CLIENT|AUTH_HOW_MUTUAL,
+				kerberos5_init,
+				kerberos5_send_mutual,
+				kerberos5_is,
+				kerberos5_reply,
+				kerberos5_status,
+				kerberos5_printsub },
+
 	{ AUTHTYPE_KERBEROS_V5, AUTH_WHO_CLIENT|AUTH_HOW_ONE_WAY,
 				kerberos5_init,
-				kerberos5_send,
+				kerberos5_send_oneway,
 				kerberos5_is,
 				kerberos5_reply,
 				kerberos5_status,
 				kerberos5_printsub },
 #endif
 #ifdef	KRB4
+	{ AUTHTYPE_KERBEROS_V4, AUTH_WHO_CLIENT|AUTH_HOW_MUTUAL,
+				kerberos4_init,
+				kerberos4_send_mutual,
+				kerberos4_is,
+				kerberos4_reply,
+				kerberos4_status,
+				kerberos4_printsub },
+
 	{ AUTHTYPE_KERBEROS_V4, AUTH_WHO_CLIENT|AUTH_HOW_ONE_WAY,
 				kerberos4_init,
-				kerberos4_send,
+				kerberos4_send_oneway,
 				kerberos4_is,
 				kerberos4_reply,
 				kerberos4_status,
@@ -205,6 +231,9 @@ auth_init(name, server)
 					Name,
 					ap->type, ap->way);
 		}
+		else if (auth_debug_mode)
+			printf(">>>%s: Init failed: auth type %d %d\r\n",
+				Name, ap->type, ap->way);
 		++ap;
 	}
 }
@@ -229,7 +258,7 @@ getauthmask(type, maskp)
 {
 	register int x;
 
-	if (strcasecmp(type, AUTHTYPE_NAME(0))) {
+	if (!strcasecmp(type, AUTHTYPE_NAME(0))) {
 		*maskp = -1;
 		return(1);
 	}
@@ -262,15 +291,20 @@ auth_onoff(type, on)
 	char *type;
 	int on;
 {
-	int mask = -1;
+	int i, mask = -1;
 	Authenticator *ap;
 
 	if (!strcasecmp(type, "?") || !strcasecmp(type, "help")) {
-                printf("auth %s 'type'\n", on ? "enable" : "disable");
+		printf("auth %s 'type'\n", on ? "enable" : "disable");
 		printf("Where 'type' is one of:\n");
 		printf("\t%s\n", AUTHTYPE_NAME(0));
-		for (ap = authenticators; ap->type; ap++)
+		mask = 0;
+		for (ap = authenticators; ap->type; ap++) {
+			if ((mask & (i = typemask(ap->type))) != 0)
+				continue;
+			mask |= i;
 			printf("\t%s\n", AUTHTYPE_NAME(ap->type));
+		}
 		return(0);
 	}
 
@@ -278,7 +312,6 @@ auth_onoff(type, on)
 		printf("%s: invalid authentication type\n", type);
 		return(0);
 	}
-	mask = getauthmask(type, &mask);
 	if (on)
 		i_wont_support &= ~mask;
 	else
@@ -302,16 +335,22 @@ auth_togdebug(on)
 auth_status()
 {
 	Authenticator *ap;
+	int i, mask;
 
 	if (i_wont_support == -1)
 		printf("Authentication disabled\n");
 	else
 		printf("Authentication enabled\n");
 
-	for (ap = authenticators; ap->type; ap++)
+	mask = 0;
+	for (ap = authenticators; ap->type; ap++) {
+		if ((mask & (i = typemask(ap->type))) != 0)
+			continue;
+		mask |= i;
 		printf("%s: %s\n", AUTHTYPE_NAME(ap->type),
 			(i_wont_support & typemask(ap->type)) ?
 					"disabled" : "enabled");
+	}
 	return(1);
 }
 
@@ -389,7 +428,7 @@ auth_send(data, cnt)
 		auth_send_cnt = cnt > sizeof(_auth_send_data)
 					? sizeof(_auth_send_data)
 					: cnt;
-		bcopy((void *)data, (void *)_auth_send_data, auth_send_cnt);
+		memmove((void *)_auth_send_data, (void *)data, auth_send_cnt);
 		auth_send_data = _auth_send_data;
 	} else {
 		/*
@@ -440,7 +479,7 @@ auth_send(data, cnt)
 	 *  We requested strong authentication, however no mechanisms worked.
 	 *  Therefore, exit on client end.
 	 */
-	printf("Unable to securely authenticate user ... exit\n"); 
+	printf("Unable to securely authenticate user ... exit\n");
 	exit(0);
 #endif /* KANNAN */
 }
@@ -470,7 +509,7 @@ auth_is(data, cnt)
 		return;
 	}
 
-	if (ap = findauthenticator(data[0], data[1])) {
+	if ((ap = findauthenticator(data[0], data[1]))) {
 		if (ap->is)
 			(*ap->is)(ap, data+2, cnt-2);
 	} else if (auth_debug_mode)
@@ -488,7 +527,7 @@ auth_reply(data, cnt)
 	if (cnt < 2)
 		return;
 
-	if (ap = findauthenticator(data[0], data[1])) {
+	if ((ap = findauthenticator(data[0], data[1]))) {
 		if (ap->reply)
 			(*ap->reply)(ap, data+2, cnt-2);
 	} else if (auth_debug_mode)
@@ -501,7 +540,6 @@ auth_name(data, cnt)
 	unsigned char *data;
 	int cnt;
 {
-	Authenticator *ap;
 	unsigned char savename[256];
 
 	if (cnt < 1) {
@@ -515,7 +553,7 @@ auth_name(data, cnt)
 					Name, cnt, sizeof(savename)-1);
 		return;
 	}
-	bcopy((void *)data, (void *)savename, cnt);
+	memmove((void *)savename, (void *)data, cnt);
 	savename[cnt] = '\0';	/* Null terminate */
 	if (auth_debug_mode)
 		printf(">>>%s: Got NAME [%s]\r\n", Name, savename);
@@ -630,7 +668,7 @@ auth_gen_printsub(data, cnt, buf, buflen)
 	buf[buflen-2] = '*';
 	buflen -= 2;
 	for (; cnt > 0; cnt--, data++) {
-		sprintf((char *)tbuf, " %d", *data);
+		snprintf((char *)tbuf, sizeof(tbuf), " %d", *data);
 		for (cp = tbuf; *cp && buflen > 0; --buflen)
 			*buf++ = *cp++;
 		if (buflen <= 0)

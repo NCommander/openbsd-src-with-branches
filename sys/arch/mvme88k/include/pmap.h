@@ -1,3 +1,4 @@
+/*	$OpenBSD: pmap.h,v 1.8 1999/07/18 18:00:06 deraadt Exp $ */
 /*
  * Mach Operating System
  * Copyright (c) 1991 Carnegie Mellon University
@@ -32,8 +33,11 @@ struct pmap {
     sdt_ptr_t		sdt_paddr;	/* physical pointer to sdt */
     sdt_ptr_t		sdt_vaddr;	/* virtual pointer to sdt */
     int			ref_count;	/* reference count */
-
+    simple_lock_data_t	lock;
     struct pmap_statistics stats;	/* pmap statistics */
+    
+    /* cpus using of this pmap; NCPU must be <= 32 */
+    unsigned long      cpus_using;
 
 #ifdef DEBUG
     pmap_t		next;
@@ -90,9 +94,15 @@ extern	pmap_t	kernel_pmap;
 
 void _pmap_activate(pmap_t pmap, pcb_t, int my_cpu);
 void _pmap_deactivate(pmap_t pmap, pcb_t, int my_cpu);
-void pmap_activate(pmap_t my_pmap, pcb_t);
-void pmap_deactivate(pmap_t pmap, pcb_t);
+void pmap_activate(pmap_t my_pmap, pcb_t, int cpu);
+void pmap_deactivate(pmap_t pmap, pcb_t, int cpu);
 int pmap_check_transaction(pmap_t pmap, vm_offset_t va, vm_prot_t type);
+
+vm_offset_t pmap_map(
+		vm_offset_t virt,
+		vm_offset_t start,
+		vm_offset_t end,
+		vm_prot_t prot);
 
 vm_offset_t pmap_map_batc(
       vm_offset_t virt,

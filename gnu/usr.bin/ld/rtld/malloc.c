@@ -1,3 +1,5 @@
+/*	$OpenBSD$	*/
+
 /*
  * Copyright (c) 1983 Regents of the University of California.
  * All rights reserved.
@@ -33,7 +35,7 @@
 
 #if defined(LIBC_SCCS) && !defined(lint)
 /*static char *sccsid = "from: @(#)malloc.c	5.11 (Berkeley) 2/23/91";*/
-static char *rcsid = "$Id: malloc.c,v 1.3 1994/09/19 16:58:18 deraadt Exp $";
+static char *rcsid = "$OpenBSD: malloc.c,v 1.1.1.1 1995/10/18 08:40:58 deraadt Exp $";
 #endif /* LIBC_SCCS and not lint */
 
 /*

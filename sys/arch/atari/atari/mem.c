@@ -1,4 +1,4 @@
-/*	$NetBSD: mem.c,v 1.3 1995/04/10 13:09:14 mycroft Exp $	*/
+/*	$NetBSD: mem.c,v 1.4 1996/01/06 20:10:43 leo Exp $	*/
 
 /*
  * Copyright (c) 1988 University of Utah.
@@ -54,6 +54,8 @@
 #include <machine/cpu.h>
 
 #include <vm/vm.h>
+
+#include "nvr.h"
 
 extern u_int lowram;
 caddr_t zeropage;
@@ -149,6 +151,15 @@ mmrw(dev, uio, flags)
 				uio->uio_resid = 0;
 			return (0);
 
+/* minor device 11 (/dev/nvram) */
+		case 11:
+#if NNVR > 0
+			error = nvram_uio(uio);
+			return (error);
+#else
+			return (ENXIO);
+#endif
+
 /* minor device 12 (/dev/zero) is source of nulls on read, rathole on write */
 		case 12:
 			if (uio->uio_rw == UIO_WRITE) {
@@ -189,5 +200,16 @@ mmmmap(dev, off, prot)
 	int off, prot;
 {
 
+	return (EOPNOTSUPP);
+}
+
+int
+mmioctl(dev, cmd, data, flags, p)
+	dev_t dev;
+	u_long cmd;
+	caddr_t data;
+	int flags;
+	struct proc *p;
+{
 	return (EOPNOTSUPP);
 }

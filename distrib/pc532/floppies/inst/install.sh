@@ -1,4 +1,5 @@
 #!/bin/sh
+#	$OpenBSD: install.sh,v 1.8 1998/11/03 04:17:20 aaron Exp $
 #
 # Copyright (c) 1994 Christopher G. Demetriou
 # All rights reserved.
@@ -27,7 +28,6 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
 # THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
-#	$Id: install.sh,v 1.3 1995/10/03 22:31:01 phil Exp $
 
 #	NetBSD installation script.
 #	In a perfect world, this would be a nice C program, with a reasonable
@@ -311,7 +311,7 @@ while [ $part_used -lt $partition ]; do
 			[1-9]*)
 				total=`expr $part_used + $resp`
 				if [ $total -gt $partition ]; then
-					echo -n	"That would make the parition"
+					echo -n	"That would make the partition"
 					echo	"too large to fit!"
 				else
 					part_size=$resp
@@ -400,33 +400,33 @@ if [ "$sect_fwd" = "sf:" ]; then
 fi
 
 echo	"Initializing root filesystem, and mounting..."
-$DONTDOIT newfs /dev/r${drivename}a $name
+$DONTDOIT newfs /dev/r${drivename}a
 $DONTDOIT mount -v /dev/${drivename}a /mnt
 if [ "$dname" != "" -a "$dname" != "NO" ]; then
 	echo	""
 	echo	"Initializing $dname filesystem, and mounting..."
-	$DONTDOIT newfs /dev/r${drivename}d $name
+	$DONTDOIT newfs /dev/r${drivename}d
 	$DONTDOIT mkdir -p /mnt/$dname
 	$DONTDOIT mount -v /dev/${drivename}d /mnt/$dname
 fi
 if [ "$ename" != "" -a "$ename" != "NO" ]; then
 	echo	""
 	echo	"Initializing $ename filesystem, and mounting..."
-	$DONTDOIT newfs /dev/r${drivename}e $name
+	$DONTDOIT newfs /dev/r${drivename}e
 	$DONTDOIT mkdir -p /mnt/$ename
 	$DONTDOIT mount -v /dev/${drivename}e /mnt/$ename
 fi
 if [ "$fname" != "" -a "$fname" != "NO" ]; then
 	echo	""
 	echo	"Initializing $fname filesystem, and mounting..."
-	$DONTDOIT newfs /dev/r${drivename}f $name
+	$DONTDOIT newfs /dev/r${drivename}f
 	$DONTDOIT mkdir -p /mnt/$fname
 	$DONTDOIT mount -v /dev/${drivename}f /mnt/$fname
 fi
 if [ "$gname" != "" -a "$gname" != "NO" ]; then
 	echo	""
 	echo	"Initializing $gname filesystem, and mounting..."
-	$DONTDOIT newfs /dev/r${drivename}g $name
+	$DONTDOIT newfs /dev/r${drivename}g
 	$DONTDOIT mkdir -p /mnt/$gname
 	$DONTDOIT mount -v /dev/${drivename}g /mnt/$gname
 fi
@@ -440,19 +440,19 @@ $DONTDOIT gzip -d /mnt/netbsd.gz
 echo	""
 echo -n	"Creating an fstab..."
 echo /dev/${drivename}a / ffs rw 1 1 | sed -e s,//,/, > $FSTAB
-if [ "$dname" != "" ]; then
+if [ "$dname" != "" -a "$dname" != "NO" ]; then
 	echo /dev/${drivename}d /$dname ffs rw 1 2 | sed -e s,//,/, >> $FSTAB
 fi
-if [ "$ename" != "" ]; then
+if [ "$ename" != "" -a "$ename" != "NO" ]; then
 	echo /dev/${drivename}e /$ename ffs rw 1 2 | sed -e s,//,/, >> $FSTAB
 fi
-if [ "$fname" != "" ]; then
+if [ "$fname" != "" -a "$fname" != "NO" ]; then
 	echo /dev/${drivename}f /$fname ffs rw 1 3 | sed -e s,//,/, >> $FSTAB
 fi
-if [ "$gname" != "" ]; then
+if [ "$gname" != "" -a "$gname" != "NO" ]; then
 	echo /dev/${drivename}g /$gname ffs rw 1 4 | sed -e s,//,/, >> $FSTAB
 fi
-if [ "$hname" != "" ]; then
+if [ "$hname" != "" -a "$hname" != "NO" ]; then
 	echo /dev/${drivename}h /$hname ffs rw 1 5 | sed -e s,//,/, >> $FSTAB
 fi
 sync

@@ -1,5 +1,3 @@
-/*	$NetBSD: xdr_rec.c,v 1.5 1995/02/25 03:02:08 cgd Exp $	*/
-
 /*
  * Sun RPC is a product of Sun Microsystems, Inc. and is provided for
  * unrestricted use provided that this legend is included on all tape
@@ -29,10 +27,8 @@
  * Mountain View, California  94043
  */
 #if defined(LIBC_SCCS) && !defined(lint) 
-/*static char *sccsid = "from: @(#)xdr_rec.c 1.21 87/08/11 Copyr 1984 Sun Micro";*/
-/*static char *sccsid = "from: @(#)xdr_rec.c	2.2 88/08/01 4.0 RPCSRC";*/
-static char *rcsid = "$NetBSD: xdr_rec.c,v 1.5 1995/02/25 03:02:08 cgd Exp $";
-#endif
+static char *rcsid = "$OpenBSD: xdr_rec.c,v 1.5 1997/05/28 21:28:56 deraadt Exp $";
+#endif /* LIBC_SCCS and not lint */
 
 /*
  * xdr_rec.c, Implements TCP/IP based XDR streams with a "record marking"
@@ -45,7 +41,7 @@ static char *rcsid = "$NetBSD: xdr_rec.c,v 1.5 1995/02/25 03:02:08 cgd Exp $";
  * and the tcp transport level.  A record is composed on one or more
  * record fragments.  A record fragment is a thirty-two bit header followed
  * by n bytes of data, where n is contained in the header.  The header
- * is represented as a htonl(u_long).  Thegh order bit encodes
+ * is represented as a htonl(u_int32_t).  The high order bit encodes
  * whether or not the fragment is the last fragment of the record
  * (1 => fragment is last, 0 => more fragments to follow. 
  * The other 31 bits encode the byte length of the fragment.
@@ -53,6 +49,7 @@ static char *rcsid = "$NetBSD: xdr_rec.c,v 1.5 1995/02/25 03:02:08 cgd Exp $";
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <rpc/types.h>
 #include <rpc/xdr.h>
 #include <netinet/in.h>
@@ -85,7 +82,7 @@ static struct  xdr_ops xdrrec_ops = {
 
 /*
  * A record is composed of one or more record fragments.
- * A record fragment is a two-byte header followed by zero to
+ * A record fragment is a four-byte header followed by zero to
  * 2**32-1 bytes.  The header is treated as a long unsigned and is
  * encode/decoded to the network via htonl/ntohl.  The low order 31 bits
  * are a byte count of the fragment.  The highest order bit is a boolean:
@@ -108,7 +105,7 @@ typedef struct rec_strm {
 	caddr_t out_base;	/* output buffer (points to frag header) */
 	caddr_t out_finger;	/* next output position */
 	caddr_t out_boundry;	/* data cannot up to this address */
-	u_int32_t *frag_header;	/* beginning of curren fragment */
+	u_int32_t *frag_header;	/* beginning of current fragment */
 	bool_t frag_sent;	/* true if buffer sent in middle of record */
 	/*
 	 * in-coming bits
@@ -282,7 +279,7 @@ xdrrec_putbytes(xdrs, addr, len)
 		current = (u_long)rstrm->out_boundry -
 		    (u_long)rstrm->out_finger;
 		current = (len < current) ? len : current;
-		bcopy(addr, rstrm->out_finger, current);
+		memcpy(rstrm->out_finger, addr, current);
 		rstrm->out_finger += current;
 		addr += current;
 		len -= current;
@@ -302,7 +299,7 @@ xdrrec_getpos(xdrs)
 	register RECSTREAM *rstrm = (RECSTREAM *)xdrs->x_private;
 	register long pos;
 
-	pos = lseek((off_t)(long)rstrm->tcp_handle, 0, 1);
+	pos = lseek((int)(long)rstrm->tcp_handle, (off_t)0, 1);
 	if (pos != -1)
 		switch (xdrs->x_op) {
 
@@ -315,7 +312,7 @@ xdrrec_getpos(xdrs)
 			break;
 
 		default:
-			pos = (u_int) -1;
+			pos = -1;
 			break;
 		}
 	return ((u_int) pos);
@@ -533,7 +530,7 @@ get_input_bytes(rstrm, addr, len)
 			continue;
 		}
 		current = (len < current) ? len : current;
-		bcopy(rstrm->in_finger, addr, current);
+		memcpy(addr, rstrm->in_finger, current);
 		rstrm->in_finger += current;
 		addr += current;
 		len -= current;
@@ -541,7 +538,7 @@ get_input_bytes(rstrm, addr, len)
 	return (TRUE);
 }
 
-static bool_t  /* next two bytes of the input stream are treated as a header */
+static bool_t  /* next four bytes of the input stream are treated as a header */
 set_input_fragment(rstrm)
 	register RECSTREAM *rstrm;
 {
@@ -551,6 +548,8 @@ set_input_fragment(rstrm)
 		return (FALSE);
 	header = (long)ntohl(header);
 	rstrm->last_frag = ((header & LAST_FRAG) == 0) ? FALSE : TRUE;
+	if ((header & (~LAST_FRAG)) == 0)
+		return(FALSE);
 	rstrm->fbtbc = header & (~LAST_FRAG);
 	return (TRUE);
 }

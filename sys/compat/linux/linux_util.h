@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /*	$NetBSD: linux_util.h,v 1.5 1995/06/24 20:20:42 christos Exp $	*/
 
 /*

@@ -1,3 +1,4 @@
+/* $OpenBSD: scratch.S,v 1.2 1996/02/02 02:35:49 mycroft Exp $ */
 /* $NetBSD: scratch.S,v 1.2 1996/02/02 02:35:49 mycroft Exp $ */
 
 /*
@@ -41,7 +42,6 @@
  * Created      : 02/04/95
  * Last updated : 04/06/95
  *
- *    $Id: scratch.S,v 1.2 1996/02/02 02:35:49 mycroft Exp $
  */
 
 #include "assym.h"

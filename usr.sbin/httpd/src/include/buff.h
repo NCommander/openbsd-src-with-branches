@@ -1,5 +1,5 @@
 /* ====================================================================
- * Copyright (c) 1996-1998 The Apache Group.  All rights reserved.
+ * Copyright (c) 1996-1999 The Apache Group.  All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -124,6 +124,10 @@ struct buff_struct {
     /* transport handle, for RPC binding handle or some such */
     void *t_handle;
 
+#ifdef EAPI
+    ap_ctx *ctx;
+#endif /* EAPI */
+
 #ifdef B_SFIO
     Sfio_t *sf_in;
     Sfio_t *sf_out;
@@ -175,6 +179,10 @@ API_EXPORT(int) ap_vbprintf(BUFF *fb, const char *fmt, va_list vlist);
 /* Internal routines */
 API_EXPORT(int) ap_bflsbuf(int c, BUFF *fb);
 API_EXPORT(int) ap_bfilbuf(BUFF *fb);
+
+#ifdef EAPI
+#define ap_bpeekc(fb) ( ((fb)->incnt == 0) ? EOF : *((fb)->inptr) )
+#endif
 
 #ifndef CHARSET_EBCDIC
 

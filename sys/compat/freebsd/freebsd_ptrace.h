@@ -1,3 +1,4 @@
+/* * $OpenBSD: freebsd_ptrace.h,v 1.1.1.1 1995/10/18 08:52:13 deraadt Exp $*/
 /*-
  * Copyright (c) 1984, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -31,7 +32,6 @@
  * SUCH DAMAGE.
  *
  *	@(#)ptrace.h	8.2 (Berkeley) 1/4/94
- * $Id: freebsd_ptrace.h,v 1.1 1995/10/10 01:19:35 mycroft Exp $
  */
 
 #ifndef	_FREEBSD_PTRACE_H_

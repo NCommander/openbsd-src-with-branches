@@ -1,4 +1,5 @@
-/*	$NetBSD: vm_mmap.c,v 1.42 1995/10/10 01:27:11 mycroft Exp $	*/
+/*	$OpenBSD: vm_mmap.c,v 1.14 1998/05/11 19:43:11 niklas Exp $	*/
+/*	$NetBSD: vm_mmap.c,v 1.47 1996/03/16 23:15:23 christos Exp $	*/
 
 /*
  * Copyright (c) 1988 University of Utah.
@@ -55,6 +56,7 @@
 #include <sys/file.h>
 #include <sys/mman.h>
 #include <sys/conf.h>
+#include <sys/stat.h>
 
 #include <sys/mount.h>
 #include <sys/syscallargs.h>
@@ -79,9 +81,11 @@ sys_sbrk(p, v, retval)
 	void *v;
 	register_t *retval;
 {
+#if 0
 	struct sys_sbrk_args /* {
 		syscallarg(int) incr;
 	} */ *uap = v;
+#endif
 
 	/* Not yet implemented */
 	return (EOPNOTSUPP);
@@ -94,90 +98,16 @@ sys_sstk(p, v, retval)
 	void *v;
 	register_t *retval;
 {
+#if 0
 	struct sys_sstk_args /* {
 		syscallarg(int) incr;
 	} */ *uap = v;
+#endif
 
 	/* Not yet implemented */
 	return (EOPNOTSUPP);
 }
 
-#if defined(COMPAT_43) || defined(COMPAT_SUNOS) || defined(COMPAT_OSF1) || \
-    defined(COMPAT_FREEBSD)
-/* ARGSUSED */
-int
-compat_43_sys_getpagesize(p, v, retval)
-	struct proc *p;
-	void *v;
-	register_t *retval;
-{
-
-	*retval = PAGE_SIZE;
-	return (0);
-}
-#endif /* COMPAT_43 || COMPAT_SUNOS || COMPAT_OSF1 || COMPAT_FREEBSD */
-
-#if defined(COMPAT_43) || defined(COMPAT_FREEBSD)
-int
-compat_43_sys_mmap(p, v, retval)
-	struct proc *p;
-	void *v;
-	register_t *retval;
-{
-	register struct compat_43_sys_mmap_args /* {
-		syscallarg(caddr_t) addr;
-		syscallarg(size_t) len;
-		syscallarg(int) prot;
-		syscallarg(int) flags;
-		syscallarg(int) fd;
-		syscallarg(long) pos;
-	} */ *uap = v;
-	struct sys_mmap_args /* {
-		syscallarg(caddr_t) addr;
-		syscallarg(size_t) len;
-		syscallarg(int) prot;
-		syscallarg(int) flags;
-		syscallarg(int) fd;
-		syscallarg(long) pad;
-		syscallarg(off_t) pos;
-	} */ nargs;
-	static const char cvtbsdprot[8] = {
-		0,
-		PROT_EXEC,
-		PROT_WRITE,
-		PROT_EXEC|PROT_WRITE,
-		PROT_READ,
-		PROT_EXEC|PROT_READ,
-		PROT_WRITE|PROT_READ,
-		PROT_EXEC|PROT_WRITE|PROT_READ,
-	};
-#define	OMAP_ANON	0x0002
-#define	OMAP_COPY	0x0020
-#define	OMAP_SHARED	0x0010
-#define	OMAP_FIXED	0x0100
-#define	OMAP_INHERIT	0x0800
-
-	SCARG(&nargs, addr) = SCARG(uap, addr);
-	SCARG(&nargs, len) = SCARG(uap, len);
-	SCARG(&nargs, prot) = cvtbsdprot[SCARG(uap, prot)&0x7];
-	SCARG(&nargs, flags) = 0;
-	if (SCARG(uap, flags) & OMAP_ANON)
-		SCARG(&nargs, flags) |= MAP_ANON;
-	if (SCARG(uap, flags) & OMAP_COPY)
-		SCARG(&nargs, flags) |= MAP_COPY;
-	if (SCARG(uap, flags) & OMAP_SHARED)
-		SCARG(&nargs, flags) |= MAP_SHARED;
-	else
-		SCARG(&nargs, flags) |= MAP_PRIVATE;
-	if (SCARG(uap, flags) & OMAP_FIXED)
-		SCARG(&nargs, flags) |= MAP_FIXED;
-	if (SCARG(uap, flags) & OMAP_INHERIT)
-		SCARG(&nargs, flags) |= MAP_INHERIT;
-	SCARG(&nargs, fd) = SCARG(uap, fd);
-	SCARG(&nargs, pos) = SCARG(uap, pos);
-	return (sys_mmap(p, &nargs, retval));
-}
-#endif
 
 /*
  * Memory Map (mmap) system call.  Note that the file offset
@@ -194,7 +124,7 @@ sys_mmap(p, v, retval)
 	register_t *retval;
 {
 	register struct sys_mmap_args /* {
-		syscallarg(caddr_t) addr;
+		syscallarg(void *) addr;
 		syscallarg(size_t) len;
 		syscallarg(int) prot;
 		syscallarg(int) flags;
@@ -202,6 +132,7 @@ sys_mmap(p, v, retval)
 		syscallarg(long) pad;
 		syscallarg(off_t) pos;
 	} */ *uap = v;
+	struct vattr va;
 	register struct filedesc *fdp = p->p_fd;
 	register struct file *fp;
 	struct vnode *vp;
@@ -210,6 +141,7 @@ sys_mmap(p, v, retval)
 	vm_prot_t prot, maxprot;
 	caddr_t handle;
 	int fd, flags, error;
+	vm_offset_t vm_min_address = VM_MIN_ADDRESS;
 
 	addr = (vm_offset_t) SCARG(uap, addr);
 	size = (vm_size_t) SCARG(uap, len);
@@ -220,7 +152,7 @@ sys_mmap(p, v, retval)
 
 #ifdef DEBUG
 	if (mmapdebug & MDB_FOLLOW)
-		printf("mmap(%d): addr %x len %x pro %x flg %x fd %d pos %x\n",
+		printf("mmap(%d): addr %lx len %lx pro %x flg %x fd %d pos %lx\n",
 		       p->p_pid, addr, size, prot, flags, fd, pos);
 #endif
 
@@ -253,9 +185,10 @@ sys_mmap(p, v, retval)
 		if (addr & PAGE_MASK)
 			return (EINVAL);
 		/* Address range must be all in user VM space. */
-		if (VM_MAXUSER_ADDRESS > 0 && addr + size > VM_MAXUSER_ADDRESS)
+		if (VM_MAXUSER_ADDRESS > 0 &&
+		    addr + size > VM_MAXUSER_ADDRESS)
 			return (EINVAL);
-		if (VM_MIN_ADDRESS > 0 && addr < VM_MIN_ADDRESS)
+		if (vm_min_address > 0 && addr < vm_min_address)
 			return (EINVAL);
 		if (addr > addr + size)
 			return (EINVAL);
@@ -282,8 +215,7 @@ sys_mmap(p, v, retval)
 		if (fp->f_type != DTYPE_VNODE)
 			return (EINVAL);
 		vp = (struct vnode *)fp->f_data;
-		if (vp->v_type != VREG && vp->v_type != VCHR)
-			return (EINVAL);
+
 		/*
 		 * XXX hack to handle use of /dev/zero to map anon
 		 * memory (ala SunOS).
@@ -292,6 +224,14 @@ sys_mmap(p, v, retval)
 			flags |= MAP_ANON;
 			goto is_anon;
 		}
+
+		/*
+		 * Only files and cdevs are mappable, and cdevs does not
+		 * provide private mappings of any kind.
+		 */
+		if (vp->v_type != VREG &&
+		    (vp->v_type != VCHR || (flags & (MAP_PRIVATE|MAP_COPY))))
+			return (EINVAL);
 		/*
 		 * Ensure that file and memory protections are
 		 * compatible.  Note that we only worry about
@@ -306,11 +246,40 @@ sys_mmap(p, v, retval)
 			maxprot |= VM_PROT_READ;
 		else if (prot & PROT_READ)
 			return (EACCES);
-		if (flags & MAP_SHARED) {
-			if (fp->f_flag & FWRITE)
+
+		/*
+		 * If we are sharing potential changes (either via MAP_SHARED
+		 * or via the implicit sharing of character device mappings),
+		 * there are security issues with giving out PROT_WRITE
+		 */
+		if ((flags & MAP_SHARED) || vp->v_type == VCHR) {
+
+			/* In case we opened the thing readonly... */
+			if (!(fp->f_flag & FWRITE)) {
+				/*
+				 * If we are trying to get write permission
+				 * bail out, otherwise go ahead but don't
+				 * raise maxprot to contain VM_PROT_WRITE, as
+				 * we have not asked for write permission at
+				 * all.
+				 */
+				if (prot & PROT_WRITE)
+					return (EACCES);
+
+			/*
+			 * If the file is writable, only add PROT_WRITE to
+			 * maxprot if the file is not immutable, append-only.
+			 * If it is, and if we are going for PROT_WRITE right
+			 * away, return EPERM.
+			 */
+			} else if ((error =
+			    VOP_GETATTR(vp, &va, p->p_ucred, p)))
+				return (error);
+			else if (va.va_flags & (IMMUTABLE|APPEND)) {
+				if (prot & PROT_WRITE)
+					return (EPERM);
+			} else
 				maxprot |= VM_PROT_WRITE;
-			else if (prot & PROT_WRITE)
-				return (EACCES);
 		} else
 			maxprot |= VM_PROT_WRITE;
 		handle = (caddr_t)vp;
@@ -340,22 +309,31 @@ sys_msync(p, v, retval)
 	register_t *retval;
 {
 	struct sys_msync_args /* {
-		syscallarg(caddr_t) addr;
+		syscallarg(void *) addr;
 		syscallarg(size_t) len;
+		syscallarg(int) flags;
 	} */ *uap = v;
 	vm_offset_t addr;
 	vm_size_t size, pageoff;
 	vm_map_t map;
-	int rv;
+	int rv, flags;
 	boolean_t syncio, invalidate;
 
 	addr = (vm_offset_t)SCARG(uap, addr);
 	size = (vm_size_t)SCARG(uap, len);
+	flags = SCARG(uap, flags);
 #ifdef DEBUG
 	if (mmapdebug & (MDB_FOLLOW|MDB_SYNC))
-		printf("msync(%d): addr %x len %x\n",
-		       p->p_pid, addr, size);
+		printf("msync(%d): addr 0x%lx len %lx\n", p->p_pid, addr, size);
 #endif
+
+	/* sanity check flags */
+	if ((flags & ~(MS_ASYNC | MS_SYNC | MS_INVALIDATE)) != 0 ||
+	    (flags & (MS_ASYNC | MS_SYNC | MS_INVALIDATE)) == 0 ||
+	    (flags & (MS_ASYNC | MS_SYNC)) == (MS_ASYNC | MS_SYNC))
+		return (EINVAL);
+	if ((flags & (MS_ASYNC | MS_SYNC)) == 0)
+		flags |= MS_SYNC;
 
 	/*
 	 * Align the address to a page boundary,
@@ -367,8 +345,8 @@ sys_msync(p, v, retval)
 	size = (vm_size_t) round_page(size);
 
 	/* Disallow wrap-around. */
-	if (addr + (int)size < addr)
-		return (EINVAL);
+	if (addr + size < addr)
+		return (ENOMEM);
 
 	map = &p->p_vmspace->vm_map;
 	/*
@@ -386,20 +364,29 @@ sys_msync(p, v, retval)
 		rv = vm_map_lookup_entry(map, addr, &entry);
 		vm_map_unlock_read(map);
 		if (rv == FALSE)
-			return (EINVAL);
+			return (ENOMEM);
 		addr = entry->start;
 		size = entry->end - entry->start;
 	}
 #ifdef DEBUG
 	if (mmapdebug & MDB_SYNC)
-		printf("msync: cleaning/flushing address range [%x-%x)\n",
+		printf("msync: cleaning/flushing address range [0x%lx-0x%lx)\n",
 		       addr, addr+size);
 #endif
+
+#if 0
 	/*
-	 * Could pass this in as a third flag argument to implement
-	 * Sun's MS_ASYNC.
+	 * XXX Asynchronous msync() causes:
+	 *	. the process to hang on wchan "vospgw", and
+	 *	. a "vm_object_page_clean: pager_put error" message to
+	 *	  be printed by the kernel.
 	 */
+	syncio = (flags & MS_SYNC) ? TRUE : FALSE;
+#else
 	syncio = TRUE;
+#endif
+	invalidate = (flags & MS_INVALIDATE) ? TRUE : FALSE;
+
 	/*
 	 * XXX bummer, gotta flush all cached pages to ensure
 	 * consistency with the file system cache.  Otherwise, we could
@@ -414,9 +401,11 @@ sys_msync(p, v, retval)
 	case KERN_SUCCESS:
 		break;
 	case KERN_INVALID_ADDRESS:
-		return (EINVAL);	/* Sun returns ENOMEM? */
+		return (ENOMEM);
 	case KERN_FAILURE:
 		return (EIO);
+	case KERN_PAGES_LOCKED:
+		return (EBUSY);
 	default:
 		return (EINVAL);
 	}
@@ -430,19 +419,20 @@ sys_munmap(p, v, retval)
 	register_t *retval;
 {
 	register struct sys_munmap_args /* {
-		syscallarg(caddr_t) addr;
+		syscallarg(void *) addr;
 		syscallarg(size_t) len;
 	} */ *uap = v;
 	vm_offset_t addr;
 	vm_size_t size, pageoff;
 	vm_map_t map;
+	vm_offset_t vm_min_address = VM_MIN_ADDRESS;
+	
 
 	addr = (vm_offset_t) SCARG(uap, addr);
 	size = (vm_size_t) SCARG(uap, len);
 #ifdef DEBUG
 	if (mmapdebug & MDB_FOLLOW)
-		printf("munmap(%d): addr %x len %x\n",
-		       p->p_pid, addr, size);
+		printf("munmap(%d): addr 0%lx len %lx\n", p->p_pid, addr, size);
 #endif
 
 	/*
@@ -463,7 +453,7 @@ sys_munmap(p, v, retval)
 	 */
 	if (VM_MAXUSER_ADDRESS > 0 && addr + size > VM_MAXUSER_ADDRESS)
 		return (EINVAL);
-	if (VM_MIN_ADDRESS > 0 && addr < VM_MIN_ADDRESS)
+	if (vm_min_address > 0 && addr < vm_min_address)
 		return (EINVAL);
 	if (addr > addr + size)
 		return (EINVAL);
@@ -501,7 +491,7 @@ sys_mprotect(p, v, retval)
 	register_t *retval;
 {
 	struct sys_mprotect_args /* {
-		syscallarg(caddr_t) addr;
+		syscallarg(void *) addr;
 		syscallarg(int) len;
 		syscallarg(int) prot;
 	} */ *uap = v;
@@ -514,7 +504,7 @@ sys_mprotect(p, v, retval)
 	prot = SCARG(uap, prot) & VM_PROT_ALL;
 #ifdef DEBUG
 	if (mmapdebug & MDB_FOLLOW)
-		printf("mprotect(%d): addr %x len %x prot %d\n", p->p_pid,
+		printf("mprotect(%d): addr 0x%lx len %lx prot %d\n", p->p_pid,
 		    addr, size, prot);
 #endif
 	/*
@@ -538,6 +528,50 @@ sys_mprotect(p, v, retval)
 	return (EINVAL);
 }
 
+int
+sys_minherit(p, v, retval)
+	struct proc *p;
+	void *v;
+	register_t *retval;
+{
+	struct sys_minherit_args /* {
+		syscallarg(caddr_t) addr;
+		syscallarg(int) len;
+		syscallarg(int) inherit;
+	} */ *uap = v;
+	vm_offset_t addr;
+	vm_size_t size, pageoff;
+	register vm_inherit_t inherit;
+
+	addr = (vm_offset_t)SCARG(uap, addr);
+	size = (vm_size_t)SCARG(uap, len);
+	inherit = SCARG(uap, inherit);
+#ifdef DEBUG
+	if (mmapdebug & MDB_FOLLOW)
+		printf("minherit(%d): addr 0x%lx len %lx inherit %d\n", p->p_pid,
+		    addr, size, inherit);
+#endif
+	/*
+	 * Align the address to a page boundary,
+	 * and adjust the size accordingly.
+	 */
+	pageoff = (addr & PAGE_MASK);
+	addr -= pageoff;
+	size += pageoff;
+	size = (vm_size_t) round_page(size);
+	if ((int)size < 0)
+		return(EINVAL);
+
+	switch (vm_map_inherit(&p->p_vmspace->vm_map, addr, addr+size,
+	    inherit)) {
+	case KERN_SUCCESS:
+		return (0);
+	case KERN_PROTECTION_FAILURE:
+		return (EACCES);
+	}
+	return (EINVAL);
+}
+
 /* ARGSUSED */
 int
 sys_madvise(p, v, retval)
@@ -545,11 +579,13 @@ sys_madvise(p, v, retval)
 	void *v;
 	register_t *retval;
 {
+#if 0
 	struct sys_madvise_args /* {
-		syscallarg(caddr_t) addr;
+		syscallarg(void *) addr;
 		syscallarg(size_t) len;
 		syscallarg(int) behav;
 	} */ *uap = v;
+#endif
 
 	/* Not yet implemented */
 	return (EOPNOTSUPP);
@@ -562,11 +598,13 @@ sys_mincore(p, v, retval)
 	void *v;
 	register_t *retval;
 {
+#if 0
 	struct sys_mincore_args /* {
-		syscallarg(caddr_t) addr;
+		syscallarg(void *) addr;
 		syscallarg(size_t) len;
 		syscallarg(char *) vec;
 	} */ *uap = v;
+#endif
 
 	/* Not yet implemented */
 	return (EOPNOTSUPP);
@@ -579,7 +617,7 @@ sys_mlock(p, v, retval)
 	register_t *retval;
 {
 	struct sys_mlock_args /* {
-		syscallarg(caddr_t) addr;
+		syscallarg(const void *) addr;
 		syscallarg(size_t) len;
 	} */ *uap = v;
 	vm_offset_t addr;
@@ -591,8 +629,7 @@ sys_mlock(p, v, retval)
 	size = (vm_size_t)SCARG(uap, len);
 #ifdef DEBUG
 	if (mmapdebug & MDB_FOLLOW)
-		printf("mlock(%d): addr %x len %x\n",
-		       p->p_pid, addr, size);
+		printf("mlock(%d): addr 0%lx len %lx\n", p->p_pid, addr, size);
 #endif
 	/*
 	 * Align the address to a page boundary,
@@ -614,11 +651,11 @@ sys_mlock(p, v, retval)
 	    p->p_rlimit[RLIMIT_MEMLOCK].rlim_cur)
 		return (EAGAIN);
 #else
-	if (error = suser(p->p_ucred, &p->p_acflag))
+	if ((error = suser(p->p_ucred, &p->p_acflag)) != 0)
 		return (error);
 #endif
 
-	error = vm_map_pageable(&p->p_vmspace->vm_map, addr, addr+size, FALSE);
+	error = vslock((caddr_t)addr, size);
 	return (error == KERN_SUCCESS ? 0 : ENOMEM);
 }
 
@@ -629,7 +666,7 @@ sys_munlock(p, v, retval)
 	register_t *retval;
 {
 	struct sys_munlock_args /* {
-		syscallarg(caddr_t) addr;
+		syscallarg(const void *) addr;
 		syscallarg(size_t) len;
 	} */ *uap = v;
 	vm_offset_t addr;
@@ -640,8 +677,7 @@ sys_munlock(p, v, retval)
 	size = (vm_size_t)SCARG(uap, len);
 #ifdef DEBUG
 	if (mmapdebug & MDB_FOLLOW)
-		printf("munlock(%d): addr %x len %x\n",
-		       p->p_pid, addr, size);
+		printf("munlock(%d): addr 0x%lx len %lx\n", p->p_pid, addr, size);
 #endif
 	/*
 	 * Align the address to a page boundary,
@@ -657,11 +693,11 @@ sys_munlock(p, v, retval)
 		return (EINVAL);
 
 #ifndef pmap_wired_count
-	if (error = suser(p->p_ucred, &p->p_acflag))
+	if ((error = suser(p->p_ucred, &p->p_acflag)) != 0)
 		return (error);
 #endif
 
-	error = vm_map_pageable(&p->p_vmspace->vm_map, addr, addr+size, TRUE);
+	error = vsunlock((caddr_t)addr, size);
 	return (error == KERN_SUCCESS ? 0 : ENOMEM);
 }
 
@@ -759,7 +795,7 @@ vm_mmap(map, addr, size, prot, maxprot, flags, handle, foff)
 		(void) pager_cache(object, FALSE);
 #ifdef DEBUG
 		if (mmapdebug & MDB_MAPIT)
-			printf("vm_mmap(%d): ANON *addr %x size %x pager %x\n",
+			printf("vm_mmap(%d): ANON *addr %lx size %lx pager %p\n",
 			       curproc->p_pid, *addr, size, pager);
 #endif
 	}
@@ -789,7 +825,7 @@ vm_mmap(map, addr, size, prot, maxprot, flags, handle, foff)
 	else {
 #ifdef DEBUG
 		if (object == NULL)
-			printf("vm_mmap: no object: vp %x, pager %x\n",
+			printf("vm_mmap: no object: vp %p, pager %p\n",
 			       vp, pager);
 #endif
 		/*
@@ -827,49 +863,58 @@ vm_mmap(map, addr, size, prot, maxprot, flags, handle, foff)
 			vm_offset_t off;
 
 			/* locate and allocate the target address space */
+			vm_map_lock(map);
 			if (fitit) {
 				/*
-				 * We cannot call vm_map_find() because
-				 * a proposed address may be vetoed by
-				 * the pmap module.
-				 * So we look for space ourselves, validate
-				 * it and insert it into the map. 
+				 * Find space in the map at a location
+				 * that is compatible with the object/offset
+				 * we're going to attach there.
 				 */
-				vm_map_lock(map);
 			again:
 				if (vm_map_findspace(map, *addr, size,
 						     addr) == 1) {
 					rv = KERN_NO_SPACE;
 				} else {
-					vm_object_prefer(object, foff, addr);
+#ifdef	PMAP_PREFER
+					PMAP_PREFER(foff, addr);
+#endif
 					rv = vm_map_insert(map, NULL,
-							(vm_offset_t)0,
-							*addr, *addr+size);
+							   (vm_offset_t)0,
+							   *addr, *addr+size);
+					/*
+					 * vm_map_insert() may fail if
+					 * PMAP_PREFER() has altered
+					 * the initial address.
+					 * If so, we start again.
+					 */
 					if (rv == KERN_NO_SPACE)
-						/*
-						 * Modified address didn't fit
-						 * after all, the gap must
-						 * have been to small.
-						 */
 						goto again;
 				}
-				vm_map_unlock(map);
 			} else {
-				rv = vm_map_find(map, NULL, (vm_offset_t)0,
-					 addr, size, 0);
+				rv = vm_map_insert(map, NULL, (vm_offset_t)0,
+						   *addr, *addr + size);
 
+#ifdef DEBUG
 				/*
 				 * Check against PMAP preferred address. If
 				 * there's a mismatch, these pages should not
 				 * be shared with others. <howto?>
 				 */
-				if (rv == KERN_SUCCESS) {
+				if (rv == KERN_SUCCESS &&
+				    (mmapdebug & MDB_MAPIT)) {
 					vm_offset_t	paddr = *addr;
-					vm_object_prefer(object, foff, &paddr);
+#ifdef	PMAP_PREFER
+					PMAP_PREFER(foff, &paddr);
+#endif
 					if (paddr != *addr)
-						printf("vm_mmap: pmap botch!\n");
+					    printf(
+					      "vm_mmap: pmap botch! "
+					      "[foff %lx, addr %lx, paddr %lx]\n",
+					      foff, *addr, paddr);
 				}
+#endif
 			}
+			vm_map_unlock(map);
 
 			if (rv != KERN_SUCCESS) {
 				vm_object_deallocate(object);
@@ -879,7 +924,7 @@ vm_mmap(map, addr, size, prot, maxprot, flags, handle, foff)
 					     VM_MIN_ADDRESS+size, TRUE);
 			off = VM_MIN_ADDRESS;
 			rv = vm_allocate_with_pager(tmap, &off, size,
-						    TRUE, pager,
+						    FALSE, pager,
 						    foff, FALSE);
 			if (rv != KERN_SUCCESS) {
 				vm_object_deallocate(object);
@@ -935,7 +980,7 @@ vm_mmap(map, addr, size, prot, maxprot, flags, handle, foff)
 		}
 #ifdef DEBUG
 		if (mmapdebug & MDB_MAPIT)
-			printf("vm_mmap(%d): FILE *addr %x size %x pager %x\n",
+			printf("vm_mmap(%d): FILE *addr %lx size %lx pager %p\n",
 			       curproc->p_pid, *addr, size, pager);
 #endif
 	}

@@ -1,7 +1,8 @@
-/*	$Id: doi.h,v 1.22 1998/10/11 12:01:03 niklas Exp $	*/
+/*	$OpenBSD: doi.h,v 1.8 2000/02/25 17:23:39 niklas Exp $	*/
+/*	$EOM: doi.h,v 1.29 2000/07/02 18:47:15 provos Exp $	*/
 
 /*
- * Copyright (c) 1998 Niklas Hallqvist.  All rights reserved.
+ * Copyright (c) 1998, 1999 Niklas Hallqvist.  All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -42,6 +43,7 @@
 struct exchange;
 struct keystate;
 struct message;
+struct payload;
 struct proto;
 struct sa;
 
@@ -59,7 +61,9 @@ struct doi {
   /* Size of DOI-specific protocol data.  */
   size_t proto_size;
 
+#ifdef USE_DEBUG
   int (*debug_attribute) (u_int16_t, u_int8_t *, u_int16_t, void *);
+#endif
   void (*delete_spi) (struct sa *, struct proto *, int);
   u_int16_t *(*exchange_script) (u_int8_t);
   void (*finalize_exchange) (struct message *);
@@ -68,7 +72,12 @@ struct doi {
   void (*free_sa_data) (void *);
   struct keystate *(*get_keystate) (struct message *);
   u_int8_t *(*get_spi) (size_t *, u_int8_t, struct message *);
+  int (*handle_leftover_payload) (struct message *, u_int8_t,
+				  struct payload *);
+  int (*informational_post_hook) (struct message *);
+  int (*informational_pre_hook) (struct message *);
   int (*is_attribute_incompatible) (u_int16_t, u_int8_t *, u_int16_t, void *);
+  void (*proto_init) (struct proto *, char *);
   void (*setup_situation) (u_int8_t *);
   size_t (*situation_size) (void);
   u_int8_t (*spi_size) (u_int8_t);
@@ -83,6 +92,7 @@ struct doi {
   int (*validate_transform_id) (u_int8_t, u_int8_t);
   int (*initiator) (struct message *msg);
   int (*responder) (struct message *msg);
+  char *(*decode_ids) (char *, u_int8_t *, size_t, u_int8_t *, size_t, int);
 };
 
 extern void doi_init (void);

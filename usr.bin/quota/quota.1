@@ -1,3 +1,5 @@
+.\"	$OpenBSD: quota.1,v 1.10 2000/03/10 20:17:49 aaron Exp $
+.\"
 .\" Copyright (c) 1983, 1990, 1993
 .\"	The Regents of the University of California.  All rights reserved.
 .\"
@@ -33,11 +35,10 @@
 .\" SUCH DAMAGE.
 .\"
 .\"	from: @(#)quota.1	8.1 (Berkeley) 6/6/93
-.\"	$Id: quota.1,v 1.4 1994/06/28 07:47:24 deraadt Exp $
 .\"
 .Dd June 6, 1993
 .Dt QUOTA 1
-.Os BSD 4.2
+.Os
 .Sh NAME
 .Nm quota
 .Nd display disk usage and limits
@@ -55,15 +56,14 @@
 .Op Fl v | Fl q
 .Ar group
 .Sh DESCRIPTION
-.Nm Quota
+.Nm quota
 displays users' disk usage and limits.
 By default only the user quotas are printed.
 .Pp
-Options:
-.Pp
+The options are as follows:
 .Bl -tag -width Ds
 .It Fl g
-Print group quotas for the group 
+Print group quotas for the group
 of which the user is a member.
 The optional
 .Fl u
@@ -85,12 +85,12 @@ and
 displays both the user quotas and the group quotas (for
 the user).
 .Pp
-Only the super-user may use the
+Only the superuser may use the
 .Fl u
 flag and the optional
 .Ar user
 argument to view the limits of other users.
-Non-super-users can use the the
+Non-superusers can use the
 .Fl g
 flag and optional
 .Ar group
@@ -102,17 +102,14 @@ flag takes precedence over the
 .Fl v
 flag.
 .Pp
-.Nm Quota
+.Nm quota
 tries to report the quotas of all mounted filesystems.
-If the filesystem is mounted via
-.Nm NFS ,
+If the filesystem is mounted via NFS,
 it will attempt to contact the
 .Xr rpc.rquotad 8
 daemon on the
-.Nm NFS
-server.
-For
-.Nm UFS
+NFS server.
+For FFS
 filesystems, quotas must be turned on in
 .Pa /etc/fstab .
 If
@@ -128,11 +125,6 @@ located at the filesystem root with group quotas
 .It Pa /etc/fstab
 to find filesystem names and locations
 .El
-.Sh HISTORY
-The
-.Nm quota
-command appeared in
-.Bx 4.2 .
 .Sh SEE ALSO
 .Xr quotactl 2 ,
 .Xr fstab 5 ,
@@ -141,3 +133,8 @@ command appeared in
 .Xr quotaon 8 ,
 .Xr repquota 8 ,
 .Xr rpc.rquotad 8
+.Sh HISTORY
+The
+.Nm quota
+command appeared in
+.Bx 4.2 .

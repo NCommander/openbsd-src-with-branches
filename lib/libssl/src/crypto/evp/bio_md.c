@@ -59,13 +59,12 @@
 #include <stdio.h>
 #include <errno.h>
 #include "cryptlib.h"
-#include "buffer.h"
-#include "evp.h"
+#include <openssl/buffer.h>
+#include <openssl/evp.h>
 
 /* BIO_put and BIO_get both add to the digest,
  * BIO_gets returns the digest */
 
-#ifndef NOPROTO
 static int md_write(BIO *h,char *buf,int num);
 static int md_read(BIO *h,char *buf,int size);
 /*static int md_puts(BIO *h,char *str); */
@@ -73,15 +72,7 @@ static int md_gets(BIO *h,char *str,int size);
 static long md_ctrl(BIO *h,int cmd,long arg1,char *arg2);
 static int md_new(BIO *h);
 static int md_free(BIO *data);
-#else
-static int md_write();
-static int md_read();
-/*static int md_puts(); */
-static int md_gets();
-static long md_ctrl();
-static int md_new();
-static int md_free();
-#endif
+static long md_callback_ctrl(BIO *h,int cmd,void (*fp)());
 
 static BIO_METHOD methods_md=
 	{
@@ -93,15 +84,15 @@ static BIO_METHOD methods_md=
 	md_ctrl,
 	md_new,
 	md_free,
+	md_callback_ctrl,
 	};
 
-BIO_METHOD *BIO_f_md()
+BIO_METHOD *BIO_f_md(void)
 	{
 	return(&methods_md);
 	}
 
-static int md_new(bi)
-BIO *bi;
+static int md_new(BIO *bi)
 	{
 	EVP_MD_CTX *ctx;
 
@@ -114,8 +105,7 @@ BIO *bi;
 	return(1);
 	}
 
-static int md_free(a)
-BIO *a;
+static int md_free(BIO *a)
 	{
 	if (a == NULL) return(0);
 	Free(a->ptr);
@@ -125,10 +115,7 @@ BIO *a;
 	return(1);
 	}
 	
-static int md_read(b,out,outl)
-BIO *b;
-char *out;
-int outl;
+static int md_read(BIO *b, char *out, int outl)
 	{
 	int ret=0;
 	EVP_MD_CTX *ctx;
@@ -152,10 +139,7 @@ int outl;
 	return(ret);
 	}
 
-static int md_write(b,in,inl)
-BIO *b;
-char *in;
-int inl;
+static int md_write(BIO *b, char *in, int inl)
 	{
 	int ret=0;
 	EVP_MD_CTX *ctx;
@@ -178,14 +162,10 @@ int inl;
 	return(ret);
 	}
 
-static long md_ctrl(b,cmd,num,ptr)
-BIO *b;
-int cmd;
-long num;
-char *ptr;
+static long md_ctrl(BIO *b, int cmd, long num, char *ptr)
 	{
 	EVP_MD_CTX *ctx,*dctx,**pctx;
-	EVP_MD **ppmd;
+	const EVP_MD **ppmd;
 	EVP_MD *md;
 	long ret=1;
 	BIO *dbio;
@@ -204,7 +184,7 @@ char *ptr;
 	case BIO_C_GET_MD:
 		if (b->init)
 			{
-			ppmd=(EVP_MD **)ptr;
+			ppmd=(const EVP_MD **)ptr;
 			*ppmd=ctx->digest;
 			}
 		else
@@ -243,10 +223,21 @@ char *ptr;
 	return(ret);
 	}
 
-static int md_gets(bp,buf,size)
-BIO *bp;
-char *buf;
-int size;
+static long md_callback_ctrl(BIO *b, int cmd, void (*fp)())
+	{
+	long ret=1;
+
+	if (b->next_bio == NULL) return(0);
+	switch (cmd)
+		{
+	default:
+		ret=BIO_callback_ctrl(b->next_bio,cmd,fp);
+		break;
+		}
+	return(ret);
+	}
+
+static int md_gets(BIO *bp, char *buf, int size)
 	{
 	EVP_MD_CTX *ctx;
 	unsigned int ret;

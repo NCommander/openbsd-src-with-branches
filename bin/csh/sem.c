@@ -1,3 +1,4 @@
+/*	$OpenBSD: sem.c,v 1.5 1998/05/18 20:38:21 deraadt Exp $	*/
 /*	$NetBSD: sem.c,v 1.9 1995/09/27 00:38:50 jtc Exp $	*/
 
 /*-
@@ -37,7 +38,7 @@
 #if 0
 static char sccsid[] = "@(#)sem.c	8.1 (Berkeley) 5/31/93";
 #else
-static char rcsid[] = "$NetBSD: sem.c,v 1.9 1995/09/27 00:38:50 jtc Exp $";
+static char rcsid[] = "$OpenBSD: sem.c,v 1.5 1998/05/18 20:38:21 deraadt Exp $";
 #endif
 #endif /* not lint */
 
@@ -49,7 +50,7 @@ static char rcsid[] = "$NetBSD: sem.c,v 1.9 1995/09/27 00:38:50 jtc Exp $";
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
-#if __STDC__
+#ifdef __STDC__
 # include <stdarg.h>
 #else
 # include <varargs.h>
@@ -170,7 +171,8 @@ execute(t, wanttty, pipein, pipeout)
 		/*
 		 * Continue for builtins that are part of the scripting language
 		 */
-		if (bifunc->bfunct != dobreak   && bifunc->bfunct != docontin &&
+		if (bifunc &&
+		    bifunc->bfunct != dobreak   && bifunc->bfunct != docontin &&
 		    bifunc->bfunct != doelse    && bifunc->bfunct != doend    &&
 		    bifunc->bfunct != doforeach && bifunc->bfunct != dogoto   &&
 		    bifunc->bfunct != doif      && bifunc->bfunct != dorepeat &&
@@ -305,7 +307,7 @@ execute(t, wanttty, pipein, pipeout)
 		    bool    ignint = 0;
 
 		    if (nosigchld) {
-		        sigprocmask(SIG_SETMASK, &csigset, NULL);
+			sigprocmask(SIG_SETMASK, &csigset, NULL);
 			nosigchld = 0;
 		    }
 
@@ -547,7 +549,7 @@ doio(t, pipein, pipeout)
 	return;
     if ((flags & F_READ) == 0) {/* F_READ already done */
 	if (t->t_dlef) {
-	    char    tmp[MAXPATHLEN+1];
+	    char    tmp[MAXPATHLEN];
 
 	    /*
 	     * so < /dev/std{in,out,err} work
@@ -556,8 +558,8 @@ doio(t, pipein, pipeout)
 	    (void) dcopy(SHOUT, 1);
 	    (void) dcopy(SHERR, 2);
 	    cp = splicepipe(t, t->t_dlef);
-	    (void) strncpy(tmp, short2str(cp), MAXPATHLEN);
-	    tmp[MAXPATHLEN] = '\0';
+	    (void) strncpy(tmp, short2str(cp), sizeof tmp-1);
+	    tmp[sizeof tmp-1] = '\0';
 	    xfree((ptr_t) cp);
 	    if ((fd = open(tmp, O_RDONLY)) < 0)
 		stderror(ERR_SYSTEM, tmp, strerror(errno));
@@ -580,11 +582,11 @@ doio(t, pipein, pipeout)
 	}
     }
     if (t->t_drit) {
-	char    tmp[MAXPATHLEN+1];
+	char    tmp[MAXPATHLEN];
 
 	cp = splicepipe(t, t->t_drit);
-	(void) strncpy(tmp, short2str(cp), MAXPATHLEN);
-	tmp[MAXPATHLEN] = '\0';
+	(void) strncpy(tmp, short2str(cp), sizeof tmp-1);
+	tmp[sizeof tmp-1] = '\0';
 	xfree((ptr_t) cp);
 	/*
 	 * so > /dev/std{out,err} work

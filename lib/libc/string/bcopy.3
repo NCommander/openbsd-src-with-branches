@@ -32,12 +32,11 @@
 .\" OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 .\" SUCH DAMAGE.
 .\"
-.\"     from: @(#)bcopy.3	5.3 (Berkeley) 4/19/91
-.\"	$Id: bcopy.3,v 1.2 1993/08/01 07:44:06 mycroft Exp $
+.\"	$OpenBSD: bcopy.3,v 1.4 1999/06/29 18:01:31 aaron Exp $
 .\"
 .Dd April 19, 1991
 .Dt BCOPY 3
-.Os BSD 4.2
+.Os
 .Sh NAME
 .Nm bcopy
 .Nd copy byte string
@@ -48,8 +47,7 @@
 .Sh DESCRIPTION
 The
 .Fn bcopy
-function
-copies
+function copies
 .Fa len
 bytes from string
 .Fa src
@@ -68,5 +66,5 @@ is zero, no bytes are copied.
 .Sh HISTORY
 A
 .Fn bcopy
-function appeared in 
+function appeared in
 .Bx 4.2 .

@@ -1,4 +1,5 @@
-/*	$NetBSD: ufs_readwrite.c,v 1.7 1995/07/24 21:20:53 cgd Exp $	*/
+/*	$OpenBSD: ufs_readwrite.c,v 1.14 1998/08/17 19:30:30 csapuntz Exp $	*/
+/*	$NetBSD: ufs_readwrite.c,v 1.9 1996/05/11 18:27:57 mycroft Exp $	*/
 
 /*-
  * Copyright (c) 1993
@@ -32,11 +33,11 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  *
- *	@(#)ufs_readwrite.c	8.8 (Berkeley) 8/4/94
+ *	@(#)ufs_readwrite.c	8.11 (Berkeley) 5/8/95
  */
 
 #ifdef LFS_READWRITE
-#define	BLKSIZE(a, b, c)	blksize(a)
+#define	BLKSIZE(a, b, c)	blksize(a, b, c)
 #define	FS			struct lfs
 #define	I_FS			i_lfs
 #define	READ			lfs_read
@@ -44,7 +45,7 @@
 #define	WRITE			lfs_write
 #define	WRITE_S			"lfs_write"
 #define	fs_bsize		lfs_bsize
-#define	fs_maxfilesize		lfs_maxfilesize
+#define MAXFILESIZE		fs->lfs_maxfilesize
 #else
 #define	BLKSIZE(a, b, c)	blksize(a, b, c)
 #define	FS			struct fs
@@ -53,20 +54,23 @@
 #define	READ_S			"ffs_read"
 #define	WRITE			ffs_write
 #define	WRITE_S			"ffs_write"
+#define MAXFILESIZE		fs->fs_maxfilesize
 #endif
 
 /*
  * Vnode op for reading.
  */
 /* ARGSUSED */
-READ(ap)
+int
+READ(v)
+	void *v;
+{
 	struct vop_read_args /* {
 		struct vnode *a_vp;
 		struct uio *a_uio;
 		int a_ioflag;
 		struct ucred *a_cred;
-	} */ *ap;
-{
+	} */ *ap = v;
 	register struct vnode *vp;
 	register struct inode *ip;
 	register struct uio *uio;
@@ -80,7 +84,7 @@ READ(ap)
 
 	vp = ap->a_vp;
 	ip = VTOI(vp);
-	mode = ip->i_mode;
+	mode = ip->i_ffs_mode;
 	uio = ap->a_uio;
 
 #ifdef DIAGNOSTIC
@@ -88,19 +92,22 @@ READ(ap)
 		panic("%s: mode", READ_S);
 
 	if (vp->v_type == VLNK) {
-		if ((int)ip->i_size < vp->v_mount->mnt_maxsymlinklen ||
+		if ((int)ip->i_ffs_size < vp->v_mount->mnt_maxsymlinklen ||
 		    (vp->v_mount->mnt_maxsymlinklen == 0 &&
-		     ip->i_din.di_blocks == 0))
+		     ip->i_ffs_blocks == 0))
 			panic("%s: short symlink", READ_S);
 	} else if (vp->v_type != VREG && vp->v_type != VDIR)
 		panic("%s: type %d", READ_S, vp->v_type);
 #endif
 	fs = ip->I_FS;
-	if ((u_int64_t)uio->uio_offset > fs->fs_maxfilesize)
+	if ((u_int64_t)uio->uio_offset > MAXFILESIZE)
 		return (EFBIG);
 
+	if (uio->uio_resid == 0)
+		return (0);
+
 	for (error = 0, bp = NULL; uio->uio_resid > 0; bp = NULL) {
-		if ((bytesinfile = ip->i_size - uio->uio_offset) <= 0)
+		if ((bytesinfile = ip->i_ffs_size - uio->uio_offset) <= 0)
 			break;
 		lbn = lblkno(fs, uio->uio_offset);
 		nextlbn = lbn + 1;
@@ -114,13 +121,14 @@ READ(ap)
 
 #ifdef LFS_READWRITE
 		(void)lfs_check(vp, lbn);
-		error = cluster_read(vp, ip->i_size, lbn, size, NOCRED, &bp);
+		error = cluster_read(vp, ip->i_ffs_size, lbn, size, NOCRED,
+		    &bp);
 #else
-		if (lblktosize(fs, nextlbn) >= ip->i_size)
+		if (lblktosize(fs, nextlbn) >= ip->i_ffs_size)
 			error = bread(vp, lbn, size, NOCRED, &bp);
 		else if (doclusterread)
 			error = cluster_read(vp,
-			    ip->i_size, lbn, size, NOCRED, &bp);
+			    ip->i_ffs_size, lbn, size, NOCRED, &bp);
 		else if (lbn - 1 == vp->v_lastr) {
 			int nextsize = BLKSIZE(fs, ip, nextlbn);
 			error = breadn(vp, lbn,
@@ -145,8 +153,9 @@ READ(ap)
 				break;
 			xfersize = size;
 		}
-		if (error =
-		    uiomove((char *)bp->b_data + blkoffset, (int)xfersize, uio))
+		error = uiomove((char *)bp->b_data + blkoffset, (int)xfersize,
+				uio);
+		if (error)
 			break;
 		brelse(bp);
 	}
@@ -159,14 +168,16 @@ READ(ap)
 /*
  * Vnode op for writing.
  */
-WRITE(ap)
+int
+WRITE(v)
+	void *v;
+{
 	struct vop_write_args /* {
 		struct vnode *a_vp;
 		struct uio *a_uio;
 		int a_ioflag;
 		struct ucred *a_cred;
-	} */ *ap;
-{
+	} */ *ap = v;
 	register struct vnode *vp;
 	register struct uio *uio;
 	register struct inode *ip;
@@ -176,6 +187,7 @@ WRITE(ap)
 	daddr_t lbn;
 	off_t osize;
 	int blkoffset, error, flags, ioflag, resid, size, xfersize;
+	struct timespec ts;
 
 	ioflag = ap->a_ioflag;
 	uio = ap->a_uio;
@@ -190,8 +202,8 @@ WRITE(ap)
 	switch (vp->v_type) {
 	case VREG:
 		if (ioflag & IO_APPEND)
-			uio->uio_offset = ip->i_size;
-		if ((ip->i_flags & APPEND) && uio->uio_offset != ip->i_size)
+			uio->uio_offset = ip->i_ffs_size;
+		if ((ip->i_ffs_flags & APPEND) && uio->uio_offset != ip->i_ffs_size)
 			return (EPERM);
 		/* FALLTHROUGH */
 	case VLNK:
@@ -206,7 +218,7 @@ WRITE(ap)
 
 	fs = ip->I_FS;
 	if (uio->uio_offset < 0 ||
-	    (u_int64_t)uio->uio_offset + uio->uio_resid > fs->fs_maxfilesize)
+	    (u_int64_t)uio->uio_offset + uio->uio_resid > MAXFILESIZE)
 		return (EFBIG);
 	/*
 	 * Maybe this should be above the vnode op call, but so long as
@@ -221,7 +233,7 @@ WRITE(ap)
 	}
 
 	resid = uio->uio_resid;
-	osize = ip->i_size;
+	osize = ip->i_ffs_size;
 	flags = ioflag & IO_SYNC ? B_SYNC : 0;
 
 	for (error = 0; uio->uio_resid > 0;) {
@@ -230,43 +242,49 @@ WRITE(ap)
 		xfersize = fs->fs_bsize - blkoffset;
 		if (uio->uio_resid < xfersize)
 			xfersize = uio->uio_resid;
-#ifdef LFS_READWRITE
-		(void)lfs_check(vp, lbn);
-		error = lfs_balloc(vp, xfersize, lbn, &bp);
-#else
 		if (fs->fs_bsize > xfersize)
 			flags |= B_CLRBUF;
 		else
 			flags &= ~B_CLRBUF;
 
-		error = ffs_balloc(ip,
-		    lbn, blkoffset + xfersize, ap->a_cred, &bp, flags);
-#endif
-		if (error)
+		if ((error = VOP_BALLOC(vp, uio->uio_offset, xfersize,
+					ap->a_cred, flags, &bp)) != 0)
 			break;
-		if (uio->uio_offset + xfersize > ip->i_size) {
-			ip->i_size = uio->uio_offset + xfersize;
-			vnode_pager_setsize(vp, (u_long)ip->i_size);
+		if (uio->uio_offset + xfersize > ip->i_ffs_size) {
+			ip->i_ffs_size = uio->uio_offset + xfersize;
+#if defined(UVM)
+			uvm_vnp_setsize(vp, ip->i_ffs_size);
+#else
+			vnode_pager_setsize(vp, (u_long)ip->i_ffs_size);
+#endif
 		}
+#if defined(UVM)
+		(void)uvm_vnp_uncache(vp);
+#else
 		(void)vnode_pager_uncache(vp);
+#endif
 
 		size = BLKSIZE(fs, ip, lbn) - bp->b_resid;
 		if (size < xfersize)
 			xfersize = size;
 
 		error =
-		    uiomove((char *)bp->b_data + blkoffset, (int)xfersize, uio);
+		    uiomove((char *)bp->b_data + blkoffset, xfersize, uio);
+
+		if (error != 0)
+			bzero((char *)bp->b_data + blkoffset, xfersize);
+
 #ifdef LFS_READWRITE
 		(void)VOP_BWRITE(bp);
 #else
 		if (ioflag & IO_SYNC)
 			(void)bwrite(bp);
-		else if (xfersize + blkoffset == fs->fs_bsize)
+		else if (xfersize + blkoffset == fs->fs_bsize) {
 			if (doclusterwrite)
-				cluster_write(bp, ip->i_size);
+				cluster_write(bp, ip->i_ffs_size);
 			else
 				bawrite(bp);
-		else
+		} else
 			bdwrite(bp);
 #endif
 		if (error || xfersize == 0)
@@ -279,7 +297,7 @@ WRITE(ap)
 	 * tampering.
 	 */
 	if (resid > uio->uio_resid && ap->a_cred && ap->a_cred->cr_uid != 0)
-		ip->i_mode &= ~(ISUID | ISGID);
+		ip->i_ffs_mode &= ~(ISUID | ISGID);
 	if (error) {
 		if (ioflag & IO_UNIT) {
 			(void)VOP_TRUNCATE(vp, osize,
@@ -287,8 +305,9 @@ WRITE(ap)
 			uio->uio_offset -= resid - uio->uio_resid;
 			uio->uio_resid = resid;
 		}
-	} else if (resid > uio->uio_resid && (ioflag & IO_SYNC))
-		error = VOP_UPDATE(vp, (struct timeval *)&time,
-		    (struct timeval *)&time, 1);
+	} else if (resid > uio->uio_resid && (ioflag & IO_SYNC)) {
+		TIMEVAL_TO_TIMESPEC(&time, &ts);
+		error = VOP_UPDATE(vp, &ts, &ts, 1);
+	}
 	return (error);
 }

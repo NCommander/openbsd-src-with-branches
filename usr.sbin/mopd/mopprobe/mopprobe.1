@@ -1,3 +1,4 @@
+.\"	$OpenBSD: mopprobe.1,v 1.7 2000/03/14 21:31:43 aaron Exp $
 .\"
 .\" Copyright (c) 1996 Mats O Jansson.  All rights reserved.
 .\"
@@ -26,40 +27,57 @@
 .\" (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
 .\" THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 .\"
-.\" @(#) $Id: mopprobe.1,v 1.1 1996/08/11 23:01:09 moj Exp $
+.\" @(#) $OpenBSD: mopprobe.1,v 1.7 2000/03/14 21:31:43 aaron Exp $
 .\"
 .Dd October 2, 1995
 .Dt MOPPROBE 1
+.Os
 .Sh NAME
 .Nm mopprobe
 .Nd MOP Probe Utility
 .Sh SYNOPSIS
-.Nm mopprobe 
+.Nm mopprobe
 .Fl a
 .Op Fl 3 | 4
+.Op Fl o
+.Op Fl v
 .Pp
-.Nm mopprobe 
+.Nm mopprobe
 .Op Fl 3 | 4
+.Op Fl o
+.Op Fl v
 .Ar interface
 .Sh DESCRIPTION
-.Nm Mopprobe
-prints the ethernet address and nodename of MOP SID message on the Ethernet
-connected to
+.Nm mopprobe
+prints the Ethernet address and nodename of DECserver 100/200/250/300 on the
+Ethernet connected to
 .Ar interface
-or all known interfaces if 
+or all known interfaces if
+.Fl a
+is given.
 .Sq Fl a
 is given.
+If
+.Sq Fl o
+inhibits all messages but the first from a node.
+With
+.Sq Fl v
+all MOP/RC SID messages will be shown (e.g., machines running DECnet).
 .Sh OPTIONS
 .Bl -tag -width indent
 .It Fl a
 Listen on all the Ethernets attached to the system.
-If 
-.Sq Fl a 
+If
+.Fl a
 is omitted, an interface must be specified.
 .It Fl 3
 Ignore MOP V3 messages (Ethernet II).
 .It Fl 4
 Ignore MOP V4 messages (Ethernet 802.3).
+.It Fl o
+Print a node just once.
+.It Fl v
+Show all nodes sending MOP/RC SID messages.
 .El
 .Sh SEE ALSO
 .Xr mopa.out 1 ,

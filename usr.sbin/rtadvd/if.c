@@ -1,3 +1,6 @@
+/*	$OpenBSD: if.c,v 1.5 2000/07/06 10:14:46 itojun Exp $	*/
+/*	$KAME: if.c,v 1.12 2000/08/31 16:35:29 itojun Exp $	*/
+
 /*
  * Copyright (C) 1995, 1996, 1997, and 1998 WIDE Project.
  * All rights reserved.
@@ -36,9 +39,7 @@
 #ifdef __FreeBSD__
 # include <net/ethernet.h>
 #endif
-#ifdef __bsdi__
-# include <ifaddrs.h>
-#endif
+#include <ifaddrs.h>
 #ifdef __NetBSD__
 #include <net/if_ether.h>
 #endif
@@ -146,7 +147,7 @@ if_nametosdl(char *name)
 int
 if_getmtu(char *name)
 {
-#if defined(__FreeBSD__) || defined(__NetBSD__)
+#ifdef SIOCGIFMTU
 	struct ifreq ifr;
 	int s;
 
@@ -163,27 +164,25 @@ if_getmtu(char *name)
 	close(s);
 
 	return(ifr.ifr_mtu);
-#endif
-#ifdef __bsdi__
-	struct ifaddrs *ifa;
+#else
+	struct ifaddrs *ifap, *ifa;
 	struct if_data *ifd;
 
-	if (getifaddrs(&ifa) < 0)
+	if (getifaddrs(&ifap) < 0)
 		return(0);
-	while (ifa) {
+	for (ifa = ifap; ifa; ifa = ifa->ifa_next) {
 		if (strcmp(ifa->ifa_name, name) == 0) {
 			ifd = ifa->ifa_data;
+			freeifaddrs(ifap);
 			if (ifd)
 				return ifd->ifi_mtu;
 			else
 				return 0;
 		}
-		ifa = ifa->ifa_next;
 	}
+	freeifaddrs(ifap);
 	return 0;
 #endif
-	/* last resort */
-	return 0;
 }
 
 /* give interface index and its old flags, then new flags returned */
@@ -206,6 +205,7 @@ if_getflags(int ifindex, int oifflags)
 		close(s);
 		return (oifflags & ~IFF_UP);
 	}
+	close(s);
 	return (ifr.ifr_flags);
 }
 
@@ -588,5 +588,4 @@ init_iflist()
 
 	/* make list of pointers to each if_msghdr */
 	parse_iflist(&iflist, ifblock, ifblock_size);
-		
 }

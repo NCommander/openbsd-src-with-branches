@@ -1,7 +1,8 @@
-/*	$Id: sysdep.h,v 1.11 1998/10/12 22:15:15 niklas Exp $	*/
+/*	$OpenBSD: sysdep.h,v 1.6 1999/04/19 19:54:54 niklas Exp $	*/
+/*	$EOM: sysdep.h,v 1.16 1999/05/01 20:21:16 niklas Exp $	*/
 
 /*
- * Copyright (c) 1998 Niklas Hallqvist.  All rights reserved.
+ * Copyright (c) 1998, 1999 Niklas Hallqvist.  All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -38,18 +39,23 @@
 
 #include <sys/types.h>
 
+#include "sysdep-os.h"
+
 struct proto;
 struct sa;
+struct sockaddr;
 
 extern void sysdep_app_handler (int);
 extern int sysdep_app_open (void);
 extern int sysdep_cleartext (int);
+extern void sysdep_connection_check (char *);
 extern int sysdep_ipsec_delete_spi (struct sa *, struct proto *, int);
-extern int sysdep_ipsec_enable_spi (struct sa *, int);
-extern u_int8_t *sysdep_ipsec_get_spi (size_t *, u_int8_t, void *, size_t);
+extern int sysdep_ipsec_enable_sa (struct sa *);
+extern u_int8_t *sysdep_ipsec_get_spi (size_t *, u_int8_t, struct sockaddr *,
+				       int, struct sockaddr *, int);
 extern int sysdep_ipsec_group_spis (struct sa *, struct proto *,
 				    struct proto *, int);
-extern int sysdep_ipsec_set_spi (struct sa *, struct proto *, int, int);
+extern int sysdep_ipsec_set_spi (struct sa *, struct proto *, int);
 extern char *sysdep_progname (void);
 extern u_int32_t sysdep_random (void);
 

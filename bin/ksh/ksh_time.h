@@ -1,4 +1,7 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: ksh_time.h,v 1.1.1.1 1996/08/14 06:19:11 downsj Exp $	*/
+
+#ifndef KSH_TIME_H
+# define KSH_TIME_H
 
 /* Wrapper around the ugly time.h,sys/time.h includes/ifdefs */
 
@@ -20,3 +23,4 @@ extern time_t time ARGS((time_t *));
 #ifndef CLK_TCK
 # define CLK_TCK 60			/* 60HZ */
 #endif
+#endif /* KSH_TIME_H */

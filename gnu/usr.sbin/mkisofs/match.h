@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: match.h,v 1.2 1997/09/22 05:25:49 millert Exp $	*/
 /*
  * 27th March 1996. Added by Jan-Piet Mens for matching regular expressions
  * 		    in paths.

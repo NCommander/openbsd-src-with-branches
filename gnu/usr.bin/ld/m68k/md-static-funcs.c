@@ -1,3 +1,5 @@
+/*	$OpenBSD$	*/
+
 
 /*
  * Called by ld.so when onanating.

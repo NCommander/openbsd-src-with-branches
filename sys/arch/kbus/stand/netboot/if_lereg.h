@@ -1,4 +1,4 @@
-/*	$Id: if_lereg.h,v 1.1 1997/08/10 18:04:24 gingold Exp $ */
+/*	$OpenBSD: if_lereg.h,v 1.1.1.1 1997/10/14 07:25:32 gingold Exp $ */
 
 /*-
  * Copyright (c) 1982, 1992, 1993

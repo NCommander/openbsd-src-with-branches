@@ -1,4 +1,4 @@
-/*	$Id: if_ie.c,v 1.3 1995/11/07 08:51:00 deraadt Exp $ */
+/*	$OpenBSD: if_ie.c,v 1.3 1998/12/15 06:32:35 smurph Exp $ */
 
 /*
  * Copyright (c) 1995 Theo de Raadt
@@ -44,7 +44,10 @@
 #define NRXBUF	16
 #define IE_RBUF_SIZE	ETHER_MAX_LEN
 
+#include <machine/prom.h>
+
 #include "stand.h"
+#include "libsa.h"
 #include "netif.h"
 #include "config.h"
 
@@ -107,10 +110,7 @@ ie_match(nif, machdep_hint)
 {
 	char   *name;
 	int     i, val = 0;
-	extern int cputyp;
 
-	if (cputyp == CPU_147)
-		return (0);
 	name = machdep_hint;
 	if (name && !bcmp(ie_driver.netif_bname, name, 2))
 		val += 10;
@@ -132,15 +132,12 @@ ie_probe(nif, machdep_hint)
 	struct netif *nif;
 	void   *machdep_hint;
 {
-	extern int cputyp;
 
 	/* the set unit is the current unit */
 	if (ie_debug)
 		printf("ie%d: ie_probe called\n", nif->nif_unit);
-
-	if (cputyp != CPU_147)
-		return (0);
-	return (1);
+	return (0);
+/*	return (1);*/
 }
 
 void
@@ -149,7 +146,7 @@ ie_error(nif, str, ier)
 	char   *str;
 	volatile struct iereg *ier;
 {
-	panic("ie%d: unknown error\n", nif->nif_unit);
+	panic("ie%d: unknown error", nif->nif_unit);
 }
 
 ieack(ier, iem)
@@ -444,7 +441,7 @@ ie_init(desc, machdep_hint)
 	bzero(&ie_softc, sizeof(ie_softc));
 	ie_softc.sc_reg =
 	    (struct iereg *) ie_config[desc->io_netif->nif_unit].phys_addr;
-	ie_softc.sc_mem = (struct iemem *) 0x1e0000;
+	ie_softc.sc_mem = (struct iemem *) 0xae0000;
 	ie_reset(desc->io_netif, desc->myea);
 	printf("device: %s%d attached to %s\n", nif->nif_driver->netif_bname,
 	    nif->nif_unit, ether_sprintf(desc->myea));

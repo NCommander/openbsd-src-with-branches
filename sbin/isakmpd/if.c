@@ -1,7 +1,8 @@
-/*	$Id: if.c,v 1.6 1998/08/14 20:31:41 niklas Exp $	*/
+/*	$OpenBSD: if.c,v 1.6 1999/04/05 20:59:49 niklas Exp $	*/
+/*	$EOM: if.c,v 1.12 1999/10/01 13:45:20 niklas Exp $	*/
 
 /*
- * Copyright (c) 1998 Niklas Hallqvist.  All rights reserved.
+ * Copyright (c) 1998, 1999 Niklas Hallqvist.  All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -40,6 +41,9 @@
 #include <stdlib.h>
 #include <unistd.h>
 
+#include "sysdep.h"
+
+#include "log.h"
 #include "if.h"
 
 /* XXX Unsafe if either x or y has side-effects.  */
@@ -62,7 +66,10 @@ siocgifconf (struct ifconf *ifcp)
   /* Get a socket to ask for the network interface configurations.  */
   s = socket (AF_INET, SOCK_DGRAM, 0);
   if (s == -1)
-    return -1;
+    {
+      log_error ("siocgifconf: socket (AF_INET, SOCK_DGRAM, 0) failed");
+      return -1;
+    }
 
   len = sizeof (struct ifreq) * INITIAL_IFREQ_COUNT;
   buf = 0;
@@ -75,10 +82,16 @@ siocgifconf (struct ifconf *ifcp)
       ifcp->ifc_len = len;
       new_buf = realloc (buf, len);
       if (!new_buf)
-	goto err;
+	{
+	  log_error ("siocgifconf: realloc (%p, %d) failed", buf, len);
+	  goto err;
+	}
       ifcp->ifc_buf = buf = new_buf;
       if (ioctl (s, SIOCGIFCONF, ifcp) == -1)
-	goto err;
+	{
+	  log_error ("siocgifconf: ioctl (%s, SIOCGIFCONF, ...) failed", s);
+	  goto err;
+	}
 
       /*
        * If there is place for another ifreq we can be sure that the buffer
@@ -114,8 +127,13 @@ if_map (void (*func) (struct ifreq *, void *), void *arg)
     {
       ifrp = (struct ifreq *)p;
       (*func) (ifrp, arg);
+#ifdef USE_OLD_SOCKADDR
+      len = sizeof ifrp->ifr_name + sizeof ifrp->ifr_addr;
+#else
       len = sizeof ifrp->ifr_name
 	+ MAX (ifrp->ifr_addr.sa_len, sizeof ifrp->ifr_addr);
+#endif
     }
+  free (ifc.ifc_buf);
   return 0;
 }

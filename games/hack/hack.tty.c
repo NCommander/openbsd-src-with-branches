@@ -87,7 +87,7 @@ gettty(){
 settty(s) char *s; {
 	clear_screen();
 	end_screen();
-	if(s) printf(s);
+	if(s) printf("%s", s);
 	(void) fflush(stdout);
 	if(tcsetattr(0, TCSADRAIN, &inittyb) < 0)
 		perror("Hack (settty)");
@@ -216,7 +216,7 @@ register int c;
 	while((c = readchar()) != '\n') {
 	    if(flags.cbreak) {
 		if(c == ' ') break;
-		if(s && index(s,c)) {
+		if(s && strchr(s,c)) {
 			morc = c;
 			break;
 		}

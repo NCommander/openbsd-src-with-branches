@@ -1,4 +1,4 @@
-/*	$NetBSD: hash_buf.c,v 1.5 1995/02/27 13:22:23 cgd Exp $	*/
+/*	$OpenBSD: hash_buf.c,v 1.7 1999/02/15 05:11:24 millert Exp $	*/
 
 /*-
  * Copyright (c) 1990, 1993, 1994
@@ -38,9 +38,9 @@
 
 #if defined(LIBC_SCCS) && !defined(lint)
 #if 0
-static char sccsid[] = "@(#)hash_buf.c	8.4 (Berkeley) 6/4/94";
+static char sccsid[] = "@(#)hash_buf.c	8.5 (Berkeley) 7/15/94";
 #else
-static char rcsid[] = "$NetBSD: hash_buf.c,v 1.5 1995/02/27 13:22:23 cgd Exp $";
+static char rcsid[] = "$OpenBSD: hash_buf.c,v 1.7 1999/02/15 05:11:24 millert Exp $";
 #endif
 #endif /* LIBC_SCCS and not lint */
 
@@ -66,6 +66,7 @@ static char rcsid[] = "$NetBSD: hash_buf.c,v 1.5 1995/02/27 13:22:23 cgd Exp $";
 #include <stddef.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 #ifdef DEBUG
 #include <assert.h>
@@ -185,10 +186,12 @@ newbuf(hashp, addr, prev_bp)
 		/* Allocate a new one */
 		if ((bp = (BUFHEAD *)malloc(sizeof(BUFHEAD))) == NULL)
 			return (NULL);
+		memset(bp, 0xff, sizeof(BUFHEAD));
 		if ((bp->page = (char *)malloc(hashp->BSIZE)) == NULL) {
 			free(bp);
 			return (NULL);
 		}
+		memset(bp->page, 0xff, hashp->BSIZE);
 		if (hashp->nbufs)
 			hashp->nbufs--;
 	} else {
@@ -263,22 +266,22 @@ newbuf(hashp, addr, prev_bp)
 
 	/* Now assign this buffer */
 	bp->addr = addr;
+	bp->ovfl = NULL;
 #ifdef DEBUG1
 	(void)fprintf(stderr, "NEWBUF1: %d->ovfl was %d is now %d\n",
 	    bp->addr, (bp->ovfl ? bp->ovfl->addr : 0), 0);
 #endif
-	bp->ovfl = NULL;
 	if (prev_bp) {
 		/*
 		 * If prev_bp is set, this is an overflow page, hook it in to
 		 * the buffer overflow links.
 		 */
+		prev_bp->ovfl = bp;
 #ifdef DEBUG1
 		(void)fprintf(stderr, "NEWBUF2: %d->ovfl was %d is now %d\n",
-		    prev_bp->addr, (prev_bp->ovfl ? bp->ovfl->addr : 0),
+		    prev_bp->addr, (prev_bp->ovfl ? prev_bp->ovfl->addr : 0),
 		    (bp ? bp->addr : 0));
 #endif
-		prev_bp->ovfl = bp;
 		bp->flags = 0;
 	} else
 		bp->flags = BUF_BUCKET;
@@ -331,8 +334,10 @@ __buf_free(hashp, do_free, to_disk)
 		}
 		/* Check if we are freeing stuff */
 		if (do_free) {
-			if (bp->page)
+			if (bp->page) {
+				(void)memset(bp->page, 0, hashp->BSIZE);
 				free(bp->page);
+			}
 			BUF_REMOVE(bp);
 			free(bp);
 			bp = LRU;

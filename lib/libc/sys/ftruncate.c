@@ -1,5 +1,3 @@
-/*	$NetBSD: ftruncate.c,v 1.3 1995/02/27 11:23:01 cgd Exp $	*/
-
 /*
  * Copyright (c) 1992, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -33,16 +31,17 @@
  * SUCH DAMAGE.
  */
 
-#if defined(LIBC_SCCS) && !defined(lint)
-#if 0
-static char sccsid[] = "@(#)ftruncate.c	8.1 (Berkeley) 6/17/93";
-#else
-static char rcsid[] = "$NetBSD: ftruncate.c,v 1.3 1995/02/27 11:23:01 cgd Exp $";
-#endif
-#endif /* LIBC_SCCS and not lint */
+#if defined(SYSLIBC_SCCS) && !defined(lint)
+static char rcsid[] = "$OpenBSD: ftruncate.c,v 1.6 1997/04/26 08:50:12 tholo Exp $";
+#endif /* SYSLIBC_SCCS and not lint */
 
 #include <sys/types.h>
 #include <sys/syscall.h>
+#include "thread_private.h"
+
+#ifdef lint
+quad_t __syscall(quad_t, ...);
+#endif
 
 /*
  * This function provides 64-bit offset padding that
@@ -53,6 +52,13 @@ ftruncate(fd, length)
 	int	fd;
 	off_t	length;
 {
+	int retval;
 
-	return(__syscall((quad_t)SYS_ftruncate, fd, 0, length));
+	if (_FD_LOCK(fd, FD_RDWR, NULL) != 0) {
+		retval = -1;
+	} else {
+		retval = __syscall((quad_t)SYS_ftruncate, fd, 0, length);
+		_FD_UNLOCK(fd, FD_RDWR);
+	}
+	return retval;
 }

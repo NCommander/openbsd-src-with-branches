@@ -1,3 +1,4 @@
+.\"	$OpenBSD: sigprocmask.2,v 1.4 1999/06/29 14:10:22 aaron Exp $
 .\"	$NetBSD: sigprocmask.2,v 1.6 1995/02/27 12:37:33 cgd Exp $
 .\"
 .\" Copyright (c) 1983, 1991, 1993
@@ -95,8 +96,8 @@ or
 .Dv SIGSTOP
 to be blocked.
 .Sh RETURN VALUES
-A 0 value indicated that the call succeeded.  A -1 return value
-indicates an error occurred and
+A 0 value indicated that the call succeeded.
+A \-1 return value indicates an error occurred and
 .Va errno
 is set to indicated the reason.
 .Sh ERRORS
@@ -112,11 +113,10 @@ has a value other than those listed here.
 .Sh SEE ALSO
 .Xr kill 2 ,
 .Xr sigaction 2 ,
-.Xr sigsetops 3 ,
-.Xr sigsuspend 2
+.Xr sigsuspend 2 ,
+.Xr sigsetops 3
 .Sh STANDARDS
 The
 .Fn sigprocmask
-function call is expected to
-conform to
+function call is expected to conform to
 .St -p1003.1-88 .

@@ -1,23 +1,36 @@
+/*	$OpenBSD: form.h,v 1.4 1998/07/24 02:36:57 millert Exp $	*/
 
-/***************************************************************************
-*                            COPYRIGHT NOTICE                              *
-****************************************************************************
-*                ncurses is copyright (C) 1992-1995                        *
-*                          Zeyd M. Ben-Halim                               *
-*                          zmbenhal@netcom.com                             *
-*                          Eric S. Raymond                                 *
-*                          esr@snark.thyrsus.com                           *
-*                                                                          *
-*        Permission is hereby granted to reproduce and distribute ncurses  *
-*        by any means and for any fee, whether alone or as part of a       *
-*        larger distribution, in source or in binary form, PROVIDED        *
-*        this notice is included with any such distribution, and is not    *
-*        removed from any of its header files. Mention of ncurses in any   *
-*        applications linked with it is highly appreciated.                *
-*                                                                          *
-*        ncurses comes AS IS with no warranty, implied or expressed.       *
-*                                                                          *
-***************************************************************************/
+/****************************************************************************
+ * Copyright (c) 1998 Free Software Foundation, Inc.                        *
+ *                                                                          *
+ * Permission is hereby granted, free of charge, to any person obtaining a  *
+ * copy of this software and associated documentation files (the            *
+ * "Software"), to deal in the Software without restriction, including      *
+ * without limitation the rights to use, copy, modify, merge, publish,      *
+ * distribute, distribute with modifications, sublicense, and/or sell       *
+ * copies of the Software, and to permit persons to whom the Software is    *
+ * furnished to do so, subject to the following conditions:                 *
+ *                                                                          *
+ * The above copyright notice and this permission notice shall be included  *
+ * in all copies or substantial portions of the Software.                   *
+ *                                                                          *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS  *
+ * OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF               *
+ * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.   *
+ * IN NO EVENT SHALL THE ABOVE COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,   *
+ * DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR    *
+ * OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR    *
+ * THE USE OR OTHER DEALINGS IN THE SOFTWARE.                               *
+ *                                                                          *
+ * Except as contained in this notice, the name(s) of the above copyright   *
+ * holders shall not be used in advertising or otherwise to promote the     *
+ * sale, use or other dealings in this Software without prior written       *
+ * authorization.                                                           *
+ ****************************************************************************/
+
+/****************************************************************************
+ *   Author: Juergen Pfeifer <juergen.pfeifer@gmx.net> 1995,1997            *
+ ****************************************************************************/
 
 #ifndef FORM_H
 #define FORM_H
@@ -222,8 +235,14 @@ typedef void (*Form_Hook)(FORM *);
 #define MIN_FORM_COMMAND (KEY_MAX + 1)	/* used by form_driver		*/
 #define MAX_FORM_COMMAND (KEY_MAX + 57)	/* used by form_driver		*/
 
-#if defined(MAX_COMMAND) && (MAX_FORM_COMMAND > MAX_COMMAND)
-#error Something is wrong -- MAX_FORM_COMMAND is greater than MAX_COMMAND
+#if defined(MAX_COMMAND)
+#  if (MAX_FORM_COMMAND > MAX_COMMAND)
+#    error Something is wrong -- MAX_FORM_COMMAND is greater than MAX_COMMAND
+#  elif (MAX_COMMAND != (KEY_MAX + 128))
+#    error Something is wrong -- MAX_COMMAND is already inconsistently defined.
+#  endif
+#else
+#  define MAX_COMMAND (KEY_MAX + 128)
 #endif
 
 	/*************************
@@ -235,6 +254,12 @@ extern FIELDTYPE *TYPE_ALPHA,
                  *TYPE_INTEGER,
                  *TYPE_NUMERIC,
                  *TYPE_REGEXP;
+
+        /************************************
+	*  built-in additional field types  *
+        *  They are not defined in SVr4     *
+	************************************/
+extern FIELDTYPE *TYPE_IPV4;      /* Internet IP Version 4 address */
 
         /*********************** 
         *   Default objects    *
@@ -283,7 +308,7 @@ extern int      free_field(FIELD *),
                 field_pad(const FIELD *),
                 set_field_buffer(FIELD *,int,const char *),
                 set_field_status(FIELD *,bool),
-                set_field_userptr(FIELD *,void *),
+                set_field_userptr(FIELD *, void *),
                 set_field_opts(FIELD *,Field_Options),
                 field_opts_on(FIELD *,Field_Options),
                 field_opts_off(FIELD *,Field_Options);
@@ -294,8 +319,9 @@ extern chtype   field_fore(const FIELD *),
 extern bool     new_page(const FIELD *),
                 field_status(const FIELD *);
 
-extern void     *field_arg(const FIELD *),
-                *field_userptr(const FIELD *);
+extern void     *field_arg(const FIELD *);
+
+extern void     *field_userptr(const FIELD *);
 
 extern FIELDTYPE
                 *field_type(const FIELD *);
@@ -343,7 +369,11 @@ extern int      free_form(FORM *),
                 set_form_userptr(FORM *,void *),
                 set_form_opts(FORM *,Form_Options),
                 form_opts_on(FORM *,Form_Options),
-                form_opts_off(FORM *,Form_Options);
+                form_opts_off(FORM *,Form_Options),
+                form_request_by_name(const char *);
+
+extern const char
+                *form_request_name(int);
 
 extern void     *form_userptr(const FORM *);
 

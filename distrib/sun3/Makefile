@@ -1,5 +1,5 @@
-#	$NetBSD: Makefile,v 1.2 1995/10/12 21:16:53 gwr Exp $
+#	$OpenBSD: Makefile,v 1.3 1998/08/23 18:08:53 kstailey Exp $
 
-SUBDIR= miniroot ramdisk
+SUBDIR+= ../ramdisk ../miniroot
 
 .include <bsd.subdir.mk>

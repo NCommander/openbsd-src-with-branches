@@ -1,7 +1,7 @@
-/*	$NetBSD: pcap-bpf.c,v 1.3 1995/04/29 05:42:31 cgd Exp $	*/
+/*	$OpenBSD: pcap-bpf.c,v 1.11 1999/08/17 09:13:13 millert Exp $	*/
 
 /*
- * Copyright (c) 1993, 1994
+ * Copyright (c) 1993, 1994, 1995, 1996, 1998
  *	The Regents of the University of California.  All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -21,37 +21,43 @@
  * MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
  */
 #ifndef lint
-static  char rcsid[] =
-    "@(#)Header: pcap-bpf.c,v 1.14 94/06/03 19:58:49 leres Exp (LBL)";
+static const char rcsid[] =
+    "@(#) $Header: /cvs/src/lib/libpcap/pcap-bpf.c,v 1.11 1999/08/17 09:13:13 millert Exp $ (LBL)";
 #endif
 
-#include <stdio.h>
-#include <netdb.h>
-#include <ctype.h>
-#include <signal.h>
-#include <errno.h>
 #include <sys/param.h>			/* optionally get BSD define */
 #include <sys/time.h>
 #include <sys/timeb.h>
 #include <sys/socket.h>
-#include <sys/file.h>
 #include <sys/ioctl.h>
-#include <net/bpf.h>
+
 #include <net/if.h>
-#include <string.h>
-#ifdef __NetBSD__
+
+#include <ctype.h>
+#include <errno.h>
+#include <fcntl.h>
+#include <netdb.h>
+#include <stdio.h>
 #include <stdlib.h>
-#endif
+#include <string.h>
+#include <unistd.h>
 
 #include "pcap-int.h"
+
+#ifdef HAVE_OS_PROTO_H
+#include "os-proto.h"
+#endif
+
+#include "gencode.h"
 
 int
 pcap_stats(pcap_t *p, struct pcap_stat *ps)
 {
 	struct bpf_stat s;
 
-	if (ioctl(p->fd, BIOCGSTATS, &s) < 0) {
-		sprintf(p->errbuf, "BIOCGSTATS: %s", pcap_strerror(errno));
+	if (ioctl(p->fd, BIOCGSTATS, (caddr_t)&s) < 0) {
+		snprintf(p->errbuf, PCAP_ERRBUF_SIZE, "BIOCGSTATS: %s",
+		    pcap_strerror(errno));
 		return (-1);
 	}
 
@@ -87,14 +93,16 @@ pcap_read(pcap_t *p, int cnt, pcap_handler callback, u_char *user)
 			 * The lseek() to 0 will fix things.
 			 */
 			case EINVAL:
-				if ((long)(tell(p->fd) + p->bufsize) < 0) {
-					(void)lseek(p->fd, 0, 0);
+				if (lseek(p->fd, 0L, SEEK_CUR) +
+				    p->bufsize < 0) {
+					(void)lseek(p->fd, 0L, SEEK_SET);
 					goto again;
 				}
 				/* fall through */
 #endif
 			}
-			sprintf(p->errbuf, "read: %s", pcap_strerror(errno));
+			snprintf(p->errbuf, PCAP_ERRBUF_SIZE, "read: %s",
+			    pcap_strerror(errno));
 			return (-1);
 		}
 		bp = p->buffer;
@@ -126,26 +134,35 @@ pcap_read(pcap_t *p, int cnt, pcap_handler callback, u_char *user)
 	return (n);
 }
 
-static inline int
+int
+pcap_inject(pcap_t *p, const void *buf, size_t len)
+{
+	return (write(p->fd, buf, len));
+}
+
+static __inline int
 bpf_open(pcap_t *p, char *errbuf)
 {
 	int fd;
 	int n = 0;
-	char device[sizeof "/dev/bpf000"];
+	char device[sizeof "/dev/bpf0000000000"];
 
 	/*
 	 * Go through all the minors and find one that isn't in use.
 	 */
 	do {
-		(void)sprintf(device, "/dev/bpf%d", n++);
-		fd = open(device, O_RDONLY);
+		(void)snprintf(device, sizeof device, "/dev/bpf%d", n++);
+		fd = open(device, O_RDWR);
+		if (fd < 0 && errno == EACCES)
+			fd = open(device, O_RDONLY);
 	} while (fd < 0 && errno == EBUSY);
 
 	/*
 	 * XXX better message for all minors used
 	 */
 	if (fd < 0)
-		sprintf(errbuf, "%s: %s", device, pcap_strerror(errno));
+		snprintf(errbuf, PCAP_ERRBUF_SIZE, "%s: %s",
+		    device, pcap_strerror(errno));
 
 	return (fd);
 }
@@ -161,7 +178,8 @@ pcap_open_live(char *device, int snaplen, int promisc, int to_ms, char *ebuf)
 
 	p = (pcap_t *)malloc(sizeof(*p));
 	if (p == NULL) {
-		sprintf(ebuf, "malloc: %s", pcap_strerror(errno));
+		snprintf(ebuf, PCAP_ERRBUF_SIZE, "malloc: %s",
+		    pcap_strerror(errno));
 		return (NULL);
 	}
 	bzero(p, sizeof(*p));
@@ -173,24 +191,49 @@ pcap_open_live(char *device, int snaplen, int promisc, int to_ms, char *ebuf)
 	p->snapshot = snaplen;
 
 	if (ioctl(fd, BIOCVERSION, (caddr_t)&bv) < 0) {
-		sprintf(ebuf, "BIOCVERSION: %s", pcap_strerror(errno));
+		snprintf(ebuf, PCAP_ERRBUF_SIZE, "BIOCVERSION: %s",
+		    pcap_strerror(errno));
 		goto bad;
 	}
 	if (bv.bv_major != BPF_MAJOR_VERSION ||
 	    bv.bv_minor < BPF_MINOR_VERSION) {
-		sprintf(ebuf, "kernel bpf filter out of date");
+		snprintf(ebuf, PCAP_ERRBUF_SIZE,
+		    "kernel bpf filter out of date");
 		goto bad;
 	}
+	v = 32768;	/* XXX this should be a user-accessible hook */
+	/* Ignore the return value - this is because the call fails on
+	 * BPF systems that don't have kernel malloc.  And if the call
+	 * fails, it's no big deal, we just continue to use the standard
+	 * buffer size.
+	 */
+	(void) ioctl(fd, BIOCSBLEN, (caddr_t)&v);
+
 	(void)strncpy(ifr.ifr_name, device, sizeof(ifr.ifr_name));
 	if (ioctl(fd, BIOCSETIF, (caddr_t)&ifr) < 0) {
-		sprintf(ebuf, "%s: %s", device, pcap_strerror(errno));
+		snprintf(ebuf, PCAP_ERRBUF_SIZE, "%s: %s",
+		    device, pcap_strerror(errno));
 		goto bad;
 	}
 	/* Get the data link layer type. */
 	if (ioctl(fd, BIOCGDLT, (caddr_t)&v) < 0) {
-		sprintf(ebuf, "BIOCGDLT: %s", pcap_strerror(errno));
+		snprintf(ebuf, PCAP_ERRBUF_SIZE, "BIOCGDLT: %s",
+		    pcap_strerror(errno));
 		goto bad;
 	}
+#if _BSDI_VERSION - 0 >= 199510
+	/* The SLIP and PPP link layer header changed in BSD/OS 2.1 */
+	switch (v) {
+
+	case DLT_SLIP:
+		v = DLT_SLIP_BSDOS;
+		break;
+
+	case DLT_PPP:
+		v = DLT_PPP_BSDOS;
+		break;
+	}
+#endif
 	p->linktype = v;
 
 	/* set timeout */
@@ -199,8 +242,8 @@ pcap_open_live(char *device, int snaplen, int promisc, int to_ms, char *ebuf)
 		to.tv_sec = to_ms / 1000;
 		to.tv_usec = (to_ms * 1000) % 1000000;
 		if (ioctl(p->fd, BIOCSRTIMEOUT, (caddr_t)&to) < 0) {
-			sprintf(ebuf, "BIOCSRTIMEOUT: %s",
-				pcap_strerror(errno));
+			snprintf(ebuf, PCAP_ERRBUF_SIZE, "BIOCSRTIMEOUT: %s",
+			    pcap_strerror(errno));
 			goto bad;
 		}
 	}
@@ -209,18 +252,21 @@ pcap_open_live(char *device, int snaplen, int promisc, int to_ms, char *ebuf)
 		(void)ioctl(p->fd, BIOCPROMISC, NULL);
 
 	if (ioctl(fd, BIOCGBLEN, (caddr_t)&v) < 0) {
-		sprintf(ebuf, "BIOCGBLEN: %s", pcap_strerror(errno));
+		snprintf(ebuf, PCAP_ERRBUF_SIZE, "BIOCGBLEN: %s",
+		    pcap_strerror(errno));
 		goto bad;
 	}
 	p->bufsize = v;
-	p->buffer = (u_char*)malloc(p->bufsize);
+	p->buffer = (u_char *)malloc(p->bufsize);
 	if (p->buffer == NULL) {
-		sprintf(ebuf, "malloc: %s", pcap_strerror(errno));
+		snprintf(ebuf, PCAP_ERRBUF_SIZE, "malloc: %s",
+		    pcap_strerror(errno));
 		goto bad;
 	}
 
 	return (p);
  bad:
+	(void)close(fd);
 	free(p);
 	return (NULL);
 }
@@ -228,10 +274,18 @@ pcap_open_live(char *device, int snaplen, int promisc, int to_ms, char *ebuf)
 int
 pcap_setfilter(pcap_t *p, struct bpf_program *fp)
 {
-	if (p->sf.rfile != NULL)
+	/*
+	 * It looks that BPF code generated by gen_protochain() is not
+	 * compatible with some of kernel BPF code (for example BSD/OS 3.1).
+	 * Take a safer side for now.
+	 */
+	if (no_optimize)
+		p->fcode = *fp;
+	else if (p->sf.rfile != NULL)
 		p->fcode = *fp;
 	else if (ioctl(p->fd, BIOCSETF, (caddr_t)fp) < 0) {
-		sprintf(p->errbuf, "BIOCSETF: %s", pcap_strerror(errno));
+		snprintf(p->errbuf, PCAP_ERRBUF_SIZE, "BIOCSETF: %s",
+		    pcap_strerror(errno));
 		return (-1);
 	}
 	return (0);

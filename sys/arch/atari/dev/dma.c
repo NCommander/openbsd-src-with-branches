@@ -1,4 +1,4 @@
-/*	$NetBSD: dma.c,v 1.4 1995/05/14 15:46:17 leo Exp $	*/
+/*	$NetBSD: dma.c,v 1.5 1995/11/06 21:13:38 leo Exp $	*/
 
 /*
  * Copyright (c) 1995 Leo Weppelman.
@@ -118,7 +118,7 @@ int	rcaller;
 	 * Create a request...
 	 */
 	if(dma_free.tqh_first == NULL)
-		panic("st_dmagrab: Too many outstanding requests\n");
+		panic("st_dmagrab: Too many outstanding requests");
 	req = dma_free.tqh_first;
 	TAILQ_REMOVE(&dma_free, dma_free.tqh_first, entries);
 	req->call_func = call_func;
@@ -164,7 +164,7 @@ int	*lock_stat;
 	 * Some validity checks first.
 	 */
 	if((req = dma_active.tqh_first) == NULL)
-		panic("st_dmafree: empty active queue\n");
+		panic("st_dmafree: empty active queue");
 	if(req->softc != softc)
 		printf("Caller of st_dmafree is not lock-owner!\n");
 
@@ -273,5 +273,6 @@ int	mode, nblk;
 	DMA->dma_mode = mode ^ DMA_WRBIT;
 	DMA->dma_mode = mode;
 	DMA->dma_data = nblk;
+	delay(2);	/* Needed for Falcon */
 	DMA->dma_mode = DMA_SCREG | (mode & DMA_WRBIT);
 }

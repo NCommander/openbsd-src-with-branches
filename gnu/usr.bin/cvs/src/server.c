@@ -814,7 +814,7 @@ E Protocol error: Root says \"%s\" but pserver says \"%s\"",
     }
     (void) strcat (path, "/");
     (void) strcat (path, CVSROOTADM_HISTORY);
-    if (isfile (path) && !isaccessible (path, R_OK | W_OK))
+    if (readonlyfs == 0 && isfile (path) && !isaccessible (path, R_OK | W_OK))
     {
 	save_errno = errno;
 	pending_error_text = malloc (80 + strlen (path));
@@ -4658,9 +4658,12 @@ static void wait_sig (sig)
      int sig;
 {
     int status;
+    int save_errno = errno;
+
     pid_t r = wait (&status);
     if (r == command_pid)
 	command_pid_is_dead++;
+    errno = save_errno;
 }
 #endif
 

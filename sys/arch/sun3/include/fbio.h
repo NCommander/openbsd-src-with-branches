@@ -1,3 +1,4 @@
+/*	$OpenBSD: fbio.h,v 1.3 1994/11/21 21:33:40 gwr Exp $	*/
 /*	$NetBSD: fbio.h,v 1.3 1994/11/21 21:33:40 gwr Exp $	*/
 
 /*

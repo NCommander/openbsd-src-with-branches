@@ -56,17 +56,18 @@
  * [including the GNU Public Licence.]
  */
 
+#ifndef NO_RSA
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
 #include "apps.h"
-#include "bio.h"
-#include "err.h"
-#include "rsa.h"
-#include "evp.h"
-#include "x509.h"
-#include "pem.h"
+#include <openssl/bio.h>
+#include <openssl/err.h>
+#include <openssl/rsa.h>
+#include <openssl/evp.h>
+#include <openssl/x509.h>
+#include <openssl/pem.h>
 
 #undef PROG
 #define PROG	rsa_main
@@ -80,19 +81,25 @@
  * -idea	- encrypt output if PEM format
  * -text	- print a text version
  * -modulus	- print the RSA key modulus
+ * -check	- verify key consistency
+ * -pubin	- Expect a public key in input file.
+ * -pubout	- Output a public key.
  */
 
-int MAIN(argc, argv)
-int argc;
-char **argv;
+int MAIN(int, char **);
+
+int MAIN(int argc, char **argv)
 	{
 	int ret=1;
 	RSA *rsa=NULL;
 	int i,badops=0;
-	EVP_CIPHER *enc=NULL;
+	const EVP_CIPHER *enc=NULL;
 	BIO *in=NULL,*out=NULL;
-	int informat,outformat,text=0,noout=0;
+	int informat,outformat,text=0,check=0,noout=0;
+	int pubin = 0, pubout = 0;
 	char *infile,*outfile,*prog;
+	char *passargin = NULL, *passargout = NULL;
+	char *passin = NULL, *passout = NULL;
 	int modulus=0;
 
 	apps_startup();
@@ -131,12 +138,28 @@ char **argv;
 			if (--argc < 1) goto bad;
 			outfile= *(++argv);
 			}
+		else if (strcmp(*argv,"-passin") == 0)
+			{
+			if (--argc < 1) goto bad;
+			passargin= *(++argv);
+			}
+		else if (strcmp(*argv,"-passout") == 0)
+			{
+			if (--argc < 1) goto bad;
+			passargout= *(++argv);
+			}
+		else if (strcmp(*argv,"-pubin") == 0)
+			pubin=1;
+		else if (strcmp(*argv,"-pubout") == 0)
+			pubout=1;
 		else if (strcmp(*argv,"-noout") == 0)
 			noout=1;
 		else if (strcmp(*argv,"-text") == 0)
 			text=1;
 		else if (strcmp(*argv,"-modulus") == 0)
 			modulus=1;
+		else if (strcmp(*argv,"-check") == 0)
+			check=1;
 		else if ((enc=EVP_get_cipherbyname(&(argv[0][1]))) == NULL)
 			{
 			BIO_printf(bio_err,"unknown option %s\n",*argv);
@@ -152,22 +175,37 @@ char **argv;
 bad:
 		BIO_printf(bio_err,"%s [options] <infile >outfile\n",prog);
 		BIO_printf(bio_err,"where options are\n");
-		BIO_printf(bio_err," -inform arg   input format - one of DER NET PEM\n");
-		BIO_printf(bio_err," -outform arg  output format - one of DER NET PEM\n");
-		BIO_printf(bio_err," -in arg       inout file\n");
-		BIO_printf(bio_err," -out arg      output file\n");
-		BIO_printf(bio_err," -des          encrypt PEM output with cbc des\n");
-		BIO_printf(bio_err," -des3         encrypt PEM output with ede cbc des using 168 bit key\n");
+		BIO_printf(bio_err," -inform arg     input format - one of DER NET PEM\n");
+		BIO_printf(bio_err," -outform arg    output format - one of DER NET PEM\n");
+		BIO_printf(bio_err," -in arg         input file\n");
+		BIO_printf(bio_err," -passin arg     input file pass phrase source\n");
+		BIO_printf(bio_err," -out arg        output file\n");
+		BIO_printf(bio_err," -passout arg    output file pass phrase source\n");
+		BIO_printf(bio_err," -des            encrypt PEM output with cbc des\n");
+		BIO_printf(bio_err," -des3           encrypt PEM output with ede cbc des using 168 bit key\n");
 #ifndef NO_IDEA
-		BIO_printf(bio_err," -idea         encrypt PEM output with cbc idea\n");
+		BIO_printf(bio_err," -idea           encrypt PEM output with cbc idea\n");
 #endif
-		BIO_printf(bio_err," -text         print the key in text\n");
-		BIO_printf(bio_err," -noout        don't print key out\n");
-		BIO_printf(bio_err," -modulus      print the RSA key modulus\n");
+		BIO_printf(bio_err," -text           print the key in text\n");
+		BIO_printf(bio_err," -noout          don't print key out\n");
+		BIO_printf(bio_err," -modulus        print the RSA key modulus\n");
+		BIO_printf(bio_err," -check          verify key consistency\n");
+		BIO_printf(bio_err," -pubin          expect a public key in input file\n");
+		BIO_printf(bio_err," -pubout         output a public key\n");
 		goto end;
 		}
 
 	ERR_load_crypto_strings();
+
+	if(!app_passwd(bio_err, passargin, passargout, &passin, &passout)) {
+		BIO_printf(bio_err, "Error getting passwords\n");
+		goto end;
+	}
+
+	if(check && pubin) {
+		BIO_printf(bio_err, "Only private keys can be checked\n");
+		goto end;
+	}
 
 	in=BIO_new(BIO_s_file());
 	out=BIO_new(BIO_s_file());
@@ -188,9 +226,11 @@ bad:
 			}
 		}
 
-	BIO_printf(bio_err,"read RSA private key\n");
-	if	(informat == FORMAT_ASN1)
-		rsa=d2i_RSAPrivateKey_bio(in,NULL);
+	BIO_printf(bio_err,"read RSA key\n");
+	if	(informat == FORMAT_ASN1) {
+		if (pubin) rsa=d2i_RSA_PUBKEY_bio(in,NULL);
+		else rsa=d2i_RSAPrivateKey_bio(in,NULL);
+	}
 #ifndef NO_RC4
 	else if (informat == FORMAT_NETSCAPE)
 		{
@@ -214,12 +254,14 @@ bad:
 				}
 			}
 		p=(unsigned char *)buf->data;
-		rsa=(RSA *)d2i_Netscape_RSA(NULL,&p,(long)size,NULL);
+		rsa=d2i_Netscape_RSA(NULL,&p,(long)size,NULL);
 		BUF_MEM_free(buf);
 		}
 #endif
-	else if (informat == FORMAT_PEM)
-		rsa=PEM_read_bio_RSAPrivateKey(in,NULL,NULL);
+	else if (informat == FORMAT_PEM) {
+		if(pubin) rsa=PEM_read_bio_RSA_PUBKEY(in,NULL,NULL,NULL);
+		else rsa=PEM_read_bio_RSAPrivateKey(in,NULL, NULL,passin);
+	}
 	else
 		{
 		BIO_printf(bio_err,"bad input format specified for key\n");
@@ -227,7 +269,7 @@ bad:
 		}
 	if (rsa == NULL)
 		{
-		BIO_printf(bio_err,"unable to load Private Key\n");
+		BIO_printf(bio_err,"unable to load key\n");
 		ERR_print_errors(bio_err);
 		goto end;
 		}
@@ -253,15 +295,48 @@ bad:
 
 	if (modulus)
 		{
-		fprintf(stdout,"Modulus=");
+		BIO_printf(out,"Modulus=");
 		BN_print(out,rsa->n);
-		fprintf(stdout,"\n");
+		BIO_printf(out,"\n");
 		}
 
-	if (noout) goto end;
-	BIO_printf(bio_err,"writing RSA private key\n");
-	if 	(outformat == FORMAT_ASN1)
-		i=i2d_RSAPrivateKey_bio(out,rsa);
+	if (check)
+		{
+		int r = RSA_check_key(rsa);
+
+		if (r == 1)
+			BIO_printf(out,"RSA key ok\n");
+		else if (r == 0)
+			{
+			long e;
+
+			while ((e = ERR_peek_error()) != 0 &&
+				ERR_GET_LIB(e) == ERR_LIB_RSA &&
+				ERR_GET_FUNC(e) == RSA_F_RSA_CHECK_KEY &&
+				ERR_GET_REASON(e) != ERR_R_MALLOC_FAILURE)
+				{
+				BIO_printf(out, "RSA key error: %s\n", ERR_reason_error_string(e));
+				ERR_get_error(); /* remove e from error stack */
+				}
+			}
+		
+		if (r == -1 || ERR_peek_error() != 0) /* should happen only if r == -1 */
+			{
+			ERR_print_errors(bio_err);
+			goto end;
+			}
+		}
+		
+	if (noout)
+		{
+		ret = 0;
+		goto end;
+		}
+	BIO_printf(bio_err,"writing RSA key\n");
+	if 	(outformat == FORMAT_ASN1) {
+		if(pubout || pubin) i=i2d_RSA_PUBKEY_bio(out,rsa);
+		else i=i2d_RSAPrivateKey_bio(out,rsa);
+	}
 #ifndef NO_RC4
 	else if (outformat == FORMAT_NETSCAPE)
 		{
@@ -281,23 +356,34 @@ bad:
 		Free(pp);
 		}
 #endif
-	else if (outformat == FORMAT_PEM)
-		i=PEM_write_bio_RSAPrivateKey(out,rsa,enc,NULL,0,NULL);
-	else	{
+	else if (outformat == FORMAT_PEM) {
+		if(pubout || pubin)
+		    i=PEM_write_bio_RSA_PUBKEY(out,rsa);
+		else i=PEM_write_bio_RSAPrivateKey(out,rsa,
+						enc,NULL,0,NULL,passout);
+	} else	{
 		BIO_printf(bio_err,"bad output format specified for outfile\n");
 		goto end;
 		}
 	if (!i)
 		{
-		BIO_printf(bio_err,"unable to write private key\n");
+		BIO_printf(bio_err,"unable to write key\n");
 		ERR_print_errors(bio_err);
 		}
 	else
 		ret=0;
 end:
-	if (in != NULL) BIO_free(in);
-	if (out != NULL) BIO_free(out);
-	if (rsa != NULL) RSA_free(rsa);
+	if(in != NULL) BIO_free(in);
+	if(out != NULL) BIO_free(out);
+	if(rsa != NULL) RSA_free(rsa);
+	if(passin) Free(passin);
+	if(passout) Free(passout);
 	EXIT(ret);
 	}
+#else /* !NO_RSA */
 
+# if PEDANTIC
+static void *dummy=&dummy;
+# endif
+
+#endif

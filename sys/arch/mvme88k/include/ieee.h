@@ -1,3 +1,4 @@
+/*	$OpenBSD: ieee.h,v 1.1 1998/12/15 04:45:50 smurph Exp $ */
 /*
  * Copyright (c) 1992, 1993
  *	The Regents of the University of California.  All rights reserved.

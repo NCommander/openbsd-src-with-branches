@@ -35,15 +35,14 @@
  * SUCH DAMAGE.
  */
 
-#if defined(LIBC_SCCS) && !defined(lint)
+#if defined(SYSLIBC_SCCS)
 	.text
-	/*.asciz "from: @(#)sigsuspend.s	5.2 (Berkeley) 6/6/90"*/
-	.asciz "$Id: sigsuspend.S,v 1.3 1994/08/04 05:02:48 chopps Exp $"
-#endif /* LIBC_SCCS and not lint */
+	.asciz "$OpenBSD: sigsuspend.S,v 1.2 1996/08/19 08:15:45 tholo Exp $"
+#endif /* SYSLIBC_SCCS */
 
 #include "SYS.h"
 
-ENTRY(sigsuspend)
+SYSENTRY(sigsuspend)
 	movl	sp@(4),a0
 	movl	a0@,sp@(4)		/* indirect to mask arg */
 	movl	#SYS_sigsuspend,d0

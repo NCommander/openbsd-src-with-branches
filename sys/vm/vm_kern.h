@@ -1,4 +1,5 @@
-/*	$NetBSD: vm_kern.h,v 1.9 1994/06/29 06:48:03 cgd Exp $	*/
+/*	$OpenBSD: vm_kern.h,v 1.2 1996/08/02 00:06:01 niklas Exp $	*/
+/*	$NetBSD: vm_kern.h,v 1.11 1998/02/10 14:08:58 mrg Exp $	*/
 
 /* 
  * Copyright (c) 1991, 1993
@@ -66,9 +67,18 @@
 
 /* Kernel memory management definitions. */
 
+#if defined(UVM)
+extern vm_map_t	buffer_map;
+extern vm_map_t	exec_map;
+extern vm_map_t	kernel_map;
+extern vm_map_t	kmem_map;
+extern vm_map_t	mb_map;
+extern vm_map_t	phys_map;
+#else
 vm_map_t	buffer_map;
 vm_map_t	exec_map;
 vm_map_t	kernel_map;
 vm_map_t	kmem_map;
 vm_map_t	mb_map;
 vm_map_t	phys_map;
+#endif

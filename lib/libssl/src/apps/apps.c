@@ -69,17 +69,9 @@
 #  include "bss_file.c"
 #endif
 
-#ifndef NOPROTO
 int app_init(long mesgwin);
-#else
-int app_init();
-#endif
-
 #ifdef undef /* never finished - probably never will be :-) */
-int args_from_file(file,argc,argv)
-char *file;
-int *argc;
-char **argv[];
+int args_from_file(char *file, int *argc, char **argv[])
 	{
 	FILE *fp;
 	int num,i;
@@ -157,8 +149,7 @@ char **argv[];
 	}
 #endif
 
-int str2fmt(s)
-char *s;
+int str2fmt(char *s)
 	{
 	if 	((*s == 'D') || (*s == 'd'))
 		return(FORMAT_ASN1);
@@ -173,10 +164,7 @@ char *s;
 	}
 
 #if defined(MSDOS) || defined(WIN32) || defined(WIN16)
-void program_name(in,out,size)
-char *in;
-char *out;
-int size;
+void program_name(char *in, char *out, int size)
 	{
 	int i,n;
 	char *p=NULL;
@@ -213,10 +201,28 @@ int size;
 	out[n]='\0';
 	}
 #else
-void program_name(in,out,size)
-char *in;
-char *out;
-int size;
+#ifdef VMS
+void program_name(char *in, char *out, int size)
+	{
+	char *p=in, *q;
+	char *chars=":]>";
+
+	while(*chars != '\0')
+		{
+		q=strrchr(p,*chars);
+		if (q > p)
+			p = q + 1;
+		chars++;
+		}
+
+	q=strrchr(p,'.');
+	if (q == NULL)
+		q = in+size;
+	strncpy(out,p,q-p);
+	out[q-p]='\0';
+	}
+#else
+void program_name(char *in, char *out, int size)
 	{
 	char *p;
 
@@ -229,24 +235,25 @@ int size;
 	out[size-1]='\0';
 	}
 #endif
+#endif
 
 #ifdef WIN32
-int WIN32_rename(from,to)
-char *from;
-char *to;
+int WIN32_rename(char *from, char *to)
 	{
+#ifdef WINNT
 	int ret;
+/* Note: MoveFileEx() doesn't work under Win95, Win98 */
 
 	ret=MoveFileEx(from,to,MOVEFILE_REPLACE_EXISTING|MOVEFILE_COPY_ALLOWED);
 	return(ret?0:-1);
+#else
+	unlink(to);
+	return MoveFile(from, to);
+#endif
 	}
 #endif
 
-int chopup_args(arg,buf,argc,argv)
-ARGS *arg;
-char *buf;
-int *argc;
-char **argv[];
+int chopup_args(ARGS *arg, char *buf, int *argc, char **argv[])
 	{
 	int num,len,i;
 	char *p;
@@ -312,9 +319,98 @@ char **argv[];
 	}
 
 #ifndef APP_INIT
-int app_init(mesgwin)
-long mesgwin;
+int app_init(long mesgwin)
 	{
 	return(1);
 	}
 #endif
+
+
+int dump_cert_text (BIO *out, X509 *x)
+{
+	char buf[256];
+	X509_NAME_oneline(X509_get_subject_name(x),buf,256);
+	BIO_puts(out,"subject=");
+	BIO_puts(out,buf);
+
+	X509_NAME_oneline(X509_get_issuer_name(x),buf,256);
+	BIO_puts(out,"\nissuer= ");
+	BIO_puts(out,buf);
+	BIO_puts(out,"\n");
+        return 0;
+}
+
+static char *app_get_pass(BIO *err, char *arg, int keepbio);
+
+int app_passwd(BIO *err, char *arg1, char *arg2, char **pass1, char **pass2)
+{
+	int same;
+	if(!arg2 || !arg1 || strcmp(arg1, arg2)) same = 0;
+	else same = 1;
+	if(arg1) {
+		*pass1 = app_get_pass(err, arg1, same);
+		if(!*pass1) return 0;
+	} else if(pass1) *pass1 = NULL;
+	if(arg2) {
+		*pass2 = app_get_pass(err, arg2, same ? 2 : 0);
+		if(!*pass2) return 0;
+	} else if(pass2) *pass2 = NULL;
+	return 1;
+}
+
+static char *app_get_pass(BIO *err, char *arg, int keepbio)
+{
+	char *tmp, tpass[APP_PASS_LEN];
+	static BIO *pwdbio = NULL;
+	int i;
+	if(!strncmp(arg, "pass:", 5)) return BUF_strdup(arg + 5);
+	if(!strncmp(arg, "env:", 4)) {
+		tmp = getenv(arg + 4);
+		if(!tmp) {
+			BIO_printf(err, "Can't read environment variable %s\n", arg + 4);
+			return NULL;
+		}
+		return BUF_strdup(tmp);
+	}
+	if(!keepbio || !pwdbio) {
+		if(!strncmp(arg, "file:", 5)) {
+			pwdbio = BIO_new_file(arg + 5, "r");
+			if(!pwdbio) {
+				BIO_printf(err, "Can't open file %s\n", arg + 5);
+				return NULL;
+			}
+		} else if(!strncmp(arg, "fd:", 3)) {
+			BIO *btmp;
+			i = atoi(arg + 3);
+			if(i >= 0) pwdbio = BIO_new_fd(i, BIO_NOCLOSE);
+			if((i < 0) || !pwdbio) {
+				BIO_printf(err, "Can't access file descriptor %s\n", arg + 3);
+				return NULL;
+			}
+			/* Can't do BIO_gets on an fd BIO so add a buffering BIO */
+			btmp = BIO_new(BIO_f_buffer());
+			pwdbio = BIO_push(btmp, pwdbio);
+		} else if(!strcmp(arg, "stdin")) {
+			pwdbio = BIO_new_fp(stdin, BIO_NOCLOSE);
+			if(!pwdbio) {
+				BIO_printf(err, "Can't open BIO for stdin\n");
+				return NULL;
+			}
+		} else {
+			BIO_printf(err, "Invalid password argument \"%s\"\n", arg);
+			return NULL;
+		}
+	}
+	i = BIO_gets(pwdbio, tpass, APP_PASS_LEN);
+	if(keepbio != 1) {
+		BIO_free_all(pwdbio);
+		pwdbio = NULL;
+	}
+	if(i <= 0) {
+		BIO_printf(err, "Error reading password from BIO\n");
+		return NULL;
+	}
+	tmp = strchr(tpass, '\n');
+	if(tmp) *tmp = 0;
+	return BUF_strdup(tpass);
+}

@@ -1,3 +1,4 @@
+#	$OpenBSD: Makefile,v 1.1 1995/10/10 01:19:24 mycroft Exp $
 #	$NetBSD: Makefile,v 1.1 1995/10/10 01:19:24 mycroft Exp $
 
 SYS=	../..

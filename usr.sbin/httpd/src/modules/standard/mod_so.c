@@ -1,5 +1,5 @@
 /* ====================================================================
- * Copyright (c) 1995-1998 The Apache Group.  All rights reserved.
+ * Copyright (c) 1995-1999 The Apache Group.  All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -125,6 +125,7 @@
  */
 
 
+#define CORE_PRIVATE
 #include "httpd.h"
 #include "http_config.h"
 #include "http_log.h"
@@ -246,11 +247,34 @@ static const char *load_module(cmd_parms *cmd, void *dummy,
      * symbol name.
      */
     if (!(modp = (module *)(ap_os_dso_sym(modhandle, modname)))) {
-	return ap_pstrcat(cmd->pool, "Can't find module ", modname,
-		       " in file ", filename, ":", ap_os_dso_error(), NULL);
+	return ap_pstrcat(cmd->pool, "Can't locate API module structure `", modname,
+		       "' in file ", szModuleFile, ": ", ap_os_dso_error(), NULL);
     }
     modi->modp = modp;
-    modp->dynamic_load_handle = modhandle;
+    modp->dynamic_load_handle = (void *)modhandle;
+
+    /* 
+     * Make sure the found module structure is really a module structure
+     * 
+     */
+#ifdef EAPI
+    if (   modp->magic != MODULE_MAGIC_COOKIE_AP13 
+        && modp->magic != MODULE_MAGIC_COOKIE_EAPI) {
+#else
+    if (modp->magic != MODULE_MAGIC_COOKIE) {
+#endif
+        return ap_pstrcat(cmd->pool, "API module structure `", modname,
+                          "' in file ", szModuleFile, " is garbled -"
+                          " perhaps this is not an Apache module DSO?", NULL);
+    }
+#ifdef EAPI
+    if (modp->magic == MODULE_MAGIC_COOKIE_AP13) {
+        ap_log_error(APLOG_MARK, APLOG_WARNING|APLOG_NOERRNO, NULL,
+                     "Loaded DSO %s uses plain Apache 1.3 API, "
+                     "this module might crash under EAPI! "
+                     "(please recompile it with -DEAPI)", filename);
+    }
+#endif
 
     /* 
      * Add this module to the Apache core structures
@@ -266,15 +290,9 @@ static const char *load_module(cmd_parms *cmd, void *dummy,
 		     (void (*)(void*))unload_module, ap_null_cleanup);
 
     /* 
-     * Finally we need to run the configuration functions 
-     * in new modules now.
+     * Finally we need to run the configuration process for the module
      */
-    if (modp->create_server_config)
-      ((void**)cmd->server->module_config)[modp->module_index] =
-	(*modp->create_server_config)(cmd->pool, cmd->server);
-    if (modp->create_dir_config)
-      ((void**)cmd->server->lookup_defaults)[modp->module_index] =
-	(*modp->create_dir_config)(cmd->pool, NULL);
+    ap_single_module_configure(cmd->pool, cmd->server, modp);
 
     return NULL;
 }
@@ -286,7 +304,7 @@ static const char *load_module(cmd_parms *cmd, void *dummy,
 
 static const char *load_file(cmd_parms *cmd, void *dummy, char *filename)
 {
-    void *handle;
+    ap_os_dso_handle_t handle;
     char *file;
 
     file = ap_server_root_relative(cmd->pool, filename);
@@ -302,7 +320,7 @@ static const char *load_file(cmd_parms *cmd, void *dummy, char *filename)
     ap_log_error(APLOG_MARK, APLOG_DEBUG|APLOG_NOERRNO, NULL,
 		"loaded file %s", filename);
 
-    ap_register_cleanup(cmd->pool, handle, unload_file, ap_null_cleanup);
+    ap_register_cleanup(cmd->pool, (void *)handle, unload_file, ap_null_cleanup);
 
     return NULL;
 }
@@ -346,6 +364,7 @@ module MODULE_VAR_EXPORT so_module = {
    NULL,			/* check auth */
    NULL,			/* check access */
    NULL,			/* type_checker */
+   NULL,			/* fixer_upper */
    NULL,			/* logger */
    NULL,			/* header parser */
    NULL,			/* child_init */

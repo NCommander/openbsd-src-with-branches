@@ -1,3 +1,4 @@
+/*	$OpenBSD: mem.c,v 1.4 1999/11/22 19:22:02 matthieu Exp $	*/
 /*	$NetBSD: mem.c,v 1.1 1996/09/30 16:34:50 ws Exp $ */
 
 /*
@@ -59,7 +60,16 @@ mmopen(dev, flag, mode)
 	dev_t dev;
 	int flag, mode;
 {
-	return 0;
+
+	switch (minor(dev)) {
+		case 0:
+		case 1:
+		case 2:
+		case 12:
+			return (0);
+		default:
+			return (ENXIO);
+	}
 }
 
 /*ARGSUSED*/
@@ -151,4 +161,15 @@ mmmmap(dev, off, prot)
         int off, prot;
 {
 	return EOPNOTSUPP;
+}
+/*ARGSUSED*/
+int
+mmioctl(dev, cmd, data, flags, p)
+	dev_t dev;
+	u_long cmd;
+	caddr_t data;
+	int flags;
+	struct proc *p;
+{
+	return (EOPNOTSUPP);
 }

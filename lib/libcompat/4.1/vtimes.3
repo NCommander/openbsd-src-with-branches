@@ -1,3 +1,5 @@
+.\"	$OpenBSD$
+.\"
 .\" Copyright (c) 1980, 1991, 1993
 .\"	The Regents of the University of California.  All rights reserved.
 .\"
@@ -33,7 +35,7 @@
 .\"
 .Dd June 4, 1993
 .Dt VTIMES 3
-.Os BSD 4
+.Os
 .Sh NAME
 .Nm vtimes
 .Nd get information about resource utilization
@@ -42,7 +44,7 @@
 .Fn vtimes "struct vtimes *par_vm" "struct vtimes *ch_vm"
 .Sh DESCRIPTION
 .Bf -symbolic
-This interface is obsoleted by 
+This interface is obsoleted by
 .Xr getrusage 2 .
 It is available from the compatibility library, libcompat.
 .Ef
@@ -54,7 +56,7 @@ returns accounting information for the current process and for
 the terminated child processes of the current
 process.  Either
 .Fa par_vm
-or 
+or
 .Fa ch_vm
 or both may be 0, in which case only the information for the pointers
 which are non-zero is returned.
@@ -84,7 +86,7 @@ and
 .Fa vm_stime
 fields give the user and system
 time respectively in 60ths of a second (or 50ths if that
-is the frequency of wall current in your locality.) The
+is the frequency of wall current in your locality). The
 .Fa vm_idrss
 and
 .Fa vm_ixrss
@@ -99,21 +101,21 @@ pages over 1 cpu-second for its data and stack, then
 .Fa vm_idsrss
 would have the value 5*60, where
 .Fa vm_utime+vm_stime
-would be the 60.  
+would be the 60.
 The
-.Fa Vm_idsrss
+.Fa vm_idsrss
 argument
 integrates data and stack segment
 usage, while
 .Fa vm_ixrss
 integrates text segment usage.
 The
-.Fa Vm_maxrss
-function
+.Fa vm_maxrss
+variable
 reports the maximum instantaneous sum of the
 text+data+stack core-resident page count.
 .Pp
-The 
+The
 .Fa vm_majflt
 field gives the number of page faults which
 resulted in disk activity; the
@@ -132,11 +134,11 @@ These numbers account only for real
 data supplied by the caching mechanism is charged only
 to the first process to read or write the data.
 .Sh SEE ALSO
+.Xr getrusage 2 ,
 .Xr time 2 ,
-.Xr wait3 2 ,
-.Xr getrusage 2
+.Xr wait3 2
 .Sh HISTORY
 The
 .Fn vlimit
-function appeared in 
+function appeared in
 .Bx 4.2 .

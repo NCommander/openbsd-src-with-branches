@@ -288,6 +288,15 @@ static const char *const config_contents[] = {
     "# level of the new working directory when using the `cvs checkout'\n",
     "# command.\n",
     "#TopLevelAdmin=no\n",
+    "\n",
+    "# Set this to the name of a local tag to use in addition to Id\n",
+    "#tag=OurTag\n",
+    "\n",
+    "# Set this to the default umask to use when creating files and directories\n",
+    "#umask=002\n",
+    "\n",
+    "# Set this to the default data resource limit to use\n",
+    "#dlimit=65536\n",
     NULL
 };
 

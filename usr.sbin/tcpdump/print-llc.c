@@ -1,7 +1,7 @@
-/*	$NetBSD: print-llc.c,v 1.2 1995/03/06 19:11:19 mycroft Exp $	*/
+/*	$OpenBSD: print-llc.c,v 1.9 2000/10/03 14:31:57 ho Exp $	*/
 
 /*
- * Copyright (c) 1992, 1993, 1994
+ * Copyright (c) 1992, 1993, 1994, 1995, 1996, 1997
  *	The Regents of the University of California.  All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -19,37 +19,35 @@
  * THIS SOFTWARE IS PROVIDED ``AS IS'' AND WITHOUT ANY EXPRESS OR IMPLIED
  * WARRANTIES, INCLUDING, WITHOUT LIMITATION, THE IMPLIED WARRANTIES OF
  * MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
- */
-
-/*
+ *
  * Code by Matt Thomas, Digital Equipment Corporation
  *	with an awful lot of hacking by Jeffrey Mogul, DECWRL
  */
 
 #ifndef lint
-static  char rcsid[] =
-	"@(#)Header: print-llc.c,v 1.13 94/06/14 20:18:45 leres Exp";
+static const char rcsid[] =
+    "@(#) $Header: /cvs/src/usr.sbin/tcpdump/print-llc.c,v 1.9 2000/10/03 14:31:57 ho Exp $";
 #endif
 
 #include <sys/param.h>
 #include <sys/time.h>
-#include <sys/types.h>
 
 #include <netinet/in.h>
 
 #include <ctype.h>
-#include <errno.h>
 #include <netdb.h>
 #include <signal.h>
 #include <stdio.h>
+#include <string.h>
 
 #include "interface.h"
 #include "addrtoname.h"
 #include "extract.h"			/* must come after interface.h */
+#include "ethertype.h"
 
 #include "llc.h"
 
-static struct token cmd2str[] = {
+static struct tok cmd2str[] = {
 	{ LLC_UI,	"ui" },
 	{ LLC_TEST,	"test" },
 	{ LLC_XID,	"xid" },
@@ -65,7 +63,7 @@ static struct token cmd2str[] = {
  * Returns non-zero IFF it succeeds in printing the header
  */
 int
-llc_print(const u_char *p, int length, int caplen,
+llc_print(const u_char *p, u_int length, u_int caplen,
 	  const u_char *esrc, const u_char *edst)
 {
 	struct llc llc;
@@ -79,7 +77,7 @@ llc_print(const u_char *p, int length, int caplen,
 	}
 
 	/* Watch out for possible alignment problems */
-	bcopy((char *)p, (char *)&llc, min(caplen, sizeof(llc)));
+	memcpy((char *)&llc, (char *)p, min(caplen, sizeof(llc)));
 
 	if (llc.ssap == LLCSAP_GLOBAL && llc.dsap == LLCSAP_GLOBAL) {
 		ipx_print(p, length);
@@ -110,10 +108,32 @@ llc_print(const u_char *p, int length, int caplen,
 		p += sizeof(llc);
 
 		/* This is an encapsulated Ethernet packet */
-		et = EXTRACT_SHORT(&llc.ethertype[0]);
-		ret = ether_encap_print(et, p, length, caplen);
+		et = EXTRACT_16BITS(&llc.ethertype[0]);
+
+		/*
+		 * Some protocols have special handling if they are 802.3
+		 * SNAP encapsulated vs vers II encapsulated. Handle
+		 * those special protocols here, and hand the rest to
+		 * print-ether.c so we don't have to duplicate
+		 * all that code here.
+		 */
+		switch (et) {
+		case ETHERTYPE_ATALK:
+			atalk_print(p, length);
+			ret = 1;
+			break;
+		default:
+			ret = ether_encap_print(et, p, length, caplen);
+			break;
+		}
+
 		if (ret)
 			return (ret);
+	}
+
+	if (llc.ssap == LLCSAP_8021D && llc.dsap == LLCSAP_8021D) {
+		stp_print(p, length);
+		return (1);
 	}
 
 	if ((llc.ssap & ~LLC_GSAP) == llc.dsap) {
@@ -151,6 +171,10 @@ llc_print(const u_char *p, int length, int caplen,
 
 		printf("%s/%c", m, f);
 
+		if (caplen < 6) {
+			default_print_unaligned(p, caplen);
+			return (0);
+		}
 		p += 3;
 		length -= 3;
 		caplen -= 3;
@@ -191,8 +215,5 @@ llc_print(const u_char *p, int length, int caplen,
 		caplen -= 4;
 	}
 	(void)printf(" len=%d", length);
-	if (caplen > 0) {
-		default_print_unaligned(p, caplen);
-	}
 	return(1);
 }

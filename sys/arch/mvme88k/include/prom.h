@@ -1,6 +1,6 @@
-/*	$NetBSD$ */
-
+/*	$OpenBSD: prom.h,v 1.3 1999/02/09 06:36:27 smurph Exp $ */
 /*
+ * Copyright (c) 1998 Steve Murphree, Jr.
  * Copyright (c) 1996 Nivas Madhur
  * Copyright (c) 1995 Theo de Raadt
  * All rights reserved.
@@ -98,19 +98,21 @@ struct mvmeprom_brdid {
 	u_short	devtype;
 	u_short	devnum;
 	u_long	bug;
-
-	/*
-	 * XXX: I have seen no documentation for these!
-	 *
-	 * The following (appears to) exist only on the MVME162 and
-	 * upwards. We should figure out what the other fields are.
-	 */
-	u_char	xx1[16];
-	u_char	xx2[4];
-	u_char	longname[12];
-	u_char	xx3[16];
-	u_char	speed[4];
-	u_char	xx4[12];
+	u_char	version[4];
+	u_char	serial[12];		/* SBC serial number */
+	u_char	id[16];			/* SBC id */
+	u_char	pwa[16];		/* printed wiring assembly number */
+	u_char	speed[4];		/* cpu speed */
+	u_char	etheraddr[6];		/* mac address, all zero if no ether */
+	u_char	fill[2];		
+	u_char	scsiid[2];		/* local SCSI id */
+	u_char	sysid[8];		/* system id - nothing on mvme187 */
+	u_char	brd1_pwb[8];		/* memory board 1 pwb */
+	u_char	brd1_serial[8];		/* memory board 1 serial */
+	u_char	brd2_pwb[8];		/* memory board 2 pwb */
+	u_char	brd2_serial[8];		/* memory board 2 serial */
+	u_char	reserved[153];
+	u_char	cksum[1];
 };
 
 struct mvmeprom_time {
@@ -148,6 +150,9 @@ struct mvmeprom_args {
         u_int	conf_blk;
         char	*arg_start;
         char	*arg_end;
+	char	*nbarg_start;
+	char	*nbarg_end;
+	u_int	cputyp;
 };
 
 #endif
@@ -155,3 +160,19 @@ struct mvmeprom_args {
 #define MVMEPROM_CALL(x)	\
 	asm volatile ( __CONCAT("or r9,r0,",__STRING(x)) ); \
 	asm volatile ("tb0 0,r0,496");
+
+#define MVMEPROM_REG_DEVLUN	"r2"
+#define MVMEPROM_REG_CTRLLUN	"r3"
+#define MVMEPROM_REG_FLAGS	"r4"
+#define MVMEPROM_REG_CTRLADDR	"r5"
+#define MVMEPROM_REG_ENTRY	"r6"
+#define MVMEPROM_REG_CONFBLK	"r7"
+#define MVMEPROM_REG_ARGSTART	"r8"
+#define MVMEPROM_REG_ARGEND	"r9"
+#define MVMEPROM_REG_NBARGSTART	"r10"
+#define MVMEPROM_REG_NBARGEND	"r11"
+
+#ifndef RB_NOSYM
+#define RB_NOSYM 0x400
+#endif
+

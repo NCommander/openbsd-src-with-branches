@@ -1,3 +1,4 @@
+/*	$OpenBSD: extern.h,v 1.4 1997/08/22 20:08:13 kstailey Exp $	*/
 /*	$NetBSD: extern.h,v 1.10 1995/05/21 13:38:27 mycroft Exp $	*/
 
 /*-
@@ -51,10 +52,12 @@ void	 command __P((KINFO *, VARENT *));
 void	 cputime __P((KINFO *, VARENT *));
 int	 donlist __P((void));
 void	 evar __P((KINFO *, VARENT *));
+void	 emulname  __P((KINFO *, VARENT *));
 void	 fmt_puts __P((char *, int *));
 void	 fmt_putc __P((int, int *));
 double	 getpcpu __P((KINFO *));
 double	 getpmem __P((KINFO *));
+void	 gname __P((KINFO *, VARENT *));
 void	 logname __P((KINFO *, VARENT *));
 void	 longtname __P((KINFO *, VARENT *));
 void	 lstarted __P((KINFO *, VARENT *));
@@ -68,6 +71,7 @@ void	 pmem __P((KINFO *, VARENT *));
 void	 pri __P((KINFO *, VARENT *));
 void	 printheader __P((void));
 void	 pvar __P((KINFO *, VARENT *));
+void	 rgname __P((KINFO *, VARENT *));
 void	 rssize __P((KINFO *, VARENT *));
 void	 runame __P((KINFO *, VARENT *));
 void	 rvar __P((KINFO *, VARENT *));
@@ -76,9 +80,6 @@ void	 started __P((KINFO *, VARENT *));
 void	 state __P((KINFO *, VARENT *));
 void	 tdev __P((KINFO *, VARENT *));
 void	 tname __P((KINFO *, VARENT *));
-#ifndef NEWVM
-void	 trss __P((KINFO *, VARENT *));
-#endif
 void	 tsize __P((KINFO *, VARENT *));
 void	 ucomm __P((KINFO *, VARENT *));
 void	 uname __P((KINFO *, VARENT *));

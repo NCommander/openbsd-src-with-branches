@@ -1,4 +1,4 @@
-/*	$NetBSD: teach.c,v 1.4 1995/04/29 00:44:18 mycroft Exp $	*/
+/*	$OpenBSD: teach.c,v 1.5 1998/08/29 23:19:12 pjanzen Exp $	*/
 
 /*
  * Copyright (c) 1980, 1993
@@ -43,28 +43,16 @@ static char copyright[] =
 #if 0
 static char sccsid[] = "@(#)teach.c	8.1 (Berkeley) 5/31/93";
 #else
-static char rcsid[] = "$NetBSD: teach.c,v 1.4 1995/04/29 00:44:18 mycroft Exp $";
+static char rcsid[] = "$OpenBSD: teach.c,v 1.5 1998/08/29 23:19:12 pjanzen Exp $";
 #endif
 #endif /* not lint */
 
 #include "back.h"
+#include "tutor.h"
 
-char	*hello[];
-char	*list[];
-char	*intro1[];
-char	*intro2[];
-char	*moves[];
-char	*remove[];
-char	*hits[];
-char	*endgame[];
-char	*doubl[];
-char	*stragy[];
-char	*prog[];
-char	*lastch[];
+extern speed_t ospeed;		/* tty output speed for termlib */
 
-extern speed_t	ospeed;			/* tty output speed for termlib */
-
-char *helpm[] = {
+const char   *const helpm[] = {
 	"\nEnter a space or newline to roll, or",
 	"     b   to display the board",
 	"     d   to double",
@@ -72,99 +60,101 @@ char *helpm[] = {
 	0
 };
 
-char *contin[] = {
+const char   *const contin[] = {
 	"",
 	0
 };
 
-main (argc,argv)
-int	argc;
-char	**argv;
-
+int
+main(argc, argv)
+	int     argc;
+	char   *argv[];
 {
-	register int	i;
+	int     i;
 
-	signal (2,getout);
-	if (tcgetattr (0, &old) == -1)			/* get old tty mode */
-		errexit ("teachgammon(gtty)");
+	/* revoke privs */
+	setegid(getgid());
+	setgid(getgid());
+
+	signal(SIGINT, getout);
+	if (tcgetattr(0, &old) == -1)	/* get old tty mode */
+		errexit("teachgammon(gtty)");
 	noech = old;
 	noech.c_lflag &= ~ECHO;
 	raw = noech;
-	raw.c_lflag &= ~ICANON;				/* set up modes */
-	ospeed = cfgetospeed (&old);			/* for termlib */
-	tflag = getcaps (getenv ("TERM"));
-#ifdef V7
-	while (*++argv != 0)
-#else
-	while (*++argv != -1)
-#endif
-		getarg (&argv);
-	if (tflag)  {
-		noech.c_oflag &= ~(ONLCR|OXTABS);
-		raw.c_oflag &= ~(ONLCR|OXTABS);
+	raw.c_lflag &= ~ICANON;	/* set up modes */
+	ospeed = cfgetospeed(&old);	/* for termlib */
+	tflag = getcaps(getenv("TERM"));
+	getarg(argc, argv);
+	if (tflag) {
+		noech.c_oflag &= ~(ONLCR | OXTABS);
+		raw.c_oflag &= ~(ONLCR | OXTABS);
 		clear();
 	}
-	text (hello);
-	text (list);
-	i = text (contin);
+	text(hello);
+	text(list);
+	i = text(contin);
 	if (i == 0)
 		i = 2;
 	init();
 	while (i)
-		switch (i)  {
-		
+		switch (i) {
 		case 1:
-			leave();
-		
+			leave();	/* Does not return */
+			break;
+
 		case 2:
-			if (i = text(intro1))
+			if ((i = text(intro1)))
 				break;
 			wrboard();
-			if (i = text(intro2))
+			if ((i = text(intro2)))
 				break;
 		
 		case 3:
-			if (i = text(moves))
+			if ((i = text(moves)))
 				break;
 		
 		case 4:
-			if (i = text(remove))
+			if ((i = text(removepiece)))
 				break;
 		
 		case 5:
-			if (i = text(hits))
+			if ((i = text(hits)))
 				break;
 		
 		case 6:
-			if (i = text(endgame))
+			if ((i = text(endgame)))
 				break;
 		
 		case 7:
-			if (i = text(doubl))
+			if ((i = text(doubl)))
 				break;
 		
 		case 8:
-			if (i = text(stragy))
+			if ((i = text(stragy)))
 				break;
 		
 		case 9:
-			if (i = text(prog))
+			if ((i = text(prog)))
 				break;
 		
 		case 10:
-			if (i = text(lastch))
+			if ((i = text(lastch)))
 				break;
 		}
 	tutor();
+	/* NOT REACHED */
 }
 
-leave()  {
+void
+leave()
+{
 	if (tflag)
 		clear();
 	else
-		writec ('\n');
+		writec('\n');
 	fixtty(&old);
-	execl (EXEC,"backgammon",args,"n",0);
-	writel ("Help! Backgammon program is missing\007!!\n");
-	exit (-1);
+	execl(EXEC, "backgammon", "-n", args, 0);
+	writel("Help! Backgammon program is missing\007!!\n");
+	exit(-1);
 }

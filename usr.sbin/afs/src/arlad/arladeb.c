@@ -1,6 +1,5 @@
-/*	$OpenBSD$	*/
 /*
- * Copyright (c) 1995, 1996, 1997, 1998 Kungliga Tekniska Högskolan
+ * Copyright (c) 1995 - 2000 Kungliga Tekniska Högskolan
  * (Royal Institute of Technology, Stockholm, Sweden).
  * All rights reserved.
  * 
@@ -37,32 +36,54 @@
  * SUCH DAMAGE.
  */
 
-#include "arla_local.h"
+#ifdef HAVE_CONFIG_H
+#include <config.h>
+#endif
+#include <assert.h>
+#include <stdarg.h>
+#include <stdlib.h>
+#include <err.h>
+#include <parse_units.h>
+#include <roken.h>
+#include "volcache.h"
+#include "ko.h"
 
-RCSID("$KTH: arladeb.c,v 1.12 1998/04/03 03:30:17 assar Exp $");
+#include "arladeb.h"
 
-static Log_method* arla_log_method = NULL;
+RCSID("$Id: arladeb.c,v 1.22 2000/08/24 21:44:32 lha Exp $");
+
+Log_method* arla_log_method = NULL;
+Log_unit* arla_log_unit = NULL;
+
+#define all (ADEBERROR | ADEBWARN | ADEBDISCONN | ADEBFBUF |		\
+	     ADEBMSG | ADEBKERNEL | ADEBCLEANER | ADEBCALLBACK |	\
+	     ADEBCM | ADEBVOLCACHE | ADEBFCACHE | ADEBINIT |		\
+	     ADEBCONN | ADEBMISC | ADEBVLOG)
+
+#define DEFAULT_LOG (ADEBWARN | ADEBERROR)
 
 struct units arla_deb_units[] = {
-    { "all",		(unsigned)(~0) >> 1 },
-    { "miscellaneous",	ADEBMISC },
-    { "connection",	ADEBCONN },
-    { "initialization",	ADEBINIT },
-    { "file-cache",	ADEBFCACHE },
-    { "volume-cache",	ADEBVOLCACHE },
-    { "cache-manager",	ADEBCM },
-    { "callbacks",	ADEBCALLBACK },
-    { "cleaner",	ADEBCLEANER },
-    { "kernel",		ADEBKERNEL },
-    { "messages",	ADEBMSG },
-    { "fbuf",		ADEBFBUF },
-    { "warnings",	ADEBWARN },
+    { "all",		all},
+    { "almost-all",	all & ~ADEBCLEANER},
     { "errors",		ADEBERROR },
+    { "warnings",	ADEBWARN },
+    { "disconn",	ADEBDISCONN },
+    { "fbuf",		ADEBFBUF },
+    { "messages",	ADEBMSG },
+    { "kernel",		ADEBKERNEL },
+    { "cleaner",	ADEBCLEANER },
+    { "callbacks",	ADEBCALLBACK },
+    { "cache-manager",	ADEBCM },
+    { "volume-cache",	ADEBVOLCACHE },
+    { "file-cache",	ADEBFCACHE },
+    { "initialization",	ADEBINIT },
+    { "connection",	ADEBCONN },
+    { "miscellaneous",	ADEBMISC },
+    { "venuslog",	ADEBVLOG },
+    { "default",	DEFAULT_LOG },
     { "none",		0 },
     { NULL }
 };
-
-#define DEFAULT_LOG (ADEBWARN | ADEBERROR)
 
 void
 arla_log(unsigned level, char *fmt, ...)
@@ -72,7 +93,7 @@ arla_log(unsigned level, char *fmt, ...)
     assert (arla_log_method);
     
     va_start(args, fmt);
-    log_vlog(arla_log_method, level, fmt, args);
+    log_vlog(arla_log_unit, level, fmt, args);
     va_end(args);
 }
 
@@ -82,28 +103,37 @@ arla_loginit(char *log)
     assert (log);
     
     arla_log_method = log_open("arla", log);
-    log_set_mask(arla_log_method, DEFAULT_LOG);
+    if (arla_log_method == NULL)
+	errx (1, "arla_loginit: log_opened failed with log `%s'", log);
+    arla_log_unit = log_unit_init (arla_log_method, "arla", arla_deb_units,
+				   DEFAULT_LOG);
+    if (arla_log_unit == NULL)
+	errx (1, "arla_loginit: log_unit_init failed");
 }
 
 int
 arla_log_set_level (const char *s)
 {
-    int ret;
+    log_set_mask_str (arla_log_method, NULL, s);
+    return 0;
+}
 
-    ret = parse_flags (s, arla_deb_units, log_get_mask(arla_log_method));
-    if (ret < 0)
-	return ret;
-    else {
-	log_set_mask (arla_log_method, ret);
-	return 0;
-    }
+void
+arla_log_set_level_num (unsigned level)
+{
+    log_set_mask (arla_log_unit, level);
 }
 
 void
 arla_log_get_level (char *s, size_t len)
 {
-    unparse_flags (log_get_mask (arla_log_method),
-		   arla_deb_units, s, len);
+    log_mask2str (arla_log_method, NULL, s, len);
+}
+
+unsigned
+arla_log_get_level_num (void)
+{
+    return log_get_mask (arla_log_unit);
 }
 
 void
@@ -133,11 +163,11 @@ arla_verr (int eval, unsigned level, int error, const char *fmt, va_list args)
 
     vasprintf (&s, fmt, args);
     if (s == NULL) {
-	log_log (arla_log_method, level,
+	log_log (arla_log_unit, level,
 		 "Sorry, no memory to print `%s'...", fmt);
 	exit (eval);
     }
-    log_log (arla_log_method, level, "%s: %s", s, koerr_gettext (error));
+    log_log (arla_log_unit, level, "%s: %s", s, koerr_gettext (error));
     free (s);
     exit (eval);
 }
@@ -155,7 +185,7 @@ arla_errx (int eval, unsigned level, const char *fmt, ...)
 void
 arla_verrx (int eval, unsigned level, const char *fmt, va_list args)
 {
-    log_vlog (arla_log_method, level, fmt, args);
+    log_vlog (arla_log_unit, level, fmt, args);
     exit (eval);
 }
 
@@ -176,11 +206,11 @@ arla_vwarn (unsigned level, int error, const char *fmt, va_list args)
 
     vasprintf (&s, fmt, args);
     if (s == NULL) {
-	log_log (arla_log_method, level,
+	log_log (arla_log_unit, level,
 		 "Sorry, no memory to print `%s'...", fmt);
 	return;
     }
-    log_log (arla_log_method, level, "%s: %s", s, koerr_gettext (error));
+    log_log (arla_log_unit, level, "%s: %s", s, koerr_gettext (error));
     free (s);
 }
 
@@ -197,5 +227,5 @@ arla_warnx (unsigned level, const char *fmt, ...)
 void
 arla_vwarnx (unsigned level, const char *fmt, va_list args)
 {
-    log_vlog (arla_log_method, level, fmt, args);
+    log_vlog (arla_log_unit, level, fmt, args);
 }

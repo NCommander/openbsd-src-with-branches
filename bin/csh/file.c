@@ -1,4 +1,5 @@
-/*	$NetBSD: file.c,v 1.10 1995/03/21 18:35:39 mycroft Exp $	*/
+/*	$OpenBSD: file.c,v 1.5 1997/11/15 21:51:29 todd Exp $	*/
+/*	$NetBSD: file.c,v 1.11 1996/11/08 19:34:37 christos Exp $	*/
 
 /*-
  * Copyright (c) 1980, 1991, 1993
@@ -37,7 +38,7 @@
 #if 0
 static char sccsid[] = "@(#)file.c	8.2 (Berkeley) 3/19/94";
 #else
-static char rcsid[] = "$NetBSD: file.c,v 1.10 1995/03/21 18:35:39 mycroft Exp $";
+static char rcsid[] = "$OpenBSD: file.c,v 1.5 1997/11/15 21:51:29 todd Exp $";
 #endif
 #endif /* not lint */
 
@@ -54,7 +55,7 @@ static char rcsid[] = "$NetBSD: file.c,v 1.10 1995/03/21 18:35:39 mycroft Exp $"
 #ifndef SHORT_STRINGS
 #include <string.h>
 #endif /* SHORT_STRINGS */
-#if __STDC__
+#ifdef __STDC__
 # include <stdarg.h>
 #else
 # include <varargs.h>
@@ -153,9 +154,9 @@ back_to_col_1()
     tty_normal = tty;
     tty.c_iflag &= ~INLCR;
     tty.c_oflag &= ~ONLCR;
-    (void) tcsetattr(SHOUT, TCSANOW, &tty);
+    (void) tcsetattr(SHOUT, TCSADRAIN, &tty);
     (void) write(SHOUT, "\r", 1);
-    (void) tcsetattr(SHOUT, TCSANOW, &tty_normal);
+    (void) tcsetattr(SHOUT, TCSADRAIN, &tty_normal);
     sigprocmask(SIG_SETMASK, &osigset, NULL);
 }
 
@@ -177,11 +178,11 @@ pushback(string)
     (void) tcgetattr(SHOUT, &tty);
     tty_normal = tty;
     tty.c_lflag &= ~(ECHOKE | ECHO | ECHOE | ECHOK | ECHONL | ECHOPRT | ECHOCTL);
-    (void) tcsetattr(SHOUT, TCSANOW, &tty);
+    (void) tcsetattr(SHOUT, TCSADRAIN, &tty);
 
     for (p = string; (c = *p) != '\0'; p++)
 	(void) ioctl(SHOUT, TIOCSTI, (ioctl_t) & c);
-    (void) tcsetattr(SHOUT, TCSANOW, &tty_normal);
+    (void) tcsetattr(SHOUT, TCSADRAIN, &tty_normal);
     sigprocmask(SIG_SETMASK, &osigset, NULL);
 }
 
@@ -332,7 +333,7 @@ retype()
 
     (void) tcgetattr(SHOUT, &tty);
     tty.c_lflag |= PENDIN;
-    (void) tcsetattr(SHOUT, TCSANOW, &tty);
+    (void) tcsetattr(SHOUT, TCSADRAIN, &tty);
 }
 
 static void
@@ -449,7 +450,7 @@ tsearch(word, command, max_word_length)
     register DIR *dir_fd;
     register numitems = 0, ignoring = TRUE, nignored = 0;
     register name_length, looking_for_lognames;
-    Char    tilded_dir[MAXPATHLEN + 1], dir[MAXPATHLEN + 1];
+    Char    tilded_dir[MAXPATHLEN], dir[MAXPATHLEN];
     Char    name[MAXNAMLEN + 1], extended_name[MAXNAMLEN + 1];
     Char   *entry;
 
@@ -641,7 +642,7 @@ tenex(inputline, inputline_size)
 	    --str_end;		/* wipeout trailing cmd Char */
 	*str_end = '\0';
 	/*
-	 * Find LAST occurence of a delimiter in the inputline. The word start
+	 * Find LAST occurrence of a delimiter in the inputline. The word start
 	 * is one Character past it.
 	 */
 	for (word_start = str_end; word_start > inputline; --word_start)

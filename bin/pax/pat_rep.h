@@ -1,3 +1,4 @@
+/*	$OpenBSD: pat_rep.h,v 1.3 1995/03/21 09:07:35 cgd Exp $	*/
 /*	$NetBSD: pat_rep.h,v 1.3 1995/03/21 09:07:35 cgd Exp $	*/
 
 /*-

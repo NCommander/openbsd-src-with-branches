@@ -1,5 +1,3 @@
-/*	$NetBSD: tmpfile.c,v 1.5 1995/02/02 02:10:43 jtc Exp $	*/
-
 /*-
  * Copyright (c) 1990, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -37,13 +35,11 @@
  */
 
 #if defined(LIBC_SCCS) && !defined(lint)
-#if 0
-static char sccsid[] = "@(#)tmpfile.c	8.1 (Berkeley) 6/4/93";
-#endif
-static char rcsid[] = "$NetBSD: tmpfile.c,v 1.5 1995/02/02 02:10:43 jtc Exp $";
+static char rcsid[] = "$OpenBSD: tmpfile.c,v 1.5 1998/03/10 20:27:06 deraadt Exp $";
 #endif /* LIBC_SCCS and not lint */
 
 #include <sys/types.h>
+#include <sys/stat.h>
 #include <unistd.h>
 #include <signal.h>
 #include <errno.h>
@@ -57,7 +53,7 @@ tmpfile()
 	sigset_t set, oset;
 	FILE *fp;
 	int fd, sverrno;
-#define	TRAILER	"tmp.XXXXXX"
+#define	TRAILER	"tmp.XXXXXXXXXX"
 	char buf[sizeof(_PATH_TMP) + sizeof(TRAILER)];
 
 	(void)memcpy(buf, _PATH_TMP, sizeof(_PATH_TMP) - 1);
@@ -67,8 +63,14 @@ tmpfile()
 	(void)sigprocmask(SIG_BLOCK, &set, &oset);
 
 	fd = mkstemp(buf);
-	if (fd != -1)
+	if (fd != -1) {
+		mode_t u;
+
 		(void)unlink(buf);
+		u = umask(0);
+		(void)umask(u);
+		(void)fchmod(fd, 0666 & ~u);
+	}
 
 	(void)sigprocmask(SIG_SETMASK, &oset, NULL);
 

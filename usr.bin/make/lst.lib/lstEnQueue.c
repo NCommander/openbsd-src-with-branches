@@ -1,8 +1,9 @@
-/*	$NetBSD: lstEnQueue.c,v 1.4 1995/06/14 15:21:04 christos Exp $	*/
+/*	$OpenBSD: lstEnQueue.c,v 1.7 2000/06/17 14:43:39 espie Exp $	*/
+/*	$NetBSD: lstEnQueue.c,v 1.5 1996/11/06 17:59:38 christos Exp $	*/
 
 /*
- * Copyright (c) 1988, 1989, 1990 The Regents of the University of California.
- * All rights reserved.
+ * Copyright (c) 1988, 1989, 1990, 1993
+ *	The Regents of the University of California.  All rights reserved.
  *
  * This code is derived from software contributed to Berkeley by
  * Adam de Boor.
@@ -36,28 +37,26 @@
  * SUCH DAMAGE.
  */
 
-#ifndef lint
-#if 0
-static char sccsid[] = "@(#)lstEnQueue.c	5.3 (Berkeley) 6/1/90";
-#else
-static char rcsid[] = "$NetBSD: lstEnQueue.c,v 1.4 1995/06/14 15:21:04 christos Exp $";
-#endif
-#endif /* not lint */
-
 /*-
  * LstEnQueue.c--
  *	Treat the list as a queue and place a datum at its end
  */
 
 #include	"lstInt.h"
+#ifndef lint
+#if 0
+static char sccsid[] = "@(#)lstEnQueue.c	8.1 (Berkeley) 6/6/93";
+#else
+UNUSED
+static char rcsid[] = "$OpenBSD: lstEnQueue.c,v 1.7 2000/06/17 14:43:39 espie Exp $";
+#endif
+#endif /* not lint */
+
 
 /*-
  *-----------------------------------------------------------------------
  * Lst_EnQueue --
  *	Add the datum to the tail of the given list.
- *
- * Results:
- *	SUCCESS or FAILURE as returned by Lst_Append.
  *
  * Side Effects:
  *	the lastPtr field is altered all the time and the firstPtr field
@@ -65,15 +64,11 @@ static char rcsid[] = "$NetBSD: lstEnQueue.c,v 1.4 1995/06/14 15:21:04 christos 
  *
  *-----------------------------------------------------------------------
  */
-ReturnStatus
-Lst_EnQueue (l, d)
+void
+Lst_EnQueue(l, d)
     Lst	    	  l;
-    ClientData	  d;
+    void	  *d;
 {
-    if (LstValid (l) == FALSE) {
-	return (FAILURE);
-    }
-    
-    return (Lst_Append (l, Lst_Last(l), d));
+    Lst_AtEnd(l, d);
 }
 

@@ -1,4 +1,5 @@
-/*	$NetBSD: param.h,v 1.26 1995/06/26 06:55:58 cgd Exp $	*/
+/*	$OpenBSD: param.h,v 1.10 2000/02/22 19:27:48 deraadt Exp $	*/
+/*	$NetBSD: param.h,v 1.29 1996/03/04 05:04:26 cgd Exp $	*/
 
 /*-
  * Copyright (c) 1990 The Regents of the University of California.
@@ -43,16 +44,18 @@
  */
 
 #ifdef _KERNEL
-#ifdef LOCORE
+#ifdef _LOCORE
 #include <machine/psl.h>
 #else
 #include <machine/cpu.h>
 #endif
 #endif
 
-#define MACHINE		"i386"
-#define MACHINE_ARCH	"i386"
-#define MID_MACHINE	MID_I386
+#define	_MACHINE	i386
+#define	MACHINE		"i386"
+#define	_MACHINE_ARCH	i386
+#define	MACHINE_ARCH	"i386"
+#define	MID_MACHINE	MID_I386
 
 /*
  * Round p (pointer or byte index) up to a correctly-aligned value
@@ -65,17 +68,23 @@
 #define	PGSHIFT		12		/* LOG2(NBPG) */
 #define	NBPG		(1 << PGSHIFT)	/* bytes/page */
 #define	PGOFSET		(NBPG-1)	/* byte offset into page */
+
+#define PAGE_SHIFT	12
+#define PAGE_SIZE	(1 << PAGE_SHIFT)
+#define PAGE_MASK	(PAGE_SIZE - 1)
+
 #define	NPTEPG		(NBPG/(sizeof (pt_entry_t)))
 
-#define	KERNBASE	0xf8000000	/* start of kernel virtual space */
-#define	KERNSIZE	0x01800000	/* size of kernel virtual space */
-#define	KERNTEXTOFF	0xf8100000	/* start of kernel text */
+#define	KERNBASE	0xe0000000		/* start of kernel virtual space */
+#define	KERNTEXTOFF	(KERNBASE+0x100000)	/* start of kernel text */
 #define	BTOPKERNBASE	((u_long)KERNBASE >> PGSHIFT)
 
 #define	DEV_BSHIFT	9		/* log2(DEV_BSIZE) */
 #define	DEV_BSIZE	(1 << DEV_BSHIFT)
 #define	BLKDEV_IOSIZE	2048
+#ifndef	MAXPHYS
 #define	MAXPHYS		(64 * 1024)	/* max raw I/O transfer size */
+#endif
 
 #define	CLSIZELOG2	0
 #define	CLSIZE		(1 << CLSIZELOG2)
@@ -85,6 +94,10 @@
 #define	SINCR		1		/* increment of stack/NBPG */
 #define	UPAGES		2		/* pages of u-area */
 #define	USPACE		(UPAGES * NBPG)	/* total size of u-area */
+
+#ifndef MSGBUFSIZE
+#define MSGBUFSIZE	2*NBPG		/* default message buffer size */
+#endif
 
 /*
  * Constants related to network buffer management.
@@ -99,18 +112,14 @@
 #define	MCLOFSET	(MCLBYTES - 1)	/* offset within a m_buf cluster */
 
 #ifndef NMBCLUSTERS
-#ifdef GATEWAY
-#define	NMBCLUSTERS	512		/* map size, max cluster allocation */
-#else
-#define	NMBCLUSTERS	256		/* map size, max cluster allocation */
-#endif
+#define	NMBCLUSTERS	2048		/* map size, max cluster allocation */
 #endif
 
 /*
  * Size of kernel malloc arena in CLBYTES-sized logical pages
  */ 
 #ifndef NKMEMCLUSTERS
-#define	NKMEMCLUSTERS	(6 * 1024 * 1024 / CLBYTES)
+#define	NKMEMCLUSTERS	(16 * 1024 * 1024 / CLBYTES)
 #endif
 
 /* pages ("clicks") to disk blocks */

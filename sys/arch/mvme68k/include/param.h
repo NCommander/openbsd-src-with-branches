@@ -1,4 +1,4 @@
-/*	$NetBSD: param.h,v 1.9 1995/03/28 18:15:38 jtc Exp $	*/
+/*	$OpenBSD: param.h,v 1.7 2000/01/06 03:21:43 smurph Exp $ */
 
 /*
  * Copyright (c) 1988 University of Utah.
@@ -45,7 +45,9 @@
 /*
  * Machine dependent constants for mvme68k, based on HP9000 series 300.
  */
+#define	_MACHINE 	"mvme68k"
 #define	MACHINE 	"mvme68k"
+#define	_MACHINE_ARCH	"m68k"
 #define	MACHINE_ARCH	"m68k"
 #define	MID_MACHINE	MID_M68K
 
@@ -63,16 +65,16 @@
 #define	NPTEPG		(NBPG/(sizeof (pt_entry_t)))
 
 #define	SEGSHIFT	22		/* LOG2(NBSEG) */
-#define NBSEG		(1 << SEGSHIFT)	/* bytes/segment */
+#define	NBSEG		(1 << SEGSHIFT)	/* bytes/segment */
 #define	SEGOFSET	(NBSEG-1)	/* byte offset into segment */
 
 #define	KERNBASE	0x00000000	/* start of kernel virtual */
-#define KERNTEXTOFF	0x00010000	/* start of kernel text */
+#define	KERNTEXTOFF	0x00010000	/* start of kernel text */
 #define	BTOPKERNBASE	((u_long)KERNBASE >> PGSHIFT)
 
 #define	DEV_BSHIFT	9		/* log2(DEV_BSIZE) */
 #define	DEV_BSIZE	(1 << DEV_BSHIFT)
-#define BLKDEV_IOSIZE	2048
+#define	BLKDEV_IOSIZE	2048
 #define	MAXPHYS		(64 * 1024)	/* max raw I/O transfer size */
 
 #define	CLSIZELOG2	0
@@ -96,18 +98,20 @@
 #define	MCLBYTES	(1 << MCLSHIFT)	/* large enough for ether MTU */
 #define	MCLOFSET	(MCLBYTES - 1)
 
-#ifndef NMBCLUSTERS
-#ifdef GATEWAY
-#define	NMBCLUSTERS	512		/* map size, max cluster allocation */
+#ifndef	NMBCLUSTERS
+#ifdef	GATEWAY
+#define	NMBCLUSTERS	2048		/* map size, max cluster allocation */
 #else
-#define	NMBCLUSTERS	256		/* map size, max cluster allocation */
+#define	NMBCLUSTERS	1024		/* map size, max cluster allocation */
 #endif
 #endif
+
+#define MSGBUFSIZE	4096
 
 /*
  * Size of kernel malloc arena in CLBYTES-sized logical pages
  */ 
-#ifndef NKMEMCLUSTERS
+#ifndef	NKMEMCLUSTERS
 #define	NKMEMCLUSTERS	(2048 * 1024 / CLBYTES)
 #endif
 
@@ -144,38 +148,26 @@
  */
 #include <machine/psl.h>
 
-#define _spl(s) \
-({ \
-	register int _spl_r; \
-\
-	__asm __volatile ("clrl %0; movew sr,%0; movew %1,sr" : \
-		"&=d" (_spl_r) : "di" (s)); \
-	_spl_r; \
-})
+/*
+ * interrupt glue 
+ */
+#include <machine/intr.h>
 
-/* spl0 requires checking for software interrupts */
-#define	spl1()	_spl(PSL_S|PSL_IPL1)
-#define	spl2()	_spl(PSL_S|PSL_IPL2)
-#define	spl3()	_spl(PSL_S|PSL_IPL3)
-#define	spl4()	_spl(PSL_S|PSL_IPL4)
-#define	spl5()	_spl(PSL_S|PSL_IPL5)
-#define	spl6()	_spl(PSL_S|PSL_IPL6)
-#define	spl7()	_spl(PSL_S|PSL_IPL7)
-
-#define	splsoftclock()	spl1()
-#define	splsoftnet()	spl1()
-#define	splbio()	spl2()
-#define	splnet()	spl3()
-#define	splimp()	spl3()
-#define	spltty()	spl3()
-#define	splclock()	spl5()
-#define	splstatclock()	spl5()
-#define	splhigh()	spl7()
-#define	splsched()	spl7()
-
-/* watch out for side effects */
-#define	splx(s)		(s & PSL_IPL ? _spl(s) : spl0())
 
 #ifdef _KERNEL
 #define DELAY(n)	delay(n)
+#endif
+
+#ifdef COMPAT_HPUX
+/*
+ * Constants/macros for HPUX multiple mapping of user address space.
+ * Pages in the first 256Mb are mapped in at every 256Mb segment.
+ */
+#define HPMMMASK	0xF0000000
+#define ISHPMMADDR(v) \
+	((curproc->p_md.md_flags & MDP_HPUXMMAP) && \
+	 ((unsigned)(v) & HPMMMASK) && \
+	 ((unsigned)(v) & HPMMMASK) != HPMMMASK)
+#define HPMMBASEADDR(v) \
+	((unsigned)(v) & ~HPMMMASK)
 #endif

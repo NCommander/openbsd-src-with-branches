@@ -1,8 +1,11 @@
-#	$NetBSD: Makefile,v 1.9 1994/12/02 00:43:17 phil Exp $
+#	$OpenBSD: Makefile,v 1.5 1999/07/22 02:35:02 deraadt Exp $
 
 BINDIR?=	/usr/bin
 PROG=	bc
-SRCS=	bcwrap.c
+SRCS=	wrap-anything.c
 NOMAN=
 
+CFLAGS+=-DWRAP=\"/usr/bin/gnubc\" -DBLOCK
+
 .include <bsd.prog.mk>
+

@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: client.c,v 1.4 2000/08/03 20:21:35 jason Exp $	*/
 
 /*
  * Copyright (c) 2000 Network Security Technologies, Inc. http://www.netsec.net
@@ -141,7 +141,6 @@ client_mode(bfd, sysname, srvname, myea)
 
 	if (pppfd >= 0) {
 		send_padt(bfd, myea, &rmea, client_sessionid);
-		close(pppfd);
 		pppfd = -1;
 	}
 	return (r);
@@ -363,7 +362,6 @@ getpackets(bfd, srv, sysname, myea, rmea)
 				    len, mpkt);
 				break;
 			default:
-				recv_debug(bfd, myea, &eh, &ph, len, mpkt);
 				r = 0;
 			}
 			if (r < 0)
@@ -374,10 +372,12 @@ getpackets(bfd, srv, sysname, myea, rmea)
 				goto next;
 			if (bcmp(rmea, &eh.ether_shost[0], ETHER_ADDR_LEN))
 				goto next;
-			if (pppfd <= 0)
+			if (pppfd < 0)
 				goto next;
-			if (bpf_to_ppp(pppfd, len, mpkt) <= 0)
+			if ((r = bpf_to_ppp(pppfd, len, mpkt)) < 0)
 				return (-1);
+			if (r == 0)
+				continue;
 		}
 next:
 		pkt += BPF_WORDALIGN(bh->bh_hdrlen + bh->bh_caplen);
@@ -427,6 +427,8 @@ recv_pado(bfd, srv, myea, rmea, eh, ph, len, pkt)
 	r = 0;
 	slen = (srv == NULL) ? 0 : strlen(srv);
 	while ((n = tag_lookup(&tl, PPPOE_TAG_SERVICE_NAME, r)) != NULL) {
+		if (slen == 0)
+			break;
 		if (slen == 0 || n->len == 0)
 			break;
 		if (n->len == slen && !strncmp(srv, n->val, slen))
@@ -490,7 +492,7 @@ recv_pads(bfd, srv, sysname, myea, rmea, eh, ph, len, pkt)
 
 	timer_clr();
 
-	pppfd = runppp(bfd, sysname);
+	pppfd = fileno(stdin);
 	if (pppfd < 0) {
 		send_padt(bfd, myea, rmea, ph->sessionid);
 		return (-1);

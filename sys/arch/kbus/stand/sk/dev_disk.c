@@ -1,4 +1,4 @@
-/*	$Id: dev_disk.c,v 1.1 1997/08/23 13:51:03 gingold Exp $ */
+/*	$OpenBSD: dev_disk.c,v 1.1.1.1 1997/10/14 07:25:31 gingold Exp $ */
 
 /*
  * Copyright (c) 1993 Paul Kranenburg

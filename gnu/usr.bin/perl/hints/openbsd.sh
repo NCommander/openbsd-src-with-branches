@@ -26,8 +26,8 @@ d_setruid=$undef
 #
 # Not all platforms support dynamic loading...
 #
-case `arch` in
-OpenBSD.alpha|OpenBSD.mips|OpenBSD.powerpc|OpenBSD.vax)
+case `arch -s` in
+alpha|mips|powerpc|vax)
 	usedl=$undef
 	;;
 *)
@@ -37,7 +37,15 @@ OpenBSD.alpha|OpenBSD.mips|OpenBSD.powerpc|OpenBSD.vax)
 	# we use -fPIC here because -fpic is *NOT* enough for some of the
 	# extensions like Tk on some OpenBSD platforms (ie: sparc)
 	cccdlflags="-DPIC -fPIC $cccdlflags"
-	lddlflags="-Bshareable $lddlflags"
+	case "$osvers" in
+	[01].*|2.[0-7]|2.[0-7].*)
+		lddlflags="-Bshareable $lddlflags"
+		;;
+	*) # from 2.8 onwards
+		ld=${cc:-cc}
+		lddlflags="-shared -fPIC $lddlflags"
+		;;
+	esac
 	;;
 esac
 
@@ -87,6 +95,9 @@ case "$openbsd_distribution" in
 	sysman='/usr/share/man/man1'
 	libpth='/usr/lib'
 	glibpth='/usr/lib'
+	# Local things, however, do go in /usr/local
+	siteprefix='/usr/local'
+	siteprefixexp='/usr/local'
 	# Ports installs non-std libs in /usr/local/lib so look there too
 	locincpth='/usr/local/include'
 	loclibpth='/usr/local/lib'

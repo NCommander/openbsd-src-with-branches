@@ -1,3 +1,5 @@
+/*	$OpenBSD: loadfont.c,v 1.4 1999/01/13 07:26:06 niklas Exp $	*/
+
 /*
  * Copyright (c) 1992, 1995 Hellmuth Michaelis
  *
@@ -47,9 +49,12 @@ static char *id =
  *
  *---------------------------------------------------------------------------*/
  
-#include <stdio.h>
-#include <fcntl.h>
 #include <errno.h>
+#include <fcntl.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <unistd.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <machine/pcvt_ioctl.h>
@@ -69,6 +74,7 @@ static void printvgafontattr(int charset);
 static void printheader(void);
 static void usage(void);
 
+int
 main(int argc, char **argv)
 {
 	extern int optind;
@@ -85,13 +91,13 @@ main(int argc, char **argv)
 	int scan_lines = -1;
 	int c;
 	int chr_set = -1;
-	char *filename;
+	char *filename = NULL;
 	int fflag = -1;
 	int info = -1;
 	int dflag = 0;
-	char *device;
+	char *device = NULL;
 	
-	while( (c = getopt(argc, argv, "c:d:f:is:")) != EOF)
+	while( (c = getopt(argc, argv, "c:d:f:is:")) != -1)
 	{
 		switch(c)
 		{
@@ -135,7 +141,7 @@ main(int argc, char **argv)
 		{
 			char buffer[80];
 			strcpy(buffer,"ERROR opening ");
-			strcat(buffer,device);
+			strncat(buffer,device,sizeof(buffer) - strlen(buffer));
 			perror(buffer);
 			exit(1);
 		}
@@ -220,7 +226,7 @@ main(int argc, char **argv)
 	if((in = fopen(filename, "r")) == NULL)
 	{
 		char buffer[80];
-		sprintf(buffer, "cannot open file %s for reading", filename);
+		snprintf(buffer, sizeof(buffer), "cannot open file %s for reading", filename);
 		perror(buffer);
 		exit(1);
 	}
@@ -228,7 +234,7 @@ main(int argc, char **argv)
 	if((fstat(fileno(in), sbp)) != 0)
 	{
 		char buffer[80];
-		sprintf(buffer, "cannot fstat file %s", filename);
+		snprintf(buffer, sizeof(buffer), "cannot fstat file %s", filename);
 		perror(buffer);
 		exit(1);
 	}
@@ -238,8 +244,8 @@ main(int argc, char **argv)
 	if(chr_height * 256 != sbp->st_size ||
 	   chr_height < 8 || chr_height > 20) {
 		fprintf(stderr,
-			"File is no valid font file, size = %d.\n",
-			sbp->st_size);
+			"File is no valid font file, size = %ld.\n",
+			(long)sbp->st_size);
 		exit(1);
 	}			
 
@@ -256,9 +262,9 @@ main(int argc, char **argv)
 	   sbp->st_size)
 	{
 		fprintf(stderr,
-			"error reading file %s, size = %d, read = %d, "
+			"error reading file %s, size = %ld, read = %d, "
 			"errno %d\n",
-			argv[1], sbp->st_size, ret, errno);
+			argv[1], (long)sbp->st_size, ret, errno);
 		exit(1);
 	}		
 

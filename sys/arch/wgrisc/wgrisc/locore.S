@@ -1,5 +1,4 @@
-
-/*	$OpenBSD: locore.S,v 1.6 1996/09/22 11:29:52 pefo Exp $	*/
+/*	$OpenBSD: locore.S,v 1.2 1997/05/11 16:26:07 pefo Exp $	*/
 /*
  * Copyright (c) 1992, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -51,7 +50,7 @@
  *	v 1.1 89/07/10 14:27:41 nelson Exp  SPRITE (DECWRL)
  *
  *	from: @(#)locore.s	8.5 (Berkeley) 1/4/94
- *	$Id: locore.S,v 1.6 1996/09/22 11:29:52 pefo Exp $
+ *	$Id: locore.S,v 1.2 1997/05/11 16:26:07 pefo Exp $
  */
 
 /*
@@ -68,6 +67,7 @@
 #include <machine/cpu.h>
 #include <machine/regnum.h>
 #include <machine/pte.h>
+#include <wgrisc/riscbus/riscbus.h>
 
 #include "assym.h"
 
@@ -77,6 +77,9 @@
  * Amount to take off of the stack for the benefit of the debugger.
  */
 #define START_FRAME	((4 * 4) + 4 + 4)
+
+	.globl  kernel_start
+	kernel_start = start
 
 	.globl	start
 start:
@@ -443,6 +446,48 @@ LEAF(outsl)
 END(outsl)
 
 /*
+ * Copy and swap words.
+ *
+ * copynswap(from, to, size);
+ */
+LEAF(copynswap)
+	subu	a2, a2, 1
+	and	a2, a2, 0xfffffffc
+	lw	t3, 0(a0)
+	addu	a0, a0, 4
+	beqz	a2, 2f		# move below is in delay slot!
+1:
+	move	t0, t3
+	lw	t3, 0(a0)	# look ahead load...
+	addu	a0, a0, 4
+	srl	t1, t0, 24	# d24-d31 -> d0-d7
+	sll	t2, t0, 24	# d0-d7 -> d24-d31
+	or	t2, t2, t1	# combine
+	srl	t1, t0, 8
+	and	t1, t1, 0xff00	# mask
+	or	t2, t1, t2	# d16-d23 -> d8-d15
+	and	t0, t0, 0xff00	# mask
+	sll	t0, t0, 8
+	or	t2, t0, t2	# d8-d15 -> d16-d23
+	sw	t2, 0(a1)
+	subu	a2, a2, 4
+	bnez	a2, 1b
+	addu	a1, a1, 4
+2:				# Do last word ----
+	srl	t1, t3, 24	# d24-d31 -> d0-d7
+	sll	t2, t3, 24	# d0-d7 -> d24-d31
+	or	t2, t2, t1	# combine
+	srl	t1, t3, 8
+	and	t1, t1, 0xff00	# mask
+	or	t2, t1, t2	# d16-d23 -> d8-d15
+	and	t3, t3, 0xff00	# mask
+	sll	t0, t3, 8
+	or	t2, t0, t2	# d8-d15 -> d16-d23
+	jr	ra
+	sw	t2, 0(a1)
+END(copynswap)
+
+/*
  * Copy a null terminated string from the user address space into
  * the kernel address space.
  *
@@ -719,12 +764,32 @@ LEAF(idle)
 	mtc0	t0, COP_0_STATUS_REG		# enable all interrupts
 	sw	zero, curproc			# set curproc NULL for stats
 1:
+	lbu	t4, led_sw
+	nop
+	or	t4, 0x40
+#ifdef ROTATING_LED
+	sb	t4, RISC_LEDS
+#endif
+	mfc0	v1, COP_0_PRID
 	lw	t0, whichqs			# look for non-empty queue
+	li	v1, 0xff00
+	bne	t0, zero, sw1
+	and	v0, v1
+	li	v1, (MIPS_R3000 << 8)
+	bne	v1, v0, 1b
+#if 0
+	mfc0	v1, COP_0_CFG
+#else
 	nop
-	beq	t0, zero, 1b
+#endif
+	li	v0, 0x02000000			# XXX assume halt for now.
+	or	v1, v0, v1
+	b	1b
+#if 0
+	mtc0	v1, COP_0_CFG
+#else
 	nop
-	b	sw1
-	mtc0	zero, COP_0_STATUS_REG	# Disable all interrupts
+#endif
 END(idle)
 
 /*
@@ -753,16 +818,30 @@ NON_LEAF(cpu_switch, STAND_FRAME_SIZE, ra)
 	addu	t2, t2, 1
 	sw	t2, cnt+V_SWTCH
 	beq	t1, zero, idle			# if none, idle
-	mtc0	zero, COP_0_STATUS_REG	# Disable all interrupts
 sw1:
+	mtc0	zero, COP_0_STATUS_REG		# Disable all interrupts
+	lbu	t4, led_sw
 	nop					# wait for intrs disabled
+	srl	t5, t4, 5			# instructions below is part
+	sll	t4, t4, 1			# if the delay!
+	or	t4, t5
+	and	t4, 0x3f
+	sb	t4, led_sw
+#ifdef ROTATING_LED
+	sb	t4, RISC_LEDS
+#else
 	nop
 	nop
 	nop
+	nop
+	nop
+#endif
+
 	lw	t0, whichqs			# look for non-empty queue
 	li	t2, -1				# t2 = lowest bit set
 	beq	t0, zero, idle			# if none, idle
 	move	t3, t0				# t3 = saved whichqs
+
 1:
 	addu	t2, t2, 1
 	and	t1, t0, 1			# bit set?
@@ -4469,6 +4548,8 @@ END(cpu_getregs)
 	.globl eintrcnt
 	.globl intrnames
 	.globl eintrnames
+led_sw:
+	.byte	1
 intrnames:
 	.asciiz	"softclock"
 	.asciiz	"softnet"

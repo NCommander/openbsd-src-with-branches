@@ -1,4 +1,4 @@
-/*	$NetBSD: if_lereg.h,v 1.4 1994/11/20 20:52:22 deraadt Exp $ */
+/*	$OpenBSD$ */
 
 /*-
  * Copyright (c) 1982, 1992, 1993

@@ -72,7 +72,7 @@ static char rcsid[] = "$NetBSD: fortune.c,v 1.8 1995/03/23 08:28:40 cgd Exp $";
 # define	CPERS	20		/* # of chars for each sec */
 # define	SLEN	160		/* # of chars in short fortune */
 
-# define	POS_UNKNOWN	((off_t) -1)	/* pos for file unknown */
+# define	POS_UNKNOWN	((int32_t) -1)	/* pos for file unknown */
 # define	NO_PROB		(-1)		/* no prob specified for file */
 
 # ifdef DEBUG
@@ -86,7 +86,7 @@ static char rcsid[] = "$NetBSD: fortune.c,v 1.8 1995/03/23 08:28:40 cgd Exp $";
 typedef struct fd {
 	int		percent;
 	int		fd, datfd;
-	off_t		pos;
+	int32_t		pos;
 	FILE		*inf;
 	char		*name;
 	char		*path;
@@ -118,7 +118,7 @@ char	*Fortbuf = NULL;			/* fortune buffer for -m */
 
 int	Fort_len = 0;
 
-off_t	Seekpts[2];			/* seek pointers to fortunes */
+int32_t	Seekpts[2];			/* seek pointers to fortunes */
 
 FILEDESC	*File_list = NULL,	/* Head of file list */
 		*File_tail = NULL;	/* Tail of file list */
@@ -200,7 +200,6 @@ char	*av[];
 #endif
 
 	init_prob();
-	srandom((int)(time((time_t *) NULL) + getpid()));
 	do {
 		get_fort();
 	} while ((Short_only && fortlen() > SLEN) ||
@@ -221,7 +220,9 @@ char	*av[];
 	 */
 	(void) flock(fd, LOCK_EX);
 #endif	/* LOCK_EX */
+	Fortfile->pos = htonl(Fortfile->pos);
 	write(fd, (char *) &Fortfile->pos, sizeof Fortfile->pos);
+	Fortfile->pos = ntohl(Fortfile->pos);
 	if (!Fortfile->was_pos_file)
 		(void) chmod(Fortfile->path, 0666);
 #ifdef	LOCK_EX
@@ -302,9 +303,9 @@ register char	**argv;
 	ignore_case = FALSE;
 
 # ifdef DEBUG
-	while ((ch = getopt(argc, argv, "aDefilm:osw")) != EOF)
+	while ((ch = getopt(argc, argv, "aDefilm:osw")) != -1)
 #else
-	while ((ch = getopt(argc, argv, "aefilm:osw")) != EOF)
+	while ((ch = getopt(argc, argv, "aefilm:osw")) != -1)
 #endif /* DEBUG */
 		switch(ch) {
 		case 'a':		/* any fortune */
@@ -536,11 +537,11 @@ over:
 			fprintf(stderr,
 				"fortune:%s not a fortune file or directory\n",
 				path);
-		free((char *) fp);
 		if (was_malloc)
 			free(path);
 		do_free(fp->datfile);
 		do_free(fp->posfile);
+		free((char *) fp);
 		do_free(offensive);
 		return FALSE;
 	}
@@ -663,7 +664,7 @@ char			*offensive;
 	obscene->fd = fd;
 	obscene->inf = NULL;
 	obscene->path = offensive;
-	if ((sp = rindex(offensive, '/')) == NULL)
+	if ((sp = strrchr(offensive, '/')) == NULL)
 		obscene->name = offensive;
 	else
 		obscene->name = ++sp;
@@ -764,7 +765,7 @@ int	check_for_offend;
 			return FALSE;
 	}
 
-	if ((sp = rindex(file, '/')) == NULL)
+	if ((sp = strrchr(file, '/')) == NULL)
 		sp = file;
 	else
 		sp++;
@@ -772,7 +773,7 @@ int	check_for_offend;
 		DPRINTF(2, (stderr, "FALSE (file starts with '.')\n"));
 		return FALSE;
 	}
-	if ((sp = rindex(sp, '.')) != NULL) {
+	if ((sp = strrchr(sp, '.')) != NULL) {
 		sp++;
 		for (i = 0; suflist[i] != NULL; i++)
 			if (strcmp(sp, suflist[i]) == 0) {
@@ -794,7 +795,7 @@ int	check_for_offend;
 		free(datfile);
 #ifdef	OK_TO_WRITE_DISK
 	if (posp != NULL) {
-		*posp = copy(file, (unsigned int) (strlen(file) + 4)); /* +4 for ".dat" */
+		*posp = copy(file, (unsigned int) (strlen(file) + 4)); /* +4 for ".pos" */
 		(void) strcat(*posp, ".pos");
 	}
 #endif	/* OK_TO_WRITE_DISK */
@@ -935,7 +936,7 @@ get_fort()
 	if (File_list->next == NULL || File_list->percent == NO_PROB)
 		fp = File_list;
 	else {
-		choice = random() % 100;
+		choice = arc4random() % 100;
 		DPRINTF(1, (stderr, "choice = %d\n", choice));
 		for (fp = File_list; fp->percent != NO_PROB; fp = fp->next)
 			if (choice < fp->percent)
@@ -955,7 +956,7 @@ get_fort()
 	else {
 		if (fp->next != NULL) {
 			sum_noprobs(fp);
-			choice = random() % Noprob_tbl.str_numstr;
+			choice = arc4random() % Noprob_tbl.str_numstr;
 			DPRINTF(1, (stderr, "choice = %d (of %d) \n", choice,
 				    Noprob_tbl.str_numstr));
 			while (choice >= fp->tbl.str_numstr) {
@@ -980,8 +981,9 @@ get_fort()
 	open_dat(fp);
 	(void) lseek(fp->datfd,
 		     (off_t) (sizeof fp->tbl + fp->pos * sizeof Seekpts[0]), 0);
-	read(fp->datfd, Seekpts, sizeof Seekpts);
+	read(fp->datfd, &Seekpts[0], sizeof Seekpts[0]);
 	Seekpts[0] = ntohl(Seekpts[0]);
+	read(fp->datfd, &Seekpts[1], sizeof Seekpts[1]);
 	Seekpts[1] = ntohl(Seekpts[1]);
 }
 
@@ -997,7 +999,7 @@ FILEDESC	*parent;
 	register int		choice;
 
 	if (Equal_probs) {
-		choice = random() % parent->num_children;
+		choice = arc4random() % parent->num_children;
 		DPRINTF(1, (stderr, "    choice = %d (of %d)\n",
 			    choice, parent->num_children));
 		for (fp = parent->child; choice--; fp = fp->next)
@@ -1007,7 +1009,7 @@ FILEDESC	*parent;
 	}
 	else {
 		get_tbl(parent);
-		choice = random() % parent->tbl.str_numstr;
+		choice = arc4random() % parent->tbl.str_numstr;
 		DPRINTF(1, (stderr, "    choice = %d (of %d)\n",
 			    choice, parent->tbl.str_numstr));
 		for (fp = parent->child; choice >= fp->tbl.str_numstr;
@@ -1096,13 +1098,15 @@ FILEDESC	*fp;
 #ifdef	OK_TO_WRITE_DISK
 		if ((fd = open(fp->posfile, 0)) < 0 ||
 		    read(fd, &fp->pos, sizeof fp->pos) != sizeof fp->pos)
-			fp->pos = random() % fp->tbl.str_numstr;
-		else if (fp->pos >= fp->tbl.str_numstr)
+			fp->pos = arc4random() % fp->tbl.str_numstr;
+		else if (ntohl(fp->pos) >= fp->tbl.str_numstr)
 			fp->pos %= fp->tbl.str_numstr;
+		else
+			fp->pos = ntohl(fp->pos);
 		if (fd >= 0)
 			(void) close(fd);
 #else
-		fp->pos = random() % fp->tbl.str_numstr;
+		fp->pos = arc4random() % fp->tbl.str_numstr;
 #endif /* OK_TO_WRITE_DISK */
 	}
 	if (++(fp->pos) >= fp->tbl.str_numstr)
@@ -1128,11 +1132,43 @@ FILEDESC	*fp;
 			perror(fp->datfile);
 			exit(1);
 		}
-		if (read(fd, (char *) &fp->tbl, sizeof fp->tbl) != sizeof fp->tbl) {
+		if (read(fd, &fp->tbl.str_version,  sizeof(fp->tbl.str_version)) !=
+		    sizeof(fp->tbl.str_version)) {
 			(void)fprintf(stderr,
 			    "fortune: %s corrupted\n", fp->path);
 			exit(1);
 		}
+		if (read(fd, &fp->tbl.str_numstr,   sizeof(fp->tbl.str_numstr)) !=
+		    sizeof(fp->tbl.str_numstr)) {
+			(void)fprintf(stderr,
+			    "fortune: %s corrupted\n", fp->path);
+			exit(1);
+		}
+		if (read(fd, &fp->tbl.str_longlen,  sizeof(fp->tbl.str_longlen)) !=
+		    sizeof(fp->tbl.str_longlen)) {
+			(void)fprintf(stderr,
+			    "fortune: %s corrupted\n", fp->path);
+			exit(1);
+		}
+		if (read(fd, &fp->tbl.str_shortlen, sizeof(fp->tbl.str_shortlen)) !=
+		    sizeof(fp->tbl.str_shortlen)) {
+			(void)fprintf(stderr,
+			    "fortune: %s corrupted\n", fp->path);
+			exit(1);
+		}
+		if (read(fd, &fp->tbl.str_flags,    sizeof(fp->tbl.str_flags)) !=
+		    sizeof(fp->tbl.str_flags)) {
+			(void)fprintf(stderr,
+			    "fortune: %s corrupted\n", fp->path);
+			exit(1);
+		}
+		if (read(fd, fp->tbl.stuff,	    sizeof(fp->tbl.stuff)) !=
+		    sizeof(fp->tbl.stuff)) {
+			(void)fprintf(stderr,
+			    "fortune: %s corrupted\n", fp->path);
+			exit(1);
+		}
+
 		/* fp->tbl.str_version = ntohl(fp->tbl.str_version); */
 		fp->tbl.str_numstr = ntohl(fp->tbl.str_numstr);
 		fp->tbl.str_longlen = ntohl(fp->tbl.str_longlen);

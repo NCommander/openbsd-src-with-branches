@@ -22,6 +22,14 @@
 
 <H1 ALIGN="CENTER">Compiling and Installing Apache 1.3</H1>
 
+This document covers compilation and installation of Apache on Unix
+systems only. For compiling and installation on Windows, see <A
+HREF="windows.html">Using Apache with Microsoft Windows</A> and for
+TPF see <A HREF="install-tpf.html">Installing the Apache 1.3 HTTP
+Server on TPF</A>.
+
+<P>
+
 UnixWare users will want to consult <A HREF="unixware.html">build notes</A>
 for various UnixWare versions before compiling.
 
@@ -96,7 +104,7 @@ directory of the Apache distribution. Change into this directory.
   </BLOCKQUOTE>
 
   (*: Depending on Configuration and your system, Configure
-  make not print these lines. That's OK).<P>
+  might not print these lines. That's OK).<P>
 
   This generates a Makefile for use in stage 3. It also creates a
   Makefile in the support directory, for compilation of the optional
@@ -213,7 +221,7 @@ file.
 If when you run <CODE>httpd</CODE> it complained about being unable to
 "bind" to an address, then either some other process is already using
 the port you have configured Apache to use, or you are running httpd
-as a normal user but trying to use port below 1024 (such as the
+as a normal user but trying to use a port below 1024 (such as the
 default port 80).
 
 <P>

@@ -1,4 +1,4 @@
-/*	$NetBSD: afsc.c,v 1.6 1995/02/12 19:19:00 chopps Exp $	*/
+/*	$OpenBSD: siopdma.c,v 1.6 1997/01/28 10:53:41 deraadt Exp $ */
 
 /*
  * Copyright (c) 1995 Theo de Raadt
@@ -57,12 +57,11 @@
 #include <mvme68k/dev/pcctworeg.h>
 #endif
 
-int	afscmatch	__P((struct device *, void *, void *));
-void	afscattach	__P((struct device *, struct device *, void *));
+int   afscmatch   __P((struct device *, void *, void *));
+void  afscattach  __P((struct device *, struct device *, void *));
 
-int	afscprint	__P((void *auxp, char *));
-int	siopintr	__P((struct siop_softc *));
-int	afsc_dmaintr	__P((struct siop_softc *));
+int   siopintr __P((struct siop_softc *));
+int   afsc_dmaintr   __P((struct siop_softc *));
 
 struct scsi_adapter afsc_scsiswitch = {
 	siop_scsicmd,
@@ -78,14 +77,18 @@ struct scsi_device afsc_scsidev = {
 	NULL,		/* Use default done routine */
 };
 
-struct cfdriver siopcd = {
-	NULL, "siop", afscmatch, afscattach, 
-	DV_DULL, sizeof(struct siop_softc), NULL, 0 };
+struct cfattach siop_ca = {
+	sizeof(struct siop_softc), afscmatch, afscattach,
+};
+
+struct cfdriver siop_cd = {
+	NULL, "siop", DV_DULL, 0
+};
 
 int
 afscmatch(pdp, vcf, args)
-	struct device *pdp;
-	void *vcf, *args;
+struct device *pdp;
+void *vcf, *args;
 {
 	struct cfdata *cf = vcf;
 	struct confargs *ca = args;
@@ -95,16 +98,16 @@ afscmatch(pdp, vcf, args)
 
 void
 afscattach(parent, self, auxp)
-	struct device *parent, *self;
-	void *auxp;
+struct device *parent, *self;
+void *auxp;
 {
 	struct siop_softc *sc = (struct siop_softc *)self;
 	struct confargs *ca = auxp;
 	siop_regmap_p rp;
+	int tmp;
 	extern int cpuspeed;
 
 	sc->sc_siopp = rp = ca->ca_vaddr;
-
 	/*
 	 * siop uses sc_clock_freq to define the dcntl & ctest7 reg values
 	 * (was 0x0221, but i added SIOP_CTEST7_SC0 for snooping control)
@@ -112,21 +115,31 @@ afscattach(parent, self, auxp)
 	 */
 	sc->sc_clock_freq = cpuspeed * 2;
 #ifdef MVME177
-	/* XXX this is a guess! */
+	/* MVME177 siop clock documented as fixed 50Mhz in VME177A/HX */
 	if (cputyp == CPU_177)
-		sc->sc_clock_freq = cpuspeed;
+		sc->sc_clock_freq = 50;
 #endif
-	sc->sc_dcntl = SIOP_DCNTL_EA;
-/*X*/	if (sc->sc_clock_freq <= 25)
-/*X*/		sc->sc_dcntl |= (2 << 6);
-/*X*/	else if (sc->sc_clock_freq <= 37)
-/*X*/		sc->sc_dcntl |= (1 << 6);
-/*X*/	else if (sc->sc_clock_freq <= 50)
-/*X*/		sc->sc_dcntl |= (0 << 6);
-/*X*/	else
-/*X*/		sc->sc_dcntl |= (3 << 6);
+#ifdef MVME172
+	/* XXX this is a guess! Same as MVME177?*/
+	if (cputyp == CPU_172)
+		sc->sc_clock_freq = 50;
+#endif
+	sc->sc_dcntl = SIOP_DCNTL_EA; 
+/*XXX*/	if (sc->sc_clock_freq <= 25)
+/*XXX*/		sc->sc_dcntl |= (2 << 6);
+/*XXX*/	else if (sc->sc_clock_freq <= 37)
+/*XXX*/		sc->sc_dcntl |= (1 << 6);
+/*XXX*/	else if (sc->sc_clock_freq <= 50)
+/*XXX*/		sc->sc_dcntl |= (0 << 6);
+/*XXX*/	else
+/*XXX*/		sc->sc_dcntl |= (3 << 6);
 
-	sc->sc_ctest7 = SIOP_CTEST7_SNOOP | SIOP_CTEST7_TT1;
+#if defined(MVME172) || defined(MVME177)  /* No Select timouts on MC68060 */
+	if (cputyp == CPU_172 || cputyp == CPU_172)
+		sc->sc_ctest7 = SIOP_CTEST7_SNOOP | SIOP_CTEST7_TT1 | SIOP_CTEST7_STD;
+	else
+#endif 
+		sc->sc_ctest7 = SIOP_CTEST7_SNOOP | SIOP_CTEST7_TT1;
 
 	sc->sc_link.adapter_softc = sc;
 	sc->sc_link.adapter_target = 7;		/* XXXX should ask ROM */
@@ -142,54 +155,47 @@ afscattach(parent, self, auxp)
 
 	switch (ca->ca_bustype) {
 #if NMC > 0
-	case BUS_MC:
-	    {
-		struct mcreg *mc = (struct mcreg *)ca->ca_master;
+		case BUS_MC:
+			{
+				struct mcreg *mc = (struct mcreg *)ca->ca_master;
 
-		mcintr_establish(MCV_NCR, &sc->sc_ih);
-		mc->mc_ncrirq = ca->ca_ipl | MC_IRQ_IEN;
-		break;
-	    }
+				mcintr_establish(MCV_NCR, &sc->sc_ih);
+				mc->mc_ncrirq = ca->ca_ipl | MC_IRQ_IEN;
+				break;
+			}
 #endif
 #if NPCCTWO > 0
-	case BUS_PCCTWO:
-	    {
-		struct pcctworeg *pcc2 = (struct pcctworeg *)ca->ca_master;
+		case BUS_PCCTWO:
+			{
+				struct pcctworeg *pcc2 = (struct pcctworeg *)ca->ca_master;
 
-		pcctwointr_establish(PCC2V_NCR, &sc->sc_ih);
-		pcc2->pcc2_ncrirq = ca->ca_ipl | PCC2_IRQ_IEN;
-		break;
-	    }
+				pcctwointr_establish(PCC2V_NCR, &sc->sc_ih);
+				pcc2->pcc2_ncrirq = ca->ca_ipl | PCC2_IRQ_IEN;
+				break;
+			}
 #endif
 	}
 
 	evcnt_attach(&sc->sc_dev, "intr", &sc->sc_intrcnt);
 
 	/*
-	 * attach all scsi units on us
+	 * attach all scsi units on us, watching for boot device
+	 * (see dk_establish).
 	 */
-	config_found(self, &sc->sc_link, afscprint);
-}
+	tmp = bootpart;
+	if (ca->ca_paddr != bootaddr)
+		bootpart = -1;				/* invalid flag to dk_establish */
+	config_found(self, &sc->sc_link, scsiprint);
+	bootpart = tmp;				 /* restore old value */
 
-/*
- * print diag if pnp is NULL else just extra
- */
-int
-afscprint(auxp, pnp)
-	void *auxp;
-	char *pnp;
-{
-	if (pnp == NULL)
-		return (UNCONF);
-	return (QUIET);
 }
 
 int
 afsc_dmaintr(sc)
-	struct siop_softc *sc;
+struct siop_softc *sc;
 {
 	siop_regmap_p rp;
-	u_char	istat;
+	u_char   istat;
 
 	rp = sc->sc_siopp;
 	istat = rp->siop_istat;

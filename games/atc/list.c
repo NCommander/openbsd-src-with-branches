@@ -1,3 +1,4 @@
+/*	$OpenBSD: list.c,v 1.2 1998/09/21 07:36:06 pjanzen Exp $	*/
 /*	$NetBSD: list.c,v 1.3 1995/03/21 15:04:18 cgd Exp $	*/
 
 /*-
@@ -49,7 +50,7 @@
 #if 0
 static char sccsid[] = "@(#)list.c	8.1 (Berkeley) 5/31/93";
 #else
-static char rcsid[] = "$NetBSD: list.c,v 1.3 1995/03/21 15:04:18 cgd Exp $";
+static char rcsid[] = "$OpenBSD: list.c,v 1.2 1998/09/21 07:36:06 pjanzen Exp $";
 #endif
 #endif /* not lint */
 
@@ -58,9 +59,14 @@ static char rcsid[] = "$NetBSD: list.c,v 1.3 1995/03/21 15:04:18 cgd Exp $";
 PLANE	*
 newplane()
 {
-	return ((PLANE *) calloc(1, sizeof (PLANE)));
+	PLANE *p;
+	
+	if ((p = (PLANE *) calloc(1, sizeof (PLANE))) == NULL)
+		loser(NULL, "Out of memory");
+	return (p);
 }
 
+void
 append(l, p)
 	LIST	*l;
 	PLANE	*p;
@@ -99,6 +105,7 @@ append(l, p)
 	}
 }
 
+void
 delete(l, p)
 	LIST	*l;
 	PLANE	*p;

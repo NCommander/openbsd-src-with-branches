@@ -1,11 +1,8 @@
-/*	$NetBSD: asm.h,v 1.3 1995/05/03 19:53:40 ragge Exp $	*/
-
-/*-
- * Copyright (c) 1990 The Regents of the University of California.
- * All rights reserved.
- *
- * This code is derived from software contributed to Berkeley by
- * William Jolitz.
+/*	$OpenBSD: asm.h,v 1.4 1997/05/29 00:04:35 niklas Exp $ */
+/*	$NetBSD: asm.h,v 1.9 1999/01/15 13:31:28 bouyer Exp $ */
+/*
+ * Copyright (c) 1982, 1993
+ *	The Regents of the University of California.  All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -35,42 +32,68 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  *
- *	@(#)asm.h	5.5 (Berkeley) 5/7/91
- *      @(#)DEFS.h      5.3 (Berkeley) 6/1/90
+ *	@(#)DEFS.h	8.1 (Berkeley) 6/4/93
  */
 
 #ifndef _MACHINE_ASM_H_
 #define _MACHINE_ASM_H_
 
-#define R0      0x001
-#define R1      0x002
-#define R2      0x004
-#define R3      0x008
-#define R4      0x010
-#define R5      0x020
-#define R6      0x040
-#define R7      0x080
-#define R8      0x100
-#define R9      0x200
-#define R10     0x400
-#define R11     0x800
+#define R0	0x001
+#define R1	0x002
+#define R2	0x004
+#define R3	0x008
+#define R4	0x010
+#define R5	0x020
+#define R6	0x040
+#define	R7 	0x080
+#define	R8	0x100
+#define	R9	0x200
+#define	R10	0x400
+#define	R11	0x800
 
 #ifdef __STDC__
-# define _FUNC(x)       _ ## x ## :
-# define _GLOB(x)       .globl _ ## x
+#ifdef GPROF
+#define	ENTRY(x, regs) \
+	.globl _ ## x; .type _ ## x,@function ; .align 2; _ ## x: .word regs; \
+	.data; 1:; .long 0; .text; moval 1b,r0; jsb mcount
+#define	ASENTRY(x, regs) \
+	.globl x; .type x,@function; .align 2; x: .word regs; \
+	.data; 1:; .long 0; .text; moval 1b,r0; jsb mcount
 #else
-# define _FUNC(x)       _/**/x:
-# define _GLOB(x)        .globl _/**/x
+#define	ENTRY(x, regs) \
+	.globl _ ## x; .type _ ## x,@function; \
+	.align 2; _ ## x : .word regs
+#define	ASENTRY(x, regs) \
+	.globl x; .type x,@function; .align 2; x: .word regs
+#endif
+#define ALTENTRY(x) .globl _ ## x; _ ## x:
+# else
+#ifdef GPROF
+#define ENTRY(x, regs) \
+	.globl _/**/x; .type _/**/x,@function; .align 2; _/**/x: .word regs; \
+	.data; 1:; .long 0; .text; moval 1b,r0; jsb mcount
+#define ASENTRY(x, regs) \
+	.globl x; .type x,@function; .align 2; x: .word regs; \
+	.data; 1:; .long 0; .text; moval 1b,r0; jsb mcount
+#else
+#define ENTRY(x, regs) \
+	.globl _/**/x; .type _/**/x,@function; .align 2; _/**/x: .word regs
+#define ASENTRY(x, regs) \
+	.globl x; .type x,@function; .align 2; x: .word regs
+#endif
+#define ALTENTRY(x) .globl _/**/x; _/**/x:
 #endif
 
-#ifdef PROF
-#define ENTRY(x,regs) \
-        _GLOB(x);.align 2;_FUNC(x);.word regs;jsb mcount;
-#else   
-#define ENTRY(x,regs) \
-        _GLOB(x);.align 2;_FUNC(x);.word regs;
+#ifdef __STDC__
+#define	__STRING(x)			#x
+#define	WARN_REFERENCES(sym,msg)					\
+	.stabs msg ## ,30,0,0,0 ;					\
+	.stabs __STRING(_ ## sym) ## ,1,0,0,0
+#else
+#define	__STRING(x)			"x"
+#define	WARN_REFERENCES(sym,msg)					\
+	.stabs msg,30,0,0,0 ;						\
+	.stabs __STRING(_/**/sym),1,0,0,0
+#endif /* __STDC__ */
+
 #endif
-
-#define	ASMSTR		.asciz
-
-#endif /* !_MACHINE_ASM_H_ */

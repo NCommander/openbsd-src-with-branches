@@ -1,3 +1,5 @@
+.\"	$OpenBSD$
+.\"
 .\" Copyright (c) 1985, 1990, 1993
 .\"	The Regents of the University of California.  All rights reserved.
 .\"
@@ -33,7 +35,7 @@
 .\"
 .Dd December 30, 1993
 .Dt LPTEST 1
-.Os BSD 4.3
+.Os
 .Sh NAME
 .Nm lptest
 .Nd generate lineprinter ripple pattern
@@ -42,8 +44,10 @@
 .Op Ar length
 .Op Ar count
 .Sh DESCRIPTION
-.Nm Lptest
-writes the traditional "ripple test" pattern on standard output.
+.Nm lptest
+writes the traditional
+.Dq ripple test
+pattern on standard output.
 In 96 lines,
 this pattern will print all 96 printable
 .Tn ASCII
@@ -69,6 +73,6 @@ is to be specified,
 .Ar length
 must be also be specified.
 .Sh HISTORY
-.Nm Lptest
+.Nm lptest
 appeared in
 .Bx 4.3 .

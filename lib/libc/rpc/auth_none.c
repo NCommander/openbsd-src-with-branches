@@ -1,5 +1,3 @@
-/*	$NetBSD: auth_none.c,v 1.3 1995/02/25 03:01:34 cgd Exp $	*/
-
 /*
  * Sun RPC is a product of Sun Microsystems, Inc. and is provided for
  * unrestricted use provided that this legend is included on all tape
@@ -30,10 +28,8 @@
  */
 
 #if defined(LIBC_SCCS) && !defined(lint)
-/*static char *sccsid = "from: @(#)auth_none.c 1.19 87/08/11 Copyr 1984 Sun Micro";*/
-/*static char *sccsid = "from: @(#)auth_none.c	2.1 88/07/29 4.0 RPCSRC";*/
-static char *rcsid = "$NetBSD: auth_none.c,v 1.3 1995/02/25 03:01:34 cgd Exp $";
-#endif
+static char *rcsid = "$OpenBSD: auth_none.c,v 1.4 1998/12/20 23:45:41 millert Exp $";
+#endif /* LIBC_SCCS and not lint */
 
 /*
  * auth_none.c
@@ -45,6 +41,7 @@ static char *rcsid = "$NetBSD: auth_none.c,v 1.3 1995/02/25 03:01:34 cgd Exp $";
 
 #include <stdlib.h>
 #include <rpc/types.h>
+#include <rpc/rpc.h>
 #include <rpc/xdr.h>
 #include <rpc/auth.h>
 #define MAX_MARSHEL_SIZE 20
@@ -52,11 +49,11 @@ static char *rcsid = "$NetBSD: auth_none.c,v 1.3 1995/02/25 03:01:34 cgd Exp $";
 /*
  * Authenticator operations routines
  */
-static void	authnone_verf();
 static void	authnone_destroy();
+static void	authnone_verf();
 static bool_t	authnone_marshal();
-static bool_t	authnone_validate();
 static bool_t	authnone_refresh();
+static bool_t	authnone_validate();
 
 static struct auth_ops ops = {
 	authnone_verf,

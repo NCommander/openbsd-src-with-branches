@@ -1,7 +1,7 @@
 /*
  * logresolve 1.1
  *
- * Tom Rathborne - tomr@uunet.ca - http://www.uunet.ca/~tomr/
+ * Tom Rathborne - tomr@aceldama.com - http://www.aceldama.com/~tomr/
  * UUNET Canada, April 16, 1995
  *
  * Rewritten by David Robinson. (drtr@ast.cam.ac.uk)
@@ -45,8 +45,14 @@
 #include <ctype.h>
 
 #ifndef MPE
+#ifndef BEOS
 #include <arpa/inet.h>
-#endif
+#else
+/* BeOS lacks the necessary files until we get the new networking */
+#include <netinet/in.h>
+#define NO_ADDRESS 4
+#endif /* BEOS */
+#endif /* MPE */
 
 static void cgethost(struct in_addr ipnum, char *string, int check);
 static int getline(char *s, int n);

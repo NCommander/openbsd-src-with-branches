@@ -1,4 +1,5 @@
-/*	$NetBSD: vm_pager.c,v 1.18 1995/05/07 19:27:30 cgd Exp $	*/
+/*	$OpenBSD: vm_pager.c,v 1.8 1997/11/06 05:59:37 csapuntz Exp $	*/
+/*	$NetBSD: vm_pager.c,v 1.21 1996/03/16 23:15:25 christos Exp $	*/
 
 /* 
  * Copyright (c) 1991, 1993
@@ -35,7 +36,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  *
- *	@(#)vm_pager.c	8.6 (Berkeley) 1/12/94
+ *	@(#)vm_pager.c	8.7 (Berkeley) 7/7/94
  *
  *
  * Copyright (c) 1987, 1990 Carnegie-Mellon University.
@@ -72,6 +73,7 @@
 #include <sys/param.h>
 #include <sys/systm.h>
 #include <sys/malloc.h>
+#include <sys/proc.h>
 
 #include <vm/vm.h>
 #include <vm/vm_page.h>
@@ -81,9 +83,7 @@
 extern struct pagerops swappagerops;
 #endif
 
-#ifdef VNODEPAGER
 extern struct pagerops vnodepagerops;
-#endif
 
 #ifdef DEVPAGER
 extern struct pagerops devicepagerops;
@@ -95,11 +95,7 @@ struct pagerops *pagertab[] = {
 #else
 	NULL,
 #endif
-#ifdef VNODEPAGER
 	&vnodepagerops,		/* PG_VNODE */
-#else
-	NULL,
-#endif
 #ifdef DEVPAGER
 	&devicepagerops,	/* PG_DEV */
 #else
@@ -171,8 +167,36 @@ vm_pager_deallocate(pager)
 {
 	if (pager == NULL)
 		panic("vm_pager_deallocate: null pager");
-
 	(*pager->pg_ops->pgo_dealloc)(pager);
+}
+
+int
+vm_pager_remove(pager, from, to)
+	vm_pager_t	pager;
+	vm_offset_t	from, to;
+{
+	if (pager == NULL)
+		panic("vm_pager_remove: null pager");
+	return (*pager->pg_ops->pgo_remove)(pager, from, to);
+}
+
+vm_offset_t
+vm_pager_next(pager, offset)
+	vm_pager_t	pager;
+	vm_offset_t	offset;
+{
+	if (pager == NULL)
+		panic("vm_pager_next: null pager");
+	return (*pager->pg_ops->pgo_next)(pager, offset);
+}
+
+int
+vm_pager_count(pager)
+	vm_pager_t	pager;
+{
+	if (pager == NULL)
+		panic("vm_pager_count: null pager");
+	return (*pager->pg_ops->pgo_count)(pager);
 }
 
 int
@@ -317,7 +341,7 @@ vm_pager_map_pages(mlist, npages, canwait)
 		m->flags |= PG_PAGEROWNED;
 #endif
 		pmap_enter(vm_map_pmap(pager_map), va, VM_PAGE_TO_PHYS(m),
-			   VM_PROT_DEFAULT, TRUE);
+			   VM_PROT_DEFAULT, TRUE, 0);
 	}
 	return (kva);
 }
@@ -339,7 +363,7 @@ vm_pager_unmap_pages(kva, npages)
 		if (m->flags & PG_PAGEROWNED)
 			m->flags &= ~PG_PAGEROWNED;
 		else
-			printf("vm_pager_unmap_pages: %x(%x/%x) not owned\n",
+			printf("vm_pager_unmap_pages: %p(%lx/%lx) not owned\n",
 			       m, va, VM_PAGE_TO_PHYS(m));
 	}
 #endif

@@ -1,4 +1,4 @@
-.\"	$NetBSD: confstr.3,v 1.4 1995/02/25 08:51:04 cgd Exp $
+.\"	$OpenBSD: confstr.3,v 1.9 1999/06/04 01:30:10 aaron Exp $
 .\"
 .\" Copyright (c) 1993
 .\"	The Regents of the University of California.  All rights reserved.
@@ -31,11 +31,9 @@
 .\" OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 .\" SUCH DAMAGE.
 .\"
-.\"	@(#)confstr.3	8.1 (Berkeley) 6/4/93
-.\"
 .Dd June 4, 1993
 .Dt CONFSTR 3
-.Os BSD 4
+.Os
 .Sh NAME
 .Nm confstr
 .Nd get string-valued configurable variables
@@ -45,7 +43,8 @@
 .Fn confstr "int name" "char *buf" "size_t len"
 .Sh DESCRIPTION
 .Bf -symbolic
-This interface is obsoleted by sysctl(3).
+This interface is obsoleted by
+.Xr sysctl 3 .
 .Ef
 .Pp
 The
@@ -57,7 +56,7 @@ The
 .Fa name
 argument specifies the system variable to be queried.
 Symbolic constants for each name value are found in the include file
-.Li <unistd.h> .
+.Aq Pa unistd.h .
 The
 .Fa len
 argument specifies the size of the buffer referenced by the
@@ -69,9 +68,9 @@ is non-zero,
 .Fa buf
 is a non-null pointer, and
 .Fa name
-has a value, up to
+has a value; up to
 .Fa len
-\- 1 bytes of the value are copied into the buffer 
+\- 1 bytes of the value are copied into the buffer
 .Fa buf .
 The copied value is always null terminated.
 .Pp
@@ -86,7 +85,7 @@ environment variable that finds all the standard utilities.
 .El
 .Sh RETURN VALUES
 If the call to
-.Nm confstr
+.Nm
 is not successful, \-1 is returned and
 .Va errno
 is set appropriately.
@@ -103,9 +102,9 @@ the string in
 was truncated.
 .Sh ERRORS
 The
-.Nm confstr
+.Nm
 function may fail and set
-.Va error
+.Va errno
 for any of the errors specified for the library functions
 .Xr malloc 3
 and
@@ -117,14 +116,16 @@ In addition, the following errors may be reported:
 The value of the
 .Fa name
 argument is invalid.
+.El
 .Sh SEE ALSO
 .Xr sysctl 3
 .Sh HISTORY
 The
-.Nm confstr
-function first appeared in 4.4BSD.
+.Nm
+function first appeared in
+.Bx 4.4 .
 .Sh STANDARDS
 The
-.Nm confstr
+.Nm
 function conforms to
 .St -p1003.2-92 .

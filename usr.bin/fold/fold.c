@@ -1,3 +1,4 @@
+/*	$OpenBSD: fold.c,v 1.2 1996/06/26 05:33:23 deraadt Exp $	*/
 /*	$NetBSD: fold.c,v 1.6 1995/09/01 01:42:44 jtc Exp $	*/
 
 /*-
@@ -46,7 +47,7 @@ static char copyright[] =
 #if 0
 static char sccsid[] = "@(#)fold.c	8.1 (Berkeley) 6/6/93";
 #endif
-static char rcsid[] = "$NetBSD: fold.c,v 1.6 1995/09/01 01:42:44 jtc Exp $";
+static char rcsid[] = "$OpenBSD: fold.c,v 1.2 1996/06/26 05:33:23 deraadt Exp $";
 #endif /* not lint */
 
 #include <stdio.h>
@@ -167,7 +168,7 @@ fold(width)
 				indx -= last_space;
 				col = 0;
 				for (i = 0; i < indx; i++) {
-					col = new_column_position (col, ch);
+					col = new_column_position (col, buf[i]);
 				}
 			} else {
 				fwrite (buf, 1, indx, stdout);

@@ -1,4 +1,4 @@
-/*	$OpenBSD	*/
+/*	$OpenBSD: main.c,v 1.7 1997/07/30 23:28:42 deraadt Exp $	*/
 
 /*
  * Copyright (c) 1983, 1988, 1993
@@ -38,6 +38,8 @@ char copyright[] =
 	The Regents of the University of California.  All rights reserved.\n";
 #if !defined(lint)
 static char sccsid[] = "@(#)main.c	8.1 (Berkeley) 6/5/93";
+#else
+static char rcsid[] = "$OpenBSD: main.c,v 1.7 1997/07/30 23:28:42 deraadt Exp $";
 #endif
 
 #include "defs.h"
@@ -52,7 +54,7 @@ static char sccsid[] = "@(#)main.c	8.1 (Berkeley) 6/5/93";
 pid_t	mypid;
 
 naddr	myaddr;				/* system address */
-char	myname[MAXHOSTNAMELEN+1];
+char	myname[MAXHOSTNAMELEN];
 
 int	supplier;			/* supply or broadcast updates */
 int	supplier_set;
@@ -115,10 +117,10 @@ main(int argc,
 	now_garbage = EPOCH - GARBAGE_TIME;
 	wtime.tv_sec = 0;
 
-	(void)gethostname(myname, sizeof(myname)-1);
+	(void)gethostname(myname, sizeof(myname));
 	(void)gethost(myname, &myaddr);
 
-	while ((n = getopt(argc, argv, "sqdghmpAtT:F:P:")) != EOF) {
+	while ((n = getopt(argc, argv, "sqdghmpAtT:F:P:")) != -1) {
 		switch (n) {
 		case 's':
 			supplier = 1;
@@ -248,6 +250,16 @@ usage:
 	}
 
 
+	signal(SIGALRM, sigalrm);
+	if (!background)
+		signal(SIGHUP, sigterm);    /* SIGHUP fatal during debugging */
+	else
+		signal(SIGHUP, SIG_IGN);
+	signal(SIGTERM, sigterm);
+	signal(SIGINT, sigterm);
+	signal(SIGUSR1, sigtrace_on);
+	signal(SIGUSR2, sigtrace_off);
+
 	/* get into the background */
 	if (background) {
 #ifdef sgi
@@ -304,13 +316,6 @@ usage:
 	age_timer.tv_sec = EPOCH+MIN_WAITTIME;
 	rdisc_timer = next_bcast;
 	ifinit_timer.tv_usec = next_bcast.tv_usec;
-
-	signal(SIGALRM, sigalrm);
-	signal(SIGHUP, sigterm);
-	signal(SIGTERM, sigterm);
-	signal(SIGINT, sigterm);
-	signal(SIGUSR1, sigtrace_on);
-	signal(SIGUSR2, sigtrace_off);
 
 	/* Collect an initial view of the world by checking the interface
 	 * configuration and the kludge file.

@@ -1,4 +1,4 @@
-/*	$NetBSD$ */
+/*	$OpenBSD: memdevs.c,v 1.1 1997/03/03 19:32:04 rahnds Exp $ */
 
 /*
  * Copyright (c) 1995 Theo de Raadt

@@ -1,3 +1,4 @@
+/*	$OpenBSD: ldd.c,v 1.5 1999/05/21 01:20:45 espie Exp $	*/
 /*	$NetBSD: ldd.c,v 1.12 1995/10/09 00:14:41 pk Exp $	*/
 /*
  * Copyright (c) 1993 Paul Kranenburg
@@ -86,11 +87,14 @@ char	*argv[];
 	}
 
 	/* ld.so magic */
-	setenv("LD_TRACE_LOADED_OBJECTS", "", 1);
+	if (setenv("LD_TRACE_LOADED_OBJECTS", "", 1) == -1)
+		err(1, "cannot setenv LD_TRACE_LOADED_OBJECTS");
 	if (fmt1)
-		setenv("LD_TRACE_LOADED_OBJECTS_FMT1", fmt1, 1);
+		if (setenv("LD_TRACE_LOADED_OBJECTS_FMT1", fmt1, 1) == -1)
+			err(1, "cannot setenv LD_TRACE_LOADED_OBJECTS_FMT1");
 	if (fmt2)
-		setenv("LD_TRACE_LOADED_OBJECTS_FMT2", fmt2, 1);
+		if (setenv("LD_TRACE_LOADED_OBJECTS_FMT2", fmt2, 1) == -1)
+			err(1, "cannot setenv LD_TRACE_LOADED_OBJECTS_FMT2");
 
 	rval = 0;
 	while (argc--) {
@@ -104,10 +108,22 @@ char	*argv[];
 			argv++;
 			continue;
 		}
-		if (read(fd, &hdr, sizeof hdr) != sizeof hdr
-		    || (N_GETFLAG(hdr) & EX_DPMASK) != EX_DYNAMIC
+		if (read(fd, &hdr, sizeof hdr) != sizeof hdr) {
+			warnx("%s: not a dynamic executable", *argv);
+			(void)close(fd);
+			rval |= 1;
+			argv++;
+			continue;
+		}
+		if ((N_GETFLAG(hdr) & EX_DPMASK) == (EX_DYNAMIC | EX_PIC)) {
+			warnx("%s: no support for dynamic libraries", *argv);
+			(void)close(fd);
+			argv++;
+			continue;
+		}
+		if ((N_GETFLAG(hdr) & EX_DPMASK) != EX_DYNAMIC
 #if 1 /* Compatibility */
-		    || hdr.a_entry < __LDPGSZ
+		    || hdr.a_entry < N_PAGSIZ(hdr)
 #endif
 		    ) {
 
@@ -119,7 +135,8 @@ char	*argv[];
 		}
 		(void)close(fd);
 
-		setenv("LD_TRACE_LOADED_OBJECTS_PROGNAME", *argv, 1);
+		if (setenv("LD_TRACE_LOADED_OBJECTS_PROGNAME", *argv, 1) == -1)
+			err(1, "cannot setenv LD_TRACE_LOADED_OBJECTS_PROGNAME");
 		if (fmt1 == NULL && fmt2 == NULL)
 			/* Default formats */
 			printf("%s:\n", *argv);
@@ -151,5 +168,5 @@ char	*argv[];
 		argv++;
 	}
 
-	return rval;
+	return (rval ? 1 : 0);
 }

@@ -1,6 +1,8 @@
+/*	$OpenBSD: strsep.c,v 1.2 1996/08/19 08:34:24 tholo Exp $	*/
+
 /*-
- * Copyright (c) 1990 The Regents of the University of California.
- * All rights reserved.
+ * Copyright (c) 1990, 1993
+ *	The Regents of the University of California.  All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -31,15 +33,19 @@
  * SUCH DAMAGE.
  */
 
+#include <string.h>
+#include <stdio.h>
+
 #if defined(LIBC_SCCS) && !defined(lint)
-/*static const char sccsid[] = "from: @(#)strsep.c	5.4 (Berkeley) 1/26/91";*/
-static char *rcsid = "$Id: strsep.c,v 1.4 1995/06/15 00:08:31 jtc Exp $";
+#if 0
+static char sccsid[] = "@(#)strsep.c	8.1 (Berkeley) 6/4/93";
+#else
+static char *rcsid = "$OpenBSD: strsep.c,v 1.2 1996/08/19 08:34:24 tholo Exp $";
+#endif
 #endif /* LIBC_SCCS and not lint */
 
-#include <string.h>
-
 /*
- * Get next token from string *stringp, where tokens are nonempty
+ * Get next token from string *stringp, where tokens are possibly-empty
  * strings separated by characters from delim.  
  *
  * Writes NULs into the string at *stringp to end tokens.
@@ -47,7 +53,7 @@ static char *rcsid = "$Id: strsep.c,v 1.4 1995/06/15 00:08:31 jtc Exp $";
  * On return, *stringp points past the last NUL written (if there might
  * be further tokens), or is NULL (if there are definitely no more tokens).
  *
- * If *stringp is NULL, strtoken returns NULL.
+ * If *stringp is NULL, strsep returns NULL.
  */
 char *
 strsep(stringp, delim)

@@ -1,3 +1,4 @@
+/*	$OpenBSD: talk_ctl.h,v 1.3 1994/12/09 02:14:28 jtc Exp $	*/
 /*	$NetBSD: talk_ctl.h,v 1.3 1994/12/09 02:14:28 jtc Exp $	*/
 
 /*

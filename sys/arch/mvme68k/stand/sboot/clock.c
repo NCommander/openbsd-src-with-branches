@@ -1,4 +1,4 @@
-/*	$NetBSD: clock.c,v 1.20 1995/02/16 21:51:38 pk Exp $ */
+/*	$OpenBSD: clock.c,v 1.4 1996/10/16 13:49:59 mickey Exp $ */
 
 /*
  * Copyright (c) 1992, 1993
@@ -51,6 +51,7 @@
  */
 
 #include <sys/cdefs.h>
+#include <sys/types.h>
 #include "sboot.h"
 #include "clockreg.h"
 
@@ -105,7 +106,7 @@ chiptotime(sec, min, hour, day, mon, year)
  * Set up the system's time, given a `reasonable' time value.
  */
 u_long 
-time()
+ttime()
 {
 	register struct clockreg *cl = clockreg;
 	int     sec, min, hour, day, mon, year;

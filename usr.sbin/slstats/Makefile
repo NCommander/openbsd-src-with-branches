@@ -1,5 +1,4 @@
-#	from: @(#)Makefile	5.6 (Berkeley) 4/23/91
-#	$Id: Makefile,v 1.5 1995/08/02 01:27:08 paulus Exp $
+#	$OpenBSD$
 
 PROG=	slstats
 SRCS=	slstats.c

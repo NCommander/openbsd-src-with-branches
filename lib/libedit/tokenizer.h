@@ -1,3 +1,6 @@
+/*	$OpenBSD: tokenizer.h,v 1.2 1997/01/16 05:18:50 millert Exp $	*/
+/*	$NetBSD: tokenizer.h,v 1.2 1997/01/11 06:48:16 lukem Exp $	*/
+
 /*-
  * Copyright (c) 1992, 1993
  *	The Regents of the University of California.  All rights reserved.

@@ -1,4 +1,4 @@
-/*	$NetBSD: hash_page.c,v 1.7 1995/02/27 13:22:34 cgd Exp $	*/
+/*	$OpenBSD$	*/
 
 /*-
  * Copyright (c) 1990, 1993, 1994
@@ -38,9 +38,9 @@
 
 #if defined(LIBC_SCCS) && !defined(lint)
 #if 0
-static char sccsid[] = "@(#)hash_page.c	8.6 (Berkeley) 6/16/94";
+static char sccsid[] = "@(#)hash_page.c	8.7 (Berkeley) 8/16/94";
 #else
-static char rcsid[] = "$NetBSD: hash_page.c,v 1.7 1995/02/27 13:22:34 cgd Exp $";
+static char rcsid[] = "$OpenBSD: hash_page.c,v 1.6 1998/07/27 15:35:40 millert Exp $";
 #endif
 #endif /* LIBC_SCCS and not lint */
 
@@ -60,6 +60,7 @@ static char rcsid[] = "$NetBSD: hash_page.c,v 1.7 1995/02/27 13:22:34 cgd Exp $"
  *	open_temp
  */
 
+#include <sys/param.h>
 #include <sys/types.h>
 
 #include <errno.h>
@@ -689,7 +690,7 @@ overflow_page(hashp)
 	for ( i = first_page; i <= free_page; i++ ) {
 		if (!(freep = (u_int32_t *)hashp->mapp[i]) &&
 		    !(freep = fetch_bitmap(hashp, i)))
-			return (NULL);
+			return (0);
 		if (i == free_page)
 			in_use_bits = free_bit;
 		else
@@ -719,7 +720,7 @@ overflow_page(hashp)
 	if (offset > SPLITMASK) {
 		if (++splitnum >= NCACHED) {
 			(void)write(STDERR_FILENO, OVMSG, sizeof(OVMSG) - 1);
-			return (NULL);
+			return (0);
 		}
 		hashp->OVFL_POINT = splitnum;
 		hashp->SPARES[splitnum] = hashp->SPARES[splitnum-1];
@@ -732,7 +733,7 @@ overflow_page(hashp)
 		free_page++;
 		if (free_page >= NCACHED) {
 			(void)write(STDERR_FILENO, OVMSG, sizeof(OVMSG) - 1);
-			return (NULL);
+			return (0);
 		}
 		/*
 		 * This is tricky.  The 1 indicates that you want the new page
@@ -745,9 +746,9 @@ overflow_page(hashp)
 		 * don't have to if we tell init_bitmap not to leave it clear
 		 * in the first place.
 		 */
-		if (__ibitmap(hashp, (int)OADDR_OF(splitnum, offset),
-		    1, free_page))
-			return (NULL);
+		if (__ibitmap(hashp,
+		    (int)OADDR_OF(splitnum, offset), 1, free_page))
+			return (0);
 		hashp->SPARES[splitnum]++;
 #ifdef DEBUG2
 		free_bit = 2;
@@ -757,7 +758,7 @@ overflow_page(hashp)
 			if (++splitnum >= NCACHED) {
 				(void)write(STDERR_FILENO, OVMSG,
 				    sizeof(OVMSG) - 1);
-				return (NULL);
+				return (0);
 			}
 			hashp->OVFL_POINT = splitnum;
 			hashp->SPARES[splitnum] = hashp->SPARES[splitnum-1];
@@ -801,7 +802,7 @@ found:
 	for (i = 0; (i < splitnum) && (bit > hashp->SPARES[i]); i++);
 	offset = (i ? bit - hashp->SPARES[i - 1] : bit);
 	if (offset >= SPLITMASK)
-		return (NULL);	/* Out of overflow pages */
+		return (0);	/* Out of overflow pages */
 	addr = OADDR_OF(i, offset);
 #ifdef DEBUG2
 	(void)fprintf(stderr, "OVERFLOW_PAGE: ADDR: %d BIT: %d PAGE %d\n",
@@ -866,13 +867,19 @@ open_temp(hashp)
 	HTAB *hashp;
 {
 	sigset_t set, oset;
-	static char namestr[] = "_hashXXXXXX";
+	char *envtmp = NULL;
+	char path[MAXPATHLEN];
+	
+	if (issetugid() == 0)
+		envtmp = getenv("TMPDIR");
+	(void)snprintf(path,
+	    sizeof(path), "%s/_hash.XXXXXX", envtmp ? envtmp : "/tmp");
 
 	/* Block signals; make sure file goes away at process exit. */
 	(void)sigfillset(&set);
 	(void)sigprocmask(SIG_BLOCK, &set, &oset);
-	if ((hashp->fp = mkstemp(namestr)) != -1) {
-		(void)unlink(namestr);
+	if ((hashp->fp = mkstemp(path)) != -1) {
+		(void)unlink(path);
 		(void)fcntl(hashp->fp, F_SETFD, 1);
 	}
 	(void)sigprocmask(SIG_SETMASK, &oset, (sigset_t *)NULL);

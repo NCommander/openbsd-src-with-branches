@@ -1,4 +1,4 @@
-/*	$NetBSD: zsvar.h,v 1.2 1995/04/11 02:37:18 mycroft Exp $	*/
+/*	$NetBSD: zsvar.h,v 1.5 1996/01/24 19:26:40 gwr Exp $	*/
 
 /*
  * Copyright (c) 1995 Leo Weppelman (Atari modifications)
@@ -46,6 +46,21 @@
  */
 
 /*
+ * Register layout is machine-dependent...
+ */
+
+struct zschan {
+	u_char		zc_xxx0;
+	volatile u_char	zc_csr;		/* ctrl,status, and indirect access */
+	u_char		zc_xxx1;
+	volatile u_char	zc_data;	/* data */
+};
+
+struct zsdevice {
+	struct	zschan zs_chan[2];
+};
+
+/*
  * Software state, per zs channel.
  *
  * The zs chip has insufficient buffering, so we provide a software
@@ -66,8 +81,8 @@
  * When the value is a character + RR1 status, the character is in the
  * upper 8 bits of the RR1 status.
  */
-#define ZLRB_RING_SIZE		256		/* ZS line ring buffer size */
-#define	ZLRB_RING_MASK		255		/* mask for same */
+#define ZLRB_RING_SIZE		4096		/* ZS line ring buffer size */
+#define	ZLRB_RING_MASK		4095		/* mask for same */
 
 /* 0 is reserved (means "no interrupt") */
 #define	ZRING_RINT		1		/* receive data interrupt */
@@ -128,7 +143,7 @@ struct zs_chanstate {
 	 */
 	u_int		cs_rbget;	/* ring buffer `get' index	*/
 	volatile u_int	cs_rbput;	/* ring buffer `put' index	*/
-	int		cs_rbuf[ZLRB_RING_SIZE];/* type, value pairs	*/
+	int		*cs_rbuf;	/* type, value pairs	*/
 };
 
 #define	ZS_CHAN_A	0

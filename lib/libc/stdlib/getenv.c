@@ -1,6 +1,6 @@
 /*
- * Copyright (c) 1987 Regents of the University of California.
- * All rights reserved.
+ * Copyright (c) 1987, 1993
+ *	The Regents of the University of California.  All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -32,12 +32,47 @@
  */
 
 #if defined(LIBC_SCCS) && !defined(lint)
-/*static char *sccsid = "from: @(#)getenv.c	5.8 (Berkeley) 2/23/91";*/
-static char *rcsid = "$Id: getenv.c,v 1.5 1995/02/28 01:46:41 jtc Exp $";
+static char *rcsid = "$OpenBSD: getenv.c,v 1.3 1996/08/19 08:33:31 tholo Exp $";
 #endif /* LIBC_SCCS and not lint */
 
 #include <stdlib.h>
 #include <string.h>
+
+/*
+ * __findenv --
+ *	Returns pointer to value associated with name, if any, else NULL.
+ *	Sets offset to be the offset of the name/value combination in the
+ *	environmental array, for use by setenv(3) and unsetenv(3).
+ *	Explicitly removes '=' in argument name.
+ *
+ *	This routine *should* be a static; don't use it.
+ */
+char *
+__findenv(name, offset)
+	register const char *name;
+	int *offset;
+{
+	extern char **environ;
+	register int len, i;
+	register const char *np;
+	register char **p, *cp;
+
+	if (name == NULL || environ == NULL)
+		return (NULL);
+	for (np = name; *np && *np != '='; ++np)
+		;
+	len = np - name;
+	for (p = environ; (cp = *p) != NULL; ++p) {
+		for (np = name, i = len; i && *cp; i--)
+			if (*cp++ != *np++)
+				break;
+		if (i == 0 && *cp++ == '=') {
+			*offset = p - environ;
+			return (cp);
+		}
+	}
+	return (NULL);
+}
 
 /*
  * getenv --
@@ -51,32 +86,4 @@ getenv(name)
 	char *__findenv();
 
 	return(__findenv(name, &offset));
-}
-
-/*
- * __findenv --
- *	Returns pointer to value associated with name, if any, else NULL.
- *	Sets offset to be the offset of the name/value combination in the
- *	environmental array, for use by setenv(3) and unsetenv(3).
- *	Explicitly removes '=' in argument name.
- *
- *	This routine *should* be a static; don't use it.
- */
-char *
-__findenv(name, offset)
-	register char *name;
-	int *offset;
-{
-	extern char **environ;
-	register int len;
-	register char **P, *C;
-
-	for (C = name, len = 0; *C && *C != '='; ++C, ++len);
-	for (P = environ; *P; ++P)
-		if (!strncmp(*P, name, len))
-			if (*(C = *P + len) == '=') {
-				*offset = P - environ;
-				return(++C);
-			}
-	return(NULL);
 }

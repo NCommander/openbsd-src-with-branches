@@ -89,11 +89,6 @@
 #include <netinet/if_ether.h>
 #endif
 
-#ifdef NS
-#include <netns/ns.h>
-#include <netns/ns_if.h>
-#endif
-
 /****************************************************************************/
 /* Some useful definitions **************************************************/
 /****************************************************************************/
@@ -314,10 +309,10 @@ ehprobe(parent, match, aux)
 			char *read_buffer;
 			MALLOC(test_data, char *, NLEN, M_TEMP, M_NOWAIT);
 			if (test_data == NULL)
-				panic("Cannot allocate temporary memory for buffer test (1)\n");
+				panic("Cannot allocate temporary memory for buffer test (1)");
 			MALLOC(read_buffer, char *, NLEN, M_TEMP, M_NOWAIT);
 			if (read_buffer == NULL)
-				panic("Cannot allocate temporary memory for buffer test (1)\n");
+				panic("Cannot allocate temporary memory for buffer test (1)");
 
 			printf("1.");
 
@@ -554,6 +549,11 @@ ehioctl(ifp, cmd, data)
 	struct ifaddr *ifa = (struct ifaddr *)data;
 	int s = splimp ();
 	int error = 0;
+
+	if ((error = ether_ioctl(ifp, &sc->sc_arpcom, cmd, data)) > 0) {
+		splx(s);
+		return error;
+	}
 
 	switch (cmd) {
 	case SIOCSIFADDR:

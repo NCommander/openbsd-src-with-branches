@@ -235,7 +235,7 @@ struct wdc_attach_args {
 int
 wdprint(aux, wdc)
 	void *aux;
-	char *wdc;
+	const char *wdc;
 {
 	struct wdc_attach_args *wa = aux;
 
@@ -263,7 +263,7 @@ wdcattach(parent, self, aux)
    	wdc->sc_ih.ih_level = IPL_BIO;
    	wdc->sc_ih.ih_name = "wdc";
 	if (irq_claim(mb->mb_irq, &wdc->sc_ih))
-		panic("Cannot claim IRQ %d for wdc%d\n", mb->mb_irq, parent->dv_unit);
+		panic("Cannot claim IRQ %d for wdc%d", mb->mb_irq, parent->dv_unit);
 
 	for (wa.wa_drive = 0; wa.wa_drive < 2; wa.wa_drive++)
 		(void)config_found(self, (void *)&wa, wdprint);
@@ -394,6 +394,7 @@ wdstrategy(bp)
 	 */
 	if (WDPART(bp->b_dev) != RAW_PART &&
 	    bounds_check_with_label(bp, wd->sc_dk.dk_label,
+	    wd->sc_dk.dk_cpulabel,
 	    (wd->sc_flags & (WDF_WLABEL|WDF_LABELLING)) != 0) <= 0)
 		goto done;
     
@@ -679,7 +680,7 @@ loop:
 /*			isa_dmastart(bp->b_flags & B_READ,
 			    bp->b_data + wd->sc_skip,
 			    wd->sc_nbytes, wdc->sc_drq);*/
-			panic("wd cannot do DMA yet\n");
+			panic("wd cannot do DMA yet");
 			break;
 		case WDM_PIOMULTI:
 			command = (bp->b_flags & B_READ) ?
@@ -726,7 +727,7 @@ loop:
 			outsw(wdc->sc_iobase+wd_data, (u_int) bp->b_data + wd->sc_skip,
 			    wd->sc_nbytes >> 1);
 		else
-			panic("wd cannot do 32 bit transfers\n");
+			panic("wd cannot do 32 bit transfers");
 /*			outsl(wdc->sc_iobase+wd_data, bp->b_data + wd->sc_skip,
 			    wd->sc_nbytes >> 2);*/
 	}
@@ -782,7 +783,7 @@ wdcintr(arg)
 
 	/* Turn off the DMA channel and unbounce the buffer. */
 	if (wd->sc_mode == WDM_DMA)
-		panic("wd cannot do DMA\n");
+		panic("wd cannot do DMA");
 /*		isa_dmadone(bp->b_flags & B_READ, bp->b_data + wd->sc_skip,
 		    wd->sc_nbytes, wdc->sc_drq);*/
 
@@ -827,7 +828,7 @@ wdcintr(arg)
 			insw(wdc->sc_iobase+wd_data, (u_int) bp->b_data + wd->sc_skip, 
 			    wd->sc_nbytes >> 1);
 		else
-			panic("wd cannot do 32 bit transfers\n");
+			panic("wd cannot do 32 bit transfers");
 /*			insl(wdc->sc_iobase+wd_data, bp->b_data + wd->sc_skip, 
 			    wd->sc_nbytes >> 2);*/
 	}
@@ -1048,7 +1049,7 @@ wdgetdisklabel(wd)
 	if (wd->sc_state > RECAL)
 		wd->sc_state = RECAL;
 	errstring = readdisklabel(MAKEWDDEV(0, wd->sc_dev.dv_unit, RAW_PART),
-	    wdstrategy, lp, wd->sc_dk.dk_cpulabel);
+	    wdstrategy, lp, wd->sc_dk.dk_cpulabel, 0);
 	if (errstring) {
 		/*
 		 * This probably happened because the drive's default
@@ -1059,7 +1060,7 @@ wdgetdisklabel(wd)
 		if (wd->sc_state > GEOMETRY)
 			wd->sc_state = GEOMETRY;
 		errstring = readdisklabel(MAKEWDDEV(0, wd->sc_dev.dv_unit, RAW_PART),
-		    wdstrategy, lp, wd->sc_dk.dk_cpulabel);
+		    wdstrategy, lp, wd->sc_dk.dk_cpulabel, 0);
 	}
 	if (errstring) {
 		printf("%s: %s\n", wd->sc_dev.dv_xname, errstring);
@@ -1606,7 +1607,7 @@ void
 bad144intern(wd)
 	struct wd_softc *wd;
 {
-	struct dkbad *bt = &wd->sc_dk.dk_cpulabel->bad;
+	struct dkbad *bt = &DKBAD(wd->sc_dk.dk_cpulabel);
 	struct disklabel *lp = wd->sc_dk.dk_label;
 	int i = 0;
 

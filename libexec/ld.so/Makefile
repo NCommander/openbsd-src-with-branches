@@ -1,9 +1,9 @@
-#	$OpenBSD: Makefile,v 1.4 1997/04/27 20:55:51 millert Exp $
+#	$OpenBSD: Makefile,v 1.2 2000/09/08 04:23:45 rahnds Exp $
 
-SUBDIR=libdl ldconfig
+SUBDIR=libdl ldconfig ldd
 #CFLAGS =
 .if (${MACHINE_ARCH} == "powerpc")
-CFLAGS += -fpic -msoft-float -Wall
+CFLAGS += -fpic -msoft-float
 .endif
 CFLAGS += -I${.CURDIR} -DNO_UNDERSCORE -DVERBOSE_DLINKER \
 	-DUSE_CACHE -D__PIC__ -I${.CURDIR}/${MACHINE_ARCH}

@@ -1,3 +1,4 @@
+/*	$OpenBSD: download.c,v 1.1 1995/10/06 21:00:16 phil Exp $	*/
 /*	$NetBSD: download.c,v 1.1 1995/10/06 21:00:16 phil Exp $	*/
 
 /*

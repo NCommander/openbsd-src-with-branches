@@ -1,5 +1,3 @@
-/*	$NetBSD: vsnprintf.c,v 1.5 1995/02/02 02:10:54 jtc Exp $	*/
-
 /*-
  * Copyright (c) 1990, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -37,14 +35,13 @@
  */
 
 #if defined(LIBC_SCCS) && !defined(lint)
-#if 0
-static char sccsid[] = "@(#)vsnprintf.c	8.1 (Berkeley) 6/4/93";
-#endif
-static char rcsid[] = "$NetBSD: vsnprintf.c,v 1.5 1995/02/02 02:10:54 jtc Exp $";
+static char rcsid[] = "$OpenBSD: vsnprintf.c,v 1.4 1998/01/12 06:14:32 millert Exp $";
 #endif /* LIBC_SCCS and not lint */
 
+#include <limits.h>
 #include <stdio.h>
 
+int
 vsnprintf(str, n, fmt, ap)
 	char *str;
 	size_t n;
@@ -52,10 +49,18 @@ vsnprintf(str, n, fmt, ap)
 	_BSD_VA_LIST_ ap;
 {
 	int ret;
+	char dummy;
 	FILE f;
 
-	if ((int)n < 1)
-		return (EOF);
+	/* While snprintf(3) specifies size_t stdio uses an int internally */
+	if (n > INT_MAX)
+		n = INT_MAX;
+	/* Stdio internals do not deal correctly with zero length buffer */
+	if (n == 0) {
+		str = &dummy;
+		n = 1;
+	}
+	f._file = -1;
 	f._flags = __SWR | __SSTR;
 	f._bf._base = f._p = (unsigned char *)str;
 	f._bf._size = f._w = n - 1;

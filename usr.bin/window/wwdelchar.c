@@ -1,4 +1,5 @@
-/*	$NetBSD: wwdelchar.c,v 1.3 1995/09/28 10:35:21 tls Exp $	*/
+/*	$OpenBSD$	*/
+/*	$NetBSD: wwdelchar.c,v 1.4 1996/02/08 21:49:00 mycroft Exp $	*/
 
 /*
  * Copyright (c) 1983, 1993
@@ -40,7 +41,7 @@
 #if 0
 static char sccsid[] = "@(#)wwdelchar.c	8.1 (Berkeley) 6/6/93";
 #else
-static char rcsid[] = "$NetBSD: wwdelchar.c,v 1.3 1995/09/28 10:35:21 tls Exp $";
+static char rcsid[] = "$OpenBSD$";
 #endif
 #endif /* not lint */
 
@@ -83,7 +84,7 @@ register struct ww *w;
 		register union ww_char *buf;
 		register char *win;
 		register union ww_char *ns;
-		register char *smap;
+		register unsigned char *smap;
 		char touched;
 
 		nvis = 0;

@@ -1,3 +1,4 @@
+/*	$OpenBSD: man.c,v 1.14 1999/07/28 01:17:56 deraadt Exp $	*/
 /*	$NetBSD: man.c,v 1.7 1995/09/28 06:05:34 tls Exp $	*/
 
 /*
@@ -43,7 +44,7 @@ static char copyright[] =
 #if 0
 static char sccsid[] = "@(#)man.c	8.17 (Berkeley) 1/31/95";
 #else
-static char rcsid[] = "$NetBSD: man.c,v 1.7 1995/09/28 06:05:34 tls Exp $";
+static char rcsid[] = "$OpenBSD: man.c,v 1.14 1999/07/28 01:17:56 deraadt Exp $";
 #endif
 #endif /* not lint */
 
@@ -58,6 +59,7 @@ static char rcsid[] = "$NetBSD: man.c,v 1.7 1995/09/28 06:05:34 tls Exp $";
 #include <glob.h>
 #include <signal.h>
 #include <stdio.h>
+#include <libgen.h>
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
@@ -66,6 +68,9 @@ static char rcsid[] = "$NetBSD: man.c,v 1.7 1995/09/28 06:05:34 tls Exp $";
 #include "pathnames.h"
 
 int f_all, f_where;
+static TAG *section;	/* could be passed to cleanup() instead */
+
+extern char *__progname;
 
 static void	 build_page __P((char *, char **));
 static void	 cat __P((char *));
@@ -84,17 +89,27 @@ main(argc, argv)
 {
 	extern char *optarg;
 	extern int optind;
-	TAG *defp, *defnewp, *section, *sectnewp, *subp;
+	TAG *defp, *defnewp, *sectnewp, *subp;
 	ENTRY *e_defp, *e_sectp, *e_subp, *ep;
 	glob_t pg;
 	size_t len;
 	int ch, f_cat, f_how, found;
-	char **ap, *cmd, *machine, *p, *p_add, *p_path, *pager, *slashp;
+	char **ap, *cmd, *machine, *p, *p_add, *p_path, *pager, *sflag, *slashp;
 	char *conffile, buf[MAXPATHLEN * 2];
 
+	if (argv[1] == NULL && strcmp(basename(__progname), "help") == 0) {
+		static char *nargv[3];
+		nargv[0] = "man";
+		nargv[1] = "help";
+		nargv[2] = NULL;
+		argv = nargv;
+		argc = 2;
+	}
+
+	machine = sflag = NULL;
 	f_cat = f_how = 0;
 	conffile = p_add = p_path = NULL;
-	while ((ch = getopt(argc, argv, "-aC:cfhkM:m:P:w")) != EOF)
+	while ((ch = getopt(argc, argv, "-aC:cfhkM:m:P:s:S:w")) != -1)
 		switch (ch) {
 		case 'a':
 			f_all = 1;
@@ -115,6 +130,12 @@ main(argc, argv)
 		case 'M':
 		case 'P':		/* Backward compatibility. */
 			p_path = optarg;
+			break;
+		case 's':		/* SVR4 compatibility. */
+			sflag = optarg;
+			break;
+		case 'S':
+			machine = optarg;
 			break;
 		/*
 		 * The -f and -k options are backward compatible,
@@ -142,7 +163,7 @@ main(argc, argv)
 	if (!f_cat && !f_how && !f_where)
 		if (!isatty(1))
 			f_cat = 1;
-		else if ((pager = getenv("PAGER")) != NULL)
+		else if ((pager = getenv("PAGER")) != NULL && (*pager != '\0'))
 			pager = check_pager(pager);
 		else
 			pager = _PATH_PAGER;
@@ -150,8 +171,8 @@ main(argc, argv)
 	/* Read the configuration file. */
 	config(conffile);
 
-	/* Get the machine type. */
-	if ((machine = getenv("MACHINE")) == NULL)
+	/* Get the machine type unless specified by -S. */
+	if (machine == NULL && (machine = getenv("MACHINE")) == NULL)
 		machine = MACHINE;
 
 	/* If there's no _default list, create an empty one. */
@@ -190,10 +211,14 @@ main(argc, argv)
 	 * 2: If the user did not specify MANPATH, -M or a section, rewrite
 	 *    the _default list to include the _subdir list and the machine.
 	 */
-	if (argv[1] == NULL)
+	if (sflag == NULL && argv[1] == NULL)
 		section = NULL;
-	else if ((section = getlist(*argv)) != NULL)
-		++argv;
+	else {
+		if (sflag != NULL && (section = getlist(sflag)) == NULL)
+			errx(1, "unknown manual section `%s'", sflag);
+		else if (sflag == NULL && (section = getlist(*argv)) != NULL)
+			++argv;
+	}
 	if (p_path == NULL && section == NULL) {
 		defnewp = addlist("_default_new");
 		e_defp =
@@ -228,9 +253,10 @@ main(argc, argv)
 	/*
 	 * 3: If the user set the -m option, insert the user's list before
 	 *    whatever list we have, again appending the _subdir list and
-	 *    the machine.
+	 *    the machine. 
 	 */
-	if (p_add != NULL)
+	if (p_add != NULL) {
+		e_sectp = NULL;
 		for (p = strtok(p_add, ":"); p != NULL; p = strtok(NULL, ":")) {
 			slashp = p[strlen(p) - 1] == '/' ? "" : "/";
 			e_subp = (subp = getlist("_subdir")) == NULL ?
@@ -241,10 +267,19 @@ main(argc, argv)
 				if ((ep = malloc(sizeof(ENTRY))) == NULL ||
 				    (ep->s = strdup(buf)) == NULL)
 					err(1, NULL);
-				TAILQ_INSERT_HEAD(&defp->list, ep, q);
+				/* puts it at the end, should be at the top, but then the added
+					entries would be in reverse order, fix later when all are added*/
+				TAILQ_INSERT_TAIL(&defp->list, ep, q);  
+				if (e_sectp == NULL) 	/* save first added, to-be the new top */
+					e_sectp = ep;
 			}
 		}
-
+		if (e_sectp != NULL) { /* entries added, fix order */
+			ep->q.tqe_next = defp->list.tqh_first;	/* save original head			*/
+			defp->list.tqh_first = e_sectp;			/* first added entry, new top */
+			*e_sectp->q.tqe_prev = NULL; 				/* terminate list					*/
+		}
+	}	
 	/*
 	 * 4: If no -m was specified, and a section was, rewrite the section's
 	 *    paths (if they have a trailing slash) to append the _subdir list
@@ -350,7 +385,7 @@ main(argc, argv)
 		p += len;
 		*p++ = ' ';
 	}
-	*p = '\0';
+	*--p = '\0';
 
 	/* Use system(3) in case someone's pager is "pager arg1 arg2". */
 	(void)system(cmd);
@@ -371,7 +406,7 @@ manual(page, tag, pg)
 	ENTRY *ep, *e_sufp, *e_tag;
 	TAG *missp, *sufp;
 	int anyfound, cnt, found;
-	char *p, buf[128];
+	char *p, buf[MAXPATHLEN];
 
 	anyfound = 0;
 	buf[0] = '*';
@@ -490,7 +525,7 @@ build_page(fmt, pathp)
 	TAG *intmpp;
 	int fd, n;
 	char *p, *b;
-	char buf[MAXPATHLEN], cmd[MAXPATHLEN], tpath[sizeof(_PATH_TMP)];
+	char buf[MAXPATHLEN], cmd[MAXPATHLEN], tpath[MAXPATHLEN];
 
 	/* Let the user know this may take awhile. */
 	if (!warned) {
@@ -532,7 +567,7 @@ build_page(fmt, pathp)
 	 * Get a temporary file and build a version of the file
 	 * to display.  Replace the old file name with the new one.
 	 */
-	(void)strcpy(tpath, _PATH_TMP);
+	(void)strcpy(tpath, _PATH_TMPFILE);
 	if ((fd = mkstemp(tpath)) == -1) {
 		warn("%s", tpath);
 		(void)cleanup();
@@ -656,7 +691,7 @@ check_pager(name)
 		save = name;
 		/* allocate space to add the "-s" */
 		if (!(name =
-		    malloc((u_int)(strlen(save) + sizeof("-s") + 1))))
+		    malloc((u_int)(strlen(save) + 1 + sizeof("-s")))))
 			err(1, NULL);
 		(void)sprintf(name, "%s %s", save, "-s");
 	}
@@ -717,7 +752,11 @@ cleanup()
 	    NULL : missp->list.tqh_first;
 	if (ep != NULL)
 		for (; ep != NULL; ep = ep->q.tqe_next) {
-			warnx("no entry for %s in the manual.", ep->s);
+			if (section)
+				warnx("no entry for %s in section %s of the manual.",
+					ep->s, section->s);
+			else
+				warnx("no entry for %s in the manual.", ep->s);
 			rval = 1;
 		}
 
@@ -735,7 +774,9 @@ cleanup()
 static void
 usage()
 {
-	(void)fprintf(stderr,
-    "usage: man [-achw] [-C file] [-M path] [-m path] [section] title ...\n");
+	(void)fprintf(stderr, "usage: %s [-achw] [-C file] [-M path] [-m path] "
+	    "[-s section] [-S subsection] [section] title ...\n", __progname);
+	(void)fprintf(stderr, "usage: %s -k keyword\n", __progname);
+	(void)fprintf(stderr, "usage: %s -f command\n", __progname);
 	exit(1);
 }

@@ -1,4 +1,4 @@
-/*	$OpenBSD: com_risc.c,v 1.1 1996/11/30 13:39:44 niklas Exp $	*/
+/*	$OpenBSD: com_risc.c,v 1.2 1997/07/07 17:09:07 niklas Exp $	*/
 
 /*
  * Copyright (c) 1993, 1994 Charles Hannum.
@@ -108,7 +108,7 @@ com_risc_probe(parent, match, aux)
 		rv = 0;
 		goto out;
 	}
-	rv = comprobe1(iot, ioh, iobase);
+	rv = comprobe1(iot, ioh);
 	if (needioh)
 		bus_space_unmap(iot, ioh, COM_NPORTS);
 
@@ -148,19 +148,25 @@ com_risc_attach(parent, self, aux)
 
 
 	/* look for a NS 16550AF UART with FIFOs */
+	sc->sc_fifolen = 1;
 	bus_space_write_1(iot, ioh, com_fifo,
 	    FIFO_ENABLE | FIFO_RCV_RST | FIFO_XMT_RST | FIFO_TRIGGER_14);
 	delay(100);
 	if (ISSET(bus_space_read_1(iot, ioh, com_iir), IIR_FIFO_MASK) ==
-	    IIR_FIFO_MASK)
+	    IIR_FIFO_MASK) {
 		if (ISSET(bus_space_read_1(iot, ioh, com_fifo),
 		    FIFO_TRIGGER_14) == FIFO_TRIGGER_14) {
 			SET(sc->sc_hwflags, COM_HW_FIFO);
 			printf(": ns16550a, working fifo\n");
-		} else
+			sc->sc_fifolen = 16;
+		}
+		else {
 			printf(": ns16550, broken fifo\n");
-	else
+		}
+	}
+	else {
 		printf(": ns8250 or ns16450, no fifo\n");
+	}
 	bus_space_write_1(iot, ioh, com_fifo, 0);
 
 	/* disable interrupts */

@@ -1,4 +1,4 @@
-/*	$Id: conf.c,v 1.1 1997/08/10 18:04:22 gingold Exp $ */
+/*	$OpenBSD: conf.c,v 1.1.1.1 1997/10/14 07:25:32 gingold Exp $ */
 
 #include <sys/types.h>
 #include <netinet/in.h>

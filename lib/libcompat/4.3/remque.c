@@ -1,3 +1,5 @@
+/*	$OpenBSD$	*/
+
 /*
  *  Copyright (c) 1993 John Brezak
  *  All rights reserved.
@@ -27,7 +29,7 @@
  */
 
 #if defined(LIBC_SCCS) && !defined(lint)
-static char *rcsid = "$Id: remque.c,v 1.4 1993/10/21 21:08:57 jtc Exp $";
+static char *rcsid = "$OpenBSD: remque.c,v 1.1.1.1 1995/10/18 08:42:34 deraadt Exp $";
 #endif /* LIBC_SCCS and not lint */
 
 #include <search.h>

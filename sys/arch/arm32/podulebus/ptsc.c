@@ -59,7 +59,7 @@
 #include <arm32/podulebus/ptscreg.h>
 #include <arm32/podulebus/ptscvar.h>
 
-int  ptscprint  __P((void *auxp, char *));
+int  ptscprint  __P((void *auxp, const char *));
 void ptscattach __P((struct device *, struct device *, void *));
 int  ptscmatch  __P((struct device *, void *, void *));
 int ptsc_scsicmd __P((struct scsi_xfer *));
@@ -196,7 +196,7 @@ ptscattach(pdp, dp, auxp)
 #if PTSC_POLL == 0
 	if (irq_claim(IRQ_PODULE /*IRQ_EXPCARD0 + sc->sc_specific.sc_podule_number */,
 		      &sc->sc_softc.sc_ih))
-	    panic("ptsc: Cannot install IRQ handler\n");
+	    panic("ptsc: Cannot install IRQ handler");
 #endif
 	
 	printf("\n");
@@ -209,7 +209,7 @@ ptscattach(pdp, dp, auxp)
 int
 ptscprint(auxp, pnp)
 	void *auxp;
-	char *pnp;
+	const char *pnp;
 {
 	if (pnp == NULL)
 		return(UNCONF);

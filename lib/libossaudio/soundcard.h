@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: soundcard.h,v 1.3 1999/08/31 19:41:06 deraadt Exp $	*/
 /*	$NetBSD: soundcard.h,v 1.4 1997/10/29 20:23:27 augustss Exp $	*/
 
 /*
@@ -43,6 +43,10 @@
 
 #ifndef _soundcard_h_
 #define _soundcard_h_
+
+#ifndef	_IOWR
+#include <sys/ioccom.h>
+#endif	/* !_IOWR */
 
 #define SOUND_VERSION	0x030000
 
@@ -106,8 +110,13 @@
  * include all of endian.h because it contains a lot
  * junk symbols.  [augustss]
  */
+#ifndef _POSIX_SOURCE
 #define _POSIX_SOURCE		/* avoid dragging in a lot of junk */
 #include <machine/endian.h>
+#undef _POSIX_SOURCE
+#else
+#include <machine/endian.h>
+#endif
 #if _QUAD_LOWWORD == 0
 #define  AFMT_S16_NE AFMT_S16_LE
 #else

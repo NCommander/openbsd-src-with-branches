@@ -35,7 +35,7 @@
 .\"
 .Dd June 5, 1993
 .Dt INET 4
-.Os BSD 4.2
+.Os
 .Sh NAME
 .Nm inet
 .Nd Internet protocol family
@@ -71,10 +71,11 @@ Sockets bound to the Internet protocol family utilize
 the following addressing structure,
 .Bd -literal -offset indent
 struct sockaddr_in {
-	short	sin_family;
-	u_short	sin_port;
-	struct	in_addr sin_addr;
-	char	sin_zero[8];
+	u_int8_t	sin_len;
+	sa_family_t	sin_family;
+	in_port_t	sin_port;
+	struct		in_addr sin_addr;
+	int8_t		sin_zero[8];
 };
 .Ed
 .Pp
@@ -82,7 +83,7 @@ Sockets may be created with the local address
 .Dv INADDR_ANY
 to effect
 .Dq wildcard
-matching on incoming messages. 
+matching on incoming messages.
 The address in a
 .Xr connect 2
 or
@@ -143,7 +144,7 @@ commands on a datagram socket in the Internet domain;
 they have the same form as the
 .Dv SIOCIFADDR
 command (see
-.Xr intro 4 ) .
+.Xr netintro 4 ) .
 .Pp
 .Bl -tag -width SIOCSIFNETMASK
 .It Dv SIOCSIFNETMASK
@@ -157,11 +158,11 @@ Get interface network mask.
 .Sh SEE ALSO
 .Xr ioctl 2 ,
 .Xr socket 2 ,
-.Xr intro 4 ,
-.Xr tcp 4 ,
-.Xr udp 4 ,
+.Xr icmp 4 ,
 .Xr ip 4 ,
-.Xr icmp 4
+.Xr netintro 4 ,
+.Xr tcp 4 ,
+.Xr udp 4
 .Rs
 .%T "An Introductory 4.3 BSD Interprocess Communication Tutorial"
 .%B PS1

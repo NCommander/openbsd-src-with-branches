@@ -59,19 +59,18 @@
 #include <stdio.h>
 #include <errno.h>
 #include "cryptlib.h"
-#include "stack.h"
-#include "lhash.h"
-#include "conf.h"
-#include "buffer.h"
-#include "err.h"
+#include <openssl/stack.h>
+#include <openssl/lhash.h>
+#include <openssl/conf.h>
+#include <openssl/buffer.h>
+#include <openssl/err.h>
 
 #include "conf_lcl.h"
 
-#ifndef NOPROTO
 static void value_free_hash(CONF_VALUE *a, LHASH *conf);
 static void value_free_stack(CONF_VALUE *a,LHASH *conf);
 static unsigned long hash(CONF_VALUE *v);
-static int cmp(CONF_VALUE *a,CONF_VALUE *b);
+static int cmp_conf(CONF_VALUE *a,CONF_VALUE *b);
 static char *eat_ws(char *p);
 static char *eat_alpha_numeric(char *p);
 static void clear_comments(char *p);
@@ -79,71 +78,82 @@ static int str_copy(LHASH *conf,char *section,char **to, char *from);
 static char *scan_quote(char *p);
 static CONF_VALUE *new_section(LHASH *conf,char *section);
 static CONF_VALUE *get_section(LHASH *conf,char *section);
+#define scan_esc(p)	((((p)[1] == '\0')?(p++):(p+=2)),p)
+
+const char *CONF_version="CONF" OPENSSL_VERSION_PTEXT;
+
+
+LHASH *CONF_load(LHASH *h, const char *file, long *line)
+	{
+	LHASH *ltmp;
+	BIO *in=NULL;
+
+#ifdef VMS
+	in=BIO_new_file(file, "r");
 #else
-static void value_free_hash();
-static void value_free_stack();
-static unsigned long hash();
-static int cmp();
-static char *eat_ws();
-static char *eat_alpha_numeric();
-static void clear_comments();
-static int str_copy();
-static char *scan_quote();
-static CONF_VALUE *new_section();
-static CONF_VALUE *get_section();
+	in=BIO_new_file(file, "rb");
+#endif
+	if (in == NULL)
+		{
+		CONFerr(CONF_F_CONF_LOAD,ERR_R_SYS_LIB);
+		return NULL;
+		}
+
+	ltmp = CONF_load_bio(h, in, line);
+	BIO_free(in);
+
+	return ltmp;
+}
+#ifndef NO_FP_API
+LHASH *CONF_load_fp(LHASH *h, FILE *in, long *line)
+{
+	BIO *btmp;
+	LHASH *ltmp;
+	if(!(btmp = BIO_new_fp(in, BIO_NOCLOSE))) {
+		CONFerr(CONF_F_CONF_LOAD_FP,ERR_R_BUF_LIB);
+		return NULL;
+	}
+	ltmp = CONF_load_bio(h, btmp, line);
+	BIO_free(btmp);
+	return ltmp;
+}
 #endif
 
-#define scan_esc(p)	((*(++p) == '\0')?(p):(++p))
-
-char *CONF_version="CONF part of SSLeay 0.9.0b 29-Jun-1998";
-
-LHASH *CONF_load(h,file,line)
-LHASH *h;
-char *file;
-long *line;
+LHASH *CONF_load_bio(LHASH *h, BIO *in, long *line)
 	{
 	LHASH *ret=NULL;
-	FILE *in=NULL;
 #define BUFSIZE	512
+	char btmp[16];
 	int bufnum=0,i,ii;
 	BUF_MEM *buff=NULL;
 	char *s,*p,*end;
-	int again,n,eline=0;
+	int again,n;
+	long eline=0;
 	CONF_VALUE *v=NULL,*vv,*tv;
 	CONF_VALUE *sv=NULL;
 	char *section=NULL,*buf;
-	STACK *section_sk=NULL,*ts;
+	STACK_OF(CONF_VALUE) *section_sk=NULL,*ts;
 	char *start,*psection,*pname;
 
 	if ((buff=BUF_MEM_new()) == NULL)
 		{
-		CONFerr(CONF_F_CONF_LOAD,ERR_R_BUF_LIB);
-		goto err;
-		}
-
-	in=fopen(file,"rb");
-	if (in == NULL)
-		{
-		SYSerr(SYS_F_FOPEN,get_last_sys_error());
-		ERR_set_error_data(BUF_strdup(file),
-			ERR_TXT_MALLOCED|ERR_TXT_STRING);
-		CONFerr(CONF_F_CONF_LOAD,ERR_R_SYS_LIB);
+		CONFerr(CONF_F_CONF_LOAD_BIO,ERR_R_BUF_LIB);
 		goto err;
 		}
 
 	section=(char *)Malloc(10);
 	if (section == NULL)
 		{
-		CONFerr(CONF_F_CONF_LOAD,ERR_R_MALLOC_FAILURE);
+		CONFerr(CONF_F_CONF_LOAD_BIO,ERR_R_MALLOC_FAILURE);
 		goto err;
 		}
 	strcpy(section,"default");
 
 	if (h == NULL)
 		{
-		if ((ret=lh_new(hash,cmp)) == NULL)
+		if ((ret=lh_new(hash,cmp_conf)) == NULL)
 			{
-			CONFerr(CONF_F_CONF_LOAD,ERR_R_MALLOC_FAILURE);
+			CONFerr(CONF_F_CONF_LOAD_BIO,ERR_R_MALLOC_FAILURE);
 			goto err;
 			}
 		}
@@ -153,10 +163,11 @@ long *line;
 	sv=new_section(ret,section);
 	if (sv == NULL)
 		{
-		CONFerr(CONF_F_CONF_LOAD,CONF_R_UNABLE_TO_CREATE_NEW_SECTION);
+		CONFerr(CONF_F_CONF_LOAD_BIO,
+					CONF_R_UNABLE_TO_CREATE_NEW_SECTION);
 		goto err;
 		}
-	section_sk=(STACK *)sv->value;
+	section_sk=(STACK_OF(CONF_VALUE) *)sv->value;
 
 	bufnum=0;
 	for (;;)
@@ -164,12 +175,12 @@ long *line;
 		again=0;
 		if (!BUF_MEM_grow(buff,bufnum+BUFSIZE))
 			{
-			CONFerr(CONF_F_CONF_LOAD,ERR_R_BUF_LIB);
+			CONFerr(CONF_F_CONF_LOAD_BIO,ERR_R_BUF_LIB);
 			goto err;
 			}
 		p= &(buff->data[bufnum]);
 		*p='\0';
-		fgets(p,BUFSIZE-1,in);
+		BIO_gets(in, p, BUFSIZE-1);
 		p[BUFSIZE-1]='\0';
 		ii=i=strlen(p);
 		if (i == 0) break;
@@ -219,13 +230,23 @@ long *line;
 		if (IS_EOF(*s)) continue; /* blank line */
 		if (*s == '[')
 			{
+			char *ss;
+
 			s++;
 			start=eat_ws(s);
-			end=eat_alpha_numeric(start);
+			ss=start;
+again:
+			end=eat_alpha_numeric(ss);
 			p=eat_ws(end);
 			if (*p != ']')
 				{
-				CONFerr(CONF_F_CONF_LOAD,CONF_R_MISSING_CLOSE_SQUARE_BRACKET);
+				if (*p != '\0')
+					{
+					ss=p;
+					goto again;
+					}
+				CONFerr(CONF_F_CONF_LOAD_BIO,
+					CONF_R_MISSING_CLOSE_SQUARE_BRACKET);
 				goto err;
 				}
 			*end='\0';
@@ -234,10 +255,11 @@ long *line;
 				sv=new_section(ret,section);
 			if (sv == NULL)
 				{
-				CONFerr(CONF_F_CONF_LOAD,CONF_R_UNABLE_TO_CREATE_NEW_SECTION);
+				CONFerr(CONF_F_CONF_LOAD_BIO,
+					CONF_R_UNABLE_TO_CREATE_NEW_SECTION);
 				goto err;
 				}
-			section_sk=(STACK *)sv->value;
+			section_sk=(STACK_OF(CONF_VALUE) *)sv->value;
 			continue;
 			}
 		else
@@ -256,7 +278,8 @@ long *line;
 			p=eat_ws(end);
 			if (*p != '=')
 				{
-				CONFerr(CONF_F_CONF_LOAD,CONF_R_MISSING_EQUAL_SIGN);
+				CONFerr(CONF_F_CONF_LOAD_BIO,
+						CONF_R_MISSING_EQUAL_SIGN);
 				goto err;
 				}
 			*end='\0';
@@ -270,9 +293,10 @@ long *line;
 			p++;
 			*p='\0';
 
-			if ((v=(CONF_VALUE *)Malloc(sizeof(CONF_VALUE))) == NULL)
+			if (!(v=(CONF_VALUE *)Malloc(sizeof(CONF_VALUE))))
 				{
-				CONFerr(CONF_F_CONF_LOAD,ERR_R_MALLOC_FAILURE);
+				CONFerr(CONF_F_CONF_LOAD_BIO,
+							ERR_R_MALLOC_FAILURE);
 				goto err;
 				}
 			if (psection == NULL) psection=section;
@@ -280,7 +304,8 @@ long *line;
 			v->value=NULL;
 			if (v->name == NULL)
 				{
-				CONFerr(CONF_F_CONF_LOAD,ERR_R_MALLOC_FAILURE);
+				CONFerr(CONF_F_CONF_LOAD_BIO,
+							ERR_R_MALLOC_FAILURE);
 				goto err;
 				}
 			strcpy(v->name,pname);
@@ -293,10 +318,11 @@ long *line;
 					tv=new_section(ret,psection);
 				if (tv == NULL)
 					{
-					CONFerr(CONF_F_CONF_LOAD,CONF_R_UNABLE_TO_CREATE_NEW_SECTION);
+					CONFerr(CONF_F_CONF_LOAD_BIO,
+					   CONF_R_UNABLE_TO_CREATE_NEW_SECTION);
 					goto err;
 					}
-				ts=(STACK *)tv->value;
+				ts=(STACK_OF(CONF_VALUE) *)tv->value;
 				}
 			else
 				{
@@ -304,15 +330,16 @@ long *line;
 				ts=section_sk;
 				}
 			v->section=tv->section;	
-			if (!sk_push(ts,(char *)v))
+			if (!sk_CONF_VALUE_push(ts,v))
 				{
-				CONFerr(CONF_F_CONF_LOAD,ERR_R_MALLOC_FAILURE);
+				CONFerr(CONF_F_CONF_LOAD_BIO,
+							ERR_R_MALLOC_FAILURE);
 				goto err;
 				}
-			vv=(CONF_VALUE *)lh_insert(ret,(char *)v);
+			vv=(CONF_VALUE *)lh_insert(ret,v);
 			if (vv != NULL)
 				{
-				sk_delete_ptr(ts,(char *)vv);
+				sk_CONF_VALUE_delete_ptr(ts,vv);
 				Free(vv->name);
 				Free(vv->value);
 				Free(vv);
@@ -322,13 +349,13 @@ long *line;
 		}
 	if (buff != NULL) BUF_MEM_free(buff);
 	if (section != NULL) Free(section);
-	if (in != NULL) fclose(in);
 	return(ret);
 err:
 	if (buff != NULL) BUF_MEM_free(buff);
 	if (section != NULL) Free(section);
 	if (line != NULL) *line=eline;
-	if (in != NULL) fclose(in);
+	sprintf(btmp,"%ld",eline);
+	ERR_add_error_data(2,"line ",btmp);
 	if ((h != ret) && (ret != NULL)) CONF_free(ret);
 	if (v != NULL)
 		{
@@ -338,11 +365,8 @@ err:
 		}
 	return(NULL);
 	}
-		
-char *CONF_get_string(conf,section,name)
-LHASH *conf;
-char *section;
-char *name;
+
+char *CONF_get_string(LHASH *conf, char *section, char *name)
 	{
 	CONF_VALUE *v,vv;
 	char *p;
@@ -354,7 +378,7 @@ char *name;
 			{
 			vv.name=name;
 			vv.section=section;
-			v=(CONF_VALUE *)lh_retrieve(conf,(char *)&vv);
+			v=(CONF_VALUE *)lh_retrieve(conf,&vv);
 			if (v != NULL) return(v->value);
 			if (strcmp(section,"ENV") == 0)
 				{
@@ -364,7 +388,7 @@ char *name;
 			}
 		vv.section="default";
 		vv.name=name;
-		v=(CONF_VALUE *)lh_retrieve(conf,(char *)&vv);
+		v=(CONF_VALUE *)lh_retrieve(conf,&vv);
 		if (v != NULL)
 			return(v->value);
 		else
@@ -374,36 +398,29 @@ char *name;
 		return(Getenv(name));
 	}
 
-static CONF_VALUE *get_section(conf,section)
-LHASH *conf;
-char *section;
+static CONF_VALUE *get_section(LHASH *conf, char *section)
 	{
 	CONF_VALUE *v,vv;
 
 	if ((conf == NULL) || (section == NULL)) return(NULL);
 	vv.name=NULL;
 	vv.section=section;
-	v=(CONF_VALUE *)lh_retrieve(conf,(char *)&vv);
+	v=(CONF_VALUE *)lh_retrieve(conf,&vv);
 	return(v);
 	}
 
-STACK *CONF_get_section(conf,section)
-LHASH *conf;
-char *section;
+STACK_OF(CONF_VALUE) *CONF_get_section(LHASH *conf, char *section)
 	{
 	CONF_VALUE *v;
 
 	v=get_section(conf,section);
 	if (v != NULL)
-		return((STACK *)v->value);
+		return((STACK_OF(CONF_VALUE) *)v->value);
 	else
 		return(NULL);
 	}
 
-long CONF_get_number(conf,section,name)
-LHASH *conf;
-char *section;
-char *name;
+long CONF_get_number(LHASH *conf, char *section, char *name)
 	{
 	char *str;
 	long ret=0;
@@ -420,35 +437,30 @@ char *name;
 		}
 	}
 
-void CONF_free(conf)
-LHASH *conf;
+void CONF_free(LHASH *conf)
 	{
 	if (conf == NULL) return;
 
 	conf->down_load=0; 	/* evil thing to make sure the 'Free()'
 				 * works as expected */
-	lh_doall_arg(conf,(void (*)())value_free_hash,(char *)conf);
+	lh_doall_arg(conf,(void (*)())value_free_hash,conf);
 
 	/* We now have only 'section' entries in the hash table.
 	 * Due to problems with */
 
-	lh_doall_arg(conf,(void (*)())value_free_stack,(char *)conf);
+	lh_doall_arg(conf,(void (*)())value_free_stack,conf);
 	lh_free(conf);
 	}
 
-static void value_free_hash(a,conf)
-CONF_VALUE *a;
-LHASH *conf;
+static void value_free_hash(CONF_VALUE *a, LHASH *conf)
 	{
 	if (a->name != NULL)
 		{
-		a=(CONF_VALUE *)lh_delete(conf,(char *)a);
+		a=(CONF_VALUE *)lh_delete(conf,a);
 		}
 	}
 
-static void value_free_stack(a,conf)
-CONF_VALUE *a;
-LHASH *conf;
+static void value_free_stack(CONF_VALUE *a, LHASH *conf)
 	{
 	CONF_VALUE *vv;
 	STACK *sk;
@@ -469,8 +481,7 @@ LHASH *conf;
 	Free(a);
 	}
 
-static void clear_comments(p)
-char *p;
+static void clear_comments(char *p)
 	{
 	char *to;
 
@@ -499,10 +510,7 @@ char *p;
 		}
 	}
 
-static int str_copy(conf,section,pto,from)
-LHASH *conf;
-char *section;
-char **pto,*from;
+static int str_copy(LHASH *conf, char *section, char **pto, char *from)
 	{
 	int q,r,rr=0,to=0,len=0;
 	char *s,*e,*rp,*p,*rrp,*np,*cp,v;
@@ -616,16 +624,14 @@ err:
 	return(0);
 	}
 
-static char *eat_ws(p)
-char *p;
+static char *eat_ws(char *p)
 	{
 	while (IS_WS(*p) && (!IS_EOF(*p)))
 		p++;
 	return(p);
 	}
 
-static char *eat_alpha_numeric(p)
-char *p;
+static char *eat_alpha_numeric(char *p)
 	{
 	for (;;)
 		{
@@ -640,14 +646,12 @@ char *p;
 		}
 	}
 
-static unsigned long hash(v)
-CONF_VALUE *v;
+static unsigned long hash(CONF_VALUE *v)
 	{
 	return((lh_strhash(v->section)<<2)^lh_strhash(v->name));
 	}
 
-static int cmp(a,b)
-CONF_VALUE *a,*b;
+static int cmp_conf(CONF_VALUE *a, CONF_VALUE *b)
 	{
 	int i;
 
@@ -668,8 +672,7 @@ CONF_VALUE *a,*b;
 		return((a->name == NULL)?-1:1);
 	}
 
-static char *scan_quote(p)
-char *p;
+static char *scan_quote(char *p)
 	{
 	int q= *p;
 
@@ -687,9 +690,7 @@ char *p;
 	return(p);
 	}
 
-static CONF_VALUE *new_section(conf,section)
-LHASH *conf;
-char *section;
+static CONF_VALUE *new_section(LHASH *conf, char *section)
 	{
 	STACK *sk=NULL;
 	int ok=0,i;
@@ -707,7 +708,7 @@ char *section;
 	v->name=NULL;
 	v->value=(char *)sk;
 	
-	vv=(CONF_VALUE *)lh_insert(conf,(char *)v);
+	vv=(CONF_VALUE *)lh_insert(conf,v);
 	if (vv != NULL)
 		{
 #if !defined(NO_STDIO) && !defined(WIN16)
@@ -725,3 +726,5 @@ err:
 		}
 	return(v);
 	}
+
+IMPLEMENT_STACK_OF(CONF_VALUE)

@@ -83,7 +83,7 @@ main(int argc, char **argv)
 	hex_name = list_name = 0;
 
 	/* parse options */
-	while ((c = getopt(argc, argv, "o:l:")) != EOF) {
+	while ((c = getopt(argc, argv, "o:l:")) != -1) {
 		switch (c) {
 		case 'o':
 			if (hex_name)
@@ -249,7 +249,7 @@ yyerror(char *err)
 {
 	extern char *lineptr;
 
-	perr(err);
+	perr("%s", err);
 	longjmp(synerrjmp, 1);
 }
 

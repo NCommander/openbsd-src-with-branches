@@ -1,3 +1,4 @@
+/*	$OpenBSD: binpatch.c,v 1.4 1997/01/17 07:12:27 millert Exp $	*/
 /*	$NetBSD: binpatch.c,v 1.6 1995/08/18 15:28:28 chopps Exp $	*/
 
 /* Author: Markus Wild mw@eunet.ch ???   */
@@ -32,8 +33,8 @@ SYNOPSIS
 \t%s [-b|-w|-l] [-o offset] -a address [-r value] binary
 ";
 static char desusage[] = "DESCRIPTION
-\tAllows the patching of BSD binaries, for example,a distributed
-\tkernel. Recient additions allows the user to index into an array
+\tAllows the patching of BSD binaries, for example, a distributed
+\tkernel. Recent additions allows the user to index into an array
 \tand assign a value. Binpatch has internal variables to allow
 \tyou to test it on itself under NetBSD.
 OPTIONS
@@ -109,7 +110,7 @@ main(int argc, char *argv[])
   u_char  cval;
   
  
-  while ((c = getopt (argc, argv, "H:a:bwlr:s:o:")) != EOF)
+  while ((c = getopt (argc, argv, "H:a:bwlr:s:o:")) != -1)
     switch (c)
       {
       case 'H':
@@ -397,7 +398,7 @@ static void FindOffset(char *symbol,u_long *index)
 */
 static u_long FindAssign(char *symbol,u_long *rvalue)
 {
-  char *ce = rindex(symbol,'='); /* Assign symbol some number */
+  char *ce = strrchr(symbol,'='); /* Assign symbol some number */
   char *cn = ce + 1; /* This should point at some number, no spaces allowed */
   u_long dr = 0; /* flag for do_replace */
   if (ce)

@@ -1,3 +1,4 @@
+#	$OpenBSD: list2sh.awk,v 1.1.1.1 1995/04/17 19:08:49 leo Exp $
 #	$NetBSD: list2sh.awk,v 1.1.1.1 1995/04/17 19:08:49 leo Exp $
 
 BEGIN {

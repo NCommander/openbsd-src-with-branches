@@ -1,3 +1,4 @@
+/*	$OpenBSD: tables.h,v 1.3 1995/03/21 09:07:47 cgd Exp $	*/
 /*	$NetBSD: tables.h,v 1.3 1995/03/21 09:07:47 cgd Exp $	*/
 
 /*-

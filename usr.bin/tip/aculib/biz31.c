@@ -1,4 +1,5 @@
-/*	$NetBSD: biz31.c,v 1.3 1994/12/08 09:31:33 jtc Exp $	*/
+/*	$OpenBSD: biz31.c,v 1.3 1996/06/26 05:40:51 deraadt Exp $	*/
+/*	$NetBSD: biz31.c,v 1.5 1997/02/11 09:24:14 mrg Exp $	*/
 
 /*
  * Copyright (c) 1983, 1993
@@ -37,7 +38,7 @@
 #if 0
 static char sccsid[] = "@(#)biz31.c	8.1 (Berkeley) 6/6/93";
 #endif
-static char rcsid[] = "$NetBSD: biz31.c,v 1.3 1994/12/08 09:31:33 jtc Exp $";
+static char rcsid[] = "$OpenBSD: biz31.c,v 1.3 1996/06/26 05:40:51 deraadt Exp $";
 #endif /* not lint */
 
 #include "tip.h"
@@ -90,7 +91,7 @@ biz_dialer(num, mod)
 	if (timeout) {
 		char line[80];
 
-		sprintf(line, "%d second dial timeout",
+		(void)sprintf(line, "%d second dial timeout",
 			number(value(DIALTIMEOUT)));
 		logent(value(HOST), num, "biz", line);
 	}
@@ -123,7 +124,7 @@ biz31_disconnect()
 
 	write(FD, DISCONNECT_CMD, 4);
 	sleep(2);
-	ioctl(FD, TIOCFLUSH);
+	tcflush(FD, TCIOFLUSH);
 }
 
 biz31_abort()
@@ -231,7 +232,7 @@ bizsync(fd)
 
 retry:
 	if (ioctl(fd, IOCTL, (caddr_t)&b) >= 0 && chars(b) > 0)
-		ioctl(fd, TIOCFLUSH);
+		tcflush(FD, TCIOFLUSH);
 	write(fd, "\rp>\r", 4);
 	sleep(1);
 	if (ioctl(fd, IOCTL, (caddr_t)&b) >= 0) {

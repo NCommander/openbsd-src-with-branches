@@ -1,3 +1,4 @@
+/*	$OpenBSD: paths.h,v 1.17 2000/06/09 16:34:03 millert Exp $	*/
 /*	$NetBSD: paths.h,v 1.7 1994/10/26 00:56:12 cgd Exp $	*/
 
 /*
@@ -39,32 +40,44 @@
 #define	_PATHS_H_
 
 /* Default search path. */
-#define	_PATH_DEFPATH	"/usr/bin:/bin"
+#define	_PATH_DEFPATH	"/usr/bin:/bin:/usr/sbin:/sbin:/usr/X11R6/bin:/usr/local/bin"
 /* All standard utilities path. */
-#define	_PATH_STDPATH \
-	"/usr/bin:/bin:/usr/sbin:/sbin:/usr/contrib/bin:/usr/old/bin"
+#define	_PATH_STDPATH	"/usr/bin:/bin:/usr/sbin:/sbin:/usr/X11R6/bin:/usr/local/bin"
 
 #define	_PATH_BSHELL	"/bin/sh"
 #define	_PATH_CONSOLE	"/dev/console"
 #define	_PATH_CSHELL	"/bin/csh"
+#define	_PATH_DEFTAPE	"/dev/rst0"
 #define	_PATH_DEVDB	"/var/run/dev.db"
 #define	_PATH_DEVNULL	"/dev/null"
 #define	_PATH_DRUM	"/dev/drum"
+#define	_PATH_FSIRAND	"/sbin/fsirand"
+#define _PATH_KLOG      "/dev/klog"
 #define	_PATH_KMEM	"/dev/kmem"
+#define	_PATH_KSYMS	"/dev/ksyms"
+#define	_PATH_KVMDB	"/var/db/kvm_bsd.db"
 #define	_PATH_LOCALE	"/usr/share/locale"
+#define _PATH_LOGCONF   "/etc/syslog.conf"
+#define _PATH_LOGPID    "/var/run/syslog.pid"
 #define	_PATH_MAILDIR	"/var/mail"
 #define	_PATH_MAN	"/usr/share/man"
 #define	_PATH_MEM	"/dev/mem"
 #define	_PATH_NOLOGIN	"/etc/nologin"
+#define	_PATH_RSH	"/usr/bin/rsh"
 #define	_PATH_SENDMAIL	"/usr/sbin/sendmail"
 #define	_PATH_SHELLS	"/etc/shells"
+#define	_PATH_SKEYKEYS	"/etc/skeykeys"
 #define	_PATH_TTY	"/dev/tty"
-#define	_PATH_UNIX	"/netbsd"
+#define	_PATH_UNIX	"/bsd"
 #define	_PATH_VI	"/usr/bin/vi"
+#define _PATH_AFSD	"/usr/libexec/afsd"
+
 
 /* Provide trailing slash, since mostly used for building pathnames. */
+#define _PATH_BOOTDIR	"/usr/mdec/"
 #define	_PATH_DEV	"/dev/"
 #define	_PATH_TMP	"/tmp/"
+#define	_PATH_UUCPLOCK	"/var/spool/lock/"
 #define	_PATH_VARDB	"/var/db/"
 #define	_PATH_VARRUN	"/var/run/"
 #define	_PATH_VARTMP	"/var/tmp/"

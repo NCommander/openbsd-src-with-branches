@@ -1,4 +1,5 @@
-/*	$NetBSD: extern.h,v 1.2 1995/01/20 08:51:54 jtc Exp $	*/
+/*	$OpenBSD: extern.h,v 1.5 1997/07/15 13:42:05 kstailey Exp $	*/
+/*	$NetBSD: extern.h,v 1.3 1996/05/10 23:16:34 thorpej Exp $	*/
 
 /*-
  * Copyright (c) 1991, 1993
@@ -50,7 +51,7 @@ extern float	*dk_mspw;
 extern kvm_t	*kd;
 extern long	ntext, textp;
 extern int	*dk_select;
-extern int	CMDLINE;
+extern long	CMDLINE;
 extern int	dk_ndrive;
 extern int	hz, stathz;
 extern int	naptime, col;
@@ -76,7 +77,7 @@ struct	 cmdtab *lookup __P((char *));
 void	 command __P((char *));
 void	 die __P((int));
 void	 display __P((int));
-int	 dkinit __P((void));
+int	 dkinit __P((int));
 int	 dkcmd __P((char *, char *));
 void	 error __P((const char *fmt, ...));
 void	 fetchiostat __P((void));
@@ -91,7 +92,7 @@ int	 initmbufs __P((void));
 int	 initnetstat __P((void));
 int	 initpigs __P((void));
 int	 initswap __P((void));
-int	 keyboard __P((void));
+void	 keyboard __P((void));
 int	 kvm_ckread __P((void *, void *, int));
 void	 labeliostat __P((void));
 void	 labelkre __P((void));
@@ -110,6 +111,7 @@ WINDOW	*opennetstat __P((void));
 WINDOW	*openpigs __P((void));
 WINDOW	*openswap __P((void));
 int	 prefix __P((char *, char *));
+void	 resize __P((int));
 void	 showiostat __P((void));
 void	 showkre __P((void));
 void	 showmbufs __P((void));
