@@ -4,19 +4,19 @@
  */
 
 #if defined(LIBC_SCCS) && !defined(lint)
-static char *rcsid = "$OpenBSD: localeconv.c,v 1.1.1.1 1995/10/18 08:42:01 deraadt Exp $";
+static char *rcsid = "$OpenBSD: localeconv.c,v 1.2 1996/08/19 08:28:20 tholo Exp $";
 #endif /* LIBC_SCCS and not lint */
 
 #include <sys/localedef.h>
 #include <locale.h>
 
-/* 
+/*
  * The localeconv() function constructs a struct lconv from the current
  * monetary and numeric locales.
  *
  * Because localeconv() may be called many times (especially by library
- * routines like printf() & strtod()), the approprate members of the 
- * lconv structure are computed only when the monetary or numeric 
+ * routines like printf() & strtod()), the approprate members of the
+ * lconv structure are computed only when the monetary or numeric
  * locale has been changed.
  */
 int __mlocale_changed = 1;
