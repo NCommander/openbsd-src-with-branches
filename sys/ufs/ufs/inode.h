@@ -1,4 +1,4 @@
-/*	$OpenBSD: inode.h,v 1.19 2001/12/19 08:58:07 art Exp $	*/
+/*	$OpenBSD: inode.h,v 1.20 2002/06/06 20:57:47 aaron Exp $	*/
 /*	$NetBSD: inode.h,v 1.8 1995/06/15 23:22:50 cgd Exp $	*/
 
 /*
@@ -52,8 +52,8 @@ typedef long ufs_lbn_t;
  * Per-filesystem inode extensions.
  */
 struct ext2fs_inode_ext {
-       ufs_daddr_t ext2fs_last_lblk; /* last logical block allocated */
-       ufs_daddr_t ext2fs_last_blk; /* last block allocated on disk */
+       ufs1_daddr_t ext2fs_last_lblk; /* last logical block allocated */
+       ufs1_daddr_t ext2fs_last_blk; /* last block allocated on disk */
 };
 
 /*
@@ -235,7 +235,7 @@ struct inode_vtbl {
  * ufs_getlbns and used by truncate and bmap code.
  */
 struct indir {
-	ufs_daddr_t in_lbn;		/* Logical block number. */
+	daddr_t in_lbn;			/* Logical block number. */
 	int	in_off;			/* Offset in buffer. */
 	int	in_exists;		/* Flag if the block exists. */
 };
