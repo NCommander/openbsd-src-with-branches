@@ -1,4 +1,4 @@
-/*	$OpenBSD: ip6_var.h,v 1.13 2001/05/28 05:28:48 angelos Exp $	*/
+/*	$OpenBSD: ip6_var.h,v 1.14 2002/03/14 01:27:12 millert Exp $	*/
 /*	$KAME: ip6_var.h,v 1.33 2000/06/11 14:59:20 jinmei Exp $	*/
 
 /*
@@ -89,6 +89,7 @@ struct	ip6q {
 #ifdef notyet
 	u_char		*ip6q_nxtp;
 #endif
+	int		ip6q_nfrag;	/* # of fragments */
 };
 
 struct	ip6asfrag {
@@ -216,6 +217,7 @@ extern int	ip6_rr_prune;		/* router renumbering prefix
 extern struct socket *ip6_mrouter; 	/* multicast routing daemon */
 extern int	ip6_sendredirects;	/* send IP redirects when forwarding? */
 extern int	ip6_maxfragpackets; /* Maximum packets in reassembly queue */
+extern int	ip6_maxfrags;	/* Maximum fragments in reassembly queue */
 extern int	ip6_sourcecheck;	/* Verify source interface */
 extern int	ip6_sourcecheck_interval; /* Interval between log messages */
 extern int	ip6_accept_rtadv;	/* Acts as a host not a router */
