@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: ebusvar.h,v 1.2 2001/08/20 20:23:52 jason Exp $	*/
 /*	$NetBSD: ebusvar.h,v 1.5 2001/07/20 00:07:13 eeh Exp $	*/
 
 /*
@@ -55,7 +55,6 @@ struct ebus_attach_args {
 
 struct ebus_softc {
 	struct device			sc_dev;
-	struct psycho_softc		*sc_parent;	/* for iommu */
 
 	int				sc_node;
 
