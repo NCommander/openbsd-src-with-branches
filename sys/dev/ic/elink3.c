@@ -1,4 +1,4 @@
-/*	$OpenBSD: elink3.c,v 1.60 2003/07/08 20:17:05 mickey Exp $	*/
+/*	$OpenBSD: elink3.c,v 1.61 2003/10/21 18:58:49 jmc Exp $	*/
 /*	$NetBSD: elink3.c,v 1.32 1997/05/14 00:22:00 thorpej Exp $	*/
 
 /*
@@ -60,7 +60,6 @@
 
 #if NBPFILTER > 0
 #include <net/bpf.h>
-#include <net/bpfdesc.h>
 #endif
 
 #include <machine/cpu.h>

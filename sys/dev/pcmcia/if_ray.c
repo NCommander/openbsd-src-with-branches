@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_ray.c,v 1.21 2002/11/19 18:36:18 jason Exp $	*/
+/*	$OpenBSD: if_ray.c,v 1.22 2003/10/22 09:58:46 jmc Exp $	*/
 /*	$NetBSD: if_ray.c,v 1.21 2000/07/05 02:35:54 onoe Exp $	*/
 
 /*
@@ -91,7 +91,6 @@
 
 #if NBPFILTER > 0
 #include <net/bpf.h>
-#include <net/bpfdesc.h>
 #endif
 
 #include <machine/cpu.h>

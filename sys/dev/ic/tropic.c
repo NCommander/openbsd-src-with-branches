@@ -1,4 +1,4 @@
-/*	$OpenBSD: tropic.c,v 1.6 2002/03/14 01:26:55 millert Exp $	*/
+/*	$OpenBSD: tropic.c,v 1.7 2003/10/21 18:58:50 jmc Exp $	*/
 /*	$NetBSD: tropic.c,v 1.6 1999/12/17 08:26:31 fvdl Exp $	*/
 
 /* 
@@ -71,7 +71,6 @@
 
 #if NBPFILTER > 0
 #include <net/bpf.h>
-#include <net/bpfdesc.h>
 #endif
 
 #ifndef ifr_mtu

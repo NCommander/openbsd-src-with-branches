@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_ep_eisa.c,v 1.16 2002/03/14 01:26:53 millert Exp $	*/
+/*	$OpenBSD: if_ep_eisa.c,v 1.17 2003/01/10 17:07:09 mickey Exp $	*/
 /*	$NetBSD: if_ep_eisa.c,v 1.13 1997/04/18 00:50:33 cgd Exp $	*/
 
 /*
@@ -60,7 +60,6 @@
 
 #if NBPFILTER > 0
 #include <net/bpf.h>
-#include <net/bpfdesc.h>
 #endif
 
 #include <machine/cpu.h>

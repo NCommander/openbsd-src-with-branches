@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_lmc_obsd.c,v 1.12 2001/11/06 19:53:19 miod Exp $ */
+/*	$OpenBSD: if_lmc_obsd.c,v 1.13 2002/06/02 22:50:00 deraadt Exp $ */
 /*	$NetBSD: if_lmc_nbsd.c,v 1.1 1999/03/25 03:32:43 explorer Exp $	*/
 
 /*-
@@ -98,7 +98,6 @@
 #include "bpfilter.h"
 #if NBPFILTER > 0
 #include <net/bpf.h>
-#include <net/bpfdesc.h>
 #endif
 
 #include <uvm/uvm_extern.h>

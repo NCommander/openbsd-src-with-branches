@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_eg.c,v 1.24 2003/01/27 19:09:12 jason Exp $	*/
+/*	$OpenBSD: if_eg.c,v 1.25 2003/04/10 10:11:24 miod Exp $	*/
 /*	$NetBSD: if_eg.c,v 1.26 1996/05/12 23:52:27 mycroft Exp $	*/
 
 /*
@@ -66,7 +66,6 @@
 
 #if NBPFILTER > 0
 #include <net/bpf.h>
-#include <net/bpfdesc.h>
 #endif
 
 #include <machine/cpu.h>

@@ -1,4 +1,4 @@
-/*	$OpenBSD: pdq_ifsubr.c,v 1.12 2002/06/02 22:49:59 deraadt Exp $	*/
+/*	$OpenBSD: pdq_ifsubr.c,v 1.13 2002/06/09 03:14:18 todd Exp $	*/
 /*	$NetBSD: pdq_ifsubr.c,v 1.5 1996/05/20 00:26:21 thorpej Exp $	*/
 
 /*-
@@ -58,7 +58,6 @@
 #include "bpfilter.h"
 #if NBPFILTER > 0
 #include <net/bpf.h>
-#include <net/bpfdesc.h>
 #endif
 
 #ifdef INET

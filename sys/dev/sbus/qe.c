@@ -1,4 +1,4 @@
-/*	$OpenBSD: qe.c,v 1.13 2003/06/24 21:54:38 henric Exp $	*/
+/*	$OpenBSD: qe.c,v 1.14 2003/06/27 01:36:53 jason Exp $	*/
 /*	$NetBSD: qe.c,v 1.16 2001/03/30 17:30:18 christos Exp $	*/
 
 /*-
@@ -107,7 +107,6 @@
 
 #if NBPFILTER > 0
 #include <net/bpf.h>
-#include <net/bpfdesc.h>
 #endif
 
 #include <machine/bus.h>

@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_ne_isapnp.c,v 1.4 2001/03/12 05:37:00 aaron Exp $	*/
+/*	$OpenBSD: if_ne_isapnp.c,v 1.5 2002/03/14 01:26:56 millert Exp $	*/
 /*	$NetBSD: if_ne_isapnp.c,v 1.7 1998/07/23 19:30:45 christos Exp $	*/
 
 /*-
@@ -76,7 +76,6 @@
 
 #if NBPFILTER > 0
 #include <net/bpf.h>
-#include <net/bpfdesc.h>
 #endif
 
 #include <machine/intr.h>

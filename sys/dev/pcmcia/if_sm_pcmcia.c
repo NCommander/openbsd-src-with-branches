@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_sm_pcmcia.c,v 1.19 2003/02/18 13:14:43 jmc Exp $	*/
+/*	$OpenBSD: if_sm_pcmcia.c,v 1.20 2003/09/04 03:46:48 avsm Exp $	*/
 /*	$NetBSD: if_sm_pcmcia.c,v 1.11 1998/08/15 20:47:32 thorpej Exp $  */
 
 /*-
@@ -69,7 +69,6 @@
 
 #if NBPFILTER > 0
 #include <net/bpf.h>
-#include <net/bpfdesc.h>
 #endif
 
 #include <machine/intr.h>

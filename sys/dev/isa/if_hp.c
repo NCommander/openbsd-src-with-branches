@@ -1,4 +1,4 @@
-/*    $OpenBSD: if_hp.c,v 1.9 2002/06/30 13:04:36 itojun Exp $       */
+/*    $OpenBSD: if_hp.c,v 1.10 2003/06/02 23:28:02 millert Exp $       */
 /*    $NetBSD: if_hp.c,v 1.21 1995/12/24 02:31:31 mycroft Exp $       */
 
 /* XXX THIS DRIVER IS BROKEN.  IT WILL NOT EVEN COMPILE. */
@@ -78,7 +78,6 @@
 #if NBPFILTER > 0
 #include <sys/select.h>
 #include <net/bpf.h>
-#include <net/bpfdesc.h>
 #endif
 
 #include <machine/cpu.h>
