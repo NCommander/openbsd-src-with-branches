@@ -1,4 +1,4 @@
-# $OpenBSD: Makefile,v 1.6 1999/12/24 09:08:48 agc Exp $
+# $OpenBSD: Makefile,v 1.1 2000/04/24 22:45:42 jakob Exp $
 
 PROG=	user
 SRCS=	user.c main.c
@@ -21,6 +21,6 @@ LINKS+=	${BINDIR}/user ${BINDIR}/groupinfo
 MAN=	user.8 useradd.8 userdel.8 usermod.8 userinfo.8 \
 	group.8 groupadd.8 groupdel.8 groupmod.8 groupinfo.8
 
-MLINKS=	useradd.8 adduser.8
+#MLINKS=	useradd.8 adduser.8
 
 .include <bsd.prog.mk>
