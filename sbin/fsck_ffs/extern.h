@@ -1,4 +1,4 @@
-/*	$OpenBSD: extern.h,v 1.2 1996/06/23 14:30:27 deraadt Exp $	*/
+/*	$OpenBSD: extern.h,v 1.3 1996/10/20 08:36:31 tholo Exp $	*/
 /*	$NetBSD: extern.h,v 1.6 1996/09/27 22:45:12 christos Exp $	*/
 
 /*
@@ -73,3 +73,4 @@ struct	dinode * getnextinode __P((ino_t));
 void	catch __P((int));
 void	catchquit __P((int));
 void	voidquit __P((int));
+void	catchinfo __P((int));
