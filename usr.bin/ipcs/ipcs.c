@@ -1,4 +1,4 @@
-/*	$OpenBSD: ipcs.c,v 1.12 2001/02/14 17:48:01 tholo Exp $	*/
+/*	$OpenBSD: ipcs.c,v 1.13 2001/07/12 05:17:11 deraadt Exp $	*/
 /*	$NetBSD: ipcs.c,v 1.10.6.1 1996/06/07 01:53:47 thorpej Exp $	*/
 
 /*
@@ -421,8 +421,6 @@ main(argc, argv)
 
 		if (display & SEMTOTAL) {
 			printf("seminfo:\n");
-			printf("\tsemmap: %6d\t(# of entries in semaphore map)\n",
-			    seminfo.semmap);
 			printf("\tsemmni: %6d\t(# of semaphore identifiers)\n",
 			    seminfo.semmni);
 			printf("\tsemmns: %6d\t(# of semaphores in system)\n",
