@@ -1,4 +1,4 @@
-/*	$OpenBSD: portal_vnops.c,v 1.4 1997/10/06 21:04:47 deraadt Exp $	*/
+/*	$OpenBSD: portal_vnops.c,v 1.5 1997/11/06 05:58:41 csapuntz Exp $	*/
 /*	$NetBSD: portal_vnops.c,v 1.17 1996/02/13 13:12:57 mycroft Exp $	*/
 
 /*
@@ -585,6 +585,9 @@ portal_setattr(v)
 	 */
 	if (ap->a_vp->v_flag & VROOT)
 		return (EACCES);
+
+	if (ap->a_vap->va_flags != VNOVAL)
+		return (EOPNOTSUPP);
 
 	return (0);
 }
