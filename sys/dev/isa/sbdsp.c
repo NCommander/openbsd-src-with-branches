@@ -1,4 +1,4 @@
-/*	$OpenBSD: sbdsp.c,v 1.18 2001/11/06 19:53:19 miod Exp $	*/
+/*	$OpenBSD: sbdsp.c,v 1.19 2002/01/20 19:56:53 ericj Exp $	*/
 
 /*
  * Copyright (c) 1991-1993 Regents of the University of California.
@@ -570,7 +570,7 @@ sbdsp_set_params(addr, setmode, usemode, play, rec)
 			    p->channels == m->channels &&
 			    p->precision == m->precision &&
 			    p->sample_rate >= m->lowrate &&
-			    p->sample_rate < m->highrate)
+			    p->sample_rate <= m->highrate)
 				break;
 		}
 		if (m->model == -1)
