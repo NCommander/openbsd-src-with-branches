@@ -1,6 +1,6 @@
 #!/bin/ksh -
 #
-# $OpenBSD: spell.ksh,v 1.6 2003/06/17 21:56:25 millert Exp $
+# $OpenBSD: spell.ksh,v 1.7 2003/07/10 02:25:38 millert Exp $
 #
 # Copyright (c) 2001, 2003 Todd C. Miller <Todd.Miller@courtesan.com>
 #
@@ -40,7 +40,7 @@ USAGE="usage: spell [-biltvx] [-d list] [-h spellhist] [-s stop] [+extra_list] [
 set -o posix		# set POSIX mode to prevent +foo in getopts
 OPTIND=1		# force getopts to reset itself
 
-trap "rm -f $TMP $VTMP; exit 0" 0
+trap "rm -f $TMP $VTMP; exit 0" 0 1 2 15
 
 # Use local word/stop lists if they exist
 if [ -f $LOCAL_DICT ]; then
