@@ -1,4 +1,4 @@
-/*	$OpenBSD: parse.y,v 1.162 2002/10/07 13:23:46 henning Exp $	*/
+/*	$OpenBSD: parse.y,v 1.163 2002/10/07 14:13:48 dhartmei Exp $	*/
 
 /*
  * Copyright (c) 2001 Markus Friedl.  All rights reserved.
@@ -2605,7 +2605,7 @@ top:
 	if (isalnum(c) || c == ':') {
 		do {
 			*p++ = c;
-			if (p-buf >= sizeof(buf)) {
+			if ((unsigned)(p-buf) >= sizeof(buf)) {
 				yyerror("string too long");
 				return (findeol());
 			}
