@@ -1,4 +1,4 @@
-/*	$OpenBSD: ip_icmp.c,v 1.52 2002/06/10 09:13:26 itojun Exp $	*/
+/*	$OpenBSD: ip_icmp.c,v 1.53 2002/08/28 15:43:03 pefo Exp $	*/
 /*	$NetBSD: ip_icmp.c,v 1.19 1996/02/13 23:42:22 christos Exp $	*/
 
 /*
@@ -671,6 +671,7 @@ icmp_reflect(m)
 		if (ro.ro_rt == 0)
 		{
 		    ipstat.ips_noroute++;
+		    m_freem(m);
 		    goto done;
 		}
 
