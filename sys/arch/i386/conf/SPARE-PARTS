@@ -1,7 +1,7 @@
 #
 #	SPARE-PARTS: spare-parts.teeny.org, the teeny gateway to the world.
 #
-#	$OpenBSD: SPARE-PARTS,v 1.6 1996/09/20 06:45:09 deraadt Exp $
+#	$OpenBSD: SPARE-PARTS,v 1.7 1996/10/04 07:29:21 downsj Exp $
 #
 
 machine		i386
@@ -103,4 +103,3 @@ pseudo-device	tun	2
 
 pseudo-device	pty	64
 pseudo-device	vnd	8
-pseudo-device	random	1
