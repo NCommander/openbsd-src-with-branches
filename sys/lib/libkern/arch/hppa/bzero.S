@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: bzero.S,v 1.1.1.1 1998/06/23 18:56:53 mickey Exp $	*/
 
 /*
  *  (c) Copyright 1988 HEWLETT-PACKARD COMPANY
@@ -112,4 +112,9 @@ $bzero_bytes
         stbs,ma r0,1(arg0) 
 
 $bzero_exit
+	bv	0(rp)
+	nop
+
 EXIT(bzero)
+
+	.end
