@@ -1,8 +1,8 @@
-/*	$OpenBSD: archdep.h,v 1.1.1.1 2000/06/13 03:34:13 rahnds Exp $ */
+/*	$OpenBSD: archdep.h,v 1.2 2002/02/21 23:17:53 drahn Exp $ */
 
 /*
  * Copyright (c) 1998 Per Fogelstrom, Opsycon AB
- * 
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
  * are met:

@@ -1,8 +1,8 @@
-/*	$OpenBSD: archdep.h,v 1.6 2002/02/21 23:17:53 drahn Exp $ */
+/*	$OpenBSD: archdep.h,v 1.7 2002/04/24 21:58:15 drahn Exp $ */
 
 /*
  * Copyright (c) 1998 Per Fogelstrom, Opsycon AB
- * 
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
  * are met:
@@ -52,7 +52,7 @@
 static inline long
 _dl_mmap(void *addr, unsigned int len, unsigned int prot,
 	unsigned int flags, int fd, off_t offset)
-{ 
+{
 	return(_dl___syscall((quad_t)SYS_mmap, addr, len, prot,
 		flags, fd, 0, offset));
 }
