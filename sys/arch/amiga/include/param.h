@@ -145,6 +145,11 @@
 #define amiga_btop(x)		((unsigned)(x) >> PGSHIFT)
 #define amiga_ptob(x)		((unsigned)(x) << PGSHIFT)
 
+/*
+ * spl functions; all are normally done in-line
+ */
+#include <machine/psl.h>
+
 #ifdef _KERNEL
 #ifndef _LOCORE
 void delay __P((u_int));
