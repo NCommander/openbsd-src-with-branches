@@ -1,4 +1,4 @@
-/*	$OpenBSD: auth_subr.c,v 1.10 2002/05/24 21:22:37 deraadt Exp $	*/
+/*	$OpenBSD: auth_subr.c,v 1.11 2002/06/27 22:21:22 deraadt Exp $	*/
 
 /*-
  * Copyright (c) 1995,1996,1997 Berkeley Software Design, Inc.
@@ -814,10 +814,10 @@ auth_call(auth_session_t *as, char *path, ...)
 
 	switch (pid = fork()) {
 	case -1:
-		close(pfd[0]);
-		close(pfd[1]);
 		syslog(LOG_ERR, "%s: %m", path);
 		_warnx("internal resource failure");
+		close(pfd[0]);
+		close(pfd[1]);
 		goto fail;
 	case 0:
 #define	COMM_FD	3
