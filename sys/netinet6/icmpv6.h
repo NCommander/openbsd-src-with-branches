@@ -1,3 +1,5 @@
+/* $OpenBSD$ */
+
 /*
 %%% portions-copyright-nrl-97
 Portions of this software are Copyright 1997-1998 by Randall Atkinson,
