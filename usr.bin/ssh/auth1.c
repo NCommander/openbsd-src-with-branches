@@ -10,7 +10,7 @@
  */
 
 #include "includes.h"
-RCSID("$OpenBSD: auth1.c,v 1.24 2001/06/23 15:12:17 itojun Exp $");
+RCSID("$OpenBSD: auth1.c,v 1.25 2001/06/26 16:15:23 dugsong Exp $");
 
 #include "xmalloc.h"
 #include "rsa.h"
@@ -323,7 +323,7 @@ do_authloop(Authctxt *authctxt)
  * been exchanged and encryption is enabled.
  */
 void
-do_authentication()
+do_authentication(void)
 {
 	Authctxt *authctxt;
 	struct passwd *pw;

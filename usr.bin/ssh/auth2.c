@@ -23,7 +23,7 @@
  */
 
 #include "includes.h"
-RCSID("$OpenBSD: auth2.c,v 1.72 2001/11/07 22:41:51 markus Exp $");
+RCSID("$OpenBSD: auth2.c,v 1.73 2001/11/17 19:14:34 stevesk Exp $");
 
 #include <openssl/evp.h>
 
@@ -111,7 +111,7 @@ Authmethod authmethods[] = {
  */
 
 void
-do_authentication2()
+do_authentication2(void)
 {
 	Authctxt *authctxt = authctxt_new();
 

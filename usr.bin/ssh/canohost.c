@@ -12,7 +12,7 @@
  */
 
 #include "includes.h"
-RCSID("$OpenBSD: canohost.c,v 1.26 2001/04/18 14:15:00 markus Exp $");
+RCSID("$OpenBSD: canohost.c,v 1.27 2001/06/23 15:12:17 itojun Exp $");
 
 #include "packet.h"
 #include "xmalloc.h"
@@ -239,7 +239,7 @@ get_local_name(int socket)
  */
 
 const char *
-get_remote_ipaddr()
+get_remote_ipaddr(void)
 {
 	static char *canonical_host_ip = NULL;
 
@@ -322,13 +322,13 @@ get_peer_port(int sock)
 }
 
 int
-get_remote_port()
+get_remote_port(void)
 {
 	return get_port(0);
 }
 
 int
-get_local_port()
+get_local_port(void)
 {
 	return get_port(1);
 }
