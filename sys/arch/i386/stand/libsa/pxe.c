@@ -375,8 +375,7 @@ pxe_init(int quiet)
 		/* assert(pxe != NULL); */
 
 		printf(quiet ? " pxe!" : "PXE present\n");
-	}
-	else {				/* pxenv != NULL */
+	} else {				/* pxenv != NULL */
 		int bang = 0;
 
 		if (pxenv->Version >= 0x0201 && pxe != NULL) {
@@ -389,8 +388,7 @@ pxe_init(int quiet)
 			    (bang ? '!' : '+'),
 			    (pxenv->Version >> 8) & 0xff,
 			     pxenv->Version & 0xff);
-		}
-		else {
+		} else {
 			printf("PXE BIOS Version %d.%d\n",
 			    (pxenv->Version >> 8) & 0xff,
 			     pxenv->Version & 0xff);
