@@ -32,7 +32,7 @@
  */
 
 #if defined(LIBC_SCCS) && !defined(lint)
-static char rcsid[] = "$OpenBSD: readdir.c,v 1.3 1998/11/20 11:18:39 d Exp $";
+static char rcsid[] = "$OpenBSD: readdir.c,v 1.4 1999/09/01 23:19:41 deraadt Exp $";
 #endif /* LIBC_SCCS and not lint */
 
 #include <sys/param.h>
@@ -98,7 +98,7 @@ readdir_r(dirp, entry, result)
 		return errno;
 	}
 	if (dp != NULL) 
-		memcpy(entry, dp, sizeof *entry);
+		memcpy(entry, dp, sizeof (struct dirent) - MAXNAMLEN + dp->d_namlen);
 	_FD_UNLOCK(dirp->dd_fd, FD_READ);
 	if (dp != NULL)
 	*result = entry;
