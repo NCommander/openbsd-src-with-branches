@@ -52,10 +52,11 @@ pread(fd, buf, nbyte, offset)
 	size_t nbyte;
 	off_t offset;
 {
+	extern off_t __syscall();
 	quad_t q;
 	int rv;
 
-	q = __syscall(SYS_pread, fd, buf, nbyte, 0, offset);
+	q = __syscall((quad_t)SYS_pread, fd, buf, nbyte, 0, offset);
 	if (/* LINTED constant */ sizeof (quad_t) == sizeof (register_t) ||
 	    /* LINTED constant */ BYTE_ORDER == LITTLE_ENDIAN)
 		rv = (int)q;

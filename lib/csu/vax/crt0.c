@@ -96,7 +96,7 @@ asm ("__callmain:");		/* Defined for the benefit of debuggers */
 }
 
 #ifdef DYNAMIC
-	asm("	___syscall2:");
+	asm("	___syscall:");
 	asm("		.word 0");		/* no registers to save */
 	asm("		movl 4(ap), r0");	/* get syscall number */
 	asm("		subl3 $1,(ap)+,(ap)");	/* n-1 args to syscall */

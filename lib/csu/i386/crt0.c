@@ -98,7 +98,7 @@ asm ("__callmain:");		/* Defined for the benefit of debuggers */
 }
 
 #ifdef DYNAMIC
-	asm("	___syscall2:");
+	asm("	___syscall:");
 	asm("		popl %ecx");
 	asm("		popl %eax");
 	asm("		pushl %ecx");

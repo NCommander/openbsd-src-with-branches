@@ -53,10 +53,11 @@ preadv(fd, iovp, iovcnt, offset)
 	int iovcnt;
 	off_t offset;
 {
+	extern off_t __syscall();
 	quad_t q;
 	int rv;
 
-	q = __syscall(SYS_preadv, fd, iovp, iovcnt, 0, offset);
+	q = __syscall((quad_t)SYS_preadv, fd, iovp, iovcnt, 0, offset);
 	if (/* LINTED constant */ sizeof (quad_t) == sizeof (register_t) ||
 	    /* LINTED constant */ BYTE_ORDER == LITTLE_ENDIAN)
 		rv = (int)q;

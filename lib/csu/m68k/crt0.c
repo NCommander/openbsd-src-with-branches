@@ -95,7 +95,7 @@ asm ("__callmain:");		/* Defined for the benefit of debuggers */
 }
 
 #ifdef DYNAMIC
-	asm("	___syscall2:");
+	asm("	___syscall:");
 	asm("		movel	a7@+,a0");	/* return address */
 	asm("		movel	a7@,d0");	/* syscall number */
 	asm("		movel	a0,a7@");
