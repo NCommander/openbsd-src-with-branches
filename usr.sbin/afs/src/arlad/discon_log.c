@@ -1,4 +1,3 @@
-/*	$OpenBSD$	*/
 /* COPYRIGHT  (C)  1998
  * THE REGENTS OF THE UNIVERSITY OF MICHIGAN
  * ALL RIGHTS RESERVED
@@ -35,7 +34,7 @@
 
 #include "arla_local.h"
 
-RCSID("$KTH: discon_log.c,v 1.8 1998/12/21 21:54:03 assar Exp $");
+RCSID("$Id: discon_log.c,v 1.8 1998/12/21 21:54:03 assar Exp $");
 
 extern int dlog_mod;
 extern long current_op_no;

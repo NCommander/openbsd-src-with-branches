@@ -1,4 +1,3 @@
-/*	$OpenBSD$	*/
 /*
  * Copyright (c) 1995, 1996, 1997, 1998, 1999 Kungliga Tekniska Högskolan
  * (Royal Institute of Technology, Stockholm, Sweden).
@@ -39,7 +38,7 @@
 
 #ifdef HAVE_CONFIG_H
 #include <config.h>
-RCSID("$KTH: symbol.c,v 1.7 1999/02/13 04:44:16 assar Exp $");
+RCSID("$Id: symbol.c,v 1.7 1999/02/13 04:44:16 assar Exp $");
 #endif
 
 #include <stdio.h>

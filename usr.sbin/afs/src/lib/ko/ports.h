@@ -1,4 +1,3 @@
-/*	$OpenBSD$	*/
 /*
  * Copyright (c) 1995, 1996, 1997, 1998 Kungliga Tekniska Högskolan
  * (Royal Institute of Technology, Stockholm, Sweden).
@@ -37,7 +36,7 @@
  * SUCH DAMAGE.
  */
 
-/* $KTH: ports.h,v 1.2 1998/12/06 07:42:15 assar Exp $ */
+/* $Id: ports.h,v 1.2 1998/12/06 07:42:15 assar Exp $ */
 
 /*
  * Port numbers.

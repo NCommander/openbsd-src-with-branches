@@ -1,4 +1,3 @@
-/*	$OpenBSD$	*/
 /*
  * Copyright (c) 1998, 1999 Kungliga Tekniska Högskolan
  * (Royal Institute of Technology, Stockholm, Sweden).
@@ -41,7 +40,7 @@
 #include <config.h>
 #endif
 
-RCSID("$KTH: heaptest.c,v 1.2 1999/02/13 05:03:25 assar Exp $");
+RCSID("$Id: heaptest.c,v 1.2 1999/02/13 05:03:25 assar Exp $");
 
 #include <stdio.h>
 #include <stdlib.h>

@@ -1,4 +1,3 @@
-/*	$OpenBSD$	*/
 /*
  * Copyright (c) 1998 Kungliga Tekniska Högskolan
  * (Royal Institute of Technology, Stockholm, Sweden).
@@ -43,7 +42,7 @@
 
 #ifdef HAVE_CONFIG_H
 #include <config.h>
-RCSID("$KTH: heap.c,v 1.1 1998/12/28 00:14:40 assar Exp $");
+RCSID("$Id: heap.c,v 1.1 1998/12/28 00:14:40 assar Exp $");
 #endif
 
 #include <assert.h>
