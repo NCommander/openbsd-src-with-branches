@@ -1,4 +1,4 @@
-/*	$OpenBSD: trap.c,v 1.39 2001/05/05 21:26:37 art Exp $	*/
+/*	$OpenBSD: trap.c,v 1.40 2001/05/05 23:25:42 art Exp $	*/
 /*	$NetBSD: trap.c,v 1.95 1996/05/05 06:50:02 mycroft Exp $	*/
 
 /*-
@@ -56,10 +56,6 @@
 #include <sys/ktrace.h>
 #endif
 #include <sys/syscall.h>
-
-#include <vm/vm_param.h>
-#include <vm/pmap.h>
-#include <vm/vm_map.h>
 
 #include <uvm/uvm_extern.h>
 
