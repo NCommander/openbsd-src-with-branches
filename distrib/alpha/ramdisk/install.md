@@ -1,4 +1,4 @@
-#       $OpenBSD: install.md,v 1.25 1998/10/28 17:53:27 millert Exp $
+#       $OpenBSD: install.md,v 1.26 1998/11/03 04:10:13 aaron Exp $
 #
 # Copyright (c) 1996 The NetBSD Foundation, Inc.
 # All rights reserved.
@@ -107,9 +107,6 @@ md_installboot() {
 	else
 		echo "No boot block prototypes found, you must run installboot manually."
 	fi
-}
-md_labeldisk() {
-	echo "huh"
 }
 
 md_checkfordisklabel() {
