@@ -67,11 +67,8 @@ cdev_decl(kd);
 /* frame-buffer devices */
 cdev_decl(fb);
 #include "bwtwo.h"
-#define bw2poll seltrue
 cdev_decl(bw2);
 #include "cgtwo.h"
-#define cg2poll seltrue
 cdev_decl(cg2);
 #include "cgfour.h"
-#define cg4poll seltrue
 cdev_decl(cg4);
