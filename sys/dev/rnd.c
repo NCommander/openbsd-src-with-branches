@@ -1,4 +1,4 @@
-/*	$OpenBSD: rnd.c,v 1.56 2002/03/21 23:02:22 mickey Exp $	*/
+/*	$OpenBSD: rnd.c,v 1.57 2002/04/01 08:25:58 mickey Exp $	*/
 
 /*
  * random.c -- A strong random number generator
@@ -553,7 +553,9 @@ arc4_reinit(v)
 	arc4random_initialized = 0;
 }
 
-int
+static int arc4random_8(void);
+
+static int
 arc4random_8(void)
 {
 	arc4maybeinit();
