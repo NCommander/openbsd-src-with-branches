@@ -1,4 +1,4 @@
-/*	$OpenBSD: ike_auth.c,v 1.65 2002/06/10 18:08:58 ho Exp $	*/
+/*	$OpenBSD: ike_auth.c,v 1.66 2002/09/11 09:50:43 ho Exp $	*/
 /*	$EOM: ike_auth.c,v 1.59 2000/11/21 00:21:31 angelos Exp $	*/
 
 /*
@@ -164,7 +164,7 @@ ike_auth_get_key (int type, char *id, char *local_id, size_t *keylen)
       if (!key)
         {
 	  log_print ("ike_auth_get_key: "
-		     "no key found for peer \"%s\"or local ID \"%s\"",
+		     "no key found for peer \"%s\" or local ID \"%s\"",
 		     id, local_id);
 	  return 0;
 	}
