@@ -1,4 +1,4 @@
-#	$OpenBSD: bsd.lkm.mk,v 1.10 1996/11/14 14:21:22 mickey Exp $
+#	$OpenBSD: bsd.lkm.mk,v 1.11 1996/12/08 14:42:29 downsj Exp $
 
 .if exists(${.CURDIR}/../Makefile.inc)
 .include "${.CURDIR}/../Makefile.inc"
@@ -63,10 +63,10 @@ afterinstall:
 .if !target(realinstall)
 realinstall:
 .if defined(LKM)
-	${INSTALL} ${COPY} -o ${LKMOWN} -g ${LKMGRP} -m ${LKMMODE} \
+	${INSTALL} ${INSTALL_COPY} -o ${LKMOWN} -g ${LKMGRP} -m ${LKMMODE} \
 	    ${COMBINED} ${DESTDIR}${LKMDIR}/${LKM}.o
 .if exists(${.CURDIR}/${POSTINSTALL})
-	${INSTALL} ${COPY} -o ${LKMOWN} -g ${LKMGRP} -m 555 \
+	${INSTALL} ${INSTALL_COPY} -o ${LKMOWN} -g ${LKMGRP} -m 555 \
 	    ${.CURDIR}/${POSTINSTALL} ${DESTDIR}${LKMDIR}
 .endif
 .endif

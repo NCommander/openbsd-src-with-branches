@@ -1,4 +1,4 @@
-#	$OpenBSD: bsd.own.mk,v 1.15 1997/04/19 21:26:08 millert Exp $
+#	$OpenBSD: bsd.own.mk,v 1.16 1997/04/20 11:43:47 niklas Exp $
 #	$NetBSD: bsd.own.mk,v 1.24 1996/04/13 02:08:09 thorpej Exp $
 
 # Host-specific overrides
@@ -56,9 +56,9 @@ NLSGRP?=	bin
 NLSOWN?=	root
 NLSMODE?=	${NONBINMODE}
 
-COPY?=		-c
+INSTALL_COPY?=	-c
 .ifndef DEBUG
-STRIP?=		-s
+INSTALL_STRIP?=	-s
 .endif
 
 # This may be changed for _single filesystem_ configurations (such as
