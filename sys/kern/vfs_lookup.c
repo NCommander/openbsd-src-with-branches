@@ -1,4 +1,4 @@
-/*	$OpenBSD: vfs_lookup.c,v 1.22 2003/01/31 17:37:50 art Exp $	*/
+/*	$OpenBSD: vfs_lookup.c,v 1.23 2003/05/04 00:22:12 tedu Exp $	*/
 /*	$NetBSD: vfs_lookup.c,v 1.17 1996/02/09 19:00:59 christos Exp $	*/
 
 /*
@@ -167,6 +167,11 @@ namei(ndp)
 		VREF(dp);
 	}
 	for (;;) {
+		if (!dp->v_mount) {
+			/* Give up if the directory is no longer mounted */
+			FREE(cnp->cn_pnbuf, M_NAMEI);
+			return (ENOENT);
+		}
 		cnp->cn_nameptr = cnp->cn_pnbuf;
 		ndp->ni_startdir = dp;
 		if ((error = lookup(ndp)) != 0) {
