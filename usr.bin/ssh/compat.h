@@ -21,7 +21,7 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-/* RCSID("$OpenBSD: compat.h,v 1.18 2001/03/18 23:30:55 deraadt Exp $"); */
+/* RCSID("$OpenBSD: compat.h,v 1.19 2001/03/23 11:04:06 djm Exp $"); */
 
 #ifndef COMPAT_H
 #define COMPAT_H
@@ -44,6 +44,7 @@
 #define SSH_BUG_PASSWORDPAD	0x0400
 #define SSH_BUG_SCANNER		0x0800
 #define SSH_BUG_BIGENDIANAES	0x1000
+#define SSH_BUG_RSASIGMD5	0x2000
 
 void    enable_compat13(void);
 void    enable_compat20(void);
