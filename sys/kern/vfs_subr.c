@@ -1,4 +1,4 @@
-/*	$OpenBSD: vfs_subr.c,v 1.105 2004/12/26 21:22:13 miod Exp $	*/
+/*	$OpenBSD: vfs_subr.c,v 1.106 2004/12/28 15:14:37 deraadt Exp $	*/
 /*	$NetBSD: vfs_subr.c,v 1.53 1996/04/22 01:39:13 christos Exp $	*/
 
 /*
@@ -796,11 +796,16 @@ vput(vp)
 		panic("vput: v_writecount != 0");
 	}
 #endif
-	vputonfreelist(vp);
-
 	simple_unlock(&vp->v_interlock);
 
 	VOP_INACTIVE(vp, p);
+
+	simple_lock(&vp->v_interlock);
+
+	if (vp->v_usecount == 0)
+		vputonfreelist(vp);
+
+	simple_unlock(&vp->v_interlock);
 }
 
 /*
@@ -836,10 +841,19 @@ vrele(vp)
 		panic("vrele: v_writecount != 0");
 	}
 #endif
-	vputonfreelist(vp);
+	if (vn_lock(vp, LK_EXCLUSIVE|LK_INTERLOCK, p)) {
+		vprint("vrele: cannot lock", vp);
+		return;
+	}
 
-	if (vn_lock(vp, LK_EXCLUSIVE|LK_INTERLOCK, p) == 0)
-		VOP_INACTIVE(vp, p);
+	VOP_INACTIVE(vp, p);
+
+	simple_lock(&vp->v_interlock);
+
+	if (vp->v_usecount == 0)
+		vputonfreelist(vp);
+
+	simple_unlock(&vp->v_interlock);
 }
 
 void vhold(struct vnode *vp);
