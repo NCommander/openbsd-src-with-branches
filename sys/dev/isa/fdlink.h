@@ -1,4 +1,4 @@
-/*	$OpenBSD: fdlink.h,v 1.5 2001/03/06 13:55:02 ho Exp $	*/
+/*	$OpenBSD: fdlink.h,v 1.6 2002/03/14 01:26:56 millert Exp $	*/
 
 /*-
  * Copyright (c) 1993, 1994, 1995 Charles Hannum.
@@ -64,7 +64,7 @@ enum fdc_state {
 	DORECAL,
 	RECALWAIT,
 	RECALTIMEDOUT,
-	RECALCOMPLETE,
+	RECALCOMPLETE
 };
 
 enum fdc_type {
