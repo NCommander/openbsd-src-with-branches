@@ -1,5 +1,5 @@
 #	from: @(#)Makefile	5.7 (Berkeley) 4/1/91
-#	$OpenBSD: Makefile,v 1.21 2001/06/24 23:31:42 hin Exp $
+#	$OpenBSD: Makefile,v 1.22 2001/06/25 04:36:15 hin Exp $
 
 .include <bsd.own.mk>
 
@@ -18,7 +18,7 @@ SUBDIR+=ld.so
 .endif
 
 .if (${KERBEROS5:L} == "yes")
-SUBDIR+=login_krb5
+SUBDIR+=login_krb5 login_krb5-or-pwd
 .endif
 
 .include <bsd.subdir.mk>
