@@ -75,7 +75,7 @@
  */
 
 #include "includes.h"
-RCSID("$OpenBSD: scp.c,v 1.78 2001/07/27 17:26:16 deraadt Exp $");
+RCSID("$OpenBSD: scp.c,v 1.79 2001/08/06 19:47:05 stevesk Exp $");
 
 #include "xmalloc.h"
 #include "atomicio.h"
@@ -200,7 +200,6 @@ int pflag, iamremote, iamrecursive, targetshouldbedirectory;
 #define	CMDNEEDS	64
 char cmd[CMDNEEDS];		/* must hold "rcp -r -p -d\0" */
 
-int main(int, char *[]);
 int response(void);
 void rsource(char *, struct stat *);
 void sink(int, char *[]);
