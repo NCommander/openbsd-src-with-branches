@@ -24,7 +24,7 @@
  */
 
 #include "includes.h"
-RCSID("$OpenBSD: kexgex.c,v 1.4 2001/04/04 22:04:35 markus Exp $");
+RCSID("$OpenBSD: kexgex.c,v 1.5 2001/04/05 10:42:50 markus Exp $");
 
 #include <openssl/bn.h>
 
@@ -57,8 +57,8 @@ kexgex_hash(
 	EVP_MD_CTX md;
 
 	buffer_init(&b);
-	buffer_put_string(&b, client_version_string, strlen(client_version_string));
-	buffer_put_string(&b, server_version_string, strlen(server_version_string));
+	buffer_put_cstring(&b, client_version_string);
+	buffer_put_cstring(&b, server_version_string);
 
 	/* kexinit messages: fake header: len+SSH2_MSG_KEXINIT */
 	buffer_put_int(&b, ckexinitlen+1);

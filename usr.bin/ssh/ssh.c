@@ -39,7 +39,7 @@
  */
 
 #include "includes.h"
-RCSID("$OpenBSD: ssh.c,v 1.122 2001/05/30 15:20:10 markus Exp $");
+RCSID("$OpenBSD: ssh.c,v 1.123 2001/05/31 10:30:17 markus Exp $");
 
 #include <openssl/evp.h>
 #include <openssl/err.h>
@@ -847,7 +847,7 @@ ssh_session(void)
 		cp = getenv("TERM");
 		if (!cp)
 			cp = "";
-		packet_put_string(cp, strlen(cp));
+		packet_put_cstring(cp);
 
 		/* Store window size in the packet. */
 		if (ioctl(fileno(stdin), TIOCGWINSZ, &ws) < 0)
