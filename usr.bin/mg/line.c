@@ -1,4 +1,4 @@
-/*	$OpenBSD: line.c,v 1.12 2002/02/16 21:27:49 millert Exp $	*/
+/*	$OpenBSD: line.c,v 1.13 2002/02/20 22:30:54 vincent Exp $	*/
 
 /*
  *		Text line handling.
@@ -247,6 +247,13 @@ lnewline()
 	MGWIN	*wp;
 
 	lchange(WFHARD);
+
+	if (!undoaction) {
+		/* XXX */
+		undo_add_custom(INSERT, curwp->w_dotp, curwp->w_doto,
+		    strdup("\n"), 1);
+	}
+
 
 	/* Get the address and offset of "." */
 	lp1 = curwp->w_dotp;
