@@ -1,4 +1,4 @@
-/*	$OpenBSD: main.c,v 1.7 1998/08/22 08:55:54 pjanzen Exp $	*/
+/*	$OpenBSD: main.c,v 1.8 1999/12/18 11:18:12 pjanzen Exp $	*/
 /*	$NetBSD: main.c,v 1.5 1995/04/22 10:08:54 cgd Exp $	*/
 
 /*
@@ -44,7 +44,7 @@ static char copyright[] =
 #if 0
 static char sccsid[] = "@(#)main.c	8.1 (Berkeley) 5/31/93";
 #else
-static char rcsid[] = "$OpenBSD: main.c,v 1.7 1998/08/22 08:55:54 pjanzen Exp $";
+static char rcsid[] = "$OpenBSD: main.c,v 1.8 1999/12/18 11:18:12 pjanzen Exp $";
 #endif
 #endif /* not lint */
 
@@ -169,13 +169,6 @@ main(ac, av)
 	} while (another());
 	quit(0);
 	/* NOT REACHED */
-}
-
-void
-__cputchar(ch)
-	int ch;
-{
-	(void)putchar(ch);
 }
 
 /*
