@@ -1,5 +1,5 @@
-/*	$OpenBSD: dec_kn20aa.h,v 1.1.4.2 1996/06/13 18:35:19 cgd Exp $	*/
-/*	$NetBSD: dec_kn20aa.h,v 1.1.4.2 1996/06/13 18:35:19 cgd Exp $	*/
+/*	$OpenBSD: dec_kn20aa.h,v 1.5 1996/06/13 18:32:07 cgd Exp $	*/
+/*	$NetBSD: dec_kn20aa.h,v 1.5 1996/06/13 18:32:07 cgd Exp $	*/
 
 /*
  * Copyright (c) 1995, 1996 Carnegie-Mellon University.

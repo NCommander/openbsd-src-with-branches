@@ -1,10 +1,13 @@
-#	$OpenBSD$
-#	$NetBSD: std.alpha,v 1.4 1995/11/25 01:34:38 cgd Exp $
+#	$OpenBSD: std.alpha,v 1.8 1996/09/27 17:18:02 cgd Exp $
+#	$NetBSD: std.alpha,v 1.8 1996/09/27 17:18:02 cgd Exp $
 #
 # Standard/required configuration info for OpenBSD/alpha.
 
 machine		alpha
 
 makeoptions	DEBUG="-g"
+#makeoptions	CWARNFLAGS="-Werror"
 
 options		EXEC_ECOFF
+options		EXEC_ELF64
+options		EXEC_SCRIPT

@@ -1,5 +1,5 @@
-/*	$OpenBSD: intrcnt.h,v 1.4.4.2 1996/06/05 03:42:24 cgd Exp $	*/
-/*	$NetBSD: intrcnt.h,v 1.4.4.2 1996/06/05 03:42:24 cgd Exp $	*/
+/*	$OpenBSD: intrcnt.h,v 1.6 1996/06/05 03:38:02 cgd Exp $	*/
+/*	$NetBSD: intrcnt.h,v 1.6 1996/06/05 03:38:02 cgd Exp $	*/
 
 /*
  * Copyright (c) 1995, 1996 Carnegie-Mellon University.

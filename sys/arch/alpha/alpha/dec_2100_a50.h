@@ -1,5 +1,5 @@
-/*	$OpenBSD: dec_2100_a50.h,v 1.2.6.2 1996/06/13 18:35:10 cgd Exp $	*/
-/*	$NetBSD: dec_2100_a50.h,v 1.2.6.2 1996/06/13 18:35:10 cgd Exp $	*/
+/*	$OpenBSD: dec_2100_a50.h,v 1.6 1996/06/13 18:31:49 cgd Exp $	*/
+/*	$NetBSD: dec_2100_a50.h,v 1.6 1996/06/13 18:31:49 cgd Exp $	*/
 
 /*
  * Copyright (c) 1995, 1996 Carnegie-Mellon University.

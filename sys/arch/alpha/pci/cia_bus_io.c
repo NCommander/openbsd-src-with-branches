@@ -1,5 +1,5 @@
-/*	$OpenBSD: cia_bus_io.c,v 1.2.4.2 1996/06/13 18:14:59 cgd Exp $	*/
-/*	$NetBSD: cia_bus_io.c,v 1.2.4.2 1996/06/13 18:14:59 cgd Exp $	*/
+/*	$OpenBSD: cia_bus_io.c,v 1.5 1996/08/27 16:29:25 cgd Exp $	*/
+/*	$NetBSD: cia_bus_io.c,v 1.5 1996/08/27 16:29:25 cgd Exp $	*/
 
 /*
  * Copyright (c) 1996 Carnegie-Mellon University.
@@ -29,6 +29,7 @@
  */
 
 #include <sys/param.h>
+#include <sys/systm.h>
 #include <sys/malloc.h>
 #include <sys/syslog.h>
 #include <sys/device.h>

@@ -39,3 +39,8 @@ struct mdproc {
 };
 
 #define	MDP_FPUSED	0x0001		/* Process used the FPU */
+
+#ifdef _KERNEL
+void switch_exit __P((struct proc *));
+void switch_trampoline __P((void (*) __P((struct proc *)), void *));
+#endif

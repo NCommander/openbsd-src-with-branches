@@ -1,5 +1,5 @@
-/*	$OpenBSD: mcclock.c,v 1.2 1996/04/17 22:22:32 cgd Exp $	*/
-/*	$NetBSD: mcclock.c,v 1.2 1996/04/17 22:22:32 cgd Exp $	*/
+/*	$OpenBSD: mcclock.c,v 1.4 1996/10/13 02:59:41 christos Exp $	*/
+/*	$NetBSD: mcclock.c,v 1.4 1996/10/13 02:59:41 christos Exp $	*/
 
 /*
  * Copyright (c) 1994, 1995, 1996 Carnegie-Mellon University.

@@ -1,5 +1,5 @@
-/*	$OpenBSD: OSFpal.c,v 1.2 1996/04/12 06:09:30 cgd Exp $	*/
-/*	$NetBSD: OSFpal.c,v 1.2 1996/04/12 06:09:30 cgd Exp $	*/
+/*	$OpenBSD: OSFpal.c,v 1.4 1996/10/13 03:00:24 christos Exp $	*/
+/*	$NetBSD: OSFpal.c,v 1.4 1996/10/13 03:00:24 christos Exp $	*/
 
 /*
  * Copyright (c) 1994, 1996 Carnegie-Mellon University.
