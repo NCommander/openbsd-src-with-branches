@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.36 2005/01/13 19:32:01 deraadt Exp $
+#	$OpenBSD: Makefile,v 1.37 2005/02/16 20:39:37 millert Exp $
 
 PROG=	disklabel
 SRCS=	disklabel.c dkcksum.c editor.c manual.c
@@ -37,7 +37,8 @@ CFLAGS+= -DSEEALSO="\"fdisk(8), installboot(8)\""
 .endif
 
 
-.if (${MACHINE} == "hp300") || (${MACHINE} == "vax") || (${MACHINE} == "hppa")
+.if (${MACHINE} == "hp300") || (${MACHINE} == "vax") || \
+    (${MACHINE} == "hppa") || (${MACHINE} == "hppa64")
 CFLAGS+= -DNUMBOOT=1
 .endif
 
