@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /*	$NetBSD: event_var.h,v 1.1.1.1 1996/01/24 01:15:34 gwr Exp $	*/
 
 /*

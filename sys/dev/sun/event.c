@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /*	$NetBSD: event.c,v 1.2 1996/05/29 21:24:41 pk Exp $	*/
 
 /*
