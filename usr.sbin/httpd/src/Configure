@@ -1,5 +1,5 @@
 #!/bin/sh
-# $OpenBSD: Configure,v 1.15 2002/02/12 07:56:49 beck Exp $
+# $OpenBSD: Configure,v 1.16 2002/02/21 23:33:14 miod Exp $
 ## ====================================================================
 ## The Apache Software License, Version 1.1
 ##
@@ -1132,6 +1132,9 @@ if [ "x$using_shlib" = "x1" ] ; then
 		*)
 		   LD_SHLIB="gcc"
 		   LDFLAGS_SHLIB="-shared \$(CFLAGS_SHLIB)"
+		   if test -z "`echo __ELF__ | ${CC} -E - | grep __ELF__`"; then
+		     LDFLAGS_SHLIB_EXPORT="-Wl,-E"
+		   fi
 		;;
 	    esac
 	    LDFLAGS_MOD_SHLIB=$LDFLAGS_SHLIB
