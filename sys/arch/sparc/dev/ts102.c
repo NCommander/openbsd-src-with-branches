@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: ts102.c,v 1.1 2003/06/23 09:29:55 miod Exp $	*/
 /*
  * Copyright (c) 2003, Miodrag Vallat.
  *
@@ -379,7 +379,7 @@ tslot_io_alloc(pcmcia_chipset_handle_t pch, bus_addr_t start, bus_size_t size,
 #endif
 
 	pih->iot = 0;
-	pih->ioh = 0;
+	pih->ioh = (bus_space_handle_t)(td->td_space[TS102_RANGE_IO]);
 	pih->addr = start;
 	pih->size = size;
 	pih->flags = 0;
