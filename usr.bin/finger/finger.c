@@ -1,4 +1,4 @@
-/*	$OpenBSD: finger.c,v 1.7 1997/05/30 23:35:51 kstailey Exp $	*/
+/*	$OpenBSD: finger.c,v 1.8 1998/07/10 15:45:15 mickey Exp $	*/
 
 /*
  * Copyright (c) 1989 The Regents of the University of California.
@@ -54,7 +54,7 @@ char copyright[] =
 
 #ifndef lint
 /*static char sccsid[] = "from: @(#)finger.c	5.22 (Berkeley) 6/29/90";*/
-static char rcsid[] = "$OpenBSD: finger.c,v 1.7 1997/05/30 23:35:51 kstailey Exp $";
+static char rcsid[] = "$OpenBSD: finger.c,v 1.8 1998/07/10 15:45:15 mickey Exp $";
 #endif /* not lint */
 
 /*
@@ -73,6 +73,7 @@ static char rcsid[] = "$OpenBSD: finger.c,v 1.7 1997/05/30 23:35:51 kstailey Exp
 
 #include <sys/param.h>
 #include <sys/file.h>
+#include <sys/stat.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -94,6 +95,7 @@ main(argc, argv)
 	extern char *__progname;
 	int ch;
 	char domain[256];
+	struct stat sb;
 
 	oflag = 1;		/* default to old "office" behavior */
 
@@ -129,9 +131,14 @@ main(argc, argv)
 	argc -= optind;
 	argv += optind;
 
-	/* if a domainname is set, increment mflag. */
+	/* If a domainname is set, increment mflag. */
 	if ((getdomainname(&domain, sizeof(domain)) == 0) && domain[0])
 		mflag++;
+	/* If _PATH_MP_DB is larger than 1MB, increment mflag. */
+	if (stat(_PATH_MP_DB, &sb) == 0) {
+		if (sb.st_size > 1048576)
+			mflag++;
+	}
 
 	(void)time(&now);
 	setpassent(1);
