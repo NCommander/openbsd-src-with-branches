@@ -1,4 +1,4 @@
-/*	$OpenBSD: util.c,v 1.5 2002/05/28 00:22:01 deraadt Exp $	*/
+/*	$OpenBSD: util.c,v 1.6 2002/07/07 08:54:50 jufi Exp $	*/
 
 /*
  * Copyright (c) 1998 Per Fogelstrom, Opsycon AB
@@ -66,7 +66,7 @@ _dl_strdup(const char *orig)
  */
 
 void *
-_dl_malloc(int size)
+_dl_malloc(size_t size)
 {
 	long *p, *t, *n;
 
