@@ -1,4 +1,4 @@
-/*	$OpenBSD: connection.c,v 1.22 2001/07/06 14:37:11 ho Exp $	*/
+/*	$OpenBSD: connection.c,v 1.23 2002/06/01 07:44:21 deraadt Exp $	*/
 /*	$EOM: connection.c,v 1.28 2000/11/23 12:21:18 niklas Exp $	*/
 
 /*
@@ -287,7 +287,8 @@ connection_setup (char *name)
   conn = calloc (1, sizeof *conn);
   if (!conn)
     {
-      log_error ("connection_setup: calloc (1, %ld) failed", sizeof *conn);
+      log_error ("connection_setup: calloc (1, %lu) failed",
+		 (unsigned long)sizeof *conn);
       goto fail;
     }
 
