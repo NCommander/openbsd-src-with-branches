@@ -7,7 +7,7 @@
  */
 
 #include "includes.h"
-RCSID("$OpenBSD: ssh-keyscan.c,v 1.23 2001/06/05 05:05:39 pvalchev Exp $");
+RCSID("$OpenBSD: ssh-keyscan.c,v 1.24 2001/06/23 15:12:20 itojun Exp $");
 
 #include <sys/queue.h>
 #include <errno.h>
@@ -562,8 +562,12 @@ nexthost(int argc, char **argv)
 static void
 usage(void)
 {
-	fatal("usage: %s [-t timeout] { [--] host | -f file } ...", __progname);
-	return;
+	fprintf(stderr, "Usage: %s [options] [ host | addrlist namelist ]\n",
+	    __progname);
+	fprintf(stderr, "Options:\n");
+	fprintf(stderr, "  -t timeout  Set connection timeout.\n");
+	fprintf(stderr, "  -f file     Read hosts or addresses from file.\n");
+	exit(1);
 }
 
 int
