@@ -1,4 +1,4 @@
-/*	$OpenBSD: lapic.c,v 1.1.2.7 2001/11/13 21:00:51 niklas Exp $	*/
+/*	$OpenBSD: lapic.c,v 1.1.2.8 2003/05/15 04:08:02 niklas Exp $	*/
 /* $NetBSD: lapic.c,v 1.1.2.8 2000/02/23 06:10:50 sommerfeld Exp $ */
 
 /*-
@@ -310,6 +310,7 @@ lapic_calibrate_timer(ci)
 		    (unsigned long long)tmp, i == 0 ? "" : " ", prefixes[i],
 		    "Hz");
 	out:
+		;
 	}
 #endif
 
