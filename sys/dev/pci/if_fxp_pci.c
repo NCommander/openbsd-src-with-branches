@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_fxp_pci.c,v 1.16 2002/11/19 18:40:17 jason Exp $	*/
+/*	$OpenBSD: if_fxp_pci.c,v 1.17 2002/11/26 16:14:49 jason Exp $	*/
 
 /*
  * Copyright (c) 1995, David Greenman
@@ -99,6 +99,7 @@ const struct pci_matchid fxp_pci_devices[] = {
 	{ PCI_VENDOR_INTEL, PCI_PRODUCT_INTEL_PRO_100_VM_1 },
 	{ PCI_VENDOR_INTEL, PCI_PRODUCT_INTEL_PRO_100_VM_2 },
 	{ PCI_VENDOR_INTEL, PCI_PRODUCT_INTEL_PRO_100_VM_3 },
+	{ PCI_VENDOR_INTEL, PCI_PRODUCT_INTEL_PRO_100_M },
 };
 
 /*
