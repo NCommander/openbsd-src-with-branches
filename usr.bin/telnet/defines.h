@@ -1,4 +1,4 @@
-/*	$OpenBSD: defines.h,v 1.5 2002/02/17 17:20:49 millert Exp $	*/
+/*	$OpenBSD: defines.h,v 1.6 2003/06/03 02:56:18 millert Exp $	*/
 /*	$NetBSD: defines.h,v 1.5 1996/02/28 21:03:55 thorpej Exp $	*/
 
 /*
@@ -61,5 +61,5 @@
 
 #define MODE_OUT8      0x8000 /* binary mode sans -opost */
 
-void upcase(register char *);
+void upcase(char *);
 
