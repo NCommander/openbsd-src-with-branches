@@ -108,9 +108,12 @@ void warnx __P((const char *, ...));
  *		and startup interface version checked in test mode.
  *		Add -s flag for compatibility to bootblock loader.
  *		05/02/96 - Add a maximum startup interface version level
- &		to allow future kernel compatibility.
+ *		to allow future kernel compatibility.
+ *	2.13.1	OpenBSD branch: changed old -c to -C so new -c can be the
+ *		architecture-independent bootflag for user-controlled
+ *		startup configuration.
  */
-static const char _version[] = "$VER: LoadBSD 2.13 (2.5.96)";
+static const char _version[] = "$VER: LoadBSD 2.13.1 (OpenBSD 15.8.96)";
 
 /*
  * Kernel startup interface version
@@ -194,7 +197,7 @@ main(argc, argv)
 	if ((ExpansionBase=(void *)OpenLibrary(EXPANSIONNAME, 0)) == NULL)
 		err(20, "can't open expansion library");
 
-	while ((ch = getopt(argc, argv, "aAbc:DhI:km:n:ptsSVZ")) != EOF) {
+	while ((ch = getopt(argc, argv, "aAbcC:DhI:km:n:ptsSVZ")) != EOF) {
 		switch (ch) {
 		case 'k':
 			k_flag = 1;
@@ -205,6 +208,9 @@ main(argc, argv)
 			break;
 		case 'b':
 			boothowto |= RB_ASKNAME;
+			break;
+		case 'c':
+			boothowto |= RB_CONFIG;
 			break;
 		case 'p':
 			p_flag = 1;
@@ -228,7 +234,7 @@ main(argc, argv)
 		case 'D':
 			boothowto |= RB_KDB;
 			break;
-		case 'c':
+		case 'C':
 			cpuid = atoi(optarg) << 16;
 			break;
 		case 'A':
@@ -687,13 +693,14 @@ verbose_usage()
 NAME
 \t%s - loads NetBSD from amiga dos.
 SYNOPSIS
-\t%s [-abhkpstADSVZ] [-c machine] [-m mem] [-n flags] [-I sync-inhibit] kernel
+\t%s [-abchkpstADSVZ] [-C machine] [-m mem] [-n flags] [-I sync-inhibit] kernel
 OPTIONS
 \t-a  Boot up to multiuser mode.
 \t-A  Use AGA display mode, if available.
 \t-b  Ask for which root device.
 \t    Its possible to have multiple roots and choose between them.
-\t-c  Set machine type. [e.g 3000]
+\t-c  Enter user-controlled startup-configuration mode.
+\t-C  Set machine type. [e.g 3000]
 \t-D  Enter debugger
 \t-h  This help message.
 \t-I  Inhibit sync negotiation. Option value is bit-encoded targets.
