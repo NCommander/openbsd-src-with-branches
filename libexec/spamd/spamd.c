@@ -1,4 +1,4 @@
-/*	$OpenBSD: spamd.c,v 1.25 2003/03/13 21:20:42 beck Exp $	*/
+/*	$OpenBSD: spamd.c,v 1.26 2003/03/20 01:39:36 david Exp $	*/
 
 /*
  * Copyright (c) 2002 Theo de Raadt.  All rights reserved.
@@ -609,8 +609,8 @@ nextstate(struct con *cp)
 
 	spam:
 	case 50:
-		syslog_r(LOG_INFO, &sdata, "%s: %s -> %s",
-		    cp->addr, cp->mail, cp->rcpt);
+		syslog_r(LOG_INFO, &sdata, "%s: %s -> %s %ldsec",
+		    cp->addr, cp->mail, cp->rcpt, (long)(t - cp->s));
 		doreply(cp);
 		cp->op = cp->obuf;
 		cp->ol = strlen(cp->op);
