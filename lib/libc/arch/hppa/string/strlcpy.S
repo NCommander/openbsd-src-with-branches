@@ -1,4 +1,4 @@
-/*	$OpenBSD: strlcpy.S,v 1.3 2001/03/28 18:20:11 mickey Exp $	*/
+/*	$OpenBSD: strlcpy.S,v 1.4 2001/06/04 23:14:03 mickey Exp $	*/
 
 /*
  * Copyright (c) 1999-2001 Michael Shalayeff
@@ -30,11 +30,11 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "DEFS.h"
+#include <machine/asm.h>
 
 #if defined(LIBC_SCCS)
 	.text
-	.asciz "$OpenBSD: strlcpy.S,v 1.3 2001/03/28 18:20:11 mickey Exp $"
+	.asciz "$OpenBSD: strlcpy.S,v 1.4 2001/06/04 23:14:03 mickey Exp $"
 	.align	4
 #endif
 
