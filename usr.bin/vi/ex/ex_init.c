@@ -1,4 +1,4 @@
-/*	$OpenBSD: ex_init.c,v 1.6 2001/01/29 01:58:43 niklas Exp $	*/
+/*	$OpenBSD: ex_init.c,v 1.7 2002/02/16 21:27:57 millert Exp $	*/
 
 /*-
  * Copyright (c) 1992, 1993, 1994
@@ -392,7 +392,7 @@ denied:	a = msg_print(sp, path, &nf1);
 			break;
 		case WRITER:
 			msgq(sp, M_ERR,
-    "127|%s/%s: not sourced: writeable by a user other than the owner", b, a);
+    "127|%s/%s: not sourced: writable by a user other than the owner", b, a);
 			break;
 		}
 		if (nf2)
@@ -409,7 +409,7 @@ denied:	a = msg_print(sp, path, &nf1);
 			break;
 		case WRITER:
 			msgq(sp, M_ERR,
-	    "130|%s: not sourced: writeable by a user other than the owner", a);
+	    "130|%s: not sourced: writable by a user other than the owner", a);
 			break;
 		}
 
