@@ -1,4 +1,4 @@
-/*	$OpenBSD: lpq.c,v 1.7 1997/01/17 16:12:44 millert Exp $	*/
+/*	$OpenBSD: lpq.c,v 1.8 2001/08/30 17:38:13 millert Exp $	*/
 
 /*
  * Copyright (c) 1983, 1993
@@ -44,7 +44,7 @@ static const char copyright[] =
 #if 0
 static const char sccsid[] = "@(#)lpq.c	8.3 (Berkeley) 5/10/95";
 #else
-static const char rcsid[] = "$OpenBSD: lpq.c,v 1.7 1997/01/17 16:12:44 millert Exp $";
+static const char rcsid[] = "$OpenBSD: lpq.c,v 1.8 2001/08/30 17:38:13 millert Exp $";
 #endif
 #endif /* not lint */
 
@@ -76,6 +76,8 @@ char	*user[MAXUSERS];	/* users to process */
 int	 users;			/* # of users in user array */
 
 uid_t	uid, euid;
+
+volatile sig_atomic_t gotintr;
 
 static int ckqueue __P((char *));
 void usage __P((void));
