@@ -1,4 +1,4 @@
-/*	$OpenBSD: restore.h,v 1.3 1997/07/05 20:51:25 millert Exp $	*/
+/*	$OpenBSD: restore.h,v 1.4 2003/06/02 20:06:16 millert Exp $	*/
 /*	$NetBSD: restore.h,v 1.8 1997/07/01 05:37:54 lukem Exp $	*/
 
 /*
@@ -107,7 +107,7 @@ struct entry {
 struct context {
 	char	*name;		/* name of file */
 	ino_t	ino;		/* inumber of file */
-	struct	dinode *dip;	/* pointer to inode */
+	struct	ufs1_dinode *dip;	/* pointer to inode */
 	char	action;		/* action being taken on this file */
 } curfile;
 /* actions */

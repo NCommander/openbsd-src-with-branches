@@ -1,4 +1,4 @@
-/*	$OpenBSD: fsdbutil.c,v 1.8 2002/06/09 08:13:06 todd Exp $	*/
+/*	$OpenBSD: fsdbutil.c,v 1.9 2003/06/11 06:22:13 deraadt Exp $	*/
 /*	$NetBSD: fsdbutil.c,v 1.5 1996/09/28 19:30:37 christos Exp $	*/
 
 /*-
@@ -38,7 +38,7 @@
  */
 
 #ifndef lint
-static char rcsid[] = "$OpenBSD: fsdbutil.c,v 1.8 2002/06/09 08:13:06 todd Exp $";
+static char rcsid[] = "$OpenBSD: fsdbutil.c,v 1.9 2003/06/11 06:22:13 deraadt Exp $";
 #endif /* not lint */
 
 #include <sys/types.h>
@@ -94,7 +94,7 @@ argcount(struct cmdtable *cmdp, int argc, char *argv[])
 }
 
 void
-printstat(const char *cp, ino_t inum, struct dinode *dp)
+printstat(const char *cp, ino_t inum, struct ufs1_dinode *dp)
 {
 	struct group *grp;
 	struct passwd *pw;

@@ -1,4 +1,4 @@
-/*	$OpenBSD: fsdb.h,v 1.3 1997/01/16 04:04:20 millert Exp $	*/
+/*	$OpenBSD: fsdb.h,v 1.4 2002/02/16 21:27:35 millert Exp $	*/
 /*	$NetBSD: fsdb.h,v 1.4 1996/09/28 19:30:36 christos Exp $	*/
 
 /*-
@@ -54,12 +54,12 @@ struct cmdtable {
 	unsigned int maxargc;
 	int (*handler)(int argc, char *argv[]);
 };
-extern struct dinode *curinode;
+extern struct ufs1_dinode *curinode;
 extern ino_t curinum;
 
 char **crack(char *, int *);
 int argcount(struct cmdtable *, int, char *[]);
-void printstat(const char *, ino_t, struct dinode *);
+void printstat(const char *, ino_t, struct ufs1_dinode *);
 int checkactive(void);
 int checkactivedir(void);
 int printactive(void);
