@@ -39,8 +39,6 @@ static char rcsid[] = "$OpenBSD: sprintf.c,v 1.6 2003/06/02 20:18:37 millert Exp
 #include <limits.h>
 #include "local.h"
 
-__warn_references(sprintf, "warning: sprintf() is often misused, please use snprintf()");
-
 int
 sprintf(char *str, char const *fmt, ...)
 {

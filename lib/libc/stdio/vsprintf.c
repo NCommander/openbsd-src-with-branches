@@ -37,9 +37,6 @@ static char rcsid[] = "$OpenBSD: vsprintf.c,v 1.5 2003/06/02 20:18:37 millert Ex
 #include <stdio.h>
 #include <limits.h>
 
-__warn_references(vsprintf,
-    "warning: vsprintf() is often misused, please use vsnprintf()");
-
 int
 vsprintf(str, fmt, ap)
 	char *str;
