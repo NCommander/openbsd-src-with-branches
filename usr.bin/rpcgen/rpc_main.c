@@ -112,7 +112,7 @@ int callerflag;		/* Generate svc_caller() function */
 #define INLINE 3
 /*length at which to start doing an inline */
 
-int inline=INLINE;  /* length at which to start doing an inline. 3 = default
+int doinline=INLINE;  /* length at which to start doing an inline. 3 = default
 		if 0, no xdr_inline code */
 
 int indefinitewait;	/* If started by port monitors, hang till it wants */
@@ -1012,7 +1012,7 @@ parseargs(argc, argv, cmd)
 				  	if (++i == argc) {
 						return (0);
 					}
-					inline = atoi(argv[i]);
+					doinline = atoi(argv[i]);
 					goto nextarg;
 				case 'n':
 				case 'o':
