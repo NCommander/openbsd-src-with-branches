@@ -1,4 +1,4 @@
-/*	$OpenBSD: rln.c,v 1.6 1999/08/26 22:27:44 d Exp $	*/
+/*	$OpenBSD: rln.c,v 1.7 1999/12/08 06:08:05 itojun Exp $	*/
 /*
  * David Leonard <d@openbsd.org>, 1999. Public Domain.
  *
@@ -132,6 +132,8 @@ rlnconfig(sc)
 		return;
 	}
 	printf(", addr %s", ether_sprintf(sc->sc_arpcom.ac_enaddr));
+
+	timeout_set(&sc->sc_timeout, rlnsoftintr, sc);
 
 	/* Attach as a network interface. */
 	bcopy(sc->sc_dev.dv_xname, ifp->if_xname, IFNAMSIZ);
@@ -421,7 +423,7 @@ rlnintr(arg)
 		rlnsoftintr(sc);
 	else
 		/* Handle later. */
-		timeout(rlnsoftintr, sc, 1);
+		timeout_add(&sc->sc_timeout, 1);
 
 	return (1);
 }
