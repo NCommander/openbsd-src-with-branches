@@ -14,7 +14,7 @@
  */
 
 #include "includes.h"
-RCSID("$OpenBSD: auth-rsa.c,v 1.48 2001/12/27 20:39:58 markus Exp $");
+RCSID("$OpenBSD: auth-rsa.c,v 1.49 2001/12/28 12:14:27 markus Exp $");
 
 #include <openssl/rsa.h>
 #include <openssl/md5.h>
@@ -66,7 +66,7 @@ auth_rsa_challenge_dialog(RSA *pk)
 	u_char buf[32], mdbuf[16], response[16];
 	MD5_CTX md;
 	u_int i;
-	int plen, len;
+	int len;
 
 	if ((encrypted_challenge = BN_new()) == NULL)
 		fatal("auth_rsa_challenge_dialog: BN_new() failed");
@@ -91,7 +91,7 @@ auth_rsa_challenge_dialog(RSA *pk)
 	packet_write_wait();
 
 	/* Wait for a response. */
-	packet_read_expect(&plen, SSH_CMSG_AUTH_RSA_RESPONSE);
+	packet_read_expect(SSH_CMSG_AUTH_RSA_RESPONSE);
 	for (i = 0; i < 16; i++)
 		response[i] = packet_get_char();
 	packet_check_eom();
