@@ -1,4 +1,4 @@
-/*	$OpenBSD: cl.c,v 1.14 1996/06/11 10:17:34 deraadt Exp $ */
+/*	$OpenBSD: cl.c,v 1.15 1997/04/02 05:25:45 rahnds Exp $ */
 
 /*
  * Copyright (c) 1995 Dale Rahn. All rights reserved.
@@ -170,7 +170,7 @@ int clparam __P((struct tty *tp, struct termios *t));
 int cl_mintr __P((struct clsoftc *sc));
 int cl_txintr __P((struct clsoftc *sc));
 int cl_rxintr __P((struct clsoftc *sc));
-void cl_overflow __P((struct clsoftc *sc, int channel, long *ptime, u_char *msg));
+void cl_overflow __P((struct clsoftc *sc, int channel, time_t *ptime, u_char *msg));
 void cl_parity __P((struct clsoftc *sc, int channel));
 void cl_frame __P((struct clsoftc *sc, int channel));
 void cl_break __P(( struct clsoftc *sc, int channel));
@@ -1817,7 +1817,7 @@ void
 cl_overflow (sc, channel, ptime, msg)
 struct clsoftc *sc;
 int channel;
-long *ptime;
+time_t *ptime;
 u_char *msg;
 {
 /*
