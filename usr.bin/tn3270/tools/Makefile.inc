@@ -1,4 +1,0 @@
-#	$OpenBSD$
-
-CC=${HOSTCC}
-DESTDIR=/

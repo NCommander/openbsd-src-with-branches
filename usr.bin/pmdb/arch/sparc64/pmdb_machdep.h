@@ -1,5 +1,0 @@
-/*	$OpenBSD$	*/
-
-#define BREAKPOINT		{ 0x91, 0xd0, 0x20, 0x01 }
-#define BREAKPOINT_LEN		4
-#define BREAKPOINT_DECR_PC	0
