@@ -1,4 +1,3 @@
-/*	$OpenBSD$	*/
 #include <lwp.h>
 
 /*

@@ -1,4 +1,3 @@
-/*	$OpenBSD$	*/
 /* $KTH: rx_user.h,v 1.5 1998/03/28 16:35:47 lha Exp $ */
 
 /*

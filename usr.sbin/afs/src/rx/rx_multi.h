@@ -1,4 +1,3 @@
-/*	$OpenBSD$	*/
 /* $KTH: rx_multi.h,v 1.3 1998/02/22 19:48:23 joda Exp $ */
 
 /*

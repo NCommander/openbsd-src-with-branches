@@ -1,4 +1,3 @@
-/*	$OpenBSD$	*/
 #include "rx_locl.h"
 
 RCSID("$KTH: rx_misc.c,v 1.4 1998/02/22 19:47:15 joda Exp $");
