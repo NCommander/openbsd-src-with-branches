@@ -1,4 +1,4 @@
-/*	$OpenBSD: db_trace.c,v 1.3 1997/03/21 02:10:48 niklas Exp $	*/
+/*	$OpenBSD: db_trace.c,v 1.4 1998/08/22 17:54:27 rahnds Exp $	*/
 /*	$NetBSD: db_trace.c,v 1.15 1996/02/22 23:23:41 gwr Exp $	*/
 
 /* 
@@ -87,7 +87,6 @@ extern label_t	*db_recover;
 void
 db_save_regs(struct trapframe *frame)
 {
-	printf ("%x %x %d\n", frame, &(ddb_regs.tf), sizeof (struct trapframe));
 	bcopy(frame, &(ddb_regs.tf), sizeof (struct trapframe));
 }
 
