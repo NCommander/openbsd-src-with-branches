@@ -1,4 +1,4 @@
-/*	$OpenBSD: aha.c,v 1.50 2003/04/10 10:11:24 miod Exp $	*/
+/*	$OpenBSD: aha.c,v 1.51 2003/04/27 11:22:53 ho Exp $	*/
 /*	$NetBSD: aha.c,v 1.11 1996/05/12 23:51:23 mycroft Exp $	*/
 
 #undef AHADIAG
@@ -481,7 +481,7 @@ AGAIN:
 		case AHA_MBI_UNKNOWN:
 			/*
 			 * Even if the CCB wasn't found, we clear it anyway.
-			 * See preceeding comment.
+			 * See preceding comment.
 			 */
 			break;
 
