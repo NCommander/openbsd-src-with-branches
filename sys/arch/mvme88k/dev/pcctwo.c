@@ -1,5 +1,5 @@
 
-/*	$OpenBSD: pcctwo.c,v 1.7 1999/09/27 18:43:24 smurph Exp $ */
+/*	$OpenBSD: pcctwo.c,v 1.8 2000/03/26 23:32:00 deraadt Exp $ */
 
 /*
  * Copyright (c) 1995 Theo de Raadt
@@ -141,7 +141,7 @@ pcctwo_scan(parent, child, args)
 	bzero(&oca, sizeof oca);
 	oca.ca_offset = cf->cf_loc[0];
 	oca.ca_ipl = cf->cf_loc[1];
-	if ((oca.ca_offset != (void*)-1) && ISIIOVA(sc->sc_vaddr + oca.ca_offset)) {
+	if (((int)oca.ca_offset != -1) && ISIIOVA(sc->sc_vaddr + oca.ca_offset)) {
 		oca.ca_vaddr = sc->sc_vaddr + oca.ca_offset;
 		oca.ca_paddr = sc->sc_paddr + oca.ca_offset;
 	} else {
