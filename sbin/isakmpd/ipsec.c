@@ -1,4 +1,4 @@
-/*	$OpenBSD: ipsec.c,v 1.35 2001/01/11 00:46:28 angelos Exp $	*/
+/*	$OpenBSD: ipsec.c,v 1.36 2001/01/14 23:40:01 angelos Exp $	*/
 /*	$EOM: ipsec.c,v 1.143 2000/12/11 23:57:42 niklas Exp $	*/
 
 /*
@@ -360,7 +360,7 @@ ipsec_set_network (u_int8_t *src_id, u_int8_t *dst_id, struct ipsec_sa *isa)
 {
   int id;
 
-  /* Set source address. */
+  /* Set source address.  */
   id = GET_ISAKMP_ID_TYPE (src_id);
   switch (id)
     {
