@@ -104,13 +104,13 @@ extern long pps_stbcnt;		/* stability limit exceeded */
  * ntp_gettime() - NTP user application interface
  */
 int
-ntp_gettime(p, v, retval)
+sys_ntp_gettime(p, v, retval)
 	struct proc *p;
 	void *v;
 	register_t *retval;
 
 {
-	struct ntp_gettime_args /* {
+	struct sys_ntp_gettime_args /* {
 		syscallarg(struct timex *) tp;
 	} */ *uap = v;
 	struct timeval atv;
@@ -191,12 +191,12 @@ ntp_gettime(p, v, retval)
  * ntp_adjtime() - NTP daemon application interface
  */
 int
-ntp_adjtime(p, v, retval)
+sys_ntp_adjtime(p, v, retval)
 	struct proc *p;
 	void *v;
 	register_t *retval;
 {
-	struct ntp_adjtime_args /* {
+	struct sys_ntp_adjtime_args /* {
 		syscallarg(struct timex *) tp;
 	} */ *uap = v;
 	struct timex ntv;
