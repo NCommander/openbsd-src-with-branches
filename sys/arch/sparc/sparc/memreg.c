@@ -86,13 +86,13 @@ memregmatch(parent, vcf, aux)
 	struct device *parent;
 	void *vcf, *aux;
 {
-	register struct cfdata *cf;
+	register struct cfdata *cf = vcf;
 	register struct confargs *ca = aux;
 
 	if (CPU_ISSUN4) {
 		if (ca->ca_bustype == BUS_OBIO)
 			return (strcmp(cf->cf_driver->cd_name,
-				       ca->ca_ra.ra_name) == 0);
+			    ca->ca_ra.ra_name) == 0);
 		return (0);
 	}
 	return (strcmp("memory-error", ca->ca_ra.ra_name) == 0);
