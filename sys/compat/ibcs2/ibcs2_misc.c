@@ -1,4 +1,4 @@
-/*	$OpenBSD: ibcs2_misc.c,v 1.19 2001/11/06 19:53:17 miod Exp $	*/
+/*	$OpenBSD: ibcs2_misc.c,v 1.20 2002/02/12 18:41:20 art Exp $	*/
 /*	$NetBSD: ibcs2_misc.c,v 1.23 1997/01/15 01:37:49 perry Exp $	*/
 
 /*
@@ -438,7 +438,7 @@ ibcs2_sys_getdents(p, v, retval)
 	args.resid = SCARG(uap, nbytes);
 	args.outp = (caddr_t)SCARG(uap, buf);
 	error = readdir_with_callback(fp, &fp->f_offset, args.resid,
-	    ibcs2_readdir_callback, &args)
+	    ibcs2_readdir_callback, &args);
 	FRELE(fp);
 	if (error)
 		return (error);
