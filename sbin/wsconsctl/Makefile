@@ -1,6 +1,6 @@
-#	$OpenBSD: Makefile,v 1.2 2000/07/02 02:09:19 mickey Exp $
+#	$OpenBSD: Makefile,v 1.3 2000/07/20 00:34:29 espie Exp $
 
-.if ${MACHINE} == "alpha" || ${MACHINE} == "hppa"
+.if ${MACHINE} == "alpha" || ${MACHINE} == "hppa" || ${MACHINE} == "powerpc"
 
 PROG=	wsconsctl
 SRCS=	display.c keyboard.c keysym.c map_parse.y map_scan.l \
