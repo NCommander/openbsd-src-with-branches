@@ -1,4 +1,4 @@
-/*	$OpenBSD: pcibios.c,v 1.2 2000/03/27 08:35:22 brad Exp $	*/
+/*	$OpenBSD: pcibios.c,v 1.3 2000/03/28 03:37:59 mickey Exp $	*/
 /*	$NetBSD: pcibios.c,v 1.2 1999/11/17 07:33:41 thorpej Exp $	*/
 
 /*-
@@ -190,8 +190,8 @@ pcibios_init()
 
 		case 1:
 			/* Fatal error. */
-			panic("pcibios_init: interrupt fixup failed");
-			break;
+			printf("pcibios_init: interrupt fixup failed");
+			return;
 		}
 
 		/*
