@@ -1,4 +1,4 @@
-/*	$OpenBSD: spamd-setup.c,v 1.7 2003/03/10 19:36:13 deraadt Exp $ */
+/*	$OpenBSD: spamd-setup.c,v 1.8 2003/03/13 21:20:42 beck Exp $ */
 /*
  * Copyright (c) 2003 Bob Beck.  All rights reserved.
  *
@@ -777,5 +777,5 @@ main(int argc, char *argv[])
 		free(cidrs);
 		free(blists[i].bl);
 	}
-	exit(0);
+	return (0);
 }
