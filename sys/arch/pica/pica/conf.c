@@ -36,7 +36,7 @@
  * SUCH DAMAGE.
  *
  *	from: @(#)conf.c	8.2 (Berkeley) 11/14/93
- *      $Id: conf.c,v 1.5 1996/05/02 07:59:42 pefo Exp $
+ *      $Id: conf.c,v 1.6 1996/05/15 07:09:10 pefo Exp $
  */
 
 #include <sys/param.h>
@@ -140,6 +140,8 @@ cdev_decl(sd);
 cdev_decl(pc);
 cdev_decl(pms);
 cdev_decl(cd);
+#include "rnd.h"
+cdev_decl(rnd);
 
 /* open, close, read, ioctl */
 cdev_decl(ipl);
@@ -183,6 +185,7 @@ struct cdevsw	cdevsw[] =
 	cdev_notdef(),			/* 29: */
 	cdev_notdef(),			/* 30: */
 	cdev_gen_ipf(NIPF,ipl),         /* 31: IP filter log */
+	cdev_rnd_init(NRND,rnd),	/* 32: random data source */
 };
 
 int	nchrdev = sizeof (cdevsw) / sizeof (cdevsw[0]);

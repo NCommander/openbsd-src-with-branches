@@ -1,4 +1,4 @@
-/*	$OpenBSD: conf.c,v 1.4 1996/02/21 12:53:48 mickey Exp $ */
+/*	$OpenBSD: conf.c,v 1.7 1996/05/27 21:58:36 chuck Exp $ */
 
 /*-
  * Copyright (c) 1995 Theo de Raadt
@@ -187,6 +187,8 @@ cdev_decl(bpf);
 
 #include "tun.h"
 cdev_decl(tun);
+#include "rnd.h"
+cdev_decl(rnd);
 
 #ifdef LKM
 #define NLKM 1
@@ -246,6 +248,7 @@ struct cdevsw	cdevsw[] =
 	cdev_lkm_dummy(),		/* 37 */
 	cdev_lkm_dummy(),		/* 38 */
 	cdev_gen_ipf(NIPF,ipl),         /* 39: IP filter */
+	cdev_rnd_init(NRND,rnd),	/* 40: random data source */
 };
 int	nchrdev = sizeof(cdevsw) / sizeof(cdevsw[0]);
 

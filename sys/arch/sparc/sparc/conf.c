@@ -175,6 +175,8 @@ cdev_decl(svr4_net);
 #define NLKM 0
 #endif
 cdev_decl(lkm);
+#include "rnd.h"
+cdev_decl(rnd);
 
 /* open, close, read, ioctl */
 cdev_decl(ipl);
@@ -311,6 +313,7 @@ struct cdevsw	cdevsw[] =
 	cdev_lkm_dummy(),		/* 116 */
 	cdev_lkm_dummy(),		/* 117 */
 	cdev_lkm_dummy(),		/* 118 */
+	cdev_rnd_init(NRND,rnd),	/* 119: random data source */
 };
 int	nchrdev = sizeof(cdevsw) / sizeof(cdevsw[0]);
 

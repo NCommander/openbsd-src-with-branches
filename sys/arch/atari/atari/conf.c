@@ -152,6 +152,8 @@ cdev_decl(tun);
 #define NLKM 0
 #endif
 cdev_decl(lkm);
+#include "rnd.h"
+cdev_decl(rnd);
 
 /* open, close, read, ioctl */
 cdev_decl(ipl);
@@ -195,6 +197,7 @@ struct cdevsw	cdevsw[] =
 	cdev_disk_init(NCCD,ccd),	/* 27: concatenated disk driver */
 	cdev_bpftun_init(NTUN,tun),	/* 28: network tunnel */
 	cdev_gen_ipf(NIPF,ipl),         /* 29: IP filter log */
+	cdev_rnd_init(NRND,rnd),	/* 30: random data source */
 };
 int	nchrdev = sizeof(cdevsw) / sizeof(cdevsw[0]);
 
