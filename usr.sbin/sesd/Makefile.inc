@@ -1,4 +1,4 @@
-# $OpenBSD: Makefile.inc,v 1.1 2000/02/21 08:45:14 mjacob Exp $
+# $OpenBSD: Makefile.inc,v 1.2 2000/02/22 06:21:35 mjacob Exp $
 #
 # Copyright (c) 2000 by Matthew Jacob
 # All rights reserved.
@@ -36,7 +36,7 @@
 .include "${.CURDIR}/../../Makefile.inc"
 .endif
 
-COPTS	+=	-DSESINC="<scsi/ses.h>"
+CFLAGS	+=	-DSESINC="<scsi/ses.h>"
 # Inherit BINDIR from one level up.
 BINDIR	?=	${DESTDIR}/usr/sbin
 
