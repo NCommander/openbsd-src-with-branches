@@ -1,4 +1,4 @@
-/*	$OpenBSD: kern_sysctl.c,v 1.114 2004/06/20 03:04:15 art Exp $	*/
+/*	$OpenBSD: kern_sysctl.c,v 1.115 2004/06/24 21:00:03 millert Exp $	*/
 /*	$NetBSD: kern_sysctl.c,v 1.17 1996/05/20 17:49:05 mrg Exp $	*/
 
 /*-
@@ -1334,7 +1334,7 @@ fill_kproc2(struct proc *p, struct kinfo_proc2 *ki)
 		ki->p_cpuid = KI_NOCPU;
 #ifdef MULTIPROCESSOR
 		if (p->p_cpu != NULL)
-			ki->p_cpuid = p->p_cpu->ci_dev.dv_unit;
+			ki->p_cpuid = CPU_INFO_UNIT(p->p_cpu);
 #endif
 		PRELE(p);
 	}
