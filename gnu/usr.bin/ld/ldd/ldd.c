@@ -1,4 +1,4 @@
-/*	$OpenBSD: ldd.c,v 1.5 1999/05/21 01:20:45 espie Exp $	*/
+/*	$OpenBSD: ldd.c,v 1.6 2000/09/15 07:13:44 deraadt Exp $	*/
 /*	$NetBSD: ldd.c,v 1.12 1995/10/09 00:14:41 pk Exp $	*/
 /*
  * Copyright (c) 1993 Paul Kranenburg
@@ -44,6 +44,8 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+
+extern void scan_library(int, struct exec *, const char *);
 
 void
 usage()
@@ -116,7 +118,7 @@ char	*argv[];
 			continue;
 		}
 		if ((N_GETFLAG(hdr) & EX_DPMASK) == (EX_DYNAMIC | EX_PIC)) {
-			warnx("%s: no support for dynamic libraries", *argv);
+			scan_library(fd, &hdr, *argv);
 			(void)close(fd);
 			argv++;
 			continue;
