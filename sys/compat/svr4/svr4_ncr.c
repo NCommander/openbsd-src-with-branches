@@ -33,10 +33,19 @@
 
 #ifdef COMPAT_SVR4_NCR
 
+#include <sys/types.h>
 #include <sys/errno.h>
+#include <sys/signal.h>
+
+#include <compat/svr4/svr4_types.h>
+#include <compat/svr4/svr4_signal.h>
+#include <compat/svr4/svr4_syscallargs.h>
 
 int
-svr4_ncr_sys_rdebug()
+svr4_ncr_sys_rdebug(p, v, retval)
+	struct proc *p;
+	void *v;
+	register_t *retval;
 {
 	return ENXIO;
 }
