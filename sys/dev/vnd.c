@@ -1,4 +1,4 @@
-/*	$OpenBSD: vnd.c,v 1.23 1998/10/03 21:19:00 millert Exp $	*/
+/*	$OpenBSD: vnd.c,v 1.24 2000/06/20 21:29:20 provos Exp $	*/
 /*	$NetBSD: vnd.c,v 1.26 1996/03/30 23:06:11 christos Exp $	*/
 
 /*
@@ -863,8 +863,10 @@ vndioctl(dev, cmd, addr, flag, p)
 			printf("vndioctl: CLRed\n");
 #endif
 		/* Free crypto key */
-		if (vnd->sc_keyctx)
+		if (vnd->sc_keyctx) {
+			bzero(vnd->sc_keyctx, vio->vnd_keylen);
 			free((caddr_t)vnd->sc_keyctx, M_DEVBUF);
+		}
 
 		/* Detatch the disk. */
 		disk_detach(&vnd->sc_dk);
