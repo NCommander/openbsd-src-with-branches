@@ -1,4 +1,4 @@
-/*	$OpenBSD: bugtty.c,v 1.6 2001/03/08 00:03:12 miod Exp $ */
+/*	$OpenBSD: bugtty.c,v 1.7 2001/03/09 05:44:38 smurph Exp $ */
 /* Copyright (c) 1998 Steve Murphree, Jr. 
  * Copyright (c) 1995 Dale Rahn.
  * All rights reserved.
@@ -476,21 +476,6 @@ bugttycnprobe(cp)
 		return (0);
 	}
 		
-#if 0
-	switch (cputyp) {
-	case CPU_147:
-	case CPU_162:
-		cp->cn_pri = CN_NORMAL;
-		return (0);
-	default:
-		break;
-	}
-#endif
-#if 0
-	cp->cn_pri = CN_NORMAL;
-	return (0);
-#endif /* 0 */
-
 	/* locate the major number */
 	for (maj = 0; maj < nchrdev; maj++)
 		if (cdevsw[maj].d_open == bugttyopen)

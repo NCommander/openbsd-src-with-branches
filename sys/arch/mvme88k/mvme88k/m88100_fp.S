@@ -1,4 +1,4 @@
-/* $OpenBSD: m88100_fp.S,v 1.11 2001/08/24 22:53:15 miod Exp $	*/
+/* $OpenBSD: m88100_fp.S,v 1.12 2001/11/18 01:43:33 miod Exp $	*/
 /*
  * Mach Operating System
  * Copyright (c) 1991 Carnegie Mellon University
@@ -27,6 +27,8 @@
  */
 
 /* Floating point trouble routines */
+#ifdef M88100
+
 #include "assym.h"
 #include <machine/trap.h>
 #include <machine/asm.h>
@@ -2298,3 +2300,5 @@ Iwritesingle:
 	st	r11, r3 [r2]
 /* Return.. */
 	jmp	r1
+#endif /* M88100 */
+
