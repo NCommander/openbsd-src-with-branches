@@ -1,4 +1,4 @@
-/*	$OpenBSD: mfs_vnops.c,v 1.13 1999/08/30 18:05:52 art Exp $	*/
+/*	$OpenBSD: mfs_vnops.c,v 1.14 2000/02/08 16:39:03 niklas Exp $	*/
 /*	$NetBSD: mfs_vnops.c,v 1.8 1996/03/17 02:16:32 christos Exp $	*/
 
 /*
@@ -363,14 +363,4 @@ mfs_badop(v)
 
 	panic("mfs_badop called");
 	/* NOTREACHED */
-}
-
-/*
- * Memory based filesystem initialization.
- */
-int
-mfs_init(vfsp)
-	struct vfsconf *vfsp;
-{
-	return  (0);
 }
