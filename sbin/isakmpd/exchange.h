@@ -1,4 +1,4 @@
-/*	$OpenBSD: exchange.h,v 1.19 2001/05/31 20:23:52 angelos Exp $	*/
+/*	$OpenBSD: exchange.h,v 1.20 2001/06/05 05:59:43 niklas Exp $	*/
 /*	$EOM: exchange.h,v 1.28 2000/09/28 12:54:28 niklas Exp $	*/
 
 /*
@@ -156,9 +156,9 @@ struct exchange {
   /* Used only by KeyNote, to cache the key used to authenticate Phase 1 */
   char *keynote_key; /* printable format */
 
-  /* 
+  /*
    * Received certificate - used to verify signatures on packet,
-   * stored here for later policy processing. 
+   * stored here for later policy processing.
    *
    * The rules for the recv_* and sent_* fields are:
    * - recv_cert stores the credential (if any) received from the peer;

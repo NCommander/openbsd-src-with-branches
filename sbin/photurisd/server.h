@@ -1,4 +1,4 @@
-/* $OpenBSD: server.h,v 1.2 2000/12/15 02:50:39 provos Exp $ */
+/* $OpenBSD: server.h,v 1.3 2001/01/28 22:45:17 niklas Exp $ */
 /*
  * Copyright 1997-2000 Niels Provos <provos@citi.umich.edu>
  * All rights reserved.
@@ -29,10 +29,10 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 /*
- * server.h: 
+ * server.h:
  * handling interfaces and communication
  */
- 
+
 #ifndef _SERVER_H_
 #define _SERVER_H_
 

@@ -1,4 +1,4 @@
-/*	$OpenBSD: pass1.c,v 1.6 2001/09/18 17:43:15 art Exp $	*/
+/*	$OpenBSD: pass1.c,v 1.7 2002/02/16 21:27:34 millert Exp $	*/
 /*	$NetBSD: pass1.c,v 1.9 2000/01/31 11:40:12 bouyer Exp $	*/
 
 /*
@@ -133,7 +133,7 @@ checkinode(inumber, idesc)
 	mode_t mode;
 
 	dp = getnextinode(inumber);
-	if (inumber < EXT2_FIRSTINO && inumber != EXT2_ROOTINO) 
+	if (inumber < EXT2_FIRSTINO && inumber != EXT2_ROOTINO)
 		return;
 
 	mode = fs2h16(dp->e2di_mode) & IFMT;

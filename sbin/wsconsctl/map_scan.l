@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: map_scan.l,v 1.1 2000/07/01 23:52:45 mickey Exp $	*/
 /*	$NetBSD: map_scan.l 1.1 1998/12/28 14:01:17 hannken Exp $ */
 
 /*-
@@ -89,7 +89,7 @@ keysym {
 	}
 
 [0-9]+ {
-		yylval.ival = atoi(yytext);     
+		yylval.ival = atoi(yytext);
 		return(T_NUMBER);
 	}
 

@@ -1,4 +1,4 @@
-/*	$OpenBSD: ui.c,v 1.28 2002/03/19 04:00:59 angelos Exp $	*/
+/*	$OpenBSD: ui.c,v 1.29 2002/06/01 07:44:22 deraadt Exp $	*/
 /*	$EOM: ui.c,v 1.43 2000/10/05 09:25:12 niklas Exp $	*/
 
 /*
@@ -206,7 +206,7 @@ ui_delete (char *cmd)
       log_print ("ui_delete: command \"%s\" malformed", cmd);
       return;
     }
-  
+
   if (strcmp (message_id_str, "-") == 0)
     message_id = 0;
 

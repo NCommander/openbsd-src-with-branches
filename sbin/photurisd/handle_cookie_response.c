@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: handle_cookie_response.c,v 1.6 2001/01/28 22:45:08 niklas Exp $	*/
 
 /*
  * Copyright 1997-2000 Niels Provos <provos@citi.umich.edu>
@@ -36,7 +36,7 @@
  */
 
 #ifndef lint
-static char rcsid[] = "$OpenBSD: handle_cookie_response.c,v 1.5 2000/12/15 02:50:38 provos Exp $";
+static char rcsid[] = "$OpenBSD: handle_cookie_response.c,v 1.6 2001/01/28 22:45:08 niklas Exp $";
 #endif
 
 #include <stdio.h>
@@ -112,10 +112,10 @@ handle_cookie_response(u_char *packet, int size,
 	if (pick_scheme(&(st->scheme), &(st->schemesize), p, i) == -1) {
 	     state_value_reset(st);
 	     state_unlink(st);
-	     return -1; 
+	     return -1;
 	}
 
-	if (pick_attrib(st, &(st->oSPIoattrib), 
+	if (pick_attrib(st, &(st->oSPIoattrib),
 			&(st->oSPIoattribsize)) == -1) {
              state_value_reset(st);
              state_unlink(st);
@@ -124,7 +124,7 @@ handle_cookie_response(u_char *packet, int size,
 
 	/* Take the counter from the cookie response */
 	st->counter = header->counter;
-	     
+	
 	packet_size = PACKET_BUFFER_SIZE;
 	if (photuris_value_request(st, packet_buffer, &packet_size) == -1)
 	     return -1;

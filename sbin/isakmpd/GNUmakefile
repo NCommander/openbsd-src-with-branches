@@ -1,4 +1,4 @@
-#    $OpenBSD: GNUmakefile,v 1.1 2001/01/26 12:09:22 niklas Exp $
+#    $OpenBSD: GNUmakefile,v 1.2 2001/01/28 22:38:47 niklas Exp $
 
 #
 # Copyright (c) 1998, 1999, 2000 Niklas Hallqvist.  All rights reserved.
@@ -126,7 +126,7 @@ DEBUG=		-g
 
 # Ignore any files with these names...
 .PHONY:	mksubdirs all clean cleandir cleandepend beforedepend \
-	afterdepend realclean realcleandepend 
+	afterdepend realclean realcleandepend
 
 # Default target, it needs to be the first target in makefile... :(
 
@@ -209,12 +209,12 @@ ${PROG} beforedepend: ${GENERATED}
 ${PROG}: ${OBJS} ${DPADD}
 	${CC} ${DEBUG} ${LDFLAGS} ${LDSTATIC} -o $@ ${OBJS} ${LDADD}
 
-# Depend rules 
+# Depend rules
 depend: beforedepend .depend mksubdirs afterdepend
 	@true
 
 # Since 'mkdep' et al maybe doesn't exist...
-MKDEP:= ${CC} -MM 
+MKDEP:= ${CC} -MM
 
 .depend: ${SRCS}
 	@rm -f .depend

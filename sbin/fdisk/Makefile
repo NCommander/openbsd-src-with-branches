@@ -1,5 +1,5 @@
 #
-#	$OpenBSD: Makefile,v 1.17 2001/09/01 16:21:16 drahn Exp $
+#	$OpenBSD: Makefile,v 1.18 2002/03/31 20:47:16 deraadt Exp $
 #
 # Copyright (c) 1997 Tobias Weingartner
 # All rights reserved.
@@ -31,7 +31,7 @@
 #
 
 .if ${MACHINE} == "i386" || ${MACHINE} == "macppc" || ${MACHINE} == "alpha"
-PROG=	fdisk 
+PROG=	fdisk
 SRCS=	fdisk.c user.c misc.c disk.c mbr.c part.c cmd.c manual.c
 DPADD=	${LIBUTIL}
 LDADD=	-lutil

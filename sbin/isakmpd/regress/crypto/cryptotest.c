@@ -1,4 +1,4 @@
-/*	$OpenBSD: cryptotest.c,v 1.5 2001/01/27 12:03:38 niklas Exp $	*/
+/*	$OpenBSD: cryptotest.c,v 1.6 2001/06/12 21:46:47 niklas Exp $	*/
 /*	$EOM: cryptotest.c,v 1.5 1998/10/07 16:40:49 niklas Exp $	*/
 
 /*
@@ -90,7 +90,7 @@ special_test_blf (void)
   asc2bin (key, akey, strlen (akey));
   asc2bin (iv, aiv, strlen (aiv));
   asc2bin (cipher, acipher, 64);
-  
+
   xf = crypto_get (BLOWFISH_CBC);
   printf ("Special Test-Case %s: ", xf->name);
 
@@ -129,7 +129,7 @@ main (void)
   test_crypto (BLOWFISH_CBC);
 
   test_crypto (CAST_CBC);
-  
+
   special_test_blf ();
 
   return 1;
@@ -152,7 +152,7 @@ test_crypto (enum transform which)
   struct crypto_xf *xf;
   struct keystate *ks;
   enum cryptoerr err;
-  
+
   xf = crypto_get (which);
   printf ("Testing %s: ", xf->name);
 

@@ -1,4 +1,4 @@
-/*	$OpenBSD: rsakeygen.c,v 1.13 2001/01/27 12:03:38 niklas Exp $	*/
+/*	$OpenBSD: rsakeygen.c,v 1.14 2002/01/03 16:27:41 ho Exp $	*/
 /*	$EOM: rsakeygen.c,v 1.10 2000/12/21 15:18:53 ho Exp $	*/
 
 /*
@@ -84,7 +84,7 @@ main (void)
   strlcpy (dec, TEST_STRING, 256);
 
   key = LC (RSA_generate_key, (1024, RSA_F4, NULL, NULL));
-  if (key == NULL) 
+  if (key == NULL)
     {
       printf("Failed to generate key\n");
       return 0;

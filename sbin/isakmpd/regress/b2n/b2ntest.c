@@ -1,4 +1,4 @@
-/*	$OpenBSD: b2ntest.c,v 1.5 2001/01/27 12:03:37 niklas Exp $	*/
+/*	$OpenBSD: b2ntest.c,v 1.6 2002/01/23 17:43:24 ho Exp $	*/
 /*	$EOM: b2ntest.c,v 1.4 1998/07/16 19:31:55 provos Exp $	*/
 
 /*
@@ -85,7 +85,7 @@ main (void)
   b2n_set_ui (m, 0);
   b2n_add (n, n, m);
   CMP_FAIL (n, "0x9090900000000000000000");
-  
+
   printf ("\nTesting: b2n_lshift: ");
   b2n_set_str (m, "0x808b8080c0");
   b2n_lshift (n, m, 3);
@@ -158,13 +158,13 @@ main (void)
   CMP_FAIL (n, "0x40005001040511");
 
   b2n_set_str (m, "0x12329");
-  printf ("\nTesting: sigbit: 0x12329: %d, %s", 
+  printf ("\nTesting: sigbit: 0x12329: %d, %s",
 	  b2n_sigbit(m), b2n_sigbit(m) == 17 ? "OKAY" : "FAILED");
   b2n_set_ui (m, 0);
-  printf ("\nTesting: sigbit: 0x0: %d, %s", 
+  printf ("\nTesting: sigbit: 0x0: %d, %s",
 	  b2n_sigbit(m), b2n_sigbit(m) == 0 ? "OKAY" : "FAILED");
   b2n_set_str (m, "0x7f3290000");
-  printf ("\nTesting: sigbit: 0x7f3290000: %d, %s", 
+  printf ("\nTesting: sigbit: 0x7f3290000: %d, %s",
 	  b2n_sigbit(m), b2n_sigbit(m) == 35 ? "OKAY" : "FAILED");
 
   printf ("\nTesting: b2n_cmp: ");

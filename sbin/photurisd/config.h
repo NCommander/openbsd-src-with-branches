@@ -1,4 +1,4 @@
-/* $OpenBSD: config.h,v 1.4 2001/01/28 22:45:07 niklas Exp $ */
+/* $OpenBSD: config.h,v 1.5 2001/07/07 18:26:17 deraadt Exp $ */
 /*
  * Copyright 1997-2000 Niels Provos <provos@citi.umich.edu>
  * All rights reserved.
@@ -29,7 +29,7 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 /*
- * config.h: 
+ * config.h:
  * handling config
  */
 

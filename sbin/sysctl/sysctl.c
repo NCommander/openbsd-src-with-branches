@@ -1,4 +1,4 @@
-/*	$OpenBSD: sysctl.c,v 1.80 2002/05/26 07:55:01 matthieu Exp $	*/
+/*	$OpenBSD: sysctl.c,v 1.81 2002/06/09 04:49:19 angelos Exp $	*/
 /*	$NetBSD: sysctl.c,v 1.9 1995/09/30 07:12:50 thorpej Exp $	*/
 
 /*
@@ -44,7 +44,7 @@ static char copyright[] =
 #if 0
 static char sccsid[] = "@(#)sysctl.c	8.5 (Berkeley) 5/9/95";
 #else
-static char *rcsid = "$OpenBSD: sysctl.c,v 1.80 2002/05/26 07:55:01 matthieu Exp $";
+static char *rcsid = "$OpenBSD: sysctl.c,v 1.81 2002/06/09 04:49:19 angelos Exp $";
 #endif
 #endif /* not lint */
 
@@ -1645,7 +1645,7 @@ sysctl_chipset(string, bufpp, mib, flags, typep)
 	if ((indx = findname(string, "third", bufpp, &chipsetlist)) == -1)
 		return(-1);
 	mib[2] = indx;
-	if (!nflag) 
+	if (!nflag)
 		printf("%s = ", string);
 	switch(mib[2]) {
 	case CPU_CHIPSET_MEM:
@@ -1659,7 +1659,7 @@ sysctl_chipset(string, bufpp, mib, flags, typep)
 		break;
 	case CPU_CHIPSET_BWX:
 		len = sizeof(int);
-		if (sysctl(mib, 3, &bwx, &len, NULL, 0) < 0) 
+		if (sysctl(mib, 3, &bwx, &len, NULL, 0) < 0)
 			return (-1);
 		printf("%d\n", bwx);
 		break;

@@ -1,4 +1,4 @@
-/* $OpenBSD: packet.h,v 1.2 2000/12/15 02:50:38 provos Exp $ */
+/* $OpenBSD: packet.h,v 1.3 2001/01/28 22:45:12 niklas Exp $ */
 /*
  * Copyright 1997-2000 Niels Provos <provos@citi.umich.edu>
  * All rights reserved.
@@ -29,10 +29,10 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 /*
- * packet.h: 
+ * packet.h:
  * prototyped for receiving and anwsering packets
  */
- 
+
 #ifndef _PACKET_H_
 #define _PACKET_H_
 

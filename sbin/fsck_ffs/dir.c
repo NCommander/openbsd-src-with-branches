@@ -1,4 +1,4 @@
-/*	$OpenBSD: dir.c,v 1.10 2001/11/05 07:39:16 mpech Exp $	*/
+/*	$OpenBSD: dir.c,v 1.11 2002/02/16 21:27:34 millert Exp $	*/
 /*	$NetBSD: dir.c,v 1.20 1996/09/27 22:45:11 christos Exp $	*/
 
 /*
@@ -38,7 +38,7 @@
 #if 0
 static char sccsid[] = "@(#)dir.c	8.5 (Berkeley) 12/8/94";
 #else
-static char rcsid[] = "$OpenBSD: dir.c,v 1.10 2001/11/05 07:39:16 mpech Exp $";
+static char rcsid[] = "$OpenBSD: dir.c,v 1.11 2002/02/16 21:27:34 millert Exp $";
 #endif
 #endif /* not lint */
 
@@ -158,7 +158,7 @@ dirscan(idesc)
 			dirty(bp);
 			sbdirty();
 		}
-		if (n & STOP) 
+		if (n & STOP)
 			return (n);
 	}
 	return (idesc->id_filesize > 0 ? KEEPON : STOP);

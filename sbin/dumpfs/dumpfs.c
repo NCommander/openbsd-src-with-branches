@@ -1,4 +1,4 @@
-/*	$OpenBSD: dumpfs.c,v 1.13 2001/12/01 19:13:21 deraadt Exp $	*/
+/*	$OpenBSD: dumpfs.c,v 1.14 2002/02/16 21:27:33 millert Exp $	*/
 /*	$NetBSD: dumpfs.c,v 1.12 1997/04/26 05:41:33 lukem Exp $	*/
 
 /*
@@ -44,7 +44,7 @@ static char copyright[] =
 #if 0
 static char sccsid[] = "@(#)dumpfs.c	8.2 (Berkeley) 2/2/94";
 #else
-static char rcsid[] = "$OpenBSD: dumpfs.c,v 1.13 2001/12/01 19:13:21 deraadt Exp $";
+static char rcsid[] = "$OpenBSD: dumpfs.c,v 1.14 2002/02/16 21:27:33 millert Exp $";
 #endif
 #endif /* not lint */
 
@@ -198,7 +198,7 @@ dumpfs(name)
 	if (afs.fs_flags & FS_DOSOFTDEP)
 		printf("soft-updates ");
 	if ((afs.fs_flags & ~(FS_UNCLEAN | FS_DOSOFTDEP)) != 0)
-		printf("unknown flags (%#x)", 
+		printf("unknown flags (%#x)",
 		    afs.fs_flags & ~(FS_UNCLEAN | FS_DOSOFTDEP));
 	printf("\n");
 	if (afs.fs_cpc != 0)

@@ -1,4 +1,4 @@
-/*	$OpenBSD: libcrypto.h,v 1.11 2001/07/13 14:13:39 ho Exp $	*/
+/*	$OpenBSD: libcrypto.h,v 1.12 2002/03/05 00:10:26 deraadt Exp $	*/
 /*	$EOM: libcrypto.h,v 1.16 2000/09/28 12:53:27 niklas Exp $	*/
 
 /*
@@ -66,7 +66,7 @@ extern void *libcrypto;
 
 #ifdef HAVE_DLOPEN
 
-/* 
+/*
  * These prototypes matches SSLeay version 0.9.0b or OpenSSL 0.9.4, if you
  * try to load a different version than that, you are on your own.
  */

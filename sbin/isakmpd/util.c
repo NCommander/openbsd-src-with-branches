@@ -1,4 +1,4 @@
-/*	$OpenBSD: util.c,v 1.26 2002/01/23 18:44:48 ho Exp $	*/
+/*	$OpenBSD: util.c,v 1.27 2002/05/28 11:23:20 ho Exp $	*/
 /*	$EOM: util.c,v 1.23 2000/11/23 12:22:08 niklas Exp $	*/
 
 /*
@@ -380,7 +380,7 @@ sockaddr2text (struct sockaddr *sa, char **address, int zflag)
 		free (*address);
 		return -1;
 	      }
-	    snprintf (*address + strlen (*address), 
+	    snprintf (*address + strlen (*address),
 		      addrlen - strlen (*address), "%03ld", val);
 	    if (bstart)
 	      strlcat (*address, ".", addrlen);

@@ -1,4 +1,4 @@
-/*	$OpenBSD: sa.h,v 1.27 2002/03/17 21:50:59 angelos Exp $	*/
+/*	$OpenBSD: sa.h,v 1.28 2002/06/07 15:24:22 ho Exp $	*/
 /*	$EOM: sa.h,v 1.58 2000/10/10 12:39:01 provos Exp $	*/
 
 /*
@@ -68,7 +68,7 @@ struct proto {
 
   /* The protocol number as found in the proposal payload.  */
   u_int8_t no;
-  
+
   /* The protocol this SA is for.  */
   u_int8_t proto;
 
@@ -155,7 +155,7 @@ struct sa {
   /*
    * Certificates or other information from Phase 1; these are copied from the
    * exchange, so look at exchange.h for an explanation of their use.
-   */  
+   */
   int recv_certtype, recv_keytype;
   /* Certificate received from peer, native format.  */
   void *recv_cert;
