@@ -1,4 +1,4 @@
-/*	$OpenBSD: lex.c,v 1.15 2002/01/16 01:28:54 millert Exp $	*/
+/*	$OpenBSD: lex.c,v 1.16 2002/06/09 05:47:27 todd Exp $	*/
 
 /*
  * lexical analysis and source input
@@ -730,7 +730,7 @@ Done:
 	/* copy word to unprefixed string ident */
 	for (sp = yylval.cp, dp = ident; dp < ident+IDENT && (c = *sp++) == CHAR; )
 		*dp++ = *sp++;
-	/* Make sure the ident array stays '\0' paded */
+	/* Make sure the ident array stays '\0' padded */
 	memset(dp, 0, (ident+IDENT) - dp + 1);
 	if (c != EOS)
 		*ident = '\0';	/* word is not unquoted */

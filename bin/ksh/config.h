@@ -1,4 +1,4 @@
-/*	$OpenBSD: config.h,v 1.5 1999/10/04 16:44:00 deraadt Exp $	*/
+/*	$OpenBSD: config.h,v 1.6 2002/08/11 21:44:58 marc Exp $	*/
 
 /* config.h.  Generated automatically by configure.  */
 /* config.h.in.  Generated automatically from configure.in by autoheader.  */
@@ -186,7 +186,7 @@
 /* Define if you arg running OS2 with the EMX library */
 /* #undef OS2 */
 
-/* Define if you have a POSIX.1 compatiable <sys/wait.h> */
+/* Define if you have a POSIX.1 compatible <sys/wait.h> */
 #define POSIX_SYS_WAIT 1
 
 /* Define if your OS maps references to /dev/fd/n to file descriptor n */

@@ -1,4 +1,4 @@
-/*	$OpenBSD: lex.h,v 1.5 1999/06/15 01:18:35 millert Exp $	*/
+/*	$OpenBSD: lex.h,v 1.6 2001/09/19 10:58:07 mpech Exp $	*/
 
 /*
  * Source input, lexer and parser
@@ -37,7 +37,7 @@ struct source {
 #define	SSTRING		3	/* string */
 #define	SWSTR		4	/* string without \n */
 #define	SWORDS		5	/* string[] */
-#define	SWORDSEP	6	/* string[] seperator */
+#define	SWORDSEP	6	/* string[] separator */
 #define	SALIAS		7	/* alias expansion */
 #define SREREAD		8	/* read ahead to be re-scanned */
 

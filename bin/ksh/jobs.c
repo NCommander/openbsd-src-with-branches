@@ -1,4 +1,4 @@
-/*	$OpenBSD: jobs.c,v 1.16 1999/08/04 16:56:42 millert Exp $	*/
+/*	$OpenBSD: jobs.c,v 1.17 2002/06/09 05:47:27 todd Exp $	*/
 
 /*
  * Process and job control
@@ -1077,7 +1077,7 @@ j_notify()
 #endif /* JOB_SIGS */
 }
 
-/* Return pid of last process in last asynchornous job */
+/* Return pid of last process in last asynchronous job */
 pid_t
 j_async()
 {
@@ -1221,7 +1221,7 @@ j_waitj(j, flags, where)
 			 * a fork/exec instead of an exec (the fork means
 			 * the execed shell gets a different pid from its
 			 * pgrp, so naturally it sets its pgrp and gets hosed
-			 * when it gets forgrounded by the parent shell, which
+			 * when it gets foregrounded by the parent shell, which
 			 * has restored the tty's pgrp to that of the su
 			 * process).
 			 */
