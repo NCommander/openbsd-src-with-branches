@@ -35,7 +35,8 @@
    to allow for concurrent adjustment to variables.
  */
 
-#include "make.h"
+#include "config.h"
+#include "defines.h"
 #include "stats.h"
 
 #ifdef HAS_STATS
@@ -50,7 +51,7 @@ void Init_Stats(void);
 static float average_runs(unsigned long val);
 unsigned long *statarray;
 
-static Boolean mmapped = FALSE;
+static bool mmapped = false;
 
 static float
 average_runs(val)
@@ -154,7 +155,7 @@ Init_Stats()
 		PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
 	    if (statarray == MAP_FAILED)
 		exit(1);
-	    mmapped = TRUE;
+	    mmapped = true;
 	}
     } else
     /* or we don't -> simple stats gathering */

@@ -43,7 +43,8 @@
  *	Function to copy a list and append it to another.
  */
 
-#include    "lstInt.h"
+#include "lstInt.h"
+#include "memory.h"
 
 #ifndef lint
 #if 0

@@ -37,6 +37,12 @@
  *	from: @(#)pathnames.h	5.2 (Berkeley) 6/1/90
  */
 
+#ifdef HAS_PATH_H
+# include <paths.h>
+#endif
+#ifndef _PATH_BSHELL
+# define _PATH_BSHELL	"/bin/sh"
+#endif
 #ifndef _PATH_OBJDIR
 #define _PATH_OBJDIR		"obj"
 #endif /* !_PATH_OBJDIR */

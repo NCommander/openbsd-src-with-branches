@@ -1,3 +1,6 @@
+#ifndef CONFIG_H
+#define CONFIG_H
+
 /*	$OpenPackages$ */
 /*	$OpenBSD: config.h,v 1.9 1998/12/05 00:06:27 espie Exp $	*/
 /*	$NetBSD: config.h,v 1.7 1996/11/06 17:59:03 christos Exp $	*/
@@ -143,3 +146,16 @@
 #define FEATURE_CONDINCLUDE	256
 #define FEATURE_ASSIGN		512
 #define FEATURE_EXECMOD		1024
+
+/*
+ * There are several places where expandable buffers are used (parse.c and
+ * var.c). This constant is merely the starting point for those buffers. If
+ * lines tend to be much shorter than this, it would be best to reduce BSIZE.
+ * If longer, it should be increased. Reducing it will cause more copying to
+ * be done for longer lines, but will save space for shorter ones. In any
+ * case, it ought to be a power of two simply because most storage allocation
+ * schemes allocate in powers of two.
+ */
+#define MAKE_BSIZE		256	/* starting size for expandable buffers */
+
+#endif

@@ -47,8 +47,9 @@
 #ifndef _LSTINT_H_
 #define _LSTINT_H_
 
-#include	  "make.h"
-#include	  "lst.h"
+#include "config.h"
+#include "defines.h"
+#include "lst.h"
 
 /*
  * PAlloc(var, ptype) --

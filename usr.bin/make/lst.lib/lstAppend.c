@@ -43,7 +43,8 @@
  *	Add a new node with a new datum after an existing node
  */
 
-#include	"lstInt.h"
+#include "lstInt.h"
+#include "memory.h"
 
 #ifndef lint
 #if 0

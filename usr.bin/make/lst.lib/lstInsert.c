@@ -43,7 +43,8 @@
  *	Insert a new datum before an old one
  */
 
-#include	"lstInt.h"
+#include "lstInt.h"
+#include "memory.h"
 
 #ifndef lint
 #if 0
@@ -59,9 +60,6 @@ static char rcsid[] = "$OpenBSD: lstInsert.c,v 1.4 1998/12/05 00:06:32 espie Exp
  * Lst_Insert --
  *	Insert a new node with the given piece of data before the given
  *	node in the given list.
- *
- * Results:
- *	SUCCESS or FAILURE.
  *
  * Side Effects:
  *	the firstPtr field will be changed if ln is the first node in the

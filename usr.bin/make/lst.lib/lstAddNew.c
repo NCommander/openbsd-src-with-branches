@@ -38,18 +38,18 @@ static char rcsid[] = "$OpenBSD: lstAppend.c,v 1.4 1998/12/05 00:06:31 espie Exp
 #endif /* not lint */
 
 /* Add datum to the end of a list only if it wasn't there already.
- * Returns FAILURE if datum was already there.
+ * Returns false if datum was already there.
  */
-ReturnStatus
+bool
 Lst_AddNew(l, d)
     Lst 	l;
     void	*d;
 {
     if (Lst_Member(l, d) != NULL)
-	return FAILURE;
+	return false;
     else {
 	Lst_AtEnd(l, d);
-	return SUCCESS;
+	return true;
     }
 }
 

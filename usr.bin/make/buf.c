@@ -71,20 +71,13 @@
  *	Functions for automatically-expanded buffers.
  */
 
-#include    "sprite.h"
-#include    "make.h"
-#include    "buf.h"
-#include    "stats.h"
-
-#ifndef lint
-#if 0
-static char sccsid[] = "@(#)buf.c	8.1 (Berkeley) 6/6/93";
-#else
-UNUSED
-static char rcsid[] = "$OpenBSD: buf.c,v 1.7 1999/10/05 21:59:00 espie Exp $";
-#endif
-#endif /* not lint */
-
+#include <ctype.h>
+#include <stddef.h>
+#include "config.h"
+#include "defines.h"
+#include "buf.h"
+#include "stats.h"
+#include "memory.h"
 
 #ifdef STATS_BUF
 #define DO_STAT_BUF(bp, nb)					\
@@ -95,8 +88,8 @@ static char rcsid[] = "$OpenBSD: buf.c,v 1.7 1999/10/05 21:59:00 espie Exp $";
 #define DO_STAT_BUF(a, b)
 #endif
 
-/* BufExpand --
- *	Expand the given buffer to hold the given number of additional
+/* BufExpand(bp, nb)
+ *	Expand buffer bp to hold upto nb additional
  *	chars.	Makes sure there's room for an extra '\0' char at
  *	the end of the buffer to terminate the string.	*/
 #define BufExpand(bp,nb)				\
@@ -117,7 +110,7 @@ do {							\
 #define BUF_DEF_SIZE	256	/* Default buffer size */
 #define BUF_MARGIN	256	/* Make sure we are comfortable */
 
-/* Buf_AddChar hard case: buffer must be expanded to accommodate
+/* the hard case for Buf_AddChar: buffer must be expanded to accommodate
  * one more char.  */
 void
 BufOverflow(bp)
@@ -144,8 +137,8 @@ Buf_AddChars(bp, numBytes, bytesPtr)
 
 void
 Buf_Init(bp, size)
-    Buffer bp;		/* New Buffer to initialize */
-    size_t    size;	/* Initial size for the buffer */
+    Buffer bp;
+    size_t    size;
 {
 #ifdef STATS_BUF
     STAT_TOTAL_BUFS++;

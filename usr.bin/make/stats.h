@@ -1,3 +1,5 @@
+#ifndef STAT_H
+#define STAT_H
 /* $OpenPackages$ */
 /* $OpenBSD$ */
 
@@ -38,6 +40,8 @@
 #endif
 
 #ifdef HAS_STATS
+extern void Init_Stats(void);
+
 extern unsigned long *statarray;
 #define STAT_INVOCATIONS	 statarray[0]
 #define STAT_VAR_SEARCHES	 statarray[1]
@@ -70,5 +74,8 @@ extern unsigned long *statarray;
 
 #define STAT_NUMBER		30
 
+#else
+#define Init_Stats()
 #endif
 
+#endif
