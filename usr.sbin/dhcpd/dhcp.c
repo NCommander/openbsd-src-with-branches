@@ -1,4 +1,4 @@
-/*	$OpenBSD: dhcp.c,v 1.13 2004/09/16 09:35:24 claudio Exp $ */
+/*	$OpenBSD: dhcp.c,v 1.14 2004/09/16 18:35:42 deraadt Exp $ */
 
 /*
  * Copyright (c) 1995, 1996, 1997, 1998, 1999
@@ -1215,8 +1215,10 @@ dhcp_reply(struct lease *lease)
 		to.sin_addr = raw.giaddr;
 		to.sin_port = server_port;
 
+		memcpy(&from, state->from.iabuf, sizeof from);
+
 		(void) send_packet(state->ip, &raw,
-		    packet_length, raw.siaddr, &to, &state->haddr);
+		    packet_length, form, &to, &state->haddr);
 
 		free_lease_state(state, "dhcp_reply gateway");
 		lease->state = NULL;
