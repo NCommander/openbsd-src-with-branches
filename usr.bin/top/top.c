@@ -1,4 +1,4 @@
-/*	$OpenBSD: top.c,v 1.21 2003/06/15 16:24:44 millert Exp $	*/
+/*	$OpenBSD: top.c,v 1.22 2003/06/16 01:09:02 deraadt Exp $	*/
 
 /*
  *  Top users/processes display for Unix
@@ -31,6 +31,9 @@
 const char      copyright[] = "Copyright (c) 1984 through 1996, William LeFebvre";
 
 #include <sys/types.h>
+#include <sys/time.h>
+#include <err.h>
+#include <errno.h>
 #include <stdio.h>
 #include <ctype.h>
 #include <signal.h>
@@ -38,8 +41,6 @@ const char      copyright[] = "Copyright (c) 1984 through 1996, William LeFebvre
 #include <string.h>
 #include <stdlib.h>
 #include <unistd.h>
-#include <errno.h>
-#include <sys/time.h>
 
 /* includes specific to top */
 #include "display.h"		/* interface to display package */
