@@ -1,4 +1,4 @@
-/*	$OpenBSD: sparc64.c,v 1.3 2002/03/17 18:39:33 art Exp $	*/
+/*	$OpenBSD: sparc64.c,v 1.4 2002/03/19 21:32:10 fgsch Exp $	*/
 /*
  * Copyright (c) 2002 Artur Grabowski <art@openbsd.org>
  * All rights reserved. 
@@ -79,7 +79,7 @@ md_getframe(struct pstate *ps, int frame, struct md_frame *fram)
 		if (fp < 8192 || (fp & 7) != 0)
 			return (-1);
 
-		if (read_from_pid(ps->ps_pid, fp, &fr, sizeof(fr)) < 0)
+		if (process_read(ps, fp, &fr, sizeof(fr)) < 0)
 			return (-1);
 
 		fp = (unsigned long)v9next_frame((&fr));
