@@ -458,7 +458,7 @@ fi
 
 echo	""
 echo    "Populating filesystems with bootstrapping binaries and config files"
-$DONTDOIT tar --one-file-system -cf - . | (cd /mnt ; tar --unlink -xpf - )
+$DONTDOIT tar -cfX - . | (cd /mnt ; tar -xpf - )
 $DONTDOIT cp /tmp/.hdprofile /mnt/.profile
 
 echo	""

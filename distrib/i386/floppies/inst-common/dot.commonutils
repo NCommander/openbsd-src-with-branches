@@ -39,7 +39,7 @@ if [ ! -f /etc/fstab ]; then
 fi
 
 # counter for possible shared library confusion
-TAR=/usr/bin/tar
+TAR=/bin/tar
 GUNZIP=/usr/bin/gunzip
 
 Set_tmp_dir()
@@ -110,7 +110,7 @@ Load_tape()
 	echo -n "continue..."
 	read foo
 	echo	"Extracting files from the tape..."
-	$TAR --unlink -xvpf /dev/$which
+	$TAR -xvpf /dev/$which
 	echo	"Done."
 }
 
@@ -127,5 +127,5 @@ Extract()
 		tarverbose=
 		;;
 	esac
-	cat "$1"* | $GUNZIP | (cd $dest_dir ; $TAR  --unlink -xp"$tarverbose"f - )
+	cat "$1"* | $GUNZIP | (cd $dest_dir ; $TAR -xp"$tarverbose"f - )
 }

@@ -130,9 +130,9 @@ Extract()
 	if [ $snapshot = n ]
 	then
 		cat "$1".?? | gunzip |
-			(cd $dest_dir ; tar --unlink -xp"$tarverbose"f -)
+			(cd $dest_dir ; tar -xp"$tarverbose"f -)
 	else
 		cat "$1".tar.gz | gunzip |
-			(cd $dest_dir ; tar --unlink -xp"$tarverbose"f -)
+			(cd $dest_dir ; tar -xp"$tarverbose"f -)
 	fi
 }

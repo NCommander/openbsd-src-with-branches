@@ -44,6 +44,7 @@ LINK	instbin			bin/rmdir
 LINK	instbin			bin/sh
 LINK	instbin			bin/stty
 LINK	instbin			bin/sync
+LINK	instbin			bin/tar
 LINK	instbin			bin/test
 LINK	instbin			bin/[
 LINK	instbin			sbin/bim
@@ -85,7 +86,6 @@ SYMLINK	/instbin		usr/bin/more
 SYMLINK	/instbin		usr/bin/netstat
 SYMLINK	/instbin		usr/bin/sed
 SYMLINK	/instbin		usr/bin/strings
-SYMLINK	/instbin		usr/bin/tar
 SYMLINK	/instbin		usr/bin/tip
 SYMLINK /instbin		usr/bin/vi
 SYMLINK /instbin		usr/bin/view

@@ -261,7 +261,7 @@ fi
 
 echo	""
 echo	"Copying bootstrapping binaries and config files to the hard drive..."
-$DONTDOIT tar -cf - sbin/mount_ffs | (cd /mnt ; tar --unlink -xpf - )
+$DONTDOIT tar -cf - sbin/mount_ffs | (cd /mnt ; tar -xpf - )
 
 echo	""
 echo	"Mounting remaining partitions..."
