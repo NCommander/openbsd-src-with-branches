@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /*	$NetBSD: scsi_base.c,v 1.33 1996/02/14 21:47:14 christos Exp $	*/
 
 /*
@@ -422,7 +423,7 @@ retry:
 	 * TRY_AGAIN_LATER, (as for polling)
 	 * After the wakeup, we must still check if it succeeded
 	 * 
-	 * If we have a bp however, all the error proccessing
+	 * If we have a bp however, all the error processing
 	 * and the buffer code both expect us to return straight
 	 * to them, so as soon as the command is queued, return
 	 */
