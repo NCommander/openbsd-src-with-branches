@@ -404,7 +404,7 @@ u_int64_t
 alpha_read_fp_c(struct proc *p)
 {
 	/*
-	 * A possibly-desireable EV6-specific optimization would deviate from
+	 * A possibly desirable EV6-specific optimization would deviate from
 	 * the Alpha Architecture spec and keep some FP_C bits in the FPCR,
 	 * but in a transparent way. Some of the code for that would need to
 	 * go right here.
