@@ -1,4 +1,4 @@
-/*	$OpenBSD: readconf.h,v 1.43 2002/06/08 05:17:01 markus Exp $	*/
+/*	$OpenBSD: readconf.h,v 1.44 2002/11/07 22:08:07 markus Exp $	*/
 
 /*
  * Author: Tatu Ylonen <ylo@cs.hut.fi>
@@ -101,6 +101,7 @@ typedef struct {
 	int	clear_forwardings;
 
 	int	enable_ssh_keysign;
+	int	rekey_limit;
 	int	no_host_authentication_for_localhost;
 }       Options;
 

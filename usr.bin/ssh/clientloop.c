@@ -59,7 +59,7 @@
  */
 
 #include "includes.h"
-RCSID("$OpenBSD: clientloop.c,v 1.104 2002/08/22 19:38:42 stevesk Exp $");
+RCSID("$OpenBSD: clientloop.c,v 1.105 2002/11/18 16:43:44 markus Exp $");
 
 #include "ssh.h"
 #include "ssh1.h"
@@ -968,9 +968,8 @@ client_loop(int have_pty, int escape_char_arg, int ssh2_chan_id)
 		/* Do channel operations unless rekeying in progress. */
 		if (!rekeying) {
 			channel_after_select(readset, writeset);
-
-			if (need_rekeying) {
-				debug("user requests rekeying");
+			if (need_rekeying || packet_need_rekeying()) {
+				debug("need rekeying");
 				xxx_kex->done = 0;
 				kex_send_kexinit(xxx_kex);
 				need_rekeying = 0;

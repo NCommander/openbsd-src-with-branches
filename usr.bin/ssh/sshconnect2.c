@@ -23,7 +23,7 @@
  */
 
 #include "includes.h"
-RCSID("$OpenBSD: sshconnect2.c,v 1.111 2003/02/16 17:09:57 markus Exp $");
+RCSID("$OpenBSD: sshconnect2.c,v 1.112 2003/03/05 22:33:43 markus Exp $");
 
 #include "ssh.h"
 #include "ssh2.h"
@@ -107,6 +107,9 @@ ssh_kex2(char *host, struct sockaddr *hostaddr)
 	if (options.hostkeyalgorithms != NULL)
 		myproposal[PROPOSAL_SERVER_HOST_KEY_ALGS] =
 		    options.hostkeyalgorithms;
+
+	if (options.rekey_limit)
+		packet_set_rekey_limit(options.rekey_limit);
 
 	/* start key exchange */
 	kex = kex_setup(myproposal);
