@@ -523,6 +523,6 @@ static __inline unsigned char RGfx(volatile void * ba, short idx) {
 	return vgar (ba, GCT_ADDRESS_R);
 }
 
-int grfrt_cnprobe __P((void));
-void grfrt_iteinit __P((struct grf_softc *));
+int grfrt_cnprobe(void);
+void grfrt_iteinit(struct grf_softc *);
 #endif /* _GRF_RTREG_H */

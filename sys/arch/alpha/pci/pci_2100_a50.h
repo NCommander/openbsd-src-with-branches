@@ -1,4 +1,4 @@
-/*	$OpenBSD: pci_2100_a50.h,v 1.3 1996/04/12 06:08:42 cgd Exp $	*/
+/*	$OpenBSD$	*/
 /*	$NetBSD: pci_2100_a50.h,v 1.3 1996/04/12 06:08:42 cgd Exp $	*/
 
 /*
@@ -28,4 +28,4 @@
  * rights to redistribute these changes.
  */
 
-void	pci_2100_a50_pickintr __P((struct apecs_config *));
+void	pci_2100_a50_pickintr(struct apecs_config *);

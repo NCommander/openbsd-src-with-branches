@@ -1,4 +1,4 @@
-/*	$OpenBSD: auccvar.h,v 1.3 1997/07/04 21:00:18 is Exp $	*/
+/*	$OpenBSD$	*/
 /*	$NetBSD: auccvar.h,v 1.3 1997/07/04 21:00:18 is Exp $	*/
 
 /*
@@ -50,7 +50,7 @@ typedef struct aucc_data {
 	u_int	nd_dmalength;  	/* length of dma data */
 	int	nd_mask;	/* mask of active channels, 
 				   together with this one */
-	void    (*nd_intr) __P((void *)); /* interrupt routine */
+	void    (*nd_intr)(void *); /* interrupt routine */
 	void   *nd_intrdata;	/* interrupt data */
 	int	nd_doublebuf;	/* double buffering */
 } aucc_data_t;

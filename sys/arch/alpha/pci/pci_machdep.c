@@ -71,8 +71,8 @@ pci_display_console(iot, memt, pc, bus, device, function)
 #if NVGA_PCI || NTGA
 	int nmatch;
 #endif
-	int (*fn) __P((bus_space_tag_t, bus_space_tag_t, pci_chipset_tag_t,
-	    int, int, int));
+	int (*fn)(bus_space_tag_t, bus_space_tag_t, pci_chipset_tag_t,
+	    int, int, int);
 
 	tag = pci_make_tag(pc, bus, device, function);
 	id = pci_conf_read(pc, tag, PCI_ID_REG);

@@ -1,4 +1,4 @@
-/*	$OpenBSD: diovar.h,v 1.2 1997/02/03 04:47:21 downsj Exp $	*/
+/*	$OpenBSD$	*/
 /*	$NetBSD: diovar.h,v 1.3 1997/05/05 21:01:33 thorpej Exp $	*/
 
 /*-
@@ -76,7 +76,7 @@ struct dio_devdesc {
 #define	DIO_UNKNOWN_SCODE	-1
 
 #ifdef _KERNEL
-void	*dio_scodetopa __P((int));
-void	*dio_intr_establish __P((int (*)(void *), void *, int, int));
-void	dio_intr_disestablish __P((void *));
+void	*dio_scodetopa(int);
+void	*dio_intr_establish(int (*)(void *), void *, int, int);
+void	dio_intr_disestablish(void *);
 #endif /* _KERNEL */

@@ -107,10 +107,10 @@
  * you have three boards with minor device numbers from 0 to 45.
  */
 
-int	mscparam __P((struct tty *, struct termios *));
-void	mscstart __P((struct tty *));
-int	mschwiflow __P((struct tty *, int));
-int	mscinitcard __P((struct zbus_args *));
+int	mscparam(struct tty *, struct termios *);
+void	mscstart(struct tty *);
+int	mschwiflow(struct tty *, int);
+int	mscinitcard(struct zbus_args *);
 
 int	mscdefaultrate = TTYDEF_SPEED;
 
@@ -163,11 +163,11 @@ struct speedtab mscspeedtab_turbo[] = {
   
 struct   speedtab *mscspeedtab;
 
-int mscmctl __P((dev_t dev, int bits, int howto));
-void mscmint __P((register void *data));
+int mscmctl(dev_t dev, int bits, int howto);
+void mscmint(register void *data);
 
-int mscmatch __P((struct device *, void *, void *));
-void mscattach __P((struct device *, struct device *, void *));
+int mscmatch(struct device *, void *, void *);
+void mscattach(struct device *, struct device *, void *);
 
 #define	SWFLAGS(dev)	(msc->openflags | (MSCDIALIN(dev) ? 0 : TIOCFLAG_SOFTCAR))
 #define	DEBUG_CD	0

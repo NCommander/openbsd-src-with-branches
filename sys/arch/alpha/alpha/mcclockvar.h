@@ -1,4 +1,4 @@
-/*	$OpenBSD: mcclockvar.h,v 1.2 1996/04/17 22:22:38 cgd Exp $	*/
+/*	$OpenBSD$	*/
 /*	$NetBSD: mcclockvar.h,v 1.2 1996/04/17 22:22:38 cgd Exp $	*/
 
 /*
@@ -34,9 +34,9 @@ struct mcclock_softc {
 };
 
 struct mcclock_busfns {
-	void    (*mc_bf_write) __P((struct mcclock_softc *, u_int, u_int));
-	u_int   (*mc_bf_read) __P((struct mcclock_softc *, u_int));
+	void    (*mc_bf_write)(struct mcclock_softc *, u_int, u_int);
+	u_int   (*mc_bf_read)(struct mcclock_softc *, u_int);
 };
 
-void	mcclock_attach __P((struct mcclock_softc *,
-	    const struct mcclock_busfns *));
+void	mcclock_attach(struct mcclock_softc *,
+	    const struct mcclock_busfns *);

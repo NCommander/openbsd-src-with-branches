@@ -51,16 +51,16 @@
 
 int retina_console = 1;
 
-void retina_cursor __P((struct ite_softc *,int));
-void retina_scroll __P((struct ite_softc *,int,int,int,int));
-void retina_deinit __P((struct ite_softc *));
-void retina_clear __P((struct ite_softc *,int,int,int,int));
-void retina_putc __P((struct ite_softc *,int,int,int,int));
-void retina_init __P((struct ite_softc *));
+void retina_cursor(struct ite_softc *,int);
+void retina_scroll(struct ite_softc *,int,int,int,int);
+void retina_deinit(struct ite_softc *);
+void retina_clear(struct ite_softc *,int,int,int,int);
+void retina_putc(struct ite_softc *,int,int,int,int);
+void retina_init(struct ite_softc *);
 
 #ifdef RETINA_SPEED_HACK
-static void screen_up __P((struct ite_softc *, int, int, int));
-static void screen_down __P((struct ite_softc *, int, int, int));
+static void screen_up(struct ite_softc *, int, int, int);
+static void screen_down(struct ite_softc *, int, int, int);
 #endif
 
 /*

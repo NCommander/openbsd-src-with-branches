@@ -57,9 +57,9 @@
 #include <machine/cpu.h>
 #include <machine/pte.h>
 
-char db_read_data __P((char *src));
-void db_write_text __P((char *dst, int ch));
-void db_write_data __P((char *dst, int ch));
+char db_read_data(char *src);
+void db_write_text(char *dst, int ch);
+void db_write_data(char *dst, int ch);
 
 /*
  * Read one byte somewhere in the kernel.

@@ -50,8 +50,8 @@
 #include <amiga/dev/itevar.h>
 
 #ifdef	RETINA_SPEED_HACK
-static void screen_up __P((struct ite_softc *, int, int, int));
-static void screen_down __P((struct ite_softc *, int, int, int));
+static void screen_up(struct ite_softc *, int, int, int);
+static void screen_down(struct ite_softc *, int, int, int);
 #endif
 
 /*

@@ -51,6 +51,6 @@
 #define	LED_PULSE	0x10		/* heartbeat */
 
 #if defined(_KERNEL) && !defined(_LOCORE)
-void	ledinit __P((void));
-void	ledcontrol __P((int, int, int));
+void	ledinit(void);
+void	ledcontrol(int, int, int);
 #endif

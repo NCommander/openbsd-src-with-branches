@@ -66,9 +66,9 @@
 #endif
 static int comcnrate = CONSPEED;
 
-void dec_kn20aa_init __P((void));
-static void dec_kn20aa_cons_init __P((void));
-static void dec_kn20aa_device_register __P((struct device *, void *));
+void dec_kn20aa_init(void);
+static void dec_kn20aa_cons_init(void);
+static void dec_kn20aa_device_register(struct device *, void *);
 
 const struct alpha_variation_table dec_kn20aa_variations[] = {
 	{ 0, "AlphaStation 500 or 600 (KN20AA)" },

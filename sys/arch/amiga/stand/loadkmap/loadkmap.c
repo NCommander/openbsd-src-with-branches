@@ -9,7 +9,7 @@
 #include <stdio.h>
 
 
-void load_kmap __P((const char *));
+void load_kmap(const char *);
 void dump_kmap(); 
 
 int

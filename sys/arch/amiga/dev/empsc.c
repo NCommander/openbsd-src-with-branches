@@ -1,4 +1,4 @@
-/*	$OpenBSD: empsc.c,v 1.5 1997/01/16 09:23:59 niklas Exp $ */
+/*	$OpenBSD$ */
 /*	$NetBSD: empsc.c,v 1.13 1996/12/23 09:09:58 veego Exp $	*/
 
 /*
@@ -50,9 +50,9 @@
 #include <amiga/dev/scivar.h>
 #include <amiga/dev/zbusvar.h>
 
-void empscattach __P((struct device *, struct device *, void *));
-int empscmatch __P((struct device *, void *, void *));
-int empsc_intr __P((void *));
+void empscattach(struct device *, struct device *, void *);
+int empscmatch(struct device *, void *, void *);
+int empsc_intr(void *);
 
 struct scsi_adapter empsc_scsiswitch = {
 	sci_scsicmd,

@@ -93,28 +93,28 @@
 
 #define	EDIFF(a, b) (((a) | WSBA_ENA | WSBA_SG)	!= ((b) | WSBA_ENA | WSBA_SG))
 
-bus_dma_tag_t tsp_dma_get_tag __P((bus_dma_tag_t, alpha_bus_t));
+bus_dma_tag_t tsp_dma_get_tag(bus_dma_tag_t, alpha_bus_t);
 
-int	tsp_bus_dmamap_create_sgmap __P((bus_dma_tag_t, bus_size_t, int,
-	    bus_size_t, bus_size_t, int, bus_dmamap_t *));
+int	tsp_bus_dmamap_create_sgmap(bus_dma_tag_t, bus_size_t, int,
+	    bus_size_t, bus_size_t, int, bus_dmamap_t *);
 
-void	tsp_bus_dmamap_destroy_sgmap __P((bus_dma_tag_t, bus_dmamap_t));
+void	tsp_bus_dmamap_destroy_sgmap(bus_dma_tag_t, bus_dmamap_t);
 
-int	tsp_bus_dmamap_load_sgmap __P((bus_dma_tag_t, bus_dmamap_t, void *,
-	    bus_size_t, struct proc *, int));
+int	tsp_bus_dmamap_load_sgmap(bus_dma_tag_t, bus_dmamap_t, void *,
+	    bus_size_t, struct proc *, int);
 
-int	tsp_bus_dmamap_load_mbuf_sgmap __P((bus_dma_tag_t, bus_dmamap_t,
-	    struct mbuf *, int));
+int	tsp_bus_dmamap_load_mbuf_sgmap(bus_dma_tag_t, bus_dmamap_t,
+	    struct mbuf *, int);
 
-int	tsp_bus_dmamap_load_uio_sgmap __P((bus_dma_tag_t, bus_dmamap_t,
-	    struct uio *, int));
+int	tsp_bus_dmamap_load_uio_sgmap(bus_dma_tag_t, bus_dmamap_t,
+	    struct uio *, int);
 
-int	tsp_bus_dmamap_load_raw_sgmap __P((bus_dma_tag_t, bus_dmamap_t,
-	    bus_dma_segment_t *, int, bus_size_t, int));
+int	tsp_bus_dmamap_load_raw_sgmap(bus_dma_tag_t, bus_dmamap_t,
+	    bus_dma_segment_t *, int, bus_size_t, int);
 
-void	tsp_bus_dmamap_unload_sgmap __P((bus_dma_tag_t, bus_dmamap_t));
+void	tsp_bus_dmamap_unload_sgmap(bus_dma_tag_t, bus_dmamap_t);
 
-void	tsp_tlb_invalidate __P((struct tsp_config *));
+void	tsp_tlb_invalidate(struct tsp_config *);
 
 void
 tsp_dma_init(pcp)

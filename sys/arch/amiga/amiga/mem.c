@@ -61,11 +61,11 @@ extern int kernel_reload_write(struct uio *uio);
 extern u_int lowram;
 caddr_t devzeropage;
 
-int mmopen __P((dev_t, int, int, struct proc *));
-int mmclose __P((dev_t, int, int, struct proc *));
-int mmrw __P((dev_t, struct uio *, int));
-paddr_t mmmmap __P((dev_t, off_t, int));
-int mmioctl __P((dev_t, u_long, caddr_t, int, struct proc *));
+int mmopen(dev_t, int, int, struct proc *);
+int mmclose(dev_t, int, int, struct proc *);
+int mmrw(dev_t, struct uio *, int);
+paddr_t mmmmap(dev_t, off_t, int);
+int mmioctl(dev_t, u_long, caddr_t, int, struct proc *);
 
 /*ARGSUSED*/
 int

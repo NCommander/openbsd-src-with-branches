@@ -196,12 +196,12 @@ struct	siop_softc {
 #define	STS_INTERMED	0x10	/* Intermediate status sent */
 #define	STS_EXT		0x80	/* Extended status valid */
 
-void siop_minphys __P((struct buf *bp));
-int siop_scsicmd __P((struct scsi_xfer *));
-void siopinitialize __P((struct siop_softc *));
-void siopintr __P((struct siop_softc *));
+void siop_minphys(struct buf *bp);
+int siop_scsicmd(struct scsi_xfer *);
+void siopinitialize(struct siop_softc *);
+void siopintr(struct siop_softc *);
 #ifdef DEBUG
-void siop_dump __P((struct siop_softc *));
+void siop_dump(struct siop_softc *);
 #endif
 
 #endif /* _SIOPVAR_H */

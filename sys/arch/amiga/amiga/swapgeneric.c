@@ -1,4 +1,4 @@
-/*	$OpenBSD: swapgeneric.c,v 1.12 1999/07/30 19:41:29 deraadt Exp $	*/
+/*	$OpenBSD$	*/
 /*	$NetBSD: swapgeneric.c,v 1.27 1997/01/26 22:58:32 rat Exp $	*/
 
 /*
@@ -54,9 +54,9 @@
 #include "wd.h"
 #include "cd.h"
 
-int (*mountroot) __P((void)) = dk_mountroot;
+int (*mountroot)(void) = dk_mountroot;
 
-void gets __P((char *));
+void gets(char *);
 
 /*
  * Generic configuration;  all in one
@@ -110,7 +110,7 @@ struct genericconf genericconf[] = {
 	{ 0 },
 };
 
-struct genericconf * getgenconf __P((char *)); 
+struct genericconf *getgenconf(char *); 
 
 struct genericconf *
 getgenconf(bp)

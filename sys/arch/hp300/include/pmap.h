@@ -6,7 +6,7 @@
 #include <m68k/pmap_motorola.h>
 
 #ifdef	_KERNEL
-void pmap_init_md __P((void));
+void pmap_init_md(void);
 #define	PMAP_INIT_MD()	pmap_init_md()
 #endif
 

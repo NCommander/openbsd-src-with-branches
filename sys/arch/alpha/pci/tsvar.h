@@ -75,11 +75,11 @@ struct tsp_attach_args {
 
 extern int tsp_console_hose;
 
-struct	tsp_config *tsp_init __P((int, int));
-void	tsp_pci_init __P((pci_chipset_tag_t, void *));
-void	tsp_dma_init __P((struct tsp_config *));
+struct	tsp_config *tsp_init(int, int);
+void	tsp_pci_init(pci_chipset_tag_t, void *);
+void	tsp_dma_init(struct tsp_config *);
 
-void	tsp_bus_io_init __P((bus_space_tag_t, void *));
-void	tsp_bus_mem_init __P((bus_space_tag_t, void *));
+void	tsp_bus_io_init(bus_space_tag_t, void *);
+void	tsp_bus_mem_init(bus_space_tag_t, void *);
 
-void tsp_bus_mem_init2 __P((void *));
+void tsp_bus_mem_init2(void *);

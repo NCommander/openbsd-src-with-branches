@@ -1,4 +1,4 @@
-/*	$OpenBSD: rawfs.c,v 1.2 1997/07/13 07:21:51 downsj Exp $	*/
+/*	$OpenBSD$	*/
 /*	$NetBSD: rawfs.c,v 1.2 1996/10/06 19:07:53 thorpej Exp $	*/
 
 /*
@@ -60,7 +60,7 @@ struct rawfs_file {
 };
 
 static int
-rawfs_get_block __P((struct open_file *));
+rawfs_get_block(struct open_file *);
 
 int
 rawfs_open(path, f)

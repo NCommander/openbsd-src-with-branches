@@ -94,8 +94,8 @@
 #include <alpha/pci/pci_1000.h>
 #endif
 
-int	apecsmatch __P((struct device *, void *, void *));
-void	apecsattach __P((struct device *, struct device *, void *));
+int	apecsmatch(struct device *, void *, void *);
+void	apecsattach(struct device *, struct device *, void *);
 
 struct cfattach apecs_ca = {
 	sizeof(struct apecs_softc), apecsmatch, apecsattach,
@@ -105,7 +105,7 @@ struct cfdriver apecs_cd = {
 	NULL, "apecs", DV_DULL,
 };
 
-int	apecsprint __P((void *, const char *pnp));
+int	apecsprint(void *, const char *pnp);
 
 /* There can be only one. */
 int apecsfound;

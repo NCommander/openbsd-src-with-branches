@@ -1,4 +1,4 @@
-/*	$OpenBSD: drsupio.c,v 1.1 1997/08/27 19:32:53 is Exp $ */
+/*	$OpenBSD$ */
 /*	$NetBSD: drsupio.c,v 1.1 1997/08/27 19:32:53 is Exp $ */
 
 /*
@@ -59,9 +59,9 @@ struct drsupio_softc {
 	struct amiga_bus_space sc_bst;
 };
 
-int	drsupiomatch __P((struct device *, void *, void *));
-void	drsupioattach __P((struct device *, struct device *, void *));
-int	drsupprint __P((void *auxp, const char *));
+int	drsupiomatch(struct device *, void *, void *);
+void	drsupioattach(struct device *, struct device *, void *);
+int	drsupprint(void *auxp, const char *);
 
 struct cfattach drsupio_ca = {
 	sizeof(struct drsupio_softc), drsupiomatch, drsupioattach
@@ -71,9 +71,9 @@ struct cfdriver drsupio_cd = {
 	NULL, "drsupio", DV_DULL
 };
 
-int	drsupio_map __P((bus_space_tag_t, bus_addr_t, bus_size_t, int,
-	    bus_space_handle_t *));
-int	drsupio_unmap __P((bus_space_tag_t, bus_space_handle_t, bus_size_t));
+int	drsupio_map(bus_space_tag_t, bus_addr_t, bus_size_t, int,
+	    bus_space_handle_t *);
+int	drsupio_unmap(bus_space_tag_t, bus_space_handle_t, bus_size_t);
 
 int
 drsupiomatch(parent, match, auxp)

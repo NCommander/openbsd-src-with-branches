@@ -69,9 +69,9 @@ static int comcnrate = CONSPEED;
 
 #define	DR_VERBOSE(f) while (0)
 
-void dec_eb164_init __P((void));
-static void dec_eb164_cons_init __P((void));
-static void dec_eb164_device_register __P((struct device *, void *));
+void dec_eb164_init(void);
+static void dec_eb164_cons_init(void);
+static void dec_eb164_device_register(struct device *, void *);
 
 void
 dec_eb164_init()

@@ -30,6 +30,6 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-int grfcc_cnprobe __P((void));
-void grfcc_iteinit __P((struct grf_softc *));
-int cc_mode __P((struct grf_softc *, u_long, void *, u_long, int));
+int grfcc_cnprobe(void);
+void grfcc_iteinit(struct grf_softc *);
+int cc_mode(struct grf_softc *, u_long, void *, u_long, int);

@@ -1,4 +1,4 @@
-/*	$OpenBSD: gvpbus.c,v 1.4 1996/11/23 21:45:18 kstailey Exp $	*/
+/*	$OpenBSD$	*/
 /*	$NetBSD: gvpbus.c,v 1.15 1996/12/23 09:10:12 veego Exp $	*/
 
 /*
@@ -37,9 +37,9 @@
 #include <amiga/dev/zbusvar.h>
 #include <amiga/dev/gvpbusvar.h>
 
-void gvpbusattach __P((struct device *, struct device *, void *));
-int gvpbusmatch __P((struct device *, void *, void *));
-int gvpbusprint __P((void *auxp, const char *)); 
+void gvpbusattach(struct device *, struct device *, void *);
+int gvpbusmatch(struct device *, void *, void *);
+int gvpbusprint(void *auxp, const char *); 
 
 extern int sbic_no_dma;		/* Kludge for A1291 - mlh */
 

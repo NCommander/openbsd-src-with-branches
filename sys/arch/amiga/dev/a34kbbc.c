@@ -1,4 +1,4 @@
-/*	$OpenBSD: a34kbbc.c,v 1.1 1997/09/18 13:39:42 niklas Exp $	*/
+/*	$OpenBSD$	*/
 /*	$NetBSD: a34kbbc.c,v 1.1 1997/07/19 00:01:42 is Exp $	*/
 
 /*
@@ -57,8 +57,8 @@
 
 #include <dev/clock_subr.h>
 
-int a34kbbc_match __P((struct device *, void *, void *));
-void a34kbbc_attach __P((struct device *, struct device *, void *));
+int a34kbbc_match(struct device *, void *, void *);
+void a34kbbc_attach(struct device *, struct device *, void *);
 
 struct cfattach a34kbbc_ca = {
 	sizeof(struct device), a34kbbc_match, a34kbbc_attach
@@ -70,8 +70,8 @@ struct cfdriver a34kbbc_cd = {
 
 
 void *a34kclockaddr;
-time_t a3gettod __P((void));
-int a3settod __P((time_t));
+time_t a3gettod(void);
+int a3settod(time_t);
 
 int
 a34kbbc_match(pdp, match, auxp)

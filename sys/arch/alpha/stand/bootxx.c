@@ -1,4 +1,4 @@
-/*	$OpenBSD: bootxx.c,v 1.7 1997/05/05 06:01:46 millert Exp $	*/
+/*	$OpenBSD$	*/
 /*	$NetBSD: bootxx.c,v 1.4 1997/01/18 00:28:59 cgd Exp $	*/
 
 /*
@@ -133,7 +133,7 @@ main()
 {
 	struct bbinfo *bbinfop;
 	char *loadaddr;
-	void (*entry) __P((void));
+	void (*entry)(void);
 
 	/* Init prom callback vector. */
 	init_prom_calls();

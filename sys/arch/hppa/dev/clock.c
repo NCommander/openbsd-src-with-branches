@@ -54,7 +54,7 @@
 
 struct timeval time;
 
-void startrtclock __P((void));
+void startrtclock(void);
 
 void
 cpu_initclocks()

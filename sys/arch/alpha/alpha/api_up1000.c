@@ -74,9 +74,9 @@ int bootdev_debug;
 #define DPRINTF(x)
 #endif
 
-void api_up1000_init __P((void));
-static void api_up1000_cons_init __P((void));
-static void api_up1000_device_register __P((struct device *, void *));
+void api_up1000_init(void);
+static void api_up1000_cons_init(void);
+static void api_up1000_device_register(struct device *, void *);
 
 void
 api_up1000_init()

@@ -65,16 +65,16 @@
 #endif
 static int comcnrate = CONSPEED;
 
-void dec_axppci_33_init __P((void));
-static void dec_axppci_33_cons_init __P((void));
-static void dec_axppci_33_device_register __P((struct device *, void *));
+void dec_axppci_33_init(void);
+static void dec_axppci_33_cons_init(void);
+static void dec_axppci_33_device_register(struct device *, void *);
 
 const struct alpha_variation_table dec_axppci_33_variations[] = {
 	{ 0, "Alpha PC AXPpci33 (\"NoName\")" },
 	{ 0, NULL },
 };
 
-static struct lca_config *lca_preinit __P((void));
+static struct lca_config *lca_preinit(void);
 
 static struct lca_config *
 lca_preinit()

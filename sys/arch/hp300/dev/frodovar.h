@@ -44,6 +44,6 @@ struct frodo_attach_args {
 #define	frodocf_offset	cf_loc[0]
 #define	FRODO_UNKNOWN_OFFSET	-1
 
-void	frodo_intr_establish __P((struct device *, int (*func)(void *),
-	    void *, int, int));
-void	frodo_intr_disestablish __P((struct device *, int));
+void	frodo_intr_establish(struct device *, int (*func)(void *),
+	    void *, int, int);
+void	frodo_intr_disestablish(struct device *, int);

@@ -1,4 +1,4 @@
-/*	$OpenBSD: pcb.h,v 1.3 1996/10/30 22:39:14 niklas Exp $	*/
+/*	$OpenBSD$	*/
 /*	$NetBSD: pcb.h,v 1.5 1996/11/13 22:21:00 cgd Exp $	*/
 
 /*
@@ -65,5 +65,5 @@ struct md_coredump {
 };
 
 #ifdef _KERNEL
-void savectx __P((struct pcb *));
+void savectx(struct pcb *);
 #endif

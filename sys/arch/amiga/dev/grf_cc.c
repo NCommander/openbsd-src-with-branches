@@ -62,10 +62,10 @@
 
 #include "view.h" 
 
-int grfccmatch __P((struct device *, void *, void *));
-int grfccprint __P((void *, const char *));
-void grfccattach __P((struct device *, struct device *, void *));
-void grf_cc_on __P((struct grf_softc *));
+int grfccmatch(struct device *, void *, void *);
+int grfccprint(void *, const char *);
+void grfccattach(struct device *, struct device *, void *);
+void grf_cc_on(struct grf_softc *);
 
 struct cfattach grfcc_ca = {
 	sizeof(struct grf_softc), grfccmatch, grfccattach

@@ -92,8 +92,8 @@
 #include <alpha/pci/pci_eb66.h>
 #endif
 
-int	lcamatch __P((struct device *, void *, void *));
-void	lcaattach __P((struct device *, struct device *, void *));
+int	lcamatch(struct device *, void *, void *);
+void	lcaattach(struct device *, struct device *, void *);
 
 struct cfattach lca_ca = {
 	sizeof(struct lca_softc), lcamatch, lcaattach,
@@ -103,11 +103,11 @@ struct cfdriver lca_cd = {
 	NULL, "lca", DV_DULL,
 };
 
-int	lcaprint __P((void *, const char *pnp));
+int	lcaprint(void *, const char *pnp);
 
 #if 0
-int	lca_bus_get_window __P((int, int,
-	    struct alpha_bus_space_translation *));
+int	lca_bus_get_window(int, int,
+	    struct alpha_bus_space_translation *);
 #endif
 
 /* There can be only one. */

@@ -1,5 +1,5 @@
 /*
- * $OpenBSD: chksum.h,v 1.1.1.1 1996/11/29 23:36:30 is Exp $
+ * $OpenBSD$
  * $NetBSD: chksum.h,v 1.1.1.1 1996/11/29 23:36:30 is Exp $
  *
  * Copyright (c) 1996 Ignatios Souvatzis
@@ -35,5 +35,5 @@
 
 #define CHKSUMOFFS 1
 
-u_int32_t chksum __P((u_int32_t *, int));
+u_int32_t chksum(u_int32_t *, int);
 

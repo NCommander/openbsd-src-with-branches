@@ -182,27 +182,27 @@ struct mfc_args {
 	char	unit;
 };
 
-int	mfcprint __P((void *auxp, const char *));
-void	mfcattach __P((struct device *, struct device *, void *));
-int	mfcmatch __P((struct device *, void *, void *));
+int	mfcprint(void *auxp, const char *);
+void	mfcattach(struct device *, struct device *, void *);
+int	mfcmatch(struct device *, void *, void *);
 
 #if NMFCS > 0
-int	mfcsmatch __P((struct device *, void *, void *));
-void	mfcsattach __P((struct device *, struct device *, void *));
-int	mfcsparam __P(( struct tty *, struct termios *));
-int	mfcshwiflow __P((struct tty *, int));
-void	mfcsstart __P((struct tty *));
-int	mfcsmctl __P((dev_t, int, int)); 
-void	mfcsxintr __P((int));
-void	mfcseint __P((int, int));
-void	mfcsmint __P((register int));
+int	mfcsmatch(struct device *, void *, void *);
+void	mfcsattach(struct device *, struct device *, void *);
+int	mfcsparam( struct tty *, struct termios *);
+int	mfcshwiflow(struct tty *, int);
+void	mfcsstart(struct tty *);
+int	mfcsmctl(dev_t, int, int); 
+void	mfcsxintr(int);
+void	mfcseint(int, int);
+void	mfcsmint(register int);
 #endif
 
 #if NMFCP > 0
-void mfcpattach __P((struct device *, struct device *, void *));
-int mfcpmatch __P((struct device *, void *, void *));
+void mfcpattach(struct device *, struct device *, void *);
+int mfcpmatch(struct device *, void *, void *);
 #endif
-int mfcintr __P((void *));
+int mfcintr(void *);
 
 struct cfattach mfc_ca = {
 	sizeof(struct mfc_softc), mfcmatch, mfcattach

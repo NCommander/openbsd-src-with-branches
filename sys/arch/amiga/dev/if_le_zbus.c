@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_le_zbus.c,v 1.7 1997/08/08 08:30:14 downsj Exp $	*/
+/*	$OpenBSD$	*/
 /*	$NetBSD: if_le.c,v 1.22 1996/12/23 09:10:18 veego Exp $	*/
 
 /*-
@@ -73,15 +73,15 @@
 /* offsets for:	   ID,   REGS,    MEM */
 int	lestd[] = { 0, 0x4000, 0x8000 };
 
-int le_zbus_match __P((struct device *, void *, void *));
-void le_zbus_attach __P((struct device *, struct device *, void *));
+int le_zbus_match(struct device *, void *, void *);
+void le_zbus_attach(struct device *, struct device *, void *);
 
 struct cfattach le_zbus_ca = {
 	sizeof(struct le_softc), le_zbus_match, le_zbus_attach
 };
 
-hide void lewrcsr __P((struct am7990_softc *, u_int16_t, u_int16_t));
-hide u_int16_t lerdcsr __P((struct am7990_softc *, u_int16_t));
+hide void lewrcsr(struct am7990_softc *, u_int16_t, u_int16_t);
+hide u_int16_t lerdcsr(struct am7990_softc *, u_int16_t);
 
 hide void
 lewrcsr(sc, port, val)

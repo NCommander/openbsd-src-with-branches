@@ -1,4 +1,4 @@
-/*	$OpenBSD: ggbusvar.h,v 1.3 1996/06/04 13:40:14 niklas Exp $	*/
+/*	$OpenBSD$	*/
 
 /*
  * Copyright (c) 1994, 1995, 1996 Niklas Hallqvist
@@ -39,7 +39,7 @@
  */
 struct intrhand {
 	struct	intrhand *ih_next;
-	int	(*ih_fun) __P((void *));
+	int	(*ih_fun)(void *);
 	void	*ih_arg;
 	u_long	ih_count;
 	int	ih_irq;

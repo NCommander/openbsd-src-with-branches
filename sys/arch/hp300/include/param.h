@@ -82,7 +82,7 @@
 #define	delay(us)	_delay((us) << 8)
 #define DELAY(us)	delay(us)
 
-void	_delay __P((u_int));
+void	_delay(u_int);
 #endif /* _KERNEL && !_LOCORE */
 
 #endif	/* !_MACHINE_PARAM_H_ */

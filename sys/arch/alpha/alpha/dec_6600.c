@@ -66,9 +66,9 @@
 
 static int comcnrate __attribute__((unused)) = CONSPEED;
 
-void dec_6600_init __P((void));
-static void dec_6600_cons_init __P((void));
-static void dec_6600_device_register __P((struct device *, void *));
+void dec_6600_init(void);
+static void dec_6600_cons_init(void);
+static void dec_6600_device_register(struct device *, void *);
 
 void
 dec_6600_init()

@@ -83,8 +83,8 @@
 
 #include <machine/cpu.h>
 
-void delay __P((int));
-void DELAY __P((int));
+void delay(int);
+void DELAY(int);
 #endif	/* !_LOCORE */
 #endif	/* _KERNEL */
 

@@ -5,7 +5,9 @@
 #
 
 include "arch/amiga/conf/std.amiga"
+
 include "conf/GENERIC"
+rmoption	PTRACE
 
 maxusers	4
 

@@ -213,6 +213,6 @@ struct vn_supr {
 	u_int		vns_zaddr;	/* Z Buffer Address (RO) */
 };
 
-void viper_setintrwnd __P((u_int32_t mask));
-void viper_eisa_en __P((void));
+void viper_setintrwnd(u_int32_t mask);
+void viper_eisa_en(void);
 

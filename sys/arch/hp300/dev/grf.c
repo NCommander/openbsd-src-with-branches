@@ -88,8 +88,8 @@ extern struct emul emul_hpux;
 /* prototypes for the devsw entry points */
 cdev_decl(grf);
 
-int	grfmatch __P((struct device *, void *, void *));
-void	grfattach __P((struct device *, struct device *, void *));
+int	grfmatch(struct device *, void *, void *);
+void	grfattach(struct device *, struct device *, void *);
 
 struct cfattach grf_ca = {
 	sizeof(struct grf_softc), grfmatch, grfattach
@@ -99,7 +99,7 @@ struct cfdriver grf_cd = {
 	NULL, "grf", DV_DULL
 };
 
-int	grfprint __P((void *, const char *));
+int	grfprint(void *, const char *);
 
 /*
  * Frambuffer state information, statically allocated for benefit

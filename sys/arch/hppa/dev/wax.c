@@ -44,8 +44,8 @@ struct wax_softc {
 	struct  device sc_dv;
 };
 
-int	waxmatch __P((struct device *, void *, void *));
-void	waxattach __P((struct device *, struct device *, void *));
+int	waxmatch(struct device *, void *, void *);
+void	waxattach(struct device *, struct device *, void *);
 
 struct cfattach wax_ca = {
 	sizeof(struct wax_softc), waxmatch, waxattach

@@ -1,4 +1,4 @@
-/*	$OpenBSD: dio.c,v 1.5 1997/07/06 08:01:48 downsj Exp $	*/
+/*	$OpenBSD$	*/
 /*	$NetBSD: dio.c,v 1.7 1997/05/05 21:00:32 thorpej Exp $	*/
 
 /*-
@@ -63,13 +63,13 @@
 
 extern	caddr_t internalhpib;
 
-int	dio_scodesize __P((struct dio_attach_args *));
-char	*dio_devinfo __P((struct dio_attach_args *, char *, size_t));
+int	dio_scodesize(struct dio_attach_args *);
+char	*dio_devinfo(struct dio_attach_args *, char *, size_t);
 
-int	diomatch __P((struct device *, void *, void *));
-void	dioattach __P((struct device *, struct device *, void *));
-int	dioprint __P((void *, const char *));
-int	diosubmatch __P((struct device *, void *, void *));
+int	diomatch(struct device *, void *, void *);
+void	dioattach(struct device *, struct device *, void *);
+int	dioprint(void *, const char *);
+int	diosubmatch(struct device *, void *, void *);
 
 struct cfattach dio_ca = {
 	sizeof(struct device), diomatch, dioattach
@@ -320,7 +320,7 @@ dio_devinfo(da, buf, buflen)
  */
 void *
 dio_intr_establish(func, arg, ipl, priority)
-	int (*func) __P((void *));
+	int (*func)(void *);
 	void *arg;
 	int ipl;
 	int priority;

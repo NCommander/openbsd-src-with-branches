@@ -1,4 +1,4 @@
-/*	$OpenBSD: ite_dv.c,v 1.3 1997/01/17 08:32:48 downsj Exp $	*/
+/*	$OpenBSD$	*/
 /*	$NetBSD: ite_dv.c,v 1.8 1996/03/03 04:23:35 thorpej Exp $	*/
 
 /*
@@ -57,8 +57,8 @@
 #define REGBASE		((struct dvboxfb *)(ip->regbase))
 #define WINDOWMOVER	dvbox_windowmove
 
-void	dvbox_windowmove __P((struct ite_data *, int, int, int, int,
-	    int, int, int));
+void	dvbox_windowmove(struct ite_data *, int, int, int, int,
+	    int, int, int);
 
 void
 dvbox_init(ip)

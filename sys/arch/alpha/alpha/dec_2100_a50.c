@@ -66,9 +66,9 @@
 #endif
 static int comcnrate = CONSPEED;
 
-void dec_2100_a50_init __P((void));
-static void dec_2100_a50_cons_init __P((void));
-static void dec_2100_a50_device_register __P((struct device *, void *));
+void dec_2100_a50_init(void);
+static void dec_2100_a50_cons_init(void);
+static void dec_2100_a50_device_register(struct device *, void *);
 
 const struct alpha_variation_table dec_2100_a50_variations[] = {
 	{ SV_ST_AVANTI,	"AlphaStation 400 4/233 (\"Avanti\")" },

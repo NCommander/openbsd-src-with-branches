@@ -56,11 +56,11 @@ extern int sigpid;
 #define SDB_KSTACK      0x02
 #endif
 
-static void netbsd_to_openbsd_sigcontext __P ((struct netbsd_sigcontext *,
-	struct sigcontext *));
+static void netbsd_to_openbsd_sigcontext(struct netbsd_sigcontext *,
+	struct sigcontext *);
 
-static void openbsd_to_netbsd_sigcontext __P ((struct sigcontext *,
-	struct netbsd_sigcontext *));
+static void openbsd_to_netbsd_sigcontext(struct sigcontext *,
+	struct netbsd_sigcontext *);
 
 static void
 netbsd_to_openbsd_sigcontext(nbsc, obsc)

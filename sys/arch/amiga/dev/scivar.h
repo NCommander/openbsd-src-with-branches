@@ -71,9 +71,9 @@ struct	sci_softc {
 	volatile u_char	*sci_irecv;	/* w: Start dma receive, initiator */
 
 	/* psuedo DMA transfer */
-	int	(*dma_xfer_in) __P((struct sci_softc *, int, u_char *, int));
+	int	(*dma_xfer_in)(struct sci_softc *, int, u_char *, int);
 	/* psuedo DMA transfer */
-	int	(*dma_xfer_out) __P((struct sci_softc *, int, u_char *, int));
+	int	(*dma_xfer_out)(struct sci_softc *, int, u_char *, int);
 	u_char	sc_flags;
 	u_char	sc_lun;
 	/* one for each target */
@@ -142,8 +142,8 @@ struct scsi_fmt_cdb {
 struct buf;
 struct scsi_xfer;
 
-void sci_minphys __P((struct buf *));
-int sci_scsicmd __P((struct scsi_xfer *));
-void scireset __P((struct sci_softc *));
+void sci_minphys(struct buf *);
+int sci_scsicmd(struct scsi_xfer *);
+void scireset(struct sci_softc *);
 
 #endif /* _SCIVAR_H_ */

@@ -1,4 +1,4 @@
-/*	$OpenBSD: ite_hy.c,v 1.3 1997/01/17 08:32:49 downsj Exp $	*/
+/*	$OpenBSD$	*/
 /*	$NetBSD: ite_hy.c,v 1.3 1996/03/03 04:23:37 thorpej Exp $	*/
 
 /*
@@ -61,9 +61,9 @@
 #define	charX(ip,c)	\
 	(((c) % (ip)->cpl) * ((((ip)->ftwidth + 7) / 8) * 8) + (ip)->fontx)
 
-void	hyper_ite_fontinit __P((struct ite_data *));
-void	hyper_windowmove __P((struct ite_data *, int, int, int, int,
-	    int, int, int));
+void	hyper_ite_fontinit(struct ite_data *);
+void	hyper_windowmove(struct ite_data *, int, int, int, int,
+	    int, int, int);
 
 void
 hyper_init(ip)

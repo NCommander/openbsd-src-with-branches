@@ -1,4 +1,4 @@
-/*	$OpenBSD: crossvar.h,v 1.5.14.1 2001/04/18 16:02:21 niklas Exp $	*/
+/*	$OpenBSD$	*/
 
 /*
  * Copyright (c) 1994, 1996 Niklas Hallqvist
@@ -39,7 +39,7 @@
  */
 struct intrhand {
 	struct	intrhand *ih_next;
-	int	(*ih_fun) __P ((void *));
+	int	(*ih_fun)(void *);
 	void	*ih_arg;
 	u_long	ih_count;
 	int	ih_irq;

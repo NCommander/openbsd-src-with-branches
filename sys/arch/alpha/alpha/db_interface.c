@@ -81,8 +81,8 @@ extern int trap_types;
 
 int	db_active = 0;
 
-void	db_mach_halt __P((db_expr_t, int, db_expr_t, char *));
-void	db_mach_reboot __P((db_expr_t, int, db_expr_t, char *));
+void	db_mach_halt(db_expr_t, int, db_expr_t, char *);
+void	db_mach_reboot(db_expr_t, int, db_expr_t, char *);
 
 struct db_command db_machine_cmds[] = {
 	{ "halt",	db_mach_halt,	0,	0 },

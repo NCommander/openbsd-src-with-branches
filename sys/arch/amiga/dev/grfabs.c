@@ -61,8 +61,8 @@ struct vbl_node grf_vbl_node;
 #define ABS(type, val) \
     (type) (((int)(val) < 0) ? -(val) : (val))
 
-void grf_vbl_function __P((void *data));
-dmode_t *get_best_display_mode __P((u_long, u_long, u_char));
+void grf_vbl_function(void *data);
+dmode_t *get_best_display_mode(u_long, u_long, u_char);
 
 
 void

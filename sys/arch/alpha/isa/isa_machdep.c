@@ -54,9 +54,9 @@
 #if (NPCPPI > 0)
 #include <dev/isa/pcppivar.h>
 
-int isabeepmatch __P((struct device *, void *, void *));
-void isabeepattach __P((struct device *, struct device *, void *));
-void isabeep __P((int, int));
+int isabeepmatch(struct device *, void *, void *);
+void isabeepattach(struct device *, struct device *, void *);
+void isabeep(int, int);
 
 struct cfattach isabeep_ca = {
 	sizeof(struct device), isabeepmatch, isabeepattach

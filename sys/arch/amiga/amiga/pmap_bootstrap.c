@@ -104,7 +104,7 @@ extern st_entry_t *Sysseg;
 extern int protostfree;
 #endif
 
-extern vaddr_t reserve_dumppages __P((vaddr_t));
+extern vaddr_t reserve_dumppages(vaddr_t);
 
 /*
  *	Bootstrap the system enough to run with virtual memory.

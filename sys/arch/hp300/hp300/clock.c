@@ -1,4 +1,4 @@
-/*	$OpenBSD: clock.c,v 1.5 1997/07/06 08:01:58 downsj Exp $	*/
+/*	$OpenBSD$	*/
 /*	$NetBSD: clock.c,v 1.20 1997/04/27 20:43:38 thorpej Exp $	*/
 
 /*
@@ -92,14 +92,14 @@ static int month_days[12] = {
 u_char bbc_registers[13];
 struct hil_dev *bbcaddr = NULL;
 
-void	statintr __P((struct clockframe *));
+void	statintr(struct clockframe *);
 
-void	hp300_calibrate_delay __P((void));
-struct bbc_tm *gmt_to_bbc __P((long));
-int	bbc_to_gmt __P((u_long *));
-void	read_bbc __P((void));
-u_char	read_bbc_reg __P((int));
-u_char	write_bbc_reg __P((int, u_int));
+void	hp300_calibrate_delay(void);
+struct bbc_tm *gmt_to_bbc(long);
+int	bbc_to_gmt(u_long *);
+void	read_bbc(void);
+u_char	read_bbc_reg(int);
+u_char	write_bbc_reg(int, u_int);
 
 /*
  * Machine-dependent clock routines.

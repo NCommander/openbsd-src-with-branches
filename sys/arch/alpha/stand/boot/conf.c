@@ -1,4 +1,4 @@
-/*	$OpenBSD: conf.c,v 1.3 1995/11/23 02:39:31 cgd Exp $	*/
+/*	$OpenBSD$	*/
 /*	$NetBSD: conf.c,v 1.3 1995/11/23 02:39:31 cgd Exp $	*/
 
 /*
@@ -44,7 +44,7 @@
 
 #include "disk.h"
 
-int	diskopen __P((struct open_file *, ...));	/* XXX */
+int	diskopen(struct open_file *, ...);	/* XXX */
 
 int	errno;
 

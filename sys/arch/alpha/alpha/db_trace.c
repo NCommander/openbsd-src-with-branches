@@ -117,11 +117,11 @@ struct opcode opcode[] = {
 	{ OPC_BR, "bgt", 1 },		/* 3F */
 };
 
-static __inline int sext __P((u_int));
-static __inline int rega __P((u_int));
-static __inline int regb __P((u_int));
-static __inline int regc __P((u_int));
-static __inline int disp __P((u_int));
+static __inline int sext(u_int);
+static __inline int rega(u_int);
+static __inline int regb(u_int);
+static __inline int regc(u_int);
+static __inline int disp(u_int);
 
 static __inline int
 sext(x)
