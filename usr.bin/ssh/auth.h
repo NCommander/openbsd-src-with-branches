@@ -21,7 +21,7 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
- * $OpenBSD: auth.h,v 1.17 2001/05/20 17:20:35 markus Exp $
+ * $OpenBSD: auth.h,v 1.18 2001/06/23 00:20:58 markus Exp $
  */
 #ifndef AUTH_H
 #define AUTH_H
@@ -165,7 +165,8 @@ char	*authorized_keys_file2(struct passwd *pw);
 
 /* check a file and the path to it */
 int
-secure_filename(FILE *f, const char *file, uid_t u, char *err, size_t errlen);
+secure_filename(FILE *f, const char *file, struct passwd *pw,
+    char *err, size_t errlen);
 
 /* helper for hostbased auth */
 HostStatus
