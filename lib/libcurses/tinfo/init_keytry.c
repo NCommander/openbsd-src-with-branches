@@ -1,4 +1,4 @@
-/*	$OpenBSD: init_keytry.c,v 1.1 1999/02/24 06:31:10 millert Exp $	*/
+/*	$OpenBSD: init_keytry.c,v 1.2 1999/11/28 17:49:53 millert Exp $	*/
 
 /****************************************************************************
  * Copyright (c) 1999 Free Software Foundation, Inc.                        *
@@ -43,7 +43,7 @@ MODULE_ID("$From: init_keytry.c,v 1.2 1999/09/11 17:32:57 Jeffrey.Honig Exp $")
 **
 */
 
-#ifdef	BROKEN_LINKER
+#if	BROKEN_LINKER
 #undef	_nc_tinfo_fkeys
 #endif
 
@@ -53,7 +53,7 @@ MODULE_ID("$From: init_keytry.c,v 1.2 1999/09/11 17:32:57 Jeffrey.Honig Exp $")
 /* LINT_PREPRO
 #endif*/
 
-#ifdef	BROKEN_LINKER
+#if	BROKEN_LINKER
 struct tinfo_fkeys *_nc_tinfo_fkeysf(void)
 {
 	return _nc_tinfo_fkeys;
