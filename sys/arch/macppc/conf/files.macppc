@@ -216,11 +216,6 @@ include "dev/pcmcia/files.pcmcia"
 #
 include "dev/usb/files.usb"
 
-#
-# Machine-independent IEEE1394 drivers
-#
-include "dev/ieee1394/files.ieee1394"
-
 # Sun HME Ethernet controllers
 device  hme: ether, ifnet, mii, ifmedia
 file    dev/ic/hme.c                   
