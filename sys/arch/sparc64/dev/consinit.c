@@ -1,4 +1,4 @@
-/*	$OpenBSD: consinit.c,v 1.7 2002/03/14 01:26:44 millert Exp $	*/
+/*	$OpenBSD: consinit.c,v 1.8 2003/06/16 20:46:10 miod Exp $	*/
 /*	$NetBSD: consinit.c,v 1.9 2000/10/20 05:32:35 mrg Exp $	*/
 
 /*-
@@ -124,6 +124,8 @@ prom_cngetc(dev)
 #endif
 	if (ch == '\r')
 		ch = '\n';
+	if (ch == '\b')
+		ch = '\177';
 	return ch;
 }
 
