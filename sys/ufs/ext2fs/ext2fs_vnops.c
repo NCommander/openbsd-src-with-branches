@@ -1,4 +1,4 @@
-/*	$OpenBSD: ext2fs_vnops.c,v 1.24 2002/03/14 03:16:13 millert Exp $	*/
+/*	$OpenBSD: ext2fs_vnops.c,v 1.25 2002/11/08 04:34:18 art Exp $	*/
 /*	$NetBSD: ext2fs_vnops.c,v 1.1 1997/06/11 09:34:09 bouyer Exp $	*/
 
 /*
@@ -1369,6 +1369,7 @@ bad:
 	vput(dvp);
 	ip->i_e2fs_nlink = 0;
 	ip->i_flag |= IN_CHANGE;
+	tvp->v_type = VNON;
 	vput(tvp);
 	return (error);
 }
