@@ -1,3 +1,5 @@
+/*	$OpenBSD$	*/
+
 /*
  * Copyright (c) 1996 Dave Richards <richards@zso.dec.com>
  * All rights reserved.
