@@ -1,4 +1,4 @@
-# $OpenBSD: Makefile,v 1.12 2003/05/14 06:59:55 mho Exp $
+# $OpenBSD: Makefile,v 1.13 2003/07/14 16:14:45 mho Exp $
 
 KRBDEPTH=../..
 .include <${.CURDIR}/../../Makefile.inc>
@@ -23,7 +23,7 @@ SRCS=	ank.c \
 	kadmin_locl.h \
 	sl.c
 SRCS+=	${PRINTVER}
-SRCS+=	tm2time.c get_default_username.c k_getpwnam.c k_getpwuid.c
+SRCS+=	tm2time.c
 
 .PATH:	${KRB5SRC}/kadmin
 .PATH:	${KRB5SRC}/lib/sl
