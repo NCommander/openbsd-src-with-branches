@@ -1,4 +1,4 @@
-/*	$OpenBSD: parse.y,v 1.217 2002/11/26 21:10:45 henning Exp $	*/
+/*	$OpenBSD: parse.y,v 1.218 2002/11/27 14:33:12 henning Exp $	*/
 
 /*
  * Copyright (c) 2001 Markus Friedl.  All rights reserved.
@@ -682,12 +682,12 @@ qlimit		: /* empty */		{ $$ = 0; }
 
 
 tbrsize		: /* empty */		{ $$ = 0; }
-		| number		{
-			if ($1 > 65535) {
+		| TBRSIZE number	{
+			if ($2 > 65535) {
 				yyerror("tbrsize too big: max 65535");
 				YYERROR;
 			}
-			$$ = $1;
+			$$ = $2;
 		}
 		;
 
