@@ -1,4 +1,4 @@
-/*	$OpenBSD: ip_esp.c,v 1.73 2002/06/18 23:03:26 angelos Exp $ */
+/*	$OpenBSD: ip_esp.c,v 1.74 2002/07/05 23:20:53 angelos Exp $ */
 /*
  * The authors of this code are John Ioannidis (ji@tla.org),
  * Angelos D. Keromytis (kermit@csd.uch.gr) and
@@ -515,7 +515,7 @@ esp_input_cb(void *op)
 		 * If we have a tag, it means an IPsec-aware NIC did the verification
 		 * for us.
 		 */
-		if (mtag != NULL) {
+		if (mtag == NULL) {
 			/* Copy the authenticator from the packet */
 			m_copydata(m, m->m_pkthdr.len - esph->authsize,
 			    esph->authsize, aalg);
