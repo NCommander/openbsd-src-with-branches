@@ -1,4 +1,4 @@
-/*	$OpenBSD: cd.c,v 1.23 1997/04/14 04:09:03 downsj Exp $	*/
+/*	$OpenBSD: cd.c,v 1.24 1997/08/08 21:47:05 niklas Exp $	*/
 /*	$NetBSD: cd.c,v 1.100 1997/04/02 02:29:30 mycroft Exp $	*/
 
 /*
@@ -1027,7 +1027,7 @@ cdioctl(dev, cmd, addr, flag, p)
 	default:
 		if (CDPART(dev) != RAW_PART)
 			return ENOTTY;
-		return scsi_do_safeioctl(cd->sc_link, dev, cmd, addr, flag, p);
+		return scsi_do_ioctl(cd->sc_link, dev, cmd, addr, flag, p);
 	}
 
 #ifdef DIAGNOSTIC
