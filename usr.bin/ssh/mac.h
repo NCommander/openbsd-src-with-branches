@@ -1,7 +1,6 @@
-/*	$OpenBSD$	*/
-
+/*      $OpenBSD: sshconnect.h,v 1.5 2001/01/29 01:58:18 niklas Exp $   */
 /*
- * Copyright (c) 2000 Markus Friedl.  All rights reserved.
+ * Copyright (c) 2001 Markus Friedl.  All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -23,14 +22,7 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-#ifndef HMAC_H
-#define HMAC_H
 
-u_char *
-hmac(
-    EVP_MD *evp_md,
-    u_int seqno,
-    u_char *data, int datalen,
-    u_char *key, int len);
-
-#endif
+int	mac_valid(const char *names);
+int	mac_init(Mac *mac, char *name);
+u_char	*mac_compute(Mac *mac, u_int32_t seqno, u_char *data, int datalen);

@@ -1,4 +1,4 @@
-/*	$OpenBSD: kex.h,v 1.12 2001/01/29 01:58:16 niklas Exp $	*/
+/*	$OpenBSD: kex.h,v 1.13 2001/02/04 15:32:24 stevesk Exp $	*/
 
 /*
  * Copyright (c) 2000 Markus Friedl.  All rights reserved.
@@ -26,9 +26,11 @@
 #ifndef KEX_H
 #define KEX_H
 
+#include <openssl/evp.h>
+#include "buffer.h"
+
 #define	KEX_DH1		"diffie-hellman-group1-sha1"
 #define	KEX_DHGEX	"diffie-hellman-group-exchange-sha1"
-#define	KEX_DSS		"ssh-dss"
 
 enum kex_init_proposals {
 	PROPOSAL_KEX_ALGS,
