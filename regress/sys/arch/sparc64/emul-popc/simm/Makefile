@@ -1,3 +1,4 @@
+#	$OpenBSD$
 
 # -O2 breaks this
 CFLAGS=-g
