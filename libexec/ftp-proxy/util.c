@@ -1,4 +1,4 @@
-/*	$OpenBSD: util.c,v 1.8 2002/05/23 10:22:14 deraadt Exp $ */
+/*	$OpenBSD: util.c,v 1.9 2002/06/09 01:03:12 beck Exp $ */
 
 /*
  * Copyright (c) 1996-2001
@@ -156,7 +156,7 @@ xfer_data(const char *what_read,int from_fd, int to_fd, struct in_addr from,
 	if (ioctl(from_fd, SIOCATMARK, &mark) < 0) {
 		xerrno = errno;
 		syslog(LOG_ERR,"can't ioctl(SIOCATMARK) socket from %s (%m)",
-		       what_read);
+		    what_read);
 		errno = xerrno;
 		return(-1);
 	}
