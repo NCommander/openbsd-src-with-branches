@@ -1,4 +1,4 @@
-/*	$OpenBSD: i82365_isa.c,v 1.3 1998/12/31 09:17:43 deraadt Exp $	*/
+/*	$OpenBSD: i82365_isa.c,v 1.4 1998/12/31 12:09:02 fgsch Exp $	*/
 /*	$NetBSD: i82365_isa.c,v 1.11 1998/06/09 07:25:00 thorpej Exp $	*/
 
 /*
@@ -218,9 +218,8 @@ pcic_isa_attach(parent, self, aux)
 		return;
 found:
 		sc->irq = pcic_isa_intr_list[i];
+		printf(" irq %d", sc->irq);
 	}
-
-	printf(": using irq %d", sc->irq);
 
 	printf("\n");
 
