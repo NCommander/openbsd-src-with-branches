@@ -1,4 +1,4 @@
-#	$OpenBSD: GENERIC,v 1.14 2002/12/19 00:24:40 mickey Exp $
+#	$OpenBSD: GENERIC,v 1.15 2003/01/08 02:11:38 krw Exp $
 #
 # Diskless kernel config
 #
@@ -25,7 +25,7 @@ maxusers	32
 option		TIMEZONE=0	# time zone to adjust RTC time by
 option		DST=0		# daylight saving time used by RTC
 
-config	bsd root on nfs swap on nfs
+config	bsd swap generic
 
 mainbus0 at root		# root "bus"
 
