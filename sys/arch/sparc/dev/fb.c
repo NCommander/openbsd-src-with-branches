@@ -414,9 +414,8 @@ fbrcons_init(fb)
 
 		rc->rc_maxcol = min(rc->rc_maxcol,
 		    (eep && eep->eeTtyCols) ? eep->eeTtyCols : 80);
-		rc->rc_maxcol = min(rc->rc_maxcol,
+		rc->rc_maxrow = min(rc->rc_maxrow,
 		    (eep && eep->eeTtyRows) ? eep->eeTtyRows : 34);
-		}
 	}
 #endif /* SUN4 */
 
