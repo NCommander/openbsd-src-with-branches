@@ -1,4 +1,4 @@
-/*	$OpenBSD: rde.c,v 1.18 2003/12/21 23:28:39 henning Exp $ */
+/*	$OpenBSD: rde.c,v 1.19 2003/12/23 15:59:02 claudio Exp $ */
 
 /*
  * Copyright (c) 2003 Henning Brauer <henning@openbsd.org>
@@ -252,6 +252,10 @@ rde_dispatch_imsg(struct imsgbuf *ibuf, int idx)
 			/* ignore end message because a dump is atomic */
 			imsg_compose(&ibuf_main, IMSG_MRT_END,
 			    imsg.hdr.peerid, NULL, 0);
+			break;
+		case IMSG_SHUTDOWN_REQUEST:
+			imsg_compose(&ibuf_main, IMSG_SHUTDOWN_DONE, 0,
+			    NULL, 0);
 			break;
 		default:
 			break;
