@@ -1,3 +1,5 @@
+/*	$OpenBSD$	*/
+
 /* Cisco IGRP definitions */
 
 /* IGRP Header */

@@ -1,3 +1,5 @@
+/*	$OpenBSD$	*/
+
 /* RADIUS support for tcpdump, Thomas Ptacek <tqbf@enteract.com> */
 
 /* ------------------------------------------------------------ */
