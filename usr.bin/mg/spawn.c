@@ -1,4 +1,4 @@
-/*	$OpenBSD: spawn.c,v 1.6 2001/01/29 01:58:09 niklas Exp $	*/
+/*	$OpenBSD: spawn.c,v 1.7 2001/05/24 03:05:26 mickey Exp $	*/
 
 /*
  * Spawn.  Actually just suspends Mg.
@@ -18,8 +18,7 @@
  */
 /* ARGSUSED */
 int
-spawncli(f, n)
-	int f, n;
+spawncli(int f, int n)
 {
 	sigset_t	oset;
 

@@ -1,4 +1,4 @@
-/* $OpenBSD: undo.c,v 1.14 2002/09/15 22:18:39 vincent Exp $ */
+/* $OpenBSD: undo.c,v 1.15 2003/04/13 19:16:49 avsm Exp $ */
 /*
  * Copyright (c) 2002 Vincent Labrecque
  * All rights reserved.
@@ -169,7 +169,7 @@ drop_oldest_undo_record(void)
 }
 
 static __inline__ int
-last_was_boundary()
+last_was_boundary(void)
 {
 	struct undo_rec *rec;
 
