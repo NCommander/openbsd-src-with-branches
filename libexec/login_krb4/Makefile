@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.2 2001/06/26 05:03:26 hin Exp $
+#	$OpenBSD: Makefile,v 1.3 2001/07/02 14:07:06 millert Exp $
 
 .include <bsd.own.mk>
 
@@ -11,7 +11,7 @@ CFLAGS+=-Wall -Werror -I${.CURDIR}/../login_passwd
 .if (${KERBEROS:L} == "yes")
 SRCS+=	login_krb4.c
 DPADD+=	${LIBKRB} ${LIBCRYPTO}
-LDADD+=	-lkrb -lcrypto
+LDADD+=	-lkrb -lcrypto -ldes
 CFLAGS+=-DKRB4
 .endif
 
