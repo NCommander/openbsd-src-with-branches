@@ -1,4 +1,4 @@
-/*	$OpenBSD: exec.c,v 1.27 2003/02/28 09:45:09 jmc Exp $	*/
+/*	$OpenBSD: exec.c,v 1.28 2003/10/22 07:40:38 jmc Exp $	*/
 
 /*
  * execute command tree
@@ -1355,6 +1355,8 @@ iosetup(iop, tp)
 				snptreef((char *) 0, 32, "%R", &iotmp), emsg);
 			return -1;
 		}
+		if (u == iop->unit)
+			return 0;		/* "dup from" == "dup to" */
 		break;
 	  }
 	}
