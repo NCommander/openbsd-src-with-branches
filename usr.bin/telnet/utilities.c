@@ -1,4 +1,4 @@
-/*	$OpenBSD: utilities.c,v 1.5 1998/03/12 04:57:47 art Exp $	*/
+/*	$OpenBSD: utilities.c,v 1.6 2001/11/19 19:02:16 mpech Exp $	*/
 /*	$NetBSD: utilities.c,v 1.5 1996/02/28 21:04:21 thorpej Exp $	*/
 
 /*
@@ -90,7 +90,7 @@ SetSockOpt(fd, level, option, yesno)
  * The following are routines used to print out debugging information.
  */
 
-unsigned char NetTraceFile[256] = "(standard output)";
+unsigned char NetTraceFile[MAXPATHLEN] = "(standard output)";
 
     void
 SetNetTrace(file)
@@ -101,7 +101,7 @@ SetNetTrace(file)
     if (file  && (strcmp(file, "-") != 0)) {
 	NetTrace = fopen(file, "w");
 	if (NetTrace) {
-	    strcpy((char *)NetTraceFile, file);
+	    strlcpy((char *)NetTraceFile, file, sizeof(NetTraceFile));
 	    return;
 	}
 	fprintf(stderr, "Cannot open %s.\n", file);
