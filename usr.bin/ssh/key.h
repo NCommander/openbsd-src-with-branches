@@ -1,4 +1,4 @@
-/*	$OpenBSD: key.h,v 1.14 2001/06/26 06:32:54 itojun Exp $	*/
+/*	$OpenBSD: key.h,v 1.15 2001/06/26 17:27:23 markus Exp $	*/
 
 /*
  * Copyright (c) 2000, 2001 Markus Friedl.  All rights reserved.
@@ -44,8 +44,13 @@ enum fp_rep {
 	SSH_FP_HEX,
 	SSH_FP_BUBBLEBABBLE
 };
+
+/* key is stored in external hardware */
+#define KEY_FLAG_EXT		0x0001
+
 struct Key {
-	int	type;
+	int	 type;
+	int	 flags;
 	RSA	*rsa;
 	DSA	*dsa;
 };
