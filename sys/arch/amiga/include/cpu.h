@@ -48,6 +48,7 @@
 /*
  * Exported definitions unique to amiga/68k cpu support.
  */
+#include <machine/psl.h>
 
 /*
  * definitions of cpu-dependent requirements
