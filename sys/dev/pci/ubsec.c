@@ -1,4 +1,4 @@
-/*	$OpenBSD: ubsec.c,v 1.14 2000/06/19 02:50:30 jason Exp $	*/
+/*	$OpenBSD: ubsec.c,v 1.15 2000/06/19 03:58:27 jason Exp $	*/
 
 /*
  * Copyright (c) 2000 Jason L. Wright (jason@thought.net)
@@ -756,5 +756,5 @@ ubsec_callback(q)
 	}
 
 	free(q, M_DEVBUF);
-	crp->crp_callback(crp);
+	crypto_done(crp);
 }

@@ -1,4 +1,4 @@
-/*	$OpenBSD: hifn7751.c,v 1.41 2000/06/13 05:04:59 jason Exp $	*/
+/*	$OpenBSD: hifn7751.c,v 1.42 2000/06/17 20:34:52 jason Exp $	*/
 
 /*
  * Invertex AEON / Hi/fn 7751 driver
@@ -1406,5 +1406,5 @@ hifn_callback(sc, cmd, macbuf)
 	}
 
 	free(cmd, M_DEVBUF);
-	crp->crp_callback(crp);
+	crypto_done(crp);
 }
