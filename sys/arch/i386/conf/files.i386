@@ -50,6 +50,13 @@ file arch/i386/i386/rd_root.c		ramdisk_hooks
 major	{rd = 17}
 
 #
+# Machine-independent ATAPI drivers
+#
+
+include "../../../dev/atapi/files.atapi"
+
+
+#
 # System bus types
 #
 
