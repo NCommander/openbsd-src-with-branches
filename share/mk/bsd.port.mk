@@ -1,6 +1,6 @@
 #-*- mode: Fundamental; tab-width: 4; -*-
 # ex:ts=4
-#	$OpenBSD: bsd.port.mk,v 1.20 1997/12/20 01:24:08 todd Exp $
+#	$OpenBSD: bsd.port.mk,v 1.21 1997/12/20 01:26:57 joey Exp $
 #	$NetBSD: $
 #
 #	bsd.port.mk - 940820 Jordan K. Hubbard.
@@ -574,7 +574,7 @@ GUNZIP_CMD?=	/usr/bin/gunzip -f
 GZCAT?=		/usr/bin/gzcat
 GZIP?=		-9
 GZIP_CMD?=	/usr/bin/gzip -nf ${GZIP}
-LDCONFIG?=	/sbin/ldconfig
+LDCONFIG?=	[ ! -x /sbin/ldconfig ] || /sbin/ldconfig
 LN?=		/bin/ln
 MKDIR?=		/bin/mkdir -p
 MV?=		/bin/mv
