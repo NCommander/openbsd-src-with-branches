@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.9 1997/07/31 09:49:13 tqbf Exp $
+#	$OpenBSD: Makefile,v 1.10 1997/09/21 11:44:30 deraadt Exp $
 #
 #  Copyright (c) 1988, 1989, 1990, 1991, 1992, 1993, 1994
 # 	The Regents of the University of California.  All rights reserved.
@@ -23,7 +23,7 @@
 PROG=	tcpdump
 MAN=	tcpdump.8
 
-CFLAGS+=-DCSLIP -DPPP -DFDDI -DETHER_SERVICE -DRETSIGTYPE=void -DHAVE_NET_SLIP_H
+CFLAGS+=-DCSLIP -DPPP -DFDDI -DETHER_SERVICE -DRETSIGTYPE=void -DHAVE_NET_SLIP_H -DHAVE_ETHER_NTOHOST
 .if (${MACHINE_ARCH} == "alpha") || (${MACHINE_ARCH} == "mips") || (${MACHINE_ARCH} == "sparc")
 CFLAGS+=-DLBL_ALIGN
 .endif
