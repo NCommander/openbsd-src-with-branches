@@ -2,10 +2,6 @@
 
 CFLAGS+=-I${.CURDIR}/../../include -O2
 
-.include "${MACHINE_ARCH}/Makefile.inc"
-
-.PATH:  ${.CURDIR}/${MACHINE_ARCH}
-
 OBJS=bugcrt.o
 
 CLEANFILES+=a.out
