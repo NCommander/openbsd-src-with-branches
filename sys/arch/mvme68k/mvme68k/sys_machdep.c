@@ -1,4 +1,4 @@
-/*	$OpenBSD: sys_machdep.c,v 1.14 2003/06/02 23:27:51 millert Exp $ */
+/*	$OpenBSD: sys_machdep.c,v 1.15 2004/05/20 09:20:42 kettenis Exp $ */
 
 /*
  * Copyright (c) 1982, 1986, 1993
@@ -86,8 +86,8 @@ cachectl(p, req, addr, len)
 #ifdef COMPAT_HPUX
 		extern struct emul emul_hpux;
 
-		if ((curproc->p_emul == &emul_hpux) &&
-			 len != 16 && len != NBPG)
+		if ((p->p_emul == &emul_hpux) &&
+		    len != 16 && len != NBPG)
 			doall = 1;
 #endif
 #ifdef M68060
