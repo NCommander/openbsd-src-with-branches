@@ -505,13 +505,27 @@ ahbattach(parent, self, aux)
 		model = EISA_PRODUCT_ADP0400;
 	else
 		model = "unknown model!";
-	printf(" irq %d: %s\n", ahb->sc_irq, model);
+	printf(": %s\n", model);
 
-#ifdef NEWCONFIG
-	isa_establish(&ahb->sc_id, &ahb->sc_dev);
-#endif
-	ahb->sc_ih = eisa_intr_establish(NULL, ahb->sc_irq, IST_LEVEL, IPL_BIO,
+	if (eisa_intr_map(ec, ahb->sc_irq, &ih)) {
+		printf("%s: couldn't map interrupt (%d)\n",
+		    ahb->sc_dev.dv_xname, ahb->sc_irq);
+		return;
+	}
+	intrstr = eisa_intr_string(ec, ih);
+	ahb->sc_ih = eisa_intr_establish(ec, ih, IST_LEVEL, IPL_BIO,
 	    ahbintr, ahb, ahb->sc_dev.dv_xname);
+	if (ahb->sc_ih == NULL) {
+		printf("%s: couldn't establish interrupt",
+		    ahb->sc_dev.dv_xname);
+		if (intrstr != NULL)
+			printf(" at %s", intrstr);
+		printf("\n");
+		return;
+	}
+	if (intrstr != NULL)
+		printf("%s: interrupting at %s\n", ahb->sc_dev.dv_xname,
+		    intrstr);
 
 	/*
 	 * ask the adapter what subunits are present
