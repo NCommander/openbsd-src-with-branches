@@ -1,3 +1,5 @@
+/*	$OpenBSD$	*/
+
 
 void dvma_init();
 

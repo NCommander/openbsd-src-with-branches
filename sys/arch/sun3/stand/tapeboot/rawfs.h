@@ -1,3 +1,4 @@
+/*	$OpenBSD: rawfs.h,v 1.1 1995/10/17 22:58:29 gwr Exp $	*/
 /*	$NetBSD: rawfs.h,v 1.1 1995/10/17 22:58:29 gwr Exp $	*/
 
 /*

@@ -1,3 +1,5 @@
+/*	$OpenBSD$	*/
+
 
 extern int hz;
 

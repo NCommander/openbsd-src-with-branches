@@ -1,3 +1,4 @@
+/*	$OpenBSD: dvma.c,v 1.6 1996/01/31 17:20:39 gwr Exp $	*/
 /*	$NetBSD: dvma.c,v 1.6 1996/01/31 17:20:39 gwr Exp $	*/
 
 /*

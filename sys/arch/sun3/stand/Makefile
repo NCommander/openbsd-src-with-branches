@@ -1,3 +1,4 @@
+#	$OpenBSD: Makefile,v 1.5 1995/10/13 21:44:08 gwr Exp $
 #	$NetBSD: Makefile,v 1.5 1995/10/13 21:44:08 gwr Exp $
 
 .if ${MACHINE} == "sun3"

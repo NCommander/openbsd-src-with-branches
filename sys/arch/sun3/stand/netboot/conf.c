@@ -1,3 +1,4 @@
+/*	$OpenBSD: conf.c,v 1.3 1996/01/29 23:54:14 gwr Exp $	*/
 /*	$NetBSD: conf.c,v 1.3 1996/01/29 23:54:14 gwr Exp $	*/
 
 #include <sys/types.h>

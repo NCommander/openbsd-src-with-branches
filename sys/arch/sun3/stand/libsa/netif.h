@@ -1,3 +1,5 @@
+/*	$OpenBSD$	*/
+
 
 #include "iodesc.h"
 

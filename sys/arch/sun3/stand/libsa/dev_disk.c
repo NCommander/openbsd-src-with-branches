@@ -1,3 +1,4 @@
+/*	$OpenBSD: dev_disk.c,v 1.4 1996/04/10 18:31:14 gwr Exp $ */
 /*	$NetBSD: dev_disk.c,v 1.4 1996/04/10 18:31:14 gwr Exp $ */
 
 /*

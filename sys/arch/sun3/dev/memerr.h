@@ -1,3 +1,4 @@
+/*	$OpenBSD: memerr.h,v 1.1 1996/03/26 14:57:44 gwr Exp $ */
 /*	$NetBSD: memerr.h,v 1.1 1996/03/26 14:57:44 gwr Exp $ */
 
 /*

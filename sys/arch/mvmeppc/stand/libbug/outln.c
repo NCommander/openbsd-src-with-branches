@@ -1,3 +1,5 @@
+/*	$OpenBSD$	*/
+
 /*
  * bug routines -- assumes that the necessary sections of memory
  * are preserved.

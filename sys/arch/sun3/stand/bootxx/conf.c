@@ -1,3 +1,4 @@
+/*	$OpenBSD: conf.c,v 1.2 1995/10/13 21:45:00 gwr Exp $	*/
 /*	$NetBSD: conf.c,v 1.2 1995/10/13 21:45:00 gwr Exp $	*/
 
 #include <stand.h>

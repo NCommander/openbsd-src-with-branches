@@ -1,3 +1,4 @@
+/*      $OpenBSD: bus_space.c,v 1.4 2001/06/15 15:50:05 nonaka Exp $     */
 /*      $NetBSD: bus_space.c,v 1.4 2001/06/15 15:50:05 nonaka Exp $     */
 
 /*-
