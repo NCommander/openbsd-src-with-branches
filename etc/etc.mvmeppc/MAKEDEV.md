@@ -1,5 +1,5 @@
 #!/bin/sh -
-#	$OpenBSD: MAKEDEV.md,v 1.1 2002/02/08 20:26:36 todd Exp $
+#	$OpenBSD: MAKEDEV.md,v 1.2 2002/02/14 13:29:20 todd Exp $
 #
 # Copyright (c) 1990 The Regents of the University of California.
 # All rights reserved.
@@ -428,7 +428,7 @@ pci*)
 	rm -f pci
 	mknod pci c 71 0
 	chown root.kmem pci
-	chmod 664 pci
+	chmod 600 pci
 	;;
 
 random|srandom|urandom|prandom|arandom)
