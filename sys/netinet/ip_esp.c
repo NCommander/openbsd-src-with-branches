@@ -1,4 +1,4 @@
-/*	$OpenBSD: ip_esp.c,v 1.52 2001/03/15 06:30:59 mickey Exp $ */
+/*	$OpenBSD: ip_esp.c,v 1.53 2001/03/23 04:27:33 angelos Exp $ */
 
 /*
  * The authors of this code are John Ioannidis (ji@tla.org),
@@ -723,10 +723,7 @@ esp_output(struct mbuf *m, struct tdb *tdb, struct mbuf **mp, int skip,
 	m1.m_len = ENC_HDRLEN;
 	m1.m_data = (char *) &hdr;
 
-	if (tdb->tdb_interface)
-	  ifn = (struct ifnet *) tdb->tdb_interface;
-	else
-	  ifn = &(encif[0].sc_if);
+	ifn = &(encif[0].sc_if);
 
 	if (ifn->if_bpf)
 	  bpf_mtap(ifn->if_bpf, &m1);
