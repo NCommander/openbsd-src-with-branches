@@ -1,4 +1,4 @@
-/* $OpenBSD$ */
+/* $OpenBSD: ringbuf.c,v 1.1 2004/01/04 08:28:49 djm Exp $ */
 
 /*
  * Copyright (c) 2004 Damien Miller
@@ -101,7 +101,7 @@ ringbuf_append_line(struct ringbuf *rb, char *line)
 	}
 
 	/*
-	 * Now append string, staring from last pointer and wrapping if
+	 * Now append string, starting from last pointer and wrapping if
 	 * necessary
 	 */
 	if (rb->end + llen > rb->len) {
