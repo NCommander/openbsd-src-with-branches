@@ -1,4 +1,4 @@
-/*	$OpenBSD: ffs_alloc.c,v 1.13 1998/03/27 11:51:01 pefo Exp $	*/
+/*	$OpenBSD: ffs_alloc.c,v 1.14 1999/01/11 05:12:37 millert Exp $	*/
 /*	$NetBSD: ffs_alloc.c,v 1.11 1996/05/11 18:27:09 mycroft Exp $	*/
 
 /*
@@ -276,7 +276,11 @@ ffs_realloccg(ip, lbprev, bpref, osize, nsize, cred, bpp)
 	    			     ffs_alloccg);
 	if (bno > 0) {
 		bp->b_blkno = fsbtodb(fs, bno);
+#if defined(UVM)
+		(void) uvm_vnp_uncache(ITOV(ip));
+#else
 		(void) vnode_pager_uncache(ITOV(ip));
+#endif
 		if (!DOINGSOFTDEP(ITOV(ip)))
 			ffs_blkfree(ip, bprev, (long)osize);
 		if (nsize < request)
