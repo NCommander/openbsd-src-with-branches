@@ -146,7 +146,7 @@ getcodpar(s, tab)
 		if (f)
 			getchar();		/* throw out the newline */
 		scanf("%*[ \t;]");
-		if ((c = scanf("%[^ \t;\n]", input)) < 0)
+		if ((c = scanf("%99[^ \t;\n]", input)) < 0)
 			exit(1);
 		if (c == 0)
 			continue;
