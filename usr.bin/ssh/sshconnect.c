@@ -8,7 +8,7 @@
  */
 
 #include "includes.h"
-RCSID("$OpenBSD: sshconnect.c,v 1.52 2000/01/16 23:53:02 markus Exp $");
+RCSID("$OpenBSD: sshconnect.c,v 1.53 2000/01/18 09:42:17 markus Exp $");
 
 #include <ssl/bn.h>
 #include "xmalloc.h"
@@ -885,6 +885,7 @@ try_skey_authentication()
 		log("WARNING: Encryption is disabled! "
 		    "Reponse will be transmitted in clear text.");
 	fprintf(stderr, "%s\n", challenge);
+	xfree(challenge);
 	fflush(stderr);
 	for (i = 0; i < options.number_of_password_prompts; i++) {
 		if (i != 0)
