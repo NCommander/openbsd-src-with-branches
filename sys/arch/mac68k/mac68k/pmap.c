@@ -1,4 +1,4 @@
-/*	$OpenBSD: pmap.c,v 1.26 2001/07/18 10:47:04 art Exp $	*/
+/*	$OpenBSD: pmap.c,v 1.27 2001/07/25 13:25:32 art Exp $	*/
 /*	$NetBSD: pmap.c,v 1.55 1999/04/22 04:24:53 chs Exp $	*/
 
 /*
@@ -1667,7 +1667,7 @@ pmap_clear_modify(struct vm_page *pg)
  *
  *	Clear the reference bit on the specified physical page.
  */
-void
+boolean_t
 pmap_clear_reference(struct vm_page *pg)
 {
 	paddr_t	pa = VM_PAGE_TO_PHYS(pg);
