@@ -1,4 +1,4 @@
-/*	$OpenBSD: pfctl_parser.h,v 1.22 2002/06/11 02:12:37 dhartmei Exp $ */
+/*	$OpenBSD: pfctl_parser.h,v 1.23 2002/06/11 03:12:03 dhartmei Exp $ */
 
 /*
  * Copyright (c) 2001 Daniel Hartmeier
@@ -99,6 +99,10 @@ struct pf_timeout {
 	const char	*name;
 	int		 timeout;
 };
+
+#define PFCTL_FLAG_ALL		0x01
+#define PFCTL_FLAG_FILTER	0x02
+#define PFCTL_FLAG_NAT		0x04
 
 extern const struct pf_timeout pf_timeouts[];
 
