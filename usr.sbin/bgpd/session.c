@@ -1,4 +1,4 @@
-/*	$OpenBSD: session.c,v 1.30 2003/12/23 18:28:05 henning Exp $ */
+/*	$OpenBSD: session.c,v 1.31 2003/12/23 18:41:32 henning Exp $ */
 
 /*
  * Copyright (c) 2003 Henning Brauer <henning@openbsd.org>
@@ -119,7 +119,7 @@ setup_listener(void)
 		close(fd);
 		return (-1);
 	}
-	
+
 	return (fd);
 }
 
