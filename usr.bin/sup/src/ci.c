@@ -1,4 +1,4 @@
-/*	$OpenBSD: ci.c,v 1.2 1996/06/26 05:39:38 deraadt Exp $	*/
+/*	$OpenBSD: ci.c,v 1.3 1997/01/17 07:13:18 millert Exp $	*/
 
 /*
  * Copyright (c) 1991 Carnegie Mellon University
@@ -140,7 +140,6 @@
  */
 
 
-#include <strings.h>
 #include <libc.h>
 #include <ci.h>
 #include <del.h>

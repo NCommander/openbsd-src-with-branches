@@ -1,4 +1,4 @@
-/* $OpenBSD$ */
+/* $OpenBSD: parse_netgroup.c,v 1.1 1997/04/15 22:06:13 maja Exp $ */
 /*
  * Copyright (c) 1992, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -45,13 +45,13 @@
  */
 
 #include <stdio.h>
-#include <strings.h>
+#include <string.h>
 #include <stdlib.h>
 #include <unistd.h>
 #include "hash.h"
 
 #ifndef lint
-static const char rcsid[] = "$OpenBSD$";
+static const char rcsid[] = "$OpenBSD: parse_netgroup.c,v 1.1 1997/04/15 22:06:13 maja Exp $";
 #endif
 
 /*

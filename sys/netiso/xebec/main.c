@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: main.c,v 1.2 1996/03/04 10:37:09 mickey Exp $	*/
 /*	$NetBSD: main.c,v 1.5 1994/06/29 06:41:07 cgd Exp $	*/
 
 /*
@@ -13,7 +13,7 @@
  */
 
 #include <stdio.h>
-#include <strings.h>
+#include <string.h>
 #include "malloc.h"
 #include "debug.h"
 #include "main.h"

@@ -1,4 +1,4 @@
-/*	$OpenBSD: rarpd.c,v 1.10 1997/06/22 22:56:34 deraadt Exp $ */
+/*	$OpenBSD: rarpd.c,v 1.11 1997/07/25 20:12:18 mickey Exp $ */
 /*	$NetBSD: rarpd.c,v 1.12 1996/03/21 18:28:23 jtc Exp $	*/
 
 /*
@@ -28,7 +28,7 @@ char    copyright[] =
 #endif				/* not lint */
 
 #ifndef lint
-static char rcsid[] = "$OpenBSD: rarpd.c,v 1.10 1997/06/22 22:56:34 deraadt Exp $";
+static char rcsid[] = "$OpenBSD: rarpd.c,v 1.11 1997/07/25 20:12:18 mickey Exp $";
 #endif
 
 
@@ -43,7 +43,6 @@ static char rcsid[] = "$OpenBSD: rarpd.c,v 1.10 1997/06/22 22:56:34 deraadt Exp 
 #include <stdlib.h>
 #include <syslog.h>
 #include <string.h>
-#include <strings.h>
 #include <sys/types.h>
 #include <unistd.h>
 #include <sys/time.h>

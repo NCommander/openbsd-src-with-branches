@@ -1,4 +1,4 @@
-/*	$OpenBSD: nfsd.c,v 1.6 1997/06/29 11:10:32 provos Exp $	*/
+/*	$OpenBSD: nfsd.c,v 1.7 1997/08/04 19:25:21 deraadt Exp $	*/
 /*	$NetBSD: nfsd.c,v 1.19 1996/02/18 23:18:56 mycroft Exp $	*/
 
 /*
@@ -85,7 +85,7 @@ static char rcsid[] = "$NetBSD: nfsd.c,v 1.19 1996/02/18 23:18:56 mycroft Exp $"
 #include <signal.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <strings.h>
+#include <string.h>
 #include <syslog.h>
 #include <unistd.h>
 

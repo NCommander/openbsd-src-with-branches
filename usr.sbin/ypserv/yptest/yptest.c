@@ -1,4 +1,4 @@
-/*	$OpenBSD: yptest.c,v 1.5 1996/06/26 21:26:40 maja Exp $ */
+/*	$OpenBSD: yptest.c,v 1.6 1997/07/26 11:59:03 maja Exp $ */
 
 /*
  * Copyright (c) 1994 Mats O Jansson <moj@stacken.kth.se>
@@ -32,12 +32,12 @@
  */
 
 #ifndef LINT
-static char rcsid[] = "$OpenBSD: yptest.c,v 1.5 1996/06/26 21:26:40 maja Exp $";
+static char rcsid[] = "$OpenBSD: yptest.c,v 1.6 1997/07/26 11:59:03 maja Exp $";
 #endif
 
 #include <stdio.h>
 #include <unistd.h>
-#include <strings.h>
+#include <string.h>
 #include <rpc/rpc.h>
 #include <rpc/xdr.h>
 #include <rpcsvc/yp.h>
