@@ -1,4 +1,4 @@
-/*	$OpenBSD: chk.c,v 1.4 1998/07/27 16:53:43 deraadt Exp $	*/
+/*	$OpenBSD: chk.c,v 1.5 1998/07/29 03:14:51 millert Exp $	*/
 /*	$NetBSD: chk.c,v 1.2 1995/07/03 21:24:42 cgd Exp $	*/
 
 /*
@@ -33,7 +33,7 @@
  */
 
 #ifndef lint
-static char rcsid[] = "$OpenBSD: chk.c,v 1.4 1998/07/27 16:53:43 deraadt Exp $";
+static char rcsid[] = "$OpenBSD: chk.c,v 1.5 1998/07/29 03:14:51 millert Exp $";
 #endif
 
 #include <stdlib.h>
@@ -282,7 +282,7 @@ chkdnud(hte)
 }
 
 /*
- * Print a warning if there is more then one definition for
+ * Print a warning if there is more than one definition for
  * this name.
  */
 static void
