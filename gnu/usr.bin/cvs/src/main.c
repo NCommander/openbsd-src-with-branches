@@ -41,7 +41,6 @@ int really_quiet = 0;
 int quiet = 0;
 int trace = 0;
 int noexec = 0;
-int readonlyfs = 0;
 int logoff = 0;
 
 /* Set if we should be writing CVSADM directories at top level.  At
@@ -50,7 +49,6 @@ int logoff = 0;
 int top_level_admin = 0;
 
 mode_t cvsumask = UMASK_DFLT;
-char *RCS_citag = NULL;
 
 char *CurDir;
 
@@ -222,6 +220,7 @@ static const char *const cmd_usage[] =
 
 static const char *const opt_usage[] =
 {
+    /* Omit -b because it is just for compatibility.  */
     "CVS global options (specified before the command name) are:\n",
     "    -H           Displays usage information for command.\n",
     "    -Q           Cause CVS to be really quiet.\n",
@@ -232,7 +231,6 @@ static const char *const opt_usage[] =
     "    -n           Do not execute anything that will change the disk.\n",
     "    -t           Show trace of program execution -- try with -n.\n",
     "    -v           CVS version and copyright.\n",
-    "    -b bindir    Find RCS programs in 'bindir'.\n",
     "    -T tmpdir    Use 'tmpdir' for temporary files.\n",
     "    -e editor    Use 'editor' for editing log information.\n",
     "    -d CVS_root  Overrides $CVSROOT as the root of the CVS tree.\n",
@@ -482,10 +480,6 @@ main (argc, argv)
     }
     if (getenv (CVSREAD_ENV) != NULL)
 	cvswrite = 0;
-    if (getenv (CVSREADONLYFS_ENV)) {
-	readonlyfs = 1;
-	logoff = 1;
-    }
 
     /* Set this to 0 to force getopt initialization.  getopt() sets
        this to 1 internally.  */
@@ -953,7 +947,7 @@ Copyright (c) 1989-1998 Brian Berliner, david d `zoo' zuhn, \n\
 		    }
 		    (void) strcat (path, "/");
 		    (void) strcat (path, CVSROOTADM_HISTORY);
-		    if (readonlyfs == 0 && isfile (path) && !isaccessible (path, R_OK | W_OK))
+		    if (isfile (path) && !isaccessible (path, R_OK | W_OK))
 		    {
 			save_errno = errno;
 			error (0, 0, "Sorry, you don't have read/write access to the history file");
@@ -1153,5 +1147,5 @@ usage (cpp)
     (void) fprintf (stderr, *cpp++, program_name, command_name);
     for (; *cpp; cpp++)
 	(void) fprintf (stderr, *cpp);
-    error_exit();
+    error_exit ();
 }

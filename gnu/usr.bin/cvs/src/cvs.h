@@ -256,8 +256,6 @@ extern int errno;
 #define	CVSREAD_ENV	"CVSREAD"	/* make files read-only */
 #define	CVSREAD_DFLT	0		/* writable files by default */
 
-#define	CVSREADONLYFS_ENV "CVSREADONLYFS" /* repository is read-only */
-
 #define	TMPDIR_ENV	"TMPDIR"	/* Temporary directory */
 /* #define	TMPDIR_DFLT		   Set by options.h */
 
@@ -365,7 +363,6 @@ extern int really_quiet, quiet;
 extern int use_editor;
 extern int cvswrite;
 extern mode_t cvsumask;
-extern char *RCS_citag;
 
 /* Access method specified in CVSroot. */
 typedef enum {
@@ -396,7 +393,6 @@ extern char *emptydir_name PROTO ((void));
 
 extern int trace;		/* Show all commands */
 extern int noexec;		/* Don't modify disk anywhere */
-extern int readonlyfs;		/* fail on all write locks; succeed all read locks */
 extern int logoff;		/* Don't write history entry */
 
 extern int top_level_admin;
@@ -465,7 +461,7 @@ extern void check_numeric PROTO ((const char *, int, char **));
 char *getcaller PROTO((void));
 char *time_stamp PROTO((char *file));
 
-char *xmalloc PROTO((size_t bytes));
+void *xmalloc PROTO((size_t bytes));
 void *xrealloc PROTO((void *ptr, size_t bytes));
 void expand_string PROTO ((char **, size_t *, size_t));
 char *xstrdup PROTO((const char *str));

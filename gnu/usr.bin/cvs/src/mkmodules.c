@@ -288,15 +288,6 @@ static const char *const config_contents[] = {
     "# level of the new working directory when using the `cvs checkout'\n",
     "# command.\n",
     "#TopLevelAdmin=no\n",
-    "\n",
-    "# Set this to the name of a local tag to use in addition to Id\n",
-    "#tag=OurTag\n",
-    "\n",
-    "# Set this to the default umask to use when creating files and directories\n",
-    "#umask=002\n",
-    "\n",
-    "# Set this to the default data resource limit to use\n",
-    "#dlimit=65536\n",
     NULL
 };
 
@@ -362,7 +353,7 @@ static const struct admin_file filelist[] = {
     {CVSROOTADM_CONFIG,
 	 "a %s file configures various behaviors",
 	 config_contents},
-    {NULL, NULL}
+    {NULL, NULL, NULL}
 };
 
 /* Rebuild the checked out administrative files in directory DIR.  */

@@ -168,7 +168,8 @@ import (argc, argv)
     }
 
     /* XXX - this should be a module, not just a pathname */
-    if (! isabsolute (argv[0]))
+    if (! isabsolute (argv[0])
+	&& pathname_levels (argv[0]) == 0)
     {
 	if (CVSroot_directory == NULL)
 	{
@@ -183,9 +184,11 @@ import (argc, argv)
     }
     else
     {
-	repository = xmalloc (strlen (argv[0]) + 5);
-	(void) strcpy (repository, argv[0]);
-	repos_len = 0;
+	/* It is somewhere between a security hole and "unexpected" to
+	   let the client start mucking around outside the cvsroot
+	   (wouldn't get the right CVSROOT configuration, &c).  */
+	error (1, 0, "directory %s not relative within the repository",
+	       argv[0]);
     }
 
     /*
@@ -880,16 +883,16 @@ static const struct compair comtable[] =
     {"r", "# "},			/* ratfor	 */
     {"rc", " * "},			/* Microsoft Windows resource file */
     {"red", "% "},			/* psl/rlisp	 */
-#ifdef __sparc__
+#ifdef sparc
     {"s", "! "},			/* assembler	 */
 #endif
-#ifdef __mc68000__
+#ifdef mc68000
     {"s", "| "},			/* assembler	 */
 #endif
-#ifdef __pdp11__
+#ifdef pdp11
     {"s", "/ "},			/* assembler	 */
 #endif
-#ifdef __vax__
+#ifdef vax
     {"s", "# "},			/* assembler	 */
 #endif
 #ifdef __ksr__
