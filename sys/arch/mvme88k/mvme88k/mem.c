@@ -1,4 +1,4 @@
-/*	$OpenBSD: mem.c,v 1.4 1999/09/03 18:01:31 art Exp $ */
+/*	$OpenBSD: mem.c,v 1.5 1999/11/22 19:22:00 matthieu Exp $ */
 
 /*
  * Copyright (c) 1988 University of Utah.
@@ -193,8 +193,7 @@ mmmmap(dev, off, prot)
         dev_t dev;
         int off, prot;
 {
-
-	return (EOPNOTSUPP);
+	return (-1);
 }
 
 /*ARGSUSED*/
