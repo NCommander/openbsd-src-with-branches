@@ -977,8 +977,13 @@ bootsync(void)
 		/*
 		 * unmount filesystems
 		 */
-		if (panicstr == 0)
+		if (panicstr == 0) {
+			extern struct proc proc0;
+			if (curproc == NULL)
+				curproc = &proc0;
+
 			vfs_unmountall();
+		}
 
 		for (iter = 0; iter < 20; iter++) {
 			nbusy = 0;
