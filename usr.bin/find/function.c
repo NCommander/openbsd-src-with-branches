@@ -1,4 +1,4 @@
-/*	$OpenBSD: function.c,v 1.12 1998/09/26 09:04:43 deraadt Exp $	*/
+/*	$OpenBSD: function.c,v 1.13 1999/03/17 17:36:30 espie Exp $	*/
 
 /*-
  * Copyright (c) 1990, 1993
@@ -38,7 +38,7 @@
 
 #ifndef lint
 /*static char sccsid[] = "from: @(#)function.c	8.1 (Berkeley) 6/6/93";*/
-static char rcsid[] = "$OpenBSD: function.c,v 1.12 1998/09/26 09:04:43 deraadt Exp $";
+static char rcsid[] = "$OpenBSD: function.c,v 1.13 1999/03/17 17:36:30 espie Exp $";
 #endif /* not lint */
 
 #include <sys/param.h>
@@ -486,7 +486,6 @@ c_execdir(argvp)
 	register char **argv, **ap, *p;
 
 	ftsoptions &= ~FTS_NOSTAT;
-	ftsoptions |= FTS_CHDIRROOT;
 	isoutput = 1;
     
 	new = palloc(N_EXECDIR, f_execdir);
