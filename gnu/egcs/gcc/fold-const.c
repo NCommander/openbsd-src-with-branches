@@ -1,5 +1,6 @@
 /* Fold a constant sub-tree into a single node for C-compiler
-   Copyright (C) 1987, 88, 92-98, 1999 Free Software Foundation, Inc.
+   Copyright (C) 1987, 1988, 1992, 1993, 1994, 1995, 1996, 1997, 1998, 1999,
+   2000 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -2131,7 +2132,7 @@ operand_equal_p (arg0, arg1, only_const)
 
       case STRING_CST:
 	return (TREE_STRING_LENGTH (arg0) == TREE_STRING_LENGTH (arg1)
-		&& ! strncmp (TREE_STRING_POINTER (arg0),
+		&& ! memcmp (TREE_STRING_POINTER (arg0),
 			      TREE_STRING_POINTER (arg1),
 			      TREE_STRING_LENGTH (arg0)));
 
@@ -2177,6 +2178,12 @@ operand_equal_p (arg0, arg1, only_const)
 				  TREE_OPERAND (arg1, 0), 0));
 
     case 'r':
+      /* If either of the pointer (or reference) expressions we are dereferencing
+	 contain a side effect, these cannot be equal. */
+      if (TREE_SIDE_EFFECTS (arg0)
+	  || TREE_SIDE_EFFECTS (arg1))
+	return 0;
+
       switch (TREE_CODE (arg0))
 	{
 	case INDIRECT_REF:
@@ -3253,8 +3260,17 @@ make_range (exp, pin_p, plow, phigh)
 	      low = range_binop (PLUS_EXPR, type, n_high, 0,
 				 integer_one_node, 0);
 	      high = range_binop (MINUS_EXPR, type, n_low, 0,
-				 integer_one_node, 0);
-	      in_p = ! in_p;
+				  integer_one_node, 0);
+
+	      /* If the range is of the form +/- [ x+1, x ], we won't
+		 be able to normalize it.  But then, it represents the
+		 whole range or the empty set, so make it +/- [ -, - ].
+	      */
+	      if (tree_int_cst_equal (n_low, low)
+		  && tree_int_cst_equal (n_high, high))
+		low = high = 0;
+	      else
+		in_p = ! in_p;
 	    }
 	  else
 	    low = n_low, high = n_high;
@@ -3806,11 +3822,10 @@ fold_truthop (code, truth_type, lhs, rhs)
     {
       if (l_const && integer_zerop (l_const) && integer_pow2p (ll_mask))
 	{
-	  /* Do not sign extend the constant here.  The left operand
-	     is either always unsigned or there is a BIT_AND_EXPR that
-	     masks out the extension bits.  */
-	  if (!	(ll_unsignedp || ll_and_mask != 0))
-	    abort ();
+	  /* Make the left operand unsigned, since we are only interested
+	     in the value of one bit.  Otherwise we are doing the wrong
+	     thing below.  */
+	  ll_unsignedp = 1;
 	  l_const = ll_mask;
 	}
       else
@@ -3822,8 +3837,7 @@ fold_truthop (code, truth_type, lhs, rhs)
     {
       if (r_const && integer_zerop (r_const) && integer_pow2p (rl_mask))
 	{
-	  if (!	(rl_unsignedp || rl_and_mask != 0))
-	    abort ();
+	  rl_unsignedp = 1;
 	  r_const = rl_mask;
 	}
       else
@@ -5621,7 +5635,15 @@ fold (expr)
 		tree newconst
 		  = fold (build (PLUS_EXPR, TREE_TYPE (varop),
 				 constop, TREE_OPERAND (varop, 1)));
-		TREE_SET_CODE (varop, PREINCREMENT_EXPR);
+
+		/* Do not overwrite the current varop to be a preincrement,
+		   create a new node so that we won't confuse our caller who
+		   might create trees and throw them away, reusing the
+		   arguments that they passed to build.  This shows up in
+		   the THEN or ELSE parts of ?: being postincrements.  */
+		varop = build (PREINCREMENT_EXPR, TREE_TYPE (varop),
+			       TREE_OPERAND (varop, 0),
+			       TREE_OPERAND (varop, 1));
 
 		/* If VAROP is a reference to a bitfield, we must mask
 		   the constant by the width of the field.  */
@@ -5665,9 +5687,9 @@ fold (expr)
 		  }
 							 
 
-		t = build (code, type, TREE_OPERAND (t, 0),
-			   TREE_OPERAND (t, 1));
-		TREE_OPERAND (t, constopnum) = newconst;
+		t = build (code, type,
+			   (constopnum == 0) ? newconst : varop,
+			   (constopnum == 1) ? newconst : varop);
 		return t;
 	      }
 	  }
@@ -5680,7 +5702,15 @@ fold (expr)
 		tree newconst
 		  = fold (build (MINUS_EXPR, TREE_TYPE (varop),
 				 constop, TREE_OPERAND (varop, 1)));
-		TREE_SET_CODE (varop, PREDECREMENT_EXPR);
+
+		/* Do not overwrite the current varop to be a predecrement,
+		   create a new node so that we won't confuse our caller who
+		   might create trees and throw them away, reusing the
+		   arguments that they passed to build.  This shows up in
+		   the THEN or ELSE parts of ?: being postdecrements.  */
+		varop = build (PREDECREMENT_EXPR, TREE_TYPE (varop),
+			       TREE_OPERAND (varop, 0),
+			       TREE_OPERAND (varop, 1));
 
 		if (TREE_CODE (TREE_OPERAND (varop, 0)) == COMPONENT_REF
 		    && DECL_BIT_FIELD(TREE_OPERAND
@@ -5719,9 +5749,9 @@ fold (expr)
 		  }
 							 
 
-		t = build (code, type, TREE_OPERAND (t, 0),
-			   TREE_OPERAND (t, 1));
-		TREE_OPERAND (t, constopnum) = newconst;
+		t = build (code, type,
+			   (constopnum == 0) ? newconst : varop,
+			   (constopnum == 1) ? newconst : varop);
 		return t;
 	      }
 	  }

@@ -4,6 +4,7 @@
 
 #include <stdio.h>
 #include <sys/file.h>
+#include "EXTERN.h"
 #include "sdbm.h"
 
 char *progname;
@@ -13,8 +14,7 @@ extern void oops();
 #define empty(page)	(((short *) page)[0] == 0)
 
 int
-main(argc, argv)
-char **argv;
+main(int argc, char **argv)
 {
 	int n;
 	char *p;
@@ -25,6 +25,9 @@ char **argv;
 
 	if (p = argv[1]) {
 		name = (char *) malloc((n = strlen(p)) + 5);
+		if (!name)
+		    oops("cannot get memory");
+
 		strcpy(name, p);
 		strcpy(name + n, ".pag");
 
@@ -38,8 +41,8 @@ char **argv;
 	return 0;
 }
 
-sdump(pagf)
-int pagf;
+void
+sdump(int pagf)
 {
 	register r;
 	register n = 0;
@@ -64,8 +67,8 @@ int pagf;
 
 
 #ifdef OLD
-dispage(pag)
-char *pag;
+int
+dispage(char *pag)
 {
 	register i, n;
 	register off;
@@ -86,8 +89,8 @@ char *pag;
 	}
 }
 #else
-dispage(pag)
-char *pag;
+void
+dispage(char *pag)
 {
 	register i, n;
 	register off;

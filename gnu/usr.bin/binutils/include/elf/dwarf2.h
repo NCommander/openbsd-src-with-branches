@@ -1,6 +1,6 @@
 /* Declarations and definitions of codes relating to the DWARF symbolic
    debugging information format.
-   Copyright (C) 1992, 1993, 1995, 1996 Free Software Foundation, Inc.
+   Copyright (C) 1992, 1993, 1995, 1996, 1999 Free Software Foundation, Inc.
 
    Written by Gary Funck (gary@intrepid.com) The Ada Joint Program
    Office (AJPO), Florida State Unviversity and Silicon Graphics Inc.
@@ -33,6 +33,92 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  *
 
 #ifndef _ELF_DWARF2_H
 #define _ELF_DWARF2_H
+
+/* Structure found in the .debug_line section.  */
+typedef struct
+{
+  unsigned char li_length          [4];
+  unsigned char li_version         [2];
+  unsigned char li_prologue_length [4];
+  unsigned char li_min_insn_length [1];
+  unsigned char li_default_is_stmt [1];
+  unsigned char li_line_base       [1];
+  unsigned char li_line_range      [1];
+  unsigned char li_opcode_base     [1];
+}
+DWARF2_External_LineInfo;
+
+typedef struct
+{
+  unsigned long  li_length;
+  unsigned short li_version;
+  unsigned int   li_prologue_length;
+  unsigned char  li_min_insn_length;
+  unsigned char  li_default_is_stmt;
+  int            li_line_base;
+  unsigned char  li_line_range;
+  unsigned char  li_opcode_base;
+}
+DWARF2_Internal_LineInfo;
+
+/* Structure found in .debug_pubnames section.  */
+typedef struct
+{
+  unsigned char pn_length  [4];
+  unsigned char pn_version [2];
+  unsigned char pn_offset  [4];
+  unsigned char pn_size    [4];
+}
+DWARF2_External_PubNames;
+
+typedef struct
+{
+  unsigned long  pn_length;
+  unsigned short pn_version;
+  unsigned long  pn_offset;
+  unsigned long  pn_size;
+}
+DWARF2_Internal_PubNames;
+
+/* Strcuture found in .debug_info section.  */
+typedef struct
+{
+  unsigned char  cu_length        [4];
+  unsigned char  cu_version       [2];
+  unsigned char  cu_abbrev_offset [4];
+  unsigned char  cu_pointer_size  [1];
+}
+DWARF2_External_CompUnit;
+
+typedef struct
+{
+  unsigned long  cu_length;
+  unsigned short cu_version;
+  unsigned long  cu_abbrev_offset;
+  unsigned char  cu_pointer_size;
+}
+DWARF2_Internal_CompUnit;
+
+typedef struct
+{
+  unsigned char  ar_length       [4];
+  unsigned char  ar_version      [2];
+  unsigned char  ar_info_offset  [4];
+  unsigned char  ar_pointer_size [1];
+  unsigned char  ar_segment_size [1];
+}
+DWARF2_External_ARange;
+
+typedef struct
+{
+  unsigned long  ar_length;
+  unsigned short ar_version;
+  unsigned long  ar_info_offset;
+  unsigned char  ar_pointer_size;
+  unsigned char  ar_segment_size;
+}
+DWARF2_Internal_ARange;
+
 
 /* Tag names and codes.  */
 
@@ -201,6 +287,10 @@ enum dwarf_attribute
     DW_AT_MIPS_loop_unroll_factor = 0x2005,
     DW_AT_MIPS_software_pipeline_depth = 0x2006,
     DW_AT_MIPS_linkage_name = 0x2007,
+    DW_AT_MIPS_stride = 0x2008,
+    DW_AT_MIPS_abstract_name = 0x2009,
+    DW_AT_MIPS_clone_origin = 0x200a,
+    DW_AT_MIPS_has_inlines = 0x200b,
     /* GNU extensions.  */
     DW_AT_sf_names = 0x2101,
     DW_AT_src_info = 0x2102,
@@ -507,82 +597,6 @@ enum dwarf_call_frame_info
 #define DW_CFA_low_user   0x1c
 #define DW_CFA_high_user  0x3f
 
-/* SGI/MIPS call frame register usage information */
-enum dwarf_call_reg_usage
-  {
-    DW_FRAME_CFA_COL = 0,
-    DW_FRAME_REG1 = 1,
-    DW_FRAME_REG2 = 2,
-    DW_FRAME_REG3 = 3,
-    DW_FRAME_REG4 = 4,
-    DW_FRAME_REG5 = 5,
-    DW_FRAME_REG6 = 6,
-    DW_FRAME_REG7 = 7,
-    DW_FRAME_REG8 = 8,
-    DW_FRAME_REG9 = 9,
-    DW_FRAME_REG10 = 10,
-    DW_FRAME_REG11 = 11,
-    DW_FRAME_REG12 = 12,
-    DW_FRAME_REG13 = 13,
-    DW_FRAME_REG14 = 14,
-    DW_FRAME_REG15 = 15,
-    DW_FRAME_REG16 = 16,
-    DW_FRAME_REG17 = 17,
-    DW_FRAME_REG18 = 18,
-    DW_FRAME_REG19 = 19,
-    DW_FRAME_REG20 = 20,
-    DW_FRAME_REG21 = 21,
-    DW_FRAME_REG22 = 22,
-    DW_FRAME_REG23 = 23,
-    DW_FRAME_REG24 = 24,
-    DW_FRAME_REG25 = 25,
-    DW_FRAME_REG26 = 26,
-    DW_FRAME_REG27 = 27,
-    DW_FRAME_REG28 = 28,
-    DW_FRAME_REG29 = 29,
-    DW_FRAME_REG30 = 30,
-    DW_FRAME_REG31 = 31,
-    DW_FRAME_FREG0 = 32,
-    DW_FRAME_FREG1 = 33,
-    DW_FRAME_FREG2 = 34,
-    DW_FRAME_FREG3 = 35,
-    DW_FRAME_FREG4 = 36,
-    DW_FRAME_FREG5 = 37,
-    DW_FRAME_FREG6 = 38,
-    DW_FRAME_FREG7 = 39,
-    DW_FRAME_FREG8 = 40,
-    DW_FRAME_FREG9 = 41,
-    DW_FRAME_FREG10 = 42,
-    DW_FRAME_FREG11 = 43,
-    DW_FRAME_FREG12 = 44,
-    DW_FRAME_FREG13 = 45,
-    DW_FRAME_FREG14 = 46,
-    DW_FRAME_FREG15 = 47,
-    DW_FRAME_FREG16 = 48,
-    DW_FRAME_FREG17 = 49,
-    DW_FRAME_FREG18 = 50,
-    DW_FRAME_FREG19 = 51,
-    DW_FRAME_FREG20 = 52,
-    DW_FRAME_FREG21 = 53,
-    DW_FRAME_FREG22 = 54,
-    DW_FRAME_FREG23 = 55,
-    DW_FRAME_FREG24 = 56,
-    DW_FRAME_FREG25 = 57,
-    DW_FRAME_FREG26 = 58,
-    DW_FRAME_FREG27 = 59,
-    DW_FRAME_FREG28 = 60,
-    DW_FRAME_FREG29 = 61,
-    DW_FRAME_FREG30 = 62,
-    DW_FRAME_FREG31 = 63,
-    DW_FRAME_RA_COL = 64,
-    DW_FRAME_STATIC_LINK = 65
-  };
-
-/* This is the number of columns in the Frame Table. */
-#define DW_FRAME_LAST_REG_NUM   66
-
-
-
 #define DW_CHILDREN_no		     0x00
 #define DW_CHILDREN_yes		     0x01
 
@@ -602,6 +616,7 @@ enum dwarf_source_language
     DW_LANG_Fortran90 = 0x0008,
     DW_LANG_Pascal83 = 0x0009,
     DW_LANG_Modula2 = 0x000a,
+    DW_LANG_Java = 0x9af4,
     DW_LANG_Mips_Assembler = 0x8001
   };
 
@@ -609,7 +624,7 @@ enum dwarf_source_language
 #define DW_LANG_lo_user 0x8000	/* implementation-defined range start */
 #define DW_LANG_hi_user 0xffff	/* implementation-defined range start */
 
-/* Names and codes for GNU "macinfo" extension.  */
+/* Names and codes for macro information.  */
 
 enum dwarf_macinfo_record_type
   {
@@ -617,7 +632,7 @@ enum dwarf_macinfo_record_type
     DW_MACINFO_undef = 2,
     DW_MACINFO_start_file = 3,
     DW_MACINFO_end_file = 4,
-    DW_MACINFO_vend_ext = 255
+    DW_MACINFO_vendor_ext = 255
   };
 
 #endif /* _ELF_DWARF2_H */
