@@ -1,4 +1,4 @@
-/*	$OpenBSD: csh.c,v 1.9 1997/11/15 21:51:27 todd Exp $	*/
+/*	$OpenBSD: csh.c,v 1.10 1999/02/21 08:28:00 deraadt Exp $	*/
 /*	$NetBSD: csh.c,v 1.14 1995/04/29 23:21:28 mycroft Exp $	*/
 
 /*-
@@ -44,7 +44,7 @@ static char copyright[] =
 #if 0
 static char sccsid[] = "@(#)csh.c	8.2 (Berkeley) 10/12/93";
 #else
-static char rcsid[] = "$OpenBSD: csh.c,v 1.9 1997/11/15 21:51:27 todd Exp $";
+static char rcsid[] = "$OpenBSD: csh.c,v 1.10 1999/02/21 08:28:00 deraadt Exp $";
 #endif
 #endif /* not lint */
 
@@ -522,6 +522,7 @@ notty:
      * start-up scripts.
      */
     reenter = setexit();	/* PWP */
+    exitset++;
     haderr = 0;			/* In case second time through */
     if (!fast && reenter == 0) {
 	/* Will have value(STRhome) here because set fast if don't */
