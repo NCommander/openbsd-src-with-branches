@@ -1,5 +1,5 @@
 /*	$OpenBSD: mfc.c,v 1.5 1996/04/21 22:15:34 deraadt Exp $ */
-/*	$NetBSD: mfc.c,v 1.12 1996/04/21 21:12:09 veego Exp $ */
+/*	$NetBSD: mfc.c,v 1.12.4.1 1996/06/06 04:53:16 mhitch Exp $ */
 
 /*
  * Copyright (c) 1994 Michael L. Hitch
@@ -488,8 +488,10 @@ mfcsopen(dev, flag, mode, p)
 
 	if (sc->sc_tty)
 		tp = sc->sc_tty;
-	else
+	else {
 		tp = sc->sc_tty = ttymalloc();
+		tty_attach(tp);
+	}
 
 	tp->t_oproc = (void (*) (struct tty *)) mfcsstart;
 	tp->t_param = mfcsparam;

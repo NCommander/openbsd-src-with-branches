@@ -1,5 +1,5 @@
 /*	$OpenBSD: if_ae.c,v 1.4 1996/04/21 22:15:21 deraadt Exp $	*/
-/*	$NetBSD: if_ae.c,v 1.8 1996/05/07 00:46:37 thorpej Exp $	*/
+/*	$NetBSD: if_ae.c,v 1.8.4.1 1996/05/26 17:26:41 is Exp $	*/
 
 /*
  * Copyright (c) 1995 Bernd Ernesti and Klaus Burkert. All rights reserved.
@@ -271,7 +271,9 @@ void
 aememinit(sc)
 	register struct ae_softc *sc;
 {        
+#if NBPFILTER > 0
 	register struct ifnet *ifp = &sc->sc_arpcom.ac_if;
+#endif
 	/*
 	 * This structure is referenced from the CARD's/PCnet-ISA's point
 	 * of view, thus the 0x8000 address which is the buffer RAM area
