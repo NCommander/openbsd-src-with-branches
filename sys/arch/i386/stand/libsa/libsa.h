@@ -1,4 +1,4 @@
-/*	$OpenBSD: libsa.h,v 1.38 2003/06/03 20:22:12 mickey Exp $	*/
+/*	$OpenBSD: libsa.h,v 1.39 2004/03/19 13:48:18 tom Exp $	*/
 
 /*
  * Copyright (c) 1996-1999 Michael Shalayeff
@@ -49,6 +49,7 @@ void ps2probe(void);
 void pciprobe(void);
 void memprobe(void);
 void diskprobe(void);
+void cdprobe(void);
 void apmprobe(void);
 void apmfixmem(void);
 void dump_biosmem(bios_memmap_t *);
