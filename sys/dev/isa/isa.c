@@ -79,8 +79,6 @@
 int isamatch __P((struct device *, void *, void *));
 void isaattach __P((struct device *, struct device *, void *));
 
-extern int autoconf_verbose;
-
 struct cfattach isa_ca = {
 	sizeof(struct isa_softc), isamatch, isaattach
 };
@@ -203,14 +201,7 @@ isascan(parent, match)
 	if (cf->cf_fstate == FSTATE_STAR) {
 		struct isa_attach_args ia2 = ia;
 
-		if (autoconf_verbose)
-			printf(">>> probing for %s*\n",
-			    cf->cf_driver->cd_name);
 		while ((*cf->cf_attach->ca_match)(parent, dev, &ia2) > 0) {
-			if (autoconf_verbose)
-				printf(">>> probe for %s* clone into %s%d\n",
-				    cf->cf_driver->cd_name,
-				    cf->cf_driver->cd_name, cf->cf_unit);
 			if (ia2.ia_iosize == 0x666) {
 				printf("%s: iosize not repaired by driver\n",
 				    sc->sc_dev.dv_xname);
@@ -225,30 +216,19 @@ isascan(parent, match)
 				ISA_DRQ_ALLOC((struct device *)sc, ia.ia_drq);
 #endif /* NISAMDA > 0 */
 		}
-		if (autoconf_verbose)
-			printf(">>> probing for %s* finished\n",
-			    cf->cf_driver->cd_name);
 		free(dev, M_DEVBUF);
 		return;
 	}
 
-	if (autoconf_verbose)
-		printf(">>> probing for %s%d\n", cf->cf_driver->cd_name,
-		    cf->cf_unit);
 	if ((*cf->cf_attach->ca_match)(parent, dev, &ia) > 0) {
-		printf(">>> probing for %s%d succeeded\n",
-		    cf->cf_driver->cd_name, cf->cf_unit);
 		config_attach(parent, dev, &ia, isaprint);
 
 #if NISADMA > 0
 		if (ia.ia_drq != DRQUNK)
 			ISA_DRQ_ALLOC((struct device *)sc, ia.ia_drq);
 #endif /* NISAMDA > 0 */
-	} else {
-		printf(">>> probing for %s%d failed\n",
-		    cf->cf_driver->cd_name, cf->cf_unit);
+	} else
 		free(dev, M_DEVBUF);
-	}
 }
 
 char *
