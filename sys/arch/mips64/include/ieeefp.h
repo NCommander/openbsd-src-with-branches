@@ -1,6 +1,6 @@
-/*	$OpenBSD: ieeefp.h,v 1.2 1999/01/27 04:46:05 imp Exp $	*/
+/*	$OpenBSD: ieeefp.h,v 1.1 2004/08/06 20:56:02 pefo Exp $	*/
 
-/* 
+/*
  * Written by J.T. Conklin, Apr 11, 1995
  * Public domain.
  */
