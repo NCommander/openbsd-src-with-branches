@@ -1,4 +1,4 @@
-/* $OpenBSD: crunchide.c,v 1.17 2003/01/27 19:41:30 deraadt Exp $	 */
+/* $OpenBSD: crunchide.c,v 1.18 2003/04/16 21:11:10 drahn Exp $	 */
 
 /*
  * Copyright (c) 1994 University of Maryland
@@ -133,7 +133,7 @@ void
 usage(void)
 {
 	fprintf(stderr,
-	    "Usage: %s [-k <symbol-name>] [-f <keep-list-file>] <files> ...\n",
+	    "Usage: %s [-f keep-list-file] [-k keep-symbol] object-file ...\n",
 	    pname);
 	exit(1);
 }
