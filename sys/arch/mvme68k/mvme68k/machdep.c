@@ -1,4 +1,4 @@
-/*	$OpenBSD: machdep.c,v 1.81 2004/02/19 18:46:18 miod Exp $ */
+/*	$OpenBSD: machdep.c,v 1.82 2004/03/02 22:55:55 miod Exp $ */
 
 /*
  * Copyright (c) 1995 Theo de Raadt
@@ -683,7 +683,9 @@ boot(howto)
 {
 	/* If system is cold, just halt. */
 	if (cold) {
-		howto |= RB_HALT;
+		/* (Unless the user explicitly asked for reboot.) */
+		if ((howto & RB_USERREQ) == 0)
+			howto |= RB_HALT;
 		goto haltsys;
 	}
 
