@@ -247,6 +247,11 @@ cvs_file_create(const char *path, u_int type, mode_t mode)
 	cfp->cf_ddat->cd_root = cvsroot_get(path);
 	cfp->cf_ddat->cd_repo = strdup(cfp->cf_path);
 
+	if (cfp->cf_ddat->cd_repo == NULL) {
+		cvs_file_free(cfp);
+		return (NULL);
+	}
+
 	if (type == DT_DIR) {
 		if ((mkdir(path, mode) == -1) || (cvs_mkadmin(cfp, mode) < 0)) {
 			cvs_file_free(cfp);
