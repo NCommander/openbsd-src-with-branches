@@ -1,5 +1,5 @@
-/*	$OpenBSD: ibcs2_ioctl.c,v 1.4 1996/08/02 20:35:07 niklas Exp $	*/
-/*	$NetBSD: ibcs2_ioctl.c,v 1.11 1996/05/03 17:05:22 christos Exp $	*/
+/*	$OpenBSD: ibcs2_ioctl.c,v 1.5 1996/08/10 12:09:21 deraadt Exp $	*/
+/*	$NetBSD: ibcs2_ioctl.c,v 1.12 1996/08/10 09:08:26 mycroft Exp $	*/
 
 /*
  * Copyright (c) 1994, 1995 Scott Bartram
