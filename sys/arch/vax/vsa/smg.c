@@ -201,7 +201,7 @@ static	struct smg_screen *curscr;
 
 static	struct timeout smg_blink_timeout;
 
-extern int getmajor __P((void *));	/* conf.c */
+extern int getmajor(void *);	/* conf.c */
 
 int
 smg_match(struct device *parent, struct cfdata *match, void *aux)
@@ -577,7 +577,7 @@ smgcninit(cndev)
 {
 	extern void lkccninit(struct consdev *);
 	extern int lkccngetc(dev_t);
-	extern int dz_vsbus_lk201_cnattach __P((int));
+	extern int dz_vsbus_lk201_cnattach(int);
 	/* Clear screen */
 	memset(sm_addr, 0, 128*864);
 

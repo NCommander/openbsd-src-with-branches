@@ -57,14 +57,14 @@
 
 #include <machine/sparc64.h>
 
-int vsprintf __P((char *, const char *, va_list));
+int vsprintf(char *, const char *, va_list);
 
-void dk_cleanup __P((void));
+void dk_cleanup(void);
 
 static u_int mmuh = -1, memh = -1;
 
-static u_int get_mmu_handle __P((void));
-static u_int get_memory_handle __P((void));
+static u_int get_mmu_handle(void);
+static u_int get_memory_handle(void);
 
 static u_int 
 get_mmu_handle()
@@ -592,13 +592,7 @@ OF_stdout()
  * This is not safe, but then what do you expect?
  */
 void
-#ifdef __STDC__
 prom_printf(const char *fmt, ...)
-#else
-prom_printf(fmt, va_alist)
-	char *fmt;
-	va_dcl
-#endif
 {
 	int len;
 	static char buf[256];

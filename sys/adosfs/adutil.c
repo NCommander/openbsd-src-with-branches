@@ -1,4 +1,4 @@
-/*	$OpenBSD: adutil.c,v 1.11 1998/08/21 23:03:14 csapuntz Exp $	*/
+/*	$OpenBSD$	*/
 /*	$NetBSD: adutil.c,v 1.15 1996/10/13 02:52:07 christos Exp $	*/
 
 /*
@@ -51,7 +51,7 @@
  */
 #define AHASH(an) ((an) & (ANODEHASHSZ - 1))
 
-static __inline char	CapitalChar __P((char, int));
+static __inline char	CapitalChar(char, int);
 
 struct vnode * 
 adosfs_ahashget(mp, an)

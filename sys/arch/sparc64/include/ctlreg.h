@@ -443,24 +443,24 @@
  * D$ so we need to flush the D$ to make sure we don't get data pollution.
  */
 
-static __inline__ u_char lduba __P((paddr_t loc, int asi));
-static __inline__ u_short lduha __P((paddr_t loc, int asi));
-static __inline__ u_int lda __P((paddr_t loc, int asi));
-static __inline__ int ldswa __P((paddr_t loc, int asi));
-static __inline__ u_int64_t ldxa __P((paddr_t loc, int asi));
-static __inline__ u_int64_t ldda __P((paddr_t loc, int asi));
+static __inline__ u_char lduba(paddr_t loc, int asi);
+static __inline__ u_short lduha(paddr_t loc, int asi);
+static __inline__ u_int lda(paddr_t loc, int asi);
+static __inline__ int ldswa(paddr_t loc, int asi);
+static __inline__ u_int64_t ldxa(paddr_t loc, int asi);
+static __inline__ u_int64_t ldda(paddr_t loc, int asi);
 
-static __inline__ void stba __P((paddr_t loc, int asi, u_char value));
-static __inline__ void stha __P((paddr_t loc, int asi, u_short value));
-static __inline__ void sta __P((paddr_t loc, int asi, u_int value));
-static __inline__ void stxa __P((paddr_t loc, int asi, u_int64_t value));
-static __inline__ void stda __P((paddr_t loc, int asi, u_int64_t value));
+static __inline__ void stba(paddr_t loc, int asi, u_char value);
+static __inline__ void stha(paddr_t loc, int asi, u_short value);
+static __inline__ void sta(paddr_t loc, int asi, u_int value);
+static __inline__ void stxa(paddr_t loc, int asi, u_int64_t value);
+static __inline__ void stda(paddr_t loc, int asi, u_int64_t value);
 
 #if 0
-static __inline__ unsigned int casa __P((paddr_t loc, int asi, 
-	unsigned int value, unsigned int oldvalue));
-static __inline__ u_int64_t casxa __P((paddr_t loc, int asi, 
-	u_int64_t value, u_int64_t oldvalue));
+static __inline__ unsigned int casa(paddr_t loc, int asi, 
+	unsigned int value, unsigned int oldvalue);
+static __inline__ u_int64_t casxa(paddr_t loc, int asi, 
+	u_int64_t value, u_int64_t oldvalue);
 #endif
 
 #ifdef __arch64__
@@ -1120,5 +1120,5 @@ casxa(paddr_t loc, int asi, u_int64_t value, u_int64_t oldvalue)
 })
 #endif
 
-extern void next_tick __P((long));
+extern void next_tick(long);
 #endif

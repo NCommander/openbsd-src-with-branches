@@ -67,7 +67,7 @@
 
 #include <sys/pipe.h>
 
-static void cvtstat __P((struct stat *, struct ostat *));
+static void cvtstat(struct stat *, struct ostat *);
 
 /*
  * Redirection info so we don't have to include the union fs routines in 
@@ -77,8 +77,8 @@ static void cvtstat __P((struct stat *, struct ostat *));
  * value is compiled in from kern/vfs_syscalls.c
  */
 
-extern int (*union_check_p)  __P((struct proc *, struct vnode **, 
-				   struct file *, struct uio, int *));
+extern int (*union_check_p)(struct proc *, struct vnode **, 
+				   struct file *, struct uio, int *);
 
 /*
  * Convert from an old to a new stat structure.

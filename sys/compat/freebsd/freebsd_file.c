@@ -57,8 +57,8 @@
 
 const char freebsd_emul_path[] = "/emul/freebsd";
 
-static char * convert_from_freebsd_mount_type __P((int));
-void statfs_to_freebsd_statfs __P((struct proc *, struct mount *, struct statfs *, struct freebsd_statfs *));
+static char * convert_from_freebsd_mount_type(int);
+void statfs_to_freebsd_statfs(struct proc *, struct mount *, struct statfs *, struct freebsd_statfs *);
 
 struct freebsd_statfs {
 	long	f_spare2;		/* placeholder */

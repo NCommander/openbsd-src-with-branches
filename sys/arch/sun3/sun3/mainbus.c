@@ -43,8 +43,8 @@
 
 #include <machine/autoconf.h>
 
-static int 	main_match __P((struct device *, void *, void *));
-static void	main_attach __P((struct device *, struct device *, void *));
+static int 	main_match(struct device *, void *, void *);
+static void	main_attach(struct device *, struct device *, void *);
 
 struct cfattach mainbus_ca = {
 	sizeof(struct device), main_match, main_attach

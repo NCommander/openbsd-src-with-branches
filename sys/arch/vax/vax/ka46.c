@@ -54,13 +54,13 @@
 #include <machine/clock.h>
 #include <machine/vsbus.h>
 
-static	void	ka46_conf __P((void));
-static	void	ka46_steal_pages __P((void));
-static	void	ka46_memerr __P((void));
-static	int	ka46_mchk __P((caddr_t));
-static	void	ka46_halt __P((void));
-static	void	ka46_reboot __P((int));
-static	void	ka46_cache_enable __P((void));
+static	void	ka46_conf(void);
+static	void	ka46_steal_pages(void);
+static	void	ka46_memerr(void);
+static	int	ka46_mchk(caddr_t);
+static	void	ka46_halt(void);
+static	void	ka46_reboot(int);
+static	void	ka46_cache_enable(void);
 
 struct	vs_cpu *ka46_cpu;
 

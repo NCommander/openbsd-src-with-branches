@@ -56,8 +56,8 @@ struct uvaxIIcpu *uvaxIIcpu_ptr;
 
 #if VAX630
 struct	ka630clock *ka630clk_ptr;
-static	time_t	ka630_clkread __P((int *));
-static	void	ka630_clkwrite __P((time_t));
+static	time_t	ka630_clkread(int *);
+static	void	ka630_clkwrite(time_t);
 
 struct watclk {
     u_short wat_sec;

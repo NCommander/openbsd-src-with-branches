@@ -1,4 +1,4 @@
-/*	$OpenBSD: ibus.c,v 1.3.4.1 2001/05/14 21:38:53 niklas Exp $	*/
+/*	$OpenBSD$	*/
 /*	$NetBSD: ibus.c,v 1.7 2001/02/04 20:36:32 ragge Exp $ */
 /*
  * Copyright (c) 1999 Ludd, University of Lule}, Sweden.
@@ -41,7 +41,7 @@
 
 static	int ibus_print(void *, const char *);
 static	int ibus_match(struct device *, struct cfdata *, void *);
-static	void ibus_attach(struct device *, struct device *, void*);
+static	void ibus_attach(struct device *, struct device *, void *);
 
 struct	cfdriver ibus_cd = {
 	NULL, "ibus", DV_DULL

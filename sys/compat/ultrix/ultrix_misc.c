@@ -145,8 +145,8 @@ extern char *ultrix_syscallnames[];
 #endif /* __vax__ */
 
 
-extern void ULTRIX_EXEC_SETREGS __P((struct proc *, struct exec_package *,
-					u_long, register_t *));
+extern void ULTRIX_EXEC_SETREGS(struct proc *, struct exec_package *,
+					u_long, register_t *);
 extern char sigcode[], esigcode[];
 
 struct emul emul_ultrix = {
@@ -279,7 +279,7 @@ ultrix_sys_select(p, v, retval)
 #endif
 
 	}
-	error = sys_select(p, (void*) uap, retval);
+	error = sys_select(p, (void *) uap, retval);
 	if (error == EINVAL)
 		printf("ultrix select: bad args?\n");
 
@@ -401,7 +401,7 @@ ultrix_sys_uname(p, v, retval)
 {
 	struct ultrix_sys_uname_args *uap = v;
 	struct ultrix_utsname sut;
-	extern char ostype[], machine[], osrelease[];
+	extern char machine[];
 
 	bzero(&sut, sizeof(sut));
 

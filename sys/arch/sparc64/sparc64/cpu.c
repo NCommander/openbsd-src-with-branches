@@ -81,8 +81,8 @@ char	machine_arch[] = MACHINE_ARCH;	/* from <machine/param.h> */
 char	cpu_model[100];
 
 /* The CPU configuration driver. */
-static void cpu_attach __P((struct device *, struct device *, void *));
-int  cpu_match __P((struct device *, void *, void *));
+static void cpu_attach(struct device *, struct device *, void *);
+int  cpu_match(struct device *, void *, void *);
 
 struct cfattach cpu_ca = {
 	sizeof(struct device), cpu_match, cpu_attach
@@ -91,9 +91,9 @@ struct cfattach cpu_ca = {
 extern struct cfdriver cpu_cd;
 
 #if defined(SUN4C) || defined(SUN4M)
-static char *psrtoname __P((int, int, int, char *));
+static char *psrtoname(int, int, int, char *);
 #endif
-static char *fsrtoname __P((int, int, int, char *));
+static char *fsrtoname(int, int, int, char *);
 
 #define	IU_IMPL(v)	((((u_int64_t)(v))&VER_IMPL) >> VER_IMPL_SHIFT)
 #define	IU_VERS(v)	((((u_int64_t)(v))&VER_MASK) >> VER_MASK_SHIFT)

@@ -80,8 +80,8 @@ hpux_termio(fd, com, data, p)
 	struct hpux_termios htios;
 	int line, error;
 	int newi = 0;
-	int (*ioctlrout) __P((struct file *fp, u_long com,
-	    caddr_t data, struct proc *p));
+	int (*ioctlrout)(struct file *fp, u_long com,
+	    caddr_t data, struct proc *p);
 
 	if ((fp = fd_getfile(p->p_fd, fd)) == NULL)
 		return (EBADF);

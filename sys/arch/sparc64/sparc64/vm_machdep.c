@@ -71,8 +71,8 @@
 
 /* XXX These are in sbusvar.h, but including that would be problematical */
 struct sbus_softc *sbus0;
-void    sbus_enter __P((struct sbus_softc *, vaddr_t va, int64_t pa, int flags));
-void    sbus_remove __P((struct sbus_softc *, vaddr_t va, int len));
+void    sbus_enter(struct sbus_softc *, vaddr_t va, int64_t pa, int flags);
+void    sbus_remove(struct sbus_softc *, vaddr_t va, int len);
 
 /*
  * Move pages from one kernel virtual address to another.

@@ -40,7 +40,7 @@
 #include "stand.h"
 #include "dvma.h"
 
-extern void set_pte __P((int, int));
+extern void set_pte(int, int);
 extern int debug;
 
 static int promdev_inuse;
@@ -107,7 +107,7 @@ prom_iopen(si)
 		size = dip->d_dmabytes + NBPG;
 		addr = (int) dvma_alloc(size);
 		addr = m68k_round_page(addr);
-		si->si_dmaaddr = (char*) addr;
+		si->si_dmaaddr = (char *) addr;
 #ifdef	DEBUG_PROM
 		if (debug)
 			printf("prom_iopen: dmaaddr=0x%x\n", si->si_dmaaddr);
@@ -222,5 +222,5 @@ found:
 		pte += 1;
 		length -= NBPG;
 	} while (length > 0);
-	return ((char*)(prom_devmap | (pa & PGOFSET)));
+	return ((char *)(prom_devmap | (pa & PGOFSET)));
 }

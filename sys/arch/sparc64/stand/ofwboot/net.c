@@ -63,8 +63,8 @@
 #include <lib/libsa/netif.h>
 
 
-static int net_mountroot_bootparams __P((void));
-static int net_mountroot_bootp __P((void));
+static int net_mountroot_bootparams(void);
+static int net_mountroot_bootp(void);
 
 char	rootpath[FNAME_SIZE];
 

@@ -110,8 +110,8 @@ struct psycho_softc {
 };
 
 /* config space is per-psycho.  mem/io/dma are per-pci bus */
-bus_dma_tag_t psycho_alloc_dma_tag __P((struct psycho_pbm *));
-bus_space_tag_t psycho_alloc_bus_tag __P((struct psycho_pbm *, int));
+bus_dma_tag_t psycho_alloc_dma_tag(struct psycho_pbm *);
+bus_space_tag_t psycho_alloc_bus_tag(struct psycho_pbm *, int);
 
 #define psycho_alloc_config_tag(pp) psycho_alloc_bus_tag((pp), PCI_CONFIG_BUS_SPACE)
 #define psycho_alloc_mem_tag(pp) psycho_alloc_bus_tag((pp), PCI_MEMORY_BUS_SPACE)

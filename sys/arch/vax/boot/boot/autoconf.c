@@ -159,6 +159,7 @@ autoconf()
 	case VAX_BTYP_49:
 	case VAX_BTYP_1301:
 	case VAX_BTYP_1303:
+	case VAX_BTYP_1305:
 		break;
 	}
 }

@@ -311,10 +311,10 @@ zsc_intr_soft(arg)
  * Provide a null zs "ops" vector.
  */
 
-static void zsnull_rxint   __P((struct zs_chanstate *));
-static void zsnull_stint   __P((struct zs_chanstate *, int));
-static void zsnull_txint   __P((struct zs_chanstate *));
-static void zsnull_softint __P((struct zs_chanstate *));
+static void zsnull_rxint(struct zs_chanstate *);
+static void zsnull_stint(struct zs_chanstate *, int);
+static void zsnull_txint(struct zs_chanstate *);
+static void zsnull_softint(struct zs_chanstate *);
 
 static void
 zsnull_rxint(cs)

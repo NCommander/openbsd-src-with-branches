@@ -115,6 +115,6 @@ struct sbus_softc {
 	struct iommu_state	sc_is;		/* IOMMU state, see iommureg.h */
 };
 
-bus_addr_t sbus_bus_addr __P((bus_space_tag_t, u_int, u_int));
+bus_addr_t sbus_bus_addr(bus_space_tag_t, u_int, u_int);
 
 #endif /* _SBUS_VAR_SPARC64_H_ */

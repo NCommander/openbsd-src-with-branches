@@ -118,7 +118,7 @@ _start:
 	 nop
 
 /*
- * void syncicache(void* start, int size)
+ * void syncicache(void *start, int size)
  *
  * I$ flush.  Really simple.  Just flush over the whole range.
  */

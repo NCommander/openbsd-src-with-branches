@@ -63,12 +63,12 @@
 
 #define b_forw	b_hash.le_next
 
-int	mscp_match __P((struct device *, struct cfdata *, void *));
-void	mscp_attach __P((struct device *, struct device *, void *));
-void	mscp_start __P((struct	mscp_softc *));
-int	mscp_init __P((struct  mscp_softc *));
-void	mscp_initds __P((struct mscp_softc *));
-int	mscp_waitstep __P((struct mscp_softc *, int, int));
+int	mscp_match(struct device *, struct cfdata *, void *);
+void	mscp_attach(struct device *, struct device *, void *);
+void	mscp_start(struct	mscp_softc *);
+int	mscp_init(struct  mscp_softc *);
+void	mscp_initds(struct mscp_softc *);
+int	mscp_waitstep(struct mscp_softc *, int, int);
 
 struct	cfattach mscpbus_ca = {
 	sizeof(struct mscp_softc), (cfmatch_t)mscp_match, mscp_attach

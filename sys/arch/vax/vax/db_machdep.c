@@ -63,7 +63,7 @@
 
 extern	label_t	*db_recover;
 
-void	kdbprinttrap __P((int, int));
+void	kdbprinttrap(int, int);
 
 int	db_active = 0;
 

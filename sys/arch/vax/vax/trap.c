@@ -61,10 +61,10 @@
 volatile int startsysc = 0, faultdebug = 0;
 #endif
 
-static __inline void userret __P((struct proc *, struct trapframe *, u_quad_t));
+static __inline void userret(struct proc *, struct trapframe *, u_quad_t);
 
-void	arithflt __P((struct trapframe *));
-void	syscall __P((struct trapframe *));
+void	arithflt(struct trapframe *);
+void	syscall(struct trapframe *);
 
 char *traptypes[]={
 	"reserved addressing",
@@ -382,7 +382,7 @@ if(startsysc)printf("trap syscall %s pc %lx, psl %lx, sp %lx, pid %d, frame %p\n
 	rval[0] = 0;
 	rval[1] = frame->r1;
 	if(callp->sy_narg) {
-		err = copyin((char*)frame->ap + 4, args, callp->sy_argsize);
+		err = copyin((char *)frame->ap + 4, args, callp->sy_argsize);
 		if (err) {
 #ifdef KTRACE
 			if (KTRPOINT(p, KTR_SYSCALL))

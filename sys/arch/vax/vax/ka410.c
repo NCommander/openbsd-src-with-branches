@@ -53,13 +53,13 @@
 #include <machine/clock.h>
 #include <machine/vsbus.h>
 
-static	void	ka410_conf __P((void));
-static	void	ka410_memerr __P((void));
-static	int	ka410_mchk __P((caddr_t));
-static	void	ka410_halt __P((void));
-static	void	ka410_reboot __P((int));
-static	void	ka41_cache_enable __P((void));
-static	void	ka410_clrf __P((void));
+static	void	ka410_conf(void);
+static	void	ka410_memerr(void);
+static	int	ka410_mchk(caddr_t);
+static	void	ka410_halt(void);
+static	void	ka410_reboot(int);
+static	void	ka41_cache_enable(void);
+static	void	ka410_clrf(void);
 
 static	caddr_t	l2cache;	/* mapped in address */
 static	long 	*cacr;		/* l2csche ctlr reg */

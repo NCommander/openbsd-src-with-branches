@@ -114,8 +114,8 @@ compat_09_sys_uname(p, v, retval)
 		syscallarg(struct outsname *) name;
 	} */ *uap = v;
 	struct outsname outsname;
-	char *cp, *dp, *ep;
-	extern char ostype[], osrelease[];
+	const char *cp;
+	char *dp, *ep;
 
 	strncpy(outsname.sysname, ostype, sizeof(outsname.sysname));
 	strncpy(outsname.nodename, hostname, sizeof(outsname.nodename));

@@ -58,7 +58,7 @@ struct idprom {
 
 extern struct idprom identity_prom;
 
-int  idprom_init __P((void));
-void idprom_etheraddr __P((u_char *));
+int  idprom_init(void);
+void idprom_etheraddr(u_char *);
 
 #endif

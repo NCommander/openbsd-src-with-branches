@@ -6185,7 +6185,7 @@ _C_LABEL(cache_flush_virt):
 	 mov	%o2, %o0	! Start of clear
 
 /*
- *	cache_flush_phys __P((paddr_t, psize_t, int));
+ *	cache_flush_phys(paddr_t, psize_t, int);
  *
  *	Clear a set of paddrs from the D$, I$ and if param3 is
  *	non-zero, E$.  (E$ is not supported yet).

@@ -60,7 +60,7 @@ extern struct pmap	kernel_pmap_store;
 #define	pmap_kernel()			(&kernel_pmap_store)
 
 /* This is called from locore.s:cpu_switch() */
-void pmap_switch __P((pmap_t pmap));
+void pmap_switch(pmap_t pmap);
 
 /* This lets us have some say in choosing VA locations. */
 extern void pmap_prefer(vm_offset_t, vm_offset_t *);

@@ -73,7 +73,7 @@ db_regs_t	ddb_regs;	/* register state */
 #define inst_store(ins)		0
 
 /* Prototypes */
-void	kdb_trap __P((struct trapframe *));
+void	kdb_trap(struct trapframe *);
 
 /*
  * We use a.out symbols in DDB.

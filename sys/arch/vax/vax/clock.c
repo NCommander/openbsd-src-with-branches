@@ -1,4 +1,4 @@
-/*	$OpenBSD: clock.c,v 1.8.12.1 2001/05/14 21:38:43 niklas Exp $	 */
+/*	$OpenBSD$	 */
 /*	$NetBSD: clock.c,v 1.35 2000/06/04 06:16:58 matt Exp $	 */
 /*
  * Copyright (c) 1995 Ludd, University of Lule}, Sweden.
@@ -44,8 +44,8 @@
 #include <machine/cpu.h>
 #include <machine/uvax.h>
 
-int	yeartonum __P((int));
-int	numtoyear __P((int));
+int	yeartonum(int);
+int	numtoyear(int);
 
 struct evcnt clock_intrcnt;
 

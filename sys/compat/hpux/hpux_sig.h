@@ -48,8 +48,8 @@
  */
 
 #ifdef _KERNEL
-int	hpuxtobsdsig __P((int));
-int	bsdtohpuxsig __P((int));
-int	hpuxtobsdmask __P((int));
-int	bsdtohpuxmask __P((int));
+int	hpuxtobsdsig(int);
+int	bsdtohpuxsig(int);
+int	hpuxtobsdmask(int);
+int	bsdtohpuxmask(int);
 #endif /* _KERNEL */

@@ -54,8 +54,8 @@
 #include <arch/vax/qbus/dzreg.h>
 #include <arch/vax/qbus/dzvar.h>
 
-static	int	dz_uba_match __P((struct device *, struct cfdata *, void *));
-static	void	dz_uba_attach __P((struct device *, struct device *, void *));
+static	int	dz_uba_match(struct device *, struct cfdata *, void *);
+static	void	dz_uba_attach(struct device *, struct device *, void *);
 
 struct	cfattach dz_uba_ca = {
 	sizeof(struct dz_softc), (cfmatch_t)dz_uba_match, dz_uba_attach

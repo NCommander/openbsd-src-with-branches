@@ -55,10 +55,10 @@
 #include <ddb/db_command.h>
 #include <ddb/db_output.h>
 
-static void db_mach_pagemap __P((db_expr_t, int, db_expr_t, char *));
-static void db_mach_abort   __P((db_expr_t, int, db_expr_t, char *));
+static void db_mach_pagemap(db_expr_t, int, db_expr_t, char *);
+static void db_mach_abort(db_expr_t, int, db_expr_t, char *);
 
-static void pte_print __P((int));
+static void pte_print(int);
 
 static char *pgt_names[] = {
 	"MEM", "OBIO", "VMES", "VMEL" };

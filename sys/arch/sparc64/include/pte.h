@@ -121,8 +121,8 @@ struct sun4u_tte {
 typedef struct sun4u_tte pte_t;
 
 /* Assembly routine to flush a mapping */
-extern void tlb_flush_pte __P((vaddr_t addr, int ctx));
-extern void tlb_flush_ctx __P((int ctx));
+extern void tlb_flush_pte(vaddr_t addr, int ctx);
+extern void tlb_flush_ctx(int ctx);
 
 #endif /* _LOCORE */
 

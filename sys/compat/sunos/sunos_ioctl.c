@@ -95,10 +95,10 @@ static u_long s2btab[] = {
 	38400,
 };
 
-static void stios2btios __P((struct sunos_termios *, struct termios *));
-static void btios2stios __P((struct termios *, struct sunos_termios *));
-static void stios2stio __P((struct sunos_termios *, struct sunos_termio *));
-static void stio2stios __P((struct sunos_termio *, struct sunos_termios *));
+static void stios2btios(struct sunos_termios *, struct termios *);
+static void btios2stios(struct termios *, struct sunos_termios *);
+static void stios2stio(struct sunos_termios *, struct sunos_termio *);
+static void stio2stios(struct sunos_termio *, struct sunos_termios *);
 
 /*
  * These two conversion functions have mostly been done
@@ -401,7 +401,7 @@ sunos_sys_ioctl(p, v, retval)
 	struct sunos_sys_ioctl_args *uap = v;
 	struct filedesc *fdp = p->p_fd;
 	struct file *fp;
-	int (*ctl) __P((struct file *, u_long, caddr_t, struct proc *));
+	int (*ctl)(struct file *, u_long, caddr_t, struct proc *);
 	int error;
 
 	if ((fp = fd_getfile(fdp, SCARG(uap, fd))) == NULL)
@@ -876,8 +876,8 @@ struct sunos_flock {
 	short	l_xxx;
 };
 
-static void bsd_to_sunos_flock __P((struct flock *, struct sunos_flock *));
-static void sunos_to_bsd_flock __P((struct sunos_flock *, struct flock *));
+static void bsd_to_sunos_flock(struct flock *, struct sunos_flock *);
+static void sunos_to_bsd_flock(struct sunos_flock *, struct flock *);
 
 #define SUNOS_F_RDLCK	1
 #define	SUNOS_F_WRLCK	2

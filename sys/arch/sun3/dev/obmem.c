@@ -49,8 +49,8 @@
 #include <machine/autoconf.h>
 #include <machine/obmem.h>
 
-static int  obmem_match __P((struct device *, void *, void *));
-static void obmem_attach __P((struct device *, struct device *, void *));
+static int  obmem_match(struct device *, void *, void *);
+static void obmem_attach(struct device *, struct device *, void *);
 
 struct cfattach obmem_ca = {
 	sizeof(struct device), obmem_match, obmem_attach

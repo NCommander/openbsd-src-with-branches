@@ -100,10 +100,10 @@
 #define	OSF1_UNMOUNT_FLAGS	(OSF1_MNT_FORCE|OSF1_MNT_NOFORCE)
 
 
-static int	osf1_mount_mfs __P((struct proc *,
-		    struct osf1_sys_mount_args *, struct sys_mount_args *));
-static int	osf1_mount_nfs __P((struct proc *,
-		    struct osf1_sys_mount_args *, struct sys_mount_args *));
+static int	osf1_mount_mfs(struct proc *,
+		    struct osf1_sys_mount_args *, struct sys_mount_args *);
+static int	osf1_mount_nfs(struct proc *,
+		    struct osf1_sys_mount_args *, struct sys_mount_args *);
 
 int
 osf1_sys_fstatfs(p, v, retval)

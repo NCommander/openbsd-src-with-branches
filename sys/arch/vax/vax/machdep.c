@@ -121,7 +121,7 @@
 
 #include "smg.h"
 
-caddr_t allocsys __P((caddr_t));
+caddr_t allocsys(caddr_t);
 
 #ifndef BUFCACHEPERCENT
 #define BUFCACHEPERCENT 5
@@ -174,7 +174,6 @@ void
 cpu_startup()
 {
 	caddr_t		v;
-	extern char	version[];
 	int		base, residual, i, sz;
 	vm_offset_t	minaddr, maxaddr;
 	vm_size_t	size;
@@ -635,6 +634,8 @@ process_read_regs(p, regs)
 	return 0;
 }
 
+#ifdef PTRACE
+
 int
 process_write_regs(p, regs)
 	struct proc    *p;
@@ -691,6 +692,8 @@ process_sstep(p, sstep)
 
 	return (0);
 }
+
+#endif	/* PTRACE */
 
 #undef PHYSMEMDEBUG
 /*

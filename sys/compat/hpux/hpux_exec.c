@@ -1,4 +1,4 @@
-/*	$OpenBSD: hpux_exec.c,v 1.11.2.2 2001/11/13 21:05:47 niklas Exp $	*/
+/*	$OpenBSD$	*/
 /*	$NetBSD: hpux_exec.c,v 1.8 1997/03/16 10:14:44 thorpej Exp $	*/
 
 /*
@@ -69,9 +69,9 @@ extern char *hpux_syscallnames[];
 #endif
 extern int bsdtohpuxerrnomap[];
 
-static	int exec_hpux_prep_nmagic __P((struct proc *, struct exec_package *));
-static	int exec_hpux_prep_zmagic __P((struct proc *, struct exec_package *));
-static	int exec_hpux_prep_omagic __P((struct proc *, struct exec_package *));
+static	int exec_hpux_prep_nmagic(struct proc *, struct exec_package *);
+static	int exec_hpux_prep_zmagic(struct proc *, struct exec_package *);
+static	int exec_hpux_prep_omagic(struct proc *, struct exec_package *);
 
 struct emul emul_hpux = {
 	"hpux",

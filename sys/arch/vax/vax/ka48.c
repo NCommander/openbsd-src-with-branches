@@ -55,13 +55,13 @@
 #include <machine/clock.h>
 #include <machine/vsbus.h>
 
-static	void	ka48_conf __P((void));
-static	void	ka48_steal_pages __P((void));
-static	void	ka48_memerr __P((void));
-static	int	ka48_mchk __P((caddr_t));
-static	void	ka48_halt __P((void));
-static	void	ka48_reboot __P((int));
-static	void	ka48_cache_enable __P((void));
+static	void	ka48_conf(void);
+static	void	ka48_steal_pages(void);
+static	void	ka48_memerr(void);
+static	int	ka48_mchk(caddr_t);
+static	void	ka48_halt(void);
+static	void	ka48_reboot(int);
+static	void	ka48_cache_enable(void);
 
 struct	vs_cpu *ka48_cpu;
 

@@ -57,7 +57,9 @@ unsupported_msg(struct proc *p, const char *fname)
 }
 
 DUMMY(ostat);			/* #18 */
+#ifdef PTRACE
 DUMMY(ptrace);			/* #26 */
+#endif
 DUMMY(ofstat);			/* #28 */
 DUMMY(stty);			/* #31 */
 DUMMY(gtty);			/* #32 */

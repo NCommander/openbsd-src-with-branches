@@ -50,8 +50,8 @@
 #include <machine/pmap.h>
 #include <machine/nexus.h>
 
-void	start __P((void));
-void	main __P((void));
+void	start(void);
+void	main(void);
 
 extern	paddr_t avail_end;
 paddr_t	esym;

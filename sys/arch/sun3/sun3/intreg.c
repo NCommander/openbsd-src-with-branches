@@ -64,9 +64,9 @@ struct intreg_softc {
 	volatile u_char *sc_reg;
 };
 
-static int  intreg_match __P((struct device *, void *vcf, void *args));
-static void intreg_attach __P((struct device *, struct device *, void *));
-static int soft1intr __P((void *));
+static int  intreg_match(struct device *, void *vcf, void *args);
+static void intreg_attach(struct device *, struct device *, void *);
+static int soft1intr(void *);
 
 struct cfattach intreg_ca = {
 	sizeof(struct intreg_softc), intreg_match, intreg_attach

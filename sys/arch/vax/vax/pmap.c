@@ -106,21 +106,21 @@ int	startpmapdebug = 0;
 #ifndef DEBUG
 static inline
 #endif
-void pmap_decpteref __P((struct pmap *, struct pte *));
+void pmap_decpteref(struct pmap *, struct pte *);
 
 #ifndef PMAPDEBUG
 static inline
 #endif
-void rensa __P((int, struct pte *));
+void rensa(int, struct pte *);
 
 vaddr_t   avail_start, avail_end;
 vaddr_t   virtual_avail, virtual_end; /* Available virtual memory	*/
 
-void pmap_pinit __P((pmap_t));
-void pmap_release __P((pmap_t));
-struct pv_entry *get_pventry __P((void));
-void free_pventry __P((struct pv_entry *));
-void more_pventries __P((void));
+void pmap_pinit(pmap_t);
+void pmap_release(pmap_t);
+struct pv_entry *get_pventry(void);
+void free_pventry(struct pv_entry *);
+void more_pventries(void);
 
 /*
  * pmap_bootstrap().

@@ -95,8 +95,8 @@ struct cg2_softc {
 };
 
 /* autoconfiguration driver */
-static void	cg2attach __P((struct device *, struct device *, void *));
-static int	cg2match __P((struct device *, void *, void *));
+static void	cg2attach(struct device *, struct device *, void *);
+static int	cg2match(struct device *, void *, void *);
 
 struct cfattach cgtwo_ca = {
 	sizeof(struct cg2_softc), cg2match, cg2attach
@@ -106,11 +106,11 @@ struct cfdriver cgtwo_cd = {
 	NULL, "cgtwo", DV_DULL
 };
 
-static int	cg2gattr __P((struct fbdevice *, struct fbgattr *));
-static int	cg2gvideo __P((struct fbdevice *, int *));
-static int	cg2svideo __P((struct fbdevice *, int *));
-static int	cg2getcmap __P((struct fbdevice *, struct fbcmap *));
-static int	cg2putcmap __P((struct fbdevice *, struct fbcmap *));
+static int	cg2gattr(struct fbdevice *, struct fbgattr *);
+static int	cg2gvideo(struct fbdevice *, int *);
+static int	cg2svideo(struct fbdevice *, int *);
+static int	cg2getcmap(struct fbdevice *, struct fbcmap *);
+static int	cg2putcmap(struct fbdevice *, struct fbcmap *);
 
 static struct fbdriver cg2fbdriver = {
 	cg2open, cg2close, cg2mmap, cg2gattr,
@@ -118,7 +118,7 @@ static struct fbdriver cg2fbdriver = {
 	cg2getcmap, cg2putcmap
 };
 
-static int	cg2intr __P((void*));
+static int	cg2intr(void *);
 
 /*
  * Match a cg2.
@@ -166,7 +166,7 @@ cg2attach(parent, self, args)
 	sc->sc_ctlreg = (struct cg2fb *) bus_mapin(ca->ca_bustype,
 			ca->ca_paddr + CTLREGS_OFF, CTLREGS_SIZE);
 
-	isr_add_vectored(cg2intr, (void*)sc,
+	isr_add_vectored(cg2intr, (void *)sc,
 					 ca->ca_intpri, ca->ca_intvec);
 
 	/*

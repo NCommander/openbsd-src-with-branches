@@ -48,4 +48,4 @@
 
 #define IREG_BITS "\20\8CLK7\7RSV6\6CLK5\5VIDEO\4SOFT3\3SOFT2\2SOFT1\1ALL\n"
 
-void set_clk_mode __P((u_char on, u_char off, int enable));
+void set_clk_mode(u_char on, u_char off, int enable);

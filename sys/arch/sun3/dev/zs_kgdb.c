@@ -79,10 +79,10 @@ struct zschan {
 extern int kgdb_dev;
 extern int kgdb_rate;
 
-struct zschan * zs_get_chan_addr __P((int zsc_unit, int channel));
+struct zschan * zs_get_chan_addr(int zsc_unit, int channel);
 
-extern int  zs_getc __P((void *arg));
-extern void zs_putc __P((void *arg,	int c));
+extern int  zs_getc(void *arg);
+extern void zs_putc(void *arg,	int c);
 
 struct zsops zsops_kgdb;
 

@@ -42,7 +42,7 @@
 
 #include <compat/common/compat_util.h>
 
-static void bsdos_to_oss	__P((struct bsdos_sys_ioctl_args *, struct oss_sys_ioctl_args *));
+static void bsdos_to_oss(struct bsdos_sys_ioctl_args *, struct oss_sys_ioctl_args *);
 
 /*
  * BSD/OS and OSS have different values for IOC_*.  Also,

@@ -1,4 +1,4 @@
-/*	$OpenBSD: fpu.c,v 1.6 1997/01/16 04:04:20 kstailey Exp $	*/
+/*	$OpenBSD$	*/
 /*	$NetBSD: fpu.c,v 1.9 1996/11/20 18:57:29 gwr Exp $	*/
 
 /*-
@@ -67,7 +67,7 @@ static char *fpu_descr[] = {
 	"mc68882",			/* 2 */
 	"?" };
 
-static int fpu_probe __P((void));
+static int fpu_probe(void);
 
 void
 initfpu()

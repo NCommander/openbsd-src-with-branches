@@ -72,7 +72,7 @@ typedef void		*osf1_data_ptr;	/* XXX hard to fix size */
 typedef void		*osf1_fcn_ptr;	/* XXX hard to fix size, bogus */
 typedef	osf1_int	osf1_key_t;
 typedef	osf1_int	osf1_pid_t;
-typedef void    (*osf1_handler_t) __P((int));
+typedef void    (*osf1_handler_t)(int);
 
 struct osf1_timeval {				/* time.h */
 	osf1_time_t	tv_sec;

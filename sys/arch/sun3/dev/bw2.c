@@ -82,8 +82,8 @@ struct bw2_softc {
 };
 
 /* autoconfiguration driver */
-static void	bw2attach __P((struct device *, struct device *, void *));
-static int	bw2match __P((struct device *, void *, void *));
+static void	bw2attach(struct device *, struct device *, void *);
+static int	bw2match(struct device *, void *, void *);
 
 struct cfattach bwtwo_ca = {
 	sizeof(struct bw2_softc), bw2match, bw2attach
@@ -95,8 +95,8 @@ struct cfdriver bwtwo_cd = {
 
 /* XXX we do not handle frame buffer interrupts */
 
-static int	bw2gvideo __P((struct fbdevice *, int *));
-static int	bw2svideo __P((struct fbdevice *, int *));
+static int	bw2gvideo(struct fbdevice *, int *);
+static int	bw2svideo(struct fbdevice *, int *);
 
 static struct fbdriver bw2fbdriver = {
 	bw2open, bw2close, bw2mmap,

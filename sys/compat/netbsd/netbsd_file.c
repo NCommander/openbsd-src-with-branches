@@ -60,9 +60,9 @@
 const char netbsd_emul_path[] = "/emul/netbsd";
 
 #if 0
-static char * convert_from_netbsd_mount_type __P((int));
-void statfs_to_netbsd_statfs __P((struct proc *, struct mount *,
-	struct statfs *, struct netbsd_statfs *));
+static char * convert_from_netbsd_mount_type(int);
+void statfs_to_netbsd_statfs(struct proc *, struct mount *,
+	struct statfs *, struct netbsd_statfs *);
 
 struct netbsd_statfs {
 	long	f_spare2;		/* placeholder */

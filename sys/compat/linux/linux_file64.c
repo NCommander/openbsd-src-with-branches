@@ -67,10 +67,10 @@
 #include <machine/linux_machdep.h>
 
 
-void bsd_to_linux_flock64 __P((struct flock *, struct linux_flock64 *));
-void linux_to_bsd_flock64 __P((struct linux_flock64 *, struct flock *));
-static void bsd_to_linux_stat __P((struct stat *, struct linux_stat64 *));
-static int linux_do_stat64 __P((struct proc *, void *, register_t *, int));
+void bsd_to_linux_flock64(struct flock *, struct linux_flock64 *);
+void linux_to_bsd_flock64(struct linux_flock64 *, struct flock *);
+static void bsd_to_linux_stat(struct stat *, struct linux_stat64 *);
+static int linux_do_stat64(struct proc *, void *, register_t *, int);
 
 /*
  * Convert a OpenBSD stat structure to a Linux stat structure.

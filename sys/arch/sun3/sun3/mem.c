@@ -64,7 +64,7 @@
 #include <machine/pte.h>
 #include <machine/pmap.h>
 
-extern int ledrw __P((struct uio *));
+extern int ledrw(struct uio *);
 
 static caddr_t devzeropage;
 

@@ -205,7 +205,7 @@ compat_43_sys_getkerninfo(p, v, retval)
 	int error, name[5];
 	size_t size;
 
-	extern char ostype[], osrelease[], machine[];
+	extern char machine[];
 
 	if (SCARG(uap, size) && (error = copyin((caddr_t)SCARG(uap, size),
 	    (caddr_t)&size, sizeof(size))))

@@ -44,10 +44,10 @@
 #include <machine/autoconf.h>
 /* #include <machine/vme.h> */
 
-static int  vmes_match __P((struct device *, void *, void *));
-static int  vmel_match __P((struct device *, void *, void *));
+static int  vmes_match(struct device *, void *, void *);
+static int  vmel_match(struct device *, void *, void *);
 
-static void vme_attach __P((struct device *, struct device *, void *));
+static void vme_attach(struct device *, struct device *, void *);
 
 struct cfattach vmes_ca = {
 	sizeof(struct device), vmes_match, vme_attach

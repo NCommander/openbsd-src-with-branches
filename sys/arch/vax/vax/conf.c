@@ -244,7 +244,7 @@ struct	consdev constab[]={
 };
 
 /* Special for console storage */
-#define dev_type_rw(n)	int n __P((dev_t, int, int, struct proc *))
+#define dev_type_rw(n)	int n(dev_t, int, int, struct proc *)
 
 /* plotters - open, close, write, ioctl, select*/
 #define cdev_plotter_init(c,n) { \

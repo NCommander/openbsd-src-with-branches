@@ -6,9 +6,9 @@
 /* This enables some code in db_command.c */
 #define DB_MACHINE_COMMANDS
 
-void db_machine_init __P((void));
-void ddb_init __P((void));
+void db_machine_init(void);
+void ddb_init(void);
 
 /* These are in db_memrw.c */
-extern void db_read_bytes  __P((vm_offset_t addr, size_t size, char *data));
-extern void db_write_bytes __P((vm_offset_t addr, size_t size, char *data));
+extern void db_read_bytes(vm_offset_t addr, size_t size, char *data);
+extern void db_write_bytes(vm_offset_t addr, size_t size, char *data);

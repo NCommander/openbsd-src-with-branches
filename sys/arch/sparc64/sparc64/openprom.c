@@ -65,8 +65,8 @@ static	int lastnode;			/* speed hack */
 extern	int optionsnode;		/* node ID of ROM's options */
 extern	struct promvec *promvec;
 
-static int openpromcheckid __P((int, int));
-static int openpromgetstr __P((int, char *, char **));
+static int openpromcheckid(int, int);
+static int openpromgetstr(int, char *, char **);
 
 int
 openpromopen(dev, flags, mode, p)

@@ -107,20 +107,20 @@
 #include "sireg.h"
 #include "sivar.h"
 
-void si_vme_dma_setup __P((struct ncr5380_softc *));
-void si_vme_dma_start __P((struct ncr5380_softc *));
-void si_vme_dma_eop __P((struct ncr5380_softc *));
-void si_vme_dma_stop __P((struct ncr5380_softc *));
+void si_vme_dma_setup(struct ncr5380_softc *);
+void si_vme_dma_start(struct ncr5380_softc *);
+void si_vme_dma_eop(struct ncr5380_softc *);
+void si_vme_dma_stop(struct ncr5380_softc *);
 
-void si_vme_intr_on  __P((struct ncr5380_softc *));
-void si_vme_intr_off __P((struct ncr5380_softc *));
+void si_vme_intr_on(struct ncr5380_softc *);
+void si_vme_intr_off(struct ncr5380_softc *);
 
 /*
  * New-style autoconfig attachment
  */
 
-static int	si_vmes_match __P((struct device *, void *, void *));
-static void	si_vmes_attach __P((struct device *, struct device *, void *));
+static int	si_vmes_match(struct device *, void *, void *);
+static void	si_vmes_attach(struct device *, struct device *, void *);
 
 struct cfattach si_vmes_ca = {
 	sizeof(struct si_softc), si_vmes_match, si_vmes_attach

@@ -39,11 +39,11 @@
 #ifndef	_NETBSD_EXEC_H
 #define	_NETBSD_EXEC_H
 
-int exec_netbsd_aout_makecmds __P((struct proc *, struct exec_package *));
+int exec_netbsd_aout_makecmds(struct proc *, struct exec_package *);
 
 #ifdef _KERN_DO_ELF64
-int netbsd_elf64_probe __P((struct proc *, struct exec_package *, char *,
-    u_long *, u_int8_t *));
+int netbsd_elf64_probe(struct proc *, struct exec_package *, char *,
+    u_long *, u_int8_t *);
 #endif
 
 #endif /* !_NETBSD_EXEC_H */

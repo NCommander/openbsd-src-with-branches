@@ -54,7 +54,7 @@
 
 #include <sys/syscallargs.h>
 
-void statfs_to_ostatfs __P((struct proc *, struct mount *, struct statfs *, struct ostatfs *));
+void statfs_to_ostatfs(struct proc *, struct mount *, struct statfs *, struct ostatfs *);
 
 /*
  * Convert struct statfs -> struct ostatfs

@@ -51,8 +51,8 @@
 #include <compat/svr4/svr4_exec.h>
 #include <compat/svr4/svr4_errno.h>
 
-static void *svr4_copyargs __P((struct exec_package *, struct ps_strings *,
-			       void *, void *));
+static void *svr4_copyargs(struct exec_package *, struct ps_strings *,
+			       void *, void *);
 
 const char svr4_emul_path[] = "/emul/svr4";
 extern char svr4_sigcode[], svr4_esigcode[];

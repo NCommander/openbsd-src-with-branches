@@ -213,7 +213,7 @@
 #ifndef	_LOCORE
 #include <machine/cpu.h>
 
-void	delay __P((int));
+void	delay(int);
 /* inline macros used inside kernel */
 #include <machine/macros.h>
 #endif

@@ -56,9 +56,9 @@
 #include <vax/uba/ubareg.h>
 #include <vax/uba/ubavar.h>
 
-static	int if_ubaalloc __P((struct ifubinfo *, struct ifrw *, int));
-static	void rcv_xmtbuf __P((struct ifxmt *));
-static	void restor_xmtbuf __P((struct ifxmt *));
+static	int if_ubaalloc(struct ifubinfo *, struct ifrw *, int);
+static	void rcv_xmtbuf(struct ifxmt *);
+static	void restor_xmtbuf(struct ifxmt *);
 
 /*
  * Routines supporting UNIBUS network interfaces.

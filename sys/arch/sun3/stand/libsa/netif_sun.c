@@ -66,7 +66,7 @@
 int debug;
 int errno;
 
-static void sun3_getether __P((u_char *));
+static void sun3_getether(u_char *);
 
 struct iodesc sockets[SOPEN_MAX];
 
@@ -92,8 +92,8 @@ sun3_getether(ea)
 	int len, x;
 
 	if (sun3_idprom.idp_format == 0) {
-		dst = (char*)&sun3_idprom;
-		src = (char*)IDPROM_BASE;
+		dst = (char *)&sun3_idprom;
+		src = (char *)IDPROM_BASE;
 		len = IDPROM_SIZE;
 		do {
 			x = get_control_byte(src++);

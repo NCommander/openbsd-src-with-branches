@@ -119,7 +119,7 @@ cpu_fork(p1, p2, stack, stacksize, func, arg)
 	 * Leave one word unused at the end of the kernel stack
 	 * so the system stack pointer stays within its stack.
 	 */
-	p2tf = (struct trapframe *)((char*)p2->p_addr + USPACE-4) - 1;
+	p2tf = (struct trapframe *)((char *)p2->p_addr + USPACE-4) - 1;
 	p2->p_md.md_regs = (int *)p2tf;
 	bcopy(p1->p_md.md_regs, p2tf, sizeof(*p2tf));
 

@@ -93,7 +93,7 @@
 #if defined(_KERNEL) && !defined(_LOCORE)
 #include <machine/cpu.h>
 
-extern void _delay __P((unsigned));
+extern void _delay(unsigned);
 #define delay(us)	_delay((us)<<8)
 #define	DELAY(n)	delay(n)
 #endif	/* _KERNEL && !_LOCORE */

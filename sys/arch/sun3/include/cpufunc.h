@@ -1,4 +1,4 @@
-/*	$OpenBSD: cpufunc.h,v 1.6 1996/11/20 18:57:07 gwr Exp $	*/
+/*	$OpenBSD$	*/
 /*	$NetBSD: cpufunc.h,v 1.6 1996/11/20 18:57:07 gwr Exp $	*/
 
 /*-
@@ -41,5 +41,5 @@
  * Functions to provide access to special 68k instructions.
  */
 
-unsigned int *getvbr __P((void));
-void setvbr __P((unsigned int *));
+unsigned int *getvbr(void);
+void setvbr(unsigned int *);

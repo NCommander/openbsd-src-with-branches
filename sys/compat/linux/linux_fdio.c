@@ -66,7 +66,7 @@ linux_ioctl_fdio(struct proc *p, struct linux_sys_ioctl_args *uap,
 	struct filedesc *fdp;
 	struct file *fp;
 	int error;
-	int (*ioctlf) __P((struct file *, u_long, caddr_t, struct proc *));
+	int (*ioctlf)(struct file *, u_long, caddr_t, struct proc *);
 	u_long com;
 	struct fd_type fparams;
 	struct linux_floppy_struct lflop;

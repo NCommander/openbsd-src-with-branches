@@ -59,7 +59,7 @@
 #include <compat/netbsd/netbsd_syscallargs.h>
 #include <compat/netbsd/netbsd_util.h>
 
-static void openbsd_to_netbsd_stat __P((struct stat *, struct netbsd_stat *));
+static void openbsd_to_netbsd_stat(struct stat *, struct netbsd_stat *);
 
 static void
 openbsd_to_netbsd_stat(obst, nbst)

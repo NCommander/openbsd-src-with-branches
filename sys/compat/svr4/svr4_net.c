@@ -77,9 +77,9 @@ enum {
 	dev_unix_ord_stream	= 40
 };
 
-int svr4_netattach __P((int));
+int svr4_netattach(int);
 
-static int svr4_soo_close __P((struct file *fp, struct proc *p));
+static int svr4_soo_close(struct file *fp, struct proc *p);
 
 static struct fileops svr4_netops = {
 	soo_read, soo_write, soo_ioctl, soo_select, soo_kqfilter,

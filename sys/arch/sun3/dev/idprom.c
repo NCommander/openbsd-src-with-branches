@@ -115,8 +115,8 @@ idprom_init()
 	} hid;
 
 	idp = &identity_prom;
-	dst = (char*)idp;
-	src = (char*)IDPROM_BASE;
+	dst = (char *)idp;
+	src = (char *)IDPROM_BASE;
 	len = IDPROM_SIZE;
 	xorsum = 0;	/* calculated as xor of data */
 

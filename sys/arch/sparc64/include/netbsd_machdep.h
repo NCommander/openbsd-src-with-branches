@@ -16,7 +16,7 @@ struct netbsd_sigcontext {
 };
 
 #ifdef _KERNEL
-void netbsd_sendsig __P((sig_t, int, int, u_long, int, union sigval));
+void netbsd_sendsig(sig_t, int, int, u_long, int, union sigval);
 #endif
 
 #endif /* _NETBSD_MACHDEP_H */

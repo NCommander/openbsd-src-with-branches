@@ -1,4 +1,4 @@
-/*	$OpenBSD: kd.c,v 1.7.14.1 2001/05/14 21:37:27 niklas Exp $	*/
+/*	$OpenBSD$	*/
 /*	$NetBSD: kd.c,v 1.21 1996/11/20 18:56:55 gwr Exp $	*/
 
 /*-
@@ -276,7 +276,7 @@ kdstop(tp, flag)
 	return (0);
 }
 
-static void kd_later(void*);
+static void kd_later(void *);
 static void kd_putfb(struct tty *);
 static struct timeout kd_timeout;
 
