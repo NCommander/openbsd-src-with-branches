@@ -1,4 +1,4 @@
-/*	$OpenBSD: supcmeat.c,v 1.18 2003/04/15 07:21:09 deraadt Exp $	*/
+/*	$OpenBSD: supcmeat.c,v 1.19 2003/09/04 03:24:07 beck Exp $	*/
 
 /*
  * Copyright (c) 1992 Carnegie Mellon University
@@ -561,6 +561,8 @@ needone(t, dummy)
 	struct stat sbuf;
 
 	newt = Tinsert (&lastT,t->Tname,TRUE);
+	if (!newt)
+		return (SCMERR);
 	newt->Tflags |= FUPDATE;
 	fetch = TRUE;
 	if ((thisC->Cflags&CFALL) == 0) {
@@ -602,6 +604,8 @@ needone(t, dummy)
 	}
 	/* If we get this far, we're either doing an update or a full fetch. */
 	newt = Tinsert(&needT, t->Tname, TRUE);
+	if (!newt)
+		return (SCMERR);
 	if (!fetch && S_ISREG(t->Tmode))
 		newt->Tflags |= FUPDATE;
 	return (SCMOK);
