@@ -1,5 +1,5 @@
 	.file	"wm_sqrt.S"
-/*	$OpenBSD$	*/
+/*	$OpenBSD: wm_sqrt.s,v 1.1 1996/08/27 10:33:04 downsj Exp $	*/
 /*
  *  wm_sqrt.S
  *
@@ -321,7 +321,7 @@ sqrt_stage_3_no_error:
 	movl	%edx,%eax
 	divl	%esi
 
-	sarl	$1,%ecx		/ divide by 2*/
+	sarl	$1,%ecx		/* divide by 2*/
 	rcrl	$1,%eax
 
 	/* prepare to round the result*/
