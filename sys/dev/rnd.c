@@ -1,4 +1,4 @@
-/*	$OpenBSD: rnd.c,v 1.44 2000/10/20 03:30:05 mickey Exp $	*/
+/*	$OpenBSD: rnd.c,v 1.45 2000/10/22 01:08:52 mickey Exp $	*/
 
 /*
  * random.c -- A strong random number generator
@@ -612,7 +612,7 @@ add_entropy_words(buf, n)
 	int new_rotate;
 	u_int32_t w;
 
-	while (n--) {
+	for (; n--; buf++) {
 		w = roll(*buf, random_state.input_rotate);
 		i = random_state.add_ptr =
 		    (random_state.add_ptr - 1) & (POOLWORDS - 1);
