@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: ext2_subr.c,v 1.1 1996/06/24 03:34:58 downsj Exp $	*/
 
 /*
  *  modified for Lites 1.1
@@ -80,7 +80,7 @@ ext2_blkatoff(v)
 	bsize = blksize(fs, ip, lbn);
 
 	*ap->a_bpp = NULL;
-	if (error = bread(ap->a_vp, lbn, bsize, NOCRED, &bp)) {
+	if ((error = bread(ap->a_vp, lbn, bsize, NOCRED, &bp)) != 0) {
 		brelse(bp);
 		return (error);
 	}
