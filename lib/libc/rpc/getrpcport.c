@@ -28,7 +28,7 @@
  */
 
 #if defined(LIBC_SCCS) && !defined(lint)
-static char *rcsid = "$OpenBSD: getrpcport.c,v 1.3 1996/07/20 06:12:30 deraadt Exp $";
+static char *rcsid = "$OpenBSD: getrpcport.c,v 1.4 1996/08/19 08:31:36 tholo Exp $";
 #endif /* LIBC_SCCS and not lint */
 
 /*
@@ -42,6 +42,7 @@ static char *rcsid = "$OpenBSD: getrpcport.c,v 1.3 1996/07/20 06:12:30 deraadt E
 #include <netdb.h>
 #include <sys/socket.h>
 
+int
 getrpcport(host, prognum, versnum, proto)
 	char *host;
 	int prognum, versnum, proto;
