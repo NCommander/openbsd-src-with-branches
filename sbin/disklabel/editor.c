@@ -1,4 +1,4 @@
-/*	$OpenBSD: editor.c,v 1.80 2002/05/22 08:21:01 deraadt Exp $	*/
+/*	$OpenBSD: editor.c,v 1.81 2002/06/09 08:13:05 todd Exp $	*/
 
 /*
  * Copyright (c) 1997-2000 Todd C. Miller <Todd.Miller@courtesan.com>
@@ -28,7 +28,7 @@
  */
 
 #ifndef lint
-static char rcsid[] = "$OpenBSD: editor.c,v 1.80 2002/05/22 08:21:01 deraadt Exp $";
+static char rcsid[] = "$OpenBSD: editor.c,v 1.81 2002/06/09 08:13:05 todd Exp $";
 #endif /* not lint */
 
 #include <sys/types.h>
@@ -119,7 +119,7 @@ static int expert;
 
 /* from disklabel.c */
 int	checklabel(struct disklabel *);
-void	display(FILE *, struct disklabel *);
+void	display(FILE *, struct disklabel *, char);
 void	display_partition(FILE *, struct disklabel *, char **, int, char, int);
 int	width_partition(struct disklabel *, int);
 
@@ -385,7 +385,7 @@ editor(lp, f, dev, fstabfile)
 			if ((fp = fopen(arg, "w")) == NULL) {
 				warn("cannot open %s", arg);
 			} else {
-				display(fp, &label);
+				display(fp, &label, 0);
 				(void)fclose(fp);
 			}
 			break;
