@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: traceroute6.c,v 1.1 2000/02/16 06:04:27 itojun Exp $	*/
 
 /*
  * Copyright (C) 1995, 1996, 1997, and 1998 WIDE Project.
@@ -949,7 +949,7 @@ pr_type(t0)
 		cp = "Neighbor Advertisement";
 		break;
 	case ND_REDIRECT:
-		cp = "Ridirect";
+		cp = "Redirect";
 		break;
 	default:
 		cp = "Unknown";
