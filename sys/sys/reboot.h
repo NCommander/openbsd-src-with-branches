@@ -97,7 +97,7 @@
 
 __BEGIN_DECLS
 
-void	boot __P((int))
+void	boot(int)
     __attribute__((__noreturn__));
 
 __END_DECLS

@@ -1,4 +1,4 @@
-/*	$OpenBSD: cd_scsi.c,v 1.1.4.1 2001/05/14 22:44:58 niklas Exp $	*/
+/*	$OpenBSD$	*/
 /*	$NetBSD: cd_scsi.c,v 1.14 1998/08/31 22:28:06 cgd Exp $	*/
 
 /*-
@@ -79,17 +79,17 @@
 #include <scsi/scsiconf.h>
 #include <scsi/cdvar.h>
 
-int	cd_scsibus_get_mode __P((struct cd_softc *,
-	    struct scsi_cd_mode_data *, int, int, int));
-int	cd_scsibus_set_mode __P((struct cd_softc *,
-	    struct scsi_cd_mode_data *, int, int));
+int	cd_scsibus_get_mode(struct cd_softc *,
+	    struct scsi_cd_mode_data *, int, int, int);
+int	cd_scsibus_set_mode(struct cd_softc *,
+	    struct scsi_cd_mode_data *, int, int);
 
-int	cd_scsibus_setchan __P((struct cd_softc *, int, int, int, int, int));
-int	cd_scsibus_getvol __P((struct cd_softc *, struct ioc_vol *, int));
-int	cd_scsibus_setvol __P((struct cd_softc *, const struct ioc_vol *,
-	    int));
-int	cd_scsibus_set_pa_immed __P((struct cd_softc *, int));
-int	cd_scsibus_load_unload __P((struct cd_softc *, int, int));
+int	cd_scsibus_setchan(struct cd_softc *, int, int, int, int, int);
+int	cd_scsibus_getvol(struct cd_softc *, struct ioc_vol *, int);
+int	cd_scsibus_setvol(struct cd_softc *, const struct ioc_vol *,
+	    int);
+int	cd_scsibus_set_pa_immed(struct cd_softc *, int);
+int	cd_scsibus_load_unload(struct cd_softc *, int, int);
 
 const struct cd_ops cd_scsibus_ops = {
 	cd_scsibus_setchan,

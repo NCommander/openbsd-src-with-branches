@@ -1,4 +1,4 @@
-/*	$OpenBSD: endian.h,v 1.4.4.1 2001/05/14 22:45:01 niklas Exp $	*/
+/*	$OpenBSD$	*/
 
 /*-
  * Copyright (c) 1997 Niklas Hallqvist.  All rights reserved.
@@ -155,15 +155,15 @@
 } while (0)
 
 __BEGIN_DECLS
-u_int32_t	htobe32 __P((u_int32_t));
-u_int16_t	htobe16 __P((u_int16_t));
-u_int32_t	betoh32 __P((u_int32_t));
-u_int16_t	betoh16 __P((u_int16_t));
+u_int32_t	htobe32(u_int32_t);
+u_int16_t	htobe16(u_int16_t);
+u_int32_t	betoh32(u_int32_t);
+u_int16_t	betoh16(u_int16_t);
 
-u_int32_t	htole32 __P((u_int32_t));
-u_int16_t	htole16 __P((u_int16_t));
-u_int32_t	letoh32 __P((u_int32_t));
-u_int16_t	letoh16 __P((u_int16_t));
+u_int32_t	htole32(u_int32_t);
+u_int16_t	htole16(u_int16_t);
+u_int32_t	letoh32(u_int32_t);
+u_int16_t	letoh16(u_int16_t);
 __END_DECLS
 
 #if BYTE_ORDER == LITTLE_ENDIAN

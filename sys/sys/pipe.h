@@ -85,7 +85,7 @@ struct pipe {
 };
 
 #ifdef _KERNEL
-void	pipe_init __P((void));
+void	pipe_init(void);
 #endif /* _KERNEL */
 
 #endif /* !_SYS_PIPE_H_ */

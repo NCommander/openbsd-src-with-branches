@@ -1,4 +1,4 @@
-/*	$OpenBSD: md5k.h,v 1.4 1998/11/24 10:19:25 niklas Exp $	*/
+/*	$OpenBSD$	*/
 
 /*
  * Copyright (C) 1991-2, RSA Data Security, Inc. Created 1991. All
@@ -44,9 +44,9 @@ typedef struct {
 
 #include <sys/cdefs.h>
 
-void MD5Init __P((MD5_CTX *));
-void MD5Update __P((MD5_CTX *, unsigned char *, unsigned int));
-void MD5Final __P((unsigned char [16], MD5_CTX *));
+void MD5Init(MD5_CTX *);
+void MD5Update(MD5_CTX *, unsigned char *, unsigned int);
+void MD5Final(unsigned char [16], MD5_CTX *);
 
 #define _MD5_H_
 

@@ -63,10 +63,10 @@ struct scsi_ioctl {
 
 LIST_HEAD(, scsi_ioctl) si_head;
 
-struct scsi_ioctl *si_get __P((void));
-void si_free __P((struct scsi_ioctl *));
-struct scsi_ioctl *si_find __P((struct buf *));
-void scsistrategy __P((struct buf *));
+struct scsi_ioctl *si_get(void);
+void si_free(struct scsi_ioctl *);
+struct scsi_ioctl *si_find(struct buf *);
+void scsistrategy(struct buf *);
 
 struct scsi_ioctl *
 si_get()

@@ -61,7 +61,7 @@ struct circq {
 
 struct timeout {
 	struct circq to_list;			/* timeout queue, don't move */
-	void (*to_func) __P((void *));		/* function to call */
+	void (*to_func)(void *);		/* function to call */
 	void *to_arg;				/* function argument */
 	int to_time;				/* ticks on event */
 	int to_flags;				/* misc flags */

@@ -48,5 +48,5 @@ struct	msgbuf {
 #ifdef _KERNEL
 struct	msgbuf *msgbufp;
 
-void	initmsgbuf __P((caddr_t buf, size_t bufsize));
+void	initmsgbuf(caddr_t buf, size_t bufsize);
 #endif

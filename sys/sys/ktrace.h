@@ -162,19 +162,19 @@ struct ktr_csw {
 #include <sys/cdefs.h>
 
 __BEGIN_DECLS
-int	ktrace __P((const char *, int, int, pid_t));
+int	ktrace(const char *, int, int, pid_t);
 __END_DECLS
 
 #else
 
-void ktrcsw __P((struct proc *, int, int));
-void ktremul __P((struct proc *, char *));
-void ktrgenio __P((struct proc *, int, enum uio_rw, struct iovec *, int, int));
-void ktrnamei __P((struct proc *, char *));
-void ktrpsig __P((struct proc *, int, sig_t, int, int, siginfo_t *));
-void ktrsyscall __P((struct proc *, register_t, size_t, register_t []));
-void ktrsysret __P((struct proc *, register_t, int, register_t));
+void ktrcsw(struct proc *, int, int);
+void ktremul(struct proc *, char *);
+void ktrgenio(struct proc *, int, enum uio_rw, struct iovec *, int, int);
+void ktrnamei(struct proc *, char *);
+void ktrpsig(struct proc *, int, sig_t, int, int, siginfo_t *);
+void ktrsyscall(struct proc *, register_t, size_t, register_t []);
+void ktrsysret(struct proc *, register_t, int, register_t);
 
-void ktrsettracevnode __P((struct proc *, struct vnode *));
+void ktrsettracevnode(struct proc *, struct vnode *);
 
 #endif	/* !_KERNEL */

@@ -39,6 +39,6 @@
 #ifdef _KERNEL
 
 /* the shell script handler's entry in the exec switch */
-int	exec_script_makecmds __P((struct proc *, struct exec_package *));
+int	exec_script_makecmds(struct proc *, struct exec_package *);
 
 #endif /* _KERNEL */

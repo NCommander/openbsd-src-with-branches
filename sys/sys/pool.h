@@ -215,7 +215,7 @@ int		pool_reclaim(struct pool *);
  */
 void		*_pool_get(struct pool *, int, const char *, long);
 void		_pool_put(struct pool *, void *, const char *, long);
-void		_pool_reclaim(struct pool *, const char *, long);
+int		_pool_reclaim(struct pool *, const char *, long);
 #define		pool_get(h, f)	_pool_get((h), (f), __FILE__, __LINE__)
 #define		pool_put(h, v)	_pool_put((h), (v), __FILE__, __LINE__)
 #define		pool_reclaim(h)	_pool_reclaim((h), __FILE__, __LINE__)
