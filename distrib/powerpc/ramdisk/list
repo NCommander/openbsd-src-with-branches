@@ -53,6 +53,7 @@ LINK	instbin			sbin/route
 #LINK	instbin			sbin/slattach
 LINK	instbin			sbin/scsi
 LINK	instbin			sbin/umount
+LINK	instbin			sbin/wicontrol
 LINK	instbin			usr/bin/grep usr/bin/fgrep usr/bin/egrep
 LINK	instbin			usr/bin/mg
 LINK	instbin			usr/bin/ftp
