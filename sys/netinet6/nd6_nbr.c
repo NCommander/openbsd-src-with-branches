@@ -1,4 +1,4 @@
-/*	$OpenBSD: nd6_nbr.c,v 1.33 2003/10/31 09:00:32 mcbride Exp $	*/
+/*	$OpenBSD: nd6_nbr.c,v 1.34 2004/10/28 20:34:57 henning Exp $	*/
 /*	$KAME: nd6_nbr.c,v 1.61 2001/02/10 16:06:14 jinmei Exp $	*/
 
 /*
@@ -193,7 +193,7 @@ nd6_ns_input(m, off, icmp6len)
 	 */
 	/* (1) and (3) check. */
 #if NCARP > 0
-	if (ifp->if_carp) 
+	if (ifp->if_carp && ifp->if_type != IFT_CARP) 
 		ifa = carp_iamatch6(ifp->if_carp, &taddr6);
 	if (!ifa) 
 		ifa = (struct ifaddr *)in6ifa_ifpwithaddr(ifp, &taddr6);
@@ -939,7 +939,7 @@ nd6_na_output(ifp, daddr6, taddr6, flags, tlladdr, sdl0)
 		 */
 		if (sdl0 == NULL) {
 #if NCARP > 0
-			if (ifp->if_carp) 
+			if (ifp->if_carp && ifp->if_type != IFT_CARP) 
 				mac = carp_macmatch6(ifp->if_carp, m, taddr6);
 			if (mac == NULL)
 				mac = nd6_ifptomac(ifp);
