@@ -236,7 +236,7 @@ vm_fork(p1, p2)
 	/*
 	 * Allocate a wired-down (for now) pcb and kernel stack for the process
 	 */
-#if defined(arc) || defined(pica)
+#if defined(arc) || defined(mips_cachealias)
 	addr = kmem_alloc_upage(kernel_map, USPACE);
 #else
 	addr = kmem_alloc_pageable(kernel_map, USPACE);
