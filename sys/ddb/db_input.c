@@ -33,6 +33,8 @@
 #include <sys/param.h>
 #include <sys/proc.h>
 
+#include <vm/vm.h>
+
 #include <machine/db_machdep.h>
 
 #include <ddb/db_var.h>
