@@ -1,4 +1,4 @@
-/*	$OpenBSD: vfs_bio.c,v 1.22 1999/04/28 09:28:15 art Exp $	*/
+/*	$OpenBSD: vfs_bio.c,v 1.23 1999/07/15 14:07:41 art Exp $	*/
 /*	$NetBSD: vfs_bio.c,v 1.44 1996/06/11 11:15:36 pk Exp $	*/
 
 /*-
@@ -636,7 +636,7 @@ allocbuf(bp, size)
 	vsize_t		desired_size;
 	int		s;
 
-	desired_size = roundup(size, CLBYTES);
+	desired_size = clrnd(round_page(size));
 	if (desired_size > MAXBSIZE)
 		panic("allocbuf: buffer larger than MAXBSIZE requested");
 
