@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: main.c,v 1.5 1996/06/26 05:33:38 deraadt Exp $	*/
 
 /*
  * Copyright (c) 1985, 1989, 1993, 1994
@@ -43,7 +43,7 @@ static char copyright[] =
 #if 0
 static char sccsid[] = "@(#)main.c	8.6 (Berkeley) 10/9/94";
 #else
-static char rcsid[] = "$OpenBSD: main.c,v 1.11 1996/05/07 00:16:55 pk Exp $";
+static char rcsid[] = "$OpenBSD: main.c,v 1.5 1996/06/26 05:33:38 deraadt Exp $";
 #endif
 #endif /* not lint */
 
@@ -52,7 +52,9 @@ static char rcsid[] = "$OpenBSD: main.c,v 1.11 1996/05/07 00:16:55 pk Exp $";
  */
 /*#include <sys/ioctl.h>*/
 #include <sys/types.h>
+#include <sys/file.h>
 #include <sys/socket.h>
+#include <netinet/in.h>
 
 #include <arpa/ftp.h>
 
@@ -168,7 +170,10 @@ main(argc, argv)
 				ret = 1;
 				goto bail;
 			}
-
+			if (!strncmp(host, "http://", strlen("http://"))) {
+				http_fetch(host);
+				goto bail;
+			}
 			if (strncmp(host, "ftp://", sizeof("ftp://")-1) == 0) {
 				host += sizeof("ftp://") - 1;
 				p = strchr(host, '/');
@@ -218,8 +223,10 @@ main(argc, argv)
 
 			/* get ready for the next file */
 bail:
-			if (bufp)
+			if (bufp) {
 				free(bufp);
+				bufp = NULL;
+			}
 			if (connected)
 				disconnect(1, xargv);
 			--argc;
