@@ -1,4 +1,4 @@
-/* $OpenBSD: pfkeyv2.c,v 1.63 2001/06/05 00:17:48 niklas Exp $ */
+/* $OpenBSD: pfkeyv2.c,v 1.64 2001/06/05 02:31:34 deraadt Exp $ */
 
 /*
  *	@(#)COPYRIGHT	1.1 (NRL) 17 January 1995
@@ -1146,6 +1146,18 @@ pfkeyv2_get(struct tdb *sa, void **headers, void **buffer)
 
     if (sa->tdb_dstid)
       i += PADUP(sa->tdb_dstid->ref_len) + sizeof(struct sadb_ident);
+
+    if (sa->tdb_local_cred)
+      i += PADUP(sa->tdb_local_cred->ref_len) + sizeof(struct sadb_x_cred);
+
+    if (sa->tdb_remote_cred)
+      i += PADUP(sa->tdb_remote_cred->ref_len) + sizeof(struct sadb_x_cred);
+
+    if (sa->tdb_local_auth)
+      i += PADUP(sa->tdb_local_auth->ref_len) + sizeof(struct sadb_x_cred);
+
+    if (sa->tdb_remote_auth)
+      i += PADUP(sa->tdb_remote_auth->ref_len) + sizeof(struct sadb_x_cred);
 
     if (!(p = malloc(i, M_PFKEY, M_DONTWAIT)))
     {
