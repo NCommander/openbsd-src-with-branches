@@ -1,4 +1,4 @@
-/*	$OpenBSD: copy.s,v 1.14 2003/01/09 22:27:09 miod Exp $	*/
+/*	$OpenBSD: copy.s,v 1.15 2003/06/02 23:27:48 millert Exp $	*/
 /*	$NetBSD: copy.s,v 1.30 1998/03/04 06:39:14 thorpej Exp $	*/
 
 /*-
@@ -49,7 +49,7 @@
 	.file	"copy.s"
 	.text
 
-#ifdef	DIAGNOSTIC
+#ifdef	DEBUG
 /*
  * The following routines all use the "moves" instruction to access
  * memory with "user" privilege while running in supervisor mode.
@@ -65,10 +65,10 @@ Lbadfc:
 	bra	Lbadfc
 #define	CHECK_SFC	movec sfc,d0; subql #FC_USERD,d0; bne Lbadfc
 #define	CHECK_DFC	movec dfc,d0; subql #FC_USERD,d0; bne Lbadfc
-#else	/* DIAGNOSTIC */
+#else	/* DEBUG */
 #define	CHECK_SFC
 #define	CHECK_DFC
-#endif	/* DIAGNOSTIC */
+#endif	/* DEBUG */
 
 /*
  * copyin(caddr_t from, caddr_t to, size_t len);
