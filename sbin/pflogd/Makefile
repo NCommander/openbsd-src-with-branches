@@ -1,6 +1,6 @@
-#	$OpenBSD: Makefile,v 1.4 2003/03/01 06:11:20 cloder Exp $
+#	$OpenBSD: Makefile,v 1.5 2003/10/22 18:51:55 canacar Exp $
 
-CFLAGS+=-Wall -Werror -Wmissing-prototypes -Wshadow
+CFLAGS+=-Wall -Wmissing-prototypes -Wshadow
 LDADD+= -lpcap -lutil
 DPAPP+=	${LIBPCAP} ${LIBUTIL}
 
