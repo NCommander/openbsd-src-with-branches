@@ -149,7 +149,7 @@ struct pool tcpcb_pool;
 struct pool sackhl_pool;
 #endif
 
-int	tcp_freeq __P((struct tcpcb *));
+int	tcp_freeq(struct tcpcb *);
 
 struct tcpstat tcpstat;		/* tcp statistics */
 
@@ -670,6 +670,7 @@ tcp_close(struct tcpcb *tp)
 	/* free the reassembly queue, if any */
 	tcp_freeq(tp);
 
+	tcp_canceltimers(tp);
 	TCP_CLEAR_DELACK(tp);
 
 #ifdef TCP_SACK
@@ -767,7 +768,7 @@ tcp6_ctlinput(cmd, sa, d)
 	void *d;
 {
 	struct tcphdr th;
-	void (*notify) __P((struct inpcb *, int)) = tcp_notify;
+	void (*notify)(struct inpcb *, int) = tcp_notify;
 	struct ip6_hdr *ip6;
 	const struct sockaddr_in6 *sa6_src = NULL;
 	struct sockaddr_in6 *sa6 = (struct sockaddr_in6 *)sa;
@@ -872,7 +873,7 @@ tcp_ctlinput(cmd, sa, v)
 	register struct ip *ip = v;
 	register struct tcphdr *th;
 	extern int inetctlerrmap[];
-	void (*notify) __P((struct inpcb *, int)) = tcp_notify;
+	void (*notify)(struct inpcb *, int) = tcp_notify;
 	int errno;
 
 	if (sa->sa_family != AF_INET)

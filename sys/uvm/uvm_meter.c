@@ -76,7 +76,7 @@ static fixpt_t cexp[3] = {
  * prototypes
  */
 
-static void uvm_loadav __P((struct loadavg *));
+static void uvm_loadav(struct loadavg *);
 
 /*
  * uvm_meter: calculate load average and wake up the swapper (if needed)

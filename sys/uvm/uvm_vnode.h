@@ -102,7 +102,7 @@ struct uvm_vnode {
  * include sys/vnode.h, and files that include sys/vnode.h don't know
  * what a vm_prot_t is.
  */
-struct uvm_object  *uvn_attach __P((void *, vm_prot_t));
+struct uvm_object  *uvn_attach(void *, vm_prot_t);
 #endif
 
 #endif /* _KERNEL */

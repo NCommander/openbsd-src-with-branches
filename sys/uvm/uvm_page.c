@@ -129,8 +129,8 @@ static struct pglist uvm_bootbucket;
  * local prototypes
  */
 
-static void uvm_pageinsert __P((struct vm_page *));
-static void uvm_pageremove __P((struct vm_page *));
+static void uvm_pageinsert(struct vm_page *);
+static void uvm_pageremove(struct vm_page *);
 
 /*
  * inline functions
@@ -477,7 +477,7 @@ uvm_pageboot_alloc(size)
  */
 
 /* subroutine: try to allocate from memory chunks on the specified freelist */
-static boolean_t uvm_page_physget_freelist __P((paddr_t *, int));
+static boolean_t uvm_page_physget_freelist(paddr_t *, int);
 
 static boolean_t
 uvm_page_physget_freelist(paddrp, freelist)
@@ -834,7 +834,7 @@ uvm_page_rehash()
 
 #if 1 /* XXXCDC: TMP TMP TMP DEBUG DEBUG DEBUG */
 
-void uvm_page_physdump __P((void)); /* SHUT UP GCC */
+void uvm_page_physdump(void); /* SHUT UP GCC */
 
 /* call from DDB */
 void

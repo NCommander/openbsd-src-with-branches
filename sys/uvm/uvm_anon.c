@@ -61,7 +61,7 @@ struct uvm_anonblock {
 static LIST_HEAD(anonlist, uvm_anonblock) anonblock_list;
 
 
-static boolean_t anon_pagein __P((struct vm_anon *));
+static boolean_t anon_pagein(struct vm_anon *);
 
 
 /*

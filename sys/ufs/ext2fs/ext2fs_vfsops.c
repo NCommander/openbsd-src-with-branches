@@ -71,8 +71,8 @@
 
 extern struct lock ufs_hashlock;
 
-int ext2fs_sbupdate __P((struct ufsmount *, int));
-static int ext2fs_checksb __P((struct ext2fs *, int));
+int ext2fs_sbupdate(struct ufsmount *, int);
+static int ext2fs_checksb(struct ext2fs *, int);
 
 extern struct vnodeopv_desc ext2fs_vnodeop_opv_desc;
 extern struct vnodeopv_desc ext2fs_specop_opv_desc;

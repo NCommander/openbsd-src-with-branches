@@ -65,10 +65,10 @@
  * prototypes
  */
 
-void uao_init __P((void));
-int uao_set_swslot __P((struct uvm_object *, int, int));
-void uao_dropswap __P((struct uvm_object *, int));
-int uao_swap_off __P((int, int));
+void uao_init(void);
+int uao_set_swslot(struct uvm_object *, int, int);
+void uao_dropswap(struct uvm_object *, int);
+int uao_swap_off(int, int);
 
 /*
  * globals

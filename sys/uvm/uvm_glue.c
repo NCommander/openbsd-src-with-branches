@@ -89,7 +89,7 @@
  * local prototypes
  */
 
-static void uvm_swapout __P((struct proc *));
+static void uvm_swapout(struct proc *);
 
 /*
  * XXXCDC: do these really belong here?
@@ -267,7 +267,7 @@ uvm_fork(p1, p2, shared, stack, stacksize, func, arg)
 	boolean_t shared;
 	void *stack;
 	size_t stacksize;
-	void (*func) __P((void *));
+	void (*func)(void *);
 	void *arg;
 {
 	struct user *up = p2->p_addr;

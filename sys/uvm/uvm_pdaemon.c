@@ -95,9 +95,9 @@
  * local prototypes
  */
 
-static void		uvmpd_scan __P((void));
-static boolean_t	uvmpd_scan_inactive __P((struct pglist *));
-static void		uvmpd_tune __P((void));
+static void		uvmpd_scan(void);
+static boolean_t	uvmpd_scan_inactive(struct pglist *);
+static void		uvmpd_tune(void);
 
 /*
  * uvm_wait: wait (sleep) for the page daemon to free some pages

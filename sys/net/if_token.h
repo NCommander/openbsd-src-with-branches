@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_token.h,v 1.1 1999/12/27 21:47:23 fgsch Exp $	*/
+/*	$OpenBSD$	*/
 /*	$NetBSD: if_token.h,v 1.6 1999/11/19 20:41:19 thorpej Exp $	*/
 
 /*
@@ -125,8 +125,8 @@ struct token_rif {
 #define	token_delmulti		ether_delmulti
 #define	token_sprintf		ether_sprintf
 
-void    token_ifattach __P((struct ifnet *));
-void	token_input __P((struct ifnet *, struct mbuf *));
+void    token_ifattach(struct ifnet *);
+void	token_input(struct ifnet *, struct mbuf *);
 #endif
 
 #endif /* _NET_IF_TOKEN_H_ */

@@ -550,7 +550,7 @@ in6_pcbnotify(head, dst, fport_arg, src, lport_arg, cmd, cmdarg, notify)
 	uint lport_arg;
 	int cmd;
 	void *cmdarg;
-	void (*notify) __P((struct inpcb *, int));
+	void (*notify)(struct inpcb *, int);
 {
 	struct inpcb *inp, *ninp;
 	u_short fport = fport_arg, lport = lport_arg;

@@ -306,13 +306,7 @@ llcintr()
  *                 are then enacted accordingly.
  */
 int
-#if __STDC__
 llc_input(struct mbuf *m, ...)
-#else
-llc_input(m, va_alist)
-	struct mbuf *m;
-	va_dcl
-#endif
 {
 	int frame_kind;
 	int pollfinal;

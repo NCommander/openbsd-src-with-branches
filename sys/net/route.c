@@ -138,7 +138,7 @@ extern struct ifnet encif;
 int	rttrash;		/* routes not in table but not freed */
 struct	sockaddr wildcard;	/* zero valued cookie for wildcard searches */
 
-static int okaytoclone __P((u_int, int));
+static int okaytoclone(u_int, int);
 
 #ifdef IPSEC
 
@@ -988,7 +988,7 @@ rt_timer_remove_all(rt)
 int      
 rt_timer_add(rt, func, queue)
 	struct rtentry *rt;
-	void(*func) __P((struct rtentry *, struct rttimer *));
+	void(*func)(struct rtentry *, struct rttimer *);
 	struct rttimer_queue *queue;
 {
 	struct rttimer *r;

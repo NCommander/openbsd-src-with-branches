@@ -67,8 +67,8 @@ extern int ngif;
 extern struct gif_softc *gif_softc;
 
 /* Prototypes */
-int gif_output __P((struct ifnet *, struct mbuf *,
-		    struct sockaddr *, struct rtentry *));
-int gif_ioctl __P((struct ifnet *, u_long, caddr_t));
-void gif_start __P((struct ifnet *));
+int gif_output(struct ifnet *, struct mbuf *,
+		    struct sockaddr *, struct rtentry *);
+int gif_ioctl(struct ifnet *, u_long, caddr_t);
+void gif_start(struct ifnet *);
 #endif /* _NET_IF_GIF_H_ */

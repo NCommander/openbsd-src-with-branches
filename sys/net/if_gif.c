@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_gif.c,v 1.7.2.2 2001/07/04 10:54:01 niklas Exp $	*/
+/*	$OpenBSD$	*/
 /*	$KAME: if_gif.c,v 1.43 2001/02/20 08:51:07 itojun Exp $	*/
 
 /*
@@ -64,7 +64,7 @@
 extern int ifqmaxlen;
 
 int ngif;
-void gifattach __P((int));
+void gifattach(int);
 
 /*
  * gif global variable definitions

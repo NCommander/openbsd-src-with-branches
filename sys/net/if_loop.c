@@ -174,7 +174,7 @@
 #endif
   
 #ifdef ALTQ
-static void lo_altqstart __P((struct ifnet *));
+static void lo_altqstart(struct ifnet *);
 #endif
 
 void

@@ -70,13 +70,7 @@
  */
 
 int
-#if __STDC__
 hd_output(struct mbuf *m0, ...)
-#else
-hd_output(m0, va_alist)
-	struct mbuf    *m0;
-	va_dcl
-#endif
 {
 	register struct hdcb *hdp;
 	register struct mbuf *m = m0;
@@ -211,13 +205,7 @@ hd_send_iframe(hdp, buf, poll_bit)
 }
 
 int
-#if __STDC__
 hd_ifoutput(struct mbuf *m, ...)
-#else
-hd_ifoutput(m, va_alist)
-	struct mbuf *m;
-	va_dcl
-#endif
 {
 	register struct hdcb *hdp;
 	register struct ifnet *ifp;

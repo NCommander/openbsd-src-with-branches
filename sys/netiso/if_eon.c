@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_eon.c,v 1.7.2.1 2001/05/14 22:40:22 niklas Exp $	*/
+/*	$OpenBSD$	*/
 /*	$NetBSD: if_eon.c,v 1.15 1996/05/09 22:29:37 scottr Exp $	*/
 
 /*-
@@ -447,13 +447,7 @@ flush:
 }
 
 void
-#if __STDC__
 eoninput(struct mbuf *m, ...)
-#else
-eoninput(m, va_alist)
-	struct mbuf *m;
-	va_dcl
-#endif
 {
 	int             iphlen;
 	register struct eon_hdr *eonhdr;

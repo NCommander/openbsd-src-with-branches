@@ -64,5 +64,5 @@ SOFTWARE.
  */
 struct clnl_protosw {
 	/* input routine */
-	void            (*clnl_input) __P((struct mbuf *, ...));
+	void            (*clnl_input)(struct mbuf *, ...);
 };

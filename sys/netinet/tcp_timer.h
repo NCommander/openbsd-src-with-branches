@@ -120,16 +120,16 @@ char *tcptimers[] =
  * Init, arm, disarm, and test TCP timers.
  */
 #define	TCP_TIMER_INIT(tp, timer)					\
-	(tp)->t_timer[(timer)] = 0
+	timeout_set(&(tp)->t_timer[(timer)], tcp_timer_funcs[(timer)], tp)
 
 #define	TCP_TIMER_ARM(tp, timer, nticks)				\
-	(tp)->t_timer[(timer)] = (nticks)
+	timeout_add(&(tp)->t_timer[(timer)], (nticks) * (hz / PR_SLOWHZ))
 
 #define	TCP_TIMER_DISARM(tp, timer)					\
-	(tp)->t_timer[(timer)] = 0
+	timeout_del(&(tp)->t_timer[(timer)])
 
 #define	TCP_TIMER_ISARMED(tp, timer)					\
-	(tp)->t_timer[(timer)]
+	timeout_pending(&(tp)->t_timer[(timer)])
 
 /*
  * Force a time value to be in a certain range.
@@ -143,6 +143,10 @@ char *tcptimers[] =
 }
 
 #ifdef _KERNEL
+typedef void (*tcp_timer_func_t)(void *);
+
+extern const tcp_timer_func_t tcp_timer_funcs[TCPT_NTIMERS];
+
 extern int tcptv_keep_init;
 extern int tcp_keepidle;		/* time before keepalive probes begin */
 extern int tcp_keepintvl;		/* time between keepalive probes */

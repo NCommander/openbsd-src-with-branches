@@ -149,7 +149,7 @@ ffs_checkoverlap(bp, ip)
 #endif /* DIAGNOSTIC */
 
 #ifndef _KERNEL
-void panic __P((const char *, ...));
+void panic(const char *, ...);
 #endif
 
 /*

@@ -74,11 +74,11 @@
 
 extern	int dirchk;
 
-static void	ext2fs_dirconv2ffs __P((struct ext2fs_direct *e2dir,
-					  struct dirent *ffsdir));
-static int	ext2fs_dirbadentry __P((struct vnode *dp,
+static void	ext2fs_dirconv2ffs(struct ext2fs_direct *e2dir,
+					  struct dirent *ffsdir);
+static int	ext2fs_dirbadentry(struct vnode *dp,
 					  struct ext2fs_direct *de,
-					  int entryoffsetinblock));
+					  int entryoffsetinblock);
 
 /*
  * the problem that is tackled below is the fact that FFS

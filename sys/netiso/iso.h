@@ -184,8 +184,8 @@ extern struct protosw isosw[];
 #include <sys/cdefs.h>
 
 __BEGIN_DECLS
-struct iso_addr *iso_addr __P((const char *));
-char           *iso_ntoa __P((const struct iso_addr *));
+struct iso_addr *iso_addr(const char *);
+char           *iso_ntoa(const struct iso_addr *);
 
 /* THESE DON'T EXIST YET */
 struct hostent *iso_gethostbyname(), *iso_gethostbyaddr();

@@ -71,13 +71,7 @@ raw_init()
  * Raw protocol interface.
  */
 void
-#if __STDC__
 raw_input(struct mbuf *m0, ...)
-#else
-raw_input(m0, va_alist)
-	struct mbuf *m0;
-	va_dcl
-#endif
 {
 	register struct rawcb *rp;
 	register struct mbuf *m = m0;

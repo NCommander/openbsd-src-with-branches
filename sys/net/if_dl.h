@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_dl.h,v 1.2.14.1 2001/05/14 22:40:00 niklas Exp $	*/
+/*	$OpenBSD$	*/
 /*	$NetBSD: if_dl.h,v 1.8 1995/03/26 20:30:13 jtc Exp $	*/
 
 /*
@@ -79,8 +79,8 @@ struct sockaddr_dl {
 #include <sys/cdefs.h>
 
 __BEGIN_DECLS
-void	link_addr __P((const char *, struct sockaddr_dl *));
-char	*link_ntoa __P((const struct sockaddr_dl *));
+void	link_addr(const char *, struct sockaddr_dl *);
+char	*link_ntoa(const struct sockaddr_dl *);
 __END_DECLS
 
 #endif /* _KERNEL */

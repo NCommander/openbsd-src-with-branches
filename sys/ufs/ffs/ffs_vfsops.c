@@ -68,7 +68,7 @@
 #include <ufs/ffs/fs.h>
 #include <ufs/ffs/ffs_extern.h>
 
-int ffs_sbupdate __P((struct ufsmount *, int));
+int ffs_sbupdate(struct ufsmount *, int);
 int ffs_reload_vnode(struct vnode *, void *);
 int ffs_sync_vnode(struct vnode *, void *);
 

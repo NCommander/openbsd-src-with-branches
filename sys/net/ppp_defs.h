@@ -1,4 +1,4 @@
-/*	$OpenBSD: ppp_defs.h,v 1.10 1999/12/08 06:50:18 itojun Exp $	*/
+/*	$OpenBSD$	*/
 /*	$NetBSD: ppp_defs.h,v 1.1 1995/07/04 06:28:26 paulus Exp $	*/
 
 /*
@@ -159,11 +159,4 @@ struct ppp_idle {
     time_t recv_idle;		/* time since last NP packet received */
 };
 
-#ifndef __P
-#ifdef __STDC__
-#define __P(x)	x
-#else
-#define __P(x)	()
-#endif
-#endif
 #endif /* _PPP_DEFS_H_ */

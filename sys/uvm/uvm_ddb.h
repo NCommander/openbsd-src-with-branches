@@ -41,13 +41,13 @@
 #ifdef _KERNEL
 
 #ifdef DDB
-void	uvm_map_printit __P((vm_map_t, boolean_t,
-	    int (*) __P((const char *, ...))));
-void	uvm_object_printit __P((struct uvm_object *, boolean_t,
-	    int (*) __P((const char *, ...))));
-void	uvm_page_printit __P((struct vm_page *, boolean_t,
-	    int (*) __P((const char *, ...))));
-void	uvmexp_print(int (*) __P((const char *, ...)));
+void	uvm_map_printit(vm_map_t, boolean_t,
+	    int (*)(const char *, ...));
+void	uvm_object_printit(struct uvm_object *, boolean_t,
+	    int (*)(const char *, ...));
+void	uvm_page_printit(struct vm_page *, boolean_t,
+	    int (*)(const char *, ...));
+void	uvmexp_print(int (*)(const char *, ...));
 #endif /* DDB */
 
 #endif /* _KERNEL */

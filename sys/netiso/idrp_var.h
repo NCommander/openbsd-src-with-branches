@@ -34,9 +34,9 @@
 struct mbuf;
 
 /* idrp_usrreq.c */
-void idrp_init __P((void));
-void idrp_input __P((struct mbuf *, ...));
-int idrp_output __P((struct mbuf *, ...));
-int idrp_usrreq __P((struct socket *, int, struct mbuf *, struct mbuf *,
-		     struct mbuf *));
+void idrp_init(void);
+void idrp_input(struct mbuf *, ...);
+int idrp_output(struct mbuf *, ...);
+int idrp_usrreq(struct socket *, int, struct mbuf *, struct mbuf *,
+		     struct mbuf *);
 #endif

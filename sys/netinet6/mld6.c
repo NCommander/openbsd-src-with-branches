@@ -104,7 +104,7 @@ static int mld6_timers_are_running;
 static struct in6_addr mld6_all_nodes_linklocal = IN6ADDR_LINKLOCAL_ALLNODES_INIT;
 static struct in6_addr mld6_all_routers_linklocal = IN6ADDR_LINKLOCAL_ALLROUTERS_INIT;
 
-static void mld6_sendpkt __P((struct in6_multi *, int, const struct in6_addr *));
+static void mld6_sendpkt(struct in6_multi *, int, const struct in6_addr *);
 
 void
 mld6_init()

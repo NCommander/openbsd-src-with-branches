@@ -88,13 +88,7 @@ idrp_init()
  * No return value.
  */
 void
-#if __STDC__
 idrp_input(struct mbuf *m, ...)
-#else
-idrp_input(m, va_alist)
-	struct mbuf *m;
-	va_dcl
-#endif
 {
 	struct sockaddr_iso *src, *dst;
 	va_list ap;
@@ -121,13 +115,7 @@ bad:		m_freem(m);
 }
 
 int
-#if __STDC__
 idrp_output(struct mbuf *m, ...)
-#else
-idrp_output(m, va_alist)
-	struct mbuf    *m;
-	va_dcl
-#endif
 {
 	struct mbuf *addr;
 	register struct sockaddr_iso *siso;

@@ -164,7 +164,7 @@ lfs_vcreate(mp, ino, vpp)
 	ino_t ino;
 	struct vnode **vpp;
 {
-	extern int (**lfs_vnodeop_p) __P((void *));
+	extern int (**lfs_vnodeop_p)(void *);
 	struct inode *ip;
 	struct ufsmount *ump;
 	int error;

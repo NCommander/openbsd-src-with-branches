@@ -230,7 +230,7 @@ do { \
 	static char *_uvmhist_name = FNAME; \
 	int _uvmhist_call; 
 
-static __inline void uvmhist_print __P((struct uvm_history_ent *));
+static __inline void uvmhist_print(struct uvm_history_ent *);
 
 static __inline void
 uvmhist_print(e)

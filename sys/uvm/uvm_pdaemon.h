@@ -80,7 +80,7 @@
  * prototypes
  */
 
-void uvm_wait __P((const char *));
+void uvm_wait(const char *);
 
 #endif /* _KERNEL */
 

@@ -1,4 +1,4 @@
-/*	$OpenBSD: ns.h,v 1.2 1996/03/04 08:20:23 niklas Exp $	*/
+/*	$OpenBSD$	*/
 /*	$NetBSD: ns.h,v 1.8 1996/02/13 22:13:51 christos Exp $	*/
 
 /*
@@ -149,8 +149,8 @@ union ns_net ns_broadnet;
 #include <sys/cdefs.h>
 
 __BEGIN_DECLS
-extern struct ns_addr ns_addr __P((const char *));
-extern char *ns_ntoa __P((struct ns_addr));
+extern struct ns_addr ns_addr(const char *);
+extern char *ns_ntoa(struct ns_addr);
 __END_DECLS
 
 #endif

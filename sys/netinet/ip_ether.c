@@ -74,13 +74,7 @@ struct etheripstat etheripstat;
  */
 
 void
-#if __STDC__
 etherip_input(struct mbuf *m, ...)
-#else
-etherip_input(m, va_alist)
-	struct mbuf *m;
-	va_dcl
-#endif
 {
 	union sockaddr_union ssrc, sdst;
 	struct ether_header eh;

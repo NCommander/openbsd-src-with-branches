@@ -1,4 +1,4 @@
-/*	$OpenBSD: ns_pcb.c,v 1.2 1996/03/04 08:20:29 niklas Exp $	*/
+/*	$OpenBSD$	*/
 /*	$NetBSD: ns_pcb.c,v 1.10 1996/03/27 14:44:14 christos Exp $	*/
 
 /*
@@ -289,7 +289,7 @@ ns_pcbnotify(dst, errno, notify, param)
 	register struct ns_addr *dst;
 	long param;
 	int errno;
-	void (*notify) __P((struct nspcb *));
+	void (*notify)(struct nspcb *);
 {
 	register struct nspcb *nsp, *oinp;
 	int s = splimp();

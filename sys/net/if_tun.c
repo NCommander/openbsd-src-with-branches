@@ -99,21 +99,21 @@ int ntun;
 
 extern int ifqmaxlen;
 
-void	tunattach __P((int));
-int	tunopen	__P((dev_t, int, int, struct proc *));
-int	tunclose __P((dev_t, int, int, struct proc *));
-int	tun_ioctl __P((struct ifnet *, u_long, caddr_t));
-int	tun_output __P((struct ifnet *, struct mbuf *, struct sockaddr *,
-		        struct rtentry *rt));
-int	tunioctl __P((dev_t, u_long, caddr_t, int, struct proc *));
-int	tunread	__P((dev_t, struct uio *, int));
-int	tunwrite __P((dev_t, struct uio *, int));
-int	tunselect __P((dev_t, int, struct proc *));
+void	tunattach(int);
+int	tunopen(dev_t, int, int, struct proc *);
+int	tunclose(dev_t, int, int, struct proc *);
+int	tun_ioctl(struct ifnet *, u_long, caddr_t);
+int	tun_output(struct ifnet *, struct mbuf *, struct sockaddr *,
+		        struct rtentry *rt);
+int	tunioctl(dev_t, u_long, caddr_t, int, struct proc *);
+int	tunread(dev_t, struct uio *, int);
+int	tunwrite(dev_t, struct uio *, int);
+int	tunselect(dev_t, int, struct proc *);
 
 
-static int tuninit __P((struct tun_softc *));
+static int tuninit(struct tun_softc *);
 #ifdef ALTQ
-static void tunstart __P((struct ifnet *));
+static void tunstart(struct ifnet *);
 #endif
 
 void

@@ -1,4 +1,4 @@
-/*	$OpenBSD: iso_snpac.c,v 1.5.10.1 2001/05/14 22:40:22 niklas Exp $	*/
+/*	$OpenBSD$	*/
 /*	$NetBSD: iso_snpac.c,v 1.13 1996/05/07 02:45:16 thorpej Exp $	*/
 
 /*-
@@ -120,7 +120,7 @@ static struct sockaddr_dl gte_dl;
 #define zap_linkaddr(a, b, c, i) \
 	(*a = blank_dl, bcopy(b, a->sdl_data, a->sdl_alen = c), a->sdl_index = i)
 
-static void snpac_fixdstandmask __P((int));
+static void snpac_fixdstandmask(int);
 
 /*
  *	We only keep track of a single IS at a time.

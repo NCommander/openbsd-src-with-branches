@@ -166,13 +166,7 @@ in_gif_output(ifp, family, m, rt)
 }
 
 void
-#if __STDC__
 in_gif_input(struct mbuf *m, ...)
-#else
-in_gif_input(m, va_alist)
-	struct mbuf *m;
-	va_dcl
-#endif
 {
 	int off;
 	struct gif_softc *sc;

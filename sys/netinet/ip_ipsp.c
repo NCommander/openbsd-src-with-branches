@@ -80,13 +80,13 @@ void tdb_hashstats(void);
 #define	INLINE	static __inline
 #endif
 
-int		ipsp_kern __P((int, char **, int));
-u_int8_t	get_sa_require  __P((struct inpcb *));
-void		tdb_rehash __P((void));
-void		tdb_timeout __P((void *v));
-void		tdb_firstuse __P((void *v));
-void		tdb_soft_timeout __P((void *v));
-void		tdb_soft_firstuse __P((void *v));
+int		ipsp_kern(int, char **, int);
+u_int8_t	get_sa_require(struct inpcb *);
+void		tdb_rehash(void);
+void		tdb_timeout(void *v);
+void		tdb_firstuse(void *v);
+void		tdb_soft_timeout(void *v);
+void		tdb_soft_firstuse(void *v);
 
 extern int	ipsec_auth_default_level;
 extern int	ipsec_esp_trans_default_level;

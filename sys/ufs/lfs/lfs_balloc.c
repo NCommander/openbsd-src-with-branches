@@ -56,8 +56,8 @@
 
 #include <uvm/uvm_extern.h>
 
-int lfs_fragextend __P((struct vnode *vp, int osize, int nsize, daddr_t lbn,
-	struct buf **bpp));
+int lfs_fragextend(struct vnode *vp, int osize, int nsize, daddr_t lbn,
+	struct buf **bpp);
 
 
 int

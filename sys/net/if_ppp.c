@@ -130,14 +130,14 @@
 #include <net/ppp-comp.h>
 #endif
 
-static int	pppsioctl __P((struct ifnet *, u_long, caddr_t));
-static void	ppp_requeue __P((struct ppp_softc *));
-static void	ppp_ccp __P((struct ppp_softc *, struct mbuf *m, int rcvd));
-static void	ppp_ccp_closed __P((struct ppp_softc *));
-static void	ppp_inproc __P((struct ppp_softc *, struct mbuf *));
-static void	pppdumpm __P((struct mbuf *m0));
+static int	pppsioctl(struct ifnet *, u_long, caddr_t);
+static void	ppp_requeue(struct ppp_softc *);
+static void	ppp_ccp(struct ppp_softc *, struct mbuf *m, int rcvd);
+static void	ppp_ccp_closed(struct ppp_softc *);
+static void	ppp_inproc(struct ppp_softc *, struct mbuf *);
+static void	pppdumpm(struct mbuf *m0);
 #ifdef ALTQ
-static void	ppp_ifstart __P((struct ifnet *ifp));
+static void	ppp_ifstart(struct ifnet *ifp);
 #endif
 
 /*

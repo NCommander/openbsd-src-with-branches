@@ -117,13 +117,13 @@ struct inpcb;
 struct mbuf;
 struct sockaddr_iso;
 
-int iso_pcballoc __P((struct socket *, void *));
-int iso_pcbbind __P((void *, struct mbuf *));
-int iso_pcbconnect __P((void *, struct mbuf *));
-void iso_pcbdisconnect __P((void *));
-void iso_pcbdetach __P((void *));
-void iso_pcbnotify __P((struct isopcb *, struct sockaddr_iso *, int,
-			void (*) (struct isopcb *)));
-struct isopcb  *iso_pcblookup __P((struct isopcb *, int, caddr_t,
-				   struct sockaddr_iso *));
+int iso_pcballoc(struct socket *, void *);
+int iso_pcbbind(void *, struct mbuf *);
+int iso_pcbconnect(void *, struct mbuf *);
+void iso_pcbdisconnect(void *);
+void iso_pcbdetach(void *);
+void iso_pcbnotify(struct isopcb *, struct sockaddr_iso *, int,
+			void (*) (struct isopcb *));
+struct isopcb  *iso_pcblookup(struct isopcb *, int, caddr_t,
+				   struct sockaddr_iso *);
 #endif

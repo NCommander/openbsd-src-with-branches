@@ -60,12 +60,12 @@ size_t in6_ifstatmax = 0;
 size_t icmp6_ifstatmax = 0;
 unsigned long in6_maxmtu = 0;
 
-static int get_rand_ifid __P((struct ifnet *, struct in6_addr *));
-static int get_hw_ifid __P((struct ifnet *, struct in6_addr *));
-static int get_ifid __P((struct ifnet *, struct ifnet *, struct in6_addr *));
-static int in6_ifattach_addaddr __P((struct ifnet *, struct in6_ifaddr *));
-static int in6_ifattach_linklocal __P((struct ifnet *, struct ifnet *));
-static int in6_ifattach_loopback __P((struct ifnet *));
+static int get_rand_ifid(struct ifnet *, struct in6_addr *);
+static int get_hw_ifid(struct ifnet *, struct in6_addr *);
+static int get_ifid(struct ifnet *, struct ifnet *, struct in6_addr *);
+static int in6_ifattach_addaddr(struct ifnet *, struct in6_ifaddr *);
+static int in6_ifattach_linklocal(struct ifnet *, struct ifnet *);
+static int in6_ifattach_loopback(struct ifnet *);
 
 #define EUI64_GBIT	0x01
 #define EUI64_UBIT	0x02

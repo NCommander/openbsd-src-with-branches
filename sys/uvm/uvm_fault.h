@@ -73,12 +73,12 @@ struct uvm_faultinfo {
  */
 
 
-int uvmfault_anonget __P((struct uvm_faultinfo *, struct vm_amap *,
-			  struct vm_anon *));
+int uvmfault_anonget(struct uvm_faultinfo *, struct vm_amap *,
+			  struct vm_anon *);
 
-int uvm_fault_wire __P((vm_map_t, vaddr_t, vaddr_t, vm_prot_t));
-void uvm_fault_unwire __P((vm_map_t, vaddr_t, vaddr_t));
-void uvm_fault_unwire_locked __P((vm_map_t, vaddr_t, vaddr_t));
+int uvm_fault_wire(vm_map_t, vaddr_t, vaddr_t, vm_prot_t);
+void uvm_fault_unwire(vm_map_t, vaddr_t, vaddr_t);
+void uvm_fault_unwire_locked(vm_map_t, vaddr_t, vaddr_t);
 
 #endif /* _KERNEL */
 

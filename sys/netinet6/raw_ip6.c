@@ -259,7 +259,7 @@ rip6_ctlinput(cmd, sa, d)
 	struct ip6ctlparam *ip6cp = NULL;
 	const struct sockaddr_in6 *sa6_src = NULL;
 	void *cmdarg;
-	void (*notify) __P((struct in6pcb *, int)) = in6_rtchange;
+	void (*notify)(struct in6pcb *, int) = in6_rtchange;
 	int nxt;
 
 	if (sa->sa_family != AF_INET6 ||
@@ -355,13 +355,7 @@ rip6_ctlinput(cmd, sa, d)
  * Tack on options user may have setup with control call.
  */
 int
-#if __STDC__
 rip6_output(struct mbuf *m, ...)
-#else
-rip6_output(m, va_alist)
-	struct mbuf *m;
-	va_dcl
-#endif
 {
 	struct socket *so;
 	struct sockaddr_in6 *dstsock;
@@ -777,8 +771,18 @@ rip6_usrreq(so, req, m, nam, control, p)
 				error = ENOTCONN;
 				break;
 			}
+			if (nam->m_len != sizeof(tmp)) {
+				error = EINVAL;
+				break;
+			}
+
 			tmp = *mtod(nam, struct sockaddr_in6 *);
 			dst = &tmp;
+
+			if (dst->sin6_family != AF_INET6) {
+				error = EAFNOSUPPORT;
+				break;
+			}
 		}
 #ifdef ENABLE_DEFAULT_SCOPE
 		if (dst->sin6_scope_id == 0) {

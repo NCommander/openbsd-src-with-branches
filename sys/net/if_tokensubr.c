@@ -123,8 +123,8 @@ extern struct ifqueue pkintrq;
 #define llc_snap	llc_un.type_snap
 #endif
 
-int	token_output __P((struct ifnet *, struct mbuf *, struct sockaddr *,
-	struct rtentry *)); 
+int	token_output(struct ifnet *, struct mbuf *, struct sockaddr *,
+	struct rtentry *); 
 
 /*
  * Token Ring output routine.

@@ -62,7 +62,7 @@ struct etherip_header {
 }
 
 #ifdef _KERNEL
-int	etherip_sysctl __P((int *, u_int, void *, size_t *, void *, size_t));
+int	etherip_sysctl(int *, u_int, void *, size_t *, void *, size_t);
 
 extern int etherip_allow;
 extern struct etheripstat etheripstat;

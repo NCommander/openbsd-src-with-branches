@@ -72,7 +72,7 @@ struct ipipstat
 }
 
 #ifdef _KERNEL
-int	ipip_sysctl __P((int *, u_int, void *, size_t *, void *, size_t));
+int	ipip_sysctl(int *, u_int, void *, size_t *, void *, size_t);
 
 extern int ipip_allow;
 extern struct ipipstat ipipstat;

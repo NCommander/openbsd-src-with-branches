@@ -175,8 +175,8 @@ static struct uvm_advice uvmadvice[] = {
  * private prototypes
  */
 
-static void uvmfault_amapcopy __P((struct uvm_faultinfo *));
-static __inline void uvmfault_anonflush __P((struct vm_anon **, int));
+static void uvmfault_amapcopy(struct uvm_faultinfo *);
+static __inline void uvmfault_anonflush(struct vm_anon **, int);
 
 /*
  * inline functions

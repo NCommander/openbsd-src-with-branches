@@ -53,13 +53,13 @@ struct mbuf;
 struct socket;
 struct idpstat	idpstat;
 
-void idp_input __P((struct mbuf *, ...));
-void idp_abort __P((struct nspcb *));
-void idp_drop __P((struct nspcb *, int));
-int idp_output __P((struct mbuf *, ...));
-int idp_ctloutput __P((int, struct socket *, int , int, struct mbuf **));
-int idp_usrreq __P((struct socket *, int, struct mbuf *, struct mbuf *,
-		    struct mbuf *));
-int idp_raw_usrreq __P((struct socket *, int, struct mbuf *, struct mbuf *,
-			struct mbuf *));
+void idp_input(struct mbuf *, ...);
+void idp_abort(struct nspcb *);
+void idp_drop(struct nspcb *, int);
+int idp_output(struct mbuf *, ...);
+int idp_ctloutput(int, struct socket *, int , int, struct mbuf **);
+int idp_usrreq(struct socket *, int, struct mbuf *, struct mbuf *,
+		    struct mbuf *);
+int idp_raw_usrreq(struct socket *, int, struct mbuf *, struct mbuf *,
+			struct mbuf *);
 #endif

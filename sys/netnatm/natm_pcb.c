@@ -1,4 +1,4 @@
-/*	$OpenBSD: natm_pcb.c,v 1.3 1996/11/09 03:29:00 chuck Exp $	*/
+/*	$OpenBSD$	*/
 
 /*
  *
@@ -168,7 +168,7 @@ done:
 
 #ifdef DDB
 
-int npcb_dump __P((void));
+int npcb_dump(void);
 
 int npcb_dump()
 

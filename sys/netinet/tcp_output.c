@@ -78,6 +78,7 @@
 #include <sys/protosw.h>
 #include <sys/socket.h>
 #include <sys/socketvar.h>
+#include <sys/kernel.h>
 
 #include <net/route.h>
 #include <net/if.h>
@@ -249,7 +250,7 @@ tcp_output(tp)
 	 * to send, then transmit; otherwise, investigate further.
 	 */
 	idle = (tp->snd_max == tp->snd_una);
-	if (idle && tp->t_idle >= tp->t_rxtcur)
+	if (idle && (tcp_now - tp->t_rcvtime) >= tp->t_rxtcur)
 		/*
 		 * We have been idle for "a while" and no acks are
 		 * expected to clock out any data we send --
@@ -982,8 +983,8 @@ send:
 			 * Time this transmission if not a retransmission and
 			 * not currently timing anything.
 			 */
-			if (tp->t_rtt == 0) {
-				tp->t_rtt = 1;
+			if (tp->t_rtttime == 0) {
+				tp->t_rtttime = tcp_now;
 				tp->t_rtseq = startseq;
 				tcpstat.tcps_segstimed++;
 			}

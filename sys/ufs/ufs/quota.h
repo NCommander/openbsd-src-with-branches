@@ -141,10 +141,10 @@ int     ufs_quota_free_inode2(struct inode *, struct ucred *, enum ufs_quota_fla
 
 int     ufs_quota_delete(struct inode *);
 
-int	getinoquota __P((struct inode *));
-int	quotaoff __P((struct proc *, struct mount *, int));
-int	qsync __P((struct mount *mp));
-int	ufs_quotactl __P((struct mount *, int, uid_t, caddr_t, struct proc *));
+int	getinoquota(struct inode *);
+int	quotaoff(struct proc *, struct mount *, int);
+int	qsync(struct mount *mp);
+int	ufs_quotactl(struct mount *, int, uid_t, caddr_t, struct proc *);
 
 void    ufs_quota_init(void);
 

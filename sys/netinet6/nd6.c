@@ -30,14 +30,6 @@
  * SUCH DAMAGE.
  */
 
-/*
- * XXX
- * KAME 970409 note:
- * BSD/OS version heavily modifies this code, related to llinfo.
- * Since we don't have BSD/OS version of net/route.c in our hand,
- * I left the code mostly as it was in 970310.  -- itojun
- */
-
 #include <sys/param.h>
 #include <sys/systm.h>
 #include <sys/timeout.h>
@@ -108,7 +100,7 @@ struct nd_prhead nd_prefix = { 0 };
 int nd6_recalc_reachtm_interval = ND6_RECALC_REACHTM_INTERVAL;
 static struct sockaddr_in6 all1_sa;
 
-static void nd6_slowtimo __P((void *));
+static void nd6_slowtimo(void *);
 
 struct timeout nd6_slowtimo_ch;
 struct timeout nd6_timer_ch;

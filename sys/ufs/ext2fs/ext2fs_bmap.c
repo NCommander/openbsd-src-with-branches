@@ -61,8 +61,8 @@
 #include <ufs/ext2fs/ext2fs.h>
 #include <ufs/ext2fs/ext2fs_extern.h>
 
-static int ext2fs_bmaparray __P((struct vnode *, ufs_daddr_t, ufs_daddr_t *,
-								struct indir *, int *, int *));
+static int ext2fs_bmaparray(struct vnode *, ufs_daddr_t, ufs_daddr_t *,
+								struct indir *, int *, int *);
 
 /*
  * Bmap converts a the logical block number of a file to its physical block

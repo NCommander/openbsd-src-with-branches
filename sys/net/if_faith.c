@@ -70,12 +70,12 @@
 
 #include "bpfilter.h"
 
-static int faithioctl __P((struct ifnet *, u_long, caddr_t));
-int faithoutput __P((struct ifnet *, struct mbuf *, struct sockaddr *,
-	struct rtentry *));
-static void faithrtrequest __P((int, struct rtentry *, struct rt_addrinfo *));
+static int faithioctl(struct ifnet *, u_long, caddr_t);
+int faithoutput(struct ifnet *, struct mbuf *, struct sockaddr *,
+	struct rtentry *);
+static void faithrtrequest(int, struct rtentry *, struct rt_addrinfo *);
 
-void faithattach __P((int));
+void faithattach(int);
 
 static struct ifnet faithif[NFAITH];
 

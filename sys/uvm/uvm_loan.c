@@ -105,12 +105,12 @@
  * local prototypes
  */
 
-static int	uvm_loananon __P((struct uvm_faultinfo *, void ***, 
-				int, struct vm_anon *));
-static int	uvm_loanentry __P((struct uvm_faultinfo *, void ***, int));
-static int	uvm_loanuobj __P((struct uvm_faultinfo *, void ***, 
-				int, vaddr_t));
-static int	uvm_loanzero __P((struct uvm_faultinfo *, void ***, int));
+static int	uvm_loananon(struct uvm_faultinfo *, void ***, 
+				int, struct vm_anon *);
+static int	uvm_loanentry(struct uvm_faultinfo *, void ***, int);
+static int	uvm_loanuobj(struct uvm_faultinfo *, void ***, 
+				int, vaddr_t);
+static int	uvm_loanzero(struct uvm_faultinfo *, void ***, int);
 
 /*
  * inlines

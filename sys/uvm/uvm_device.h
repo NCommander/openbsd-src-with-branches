@@ -70,7 +70,7 @@ struct uvm_device {
  * prototypes
  */
 
-struct uvm_object *udv_attach __P((void *, vm_prot_t, voff_t, vsize_t));
+struct uvm_object *udv_attach(void *, vm_prot_t, voff_t, vsize_t);
 
 #endif /* _KERNEL */
 
