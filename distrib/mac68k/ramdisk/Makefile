@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.5 2002/04/30 09:18:20 deraadt Exp $
+#	$OpenBSD: Makefile,v 1.6 2004/12/03 06:37:48 miod Exp $
 
 TOP=		${.CURDIR}/..
 
@@ -84,7 +84,7 @@ do_files:
 
 clean cleandir:
 	/bin/rm -f core ${IMAGE} ${CBIN} ${CBIN}.conf ${CBIN}.mk ${CBIN}.cache \
-	*.o *.lo *.c bsd bsdmix bsdofw ${BSD_RD} \
+	*.o *.lo *.c bsd ${BSD_RD} \
 	rdsetroot
 
 .include <bsd.obj.mk>
