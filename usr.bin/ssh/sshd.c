@@ -42,7 +42,7 @@
  */
 
 #include "includes.h"
-RCSID("$OpenBSD: sshd.c,v 1.286 2004/02/23 12:02:33 markus Exp $");
+RCSID("$OpenBSD: sshd.c,v 1.287 2004/02/25 00:22:45 djm Exp $");
 
 #include <openssl/dh.h>
 #include <openssl/bn.h>
@@ -1324,6 +1324,7 @@ main(int ac, char **av)
 	}
 
 	/* This is the child processing a new connection. */
+	setproctitle("%s", "[accepted]");
 
 	/*
 	 * Create a new session and process group since the 4.4BSD
