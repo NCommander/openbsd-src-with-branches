@@ -1,4 +1,4 @@
-/*	$OpenBSD: ip_ah.h,v 1.3 1997/02/24 19:42:32 angelos Exp $	*/
+/*	$OpenBSD: ip_ah.h,v 1.4 1997/02/26 02:38:11 angelos Exp $	*/
 
 /*
  * The author of this code is John Ioannidis, ji@tla.org,
@@ -28,7 +28,7 @@
  * Per RFC1826 (Atkinson, 1995)
  */
 
-#include <netinet/ip_md5.h>
+#include <sys/md5k.h>
 #include <netinet/ip_sha1.h>
 
 struct ah

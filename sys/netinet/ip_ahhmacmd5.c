@@ -1,4 +1,4 @@
-/*	$OpenBSD: ip_ahhmacmd5.c,v 1.5 1997/02/26 03:01:03 angelos Exp $	*/
+/*	$OpenBSD: ip_ahhmacmd5.c,v 1.6 1997/03/09 07:03:20 angelos Exp $	*/
 
 /*
  * The author of this code is John Ioannidis, ji@tla.org,
@@ -109,8 +109,8 @@ ahhmacmd5_init(struct tdb *tdbp, struct xformsw *xsp, struct mbuf *m)
 	xd->amx_bitmap = 0;
 	xd->amx_wnd = txd.amx_wnd;
 	
-	realMD5Init(&(xd->amx_ictx));
-	realMD5Init(&(xd->amx_octx));
+	MD5Init(&(xd->amx_ictx));
+	MD5Init(&(xd->amx_octx));
 	
 	for (len = 0; len < AHHMACMD5_KMAX; len++)
 	  txd.amx_key[len] ^= HMACMD5_IPAD_VAL;
