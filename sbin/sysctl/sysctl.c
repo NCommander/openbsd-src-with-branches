@@ -1,4 +1,4 @@
-/*	$OpenBSD: sysctl.c,v 1.48 2000/03/21 20:46:30 mickey Exp $	*/
+/*	$OpenBSD: sysctl.c,v 1.49 2000/04/10 19:50:50 mickey Exp $	*/
 /*	$NetBSD: sysctl.c,v 1.9 1995/09/30 07:12:50 thorpej Exp $	*/
 
 /*
@@ -44,7 +44,7 @@ static char copyright[] =
 #if 0
 static char sccsid[] = "@(#)sysctl.c	8.5 (Berkeley) 5/9/95";
 #else
-static char *rcsid = "$OpenBSD: sysctl.c,v 1.48 2000/03/21 20:46:30 mickey Exp $";
+static char *rcsid = "$OpenBSD: sysctl.c,v 1.49 2000/04/10 19:50:50 mickey Exp $";
 #endif
 #endif /* not lint */
 
@@ -562,7 +562,7 @@ parse(string, flags)
 			if (special & BIOSGEO)
 				return;
 		default:
-			warn(string);
+			warn("%s", string);
 			return;
 		}
 	}

@@ -1,6 +1,6 @@
-/*	$OpenBSD: regerror.c,v 1.2 1996/07/24 05:39:11 downsj Exp $	*/
+/*	$OpenBSD: regerror.c,v 1.3 1999/08/02 17:10:47 downsj Exp $	*/
 #ifndef lint
-static char *rcsid = "$OpenBSD: regerror.c,v 1.2 1996/07/24 05:39:11 downsj Exp $";
+static char *rcsid = "$OpenBSD: regerror.c,v 1.3 1999/08/02 17:10:47 downsj Exp $";
 #endif /* not lint */
 
 #include <regexp.h>
@@ -15,7 +15,7 @@ v8_regerror(s)
 	if (_new_regerror != NULL)
 		_new_regerror(s);
 	else
-		warnx(s);
+		warnx("%s", s);
 	return;
 }
 

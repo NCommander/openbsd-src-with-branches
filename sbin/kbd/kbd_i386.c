@@ -1,4 +1,4 @@
-/*	$OpenBSD: kbd_i386.c,v 1.7 1998/05/29 00:42:53 mickey Exp $	*/
+/*	$OpenBSD: kbd_i386.c,v 1.8 1998/07/06 13:42:26 pefo Exp $	*/
 
 /*
  * Copyright (c) 1996 Juergen Hannken-Illjes
@@ -145,6 +145,6 @@ kbd_set(name, verbose)
 		snprintf(buf, sizeof(buf), "kcon -m %s", name);
 
 		if (system(buf))
-			err(1, name);
+			err(1, "%s", name);
 	}
 }
