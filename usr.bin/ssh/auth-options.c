@@ -10,7 +10,7 @@
  */
 
 #include "includes.h"
-RCSID("$OpenBSD: auth-options.c,v 1.26 2002/07/30 17:03:55 markus Exp $");
+RCSID("$OpenBSD: auth-options.c,v 1.27 2003/04/08 20:21:28 itojun Exp $");
 
 #include "xmalloc.h"
 #include "match.h"
@@ -173,7 +173,7 @@ auth_parse_options(struct passwd *pw, char *opts, char *file, u_long linenum)
 		if (strncasecmp(opts, cp, strlen(cp)) == 0) {
 			const char *remote_ip = get_remote_ipaddr();
 			const char *remote_host = get_canonical_hostname(
-			    options.verify_reverse_mapping);
+			    options.use_dns);
 			char *patterns = xmalloc(strlen(opts) + 1);
 
 			opts += strlen(cp);

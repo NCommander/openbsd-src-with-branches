@@ -13,7 +13,7 @@
  */
 
 #include "includes.h"
-RCSID("$OpenBSD: auth-rh-rsa.c,v 1.34 2002/03/25 09:25:06 markus Exp $");
+RCSID("$OpenBSD: auth-rh-rsa.c,v 1.35 2003/04/08 20:21:28 itojun Exp $");
 
 #include "packet.h"
 #include "uidswap.h"
@@ -63,7 +63,7 @@ auth_rhosts_rsa(struct passwd *pw, char *cuser, Key *client_host_key)
 	    client_host_key->rsa == NULL)
 		return 0;
 
-	chost = (char *)get_canonical_hostname(options.verify_reverse_mapping);
+	chost = (char *)get_canonical_hostname(options.use_dns);
 	debug("Rhosts RSA authentication: canonical host %.900s", chost);
 
 	if (!PRIVSEP(auth_rhosts_rsa_key_allowed(pw, cuser, chost, client_host_key))) {
