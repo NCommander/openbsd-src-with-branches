@@ -1,4 +1,4 @@
-#	$OpenBSD$
+#	$OpenBSD: Makefile.inc,v 1.1 2004/01/28 02:11:53 mickey Exp $
 
 .ifdef DESTDIR
 snap_md: boot bsd distrib
@@ -11,7 +11,7 @@ bsd:
 	    ${MAKE} clean && ${MAKE} depend && exec ${MAKE}
 
 boot:
-	cp ${DESTDIR}/usr/mdec/xxboot ${DESTDIR}/snapshot
+	cp ${DESTDIR}/usr/mdec/biosboot ${DESTDIR}/snapshot
 
 .PHONY: bsd
 
