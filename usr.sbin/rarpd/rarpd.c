@@ -1,4 +1,4 @@
-/*	$OpenBSD: rarpd.c,v 1.8 1997/02/05 13:41:04 deraadt Exp $ */
+/*	$OpenBSD: rarpd.c,v 1.9 1997/03/29 04:01:58 deraadt Exp $ */
 /*	$NetBSD: rarpd.c,v 1.12 1996/03/21 18:28:23 jtc Exp $	*/
 
 /*
@@ -28,7 +28,7 @@ char    copyright[] =
 #endif				/* not lint */
 
 #ifndef lint
-static char rcsid[] = "$OpenBSD: rarpd.c,v 1.8 1997/02/05 13:41:04 deraadt Exp $";
+static char rcsid[] = "$OpenBSD: rarpd.c,v 1.9 1997/03/29 04:01:58 deraadt Exp $";
 #endif
 
 
@@ -561,7 +561,7 @@ rarp_process(ii, pkt)
 	struct ether_header *ep;
 	struct hostent *hp;
 	u_int32_t  target_ipaddr;
-	char    ename[256];
+	char    ename[MAXHOSTNAMELEN];
 	struct	in_addr in;
 
 	ep = (struct ether_header *) pkt;
