@@ -1,4 +1,4 @@
-/*	$OpenBSD: machdep.c,v 1.96 2003/01/14 12:17:07 mickey Exp $	*/
+/*	$OpenBSD: machdep.c,v 1.97 2003/01/14 16:06:53 mickey Exp $	*/
 
 /*
  * Copyright (c) 1999-2002 Michael Shalayeff
@@ -638,7 +638,7 @@ cpu_startup()
 				panic("cpu_startup: not enough memory for "
 				    "buffer cache");
 			pmap_kenter_pa(curbuf, VM_PAGE_TO_PHYS(pg),
-			    VM_PROT_READ|VM_PROT_WRITE);
+			    UVM_PROT_RW);
 			curbuf += PAGE_SIZE;
 		}
 	}
