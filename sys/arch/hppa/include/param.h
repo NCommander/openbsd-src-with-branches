@@ -1,4 +1,4 @@
-/*	$OpenBSD: param.h,v 1.20 2003/03/29 00:59:32 mickey Exp $	*/
+/*	$OpenBSD: param.h,v 1.21 2003/04/16 07:26:07 mickey Exp $	*/
 
 /* 
  * Copyright (c) 1988-1994, The University of Utah and
@@ -83,9 +83,7 @@
 #define	MCLSHIFT	11
 #define	MCLBYTES	(1 << MCLSHIFT)	/* large enough for ether MTU */
 #define	MCLOFSET	(MCLBYTES - 1)
-#ifndef NMBCLUSTERS
-#define	NMBCLUSTERS	(2048)		/* cl map size: 1MB */
-#endif
+#define	NMBCLUSTERS	4096		/* map size, max cluster allocation */
 
 /*
  * Minimum and maximum sizes of the kernel malloc arena in PAGE_SIZE-sized
