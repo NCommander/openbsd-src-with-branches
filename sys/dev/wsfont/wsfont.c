@@ -1,4 +1,4 @@
-/*	$OpenBSD: wsfont.c,v 1.4 2002/05/09 08:59:03 maja Exp $ */
+/*	$OpenBSD: wsfont.c,v 1.5 2002/07/25 18:57:50 miod Exp $ */
 /* 	$NetBSD: wsfont.c,v 1.17 2001/02/07 13:59:24 ad Exp $	*/
 
 /*-
@@ -99,8 +99,8 @@
 /* Make sure we always have at least one font. */
 #ifndef HAVE_FONT
 #define HAVE_FONT 1
-#if defined(SMALL_KERNEL)
-#if defined(__sparc__) || defined(__sparc64__)
+#if defined(SMALL_KERNEL) && !defined(__sparc__)
+#if defined(__sparc64__)
 #define FONT_GALLANT12x22
 #else
 #define FONT_BOLD8x16 1
