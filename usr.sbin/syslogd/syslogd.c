@@ -1,4 +1,4 @@
-/*	$OpenBSD: syslogd.c,v 1.48 2001/12/02 02:23:45 deraadt Exp $	*/
+/*	$OpenBSD: syslogd.c,v 1.49 2002/02/16 21:28:09 millert Exp $	*/
 
 /*
  * Copyright (c) 1983, 1988, 1993, 1994
@@ -43,7 +43,7 @@ static char copyright[] =
 #if 0
 static char sccsid[] = "@(#)syslogd.c	8.3 (Berkeley) 4/4/94";
 #else
-static char rcsid[] = "$OpenBSD: syslogd.c,v 1.48 2001/12/02 02:23:45 deraadt Exp $";
+static char rcsid[] = "$OpenBSD: syslogd.c,v 1.49 2002/02/16 21:28:09 millert Exp $";
 #endif
 #endif /* not lint */
 
@@ -455,7 +455,8 @@ usage()
 {
 
 	(void)fprintf(stderr,
-	    "usage: syslogd [-u] [-f conffile] [-m markinterval] [-p logpath] [-a logpath]\n");
+	    "usage: syslogd [-du] [-f config_file] [-m mark_interval] "
+	    "[-a path] [-p log_socket]\n");
 	exit(1);
 }
 
