@@ -1,7 +1,10 @@
-#	$OpenBSD: Makefile,v 1.1 1999/12/11 08:43:19 itojun Exp $
+#	$OpenBSD: Makefile,v 1.2 1999/12/30 16:19:32 itojun Exp $
 
 PROG=	ping6
 MAN=	ping6.8
+
+LDADD=	-lm
+DPADD=	${LIBM}
 
 CPPFLAGS+= -DINET6
 
