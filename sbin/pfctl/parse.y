@@ -1,4 +1,4 @@
-/*	$OpenBSD: parse.y,v 1.402 2003/07/18 06:30:06 cedric Exp $	*/
+/*	$OpenBSD: parse.y,v 1.403 2003/07/19 13:08:58 cedric Exp $	*/
 
 /*
  * Copyright (c) 2001 Markus Friedl.  All rights reserved.
@@ -1776,7 +1776,7 @@ xhost		: not host			{
 			$$ = $2;
 		}
 		| NOROUTE			{
-		$$ = calloc(1, sizeof(struct node_host));
+			$$ = calloc(1, sizeof(struct node_host));
 			if ($$ == NULL)
 				err(1, "xhost: calloc");
 			$$->addr.type = PF_ADDR_NOROUTE;
