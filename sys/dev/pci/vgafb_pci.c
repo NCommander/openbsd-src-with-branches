@@ -1,4 +1,4 @@
-/*	$OpenBSD: vga_pci.c,v 1.7 1998/01/05 13:35:27 deraadt Exp $	*/
+/*	$OpenBSD: vgafb_pci.c,v 1.1 1998/09/27 03:55:59 rahnds Exp $	*/
 /*	$NetBSD: vga_pci.c,v 1.4 1996/12/05 01:39:38 cgd Exp $	*/
 
 /*
@@ -126,8 +126,10 @@ vgafb_pci_match(parent, match, aux)
 			printf(": couldn't find memory region\n");
 			return 0;
 		}
+#if 0
 		printf("vga pci_mem_find returned retval %x A %x S %x C%x\n",
 			retval, memaddr, memsize, cacheable);
+#endif
 
 {
 	int s;
