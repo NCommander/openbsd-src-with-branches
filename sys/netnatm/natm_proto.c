@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: natm_proto.c,v 1.3 1996/09/18 00:56:41 chuck Exp $	*/
 
 /*
  *
@@ -59,6 +59,14 @@ static	void natm_init __P((void));
 
 struct protosw natmsw[] = {
 { SOCK_STREAM,	&natmdomain,	PROTO_NATMAAL5, PR_CONNREQUIRED,
+  0,	0,	0,	0,
+  natm_usrreq,
+  0,	0,	0,	0,	
+#if defined(__NetBSD__) || defined(__OpenBSD__)
+	natm5_sysctl
+#endif
+},
+{ SOCK_DGRAM,	&natmdomain,	PROTO_NATMAAL5,	PR_CONNREQUIRED | PR_ATOMIC,
   0,	0,	0,	0,
   natm_usrreq,
   0,	0,	0,	0,	
