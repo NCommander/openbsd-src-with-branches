@@ -34,11 +34,11 @@
 
 #if defined(SYSLIBC_SCCS)
 	.text
-	.asciz "$OpenBSD: cerror.S,v 1.4 2003/04/17 03:47:42 drahn Exp $"
+	.asciz "$OpenBSD: cerror.S,v 1.5 2003/06/02 20:18:30 millert Exp $"
 #endif /* SYSLIB_SCCS */
 
 	.globl	_C_LABEL(errno)
-CERROR:
+_ENTRY(CERROR)
 #ifdef PIC
 	PIC_PROLOGUE
 	movl	PIC_GOT(_C_LABEL(errno)),%ecx
