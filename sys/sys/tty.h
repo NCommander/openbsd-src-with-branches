@@ -1,4 +1,4 @@
-/*	$OpenBSD: tty.h,v 1.4 1996/06/10 07:31:41 deraadt Exp $	*/
+/*	$OpenBSD: tty.h,v 1.5 2000/07/19 13:37:27 art Exp $	*/
 /*	$NetBSD: tty.h,v 1.30.4.1 1996/06/02 09:08:13 mrg Exp $	*/
 
 /*-
@@ -267,7 +267,7 @@ int	clalloc __P((struct clist *, int, int));
 void	clfree __P((struct clist *));
 
 #if defined(COMPAT_43) || defined(COMPAT_SUNOS) || defined(COMPAT_SVR4) || \
-    defined(COMPAT_FREEBSD)
+    defined(COMPAT_FREEBSD) || defined(COMPAT_OSF1)
 # define COMPAT_OLDTTY
 int 	ttcompat __P((struct tty *, u_long, caddr_t, int, struct proc *));
 #endif
