@@ -1,4 +1,4 @@
-/*      $OpenBSD: ath.c,v 1.4 2004/11/23 09:39:28 reyk Exp $  */
+/*      $OpenBSD: ath.c,v 1.5 2004/12/31 01:00:23 reyk Exp $  */
 /*	$NetBSD: ath.c,v 1.37 2004/08/18 21:59:39 dyoung Exp $	*/
 
 /*-
@@ -190,6 +190,10 @@ static	int ath_outdoor = AH_TRUE;		/* outdoor operation */
 static	int ath_xchanmode = AH_TRUE;		/* enable extended channels */
 static	int ath_countrycode = CTRY_DEFAULT;	/* country code */
 static	int ath_regdomain = DMN_DEFAULT;	/* regulatory domain */
+
+struct cfdriver ath_cd = {
+	NULL, "ath", DV_IFNET
+};
 
 #ifdef AR_DEBUG
 enum {
