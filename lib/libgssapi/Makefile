@@ -1,11 +1,22 @@
-# $OpenBSD: Makefile,v 1.1 2003/05/14 23:48:20 hin Exp $
+# $OpenBSD: Makefile,v 1.2 2003/05/16 19:01:19 hin Exp $
 
 KRB5DIR	= ${.CURDIR}/../../kerberosV
 .include <${.CURDIR}/../libkrb5/Makefile.common.inc>
 
 LIB=	gssapi
 
-INCLUDE_FILES=	${KRB5SRC}/lib/gssapi/gssapi.h
+DIR_GSSAPI=	${KRB5SRC}/lib/gssapi
+HDR_GSSAPI=	gssapi.h
+
+includes:
+	@echo -n ${DIR_GSSAPI}:; \
+	cd ${DIR_GSSAPI}; for i in ${HDR_GSSAPI}; do \
+		echo -n " $$i"; \
+		cmp -s $$i ${DESTDIR}/usr/include/kerberosV/$$i || \
+			${INSTALL} ${INSTALL_COPY} -m 444 \
+			-o ${BINOWN} -g $(BINGRP) $$i \
+			${DESTDIR}/usr/include/kerberosV; done; \
+		echo
 
 SRCS=	8003.c			\
 	accept_sec_context.c	\
