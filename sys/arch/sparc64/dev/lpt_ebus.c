@@ -1,4 +1,4 @@
-/*	$OpenBSD: lpt_ebus.c,v 1.3 2002/04/16 16:19:32 jason Exp $	*/
+/*	$OpenBSD: lpt_ebus.c,v 1.1 2002/03/14 20:15:00 jason Exp $	*/
 /*	$NetBSD: lpt_ebus.c,v 1.8 2002/03/01 11:51:00 martin Exp $	*/
 
 /*
@@ -46,17 +46,14 @@
 
 #include <dev/ic/lptvar.h>
 
-struct lpt_ebus_softc {
-	struct lpt_softc sc_lpt;
-	bus_space_handle_t sc_ctrl;
-};
-
 int	lpt_ebus_match __P((struct device *, void *, void *));
 void	lpt_ebus_attach __P((struct device *, struct device *, void *));
 
 struct cfattach lpt_ebus_ca = {
-	sizeof(struct lpt_ebus_softc), lpt_ebus_match, lpt_ebus_attach
+	sizeof(struct lpt_softc), lpt_ebus_match, lpt_ebus_attach
 };
+
+#define	ROM_LPT_NAME	"ecpp"
 
 int
 lpt_ebus_match(parent, match, aux)
@@ -66,7 +63,7 @@ lpt_ebus_match(parent, match, aux)
 {
 	struct ebus_attach_args *ea = aux;
 
-	if (strcmp(ea->ea_name, "ecpp") == 0)
+	if (strcmp(ea->ea_name, ROM_LPT_NAME) == 0)
 		return (1);
 
 	return (0);
@@ -77,29 +74,36 @@ lpt_ebus_attach(parent, self, aux)
 	struct device *parent, *self;
 	void *aux;
 {
-	struct lpt_ebus_softc *sc = (void *)self;
+	struct lpt_softc *sc = (void *)self;
 	struct ebus_attach_args *ea = aux;
+	int i;
 
-	sc->sc_lpt.sc_iot = ea->ea_bustag;
-
-	if (ebus_bus_map(sc->sc_lpt.sc_iot, 0,
-	    EBUS_PADDR_FROM_REG(&ea->ea_regs[0]), ea->ea_regs[0].size,
-	    BUS_SPACE_MAP_LINEAR, 0, &sc->sc_lpt.sc_ioh) != 0) {
+	sc->sc_iot = ea->ea_bustag;
+	/*
+	 * Addresses that shoud be supplied by the prom:
+	 *	- normal lpt registers
+	 *	- ns873xx configuration registers
+	 *	- DMA space
+	 * The `lpt' driver does not use DMA accesses, so we can
+	 * ignore that for now.  We should enable the lpt port in
+	 * the ns873xx registers here. XXX
+	 *
+	 * Use the prom address if there.
+	 */
+	if (ea->ea_nvaddrs)
+		sc->sc_ioh = (bus_space_handle_t)ea->ea_vaddrs[0];
+	else if (ebus_bus_map(sc->sc_iot, 0,
+			      EBUS_PADDR_FROM_REG(&ea->ea_regs[0]),
+			      ea->ea_regs[0].size,
+			      BUS_SPACE_MAP_LINEAR,
+			      0, &sc->sc_ioh) != 0) {
 		printf(": can't map register space\n");
                 return;
 	}
 
-	if (ebus_bus_map(sc->sc_lpt.sc_iot, 0,
-	    EBUS_PADDR_FROM_REG(&ea->ea_regs[1]), ea->ea_regs[1].size,
-	    BUS_SPACE_MAP_LINEAR, 0, &sc->sc_ctrl) != 0) {
-		printf(": can't map control space\n");
-		bus_space_unmap(sc->sc_lpt.sc_iot, sc->sc_lpt.sc_ioh,
-		    ea->ea_regs[0].size);
-		return;
-	}
+	for (i = 0; i < ea->ea_nintrs; i++)
+		bus_intr_establish(ea->ea_bustag, ea->ea_intrs[i],
+				   IPL_SERIAL, 0, lptintr, sc);
 
-	sc->sc_lpt.sc_flags |= LPT_POLLED;
-	printf(": polled");
-
-	lpt_attach_common(&sc->sc_lpt);
+	lpt_attach_common(sc);
 }

@@ -1,4 +1,4 @@
-/*	$OpenBSD: pfctl_parser.c,v 1.63 2002/03/27 18:16:23 mickey Exp $ */
+/*	$OpenBSD: pfctl_parser.c,v 1.62 2002/03/12 08:15:03 dhartmei Exp $ */
 
 /*
  * Copyright (c) 2001 Daniel Hartmeier
@@ -807,7 +807,7 @@ parse_flags(char *s)
 struct hostent *
 getpfhostname(const char *addr_str)
 {
-	in_addr_t		 addr_num;
+	unsigned long		 addr_num;
 	struct hostent		*hp;
 	static struct hostent	 myhp;
 

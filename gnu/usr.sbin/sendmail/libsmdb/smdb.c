@@ -8,7 +8,7 @@
 */
 
 #include <sm/gen.h>
-SM_RCSID("@(#)$Sendmail: smdb.c,v 8.54 2002/04/04 21:32:14 gshapiro Exp $")
+SM_RCSID("@(#)$Sendmail: smdb.c,v 8.53 2001/11/19 19:31:14 gshapiro Exp $")
 
 #include <fcntl.h>
 #include <stdlib.h>
@@ -119,14 +119,15 @@ smdb_lockfile(fd, type)
 	if (!bitset(LOCK_NB, type) ||
 	    (save_errno != EACCES && save_errno != EAGAIN))
 	{
-# if 0
-		int omode = fcntl(fd, F_GETFL, NULL);
-		int euid = (int) geteuid();
-
-		syslog(LOG_ERR, "cannot lockf(%s%s, fd=%d, type=%o, omode=%o, euid=%d)",
-		       filename, ext, fd, type, omode, euid);
-# endif /* 0 */
+		int omode = -1;
+# ifdef F_GETFL
+		(void) fcntl(fd, F_GETFL, &omode);
 		errno = save_errno;
+# endif /* F_GETFL */
+# if 0
+		syslog(LOG_ERR, "cannot lockf(%s%s, fd=%d, type=%o, omode=%o, euid=%d)",
+		       filename, ext, fd, type, omode, (int) geteuid());
+# endif /* 0 */
 		return false;
 	}
 #else /* !HASFLOCK */
@@ -139,14 +140,15 @@ smdb_lockfile(fd, type)
 
 	if (!bitset(LOCK_NB, type) || save_errno != EWOULDBLOCK)
 	{
-# if 0
-		int omode = fcntl(fd, F_GETFL, NULL);
-		int euid = (int) geteuid();
-
-		syslog(LOG_ERR, "cannot flock(%s%s, fd=%d, type=%o, omode=%o, euid=%d)",
-		       filename, ext, fd, type, omode, euid);
-# endif /* 0 */
+		int omode = -1;
+# ifdef F_GETFL
+		(void) fcntl(fd, F_GETFL, &omode);
 		errno = save_errno;
+# endif /* F_GETFL */
+# if 0
+		syslog(LOG_ERR, "cannot flock(%s%s, fd=%d, type=%o, omode=%o, euid=%d)",
+		       filename, ext, fd, type, omode, (int) geteuid());
+# endif /* 0 */
 		return false;
 	}
 #endif /* !HASFLOCK */

@@ -1,4 +1,4 @@
-/*	$OpenBSD: ld.c,v 1.21 2002/03/31 20:48:16 fgsch Exp $	*/
+/*	$OpenBSD: ld.c,v 1.20 2002/02/26 06:26:38 fgsch Exp $	*/
 /*	$NetBSD: ld.c,v 1.52 1998/02/20 03:12:51 jonathan Exp $	*/
 
 /*-
@@ -1237,37 +1237,19 @@ read_entry_relocation(fd, entry)
 
 /*---------------------------------------------------------------------------*/
 
-int current_file;
-
-/* 
- * Check whether a library name appears in the list of files
- * still to link in: used to avoid linking dependent libraries
- * that will be pulled in anyways.
- */
-int 
-will_see_later(const char *name)
-{
-	int i;
-
-	for (i = current_file+1; i < number_of_files; i++)
-		if ((file_table[i].flags & E_SEARCH_DIRS) &&
-		    strcmp(name, file_table[i].filename) == 0)
-			return 1;
-	return 0;
-}
-
 /*
  * Read in the symbols of all input files.
  */
 static void
 load_symbols()
 {
+	register int i;
 
 	if (trace_files)
 		fprintf(stderr, "Loading symbols:\n\n");
 
-	for (current_file = 0; current_file < number_of_files; current_file++)
-		read_file_symbols(&file_table[current_file]);
+	for (i = 0; i < number_of_files; i++)
+		read_file_symbols(&file_table[i]);
 
 	if (trace_files)
 		fprintf(stderr, "\n");

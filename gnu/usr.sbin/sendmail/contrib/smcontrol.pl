@@ -1,11 +1,9 @@
 #!/usr/local/bin/perl -w
 
-use strict;
-use Getopt::Std;
 use FileHandle;
 use Socket;
 
-my $sendmailDaemon = "/usr/sbin/sendmail -q30m -bd";
+$sendmailDaemon = "/usr/sbin/sendmail -q30m -bd";
 
 ##########################################################################
 #
@@ -72,7 +70,6 @@ sub do_command
 	my $command = shift;
 	my $proto = getprotobyname('ip');
 	my @reply;
-	my $i;
 
 	socket(SOCK, PF_UNIX, SOCK_STREAM, $proto) or return undef;
 
@@ -219,7 +216,7 @@ sub start_daemon
 	}
 	elsif (defined $pid)
 	{
-		exec($sendmailDaemon);
+		exec($main::sendmailDaemon);
 		die "Unable to start sendmail daemon: $!.\n";
 	}
 	else
@@ -277,29 +274,6 @@ sub restart_daemon
 
 ##########################################################################
 #
-#  &memdump -- get memdump from the daemon using the control socket
-#
-#	Parameters:
-#		control -- control socket name
-#
-#	Returns:
-#		Error message or status message
-#
-
-sub memdump
-{
-	my $control = shift;
-	my $status;
-
-	if (not defined $control)
-	{
-		return "The control socket is not configured so the daemon can not be queried for memdump.";
-	}
-	return &do_command($control, "MEMDUMP");
-}
-
-##########################################################################
-#
 #  &help -- get help from the daemon using the control socket
 #
 #	Parameters:
@@ -321,14 +295,10 @@ sub help
 	return &do_command($control, "HELP");
 }
 
+my $command = shift;
+my $control = &get_controlname;
 my $status = undef;
 my $daemonStatus = undef;
-my $opts = {};
-
-getopts('f:', $opts) || die "Usage: $0 [-f /path/to/control/socket] command\n";
-
-my $control = $opts->{f} || &get_controlname;
-my $command = shift;
 
 if (not defined $control)
 {
@@ -336,7 +306,7 @@ if (not defined $control)
 }
 if (not defined $command)
 {
-	die "Usage: $0 [-f /path/to/control/socket] command\n";
+	die "Usage: $0 command\n";
 }
 if ($command eq "status")
 {
@@ -370,10 +340,6 @@ elsif (lc($command) eq "restart")
 elsif (lc($command) eq "start")
 {
 	$status = &start_daemon($control);
-}
-elsif (lc($command) eq "memdump")
-{
-	$status = &memdump($control);
 }
 elsif (lc($command) eq "help")
 {

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1998-2002 Sendmail, Inc. and its suppliers.
+ * Copyright (c) 1998-2001 Sendmail, Inc. and its suppliers.
  *	All rights reserved.
  * Copyright (c) 1983, 1995-1997 Eric P. Allman.  All rights reserved.
  * Copyright (c) 1988, 1993
@@ -13,16 +13,13 @@
 
 #include <sendmail.h>
 
-SM_RCSID("@(#)$Sendmail: parseaddr.c,v 8.359 2002/03/29 16:20:47 ca Exp $")
+SM_RCSID("@(#)$Sendmail: parseaddr.c,v 8.349 2001/12/12 02:50:22 gshapiro Exp $")
 
 static void	allocaddr __P((ADDRESS *, int, char *, ENVELOPE *));
 static int	callsubr __P((char**, int, ENVELOPE *));
 static char	*map_lookup __P((STAB *, char *, char **, int *, ENVELOPE *));
 static ADDRESS	*buildaddr __P((char **, ADDRESS *, int, ENVELOPE *));
-static bool	hasctrlchar __P((register char *, bool, bool));
-
-/* replacement for illegal characters in addresses */
-#define BAD_CHAR_REPLACEMENT	'?'
+static bool	hasctrlchar __P((register char *, bool));
 
 /*
 **  PARSEADDR -- Parse an address
@@ -141,18 +138,11 @@ parseaddr(addr, a, flags, delim, delimptr, e, isrcpt)
 
 	a = buildaddr(pvp, a, flags, e);
 
-	if (hasctrlchar(a->q_user, isrcpt, true))
+	if (hasctrlchar(a->q_user, isrcpt))
 	{
 		if (tTd(20, 1))
 			sm_dprintf("parseaddr-->bad q_user\n");
-
-		/*
-		**  Just mark the address as bad so DSNs work.
-		**  hasctrlchar() has to make sure that the address
-		**  has been sanitized, e.g., shortened.
-		*/
-
-		a->q_state = QS_BADADDR;
+		return NULL;
 	}
 
 	/*
@@ -162,11 +152,7 @@ parseaddr(addr, a, flags, delim, delimptr, e, isrcpt)
 
 	allocaddr(a, flags, addr, e);
 	if (QS_IS_BADADDR(a->q_state))
-	{
-		/* weed out bad characters in the printable address too */
-		(void) hasctrlchar(a->q_paddr, isrcpt, false);
 		return a;
-	}
 
 	/*
 	**  Select a queue directory for recipient addresses.
@@ -256,7 +242,6 @@ invalidaddr(addr, delimptr, isrcpt)
 {
 	bool result = false;
 	char savedelim = '\0';
-	char *b = addr;
 	int len = 0;
 
 	if (delimptr != NULL)
@@ -272,16 +257,12 @@ invalidaddr(addr, delimptr, isrcpt)
 		{
 			setstat(EX_USAGE);
 			result = true;
-			*addr = BAD_CHAR_REPLACEMENT;
+			break;
 		}
 		if (++len > MAXNAME - 1)
 		{
-			char saved = *addr;
-
-			*addr = '\0';
-			usrerr("553 5.1.0 Address \"%s\" too long (%d bytes max)",
-			       b, MAXNAME - 1);
-			*addr = saved;
+			usrerr("553 5.1.0 Address too long (%d bytes max)",
+			       MAXNAME - 1);
 			result = true;
 			goto delim;
 		}
@@ -289,11 +270,9 @@ invalidaddr(addr, delimptr, isrcpt)
 	if (result)
 	{
 		if (isrcpt)
-			usrerr("501 5.1.3 8-bit character in mailbox address \"%s\"",
-			       b);
+			usrerr("501 5.1.3 Syntax error in mailbox address");
 		else
-			usrerr("501 5.1.7 8-bit character in mailbox address \"%s\"",
-			       b);
+			usrerr("501 5.1.7 Syntax error in mailbox address");
 	}
 delim:
 	if (delimptr != NULL && savedelim != '\0')
@@ -311,8 +290,6 @@ delim:
 **		addr -- the address to check.
 **		isrcpt -- true if the address is for a recipient; false
 **			indicates a from.
-**		complain -- true if an error should issued if the address
-**			is invalid and should be "repaired".
 **
 **	Returns:
 **		true -- if the address has any "wierd" characters or
@@ -321,35 +298,22 @@ delim:
 */
 
 static bool
-hasctrlchar(addr, isrcpt, complain)
+hasctrlchar(addr, isrcpt)
 	register char *addr;
-	bool isrcpt, complain;
+	bool isrcpt;
 {
-	bool quoted = false;
+	bool result = false;
 	int len = 0;
-	char *result = NULL;
-	char *b = addr;
+	bool quoted = false;
 
 	if (addr == NULL)
 		return false;
 	for (; *addr != '\0'; addr++)
 	{
-		if (++len > MAXNAME - 1)
-		{
-			if (complain)
-			{
-				(void) shorten_rfc822_string(b, MAXNAME - 1);
-				usrerr("553 5.1.0 Address \"%s\" too long (%d bytes max)",
-				       b, MAXNAME - 1);
-				return true;
-			}
-			result = "too long";
-		}
 		if (!quoted && (*addr < 32 || *addr == 127))
 		{
-			result = "non-printable character";
-			*addr = BAD_CHAR_REPLACEMENT;
-			continue;
+			result = true;	/* a non-printable */
+			break;
 		}
 		if (*addr == '"')
 			quoted = !quoted;
@@ -358,31 +322,33 @@ hasctrlchar(addr, isrcpt, complain)
 			/* XXX Generic problem: no '\0' in strings. */
 			if (*++addr == '\0')
 			{
-				result = "trailing \\ character";
-				*--addr = BAD_CHAR_REPLACEMENT;
+				result = true;
 				break;
 			}
 		}
 		if ((*addr & 0340) == 0200)
 		{
 			setstat(EX_USAGE);
-			result = "8-bit character";
-			*addr = BAD_CHAR_REPLACEMENT;
-			continue;
+			result = true;
+			break;
+		}
+		if (++len > MAXNAME - 1)
+		{
+			usrerr("553 5.1.0 Address too long (%d bytes max)",
+			       MAXNAME - 1);
+			return true;
 		}
 	}
 	if (quoted)
-		result = "unbalanced quote"; /* unbalanced quote */
-	if (result != NULL && complain)
+		result = true; /* unbalanced quote */
+	if (result)
 	{
 		if (isrcpt)
-			usrerr("501 5.1.3 Syntax error in mailbox address \"%s\" (%s)",
-			       b, result);
+			usrerr("501 5.1.3 Syntax error in mailbox address");
 		else
-			usrerr("501 5.1.7 Syntax error in mailbox address \"%s\" (%s)",
-			       b, result);
+			usrerr("501 5.1.7 Syntax error in mailbox address");
 	}
-	return result != NULL;
+	return result;
 }
 /*
 **  ALLOCADDR -- do local allocations of address on demand.
@@ -1854,7 +1820,6 @@ buildaddr(tv, a, flags, e)
 	int flags;
 	register ENVELOPE *e;
 {
-	bool tempfail = false;
 	struct mailer **mp;
 	register struct mailer *m;
 	register char *p;
@@ -1882,23 +1847,7 @@ buildaddr(tv, a, flags, e)
 	{
 		syserr("554 5.3.5 buildaddr: no mailer in parsed address");
 badaddr:
-#if _FFR_ALLOW_S0_ERROR_4XX
-		/*
-		**  ExitStat may have been set by an earlier map open
-		**  failure (to a permanent error (EX_OSERR) in syserr())
-		**  so we also need to check if this particular $#error
-		**  return wanted a 4XX failure.
-		**
-		**  XXX the real fix is probably to set ExitStat correctly,
-		**  i.e., to EX_TEMPFAIL if the map open is just a temporary
-		**  error.
-		**
-		**  tempfail is tested here even if _FFR_ALLOW_S0_ERROR_4XX
-		**  is not set; that's ok because it is initialized to false.
-		*/
-#endif /* _FFR_ALLOW_S0_ERROR_4XX */
-
-		if (ExitStat == EX_TEMPFAIL || tempfail)
+		if (ExitStat == EX_TEMPFAIL)
 			a->q_state = QS_QUEUEUP;
 		else
 		{
@@ -1987,10 +1936,6 @@ badaddr:
 			else
 				usrerr(fmt, ubuf + off);
 			/* XXX ubuf[off - 1] = ' '; */
-#if _FFR_ALLOW_S0_ERROR_4XX
-			if (ubuf[0] == '4')
-				tempfail = true;
-#endif /* _FFR_ALLOW_S0_ERROR_4XX */
 		}
 		else
 		{
@@ -2148,11 +2093,6 @@ cataddr(pvp, evp, buf, sz, spacesub)
 		if (pvp++ == evp)
 			break;
 	}
-#if _FFR_CATCH_LONG_STRINGS
-	/* Don't silently truncate long strings */
-	if (*pvp != NULL)
-		syserr("cataddr: string too long");
-#endif /* _FFR_CATCH_LONG_STRINGS */
 	*p = '\0';
 }
 /*

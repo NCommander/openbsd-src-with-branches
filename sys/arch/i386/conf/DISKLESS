@@ -1,4 +1,4 @@
-#	$OpenBSD: DISKLESS,v 1.39 2002/01/27 21:07:13 mickey Exp $
+#	$OpenBSD: DISKLESS,v 1.38 2001/10/10 23:43:43 millert Exp $
 #	$NetBSD: DISKLESS,v 1.26 1996/05/20 18:17:16 mrg Exp $
 #
 # DISKLESS -- Generic machine setup for diskless boot.
@@ -391,6 +391,7 @@ dc*	at cardbus? dev ? function ?		# 21143, "tulip" clone ethernet
 ti*	at pci? dev ? function ?		# Alteon Tigon 1Gb ethernet
 skc*	at pci? dev ? function ?		# SysKonnect GEnesis 984x
 sk*	at skc?					#  each port of above
+wx*	at pci? dev ? function ?		# Intel Pro/1000 ethernet
 
 # Wireless network cards
 wi*	at pcmcia? function ?			# WaveLAN IEEE 802.11DS

@@ -12,7 +12,7 @@
  */
 
 #include <sm/gen.h>
-SM_RCSID("@(#)$Sendmail: clock.c,v 1.35 2002/03/22 18:34:38 gshapiro Exp $")
+SM_RCSID("@(#)$Sendmail: clock.c,v 1.34 2001/11/05 18:33:20 ca Exp $")
 #include <unistd.h>
 #include <time.h>
 #include <errno.h>
@@ -160,8 +160,6 @@ sm_sigsafe_seteventm(intvl, func, arg)
 	timersub(&SmEventQueue->ev_time, &now, &itime.it_value);
 	itime.it_interval.tv_sec = 0;
 	itime.it_interval.tv_usec = 0;
-	if (itime.it_value.tv_sec < 0)
-		itime.it_value.tv_sec = 0;
 	if (itime.it_value.tv_sec == 0 && itime.it_value.tv_usec == 0)
 		itime.it_value.tv_usec = 1000;
 	(void) setitimer(ITIMER_REAL, &itime, NULL);
@@ -414,11 +412,6 @@ sm_tick(sig)
 					 &clr.it_value);
 				clr.it_interval.tv_sec = 0;
 				clr.it_interval.tv_usec = 0;
-				if (clr.it_value.tv_sec < 0)
-					clr.it_value.tv_sec = 0;
-				if (clr.it_value.tv_sec == 0 &&
-				    clr.it_value.tv_usec == 0)
-					clr.it_value.tv_usec = 1000;
 				(void) setitimer(ITIMER_REAL, &clr, NULL);
 			}
 			else
@@ -459,10 +452,6 @@ sm_tick(sig)
 		timersub(&SmEventQueue->ev_time, &now, &clr.it_value);
 		clr.it_interval.tv_sec = 0;
 		clr.it_interval.tv_usec = 0;
-		if (clr.it_value.tv_sec < 0)
-			clr.it_value.tv_sec = 0;
-		if (clr.it_value.tv_sec == 0 && clr.it_value.tv_usec == 0)
-			clr.it_value.tv_usec = 1000;
 		(void) setitimer(ITIMER_REAL, &clr, NULL);
 #else /* SM_CONF_SETITIMER */
 		(void) alarm((unsigned) (SmEventQueue->ev_time - now));

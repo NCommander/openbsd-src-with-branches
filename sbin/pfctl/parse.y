@@ -1,4 +1,4 @@
-/*	$OpenBSD: parse.y,v 1.57 2002/03/27 18:16:22 mickey Exp $	*/
+/*	$OpenBSD: parse.y,v 1.56 2002/02/27 18:11:45 dhartmei Exp $	*/
 
 /*
  * Copyright (c) 2001 Markus Friedl.  All rights reserved.
@@ -1713,7 +1713,6 @@ parse_rules(FILE *input, struct pfctl *xpf)
 	natmode = 0;
 	fin = input;
 	pf = xpf;
-	lineno = 1;
 	errors = 0;
 	yyparse();
 	return (errors ? -1 : 0);
@@ -1725,7 +1724,6 @@ parse_nat(FILE *input, struct pfctl *xpf)
 	natmode = 1;
 	fin = input;
 	pf = xpf;
-	lineno = 1;
 	errors = 0;
 	yyparse();
 	return (errors ? -1 : 0);

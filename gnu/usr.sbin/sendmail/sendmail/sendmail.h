@@ -48,7 +48,7 @@
 
 #ifdef _DEFINE
 # ifndef lint
-SM_UNUSED(static char SmailId[]) = "@(#)$Sendmail: sendmail.h,v 8.912 2002/04/02 16:43:26 ca Exp $";
+SM_UNUSED(static char SmailId[]) = "@(#)$Sendmail: sendmail.h,v 8.902 2002/01/09 00:10:11 ca Exp $";
 # endif /* ! lint */
 #endif /* _DEFINE */
 
@@ -444,10 +444,7 @@ struct mailer
 extern void	initerrmailers __P((void));
 extern void	makemailer __P((char *));
 extern void	makequeue __P((char *, bool));
-extern void	runqueueevent __P((void));
-#if _FFR_QUEUE_RUN_PARANOIA
-extern bool	checkqueuerunner __P((void));
-#endif /* _FFR_QUEUE_RUN_PARANOIA */
+extern void	runqueueevent __P((int));
 
 EXTERN MAILER	*FileMailer;	/* ptr to *file* mailer */
 EXTERN MAILER	*InclMailer;	/* ptr to *include* mailer */
@@ -503,11 +500,8 @@ struct queuegrp
 	int     qg_curnum;	/* current number of queue for queue runs */
 	int	qg_maxrcpt;	/* max recipients per envelope, 0==no limit */
 
-	time_t	qg_nextrun;	/* time for next queue runs */
-#if _FFR_QUEUE_GROUP_SORTORDER
-	short	qg_sortorder;	/* how do we sort this queuerun */
-#endif /* _FFR_QUEUE_GROUP_SORTORDER */
 #if 0
+	short	qg_sortorder;	/* how do we sort this queuerun */
 	long	qg_wkrcptfact;	/* multiplier for # recipients -> priority */
 	long	qg_qfactor;	/* slope of queue function */
 	bool	qg_doqueuerun;	/* XXX flag is it time to do a queuerun */
@@ -663,7 +657,7 @@ MCI
 #define MCIF_SIZE	0x00000020	/* SIZE option supported */
 #define MCIF_8BITMIME	0x00000040	/* BODY=8BITMIME supported */
 #define MCIF_7BIT	0x00000080	/* strip this message to 7 bits */
-/* 0x00000100 unused, was MCIF_MULTSTAT: MAIL11V3: handles MULT status */
+#define MCIF_MULTSTAT	0x00000100	/* MAIL11V3: handles MULT status */
 #define MCIF_INHEADER	0x00000200	/* currently outputing header */
 #define MCIF_CVT8TO7	0x00000400	/* convert from 8 to 7 bits */
 #define MCIF_DSN	0x00000800	/* DSN extension supported */
@@ -1499,7 +1493,6 @@ extern void	set_delivery_mode __P((int, ENVELOPE *));
 #define PXLF_MAPFROM		0x0001	/* map From_ to >From_ */
 #define PXLF_STRIP8BIT		0x0002	/* strip 8th bit */
 #define PXLF_HEADER		0x0004	/* map newlines in headers */
-#define PXLF_NOADDEOL		0x0008	/* if EOL not present, don't add one */
 
 /*
 **  Privacy flags
@@ -1614,18 +1607,11 @@ extern char	*validate_connection __P((SOCKADDR *, char *, ENVELOPE *));
 
 #endif /* NETINET || NETINET6 || NETUNIX || NETISO || NETNS || NETX25 */
 
+#if MILTER
 /*
 **  Mail Filters (milter)
 */
 
-/*
-**  32-bit type used by milter
-**  (needed by libmilter even if MILTER isn't defined)
-*/
-
-typedef SM_INT32	mi_int32;
-
-#if MILTER
 # define SMFTO_WRITE	0		/* Timeout for sending information */
 # define SMFTO_READ	1		/* Timeout waiting for a response */
 # define SMFTO_EOM	2		/* Timeout for ACK/NAK to EOM */
@@ -1637,9 +1623,9 @@ struct milter
 {
 	char		*mf_name;	/* filter name */
 	BITMAP256	mf_flags;	/* MTA flags */
-	mi_int32	mf_fvers;	/* filter version */
-	mi_int32	mf_fflags;	/* filter flags */
-	mi_int32	mf_pflags;	/* protocol flags */
+	unsigned long	mf_fvers;	/* filter version */
+	unsigned long	mf_fflags;	/* filter flags */
+	unsigned long	mf_pflags;	/* protocol flags */
 	char		*mf_conn;	/* connection info */
 	int		mf_sock;	/* connected socket */
 	char		mf_state;	/* state of filter */
@@ -1668,6 +1654,13 @@ EXTERN int		MilterLogLevel;
 extern void	setup_daemon_milters __P(());
 # endif /* _FFR_MILTER_PERDAEMON */
 #endif /* MILTER */
+
+/*
+**  32-bit type used by milter
+**  (needed by libmilter even if MILTER isn't defined)
+*/
+
+typedef SM_INT32	mi_int32;
 
 /*
 **  Vendor codes
@@ -2177,9 +2170,6 @@ EXTERN gid_t	RunAsGid;	/* GID to become for bulk of run */
 EXTERN gid_t	EffGid;		/* effective gid */
 #if SM_CONF_SHM
 EXTERN key_t	ShmKey;		/* shared memory key */
-# if _FFR_SELECT_SHM
-EXTERN char	*ShmKeyFile;	/* shared memory key file */
-# endif /* _FFR_SELECT_SHM */
 #endif /* SM_CONF_SHM */
 EXTERN pid_t	CurrentPid;	/* current process id */
 EXTERN pid_t	DaemonPid;	/* process id of daemon */
@@ -2323,7 +2313,6 @@ extern void	sendall __P((ENVELOPE *, int));
 # define STATS_QUARANTINE	'q'
 #endif /* _FFR_QUARANTINE */
 #define STATS_REJECT		'r'
-#define STATS_CONNECT		'c'
 
 extern void	markstats __P((ENVELOPE *, ADDRESS *, int));
 extern void	clearstats __P((void));

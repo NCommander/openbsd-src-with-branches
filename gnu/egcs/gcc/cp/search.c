@@ -151,6 +151,9 @@ static int protected_accessible_p PROTO ((tree, tree, tree, tree));
 static int friend_accessible_p PROTO ((tree, tree, tree, tree));
 static void setup_class_bindings PROTO ((tree, int));
 static int template_self_reference_p PROTO ((tree, tree));
+static void expand_direct_vtbls_init_thunks PROTO((tree, tree, int));
+static void expand_indirect_vtbls_init_thunks PROTO((tree, tree, tree));
+
 
 /* Allocate a level of searching.  */
 
@@ -2057,17 +2060,29 @@ static tree
 convert_pointer_to_single_level (to_type, expr)
      tree to_type, expr;
 {
+  tree derived;
   tree binfo_of_derived;
-  tree last;
+  int i;
 
-  binfo_of_derived = TYPE_BINFO (TREE_TYPE (TREE_TYPE (expr)));
-  last = get_binfo (to_type, TREE_TYPE (TREE_TYPE (expr)), 0);
-  my_friendly_assert (BINFO_INHERITANCE_CHAIN (last) == binfo_of_derived,
-		      980827);
+  derived = TREE_TYPE (TREE_TYPE (expr));
+  binfo_of_derived = TYPE_BINFO (derived);
   my_friendly_assert (BINFO_INHERITANCE_CHAIN (binfo_of_derived) == NULL_TREE,
 		      980827);
-  return build_vbase_path (PLUS_EXPR, build_pointer_type (to_type), expr,
-			   last, 1);
+  for (i = CLASSTYPE_N_BASECLASSES (derived) - 1; i >= 0; --i)
+    {
+      tree binfo = BINFO_BASETYPE (binfo_of_derived, i);
+      my_friendly_assert (BINFO_INHERITANCE_CHAIN (binfo) == binfo_of_derived,
+			  980827);
+      if (same_type_p (BINFO_TYPE (binfo), to_type))
+	return build_vbase_path (PLUS_EXPR, 
+				 build_pointer_type (to_type), 
+				 expr, binfo, 1);
+    }
+
+  my_friendly_abort (19990607);
+
+  /* NOTREACHED */
+  return NULL_TREE;
 }
 
 tree markedp (binfo, data) 
@@ -2122,7 +2137,8 @@ marked_pushdecls_p (binfo, data)
      tree binfo;
      void *data ATTRIBUTE_UNUSED;
 {
-  return BINFO_PUSHDECLS_MARKED (binfo) ? binfo : NULL_TREE; 
+  return (CLASS_TYPE_P (BINFO_TYPE (binfo))
+	  && BINFO_PUSHDECLS_MARKED (binfo)) ? binfo : NULL_TREE; 
 }
 
 static tree
@@ -2130,7 +2146,8 @@ unmarked_pushdecls_p (binfo, data)
      tree binfo;
      void *data ATTRIBUTE_UNUSED;
 { 
-  return !BINFO_PUSHDECLS_MARKED (binfo) ? binfo : NULL_TREE;
+  return (CLASS_TYPE_P (BINFO_TYPE (binfo))
+	  && !BINFO_PUSHDECLS_MARKED (binfo)) ? binfo : NULL_TREE;
 }
 
 #if 0
@@ -2612,6 +2629,117 @@ fixup_virtual_upcast_offsets (real_binfo, binfo, init_self, can_elide, addr, ori
     }
 }
 
+/* Emit initialization of vfields of BASE, where the complete object
+   is pointed to by decl_ptr. DO_SELF indicates we have to do our own
+   vfield, otherwise only proceed to our own direct non-virtual bases.  */
+
+static void
+expand_direct_vtbls_init_thunks (base, decl_ptr, do_self)
+     tree base, decl_ptr;
+     int do_self;
+{
+  tree addr, expr;
+  tree type = BINFO_TYPE (base);
+  tree binfos = BINFO_BASETYPES (base);
+  int i, n_baselinks = binfos ? TREE_VEC_LENGTH (binfos) : 0;
+  tree vlist = lookup_name (vlist_identifier, 0);
+  int in_dtor = DECL_DESTRUCTOR_FOR_PVBASE_P (current_function_decl);
+
+  my_friendly_assert (vlist != NULL_TREE, 990320);
+
+  if (in_dtor)
+    /* In the destructor, we find the vfield pointers for the bases in
+       reverse order, before we find our own vfield pointer. */
+    for (i = n_baselinks - 1; i >= 0; i--)
+      {
+	tree base_binfo = TREE_VEC_ELT (binfos, i);
+	int is_not_base_vtable
+	  = i != CLASSTYPE_VFIELD_PARENT (type);
+	if (! TREE_VIA_VIRTUAL (base_binfo))
+	  expand_direct_vtbls_init_thunks (base_binfo, decl_ptr,
+					   is_not_base_vtable);
+      }
+
+  if (do_self && CLASSTYPE_VFIELDS (type))
+    {
+      addr = build_vbase_path (PLUS_EXPR, build_pointer_type (type), 
+			       decl_ptr, base, 1);
+      addr = build_indirect_ref (addr, "vptr");
+      addr = build_vfield_ref (addr, type);
+
+      /* In a destructor, we decrease the vlist before we retrieve the
+	 value. In a constructor, we increase the vlist after we
+	 retrieve the value.  */
+      if (in_dtor)
+	{
+	  expr = build_binary_op (MINUS_EXPR, vlist, integer_one_node);
+	  expr = build_modify_expr (vlist, NOP_EXPR, expr);
+	  expand_expr_stmt (expr);
+	}
+      
+      /* Store the next vptr into the vbase's vptr. */
+      expr = build_indirect_ref (vlist, "__vlist");
+      expr = convert_force (TREE_TYPE (addr), expr, 0);
+      expr = build_modify_expr (addr, NOP_EXPR, expr);
+      expand_expr_stmt (expr);
+
+      /* Advance the vlist. */
+      if (!in_dtor)
+	{
+	  expr = build_binary_op (PLUS_EXPR, vlist, integer_one_node);
+	  expr = build_modify_expr (vlist, NOP_EXPR, expr);
+	  expand_expr_stmt (expr);
+	}
+    }
+
+  if (!in_dtor)
+    for (i = 0; i < n_baselinks; i++)
+      {
+	tree base_binfo = TREE_VEC_ELT (binfos, i);
+	int is_not_base_vtable = i != CLASSTYPE_VFIELD_PARENT (type);
+	if (! TREE_VIA_VIRTUAL (base_binfo))
+	  expand_direct_vtbls_init_thunks (base_binfo, decl_ptr,
+					   is_not_base_vtable);
+      }
+}
+
+/* Like expand_indirect_vtbls_init below, but based on the vtable list
+   passed to the constructor.  */
+
+static void
+expand_indirect_vtbls_init_thunks (binfo, true_exp, decl_ptr)
+     tree binfo;
+     tree true_exp, decl_ptr;
+{
+  tree type = BINFO_TYPE (binfo);
+  tree vbases = CLASSTYPE_VBASECLASSES (type);
+  struct vbase_info vi;
+
+  vi.decl_ptr = (true_exp ? build_unary_op (ADDR_EXPR, true_exp, 0) 
+		 : decl_ptr);
+  vi.vbase_types = vbases;
+
+  dfs_walk (binfo, dfs_find_vbases, unmarked_new_vtablep, &vi);
+
+  /* Initialized with vtables of type TYPE.  */
+  for (; vbases; vbases = TREE_CHAIN (vbases))
+    {
+      tree addr;
+
+      if (!CLASSTYPE_VFIELD (BINFO_TYPE (vbases)))
+	/* This vbase doesn't have a vptr of its own. */
+	/* FIXME: check */
+	continue;
+
+      addr = convert_pointer_to_vbase (TREE_TYPE (vbases), decl_ptr);
+      expand_direct_vtbls_init_thunks (TYPE_BINFO (BINFO_TYPE (vbases)), 
+				       addr, 1);
+
+    }
+
+  dfs_walk (binfo, dfs_clear_vbase_slots, marked_new_vtablep, 0);
+}
+
 /* Build a COMPOUND_EXPR which when expanded will generate the code
    needed to initialize all the virtual function table slots of all
    the virtual baseclasses.  MAIN_BINFO is the binfo which determines
@@ -2642,6 +2770,12 @@ expand_indirect_vtbls_init (binfo, true_exp, decl_ptr)
      temporary space as unavailable prevents this from happening. */
 
   mark_all_temps_used();
+
+  if (TYPE_USES_PVBASES (type))
+    {
+      expand_indirect_vtbls_init_thunks (binfo, true_exp, decl_ptr);
+      return;
+    }
 
   if (TYPE_USES_VIRTUAL_BASECLASSES (type))
     {
@@ -2968,7 +3102,7 @@ push_class_decls (type)
   /* Build up all the relevant bindings and such on the cache
      obstack.  That way no memory is wasted when we throw away the
      cache later.  */
-  maybe_push_cache_obstack ();
+  push_cache_obstack ();
 
   /* Enter type declarations and mark.  */
   dfs_walk (TYPE_BINFO (type), dfs_push_type_decls, unmarked_pushdecls_p, 0);
@@ -2976,7 +3110,7 @@ push_class_decls (type)
   /* Enter non-type declarations and unmark.  */
   dfs_walk (TYPE_BINFO (type), dfs_push_decls, marked_pushdecls_p, 0);
 
-  /* Undo the call to maybe_push_cache_obstack above.  */
+  /* Undo the call to push_cache_obstack above.  */
   pop_obstacks ();
 
   current_obstack = ambient_obstack;

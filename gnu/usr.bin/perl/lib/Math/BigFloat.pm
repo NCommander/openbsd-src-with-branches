@@ -4,19 +4,21 @@ use Math::BigInt;
 
 use Exporter;  # just for use to be happy
 @ISA = (Exporter);
+$VERSION = '0.02';
 
 use overload
 '+'	=>	sub {new Math::BigFloat &fadd},
 '-'	=>	sub {new Math::BigFloat
 		       $_[2]? fsub($_[1],${$_[0]}) : fsub(${$_[0]},$_[1])},
-'<=>'	=>	sub {new Math::BigFloat
-		       $_[2]? fcmp($_[1],${$_[0]}) : fcmp(${$_[0]},$_[1])},
-'cmp'	=>	sub {new Math::BigFloat
-		       $_[2]? ($_[1] cmp ${$_[0]}) : (${$_[0]} cmp $_[1])},
+'<=>'	=>	sub {$_[2]? fcmp($_[1],${$_[0]}) : fcmp(${$_[0]},$_[1])},
+'cmp'	=>	sub {$_[2]? ($_[1] cmp ${$_[0]}) : (${$_[0]} cmp $_[1])},
 '*'	=>	sub {new Math::BigFloat &fmul},
-'/'	=>	sub {new Math::BigFloat 
+'/'	=>	sub {new Math::BigFloat
 		       $_[2]? scalar fdiv($_[1],${$_[0]}) :
 			 scalar fdiv(${$_[0]},$_[1])},
+'%'	=>	sub {new Math::BigFloat
+		       $_[2]? scalar fmod($_[1],${$_[0]}) :
+			 scalar fmod(${$_[0]},$_[1])},
 'neg'	=>	sub {new Math::BigFloat &fneg},
 'abs'	=>	sub {new Math::BigFloat &fabs},
 
@@ -28,16 +30,16 @@ qw(
 sub new {
   my ($class) = shift;
   my ($foo) = fnorm(shift);
-  panic("Not a number initialized to Math::BigFloat") if $foo eq "NaN";
   bless \$foo, $class;
 }
+
 sub numify { 0 + "${$_[0]}" }	# Not needed, additional overhead
 				# comparing to direct compilation based on
 				# stringify
 sub stringify {
     my $n = ${$_[0]};
 
-    $n =~ s/^\+//;
+    my $minus = ($n =~ s/^([+-])// && $1 eq '-');
     $n =~ s/E//;
 
     $n =~ s/([-+]\d+)$//;
@@ -45,13 +47,17 @@ sub stringify {
     my $e = $1;
     my $ln = length($n);
 
-    if ($e > 0) {
-	$n .= "0" x $e . '.';
-    } elsif (abs($e) < $ln) {
-	substr($n, $ln + $e, 0) = '.';
-    } else {
-	$n = '.' . ("0" x (abs($e) - $ln)) . $n;
+    if ( defined $e )
+    {
+        if ($e > 0) {
+        $n .= "0" x $e . '.';
+        } elsif (abs($e) < $ln) {
+        substr($n, $ln + $e, 0) = '.';
+        } else {
+        $n = '.' . ("0" x (abs($e) - $ln)) . $n;
+        }
     }
+    $n = "-$n" if $minus;
 
     # 1 while $n =~ s/(.*\d)(\d\d\d)/$1,$2/;
 
@@ -75,6 +81,7 @@ sub fnorm; sub fsqrt;
 sub fnorm { #(string) return fnum_str
     local($_) = @_;
     s/\s+//g;                               # strip white space
+    no warnings;	# $4 and $5 below might legitimately be undefined
     if (/^([+-]?)(\d*)(\.(\d*))?([Ee]([+-]?\d+))?$/ && "$2$4" ne '') {
 	&norm(($1 ? "$1$2$4" : "+$2$4"),(($4 ne '') ? $6-length($4) : $6));
     } else {
@@ -85,6 +92,7 @@ sub fnorm { #(string) return fnum_str
 # normalize number -- for internal use
 sub norm { #(mantissa, exponent) return fnum_str
     local($_, $exp) = @_;
+	$exp = 0 unless defined $exp;
     if ($_ eq 'NaN') {
 	'NaN';
     } else {
@@ -140,7 +148,7 @@ sub fadd { #(fnum_str, fnum_str) return fnum_str
 
 # subtraction
 sub fsub { #(fnum_str, fnum_str) return fnum_str
-    fadd($_[$[],fneg($_[$[+1]));    
+    fadd($_[$[],fneg($_[$[+1]));
 }
 
 # division
@@ -158,11 +166,33 @@ sub fdiv #(fnum_str, fnum_str[,scale]) return fnum_str
 	$scale = length($xm)-1 if (length($xm)-1 > $scale);
 	$scale = length($ym)-1 if (length($ym)-1 > $scale);
 	$scale = $scale + length($ym) - length($xm);
-	&norm(&round(Math::BigInt::bdiv($xm.('0' x $scale),$ym),$ym),
+	&norm(&round(Math::BigInt::bdiv($xm.('0' x $scale),$ym),
+		    Math::BigInt::babs($ym)),
 	    $xe-$ye-$scale);
     }
 }
 
+# modular division
+#   args are dividend, divisor
+sub fmod #(fnum_str, fnum_str) return fnum_str
+{
+    local($x,$y) = (fnorm($_[$[]),fnorm($_[$[+1]));
+    if ($x eq 'NaN' || $y eq 'NaN' || $y eq '+0E+0') {
+	'NaN';
+    } else {
+	local($xm,$xe) = split('E',$x);
+	local($ym,$ye) = split('E',$y);
+	if ( $xe < $ye )
+	{
+		$ym .= ('0' x ($ye-$xe));
+	}
+	else
+	{
+		$xm .= ('0' x ($xe-$ye));
+	}
+	&norm(Math::BigInt::bmod($xm,$ym));
+    }
+}
 # round int $q based on fraction $r/$base using $rnd_mode
 sub round { #(int_str, int_str, int_str) return int_str
     local($q,$r,$base) = @_;
@@ -173,12 +203,14 @@ sub round { #(int_str, int_str, int_str) return int_str
     } else {
 	local($cmp) = Math::BigInt::bcmp(Math::BigInt::bmul($r,'+2'),$base);
 	if ( $cmp < 0 ||
-		 ($cmp == 0 &&
-		  ( $rnd_mode eq 'zero'                             ||
+		 ($cmp == 0 &&                                          (
+		   ($rnd_mode eq 'zero'                            ) ||
 		   ($rnd_mode eq '-inf' && (substr($q,$[,1) eq '+')) ||
 		   ($rnd_mode eq '+inf' && (substr($q,$[,1) eq '-')) ||
-		   ($rnd_mode eq 'even' && $q =~ /[24680]$/)        ||
-		   ($rnd_mode eq 'odd'  && $q =~ /[13579]$/)        )) ) {
+		   ($rnd_mode eq 'even' && $q =~ /[24680]$/        ) ||
+		   ($rnd_mode eq 'odd'  && $q =~ /[13579]$/        )    )
+		  )
+		) {
 	    $q;                     # round down
 	} else {
 	    Math::BigInt::badd($q, ((substr($q,$[,1) eq '-') ? '-1' : '+1'));
@@ -198,7 +230,7 @@ sub fround { #(fnum_str, scale) return fnum_str
 	    $x;
 	} else {
 	    &norm(&round(substr($xm,$[,$scale+1),
-			 "+0".substr($xm,$[+$scale+1,1),"+10"),
+			 "+0".substr($xm,$[+$scale+1),"+1"."0" x length(substr($xm,$[+$scale+1))),
 		  $xe+length($xm)-$scale-1);
 	}
     }
@@ -218,15 +250,21 @@ sub ffround { #(fnum_str, scale) return fnum_str
 	    if ($xe < 1) {
 		'+0E+0';
 	    } elsif ($xe == 1) {
-		&norm(&round('+0',"+0".substr($xm,$[+1,1),"+10"), $scale);
+		# The first substr preserves the sign, passing a non-
+		# normalized "-0" to &round when rounding -0.006 (for
+		# example), purely so &round won't lose the sign.
+		&norm(&round(substr($xm,$[,1).'0',
+		      "+0".substr($xm,$[+1),
+		      "+1"."0" x length(substr($xm,$[+1))), $scale);
 	    } else {
 		&norm(&round(substr($xm,$[,$xe),
-		      "+0".substr($xm,$[+$xe,1),"+10"), $scale);
+		      "+0".substr($xm,$[+$xe),
+		      "+1"."0" x length(substr($xm,$[+$xe))), $scale);
 	    }
 	}
     }
 }
-    
+
 # compare 2 values returns one of undef, <0, =0, >0
 #   returns undef if either or both input value are not numbers
 sub fcmp #(fnum_str, fnum_str) return cond_code
@@ -235,12 +273,21 @@ sub fcmp #(fnum_str, fnum_str) return cond_code
     if ($x eq "NaN" || $y eq "NaN") {
 	undef;
     } else {
-	ord($y) <=> ord($x)
-	||
-	(  local($xm,$xe,$ym,$ye) = split('E', $x."E$y"),
-	     (($xe <=> $ye) * (substr($x,$[,1).'1')
-             || Math::BigInt::cmp($xm,$ym))
-	);
+	local($xm,$xe,$ym,$ye) = split('E', $x."E$y");
+	if ($xm eq '+0' || $ym eq '+0') {
+	    return $xm <=> $ym;
+	}
+	if ( $xe < $ye )	# adjust the exponents to be equal
+	{
+		$ym .= '0' x ($ye - $xe);
+		$ye = $xe;
+	}
+	elsif ( $ye < $xe )	# same here
+	{
+		$xm .= '0' x ($xe - $ye);
+		$xe = $ye;
+	}
+	return Math::BigInt::cmp($xm,$ym);
     }
 }
 
@@ -273,13 +320,14 @@ Math::BigFloat - Arbitrary length float math package
 
 =head1 SYNOPSIS
 
-  use Math::BogFloat;
+  use Math::BigFloat;
   $f = Math::BigFloat->new($string);
 
   $f->fadd(NSTR) return NSTR            addition
   $f->fsub(NSTR) return NSTR            subtraction
   $f->fmul(NSTR) return NSTR            multiplication
   $f->fdiv(NSTR[,SCALE]) returns NSTR   division to SCALE places
+  $f->fmod(NSTR) returns NSTR           modular remainder
   $f->fneg() return NSTR                negation
   $f->fabs() return NSTR                absolute value
   $f->fcmp(NSTR) return CODE            compare undef,<0,=0,>0
@@ -300,17 +348,32 @@ floats as
 =item number format
 
 canonical strings have the form /[+-]\d+E[+-]\d+/ .  Input values can
-have inbedded whitespace.
+have embedded whitespace.
 
 =item Error returns 'NaN'
 
 An input parameter was "Not a Number" or divide by zero or sqrt of
 negative number.
 
-=item Division is computed to 
+=item Division is computed to
 
-C<max($div_scale,length(dividend)+length(divisor))> digits by default.
+C<max($Math::BigFloat::div_scale,length(dividend)+length(divisor))>
+digits by default.
 Also used for default sqrt scale.
+
+=item Rounding is performed
+
+according to the value of
+C<$Math::BigFloat::rnd_mode>:
+
+  trunc     truncate the value
+  zero      round towards 0
+  +inf      round towards +infinity (round up)
+  -inf      round towards -infinity (round down)
+  even      round to the nearest, .5 to the even digit
+  odd       round to the nearest, .5 to the odd digit
+
+The default is C<even> rounding.
 
 =back
 
@@ -319,8 +382,17 @@ Also used for default sqrt scale.
 The current version of this module is a preliminary version of the
 real thing that is currently (as of perl5.002) under development.
 
+The printf subroutine does not use the value of
+C<$Math::BigFloat::rnd_mode> when rounding values for printing.
+Consequently, the way to print rounded values is
+to specify the number of digits both as an
+argument to C<ffround> and in the C<%f> printf string,
+as follows:
+
+  printf "%.3f\n", $bigfloat->ffround(-3);
+
 =head1 AUTHOR
 
 Mark Biggar
-
+Patches by John Peacock Apr 2001
 =cut

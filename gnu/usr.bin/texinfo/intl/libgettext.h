@@ -1,27 +1,27 @@
-/* libgettext.h -- Message catalogs for internationalization.
-   Copyright (C) 1995, 1996 Free Software Foundation, Inc.
+/* Message catalogs for internationalization.
+   Copyright (C) 1995, 1996, 1997, 1998 Free Software Foundation, Inc.
 
-This program is free software; you can redistribute it and/or modify
-it under the terms of the GNU General Public License as published by
-the Free Software Foundation; either version 2, or (at your option)
-any later version.
+   This program is free software; you can redistribute it and/or modify
+   it under the terms of the GNU General Public License as published by
+   the Free Software Foundation; either version 2, or (at your option)
+   any later version.
 
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
+   This program is distributed in the hope that it will be useful,
+   but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+   GNU General Public License for more details.
 
-You should have received a copy of the GNU General Public License
-along with this program; if not, write to the Free Software
-Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
+   You should have received a copy of the GNU General Public License
+   along with this program; if not, write to the Free Software Foundation,
+   Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
 
 /* Because on some systems (e.g. Solaris) we sometimes have to include
    the systems libintl.h as well as this file we have more complex
    include protection above.  But the systems header might perhaps also
    define _LIBINTL_H and therefore we have to protect the definition here.  */
 
-#if !defined (_LIBINTL_H) || !defined (_LIBGETTEXT_H)
-#if !defined (_LIBINTL_H)
+#if !defined _LIBINTL_H || !defined _LIBGETTEXT_H
+#ifndef _LIBINTL_H
 # define _LIBINTL_H	1
 #endif
 #define _LIBGETTEXT_H	1
@@ -44,7 +44,7 @@ extern "C" {
 /* @@ end of prolog @@ */
 
 #ifndef PARAMS
-# if __STDC__
+# if __STDC__ || defined __cplusplus
 #  define PARAMS(args) args
 # else
 #  define PARAMS(args) ()
@@ -151,13 +151,13 @@ extern int _nl_msg_cat_cntr;
 	 if (! __translation__ || __catalog_counter__ != _nl_msg_cat_cntr)    \
 	   {								      \
 	     __translation__ =						      \
-	       dcgettext__ ((Domainname), (Msgid), (Category));		      \
+	       dcgettext__ (Domainname, Msgid, Category);		      \
 	     __catalog_counter__ = _nl_msg_cat_cntr;			      \
 	   }								      \
 	 __result = __translation__;					      \
        }								      \
      else								      \
-       __result = dcgettext__ ((Domainname), (Msgid), (Category));	      \
+       __result = dcgettext__ (Domainname, Msgid, Category);		      \
      __result;								      \
     }))
 #  endif
@@ -168,8 +168,8 @@ extern int _nl_msg_cat_cntr;
 # define gettext(Msgid) (Msgid)
 # define dgettext(Domainname, Msgid) (Msgid)
 # define dcgettext(Domainname, Msgid, Category) (Msgid)
-# define textdomain(Domainname) while (0) /* nothing */
-# define bindtextdomain(Domainname, Dirname) while (0) /* nothing */
+# define textdomain(Domainname) ((char *) Domainname)
+# define bindtextdomain(Domainname, Dirname) ((char *) Dirname)
 
 #endif
 

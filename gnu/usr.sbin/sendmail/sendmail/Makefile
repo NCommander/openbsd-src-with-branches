@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.15 2001/09/20 22:10:02 millert Exp $
+#	$OpenBSD: Makefile,v 1.14 2001/09/12 19:17:10 millert Exp $
 
 PROG=	sendmail
 
@@ -23,9 +23,6 @@ DPADD=	${LIBSSL} ${LIBCRYPTO}
 
 # Since we have random PIDs we need to be careful to avoid filename collisions
 ENVDEF+= -DFAST_PID_RECYCLE
-
-# We want sendmail to call setlogin() when running commands as a non-root user
-ENVDEF+= -D_FFR_USE_SETLOGIN
 
 SRCS=	main.c alias.c arpadate.c bf.c collect.c conf.c control.c convtime.c \
 	daemon.c deliver.c domain.c envelope.c err.c headers.c macro.c map.c \

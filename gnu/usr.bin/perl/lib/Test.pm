@@ -2,9 +2,9 @@ use strict;
 package Test;
 use Test::Harness 1.1601 ();
 use Carp;
-use vars (qw($VERSION @ISA @EXPORT @EXPORT_OK $ntest $TestLevel), #public-ish
-	  qw($TESTOUT $ONFAIL %todo %history $planned @FAILDETAIL)); #private-ish
-$VERSION = '1.122';
+our($VERSION, @ISA, @EXPORT, @EXPORT_OK, $ntest, $TestLevel); #public-ish
+our($TESTOUT, $ONFAIL, %todo, %history, $planned, @FAILDETAIL); #private-ish
+$VERSION = '1.15';
 require Exporter;
 @ISA=('Exporter');
 @EXPORT=qw(&plan &ok &skip);
@@ -63,7 +63,11 @@ sub ok ($;$$) {
     } else {
 	$expected = to_value(shift);
 	my ($regex,$ignore);
-	if ((ref($expected)||'') eq 'Regexp') {
+	if (!defined $expected) {
+	    $ok = !defined $result;
+	} elsif (!defined $result) {
+	    $ok = 0;
+	} elsif ((ref($expected)||'') eq 'Regexp') {
 	    $ok = $result =~ /$expected/;
 	} elsif (($regex) = ($expected =~ m,^ / (.+) / $,sx) or
 	    ($ignore, $regex) = ($expected =~ m,^ m([^\w\s]) (.+) \1 $,sx)) {
@@ -77,8 +81,16 @@ sub ok ($;$$) {
 	$context .= ' TODO?!' if $todo;
 	print $TESTOUT "ok $ntest # ($context)\n";
     } else {
-	print $TESTOUT "not " if !$ok;
-	print $TESTOUT "ok $ntest\n";
+	# Issuing two separate print()s causes severe trouble with 
+	# Test::Harness on VMS.  The "not "'s for failed tests occur
+	# on a separate line and would not get counted as failures.
+	#print $TESTOUT "not " if !$ok;
+	#print $TESTOUT "ok $ntest\n";
+	# Replace with a single print() as a workaround:
+	my $okline = '';
+	$okline = "not " if !$ok;
+	$okline .= "ok $ntest\n";
+	print $TESTOUT $okline;
 	
 	if (!$ok) {
 	    my $detail = { 'repetition' => $repetition, 'package' => $pkg,
@@ -94,7 +106,8 @@ sub ok ($;$$) {
 		}
 	    } else {
 		my $prefix = "Test $ntest";
-		print $TESTOUT "# $prefix got: '$result' ($context)\n";
+		print $TESTOUT "# $prefix got: ".
+		    (defined $result? "'$result'":'<UNDEF>')." ($context)\n";
 		$prefix = ' ' x (length($prefix) - 5);
 		if ((ref($expected)||'') eq 'Regexp') {
 		    $expected = 'qr/'.$expected.'/'
@@ -172,9 +185,9 @@ __END__
 
 =head1 DESCRIPTION
 
-L<Test::Harness> expects to see particular output when it executes
-tests.  This module aims to make writing proper test scripts just a
-little bit easier (and less error prone :-).
+L<Test::Harness|Test::Harness> expects to see particular output when it
+executes tests.  This module aims to make writing proper test scripts just
+a little bit easier (and less error prone :-).
 
 =head1 TEST TYPES
 
@@ -220,7 +233,7 @@ triggered at the end of a test run.  C<onfail> is passed an array ref
 of hash refs that describe each test failure.  Each hash will contain
 at least the following fields: C<package>, C<repetition>, and
 C<result>.  (The file, line, and test number are not included because
-their correspondance to a particular test is tenuous.)  If the test
+their correspondence to a particular test is tenuous.)  If the test
 had an expected value or a diagnostic string, these will also be
 included.
 
@@ -239,7 +252,7 @@ L<Test::Harness> and, perhaps, test coverage analysis tools.
 
 =head1 AUTHOR
 
-Copyright (c) 1998 Joshua Nathaniel Pritikin.  All rights reserved.
+Copyright (c) 1998-1999 Joshua Nathaniel Pritikin.  All rights reserved.
 
 This package is free software and is provided "as is" without express
 or implied warranty.  It may be used, redistributed and/or modified
