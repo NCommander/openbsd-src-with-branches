@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.2 2000/04/02 19:48:34 millert Exp $
+#	$OpenBSD: Makefile,v 1.3 2000/04/04 04:50:14 millert Exp $
 
 PROG=	sendmail
 
@@ -27,6 +27,10 @@ beforeinstall:
 		else \
 			echo "Warning: both /etc/mail/sendmail.cf and /etc/sendmail.cf exist.  Sendmail will use /etc/mail/sendmail.cf."; \
 		fi ; \
+	fi
+	@if test -f /etc/netstart && grep -q /etc/sendmail.cf /etc/netstart; \
+	    then echo "Error: /etc/netstart must check for /etc/mail/sendmail.cf, not /etc/sendmail.cf"; \
+	    false; \
 	fi
 	${INSTALL} ${INSTALL_COPY} -o ${BINOWN} -g ${BINGRP} -m 444 \
 	    ${.CURDIR}/helpfile ${DESTDIR}/etc/mail/helpfile
