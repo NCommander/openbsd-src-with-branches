@@ -1,4 +1,4 @@
-/*	$OpenBSD: cs4231.c,v 1.2 2001/09/30 20:58:16 jason Exp $	*/
+/*	$OpenBSD: cs4231.c,v 1.3 2001/09/30 21:03:26 jason Exp $	*/
 
 /*
  * Copyright (c) 1999 Jason L. Wright (jason@thought.net)
@@ -250,7 +250,7 @@ cs4231_attach(parent, self, aux)
 		burst = sbusburst;
 	sc->sc_burst = burst & sbusburst;
 
-	printf(": pri %d\n", sa->sa_pri);
+	printf("\n");
 
 	evcnt_attach(&sc->sc_dev, "intr", &sc->sc_intrcnt);
 
