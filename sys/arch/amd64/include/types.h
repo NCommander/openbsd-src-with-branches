@@ -1,4 +1,4 @@
-/*	$OpenBSD: types.h,v 1.2 2004/02/03 12:09:47 mickey Exp $	*/
+/*	$OpenBSD: types.h,v 1.3 2004/06/22 01:16:50 art Exp $	*/
 
 /*-
  * Copyright (c) 1990 The Regents of the University of California.
@@ -70,5 +70,6 @@ typedef long			register_t;
 #define	__HAVE_NWSCONS
 #define __HAVE_GENERIC_SOFT_INTERRUPTS
 #define __HAVE_CPUINFO
+#define	__HAVE_EVCOUNT
 
 #endif	/* _MACHTYPES_H_ */
