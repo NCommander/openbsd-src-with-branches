@@ -1,5 +1,5 @@
 #!/bin/sh
-#	$OpenBSD: install.sh,v 1.42 1998/10/28 17:51:14 millert Exp $
+#	$OpenBSD: install.sh,v 1.43 1998/11/09 03:54:52 millert Exp $
 #	$NetBSD: install.sh,v 1.5.2.8 1996/08/27 18:15:05 gwr Exp $
 #
 # Copyright (c) 1997,1998 Todd Miller, Theo de Raadt
@@ -300,6 +300,10 @@ else
 	while [ "X${ROOTDISK}" = "X" ]; do
 		getrootdisk
 	done
+fi
+
+if [ -f /sbin/swapon ]; then
+	swapon /dev/${ROOTDISK}b
 fi
 
 # Get network configuration information, and store it for placement in the
