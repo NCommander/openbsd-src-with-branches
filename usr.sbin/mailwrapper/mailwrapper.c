@@ -1,4 +1,4 @@
-/*	$OpenBSD: mailwrapper.c,v 1.4 1999/08/02 21:13:22 jakob Exp $	*/
+/*	$OpenBSD: mailwrapper.c,v 1.5 1999/09/28 15:25:45 ho Exp $	*/
 /*	$NetBSD: mailwrapper.c,v 1.2 1999/02/20 22:10:07 thorpej Exp $	*/
 
 /*
@@ -120,6 +120,8 @@ main(argc, argv, envp)
 	initarg(&al);
 	for (len = 0; len < argc; len++)
 		addarg(&al, argv[len], 0);
+
+	addarg(&al, NULL, 0);
 
 	if ((config = fopen(_PATH_MAILERCONF, "r")) == NULL) {
 		openlog("mailwrapper", LOG_PID, LOG_MAIL);
