@@ -1,4 +1,4 @@
-/*	$OpenBSD: pdc.c,v 1.5 1998/12/13 06:41:43 mickey Exp $	*/
+/*	$OpenBSD: pdc.c,v 1.6 1998/12/13 06:45:05 mickey Exp $	*/
 
 /*
  * Copyright (c) 1998 Michael Shalayeff
@@ -213,7 +213,7 @@ iodcstrategy(devdata, rw, blk, size, buf, rsize)
 		xfer = min(dp->last_read - offset, size);
 		size -= xfer;
 		blk += xfer;
-#ifdef DEBUG
+#ifdef PDCDEBUG
 		if (debug)
 			printf("off=%d,xfer=%d,size=%d,blk=%d\n",
 			       offset, xfer, size, blk);
