@@ -18,8 +18,7 @@ SUBDIR		+= usr.sbin/ydr
 .endif
 SUBDIR		+= lib libexec usr.sbin
 
-## To be able to make depend in libarla we have to have ydr (that needs
-## libroken) and libroken used by gensysname in (libarla/Makefile.ko.inc)
+## To be able to make depend in libarla we have to have ydr
 
 beforedepend:
 	cd usr.sbin/ydr && make depend && exec make
