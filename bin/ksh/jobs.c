@@ -1,4 +1,4 @@
-/*	$OpenBSD: jobs.c,v 1.10 1998/11/19 19:59:09 millert Exp $	*/
+/*	$OpenBSD: jobs.c,v 1.11 1999/01/08 20:24:59 millert Exp $	*/
 
 /*
  * Process and job control
@@ -1557,11 +1557,12 @@ j_print(j, how, shf)
 			break;
 		}
 
-		if (how != JP_SHORT)
+		if (how != JP_SHORT) {
 			if (p == j->proc_list)
 				shf_fprintf(shf, "[%d] %c ", j->job, jobchar);
 			else
 				shf_fprintf(shf, "%s", filler);
+		}
 
 		if (how == JP_LONG)
 			shf_fprintf(shf, "%5d ", p->pid);

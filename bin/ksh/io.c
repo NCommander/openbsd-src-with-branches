@@ -1,4 +1,4 @@
-/*	$OpenBSD: io.c,v 1.5 1998/06/25 19:02:00 millert Exp $	*/
+/*	$OpenBSD: io.c,v 1.6 1999/01/08 20:24:59 millert Exp $	*/
 
 /*
  * shell buffered IO and formatted output
@@ -299,11 +299,12 @@ savefd(fd, noclose)
 
 	if (fd < FDBASE) {
 		nfd = ksh_dupbase(fd, FDBASE);
-		if (nfd < 0)
+		if (nfd < 0) {
 			if (errno == EBADF)
 				return -1;
 			else
 				errorf("too many files open in shell");
+		}
 		if (!noclose)
 			close(fd);
 	} else
