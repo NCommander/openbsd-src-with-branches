@@ -3,6 +3,7 @@
 #
 # This system was a 468 but now has an Intel Pentium Overdrive Processor[tm]
 #
+# $OpenBSD$
 
 machine		i386		# architecture, used by config; REQUIRED
 
