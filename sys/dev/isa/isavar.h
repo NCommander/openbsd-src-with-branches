@@ -1,4 +1,5 @@
-/*	$NetBSD: isavar.h,v 1.16 1995/06/07 06:45:44 cgd Exp $	*/
+/*	$OpenBSD$	*/
+/*	$NetBSD: isavar.h,v 1.17 1995/12/24 02:31:38 mycroft Exp $      */
 
 /*
  * Copyright (c) 1995 Chris G. Demetriou

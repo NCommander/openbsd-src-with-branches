@@ -1,4 +1,5 @@
-/*	$NetBSD: lpt.c,v 1.30 1995/04/17 12:09:17 cgd Exp $	*/
+/*	$OpenBSD$ */
+/*	$NetBSD: lpt.c,v 1.31 1995/12/24 02:31:40 mycroft Exp $ */
 
 /*
  * Copyright (c) 1993, 1994 Charles Hannum.

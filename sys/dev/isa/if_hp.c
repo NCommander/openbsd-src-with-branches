@@ -1,4 +1,5 @@
-/*	$NetBSD: if_hp.c,v 1.20 1995/04/17 12:09:01 cgd Exp $	*/
+/*    $OpenBSD$       */
+/*    $NetBSD: if_hp.c,v 1.21 1995/12/24 02:31:31 mycroft Exp $       */
 
 /* XXX THIS DRIVER IS BROKEN.  IT WILL NOT EVEN COMPILE. */
 
