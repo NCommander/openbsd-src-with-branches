@@ -1,4 +1,4 @@
-/*	$OpenBSD: vfs_lookup.c,v 1.26 2003/10/08 16:30:01 sturm Exp $	*/
+/*	$OpenBSD: vfs_lookup.c,v 1.27 2004/05/14 04:00:33 tedu Exp $	*/
 /*	$NetBSD: vfs_lookup.c,v 1.17 1996/02/09 19:00:59 christos Exp $	*/
 
 /*
@@ -209,7 +209,7 @@ namei(ndp)
 		auio.uio_offset = 0;
 		auio.uio_rw = UIO_READ;
 		auio.uio_segflg = UIO_SYSSPACE;
-		auio.uio_procp = (struct proc *)0;
+		auio.uio_procp = cnp->cn_proc;
 		auio.uio_resid = MAXPATHLEN;
 		error = VOP_READLINK(ndp->ni_vp, &auio, cnp->cn_cred);
 		if (error) {
