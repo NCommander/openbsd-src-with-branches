@@ -1,4 +1,4 @@
-/*	$OpenBSD: ftpd.c,v 1.68 2000/01/18 18:26:38 millert Exp $	*/
+/*	$OpenBSD: ftpd.c,v 1.69 2000/03/03 15:51:45 bitblt Exp $	*/
 /*	$NetBSD: ftpd.c,v 1.15 1995/06/03 22:46:47 mycroft Exp $	*/
 
 /*
@@ -1099,8 +1099,10 @@ retrieve(cmd, name)
 		logxfer(name, st.st_size, start);
 	(void) fclose(dout);
 	data = -1;
-	pdata = -1;
 done:
+	if (pdata >= 0)
+		(void) close(pdata);
+	pdata = -1;
 	if (cmd == 0)
 		LOGBYTES("get", name, byte_count);
 	(*closefunc)(fin);
@@ -2436,6 +2438,10 @@ send_file_list(whichf)
 	transflag = 0;
 	if (dout != NULL)
 		(void) fclose(dout);
+	else {
+		if (pdata >= 0)
+			close(pdata);
+	}
 	data = -1;
 	pdata = -1;
 out:
