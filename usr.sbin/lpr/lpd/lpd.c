@@ -1,4 +1,4 @@
-/*	$OpenBSD: lpd.c,v 1.6 1996/08/07 00:20:49 deraadt Exp $ */
+/*	$OpenBSD: lpd.c,v 1.7 1996/09/21 07:56:31 deraadt Exp $ */
 /*	$NetBSD: lpd.c,v 1.7 1996/04/24 14:54:06 mrg Exp $	*/
 
 /*
@@ -253,7 +253,7 @@ main(argc, argv)
 			domain = AF_INET, fromlen = sizeof(frominet);
 			s = accept(finet,
 			    (struct sockaddr *)&frominet, &fromlen);
-			if (frominet.s_port == 20) {
+			if (frominet.s_port == htons(20)) {
 				close(s);
 				continue;
 			}
