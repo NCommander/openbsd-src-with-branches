@@ -1,4 +1,4 @@
-/*	$OpenBSD: ss_scanjet.c,v 1.14 1996/12/08 14:25:50 niklas Exp $	*/
+/*	$OpenBSD: ss_scanjet.c,v 1.15 1997/03/06 12:44:42 kstailey Exp $	*/
 /*	$NetBSD: ss_scanjet.c,v 1.6 1996/05/18 22:58:01 christos Exp $	*/
 
 /*
@@ -120,7 +120,7 @@ scanjet_attach(ss, sa)
 	    ss->sio.scan_scanner_type));
 
 	/* now install special handlers */
-	ss->special = &scanjet_special;
+	ss->special = scanjet_special;
 
 	/*
 	 * populate the scanio struct with legal values
