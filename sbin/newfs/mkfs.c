@@ -1,4 +1,4 @@
-/*	$OpenBSD: mkfs.c,v 1.5 1997/02/21 22:55:19 millert Exp $	*/
+/*	$OpenBSD: mkfs.c,v 1.6 1997/02/23 03:51:23 millert Exp $	*/
 /*	$NetBSD: mkfs.c,v 1.25 1995/06/18 21:35:38 cgd Exp $	*/
 
 /*
@@ -38,7 +38,7 @@
 #if 0
 static char sccsid[] = "@(#)mkfs.c	8.3 (Berkeley) 2/3/94";
 #else
-static char rcsid[] = "$OpenBSD: mkfs.c,v 1.5 1997/02/21 22:55:19 millert Exp $";
+static char rcsid[] = "$OpenBSD: mkfs.c,v 1.6 1997/02/23 03:51:23 millert Exp $";
 #endif
 #endif /* not lint */
 
@@ -883,7 +883,7 @@ fsinit(utime)
 			memcpy(&buf[i], &lost_found_dir[2],
 			    DIRSIZ(0, &lost_found_dir[2]));
 	}
-	node.di_mode = IFDIR | UMASK;
+	node.di_mode = IFDIR | 1700;
 	node.di_nlink = 2;
 	node.di_size = sblock.fs_bsize;
 	node.di_db[0] = alloc(node.di_size, node.di_mode);
