@@ -35,10 +35,10 @@
  */
 
 #if defined(LIBC_SCCS) && !defined(lint)
-static char *rcsid = "$OpenBSD: memcmp.c,v 1.2 1996/08/19 08:34:05 tholo Exp $";
+static char *rcsid = "$OpenBSD: memcmp.c,v 1.2 1996/10/24 23:09:09 deraadt Exp $";
 #endif /* LIBC_SCCS and not lint */
 
-#include <string.h>
+#include <stand.h>
 
 /*
  * Compare memory regions.
