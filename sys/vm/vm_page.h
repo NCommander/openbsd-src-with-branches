@@ -1,3 +1,4 @@
+/*	$OpenBSD: vm_page.h,v 1.18 1995/03/26 20:39:13 jtc Exp $	*/
 /*	$NetBSD: vm_page.h,v 1.18 1995/03/26 20:39:13 jtc Exp $	*/
 
 /* 
