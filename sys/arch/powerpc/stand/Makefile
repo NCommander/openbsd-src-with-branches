@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.7 1997/10/15 14:07:53 pefo Exp $
+#	$OpenBSD: Makefile,v 1.9 2001/06/23 01:48:41 drahn Exp $
 #	$NetBSD: Makefile,v 1.1 1996/09/30 16:34:59 ws Exp $
 
 SUBDIR=	ofwboot boot.mac mbr
@@ -8,6 +8,7 @@ KERNREL=
 KERN_AS=library
 Z_AS=library
 SA_ZLIB=smth
+USE_LOADFILE=yes
 
 .include "Makefile.inc"
 .include "$S/lib/libz/Makefile.inc"
