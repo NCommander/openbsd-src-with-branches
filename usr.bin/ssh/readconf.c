@@ -12,7 +12,7 @@
  */
 
 #include "includes.h"
-RCSID("$OpenBSD: readconf.c,v 1.104 2003/04/01 10:22:21 markus Exp $");
+RCSID("$OpenBSD: readconf.c,v 1.105 2003/04/02 09:48:07 markus Exp $");
 
 #include "ssh.h"
 #include "xmalloc.h"
@@ -279,6 +279,13 @@ process_config_line(Options *options, const char *host,
 	size_t len;
 	u_short fwd_port, fwd_host_port;
 	char sfwd_host_port[6];
+
+	/* Strip trailing whitespace */
+	for(len = strlen(line) - 1; len > 0; len--) {
+		if (strchr(WHITESPACE, line[len]) == NULL)
+			break;
+		line[len] = '\0';
+	}
 
 	s = line;
 	/* Get the keyword. (Each line is supposed to begin with a keyword). */
