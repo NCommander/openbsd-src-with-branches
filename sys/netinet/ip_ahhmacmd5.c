@@ -236,11 +236,11 @@ ahhmacmd5_input(struct mbuf *m, struct tdb *tdb)
       for (off = sizeof(struct ip); off < (ip->ip_hl << 2);)
       {
 	  optval = ((u_int8_t *)ip)[off];
-	  MD5Update(&ctx, &optval, 1);
-	  switch (IPOPT_NUMBER(optval))
+	  switch (optval)
 	  {
 	      case IPOPT_EOL:
 	      case IPOPT_NOP:
+		  MD5Update(&ctx, ipseczeroes, 1);
 		  off++;
 		  continue;
 		  
@@ -248,13 +248,13 @@ ahhmacmd5_input(struct mbuf *m, struct tdb *tdb)
 	      case 133:
 	      case 134:
 		  optval = ((u_int8_t *)ip)[off + 1];
-		  MD5Update(&ctx, (u_int8_t *)ip + off + 1, optval - 1);
+		  MD5Update(&ctx, (u_int8_t *)ip + off, optval);
 		  off += optval;
 		  continue;
 		  
 	      default:
-		  MD5Update(&ctx, &optval, 1);
-		  MD5Update(&ctx, ipseczeroes, optval - 2);
+		  optval = ((u_int8_t *)ip)[off + 1];
+		  MD5Update(&ctx, ipseczeroes, optval);
 		  off += optval;
 		  continue;
 	  }
