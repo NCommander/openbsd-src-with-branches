@@ -1,4 +1,4 @@
-/*	$OpenBSD: pfctl.c,v 1.199 2004/01/29 01:25:13 mcbride Exp $ */
+/*	$OpenBSD: pfctl.c,v 1.200 2004/02/04 10:43:18 mcbride Exp $ */
 
 /*
  * Copyright (c) 2001 Daniel Hartmeier
@@ -422,7 +422,8 @@ pfctl_kill_states(int dev, int opts)
 			memset(&last_dst, 0xff, sizeof(last_dst));
 			if ((ret_ga = getaddrinfo(state_kill[1], NULL, NULL,
 			    &res[1]))) {
-				errx(1, "getaddrinfo: %s", gai_strerror(ret_ga));
+				errx(1, "getaddrinfo: %s",
+				    gai_strerror(ret_ga));
 				/* NOTREACHED */
 			}
 			for (resp[1] = res[1]; resp[1];
