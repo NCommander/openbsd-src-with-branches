@@ -1,4 +1,4 @@
-/*	$OpenBSD: lib_tstp.c,v 1.7 2000/10/08 22:47:05 millert Exp $	*/
+/*	$OpenBSD: lib_tstp.c,v 1.8 2001/01/22 18:02:00 millert Exp $	*/
 
 /****************************************************************************
  * Copyright (c) 1998,1999,2000 Free Software Foundation, Inc.              *
@@ -205,6 +205,8 @@ cleanup(int sig)
     static int nested;
 
     /*
+     * XXX signal race. The kind of comment is completely ingenius!
+     *
      * Actually, doing any sort of I/O from within an signal handler is
      * "unsafe".  But we'll _try_ to clean up the screen and terminal
      * settings on the way out.
