@@ -23,7 +23,7 @@
  */
 
 #include "includes.h"
-RCSID("$OpenBSD: sshconnect2.c,v 1.34 2000/12/27 12:34:50 markus Exp $");
+RCSID("$OpenBSD: sshconnect2.c,v 1.35 2001/01/04 22:21:26 markus Exp $");
 
 #include <openssl/bn.h>
 #include <openssl/rsa.h>
@@ -332,8 +332,7 @@ ssh_dhgex_client(Kex *kex, char *host, struct sockaddr *hostaddr,
 	if ((g = BN_new()) == NULL)
 		fatal("BN_new");
 	packet_get_bignum2(g, &dlen);
-	if ((dh = dh_new_group(g, p)) == NULL)
-		fatal("dh_new_group");
+	dh = dh_new_group(g, p);
 
 	dh_gen_key(dh);
 
