@@ -400,19 +400,6 @@ kr_show_route(struct imsg *imsg)
 	send_imsg_session(IMSG_CTL_END, imsg->hdr.pid, NULL, 0);
 }
 
-void
-kr_ifinfo(char *ifname)
-{
-	struct kif_node	*kif;
-
-	RB_FOREACH(kif, kif_tree, &kit)
-		if (!strcmp(ifname, kif->k.ifname)) {
-			send_imsg_session(IMSG_IFINFO, 0,
-			    &kif->k, sizeof(kif->k));
-			return;
-		}
-}
-
 /*
  * RB-tree compare functions
  */
@@ -964,8 +951,6 @@ if_change(u_short ifindex, int flags, struct if_data *ifd)
 	kif->k.link_state = ifd->ifi_link_state;
 	kif->k.media_type = ifd->ifi_type;
 	kif->k.baudrate = ifd->ifi_baudrate;
-
-	send_imsg_session(IMSG_IFINFO, 0, &kif->k, sizeof(kif->k));
 
 	if ((reachable = (flags & IFF_UP) &&
 	    (ifd->ifi_link_state != LINK_STATE_DOWN)) == kif->k.nh_reachable)
