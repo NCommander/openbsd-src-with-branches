@@ -1,4 +1,4 @@
-/*	$OpenBSD: machdep.c,v 1.79 2002/09/11 16:01:37 mickey Exp $	*/
+/*	$OpenBSD: machdep.c,v 1.80 2002/09/17 03:51:49 mickey Exp $	*/
 
 /*
  * Copyright (c) 1999-2002 Michael Shalayeff
@@ -494,6 +494,9 @@ hppa_init(start)
 #ifdef COMPAT_HPUX
 				cpu_model_hpux = HPUX_SYSCONF_CPUPA11;
 #endif
+				/* this one is just a 100MHz pcxl */
+				if (lev == 0x10)
+					lev = 0xe;
 				break;
 			case 8:
 				q = "2.0";
