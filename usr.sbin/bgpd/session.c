@@ -383,8 +383,8 @@ bgp_fsm(struct peer *peer, enum session_events event)
 		case EVNT_TIMER_CONNRETRY:
 			peer->ConnectRetryTimer =
 			    time(NULL) + peer->holdtime;
-			session_connect(peer);
 			change_state(peer, STATE_CONNECT, event);
+			session_connect(peer);
 			break;
 		default:
 			change_state(peer, STATE_IDLE, event);
