@@ -1,4 +1,4 @@
-/*	$OpenBSD: funmap.c,v 1.3 2001/05/24 13:00:45 art Exp $	*/
+/*	$OpenBSD: funmap.c,v 1.4 2002/02/08 21:21:11 deraadt Exp $	*/
 /*
  * Copyright (c) 2001 Artur Grabowski <art@openbsd.org>.  All rights reserved.
  *
@@ -217,6 +217,7 @@ static struct funmap functnames[] = {
 	{usebuffer, "switch-to-buffer",},
 	{poptobuffer, "switch-to-buffer-other-window",},
 	{twiddle, "transpose-chars",},
+	{ undo, "undo", },
 	{universal_argument, "universal-argument",},
 	{upperregion, "upcase-region",},
 	{upperword, "upcase-word",},

@@ -1,4 +1,4 @@
-/*	$OpenBSD: main.c,v 1.14 2001/06/23 04:22:44 art Exp $	*/
+/*	$OpenBSD: main.c,v 1.15 2002/02/16 21:27:49 millert Exp $	*/
 
 /*
  *	Mainline.
@@ -41,7 +41,8 @@ main(argc, argv)
 	maps_init();		/* Keymaps and modes.		*/
 	funmap_init();		/* Functions.			*/
 	ttykeymapinit();	/* Symbols, bindings.		*/
-
+	undo_init();
+	
 	/*
 	 * This is where we initialize standalone extensions that should
 	 * be loaded dynamically sometime in the future.
