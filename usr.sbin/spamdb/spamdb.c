@@ -1,4 +1,4 @@
-/*	$OpenBSD: spamdb.c,v 1.3 2004/02/26 08:28:57 beck Exp $	*/
+/*	$OpenBSD: spamdb.c,v 1.4 2004/03/01 17:47:07 beck Exp $	*/
 
 /*
  * Copyright (c) 2004 Bob Beck.  All rights reserved.
@@ -144,12 +144,10 @@ dbupdate(char *dbname, char *ip, int add)
 			}
 		}
 	}
-	db->sync(db, 0);
 	db->close(db);
 	db = NULL;
 	return (0);
  bad:
-	db->sync(db, 0);
 	db->close(db);
 	db = NULL;
 	return(-1);
@@ -208,12 +206,10 @@ dblist(char *dbname)
 			    gd.bcount, gd.pcount);
 		}
 	}
-	db->sync(db, 0);
 	db->close(db);
 	db = NULL;
 	return(0);
  bad:
-	db->sync(db, 0);
 	db->close(db);
 	db = NULL;
 	errx(1, "incorrect db format entry");
