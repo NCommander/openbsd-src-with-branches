@@ -1,5 +1,5 @@
-/*	$OpenBSD: viareg.h,v 1.3 1996/06/08 16:21:14 briggs Exp $	*/
-/*	$NetBSD: viareg.h,v 1.4 1996/06/07 10:41:37 briggs Exp $	*/
+/*	$OpenBSD: viareg.h,v 1.4 1996/10/28 14:49:08 briggs Exp $	*/
+/*	$NetBSD: viareg.h,v 1.5 1996/10/29 05:42:16 briggs Exp $	*/
 
 /*-
  * Copyright (C) 1993	Allen K. Briggs, Chris P. Caputo,
