@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_ep_pcmcia.c,v 1.12 1998/12/17 20:14:35 fgsch Exp $	*/
+/*	$OpenBSD: if_ep_pcmcia.c,v 1.13 1999/01/28 04:58:30 fgsch Exp $	*/
 /*	$NetBSD: if_ep_pcmcia.c,v 1.16 1998/08/17 23:20:40 thorpej Exp $  */
 
 /*-
@@ -309,7 +309,7 @@ ep_pcmcia_attach(parent, self, aux)
 			if (i & 0x80)
 				continue;
 			if (pcmcia_io_alloc(pa->pf, i, cfe->iospace[0].length,
-			    0, &psc->sc_pcioh) == 0)
+			    cfe->iospace[0].length, &psc->sc_pcioh) == 0)
 				break;
 		}
 		if (i >= maxaddr) {
