@@ -1,4 +1,4 @@
-/*	$OpenBSD: disklabel.h,v 1.11 1999/03/23 16:36:16 millert Exp $	*/
+/*	$OpenBSD: disklabel.h,v 1.3 1999/05/03 22:45:04 mickey Exp $	*/
 /*	$NetBSD: disklabel.h,v 1.1 1995/02/13 23:07:34 cgd Exp $	*/
 
 /*
@@ -283,7 +283,7 @@ struct	lifvol {
 
 struct	lifdir {
 	char	dir_name[10];
-	short	dir_type;
+	u_short	dir_type;
 	u_int	dir_addr;
 	u_int	dir_length;
 	char	dir_toc[6];
