@@ -1,4 +1,4 @@
-/*	$OpenBSD: md5.c,v 1.10 2001/06/02 20:38:06 millert Exp $	*/
+/*	$OpenBSD: md5.c,v 1.11 2001/06/02 21:04:53 millert Exp $	*/
 
 /*
  * Copyright (c) 2001 Todd C. Miller <Todd.Miller@courtesan.com>
@@ -116,7 +116,7 @@ main(int argc, char **argv)
 	argc -= optind;
 	argv += optind;
 
-	if (pflag + tflag + xflag + argc > 1)
+	if (pflag + tflag + xflag + argc < 1)
 		usage();
 
 	if (tflag)
