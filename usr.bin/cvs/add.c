@@ -1,4 +1,4 @@
-/*	$OpenBSD: add.c,v 1.7 2004/12/06 21:03:12 deraadt Exp $	*/
+/*	$OpenBSD: add.c,v 1.8 2004/12/07 17:10:56 tedu Exp $	*/
 /*
  * Copyright (c) 2004 Jean-Francois Brousseau <jfb@openbsd.org>
  * All rights reserved.
@@ -103,8 +103,7 @@ cvs_add_file(CVSFILE *cf, void *arg)
 	struct cvsroot *root;
 
 	if (cf->cf_type == DT_DIR) {
-		if (cf->cf_cvstat == CVS_FST_UNKNOWN) {
-		} else {
+		if (cf->cf_cvstat != CVS_FST_UNKNOWN) {
 			root = cf->cf_ddat->cd_root;
 			if ((cf->cf_parent == NULL) ||
 			    (root != cf->cf_parent->cf_ddat->cd_root)) {
