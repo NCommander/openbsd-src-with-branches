@@ -339,10 +339,6 @@ struct db_command db_show_cmds[] = {
 	{ NULL,		NULL,			0,	NULL, }
 };
 
-void	db_boot_sync_cmd();
-void	db_boot_crash_cmd();
-void	db_boot_dump_cmd();
-
 struct db_command db_boot_cmds[] = {
 	{ "sync",	db_boot_sync_cmd,	0,	0 },
 	{ "crash",	db_boot_crash_cmd,	0,	0 },
@@ -519,19 +515,31 @@ db_fncall(addr, have_addr, count, modif)
 }
 
 void
-db_boot_sync_cmd()
+db_boot_sync_cmd(addr, haddr, count, modif)
+	db_expr_t addr;
+	int haddr;
+	db_expr_t count;
+	char *modif;
 {
 	boot(RB_AUTOBOOT);
 }
 
 void
-db_boot_crash_cmd()
+db_boot_crash_cmd(addr, haddr, count, modif)
+	db_expr_t addr;
+	int haddr;
+	db_expr_t count;
+	char *modif;
 {
 	boot(RB_NOSYNC | RB_DUMP);
 }
 
 void
-db_boot_dump_cmd()
+db_boot_dump_cmd(addr, haddr, count, modif)
+	db_expr_t addr;
+	int haddr;
+	db_expr_t count;
+	char *modif;
 {
 	boot(RB_DUMP);
 }

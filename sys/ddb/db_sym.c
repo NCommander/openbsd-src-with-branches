@@ -1,4 +1,4 @@
-/*	$OpenBSD: db_sym.c,v 1.7 1996/04/21 22:19:13 deraadt Exp $	*/
+/*	$OpenBSD: db_sym.c,v 1.10 1996/05/20 13:30:07 mickey Exp $	*/
 /*	$NetBSD: db_sym.c,v 1.12 1996/02/05 01:57:15 christos Exp $	*/
 
 /* 
@@ -30,6 +30,7 @@
 #include <sys/param.h>
 #include <sys/proc.h>
 #include <sys/malloc.h>
+#include <sys/systm.h>
 
 #include <machine/db_machdep.h>
 
