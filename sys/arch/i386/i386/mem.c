@@ -1,5 +1,5 @@
 /*	$NetBSD: mem.c,v 1.31 1996/05/03 19:42:19 christos Exp $	*/
-/*	$OpenBSD: mem.c,v 1.24 2003/01/16 04:15:17 art Exp $ */
+/*	$OpenBSD: mem.c,v 1.25 2003/02/26 18:25:29 tedu Exp $ */
 /*
  * Copyright (c) 1988 University of Utah.
  * Copyright (c) 1982, 1986, 1990, 1993
@@ -17,11 +17,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
