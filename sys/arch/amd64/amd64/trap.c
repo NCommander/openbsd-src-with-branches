@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: trap.c,v 1.1 2004/01/28 01:39:39 mickey Exp $	*/
 /*	$NetBSD: trap.c,v 1.2 2003/05/04 23:51:56 fvdl Exp $	*/
 
 /*-
@@ -78,7 +78,7 @@
 /*
  * amd64 Trap and System call handling
  */
-#define	TRAP_SIGDEBUG
+#undef	TRAP_SIGDEBUG
 
 #include <sys/param.h>
 #include <sys/systm.h>
