@@ -35,7 +35,7 @@
  *
  * Author: Erik Salander <erik@whistle.com>
  *
- *	$OpenBSD: alias_pptp.c,v 1.2 2000/08/13 22:05:47 brian Exp $
+ *	$OpenBSD: alias_pptp.c,v 1.3 2000/11/02 00:53:47 brian Exp $
  */
 
 /*
@@ -70,6 +70,8 @@
 #include <netinet/in.h>
 #include <netinet/ip.h>
 #include <netinet/tcp.h>
+
+#include <stdio.h>
 
 #include "alias_local.h"
 
