@@ -1,9 +1,9 @@
-; $OpenBSD: db.loopback6.arpa,v 1.1 2002/12/26 16:49:56 jakob Exp $
+; $OpenBSD: db.loopback6.arpa,v 1.1 2003/01/20 22:30:13 jakob Exp $
 
 $ORIGIN 0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.ip6.arpa.
 $TTL 6h
 
-@	IN	SOA	localhost. root.localhost. (	
+@	IN	SOA	localhost. root.localhost. (
 			1	; serial
 			1h	; refresh
 			30m	; retry
