@@ -1,6 +1,6 @@
-#	$OpenBSD: Makefile,v 1.1.1.1 1995/10/18 08:45:27 deraadt Exp $
+#	$OpenBSD: Makefile,v 1.2 1996/06/26 05:34:45 deraadt Exp $
 
-LDSTATIC=-static
+LDSTATIC=${STATIC}
 PROG=	ktrace
 SRCS=	ktrace.c subr.c
 
