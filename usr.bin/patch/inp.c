@@ -241,6 +241,7 @@ char *filename;
     using_plan_a = FALSE;
     if ((ifp = fopen(filename, "r")) == Nullfp)
 	pfatal2("can't open file %s", filename);
+    (void) unlink(TMPINNAME);
     if ((tifd = open(TMPINNAME, O_EXCL|O_CREAT|O_WRONLY, 0666)) < 0)
 	pfatal2("can't open file %s", TMPINNAME);
     while (fgets(buf, sizeof buf, ifp) != Nullch) {

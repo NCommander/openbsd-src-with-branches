@@ -54,15 +54,10 @@ void
 open_patch_file(filename)
 char *filename;
 {
-    int fd;
-
     if (filename == Nullch || !*filename || strEQ(filename, "-")) {
-	if ((fd = open(TMPPATNAME, O_EXCL|O_CREAT|O_RDWR, 0666)) == -1 ||
-	    (pfp = fdopen(fd, "w")) == NULL) {
-	    if (fd != -1)
-		close(fd);
+	pfp = fopen(TMPPATNAME, "w");
+	if (pfp == Nullfp)
 	    pfatal2("can't create %s", TMPPATNAME);
-	}
 	while (fgets(buf, sizeof buf, stdin) != Nullch)
 	    fputs(buf, pfp);
 	Fclose(pfp);

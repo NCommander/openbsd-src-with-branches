@@ -784,14 +784,9 @@ void
 init_output(name)
 char *name;
 {
-    int fd;
-
-    if ((fd = open(name, O_EXCL|O_CREAT|O_RDWR, 0666)) == -1 ||
-	(ofp = fdopen(fd, "w")) == NULL) {
-	if (fd != -1)
-		close(fd);
+    ofp = fopen(name, "w");
+    if (ofp == Nullfp)
 	pfatal2("can't create %s", name);
-    }
 }
 
 /* Open a file to put hunks we can't locate. */
@@ -800,14 +795,9 @@ void
 init_reject(name)
 char *name;
 {
-    int fd;
-
-    if ((fd = open(name, O_EXCL|O_CREAT|O_RDWR, 0666)) == -1 ||
-	(rejfp = fdopen(fd, "w")) == NULL) {
-	if (fd != -1)
-		close(fd);
+    rejfp = fopen(name, "w");
+    if (rejfp == Nullfp)
 	pfatal2("can't create %s", name);
-    }
 }
 
 /* Copy input file to output, up to wherever hunk is to be applied. */
