@@ -1,4 +1,4 @@
-/*	$OpenBSD: ar_io.c,v 1.29 2002/10/16 19:20:02 millert Exp $	*/
+/*	$OpenBSD: ar_io.c,v 1.30 2002/10/18 15:38:11 millert Exp $	*/
 /*	$NetBSD: ar_io.c,v 1.5 1996/03/26 23:54:13 mrg Exp $	*/
 
 /*-
@@ -42,7 +42,7 @@
 #if 0
 static const char sccsid[] = "@(#)ar_io.c	8.2 (Berkeley) 4/18/94";
 #else
-static const char rcsid[] = "$OpenBSD: ar_io.c,v 1.29 2002/10/16 19:20:02 millert Exp $";
+static const char rcsid[] = "$OpenBSD: ar_io.c,v 1.30 2002/10/18 15:38:11 millert Exp $";
 #endif
 #endif /* not lint */
 
@@ -844,7 +844,7 @@ ar_fow(off_t sksz, off_t *skipped)
 		if (lseek(arfd, mpos, SEEK_SET) >= 0)
 			return(0);
 	}
-	syswarn(1, errno, "Foward positioning operation on archive failed");
+	syswarn(1, errno, "Forward positioning operation on archive failed");
 	lstrval = -1;
 	return(-1);
 }
