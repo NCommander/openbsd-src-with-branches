@@ -1,4 +1,4 @@
-/*	$OpenBSD: setup.c,v 1.7 1999/08/17 09:13:14 millert Exp $	*/
+/*	$OpenBSD: setup.c,v 1.8 2001/03/02 08:33:55 art Exp $	*/
 /*	$NetBSD: setup.c,v 1.27 1996/09/27 22:45:19 christos Exp $	*/
 
 /*
@@ -38,7 +38,7 @@
 #if 0
 static char sccsid[] = "@(#)setup.c	8.5 (Berkeley) 11/23/94";
 #else
-static char rcsid[] = "$OpenBSD: setup.c,v 1.7 1999/08/17 09:13:14 millert Exp $";
+static char rcsid[] = "$OpenBSD: setup.c,v 1.8 2001/03/02 08:33:55 art Exp $";
 #endif
 #endif /* not lint */
 
@@ -459,6 +459,9 @@ readsb(listerr)
 	memcpy(altsblock.fs_csp, sblock.fs_csp,
 		sizeof sblock.fs_csp);
 	altsblock.fs_maxcluster = sblock.fs_maxcluster;
+	altsblock.fs_contigdirs = sblock.fs_contigdirs;
+	altsblock.fs_avgfilesize = sblock.fs_avgfilesize;
+	altsblock.fs_avgfpdir = sblock.fs_avgfpdir;
 	memcpy(altsblock.fs_fsmnt, sblock.fs_fsmnt,
 		sizeof sblock.fs_fsmnt);
 	memcpy(altsblock.fs_sparecon, sblock.fs_sparecon,
