@@ -1,10 +1,10 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: ns_udp.c,v 1.1 1997/03/12 10:42:36 downsj Exp $	*/
 
 #if !defined(lint) && !defined(SABER)
 #if 0
 static char rcsid[] = "$From: ns_udp.c,v 8.3 1996/08/27 08:33:23 vixie Exp $";
 #else
-static char rcsid[] = "$OpenBSD$";
+static char rcsid[] = "$OpenBSD: ns_udp.c,v 1.1 1997/03/12 10:42:36 downsj Exp $";
 #endif
 #endif /* not lint */
 
@@ -81,7 +81,7 @@ ns_udp() {
 
 	res = lseek(fd, offset, SEEK_SET);
 	if (res != offset) {
-		dprintf(1, (ddt, "ns_udp: lseek %ul failed %lu %d\n",
+		dprintf(1, (ddt, "ns_udp: lseek %lu failed %lu %d\n",
 			    offset, res, errno));
 		goto cleanup;
 	}
@@ -97,7 +97,7 @@ ns_udp() {
 		sum = 1;
 		lseek(fd, offset, SEEK_SET);
 		if (res != offset) {
-			dprintf(1, (ddt, "ns_udp: lseek %ul failed %lu %d\n",
+			dprintf(1, (ddt, "ns_udp: lseek %lu failed %lu %d\n",
 				    offset, res, errno));
 			goto cleanup;
 		}
