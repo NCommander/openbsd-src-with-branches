@@ -1,4 +1,4 @@
-/*	$OpenBSD: bwtwo.c,v 1.15 1998/11/20 15:57:21 deraadt Exp $	*/
+/*	$OpenBSD: bwtwo.c,v 1.16 1999/12/08 01:35:44 jason Exp $	*/
 /*	$NetBSD: bwtwo.c,v 1.33 1997/05/24 20:16:02 pk Exp $ */
 
 /*
@@ -108,9 +108,6 @@ static int	bwtwomatch __P((struct device *, void *, void *));
 static void	bwtwounblank __P((struct device *));
 static void	bwtwo_set_video __P((struct bwtwo_softc *, int));
 static int	bwtwo_get_video __P((struct bwtwo_softc *));
-
-/* cdevsw prototypes */
-cdev_decl(bwtwo);
 
 struct cfattach bwtwo_ca = {
 	sizeof(struct bwtwo_softc), bwtwomatch, bwtwoattach

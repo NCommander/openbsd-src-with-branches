@@ -1,4 +1,4 @@
-/*	$OpenBSD: cgthree.c,v 1.8 1998/11/20 15:57:22 deraadt Exp $	*/
+/*	$OpenBSD: cgthree.c,v 1.9 1999/09/10 23:32:02 art Exp $	*/
 /*	$NetBSD: cgthree.c,v 1.33 1997/05/24 20:16:11 pk Exp $ */
 
 /*
@@ -93,9 +93,6 @@ struct cgthree_softc {
 static void	cgthreeattach(struct device *, struct device *, void *);
 static int	cgthreematch(struct device *, void *, void *);
 static void	cgthreeunblank(struct device *);
-
-/* cdevsw prototypes */
-cdev_decl(cgthree);
 
 struct cfattach cgthree_ca = {
 	sizeof(struct cgthree_softc), cgthreematch, cgthreeattach

@@ -1,4 +1,4 @@
-/*	$OpenBSD: tcx.c,v 1.1 1997/08/08 08:25:31 downsj Exp $	*/
+/*	$OpenBSD: tcx.c,v 1.2 1998/11/20 15:57:24 deraadt Exp $	*/
 /*	$NetBSD: tcx.c,v 1.8 1997/07/29 09:58:14 fair Exp $ */
 
 /* 
@@ -107,9 +107,6 @@ struct tcx_softc {
 static void	tcxattach __P((struct device *, struct device *, void *));
 static int	tcxmatch __P((struct device *, void *, void *));
 static void	tcx_unblank __P((struct device *));
-
-/* cdevsw prototypes */
-cdev_decl(tcx);
 
 struct cfattach tcx_ca = {
 	sizeof(struct tcx_softc), tcxmatch, tcxattach
