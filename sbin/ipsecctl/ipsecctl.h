@@ -1,4 +1,4 @@
-/*	$Id: ipsecctl.h,v 1.6 2005/02/03 16:26:54 hshoexer Exp $	 */
+/*	$OpenBSD:$	*/
 /*
  * Copyright (c) 2004, 2005 Hans-Joerg Hoexer <hshoexer@openbsd.org>
  *
