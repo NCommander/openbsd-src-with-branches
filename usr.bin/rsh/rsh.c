@@ -1,4 +1,4 @@
-/*	$OpenBSD: rsh.c,v 1.19 2000/02/01 03:23:37 deraadt Exp $	*/
+/*	$OpenBSD: rsh.c,v 1.20 2001/09/04 23:35:59 millert Exp $	*/
 
 /*-
  * Copyright (c) 1983, 1990 The Regents of the University of California.
@@ -41,7 +41,7 @@ char copyright[] =
 
 #ifndef lint
 /*static char sccsid[] = "from: @(#)rsh.c	5.24 (Berkeley) 7/1/91";*/
-static char rcsid[] = "$OpenBSD: rsh.c,v 1.19 2000/02/01 03:23:37 deraadt Exp $";
+static char rcsid[] = "$OpenBSD: rsh.c,v 1.20 2001/09/04 23:35:59 millert Exp $";
 #endif /* not lint */
 
 #include <sys/types.h>
@@ -381,7 +381,7 @@ done:
 		exit(0);
 	}
 
-	sigprocmask(SIG_SETMASK, &omask, NULL);
+	sigprocmask(SIG_SETMASK, omask, NULL);
 	FD_ZERO(&readfrom);
 	FD_SET(rfd2, &readfrom);
 	FD_SET(rem, &readfrom);
