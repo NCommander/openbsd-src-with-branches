@@ -1,4 +1,4 @@
-/*	$OpenBSD: monitor.c,v 1.1 2003/05/15 00:28:53 ho Exp $	*/
+/*	$OpenBSD: monitor.c,v 1.2 2003/05/15 01:51:10 ho Exp $	*/
 
 /*
  * Copyright (c) 2003 Håkan Olsson.  All rights reserved.
@@ -431,6 +431,7 @@ monitor_loop (int debugging)
 	  if (sigchlded)
 	    wait (&n);
 	  shutdown++;
+	  break;
 	}
 
       FD_ZERO (fds);
