@@ -1,4 +1,4 @@
-/* $OpenBSD: pfkeyv2.c,v 1.69 2001/06/26 18:34:41 angelos Exp $ */
+/* $OpenBSD: pfkeyv2.c,v 1.70 2001/06/26 18:56:31 angelos Exp $ */
 
 /*
  *	@(#)COPYRIGHT	1.1 (NRL) 17 January 1995
@@ -869,7 +869,7 @@ pfkeyv2_send(struct socket *socket, void *message, int len)
 	    sa.tdb_spi = reserve_spi(sprng->sadb_spirange_min,
 				     sprng->sadb_spirange_max,
 				     &sa.tdb_src, &sa.tdb_dst,
-				     sa.tdb_sproto, &rval, smsg->sadb_msg_seq);
+				     sa.tdb_sproto, &rval);
 	    if (sa.tdb_spi == 0)
 	      goto ret;
 
@@ -960,6 +960,8 @@ pfkeyv2_send(struct socket *socket, void *message, int len)
 		headers[SADB_EXT_KEY_AUTH] = NULL;
 		headers[SADB_EXT_KEY_ENCRYPT] = NULL;
 		headers[SADB_X_EXT_LOCAL_AUTH] = NULL;
+
+		newsa->tdb_seq = smsg->sadb_msg_seq;
 
 		rval = tdb_init(newsa, alg, &ii);
 		if (rval)
@@ -1084,6 +1086,8 @@ pfkeyv2_send(struct socket *socket, void *message, int len)
 		headers[SADB_EXT_KEY_AUTH] = NULL;
 		headers[SADB_EXT_KEY_ENCRYPT] = NULL;
 		headers[SADB_X_EXT_LOCAL_AUTH] = NULL;
+
+		newsa->tdb_seq = smsg->sadb_msg_seq;
 
 		rval = tdb_init(newsa, alg, &ii);
 		if (rval)
