@@ -1,4 +1,4 @@
-/*      $OpenBSD: extern.h,v 1.2 2003/09/26 07:02:52 deraadt Exp $	*/
+/*      $OpenBSD: extern.h,v 1.3 2003/09/28 07:57:57 otto Exp $	*/
 
 /*
  * Copyright (c) 2003, Otto Moerbeek <otto@drijf.net>
@@ -19,8 +19,8 @@
 #include <stdio.h>
 
 struct lvalue {
-	int load;
-	int store;
+	ssize_t load;
+	ssize_t store;
 };
 
 int		yylex(void);
