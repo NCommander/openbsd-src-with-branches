@@ -1,5 +1,5 @@
 
-/*	$OpenBSD: term.h.tail,v 1.1.1.1 1996/05/31 05:40:02 tholo Exp $	*/
+/*	$OpenBSD: term.h.tail,v 1.2 1996/06/18 20:29:41 tholo Exp $	*/
 
 /*
  * Copyright (c) 1996 SigmaSoft, Th. Lockert <tholo@sigmasoft.com>
@@ -12,6 +12,7 @@ typedef struct _terminal {
     struct termios	 pmode;
     struct termios	 smode;
     char		*name;
+    char		*names;
     char		 bools[_tBoolCnt];
     short		 nums[_tNumCnt];
     char		*strs[_tStrCnt];
