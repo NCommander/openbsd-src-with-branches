@@ -1,4 +1,4 @@
-/*	$OpenBSD: raidctl.c,v 1.11 2002/02/18 03:45:27 deraadt Exp $	*/
+/*	$OpenBSD: raidctl.c,v 1.12 2002/02/19 02:21:30 deraadt Exp $	*/
 /*      $NetBSD: raidctl.c,v 1.27 2001/07/10 01:30:52 lukem Exp $   */
 
 /*-
@@ -243,7 +243,12 @@ main(argc, argv)
 
 	strlcpy(name, argv[0], PATH_MAX);
 
-	nfd = open_device(&fds, name);
+	if ((nfd = open_device(&fds, name)) < 1) {
+		/* No configured raid device */
+		free(fds);
+		return (0);
+	}
+
 	if (do_all) {
 		switch(action) {
 		case RAIDFRAME_ADD_HOT_SPARE:
