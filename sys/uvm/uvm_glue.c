@@ -1,5 +1,5 @@
-/*	$OpenBSD: uvm_glue.c,v 1.21 2001/11/05 22:14:54 art Exp $	*/
-/*	$NetBSD: uvm_glue.c,v 1.38 2000/06/27 17:29:22 mrg Exp $	*/
+/*	$OpenBSD: uvm_glue.c,v 1.22 2001/11/06 01:35:04 art Exp $	*/
+/*	$NetBSD: uvm_glue.c,v 1.40 2000/08/21 02:29:32 thorpej Exp $	*/
 
 /* 
  * Copyright (c) 1997 Charles D. Cranor and Washington University.
