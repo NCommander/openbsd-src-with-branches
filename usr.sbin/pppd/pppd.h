@@ -1,4 +1,4 @@
-/*	$OpenBSD: pppd.h,v 1.5 1997/07/25 20:12:17 mickey Exp $	*/
+/*	$OpenBSD: pppd.h,v 1.6 1997/09/05 04:32:45 millert Exp $	*/
 
 /*
  * pppd.h - PPP daemon global declarations.
@@ -81,6 +81,7 @@ extern int	default_device;	/* Using /dev/tty or equivalent */
 extern char	devnam[];	/* Device name */
 extern int	crtscts;	/* Use hardware flow control */
 extern int	modem;		/* Use modem control lines */
+extern int	modem_chat;	/* Watch carrier detect in chat script */
 extern int	inspeed;	/* Input/Output speed requested */
 extern u_int32_t netmask;	/* IP netmask to set on interface */
 extern int	lockflag;	/* Create lock file to lock the serial dev */
