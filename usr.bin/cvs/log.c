@@ -1,4 +1,4 @@
-/*	$OpenBSD: log.c,v 1.8 2004/12/15 06:11:40 jfb Exp $	*/
+/*	$OpenBSD: log.c,v 1.9 2005/02/15 15:29:35 jfb Exp $	*/
 /*
  * Copyright (c) 2004 Jean-Francois Brousseau <jfb@openbsd.org>
  * All rights reserved.
@@ -67,7 +67,7 @@ static int cvs_slpriomap[] = {
 static u_int cvs_log_dest = LD_STD;
 static u_int cvs_log_flags = 0;
 
-static struct syslog_data cvs_sl;
+static struct syslog_data cvs_sl = SYSLOG_DATA_INIT;
 
 /* filter manipulation macros */
 #define CVS_LOG_FLTRRST()    (cvs_log_filters = 0)
