@@ -1,5 +1,5 @@
 #!/bin/sh
-#	$OpenBSD$
+#	$OpenBSD: ndc.sh,v 1.4 1997/03/12 10:42:44 downsj Exp $
 
 USAGE='echo \
 	"usage: $0 \
@@ -50,7 +50,7 @@ do
 			continue
 		}
 		rm -f $PIDFILE
-		%INDOT%named && {
+		named && {
 			sleep 5
 			echo Name Server Started
 		}
@@ -71,7 +71,7 @@ do
 			kill $PID && sleep 5
 		}
 		rm -f $PIDFILE
-		%INDOT%named && {
+		named && {
 			sleep 5
 			echo Name Server Restarted
 		}
