@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.4 1996/09/16 10:51:31 downsj Exp $
+#	$OpenBSD: Makefile,v 1.5 1997/02/22 08:38:09 millert Exp $
 
 STATIC=	-static
 
@@ -8,6 +8,6 @@ DPADD=	${LIBUTIL}
 LDADD=	-lutil 
 BINMODE=500
 INSTALLFLAGS=-fschg
-CFLAGS+=-DDEBUGSHELL -DSECURE
+CFLAGS+=-DDEBUGSHELL -DSECURE -DLOGIN_CAP
 
 .include <bsd.prog.mk>
