@@ -1,4 +1,4 @@
-/*	$OpenBSD: pfctl_parser.c,v 1.202 2004/06/29 22:14:13 henning Exp $ */
+/*	$OpenBSD: pfctl_parser.c,v 1.203 2004/07/16 23:44:25 frantzen Exp $ */
 
 /*
  * Copyright (c) 2001 Daniel Hartmeier
@@ -628,11 +628,11 @@ print_src_node(struct pf_src_node *sn, int opts)
 void
 print_rule(struct pf_rule *r, const char *anchor_call, int verbose)
 {
-	static const char *actiontypes[] = { "pass", "block", "scrub", "nat",
-	    "no nat", "binat", "no binat", "rdr", "no rdr" };
+	static const char *actiontypes[] = { "pass", "block", "scrub",
+	    "no scrub", "nat", "no nat", "binat", "no binat", "rdr", "no rdr" };
 	static const char *anchortypes[] = { "anchor", "anchor", "anchor",
-	    "nat-anchor", "nat-anchor", "binat-anchor", "binat-anchor",
-	    "rdr-anchor", "rdr-anchor" };
+	    "anchor", "nat-anchor", "nat-anchor", "binat-anchor",
+	    "binat-anchor", "rdr-anchor", "rdr-anchor" };
 	int	i, opts;
 
 	if (verbose)
