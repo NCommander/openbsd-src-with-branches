@@ -1,19 +1,17 @@
 /*
- *
- * authfd.h
- *
  * Author: Tatu Ylonen <ylo@cs.hut.fi>
- *
  * Copyright (c) 1995 Tatu Ylonen <ylo@cs.hut.fi>, Espoo, Finland
  *                    All rights reserved
- *
- * Created: Wed Mar 29 01:17:41 1995 ylo
- *
  * Functions to interface with the SSH_AUTHENTICATION_FD socket.
  *
+ * As far as I am concerned, the code I have written for this software
+ * can be used freely for any purpose.  Any derived versions of this
+ * software must be clearly marked as such, and if the derived work is
+ * incompatible with the protocol description in the RFC file, it must be
+ * called by a name other than "ssh" or "Secure Shell".
  */
 
-/* RCSID("$OpenBSD: authfd.h,v 1.10 2000/08/19 21:34:43 markus Exp $"); */
+/* RCSID("$OpenBSD: authfd.h,v 1.13 2000/10/09 21:51:00 markus Exp $"); */
 
 #ifndef AUTHFD_H
 #define AUTHFD_H
@@ -31,6 +29,7 @@
 #define SSH_AGENTC_REMOVE_RSA_IDENTITY		8
 #define SSH_AGENTC_REMOVE_ALL_RSA_IDENTITIES	9
 
+/* private OpenSSH extensions for SSH2 */
 #define SSH2_AGENTC_REQUEST_IDENTITIES		11
 #define SSH2_AGENT_IDENTITIES_ANSWER		12
 #define SSH2_AGENTC_SIGN_REQUEST		13
@@ -38,6 +37,12 @@
 #define SSH2_AGENTC_ADD_IDENTITY		17
 #define SSH2_AGENTC_REMOVE_IDENTITY		18
 #define SSH2_AGENTC_REMOVE_ALL_IDENTITIES	19
+
+/* additional error code for ssh.com's ssh-agent2 */
+#define SSH_COM_AGENT2_FAILURE                   102
+
+#define	SSH_AGENT_OLD_SIGNATURE			0x01
+
 
 typedef struct {
 	int     fd;

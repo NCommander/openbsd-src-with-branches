@@ -1,20 +1,18 @@
 /*
- *
- * canohost.c
- *
  * Author: Tatu Ylonen <ylo@cs.hut.fi>
- *
  * Copyright (c) 1995 Tatu Ylonen <ylo@cs.hut.fi>, Espoo, Finland
  *                    All rights reserved
- *
- * Created: Sun Jul  2 17:52:22 1995 ylo
- *
  * Functions for returning the canonical host name of the remote site.
  *
+ * As far as I am concerned, the code I have written for this software
+ * can be used freely for any purpose.  Any derived versions of this
+ * software must be clearly marked as such, and if the derived work is
+ * incompatible with the protocol description in the RFC file, it must be
+ * called by a name other than "ssh" or "Secure Shell".
  */
 
 #include "includes.h"
-RCSID("$OpenBSD: canohost.c,v 1.13 2000/06/20 01:39:39 markus Exp $");
+RCSID("$OpenBSD: canohost.c,v 1.16 2000/10/21 17:04:22 markus Exp $");
 
 #include "packet.h"
 #include "xmalloc.h"
@@ -125,7 +123,7 @@ check_ip_options:
 		else
 			ipproto = IPPROTO_IP;
 		option_size = sizeof(options);
-		if (getsockopt(0, ipproto, IP_OPTIONS, (char *) options,
+		if (getsockopt(socket, ipproto, IP_OPTIONS, (char *) options,
 		    &option_size) >= 0 && option_size != 0) {
 			cp = text;
 			/* Note: "text" buffer must be at least 3x as big as options. */

@@ -2,13 +2,18 @@
  * Author: Tatu Ylonen <ylo@cs.hut.fi>
  * Copyright (c) 1995 Tatu Ylonen <ylo@cs.hut.fi>, Espoo, Finland
  *                    All rights reserved
- * Created: Sat Mar 18 22:15:47 1995 ylo
  * Code to connect to a remote host, and to perform the client side of the
  * login (authentication) dialog.
+ *
+ * As far as I am concerned, the code I have written for this software
+ * can be used freely for any purpose.  Any derived versions of this
+ * software must be clearly marked as such, and if the derived work is
+ * incompatible with the protocol description in the RFC file, it must be
+ * called by a name other than "ssh" or "Secure Shell".
  */
 
 #include "includes.h"
-RCSID("$OpenBSD: sshconnect.c,v 1.77 2000/08/28 03:50:54 deraadt Exp $");
+RCSID("$OpenBSD: sshconnect.c,v 1.79 2000/09/17 15:52:51 markus Exp $");
 
 #include <openssl/bn.h>
 #include <openssl/dsa.h>
@@ -431,8 +436,10 @@ read_yes_or_no(const char *prompt, int defval)
 			retval = defval;
 		if (strcmp(buf, "yes") == 0)
 			retval = 1;
-		if (strcmp(buf, "no") == 0)
+		else if (strcmp(buf, "no") == 0)
 			retval = 0;
+		else
+			fprintf(stderr, "Please type 'yes' or 'no'.\n");
 
 		if (retval != -1) {
 			if (f != stdin)
