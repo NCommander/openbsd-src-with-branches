@@ -1,4 +1,4 @@
-/*	$OpenBSD: conf.c,v 1.36 1995/09/25 20:27:32 chuck Exp $ */
+/*	$OpenBSD: conf.c,v 1.4 1996/02/21 12:53:53 mickey Exp $ */
 
 /*
  * Copyright (c) 1992, 1993
@@ -53,12 +53,6 @@
 #include <sys/conf.h>
 
 int	ttselect	__P((dev_t, int, struct proc *));
-
-#ifdef LKM
-int	lkmenodev();
-#else
-#define	lkmenodev	enodev
-#endif
 
 bdev_decl(sw);
 #include "sd.h"

@@ -40,12 +40,6 @@
 
 int	ttselect	__P((dev_t, int, struct proc *));
 
-#ifndef LKM
-#define	lkmenodev	enodev
-#else
-int	lkmenodev();
-#endif
-
 #include "wdc.h"
 bdev_decl(wd);
 bdev_decl(sw);
@@ -172,11 +166,6 @@ cdev_decl(bpf);
 cdev_decl(pcmcia);
 #include "spkr.h"
 cdev_decl(spkr);
-#ifdef LKM
-#define	NLKM	1
-#else
-#define	NLKM	0
-#endif
 cdev_decl(lkm);
 #include "mms.h"
 cdev_decl(mms);

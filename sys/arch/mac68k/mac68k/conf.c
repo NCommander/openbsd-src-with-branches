@@ -1,4 +1,4 @@
-/*	$OpenBSD: conf.c,v 1.29 1995/11/21 03:39:45 briggs Exp $	*/
+/*	$OpenBSD: conf.c,v 1.4 1996/02/21 12:53:47 mickey Exp $	*/
 
 /*
  * Copyright (c) 1990 The Regents of the University of California.
@@ -97,12 +97,6 @@ bdev_decl(ccd);
 #include "rd.h"
 bdev_decl(rd);
 /* No cdev for rd */
-
-#ifdef LKM
-int	lkmenodev();
-#else
-#define lkmenodev	enodev
-#endif
 
 struct bdevsw	bdevsw[] =
 {

@@ -90,12 +90,6 @@ bdev_decl(vnd);
 #include "ccd.h"
 bdev_decl(ccd);
 
-#ifdef LKM
-int	lkmenodev();
-#else
-#define	lkmenodev	enodev
-#endif
-
 struct bdevsw	bdevsw[] =
 {
 	bdev_notdef(),			/* 0 */
