@@ -1,4 +1,4 @@
-/*	$OpenBSD: malloc.h,v 1.70 2004/01/14 19:34:05 grange Exp $	*/
+/*	$OpenBSD: malloc.h,v 1.71 2004/05/14 04:00:33 tedu Exp $	*/
 /*	$NetBSD: malloc.h,v 1.39 1998/07/12 19:52:01 augustss Exp $	*/
 
 /*
@@ -437,6 +437,9 @@ size_t malloc_roundup(size_t);
 int	debug_malloc(unsigned long, int, int, void **);
 int	debug_free(void *, int);
 void	debug_malloc_init(void);
+void	debug_malloc_assert_allocated(void *, const char *);
+#define DEBUG_MALLOC_ASSERT_ALLOCATED(addr) 			\
+	debug_malloc_assert_allocated(addr, __func__)
 
 void	debug_malloc_print(void);
 void	debug_malloc_printit(int (*)(const char *, ...), vaddr_t);
