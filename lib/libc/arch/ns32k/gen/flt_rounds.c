@@ -3,8 +3,11 @@
  * Public domain.
  */
 
+#include <sys/types.h>
+#include <machine/float.h>
+
 #if defined(LIBC_SCCS) && !defined(lint)
-static char rcsid[] = "$OpenBSD$";
+static char rcsid[] = "$OpenBSD: flt_rounds.c,v 1.2 1996/08/19 08:16:40 tholo Exp $";
 #endif /* LIBC_SCCS and not lint */
 
 static const int map[] = {

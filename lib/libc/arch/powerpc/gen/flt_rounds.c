@@ -1,4 +1,7 @@
-/*	$NetBSD$	*/
+/*	$OpenBSD$	*/
+
+#include <sys/types.h>
+#include <machine/float.h>
 
 static const int map[] = {
 	1,	/* round to nearest */
