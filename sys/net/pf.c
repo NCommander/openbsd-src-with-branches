@@ -1,4 +1,4 @@
-/*	$OpenBSD: pf.c,v 1.334 2003/04/05 20:24:58 cedric Exp $ */
+/*	$OpenBSD: pf.c,v 1.335 2003/04/09 15:32:59 cedric Exp $ */
 
 /*
  * Copyright (c) 2001 Daniel Hartmeier
@@ -4342,7 +4342,7 @@ pf_test(int dir, struct ifnet *ifp, struct mbuf **m0)
 			if (a != NULL) {
 				a->packets++;
 				a->bytes += h->ip_len;
-			}	
+			}
 			log = s->log;
 		} else if (s == NULL)
 			action = pf_test_icmp(&r, &s, dir, ifp,
