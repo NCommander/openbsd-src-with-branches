@@ -1,4 +1,4 @@
-/*	$OpenBSD: clnp_frag.c,v 1.5 2003/06/02 23:28:16 millert Exp $	*/
+/*	$OpenBSD: clnp_frag.c,v 1.6 2003/12/10 07:22:43 itojun Exp $	*/
 /*	$NetBSD: clnp_frag.c,v 1.8 1996/04/13 01:34:23 cgd Exp $	*/
 
 /*-
@@ -875,8 +875,7 @@ static int      troll_cnt;
 float
 troll_random()
 {
-	extern struct timeval time;
-	long            t = time.tv_usec % 100;
+	long            t = random() % 100;
 
 	return ((float) t / (float) 100);
 }
