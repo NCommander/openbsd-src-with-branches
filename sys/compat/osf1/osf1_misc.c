@@ -1,4 +1,4 @@
-2/*	$OpenBSD: osf1_misc.c,v 1.4 1996/08/25 12:19:53 deraadt Exp $	*/
+/*	$OpenBSD: osf1_misc.c,v 1.5 1996/08/31 09:24:03 pefo Exp $	*/
 /*	$NetBSD: osf1_misc.c,v 1.7 1995/10/07 06:53:04 mycroft Exp $	*/
 
 /*
