@@ -39,7 +39,7 @@
  */
 
 #include "includes.h"
-RCSID("$OpenBSD: ssh.c,v 1.144 2001/09/24 03:38:58 stevesk Exp $");
+RCSID("$OpenBSD: ssh.c,v 1.145 2001/09/28 15:46:29 markus Exp $");
 
 #include <openssl/evp.h>
 #include <openssl/err.h>
@@ -551,6 +551,7 @@ again:
 
 	SSLeay_add_all_algorithms();
 	ERR_load_crypto_strings();
+	channel_set_af(IPv4or6);
 
 	/* Initialize the command to execute on remote host. */
 	buffer_init(&command);
