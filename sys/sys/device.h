@@ -94,9 +94,8 @@ struct cfdata {
 	int	cf_flags;		/* flags from config */
 	short	*cf_parents;		/* potential parents */
 	int	cf_locnames;		/* start of names */
-	void	(**cf_ivstubs)__P((void));
-					/* config-generated vectors, if any */
-	const char **cf_locnames;	/* locator names (machine dependent) */
+	void	(**cf_ivstubs)		/* config-generated vectors, if any */
+			__P((void));
 };
 extern struct cfdata cfdata[];
 #define FSTATE_NOTFOUND	0	/* has not been found */
