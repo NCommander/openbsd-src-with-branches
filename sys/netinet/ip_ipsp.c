@@ -1,4 +1,4 @@
-/*	$OpenBSD: ip_ipsp.c,v 1.88 2000/06/01 05:33:08 angelos Exp $	*/
+/*	$OpenBSD: ip_ipsp.c,v 1.89 2000/06/01 05:46:12 angelos Exp $	*/
 
 /*
  * The authors of this code are John Ioannidis (ji@tla.org),
@@ -149,7 +149,7 @@ static u_int tdb_hashmask = TDB_HASHSIZE_INIT - 1;
 static int tdb_count;
 
 /*
- * Check which transformationes are required
+ * Check which transformations are required.
  */
 u_int8_t
 get_sa_require(struct inpcb *inp)
