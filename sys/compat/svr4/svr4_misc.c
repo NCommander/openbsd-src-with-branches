@@ -1,4 +1,4 @@
-/*	$OpenBSD: svr4_misc.c,v 1.4 1996/04/17 05:24:18 mickey Exp $	 */
+/*	$OpenBSD: svr4_misc.c,v 1.5 1996/08/01 00:50:53 niklas Exp $	 */
 /*	$NetBSD: svr4_misc.c,v 1.36 1996/03/30 22:38:02 christos Exp $	 */
 
 /*
@@ -38,7 +38,7 @@
 #include <sys/param.h>
 #include <sys/systm.h>
 #include <sys/namei.h>
-#include <sys/dir.h>
+#include <sys/dirent.h>
 #include <sys/proc.h>
 #include <sys/file.h>
 #include <sys/stat.h>
