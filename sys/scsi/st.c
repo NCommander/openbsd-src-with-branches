@@ -1,4 +1,4 @@
-/*	$OpenBSD: st.c,v 1.29 2001/06/22 14:35:43 deraadt Exp $	*/
+/*	$OpenBSD: st.c,v 1.30 2002/03/14 01:27:13 millert Exp $	*/
 /*	$NetBSD: st.c,v 1.71 1997/02/21 23:03:49 thorpej Exp $	*/
 
 /*
@@ -425,7 +425,7 @@ stattach(parent, self, aux)
 
 	/*
 	 * Reset the media loaded flag, sometimes the data
-	 * aquired at boot time is not quite accurate.  This
+	 * acquired at boot time is not quite accurate.  This
 	 * will be checked again at the first open.
 	 */
 	sc_link->flags &= ~SDEV_MEDIA_LOADED;

@@ -1,4 +1,4 @@
-/*	$OpenBSD: pw_yp.c,v 1.13 2001/11/19 19:02:13 mpech Exp $	*/
+/*	$OpenBSD: pw_yp.c,v 1.14 2002/05/29 09:23:25 deraadt Exp $	*/
 /*	$NetBSD: pw_yp.c,v 1.5 1995/03/26 04:55:33 glass Exp $	*/
 
 /*
@@ -37,7 +37,7 @@
 #if 0
 static char sccsid[] = "@(#)pw_yp.c	1.0 2/2/93";
 #else
-static char rcsid[] = "$OpenBSD: pw_yp.c,v 1.13 2001/11/19 19:02:13 mpech Exp $";
+static char rcsid[] = "$OpenBSD: pw_yp.c,v 1.14 2002/05/29 09:23:25 deraadt Exp $";
 #endif
 #endif /* not lint */
 
@@ -109,7 +109,7 @@ pw_yp(pw, uid)
 	}
 
 	/*
-	 * Be sure the port is priviledged
+	 * Be sure the port is privileged
 	 */
 	if (rpcport >= IPPORT_RESERVED) {
 		(void)fprintf(stderr,

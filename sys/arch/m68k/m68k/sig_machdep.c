@@ -1,4 +1,4 @@
-/*	$OpenBSD: sig_machdep.c,v 1.7 2001/11/06 19:53:14 miod Exp $	*/
+/*	$OpenBSD: sig_machdep.c,v 1.8 2002/03/14 01:26:35 millert Exp $	*/
 /*	$NetBSD: sig_machdep.c,v 1.3 1997/04/30 23:28:03 gwr Exp $	*/
 
 /*
@@ -292,7 +292,7 @@ sendsig(catcher, sig, mask, code, type, val)
  * Return to previous pc and psl as specified by
  * context left by sendsig. Check carefully to
  * make sure that the user has not modified the
- * psl to gain improper priviledges or to cause
+ * psl to gain improper privileges or to cause
  * a machine fault.
  */
 int

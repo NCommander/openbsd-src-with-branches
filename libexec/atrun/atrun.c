@@ -1,4 +1,4 @@
-/*	$OpenBSD: atrun.c,v 1.20 2002/05/11 23:11:59 millert Exp $	*/
+/*	$OpenBSD: atrun.c,v 1.21 2002/05/14 18:05:39 millert Exp $	*/
 
 /*
  *  atrun.c - run jobs queued by at; run with root privileges.
@@ -64,7 +64,7 @@
 #define LOGNAMESIZE (MAXLOGNAME-1)
 #endif
 
-static const char rcsid[] = "$OpenBSD: atrun.c,v 1.20 2002/05/11 23:11:59 millert Exp $";
+static const char rcsid[] = "$OpenBSD: atrun.c,v 1.21 2002/05/14 18:05:39 millert Exp $";
 static int debug = 0;
 
 static void
@@ -381,7 +381,7 @@ main(int argc, char **argv)
 
 	/*
 	 * We don't need root privileges all the time; running under uid
-	 * and gid nobody is fine except for priviledged operations.
+	 * and gid nobody is fine except for privileged operations.
 	 */
 	RELINQUISH_PRIVS_ROOT(NOBODY_UID, NOBODY_GID);
 

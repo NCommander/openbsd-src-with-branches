@@ -1,4 +1,4 @@
-/*	$OpenBSD: pmap.c,v 1.65 2002/03/22 21:01:07 drahn Exp $ */
+/*	$OpenBSD: pmap.c,v 1.66 2002/05/18 20:11:06 drahn Exp $ */
 
 /*
  * Copyright (c) 2001, 2002 Dale Rahn. All rights reserved.
@@ -462,7 +462,7 @@ pmap_enter(pm, va, pa, prot, flags)
 	int need_sync;
 	int cache;
 
-	/* MP - Aquire lock for this pmap */
+	/* MP - Acquire lock for this pmap */
 
 	s = splimp();
 	pted = pmap_vp_lookup(pm, va);
