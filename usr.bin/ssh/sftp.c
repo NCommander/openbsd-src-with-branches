@@ -16,7 +16,7 @@
 
 #include "includes.h"
 
-RCSID("$OpenBSD: sftp.c,v 1.47 2004/05/26 08:59:57 djm Exp $");
+RCSID("$OpenBSD: sftp.c,v 1.48 2004/06/03 12:22:20 pedro Exp $");
 
 #include <glob.h>
 
@@ -1270,7 +1270,7 @@ connect_to_server(char *path, char **args, int *in, int *out)
 		 * kill it too
 		 */
 		signal(SIGINT, SIG_IGN);
-		execv(path, args);
+		execvp(path, args);
 		fprintf(stderr, "exec: %s: %s\n", path, strerror(errno));
 		_exit(1);
 	}
