@@ -28,7 +28,7 @@
  */
 
 #if defined(LIBC_SCCS) && !defined(lint)
-static char *rcsid = "$OpenBSD: pmap_clnt.c,v 1.7 1997/07/09 03:05:03 deraadt Exp $";
+static char *rcsid = "$OpenBSD: pmap_clnt.c,v 1.8 1997/09/22 05:11:08 millert Exp $";
 #endif /* LIBC_SCCS and not lint */
 
 /*
@@ -57,7 +57,7 @@ bool_t
 pmap_set(program, version, protocol, port)
 	u_long program;
 	u_long version;
-	int protocol;
+	u_int protocol;
 	u_short port;
 {
 	struct sockaddr_in myaddress;
