@@ -1,4 +1,4 @@
-/*	$OpenBSD: skeleton.c,v 1.19 2002/12/03 21:34:21 mickey Exp $	*/
+/*	$OpenBSD: skeleton.c,v 1.20 2003/06/03 02:56:24 millert Exp $	*/
 /*	$NetBSD: skeleton.c,v 1.10 1996/03/25 00:36:18 mrg Exp $	*/
 
 /*
@@ -63,7 +63,7 @@ char *banner[] =
     "#if __GNUC__ == 2",
     "  __attribute__ ((unused))",
     "#endif /* __GNUC__ == 2 */",
-    "  = \"$OpenBSD: skeleton.c,v 1.19 2002/12/03 21:34:21 mickey Exp $\";",
+    "  = \"$OpenBSD: skeleton.c,v 1.20 2003/06/03 02:56:24 millert Exp $\";",
     "#endif",
     "#include <stdlib.h>",
     "#define YYBYACC 1",
@@ -406,8 +406,7 @@ char *trailer[] =
 
 
 void
-write_section(section)
-char *section[];
+write_section(char *section[])
 {
     int c;
     int i;
