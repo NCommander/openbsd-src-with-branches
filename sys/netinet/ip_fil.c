@@ -8,7 +8,7 @@
 #if 0
 #ifndef	lint
 static	char	sccsid[] = "@(#)ip_fil.c	2.41 6/5/96 (C) 1993-1995 Darren Reed";
-static	char	rcsid[] = "$OpenBSD: ip_fil.c,v 1.7 1996/10/24 17:56:20 tholo Exp $";
+static	char	rcsid[] = "$OpenBSD: ip_fil.c,v 1.8 1997/01/18 08:29:19 downsj Exp $";
 #endif
 #endif
 
@@ -68,7 +68,7 @@ static	void	(*fr_saveslowtimo) __P((void));
 #endif
 
 int	ipl_inited = 0;
-int	ipl_unreach = ICMP_UNREACH_FILTER;
+int	ipl_unreach = ICMP_UNREACH_FILTER_PROHIB;
 
 #ifdef	IPFILTER_LOG
 # define LOGSIZE	8192
