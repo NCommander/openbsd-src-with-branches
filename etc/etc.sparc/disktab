@@ -1,4 +1,4 @@
-# $Id: disktab,v 1.14 1997/05/22 00:11:48 deraadt Exp $
+# $OpenBSD: disktab,v 1.15 1997/05/24 10:05:14 johns Exp $
 #
 #	@(#)disktab	5.5 (Berkeley) 2/27/91
 #

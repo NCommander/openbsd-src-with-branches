@@ -1,5 +1,5 @@
 #!/bin/sh
-# $Id$
+# $OpenBSD: install.sh,v 1.3 1995/11/22 10:21:25 deraadt Exp $
 
 # XXX should handle --unlink
 
