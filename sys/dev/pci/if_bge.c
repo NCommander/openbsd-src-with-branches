@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_bge.c,v 1.28 2004/08/05 19:57:17 brad Exp $	*/
+/*	$OpenBSD: if_bge.c,v 1.29 2004/08/17 18:23:49 deraadt Exp $	*/
 /*
  * Copyright (c) 2001 Wind River Systems
  * Copyright (c) 1997, 1998, 1999, 2001
@@ -645,7 +645,8 @@ bge_jalloc(sc)
 	entry = LIST_FIRST(&sc->bge_jfree_listhead);
 
 	if (entry == NULL) {
-		printf("%s: no free jumbo buffers\n", sc->bge_dev.dv_xname);
+		DPRINTFN(1,("%s: no free jumbo buffers\n",
+		    sc->bge_dev.dv_xname));
 		return(NULL);
 	}
 
