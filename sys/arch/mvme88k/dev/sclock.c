@@ -1,4 +1,4 @@
-/*	$OpenBSD: sclock.c,v 1.8 2001/12/16 23:49:46 miod Exp $ */
+/*	$OpenBSD: sclock.c,v 1.9 2001/12/20 06:07:28 smurph Exp $ */
 /*
  * Copyright (c) 1999 Steve Murphree, Jr.
  * 
@@ -353,7 +353,7 @@ write_cio(reg, val)
 	unsigned reg,val;
 {
 	int s, i;
-	volatile int *cio_ctrl = (volatile int *)CIO_CNTRL;
+	int *volatile cio_ctrl = (int *volatile)CIO_CNTRL;
 	
 	s = splclock();
 	CIO_LOCK;
@@ -376,7 +376,7 @@ read_cio(reg)
 {
 	int c;
 	int s, i;
-	volatile int *cio_ctrl = (volatile int *)CIO_CNTRL;
+	int *volatile cio_ctrl = (int *volatile)CIO_CNTRL;
 
 	s = splclock();
 	CIO_LOCK;

@@ -1,4 +1,4 @@
-/*	$OpenBSD: vs.c,v 1.13 2001/12/16 23:49:46 miod Exp $ */
+/*	$OpenBSD: vs.c,v 1.14 2001/12/22 09:49:39 smurph Exp $ */
 
 /*
  * Copyright (c) 1999 Steve Murphree, Jr.
@@ -107,11 +107,12 @@ vs_copy(src, dst, cnt)
 	void *dst;
 	unsigned short cnt;
 { 
-	register unsigned short volatile *x, *y, z; 
+	register unsigned short *volatile x, *volatile y;
+	register unsigned short volatile z; 
 
 	z = cnt >> 1; 
-	x = (unsigned short *) src; 
-	y = (unsigned short *) dst; 
+	x = (unsigned short *)src; 
+	y = (unsigned short *)dst; 
 
 	while (z--) {
 		*y++ = *x++; 

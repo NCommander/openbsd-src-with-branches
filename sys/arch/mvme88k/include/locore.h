@@ -1,4 +1,4 @@
-/*	$OpenBSD: locore.h,v 1.13 2001/12/16 23:49:46 miod Exp $	*/
+/*	$OpenBSD: locore.h,v 1.14 2001/12/22 17:57:11 smurph Exp $	*/
 
 #ifndef _MACHINE_LOCORE_H_
 #define _MACHINE_LOCORE_H_
@@ -40,7 +40,7 @@ int db_are_interrupts_disabled __P((void));
 void fubail __P((void));
 void subail __P((void));
 
-int guarded_access __P((volatile unsigned char *address,
+int guarded_access __P((unsigned char *volatile address,
     unsigned len, u_char *vec));
 
 /* locore_c_routines.c */
