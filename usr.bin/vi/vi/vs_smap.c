@@ -1,4 +1,4 @@
-/*	$OpenBSD: vs_smap.c,v 1.3 2001/01/29 01:58:55 niklas Exp $	*/
+/*	$OpenBSD: vs_smap.c,v 1.4 2002/02/16 21:27:58 millert Exp $	*/
 
 /*-
  * Copyright (c) 1993, 1994
@@ -1118,7 +1118,7 @@ vs_sm_cursor(sp, smpp)
 	if (sp->lno < HMAP->lno || sp->lno > TMAP->lno)
 		return (1);
 
-	/* Find the first occurence of the line. */
+	/* Find the first occurrence of the line. */
 	for (p = HMAP; p->lno != sp->lno; ++p);
 
 	/* Fill in the map information until we find the right line. */

@@ -1,4 +1,4 @@
-/*	$OpenBSD: supfilesrv.c,v 1.29 2002/06/12 06:07:16 mpech Exp $	*/
+/*	$OpenBSD: supfilesrv.c,v 1.30 2002/06/23 03:07:22 deraadt Exp $	*/
 
 /*
  * Copyright (c) 1992 Carnegie Mellon University
@@ -1915,7 +1915,7 @@ fmttime(time)
  * file lives from underneath us.
  *
  * returns: -1 for error, indicating that we can not tell
- *	     0 for file is definately not local, or it is an RFS link
+ *	     0 for file is definitely not local, or it is an RFS link
  *	     1 for file is local and can be trusted
  *
  * Side effect: copies the stat information into the supplied buffer,
