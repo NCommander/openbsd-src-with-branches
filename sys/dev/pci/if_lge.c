@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_lge.c,v 1.3 2001/09/11 20:05:25 miod Exp $	*/
+/*	$OpenBSD: if_lge.c,v 1.4 2001/11/05 04:16:11 fgsch Exp $	*/
 /*
  * Copyright (c) 2001 Wind River Systems
  * Copyright (c) 1997, 1998, 1999, 2000, 2001
@@ -959,7 +959,6 @@ void lge_rxeof(sc, cnt)
 	struct lge_softc	*sc;
 	int			cnt;
 {
-        struct ether_header	*eh;
         struct mbuf		*m;
         struct ifnet		*ifp;
 	struct lge_rx_desc	*cur_rx;
