@@ -39,7 +39,7 @@
  */
 
 #include "includes.h"
-RCSID("$OpenBSD: ssh.c,v 1.152 2001/12/19 17:16:13 stevesk Exp $");
+RCSID("$OpenBSD: ssh.c,v 1.153 2001/12/20 22:50:24 djm Exp $");
 
 #include <openssl/evp.h>
 #include <openssl/err.h>
@@ -956,7 +956,7 @@ ssh_session(void)
 
 		/* Read response from the server. */
 		type = packet_read(&plen);
-		packet_integrity_check(plen, 0, type);
+		packet_done();
 		if (type != SSH_SMSG_SUCCESS)
 			log("Warning: Remote host denied authentication agent forwarding.");
 	}
