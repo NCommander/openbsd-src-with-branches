@@ -37,4 +37,4 @@
  */
 
 #define	_PATH_TERMCAP	"/usr/share/misc/termcap"
-#define	_PATH_DEF	__CONCAT(".termcap ",_PATH_TERMCAP)
+#define	_PATH_DEF	(".termcap " _PATH_TERMCAP)
