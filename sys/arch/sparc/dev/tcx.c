@@ -1,4 +1,4 @@
-/*	$OpenBSD: tcx.c,v 1.2 1998/11/20 15:57:24 deraadt Exp $	*/
+/*	$OpenBSD: tcx.c,v 1.3 2001/08/17 13:52:29 mickey Exp $	*/
 /*	$NetBSD: tcx.c,v 1.8 1997/07/29 09:58:14 fair Exp $ */
 
 /* 
@@ -437,10 +437,11 @@ struct mmo {
  *
  * XXX	needs testing against `demanding' applications (e.g., aviator)
  */
-int
+paddr_t
 tcxmmap(dev, off, prot)
 	dev_t dev;
-	int off, prot;
+	off_t off;
+	int prot;
 {
 	register struct tcx_softc *sc = tcx_cd.cd_devs[minor(dev)];
 	register struct mmo *mo;

@@ -1,4 +1,4 @@
-/*	$OpenBSD: mem.c,v 1.14 2001/08/11 23:21:14 art Exp $	*/
+/*	$OpenBSD: mem.c,v 1.15 2001/09/11 20:05:24 miod Exp $	*/
 /*	$NetBSD: mem.c,v 1.19 1995/08/08 21:09:01 gwr Exp $	*/
 
 /*
@@ -262,10 +262,11 @@ unlock:
 	return (error);
 }
 
-int
+paddr_t
 mmmmap(dev, off, prot)
 	dev_t dev;
-	int off, prot;
+	off_t off;
+	int prot;
 {
 	register int v = off;
 

@@ -1,4 +1,4 @@
-/*	$OpenBSD: mem.c,v 1.1 2001/06/26 21:57:41 smurph Exp $	*/
+/*	$OpenBSD: mem.c,v 1.2 2001/08/21 22:10:10 miod Exp $	*/
 /*	$NetBSD: mem.c,v 1.1 1996/09/30 16:34:50 ws Exp $ */
 
 /*
@@ -155,10 +155,11 @@ mmrw(dev, uio, flags)
 	return error;
 }
 
-int
+paddr_t
 mmmmap(dev, off, prot)
         dev_t dev;
-        int off, prot;
+        off_t off;
+	int prot;
 {
 	return (-1);
 }
