@@ -1,4 +1,4 @@
-/*	$OpenBSD: kroute.c,v 1.95 2004/05/08 06:04:57 henning Exp $ */
+/*	$OpenBSD: kroute.c,v 1.96 2004/06/20 19:16:53 henning Exp $ */
 
 /*
  * Copyright (c) 2003, 2004 Henning Brauer <henning@openbsd.org>
@@ -284,7 +284,7 @@ kr_nexthop_add(struct bgpd_addr *addr)
 				nh.gateway.v4.s_addr =
 				    h->kroute->r.nexthop.s_addr;
 			}
-			memcpy(&nh.kr, &h->kroute->r, sizeof(nh.kr));
+			memcpy(&nh.kr.kr4, &h->kroute->r, sizeof(nh.kr.kr4));
 		}
 		send_nexthop_update(&nh);
 	} else {
