@@ -1,4 +1,4 @@
-/*      $OpenBSD: ftp_var.h,v 1.3 1996/06/26 05:33:37 deraadt Exp $      */
+/*      $OpenBSD: ftp_var.h,v 1.4 1996/10/31 14:36:56 mickey Exp $      */
 /*      $NetBSD: ftp_var.h,v 1.7 1995/09/15 00:32:35 pk Exp $      */
 
 /*
@@ -50,6 +50,7 @@
  */
 int	trace;			/* trace packets exchanged */
 int	hash;			/* print # for each buffer transferred */
+int	mark;			/* number of bytes between hashes */
 int	sendport;		/* use PORT cmd for each data connection */
 int	verbose;		/* print messages coming back from server */
 int	connected;		/* connected to server */
