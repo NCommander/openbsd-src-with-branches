@@ -2,7 +2,7 @@
 
 /*	$OpenBSD$	*/
 /*
- *  CU sudo version 1.5.3
+ *  CU sudo version 1.5.4
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -28,7 +28,7 @@
  */
 
 #ifndef lint
-static char rcsid[] = "Id: parse.yacc,v 1.102 1996/11/14 20:09:12 millert Exp millert $";
+static char rcsid[] = "Id: parse.yacc,v 1.103 1998/01/13 04:48:42 millert Exp $";
 #endif /* lint */
 
 #include "config.h"
