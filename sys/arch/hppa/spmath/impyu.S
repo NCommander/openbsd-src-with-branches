@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: impyu.S,v 1.3 1998/07/02 19:05:33 mickey Exp $	*/
 
 /*
  * Copyright 1996 1995 by Open Software Foundation, Inc.   
@@ -68,8 +68,7 @@ temp	.equ		6
 
 ;****************************************************************************
 	.export impyu,entry
-	.space $TEXT$
-	.subspa $CODE$
+	.text
 	.align 4
 	.proc
 	.callinfo
