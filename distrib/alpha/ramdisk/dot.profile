@@ -1,5 +1,5 @@
 #
-#	$OpenBSD: dot.profile,v 1.5 1997/10/20 22:23:59 millert Exp $
+#	$OpenBSD: dot.profile,v 1.6 1997/10/25 04:35:33 deraadt Exp $
 #
 # Copyright (c) 1994 Christopher G. Demetriou
 # All rights reserved.
@@ -82,6 +82,7 @@ if [ "X${DONEPROFILE}" = "X" ]; then
 			break
 		fi
 		if isin $resp $TERMS ; then
+			TERM=$resp
 			break;
 		fi
 		echo "Type $resp unknown."
