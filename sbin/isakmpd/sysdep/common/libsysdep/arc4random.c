@@ -1,4 +1,4 @@
-/*	$OpenBSD: arc4random.c,v 1.5 2004/08/10 09:47:59 ho Exp $	*/
+/*	$OpenBSD: arc4random.c,v 1.6 2004/10/08 15:18:26 hshoexer Exp $	*/
 
 /*
  * Arc4 random number generator for OpenBSD.
@@ -78,7 +78,7 @@ arc4_addrandom(struct arc4_stream *as, u_char *dat, int datlen)
 static void
 arc4_stir(struct arc4_stream *as)
 {
-	int     fd;
+	int     fd, i;
 	struct {
 		struct timeval tv;
 		u_int8_t rnd[128 - sizeof(struct timeval)];
