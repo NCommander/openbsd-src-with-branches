@@ -1,4 +1,4 @@
-#	$OpenBSD: sys.mk,v 1.42 2004/11/22 18:51:23 miod Exp $
+#	$OpenBSD: sys.mk,v 1.43 2004/12/11 16:29:05 miod Exp $
 #	$NetBSD: sys.mk,v 1.27 1996/04/10 05:47:19 mycroft Exp $
 #	@(#)sys.mk	5.11 (Berkeley) 3/13/91
 
@@ -90,12 +90,10 @@ CTAGS?=		/usr/bin/ctags
 	${LINK.c} -o ${.TARGET} ${.IMPSRC} ${LDLIBS}
 .c.o:
 	${COMPILE.c} ${.IMPSRC}
-.if (${MACHINE_ARCH} != "alpha")
 .c.a:
 	${COMPILE.c} ${.IMPSRC}
 	${AR} ${ARFLAGS} $@ $*.o
 	rm -f $*.o
-.endif
 .c.ln:
 	${LINT} ${LINTFLAGS} ${CFLAGS:M-[IDU]*} ${CPPFLAGS:M-[IDU]*} -i ${.IMPSRC}
 
