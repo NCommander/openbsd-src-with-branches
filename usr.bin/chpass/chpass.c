@@ -1,4 +1,4 @@
-/*	$OpenBSD: chpass.c,v 1.14 1999/12/05 20:18:35 millert Exp $	*/
+/*	$OpenBSD: chpass.c,v 1.15 2000/11/21 13:36:14 aaron Exp $	*/
 /*	$NetBSD: chpass.c,v 1.8 1996/05/15 21:50:43 jtc Exp $	*/
 
 /*-
@@ -44,7 +44,7 @@ static char copyright[] =
 #if 0
 static char sccsid[] = "@(#)chpass.c	8.4 (Berkeley) 4/2/94";
 #else 
-static char rcsid[] = "$OpenBSD: chpass.c,v 1.14 1999/12/05 20:18:35 millert Exp $";
+static char rcsid[] = "$OpenBSD: chpass.c,v 1.15 2000/11/21 13:36:14 aaron Exp $";
 #endif
 #endif /* not lint */
 
@@ -219,7 +219,7 @@ main(argc, argv)
 		pw_copy(pfd, tfd, pw);
 
 		/* Now finish the passwd file update. */
-		if (pw_mkdb() == -1)
+		if (pw_mkdb(pw->pw_name) == -1)
 			pw_error(NULL, 0, 1);
 	}
 
