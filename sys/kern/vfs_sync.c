@@ -1,4 +1,4 @@
-/*       $OpenBSD: vfs_sync.c,v 1.18 2001/03/16 15:51:58 art Exp $  */
+/*       $OpenBSD: vfs_sync.c,v 1.19 2001/06/22 14:14:11 deraadt Exp $  */
 
 /*
  *  Portions of this code are:
@@ -130,8 +130,8 @@ vn_syncer_add_to_worklist(vp, delay)
 	if (vp->v_bioflag & VBIOONSYNCLIST)
 		LIST_REMOVE(vp, v_synclist);
 
-	LIST_INSERT_HEAD(&syncer_workitem_pending[slot], vp, v_synclist);
 	vp->v_bioflag |= VBIOONSYNCLIST;
+	LIST_INSERT_HEAD(&syncer_workitem_pending[slot], vp, v_synclist);
 	splx(s);
 }
 
@@ -387,6 +387,7 @@ sync_inactive(v)
 	}
 	vp->v_mount->mnt_syncer = NULL;
 	LIST_REMOVE(vp, v_synclist);
+	vp->v_bioflag &= ~VBIOONSYNCLIST;
 	vp->v_writecount = 0;
 	vput(vp);
 	return (0);
