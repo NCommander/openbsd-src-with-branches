@@ -1,3 +1,4 @@
+#	$OpenBSD$
 #	$NetBSD: Makefile,v 1.6 1996/02/01 22:31:28 mycroft Exp $
 #	@(#)Makefile	7.3 (Berkeley) 6/9/91
 
