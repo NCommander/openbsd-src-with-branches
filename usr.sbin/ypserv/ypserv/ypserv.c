@@ -1,4 +1,4 @@
-/*	$OpenBSD: ypserv.c,v 1.11 1997/08/05 05:09:33 deraadt Exp $ */
+/*	$OpenBSD: ypserv.c,v 1.12 1997/11/04 07:40:52 deraadt Exp $ */
 
 /*
  * Copyright (c) 1994 Mats O Jansson <moj@stacken.kth.se>
@@ -32,7 +32,7 @@
  */
 
 #ifndef LINT
-static char rcsid[] = "$OpenBSD: ypserv.c,v 1.11 1997/08/05 05:09:33 deraadt Exp $";
+static char rcsid[] = "$OpenBSD: ypserv.c,v 1.12 1997/11/04 07:40:52 deraadt Exp $";
 #endif
 
 #include "yp.h"
@@ -87,11 +87,11 @@ void _msgout(char* msg)
 {
 #ifdef RPC_SVC_FG
 	if (_rpcpmstart)
-		syslog(LOG_ERR, msg);
+		syslog(LOG_ERR, "%s", msg);
 	else
 		(void) fprintf(stderr, "%s\n", msg);
 #else
-	syslog(LOG_ERR, msg);
+	syslog(LOG_ERR, "%s", msg);
 #endif
 }
 
