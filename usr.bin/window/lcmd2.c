@@ -1,4 +1,4 @@
-/*	$OpenBSD: lcmd2.c,v 1.7 2003/04/17 07:17:18 deraadt Exp $	*/
+/*	$OpenBSD: lcmd2.c,v 1.8 2003/06/03 02:56:23 millert Exp $	*/
 /*	$NetBSD: lcmd2.c,v 1.7 1995/09/29 00:44:04 cgd Exp $	*/
 
 /*
@@ -37,7 +37,7 @@
 #if 0
 static char sccsid[] = "@(#)lcmd2.c	8.1 (Berkeley) 6/6/93";
 #else
-static char rcsid[] = "$OpenBSD: lcmd2.c,v 1.7 2003/04/17 07:17:18 deraadt Exp $";
+static char rcsid[] = "$OpenBSD: lcmd2.c,v 1.8 2003/06/03 02:56:23 millert Exp $";
 #endif
 #endif /* not lint */
 
@@ -49,6 +49,7 @@ static char rcsid[] = "$OpenBSD: lcmd2.c,v 1.7 2003/04/17 07:17:18 deraadt Exp $
 #include "alias.h"
 #include <sys/types.h>
 #include <sys/resource.h>
+#include <stdio.h>
 #include <string.h>
 
 /*ARGSUSED*/
