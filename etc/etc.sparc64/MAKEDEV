@@ -4,7 +4,7 @@
 # generated from:
 #
 #	OpenBSD: etc.sparc64/MAKEDEV.md,v 1.4 2002/01/04 16:59:18 todd Exp 
-#	OpenBSD: MAKEDEV.mi,v 1.8 2002/01/07 07:50:48 todd Exp 
+#	OpenBSD: MAKEDEV.mi,v 1.9 2002/01/07 21:58:54 todd Exp 
 #	OpenBSD: MAKEDEV.sub,v 1.4 2002/01/07 06:54:10 todd Exp 
 #
 #	$OpenBSD$
@@ -405,10 +405,6 @@ tty[a-z])
 
 wsmouse*)
 	M wsmouse$U c 80 $U 600
-	;;
-
-mouse)
-	M mouse c 30 0 666 
 	;;
 
 wsmux|wsmouse|wskbd)
