@@ -1,3 +1,4 @@
+/*	$OpenBSD$ */
 /*	$NetBSD: boot.c,v 1.2 1995/09/23 03:42:52 gwr Exp $ */
 
 /*-
@@ -72,7 +73,7 @@ main()
 				ret = parse_args(&file, &flag);
 			}
 		}
-		if ( ret == -1 ) {
+		if (ret) {
 			printf("boot: -q returning to MVME-Bug\n");
 			break;
 		}
