@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_fxp_cardbus.c,v 1.6 2004/05/07 23:33:39 brad Exp $ */
+/*	$OpenBSD: if_fxp_cardbus.c,v 1.7 2004/06/27 02:38:37 brad Exp $ */
 /*	$NetBSD: if_fxp_cardbus.c,v 1.12 2000/05/08 18:23:36 thorpej Exp $	*/
 
 /*
@@ -196,6 +196,8 @@ fxp_cardbus_attach(parent, self, aux)
 		return;
 	}
 	snprintf(intrstr, sizeof(intrstr), "irq %d", ca->ca_intrline);
+	
+	sc->sc_revision = PCI_REVISION(ca->ca_class);
 
 	fxp_attach_common(sc, intrstr);
 }
