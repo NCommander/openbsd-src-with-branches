@@ -1,4 +1,4 @@
-/*	$OpenBSD: machdep.c,v 1.66 2002/03/14 03:15:56 millert Exp $ */
+/*	$OpenBSD: machdep.c,v 1.67 2002/03/14 20:31:31 mickey Exp $ */
 
 /*
  * Copyright (c) 1995 Theo de Raadt
@@ -291,6 +291,9 @@ again:
 #define	valloclim(name, type, num, lim) \
 	    (name) = (type *)v; v = (caddr_t)((lim) = ((name)+(num)))
 #ifdef SYSVSHM
+	shminfo.shmmax = shmmaxpgs;
+	shminfo.shmall = shmmaxpgs;
+	shminfo.shmseg = shmseg;
 	valloc(shmsegs, struct shmid_ds, shminfo.shmmni);
 #endif
 #ifdef SYSVSEM

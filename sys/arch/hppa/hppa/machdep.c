@@ -1,4 +1,4 @@
-/*	$OpenBSD: machdep.c,v 1.62 2002/03/15 21:44:18 mickey Exp $	*/
+/*	$OpenBSD: machdep.c,v 1.63 2002/03/19 19:03:20 mickey Exp $	*/
 
 /*
  * Copyright (c) 1999-2002 Michael Shalayeff
@@ -492,6 +492,9 @@ hppa_init(start)
 	valloc(buf, struct buf, nbuf);
 
 #ifdef SYSVSHM
+	shminfo.shmmax = shmmaxpgs;
+	shminfo.shmall = shmmaxpgs;
+	shminfo.shmseg = shmseg;
 	valloc(shmsegs, struct shmid_ds, shminfo.shmmni);
 #endif
 #ifdef SYSVSEM
