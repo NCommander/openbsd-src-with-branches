@@ -61,8 +61,7 @@ netbsd_sys___vfork14(p, v, retval)
 	void *v;
 	register_t *retval;
 {
-	/* XXX - should add FORK_SHAREVM */
-	return (fork1(p, FORK_VFORK|FORK_PPWAIT, NULL, 0, retval));
+	return (fork1(p, ISVFORK, 0, NULL, 0, retval));
 }
 
 /* XXX syncs whole file */

@@ -83,7 +83,7 @@ kthread_create(func, arg, newpp, fmt, va_alist)
 	 * descriptors and don't leave the exit status around for the
 	 * parent to wait for.
 	 */
-	error = fork1(&proc0, FORK_RFORK|FORK_SHAREVM|FORK_NOZOMBIE, NULL,
+	error = fork1(&proc0, ISRFORK, RFPROC | RFMEM | RFFDG | RFNOWAIT, NULL,
 	    0, rv);
 	if (error)
 		return (error);
