@@ -1,4 +1,4 @@
-/*	$OpenBSD: resp.c,v 1.17 2004/12/13 17:09:01 jfb Exp $	*/
+/*	$OpenBSD: resp.c,v 1.18 2004/12/13 22:53:48 jfb Exp $	*/
 /*
  * Copyright (c) 2004 Jean-Francois Brousseau <jfb@openbsd.org>
  * All rights reserved.
@@ -385,6 +385,11 @@ cvs_resp_sticky(struct cvsroot *root, int type, char *line)
 		if (cf == NULL)
 			return (-1);
 		cf->cf_ddat->cd_repo = strdup(line);
+		if (cf->cf_ddat->cd_repo == NULL) {
+			cvs_log(LP_ERRNO, "failed to duplicate `%s'", line);
+			cvs_file_free(cf);
+			return (-1);
+		}
 		cf->cf_ddat->cd_root = root;
 		root->cr_ref++;
 
