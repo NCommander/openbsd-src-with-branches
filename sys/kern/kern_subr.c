@@ -1,4 +1,4 @@
-/*	$OpenBSD: kern_subr.c,v 1.10.2.8 2004/02/19 10:56:37 niklas Exp $	*/
+/*	$OpenBSD: kern_subr.c,v 1.10.2.9 2004/06/05 17:19:55 niklas Exp $	*/
 /*	$NetBSD: kern_subr.c,v 1.15 1996/04/09 17:21:56 ragge Exp $	*/
 
 /*
@@ -40,6 +40,7 @@
 #include <sys/param.h>
 #include <sys/systm.h>
 #include <sys/proc.h>
+#include <sys/sched.h>
 #include <sys/malloc.h>
 #include <sys/queue.h>
 #include <sys/kernel.h>
