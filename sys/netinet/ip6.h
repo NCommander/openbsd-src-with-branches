@@ -1,4 +1,4 @@
-/*	$OpenBSD: ip6.h,v 1.13 2003/11/16 20:30:07 avsm Exp $	*/
+/*	$OpenBSD: ip6.h,v 1.14 2004/01/08 05:31:13 itojun Exp $	*/
 /*	$KAME: ip6.h,v 1.45 2003/06/05 04:46:38 keiichi Exp $	*/
 
 /*
@@ -108,6 +108,7 @@ struct ip6_hdr {
 #define IP6TOS_ECT		0x02	/* ECN-capable transport */
 #endif
 
+#ifdef _KERNEL
 /*
  * for IPv6 pseudo header checksum
  * XXX nonstandard
@@ -119,6 +120,7 @@ struct ip6_hdr_pseudo {
 	u_int8_t	ip6ph_zero[3];
 	u_int8_t	ip6ph_nxt;
 } __packed;
+#endif
 
 /*
  * Extension Headers
