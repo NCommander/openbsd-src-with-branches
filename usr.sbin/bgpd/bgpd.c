@@ -1,4 +1,4 @@
-/*	$OpenBSD: bgpd.c,v 1.74 2004/02/06 20:18:18 henning Exp $ */
+/*	$OpenBSD: bgpd.c,v 1.75 2004/02/07 11:42:30 henning Exp $ */
 
 /*
  * Copyright (c) 2003, 2004 Henning Brauer <henning@openbsd.org>
@@ -154,7 +154,11 @@ main(int argc, char *argv[])
 		exit(1);
 
 	if (conf.opts & BGPD_OPT_NOACTION) {
-		fprintf(stderr, "configuration OK\n");
+		if (conf.opts & BGPD_OPT_VERBOSE)
+			TAILQ_FOREACH(r, rules_l, entries)
+				print_rule(peer_l, r);
+		else
+			fprintf(stderr, "configuration OK\n");
 		exit(0);
 	}
 
