@@ -1,4 +1,4 @@
-/*	$OpenBSD: dumplfs.c,v 1.6 2002/02/16 21:27:33 millert Exp $	*/
+/*	$OpenBSD: dumplfs.c,v 1.7 2002/06/09 08:13:05 todd Exp $	*/
 /*	$NetBSD: dumplfs.c,v 1.7 1995/12/14 22:36:34 thorpej Exp $	*/
 
 /*-
@@ -44,7 +44,7 @@ static char copyright[] =
 #if 0
 static char sccsid[] = "@(#)dumplfs.c	8.1 (Berkeley) 6/5/93";
 #else
-static char rcsid[] = "$OpenBSD: dumplfs.c,v 1.6 2002/02/16 21:27:33 millert Exp $";
+static char rcsid[] = "$OpenBSD: dumplfs.c,v 1.7 2002/06/09 08:13:05 todd Exp $";
 #endif
 #endif /* not lint */
 
@@ -420,6 +420,8 @@ dump_sum(fd, lfsp, sp, segnum, addr)
 	dp = (daddr_t *)sp;
 	dp += LFS_SUMMARY_SIZE / sizeof(daddr_t);
 	inop = malloc(1 << lfsp->lfs_bshift);
+	if (inop == NULL)
+		err(1, "malloc");
 	printf("    Inode addresses:");
 	for (dp--, i = 0; i < sp->ss_ninos; dp--) {
 		printf("\t0x%X {", *dp);
