@@ -1,4 +1,4 @@
-/*	$OpenBSD: pf.c,v 1.433.2.2 2004/07/17 03:22:34 brad Exp $ */
+/*	$OpenBSD: pf.c,v 1.433.2.3 2004/11/13 23:24:37 brad Exp $ */
 
 /*
  * Copyright (c) 2001 Daniel Hartmeier
@@ -2129,7 +2129,7 @@ pf_get_translation(struct pf_pdesc *pd, struct mbuf *m, int off, int direction,
 					    saddr, pd->af);
 				break;
 			case PF_IN:
-				if (r->rpool.cur->addr.type == PF_ADDR_DYNIFTL){
+				if (r->src.addr.type == PF_ADDR_DYNIFTL) {
 					if (pd->af == AF_INET) {
 						if (r->src.addr.p.dyn->
 						    pfid_acnt4 < 1)
