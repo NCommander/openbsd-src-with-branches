@@ -286,6 +286,7 @@ struct pf_rule {
 #define	PFRULE_RETURNICMP	0x08
 #define	PFRULE_FRAGCROP		0x10	/* non-buffering frag cache */
 #define	PFRULE_FRAGDROP		0x20	/* drop funny fragments */
+#define	PFRULE_RETURN		0x40
 
 struct pf_state_host {
 	struct pf_addr	addr;
