@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.5 2001/02/18 16:03:01 pjanzen Exp $
+#	$OpenBSD: Makefile,v 1.6 2002/05/23 18:43:00 deraadt Exp $
 #	@(#)Makefile	8.1 (Berkeley) 5/31/93
 
 PROG=	snake
@@ -11,6 +11,6 @@ MLINKS=snake.6 snscore.6
 beforeinstall:
 	${INSTALL} ${INSTALL_COPY} -o ${BINOWN} -g ${BINGRP} -m 664 /dev/null \
 	    ${DESTDIR}/var/games/snakerawscores
-	(cd ${DESTDIR}/usr/games; rm -f snscore; ln -s dm snscore)
+	(cd ${DESTDIR}/usr/games; rm -f snscore; ln -s snake snscore)
 
 .include <bsd.prog.mk>
