@@ -1,4 +1,4 @@
-/*	$OpenBSD: dir.h,v 1.10 2000/09/14 13:52:41 espie Exp $	*/
+/*	$OpenBSD: dir.h,v 1.11 2000/11/24 14:27:19 espie Exp $	*/
 /*	$NetBSD: dir.h,v 1.4 1996/11/06 17:59:05 christos Exp $	*/
 
 /*
@@ -69,5 +69,6 @@ extern void Dir_PrintDirectories __P((void));
 extern void Dir_PrintPath __P((Lst));
 extern void Dir_Destroy __P((void *));
 extern void *Dir_CopyDir __P((void *));
+extern int set_times __P((const char *));
 
 #endif /* _DIR */
