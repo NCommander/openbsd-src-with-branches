@@ -1,5 +1,5 @@
 #
-#	$OpenBSD: Makefile,v 1.18 2002/03/31 20:47:16 deraadt Exp $
+#	$OpenBSD: Makefile,v 1.19 2002/06/09 08:13:05 todd Exp $
 #
 # Copyright (c) 1997 Tobias Weingartner
 # All rights reserved.
@@ -36,6 +36,8 @@ SRCS=	fdisk.c user.c misc.c disk.c mbr.c part.c cmd.c manual.c
 DPADD=	${LIBUTIL}
 LDADD=	-lutil
 CLEANFILES+=manual.c
+
+.include <bsd.own.mk>
 
 .ifdef NOMAN
 manual.c:

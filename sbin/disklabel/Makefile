@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.26 2001/09/01 16:21:16 drahn Exp $
+#	$OpenBSD: Makefile,v 1.27 2002/02/20 01:55:49 miod Exp $
 
 PROG=	disklabel
 SRCS=	disklabel.c dkcksum.c editor.c manual.c
@@ -8,6 +8,8 @@ MAN=	disklabel.8 disklabel.5
 
 
 CLEANFILES+=manual.c
+
+.include <bsd.own.mk>
 
 .ifdef NOMAN
 manual.c:
