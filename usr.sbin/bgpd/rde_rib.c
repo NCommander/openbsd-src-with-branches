@@ -1,4 +1,4 @@
-/*	$OpenBSD: rde_rib.c,v 1.27 2004/01/22 20:34:56 henning Exp $ */
+/*	$OpenBSD: rde_rib.c,v 1.28 2004/01/27 21:56:21 henning Exp $ */
 
 /*
  * Copyright (c) 2003, 2004 Claudio Jeker <claudio@openbsd.org>
@@ -1069,7 +1069,7 @@ nexthop_init(u_long hashsize)
 
 	for (hs = 1; hs < hashsize; hs <<= 1)
 		;
-	nexthoptable.nexthop_hashtbl = calloc(hs, sizeof(struct aspath_head));
+	nexthoptable.nexthop_hashtbl = calloc(hs, sizeof(struct nexthop_table));
 	if (nexthoptable.nexthop_hashtbl == NULL)
 		fatal("nextop_init");
 
