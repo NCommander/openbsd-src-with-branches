@@ -1,4 +1,4 @@
-/*	$OpenBSD: scsi_base.c,v 1.12 1997/07/03 17:47:29 deraadt Exp $	*/
+/*	$OpenBSD: scsi_base.c,v 1.13 1997/08/22 04:43:25 millert Exp $	*/
 /*	$NetBSD: scsi_base.c,v 1.43 1997/04/02 02:29:36 mycroft Exp $	*/
 
 /*
@@ -1112,13 +1112,12 @@ scsi_print_sense(xs, verbosity)
 		printf("\n     ASC/ASCQ:  %s", sbs);
 	}
 	if (s[14] != 0) {
-		printf("\n     FRU CODE:  0x%x\n", s[14] & 0xff);
+		printf("\n     FRU CODE:  0x%x", s[14] & 0xff);
 	}
 	sbs = scsi_decode_sense(s, 3);
 	if (sbs) {
 		printf("\n         SKSV:  %s", sbs);
 	}
-	printf("\n");
 	if (verbosity == 0) {
 		printf("\n");
 		return;
