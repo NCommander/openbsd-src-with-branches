@@ -1,4 +1,4 @@
-.\"	$OpenBSD: apm.4,v 1.10 2000/07/03 15:10:57 mickey Exp $
+.\"	$OpenBSD: apm.4,v 1.11 2000/07/05 13:46:52 aaron Exp $
 .\"
 .\"	Copyright (c) 1998 Marco S. Hyman
 .\"
@@ -258,3 +258,6 @@ driver source code contains these copyrights:
 .El
 .Pp
 \&...and has been hacked on by many others since.
+.Sh BUGS
+Not all the BIOSes support power down the way we are attempting
+to execute it.
