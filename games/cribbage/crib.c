@@ -1,4 +1,4 @@
-/*	$OpenBSD: crib.c,v 1.9 2001/11/17 06:29:00 pjanzen Exp $	*/
+/*	$OpenBSD: crib.c,v 1.10 2002/05/31 05:11:37 pjanzen Exp $	*/
 /*	$NetBSD: crib.c,v 1.7 1997/07/10 06:47:29 mikel Exp $	*/
 
 /*-
@@ -44,7 +44,7 @@ static char copyright[] =
 #if 0
 static char sccsid[] = "@(#)crib.c	8.1 (Berkeley) 5/31/93";
 #else
-static char rcsid[] = "$OpenBSD: crib.c,v 1.9 2001/11/17 06:29:00 pjanzen Exp $";
+static char rcsid[] = "$OpenBSD: crib.c,v 1.10 2002/05/31 05:11:37 pjanzen Exp $";
 #endif
 #endif /* not lint */
 
@@ -193,8 +193,6 @@ makeboard()
 void
 gamescore()
 {
-	extern int Lastscore[];
-
 	if (pgames || cgames) {
 		mvprintw(SCORE_Y + 1, SCORE_X + 28, "Games: %3d", pgames);
 		mvprintw(SCORE_Y + 7, SCORE_X + 28, "Games: %3d", cgames);
