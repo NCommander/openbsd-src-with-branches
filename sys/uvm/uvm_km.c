@@ -507,7 +507,7 @@ uvm_km_kmemalloc(map, obj, size, flags)
 	 */
 
 	if (__predict_false(uvm_map(map, &kva, size, obj, UVM_UNKNOWN_OFFSET,
-	      0, UVM_MAPFLAG(UVM_PROT_RW, UVM_PROT_RW, UVM_INH_NONE,
+	      0, UVM_MAPFLAG(UVM_PROT_ALL, UVM_PROT_ALL, UVM_INH_NONE,
 			  UVM_ADV_RANDOM, (flags & UVM_KMF_TRYLOCK))) 
 			!= KERN_SUCCESS)) {
 		UVMHIST_LOG(maphist, "<- done (no VM)",0,0,0,0);
@@ -569,10 +569,11 @@ uvm_km_kmemalloc(map, obj, size, flags)
 
 		if (UVM_OBJ_IS_INTRSAFE_OBJECT(obj)) {
 			pmap_kenter_pa(loopva, VM_PAGE_TO_PHYS(pg),
-			    UVM_PROT_RW);
+			    VM_PROT_ALL);
 		} else {
 			pmap_enter(map->pmap, loopva, VM_PAGE_TO_PHYS(pg),
-			    UVM_PROT_RW, PMAP_WIRED | UVM_PROT_RW);
+			    UVM_PROT_ALL,
+			    PMAP_WIRED | VM_PROT_READ | VM_PROT_WRITE);
 		}
 		loopva += PAGE_SIZE;
 		offset += PAGE_SIZE;
