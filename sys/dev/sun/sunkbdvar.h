@@ -1,4 +1,4 @@
-/*	$OpenBSD: sunkbdvar.h,v 1.1 2002/01/25 03:24:53 jason Exp $	*/
+/*	$OpenBSD: sunkbdvar.h,v 1.2 2002/04/08 17:49:42 jason Exp $	*/
 
 /*
  * Copyright (c) 2002 Jason L. Wright (jason@thought.net)
@@ -39,3 +39,7 @@
 extern const keysym_t sunkbd_keydesc_us[];
 extern const struct wscons_keydesc sunkbd_keydesctab[];
 extern struct wskbd_mapdata sunkbd_keymapdata;
+extern const struct wscons_keydesc sunkbd5_keydesctab[];
+extern struct wskbd_mapdata sunkbd5_keymapdata;
+
+#define ISTYPE5(layout) ((layout) > 0x20)
