@@ -1,6 +1,6 @@
-#	$OpenBSD$
+#	$OpenBSD: Makefile,v 1.1 2001/08/21 00:39:40 jason Exp $
 
-MAN=	autoconf.4
+MAN=	autoconf.4 intro.4
 
 MANSUBDIR=sparc64
 
