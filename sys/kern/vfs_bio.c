@@ -1,4 +1,4 @@
-/*	$OpenBSD: vfs_bio.c,v 1.19 1997/11/07 23:01:36 csapuntz Exp $	*/
+/*	$OpenBSD: vfs_bio.c,v 1.20 1998/01/10 23:44:28 csapuntz Exp $	*/
 /*	$NetBSD: vfs_bio.c,v 1.44 1996/06/11 11:15:36 pk Exp $	*/
 
 /*-
@@ -527,7 +527,7 @@ incore(vp, blkno)
 	for (; bp != NULL; bp = bp->b_hash.le_next) {
 		if (bp->b_lblkno == blkno && bp->b_vp == vp &&
 		    !ISSET(bp->b_flags, B_INVAL))
-		return (bp);
+			return (bp);
 	}
 
 	return (0);
