@@ -1,4 +1,4 @@
-/*      $OpenBSD: eap.c,v 1.8 1999/12/13 06:43:01 csapuntz Exp $ */
+/*      $OpenBSD: eap.c,v 1.9 2000/07/18 07:03:29 csapuntz Exp $ */
 /*	$NetBSD: eap.c,v 1.25 1999/02/18 07:59:30 mycroft Exp $	*/
 
 /*
@@ -48,7 +48,7 @@
  * Data sheets can be found at 
  * http://www.ensoniq.com/multimedia/semi_html/html/es1370.zip
  * and
- * http://206.214.38.151/pdf/4531.pdf
+ * http://www.akm.com/pdf/4531.pdf
  *
  * Added Creative Ensoniq support: ES1371 + AC97 = hack city.
  * -- Ezra Story <ezy@panix.com>
