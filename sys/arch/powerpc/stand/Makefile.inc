@@ -1,3 +1,4 @@
+#	$OpenBSD:$
 #	$NetBSD: Makefile.inc,v 1.1 1996/09/30 16:34:59 ws Exp $
 
 .if !defined(__stand_makefile_inc)
