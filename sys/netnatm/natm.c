@@ -1,4 +1,4 @@
-/*	$OpenBSD: natm.c,v 1.4 1997/10/11 01:21:16 angelos Exp $	*/
+/*	$OpenBSD: natm.c,v 1.5 1997/10/11 01:32:08 angelos Exp $	*/
 
 /*
  *
@@ -246,10 +246,6 @@ struct proc *p;
        */
 
       M_PREPEND(m, sizeof(*aph), M_WAITOK);
-      if (m == NULL) {
-        error = ENOBUFS;
-	break;
-      }
       aph = mtod(m, struct atm_pseudohdr *);
       ATM_PH_VPI(aph) = npcb->npcb_vpi;
       ATM_PH_SETVCI(aph, npcb->npcb_vci);

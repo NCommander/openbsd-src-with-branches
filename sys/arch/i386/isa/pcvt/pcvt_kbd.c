@@ -1,4 +1,4 @@
-/*	$OpenBSD: pcvt_kbd.c,v 1.39 2000/10/16 02:25:22 aaron Exp $	*/
+/*	$OpenBSD: pcvt_kbd.c,v 1.40 2001/01/22 18:48:43 deraadt Exp $	*/
 
 /*
  * Copyright (c) 1992, 1995 Hellmuth Michaelis and Joerg Wunsch.
@@ -629,10 +629,9 @@ void ovlinit(int force)
 	int i;
 
 	if (force || ovlinitflag == 0) {
-		if (ovlinitflag == 0 &&
-		   (ovltbl = (Ovl_tbl *)malloc(sizeof(Ovl_tbl) * OVLTBL_SIZE,
-					       M_DEVBUF, M_WAITOK)) == NULL)
-			panic("pcvt_kbd: malloc of Ovl_tbl failed");
+		if (ovlinitflag == 0)
+		    ovltbl = (Ovl_tbl *)malloc(sizeof(Ovl_tbl) * OVLTBL_SIZE,
+					       M_DEVBUF, M_WAITOK);
 
 		for(i = 0; i < OVLTBL_SIZE; i++) {
 			ovltbl[i].keynum =

@@ -1,4 +1,4 @@
-/* $OpenBSD: wsdisplay.c,v 1.25 2001/05/01 02:23:22 aaron Exp $ */
+/* $OpenBSD: wsdisplay.c,v 1.26 2001/05/08 22:28:43 mickey Exp $ */
 /* $NetBSD: wsdisplay.c,v 1.37.4.1 2000/06/30 16:27:53 simonb Exp $ */
 
 /*
@@ -266,8 +266,6 @@ wsscreen_attach(sc, console, emul, type, cookie, ccol, crow, defattr)
 	struct wsscreen *scr;
 
 	scr = malloc(sizeof(struct wsscreen), M_DEVBUF, M_WAITOK);
-	if (!scr)
-		return (NULL);
 
 	if (console) {
 		dconf = &wsdisplay_console_conf;

@@ -1,4 +1,4 @@
-/*	$OpenBSD: ddp_output.c,v 1.1 1997/07/23 03:39:54 denny Exp $	*/
+/*	$OpenBSD: ddp_output.c,v 1.2 2000/06/16 21:47:15 provos Exp $	*/
 
 /*
  * Copyright (c) 1990,1991 Regents of The University of Michigan.
@@ -212,10 +212,6 @@ ddp_route( m, ro )
 	}
     } else {
 	MGET( m0, M_WAIT, MT_HEADER );
-	if ( m0 == 0 ) {
-	    m_freem( m );
-	    return( ENOBUFS );
-	}
 	m0->m_next = m;
 	m0->m_len = SZ_ELAPHDR;
 	m = m0;

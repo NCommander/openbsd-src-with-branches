@@ -1,4 +1,4 @@
-/*	$OpenBSD: ramdisk.c,v 1.10 1999/09/14 14:19:56 mickey Exp $	*/
+/*	$OpenBSD: ramdisk.c,v 1.11 1999/11/16 09:24:59 art Exp $	*/
 /*	$NetBSD: ramdisk.c,v 1.8 1996/04/12 08:30:09 leo Exp $	*/
 
 /*
@@ -161,10 +161,6 @@ rdattach(n)
 	for (i = 0; i < n; i++) {
 
 		sc = malloc(sizeof(*sc), M_DEVBUF, M_WAITOK);
-		if (!sc) {
-			printf("ramdisk: malloc for attach failed!\n");
-			return;
-		}
 		bzero((caddr_t)sc, sizeof(*sc));
 		ramdisk_devs[i] = sc;
 		sc->sc_dev.dv_unit = i;

@@ -1,4 +1,4 @@
-/*	$OpenBSD: pmap.c,v 1.25 2001/03/22 01:15:35 miod Exp $	*/
+/*	$OpenBSD: pmap.c,v 1.26 2001/05/09 15:31:25 art Exp $	*/
 /*
  * Copyright (c) 1996 Nivas Madhur
  * All rights reserved.
@@ -1674,9 +1674,6 @@ pmap_create(vm_size_t size)
 	CHECK_PMAP_CONSISTENCY("pmap_create");
 
 	p = (pmap_t)malloc(sizeof(*p), M_VMPMAP, M_WAITOK);
-	if (p == PMAP_NULL) {
-		panic("pmap_create: cannot allocate a pmap");
-	}
 
 	bzero(p, sizeof(*p));
 	pmap_pinit(p);

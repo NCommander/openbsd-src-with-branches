@@ -1,4 +1,4 @@
-/*	$OpenBSD: ip_output.c,v 1.88 2001/04/06 04:42:08 csapuntz Exp $	*/
+/*	$OpenBSD: ip_output.c,v 1.89 2001/04/14 00:30:59 angelos Exp $	*/
 /*	$NetBSD: ip_output.c,v 1.28 1996/02/13 23:43:07 christos Exp $	*/
 
 /*
@@ -1224,8 +1224,6 @@ ip_setmoptions(optname, imop, m)
 		imo = (struct ip_moptions *)malloc(sizeof(*imo), M_IPMOPTS,
 		    M_WAITOK);
 
-		if (imo == NULL)
-			return (ENOBUFS);
 		*imop = imo;
 		imo->imo_multicast_ifp = NULL;
 		imo->imo_multicast_ttl = IP_DEFAULT_MULTICAST_TTL;
