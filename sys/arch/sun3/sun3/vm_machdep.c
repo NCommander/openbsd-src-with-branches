@@ -161,19 +161,19 @@ cpu_fork(p1, p2, stack, stacksize)
  * before we "pushed" this call.
  */
 void
-cpu_set_kpc(proc, func, arg)
-	struct proc *proc;
-	void (*func) __P((void *));
+cpu_set_kpc(prc, func, arg)
+	struct proc *prc;
+	void (*func) (void *);
 	void *arg;
 {
 	struct pcb *pcbp;
 	struct ksigframe {
 		struct switchframe sf;
-		void (*func)(void *);
+		void (*func) (void *);
 		void *arg;
 	} *ksfp;
 
-	pcbp = &proc->p_addr->u_pcb;
+	pcbp = &prc->p_addr->u_pcb;
 
 	/* Push a ksig frame onto the kernel stack. */
 	ksfp = (struct ksigframe *)pcbp->pcb_regs[11] - 1;
