@@ -29,6 +29,11 @@ SRCS+=	_err.c _errx.c _sys_errlist.c _sys_nerr.c _sys_siglist.c \
 #	_setjmp() fabs() frexp() infinity isinf() ldexp() modf()
 #	setjmp() sigsetjmp()
 
+# machine dependant ELF ABI v1 libc support
+.if (${MACHINE_ARCH} == "i386") || (${MACHINE_ARCH} == "mips")
+SRCS+=	elf_sup.c
+.endif
+
 .include "${.CURDIR}/arch/${MACHINE_ARCH}/gen/Makefile.inc"
 
 .ifdef _NOTDEF_XXX_
