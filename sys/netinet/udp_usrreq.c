@@ -158,8 +158,10 @@ udp_input(m, va_alist)
 
 	/*
 	 * Checksum extended UDP header and data.
+	 * from W.R.Stevens: check incoming udp cksums even if
+	 *	udpcksum is not set.
 	 */
-	if (udpcksum && uh->uh_sum) {
+	if (uh->uh_sum) {
 		bzero(((struct ipovly *)ip)->ih_x1,
 		    sizeof ((struct ipovly *)ip)->ih_x1);
 		((struct ipovly *)ip)->ih_len = uh->uh_ulen;
