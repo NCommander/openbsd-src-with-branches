@@ -1,4 +1,4 @@
-/*	$OpenBSD: pfvar.h,v 1.179 2003/12/15 09:10:26 henning Exp $ */
+/*	$OpenBSD: pfvar.h,v 1.180 2003/12/31 11:18:25 cedric Exp $ */
 
 /*
  * Copyright (c) 2001 Daniel Hartmeier
@@ -564,6 +564,8 @@ struct pf_src_node {
 	sa_family_t	 af;
 	u_int8_t	 ruletype;
 };
+
+#define PFSNODE_HIWAT		10000	/* default source node table size */
 
 struct pf_state_scrub {
 	u_int16_t	pfss_flags;

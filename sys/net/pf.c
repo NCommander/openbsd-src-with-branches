@@ -1,4 +1,4 @@
-/*	$OpenBSD: pf.c,v 1.419 2004/01/27 09:31:15 markus Exp $ */
+/*	$OpenBSD: pf.c,v 1.420 2004/02/02 12:47:50 cedric Exp $ */
 
 /*
  * Copyright (c) 2001 Daniel Hartmeier
@@ -207,8 +207,11 @@ static int		 pf_add_mbuf_tag(struct mbuf *, u_int);
 struct pf_state		*pf_find_state_recurse(struct pfi_kif *,
 			    struct pf_state *, u_int8_t);
 
-struct pf_pool_limit pf_pool_limits[PF_LIMIT_MAX] =
-    { { &pf_state_pl, PFSTATE_HIWAT }, { &pf_frent_pl, PFFRAG_FRENT_HIWAT } };
+struct pf_pool_limit pf_pool_limits[PF_LIMIT_MAX] = {
+	{ &pf_state_pl, PFSTATE_HIWAT },
+	{ &pf_src_tree_pl, PFSNODE_HIWAT },
+	{ &pf_frent_pl, PFFRAG_FRENT_HIWAT }
+};
 
 #define STATE_LOOKUP()							\
 	do {								\
