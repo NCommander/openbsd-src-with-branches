@@ -1,4 +1,4 @@
-/*	$OpenBSD: trpt.c,v 1.14 2002/11/18 05:15:39 itojun Exp $	*/
+/*	$OpenBSD: trpt.c,v 1.15 2002/12/09 09:53:34 deraadt Exp $	*/
 
 /*-
  * Copyright (c) 1997 The NetBSD Foundation, Inc.
@@ -126,6 +126,9 @@ struct nlist nl[] = {
 	{ "_tcp_debx" },
 	{ NULL },
 };
+
+int	tcp_debx;
+struct	tcp_debug tcp_debug[TCP_NDEBUG];
 
 static caddr_t tcp_pcbs[TCP_NDEBUG];
 static n_time ntime;
