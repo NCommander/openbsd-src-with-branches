@@ -1,4 +1,4 @@
-/*	$OpenBSD: window.c,v 1.8 2002/02/08 21:21:11 deraadt Exp $	*/
+/*	$OpenBSD: window.c,v 1.9 2002/02/14 14:24:21 deraadt Exp $	*/
 
 /*
  *		Window handling.
@@ -67,7 +67,6 @@ refresh(f, n)
 		wp->w_ntrows = nrow - wp->w_toprow - 2;
 		sgarbf = TRUE;
 		update();
-		ewprintf("New size %d by %d", nrow, ncol);
 	} else
 		sgarbf = TRUE;
 	return TRUE;
