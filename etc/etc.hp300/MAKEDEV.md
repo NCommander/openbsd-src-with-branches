@@ -1,5 +1,5 @@
 vers(__file__,
-	{-$OpenBSD: MAKEDEV.md,v 1.6 2002/04/14 23:26:45 deraadt Exp $-},
+	{-$OpenBSD: MAKEDEV.md,v 1.7 2002/04/18 23:16:00 deraadt Exp $-},
 etc.MACHINE)dnl
 dnl
 dnl Copyright (c) 2001 Todd T. Fries <todd@OpenBSD.org>
@@ -61,6 +61,7 @@ _DEV(lkm, 24)
 _DEV(rnd, 32)
 _DEV(xfs, 51)
 _DEV(altq, 52)
+_DEV(systrace, 50)
 dnl
 divert(7)dnl
 dnl
