@@ -1,4 +1,4 @@
-/*	$OpenBSD: systrace.c,v 1.27 2002/12/12 08:36:05 art Exp $	*/
+/*	$OpenBSD: systrace.c,v 1.28 2003/02/20 22:03:31 art Exp $	*/
 /*
  * Copyright 2002 Niels Provos <provos@citi.umich.edu>
  * All rights reserved.
@@ -523,7 +523,6 @@ systraceioctl(dev, cmd, data, flag, p)
 
 	switch (cmd) {
 	case STRIOCCLONE:
-	case SYSTR_CLONE:
 		MALLOC(fst, struct fsystrace *, sizeof(struct fsystrace),
 		    M_XDATA, M_WAITOK);
 
