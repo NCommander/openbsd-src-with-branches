@@ -26,7 +26,7 @@
 /* XXX: recursive operations */
 
 #include "includes.h"
-RCSID("$OpenBSD: sftp-int.c,v 1.32 2001/03/23 13:10:57 markus Exp $");
+RCSID("$OpenBSD: sftp-int.c,v 1.33 2001/04/05 10:42:53 markus Exp $");
 
 #include <glob.h>
 
@@ -88,6 +88,7 @@ const struct CMD cmds[] = {
 	{ "dir",	I_LS },
 	{ "exit",	I_QUIT },
 	{ "get",	I_GET },
+	{ "mget",	I_GET },
 	{ "help",	I_HELP },
 	{ "lcd",	I_LCHDIR },
 	{ "lchdir",	I_LCHDIR },
@@ -99,6 +100,7 @@ const struct CMD cmds[] = {
 	{ "lumask",	I_LUMASK },
 	{ "mkdir",	I_MKDIR },
 	{ "put",	I_PUT },
+	{ "mput",	I_PUT },
 	{ "pwd",	I_PWD },
 	{ "quit",	I_QUIT },
 	{ "rename",	I_RENAME },
