@@ -1,4 +1,4 @@
-/*	$OpenBSD: pf.c,v 1.200 2002/03/31 13:02:08 dhartmei Exp $ */
+/*	$OpenBSD: pf.c,v 1.201 2002/04/08 17:49:43 jason Exp $ */
 
 /*
  * Copyright (c) 2001 Daniel Hartmeier
@@ -2734,7 +2734,7 @@ pf_add_sport(struct pf_port_list *plist, u_int16_t port)
 {
 	struct pf_port_node *pnode;
 
-	pnode = pool_get(&pf_sport_pl, M_NOWAIT);
+	pnode = pool_get(&pf_sport_pl, PR_NOWAIT);
 	if (pnode == NULL)
 		return (ENOMEM);
 
