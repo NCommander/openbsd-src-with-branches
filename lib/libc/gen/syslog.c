@@ -32,7 +32,7 @@
  */
 
 #if defined(LIBC_SCCS) && !defined(lint)
-static char rcsid[] = "$OpenBSD: syslog.c,v 1.17 2002/05/26 09:29:02 deraadt Exp $";
+static char rcsid[] = "$OpenBSD: syslog.c,v 1.18 2002/06/05 17:13:49 millert Exp $";
 #endif /* LIBC_SCCS and not lint */
 
 #include <sys/types.h>
@@ -299,6 +299,10 @@ vsyslog_r(pri, data, fmt, ap)
 		iov[1].iov_len = 2;
 		(void)writev(fd, iov, 2);
 		(void)close(fd);
+	}
+
+	if (data != &sdata) {
+		closelog_r(data);
 	}
 }
 
