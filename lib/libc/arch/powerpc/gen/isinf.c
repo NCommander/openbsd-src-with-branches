@@ -1,8 +1,12 @@
-/*	$OpenBSD: isinf.c,v 1.2 2000/03/01 17:31:22 todd Exp $	*/
+/*	$OpenBSD$	*/
 
-/*-
- * Copyright (c) 1991 The Regents of the University of California.
- * All rights reserved.
+/*
+ * Copyright (c) 1992, 1993
+ *	The Regents of the University of California.  All rights reserved.
+ *
+ * This software was developed by the Computer Systems Engineering group
+ * at Lawrence Berkeley Laboratory under DARPA contract BG 91-66 and
+ * contributed to Berkeley.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -34,35 +38,18 @@
  */
 
 #if defined(LIBC_SCCS) && !defined(lint)
-static char rcsid[] = "$OpenBSD: isinf.c,v 1.3 1996/08/19 08:14:25 tholo Exp $";
+static char rcsid[] = "$OpenBSD: isinf.c,v 1.3 1996/08/19 08:17:38 tholo Exp $";
 #endif /* LIBC_SCCS and not lint */
 
 #include <sys/types.h>
-
-int
-isnan(d)
-	double d;
-{
-	register struct IEEEdp {
-		u_int sign :  1;
-		u_int  exp : 11;
-		u_int manh : 20;
-		u_int manl : 32;
-	} *p = (struct IEEEdp *)&d;
-
-	return(p->exp == 2047 && (p->manh || p->manl));
-}
+#include <machine/ieee.h>
 
 int
 isinf(d)
 	double d;
 {
-	register struct IEEEdp {
-		u_int sign :  1;
-		u_int  exp : 11;
-		u_int manh : 20;
-		u_int manl : 32;
-	} *p = (struct IEEEdp *)&d;
+	struct ieee_double *p = (struct ieee_double *)&d;
 
-	return(p->exp == 2047 && !p->manh && !p->manl);
+	return (p->dbl_exp == DBL_EXP_INFNAN &&
+	    p->dbl_frach == 0 && p->dbl_fracl == 0);
 }
