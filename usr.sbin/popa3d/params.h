@@ -1,4 +1,4 @@
-/* $OpenBSD: params.h,v 1.4 2001/08/25 15:35:09 camield Exp $ */
+/* $OpenBSD: params.h,v 1.5 2001/09/21 20:22:06 camield Exp $ */
 
 /*
  * Global POP daemon parameters.
@@ -111,7 +111,7 @@
  * An empty directory to chroot to before authentication. The directory
  * and its parent directories must not be writable by anyone but root.
  */
-#define POP_CHROOT			"/usr/share/empty"
+#define POP_CHROOT			"/var/empty"
 
 /*
  * Sessions will be closed if idle for longer than POP_TIMEOUT seconds.
