@@ -1,4 +1,4 @@
-/*	$OpenBSD: fxp.c,v 1.6 2000/06/03 02:55:04 jason Exp $	*/
+/*	$OpenBSD: fxp.c,v 1.7 2000/07/20 16:22:26 ho Exp $	*/
 /*	$NetBSD: if_fxp.c,v 1.2 1997/06/05 02:01:55 thorpej Exp $	*/
 
 /*
@@ -91,10 +91,6 @@
 
 #include <dev/ic/fxpreg.h>
 #include <dev/ic/fxpvar.h>
-
-#include <dev/pci/pcivar.h>
-#include <dev/pci/pcireg.h>
-#include <dev/pci/pcidevs.h>
 
 #ifdef __alpha__		/* XXX */
 /* XXX XXX NEED REAL DMA MAPPING SUPPORT XXX XXX */
