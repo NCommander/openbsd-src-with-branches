@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.84 2001/07/30 21:56:10 deraadt Exp $
+#	$OpenBSD: Makefile,v 1.85 2001/09/25 21:15:40 deraadt Exp $
 
 # not yet done: catman
 
@@ -16,7 +16,7 @@ SUBDIR=	ac accton adduser altq amd arp bootpd bootpgw bootpef bootptest \
 	syslogd tcpdump timed tokenadm tokeninit traceroute trpt trsp \
 	usbdevs user vipw vnconfig wsmoused zdump zic
 
-# LICENSING ISSUES:
+# LICENSING ISSUES: mrouted has non-free parts, and the following use them:
 # mrouted mrinfo mtrace map-mbone
 
 # IPv6
