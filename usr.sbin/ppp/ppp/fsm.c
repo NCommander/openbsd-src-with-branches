@@ -25,7 +25,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  *
- * $OpenBSD: fsm.c,v 1.20 2002/03/31 02:38:49 brian Exp $
+ * $OpenBSD: fsm.c,v 1.21 2002/05/16 01:13:39 brian Exp $
  */
 
 #include <sys/param.h>
@@ -1144,9 +1144,9 @@ fsm_readopt(u_char **cp)
   *cp += o->hdr.len;
 
   if (o->hdr.len > sizeof(struct fsm_opt)) {
+    log_Printf(LogERROR, "Warning: Truncating option length from %d to %ld\n",
+               o->hdr.len, sizeof(struct fsm_opt));
     o->hdr.len = sizeof(struct fsm_opt);
-    log_Printf(LogERROR, "Warning: Truncating option length to %d\n",
-               o->hdr.len);
   }
 
   return o;
