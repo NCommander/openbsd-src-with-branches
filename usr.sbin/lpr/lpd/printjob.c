@@ -1,4 +1,4 @@
-/*	$OpenBSD: printjob.c,v 1.4 1996/07/04 05:41:55 tholo Exp $ */
+/*	$OpenBSD: printjob.c,v 1.5 1996/07/27 10:31:17 deraadt Exp $ */
 /*	$NetBSD: printjob.c,v 1.9.4.3 1996/07/12 22:31:39 jtc Exp $	*/
 
 /*
@@ -291,6 +291,8 @@ again:
 			if (TR != NULL)		/* output trailer */
 				(void) write(ofd, TR, strlen(TR));
 		}
+		(void) close(ofd);
+		(void) wait(NULL);
 		(void) unlink(tempfile);
 		exit(0);
 	}
