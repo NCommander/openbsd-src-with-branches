@@ -1,4 +1,4 @@
-/*	$OpenBSD: rnd.c,v 1.54 2002/01/31 00:16:42 mickey Exp $	*/
+/*	$OpenBSD: rnd.c,v 1.55 2002/03/14 01:26:52 millert Exp $	*/
 
 /*
  * random.c -- A strong random number generator
@@ -866,9 +866,9 @@ extract_entropy(buf, nbytes)
 			rs->entropy_count -= nbytes * 8;
 		else
 			rs->entropy_count = 0;
+		splx(s);
 		MD5Final(buffer, &tmp);
 		bzero(&tmp, sizeof(tmp));
-		splx(s);
 
 		/*
 		 * In case the hash function has some recognizable
@@ -893,6 +893,7 @@ extract_entropy(buf, nbytes)
 
 		/* Modify pool so next hash will produce different results */
 		add_timer_randomness(nbytes);
+		dequeue_randomness(&random_state);
 	}
 
 	/* Wipe data from memory */
