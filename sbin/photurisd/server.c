@@ -1,4 +1,4 @@
-/*	$OpenBSD: server.c,v 1.10 2001/11/17 19:54:57 deraadt Exp $	*/
+/*	$OpenBSD: server.c,v 1.11 2001/11/30 20:31:49 provos Exp $	*/
 
 /*
  * Copyright 1997-2000 Niels Provos <provos@citi.umich.edu>
@@ -37,7 +37,7 @@
  */
 
 #ifndef lint
-static char rcsid[] = "$OpenBSD: server.c,v 1.10 2001/11/17 19:54:57 deraadt Exp $";
+static char rcsid[] = "$OpenBSD: server.c,v 1.11 2001/11/30 20:31:49 provos Exp $";
 #endif
 
 #define _SERVER_C_
@@ -78,7 +78,6 @@ init_server(void)
 {
      struct sockaddr_in sin, *sin2; 
      struct protoent *proto; 
-     struct stat sb;
      int sock, d, i, ip, on = 1; 
      struct ifconf ifconf; 
      void *newbuf;
