@@ -1,4 +1,4 @@
-/* $OpenBSD: pfkeyv2.c,v 1.65 2001/06/07 05:27:52 angelos Exp $ */
+/* $OpenBSD: pfkeyv2.c,v 1.66 2001/06/08 02:53:49 angelos Exp $ */
 
 /*
  *	@(#)COPYRIGHT	1.1 (NRL) 17 January 1995
@@ -74,18 +74,13 @@
 #include <sys/systm.h>
 #include <sys/mbuf.h>
 #include <sys/kernel.h>
-#include <sys/malloc.h>
-#include <sys/socketvar.h>
 #include <sys/proc.h>
 #include <net/route.h>
-#include <netinet/in.h>
 #include <netinet/ip_ipsp.h>
 #include <net/pfkeyv2.h>
 #include <netinet/ip_ah.h>
 #include <netinet/ip_esp.h>
 #include <crypto/blf.h>
-#include <crypto/crypto.h>
-#include <crypto/xform.h>
 
 #define PFKEYV2_PROTOCOL 2
 #define GETSPI_TRIES 10
