@@ -1,4 +1,4 @@
-/*	$OpenBSD: editor.c,v 1.63 1999/04/07 22:57:26 millert Exp $	*/
+/*	$OpenBSD: editor.c,v 1.64 1999/06/06 18:42:29 aaron Exp $	*/
 
 /*
  * Copyright (c) 1997-1999 Todd C. Miller <Todd.Miller@courtesan.com>
@@ -28,7 +28,7 @@
  */
 
 #ifndef lint
-static char rcsid[] = "$OpenBSD: editor.c,v 1.63 1999/04/07 22:57:26 millert Exp $";
+static char rcsid[] = "$OpenBSD: editor.c,v 1.64 1999/06/06 18:42:29 aaron Exp $";
 #endif /* not lint */
 
 #include <sys/types.h>
@@ -309,7 +309,7 @@ editor(lp, f, dev, fstabfile)
 			char *pager;
 			extern char manpage[];
 
-			if ((pager = getenv("PAGER")) == NULL)
+			if ((pager = getenv("PAGER")) == NULL || *pager == '\0')
 				pager = _PATH_LESS;
 			if ((fp = popen(pager, "w")) != NULL) {
 				(void) fwrite(manpage, strlen(manpage), 1, fp);

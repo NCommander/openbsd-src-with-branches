@@ -1,4 +1,4 @@
-/*	$OpenBSD: cmd.c,v 1.19 1998/09/08 11:03:15 pefo Exp $	*/
+/*	$OpenBSD: cmd.c,v 1.20 1998/09/14 03:54:34 rahnds Exp $	*/
 
 /*
  * Copyright (c) 1997 Tobias Weingartner
@@ -384,12 +384,13 @@ Xmanual(cmd, disk, mbr, tt, offset)
 	int offset;
 {
 	char *pager = "/usr/bin/less";
+	char *p;
 	sig_t opipe = signal(SIGPIPE, SIG_IGN);
 	extern char manpage[];
 	FILE *f;
 
-	if (getenv("PAGER"))
-		pager = getenv("PAGER");
+	if ((p = getenv("PAGER")) != NULL && (*p != '\0'))
+		pager = p;
 	f = popen(pager, "w");
 	if (f) {
 		(void) fwrite(manpage, strlen(manpage), 1, f);
