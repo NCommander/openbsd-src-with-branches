@@ -1,4 +1,4 @@
-/*	$OpenBSD: readconf.h,v 1.46 2003/04/01 10:22:21 markus Exp $	*/
+/*	$OpenBSD: readconf.h,v 1.47 2003/04/02 09:48:07 markus Exp $	*/
 
 /*
  * Author: Tatu Ylonen <ylo@cs.hut.fi>
@@ -86,6 +86,7 @@ typedef struct {
 	char   *preferred_authentications;
 	char   *bind_address;	/* local socket address for connection to sshd */
 	char   *smartcard_device; /* Smartcard reader device */
+	int	verify_host_key_dns;	/* Verify host key using DNS */
 
 	int     num_identity_files;	/* Number of files for RSA/DSA identities. */
 	char   *identity_files[SSH_MAX_IDENTITY_FILES];

@@ -1,4 +1,4 @@
-/*	$OpenBSD: key.h,v 1.19 2002/03/18 17:23:31 markus Exp $	*/
+/*	$OpenBSD: key.h,v 1.20 2003/02/12 09:33:04 markus Exp $	*/
 
 /*
  * Copyright (c) 2000, 2001 Markus Friedl.  All rights reserved.
@@ -61,6 +61,7 @@ void	 key_free(Key *);
 Key	*key_demote(Key *);
 int	 key_equal(Key *, Key *);
 char	*key_fingerprint(Key *, enum fp_type, enum fp_rep);
+u_char	*key_fingerprint_raw(Key *, enum fp_type, u_int *);
 char	*key_type(Key *);
 int	 key_write(Key *, FILE *);
 int	 key_read(Key *, char **);
