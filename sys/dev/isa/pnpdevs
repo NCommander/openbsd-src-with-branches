@@ -1,4 +1,4 @@
-#	$OpenBSD: pnpdevs,v 1.24 1998/10/28 17:55:10 deraadt Exp $
+#	$OpenBSD: pnpdevs,v 1.25 1998/10/28 17:56:00 deraadt Exp $
 
 #
 # NOTE: All `com' devices also need pccom identifiers.
@@ -387,3 +387,4 @@ ym	YMH0021 #
 sb	ESS1868	#
 ed	SMC8416 #SMC EtherEZ
 joy	@P@1001	#ALS100+
+ne	@@@1980	#OvisLink LE-8019R
