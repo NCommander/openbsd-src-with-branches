@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_ie.c,v 1.10 1999/01/11 05:12:01 millert Exp $	*/
+/*	$OpenBSD: if_ie.c,v 1.11 1999/05/13 15:44:49 jason Exp $	*/
 /*	$NetBSD: if_ie.c,v 1.15 1996/10/30 00:24:33 gwr Exp $ */
 
 /*-
@@ -147,9 +147,9 @@
 #include <machine/cpu.h>
 #include <machine/pmap.h>
 
-#include "i82586.h"
-#include "if_iereg.h"
-#include "if_ievar.h"
+#include <sparc/dev/i82586.h>
+#include <sun3/dev/if_iereg.h>
+#include <sun3/dev/if_ievar.h>
 
 static struct mbuf *last_not_for_us;
 
