@@ -1,4 +1,4 @@
-/*	$OpenBSD: conf.c,v 1.1.2.1 1996/12/03 13:17:00 mickey Exp $	*/
+/*	$OpenBSD: conf.c,v 1.1.2.2 1996/12/15 15:49:36 mickey Exp $	*/
 
 /*
  * Copyright (c) 1996 Michael Shalayeff
@@ -41,6 +41,7 @@
 #include <fat.h>
 #include <netif.h>
 #include "biosdev.h"
+#include "unixdev.h"
 
 int	debug = 1;
 
@@ -50,31 +51,41 @@ struct fs_ops file_system[] = {
 #ifdef notdef
 	{ fat_open,    fat_close,    fat_read,    fat_write,    fat_seek,
 	  fat_stat,    fat_readdir    },
+#endif
 	{ cd9660_open, cd9660_close, cd9660_read, cd9660_write, cd9660_seek,
 	  cd9660_stat, cd9660_readdir },
-#endif
+#ifndef NO_NET
 	{ nfs_open,    nfs_close,    nfs_read,    nfs_write,    nfs_seek,
 	  nfs_stat,    nfs_readdir    },
+#endif
 	{ null_open,   null_close,   null_read,   null_write,   null_seek,
 	  null_stat,   null_readdir   }
 };
 int nfsys = NENTS(file_system);
 
 struct devsw	devsw[] = {
+#ifdef _TEST
+	{ "UNIX", unixstrategy, unixopen, unixclose, unixioctl },
+#else
 	{ "BIOS", biosstrategy, biosopen, biosclose, biosioctl },
-	{ NULL, NULL, NULL, NULL, NULL }
+#endif
 };
-int	ndevsw = NENTS(devsw);
+int	ndevs = NENTS(devsw);
 
+#ifndef NO_NET
 struct netif_driver	*netif_drivers[] = {
 	NULL
 };
 int n_netif_drivers = NENTS(netif_drivers);
-
+#endif
 
 struct consw	consw[] = {
+#ifdef _TEST
+	{ "unix",unix_probe,unix_putc,unix_getc,unix_ischar},
+#else
 	{ "kbd", kbd_probe, kbd_putc, kbd_getc, kbd_ischar },
-	{ "com", com_probe, com_putc, com_getc, com_ischar }
+	{ "com", com_probe, com_putc, com_getc, com_ischar },
+#endif
 };
 int	ncons = NENTS(consw);
 
