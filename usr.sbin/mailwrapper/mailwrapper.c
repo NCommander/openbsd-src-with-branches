@@ -1,4 +1,4 @@
-/*	$OpenBSD: mailwrapper.c,v 1.5 1999/09/28 15:25:45 ho Exp $	*/
+/*	$OpenBSD: mailwrapper.c,v 1.6 1999/12/17 05:06:28 mickey Exp $	*/
 /*	$NetBSD: mailwrapper.c,v 1.2 1999/02/20 22:10:07 thorpej Exp $	*/
 
 /*
@@ -89,7 +89,7 @@ addarg(al, arg, copy)
 	}
 	if (copy) {
 		if ((al->argv[al->argc++] = strdup(arg)) == NULL)
-			err(1, "mailwrapper:");
+			err(1, "mailwrapper");
 	} else
 		al->argv[al->argc++] = (char *)arg;
 }
