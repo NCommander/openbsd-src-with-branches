@@ -1,4 +1,4 @@
-/*	$OpenBSD: subr_prf.c,v 1.22 1998/02/05 16:49:29 deraadt Exp $	*/
+/*	$OpenBSD: subr_prf.c,v 1.23 1998/04/04 18:36:32 deraadt Exp $	*/
 /*	$NetBSD: subr_prf.c,v 1.45 1997/10/24 18:14:25 chuck Exp $	*/
 
 /*-
@@ -569,13 +569,15 @@ vsprintf(buf, fmt, ap)
 	va_list ap;
 {
 	int savintr;
+	int len;
 
 	savintr = consintr;		/* disable interrupts */
 	consintr = 0;
-	kprintf(fmt, TOBUFONLY, NULL, buf, ap);
+	len = kprintf(fmt, TOBUFONLY, NULL, buf, ap);
 	if (!panicstr)
 		logwakeup();
 	consintr = savintr;		/* reenable interrupts */
+	buf[len] = 0;
 	return (0);
 }
 
