@@ -1,4 +1,4 @@
-/* $OpenBSD: util.h,v 1.4 2003/07/18 02:00:09 deraadt Exp $ */
+/*	$OpenBSD: util.h,v 1.5 2003/07/21 14:00:41 deraadt Exp $	*/
 
 /* and for those machine that can't handle a variable argument list */
 

@@ -1,4 +1,5 @@
-/* $OpenBSD: backupfile.h,v 1.3 2002/02/19 19:39:39 millert Exp $ */
+/*	$OpenBSD: backupfile.h,v 1.4 2003/07/21 14:00:41 deraadt Exp $	*/
+
 /*
  * backupfile.h -- declarations for making Emacs style backup file names
  * Copyright (C) 1990 Free Software Foundation, Inc.

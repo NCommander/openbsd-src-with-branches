@@ -1,4 +1,4 @@
-/* $OpenBSD: common.h,v 1.14 2003/07/21 14:00:41 deraadt Exp $ */
+/*	$OpenBSD: common.h,v 1.15 2003/07/21 14:30:31 deraadt Exp $	*/
 
 #define DEBUGGING
 
