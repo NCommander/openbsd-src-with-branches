@@ -1,6 +1,8 @@
-#	$OpenBSD: Makefile,v 1.1 1996/06/04 07:56:07 niklas Exp $
+#	$OpenBSD: Makefile,v 1.2 1996/06/19 01:15:13 maja Exp $
 PROG= pkg_delete
 CFLAGS+=	${DEBUG} -I${.CURDIR}/../lib
+
+.include <bsd.obj.mk>
 
 .if exists(${.CURDIR}/../lib/${__objdir})
 LDADD+=		-L${.CURDIR}/../lib/${__objdir} -linstall
