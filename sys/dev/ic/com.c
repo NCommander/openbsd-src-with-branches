@@ -1,4 +1,4 @@
-/*	$OpenBSD: com.c,v 1.89 2003/06/02 23:28:02 millert Exp $	*/
+/*	$OpenBSD: com.c,v 1.90 2003/06/03 21:09:02 deraadt Exp $	*/
 /*	$NetBSD: com.c,v 1.82.4.1 1996/06/02 09:08:00 mrg Exp $	*/
 
 /*
@@ -99,7 +99,6 @@ cdev_decl(com);
 static u_char tiocm_xxx2mcr(int);
 
 void	compwroff(struct com_softc *);
-void	com_raisedtr(void *);
 void	com_enable_debugport(struct com_softc *);
 
 struct cfdriver com_cd = {
