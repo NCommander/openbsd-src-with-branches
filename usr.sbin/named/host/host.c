@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: host.c,v 1.2 1997/03/12 10:41:53 downsj Exp $	*/
 
 /*
  * Copyright (c) 1985, 1989 Regents of the University of California.
@@ -540,7 +540,7 @@ input char *argv[];
 	_res.retrans = DEF_RETRANS;	/* timeout in secs between retries */
 
 	/* initialize packet id */
-	_res.id = getpid() & 0x7fff;
+	_res.id = res_randomid();
 
 	/* save new defaults */
 	new_res = _res;
