@@ -1,3 +1,5 @@
+/*	$OpenBSD$ */
+
 /*
  * Copyright (c) 2004 Henning Brauer <henning@cvs.openbsd.org>
  * Copyright (c) 1997, 1998, 1999 The Internet Software Consortium.
