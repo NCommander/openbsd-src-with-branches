@@ -6,10 +6,10 @@
 
 .ifdef DESTDIR
 snap_md: bsd-install
-	cp ${.CURDIR}/../sys/arch/amiga/compile/INSTALL/bsd.gz \
-	    ${DESTDIR}/snapshot/bsd-install.gz
+	cp ${.CURDIR}/../sys/arch/amiga/compile/GENERIC/bsd.gz \
+	    ${DESTDIR}/snapshot/bsd-generic.gz
 bsd-install:
-	cd ${.CURDIR}/../sys/arch/amiga/conf && config INSTALL
-	cd ${.CURDIR}/../sys/arch/amiga/compile/INSTALL && \
+	cd ${.CURDIR}/../sys/arch/amiga/conf && config GENERIC
+	cd ${.CURDIR}/../sys/arch/amiga/compile/GENERIC && \
 	    make clean && make depend && make && gzip -c -9 bsd >bsd.gz
 .endif	# DESTDIR check
