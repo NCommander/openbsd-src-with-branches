@@ -1,3 +1,4 @@
+/*	$OpenBSD: cpu.c,v 1.9 1996/04/29 16:36:19 cgd Exp $	*/
 /*	$NetBSD: cpu.c,v 1.9 1996/04/29 16:36:19 cgd Exp $	*/
 
 /*

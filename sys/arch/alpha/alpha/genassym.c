@@ -1,3 +1,4 @@
+/*	$OpenBSD: genassym.c,v 1.4 1996/05/17 18:29:41 cgd Exp $	*/
 /*	$NetBSD: genassym.c,v 1.4 1996/05/17 18:29:41 cgd Exp $	*/
 
 /*

@@ -1,3 +1,4 @@
+/*	$OpenBSD: dec_kn20aa.c,v 1.4.4.2 1996/06/14 20:42:25 cgd Exp $	*/
 /*	$NetBSD: dec_kn20aa.c,v 1.4.4.2 1996/06/14 20:42:25 cgd Exp $	*/
 
 /*

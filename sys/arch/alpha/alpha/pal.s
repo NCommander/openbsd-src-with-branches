@@ -1,3 +1,4 @@
+/*	$OpenBSD: pal.s,v 1.2 1995/11/23 02:34:23 cgd Exp $	*/
 /*	$NetBSD: pal.s,v 1.2 1995/11/23 02:34:23 cgd Exp $	*/
 
 /*
