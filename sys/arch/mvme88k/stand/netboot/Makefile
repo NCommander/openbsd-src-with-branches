@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.10 2003/08/01 07:42:33 miod Exp $
+#	$OpenBSD: Makefile,v 1.11 2003/10/01 20:39:41 miod Exp $
 
 SIZE?=	size
 STRIP?= strip
@@ -35,8 +35,6 @@ netboot.bin: netboot
 	${STRIP} netboot
 	dd ibs=32 skip=1 if=netboot of=$@
 #	dd ibs=38 skip=1 if=netboot of=$@
-	chown ${LIBOWN}:${LIBGRP} netboot.bin
-	chmod ${LIBMODE} netboot.bin
 
 install:
 	${INSTALL} ${INSTALL_COPY} -o ${LIBOWN} -g ${LIBGRP} -m ${LIBMODE} \
