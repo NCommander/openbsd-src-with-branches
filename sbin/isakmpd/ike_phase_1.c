@@ -1,4 +1,4 @@
-/*	$OpenBSD: ike_phase_1.c,v 1.38 2003/06/10 16:41:29 deraadt Exp $	*/
+/*	$OpenBSD: ike_phase_1.c,v 1.39 2003/08/08 08:46:59 ho Exp $	*/
 /*	$EOM: ike_phase_1.c,v 1.31 2000/12/11 23:47:56 niklas Exp $	*/
 
 /*
@@ -1093,6 +1093,9 @@ ike_phase_1_recv_AUTH (struct message *msg)
       /* XXX Log?  */
       return -1;
     }
+
+  /* Mark message as authenticated. */
+  msg->flags |= MSG_AUTHENTICATED;
 
   return 0;
 }
