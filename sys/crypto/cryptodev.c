@@ -1,4 +1,4 @@
-/*	$OpenBSD: cryptodev.c,v 1.24 2001/09/03 10:13:44 deraadt Exp $	*/
+/*	$OpenBSD: cryptodev.c,v 1.25 2001/10/26 12:03:27 art Exp $	*/
 
 /*
  * Copyright (c) 2001 Theo de Raadt
@@ -212,8 +212,8 @@ cryptof_ioctl(fp, cmd, data, p)
 		if (txform) {
 			crie.cri_alg = txform->type;
 			crie.cri_klen = sop->keylen * 8;
-			if (sop->keylen > txform->maxkey
-			    || sop->keylen < txform->minkey) {
+			if (sop->keylen > txform->maxkey ||
+			    sop->keylen < txform->minkey) {
 				error = EINVAL;
 				goto bail;
 			}
