@@ -1,4 +1,4 @@
-/*	$OpenBSD: ofw_machdep.c,v 1.12 1999/11/09 00:20:42 rahnds Exp $	*/
+/*	$OpenBSD: ofw_machdep.c,v 1.13 2000/03/20 07:05:53 rahnds Exp $	*/
 /*	$NetBSD: ofw_machdep.c,v 1.1 1996/09/30 16:34:50 ws Exp $	*/
 
 /*
@@ -92,6 +92,10 @@ ofw_mem_regions(memp, availp)
 	       <= 0)
 		panic("no memory?");
 	*memp = OFmem;
+	/* HACK */
+	if (OFmem[0].size == 0) {
+		*memp = OFavail;
+	}
 	*availp = OFavail;
 }
 
