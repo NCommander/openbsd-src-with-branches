@@ -16,7 +16,7 @@
 
 #include "includes.h"
 
-RCSID("$OpenBSD: sftp.c,v 1.53 2004/06/21 22:30:45 djm Exp $");
+RCSID("$OpenBSD: sftp.c,v 1.54 2004/06/22 01:16:39 djm Exp $");
 
 #include <glob.h>
 
@@ -424,7 +424,7 @@ get_pathname(const char **cpp, char **path)
 				i++;
 				if (cp[i] != '\'' && cp[i] != '\"' &&
 				    cp[i] != '\\') {
-					error("Bad escaped character '\%c'",
+					error("Bad escaped character '\\%c'",
 					    cp[i]);
 					goto fail;
 				}
