@@ -1,4 +1,4 @@
-/*	$OpenBSD: pfctl.h,v 1.1 2003/01/04 00:01:34 deraadt Exp $ */
+/*	$OpenBSD: pfctl.h,v 1.2 2003/01/04 22:42:14 henning Exp $ */
 
 /*
  * Copyright (c) 2001 Daniel Hartmeier
@@ -50,8 +50,6 @@ int	 pfr_get_addrs(struct pfr_table *, struct pfr_addr *, int *, int);
 int	 pfr_get_astats(struct pfr_table *, struct pfr_astats *, int *, int);
 int	 pfr_clr_astats(struct pfr_table *, struct pfr_addr *, int, int *, int);
 int	 pfr_tst_addrs(struct pfr_table *, struct pfr_addr *, int, int *, int);
-int	 pfr_wrap_table(struct pfr_table *, struct pf_addr_wrap *, int *, int);
-int	 pfr_unwrap_table(struct pfr_table *, struct pf_addr_wrap *, int);
 int	 pfctl_clear_tables(int);
 int	 pfctl_show_tables(int);
 int	 pfctl_command_tables(int, char *[], char *, char *, char *, int);
