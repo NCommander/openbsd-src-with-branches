@@ -1,4 +1,4 @@
-/*	$OpenBSD: skeyinit.c,v 1.48 2004/06/07 19:28:03 otto Exp $	*/
+/*	$OpenBSD: skeyinit.c,v 1.49 2004/09/14 22:58:57 deraadt Exp $	*/
 
 /* OpenBSD S/Key (skeyinit.c)
  *
@@ -424,7 +424,7 @@ normal_mode(char *username, int n, char *key, char *seed)
 			(void)fputs("ERROR: Your passphrase may not be the "
 			    "same as your user name.\n", stderr);
 			continue;
-		} else if (strspn(passwd, "abcdefghijklmnopqrstuvwxyz") == 
+		} else if (strspn(passwd, "abcdefghijklmnopqrstuvwxyz") ==
 		    strlen(passwd)) {
 			(void)fputs("ERROR: Your passphrase must contain more "
 			    "than just lower case letters.\nWhitespace, "
