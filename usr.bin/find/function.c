@@ -1,4 +1,4 @@
-/*	$OpenBSD: function.c,v 1.10 1997/09/01 02:44:19 millert Exp $	*/
+/*	$OpenBSD: function.c,v 1.11 1997/11/13 08:30:33 deraadt Exp $	*/
 
 /*-
  * Copyright (c) 1990, 1993
@@ -38,7 +38,7 @@
 
 #ifndef lint
 /*static char sccsid[] = "from: @(#)function.c	8.1 (Berkeley) 6/6/93";*/
-static char rcsid[] = "$OpenBSD: function.c,v 1.10 1997/09/01 02:44:19 millert Exp $";
+static char rcsid[] = "$OpenBSD: function.c,v 1.11 1997/11/13 08:30:33 deraadt Exp $";
 #endif /* not lint */
 
 #include <sys/param.h>
@@ -1035,6 +1035,7 @@ c_perm(perm)
 		err(1, "-perm: %s: illegal mode string", perm);
 
 	new->m_data = getmode(set, 0);
+	free(set);
 	return (new);
 }
  
