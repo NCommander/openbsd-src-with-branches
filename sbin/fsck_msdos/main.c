@@ -1,4 +1,4 @@
-/*	$OpenBSD: main.c,v 1.3 1996/06/23 14:30:45 deraadt Exp $	*/
+/*	$OpenBSD: main.c,v 1.4 1997/01/15 23:41:47 millert Exp $	*/
 /*	$NetBSD: main.c,v 1.1.4.1 1996/05/31 18:41:54 jtc Exp $	*/
 
 /*
@@ -35,7 +35,7 @@
 
 
 #ifndef lint
-static char rcsid[] = "$OpenBSD: main.c,v 1.3 1996/06/23 14:30:45 deraadt Exp $";
+static char rcsid[] = "$OpenBSD: main.c,v 1.4 1997/01/15 23:41:47 millert Exp $";
 #endif /* not lint */
 
 #include <stdlib.h>
@@ -88,6 +88,9 @@ main(argc, argv)
 		case 'p':
 			preen = 1;
 			alwaysyes = alwaysno = 0;
+			break;
+
+		case 'f':
 			break;
 			
 		default:
