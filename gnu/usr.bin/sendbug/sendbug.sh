@@ -21,7 +21,7 @@
 # along with GNU GNATS; see the file COPYING.  If not, write to
 # the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.
 #
-#	$OpenBSD: sendbug.sh,v 1.13 2003/02/28 01:35:07 millert Exp $
+#	$OpenBSD: sendbug.sh,v 1.14 2003/03/21 21:32:47 david Exp $
 
 # The version of this sendbug.
 VERSION=3.97
@@ -155,8 +155,6 @@ if [ -n "$ORGANIZATION" ]; then
 else
   if [ -f $HOME/.organization ]; then
     ORGANIZATION="`cat $HOME/.organization`"
-  elif [ -f $HOME/.signature ]; then
-    ORGANIZATION="`cat $HOME/.signature`"
   elif [ -n "$DEFAULT_ORGANIZATION" ]; then
     ORGANIZATION="$DEFAULT_ORGANIZATION"
   fi
