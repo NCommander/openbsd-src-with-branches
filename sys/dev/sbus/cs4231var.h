@@ -1,4 +1,4 @@
-/*	$OpenBSD: cs4231var.h,v 1.4 2002/04/08 17:49:42 jason Exp $	*/
+/*	$OpenBSD: cs4231var.h,v 1.5 2002/09/09 20:25:17 jason Exp $	*/
 
 /*
  * Copyright (c) 1999 Jason L. Wright (jason@thought.net)
@@ -91,6 +91,5 @@ struct cs4231_softc {
 	int sc_precision;
 	int sc_need_commit;
 	int sc_channels;
-	u_int sc_last_format;
 	struct cs_dma	*sc_dmas;	/* dma list */
 };
