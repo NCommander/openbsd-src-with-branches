@@ -1,4 +1,4 @@
-/*	$OpenBSD: make_keys.c,v 1.1 1999/01/18 19:10:21 millert Exp $	*/
+/*	$OpenBSD: make_keys.c,v 1.2 1999/02/24 06:31:11 millert Exp $	*/
 
 /****************************************************************************
  * Copyright (c) 1998 Free Software Foundation, Inc.                        *
@@ -39,7 +39,7 @@
  */
 #include <curses.priv.h>
 
-MODULE_ID("$From: make_keys.c,v 1.5 1999/02/18 22:38:41 tom Exp $")
+MODULE_ID("$From: make_keys.c,v 1.6 1999/02/22 16:55:20 tom Exp $")
 
 #include <names.c>
 
@@ -109,7 +109,7 @@ int main(int argc, char *argv[])
 		0
 	};
 	static const char *suffix[] = {
-		" { 0, 0} };",
+		"\t{ 0, 0} };",
 		"",
 		"#endif /* NCU_KEYS_H */",
 		0

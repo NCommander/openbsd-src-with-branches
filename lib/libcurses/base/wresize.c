@@ -1,4 +1,4 @@
-/*	$OpenBSD: wresize.c,v 1.7 1998/09/13 19:16:31 millert Exp $	*/
+/*	$OpenBSD: wresize.c,v 1.1 1999/01/18 19:10:08 millert Exp $	*/
 
 /****************************************************************************
  * Copyright (c) 1998 Free Software Foundation, Inc.                        *
@@ -34,7 +34,7 @@
 
 #include <curses.priv.h>
 
-MODULE_ID("$From: wresize.c,v 1.11 1998/10/12 12:24:40 Alexander.V.Lukyanov Exp $")
+MODULE_ID("$From: wresize.c,v 1.12 1999/02/27 18:57:31 tom Exp $")
 
 /*
  * Reallocate a curses WINDOW struct to either shrink or grow to the specified
@@ -42,7 +42,7 @@ MODULE_ID("$From: wresize.c,v 1.11 1998/10/12 12:24:40 Alexander.V.Lukyanov Exp 
  * blanks.  The application is responsible for repainting the blank area.
  */
 
-#define DOALLOC(p,t,n)  (t *)_nc_doalloc(p, sizeof(t)*(n))
+#define DOALLOC(p,t,n)  typeRealloc(t, n, p)
 #define	ld_ALLOC(p,n)	DOALLOC(p,struct ldat,n)
 #define	c_ALLOC(p,n)	DOALLOC(p,chtype,n)
 

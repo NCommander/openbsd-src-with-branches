@@ -1,7 +1,7 @@
-/*	$OpenBSD: lib_ti.c,v 1.1 1999/01/18 19:10:20 millert Exp $	*/
+/*	$OpenBSD$	*/
 
 /****************************************************************************
- * Copyright (c) 1998 Free Software Foundation, Inc.                        *
+ * Copyright (c) 1999 Free Software Foundation, Inc.                        *
  *                                                                          *
  * Permission is hereby granted, free of charge, to any person obtaining a  *
  * copy of this software and associated documentation files (the            *
@@ -29,75 +29,46 @@
  ****************************************************************************/
 
 /****************************************************************************
- *  Author: Zeyd M. Ben-Halim <zmbenhal@netcom.com> 1992,1995               *
- *     and: Eric S. Raymond <esr@snark.thyrsus.com>                         *
+ *  Author: Thomas E. Dickey <dickey@clark.net> 1999                        *
  ****************************************************************************/
 
 
+/*
+ * free_ttype.c -- allocation functions for TERMTYPE
+ *
+ *	_nc_free_termtype()
+ *	use_extended_names()
+ *
+ */
+
 #include <curses.priv.h>
 
-#include <term_entry.h>
 #include <tic.h>
+#include <term_entry.h>
 
-MODULE_ID("$From: lib_ti.c,v 1.16 1999/02/28 23:11:28 tom Exp $")
+MODULE_ID("$Id: free_ttype.c,v 1.2 1999/03/01 00:30:35 tom Exp $")
 
-int tigetflag(NCURSES_CONST char *str)
+void _nc_free_termtype(TERMTYPE *ptr)
 {
-int i;
-
-	T((T_CALLED("tigetflag(%s)"), str));
-
-	if (cur_term != 0) {
-	    TERMTYPE *tp = &(cur_term->type);
-	    for_each_boolean(i,tp) {
-		const char *capname = ExtBoolname(tp, i, boolnames);
-		if (!strcmp(str, capname)) {
-		    /* setupterm forces invalid booleans to false */
-		    returnCode(tp->Booleans[i]);
-		}
-	    }
-	}
-
-	returnCode(ABSENT_BOOLEAN);
+	FreeIfNeeded(ptr->str_table);
+	FreeIfNeeded(ptr->term_names);
+#if NCURSES_XNAMES
+	FreeIfNeeded(ptr->ext_str_table);
+	FreeIfNeeded(ptr->Booleans);
+	FreeIfNeeded(ptr->Numbers);
+	FreeIfNeeded(ptr->Strings);
+	FreeIfNeeded(ptr->ext_Names);
+#endif
+	memset(ptr, 0, sizeof(TERMTYPE));
 }
 
-int tigetnum(NCURSES_CONST char *str)
+#if NCURSES_XNAMES
+bool _nc_user_definable = TRUE;
+
+int use_extended_names(bool flag)
 {
-int i;
-
-	T((T_CALLED("tigetnum(%s)"), str));
-
-	if (cur_term != 0) {
-	    TERMTYPE *tp = &(cur_term->type);
-	    for_each_number(i, tp) {
-		const char *capname = ExtNumname(tp, i, numnames);
-		if (!strcmp(str, capname)) {
-		    if (!VALID_NUMERIC(tp->Numbers[i]))
-			return -1;
-		    returnCode(tp->Numbers[i]);
-		}
-	    }
-	}
-
-	returnCode(CANCELLED_NUMERIC);	/* Solaris returns a -1 instead */
+	int oldflag = _nc_user_definable;
+	_nc_user_definable = flag;
+	return oldflag;
 }
-
-char *tigetstr(NCURSES_CONST char *str)
-{
-int i;
-
-	T((T_CALLED("tigetstr(%s)"), str));
-
-	if (cur_term != 0) {
-	    TERMTYPE *tp = &(cur_term->type);
-	    for_each_string(i, tp) {
-		const char *capname = ExtStrname(tp, i, strnames);
-		if (!strcmp(str, capname)) {
-		    /* setupterm forces cancelled strings to null */
-		    returnPtr(tp->Strings[i]);
-		}
-	    }
-	}
-
-	returnPtr(CANCELLED_STRING);
-}
+#endif
