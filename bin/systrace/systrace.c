@@ -1,4 +1,4 @@
-/*	$OpenBSD: systrace.c,v 1.45 2003/08/04 18:15:11 sturm Exp $	*/
+/*	$OpenBSD: systrace.c,v 1.46 2003/10/08 16:32:44 sturm Exp $	*/
 /*
  * Copyright 2002 Niels Provos <provos@citi.umich.edu>
  * All rights reserved.
@@ -590,7 +590,7 @@ main(int argc, char **argv)
 		usage();
 	}
 
-	/* Local initalization */
+	/* Local initialization */
 	systrace_initalias();
 	systrace_initpolicy(filename, policypath);
 	systrace_initcb();
