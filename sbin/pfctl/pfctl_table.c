@@ -1,4 +1,4 @@
-/*	$OpenBSD: pfctl_table.c,v 1.47 2003/07/03 21:09:13 cedric Exp $ */
+/*	$OpenBSD: pfctl_table.c,v 1.48 2003/07/11 08:29:34 cedric Exp $ */
 
 /*
  * Copyright (c) 2002 Cedric Berger
@@ -443,7 +443,7 @@ radix_perror(void)
 
 int
 pfctl_define_table(char *name, int flags, int addrs, const char *anchor,
-    const char *ruleset, struct pfr_buffer *ab, int ticket)
+    const char *ruleset, struct pfr_buffer *ab, u_int32_t ticket)
 {
 	struct pfr_table tbl;
 
