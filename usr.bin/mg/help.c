@@ -1,4 +1,4 @@
-/*	$OpenBSD: help.c,v 1.19 2002/07/01 14:33:44 vincent Exp $	*/
+/*	$OpenBSD: help.c,v 1.20 2002/08/22 23:28:19 deraadt Exp $	*/
 
 /*
  * Help functions for Mg 2
@@ -182,9 +182,9 @@ apropos_command(f, n)
 {
 	BUFFER		*bp;
 	LIST		*fnames, *el;
-	char		 string[32];
+	char		 string[32], *bufp;
 
-	if (eread("apropos: ", string, sizeof(string), EFNEW) == ABORT)
+	if ((bufp = eread("apropos: ", string, sizeof(string), EFNEW)) == NULL)
 		return ABORT;
 	/* FALSE means we got a 0 character string, which is fine */
 	bp = bfind("*help*", TRUE);
