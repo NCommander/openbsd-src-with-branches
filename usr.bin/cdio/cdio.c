@@ -1,4 +1,4 @@
-/*	$OpenBSD: cdio.c,v 1.11 1998/07/09 20:10:26 csapuntz Exp $	*/
+/*	$OpenBSD: cdio.c,v 1.12 1998/12/20 23:53:35 millert Exp $	*/
 /*
  * Compact Disc Control Utility by Serge V. Vakulenko <vak@cronyx.ru>.
  * Based on the non-X based CD player by Jean-Marc Zucconi and
@@ -222,7 +222,7 @@ int main (argc, argv)
 			if (p > buf)
 				*p++ = ' ';
 
-			strcpy (p, *argv);
+			strcpy (p, *argv);	/* ok */
 			p += len;
 		}
 		*p = 0;
