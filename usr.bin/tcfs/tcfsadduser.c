@@ -1,4 +1,4 @@
-/*	$OpenBSD: tcfsadduser.c,v 1.6 2000/06/20 06:45:16 fgsch Exp $	*/
+/*	$OpenBSD: tcfsadduser.c,v 1.7 2000/06/20 08:59:53 fgsch Exp $	*/
 
 /*
  *	Transparent Cryptographic File System (TCFS) for NetBSD 
@@ -41,7 +41,7 @@ adduser_main(int argn, char *argv[])
 	/*
 	 * Going to check the arguments
 	 */
-	while ((val = getopt(argn, argv, "g:l:hv")) != EOF)
+	while ((val = getopt(argn, argv, "g:l:hv")) != -1)
 		switch (val) {
 		case 'l':
 			strlcpy(user, optarg, sizeof(user));

@@ -1,4 +1,4 @@
-/*	$OpenBSD: tcfsrmkey.c,v 1.5 2000/06/20 01:29:14 provos Exp $	*/
+/*	$OpenBSD: tcfsrmkey.c,v 1.6 2000/06/20 08:59:53 fgsch Exp $	*/
 
 /*
  *	Transparent Cryptographic File System (TCFS) for NetBSD 
@@ -43,7 +43,7 @@ rmkey_main(int argc, char *argv[])
 	int havempname = FALSE, havefsname = FALSE, isgroupkey = FALSE;
 	int havename = FALSE, havefspath = FALSE;
 
-	while ((x = getopt(argc, argv, "f:p:g:")) != EOF) {
+	while ((x = getopt(argc, argv, "f:p:g:")) != -1) {
 		switch(x) {
 		case 'p':
 			havempname = TRUE;

@@ -1,4 +1,4 @@
-/*	$OpenBSD: tcfsaddgroup.c,v 1.10 2000/06/20 06:45:16 fgsch Exp $	*/
+/*	$OpenBSD: tcfsaddgroup.c,v 1.11 2000/06/20 08:59:52 fgsch Exp $	*/
 
 /*
  *	Transparent Cryptographic File System (TCFS) for NetBSD 
@@ -178,7 +178,7 @@ addgroup_main(int argn, char *argv[])
 	/*
 	 * Going to check the arguments
 	 */
-	while ((val = getopt(argn, argv, "vg:m:t:h")) != EOF)
+	while ((val = getopt(argn, argv, "vg:m:t:h")) != -1)
 		switch (val) {
 		case 'm':
 			members = atoi(optarg);

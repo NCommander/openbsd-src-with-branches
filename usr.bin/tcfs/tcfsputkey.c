@@ -1,4 +1,4 @@
-/*	$OpenBSD: tcfsputkey.c,v 1.9 2000/06/20 01:29:14 provos Exp $	*/
+/*	$OpenBSD: tcfsputkey.c,v 1.10 2000/06/20 08:59:53 fgsch Exp $	*/
 
 /*
  *	Transparent Cryptographic File System (TCFS) for NetBSD 
@@ -47,7 +47,7 @@ putkey_main(int argc, char *argv[])
 	int isgroupkey = FALSE;
 	int havename = FALSE, havefspath = FALSE, havekey = FALSE;
 
-	while ((x = getopt(argc, argv, "kf:p:g:")) != EOF) {
+	while ((x = getopt(argc, argv, "kf:p:g:")) != -1) {
 		switch(x) {
 		case 'k':
 			def = FALSE;
