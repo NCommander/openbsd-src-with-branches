@@ -1726,7 +1726,6 @@ gotit:
 		break;
 
 	default:
-		sc_print_addr(ecb->xs->sc_link);
 		printf("%s: unexpected MESSAGE IN; sending DEVICE RESET\n",
 		    sc->sc_dev.dv_xname);
 	reset:
