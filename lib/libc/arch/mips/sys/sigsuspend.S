@@ -38,10 +38,10 @@
 
 #if defined(SYSLIBC_SCCS)
 	.text
-	.asciz "$OpenBSD$"
+	.asciz "$OpenBSD: sigsuspend.S,v 1.4 1996/08/19 08:16:28 tholo Exp $"
 #endif /* SYSLIBC_SCCS */
 
-LEAF(sigsuspend)
+SYSLEAF(sigsuspend)
 	.set	reorder
 	lw	a0, 0(a0)		# indirect to mask arg
 	li	v0, SYS_sigsuspend
@@ -52,4 +52,4 @@ LEAF(sigsuspend)
 1:
 	la	t9, _C_LABEL(cerror)
 	jr	t9
-END(sigsuspend)
+SYSEND(sigsuspend)

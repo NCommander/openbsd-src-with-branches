@@ -40,7 +40,7 @@
 
 #if defined(LIBC_SCCS) 
 	.text
-	.asciz "$OpenBSD: setjmp.S,v 1.5 1996/08/19 08:16:05 tholo Exp $"
+	.asciz "$OpenBSD: setjmp.S,v 1.6 1997/07/23 20:55:25 kstailey Exp $"
 #endif /* LIBC_SCCS */
 
 /*
@@ -71,7 +71,11 @@ NON_LEAF(setjmp, SETJMP_FRAME_SIZE, ra)
 	sw	v0, (1 * 4)(v1)			# save sc_mask = sigblock(0)
 	move	a0, zero
 	addu	a1, sp, STAND_FRAME_SIZE	# pointer to struct sigaltstack
+#ifndef _THREAD_SAFE
 	jal	_C_LABEL(sigaltstack)
+#else
+	jal	_C_LABEL(_thread_sys_sigaltstack)
+#endif
 	lw	a0, SETJMP_FRAME_SIZE(sp)	# restore jmpbuf
 	lw	v1, STAND_FRAME_SIZE+8(sp)	# get old ss_onstack
 	and	v1, v1, 1			# extract onstack flag

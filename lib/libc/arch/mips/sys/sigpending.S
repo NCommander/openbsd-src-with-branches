@@ -38,10 +38,10 @@
 
 #if defined(SYSLIBC_SCCS)
 	.text
-	.asciz "$OpenBSD$"
+	.asciz "$OpenBSD: sigpending.S,v 1.4 1996/08/19 08:16:26 tholo Exp $"
 #endif /* SYSLIBC_SCCS */
 
-LEAF(sigpending)
+SYSLEAF(sigpending)
 	.set	reorder
 	li	v0, SYS_sigpending	# setlogin(name)
 	syscall
@@ -52,4 +52,4 @@ LEAF(sigpending)
 1:
 	la	t9, _C_LABEL(cerror)
 	jr	t9
-END(sigpending)
+SYSEND(sigpending)
