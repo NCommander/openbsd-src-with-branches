@@ -1,5 +1,5 @@
-/*	$OpenBSD: db_machdep.h,v 1.3 1997/01/19 13:53:09 niklas Exp $	*/
-/*	$NetBSD: db_machdep.h,v 1.19 1997/02/18 22:29:58 gwr Exp $	*/
+/*	$OpenBSD: db_machdep.h,v 1.4 1997/03/21 00:36:36 niklas Exp $	*/
+/*	$NetBSD: db_machdep.h,v 1.20 1997/06/26 01:26:58 thorpej Exp $	*/
 
 /* 
  * Mach Operating System
@@ -101,5 +101,10 @@ void	kdb_kintr __P((db_regs_t *));
 int 	kdb_trap __P((int, db_regs_t *));
 
 #endif /* _KERNEL */
+
+/*
+ * We use a.out symbols in DDB.
+ */
+#define	DB_AOUT_SYMBOLS
 
 #endif	/* _M68K_DB_MACHDEP_H_ */
