@@ -1,4 +1,4 @@
-/*	$OpenBSD: main.c,v 1.14 1997/02/10 04:19:55 millert Exp $	*/
+/*	$OpenBSD: main.c,v 1.15 1997/02/25 17:37:20 millert Exp $	*/
 /*	$NetBSD: main.c,v 1.8 1996/03/15 22:39:32 scottr Exp $	*/
 
 /*-
@@ -67,6 +67,7 @@ static char rcsid[] = "$NetBSD: main.c,v 1.8 1996/03/15 22:39:32 scottr Exp $";
 #include <errno.h>
 #include <fcntl.h>
 #include <fstab.h>
+#include <paths.h>
 #include <signal.h>
 #include <stdio.h>
 #include <stdlib.h>
