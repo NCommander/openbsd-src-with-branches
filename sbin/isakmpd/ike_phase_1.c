@@ -1,4 +1,4 @@
-/*	$OpenBSD: ike_phase_1.c,v 1.40 2003/10/04 17:29:58 cloder Exp $	*/
+/*	$OpenBSD: ike_phase_1.c,v 1.41 2003/10/14 14:29:15 ho Exp $	*/
 /*	$EOM: ike_phase_1.c,v 1.31 2000/12/11 23:47:56 niklas Exp $	*/
 
 /*
@@ -236,7 +236,7 @@ ike_phase_1_initiator_send_SA (struct message *msg)
 	    group_desc = new_group_desc;
 	  else if (group_desc != new_group_desc)
 	    {
-	      log_print ("ike_phase_1_inititor_send_SA: "
+	      log_print ("ike_phase_1_initiator_send_SA: "
 			 "differing group descriptions in a proposal");
 	      goto bail_out;
 	    }
