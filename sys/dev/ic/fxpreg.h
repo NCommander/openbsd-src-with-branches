@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: if_fxpreg.h,v 1.5 1998/07/02 21:15:46 downsj Exp $	*/
 
 /*
  * Copyright (c) 1995, David Greenman
