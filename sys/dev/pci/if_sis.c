@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_sis.c,v 1.14 2001/06/24 20:27:00 fgsch Exp $ */
+/*	$OpenBSD: if_sis.c,v 1.15 2001/06/27 06:34:48 kjc Exp $ */
 /*
  * Copyright (c) 1997, 1998, 1999
  *	Bill Paul <wpaul@ctr.columbia.edu>.  All rights reserved.
@@ -90,7 +90,6 @@
 #endif
 
 #include <vm/vm.h>              /* for vtophys */
-#include <vm/pmap.h>            /* for vtophys */
 
 #include <sys/device.h>
 

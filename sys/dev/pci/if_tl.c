@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_tl.c,v 1.20 2001/06/24 20:27:01 fgsch Exp $	*/
+/*	$OpenBSD: if_tl.c,v 1.21 2001/06/27 06:34:49 kjc Exp $	*/
 
 /*
  * Copyright (c) 1997, 1998
@@ -210,7 +210,6 @@
 #endif
 
 #include <vm/vm.h>              /* for vtophys */
-#include <vm/pmap.h>            /* for vtophys */
 
 #include <dev/mii/mii.h>
 #include <dev/mii/miivar.h>

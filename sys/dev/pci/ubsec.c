@@ -1,4 +1,4 @@
-/*	$OpenBSD: ubsec.c,v 1.65 2001/07/02 04:34:47 jason Exp $	*/
+/*	$OpenBSD: ubsec.c,v 1.66 2001/07/04 06:03:55 jason Exp $	*/
 
 /*
  * Copyright (c) 2000 Jason L. Wright (jason@thought.net)
@@ -46,12 +46,10 @@
 #include <sys/malloc.h>
 #include <sys/kernel.h>
 #include <sys/mbuf.h>
-#include <vm/vm.h>
-#include <vm/vm_extern.h>
-#include <vm/pmap.h>
-#include <machine/pmap.h>
 #include <sys/device.h>
 #include <sys/queue.h>
+
+#include <vm/vm.h>
 
 #include <crypto/cryptodev.h>
 #include <crypto/cryptosoft.h>
