@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.5 2003/05/28 19:19:41 millert Exp $
+#	$OpenBSD: Makefile,v 1.6 2003/05/28 20:05:41 mickey Exp $
 
 PROG=	more
 MAN=
@@ -13,5 +13,7 @@ morehelp.h: ${.CURDIR}/more.help
 	echo -n 'const char *more_help = "' > morehelp.h
 	cat  ${.CURDIR}/more.help >> morehelp.h
 	echo '";' >> morehelp.h
+
+more.o: morehelp.h
 
 .include <bsd.prog.mk>
