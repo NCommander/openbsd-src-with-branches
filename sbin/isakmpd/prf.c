@@ -1,4 +1,4 @@
-/*	$OpenBSD: prf.c,v 1.6 1999/04/19 19:54:54 niklas Exp $	*/
+/*	$OpenBSD: prf.c,v 1.7 1999/05/02 19:16:41 niklas Exp $	*/
 /*	$EOM: prf.c,v 1.7 1999/05/02 12:50:29 niklas Exp $	*/
 
 /*
@@ -100,7 +100,7 @@ prf_alloc (enum prfs type, int subtype, char *shared, int sharedsize)
   prf = malloc (sizeof *prf);
   if (!prf)
     {
-      log_error ("prf_alloc: malloc (%d) failed", sizeof *prf);
+      log_error ("prf_alloc: malloc (%lu) failed", (unsigned long)sizeof *prf);
       return 0;
     }
 
@@ -110,7 +110,7 @@ prf_alloc (enum prfs type, int subtype, char *shared, int sharedsize)
       prfctx = malloc (sizeof *prfctx);
       if (!prfctx)
 	{
-	  log_error ("prf_alloc: malloc (%d) failed", sizeof *prfctx);
+	  log_error ("prf_alloc: malloc (%lu) failed", (unsigned long)sizeof *prfctx);
 	  goto cleanprf;
 	}
       prf->prfctx = prfctx;
