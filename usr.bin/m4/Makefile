@@ -1,11 +1,11 @@
-#	$OpenBSD: Makefile,v 1.8 2001/09/18 14:55:52 espie Exp $
+#	$OpenBSD: Makefile,v 1.9 2002/04/22 21:45:00 miod Exp $
 
 # -DEXTENDED 
 # 	if you want the paste & spaste macros.
 
 PROG=	m4
 CFLAGS+=-DEXTENDED
-CDIAGFLAGS=-W -Wall -Wstrict-prototypes \
+CDIAGFLAGS=-W -Wall -Wstrict-prototypes -pedantic \
 	-Wno-unused -Wno-char-subscripts -Wno-sign-compare
 
 SRCS=	eval.c expr.c look.c main.c misc.c gnum4.c trace.c
