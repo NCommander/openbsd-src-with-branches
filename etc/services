@@ -182,3 +182,5 @@ eklogin		2105/tcp		# Kerberos encrypted `rlogin'
 #
 supfilesrv	871/tcp			# SUP server
 supfiledbg	1127/tcp		# SUP debugging
+radius		1645/udp		# radius authentication
+radacct		1646/udp		# radius accounting
