@@ -3434,11 +3434,7 @@ pmap_tlb_shootnow(int32_t cpumask)
 	self->ci_tlb_ipi_mask = cpumask;
 #endif
 
-#ifdef notyet
 	pmap_do_tlb_shootdown(0);	/* do *our* work. */
-#else
-	pmap_do_tlb_shootdown();	/* do *our* work. */
-#endif
 
 #ifdef MULTIPROCESSOR
 	splx(s);
@@ -3579,11 +3575,7 @@ pmap_tlb_shootdown(pmap, va, pte, cpumaskp)
  *	Process pending TLB shootdown operations for this processor.
  */
 void
-#ifdef notyet
 pmap_do_tlb_shootdown(struct cpu_info *self)
-#else
-pmap_do_tlb_shootdown(void)
-#endif
 {
 	u_long cpu_id = cpu_number();
 	struct pmap_tlb_shootdown_q *pq = &pmap_tlb_shootdown_q[cpu_id];

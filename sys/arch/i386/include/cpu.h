@@ -363,8 +363,8 @@ int     p4tcc_setperf(void *, size_t *, void *, size_t);
 
 /* npx.c */
 void	npxdrop(struct proc *);
-void	npxsave_proc(struct proc *);
-void	npxsave_cpu(struct cpu_info *);
+void	npxsave_proc(struct proc *, int);
+void	npxsave_cpu(struct cpu_info *, int);
 
 #if defined(GPL_MATH_EMULATE)
 /* math_emulate.c */

@@ -1,4 +1,4 @@
-/*	$OpenBSD: intr.h,v 1.4.4.17 2003/05/17 16:07:37 andreas Exp $	*/
+/*	$OpenBSD$	*/
 /*	$NetBSD: intr.h,v 1.5 1996/05/13 06:11:28 mycroft Exp $	*/
 
 /*
@@ -253,17 +253,16 @@ softintr(sir, vec)
 #define	setsoftnet()	softintr(1 << SIR_NET, IPL_SOFTNET)
 #define	setsofttty()	softintr(1 << SIR_TTY, IPL_SOFTTTY)
 
-#define I386_IPI_HALT	0x00000001
-#define I386_IPI_TLB	0x00000002
-#define I386_IPI_FPSAVE	0x00000004
+#define I386_IPI_HALT		0x00000001
+#define I386_IPI_MICROSET	0x00000002
+#define I386_IPI_FLUSH_FPU	0x00000004
+#define I386_IPI_SYNCH_FPU	0x00000008
+#define I386_IPI_TLB		0x00000010
+#define I386_IPI_MTRR		0x00000020
+#define I386_IPI_GDT		0x00000040
+#define I386_IPI_DDB		0x00000080	/* synchronize while in ddb */
 
-/* the following are for debugging.. */
-#define I386_IPI_GMTB	0x00000010
-#define I386_IPI_NYCHI	0x00000020
-
-#define I386_IPI_DDB	0x00000040	/* syncronize while in ddb */
-
-#define I386_NIPI	7
+#define I386_NIPI	8
 
 struct cpu_info;
 
@@ -277,11 +276,7 @@ void i386_intunlock(struct intrframe);
 void i386_softintlock(void);
 void i386_softintunlock(void);
 
-#ifdef notyet
 extern void (*ipifunc[I386_NIPI])(struct cpu_info *);
-#else
-extern void (*ipifunc[I386_NIPI])(void);
-#endif
 #endif
 
 #endif /* !_LOCORE */

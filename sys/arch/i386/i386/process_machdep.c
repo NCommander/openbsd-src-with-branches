@@ -211,7 +211,7 @@ process_read_fpregs(p, regs)
 		union savefpu *frame = process_fpframe(p);
 
 #if NNPX > 0
-		npxsave_proc(p);
+		npxsave_proc(p, 1);
 #endif
 
 		if (i386_use_fxsave) {
@@ -311,7 +311,7 @@ process_write_fpregs(p, regs)
 
 	if (p->p_md.md_flags & MDP_USEDFPU) {
 #if NNPX > 0
-		npxdrop();
+		npxsave_proc(p, 0);
 #endif
 	} else
 		p->p_md.md_flags |= MDP_USEDFPU;

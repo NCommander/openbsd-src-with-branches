@@ -1,4 +1,4 @@
-/*	$OpenBSD: vm_machdep.c,v 1.17.4.10 2003/05/13 19:42:08 ho Exp $	*/
+/*	$OpenBSD$	*/
 /*	$NetBSD: vm_machdep.c,v 1.61 1996/05/03 19:42:35 christos Exp $	*/
 
 /*-
@@ -85,7 +85,7 @@ cpu_fork(p1, p2, stack, stacksize, func, arg)
 	struct switchframe *sf;
 
 #if NNPX > 0
-	npxsave_proc(p1);
+	npxsave_proc(p1, 1);
 #endif
 
 	p2->p_md.md_flags = p1->p_md.md_flags;
@@ -139,7 +139,7 @@ cpu_swapout(p)
 	/*
 	 * Make sure we save the FP state before the user area vanishes.
 	 */
-	npxsave_proc(p);
+	npxsave_proc(p, 1);
 #endif
 }
 
@@ -157,7 +157,8 @@ cpu_exit(p)
 {
 #if NNPX > 0
 	/* If we were using the FPU, forget about it. */
-	npxdrop(p);
+	if (p->p_addr->u_pcb.pcb_fpcpu != NULL)
+		npxsave_proc(p, 0);
 #endif
 
 	uvmexp.swtch++;

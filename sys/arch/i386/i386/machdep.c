@@ -2877,8 +2877,11 @@ setregs(p, pack, stack, retval)
 	struct pmap *pmap = vm_map_pmap(&p->p_vmspace->vm_map);
 	struct trapframe *tf = p->p_md.md_regs;
 
+#if NNPX > 0
 	/* If we were using the FPU, forget about it. */
-	npxdrop(p);
+	if (pcb->pcb_fpcpu != NULL)
+		npxsave_proc(p, 0);
+#endif
 
 #ifdef USER_LDT
 	pmap_ldt_cleanup(p);
