@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /*	$NetBSD: rd_root.c,v 1.7 1996/11/20 18:56:58 gwr Exp $	*/
 
 /*-
@@ -37,6 +38,7 @@
  */
 
 #include <sys/param.h>
+#include <sys/systm.h>
 #include <sys/reboot.h>
 
 #include <dev/ramdisk.h>

@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /*	$NetBSD: mainbus.c,v 1.5 1996/12/17 21:11:35 gwr Exp $	*/
 
 /*-

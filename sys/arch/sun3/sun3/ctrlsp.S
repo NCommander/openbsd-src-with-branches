@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /*	$NetBSD: ctrlsp.S,v 1.3 1996/11/20 18:57:26 gwr Exp $	*/
 
 /*-

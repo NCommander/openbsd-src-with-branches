@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /*	$NetBSD: buserr.h,v 1.6 1996/11/20 18:57:23 gwr Exp $	*/
 
 /*-

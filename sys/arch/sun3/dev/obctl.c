@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /*	$NetBSD: obctl.c,v 1.11 1996/11/20 18:56:55 gwr Exp $	*/
 
 /*-
