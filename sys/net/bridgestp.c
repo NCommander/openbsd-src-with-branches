@@ -1,4 +1,4 @@
-/*	$OpenBSD: bridgestp.c,v 1.10 2002/11/26 17:34:43 jason Exp $	*/
+/*	$OpenBSD: bridgestp.c,v 1.11 2002/12/04 15:44:21 markus Exp $	*/
 
 /*
  * Copyright (c) 2000 Jason L. Wright (jason@thought.net)
@@ -1259,6 +1259,7 @@ bstp_ioctl(ifp, cmd, data)
 	case SIOCBRDGDEL:
 	case SIOCBRDGSIFFLGS:
 	case SIOCBRDGSIFPRIO:
+	case SIOCBRDGSIFCOST:
 		r = 1;
 		break;
 	default:
