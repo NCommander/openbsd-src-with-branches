@@ -38,6 +38,9 @@
 #undef COMMENT_BEGIN
 #define COMMENT_BEGIN "#"
 
+#undef	CC1_SPEC
+#define CC1_SPEC "-fno-strength-reduce"
+
 #undef ASM_APP_ON
 #define ASM_APP_ON "#APP\n"
 
