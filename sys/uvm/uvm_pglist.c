@@ -1,3 +1,4 @@
+/*	$OpenBSD: uvm_pglist.c,v 1.7 1999/05/24 19:10:58 thorpej Exp $	*/
 /*	$NetBSD: uvm_pglist.c,v 1.7 1999/05/24 19:10:58 thorpej Exp $	*/
 
 #define VM_PAGE_ALLOC_MEMORY_STATS

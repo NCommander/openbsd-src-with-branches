@@ -1,3 +1,4 @@
+/*	$OpenBSD: uvm_stat.c,v 1.12 1999/03/26 17:34:16 chs Exp $	 */
 /*	$NetBSD: uvm_stat.c,v 1.12 1999/03/26 17:34:16 chs Exp $	 */
 
 /*

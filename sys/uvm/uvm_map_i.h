@@ -1,3 +1,4 @@
+/*	$OpenBSD: uvm_map_i.h,v 1.14 1999/06/04 23:38:42 thorpej Exp $	*/
 /*	$NetBSD: uvm_map_i.h,v 1.14 1999/06/04 23:38:42 thorpej Exp $	*/
 
 /* 

@@ -1,3 +1,5 @@
+/*	$OpenBSD$	*/
+
 /*
  * Copyright 1999 Niels Provos <provos@citi.umich.edu>
  * All rights reserved.
