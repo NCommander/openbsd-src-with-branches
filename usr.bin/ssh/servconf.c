@@ -10,7 +10,7 @@
  */
 
 #include "includes.h"
-RCSID("$OpenBSD: servconf.c,v 1.126 2003/08/28 12:54:34 markus Exp $");
+RCSID("$OpenBSD: servconf.c,v 1.127 2003/09/01 18:15:50 markus Exp $");
 
 #include "ssh.h"
 #include "log.h"
@@ -279,10 +279,10 @@ static struct {
 	{ "afstokenpassing", sUnsupported },
 #ifdef GSSAPI
 	{ "gssapiauthentication", sGssAuthentication },
-	{ "gssapicleanupcreds", sGssCleanupCreds },
+	{ "gssapicleanupcredentials", sGssCleanupCreds },
 #else
 	{ "gssapiauthentication", sUnsupported },
-	{ "gssapicleanupcreds", sUnsupported },
+	{ "gssapicleanupcredentials", sUnsupported },
 #endif
 	{ "passwordauthentication", sPasswordAuthentication },
 	{ "kbdinteractiveauthentication", sKbdInteractiveAuthentication },
