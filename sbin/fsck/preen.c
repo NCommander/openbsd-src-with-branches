@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: preen.c,v 1.4 1997/09/14 10:37:42 deraadt Exp $	*/
 /*	$NetBSD: preen.c,v 1.15 1996/09/28 19:21:42 christos Exp $	*/
 
 /*
@@ -71,7 +71,7 @@ struct diskentry {
 	TAILQ_ENTRY(diskentry) 	    d_entries;
 	char		       	   *d_name;	/* disk base name */
 	TAILQ_HEAD(prt, partentry)  d_part;	/* list of partitions on disk */
-	int			    d_pid;	/* 0 or pid of fsck proc */
+	pid_t			    d_pid;	/* 0 or pid of fsck proc */
 };
 
 TAILQ_HEAD(disk, diskentry) diskh;
