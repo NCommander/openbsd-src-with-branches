@@ -23,7 +23,7 @@
  */
 
 #include "includes.h"
-RCSID("$OpenBSD: misc.c,v 1.23 2003/10/28 09:08:06 markus Exp $");
+RCSID("$OpenBSD: misc.c,v 1.24 2004/06/14 01:44:39 djm Exp $");
 
 #include "misc.h"
 #include "log.h"
@@ -308,7 +308,7 @@ addargs(arglist *args, char *fmt, ...)
 {
 	va_list ap;
 	char buf[1024];
-	int nalloc;
+	u_int nalloc;
 
 	va_start(ap, fmt);
 	vsnprintf(buf, sizeof(buf), fmt, ap);
