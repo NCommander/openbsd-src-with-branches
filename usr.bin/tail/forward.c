@@ -1,4 +1,4 @@
-/*	$OpenBSD: forward.c,v 1.3 1996/06/26 05:40:15 deraadt Exp $	*/
+/*	$OpenBSD: forward.c,v 1.4 1997/01/12 23:43:05 millert Exp $	*/
 /*	$NetBSD: forward.c,v 1.7 1996/02/13 16:49:10 ghudson Exp $	*/
 
 /*-
@@ -41,12 +41,11 @@
 #if 0
 static char sccsid[] = "@(#)forward.c	8.1 (Berkeley) 6/6/93";
 #endif
-static char rcsid[] = "$OpenBSD: forward.c,v 1.3 1996/06/26 05:40:15 deraadt Exp $";
+static char rcsid[] = "$OpenBSD: forward.c,v 1.4 1997/01/12 23:43:05 millert Exp $";
 #endif /* not lint */
 
 #include <sys/types.h>
 #include <sys/stat.h>
-#include <sys/time.h>
 #include <sys/mman.h>
 
 #include <err.h>
@@ -92,7 +91,6 @@ forward(fp, style, off, sbp)
 	struct stat *sbp;
 {
 	register int ch;
-	struct timeval second;
 
 	switch(style) {
 	case FBYTES:
@@ -176,15 +174,7 @@ forward(fp, style, off, sbp)
 		(void)fflush(stdout);
 		if (!fflag)
 			break;
-		/*
-		 * We pause for one second after displaying any data that has
-		 * accumulated since we read the file.  Since sleep(3) takes
-		 * eight system calls, use select() instead.
-		 */
-		second.tv_sec = 1;
-		second.tv_usec = 0;
-		if (select(0, NULL, NULL, NULL, &second) == -1)
-			err(1, "select");
+		sleep(1);
 		clearerr(fp);
 	}
 }
