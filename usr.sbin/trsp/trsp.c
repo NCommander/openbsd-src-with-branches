@@ -1,4 +1,4 @@
-/*	$OpenBSD: trsp.c,v 1.8 2002/02/16 21:28:10 millert Exp $	*/
+/*	$OpenBSD: trsp.c,v 1.9 2002/02/17 19:42:40 millert Exp $	*/
 
 /*-
  * Copyright (c) 1997 The NetBSD Foundation, Inc.
@@ -125,9 +125,9 @@ int	jflag;
 int	aflag;
 int	zflag;
 struct	nlist nl[] = {
-#define	N_SPP_DEBUG	0
+#define	N_SPP_DEBUG	0		/* no sysctl */
 	{ "_spp_debug" },
-#define	N_SPP_DEBX	1
+#define	N_SPP_DEBX	1		/* no sysctl */
 	{ "_spp_debx" },
 	{ NULL },
 };

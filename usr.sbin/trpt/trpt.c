@@ -1,4 +1,4 @@
-/*	$OpenBSD: trpt.c,v 1.11 2002/03/08 17:22:24 mickey Exp $	*/
+/*	$OpenBSD: trpt.c,v 1.12 2002/03/14 16:44:25 mpech Exp $	*/
 
 /*-
  * Copyright (c) 1997 The NetBSD Foundation, Inc.
@@ -120,9 +120,9 @@ static char sccsid[] = "@(#)trpt.c	8.1 (Berkeley) 6/6/93";
 #include <unistd.h>
 
 struct nlist nl[] = {
-#define	N_TCP_DEBUG	0
+#define	N_TCP_DEBUG	0		/* no sysctl */
 	{ "_tcp_debug" },
-#define	N_TCP_DEBX	1
+#define	N_TCP_DEBX	1		/* no sysctl */
 	{ "_tcp_debx" },
 	{ NULL },
 };
