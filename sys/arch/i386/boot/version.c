@@ -1,7 +1,12 @@
+/*	$OpenBSD$	*/
 /*	$NetBSD: version.c,v 1.28 1995/12/23 17:21:23 perry Exp $	*/
 
 /*
  *	NOTE ANY CHANGES YOU MAKE TO THE BOOTBLOCKS HERE.
+ *
+ *	1.28 -> 1.29
+ *		adding program for booting from DOS file.
+ *		implement 'list files' (Luke Mewburn <lukem@telstra.com.au>)
  *
  *	1.27 -> 1.28
  *		fix gets to use real timeout instead of loop and do
@@ -54,4 +59,4 @@
  *		look in boot.c revision logs
  */
 
-char *version = "1.28";
+char version[] = "1.29";
