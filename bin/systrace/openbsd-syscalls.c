@@ -1,4 +1,4 @@
-/*	$OpenBSD: openbsd-syscalls.c,v 1.8 2002/07/19 14:38:58 itojun Exp $	*/
+/*	$OpenBSD: openbsd-syscalls.c,v 1.9 2002/07/22 04:02:39 provos Exp $	*/
 /*
  * Copyright 2002 Niels Provos <provos@citi.umich.edu>
  * All rights reserved.
@@ -472,7 +472,7 @@ obsd_io(int fd, pid_t pid, int op, void *addr, u_char *buf, size_t size)
 	return (0);
 }
 
-char *
+static char *
 obsd_getcwd(int fd, pid_t pid, char *buf, size_t size)
 {
 	char *path;
