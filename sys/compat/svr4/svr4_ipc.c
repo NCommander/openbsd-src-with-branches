@@ -1,4 +1,4 @@
-/*	$OpenBSD: svr4_ipc.c,v 1.3 1997/02/13 19:45:18 niklas Exp $	*/
+/*	$OpenBSD: svr4_ipc.c,v 1.4 1997/08/29 18:30:58 kstailey Exp $	*/
 /*	$NetBSD: svr4_ipc.c,v 1.3 1997/03/30 17:21:02 christos Exp $	*/
 
 /*
@@ -221,7 +221,7 @@ svr4_semctl(p, v, retval)
 		SCARG(&ap, arg)->buf = stackgap_alloc(&sg, sizeof(bs));
 		if ((error = sys___semctl(p, &ap, retval)) != 0)
 			return error;
-		error = copyin(&bs, SCARG(&ap, arg)->buf, sizeof bs);
+		error = copyin(SCARG(&ap, arg)->buf, &bs, sizeof bs);
 		if (error)
 			return error;
 		bsd_to_svr4_semid_ds(&bs, &ss);
