@@ -334,6 +334,24 @@ chrtoblk(dev)
 }
 
 /*
+ * Convert a character device number to a block device number.
+ */
+dev_t
+blktochr(dev)
+	dev_t dev;
+{
+	int blkmaj = major(dev);
+	int i;
+
+	if (blkmaj >= nblkdev)
+		return (NODEV);
+	for (i = 0; i < sizeof(chrtoblktbl)/sizeof(chrtoblktbl[0]); i++)
+		if (blkmaj == chrtoblktbl[i])
+			return (makedev(i, minor(dev)));
+	return (NODEV);
+}
+
+/*
  * This entire table could be autoconfig()ed but that would mean that
  * the kernel's idea of the console would be out of sync with that of
  * the standalone boot.  I think it best that they both use the same
