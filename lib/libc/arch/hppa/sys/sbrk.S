@@ -1,4 +1,4 @@
-/*	$OpenBSD: sbrk.S,v 1.2 1999/12/31 03:06:49 mickey Exp $	*/
+/*	$OpenBSD: sbrk.S,v 1.3 1999/12/31 04:28:50 mickey Exp $	*/
 
 /*
  * Copyright (c) 1999 Michael Shalayeff
@@ -36,7 +36,8 @@
 #ifdef SYSLIBC_SCCS
 	.space .text
 	.subspa $code$
-	.asciz "$OpenBSD$"
+	.asciz "$OpenBSD: sbrk.S,v 1.3 1999/12/31 04:28:50 mickey Exp $"
+	.align	4
 #endif
 
 	.import	end, data
