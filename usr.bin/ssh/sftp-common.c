@@ -24,7 +24,7 @@
  */
 
 #include "includes.h"
-RCSID("$OpenBSD: sftp-common.c,v 1.4 2001/07/14 15:10:17 stevesk Exp $");
+RCSID("$OpenBSD: sftp-common.c,v 1.5 2001/12/02 02:08:32 deraadt Exp $");
 
 #include "buffer.h"
 #include "bufaux.h"
@@ -70,6 +70,7 @@ Attrib *
 decode_attrib(Buffer *b)
 {
 	static Attrib a;
+
 	attrib_clear(&a);
 	a.flags = buffer_get_int(b);
 	if (a.flags & SSH2_FILEXFER_ATTR_SIZE)
@@ -88,6 +89,7 @@ decode_attrib(Buffer *b)
 	if (a.flags & SSH2_FILEXFER_ATTR_EXTENDED) {
 		char *type, *data;
 		int i, count;
+
 		count = buffer_get_int(b);
 		for (i = 0; i < count; i++) {
 			type = buffer_get_string(b, NULL);
