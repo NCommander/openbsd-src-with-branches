@@ -1,4 +1,4 @@
-/*	$OpenBSD: ncr5380var.h,v 1.3 1996/04/18 23:47:21 niklas Exp $	*/
+/*	$OpenBSD: ncr5380var.h,v 1.5 1997/09/11 01:07:13 kstailey Exp $	*/
 /*	$NetBSD: ncr5380var.h,v 1.6 1996/05/10 18:04:06 gwr Exp $	*/
 
 /*
@@ -167,6 +167,7 @@ struct ncr5380_softc {
 	u_char	sc_imess[NCR_MAX_MSG_LEN];
 	u_char	*sc_imp;		/* Incoming message pointer */
 
+	struct timeout sc_timeout;
 };
 
 void	ncr5380_init __P((struct ncr5380_softc *));
