@@ -1,4 +1,4 @@
-/*	$OpenBSD: mainbus.c,v 1.4 1996/05/07 07:21:47 deraadt Exp $	*/
+/*	$OpenBSD: mainbus.c,v 1.5 1996/05/30 09:30:08 deraadt Exp $	*/
 /*	$NetBSD: mainbus.c,v 1.8 1996/04/11 22:13:37 cgd Exp $	*/
 
 /*
@@ -35,7 +35,7 @@
 #include <sys/systm.h>
 #include <sys/device.h>
 
-#include <machine/bus.h>
+#include <machine/bus.old.h>
 
 #include <dev/isa/isavar.h>
 #include <dev/eisa/eisavar.h>

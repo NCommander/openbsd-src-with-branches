@@ -1,4 +1,4 @@
-/*	$OpenBSD: pcivar.h,v 1.6 1996/04/18 23:48:08 niklas Exp $	*/
+/*	$OpenBSD: pcivar.h,v 1.7 1996/04/21 22:25:51 deraadt Exp $	*/
 /*	$NetBSD: pcivar.h,v 1.15 1996/03/28 02:16:23 cgd Exp $	*/
 
 /*
@@ -42,7 +42,7 @@
  * provided by pci_machdep.h.
  */
 
-#include <machine/bus.h>
+#include <machine/bus.old.h>
 #include <dev/pci/pcireg.h>
 
 /*

@@ -1,4 +1,4 @@
-/*	$OpenBSD: aic7xxx.c,v 1.10 1996/10/16 10:25:07 deraadt Exp $	*/
+/*	$OpenBSD: aic7xxx.c,v 1.11 1996/10/31 01:01:24 niklas Exp $	*/
 
 /*
  * Generic driver for the aic7xxx based adaptec SCSI controllers
@@ -118,7 +118,7 @@
 #include <sys/systm.h>
 #if defined(__NetBSD__) || defined(__OpenBSD__)
 #include <sys/device.h>
-#include <machine/bus.h>
+#include <machine/bus.old.h>
 #include <machine/intr.h>
 #endif /* defined(__NetBSD__) */
 

@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_ep_pcmcia.c,v 1.3 1996/05/07 07:34:16 deraadt Exp $       */
+/*	$OpenBSD: if_ep_pcmcia.c,v 1.4 1996/10/16 12:36:29 deraadt Exp $       */
 /*	$NetBSD: if_ep.c,v 1.90 1996/04/11 22:29:15 cgd Exp $	*/
 
 /*
@@ -63,7 +63,7 @@
 #endif
 
 #include <machine/cpu.h>
-#include <machine/bus.h>
+#include <machine/bus.old.h>
 
 #include <dev/ic/elink3var.h>
 #include <dev/ic/elink3reg.h>

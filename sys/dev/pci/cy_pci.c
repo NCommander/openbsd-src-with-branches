@@ -1,4 +1,4 @@
-/*	$OpenBSD: cy.c,v 1.4 1996/06/23 13:11:05 deraadt Exp $	*/
+/*	$OpenBSD: cy_pci.c,v 1.1 1996/07/27 07:20:07 deraadt Exp $	*/
 
 /*
  * cy.c
@@ -41,7 +41,7 @@
 #include <sys/device.h>
 #include <sys/malloc.h>
 #include <sys/systm.h>
-#include <machine/bus.h>
+#include <machine/bus.old.h>
 #include <dev/pci/pcivar.h>
 #include <dev/pci/pcireg.h>
 #include <dev/pci/pcidevs.h>

@@ -1,4 +1,4 @@
-/*    $OpenBSD: if_de.c,v 1.12 1996/08/21 22:27:52 deraadt Exp $       */
+/*    $OpenBSD: if_de.c,v 1.13 1996/08/23 16:24:50 niklas Exp $       */
 /*    $NetBSD: if_de.c,v 1.22.4.1 1996/06/03 20:32:07 cgd Exp $       */
 
 /*-
@@ -103,7 +103,7 @@
 #endif /* __bsdi__ */
 
 #if defined(__NetBSD__) || defined(__OpenBSD__)
-#include <machine/bus.h>
+#include <machine/bus.old.h>
 #include <machine/intr.h>
 
 #include <dev/pci/pcireg.h>

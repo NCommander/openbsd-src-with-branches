@@ -1,4 +1,4 @@
-/*	$OpenBSD: ace.c,v 1.5 1996/09/02 09:01:49 deraadt Exp $	*/
+/*	$OpenBSD: ace.c,v 1.6 1996/09/14 15:58:21 pefo Exp $	*/
 /*	$NetBSD: com.c,v 1.82.4.1 1996/06/02 09:08:00 mrg Exp $	*/
 
 /*-
@@ -58,7 +58,7 @@
 #include <sys/device.h>
 
 #include <arc/arc/arctype.h>
-#include <machine/bus.h>
+#include <machine/bus.old.h>
 #include <machine/intr.h>
 
 #include <dev/isa/isavar.h>
