@@ -1,3 +1,4 @@
+/*	$OpenBSD: svr4_wait.h,v 1.5 1995/03/31 03:06:50 christos Exp $	 */
 /*	$NetBSD: svr4_wait.h,v 1.5 1995/03/31 03:06:50 christos Exp $	 */
 
 /*

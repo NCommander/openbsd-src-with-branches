@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: param.h,v 1.5 2001/12/05 01:57:15 provos Exp $	*/
 /*	$NetBSD: param.h,v 1.25 2001/05/30 12:28:51 mrg Exp $ */
 
 /*
@@ -68,7 +68,8 @@
  *
  */
 
-
+#ifndef _SPARC64_PARAM_H_
+#define _SPARC64_PARAM_H_
 
 #define	_MACHINE	sparc64
 #define	MACHINE		"sparc64"
@@ -198,13 +199,9 @@ extern int nbpg, pgofset, pgshift;
  * of the hardware page size.
  */
 #define	MSIZE		256		/* size of an mbuf */
-#define	MCLBYTES	2048		/* enough for whole Ethernet packet */
 #define	MCLSHIFT	11		/* log2(MCLBYTES) */
+#define	MCLBYTES	(1 << MCLSHIFT)	/* enough for whole Ethernet packet */
 #define	MCLOFSET	(MCLBYTES - 1)
-
-#if defined(_KERNEL_OPT)
-#include "opt_gateway.h"
-#endif
 
 #ifndef NMBCLUSTERS
 #ifdef GATEWAY
@@ -313,3 +310,9 @@ extern int mmumod;
 #define	NBPG		8192		/* bytes/page */
 #define	PGOFSET		(NBPG-1)	/* byte offset into page */
 #define	PGSHIFT		13		/* log2(NBPG) */
+
+#define PAGE_SHIFT	13
+#define PAGE_SIZE	(1 << PAGE_SHIFT)
+#define PAGE_MASK	(PAGE_SIZE - 1)
+
+#endif	/* _SPARC64_PARAM_H_ */

@@ -1,3 +1,5 @@
+/*	$OpenBSD: amd7930intr.s,v 1.4 1999/04/22 18:43:50 art Exp $	*/
+/*	$NetBSD: amd7930intr.s,v 1.10 1997/03/11 01:03:07 pk Exp $	*/
 /*
  * Copyright (c) 1995 Rolf Grossmann.
  * Copyright (c) 1992, 1993
@@ -44,13 +46,40 @@
  */
 
 #ifndef AUDIO_C_HANDLER
-#ifndef LOCORE
-#define LOCORE
-#endif
-#include "assym.s"
+#include "assym.h"
+#include <machine/param.h>
 #include <sparc/sparc/intreg.h>
-/* XXX this goes in a header file -- currently, it's hidden in locore.s */
-#define INTREG_ADDR 0xf8002000
+#include <machine/psl.h>
+
+#define AUDIO_SET_SWINTR_4C				\
+	sethi	%hi(INTRREG_VA), %l5;			\
+	ldub	[%l5 + %lo(INTRREG_VA)], %l6;		\
+	or	%l6, IE_L4, %l6;			\
+	stb	%l6, [%l5 + %lo(INTRREG_VA)]
+
+! raise(0,PIL_AUSOFT)	! NOTE: CPU#0 and PIL_AUSOFT=4
+#define AUDIO_SET_SWINTR_4M				\
+	sethi	%hi(1 << (16 + 4)), %l5;		\
+	set	ICR_PI_SET, %l6;			\
+	st	%l5, [%l6]
+
+/* set software interrupt */
+#if (defined(SUN4) || defined(SUN4C)) && !defined(SUN4M)
+#define AUDIO_SET_SWINTR	AUDIO_SET_SWINTR_4C
+#elif !(defined(SUN4) || defined(SUN4C)) && defined(SUN4M)
+#define AUDIO_SET_SWINTR	AUDIO_SET_SWINTR_4M
+#else
+#define AUDIO_SET_SWINTR				\
+	sethi	%hi(_cputyp), %l5;			\
+	ld	[%l5 + %lo(_cputyp)], %l5;		\
+	cmp	%l5, CPU_SUN4M;				\
+	be	8f;					\
+	AUDIO_SET_SWINTR_4C;				\
+	ba,a	9f;					\
+8:							\
+	AUDIO_SET_SWINTR_4M;				\
+9:
+#endif
 
 #define R_amd	%l2
 #define R_data	%l3
@@ -71,11 +100,10 @@ _amd7930_trap:
 	st	%l2, [%l7 + %lo(savepc)]
 
 	! tally interrupt
-	sethi	%hi(_cnt+V_INTR), %l7
-	ld	[%l7 + %lo(_cnt+V_INTR)], %l6
+	sethi	%hi(_uvmexp+V_INTR), %l7
+	ld	[%l7 + %lo(_uvmexp+V_INTR)], %l6
 	inc	%l6
-	st	%l6, [%l7 + %lo(_cnt+V_INTR)]
-
+	st	%l6, [%l7 + %lo(_uvmexp+V_INTR)]
 	sethi	%hi(_auiop), %l7
 	ld	[%l7 + %lo(_auiop)], %l7
 
@@ -95,18 +123,15 @@ _amd7930_trap:
 	cmp	R_data, R_end
 	bgu	1f
 	 nop
-	
+
 	ldub	[R_amd + AMD_BBRB], %l6		! *d = amd->bbrb
 	stb	%l6, [ R_data ]
 	cmp	R_data, R_end
 	inc	R_data				! au->au_rdata++
 	bne	1f				! if (d == e)
 	 st	R_data, [%l7 + AU_RDATA]
-	
-	sethi	%hi(INTREG_ADDR), %l5
-	ldub	[%l5 + %lo(INTREG_ADDR)], %l6
-	or	%l6, IE_L4, %l6
-	stb	%l6, [%l5 + %lo(INTREG_ADDR)]	!    set software interrupt
+
+	AUDIO_SET_SWINTR
 
 1:
 	! write outgoing data
@@ -118,7 +143,7 @@ _amd7930_trap:
 	cmp	R_data, R_end
 	bgu	2f
 	 nop
-	
+
 	ldub	[ R_data ], %l6			! amd->bbtb = *d
 	stb	%l6, [ R_amd + AMD_BBTB ]
 
@@ -126,11 +151,8 @@ _amd7930_trap:
 	inc	R_data				! au->au_pdata++
 	bne	2f				! if (d == e)
 	 st	R_data, [%l7 + AU_PDATA]
-	
-	sethi	%hi(INTREG_ADDR), %l5
-	ldub	[%l5 + %lo(INTREG_ADDR)], %l6
-	or	%l6, IE_L4, %l6
-	stb	%l6, [%l5 + %lo(INTREG_ADDR)]	!    set software interrupt
+
+	AUDIO_SET_SWINTR
 
 2:
 	/*

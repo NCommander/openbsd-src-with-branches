@@ -1,3 +1,4 @@
+/*	$OpenBSD: file.h,v 1.13 2001/10/26 12:03:28 art Exp $	*/
 /*	$NetBSD: file.h,v 1.11 1995/03/26 20:24:13 jtc Exp $	*/
 
 /*
@@ -43,6 +44,8 @@
 
 struct proc;
 struct uio;
+struct knote;
+struct stat;
 
 /*
  * Kernel descriptor table.
@@ -53,28 +56,54 @@ struct file {
 	short	f_flag;		/* see fcntl.h */
 #define	DTYPE_VNODE	1	/* file */
 #define	DTYPE_SOCKET	2	/* communications endpoint */
+#define	DTYPE_PIPE	3	/* pipe */
+#define	DTYPE_KQUEUE	4	/* event queue */
+#define	DTYPE_CRYPTO	5	/* crypto */
 	short	f_type;		/* descriptor type */
-	short	f_count;	/* reference count */
-	short	f_msgcount;	/* references from message queue */
+	long	f_count;	/* reference count */
+	long	f_msgcount;	/* references from message queue */
 	struct	ucred *f_cred;	/* credentials associated with descriptor */
 	struct	fileops {
-		int	(*fo_read)	__P((struct file *fp, struct uio *uio,
-					    struct ucred *cred));
-		int	(*fo_write)	__P((struct file *fp, struct uio *uio,
-					    struct ucred *cred));
+		int	(*fo_read)	__P((struct file *fp, off_t *, 
+					     struct uio *uio,
+					     struct ucred *cred));
+		int	(*fo_write)	__P((struct file *fp, off_t *,
+					     struct uio *uio,
+					     struct ucred *cred));
 		int	(*fo_ioctl)	__P((struct file *fp, u_long com,
 					    caddr_t data, struct proc *p));
 		int	(*fo_select)	__P((struct file *fp, int which,
-					    struct proc *p));
+					     struct proc *p));
+		int	(*fo_kqfilter)	__P((struct file *fp,
+					     struct knote *kn));
+		int	(*fo_stat)	__P((struct file *fp, struct stat *sb,
+					     struct proc *p));
 		int	(*fo_close)	__P((struct file *fp, struct proc *p));
 	} *f_ops;
 	off_t	f_offset;
-	caddr_t	f_data;		/* vnode or socket */
+	caddr_t	f_data;		/* private data */
+	int	f_iflags;	/* internal flags */
 };
+
+#define FIF_WANTCLOSE		0x01	/* a close is waiting for usecount */
+#define FIF_LARVAL		0x02	/* not fully constructed, don't use */
+
+#define FILE_IS_USABLE(fp) \
+	(((fp)->f_iflags & (FIF_WANTCLOSE|FIF_LARVAL)) == 0)
+
+#define FILE_SET_MATURE(fp) do {	\
+	(fp)->f_iflags &= ~FIF_LARVAL;	\
+} while (0)
 
 LIST_HEAD(filelist, file);
 extern struct filelist filehead;	/* head of list of open files */
 extern int maxfiles;			/* kernel limit on number of open files */
 extern int nfiles;			/* actual number of open files */
+extern struct fileops vnops;		/* vnode operations for files */
+
+int     dofileread __P((struct proc *, int, struct file *, void *, size_t,
+            off_t *, register_t *));
+int     dofilewrite __P((struct proc *, int, struct file *, const void *,
+            size_t, off_t *, register_t *));
 
 #endif /* _KERNEL */

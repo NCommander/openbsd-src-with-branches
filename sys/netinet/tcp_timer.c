@@ -1,4 +1,5 @@
-/*	$NetBSD: tcp_timer.c,v 1.13 1995/08/12 23:59:39 mycroft Exp $	*/
+/*	$OpenBSD: tcp_timer.c,v 1.26 2002/01/15 19:18:01 provos Exp $	*/
+/*	$NetBSD: tcp_timer.c,v 1.14 1996/02/13 23:44:09 christos Exp $	*/
 
 /*
  * Copyright (c) 1982, 1986, 1988, 1990, 1993
@@ -38,14 +39,11 @@
 #ifndef TUBA_INCLUDE
 #include <sys/param.h>
 #include <sys/systm.h>
-#include <sys/malloc.h>
 #include <sys/mbuf.h>
 #include <sys/socket.h>
 #include <sys/socketvar.h>
 #include <sys/protosw.h>
-#include <sys/errno.h>
 
-#include <net/if.h>
 #include <net/route.h>
 
 #include <netinet/in.h>
@@ -55,13 +53,13 @@
 #include <netinet/ip_var.h>
 #include <netinet/tcp.h>
 #include <netinet/tcp_fsm.h>
-#include <netinet/tcp_seq.h>
 #include <netinet/tcp_timer.h>
 #include <netinet/tcp_var.h>
-#include <netinet/tcpip.h>
+#include <netinet/ip_icmp.h>
 
 int	tcp_keepidle = TCPTV_KEEP_IDLE;
 int	tcp_keepintvl = TCPTV_KEEPINTVL;
+int	tcp_maxpersistidle = TCPTV_KEEP_IDLE;	/* max idle time in persist */
 int	tcp_maxidle;
 #endif /* TUBA_INCLUDE */
 /*
@@ -116,7 +114,7 @@ tcp_slowtimo()
 	for (; ip != (struct inpcb *)&tcbtable.inpt_queue; ip = ipnxt) {
 		ipnxt = ip->inp_queue.cqe_next;
 		tp = intotcpcb(ip);
-		if (tp == 0)
+		if (tp == 0 || tp->t_state == TCPS_LISTEN)
 			continue;
 		for (i = 0; i < TCPT_NTIMERS; i++) {
 			if (tp->t_timer[i] && --tp->t_timer[i] == 0) {
@@ -136,11 +134,11 @@ tcp_slowtimo()
 tpgone:
 		;
 	}
-	tcp_iss += TCP_ISSINCR/PR_SLOWHZ;		/* increment iss */
 #ifdef TCP_COMPAT_42
+	tcp_iss += TCP_ISSINCR/PR_SLOWHZ;		/* increment iss */
 	if ((int)tcp_iss < 0)
 		tcp_iss = 0;				/* XXX */
-#endif
+#endif /* TCP_COMPAT_42 */
 	tcp_now++;					/* for timestamps */
 	splx(s);
 }
@@ -156,11 +154,13 @@ tcp_canceltimers(tp)
 	register int i;
 
 	for (i = 0; i < TCPT_NTIMERS; i++)
-		tp->t_timer[i] = 0;
+		TCP_TIMER_DISARM(tp, i);
 }
 
 int	tcp_backoff[TCP_MAXRXTSHIFT + 1] =
     { 1, 2, 4, 8, 16, 32, 64, 64, 64, 64, 64, 64, 64 };
+
+int tcp_totbackoff = 511;	/* sum of tcp_backoff[] */
 
 /*
  * TCP timer processing.
@@ -170,7 +170,27 @@ tcp_timers(tp, timer)
 	register struct tcpcb *tp;
 	int timer;
 {
-	register int rexmt;
+	short rto;
+#ifdef TCP_SACK
+	struct sackhole *p, *q;
+	/*
+	 * Free SACK holes for 2MSL and REXMT timers.
+	 */
+	if (timer == TCPT_2MSL || timer == TCPT_REXMT) {
+		q = tp->snd_holes;
+		while (q != NULL) {
+			p = q;
+			q = q->next;
+			pool_put(&sackhl_pool, p);
+		}
+		tp->snd_holes = 0;
+#if defined(TCP_SACK) && defined(TCP_FACK)
+		tp->snd_fack = tp->snd_una;
+		tp->retran_data = 0;
+		tp->snd_awnd = 0;
+#endif /* TCP_FACK */
+	}
+#endif /* TCP_SACK */
 
 	switch (timer) {
 
@@ -183,7 +203,7 @@ tcp_timers(tp, timer)
 	case TCPT_2MSL:
 		if (tp->t_state != TCPS_TIME_WAIT &&
 		    tp->t_idle <= tcp_maxidle)
-			tp->t_timer[TCPT_2MSL] = tcp_keepintvl;
+			TCP_TIMER_ARM(tp, TCPT_2MSL, tcp_keepintvl);
 		else
 			tp = tcp_close(tp);
 		break;
@@ -202,10 +222,71 @@ tcp_timers(tp, timer)
 			break;
 		}
 		tcpstat.tcps_rexmttimeo++;
-		rexmt = TCP_REXMTVAL(tp) * tcp_backoff[tp->t_rxtshift];
-		TCPT_RANGESET(tp->t_rxtcur, rexmt,
+		rto = TCP_REXMTVAL(tp);
+		if (rto < tp->t_rttmin)
+			rto = tp->t_rttmin;
+		TCPT_RANGESET((long) tp->t_rxtcur,
+		    rto * tcp_backoff[tp->t_rxtshift],
 		    tp->t_rttmin, TCPTV_REXMTMAX);
-		tp->t_timer[TCPT_REXMT] = tp->t_rxtcur;
+		TCP_TIMER_ARM(tp, TCPT_REXMT, tp->t_rxtcur);
+
+		/* 
+		 * If we are losing and we are trying path MTU discovery,
+		 * try turning it off.  This will avoid black holes in
+		 * the network which suppress or fail to send "packet
+		 * too big" ICMP messages.  We should ideally do
+		 * lots more sophisticated searching to find the right
+		 * value here...
+		 */
+		if (ip_mtudisc && tp->t_inpcb &&
+		    TCPS_HAVEESTABLISHED(tp->t_state) &&
+		    tp->t_rxtshift > TCP_MAXRXTSHIFT / 6) {
+			struct inpcb *inp = tp->t_inpcb;
+			struct rtentry *rt = NULL;
+			struct sockaddr_in sin;
+
+			/* No data to send means path mtu is not a problem */
+			if (!inp->inp_socket->so_snd.sb_cc)
+				goto out;
+
+			rt = in_pcbrtentry(inp);
+			/* Check if path MTU discovery is disabled already */
+			if (rt && (rt->rt_flags & RTF_HOST) &&
+			    (rt->rt_rmx.rmx_locks & RTV_MTU))
+				goto out;
+
+			rt = NULL;
+			switch(tp->pf) {
+#ifdef INET6
+			case PF_INET6:
+				/*
+				 * We can not turn off path MTU for IPv6.
+				 * Do nothing for now, maybe lower to
+				 * minimum MTU.
+				 */
+				break;
+#endif
+			case PF_INET:
+				bzero(&sin, sizeof(struct sockaddr_in));
+				sin.sin_family = AF_INET;
+				sin.sin_len = sizeof(struct sockaddr_in);
+				sin.sin_addr = inp->inp_faddr;
+				rt = icmp_mtudisc_clone(sintosa(&sin));
+				break;
+			}
+			if (rt != NULL) {
+				/* Disable path MTU discovery */
+				if ((rt->rt_rmx.rmx_locks & RTV_MTU) == 0) {
+					rt->rt_rmx.rmx_locks |= RTV_MTU;
+					in_rtchange(inp, 0);
+				}
+
+				rtfree(rt);
+			}
+			out:
+				;
+		}
+
 		/*
 		 * If losing, let the lower level know and try for
 		 * a better route.  Also, if we backed off this far,
@@ -220,6 +301,13 @@ tcp_timers(tp, timer)
 			tp->t_srtt = 0;
 		}
 		tp->snd_nxt = tp->snd_una;
+#if defined(TCP_SACK)
+		/*
+		 * Note:  We overload snd_last to function also as the
+		 * snd_last variable described in RFC 2582
+		 */
+		tp->snd_last = tp->snd_max;
+#endif /* TCP_SACK */
 		/*
 		 * If timing a segment in this window, stop the timer.
 		 */
@@ -249,7 +337,7 @@ tcp_timers(tp, timer)
 		 * to go below this.)
 		 */
 		{
-		u_int win = min(tp->snd_wnd, tp->snd_cwnd) / 2 / tp->t_maxseg;
+		u_long win = ulmin(tp->snd_wnd, tp->snd_cwnd) / 2 / tp->t_maxseg;
 		if (win < 2)
 			win = 2;
 		tp->snd_cwnd = tp->t_maxseg;
@@ -265,6 +353,23 @@ tcp_timers(tp, timer)
 	 */
 	case TCPT_PERSIST:
 		tcpstat.tcps_persisttimeo++;
+		/*
+		 * Hack: if the peer is dead/unreachable, we do not
+		 * time out if the window is closed.  After a full
+		 * backoff, drop the connection if the idle time
+		 * (no responses to probes) reaches the maximum
+		 * backoff that we would use if retransmitting.
+		 */
+		rto = TCP_REXMTVAL(tp);
+		if (rto < tp->t_rttmin)
+			rto = tp->t_rttmin;
+		if (tp->t_rxtshift == TCP_MAXRXTSHIFT &&
+		    (tp->t_idle >= tcp_maxpersistidle ||
+		     tp->t_idle >= rto * tcp_totbackoff)) {
+			tcpstat.tcps_persistdrop++;
+			tp = tcp_drop(tp, ETIMEDOUT);
+			break;
+		}
 		tcp_setpersist(tp);
 		tp->t_force = 1;
 		(void) tcp_output(tp);
@@ -280,8 +385,8 @@ tcp_timers(tp, timer)
 		if (TCPS_HAVEESTABLISHED(tp->t_state) == 0)
 			goto dropit;
 		if (tp->t_inpcb->inp_socket->so_options & SO_KEEPALIVE &&
-		    tp->t_state <= TCPS_CLOSE_WAIT) {
-		    	if (tp->t_idle >= tcp_keepidle + tcp_maxidle)
+		    tp->t_state <= TCPS_CLOSING) {
+			if (tp->t_idle >= tcp_keepidle + tcp_maxidle)
 				goto dropit;
 			/*
 			 * Send a packet designed to force a response
@@ -301,15 +406,19 @@ tcp_timers(tp, timer)
 			 * The keepalive packet must have nonzero length
 			 * to get a 4.2 host to respond.
 			 */
-			tcp_respond(tp, tp->t_template, (struct mbuf *)NULL,
-			    tp->rcv_nxt - 1, tp->snd_una - 1, 0);
+			tcp_respond(tp,
+				mtod(tp->t_template, caddr_t),
+				(struct mbuf *)NULL,
+				tp->rcv_nxt - 1, tp->snd_una - 1, 0);
 #else
-			tcp_respond(tp, tp->t_template, (struct mbuf *)NULL,
-			    tp->rcv_nxt, tp->snd_una - 1, 0);
+			tcp_respond(tp,
+				mtod(tp->t_template, caddr_t),
+				(struct mbuf *)NULL,
+				tp->rcv_nxt, tp->snd_una - 1, 0);
 #endif
-			tp->t_timer[TCPT_KEEP] = tcp_keepintvl;
+			TCP_TIMER_ARM(tp, TCPT_KEEP, tcp_keepintvl);
 		} else
-			tp->t_timer[TCPT_KEEP] = tcp_keepidle;
+			TCP_TIMER_ARM(tp, TCPT_KEEP, tcp_keepidle);
 		break;
 	dropit:
 		tcpstat.tcps_keepdrops++;

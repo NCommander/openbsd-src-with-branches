@@ -1,4 +1,5 @@
-/*	$NetBSD: stdarg.h,v 1.5 1995/03/28 18:21:25 jtc Exp $	*/
+/*	$OpenBSD: stdarg.h,v 1.3 1997/05/29 00:04:53 niklas Exp $	*/
+/*	$NetBSD: stdarg.h,v 1.11 1999/05/03 16:30:34 christos Exp $	*/
 
 /*-
  * Copyright (c) 1991 The Regents of the University of California.
@@ -42,21 +43,19 @@
 
 typedef _BSD_VA_LIST_	va_list;
 
-#define __va_promote(type) \
-        (((sizeof(type) + sizeof(int) - 1) / sizeof(int)) * sizeof(int))
-
-#define va_start(ap, last) \
-        (ap = ((char *)&(last) + __va_promote(last)))
-
-#ifdef _KERNEL
-#define va_arg(ap, type) \
-        ((type *)(ap += sizeof(type)))[-1]
-#else
-#define va_arg(ap, type) \
-        ((type *)(ap += sizeof(type) < sizeof(int) ? \
-                (abort(), 0) : sizeof(type)))[-1]
+#ifdef __lint__
+#define __builtin_next_arg(t)		((t) ? 0 : 0)
 #endif
 
-#define va_end(ap)	((void) 0)
+#define	__va_size(type) \
+	(((sizeof(type) + sizeof(long) - 1) / sizeof(long)) * sizeof(long))
+
+#define va_start(ap, last) \
+	((ap) = (va_list)__builtin_next_arg(last))
+
+#define	va_arg(ap, type) \
+	(*(type *)(void *)((ap) += __va_size(type), (ap) - __va_size(type)))
+
+#define va_end(ap)	
 
 #endif /* !_VAX_STDARG_H_ */

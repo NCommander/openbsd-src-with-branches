@@ -1,3 +1,4 @@
+/*	$OpenBSD: ufsmount.h,v 1.5 1999/06/01 01:48:52 millert Exp $	*/
 /*	$NetBSD: ufsmount.h,v 1.4 1994/12/21 20:00:23 mycroft Exp $	*/
 
 /*
@@ -51,15 +52,19 @@ struct ufsmount {
 	struct	vnode *um_devvp;		/* block device mounted vnode */
 
 	union {					/* pointer to superblock */
-		struct	lfs *lfs;		/* LFS */
 		struct	fs *fs;			/* FFS */
+		struct	lfs *lfs;		/* LFS */
+		struct  m_ext2fs *e2fs;		/* EXT2FS */
 	} ufsmount_u;
 #define	um_fs	ufsmount_u.fs
 #define	um_lfs	ufsmount_u.lfs
+#define um_e2fs    ufsmount_u.e2fs
+#define um_e2fsb ufsmount_u.e2fs->s_es
 
 	struct	vnode *um_quotas[MAXQUOTAS];	/* pointer to quota files */
 	struct	ucred *um_cred[MAXQUOTAS];	/* quota file access cred */
 	u_long	um_nindir;			/* indirect ptrs per block */
+	u_long	um_lognindir;			/* log2 of um_nindir */
 	u_long	um_bptrtodb;			/* indir ptr to disk block */
 	u_long	um_seqinc;			/* inc between seq blocks */
 	time_t	um_btime[MAXQUOTAS];		/* block quota time limit */

@@ -1,4 +1,5 @@
-/*	$NetBSD: ktrace.h,v 1.11 1995/07/19 15:27:05 christos Exp $	*/
+/*	$OpenBSD: ktrace.h,v 1.4 2000/11/10 18:15:49 art Exp $	*/
+/*	$NetBSD: ktrace.h,v 1.12 1996/02/04 02:12:29 christos Exp $	*/
 
 /*
  * Copyright (c) 1988, 1993
@@ -161,5 +162,17 @@ struct ktr_csw {
 __BEGIN_DECLS
 int	ktrace __P((const char *, int, int, pid_t));
 __END_DECLS
+
+#else
+
+void ktrcsw __P((struct proc *, int, int));
+void ktremul __P((struct proc *, char *));
+void ktrgenio __P((struct proc *, int, enum uio_rw, struct iovec *, int, int));
+void ktrnamei __P((struct proc *, char *));
+void ktrpsig __P((struct proc *, int, sig_t, int, int));
+void ktrsyscall __P((struct proc *, register_t, size_t, register_t []));
+void ktrsysret __P((struct proc *, register_t, int, register_t));
+
+void ktrsettracevnode __P((struct proc *, struct vnode *));
 
 #endif	/* !_KERNEL */

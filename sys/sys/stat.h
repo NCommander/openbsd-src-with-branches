@@ -1,4 +1,5 @@
-/*	$NetBSD: stat.h,v 1.17 1995/06/15 23:08:08 cgd Exp $	*/
+/*	$OpenBSD: stat.h,v 1.8 2000/07/23 21:30:06 pjanzen Exp $	*/
+/*	$NetBSD: stat.h,v 1.20 1996/05/16 22:17:49 cgd Exp $	*/
 
 /*-
  * Copyright (c) 1982, 1986, 1989, 1993
@@ -45,7 +46,7 @@
 
 #include <sys/time.h>
 
-#ifndef _POSIX_SOURCE
+#ifdef _KERNEL
 struct ostat {
 	u_int16_t st_dev;		/* inode's device */
 	ino_t	  st_ino;		/* inode's number */
@@ -63,7 +64,7 @@ struct ostat {
 	u_int32_t st_flags;		/* user defined flags for file */
 	u_int32_t st_gen;		/* file generation number */
 };
-#endif /* !_POSIX_SOURCE */
+#endif /* !_KERNEL */
 
 struct stat {
 	dev_t	  st_dev;		/* inode's device */
@@ -94,12 +95,12 @@ struct stat {
 	int64_t	  st_qspare[2];
 };
 #ifndef _POSIX_SOURCE
-#define	st_atime	st_atimespec.ts_sec
-#define	st_atimensec	st_atimespec.ts_nsec
-#define	st_mtime	st_mtimespec.ts_sec
-#define	st_mtimensec	st_mtimespec.ts_nsec
-#define	st_ctime	st_ctimespec.ts_sec
-#define	st_ctimensec	st_ctimespec.ts_nsec
+#define	st_atime	st_atimespec.tv_sec
+#define	st_atimensec	st_atimespec.tv_nsec
+#define	st_mtime	st_mtimespec.tv_sec
+#define	st_mtimensec	st_mtimespec.tv_nsec
+#define	st_ctime	st_ctimespec.tv_sec
+#define	st_ctimensec	st_ctimespec.tv_nsec
 #endif
 
 #define	S_ISUID	0004000			/* set user id on execution */
@@ -146,23 +147,21 @@ struct stat {
 #define	S_ISCHR(m)	((m & 0170000) == 0020000)	/* char special */
 #define	S_ISBLK(m)	((m & 0170000) == 0060000)	/* block special */
 #define	S_ISREG(m)	((m & 0170000) == 0100000)	/* regular file */
-#define	S_ISFIFO(m)	((m & 0170000) == 0010000 || \
-			 (m & 0170000) == 0140000)	/* fifo or socket */
+#define	S_ISFIFO(m)	((m & 0170000) == 0010000)	/* fifo */
 #ifndef _POSIX_SOURCE
 #define	S_ISLNK(m)	((m & 0170000) == 0120000)	/* symbolic link */
-#define	S_ISSOCK(m)	((m & 0170000) == 0010000 || \
-			 (m & 0170000) == 0140000)	/* fifo or socket */
+#define	S_ISSOCK(m)	((m & 0170000) == 0140000)	/* socket */
 #define	S_ISWHT(m)	((m & 0170000) == 0160000)	/* whiteout */
 #endif
 
 #ifndef _POSIX_SOURCE
-#define	ACCESSPERMS	(S_IRWXU|S_IRWXG|S_IRWXO)	/* 0777 */
-							/* 7777 */
+#define	ACCESSPERMS	(S_IRWXU|S_IRWXG|S_IRWXO)	/* 00777 */
+							/* 07777 */
 #define	ALLPERMS	(S_ISUID|S_ISGID|S_ISTXT|S_IRWXU|S_IRWXG|S_IRWXO)
-							/* 0666 */
+							/* 00666 */
 #define	DEFFILEMODE	(S_IRUSR|S_IWUSR|S_IRGRP|S_IWGRP|S_IROTH|S_IWOTH)
 
-#define S_BLKSIZE	512		/* block size used in the stat struct */
+#define	S_BLKSIZE	512		/* block size used in the stat struct */
 
 /*
  * Definitions of flags stored in file flags word.
@@ -173,7 +172,7 @@ struct stat {
 #define	UF_NODUMP	0x00000001	/* do not dump file */
 #define	UF_IMMUTABLE	0x00000002	/* file may not be changed */
 #define	UF_APPEND	0x00000004	/* writes to file may only append */
-#define UF_OPAQUE	0x00000008	/* directory is opaque wrt. union */
+#define	UF_OPAQUE	0x00000008	/* directory is opaque wrt. union */
 /*
  * Super-user changeable flags.
  */
@@ -198,13 +197,14 @@ struct stat {
 __BEGIN_DECLS
 int	chmod __P((const char *, mode_t));
 int	fstat __P((int, struct stat *));
+int	mknod __P((const char *, mode_t, dev_t));
 int	mkdir __P((const char *, mode_t));
 int	mkfifo __P((const char *, mode_t));
 int	stat __P((const char *, struct stat *));
 mode_t	umask __P((mode_t));
 #ifndef _POSIX_SOURCE
-int	chflags __P((const char *, u_long));
-int	fchflags __P((int, u_long));
+int	chflags __P((const char *, unsigned int));
+int	fchflags __P((int, unsigned int));
 int	fchmod __P((int, mode_t));
 int	lstat __P((const char *, struct stat *));
 #endif

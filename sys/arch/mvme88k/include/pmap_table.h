@@ -1,3 +1,4 @@
+/*	$OpenBSD: pmap_table.h,v 1.6 2001/01/14 20:25:24 smurph Exp $ */
 /* 
  * Mach Operating System
  * Copyright (c) 1992 Carnegie Mellon University
@@ -31,14 +32,18 @@
 
 /* an entry is considered invalid if pm_size = 0 */
 /* end of list is indicated by pm_size 0xffffffff */
-
+#ifndef __MACHINE_PAMP_TABLE_H__
+#define __MACHINE_PAMP_TABLE_H__
 typedef struct {
-  vm_offset_t	phys_start;   /* in bytes */
-  vm_offset_t   virt_start;   /* in bytes */
+  vm_offset_t phys_start;   /* in bytes */
+  vm_offset_t virt_start;   /* in bytes */
   unsigned int	size;      /* in bytes */
   unsigned int  prot;	      /* vm_prot_read, vm_prot_write */
   unsigned int  cacheability; /* none, writeback, normal */
 } pmap_table_entry;
 
 typedef pmap_table_entry *pmap_table_t;
+
+pmap_table_t pmap_table_build __P((unsigned memory_size));
+#endif /* __MACHINE_PAMP_TABLE_H__ */
 

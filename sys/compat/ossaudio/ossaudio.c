@@ -1,3 +1,4 @@
+/*	$OpenBSD: ossaudio.c,v 1.5 2001/05/24 04:21:02 aaron Exp $	*/
 /*	$NetBSD: ossaudio.c,v 1.23 1997/10/19 07:41:52 augustss Exp $	*/
 
 /*
@@ -87,8 +88,7 @@ oss_ioctl_audio(p, uap, retval)
 	int (*ioctlf) __P((struct file *, u_long, caddr_t, struct proc *));
 
 	fdp = p->p_fd;
-	if ((u_int)SCARG(uap, fd) >= fdp->fd_nfiles ||
-	    (fp = fdp->fd_ofiles[SCARG(uap, fd)]) == NULL)
+	if ((fp = fd_getfile(fdp, SCARG(uap, fd))) == NULL)
 		return (EBADF);
 
 	if ((fp->f_flag & (FREAD | FWRITE)) == 0)
@@ -312,7 +312,7 @@ oss_ioctl_audio(p, uap, retval)
 		if ((idat & 0xffff) < 4 || (idat & 0xffff) > 17)
 			return EINVAL;
 		tmpinfo.blocksize = 1 << (idat & 0xffff);
-		tmpinfo.hiwat = (idat >> 16) & 0xffff;
+		tmpinfo.hiwat = (idat >> 16) & 0x7fff;
 		DPRINTF(("oss_audio: SETFRAGMENT blksize=%d, hiwat=%d\n",
 			 tmpinfo.blocksize, tmpinfo.hiwat));
 		if (tmpinfo.hiwat == 0)	/* 0 means set to max */
@@ -322,9 +322,9 @@ oss_ioctl_audio(p, uap, retval)
 		if (error)
 			return error;
 		u = tmpinfo.blocksize;
-		for(idat = 0; u; idat++, u >>= 1)
+		for(idat = 0; u > 1; idat++, u >>= 1)
 			;
-		idat |= (tmpinfo.hiwat & 0xffff) << 16;
+		idat |= (tmpinfo.hiwat & 0x7fff) << 16;
 		error = copyout(&idat, SCARG(uap, data), sizeof idat);
 		if (error)
 			return error;
@@ -385,15 +385,33 @@ oss_ioctl_audio(p, uap, retval)
 			return error;
 		break;
 	case OSS_SNDCTL_DSP_GETOSPACE:
+		error = ioctlf(fp, AUDIO_GETINFO, (caddr_t)&tmpinfo, p);
+		if (error)
+			return error;
+		setblocksize(fp, &tmpinfo, p);
+		bufinfo.fragsize = tmpinfo.blocksize;
+		bufinfo.fragments = tmpinfo.hiwat -
+		    (tmpinfo.play.seek + tmpinfo.blocksize - 1) /
+		    tmpinfo.blocksize;
+		bufinfo.fragstotal = tmpinfo.hiwat;
+		bufinfo.bytes =
+		    tmpinfo.hiwat * tmpinfo.blocksize - tmpinfo.play.seek;
+		error = copyout(&bufinfo, SCARG(uap, data), sizeof bufinfo);
+		if (error)
+			return error;
+		break;
 	case OSS_SNDCTL_DSP_GETISPACE:
 		error = ioctlf(fp, AUDIO_GETINFO, (caddr_t)&tmpinfo, p);
 		if (error)
 			return error;
 		setblocksize(fp, &tmpinfo, p);
 		bufinfo.fragsize = tmpinfo.blocksize;
-		bufinfo.fragments = /* XXX */
-		bufinfo.fragstotal = tmpinfo.play.buffer_size / bufinfo.fragsize;
-		bufinfo.bytes = tmpinfo.play.buffer_size;
+		bufinfo.fragments = tmpinfo.hiwat -
+		    (tmpinfo.record.seek + tmpinfo.blocksize - 1) /
+		    tmpinfo.blocksize;
+		bufinfo.fragstotal = tmpinfo.hiwat;
+		bufinfo.bytes =
+		    tmpinfo.hiwat * tmpinfo.blocksize - tmpinfo.record.seek;
 		DPRINTF(("oss_sys_ioctl: SNDCTL_DSP_GETxSPACE = %d %d %d %d\n",
 			 bufinfo.fragsize, bufinfo.fragments, 
 			 bufinfo.fragstotal, bufinfo.bytes));
@@ -511,10 +529,10 @@ getdevinfo(fp, p)
 {
 	mixer_devinfo_t mi;
 	int i;
-	static struct {
-		char *name;
+	static const struct oss_devs {
+		const char *name;
 		int code;
-	} *dp, devs[] = {
+	} devs[] = {
 		{ AudioNmicrophone,	OSS_SOUND_MIXER_MIC },
 		{ AudioNline,		OSS_SOUND_MIXER_LINE },
 		{ AudioNcd,		OSS_SOUND_MIXER_CD },
@@ -536,12 +554,13 @@ getdevinfo(fp, p)
 /*		{ AudioNmixerout,	?? },*/
 		{ 0, -1 }
 	};
+	register const struct oss_devs *dp;
 	int (*ioctlf) __P((struct file *, u_long, caddr_t, struct proc *)) =
 	    fp->f_ops->fo_ioctl;
 	struct vnode *vp;
 	struct vattr va;
 	static struct audiodevinfo devcache = { 0 };
-	struct audiodevinfo *di = &devcache;
+	register struct audiodevinfo *di = &devcache;
 
 	/* Figure out what device it is so we can check if the
 	 * cached data is valid.
@@ -632,8 +651,7 @@ oss_ioctl_mixer(p, uap, retval)
 	int (*ioctlf) __P((struct file *, u_long, caddr_t, struct proc *));
 
 	fdp = p->p_fd;
-	if ((u_int)SCARG(uap, fd) >= fdp->fd_nfiles ||
-	    (fp = fdp->fd_ofiles[SCARG(uap, fd)]) == NULL)
+	if ((fp = fd_getfile(fdp, SCARG(uap, fd))) == NULL)
 		return (EBADF);
 
 	if ((fp->f_flag & (FREAD | FWRITE)) == 0)
@@ -796,8 +814,7 @@ oss_ioctl_sequencer(p, uap, retval)
 #endif
 
 	fdp = p->p_fd;
-	if ((u_int)SCARG(uap, fd) >= fdp->fd_nfiles ||
-	    (fp = fdp->fd_ofiles[SCARG(uap, fd)]) == NULL)
+	if ((fp = fd_getfile(fdp, SCARG(uap, fd))) == NULL)
 		return (EBADF);
 
 	if ((fp->f_flag & (FREAD | FWRITE)) == 0)

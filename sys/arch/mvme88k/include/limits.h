@@ -1,3 +1,4 @@
+/*	$OpenBSD: limits.h,v 1.7 1999/02/09 06:36:26 smurph Exp $ */
 /*
  * Copyright (c) 1988, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -31,8 +32,11 @@
  * SUCH DAMAGE.
  *
  *	from: @(#)limits.h	8.3 (Berkeley) 1/4/94
- *      $Id: limits.h,v 1.2 1995/11/14 14:00:09 build Exp $
+ *      $Id: limits.h,v 1.7 1999/02/09 06:36:26 smurph Exp $
  */
+
+#ifndef _MACHINE_LIMITS_H_
+#define _MACHINE_LIMITS_H_
 
 #define	CHAR_BIT	8		/* number of bits in a char */
 #define	MB_LEN_MAX	6		/* Allow 31 bit UTF2 */
@@ -72,11 +76,32 @@
 #if !defined(_POSIX_SOURCE)
 #define	SIZE_T_MAX	UINT_MAX	/* max value for a size_t */
 
+#define	UID_MAX		UINT_MAX	/* max value for a uid_t */
+#define	GID_MAX		UINT_MAX	/* max value for a gid_t */
+
 /* GCC requires that quad constants be written as expressions. */
 #define	UQUAD_MAX	((u_quad_t)0-1)	/* max value for a uquad_t */
 					/* max value for a quad_t */
 #define	QUAD_MAX	((quad_t)(UQUAD_MAX >> 1))
 #define	QUAD_MIN	(-QUAD_MAX-1)	/* min value for a quad_t */
+#define ULLONG_MAX	(UQUAD_MAX)	/* max value for unsigned long long */
+#define LLONG_MAX	(QUAD_MAX)	/* max value for a signed long long */
+#define LLONG_MIN	(QUAD_MIN)	/* min value for a signed long long */
 
 #endif /* !_POSIX_SOURCE */
 #endif /* !_ANSI_SOURCE */
+
+#if (!defined(_ANSI_SOURCE)&&!defined(_POSIX_SOURCE)) || defined(_XOPEN_SOURCE)
+#define LONG_BIT	32
+#define WORD_BIT	32
+
+#define DBL_DIG		15
+#define DBL_MAX		1.7976931348623157E+308
+#define DBL_MIN		2.2250738585072014E-308
+
+#define FLT_DIG		6
+#define FLT_MAX		3.40282347E+38F
+#define FLT_MIN		1.17549435E-38F
+#endif
+
+#endif /* _MACHINE_LIMITS_H_ */

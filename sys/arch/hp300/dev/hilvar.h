@@ -1,4 +1,5 @@
-/*	$NetBSD: hilvar.h,v 1.8 1994/10/26 07:24:16 cgd Exp $	*/
+/*	$OpenBSD: hilvar.h,v 1.3 1997/01/12 15:12:44 downsj Exp $	*/
+/*	$NetBSD: hilvar.h,v 1.14 1997/04/01 19:29:10 scottr Exp $	*/
 
 /*
  * Copyright (c) 1988 University of Utah.
@@ -95,7 +96,7 @@ struct hilloopdev {
 #define HIL_ASLEEP	0x40	/* process awaiting input on device */
 #define HIL_DERROR	0x80	/* loop has reconfigured, reality altered */
 
-struct hilloop {
+struct hil_softc {
 	struct	hil_dev	*hl_addr;	/* base of hardware registers */
 	u_char 	hl_cmddone;		/* */
 	u_char 	hl_cmdending;		/* */
@@ -117,3 +118,28 @@ struct hilloop {
 #define KBD_RAW		0x01		/* keyboard is raw */
 #define KBD_AR1		0x02		/* keyboard auto-repeat rate 1 */
 #define KBD_AR2		0x04		/* keyboard auto-repeat rate 2 */
+
+#ifdef _KERNEL
+void	kbdbell __P((int));
+void	kbdenable __P((int));
+void	kbddisable __P((int));
+int	kbdgetc __P((int *));
+void	kbdcninit __P((void));
+
+int	kbdnmi __P((void));
+
+void	hilsoftinit __P((int, struct hil_dev *));
+void	hilinit __P((int, struct hil_dev *));
+
+void	send_hil_cmd __P((struct hil_dev *, u_char,
+				u_char *, u_char, u_char *));
+void	send_hildev_cmd __P((struct hil_softc *, char, char));
+
+void	polloff __P((struct hil_dev *));
+void	pollon __P((struct hil_dev *));
+
+#ifdef COMPAT_HPUX
+int	hpuxhilioctl __P((dev_t, int, caddr_t, int));
+int	hildevno __P((dev_t));
+#endif /* COMPAT_HPUX */
+#endif /* _KERNEL */

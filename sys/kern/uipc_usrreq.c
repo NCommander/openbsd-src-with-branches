@@ -1,4 +1,5 @@
-/*	$NetBSD: uipc_usrreq.c,v 1.15 1995/08/17 02:57:20 mycroft Exp $	*/
+/*	$OpenBSD: uipc_usrreq.c,v 1.14 2001/10/26 10:39:31 art Exp $	*/
+/*	$NetBSD: uipc_usrreq.c,v 1.18 1996/02/09 19:00:50 christos Exp $	*/
 
 /*
  * Copyright (c) 1982, 1986, 1989, 1991, 1993
@@ -258,6 +259,9 @@ uipc_usrreq(so, req, m, nam, control)
 		((struct stat *) m)->st_dev = NODEV;
 		if (unp->unp_ino == 0)
 			unp->unp_ino = unp_ino++;
+		((struct stat *) m)->st_atimespec =
+		    ((struct stat *) m)->st_mtimespec =
+		    ((struct stat *) m)->st_ctimespec = unp->unp_ctime;
 		((struct stat *) m)->st_ino = unp->unp_ino;
 		return (0);
 
@@ -281,6 +285,15 @@ uipc_usrreq(so, req, m, nam, control)
 		if (unp->unp_conn && unp->unp_conn->unp_addr) {
 			nam->m_len = unp->unp_conn->unp_addr->m_len;
 			bcopy(mtod(unp->unp_conn->unp_addr, caddr_t),
+			    mtod(nam, caddr_t), (unsigned)nam->m_len);
+		} else
+			nam->m_len = 0;
+		break;
+
+	case PRU_PEEREID:
+		if (unp->unp_flags & UNP_FEIDS) {
+			nam->m_len = sizeof(struct unpcbid);
+			bcopy((caddr_t)(&(unp->unp_connid)),
 			    mtod(nam, caddr_t), (unsigned)nam->m_len);
 		} else
 			nam->m_len = 0;
@@ -321,6 +334,7 @@ unp_attach(so)
 	struct socket *so;
 {
 	register struct unpcb *unp;
+	struct timeval tv;
 	int error;
 	
 	if (so->so_snd.sb_hiwat == 0 || so->so_rcv.sb_hiwat == 0) {
@@ -346,10 +360,12 @@ unp_attach(so)
 	bzero((caddr_t)unp, sizeof(*unp));
 	unp->unp_socket = so;
 	so->so_pcb = unp;
+	microtime(&tv);
+	TIMEVAL_TO_TIMESPEC(&tv, &unp->unp_ctime);
 	return (0);
 }
 
-int
+void
 unp_detach(unp)
 	register struct unpcb *unp;
 {
@@ -390,20 +406,20 @@ unp_bind(unp, nam, p)
 	struct sockaddr_un *soun = mtod(nam, struct sockaddr_un *);
 	register struct vnode *vp;
 	struct vattr vattr;
-	int error;
+	int error, namelen;
 	struct nameidata nd;
+	char buf[MLEN];
 
-	NDINIT(&nd, CREATE, FOLLOW | LOCKPARENT, UIO_SYSSPACE,
-	    soun->sun_path, p);
 	if (unp->unp_vnode != NULL)
 		return (EINVAL);
-	if (nam->m_len == MLEN) {
-		if (*(mtod(nam, caddr_t) + nam->m_len - 1) != 0)
-			return (EINVAL);
-	} else
-		*(mtod(nam, caddr_t) + nam->m_len) = 0;
+	namelen = soun->sun_len - offsetof(struct sockaddr_un, sun_path);
+	if (namelen <= 0 || namelen >= MLEN)
+		return EINVAL;
+	strncpy(buf, soun->sun_path, namelen);
+	buf[namelen] = 0;       /* null-terminate the string */
+	NDINIT(&nd, CREATE, NOFOLLOW | LOCKPARENT, UIO_SYSSPACE, buf, p);
 /* SHOULD BE ABLE TO ADOPT EXISTING AND wakeup() ALA FIFO's */
-	if (error = namei(&nd))
+	if ((error = namei(&nd)) != 0)
 		return (error);
 	vp = nd.ni_vp;
 	if (vp != NULL) {
@@ -417,15 +433,16 @@ unp_bind(unp, nam, p)
 	}
 	VATTR_NULL(&vattr);
 	vattr.va_type = VSOCK;
-	vattr.va_mode = ACCESSPERMS;
+	vattr.va_mode = ACCESSPERMS &~ p->p_fd->fd_cmask;
 	VOP_LEASE(nd.ni_dvp, p, p->p_ucred, LEASE_WRITE);
-	if (error = VOP_CREATE(nd.ni_dvp, &nd.ni_vp, &nd.ni_cnd, &vattr))
+	error = VOP_CREATE(nd.ni_dvp, &nd.ni_vp, &nd.ni_cnd, &vattr);
+	if (error)
 		return (error);
 	vp = nd.ni_vp;
 	vp->v_socket = unp->unp_socket;
 	unp->unp_vnode = vp;
 	unp->unp_addr = m_copy(nam, 0, (int)M_COPYALL);
-	VOP_UNLOCK(vp);
+	VOP_UNLOCK(vp, 0, p);
 	return (0);
 }
 
@@ -448,14 +465,14 @@ unp_connect(so, nam, p)
 			return (EMSGSIZE);
 	} else
 		*(mtod(nam, caddr_t) + nam->m_len) = 0;
-	if (error = namei(&nd))
+	if ((error = namei(&nd)) != 0)
 		return (error);
 	vp = nd.ni_vp;
 	if (vp->v_type != VSOCK) {
 		error = ENOTSOCK;
 		goto bad;
 	}
-	if (error = VOP_ACCESS(vp, VWRITE, p->p_ucred, p))
+	if ((error = VOP_ACCESS(vp, VWRITE, p->p_ucred, p)) != 0)
 		goto bad;
 	so2 = vp->v_socket;
 	if (so2 == 0) {
@@ -476,7 +493,10 @@ unp_connect(so, nam, p)
 		unp3 = sotounpcb(so3);
 		if (unp2->unp_addr)
 			unp3->unp_addr =
-				  m_copy(unp2->unp_addr, 0, (int)M_COPYALL);
+			    m_copy(unp2->unp_addr, 0, (int)M_COPYALL);
+		unp3->unp_connid.unp_euid = p->p_ucred->cr_uid;
+		unp3->unp_connid.unp_egid = p->p_ucred->cr_gid;
+		unp3->unp_flags |= UNP_FEIDS;
 		so2 = so3;
 	}
 	error = unp_connect2(so, so2);
@@ -603,31 +623,113 @@ unp_externalize(rights)
 	struct mbuf *rights;
 {
 	struct proc *p = curproc;		/* XXX */
-	register int i;
-	register struct cmsghdr *cm = mtod(rights, struct cmsghdr *);
-	register struct file **rp = (struct file **)(cm + 1);
-	register struct file *fp;
-	int newfds = (cm->cmsg_len - sizeof(*cm)) / sizeof (int);
-	int f;
+	struct cmsghdr *cm = mtod(rights, struct cmsghdr *);
+	int i, *fdp;
+	struct file **rp;
+	struct file *fp;
+	int nfds, error = 0;
 
-	if (!fdavail(p, newfds)) {
-		for (i = 0; i < newfds; i++) {
-			fp = *rp;
-			unp_discard(fp);
-			*rp++ = 0;
+	nfds = (cm->cmsg_len - CMSG_ALIGN(sizeof(*cm))) /
+	    sizeof(struct file *);
+	rp = (struct file **)CMSG_DATA(cm);
+
+	fdp = malloc(nfds * sizeof(int), M_TEMP, M_WAITOK);
+
+#ifdef notyet
+	/* Make sure the recipient should be able to see the descriptors.. */
+	if (p->p_cwdi->cwdi_rdir != NULL) {
+		rp = (struct file **)CMSG_DATA(cm);
+		for (i = 0; i < nfds; i++) {
+			fp = *rp++;
+			/*
+			 * If we are in a chroot'ed directory, and
+			 * someone wants to pass us a directory, make
+			 * sure it's inside the subtree we're allowed
+			 * to access.
+			 */
+			if (fp->f_type == DTYPE_VNODE) {
+				struct vnode *vp = (struct vnode *)fp->f_data;
+				if ((vp->v_type == VDIR) &&
+				    !vn_isunder(vp, p->p_cwdi->cwdi_rdir, p)) {
+					error = EPERM;
+					break;
+				}
+			}
 		}
-		return (EMSGSIZE);
 	}
-	for (i = 0; i < newfds; i++) {
-		if (fdalloc(p, 0, &f))
-			panic("unp_externalize");
-		fp = *rp;
-		p->p_fd->fd_ofiles[f] = fp;
+#endif
+
+restart:
+	rp = (struct file **)CMSG_DATA(cm);
+	if (error != 0) {
+		for (i = 0; i < nfds; i++) {
+			fp = *rp;
+			/*
+			 * zero the pointer before calling unp_discard,
+			 * since it may end up in unp_gc()..
+			 */
+			*rp++ = 0;
+			unp_discard(fp);
+		}
+		goto out;
+	}
+
+	/*
+	 * First loop -- allocate file descriptor table slots for the
+	 * new descriptors.
+	 */
+	for (i = 0; i < nfds; i++) {
+		fp = *rp++;
+		if ((error = fdalloc(p, 0, &fdp[i])) != 0) {
+			/*
+			 * Back out what we've done so far.
+			 */
+			for (--i; i >= 0; i--)
+				fdremove(p->p_fd, fdp[i]);
+
+			if (error == ENOSPC) {
+				fdexpand(p);
+				error = 0;
+			} else {
+				/*
+				 * This is the error that has historically
+				 * been returned, and some callers may
+				 * expect it.
+				 */
+				error = EMSGSIZE;
+			}
+			goto restart;
+		}
+
+		/*
+		 * Make the slot reference the descriptor so that
+		 * fdalloc() works properly.. We finalize it all
+		 * in the loop below.
+		 */
+		p->p_fd->fd_ofiles[fdp[i]] = fp;
+	}
+
+	/*
+	 * Now that adding them has succeeded, update all of the
+	 * descriptor passing state.
+	 */
+	rp = (struct file **)CMSG_DATA(cm);
+	for (i = 0; i < nfds; i++) {
+		fp = *rp++;
 		fp->f_msgcount--;
 		unp_rights--;
-		*(int *)rp++ = f;
 	}
-	return (0);
+
+	/*
+	 * Copy temporary array to message and adjust length, in case of
+	 * transition from large struct file pointers to ints.
+	 */
+	memcpy(CMSG_DATA(cm), fdp, nfds * sizeof(int));
+	cm->cmsg_len = CMSG_LEN(nfds * sizeof(int));
+	rights->m_len = CMSG_SPACE(nfds * sizeof(int));
+ out:
+	free(fdp, M_TEMP);
+	return (error);
 }
 
 int
@@ -637,29 +739,44 @@ unp_internalize(control, p)
 {
 	struct filedesc *fdp = p->p_fd;
 	register struct cmsghdr *cm = mtod(control, struct cmsghdr *);
-	register struct file **rp;
-	register struct file *fp;
-	register int i, fd;
-	int oldfds;
+	struct file **rp, *fp;
+	register int i;
+	struct mbuf *n = NULL;
+	int oldfds, *ip, fd;
 
 	if (cm->cmsg_type != SCM_RIGHTS || cm->cmsg_level != SOL_SOCKET ||
 	    cm->cmsg_len != control->m_len)
 		return (EINVAL);
 	oldfds = (cm->cmsg_len - sizeof (*cm)) / sizeof (int);
-	rp = (struct file **)(cm + 1);
+	ip = (int *)(cm + 1);
 	for (i = 0; i < oldfds; i++) {
-		fd = *(int *)rp++;
-		if ((unsigned)fd >= fdp->fd_nfiles ||
-		    fdp->fd_ofiles[fd] == NULL)
+		fd = *ip++;
+		if (fd_getfile(fdp, fd) == NULL)
 			return (EBADF);
+		if (fdp->fd_ofiles[fd]->f_count == LONG_MAX-2 ||
+		    fdp->fd_ofiles[fd]->f_msgcount == LONG_MAX-2)
+			return (EDEADLK);
 	}
-	rp = (struct file **)(cm + 1);
+	ip = (int *)(cm + 1);
+	if (sizeof(int) != sizeof(struct file *)) {
+		MGET(n, M_WAIT, MT_DATA);
+		rp = (struct file **)mtod(n, caddr_t);
+	} else
+		rp = (struct file **)ip;
 	for (i = 0; i < oldfds; i++) {
-		fp = fdp->fd_ofiles[*(int *)rp];
-		*rp++ = fp;
+		bcopy(ip, &fd, sizeof fd);
+		ip++;
+		fp = fdp->fd_ofiles[fd];
+		bcopy(&fp, rp, sizeof fp);
+		rp++;
 		fp->f_count++;
 		fp->f_msgcount++;
 		unp_rights++;
+	}
+	if (n) {
+		m_adj(control, -(oldfds * sizeof(int)));
+		n->m_len = oldfds * sizeof(struct file *);
+		m_cat(control, n);
 	}
 	return (0);
 }
@@ -725,7 +842,7 @@ unp_gc()
 	 * that are not otherwise accessible and then free the rights
 	 * that are stored in messages on them.
 	 *
-	 * The bug in the orginal code is a little tricky, so I'll describe
+	 * The bug in the original code is a little tricky, so I'll describe
 	 * what's wrong with it here.
 	 *
 	 * It is incorrect to simply unp_discard each entry for f_msgcount
@@ -772,7 +889,8 @@ unp_gc()
 		}
 	}
 	for (i = nunref, fpp = extra_ref; --i >= 0; ++fpp)
-		sorflush((struct socket *)(*fpp)->f_data);
+	        if ((*fpp)->f_type == DTYPE_SOCKET && (*fpp)->f_data != NULL)
+		        sorflush((struct socket *)(*fpp)->f_data);
 	for (i = nunref, fpp = extra_ref; --i >= 0; ++fpp)
 		(void) closef(*fpp, (struct proc *)0);
 	free((caddr_t)extra_ref, M_FILE);
@@ -794,7 +912,7 @@ unp_scan(m0, op)
 	void (*op) __P((struct file *));
 {
 	register struct mbuf *m;
-	register struct file **rp;
+	struct file **rp, *fp;
 	register struct cmsghdr *cm;
 	register int i;
 	int qfds;
@@ -807,11 +925,13 @@ unp_scan(m0, op)
 				if (cm->cmsg_level != SOL_SOCKET ||
 				    cm->cmsg_type != SCM_RIGHTS)
 					continue;
-				qfds = (cm->cmsg_len - sizeof *cm)
-						/ sizeof (struct file *);
+				qfds = (cm->cmsg_len - sizeof *cm) / sizeof (int);
 				rp = (struct file **)(cm + 1);
-				for (i = 0; i < qfds; i++)
-					(*op)(*rp++);
+				for (i = 0; i < qfds; i++) {
+					bcopy(rp, &fp, sizeof fp);
+					rp++;
+					(*op)(fp);
+				}
 				break;		/* XXX, but saves time */
 			}
 		m0 = m0->m_act;

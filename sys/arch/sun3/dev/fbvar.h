@@ -1,4 +1,5 @@
-/*	$NetBSD: fbvar.h,v 1.2 1995/04/07 02:51:21 gwr Exp $	*/
+/*	$OpenBSD: fbvar.h,v 1.5 1997/01/16 04:03:45 kstailey Exp $	*/
+/*	$NetBSD: fbvar.h,v 1.3 1996/10/29 19:27:37 gwr Exp $	*/
 
 /*
  * Copyright (c) 1992, 1993
@@ -69,7 +70,7 @@ struct fbdriver {
 	/* These avoid the need to know our major number. */
 	int 	(*fbd_open) __P((dev_t, int, int, struct proc *));
 	int 	(*fbd_close) __P((dev_t, int, int, struct proc *));
-	int 	(*fbd_mmap) __P((dev_t, int, int));
+	paddr_t	(*fbd_mmap) __P((dev_t, off_t, int));
 	/* These are the internal ioctl functions */
 	int 	(*fbd_gattr) __P((struct fbdevice *, struct fbgattr *));
 	int 	(*fbd_gvideo) __P((struct fbdevice *, int *));
@@ -78,6 +79,5 @@ struct fbdriver {
 	int 	(*fbd_putcmap) __P((struct fbdevice *, struct fbcmap *));
 };
 
-void	fbattach __P((struct fbdevice *, int));
+void	fb_attach __P((struct fbdevice *, int));
 int 	fbioctlfb __P((struct fbdevice *, u_long, caddr_t));
-extern int enoioctl();

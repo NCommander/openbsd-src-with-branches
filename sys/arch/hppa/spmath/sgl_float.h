@@ -1,21 +1,45 @@
+/*	$OpenBSD: sgl_float.h,v 1.4 2000/01/11 08:25:08 mickey Exp $	*/
+
 /*
-  (c) Copyright 1986 HEWLETT-PACKARD COMPANY
-  To anyone who acknowledges that this file is provided "AS IS"
-  without any express or implied warranty:
-      permission to use, copy, modify, and distribute this file
-  for any purpose is hereby granted without fee, provided that
-  the above copyright notice and this notice appears in all
-  copies, and that the name of Hewlett-Packard Company not be
-  used in advertising or publicity pertaining to distribution
-  of the software without specific, written prior permission.
-  Hewlett-Packard Company makes no representations about the
-  suitability of this software for any purpose.
-*/
-/*
- * @(#)sgl_float.h: $Revision: 2.8.88.1 $ $Date: 93/12/07 15:07:17 $
- * $Locker:  $
- * 
+ * Copyright 1996 1995 by Open Software Foundation, Inc.
+ *              All Rights Reserved
+ *
+ * Permission to use, copy, modify, and distribute this software and
+ * its documentation for any purpose and without fee is hereby granted,
+ * provided that the above copyright notice appears in all copies and
+ * that both the copyright notice and this permission notice appear in
+ * supporting documentation.
+ *
+ * OSF DISCLAIMS ALL WARRANTIES WITH REGARD TO THIS SOFTWARE
+ * INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
+ * FOR A PARTICULAR PURPOSE.
+ *
+ * IN NO EVENT SHALL OSF BE LIABLE FOR ANY SPECIAL, INDIRECT, OR
+ * CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM
+ * LOSS OF USE, DATA OR PROFITS, WHETHER IN ACTION OF CONTRACT,
+ * NEGLIGENCE, OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION
+ * WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
+/*
+ * pmk1.1
+ */
+/*
+ * (c) Copyright 1986 HEWLETT-PACKARD COMPANY
+ *
+ * To anyone who acknowledges that this file is provided "AS IS"
+ * without any express or implied warranty:
+ *     permission to use, copy, modify, and distribute this file
+ * for any purpose is hereby granted without fee, provided that
+ * the above copyright notice and this notice appears in all
+ * copies, and that the name of Hewlett-Packard Company not be
+ * used in advertising or publicity pertaining to distribution
+ * of the software without specific, written prior permission.
+ * Hewlett-Packard Company makes no representations about the
+ * suitability of this software for any purpose.
+ */
+
+#include <sys/cdefs.h>
+
 /******************************
  * Single precision functions *
  ******************************/
@@ -54,16 +78,16 @@
     Sall(srcdst) <<= varamount
 #define Sgl_rightshift_exponentmantissa(srcdst, varamount) \
     Sall(srcdst) = \
-	(Sexponentmantissa(srcdst) >> varamount) | (Sall(srcdst) & (1<<31))
+	(Sexponentmantissa(srcdst) >> (varamount)) | (Sall(srcdst) & (1<<31))
 
 #define Sgl_leftshiftby1_withextent(left,right,result) \
     Shiftdouble(Sall(left),Extall(right),31,Sall(result))
-    
+
 #define Sgl_rightshiftby1_withextent(left,right,dst)		\
     Shiftdouble(Sall(left),Extall(right),1,Extall(right))
 #define Sgl_arithrightshiftby1(srcdst)	\
     Sall(srcdst) = (int)Sall(srcdst) >> 1
-    
+
 /* Sign extend the sign bit with an integer destination */
 #define Sgl_signextendedsign(value) Ssignedsign(value)
 
@@ -101,9 +125,9 @@
 #define Sgl_iszero_mantissa(sgl_value) (Smantissa(sgl_value)==0)
 #define Sgl_iszero_exponentmantissa(sgl_value) \
     (Sexponentmantissa(sgl_value)==0)
-#define Sgl_isinfinity_exponent(sgl_value) 		\
+#define Sgl_isinfinity_exponent(sgl_value)		\
     (Sgl_exponent(sgl_value)==SGL_INFINITY_EXPONENT)
-#define Sgl_isnotinfinity_exponent(sgl_value) 		\
+#define Sgl_isnotinfinity_exponent(sgl_value)		\
     (Sgl_exponent(sgl_value)!=SGL_INFINITY_EXPONENT)
 #define Sgl_isinfinity(sgl_value)			\
     (Sgl_exponent(sgl_value)==SGL_INFINITY_EXPONENT &&	\
@@ -139,11 +163,11 @@
     Sall(sgl_value) >>= 4
 #define Sgl_rightshiftby8(sgl_value) \
     Sall(sgl_value) >>= 8
-    
+
 #define Sgl_ismagnitudeless(signlessleft,signlessright)			\
 /*  unsigned int signlessleft, signlessright; */			\
-      (signlessleft < signlessright)  
-    
+      (signlessleft < signlessright)
+
 
 #define Sgl_copytoint_exponentmantissa(source,dest)     \
     dest = Sexponentmantissa(source)
@@ -191,23 +215,23 @@
 #define Sgl_setwrapped_exponent(sgl_value,exponent,op) \
     Deposit_sexponent(sgl_value,(exponent op SGL_WRAP))
 
-#define Sgl_setlargestpositive(sgl_value) 				\
-    Sall(sgl_value) = ((SGL_EMAX+SGL_BIAS) << (32-(1+SGL_EXP_LENGTH)))	\
-                      | ((1<<(32-(1+SGL_EXP_LENGTH))) - 1 )
+#define Sgl_setlargestpositive(sgl_value)				\
+    Sall(sgl_value) = ((FLT_MAX_EXP+SGL_BIAS) << (32-(1+SGL_EXP_LENGTH)))	\
+			| ((1<<(32-(1+SGL_EXP_LENGTH))) - 1)
 #define Sgl_setlargestnegative(sgl_value)				\
-    Sall(sgl_value) = ((SGL_EMAX+SGL_BIAS) << (32-(1+SGL_EXP_LENGTH)))	\
-                      | ((1<<(32-(1+SGL_EXP_LENGTH))) - 1 ) | (1<<31)
+    Sall(sgl_value) = ((FLT_MAX_EXP+SGL_BIAS) << (32-(1+SGL_EXP_LENGTH)))	\
+			| ((1<<(32-(1+SGL_EXP_LENGTH))) - 1 ) | (1<<31)
 
 #define Sgl_setnegativeinfinity(sgl_value)	\
-    Sall(sgl_value) = 				\
+    Sall(sgl_value) =				\
     ((1<<SGL_EXP_LENGTH) | SGL_INFINITY_EXPONENT) << (32-(1+SGL_EXP_LENGTH))
-#define Sgl_setlargest(sgl_value,sign) 					\
-    Sall(sgl_value) = sign << 31 |					\
-        (((SGL_EMAX+SGL_BIAS) << (32-(1+SGL_EXP_LENGTH)))		\
+#define Sgl_setlargest(sgl_value,sign)					\
+    Sall(sgl_value) = ((sign) << 31) |					\
+	(((FLT_MAX_EXP+SGL_BIAS) << (32-(1+SGL_EXP_LENGTH)))		\
 	  | ((1 << (32-(1+SGL_EXP_LENGTH))) - 1 ))
 #define Sgl_setlargest_exponentmantissa(sgl_value)			\
-    Sall(sgl_value) = Sall(sgl_value) & (1<<31) |			\
-        (((SGL_EMAX+SGL_BIAS) << (32-(1+SGL_EXP_LENGTH)))		\
+    Sall(sgl_value) = (Sall(sgl_value) & (1<<31)) |			\
+	(((FLT_MAX_EXP+SGL_BIAS) << (32-(1+SGL_EXP_LENGTH)))		\
 	  | ((1 << (32-(1+SGL_EXP_LENGTH))) - 1 ))
 
 /* The high bit is always zero so arithmetic or logical shifts will work. */
@@ -215,7 +239,7 @@
     /* sgl_floating_point srcdst; int shift; extension extent */	\
     if (shift < 32) {							\
 	Extall(extent) = Sall(srcdst) << (32-(shift));			\
-    	Sall(srcdst) >>= shift;						\
+	Sall(srcdst) >>= shift;						\
     }									\
     else {								\
 	Extall(extent) = Sall(srcdst);					\
@@ -248,11 +272,11 @@
 
 /* Need to Initialize */
 #define Sgl_makequietnan(dest)						\
-    Sall(dest) = ((SGL_EMAX+SGL_BIAS)+1)<< (32-(1+SGL_EXP_LENGTH))	\
-                 | (1<<(32-(1+SGL_EXP_LENGTH+2)))
+    Sall(dest) = ((FLT_MAX_EXP+SGL_BIAS)+1)<< (32-(1+SGL_EXP_LENGTH))	\
+		| (1<<(32-(1+SGL_EXP_LENGTH+2)))
 #define Sgl_makesignalingnan(dest)					\
-    Sall(dest) = ((SGL_EMAX+SGL_BIAS)+1)<< (32-(1+SGL_EXP_LENGTH))	\
-                 | (1<<(32-(1+SGL_EXP_LENGTH+1)))
+    Sall(dest) = ((FLT_MAX_EXP+SGL_BIAS)+1)<< (32-(1+SGL_EXP_LENGTH))	\
+		| (1<<(32-(1+SGL_EXP_LENGTH+1)))
 
 #define Sgl_normalize(sgl_opnd,exponent)			\
 	while(Sgl_iszero_hiddenhigh7mantissa(sgl_opnd)) {	\
@@ -297,9 +321,9 @@
 #define Sgl_denormalize(opnd,exponent,guard,sticky,inexact)		\
 	Sgl_clear_signexponent_set_hidden(opnd);			\
 	if (exponent >= (1 - SGL_P)) {					\
-		guard = (Sall(opnd) >> -exponent) & 1;			\
+		guard = (Sall(opnd) >> (-(exponent))) & 1;		\
 		if (exponent < 0) sticky |= Sall(opnd) << (32+exponent); \
-		inexact = guard | sticky;				\
+		inexact = (guard) | (sticky);				\
 		Sall(opnd) >>= (1-exponent);				\
 	}								\
 	else {								\
@@ -308,3 +332,14 @@
 		inexact = sticky;					\
 		Sgl_setzero(opnd);					\
 	}
+
+sgl_floating_point sgl_setoverflow __P((unsigned int));
+int sgl_fadd __P((sgl_floating_point *, sgl_floating_point *, sgl_floating_point *, unsigned int *));
+int sgl_fcmp __P((sgl_floating_point *, sgl_floating_point *, unsigned int, unsigned int *));
+int sgl_fdiv __P((sgl_floating_point *, sgl_floating_point *, sgl_floating_point *, unsigned int *));
+int sgl_fmpy __P((sgl_floating_point *, sgl_floating_point *, sgl_floating_point *, unsigned int *));
+int sgl_frem __P((sgl_floating_point *, sgl_floating_point *, sgl_floating_point *, unsigned int *));
+int sgl_fsqrt __P((sgl_floating_point *, sgl_floating_point *, unsigned int *));
+int sgl_fsub __P((sgl_floating_point *, sgl_floating_point *, sgl_floating_point *, unsigned int *));
+int sgl_frnd __P((sgl_floating_point *, sgl_floating_point *, unsigned int *));
+

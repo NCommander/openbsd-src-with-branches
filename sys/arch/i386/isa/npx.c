@@ -1,4 +1,5 @@
-/*	$NetBSD: npx.c,v 1.51 1995/10/10 04:46:09 mycroft Exp $	*/
+/*	$OpenBSD: npx.c,v 1.21 2001/11/12 20:28:20 niklas Exp $	*/
+/*	$NetBSD: npx.c,v 1.57 1996/05/12 23:12:24 mycroft Exp $	*/
 
 #if 0
 #define iprintf(x)	printf x
@@ -48,20 +49,24 @@
 #include <sys/conf.h>
 #include <sys/file.h>
 #include <sys/proc.h>
+#include <sys/signalvar.h>
 #include <sys/user.h>
 #include <sys/ioctl.h>
 #include <sys/device.h>
 
+#include <uvm/uvm_extern.h>
+
 #include <machine/cpu.h>
+#include <machine/intr.h>
 #include <machine/pio.h>
 #include <machine/cpufunc.h>
 #include <machine/pcb.h>
 #include <machine/trap.h>
 #include <machine/specialreg.h>
 
-#include <i386/isa/icu.h>
-#include <dev/isa/isavar.h>
 #include <dev/isa/isareg.h>
+#include <dev/isa/isavar.h>
+#include <i386/isa/icu.h>
 
 /*
  * 387 and 287 Numeric Coprocessor Extension (NPX) Driver.
@@ -104,7 +109,6 @@ int npxdna __P((struct proc *));
 void npxexit __P((void));
 int npxintr __P((void *));
 static int npxprobe1 __P((struct isa_attach_args *));
-void npxsave __P((void));
 static void npxsave1 __P((void));
 
 struct npx_softc {
@@ -115,8 +119,12 @@ struct npx_softc {
 int npxprobe __P((struct device *, void *, void *));
 void npxattach __P((struct device *, struct device *, void *));
 
-struct cfdriver npxcd = {
-	NULL, "npx", npxprobe, npxattach, DV_DULL, sizeof(struct npx_softc)
+struct cfattach npx_ca = {
+	sizeof(struct npx_softc), npxprobe, npxattach
+};
+
+struct cfdriver npx_cd = {
+	NULL, "npx", DV_DULL
 };
 
 enum npx_type {
@@ -132,6 +140,10 @@ static	enum npx_type		npx_type;
 static	int			npx_nointr;
 static	volatile u_int		npx_intrs_while_probing;
 static	volatile u_int		npx_traps_while_probing;
+
+extern int i386_fpu_present;
+extern int i386_fpu_exception;
+extern int i386_fpu_fdivbug;
 
 /*
  * Special interrupt handlers.  Someday intr0-intr15 will be used to count
@@ -168,6 +180,7 @@ static inline int
 npxprobe1(ia)
 	struct isa_attach_args *ia;
 {
+#ifndef ALWAYS_MATH_EMULATE
 	int control;
 	int status;
 
@@ -209,6 +222,7 @@ npxprobe1(ia)
 				 */
 				npx_type = NPX_EXCEPTION;
 				ia->ia_irq = IRQUNK;	/* zap the interrupt */
+				i386_fpu_exception = 1;
 			} else if (npx_intrs_while_probing != 0) {
 				/*
 				 * Bad, we are stuck with IRQ13.
@@ -224,6 +238,7 @@ npxprobe1(ia)
 			return 1;
 		}
 	}
+#endif
 	/*
 	 * Probe failed.  There is no usable FPU.
 	 */
@@ -262,8 +277,8 @@ npxprobe(parent, match, aux)
 	disable_intr();
 	save_idt_npxintr = idt[irq];
 	save_idt_npxtrap = idt[16];
-	setgate(&idt[irq], probeintr, 0, SDT_SYS386IGT, SEL_KPL);
-	setgate(&idt[16], probetrap, 0, SDT_SYS386TGT, SEL_KPL);
+	setgate(&idt[irq], probeintr, 0, SDT_SYS386IGT, SEL_KPL, GICODE_SEL);
+	setgate(&idt[16], probetrap, 0, SDT_SYS386TGT, SEL_KPL, GCODE_SEL);
 	save_imen = imen;
 	imen = ~((1 << IRQ_SLAVE) | (1 << ia->ia_irq));
 	SET_ICUS();
@@ -325,8 +340,8 @@ npxattach(parent, self, aux)
 	case NPX_INTERRUPT:
 		printf("\n");
 		lcr0(rcr0() & ~CR0_NE);
-		sc->sc_ih = isa_intr_establish(ia->ia_irq, ISA_IST_EDGE,
-		    ISA_IPL_NONE, npxintr, 0);
+		sc->sc_ih = isa_intr_establish(ia->ia_ic, ia->ia_irq,
+		    IST_EDGE, IPL_NONE, npxintr, 0, sc->sc_dev.dv_xname);
 		break;
 	case NPX_EXCEPTION:
 		printf(": using exception 16\n");
@@ -335,13 +350,18 @@ npxattach(parent, self, aux)
 		printf(": error reporting broken; not using\n");
 		npx_type = NPX_NONE;
 		return;
+	case NPX_NONE:
+		return;
 	}
 
 	lcr0(rcr0() & ~(CR0_EM|CR0_TS));
 	fninit();
-	if (npx586bug1(4195835, 3145727) != 0)
+	if (npx586bug1(4195835, 3145727) != 0) {
+		i386_fpu_fdivbug = 1;
 		printf("WARNING: Pentium FDIV bug detected!\n");
+	}
 	lcr0(rcr0() | (CR0_TS));
+	i386_fpu_present = 1;
 }
 
 /*
@@ -367,8 +387,9 @@ npxintr(arg)
 	register struct save87 *addr;
 	struct intrframe *frame = arg;
 	int code;
+	union sigval sv;
 
-	cnt.v_trap++;
+	uvmexp.traps++;
 	iprintf(("Intr"));
 
 	if (p == 0 || npx_type == NPX_NONE) {
@@ -391,7 +412,7 @@ npxintr(arg)
 	 * Find the address of npxproc's savefpu.  This is not necessarily
 	 * the one in curpcb.
 	 */
-	addr = &p->p_addr->u_pcb.pcb_savefpu;
+	addr = &p->p_addr->u_pcb.pcb_savefpu.npx;
 	/*
 	 * Save state.  This does an implied fninit.  It had better not halt
 	 * the cpu or we'll hang.
@@ -431,16 +452,29 @@ npxintr(arg)
 		 * just before it is used).
 		 */
 		p->p_md.md_regs = (struct trapframe *)&frame->if_es;
-#ifdef notyet
+
 		/*
 		 * Encode the appropriate code for detailed information on
 		 * this exception.
 		 */
-		code = XXX_ENCODE(addr->sv_ex_sw);
-#else
-		code = 0;	/* XXX */
+		if (addr->sv_ex_sw & EN_SW_IE)
+			code = FPE_FLTINV;
+#ifdef notyet
+		else if (addr->sv_ex_sw & EN_SW_DE)
+			code = FPE_FLTDEN;
 #endif
-		trapsignal(p, SIGFPE, code);
+		else if (addr->sv_ex_sw & EN_SW_ZE)
+			code = FPE_FLTDIV;
+		else if (addr->sv_ex_sw & EN_SW_OE)
+			code = FPE_FLTOVF;
+		else if (addr->sv_ex_sw & EN_SW_UE)
+			code = FPE_FLTUND;
+		else if (addr->sv_ex_sw & EN_SW_PE)
+			code = FPE_FLTRES;
+		else
+			code = 0;		/* XXX unknown */
+		sv.sival_int = frame->if_eip;
+		trapsignal(p, SIGFPE, T_ARITHTRAP, code, sv);
 	} else {
 		/*
 		 * Nested interrupt.  These losers occur when:
@@ -503,7 +537,7 @@ npxdna(p)
 	}
 
 #ifdef DIAGNOSTIC
-	if (cpl != 0 || npx_nointr != 0)
+	if (cpl != IPL_NONE || npx_nointr != 0)
 		panic("npxdna: masked");
 #endif
 
@@ -578,7 +612,7 @@ npxsave()
 {
 
 #ifdef DIAGNOSTIC
-	if (cpl != 0 || npx_nointr != 0)
+	if (cpl != IPL_NONE || npx_nointr != 0)
 		panic("npxsave: masked");
 #endif
 	iprintf(("Fork"));

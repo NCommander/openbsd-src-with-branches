@@ -1,4 +1,5 @@
-/*	$NetBSD: tty.h,v 1.28 1995/03/26 20:24:57 jtc Exp $	*/
+/*	$OpenBSD: tty.h,v 1.10 2001/06/22 14:11:00 deraadt Exp $	*/
+/*	$NetBSD: tty.h,v 1.30.4.1 1996/06/02 09:08:13 mrg Exp $	*/
 
 /*-
  * Copyright (c) 1982, 1986, 1993
@@ -41,15 +42,30 @@
  */
 
 #include <sys/termios.h>
+#include <sys/queue.h>
 #include <sys/select.h>		/* For struct selinfo. */
+#include <sys/timeout.h>
 
-#ifndef REAL_CLISTS
+#define KERN_TTY_TKNIN		1	/* quad: input chars */
+#define KERN_TTY_TKNOUT		2	/* quad: output chars */
+#define KERN_TTY_TKRAWCC	3	/* quad: input chars, raw mode */
+#define KERN_TTY_TKCANCC	4	/* quad: input char, cooked mode */
+#define KERN_TTY_MAXID		5
+
+#define CTL_KERN_TTY_NAMES { \
+	{ 0, 0 }, \
+	{ "tk_nin", CTLTYPE_QUAD }, \
+	{ "tk_nout", CTLTYPE_QUAD }, \
+	{ "tk_rawcc", CTLTYPE_QUAD }, \
+	{ "tk_cancc", CTLTYPE_QUAD }, \
+}
+
 /*
  * Clists are actually ring buffers. The c_cc, c_cf, c_cl fields have
  * exactly the same behaviour as in true clists.
  * if c_cq is NULL, the ring buffer has no TTY_QUOTE functionality
  * (but, saves memory and cpu time)
- * 
+ *
  * *DON'T* play with c_cs, c_ce, c_cq, or c_cl outside tty_subr.c!!!
  */
 struct clist {
@@ -61,17 +77,6 @@ struct clist {
 	u_char	*c_ce;		/* c_ce + c_len */
 	u_char	*c_cq;		/* N bits/bytes long, see tty_subr.c */
 };
-#else
-/*
- * Clists are character lists, which is a variable length linked list
- * of cblocks, with a count of the number of characters in the list.
- */
-struct clist {
-	int	c_cc;		/* Number of characters in the clist. */
-	u_char	*c_cf;		/* Pointer to the first cblock. */
-	u_char	*c_cl;		/* Pointer to the last cblock. */
-};
-#endif
 
 /*
  * Per-tty structure.
@@ -81,6 +86,7 @@ struct clist {
  * (low, high, timeout).
  */
 struct tty {
+	TAILQ_ENTRY(tty) tty_link;	/* Link in global tty list. */
 	struct	clist t_rawq;		/* Device raw input queue. */
 	long	t_rawcc;		/* Raw input queue statistics. */
 	struct	clist t_canq;		/* Device canonical queue. */
@@ -109,6 +115,7 @@ struct tty {
 	short	t_hiwat;		/* High water mark. */
 	short	t_lowat;		/* Low water mark. */
 	short	t_gen;			/* Generation number. */
+	struct timeout t_rstrt_to;	/* restart timeout */
 };
 
 #define	t_cc		t_termios.c_cc
@@ -191,11 +198,20 @@ struct speedtab {
 #define	isbackground(p, tp)						\
 	(isctty((p), (tp)) && (p)->p_pgrp != (tp)->t_pgrp)
 
+/*
+ * ttylist_head is defined here so that user-land has access to it.
+ */
+TAILQ_HEAD(ttylist_head, tty);		/* the ttylist is a TAILQ */
+
 #ifdef _KERNEL
+
+extern	int tty_count;			/* number of ttys in global ttylist */
 extern	struct ttychars ttydefaults;
 
 /* Symbolic sleep message strings. */
 extern	 char ttyin[], ttyout[], ttopen[], ttclos[], ttybg[], ttybuf[];
+
+int	sysctl_tty __P((int *, u_int, void *, size_t *, void *, size_t));
 
 int	 b_to_q __P((u_char *cp, int cc, struct clist *q));
 void	 catq __P((struct clist *from, struct clist *to));
@@ -215,6 +231,7 @@ int	 ttioctl __P((struct tty *tp, u_long com, caddr_t data, int flag,
 int	 ttread __P((struct tty *tp, struct uio *uio, int flag));
 void	 ttrstrt __P((void *tp));
 int	 ttselect __P((dev_t device, int rw, struct proc *p));
+int	 ttkqfilter __P((dev_t dev, struct knote *kn));
 void	 ttsetwater __P((struct tty *tp));
 int	 ttspeedtab __P((int speed, struct speedtab *table));
 int	 ttstart __P((struct tty *tp));
@@ -238,7 +255,26 @@ int	 ttysleep __P((struct tty *tp,
 int	 ttywait __P((struct tty *tp));
 int	 ttywflush __P((struct tty *tp));
 
+void	tty_init __P((void));
+void	tty_attach __P((struct tty *));
+void	tty_detach __P((struct tty *));
 struct tty *ttymalloc __P((void));
 void	 ttyfree __P((struct tty *));
-u_char	*firstc           __P((struct clist *clp, int *c));
+u_char	*firstc __P((struct clist *clp, int *c));
+
+int	cttyopen __P((dev_t, int, int, struct proc *));
+int	cttyread __P((dev_t, struct uio *, int));
+int	cttywrite __P((dev_t, struct uio *, int));
+int	cttyioctl __P((dev_t, u_long, caddr_t, int, struct proc *));
+int	cttyselect __P((dev_t, int, struct proc *));
+
+int	clalloc __P((struct clist *, int, int));
+void	clfree __P((struct clist *));
+
+#if defined(COMPAT_43) || defined(COMPAT_SUNOS) || defined(COMPAT_SVR4) || \
+    defined(COMPAT_FREEBSD) || defined(COMPAT_OSF1)
+# define COMPAT_OLDTTY
+int 	ttcompat __P((struct tty *, u_long, caddr_t, int, struct proc *));
+#endif
+
 #endif

@@ -1,4 +1,5 @@
-/*	$NetBSD: conf.c,v 1.28 1995/08/17 17:40:52 thorpej Exp $	*/
+/*	$OpenBSD: conf.c,v 1.26 2001/09/28 02:53:13 mickey Exp $	*/
+/*	$NetBSD: conf.c,v 1.41 1997/02/11 07:35:49 scottr Exp $	*/
 
 /*
  * Copyright (c) 1990 The Regents of the University of California.
@@ -31,39 +32,6 @@
  * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
-*/
-/*-
- * Copyright (C) 1993	Allen K. Briggs, Chris P. Caputo,
- *			Michael L. Finch, Bradley A. Grantham, and
- *			Lawrence A. Kesteloot
- * All rights reserved.
- *
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions
- * are met:
- * 1. Redistributions of source code must retain the above copyright
- *    notice, this list of conditions and the following disclaimer.
- * 2. Redistributions in binary form must reproduce the above copyright
- *    notice, this list of conditions and the following disclaimer in the
- *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the Alice Group.
- * 4. The names of the Alice Group or any of its members may not be used
- *    to endorse or promote products derived from this software without
- *    specific prior written permission.
- *
- * THIS SOFTWARE IS PROVIDED BY THE ALICE GROUP ``AS IS'' AND ANY EXPRESS OR
- * IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
- * OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.
- * IN NO EVENT SHALL THE ALICE GROUP BE LIABLE FOR ANY DIRECT, INDIRECT,
- * INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT
- * NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
- * DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
- * THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
- * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
- * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- *
  */
 /*-
  * Derived a long time ago from
@@ -79,27 +47,13 @@
 #include <sys/vnode.h>
 #include <dev/cons.h>
 
-int	ttselect	__P((dev_t, int, struct proc *));
-
-bdev_decl(sw);
 #include "st.h"
-bdev_decl(st);
 #include "sd.h"
-bdev_decl(sd);
 #include "cd.h"
-bdev_decl(cd);
 #include "ch.h"
-bdev_decl(ch);
 #include "vnd.h"
-bdev_decl(vnd);
 #include "ccd.h"
-bdev_decl(ccd);
-
-#ifdef LKM
-int	lkmenodev();
-#else
-#define lkmenodev	enodev
-#endif
+#include "rd.h"
 
 struct bdevsw	bdevsw[] =
 {
@@ -113,63 +67,51 @@ struct bdevsw	bdevsw[] =
 	bdev_notdef(),        	 	/* 7 */
 	bdev_disk_init(NVND,vnd),	/* 8: vnode disk driver */
 	bdev_disk_init(NCCD,ccd),	/* 9: concatenated disk driver */
-	bdev_lkm_dummy(),		/* 10 */
-	bdev_lkm_dummy(),		/* 11 */
-	bdev_lkm_dummy(),		/* 12 */
-	bdev_lkm_dummy(),		/* 13 */
+	bdev_notdef(),        	 	/* 10 */
+	bdev_notdef(),        	 	/* 11 */
+	bdev_notdef(),        	 	/* 12 */
+	bdev_disk_init(NRD,rd),	 	/* 13: RAM disk -- for install */
 	bdev_lkm_dummy(),		/* 14 */
 	bdev_lkm_dummy(),		/* 15 */
+	bdev_lkm_dummy(),		/* 16 */
+	bdev_lkm_dummy(),		/* 17 */
+	bdev_lkm_dummy(),		/* 18 */
+	bdev_lkm_dummy(),		/* 19 */
 };
 int	nblkdev = sizeof(bdevsw) / sizeof(bdevsw[0]);
-
-/* open, close, ioctl, select, mmap -- XXX should be a map device */
-#define	cdev_grf_init(c,n) { \
-	dev_init(c,n,open), dev_init(c,n,close), (dev_type_read((*))) nullop, \
-	(dev_type_write((*))) nullop, dev_init(c,n,ioctl), \
-	(dev_type_stop((*))) enodev, 0, dev_init(c,n,select), \
-	dev_init(c,n,mmap) }
-
-cdev_decl(cn);
-cdev_decl(ctty);
 
 #include "ite.h"
 cdev_decl(ite);
 #define mmread	mmrw
 #define mmwrite	mmrw
 cdev_decl(mm);
-cdev_decl(sw);
 #include "pty.h"
-#define	ptstty		ptytty
-#define	ptsioctl	ptyioctl
-cdev_decl(pts);
-#define	ptctty		ptytty
-#define	ptcioctl	ptyioctl
-cdev_decl(ptc);
-cdev_decl(log);
-cdev_decl(st);
-cdev_decl(sd);
+#include "ss.h"
+#include "uk.h"
 cdev_decl(fd);
 #include "grf.h"
 cdev_decl(grf);
 #define NADB 1 /* #include "adb.h" */
 cdev_decl(adb);
-#include "ser.h"
-cdev_decl(ser);
-cdev_decl(cd);
-cdev_decl(vnd);
-cdev_decl(ccd);
+#include "zsc.h"
+cdev_decl(zsc);
+#include "zstty.h"
+cdev_decl(zs);
+#include "ch.h"
 #include "bpfilter.h"
-cdev_decl(bpf);
 #include "tun.h"
-cdev_decl(tun);
-
-#ifdef LKM
-#define NLKM	1
-#else
-#define NLKM	0
+#include "asc.h"
+cdev_decl(asc);
+#include "ksyms.h"
+cdev_decl(ksyms);
+#ifdef XFS
+#include <xfs/nxfs.h>
+cdev_decl(xfs_dev);
 #endif
 
-cdev_decl(lkm);
+#include "pf.h"
+
+#include <altq/altqconf.h>
 
 struct cdevsw	cdevsw[] =
 {
@@ -183,19 +125,18 @@ struct cdevsw	cdevsw[] =
 	cdev_notdef(),			/* 7 */
 	cdev_notdef(),			/* 8 */
 	cdev_notdef(),			/* 9 */
-	cdev_grf_init(1,grf),		/* 10: frame buffer */
+	cdev_fb_init(NGRF,grf),		/* 10: frame buffer */
 	cdev_tty_init(NITE,ite),	/* 11: console terminal emulator */
-	cdev_tty_init(NSER,ser),	/* 12: 2 mac serial ports -- BG*/
+	cdev_tty_init(NZSTTY,zs),	/* 12: 2 mac serial ports -- BG*/
 	cdev_disk_init(NSD,sd),		/* 13: SCSI disk */
 	cdev_tape_init(NST,st),		/* 14: SCSI tape */
 	cdev_disk_init(NCD,cd),		/* 15: SCSI CD-ROM */
 	cdev_notdef(),			/* 16 */
-/*	cdev_disk_init(NCH,ch),		 17: SCSI autochanger */
-	cdev_notdef(),			/* 17: until we find chstrategy... */
+	cdev_ch_init(NCH,ch),		/* 17: SCSI autochanger */
 	cdev_notdef(),			/* 18 */
 	cdev_disk_init(NVND,vnd),	/* 19: vnode disk driver */
 	cdev_disk_init(NCCD,ccd),	/* 20: concatenated disk driver */
-	cdev_fd_init(1,fd),		/* 21: file descriptor pseudo-device */
+	cdev_fd_init(1,filedesc),	/* 21: file descriptor pseudo-device */
 	cdev_bpftun_init(NBPFILTER,bpf),/* 22: Berkeley packet filter */
 	cdev_mouse_init(NADB,adb),	/* 23: ADB event interface */
 	cdev_bpftun_init(NTUN,tun),	/* 24: network tunnel */
@@ -206,6 +147,31 @@ struct cdevsw	cdevsw[] =
 	cdev_lkm_dummy(),		/* 29 */
 	cdev_lkm_dummy(),		/* 30 */
 	cdev_lkm_dummy(),		/* 31 */
+	cdev_random_init(1,random),	/* 32: random data source */
+	cdev_ss_init(NSS,ss),           /* 33: SCSI scanner */
+	cdev_uk_init(NUK,uk),		/* 34: SCSI unknown */
+	cdev_pf_init(NPF,pf),		/* 35: packet filter */
+	cdev_audio_init(NASC,asc),      /* 36: ASC audio device */
+	cdev_ksyms_init(NKSYMS,ksyms),	/* 37: Kernel symbols device */
+	cdev_notdef(),			/* 38 */
+	cdev_notdef(),			/* 39 */
+	cdev_notdef(),			/* 40 */
+	cdev_notdef(),			/* 41 */
+	cdev_notdef(),			/* 42 */
+	cdev_notdef(),			/* 43 */
+	cdev_notdef(),			/* 44 */
+	cdev_notdef(),			/* 45 */
+	cdev_notdef(),			/* 46 */
+	cdev_notdef(),			/* 47 */
+	cdev_notdef(),			/* 48 */
+	cdev_notdef(),			/* 49 */
+	cdev_notdef(),			/* 50 */
+#ifdef XFS
+	cdev_xfs_init(NXFS,xfs_dev),	/* 51: xfs communication device */
+#else
+	cdev_notdef(),			/* 51 */
+#endif
+	cdev_altq_init(NALTQ,altq),	/* 52: ALTQ control interface */
 };
 int	nchrdev = sizeof(cdevsw) / sizeof(cdevsw[0]);
 
@@ -236,11 +202,18 @@ iskmemdev(dev)
 /*
  * Returns true if dev is /dev/zero.
  */
+int
 iszerodev(dev)
 	dev_t	dev;
 {
 
 	return (major(dev) == mem_no && minor(dev) == 12);
+}
+
+dev_t
+getnulldev()
+{
+	return makedev(mem_no, 2);
 }
 
 static int chrtoblktab[] = {
@@ -267,43 +240,52 @@ static int chrtoblktab[] = {
 	/* 18 */	NODEV,
 	/* 19 */	8,
 	/* 20 */	9,
-	/* 21 */	NODEV,
-	/* 22 */	NODEV,
-	/* 23 */	NODEV,
-	/* 24 */	NODEV,
-	/* 25 */	NODEV,
-	/* 26 */	NODEV,
-	/* 27 */	NODEV,
-	/* 28 */	NODEV,
-	/* 29 */	NODEV,
-	/* 30 */	NODEV,
-	/* 31 */	NODEV,
 };
 
+dev_t
 chrtoblk(dev)
 	dev_t	dev;
 {
 	int	blkmaj;
 
-	if (major(dev) >= nchrdev)
-		return NODEV;
+	if (major(dev) >= nchrdev ||
+	    major(dev) > sizeof(chrtoblktab)/sizeof(chrtoblktab[0]))
+		return (NODEV);
 	blkmaj = chrtoblktab[major(dev)];
 	if (blkmaj == NODEV)
-		return NODEV;
+		return (NODEV);
 	return (makedev(blkmaj, minor(dev)));
+}
+
+/*
+ * Convert a character device number to a block device number.
+ */
+dev_t
+blktochr(dev)
+	dev_t dev;
+{
+	int blkmaj = major(dev);
+	int i;
+
+	if (blkmaj >= nblkdev)
+		return (NODEV);
+	for (i = 0; i < sizeof(chrtoblktab)/sizeof(chrtoblktab[0]); i++)
+		if (blkmaj == chrtoblktab[i])
+			return (makedev(i, minor(dev)));
+	return (NODEV);
 }
 
 #define itecnpollc	nullcnpollc
 cons_decl(ite);
-#define sercnpollc	nullcnpollc
-cons_decl(ser);
+#define zscnpollc	nullcnpollc
+cons_decl(zs);
 
 struct	consdev constab[] = {
 #if NITE > 0
 	cons_init(ite),
 #endif
-#if NSER > 0
-	cons_init(ser),
+#if NZSTTY > 0
+	cons_init(zs),
 #endif
 	{ 0 },
 };

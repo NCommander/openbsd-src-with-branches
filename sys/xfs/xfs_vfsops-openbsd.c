@@ -14,7 +14,12 @@
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
  *
- * 3. Neither the name of the Institute nor the names of its contributors
+ * 3. All advertising materials mentioning features or use of this software
+ *    must display the following acknowledgement:
+ *      This product includes software developed by the Kungliga Tekniska
+ *      Högskolan and its contributors.
+ *
+ * 4. Neither the name of the Institute nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -33,7 +38,7 @@
 
 #include <xfs/xfs_locl.h>
 
-RCSID("$Id: xfs_vfsops-openbsd.c,v 1.1.1.1 2002/06/05 17:24:11 hin Exp $");
+RCSID("$Id: xfs_vfsops-openbsd.c,v 1.11 2000/07/19 14:28:14 art Exp $");
 
 #include <xfs/xfs_common.h>
 #include <xfs/xfs_message.h>

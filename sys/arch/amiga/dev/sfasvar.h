@@ -1,3 +1,6 @@
+/*	$OpenBSD: sfasvar.h,v 1.2 1996/05/02 06:44:33 niklas Exp $	*/
+/*	$NetBSD: sfasvar.h,v 1.4 1996/04/21 21:12:33 veego Exp $	*/
+
 /*
  * Copyright (c) 1995 Daniel Widenfalk
  *
@@ -146,7 +149,7 @@ struct nexus {
 #define SFAS_NS_MSG_IN		5	/* Last phase was MESSAGE IN */
 #define SFAS_NS_MSG_OUT		6	/* Last phase was MESSAGE OUT */
 #define SFAS_NS_SVC		7	/* We have sent the command */
-#define SFAS_NS_DISCONNECTING	8	/* We have recieved a disconnect msg */
+#define SFAS_NS_DISCONNECTING	8	/* We have received a disconnect msg */
 #define SFAS_NS_DISCONNECTED	9	/* We are disconnected */
 #define SFAS_NS_RESELECTED	10	/* We was reselected */
 #define SFAS_NS_DONE		11	/* Done. Prephsase to FINISHED */
@@ -162,7 +165,7 @@ struct nexus {
 #define SFAS_NF_REQUEST_SENSE	0x0004	/* We should request sense */
 #define SFAS_NF_SENSING		0x0008	/* We are sensing */
 
-#define SFAS_NF_HAS_MSG		0x0010	/* We have recieved a complete msg */
+#define SFAS_NF_HAS_MSG		0x0010	/* We have received a complete msg */
 
 #define SFAS_NF_DO_SDTR		0x0020	/* We should send a SDTR */
 #define SFAS_NF_SDTR_SENT	0x0040	/* We have sent a SDTR */
@@ -200,13 +203,20 @@ struct	sfas_softc {
 	u_char			 sc_config_flags;
 
 /* Generic DMA functions */
-	int		       (*sc_setup_dma)();
-	int		       (*sc_build_dma_chain)();
-	int		       (*sc_need_bump)();
+	int		       (*sc_setup_dma)
+					__P((struct sfas_softc *sc,
+					    vm_offset_t ptr, int len, int mode));
+	int		       (*sc_build_dma_chain)
+					__P((struct sfas_softc *sc,
+					    struct sfas_dma_chain *chain,
+					    void *p, int l));
+	int		       (*sc_need_bump)
+					__P((struct sfas_softc *sc,
+					    vm_offset_t ptr, int len));
 
 /* Generic Led data */
 	int			 sc_led_status;
-	void		       (*sc_led)();
+	void			(*sc_led) __P((struct sfas_softc *sc, int mode));
 
 /* Nexus list */
 	struct nexus		 sc_nexus[8];
@@ -291,5 +301,6 @@ struct	sfas_softc {
 void	sfasinitialize __P((struct sfas_softc *sc));
 void	sfas_minphys   __P((struct buf *bp));
 int	sfas_scsicmd   __P((struct scsi_xfer *));
+void	sfasintr	__P((struct sfas_softc *dev));
 
 #endif /* _SFASVAR_H_ */

@@ -1,3 +1,4 @@
+/*	$OpenBSD: tcp_timer.h,v 1.6 2002/01/14 19:26:10 provos Exp $	*/
 /*	$NetBSD: tcp_timer.h,v 1.6 1995/03/26 20:32:37 jtc Exp $	*/
 
 /*
@@ -34,6 +35,9 @@
  *
  *	@(#)tcp_timer.h	8.1 (Berkeley) 6/10/93
  */
+
+#ifndef _NETINET_TCP_TIMER_H_
+#define _NETINET_TCP_TIMER_H_
 
 /*
  * Definitions of the TCP timers.  These timers are counted
@@ -108,7 +112,22 @@
 #ifdef	TCPTIMERS
 char *tcptimers[] =
     { "REXMT", "PERSIST", "KEEP", "2MSL" };
-#endif
+#endif /* TCPTIMERS */
+
+/*
+ * Init, arm, disarm, and test TCP timers.
+ */
+#define	TCP_TIMER_INIT(tp, timer)					\
+	(tp)->t_timer[(timer)] = 0
+
+#define	TCP_TIMER_ARM(tp, timer, nticks)				\
+	(tp)->t_timer[(timer)] = (nticks)
+
+#define	TCP_TIMER_DISARM(tp, timer)					\
+	(tp)->t_timer[(timer)] = 0
+
+#define	TCP_TIMER_ISARMED(tp, timer)					\
+	(tp)->t_timer[(timer)]
 
 /*
  * Force a time value to be in a certain range.
@@ -122,9 +141,11 @@ char *tcptimers[] =
 }
 
 #ifdef _KERNEL
+extern int tcptv_keep_init;
 extern int tcp_keepidle;		/* time before keepalive probes begin */
 extern int tcp_keepintvl;		/* time between keepalive probes */
 extern int tcp_maxidle;			/* time to drop after starting probes */
 extern int tcp_ttl;			/* time to live for TCP segs */
 extern int tcp_backoff[];
-#endif
+#endif /* _KERNEL */
+#endif /* _NETINET_TCP_TIMER_H_ */

@@ -14,7 +14,12 @@
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
  *
- * 3. Neither the name of the Institute nor the names of its contributors
+ * 3. All advertising materials mentioning features or use of this software
+ *    must display the following acknowledgement:
+ *      This product includes software developed by the Kungliga Tekniska
+ *      Högskolan and its contributors.
+ *
+ * 4. Neither the name of the Institute nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -38,14 +43,14 @@
 #include <xfs/xfs_dev.h>
 #include <xfs/xfs_deb.h>
 
-RCSID("$Id: xfs_dev-bsd.c,v 1.1.1.1 2002/06/05 17:24:11 hin Exp $");
+RCSID("$Id: xfs_dev-bsd.c,v 1.24 2000/07/22 03:59:04 assar Exp $");
 
 int
 xfs_devopen(dev_t dev, int flag, int devtype, struct proc *proc)
 {
     XFSDEB(XDEBDEV, ("xfsopen dev = %d.%d, flag = %d, devtype = %d\n", 
 		     major(dev), minor(dev), flag, devtype));
-    return xfs_devopen_common(dev, proc);
+    return xfs_devopen_common(dev);
 }
 
 int
@@ -80,18 +85,14 @@ xfs_devioctl(dev_t dev,
 }
 
 static int
-xfs_realselect(dev_t dev, struct proc *p, void *wql)
+xfs_realselect(dev_t dev, struct proc *p)
 {
     struct xfs_channel *chan = &xfs_channel[minor(dev)];
 
     if (!xfs_emptyq(&chan->messageq))
 	return 1;		       /* Something to read */
 
-#ifdef HAVE_THREE_ARGUMENT_SELRECORD
-    selrecord (p, &chan->selinfo, wql);
-#else
     selrecord (p, &chan->selinfo);
-#endif
     return 0;
 }
 
@@ -109,24 +110,12 @@ xfs_devpoll(dev_t dev, int events, struct proc * p)
     if (!(events & POLLRDNORM))
 	return 0;
 
-    return xfs_realselect(dev, p, NULL);
+    return xfs_realselect(dev, p);
 }
 
 #endif
 
 #ifdef HAVE_VOP_SELECT
-#ifdef HAVE_THREE_ARGUMENT_SELRECORD
-int
-xfs_devselect(dev_t dev, int which, void *wql, struct proc * p)
-{
-    XFSDEB(XDEBDEV, ("xfs_devselect dev = %d, which = %d\n", dev, which));
-
-    if (which != FREAD)
-	return 0;
-
-    return xfs_realselect(dev, p, wql);
-}
-#else
 int
 xfs_devselect(dev_t dev, int which, struct proc * p)
 {
@@ -135,9 +124,9 @@ xfs_devselect(dev_t dev, int which, struct proc * p)
     if (which != FREAD)
 	return 0;
 
-    return xfs_realselect(dev, p, NULL);
+    return xfs_realselect(dev, p);
 }
-#endif
+
 #endif
 
 void
@@ -218,13 +207,11 @@ struct cdevsw xfs_dev = {
 #ifdef HAVE_STRUCT_CDEVSW_D_MAXIO
     0,				/* maxio */
 #endif
-#ifdef HAVE_STRUCT_CDEVSW_D_BMAJ
 #ifdef NOUDEV
     NOUDEV			/* bmaj */
 #else
     NODEV			/* bmaj */
 #endif
-#endif /* HAVE_STRUCT_CDEVSW_D_BMAJ */
 };
 
 #elif defined(__APPLE__)
@@ -322,7 +309,7 @@ xfs_stat_device(void)
     return xfs_uprintf_device();
 }
 
-#if !defined(_LKM) && !defined(KLD_MODULE) && !defined(__APPLE__)
+#if !defined(_LKM) && !defined(KLD_MODULE)
 int
 xfs_is_xfs_dev(dev_t dev)
 {

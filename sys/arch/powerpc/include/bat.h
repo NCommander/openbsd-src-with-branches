@@ -1,4 +1,4 @@
-/*	$NetBSD: bat.h,v 1.1 1996/09/30 16:34:20 ws Exp $	*/
+/*	$OpenBSD: bat.h,v 1.3 1997/10/13 10:53:41 pefo Exp $	*/
 
 /*
  * Copyright (C) 1995, 1996 Wolfgang Solfrank.
@@ -31,8 +31,8 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef	_MACHINE_BAT_H_
-#define	_MACHINE_BAT_H_
+#ifndef	_POWERPC_BAT_H_
+#define	_POWERPC_BAT_H_
 
 struct bat {
 	u_int32_t batu;
@@ -51,4 +51,4 @@ struct bat {
 extern struct bat battable[16];
 #endif
 
-#endif	/* _MACHINE_BAT_H_ */
+#endif	/* _POWERPC_BAT_H_ */

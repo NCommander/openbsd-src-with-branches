@@ -1,3 +1,4 @@
+/*	$OpenBSD: malloc.c,v 1.3 2000/06/16 21:47:18 provos Exp $	*/
 /*	$NetBSD: malloc.c,v 1.4 1994/06/29 06:41:10 cgd Exp $	*/
 
 /*
@@ -27,13 +28,13 @@ init_alloc()
 #ifdef LINT
 	hiwat = 0;
 	highend = 0;
-#else LINT
+#else /* LINT */
 	extern char *sbrk();
 
 	hiwat = (char *) sbrk(0);
 	hiwat = (char *)((unsigned)(hiwat + 3) & ~0x3);
 	highend = hiwat;
-#endif LINT
+#endif /* LINT */
 }
 
 HIWAT(s)
@@ -44,8 +45,6 @@ char *s;
 		fflush(stdout);
 	ENDDEBUG
 }
-
-#define MIN(x,y) ((x<y)?x:y)
 
 char *Malloc(x)
 int x;

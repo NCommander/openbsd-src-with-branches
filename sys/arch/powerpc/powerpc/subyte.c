@@ -1,3 +1,4 @@
+/*	$OpenBSD: subyte.c,v 1.3 2001/07/01 04:34:24 drahn Exp $	*/
 /*	$NetBSD: subyte.c,v 1.1 1996/09/30 16:34:54 ws Exp $	*/
 
 /*-
@@ -31,13 +32,16 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#include <sys/types.h>
+#include <sys/systm.h>
+
 /*
  * Emulate subyte.
  */
 int
 subyte(addr,c)
-char *addr;
-unsigned char c;
+	void *addr;
+	unsigned char c;
 {
 	if (copyout(&c,addr,sizeof(c)))
 		return -1;

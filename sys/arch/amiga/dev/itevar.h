@@ -1,4 +1,5 @@
-/*	$NetBSD: itevar.h,v 1.11 1995/08/20 15:22:46 chopps Exp $	*/
+/*	$OpenBSD: itevar.h,v 1.3 1996/05/02 06:44:14 niklas Exp $	*/
+/*	$NetBSD: itevar.h,v 1.14 1996/04/21 21:12:03 veego Exp $	*/
 
 /*
  * Copyright (c) 1994 Christian E. Hopps
@@ -32,6 +33,8 @@
 #if ! defined (_ITEVAR_H)
 #define _ITEVAR_H
 
+#include <sys/timeout.h>
+
 enum ite_arraymaxs {
 	MAX_ARGSIZE = 256,
 	MAX_TABS = 256,
@@ -50,9 +53,11 @@ enum ite_attr {
 
 struct ite_softc {
 	struct	device device;
+	struct	tty *tp;
+	struct	timeout blank_timeout;
+	struct	timeout repeat_timeout;
 	char	argbuf[MAX_ARGSIZE];
 	struct  grf_softc *grf;		/* XXX */
-	struct	tty *tp;
 	void	*priv;
 	char	*ap;
 	u_char	*tabs;
@@ -206,11 +211,12 @@ void	itestart __P((struct tty *));
 
 /* ite functions */
 int	ite_on __P((dev_t, int));
-int	ite_off __P((dev_t, int));
+void	ite_off __P((dev_t, int));
 void	ite_reinit __P((dev_t));
 int	ite_param __P((struct tty *, struct termios *));
 void	ite_reset __P((struct ite_softc *));
 int	ite_cnfilter __P((u_char, enum caller));
 void	ite_filter __P((u_char ,enum caller));
+int	ite_grf_ioctl __P((struct ite_softc *, u_long, caddr_t, int, struct proc *));
 
 #endif /* _ITEVAR_H */

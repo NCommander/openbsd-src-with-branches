@@ -1,4 +1,5 @@
-/*	$NetBSD: radix.h,v 1.7 1995/05/17 15:50:08 mycroft Exp $	*/
+/*	$OpenBSD: radix.h,v 1.4 2000/06/17 20:30:34 provos Exp $	*/
+/*	$NetBSD: radix.h,v 1.8 1996/02/13 22:00:37 christos Exp $	*/
 
 /*
  * Copyright (c) 1988, 1989, 1993
@@ -51,6 +52,7 @@ struct radix_node {
 #define RNF_NORMAL	1		/* leaf contains normal route */
 #define RNF_ROOT	2		/* leaf is root leaf for tree */
 #define RNF_ACTIVE	4		/* This node is alive (for rtfree) */
+#define RNF_IGNORE	8		/* Ignore this entry (for if down) */
 	union {
 		struct {			/* leaf only data: */
 			caddr_t	rn_Key;		/* object of search */
@@ -126,7 +128,8 @@ struct radix_node_head {
 	struct	radix_node *(*rnh_matchpkt)	/* locate based on packet hdr */
 		__P((void *v, struct radix_node_head *head));
 	int	(*rnh_walktree)			/* traverse tree */
-		__P((struct radix_node_head *head, int (*f)(), void *w));
+		__P((struct radix_node_head *,
+		     int (*)(struct radix_node *, void *), void *));
 	struct	radix_node rnh_nodes[3];	/* empty tree for common case */
 };
 
@@ -143,11 +146,14 @@ struct radix_node_head {
 #define Bzero(p, n) bzero((caddr_t)(p), (unsigned)(n));
 #define R_Malloc(p, t, n) (p = (t) malloc((unsigned long)(n), M_RTABLE, M_DONTWAIT))
 #define Free(p) free((caddr_t)p, M_RTABLE);
+#endif /* !_KERNEL */
 
+#if defined(_KERNEL) || defined(_ROUTED)
 void	 rn_init __P((void));
 int	 rn_inithead __P((void **, int));
 int	 rn_refines __P((void *, void *));
-int	 rn_walktree __P((struct radix_node_head *, int (*)(), void *));
+int	 rn_walktree __P((struct radix_node_head *,
+			  int (*)(struct radix_node *, void *), void *));
 struct radix_node
 	 *rn_addmask __P((void *, int, int)),
 	 *rn_addroute __P((void *, void *, struct radix_node_head *,
@@ -160,6 +166,5 @@ struct radix_node
 	 *rn_newpair __P((void *, int, struct radix_node[2])),
 	 *rn_search __P((void *, struct radix_node *)),
 	 *rn_search_m __P((void *, struct radix_node *, void *));
-#endif /* !_KERNEL */
-
-#endif /* !_NET_RADIX_H_ */
+#endif /* define(_KERNEL) || defined(_ROUTED) */
+#endif /* _NET_RADIX_H_ */

@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: cpu.h,v 1.5 2001/09/04 15:19:16 jason Exp $	*/
 /*	$NetBSD: cpu.h,v 1.28 2001/06/14 22:56:58 thorpej Exp $ */
 
 /*
@@ -64,17 +64,12 @@
  * Exported definitions unique to SPARC cpu support.
  */
 
-#if !defined(_LKM)
-#include "opt_multiprocessor.h"
-#include "opt_lockdebug.h"
-#endif
-
 #include <machine/psl.h>
 #include <machine/reg.h>
 #include <machine/intr.h>
 #include <sparc64/sparc64/intreg.h>
 
-#include <sys/sched.h>
+/*#include <sys/sched.h> */
 
 /*
  * CPU states.
@@ -210,7 +205,7 @@ int	want_ast;
  * or after the current trap/syscall if in system mode.
  */
 int	want_resched;		/* resched() was called */
-#define	need_resched(ci)	(want_resched = 1, want_ast = 1)
+#define	need_resched()		(want_resched = 1, want_ast = 1)
 
 /*
  * Give a profiling tick to the current process when the user profiling
@@ -250,7 +245,7 @@ struct intrhand {
 	volatile u_int64_t	*ih_map;	/* Interrupt map reg */
 	volatile u_int64_t	*ih_clr;	/* clear interrupt reg */
 };
-extern struct intrhand *intrhand[15];
+extern struct intrhand *intrhand[];
 extern struct intrhand *intrlev[MAXINTNUM];
 
 void	intr_establish __P((int level, struct intrhand *));

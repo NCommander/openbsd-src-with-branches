@@ -1,10 +1,10 @@
-#	$Id: Makefile,v 1.2 1995/11/07 08:51:06 deraadt Exp $
+#	$OpenBSD: Makefile,v 1.3 1998/08/22 09:25:11 smurph Exp $
 
 S=	${.CURDIR}/../../../..
 INCL?= -I${.CURDIR} -I${.CURDIR}/../libsa -I${S}/lib/libsa -I${S}
 COPTS?= ${DEFS} ${INCL}
 
-.include "${S}/arch/${MACHINE}/stand/libsa/Makefile.inc"
+.include "${S}/arch/mvme88k/stand/libsa/Makefile.inc"
 
 SRCS=   sboot.c clock.c etherfun.c if_le.c
 
@@ -31,9 +31,9 @@ rboot: rboot.tmp srec
 	dd ibs=32 skip=1 if=rboot.tmp | ${.OBJDIR}/srec 4 0x4000 rboot > rboot
 
 install:
-	install ${COPY} -o ${LIBOWN} -g ${LIBGRP} -m ${LIBMODE} \
+	${INSTALL} ${INSTALL_COPY} -o ${LIBOWN} -g ${LIBGRP} -m ${LIBMODE} \
 	    sboot ${DESTDIR}${MDEC_DIR}/sboot
-	install ${COPY} -o ${LIBOWN} -g ${LIBGRP} -m ${LIBMODE} \
+	${INSTALL} ${INSTALL_COPY} -o ${LIBOWN} -g ${LIBGRP} -m ${LIBMODE} \
 	    rboot ${DESTDIR}${MDEC_DIR}/rboot
 
 .include <bsd.prog.mk>

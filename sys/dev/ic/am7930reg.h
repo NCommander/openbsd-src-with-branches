@@ -1,3 +1,4 @@
+/*	$OpenBSD: am7930reg.h,v 1.2 1996/10/31 01:01:26 niklas Exp $ */
 /*	$NetBSD: am7930reg.h,v 1.1 1995/04/24 19:17:17 pk Exp $ */
 
 /*
@@ -51,6 +52,9 @@
  *
  * Indirect register numbers (the value written into cr to select a given
  * chip registers) have the form AMDR_*.  Register fields look like AMD_*.
+ *
+ * Further documentation is available from AMD's website:
+ *	http://www.amd.com/products/cpd/techdocs/techdocs.html
  */
 
 struct amd7930 {

@@ -1,3 +1,5 @@
+/*	$OpenBSD$	*/
+
 /* START: "getdevices.c" */
 struct List * get_drive_list  (void);
 void free_drive_list  (struct List *l);

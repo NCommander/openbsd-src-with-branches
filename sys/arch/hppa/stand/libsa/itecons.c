@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: itecons.c,v 1.5 1998/09/29 07:28:35 mickey Exp $	*/
 
 /*
  * Copyright (c) 1998 Michael Shalayeff
@@ -29,7 +29,6 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-
 /*
  * Copyright 1996 1995 by Open Software Foundation, Inc.   
  *              All Rights Reserved 
@@ -57,20 +56,20 @@
 #include <sys/param.h>
 #include <sys/disklabel.h>
 #include <machine/pdc.h>
-#include <machine/iodc.h>
 #include <machine/iomod.h>
 #include <dev/cons.h>
 
 #include "dev_hppa.h"
 
-int (*cniodc)();	/* console IODC entry point */
-int (*kyiodc)();	/* keyboard IODC entry point */
+iodcio_t cniodc;	/* console IODC entry point */
+iodcio_t kyiodc;	/* keyboard IODC entry point */
+pz_device_t *cons_pzdev, *kbd_pzdev;
 
 /*
  * Console.
  */
 
-char cnbuf[MINIOSIZ] __attribute__ ((aligned (MINIOSIZ)));
+char cnbuf[IODC_MINIOSIZ] __attribute__ ((aligned (IODC_MINIOSIZ)));
 int kycode[IODC_MAXSIZE/sizeof(int)];
 
 int
@@ -85,16 +84,20 @@ void
 ite_probe(cn)
 	struct consdev *cn;
 {
-	cniodc = (int (*)()) PAGE0->mem_free;
+	cniodc = (iodcio_t)PAGE0->mem_free;
+	cons_pzdev = &PAGE0->mem_cons;
+	kbd_pzdev = &PAGE0->mem_kbd;
 
-	if ((*pdc)   (PDC_IODC, PDC_IODC_READ, pdcbuf, CN_HPA, IODC_INIT,
-		      cniodc, IODC_MAXSIZE) < 0 ||
-	    (*cniodc)(CN_HPA, (CN_HPA==BT_HPA)? IODC_INIT_DEV: IODC_INIT_ALL,
-		      CN_SPA, CN_LAYER, pdcbuf, 0,0,0,0) < 0 ||
-	    (*pdc)   (PDC_IODC, PDC_IODC_READ, pdcbuf, CN_HPA, IODC_IO,
-		      cniodc, IODC_MAXSIZE) < 0) {
+	if ((*pdc)   (PDC_IODC, PDC_IODC_READ, pdcbuf, cons_pzdev->pz_hpa,
+		      IODC_INIT, cniodc, IODC_MAXSIZE) < 0 ||
+	    (*cniodc)(cons_pzdev->pz_hpa,
+		      (cons_pzdev->pz_hpa==PAGE0->mem_boot.pz_hpa)?
+			IODC_INIT_DEV: IODC_INIT_ALL, cons_pzdev->pz_spa,
+			cons_pzdev->pz_layers, pdcbuf, 0,0,0,0) < 0 ||
+	    (*pdc)   (PDC_IODC, PDC_IODC_READ, pdcbuf, cons_pzdev->pz_hpa,
+		      IODC_IO, cniodc, IODC_MAXSIZE) < 0) {
 		/* morse code with the LED's?!! */
-		CN_IODC = KY_IODC = NULL;
+		cons_pzdev->pz_iodc_io = kbd_pzdev->pz_iodc_io = NULL;
 	} else {
         	cn->cn_pri = CN_INTERNAL;
 		cn->cn_dev = makedev(0, 0);
@@ -112,16 +115,19 @@ ite_init(cn)
 	 * N.B. In this case, since the keyboard code is part of the
 	 * boot code, it will be overwritten when we load a kernel.
 	 */
-	if (CN_CLASS != PCL_DUPLEX || KY_CLASS == PCL_KEYBD) {
+	if (cons_pzdev->pz_class != PCL_DUPLEX ||
+	    kbd_pzdev->pz_class == PCL_KEYBD) {
 
-		kyiodc = (int (*)()) kycode;
+		kyiodc = (iodcio_t)kycode;
 
-		if ((*pdc)   (PDC_IODC, PDC_IODC_READ, pdcbuf, KY_HPA,
+		if ((*pdc)   (PDC_IODC, PDC_IODC_READ, pdcbuf, kbd_pzdev->pz_hpa,
 			      IODC_INIT, kyiodc, IODC_MAXSIZE) < 0 ||
-		    (*kyiodc)(KY_HPA, (KY_HPA == BT_HPA || KY_HPA == CN_HPA)?
-			      IODC_INIT_DEV: IODC_INIT_ALL,
-			      KY_SPA, KY_LAYER, pdcbuf, 0,0,0,0) < 0 ||
-		    (*pdc)   (PDC_IODC, PDC_IODC_READ, pdcbuf, KY_HPA,
+		    (*kyiodc)(kbd_pzdev->pz_hpa,
+			      (kbd_pzdev->pz_hpa == PAGE0->mem_boot.pz_hpa ||
+			       kbd_pzdev->pz_hpa == cons_pzdev->pz_hpa)?
+			      IODC_INIT_DEV: IODC_INIT_ALL, kbd_pzdev->pz_spa,
+			      kbd_pzdev->pz_layers, pdcbuf, 0, 0, 0, 0) < 0 ||
+		    (*pdc)   (PDC_IODC, PDC_IODC_READ, pdcbuf, kbd_pzdev->pz_hpa,
 			      IODC_IO, kyiodc, IODC_MAXSIZE))
 			kyiodc = NULL;
 	} else {
@@ -131,8 +137,8 @@ ite_init(cn)
 		      sizeof(struct pz_device));
 	}
 
-	CN_IODC = cniodc;
-	KY_IODC = kyiodc;
+	cons_pzdev->pz_iodc_io = cniodc;
+	kbd_pzdev->pz_iodc_io = kyiodc;
 #ifdef DEBUG
 	if (!kyiodc)
 		printf("ite_init: no kbd\n");
@@ -149,8 +155,8 @@ ite_putc(dev, c)
 
 	*cnbuf = c;
 
-	(*cniodc)(CN_HPA, IODC_IO_CONSOUT, CN_SPA, CN_LAYER,
-	                 pdcbuf, 0, cnbuf, 1, 0);
+	(*cniodc)(cons_pzdev->pz_hpa, IODC_IO_CONSOUT, cons_pzdev->pz_spa,
+		  cons_pzdev->pz_layers, pdcbuf, 0, cnbuf, 1, 0);
 }
 
 /*
@@ -162,34 +168,32 @@ ite_getc(dev)
 	dev_t dev;
 {
 	static int stash = 0;
-	register int err;
-	register int c, l;
+	register int err, c, l, i;
 
 	if (kyiodc == NULL)
 		return(0x100);
 
 	if (stash) {
-		if (dev & 0x80)
-			return stash;
-		else {
-			c = stash;
+		c = stash;
+		if (!(dev & 0x80))
 			stash = 0;
-			return stash;
-		}
+		return c;
 	}
 
+	i = 16;
 	do {
-		err = (*kyiodc)(KY_HPA, IODC_IO_CONSIN, KY_SPA, KY_LAYER,
+		err = (*kyiodc)(kbd_pzdev->pz_hpa, IODC_IO_CONSIN,
+				kbd_pzdev->pz_spa, kbd_pzdev->pz_layers,
 				pdcbuf, 0, cnbuf, 1, 0);
 		l = pdcbuf[0];
-		stash = c = cnbuf[0];
+		c = cnbuf[0];
 #ifdef DEBUG
 		if (debug && err < 0)
 			printf("KBD input error: %d", err);
 #endif
 
 		/* if we are doing ischar() report immidiatelly */
-		if (dev & 0x80 && l == 0) {
+		if (!i-- && (dev & 0x80) && l == 0) {
 #ifdef DEBUG
 			if (debug > 2)
 				printf("ite_getc(0x%x): no char %d(%x)\n",
@@ -206,8 +210,8 @@ ite_getc(dev)
 	if (debug > 3)
 		printf("kbd: \'%c\' (0x%x)\n", c, c);
 #endif
-	if (!(dev & 0x80))
-		stash = 0;
+	if (dev & 0x80)
+		stash = c;
 
 	return (c);
 }

@@ -1,4 +1,5 @@
-/*	$NetBSD: ttydefaults.h,v 1.7 1994/06/29 06:45:57 cgd Exp $	*/
+/*	$OpenBSD: ttydefaults.h,v 1.4 1996/04/21 22:32:13 deraadt Exp $	*/
+/*	$NetBSD: ttydefaults.h,v 1.8 1996/04/09 20:55:45 cgd Exp $	*/
 
 /*-
  * Copyright (c) 1982, 1986, 1993
@@ -49,10 +50,10 @@
 /*
  * Defaults on "first" open.
  */
-#define	TTYDEF_IFLAG	(BRKINT | ISTRIP | ICRNL | IMAXBEL | IXON | IXANY)
+#define	TTYDEF_IFLAG	(BRKINT | ICRNL | IMAXBEL | IXON | IXANY)
 #define TTYDEF_OFLAG	(OPOST | ONLCR | OXTABS)
 #define TTYDEF_LFLAG	(ECHO | ICANON | ISIG | IEXTEN | ECHOE|ECHOKE|ECHOCTL)
-#define TTYDEF_CFLAG	(CREAD | CS7 | PARENB | HUPCL)
+#define TTYDEF_CFLAG	(CREAD | CS8 | HUPCL)
 #define TTYDEF_SPEED	(B9600)
 
 /*
@@ -90,7 +91,7 @@
  */
 #ifdef TTYDEFCHARS
 cc_t	ttydefchars[NCCS] = {
-	CEOF,	CEOL,	CEOL,	CERASE, CWERASE, CKILL, CREPRINT, 
+	CEOF,	CEOL,	CEOL,	CERASE, CWERASE, CKILL, CREPRINT,
 	_POSIX_VDISABLE, CINTR,	CQUIT,	CSUSP,	CDSUSP,	CSTART,	CSTOP,	CLNEXT,
 	CDISCARD, CMIN,	CTIME,  CSTATUS, _POSIX_VDISABLE
 };

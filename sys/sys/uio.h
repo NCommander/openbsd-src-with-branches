@@ -1,4 +1,5 @@
-/*	$NetBSD: uio.h,v 1.11 1995/06/14 05:24:46 jtc Exp $	*/
+/*	$OpenBSD: uio.h,v 1.8 2000/04/20 06:34:17 deraadt Exp $	*/
+/*	$NetBSD: uio.h,v 1.12 1996/02/09 18:25:45 christos Exp $	*/
 
 /*
  * Copyright (c) 1982, 1986, 1993, 1994
@@ -38,12 +39,8 @@
 #ifndef _SYS_UIO_H_
 #define	_SYS_UIO_H_
 
-/*
- * XXX
- * iov_base should be a void *.
- */
 struct iovec {
-	char	*iov_base;	/* Base address. */
+	void	*iov_base;	/* Base address. */
 	size_t	 iov_len;	/* Length. */
 };
 
@@ -57,28 +54,42 @@ enum uio_seg {
 
 #ifdef _KERNEL
 struct uio {
-	struct	iovec *uio_iov;
-	int	uio_iovcnt;
-	off_t	uio_offset;
-	int	uio_resid;
-	enum	uio_seg uio_segflg;
-	enum	uio_rw uio_rw;
-	struct	proc *uio_procp;
+	struct	iovec *uio_iov;	/* pointer to array of iovecs */
+	int	uio_iovcnt;	/* number of iovecs in array */
+	off_t	uio_offset;	/* offset into file this uio corresponds to */
+	size_t	uio_resid;	/* residual i/o count */
+	enum	uio_seg uio_segflg; /* see above */
+	enum	uio_rw uio_rw;	/* see above */
+	struct	proc *uio_procp;/* process if UIO_USERSPACE */
 };
 
 /*
  * Limits
  */
-#define UIO_MAXIOV	1024		/* max 1K of iov's */
 #define UIO_SMALLIOV	8		/* 8 on stack, else malloc */
 #endif /* _KERNEL */
+
+#define UIO_MAXIOV	1024		/* Deprecated, use IOV_MAX instead */
 
 #ifndef	_KERNEL
 #include <sys/cdefs.h>
 
 __BEGIN_DECLS
+#if !defined(_POSIX_C_SOURCE) && !defined(_XOPEN_SOURCE)
+ssize_t preadv __P((int, const struct iovec *, int, off_t));
+ssize_t pwritev __P((int, const struct iovec *, int, off_t));
+#endif /* !_POSIX_C_SOURCE && !_XOPEN_SOURCE */
 ssize_t	readv __P((int, const struct iovec *, int));
 ssize_t	writev __P((int, const struct iovec *, int));
 __END_DECLS
+#else
+int	ureadc __P((int c, struct uio *));
+
+int	dofilereadv __P((struct proc *, int, struct file *,
+	    const struct iovec *, int, off_t *, register_t *));
+int	dofilewritev __P((struct proc *, int, struct file *,
+	    const struct iovec *, int, off_t *, register_t *));
+
 #endif /* !_KERNEL */
+
 #endif /* !_SYS_UIO_H_ */

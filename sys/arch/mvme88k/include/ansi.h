@@ -1,3 +1,4 @@
+/*	$OpenBSD: ansi.h,v 1.10 2001/01/14 20:25:23 smurph Exp $	*/
 /*-
  * Copyright (c) 1990, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -31,11 +32,10 @@
  * SUCH DAMAGE.
  *
  *	from: @(#)ansi.h	8.2 (Berkeley) 1/4/94
- *      $Id: ansi.h,v 1.1 1995/11/15 04:45:19 build Exp build $
  */
 
-#ifndef	_ANSI_H_
-#define	_ANSI_H_
+#ifndef	__MACHINE_ANSI_H__
+#define	__MACHINE_ANSI_H__
 
 /*
  * Types which are fundamental to the implementation and may appear in
@@ -50,7 +50,13 @@
 #define	_BSD_PTRDIFF_T_	int			/* ptr1 - ptr2 */
 #define	_BSD_SIZE_T_	unsigned int		/* sizeof() */
 #define	_BSD_SSIZE_T_	int			/* byte count or error */
-#define	_BSD_TIME_T_	long			/* time() */
+#define	_BSD_TIME_T_	int			/* time() */
+#define	_BSD_CLOCKID_T_	int
+#define	_BSD_TIMER_T_	int
+
+#if 0
+#define	_BSD_VA_LIST_	char*			/* va_list */
+#endif
 
 #include "va-m88k.h"
 
@@ -71,6 +77,13 @@
  * defined for ctype.h.
  */
 #define	_BSD_WCHAR_T_	int			/* wchar_t */
+#define	_BSD_WINT_T_	int			/* wint_t */
 #define	_BSD_RUNE_T_	int			/* rune_t */
 
-#endif	/* _ANSI_H_ */
+/*
+ * We describe off_t here so its declaration can be visible to
+ * stdio without pulling in all of <sys/type.h>, thus appeasing ANSI.
+ */
+#define _BSD_OFF_T_	long long		/* file offset */
+
+#endif /* __MACHINE_ANSI_H__ */

@@ -1,3 +1,4 @@
+/*	$OpenBSD: serreg.h,v 1.7 1994/10/26 02:04:54 cgd Exp $	*/
 /*	$NetBSD: serreg.h,v 1.7 1994/10/26 02:04:54 cgd Exp $	*/
 
 /*

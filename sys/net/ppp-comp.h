@@ -1,4 +1,4 @@
-/*	$NetBSD: ppp-comp.h,v 1.1 1995/07/04 06:28:24 paulus Exp $	*/
+/*	$OpenBSD: ppp-comp.h,v 1.4 1998/05/08 05:02:01 millert Exp $	*/
 
 /*
  * ppp-comp.h - Definitions for doing PPP packet compression.
@@ -26,11 +26,11 @@
  * OBLIGATION TO PROVIDE MAINTENANCE, SUPPORT, UPDATES, ENHANCEMENTS,
  * OR MODIFICATIONS.
  *
- * $Id: ppp-comp.h,v 1.1 1995/07/04 06:28:24 paulus Exp $
+ * Id: ppp-comp.h,v 1.11 1998/03/25 03:33:34 paulus Exp $
  */
 
-#ifndef _NET_PPP_COMP_H
-#define _NET_PPP_COMP_H
+#ifndef _NET_PPP_COMP_H_
+#define _NET_PPP_COMP_H_
 
 /*
  * The following symbols control whether we include code for
@@ -39,6 +39,11 @@
 #ifndef DO_BSD_COMPRESS
 #define DO_BSD_COMPRESS	1	/* by default, include BSD-Compress */
 #endif
+#ifndef DO_DEFLATE
+#define DO_DEFLATE	1	/* by default, include Deflate */
+#endif
+#define DO_PREDICTOR_1	0
+#define DO_PREDICTOR_2	0
 
 /*
  * Structure giving methods for compression/decompression.
@@ -135,4 +140,28 @@ struct compressor {
 #define BSD_MIN_BITS		9	/* smallest code size supported */
 #define BSD_MAX_BITS		15	/* largest code size supported */
 
-#endif /* _NET_PPP_COMP_H */
+/*
+ * Definitions for Deflate.
+ */
+#define CI_DEFLATE		26	/* config option for Deflate */
+#define CI_DEFLATE_DRAFT	24	/* value used in original draft RFC */
+#define CILEN_DEFLATE		4	/* length of its config option */
+
+#define DEFLATE_MIN_SIZE	8
+#define DEFLATE_MAX_SIZE	15
+#define DEFLATE_METHOD_VAL	8
+#define DEFLATE_SIZE(x)		(((x) >> 4) + DEFLATE_MIN_SIZE)
+#define DEFLATE_METHOD(x)	((x) & 0x0F)
+#define DEFLATE_MAKE_OPT(w)	((((w) - DEFLATE_MIN_SIZE) << 4) \
+				 + DEFLATE_METHOD_VAL)
+#define DEFLATE_CHK_SEQUENCE	0
+
+/*
+ * Definitions for other, as yet unsupported, compression methods.
+ */
+#define CI_PREDICTOR_1		1	/* config option for Predictor-1 */
+#define CILEN_PREDICTOR_1	2	/* length of its config option */
+#define CI_PREDICTOR_2		2	/* config option for Predictor-2 */
+#define CILEN_PREDICTOR_2	2	/* length of its config option */
+
+#endif /* _NET_PPP_COMP_H_ */
