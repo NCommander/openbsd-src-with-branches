@@ -320,8 +320,7 @@ vm_fault(map, vaddr, fault_type, change_wiring)
 			 */
 			UNLOCK_MAP;
 			cnt.v_pageins++;
-			if (curproc)
-				curproc->p_addr->u_stats.p_ru.ru_majflt++;
+			curproc->p_addr->u_stats.p_ru.ru_majflt++;
 			rv = vm_pager_get(object->pager, m, TRUE);
 
 			/*
