@@ -224,15 +224,13 @@ extendfile(path, ext)
 	char *file;
 	char *res;
 	char *p;
-	size_t len;
 
 	if ((file = strrchr(path, '/')) == NULL)
 		file = path;
 	else
 		file++;
 
-	len = strlen(file) + strlen(ext) + 1;
-	res = alloc(len);
+	res = alloc(strlen(file) + strlen(ext) + 1);
 	if (res == NULL) {
 		fprintf(stderr, "could not allocate memory\n");
 		exit(1);
@@ -240,8 +238,8 @@ extendfile(path, ext)
 	p = strrchr(file, '.');
 	if (p == NULL)
 		p = file + strlen(file);
-	(void) strlcpy(res, file, len);
-	(void) strlcpy(res, ext, len - (p - file));
+	(void) strcpy(res, file);
+	(void) strcpy(res + (p - file), ext);
 	return (res);
 }
 
