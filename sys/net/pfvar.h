@@ -280,6 +280,7 @@ struct pf_rule {
 	u_int8_t		 tos;
 };
 
+#define	PFRULE_DROP		0x00
 #define	PFRULE_RETURNRST	0x01
 #define	PFRULE_NODF		0x02
 #define	PFRULE_FRAGMENT		0x04

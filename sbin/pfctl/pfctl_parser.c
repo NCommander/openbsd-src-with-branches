@@ -632,7 +632,9 @@ print_rule(struct pf_rule *r)
 		printf("pass ");
 	else if (r->action == PF_DROP) {
 		printf("block ");
-		if (r->rule_flag & PFRULE_RETURNRST) {
+		if (r->rule_flag & PFRULE_RETURN)
+			printf("return ");
+		else if (r->rule_flag & PFRULE_RETURNRST) {
 			if (!r->return_ttl)
 				printf("return-rst ");
 			else
