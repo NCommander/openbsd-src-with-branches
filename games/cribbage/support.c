@@ -1,4 +1,4 @@
-/*	$OpenBSD: support.c,v 1.6 2003/04/06 18:50:36 deraadt Exp $	*/
+/*	$OpenBSD: support.c,v 1.7 2003/06/03 03:01:39 millert Exp $	*/
 /*	$NetBSD: support.c,v 1.3 1995/03/21 15:08:59 cgd Exp $	*/
 
 /*-
@@ -34,7 +34,7 @@
 #if 0
 static char sccsid[] = "@(#)support.c	8.1 (Berkeley) 5/31/93";
 #else
-static char rcsid[] = "$OpenBSD: support.c,v 1.6 2003/04/06 18:50:36 deraadt Exp $";
+static char rcsid[] = "$OpenBSD: support.c,v 1.7 2003/06/03 03:01:39 millert Exp $";
 #endif
 #endif /* not lint */
 
@@ -154,7 +154,7 @@ plyrhand(hand, s)
 			}
 		}
 		if (explain)
-			msg("Explanation: %s", expl);
+			msg("Explanation: %s", expl_string);
 		do_wait();
 	} else
 		win = chkscr(&pscore, i);

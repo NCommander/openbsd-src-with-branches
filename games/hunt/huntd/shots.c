@@ -1,4 +1,4 @@
-/*	$OpenBSD: shots.c,v 1.6 2002/02/16 21:27:10 millert Exp $	*/
+/*	$OpenBSD: shots.c,v 1.7 2003/06/11 08:45:33 pjanzen Exp $	*/
 /*	$NetBSD: shots.c,v 1.3 1997/10/11 08:13:50 lukem Exp $	*/
 /*
  * Copyright (c) 1983-2003, Regents of the University of California.
@@ -877,7 +877,7 @@ chkslime(bp, next)
 	/* Duplicate the unit of slime: */
 	nbp = (BULLET *) malloc(sizeof (BULLET));
 	if (nbp == NULL) {
-		log(LOG_ERR, "malloc");
+		logit(LOG_ERR, "malloc");
 		return;
 	}
 	*nbp = *bp;

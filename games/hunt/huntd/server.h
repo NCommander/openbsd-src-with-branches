@@ -1,4 +1,4 @@
-/*	$OpenBSD: server.h,v 1.7 2002/02/17 19:42:20 millert Exp $	*/
+/*	$OpenBSD: server.h,v 1.8 2003/06/11 08:45:33 pjanzen Exp $	*/
 /*	$NetBSD: hunt.h,v 1.5 1998/09/13 15:27:28 hubertf Exp $	*/
 /*
  * Copyright (c) 1983-2003, Regents of the University of California.
@@ -268,7 +268,7 @@ void	clrscr(PLAYER *);
 void	ce(PLAYER *);
 void	sendcom(PLAYER *, int, ...);
 void	flush(PLAYER *);
-void	log(int, const char *, ...)
+void	logit(int, const char *, ...)
 			__attribute__((format (printf, 2, 3)));
 void	logx(int, const char *, ...)
 			__attribute__((format (printf, 2, 3)));
