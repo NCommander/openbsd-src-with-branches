@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_cue.c,v 1.20 2004/06/06 17:56:37 mcbride Exp $ */
+/*	$OpenBSD: if_cue.c,v 1.21 2004/07/08 22:18:44 deraadt Exp $ */
 /*	$NetBSD: if_cue.c,v 1.40 2002/07/11 21:14:26 augustss Exp $	*/
 /*
  * Copyright (c) 1997, 1998, 1999, 2000
@@ -552,7 +552,6 @@ USB_ATTACH(cue)
 	/* Initialize interface info.*/
 	ifp = GET_IFP(sc);
 	ifp->if_softc = sc;
-	ifp->if_mtu = ETHERMTU;
 	ifp->if_flags = IFF_BROADCAST | IFF_SIMPLEX | IFF_MULTICAST;
 	ifp->if_ioctl = cue_ioctl;
 	ifp->if_start = cue_start;

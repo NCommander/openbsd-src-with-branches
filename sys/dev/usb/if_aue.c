@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_aue.c,v 1.33 2004/07/08 22:18:44 deraadt Exp $ */
+/*	$OpenBSD: if_aue.c,v 1.34 2004/07/11 09:47:22 deraadt Exp $ */
 /*	$NetBSD: if_aue.c,v 1.82 2003/03/05 17:37:36 shiba Exp $	*/
 /*
  * Copyright (c) 1997, 1998, 1999, 2000
@@ -815,7 +815,6 @@ USB_ATTACH(aue)
 
 	/* Initialize interface info.*/
 	ifp->if_softc = sc;
-	ifp->if_mtu = ETHERMTU;
 	ifp->if_flags = IFF_BROADCAST | IFF_SIMPLEX | IFF_MULTICAST;
 	ifp->if_ioctl = aue_ioctl;
 	ifp->if_start = aue_start;

@@ -1,4 +1,4 @@
-/*	$OpenBSD: midway.c,v 1.31 2003/10/04 01:03:48 deraadt Exp $	*/
+/*	$OpenBSD: midway.c,v 1.32 2003/10/21 18:58:49 jmc Exp $	*/
 /*	(sync'd to midway.c 1.68)	*/
 
 /*
@@ -748,7 +748,6 @@ done_probe:
 #endif
   ifp->if_flags = IFF_SIMPLEX|IFF_NOTRAILERS;
   ifp->if_ioctl = en_ioctl;
-  ifp->if_output = atm_output;
   ifp->if_start = en_start;
   IFQ_SET_READY(&ifp->if_snd);
 
