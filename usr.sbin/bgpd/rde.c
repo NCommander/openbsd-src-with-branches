@@ -1,4 +1,4 @@
-/*	$OpenBSD: rde.c,v 1.37 2003/12/26 23:50:35 jakob Exp $ */
+/*	$OpenBSD: rde.c,v 1.38 2003/12/27 00:18:11 jakob Exp $ */
 
 /*
  * Copyright (c) 2003 Henning Brauer <henning@openbsd.org>
@@ -547,9 +547,6 @@ rde_send_kroute(struct prefix *new, struct prefix *old)
 	struct kroute	 kr;
 	struct prefix	*p;
 	enum imsg_type	 type;
-
-	if (conf->flags & BGPD_FLAG_NO_FIB_UPDATE)
-		return;
 
 	if (old == NULL && new == NULL)
 		return;
