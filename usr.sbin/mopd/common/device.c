@@ -1,4 +1,4 @@
-/*	$OpenBSD: device.c,v 1.7 2003/06/02 21:38:39 maja Exp $ */
+/*	$OpenBSD: device.c,v 1.8 2003/08/19 22:19:08 itojun Exp $ */
 
 /*
  * Copyright (c) 1993-95 Mats O Jansson.  All rights reserved.
@@ -25,7 +25,7 @@
  */
 
 #ifndef LINT
-static char rcsid[] = "$OpenBSD: device.c,v 1.7 2003/06/02 21:38:39 maja Exp $";
+static char rcsid[] = "$OpenBSD: device.c,v 1.8 2003/08/19 22:19:08 itojun Exp $";
 #endif
 
 #include "os.h"
@@ -259,7 +259,7 @@ deviceInitAll()
 	}
 
 	for (ifa = ifap; ifa; ifa = ifa->ifa_next) {
-		sdl = (struct sockaddr_dl *)ifa->ifa_next;
+		sdl = (struct sockaddr_dl *)ifa->ifa_addr;
 		if (sdl->sdl_family != AF_LINK || sdl->sdl_type != IFT_ETHER ||
 		    sdl->sdl_alen != 6)
 			continue;
