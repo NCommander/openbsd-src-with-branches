@@ -749,7 +749,7 @@ const struct cpu_cpuid_nameclass i386_cpuid_cpus[] = {
 		{
 			CPUCLASS_686,
 			{
-				"Pentium 4", 0, "Mobile Pentium 4-M", 0,
+				"Pentium 4", 0, 0, 0,
 				0, 0, 0, 0,
 				0, 0, 0, 0,
 				0, 0, 0, 0,
