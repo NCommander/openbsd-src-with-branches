@@ -12,7 +12,7 @@
  */
 
 #include "includes.h"
-RCSID("$OpenBSD: readconf.c,v 1.137 2005/03/04 08:48:06 djm Exp $");
+RCSID("$OpenBSD: readconf.c,v 1.138 2005/03/10 10:15:02 dtucker Exp $");
 
 #include "ssh.h"
 #include "xmalloc.h"
@@ -299,7 +299,7 @@ process_config_line(Options *options, const char *host,
 	Forward fwd;
 
 	/* Strip trailing whitespace */
-	for(len = strlen(line) - 1; len > 0; len--) {
+	for (len = strlen(line) - 1; len > 0; len--) {
 		if (strchr(WHITESPACE, line[len]) == NULL)
 			break;
 		line[len] = '\0';

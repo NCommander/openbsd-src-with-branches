@@ -16,7 +16,7 @@
 
 #include "includes.h"
 
-RCSID("$OpenBSD: sftp.c,v 1.61 2005/01/24 10:22:06 dtucker Exp $");
+RCSID("$OpenBSD: sftp.c,v 1.62 2005/02/20 22:59:06 djm Exp $");
 
 #include <glob.h>
 #include <histedit.h>
@@ -352,7 +352,7 @@ parse_ls_flags(const char **cpp, int *lflag)
 
 	/* Check for flags */
 	if (cp++[0] == '-') {
-		for(; strchr(WHITESPACE, *cp) == NULL; cp++) {
+		for (; strchr(WHITESPACE, *cp) == NULL; cp++) {
 			switch (*cp) {
 			case 'l':
 				*lflag &= ~VIEW_FLAGS;
