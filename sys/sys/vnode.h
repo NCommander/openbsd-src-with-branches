@@ -1,4 +1,4 @@
-/*	$OpenBSD: vnode.h,v 1.16 1998/08/06 19:35:17 csapuntz Exp $	*/
+/*	$OpenBSD: vnode.h,v 1.17 1998/09/06 01:44:08 art Exp $	*/
 /*	$NetBSD: vnode.h,v 1.38 1996/02/29 20:59:05 cgd Exp $	*/
 
 /*
@@ -108,8 +108,8 @@ struct vnode {
 	int	v_clen;				/* length of current cluster */
 	int	v_ralen;			/* Read-ahead length */
 	daddr_t	v_maxra;			/* last readahead block */
-	struct  simplelock v_interlock;        /* lock on usecount and flag */
-	struct  lock *v_vnlock;                 /* used for non-locking fs's */
+	struct  simplelock v_interlock;		/* lock on usecount and flag */
+	struct  lock *v_vnlock;			/* used for non-locking fs's */
 	long	v_spare[3];			/* round to 128 bytes */
 	enum	vtagtype v_tag;			/* type of underlying data */
 	void 	*v_data;			/* private data for fs */
