@@ -397,7 +397,7 @@ netname(sa)
 	struct sockaddr *sa;
 {
 	char *cp = 0;
-	static char line[50];
+	static char line[MAXHOSTNAMELEN];
 	struct netent *np = 0;
 	u_long net, mask;
 	register u_long i;
@@ -440,9 +440,10 @@ netname(sa)
 			if (np)
 				cp = np->n_name;
 		}
-		if (cp)
-			strcpy(line, cp);
-		else if ((in.s_addr & 0xffffff) == 0)
+		if (cp) {
+			strncpy(line, cp, sizeof line-1);
+			line[sizeof line-1] = '\0';
+		} else if ((in.s_addr & 0xffffff) == 0)
 			(void) sprintf(line, "%u", C(in.s_addr >> 24));
 		else if ((in.s_addr & 0xffff) == 0)
 			(void) sprintf(line, "%u.%u", C(in.s_addr >> 24),
