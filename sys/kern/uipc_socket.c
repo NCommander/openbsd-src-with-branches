@@ -1,4 +1,4 @@
-/*	$OpenBSD: uipc_socket.c,v 1.12 1997/06/06 11:12:13 deraadt Exp $	*/
+/*	$OpenBSD: uipc_socket.c,v 1.13 1997/06/23 00:22:03 deraadt Exp $	*/
 /*	$NetBSD: uipc_socket.c,v 1.21 1996/02/04 02:17:52 christos Exp $	*/
 
 /*
@@ -897,7 +897,7 @@ sosetopt(so, level, optname, m0)
 				error = EINVAL;
 				goto bad;
 			}
-			bufsize = *mtod(m, int *);
+			cnt = *mtod(m, int *);
 			if ((long)cnt <= 0)
 				cnt = 1;
 			switch (optname) {
