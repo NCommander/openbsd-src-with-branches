@@ -39,6 +39,11 @@ file	dev/cninit.c
 major	{vnd = 14}
 
 #
+# Media Indepedent Interface (mii)
+#
+include "../../../dev/mii/files.mii"
+
+#
 # Machine-independent SCSI drivers
 #
 
