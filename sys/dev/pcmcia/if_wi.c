@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_wi.c,v 1.8 2000/02/03 00:56:45 angelos Exp $	*/
+/*	$OpenBSD: if_wi.c,v 1.9 2000/03/27 18:34:58 jason Exp $	*/
 
 /*
  * Copyright (c) 1997, 1998, 1999
@@ -135,7 +135,7 @@ u_int32_t	widebug = WIDEBUG;
 
 #if !defined(lint) && !defined(__OpenBSD__)
 static const char rcsid[] =
-	"$OpenBSD: if_wi.c,v 1.8 2000/02/03 00:56:45 angelos Exp $";
+	"$OpenBSD: if_wi.c,v 1.9 2000/03/27 18:34:58 jason Exp $";
 #endif	/* lint */
 
 #ifdef foo
@@ -389,8 +389,8 @@ wi_pcmcia_activate(dev, act)
 		ifp->if_timer = 0;
 		if (ifp->if_flags & IFF_RUNNING)
 			wi_stop(sc);
-		pcmcia_function_disable(sc->sc_pf);
 		pcmcia_intr_disestablish(sc->sc_pf, sc->sc_ih);
+		pcmcia_function_disable(sc->sc_pf);
 		break;
 	}
 	splx(s);

@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_ray.c,v 1.1 2000/03/22 04:40:57 mickey Exp $	*/
+/*	$OpenBSD$	*/
 /*	$NetBSD: if_ray.c,v 1.17 2000/03/23 07:01:42 thorpej Exp $	*/
 
 /*
@@ -742,8 +742,8 @@ ray_activate(dev, act)
 #ifdef __NetBSD__
 		if_deactivate(ifp);
 #elif defined(__OpenBSD__)
-		pcmcia_function_disable(sc->sc_pf);
 		pcmcia_intr_disestablish(sc->sc_pf, sc->sc_ih);
+		pcmcia_function_disable(sc->sc_pf);
 #endif
 		break;
 	}
