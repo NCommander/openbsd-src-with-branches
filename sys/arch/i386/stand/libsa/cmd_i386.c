@@ -1,4 +1,4 @@
-/*	$OpenBSD: cmd_i386.c,v 1.3 1997/09/02 22:43:17 weingart Exp $	*/
+/*	$OpenBSD: cmd_i386.c,v 1.4 1997/09/02 23:06:55 mickey Exp $	*/
 
 /*
  * Copyright (c) 1997 Michael Shalayeff, Tobias Weingartner
@@ -48,13 +48,13 @@ const struct cmd_table cmd_machine[] = {
 static int
 Xdiskinfo()
 {
-	u_int16_t di;
+	u_int32_t di;
 	int i;
 
-	for(i = 0x80; i < 0x85; i++){
-		if (!(di = biosdinfo(i)))
-			printf("\tDisk 0x%x => Heads %d, Sectors %d\n",
-			       i, BIOSNHEADS(di), BIOSNSECTS(di));
+	for(i = 0x80; i < 0x84; i++){
+		if ((di = biosdinfo(i)))
+			printf("\tDisk 0x%x => Tracks %d, Heads %d, Sectors %d\n",
+				i, BIOSNTRACKS(di), BIOSNHEADS(di), BIOSNSECTS(di));
 	}
 
 	return 0;
