@@ -95,8 +95,6 @@
 #define CRYPTO_DEFLATE_COMP	15 /* Deflate compression algorithm */
 #define CRYPTO_ALGORITHM_MAX	15 /* Keep updated - see below */
 
-#define	CRYPTO_ALGORITHM_ALL	(CRYPTO_ALGORITHM_MAX + 1)
-
 /* Algorithm flags */
 #define	CRYPTO_ALG_FLAG_SUPPORTED	0x01 /* Algorithm is supported */
 #define	CRYPTO_ALG_FLAG_RNG_ENABLE	0x02 /* Has HW RNG for DH/DSA */
