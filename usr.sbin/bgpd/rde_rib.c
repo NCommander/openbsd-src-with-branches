@@ -1,4 +1,4 @@
-/*	$OpenBSD: rde_rib.c,v 1.19 2004/01/11 21:47:20 claudio Exp $ */
+/*	$OpenBSD: rde_rib.c,v 1.20 2004/01/11 21:59:45 henning Exp $ */
 
 /*
  * Copyright (c) 2003, 2004 Claudio Jeker <claudio@openbsd.org>
@@ -1007,7 +1007,7 @@ struct nexthop_table {
 } nexthoptable;
 
 #define NEXTHOP_HASH(x)					\
-	&nexthoptable.nexthop_hashtbl[ntohl((x)) & 	\
+	&nexthoptable.nexthop_hashtbl[ntohl((x)) &	\
 	    nexthoptable.nexthop_hashmask]
 
 void
