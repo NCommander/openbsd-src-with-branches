@@ -1,4 +1,4 @@
-/*      $OpenBSD: wdcvar.h,v 1.19 2001/06/25 19:31:50 csapuntz Exp $     */
+/*      $OpenBSD: wdcvar.h,v 1.20 2001/07/31 06:14:05 csapuntz Exp $     */
 /*	$NetBSD: wdcvar.h,v 1.17 1999/04/11 20:50:29 bouyer Exp $	*/
 
 /*-
@@ -289,4 +289,4 @@ void wdc_input_bytes __P((struct ata_drive_datas *drvp, void *, unsigned int));
 
 void wdc_print_current_modes __P((struct channel_softc *));
 
-int wdc_ioctl __P((struct ata_drive_datas *, u_long, caddr_t, int));
+int wdc_ioctl __P((struct ata_drive_datas *, u_long, caddr_t, int, struct proc *));
