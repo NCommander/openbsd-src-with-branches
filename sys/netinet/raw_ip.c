@@ -1,4 +1,4 @@
-/*	$OpenBSD: raw_ip.c,v 1.33 2004/11/24 01:25:42 mcbride Exp $	*/
+/*	$OpenBSD: raw_ip.c,v 1.34 2004/11/25 21:42:08 markus Exp $	*/
 /*	$NetBSD: raw_ip.c,v 1.25 1996/02/18 18:58:33 christos Exp $	*/
 
 /*
@@ -202,7 +202,7 @@ rip_output(struct mbuf *m, ...)
 		if (!m)
 			return (ENOBUFS);
 		ip = mtod(m, struct ip *);
-		ip->ip_tos = 0;
+		ip->ip_tos = inp->inp_ip.ip_tos;
 		ip->ip_off = htons(0);
 		ip->ip_p = inp->inp_ip.ip_p;
 		ip->ip_len = htons(m->m_pkthdr.len);
