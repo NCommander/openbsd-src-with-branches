@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.30 1998/02/24 22:06:42 weingart Exp $
+#	$OpenBSD: Makefile,v 1.31 1998/05/25 19:20:50 mickey Exp $
 
 .include "${.CURDIR}/../Makefile.inc"
 
@@ -8,7 +8,6 @@ S=${.CURDIR}/../../../..
 SADIR=${.CURDIR}/..
 DIR_SA=	$S/lib/libsa
 DIR_KERN=$S/lib/libkern
-CLEANFILES=i386 machine
 
 # i386 stuff (so, it will possibly load in the same 64k)
 SRCS+=	machdep.c dev_i386.c exec_i386.c cmd_i386.c
@@ -56,12 +55,7 @@ NOPIC=nopic
 
 .PATH:  ${DIR_SA} ${DIR_KERN}
 
-all: machine-links ${SALIB}
-
-machine-links:
-	@rm -f machine i386
-	@ln -s ${.CURDIR}/../.. i386
-	@ln -s ${.CURDIR}/../../include machine
+all: ${SALIB}
 
 install:
 
