@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.10 2002/06/09 05:53:54 todd Exp $
+#	$OpenBSD: Makefile,v 1.11 2003/03/04 18:08:01 deraadt Exp $
 
 REV=	${OSrev}
 
@@ -52,7 +52,7 @@ cd: ${BSD_RD}
 	    -A "OpenBSD ${OSREV} macppc bootonly CD" \
 	    -P "Copyright (c) 2003 Theo de Raadt, The OpenBSD project" \
 	    -p "Theo de Raadt <deraadt@openbsd.org>" \
-	    -V "OpenBSD${OSREV} CD boot-only CD " \
+	    -V "OpenBSD/macppc  ${OSREV} boot-only CD" \
 	    -o ${.OBJDIR}/cd${OSrev}.iso ${.OBJDIR}/cd-dir
 
 ${IMAGE}: rd_setup do_files rd_teardown
