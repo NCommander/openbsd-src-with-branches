@@ -1,4 +1,4 @@
-/*	$OpenBSD: rijndael.c,v 1.14 2002/07/10 17:53:54 deraadt Exp $ */
+/*	$OpenBSD: rijndael.c,v 1.15 2003/11/21 11:57:03 djm Exp $ */
 
 /**
  * rijndael-alg-fst.c
@@ -1216,10 +1216,10 @@ static void rijndaelDecrypt(const u32 rk[/*4*(Nr + 1)*/], int Nr, const u8 ct[16
 }
 
 void
-rijndael_set_key(rijndael_ctx *ctx, u_char *key, int bits, int encrypt)
+rijndael_set_key(rijndael_ctx *ctx, u_char *key, int bits, int do_encrypt)
 {
 	ctx->Nr = rijndaelKeySetupEnc(ctx->ek, key, bits);
-	if (encrypt) {
+	if (do_encrypt) {
 		ctx->decrypt = 0;
 		memset(ctx->dk, 0, sizeof(ctx->dk));
 	} else {
