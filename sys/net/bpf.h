@@ -1,4 +1,4 @@
-/*	$OpenBSD: bpf.h,v 1.4 1996/07/12 07:57:41 mickey Exp $	*/
+/*	$OpenBSD: bpf.h,v 1.5 1997/03/17 16:29:37 niklas Exp $	*/
 /*	$NetBSD: bpf.h,v 1.15 1996/12/13 07:57:33 mikel Exp $	*/
 
 /*
@@ -179,6 +179,7 @@ struct bpf_hdr {
 #define DLT_PPP		9	/* Point-to-point Protocol */
 #define DLT_FDDI	10	/* FDDI */
 #define DLT_ATM_RFC1483	11	/* LLC/SNAP encapsulated atm */
+#define DLT_LOOP	12	/* loopback type (af header) */
 
 /*
  * The instruction encondings.
