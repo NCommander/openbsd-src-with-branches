@@ -1,4 +1,4 @@
-/*	$OpenBSD: backupfile.c,v 1.12 2003/07/21 14:32:21 deraadt Exp $	*/
+/*	$OpenBSD: backupfile.c,v 1.13 2003/07/22 17:18:49 otto Exp $	*/
 
 /*
  * backupfile.c -- make Emacs style backup file names Copyright (C) 1990 Free
@@ -17,8 +17,8 @@
  */
 
 #ifndef lint
-static const char     rcsid[] = "$OpenBSD: backupfile.c,v 1.12 2003/07/21 14:32:21 deraadt Exp $";
-#endif				/* not lint */
+static const char rcsid[] = "$OpenBSD: backupfile.c,v 1.13 2003/07/22 17:18:49 otto Exp $";
+#endif /* not lint */
 
 #include <ctype.h>
 #include <libgen.h>
