@@ -1,4 +1,4 @@
-/*	$OpenBSD: if.c,v 1.45 2001/06/08 04:19:25 angelos Exp $	*/
+/*	$OpenBSD: if.c,v 1.46 2001/06/15 03:38:33 itojun Exp $	*/
 /*	$NetBSD: if.c,v 1.35 1996/05/07 05:26:04 thorpej Exp $	*/
 
 /*
@@ -613,7 +613,7 @@ if_up(ifp)
 #ifdef notyet
 	/* this has no effect on IP, and will kill all ISO connections XXX */
 	for (ifa = ifp->if_addrlist.tqh_first; ifa != 0;
-	     ifa = ifa->ifa_list.tqe_next)
+	    ifa = ifa->ifa_list.tqe_next)
 		pfctlinput(PRC_IFUP, ifa->ifa_addr);
 #endif
 	rt_ifmsg(ifp);
