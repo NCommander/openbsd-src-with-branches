@@ -1,4 +1,4 @@
-/*	$OpenBSD: atactl.c,v 1.22 2002/11/24 20:36:11 henning Exp $	*/
+/*	$OpenBSD: atactl.c,v 1.23 2002/12/11 19:44:34 grange Exp $	*/
 /*	$NetBSD: atactl.c,v 1.4 1999/02/24 18:49:14 jwise Exp $	*/
 
 /*-
@@ -473,7 +473,7 @@ device_dump(int argc, char *argv[])
 {
 	unsigned char buf[131072];
 	int error;
-	struct atagettrace agt = { sizeof(buf), &buf, 0 };
+	atagettrace_t agt = { sizeof(buf), &buf, 0 };
 
 	error = ioctl(fd, ATAIOGETTRACE, &agt);
 	if (error == -1) {
