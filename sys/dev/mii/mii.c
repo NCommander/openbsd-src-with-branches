@@ -1,4 +1,4 @@
-/*	$OpenBSD: mii.c,v 1.9 2000/08/26 20:04:17 nate Exp $	*/
+/*	$OpenBSD: mii.c,v 1.6.2.1 2001/05/14 22:25:24 niklas Exp $	*/
 /*	$NetBSD: mii.c,v 1.19 2000/02/02 17:09:44 thorpej Exp $	*/
 
 /*-
@@ -115,7 +115,7 @@ mii_attach(parent, mii, capmask, phyloc, offloc, flags)
 		 */
 		bmsr = (*mii->mii_readreg)(parent, ma.mii_phyno, MII_BMSR);
 		if (bmsr == 0 || bmsr == 0xffff ||
-		    (bmsr & BMSR_MEDIAMASK) == 0) {
+		    (bmsr & (BMSR_MEDIAMASK|BMSR_EXTSTAT)) == 0) {
 			/* Assume no PHY at this address. */
 			continue;
 		}

@@ -1,4 +1,4 @@
-/*	$OpenBSD: isp_inline.h,v 1.8 2001/04/04 22:07:19 mjacob Exp $ */
+/*	$OpenBSD: isp_inline.h,v 1.2.2.2 2001/05/14 22:23:54 niklas Exp $ */
 /*
  * Qlogic Host Adapter Inline Functions
  *
@@ -123,7 +123,7 @@ isp_getrqentry(struct ispsoftc *isp, u_int16_t *iptrp,
 {
 	volatile u_int16_t iptr, optr;
 
-	optr = isp->isp_reqodx = ISP_READ(isp, OUTMAILBOX4);
+	optr = isp->isp_reqodx = READ_REQUEST_QUEUE_OUT_POINTER(isp);
 	iptr = isp->isp_reqidx;
 	*resultp = ISP_QUEUE_ENTRY(isp->isp_rquest, iptr);
 	iptr = ISP_NXT_QENTRY(iptr, RQUEST_QUEUE_LEN(isp));

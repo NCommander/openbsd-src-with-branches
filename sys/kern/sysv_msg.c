@@ -1,4 +1,4 @@
-/*	$OpenBSD: sysv_msg.c,v 1.8 1999/08/09 21:44:24 deraadt Exp $	*/
+/*	$OpenBSD: sysv_msg.c,v 1.8.4.1 2001/07/04 10:48:38 niklas Exp $	*/
 /*	$NetBSD: sysv_msg.c,v 1.19 1996/02/09 19:00:18 christos Exp $	*/
 
 /*
@@ -36,6 +36,10 @@
 int nfree_msgmaps;		/* # of free map entries */
 short free_msgmaps;		/* head of linked list of free map entries */
 struct msg *free_msghdrs;	/* list of free msg headers */
+char *msgpool;			/* MSGMAX byte long msg buffer pool */
+struct msgmap *msgmaps;		/* MSGSEG msgmap structures */
+struct msg *msghdrs;		/* MSGTQL msg headers */
+struct msqid_ds *msqids;	/* MSGMNI msqid_ds struct's */
 
 void msg_freehdr __P((struct msg *));
 

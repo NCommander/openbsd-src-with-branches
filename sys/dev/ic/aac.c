@@ -1,4 +1,4 @@
-/*	$OpenBSD: aac.c,v 1.4.4.1 2001/05/14 22:23:18 niklas Exp $	*/
+/*	$OpenBSD: aac.c,v 1.4.4.2 2001/07/04 10:40:20 niklas Exp $	*/
 
 /*-
  * Copyright (c) 2000 Michael Smith
@@ -52,7 +52,6 @@
 #include <machine/bus.h>
 
 #include <vm/vm.h>
-#include <vm/pmap.h>
 
 #include <scsi/scsi_all.h>
 #include <scsi/scsi_disk.h>
@@ -639,6 +638,8 @@ aac_scsi_cmd(xs)
 	while ((xs = aac_dequeue(sc))) {
 		xs->error = XS_NOERROR;
 		ccb = NULL;
+		link = xs->sc_link;
+		target = link->target;
 
 		switch (xs->cmd->opcode) {
 		case TEST_UNIT_READY:
@@ -1094,8 +1095,8 @@ aac_bio_complete(struct aac_ccb *ccb)
 		bp->b_flags |= B_ERROR;
 	
 		/* XXX be more verbose? */
-		printf("%s: I/O error %d (%s)\n", status,
-		    AAC_COMMAND_STATUS(status));
+		printf("%s: I/O error %d (%s)\n", sc->sc_dev.dv_xname,
+		    status, AAC_COMMAND_STATUS(status));
 	}
 	scsi_done(xs);
 }

@@ -1,4 +1,4 @@
-/*	$OpenBSD: sys_pipe.c,v 1.23.2.1 2001/05/14 22:32:43 niklas Exp $	*/
+/*	$OpenBSD: sys_pipe.c,v 1.23.2.2 2001/07/04 10:48:34 niklas Exp $	*/
 
 /*
  * Copyright (c) 1996 John S. Dyson
@@ -45,18 +45,9 @@
 #include <sys/mount.h>
 #include <sys/syscallargs.h>
 #include <sys/event.h>
+#include <sys/lock.h>
 
 #include <vm/vm.h>
-#include <vm/vm_prot.h>
-#include <vm/vm_param.h>
-#include <sys/lock.h>
-#include <vm/vm_object.h>
-#include <vm/vm_kern.h>
-#include <vm/vm_extern.h>
-#include <vm/pmap.h>
-#include <vm/vm_map.h>
-#include <vm/vm_page.h>
-
 #include <uvm/uvm_extern.h>
 
 #include <sys/pipe.h>
@@ -152,6 +143,8 @@ sys_opipe(p, v, retval)
 	rpipe->pipe_peer = wpipe;
 	wpipe->pipe_peer = rpipe;
 
+	FILE_SET_MATURE(rf);
+	FILE_SET_MATURE(wf);
 	return (0);
 free3:
 	ffree(rf);

@@ -1,4 +1,4 @@
-/* $OpenBSD: wscons_rops.c,v 1.7 2000/08/01 13:51:17 mickey Exp $ */
+/* $OpenBSD: wscons_rops.c,v 1.5.10.1 2001/05/14 22:26:30 niklas Exp $ */
 /* $NetBSD: wscons_rops.c,v 1.6 2000/03/30 12:45:44 augustss Exp $ */
 
 /*
@@ -102,7 +102,7 @@ rcons_mapchar(id, uni, index)
 	unsigned int *index;
 {
 
-	if (uni < 128) {
+	if (uni < 256) {
 		*index = uni;
 		return (5);
 	}

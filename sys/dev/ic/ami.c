@@ -1,4 +1,4 @@
-/*	$OpenBSD: ami.c,v 1.8.2.1 2001/05/14 22:23:28 niklas Exp $	*/
+/*	$OpenBSD: ami.c,v 1.8.2.2 2001/07/04 10:40:32 niklas Exp $	*/
 
 /*
  * Copyright (c) 2001 Michael Shalayeff
@@ -61,7 +61,6 @@
 #include <machine/bus.h>
 
 #include <vm/vm.h>
-#include <vm/vm_kern.h>
 #include <uvm/uvm_extern.h>
 
 #include <scsi/scsi_all.h>
@@ -878,6 +877,7 @@ ami_done(sc, idx)
 			break;
 		default:
 			/* no data */
+			break;
 		}
 	}
 

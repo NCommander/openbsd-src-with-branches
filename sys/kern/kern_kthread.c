@@ -1,4 +1,4 @@
-/*	$OpenBSD: kern_kthread.c,v 1.7.2.1 2001/05/14 22:32:40 niklas Exp $	*/
+/*	$OpenBSD: kern_kthread.c,v 1.7.2.2 2001/07/04 10:48:20 niklas Exp $	*/
 /*	$NetBSD: kern_kthread.c,v 1.3 1998/12/22 21:21:36 kleink Exp $	*/
 
 /*-
@@ -131,7 +131,7 @@ kthread_exit(ecode)
 	exit1(curproc, W_EXITCODE(ecode, 0));
 
 	/*
-	 * XXX Fool the compiler.  Making exit1() __noreturn__ is a can
+	 * XXX Fool the compiler.  Making exit1() __dead is a can
 	 * XXX of worms right now.
 	 */
 	for (;;);

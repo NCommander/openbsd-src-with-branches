@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_wxreg.h,v 1.4 2001/04/13 00:27:57 mjacob Exp $	*/
+/*	$OpenBSD: if_wxreg.h,v 1.1.2.1 2001/05/14 22:25:49 niklas Exp $	*/
 /*
  * Principal Author: Matthew Jacob
  * Copyright (c) 1999, 2001 by Traakan Software
@@ -303,7 +303,7 @@ typedef struct {
 #define WXISR_GPI_EN3	0x4000
 
 #define	WXIENABLE_DEFAULT	\
-	 (WXISR_RXO | WXISR_RXT0 | WXISR_RXDMT0 | WXISR_RXSEQ |	\
+	 (WXISR_RXO | WXISR_RXT0 | WXISR_RXDMT0 | WXISR_RXSEQ |	WXISR_TXDW |\
 		    WXISR_LSC | WXISR_PCIE | WXISR_GPI_EN1)
 
 #define	WXDISABLE	0xffffffff

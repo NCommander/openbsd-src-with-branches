@@ -1,3 +1,4 @@
+/* $OpenBSD$ */
 /* $NetBSD: awivar.h,v 1.12 2000/07/21 04:48:56 onoe Exp $ */
 
 /*-

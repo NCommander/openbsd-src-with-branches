@@ -1,4 +1,4 @@
-/*	$OpenBSD: vfs_vnops.c,v 1.23.2.1 2001/05/14 22:32:46 niklas Exp $	*/
+/*	$OpenBSD: vfs_vnops.c,v 1.23.2.2 2001/07/04 10:48:56 niklas Exp $	*/
 /*	$NetBSD: vfs_vnops.c,v 1.20 1996/02/04 02:18:41 christos Exp $	*/
 
 /*
@@ -156,7 +156,7 @@ vn_open(ndp, fmode, cmode)
 				goto bad;
 		}
 	}
-	if (fmode & O_TRUNC) {
+	if ((fmode & O_TRUNC) && vp->v_type == VREG) {
 		VOP_UNLOCK(vp, 0, p);				/* XXX */
 		VOP_LEASE(vp, p, cred, LEASE_WRITE);
 		vn_lock(vp, LK_EXCLUSIVE | LK_RETRY, p);	/* XXX */

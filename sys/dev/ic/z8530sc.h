@@ -1,4 +1,4 @@
-/*	$OpenBSD: z8530sc.h,v 1.6 1997/01/15 00:41:55 kstailey Exp $	*/
+/*	$OpenBSD: z8530sc.h,v 1.7 1997/01/15 05:35:47 kstailey Exp $	*/
 /*	$NetBSD: z8530sc.h,v 1.4 1996/10/16 20:34:54 gwr Exp $	*/
 
 /*
@@ -105,11 +105,6 @@ struct zsops {
 };
 
 extern struct zsops zsops_null;
-
-struct zsc_softc {
-	struct	device zsc_dev;		/* required first: base device */
-	struct	zs_chanstate zsc_cs[2];	/* channel A and B soft state */
-};
 
 struct zsc_attach_args {
 	int channel;	/* two serial channels per zsc */

@@ -1,4 +1,4 @@
-/*      $OpenBSD: sv.c,v 1.8 2000/04/03 21:13:48 deraadt Exp $ */
+/*      $OpenBSD: sv.c,v 1.7.4.1 2001/05/14 22:25:57 niklas Exp $ */
 
 /*
  * Copyright (c) 1998 Constantine Paul Sapuntzakis
@@ -389,8 +389,7 @@ sv_attach(parent, self, aux)
   sc->sc_enable = 0;
 
   /* Map and establish the interrupt. */
-  if (pci_intr_map(pc, pa->pa_intrtag, pa->pa_intrpin,
-		   pa->pa_intrline, &ih)) {
+  if (pci_intr_map(pa, &ih)) {
     printf(": couldn't map interrupt\n");
     return;
   }

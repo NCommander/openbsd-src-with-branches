@@ -1,4 +1,4 @@
-/*	$OpenBSD: uhci_pci.c,v 1.5.2.1 2001/05/14 22:26:00 niklas Exp $	*/
+/*	$OpenBSD: uhci_pci.c,v 1.5.2.2 2001/07/04 10:43:14 niklas Exp $	*/
 /*	$NetBSD: uhci_pci.c,v 1.14 2000/01/25 11:26:06 augustss Exp $	*/
 
 /*
@@ -149,8 +149,7 @@ uhci_pci_attach(parent, self, aux)
 	bus_space_write_2(sc->sc.iot, sc->sc.ioh, UHCI_INTR, 0);
 
 	/* Map and establish the interrupt. */
-	if (pci_intr_map(pc, pa->pa_intrtag, pa->pa_intrpin,
-	    pa->pa_intrline, &ih)) {
+	if (pci_intr_map(pa, &ih)) {
 		printf(": couldn't map interrupt\n");
 		return;
 	}

@@ -1,4 +1,4 @@
-/*	$OpenBSD: umap_vfsops.c,v 1.16 2001/02/20 01:50:10 assar Exp $	*/
+/*	$OpenBSD: umap_vfsops.c,v 1.15.2.1 2001/05/14 22:32:58 niklas Exp $	*/
 /*	$NetBSD: umap_vfsops.c,v 1.9 1996/02/09 22:41:05 christos Exp $	*/
 
 /*
@@ -151,6 +151,11 @@ umapfs_mount(mp, path, data, ndp, p)
 	/* 
 	 * Now copy in the number of entries and maps for umap mapping.
 	 */
+	if (args.unentries < 0 || args.unentries > UMAPFILEENTRIES ||
+	    args.gnentries < 0 || args.gnentries > GMAPFILEENTRIES) {
+		vput(lowerrootvp);
+		return (error);
+	}
 	amp->info_unentries = args.unentries;
 	amp->info_gnentries = args.gnentries;
 	error = copyin(args.umapdata, (caddr_t)amp->info_umapdata, 

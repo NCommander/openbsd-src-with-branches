@@ -1,3 +1,4 @@
+/* $OpenBSD$ */
 /* $NetBSD: awireg.h,v 1.3 2000/03/22 11:22:22 onoe Exp $ */
 
 /*-
