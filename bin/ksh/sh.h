@@ -1,4 +1,4 @@
-/*	$OpenBSD: sh.h,v 1.14 2003/09/01 15:47:40 naddy Exp $	*/
+/*	$OpenBSD: sh.h,v 1.15 2003/10/22 07:40:38 jmc Exp $	*/
 
 /*
  * Public Domain Bourne/Korn shell
@@ -246,15 +246,7 @@ extern int dup2 ARGS((int, int));
  * by autoconf (assumes an 8 bit byte, but I'm not concerned).
  * NOTE: INT32 may end up being more than 32 bits.
  */
-#if SIZEOF_INT >= 4
 # define INT32	int
-#else /* SIZEOF_INT */
-# if SIZEOF_LONG >= 4
-#  define INT32	long
-# else /* SIZEOF_LONG */
-   #error cannot find 32 bit type...
-# endif /* SIZEOF_LONG */
-#endif /* SIZEOF_INT */
 
 /* end of common headers */
 

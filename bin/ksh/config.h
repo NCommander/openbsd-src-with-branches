@@ -1,4 +1,4 @@
-/*	$OpenBSD: config.h,v 1.8 2003/05/16 18:49:46 jsyn Exp $	*/
+/*	$OpenBSD: config.h,v 1.9 2003/10/22 07:40:38 jmc Exp $	*/
 
 /* config.h.  NOT generated automatically. */
 
@@ -235,13 +235,6 @@
 
 /* The number of bytes in a int.  */
 #define SIZEOF_INT 4
-
-/* The number of bytes in a long.  */
-#if defined(alpha)
-#define SIZEOF_LONG 8
-#else
-#define SIZEOF_LONG 4
-#endif
 
 /* Define if you have the _setjmp function.  */
 /* #undef HAVE__SETJMP */
