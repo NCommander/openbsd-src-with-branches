@@ -1,4 +1,4 @@
-/*	$OpenBSD: qv.c,v 1.6 2003/06/02 23:27:58 millert Exp $	*/
+/*	$OpenBSD: qv.c,v 1.7 2003/09/23 16:51:11 millert Exp $	*/
 /*	$NetBSD: qv.c,v 1.2 1996/09/02 06:44:28 mycroft Exp $	*/
 
 /*-
@@ -166,7 +166,7 @@ struct	uba_driver qvdriver =
 	{ qvprobe, 0, qvattach, 0, qvstd, "qv", qvinfo };
 
 extern	char qvmem[][512*NBPG];
-extern	struct pte QVmap[][512];
+extern	pt_entry_t QVmap[][512];
 
 /*
  * Local variables for the driver. Initialized for 15' screen

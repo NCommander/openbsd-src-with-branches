@@ -1,4 +1,4 @@
-/*	$OpenBSD: uba.c,v 1.16 2002/06/10 21:56:11 miod Exp $	   */
+/*	$OpenBSD: uba.c,v 1.17 2003/06/02 23:27:58 millert Exp $	   */
 /*	$NetBSD: uba.c,v 1.43 2000/01/24 02:40:36 matt Exp $	   */
 /*
  * Copyright (c) 1996 Jonathan Stone.
@@ -421,7 +421,7 @@ qba_attach(parent, self, aux)
 	 * the map registers are in the bus IO space.
 	 */
 	sc->uh_mr = (void *)vax_map_physmem(QBAMAP,
-	    (QBAPAGES * sizeof(struct pte)) / VAX_NBPG);
+	    (QBAPAGES * sizeof(pt_entry_t)) / VAX_NBPG);
 
 	uba_attach(sc, QIOPAGE);
 }
