@@ -1,4 +1,4 @@
-/*	$OpenBSD: fdisk.c,v 1.12 1997/01/31 11:59:05 deraadt Exp $	*/
+/*	$OpenBSD: fdisk.c,v 1.13 1997/04/02 05:30:05 mickey Exp $	*/
 /*	$NetBSD: fdisk.c,v 1.11 1995/10/04 23:11:19 ghudson Exp $	*/
 
 /*
@@ -28,7 +28,7 @@
  */
 
 #ifndef lint
-static char rcsid[] = "$OpenBSD: fdisk.c,v 1.12 1997/01/31 11:59:05 deraadt Exp $";
+static char rcsid[] = "$OpenBSD: fdisk.c,v 1.13 1997/04/02 05:30:05 mickey Exp $";
 #endif /* not lint */
 
 #include <sys/param.h>
@@ -105,6 +105,7 @@ struct part_type {
 	{ 0x0A, "OS/2 Boot Manager or OPUS"},
 	{ 0x0B, "Primary Windows 95 with 32 bit FAT"},
 	{ 0x10, "OPUS"},
+	{ 0x12, "Compaq Diagnostics"},
 	{ 0x40, "VENIX 286"},
 	{ 0x50, "DM"},
 	{ 0x51, "DM"},
