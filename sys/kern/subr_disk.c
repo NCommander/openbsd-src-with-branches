@@ -1,4 +1,4 @@
-/*	$OpenBSD: subr_disk.c,v 1.17 1999/11/17 04:31:22 d Exp $	*/
+/*	$OpenBSD: subr_disk.c,v 1.18 2000/04/09 19:26:35 csapuntz Exp $	*/
 /*	$NetBSD: subr_disk.c,v 1.17 1996/03/16 23:17:08 christos Exp $	*/
 
 /*
@@ -448,7 +448,6 @@ dk_mountroot()
 	dev_t rawdev, rrootdev;
 	int part = DISKPART(rootdev);
 	int (*mountrootfn) __P((void));
-	extern struct proc *curproc;
 	struct disklabel dl;
 	int error;
 
