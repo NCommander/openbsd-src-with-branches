@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: child.c,v 1.3 1996/06/26 05:38:07 deraadt Exp $	*/
 
 /*
  * Copyright (c) 1983 Regents of the University of California.
@@ -35,7 +35,7 @@
 
 #ifndef lint
 static char RCSid[] = 
-"$OpenBSD: child.c,v 1.2 1996/03/05 03:15:56 dm Exp $";
+"$OpenBSD: child.c,v 1.3 1996/06/26 05:38:07 deraadt Exp $";
 
 static char sccsid[] = "@(#)docmd.c	5.1 (Berkeley) 6/6/85";
 
@@ -390,8 +390,9 @@ extern void waitup()
 	debugmsg(DM_MISC, "waitup() Call select(), activechildren=%d\n", 
 		 activechildren);
 
-	count = select(FD_SETSIZE, &rchildfds, (fd_set *) NULL, 
-		       (fd_set *) NULL, (struct timeval *) NULL);
+	count = select(FD_SETSIZE, (SELECT_FD_TYPE *) &rchildfds,
+		       (SELECT_FD_TYPE *) NULL, (SELECT_FD_TYPE *) NULL,
+		       (struct timeval *) NULL);
 
 	debugmsg(DM_MISC, "waitup() select returned %d activechildren = %d\n", 
 		 count, activechildren);
