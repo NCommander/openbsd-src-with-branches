@@ -1,4 +1,4 @@
-/* $OpenBSD: ip_ipcomp.h,v 1.4 2003/02/12 14:41:08 jason Exp $ */
+/* $OpenBSD: ip_ipcomp.h,v 1.5 2003/02/19 19:19:54 jason Exp $ */
 
 /*
  * Copyright (c) 2001 Jean-Jacques Bernard-Gundol (jj@wabbitt.org)
@@ -73,6 +73,11 @@ struct ipcomp {
 #define IPCOMPCTL_NAMES { \
 	{ 0, 0 }, \
 	{ "enable", CTLTYPE_INT}, \
+}
+
+#define IPCOMPCTL_VARS { \
+	NULL, \
+	&ipcomp_enable, \
 }
 
 #ifdef _KERNEL
