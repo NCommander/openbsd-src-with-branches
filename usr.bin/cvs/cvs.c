@@ -39,6 +39,7 @@
 
 #include "cvs.h"
 #include "log.h"
+#include "file.h"
 
 
 extern char *__progname;
