@@ -1,4 +1,4 @@
-#       $OpenBSD: dot.profile,v 1.1 1997/04/13 17:17:54 mickey Exp $
+#       $OpenBSD: dot.profile,v 1.2 1997/04/17 02:10:45 niklas Exp $
 #
 # Copyright (c) 1994 Christopher G. Demetriou
 # All rights reserved.
@@ -33,6 +33,8 @@ PATH=/sbin:/bin:/usr/bin:/usr/sbin:/
 export PATH
 TERM=pc3
 export TERM
+HOME=/
+export HOME
 
 umask 022
 
@@ -43,6 +45,8 @@ if [ "X${DONEPROFILE}" = "X" ]; then
 	echo 'erase ^?, werase ^W, kill ^U, intr ^C'
 	stty newcrt werase ^W intr ^C kill ^U erase ^? 9600
 	echo ''
+
+	mount /dev/rd0a /
 
 	# mount the kern_fs so that we can examine the dmesg state
 	mount -t kernfs /kern /kern
