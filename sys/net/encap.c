@@ -1,4 +1,4 @@
-/*	$OpenBSD: encap.c,v 1.24 1998/08/19 13:29:18 provos Exp $	*/
+/*	$OpenBSD: encap.c,v 1.25 1999/01/07 06:05:02 deraadt Exp $	*/
 
 /*
  * The authors of this code are John Ioannidis (ji@tla.org),
@@ -630,7 +630,7 @@ va_dcl
       return ENOBUFS;
 
     if ((m->m_flags & M_PKTHDR) == 0)
-      panic("encap_output()");
+      SENDERR(EINVAL);
 
     len = m->m_pkthdr.len; 
 
