@@ -1,8 +1,8 @@
-#	$OpenBSD: Makefile,v 1.3 1996/12/14 21:15:07 downsj Exp $
+#	$OpenBSD: Makefile,v 1.4 1997/09/21 11:44:21 deraadt Exp $
 
 SUBDIR= src smrsh mailstats makemap praliases cf/cf
 .if make(install)
-SUBDIR+= doc/intro doc/op
+SUBDIR+= doc/intro doc/op cf
 .endif
 
 .include <bsd.subdir.mk>
