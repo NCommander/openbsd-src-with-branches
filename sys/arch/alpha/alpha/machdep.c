@@ -1,4 +1,4 @@
-/*	$OpenBSD: machdep.c,v 1.28 1999/05/24 23:08:55 jason Exp $	*/
+/*	$OpenBSD: machdep.c,v 1.29 1999/12/08 06:50:14 itojun Exp $	*/
 /*	$NetBSD: machdep.c,v 1.61 1996/12/07 01:54:49 cgd Exp $	*/
 
 /*
@@ -100,7 +100,7 @@
 # ifndef INET
 #  include <netinet/in.h>
 # endif
-#include <netinet6/ip6.h>
+#include <netinet/ip6.h>
 #include <netinet6/ip6_var.h>
 #endif
 
