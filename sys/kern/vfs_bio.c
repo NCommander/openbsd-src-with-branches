@@ -1,4 +1,4 @@
-/*	$OpenBSD: vfs_bio.c,v 1.52 2001/11/27 05:27:11 art Exp $	*/
+/*	$OpenBSD: vfs_bio.c,v 1.53 2001/11/27 06:21:37 art Exp $	*/
 /*	$NetBSD: vfs_bio.c,v 1.44 1996/06/11 11:15:36 pk Exp $	*/
 
 /*-
@@ -1063,3 +1063,16 @@ vfs_bufstats()
 	splx(s);
 }
 #endif /* DEBUG */
+
+int
+buf_cleanout(struct buf *bp) {
+	if (bp->b_vp != NULL)
+		brelvp(bp);
+
+	if (bp->b_flags & B_WANTED) {
+		bp->b_flags &= ~B_WANTED;
+		wakeup(bp);
+	}
+
+	return (0);
+}
