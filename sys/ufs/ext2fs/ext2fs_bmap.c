@@ -1,4 +1,4 @@
-/*	$OpenBSD: ext2fs_bmap.c,v 1.2 1997/05/30 08:33:42 downsj Exp $	*/
+/*	$OpenBSD: ext2fs_bmap.c,v 1.3 1997/06/12 21:09:31 downsj Exp $	*/
 /*	$NetBSD: ext2fs_bmap.c,v 1.1 1997/06/11 09:33:46 bouyer Exp $	*/
 
 /*
@@ -120,7 +120,7 @@ ext2fs_bmaparray(vp, bn, bnp, ap, nump, runp)
 	struct ufsmount *ump;
 	struct mount *mp;
 	struct vnode *devvp;
-	struct indir a[NIADDR], *xap;
+	struct indir a[NIADDR+1], *xap;
 	daddr_t daddr;
 	long metalbn;
 	int error, maxrun = 0, num;
