@@ -1,4 +1,4 @@
-/*	$OpenBSD: scmio.c,v 1.4 2000/02/01 03:23:40 deraadt Exp $	*/
+/*	$OpenBSD: scmio.c,v 1.5 2001/04/29 21:52:15 millert Exp $	*/
 
 /*
  * Copyright (c) 1992 Carnegie Mellon University
@@ -164,7 +164,6 @@
 #include "supcdefs.h"
 #include "supextern.h"
 #include "supmsg.h"
-
 
 /*************************
  ***    M A C R O S    ***
