@@ -1,4 +1,4 @@
-/*	$OpenBSD: diff.h,v 1.20 2003/07/21 21:57:22 millert Exp $	*/
+/*	$OpenBSD: diff.h,v 1.21 2003/07/22 01:16:01 millert Exp $	*/
 
 /*-
  * Copyright (c) 1991, 1993
@@ -68,7 +68,7 @@ struct excludes {
 	struct excludes *next;
 };
 
-extern int	aflag, bflag, iflag, lflag, Nflag, Pflag, rflag, sflag,
+extern int	aflag, bflag, dflag, iflag, lflag, Nflag, Pflag, rflag, sflag,
 		tflag, Tflag, wflag;
 extern int	format, context, status, anychange;
 extern char	*start, *ifdefname, *diffargs, *label;
