@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: main.c,v 1.4 1998/07/10 09:46:47 downsj Exp $	*/
 /*	$NetBSD: main.c,v 1.3 1995/04/24 12:24:37 cgd Exp $	*/
 
 /*
@@ -1320,5 +1320,4 @@ bool	doexit;
 
     if (doexit)
 	exit(0);
-	/*NOTREACHED*/
 }
