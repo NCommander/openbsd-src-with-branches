@@ -1,4 +1,4 @@
-/*	$OpenBSD: dead_vnops.c,v 1.5 1997/11/06 05:58:31 csapuntz Exp $	*/
+/*	$OpenBSD: dead_vnops.c,v 1.6 1998/08/06 19:34:30 csapuntz Exp $	*/
 /*	$NetBSD: dead_vnops.c,v 1.16 1996/02/13 13:12:48 mycroft Exp $	*/
 
 /*
@@ -292,7 +292,7 @@ dead_lock(v)
 		simple_unlock(&vp->v_interlock);
 		ap->a_flags &= ~LK_INTERLOCK;
 	}
-	if (!chkvnlock(vp))
+	if (ap->a_flags & LK_DRAIN || !chkvnlock(vp))
  		return (0);
 
 	return (VCALL(vp, VOFFSET(vop_lock), ap));
