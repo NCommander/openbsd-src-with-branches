@@ -1,4 +1,4 @@
-/*	$OpenBSD: param.c,v 1.4 1998/05/20 22:29:08 downsj Exp $	*/
+/*	$OpenBSD: param.c,v 1.6 1998/08/27 05:00:11 deraadt Exp $	*/
 /*	$NetBSD: param.c,v 1.16 1996/03/12 03:08:40 mrg Exp $	*/
 
 /*
@@ -107,7 +107,7 @@ int	fscale = FSCALE;	/* kernel uses `FSCALE', user uses `fscale' */
  * Values in support of System V compatible shared memory.	XXX
  */
 #ifdef SYSVSHM
-#define	SHMMAX	SHMMAXPGS	/* shminit() performs a `*= NBPG' */
+#define	SHMMAX	SHMMAXPGS	/* shminit() performs a `*= PAGE_SIZE' */
 #define	SHMMIN	1
 #define	SHMMNI	32			/* <= SHMMMNI in shm.h */
 #define	SHMSEG	8
