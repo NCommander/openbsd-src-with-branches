@@ -1,4 +1,5 @@
-/*	$OpenBSD: test_stdarg.c,v 1.2 2000/01/04 02:31:44 d Exp $	*/
+/*	$OpenBSD: test_stdarg.c,v 1.3 2000/10/04 05:50:58 d Exp $	*/
+/* David Leonard <d@openbsd.org>, 2001. Public Domain. */
 /*
  * Test <stdarg.h>
  */

@@ -1,4 +1,5 @@
-/* $OpenBSD: test_signal.c,v 1.2 2000/08/07 02:00:04 brad Exp $ */
+/* $OpenBSD: test_signal.c,v 1.3 2000/10/04 05:50:58 d Exp $ */
+/* David Leonard <d@openbsd.org>, 2001. Public Domain. */
 
 /*
  * This program tests signal handler re-entrancy.
