@@ -24,11 +24,10 @@
  */
 
 #include "includes.h"
-RCSID("$OpenBSD: sftp-common.c,v 1.2 2001/02/06 23:50:10 markus Exp $");
+RCSID("$OpenBSD: sftp-common.c,v 1.3 2001/06/26 17:27:24 markus Exp $");
 
 #include "buffer.h"
 #include "bufaux.h"
-#include "getput.h"
 #include "log.h"
 #include "xmalloc.h"
 

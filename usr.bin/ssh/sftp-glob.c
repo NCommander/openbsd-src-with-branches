@@ -23,18 +23,14 @@
  */
 
 #include "includes.h"
-RCSID("$OpenBSD: sftp-glob.c,v 1.6 2001/06/23 15:12:20 itojun Exp $");
+RCSID("$OpenBSD: sftp-glob.c,v 1.7 2001/07/05 11:43:33 espie Exp $");
 
 #include <glob.h>
 
-#include "ssh.h"
 #include "buffer.h"
 #include "bufaux.h"
-#include "getput.h"
 #include "xmalloc.h"
 #include "log.h"
-#include "atomicio.h"
-#include "pathnames.h"
 
 #include "sftp.h"
 #include "sftp-common.h"

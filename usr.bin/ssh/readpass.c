@@ -32,7 +32,7 @@
  */
 
 #include "includes.h"
-RCSID("$OpenBSD: readpass.c,v 1.20 2001/07/02 22:29:20 markus Exp $");
+RCSID("$OpenBSD: readpass.c,v 1.21 2001/07/10 21:49:12 markus Exp $");
 
 #include <readpassphrase.h>
 
@@ -40,7 +40,6 @@ RCSID("$OpenBSD: readpass.c,v 1.20 2001/07/02 22:29:20 markus Exp $");
 #include "readpass.h"
 #include "pathnames.h"
 #include "log.h"
-#include "atomicio.h"
 #include "ssh.h"
 
 static char *
