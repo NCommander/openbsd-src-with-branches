@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.11 2002/10/24 19:27:15 mickey Exp $
+#	$OpenBSD: Makefile,v 1.12 2002/12/18 01:20:41 deraadt Exp $
 
 MAN=	boot.8
 MANSUBDIR=/hppa
@@ -30,7 +30,7 @@ all:	boot.lif
 #.endif
 
 .if exists(${.CURDIR}/../../compile/GENERIC/bsd)
-bsd: ${.CURDIR}/../../compile/GENERIC_PIE/bsd
+bsd: ${.CURDIR}/../../compile/GENERIC/bsd
 	gzip -9 -c ${.CURDIR}/../../compile/GENERIC/bsd > bsd
 ADDBOOT+=bsd
 .endif
