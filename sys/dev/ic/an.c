@@ -1,4 +1,4 @@
-/*	$OpenBSD: an.c,v 1.38 2004/08/05 20:06:58 brad Exp $	*/
+/*	$OpenBSD: an.c,v 1.39 2004/09/23 17:45:16 brad Exp $	*/
 
 /*
  * Copyright (c) 1997, 1998, 1999
@@ -680,7 +680,7 @@ an_read_record(sc, ltv)
 	case AN_RID_WEP_VOLATILE:
 	case AN_RID_WEP_PERMANENT:
 		an_swap16(&ltv->an_val[1], 3);	/* an_mac_addr */
-		an_swap16(&ltv->an_val[5], 6);
+		an_swap16(&ltv->an_val[5], 7);
 		break;
 	case AN_RID_32BITS_CUM:
 		for (i = 0x60; i--;) {
@@ -742,7 +742,7 @@ an_write_record(sc, ltv)
 	case AN_RID_WEP_VOLATILE:
 	case AN_RID_WEP_PERMANENT:
 		an_swap16(&ltv->an_val[1], 3);	/* an_mac_addr */
-		an_swap16(&ltv->an_val[5], 6);
+		an_swap16(&ltv->an_val[5], 7);
 		break;
 	}
 #endif
