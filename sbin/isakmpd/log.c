@@ -1,8 +1,9 @@
-/*	$OpenBSD: log.c,v 1.11 2000/06/29 00:01:14 deraadt Exp $	*/
-/*	$EOM: log.c,v 1.28 2000/08/03 07:21:15 niklas Exp $	*/
+/*	$OpenBSD: log.c,v 1.12 2000/08/03 07:28:56 niklas Exp $	*/
+/*	$EOM: log.c,v 1.30 2000/09/29 08:19:23 niklas Exp $	*/
 
 /*
  * Copyright (c) 1998, 1999 Niklas Hallqvist.  All rights reserved.
+ * Copyright (c) 1999, 2000 Håkan Olsson.  All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -44,8 +45,6 @@
 #else
 #include <varargs.h>
 #endif
-
-#include "sysdep.h"
 
 #include "log.h"
 
