@@ -1,4 +1,4 @@
-/*	$OpenBSD: tftp.c,v 1.9 2001/11/19 19:02:16 mpech Exp $	*/
+/*	$OpenBSD: tftp.c,v 1.10 2002/02/16 21:27:55 millert Exp $	*/
 /*	$NetBSD: tftp.c,v 1.5 1995/04/29 05:55:25 cgd Exp $	*/
 
 /*
@@ -38,7 +38,7 @@
 #if 0
 static char sccsid[] = "@(#)tftp.c	8.1 (Berkeley) 6/6/93";
 #endif
-static char rcsid[] = "$OpenBSD: tftp.c,v 1.9 2001/11/19 19:02:16 mpech Exp $";
+static const char rcsid[] = "$OpenBSD: tftp.c,v 1.10 2002/02/16 21:27:55 millert Exp $";
 #endif /* not lint */
 
 /* Many bug fixes are from Jim Guyton <guyton@rand-unix> */
@@ -58,6 +58,7 @@ static char rcsid[] = "$OpenBSD: tftp.c,v 1.9 2001/11/19 19:02:16 mpech Exp $";
 #include <setjmp.h>
 #include <signal.h>
 #include <stdio.h>
+#include <stddef.h>
 #include <string.h>
 #include <unistd.h>
 #include <err.h>
@@ -96,13 +97,11 @@ sendfile(fd, name, mode)
 	char *name;
 	char *mode;
 {
-	struct tftphdr *ap;	   /* data and ack packets */
-	struct tftphdr *r_init(), *dp;
-	int n;
+	struct tftphdr *dp, *ap;	   /* data and ack packets */
 	volatile int block, size, convert;
 	volatile unsigned long amount;
 	struct sockaddr_in from;
-	int fromlen;
+	int n, fromlen;
 	FILE *file;
 
 	startclock();		/* start stat's clock */
@@ -201,13 +200,11 @@ recvfile(fd, name, mode)
 	char *name;
 	char *mode;
 {
-	struct tftphdr *ap;
-	struct tftphdr *dp, *w_init();
-	int n;
+	struct tftphdr *dp, *ap;
 	volatile int block, size, firsttrip;
 	volatile unsigned long amount;
 	struct sockaddr_in from;
-	int fromlen;
+	int n, fromlen;
 	FILE *file;
 	volatile int convert;		/* true if converting crlf -> lf */
 
@@ -312,16 +309,16 @@ makerequest(request, name, tp, mode)
 	const char *mode;
 {
 	char *cp;
+	int len, pktlen;
 
 	tp->th_opcode = htons((u_short)request);
 	cp = tp->th_stuff;
-	strcpy(cp, name);
-	cp += strlen(name);
-	*cp++ = '\0';
-	strcpy(cp, mode);
-	cp += strlen(mode);
-	*cp++ = '\0';
-	return (cp - (char *)tp);
+	pktlen = PKTSIZE - offsetof(struct tftphdr, th_stuff);
+	len = strlen(name) + 1;
+	strlcpy(cp, name, pktlen);
+	strlcpy(cp + len, mode, pktlen - len);
+	len += strlen(mode) + 1;
+	return (cp + len - (char *)tp);
 }
 
 struct errmsg {
