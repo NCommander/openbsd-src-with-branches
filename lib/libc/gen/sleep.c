@@ -32,7 +32,7 @@
  */
 
 #if defined(LIBC_SCCS) && !defined(lint)
-static char rcsid[] = "$OpenBSD: sleep.c,v 1.4 1996/08/19 08:26:20 tholo Exp $";
+static char rcsid[] = "$OpenBSD: sleep.c,v 1.5 1996/09/15 09:31:05 tholo Exp $";
 #endif /* LIBC_SCCS and not lint */
 
 #include <sys/time.h>
@@ -108,10 +108,11 @@ sleep(seconds)
 		timerclear(&nulltv.it_interval);
 		timerclear(&nulltv.it_value);
 		(void) setitimer(ITIMER_REAL, &nulltv, &itv);
-	}
+	} else
+		timerclear(&itv.it_value);
 	sigprocmask(SIG_SETMASK, &oset, NULL);
 	sigaction(SIGALRM, &oact, NULL);
-	(void) setitimer(ITIMER_REAL, &oitv, &itv);
+	(void) setitimer(ITIMER_REAL, &oitv, NULL);
 
 	if (timerisset(&diff))
 		timeradd(&itv.it_value, &diff, &itv.it_value);
