@@ -1,4 +1,4 @@
-/*	$OpenBSD: atrun.c,v 1.5 2002/08/10 20:28:51 millert Exp $	*/
+/*	$OpenBSD: atrun.c,v 1.6 2003/02/20 20:38:08 millert Exp $	*/
 
 /*
  * Copyright (c) 2002-2003 Todd C. Miller <Todd.Miller@courtesan.com>
@@ -17,7 +17,7 @@
  */
 
 #if !defined(lint) && !defined(LINT)
-static const char rcsid[] = "$OpenBSD: atrun.c,v 1.5 2002/08/10 20:28:51 millert Exp $";
+static const char rcsid[] = "$OpenBSD: atrun.c,v 1.6 2003/02/20 20:38:08 millert Exp $";
 #endif
 
 #include "cron.h"
@@ -526,7 +526,7 @@ run_job(atjob *job, char *atfile)
 		    (long)getpid()))
 
 		if (gethostname(hostname, sizeof(hostname)) != 0)
-			strcpy(hostname, "unknown");
+			strlcpy(hostname, "unknown", sizeof(hostname));
 		if (snprintf(mailcmd, sizeof mailcmd,  MAILFMT,
 		    MAILARG) >= sizeof mailcmd) {
 			fprintf(stderr, "mailcmd too long\n");
