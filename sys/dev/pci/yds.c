@@ -1,4 +1,4 @@
-/*	$OpenBSD: yds.c,v 1.23 2004/05/24 22:52:52 mickey Exp $	*/
+/*	$OpenBSD: yds.c,v 1.24 2004/12/20 12:29:36 deraadt Exp $	*/
 /*	$NetBSD: yds.c,v 1.5 2001/05/21 23:55:04 minoura Exp $	*/
 
 /*
@@ -1904,5 +1904,5 @@ detected:
 
 	DPRINTF(("out of yds_init()\n"));
 
-	return ac97_id2;
+	return 0;
 }
