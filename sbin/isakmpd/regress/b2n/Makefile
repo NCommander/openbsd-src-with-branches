@@ -1,7 +1,7 @@
-#	$OpenBSD: Makefile,v 1.3 1998/12/21 01:02:28 niklas Exp $
-#	$EOM: Makefile,v 1.7 1999/02/25 15:10:05 niklas Exp $
+#	$OpenBSD: Makefile,v 1.5 2000/04/07 22:19:35 niklas Exp $
+#	$EOM: Makefile,v 1.11 2000/04/07 19:20:24 niklas Exp $
 
-# Test HMAC:
+# Test some math
 
 PROG=		b2ntest
 SRCS=		math_2n.c b2ntest.c util.c sysdep.c
