@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_bm.c,v 1.5 2000/03/31 05:33:36 rahnds Exp $	*/
+/*	$OpenBSD$	*/
 /*	$NetBSD: if_gm.c,v 1.2 2000/03/04 11:17:00 tsubai Exp $	*/
 
 /*-
@@ -30,8 +30,8 @@
 #ifdef __NetBSD__
 #include "opt_inet.h"
 #include "opt_ns.h"
-#include "bpfilter.h"
 #endif /* __NetBSD__ */
+#include "bpfilter.h"
 
 #include <sys/param.h>
 #include <sys/device.h>
