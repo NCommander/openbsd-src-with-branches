@@ -1,4 +1,4 @@
-/*	$OpenBSD: misc.c,v 1.8 2001/05/11 14:59:56 markus Exp $	*/
+/*	$OpenBSD: misc.c,v 1.9 2001/05/19 19:43:57 stevesk Exp $	*/
 
 /*
  * Copyright (c) 2000 Markus Friedl.  All rights reserved.
@@ -25,7 +25,7 @@
  */
 
 #include "includes.h"
-RCSID("$OpenBSD: misc.c,v 1.8 2001/05/11 14:59:56 markus Exp $");
+RCSID("$OpenBSD: misc.c,v 1.9 2001/05/19 19:43:57 stevesk Exp $");
 
 #include "misc.h"
 #include "log.h"
@@ -82,7 +82,7 @@ unset_nonblock(int fd)
 		debug2("fd %d is not O_NONBLOCK", fd);
 		return;
 	}
-	debug("fd %d setting O_NONBLOCK", fd);
+	debug("fd %d clearing O_NONBLOCK", fd);
 	val &= ~O_NONBLOCK;
 	if (fcntl(fd, F_SETFL, val) == -1)
 		if (errno != ENODEV)
