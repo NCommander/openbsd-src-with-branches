@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: subs.c,v 1.5 1998/03/19 11:13:26 pjanzen Exp $	*/
 
 /*
  * Copyright (c) 1980, 1993
@@ -37,7 +37,7 @@
 #if 0
 static char sccsid[] = "@(#)subs.c	8.1 (Berkeley) 5/31/93";
 #else
-static char rcsid[] = "$OpenBSD$";
+static char rcsid[] = "$OpenBSD: subs.c,v 1.5 1998/03/19 11:13:26 pjanzen Exp $";
 #endif
 #endif /* not lint */
 
@@ -70,13 +70,6 @@ errexit(s)
 	write(2, "\n", 1);
 	perror(s);
 	getout(0);
-}
-
-void
-strset(s1, s2)
-	char   *s1, *s2;
-{
-	while ((*s1++ = *s2++) != '\0');
 }
 
 int
