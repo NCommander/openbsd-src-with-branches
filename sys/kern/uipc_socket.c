@@ -1,4 +1,4 @@
-/*	$OpenBSD: uipc_socket.c,v 1.35 2001/06/22 14:14:09 deraadt Exp $	*/
+/*	$OpenBSD: uipc_socket.c,v 1.36 2001/11/27 15:51:36 provos Exp $	*/
 /*	$NetBSD: uipc_socket.c,v 1.21 1996/02/04 02:17:52 christos Exp $	*/
 
 /*
@@ -408,8 +408,12 @@ restart:
 		s = splsoftnet();
 		if (so->so_state & SS_CANTSENDMORE)
 			snderr(EPIPE);
-		if (so->so_error)
-			snderr(so->so_error);
+		if (so->so_error) {
+			error = so->so_error;
+			so->so_error = 0;
+			splx(s);
+			goto release;
+		}
 		if ((so->so_state & SS_ISCONNECTED) == 0) {
 			if (so->so_proto->pr_flags & PR_CONNREQUIRED) {
 				if ((so->so_state & SS_ISCONFIRMING) == 0 &&
