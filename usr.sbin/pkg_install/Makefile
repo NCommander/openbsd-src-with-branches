@@ -1,5 +1,5 @@
-#	$OpenBSD: Makefile,v 1.2 1997/09/21 11:44:03 deraadt Exp $
+#	$OpenBSD: Makefile,v 1.4 1999/10/05 22:34:44 espie Exp $
 
-SUBDIR=lib add create delete info
+SUBDIR=lib add create delete info version
 
 .include <bsd.subdir.mk>
