@@ -1,4 +1,4 @@
-|	$NetBSD: oc_cksum.s,v 1.1.1.1 1995/07/25 23:12:31 chuck Exp $
+|	$NetBSD: oc_cksum.s,v 1.4 1994/10/26 07:51:13 cgd Exp $
 
 | Copyright (c) 1988 Regents of the University of California.
 | All rights reserved.
@@ -38,7 +38,7 @@
 |
 | oc_cksum (buffer, count, strtval)
 |
-| Do a 16 bit one's complement sum of 'count' bytes from 'buffer'.
+| Do a 16 bit ones complement sum of 'count' bytes from 'buffer'.
 | 'strtval' is the starting value of the sum (usually zero).
 |
 | It simplifies life in in_cksum if strtval can be >= 2^16.
@@ -47,20 +47,20 @@
 | Performance
 | -----------
 | This routine is intended for MC 68020s but should also work
-| for 68030s.  It (deliberately) doesn't worry about the alignment
+| for 68030s.  It (deliberately) does not worry about the alignment
 | of the buffer so will only work on a 68010 if the buffer is
 | aligned on an even address.  (Also, a routine written to use
 | 68010 "loop mode" would almost certainly be faster than this
 | code on a 68010).
 |
-| We don't worry about alignment because this routine is frequently
+| We do not worry about alignment because this routine is frequently
 | called with small counts: 20 bytes for IP header checksums and 40
 | bytes for TCP ack checksums.  For these small counts, testing for
 | bad alignment adds ~10% to the per-call cost.  Since, by the nature
-| of the kernel's allocator, the data we're called with is almost
+| of the kernel allocator, the data we are called with is almost
 | always longword aligned, there is no benefit to this added cost
-| and we're better off letting the loop take a big performance hit
-| in the rare cases where we're handed an unaligned buffer.
+| and we are better off letting the loop take a big performance hit
+| in the rare cases where we are handed an unaligned buffer.
 |
 | Loop unrolling constants of 2, 4, 8, 16, 32 and 64 times were
 | tested on random data on four different types of processors (see
@@ -68,9 +68,9 @@
 | overflows the 68020 Icache).  On all the processors, the
 | throughput asymptote was located between 8 and 16 (closer to 8).
 | However, 16 was substantially better than 8 for small counts.
-| (It's clear why this happens for a count of 40: unroll-8 pays a
-| loop branch cost and unroll-16 doesn't.  But the tests also showed
-| that 16 was better than 8 for a count of 20.  It's not obvious to
+| (It is clear why this happens for a count of 40: unroll-8 pays a
+| loop branch cost and unroll-16 does not.  But the tests also showed
+| that 16 was better than 8 for a count of 20.  It is not obvious to
 | me why.)  So, since 16 was good for both large and small counts,
 | the loop below is unrolled 16 times.
 | 
@@ -90,7 +90,7 @@
 | packet -- a 1% effect for a 1ms ethernet packet.  This is not
 | enough gain to be worth the effort.
 
-#include <m68k/asm.h>
+#include <machine/asm.h>
 
 	.text
 
@@ -104,7 +104,7 @@
 	| of buffer.  The usual case is no excess (the usual
 	| case is header checksums) so we give that the faster
 	| 'not taken' leg of the compare.  (We do the excess
-	| first because we're about the trash the low order
+	| first because we are about the trash the low order
 	| bits of the count in d1.)
 
 	btst	#0,d1
@@ -152,10 +152,10 @@ L2:
 	movl	a0@+,d2
 	addxl	d2,d0
 L3:
-	dbra	d1,L2		| (NB- dbra doesn't affect X)
+	dbra	d1,L2		| (NB- dbra does not affect X)
 
 	movl	d0,d1		| fold 32 bit sum to 16 bits
-	swap	d1		| (NB- swap doesn't affect X)
+	swap	d1		| (NB- swap does not affect X)
 	addxw	d1,d0
 	jcc	L4
 	addw	#1,d0
