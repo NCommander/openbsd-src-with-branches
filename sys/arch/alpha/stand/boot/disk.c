@@ -64,7 +64,7 @@ diskstrategy(devdata, rw, bn, reqcnt, addrvoid, cnt)
 	daddr_t bn;
 	size_t reqcnt;
 	void *addrvoid;
-	size_t *cnt;	/* out: number of bytes transfered */
+	size_t *cnt;	/* out: number of bytes transferred */
 {
 	char *addr = addrvoid;
 	struct disk_softc *sc;

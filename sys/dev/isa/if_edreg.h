@@ -1,4 +1,4 @@
-/*    $OpenBSD: if_edreg.h,v 1.3 1996/03/08 16:43:00 niklas Exp $      */
+/*    $OpenBSD: if_edreg.h,v 1.4 1998/03/16 10:41:42 downsj Exp $      */
 /*    $NetBSD: if_edreg.h,v 1.15 1996/01/10 16:49:22 chuck Exp $      */
 
 /*
@@ -277,7 +277,7 @@
 #define ED_3COM_PSPR		1
 
 /*
- * DrQ Timer Register.  Determines number of bytes to be transfered during a
+ * DrQ Timer Register.  Determines number of bytes to be transferred during a
  * DMA burst.
  */
 #define ED_3COM_DQTR		2

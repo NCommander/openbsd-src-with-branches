@@ -137,7 +137,7 @@ struct wd_softc {
 	struct buf sc_q;
 	/* IDE disk soft states */
 	struct ata_bio sc_wdc_bio; /* current transfer */
-	struct buf *sc_bp; /* buf being transfered */
+	struct buf *sc_bp; /* buf being transferred */
 	struct ata_drive_datas *drvp; /* Our controller's infos */
 	int openings;
 	struct ataparams sc_params;/* drive characteistics found */

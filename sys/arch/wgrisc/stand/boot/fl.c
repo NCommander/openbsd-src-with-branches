@@ -52,7 +52,7 @@ flstrategy(devdata, rw, bn, reqcnt, addr, cnt)
 	daddr_t bn;
 	u_int reqcnt;
 	char *addr;
-	u_int *cnt;	/* out: number of bytes transfered */
+	u_int *cnt;	/* out: number of bytes transferred */
 {
 	struct fl_softc *sc = (struct fl_softc *)devdata;
 	int s;

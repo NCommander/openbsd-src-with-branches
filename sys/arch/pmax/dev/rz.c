@@ -733,7 +733,7 @@ void
 rzdone(unit, error, resid, status)
 	register int unit;
 	int error;		/* error number from errno.h */
-	int resid;		/* amount not transfered */
+	int resid;		/* amount not transferred */
 	int status;		/* SCSI status byte */
 {
 	register struct rz_softc *sc = &rz_softc[unit];

@@ -47,7 +47,7 @@ struct ata_bio {
     int multi; /* number of blocks to transfer in multi-mode */
     struct disklabel *lp; /* pointer to drive's label info */
     daddr_t blkno; /* block addr */
-    daddr_t blkdone; /* number of blks transfered */
+    daddr_t blkdone; /* number of blks transferred */
     daddr_t nblks; /* number of block currently transfering */
     int     nbytes; /* number of bytes currently transfering */
     long    bcount; /* total number of bytes */

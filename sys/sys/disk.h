@@ -80,7 +80,7 @@ struct disk {
 	int		dk_busy;	/* busy counter */
 	u_int64_t	dk_xfer;	/* total number of transfers */
 	u_int64_t	dk_seek;	/* total independent seek operations */
-	u_int64_t	dk_bytes;	/* total bytes transfered */
+	u_int64_t	dk_bytes;	/* total bytes transferred */
 	struct timeval	dk_attachtime;	/* time disk was attached */
 	struct timeval	dk_timestamp;	/* timestamp of last unbusy */
 	struct timeval	dk_time;	/* total time spent busy */

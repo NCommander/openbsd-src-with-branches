@@ -1,4 +1,4 @@
-/*	$OpenBSD: ascvar.h,v 1.2 1997/11/07 08:07:45 niklas Exp $	*/
+/*	$OpenBSD: ascvar.h,v 1.3 1998/05/18 00:25:10 millert Exp $	*/
 /*	$NetBSD: ascvar.h,v 1.4 1997/11/28 18:23:40 mhitch Exp $	*/
 
 
@@ -13,7 +13,7 @@ typedef struct scsi_state {
 	int	error;		/* errno to pass back to device driver */
 	u_char	*dmaBufAddr;	/* DMA buffer address */
 	int	dmalen;		/* amount to transfer in this chunk */
-	int	dmaresid;	/* amount not transfered if chunk suspended */
+	int	dmaresid;	/* amount not transferred if chunk suspended */
 	int	buflen;		/* total remaining amount of data to transfer */
 	char	*buf;		/* current pointer within scsicmd->buf */
 	int	flags;		/* see below */
