@@ -1,4 +1,4 @@
-/*	$OpenBSD: login_krb5.c,v 1.18 2003/07/06 21:57:27 deraadt Exp $	*/
+/*	$OpenBSD: login_krb5.c,v 1.19 2003/08/07 11:12:38 hin Exp $	*/
 
 /*-
  * Copyright (c) 2001, 2002 Hans Insulander <hin@openbsd.org>.
@@ -164,7 +164,7 @@ krb5_login(char *username, char *invokinguser, char *password, int login,
 		exit(1);
 	}
 
-	if (strcmp(username, "root") == 0) {
+	if (strcmp(username, "root") == 0 && invokinguser[0] != '\0') {
 		char *tmp;
 		int len = strlen(invokinguser)+6;
 
