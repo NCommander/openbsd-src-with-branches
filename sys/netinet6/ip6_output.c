@@ -1,4 +1,4 @@
-/*	$OpenBSD: ip6_output.c,v 1.50 2001/09/15 03:54:40 frantzen Exp $	*/
+/*	$OpenBSD: ip6_output.c,v 1.51 2001/09/25 14:54:31 jasoni Exp $	*/
 /*	$KAME: ip6_output.c,v 1.172 2001/03/25 09:55:56 itojun Exp $	*/
 
 /*
@@ -886,6 +886,7 @@ skip_ipsec2:;
 		m_freem(m);
                 goto done;
         }
+	ip6 = mtod(m, struct ip6_hdr *);
 #endif 
 
 	/*
