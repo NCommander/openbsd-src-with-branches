@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /*	$NetBSD: main.c,v 1.5 1995/04/22 10:08:54 cgd Exp $	*/
 
 /*
