@@ -1,4 +1,4 @@
-dnl	$OpenBSD: hardware,v 1.75 2004/10/11 15:20:46 mickey Exp $
+dnl	$OpenBSD: hardware,v 1.76 2004/11/29 18:12:48 miod Exp $
 OpenBSD/MACHINE OSREV runs on the following classes of machines:
 	- SBUS based workstations:
 		Ultra 1
@@ -235,7 +235,7 @@ dnl		PCI Alteon Tigon I/II PCI Gigabit Ethernet boards (ti)
 		    Linksys WUSB11 v3.0
 		    Linksys WUSB12
 		    Melco WLI-USB-KS11G
-		    MicroSoft MN510
+		    Microsoft MN510
 		    Netgear MA111
 		    Siemens SpeedStream SS1022
 		    Syntax USB-400

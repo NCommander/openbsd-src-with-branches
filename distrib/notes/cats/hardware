@@ -1,4 +1,4 @@
-dnl	$OpenBSD: hardware,v 1.10 2004/09/16 08:03:46 grange Exp $
+dnl	$OpenBSD: hardware,v 1.11 2004/11/21 18:48:10 grange Exp $
 OpenBSD/MACHINE runs on the Chalice/Simtec StrongARM 110 Evaluation Board.
 
 Supported devices {:-include-:}:
@@ -156,7 +156,7 @@ Supported devices {:-include-:}:
 		    Linksys WUSB11 v3.0
 		    Linksys WUSB12
 		    Melco WLI-USB-KS11G
-		    MicroSoft MN510
+		    Microsoft MN510
 		    Netgear MA111
 		    Siemens SpeedStream SS1022
 		    Syntax USB-400
