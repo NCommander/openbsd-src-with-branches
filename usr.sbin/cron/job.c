@@ -1,4 +1,5 @@
-/*	$OpenBSD: job.c,v 1.4 2002/07/08 18:11:02 millert Exp $	*/
+/*	$OpenBSD: job.c,v 1.5 2002/07/11 20:15:40 millert Exp $	*/
+
 /* Copyright 1988,1990,1993,1994 by Paul Vixie
  * All rights reserved
  */
@@ -21,7 +22,7 @@
  */
 
 #if !defined(lint) && !defined(LINT)
-static char const rcsid[] = "$OpenBSD: job.c,v 1.4 2002/07/08 18:11:02 millert Exp $";
+static char const rcsid[] = "$OpenBSD: job.c,v 1.5 2002/07/11 20:15:40 millert Exp $";
 #endif
 
 #include "cron.h"
