@@ -1,4 +1,4 @@
-/*	$OpenBSD: creator.c,v 1.26 2003/06/17 17:35:40 miod Exp $	*/
+/*	$OpenBSD: creator.c,v 1.27 2003/06/20 19:54:37 miod Exp $	*/
 
 /*
  * Copyright (c) 2002 Jason L. Wright (jason@thought.net)
@@ -504,10 +504,8 @@ creator_mmap(vsc, off, prot)
 			    off < (creator_map[i].uoff + creator_map[i].ulen))
 				break;
 		}
-		if (i == CREATOR_NMAPPINGS) {
-			printf("didn't find %llx\n", off);
+		if (i == CREATOR_NMAPPINGS)
 			break;
-		}
 
 		off -= creator_map[i].uoff;
 		off += creator_map[i].poff;
