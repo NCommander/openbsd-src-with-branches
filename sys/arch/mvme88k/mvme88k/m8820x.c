@@ -1,4 +1,4 @@
-/*	$OpenBSD: m8820x.c,v 1.13 2002/03/14 01:26:40 millert Exp $	*/
+/*	$OpenBSD: m8820x.c,v 1.14 2002/03/14 03:15:57 millert Exp $	*/
 /*
  * Copyright (c) 2001 Steve Murphree, Jr.
  * Copyright (c) 1996 Nivas Madhur
@@ -2130,8 +2130,6 @@ m8820x_cmmu_cache_state(addr, supervisor_flag)
 
 }
 
-#endif /* DDB */
-
 void
 m8820x_show_cmmu_info(addr)
 	unsigned addr;
@@ -2148,4 +2146,5 @@ m8820x_show_cmmu_info(addr)
 		}
 }
 
+#endif /* DDB */
 #endif /* M88100 */
