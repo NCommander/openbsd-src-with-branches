@@ -1,4 +1,4 @@
-/*	$OpenBSD: tape.c,v 1.14 1999/08/17 09:13:15 millert Exp $	*/
+/*	$OpenBSD: tape.c,v 1.15 2000/06/16 16:43:18 deraadt Exp $	*/
 /*	$NetBSD: tape.c,v 1.26 1997/04/15 07:12:25 lukem Exp $	*/
 
 /*
@@ -472,7 +472,7 @@ setdumpnum()
 		rmtioctl(MTFSF, dumpnum - 1);
 	else
 #endif
-		if (ioctl(mt, (int)MTIOCTOP, (char *)&tcom) < 0)
+		if (ioctl(mt, MTIOCTOP, (char *)&tcom) < 0)
 			warn("ioctl MTFSF");
 }
 
