@@ -1,4 +1,4 @@
-/*	$OpenBSD: sort.c,v 1.22 2003/06/26 00:12:39 deraadt Exp $	*/
+/*	$OpenBSD: sort.c,v 1.23 2004/03/17 18:24:49 mickey Exp $	*/
 
 /*-
  * Copyright (c) 1993
@@ -42,7 +42,7 @@ static char copyright[] =
 #if 0
 static char sccsid[] = "@(#)sort.c	8.1 (Berkeley) 6/6/93";
 #else
-static char rcsid[] = "$OpenBSD: sort.c,v 1.22 2003/06/26 00:12:39 deraadt Exp $";
+static char rcsid[] = "$OpenBSD: sort.c,v 1.23 2004/03/17 18:24:49 mickey Exp $";
 #endif
 #endif /* not lint */
 
@@ -306,6 +306,7 @@ main(int argc, char *argv[])
 	exit(0);
 }
 
+/* ARGSUSED */
 static void
 onsig(int signo)
 {

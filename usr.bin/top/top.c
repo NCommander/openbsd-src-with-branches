@@ -1,4 +1,4 @@
-/*	$OpenBSD: top.c,v 1.32 2004/05/09 22:14:15 deraadt Exp $	*/
+/*	$OpenBSD: top.c,v 1.33 2004/05/09 22:16:26 deraadt Exp $	*/
 
 /*
  *  Top users/processes display for Unix
@@ -825,24 +825,28 @@ reset_display(void)
 	d_process = i_process;
 }
 
+/* ARGSUSED */
 void
 leave(int signo)
 {
 	leaveflag = 1;
 }
 
+/* ARGSUSED */
 void
 tstop(int signo)
 {
 	tstopflag = 1;
 }
 
+/* ARGSUSED */
 void
 winch(int signo)
 {
 	winchflag = 1;
 }
 
+/* ARGSUSED */
 void
 onalrm(int signo)
 {
