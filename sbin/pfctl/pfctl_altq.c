@@ -1,4 +1,4 @@
-/*	$OpenBSD: pfctl_altq.c,v 1.83 2004/03/14 21:51:44 dhartmei Exp $	*/
+/*	$OpenBSD: pfctl_altq.c,v 1.84 2004/04/26 02:50:04 kjc Exp $	*/
 
 /*
  * Copyright (c) 2002
@@ -1102,6 +1102,7 @@ getifspeed(char *ifname)
 
 	if ((s = socket(AF_INET, SOCK_DGRAM, 0)) < 0)
 		err(1, "socket");
+	bzero(&ifr, sizeof(ifr));
 	if (strlcpy(ifr.ifr_name, ifname, sizeof(ifr.ifr_name)) >=
 	    sizeof(ifr.ifr_name))
 		errx(1, "getifspeed: strlcpy");
@@ -1123,6 +1124,7 @@ getifmtu(char *ifname)
 
 	if ((s = socket(AF_INET, SOCK_DGRAM, 0)) < 0)
 		err(1, "socket");
+	bzero(&ifr, sizeof(ifr));
 	if (strlcpy(ifr.ifr_name, ifname, sizeof(ifr.ifr_name)) >=
 	    sizeof(ifr.ifr_name))
 		errx(1, "getifmtu: strlcpy");
