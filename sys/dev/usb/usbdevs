@@ -876,6 +876,7 @@ product IOMEGA ZIP250_2		0x0032	Zip 250
 product IOMEGA CDRW		0x0055	CDRW 9602
 
 /* iRiver products */
+product IRIVER IFP_1XX		0x1101	iFP-1xx
 product IRIVER IFP_3XX		0x1103	iFP-3xx
 product IRIVER IFP_5XX		0x1105	iFP-5xx
 
