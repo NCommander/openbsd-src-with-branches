@@ -12,7 +12,7 @@
  */
 
 #include "includes.h"
-RCSID("$OpenBSD: uidswap.c,v 1.8 2000/08/28 03:50:54 deraadt Exp $");
+RCSID("$OpenBSD: uidswap.c,v 1.9 2000/09/07 20:27:55 deraadt Exp $");
 
 #include "ssh.h"
 #include "uidswap.h"
@@ -49,7 +49,7 @@ temporarily_use_uid(uid_t uid)
 	/* Set the effective uid to the given (unprivileged) uid. */
 	if (seteuid(uid) == -1)
 		debug("seteuid %u: %.100s", (u_int) uid, strerror(errno));
-#else /* SAVED_IDS_WORK_WITH_SETUID */
+#else /* SAVED_IDS_WORK_WITH_SETEUID */
 	/* Propagate the privileged uid to all of our uids. */
 	if (setuid(geteuid()) < 0)
 		debug("setuid %u: %.100s", (u_int) geteuid(), strerror(errno));
