@@ -179,7 +179,7 @@ exit1(p, rv)
 				 * if we blocked.
 				 */
 				if (sp->s_ttyvp)
-					VOP_REVOKE(sp->s_ttyvp, REVOKEALL);
+					vgoneall(sp->s_ttyvp);
 			}
 			if (sp->s_ttyvp)
 				vrele(sp->s_ttyvp);

@@ -128,9 +128,7 @@ int procfs_rw __P((void *));
 extern int (**procfs_vnodeop_p) __P((void *));
 extern struct vfsops procfs_vfsops;
 
-struct vfsconf;
-
-int	procfs_init __P((struct vfsconf *));
+void	procfs_init __P((void));
 int	procfs_root __P((struct mount *, struct vnode **));
 
 #endif /* _KERNEL */

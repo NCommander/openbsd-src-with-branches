@@ -38,7 +38,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  *
- *	@(#)vm_pager.h	8.5 (Berkeley) 7/7/94
+ *	@(#)vm_pager.h	8.4 (Berkeley) 1/12/94
  */
 
 /*

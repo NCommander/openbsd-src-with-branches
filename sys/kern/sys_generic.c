@@ -178,12 +178,18 @@ sys_readv(p, v, retval)
 		goto done;
 	auio.uio_resid = 0;
 	for (i = 0; i < SCARG(uap, iovcnt); i++) {
-		if (auio.uio_resid + iov->iov_len < auio.uio_resid) {
+#if 0
+		/* Cannot happen iov_len is unsigned */
+		if (iov->iov_len < 0) {
 			error = EINVAL;
 			goto done;
 		}
-
+#endif
 		auio.uio_resid += iov->iov_len;
+		if (auio.uio_resid < 0) {
+			error = EINVAL;
+			goto done;
+		}
 		iov++;
 	}
 #ifdef KTRACE
@@ -331,12 +337,18 @@ sys_writev(p, v, retval)
 		goto done;
 	auio.uio_resid = 0;
 	for (i = 0; i < SCARG(uap, iovcnt); i++) {
-		if (auio.uio_resid + iov->iov_len < auio.uio_resid) {
+#if 0
+		/* Cannot happen iov_len is unsigned */
+		if (iov->iov_len < 0) {
 			error = EINVAL;
 			goto done;
 		}
-
+#endif
 		auio.uio_resid += iov->iov_len;
+		if (auio.uio_resid < 0) {
+			error = EINVAL;
+			goto done;
+		}
 		iov++;
 	}
 #ifdef KTRACE

@@ -54,14 +54,10 @@
 static TAILQ_HEAD(, pfsnode)	pfshead;
 static int pfsvplock;
 
-/*ARGSUSED*/
-int
-procfs_init(vfsp)
-	struct vfsconf *vfsp;
-
+void
+procfs_init(void)
 {
 	TAILQ_INIT(&pfshead);
-	return (0);
 }
 
 /*
@@ -97,7 +93,6 @@ procfs_allocvp(mp, vpp, pid, pfs_type)
 	long pid;
 	pfstype pfs_type;
 {
-	struct proc *p = curproc;
 	struct pfsnode *pfs;
 	struct vnode *vp;
 	int error;
@@ -108,7 +103,7 @@ loop:
 		if (pfs->pfs_pid == pid &&
 		    pfs->pfs_type == pfs_type &&
 		    vp->v_mount == mp) {
-			if (vget(vp, 0, p))
+			if (vget(vp, 0))
 				goto loop;
 			*vpp = vp;
 			return (0);

@@ -179,9 +179,7 @@ int cd9660_vget __P((struct mount *, ino_t, struct vnode **));
 int cd9660_fhtovp __P((struct mount *, struct fid *, struct mbuf *,
 	    struct vnode **, int *, struct ucred **));
 int cd9660_vptofh __P((struct vnode *, struct fid *));
-int cd9660_init __P((struct vfsconf *));
-#define cd9660_sysctl ((int (*) __P((int *, u_int, void *, size_t *, void *, \
-                                    size_t, struct proc *)))eopnotsupp)
+void cd9660_init __P((void));
 
 int cd9660_mountroot __P((void)); 
 

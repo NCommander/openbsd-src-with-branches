@@ -36,7 +36,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  *
- *	@(#)vm_glue.c	8.9 (Berkeley) 3/4/95
+ *	@(#)vm_glue.c	8.6 (Berkeley) 1/5/94
  *
  *
  * Copyright (c) 1987, 1990 Carnegie-Mellon University.
@@ -381,16 +381,13 @@ scheduler()
 
 loop:
 #ifdef DEBUG
-	while (!enableswap) {
-		panic ("swap disabled??");
+	while (!enableswap)
 		tsleep((caddr_t)&proc0, PVM, "noswap", 0);
-	}
 #endif
 	pp = NULL;
 	ppri = INT_MIN;
 	for (p = allproc.lh_first; p != 0; p = p->p_list.le_next) {
 		if (p->p_stat == SRUN && (p->p_flag & P_INMEM) == 0) {
-
 			pri = p->p_swtime + p->p_slptime - p->p_nice * 8;
 			if (pri > ppri) {
 				pp = p;
@@ -414,7 +411,6 @@ loop:
 	 * We would like to bring someone in.
 	 * This part is really bogus cuz we could deadlock on memory
 	 * despite our feeble check.
-	 * XXX should require at least vm_swrss / 2
 	 */
 	if (cnt.v_free_count > atop(USPACE)) {
 #ifdef DEBUG

@@ -66,7 +66,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  *
- *	@(#)vm_object.c	8.7 (Berkeley) 5/11/95
+ *	@(#)vm_object.c	8.5 (Berkeley) 3/22/94
  *
  *
  * Copyright (c) 1987, 1990 Carnegie-Mellon University.
@@ -416,8 +416,10 @@ vm_object_terminate(object)
 	 *
 	 * XXX need to do something in the event of a cleaning error.
 	 */
-	if ((object->flags & OBJ_INTERNAL) == 0)
+	if ((object->flags & OBJ_INTERNAL) == 0) {
 		(void) vm_object_page_clean(object, 0, 0, TRUE, TRUE);
+		vm_object_unlock(object);
+	}
 
 	/*
 	 * Now free the pages.

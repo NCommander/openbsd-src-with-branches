@@ -228,7 +228,7 @@ check_shell:
 	scriptvp = epp->ep_vp;
 	oldpnbuf = epp->ep_ndp->ni_cnd.cn_pnbuf;
 
-	VOP_UNLOCK(scriptvp, 0, p);
+	VOP_UNLOCK(scriptvp);
 
 	if ((error = check_exec(p, epp)) == 0) {
 		/* note that we've clobbered the header */

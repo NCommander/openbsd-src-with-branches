@@ -36,7 +36,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  *
- *	@(#)vm_pageout.c	8.7 (Berkeley) 6/19/95
+ *	@(#)vm_pageout.c	8.5 (Berkeley) 2/14/94
  *
  *
  * Copyright (c) 1987, 1990 Carnegie-Mellon University.

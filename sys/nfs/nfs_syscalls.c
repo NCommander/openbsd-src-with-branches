@@ -944,6 +944,8 @@ nfssvc_iod(p)
 		     * up to, but not including nfs_strategy().
 		     */
 		    if (nbp) {
+			if (nbp->b_flags & B_DELWRI)
+			    TAILQ_REMOVE(&bdirties, nbp, b_synclist);
 			nbp->b_flags &= ~(B_READ|B_DONE|B_ERROR|B_DELWRI);
 			reassignbuf(nbp, nbp->b_vp);
 			nbp->b_vp->v_numoutput++;

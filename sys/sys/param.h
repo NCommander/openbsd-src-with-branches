@@ -54,7 +54,6 @@
 
 #ifndef _LOCORE
 #include <sys/types.h>
-#include <sys/simplelock.h>
 #endif
 
 /*

@@ -199,4 +199,4 @@ int msdosfs_statfs __P((struct mount *, struct statfs *, struct proc *));
 int msdosfs_sync __P((struct mount *, int, struct ucred *, struct proc *));
 int msdosfs_fhtovp __P((struct mount *, struct fid *, struct mbuf *, struct vnode **, int *, struct ucred **));
 int msdosfs_vptofh __P((struct vnode *, struct fid *));
-int msdosfs_init __P((struct vfsconf *));
+void msdosfs_init __P((void));

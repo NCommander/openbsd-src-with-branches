@@ -336,10 +336,8 @@ setup(dev)
 		    fsbtodb(&sblock, sblock.fs_csaddr + j * sblock.fs_frag),
 		    size) != 0 && !asked) {
 			pfatal("BAD SUMMARY INFORMATION");
-			if (reply("CONTINUE") == 0) {
-				ckfini(0);
+			if (reply("CONTINUE") == 0)
 				errexit("%s", "");
-			}
 			asked++;
 		}
 	}
@@ -384,10 +382,6 @@ setup(dev)
 		goto badsblabel;
 	}
 	bufinit();
-	if (sblock.fs_flags & FS_DOSOFTDEP)
-		usedsoftdep = 1;
-	else
-		usedsoftdep = 0;
 	return (1);
 
 badsblabel:

@@ -188,10 +188,10 @@ check_exec(p, epp)
 
 bad2:
 	/*
-	 * unlock and close the vnode, free the
+	 * unlock and close the vnode, restore the old one, free the
 	 * pathname buf, and punt.
 	 */
-	VOP_UNLOCK(vp, 0, p);
+	VOP_UNLOCK(vp);
 	vn_close(vp, FREAD, p->p_ucred, p);
 	FREE(ndp->ni_cnd.cn_pnbuf, M_NAMEI);
 	return error;

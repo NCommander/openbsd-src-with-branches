@@ -33,7 +33,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  *
- *	@(#)vm_meter.c	8.7 (Berkeley) 5/10/95
+ *	@(#)vm_meter.c	8.4 (Berkeley) 1/4/94
  */
 
 #include <sys/param.h>
@@ -223,7 +223,6 @@ vmtotal(totalp)
 		}
 		if (object->ref_count > 1) {
 			/* shared object */
-	simple_unlock(&vm_object_list_lock);
 			totalp->t_vmshr += num_pages(object->size);
 			totalp->t_rmshr += object->resident_page_count;
 			if (object->flags & OBJ_ACTIVE) {

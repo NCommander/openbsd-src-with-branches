@@ -94,6 +94,6 @@ extern struct vnode *umap_checkvp __P((struct vnode *vp, char *fil, int lno));
 extern int (**umap_vnodeop_p) __P((void *));
 extern struct vfsops umap_vfsops;
 
-int umapfs_init __P((struct vfsconf *));
+void umapfs_init __P((void));
 
 #endif /* _KERNEL */

@@ -33,7 +33,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  *
- *	@(#)vm_extern.h	8.5 (Berkeley) 5/3/95
+ *	@(#)vm_extern.h	8.2 (Berkeley) 1/12/94
  */
 
 struct buf;

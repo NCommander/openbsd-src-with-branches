@@ -91,10 +91,8 @@ enosys ()
  * Return error for operation not supported
  * on a specific object or file type.
  */
-/*ARGSUSED*/
 int
-eopnotsupp(v)
-	void *v;
+eopnotsupp()
 {
 
 	return (EOPNOTSUPP);

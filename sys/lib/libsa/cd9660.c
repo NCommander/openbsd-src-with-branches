@@ -51,8 +51,6 @@ struct netexport { int x; };
 struct proc;
 struct statfs;
 struct ucred;
-struct vfsconf;
-
 #include <isofs/cd9660/iso.h>
 /* These once were in iso.h, but got deleted??? */
 extern __inline int

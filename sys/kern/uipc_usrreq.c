@@ -427,7 +427,7 @@ unp_bind(unp, nam, p)
 	vp->v_socket = unp->unp_socket;
 	unp->unp_vnode = vp;
 	unp->unp_addr = m_copy(nam, 0, (int)M_COPYALL);
-	VOP_UNLOCK(vp, 0, p);
+	VOP_UNLOCK(vp);
 	return (0);
 }
 

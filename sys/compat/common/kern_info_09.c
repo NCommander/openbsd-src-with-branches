@@ -127,7 +127,6 @@ compat_09_sys_uname(p, v, retval)
 		*dp++ = *cp;
 	*dp = '\0';
 	strncpy(outsname.machine, MACHINE, sizeof(outsname.machine));
-
 	return (copyout((caddr_t)&outsname, (caddr_t)SCARG(uap, name),
 			sizeof(struct outsname)));
 }

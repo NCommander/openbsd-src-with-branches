@@ -1213,7 +1213,7 @@ coredump(p)
 		    UIO_SYSSPACE, IO_NODELOCKED|IO_UNIT, cred, NULL, p);
 	}
 out:
-	VOP_UNLOCK(vp, 0, p);
+	VOP_UNLOCK(vp);
 	error1 = vn_close(vp, FWRITE, cred, p);
 	crfree(cred);
 	if (error == 0)

@@ -128,7 +128,7 @@ int	enodev __P((void));
 int	enosys __P((void));
 int	enoioctl __P((void));
 int	enxio __P((void));
-int	eopnotsupp __P((void *));
+int	eopnotsupp __P((void));
 
 int	lkmenodev __P((void));
 
@@ -240,7 +240,7 @@ void	kmstartup __P((void));
 
 int nfs_mountroot __P((void));
 int dk_mountroot __P((void));
-int (*mountroot)__P((void));
+int (*mountroot) __P((void));
 
 #include <lib/libkern/libkern.h>
 

@@ -120,7 +120,7 @@ sys_acct(p, v, retval)
 		    p);
 		if ((error = vn_open(&nd, FWRITE, 0)) != 0)
 			return (error);
-		VOP_UNLOCK(nd.ni_vp, 0, p);
+		VOP_UNLOCK(nd.ni_vp);
 		if (nd.ni_vp->v_type != VREG) {
 			vn_close(nd.ni_vp, FWRITE, p->p_ucred, p);
 			return (EACCES);

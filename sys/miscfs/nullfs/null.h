@@ -92,8 +92,6 @@ extern struct vnode *null_checkvp __P((struct vnode *vp, char *fil, int lno));
 extern int (**null_vnodeop_p) __P((void *));
 extern struct vfsops null_vfsops;
 
-int nullfs_init __P((struct vfsconf *));
-int null_bypass __P((void *));
-
+void nullfs_init __P((void));
 
 #endif /* _KERNEL */

@@ -40,7 +40,7 @@
  *
  * from: Utah $Hdr: vm_unix.c 1.1 89/11/07$
  *
- *	@(#)vm_unix.c	8.2 (Berkeley) 1/9/95
+ *	@(#)vm_unix.c	8.1 (Berkeley) 6/11/93
  */
 
 /*

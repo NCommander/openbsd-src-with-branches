@@ -110,7 +110,7 @@ sys___sysctl(p, v, retval)
 	switch (name[0]) {
 	case CTL_KERN:
 		fn = kern_sysctl;
-		if (name[2] == KERN_VNODE)	/* XXX */
+		if (name[2] != KERN_VNODE)	/* XXX */
 			dolock = 0;
 		break;
 	case CTL_HW:
@@ -124,9 +124,6 @@ sys___sysctl(p, v, retval)
 		break;
 	case CTL_FS:
 		fn = fs_sysctl;
-		break;
-	case CTL_VFS:
-		fn = vfs_sysctl;
 		break;
 	case CTL_MACHDEP:
 		fn = cpu_sysctl;
@@ -267,7 +264,7 @@ kern_sysctl(name, namelen, oldp, oldlenp, newp, newlen, p)
 		return (sysctl_rdstruct(oldp, oldlenp, newp, &boottime,
 		    sizeof(struct timeval)));
 	case KERN_VNODE:
-		return (sysctl_vnode(oldp, oldlenp, p));
+		return (sysctl_vnode(oldp, oldlenp));
 	case KERN_PROC:
 		return (sysctl_doproc(name + 1, namelen - 1, oldp, oldlenp));
 	case KERN_FILE:

@@ -78,11 +78,11 @@ int	dead_select	__P((void *));
 #define dead_inactive	nullop
 #define dead_reclaim	nullop
 int	dead_lock	__P((void *));
-#define dead_unlock	vop_nounlock
+#define dead_unlock	nullop
 int	dead_bmap	__P((void *));
 int	dead_strategy	__P((void *));
 int	dead_print	__P((void *));
-#define dead_islocked	vop_noislocked
+#define dead_islocked	nullop
 #define dead_pathconf	dead_ebadf
 #define dead_advlock	dead_ebadf
 #define dead_blkatoff	dead_badop
@@ -279,23 +279,11 @@ dead_lock(v)
 {
 	struct vop_lock_args /* {
 		struct vnode *a_vp;
-		int a_flags;
-		struct proc *a_p;
 	} */ *ap = v;
-	struct vnode *vp = ap->a_vp;
 
-	/*
-	 * Since we are not using the lock manager, we must clear
-	 * the interlock here.
-	 */
-	if (ap->a_flags & LK_INTERLOCK) {
-		simple_unlock(&vp->v_interlock);
-		ap->a_flags &= ~LK_INTERLOCK;
-	}
-	if (!chkvnlock(vp))
- 		return (0);
-
-	return (VCALL(vp, VOFFSET(vop_lock), ap));
+	if (!chkvnlock(ap->a_vp))
+		return (0);
+	return (VCALL(ap->a_vp, VOFFSET(vop_lock), ap));
 }
 
 /*

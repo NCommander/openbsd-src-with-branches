@@ -215,10 +215,8 @@ checkinode(inumber, idesc)
 		zlnp = (struct zlncnt *)malloc(sizeof *zlnp);
 		if (zlnp == NULL) {
 			pfatal("LINK COUNT TABLE OVERFLOW");
-			if (reply("CONTINUE") == 0) {
-				ckfini(0);
+			if (reply("CONTINUE") == 0)
 				errexit("%s", "");
-			}
 		} else {
 			zlnp->zlncnt = inumber;
 			zlnp->next = zlnhead;
@@ -287,10 +285,8 @@ pass1check(idesc)
 				idesc->id_number);
 			if (preen)
 				printf(" (SKIPPING)\n");
-			else if (reply("CONTINUE") == 0) {
-				ckfini(0);
+			else if (reply("CONTINUE") == 0)
 				errexit("%s", "");
-			}
 			return (STOP);
 		}
 	}
@@ -307,19 +303,15 @@ pass1check(idesc)
 					idesc->id_number);
 				if (preen)
 					printf(" (SKIPPING)\n");
-				else if (reply("CONTINUE") == 0) {
-					ckfini(0);
+				else if (reply("CONTINUE") == 0)
 					errexit("%s", "");
-				}
 				return (STOP);
 			}
 			new = (struct dups *)malloc(sizeof(struct dups));
 			if (new == NULL) {
 				pfatal("DUP TABLE OVERFLOW.");
-				if (reply("CONTINUE") == 0) {
-					ckfini(0);
+				if (reply("CONTINUE") == 0)
 					errexit("%s", "");
-				}
 				return (STOP);
 			}
 			new->dup = blkno;
