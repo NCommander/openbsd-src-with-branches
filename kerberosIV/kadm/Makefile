@@ -1,9 +1,9 @@
-#	$OpenBSD: Makefile,v 1.6 1996/11/11 05:43:25 tholo Exp $
+#	$OpenBSD: Makefile,v 1.7 1997/02/11 04:40:36 tholo Exp $
 
 .include <bsd.obj.mk>
 
 LIB=	kadm
-SRCS=	kadm_err.c kadm_cli_wrap.c kadm_stream.c kadm_supp.c
+SRCS=	kadm_err.c kadm_cli_wrap.c kadm_stream.c kadm_supp.c check_password.c
 CFLAGS+=-I. -I${.CURDIR}
 .if exists(${.CURDIR}/../krb/${__objdir})
 CFLAGS+=-I${.CURDIR}/../krb/${__objdir}
