@@ -1,4 +1,4 @@
-/*	$OpenBSD: elf.c,v 1.4 2002/12/11 18:28:22 deraadt Exp $	*/
+/*	$OpenBSD: elf.c,v 1.5 2003/07/21 03:55:35 tedu Exp $	*/
 /*	$NetBSD: elf.c,v 1.8 2002/01/03 21:45:58 jdolecek Exp $	*/
 
 /*
@@ -285,10 +285,10 @@ elf_mod_sizes(int fd, size_t *modsize, int *strtablen,
 
 	/* XXX round to pagesize? */
 	*modsize = roundup(off, sysconf(_SC_PAGESIZE));
-	free(shstrtab);
 
 	/* get string table length */
 	strtab = read_string_table(fd, head, strtablen);
+	free(shstrtab);
 	free(strtab);
 
 	/* get symbol table sections */
