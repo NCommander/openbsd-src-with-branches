@@ -1,11 +1,11 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: hack.mklev.c,v 1.3 2001/01/28 23:41:44 niklas Exp $	*/
 
 /*
  * Copyright (c) Stichting Mathematisch Centrum, Amsterdam, 1985.
  */
 
 #ifndef lint
-static char rcsid[] = "$OpenBSD: hack.mklev.c,v 1.3 1995/03/23 08:30:43 cgd Exp $";
+static char rcsid[] = "$OpenBSD: hack.mklev.c,v 1.3 2001/01/28 23:41:44 niklas Exp $";
 #endif /* not lint */
 
 #include "hack.h"
@@ -131,7 +131,7 @@ makelevel()
 #ifndef QUEST
 #ifdef WIZARD
 	if(wizard && getenv("SHOPTYPE")) mkshop(); else
-#endif WIZARD
+#endif /* WIZARD */
  	if(dlevel > 1 && dlevel < 20 && rn2(dlevel) < 3) mkshop();
 	else
 	if(dlevel > 6 && !rn2(7)) mkzoo(ZOO);
@@ -141,7 +141,7 @@ makelevel()
 	if(dlevel > 11 && !rn2(6)) mkzoo(MORGUE);
 	else
 	if(dlevel > 18 && !rn2(6)) mkswamp();
-#endif QUEST
+#endif /* QUEST */
 }
 
 makerooms() {
@@ -269,7 +269,7 @@ boolean discarded;		/* piece of a discarded area */
 	if(rsmax >= MAXRS) {
 #ifdef WIZARD
 		if(wizard) pline("MAXRS may be too small.");
-#endif WIZARD
+#endif /* WIZARD */
 		return;
 	}
 	rsmax++;
@@ -391,7 +391,7 @@ chk:
 #ifdef WIZARD
 			    if(wizard && !secret)
 				pline("Strange area [%d,%d] in maker().",x,y);
-#endif WIZARD
+#endif /* WIZARD */
 				if(!rn2(3)) return(0);
 				if(x < lowx)
 					lowx = x+xlim+1;

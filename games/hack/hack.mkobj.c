@@ -1,11 +1,11 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: hack.mkobj.c,v 1.3 2001/01/28 23:41:44 niklas Exp $	*/
 
 /*
  * Copyright (c) Stichting Mathematisch Centrum, Amsterdam, 1985.
  */
 
 #ifndef lint
-static char rcsid[] = "$OpenBSD: hack.mkobj.c,v 1.3 1995/03/23 08:30:47 cgd Exp $";
+static char rcsid[] = "$OpenBSD: hack.mkobj.c,v 1.3 2001/01/28 23:41:44 niklas Exp $";
 #endif /* not lint */
 
 #include "hack.h"
@@ -81,7 +81,7 @@ register otyp;
 		/* if tins are to be identified, need to adapt doname() etc */
 		if(otmp->otyp == TIN)
 			otmp->spe = rnd(...);
-#endif NOT_YET_IMPLEMENTED
+#endif /* NOT_YET_IMPLEMENTED */
 		/* fall into next case */
 	case GEM_SYM:
 		otmp->quan = rn2(6) ? 1 : 2;

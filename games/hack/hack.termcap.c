@@ -1,11 +1,11 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: hack.termcap.c,v 1.4 2001/01/28 23:41:45 niklas Exp $	*/
 
 /*
  * Copyright (c) Stichting Mathematisch Centrum, Amsterdam, 1985.
  */
 
 #ifndef lint
-static char rcsid[] = "$OpenBSD: hack.termcap.c,v 1.6 1995/04/29 01:20:00 mycroft Exp $";
+static char rcsid[] = "$OpenBSD: hack.termcap.c,v 1.4 2001/01/28 23:41:45 niklas Exp $";
 #endif /* not lint */
 
 #include <stdio.h>
@@ -18,7 +18,7 @@ extern long *alloc();
 
 #ifndef lint
 extern			/* it is defined in libtermlib (libtermcap) */
-#endif lint
+#endif /* lint */
 	speed_t ospeed;		/* terminal baudrate; used by tputs */
 static char tbuf[512];
 static char *HO, *CL, *CE, *UP, *CM, *ND, *XD, *BC, *SO, *SE, *TI, *TE;
