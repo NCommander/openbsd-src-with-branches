@@ -284,8 +284,14 @@ utty*)
 	;;
 
 ttyC*)
+	unit=${i##ttyC}
+	case $unit in
+	[0123456789abcdef])	;;
+	*)			echo bad unit $unit for $i; exit 1;;
+	esac
+	num=$(( 16#$unit ))
 	rm -f ttyC$unit
-	mknod ttyC$unit c 12 $unit
+	mknod ttyC$unit c 12 $num
 	chown root.wheel ttyC$unit
 	;;
 
