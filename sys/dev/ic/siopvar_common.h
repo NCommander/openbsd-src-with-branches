@@ -1,4 +1,4 @@
-/*	$OpenBSD: siopvar_common.h,v 1.3 2001/03/06 16:29:32 krw Exp $ */
+/*	$OpenBSD: siopvar_common.h,v 1.4 2001/04/15 06:01:29 krw Exp $ */
 /*	$NetBSD: siopvar_common.h,v 1.10 2001/01/26 21:58:56 bouyer Exp $	*/
 
 /*
@@ -209,7 +209,7 @@ void    siop_ppr_msg  __P((struct siop_cmd *, int, int, int));
 #define SIOP_NEG_ACK	0x2
 #define SIOP_NEG_MSGREJ	0x3
 
-void	siop_print_info __P((struct siop_softc *, int));
+void	siop_print_info __P((struct scsi_link *));
 void	siop_minphys __P((struct buf *));
 void 	siop_sdp __P((struct siop_cmd *));
 void	siop_clearfifo __P((struct siop_softc *));
