@@ -1,4 +1,4 @@
-/*	$OpenBSD: mkpar.c,v 1.7 2001/11/19 19:02:18 mpech Exp $	*/
+/*	$OpenBSD: mkpar.c,v 1.8 2002/02/16 21:28:00 millert Exp $	*/
 
 /*	$NetBSD: mkpar.c,v 1.4 1996/03/19 03:21:39 jtc Exp $	*/
 
@@ -344,17 +344,19 @@ total_conflicts()
     if ((SRtotal != SRexpect) || RRtotal)
     {
         if (SRtotal == 1)
-            fprintf(stderr, "%s: 1 shift/reduce conflict\n", __progname);
+            fprintf(stderr, "%s: %s finds 1 shift/reduce conflict\n",
+		    input_file_name, __progname);
         else if (SRtotal > 1)
-            fprintf(stderr, "%s: %d shift/reduce conflicts\n", __progname,
-                    SRtotal);
+            fprintf(stderr, "%s: %s finds %d shift/reduce conflicts\n",
+		    input_file_name, __progname, SRtotal);
     }
 
     if (RRtotal == 1)
-        fprintf(stderr, "%s: 1 reduce/reduce conflict\n", __progname);
+        fprintf(stderr, "%s: %s finds 1 reduce/reduce conflict\n",
+		input_file_name, __progname);
     else if (RRtotal > 1)
-	fprintf(stderr, "%s: %d reduce/reduce conflicts\n", __progname,
-                RRtotal);
+	fprintf(stderr, "%s: %s finds %d reduce/reduce conflicts\n",
+		input_file_name, __progname, RRtotal);
 }
 
 
