@@ -1,4 +1,4 @@
-/*	$OpenBSD: main.c,v 1.6 1997/01/15 23:41:38 millert Exp $	*/
+/*	$OpenBSD: main.c,v 1.7 1997/04/16 04:07:37 millert Exp $	*/
 /*	$NetBSD: main.c,v 1.11 1996/03/15 22:39:39 scottr Exp $	*/
 
 /*
@@ -212,7 +212,7 @@ main(argc, argv)
 			 * This is a level zero dump tape.
 			 */
 			vprintf(stdout, "Begin level 0 restore\n");
-			initsymtable((char *)0);
+			initsymtable(NULL);
 			extractdirs(1);
 			vprintf(stdout, "Calculate extraction list.\n");
 			treescan(".", ROOTINO, nodeupdates);
@@ -246,7 +246,7 @@ main(argc, argv)
 	case 't':
 		setup();
 		extractdirs(0);
-		initsymtable((char *)0);
+		initsymtable(NULL);
 		while (argc--) {
 			canon(*argv++, name);
 			ino = dirlookup(name);
@@ -261,7 +261,7 @@ main(argc, argv)
 	case 'x':
 		setup();
 		extractdirs(1);
-		initsymtable((char *)0);
+		initsymtable(NULL);
 		while (argc--) {
 			canon(*argv++, name);
 			ino = dirlookup(name);
