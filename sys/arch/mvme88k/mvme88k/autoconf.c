@@ -1,4 +1,4 @@
-/*	$OpenBSD: autoconf.c,v 1.25 2004/02/11 20:41:08 miod Exp $	*/
+/*	$OpenBSD: autoconf.c,v 1.26 2004/04/14 20:18:18 miod Exp $	*/
 /*
  * Copyright (c) 1998 Steve Murphree, Jr.
  * Copyright (c) 1996 Nivas Madhur
@@ -65,7 +65,7 @@ struct device *getdisk(char *, int, int, dev_t *);
 
 int cold = 1;   /* 1 if still booting */
 
-void *bootaddr;
+paddr_t bootaddr;
 int bootpart;
 struct device *bootdv;	/* set by device drivers (if found) */
 
