@@ -1,11 +1,15 @@
-#	$OpenBSD: Makefile,v 1.19 1997/05/14 18:39:00 niklas Exp $
+#	$OpenBSD: Makefile,v 1.20 1997/05/17 04:01:48 millert Exp $
 
 TOP=		${.CURDIR}/..
 
 .include "${TOP}/Makefile.inc"
 IMAGE=		mr.fs
 CBIN?=		instbin
+.if (${KERBEROS} == "yes")
 CRUNCHCONF?=    ${.CURDIR}/${CBIN}.conf
+.else
+CRUNCHCONF?=    ${.CURDIR}/${CBIN}-nokrb.conf
+.endif
 LISTS=		${.CURDIR}/list
 
 MOUNT_POINT=	/mnt
@@ -90,7 +94,8 @@ install:
 	cp ${FS} ${DESTDIR}/snapshot/${FS}
 
 ${CBIN}.mk ${CBIN}.cache ${CBIN}.c: ${CRUNCHCONF}
-	crunchgen -D ${BSDSRCDIR} -L ${DESTDIR}/usr/lib ${CRUNCHCONF}
+	crunchgen -D ${BSDSRCDIR} -L ${DESTDIR}/usr/lib -c ${CBIN} \
+	${CRUNCHCONF}
 
 ${CBIN}: ${CBIN}.mk ${CBIN}.cache ${CBIN}.c
 	make -f ${CBIN}.mk all
@@ -100,9 +105,16 @@ do_files:
 	TOPDIR=${TOP} CURDIR=${.CURDIR} OBJDIR=${.OBJDIR} \
 	    REV=${REV} TARGDIR=${MOUNT_POINT} sh ${TOP}/runlist.sh ${LISTS}
 
+.if (${KERBEROS} == "yes")
 clean cleandir:
-	/bin/rm -f core ${IMAGE} ${CBIN} ${CBIN}.mk ${CBIN}.cache *.o *.lo *.c \
-	    bsd bsd.rd bsd.gz floppy*.fs rdsetroot
+	/bin/rm -f core ${IMAGE} ${CBIN} ${CBIN}.mk ${CBIN}.cache \
+	    *.o *.lo *.c bsd bsd.rd bsd.gz bsd.strip floppy*.fs rdsetroot
+.else
+clean cleandir:
+	/bin/rm -f core ${IMAGE} ${CBIN}-nokrb ${CBIN}-nokrb.mk \
+	    ${CBIN}-nokrb.cache *.o *.lo *.c \
+	    bsd bsd.rd bsd.gz bsd.strip floppy*.fs rdsetroot
+.endif
 
 .include <bsd.obj.mk>
 .include <bsd.subdir.mk>
