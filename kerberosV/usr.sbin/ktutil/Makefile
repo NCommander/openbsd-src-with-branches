@@ -1,4 +1,4 @@
-# $OpenBSD: Makefile,v 1.6 2002/03/04 23:26:43 deraadt Exp $
+# $OpenBSD: Makefile,v 1.7 2002/05/11 00:20:20 espie Exp $
 
 KRBDEPTH=../..
 .include <${.CURDIR}/../../Makefile.inc>
@@ -21,7 +21,7 @@ CFLAGS+=-I${KRB5SRC}/lib/krb5 -I${KRB5SRC}/lib/kadm5
 DPADD+=	${LIBREADLINE} ${LIBCURSES} ${LIBKRB} ${LIBHDB} ${LIBADM5SRV} \
 	${LIBKADM5CLNT} ${LIBKRB5} ${LIBASN1} ${LIBCRYPTO} ${LIBCOM_ERR} \
 	${LIBKAFS} ${LIBDES}
-LDADD+=	${LIBSL} -lreadline -lcurses -lkrb -lhdb -lkadm5srv -lkadm5clnt \
+LDADD+=	${LIBSL} -lreadline -lcurses -lkrb -lhdb -lkadm5clnt \
 	-lhdb -lkrb5 ${LIBROKEN} -lasn1 -lcrypto -lcom_err -lkafs -ldes
 
 .include <bsd.prog.mk>
