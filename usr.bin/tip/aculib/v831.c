@@ -1,4 +1,4 @@
-/*	$OpenBSD: v831.c,v 1.8 2002/06/12 06:07:16 mpech Exp $	*/
+/*	$OpenBSD: v831.c,v 1.9 2003/06/03 02:56:18 millert Exp $	*/
 /*	$NetBSD: v831.c,v 1.5 1996/12/29 10:42:01 cgd Exp $	*/
 
 /*
@@ -34,7 +34,7 @@
 #if 0
 static char sccsid[] = "@(#)v831.c	8.1 (Berkeley) 6/6/93";
 #endif
-static const char rcsid[] = "$OpenBSD: v831.c,v 1.8 2002/06/12 06:07:16 mpech Exp $";
+static const char rcsid[] = "$OpenBSD: v831.c,v 1.9 2003/06/03 02:56:18 millert Exp $";
 #endif /* not lint */
 
 /*
@@ -157,9 +157,9 @@ v831_abort()
         sleep(2);
         if (child > 0)
                 kill(child, SIGKILL);
-        if (AC > 0)
+        if (FD > 0)
                 ioctl(FD, TIOCNXCL, NULL);
-                close(AC);
+        close(AC);
         if (FD > 0)
                 ioctl(FD, TIOCCDTR, 0);
         close(FD);
