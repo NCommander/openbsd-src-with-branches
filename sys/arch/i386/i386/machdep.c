@@ -217,12 +217,15 @@ cpu_startup()
 	if (vm_map_find(buffer_map, vm_object_allocate(size), (vm_offset_t)0,
 			&minaddr, size, FALSE) != KERN_SUCCESS)
 		panic("startup: cannot allocate buffers");
-	if ((bufpages / nbuf) >= btoc(MAXBSIZE)) {
-		/* don't want to alloc more physical mem than needed */
-		bufpages = btoc(MAXBSIZE) * nbuf;
-	}
+
 	base = bufpages / nbuf;
 	residual = bufpages % nbuf;
+	if (base >= MAXBSIZE) {
+		/* don't want to alloc more physical mem than needed */
+		base = MAXBSIZE;
+		residual = 0;
+	}
+
 	for (i = 0; i < nbuf; i++) {
 		vm_size_t curbufsize;
 		vm_offset_t curbuf;
@@ -366,6 +369,12 @@ allocsys(v)
 		else
 			bufpages = (btoc(2 * 1024 * 1024) + physmem) /
 			    ((100/BUFCACHEPERCENT) * CLSIZE);
+
+	/* Restrict to at most 70% filled kvm */
+	if (bufpages * MAXBSIZE * 7 / 10 >
+	    (VM_MAX_KERNEL_ADDRESS-VM_MIN_KERNEL_ADDRESS))
+		bufpages = (VM_MAX_KERNEL_ADDRESS-VM_MIN_KERNEL_ADDRESS) /
+		    MAXBSIZE * 7 / 10;
 	if (nbuf == 0) {
 		nbuf = bufpages;
 		if (nbuf < 16)
