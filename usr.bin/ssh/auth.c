@@ -23,7 +23,7 @@
  */
 
 #include "includes.h"
-RCSID("$OpenBSD: auth.c,v 1.41 2002/03/19 15:31:47 markus Exp $");
+RCSID("$OpenBSD: auth.c,v 1.42 2002/05/13 20:44:58 markus Exp $");
 
 #include <libgen.h>
 
@@ -416,7 +416,7 @@ getpwnamallow(const char *user)
 	}
 #ifdef BSD_AUTH
 	if ((as = auth_open()) == NULL || auth_setpwd(as, pw) != 0 ||
-	    auth_approval(NULL, lc, pw->pw_name, "ssh") <= 0) {
+	    auth_approval(as, lc, pw->pw_name, "ssh") <= 0) {
 		debug("Approval failure for %s", user);
 		pw = NULL;
 	}
