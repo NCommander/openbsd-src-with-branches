@@ -1,4 +1,4 @@
-/*	$OpenBSD: tcp_output.c,v 1.71 2004/06/20 18:16:50 itojun Exp $	*/
+/*	$OpenBSD: tcp_output.c,v 1.72 2004/09/16 13:14:28 markus Exp $	*/
 /*	$NetBSD: tcp_output.c,v 1.16 1997/06/03 16:17:09 kml Exp $	*/
 
 /*
@@ -248,7 +248,7 @@ tcp_output(tp)
 		 * expected to clock out any data we send --
 		 * slow start to get ack "clock" running again.
 		 */
-		tp->snd_cwnd = tp->t_maxseg;
+		tp->snd_cwnd = 2 * tp->t_maxseg;
 
 	/* remember 'idle' for next invocation of tcp_output */
 	if (idle && soissending(so)) {
