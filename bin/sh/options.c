@@ -1,4 +1,4 @@
-/*	$OpenBSD: options.c,v 1.2 1996/06/23 14:21:28 deraadt Exp $	*/
+/*	$OpenBSD: options.c,v 1.3 1996/10/20 00:54:59 millert Exp $	*/
 /*	$NetBSD: options.c,v 1.14 1995/05/11 21:29:46 christos Exp $	*/
 
 /*-
@@ -41,7 +41,7 @@
 #if 0
 static char sccsid[] = "@(#)options.c	8.2 (Berkeley) 5/4/95";
 #else
-static char rcsid[] = "$OpenBSD: options.c,v 1.2 1996/06/23 14:21:28 deraadt Exp $";
+static char rcsid[] = "$OpenBSD: options.c,v 1.3 1996/10/20 00:54:59 millert Exp $";
 #endif
 #endif /* not lint */
 
@@ -362,7 +362,7 @@ getoptsreset(value)
 	const char *value;
 {
 	if (number(value) == 1)
-		shellparam.optnext;
+		shellparam.optnext = NULL;
 }
 
 

@@ -1,4 +1,4 @@
-/*	$OpenBSD: echo.c,v 1.7 1995/03/21 09:10:49 cgd Exp $	*/
+/*	$OpenBSD: echo.c,v 1.2 1996/06/23 14:21:41 deraadt Exp $	*/
 /*	$NetBSD: echo.c,v 1.7 1995/03/21 09:10:49 cgd Exp $	*/
 
 /*-
@@ -49,6 +49,7 @@
 
 /* #define eflag 1 */
 
+int
 main(argc, argv)  char **argv; {
 	register char **ap;
 	register char *p;
