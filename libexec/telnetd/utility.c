@@ -95,13 +95,14 @@ ttloop()
 stilloob(s)
     int	s;		/* socket number */
 {
-    static struct timeval timeout = { 0 };
+    struct timeval timeout;
     fd_set	excepts;
     int value;
 
     do {
 	FD_ZERO(&excepts);
 	FD_SET(s, &excepts);
+	bzero(&timeout, sizeof timeout);
 	value = select(s+1, (fd_set *)0, (fd_set *)0, &excepts, &timeout);
     } while ((value == -1) && (errno == EINTR));
 
