@@ -1,4 +1,4 @@
-/* $OpenBSD: ssl_engine_init.c,v 1.20 2002/10/07 20:23:06 henning Exp $ */
+/* $OpenBSD: ssl_engine_init.c,v 1.21 2003/03/14 09:28:14 ho Exp $ */
 
 /*                      _             _
 **  _ __ ___   ___   __| |    ___ ___| |  mod_ssl
@@ -832,9 +832,9 @@ void ssl_init_ConfigureServer(server_rec *s, pool *p, SSLSrvConfigRec *sc)
                     cpVHostID);
             ssl_die();
         }
-	if (RSA_blinding_on (sc->pPrivateKey[SSL_AIDX_RSA]->pkey.rsa, NULL) != 1) {
+        if (!RSA_blinding_on(sc->pPrivateKey[SSL_AIDX_RSA]->pkey.rsa, NULL)) {
             ssl_log(s, SSL_LOG_ERROR|SSL_ADD_SSLERR,
-                    "Init: (%s) Unable to add blinding for RSA server private key",
+                    "Init: (%s) Unable to enable RSA blinding (probably PRNG failure)",
                     cpVHostID);
             ssl_die();
         }
