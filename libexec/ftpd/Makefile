@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.17 2000/07/19 19:28:02 mickey Exp $
+#	$OpenBSD: Makefile,v 1.18 2000/09/03 18:41:14 espie Exp $
 #	$NetBSD: Makefile,v 1.13 1996/02/16 02:07:41 cgd Exp $
 #	@(#)Makefile	8.2 (Berkeley) 4/4/94
 
@@ -19,20 +19,6 @@ CFLAGS	+= -I${LSDIR}
 
 # not really used
 CPPFLAGS+=-DINET6
-
-.if (${SKEY:L} == "yes")
-CFLAGS+=-DSKEY
-LDADD+= -lskey
-DPADD+= ${LIBSKEY}
-.endif
-
-.if (${KERBEROS:L} == "yes")
-SRCS+= klogin.c
-.PATH:	${.CURDIR}/../../usr.bin/login
-CFLAGS+= -DKERBEROS
-LDADD+= -lkafs -lkrb -ldes
-DPADD+= ${LIBKRB} ${LIBKRB} ${LIBKAFS}
-.endif
 
 .if (${TCP_WRAPPERS:L} == "yes")
 CFLAGS+=-DTCPWRAPPERS
