@@ -1,4 +1,4 @@
-/*	$OpenBSD: urio.c,v 1.10 2002/07/09 17:41:02 nate Exp $	*/
+/*	$OpenBSD: urio.c,v 1.11 2002/07/10 13:18:10 nate Exp $	*/
 /*	$NetBSD: urio.c,v 1.11 2002/02/11 15:11:49 augustss Exp $	*/
 
 /*
@@ -82,7 +82,7 @@ int	uriodebug = 0;
 #endif
 
 
-#if defined(__NetBSD__) || defined(__OpenBSD__)
+#if defined(__NetBSD__)
 cdev_decl(urio);
 #elif defined(__FreeBSD__)
 d_open_t  urioopen;
