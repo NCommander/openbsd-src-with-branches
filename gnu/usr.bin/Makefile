@@ -1,7 +1,7 @@
-#	$OpenBSD: Makefile,v 1.29 2001/07/11 03:02:26 pvalchev Exp $
+#	$OpenBSD: Makefile,v 1.30 2001/09/05 22:29:02 art Exp $
 #	$NetBSD: Makefile,v 1.35 1996/04/03 21:20:52 chuck Exp $
 
-SUBDIR+=	bc cvs deroff diff diff3 
+SUBDIR+=	bc cvs diff diff3 
 SUBDIR+=../egcs/gcc
 #SUBDIR+= gcc 
 SUBDIR+= grep groff gzip lynx rcs sdiff sendbug
