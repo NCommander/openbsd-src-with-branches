@@ -1,4 +1,4 @@
-/*	$OpenBSD: cond.c,v 1.13 1999/12/19 00:04:25 espie Exp $	*/
+/*	$OpenBSD: cond.c,v 1.14 2000/01/08 09:45:15 espie Exp $	*/
 /*	$NetBSD: cond.c,v 1.7 1996/11/06 17:59:02 christos Exp $	*/
 
 /*
@@ -43,7 +43,7 @@
 #if 0
 static char sccsid[] = "@(#)cond.c	8.2 (Berkeley) 1/2/94";
 #else
-static char rcsid[] = "$OpenBSD: cond.c,v 1.13 1999/12/19 00:04:25 espie Exp $";
+static char rcsid[] = "$OpenBSD: cond.c,v 1.14 2000/01/08 09:45:15 espie Exp $";
 #endif
 #endif /* not lint */
 
@@ -339,7 +339,7 @@ CondDoMake (argLen, arg)
     Boolean result;
 
     arg[argLen] = '\0';
-    if (Lst_Find(create, CondStrMatch, (ClientData)arg) == NULL) {
+    if (Lst_Find(create, CondStrMatch, arg) == NULL) {
 	result = FALSE;
     } else {
 	result = TRUE;
