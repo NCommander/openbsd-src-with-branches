@@ -1,4 +1,4 @@
-/*	$OpenBSD: scsi_base.c,v 1.26 2000/03/01 18:12:04 millert Exp $	*/
+/*	$OpenBSD: scsi_base.c,v 1.27 2001/01/22 19:10:13 csapuntz Exp $	*/
 /*	$NetBSD: scsi_base.c,v 1.43 1997/04/02 02:29:36 mycroft Exp $	*/
 
 /*
@@ -1038,7 +1038,7 @@ scsi_print_sense(xs, verbosity)
 
 	sc_print_addr(xs->sc_link);
 	s = (char *) &xs->sense;
-	printf("Check Condition on opcode %x\n", xs->cmd->opcode);
+	printf("Check Condition on opcode 0x%x\n", xs->cmd->opcode);
 
 	/*
 	 * Basics- print out SENSE KEY
