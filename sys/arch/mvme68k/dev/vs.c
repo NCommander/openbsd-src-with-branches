@@ -1,4 +1,4 @@
-/*	$OpenBSD: vs.c,v 1.11 2003/11/03 06:54:25 david Exp $ */
+/*	$OpenBSD: vs.c,v 1.12 2003/11/07 10:16:45 jmc Exp $ */
 
 /*
  * Copyright (c) 1999 Steve Murphree, Jr.
@@ -253,7 +253,6 @@ vs_scsicmd(xs)
 		scsi_done(xs);
 	}
 
-	slp->quirks |= SDEV_NOLUNS;
 	flags = xs->flags;
 #ifdef SDEBUG
 	printf("scsi_cmd() ");
