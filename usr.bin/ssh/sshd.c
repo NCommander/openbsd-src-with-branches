@@ -40,7 +40,7 @@
  */
 
 #include "includes.h"
-RCSID("$OpenBSD: sshd.c,v 1.176 2001/03/22 20:22:55 deraadt Exp $");
+RCSID("$OpenBSD: sshd.c,v 1.177 2001/03/23 11:04:07 djm Exp $");
 
 #include <openssl/dh.h>
 #include <openssl/bn.h>
@@ -790,6 +790,9 @@ main(int ac, char **av)
 	/* Chdir to the root directory so that the current disk can be
 	   unmounted if desired. */
 	chdir("/");
+	
+	/* ignore SIGPIPE */
+	signal(SIGPIPE, SIG_IGN);
 
 	/* Start listening for a socket, unless started from inetd. */
 	if (inetd_flag) {
