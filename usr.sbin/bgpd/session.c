@@ -1046,8 +1046,14 @@ session_dispatch_msg(struct pollfd *pfd, struct peer *peer)
 			av = peer->rbuf->wpos + n;
 			peer->stats.last_read = time(NULL);
 
+			/*
+			 * session might drop to IDLE -> buffers deallocated
+			 * we MUST check rbuf != NULL before use
+			 */
 			for (;;) {
 				if (rpos + MSGSIZE_HEADER > av)
+					break;
+				if (peer->rbuf == NULL)
 					break;
 				if (parse_header(peer, peer->rbuf->buf + rpos,
 				    &msglen, &msgtype) == -1)
@@ -1082,6 +1088,9 @@ session_dispatch_msg(struct pollfd *pfd, struct peer *peer)
 				}
 				rpos += msglen;
 			}
+			if (peer->rbuf == NULL)
+				return (1);
+
 			if (rpos < av) {
 				left = av - rpos;
 				memcpy(&peer->rbuf->buf, peer->rbuf->buf + rpos,
