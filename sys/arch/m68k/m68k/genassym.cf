@@ -1,4 +1,4 @@
-#	$OpenBSD: genassym.cf,v 1.9 2003/06/02 07:06:56 deraadt Exp $
+#	$OpenBSD: genassym.cf,v 1.10 2003/06/02 23:27:48 millert Exp $
 
 #
 # Copyright (c) 1995 Theo de Raadt
@@ -80,6 +80,7 @@ member	p_vmspace
 member	p_addr
 
 export	SRUN
+export	SONPROC
 
 # contexts
 export	FC_SUPERD
