@@ -1,4 +1,4 @@
-/*	$OpenBSD: pfkeyv2_convert.c,v 1.18 2003/12/02 23:16:29 markus Exp $	*/
+/*	$OpenBSD: pfkeyv2_convert.c,v 1.19 2004/06/21 20:44:54 itojun Exp $	*/
 /*
  * The author of this code is Angelos D. Keromytis (angelos@keromytis.org)
  *
@@ -266,14 +266,11 @@ void
 import_lifetime(struct tdb *tdb, struct sadb_lifetime *sadb_lifetime, int type)
 {
 	struct timeval tv;
-	int s;
 
 	if (!sadb_lifetime)
 		return;
 
-	s = splhigh();
-	tv = time;
-	splx(s);
+	getmicrotime(&tv);
 
 	switch (type) {
 	case PFKEYV2_LIFETIME_HARD:

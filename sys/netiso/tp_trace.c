@@ -1,4 +1,4 @@
-/*	$OpenBSD: tp_trace.c,v 1.3 2003/06/02 23:28:18 millert Exp $	*/
+/*	$OpenBSD: tp_trace.c,v 1.4 2003/12/10 07:22:44 itojun Exp $	*/
 /*	$NetBSD: tp_trace.c,v 1.6 1996/02/13 22:12:20 christos Exp $	*/
 
 /*-
@@ -115,7 +115,7 @@ tpTrace(tpcb, event, arg, src, len, arg4, arg5)
 	tp->tpt_arg = arg;
 	if (tpcb)
 		tp->tpt_arg2 = tpcb->tp_lref;
-	bcopy((caddr_t) & time, (caddr_t) & tp->tpt_time, sizeof(struct timeval));
+	getmicrotime(&tp->tpt_time);
 
 	switch (event) {
 

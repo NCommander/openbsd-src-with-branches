@@ -1,4 +1,4 @@
-/* $OpenBSD: wsmouse.c,v 1.11 2003/06/02 23:28:04 millert Exp $ */
+/* $OpenBSD: wsmouse.c,v 1.12 2003/09/23 16:51:12 millert Exp $ */
 /* $NetBSD: wsmouse.c,v 1.12 2000/05/01 07:36:58 takemura Exp $ */
 
 /*
@@ -347,10 +347,7 @@ wsmouse_input(wsmousedev, btns, x, y, z, flags)
 	/* TIMESTAMP sets `time' field of the event to the current time */
 #define TIMESTAMP							\
 	do {								\
-		int s;							\
-		s = splhigh();						\
-		TIMEVAL_TO_TIMESPEC(&time, &ev->time);			\
-		splx(s);						\
+		getnanotime(&ev->time);					\
 	} while (0)
 
 	if (flags & WSMOUSE_INPUT_ABSOLUTE_X) {
