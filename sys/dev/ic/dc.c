@@ -1,4 +1,4 @@
-/*	$OpenBSD: dc.c,v 1.11 2000/09/07 20:26:15 aaron Exp $	*/
+/*	$OpenBSD: dc.c,v 1.12 2000/09/13 00:29:34 aaron Exp $	*/
 
 /*
  * Copyright (c) 1997, 1998, 1999
@@ -2377,10 +2377,14 @@ void dc_init(xsc)
 
 	timeout_set(&sc->dc_tick_tmo, dc_tick, sc);
 
-	if (sc->dc_flags & DC_21143_NWAY)
-		timeout_add(&sc->dc_tick_tmo, hz / 10);
-	else
-		timeout_add(&sc->dc_tick_tmo, hz);
+	if (IFM_SUBTYPE(mii->mii_media.ifm_media) == IFM_HPNA_1)
+		sc->dc_link = 1;
+	else {
+		if (sc->dc_flags & DC_21143_NWAY)
+			timeout_add(&sc->dc_tick_tmo, hz / 10);
+		else
+			timeout_add(&sc->dc_tick_tmo, hz);
+	}
 
 	return;
 }
