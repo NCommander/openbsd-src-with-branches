@@ -117,7 +117,7 @@ sysconmatch(parent, vcf, args)
 	struct sysconreg *syscon;
 
 	/* Don't match if wrong cpu */
-	if (brdtyp != BRD_188) return (0);  /* The only one... */
+	if (cputyp != CPU_188) return (0);
 	/* Uh, MVME188 better have on of these, so always match if it 
 	 * is a MVME188... */
 	syscon = (struct sysconreg *)(IIOV(ca->ca_paddr));

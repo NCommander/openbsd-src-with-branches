@@ -56,7 +56,6 @@
 
 #include <machine/autoconf.h>
 #include <machine/param.h>
-#include <machine/cmmu.h>
 
 #if defined(mvme88k)
 #include <mvme88k/dev/vsreg.h>

@@ -108,20 +108,13 @@
 #define FPUP_BIT	0x400		/* FPU precise exception	*/
 #define FPUI_BIT	0x800		/* FPU imprecise exception	*/
 
-/* machine dependant definitions */
-
 #if defined(MVME187) || defined(MVME197)
 #include <machine/mvme1x7.h>
 #endif
-#ifdef MVME187
-#include <machine/mvme187.h>
-#endif 
+
 #ifdef MVME188
 #include <machine/mvme188.h>
 #endif
-#ifdef MVME197
-#include <machine/mvme197.h>
-#endif 
 
 #endif /* __MACHINE_BOARD_H__ */
 

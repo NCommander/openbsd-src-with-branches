@@ -1,4 +1,4 @@
-/* $OpenBSD: m88100_fp.S,v 1.13 2001/12/13 08:55:52 smurph Exp $	*/
+/* $OpenBSD: m88100_fp.S,v 1.12 2001/11/18 01:43:33 miod Exp $	*/
 /*
  * Mach Operating System
  * Copyright (c) 1991 Carnegie Mellon University
@@ -27,8 +27,6 @@
  */
 
 /* Floating point trouble routines */
-#ifdef M88100
-
 #include "assym.h"
 #include <machine/trap.h>
 #include <machine/asm.h>
@@ -166,7 +164,7 @@ fp_p_trap:
 	st      r3,r31,32       /* save exception frame */
 	or      r2,r0,T_FPEPFLT /* load trap type */
 	or	r3, r29, r0
-	bsr     _C_LABEL(m88100_trap)           /* trap */
+	bsr     _C_LABEL(trap18x)           /* trap */
 	ld      r1,r31,36       /* recover return address */
 	addu    r31,r31,40      /* deallocate stack */
  	br	fp_p_return
@@ -2300,5 +2298,3 @@ Iwritesingle:
 	st	r11, r3 [r2]
 /* Return.. */
 	jmp	r1
-#endif /* M88100 */
-

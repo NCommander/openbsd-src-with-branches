@@ -197,6 +197,8 @@ vxmatch(parent, self, aux)
 	struct vxreg *vx_reg;
 	struct confargs *ca = aux;
    
+	if (cputyp != CPU_187)
+		return 0;
 #ifdef OLD_MAPPINGS
 	ca->ca_vaddr = ca->ca_paddr;
 #endif
@@ -205,9 +207,15 @@ vxmatch(parent, self, aux)
 
 	vx_reg = (struct vxreg *)ca->ca_vaddr;
 	board_addr = (unsigned int)ca->ca_vaddr;
-	if (badvaddr((unsigned)&vx_reg->ipc_cr, 1))
+	if (!badvaddr((unsigned)&vx_reg->ipc_cr, 1)) {
+		if (ca->ca_vec & 0x03) {
+			printf("xvt: bad vector 0x%x\n", ca->ca_vec);
+			return (0);
+		}
+		return (1);
+	} else {
 		return (0);
-	return (1);
+	}      
 }
 
 void

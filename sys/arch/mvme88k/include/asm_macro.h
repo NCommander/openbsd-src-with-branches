@@ -89,16 +89,6 @@ static __inline__ void set_psr(m88k_psr_type psr)
 }
 
 /*
- * Gets the PSR. See comments above.
- */
-static __inline__ m88k_psr_type get_psr(void)
-{
-	m88k_psr_type psr;
-	__asm__ __volatile__ ("ldcr %0, cr1" : "=r" (psr));
-	return psr;
-}
-
-/*
  * Enables interrupts.
  */
 static __inline__ m88k_psr_type enable_interrupts_return_psr(void)

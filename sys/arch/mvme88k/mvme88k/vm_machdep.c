@@ -434,6 +434,7 @@ int
 badvaddr(vm_offset_t va, int size)
 {
 	register int 	x;
+
 	if (badaddr(va, size)) {
 		return -1;
 	}
@@ -448,10 +449,8 @@ badvaddr(vm_offset_t va, int size)
 	case 4:
 		x = *(volatile unsigned long *)va;
 		break;
-	default:
-                return -1;
 	}
-	return(0);
+	return(x);
 }
 
 int

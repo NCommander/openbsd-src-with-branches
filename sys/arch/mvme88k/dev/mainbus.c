@@ -69,7 +69,7 @@ mainbus_attach(parent, self, args)
 	struct device *parent, *self;
 	void *args;
 {
-	printf (" machine type MVME%x\n", brdtyp);
+	printf (" machine type MVME%x\n", cputyp);
 
 	/* XXX
 	 * should have a please-attach-first list for mainbus,

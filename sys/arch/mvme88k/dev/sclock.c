@@ -191,7 +191,7 @@ sclockattach(parent, self, args)
 		sc->sc_statih.ih_ipl = ca->ca_ipl;
 		stat_reset = ca->ca_ipl | PCC2_IRQ_IEN | PCC2_IRQ_ICLR;
 		pcctwointr_establish(PCC2V_TIMER2, &sc->sc_statih);
-		md.statclock_init_func = &sbc_initstatclock;
+		mdfp.statclock_init_func = &sbc_initstatclock;
 		printf(": VME1x7");
 		break;
 #endif /* NPCCTWO */
@@ -202,7 +202,7 @@ sclockattach(parent, self, args)
 		sc->sc_statih.ih_wantframe = 1;
 		sc->sc_statih.ih_ipl = ca->ca_ipl;
 		sysconintr_establish(SYSCV_TIMER2, &sc->sc_statih);
-		md.statclock_init_func = &m188_initstatclock;
+		mdfp.statclock_init_func = &m188_initstatclock;
 		printf(": VME188");
 		break;
 #endif /* NSYSCON */

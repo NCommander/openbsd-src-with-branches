@@ -93,9 +93,11 @@ vsmatch(pdp, vcf, args)
 	void *vcf, *args;
 {
 	struct confargs *ca = args;
-	if (badvaddr((unsigned)ca->ca_vaddr, 1))
+	if (!badvaddr((unsigned)ca->ca_vaddr, 1)) {
+		return (1);
+	} else {
 		return (0);
-	return (1);
+	}           
 }
 
 void

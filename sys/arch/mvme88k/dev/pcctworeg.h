@@ -55,7 +55,6 @@ struct pcctworeg {
 	volatile u_short    pcc2_speed;		/* DO NOT USE */
 	volatile u_short    pcc2_prtdat;
 	volatile u_short    :16;
-	/* The following regs are not valid on MVME197 */
 	volatile u_char     pcc2_ipl;
 	volatile u_char     pcc2_mask;
 };
