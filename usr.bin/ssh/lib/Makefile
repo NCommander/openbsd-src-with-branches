@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.25 2001/06/24 05:35:34 markus Exp $
+#	$OpenBSD: Makefile,v 1.26 2001/06/26 05:33:35 markus Exp $
 
 .PATH:		${.CURDIR}/..
 
@@ -26,9 +26,5 @@ CFLAGS+= -DAFS
 SRCS+=  radix.c
 .endif # AFS
 .endif # KERBEROS
-
-.if (${SMARTCARD:L} == "yes")
-CFLAGS+= -DSMARTCARD
-.endif # SMARTCARD
 
 .include <bsd.lib.mk>
