@@ -1,7 +1,7 @@
-#	$OpenBSD: Makefile,v 1.3 1997/01/09 05:21:27 rahnds Exp $
+#	$OpenBSD: Makefile,v 1.4 1997/02/06 23:44:55 rahnds Exp $
 #	$NetBSD: Makefile,v 1.1 1996/09/30 16:34:59 ws Exp $
 
-SUBDIR=	boot
+SUBDIR=	boot boot.mac
 
 SAREL=
 KERNREL=
