@@ -1,6 +1,6 @@
-/*	$OpenBSD: inffast.c,v 1.4 2003/12/16 22:33:02 henning Exp $	*/
+/*	$OpenBSD: inffast.c,v 1.5 2003/12/17 00:28:19 millert Exp $	*/
 /* inffast.c -- fast decoding
- * Copyright (C) 1995-2003 Mark Adler
+ * Copyright (C) 1995-2004 Mark Adler
  * For conditions of distribution and use, see copyright notice in zlib.h
  */
 
@@ -20,7 +20,7 @@
    - none
    No measurable difference:
    - Pentium III (Anderson)
-   - 68060 (Nikl)
+   - M68060 (Nikl)
  */
 #ifdef POSTINC
 #  define OFF 0
