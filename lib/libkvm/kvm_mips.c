@@ -67,7 +67,7 @@ static char *rcsid = "$OpenBSD$";
 
 #include "kvm_private.h"
 
-#include <machine/machConst.h>
+#include <machine/cpu.h>
 #include <machine/pte.h>
 #include <machine/pmap.h>
 
@@ -148,7 +148,7 @@ _kvm_kvatop(kd, va, pa)
 	    va >= VM_MIN_KERNEL_ADDRESS + vm->Sysmapsize * NBPG)
 		goto invalid;
 	if (va < VM_MIN_KERNEL_ADDRESS) {
-		*pa = MACH_CACHED_TO_PHYS(va);
+		*pa = CACHED_TO_PHYS(va);
 		return (NBPG - offset);
 	}
 	addr = (u_long)(vm->Sysmap + ((va - VM_MIN_KERNEL_ADDRESS) >> PGSHIFT));
