@@ -126,7 +126,7 @@ refill_buffer(struct csiob *iobp)
 		if (errno == EAGAIN || errno == EINTR)
 			goto doread;
 		if (errno != ECONNRESET) {
-			syslog(LOG_INFO, "read() failed on socket from %s (%m)",
+			syslog(LOG_INFO, "read failed on socket from %s (%m)",
 			    iobp->who);
 			exit(EX_DATAERR);
 		}
@@ -213,7 +213,7 @@ telnet_getline(struct csiob *iobp, struct csiob *telnet_passthrough)
 				break;
 			if (iobp->io_buffer[ix] == '\0') {
 				syslog(LOG_INFO,
-				    "got NUL byte from %s - bye!",
+				    "got null byte from %s - bye!",
 				    iobp->who);
 				exit(EX_DATAERR);
 			}
