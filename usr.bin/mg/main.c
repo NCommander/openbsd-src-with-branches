@@ -1,4 +1,4 @@
-/*	$OpenBSD: main.c,v 1.19 2002/03/18 01:45:55 vincent Exp $	*/
+/*	$OpenBSD: main.c,v 1.20 2002/07/01 14:33:44 vincent Exp $	*/
 
 /*
  *	Mainline.
@@ -111,6 +111,8 @@ edinit(void)
 	bheadp = NULL;
 	bp = bfind("*scratch*", TRUE);		/* Text buffer.		 */
 	wp = (MGWIN *)malloc(sizeof(MGWIN));	/* Initial window.	 */
+	if (wp == NULL)
+		panic("Out of memory");
 	if (bp == NULL || wp == NULL)
 		panic("edinit");
 	curbp = bp;				/* Current ones.	 */
