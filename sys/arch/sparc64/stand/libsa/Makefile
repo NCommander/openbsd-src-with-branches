@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.1 1997/09/17 10:46:23 downsj Exp $
+#	$OpenBSD: Makefile,v 1.1.1.1 2001/08/18 15:51:10 jason Exp $
 
 LIB=	sa
 
@@ -35,7 +35,7 @@ NOPROFILE=
 NOPIC=
 
 .NOPATH: machine
-${SRCS}: machine
+beforedepend: machine
 
 install:
 
