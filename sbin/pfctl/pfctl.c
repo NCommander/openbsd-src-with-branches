@@ -1,4 +1,4 @@
-/*	$OpenBSD: pfctl.c,v 1.81 2002/06/25 08:13:26 henning Exp $ */
+/*	$OpenBSD: pfctl.c,v 1.82 2002/07/01 05:28:22 deraadt Exp $ */
 
 /*
  * Copyright (c) 2001 Daniel Hartmeier
@@ -746,7 +746,10 @@ pfctl_set_logif(struct pfctl *pf, char *ifname)
 
 	if ((loadopt & (PFCTL_FLAG_OPTION | PFCTL_FLAG_ALL)) != 0) {
 		if ((pf->opts & PF_OPT_NOACTION) == 0) {
-			strlcpy(pi.ifname, ifname, sizeof(pi.ifname));
+			if (!strcmp(ifname, "none"))
+				bzero(pi.ifname, sizeof(pi.ifname));
+			else
+				strlcpy(pi.ifname, ifname, sizeof(pi.ifname));
 			if (ioctl(pf->dev, DIOCSETSTATUSIF, &pi))
 				return (1);
 		}
