@@ -1,4 +1,4 @@
-/*	$OpenBSD: telnetd.c,v 1.9 1998/03/25 18:43:49 art Exp $	*/
+/*	$OpenBSD: telnetd.c,v 1.10 1998/04/25 04:43:03 millert Exp $	*/
 /*	$NetBSD: telnetd.c,v 1.6 1996/03/20 04:25:57 tls Exp $	*/
 
 /*
@@ -45,7 +45,7 @@ static char copyright[] =
 static char sccsid[] = "@(#)telnetd.c	8.4 (Berkeley) 5/30/95";
 static char rcsid[] = "$NetBSD: telnetd.c,v 1.5 1996/02/28 20:38:23 thorpej Exp $";
 #else
-static char rcsid[] = "$OpenBSD: telnetd.c,v 1.9 1998/03/25 18:43:49 art Exp $";
+static char rcsid[] = "$OpenBSD: telnetd.c,v 1.10 1998/04/25 04:43:03 millert Exp $";
 #endif
 #endif /* not lint */
 
@@ -837,7 +837,8 @@ doit(who)
 			fatal(net, "Out of ptys");
 
 		if ((pty = open(lp, 2)) >= 0) {
-			strcpy(line,lp);
+			strncpy(line, lp, sizeof line -1);
+			line[sizeof line -1] = '\0';
 			line[5] = 't';
 			break;
 		}
@@ -1156,8 +1157,10 @@ telnet(f, p, host)
 		HE = getstr("he", &cp);
 		HN = getstr("hn", &cp);
 		IM = getstr("im", &cp);
-		if (HN && *HN)
-			(void) strcpy(host_name, HN);
+		if (HN && *HN) {
+			strcpy(host_name, HN, sizeof host_name - 1);
+			host_name[sizeof host_name -1] = '\0';
+		}
 		if (IM == 0)
 			IM = "";
 	} else {
