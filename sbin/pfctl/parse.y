@@ -1,4 +1,4 @@
-/*	$OpenBSD: parse.y,v 1.54 2002/01/10 17:02:39 hugh Exp $	*/
+/*	$OpenBSD: parse.y,v 1.55 2002/01/11 22:26:41 mickey Exp $	*/
 
 /*
  * Copyright (c) 2001 Markus Friedl.  All rights reserved.
@@ -1265,8 +1265,10 @@ void expand_rule_hosts(struct pf_rule *r,
 					if (rule_consistent(r) < 0 || nomatch)
 						yyerror("skipping rule "
 						    "due to errors");
-					else
+					else {
+						r->nr = pf->rule_nr++;
 						pfctl_add_rule(pf, r);
+					}
 					dst_port = dst_port->next;
 				}
 				dst_host = dst_host->next;
