@@ -23,7 +23,7 @@
  */
 
 #include "includes.h"
-RCSID("$OpenBSD: auth2.c,v 1.91 2002/05/13 02:37:39 itojun Exp $");
+RCSID("$OpenBSD: auth2-kbdint.c,v 1.1 2002/05/25 18:51:07 markus Exp $");
 
 #include "packet.h"
 #include "auth.h"
@@ -34,7 +34,7 @@ RCSID("$OpenBSD: auth2.c,v 1.91 2002/05/13 02:37:39 itojun Exp $");
 /* import */
 extern ServerOptions options;
 
-int
+static int
 userauth_kbdint(Authctxt *authctxt)
 {
 	int authenticated = 0;
@@ -53,3 +53,9 @@ userauth_kbdint(Authctxt *authctxt)
 	xfree(lang);
 	return authenticated;
 }
+
+Authmethod method_kbdint = {
+	"keyboard-interactive",
+	userauth_kbdint,
+	&options.kbd_interactive_authentication
+};
