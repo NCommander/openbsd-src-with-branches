@@ -1,4 +1,4 @@
-/*	$OpenBSD: nlist.c,v 1.8 2001/12/05 02:23:59 art Exp $	*/
+/*	$OpenBSD: nlist.c,v 1.9 2002/06/08 22:41:46 art Exp $	*/
 /*	$NetBSD: nlist.c,v 1.11 1995/03/21 09:08:03 cgd Exp $	*/
 
 /*-
@@ -38,7 +38,7 @@
 #if 0
 static char sccsid[] = "@(#)nlist.c	8.4 (Berkeley) 4/2/94";
 #else
-static char rcsid[] = "$OpenBSD: nlist.c,v 1.8 2001/12/05 02:23:59 art Exp $";
+static char rcsid[] = "$OpenBSD: nlist.c,v 1.9 2002/06/08 22:41:46 art Exp $";
 #endif
 #endif /* not lint */
 
@@ -102,7 +102,7 @@ donlist()
 			eval = rval = 1;
 		}
 		if (kread(X_PHYSMEM, mempages)) {
-			warnx("avail_start: %s", kvm_geterr(kd));
+			warnx("physmem: %s", kvm_geterr(kd));
 			eval = rval = 1;
 		}
 		if (kread(X_CCPU, ccpu)) {
