@@ -95,7 +95,7 @@ alpha_sgmap_init(t, sgmap, name, wbase, sgvabase, sgvasize, ptesize, ptva,
 		/*
 		 * Compute the page table size and allocate it.  At minimum,
 		 * this must be aligned to the page table size.  However,
-		 * some platforms have more strict alignment reqirements.
+		 * some platforms have more strict alignment requirements.
 		 */
 		ptsize = (sgvasize / NBPG) * ptesize;
 		if (minptalign != 0) {

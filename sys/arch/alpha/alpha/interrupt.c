@@ -382,6 +382,8 @@ badaddr_read(void *addr, size_t size, void *rptr)
 	return (rv);
 }
 
+int netisr;
+
 void
 netintr()
 {

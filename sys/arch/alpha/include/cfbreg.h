@@ -1,4 +1,4 @@
-/*	$OpenBSD: cfbreg.h,v 1.1 1996/05/01 23:25:00 cgd Exp $	*/
+/*	$OpenBSD$	*/
 /*	$NetBSD: cfbreg.h,v 1.1 1996/05/01 23:25:00 cgd Exp $	*/
 
 /*
@@ -31,7 +31,7 @@
 /*
  * Color Frame Buffer definitions, from:
  * ``PMAG-BA TURBOchannel Color Frame Buffer Functional Specification
- * (Revision 1.2)'', availalable via anonymous FTP from gatekeeper.dec.com.
+ * (Revision 1.2)'', available via anonymous FTP from gatekeeper.dec.com.
  *
  * All definitions are in "dense" TurboChannel space.
  */

@@ -124,6 +124,10 @@ siomatch(parent, match, aux)
 		return (1);
 
 	if (PCI_VENDOR(pa->pa_id) == PCI_VENDOR_ALI &&
+	    PCI_PRODUCT(pa->pa_id) == PCI_PRODUCT_ALI_M1533)
+		return(1);
+
+	if (PCI_VENDOR(pa->pa_id) == PCI_VENDOR_ALI &&
 	    PCI_PRODUCT(pa->pa_id) == PCI_PRODUCT_ALI_M1543)
 		return(1);
 	return (0);

@@ -35,6 +35,7 @@ option		CD9660		# ISO 9660 + Rock Ridge file system
 
 # Networking options
 option		INET		# Internet protocol suite
+option		INET6		# IPv6 (needs INET)
 
 # Misc. options
 option		EISAVERBOSE		# recognize "unknown" EISA devices

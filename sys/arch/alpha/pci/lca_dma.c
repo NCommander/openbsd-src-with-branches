@@ -193,7 +193,7 @@ lca_dma_init(lcp)
 	REGVAL64(LCA_IOC_W_T_BASE0) = lcp->lc_sgmap.aps_ptpa;
 	alpha_mb();
 
-	/* Enble the scatter/gather TLB. */
+	/* Enable the scatter/gather TLB. */
 	REGVAL64(LCA_IOC_TB_ENA) = IOC_TB_ENA_TEN;
 	alpha_mb();
 

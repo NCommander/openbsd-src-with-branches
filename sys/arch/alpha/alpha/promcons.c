@@ -74,9 +74,8 @@ promopen(dev, flag, mode, p)
 
 	s = spltty();
 
-	if (!prom_tty[unit]) {
+	if (prom_tty[unit] == NULL) {
 		tp = prom_tty[unit] = ttymalloc();
-		tty_attach(tp);
 	} else
 		tp = prom_tty[unit];
 

@@ -79,6 +79,8 @@ extern char *trap_type[];
 extern int trap_types;
 #endif
 
+db_regs_t ddb_regs;
+
 int	db_active = 0;
 
 struct db_variable db_regs[] = {

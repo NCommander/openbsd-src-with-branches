@@ -519,7 +519,7 @@ struct alpha_bus_dma_tag {
 	/*
 	 * Some chipsets have a built-in boundary constraint, independent
 	 * of what the device requests.  This allows that boundary to
-	 * be specified.  If the device has a more restrictive contraint,
+	 * be specified.  If the device has a more restrictive constraint,
 	 * the map will use that, otherwise this boundary will be used.
 	 * This value is ignored if 0.
 	 */

@@ -1,4 +1,4 @@
-/* $OpenBSD: vmparam.h,v 1.4.14.4 2002/03/06 00:47:44 niklas Exp $ */
+/* $OpenBSD$ */
 /* $NetBSD: vmparam.h,v 1.18 2000/05/22 17:13:54 thorpej Exp $ */
 
 /*
@@ -92,7 +92,7 @@
  * This is basically slop for kmempt which we actually allocate (malloc) from.
  */
 #ifndef SHMMAXPGS
-#define SHMMAXPGS	1024		/* 8mb */
+#define SHMMAXPGS	4096		/* 32mb */
 #endif
 
 /*

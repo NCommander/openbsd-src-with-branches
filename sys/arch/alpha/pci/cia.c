@@ -204,7 +204,7 @@ cia_init(ccp, mallocsafe)
 	/*
 	 * Use BWX iff:
 	 *
-	 *	- It hasn't been disbled by the user,
+	 *	- It hasn't been disabled by the user,
 	 *	- it's enabled in CNFG,
 	 *	- we're implementation version ev5,
 	 *	- BWX is enabled in the CPU's capabilities mask (yes,

@@ -62,6 +62,9 @@
  */                                                                      
 __asm(".arch ev6");                                                      
 
+#define	CHIP_EXTENT_NAME(v)	((struct tsp_config *)(v))->pc_mem_ex_name
+#define	CHIP_EXTENT_STORAGE(v)	((struct tsp_config *)(v))->pc_mem_ex_storage
+
 #include <alpha/pci/pci_bwx_bus_mem_chipdep.c>
 
 void

@@ -237,7 +237,7 @@ Lstart1: LDGP(pv)
 
 #if defined(MULTIPROCESSOR)
 /*
- * Pull in the multiprocssor glue.
+ * Pull in the multiprocessor glue.
  */
 #include <alpha/alpha/multiproc.s>
 #endif /* MULTIPROCESSOR */

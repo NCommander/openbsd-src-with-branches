@@ -60,6 +60,9 @@ struct tsp_config {
 	u_int32_t pc_hae_io;
 
 	struct	extent *pc_io_ex, *pc_mem_ex;
+	char	pc_io_ex_name[16], pc_mem_ex_name[16];
+	long	pc_io_ex_storage[EXTENT_FIXED_STORAGE_SIZE(8) / sizeof(long)];
+	long	pc_mem_ex_storage[EXTENT_FIXED_STORAGE_SIZE(8) / sizeof(long)];
 	int	pc_mallocsafe;
 };
 
