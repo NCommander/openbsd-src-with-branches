@@ -10,7 +10,7 @@
  */
 
 #include "includes.h"
-RCSID("$OpenBSD: auth1.c,v 1.34 2001/12/28 14:50:54 markus Exp $");
+RCSID("$OpenBSD: auth1.c,v 1.35 2002/02/03 17:53:25 markus Exp $");
 
 #include "xmalloc.h"
 #include "rsa.h"
@@ -345,8 +345,8 @@ do_authentication(void)
 	authctxt->style = style;
 
 	/* Verify that the user is a valid user. */
-	pw = getpwnam(user);
-	if (pw && allowed_user(pw)) {
+	pw = getpwnamallow(user);
+	if (pw) {
 		authctxt->valid = 1;
 		pw = pwcopy(pw);
 	} else {
