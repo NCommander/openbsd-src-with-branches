@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /*	$NetBSD: via.c,v 1.44 1996/05/25 16:31:04 briggs Exp $	*/
 
 /*-

@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /*	$NetBSD: grfvar.h,v 1.10 1996/05/19 22:27:10 scottr Exp $	*/
 
 /*

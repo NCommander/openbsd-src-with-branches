@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /*	$NetBSD: pram.c,v 1.8 1996/03/31 14:21:03 scottr Exp $	*/
 
 /*-

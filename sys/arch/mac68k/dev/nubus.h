@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /*	$NetBSD: nubus.h,v 1.14 1996/05/07 03:13:40 briggs Exp $	*/
 
 /*

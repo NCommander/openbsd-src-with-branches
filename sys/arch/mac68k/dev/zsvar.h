@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /*	$NetBSD: zsvar.h,v 1.2 1995/12/13 03:08:12 briggs Exp $	*/
 
 /*

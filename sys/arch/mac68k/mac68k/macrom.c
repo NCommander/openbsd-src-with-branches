@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /*	$NetBSD: macrom.c,v 1.25 1996/05/25 14:45:34 briggs Exp $	*/
 
 /*-

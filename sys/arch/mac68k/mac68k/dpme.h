@@ -1,4 +1,5 @@
-/* $NetBSD: dpme.h,v 1.5 1994/10/26 18:05:48 briggs Exp $	 */
+/*	$OpenBSD$	*/
+/*	$NetBSD: dpme.h,v 1.5 1994/10/26 18:05:48 briggs Exp $	 */
 
 /*-
  * Copyright (C) 1993	Allen K. Briggs, Chris P. Caputo,

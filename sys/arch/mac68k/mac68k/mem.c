@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /*	$NetBSD: mem.c,v 1.10 1995/04/10 13:15:26 mycroft Exp $	*/
 
 /*

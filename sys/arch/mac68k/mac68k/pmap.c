@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /*	$NetBSD: pmap.c,v 1.25 1996/05/07 01:45:22 briggs Exp $	*/
 
 /* 

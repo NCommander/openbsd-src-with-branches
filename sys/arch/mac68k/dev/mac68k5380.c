@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /*	$NetBSD: mac68k5380.c,v 1.24 1996/05/25 16:42:24 briggs Exp $	*/
 
 /*

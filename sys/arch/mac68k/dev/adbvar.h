@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /*	$NetBSD: adbvar.h,v 1.3 1996/05/05 06:16:24 briggs Exp $	*/
 
 /*-

@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /*	$NetBSD: locore.s,v 1.63 1996/05/17 02:11:47 briggs Exp $	*/
 
 /*

@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /*	$NetBSD: rd_root.c,v 1.3 1996/05/05 06:17:09 briggs Exp $	*/
 
 /*

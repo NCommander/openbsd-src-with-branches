@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /*	$NetBSD: z8530var.h,v 1.1 1996/05/18 18:54:45 briggs Exp $	*/
 
 /*

@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /*	$NetBSD: float.h,v 1.6 1996/05/05 06:17:44 briggs Exp $	*/
 
 #ifndef _FLOAT_MACHINE_

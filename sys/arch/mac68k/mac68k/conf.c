@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /*	$NetBSD: conf.c,v 1.33 1996/05/18 18:54:49 briggs Exp $	*/
 
 /*

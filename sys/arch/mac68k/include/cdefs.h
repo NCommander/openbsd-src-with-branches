@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /*	$NetBSD: cdefs.h,v 1.2 1996/05/05 06:17:34 briggs Exp $	*/
 
 #ifndef _CDEFS_MACHINE_

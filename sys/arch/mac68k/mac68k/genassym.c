@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /*	$NetBSD: genassym.c,v 1.18 1996/05/05 06:18:27 briggs Exp $	*/
 
 /*

@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /*	$NetBSD: param.h,v 1.26 1996/05/05 06:17:49 briggs Exp $	*/
 
 /*

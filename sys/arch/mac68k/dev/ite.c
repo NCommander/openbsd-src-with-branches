@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /*	$NetBSD: ite.c,v 1.22 1996/05/25 00:56:38 briggs Exp $	*/
 
 /*

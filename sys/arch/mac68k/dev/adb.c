@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /*	$NetBSD: adb.c,v 1.9 1996/05/05 16:21:20 briggs Exp $	*/
 
 /*-

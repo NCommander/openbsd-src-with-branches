@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /*	$NetBSD: reg.h,v 1.10 1996/05/05 06:18:00 briggs Exp $	*/
 
 #ifndef _REG_MACHINE_

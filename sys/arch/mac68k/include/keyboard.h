@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /*	$NetBSD: keyboard.h,v 1.5 1996/02/23 05:43:48 scottr Exp $	*/
 
 /*-

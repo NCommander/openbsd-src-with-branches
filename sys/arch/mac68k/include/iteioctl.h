@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /*	$NetBSD: iteioctl.h,v 1.1 1994/12/03 23:34:31 briggs Exp $	*/
 
 /*-
@@ -32,7 +33,7 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
- * $Id: iteioctl.h,v 1.1 1994/12/03 23:34:31 briggs Exp $
+ * $Id: iteioctl.h,v 1.1.1.1 1995/10/18 08:51:05 deraadt Exp $
  *
  */
 

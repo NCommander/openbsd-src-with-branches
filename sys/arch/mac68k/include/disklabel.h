@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /*	$NetBSD: disklabel.h,v 1.2 1996/05/05 06:17:38 briggs Exp $	*/
 
 /*

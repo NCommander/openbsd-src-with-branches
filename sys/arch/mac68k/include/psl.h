@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /*	$NetBSD: psl.h,v 1.9 1996/05/19 04:30:32 briggs Exp $	*/
 
 #ifndef PSL_C

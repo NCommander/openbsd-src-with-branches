@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /*	$NetBSD: autoconf.c,v 1.29 1996/05/15 02:51:00 briggs Exp $	*/
 
 /*

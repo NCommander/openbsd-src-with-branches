@@ -1,3 +1,5 @@
+/*	$OpenBSD$	*/
+
 /*
  * National Semiconductor  SONIC Driver
  * Copyright (c) 1991   Algorithmics Ltd (http://www.algor.co.uk)

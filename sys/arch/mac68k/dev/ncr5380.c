@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /*	$NetBSD: ncr5380.c,v 1.29 1996/05/22 17:16:45 briggs Exp $	*/
 
 /*

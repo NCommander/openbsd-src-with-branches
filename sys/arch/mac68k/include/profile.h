@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /*	$NetBSD: profile.h,v 1.3 1996/05/05 06:17:55 briggs Exp $	*/
 
 #ifndef _PROFILE_MACHINE_
