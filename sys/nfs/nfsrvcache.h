@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /*	$NetBSD: nfsrvcache.h,v 1.10 1996/02/18 11:54:08 fvdl Exp $	*/
 
 /*

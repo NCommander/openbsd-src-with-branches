@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /*	$NetBSD: rpcv2.h,v 1.8 1996/02/18 11:54:11 fvdl Exp $	*/
 
 /*

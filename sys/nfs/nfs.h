@@ -1,4 +1,6 @@
+/*	$OpenBSD$	*/
 /*	$NetBSD: nfs.h,v 1.10 1996/02/18 11:53:38 fvdl Exp $	*/
+
 /*
  * Copyright (c) 1989, 1993, 1995
  *	The Regents of the University of California.  All rights reserved.

@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /*	$NetBSD: nqnfs.h,v 1.6 1996/02/18 11:54:10 fvdl Exp $	*/
 
 /*

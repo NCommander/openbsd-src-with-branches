@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /*	$NetBSD: nfsv2.h,v 1.10 1995/12/19 23:08:15 cgd Exp $	*/
 
 /*

@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /*	$NetBSD: nfsrtt.h,v 1.4 1996/02/18 11:54:07 fvdl Exp $	*/
 
 /*
