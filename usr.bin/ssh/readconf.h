@@ -11,7 +11,7 @@
  * called by a name other than "ssh" or "Secure Shell".
  */
 
-/* RCSID("$OpenBSD: readconf.h,v 1.36 2001/07/31 09:28:44 jakob Exp $"); */
+/* RCSID("$OpenBSD: readconf.h,v 1.37 2001/08/01 22:03:33 markus Exp $"); */
 
 #ifndef READCONF_H
 #define READCONF_H
@@ -105,7 +105,7 @@ typedef struct {
 
 void     initialize_options(Options *);
 void     fill_default_options(Options *);
-void	 read_config_file(const char *, const char *, Options *);
+int	 read_config_file(const char *, const char *, Options *);
 
 int
 process_config_line(Options *, const char *, char *, const char *, int, int *);
