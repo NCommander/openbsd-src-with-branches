@@ -1,4 +1,4 @@
-/*      $OpenBSD: pf_key_v2.c,v 1.119 2002/12/04 18:08:40 ho Exp $  */
+/*      $OpenBSD: pf_key_v2.c,v 1.120 2002/12/06 20:28:20 ho Exp $  */
 /*	$EOM: pf_key_v2.c,v 1.79 2000/12/12 00:33:19 niklas Exp $	*/
 
 /*
@@ -3695,10 +3695,10 @@ pf_key_v2_acquire (struct pf_key_v2_msg *pmsg)
       goto fail;
     }
 
-  if (conf_get_str ("General", "Default-Phase-2-Suites"))
+  if (conf_get_str ("General", "Default-phase-2-suites"))
     {
       if (conf_set (af, configname, "Suites",
-		    conf_get_str ("General", "Default-Phase-2-Suites"), 0, 0))
+		    conf_get_str ("General", "Default-phase-2-suites"), 0, 0))
         {
 	  conf_end (af, 0);
 	  goto fail;
