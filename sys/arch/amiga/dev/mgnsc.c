@@ -41,6 +41,7 @@
 #include <sys/systm.h>
 #include <sys/kernel.h>
 #include <sys/device.h>
+#include <machine/intr.h>
 #include <machine/psl.h>
 #include <scsi/scsi_all.h>
 #include <scsi/scsiconf.h>
