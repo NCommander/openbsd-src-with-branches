@@ -1,4 +1,4 @@
-/*	$OpenBSD: queue.h,v 1.11 1998/09/11 06:28:05 fgsch Exp $	*/
+/*	$OpenBSD: queue.h,v 1.12 1999/01/08 15:29:32 niklas Exp $	*/
 /*	$NetBSD: queue.h,v 1.11 1996/05/16 05:17:14 mycroft Exp $	*/
 
 /*
@@ -186,6 +186,8 @@ struct {								\
 #define	SIMPLEQ_FIRST(head)		((head)->sqh_first)
 
 #define	SIMPLEQ_NEXT(elm, field)	((elm)->field.sqe_next)
+
+#define	SIMPLEQ_END(head)		NULL
 
 /*
  * Tail queue definitions.
