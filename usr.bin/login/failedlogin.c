@@ -1,4 +1,4 @@
-/*	$OpenBSD: failedlogin.c,v 1.4 1998/06/21 22:13:59 millert Exp $	*/
+/*	$OpenBSD: failedlogin.c,v 1.5 1998/07/13 02:11:35 millert Exp $	*/
 
 /*
  * Copyright (c) 1996 Todd C. Miller <Todd.Miller@courtesan.com>
@@ -28,7 +28,7 @@
  */
 
 #ifndef lint                                                              
-static char rcsid[] = "$OpenBSD: failedlogin.c,v 1.4 1998/06/21 22:13:59 millert Exp $";
+static char rcsid[] = "$OpenBSD: failedlogin.c,v 1.5 1998/07/13 02:11:35 millert Exp $";
 #endif /* not lint */                                                        
 
 /*
@@ -121,7 +121,7 @@ check_failedlogin(uid)
 			if (failedlogin.count > 1)
 				(void)printf("There have been %u unsuccessful login attempts to your account.\n",
 					failedlogin.count);
-			(void)printf("Last unsucessful login: %.*s", 24-5,
+			(void)printf("Last unsuccessful login: %.*s", 24-5,
 				(char *)ctime(&failedlogin.bl_time));
 			(void)printf(" on %.*s",
 			    (int)sizeof(failedlogin.bl_line),
