@@ -1499,8 +1499,8 @@ pmap_extract(pm, va)
 	if (!(ptp = pte_find(pm, va))) {
 		/* return address 0 if not mapped??? */
 		o = 0;
-		if (pm == pmap_kernel() && va < 0x80000000){
-			/* if in kernel, va==pa for 0 - 0x80000000 */
+		if (pm == pmap_kernel() && va < 0xa0000000){
+			/* if in kernel, va==pa for 0 - 0xa0000000 */
 			o = va;
 		}
 		splx(s);
