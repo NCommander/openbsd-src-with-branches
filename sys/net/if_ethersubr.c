@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_ethersubr.c,v 1.15 1996/12/19 12:58:14 mickey Exp $	*/
+/*	$OpenBSD: if_ethersubr.c,v 1.16 1997/01/02 20:45:49 deraadt Exp $	*/
 /*	$NetBSD: if_ethersubr.c,v 1.19 1996/05/07 02:40:30 thorpej Exp $	*/
 
 /*
@@ -360,11 +360,11 @@ ether_output(ifp, m0, dst, rt0)
 	}
 	ifp->if_obytes += m->m_pkthdr.len;
 	IF_ENQUEUE(&ifp->if_snd, m);
+	if (m->m_flags & M_MCAST)
+		ifp->if_omcasts++;
 	if ((ifp->if_flags & IFF_OACTIVE) == 0)
 		(*ifp->if_start)(ifp);
 	splx(s);
-	if (m->m_flags & M_MCAST)
-		ifp->if_omcasts++;
 	return (error);
 
 bad:
