@@ -59,7 +59,7 @@
  */
 
 #include "includes.h"
-RCSID("$OpenBSD: clientloop.c,v 1.84.2.3 2002/05/17 00:03:23 miod Exp $");
+RCSID("$OpenBSD: clientloop.c,v 1.84.2.4 2002/06/22 07:23:17 miod Exp $");
 
 #include "ssh.h"
 #include "ssh1.h"
@@ -1208,10 +1208,8 @@ client_input_channel_open(int type, u_int32_t seq, void *ctxt)
 {
 	Channel *c = NULL;
 	char *ctype;
-	u_int len;
 	int rchan;
-	int rmaxpack;
-	int rwindow;
+	u_int rmaxpack, rwindow, len;
 
 	ctype = packet_get_string(&len);
 	rchan = packet_get_int();
