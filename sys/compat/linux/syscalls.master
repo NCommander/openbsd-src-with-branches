@@ -1,4 +1,4 @@
-	$OpenBSD: syscalls.master,v 1.4 1996/04/17 05:24:13 mickey Exp$
+	$OpenBSD$
 ;	$NetBSD: syscalls.master,v 1.15 1995/12/18 14:35:10 fvdl Exp $
 
 ;	@(#)syscalls.master	8.1 (Berkeley) 7/19/93
