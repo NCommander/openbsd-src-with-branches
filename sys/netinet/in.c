@@ -1,4 +1,4 @@
-/*	$OpenBSD: in.c,v 1.13 1999/04/20 20:06:11 niklas Exp $	*/
+/*	$OpenBSD: in.c,v 1.14 1999/12/08 06:50:19 itojun Exp $	*/
 /*	$NetBSD: in.c,v 1.26 1996/02/13 23:41:39 christos Exp $	*/
 
 /*
@@ -633,8 +633,8 @@ in_ifinit(ifp, ia, sin, scrub)
 	 */
 	if (ifp->if_ioctl &&
 	    (error = (*ifp->if_ioctl)(ifp, SIOCSIFADDR, (caddr_t)ia))) {
-		splx(s);
 		ia->ia_addr = oldaddr;
+		splx(s);
 		return (error);
 	}
 	splx(s);
