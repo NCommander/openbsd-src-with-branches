@@ -25,7 +25,7 @@
  */
 
 #include "includes.h"
-RCSID("$OpenBSD: monitor.c,v 1.46 2003/08/22 10:56:09 markus Exp $");
+RCSID("$OpenBSD: monitor.c,v 1.47 2003/08/24 17:36:52 deraadt Exp $");
 
 #include <openssl/dh.h>
 
@@ -615,7 +615,7 @@ mm_answer_authpassword(int socket, Buffer *m)
 	passwd = buffer_get_string(m, &plen);
 	/* Only authenticate if the context is valid */
 	authenticated = options.password_authentication &&
-	    authctxt->valid && auth_password(authctxt, passwd);
+	    auth_password(authctxt, passwd);
 	memset(passwd, 0, strlen(passwd));
 	xfree(passwd);
 
