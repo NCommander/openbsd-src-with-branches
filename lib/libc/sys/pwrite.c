@@ -1,4 +1,4 @@
-/*	$OpenBSD: pwrite.c,v 1.1 2000/04/20 06:34:37 deraadt Exp $	 */
+/*	$OpenBSD: pwrite.c,v 1.2 2001/05/05 22:58:30 millert Exp $	 */
 
 /*
  * Copyright (c) 1992, 1993
@@ -34,7 +34,7 @@
  */
 
 #if defined(SYSLIBC_SCCS) && !defined(lint)
-static char rcsid[] = "$OpenBSD: pwrite.c,v 1.1 2000/04/20 06:34:37 deraadt Exp $";
+static char rcsid[] = "$OpenBSD: pwrite.c,v 1.2 2001/05/05 22:58:30 millert Exp $";
 #endif /* SYSLIBC_SCCS and not lint */
 
 #include <sys/types.h>
@@ -52,11 +52,10 @@ pwrite(fd, buf, nbyte, offset)
 	size_t nbyte;
 	off_t offset;
 {
-	extern off_t __syscall();
 	quad_t q;
 	int rv;
 
-	q = __syscall((quad_t)SYS_pwrite, fd, buf, nbyte, 0, offset);
+	q = __syscall(SYS_pwrite, fd, buf, nbyte, 0, offset);
 	if (/* LINTED constant */ sizeof (quad_t) == sizeof (register_t) ||
 	    /* LINTED constant */ BYTE_ORDER == LITTLE_ENDIAN)
 		rv = (int)q;
