@@ -282,7 +282,7 @@ int              cvs_hist_append  (CVSHIST *, struct cvs_hent *);
 
 /* from logmsg.c */
 char*  cvs_logmsg_open (const char *);
-char*  cvs_logmsg_get  (const char *);
+char*  cvs_logmsg_get  (const char *, struct cvs_flist *);
 int    cvs_logmsg_send (struct cvsroot *, const char *);
 
 /* from util.c */
