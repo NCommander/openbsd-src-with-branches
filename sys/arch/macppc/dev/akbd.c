@@ -1,4 +1,4 @@
-/*	$OpenBSD: akbd.c,v 1.3 2002/03/14 01:26:36 millert Exp $	*/
+/*	$OpenBSD: akbd.c,v 1.4 2002/03/27 21:48:12 drahn Exp $	*/
 /*	$NetBSD: akbd.c,v 1.13 2001/01/25 14:08:55 tsubai Exp $	*/
 
 /*
@@ -459,7 +459,10 @@ akbd_ioctl(v, cmd, data, flag, p)
 	int flag;
 	struct proc *p;
 {
+#ifdef WSDISPLAY_COMPAT_RAWKBD
 	struct akbd_softc *sc = v;
+#endif
+
 	switch (cmd) {
 
 	case WSKBDIO_GTYPE:
@@ -510,7 +513,6 @@ akbd_intr(event)
 {
 	int key, press, val;
 	int type;
-	int s;
 
 	struct akbd_softc *sc = akbd_cd.cd_devs[0];
 
@@ -543,7 +545,7 @@ akbd_intr(event)
 #ifdef WSDISPLAY_COMPAT_RAWKBD
 	} else if (sc->sc_rawkbd) {
 		char cbuf[MAXKEYS *2];
-		int c, j; 
+		int c, j, s; 
 		int npress;
 
 		j = npress = 0;
