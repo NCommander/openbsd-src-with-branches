@@ -7,6 +7,8 @@
 #include "includes.h"
 #include "uuencode.h"
 
+RCSID("$OpenBSD$");
+
 #ifdef AFS
 #include <krb.h>
 
