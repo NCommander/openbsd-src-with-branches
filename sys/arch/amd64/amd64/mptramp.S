@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: mptramp.S,v 1.1 2004/06/25 11:03:27 art Exp $	*/
 /*	$NetBSD: mptramp.S,v 1.1 2003/04/26 18:39:30 fvdl Exp $	*/
 
 /*-
@@ -141,7 +141,7 @@ _TRMP_LABEL(mp_startup)
 	popfl
 
 	movl	%cr4,%eax
-	orl	$(CR4_PAE|CR4_OSFXSR|CR4_OSXMMEXCPT),%eax
+	orl	$(CR4_PAE|CR4_OSFXSR|CR4_OSXMMEXCPT|CR4_PGE|CR4_PSE),%eax
 	movl	%eax,%cr4
 
 	movl	$MSR_EFER,%ecx
