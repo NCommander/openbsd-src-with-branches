@@ -1,4 +1,4 @@
-/*	$OpenBSD: init_main.c,v 1.46.2.5 2001/07/04 10:48:14 niklas Exp $	*/
+/*	$OpenBSD$	*/
 /*	$NetBSD: init_main.c,v 1.84.4.1 1996/06/02 09:08:06 mrg Exp $	*/
 
 /*
@@ -195,7 +195,7 @@ main(framep)
 	 */
 	p = &proc0;
 	curproc = p;
-	/* XXX_SMP	p->p_cpu = curcpu(); */
+	p->p_cpu = curcpu();
 
 	/*
 	 * Attempt to find console and initialize
@@ -435,6 +435,12 @@ main(framep)
 	srandom((u_long)(rtv.tv_sec ^ rtv.tv_usec));
 
 	randompid = 1;
+
+#if defined(MULTIPROCESSOR)
+	/* Boot the secondary processors. */
+	cpu_boot_secondary_processors();
+#endif
+
 	/* The scheduler is an infinite loop. */
 	uvm_scheduler();
 	/* NOTREACHED */
