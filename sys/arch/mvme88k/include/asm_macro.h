@@ -1,4 +1,4 @@
-/*	$OpenBSD: asm_macro.h,v 1.21 2003/08/01 07:45:43 miod Exp $ */
+/*	$OpenBSD: asm_macro.h,v 1.22 2003/10/05 20:25:08 miod Exp $ */
 /*
  * Mach Operating System
  * Copyright (c) 1993-1991 Carnegie Mellon University
@@ -40,8 +40,6 @@
  */
 #define	flush_pipeline() \
 	__asm__ __volatile__ (FLUSH_PIPELINE_STRING)
-
-#define db_flush_pipeline flush_pipeline
 
 /*
  * PSR_TYPE is the type of the Process Status Register.
