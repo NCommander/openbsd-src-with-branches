@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_enc.c,v 1.17 2000/01/07 20:14:51 angelos Exp $	*/
+/*	$OpenBSD: if_enc.c,v 1.18 2000/01/15 19:38:09 angelos Exp $	*/
 
 /*
  * The authors of this code are John Ioannidis (ji@tla.org),
@@ -45,6 +45,8 @@
 #include <sys/errno.h>
 #include <sys/ioctl.h>
 #include <sys/proc.h>
+
+#include <machine/cpu.h>
 
 #include <net/if.h>
 #include <net/if_types.h>
