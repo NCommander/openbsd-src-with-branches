@@ -1,3 +1,4 @@
+/*	$OpenBSD: asm.h,v 1.10 1995/03/26 17:08:36 briggs Exp $	*/
 /*	$NetBSD: asm.h,v 1.10 1995/03/26 17:08:36 briggs Exp $	*/
 
 /*
