@@ -1,5 +1,4 @@
 /*	$OpenBSD: libsa.h,v 1.2 1998/07/08 19:31:13 mickey Exp $	*/
-/*	$NOWHERE: libsa.h,v 2.2 1998/06/22 19:34:47 mickey Exp $	*/
 
 /*
  * Copyright (c) 1998 Michael Shalayeff
