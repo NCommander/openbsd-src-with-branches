@@ -1,4 +1,4 @@
-/*	$OpenBSD: parse.y,v 1.305 2003/02/03 15:44:52 dhartmei Exp $	*/
+/*	$OpenBSD: parse.y,v 1.306 2003/02/03 16:44:21 deraadt Exp $	*/
 
 /*
  * Copyright (c) 2001 Markus Friedl.  All rights reserved.
@@ -2600,6 +2600,7 @@ route_host	: STRING			{
 				    "supported", $$->ifname);
 				YYERROR;
 			}
+			set_ipmask($$, 128);
 			$$->next = NULL;
 			$$->tail = $$;
 		}
