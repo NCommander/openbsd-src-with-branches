@@ -1,4 +1,4 @@
-/*	$OpenBSD: ip_carp.c,v 1.57 2004/05/30 23:03:34 pvalchev Exp $	*/
+/*	$OpenBSD: ip_carp.c,v 1.58 2004/05/31 21:16:57 mpf Exp $	*/
 
 /*
  * Copyright (c) 2002 Michael Shalayeff. All rights reserved.
@@ -693,6 +693,7 @@ carp_clone_destroy(struct ifnet *ifp)
 	bpfdetach(ifp);
 #endif
 	if_detach(ifp);
+	free(sc, M_DEVBUF);
 
 	return (0);
 }
