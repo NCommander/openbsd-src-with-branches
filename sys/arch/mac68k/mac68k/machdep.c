@@ -1,4 +1,4 @@
-/*	$OpenBSD: machdep.c,v 1.54 1999/01/07 23:16:00 deraadt Exp $	*/
+/*	$OpenBSD: machdep.c,v 1.55 1999/02/04 23:00:25 niklas Exp $	*/
 /*	$NetBSD: machdep.c,v 1.134 1997/02/14 06:15:30 scottr Exp $	*/
 
 /*
@@ -500,10 +500,10 @@ void via_shutdown __P((void));
  * but would break init; should be fixed soon.
  */
 void
-setregs(p, pack, sp, retval)
+setregs(p, pack, stack, retval)
 	register struct proc *p;
 	struct exec_package *pack;
-	u_long  sp;
+	u_long  stack;
 	register_t *retval;
 {
 #ifdef COMPAT_SUNOS
