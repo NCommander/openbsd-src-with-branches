@@ -1,4 +1,4 @@
-/*	$OpenBSD: ufs_readwrite.c,v 1.11 1997/10/06 20:21:48 deraadt Exp $	*/
+/*	$OpenBSD: ufs_readwrite.c,v 1.12 1997/11/06 05:59:28 csapuntz Exp $	*/
 /*	$NetBSD: ufs_readwrite.c,v 1.9 1996/05/11 18:27:57 mycroft Exp $	*/
 
 /*-
@@ -267,12 +267,12 @@ WRITE(v)
 #else
 		if (ioflag & IO_SYNC)
 			(void)bwrite(bp);
-		else if (xfersize + blkoffset == fs->fs_bsize)
+		else if (xfersize + blkoffset == fs->fs_bsize) {
 			if (doclusterwrite)
 				cluster_write(bp, ip->i_ffs_size);
 			else
 				bawrite(bp);
-		else
+		} else
 			bdwrite(bp);
 #endif
 		if (error || xfersize == 0)

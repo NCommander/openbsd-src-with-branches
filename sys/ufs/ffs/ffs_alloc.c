@@ -1,4 +1,4 @@
-/*	$OpenBSD: ffs_alloc.c,v 1.9 1997/10/06 20:21:33 deraadt Exp $	*/
+/*	$OpenBSD: ffs_alloc.c,v 1.10 1997/11/06 05:59:17 csapuntz Exp $	*/
 /*	$NetBSD: ffs_alloc.c,v 1.11 1996/05/11 18:27:09 mycroft Exp $	*/
 
 /*
@@ -492,11 +492,12 @@ ffs_reallocblks(v)
 			VOP_UPDATE(vp, &ts, &ts, 1);
 		}
 	}
-	if (ssize < len)
+	if (ssize < len) {
 		if (doasyncfree)
 			bdwrite(ebp);
 		else
 			bwrite(ebp);
+	}
 	/*
 	 * Last, free the old blocks and assign the new blocks to the buffers.
 	 */
