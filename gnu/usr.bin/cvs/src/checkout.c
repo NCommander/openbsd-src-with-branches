@@ -35,11 +35,6 @@
 
 #include "cvs.h"
 
-#ifndef lint
-static const char rcsid[] = "$CVSid: @(#)checkout.c 1.78 94/10/07 $";
-USE(rcsid);
-#endif
-
 static char *findslash PROTO((char *start, char *p));
 static int build_dirs_and_chdir PROTO((char *dir, char *prepath, char *realdir,
 				 int sticky));
@@ -89,6 +84,7 @@ static int pipeout;
 static int aflag;
 static char *options = NULL;
 static char *tag = NULL;
+static int tag_validated = 0;
 static char *date = NULL;
 static char *join_rev1 = NULL;
 static char *join_rev2 = NULL;
@@ -324,15 +320,13 @@ checkout (argc, argv)
 	    client_nonexpanded_setup ();
 	  }
 
-	if (fprintf
-	    (to_server,
-	     strcmp (command_name, "export") == 0 ? "export\n" : "co\n")
-	    < 0)
-	  error (1, errno, "writing to server");
+	send_to_server (strcmp (command_name, "export") == 0 ?
+                        "export\012" : "co\012",
+                        0);
 
 	return get_responses_and_close ();
     }
-#endif
+#endif /* CLIENT_SUPPORT */
 
     if (cat || status)
     {
@@ -360,7 +354,12 @@ checkout (argc, argv)
 	    (void) sprintf (repository, "%s/%s/%s", CVSroot, CVSROOTADM,
 			    CVSNULLREPOS);
 	    if (!isfile (repository))
+	    {
+		mode_t omask;
+		omask = umask (cvsumask);
 		(void) CVS_MKDIR (repository, 0777);
+		(void) umask (omask);
+	    }
 
 	    /* I'm not sure whether this check is redundant.  */
 	    if (!isdir (repository))
@@ -427,7 +426,10 @@ safe_location ()
     {
         strcpy(hardpath, CVSroot);
     }
-    hardpath[x] = '\0';
+    else
+    {
+        hardpath[x] = '\0';
+    }
     getwd (current);
     if (strncmp(current, hardpath, strlen(hardpath)) == 0)
     {
@@ -719,12 +721,28 @@ checkout_proc (pargc, argv, where, mwhere, mfile, shorten,
 	    return (1);
 	}
 	which = W_REPOS;
+	if (tag != NULL && !tag_validated)
+	{
+	    tag_check_valid (tag, *pargc - 1, argv + 1, 0, aflag, NULL);
+	    tag_validated = 1;
+	}
     }
     else
+    {
 	which = W_LOCAL | W_REPOS;
+	if (tag != NULL && !tag_validated)
+	{
+	    tag_check_valid (tag, *pargc - 1, argv + 1, 0, aflag,
+			     repository);
+	    tag_validated = 1;
+	}
+    }
 
     if (tag != NULL || date != NULL)
 	which |= W_ATTIC;
+
+    /* FIXME: We don't call tag_check_valid on join_rev1 and join_rev2
+       yet (make sure to handle ':' correctly if we do, though).  */
 
     /*
      * if we are going to be recursive (building dirs), go ahead and call the
@@ -755,19 +773,21 @@ checkout_proc (pargc, argv, where, mwhere, mfile, shorten,
 	entries = Entries_Open (0);
 	for (i = 1; i < *pargc; i++)
 	{
-	    char line[MAXLINELEN];
+	    char *line;
 	    char *user;
 	    Vers_TS *vers;
 
 	    user = argv[i];
 	    vers = Version_TS (repository, options, tag, date, user,
-			       force_tag_match, 0, entries, (List *) NULL);
+			       force_tag_match, 0, entries, (RCSNode *) NULL);
 	    if (vers->ts_user == NULL)
 	    {
+		line = xmalloc (strlen (user) + 15);
 		(void) sprintf (line, "Initial %s", user);
 		Register (entries, user, vers->vn_rcs ? vers->vn_rcs : "0",
 			  line, vers->options, vers->tag,
 			  vers->date, (char *) 0);
+		free (line);
 	    }
 	    freevers_ts (&vers);
 	}
@@ -843,7 +863,7 @@ build_dirs_and_chdir (dir, prepath, realdir, sticky)
 	    /* I'm not sure whether this check is redundant.  */
 	    if (!isdir (repository))
 		error (1, 0, "there is no repository %s", repository);
-	    Create_Admin (".", cp, repository, sticky ? (char *) NULL : tag,
+	    Create_Admin (".", path, repository, sticky ? (char *) NULL : tag,
 			  sticky ? (char *) NULL : date);
 	    if (!noexec)
 	    {

@@ -13,11 +13,6 @@
 
 #include "cvs.h"
 
-#ifndef lint
-static const char rcsid[] = "$CVSid: @(#)root.c,v 1.2 1994/09/15 05:32:17 zoo Exp";
-USE(rcsid);
-#endif
-
 char *
 Name_Root(dir, update_dir)
      char *dir;
@@ -50,7 +45,7 @@ Name_Root(dir, update_dir)
      * Do not bother looking for a readable file if there is no cvsadm
      * directory present.
      *
-     * It is possiible that not all repositories will have a CVS/Root
+     * It is possible that not all repositories will have a CVS/Root
      * file. This is ok, but the user will need to specify -d
      * /path/name or have the environment variable CVSROOT set in
      * order to continue.
@@ -92,9 +87,9 @@ Name_Root(dir, update_dir)
     /* It must specify a server via remote CVS or be an absolute pathname.  */
     if ((strchr (root, ':') == NULL)
     	&& ! isabsolute (root))
-#else
+#else /* ! CLIENT_SUPPORT */
     if (root[0] != '/')
-#endif
+#endif /* CLIENT_SUPPORT */
     {
 	error (0, 0, "in directory %s:", xupdate_dir);
 	error (0, 0,
@@ -105,9 +100,9 @@ Name_Root(dir, update_dir)
 
 #ifdef CLIENT_SUPPORT
     if ((strchr (root, ':') == NULL) && !isdir (root))
-#else
+#else /* ! CLIENT_SUPPORT */
     if (!isdir (root))
-#endif
+#endif /* CLIENT_SUPPORT */
     {
 	error (0, 0, "in directory %s:", xupdate_dir);
 	error (0, 0,
@@ -161,6 +156,9 @@ Create_Root (dir, rootdir)
 {
     FILE *fout;
     char tmp[PATH_MAX];
+
+    if (noexec)
+	return;
 
     /* record the current cvs root */
 

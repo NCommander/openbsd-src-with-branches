@@ -10,11 +10,6 @@
 
 #include "cvs.h"
 
-#ifndef lint
-static const char rcsid[] = "$CVSid: @(#)subr.c 1.64 94/10/07 $";
-USE(rcsid);
-#endif
-
 extern char *getlogin ();
 
 /*
@@ -43,9 +38,9 @@ xmalloc (bytes)
  * a "malloc" if the argument is NULL, but you can't depend on it.  Here, I
  * can *force* it.
  */
-char *
+void *
 xrealloc (ptr, bytes)
-    char *ptr;
+    void *ptr;
     size_t bytes;
 {
     char *cp;
@@ -74,6 +69,18 @@ xstrdup (str)
     s = xmalloc (strlen (str) + 1);
     (void) strcpy (s, str);
     return (s);
+}
+
+/* Remove trailing newlines from STRING, destructively. */
+void
+strip_trailing_newlines (str)
+     char *str;
+{
+  int len;
+  len = strlen (str) - 1;
+
+  while (str[len] == '\n')
+    str[len--] = '\0';
 }
 
 /*
@@ -148,8 +155,8 @@ getcaller ()
     if (uid == (uid_t) 0)
     {
 	/* super-user; try getlogin() to distinguish */
-	if (((name = getenv("LOGNAME")) || (name = getenv("USER")) ||
-	     (name = getlogin ())) && *name)
+	if (((name = getlogin ()) || (name = getenv("LOGNAME")) ||
+	     (name = getenv("USER"))) && *name)
 	    return (name);
     }
     if ((pw = (struct passwd *) getpwuid (uid)) == NULL)
@@ -288,7 +295,8 @@ gca (rev1, rev2)
 /*
  *  Sanity checks and any required fix-up on message passed to RCS via '-m'.
  *  RCS 5.7 requires that a non-total-whitespace, non-null message be provided
- *  with '-m'.
+ *  with '-m'.  Returns the original argument or a pointer to readonly
+ *  static storage.
  */
 char *
 make_message_rcslegal (message)

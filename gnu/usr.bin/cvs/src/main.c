@@ -35,6 +35,12 @@
 
 #include "cvs.h"
 
+#ifdef HAVE_WINSOCK_H
+#include <winsock.h>
+#else
+extern int gethostname ();
+#endif
+
 #if HAVE_KERBEROS
 #include <sys/socket.h>
 #include <netinet/in.h>
@@ -50,7 +56,7 @@ char *program_path;
  * Initialize comamnd_name to "cvs" so that the first call to
  * read_cvsrc tries to find global cvs options.
  */
-char *command_name = "cvs";
+char *command_name = "";
 
 /*
  * Since some systems don't define this...
@@ -71,7 +77,6 @@ int really_quiet = FALSE;
 int quiet = FALSE;
 int trace = FALSE;
 int noexec = FALSE;
-int readonlyfs = FALSE;
 int logoff = FALSE;
 mode_t cvsumask = UMASK_DFLT;
 
@@ -127,6 +132,7 @@ const struct cmd
 
     CMD_ENTRY("add",      "ad",    "new",     add,       client_add),
     CMD_ENTRY("admin",    "adm",   "rcs",     admin,     client_admin),
+    CMD_ENTRY("annotate", NULL,    NULL,      annotate,  client_annotate),
     CMD_ENTRY("checkout", "co",    "get",     checkout,  client_checkout),
     CMD_ENTRY("commit",   "ci",    "com",     commit,    client_commit),
     CMD_ENTRY("diff",     "di",    "dif",     diff,      client_diff),
@@ -135,6 +141,7 @@ const struct cmd
     CMD_ENTRY("export",   "exp",   "ex",      checkout,  client_export),
     CMD_ENTRY("history",  "hi",    "his",     history,   client_history),
     CMD_ENTRY("import",   "im",    "imp",     import,    client_import),
+    CMD_ENTRY("init",     NULL,    NULL,      init,      client_init),
     CMD_ENTRY("log",      "lo",    "rlog",    cvslog,    client_log),
 #ifdef AUTH_CLIENT_SUPPORT
     CMD_ENTRY("login",    "logon", "lgn",     login,     login),
@@ -194,6 +201,7 @@ static const char *const cmd_usage[] =
     "CVS commands are:\n",
     "        add          Adds a new file/directory to the repository\n",
     "        admin        Administration front end for rcs\n",
+    "        annotate     Show revision where each line was modified\n",
     "        checkout     Checkout sources for editing\n",
     "        commit       Checks files into the repository\n",
     "        diff         Runs diffs between revisions\n",
@@ -220,31 +228,9 @@ static const char *const cmd_usage[] =
 };
 
 static RETSIGTYPE
-main_cleanup (sig)
-     int sig;
+main_cleanup ()
 {
-    const char *name;
-
-    switch (sig)
-    {
-	case SIGHUP:
-	    name = "hangup";
-	    break;
-	case SIGINT:
-	    name = "interrupt";
-	    break;
-	case SIGQUIT:
-	    name = "quit";
-	    break;
-	case SIGPIPE:
-	    name = "broken pipe";
-	    break;
-	case SIGTERM:
-	    name = "termination";
-	    break;
-    }
-
-    error (1, 0, "received %s signal", name);
+    exit (EXIT_FAILURE);
 }
 
 static void
@@ -325,8 +311,6 @@ main (argc, argv)
     }
     if (getenv (CVSREAD_ENV) != NULL)
 	cvswrite = FALSE;
-    if (getenv (CVSREADONLYFS_ENV))
-	readonlyfs = TRUE;
     if ((cp = getenv (CVSUMASK_ENV)) != NULL)
     {
 	/* FIXME: Should be accepting symbolic as well as numeric mask.  */
@@ -362,7 +346,7 @@ main (argc, argv)
      * Scan cvsrc file for global options.
      */
     if (use_cvsrc)
-	read_cvsrc(&argc, &argv);
+	read_cvsrc (&argc, &argv, "cvs");
 
     optind = 1;
     opterr = 1;
@@ -486,7 +470,7 @@ main (argc, argv)
 	{
 	    printf ("E Fatal error, aborting.\n\
 error %s getpeername or getsockname failed\n", strerror (errno));
-	    exit (1);
+	    exit (EXIT_FAILURE);
 	}
 
 	status = krb_recvauth (KOPT_DO_MUTUAL, STDIN_FILENO, &ticket, "rcmd",
@@ -496,7 +480,7 @@ error %s getpeername or getsockname failed\n", strerror (errno));
 	{
 	    printf ("E Fatal error, aborting.\n\
 error 0 kerberos: %s\n", krb_get_err_text(status));
-	    exit (1);
+	    exit (EXIT_FAILURE);
 	}
 
 	/* Get the local name.  */
@@ -505,7 +489,7 @@ error 0 kerberos: %s\n", krb_get_err_text(status));
 	{
 	    printf ("E Fatal error, aborting.\n\
 error 0 kerberos: can't get local name: %s\n", krb_get_err_text(status));
-	    exit (1);
+	    exit (EXIT_FAILURE);
 	}
 
 	pw = getpwnam (user);
@@ -513,7 +497,7 @@ error 0 kerberos: can't get local name: %s\n", krb_get_err_text(status));
 	{
 	    printf ("E Fatal error, aborting.\n\
 error 0 %s: no such user\n", user);
-	    exit (1);
+	    exit (EXIT_FAILURE);
 	}
 
 	initgroups (pw->pw_name, pw->pw_gid);
@@ -643,20 +627,26 @@ error 0 %s: no such user\n", user);
 	    if (!isaccessible (path, R_OK | X_OK))
 	    {
 		save_errno = errno;
+		/* If this is "cvs init", the root need not exist yet.  */
+		if (strcmp (command_name, "init") != 0
 #ifdef CLIENT_SUPPORT
-		if (strchr (CVSroot, ':') == NULL)
-		{
+		    /* If we are a remote client, the root need not exist
+		       on the client machine (FIXME: we should also skip
+		       the check for CVSROOTADM_HISTORY being writable;
+		       it shouldn't matter if there is a read-only file
+		       which happens to have the same name on the client
+		       machine).  */
+		    && strchr (CVSroot, ':') == NULL)
 #endif
+		{
 		error (0, 0,
 		    "Sorry, you don't have sufficient access to %s", CVSroot);
 		error (1, save_errno, "%s", path);
-#ifdef CLIENT_SUPPORT
 		}
-#endif
 	    }
 	    (void) strcat (path, "/");
 	    (void) strcat (path, CVSROOTADM_HISTORY);
-	    if (readonlyfs == 0 && isfile (path) && !isaccessible (path, R_OK | W_OK))
+	    if (isfile (path) && !isaccessible (path, R_OK | W_OK))
 	    {
 		save_errno = errno;
 		error (0, 0,
@@ -766,7 +756,7 @@ error 0 %s: no such user\n", user);
 #endif
 
 	if (use_cvsrc)
-	  read_cvsrc(&argc, &argv);
+	  read_cvsrc (&argc, &argv, command_name);
 
 #ifdef CLIENT_SUPPORT
 	/* If cvsroot contains a colon, try to do it via the protocol.  */
@@ -782,14 +772,10 @@ error 0 %s: no such user\n", user);
 
 #endif /* No CLIENT_SUPPORT */
     }
-    /*
-     * If the command's error count is modulo 256, we need to change it
-     * so that we don't overflow the 8-bits we get to report exit status
-     */
-    if (err && (err % 256) == 0)
-	err = 1;
     Lock_Cleanup ();
-    return (err);
+    if (err)
+	return (EXIT_FAILURE);
+    return 0;
 }
 
 char *
@@ -824,5 +810,5 @@ usage (cpp)
     (void) fprintf (stderr, *cpp++, program_name, command_name);
     for (; *cpp; cpp++)
 	(void) fprintf (stderr, *cpp);
-    exit (1);
+    exit (EXIT_FAILURE);
 }
