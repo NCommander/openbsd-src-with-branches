@@ -1,4 +1,4 @@
-/*	$OpenBSD: krb_passwd.c,v 1.10 1998/03/09 22:17:32 art Exp $	*/
+/*	$OpenBSD: krb_passwd.c,v 1.11 1999/05/23 17:19:21 aaron Exp $	*/
 /* $KTH: kpasswd.c,v 1.25 1997/05/02 14:28:51 assar Exp $ */
 
 /*
@@ -58,6 +58,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include <unistd.h>
+#include <com_err.h>
 
 char realm[REALM_SZ];
 
