@@ -1,4 +1,4 @@
-/* 	$OpenBSD: osf1_mount.c,v 1.7 2002/02/22 20:37:45 drahn Exp $ */
+/* 	$OpenBSD: osf1_mount.c,v 1.8 2002/03/14 01:26:50 millert Exp $ */
 /*	$NetBSD: osf1_mount.c,v 1.14 1999/05/05 01:51:34 cgd Exp $	*/
 
 /*
@@ -122,7 +122,6 @@ osf1_sys_fstatfs(p, v, retval)
 		return (error);
 	mp = ((struct vnode *)fp->f_data)->v_mount;
 	sp = &mp->mnt_stat;
-	FREF(fp);
 	error = VFS_STATFS(mp, sp, p);
 	FRELE(fp);
 	if (error)

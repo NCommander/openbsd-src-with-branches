@@ -1,4 +1,4 @@
-/*	$OpenBSD: linux_misc.c,v 1.43 2002/06/05 19:43:25 jasoni Exp $	*/
+/*	$OpenBSD: linux_misc.c,v 1.44 2002/07/25 22:18:27 nordin Exp $	*/
 /*	$NetBSD: linux_misc.c,v 1.27 1996/05/20 01:59:21 fvdl Exp $	*/
 
 /*
@@ -1021,7 +1021,6 @@ linux_sys_getdents(p, v, retval)
 	args.resid = nbytes;
 	args.outp = (caddr_t)SCARG(uap, dirent);
 
-	FREF(fp);
 	if ((error = readdir_with_callback(fp, &fp->f_offset, nbytes,
 	    linux_readdir_callback, &args)) != 0)
 		goto exit;
