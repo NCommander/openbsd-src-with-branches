@@ -23,7 +23,7 @@
  */
 
 #include "includes.h"
-RCSID("$OpenBSD: auth2.c,v 1.56.2.1 2001/09/27 19:03:54 jason Exp $");
+RCSID("$OpenBSD: auth2.c,v 1.56.2.2 2001/11/15 00:15:19 miod Exp $");
 
 #include <openssl/evp.h>
 
@@ -50,7 +50,6 @@ RCSID("$OpenBSD: auth2.c,v 1.56.2.1 2001/09/27 19:03:54 jason Exp $");
 #include "misc.h"
 #include "hostfile.h"
 #include "canohost.h"
-#include "tildexpand.h"
 #include "match.h"
 
 /* import */
