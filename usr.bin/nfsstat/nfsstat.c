@@ -68,6 +68,7 @@ static char *rcsid = "$OpenBSD$";
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <limits.h>
 #include <paths.h>
 #include <err.h>
 
@@ -89,7 +90,7 @@ main(argc, argv)
 	u_int interval;
 	int ch;
 	char *memf, *nlistf;
-	char errbuf[80];
+	char errbuf[_POSIX2_LINE_MAX];
 
 	interval = 0;
 	memf = nlistf = NULL;
