@@ -1,4 +1,4 @@
-/*	$OpenBSD: kern_clock.c,v 1.15 1997/01/25 23:35:58 tholo Exp $	*/
+/*	$OpenBSD: kern_clock.c,v 1.16 1997/11/23 03:19:17 mickey Exp $	*/
 /*	$NetBSD: kern_clock.c,v 1.34 1996/06/09 04:51:03 briggs Exp $	*/
 
 /*-
@@ -899,6 +899,7 @@ statclock(frame)
 {
 #ifdef GPROF
 	register struct gmonparam *g;
+	register int i;
 #endif
 	register struct proc *p;
 
