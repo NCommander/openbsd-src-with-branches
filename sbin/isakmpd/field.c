@@ -1,4 +1,4 @@
-/* $OpenBSD: field.c,v 1.14 2004/04/15 18:39:25 deraadt Exp $	 */
+/* $OpenBSD: field.c,v 1.15 2004/05/23 18:17:55 hshoexer Exp $	 */
 /* $EOM: field.c,v 1.11 2000/02/20 19:58:37 niklas Exp $	 */
 
 /*
@@ -47,7 +47,8 @@ static char    *field_debug_ign(u_int8_t *, size_t, struct constant_map **);
 static char    *field_debug_cst(u_int8_t *, size_t, struct constant_map **);
 
 /* Contents must match the enum in struct field.  */
-static char    *(*decode_field[]) (u_int8_t *, size_t, struct constant_map **) = {
+static char    *(*decode_field[]) (u_int8_t *, size_t,
+    struct constant_map **) = {
 	field_debug_raw,
 	field_debug_num,
 	field_debug_mask,

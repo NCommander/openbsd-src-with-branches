@@ -1,4 +1,4 @@
-/* $OpenBSD: cert.c,v 1.26 2004/04/15 18:39:25 deraadt Exp $	 */
+/* $OpenBSD: cert.c,v 1.27 2004/05/14 08:42:56 hshoexer Exp $	 */
 /* $EOM: cert.c,v 1.18 2000/09/28 12:53:27 niklas Exp $	 */
 
 /*
@@ -81,7 +81,8 @@ cert_init(void)
 	int	err = 1;
 
 	for (i = 0; i < sizeof cert_handler / sizeof cert_handler[0]; i++)
-		if (cert_handler[i].cert_init && !(*cert_handler[i].cert_init)())
+		if (cert_handler[i].cert_init &&
+		    !(*cert_handler[i].cert_init)())
 			err = 0;
 
 	return err;

@@ -1,4 +1,4 @@
-/* $OpenBSD: key.c,v 1.16 2004/05/23 16:13:39 deraadt Exp $	 */
+/* $OpenBSD: key.c,v 1.17 2004/05/23 18:17:56 hshoexer Exp $	 */
 /*
  * The author of this code is Angelos D. Keromytis (angelos@cis.upenn.edu)
  *
@@ -185,8 +185,8 @@ key_from_printable(int type, int private, char *key, u_int8_t **data,
 		break;
 
 	default:
-		log_error("key_from_printable: unknown/unsupported key type %d",
-		    type);
+		log_error("key_from_printable: "
+		    "unknown/unsupported key type %d", type);
 		*data = NULL;
 		*datalenp = 0;
 		break;
