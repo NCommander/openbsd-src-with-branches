@@ -1,4 +1,4 @@
-.\"	$OpenBSD: fdisk.8,v 1.42 2004/06/22 23:01:55 tom Exp $
+.\"	$OpenBSD: fdisk.8,v 1.43 2004/06/26 11:45:40 jmc Exp $
 .\"
 .\" Copyright (c) 1997 Tobias Weingartner
 .\" All rights reserved.
@@ -234,6 +234,8 @@ Update the machine code and 0xAA55 signature in the memory copy
 of the currently selected boot block.
 Note that this option will overwrite the NT disk
 signature, if present.
+.It Em swap
+Swap two MBR entries.
 .It Em select
 Select and load into memory the boot block pointed
 to by the extended partition table entry in the current boot block.
