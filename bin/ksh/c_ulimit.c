@@ -1,4 +1,4 @@
-/*	$OpenBSD: c_ulimit.c,v 1.10 2003/10/22 07:40:38 jmc Exp $	*/
+/*	$OpenBSD: c_ulimit.c,v 1.11 2004/12/18 20:55:52 millert Exp $	*/
 
 /*
 	ulimit -- handle "ulimit" builtin
@@ -25,8 +25,7 @@
 #define HARD	0x2
 
 int
-c_ulimit(wp)
-	char **wp;
+c_ulimit(char **wp)
 {
 	static const struct limits {
 		const char	*name;
