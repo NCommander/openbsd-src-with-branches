@@ -1,4 +1,4 @@
-/*	$OpenBSD: nfs.c,v 1.6 1996/12/08 15:15:52 niklas Exp $	*/
+/*	$OpenBSD: nfs.c,v 1.7 1997/02/16 14:39:39 mickey Exp $	*/
 /*	$NetBSD: nfs.c,v 1.19 1996/10/13 02:29:04 christos Exp $	*/
 
 /*-
@@ -33,7 +33,6 @@
 #include <sys/time.h>
 #include <sys/socket.h>
 #include <sys/stat.h>
-#include <string.h>
 
 #include <netinet/in.h>
 #include <netinet/in_systm.h>
