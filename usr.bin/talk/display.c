@@ -1,4 +1,4 @@
-/*	$OpenBSD: display.c,v 1.4 1997/11/30 20:30:50 deraadt Exp $	*/
+/*	$OpenBSD: display.c,v 1.5 1998/04/28 22:13:22 pjanzen Exp $	*/
 /*	$NetBSD: display.c,v 1.3 1994/12/09 02:14:13 jtc Exp $	*/
 
 /*
@@ -38,7 +38,7 @@
 #if 0
 static char sccsid[] = "@(#)display.c	8.1 (Berkeley) 6/6/93";
 #endif
-static char rcsid[] = "$OpenBSD: display.c,v 1.4 1997/11/30 20:30:50 deraadt Exp $";
+static char rcsid[] = "$OpenBSD: display.c,v 1.5 1998/04/28 22:13:22 pjanzen Exp $";
 #endif /* not lint */
 
 /*
@@ -80,7 +80,13 @@ display(win, text, size)
 	char cch;
 
 	for (i = 0; i < size; i++) {
-		if (*text == '\n' || *text == '\r') {
+		/*
+		 * Since we do not use curses's input routines we must
+		 * convert '\r' -> '\n' ourselves.
+		 */
+		if (*text == '\r')
+			*text = '\n';
+		if (*text == '\n') {
 			xscroll(win, 0);
 			text++;
 			continue;
