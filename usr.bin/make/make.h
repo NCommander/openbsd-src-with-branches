@@ -1,4 +1,4 @@
-/*	$OpenBSD: make.h,v 1.15 1999/11/11 11:47:27 espie Exp $	*/
+/*	$OpenBSD: make.h,v 1.16 1999/12/18 21:53:32 espie Exp $	*/
 /*	$NetBSD: make.h,v 1.15 1997/03/10 21:20:00 christos Exp $	*/
 
 /*
@@ -83,6 +83,8 @@
 #include "lst.h"
 #include "config.h"
 #include "buf.h"
+
+#define OUT_OF_DATE INT_MIN
 
 /*-
  * The structure for an individual graph node. Each node has several
