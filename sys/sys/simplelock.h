@@ -1,3 +1,5 @@
+/*	$OpenBSD$	*/
+
 #ifndef _SIMPLELOCK_H_
 #define _SIMPLELOCK_H_
 /*
