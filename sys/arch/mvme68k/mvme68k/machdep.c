@@ -1,4 +1,4 @@
-/*	$Id: machdep.c,v 1.5 1995/11/29 17:02:49 deraadt Exp $ */
+/*	$OpenBSD$ */
 
 /*
  * Copyright (c) 1995 Theo de Raadt

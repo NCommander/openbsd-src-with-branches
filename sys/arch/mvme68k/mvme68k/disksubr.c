@@ -1,3 +1,5 @@
+/*	$OpenBSD$ */
+
 /*
  * Copyright (c) 1995 Dale Rahn.
  * All rights reserved.

@@ -1,4 +1,4 @@
-/*	$Id: flashreg.h,v 1.2 1995/11/07 08:48:56 deraadt Exp $ */
+/*	$OpenBSD$ */
 
 /*
  * Copyright (c) 1995 Theo de Raadt
