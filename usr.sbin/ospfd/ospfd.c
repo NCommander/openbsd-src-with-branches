@@ -1,4 +1,4 @@
-/*	$OpenBSD: ospfd.c,v 1.7 2005/03/07 10:28:14 claudio Exp $ */
+/*	$OpenBSD: ospfd.c,v 1.8 2005/03/08 20:12:18 norby Exp $ */
 
 /*
  * Copyright (c) 2005 Claudio Jeker <claudio@openbsd.org>
@@ -328,6 +328,16 @@ main_dispatch_ospfe(int fd, short event, void *bula)
 			break;
 		case IMSG_CTL_FIB_DECOUPLE:
 			kr_fib_decouple();
+			break;
+		case IMSG_CTL_KROUTE:
+		case IMSG_CTL_KROUTE_ADDR:
+			kr_show_route(&imsg);
+			break;
+		case IMSG_CTL_IFINFO:
+			if (imsg.hdr.len != IMSG_HEADER_SIZE + IFNAMSIZ)
+				log_warnx("IFINFO request with wrong len");
+			else
+				kr_ifinfo(imsg.data);
 			break;
 		default:
 			log_debug("main_dispatch_ospfe: error handling imsg %d",
