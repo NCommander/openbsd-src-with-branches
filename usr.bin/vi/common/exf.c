@@ -1,4 +1,4 @@
-/*	$OpenBSD: exf.c,v 1.17 2002/02/19 00:06:34 ericj Exp $	*/
+/*	$OpenBSD: exf.c,v 1.18 2003/07/02 00:21:16 avsm Exp $	*/
 
 /*-
  * Copyright (c) 1992, 1993, 1994
@@ -353,8 +353,10 @@ file_init(sp, frp, rcv_name, flags)
 			break;
 		case LOCK_UNAVAIL:
 			readonly = 1;
-			msgq_str(sp, M_INFO, oname,
-			    "239|%s already locked, session is read-only");
+			if (!O_ISSET(sp, O_READONLY)) {
+				msgq_str(sp, M_INFO, oname,
+				    "239|%s already locked, session is read-only");
+			}
 			break;
 		case LOCK_SUCCESS:
 			break;
