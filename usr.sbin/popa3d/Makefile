@@ -1,4 +1,4 @@
-# $OpenBSD: Makefile,v 1.1.1.1 2001/08/13 20:03:21 camield Exp $
+# $OpenBSD: Makefile,v 1.2 2001/08/16 19:40:39 ericj Exp $
 
 PROG=	popa3d
 

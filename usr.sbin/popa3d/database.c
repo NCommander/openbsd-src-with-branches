@@ -1,4 +1,4 @@
-/* $OpenBSD$ */
+/* $OpenBSD: database.c,v 1.2 2001/08/13 20:19:33 camield Exp $ */
 
 /*
  * Message database management.

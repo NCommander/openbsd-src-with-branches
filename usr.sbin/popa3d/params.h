@@ -1,4 +1,4 @@
-/* $OpenBSD: params.h,v 1.5 2001/08/16 19:58:16 camield Exp $ */
+/* $OpenBSD: params.h,v 1.6 2001/08/16 20:02:42 camield Exp $ */
 
 /*
  * Global POP daemon parameters.

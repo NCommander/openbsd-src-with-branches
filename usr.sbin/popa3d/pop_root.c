@@ -1,4 +1,4 @@
-/* $OpenBSD: pop_root.c,v 1.3 2001/08/16 19:58:16 camield Exp $ */
+/* $OpenBSD: pop_root.c,v 1.4 2001/08/16 20:02:42 camield Exp $ */
 
 /*
  * Main daemon code: invokes the actual POP handling routines. Most calls
