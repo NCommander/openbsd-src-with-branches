@@ -13,7 +13,7 @@
  */
 
 #include "includes.h"
-RCSID("$OpenBSD: sshconnect1.c,v 1.14 2001/01/08 21:55:41 markus Exp $");
+RCSID("$OpenBSD: sshconnect1.c,v 1.15 2001/01/16 23:58:09 deraadt Exp $");
 
 #include <openssl/bn.h>
 #include <openssl/dsa.h>
@@ -630,7 +630,8 @@ try_skey_authentication()
 		}
 		challenge = packet_get_string(&clen);
 		packet_integrity_check(payload_len, (4 + clen), type);
-		snprintf(prompt, sizeof prompt, "%s\nResponse: ", challenge);
+		snprintf(prompt, sizeof prompt, "%s%s", challenge,
+		     strchr(challenge, '\n') ? "" : "\nResponse: ");
 		xfree(challenge);
 		if (i != 0)
 			error("Permission denied, please try again.");
