@@ -1,4 +1,4 @@
-/*	$OpenBSD: test_stdarg.c,v 1.3 2000/10/04 05:50:58 d Exp $	*/
+/*	$OpenBSD: stdarg.c,v 1.1.1.1 2001/08/15 14:37:16 fgsch Exp $	*/
 /* David Leonard <d@openbsd.org>, 2001. Public Domain. */
 
 /*
@@ -21,7 +21,7 @@ test1(char *fmt, ...)
 
 	char	ch;
 	int	i;
-	char	c;
+	int	c;
 	long	l;
 	void 	*p;
 	char 	*ofmt = fmt;
@@ -34,7 +34,7 @@ test1(char *fmt, ...)
 		EQ(i, 1234);
 		break;
 	    case 'c':		
-		c = va_arg(ap, char); 
+		c = va_arg(ap, int); 
 		EQ(c, 'x');
 		break;
 	    case 'l':		
