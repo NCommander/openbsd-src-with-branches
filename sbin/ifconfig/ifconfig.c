@@ -1,4 +1,4 @@
-/*	$OpenBSD: ifconfig.c,v 1.96 2004/04/27 22:14:11 pb Exp $	*/
+/*	$OpenBSD: ifconfig.c,v 1.97 2004/05/05 22:20:17 deraadt Exp $	*/
 /*	$NetBSD: ifconfig.c,v 1.40 1997/10/01 02:19:43 enami Exp $	*/
 
 /*
@@ -77,7 +77,7 @@ static const char copyright[] =
 #if 0
 static const char sccsid[] = "@(#)ifconfig.c	8.2 (Berkeley) 2/16/94";
 #else
-static const char rcsid[] = "$OpenBSD: ifconfig.c,v 1.96 2004/04/27 22:14:11 pb Exp $";
+static const char rcsid[] = "$OpenBSD: ifconfig.c,v 1.97 2004/05/05 22:20:17 deraadt Exp $";
 #endif
 #endif /* not lint */
 
@@ -2399,9 +2399,9 @@ at_getaddr(const char *addr, int which)
 void
 setatrange(const char *range, int d)
 {
-	u_short first = 123, last = 123;
+	u_int first = 123, last = 123;
 
-	if (sscanf(range, "%hu-%hu", &first, &last) != 2 ||
+	if (sscanf(range, "%u-%u", &first, &last) != 2 ||
 	    first == 0 || first > 0xffff ||
 	    last == 0 || last > 0xffff || first > last)
 		errx(1, "%s: illegal net range: %u-%u", range, first, last);
