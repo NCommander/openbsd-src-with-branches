@@ -1,4 +1,4 @@
-/*	$OpenBSD: mod_mime.c,v 1.10 2002/08/15 16:06:11 henning Exp $ */
+/*	$OpenBSD: mod_mime.c,v 1.11 2003/04/08 17:40:46 henning Exp $ */
 
 /* ====================================================================
  * The Apache Software License, Version 1.1
@@ -70,6 +70,7 @@
 #include "httpd.h"
 #include "http_config.h"
 #include "http_log.h"
+#include "http_main.h"
 
 /*
  * isascii(c) isn't universal, and even those places where it is

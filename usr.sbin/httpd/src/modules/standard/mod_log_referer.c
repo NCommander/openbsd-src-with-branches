@@ -1,4 +1,4 @@
-/*	$OpenBSD$ */
+/*	$OpenBSD: mod_log_referer.c,v 1.5 2002/07/17 12:55:15 henning Exp $ */
 
 /* ====================================================================
  * The Apache Software License, Version 1.1
@@ -62,6 +62,7 @@
 #include "httpd.h"
 #include "http_config.h"
 #include "http_log.h"
+#include "http_main.h"
 #include "fdcache.h"
 
 module referer_log_module;

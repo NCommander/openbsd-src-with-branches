@@ -1,4 +1,4 @@
-/*	$OpenBSD$ */
+/*	$OpenBSD: mod_log_config.c,v 1.12 2002/07/19 21:31:16 henning Exp $ */
 
 /* ====================================================================
  * The Apache Software License, Version 1.1
@@ -185,6 +185,7 @@
 #include "http_config.h"
 #include "http_core.h"          /* For REMOTE_NAME */
 #include "http_log.h"
+#include "http_main.h"
 #include "fdcache.h"
 #include <limits.h>
 
