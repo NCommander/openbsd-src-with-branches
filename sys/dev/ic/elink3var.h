@@ -1,4 +1,4 @@
-/*	$OpenBSD: elink3var.h,v 1.13 2000/02/02 18:47:01 deraadt Exp $	*/
+/*	$OpenBSD: elink3var.h,v 1.14 2000/05/29 18:04:07 aaron Exp $	*/
 /*	$NetBSD: elink3var.h,v 1.12 1997/03/30 22:47:11 jonathan Exp $	*/
 
 /*
@@ -92,3 +92,4 @@ void	epconfig __P((struct ep_softc *, u_short, u_int8_t *));
 int	epintr __P((void *));
 void	epstop __P((struct ep_softc *));
 void	epinit __P((struct ep_softc *));
+int	ep_detach __P((struct device *));

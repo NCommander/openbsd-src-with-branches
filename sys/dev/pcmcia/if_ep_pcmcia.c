@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_ep_pcmcia.c,v 1.24 2000/05/29 18:04:07 aaron Exp $	*/
+/*	$OpenBSD: if_ep_pcmcia.c,v 1.25 2000/06/28 18:03:37 millert Exp $	*/
 /*	$NetBSD: if_ep_pcmcia.c,v 1.16 1998/08/17 23:20:40 thorpej Exp $  */
 
 /*-
@@ -391,15 +391,14 @@ ep_pcmcia_detach(dev, flags)
 	struct device *dev;
 	int flags;
 {
+	int rv;
 	struct ep_pcmcia_softc *psc = (struct ep_pcmcia_softc *)dev;
-	struct ep_softc *sc = &psc->sc_ep;
-	struct ifnet *ifp = &sc->sc_arpcom.ac_if;
+
+	if ((rv = ep_detach(dev)) != 0)
+		return (rv);
 
 	pcmcia_io_unmap(psc->sc_pf, psc->sc_io_window);
 	pcmcia_io_free(psc->sc_pf, &psc->sc_pcioh);
-
-	ether_ifdetach(ifp);
-	if_detach(ifp);
 
 	return (0);
 }
