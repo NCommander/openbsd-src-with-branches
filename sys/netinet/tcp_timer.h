@@ -115,6 +115,21 @@ char *tcptimers[] =
 #endif /* TCPTIMERS */
 
 /*
+ * Init, arm, disarm, and test TCP timers.
+ */
+#define	TCP_TIMER_INIT(tp, timer)					\
+	(tp)->t_timer[(timer)] = 0
+
+#define	TCP_TIMER_ARM(tp, timer, nticks)				\
+	(tp)->t_timer[(timer)] = (nticks)
+
+#define	TCP_TIMER_DISARM(tp, timer)					\
+	(tp)->t_timer[(timer)] = 0
+
+#define	TCP_TIMER_ISARMED(tp, timer)					\
+	&(tp)->t_timer[(timer)]
+
+/*
  * Force a time value to be in a certain range.
  */
 #define	TCPT_RANGESET(tv, value, tvmin, tvmax) { \
