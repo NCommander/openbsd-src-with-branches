@@ -1,4 +1,4 @@
-/*	$OpenBSD: fdisk.c,v 1.18 1997/04/17 12:31:46 provos Exp $	*/
+/*	$OpenBSD: fdisk.c,v 1.19 1997/07/06 18:19:29 niklas Exp $	*/
 /*	$NetBSD: fdisk.c,v 1.11 1995/10/04 23:11:19 ghudson Exp $	*/
 
 /*
@@ -28,7 +28,7 @@
  */
 
 #ifndef lint
-static char rcsid[] = "$OpenBSD: fdisk.c,v 1.18 1997/04/17 12:31:46 provos Exp $";
+static char rcsid[] = "$OpenBSD: fdisk.c,v 1.19 1997/07/06 18:19:29 niklas Exp $";
 #endif /* not lint */
 
 #include <sys/param.h>
@@ -46,7 +46,7 @@ static char rcsid[] = "$OpenBSD: fdisk.c,v 1.18 1997/04/17 12:31:46 provos Exp $
 #include <unistd.h>
 #include <util.h>
 
-#define _PATH_MBR	"/usr/mdec/sdboot"
+#define _PATH_MBR	"/usr/mdec/mbr"
 
 /*
  * 14-Dec-89  Robert Baron (rvb) at Carnegie-Mellon University
