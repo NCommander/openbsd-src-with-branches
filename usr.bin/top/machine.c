@@ -1,4 +1,4 @@
-/*	$OpenBSD: machine.c,v 1.15 1999/05/22 21:42:26 weingart Exp $	*/
+/*	$OpenBSD: machine.c,v 1.16 1999/06/21 20:48:01 art Exp $	*/
 
 /*
  * top - a top users display for Unix
@@ -844,7 +844,7 @@ pid_t pid;
 
 #ifdef DOSWAP
 /*
- * swapmode is rewriten by Tobias Weingartner <weingart@openbsd.org>
+ * swapmode is rewritten by Tobias Weingartner <weingart@openbsd.org>
  * to be based on the new swapctl(2) system call.
  */
 static int
