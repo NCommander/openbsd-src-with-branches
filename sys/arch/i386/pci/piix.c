@@ -1,5 +1,5 @@
-/*	$OpenBSD	*/
-/*	$NetBSD$	*/
+/*	$OpenBSD$	*/
+/*	$NetBSD: piix.c,v 1.1 1999/11/17 01:21:20 thorpej Exp $  */
 
 /*-
  * Copyright (c) 1999 The NetBSD Foundation, Inc.

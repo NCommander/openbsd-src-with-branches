@@ -1,5 +1,5 @@
-/*	$OpenBSD$	*/
-/*	$NetBSD$	*/
+/*	$OpenBSD: pci_intr_fixup.h,v 1.2 2000/03/27 08:35:22 brad Exp $	 */
+/*	$NetBSD: pci_intr_fixup.h,v 1.1 1999/11/17 01:20:38 thorpej Exp $  */
 
 /*
  * Copyright (c) 1999, by UCHIYAMA Yasushi

@@ -1,5 +1,5 @@
-/*	$OpenBSD$	*/
-/*	$NetBSD$	*/
+/*	$OpenBSD: pci_bus_fixup.h,v 1.2 2000/03/27 08:35:21 brad Exp $	*/
+/*	$NetBSD: pci_bus_fixup.h,v 1.1 1999/11/17 07:32:58 thorpej Exp $  */
 
 /*
  * Copyright (c) 1999, by UCHIYAMA Yasushi
