@@ -1,4 +1,4 @@
-/*	$OpenBSD: bgpd.h,v 1.77 2004/01/22 20:59:16 henning Exp $ */
+/*	$OpenBSD: bgpd.h,v 1.78 2004/01/22 21:08:59 henning Exp $ */
 
 /*
  * Copyright (c) 2003, 2004 Henning Brauer <henning@openbsd.org>
@@ -292,6 +292,7 @@ void		 fatal(const char *);
 void		 fatalx(const char *);
 void		 fatal_ensure(const char *, int, const char *);
 char		*log_ntoa(in_addr_t);
+char		*log_addr(struct bgpd_addr *);
 
 /* parse.y */
 int	 cmdline_symset(char *);
