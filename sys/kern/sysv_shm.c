@@ -1,4 +1,4 @@
-/*	$OpenBSD: sysv_shm.c,v 1.24 2001/12/19 08:58:06 art Exp $	*/
+/*	$OpenBSD: sysv_shm.c,v 1.25 2002/03/14 01:27:05 millert Exp $	*/
 /*	$NetBSD: sysv_shm.c,v 1.50 1998/10/21 22:24:29 tron Exp $	*/
 
 /*
@@ -246,7 +246,7 @@ sys_shmat(p, v, retval)
 		else
 			return EINVAL;
 	} else {
-		/* This is just a hint to vm_mmap() about where to put it. */
+		/* This is just a hint to uvm_map() about where to put it. */
 		attach_va = round_page((vaddr_t)p->p_vmspace->vm_taddr +
 		    MAXTSIZ + MAXDSIZ);
 	}
