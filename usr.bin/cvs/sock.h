@@ -48,15 +48,12 @@
 
 
 extern char *cvsd_sock_path;
-
-extern volatile sig_atomic_t cvs_sock_doloop;
-
+extern int   cvsd_sock;
 
 /* daemon api */
 int  cvsd_sock_open   (void);
 void cvsd_sock_close  (void);
-void cvsd_sock_loop   (void);
-int  cvsd_sock_hdl    (int);
+int  cvsd_sock_accept (int);
 
 /* client api */
 int  cvs_sock_connect    (const char *);
