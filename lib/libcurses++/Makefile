@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.37 1999/03/02 06:23:26 millert Exp $
+#	$OpenBSD: Makefile,v 1.1 1999/05/09 00:21:14 millert Exp $
 
 # Uncomment this to enable tracing in libcurses
 #CURSESTRACE=-DTRACE
@@ -11,6 +11,8 @@ HEADERS=cursesapp.h cursesf.h cursesm.h cursesp.h cursesw.h etip.h cursslk.h
 CFLAGS+= -I${.CURDIR} -I${.CURDIR}/../libcurses ${CURSESTRACE}
 
 includes:
+	@test -d ${DESTDIR}/usr/include/g++ || \
+	    install -d -o root -g bin -m 755 /usr/include/g++
 	@for i in ${HEADERS}; do \
 	    cmp -s ${DESTDIR}/usr/include/g++/$$i ${.CURDIR}/$$i || \
 		${INSTALL} ${INSTALL_COPY} -m 444 -o $(BINOWN) -g $(BINGRP) \
