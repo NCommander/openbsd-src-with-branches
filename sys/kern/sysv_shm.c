@@ -1,4 +1,4 @@
-/*	$OpenBSD: sysv_shm.c,v 1.37 2003/06/17 21:56:25 millert Exp $	*/
+/*	$OpenBSD: sysv_shm.c,v 1.38 2003/08/21 05:20:07 kevlo Exp $	*/
 /*	$NetBSD: sysv_shm.c,v 1.50 1998/10/21 22:24:29 tron Exp $	*/
 
 /*
@@ -272,8 +272,10 @@ sys_shmat(struct proc *p, void *v, register_t *retval)
 	error = uvm_map(&p->p_vmspace->vm_map, &attach_va, size,
 	    shm_handle->shm_object, 0, 0, UVM_MAPFLAG(prot, prot,
 	    UVM_INH_SHARE, UVM_ADV_RANDOM, 0));
-	if (error)
+	if (error) {
+		uao_detach(shm_handle->shm_object);
 		return (error);
+	}
 
 	shmmap_s->va = attach_va;
 	shmmap_s->shmid = SCARG(uap, shmid);
