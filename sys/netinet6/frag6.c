@@ -1,4 +1,4 @@
-/*	$OpenBSD: frag6.c,v 1.2 1999/12/10 10:04:27 angelos Exp $	*/
+/*	$OpenBSD: frag6.c,v 1.3 2000/01/08 04:49:22 deraadt Exp $	*/
 
 /*
  * Copyright (C) 1995, 1996, 1997, and 1998 WIDE Project.
@@ -51,6 +51,8 @@
 #include <netinet6/icmp6.h>
 
 #include <net/net_osdep.h>
+
+#include <dev/rndvar.h>
 
 /*
  * Define it to get a correct behavior on per-interface statistics.
