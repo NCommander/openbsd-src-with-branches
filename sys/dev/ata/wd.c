@@ -1,4 +1,4 @@
-/*	$OpenBSD: wd.c,v 1.23 2002/03/14 03:16:03 millert Exp $ */
+/*	$OpenBSD: wd.c,v 1.24 2002/05/03 09:18:46 gluk Exp $ */
 /*	$NetBSD: wd.c,v 1.193 1999/02/28 17:15:27 explorer Exp $ */
 
 /*
@@ -521,7 +521,9 @@ bad:
 done:
 	/* Toss transfer; we're done early. */
 	bp->b_resid = bp->b_bcount;
+	s = splbio();
 	biodone(bp);
+	splx(s);
 	if (wd != NULL)
 		device_unref(&wd->sc_dev);
 }
