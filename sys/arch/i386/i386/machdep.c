@@ -1,4 +1,4 @@
-/*	$OpenBSD: machdep.c,v 1.225 2003/04/17 03:56:20 drahn Exp $	*/
+/*	$OpenBSD: machdep.c,v 1.226 2003/04/30 22:37:11 mickey Exp $	*/
 /*	$NetBSD: machdep.c,v 1.214 1996/11/10 03:16:17 thorpej Exp $	*/
 
 /*-
@@ -1429,15 +1429,17 @@ identifycpu()
 	}
 
 	if (cachesize > -1) {
-		sprintf(cpu_model, "%s %s%s (%s%s%s%s-class, %dKB L2 cache)",
-			vendorname, modifier, name,
-			((*token) ? "\"" : ""), ((*token) ? token : ""),
-			((*token) ? "\" " : ""), classnames[class], cachesize);
+		snprintf(cpu_model, sizeof(cpu_model),
+		    "%s %s%s (%s%s%s%s-class, %dKB L2 cache)",
+		    vendorname, modifier, name,
+		    ((*token) ? "\"" : ""), ((*token) ? token : ""),
+		    ((*token) ? "\" " : ""), classnames[class], cachesize);
 	} else {
-		sprintf(cpu_model, "%s %s%s (%s%s%s%s-class)",
-			vendorname, modifier, name,
-			((*token) ? "\"" : ""), ((*token) ? token : ""),
-			((*token) ? "\" " : ""), classnames[class]);
+		snprintf(cpu_model, sizeof(cpu_model),
+		    "%s %s%s (%s%s%s%s-class)",
+		    vendorname, modifier, name,
+		    ((*token) ? "\"" : ""), ((*token) ? token : ""),
+		    ((*token) ? "\" " : ""), classnames[class]);
 	}
 
 	/* configure the CPU if needed */
