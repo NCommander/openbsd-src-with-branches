@@ -1,4 +1,4 @@
-/*	$OpenBSD: usb_port.h,v 1.46 2003/12/15 23:36:14 cedric Exp $ */
+/*	$OpenBSD: usb_port.h,v 1.47 2004/01/14 02:00:41 krw Exp $ */
 /*	$NetBSD: usb_port.h,v 1.62 2003/02/15 18:33:30 augustss Exp $	*/
 /*	$FreeBSD: src/sys/dev/usb/usb_port.h,v 1.21 1999/11/17 22:33:47 n_hibma Exp $	*/
 
@@ -79,6 +79,7 @@ MALLOC_DECLARE(M_USBHC);
 #define UMODEM_DEBUG 1
 #define UAUDIO_DEBUG 1
 #define AUE_DEBUG 1
+#define AXE_DEBUG 1
 #define CUE_DEBUG 1
 #define KUE_DEBUG 1
 #define URL_DEBUG 1
