@@ -1,4 +1,4 @@
-/*      $OpenBSD: atapiscsi.c,v 1.51 2001/07/31 07:07:00 csapuntz Exp $     */
+/*      $OpenBSD: atapiscsi.c,v 1.52 2001/08/18 20:37:21 deraadt Exp $     */
 
 /*
  * This code is derived from code with the copyright below.
@@ -229,6 +229,9 @@ atapiscsi_attach(parent, self, aux)
 	struct ataparams *id = &drvp->id;
 
 	printf("\n");
+
+	/* Initialize shared data. */
+	scsi_init();
 
 #ifdef WDCDEBUG
 	if (chp->wdc->sc_dev.dv_cfdata->cf_flags & WDC_OPTION_PROBE_VERBOSE)
