@@ -1,4 +1,4 @@
-/*	$OpenBSD: db_input.c,v 1.3 1996/03/11 11:16:09 mickey Exp $	*/
+/*	$OpenBSD: db_input.c,v 1.4 1996/04/21 22:19:01 deraadt Exp $	*/
 /*	$NetBSD: db_input.c,v 1.7 1996/02/05 01:57:02 christos Exp $	*/
 
 /* 
@@ -173,6 +173,11 @@ db_inputchar(c)
 		    cnputc(*db_lc);
 		    db_lc++;
 		}
+		break;
+	    case CTRL('w'):
+		/* erase word back */
+		while (db_lc > db_lbuf_start && *db_lc != BLANK)
+		    db_delete(1, DEL_BWD);
 		break;
 	    case CTRL('h'):
 	    case 0177:
