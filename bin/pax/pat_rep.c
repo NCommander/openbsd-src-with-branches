@@ -123,7 +123,15 @@ rep_add(str)
 	 * first character in the string specifies what the delimiter is for
 	 * this expression
 	 */
-	if ((pt1 = strchr(str+1, *str)) == NULL) {
+	for (pt1 = str+1; *pt1; pt1++) {
+		if (*pt1 == '\\') {
+			pt1++;
+			continue;
+		}
+		if (*pt1 == *str)
+			break;
+	}
+	if (pt1 == NULL) {
 		paxwarn(1, "Invalid replacement string %s", str);
 		return(-1);
 	}
@@ -151,7 +159,15 @@ rep_add(str)
 	 * we then point the node at the new substitution string
 	 */
 	*pt1++ = *str;
-	if ((pt2 = strchr(pt1, *str)) == NULL) {
+	for (pt2 = pt1; *pt2; pt2++) {
+		if (*pt2 == '\\') {
+			pt2++;
+			continue;
+		}
+		if (*pt2 == *str)
+			break;
+	}
+	if (pt2 == NULL) {
 		regfree(&(rep->rcmp));
 		(void)free((char *)rep);
 		paxwarn(1, "Invalid replacement string %s", str);
@@ -1112,7 +1128,7 @@ resub(rp, pm, src, inpt, dest, destend)
 			/*
 			 * Ordinary character, just copy it
 			 */
-			if ((c == '\\') && ((*spt == '\\') || (*spt == '&')))
+			if ((c == '\\') && (*spt != '\0'))
 				c = *spt++;
 			*dpt++ = c;
 			continue;
