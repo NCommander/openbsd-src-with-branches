@@ -1,4 +1,4 @@
-/*	$OpenBSD: installboot.c,v 1.4 1996/10/30 22:40:31 niklas Exp $ */
+/*	$OpenBSD: installboot.c,v 1.5 1997/01/15 23:41:48 millert Exp $ */
 /*	$NetBSD: installboot.c,v 1.2 1995/12/20 00:17:49 cgd Exp $ */
 
 /*
@@ -156,7 +156,7 @@ main(argc, argv)
 		long    bb_secsize;     /* size of secondary boot block */
 		long    bb_secstart;    /* start of secondary boot block */
 		long    bb_flags;       /* unknown; always zero */
-		long    bb_cksum;       /* checksum of the the boot block, as longs. */
+		long    bb_cksum;       /* checksum of the boot block, as longs. */
 	} bb;
 	long *lp, *ep;
 
