@@ -1,7 +1,7 @@
-/*	$OpenBSD: show.c,v 1.5 1998/11/19 04:12:55 espie Exp $	*/
+/*	$OpenBSD: show.c,v 1.6 1998/11/22 23:22:41 espie Exp $	*/
 
 #ifndef lint
-static const char *rcsid = "$OpenBSD: show.c,v 1.5 1998/11/19 04:12:55 espie Exp $";
+static const char *rcsid = "$OpenBSD: show.c,v 1.6 1998/11/22 23:22:41 espie Exp $";
 #endif
 
 /*
@@ -97,10 +97,12 @@ show_index(char *title, char *fname)
 	} 
 	else {
 		if (fgets(line, MAXINDEXSIZE+1, fp)) {
-			if (line[MAXINDEXSIZE-1] != '\n') {
-				line[MAXINDEXSIZE] = '\n';
+			int  line_length = strlen(line);
+
+			if (line[line_length-1] != '\n') {
+				line[line_length] = '\n';
+				line[line_length+1] = 0;
 			}
-			line[MAXINDEXSIZE+1] = 0;
 		}
 		(void) fclose(fp);
 	}
