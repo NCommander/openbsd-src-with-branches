@@ -1,4 +1,4 @@
-/*	$OpenBSD: pmap.h,v 1.30 2004/05/20 09:20:42 kettenis Exp $	*/
+/*	$OpenBSD: pmap.h,v 1.31 2004/06/09 20:17:23 tedu Exp $	*/
 
 /*
  * Copyright (c) 2002-2004 Michael Shalayeff
@@ -85,6 +85,7 @@ extern struct pdc_hwtlb pdc_hwtlb;
  */
 #define	pmap_map_direct(pg)	((vaddr_t)VM_PAGE_TO_PHYS(pg))
 #define	pmap_unmap_direct(va) PHYS_TO_VM_PAGE((paddr_t)(va))
+#define	__HAVE_PMAP_DIRECT
 
 /*
  * according to the parisc manual aliased va's should be
