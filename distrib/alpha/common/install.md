@@ -1,4 +1,4 @@
-#       $OpenBSD: install.md,v 1.9 2002/05/18 17:56:03 krw Exp $
+#       $OpenBSD: install.md,v 1.10 2002/05/20 16:53:57 krw Exp $
 #
 # Copyright (c) 1996 The NetBSD Foundation, Inc.
 # All rights reserved.
@@ -40,7 +40,7 @@
 
 # Machine-dependent install sets
 MDSETS=kernel
-MDTERM=sun
+MDTERM=vt220
 ARCH=ARCH
 
 md_set_term() {
