@@ -1,9 +1,9 @@
-#	$OpenBSD: Makefile.inc,v 1.34 2002/10/16 16:10:24 millert Exp $
+#	$OpenBSD: Makefile.inc,v 1.35 2003/07/21 20:25:09 millert Exp $
 
 # gen sources
 .PATH: ${LIBCSRCDIR}/arch/${MACHINE_ARCH}/gen ${LIBCSRCDIR}/gen
 
-SRCS+=  alarm.c assert.c auth_subr.c authenticate.c login_cap.c \
+SRCS+=  alarm.c assert.c auth_subr.c authenticate.c \
         basename.c clock.c closedir.c confstr.c ctermid.c ctype_.c \
         daemon.c devname.c dirname.c disklabel.c elf_hash.c err.c \
         errx.c errlist.c errno.c exec.c fnmatch.c fstab.c ftok.c \
