@@ -1592,8 +1592,13 @@ ParseAddCmd(gnp, cmd)
 {
     GNode *gn = (GNode *) gnp;
     /* if target already supplied, ignore commands */
-    if (!(gn->type & OP_HAS_COMMANDS))
+    if (!(gn->type & OP_HAS_COMMANDS)) {
 	Lst_AtEnd(gn->commands, cmd);
+	if (!gn->lineno) {
+	    gn->lineno = Parse_Getlineno();
+	    gn->fname = Parse_Getfilename();
+	}
+    }
     return(0);
 }
 
