@@ -1,4 +1,4 @@
-#	$OpenBSD: RAMDISK,v 1.10 2000/09/16 04:03:00 rahnds Exp $
+#	$OpenBSD: RAMDISK,v 1.11 2000/12/07 18:19:31 deraadt Exp $
 #
 # PPC GENERIC config file
 #
@@ -14,7 +14,6 @@ option		SYS_TYPE=APPL
 option		FIREPOWERBUGS
 option		PPC_MPC106_BUG
 option		PCIVERBOSE
-option		WSEMUL_VT100
 option		WSEMUL_NO_DUMB
 
 # include "../../../conf/GENERIC"
