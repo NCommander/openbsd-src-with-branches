@@ -1,4 +1,4 @@
-/*	$OpenBSD: cvs.h,v 1.43 2005/01/24 16:12:56 jfb Exp $	*/
+/*	$OpenBSD: cvs.h,v 1.44 2005/02/01 18:51:04 jfb Exp $	*/
 /*
  * Copyright (c) 2004 Jean-Francois Brousseau <jfb@openbsd.org>
  * All rights reserved.
@@ -273,6 +273,7 @@ extern CVSFILE *cvs_files;
 
 /* client command handlers */
 int  cvs_add      (int, char **);
+int  cvs_admin    (int, char **);
 int  cvs_annotate (int, char **);
 int  cvs_checkout (int, char **);
 int  cvs_commit   (int, char **);
