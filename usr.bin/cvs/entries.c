@@ -50,7 +50,7 @@
  */
 
 CVSENTRIES*
-cvs_ent_open(const char *dir)
+cvs_ent_open(const char *dir, int flags)
 {
 	size_t len;
 	char entpath[MAXPATHLEN], ebuf[128];

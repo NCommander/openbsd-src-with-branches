@@ -510,7 +510,7 @@ cvs_diff_file(const char *path, const char *rev1, const char *rev2)
 	cvs_splitpath(path, dir, sizeof(dir), file, sizeof(file));
 	cvs_readrepo(dir, repo, sizeof(repo));
 
-	entf = cvs_ent_open(dir);
+	entf = cvs_ent_open(dir, O_RDONLY);
 	if (entf == NULL) {
 		cvs_log(LP_ERR, "no CVS/Entries file in `%s'", dir);
 		return (-1);
@@ -621,7 +621,7 @@ cvs_diff_dir(const char *dir, int recurse)
 		return (-1);
 	}
 
-	entf = cvs_ent_open(dir);
+	entf = cvs_ent_open(dir, O_RDONLY);
 	if (entf == NULL) {
 		cvs_log(LP_ERR, "no CVS/Entries file in `%s'", dir);
 		(void)closedir(dirp);
