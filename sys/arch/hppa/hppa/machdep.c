@@ -1,4 +1,4 @@
-/*	$OpenBSD: machdep.c,v 1.116 2003/10/15 18:54:55 mickey Exp $	*/
+/*	$OpenBSD: machdep.c,v 1.117 2003/11/24 19:27:03 mickey Exp $	*/
 
 /*
  * Copyright (c) 1999-2002 Michael Shalayeff
@@ -904,9 +904,13 @@ btlb_insert(space, va, pa, lenp, prot)
 	pa >>= PGSHIFT;
 	va >>= PGSHIFT;
 	/* check address alignment */
-	if (pa & (len - 1))
+	if (pa & (len - 1)) {
+#ifdef BTLBDEBUG
 		printf("WARNING: BTLB address misaligned pa=0x%x, len=0x%x\n",
 		    pa, len);
+#endif
+		return -(ERANGE);
+	}
 
 	/* ensure IO space is uncached */
 	if ((pa & (HPPA_IOBEGIN >> PGSHIFT)) == (HPPA_IOBEGIN >> PGSHIFT))
