@@ -1,4 +1,4 @@
-/*	$OpenBSD: policy.c,v 1.24 2003/02/18 13:14:43 jmc Exp $	*/
+/*	$OpenBSD: policy.c,v 1.25 2003/04/17 07:39:24 pvalchev Exp $	*/
 /*
  * Copyright 2002 Niels Provos <provos@citi.umich.edu>
  * All rights reserved.
@@ -197,7 +197,7 @@ systrace_newpolicynr(int fd, struct policy *tmp)
 		return (-1);
 
 	if ((tmp->policynr = intercept_newpolicy(fd)) == -1) {
-		free(tmp);
+		/* XXX - maybe free policy structure here */
 		return (-1);
 	}
 
