@@ -152,26 +152,13 @@ getdiv(n)
 int n;
 {
 	register int c;
-	register FILE *dfil;
 
 	if (active == outfile[n])
 		errx(1, "undivert: diversion still active");
+	rewind(outfile[n]);
+	while ((c = getc(outfile[n])) != EOF)
+		putc(c, active);
 	(void) fclose(outfile[n]);
-	outfile[n] = NULL;
-	m4temp[UNIQUE] = n + '0';
-	if ((dfil = fopen(m4temp, "r")) == NULL)
-		err(1, "%s: cannot undivert", m4temp);
-	else
-		while ((c = getc(dfil)) != EOF)
-			putc(c, active);
-	(void) fclose(dfil);
-
-#ifdef vms
-	if (remove(m4temp))
-#else
-	if (unlink(m4temp) == -1)
-#endif
-		err(1, "%s: cannot unlink", m4temp);
 }
 
 void
@@ -192,12 +179,6 @@ killdiv()
 	for (n = 0; n < MAXOUT; n++)
 		if (outfile[n] != NULL) {
 			(void) fclose(outfile[n]);
-			m4temp[UNIQUE] = n + '0';
-#ifdef vms
-			(void) remove(m4temp);
-#else
-			(void) unlink(m4temp);
-#endif
 		}
 }
 

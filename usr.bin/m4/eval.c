@@ -56,6 +56,7 @@ static char rcsid[] = "$OpenBSD: eval.c,v 1.11 1998/04/25 18:47:18 millert Exp $
 #include <unistd.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <stddef.h>
 #include <string.h>
 #include <fcntl.h>
 #include <err.h>
@@ -668,10 +669,13 @@ register int n;
 	if (n < 0 || n >= MAXOUT)
 		n = 0;		       /* bitbucket */
 	if (outfile[n] == NULL) {
-		m4temp[UNIQUE] = n + '0';
-		if ((fd = open(m4temp, O_CREAT|O_EXCL|O_WRONLY, 0600)) < 0 ||
-		    (outfile[n] = fdopen(fd, "w")) == NULL)
-			err(1, "%s: cannot divert", m4temp);
+		char fname[] = _PATH_DIVNAME;
+
+		if ((fd = mkstemp(fname)) < 0 || 
+			(outfile[n] = fdopen(fd, "w+")) == NULL)
+				err(1, "%s: cannot divert", fname);
+		if (unlink(fname) == -1)
+			err(1, "%s: cannot unlink", fname);
 	}
 	active = outfile[n];
 }
