@@ -1,4 +1,4 @@
-/*	$OpenBSD: in_pcb.c,v 1.55 2001/06/12 10:59:53 angelos Exp $	*/
+/*	$OpenBSD: in_pcb.c,v 1.56 2001/07/05 16:45:54 jjbg Exp $	*/
 /*	$NetBSD: in_pcb.c,v 1.25 1996/02/13 23:41:53 christos Exp $	*/
 
 /*
@@ -543,14 +543,6 @@ in_pcbdetach(v)
 	struct socket *so = inp->inp_socket;
 	int s;
 
-#if 0 /*KAME IPSEC*/
-	if (so->so_pcb) {
-		KEYDEBUG(KEYDEBUG_KEY_STAMP,
-			printf("DP call free SO=%p from in_pcbdetach\n", so));
-		key_freeso(so);
-	}
-	ipsec4_delete_pcbpolicy(inp);
-#endif /*IPSEC*/
 	so->so_pcb = 0;
 	sofree(so);
 	if (inp->inp_options)
