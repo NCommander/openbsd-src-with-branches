@@ -1,6 +1,6 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: ctors.c,v 1.1 2002/01/31 15:33:36 art Exp $	*/
 /*
- * Written by Artur Grabowski <art@openbsd.org>. Public Domain.
+ *	Written by Artur Grabowski <art@openbsd.org>, 2002 Public Domain.
  */
 void foo(void) __attribute__((constructor));
 
