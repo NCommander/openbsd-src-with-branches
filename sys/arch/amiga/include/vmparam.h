@@ -61,8 +61,8 @@
  */
 
 /* Sun settings. Still hope, that I might get sun3 binaries to work... */
-#define	USRTEXT		0x2000
-#define	USRSTACK	0x0E000000
+#define	USRTEXT		(vm_offset_t)0x2000
+#define	USRSTACK	(vm_offset_t)0x0E000000
 #define	LOWPAGES	btoc(USRTEXT)
 #define KUSER_AREA	(-UPAGES*NBPG)
 /*

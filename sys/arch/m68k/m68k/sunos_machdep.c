@@ -61,7 +61,6 @@
 #include <compat/sunos/sunos.h>
 #include <compat/sunos/sunos_syscallargs.h>
 
-#include <machine/psl.h>
 #include <machine/reg.h>
 
 #ifdef DEBUG
@@ -142,7 +141,7 @@ sunos_sendsig(catcher, sig, mask, code)
 		psp->ps_sigstk.ss_flags |= SS_ONSTACK;
 	} else
 		fp = (struct sunos_sigframe *)frame->f_regs[SP] - 1;
-	if ((unsigned)fp <= USRSTACK - ctob(p->p_vmspace->vm_ssize)) 
+	if ((vm_offset_t)fp <= USRSTACK - ctob(p->p_vmspace->vm_ssize)) 
 		(void)grow(p, (unsigned)fp);
 #ifdef DEBUG
 	if ((sigdebug & SDB_KSTACK) && p->p_pid == sigpid)
