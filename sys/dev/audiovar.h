@@ -79,6 +79,9 @@ struct audio_buffer {
 	u_short	cb_pause;	/* io paused */
 	u_long	cb_drops;	/* missed samples from over/underrun */
 	u_long	cb_pdrops;	/* paused samples */
+
+	int	fill;		/* number of silence pad bytes */
+	u_char	*otp;		/* point where silence padding started */
 };
 
 /*
@@ -103,6 +106,8 @@ struct audio_softc {
 	/* Ring buffers, separate for record and play. */
 	struct	audio_buffer rr; /* Record ring */
 	struct	audio_buffer pr; /* Play ring */
+
+	u_char	*auzero_block;	/* a block of silence */
 	
 	u_char	sc_rbus;	/* input dma in progress */
 	u_char	sc_pbus;	/* output dma in progress */
