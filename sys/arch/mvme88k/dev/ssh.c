@@ -1,4 +1,4 @@
-/*	$OpenBSD: ssh.c,v 1.2 2001/03/07 23:47:20 miod Exp $	*/
+/*	$OpenBSD: ssh.c,v 1.3 2001/03/09 05:44:39 smurph Exp $	*/
 
 /*
  * Copyright (c) 1994 Michael L. Hitch
@@ -680,8 +680,8 @@ sshreset(sc)
 		for (i = 0; i < SSH_NACB; i++) {
 
 			pmap_cache_ctrl(pmap_kernel(),
-				M88K_TRUNC_PAGE((vm_offset_t)acb),
-				M88K_ROUND_PAGE((vm_offset_t)acb+sizeof(*acb)),
+				trunc_page((vm_offset_t)acb),
+				round_page((vm_offset_t)acb+sizeof(*acb)),
 				CACHE_INH);
 
 			TAILQ_INSERT_TAIL(&sc->free_list, acb, chain);
