@@ -1,12 +1,12 @@
-#	$OpenBSD: Makefile,v 1.33 2003/06/22 22:27:17 deraadt Exp $
+#	$OpenBSD: Makefile,v 1.34 2003/07/22 17:15:12 brad Exp $
 #	$NetBSD: Makefile,v 1.35 1996/04/03 21:20:52 chuck Exp $
 
 .include <bsd.own.mk>
 
-SUBDIR+=	bc cvs diff diff3 
+SUBDIR+=	bc cvs
 SUBDIR+=../egcs/gcc
 #SUBDIR+= gcc 
-SUBDIR+= groff gzip lynx rcs sdiff sendbug
+SUBDIR+= groff gzip lynx rcs sendbug
 
 SUBDIR+=	binutils
 # some ports use binutils gas and ld, most do not (yet).
