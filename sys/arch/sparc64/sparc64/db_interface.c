@@ -1,4 +1,4 @@
-/*	$OpenBSD: db_interface.c,v 1.12 2002/07/24 00:48:25 art Exp $	*/
+/*	$OpenBSD: db_interface.c,v 1.13 2003/01/09 22:27:10 miod Exp $	*/
 /*	$NetBSD: db_interface.c,v 1.61 2001/07/31 06:55:47 eeh Exp $ */
 
 /*
@@ -58,6 +58,8 @@
 #include "fb.h"
 #include "esp_sbus.h"
 #endif
+
+db_regs_t	ddb_regs;	/* register state */
 
 extern void OF_enter(void);
 
