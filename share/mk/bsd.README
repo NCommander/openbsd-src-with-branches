@@ -292,12 +292,14 @@ DPADD		Additional dependencies for the program.  Usually used for
 			LIBKDB		/usr/lib/libkdb.a
 			LIBKRB		/usr/lib/libkrb.a
 			LIBKVM		/usr/lib/libkvm.a
+			LIBOLDCURSES	/usr/lib/libocurses.a
 			LIBM		/usr/lib/libm.a
 			LIBMP		/usr/lib/libmp.a
 			LIBPC		/usr/lib/libpc.a
 			LIBPLOT		/usr/lib/libplot.a
 			LIBRPC		/usr/lib/sunrpc.a
-			LIBTERM		/usr/lib/libterm.a
+			LIBTERMCAP	/usr/lib/libtermcap.a
+			LIBTERMLIB	/usr/lib/libtermlib.a
 			LIBUTIL		/usr/lib/libutil.a
 
 SHAREDSTRINGS	If defined, a new .c.o rule is used that results in shared
