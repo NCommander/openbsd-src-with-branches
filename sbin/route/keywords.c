@@ -12,7 +12,6 @@ struct keytab keywords[] = {
 	{"cloning", K_CLONING},
 	{"delete", K_DELETE},
 	{"dst", K_DST},
-	{"encap", K_ENCAP},
 	{"expire", K_EXPIRE},
 	{"flush", K_FLUSH},
 	{"gateway", K_GATEWAY},
