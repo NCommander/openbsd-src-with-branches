@@ -1,4 +1,4 @@
-/*	$OpenBSD: nat_traversal.c,v 1.7 2004/08/08 19:11:06 deraadt Exp $	*/
+/*	$OpenBSD: nat_traversal.c,v 1.8 2004/11/18 18:15:46 hshoexer Exp $	*/
 
 /*
  * Copyright (c) 2004 Håkan Olsson.  All rights reserved.
@@ -252,7 +252,7 @@ nat_t_generate_nat_d_hash(struct message *msg, struct sockaddr *sa,
 	}
 
 	port = sockaddr_port(sa);
-	memset(res, 0, *hashlen);
+	bzero(res, *hashlen);
 
 	hash->Init(hash->ctx);
 	hash->Update(hash->ctx, msg->exchange->cookies,
