@@ -1,4 +1,4 @@
-/*	$OpenBSD: session.c,v 1.120 2004/02/25 19:48:18 claudio Exp $ */
+/*	$OpenBSD: session.c,v 1.121 2004/02/26 16:16:41 claudio Exp $ */
 
 /*
  * Copyright (c) 2003, 2004 Henning Brauer <henning@openbsd.org>
@@ -648,6 +648,13 @@ change_state(struct peer *peer, enum session_state state,
 
 	switch (state) {
 	case STATE_IDLE:
+		/*
+		 * try to write out what's buffered (maybe a notification),
+		 * don't bother if it fails
+		 */
+		if (peer->state >= STATE_OPENSENT && peer->wbuf.queued)
+			msgbuf_write(&peer->wbuf);
+
 		/*
 		 * we must start the timer for the next EVNT_START
 		 * if we are coming here due to an error and the
