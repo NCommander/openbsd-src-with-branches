@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.51 2002/06/20 19:56:07 stevesk Exp $
+#	$OpenBSD: Makefile,v 1.52 2003/02/21 09:04:09 markus Exp $
 
 .PATH:		${.CURDIR}/..
 
@@ -26,18 +26,6 @@ SRCS+=  auth-krb5.c
 LDADD+= -lkrb5 -lkafs -lasn1 -lcom_err
 DPADD+= ${LIBKRB5} ${LIBKAFS} ${LIBASN1} ${LIBCOM_ERR}
 .endif # KERBEROS5
-
-.if (${KERBEROS:L} == "yes")
-.if (${AFS:L} == "yes")
-CFLAGS+= -DAFS
-LDADD+=  -lkafs
-DPADD+=  ${LIBKAFS}
-.endif # AFS
-CFLAGS+= -DKRB4 -I${DESTDIR}/usr/include/kerberosIV
-SRCS+=	auth-krb4.c
-LDADD+=	 -lkrb
-DPADD+=	 ${LIBKRB}
-.endif # KERBEROS
 
 .include <bsd.prog.mk>
 
