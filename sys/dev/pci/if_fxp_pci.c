@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_fxp_pci.c,v 1.2 2000/04/26 19:12:08 chris Exp $	*/
+/*	$OpenBSD: if_fxp_pci.c,v 1.3 2000/06/18 15:27:54 deraadt Exp $	*/
 
 /*
  * Copyright (c) 1995, David Greenman
@@ -119,6 +119,7 @@ fxp_pci_match(parent, match, aux)
 	case PCI_PRODUCT_INTEL_82557:
 	case PCI_PRODUCT_INTEL_82559:
 	case PCI_PRODUCT_INTEL_82559ER:
+	case PCI_PRODUCT_INTEL_82562:
 		return (1);
 	}
 
