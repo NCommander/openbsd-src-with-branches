@@ -23,7 +23,7 @@
  */
 
 #include "includes.h"
-RCSID("$OpenBSD: dh.c,v 1.29 2004/02/27 22:49:27 dtucker Exp $");
+RCSID("$OpenBSD: dh.c,v 1.30 2004/06/13 12:53:24 djm Exp $");
 
 #include "xmalloc.h"
 
@@ -145,7 +145,7 @@ choose_dh(int min, int wantbits, int max)
 	if (bestcount == 0) {
 		fclose(f);
 		logit("WARNING: no suitable primes in %s", _PATH_DH_PRIMES);
-		return (NULL);
+		return (dh_new_group14());
 	}
 
 	linenum = 0;
