@@ -1,4 +1,4 @@
-/*	$OpenBSD: pfctl_table.c,v 1.25 2003/01/22 01:15:32 cedric Exp $ */
+/*	$OpenBSD: pfctl_table.c,v 1.26 2003/01/23 16:10:29 cedric Exp $ */
 
 /*
  * Copyright (c) 2002 Cedric Berger
@@ -598,6 +598,12 @@ pfctl_append_addr(char *addr, int net, int neg)
 	}
 	append_addr(p, 0);
 	free(p);
+}
+
+void
+pfctl_append_file(char *file)
+{
+	load_addr(0, NULL, file, 0);
 }
 
 void
