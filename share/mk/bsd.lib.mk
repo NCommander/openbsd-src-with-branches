@@ -1,4 +1,4 @@
-#	$OpenBSD: bsd.lib.mk,v 1.25 2000/10/03 23:17:07 mickey Exp $
+#	$OpenBSD: bsd.lib.mk,v 1.26 2000/10/09 15:50:31 espie Exp $
 #	$NetBSD: bsd.lib.mk,v 1.67 1996/01/17 20:39:26 mycroft Exp $
 #	@(#)bsd.lib.mk	5.26 (Berkeley) 5/2/91
 
@@ -173,14 +173,14 @@ lib${LIB}_pic.a:: ${SOBJS}
 lib${LIB}.so.${SHLIB_MAJOR}.${SHLIB_MINOR}: ${OBJS} ${DPADD}
 	@echo building shared ${LIB} library \(version ${SHLIB_MAJOR}.${SHLIB_MINOR}\)
 	@rm -f lib${LIB}.so.${SHLIB_MAJOR}.${SHLIB_MINOR}
-	gcc -shared ${PICFLAG} -Wl,-soname,lib${LIB}.so.${SHLIB_MAJOR} \
+	${CC} -shared ${PICFLAG} -Wl,-soname,lib${LIB}.so.${SHLIB_MAJOR} \
 	    -o lib${LIB}.so.${SHLIB_MAJOR}.${SHLIB_MINOR} \
 	    `${LORDER} ${OBJS}|tsort -q` ${LDADD}
 .else
 lib${LIB}.so.${SHLIB_MAJOR}.${SHLIB_MINOR}: ${SOBJS} ${DPADD}
 	@echo building shared ${LIB} library \(version ${SHLIB_MAJOR}.${SHLIB_MINOR}\)
 	@rm -f lib${LIB}.so.${SHLIB_MAJOR}.${SHLIB_MINOR}
-	gcc -shared ${PICFLAG} \
+	${CC} -shared ${PICFLAG} \
 	    -o lib${LIB}.so.${SHLIB_MAJOR}.${SHLIB_MINOR} \
 	    `${LORDER} ${SOBJS}|tsort -q` ${LDADD}
 .endif
