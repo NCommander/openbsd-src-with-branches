@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: adw.h,v 1.1 1998/11/17 06:14:58 downsj Exp $	*/
 /*      $NetBSD: adw.h,v 1.1 1998/09/26 16:10:41 dante Exp $        */
 
 /*
@@ -87,7 +87,7 @@ typedef struct adw_ccb ADW_CCB;
 #define	CCB_WATCHDOG	0x10
 
 
-#define ADW_MAX_CCB	16
+#define ADW_MAX_CCB	64
 
 struct adw_control
 {
