@@ -1,4 +1,4 @@
-/*	$OpenBSD: mainbus.c,v 1.31 2002/04/21 22:54:10 mickey Exp $	*/
+/*	$OpenBSD: mainbus.c,v 1.32 2002/04/22 01:49:42 mickey Exp $	*/
 
 /*
  * Copyright (c) 1998-2001 Michael Shalayeff
@@ -877,7 +877,7 @@ mbprint(aux, pnp)
 		printf("\"%s\" at %s (type %x, sv %x)", ca->ca_name, pnp,
 		    ca->ca_type.iodc_type, ca->ca_type.iodc_sv_model);
 	if (ca->ca_hpa) {
-		if (ca->ca_hpa & ~ca->ca_hpamask)
+		if (~ca->ca_hpamask)
 			printf(" offset %x", ca->ca_hpa & ~ca->ca_hpamask);
 		if (!pnp && ca->ca_irq >= 0)
 			printf(" irq %d", ca->ca_irq);
