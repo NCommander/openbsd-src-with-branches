@@ -1,4 +1,4 @@
-/*	$OpenBSD: cpu.h,v 1.14 2001/08/20 19:48:55 miod Exp $	*/
+/*	$OpenBSD: cpu.h,v 1.15 2001/11/30 23:20:09 miod Exp $	*/
 /*	$NetBSD: cpu.h,v 1.36 1996/09/11 00:11:42 thorpej Exp $	*/
 
 /*
@@ -233,7 +233,6 @@ int	dma_cachectl __P((caddr_t, int));
 int	kvtop __P((caddr_t));
 void	physaccess __P((caddr_t,  caddr_t, int, int));
 void	physunaccess __P((caddr_t, int));
-void	setredzone __P((u_int *, caddr_t));
 
 #ifdef GENERIC
 /*
