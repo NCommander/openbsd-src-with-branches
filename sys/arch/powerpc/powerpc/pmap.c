@@ -1,4 +1,4 @@
-/*	$OpenBSD: pmap.c,v 1.10 1999/07/05 20:56:26 rahnds Exp $	*/
+/*	$OpenBSD: pmap.c,v 1.11 1999/09/03 18:01:50 art Exp $	*/
 /*	$NetBSD: pmap.c,v 1.1 1996/09/30 16:34:52 ws Exp $	*/
 
 /*
@@ -956,7 +956,7 @@ pmap_remove_pv(pm, pteidx, va, pind, pte)
  * Insert physical page at pa into the given pmap at virtual address va.
  */
 void
-pmap_enter(pm, va, pa, prot, wired, acces_type)
+pmap_enter(pm, va, pa, prot, wired, access_type)
 	struct pmap *pm;
 	vm_offset_t va, pa;
 	vm_prot_t prot;
