@@ -1,4 +1,4 @@
-/*	$OpenBSD: def.h,v 1.40 2002/05/29 12:32:51 vincent Exp $	*/
+/*	$OpenBSD: def.h,v 1.41 2002/05/29 12:41:42 vincent Exp $	*/
 
 #include <sys/queue.h>
 
@@ -614,7 +614,6 @@ extern int	 ttcol;
 extern int	 tttop;
 extern int	 ttbot;
 extern int	 tthue;
-extern int	 undoaction;
 extern int	 defb_nmodes;
 extern int	 defb_flag;
 extern const char cinfo[];
