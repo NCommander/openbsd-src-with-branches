@@ -1,4 +1,5 @@
-/*	$OpenBSD: sdl.c,v 1.10 2003/09/26 16:07:29 deraadt Exp $ */
+/*	$OpenBSD: sdl.c,v 1.11 2004/02/26 07:28:55 beck Exp $ */
+
 /*
  * Copyright (c) 2003 Bob Beck.  All rights reserved.
  *
