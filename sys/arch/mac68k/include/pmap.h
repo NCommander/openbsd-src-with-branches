@@ -1,4 +1,4 @@
-/*	$OpenBSD: pmap.h,v 1.14.2.1 2002/01/31 22:55:13 niklas Exp $	*/
+/*	$OpenBSD$	*/
 
 #ifndef	_MAC68K_PMAP_H_
 #define	_MAC68K_PMAP_H_
@@ -7,7 +7,8 @@
 
 #ifdef	_KERNEL
 
-void mac68k_set_pte(vaddr_t va, paddr_t pge);
+vaddr_t	pmap_map(vaddr_t, paddr_t, paddr_t, int);
+void mac68k_set_pte(vaddr_t, paddr_t);
 
 void pmap_init_md(void);
 #define	PMAP_INIT_MD()	pmap_init_md()

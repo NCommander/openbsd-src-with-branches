@@ -21,7 +21,7 @@ mpys(opnd1,opnd2,result)
 	int opnd1, opnd2;
 	struct mdsfu_register *result;
 {
-	impys(&opnd1,&opnd2,result);
+	s_xmpy(&opnd1,&opnd2,result);
 
 	/* determine overflow status */
 	if ((result_hi == 0 && result_lo >= 0) ||

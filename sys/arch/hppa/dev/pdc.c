@@ -1,4 +1,4 @@
-/*	$OpenBSD: pdc.c,v 1.14.4.1 2002/01/31 22:55:09 niklas Exp $	*/
+/*	$OpenBSD$	*/
 
 /*
  * Copyright (c) 1998-2002 Michael Shalayeff
@@ -196,7 +196,7 @@ pdcopen(dev, flag, mode, p)
 	struct pdc_softc *sc;
 	struct tty *tp;
 	int s;
-	int error = 0, setuptimeout;
+	int error = 0, setuptimeout = 0;
 
 	if (unit >= pdc_cd.cd_ndevs || (sc = pdc_cd.cd_devs[unit]) == NULL)
 		return ENXIO;

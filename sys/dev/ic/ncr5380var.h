@@ -1,4 +1,4 @@
-/*	$OpenBSD: ncr5380var.h,v 1.7 2001/09/20 23:30:29 miod Exp $	*/
+/*	$OpenBSD$	*/
 /*	$NetBSD: ncr5380var.h,v 1.6 1996/05/10 18:04:06 gwr Exp $	*/
 
 /*
@@ -41,7 +41,7 @@
 #define SCI_CLR_INTR(sc)	(*(sc)->sci_iack)
 #define	SCI_BUSY(sc)		(*sc->sci_bus_csr & SCI_BUS_BSY)
 
-/* These are NOT artibtrary, but map to bits in sci_tcmd */
+/* These are NOT arbitrary, but map to bits in sci_tcmd */
 #define PHASE_DATA_OUT	0x0
 #define PHASE_DATA_IN	0x1
 #define PHASE_COMMAND	0x2

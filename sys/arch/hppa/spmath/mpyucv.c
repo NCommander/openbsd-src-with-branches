@@ -21,6 +21,6 @@ mpyucv(opnd1,opnd2,result)
 	unsigned int opnd1, opnd2;
 	struct mdsfu_register *result;
 {
-	impyu(&opnd1,&opnd2,result);
+	u_xmpy(&opnd1,&opnd2,result);
 	overflow = FALSE;
 }

@@ -74,4 +74,4 @@
     Qallp4(rightp4) = Qallp4(leftp4) XOR Qallp4(rightp4)	\
     Qallp4(leftp4)  = Qallp4(leftp4) XOR Qallp4(rightp4)
 
-int quad_frnd(quad_floating_point *, quad_floating_point *, unsigned int *);
+int quad_frnd(quad_floating_point *, quad_floating_point *, quad_floating_point *, unsigned int *);

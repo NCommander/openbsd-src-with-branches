@@ -1,4 +1,4 @@
-/*	$OpenBSD: ncr53c9x.c,v 1.11.2.2 2002/06/11 03:42:19 art Exp $	*/
+/*	$OpenBSD$	*/
 /*     $NetBSD: ncr53c9x.c,v 1.56 2000/11/30 14:41:46 thorpej Exp $    */
 
 /*
@@ -2668,8 +2668,8 @@ shortcut:
 	 * overhead to pay. For example, selecting, sending a message
 	 * and command and then doing some work can be done in one "pass".
 	 *
-	 * The delay is a heuristic. It is 2 when at 20Mhz, 2 at 25Mhz and 1
-	 * at 40Mhz. This needs testing.
+	 * The delay is a heuristic. It is 2 when at 20MHz, 2 at 25MHz and 1
+	 * at 40MHz. This needs testing.
 	 */
 	{
 		struct timeval wait, cur;

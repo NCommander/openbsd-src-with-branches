@@ -25,8 +25,8 @@
  */
 /*ARGSUSED*/
 int
-sgl_to_sgl_fcnvfxt(srcptr,dstptr,status)
-	sgl_floating_point *srcptr;
+sgl_to_sgl_fcnvfxt(srcptr, null, dstptr, status)
+	sgl_floating_point *srcptr, *null;
 	int *dstptr;
 	unsigned int *status;
 {
@@ -101,8 +101,8 @@ sgl_to_sgl_fcnvfxt(srcptr,dstptr,status)
  */
 /*ARGSUSED*/
 int
-sgl_to_dbl_fcnvfxt(srcptr,dstptr,status)
-	sgl_floating_point *srcptr;
+sgl_to_dbl_fcnvfxt(srcptr, null, dstptr, status)
+	sgl_floating_point *srcptr, *null;
 	dbl_integer *dstptr;
 	unsigned int *status;
 {
@@ -187,8 +187,8 @@ sgl_to_dbl_fcnvfxt(srcptr,dstptr,status)
  */
 /*ARGSUSED*/
 int
-dbl_to_sgl_fcnvfxt(srcptr,dstptr,status)
-	dbl_floating_point *srcptr;
+dbl_to_sgl_fcnvfxt(srcptr, null, dstptr, status)
+	dbl_floating_point *srcptr, *null;
 	int *dstptr;
 	unsigned int *status;
 {
@@ -264,8 +264,8 @@ dbl_to_sgl_fcnvfxt(srcptr,dstptr,status)
  */
 /*ARGSUSED*/
 int
-dbl_to_dbl_fcnvfxt(srcptr,dstptr,status)
-	dbl_floating_point *srcptr;
+dbl_to_dbl_fcnvfxt(srcptr, null, dstptr, status)
+	dbl_floating_point *srcptr, *null;
 	dbl_integer *dstptr;
 	unsigned int *status;
 {

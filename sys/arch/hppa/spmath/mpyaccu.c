@@ -24,7 +24,7 @@ mpyaccu(opnd1,opnd2,result)
 	struct mdsfu_register temp;
 	int carry;
 
-	impyu(&opnd1,&opnd2,&temp);
+	u_xmpy(&opnd1,&opnd2,&temp);
 
 	/* get result of low word add, and check for carry out */
 	if ((result_lo += (unsigned)temp.rslt_lo) < (unsigned)temp.rslt_lo)

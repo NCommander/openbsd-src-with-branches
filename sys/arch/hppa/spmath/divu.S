@@ -1,4 +1,4 @@
-/*	$OpenBSD: divu.S,v 1.5.6.2 2002/06/11 03:35:38 art Exp $	*/
+/*	$OpenBSD$	*/
 /*
   (c) Copyright 1986 HEWLETT-PACKARD COMPANY
   To anyone who acknowledges that this file is provided "AS IS"
@@ -15,6 +15,8 @@
 /* @(#)divu.s: Revision: 1.11.88.1 Date: 93/12/07 15:06:01 */
 
 #include <machine/asm.h>
+#define _LOCORE
+#include <machine/frame.h>
 
 ;************************************************************************
 ; Implement an integer divide routine for 32-bit operands and 32-bit quotient

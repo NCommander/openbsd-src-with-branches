@@ -77,5 +77,5 @@ void mpyscv(int, int, struct mdsfu_register *);
 void mpyu(unsigned int, unsigned int, struct mdsfu_register *);
 void mpyucv(unsigned int, unsigned int, struct mdsfu_register *);
 
-int impys(int *, int *, struct mdsfu_register *);
-int impyu(int *, int *, struct mdsfu_register *);
+int s_xmpy(int *, int *, struct mdsfu_register *);
+int u_xmpy(int *, int *, struct mdsfu_register *);

@@ -1,4 +1,4 @@
-/*	$OpenBSD: mpcpcibus.c,v 1.4.2.2 2002/06/11 03:36:34 art Exp $ */
+/*	$OpenBSD$ */
 
 /*
  * Copyright (c) 1997 Per Fogelstrom
@@ -640,7 +640,7 @@ fix_node_irq(node, pba)
 	}
 
 	/* if this node has a AAPL,interrupts property, firmware
-	 * has intialized the register correctly.
+	 * has initialized the register correctly.
 	 */
 	len = OF_getprop(node, "AAPL,interrupts", &intr, 4);
 	if (len != 4) {
@@ -874,7 +874,7 @@ mpc_conf_read(cpv, tag, offset)
 	s = splhigh();
 
 	oldh = curpcb->pcb_onfault;
-	if (setfault(env)) {
+	if (setfault(&env)) {
 		/* we faulted during the read? */
 		curpcb->pcb_onfault = oldh;
 		return 0xffffffff;
@@ -979,7 +979,7 @@ mpc_intr_string(lcv, ih)
 {
 	static char str[16];
 
-	sprintf(str, "irq %d", ih);
+	snprintf(str, sizeof str, "irq %d", ih);
 	return(str);
 }
 

@@ -1,4 +1,4 @@
-/*	$OpenBSD: db_command.h,v 1.11.6.1 2002/01/31 22:55:29 niklas Exp $	*/
+/*	$OpenBSD$	*/
 /*	$NetBSD: db_command.h,v 1.8 1996/02/05 01:56:55 christos Exp $	*/
 
 /* 
@@ -44,6 +44,7 @@ void db_object_print_cmd(db_expr_t, int, db_expr_t, char *);
 void db_page_print_cmd(db_expr_t, int, db_expr_t, char *);
 void db_extent_print_cmd(db_expr_t, int, db_expr_t, char *);
 void db_pool_print_cmd(db_expr_t, int, db_expr_t, char *);
+void db_proc_print_cmd(db_expr_t, int, db_expr_t, char *);
 void db_uvmexp_print_cmd(db_expr_t, int, db_expr_t, char *);
 void db_machine_commands_install(struct db_command *);
 void db_help_cmd(db_expr_t, int, db_expr_t, char *);
@@ -58,12 +59,7 @@ void db_boot_reboot_cmd(db_expr_t, int, db_expr_t, char *);
 void db_boot_poweroff_cmd(db_expr_t, int, db_expr_t, char *);
 void db_stack_trace_cmd(db_expr_t, int, db_expr_t, char *);
 
-db_addr_t	db_dot;		/* current location */
-db_addr_t	db_last_addr;	/* last explicit address typed */
-db_addr_t	db_prev;	/* last address examined
-				   or written */
-db_addr_t	db_next;	/* next address to be examined
-				   or written */
+extern	db_addr_t db_dot, db_last_addr, db_prev, db_next;
 
 /*
  * Command table

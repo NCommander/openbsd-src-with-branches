@@ -1,4 +1,4 @@
-/*	$OpenBSD: Locore.c,v 1.6 2001/06/24 04:46:25 drahn Exp $	*/
+/*	$OpenBSD$	*/
 
 /*
  * Copyright (C) 1995, 1996 Wolfgang Solfrank.
@@ -40,7 +40,7 @@
 #include <sys/proc.h>
 #include <sys/systm.h>
 
-int whichqs;
+extern int whichqs;
 
 /*
  * Put process p on the run queue, given by its priority.

@@ -1,4 +1,4 @@
-/*	$OpenBSD: pchb.c,v 1.2.2.1 2002/06/11 03:36:34 art Exp $	*/
+/*	$OpenBSD$	*/
 /*	$NetBSD: pchb.c,v 1.4 2000/01/25 07:19:11 tsubai Exp $	*/
 
 /*-
@@ -117,7 +117,7 @@ pchbattach(parent, self, aux)
 	 */
 
 	/*
-	pci_devinfo(pa->pa_id, pa->pa_class, 0, devinfo);
+	pci_devinfo(pa->pa_id, pa->pa_class, 0, devinfo, sizeof devinfo);
 	printf("%s: %s (rev. 0x%02x)\n", self->dv_xname, devinfo,
 	    PCI_REVISION(pa->pa_class));
 	*/

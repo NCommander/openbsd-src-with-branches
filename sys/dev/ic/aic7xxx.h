@@ -708,7 +708,7 @@ struct ahc_syncrate {
 extern struct ahc_syncrate ahc_syncrates[];
 
 /*
- * Indexes into our table of syncronous transfer rates.
+ * Indexes into our table of synchronous transfer rates.
  */
 #define AHC_SYNCRATE_DT		0
 #define AHC_SYNCRATE_ULTRA2	1
@@ -1101,7 +1101,8 @@ int		ahc_match_scb(struct ahc_softc *ahc, struct scb *scb,
 /****************************** Initialization ********************************/
 struct ahc_softc	*ahc_alloc(void *platform_arg, char *name);
 int			 ahc_softc_init(struct ahc_softc *);
-void			 ahc_controller_info(struct ahc_softc *ahc, char *buf);
+void			 ahc_controller_info(struct ahc_softc *ahc, char *buf,
+					     size_t buf_len);
 int			 ahc_init(struct ahc_softc *ahc);
 void			 ahc_intr_enable(struct ahc_softc *ahc, int enable);
 void			 ahc_pause_and_flushwork(struct ahc_softc *ahc);

@@ -23,8 +23,8 @@
 
 /*ARGSUSED*/
 int
-sgl_fsqrt(srcptr,dstptr,status)
-	sgl_floating_point *srcptr, *dstptr;
+sgl_fsqrt(srcptr, null, dstptr, status)
+	sgl_floating_point *srcptr, *null, *dstptr;
 	unsigned int *status;
 {
 	register unsigned int src, result;

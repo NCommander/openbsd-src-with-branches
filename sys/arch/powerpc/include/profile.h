@@ -1,4 +1,4 @@
-/*	$OpenBSD: profile.h,v 1.2 1998/07/04 23:56:14 rahnds Exp $ */
+/*	$OpenBSD$ */
 
 /*
  * Copyright (c) 1998 Dale Rahn. All rights reserved.
@@ -70,4 +70,15 @@
 	.Lfe2: \n\
 		.size _mcount, .Lfe2-_mcount \n\
 	");
-#define _MCOUNT_DECL static __mcount
+#define _MCOUNT_DECL static void __mcount
+#ifdef _KERNEL
+#define MCOUNT_ENTER						\
+	__asm volatile("mfmsr %0" : "=r"(s));			\
+	if ((s & (PSL_IR | PSL_DR)) != (PSL_IR | PSL_DR))	\
+		return;	/* prof not possible in real mode */	\
+	s &= ~PSL_POW;						\
+	__asm volatile("mtmsr %0" :: "r"(s & ~PSL_EE))
+
+#define	MCOUNT_EXIT						\
+	__asm volatile("mtmsr %0" :: "r"(s))
+#endif /* _KERNEL */

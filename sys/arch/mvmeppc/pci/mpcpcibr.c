@@ -1,4 +1,4 @@
-/*	$OpenBSD: mpcpcibr.c,v 1.7 2001/11/06 22:46:00 miod Exp $ */
+/*	$OpenBSD$ */
 
 /*
  * Copyright (c) 2001 Steve Murphree, Jr.
@@ -520,7 +520,7 @@ mpc_intr_string(lcv, ih)
 {
 	static char str[16];
 
-	sprintf(str, "irq %d", ih);
+	snprintf(str, sizeof str, "irq %d", ih);
 	return (str);
 }
 

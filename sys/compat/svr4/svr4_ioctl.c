@@ -1,4 +1,4 @@
-/*	$OpenBSD: svr4_ioctl.c,v 1.9 2001/10/26 12:03:27 art Exp $	 */
+/*	$OpenBSD$	 */
 /*	$NetBSD: svr4_ioctl.c,v 1.16 1996/04/11 12:54:41 christos Exp $	 */
 
 /*
@@ -151,8 +151,9 @@ svr4_sys_ioctl(p, v, retval)
 		error = 0;	/* XXX: really ENOSYS */
 		goto out;
 	}
+	FREF(fp);
 	error = (*fun)(fp, p, retval, SCARG(uap, fd), cmd, SCARG(uap, data));
-out:
 	FRELE(fp);
+out:
 	return (error);
 }

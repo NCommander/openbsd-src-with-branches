@@ -21,9 +21,12 @@ mpyu(opnd1,opnd2,result)
 	unsigned int opnd1, opnd2;
 	struct mdsfu_register *result;
 {
-	impyu(&opnd1,&opnd2,result);
+	u_xmpy(&opnd1,&opnd2,result);
+
 	/* determine overflow status */
-	if (result_hi) overflow = TRUE;
-	else overflow = FALSE;
+	if (result_hi)
+		overflow = TRUE;
+	else
+		overflow = FALSE;
 	return;
 }

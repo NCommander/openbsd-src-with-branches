@@ -1,4 +1,4 @@
-/*	$OpenBSD: com_gsc.c,v 1.8.10.2 2002/06/11 03:35:36 art Exp $	*/
+/*	$OpenBSD$	*/
 
 /*
  * Copyright (c) 1998-2002 Michael Shalayeff
@@ -62,7 +62,7 @@ com_gsc_probe(parent, match, aux)
 	struct device *parent;
 	void *match, *aux;
 {
-	register struct gsc_attach_args *ga = aux;
+	struct gsc_attach_args *ga = aux;
 
 	if (ga->ga_type.iodc_type != HPPA_TYPE_FIO ||
 	    (ga->ga_type.iodc_sv_model != HPPA_FIO_GRS232 &&

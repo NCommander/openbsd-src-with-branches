@@ -21,6 +21,6 @@ mpyscv(opnd1,opnd2,result)
 	int opnd1, opnd2;
 	struct mdsfu_register *result;
 {
-	impys(&opnd1,&opnd2,result);
+	s_xmpy(&opnd1,&opnd2,result);
 	overflow = FALSE;
 }

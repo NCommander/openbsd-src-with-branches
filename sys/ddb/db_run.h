@@ -1,4 +1,4 @@
-/*	$OpenBSD: db_run.h,v 1.6 1997/09/06 14:49:00 deraadt Exp $	*/
+/*	$OpenBSD$	*/
 /*	$NetBSD: db_run.h,v 1.3 1996/02/05 01:57:14 christos Exp $	*/
 
 /* 
@@ -36,9 +36,9 @@
 /*
  * Commands to run process.
  */
-int		db_inst_count;
-int		db_load_count;
-int		db_store_count;
+extern	int db_inst_count;
+extern	int db_load_count;
+extern	int db_store_count;
 
 boolean_t db_stop_at_pc(db_regs_t *, boolean_t *);
 void db_restart_at_pc(db_regs_t *, boolean_t);

@@ -23,8 +23,8 @@
 
 /*ARGSUSED*/
 int
-dbl_fsqrt(srcptr,dstptr,status)
-	dbl_floating_point *srcptr, *dstptr;
+dbl_fsqrt(srcptr, null, dstptr, status)
+	dbl_floating_point *srcptr, *null, *dstptr;
 	unsigned int *status;
 {
 	register unsigned int srcp1, srcp2, resultp1, resultp2;

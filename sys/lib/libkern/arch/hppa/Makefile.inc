@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile.inc,v 1.14 2000/12/29 19:04:41 mickey Exp $
+#	$OpenBSD$
 
 SRCS+=	__main.c imax.c imin.c lmax.c lmin.c max.c min.c ulmax.c ulmin.c \
 	random.c ashrdi3.c divdi3.c strncpy.c strncmp.c strcmp.c memchr.c \
@@ -15,7 +15,13 @@ CLEANFILES+=	bcopy.S spcopy.S bzero.o
 bzero.o: ${KERNDIR}/memset.c
 	@echo "${COMPILE.c} -DBZERO ${KERNDIR}/memset.c -o ${.TARGET}"
 	@${COMPILE.c} -DBZERO ${KERNDIR}/memset.c  -o ${.TARGET}.o
-	@${LD} -x -r ${.TARGET}.o -o ${.TARGET}
+	@${LD} -X -r ${.TARGET}.o -o ${.TARGET}
+	@rm -f ${.TARGET}.o
+
+bzero.po: ${KERNDIR}/memset.c
+	@echo "${COMPILE.c} -p -DBZERO ${KERNDIR}/memset.c -o ${.TARGET}"
+	@${COMPILE.c} -p -DBZERO ${KERNDIR}/memset.c  -o ${.TARGET}.o
+	@${LD} -X -r ${.TARGET}.o -o ${.TARGET}
 	@rm -f ${.TARGET}.o
 
 bcopy.S: ${M}/bcopy.m4

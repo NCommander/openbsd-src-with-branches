@@ -1,7 +1,7 @@
-/*	$OpenBSD: iomod.h,v 1.9 2001/12/02 04:10:25 mickey Exp $	*/
+/*	$OpenBSD$	*/
 
 /*
- * Copyright (c) 2000 Michael Shalayeff
+ * Copyright (c) 2000-2003 Michael Shalayeff
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -54,6 +54,7 @@
  * improvements that they make and grant CSL redistribution rights.
  *
  *	Utah $Hdr: iomod.h 1.6 94/12/14$
+ *	Author: Jeff Forys (CSS), Dave Slattengren (mtXinu)
  */
 
 #ifndef	_MACHINE_IOMOD_H_
@@ -425,9 +426,5 @@ struct iomod {
 
 /* io_spa */
 #define	SPA_ENABLE	0x20	/* io_spa register enable spa bit */
-
-#define	EIM_GRPMASK	0x1F	/* EIM register group mask */
-#define	EIEM_MASK(eim)	(0x80000000 >> (eim & EIM_GRPMASK))
-#define	EIEM_BITCNT	32	/* number of bits in EIEM register */
 
 #endif	/* _MACHINE_IOMOD_H_ */

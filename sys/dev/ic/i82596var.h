@@ -1,4 +1,4 @@
-/*	$OpenBSD: i82596var.h,v 1.5.4.1 2002/06/11 03:42:18 art Exp $	*/
+/*	$OpenBSD$	*/
 /*	$NetBSD: i82586var.h,v 1.10 1998/08/15 04:42:42 mycroft Exp $	*/
 
 /*-
@@ -295,10 +295,11 @@ int 	i82596_start_cmd(struct ie_softc *, int, int, int, int);
 static __inline__ void
 ie_ack(struct ie_softc *sc, u_int mask) /* in native byte-order */
 {
-	register u_int status;
+	u_int status;
+	int off = IE_SCB_STATUS(sc->scb);
 
-	bus_space_barrier(sc->bt, sc->bh, 0, 0, BUS_SPACE_BARRIER_READ);
-	status = (sc->ie_bus_read16)(sc, IE_SCB_STATUS(sc->scb));
+	bus_space_barrier(sc->bt, sc->bh, off, 2, BUS_SPACE_BARRIER_READ);
+	status = (sc->ie_bus_read16)(sc, off);
 	i82596_start_cmd(sc, status & mask, 0, 0, 0);
 }
 

@@ -24,8 +24,8 @@
  */
 /*ARGSUSED*/
 int
-sgl_to_dbl_fcnvff(srcptr,dstptr,status)
-	sgl_floating_point *srcptr;
+sgl_to_dbl_fcnvff(srcptr, null, dstptr, status)
+	sgl_floating_point *srcptr, *null;
 	dbl_floating_point *dstptr;
 	unsigned int *status;
 {
@@ -110,8 +110,8 @@ sgl_to_dbl_fcnvff(srcptr,dstptr,status)
  */
 /*ARGSUSED*/
 int
-dbl_to_sgl_fcnvff(srcptr,dstptr,status)
-	dbl_floating_point *srcptr;
+dbl_to_sgl_fcnvff(srcptr, null, dstptr, status)
+	dbl_floating_point *srcptr, *null;
 	sgl_floating_point *dstptr;
 	unsigned int *status;
 {

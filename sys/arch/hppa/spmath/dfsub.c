@@ -1,4 +1,4 @@
-/*	$OpenBSD: dfsub.c,v 1.4.6.1 2002/06/11 03:35:37 art Exp $	*/
+/*	$OpenBSD$	*/
 /*
   (c) Copyright 1986 HEWLETT-PACKARD COMPANY
   To anyone who acknowledges that this file is provided "AS IS"
@@ -279,7 +279,7 @@ dbl_fsub(leftptr, rightptr, dstptr, status)
 	if(Dbl_iszero_hidden(resultp1))
 	    {
 	    /* Handle normalization */
-	    /* A straight foward algorithm would now shift the result
+	    /* A straight forward algorithm would now shift the result
 	     * and extension left until the hidden bit becomes one.  Not
 	     * all of the extension bits need participate in the shift.
 	     * Only the two most significant bits (round and guard) are
