@@ -1,9 +1,13 @@
 #
-#	$OpenBSD: Makefile,v 1.2 2001/06/25 16:12:33 kjell Exp $
+#	$OpenBSD: Makefile,v 1.3 2001/06/26 22:38:28 smart Exp $
+
+CLEANFILES+=parse.c y.tab.h
 
 PROG=	pfctl
-SRCS=	pfctl.c pfctl_parser.c
+SRCS=	pfctl.c parse.c pfctl_parser.c
 MAN=	pfctl.8
+
+DEBUG=-g
 
 CFLAGS+= -Wall
 
