@@ -1,5 +1,11 @@
+/*	$OpenBSD$	*/
+
 #if !defined(lint) && !defined(SABER)
-static char rcsid[] = "$Id: addr.c,v 8.4 1996/05/23 08:21:28 vixie Exp $";
+#if 0
+static char rcsid[] = "$From: addr.c,v 8.4 1996/05/23 08:21:28 vixie Exp $";
+#else
+static char rcsid[] = "$OpenBSD$";
+#endif
 #endif /* not lint */
 
 /* Copyright (c) 1996 by Internet Software Consortium.
