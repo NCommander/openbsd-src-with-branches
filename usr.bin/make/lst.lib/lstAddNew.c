@@ -1,5 +1,5 @@
 /*	$OpenPackages$ */
-/*	$OpenBSD: lstAppend.c,v 1.4 1998/12/05 00:06:31 espie Exp $	*/
+/*	$OpenBSD: lstAddNew.c,v 1.3 2001/05/29 12:53:44 espie Exp $	*/
 /* ex:ts=8 sw=4:
  */
 
@@ -37,9 +37,7 @@
  * Returns false if datum was already there.
  */
 bool
-Lst_AddNew(l, d)
-    Lst 	l;
-    void	*d;
+Lst_AddNew(Lst l, void *d)
 {
     if (Lst_Member(l, d) != NULL)
 	return false;

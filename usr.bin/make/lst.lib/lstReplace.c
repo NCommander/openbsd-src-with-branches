@@ -1,5 +1,5 @@
 /*	$OpenPackages$ */
-/*	$OpenBSD: lstReplace.c,v 1.12 2001/05/29 12:53:47 espie Exp $	*/
+/*	$OpenBSD: lstReplace.c,v 1.13 2003/06/03 02:56:12 millert Exp $	*/
 /*	$NetBSD: lstReplace.c,v 1.5 1996/11/06 17:59:51 christos Exp $	*/
 
 /*
@@ -49,9 +49,7 @@
  *-----------------------------------------------------------------------
  */
 void
-Lst_Replace(ln, d)
-    LstNode		ln;
-    void		*d;
+Lst_Replace(LstNode ln, void *d)
 {
     if (ln != NULL)
 	ln->datum = d;

@@ -1,5 +1,5 @@
 /*	$OpenPackages$ */
-/*	$OpenBSD: lstMember.c,v 1.11 2001/05/29 12:53:47 espie Exp $	*/
+/*	$OpenBSD: lstMember.c,v 1.12 2003/06/03 02:56:12 millert Exp $	*/
 /*	$NetBSD: lstMember.c,v 1.5 1996/11/06 17:59:48 christos Exp $	*/
 
 /*
@@ -43,9 +43,7 @@
 #include    <stddef.h>
 
 LstNode
-Lst_Member(l, d)
-    Lst 		l;
-    void		*d;
+Lst_Member(Lst l, void *d)
 {
     LstNode		lNode;
 

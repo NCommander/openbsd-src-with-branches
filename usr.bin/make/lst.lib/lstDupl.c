@@ -1,5 +1,5 @@
 /*	$OpenPackages$ */
-/*	$OpenBSD: lstDupl.c,v 1.16 2001/05/29 12:53:46 espie Exp $	*/
+/*	$OpenBSD: lstDupl.c,v 1.17 2003/06/03 02:56:12 millert Exp $	*/
 /*	$NetBSD: lstDupl.c,v 1.6 1996/11/06 17:59:37 christos Exp $	*/
 
 /*
@@ -57,10 +57,7 @@
  *-----------------------------------------------------------------------
  */
 Lst
-Lst_Clone(nl, l, copyProc)
-    Lst 	  nl;
-    Lst 	  l;		 /* the list to duplicate */
-    DuplicateProc copyProc;    /* A function to duplicate each void * */
+Lst_Clone(Lst nl, Lst l, DuplicateProc copyProc)
 {
     LstNode	  ln;
 

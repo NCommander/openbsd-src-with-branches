@@ -1,5 +1,5 @@
 /*	$OpenPackages$ */
-/*	$OpenBSD: var.c,v 1.12 1999/09/28 21:57:04 espie Exp $	*/
+/*	$OpenBSD: varname.c,v 1.1 2001/05/23 12:34:52 espie Exp $	*/
 /*
  * Copyright (c) 2001 Marc Espie.
  *
@@ -33,12 +33,7 @@
 #include "varname.h"
 
 const char *
-VarName_Get(start, name, ctxt, err, cont)
-	const char 	*start;
-	struct Name 	*name;
-	SymTable 	*ctxt;
-	bool		err;
-	const char *(*cont)(const char *);
+VarName_Get(const char *start, struct Name *name, SymTable *ctxt, bool err, const char *(*cont)(const char *))
 {
 	const char *p;
 	size_t len;
@@ -74,8 +69,7 @@ VarName_Get(start, name, ctxt, err, cont)
 }
 
 void
-VarName_Free(name)
-	struct Name *name;
+VarName_Free(struct Name *name)
 {
 	if (name->tofree)
 		free((char *)name->s);
