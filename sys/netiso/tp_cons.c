@@ -1,4 +1,4 @@
-/*	$OpenBSD: tp_cons.c,v 1.3 2001/05/27 12:26:05 angelos Exp $	*/
+/*	$OpenBSD: tp_cons.c,v 1.4 2001/06/25 01:50:17 fgsch Exp $	*/
 /*	$NetBSD: tp_cons.c,v 1.8 1996/02/14 21:32:37 christos Exp $	*/
 
 /*-
@@ -300,7 +300,7 @@ tpcons_output(m0, va_alist)
 		MGETHDR(m, M_DONTWAIT, MT_DATA);
 		if (m == 0)
 			return ENOBUFS;
-		M_COPY_HDR(m, m0);
+		M_MOVE_HDR(m, m0);
 		m->m_next = m0;
 	}
 	m->m_pkthdr.len = datalen;
