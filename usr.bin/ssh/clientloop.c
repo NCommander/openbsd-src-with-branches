@@ -59,7 +59,7 @@
  */
 
 #include "includes.h"
-RCSID("$OpenBSD: clientloop.c,v 1.56 2001/04/04 20:25:37 markus Exp $");
+RCSID("$OpenBSD: clientloop.c,v 1.57 2001/04/05 10:42:49 markus Exp $");
 
 #include "ssh.h"
 #include "ssh1.h"
@@ -554,7 +554,7 @@ process_escapes(Buffer *bin, Buffer *bout, Buffer *berr, char *buf, int len)
 				continue;
 
 			case 'R':
-				if (compat20)
+				if (compat20 && !(datafellows && SSH_BUG_NOREKEY))
 					need_rekeying = 1;
 				continue;
 
