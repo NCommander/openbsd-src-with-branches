@@ -6,7 +6,7 @@
  */
 
 #include "includes.h"
-RCSID("$OpenBSD: crc32.c,v 1.4 1999/11/24 00:26:01 deraadt Exp $");
+RCSID("$OpenBSD: crc32.c,v 1.5 2000/06/20 01:39:40 markus Exp $");
 
 #include "crc32.h"
 
@@ -108,7 +108,7 @@ static unsigned int crc32_tab[] = {
 /* Return a 32-bit CRC of the contents of the buffer. */
 
 unsigned int
-crc32(const unsigned char *s, unsigned int len)
+ssh_crc32(const unsigned char *s, unsigned int len)
 {
 	unsigned int i;
 	unsigned int crc32val;
