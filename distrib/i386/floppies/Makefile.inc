@@ -1,5 +1,5 @@
 #	$OpenBSD$
 
-# Revision is 1.1
+# Revision is 1.2
 # all these private copies of the version number really lose.
-REV=	11
+REV=	12
