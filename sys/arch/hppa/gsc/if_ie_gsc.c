@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_ie_gsc.c,v 1.14 2002/10/13 14:15:35 mickey Exp $	*/
+/*	$OpenBSD: if_ie_gsc.c,v 1.15 2002/12/11 06:02:23 mickey Exp $	*/
 
 /*
  * Copyright (c) 1998,1999 Michael Shalayeff
@@ -374,7 +374,7 @@ ie_gsc_attach(parent, self, aux)
 	else
 		bcopy(pdc_mac.addr, sc->sc_arpcom.ac_enaddr, ETHER_ADDR_LEN);
 
-	printf(": ");
+	printf(":");
 
 	sc->iscp = 0;
 	sc->scp = 32;
