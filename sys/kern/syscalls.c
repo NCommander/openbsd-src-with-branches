@@ -359,4 +359,5 @@ char *syscallnames[] = {
 	"kevent",			/* 270 = kevent */
 	"mlockall",			/* 271 = mlockall */
 	"munlockall",			/* 272 = munlockall */
+	"getpeereid",			/* 273 = getpeereid */
 };

@@ -1115,6 +1115,12 @@ struct sys_mlockall_args {
 	syscallarg(int) flags;
 };
 
+struct sys_getpeereid_args {
+	syscallarg(int) fdes;
+	syscallarg(uid_t *) euid;
+	syscallarg(gid_t *) egid;
+};
+
 /*
  * System call prototypes.
  */
@@ -1391,3 +1397,4 @@ int	sys_kqueue	__P((struct proc *, void *, register_t *));
 int	sys_kevent	__P((struct proc *, void *, register_t *));
 int	sys_mlockall	__P((struct proc *, void *, register_t *));
 int	sys_munlockall	__P((struct proc *, void *, register_t *));
+int	sys_getpeereid	__P((struct proc *, void *, register_t *));

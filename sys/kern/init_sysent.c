@@ -707,5 +707,7 @@ struct sysent sysent[] = {
 	    sys_mlockall },			/* 271 = mlockall */
 	{ 0, 0,
 	    sys_munlockall },			/* 272 = munlockall */
+	{ 3, s(struct sys_getpeereid_args),
+	    sys_getpeereid },			/* 273 = getpeereid */
 };
 

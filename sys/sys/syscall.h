@@ -636,4 +636,7 @@
 /* syscall: "munlockall" ret: "int" args: */
 #define	SYS_munlockall	272
 
-#define	SYS_MAXSYSCALL	273
+/* syscall: "getpeereid" ret: "int" args: "int" "uid_t *" "gid_t *" */
+#define	SYS_getpeereid	273
+
+#define	SYS_MAXSYSCALL	274
