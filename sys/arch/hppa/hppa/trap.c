@@ -1,4 +1,4 @@
-/*	$OpenBSD: trap.c,v 1.82 2004/12/06 20:12:24 miod Exp $	*/
+/*	$OpenBSD: trap.c,v 1.83 2005/01/17 19:01:00 mickey Exp $	*/
 
 /*
  * Copyright (c) 1998-2004 Michael Shalayeff
@@ -183,8 +183,9 @@ trap(type, frame)
 
 	trapnum = type & ~T_USER;
 	opcode = frame->tf_iir;
-	if (trapnum == T_ITLBMISS ||
-	    trapnum == T_EXCEPTION || trapnum == T_EMULATION) {
+	if (trapnum <= T_EXCEPTION || trapnum == T_HIGHERPL ||
+	    trapnum == T_LOWERPL || trapnum == T_TAKENBR ||
+	    trapnum == T_IDEBUG || trapnum == T_PERFMON) {
 		va = frame->tf_iioq_head;
 		space = frame->tf_iisq_head;
 		vftype = UVM_PROT_EXEC;
