@@ -62,8 +62,8 @@
 #include <dev/ic/pdqvar.h>
 #include <dev/ic/pdqreg.h>
 
-int	pdq_tc_match __P((struct device *, void *, void *));
-void	pdq_tc_attach __P((struct device *, struct device *, void *));
+int	pdq_tc_match(struct device *, void *, void *);
+void	pdq_tc_attach(struct device *, struct device *, void *);
 
 int
 pdq_tc_match(parent, match, aux)

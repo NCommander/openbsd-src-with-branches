@@ -78,3 +78,13 @@ file	dev/sbus/spif.c			spif | stty | sbpp needs-flag
 
 attach	uperf at sbus with uperf_sbus
 file	dev/sbus/uperf_sbus.c		uperf_sbus
+
+device asio {}
+attach asio at sbus
+attach com at asio with com_asio
+file	dev/sbus/asio.c			asio | com_asio needs-flag
+
+device apio {}
+attach apio at sbus
+attach lpt at apio with lpt_apio
+file	dev/sbus/apio.c			apio | lpt_apio needs-flag

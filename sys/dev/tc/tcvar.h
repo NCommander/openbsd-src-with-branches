@@ -1,4 +1,4 @@
-/*	$OpenBSD: tcvar.h,v 1.6 1996/12/08 01:03:07 niklas Exp $	*/
+/*	$OpenBSD$	*/
 /*	$NetBSD: tcvar.h,v 1.7 1996/10/22 21:37:31 cgd Exp $	*/
 
 /*
@@ -89,9 +89,9 @@ struct tcbus_attach_args {
 	
 
 	/* TC bus resource management; XXX will move elsewhere eventually. */
-	void	(*tba_intr_establish) __P((struct device *, void *,
-		    tc_intrlevel_t, int (*)(void *), void *));
-	void	(*tba_intr_disestablish) __P((struct device *, void *));
+	void	(*tba_intr_establish)(struct device *, void *,
+		    tc_intrlevel_t, int (*)(void *), void *);
+	void	(*tba_intr_disestablish)(struct device *, void *);
 };
 
 /*
@@ -134,9 +134,9 @@ struct tc_builtin {
 /*
  * Interrupt establishment functions.
  */
-void	tc_intr_establish __P((struct device *, void *, tc_intrlevel_t,
-	    int (*)(void *), void *));
-void	tc_intr_disestablish __P((struct device *, void *));
+void	tc_intr_establish(struct device *, void *, tc_intrlevel_t,
+	    int (*)(void *), void *);
+void	tc_intr_disestablish(struct device *, void *);
 
 /*
  * Easy to remember names for TurboChannel device locators.

@@ -1,4 +1,4 @@
-/* $OpenBSD: wsemul_vt100_subr.c,v 1.6.4.1 2001/05/14 22:26:31 niklas Exp $ */
+/* $OpenBSD$ */
 /* $NetBSD: wsemul_vt100_subr.c,v 1.7 2000/04/28 21:56:16 mycroft Exp $ */
 
 /*
@@ -42,10 +42,10 @@
 #include <dev/wscons/wsemulvar.h>
 #include <dev/wscons/wsemul_vt100var.h>
 
-int vt100_selectattribute __P((struct wsemul_vt100_emuldata *, int, int, int,
-			       long *, long *));
-int vt100_ansimode __P((struct wsemul_vt100_emuldata *, int, int));
-int vt100_decmode __P((struct wsemul_vt100_emuldata *, int, int));
+int vt100_selectattribute(struct wsemul_vt100_emuldata *, int, int, int,
+			       long *, long *);
+int vt100_ansimode(struct wsemul_vt100_emuldata *, int, int);
+int vt100_decmode(struct wsemul_vt100_emuldata *, int, int);
 #define VTMODE_SET 33
 #define VTMODE_RESET 44
 #define VTMODE_REPORT 55

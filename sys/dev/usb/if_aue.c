@@ -1103,7 +1103,7 @@ aue_rxeof(usbd_xfer_handle xfer, usbd_private_handle priv, usbd_status status)
 
 	usbd_get_xfer_status(xfer, NULL, NULL, &total_len, NULL);
 
-	memcpy(mtod(c->aue_mbuf, char*), c->aue_buf, total_len);
+	memcpy(mtod(c->aue_mbuf, char *), c->aue_buf, total_len);
 
 	if (total_len <= 4 + ETHER_CRC_LEN) {
 		ifp->if_ierrors++;

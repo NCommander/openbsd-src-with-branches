@@ -83,8 +83,8 @@ struct	le_softc {
 
 #define MEMSIZE 0x4000		/* LANCE memory size */
 
-int	lematch_sbus __P((struct device *, void *, void *));
-void	leattach_sbus __P((struct device *, struct device *, void *));
+int	lematch_sbus(struct device *, void *, void *);
+void	leattach_sbus(struct device *, struct device *, void *);
 
 /*
  * Media types supported.
@@ -103,8 +103,8 @@ extern struct cfdriver le_cd;
 #define hide		static
 #endif
 
-static void lewrcsr __P((struct am7990_softc *, u_int16_t, u_int16_t));
-static u_int16_t lerdcsr __P((struct am7990_softc *, u_int16_t));
+static void lewrcsr(struct am7990_softc *, u_int16_t, u_int16_t);
+static u_int16_t lerdcsr(struct am7990_softc *, u_int16_t);
 
 static void
 lewrcsr(sc, port, val)
@@ -165,7 +165,7 @@ leattach_sbus(parent, self, aux)
 	bus_dma_tag_t dmatag;
 	struct sbusdev *sd;
 	/* XXX the following declarations should be elsewhere */
-	extern void myetheraddr __P((u_char *));
+	extern void myetheraddr(u_char *);
 
 
 	lesc->sc_bustag = sa->sa_bustag;

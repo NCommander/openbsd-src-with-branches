@@ -75,4 +75,4 @@ struct qec_ring {
 	int	rb_td_nbusy;
 };
 
-void	qec_meminit __P((struct qec_ring *, unsigned int));
+void	qec_meminit(struct qec_ring *, unsigned int);

@@ -592,7 +592,7 @@ ohci_alloc_sitd(ohci_softc_t *sc)
 			return (NULL);
 		for(i = 0; i < OHCI_SITD_CHUNK; i++) {
 			offs = i * OHCI_SITD_SIZE;
-			sitd = (ohci_soft_itd_t *)((char*)KERNADDR(&dma)+offs);
+			sitd = (ohci_soft_itd_t *)((char *)KERNADDR(&dma)+offs);
 			sitd->physaddr = DMAADDR(&dma) + offs;
 			sitd->nextitd = sc->sc_freeitds;
 			sc->sc_freeitds = sitd;

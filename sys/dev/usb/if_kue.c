@@ -767,7 +767,7 @@ kue_rxeof(usbd_xfer_handle xfer, usbd_private_handle priv, usbd_status status)
 
 	m = c->kue_mbuf;
 	/* copy data to mbuf */
-	memcpy(mtod(m, char*), c->kue_buf, total_len);
+	memcpy(mtod(m, char *), c->kue_buf, total_len);
 
 	/* No errors; receive the packet. */
 	total_len = UGETW(mtod(m, u_int8_t *));
