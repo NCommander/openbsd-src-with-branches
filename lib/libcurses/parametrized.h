@@ -402,6 +402,8 @@ static short const parametrized[] = {
 0,	/*  erhlm  */
 0,	/*  ethlm  */
 0,	/*  evhlm  */
+1,	/*  sgr1  */
+1,	/*  slength  */
 0,	/*  OTi2  */
 0,	/*  OTrs  */
 0,	/*  OTnl  */
@@ -607,5 +609,5 @@ static short const parametrized[] = {
 0,	/*  btml  */
 0,	/*  rvert  */
 0,	/*  lvert  */
-} /* 597 entries */;
+} /* 599 entries */;
 
