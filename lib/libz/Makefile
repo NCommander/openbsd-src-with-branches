@@ -1,11 +1,11 @@
-#	$OpenBSD: Makefile,v 1.6 2003/02/23 23:17:01 deraadt Exp $
+#	$OpenBSD: Makefile,v 1.7 2003/02/26 18:13:22 millert Exp $
 
 LIB=	z
 HDRS=	zconf.h zlib.h
 SRCS=	adler32.c compress.c crc32.c deflate.c gzio.c infblock.c \
 	infcodes.c inffast.c inflate.c inftrees.c infutil.c trees.c \
 	uncompr.c zutil.c
-NOMAN=	noman
+MAN=	zlib.3
 CFLAGS+=-DHAVE_UNISTD_H -DHAVE_STRERROR -DHAVE_MEMCPY -DHAS_vsnprintf \
 	-DHAS_snprintf
 
