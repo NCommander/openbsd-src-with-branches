@@ -725,6 +725,7 @@ setup(sep)
 	register struct servtab *sep;
 {
 	int on = 1;
+	int r;
 
 	if ((sep->se_fd = socket(sep->se_family, sep->se_socktype, 0)) < 0) {
 		syslog(LOG_ERR, "%s/%s: socket: %m",
@@ -739,7 +740,12 @@ setsockopt(fd, SOL_SOCKET, opt, (char *)&on, sizeof (on))
 	if (turnon(sep->se_fd, SO_REUSEADDR) < 0)
 		syslog(LOG_ERR, "setsockopt (SO_REUSEADDR): %m");
 #undef turnon
-	if (bind(sep->se_fd, &sep->se_ctrladdr, sep->se_ctrladdr_size) < 0) {
+	if (isrpcservice(sep))
+		r = bindresvport(sep->se_fd, &sep->se_ctrladdr,
+		    sep->se_ctrladdr_size);
+	else
+		r = bind(sep->se_fd, &sep->se_ctrladdr, sep->se_ctrladdr_size);
+	if (r < 0) {
 		syslog(LOG_ERR, "%s/%s: bind: %m",
 		    sep->se_service, sep->se_proto);
 		(void) close(sep->se_fd);
