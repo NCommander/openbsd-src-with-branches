@@ -1774,11 +1774,11 @@ vfs_syncwait(verbose)
 		for (bp = &buf[nbuf]; --bp >= buf; )
 			if ((bp->b_flags & (B_BUSY|B_INVAL)) == B_BUSY)
 				nbusy++;
-		if (nbusy == 0)
-			break;
-		if (verbose)
-			printf("%d ", nbusy);
-		DELAY(40000 * iter);
+			if (nbusy == 0)
+				break;
+			if (verbose)
+				printf("%d ", nbusy);
+			DELAY(40000 * iter);
 	}   
 
 	return nbusy;

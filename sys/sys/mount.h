@@ -506,8 +506,7 @@ struct	netcred *vfs_export_lookup	    /* lookup host in fs export list */
 	  __P((struct mount *, struct netexport *, struct mbuf *));
 int	vfs_allocate_syncvnode __P((struct mount *));
 
-int	vfs_syncwait __P((int));	/* sync and wait for complete */
-void	vfs_shutdown __P((void));	/* unmount and sync file systems */
+void	vfs_shutdown __P((void));	    /* unmount and sync file systems */
 long	makefstype __P((char *));
 int	dounmount __P((struct mount *, int, struct proc *));
 void	vfsinit __P((void));
