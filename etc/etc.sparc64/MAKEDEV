@@ -405,7 +405,7 @@ if [ "$os" = "SunOS" ]; then
 		666)mask=0;;
 		440)mask=227;;
 		esac
-		echo eval `echo "$@"|sed \
+		echo `echo "$@"|sed \
 			's/mknod -m \([0-9]*\) /umask '$mask';mknod /;s/-m [0-9]* //g;\
 			 s/operator/5/g;s/root.kmem/root.2/g;s/root\./root:/g'`
 	}
