@@ -12,7 +12,7 @@
  */
 
 #include "includes.h"
-RCSID("$OpenBSD: ssh-keygen.c,v 1.94 2002/02/25 16:33:27 markus Exp $");
+RCSID("$OpenBSD: ssh-keygen.c,v 1.95 2002/03/21 16:54:53 markus Exp $");
 
 #include <openssl/evp.h>
 #include <openssl/pem.h>
@@ -414,7 +414,7 @@ do_download(struct passwd *pw, const char *sc_reader_id)
 {
 	Key *pub = NULL;
 
-	pub = sc_get_key(sc_reader_id);
+	pub = sc_get_key(sc_reader_id, NULL);
 	if (pub == NULL)
 		fatal("cannot read public key from smartcard");
 	key_write(pub, stdout);
