@@ -1,5 +1,5 @@
 /*	$NetBSD: types.h,v 1.1 1996/09/30 16:34:36 ws Exp $	*/
-/*	$OpenBSD: types.h,v 1.13 2004/06/28 02:49:10 aaron Exp $	*/
+/*	$OpenBSD: types.h,v 1.14 2004/11/26 21:23:05 miod Exp $	*/
 
 /*-
  * Copyright (C) 1995 Wolfgang Solfrank.
@@ -62,7 +62,7 @@ typedef unsigned long	vsize_t;
 typedef unsigned long	psize_t;
 
 typedef struct label_t {
-        int val[40]; /* double check this XXX */
+        int val[25];
 } label_t;
 
 #define	__BROKEN_INDIRECT_CONFIG
