@@ -1,4 +1,4 @@
-#	$OpenBSD: install.md,v 1.16 2002/12/14 15:33:34 krw Exp $
+#	$OpenBSD: install.md,v 1.17 2003/01/26 15:58:39 krw Exp $
 #
 #
 # Copyright (c) 1996 The NetBSD Foundation, Inc.
@@ -100,7 +100,7 @@ md_installboot() {
 	echo Installing boot block...
 	cp /usr/mdec/boot /mnt/boot
 	/usr/mdec/installboot -v /mnt/boot /usr/mdec/biosboot ${1}
-	echo "...done."
+	echo "done."
 }
 
 md_checkfordisklabel() {
