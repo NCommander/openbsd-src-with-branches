@@ -1,4 +1,4 @@
-/*	$OpenBSD: def.h,v 1.42 2002/06/21 00:54:55 vincent Exp $	*/
+/*	$OpenBSD: def.h,v 1.43 2002/07/01 14:33:44 vincent Exp $	*/
 
 #include <sys/queue.h>
 
@@ -269,7 +269,6 @@ struct undo_rec {
 	enum {
 		INSERT = 1,
 		DELETE,
-		CHANGE,
 		BOUNDARY
 	} type;
 	REGION		 region;
