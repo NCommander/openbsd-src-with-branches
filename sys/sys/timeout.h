@@ -1,4 +1,4 @@
-/*	$OpenBSD: timeout.h,v 1.9 2001/08/23 12:02:04 art Exp $	*/
+/*	$OpenBSD: timeout.h,v 1.10 2001/08/23 12:06:30 art Exp $	*/
 /*
  * Copyright (c) 2000 Artur Grabowski <art@openbsd.org>
  * All rights reserved. 
@@ -84,11 +84,7 @@ void timeout_del __P((struct timeout *));
 #define timeout_initialized(to) ((to)->to_flags & TIMEOUT_INITIALIZED)
 #define timeout_triggered(to) ((to)->to_flags & TIMEOUT_TRIGGERED)
 
-/*
- * timeout_init - called by the machine dependent code to initialize a static
- *                list of preallocated timeout structures.
- */
-void timeout_init __P((void));
+void timeout_startup __P((void));
 
 /*
  * called once every hardclock. returns non-zero if we need to schedule a

@@ -1,4 +1,4 @@
-/*	$OpenBSD: kern_timeout.c,v 1.9 2001/08/23 08:18:57 miod Exp $	*/
+/*	$OpenBSD: kern_timeout.c,v 1.10 2001/08/23 11:20:05 art Exp $	*/
 /*
  * Copyright (c) 2000 Artur Grabowski <art@openbsd.org>
  * All rights reserved. 
@@ -78,7 +78,7 @@ struct simplelock _timeout_lock;
 extern int ticks;		/* XXX - move to sys/X.h */
 
 void
-timeout_init()
+timeout_startup()
 {
 
 	TAILQ_INIT(&timeout_todo);
