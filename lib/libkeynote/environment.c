@@ -1,4 +1,4 @@
-/* $OpenBSD: environment.c,v 1.18 2004/06/25 05:06:49 msf Exp $ */
+/* $OpenBSD: environment.c,v 1.19 2004/06/29 11:35:56 msf Exp $ */
 /*
  * The author of this code is Angelos D. Keromytis (angelos@dsl.cis.upenn.edu)
  *
@@ -893,7 +893,6 @@ kn_read_asserts(char *buffer, int bufferlen, int *numassertions)
 			return (char **) NULL;
 		    }
 
-		    free(buf);     /* Free old buffer */
 		    buf = tempbuf;
 		    bufsize *= 2;
 		}
