@@ -1,4 +1,4 @@
-/*	$OpenBSD: wwinit.c,v 1.10 2000/04/15 05:22:14 millert Exp $	*/
+/*	$OpenBSD: wwinit.c,v 1.11 2001/11/19 19:02:18 mpech Exp $	*/
 /*	$NetBSD: wwinit.c,v 1.11 1996/02/08 21:49:07 mycroft Exp $	*/
 
 /*
@@ -41,7 +41,7 @@
 #if 0
 static char sccsid[] = "@(#)wwinit.c	8.2 (Berkeley) 4/28/95";
 #else
-static char rcsid[] = "$OpenBSD: wwinit.c,v 1.10 2000/04/15 05:22:14 millert Exp $";
+static char rcsid[] = "$OpenBSD: wwinit.c,v 1.11 2001/11/19 19:02:18 mpech Exp $";
 #endif
 #endif /* not lint */
 
@@ -311,7 +311,7 @@ wwinit()
 		for (; *kp; kp++)
 			;
 		for (i = 1; i <= j; i++) {
-			(void) sprintf(cap, "k%d", i);
+			(void) snprintf(cap, sizeof(cap), "k%d", i);
 			wwaddcap(cap, &kp);
 			cap[0] = 'l';
 			wwaddcap(cap, &kp);
