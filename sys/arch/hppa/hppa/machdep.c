@@ -1,4 +1,4 @@
-/*	$OpenBSD: machdep.c,v 1.71 2002/05/13 19:11:15 mickey Exp $	*/
+/*	$OpenBSD: machdep.c,v 1.72 2002/05/14 00:25:02 mickey Exp $	*/
 
 /*
  * Copyright (c) 1999-2002 Michael Shalayeff
@@ -1256,8 +1256,7 @@ sendsig(catcher, sig, mask, code, type, val)
 	tf->tf_arg2 = tf->tf_r3 = (register_t)scp;
 	tf->tf_arg3 = (register_t)catcher;
 	tf->tf_sp = (register_t)scp + sss;
-	tf->tf_iioq_head = HPPA_PC_PRIV_USER |
-	    ((register_t)PS_STRINGS + sizeof(struct ps_strings));
+	tf->tf_iioq_head = HPPA_PC_PRIV_USER | p->p_sigcode;
 	tf->tf_iioq_tail = tf->tf_iioq_head + 4;
 	/* disable tracing in the trapframe */
 
