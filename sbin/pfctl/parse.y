@@ -1,4 +1,4 @@
-/*	$OpenBSD: parse.y,v 1.316 2003/02/13 10:26:21 henning Exp $	*/
+/*	$OpenBSD: parse.y,v 1.317 2003/02/14 13:23:17 cedric Exp $	*/
 
 /*
  * Copyright (c) 2001 Markus Friedl.  All rights reserved.
@@ -2551,10 +2551,6 @@ route_host	: STRING			{
 				yyerror("routeto: unknown interface %s",
 				    $$->ifname);
 				YYERROR;
-			} else if (n->ifa_flags & IFF_LOOPBACK) {
-				yyerror("routeto: loopback interface %s not "
-				    "supported", $$->ifname);
-				YYERROR;
 			}
 			set_ipmask($$, 128);
 			$$->next = NULL;
@@ -2569,10 +2565,6 @@ route_host	: STRING			{
 			if ((n = ifa_exists($$->ifname)) == NULL) {
 				yyerror("routeto: unknown interface %s",
 				    $$->ifname);
-				YYERROR;
-			} else if (n->ifa_flags & IFF_LOOPBACK) {
-				yyerror("routeto: loopback interface %s not "
-				    "supported", $$->ifname);
 				YYERROR;
 			}
 			if (disallow_table($3, "invalid use of table <%s> in "
