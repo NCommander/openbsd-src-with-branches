@@ -17,7 +17,7 @@
  * IMPLIED WARRANTIES, INCLUDING, WITHOUT LIMITATION, THE IMPLIED
  * WARRANTIES OF MERCHANTIBILITY AND FITNESS FOR A PARTICULAR PURPOSE.
  *
- * $OpenBSD: lcp.c,v 1.21 2000/07/19 11:06:34 brian Exp $
+ * $OpenBSD: lcp.c,v 1.22 2000/11/02 00:54:34 brian Exp $
  *
  */
 
@@ -246,7 +246,7 @@ lcp_Init(struct lcp *lcp, struct bundle *bundle, struct link *l,
 #ifdef HAVE_DES
   lcp->cfg.chap80nt = NEG_ACCEPTED;
   lcp->cfg.chap80lm = NEG_ACCEPTED;
-  lcp->cfg.chap81 = 0;
+  lcp->cfg.chap81 = NEG_ACCEPTED;
 #endif
   lcp->cfg.lqr = NEG_ACCEPTED;
   lcp->cfg.pap = NEG_ACCEPTED;
