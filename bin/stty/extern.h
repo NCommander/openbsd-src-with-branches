@@ -1,3 +1,4 @@
+/*	$OpenBSD: extern.h,v 1.8 1996/05/07 18:20:06 jtc Exp $	*/
 /*	$NetBSD: extern.h,v 1.8 1996/05/07 18:20:06 jtc Exp $	*/
 
 /*-

@@ -1,3 +1,4 @@
+#	$OpenBSD: Makefile,v 1.24 1995/03/21 09:04:30 cgd Exp $
 #	$NetBSD: Makefile,v 1.24 1995/03/21 09:04:30 cgd Exp $
 
 PROG=	ed

@@ -1,3 +1,4 @@
+/*	$OpenBSD: buf.c,v 1.15 1995/04/23 10:07:28 cgd Exp $	*/
 /*	$NetBSD: buf.c,v 1.15 1995/04/23 10:07:28 cgd Exp $	*/
 
 /* buf.c: This file contains the scratch-file buffer rountines for the
@@ -32,7 +33,7 @@
 #if 0
 static char *rcsid = "@(#)buf.c,v 1.4 1994/02/01 00:34:35 alm Exp";
 #else
-static char rcsid[] = "$NetBSD: buf.c,v 1.15 1995/04/23 10:07:28 cgd Exp $";
+static char rcsid[] = "$OpenBSD: buf.c,v 1.15 1995/04/23 10:07:28 cgd Exp $";
 #endif
 #endif /* not lint */
 

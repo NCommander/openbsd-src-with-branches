@@ -1,3 +1,4 @@
+/*	$OpenBSD: cd.h,v 1.1 1995/11/19 23:27:40 christos Exp $	*/
 /*	$NetBSD: cd.h,v 1.1 1995/11/19 23:27:40 christos Exp $	*/
 
 /*-

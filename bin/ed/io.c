@@ -1,3 +1,4 @@
+/*	$OpenBSD: io.c,v 1.2 1995/03/21 09:04:43 cgd Exp $	*/
 /*	$NetBSD: io.c,v 1.2 1995/03/21 09:04:43 cgd Exp $	*/
 
 /* io.c: This file contains the i/o routines for the ed line editor */
@@ -31,7 +32,7 @@
 #if 0
 static char *rcsid = "@(#)io.c,v 1.1 1994/02/01 00:34:41 alm Exp";
 #else
-static char rcsid[] = "$NetBSD: io.c,v 1.2 1995/03/21 09:04:43 cgd Exp $";
+static char rcsid[] = "$OpenBSD: io.c,v 1.2 1995/03/21 09:04:43 cgd Exp $";
 #endif
 #endif /* not lint */
 

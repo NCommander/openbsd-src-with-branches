@@ -1,3 +1,4 @@
+/*	$OpenBSD: defs.h,v 1.1.1.1 1996/04/03 00:34:38 thorpej Exp $	*/
 /*	$NetBSD: defs.h,v 1.1.1.1 1996/04/03 00:34:38 thorpej Exp $	*/
 
 /*

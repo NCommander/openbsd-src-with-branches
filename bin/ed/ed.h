@@ -1,3 +1,4 @@
+/*	$OpenBSD: ed.h,v 1.23 1995/03/21 09:04:40 cgd Exp $	*/
 /*	$NetBSD: ed.h,v 1.23 1995/03/21 09:04:40 cgd Exp $	*/
 
 /* ed.h: type and constant definitions for the ed editor. */

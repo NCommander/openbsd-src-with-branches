@@ -1,3 +1,4 @@
+/*	$OpenBSD: redir.h,v 1.9 1995/05/11 21:30:13 christos Exp $	*/
 /*	$NetBSD: redir.h,v 1.9 1995/05/11 21:30:13 christos Exp $	*/
 
 /*-

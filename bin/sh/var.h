@@ -1,3 +1,4 @@
+/*	$OpenBSD: var.h,v 1.9 1995/05/11 21:30:44 christos Exp $	*/
 /*	$NetBSD: var.h,v 1.9 1995/05/11 21:30:44 christos Exp $	*/
 
 /*-
