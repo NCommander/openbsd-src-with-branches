@@ -41,8 +41,6 @@
  *	@(#)kern_clock.c	8.5 (Berkeley) 1/21/94
  */
 
-#include "opt_ntp.h"
-
 #include <sys/param.h>
 #include <sys/systm.h>
 #include <sys/dkstat.h>

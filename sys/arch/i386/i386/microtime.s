@@ -34,8 +34,6 @@
  * SUCH DAMAGE.
  */
 
-#include "opt_ntp.h"
-
 #include <machine/asm.h>
 #include <dev/isa/isareg.h>
 #include <i386/isa/timerreg.h>

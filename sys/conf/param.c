@@ -41,8 +41,6 @@
  *	@(#)param.c	7.20 (Berkeley) 6/27/91
  */
 
-#include "opt_timezone.h"
-
 #include <sys/param.h>
 #include <sys/systm.h>
 #include <sys/socket.h>
