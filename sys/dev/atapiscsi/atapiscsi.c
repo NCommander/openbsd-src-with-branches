@@ -1,4 +1,4 @@
-/*      $OpenBSD: atapiscsi.c,v 1.9 1999/08/12 13:01:13 niklas Exp $     */
+/*      $OpenBSD: atapiscsi.c,v 1.10 1999/09/05 21:45:23 niklas Exp $     */
 
 /*
  * This code is derived from code with the copyright below.
@@ -1071,7 +1071,7 @@ again:
 		wdcbit_bucket(chp, 512);
 
 		drvp->state = PIOMODE;
-		break;
+	/* fall through */
 
 	case PIOMODE:
 piomode:
