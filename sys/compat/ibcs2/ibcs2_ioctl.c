@@ -1,4 +1,4 @@
-/*	$OpenBSD: ibcs2_ioctl.c,v 1.11 1996/05/03 17:05:22 christos Exp $	*/
+/*	$OpenBSD: ibcs2_ioctl.c,v 1.4 1996/08/02 20:35:07 niklas Exp $	*/
 /*	$NetBSD: ibcs2_ioctl.c,v 1.11 1996/05/03 17:05:22 christos Exp $	*/
 
 /*
@@ -30,7 +30,7 @@
 #include <sys/param.h>
 #include <sys/systm.h>
 #include <sys/namei.h>
-#include <sys/dir.h>
+#include <sys/dirent.h>
 #include <sys/proc.h>
 #include <sys/file.h>
 #include <sys/stat.h>
