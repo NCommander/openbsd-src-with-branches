@@ -899,7 +899,7 @@ paddr_t	_bus_dmamem_mmap(bus_dma_tag_t tag, bus_dma_segment_t *segs,
 int	_bus_dmamem_alloc_range(bus_dma_tag_t tag, bus_size_t size,
 	    bus_size_t alignment, bus_size_t boundary,
 	    bus_dma_segment_t *segs, int nsegs, int *rsegs, int flags,
-	    vm_offset_t low, vm_offset_t high);
+	    paddr_t low, paddr_t high);
 #endif /* _I386_BUS_DMA_PRIVATE */
 
 #endif /* _I386_BUS_H_ */

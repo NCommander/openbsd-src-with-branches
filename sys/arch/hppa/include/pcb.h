@@ -1,4 +1,4 @@
-/*	$OpenBSD: pcb.h,v 1.5 1999/11/25 18:28:06 mickey Exp $	*/
+/*	$OpenBSD$	*/
 
 /*
  * Copyright (c) 1999-2000 Michael Shalayeff
@@ -46,6 +46,7 @@ struct pcb {
 
 struct md_coredump {
 	struct reg md_reg;
+	struct fpreg md_fpreg;
 }; 
 
 

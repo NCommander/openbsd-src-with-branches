@@ -66,7 +66,7 @@
 #define	SSIZE		(4)		/* initial stack size/NBPG */
 #define	SINCR		(1)		/* increment of stack/NBPG */
 
-#define	UADDR		0x7ffe6000	/* u-area lives here */
+#define	UADDR		0x7fff7000	/* u-area lives here */
 #define	USHIFT		(3)		/* log2(UPAGES) */
 #define	UPAGES		(1<<USHIFT)	/* pages of u-area */
 #define	USPACE		(UPAGES * NBPG)	/* pages for user struct and kstack */

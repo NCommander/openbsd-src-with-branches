@@ -47,7 +47,9 @@ void _bus_space_unmap(bus_space_tag_t, bus_space_handle_t,
 	_bus_space_unmap((bt), (bsh), (size), (adrp))
 
 
-rbus_tag_t rbus_pccbb_parent_io(struct pci_attach_args *pa);
-rbus_tag_t rbus_pccbb_parent_mem(struct pci_attach_args *pa);
+rbus_tag_t rbus_pccbb_parent_io(struct device *self,
+    struct pci_attach_args *pa);
+rbus_tag_t rbus_pccbb_parent_mem(struct device *self,
+    struct pci_attach_args *pa);
 
 #endif /* _ARCH_I386_I386_RBUS_MACHDEP_H_ */

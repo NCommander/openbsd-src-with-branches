@@ -407,7 +407,7 @@ pciaddr_search(mem_port, startp, size)
 		struct extent *ex = mem_port? sc->extent_mem : sc->extent_port;
 
 		/* Search the PCI I/O memory space extent for free
-		 * space that will accomodate size.  Remember that the
+		 * space that will accommodate size.  Remember that the
 		 * extent stores allocated space and we're searching
 		 * for the gaps.
 		 *

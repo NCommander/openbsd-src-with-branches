@@ -9,6 +9,7 @@ struct disklabel;
 struct hppa_dev {
 	dev_t	bootdev;
 	struct pz_device *pz_dev;	/* device descriptor */
+	daddr_t fsoff;			/* offset to the file system */
 	daddr_t	last_blk;		/* byte offset for last read blk */
 	size_t	last_read;		/* amount read last time */
 	struct disklabel *label;

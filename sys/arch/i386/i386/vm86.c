@@ -150,7 +150,7 @@ is_bitset(nr, bitmap)
 					   bytes--it examines ints! */
 	bitmap += nr / NBBY;
 	nr = nr % NBBY;
-	byte = fubyte(bitmap);
+	copyin(bitmap, &byte, sizeof(u_char));
 
 	__asm__ __volatile__("btl %2,%1\n\tsbbl %0,%0"
 			     :"=r" (nr)
@@ -180,7 +180,7 @@ fast_intxx(p, intrno)
 
 	/* 
 	 * Note: u_vm86p points to user-space, we only compute offsets
-	 * and don't deref it. is_revectored() above does fubyte() to
+	 * and don't deref it. is_revectored() above does copyin() to
 	 * get stuff from it
 	 */
 	u_vm86p = (struct vm86_struct *)p->p_addr->u_pcb.vm86_userp;

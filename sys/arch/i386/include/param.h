@@ -75,7 +75,7 @@
 
 #define	NPTEPG		(NBPG/(sizeof (pt_entry_t)))
 
-#define	KERNBASE	0xe0000000		/* start of kernel virtual space */
+#define	KERNBASE	0xd0000000		/* start of kernel virtual space */
 #define	KERNTEXTOFF	(KERNBASE+0x100000)	/* start of kernel text */
 #define	BTOPKERNBASE	((u_long)KERNBASE >> PGSHIFT)
 

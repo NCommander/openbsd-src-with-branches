@@ -1,7 +1,7 @@
 /*	$OpenBSD$	*/
 
 /*
- * Copyright (c) 1999 Michael Shalayeff
+ * Copyright (c) 2002 Michael Shalayeff
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -31,65 +31,72 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-
 #include <sys/param.h>
-#include "libsa.h"
-#include <machine/exec.h>
-#include <lib/libsa/exec.h>
+#include <sys/systm.h>
+#include <sys/kernel.h>
+#include <sys/conf.h>
+#include <sys/device.h>
+#include <sys/extent.h>
 
-int
-som_probe(fd, hdr)
-	int fd;
-	union x_header *hdr;
+#include <machine/autoconf.h>
+#include <machine/bus.h>
+#include <machine/pdc.h>
+#include <machine/iomod.h>
+
+#include <dev/cons.h>
+
+#include "wsdisplay.h"
+#if NWSDISPLAY > 0
+#include <dev/wscons/wsdisplayvar.h>
+#endif
+
+#include "wskbd.h"
+#if NWSKBD > 0
+#include <dev/wscons/wskbdvar.h>
+#endif
+
+cons_decl(ws);
+
+void
+wscnprobe(struct consdev *cp)
 {
-	return !SOM_BADMAGIC(&hdr->x_som);
+	/*
+	 * Due to various device probe restrictions, the wscons console
+	 * can never be enabled early during boot.
+	 * It will be enabled as soon as enough wscons components get
+	 * attached.
+	 * So do nothing there, the switch will occur in
+	 * wsdisplay_emul_attach() later.
+	 */
 }
 
-
-int
-som_load(fd, xp)
-	int fd;
-	register struct x_param *xp;
+void
+wscninit(struct consdev *cp)
 {
-	register struct som_filehdr *xf = &xp->xp_hdr->x_som;
-	struct som_exec_aux x;
+}
 
-	if (lseek(fd, xf->aux_loc, SEEK_SET) < 0 ||
-	    read (fd, &x, sizeof(x)) != sizeof(x)) {
-		if (!errno)
-			errno = EIO;
-		return -1;
-	}
-
-	xp->xp_entry = x.a_entry;
-
-	xp->text.size = hppa_round_page(x.a_tsize);
-	xp->data.size = hppa_round_page(x.a_dsize);
-	xp->bss.size = x.a_bsize;
-	xp->sym.size = xf->sym_total * sizeof(struct som_sym);
-	xp->str.size = xf->strings_size;
-
-	xp->text.foff = x.a_tfile;
-	xp->data.foff = x.a_dfile;
-	xp->bss.foff = 0;
-	if (xf->sym_total) {
-		xp->sym.foff = xf->sym_loc;
-		xp->str.foff = xf->strings_loc;
-	}
-
-	xp->text.addr = x.a_tmem;
-	xp->data.addr = x.a_dmem;
-	xp->bss.addr = xp->data.addr + x.a_dsize;
-	xp->sym.addr = xp->bss.addr + xp->bss.size;
-	xp->str.addr = xp->sym.addr + xp->sym.size;
-
-	return 0;
+void
+wscnputc(dev_t dev, int i)
+{
+#if NWSDISPLAY > 0
+	wsdisplay_cnputc(dev, i);
+#endif
 }
 
 int
-som_ldsym(fd, xp)
-	int fd;
-	register struct x_param *xp;
+wscngetc(dev_t dev)
 {
-	return -1;
+#if NWSKBD > 0
+	return (wskbd_cngetc(dev));
+#else
+	return (0);
+#endif
+}
+
+void
+wscnpollc(dev_t dev, int on)
+{
+#if NWSKBD > 0
+	wskbd_cnpollc(dev, on);
+#endif
 }

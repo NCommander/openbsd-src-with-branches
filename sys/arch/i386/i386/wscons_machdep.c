@@ -80,11 +80,6 @@
 #include <dev/usb/ukbdvar.h>
 #endif
 
-#include "pc.h"
-#if (NPC > 0)
-#include <machine/pccons.h>
-#endif
-
 void wscnprobe(struct consdev *);
 void wscninit(struct consdev *);
 void wscnputc(dev_t, char);

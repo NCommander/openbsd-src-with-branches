@@ -92,8 +92,8 @@ static __inline int inst_trap_return(u_int ins)	{
 }
 
 #if 0
-#define db_clear_single_step(r)	((r)->tf_flags &= ~(PSW_Z))
-#define db_set_single_step(r)	((r)->tf_flags |= (PSW_Z))
+#define db_clear_single_step(r)	((r)->tf_flags &= ~(PSL_Z))
+#define db_set_single_step(r)	((r)->tf_flags |= (PSL_Z))
 #else
 #define	SOFTWARE_SSTEP		1
 #define	SOFTWARE_SSTEP_EMUL	1

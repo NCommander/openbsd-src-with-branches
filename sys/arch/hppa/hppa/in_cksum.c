@@ -1,4 +1,4 @@
-/*	$OpenBSD: in_cksum.c,v 1.1 2001/01/13 00:00:20 mickey Exp $	*/
+/*	$OpenBSD$	*/
 
 /*
  * Copyright (c) 2000 Michael Shalayeff
@@ -106,10 +106,10 @@ in_cksum(m, len)
 				if ((4 & (u_long)w) != 0)
 					ADDWORD;
 			}
-	
+
 			while ((mlen -= 32) >= 0)
 				ADD32;
-	
+
 			mlen += 32;
 			if (mlen >= 16) {
 				ADD16;

@@ -165,9 +165,9 @@ i386_set_ldt(p, args, retval)
 	    ua.num, ua.desc);
 #endif
 
-	if (ua.start < 0 || ua.num < 0)
-		return (EINVAL);
-	if (ua.start > 8192 || (ua.start + ua.num) > 8192)
+	if (ua.start < 0 || ua.num < 0 ||
+	    ua.start > 8192 || ua.num > 8192 ||
+	    (ua.start + ua.num) > 8192)
 		return (EINVAL);
 
 	/*

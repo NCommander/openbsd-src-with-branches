@@ -33,6 +33,7 @@ typedef	u_int32_t	pt_entry_t;
 #define	PTE_PROT(tlb)	((tlb) >> PTE_PROT_SHIFT)
 #define	TLB_PROT(pte)	((pte) << PTE_PROT_SHIFT)
 #define	PDE_MASK	(0xffc00000)
+#define	PDE_SIZE	(0x00400000)
 #define	PTE_MASK	(0x003ff000)
 #define	PTE_PAGE(pte)	((pte) & ~PGOFSET)
 
@@ -55,7 +56,7 @@ typedef	u_int32_t	pt_entry_t;
 #define TLB_UNCACHABLE	0x00080000
 #define TLB_PID_MASK	0x0000fffe
 
-#define	TLB_BITS	"\020\024U\031W\032X\033N\034B\035D\036T\037A\040R"
+#define	TLB_BITS	"\020\024U\031W\032X\033N\034B\035D\036R\037H"
 
 /* protection for a gateway page */
 #define TLB_GATE_PROT	0x04c00000

@@ -498,6 +498,13 @@ pci_intr_route_link(pc, ihp)
 	int rv = 1;
 	char *p = NULL;
 
+	if (pcibios_flags & PCIBIOS_INTR_FIXUP)
+		return 1;
+
+	if (ihp->line != 0 &&
+	    ihp->line != I386_PCI_INTERRUPT_LINE_NO_CONNECTION)
+		pcibios_pir_header.exclusive_irq |= (1 << ihp->line);
+
 	l = ihp->link;
 	if (!l || pciintr_icu_tag == NULL)
 		return (1);
@@ -556,6 +563,9 @@ pci_intr_post_fixup()
 	struct pciintr_link_map *l;
 	int i, pciirq;
 
+	if (pcibios_flags & PCIBIOS_INTR_FIXUP)
+		return 1;
+
 	if (!pciintr_icu_handle)
 		return 0;
 
@@ -564,7 +574,7 @@ pci_intr_post_fixup()
 		printf("pci_intr_post_fixup: PCI IRQs:");
 	for (l = SIMPLEQ_FIRST(&pciintr_link_map_list);
 	    l != NULL; l = SIMPLEQ_NEXT(l, list))
-		if (l->fixup_stage == 0 &&
+		if (l->fixup_stage == 0 && l->irq != 0 &&
 		    l->irq != I386_PCI_INTERRUPT_LINE_NO_CONNECTION) {
 			if (pcibios_flags & PCIBIOS_INTRDEBUG)
 				printf(" %d", l->irq);
@@ -597,6 +607,9 @@ pci_intr_header_fixup(pc, tag, ihp)
 	struct pciintr_link_map *l;
 	int irq, link, bus, device, function;
 	char *p = NULL;
+
+	if (pcibios_flags & PCIBIOS_INTR_FIXUP)
+		return 1;
 
 	irq = ihp->line;
 	ihp->link = NULL;

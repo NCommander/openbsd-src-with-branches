@@ -42,6 +42,7 @@
 /* DOS partition table -- located in boot block */
 #define	DOSBBSECTOR	0		/* DOS boot block relative sector # */
 #define	DOSPARTOFF	446
+#define	DOSDISKOFF	444
 #define	NDOSPART	4
 #define	DOSACTIVE	0x80		/* active partition */
 

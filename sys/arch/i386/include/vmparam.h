@@ -104,11 +104,11 @@
 #define PTDPTDI		PDSLOT_PTE
 
 /* user/kernel map constants */
-#define VM_MIN_ADDRESS		((vm_offset_t)0)
-#define VM_MAXUSER_ADDRESS	((vm_offset_t)((PTDPTDI<<PDSHIFT) - USPACE))
-#define VM_MAX_ADDRESS		((vm_offset_t)((PTDPTDI<<PDSHIFT) + (PTDPTDI<<PGSHIFT)))
-#define VM_MIN_KERNEL_ADDRESS	((vm_offset_t)KERNBASE)
-#define VM_MAX_KERNEL_ADDRESS	((vm_offset_t)(APTDPTDI<<PDSHIFT))
+#define VM_MIN_ADDRESS		((vaddr_t)0)
+#define VM_MAXUSER_ADDRESS	((vaddr_t)((PTDPTDI<<PDSHIFT) - USPACE))
+#define VM_MAX_ADDRESS		((vaddr_t)((PTDPTDI<<PDSHIFT) + (PTDPTDI<<PGSHIFT)))
+#define VM_MIN_KERNEL_ADDRESS	((vaddr_t)KERNBASE)
+#define VM_MAX_KERNEL_ADDRESS	((vaddr_t)(APTDPTDI<<PDSHIFT))
 
 /* virtual sizes (bytes) for various kernel submaps */
 #define VM_PHYS_SIZE		(USRIOSIZE*PAGE_SIZE)

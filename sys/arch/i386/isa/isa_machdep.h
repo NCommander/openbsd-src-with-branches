@@ -191,7 +191,7 @@ struct i386_isa_dma_cookie {
 #define	DMA_BOUNCE_LOW  16		/* number of pages if memory <= 16M */
 #endif
 
-extern vm_offset_t isaphysmem;
+extern vaddr_t isaphysmem;
 extern int isaphysmempgs;
 
 

@@ -253,7 +253,7 @@ putfile(from_file, to)
 	} else if (*(u_char *)&ex == 0x1f && ((u_char *)&ex)[1] == 0x8b) {
 		entry = 0;
 	} else
-		errx(1, "%s: bad magic number\n", from_file);
+		errx(1, "%s: bad magic number", from_file);
 
 	entry += sizeof(load);
 	lseek(to, sizeof(load), SEEK_CUR);

@@ -86,12 +86,23 @@ void diskconf(void);
  */
 dev_t	bootdev = 0;		/* bootdevice, initialized in locore.s */
 
+/* Support for VIA C3 RNG */
+#ifdef I686_CPU
+extern struct timeout viac3_rnd_tmo;
+extern int	viac3_rnd_present;
+void		viac3_rnd(void *);
+#endif
+
 /*
  * Determine i/o configuration for a machine.
  */
 void
 cpu_configure()
 {
+	/*
+	 * Note, on i386, configure is not running under splhigh unlike other
+	 * architectures.  This fact is used by the pcmcia irq line probing.
+	 */
 
 	startrtclock();
 
@@ -118,6 +129,17 @@ cpu_configure()
 
 	/* Set up proc0's TSS and LDT (after the FPU is configured). */
 	i386_proc0_tss_ldt_init();
+
+#ifdef I686_CPU
+	/*
+	 * At this point the RNG is running, and if FSXR is set we can
+	 * use it.  Here we setup a periodic timeout to collect the data.
+	 */
+	if (viac3_rnd_present) {
+		timeout_set(&viac3_rnd_tmo, viac3_rnd, &viac3_rnd_tmo);
+		viac3_rnd(&viac3_rnd_tmo);
+	}
+#endif
 }
 
 /*
@@ -244,9 +266,9 @@ setroot()
 	 * If the original rootdev is the same as the one
 	 * just calculated, don't need to adjust the swap configuration.
 	 */
+	printf("root on %s%d%c\n", findblkname(majdev), unit, part + 'a');
 	if (rootdev == orootdev)
 		return;
-	printf("root on %s%d%c\n", findblkname(majdev), unit, part + 'a');
 
 #ifdef DOSWAP
 	for (swp = swdevt; swp->sw_dev != NODEV; swp++) {
@@ -404,6 +426,14 @@ noask:
 		setroot();
 	} else {
 		/* preconfigured */
+		int  majdev, unit, part;
+
+		majdev = major(rootdev);
+		if (findblkname(majdev) == NULL)
+			return;
+		part = minor(rootdev) % MAXPARTITIONS;
+		unit = minor(rootdev) / MAXPARTITIONS;
+		printf("root on %s%d%c\n", findblkname(majdev), unit, part + 'a');
 		return;
 	}
 

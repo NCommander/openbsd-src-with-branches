@@ -35,13 +35,9 @@
  *	@(#)profile.h	8.1 (Berkeley) 6/11/93
  */
 
-#define	_MCOUNT_DECL static __inline void _mcount
+#define	_MCOUNT_DECL void _mcount
 
-#define	MCOUNT \
-void									\
-mcount()								\
-{									\
-}
+#define	MCOUNT
 
 #ifdef _KERNEL
 /*

@@ -36,7 +36,7 @@
 /* #define	EXEC_ECOFF */
 #define	EXEC_SOM
 
-#define	DEFAULT_KERNEL_ADDRESS	0x12000
+#define	DEFAULT_KERNEL_ADDRESS	0
 
 extern dev_t bootdev;
 
