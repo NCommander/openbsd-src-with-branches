@@ -1507,7 +1507,9 @@ salloc_new(addr, size, nzones)
 	int i;
 
 	MALLOC(pool, salloc_t, sizeof *pool + nzones * sizeof pool->zones[0],
-	    M_TEMP, M_WAITOK);
+	    M_TEMP, M_NOWAIT);
+	if (pool == NULL)
+		return NULL;
 	SLIST_INIT(&pool->free);
 	SLIST_INIT(&pool->used);
 	SLIST_INIT(&pool->spare);
