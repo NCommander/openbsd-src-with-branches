@@ -37,7 +37,7 @@ Parse_Info (infofile, repository, callproc, all)
     char *cp, *exp, *value, *srepos, bad;
     const char *regex_err;
 
-    if (CVSroot_original == NULL)
+    if (current_parsed_root == NULL)
     {
 	/* XXX - should be error maybe? */
 	error (0, 0, "CVSROOT variable not set");
@@ -45,11 +45,11 @@ Parse_Info (infofile, repository, callproc, all)
     }
 
     /* find the info file and open it */
-    infopath = xmalloc (strlen (CVSroot_directory)
+    infopath = xmalloc (strlen (current_parsed_root->directory)
 			+ strlen (infofile)
 			+ sizeof (CVSROOTADM)
-			+ 10);
-    (void) sprintf (infopath, "%s/%s/%s", CVSroot_directory,
+			+ 3);
+    (void) sprintf (infopath, "%s/%s/%s", current_parsed_root->directory,
 		    CVSROOTADM, infofile);
     fp_info = CVS_FOPEN (infopath, "r");
     if (fp_info == NULL)
@@ -204,7 +204,7 @@ Parse_Info (infofile, repository, callproc, all)
    KEYWORD=VALUE.  There is currently no way to have a multi-line
    VALUE (would be nice if there was, probably).
 
-   CVSROOT is the $CVSROOT directory (CVSroot_directory might not be
+   CVSROOT is the $CVSROOT directory (current_parsed_root->directory might not be
    set yet).
 
    Returns 0 for success, negative value for failure.  Call
@@ -334,30 +334,6 @@ parse_config (cvsroot)
 		error (0, 0, "unrecognized value '%s' for SystemAuth", p);
 		goto error_return;
 	    }
-	}
-	else if (strcmp (line, "tag") == 0) {
-	    RCS_citag = strdup(p);
-	    if (RCS_citag == NULL) {
-		error (0, 0, "%s: no memory for local tag '%s'",
-		       infopath, p);
-		goto error_return;
-	    }
-	}
-	else if (strcmp (line, "umask") == 0) {
-	    cvsumask = (mode_t)(strtol(p, NULL, 8) & 0777);
-	}
-	else if (strcmp (line, "dlimit") == 0) {
-#ifdef BSD
-#include <sys/resource.h>
-	    struct rlimit rl;
-
-	    if (getrlimit(RLIMIT_DATA, &rl) != -1) {
-		rl.rlim_cur = atoi(p);
-		rl.rlim_cur *= 1024;
-
-		(void) setrlimit(RLIMIT_DATA, &rl);
-	    }
-#endif /* BSD */
 	}
 	else if (strcmp (line, "PreservePermissions") == 0)
 	{

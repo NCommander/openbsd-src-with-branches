@@ -1,3 +1,0 @@
-interfaces = "{ gm0, kue0 }"
-
-block in on $interfaces all
