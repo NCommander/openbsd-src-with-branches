@@ -1,6 +1,7 @@
-#	$OpenBSD: Makefile,v 1.1 1997/02/06 02:56:48 downsj Exp $
+#	$OpenBSD: Makefile,v 1.3 1997/04/17 22:34:19 weingart Exp $
 #	$NetBSD: Makefile,v 1.2 1997/01/22 01:36:30 cgd Exp $
 
+CFLAGS+=${SACFLAGS}
 S=${.CURDIR}/../../../..
 ZDST=${.OBJDIR}
 
