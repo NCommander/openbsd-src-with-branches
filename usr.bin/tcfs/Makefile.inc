@@ -1,3 +1,5 @@
+# $OpenBSD$
+
 CFLAGS+=	-I${.CURDIR}/..
 
 .include <bsd.obj.mk>
