@@ -1,4 +1,4 @@
-/*	$OpenBSD: sprite.h,v 1.7 2000/03/26 16:21:33 espie Exp $	*/
+/*	$OpenBSD: sprite.h,v 1.5 1998/12/05 00:06:29 espie Exp $	*/
 /*	$NetBSD: sprite.h,v 1.6 1996/11/06 17:59:22 christos Exp $	*/
 
 /*
@@ -44,21 +44,18 @@
 #ifndef _SPRITE
 #define _SPRITE
 
+/* Some basic types and definitions, originally from Sprite */
 
-/*
- * A boolean type is defined as an integer, not an enum. This allows a
- * boolean argument to be an expression that isn't strictly 0 or 1 valued.
- */
 typedef int Boolean;
 #ifndef TRUE
-#define TRUE	1
-#endif /* TRUE */
+#define TRUE 1
+#endif
 #ifndef FALSE
-#define FALSE	0
-#endif /* FALSE */
+#define FALSE 0
+#endif
 
-typedef int  ReturnStatus;
-#define	SUCCESS			0
-#define	FAILURE			1
+typedef int ReturnStatus;
+#define SUCCESS	0
+#define FAILURE 1
 
 #endif /* _SPRITE */

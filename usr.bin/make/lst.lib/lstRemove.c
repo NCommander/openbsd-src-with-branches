@@ -1,4 +1,4 @@
-/*	$OpenBSD: lstRemove.c,v 1.8 2000/06/17 14:34:10 espie Exp $	*/
+/*	$OpenBSD: lstRemove.c,v 1.9 2000/06/17 14:43:40 espie Exp $	*/
 /*	$NetBSD: lstRemove.c,v 1.5 1996/11/06 17:59:50 christos Exp $	*/
 
 /*
@@ -37,20 +37,21 @@
  * SUCH DAMAGE.
  */
 
-#ifndef lint
-#if 0
-static char sccsid[] = "@(#)lstRemove.c	8.1 (Berkeley) 6/6/93";
-#else
-static char rcsid[] = "$OpenBSD: lstRemove.c,v 1.8 2000/06/17 14:34:10 espie Exp $";
-#endif
-#endif /* not lint */
-
 /*-
  * LstRemove.c --
  *	Remove an element from a list
  */
 
 #include	"lstInt.h"
+#ifndef lint
+#if 0
+static char sccsid[] = "@(#)lstRemove.c	8.1 (Berkeley) 6/6/93";
+#else
+UNUSED
+static char rcsid[] = "$OpenBSD: lstRemove.c,v 1.9 2000/06/17 14:43:40 espie Exp $";
+#endif
+#endif /* not lint */
+
 
 /*-
  *-----------------------------------------------------------------------

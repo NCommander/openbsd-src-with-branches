@@ -1,7 +1,7 @@
-#	$OpenBSD: Makefile,v 1.20 2000/07/17 23:01:20 espie Exp $
+#	$OpenBSD: Makefile,v 1.21 2000/07/17 23:09:06 espie Exp $
 
 PROG=	make
-CFLAGS+= -I${.OBJDIR} -I${.CURDIR} -Wall -Wno-char-subscripts -Wno-unused -Wstrict-prototypes#-Wmissing-prototypes -Wstrict-prototypes
+CFLAGS+= -I${.OBJDIR} -I${.CURDIR} -Wall -Wno-char-subscripts -Wstrict-prototypes
 
 .if (${MACHINE_ARCH} == "m88k")
 CFLAGS+=-O0
