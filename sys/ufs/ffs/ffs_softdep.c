@@ -1,4 +1,4 @@
-/*	$OpenBSD: ffs_softdep.c,v 1.8.2.2 2001/05/14 22:47:40 niklas Exp $	*/
+/*	$OpenBSD$	*/
 /*
  * Copyright 1998, 2000 Marshall Kirk McKusick. All Rights Reserved.
  *
@@ -462,7 +462,7 @@ STATIC int stat_inode_bitmap;	/* bufs redirtied as inode bitmap not written */
 STATIC int stat_direct_blk_ptrs;/* bufs redirtied as direct ptrs not written */
 STATIC int stat_dir_entry;	/* bufs redirtied as dir entry cannot write */
 #ifdef DEBUG
-#include <vm/vm.h>
+#include <uvm/uvm_extern.h>
 #include <sys/sysctl.h>
 struct ctldebug debug20 = { "max_softdeps", &max_softdeps };
 struct ctldebug debug21 = { "tickdelay", &tickdelay };

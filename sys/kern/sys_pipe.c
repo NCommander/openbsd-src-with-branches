@@ -1,4 +1,4 @@
-/*	$OpenBSD: sys_pipe.c,v 1.23.2.2 2001/07/04 10:48:34 niklas Exp $	*/
+/*	$OpenBSD$	*/
 
 /*
  * Copyright (c) 1996 John S. Dyson
@@ -47,7 +47,6 @@
 #include <sys/event.h>
 #include <sys/lock.h>
 
-#include <vm/vm.h>
 #include <uvm/uvm_extern.h>
 
 #include <sys/pipe.h>

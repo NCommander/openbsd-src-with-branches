@@ -2898,7 +2898,7 @@ icmp6_redirect_timeout(rt, r)
 	}
 }
 
-#include <vm/vm.h>
+#include <uvm/uvm_extern.h>
 #include <sys/sysctl.h>
 int
 icmp6_sysctl(name, namelen, oldp, oldlenp, newp, newlen)

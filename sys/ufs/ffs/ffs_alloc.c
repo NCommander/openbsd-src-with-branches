@@ -1,4 +1,4 @@
-/*	$OpenBSD: ffs_alloc.c,v 1.18.2.2 2001/07/04 11:00:47 niklas Exp $	*/
+/*	$OpenBSD$	*/
 /*	$NetBSD: ffs_alloc.c,v 1.11 1996/05/11 18:27:09 mycroft Exp $	*/
 
 /*
@@ -45,7 +45,7 @@
 #include <sys/kernel.h>
 #include <sys/syslog.h>
 
-#include <vm/vm.h>
+#include <uvm/uvm_extern.h>
 
 #include <dev/rndvar.h>
 

@@ -1,4 +1,4 @@
-/*	$OpenBSD: kern_malloc_debug.c,v 1.5.6.2 2001/07/04 10:48:22 niklas Exp $	*/
+/*	$OpenBSD$	*/
 
 /*
  * Copyright (c) 1999, 2000 Artur Grabowski <art@openbsd.org>
@@ -60,7 +60,6 @@
 #include <sys/systm.h>
 #include <sys/pool.h>
 
-#include <vm/vm.h>
 #include <uvm/uvm.h>
 
 /*

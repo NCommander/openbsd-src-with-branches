@@ -1,4 +1,4 @@
-/*	$OpenBSD: file.h,v 1.5.2.2 2001/07/04 11:00:20 niklas Exp $	*/
+/*	$OpenBSD$	*/
 /*	$NetBSD: file.h,v 1.11 1995/03/26 20:24:13 jtc Exp $	*/
 
 /*
@@ -81,8 +81,8 @@ struct file {
 		int	(*fo_close)	__P((struct file *fp, struct proc *p));
 	} *f_ops;
 	off_t	f_offset;
-	caddr_t	f_data;		/* vnode or socket */
-	int	f_iflags;
+	caddr_t	f_data;		/* private data */
+	int	f_iflags;	/* internal flags */
 };
 
 #define FIF_WANTCLOSE		0x01	/* a close is waiting for usecount */

@@ -1,4 +1,4 @@
-/*	$OpenBSD: rtsock.c,v 1.9.2.4 2001/07/04 10:54:20 niklas Exp $	*/
+/*	$OpenBSD$	*/
 /*	$NetBSD: rtsock.c,v 1.18 1996/03/29 00:32:10 cgd Exp $	*/
 
 /*
@@ -74,7 +74,7 @@
 #include <sys/domain.h>
 #include <sys/protosw.h>
 
-#include <vm/vm.h>
+#include <uvm/uvm_extern.h>
 #include <sys/sysctl.h>
 
 #include <net/if.h>

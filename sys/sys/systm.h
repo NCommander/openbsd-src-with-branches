@@ -1,4 +1,4 @@
-/*	$OpenBSD: systm.h,v 1.37.2.2 2001/07/04 11:00:35 niklas Exp $	*/
+/*	$OpenBSD$	*/
 /*	$NetBSD: systm.h,v 1.50 1996/06/09 04:55:09 briggs Exp $	*/
 
 /*-
@@ -289,7 +289,6 @@ void	consinit __P((void));
 
 void	cpu_startup __P((void));
 void	cpu_configure __P((void));
-void	cpu_set_kpc __P((struct proc *, void (*)(void *), void *));
 extern void (*md_diskconf) __P((void));
 
 

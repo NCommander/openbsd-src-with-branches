@@ -1,4 +1,4 @@
-/*	$OpenBSD: exec_subr.c,v 1.7.2.1 2001/05/14 22:32:39 niklas Exp $	*/
+/*	$OpenBSD$	*/
 /*	$NetBSD: exec_subr.c,v 1.9 1994/12/04 03:10:42 mycroft Exp $	*/
 
 /*
@@ -40,8 +40,6 @@
 #include <sys/exec.h>
 #include <sys/mman.h>
 #include <sys/resourcevar.h>
-
-#include <vm/vm.h>
 
 #include <uvm/uvm.h>
 
@@ -175,7 +173,7 @@ vmcmd_map_pagedvn(p, cmd)
 	 */
 
 	retval = uvm_map(&p->p_vmspace->vm_map, &cmd->ev_addr, cmd->ev_len,
-	    uobj, cmd->ev_offset,
+	    uobj, cmd->ev_offset, 0,
 	    UVM_MAPFLAG(cmd->ev_prot, VM_PROT_ALL, UVM_INH_COPY,
 	    UVM_ADV_NORMAL, UVM_FLAG_COPYONW|UVM_FLAG_FIXED));
 
@@ -212,7 +210,7 @@ vmcmd_map_readvn(p, cmd)
 	
 	cmd->ev_addr = trunc_page(cmd->ev_addr); /* required by uvm_map */
 	error = uvm_map(&p->p_vmspace->vm_map, &cmd->ev_addr,
-	    round_page(cmd->ev_len), NULL, UVM_UNKNOWN_OFFSET,
+	    round_page(cmd->ev_len), NULL, UVM_UNKNOWN_OFFSET, 0,
 	    UVM_MAPFLAG(UVM_PROT_ALL, UVM_PROT_ALL, UVM_INH_COPY,
 	    UVM_ADV_NORMAL,
 	    UVM_FLAG_FIXED|UVM_FLAG_OVERLAY|UVM_FLAG_COPYONW));
@@ -260,7 +258,7 @@ vmcmd_map_zero(p, cmd)
 	
 	cmd->ev_addr = trunc_page(cmd->ev_addr); /* required by uvm_map */
 	error = uvm_map(&p->p_vmspace->vm_map, &cmd->ev_addr,
-	    round_page(cmd->ev_len), NULL, UVM_UNKNOWN_OFFSET,
+	    round_page(cmd->ev_len), NULL, UVM_UNKNOWN_OFFSET, 0,
 	    UVM_MAPFLAG(cmd->ev_prot, UVM_PROT_ALL, UVM_INH_COPY,
 	    UVM_ADV_NORMAL, UVM_FLAG_FIXED|UVM_FLAG_COPYONW));
 

@@ -1,4 +1,4 @@
-/*	$OpenBSD: nfs_bio.c,v 1.15.6.1 2001/05/14 22:44:57 niklas Exp $	*/
+/*	$OpenBSD$	*/
 /*	$NetBSD: nfs_bio.c,v 1.25.4.2 1996/07/08 20:47:04 jtc Exp $	*/
 
 /*
@@ -51,7 +51,7 @@
 #include <sys/kernel.h>
 #include <sys/namei.h>
 
-#include <vm/vm.h>
+#include <uvm/uvm_extern.h>
 
 #include <nfs/rpcv2.h>
 #include <nfs/nfsproto.h>

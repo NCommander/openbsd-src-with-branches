@@ -1,4 +1,4 @@
-/*	$OpenBSD: kern_resource.c,v 1.10.2.2 2001/05/14 22:32:41 niklas Exp $	*/
+/*	$OpenBSD$	*/
 /*	$NetBSD: kern_resource.c,v 1.38 1996/10/23 07:19:38 matthias Exp $	*/
 
 /*-
@@ -52,9 +52,13 @@
 #include <sys/mount.h>
 #include <sys/syscallargs.h>
 
-#include <vm/vm.h>
-
 #include <uvm/uvm_extern.h>
+
+/*
+ * Patchable maximum data and stack limits.
+ */
+rlim_t maxdmap = MAXDSIZ;
+rlim_t maxsmap = MAXSSIZ;
 
 /*
  * Resource controls and accounting.
@@ -229,7 +233,6 @@ dosetrlimit(p, which, limp)
 	struct rlimit *limp;
 {
 	struct rlimit *alimp;
-	extern unsigned maxdmap, maxsmap;
 	rlim_t maxlim;
 	int error;
 

@@ -1,4 +1,4 @@
-/*	$OpenBSD: kern_exit.c,v 1.20.4.4 2001/07/04 10:48:18 niklas Exp $	*/
+/*	$OpenBSD$	*/
 /*	$NetBSD: kern_exit.c,v 1.39 1996/04/22 01:38:25 christos Exp $	*/
 
 /*
@@ -77,8 +77,6 @@
 
 #include <machine/cpu.h>
 
-#include <vm/vm.h>
-
 #include <uvm/uvm_extern.h>
 
 void proc_zap __P((struct proc *));
@@ -145,10 +143,6 @@ exit1(p, rv)
 
 	/* The next three chunks should probably be moved to vmspace_exit. */
 	vm = p->p_vmspace;
-#ifdef SYSVSHM
-	if (vm->vm_shm && vm->vm_refcnt == 1)
-		shmexit(vm);
-#endif
 #ifdef SYSVSEM
 	semexit(p);
 #endif

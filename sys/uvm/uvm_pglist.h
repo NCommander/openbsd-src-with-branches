@@ -58,4 +58,4 @@ struct pgfreelist {
 	struct pglist pgfl_queues[PGFL_NQUEUES];
 };
 
-#endif /* _PGLIST_H_ */
+#endif

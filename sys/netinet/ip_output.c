@@ -1,4 +1,4 @@
-/*	$OpenBSD: ip_output.c,v 1.64.2.3 2001/07/04 10:54:56 niklas Exp $	*/
+/*	$OpenBSD$	*/
 /*	$NetBSD: ip_output.c,v 1.28 1996/02/13 23:43:07 christos Exp $	*/
 
 /*
@@ -452,7 +452,15 @@ ip_output(m0, va_alist)
 			 * If we belong to the destination multicast group
 			 * on the outgoing interface, and the caller did not
 			 * forbid loopback, loop back a copy.
+			 * Can't defer TCP/UDP checksumming, do the
+			 * computation now.
 			 */
+			if (m->m_pkthdr.csum &
+			    (M_TCPV4_CSUM_OUT | M_UDPV4_CSUM_OUT)) {
+				in_delayed_cksum(m);
+				m->m_pkthdr.csum &=
+				    ~(M_UDPV4_CSUM_OUT | M_TCPV4_CSUM_OUT);
+			}
 			ip_mloopback(ifp, m, dst);
 		}
 #ifdef MROUTING

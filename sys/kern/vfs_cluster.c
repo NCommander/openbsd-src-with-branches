@@ -1,4 +1,4 @@
-/*	$OpenBSD: vfs_cluster.c,v 1.16.6.1 2001/05/14 22:32:45 niklas Exp $	*/
+/*	$OpenBSD$	*/
 /*	$NetBSD: vfs_cluster.c,v 1.12 1996/04/22 01:39:05 christos Exp $	*/
 
 /*-
@@ -45,7 +45,7 @@
 #include <sys/systm.h>
 #include <sys/resourcevar.h>
 
-#include <vm/vm.h>
+#include <uvm/uvm_extern.h>
 
 /*
  * Local declarations

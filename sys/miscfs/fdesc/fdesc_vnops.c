@@ -1,4 +1,4 @@
-/*	$OpenBSD: fdesc_vnops.c,v 1.16.4.1 2001/07/04 10:49:06 niklas Exp $	*/
+/*	$OpenBSD$	*/
 /*	$NetBSD: fdesc_vnops.c,v 1.32 1996/04/11 11:24:29 mrg Exp $	*/
 
 /*
@@ -67,7 +67,7 @@
 
 #include <miscfs/fdesc/fdesc.h>
 
-#include <vm/vm.h>
+#include <uvm/uvm_extern.h>
 
 #include <sys/pipe.h>
 

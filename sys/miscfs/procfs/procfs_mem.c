@@ -1,4 +1,4 @@
-/*	$OpenBSD: procfs_mem.c,v 1.9.6.2 2001/07/04 10:49:15 niklas Exp $	*/
+/*	$OpenBSD$	*/
 /*	$NetBSD: procfs_mem.c,v 1.8 1996/02/09 22:40:50 christos Exp $	*/
 
 /*
@@ -53,8 +53,6 @@
 #include <sys/proc.h>
 #include <sys/vnode.h>
 #include <miscfs/procfs/procfs.h>
-#include <vm/vm.h>
-#include <vm/vm_page.h>
 
 #include <uvm/uvm_extern.h>
 

@@ -1,9 +1,6 @@
-/*	$OpenBSD$	*/
-/*	$NetBSD: uvm_user.c,v 1.8 2000/06/27 17:29:37 mrg Exp $	*/
-
+/* $OpenBSD$ */
 /*
- *
- * Copyright (c) 1997 Charles D. Cranor and Washington University.
+ * Copyright 2001 Niels Provos <provos@citi.umich.edu>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -14,12 +11,6 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *      This product includes software developed by Charles D. Cranor and
- *      Washington University.
- * 4. The name of the author may not be used to endorse or promote products
- *    derived from this software without specific prior written permission.
  *
  * THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR
  * IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
@@ -31,38 +22,25 @@
  * THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- *
- * from: Id: uvm_user.c,v 1.1.2.1 1997/08/14 19:10:41 chuck Exp
  */
 
-/*
- * uvm_user.c: high level uvm_allocate/uvm_deallocate interface into vm.
- */
+#ifndef _NET_IF_PFLOG_H_
+#define _NET_IF_PFLOG_H_
 
+struct pflog_softc {
+	struct ifnet	sc_if;  /* the interface */
+};
 
-#include <sys/param.h>
-#include <sys/systm.h>
-#include <sys/proc.h>
+struct pfloghdr {
+	u_int32_t af;
+	char ifname[IFNAMSIZ];
+	short rnr;
+	u_short reason;
+	u_short action;
+	u_short dir;
+};
 
-#include <uvm/uvm.h>
+#define PFLOG_HDRLEN	sizeof(struct pfloghdr)
 
-/*
- * uvm_deallocate: deallocate memory (unmap)
- */
-
-int
-uvm_deallocate(map, start, size)
-	vm_map_t map;
-	vaddr_t start;
-	vsize_t size;
-{
-
-	if (map == NULL)
-		panic("uvm_deallocate with null map");
-
-	if (size == (vaddr_t) 0)
-		return (KERN_SUCCESS);
-
-	return(uvm_unmap(map, trunc_page(start), round_page(start+size)));
-
-}
+extern struct pflog_softc pflogif[];
+#endif /* _NET_IF_PFLOG_H_ */

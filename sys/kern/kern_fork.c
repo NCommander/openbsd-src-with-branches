@@ -1,4 +1,4 @@
-/*	$OpenBSD: kern_fork.c,v 1.27.2.4 2001/07/04 10:48:19 niklas Exp $	*/
+/*	$OpenBSD$	*/
 /*	$NetBSD: kern_fork.c,v 1.29 1996/02/09 18:59:34 christos Exp $	*/
 
 /*
@@ -58,10 +58,10 @@
 #include <sys/sched.h>
 #include <dev/rndvar.h>
 #include <sys/pool.h>
+#include <sys/mman.h>
 
 #include <sys/syscallargs.h>
 
-#include <vm/vm.h>
 #include <uvm/uvm_extern.h>
 #include <uvm/uvm_map.h>
 
@@ -78,7 +78,7 @@ sys_fork(p, v, retval)
 	void *v;
 	register_t *retval;
 {
-	return (fork1(p, SIGCHLD, FORK_FORK, NULL, 0, retval));
+	return (fork1(p, SIGCHLD, FORK_FORK, NULL, 0, NULL, NULL, retval));
 }
 
 /*ARGSUSED*/
@@ -88,7 +88,8 @@ sys_vfork(p, v, retval)
 	void *v;
 	register_t *retval;
 {
-	return (fork1(p, SIGCHLD, FORK_VFORK|FORK_PPWAIT, NULL, 0, retval));
+	return (fork1(p, SIGCHLD, FORK_VFORK|FORK_PPWAIT, NULL, 0, NULL,
+	    NULL, retval));
 }
 
 int
@@ -129,16 +130,18 @@ sys_rfork(p, v, retval)
 	if (rforkflags & RFMEM)
 		flags |= FORK_VMNOSTACK;
 
-	return (fork1(p, SIGCHLD, flags, NULL, 0, retval));
+	return (fork1(p, SIGCHLD, flags, NULL, 0, NULL, NULL, retval));
 }
 
 int
-fork1(p1, exitsig, flags, stack, stacksize, retval)
-	register struct proc *p1;
+fork1(p1, exitsig, flags, stack, stacksize, func, arg, retval)
+	struct proc *p1;
 	int exitsig;
 	int flags;
 	void *stack;
 	size_t stacksize;
+	void (*func)(void *);
+	void *arg;
 	register_t *retval;
 {
 	struct proc *p2;
@@ -349,7 +352,7 @@ again:
 		/* share as much address space as possible */
 		(void) uvm_map_inherit(&p1->p_vmspace->vm_map,
 		    VM_MIN_ADDRESS, VM_MAXUSER_ADDRESS - MAXSSIZ,
-		    VM_INHERIT_SHARE);
+		    MAP_INHERIT_SHARE);
 	}
 
 	p2->p_addr = (struct user *)uaddr;
@@ -359,7 +362,7 @@ again:
 	 * different path later.
 	 */
 	uvm_fork(p1, p2, ((flags & FORK_SHAREVM) ? TRUE : FALSE), stack,
-	    stacksize);
+	    stacksize, func ? func : child_return, arg ? arg : p2);
 
 	vm = p2->p_vmspace;
 

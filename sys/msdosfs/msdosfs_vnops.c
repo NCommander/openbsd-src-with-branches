@@ -1,4 +1,4 @@
-/*	$OpenBSD: msdosfs_vnops.c,v 1.21.6.2 2001/07/04 10:49:27 niklas Exp $	*/
+/*	$OpenBSD$	*/
 /*	$NetBSD: msdosfs_vnops.c,v 1.63 1997/10/17 11:24:19 ws Exp $	*/
 
 /*-
@@ -65,7 +65,7 @@
 #include <sys/dirent.h>		/* defines dirent structure */
 #include <sys/lockf.h>
 
-#include <vm/vm.h>
+#include <uvm/uvm_extern.h>
 
 #include <msdosfs/bpb.h>
 #include <msdosfs/direntry.h>

@@ -1,4 +1,4 @@
-/*	$OpenBSD: procfs_cmdline.c,v 1.1.6.1 2001/05/14 22:32:55 niklas Exp $	*/
+/*	$OpenBSD$	*/
 /*	$NetBSD: procfs_cmdline.c,v 1.3 1999/03/13 22:26:48 thorpej Exp $	*/
 
 /*
@@ -47,8 +47,6 @@
 #include <sys/exec.h>
 #include <sys/malloc.h>
 #include <miscfs/procfs/procfs.h>
-#include <vm/vm.h>
-
 #include <uvm/uvm_extern.h>
 
 /*

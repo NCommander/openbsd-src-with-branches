@@ -1,4 +1,4 @@
-/*	$OpenBSD: exec_aout.c,v 1.4 1999/01/11 05:12:21 millert Exp $	*/
+/*	$OpenBSD$	*/
 /*	$NetBSD: exec_aout.c,v 1.14 1996/02/04 02:15:01 christos Exp $	*/
 
 /*
@@ -38,7 +38,7 @@
 #include <sys/vnode.h>
 #include <sys/exec.h>
 #include <sys/resourcevar.h>
-#include <vm/vm.h>
+#include <uvm/uvm_extern.h>
 
 #if defined(_KERN_DO_AOUT)
 

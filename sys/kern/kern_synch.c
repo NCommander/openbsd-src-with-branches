@@ -1,4 +1,4 @@
-/*	$OpenBSD: kern_synch.c,v 1.17.4.3 2001/07/04 10:48:27 niklas Exp $	*/
+/*	$OpenBSD$	*/
 /*	$NetBSD: kern_synch.c,v 1.37 1996/04/22 01:38:37 christos Exp $	*/
 
 /*-
@@ -48,11 +48,9 @@
 #include <sys/buf.h>
 #include <sys/signalvar.h>
 #include <sys/resourcevar.h>
-#include <vm/vm.h>
+#include <uvm/uvm_extern.h>
 #include <sys/sched.h>
 #include <sys/timeout.h>
-
-#include <uvm/uvm_extern.h>
 
 #ifdef KTRACE
 #include <sys/ktrace.h>
@@ -346,7 +344,7 @@ int
 ltsleep(ident, priority, wmesg, timo, interlock)
 	void *ident;
 	int priority, timo;
-	char *wmesg;
+	const char *wmesg;
 	volatile struct simplelock *interlock;
 {
 	struct proc *p = curproc;

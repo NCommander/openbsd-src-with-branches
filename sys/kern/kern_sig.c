@@ -1,4 +1,4 @@
-/*	$OpenBSD: kern_sig.c,v 1.35.2.3 2001/07/04 10:48:25 niklas Exp $	*/
+/*	$OpenBSD$	*/
 /*	$NetBSD: kern_sig.c,v 1.54 1996/04/22 01:38:32 christos Exp $	*/
 
 /*
@@ -72,10 +72,8 @@
 
 #include <machine/cpu.h>
 
-#include <vm/vm.h>
-#include <sys/user.h>		/* for coredump */
-
 #include <uvm/uvm_extern.h>
+#include <sys/user.h>		/* for coredump */
 
 int	filt_sigattach(struct knote *kn);
 void	filt_sigdetach(struct knote *kn);

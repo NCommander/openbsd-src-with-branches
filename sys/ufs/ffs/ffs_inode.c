@@ -1,4 +1,4 @@
-/*	$OpenBSD: ffs_inode.c,v 1.15.2.2 2001/07/04 11:00:49 niklas Exp $	*/
+/*	$OpenBSD$	*/
 /*	$NetBSD: ffs_inode.c,v 1.10 1996/05/11 18:27:19 mycroft Exp $	*/
 
 /*
@@ -46,8 +46,6 @@
 #include <sys/kernel.h>
 #include <sys/malloc.h>
 #include <sys/resourcevar.h>
-
-#include <vm/vm.h>
 
 #include <uvm/uvm_extern.h>
 

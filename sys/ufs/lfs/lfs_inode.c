@@ -1,4 +1,4 @@
-/*	$OpenBSD: lfs_inode.c,v 1.6 1997/05/30 08:34:39 downsj Exp $	*/
+/*	$OpenBSD$	*/
 /*	$NetBSD: lfs_inode.c,v 1.5 1996/05/11 18:27:35 mycroft Exp $	*/
 
 /*
@@ -46,7 +46,7 @@
 #include <sys/kernel.h>
 #include <sys/malloc.h>
 
-#include <vm/vm.h>
+#include <uvm/uvm_extern.h>
 
 #include <ufs/ufs/quota.h>
 #include <ufs/ufs/inode.h>

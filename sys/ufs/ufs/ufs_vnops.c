@@ -1,4 +1,4 @@
-/*	$OpenBSD: ufs_vnops.c,v 1.27.6.2 2001/07/04 11:00:57 niklas Exp $	*/
+/*	$OpenBSD$	*/
 /*	$NetBSD: ufs_vnops.c,v 1.18 1996/05/11 18:28:04 mycroft Exp $	*/
 
 /*
@@ -57,8 +57,6 @@
 #include <sys/dirent.h>
 #include <sys/lockf.h>
 #include <sys/event.h>
-
-#include <vm/vm.h>
 
 #include <uvm/uvm_extern.h>
 

@@ -1,4 +1,4 @@
-/*	$OpenBSD: msdosfs_denode.c,v 1.16 1999/04/28 09:28:16 art Exp $	*/
+/*	$OpenBSD$	*/
 /*	$NetBSD: msdosfs_denode.c,v 1.23 1997/10/17 11:23:58 ws Exp $	*/
 
 /*-
@@ -59,7 +59,7 @@
 #include <sys/dirent.h>
 #include <sys/namei.h>
 
-#include <vm/vm.h>
+#include <uvm/uvm_extern.h>
 
 #include <msdosfs/bpb.h>
 #include <msdosfs/msdosfsmount.h>
