@@ -1,4 +1,5 @@
-/*	$OpenBSD: db_break.h,v 1.2 1996/02/20 13:35:33 mickey Exp $	*/
+/*	$OpenBSD: db_break.h,v 1.3 1996/03/11 11:16:00 mickey Exp $	*/
+/*	$NetBSD: db_break.h,v 1.8 1996/02/05 01:56:52 christos Exp $	*/
 
 /* 
  * Mach Operating System

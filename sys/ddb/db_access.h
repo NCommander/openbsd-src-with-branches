@@ -1,4 +1,5 @@
-/*	$OpenBSD: db_access.h,v 1.2 1996/02/20 13:35:30 mickey Exp $	*/
+/*	$OpenBSD: db_access.h,v 1.3 1996/03/11 11:15:55 mickey Exp $	*/
+/*	$NetBSD: db_access.h,v 1.6 1994/10/09 08:29:57 mycroft Exp $	*/
 
 /* 
  * Mach Operating System

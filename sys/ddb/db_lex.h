@@ -1,4 +1,5 @@
-/*	$OpenBSD: db_lex.h,v 1.2 1996/02/20 13:35:39 mickey Exp $	*/
+/*	$OpenBSD: db_lex.h,v 1.3 1996/03/11 11:16:13 mickey Exp $	*/
+/*	$NetBSD: db_lex.h,v 1.7 1996/02/05 01:57:07 christos Exp $	*/
 
 /* 
  * Mach Operating System

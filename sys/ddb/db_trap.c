@@ -1,4 +1,5 @@
-/*	$OpenBSD: db_trap.c,v 1.2 1996/02/20 13:35:44 mickey Exp $	*/
+/*	$OpenBSD: db_trap.c,v 1.3 1996/03/11 11:16:26 mickey Exp $	*/
+/*	$NetBSD: db_trap.c,v 1.9 1996/02/05 01:57:18 christos Exp $	*/
 
 /* 
  * Mach Operating System

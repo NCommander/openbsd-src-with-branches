@@ -1,4 +1,5 @@
-/*	$OpenBSD: db_watch.h,v 1.2 1996/02/20 13:35:47 mickey Exp $	*/
+/*	$OpenBSD: db_watch.h,v 1.3 1996/03/11 11:16:32 mickey Exp $	*/
+/*	$NetBSD: db_watch.h,v 1.9 1996/02/05 01:57:24 christos Exp $	*/
 
 /* 
  * Mach Operating System

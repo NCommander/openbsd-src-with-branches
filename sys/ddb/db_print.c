@@ -1,4 +1,5 @@
-/*	$OpenBSD: db_print.c,v 1.2 1996/02/20 13:35:40 mickey Exp $	*/
+/*	$OpenBSD: db_print.c,v 1.3 1996/03/11 11:16:18 mickey Exp $	*/
+/*	$NetBSD: db_print.c,v 1.5 1996/02/05 01:57:11 christos Exp $	*/
 
 /* 
  * Mach Operating System

@@ -1,4 +1,5 @@
-/*	$OpenBSD: db_sym.c,v 1.5 1996/03/11 11:16:23 mickey Exp $	*/
+/*	$OpenBSD: db_sym.c,v 1.6 1996/03/30 04:51:28 mickey Exp $	*/
+/*	$NetBSD: db_sym.c,v 1.12 1996/02/05 01:57:15 christos Exp $	*/
 
 /* 
  * Mach Operating System
