@@ -1,4 +1,4 @@
-/*	$OpenBSD: ce4231.c,v 1.14 2003/06/02 20:02:49 jason Exp $	*/
+/*	$OpenBSD: ce4231.c,v 1.15 2003/06/24 21:54:39 henric Exp $	*/
 
 /*
  * Copyright (c) 1999 Jason L. Wright (jason@thought.net)
@@ -290,8 +290,6 @@ ce4231_attach(parent, self, aux)
 	}
 
 	printf(": nvaddrs %d\n", ea->ea_nvaddrs);
-
-	evcnt_attach(&sc->sc_dev, "intr", &sc->sc_intrcnt);
 
 	audio_attach_mi(&ce4231_sa_hw_if, sc, &sc->sc_dev);
 

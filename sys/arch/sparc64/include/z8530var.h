@@ -1,4 +1,4 @@
-/*	$OpenBSD: z8530var.h,v 1.4 2002/03/14 01:26:45 millert Exp $	*/
+/*	$OpenBSD: z8530var.h,v 1.5 2003/06/02 23:27:56 millert Exp $	*/
 /*	$NetBSD: z8530var.h,v 1.4 2000/11/08 23:41:42 eeh Exp $	*/
 
 /*
@@ -64,7 +64,6 @@ struct zsc_softc {
 	void			*zsc_softintr;
 	int			zsc_promunit;	/* PROM's view of zs devices */
 	int			zsc_node;	/* PROM node, if any */
-	struct evcnt		zsc_intrcnt;	/* count interrupts */
 	struct zs_chanstate	zsc_cs_store[2];
 };
 
