@@ -1,4 +1,4 @@
-/*	$OpenBSD: sfb.c,v 1.4 1996/11/12 20:29:43 niklas Exp $	*/
+/*	$OpenBSD: sfb.c,v 1.5 1996/11/23 21:45:01 kstailey Exp $	*/
 /*	$NetBSD: sfb.c,v 1.5 1996/10/13 03:00:35 christos Exp $	*/
 
 /*
@@ -37,7 +37,7 @@
 #include <sys/conf.h>
 #include <sys/ioctl.h>
 
-#include <machine/bus.old.h>
+#include <machine/bus.h>
 #include <machine/intr.h>
 
 #include <dev/tc/tcvar.h>
