@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_san_common.c,v 1.2 2004/06/26 20:17:23 mcbride Exp $	*/
+/*	$OpenBSD: if_san_common.c,v 1.3 2004/06/26 22:19:38 mcbride Exp $	*/
 
 /*-
  * Copyright (c) 2001-2004 Sangoma Technologies (SAN)
@@ -33,7 +33,6 @@
  */
 
 
-# include </usr/include/bitstring.h>
 # include <sys/types.h>
 # include <sys/param.h>
 # include <sys/systm.h>
