@@ -211,8 +211,7 @@ dec_eb164_intr_map(ccv, bustag, buspin, line, ihp)
 			if (device == 8) {
 				if (function == 0)
 					panic("dec_eb164_intr_map: SIO device");
-				if (function == 1 || function == 2)
-					return (1);
+				return (1);
 			}
 		} else {
 			if (device == 8)

@@ -140,7 +140,7 @@ struct cia_config cia_configuration;
 #endif
 
 #ifndef CIA_PYXIS_FORCE_BWX
-#define	CIA_PYXIS_FORCE_BWX 1
+#define	CIA_PYXIS_FORCE_BWX 0
 #endif
 
 int	cia_pci_use_bwx = CIA_PCI_USE_BWX;
