@@ -1,4 +1,4 @@
-/*	$OpenBSD: printconf.c,v 1.6 2004/03/01 16:47:06 claudio Exp $	*/
+/*	$OpenBSD: printconf.c,v 1.7 2004/03/01 17:04:07 henning Exp $	*/
 
 /*
  * Copyright (c) 2003, 2004 Henning Brauer <henning@openbsd.org>
@@ -132,7 +132,8 @@ print_peer(struct peer_config *p)
 		c = nada;
 
 	printf("%sneighbor %s {\n", c, log_addr(&p->remote_addr));
-	printf("%s\tdescr \"%s\"\n", c, p->descr);
+	if (p->descr[0])
+		printf("%s\tdescr \"%s\"\n", c, p->descr);
 	printf("%s\tremote-as %u\n", c, p->remote_as);
 	if (p->distance > 1)
 		printf("%s\tmultihop %u\n", c, p->distance);
