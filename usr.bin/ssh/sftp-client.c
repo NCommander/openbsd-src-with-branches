@@ -28,7 +28,7 @@
 /* XXX: copy between two remote sites */
 
 #include "includes.h"
-RCSID("$OpenBSD: sftp-client.c,v 1.31 2002/04/06 00:30:08 djm Exp $");
+RCSID("$OpenBSD: sftp-client.c,v 1.18.2.2 2002/05/17 00:03:24 miod Exp $");
 
 #include <sys/queue.h>
 
@@ -1057,7 +1057,7 @@ do_upload(struct sftp_conn *conn, char *local_path, char *remote_path,
 
 		if (id == startid || len == 0 ||
 		    id - ackid >= conn->num_requests) {
-		    	u_int r_id;
+			u_int r_id;
 
 			buffer_clear(&msg);
 			get_msg(conn->fd_in, &msg);

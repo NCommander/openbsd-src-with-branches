@@ -59,7 +59,7 @@
  */
 
 #include "includes.h"
-RCSID("$OpenBSD: clientloop.c,v 1.100 2002/04/22 21:04:52 markus Exp $");
+RCSID("$OpenBSD: clientloop.c,v 1.84.2.3 2002/05/17 00:03:23 miod Exp $");
 
 #include "ssh.h"
 #include "ssh1.h"
@@ -481,7 +481,7 @@ process_cmdline(void)
 	int local = 0;
 
 	leave_raw_mode();
- 	handler = signal(SIGINT, SIG_IGN);
+	handler = signal(SIGINT, SIG_IGN);
 	cmd = s = read_passphrase("\r\nssh> ", RP_ECHO);
 	if (s == NULL)
 		goto out;

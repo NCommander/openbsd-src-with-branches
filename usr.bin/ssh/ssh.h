@@ -1,4 +1,4 @@
-/*	$OpenBSD: ssh.h,v 1.69 2002/05/11 20:24:48 stevesk Exp $	*/
+/*	$OpenBSD: ssh.h,v 1.63.2.2 2002/05/17 00:03:24 miod Exp $	*/
 
 /*
  * Author: Tatu Ylonen <ylo@cs.hut.fi>
@@ -31,7 +31,7 @@
 #define SSH_MAX_IDENTITY_FILES		100
 
 /*
- * Major protocol version.  Different version indicates major incompatiblity
+ * Major protocol version.  Different version indicates major incompatibility
  * that prevents communication.
  *
  * Minor protocol version.  Different version indicates minor incompatibility
@@ -90,7 +90,7 @@
  * sshd will change its privileges to this user and its
  * primary group.
  */
-#define SSH_PRIVSEP_USER		"sshd"
+#define SSH_PRIVSEP_USER		"nobody"
 
 /* Minimum modulus size (n) for RSA keys. */
 #define SSH_RSA_MINIMUM_MODULUS_SIZE	768

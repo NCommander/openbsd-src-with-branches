@@ -36,7 +36,7 @@
  */
 
 #include "includes.h"
-RCSID("$OpenBSD: authfile.c,v 1.48 2002/02/28 15:46:33 markus Exp $");
+RCSID("$OpenBSD: authfile.c,v 1.39.2.1 2002/03/07 17:37:46 jason Exp $");
 
 #include <openssl/err.h>
 #include <openssl/evp.h>
@@ -421,7 +421,7 @@ fail:
 	return NULL;
 }
 
-static Key *
+Key *
 key_load_private_pem(int fd, int type, const char *passphrase,
     char **commentp)
 {
