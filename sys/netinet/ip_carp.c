@@ -1,4 +1,4 @@
-/*	$OpenBSD: ip_carp.c,v 1.27 2003/11/09 08:56:55 mcbride Exp $	*/
+/*	$OpenBSD: ip_carp.c,v 1.28 2003/11/14 08:17:46 mcbride Exp $	*/
 
 /*
  * Copyright (c) 2002 Michael Shalayeff. All rights reserved.
@@ -179,7 +179,9 @@ carp_hmac_prepare(struct carp_softc *sc)
 	u_int8_t vhid = sc->sc_vhid & 0xff;
 	struct ifaddr *ifa;
 	int i;
+#ifdef INET6
 	struct in6_addr in6;
+#endif /* INET6 */
 
 	/* compute ipad from key */
 	bzero(sc->sc_pad, sizeof(sc->sc_pad));
