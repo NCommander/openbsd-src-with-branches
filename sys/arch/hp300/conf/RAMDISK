@@ -1,4 +1,4 @@
-#	$OpenBSD: RAMDISK,v 1.7 1999/08/15 07:42:45 downsj Exp $
+#	$OpenBSD: RAMDISK,v 1.8 2000/10/31 16:52:50 millert Exp $
 #
 # Ram disk kernel.
 #
@@ -19,6 +19,8 @@ option		HP385
 option	 	HP400
 option	 	HP425
 option	 	HP433
+
+option		UVM		# use the UVM virtual memory system
 
 maxusers	8
 
