@@ -29,7 +29,7 @@ divert(-1)
 # ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
 
-VERSIONID(`$OpenBSD: elbereth.mc,v 1.5 1999/08/19 17:58:22 kstailey Exp $')dnl
+VERSIONID(`$OpenBSD: elbereth.mc,v 1.1 2000/04/02 19:48:11 millert Exp $')dnl
 OSTYPE(openbsd)dnl
 MASQUERADE_AS(primark.com)dnl
 FEATURE(masquerade_envelope)dnl
@@ -37,4 +37,5 @@ define(`SMART_HOST', `mailhost.disclosure.com')
 MAILER(local)dnl
 MAILER(smtp)dnl
 
+LOCAL_CONFIG
 Cw elbereth elbereth.primark.com elbereth.disclosure.com localhost localhost.primark.com localhost.disclosure.com
