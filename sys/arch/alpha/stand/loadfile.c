@@ -185,7 +185,7 @@ coff_exec(fd, coff, entryp)
 				printf("read data: %s\n", strerror(errno));
 				return (1);
 			}
-			symtab->n_un.n_strx = sym.es_strindex;
+			symtab->n_un.n_strx = sym.es_strindex + sizeof(int);
 			symtab->n_value = sym.es_value;
 			symtab->n_type = N_EXT;
 			if (sym.es_class == 1)		/* scText */
