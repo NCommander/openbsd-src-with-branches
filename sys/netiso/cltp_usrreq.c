@@ -1,4 +1,4 @@
-/*	$OpenBSD: cltp_usrreq.c,v 1.3 2002/03/15 18:19:53 millert Exp $	*/
+/*	$OpenBSD: cltp_usrreq.c,v 1.4 2003/06/02 23:28:17 millert Exp $	*/
 /*	$NetBSD: cltp_usrreq.c,v 1.9 1996/02/13 22:08:59 christos Exp $	*/
 
 /*
@@ -185,7 +185,7 @@ cltp_ctlinput(cmd, sa, dummy)
 	extern u_char   inetctlerrmap[];
 	struct sockaddr_iso *siso;
 
-	if ((unsigned) cmd > PRC_NCMDS)
+	if ((unsigned) cmd >= PRC_NCMDS)
 		return;
 	if (sa->sa_family != AF_ISO && sa->sa_family != AF_CCITT)
 		return;

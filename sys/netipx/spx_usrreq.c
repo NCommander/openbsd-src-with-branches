@@ -1,4 +1,4 @@
-/*	$OpenBSD: spx_usrreq.c,v 1.19 2002/08/08 13:51:25 aaron Exp $	*/
+/*	$OpenBSD: spx_usrreq.c,v 1.20 2003/06/02 23:28:16 millert Exp $	*/
 
 /*-
  *
@@ -612,7 +612,7 @@ spx_ctlinput(cmd, arg_as_sa, dummy)
 	struct ipx_addr *na;
 	struct sockaddr_ipx *sipx;
 
-	if (cmd < 0 || cmd > PRC_NCMDS)
+	if (cmd < 0 || cmd >= PRC_NCMDS)
 		return NULL;
 
 	switch (cmd) {

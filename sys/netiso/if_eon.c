@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_eon.c,v 1.19 2003/06/02 23:28:17 millert Exp $	*/
+/*	$OpenBSD: if_eon.c,v 1.20 2003/07/09 22:03:16 itojun Exp $	*/
 /*	$NetBSD: if_eon.c,v 1.15 1996/05/09 22:29:37 scottr Exp $	*/
 
 /*-
@@ -585,7 +585,7 @@ eonctlinput(cmd, sa, dummy)
 	}
 #endif
 
-	if (cmd < 0 || cmd > PRC_NCMDS)
+	if (cmd < 0 || cmd >= PRC_NCMDS)
 		return NULL;
 
 	IncStat(es_icmp[cmd]);
