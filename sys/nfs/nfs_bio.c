@@ -1,4 +1,4 @@
-/*	$OpenBSD: nfs_bio.c,v 1.35 2002/02/08 08:20:49 csapuntz Exp $	*/
+/*	$OpenBSD: nfs_bio.c,v 1.36 2002/05/21 21:07:09 art Exp $	*/
 /*	$NetBSD: nfs_bio.c,v 1.25.4.2 1996/07/08 20:47:04 jtc Exp $	*/
 
 /*
@@ -63,6 +63,7 @@
 extern struct proc *nfs_iodwant[NFS_MAXASYNCDAEMON];
 extern int nfs_numasync;
 struct nfsstats nfsstats;
+struct nfs_bufqhead nfs_bufq;
 
 /*
  * Vnode op for read using bio

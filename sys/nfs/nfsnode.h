@@ -1,4 +1,4 @@
-/*	$OpenBSD: nfsnode.h,v 1.15 2002/02/23 23:47:13 art Exp $	*/
+/*	$OpenBSD: nfsnode.h,v 1.16 2002/03/14 01:27:13 millert Exp $	*/
 /*	$NetBSD: nfsnode.h,v 1.16 1996/02/18 11:54:04 fvdl Exp $	*/
 
 /*
@@ -148,7 +148,7 @@ struct nfsnode {
 /*
  * Queue head for nfsiod's
  */
-TAILQ_HEAD(, buf) nfs_bufq;
+extern TAILQ_HEAD(nfs_bufqhead, buf) nfs_bufq;
 
 #ifdef _KERNEL
 /*
