@@ -1,4 +1,4 @@
-/*      $OpenBSD: eap.c,v 1.20 2003/05/14 05:18:48 jason Exp $ */
+/*      $OpenBSD: eap.c,v 1.21 2004/03/18 01:24:41 tedu Exp $ */
 /*	$NetBSD: eap.c,v 1.46 2001/09/03 15:07:37 reinoud Exp $ */
 
 /*
@@ -52,7 +52,6 @@
  * 
  * ftp://ftp.alsa-project.org/pub/manuals/ensoniq/
  * ftp://ftp.alsa-project.org/pub/manuals/asahi_kasei/4531.pdf
- * ftp://download.intel.com/ial/scalableplatforms/audio/ac97r21.pdf
  */
 
 #include <sys/param.h>
