@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: kdump.c,v 1.4 1996/06/26 05:34:43 deraadt Exp $	*/
 
 /*-
  * Copyright (c) 1988, 1993
@@ -43,7 +43,7 @@ static char copyright[] =
 #if 0
 static char sccsid[] = "@(#)kdump.c	8.4 (Berkeley) 4/28/95";
 #endif
-static char *rcsid = "$OpenBSD: kdump.c,v 1.13 1996/05/13 21:12:25 christos Exp $";
+static char *rcsid = "$OpenBSD: kdump.c,v 1.4 1996/06/26 05:34:43 deraadt Exp $";
 #endif /* not lint */
 
 #include <sys/param.h>
@@ -167,10 +167,7 @@ main(argc, argv)
 		default:
 			usage();
 		}
-	argv += optind;
-	argc -= optind;
-
-	if (argc > 1)
+	if (argc > optind)
 		usage();
 
 	m = (void *)malloc(size = 1025);
