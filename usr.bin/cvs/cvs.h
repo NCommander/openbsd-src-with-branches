@@ -1,4 +1,4 @@
-/*	$OpenBSD: cvs.h,v 1.35 2004/12/07 17:10:56 tedu Exp $	*/
+/*	$OpenBSD: cvs.h,v 1.36 2004/12/08 16:07:43 jfb Exp $	*/
 /*
  * Copyright (c) 2004 Jean-Francois Brousseau <jfb@openbsd.org>
  * All rights reserved.
@@ -282,7 +282,7 @@ int              cvs_hist_append  (CVSHIST *, struct cvs_hent *);
 
 /* from logmsg.c */
 char*  cvs_logmsg_open (const char *);
-char*  cvs_logmsg_get  (const char *, struct cvs_flist *);
+char*  cvs_logmsg_get  (const char *, struct cvs_flist *, struct cvs_flist *, struct cvs_flist *);
 int    cvs_logmsg_send (struct cvsroot *, const char *);
 
 /* from util.c */
