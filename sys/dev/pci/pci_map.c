@@ -1,3 +1,4 @@
+/*      $OpenBSD: $     */
 /*	$NetBSD: pci_map.c,v 1.5 1998/08/15 10:10:54 mycroft Exp $	*/
 
 /*-
