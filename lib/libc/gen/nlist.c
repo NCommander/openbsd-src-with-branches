@@ -1,4 +1,4 @@
-/*	$OpenBSD: nlist.c,v 1.9 1996/05/29 03:05:14 deraadt Exp $ */
+/*	$OpenBSD: nlist.c,v 1.10 1996/05/30 16:16:53 pefo Exp $ */
 /*	$NetBSD: nlist.c,v 1.7 1996/05/16 20:49:20 cgd Exp $	*/
 
 /*
@@ -35,7 +35,7 @@
  */
 
 #if defined(LIBC_SCCS) && !defined(lint)
-static char rcsid[] = "$OpenBSD: nlist.c,v 1.9 1996/05/29 03:05:14 deraadt Exp $";
+static char rcsid[] = "$OpenBSD: nlist.c,v 1.10 1996/05/30 16:16:53 pefo Exp $";
 #endif /* LIBC_SCCS and not lint */
 
 #include <sys/types.h>
@@ -433,7 +433,7 @@ __fdnlist(fd, list)
 	register int fd;
 	register struct nlist *list;
 {
-	int n, i;
+	int n = -1, i;
 
 	for (i = 0; i < sizeof(nlist_fn)/sizeof(nlist_fn[0]); i++) {
 		n = (nlist_fn[i].fn)(fd, list);
