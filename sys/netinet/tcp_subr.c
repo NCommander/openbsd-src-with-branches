@@ -72,7 +72,6 @@ int 	tcp_rttdflt = TCPTV_SRTTDFLT / PR_SLOWHZ;
  * pretty well destroys the VJ compression (any packet with a timestamp
  * different from the previous one can't be compressed), as well as adding
  * more overhead.
- * XXX "tcp_do_rfc1323" should be sysctl() changeable.
  * XXX And it should be a settable per route characteristic (with this just
  * used as the default).
  */
