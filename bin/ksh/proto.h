@@ -1,4 +1,4 @@
-/*	$OpenBSD: proto.h,v 1.10 2003/04/16 23:11:52 tdeval Exp $	*/
+/*	$OpenBSD: proto.h,v 1.11 2003/05/16 19:58:57 jsyn Exp $	*/
 
 /*
  * prototypes for PD-KSH
@@ -148,6 +148,7 @@ int 	waitfor		ARGS((const char *cp, int *sigp));
 int 	j_kill		ARGS((const char *cp, int sig));
 int 	j_resume	ARGS((const char *cp, int bg));
 int 	j_jobs		ARGS((const char *cp, int slp, int nflag));
+int	j_njobs		ARGS((void));
 void 	j_notify	ARGS((void));
 pid_t	j_async		ARGS((void));
 int 	j_stopped_running	ARGS((void));
