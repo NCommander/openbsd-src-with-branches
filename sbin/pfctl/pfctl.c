@@ -1,4 +1,4 @@
-/*	$OpenBSD: pfctl.c,v 1.115 2003/01/01 00:58:10 dhartmei Exp $ */
+/*	$OpenBSD: pfctl.c,v 1.116 2003/01/01 04:26:19 dhartmei Exp $ */
 
 /*
  * Copyright (c) 2001 Daniel Hartmeier
@@ -963,10 +963,10 @@ pfctl_rules(int dev, char *filename, int opts)
 		}
 		if ((loadopt & (PFCTL_FLAG_FILTER | PFCTL_FLAG_ALL)) != 0) {
 			pr[PF_RULESET_SCRUB].rule.action = PF_SCRUB;
-		    	if (ioctl(dev, DIOCBEGINRULES, &pr[PF_RULESET_SCRUB]))
+			if (ioctl(dev, DIOCBEGINRULES, &pr[PF_RULESET_SCRUB]))
 				err(1, "DIOCBEGINRULES");
 			pr[PF_RULESET_FILTER].rule.action = PF_PASS;
-		    	if (ioctl(dev, DIOCBEGINRULES, &pr[PF_RULESET_FILTER]))
+			if (ioctl(dev, DIOCBEGINRULES, &pr[PF_RULESET_FILTER]))
 				err(1, "DIOCBEGINRULES");
 		}
 
