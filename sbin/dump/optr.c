@@ -72,6 +72,8 @@ void	alarmcatch __P((/* int, int */));
 int	datesort __P((const void *, const void *));
 static	void sendmes __P((char *, char *));
 
+extern gid_t gid, egid;
+
 /*
  *	Query the operator; This previously-fascist piece of code
  *	no longer requires an exact response.
@@ -272,6 +274,7 @@ sendmes(tty, message)
 	(void) strcpy(t, _PATH_DEV);
 	(void) strncat(t, tty, sizeof t - strlen(_PATH_DEV));
 
+	setegid(egid);
 	if ((f_tty = fopen(t, "w")) != NULL) {
 		setbuf(f_tty, buf);
 		(void) fprintf(f_tty,
@@ -295,6 +298,7 @@ DUMP: NEEDS ATTENTION: ",
 		}
 		(void) fclose(f_tty);
 	}
+	setegid(gid);
 }
 
 /*
