@@ -1,4 +1,4 @@
-/*	$OpenBSD: psychovar.h,v 1.4 2002/03/14 01:26:44 millert Exp $	*/
+/*	$OpenBSD: psychovar.h,v 1.5 2003/02/17 01:29:20 henric Exp $	*/
 /*	$NetBSD: psychovar.h,v 1.6 2001/07/20 00:07:13 eeh Exp $	*/
 
 /*
@@ -51,6 +51,12 @@ struct psycho_pbm {
 	int				pp_nregs;
 	int				pp_nrange;
 	int				pp_nintmap;
+
+	/* PCI Bus Module A or PCI Bus Module B */
+	int				pp_id;
+#define PSYCHO_PBM_UNKNOWN	0
+#define PSYCHO_PBM_A		1
+#define PSYCHO_PBM_B		2
 
 	/* chipset tag for this instance */
 	pci_chipset_tag_t		pp_pc;
