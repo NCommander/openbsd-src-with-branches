@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.13 2000/10/19 20:32:48 deraadt Exp $
+#	$OpenBSD: Makefile,v 1.14 2000/10/19 20:54:36 drahn Exp $
 
 TOP=		${.CURDIR}/..
 
@@ -9,7 +9,7 @@ CBIN?=		instbin
 LISTS=		${.CURDIR}/list
 UTILS?=		${.CURDIR}/../../miniroot
 
-MOUNT_POINT=	/mnt2
+MOUNT_POINT=	/mnt
 MTREE=		${.CURDIR}/mtree.conf
 
 VND?=		svnd0
