@@ -1,4 +1,4 @@
-#	$OpenBSD: bsd.doc.mk,v 1.5 1996/12/08 14:42:27 downsj Exp $
+#	$OpenBSD: bsd.doc.mk,v 1.6 1997/04/27 21:38:26 millert Exp $
 #	$NetBSD: bsd.doc.mk,v 1.20 1994/07/26 19:42:37 mycroft Exp $
 #	@(#)bsd.doc.mk	8.1 (Berkeley) 8/14/93
 
@@ -43,15 +43,10 @@ clean cleandir:
 
 FILES?=	${SRCS}
 install:
-	${INSTALL} ${INSTALL_COPY} -o ${BINOWN} -g ${BINGRP} -m 444 \
-	    Makefile ${FILES} ${EXTRA} ${DESTDIR}${BINDIR}/${DIR}
+	${INSTALL} ${INSTALL_COPY} -o ${DOCOWN} -g ${DOCGRP} -m ${DOCMODE} \
+	    Makefile ${FILES} ${EXTRA} ${DESTDIR}${DOCDIR}/${DIR}
 
 spell: ${SRCS}
 	spell ${SRCS} | sort | comm -23 - spell.ok > paper.spell
-
-BINDIR?=	/usr/share/doc
-BINGRP?=	bin
-BINOWN?=	root
-BINMODE?=	444
 
 .include <bsd.own.mk>
