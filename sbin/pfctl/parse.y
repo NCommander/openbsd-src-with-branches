@@ -1,4 +1,4 @@
-/*	$OpenBSD: parse.y,v 1.355 2003/04/11 15:19:10 henning Exp $	*/
+/*	$OpenBSD: parse.y,v 1.356 2003/04/12 20:10:32 henning Exp $	*/
 
 /*
  * Copyright (c) 2001 Markus Friedl.  All rights reserved.
@@ -922,13 +922,13 @@ queue_opts_l	: queue_opts_l queue_opt
 		| queue_opt
 		;
 
-queue_opt	: bandwidth	{
+queue_opt	: BANDWIDTH bandwidth	{
 			if (queue_opts.marker & QOM_BWSPEC) {
 				yyerror("bandwidth cannot be respecified");
 				YYERROR;
 			}
 			queue_opts.marker |= QOM_BWSPEC;
-			queue_opts.queue_bwspec = $1;
+			queue_opts.queue_bwspec = $2;
 		}
 		| PRIORITY number	{
 			if (queue_opts.marker & QOM_PRIORITY) {
@@ -976,13 +976,13 @@ queue_opt	: bandwidth	{
 		}
 		;
 
-bandwidth	: BANDWIDTH STRING {
+bandwidth	: STRING {
 			double	 bps;
 			char	*cp;
 
 			$$.bw_percent = 0;
 
-			bps = strtod($2, &cp);
+			bps = strtod($1, &cp);
 			if (cp != NULL) {
 				if (!strcmp(cp, "b"))
 					; /* nothing */
