@@ -120,6 +120,8 @@ sys_sigaction(p, v, retval)
 			sa->sa_flags |= SA_RESTART;
 		if ((ps->ps_sigreset & bit) != 0)
 			sa->sa_flags |= SA_RESETHAND;
+		if ((ps->ps_siginfo & bit) != 0)
+			sa->sa_flags |= SA_SIGINFO;
 		if (signum == SIGCHLD) {
 			if ((p->p_flag & P_NOCLDSTOP) != 0)
 				sa->sa_flags |= SA_NOCLDSTOP;
@@ -170,6 +172,10 @@ setsigvec(p, signum, sa)
 		ps->ps_sigreset |= bit;
 	else
 		ps->ps_sigreset &= ~bit;
+	if ((sa->sa_flags & SA_SIGINFO) != 0)
+		ps->ps_siginfo |= bit;
+	else
+		ps->ps_siginfo &= ~bit;
 	if ((sa->sa_flags & SA_RESTART) == 0)
 		ps->ps_sigintr |= bit;
 	else
@@ -1170,4 +1176,14 @@ sys_nosys(p, v, retval)
 
 	psignal(p, SIGSYS);
 	return (ENOSYS);
+}
+
+void
+initsiginfo(si, sig)
+	siginfo_t *si;
+	int sig;
+{
+	bzero(si, sizeof *si);
+	si->si_signo = sig;
+	si->si_addr = (caddr_t)-1;
 }
