@@ -64,8 +64,9 @@ mbuf2pages(m, np, pp, lp, maxp, nicep)
 		va -= off;
 
 next_page:
-		if (pmap_extract(pmap_kernel(), va, &pa) == FALSE)
-			panic("mbuf2pages: unmapped page");
+		pa = pmap_extract(pmap_kernel(), va);
+		if (pa == 0)
+			panic("mbuf2pages: pa == 0");
 
 		pa += off;
 
