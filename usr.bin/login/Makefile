@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.11 1998/03/26 20:28:04 art Exp $
+#	$OpenBSD: Makefile,v 1.12 1998/03/26 20:38:08 art Exp $
 
 PROG=	login
 SRCS=	login.c failedlogin.c
@@ -23,7 +23,7 @@ DPADD+=	${LIBKRB5} ${LIBCRYPTO}
 CFLAGS+= -DKERBEROS
 SRCS+=	klogin.c
 LDADD+=	-lkrb -ldes -lkafs
-DPADD+=	${LIBKRB} ${LIBDES}
+DPADD+=	${LIBKRB} ${LIBDES} ${LIBKAFS}
 .endif
 
 BINOWN=	root
