@@ -1,5 +1,4 @@
-/*    $OpenBSD: xdryp.c,v 1.3 1996/03/09 02:43:00 niklas Exp $   */
-/*    $NetBSD: xdryp.c,v 1.10 1996/02/04 23:26:21 jtc Exp $   */
+/*    $OpenBSD: xdr_ypbind_resptype.c,v 1.1 1996/04/24 12:55:51 deraadt Exp $   */
 
 /*
  * Copyright (c) 1992, 1993 Theo de Raadt <deraadt@theos.com>
@@ -33,7 +32,7 @@
  */
 
 #if defined(LIBC_SCCS) && !defined(lint)
-static char *rcsid = "$NetBSD: xdryp.c,v 1.10 1996/02/04 23:26:21 jtc Exp $";
+static char *rcsid = "$OpenBSD$";
 #endif
 
 #include <sys/param.h>

@@ -1,5 +1,4 @@
-/*	$OpenBSD: yplib.c,v 1.4 1996/03/09 02:43:01 niklas Exp $	 */
-/*	$NetBSD: yplib.c,v 1.17 1996/02/04 23:26:26 jtc Exp $	 */
+/*	$OpenBSD: yp_order.c,v 1.3 1996/05/22 02:08:38 deraadt Exp $	 */
 
 /*
  * Copyright (c) 1992, 1993 Theo de Raadt <deraadt@theos.com>
@@ -33,7 +32,7 @@
  */
 
 #if defined(LIBC_SCCS) && !defined(lint)
-static char rcsid[] = "$NetBSD: yplib.c,v 1.17 1996/02/04 23:26:26 jtc Exp $";
+static char *rcsid = "$OpenBSD$";
 #endif
 
 #include <sys/param.h>
