@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_gif.c,v 1.25 2002/06/30 13:04:36 itojun Exp $	*/
+/*	$OpenBSD: if_gif.c,v 1.26 2003/01/20 01:34:26 itojun Exp $	*/
 /*	$KAME: if_gif.c,v 1.43 2001/02/20 08:51:07 itojun Exp $	*/
 
 /*
@@ -199,6 +199,7 @@ gif_output(ifp, m, dst, rt)
 		struct mbuf m0;
 		u_int32_t af = dst->sa_family;
 
+		m0.m_flags = 0;
 		m0.m_next = m;
 		m0.m_len = 4;
 		m0.m_data = (char *)&af;

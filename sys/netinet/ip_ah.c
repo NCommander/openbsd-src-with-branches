@@ -1,4 +1,4 @@
-/*	$OpenBSD: ip_ah.c,v 1.73 2003/03/31 20:52:06 millert Exp $ */
+/*	$OpenBSD: ip_ah.c,v 1.74 2003/04/02 20:09:26 millert Exp $ */
 /*
  * The authors of this code are John Ioannidis (ji@tla.org),
  * Angelos D. Keromytis (kermit@csd.uch.gr) and
@@ -946,6 +946,7 @@ ah_output(struct mbuf *m, struct tdb *tdb, struct mbuf **mp, int skip,
 		hdr.spi = tdb->tdb_spi;
 		hdr.flags |= M_AUTH | M_AUTH_AH;
 
+		m1.m_flags = 0;
 		m1.m_next = m;
 		m1.m_len = ENC_HDRLEN;
 		m1.m_data = (char *) &hdr;

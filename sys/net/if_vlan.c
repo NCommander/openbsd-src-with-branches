@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_vlan.c,v 1.34 2003/02/01 00:14:40 chris Exp $ */
+/*	$OpenBSD: if_vlan.c,v 1.35 2003/03/24 17:59:48 jason Exp $ */
 /*
  * Copyright 1998 Massachusetts Institute of Technology
  *
@@ -351,6 +351,8 @@ vlan_input(eh, m)
 		 * that yet.
 		 */
 		struct mbuf m0;
+
+		m0.m_flags = 0;
 		m0.m_next = m;
 		m0.m_len = sizeof(struct ether_header);
 		m0.m_data = (char *)eh;
