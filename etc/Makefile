@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.92 1998/09/19 00:48:33 todd Exp $
+#	$OpenBSD: Makefile,v 1.93 1998/10/30 18:44:47 millert Exp $
 
 TZDIR=		/usr/share/zoneinfo
 LOCALTIME=	US/Pacific
@@ -211,7 +211,7 @@ distrib-dirs:
 	if [ ! -d ${DESTDIR}/usr/src ]; then \
 		${INSTALL} -d -o root -g wsrc -m 775 ${DESTDIR}/usr/src; \
 	fi
-	cd ${DESTDIR}; rm -f sys; ln -s usr/src/sys sys
+	cd ${DESTDIR}/; rm -f sys; ln -s usr/src/sys sys
 
 .ifndef RELEASEDIR
 release:
