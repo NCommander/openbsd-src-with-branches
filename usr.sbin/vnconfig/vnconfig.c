@@ -1,4 +1,4 @@
-/*	$OpenBSD: vnconfig.c,v 1.13 2004/06/20 18:04:54 pedro Exp $	*/
+/*	$OpenBSD: vnconfig.c,v 1.14 2004/06/20 19:16:37 pedro Exp $	*/
 /*
  * Copyright (c) 1993 University of Utah.
  * Copyright (c) 1990, 1993
@@ -121,7 +121,7 @@ getinfo(const char *vname)
 		print_all = 1;
 	}
 
-	vd = opendev(vname, O_RDONLY, OPENDEV_PART, NULL);
+	vd = opendev((char *)vname, O_RDONLY, OPENDEV_PART, NULL);
 	if (vd < 0)
 		err(1, "open: %s", vname);
 
