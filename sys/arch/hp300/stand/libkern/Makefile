@@ -1,11 +1,11 @@
-#	$OpenBSD$
+#	$OpenBSD: Makefile,v 1.1 1997/01/17 08:33:05 downsj Exp $
 
 LIB=	kern
 
 .PATH:	${.CURDIR}/../../../../lib/libkern
 .PATH:	${.CURDIR}/..
 
-CFLAGS+=${DEBUGFLAGS}
+CFLAGS+-Dhp300 =${DEBUGFLAGS}
 CFLAGS+=-I${.CURDIR}/..
 CFLAGS+=-I${.CURDIR}/../../../..  -I${.CURDIR}/../../../../lib/libkern
 
