@@ -1,4 +1,4 @@
-/* $OpenBSD: user.c,v 1.17 2000/07/15 08:31:54 ho Exp $ */
+/* $OpenBSD: user.c,v 1.18 2000/11/26 01:29:42 millert Exp $ */
 /* $NetBSD: user.c,v 1.17 2000/04/14 06:26:55 simonb Exp $ */
 
 /*
@@ -132,8 +132,7 @@ typedef struct user_t {
 enum {
 	MaxShellNameLen = 256,
 	MaxFileNameLen = MAXPATHLEN,
-	MaxUserNameLen = 32,
-	MaxFieldNameLen = 32,
+	MaxUserNameLen = MAXLOGNAME,
 	MaxCommandLen = 2048,
 	MaxEntryLen = 2048,
 	MaxPasswordEntryLen = 1024,
