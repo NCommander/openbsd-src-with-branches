@@ -321,7 +321,7 @@ cvs_file_find(CVSFILE *hier, const char *path)
 	do {
 		sp = strchr(pp, '/');
 		if (sp != NULL)
-			*sp = '\0';
+			*(sp++) = '\0';
 
 		/* special case */
 		if (*pp == '.') {
@@ -349,7 +349,7 @@ cvs_file_find(CVSFILE *hier, const char *path)
 		pp = sp;
 	} while (sp != NULL);
 
-	return (NULL);
+	return (cf);
 }
 
 
@@ -455,6 +455,9 @@ cvs_file_getdir(CVSFILE *cf, int flags)
 			dp += ent->d_reclen;
 
 			if ((flags & CF_IGNORE) && cvs_file_chkign(ent->d_name))
+				continue;
+
+			if ((flags & CF_NOSYMS) && (ent->d_type == DT_LNK))
 				continue;
 
 			snprintf(pbuf, sizeof(pbuf), "%s/%s",
