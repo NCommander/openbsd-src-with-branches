@@ -1,4 +1,4 @@
-/*	$OpenBSD: server.c,v 1.4 1996/06/26 05:38:24 deraadt Exp $	*/
+/*	$OpenBSD: server.c,v 1.5 1996/07/25 05:31:03 millert Exp $	*/
 
 /*
  * Copyright (c) 1983 Regents of the University of California.
@@ -34,7 +34,7 @@
  */
 #ifndef lint
 static char RCSid[] = 
-"$OpenBSD: server.c,v 1.4 1996/06/26 05:38:24 deraadt Exp $";
+"$OpenBSD: server.c,v 1.5 1996/07/25 05:31:03 millert Exp $";
 
 static char sccsid[] = "@(#)server.c	5.3 (Berkeley) 6/7/86";
 
@@ -1162,7 +1162,7 @@ static void recvlink(new, opts, mode, size)
 	if (IS_ON(opts, DO_COMPARE)) {
 		char tbuf[MAXPATHLEN];
 		
-		if ((i = readlink(target, tbuf, sizeof(tbuf))) >= 0 &&
+		if ((i = readlink(target, tbuf, sizeof(tbuf)-1)) >= 0 &&
 		    i == size && strncmp(buf, tbuf, (int) size) == 0) {
 			(void) unlink(new);
 			ack();

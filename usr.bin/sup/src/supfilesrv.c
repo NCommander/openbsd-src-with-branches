@@ -1,4 +1,4 @@
-/*	$OpenBSD: supfilesrv.c,v 1.12 1997/10/11 23:34:21 beck Exp $	*/
+/*	$OpenBSD: supfilesrv.c,v 1.13 1997/11/17 08:54:05 deraadt Exp $	*/
 
 /*
  * Copyright (c) 1992 Carnegie Mellon University
@@ -1057,7 +1057,7 @@ void *v;
 	}
 	switch (t->Tmode&S_IFMT) {
 	case S_IFLNK:
-		if ((x = readlink (name,slinkname,STRINGLENGTH)) <= 0) {
+		if ((x = readlink (name,slinkname,STRINGLENGTH-1)) <= 0) {
 			(void) Tinsert (&denyT,name,FALSE);
 			return (SCMOK);
 		}
