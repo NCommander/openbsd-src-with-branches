@@ -1,4 +1,4 @@
-#	$OpenBSD: install.md,v 1.10 1997/05/16 02:09:38 grr Exp $
+#	$OpenBSD: install.md,v 1.11 1997/05/16 03:40:41 grr Exp $
 #	$NetBSD: install.md,v 1.3.2.5 1996/08/26 15:45:28 gwr Exp $
 #
 #
@@ -98,7 +98,7 @@ md_get_diskdevs() {
 	# return available disk devices
 	# dmesg | egrep "(^sd[0-9] |^x[dy][0-9] )" | cut -d" " -f1 | sort -u
 	sed -n -e '1,/^OpenBSD /d' -e '/^sd[0-9] /{s/ .*//;p;}' \
-				-e '/^x[dy][0-9] /{s/ .*//;p;}' \ <  $MSGBUF
+				-e '/^x[dy][0-9] /{s/ .*//;p;}' <  $MSGBUF
 }
 
 md_get_cddevs() {
