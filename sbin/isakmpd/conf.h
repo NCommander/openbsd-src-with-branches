@@ -1,4 +1,4 @@
-/*	$OpenBSD: conf.h,v 1.14 2001/01/27 12:03:31 niklas Exp $	*/
+/*	$OpenBSD: conf.h,v 1.15 2001/06/29 19:42:16 niklas Exp $	*/
 /*	$EOM: conf.h,v 1.13 2000/09/18 00:01:47 ho Exp $	*/
 
 /*
@@ -63,6 +63,7 @@
 #define CONF_DFLT_X509_CA_DIR          "/etc/isakmpd/ca/"
 #define CONF_DFLT_X509_CERT_DIR        "/etc/isakmpd/certs/"
 #define CONF_DFLT_X509_PRIVATE_KEY     "/etc/isakmpd/private/local.key"
+#define CONF_DFLT_X509_CRL_FILE        "/etc/isakmpd/crl.pem"
 
 #define CONF_DFLT_KEYNOTE_CRED_DIR     "/etc/isakmpd/keynote/"
 struct conf_list_node {
