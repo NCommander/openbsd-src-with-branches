@@ -69,6 +69,9 @@ domaininit()
 	ADDDOMAIN(route);
 #ifdef INET
 	ADDDOMAIN(inet);
+#ifdef IPSEC
+	ADDDOMAIN(encap);
+#endif
 #endif
 #ifdef IPX
 	ADDDOMAIN(ipx);

@@ -57,6 +57,10 @@
 #include <netns/ns.h>
 #endif
 
+#ifdef IPSEC
+#include <net/encap.h>
+#endif
+
 #define	SA(p) ((struct sockaddr *)(p))
 
 int	rttrash;		/* routes not in table but not freed */
@@ -283,6 +287,18 @@ ifa_ifwithroute(flags, dst, gateway)
 	struct sockaddr	*dst, *gateway;
 {
 	register struct ifaddr *ifa;
+
+#ifdef IPSEC
+	/*
+	 * If the destination is a AF_ENCAP address, we'll look
+	 * for the existence of a encap interface number or address
+	 * in the options list of the gateway. By default, we'll return
+	 * encap0.
+	 */
+	if (dst && (dst->sa_family == AF_ENCAP))
+		return encap_findgwifa(gateway);
+#endif
+
 	if ((flags & RTF_GATEWAY) == 0) {
 		/*
 		 * If we are adding a route to an interface,
