@@ -90,7 +90,7 @@ int
 main(argc, argv)
 char **argv;
 {
-	char *domain;
+	char *domain = NULL;
 	struct ypall_callback ypcb;
 	char *inmap;
 	extern char *optarg;
@@ -99,8 +99,6 @@ char **argv;
 	int c, r, i;
 
 	notrans = key = 0;
-	yp_get_default_domain(&domain);
-
 	while( (c=getopt(argc, argv, "xd:kt")) != -1)
 		switch(c) {
 		case 'x':
@@ -124,6 +122,10 @@ char **argv;
 
 	if(optind + 1 != argc )
 		usage();
+
+	if (!domainname) {
+		yp_get_default_domain(&domainname);
+	}
 
 	inmap = argv[optind];
 	if (!notrans) {
