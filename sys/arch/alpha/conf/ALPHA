@@ -1,3 +1,4 @@
+#	$OpenBSD: ALPHA,v 1.14.4.4 1996/06/13 19:21:59 cgd Exp $
 #	$NetBSD: ALPHA,v 1.14.4.4 1996/06/13 19:21:59 cgd Exp $
 #
 # Alpha kernel with all the options you'd want, and more.

@@ -1,8 +1,7 @@
-#	$OpenBSD: NOSY,v 1.5.4.2 1996/06/13 19:22:15 cgd Exp $
-#	$NetBSD: NOSY,v 1.5.4.2 1996/06/13 19:22:15 cgd Exp $
+#	$OpenBSD$
+#	$NetBSD: GENERIC_NFS,v 1.9.4.1 1996/06/03 20:11:52 cgd Exp $
 #
-# Jason's DEC 3000/400 in the lab...
-#
+# Generic Alpha kernel.  Enough to get booted, etc., but not much more.
 
 include	"std.alpha"
 
@@ -10,9 +9,14 @@ maxusers 8
 
 # CPU Support
 options		DEC_3000_500	# Flamingo etc:	3000/[4-9]00*
+options		DEC_3000_300	# Pelican etc:	3000/300*
+options		DEC_2100_A50	# Avanti etc:	AlphaStation 400, 200, etc.
+options		DEC_KN20AA	# KN20AA:	AlphaStation 600
+options		DEC_AXPPCI_33	# NoName:	AXPpci33, etc.
+#options	DEC_2000_300	# "Jensen":	2000/300 (DECpc AXP 150)
 
 # needs to be set per system
-options		TIMEZONE="8*60"		# Minutes west of GMT (for param.c)
+options		TIMEZONE="5*60"		# Minutes west of GMT (for param.c)
 options		DST=1			# Daylight savings rules (for param.c)
 
 # Standard system options
@@ -26,7 +30,6 @@ options		FFS		# Fast file system
 options		MFS		# Memory-based file system
 options		NFSSERVER	# Sun NFS-compatible file system server
 options		NFSCLIENT	# Sun NFS-compatible file system client
-options		UNION		# Union filesystem
 
 # Networking options
 options		INET		# Internet protocol suite
@@ -35,9 +38,7 @@ options		INET		# Internet protocol suite
 options		COMPAT_43
 
 # Binary compatibility with previous versions of NetBSD.
-#options	COMPAT_09
 options		COMPAT_10
-options		COMPAT_11
 
 # OSF/1 binary compatibility -- CURRENTLY DOES NOT WORK
 #options	COMPAT_OSF1
@@ -46,9 +47,12 @@ options		COMPAT_11
 options		LKM
 
 # Disable kernel security.
-options		INSECURE
+#options	INSECURE
 
-config		bsd	swap generic
+# Misc. options
+options		PCIVERBOSE	# recognize "unknown" PCI devices
+
+config		netbsd_nfs	root on nfs swap on nfs
 
 mainbus0 at	root
 cpu*	at	mainbus0
@@ -68,11 +72,53 @@ scc1	at	ioasic? offset ?
 tcds0	at	tc? slot ? offset ?
 esp0	at	tcds? slot ?
 esp1	at	tcds? slot ?
+cfb*	at	tc? slot ? offset ?
 sfb*	at	tc? slot ? offset ?
+le*	at	tc? slot ? offset ?
 fta*	at	tc? slot ? offset ?		# DEC DEFTA FDDI cards
+
+# PCI host bus adapter support
+apecs*	at	mainbus?
+cia*	at	mainbus?
+lca*	at	mainbus?
+
+# PCI bus support
+pci*	at	apecs?
+pci*	at	cia?
+pci*	at	lca?
+pci*	at	ppb?
+
+# PCI devices
+de*	at	pci?
+le*	at	pci?
+ncr*	at	pci?
+pceb*	at	pci?
+pcivga*	at	pci?
+ppb*	at	pci?
+sio*	at	pci?
+tga*	at	pci?
+fpa*	at	pci? dev ? function ?		# DEC DEFPA FDDI cards
+
+# ISA/EISA bus support
+isa*	at	pceb?
+eisa*	at	pceb?
+isa*	at	sio?
+
+# ISA devices
+mcclock0 at	isa? port 0x70
+pckbd0	at	isa? port 0x60 irq 1		# PC-ish ISA keyboard
+pms0	at	isa? port 0x60 irq 12		# PS/2 auxiliary
+com0	at	isa? port 0x3f8 irq 4		# standard serial ports
+com1	at	isa? port 0x2f8 irq 3
+lpt0	at	isa? port 0x3bc irq 7		# standard parallel port
+#wss0	at	isa? port 0x530 irq 9 drq 0	# Windows Sound System
+
+# EISA devices
+fea*	at	eisa? slot ?			# DEC DEFEA FDDI cards
 
 # SCSI bus support
 scsibus* at	esp?
+scsibus* at	ncr?
 
 # SCSI devices
 sd*	at	scsibus? target ? lun ?
@@ -80,8 +126,13 @@ st*	at	scsibus? target ? lun ?
 cd*	at	scsibus? target ? lun ?
 
 # Workstation Console attachments
+wscons*	at	cfb?
+wscons*	at	pcivga?
 wscons*	at	sfb?
+wscons*	at	tga?
 
-pseudo-device	bpfilter	16
+pseudo-device	bpfilter
 pseudo-device	loop
-pseudo-device	pty		64
+pseudo-device	pty
+pseudo-device	sl
+pseudo-device	vnd
