@@ -1,4 +1,4 @@
-/*	$OpenBSD: uipc_socket2.c,v 1.30 2002/08/08 19:18:12 provos Exp $	*/
+/*	$OpenBSD: uipc_socket2.c,v 1.31 2002/08/26 16:39:25 dhartmei Exp $	*/
 /*	$NetBSD: uipc_socket2.c,v 1.11 1996/02/04 02:17:55 christos Exp $	*/
 
 /*
@@ -54,10 +54,10 @@
  */
 
 /* strings for sleep message: */
-char	netcon[] = "netcon";
-char	netcls[] = "netcls";
-char	netio[] = "netio";
-char	netlck[] = "netlck";
+const char	netcon[] = "netcon";
+const char	netcls[] = "netcls";
+const char	netio[] = "netio";
+const char	netlck[] = "netlck";
 
 u_long	sb_max = SB_MAX;		/* patchable */
 
