@@ -1,4 +1,4 @@
-/*	$OpenBSD: miivar.h,v 1.9 2001/05/03 12:31:43 aaron Exp $	*/
+/*	$OpenBSD: miivar.h,v 1.10 2001/06/08 02:16:41 nate Exp $	*/
 /*	$NetBSD: miivar.h,v 1.17 2000/03/06 20:56:57 thorpej Exp $	*/
 
 /*-
@@ -140,6 +140,7 @@ struct mii_softc {
 	int mii_capabilities;		/* capabilities from BMSR */
 	int mii_extcapabilities;	/* extended capabilities */
 	int mii_ticks;			/* MII_TICK counter */
+	int mii_anegticks;		/* ticks before retrying aneg */
 
 #if defined(__NetBSD__)
 	struct callout mii_nway_ch;	/* NWAY callout */
