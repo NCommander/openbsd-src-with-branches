@@ -46,6 +46,8 @@ struct wscons_emul_data {
 #define	ANSICONS_STATE_HAVEESC	1		/* seen start of ctl seq */
 #define	ANSICONS_STATE_CONTROL	2		/* processing ctl seq */
 
+#define JUMPSCROLL		1		/* lines to scroll at once */
+
 void	wscons_emul_attach __P((struct wscons_emul_data *,
 	    const struct wscons_odev_spec *));
 void	wscons_emul_input __P((struct wscons_emul_data *, char *, int));
