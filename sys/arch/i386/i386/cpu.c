@@ -1,4 +1,4 @@
-/*	$OpenBSD: cpu.c,v 1.1.2.16 2004/06/08 19:57:15 markus Exp $	*/
+/*	$OpenBSD: cpu.c,v 1.1.2.17 2004/06/08 21:41:37 grange Exp $	*/
 /* $NetBSD: cpu.c,v 1.1.2.7 2000/06/26 02:04:05 sommerfeld Exp $ */
 
 /*-
@@ -302,6 +302,7 @@ cpu_attach(parent, self, aux)
 		identifycpu(ci);
 		ci->ci_next = cpu_info_list->ci_next;
 		cpu_info_list->ci_next = ci;
+		ncpus++;
 #else
 		printf("%s: not started\n", ci->ci_dev.dv_xname);
 #endif
