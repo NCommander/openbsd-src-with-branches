@@ -1,4 +1,4 @@
-/*	$OpenBSD: lpt_lbus.c,v 1.3 1997/04/10 16:29:17 pefo Exp $	*/
+/*	$OpenBSD: lpt_lbus.c,v 1.1 2004/08/06 21:12:18 pefo Exp $	*/
 
 /*
  * Copyright (c) 1993, 1994 Charles Hannum.
@@ -101,7 +101,8 @@ lpt_localbus_probe(parent, match, aux)
 	if(!BUS_MATCHNAME(ca, "lpt"))
 		 return(0);
 
-	iot = &pmonmips_bus_io;
+/*XXX need to check where to pick up iotag when porting this */
+	iot = sys_config.localbus_iot;
 	base = (bus_addr_t)BUS_CVTADDR(ca);
 	if (bus_space_map(iot, base, LPT_NPORTS, 0, &ioh)) {
 		return 0;
