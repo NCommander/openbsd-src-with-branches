@@ -1,4 +1,4 @@
-/*	$OpenBSD: lpt.c,v 1.11 1996/05/26 00:27:24 deraadt Exp $ */
+/*	$OpenBSD: lpt.c,v 1.12 1996/06/22 23:13:36 pefo Exp $ */
 /*	$NetBSD: lpt.c,v 1.39 1996/05/12 23:53:06 mycroft Exp $	*/
 
 /*
@@ -119,7 +119,7 @@ int lptintr __P((void *));
 #if NLPT_ISA
 int lpt_isa_probe __P((struct device *, void *, void *));
 void lpt_isa_attach __P((struct device *, struct device *, void *));
-struct cfattach lpt_ca = {
+struct cfattach lpt_isa_ca = {
 	sizeof(struct lpt_softc), lpt_isa_probe, lpt_isa_attach
 };
 #endif
