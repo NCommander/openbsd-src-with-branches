@@ -98,9 +98,10 @@ hardprobe(void)
 	int i;
 	u_int bsdunit, type;
 	u_int scsi = 0, ide = 0;
+	const char *dc = (const char *)((0x40 << 4) + 0x75);
 
 	/* Hard disks */
-	for(i = 0x80; i < 0x88; i++) {
+	for (i = 0x80; i < (0x80 + *dc); i++) {
 		dip = alloc(sizeof(struct diskinfo));
 		bzero(dip, sizeof(*dip));
 
