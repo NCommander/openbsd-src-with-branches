@@ -1,4 +1,4 @@
-/*	$OpenBSD: dc.c,v 1.59 2003/05/17 01:55:28 jason Exp $	*/
+/*	$OpenBSD: dc.c,v 1.60 2003/05/20 18:48:43 henning Exp $	*/
 
 /*
  * Copyright (c) 1997, 1998, 1999
@@ -439,9 +439,9 @@ void dc_read_eeprom(sc, dest, off, cnt, swap)
 			dc_eeprom_getword(sc, off + i, &word);
 		ptr = (u_int16_t *)(dest + (i * 2));
 		if (swap)
-			*ptr = ntohs(word);
+			*ptr = betoh16(word);
 		else
-			*ptr = word;
+			*ptr = letoh16(word);
 	}
 }
 
