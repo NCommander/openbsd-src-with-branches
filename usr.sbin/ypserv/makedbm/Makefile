@@ -1,7 +1,7 @@
-#	$OpenBSD$
+#	$OpenBSD: Makefile,v 1.2 1996/05/30 09:53:05 deraadt Exp $
 
 PROG=	makedbm
-SRCS=	makedbm.c ypdb.c
+SRCS=	makedbm.c ypdb.c db.c
 MAN=	makedbm.8
 .PATH:	${.CURDIR}/../common
 CFLAGS+=-I${.CURDIR}/../common
