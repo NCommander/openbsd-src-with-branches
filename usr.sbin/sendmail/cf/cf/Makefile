@@ -1,8 +1,8 @@
-#	$OpenBSD: Makefile,v 1.16 1998/07/12 19:41:16 millert Exp $
+#	$OpenBSD: Makefile,v 1.17 1998/07/13 11:55:00 deraadt Exp $
 #
 #  Makefile for configuration files.
 #
-#	@(#)Makefile	8.17 (Berkeley) 4/2/98
+#	@(#)Makefile	8.17 (Berkeley) 4/2/1998
 #
 
 #
