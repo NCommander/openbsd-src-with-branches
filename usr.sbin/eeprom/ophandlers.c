@@ -71,7 +71,7 @@ static	struct extabent opextab[] = {
 };
 
 #define BARF(str1, str2) {						\
-	sprintf(err_str, "%s: %s", (str1), (str2));			\
+	snprintf(err_str, sizeof err_str "%s: %s", (str1), (str2));	\
 	++eval;								\
 	return (err_str);						\
 };
@@ -146,7 +146,8 @@ op_handler(keyword, arg)
 			BARF("OPIOCGET", strerror(errno));
 
 		if (opio.op_buflen <= 0) {
-			sprintf(err_str, "nothing available for %s",
+			snprintf(err_str, sizeof err_str,
+			    "nothing available for %s",
 			    keyword);
 			return (err_str);
 		}
