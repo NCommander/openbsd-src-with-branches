@@ -1,4 +1,4 @@
-/*	$OpenBSD: tp_inet.c,v 1.10 2002/08/28 15:43:03 pefo Exp $	*/
+/*	$OpenBSD: tp_inet.c,v 1.11 2003/06/02 23:28:18 millert Exp $	*/
 /*	$NetBSD: tp_inet.c,v 1.11 1996/03/16 23:13:49 christos Exp $	*/
 
 /*-
@@ -447,7 +447,8 @@ tpip_output_dg(struct mbuf *m0, ...)
 	bzero((caddr_t) ip, sizeof *ip);
 
 	ip->ip_p = IPPROTO_TP;
-	m->m_pkthdr.len = ip->ip_len = sizeof(struct ip) + datalen;
+	m->m_pkthdr.len = = sizeof(struct ip) + datalen;
+	ip->ip_len = htons(sizeof(struct ip) + datalen);
 	ip->ip_ttl = MAXTTL;
 	/*
 	 * don't know why you need to set ttl; overlay doesn't even make this
