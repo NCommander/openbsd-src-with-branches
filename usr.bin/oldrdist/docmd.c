@@ -1,4 +1,4 @@
-/*	$OpenBSD: docmd.c,v 1.9 1997/11/05 09:43:39 deraadt Exp $	*/
+/*	$OpenBSD: docmd.c,v 1.10 1997/11/16 18:51:59 deraadt Exp $	*/
 
 /*
  * Copyright (c) 1983, 1993
@@ -35,7 +35,7 @@
 
 #ifndef lint
 /* from: static char sccsid[] = "@(#)docmd.c	8.1 (Berkeley) 6/9/93"; */
-static char *rcsid = "$OpenBSD: docmd.c,v 1.9 1997/11/05 09:43:39 deraadt Exp $";
+static char *rcsid = "$OpenBSD: docmd.c,v 1.10 1997/11/16 18:51:59 deraadt Exp $";
 #endif /* not lint */
 
 #include "defs.h"
@@ -192,13 +192,16 @@ done:
 		if (sc->sc_type == NOTIFY)
 			notify(tempfile, rhost, sc->sc_args, 0);
 	if (!nflag) {
+		struct linkbuf *nextihead;
+
 		(void) unlink(tempfile);
-		for (; ihead != NULL; ihead = ihead->nextp) {
-			free(ihead);
+		for (; ihead != NULL; ihead = nextihead) {
+			nextihead = ihead->nextp;
 			if ((opts & IGNLNKS) || ihead->count == 0)
 				continue;
 			log(lfp, "%s: Warning: missing links\n",
 				ihead->pathname);
+			free(ihead);
 		}
 	}
 }
