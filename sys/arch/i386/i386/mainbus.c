@@ -1,4 +1,4 @@
-/*	$OpenBSD: mainbus.c,v 1.14 1999/02/19 17:32:39 art Exp $	*/
+/*	$OpenBSD: mainbus.c,v 1.14.6.1 2000/02/20 10:30:44 niklas Exp $	*/
 /*	$NetBSD: mainbus.c,v 1.21 1997/06/06 23:14:20 thorpej Exp $	*/
 
 /*
@@ -123,7 +123,7 @@ mainbus_attach(parent, self, aux)
 	if (bios_smpinfo != NULL) {
 		struct mp_float *mp = bios_smpinfo;
 
-		printf("%s: MP 1.%d configuration %d\n", mba.mba_busname,
+		printf("%s: MP 1.%d configuration %d\n", self->dv_xname,
 		    mp->revision, mp->feature1);
 	}
 #endif
