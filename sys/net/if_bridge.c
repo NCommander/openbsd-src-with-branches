@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_bridge.c,v 1.78 2001/12/08 18:07:57 jason Exp $	*/
+/*	$OpenBSD: if_bridge.c,v 1.79 2001/12/10 05:46:57 jasoni Exp $	*/
 
 /*
  * Copyright (c) 1999, 2000 Jason L. Wright (jason@thought.net)
@@ -1927,9 +1927,6 @@ bridge_filter(sc, dir, ifp, eh, m)
 	struct ether_header *eh;
 	struct mbuf *m;
 {
-#if NPF == 0
-	return (m);
-#else
 	struct llc llc;
 	int hassnap = 0;
 	struct ip *ip;
@@ -2048,6 +2045,5 @@ dropit:
 	if (m != NULL)
 		m_freem(m);
 	return (NULL);
-#endif /* NPF == 0 */
 }
-#endif
+#endif /* NPF > 0 */
