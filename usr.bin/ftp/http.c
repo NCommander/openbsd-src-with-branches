@@ -1,4 +1,4 @@
-/*	$OpenBSD: main.c,v 1.5 1996/06/26 05:33:38 deraadt Exp $	*/
+/*	$OpenBSD: http.c,v 1.1 1996/09/03 18:00:06 deraadt Exp $	*/
 
 /*
  * Copyright (c) 1996 Theo de Raadt
@@ -104,7 +104,7 @@ http_fetch(url)
 
 	he = gethostbyname(hostname);
 	if (!he) {
-		perror("gethostbyname");
+		herror("gethostbyname");
 		goto die;
 	}
 
