@@ -1,4 +1,4 @@
-/*	$OpenBSD: keymap.c,v 1.14 2001/05/24 10:47:54 art Exp $	*/
+/*	$OpenBSD: keymap.c,v 1.15 2002/02/08 21:21:11 deraadt Exp $	*/
 
 /*
  * Keyboard maps.  This is character set dependent.  The terminal specific
@@ -322,7 +322,7 @@ static PF fund_esc[] = {
 	rescan,			/* ^\ selfinsert is default on fundamental */
 	rescan,			/* ^] */
 	rescan,			/* ^^ */
-	rescan,			/* ^_ */
+	undo,			/* ^_ */
 };
 
 static PF fund_del[] = {
