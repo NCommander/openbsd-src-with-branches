@@ -1,6 +1,12 @@
-#	$OpenBSD: Makefile,v 1.3 2002/03/15 16:41:05 jason Exp $
+#	$OpenBSD: Makefile,v 1.4 2002/03/15 16:45:10 drahn Exp $
 
 .include <bsd.own.mk>
+
+.if (!exists(arch/${MACHINE}/Makefile.inc) && \
+    !exists(arch/${MACHINE_ARCH}/Makefile.inc))
+NOMAN=no, man
+NOPROG=no, man
+.else
 
 PROG=pmdb
 SRCS=pmdb.c symbol.c clit.c process.c signal.c break.c
@@ -40,5 +46,7 @@ CPPFLAGS+=-I${.CURDIR}/arch/${MACHINE_ARCH}
 .endif
 
 COPTS=-Wall -Wno-uninitialized
+
+.endif
 
 .include <bsd.prog.mk>
