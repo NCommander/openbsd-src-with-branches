@@ -1,4 +1,4 @@
-/*	$OpenBSD: intr.h,v 1.22 2004/06/16 18:27:26 grange Exp $	*/
+/*	$OpenBSD: intr.h,v 1.23 2004/12/24 21:22:01 pvalchev Exp $	*/
 /*	$NetBSD: intr.h,v 1.5 1996/05/13 06:11:28 mycroft Exp $	*/
 
 /*
@@ -86,6 +86,21 @@ void splassert_check(int, const char *);
 #else
 #define splassert(wantipl) do { /* nada */ } while (0)
 #endif
+
+/*
+ * Define the splraise and splx code in macros, so that the code can be
+ * reused in a profiling build in a way that does not cause recursion.
+ */
+#define _SPLRAISE(ocpl, ncpl) 		\
+	ocpl = lapic_tpr;		\
+	if (ncpl > ocpl)		\
+		lapic_tpr = ncpl
+
+
+#define _SPLX(ncpl) 			\
+	lapic_tpr = ncpl;		\
+	if (ipending & IUNMASK(ncpl))	\
+		Xspllower()
 
 /*
  * Hardware interrupt masks
