@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /*	$NetBSD: iommu.c,v 1.37 2001/08/06 22:02:58 eeh Exp $	*/
 
 /*

@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /*	$NetBSD: sbus.c,v 1.43 2001/07/20 00:07:13 eeh Exp $ */
 
 /*-

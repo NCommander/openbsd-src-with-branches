@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /*	$NetBSD: iommuvar.h,v 1.7 2001/07/20 00:07:13 eeh Exp $	*/
 
 /*

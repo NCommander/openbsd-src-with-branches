@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /*	$NetBSD: sbusreg.h,v 1.7 1999/06/07 05:28:03 eeh Exp $ */
 
 /*
