@@ -28,7 +28,7 @@
 /* XXX: recursive operations */
 
 #include "includes.h"
-RCSID("$OpenBSD: sftp-int.c,v 1.12 2001/02/07 13:12:29 djm Exp $");
+RCSID("$OpenBSD: sftp-int.c,v 1.13 2001/02/07 18:10:39 stevesk Exp $");
 
 #include "buffer.h"
 #include "xmalloc.h"
@@ -604,8 +604,8 @@ interactive_loop(int fd_in, int fd_out)
 	if (pwd == NULL)
 		fatal("Need cwd");
 
-	setlinebuf(stdout);
-	setlinebuf(stdin);
+	setvbuf(stdout, NULL, _IOLBF, 0);
+	setvbuf(stdin, NULL, _IOLBF, 0);
 
 	for(;;) {
 		char *cp;
