@@ -1,4 +1,4 @@
-/*	$OpenBSD: privsep.c,v 1.7 2003/10/22 19:37:38 deraadt Exp $	*/
+/*	$OpenBSD: privsep.c,v 1.8 2003/10/24 21:21:27 canacar Exp $	*/
 
 /*
  * Copyright (c) 2003 Anil Madhavapeddy <anil@recoil.org>
@@ -208,7 +208,7 @@ priv_init(char *conf, int numeric, int lockfd, int nullfd, char *argv[])
 			break;
 
 		case PRIV_OPEN_LOG:
-			dprintf("[priv]: msg PRIV_OPEN_LOG received: %s\n", path);
+			dprintf("[priv]: msg PRIV_OPEN_LOG received\n");
 			/* Expecting: length, path */
 			must_read(socks[0], &path_len, sizeof(size_t));
 			if (path_len == 0 || path_len > sizeof(path))
