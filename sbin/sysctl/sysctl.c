@@ -1,4 +1,4 @@
-/*	$OpenBSD: sysctl.c,v 1.82 2002/06/09 08:13:09 todd Exp $	*/
+/*	$OpenBSD: sysctl.c,v 1.83 2002/07/03 22:32:34 deraadt Exp $	*/
 /*	$NetBSD: sysctl.c,v 1.9 1995/09/30 07:12:50 thorpej Exp $	*/
 
 /*
@@ -44,7 +44,7 @@ static char copyright[] =
 #if 0
 static char sccsid[] = "@(#)sysctl.c	8.5 (Berkeley) 5/9/95";
 #else
-static char *rcsid = "$OpenBSD: sysctl.c,v 1.82 2002/06/09 08:13:09 todd Exp $";
+static char *rcsid = "$OpenBSD: sysctl.c,v 1.83 2002/07/03 22:32:34 deraadt Exp $";
 #endif
 #endif /* not lint */
 
@@ -385,11 +385,6 @@ parse(char *string, int flags)
 			if (flags == 0)
 				return;
 			warnx("use ps to view %s information", string);
-			return;
-		case KERN_NTPTIME:
-			if (flags == 0)
-				return;
-			warnx("use xntpdc to view %s information", string);
 			return;
 		case KERN_CLOCKRATE:
 			special |= CLOCK;

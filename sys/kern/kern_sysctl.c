@@ -1,4 +1,4 @@
-/*	$OpenBSD: kern_sysctl.c,v 1.71 2002/06/11 11:14:29 beck Exp $	*/
+/*	$OpenBSD: kern_sysctl.c,v 1.72 2002/06/24 11:09:01 art Exp $	*/
 /*	$NetBSD: kern_sysctl.c,v 1.17 1996/05/20 17:49:05 mrg Exp $	*/
 
 /*-
@@ -355,8 +355,6 @@ kern_sysctl(name, namelen, oldp, oldlenp, newp, newlen, p)
 		return (sysctl_rdint(oldp, oldlenp, newp, MAXPARTITIONS));
 	case KERN_RAWPARTITION:
 		return (sysctl_rdint(oldp, oldlenp, newp, RAW_PART));
-	case KERN_NTPTIME:
-		return (sysctl_ntptime(oldp, oldlenp));
 	case KERN_SOMAXCONN:
 		return (sysctl_int(oldp, oldlenp, newp, newlen, &somaxconn));
 	case KERN_SOMINCONN:
