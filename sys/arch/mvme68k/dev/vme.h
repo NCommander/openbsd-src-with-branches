@@ -1,4 +1,4 @@
-/*	$OpenBSD: vme.h,v 1.8 2002/04/27 23:21:05 miod Exp $ */
+/*	$OpenBSD: vme.h,v 1.9 2003/06/02 05:09:14 deraadt Exp $ */
 
 /*
  * Copyright (c) 1995 Theo de Raadt
@@ -135,7 +135,7 @@ struct vme1reg {
 #define VME1_A16BASE	0xffff0000UL
 
 /*
- * XXX: this chip has some rather inane access rules!
+ * XXX: this chip has some rather insane access rules!
  */
 struct vme2reg {
 /*00*/	volatile u_long		vme2_slaveaddr1;
