@@ -1,4 +1,4 @@
-/*	$OpenBSD: ps.c,v 1.38 2004/02/24 11:53:45 jmc Exp $	*/
+/*	$OpenBSD: ps.c,v 1.39 2004/09/14 23:45:35 deraadt Exp $	*/
 /*	$NetBSD: ps.c,v 1.15 1995/05/18 20:33:25 mycroft Exp $	*/
 
 /*-
@@ -40,7 +40,7 @@ static char copyright[] =
 #if 0
 static char sccsid[] = "@(#)ps.c	8.4 (Berkeley) 4/2/94";
 #else
-static char rcsid[] = "$OpenBSD: ps.c,v 1.38 2004/02/24 11:53:45 jmc Exp $";
+static char rcsid[] = "$OpenBSD: ps.c,v 1.39 2004/09/14 23:45:35 deraadt Exp $";
 #endif
 #endif /* not lint */
 
@@ -79,6 +79,8 @@ int	rawcpu;			/* -C */
 int	sumrusage;		/* -S */
 int	termwidth;		/* width of screen (0 == infinity) */
 int	totwidth;		/* calculated width of requested variables */
+
+int	ncpu = 1;
 
 int	needcomm, needenv, commandonly;
 
@@ -312,6 +314,12 @@ main(int argc, char *argv[])
 		what = KERN_PROC_ALL;
 		flag = 0;
 	}
+
+	mib[0] = CTL_HW;
+	mib[1] = HW_NCPU;
+	size = sizeof(ncpu);
+	(void) sysctl(mib, 2, &ncpu, &size, NULL, 0);
+
 	/*
 	 * select procs
 	 */
