@@ -1,4 +1,4 @@
-/*	$OpenBSD: pcvt_kbd.h,v 1.3 1996/05/07 07:22:31 deraadt Exp $	*/
+/*	$OpenBSD: pcvt_kbd.h,v 1.4 1996/08/01 23:23:27 deraadt Exp $	*/
 
 /*
  * Copyright (c) 1992, 1995 Hellmuth Michaelis and Joerg Wunsch.
@@ -110,7 +110,7 @@ typedef struct
 
 static Ovl_tbl *ovltbl;			/* the table itself */
 
-static ovlinitflag = 0;			/* the init flag for the table */
+static int ovlinitflag = 0;		/* the init flag for the table */
 
 /*
  * key codes >= 128 denote "virtual" shift/control
