@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_ne_pcmcia.c,v 1.40 2001/03/31 15:01:34 aaron Exp $	*/
+/*	$OpenBSD: if_ne_pcmcia.c,v 1.41 2001/04/18 14:59:31 aaron Exp $	*/
 /*	$NetBSD: if_ne_pcmcia.c,v 1.17 1998/08/15 19:00:04 thorpej Exp $	*/
 
 /*
@@ -566,7 +566,7 @@ ne_pcmcia_attach(parent, self, aux)
 		goto fail_4;
 	}
 
-	printf(" port 0x%lx/%d", psc->sc_pcioh.addr, NE2000_NIC_NPORTS);
+	printf(" port 0x%lx/%d", psc->sc_pcioh.addr, NE2000_NPORTS);
 
 	/*
 	 * Read the station address from the board.
