@@ -1,4 +1,4 @@
-/*	$OpenBSD: diff.h,v 1.22 2003/07/27 07:39:52 otto Exp $	*/
+/*	$OpenBSD: diff.h,v 1.23 2003/08/01 20:54:18 deraadt Exp $	*/
 
 /*-
  * Copyright (c) 1991, 1993
@@ -81,4 +81,5 @@ int	easprintf(char **, const char *, ...);
 void	*emalloc(size_t);
 void	*erealloc(void *, size_t);
 void	diffdir(char *, char *);
+void	print_only(const char *, size_t, const char *);
 void	print_status(int, char *, char *, char *);
