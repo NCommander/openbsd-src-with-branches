@@ -1,4 +1,4 @@
-/*	$OpenBSD: memory.c,v 1.6 2004/04/20 05:35:33 henning Exp $ */
+/*	$OpenBSD: memory.c,v 1.7 2004/05/04 20:28:40 deraadt Exp $ */
 
 /*
  * Copyright (c) 1995, 1996, 1997, 1998 The Internet Software Consortium.
@@ -169,10 +169,8 @@ find_host_for_network(struct host_decl **host, struct iaddr *addr,
 }
 
 void
-new_address_range(low, high, subnet, dynamic)
-	struct iaddr low, high;
-	struct subnet *subnet;
-	int dynamic;
+new_address_range(struct iaddr low, struct iaddr high, struct subnet *subnet,
+    int dynamic)
 {
 	struct lease *address_range, *lp, *plp;
 	struct iaddr net;
