@@ -1,1 +1,5 @@
-#define VERSIONLIST { "krb4-1.0.4" }
+/*	$OpenBSD$	*/
+
+#include <version.h>
+
+#define VERSIONLIST { KRB4_VERSION }
