@@ -1,11 +1,11 @@
-# $OpenBSD: Makefile,v 1.6 2001/06/27 16:17:09 hin Exp $
+# $OpenBSD: Makefile,v 1.7 2002/06/11 15:26:49 hin Exp $
 
 # XXX asn1_compile is compiled in ../Makefile
 
+# kf
 SUBDIR=	afslog \
 	kauth \
 	kdestroy \
-	kf \
 	kinit \
 	klist \
 	pagsh \
