@@ -1,4 +1,4 @@
-/*	$OpenBSD: init.c,v 1.4 2002/02/19 19:39:35 millert Exp $	*/
+/*	$OpenBSD: init.c,v 1.5 2003/06/02 23:32:07 millert Exp $	*/
 /*	$NetBSD: init.c,v 1.6 1995/03/21 09:03:05 cgd Exp $	*/
 
 /*-
@@ -34,7 +34,7 @@
 #if 0
 static char sccsid[] = "@(#)init.c	8.1 (Berkeley) 5/31/93";
 #else
-static char rcsid[] = "$OpenBSD: init.c,v 1.4 2002/02/19 19:39:35 millert Exp $";
+static char rcsid[] = "$OpenBSD: init.c,v 1.5 2003/06/02 23:32:07 millert Exp $";
 #endif
 #endif /* not lint */
 
@@ -85,7 +85,6 @@ struct biltins bfunc[] =
     { "notify", 	donotify, 	0, INF	},
     { "onintr", 	doonintr, 	0, 2	},
     { "popd", 		dopopd, 	0, INF	},
-    { "printf",		doprintf,	1, INF	},
     { "pushd", 		dopushd, 	0, INF	},
     { "rehash", 	dohash, 	0, 0	},
     { "repeat", 	dorepeat, 	2, INF	},

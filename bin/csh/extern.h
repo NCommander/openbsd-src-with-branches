@@ -1,4 +1,4 @@
-/*	$OpenBSD: extern.h,v 1.11 2003/05/12 21:42:01 jsyn Exp $	*/
+/*	$OpenBSD: extern.h,v 1.12 2003/06/02 23:32:07 millert Exp $	*/
 /*	$NetBSD: extern.h,v 1.8 1996/10/31 23:50:54 christos Exp $	*/
 
 /*-
@@ -130,7 +130,6 @@ void	dologin(Char **, struct command *);
 void	dologout(Char **, struct command *);
 void	donohup(Char **, struct command *);
 void	doonintr(Char **, struct command *);
-void	doprintf(Char **, struct command *);
 void	dorepeat(Char **, struct command *);
 void	dosetenv(Char **, struct command *);
 void	dosuspend(Char **, struct command *);
