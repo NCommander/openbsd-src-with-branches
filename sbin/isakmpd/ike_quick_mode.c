@@ -1,4 +1,4 @@
-/*	$OpenBSD: ike_quick_mode.c,v 1.21 1999/08/26 22:30:21 niklas Exp $	*/
+/*	$OpenBSD: ike_quick_mode.c,v 1.22 1999/10/01 14:07:16 niklas Exp $	*/
 /*	$EOM: ike_quick_mode.c,v 1.100 1999/10/01 13:44:21 niklas Exp $	*/
 
 /*
@@ -38,6 +38,8 @@
 #include <string.h>
 
 #if defined (USE_KEYNOTE) || defined (HAVE_DLOPEN)
+#include <sys/types.h>
+#include <regex.h>
 #include <keynote.h>
 #endif
 
