@@ -1,11 +1,11 @@
-/*	$OpenBSD: identd.h,v 1.14 2002/09/13 01:31:39 djm Exp $*/
+/*	$OpenBSD: identd.h,v 1.15 2003/06/07 18:31:17 henning Exp $*/
 
 /*
 **
 ** identd.h		    Common variables for the Pidentd daemon
 **
 ** This program is in the public domain and may be used freely by anyone
-** who wants to. 
+** who wants to.
 **
 ** Last update: 6 Dec 1992
 **

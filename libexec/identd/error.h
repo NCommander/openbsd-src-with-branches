@@ -1,11 +1,11 @@
-/*	$OpenBSD: error.h,v 1.4 2002/07/16 10:25:47 deraadt Exp $*/
+/*	$OpenBSD: error.h,v 1.5 2003/12/09 22:41:06 deraadt Exp $*/
 
 /*
 **
 ** error.h						 Error handling macros
 **
 ** This program is in the public domain and may be used freely by anyone
-** who wants to. 
+** who wants to.
 **
 ** Last update: 19 Aug 1992
 **
