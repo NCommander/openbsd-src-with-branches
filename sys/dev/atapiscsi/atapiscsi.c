@@ -1,4 +1,4 @@
-/*      $OpenBSD: atapiscsi.c,v 1.24 2000/01/12 17:14:02 csapuntz Exp $     */
+/*      $OpenBSD: atapiscsi.c,v 1.25 2000/04/10 07:06:17 csapuntz Exp $     */
 
 /*
  * This code is derived from code with the copyright below.
@@ -695,8 +695,7 @@ wdc_atapi_the_machine(chp, xfer, ctxt)
 		if (xfer->expect_irq) {
 			chp->ch_flags |= WDCF_IRQ_WAIT;
 			xfer->expect_irq = 0;
-			timeout(wdctimeout, chp, xfer->endticks - ticks);
-
+			timeout_add(&chp->ch_timo, xfer->endticks - ticks);
 			return (claim_irq);
 		}
 
