@@ -57,19 +57,19 @@
 #define __inline__	/* XXX for debugging porpoises */
 #endif
 
-static __inline__ void	dp8390_xmit __P((struct dp8390_softc *));
+static __inline__ void	dp8390_xmit(struct dp8390_softc *);
 
-static __inline__ void	dp8390_read_hdr __P((struct dp8390_softc *,
-			    int, struct dp8390_ring *));
-static __inline__ int	dp8390_ring_copy __P((struct dp8390_softc *,
-			    int, caddr_t, u_short));
-static __inline__ int	dp8390_write_mbuf __P((struct dp8390_softc *,
-			    struct mbuf *, int));
+static __inline__ void	dp8390_read_hdr(struct dp8390_softc *,
+			    int, struct dp8390_ring *);
+static __inline__ int	dp8390_ring_copy(struct dp8390_softc *,
+			    int, caddr_t, u_short);
+static __inline__ int	dp8390_write_mbuf(struct dp8390_softc *,
+			    struct mbuf *, int);
 
-static int		dp8390_test_mem __P((struct dp8390_softc *));
+static int		dp8390_test_mem(struct dp8390_softc *);
 
-int	dp8390_enable __P((struct dp8390_softc *));
-void	dp8390_disable __P((struct dp8390_softc *));
+int	dp8390_enable(struct dp8390_softc *);
+void	dp8390_disable(struct dp8390_softc *);
 
 int	dp8390_debug = 0;
 

@@ -59,11 +59,11 @@
 #include <dev/ic/ncr53c9xreg.h>
 #include <dev/ic/ncr53c9xvar.h>
 
-void	lsi64854_reset	__P((struct lsi64854_softc *));
-int	lsi64854_setup	__P((struct lsi64854_softc *, caddr_t *, size_t *,
-			     int, size_t *));
-int	lsi64854_setup_pp __P((struct lsi64854_softc *, caddr_t *, size_t *,
-			     int, size_t *));
+void	lsi64854_reset(struct lsi64854_softc *);
+int	lsi64854_setup(struct lsi64854_softc *, caddr_t *, size_t *,
+			     int, size_t *);
+int	lsi64854_setup_pp(struct lsi64854_softc *, caddr_t *, size_t *,
+			     int, size_t *);
 
 #ifdef DEBUG
 #define LDB_SCSI	1

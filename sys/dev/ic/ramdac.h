@@ -48,34 +48,34 @@ struct ramdac_cookie;
 
 struct ramdac_funcs {
 	char	*ramdac_name;
-	struct ramdac_cookie *(*ramdac_register) __P((void *,
+	struct ramdac_cookie *(*ramdac_register)(void *,
 		    int (*)(void *, void (*)(void *)),
 		    void (*)(void *, u_int, u_int8_t),
-		    u_int8_t (*)(void *, u_int)));	      
-	void	(*ramdac_init) __P((struct ramdac_cookie *));
+		    u_int8_t (*)(void *, u_int));	      
+	void	(*ramdac_init)(struct ramdac_cookie *);
 
-	int	(*ramdac_set_cmap) __P((struct ramdac_cookie *,
-		    struct wsdisplay_cmap *));
-	int	(*ramdac_get_cmap) __P((struct ramdac_cookie *,
-		    struct wsdisplay_cmap *));
-	int	(*ramdac_set_cursor) __P((struct ramdac_cookie *,
-		    struct wsdisplay_cursor *));
-	int	(*ramdac_get_cursor) __P((struct ramdac_cookie *,
-		    struct wsdisplay_cursor *));
-	int	(*ramdac_set_curpos) __P((struct ramdac_cookie *,
-		    struct wsdisplay_curpos *));
-	int	(*ramdac_get_curpos) __P((struct ramdac_cookie *,
-		    struct wsdisplay_curpos *));
-	int	(*ramdac_get_curmax) __P((struct ramdac_cookie *,
-		    struct wsdisplay_curpos *));
+	int	(*ramdac_set_cmap)(struct ramdac_cookie *,
+		    struct wsdisplay_cmap *);
+	int	(*ramdac_get_cmap)(struct ramdac_cookie *,
+		    struct wsdisplay_cmap *);
+	int	(*ramdac_set_cursor)(struct ramdac_cookie *,
+		    struct wsdisplay_cursor *);
+	int	(*ramdac_get_cursor)(struct ramdac_cookie *,
+		    struct wsdisplay_cursor *);
+	int	(*ramdac_set_curpos)(struct ramdac_cookie *,
+		    struct wsdisplay_curpos *);
+	int	(*ramdac_get_curpos)(struct ramdac_cookie *,
+		    struct wsdisplay_curpos *);
+	int	(*ramdac_get_curmax)(struct ramdac_cookie *,
+		    struct wsdisplay_curpos *);
 
 	/* Only called from the TGA built-in cursor handling code. */
-	int	(*ramdac_check_curcmap) __P((struct ramdac_cookie *,
-		    struct wsdisplay_cursor *));
-	void	(*ramdac_set_curcmap) __P((struct ramdac_cookie *,
-		    struct wsdisplay_cursor *));
-	int	(*ramdac_get_curcmap) __P((struct ramdac_cookie *,
-		    struct wsdisplay_cursor *));
+	int	(*ramdac_check_curcmap)(struct ramdac_cookie *,
+		    struct wsdisplay_cursor *);
+	void	(*ramdac_set_curcmap)(struct ramdac_cookie *,
+		    struct wsdisplay_cursor *);
+	int	(*ramdac_get_curcmap)(struct ramdac_cookie *,
+		    struct wsdisplay_cursor *);
 };
 
 #endif

@@ -109,10 +109,10 @@ struct adw_control {
 
 /******************************************************************************/
 
-int adw_init __P((ADW_SOFTC *sc));
-void adw_attach __P((ADW_SOFTC *sc));
-int adw_intr __P((void *arg));
-ADW_CCB *adw_ccb_phys_kv __P((ADW_SOFTC *, u_int32_t));
+int adw_init(ADW_SOFTC *sc);
+void adw_attach(ADW_SOFTC *sc);
+int adw_intr(void *arg);
+ADW_CCB *adw_ccb_phys_kv(ADW_SOFTC *, u_int32_t);
 
 /******************************************************************************/
 

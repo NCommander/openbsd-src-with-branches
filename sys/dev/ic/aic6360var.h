@@ -1,4 +1,4 @@
-/*	$OpenBSD: aic6360.c,v 1.15 1997/07/30 13:03:50 niklas Exp $	*/
+/*	$OpenBSD$	*/
 /*	$NetBSD: aic6360.c,v 1.52 1996/12/10 21:27:51 thorpej Exp $	*/
 
 /*
@@ -212,6 +212,6 @@ struct aic_softc {
 #define AIC_TRACE(s)	AIC_PRINT(AIC_SHOWTRACE, s)
 #define AIC_START(s)	AIC_PRINT(AIC_SHOWSTART, s)
 
-void	aicattach	__P((struct aic_softc *));
-int	aicintr		__P((void *));
-int 	aic_find	__P((bus_space_tag_t, bus_space_handle_t));
+void	aicattach(struct aic_softc *);
+int	aicintr(void *);
+int 	aic_find(bus_space_tag_t, bus_space_handle_t);

@@ -39,11 +39,11 @@
 
 
 struct ramdac_funcs *bt463_funcs(void);
-struct ramdac_cookie *bt463_register __P((void *,
+struct ramdac_cookie *bt463_register(void *,
 	int (*)(void *, void (*)(void *)),
 	void (*)(void *, u_int, u_int8_t),
-	u_int8_t (*)(void *, u_int)));
-void bt463_cninit __P((void *,
+	u_int8_t (*)(void *, u_int));
+void bt463_cninit(void *,
 	int (*)(void *, void (*)(void *)),
 	void (*)(void *, u_int, u_int8_t),
-	u_int8_t (*)(void *, u_int)));
+	u_int8_t (*)(void *, u_int));

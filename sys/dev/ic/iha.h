@@ -435,9 +435,9 @@ struct iha_nvram {
 
 /* Functions used by higher SCSI layers, the kernel, or iha.c and iha_pci.c  */
 
-int  iha_scsi_cmd   __P((struct scsi_xfer *));
-int  iha_intr	    __P((void *));
-void iha_minphys    __P((struct buf *));
-int  iha_init_tulip __P((struct iha_softc *));
+int  iha_scsi_cmd(struct scsi_xfer *);
+int  iha_intr(void *);
+void iha_minphys(struct buf *);
+int  iha_init_tulip(struct iha_softc *);
 
 

@@ -1,4 +1,4 @@
-/*	$OpenBSD: rlnsubr.c,v 1.3 1999/08/26 22:28:15 d Exp $	*/
+/*	$OpenBSD$	*/
 /*
  * David Leonard <d@openbsd.org>, 1999. Public Domain.
  *
@@ -38,8 +38,8 @@
 #include <dev/ic/rlnreg.h>
 #include <dev/ic/rlncmd.h>
 
-static int	rln_tx_request __P((struct rln_softc *, u_int16_t));
-static int	rln_tx_end __P((struct rln_softc *));
+static int	rln_tx_request(struct rln_softc *, u_int16_t);
+static int	rln_tx_end(struct rln_softc *);
 
 /*
  * Disables or enables interrupts from the card. Returns the old 

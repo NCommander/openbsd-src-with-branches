@@ -87,9 +87,9 @@ struct adv_control
 
 /******************************************************************************/
 
-int adv_init __P((ASC_SOFTC *sc));
-void adv_attach __P((ASC_SOFTC *sc));
-int adv_intr __P((void *arg));
+int adv_init(ASC_SOFTC *sc);
+void adv_attach(ASC_SOFTC *sc);
+int adv_intr(void *arg);
 
 /******************************************************************************/
 

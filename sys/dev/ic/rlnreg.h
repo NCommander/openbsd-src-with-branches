@@ -1,4 +1,4 @@
-/*	$OpenBSD: rlnreg.h,v 1.1 1999/07/30 13:43:36 d Exp $	*/
+/*	$OpenBSD$	*/
 /*
  * David Leonard <d@openbsd.org>, 1999. Public Domain.
  *
@@ -53,13 +53,13 @@
 #define _rln_regacc_delay() \
 	bus_space_read_1(I386_BUS_SPACE_IO, 0, 0x61)
 
-static void	_rln_register_write_1 __P((struct rln_softc *, u_int8_t, 
-			u_int8_t));
-static void	_rln_register_write_2 __P((struct rln_softc *, u_int8_t, 
-			u_int16_t));
-static u_int8_t	_rln_register_read_1 __P((struct rln_softc *, u_int8_t));
-static u_int16_t _rln_register_read_2 __P((struct rln_softc *, u_int8_t));
-static int	rln_status_rx_ready __P((struct rln_softc *));
+static void	_rln_register_write_1(struct rln_softc *, u_int8_t, 
+			u_int8_t);
+static void	_rln_register_write_2(struct rln_softc *, u_int8_t, 
+			u_int16_t);
+static u_int8_t	_rln_register_read_1(struct rln_softc *, u_int8_t);
+static u_int16_t _rln_register_read_2(struct rln_softc *, u_int8_t);
+static int	rln_status_rx_ready(struct rln_softc *);
 
 /* Write to a register. */
 static inline void
