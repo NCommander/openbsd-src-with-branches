@@ -1,4 +1,4 @@
-/*	$OpenBSD: elfrdsetroot.c,v 1.1 2001/09/18 15:24:18 jason Exp $	*/
+/*	$OpenBSD: elfrdsetroot.c,v 1.2 2001/09/18 15:27:36 jason Exp $	*/
 /*	$NetBSD: rdsetroot.c,v 1.2 1995/10/13 16:38:39 gwr Exp $	*/
 
 /*
@@ -80,7 +80,7 @@ main(argc,argv)
 {
 	int fd, n;
 	int found;
-	int *ip;
+	u_int32_t *ip;
 	Elf_Ehdr eh;
 	Elf_Phdr *ph;
 	int phsize;
@@ -144,11 +144,12 @@ main(argc,argv)
 	/*
 	 * Find value in the location: rd_root_size
 	 */
-	ip = (int*) (dataseg + rd_root_size_off);
+	ip = (u_int32_t*) (dataseg + rd_root_size_off);
 	rd_root_size_val = *ip;
 #ifdef	DEBUG
 	printf("rd_root_size  val: 0x%08X (%d blocks)\n",
-		rd_root_size_val, (rd_root_size_val >> 9));
+		(u_int32_t)rd_root_size_val,
+		(u_int32_t)(rd_root_size_val >> 9));
 #endif
 
 	/*
