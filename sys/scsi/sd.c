@@ -1,4 +1,4 @@
-/*	$OpenBSD: sd.c,v 1.52 2002/03/14 01:27:13 millert Exp $	*/
+/*	$OpenBSD: sd.c,v 1.53 2002/06/09 00:05:57 art Exp $	*/
 /*	$NetBSD: sd.c,v 1.111 1997/04/02 02:29:41 mycroft Exp $	*/
 
 /*-
@@ -360,6 +360,7 @@ sdopen(dev, flag, fmt, p)
 		return ENXIO;
 
 	sc_link = sd->sc_link;
+	part = SDPART(dev);
 
 	SC_DEBUG(sc_link, SDEV_DB1,
 	    ("sdopen: dev=0x%x (unit %d (of %d), partition %d)\n", dev, unit,
@@ -422,8 +423,6 @@ sdopen(dev, flag, fmt, p)
 			SC_DEBUG(sc_link, SDEV_DB3, ("Disklabel loaded "));
 		}
 	}
-
-	part = SDPART(dev);
 
 	/* Check that the partition exists. */
 	if (part != RAW_PART &&
