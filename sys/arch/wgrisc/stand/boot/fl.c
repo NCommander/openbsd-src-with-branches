@@ -31,28 +31,72 @@
  * SUCH DAMAGE.
  *
  */
+
+#include <stdarg.h>
+
 #include <stand.h>
+#include <sys/param.h>
 
-int	errno;
+int prom_seek __P((int, long, int));
+int disk_read __P((int, char *, int, int));
+int disk_open __P((char *, int));
 
-extern void	nullsys();
-extern int	nodev();
-extern int	noioctl();
-
-int	sdstrategy __P((void *, int, daddr_t, size_t, void *, size_t *));
-int	sdopen __P((struct open_file *, ...));
-int	sdclose __P((struct open_file *));
-
-int	flstrategy __P((void *, int, daddr_t, size_t, void *, size_t *));
-int	flopen __P((struct open_file *, ...));
-int	flclose __P((struct open_file *));
-
-#define	sdioctl		noioctl
-#define	flioctl		noioctl
-
-struct devsw devsw[] = {
-	{ "sd",	sdstrategy,	sdopen,	sdclose,	sdioctl }, /*0*/
-	{ "fl",	flstrategy,	flopen,	flclose,	flioctl }, /*1*/
+struct	fl_softc {
+	int	sc_fd;			/* PROM file id */
 };
 
-int	ndevs = (sizeof(devsw)/sizeof(devsw[0]));
+int
+flstrategy(devdata, rw, bn, reqcnt, addr, cnt)
+	void *devdata;
+	int rw;
+	daddr_t bn;
+	u_int reqcnt;
+	char *addr;
+	u_int *cnt;	/* out: number of bytes transfered */
+{
+	struct fl_softc *sc = (struct fl_softc *)devdata;
+	int s;
+	long offset;
+
+	offset = bn * DEV_BSIZE;
+
+	s = disk_read(sc->sc_fd, addr, offset, reqcnt);
+	if (s < 0)
+		return (-s);
+	*cnt = s;
+	return (0);
+}
+
+/*
+ *  We only deal with flash 0 here. We need to be small.
+ */
+int
+flopen(struct open_file *f, ...)
+{
+	struct fl_softc *sc;
+	int fd;
+	static char device[] = "fl(0)";
+
+	fd = disk_open(device, 0);
+	if (fd < 0) {
+		return (ENXIO);
+	}
+
+	sc = alloc(sizeof(struct fl_softc));
+	f->f_devdata = (void *)sc;
+
+	sc->sc_fd = fd;
+
+	return (0);
+}
+
+int
+flclose(f)
+	struct open_file *f;
+{
+#ifdef FANCY
+	free(f->f_devdata, sizeof(struct fl_softc));
+	f->f_devdata = (void *)0;
+#endif
+	return (0);
+}
