@@ -1,4 +1,4 @@
-/*	$OpenBSD: ipsec.c,v 1.84 2003/12/15 10:06:42 hshoexer Exp $	*/
+/*	$OpenBSD: ipsec.c,v 1.85 2004/01/03 16:38:13 ho Exp $	*/
 /*	$EOM: ipsec.c,v 1.143 2000/12/11 23:57:42 niklas Exp $	*/
 
 /*
@@ -877,10 +877,8 @@ ipsec_validate_situation (u_int8_t *buf, size_t *sz)
   return
     sit & ~(IPSEC_SIT_IDENTITY_ONLY | IPSEC_SIT_SECRECY | IPSEC_SIT_INTEGRITY);
 #else
-   return sit & ~IPSEC_SIT_IDENTITY_ONLY;
+  return sit & ~IPSEC_SIT_IDENTITY_ONLY;
 #endif
-    return 1;
-  return 0;
 }
 
 static int
