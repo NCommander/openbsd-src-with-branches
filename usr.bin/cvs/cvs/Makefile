@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.22 2005/03/28 23:08:24 jfb Exp $
+#	$OpenBSD: Makefile,v 1.23 2005/03/29 02:58:27 joris Exp $
 
 .PATH:	${.CURDIR}/..
 
@@ -23,6 +23,7 @@ CFLAGS+= -Wmissing-declarations
 CFLAGS+= -Wshadow -Wpointer-arith -Wcast-qual
 CFLAGS+= -Wsign-compare
 CFLAGS+= -DCVS
+YFLAGS=
 
 INSTALL_STRIP=
 
