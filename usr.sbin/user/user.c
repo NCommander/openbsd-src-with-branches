@@ -1,4 +1,4 @@
-/* $OpenBSD: user.c,v 1.33 2002/04/04 18:39:32 millert Exp $ */
+/* $OpenBSD: user.c,v 1.34 2002/05/17 04:07:50 millert Exp $ */
 /* $NetBSD: user.c,v 1.45 2001/08/17 08:29:00 joda Exp $ */
 
 /*
@@ -555,6 +555,8 @@ valid_login(char *login)
 			return 0;
 		}
 	}
+	if (cp - login > MaxUserNameLen)
+		return 0;
 	return 1;
 }
 
