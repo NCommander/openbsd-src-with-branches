@@ -1,4 +1,4 @@
-/*	$OpenBSD: vmparam.h,v 1.6 2001/06/26 21:35:40 miod Exp $ */
+/*	$OpenBSD: vmparam.h,v 1.7 2001/06/27 06:19:47 art Exp $ */
 
 /*
  * Copyright (c) 1988 University of Utah.
@@ -43,7 +43,7 @@
  */
 
 #ifndef _MVME68K_VMPARAM_H_
-#define       _MVME68K_VMPARAM_H_
+#define _MVME68K_VMPARAM_H_
 
 /*
  * Machine dependent constants for MVME68K
@@ -62,8 +62,6 @@
  */
 #define	USRTEXT		8192			/* Must equal __LDPGSZ */
 #define	USRSTACK	(-HIGHPAGES*NBPG)	/* Start of user stack */
-#define	BTOPUSRSTACK	(0x100000-HIGHPAGES)	/* btop(USRSTACK) */
-#define	P1PAGES		0x100000
 #define	LOWPAGES	0
 #define	HIGHPAGES	(0x100000/NBPG)
 
