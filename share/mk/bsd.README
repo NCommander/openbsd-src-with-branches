@@ -200,7 +200,7 @@ NOPIC		Do not build PIC versions of system libraries, and
 NOLINT		Do not build lint libraries. [set, set unconditionally]
 
 DEBUG		Add -g to assembly and C compiler passes.  Also doesn't
-		set STRIP to -s per defalt if defined.
+		set STRIP to -s per default if defined.
 
 bsd.own.mk is generally useful when building your own Makefiles so that
 they use the same default owners etc. as the rest of the tree.
