@@ -1,4 +1,4 @@
-/*	$OpenBSD: db_command.c,v 1.27 2002/03/14 01:26:51 millert Exp $	*/
+/*	$OpenBSD: db_command.c,v 1.28 2002/03/14 03:16:03 millert Exp $	*/
 /*	$NetBSD: db_command.c,v 1.20 1996/03/30 22:30:05 christos Exp $	*/
 
 /* 
@@ -638,4 +638,11 @@ db_boot_poweroff_cmd(addr, haddr, count, modif)
 	char *modif;
 {
 	boot(RB_NOSYNC | RB_HALT | RB_POWERDOWN | RB_TIMEBAD);
+}
+
+void
+db_stack_trace_cmd(db_expr_t addr, boolean_t have_addr, db_expr_t count,
+    char *modif)
+{
+	db_stack_trace_print(addr, have_addr, count, modif, db_printf);
 }
