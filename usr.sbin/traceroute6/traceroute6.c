@@ -1,4 +1,4 @@
-/*	$OpenBSD: traceroute6.c,v 1.16 2001/10/26 06:23:02 mpech Exp $	*/
+/*	$OpenBSD: traceroute6.c,v 1.17 2002/02/16 21:28:10 millert Exp $	*/
 /*	$KAME: traceroute6.c,v 1.39 2000/12/22 15:11:05 itojun Exp $	*/
 
 /*
@@ -1316,7 +1316,7 @@ inetname(sa)
 
 	if (first && !nflag) {
 		first = 0;
-		if (gethostname(domain, MAXHOSTNAMELEN) == 0 &&
+		if (gethostname(domain, sizeof(domain)) == 0 &&
 		    (cp = index(domain, '.')))
 			(void) strlcpy(domain, cp + 1, sizeof(domain));
 		else
