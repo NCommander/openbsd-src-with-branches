@@ -51,6 +51,7 @@ struct biosdisk {
 	struct disklabel disklabel;
 	dev_t	bsddev;
 	u_int8_t biosdev;
+	int edd_flags;
 };
 
 int
@@ -145,12 +146,14 @@ biosopen(struct open_file *f, ...)
 		return ENXIO;
 	}
 
+	bd->edd_flags = EDDcheck((dev_t)bd->biosdev);
 	bd->dinfo = biosdinfo((dev_t)bd->biosdev);
 
 #ifdef BIOS_DEBUG
 	if (debug) {
-		printf("BIOS geometry: heads: %u, s/t: %u\n",
-			BIOSNHEADS(bd->dinfo), BIOSNSECTS(bd->dinfo));
+		printf("BIOS geometry: heads=%u, s/t=%u; EDD=%d\n",
+		       BIOSNHEADS(bd->dinfo), BIOSNSECTS(bd->dinfo),
+		       bd->edd_flags);
 	}
 #endif
 
