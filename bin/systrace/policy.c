@@ -1,4 +1,4 @@
-/*	$OpenBSD: policy.c,v 1.14 2002/08/05 23:27:53 provos Exp $	*/
+/*	$OpenBSD: policy.c,v 1.15 2002/08/07 00:34:17 vincent Exp $	*/
 /*
  * Copyright 2002 Niels Provos <provos@citi.umich.edu>
  * All rights reserved.
@@ -397,8 +397,20 @@ systrace_readpolicy(char *filename)
 		}
 		*p = '\0';
 
-		p = line;
-		strsep(&p, "#");
+		p = strchr(line, '#');
+		if (p != NULL) {
+			if (p != line && *(p-1) == '-')
+				p = strchr(p + 1, '#');
+			if (p != NULL)
+				*p = '\0';
+		}
+
+		p = line + strlen(line) - 1;
+		while (p > line) {
+			if (!isspace(*p))
+				break;
+			*p-- = '\0';
+		}
 
 		p = line;
 		p += strspn(p, " \t");
