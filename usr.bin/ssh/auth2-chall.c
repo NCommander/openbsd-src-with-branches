@@ -23,7 +23,7 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 #include "includes.h"
-RCSID("$OpenBSD: auth2-chall.c,v 1.6 2001/06/03 20:06:11 markus Exp $");
+RCSID("$OpenBSD: auth2-chall.c,v 1.7 2001/06/23 15:12:17 itojun Exp $");
 
 #include "ssh2.h"
 #include "auth.h"
@@ -139,7 +139,7 @@ kbdint_next_device(KbdintAuthctxt *kbdintctxt)
 }
 
 /*
- * try challenge-reponse, set authctxt->postponed if we have to
+ * try challenge-response, set authctxt->postponed if we have to
  * wait for the response.
  */
 int
