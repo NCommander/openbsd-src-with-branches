@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /*	$NetBSD: ffs_alloc.c,v 1.13 1996/10/12 21:58:44 christos Exp $	*/
 
 /* Modified for EXT2FS on NetBSD by Manuel Bouyer, April 1997 */
