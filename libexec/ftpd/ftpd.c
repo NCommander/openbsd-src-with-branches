@@ -1,4 +1,4 @@
-/*	$OpenBSD: ftpd.c,v 1.14 1996/08/10 06:12:12 downsj Exp $	*/
+/*	$OpenBSD: ftpd.c,v 1.15 1996/08/13 06:34:39 deraadt Exp $	*/
 /*	$NetBSD: ftpd.c,v 1.15 1995/06/03 22:46:47 mycroft Exp $	*/
 
 /*
@@ -797,11 +797,15 @@ skip:
 			reply(550, "Can't set guest privileges.");
 			goto bad;
 		}
+		strcpy(pw->pw_dir, "/");
+		setenv("HOME", "/", 1);
 	} else if (dochroot) {
 		if (chroot(rootdir) < 0 || chdir("/") < 0) {
 			reply(550, "Can't change root.");
 			goto bad;
 		}
+		strcpy(pw->pw_dir, "/");
+		setenv("HOME", "/", 1);
 	} else if (chdir(pw->pw_dir) < 0) {
 		if (chdir("/") < 0) {
 			reply(530, "User %s: can't change directory to %s.",
