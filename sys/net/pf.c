@@ -1,4 +1,4 @@
-/*	$OpenBSD: pf.c,v 1.370 2003/06/28 00:27:10 itojun Exp $ */
+/*	$OpenBSD: pf.c,v 1.371 2003/06/29 12:25:03 itojun Exp $ */
 
 /*
  * Copyright (c) 2001 Daniel Hartmeier
@@ -5002,6 +5002,11 @@ pf_test6(int dir, struct ifnet *ifp, struct mbuf **m0)
 		goto done;
 	}
 
+	/* We do IP header normalization and packet reassembly here */
+	if (pf_normalize_ip6(m0, dir, ifp, &reason) != PF_PASS) {
+		action = PF_DROP;
+		goto done;
+	}
 	m = *m0;
 	h = mtod(m, struct ip6_hdr *);
 
