@@ -1,4 +1,4 @@
-/*	$OpenBSD: an.c,v 1.35 2004/07/24 21:26:05 mickey Exp $	*/
+/*	$OpenBSD: an.c,v 1.36 2004/08/05 07:58:55 mickey Exp $	*/
 
 /*
  * Copyright (c) 1997, 1998, 1999
@@ -356,7 +356,6 @@ an_rxeof(sc)
 
 	m->m_pkthdr.rcvif = ifp;
 	m->m_pkthdr.len = m->m_len = len + 12;
-if ((int)m->m_data & 3) printf("m_data %p\n", m->m_data);
 	m->m_data += ETHER_ALIGN;
 	eh = mtod(m, struct ether_header *);
 
