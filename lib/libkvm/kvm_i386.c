@@ -194,6 +194,6 @@ _kvm_kvatop(kd, va, pa)
 	return (NBPG - offset);
 
 invalid:
-	_kvm_err(kd, 0, "invalid address (%x)", va);
+	_kvm_err(kd, 0, "invalid address (%lx)", va);
 	return (0);
 }

@@ -299,7 +299,7 @@ _kvm_kvatop44c(kd, va, pa)
 		return (kd->nbpg - off);
 	}
 err:
-	_kvm_err(kd, 0, "invalid address (%x)", va);
+	_kvm_err(kd, 0, "invalid address (%lx)", va);
 	return (0);
 }
 
@@ -412,6 +412,6 @@ _kvm_kvatop4m(kd, va, pa)
 		return (kd->nbpg - off);
 	}
 err:
-	_kvm_err(kd, 0, "invalid address (%x)", va);
+	_kvm_err(kd, 0, "invalid address (%lx)", va);
 	return (0);
 }
