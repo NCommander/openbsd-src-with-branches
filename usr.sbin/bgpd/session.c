@@ -1,4 +1,4 @@
-/*	$OpenBSD: session.c,v 1.11 2003/12/19 21:06:46 henning Exp $ */
+/*	$OpenBSD: session.c,v 1.12 2003/12/19 21:26:47 claudio Exp $ */
 
 /*
  * Copyright (c) 2003 Henning Brauer <henning@openbsd.org>
@@ -1260,7 +1260,7 @@ session_dispatch_imsg(int fd, int idx)
 					p->conf.reconf_action = RECONF_REINIT;
 				if (p->holdtime > nconf->holdtime)
 					p->conf.reconf_action = RECONF_REINIT;
-				if (p->holdtime > nconf->min_holdtime)
+				if (p->holdtime < nconf->min_holdtime)
 					p->conf.reconf_action = RECONF_REINIT;
 			}
 			break;
