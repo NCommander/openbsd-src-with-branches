@@ -1,4 +1,5 @@
 #! /usr/bin/awk -f
+#	$OpenBSD$
 #	$NetBSD: devlist2h.awk,v 1.8 1999/11/18 23:32:25 augustss Exp $
 #
 # Copyright (c) 1995, 1996 Christopher G. Demetriou
