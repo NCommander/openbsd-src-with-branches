@@ -1,4 +1,4 @@
-/*	$OpenBSD: libsa.h,v 1.22 1997/10/24 22:22:57 mickey Exp $	*/
+/*	$OpenBSD: libsa.h,v 1.23 1997/11/30 21:51:44 mickey Exp $	*/
 
 /*
  * Copyright (c) 1996 Michael Shalayeff
@@ -41,6 +41,7 @@ void smpprobe __P((void));
 void memprobe __P((void));
 void diskprobe __P((void));
 void apmprobe __P((void));
+void pciprobe __P((void));
 
 void devboot __P((dev_t, char *));
 void *alloca __P((size_t));
