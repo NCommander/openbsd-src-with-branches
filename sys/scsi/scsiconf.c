@@ -1,4 +1,4 @@
-/*	$OpenBSD: scsiconf.c,v 1.38 1998/06/26 01:28:28 deraadt Exp $	*/
+/*	$OpenBSD: scsiconf.c,v 1.39 1998/07/19 06:08:28 downsj Exp $	*/
 /*	$NetBSD: scsiconf.c,v 1.57 1996/05/02 01:09:01 neil Exp $	*/
 
 /*
@@ -276,9 +276,10 @@ scsi_strvis(dst, src, len)
 {
 
 	/* Trim leading and trailing blanks and NULs. */
-	while (len > 0 && (src[0] == ' ' || src[0] == '\0'))
+	while (len > 0 && (src[0] == ' ' || src[0] == '\0' || src[0] == 0xff))
 		++src, --len;
-	while (len > 0 && (src[len-1] == ' ' || src[len-1] == '\0'))
+	while (len > 0 && (src[len-1] == ' ' || src[len-1] == '\0' ||
+	    src[len-1] == 0xff))
 		--len;
 
 	while (len > 0) {
