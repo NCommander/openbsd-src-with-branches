@@ -178,8 +178,6 @@ int	 ip_pcbopts __P((struct mbuf **, struct mbuf *));
 struct ip *
 	 ip_reass __P((struct ipqent *, struct ipq *));
 struct in_ifaddr *
-	 in_iawithaddr __P((struct in_addr, struct mbuf *));
-struct in_ifaddr *
 	 ip_rtaddr __P((struct in_addr));
 int	 ip_setmoptions __P((int, struct ip_moptions **, struct mbuf *));
 void	 ip_slowtimo __P((void));
