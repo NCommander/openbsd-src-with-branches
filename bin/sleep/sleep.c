@@ -1,4 +1,4 @@
-/*	$OpenBSD: sleep.c,v 1.15 2002/09/06 18:16:59 deraadt Exp $	*/
+/*	$OpenBSD: sleep.c,v 1.16 2003/06/02 23:32:09 millert Exp $	*/
 /*	$NetBSD: sleep.c,v 1.8 1995/03/21 09:11:11 cgd Exp $	*/
 
 /*
@@ -40,7 +40,7 @@ static char copyright[] =
 #if 0
 static char sccsid[] = "@(#)sleep.c	8.3 (Berkeley) 4/2/94";
 #else
-static char rcsid[] = "$OpenBSD: sleep.c,v 1.15 2002/09/06 18:16:59 deraadt Exp $";
+static char rcsid[] = "$OpenBSD: sleep.c,v 1.16 2003/06/02 23:32:09 millert Exp $";
 #endif
 #endif /* not lint */
 
@@ -135,8 +135,9 @@ usage(void)
  * POSIX 1003.2 says sleep should exit with 0 return code on reception
  * of SIGALRM.
  */
+/* ARGSUSED */
 void
-alarmh(int sigraised)
+alarmh(int signo)
 {
 	/*
 	 * exit() flushes stdio buffers, which is not legal in a signal
