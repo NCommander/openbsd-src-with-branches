@@ -1438,7 +1438,7 @@ help(ctab, s)
 		NCMDS++;
 	}
 	width = (width + 8) &~ 7;
-	if (s == 0) {
+	if (s == NULL) {
 		int i, j, w;
 		int columns, lines;
 
