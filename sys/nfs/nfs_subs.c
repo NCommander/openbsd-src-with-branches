@@ -1,5 +1,5 @@
 /*	$OpenBSD: nfs_subs.c,v 1.6 1996/04/17 04:50:31 mickey Exp $	*/
-/*	$NetBSD: nfs_subs.c,v 1.27 1996/04/03 23:25:36 thorpej Exp $	*/
+/*	$NetBSD: nfs_subs.c,v 1.27.4.1 1996/05/25 22:40:34 fvdl Exp $	*/
 
 /*
  * Copyright (c) 1989, 1993
