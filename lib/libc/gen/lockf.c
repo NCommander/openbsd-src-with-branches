@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /*	$NetBSD: lockf.c,v 1.1 1997/12/20 20:23:18 kleink Exp $	*/
 
 /*-
@@ -37,7 +38,7 @@
  */
 
 #if defined(LIBC_SCCS) && !defined(lint)
-static char rcsid[] = "$NetBSD: lockf.c,v 1.1 1997/12/20 20:23:18 kleink Exp $";
+static char rcsid[] = "$OpenBSD$";
 #endif /* LIBC_SCCS and not lint */
 
 #include <errno.h>
