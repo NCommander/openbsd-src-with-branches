@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: trap.c,v 1.1 2003/09/01 19:45:28 miod Exp $	*/
 
 /*
  * Simple test program to check what happens when userland tries to trap.
