@@ -1,4 +1,4 @@
-/*	$OpenBSD: pac.c,v 1.7 1996/11/03 23:24:13 millert Exp $ */
+/*	$OpenBSD: pac.c,v 1.8 1997/01/17 16:12:50 millert Exp $ */
 /*	$NetBSD: pac.c,v 1.7 1996/03/21 18:21:20 jtc Exp $	*/
 
 /*
@@ -45,7 +45,7 @@ static char copyright[] =
 #if 0
 static char sccsid[] = "@(#)pac.c	8.1 (Berkeley) 6/6/93";
 #else
-static char rcsid[] = "$OpenBSD: $";
+static char rcsid[] = "$OpenBSD: pac.c,v 1.8 1997/01/17 16:12:50 millert Exp $";
 #endif
 #endif /* not lint */
 
@@ -60,6 +60,7 @@ static char rcsid[] = "$OpenBSD: $";
 
 #include <dirent.h>
 #include <stdlib.h>
+#include <unistd.h>
 #include <stdio.h>
 #include <string.h>
 #include "lp.h"
