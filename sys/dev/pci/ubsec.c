@@ -1,4 +1,4 @@
-/*	$OpenBSD: ubsec.c,v 1.7 2000/06/12 19:50:35 deraadt Exp $	*/
+/*	$OpenBSD: ubsec.c,v 1.8 2000/06/13 00:38:25 deraadt Exp $	*/
 
 /*
  * Copyright (c) 2000 Jason L. Wright (jason@thought.net)
@@ -335,6 +335,14 @@ ubsec_process(crp)
 	}
 
 	sc = ubsec_cd.cd_devs[card];
+
+	s = splnet();
+	if (sc->sc_nqueue == UBS_MAX_NQUEUE) {
+		splx(s);
+		err = ENOMEM;
+		goto errout;
+	}
+	splx(s);
 
 	q = (struct ubsec_q *)malloc(sizeof(struct ubsec_q),
 	    M_DEVBUF, M_NOWAIT);

@@ -1,4 +1,4 @@
-/*	$OpenBSD: ubsecvar.h,v 1.2 2000/06/03 13:14:39 jason Exp $	*/
+/*	$OpenBSD: ubsecvar.h,v 1.3 2000/06/12 19:50:35 deraadt Exp $	*/
 
 /*
  * Copyright (c) 2000 Theo de Raadt
@@ -60,3 +60,8 @@ struct ubsec_q {
 	int				q_dst_packl[MAX_SCATTER];
 	int				q_dst_npa, q_dst_l;
 };
+
+/* Maximum queue length */
+#ifndef UBS_MAX_NQUEUE
+#define UBS_MAX_NQUEUE		24
+#endif
