@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: name_match.c,v 1.1 1998/07/23 21:19:53 millert Exp $	*/
 
 /****************************************************************************
  * Copyright (c) 1998 Free Software Foundation, Inc.                        *
@@ -37,7 +37,7 @@
 #include <term.h>
 #include <tic.h>
 
-MODULE_ID("$From: name_match.c,v 1.6 1998/05/31 01:10:13 tom Exp $")
+MODULE_ID("$From: name_match.c,v 1.7 1998/09/19 20:27:49 Todd.Miller Exp $")
 
 /*
  *	_nc_first_name(char *names)
