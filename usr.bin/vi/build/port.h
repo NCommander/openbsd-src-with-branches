@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /* @(#)port.h.in	8.13 (Berkeley) 6/12/96 */
 
 /*
