@@ -1,4 +1,4 @@
-/*	$OpenBSD: main.c,v 1.20 1999/11/25 00:54:22 millert Exp $	*/
+/*	$OpenBSD: main.c,v 1.22 1999/11/30 22:24:20 espie Exp $	*/
 /*	$NetBSD: main.c,v 1.12 1997/02/08 23:54:49 cgd Exp $	*/
 
 /*-
@@ -47,7 +47,7 @@ static char copyright[] =
 #if 0
 static char sccsid[] = "@(#)main.c	8.1 (Berkeley) 6/6/93";
 #else
-static char rcsid[] = "$OpenBSD: main.c,v 1.20 1999/11/25 00:54:22 millert Exp $";
+static char rcsid[] = "$OpenBSD: main.c,v 1.22 1999/11/30 22:24:20 espie Exp $";
 #endif
 #endif /* not lint */
 
@@ -125,11 +125,11 @@ struct keyblk keywrds[] = {	/* m4 keywords to be installed */
 	{ "syscmd",       SYSCTYPE },
 	{ "sysval",       SYSVTYPE },
 
-#if defined(unix) || defined(__NetBSD__) || defined(__OpenBSD__)
-	{ "unix",         MACRTYPE },
+#if defined(unix) || defined(__unix__)
+	{ "unix",         SELFTYPE },
 #else
 #ifdef vms
-	{ "vms",          MACRTYPE },
+	{ "vms",          SELFTYPE },
 #endif
 #endif
 };
