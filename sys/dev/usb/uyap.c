@@ -1,4 +1,4 @@
-/*	$OpenBSD: uyap.c,v 1.6 2002/07/25 04:07:33 nate Exp $ */
+/*	$OpenBSD: uyap.c,v 1.7 2003/05/07 04:33:33 deraadt Exp $ */
 /*	$NetBSD: uyap.c,v 1.6 2002/07/11 21:14:37 augustss Exp $	*/
 
 /*
@@ -50,20 +50,13 @@
 
 #include <dev/usb/ezload.h>
 
-const struct ezdata uyap_firmware[] = {
-#if defined(__OpenBSD__)
-#include "dev/microcode/uyap/uyap_firmware.h"
-#else
-#include "dev/usb/uyap_firmware.h"
-#endif
-};
-const struct ezdata *uyap_firmwares[] = { uyap_firmware, NULL };
-
 struct uyap_softc {
 	USBBASEDEVICE		sc_dev;		/* base device */
+	usbd_device_handle	sc_udev;
 };
 
 USB_DECLARE_DRIVER(uyap);
+void uyap_attachhook(void *);
 
 USB_MATCH(uyap)
 {
@@ -80,11 +73,28 @@ USB_MATCH(uyap)
 	return (UMATCH_NONE);
 }
 
+void
+uyap_attachhook(void *xsc)
+{
+	char *firmwares[] = { "uyap", NULL };
+	struct uyap_softc *sc = xsc;
+	int err;
+
+	err = ezload_downloads_and_reset(sc->sc_udev, firmwares);
+	if (err) {
+		printf("%s: download ezdata format firmware error: %s\n",
+		    USBDEVNAME(sc->sc_dev), usbd_errstr(err));
+		USB_ATTACH_ERROR_RETURN;
+	}
+
+	printf("%s: firmware download complete, disconnecting.\n",
+	    USBDEVNAME(sc->sc_dev));
+}
+
 USB_ATTACH(uyap)
 {
 	USB_ATTACH_START(uyap, sc, uaa);
 	usbd_device_handle dev = uaa->device;
-	usbd_status err;
 	char devinfo[1024];
 
 	usbd_devinfo(dev, 0, devinfo, sizeof devinfo);
@@ -92,15 +102,12 @@ USB_ATTACH(uyap)
 	printf("%s: %s\n", USBDEVNAME(sc->sc_dev), devinfo);
 	printf("%s: downloading firmware\n", USBDEVNAME(sc->sc_dev));
 
-	err = ezload_downloads_and_reset(dev, uyap_firmwares);
-	if (err) {
-		printf("%s: download ezdata error: %s\n",
-		       USBDEVNAME(sc->sc_dev), usbd_errstr(err));
-		USB_ATTACH_ERROR_RETURN;
-	}
+	sc->sc_udev = dev;
+	if (rootvp == NULL)
+		mountroothook_establish(uyap_attachhook, sc);
+	else
+		uyap_attachhook(sc);
 
-	printf("%s: firmware download complete, disconnecting.\n",
-	       USBDEVNAME(sc->sc_dev));
 	USB_ATTACH_SUCCESS_RETURN;
 }
 

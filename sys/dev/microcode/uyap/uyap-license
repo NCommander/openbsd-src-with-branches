@@ -1,12 +1,8 @@
-/*	$OpenBSD: ezload.h,v 1.2 2001/05/03 02:20:32 aaron Exp $ */
-/*	$NetBSD: ezload.h,v 1.2 2001/01/18 20:28:23 jdolecek Exp $	*/
-
-/*
  * Copyright (c) 2000 The NetBSD Foundation, Inc.
  * All rights reserved.
  *
  * This code is derived from software contributed to The NetBSD Foundation
- * by  Lennart Augustsson <lennart@augustsson.net>.
+ * by Silicon Portals.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -35,17 +31,4 @@
  * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
- */
 
-struct ezdata {
-	u_int8_t	length;
-	u_int16_t	address;
-	u_int8_t	*data;
-};
-
-#ifdef _KERNEL
-usbd_status ezload_reset(usbd_device_handle, int);
-usbd_status ezload_download(usbd_device_handle, const char *name,
-	const u_char *buf, size_t buflen);
-usbd_status ezload_downloads_and_reset(usbd_device_handle, char **);
-#endif
