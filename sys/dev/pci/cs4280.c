@@ -1,4 +1,4 @@
-/*	$OpenBSD: cs4280.c,v 1.18 2003/08/21 04:52:51 kevlo Exp $	*/
+/*	$OpenBSD: cs4280.c,v 1.19 2003/08/21 04:57:40 mickey Exp $	*/
 /*	$NetBSD: cs4280.c,v 1.5 2000/06/26 04:56:23 simonb Exp $	*/
 
 /*
@@ -292,7 +292,6 @@ struct audio_device cs4280_device = {
 const struct pci_matchid cs4280_devices[] = {
 	{ PCI_VENDOR_CIRRUS, PCI_PRODUCT_CIRRUS_CS4280 },
 	{ PCI_VENDOR_CIRRUS, PCI_PRODUCT_CIRRUS_CS4610 },
-	{ PCI_VENDOR_CIRRUS, PCI_PRODUCT_CIRRUS_CS4614 },
 	{ PCI_VENDOR_CIRRUS, PCI_PRODUCT_CIRRUS_CS4615 },
 };
 
