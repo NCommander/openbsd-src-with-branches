@@ -373,9 +373,16 @@ next:	tmp = p;
 		 * the root of the tree), and load the paths for the next root.
 		 */
 		if (p->fts_level == FTS_ROOTLEVEL) {
-			if (FCHDIR(sp, sp->fts_rfd)) {
-				SET(FTS_STOP);
-				return (NULL);
+			if ((sp->fts_options & FTS_CHDIRROOT)) {
+				if (chdir(p->fts_accpath)) {
+					SET(FTS_STOP);
+					return (NULL);
+				}
+			} else {
+				if (FCHDIR(sp, sp->fts_rfd)) {
+					SET(FTS_STOP);
+					return (NULL);
+				}
 			}
 			fts_load(sp, p);
 			return (sp->fts_cur = p);
@@ -430,9 +437,16 @@ name:		t = sp->fts_path + NAPPEND(p->fts_parent);
 	 * one directory.
 	 */
 	if (p->fts_level == FTS_ROOTLEVEL) {
-		if (FCHDIR(sp, sp->fts_rfd)) {
-			SET(FTS_STOP);
-			return (NULL);
+		if ((sp->fts_options & FTS_CHDIRROOT)) {
+			if (chdir(p->fts_accpath)) {
+				SET(FTS_STOP);
+				return (NULL);
+			}
+		} else {
+			if (FCHDIR(sp, sp->fts_rfd)) {
+				SET(FTS_STOP);
+				return (NULL);
+			}
 		}
 	} else if (p->fts_flags & FTS_SYMFOLLOW) {
 		if (FCHDIR(sp, p->fts_symfd)) {
