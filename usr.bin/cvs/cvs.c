@@ -1,4 +1,4 @@
-/*	$OpenBSD: cvs.c,v 1.22 2004/12/14 19:11:54 jfb Exp $	*/
+/*	$OpenBSD: cvs.c,v 1.23 2004/12/14 19:56:35 xsa Exp $	*/
 /*
  * Copyright (c) 2004 Jean-Francois Brousseau <jfb@openbsd.org>
  * All rights reserved.
@@ -473,6 +473,7 @@ cvs_getopt(int argc, char **argv)
 			cvs_readonly = 1;
 			break;
 		case 't':
+			(void)cvs_log_filter(LP_FILTER_UNSET, LP_TRACE);
 			cvs_trace = 1;
 			break;
 		case 'v':
