@@ -1,4 +1,4 @@
-/*	$OpenBSD: resolv.h,v 1.4 2002/02/16 21:28:05 millert Exp $	*/
+/*	$OpenBSD: resolv.h,v 1.5 2002/02/17 19:42:37 millert Exp $	*/
 
 /*
  * ++Copyright++ 1983, 1987, 1989, 1993
@@ -105,7 +105,7 @@
 #define	RES_MAXNDOTS		15	/* should reflect bit field size */
 
 struct __res_state {
-	int	retrans;	 	/* retransmition time interval */
+	int	retrans;	 	/* retransmission time interval */
 	int	retry;			/* number of times to retransmit */
 	u_long	options;		/* option flags - see below. */
 	int	nscount;		/* number of name servers */

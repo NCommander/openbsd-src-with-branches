@@ -1,4 +1,4 @@
-/*	$OpenBSD: ultrix_fs.c,v 1.7 2002/03/14 03:16:03 millert Exp $	*/
+/*	$OpenBSD: ultrix_fs.c,v 1.8 2002/04/23 18:54:12 espie Exp $	*/
 /*	$NetBSD: ultrix_fs.c,v 1.4 1996/04/07 17:23:06 jonathan Exp $	*/
 
 /*
@@ -59,7 +59,7 @@
 /*
  * Ultrix file system data structure, as modified by
  * Ultrix getmntent(). This  structure is padded to 2560 bytes, for
- * compatiblity with the size the Ultrix kernel and user apps expect.
+ * compatibility with the size the Ultrix kernel and user apps expect.
  */
 struct ultrix_fs_data {
 	u_int32_t	ufsd_flags;	/* how mounted */

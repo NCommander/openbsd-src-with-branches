@@ -1,4 +1,4 @@
-/*	$OpenBSD: ssh.h,v 1.68 2002/05/08 21:06:34 deraadt Exp $	*/
+/*	$OpenBSD: ssh.h,v 1.69 2002/05/11 20:24:48 stevesk Exp $	*/
 
 /*
  * Author: Tatu Ylonen <ylo@cs.hut.fi>
@@ -31,7 +31,7 @@
 #define SSH_MAX_IDENTITY_FILES		100
 
 /*
- * Major protocol version.  Different version indicates major incompatiblity
+ * Major protocol version.  Different version indicates major incompatibility
  * that prevents communication.
  *
  * Minor protocol version.  Different version indicates minor incompatibility

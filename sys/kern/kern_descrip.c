@@ -1,4 +1,4 @@
-/*	$OpenBSD: kern_descrip.c,v 1.56 2002/03/14 01:27:04 millert Exp $	*/
+/*	$OpenBSD: kern_descrip.c,v 1.57 2002/05/23 14:25:20 art Exp $	*/
 /*	$NetBSD: kern_descrip.c,v 1.42 1996/03/30 22:24:38 christos Exp $	*/
 
 /*
@@ -796,7 +796,7 @@ fdexpand(p)
 
 /*
  * Create a new open file structure and allocate
- * a file decriptor for the process that refers to it.
+ * a file descriptor for the process that refers to it.
  */
 int
 falloc(p, resultfp, resultfd)
