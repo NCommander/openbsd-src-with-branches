@@ -1,4 +1,4 @@
-/*	$OpenBSD: advcap.c,v 1.7 2002/05/29 14:34:05 itojun Exp $	*/
+/*	$OpenBSD: advcap.c,v 1.8 2002/06/10 19:57:35 espie Exp $	*/
 /*	$KAME: advcap.c,v 1.9 2002/05/29 14:28:35 itojun Exp $	*/
 
 /*
@@ -224,7 +224,7 @@ tnchktc()
 		write(2, "Remcap entry too long\n", 23);
 		q[BUFSIZ - (p-holdtbuf)] = 0;
 	}
-	strcpy(p, q);
+	strlcpy(p, q, holdtbuf + BUFSIZ - p);
 	tbuf = holdtbuf;
 	return (1);
 }
