@@ -1,4 +1,4 @@
-/*	$OpenBSD: lstDestroy.c,v 1.4 1998/12/05 00:06:31 espie Exp $	*/
+/*	$OpenBSD: lstDestroy.c,v 1.5 1999/12/18 21:53:33 espie Exp $	*/
 /*	$NetBSD: lstDestroy.c,v 1.6 1996/11/06 17:59:37 christos Exp $	*/
 
 /*
@@ -41,7 +41,7 @@
 #if 0
 static char sccsid[] = "@(#)lstDestroy.c	8.1 (Berkeley) 6/6/93";
 #else
-static char rcsid[] = "$OpenBSD: lstDestroy.c,v 1.4 1998/12/05 00:06:31 espie Exp $";
+static char rcsid[] = "$OpenBSD: lstDestroy.c,v 1.5 1999/12/18 21:53:33 espie Exp $";
 #endif
 #endif /* not lint */
 
@@ -68,9 +68,9 @@ static char rcsid[] = "$OpenBSD: lstDestroy.c,v 1.4 1998/12/05 00:06:31 espie Ex
  *-----------------------------------------------------------------------
  */
 void
-Lst_Destroy (l, freeProc)
+Lst_Destroy(l, freeProc)
     Lst	    	  	l;
-    register void	(*freeProc) __P((ClientData));
+    SimpleProc		freeProc;
 {
     register ListNode	ln;
     register ListNode	tln = NULL;
