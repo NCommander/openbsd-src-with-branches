@@ -1,4 +1,4 @@
-/*	$OpenBSD: eventtest.c,v 1.3 2004/01/05 19:23:04 markus Exp $	*/
+/*	$OpenBSD: eventtest.c,v 1.4 2004/11/25 16:48:47 brad Exp $	*/
 /*	$NetBSD: eventtest.c,v 1.3 2004/08/07 21:09:47 provos Exp $	*/
 
 /*
@@ -42,6 +42,7 @@
 #include <string.h>
 #include <unistd.h>
 #include <errno.h>
+#include <err.h>
 
 #include <event.h>
 

@@ -1,4 +1,4 @@
-/*	$OpenBSD: extern.h,v 1.13 2003/12/10 22:57:12 deraadt Exp $	*/
+/*	$OpenBSD: extern.h,v 1.14 2004/11/28 18:49:29 henning Exp $	*/
 /*	$NetBSD: extern.h,v 1.2 1995/04/11 02:44:49 cgd Exp $	*/
 
 /*
@@ -90,6 +90,7 @@ void	removedir(char *);
 void	renamecmd(char *, char *);
 char   *renamefrom(char *);
 void	reply(int, const char *, ...);
+void	reply_r(int, const char *, ...);
 void	retrieve(char *, char *);
 void	send_file_list(char *);
 void	setproctitle(const char *, ...);
