@@ -1,4 +1,4 @@
-/*	$OpenBSD: copyinstr.c,v 1.2 1996/12/28 06:21:43 rahnds Exp $	*/
+/*	$OpenBSD: copyinstr.c,v 1.3 1997/10/13 13:42:55 pefo Exp $	*/
 
 /*-
  * Copyright (C) 1995 Wolfgang Solfrank.
@@ -50,7 +50,7 @@ copyinstr(udaddr, kaddr, len, done)
 	for (l = 0; len-- > 0; l++) {
 		if ((c = fubyte(udaddr++)) < 0) {
 			*done = l;
-			return EACCES;
+			return EFAULT;
 		}
 		if (!(*kp++ = c)) {
 			*done = l + 1;
