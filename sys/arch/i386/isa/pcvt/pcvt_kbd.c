@@ -1,4 +1,4 @@
-/*	$OpenBSD: pcvt_kbd.c,v 1.31 1999/11/27 21:39:29 aaron Exp $	*/
+/*	$OpenBSD$	*/
 
 /*
  * Copyright (c) 1992, 1995 Hellmuth Michaelis and Joerg Wunsch.
@@ -1106,7 +1106,7 @@ regular:
 
 	if ((key == 85) && shift_down &&
 	    (kbd_lastkey != 85 || !kbd_status.breakseen)) {
-		if (vsp->scr_offset > vsp->row) {
+		if (vsp->scr_offset && vsp->scr_offset >= vsp->row) {
 			if (!vsp->scrolling) {
 				vsp->scrolling += vsp->row - 1;
 				if (vsp->Scrollback) {

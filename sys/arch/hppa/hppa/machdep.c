@@ -1,4 +1,4 @@
-/*	$OpenBSD: machdep.c,v 1.20 2000/01/25 22:11:39 mickey Exp $	*/
+/*	$OpenBSD$	*/
 
 /*
  * Copyright (c) 1999-2000 Michael Shalayeff
@@ -338,8 +338,7 @@ hppa_init(start)
 	physmem = totalphysmem - btoc(vstart);
 
 	/* alloc msgbuf */
-	if (!(msgbufp = (void *)pmap_steal_memory(sizeof(struct msgbuf),
-	    NULL, NULL)))
+	if (!(msgbufp = (void *)pmap_steal_memory(MSGBUFSIZE, NULL, NULL)))
 		panic("cannot allocate msgbuf");
 	msgbufmapped = 1;
 

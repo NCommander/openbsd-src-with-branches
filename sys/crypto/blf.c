@@ -1,4 +1,4 @@
-/* $OpenBSD: ip_blf.c,v 1.5 1999/02/23 05:14:46 angelos Exp $ */
+/* $OpenBSD$ */
 /*
  * Blowfish block cipher for OpenBSD
  * Copyright 1997 Niels Provos <provos@physnet.uni-hamburg.de>
@@ -42,7 +42,7 @@
 #include <sys/param.h>
 #include <sys/systm.h>
 
-#include <netinet/ip_blf.h>
+#include <crypto/blf.h>
 
 #undef inline
 #ifdef __GNUC__

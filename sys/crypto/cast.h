@@ -1,4 +1,4 @@
-/*      $OpenBSD: ip_cast.h,v 1.2 1998/11/24 10:04:06 niklas Exp $       */
+/*      $OpenBSD$       */
 
 /*
  *	CAST-128 in C

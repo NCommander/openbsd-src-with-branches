@@ -36,14 +36,16 @@
  *	@(#)msgbuf.h	8.1 (Berkeley) 6/2/93
  */
 
-#define	MSG_BSIZE	(4096 - 3 * sizeof(long))
 struct	msgbuf {
 #define	MSG_MAGIC	0x063061
 	long	msg_magic;
 	long	msg_bufx;		/* write pointer */
 	long	msg_bufr;		/* read pointer */
-	char	msg_bufc[MSG_BSIZE];	/* buffer */
+	long	msg_bufs;		/* real msg_bufc size (bytes) */
+	char	msg_bufc[1];		/* buffer */
 };
 #ifdef _KERNEL
 struct	msgbuf *msgbufp;
+
+void	initmsgbuf __P((caddr_t buf, size_t bufsize));
 #endif

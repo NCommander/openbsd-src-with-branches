@@ -1,4 +1,4 @@
-/*	$OpenBSD: ansi.h,v 1.5 1997/07/07 05:56:41 millert Exp $	*/
+/*	$OpenBSD$	*/
 /*	$NetBSD: ansi.h,v 1.2 1996/11/15 22:38:57 jtc Exp $	*/
 
 /*-
@@ -74,5 +74,11 @@ struct __va_list_tag;
  */
 #define	_BSD_WCHAR_T_	int			/* wchar_t */
 #define	_BSD_RUNE_T_	int			/* rune_t */
+
+/*
+ * We describe off_t here so its declaration can be visible to
+ * stdio without pulling in all of <sys/type.h>, thus appeasing ANSI.
+ */
+#define _BSD_OFF_T_	long long		/* file offset */
 
 #endif	/* _ANSI_H_ */

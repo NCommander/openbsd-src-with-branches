@@ -1,4 +1,4 @@
-/*	$OpenBSD: ip_rmd160.h,v 1.2 1998/03/23 15:17:48 janjaap Exp $	*/
+/*	$OpenBSD$	*/
 
 /*
  *      FILE:     rmd160.h

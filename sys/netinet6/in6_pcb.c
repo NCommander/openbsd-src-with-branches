@@ -1,4 +1,4 @@
-/* $OpenBSD: in6_pcb.c,v 1.8 1999/12/10 08:53:17 angelos Exp $ */
+/*	$OpenBSD$	*/
 
 /*
 %%% copyright-nrl-95

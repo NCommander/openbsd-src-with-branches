@@ -1,4 +1,4 @@
-/*	$OpenBSD: set_key.c,v 1.3 1997/02/24 14:06:53 niklas Exp $	*/
+/*	$OpenBSD$	*/
 
 /* lib/des/set_key.c */
 /* Copyright (C) 1995 Eric Young (eay@mincom.oz.au)

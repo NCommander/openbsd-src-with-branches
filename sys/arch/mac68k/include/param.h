@@ -1,4 +1,4 @@
-/*	$OpenBSD: param.h,v 1.8 1998/05/03 07:10:47 gene Exp $	*/
+/*	$OpenBSD$	*/
 /*	$NetBSD: param.h,v 1.28 1997/03/01 06:57:45 scottr Exp $	*/
 
 /*
@@ -109,6 +109,8 @@
 #ifndef NKMEMCLUSTERS
 #define	NKMEMCLUSTERS	(2048 * 1024 / CLBYTES)
 #endif
+
+#define MSGBUFSIZE	4096
 
 #if defined(_KERNEL) && !defined(_LOCORE)
 void	delay		__P((unsigned));

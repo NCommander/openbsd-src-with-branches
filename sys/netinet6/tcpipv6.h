@@ -1,4 +1,4 @@
-/* $OpenBSD: tcpipv6.h,v 1.4 1999/12/10 08:53:18 angelos Exp $ */
+/*	$OpenBSD$	*/
 
 /*
 %%% copyright-nrl-95
