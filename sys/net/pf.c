@@ -1,4 +1,4 @@
-/*	$OpenBSD: pf.c,v 1.415 2003/12/31 22:14:42 deraadt Exp $ */
+/*	$OpenBSD: pf.c,v 1.416 2004/01/04 12:56:33 cedric Exp $ */
 
 /*
  * Copyright (c) 2001 Daniel Hartmeier
@@ -1454,7 +1454,7 @@ pf_send_icmp(struct mbuf *m, u_int8_t type, u_int8_t code, sa_family_t af,
 	switch (af) {
 #ifdef INET
 	case AF_INET:
-		icmp_error(m0, type, code, 0, 0);
+		icmp_error(m0, type, code, 0, (void *)NULL);
 		break;
 #endif /* INET */
 #ifdef INET6
