@@ -1,4 +1,4 @@
-/*	$OpenBSD: nlist.c,v 1.24 2002/02/20 23:07:49 pefo Exp $	*/
+/*	$OpenBSD: nlist.c,v 1.25 2002/03/14 16:44:25 mpech Exp $	*/
 
 /*-
  * Copyright (c) 1990, 1993
@@ -37,7 +37,7 @@
 #if 0
 static char sccsid[] = "from: @(#)nlist.c	8.1 (Berkeley) 6/6/93";
 #else
-static char *rcsid = "$OpenBSD: nlist.c,v 1.24 2002/02/20 23:07:49 pefo Exp $";
+static char *rcsid = "$OpenBSD: nlist.c,v 1.25 2002/03/14 16:44:25 mpech Exp $";
 #endif
 #endif /* not lint */
 
@@ -480,7 +480,7 @@ __elf_knlist(fd, db, ksyms)
 				 * don't have real text or data.
 				 */
 				int mib[2];
-				int len;
+				size_t len;
 				char *p;
 
 				mib[0] = CTL_KERN;

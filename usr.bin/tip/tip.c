@@ -1,4 +1,4 @@
-/*	$OpenBSD: tip.c,v 1.15 2001/10/24 18:38:58 millert Exp $	*/
+/*	$OpenBSD: tip.c,v 1.16 2002/02/25 00:20:19 deraadt Exp $	*/
 /*	$NetBSD: tip.c,v 1.13 1997/04/20 00:03:05 mellon Exp $	*/
 
 /*
@@ -44,7 +44,7 @@ static char copyright[] =
 #if 0
 static char sccsid[] = "@(#)tip.c	8.1 (Berkeley) 6/6/93";
 #endif
-static char rcsid[] = "$OpenBSD: tip.c,v 1.15 2001/10/24 18:38:58 millert Exp $";
+static char rcsid[] = "$OpenBSD: tip.c,v 1.16 2002/02/25 00:20:19 deraadt Exp $";
 #endif /* not lint */
 
 /*
@@ -372,6 +372,7 @@ tipin()
 {
 	char bol = 1;
 	int gch;
+	char ch;
 
 	/*
 	 * Kinda klugey here...
@@ -398,7 +399,8 @@ tipin()
 			continue;
 		} else if (gch == '\r') {
 			bol = 1;
-			parwrite(FD, &gch, 1);
+			ch = gch;
+			parwrite(FD, &ch, 1);
 			if (boolean(value(HALFDUPLEX)))
 				printf("\r\n");
 			continue;
@@ -407,9 +409,10 @@ tipin()
 		bol = any(gch, value(EOL));
 		if (boolean(value(RAISE)) && islower(gch))
 			gch = toupper(gch);
-		parwrite(FD, &gch, 1);
+		ch = gch;
+		parwrite(FD, &ch, 1);
 		if (boolean(value(HALFDUPLEX)))
-			printf("%c", gch);
+			printf("%c", ch);
 	}
 }
 
