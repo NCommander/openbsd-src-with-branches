@@ -5,7 +5,7 @@
 
 #if defined(LIBC_SCCS) && !defined(lint) && !defined(NOID)
 static char elsieid[] = "@(#)zic.c	7.107";
-static char rcsid[] = "$OpenBSD: zic.c,v 1.17 2003/02/14 18:24:53 millert Exp $";
+static char rcsid[] = "$OpenBSD: zic.c,v 1.18 2003/04/05 00:48:02 tdeval Exp $";
 #endif /* LIBC_SCCS and not lint */
 
 #include "private.h"
@@ -1553,7 +1553,7 @@ const char * const	name;
 }
 
 static void
-doabbr(abbr, size_t, format, letters, isdst)
+doabbr(abbr, size, format, letters, isdst)
 char * const		abbr;
 size_t			size;
 const char * const	format;
