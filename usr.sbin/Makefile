@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.65 2000/06/09 16:28:26 mickey Exp $
+#	$OpenBSD: Makefile,v 1.66 2000/06/18 07:45:11 jason Exp $
 
 # not yet done: catman
 
@@ -23,6 +23,7 @@ SUBDIR+=faithd ifmcstat ndp rip6query route6d rtadvd rtsold traceroute6
 SUBDIR+=iteconfig grfconfig videomode
 SUBDIR+=bad144 apm apmd fdformat memconfig
 SUBDIR+=eeprom screenblank grfinfo hilinfo
+SUBDIR+=wsconscfg wsfontload
 
 .if (${AFS} == "yes")
 SUBDIR+=afs
