@@ -1,4 +1,4 @@
-/*	$OpenBSD: comp_expand.c,v 1.1 1998/07/23 21:17:25 millert Exp $	*/
+/*	$OpenBSD: comp_expand.c,v 1.2 1998/08/14 21:11:38 millert Exp $	*/
 
 /****************************************************************************
  * Copyright (c) 1998 Free Software Foundation, Inc.                        *
@@ -63,17 +63,16 @@ bool		islong = (strlen(str) > 3);
 size_t		need = (2 + strlen(str)) * 4;
 int		ch;
 
-	if (buffer == 0) {
-		nbuffer = malloc(length = need);
-	} else if (need > length) {
-		nbuffer = realloc(buffer, length = need);
+	if (buffer == 0 || need > length) {
+		length = need;
+		nbuffer = buffer ? realloc(buffer, length) : malloc(length);
+		if (nbuffer == 0) {
+			if (buffer != 0)
+				free(buffer);
+			return(NULL);
+		}
+		buffer = nbuffer;
 	}
-	if (nbuffer == 0) {
-		if (buffer != 0)
-			free(buffer);
-		return(NULL);
-	}
-	buffer = nbuffer;
 
 	bufp = 0;
 	ptr = str;

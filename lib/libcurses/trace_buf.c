@@ -1,4 +1,4 @@
-/*	$OpenBSD: trace_buf.c,v 1.2 1998/07/23 21:20:06 millert Exp $	*/
+/*	$OpenBSD: trace_buf.c,v 1.3 1998/08/14 21:11:44 millert Exp $	*/
 
 /****************************************************************************
  * Copyright (c) 1998 Free Software Foundation, Inc.                        *
@@ -79,7 +79,7 @@ char * _nc_trace_buf(int bufnum, size_t want)
 	}
 	else if (want > list[bufnum].size)
 	{
-		char *p = realloc(list[bufnum].text, want);
+		void *p = realloc(list[bufnum].text, want);
 
 		if (p != 0) {
 			list[bufnum].text = p;
