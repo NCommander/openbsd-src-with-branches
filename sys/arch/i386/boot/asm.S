@@ -1,4 +1,4 @@
-/*	$OpenBSD: asm.S,v 1.2.2.2 1996/09/26 12:11:29 mickey Exp $	*/
+/*	$OpenBSD: asm.S,v 1.2.2.3 1996/09/26 12:15:45 mickey Exp $	*/
 /*	$NetBSD: asm.S,v 1.12 1995/03/12 00:10:53 mycroft Exp $	*/
 
 /*
@@ -175,8 +175,8 @@ ENTRY(prot_to_real)
 	movw    %ax, xreal-2
 
 	# Change to use16 mode.
-	ljmp	$0x28, $x16
-x16:
+	ljmp	$0x28, $1f
+1:
 	# clear the PE bit of CR0
 	movl	%cr0, %eax
 	data32

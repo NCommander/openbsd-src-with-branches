@@ -1,4 +1,4 @@
-/*	$OpenBSD: start.S,v 1.4.2.2 1996/09/24 09:35:51 mickey Exp $	*/
+/*	$OpenBSD: start.S,v 1.4.2.3 1996/09/26 12:11:40 mickey Exp $	*/
 /*	$NetBSD: start.S,v 1.12 1995/01/18 17:34:18 mycroft Exp $	*/
 
 /*
@@ -389,7 +389,11 @@ stop:
 #ifndef	DOSREAD
 eread:	.asciz		"Read error\r\n"
 enoboot: .asciz		"No partition to boot\r\n"
+prompt:	.asciz		"OpenBSD?"
+
 endofcode:
+	nop
+
 /* throw in a partition in case we are block0 as well */
 /* flag, head, sec, cyl, typ, ehead, esect, ecyl, start, len */
 	. = _C_LABEL(boot1) + 0x1be	# starting address of partition table
