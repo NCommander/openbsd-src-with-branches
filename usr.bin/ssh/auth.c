@@ -23,7 +23,7 @@
  */
 
 #include "includes.h"
-RCSID("$OpenBSD: auth.c,v 1.53 2004/05/11 19:01:43 deraadt Exp $");
+RCSID("$OpenBSD: auth.c,v 1.54 2004/05/23 23:59:53 dtucker Exp $");
 
 #include <libgen.h>
 
@@ -397,7 +397,7 @@ getpwnamallow(const char *user)
 
 	pw = getpwnam(user);
 	if (pw == NULL) {
-		logit("Illegal user %.100s from %.100s",
+		logit("Invalid user %.100s from %.100s",
 		    user, get_remote_ipaddr());
 		return (NULL);
 	}
