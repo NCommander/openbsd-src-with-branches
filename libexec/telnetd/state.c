@@ -1,4 +1,4 @@
-/*	$OpenBSD: state.c,v 1.8 1998/07/10 08:06:21 deraadt Exp $	*/
+/*	$OpenBSD: state.c,v 1.9 1998/08/21 17:12:22 art Exp $	*/
 /*	$NetBSD: state.c,v 1.9 1996/02/28 20:38:19 thorpej Exp $	*/
 
 /*
@@ -39,7 +39,7 @@
 static char sccsid[] = "@(#)state.c	8.5 (Berkeley) 5/30/95";
 static char rcsid[] = "$NetBSD: state.c,v 1.9 1996/02/28 20:38:19 thorpej Exp $";
 #else
-static char rcsid[] = "$OpenBSD: state.c,v 1.8 1998/07/10 08:06:21 deraadt Exp $";
+static char rcsid[] = "$OpenBSD: state.c,v 1.9 1998/08/21 17:12:22 art Exp $";
 #endif
 #endif /* not lint */
 
@@ -1287,6 +1287,7 @@ suboption()
 		return;
 	settimer(xdisplocsubopt);
 	subpointer[SB_LEN()] = '\0';
+	/* XXX allocation failure? */
 	(void)setenv("DISPLAY", (char *)subpointer, 1);
 	break;
     }  /* end of case TELOPT_XDISPLOC */
@@ -1455,6 +1456,7 @@ suboption()
 			*cp = '\0';
 			if (envvarok(varp)) {
 				if (valp)
+					/* XXX allocation failure? */
 					(void)setenv(varp, valp, 1);
 				else
 					unsetenv(varp);
@@ -1476,6 +1478,7 @@ suboption()
 	*cp = '\0';
 	if (envvarok(varp)) {
 		if (valp)
+			/* XXX allocation failure? */
 			(void)setenv(varp, valp, 1);
 		else
 			unsetenv(varp);

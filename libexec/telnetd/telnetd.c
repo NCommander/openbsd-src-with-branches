@@ -1,4 +1,4 @@
-/*	$OpenBSD: telnetd.c,v 1.21 1999/12/20 15:51:52 itojun Exp $	*/
+/*	$OpenBSD: telnetd.c,v 1.22 2000/08/18 03:26:10 itojun Exp $	*/
 /*	$NetBSD: telnetd.c,v 1.6 1996/03/20 04:25:57 tls Exp $	*/
 
 /*
@@ -45,7 +45,7 @@ static char copyright[] =
 static char sccsid[] = "@(#)telnetd.c	8.4 (Berkeley) 5/30/95";
 static char rcsid[] = "$NetBSD: telnetd.c,v 1.5 1996/02/28 20:38:23 thorpej Exp $";
 #else
-static char rcsid[] = "$OpenBSD: telnetd.c,v 1.21 1999/12/20 15:51:52 itojun Exp $";
+static char rcsid[] = "$OpenBSD: telnetd.c,v 1.22 2000/08/18 03:26:10 itojun Exp $";
 #endif
 #endif /* not lint */
 
@@ -907,7 +907,7 @@ doit(who)
 	 */
 	*user_name = 0;
 	level = getterminaltype(user_name);
-	setenv("TERM", terminaltype ? terminaltype : "network", 1);
+	setenv("TERM", terminaltype ? terminaltype : "network", 1);	/* XXX mem */
 
 	/*
 	 * Start up the login process on the slave side of the terminal

@@ -1,4 +1,4 @@
-/*	$OpenBSD: ssh-agent.c,v 1.34 2000/08/31 22:09:34 markus Exp $	*/
+/*	$OpenBSD: ssh-agent.c,v 1.35 2000/09/07 20:27:54 deraadt Exp $	*/
 
 /*
  * Author: Tatu Ylonen <ylo@cs.hut.fi>
@@ -37,7 +37,7 @@
  */
 
 #include "includes.h"
-RCSID("$OpenBSD: ssh-agent.c,v 1.34 2000/08/31 22:09:34 markus Exp $");
+RCSID("$OpenBSD: ssh-agent.c,v 1.35 2000/09/07 20:27:54 deraadt Exp $");
 
 #include "ssh.h"
 #include "rsa.h"
@@ -771,8 +771,11 @@ main(int ac, char **av)
 			printf("echo Agent pid %d;\n", pid);
 			exit(0);
 		}
-		setenv(SSH_AUTHSOCKET_ENV_NAME, socket_name, 1);
-		setenv(SSH_AGENTPID_ENV_NAME, pidstrbuf, 1);
+		if (setenv(SSH_AUTHSOCKET_ENV_NAME, socket_name, 1) == -1 ||
+		    setenv(SSH_AGENTPID_ENV_NAME, pidstrbuf, 1) == -1) {
+			perror("setenv");
+			exit(1);
+		}
 		execvp(av[0], av);
 		perror(av[0]);
 		exit(1);
