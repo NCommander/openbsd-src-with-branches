@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_vereg.h,v 1.0 1996/08/20 05:17:09 smurph Exp $ */
+/*	$OpenBSD: if_vereg.h,v 1.1 1999/05/29 04:41:43 smurph Exp $ */
 
 /*-
  * Copyright (c) 1982, 1992, 1993
@@ -148,7 +148,7 @@ struct veinit {
 #define	LE_C0_MERR	0x0800		/* memory error */
 #define	LE_C0_RINT	0x0400		/* receiver interrupt */
 #define	LE_C0_TINT	0x0200		/* transmitter interrupt */
-#define	LE_C0_IDON	0x0100		/* initalization done */
+#define	LE_C0_IDON	0x0100		/* initialization done */
 #define	LE_C0_INTR	0x0080		/* interrupt condition */
 #define	LE_C0_INEA	0x0040		/* interrupt enable */
 #define	LE_C0_RXON	0x0020		/* receiver on */
@@ -156,7 +156,7 @@ struct veinit {
 #define	LE_C0_TDMD	0x0008		/* transmit demand */
 #define	LE_C0_STOP	0x0004		/* disable all external activity */
 #define	LE_C0_STRT	0x0002		/* enable external activity */
-#define	LE_C0_INIT	0x0001		/* begin initalization */
+#define	LE_C0_INIT	0x0001		/* begin initialization */
 
 #define	LE_C0_BITS \
     "\20\20ERR\17BABL\16CERR\15MISS\14MERR\13RINT\
