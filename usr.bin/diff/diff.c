@@ -1,4 +1,4 @@
-/*	$OpenBSD: diff.c,v 1.30 2003/07/21 21:59:58 henning Exp $	*/
+/*	$OpenBSD: diff.c,v 1.31 2003/07/21 22:57:16 millert Exp $	*/
 
 /*
  * Copyright (c) 2003 Todd C. Miller <Todd.Miller@courtesan.com>
@@ -21,7 +21,7 @@
  */
 
 #ifndef lint
-static const char rcsid[] = "$OpenBSD: diff.c,v 1.30 2003/07/21 21:59:58 henning Exp $";
+static const char rcsid[] = "$OpenBSD: diff.c,v 1.31 2003/07/21 22:57:16 millert Exp $";
 #endif /* not lint */
 
 #include <sys/param.h>
@@ -312,7 +312,9 @@ print_status(int val, char *path1, char *path2, char *entry)
 {
 	switch (val) {
 	case D_ONLY:
-		printf("Only in %s: %s\n", path1, entry);
+		/* must strip off the trailing '/' */
+		printf("Only in %.*s: %s\n", (int)(strlen(path1) - 1),
+		    path1, entry);
 		break;
 	case D_COMMON:
 		printf("Common subdirectories: %s%s and %s%s\n",
