@@ -1,5 +1,5 @@
-#!/bin/sh
-#	$OpenBSD$
+#!/bin/perl
+#	$OpenBSD: genasm.pl,v 1.2 2003/07/10 14:42:36 jason Exp $
 #
 # Copyright (c) 2003 Jason L. Wright (jason@thought.net)
 # All rights reserved.
