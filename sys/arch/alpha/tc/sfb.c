@@ -1,4 +1,4 @@
-/*	$OpenBSD: sfb.c,v 1.6 1996/12/08 00:20:56 niklas Exp $	*/
+/*	$OpenBSD: sfb.c,v 1.7 1997/01/24 19:58:17 niklas Exp $	*/
 /*	$NetBSD: sfb.c,v 1.7 1996/12/05 01:39:44 cgd Exp $	*/
 
 /*
@@ -81,6 +81,7 @@ struct wscons_emulfuncs sfb_emulfuncs = {
 	rcons_erasecols,
 	rcons_copyrows,
 	rcons_eraserows,
+	rcons_setattr,
 };
 
 int	sfbioctl __P((void *, u_long, caddr_t, int, struct proc *));

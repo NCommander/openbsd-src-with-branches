@@ -1,4 +1,4 @@
-/*	$OpenBSD: tga.c,v 1.8 1996/12/08 00:20:51 niklas Exp $	*/
+/*	$OpenBSD: tga.c,v 1.9 1997/01/24 19:58:00 niklas Exp $	*/
 /*	$NetBSD: tga.c,v 1.13 1996/12/05 01:39:37 cgd Exp $	*/
 
 /*
@@ -85,6 +85,7 @@ struct wscons_emulfuncs tga_emulfuncs = {
 	rcons_erasecols,
 	rcons_copyrows,
 	rcons_eraserows,
+	rcons_setattr,
 };
 
 int	tgaioctl __P((void *, u_long, caddr_t, int, struct proc *));
