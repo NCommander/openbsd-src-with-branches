@@ -1,4 +1,4 @@
-/*	$OpenBSD: pf_norm.c,v 1.76 2003/12/18 20:13:23 dhartmei Exp $ */
+/*	$OpenBSD: pf_norm.c,v 1.77 2003/12/31 11:18:25 cedric Exp $ */
 
 /*
  * Copyright 2001 Niels Provos <provos@citi.umich.edu>
@@ -1410,7 +1410,7 @@ pf_normalize_tcp_stateful(struct mbuf *m, int off, struct pf_pdesc *pd,
 #endif /* INET */
 #ifdef INET6
 	case AF_INET6: {
-		if (dst->scrub) {
+		if (src->scrub) {
 			struct ip6_hdr *h = mtod(m, struct ip6_hdr *);
 			if (h->ip6_hlim > src->scrub->pfss_ttl)
 				src->scrub->pfss_ttl = h->ip6_hlim;
