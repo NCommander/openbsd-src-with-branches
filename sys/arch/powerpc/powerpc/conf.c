@@ -1,4 +1,4 @@
-/*	$OpenBSD: conf.c,v 1.7 1998/05/29 04:15:38 rahnds Exp $ */
+/*	$OpenBSD: conf.c,v 1.8 1998/07/07 03:02:45 deraadt Exp $ */
 
 /*
  * Copyright (c) 1997 Per Fogelstrom
@@ -243,7 +243,7 @@ chrtoblk(dev)
 {
 	int major;
 	
-	if (major(dev) >= MAXDEV ||
+	if (major(dev) >= nchrdev ||
 	    major(dev) > sizeof(chrtoblktbl)/sizeof(chrtoblktbl[0]))
 		return (NODEV);
 	blkmaj = chrtoblktbl[major(dev)];
