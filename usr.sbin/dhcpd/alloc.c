@@ -1,4 +1,4 @@
-/*	$OpenBSD: alloc.c,v 1.3 2004/05/04 20:28:40 deraadt Exp $	*/
+/*	$OpenBSD: alloc.c,v 1.2 2004/04/14 00:20:25 henning Exp $	*/
 
 /* Memory allocation... */
 
@@ -50,7 +50,7 @@ dmalloc(int size, char *name)
 	void *foo = calloc(size, sizeof(char));
 
 	if (!foo)
-		warning("No memory for %s.", name);
+		warn("No memory for %s.", name);
 	return (foo);
 }
 
@@ -58,7 +58,7 @@ void
 dfree(void *ptr, char *name)
 {
 	if (!ptr) {
-		warning("dfree %s: free on null pointer.", name);
+		warn("dfree %s: free on null pointer.", name);
 		return;
 	}
 	free(ptr);

@@ -1,4 +1,4 @@
-/*	$OpenBSD: session.c,v 1.191 2004/09/16 17:36:29 henning Exp $ */
+/*	$OpenBSD: session.c,v 1.188 2004/08/11 16:48:45 claudio Exp $ */
 
 /*
  * Copyright (c) 2003, 2004 Henning Brauer <henning@openbsd.org>
@@ -92,8 +92,8 @@ volatile sig_atomic_t	 session_quit = 0;
 int			 pending_reconf = 0;
 int			 csock = -1;
 u_int			 peer_cnt;
-struct imsgbuf		*ibuf_rde;
-struct imsgbuf		*ibuf_main;
+struct imsgbuf		 ibuf_rde;
+struct imsgbuf		 ibuf_main;
 
 struct mrt_head		 mrthead;
 
@@ -228,11 +228,8 @@ session_main(struct bgpd_config *config, struct peer *cpeers,
 	close(pipe_m2r[0]);
 	close(pipe_m2r[1]);
 	init_conf(conf);
-	if ((ibuf_rde = malloc(sizeof(struct imsgbuf))) == NULL ||
-	    (ibuf_main = malloc(sizeof(struct imsgbuf))) == NULL)
-		fatal(NULL);
-	imsg_init(ibuf_rde, pipe_s2r[0]);
-	imsg_init(ibuf_main, pipe_m2s[1]);
+	imsg_init(&ibuf_rde, pipe_s2r[0]);
+	imsg_init(&ibuf_main, pipe_m2s[1]);
 	TAILQ_INIT(&ctl_conns);
 	csock = control_listen();
 	LIST_INIT(&mrthead);
@@ -264,12 +261,6 @@ session_main(struct bgpd_config *config, struct peer *cpeers,
 		for (p = peers; p != NULL; p = next) {
 			next = p->next;
 			if (!pending_reconf) {
-				/* cloned peer that idled out? */
-				if (p->state == STATE_IDLE && p->conf.cloned &&
-				    time(NULL) - p->stats.last_updown >=
-				    INTERVAL_HOLD_CLONED)
-					p->conf.reconf_action = RECONF_DELETE;
-
 				/* new peer that needs init? */
 				if (p->state == STATE_NONE)
 					init_peer(p);
@@ -348,13 +339,13 @@ session_main(struct bgpd_config *config, struct peer *cpeers,
 		}
 
 		bzero(pfd, sizeof(struct pollfd) * pfd_elms);
-		pfd[PFD_PIPE_MAIN].fd = ibuf_main->fd;
+		pfd[PFD_PIPE_MAIN].fd = ibuf_main.fd;
 		pfd[PFD_PIPE_MAIN].events = POLLIN;
-		if (ibuf_main->w.queued > 0)
+		if (ibuf_main.w.queued > 0)
 			pfd[PFD_PIPE_MAIN].events |= POLLOUT;
-		pfd[PFD_PIPE_ROUTE].fd = ibuf_rde->fd;
+		pfd[PFD_PIPE_ROUTE].fd = ibuf_rde.fd;
 		pfd[PFD_PIPE_ROUTE].events = POLLIN;
-		if (ibuf_rde->w.queued > 0)
+		if (ibuf_rde.w.queued > 0)
 			pfd[PFD_PIPE_ROUTE].events |= POLLOUT;
 		pfd[PFD_SOCK_CTL].fd = csock;
 		pfd[PFD_SOCK_CTL].events = POLLIN;
@@ -448,22 +439,22 @@ session_main(struct bgpd_config *config, struct peer *cpeers,
 				fatal("poll error");
 
 		if (nfds > 0 && pfd[PFD_PIPE_MAIN].revents & POLLOUT)
-			if (msgbuf_write(&ibuf_main->w) < 0)
+			if (msgbuf_write(&ibuf_main.w) < 0)
 				fatal("pipe write error");
 
 		if (nfds > 0 && pfd[PFD_PIPE_MAIN].revents & POLLIN) {
 			nfds--;
-			session_dispatch_imsg(ibuf_main, PFD_PIPE_MAIN,
+			session_dispatch_imsg(&ibuf_main, PFD_PIPE_MAIN,
 			    &listener_cnt);
 		}
 
 		if (nfds > 0 && pfd[PFD_PIPE_ROUTE].revents & POLLOUT)
-			if (msgbuf_write(&ibuf_rde->w) < 0)
+			if (msgbuf_write(&ibuf_rde.w) < 0)
 				fatal("pipe write error");
 
 		if (nfds > 0 && pfd[PFD_PIPE_ROUTE].revents & POLLIN) {
 			nfds--;
-			session_dispatch_imsg(ibuf_rde, PFD_PIPE_ROUTE,
+			session_dispatch_imsg(&ibuf_rde, PFD_PIPE_ROUTE,
 			    &listener_cnt);
 		}
 
@@ -515,12 +506,10 @@ session_main(struct bgpd_config *config, struct peer *cpeers,
 	free(mrt_l);
 	free(pfd);
 
-	msgbuf_write(&ibuf_rde->w);
-	msgbuf_clear(&ibuf_rde->w);
-	free(ibuf_rde);
-	msgbuf_write(&ibuf_main->w);
-	msgbuf_clear(&ibuf_main->w);
-	free(ibuf_main);
+	msgbuf_write(&ibuf_rde.w);
+	msgbuf_clear(&ibuf_rde.w);
+	msgbuf_write(&ibuf_main.w);
+	msgbuf_clear(&ibuf_main.w);
 
 	control_shutdown();
 	log_info("session engine exiting");
@@ -844,12 +833,14 @@ change_state(struct peer *peer, enum session_state state,
 		peer->rbuf = NULL;
 		if (peer->state == STATE_ESTABLISHED)
 			session_down(peer);
-		if (event != EVNT_STOP) {
+		if (event != EVNT_STOP && !peer->conf.cloned) {
 			peer->IdleHoldTimer = time(NULL) + peer->IdleHoldTime;
 			if (event != EVNT_NONE &&
 			    peer->IdleHoldTime < MAX_IDLE_HOLD/2)
 				peer->IdleHoldTime *= 2;
 		}
+		if (peer->state != STATE_NONE && peer->conf.cloned)
+			peer->conf.reconf_action = RECONF_DELETE;
 		break;
 	case STATE_CONNECT:
 		break;
@@ -1811,7 +1802,7 @@ parse_update(struct peer *peer)
 	p += MSGSIZE_HEADER;	/* header is already checked */
 	datalen -= MSGSIZE_HEADER;
 
-	if (imsg_compose(ibuf_rde, IMSG_UPDATE, peer->conf.id, 0, -1, p,
+	if (imsg_compose(&ibuf_rde, IMSG_UPDATE, peer->conf.id, p,
 	    datalen) == -1)
 		return (-1);
 
@@ -1838,7 +1829,7 @@ parse_refresh(struct peer *peer)
 
 	/* afi/safi unchecked -	unrecognized values will be ignored anyway */
 
-	if (imsg_compose(ibuf_rde, IMSG_REFRESH, peer->conf.id, 0, -1, &r,
+	if (imsg_compose(&ibuf_rde, IMSG_REFRESH, peer->conf.id, &r,
 	    sizeof(r)) == -1)
 		return (-1);
 
@@ -2446,7 +2437,7 @@ void
 session_down(struct peer *peer)
 {
 	peer->stats.last_updown = time(NULL);
-	if (imsg_compose(ibuf_rde, IMSG_SESSION_DOWN, peer->conf.id, 0, -1,
+	if (imsg_compose(&ibuf_rde, IMSG_SESSION_DOWN, peer->conf.id,
 	    NULL, 0) == -1)
 		fatalx("imsg_compose error");
 }
@@ -2485,7 +2476,7 @@ session_up(struct peer *peer)
 
 	memcpy(&sup.conf, &peer->conf, sizeof(sup.conf));
 	peer->stats.last_updown = time(NULL);
-	if (imsg_compose(ibuf_rde, IMSG_SESSION_UP, peer->conf.id, 0, -1,
+	if (imsg_compose(&ibuf_rde, IMSG_SESSION_UP, peer->conf.id,
 	    &sup, sizeof(sup)) == -1)
 		fatalx("imsg_compose error");
 }
@@ -2493,13 +2484,13 @@ session_up(struct peer *peer)
 int
 imsg_compose_parent(int type, pid_t pid, void *data, u_int16_t datalen)
 {
-	return (imsg_compose(ibuf_main, type, 0, pid, -1, data, datalen));
+	return (imsg_compose_pid(&ibuf_main, type, pid, data, datalen));
 }
 
 int
 imsg_compose_rde(int type, pid_t pid, void *data, u_int16_t datalen)
 {
-	return (imsg_compose(ibuf_rde, type, 0, pid, -1, data, datalen));
+	return (imsg_compose_pid(&ibuf_rde, type, pid, data, datalen));
 }
 
 static struct sockaddr *

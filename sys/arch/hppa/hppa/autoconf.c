@@ -1,4 +1,4 @@
-/*	$OpenBSD: autoconf.c,v 1.40 2004/09/14 23:07:56 mickey Exp $	*/
+/*	$OpenBSD: autoconf.c,v 1.38 2003/12/20 21:49:06 miod Exp $	*/
 
 /*
  * Copyright (c) 1998-2003 Michael Shalayeff
@@ -375,9 +375,9 @@ print_devpath(const char *label, struct pz_device *pz)
 		if (pz->pz_bc[i] >= 0)
 			printf("%d/", pz->pz_bc[i]);
 
-	printf("%d.%x", pz->pz_mod, pz->pz_layers[0]);
+	printf("%d.%d", pz->pz_mod, pz->pz_layers[0]);
 	for (i = 1; i < 6 && pz->pz_layers[i]; i++)
-		printf(".%x", pz->pz_layers[i]);
+		printf(".%d", pz->pz_layers[i]);
 
 	printf(" class=%d flags=%b hpa=%p spa=%p io=%p\n", pz->pz_class,
 	    pz->pz_flags, PZF_BITS, pz->pz_hpa, pz->pz_spa, pz->pz_iodc_io);
@@ -631,11 +631,10 @@ struct pdc_sysmap_addrs pdc_addr PDC_ALIGNMENT;
 struct pdc_iodc_read pdc_iodc_read PDC_ALIGNMENT;
 
 void
-pdc_scanbus(self, ca, maxmod, hpa)
+pdc_scanbus(self, ca, maxmod)
 	struct device *self;
 	struct confargs *ca;
 	int maxmod;
-	hppa_hpa_t hpa;
 {
 	int i;
 
@@ -654,13 +653,8 @@ pdc_scanbus(self, ca, maxmod, hpa)
 		nca.ca_dp.dp_bc[5] = ca->ca_dp.dp_mod;
 		nca.ca_dp.dp_mod = i;
 		nca.ca_hpamask = ca->ca_hpamask;
-		nca.ca_naddrs = 0;
-		nca.ca_hpa = 0;
 
-		if (hpa) {
-			nca.ca_hpa = hpa + IOMOD_HPASIZE * i;
-			nca.ca_dp.dp_mod = i;
-		} else if ((error = pdc_call((iodcio_t)pdc, 0, PDC_MEMMAP,
+		if ((error = pdc_call((iodcio_t)pdc, 0, PDC_MEMMAP,
 		    PDC_MEMMAP_HPA, &pdc_memmap, &nca.ca_dp)) == 0)
 			nca.ca_hpa = pdc_memmap.hpa;
 		else if ((error = pdc_call((iodcio_t)pdc, 0, PDC_SYSMAP,

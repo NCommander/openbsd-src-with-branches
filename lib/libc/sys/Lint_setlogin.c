@@ -1,4 +1,4 @@
-/*	$OpenBSD: Lint_setlogin.c,v 1.1 1998/02/08 22:45:12 tholo Exp $	*/
+/*	$OpenBSD$	*/
 /*	$NetBSD: Lint_setlogin.c,v 1.1 1997/11/06 00:53:08 cgd Exp $	*/
 
 /*
@@ -10,7 +10,8 @@
 
 /*ARGSUSED*/
 int
-setlogin(const char *name)
+setlogin(name)
+	const char *name;
 {
 	return (0);
 }

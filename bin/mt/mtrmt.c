@@ -1,4 +1,4 @@
-/*	$OpenBSD: mtrmt.c,v 1.14 2003/06/11 23:42:12 deraadt Exp $	*/
+/*	$OpenBSD: mtrmt.c,v 1.13 2003/06/02 23:32:08 millert Exp $	*/
 /*	$NetBSD: mtrmt.c,v 1.2 1996/03/06 06:22:07 scottr Exp $	*/
 
 /*-
@@ -101,9 +101,8 @@ rmthost(char *host)
 	return (1);
 }
 
-/* ARGSUSED */
 static void
-sigrmtconnaborted(int signo)
+sigrmtconnaborted(int sig)
 {
 
 	warnx("Lost connection to remote host.");

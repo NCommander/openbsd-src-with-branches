@@ -1,4 +1,4 @@
-/*	$OpenBSD: trap.c,v 1.7 2004/09/16 09:58:56 miod Exp $	*/
+/*	$OpenBSD: trap.c,v 1.4 2004/08/10 20:28:13 deraadt Exp $	*/
 /* tracked to 1.23 */
 
 /*
@@ -107,7 +107,7 @@ char	*trap_type[] = {
 	"coprocessor unusable",
 	"arithmetic overflow",
 	"trap",
-	"virtual coherency instruction",
+	"viritual coherency instruction",
 	"floating point",
 	"reserved 16",
 	"reserved 17",
@@ -124,7 +124,7 @@ char	*trap_type[] = {
 	"reserved 28",
 	"reserved 29",
 	"reserved 30",
-	"virtual coherency data",
+	"viritual coherency data",
 };
 
 #if defined(DDB) || defined(DEBUG)
@@ -195,11 +195,10 @@ trap(trapframe)
 	switch (type) {
 	case T_TLB_MOD:
 		/* check for kernel address */
-		if (trapframe->badvaddr < 0) {
+		if ((int)trapframe->badvaddr < 0) {
 			pt_entry_t *pte;
 			unsigned int entry;
-			paddr_t pa;
-			vm_page_t pg;
+			vaddr_t pa;
 
 			pte = kvtopte(trapframe->badvaddr);
 			entry = pte->pt_entry;
@@ -207,8 +206,7 @@ trap(trapframe)
 			if (!(entry & PG_V) || (entry & PG_M))
 				panic("trap: ktlbmod: invalid pte");
 #endif
-			if (pmap_is_page_ro(pmap_kernel(),
-			    mips_trunc_page(trapframe->badvaddr), entry)) {
+			if (pmap_is_page_ro(pmap_kernel(), mips_trunc_page(trapframe->badvaddr), entry)) {
 				/* write to read only page in the kernel */
 				ftype = VM_PROT_WRITE;
 				goto kernel_fault;
@@ -218,10 +216,9 @@ trap(trapframe)
 			trapframe->badvaddr &= ~PGOFSET;
 			tlb_update(trapframe->badvaddr, entry);
 			pa = pfn_to_pad(entry);
-			pg = PHYS_TO_VM_PAGE(pa);
-			if (pg == NULL)
+			if (!IS_VM_PHYSADDR(pa))
 				panic("trap: ktlbmod: unmanaged page");
-			pmap_set_modify(pg);
+			PHYS_TO_VM_PAGE(pa)->flags &= ~PG_CLEAN;
 			return (trapframe->pc);
 		}
 		/* FALLTHROUGH */
@@ -231,7 +228,6 @@ trap(trapframe)
 		pt_entry_t *pte;
 		unsigned int entry;
 		paddr_t pa;
-		vm_page_t pg;
 		pmap_t pmap = p->p_vmspace->vm_map.pmap;
 
 		if (!(pte = pmap_segmap(pmap, trapframe->badvaddr)))
@@ -239,25 +235,24 @@ trap(trapframe)
 		pte += (trapframe->badvaddr >> PGSHIFT) & (NPTEPG - 1);
 		entry = pte->pt_entry;
 #ifdef DIAGNOSTIC
-		if (!(entry & PG_V) || (entry & PG_M))
+		if (!(entry & PG_V) || (entry & PG_M)) {
 			panic("trap: utlbmod: invalid pte");
+		}
 #endif
-		if (pmap_is_page_ro(pmap,
-		    mips_trunc_page(trapframe->badvaddr), entry)) {
+		if (pmap_is_page_ro(pmap, (vaddr_t)mips_trunc_page(trapframe->badvaddr), entry)) {
 			/* write to read only page */
 			ftype = VM_PROT_WRITE;
 			goto dofault;
 		}
 		entry |= PG_M;
 		pte->pt_entry = entry;
-		trapframe->badvaddr = (trapframe->badvaddr & ~PGOFSET) |
-		    (pmap->pm_tlbpid << VMTLB_PID_SHIFT);
+		trapframe->badvaddr = (trapframe->badvaddr & ~PGOFSET) | (pmap->pm_tlbpid << VMTLB_PID_SHIFT);
 		tlb_update(trapframe->badvaddr, entry);
 		pa = pfn_to_pad(entry);
-		pg = PHYS_TO_VM_PAGE(pa);
-		if (pg == NULL)
+		if (!IS_VM_PHYSADDR(pa)) {
 			panic("trap: utlbmod: unmanaged page");
-		pmap_set_modify(pg);
+		}
+		PHYS_TO_VM_PAGE(pa)->flags &= ~PG_CLEAN;
 		if (!USERMODE(trapframe->sr))
 			return (trapframe->pc);
 		goto out;
@@ -752,7 +747,21 @@ out:
 	p->p_priority = p->p_usrpri;
 	astpending = 0;
 	if (want_resched) {
-		preempt(NULL);
+		int s;
+
+		/*
+		 * Since we are curproc, clock will normally just change
+		 * our priority without moving us from one queue to another
+		 * (since the running process is not on a queue.)
+		 * If that happened after we put ourselves on the run queue
+		 * but before we switched, we might not be on the queue
+		 * indicated by our priority.
+		 */
+		s = splstatclock();
+		setrunqueue(p);
+		p->p_stats->p_ru.ru_nivcsw++;
+		mi_switch();
+		splx(s);
 		while ((i = CURSIG(p)) != 0)
 			postsig(i);
 	}
@@ -789,7 +798,21 @@ child_return(arg)
 	p->p_priority = p->p_usrpri;
 	astpending = 0;
 	if (want_resched) {
-		preempt(NULL);
+		int s;
+
+		/*
+		 * Since we are curproc, clock will normally just change
+		 * our priority without moving us from one queue to another
+		 * (since the running process is not on a queue.)
+		 * If that happened after we put ourselves on the run queue
+		 * but before we switched, we might not be on the queue
+		 * indicated by our priority.
+		 */
+		s = splstatclock();
+		setrunqueue(p);
+		p->p_stats->p_ru.ru_nivcsw++;
+		mi_switch();
+		splx(s);
 		while ((i = CURSIG(p)) != 0)
 			postsig(i);
 	}

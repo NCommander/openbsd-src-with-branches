@@ -1,4 +1,4 @@
-/*	$OpenBSD: netisr_dispatch.h,v 1.4 2004/06/13 21:49:27 niklas Exp $	*/
+/*	$OpenBSD$	*/
 /* $NetBSD: netisr_dispatch.h,v 1.2 2000/07/02 04:40:47 cgd Exp $ */
 
 /*
@@ -52,6 +52,9 @@
 #endif
 #ifdef NS
 	DONETISR(NETISR_NS,nsintr);
+#endif
+#ifdef ISO
+	DONETISR(NETISR_ISO,clnlintr);
 #endif
 #ifdef CCITT
 	DONETISR(NETISR_CCITT,ccittintr);

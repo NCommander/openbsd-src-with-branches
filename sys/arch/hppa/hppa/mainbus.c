@@ -1,4 +1,4 @@
-/*	$OpenBSD: mainbus.c,v 1.58 2004/09/15 21:32:43 mickey Exp $	*/
+/*	$OpenBSD: mainbus.c,v 1.55 2004/03/02 21:06:15 mickey Exp $	*/
 
 /*
  * Copyright (c) 1998-2004 Michael Shalayeff
@@ -43,8 +43,6 @@
 #include <machine/pdc.h>
 #include <machine/iomod.h>
 #include <machine/autoconf.h>
-
-#include <hppa/dev/cpudevs.h>
 
 struct mainbus_softc {
 	struct  device sc_dv;
@@ -1015,10 +1013,10 @@ mbattach(parent, self, aux)
 		panic("mbattach: cannot map mainbus IO space");
 
 	/*
-	 * Local-Broadcast the HPA to all modules on this bus
+	 * Local-Broadcast the HPA to all modules on the bus
 	 */
-	((struct iomod *)LBCAST_ADDR)->io_flex =
-	    (void *)((pdc_hpa.hpa & HPPA_FLEX_MASK) | DMA_ENABLE);
+	((struct iomod *)(pdc_hpa.hpa & HPPA_FLEX_MASK))[FPA_IOMOD].io_flex =
+		(void *)((pdc_hpa.hpa & HPPA_FLEX_MASK) | DMA_ENABLE);
 
 	sc->sc_hpa = pdc_hpa.hpa;
 
@@ -1044,6 +1042,7 @@ mbattach(parent, self, aux)
 #endif
 
 	bzero (&nca, sizeof(nca));
+	nca.ca_name = "mainbus";
 	nca.ca_hpa = 0;
 	nca.ca_irq = -1;
 	nca.ca_hpamask = HPPA_IOSPACE;
@@ -1052,31 +1051,7 @@ mbattach(parent, self, aux)
 	nca.ca_dp.dp_bc[0] = nca.ca_dp.dp_bc[1] = nca.ca_dp.dp_bc[2] =
 	nca.ca_dp.dp_bc[3] = nca.ca_dp.dp_bc[4] = nca.ca_dp.dp_bc[5] = -1;
 	nca.ca_dp.dp_mod = -1;
-	switch (cpu_hvers) {
-#if 0
-	case HPPA_BOARD_HP809:
-	case HPPA_BOARD_HP819:
-	case HPPA_BOARD_HP839:
-	case HPPA_BOARD_HP859:
-	case HPPA_BOARD_HP770_J200:
-	case HPPA_BOARD_HP770_J210:
-	case HPPA_BOARD_HP770_J210XC:
-	case HPPA_BOARD_HP780_J282:
-	case HPPA_BOARD_HP782_J2240:
-#endif
-	case HPPA_BOARD_HP780_C160:
-	case HPPA_BOARD_HP780_C180P:
-	case HPPA_BOARD_HP780_C180XP:
-	case HPPA_BOARD_HP780_C200:
-	case HPPA_BOARD_HP780_C230:
-	case HPPA_BOARD_HP780_C240:
-	case HPPA_BOARD_HP785_C360:
-		pdc_scanbus(self, &nca, MAXMODBUS, FP_ADDR);
-	break;
-	default:
-		pdc_scanbus(self, &nca, MAXMODBUS, 0);
-	break;
-	}
+	pdc_scanbus(self, &nca, MAXMODBUS);
 }
 
 /*

@@ -1,4 +1,4 @@
-/*	$OpenBSD: atactl.c,v 1.33 2004/02/19 21:22:07 grange Exp $	*/
+/*	$OpenBSD: atactl.c,v 1.32 2004/02/19 21:17:41 grange Exp $	*/
 /*	$NetBSD: atactl.c,v 1.4 1999/02/24 18:49:14 jwise Exp $	*/
 
 /*-
@@ -394,7 +394,9 @@ usage(void)
 void
 ata_command(struct atareq *req)
 {
-	if (ioctl(fd, ATAIOCCOMMAND, req) == -1)
+	int error;
+
+	if ((error = ioctl(fd, ATAIOCCOMMAND, req)) == -1)
 		err(1, "ATAIOCCOMMAND failed");
 
 	switch (req->retsts) {
@@ -470,6 +472,7 @@ void
 device_dump(int argc, char *argv[])
 {
 	unsigned char buf[131072];
+	int error;
 	atagettrace_t agt;
 	int total;
 	int p = 0;
@@ -490,7 +493,7 @@ device_dump(int argc, char *argv[])
 	agt.buf_size = sizeof(buf);
 	agt.buf = buf;
 
-	if (ioctl(fd, ATAIOGETTRACE, &agt) == -1)
+	if ((error = ioctl(fd, ATAIOGETTRACE, &agt)) == -1)
 		err(1, "ATAIOGETTRACE failed");
 
 	total = agt.bytes_copied;

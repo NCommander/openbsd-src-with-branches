@@ -1,5 +1,5 @@
 # ex:ts=8 sw=4:
-# $OpenBSD: Ustar.pm,v 1.9 2004/08/06 08:06:01 espie Exp $
+# $OpenBSD: Ustar.pm,v 1.8 2004/08/06 07:51:17 espie Exp $
 #
 # Copyright (c) 2002-2004 Marc Espie <espie@openbsd.org>
 #
@@ -30,24 +30,44 @@ use constant BLOCKDEVICE => '4';
 use constant DIR => '5';
 use constant FIFO => '6';
 use constant CONTFILE => '7';
-use constant USTAR_HEADER => 'a100a8a8a8a12a12a8aa100a6a2a32a32a8a8a155';
 use File::Path ();
 use File::Basename ();
-use OpenBSD::IdCache;
 
-my $uidcache = new OpenBSD::UidCache;
-my $gidcache = new OpenBSD::GidCache;
+my $uidcache = {};
+my $gidcache = {};
 my $buffsize = 2 * 1024 * 1024;
 
 sub new
 {
-    my ($class, $fh, $destdir) = @_;
+    my ($class, $fh) = @_;
 
-    $destdir = '' unless defined $destdir;
-
-    return bless { fh => $fh, swallow => 0, destdir => $destdir} , $class;
+    return bless { fh => $fh, swallow => 0} , $class;
 }
 
+
+sub name2uid
+{
+	my $name = shift;
+	return $uidcache->{$name} if defined $uidcache->{$name};
+	my @entry = getpwnam($name);
+	if (@entry == 0) {
+		return $uidcache->{$name} = shift;
+	} else {
+		return $uidcache->{$name} = $entry[2];
+	}
+}
+
+sub name2gid
+{
+	my $name = shift;
+	return $gidcache->{$name} if defined $gidcache->{$name};
+	my @entry = getgrnam($name);
+	if (@entry == 0) {
+		return $gidcache->{$name} = shift;
+	} else {
+		return $gidcache->{$name} = $entry[2];
+	}
+}
 
 sub skip
 {
@@ -79,7 +99,7 @@ sub next
     # decode header
     my ($name, $mode, $uid, $gid, $size, $mtime, $chksum, $type,
     $linkname, $magic, $version, $uname, $gname, $major, $minor,
-    $prefix) = unpack(USTAR_HEADER, $header);
+    $prefix) = unpack('a100a8a8a8a12a12a8aa100a6a2a32a32a8a8a155', $header);
     if ($magic ne "ustar\0" || $version ne '00') {
 	die "Not an ustar archive header";
     }
@@ -96,8 +116,8 @@ sub next
     $gname =~ s/\0*$//;
     $uid = oct($uid);
     $gid = oct($gid);
-    $uid = $uidcache->lookup($uname, $uid);
-    $gid = $gidcache->lookup($gname, $gid);
+    $uid = name2uid($uname, $uid);
+    $gid = name2gid($gname, $gid);
     $mtime = oct($mtime);
     unless ($prefix =~ m/^\0/) {
 	$prefix =~ s/\0*$//;
@@ -116,7 +136,7 @@ sub next
 	gid => $gid,
 	size => $size,
 	archive => $self,
-	destdir => $self->{destdir}
+	destdir => ''
 	};
     # adjust swallow
     $self->{swallow} = $size;

@@ -1,4 +1,4 @@
-/*	$OpenBSD: sendsig.c,v 1.4 2004/09/16 09:06:41 miod Exp $ */
+/*	$OpenBSD: sendsig.c,v 1.2 2004/08/09 14:57:26 pefo Exp $ */
 
 /*
  * Copyright (c) 1990 The Regents of the University of California.
@@ -131,8 +131,8 @@ sendsig(catcher, sig, mask, code, type, val)
 		psp->ps_sigstk.ss_flags |= SA_ONSTACK;
 	} else
 		fp = (struct sigframe *)(regs->sp - fsize);
-	if ((vaddr_t)fp <= USRSTACK - ctob(p->p_vmspace->vm_ssize))
-		(void)uvm_grow(p, (vaddr_t)fp);
+	if ((long)fp <= USRSTACK - ctob(p->p_vmspace->vm_ssize))
+		(void)uvm_grow(p, (long)fp);
 #ifdef DEBUG
 	if ((sigdebug & SDB_FOLLOW) ||
 	    ((sigdebug & SDB_KSTACK) && (p->p_pid == sigpid)))
@@ -149,7 +149,7 @@ sendsig(catcher, sig, mask, code, type, val)
 	ksc.mulhi = regs->mulhi;
 	ksc.sc_regs[0] = 0xACEDBADE;		/* magic number */
 	bcopy((caddr_t)&regs->ast, (caddr_t)&ksc.sc_regs[1],
-		sizeof(ksc.sc_regs) - sizeof(register_t));
+		sizeof(ksc.sc_regs) - sizeof(int));
 	ksc.sc_fpused = p->p_md.md_flags & MDP_FPUSED;
 	if (ksc.sc_fpused) {
 		extern struct proc *machFPCurProcPtr;
@@ -179,8 +179,13 @@ bail:
 		 * Process has trashed its stack; give it an illegal
 		 * instruction to halt it in its tracks.
 		 */
-		sigexit(p, SIGILL);
-		/* NOTREACHED */
+		SIGACTION(p, SIGILL) = SIG_DFL;
+		sig = sigmask(SIGILL);
+		p->p_sigignore &= ~sig;
+		p->p_sigcatch &= ~sig;
+		p->p_sigmask &= ~sig;
+		psignal(p, SIGILL);
+		return;
 	}
 	/*
 	 * Build the argument list for the signal handler.

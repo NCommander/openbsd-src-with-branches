@@ -1,5 +1,5 @@
 # ex:ts=8 sw=4:
-# $OpenBSD: PackingList.pm,v 1.22 2004/09/14 22:28:23 espie Exp $
+# $OpenBSD: PackingList.pm,v 1.20 2004/08/06 08:06:01 espie Exp $
 #
 # Copyright (c) 2003-2004 Marc Espie <espie@openbsd.org>
 #
@@ -70,23 +70,12 @@ sub DirrmOnly
 	}
 }
 
-sub LibraryOnly
-{
-	my ($fh, $cont) = @_;
-	local $_;
-	while (<$fh>) {
-		next unless m/^\@(?:cwd|lib|name)\b/ ||
-			m/^\@comment\s+subdir\=/;
-		&$cont($_);
-	}
-}
-
 sub FilesOnly
 {
 	my ($fh, $cont) = @_;
 	local $_;
 	while (<$fh>) {
-	    	next unless m/^\@(?:cwd|name|info|man|file|lib|shell)\b/ || !m/^\@/;
+	    	next unless m/^\@(?:cwd|name|info|man|file|lib)\b/ || !m/^\@/;
 		&$cont($_);
 	}
 }
@@ -131,10 +120,10 @@ sub write
 			$item->write($fh);
 		}
 	}
-	for my $unique_item (qw(name no-default-conflict manual-installation extrainfo arch)) {
+	for my $unique_item (qw(name no-default-conflict extrainfo arch)) {
 		$self->{$unique_item}->write($fh) if defined $self->{$unique_item};
 	}
-	for my $listname (qw(modules pkgcfl pkgdep newdepend libdepend items)) {
+	for my $listname (qw(pkgcfl pkgdep newdepend libdepend items)) {
 		if (defined $self->{$listname}) {
 			for my $item (@{$self->{$listname}}) {
 				$item->write($fh);
@@ -143,35 +132,6 @@ sub write
 	}
 	for my $special (OpenBSD::PackageInfo::info_names()) {
 		$self->{$special}->write($fh) if defined $self->{$special};
-	}
-}
-
-sub visit
-{
-	my ($self, $method, @l) = @_;
-
-	if (defined $self->{cvstags}) {
-		for my $item (@{$self->{cvstags}}) {
-			$item->$method(@l);
-		}
-	}
-
-	for my $special (OpenBSD::PackageInfo::info_names()) {
-		$self->{$special}->$method(@l, 0) if defined $self->{$special};
-	}
-
-	for my $unique_item (qw(name no-default-conflict manual-installation extrainfo arch)) {
-		$self->{$unique_item}->$method(@l) if defined $self->{$unique_item};
-	}
-	for my $listname (qw(modules pkgcfl pkgdep newdepend libdepend items)) {
-		if (defined $self->{$listname}) {
-			for my $item (@{$self->{$listname}}) {
-				$item->$method(@l);
-			}
-		}
-	}
-	for my $special (OpenBSD::PackageInfo::info_names()) {
-		$self->{$special}->$method(@l, 1) if defined $self->{$special};
 	}
 }
 

@@ -1,4 +1,4 @@
-#	$OpenBSD: GENERIC,v 1.35 2004/09/16 09:14:04 mickey Exp $
+#	$OpenBSD: GENERIC,v 1.33 2002/12/24 03:09:52 hugh Exp $
 #	$NetBSD: GENERIC,v 1.61 2000/04/19 06:50:36 itojun Exp $
 
 machine 	vax			# machine type; required
@@ -24,7 +24,7 @@ option		VAX49		# VS 4000/90
 option		VAX53		# VAX 4000 10X, MicroVAX 3100m9X
 
 # Max users on system; this is just a hint
-maxusers	8
+maxusers	8	
 
 option		SCSIVERBOSE	# Verbose SCSI errors
 
@@ -47,7 +47,7 @@ mainbus0	at root
 #abus0		at mainbus0		# Master bus on VAX 8600
 #sbi0		at mainbus0		# SBI, master bus on 11/780.
 #cmi0		at mainbus0		# 11/750 internal bus.
-#bi0		at mainbus0		# VAX 8200
+#bi0		at mainbus0		# VAX 8200 
 vsbus0		at mainbus0		# All VAXstations
 ibus0		at mainbus0		# All Microvax
 #nbi0		at mainbus0		# VAX 8800
@@ -127,12 +127,12 @@ mt*		at mscpbus? drive?	# MSCP tape
 scsibus*	at asc?
 scsibus*	at ncr?
 
-sd*		at scsibus?
-st*		at scsibus?
-cd*		at scsibus?
-ch*		at scsibus?
-ss*		at scsibus?
-uk*		at scsibus?
+sd*		at scsibus? target? lun?
+st*		at scsibus? target? lun?
+cd*		at scsibus? target? lun?
+ch*		at scsibus? target? lun?
+ss*		at scsibus? target? lun?
+uk*		at scsibus? target? lun?
 
 # Workstation console
 wsdisplay0	at smg?
@@ -142,6 +142,6 @@ wsdisplay0	at smg?
 #wsdisplay0	at qv0
 
 lkkbd0		at dz0 line 0
-wskbd*		at lkkbd?
+wskbd*		at lkkbd? console ?
 lkms0		at dz0 line 1
 wsmouse*	at lkms?

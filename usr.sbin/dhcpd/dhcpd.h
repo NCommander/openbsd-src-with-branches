@@ -1,4 +1,4 @@
-/*	$OpenBSD: dhcpd.h,v 1.14 2004/09/16 09:35:24 claudio Exp $ */
+/*	$OpenBSD: dhcpd.h,v 1.12 2004/05/04 20:28:40 deraadt Exp $ */
 
 /*
  * Copyright (c) 1995, 1996, 1997, 1998, 1999
@@ -232,7 +232,6 @@ struct lease_state {
 	struct in_addr giaddr;
 	u_int8_t hops;
 	u_int8_t offer;
-	struct hardware haddr;
 };
 
 #define	ROOT_GROUP	0
@@ -545,7 +544,7 @@ void	 do_packet(struct interface_info *, struct dhcp_packet *, int,
 /* errwarn.c */
 extern int warnings_occurred;
 void	error(char *, ...) __attribute__ ((__format__ (__printf__, 1, 2)));
-int	warning(char *, ...) __attribute__ ((__format__ (__printf__, 1, 2)));
+int	warn(char *, ...) __attribute__ ((__format__ (__printf__, 1, 2)));
 int	note(char *, ...) __attribute__ ((__format__ (__printf__, 1, 2)));
 int	debug(char *, ...) __attribute__ ((__format__ (__printf__, 1, 2)));
 int	parse_warn(char *, ...) __attribute__ ((__format__ (__printf__, 1, 2)));
@@ -718,7 +717,8 @@ int can_receive_unicast_unconfigured(struct interface_info *);
 void maybe_setup_fallback(void);
 
 /* dispatch.c */
-extern struct interface_info *interfaces;
+extern struct interface_info *interfaces,
+	*dummy_interfaces, *fallback_interface;
 extern struct protocol *protocols;
 extern int quiet_interface_discovery;
 extern void (*bootp_packet_handler)(struct interface_info *,

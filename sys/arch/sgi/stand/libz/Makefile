@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.1 2004/08/23 14:22:40 pefo Exp $
+#	$OpenBSD: Makefile,v 1.6 2003/12/17 05:17:07 millert Exp $
 
 S=${.CURDIR}/../../../..
 ZDST=${.OBJDIR}
@@ -6,4 +6,4 @@ ZDST=${.OBJDIR}
 .PATH: ${S}/lib/libz
 
 .include "${S}/lib/libz/Makefile"
-CFLAGS+= ${SAABI} -mno-abicalls -D_NO_ABICALLS ${CEXTRAFLAGS} ${AFLAGS} -I${S}
+CFLAGS+= -mno-abicalls -D_NO_ABICALLS ${CEXTRAFLAGS} ${AFLAGS} -I${S}

@@ -1,7 +1,7 @@
 #! /usr/bin/perl
 
 # ex:ts=8 sw=4:
-# $OpenBSD: pkg_add,v 1.53 2004/09/14 22:49:36 espie Exp $
+# $OpenBSD: pkg_add,v 1.49 2004/08/10 12:04:53 espie Exp $
 #
 # Copyright (c) 2003-2004 Marc Espie <espie@openbsd.org>
 #
@@ -27,7 +27,6 @@ use OpenBSD::PackageName;
 use OpenBSD::PkgCfl;
 use OpenBSD::Vstat;
 use Getopt::Std;
-use OpenBSD::Error;
 use File::Copy;
 
 our %forced = ();
@@ -37,15 +36,14 @@ sub ensure_ldconfig
 {
 	my $verbose = shift;
 	return unless defined $OpenBSD::PackingElement::Lib::todo;
-	VSystem($verbose, @OpenBSD::PackingElement::Lib::ldconfig, "-m", 
+	print "running ldconfig -m ", join(' ', keys %$OpenBSD::PackingElement::Lib::todo), "\n"
+	    if  $verbose;
+	system(@OpenBSD::PackingElement::Lib::ldconfig, "-m", 
 	    keys %$OpenBSD::PackingElement::Lib::todo);
 	undef $OpenBSD::PackingElement::Lib::todo;
 }
 
 package OpenBSD::PackingElement;
-use OpenBSD::Error;
-
-my ($uidcache, $gidcache);
 
 sub install
 {
@@ -55,29 +53,15 @@ sub set_modes
 {
 	my ($self, $name) = @_;
 
-	if (defined $self->{owner} || defined $self->{group}) {
-		require OpenBSD::IdCache;
-
-		if (!defined $uidcache) {
-			$uidcache = OpenBSD::UidCache->new();
-			$gidcache = OpenBSD::GidCache->new();
-		}
-		my ($uid, $gid) = (stat $name)[4,5];
-		if (defined $self->{owner}) {
-			$uid = $uidcache->lookup($self->{owner}, $uid);
-		}
-		if (defined $self->{group}) {
-			$gid = $gidcache->lookup($self->{group}, $gid);
-		}
-		chown $uid, $gid, $name;
+	if (defined $self->{owner} && defined $self->{group}) {
+		system('chown', $self->{owner}.':'.$self->{group}, $name);
+	} elsif (defined $self->{owner}) {
+		system('chown', $self->{owner}, $name);
+	} elsif (defined $self->{group}) {
+		system('chown', ':'.$self->{group}, $name);
 	}
 	if (defined $self->{mode}) {
-		my $v = $self->{mode};
-		if ($v =~ m/^\d+$/) {
-			chmod oct($v), $name;
-		} else {
-			System('chmod', $self->{mode}, $name);
-		}
+		system('chmod', $self->{mode}, $name);
 	}
 }
 
@@ -134,9 +118,7 @@ sub install
 		if ($not) {
 			print "The configuration file $filename would be installed from $origname\n";
 		} else {
-			if (!copy($origname, $filename)) {
-				print STDERR "Configuration file $filename could not be installed:\n\t$!\n";
-			}
+			copy($origname, $filename);
 			$self->set_modes($filename);
 			print "The configuration file $filename has been installed from $origname\n";
 		}
@@ -161,7 +143,6 @@ sub install
 
 package OpenBSD::PackingElement::InfoFile;
 use File::Basename;
-use OpenBSD::Error;
 
 sub install
 {
@@ -169,8 +150,7 @@ sub install
 	$self->SUPER::install($archive, $destdir, $verbose, $not);
 	return if $not;
 	my $fullname = $destdir.$self->fullname();
-	VSystem($verbose, 
-	    "install-info", "--info-dir=".dirname($fullname), $fullname);
+	system("install-info", "--info-dir=".dirname($fullname), $fullname);
 }
 
 package OpenBSD::PackingElement::Dir;
@@ -186,7 +166,6 @@ sub install
 }
 
 package OpenBSD::PackingElement::Exec;
-use OpenBSD::Error;
 
 sub install
 {
@@ -194,7 +173,7 @@ sub install
 
 	main::ensure_ldconfig($verbose) unless $not;
 	print "exec ", $self->{expanded}, "\n" if $verbose or $not;
-	System('/bin/sh', '-c', $self->{expanded}) unless $not;
+	system('/bin/sh', '-c', $self->{expanded}) unless $not;
 }
 
 package OpenBSD::PackingElement::Lib;
@@ -352,8 +331,7 @@ sub pre_add($$)
 	my $l = OpenBSD::PkgCfl->make_conflict_list($plist);
 	$handle->{conflicts} = $l;
 	if ($l->conflicts_with(installed_packages())) {
-		print "package $pkg has conflicts: ", 
-		    join(' ', $l->conflicts_with(installed_packages())), "\n";
+		print "package $pkg has conflicts\n";
 		$errors++;
 		return undef unless $forced{conflicts};
 	}
@@ -613,7 +591,7 @@ sub really_add($$)
 		print "Require script: $dir",REQUIRE," $pkgname INSTALL\n" if $opt_v or $opt_n;
 		unless ($opt_n) {
 			chmod 0755, $dir.REQUIRE;
-			System($dir.REQUIRE, $pkgname, "INSTALL") == 0 or
+			system($dir.REQUIRE, $pkgname, "INSTALL") == 0 or
 			    borked_script("require script");
 		}
 	}
@@ -624,7 +602,7 @@ sub really_add($$)
 			print "Install script: $dir",INSTALL," $pkgname PRE-INSTALL\n" if $opt_v or $opt_n;
 			unless ($opt_n) {
 				chmod 0755, $dir.INSTALL;
-				System($dir.INSTALL, $pkgname, "PRE-INSTALL") == 0 or
+				system($dir.INSTALL, $pkgname, "PRE-INSTALL") == 0 or
 				    borked_script("install script");
 			}
 		}
@@ -657,7 +635,7 @@ sub really_add($$)
 			ensure_ldconfig($opt_v) unless $opt_n;
 			print "Install script: $dir",INSTALL ," $pkgname POST-INSTALL\n" if $opt_v or $opt_n;
 			unless ($opt_n) {
-				if (System($dir.INSTALL, $pkgname, "POST-INSTALL") != 0) {
+				if (system($dir.INSTALL, $pkgname, "POST-INSTALL") != 0) {
 					print STDERR "install script for $pkgname borked\n";
 					$errors++ unless $forced{scripts};
 				}
@@ -682,7 +660,7 @@ sub really_add($$)
 	add_installed($pkgname);
 	if ($plist->has(DISPLAY)) {
 		my $pager = $ENV{'PAGER'} || "/usr/bin/more";
-		System("$pager $dir".DISPLAY);
+		system("$pager $dir".DISPLAY);
 	}
 }
 

@@ -1,4 +1,4 @@
-/*	$OpenBSD: fetch.c,v 1.50 2004/07/20 03:50:25 deraadt Exp $	*/
+/*	$OpenBSD: fetch.c,v 1.49 2004/02/28 20:08:38 krw Exp $	*/
 /*	$NetBSD: fetch.c,v 1.14 1997/08/18 10:20:20 lukem Exp $	*/
 
 /*-
@@ -38,7 +38,7 @@
  */
 
 #if !defined(lint) && !defined(SMALL)
-static char rcsid[] = "$OpenBSD: fetch.c,v 1.50 2004/07/20 03:50:25 deraadt Exp $";
+static char rcsid[] = "$OpenBSD: fetch.c,v 1.49 2004/02/28 20:08:38 krw Exp $";
 #endif /* not lint and not SMALL */
 
 /*
@@ -562,9 +562,8 @@ cleanup_url_get:
 /*
  * Abort a http retrieval
  */
-/* ARGSUSED */
 void
-aborthttp(int signo)
+aborthttp(int notused)
 {
 
 	alarmtimer(0);
@@ -576,9 +575,8 @@ aborthttp(int signo)
 /*
  * Abort a http retrieval
  */
-/* ARGSUSED */
 void
-abortfile(int signo)
+abortfile(int notused)
 {
 
 	alarmtimer(0);

@@ -40,7 +40,7 @@
  */
 
 #include "includes.h"
-RCSID("$OpenBSD: ssh.c,v 1.226 2004/09/07 23:41:30 djm Exp $");
+RCSID("$OpenBSD: ssh.c,v 1.225 2004/08/23 14:26:38 dtucker Exp $");
 
 #include <openssl/evp.h>
 #include <openssl/err.h>
@@ -311,7 +311,7 @@ again:
 					options.log_level++;
 				break;
 			}
-			/* FALLTHROUGH */
+			/* fallthrough */
 		case 'V':
 			fprintf(stderr, "%s, %s\n",
 			    SSH_VERSION, SSLeay_version(SSLEAY_VERSION));

@@ -33,7 +33,7 @@
 
 #ifdef HAVE_CONFIG_H
 #include <config.h>
-RCSID("$KTH: socket.c,v 1.5 2000/07/27 04:41:06 assar Exp $");
+RCSID("$KTH: socket.c,v 1.8 2003/04/15 03:26:51 lha Exp $");
 #endif
 
 #include <roken.h>
@@ -222,6 +222,31 @@ socket_set_port (struct sockaddr *sa, int port)
 }
 
 /*
+ * Set the range of ports to use when binding with port = 0.
+ */
+void
+socket_set_portrange (int sock, int restr, int af)
+{
+#if defined(IP_PORTRANGE)
+	if (af == AF_INET) {
+		int on = restr ? IP_PORTRANGE_HIGH : IP_PORTRANGE_DEFAULT;
+		if (setsockopt (sock, IPPROTO_IP, IP_PORTRANGE, &on,
+		    sizeof(on)) < 0)
+			warn ("setsockopt IP_PORTRANGE (ignored)");
+	}
+#endif
+#if defined(IPV6_PORTRANGE)
+	if (af == AF_INET6) {
+		int on = restr ? IPV6_PORTRANGE_HIGH : 
+		    IPV6_PORTRANGE_DEFAULT;
+		if (setsockopt (sock, IPPROTO_IPV6, IPV6_PORTRANGE, &on,
+		    sizeof(on)) < 0)
+			warn ("setsockopt IPV6_PORTRANGE (ignored)");
+	}
+#endif
+}
+	
+/*
  * Enable debug on `sock'.
  */
 
@@ -245,7 +270,8 @@ socket_set_tos (int sock, int tos)
 {
 #if defined(IP_TOS) && defined(HAVE_SETSOCKOPT)
     if (setsockopt (sock, IPPROTO_IP, IP_TOS, (void *) &tos, sizeof (int)) < 0)
-	warn ("setsockopt TOS (ignored)");
+	if (errno != EINVAL)
+	    warn ("setsockopt TOS (ignored)");
 #endif
 }
 

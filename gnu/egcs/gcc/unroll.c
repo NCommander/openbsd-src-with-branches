@@ -1,5 +1,6 @@
 /* Try to unroll loops, and split induction variables.
-   Copyright (C) 1992, 93, 94, 95, 97, 98, 1999 Free Software Foundation, Inc.
+   Copyright (C) 1992, 1993, 1994, 1995, 1997, 1998, 1999, 2000 Free Software
+   Foundation, Inc.
    Contributed by James E. Wilson, Cygnus Support/UC Berkeley.
 
 This file is part of GNU CC.
@@ -1262,7 +1263,18 @@ unroll_loop (loop_end, insn_count, loop_start, end_insert_before,
   insn = NEXT_INSN (copy_start);
   while (insn != safety_label)
     {
-      if (insn != start_label)
+      /* ??? Don't delete named code labels.  They will be deleted when the
+	 jump that references them is deleted.  Otherwise, we end up deleting
+	 them twice, which causes them to completely disappear instead of turn
+	 into NOTE_INSN_DELETED_LABEL notes.  This in turn causes aborts in
+	 dwarfout.c/dwarf2out.c.  We could perhaps fix the dwarf*out.c files
+	 to handle deleted labels instead.  Or perhaps fix DECL_RTL of the
+	 associated LABEL_DECL to point to one of the new label instances.  */
+      /* ??? Likewise, we can't delete a NOTE_INSN_DELETED_LABEL note.  */
+      if (insn != start_label
+	  && ! (GET_CODE (insn) == CODE_LABEL && LABEL_NAME (insn))
+	  && ! (GET_CODE (insn) == NOTE
+		&& NOTE_LINE_NUMBER (insn) == NOTE_INSN_DELETED_LABEL))
 	insn = delete_insn (insn);
       else
 	insn = NEXT_INSN (insn);
@@ -3671,10 +3683,14 @@ loop_iterations (loop_start, loop_end, loop_info)
       return 0;
     }
 
-  /* The only new registers that care created before loop iterations are
-     givs made from biv increments, so this should never occur.  */
+  /* The only new registers that are created before loop iterations
+     are givs made from biv increments or registers created by
+     load_mems.  In the latter case, it is possible that try_copy_prop
+     will propagate a new pseudo into the old iteration register but
+     this will be marked by having the REG_USERVAR_P bit set.  */
 
-  if ((unsigned) REGNO (iteration_var) >= reg_iv_type->num_elements)
+  if ((unsigned) REGNO (iteration_var) >= reg_iv_type->num_elements
+      && ! REG_USERVAR_P (iteration_var))
     abort ();
 
   iteration_info (iteration_var, &initial_value, &increment,

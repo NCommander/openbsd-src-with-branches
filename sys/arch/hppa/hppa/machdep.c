@@ -1,4 +1,4 @@
-/*	$OpenBSD: machdep.c,v 1.134 2004/09/14 23:39:32 mickey Exp $	*/
+/*	$OpenBSD: machdep.c,v 1.131 2004/06/30 18:18:54 mickey Exp $	*/
 
 /*
  * Copyright (c) 1999-2003 Michael Shalayeff
@@ -137,7 +137,6 @@ char	cpu_model[128];
 enum hppa_cpu_type cpu_type;
 const char *cpu_typename;
 int	cpu_hvers;
-u_int	fpu_version;
 #ifdef COMPAT_HPUX
 int	cpu_model_hpux;	/* contains HPUX_SYSCONF_CPU* kind of value */
 #endif
@@ -196,7 +195,6 @@ extern const u_int itlb_x[], itlbna_x[], dtlb_x[], dtlbna_x[], tlbd_x[];
 extern const u_int itlb_s[], itlbna_s[], dtlb_s[], dtlbna_s[], tlbd_s[];
 extern const u_int itlb_t[], itlbna_t[], dtlb_t[], dtlbna_t[], tlbd_t[];
 extern const u_int itlb_l[], itlbna_l[], dtlb_l[], dtlbna_l[], tlbd_l[];
-extern const u_int itlb_u[], itlbna_u[], dtlb_u[], dtlbna_u[], tlbd_u[];
 int iibtlb_s(int i, pa_space_t sp, vaddr_t va, paddr_t pa,
     vsize_t sz, u_int prot);
 int idbtlb_s(int i, pa_space_t sp, vaddr_t va, paddr_t pa,
@@ -205,20 +203,15 @@ int ibtlb_t(int i, pa_space_t sp, vaddr_t va, paddr_t pa,
     vsize_t sz, u_int prot);
 int ibtlb_l(int i, pa_space_t sp, vaddr_t va, paddr_t pa,
     vsize_t sz, u_int prot);
-int ibtlb_u(int i, pa_space_t sp, vaddr_t va, paddr_t pa,
-    vsize_t sz, u_int prot);
 int ibtlb_g(int i, pa_space_t sp, vaddr_t va, paddr_t pa,
     vsize_t sz, u_int prot);
 int pbtlb_g(int i);
-int pbtlb_u(int i);
 int hpti_l(vaddr_t, vsize_t);
-int hpti_u(vaddr_t, vsize_t);
 int hpti_g(vaddr_t, vsize_t);
 int desidhash_x(void);
 int desidhash_s(void);
 int desidhash_t(void);
 int desidhash_l(void);
-int desidhash_u(void);
 int desidhash_g(void);
 const struct hppa_cpu_typed {
 	char name[8];
@@ -254,16 +247,16 @@ const struct hppa_cpu_typed {
 	  0, desidhash_l, ibtlb_g, NULL, pbtlb_g, hpti_g},
 #endif
 #ifdef HP8000_CPU
-	{ "PCXU",  hpcxu, HPPA_CPU_PCXU, HPPA_FTRS_W32B,
-	  4, desidhash_g, ibtlb_u, NULL, pbtlb_g },
+	{ "PCXU",  hpcxu, HPPA_CPU_PCXU, HPPA_FTRS_W32B|HPPA_FTRS_BTLBU,
+	  4, desidhash_g, ibtlb_g, NULL, pbtlb_g, hpti_g},
 #endif
 #ifdef HP8200_CPU
-	{ "PCXU+", hpcxu2,HPPA_CPU_PCXUP, HPPA_FTRS_W32B,
-	  4, desidhash_g, ibtlb_u, NULL, pbtlb_u },
+	{ "PCXU+", hpcxu2,HPPA_CPU_PCXUP, HPPA_FTRS_W32B|HPPA_FTRS_BTLBU,
+	  4, desidhash_g, ibtlb_g, NULL, pbtlb_g, hpti_g},
 #endif
 #ifdef HP8500_CPU
-	{ "PCXW",  hpcxw, HPPA_CPU_PCXW, HPPA_FTRS_W32B,
-	  4, desidhash_g, ibtlb_u, NULL, pbtlb_u },
+	{ "PCXW",  hpcxw, HPPA_CPU_PCXW, HPPA_FTRS_W32B|HPPA_FTRS_BTLBU,
+	  4, desidhash_g, ibtlb_g, NULL, pbtlb_g, hpti_g},
 #endif
 	{ "", 0 }
 };
@@ -358,8 +351,8 @@ hppa_init(start)
 	fdcacheall();
 
 	avail_end = trunc_page(PAGE0->imm_max_mem);
-	if (avail_end > SYSCALLGATE)
-		avail_end = SYSCALLGATE;
+	/*if (avail_end > 32*1024*1024)
+		avail_end = 32*1024*1024;*/
 	totalphysmem = btoc(avail_end);
 	resvmem = btoc(((vaddr_t)&kernel_text));
 
@@ -483,15 +476,10 @@ cpuid()
 		printf("WARNING: PDC_COPROC error %d\n", error);
 		cpu_fpuena = 0;
 	} else {
-		printf("pdc_coproc: 0x%x, 0x%x; model %x rev %x\n",
-		    pdc_coproc.ccr_enable, pdc_coproc.ccr_present,
-		    pdc_coproc.fpu_model, pdc_coproc.fpu_revision);
+		printf("pdc_coproc: 0x%x, 0x%x\n", pdc_coproc.ccr_enable,
+		    pdc_coproc.ccr_present);
 		fpu_enable = pdc_coproc.ccr_enable & CCR_MASK;
 		cpu_fpuena = 1;
-
-		/* a kludge to detect PCXW */
-		if (pdc_coproc.fpu_model == HPPA_FPU_PCXW)
-			cpu_type = HPPA_CPU_PCXW;
 	}
 
 	/* BTLB params */
@@ -570,13 +558,6 @@ cpuid()
 		trap_ep_T_DTLBMISSNA[0] = trap_ep_T_DTLBMISSNA[p->patch];
 		trap_ep_T_ITLBMISS  [0] = trap_ep_T_ITLBMISS  [p->patch];
 		trap_ep_T_ITLBMISSNA[0] = trap_ep_T_ITLBMISSNA[p->patch];
-	}
-
-	/* force strong ordering for now */
-	if (p->features & HPPA_FTRS_W32B) {
-		extern register_t kpsw;	/* intr.c */
-
-		kpsw |= PSL_O;
 	}
 
 	{
@@ -914,9 +895,6 @@ btlb_insert(space, va, pa, lenp, prot)
 	register vsize_t len;
 	register int error, i;
 
-	if (!pdc_btlb.min_size && !pdc_btlb.max_size)
-		return -(ENXIO);
-
 	/* align size */
 	for (len = pdc_btlb.min_size << PGSHIFT; len < *lenp; len <<= 1);
 	len >>= PGSHIFT;
@@ -1243,16 +1221,16 @@ setregs(p, pack, stack, retval)
 	copyout(&zero, (caddr_t)(stack + HPPA_FRAME_CRP), sizeof(register_t));
 
 	/* reset any of the pending FPU exceptions */
-	if (tf->tf_cr30 == fpu_curpcb) {
-		fpu_exit();
-		fpu_curpcb = 0;
-	}
 	pcb->pcb_fpregs[0] = ((u_int64_t)HPPA_FPU_INIT) << 32;
 	pcb->pcb_fpregs[1] = 0;
 	pcb->pcb_fpregs[2] = 0;
 	pcb->pcb_fpregs[3] = 0;
 	fdcache(HPPA_SID_KERNEL, (vaddr_t)pcb->pcb_fpregs, 8 * 4);
-
+	if (tf->tf_cr30 == fpu_curpcb) {
+		fpu_curpcb = 0;
+		/* force an fpu ctxsw, we won't be hugged by the cpu_switch */
+		mtctl(0, CR_CCR);
+	}
 	retval[1] = 0;
 }
 
@@ -1268,14 +1246,13 @@ sendsig(catcher, sig, mask, code, type, val)
 	union sigval val;
 {
 	extern paddr_t fpu_curpcb;	/* from locore.S */
-	extern u_int fpu_enable;
 	struct proc *p = curproc;
 	struct trapframe *tf = p->p_md.md_regs;
 	struct sigacts *psp = p->p_sigacts;
 	struct sigcontext ksc;
 	siginfo_t ksi;
-	register_t scp, sip;
 	int sss;
+	register_t zero, scp, sip;
 
 #ifdef DEBUG
 	if ((sigdebug & SDB_FOLLOW) && (!sigpid || p->p_pid == sigpid))
@@ -1285,10 +1262,8 @@ sendsig(catcher, sig, mask, code, type, val)
 
 	/* flush the FPU ctx first */
 	if (tf->tf_cr30 == fpu_curpcb) {
-		mtctl(fpu_enable, CR_CCR);
 		fpu_save(fpu_curpcb);
-		/* fpu_curpcb = 0; only needed if fpregs are preset */
-		mtctl(0, CR_CCR);
+		fpu_curpcb = 0;
 	}
 
 	ksc.sc_onstack = psp->ps_sigstk.ss_flags & SS_ONSTACK;
@@ -1416,7 +1391,7 @@ sys_sigreturn(p, v, retval)
 
 	/* flush the FPU ctx first */
 	if (tf->tf_cr30 == fpu_curpcb) {
-		fpu_exit();
+		fpu_save(fpu_curpcb);
 		fpu_curpcb = 0;
 	}
 
@@ -1496,7 +1471,6 @@ cpu_sysctl(name, namelen, oldp, oldlenp, newp, newlen, p)
 	struct proc *p;
 {
 	extern paddr_t fpu_curpcb;	/* from locore.S */
-	extern u_int fpu_enable;
 	extern int cpu_fpuena;
 	dev_t consdev;
 
@@ -1513,7 +1487,6 @@ cpu_sysctl(name, namelen, oldp, oldlenp, newp, newlen, p)
 		    sizeof consdev));
 	case CPU_FPU:
 		if (fpu_curpcb) {
-			mtctl(fpu_enable, CR_CCR);
 			fpu_save(fpu_curpcb);
 			fpu_curpcb = 0;
 			mtctl(0, CR_CCR);

@@ -1,4 +1,4 @@
-/*	$OpenBSD: bootp.c,v 1.10 2004/09/16 09:35:24 claudio Exp $	*/
+/*	$OpenBSD: bootp.c,v 1.8 2004/05/04 20:28:40 deraadt Exp $	*/
 
 /*
  * BOOTP Protocol support.
@@ -57,7 +57,7 @@ bootp(struct packet *packet)
 	struct subnet *subnet = NULL;
 	struct lease *lease;
 	struct iaddr ip_address;
-	int i;
+	int result, i;
 
 	if (packet->raw->op != BOOTREQUEST)
 		return;
@@ -332,9 +332,12 @@ lose:
 		to.sin_addr = raw.giaddr;
 		to.sin_port = server_port;
 
-		(void) send_packet(packet->interface, &raw,
-		    outgoing.packet_length, from, &to, packet->haddr);
-		return;
+		if (fallback_interface) {
+			result = send_packet(fallback_interface, &raw,
+			    outgoing.packet_length, from, &to, &hto);
+			return;
+		}
+
 	}
 
 	/*
@@ -352,6 +355,6 @@ lose:
 	}
 
 	errno = 0;
-	(void) send_packet(packet->interface, &raw,
+	result = send_packet(packet->interface, &raw,
 	    outgoing.packet_length, from, &to, &hto);
 }

@@ -1,4 +1,4 @@
-/*	$OpenBSD: Lint_Ovfork.c,v 1.1 1998/02/08 22:45:08 tholo Exp $	*/
+/*	$OpenBSD$	*/
 /*	$NetBSD: Lint_Ovfork.c,v 1.1 1997/11/06 00:52:49 cgd Exp $	*/
 
 /*
@@ -10,7 +10,7 @@
 
 /*ARGSUSED*/
 pid_t
-vfork(void)
+vfork()
 {
 	return (0);
 }

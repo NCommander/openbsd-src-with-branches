@@ -1,4 +1,4 @@
-/*	$OpenBSD: identd.c,v 1.39 2004/09/14 22:14:29 deraadt Exp $	*/
+/*	$OpenBSD: identd.c,v 1.37 2004/04/07 14:09:35 aaron Exp $	*/
 
 /*
  * This program is in the public domain and may be used freely by anyone
@@ -22,7 +22,6 @@
 #include <stdlib.h>
 #include <poll.h>
 #include <string.h>
-#include <stdarg.h>
 #include <ctype.h>
 #include <errno.h>
 #include <netdb.h>
@@ -34,6 +33,7 @@
 #include <grp.h>
 
 #include "identd.h"
+#include "error.h"
 
 extern char *__progname;
 
@@ -132,7 +132,6 @@ volatile sig_atomic_t alarm_fired;
 /*
  * Exit cleanly after our time's up.
  */
-/* ARGSUSED */
 static void
 alarm_handler(int notused)
 {
@@ -168,7 +167,7 @@ main(int argc, char *argv[])
 		if ((pwd = getpwnam(DEFAULT_UID)) == NULL)
 			pwd = getpwnam("nobody");
 		if (pwd == NULL)
-			error("no such user: neither %s nor nobody",
+			ERROR1("no such user: neither %s nor nobody",
 			    DEFAULT_UID);
 		set_uid = pwd->pw_uid;
 		set_gid = pwd->pw_gid;
@@ -211,7 +210,7 @@ main(int argc, char *argv[])
 					break;
 			}
 			if (pwd == NULL)
-				error("no such user (%s) for -u option",
+				ERROR1("no such user (%s) for -u option",
 				    optarg);
 			else {
 				set_uid = pwd->pw_uid;
@@ -227,7 +226,7 @@ main(int argc, char *argv[])
 			}
 			grp = getgrnam(optarg);
 			if (!grp)
-				error("no such group (%s) for -g option", optarg);
+				ERROR1("no such group (%s) for -g option", optarg);
 			else
 				set_gid = grp->gr_gid;
 			break;
@@ -287,7 +286,7 @@ main(int argc, char *argv[])
 
 		fd = socket(AF_INET, SOCK_STREAM, 0);
 		if (fd == -1)
-			error("main: socket");
+			ERROR("main: socket");
 
 		if (fd != 0)
 			dup2(fd, 0);
@@ -304,7 +303,7 @@ main(int argc, char *argv[])
 
 				hp = gethostbyname(bind_address);
 				if (!hp)
-					error("no such address (%s) for -a switch",
+					ERROR1("no such address (%s) for -a switch",
 					    bind_address);
 				memcpy(&addr.sin_addr, hp->h_addr,
 				    sizeof(addr.sin_addr));
@@ -316,27 +315,27 @@ main(int argc, char *argv[])
 		else {
 			sp = getservbyname(portno, "tcp");
 			if (sp == NULL)
-				error("main: getservbyname: %s", portno);
+				ERROR1("main: getservbyname: %s", portno);
 			addr.sin_port = sp->s_port;
 		}
 
 		if (bind(0, (struct sockaddr *) &addr, sizeof(addr)) < 0)
-			error("main: bind");
+			ERROR("main: bind");
 
 		if (listen(0, 3) < 0)
-			error("main: listen");
+			ERROR("main: listen");
 	}
 	if (set_gid) {
 		if (setegid(set_gid) == -1)
-			error("main: setgid");
+			ERROR("main: setgid");
 		if (setgid(set_gid) == -1)
-			error("main: setgid");
+			ERROR("main: setgid");
 	}
 	if (set_uid) {
 		if (seteuid(set_uid) == -1)
-			error("main: setuid");
+			ERROR("main: setuid");
 		if (setuid(set_uid) == -1)
-			error("main: setuid");
+			ERROR("main: setuid");
 	}
 	/*
 	 * Do some special handling if the "-b" or "-w" flags are used
@@ -382,7 +381,7 @@ main(int argc, char *argv[])
 			 * An error occurred in select? Just die
 			 */
 			if (nfds < 0)
-				error("main: select");
+				ERROR("main: select");
 
 			/*
 			 * Timeout limit reached. Exit nicely
@@ -400,7 +399,7 @@ main(int argc, char *argv[])
 			 */
 			fd = accept(0, NULL, NULL);
 			if (fd == -1)
-				error("main: accept. errno = %d", errno);
+				ERROR1("main: accept. errno = %d", errno);
 
 			/*
 			 * And fork, then close the fd if we are the parent.
@@ -414,13 +413,13 @@ main(int argc, char *argv[])
 		 * We are now in child, the parent has returned to "do" above.
 		 */
 		if (dup2(fd, 0) == -1)
-			error("main: dup2: failed fd 0");
+			ERROR("main: dup2: failed fd 0");
 
 		if (dup2(fd, 1) == -1)
-			error("main: dup2: failed fd 1");
+			ERROR("main: dup2: failed fd 1");
 
 		if (dup2(fd, 2) == -1)
-			error("main: dup2: failed fd 2");
+			ERROR("main: dup2: failed fd 2");
 	}
 	/*
 	 * Get foreign internet address
@@ -481,26 +480,4 @@ main(int argc, char *argv[])
 	}
 
 	exit(0);
-}
-
-void
-error(char *fmt, ...)
-{
-	va_list ap, ap2;
-
-	va_start(ap, fmt);
-	
-	if (syslog_flag) {
-		va_copy(ap2, ap);
-		syslog(LOG_ERR, fmt, ap2);
-		va_end(ap2);
-	}
-	if (debug_flag) {
-		fprintf(stderr, "%d , %d : ERROR : X-DBG : ", lport, fport);
-		fprintf(stderr, fmt, ap);
-		perror(": ");
-	} else
-		printf("%d , %d : ERROR : UNKNOWN-ERROR\r\n", lport, fport);
-	va_end(ap);
-	exit(1);
 }

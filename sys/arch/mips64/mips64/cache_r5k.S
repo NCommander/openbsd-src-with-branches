@@ -1,4 +1,4 @@
-/*	$OpenBSD: cache_r5k.S,v 1.8 2004/09/16 07:25:26 miod Exp $ */
+/*	$OpenBSD: cache_r5k.S,v 1.6 2004/09/10 08:58:27 pefo Exp $ */
 
 /*
  * Copyright (c) 1998-2004 Opsycon AB (www.opsycon.se)
@@ -30,7 +30,7 @@
  *  NOTE!
  *
  *  This code does not support caches with other linesize than 32.
- *  Neither will it support R4000 or R4400 Secondary caches. These
+ *  Neither will it support R4000 or R4400 Secondary cahes. These
  *  configurations will need another set of cache functions.
  *
  *  Processors supported:
@@ -661,7 +661,7 @@ END(Mips5k_SyncDCachePage)
  *		vaddr_t addr, len;
  *
  *	Sync data cache for range of addr to addr + len - 1.
- *	The address can be any valid virtual address as long
+ *	The address can be any valid viritual address as long
  *	as no TLB invalid traps occur. Only lines with matching
  *	addr are flushed.
  *
@@ -719,7 +719,7 @@ END(Mips5k_HitSyncDCache)
  *		vaddr_t addr, len;
  *
  *	Sync secondary cache for range of addr to addr + len - 1.
- *	The address can be any valid virtual address as long
+ *	The address can be any valid viritual address as long
  *	as no TLB invalid traps occur. Only lines with matching
  *	addr are flushed.
  *

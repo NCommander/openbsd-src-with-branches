@@ -1,6 +1,11 @@
 BEGIN {
     chdir 't' if -d 't';
     @INC = '../lib' if -d '../lib';
+    require Config;
+    if (($Config::Config{'extensions'} !~ m!\bDevel/PPPort\b!) ){
+        print "1..0 # Skip -- Perl configured without Devel::PPPort module\n";
+        exit 0;
+    }
 }
 
 use Devel::PPPort;
@@ -94,3 +99,20 @@ NOOP
 SAVE_DEFSV
 PERL_UNUSED_DECL
 dNOOP
+
+call_argv
+call_method
+call_pv
+call_sv
+
+get_cv
+get_av
+get_hv
+get_sv
+
+grok_hex
+grok_oct
+grok_bin
+
+grok_number
+grok_numeric_radix

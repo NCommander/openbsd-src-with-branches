@@ -1,4 +1,4 @@
-/*	$OpenBSD: process.m88k.S,v 1.3 2004/03/08 20:52:03 miod Exp $	*/
+/*	$OpenBSD: process.m88k.S,v 1.2 2004/03/02 23:36:45 miod Exp $	*/
 
 /*
  * Copyright (c) 2004, Miodrag Vallat.
@@ -70,11 +70,13 @@ ENTRY(savecontext)
 1:
 
 	/* invoke function */
-	jsr	r2
+	jsr.n	r2
+	 subu	r31, r31, 32
 
 	/* should not return, invoke abort() if this happens */
 	bsr	_C_LABEL(abort)
 	/* NOTREACHED */
+	addu	r31, r31, 32
 	
 /*
  * returnto(struct savearea *a2)

@@ -1,4 +1,4 @@
-/*	$OpenBSD: lasi.c,v 1.21 2004/09/15 01:10:06 mickey Exp $	*/
+/*	$OpenBSD: lasi.c,v 1.19 2003/12/01 21:19:56 mickey Exp $	*/
 
 /*
  * Copyright (c) 1998-2003 Michael Shalayeff
@@ -65,6 +65,7 @@ struct lasi_trs {
 struct lasi_softc {
 	struct device sc_dev;
 	struct gscbus_ic sc_ic;
+	int sc_phantomassed;
 
 	struct lasi_hwr volatile *sc_hw;
 	struct lasi_trs volatile *sc_trs;
@@ -73,9 +74,16 @@ struct lasi_softc {
 
 int	lasimatch(struct device *, void *, void *);
 void	lasiattach(struct device *, struct device *, void *);
+void	lasi_mainbus_attach(struct device *, struct device *, void *);
+void	lasi_phantomas_attach(struct device *, struct device *, void *);
+void	lasi_gsc_attach(struct device *);
 
-struct cfattach lasi_ca = {
-	sizeof(struct lasi_softc), lasimatch, lasiattach
+struct cfattach lasi_mainbus_ca = {
+	sizeof(struct lasi_softc), lasimatch, lasi_mainbus_attach
+};
+
+struct cfattach lasi_phantomas_ca = {
+	sizeof(struct lasi_softc), lasimatch, lasi_phantomas_attach
 };
 
 struct cfdriver lasi_cd = {
@@ -83,7 +91,6 @@ struct cfdriver lasi_cd = {
 };
 
 void lasi_cold_hook(int on);
-void lasi_gsc_attach(struct device *self);
 
 int
 lasimatch(parent, cfdata, aux)   
@@ -102,6 +109,27 @@ lasimatch(parent, cfdata, aux)
 }
 
 void
+lasi_mainbus_attach(parent, self, aux)
+	struct device *parent;
+	struct device *self;
+	void *aux;
+{
+	lasiattach(parent, self, aux);
+}
+
+void
+lasi_phantomas_attach(parent, self, aux)
+	struct device *parent;
+	struct device *self;
+	void *aux;
+{
+	struct lasi_softc *sc = (struct lasi_softc *)self;
+
+	sc->sc_phantomassed = 1;
+	lasiattach(parent, self, aux);
+}
+
+void
 lasiattach(parent, self, aux)
 	struct device *parent;
 	struct device *self;
@@ -109,18 +137,11 @@ lasiattach(parent, self, aux)
 {
 	struct lasi_softc *sc = (struct lasi_softc *)self;
 	struct confargs *ca = aux;
-	bus_space_handle_t ioh, ioh2;
+	bus_space_handle_t ioh;
 	int s, in;
 
-	if (bus_space_map(ca->ca_iot, ca->ca_hpa,
-	    IOMOD_HPASIZE, 0, &ioh)) {
-		printf(": can't map TRS space\n");
-		return;
-	}
-
 	if (bus_space_map(ca->ca_iot, ca->ca_hpa + 0xc000,
-	    IOMOD_HPASIZE, 0, &ioh2)) {
-		bus_space_unmap(ca->ca_iot, ioh, IOMOD_HPASIZE);
+	    IOMOD_HPASIZE, 0, &ioh)) {
 		printf(": can't map IO space\n");
 		return;
 	}
@@ -194,7 +215,7 @@ lasiattach(parent, self, aux)
 #endif
 
 	sc->ga.ga_ca = *ca;	/* clone from us */
-	if (!strcmp(parent->dv_xname, "mainbus0")) {
+	if (!sc->sc_phantomassed) {
 		sc->ga.ga_dp.dp_bc[0] = sc->ga.ga_dp.dp_bc[1];
 		sc->ga.ga_dp.dp_bc[1] = sc->ga.ga_dp.dp_bc[2];
 		sc->ga.ga_dp.dp_bc[2] = sc->ga.ga_dp.dp_bc[3];

@@ -1,4 +1,4 @@
-# 	$OpenBSD: RAMDISKU1,v 1.8 2004/09/16 09:14:04 mickey Exp $
+# 	$OpenBSD: RAMDISKU1,v 1.6 2003/06/13 20:27:50 brad Exp $
 
 # Machine architecture; required by config(8)
 machine		sparc64
@@ -35,7 +35,7 @@ cpu0	at mainbus0
 # Bus types found on SPARC systems.
 sbus0	at mainbus0				# Ultra 1
 
-clock*	at sbus?				# Mostek clock
+clock*	at sbus?				# Mostek clock 
 timer*	at mainbus0				# Timer chip
 
 ## PROM console driver -- if all else fails
@@ -63,20 +63,20 @@ hme*		at sbus?
 #	      devices should be allowed to disconnect for the SCSI bus
 #	      to operate acceptably.
 #
-dma*	at sbus?		# SBus
-esp*	at dma? flags 0x0000	# SBus
+dma*	at sbus?				# SBus
+esp*	at dma? flags 0x0000			# SBus
 esp*	at sbus?
 scsibus*	at esp?
 
 # These entries find devices on all SCSI busses and assign
 # unit numers dynamically.
-sd*	at scsibus?		# SCSI disks
-#cd*	at scsibus?		# SCSI CD-ROMs
+sd*		at scsibus? target ? lun ?	# SCSI disks
+#cd*		at scsibus? target ? lun ?	# SCSI CD-ROMs
 
 # Media Independent Interface (mii) drivers)
-nsphy*	at mii?			# NS and compatible PHYs
-qsphy*	at mii?			# Quality Semi QS6612 PHYs
-ukphy*	at mii?			# Unknown PHYs
+nsphy*	at mii? phy ?				# NS and compatible PHYs
+qsphy*	at mii? phy ?				# Quality Semi QS6612 PHYs
+ukphy*	at mii? phy ?				# Unknown PHYs
 
 pseudo-device	rd	2	# ramdisk
 pseudo-device	loop	1	# network loopback

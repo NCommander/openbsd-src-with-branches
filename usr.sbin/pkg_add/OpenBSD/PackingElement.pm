@@ -1,5 +1,5 @@
 # ex:ts=8 sw=4:
-# $OpenBSD: PackingElement.pm,v 1.23 2004/09/14 23:04:10 espie Exp $
+# $OpenBSD: PackingElement.pm,v 1.21 2004/08/10 11:53:27 espie Exp $
 #
 # Copyright (c) 2003-2004 Marc Espie <espie@openbsd.org>
 #
@@ -329,12 +329,7 @@ package OpenBSD::PackingElement::InfoFile;
 our @ISA=qw(OpenBSD::PackingElement::FileBase);
 __PACKAGE__->setKeyword('info');
 sub keyword() { "info" }
-sub dirclass() { "OpenBSD::PackingElement::Infodir" }
 
-package OpenBSD::PackingElement::Shell;
-our @ISA=qw(OpenBSD::PackingElement::FileBase);
-__PACKAGE__->setKeyword('shell');
-sub keyword() { "shell" }
 
 package OpenBSD::PackingElement::Manpage;
 our @ISA=qw(OpenBSD::PackingElement::FileBase);
@@ -802,16 +797,11 @@ sub needs_keyword
 	return $self->stringize() =~ m/\^@/;
 }
 
-package OpenBSD::PackingElement::Infodir;
-our @ISA=qw(OpenBSD::PackingElement::Dir);
-sub keyword() { "info" }
-sub needs_keyword() { 1 }
-
 package OpenBSD::PackingElement::Fontdir;
 our @ISA=qw(OpenBSD::PackingElement::Dir);
 __PACKAGE__->setKeyword('fontdir');
 sub keyword() { "fontdir" }
-sub needs_keyword() { 1 }
+sub needs_keyword { 1 }
 sub dirclass() { "OpenBSD::PackingElement::Fontdir" }
 
 our %fonts_todo = ();
@@ -848,10 +838,10 @@ sub restore_fontdir
 {
 	my $dirname = shift;
 	if (-f "$dirname/fonts.dir.dist") {
-		require OpenBSD::Error;
+		require File::Copy;
 
 		unlink("$dirname/fonts.dir");
-		OpenBSD::Error::Copy("$dirname/fonts.dir.dist", "$dirname/fonts.dir");
+		File::Copy::copy("$dirname/fonts.dir.dist", "$dirname/fonts.dir");
 	}
 }
 
@@ -859,13 +849,11 @@ sub finish_fontdirs
 {
 	my @l = keys %fonts_todo;
 	if (@l != 0) {
-		require OpenBSD::Error;
-
 		map { update_fontalias($_) } @l;
 		print "You may wish to update your font path for ", join(' ', @l), "\n";
-		eval { OpenBSD::Error::System("/usr/X11R6/bin/mkfontdir", @l); };
+		eval { system("/usr/X11R6/bin/mkfontdir", @l); };
 		map { restore_fontdir($_) } @l;
-		eval { OpenBSD::Error::System("/usr/X11R6/bin/fc-cache", @l); };
+		eval { system("/usr/X11R6/bin/fc-cache", @l); };
 	}
 }
 
@@ -874,7 +862,7 @@ package OpenBSD::PackingElement::Mandir;
 our @ISA=qw(OpenBSD::PackingElement::Dir);
 __PACKAGE__->setKeyword('mandir');
 sub keyword() { "mandir" }
-sub needs_keyword() { 1 }
+sub needs_keyword { 1 }
 sub dirclass() { "OpenBSD::PackingElement::Mandir" }
 
 package OpenBSD::PackingElement::Extra;

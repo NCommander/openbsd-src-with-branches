@@ -1,4 +1,4 @@
-/*	$OpenBSD: parse.c,v 1.39 2004/08/08 19:32:45 deraadt Exp $	*/
+/*	$OpenBSD: parse.c,v 1.38 2003/07/29 18:39:23 deraadt Exp $	*/
 
 /*
  * This program is in the public domain and may be used freely by anyone
@@ -18,7 +18,6 @@
 #include <poll.h>
 #include <stdlib.h>
 #include <string.h>
-#include <syslog.h>
 #include <errno.h>
 #include <ctype.h>
 #include <pwd.h>
@@ -26,6 +25,7 @@
 #include <unistd.h>
 
 #include "identd.h"
+#include "error.h"
 
 #define IO_TIMEOUT	30	/* Timeout I/O operations after N seconds */
 

@@ -1,4 +1,4 @@
-/*	$OpenBSD: print-tcp.c,v 1.22 2004/09/16 11:29:51 markus Exp $	*/
+/*	$OpenBSD: print-tcp.c,v 1.20 2004/07/28 14:08:14 markus Exp $	*/
 
 /*
  * Copyright (c) 1988, 1989, 1990, 1991, 1992, 1993, 1994, 1995, 1996, 1997
@@ -23,7 +23,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-    "@(#) $Header: /cvs/src/usr.sbin/tcpdump/print-tcp.c,v 1.22 2004/09/16 11:29:51 markus Exp $ (LBL)";
+    "@(#) $Header: /cvs/src/usr.sbin/tcpdump/print-tcp.c,v 1.20 2004/07/28 14:08:14 markus Exp $ (LBL)";
 #endif
 
 #include <sys/param.h>
@@ -254,9 +254,6 @@ tcp_print(register const u_char *bp, register u_int length,
 		}
 	}
 
-	if (!qflag && TTEST(tp->th_seq) && !TTEST(tp->th_ack))
-		(void)printf("%u ", ntohl(tp->th_seq));
-
 	TCHECK(*tp);
 	seq = ntohl(tp->th_seq);
 	ack = ntohl(tp->th_ack);
@@ -267,8 +264,7 @@ tcp_print(register const u_char *bp, register u_int length,
 	if (qflag) {
 		(void)printf("tcp %d", length - tp->th_off * 4);
 		return;
-	} else if (packettype != PT_TCP) {
-
+	} else {
 		/*
 		 * If data present and NFS port used, assume NFS.
 		 * Pass offset of data plus 4 bytes for RPC TCP msg length

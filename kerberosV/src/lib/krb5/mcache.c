@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1997-2000 Kungliga Tekniska Högskolan
+ * Copyright (c) 1997-2002 Kungliga Tekniska Högskolan
  * (Royal Institute of Technology, Stockholm, Sweden). 
  * All rights reserved. 
  *
@@ -33,7 +33,7 @@
 
 #include "krb5_locl.h"
 
-RCSID("$KTH: mcache.c,v 1.12 2000/11/15 02:12:51 assar Exp $");
+RCSID("$KTH: mcache.c,v 1.15 2002/04/18 09:40:33 joda Exp $");
 
 typedef struct krb5_mcache {
     char *name;
@@ -54,7 +54,7 @@ static struct krb5_mcache *mcc_head;
 
 #define MCC_CURSOR(C) ((struct link*)(C))
 
-static char*
+static const char*
 mcc_get_name(krb5_context context,
 	     krb5_ccache id)
 {
@@ -65,6 +65,7 @@ static krb5_mcache *
 mcc_alloc(const char *name)
 {
     krb5_mcache *m;
+
     ALLOC(m, 1);
     if(m == NULL)
 	return NULL;
@@ -101,8 +102,10 @@ mcc_resolve(krb5_context context, krb5_ccache *id, const char *res)
     }
 
     m = mcc_alloc(res);
-    if (m == NULL)
+    if (m == NULL) {
+	krb5_set_error_string (context, "malloc: out of memory");
 	return KRB5_CC_NOMEM;
+    }
     
     (*id)->data.data = m;
     (*id)->data.length = sizeof(*m);
@@ -118,8 +121,10 @@ mcc_gen_new(krb5_context context, krb5_ccache *id)
 
     m = mcc_alloc(NULL);
 
-    if (m == NULL)
+    if (m == NULL) {
+	krb5_set_error_string (context, "malloc: out of memory");
 	return KRB5_CC_NOMEM;
+    }
 
     (*id)->data.data = m;
     (*id)->data.length = sizeof(*m);
@@ -203,8 +208,10 @@ mcc_store_cred(krb5_context context,
 	return ENOENT;
 
     l = malloc (sizeof(*l));
-    if (l == NULL)
+    if (l == NULL) {
+	krb5_set_error_string (context, "malloc: out of memory");
 	return KRB5_CC_NOMEM;
+    }
     l->next = m->creds;
     m->creds = l;
     memset (&l->cred, 0, sizeof(l->cred));
@@ -287,7 +294,7 @@ mcc_remove_cred(krb5_context context,
     for(q = &m->creds, p = *q; p; p = *q) {
 	if(krb5_compare_creds(context, which, mcreds, &p->cred)) {
 	    *q = p->next;
-	    krb5_free_cred_contents(context, &p->cred);
+	    krb5_free_creds_contents(context, &p->cred);
 	    free(p);
 	} else
 	    q = &p->next;

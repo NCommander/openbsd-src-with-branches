@@ -1,4 +1,4 @@
-/*	$OpenBSD: tcp_output.c,v 1.71 2004/06/20 18:16:50 itojun Exp $	*/
+/*	$OpenBSD: tcp_output.c,v 1.70 2004/06/08 19:47:24 markus Exp $	*/
 /*	$NetBSD: tcp_output.c,v 1.16 1997/06/03 16:17:09 kml Exp $	*/
 
 /*
@@ -241,7 +241,7 @@ tcp_output(tp)
 	 * If there is some data or critical controls (SYN, RST)
 	 * to send, then transmit; otherwise, investigate further.
 	 */
-	idle = (tp->t_flags & TF_LASTIDLE) || (tp->snd_max == tp->snd_una);
+	idle = (tp->snd_max == tp->snd_una);
 	if (idle && (tcp_now - tp->t_rcvtime) >= tp->t_rxtcur)
 		/*
 		 * We have been idle for "a while" and no acks are
@@ -249,14 +249,6 @@ tcp_output(tp)
 		 * slow start to get ack "clock" running again.
 		 */
 		tp->snd_cwnd = tp->t_maxseg;
-
-	/* remember 'idle' for next invocation of tcp_output */
-	if (idle && soissending(so)) {
-		tp->t_flags |= TF_LASTIDLE;
-		idle = 0;
-	} else
-		tp->t_flags &= ~TF_LASTIDLE;
-
 again:
 #ifdef TCP_SACK
 	/*
@@ -412,7 +404,7 @@ again:
 		if (len == txmaxseg)
 			goto send;
 		if ((idle || tp->t_flags & TF_NODELAY) &&
-		    len + off >= so->so_snd.sb_cc && !soissending(so))
+		    len + off >= so->so_snd.sb_cc)
 			goto send;
 		if (tp->t_force)
 			goto send;
@@ -736,7 +728,7 @@ send:
 		 * give data to the user when a buffer fills or
 		 * a PUSH comes in.)
 		 */
-		if (off + len == so->so_snd.sb_cc && !soissending(so))
+		if (off + len == so->so_snd.sb_cc)
 			flags |= TH_PUSH;
 	} else {
 		if (tp->t_flags & TF_ACKNOW)

@@ -1,4 +1,4 @@
-/* $OpenBSD: netcat.c,v 1.73 2004/07/15 15:07:52 markus Exp $ */
+/* $OpenBSD: netcat.c,v 1.72 2004/03/12 10:10:00 jmc Exp $ */
 /*
  * Copyright (c) 2001 Eric Jackson <ericj@monkey.org>
  *
@@ -583,8 +583,8 @@ void
 readwrite(int nfd)
 {
 	struct pollfd pfd[2];
-	unsigned char buf[BUFSIZ];
-	int wfd = fileno(stdin), n;
+	char buf[BUFSIZ];
+	int wfd = fileno(stdin), n, ret;
 	int lfd = fileno(stdout);
 
 	/* Setup Network FD */
@@ -617,8 +617,9 @@ readwrite(int nfd)
 			} else {
 				if (tflag)
 					atelnet(nfd, buf, n);
-				if (atomicio((ssize_t (*)(int, void *, size_t))write,
-				    lfd, buf, n) != n)
+				if ((ret = atomicio(
+				    (ssize_t (*)(int, void *, size_t))write,
+				    lfd, buf, n)) != n)
 					return;
 			}
 		}
@@ -631,8 +632,9 @@ readwrite(int nfd)
 				pfd[1].fd = -1;
 				pfd[1].events = 0;
 			} else {
-				if (atomicio((ssize_t (*)(int, void *, size_t))write,
-				    nfd, buf, n) != n)
+				if ((ret = atomicio(
+				    (ssize_t (*)(int, void *, size_t))write,
+				    nfd, buf, n)) != n)
 					return;
 			}
 		}
@@ -643,6 +645,7 @@ readwrite(int nfd)
 void
 atelnet(int nfd, unsigned char *buf, unsigned int size)
 {
+	int ret;
 	unsigned char *p, *end;
 	unsigned char obuf[4];
 
@@ -663,8 +666,9 @@ atelnet(int nfd, unsigned char *buf, unsigned int size)
 			p++;
 			obuf[2] = *p;
 			obuf[3] = '\0';
-			if (atomicio((ssize_t (*)(int, void *, size_t))write,
-			    nfd, obuf, 3) != 3)
+			if ((ret = atomicio(
+			    (ssize_t (*)(int, void *, size_t))write,
+			    nfd, obuf, 3)) != 3)
 				warnx("Write Error!");
 			obuf[0] = '\0';
 		}
@@ -745,10 +749,10 @@ build_ports(char *p)
 int
 udptest(int s)
 {
-	int i, ret;
+	int i, rv, ret;
 
 	for (i = 0; i <= 3; i++) {
-		if (write(s, "X", 1) == 1)
+		if ((rv = write(s, "X", 1)) == 1)
 			ret = 1;
 		else
 			ret = -1;

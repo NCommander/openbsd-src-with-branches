@@ -1,4 +1,4 @@
-/*	$OpenBSD: process_machdep.c,v 1.10 2004/04/07 18:24:19 mickey Exp $	*/
+/*	$OpenBSD: process_machdep.c,v 1.9 2003/01/16 00:33:14 mickey Exp $	*/
 
 /*
  * Copyright (c) 1999-2004 Michael Shalayeff
@@ -86,13 +86,9 @@ process_read_fpregs(p, fpregs)
 	struct fpreg *fpregs;
 {
 	extern paddr_t fpu_curpcb;
-	extern u_int fpu_enable;
 
-	if (p->p_md.md_regs->tf_cr30 == fpu_curpcb) {
-		mtctl(fpu_enable, CR_CCR);
+	if (p->p_md.md_regs->tf_cr30 == fpu_curpcb)
 		fpu_save((vaddr_t)p->p_addr->u_pcb.pcb_fpregs);
-		mtctl(0, CR_CCR);
-	}
 	bcopy(p->p_addr->u_pcb.pcb_fpregs, fpregs, 32*8);
 
 	return (0);
@@ -152,12 +148,12 @@ process_write_fpregs(p, fpregs)
 {
 	extern paddr_t fpu_curpcb;
 
+	bcopy(fpregs, p->p_addr->u_pcb.pcb_fpregs, 32 * 8);
+
 	if (p->p_md.md_regs->tf_cr30 == fpu_curpcb) {
-		fpu_exit();
+		mtctl(0, CR_CCR);
 		fpu_curpcb = 0;
 	}
-
-	bcopy(fpregs, p->p_addr->u_pcb.pcb_fpregs, 32 * 8);
 
 	return (0);
 }

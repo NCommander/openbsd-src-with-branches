@@ -1,4 +1,4 @@
-/*	$OpenBSD: apply.c,v 1.17 2003/11/10 22:35:07 mickey Exp $	*/
+/*	$OpenBSD: apply.c,v 1.16 2003/09/26 21:26:05 tedu Exp $	*/
 /*	$NetBSD: apply.c,v 1.3 1995/03/25 03:38:23 glass Exp $	*/
 
 /*-
@@ -37,7 +37,7 @@
 #if 0
 static const char sccsid[] = "@(#)apply.c	8.4 (Berkeley) 4/4/94";
 #else
-static const char rcsid[] = "$OpenBSD: apply.c,v 1.17 2003/11/10 22:35:07 mickey Exp $";
+static const char rcsid[] = "$OpenBSD: apply.c,v 1.16 2003/09/26 21:26:05 tedu Exp $";
 #endif
 #endif /* not lint */
 
@@ -53,7 +53,7 @@ static const char rcsid[] = "$OpenBSD: apply.c,v 1.17 2003/11/10 22:35:07 mickey
 #include <unistd.h>
 
 void	usage(void);
-int	mysystem(const char *);
+int	system(const char *);
 
 int
 main(int argc, char *argv[])
@@ -189,7 +189,7 @@ main(int argc, char *argv[])
 		if (debug)
 			(void)printf("%s\n", c);
 		else
-			if (mysystem(c))
+			if (system(c))
 				rval = 1;
 	}
 
@@ -205,7 +205,7 @@ main(int argc, char *argv[])
  *	variable as the shell to execute.
  */
 int
-mysystem(const char *command)
+system(const char *command)
 {
 	static char *name, *shell;
 	pid_t pid;

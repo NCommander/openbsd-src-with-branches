@@ -1,4 +1,4 @@
-/*	$OpenBSD: pmap.c,v 1.118 2004/09/14 23:56:55 mickey Exp $	*/
+/*	$OpenBSD: pmap.c,v 1.114 2004/08/01 07:13:49 mickey Exp $	*/
 
 /*
  * Copyright (c) 1998-2004 Michael Shalayeff
@@ -43,7 +43,6 @@
 #include <uvm/uvm.h>
 
 #include <machine/cpufunc.h>
-#include <machine/iomod.h>
 
 #include <dev/rndvar.h>
 
@@ -312,7 +311,7 @@ pmap_dump_table(pa_space_t space, vaddr_t sva)
 			continue;
 
 		for (pdemask = 1, va = sva ? sva : 0;
-		    va < 0xfffff000; va += PAGE_SIZE) {
+		    va < VM_MAX_KERNEL_ADDRESS; va += PAGE_SIZE) {
 			if (pdemask != (va & PDE_MASK)) {
 				pdemask = va & PDE_MASK;
 				if (!(pde = pmap_pde_get(pd, va))) {
@@ -526,7 +525,8 @@ pmap_bootstrap(vstart)
 	if (btlb_insert(HPPA_SID_KERNEL, 0, 0, &t,
 	    pmap_sid2pid(HPPA_SID_KERNEL) |
 	    pmap_prot(pmap_kernel(), UVM_PROT_RX)) < 0)
-		printf("WARNING: cannot block map kernel text\n");
+		panic("pmap_bootstrap: cannot block map kernel text");
+	kpm->pm_stats.wired_count = kpm->pm_stats.resident_count = atop(t);
 
 	if (&__rodata_end < &__data_start) {
 		physical_steal = (vaddr_t)&__rodata_end;
@@ -535,21 +535,25 @@ pmap_bootstrap(vstart)
 		    physical_end - physical_steal, physical_steal));
 	}
 
-	/* kernel virtual is the last gig of the moohicans */
-	nkpdes = totalphysmem >> 14;	/* at least 16/gig for kmem */
+	/*
+	 * NOTE: we no longer trash the BTLB w/ unused entries,
+	 * lazy map only needed pieces (see bus_mem_add_mapping() for refs).
+	 */
+
+	/* takes about 16 per gig of initial kmem ... */
+	nkpdes = totalphysmem >> 14;
 	if (nkpdes < 4)
-		nkpdes = 4;		/* ... but no less than four */
-	nkpdes += HPPA_IOLEN / PDE_SIZE; /* ... and io space too */
+		nkpdes = 4;	/* ... but no less than four */
 	npdes = nkpdes + (totalphysmem + btoc(PDE_SIZE) - 1) / btoc(PDE_SIZE);
+	uvm_page_physload(0, totalphysmem,
+	    atop(addr) + npdes, totalphysmem, VM_FREELIST_DEFAULT);
 
 	/* map the pdes */
 	for (va = 0; npdes--; va += PDE_SIZE, addr += PAGE_SIZE) {
 
-		/* last nkpdes are for the kernel virtual */
+		/* last four pdes are for the kernel virtual */
 		if (npdes == nkpdes - 1)
 			va = SYSCALLGATE;
-		if (npdes == HPPA_IOLEN / PDE_SIZE - 1)
-			va = HPPA_IOBEGIN;
 		/* now map the pde for the physmem */
 		bzero((void *)addr, PAGE_SIZE);
 		DPRINTF(PDB_INIT|PDB_VP, ("pde premap 0x%x 0x%x\n", va, addr));
@@ -558,9 +562,6 @@ pmap_bootstrap(vstart)
 	}
 
 	physmem = atop(addr);
-	DPRINTF(PDB_INIT, ("physmem: 0x%x - 0x%x\n", physmem, totalphysmem));
-	uvm_page_physload(0, totalphysmem,
-	    physmem, totalphysmem, VM_FREELIST_DEFAULT);
 
 	/* TODO optimize/inline the kenter */
 	for (va = 0; va < ptoa(totalphysmem); va += PAGE_SIZE) {
@@ -609,8 +610,6 @@ pmap_init()
 		pmap_pte_set(pde, SYSCALLGATE, (paddr_t)&gateway_page |
 		    PTE_PROT(TLB_GATE_PROT));
 	}
-
-	DPRINTF(PDB_FOLLOW|PDB_INIT, ("pmap_init(): done\n"));
 }
 
 void
@@ -1172,7 +1171,7 @@ pmap_kenter_pa(va, pa, prot)
 	vm_prot_t prot;
 {
 	volatile pt_entry_t *pde;
-	pt_entry_t pte, opte;
+	pt_entry_t pte;
 
 	DPRINTF(PDB_FOLLOW|PDB_ENTER,
 	    ("pmap_kenter_pa(%x, %x, %x)\n", va, pa, prot));
@@ -1182,16 +1181,17 @@ pmap_kenter_pa(va, pa, prot)
 	if (!(pde = pmap_pde_get(pmap_kernel()->pm_pdir, va)) &&
 	    !(pde = pmap_pde_alloc(pmap_kernel(), va, NULL)))
 		panic("pmap_kenter_pa: cannot allocate pde for va=0x%lx", va);
-	opte = pmap_pte_get(pde, va);
+#ifdef DIAGNOSTIC
+	if ((pte = pmap_pte_get(pde, va)))
+		panic("pmap_kenter_pa: 0x%lx is already mapped %p:0x%x",
+		    va, pde, pte);
+#endif
+
 	pte = pa | PTE_PROT(TLB_WIRED | TLB_REFTRAP |
 	    pmap_prot(pmap_kernel(), prot));
 	if (pa >= HPPA_IOSPACE)
 		pte |= PTE_PROT(TLB_UNCACHABLE);
 	pmap_pte_set(pde, va, pte);
-	pmap_kernel()->pm_stats.wired_count++;
-	pmap_kernel()->pm_stats.resident_count++;
-	if (opte)
-		pmap_pte_flush(pmap_kernel(), va, opte);
 
 #ifdef PMAPDEBUG
 	{

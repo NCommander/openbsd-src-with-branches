@@ -1,4 +1,4 @@
-/*	$OpenBSD: ntpd.h,v 1.35 2004/09/15 19:21:25 henning Exp $ */
+/*	$OpenBSD: ntpd.h,v 1.32 2004/08/10 12:41:15 henning Exp $ */
 
 /*
  * Copyright (c) 2003, 2004 Henning Brauer <henning@openbsd.org>
@@ -191,10 +191,10 @@ int		 msgbuf_write(struct msgbuf *);
 void	 imsg_init(struct imsgbuf *, int);
 int	 imsg_read(struct imsgbuf *);
 int	 imsg_get(struct imsgbuf *, struct imsg *);
-int	 imsg_compose(struct imsgbuf *, enum imsg_type, u_int32_t, pid_t,
-	    void *, u_int16_t);
-struct buf	*imsg_create(struct imsgbuf *, enum imsg_type, u_int32_t, pid_t,
-		    u_int16_t);
+int	 imsg_compose(struct imsgbuf *, int, u_int32_t, void *, u_int16_t);
+int	 imsg_compose_pid(struct imsgbuf *, int, pid_t, void *, u_int16_t);
+struct buf *imsg_create(struct imsgbuf *, int, u_int32_t, u_int16_t);
+struct buf *imsg_create_pid(struct imsgbuf *, int, pid_t, u_int16_t);
 int	 imsg_add(struct buf *, void *, u_int16_t);
 int	 imsg_close(struct imsgbuf *, struct buf *);
 void	 imsg_free(struct imsg *);
@@ -206,6 +206,7 @@ void	 ntp_host_dns(char *, u_int32_t);
 
 /* parse.y */
 int	 parse_config(char *, struct ntpd_conf *);
+int	 cmdline_symset(char *);
 
 /* config.c */
 int		 host(const char *, struct ntp_addr **);

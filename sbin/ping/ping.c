@@ -1,4 +1,4 @@
-/*	$OpenBSD: ping.c,v 1.68 2004/09/14 23:51:34 deraadt Exp $	*/
+/*	$OpenBSD: ping.c,v 1.66 2004/04/07 14:09:35 aaron Exp $	*/
 /*	$NetBSD: ping.c,v 1.20 1995/08/11 22:37:58 cgd Exp $	*/
 
 /*
@@ -43,7 +43,7 @@ static const char copyright[] =
 #if 0
 static char sccsid[] = "@(#)ping.c	8.1 (Berkeley) 6/5/93";
 #else
-static const char rcsid[] = "$OpenBSD: ping.c,v 1.68 2004/09/14 23:51:34 deraadt Exp $";
+static const char rcsid[] = "$OpenBSD: ping.c,v 1.66 2004/04/07 14:09:35 aaron Exp $";
 #endif
 #endif /* not lint */
 
@@ -193,8 +193,8 @@ main(int argc, char *argv[])
 	socklen_t maxsizelen;
 	u_char *datap, *packet;
 	char *target, hnamebuf[MAXHOSTNAMELEN];
-	u_char ttl = MAXTTL, loop = 1;
-	int df = 0, tos = 0;
+	u_char ttl = MAXTTL, loop = 1, df = 0;
+	int tos = 0;
 #ifdef IP_OPTIONS
 	char rspace[3 + 4 * NROUTES + 1];	/* record route space */
 #endif
@@ -221,7 +221,7 @@ main(int argc, char *argv[])
 			break;
 		case 'D':
 			options |= F_HDRINCL;
-			df = 1;
+			df = -1;
 			break;
 		case 'd':
 			options |= F_SO_DEBUG;
@@ -400,7 +400,7 @@ main(int argc, char *argv[])
 		ip->ip_hl = sizeof(struct ip) >> 2;
 		ip->ip_tos = tos;
 		ip->ip_id = 0;
-		ip->ip_off = htons(df ? IP_DF : 0);
+		ip->ip_off = htons(df?IP_DF:0);
 		ip->ip_ttl = ttl;
 		ip->ip_p = IPPROTO_ICMP;
 		ip->ip_src.s_addr = INADDR_ANY;
@@ -536,7 +536,6 @@ main(int argc, char *argv[])
  * launched exactly at 1-second intervals).  This does not affect the
  * quality of the delay and loss statistics.
  */
-/* ARGSUSED */
 void
 catcher(int signo)
 {
@@ -564,7 +563,6 @@ catcher(int signo)
  * Print statistics when SIGINFO is received.
  * XXX not race safe
  */
-/* ARGSUSED */
 void
 prtsig(int signo)
 {

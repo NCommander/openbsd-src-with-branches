@@ -1,4 +1,4 @@
-/*	$OpenBSD: dhcpd.c,v 1.20 2004/09/09 20:51:57 millert Exp $ */
+/*	$OpenBSD: dhcpd.c,v 1.19 2004/05/12 10:20:49 henning Exp $ */
 
 /*
  * Copyright (c) 2004 Henning Brauer <henning@cvs.openbsd.org>
@@ -186,7 +186,7 @@ lease_pinged(struct iaddr from, u_int8_t *packet, int length)
 	}
 
 	if (!lp->state && !lp->releasing) {
-		warning("ICMP Echo Reply for %s arrived late or is spurious.",
+		warn("ICMP Echo Reply for %s arrived late or is spurious.",
 		    piaddr(from));
 		return;
 	}
@@ -200,9 +200,9 @@ lease_pinged(struct iaddr from, u_int8_t *packet, int length)
 	 *     and something answered, so we don't release it.
 	 */
 	if (lp->releasing) {
-		warning("IP address %s answers a ping after sending a release",
+		warn("IP address %s answers a ping after sending a release",
 		    piaddr(lp->ip_addr));
-		warning("Possible release spoof - Not releasing address %s",
+		warn("Possible release spoof - Not releasing address %s",
 		    piaddr(lp->ip_addr));
 		lp->releasing = 0;
 	} else {

@@ -1,4 +1,4 @@
-/*	$OpenBSD: spamd-setup.c,v 1.19 2004/06/29 11:19:07 mickey Exp $ */
+/*	$OpenBSD: spamd-setup.c,v 1.18 2004/04/28 07:32:57 deraadt Exp $ */
 
 /*
  * Copyright (c) 2003 Bob Beck.  All rights reserved.
@@ -74,7 +74,7 @@ u_int32_t	ptoa(char *cp);
 int		parse_netblock(char *buf, struct bl *start, struct bl *end,
 		    int white);
 int		open_child(char *file, char **argv);
-int		fileget(char *url);
+int		fetch(char *url);
 int		open_file(char *method, char *file);
 char		*fix_quoted_colons(char *buf);
 void		do_message(FILE *sdc, char *msg);
@@ -178,6 +178,16 @@ atop(u_int32_t addr)
 	return(inet_ntoa(in));
 }
 
+u_int32_t
+ptoa(char *cp)
+{
+	struct in_addr in;
+
+	memset(&in, 0, sizeof(in));
+	(void) inet_aton(cp, &in);
+	return ntohl(in.s_addr);
+}
+
 int
 parse_netblock(char *buf, struct bl *start, struct bl *end, int white)
 {
@@ -248,11 +258,12 @@ parse_netblock(char *buf, struct bl *start, struct bl *end, int white)
 int
 open_child(char *file, char **argv)
 {
+	pid_t pid;
 	int pdes[2];
 
 	if (pipe(pdes) != 0)
 		return(-1);
-	switch (fork()) {
+	switch (pid = fork()) {
 	case -1:
 		close(pdes[0]);
 		close(pdes[1]);
@@ -274,16 +285,9 @@ open_child(char *file, char **argv)
 }
 
 int
-fileget(char *url)
+fetch(char *url)
 {
-	char *argv[6];
-
-	argv[0] = "ftp";
-	argv[1] = "-V";
-	argv[2] = "-o";
-	argv[3] = "-";
-	argv[4] = url;
-	argv[5] = NULL;
+	char *argv[6]= {"ftp", "-V", "-o", "-", url, NULL};
 
 	if (debug)
 		fprintf(stderr, "Getting %s\n", url);
@@ -305,7 +309,7 @@ open_file(char *method, char *file)
 		asprintf(&url, "%s://%s", method, file);
 		if (url == NULL)
 			return(-1);
-		i = fileget(url);
+		i = fetch(url);
 		free(url);
 		return(i);
 	} else if (strcmp(method, "exec") == 0) {
@@ -635,11 +639,12 @@ configure_pf(struct cidr **blacklists)
 	    "-f" "-", NULL};
 	static FILE *pf = NULL;
 	int pdes[2];
+	pid_t pid;
 
 	if (pf == NULL) {
 		if (pipe(pdes) != 0)
 			return(-1);
-		switch (fork()) {
+		switch (pid = fork()) {
 		case -1:
 			close(pdes[0]);
 			close(pdes[1]);

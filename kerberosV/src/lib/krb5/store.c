@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1997-2000 Kungliga Tekniska Högskolan
+ * Copyright (c) 1997-2002 Kungliga Tekniska Högskolan
  * (Royal Institute of Technology, Stockholm, Sweden). 
  * All rights reserved. 
  *
@@ -32,8 +32,15 @@
  */
 
 #include "krb5_locl.h"
+#include "store-int.h"
 
-RCSID("$KTH: store.c,v 1.34 2000/04/11 00:46:09 assar Exp $");
+RCSID("$KTH: store.c,v 1.38 2002/08/21 12:21:57 joda Exp $");
+
+#define BYTEORDER_IS(SP, V) (((SP)->flags & KRB5_STORAGE_BYTEORDER_MASK) == (V))
+#define BYTEORDER_IS_LE(SP) BYTEORDER_IS((SP), KRB5_STORAGE_BYTEORDER_LE)
+#define BYTEORDER_IS_BE(SP) BYTEORDER_IS((SP), KRB5_STORAGE_BYTEORDER_BE)
+#define BYTEORDER_IS_HOST(SP) (BYTEORDER_IS((SP), KRB5_STORAGE_BYTEORDER_HOST) || \
+			       krb5_storage_is_flags((SP), KRB5_STORAGE_HOST_BYTEORDER))
 
 void
 krb5_storage_set_flags(krb5_storage *sp, krb5_flags flags)
@@ -53,7 +60,44 @@ krb5_storage_is_flags(krb5_storage *sp, krb5_flags flags)
     return (sp->flags & flags) == flags;
 }
 
-ssize_t
+void
+krb5_storage_set_byteorder(krb5_storage *sp, krb5_flags byteorder)
+{
+    sp->flags &= ~KRB5_STORAGE_BYTEORDER_MASK;
+    sp->flags |= byteorder;
+}
+
+krb5_flags
+krb5_storage_get_byteorder(krb5_storage *sp, krb5_flags byteorder)
+{
+    return sp->flags & KRB5_STORAGE_BYTEORDER_MASK;
+}
+
+off_t
+krb5_storage_seek(krb5_storage *sp, off_t offset, int whence)
+{
+    return (*sp->seek)(sp, offset, whence);
+}
+
+krb5_ssize_t
+krb5_storage_read(krb5_storage *sp, void *buf, size_t len)
+{
+    return sp->fetch(sp, buf, len);
+}
+
+krb5_ssize_t
+krb5_storage_write(krb5_storage *sp, const void *buf, size_t len)
+{
+    return sp->store(sp, buf, len);
+}
+
+void
+krb5_storage_set_eof_code(krb5_storage *sp, int code)
+{
+    sp->eof_code = code;
+}
+
+krb5_ssize_t
 _krb5_put_int(void *buffer, unsigned long value, size_t size)
 {
     unsigned char *p = buffer;
@@ -65,7 +109,7 @@ _krb5_put_int(void *buffer, unsigned long value, size_t size)
     return size;
 }
 
-ssize_t
+krb5_ssize_t
 _krb5_get_int(void *buffer, unsigned long *value, size_t size)
 {
     unsigned char *p = buffer;
@@ -115,12 +159,14 @@ krb5_store_int(krb5_storage *sp,
 	       size_t len)
 {
     int ret;
-    unsigned char v[4];
+    unsigned char v[16];
 
+    if(len > sizeof(v))
+	return EINVAL;
     _krb5_put_int(v, value, len);
     ret = sp->store(sp, v, len);
     if (ret != len)
-	return (ret<0)?errno:KRB5_CC_END;
+	return (ret<0)?errno:sp->eof_code;
     return 0;
 }
 
@@ -128,8 +174,10 @@ krb5_error_code
 krb5_store_int32(krb5_storage *sp,
 		 int32_t value)
 {
-    if(krb5_storage_is_flags(sp, KRB5_STORAGE_HOST_BYTEORDER))
+    if(BYTEORDER_IS_HOST(sp))
 	value = htonl(value);
+    else if(BYTEORDER_IS_LE(sp))
+	value = bswap32(value);
     return krb5_store_int(sp, value, 4);
 }
 
@@ -143,7 +191,7 @@ krb5_ret_int(krb5_storage *sp,
     unsigned long w;
     ret = sp->fetch(sp, v, len);
     if(ret != len)
-	return (ret<0)?errno:KRB5_CC_END;
+	return (ret<0)?errno:sp->eof_code;
     _krb5_get_int(v, &w, len);
     *value = w;
     return 0;
@@ -156,8 +204,10 @@ krb5_ret_int32(krb5_storage *sp,
     krb5_error_code ret = krb5_ret_int(sp, value, 4);
     if(ret)
 	return ret;
-    if(krb5_storage_is_flags(sp, KRB5_STORAGE_HOST_BYTEORDER))
-	*value = ntohl(*value);
+    if(BYTEORDER_IS_HOST(sp))
+	*value = htonl(*value);
+    else if(BYTEORDER_IS_LE(sp))
+	*value = bswap32(*value);
     return 0;
 }
 
@@ -165,8 +215,10 @@ krb5_error_code
 krb5_store_int16(krb5_storage *sp,
 		 int16_t value)
 {
-    if(krb5_storage_is_flags(sp, KRB5_STORAGE_HOST_BYTEORDER))
+    if(BYTEORDER_IS_HOST(sp))
 	value = htons(value);
+    else if(BYTEORDER_IS_LE(sp))
+	value = bswap16(value);
     return krb5_store_int(sp, value, 2);
 }
 
@@ -180,8 +232,10 @@ krb5_ret_int16(krb5_storage *sp,
     if(ret)
 	return ret;
     *value = v;
-    if(krb5_storage_is_flags(sp, KRB5_STORAGE_HOST_BYTEORDER))
-	*value = ntohs(*value);
+    if(BYTEORDER_IS_HOST(sp))
+	*value = htons(*value);
+    else if(BYTEORDER_IS_LE(sp))
+	*value = bswap16(*value);
     return 0;
 }
 
@@ -193,7 +247,7 @@ krb5_store_int8(krb5_storage *sp,
 
     ret = sp->store(sp, &value, sizeof(value));
     if (ret != sizeof(value))
-	return (ret<0)?errno:KRB5_CC_END;
+	return (ret<0)?errno:sp->eof_code;
     return 0;
 }
 
@@ -205,7 +259,7 @@ krb5_ret_int8(krb5_storage *sp,
 
     ret = sp->fetch(sp, value, sizeof(*value));
     if (ret != sizeof(*value))
-	return (ret<0)?errno:KRB5_CC_END;
+	return (ret<0)?errno:sp->eof_code;
     return 0;
 }
 
@@ -221,7 +275,7 @@ krb5_store_data(krb5_storage *sp,
     if(ret != data.length){
 	if(ret < 0)
 	    return errno;
-	return KRB5_CC_END;
+	return sp->eof_code;
     }
     return 0;
 }
@@ -242,7 +296,7 @@ krb5_ret_data(krb5_storage *sp,
     if (size) {
 	ret = sp->fetch(sp, data->data, size);
 	if(ret != size)
-	    return (ret < 0)? errno : KRB5_CC_END;
+	    return (ret < 0)? errno : sp->eof_code;
     }
     return 0;
 }
@@ -285,7 +339,7 @@ krb5_store_stringz(krb5_storage *sp, const char *s)
 	if(ret < 0)
 	    return ret;
 	else
-	    return KRB5_CC_END;
+	    return sp->eof_code;
     }
     return 0;
 }
@@ -316,7 +370,7 @@ krb5_ret_stringz(krb5_storage *sp,
     if(ret != 1){
 	free(s);
 	if(ret == 0)
-	    return KRB5_CC_END;
+	    return sp->eof_code;
 	return ret;
     }
     *string = s;
@@ -563,37 +617,35 @@ krb5_store_creds(krb5_storage *sp, krb5_creds *creds)
     int ret;
 
     ret = krb5_store_principal(sp, creds->client);
-    if (ret)
+    if(ret)
 	return ret;
     ret = krb5_store_principal(sp, creds->server);
-    if (ret)
+    if(ret)
 	return ret;
     ret = krb5_store_keyblock(sp, creds->session);
-    if (ret)
+    if(ret)
 	return ret;
     ret = krb5_store_times(sp, creds->times);
-    if (ret)
+    if(ret)
 	return ret;
     ret = krb5_store_int8(sp, 0);  /* this is probably the
 				enc-tkt-in-skey bit from KDCOptions */
-    if (ret)
+    if(ret)
 	return ret;
     ret = krb5_store_int32(sp, creds->flags.i);
-    if (ret)
+    if(ret)
 	return ret;
     ret = krb5_store_addrs(sp, creds->addresses);
-    if (ret)
+    if(ret)
 	return ret;
     ret = krb5_store_authdata(sp, creds->authdata);
-    if (ret)
+    if(ret)
 	return ret;
     ret = krb5_store_data(sp, creds->ticket);
-    if (ret)
+    if(ret)
 	return ret;
     ret = krb5_store_data(sp, creds->second_ticket);
-    if (ret)
-	return ret;
-    return 0;
+    return ret;
 }
 
 krb5_error_code
@@ -625,10 +677,10 @@ krb5_ret_creds(krb5_storage *sp, krb5_creds *creds)
     if(ret) goto cleanup;
     ret = krb5_ret_data (sp,  &creds->second_ticket);
 cleanup:
-    if(ret)
+    if(ret) {
 #if 0	
-	krb5_free_creds_contents(context, creds) /* XXX */
+	krb5_free_creds_contents(context, creds); /* XXX */
 #endif
-	    ;
+    }
     return ret;
 }

@@ -1,4 +1,4 @@
-/*	$OpenBSD: dhclient.c,v 1.59 2004/09/15 18:15:18 henning Exp $	*/
+/*	$OpenBSD: dhclient.c,v 1.57 2004/07/07 17:00:55 deraadt Exp $	*/
 
 /*
  * Copyright 2004 Henning Brauer <henning@openbsd.org>
@@ -165,7 +165,6 @@ get_ifa(char *cp, int n)
 	return (NULL);
 }
 
-/* ARGSUSED */
 void
 routehandler(struct protocol *p)
 {
@@ -1655,7 +1654,7 @@ rewrite_client_leases(void)
 		write_client_lease(ifi, ifi->client->active, 1);
 
 	fflush(leaseFile);
-	ftruncate(fileno(leaseFile), ftello(leaseFile));
+	ftruncate(fileno(leaseFile), ftell(leaseFile));
 	fsync(fileno(leaseFile));
 }
 
@@ -1768,7 +1767,7 @@ priv_script_init(char *reason, char *medium)
 		if (ip->client->scriptEnv == NULL)
 			error("script_init: no memory for environment");
 
-		ip->client->scriptEnv[0] = strdup(CLIENT_PATH);
+		ip->client->scriptEnv[0]=strdup(CLIENT_PATH);
 		if (ip->client->scriptEnv[0] == NULL)
 			error("script_init: no memory for environment");
 
@@ -2031,6 +2030,7 @@ priv_script_go(void)
 	} else {
 		execve(scriptName, argv, envp);
 		error("execve (%s, ...): %m", scriptName);
+		exit(0);
 	}
 
 	if (ip)
@@ -2305,7 +2305,7 @@ option_as_string(unsigned int code, unsigned char *data, int len)
 	unsigned char *dp = data;
 
 	if (code > 255)
-		error("option_as_string: bad code %d", code);
+		error("option_as_string: bad code %d\n", code);
 
 	for (; dp < data + len; dp++) {
 		if (!isascii(*dp) || !isprint(*dp)) {

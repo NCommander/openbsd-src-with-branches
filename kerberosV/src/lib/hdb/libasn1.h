@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1997 Kungliga Tekniska Högskolan
+ * Copyright (c) 1997 - 2001 Kungliga Tekniska Högskolan
  * (Royal Institute of Technology, Stockholm, Sweden). 
  * All rights reserved. 
  *
@@ -31,7 +31,7 @@
  * SUCH DAMAGE. 
  */
 
-/* $KTH: libasn1.h,v 1.4 1999/12/02 17:05:05 joda Exp $ */
+/* $KTH: libasn1.h,v 1.7 2001/06/23 23:18:50 assar Exp $ */
 
 #ifndef __LIBASN1_H__
 #define __LIBASN1_H__
@@ -41,8 +41,9 @@
 #endif
 
 #include <stdlib.h>
+#include <string.h>
 #include <errno.h>
-#include <asn1.h>
+#include <krb5_asn1.h>
 #include <der.h>
 #include "hdb_asn1.h"
 #include <asn1_err.h>

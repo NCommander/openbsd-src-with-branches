@@ -1,4 +1,4 @@
-/*	$OpenBSD: parse.c,v 1.6 2004/05/04 20:28:40 deraadt Exp $	*/
+/*	$OpenBSD: parse.c,v 1.5 2004/04/18 00:43:27 deraadt Exp $	*/
 
 /* Common parser code for dhcpd and dhclient. */
 
@@ -393,11 +393,11 @@ convert_num(unsigned char *buf, char *str, int base, int size)
 		else if (tval >= '0')
 			tval -= '0';
 		else {
-			warning("Bogus number: %s.", str);
+			warn("Bogus number: %s.", str);
 			break;
 		}
 		if (tval >= base) {
-			warning("Bogus number: %s: digit %d not in base %d",
+			warn("Bogus number: %s: digit %d not in base %d",
 			    str, tval, base);
 			break;
 		}
@@ -411,15 +411,15 @@ convert_num(unsigned char *buf, char *str, int base, int size)
 	if (val > max) {
 		switch (base) {
 		case 8:
-			warning("value %s%o exceeds max (%d) for precision.",
+			warn("value %s%o exceeds max (%d) for precision.",
 			    negative ? "-" : "", val, max);
 			break;
 		case 16:
-			warning("value %s%x exceeds max (%d) for precision.",
+			warn("value %s%x exceeds max (%d) for precision.",
 			    negative ? "-" : "", val, max);
 			break;
 		default:
-			warning("value %s%u exceeds max (%d) for precision.",
+			warn("value %s%u exceeds max (%d) for precision.",
 			    negative ? "-" : "", val, max);
 			break;
 		}
@@ -436,7 +436,7 @@ convert_num(unsigned char *buf, char *str, int base, int size)
 			putLong(buf, -(unsigned long)val);
 			break;
 		default:
-			warning("Unexpected integer size: %d", size);
+			warn("Unexpected integer size: %d", size);
 			break;
 		}
 	} else {
@@ -451,7 +451,7 @@ convert_num(unsigned char *buf, char *str, int base, int size)
 			putULong(buf, val);
 			break;
 		default:
-			warning("Unexpected integer size: %d", size);
+			warn("Unexpected integer size: %d", size);
 			break;
 		}
 	}

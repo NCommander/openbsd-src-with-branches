@@ -35,7 +35,7 @@ char copyright[] =
 
 #ifndef lint
 /*static char sccsid[] = "from: @(#)sliplogin.c	5.6 (Berkeley) 3/2/91";*/
-static char rcsid[] = "$Id: sliplogin.c,v 1.24 2004/01/23 03:48:43 deraadt Exp $";
+static char rcsid[] = "$Id: sliplogin.c,v 1.23 2003/06/26 21:36:39 deraadt Exp $";
 #endif /* not lint */
 
 /*
@@ -172,9 +172,8 @@ sigstr(int s)
 
 volatile sig_atomic_t die;
 
-/* ARGSUSED */
 void
-hup_handler(int signo)
+hup_handler(int s)
 {
 	die = 1;
 }

@@ -1,4 +1,4 @@
-/*	$OpenBSD: rde.c,v 1.143 2004/09/16 00:25:12 henning Exp $ */
+/*	$OpenBSD: rde.c,v 1.141 2004/08/10 14:06:53 claudio Exp $ */
 
 /*
  * Copyright (c) 2003, 2004 Henning Brauer <henning@openbsd.org>
@@ -90,8 +90,8 @@ struct rde_peer_head	 peerlist;
 struct rde_peer		 peerself;
 struct rde_peer		 peerdynamic;
 struct filter_head	*rules_l, *newrules;
-struct imsgbuf		*ibuf_se;
-struct imsgbuf		*ibuf_main;
+struct imsgbuf		 ibuf_se;
+struct imsgbuf		 ibuf_main;
 struct mrt		*mrt;
 
 void
@@ -161,11 +161,8 @@ rde_main(struct bgpd_config *config, struct peer *peer_l,
 	close(pipe_m2s[1]);
 
 	/* initialize the RIB structures */
-	if ((ibuf_se = malloc(sizeof(struct imsgbuf))) == NULL ||
-	    (ibuf_main = malloc(sizeof(struct imsgbuf))) == NULL)
-		fatal(NULL);
-	imsg_init(ibuf_se, pipe_s2r[1]);
-	imsg_init(ibuf_main, pipe_m2r[1]);
+	imsg_init(&ibuf_se, pipe_s2r[1]);
+	imsg_init(&ibuf_main, pipe_m2r[1]);
 
 	/* peer list, mrt list and listener list are not used in the RDE */
 	while ((p = peer_l) != NULL) {
@@ -198,14 +195,14 @@ rde_main(struct bgpd_config *config, struct peer *peer_l,
 
 	while (rde_quit == 0) {
 		bzero(&pfd, sizeof(pfd));
-		pfd[PFD_PIPE_MAIN].fd = ibuf_main->fd;
+		pfd[PFD_PIPE_MAIN].fd = ibuf_main.fd;
 		pfd[PFD_PIPE_MAIN].events = POLLIN;
-		if (ibuf_main->w.queued > 0)
+		if (ibuf_main.w.queued > 0)
 			pfd[PFD_PIPE_MAIN].events |= POLLOUT;
 
-		pfd[PFD_PIPE_SESSION].fd = ibuf_se->fd;
+		pfd[PFD_PIPE_SESSION].fd = ibuf_se.fd;
 		pfd[PFD_PIPE_SESSION].events = POLLIN;
-		if (ibuf_se->w.queued > 0)
+		if (ibuf_se.w.queued > 0)
 			pfd[PFD_PIPE_SESSION].events |= POLLOUT;
 
 		i = 2;
@@ -220,23 +217,23 @@ rde_main(struct bgpd_config *config, struct peer *peer_l,
 				fatal("poll error");
 
 		if (nfds > 0 && (pfd[PFD_PIPE_MAIN].revents & POLLOUT) &&
-		    ibuf_main->w.queued)
-			if (msgbuf_write(&ibuf_main->w) < 0)
+		    ibuf_main.w.queued)
+			if (msgbuf_write(&ibuf_main.w) < 0)
 				fatal("pipe write error");
 
 		if (nfds > 0 && pfd[PFD_PIPE_MAIN].revents & POLLIN) {
 			nfds--;
-			rde_dispatch_imsg_parent(ibuf_main);
+			rde_dispatch_imsg_parent(&ibuf_main);
 		}
 
 		if (nfds > 0 && (pfd[PFD_PIPE_SESSION].revents & POLLOUT) &&
-		    ibuf_se->w.queued)
-			if (msgbuf_write(&ibuf_se->w) < 0)
+		    ibuf_se.w.queued)
+			if (msgbuf_write(&ibuf_se.w) < 0)
 				fatal("pipe write error");
 
 		if (nfds > 0 && pfd[PFD_PIPE_SESSION].revents & POLLIN) {
 			nfds--;
-			rde_dispatch_imsg_session(ibuf_se);
+			rde_dispatch_imsg_session(&ibuf_se);
 		}
 
 		if (nfds > 0 && pfd[PFD_MRT_FILE].revents & POLLOUT) {
@@ -252,12 +249,10 @@ rde_main(struct bgpd_config *config, struct peer *peer_l,
 
 	rde_shutdown();
 
-	msgbuf_write(&ibuf_se->w);
-	msgbuf_clear(&ibuf_se->w);
-	free(ibuf_se);
-	msgbuf_write(&ibuf_main->w);
-	msgbuf_clear(&ibuf_main->w);
-	free(ibuf_main);
+	msgbuf_write(&ibuf_se.w);
+	msgbuf_clear(&ibuf_se.w);
+	msgbuf_write(&ibuf_main.w);
+	msgbuf_clear(&ibuf_main.w);
 
 	log_info("route decision engine exiting");
 	_exit(0);
@@ -336,8 +331,7 @@ rde_dispatch_imsg_session(struct imsgbuf *ibuf)
 			}
 			pid = imsg.hdr.pid;
 			pt_dump(network_dump_upcall, &pid, AF_UNSPEC);
-			imsg_compose(ibuf_se, IMSG_CTL_END, 0, pid, -1,
-			    NULL, 0);
+			imsg_compose_pid(&ibuf_se, IMSG_CTL_END, pid, NULL, 0);
 			break;
 		case IMSG_CTL_SHOW_RIB:
 			if (imsg.hdr.len != IMSG_HEADER_SIZE) {
@@ -346,8 +340,7 @@ rde_dispatch_imsg_session(struct imsgbuf *ibuf)
 			}
 			pid = imsg.hdr.pid;
 			pt_dump(rde_dump_upcall, &pid, AF_UNSPEC);
-			imsg_compose(ibuf_se, IMSG_CTL_END, 0, pid, -1,
-			    NULL, 0);
+			imsg_compose_pid(&ibuf_se, IMSG_CTL_END, pid, NULL, 0);
 			break;
 		case IMSG_CTL_SHOW_RIB_AS:
 			if (imsg.hdr.len - IMSG_HEADER_SIZE !=
@@ -357,8 +350,7 @@ rde_dispatch_imsg_session(struct imsgbuf *ibuf)
 			}
 			pid = imsg.hdr.pid;
 			rde_dump_as(imsg.data, pid);
-			imsg_compose(ibuf_se, IMSG_CTL_END, 0, pid, -1,
-			    NULL, 0);
+			imsg_compose_pid(&ibuf_se, IMSG_CTL_END, pid, NULL, 0);
 			break;
 		case IMSG_CTL_SHOW_RIB_PREFIX:
 			if (imsg.hdr.len - IMSG_HEADER_SIZE !=
@@ -368,8 +360,7 @@ rde_dispatch_imsg_session(struct imsgbuf *ibuf)
 			}
 			pid = imsg.hdr.pid;
 			rde_dump_prefix(imsg.data, pid);
-			imsg_compose(ibuf_se, IMSG_CTL_END, 0, pid, -1,
-			    NULL, 0);
+			imsg_compose_pid(&ibuf_se, IMSG_CTL_END, pid, NULL, 0);
 			break;
 		case IMSG_CTL_SHOW_NEIGHBOR:
 			if (imsg.hdr.len - IMSG_HEADER_SIZE !=
@@ -381,12 +372,12 @@ rde_dispatch_imsg_session(struct imsgbuf *ibuf)
 			peer = peer_get(p.conf.id);
 			if (peer != NULL)
 				p.stats.prefix_cnt = peer->prefix_cnt;
-			imsg_compose(ibuf_se, IMSG_CTL_SHOW_NEIGHBOR, 0,
-			    imsg.hdr.pid, -1, &p, sizeof(struct peer));
+			imsg_compose_pid(&ibuf_se, IMSG_CTL_SHOW_NEIGHBOR,
+			    imsg.hdr.pid, &p, sizeof(struct peer));
 			break;
 		case IMSG_CTL_END:
-			imsg_compose(ibuf_se, IMSG_CTL_END, 0, imsg.hdr.pid,
-			    -1, NULL, 0);
+			imsg_compose_pid(&ibuf_se, IMSG_CTL_END, imsg.hdr.pid,
+			    NULL, 0);
 			break;
 		default:
 			break;
@@ -1320,14 +1311,14 @@ rde_update_err(struct rde_peer *peer, u_int8_t error, u_int8_t suberr,
 {
 	struct buf	*wbuf;
 
-	if ((wbuf = imsg_create(ibuf_se, IMSG_UPDATE_ERR, peer->conf.id, 0,
+	if ((wbuf = imsg_create(&ibuf_se, IMSG_UPDATE_ERR, peer->conf.id,
 	    size + sizeof(error) + sizeof(suberr))) == NULL)
 		fatal("imsg_create error");
 	if (imsg_add(wbuf, &error, sizeof(error)) == -1 ||
 	    imsg_add(wbuf, &suberr, sizeof(suberr)) == -1 ||
 	    imsg_add(wbuf, data, size) == -1)
 		fatal("imsg_add error");
-	if (imsg_close(ibuf_se, wbuf) == -1)
+	if (imsg_close(&ibuf_se, wbuf) == -1)
 		fatal("imsg_close error");
 	peer->state = PEER_ERR;
 }
@@ -1442,14 +1433,14 @@ rde_dump_rib_as(struct prefix *p, pid_t pid)
 		rib.flags |= F_RIB_ELIGIBLE;
 	rib.aspath_len = aspath_length(p->aspath->aspath);
 
-	if ((wbuf = imsg_create(ibuf_se, IMSG_CTL_SHOW_RIB, 0, pid,
+	if ((wbuf = imsg_create_pid(&ibuf_se, IMSG_CTL_SHOW_RIB, pid,
 	    sizeof(rib) + rib.aspath_len)) == NULL)
 		return;
 	if (imsg_add(wbuf, &rib, sizeof(rib)) == -1 ||
 	    imsg_add(wbuf, aspath_dump(p->aspath->aspath),
 	    rib.aspath_len) == -1)
 		return;
-	if (imsg_close(ibuf_se, wbuf) == -1)
+	if (imsg_close(&ibuf_se, wbuf) == -1)
 		return;
 }
 
@@ -1471,7 +1462,7 @@ rde_dump_rib_prefix(struct prefix *p, pid_t pid)
 	if (p->aspath->nexthop == NULL ||
 	    p->aspath->nexthop->state == NEXTHOP_REACH)
 		prefix.flags |= F_RIB_ELIGIBLE;
-	if (imsg_compose(ibuf_se, IMSG_CTL_SHOW_RIB_PREFIX, 0, pid, -1,
+	if (imsg_compose_pid(&ibuf_se, IMSG_CTL_SHOW_RIB_PREFIX, pid,
 	    &prefix, sizeof(prefix)) == -1)
 		log_warnx("rde_dump_as: imsg_compose error");
 }
@@ -1596,7 +1587,7 @@ rde_send_kroute(struct prefix *new, struct prefix *old)
 	if (p->aspath->flags & F_NEXTHOP_BLACKHOLE)
 		kr.flags |= F_BLACKHOLE;
 
-	if (imsg_compose(ibuf_main, type, 0, 0, -1, &kr, sizeof(kr)) == -1)
+	if (imsg_compose(&ibuf_main, type, 0, &kr, sizeof(kr)) == -1)
 		fatal("imsg_compose error");
 }
 
@@ -1617,17 +1608,16 @@ rde_send_pftable(const char *table, struct bgpd_addr *addr,
 	memcpy(&pfm.addr, addr, sizeof(pfm.addr));
 	pfm.len = len;
 
-	if (imsg_compose(ibuf_main,
+	if (imsg_compose(&ibuf_main,
 	    del ? IMSG_PFTABLE_REMOVE : IMSG_PFTABLE_ADD,
-	    0, 0, -1, &pfm, sizeof(pfm)) == -1)
+	    0, &pfm, sizeof(pfm)) == -1)
 		fatal("imsg_compose error");
 }
 
 void
 rde_send_pftable_commit(void)
 {
-	if (imsg_compose(ibuf_main, IMSG_PFTABLE_COMMIT, 0, 0, -1, NULL, 0) ==
-	    -1)
+	if (imsg_compose(&ibuf_main, IMSG_PFTABLE_COMMIT, 0, NULL, 0) == -1)
 		fatal("imsg_compose error");
 }
 
@@ -1647,7 +1637,7 @@ rde_send_nexthop(struct bgpd_addr *next, int valid)
 
 	size = sizeof(struct bgpd_addr);
 
-	if (imsg_compose(ibuf_main, type, 0, 0, -1, next,
+	if (imsg_compose(&ibuf_main, type, 0, next,
 	    sizeof(struct bgpd_addr)) == -1)
 		fatal("imsg_compose error");
 }
@@ -1714,8 +1704,8 @@ rde_update_queue_runner(void)
 				continue;
 
 			/* finally send message to SE */
-			if (imsg_compose(ibuf_se, IMSG_UPDATE, peer->conf.id,
-			    0, -1, queue_buf, wpos) == -1)
+			if (imsg_compose(&ibuf_se, IMSG_UPDATE, peer->conf.id,
+			    queue_buf, wpos) == -1)
 				fatal("imsg_compose error");
 			sent++;
 		}
@@ -1990,8 +1980,8 @@ network_dump_upcall(struct pt_entry *pt, void *ptr)
 		    k.prefixlen = p->prefix->prefixlen;
 		    if (p->peer == &peerself)
 			    k.flags = F_KERNEL;
-		    if (imsg_compose(ibuf_se, IMSG_CTL_SHOW_NETWORK, 0, pid,
-			-1, &k, sizeof(k)) == -1)
+		    if (imsg_compose_pid(&ibuf_se, IMSG_CTL_SHOW_NETWORK, pid,
+			&k, sizeof(k)) == -1)
 			    log_warnx("network_dump_upcall: "
 				"imsg_compose error");
 	    }

@@ -1,4 +1,4 @@
-/*	$OpenBSD: dispatch.c,v 1.12 2004/09/16 09:35:24 claudio Exp $ */
+/*	$OpenBSD: dispatch.c,v 1.9 2004/05/04 20:28:40 deraadt Exp $ */
 
 /*
  * Copyright (c) 1995, 1996, 1997, 1998, 1999
@@ -48,7 +48,7 @@
 /* Most boxes has less than 16 interfaces, so this might be a good guess.  */
 #define INITIAL_IFREQ_COUNT 16
 
-struct interface_info *interfaces;
+struct interface_info *interfaces, *dummy_interfaces, *fallback_interface;
 struct protocol *protocols;
 struct timeout *timeouts;
 static struct timeout *free_timeouts;
@@ -176,7 +176,7 @@ discover_interfaces(int state)
 					subnet->interface = tmp;
 					subnet->interface_address = addr;
 				} else if (subnet->interface != tmp) {
-					warning("Multiple %s %s: %s %s",
+					warn("Multiple %s %s: %s %s",
 					    "interfaces match the",
 					    "same subnet",
 					    subnet->interface->name,
@@ -185,7 +185,7 @@ discover_interfaces(int state)
 				share = subnet->shared_network;
 				if (tmp->shared_network &&
 				    tmp->shared_network != share) {
-					warning("Interface %s matches %s",
+					warn("Interface %s matches %s",
 					    tmp->name,
 					    "multiple shared networks");
 				} else {
@@ -195,7 +195,7 @@ discover_interfaces(int state)
 				if (!share->interface) {
 					share->interface = tmp;
 				} else if (share->interface != tmp) {
-					warning("Multiple %s %s: %s %s",
+					warn("Multiple %s %s: %s %s",
 					    "interfaces match the",
 					    "same shared network",
 					    share->interface->name,
@@ -229,6 +229,10 @@ discover_interfaces(int state)
 			else
 				last->next = tmp->next;
 
+			/* Remember the interface in case we need to know
+			   about it later. */
+			tmp->next = dummy_interfaces;
+			dummy_interfaces = tmp;
 			continue;
 		}
 		last = tmp;
@@ -237,9 +241,9 @@ discover_interfaces(int state)
 
 		/* We must have a subnet declaration for each interface. */
 		if (!tmp->shared_network && (state == DISCOVER_SERVER)) {
-			warning("No subnet declaration for %s (%s).",
+			warn("No subnet declaration for %s (%s).",
 			    tmp->name, inet_ntoa(foo.sin_addr));
-			warning("Please write a subnet declaration in your %s",
+			warn("Please write a subnet declaration in your %s",
 			    "dhcpd.conf file for the");
 			error("network segment to which interface %s %s",
 			    tmp->name, "is attached.");
@@ -381,7 +385,7 @@ got_one(struct protocol *l)
 	struct sockaddr_in from;
 	struct hardware hfrom;
 	struct iaddr ifrom;
-	ssize_t result;
+	size_t result;
 	union {
 		unsigned char packbuf[4095];
 		struct dhcp_packet packet;
@@ -390,13 +394,13 @@ got_one(struct protocol *l)
 
 	if ((result = receive_packet (ip, u.packbuf, sizeof u,
 	    &from, &hfrom)) == -1) {
-		warning("receive_packet failed on %s: %s", ip->name,
+		warn("receive_packet failed on %s: %s", ip->name,
 		    strerror(errno));
 		ip->errors++;
 		if ((!interface_status(ip)) ||
 		    (ip->noifmedia && ip->errors > 20)) {
 			/* our interface has gone away. */
-			warning("Interface %s no longer appears valid.",
+			warn("Interface %s no longer appears valid.",
 			    ip->name);
 			ip->dead = 1;
 			interfaces_invalidated = 1;

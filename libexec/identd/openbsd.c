@@ -1,4 +1,4 @@
-/* $OpenBSD: openbsd.c,v 1.18 2002/07/16 10:32:37 deraadt Exp $ */
+/* $OpenBSD: openbsd.c,v 1.17 2002/07/16 10:16:10 deraadt Exp $ */
 
 /*
  * This program is in the public domain and may be used freely by anyone
@@ -18,7 +18,6 @@
 #include <stdio.h>
 #include <string.h>
 #include <errno.h>
-#include <syslog.h>
 
 #include <netinet/in.h>
 #include <netinet/in_systm.h>
@@ -30,6 +29,7 @@
 #include <arpa/inet.h>
 
 #include "identd.h"
+#include "error.h"
 
 /*
  * Return the user number for the connection owner

@@ -37,7 +37,6 @@
 
 #include <sys/param.h>
 
-#include <stdlib.h>
 #include <db.h>
 #include <limits.h>
 #include <kvm.h>

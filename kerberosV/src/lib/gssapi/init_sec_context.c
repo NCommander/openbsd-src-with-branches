@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1997 - 2001 Kungliga Tekniska Högskolan
+ * Copyright (c) 1997 - 2003 Kungliga Tekniska Högskolan
  * (Royal Institute of Technology, Stockholm, Sweden). 
  * All rights reserved. 
  *
@@ -33,7 +33,7 @@
 
 #include "gssapi_locl.h"
 
-RCSID("$KTH: init_sec_context.c,v 1.25 2001/01/30 22:49:56 assar Exp $");
+RCSID("$KTH: init_sec_context.c,v 1.36 2003/03/16 18:00:00 lha Exp $");
 
 /*
  * copy the addresses from `input_chan_bindings' (if any) to
@@ -111,20 +111,10 @@ do_delegation (krb5_auth_context ac,
 {
     krb5_creds creds;
     krb5_kdc_flags fwd_flags;
-    krb5_keyblock *subkey;
     krb5_error_code kret;
        
     memset (&creds, 0, sizeof(creds));
     krb5_data_zero (fwd_data);
-       
-    kret = krb5_generate_subkey (gssapi_krb5_context, &cred->session, &subkey);
-    if (kret)
-	goto out;
-       
-    kret = krb5_auth_con_setlocalsubkey(gssapi_krb5_context, ac, subkey);
-    krb5_free_keyblock (gssapi_krb5_context, subkey);
-    if (kret)
-	goto out;
        
     kret = krb5_cc_get_principal(gssapi_krb5_context, ccache, &creds.client);
     if (kret) 
@@ -204,9 +194,6 @@ init_auth
     krb5_enctype enctype;
     krb5_data fwd_data;
 
-    output_token->length = 0;
-    output_token->value  = NULL;
-
     krb5_data_zero(&outbuf);
     krb5_data_zero(&fwd_data);
 
@@ -224,10 +211,12 @@ init_auth
     (*context_handle)->flags        = 0;
     (*context_handle)->more_flags   = 0;
     (*context_handle)->ticket       = NULL;
+    (*context_handle)->lifetime     = GSS_C_INDEFINITE;
 
     kret = krb5_auth_con_init (gssapi_krb5_context,
 			       &(*context_handle)->auth_context);
     if (kret) {
+	gssapi_krb5_set_error_string ();
 	*minor_status = kret;
 	ret = GSS_S_FAILURE;
 	goto failure;
@@ -259,6 +248,7 @@ init_auth
     if (initiator_cred_handle == GSS_C_NO_CREDENTIAL) {
 	kret = krb5_cc_default (gssapi_krb5_context, &ccache);
 	if (kret) {
+	    gssapi_krb5_set_error_string ();
 	    *minor_status = kret;
 	    ret = GSS_S_FAILURE;
 	    goto failure;
@@ -270,6 +260,7 @@ init_auth
 				  ccache,
 				  &(*context_handle)->source);
     if (kret) {
+	gssapi_krb5_set_error_string ();
 	*minor_status = kret;
 	ret = GSS_S_FAILURE;
 	goto failure;
@@ -279,15 +270,21 @@ init_auth
 				target_name,
 				&(*context_handle)->target);
     if (kret) {
+	gssapi_krb5_set_error_string ();
 	*minor_status = kret;
 	ret = GSS_S_FAILURE;
 	goto failure;
     }
 
+    ret = _gss_DES3_get_mic_compat(minor_status, *context_handle);
+    if (ret)
+	goto failure;
+
+
     memset(&this_cred, 0, sizeof(this_cred));
     this_cred.client          = (*context_handle)->source;
     this_cred.server          = (*context_handle)->target;
-    if (time_req) {
+    if (time_req && time_req != GSS_C_INDEFINITE) {
 	krb5_timestamp ts;
 
 	krb5_timeofday (gssapi_krb5_context, &ts);
@@ -303,15 +300,28 @@ init_auth
 				 &cred);
 
     if (kret) {
+	gssapi_krb5_set_error_string ();
 	*minor_status = kret;
 	ret = GSS_S_FAILURE;
 	goto failure;
     }
 
+    (*context_handle)->lifetime = cred->times.endtime;
+
     krb5_auth_con_setkey(gssapi_krb5_context, 
 			 (*context_handle)->auth_context, 
 			 &cred->session);
   
+    kret = krb5_auth_con_generatelocalsubkey(gssapi_krb5_context, 
+					     (*context_handle)->auth_context,
+					     &cred->session);
+    if(kret) {
+	gssapi_krb5_set_error_string ();
+	*minor_status = kret;
+	ret = GSS_S_FAILURE;
+	goto failure;
+    }
+
     flags = 0;
     ap_options = 0;
     if (req_flags & GSS_C_DELEG_FLAG)
@@ -337,18 +347,16 @@ init_auth
     if (ret_flags)
 	*ret_flags = flags;
     (*context_handle)->flags = flags;
-    (*context_handle)->more_flags = LOCAL;
+    (*context_handle)->more_flags |= LOCAL;
     
-    kret = gssapi_krb5_create_8003_checksum (input_chan_bindings,
-					     flags,
-					     &fwd_data,
-					     &cksum);
+    ret = gssapi_krb5_create_8003_checksum (minor_status,
+					    input_chan_bindings,
+					    flags,
+					    &fwd_data,
+					    &cksum);
     krb5_data_free (&fwd_data);
-    if (kret) {
-	*minor_status = kret;
-	ret = GSS_S_FAILURE;
+    if (ret)
 	goto failure;
-    }
 
 #if 1
     enctype = (*context_handle)->auth_context->keyblock->keytype;
@@ -374,6 +382,7 @@ init_auth
 				     KRB5_KU_AP_REQ_AUTH);
 
     if (kret) {
+	gssapi_krb5_set_error_string ();
 	*minor_status = kret;
 	ret = GSS_S_FAILURE;
 	goto failure;
@@ -387,22 +396,25 @@ init_auth
 			      &outbuf);
 
     if (kret) {
+	gssapi_krb5_set_error_string ();
 	*minor_status = kret;
 	ret = GSS_S_FAILURE;
 	goto failure;
     }
 
-    ret = gssapi_krb5_encapsulate (&outbuf, output_token, "\x01\x00");
-    if (ret) {
-	*minor_status = kret;
+    ret = gssapi_krb5_encapsulate (minor_status, &outbuf, output_token,
+				   "\x01\x00");
+    if (ret)
 	goto failure;
-    }
 
     krb5_data_free (&outbuf);
 
     if (flags & GSS_C_MUTUAL_FLAG) {
 	return GSS_S_CONTINUE_NEEDED;
     } else {
+	if (time_rec)
+	    *time_rec = (*context_handle)->lifetime;
+
 	(*context_handle)->more_flags |= OPEN;
 	return GSS_S_COMPLETE;
     }
@@ -444,25 +456,38 @@ repl_mutual
     krb5_data indata;
     krb5_ap_rep_enc_part *repl;
 
-    ret = gssapi_krb5_decapsulate (input_token, &indata, "\x02\x00");
-    if (ret) {
+    output_token->length = 0;
+    output_token->value = NULL;
+
+    if (actual_mech_type)
+	*actual_mech_type = GSS_KRB5_MECHANISM;
+
+    ret = gssapi_krb5_decapsulate (minor_status, input_token, &indata,
+				   "\x02\x00");
+    if (ret)
 				/* XXX - Handle AP_ERROR */
-	return GSS_S_FAILURE;
-    }
+	return ret;
 
     kret = krb5_rd_rep (gssapi_krb5_context,
 			(*context_handle)->auth_context,
 			&indata,
 			&repl);
-    if (kret)
+    if (kret) {
+	gssapi_krb5_set_error_string ();
+	*minor_status = kret;
 	return GSS_S_FAILURE;
+    }
     krb5_free_ap_rep_enc_part (gssapi_krb5_context,
 			       repl);
 
-    output_token->length = 0;
-
     (*context_handle)->more_flags |= OPEN;
+    
+    if (time_rec)
+	*time_rec = (*context_handle)->lifetime;
+    if (ret_flags)
+	*ret_flags = (*context_handle)->flags;
 
+    *minor_status = 0;
     return GSS_S_COMPLETE;
 }
 
@@ -486,7 +511,22 @@ OM_uint32 gss_init_sec_context
             OM_uint32 * time_rec
            )
 {
-    gssapi_krb5_init ();
+    GSSAPI_KRB5_INIT ();
+
+    output_token->length = 0;
+    output_token->value  = NULL;
+
+    if (ret_flags)
+	*ret_flags = 0;
+    if (time_rec)
+	*time_rec = 0;
+
+    if (target_name == GSS_C_NO_NAME) {
+	if (actual_mech_type)
+	    *actual_mech_type = GSS_C_NO_OID;
+	*minor_status = 0;
+	return GSS_S_BAD_NAME;
+    }
 
     if (input_token == GSS_C_NO_BUFFER || input_token->length == 0)
 	return init_auth (minor_status,
