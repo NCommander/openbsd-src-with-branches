@@ -1,4 +1,4 @@
-/*	$OpenBSD: ar5211reg.h,v 1.1 2005/02/25 22:25:30 reyk Exp $	*/
+/*	$OpenBSD: ar5211reg.h,v 1.2 2005/03/10 08:30:56 reyk Exp $	*/
 
 /*
  * Copyright (c) 2004, 2005 Reyk Floeter <reyk@vantronix.net>
@@ -597,6 +597,9 @@ typedef enum {
 #define AR5K_AR5211_PCICFG_LEDBLINK	0x00700000
 #define AR5K_AR5211_PCICFG_LEDBLINK_S	20
 #define AR5K_AR5211_PCICFG_LEDSLOW	0x00800000
+#define AR5K_AR5211_PCICFG_LEDSTATE					\
+	(AR5K_AR5211_PCICFG_LED | AR5K_AR5211_PCICFG_LEDMODE |		\
+	AR5K_AR5211_PCICFG_LEDBLINK | AR5K_AR5211_PCICFG_LEDSLOW)
 
 /*
  * "General Purpose Input/Output" (GPIO) control register
