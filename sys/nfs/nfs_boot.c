@@ -1,4 +1,4 @@
-/*	$OpenBSD: nfs_boot.c,v 1.14 2002/03/14 01:27:13 millert Exp $ */
+/*	$OpenBSD: nfs_boot.c,v 1.15 2002/06/02 01:47:08 deraadt Exp $ */
 /*	$NetBSD: nfs_boot.c,v 1.26 1996/05/07 02:51:25 thorpej Exp $	*/
 
 /*
@@ -83,7 +83,7 @@ nfs_boot_getfh(bpsin, key, ndmntp, retries)
  * Support for NFS diskless booting, specifically getting information
  * about where to boot from, what pathnames, etc.
  *
- * This implememtation uses RARP and the bootparam RPC.
+ * This implementation uses RARP and the bootparam RPC.
  * We are forced to implement RPC anyway (to get file handles)
  * so we might as well take advantage of it for bootparam too.
  *
