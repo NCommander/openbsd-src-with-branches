@@ -1,4 +1,4 @@
-/*	$OpenBSD: exec_elf.c,v 1.27 1999/08/12 20:37:16 niklas Exp $	*/
+/*	$OpenBSD: exec_elf.c,v 1.28 1999/11/25 13:41:30 art Exp $	*/
 
 /*
  * Copyright (c) 1996 Per Fogelstrom
@@ -686,7 +686,7 @@ exec_elf_fixup(p, epp)
 		return (error);
 	}
 	/*
-	 * We have to do this ourselfs...
+	 * We have to do this ourselves...
 	 */
 	for (i = 0; i < epp->ep_vmcmds.evs_used && !error; i++) {
 		struct exec_vmcmd *vcp;
