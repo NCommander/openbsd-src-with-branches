@@ -1,4 +1,4 @@
-/*	$OpenBSD: init_main.c,v 1.65 2001/05/17 18:41:44 provos Exp $	*/
+/*	$OpenBSD: init_main.c,v 1.66 2001/06/22 14:14:08 deraadt Exp $	*/
 /*	$NetBSD: init_main.c,v 1.84.4.1 1996/06/02 09:08:06 mrg Exp $	*/
 
 /*
@@ -78,6 +78,7 @@
 #endif
 #include <sys/domain.h>
 #include <sys/mbuf.h>
+#include <sys/pipe.h>
 
 #include <sys/syscall.h>
 #include <sys/syscallargs.h>
@@ -243,6 +244,11 @@ main(framep)
 	 * Initialize filedescriptors.
 	 */
 	filedesc_init();
+
+	/*
+	 * Initialize pipes.
+	 */
+	pipe_init();
 
 	/*
 	 * Create process 0 (the swapper).
