@@ -1,10 +1,10 @@
-#	$OpenBSD$
+#	$OpenBSD: Makefile.inc,v 1.9 1997/09/21 11:50:34 deraadt Exp $
 #	etc.pmax/Makefile.inc -- pmax-specific etc Makefile targets
 
 .ifdef DESTDIR
 
 snap_md: binutils bsd distrib
-	cp ${.CURDIR}/../sys/arch/sparc/compile/GENERIC/bsd \
+	cp ${.CURDIR}/../sys/arch/pmax/compile/GENERIC/bsd \
 	    ${DESTDIR}/snapshot/bsd
 
 binutils:
