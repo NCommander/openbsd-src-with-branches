@@ -1,4 +1,4 @@
-/*	$OpenBSD: kern_fork.c,v 1.48 2002/01/16 20:50:17 miod Exp $	*/
+/*	$OpenBSD: kern_fork.c,v 1.49 2002/01/25 15:00:26 art Exp $	*/
 /*	$NetBSD: kern_fork.c,v 1.29 1996/02/09 18:59:34 christos Exp $	*/
 
 /*
@@ -349,7 +349,7 @@ again:
 	if (flags & FORK_VMNOSTACK) {
 		/* share as much address space as possible */
 		(void) uvm_map_inherit(&p1->p_vmspace->vm_map,
-		    VM_MIN_ADDRESS, VM_MAXUSER_ADDRESS - MAXSSIZ,
+		    VM_MIN_ADDRESS, round_page(VM_MAXUSER_ADDRESS - MAXSSIZ),
 		    MAP_INHERIT_SHARE);
 	}
 
