@@ -598,7 +598,7 @@ user(name)
 			    "ANONYMOUS FTP LOGIN REFUSED FROM %s", remotehost);
 		return;
 	}
-	if (anon_only != 0) {
+	if (anon_only && !checkuser(_PATH_FTPCHROOT, name)) {
 		reply(530, "Sorry, only anonymous ftp allowed.");
 		return;
 	}
