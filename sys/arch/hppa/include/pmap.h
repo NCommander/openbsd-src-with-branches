@@ -1,4 +1,4 @@
-/*	$OpenBSD: pmap.h,v 1.19 2002/03/15 21:44:18 mickey Exp $	*/
+/*	$OpenBSD: pmap.h,v 1.20 2002/04/22 06:31:28 mickey Exp $	*/
 
 /*
  * Copyright (c) 2002 Michael Shalayeff
@@ -52,7 +52,7 @@ struct pmap {
 typedef struct pmap *pmap_t;
 
 #define HPPA_MAX_PID    0xfffa
-#define	HPPA_SID_MAX	0x7fff
+#define	HPPA_SID_MAX	0x7ffd
 #define HPPA_SID_KERNEL 0
 #define HPPA_PID_KERNEL 2
 
