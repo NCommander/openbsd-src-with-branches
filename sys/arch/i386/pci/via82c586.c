@@ -1,4 +1,4 @@
-/*	$OpenBSD: via82c586.c,v 1.5 2001/01/16 20:49:49 mickey Exp $	*/
+/*	$OpenBSD: via82c586.c,v 1.6 2001/01/25 00:07:41 mickey Exp $	*/
 /*	$NetBSD: via82c586.c,v 1.2 2000/07/18 11:24:09 soda Exp $	*/
 
 /*-
@@ -253,10 +253,9 @@ via82c586_set_trigger(v, irq, trigger)
 			reg = pci_conf_read(ph->ph_pc, ph->ph_tag,
 			    VP3_CFG_PIRQ_REG);
 			shift = vp3_cfg_trigger_shift[i];
+			/* XXX we only upgrade the trigger here */
 			if (trigger == IST_LEVEL)
 				reg &= ~(VP3_CFG_TRIGGER_MASK << shift);
-			else
-				reg |= (VP3_CFG_TRIGGER_EDGE << shift);
 			pci_conf_write(ph->ph_pc, ph->ph_tag,
 			    VP3_CFG_PIRQ_REG, reg);
 			break;
