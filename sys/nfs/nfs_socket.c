@@ -1231,9 +1231,9 @@ nfs_rephead(siz, nd, slp, err, cache, frev, mrq, mbp, bposp)
 			*tl = 0;
 		}
 	}
+	*mrq = mreq;
 	if (mrq != NULL)
-		*mrq = mreq;
-	*mbp = mb;
+		*mbp = mb;
 	*bposp = bpos;
 	if (err != 0 && err != NFSERR_RETVOID)
 		nfsstats.srvrpc_errs++;
