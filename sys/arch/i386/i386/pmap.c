@@ -1,4 +1,4 @@
-/*	$OpenBSD: pmap.c,v 1.69 2003/05/02 21:07:47 mickey Exp $	*/
+/*	$OpenBSD: pmap.c,v 1.70 2003/05/05 17:54:59 drahn Exp $	*/
 /*	$NetBSD: pmap.c,v 1.91 2000/06/02 17:46:37 thorpej Exp $	*/
 
 /*
@@ -1143,7 +1143,8 @@ pmap_alloc_pvpage(pmap, mode)
 	 * pmap is already locked!  (...but entering the mapping is safe...)
 	 */
 
-	pmap_kenter_pa(pv_cachedva, VM_PAGE_TO_PHYS(pg), VM_PROT_ALL);
+	pmap_kenter_pa(pv_cachedva, VM_PAGE_TO_PHYS(pg),
+	    VM_PROT_READ|VM_PROT_WRITE);
 	pvpage = (struct pv_page *) pv_cachedva;
 	pv_cachedva = 0;
 	return(pmap_add_pvpage(pvpage, mode != ALLOCPV_NONEED));
