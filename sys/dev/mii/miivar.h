@@ -1,4 +1,4 @@
-/*	$OpenBSD: miivar.h,v 1.20 2004/09/27 18:25:48 brad Exp $	*/
+/*	$OpenBSD: miivar.h,v 1.21 2004/11/18 16:15:33 brad Exp $	*/
 /*	$NetBSD: miivar.h,v 1.17 2000/03/06 20:56:57 thorpej Exp $	*/
 
 /*-
@@ -257,7 +257,7 @@ int	mii_phy_tick(struct mii_softc *);
 
 void	mii_phy_status(struct mii_softc *);
 void	mii_phy_update(struct mii_softc *, int);
-void	mii_phy_statusmsg(struct mii_softc *);
+int	mii_phy_statusmsg(struct mii_softc *);
 
 void	ukphy_status(struct mii_softc *);
 
