@@ -61,7 +61,7 @@ struct cfdriver ppb_cd = {
 	NULL, "ppb", DV_DULL
 };
 
-int	ppbprint __P((void *, char *pnp));
+int	ppbprint __P((void *, const char *pnp));
 
 int
 ppbmatch(parent, match, aux)
@@ -132,7 +132,7 @@ ppbattach(parent, self, aux)
 int
 ppbprint(aux, pnp)
 	void *aux;
-	char *pnp;
+	const char *pnp;
 {
 	struct pcibus_attach_args *pba = aux;
 

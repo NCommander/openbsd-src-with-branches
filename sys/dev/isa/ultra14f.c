@@ -330,7 +330,7 @@ struct scsi_device uha_dev = {
 
 int	uhaprobe __P((struct device *, void *, void *));
 void	uhaattach __P((struct device *, struct device *, void *));
-int	uhaprint __P((void *, char *));
+int	uhaprint __P((void *, const char *));
 
 struct cfattach uha_ca = {
 	sizeof(struct uha_softc), uhaprobe, uhaattach
@@ -578,7 +578,7 @@ uhaprobe(parent, match, aux)
 int
 uhaprint(aux, name)
 	void *aux;
-	char *name;
+	const char *name;
 {
 	if (name != NULL)       
 		printf("%s: scsibus ", name);

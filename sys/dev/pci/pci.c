@@ -53,7 +53,7 @@ struct cfdriver pci_cd = {
 	NULL, "pci", DV_DULL
 };
 
-int	pciprint __P((void *, char *));
+int	pciprint __P((void *, const char *));
 int	pcisubmatch __P((struct device *, void *, void *));
 
 int
@@ -161,7 +161,7 @@ pciattach(parent, self, aux)
 int
 pciprint(aux, pnp)
 	void *aux;
-	char *pnp;
+	const char *pnp;
 {
 	register struct pci_attach_args *pa = aux;
 	char devinfo[256];

@@ -147,4 +147,4 @@ int	grfunmap __P((dev_t dev, caddr_t addr, struct proc *p));
 void	grf_establish __P((struct grfbus_softc *, nubus_slot *,
 	    int (*)(struct grf_softc *, int, void *),
 	    caddr_t (*)(struct grf_softc *, vm_offset_t)));
-int	grfbusprint __P((void *, char *));
+int	grfbusprint __P((void *, const char *));

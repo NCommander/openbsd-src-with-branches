@@ -55,7 +55,7 @@ struct confargs {
 /* autoconf.c */
 void	setconf __P((void));
 int	bus_scan __P((struct device *, void *, void *));
-int	bus_print __P((void *, char *));
+int	bus_print __P((void *, const char *));
 int	bus_peek __P((int, vm_offset_t, int));
 char	*bus_mapin __P((int, int, int));
 void	configure __P((void));

@@ -56,7 +56,7 @@
 
 void	sbicdmaattach	__P((struct device *, struct device *, void *));
 int	sbicdmamatch	__P((struct device *, void *, void *));
-int	sbicdmaprint	__P((void *auxp, char *));
+int	sbicdmaprint	__P((void *auxp, const char *));
 
 void	sbicdma_dmafree	__P((struct sbic_softc *));
 void	sbicdma_dmastop	__P((struct sbic_softc *));
@@ -160,8 +160,8 @@ sbicdmaattach(parent, self, args)
  */
 int
 sbicdmaprint(auxp, pnp)
-	void	*auxp;
-	char	*pnp;
+	void		*auxp;
+	const char	*pnp;
 {
 	if (pnp == NULL)
 		return (UNCONF);

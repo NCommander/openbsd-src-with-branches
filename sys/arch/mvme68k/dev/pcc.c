@@ -92,7 +92,7 @@ pccmatch(parent, vcf, args)
 int
 pcc_print(args, bus)
 	void *args;
-	char *bus;
+	const char *bus;
 {
 	struct confargs *ca = args;
 

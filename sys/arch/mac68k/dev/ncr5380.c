@@ -197,7 +197,7 @@ extern __inline__ void finish_req(SC_REQ *reqp)
 /*
  * Auto config stuff....
  */
-int	ncr_cprint __P((void *auxp, char *));
+int	ncr_cprint __P((void *auxp, const char *));
 void	ncr_attach __P((struct device *, struct device *, void *));
 int	ncr_match __P((struct device *, void *, void *));
 
@@ -283,7 +283,7 @@ void		*auxp;
 int
 ncr_cprint(auxp, name)
 void	*auxp;
-char	*name;
+const char *name;
 {
 	if (name == NULL)
 		return (UNCONF);

@@ -1,4 +1,4 @@
-/*	$OpenBSD: isavar.h,v 1.17 1996/10/31 01:05:10 niklas Exp $	*/
+/*	$OpenBSD: isavar.h,v 1.18 1996/11/12 20:30:40 niklas Exp $	*/
 /*	$NetBSD: isavar.h,v 1.23 1996/05/08 23:32:31 thorpej Exp $	*/
 
 /*
@@ -185,7 +185,7 @@ struct isa_softc {
 char	*isa_intr_typename __P((int type));
 
 void	isascan __P((struct device *parent, void *match));
-int	isaprint __P((void *, char *));
+int	isaprint __P((void *, const char *));
 
 #ifdef NEWCONFIG
 /*

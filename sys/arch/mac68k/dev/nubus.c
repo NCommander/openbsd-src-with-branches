@@ -48,7 +48,7 @@ static int	nubus_debug = 0x01;
 #define NDB_ARITH	0x4
 #endif
 
-static int	nubusprint __P((void *, char *));
+static int	nubusprint __P((void *, const char *));
 static int	nubusmatch __P((struct device *, void *, void *));
 static void	nubusattach __P((struct device *, struct device *, void *));
 
@@ -101,8 +101,8 @@ nubusattach(parent, self, aux)
 
 static int
 nubusprint(aux, name)
-	void	*aux;
-	char	*name;
+	void	   *aux;
+	const char *name;
 {
 	nubus_slot	*fmt;
 

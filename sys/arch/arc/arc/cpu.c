@@ -1,4 +1,4 @@
-/*	$OpenBSD: cpu.c,v 1.2 1996/08/26 11:11:52 pefo Exp $	*/
+/*	$OpenBSD: cpu.c,v 1.3 1996/09/14 15:58:14 pefo Exp $	*/
 
 /*
  * Copyright (c) 1994, 1995 Carnegie-Mellon University.
@@ -45,7 +45,7 @@ struct cfdriver cpu_cd = {
 	NULL, "cpu", DV_DULL, NULL, 0
 };
 
-static int	cpuprint __P((void *, char *pnp));
+static int	cpuprint __P((void *, const char *pnp));
 
 static int
 cpumatch(parent, cfdata, aux)

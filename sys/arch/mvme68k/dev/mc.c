@@ -93,7 +93,7 @@ mcmatch(parent, vcf, args)
 int
 mc_print(args, bus)
 	void *args;
-	char *bus;
+	const char *bus;
 {
 	struct confargs *ca = args;
 

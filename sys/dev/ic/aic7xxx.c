@@ -1,4 +1,4 @@
-/*	$OpenBSD: aic7xxx.c,v 1.11 1996/10/31 01:01:24 niklas Exp $	*/
+/*	$OpenBSD: aic7xxx.c,v 1.12 1996/11/12 20:30:15 niklas Exp $	*/
 
 /*
  * Generic driver for the aic7xxx based adaptec SCSI controllers
@@ -577,12 +577,12 @@ ahc_scsirate(ahc, scsirate, period, offset, channel, target )
 }
 
 #if defined(__NetBSD__) || defined(__OpenBSD__)
-int	ahcprint __P((void *, char *));
+int	ahcprint __P((void *, const char *));
 
 int
 ahcprint(aux, name)
 	void *aux;
-	char *name;
+	const char *name;
 {
 
 	if (name != NULL)

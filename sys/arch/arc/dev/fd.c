@@ -1,4 +1,4 @@
-/*	$OpenBSD: fd.c,v 1.2 1996/08/26 11:12:00 pefo Exp $	*/
+/*	$OpenBSD: fd.c,v 1.3 1996/11/06 01:34:00 deraadt Exp $	*/
 /*	$NetBSD: fd.c,v 1.78 1995/07/04 07:23:09 mycroft Exp $	*/
 
 /*-
@@ -249,7 +249,7 @@ struct fdc_attach_args {
 int
 fdprint(aux, fdc)
 	void *aux;
-	char *fdc;
+	const char *fdc;
 {
 	register struct fdc_attach_args *fa = aux;
 

@@ -75,7 +75,7 @@ grf_establish(sc, sp, g_mode, g_phys)
 int
 grfbusprint(aux, name)
 	void *aux;
-	char *name;
+	const char *name;
 {
 	struct grfbus_attach_args *ga = aux;
 

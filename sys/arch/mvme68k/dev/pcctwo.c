@@ -95,7 +95,7 @@ pcctwomatch(parent, vcf, args)
 int
 pcctwo_print(args, bus)
 	void *args;
-	char *bus;
+	const char *bus;
 {
 	struct confargs *ca = args;
 

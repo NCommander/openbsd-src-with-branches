@@ -254,7 +254,7 @@ vmerw(sc, uio, flags, bus)
 int
 vmeprint(args, bus)
 	void *args;
-	char *bus;
+	const char *bus;
 {
 	struct confargs *ca = args;
 
