@@ -1,4 +1,4 @@
-/*	$OpenBSD: sunos_misc.c,v 1.43 2003/08/15 20:32:16 tedu Exp $	*/
+/*	$OpenBSD: sunos_misc.c,v 1.44 2004/06/22 20:45:33 deraadt Exp $	*/
 /*	$NetBSD: sunos_misc.c,v 1.65 1996/04/22 01:44:31 christos Exp $	*/
 
 /*
@@ -400,7 +400,7 @@ sunos_readdir_callback(arg, bdp, cookie)
 	idb.d_off = cookie;
 	idb.d_reclen = sunos_reclen;
 	idb.d_namlen = bdp->d_namlen;
-	strlcpy(idb.d_name, bdp->d_name, SUNOS_MAXNAMLEN+1);
+	strlcpy(idb.d_name, bdp->d_name, sizeof(idb.d_name));
 
 	if ((error = copyout((caddr_t)&idb, cb->outp, sunos_reclen)))
 		return (error);
