@@ -28,7 +28,7 @@
  */
 
 #if defined(LIBC_SCCS) && !defined(lint)
-static char rcsid[] = "$OpenBSD: alarm.c,v 1.4 2003/06/02 20:18:34 millert Exp $";
+static char rcsid[] = "$OpenBSD: alarm.c,v 1.5 2003/06/11 21:03:10 deraadt Exp $";
 #endif /* LIBC_SCCS and not lint */
 
 /*
@@ -41,7 +41,7 @@ unsigned int
 alarm(unsigned int secs)
 {
 	struct itimerval it, oitv;
-	register struct itimerval *itp = &it;
+	struct itimerval *itp = &it;
 
 	timerclear(&itp->it_interval);
 	itp->it_value.tv_sec = secs;

@@ -31,7 +31,7 @@
  */
 
 #if defined(LIBC_SCCS) && !defined(lint)
-static char rcsid[] = "$OpenBSD: popen.c,v 1.14 2004/05/18 02:05:52 jfb Exp $";
+static char rcsid[] = "$OpenBSD: popen.c,v 1.15 2004/08/06 18:31:11 pedro Exp $";
 #endif /* LIBC_SCCS and not lint */
 
 #include <sys/param.h>
@@ -141,7 +141,7 @@ popen(const char *program, const char *type)
 int
 pclose(FILE *iop)
 {
-	register struct pid *cur, *last;
+	struct pid *cur, *last;
 	int pstat;
 	pid_t pid;
 

@@ -28,7 +28,7 @@
  */
 
 #if defined(LIBC_SCCS) && !defined(lint)
-static char rcsid[] = "$OpenBSD: ttyslot.c,v 1.4 2003/06/02 20:18:35 millert Exp $";
+static char rcsid[] = "$OpenBSD: ttyslot.c,v 1.5 2004/05/18 02:05:52 jfb Exp $";
 #endif /* LIBC_SCCS and not lint */
 
 #include <ttyent.h>
@@ -39,9 +39,9 @@ static char rcsid[] = "$OpenBSD: ttyslot.c,v 1.4 2003/06/02 20:18:35 millert Exp
 int
 ttyslot(void)
 {
-	register struct ttyent *ttyp;
-	register int slot;
-	register char *p;
+	struct ttyent *ttyp;
+	int slot;
+	char *p;
 	int cnt;
 	char *name;
 
