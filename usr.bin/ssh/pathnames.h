@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: pathnames.h,v 1.2 2001/01/29 01:58:17 niklas Exp $	*/
 
 /*
  * Author: Tatu Ylonen <ylo@cs.hut.fi>
@@ -104,3 +104,6 @@
 
 /* for scp */
 #define _PATH_CP			"cp"
+
+/* for sftp */
+#define _PATH_SFTP_SERVER		"/usr/libexec/sftp-server"
