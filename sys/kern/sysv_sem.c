@@ -1,4 +1,4 @@
-/*	$OpenBSD: sysv_sem.c,v 1.19 2003/07/21 22:44:50 tedu Exp $	*/
+/*	$OpenBSD: sysv_sem.c,v 1.20 2003/08/20 18:02:20 millert Exp $	*/
 /*	$NetBSD: sysv_sem.c,v 1.26 1996/02/09 19:00:25 christos Exp $	*/
 
 /*
@@ -884,7 +884,7 @@ sysctl_sysvsem(int *name, u_int namelen, void *oldp, size_t *oldlenp,
 		if ((error = sysctl_int(oldp, oldlenp, newp, newlen, &val)) ||
 		    val == seminfo.semmns)
 			return (error);
-		if (val < seminfo.semmns)
+		if (val < seminfo.semmns || val > 0xffff)
 			return (EINVAL);	/* can't decrease semmns */
 		seminfo.semmns = val;
 		return (0);
@@ -902,7 +902,7 @@ sysctl_sysvsem(int *name, u_int namelen, void *oldp, size_t *oldlenp,
 		if ((error = sysctl_int(oldp, oldlenp, newp, newlen, &val)) ||
 		    val == seminfo.semmsl)
 			return (error);
-		if (val < seminfo.semmsl)
+		if (val < seminfo.semmsl || val > 0xffff)
 			return (EINVAL);	/* can't decrease semmsl */
 		seminfo.semmsl = val;
 		return (0);
