@@ -1,4 +1,4 @@
-/*	$OpenBSD: wdvar.h,v 1.9 2003/10/16 20:03:40 grange Exp $	*/
+/*	$OpenBSD: wdvar.h,v 1.10 2003/10/21 09:57:04 jmc Exp $	*/
 /*	$NetBSD: wdvar.h,v 1.3 1998/11/11 19:38:27 bouyer Exp $	*/
 
 /*
@@ -31,6 +31,9 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
  */
+
+#ifndef _DEV_ATA_WDVAR_H_
+#define _DEV_ATA_WDVAR_H_
 
 /* Params needed by the controller to perform an ATA bio */
 struct ata_bio {
@@ -79,3 +82,5 @@ struct ata_bio {
 int wdc_ata_bio(struct ata_drive_datas*, struct ata_bio*);
 
 void wddone(void *);
+
+#endif	/* !_DEV_ATA_WDVAR_H_ */
