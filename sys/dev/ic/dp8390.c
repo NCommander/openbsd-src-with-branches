@@ -1,4 +1,4 @@
-/*	$OpenBSD: dp8390.c,v 1.9 2001/02/20 19:39:37 mickey Exp $	*/
+/*	$OpenBSD: dp8390.c,v 1.10 2001/03/12 05:36:57 aaron Exp $	*/
 /*	$NetBSD: dp8390.c,v 1.13 1998/07/05 06:49:11 jonathan Exp $	*/
 
 /*
@@ -578,7 +578,6 @@ loop:
 			dp8390_read(sc,
 			    packet_ptr + sizeof(struct dp8390_ring),
 			    len - sizeof(struct dp8390_ring));
-			++sc->sc_arpcom.ac_if.if_ipackets;
 		} else {
 			/* Really BAD.  The ring pointers are corrupted. */
 			log(LOG_ERR, "%s: NIC memory corrupt - "
