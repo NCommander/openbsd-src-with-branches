@@ -1,4 +1,4 @@
-/*	$OpenBSD: tape.c,v 1.13 1998/02/17 00:07:52 millert Exp $	*/
+/*	$OpenBSD: tape.c,v 1.14 1999/08/17 09:13:15 millert Exp $	*/
 /*	$NetBSD: tape.c,v 1.26 1997/04/15 07:12:25 lukem Exp $	*/
 
 /*
@@ -320,7 +320,7 @@ again:
 		do	{
 			fprintf(stderr, "Specify next volume #: ");
 			(void)fflush(stderr);
-			(void)fgets(buf, BUFSIZ, terminal);
+			(void)fgets(buf, TP_BSIZE, terminal);
 		} while (!feof(terminal) && buf[0] == '\n');
 		if (feof(terminal))
 			exit(1);
@@ -339,7 +339,7 @@ again:
 	fprintf(stderr, "Enter ``none'' if there are no more tapes\n");
 	fprintf(stderr, "otherwise enter tape name (default: %s) ", magtape);
 	(void)fflush(stderr);
-	(void)fgets(buf, BUFSIZ, terminal);
+	(void)fgets(buf, TP_BSIZE, terminal);
 	if (feof(terminal))
 		exit(1);
 	if (!strcmp(buf, "none\n")) {
