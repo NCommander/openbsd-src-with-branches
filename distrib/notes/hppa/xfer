@@ -1,0 +1,7 @@
+dnl	$OpenBSD$
+
+Since there is no installation media for the MACHINE port, there is no need
+for specific media filling instructions. You will just need to be able to
+unpack the OpenBSD sets on the diskless boot server, as told in the
+``Installing the OpenBSD system'' below.
+
