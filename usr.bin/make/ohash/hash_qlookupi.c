@@ -1,4 +1,4 @@
-/* $OpenBSD$ */
+/* $OpenBSD: hash_qlookupi.c,v 1.1 2000/06/23 16:24:51 espie Exp $ */
 /* ex:ts=8 sw=4: 
  */
 
@@ -31,7 +31,7 @@
 
 #include "ohash_int.h"
 
-unsigned
+unsigned int
 hash_qlookupi(h, s, e)
 	struct hash *h;
 	const char *s;
