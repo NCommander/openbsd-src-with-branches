@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.24 2002/03/31 02:38:49 brian Exp $
+#	$OpenBSD: Makefile,v 1.25 2002/05/11 00:20:21 espie Exp $
 
 PROG=	ppp
 SRCS=	alias.c alias_cuseeme.c alias_db.c alias_ftp.c alias_irc.c \
@@ -18,7 +18,7 @@ DPADD+=	${LIBDES} ${LIBUTIL} ${LIBZ} ${LIBCRYPTO}
 .if defined(NOSUID) || defined(PPP_NOSUID)
 BINMODE=554
 .else
-BINMODE=4554
+BINMODE=4550
 BINOWN=	root
 .endif
 BINGRP=	network
