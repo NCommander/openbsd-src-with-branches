@@ -1,3 +1,4 @@
+/*	$OpenBSD: parse.c,v 1.3 1997/07/23 20:04:47 kstailey Exp $	*/
 /*	$NetBSD: parse.c,v 1.3 1995/03/21 15:07:48 cgd Exp $	*/
 
 /*
@@ -41,8 +42,13 @@ static char rcsid[] = "$NetBSD: parse.c,v 1.3 1995/03/21 15:07:48 cgd Exp $";
 #endif
 #endif /* not lint */
 
-#include "externs.h"
+#include "extern.h"
 
+int hash __P((char *));
+void install __P((struct wlist *));
+struct wlist *lookup __P((char *));
+
+void
 wordinit()
 {
 	register struct wlist *w;
@@ -51,6 +57,7 @@ wordinit()
 		install(w);
 }
 
+int
 hash(s)
 	register char *s;
 {
@@ -76,6 +83,7 @@ lookup(s)
 	return NULL;
 }
 
+void
 install(wp)
 	register struct wlist *wp;
 {
@@ -89,12 +97,13 @@ install(wp)
 		printf("Multiply defined %s.\n", wp->string);
 }
 
+void
 parse()
 {
 	register struct wlist *wp;
 	register n;
 
-	wordnumber = 0;           /* for cypher */
+	wordnumber = 0;		  /* for cypher */
 	for (n = 0; n <= wordcount; n++) {
 		if ((wp = lookup(words[n])) == NULL) {
 			wordvalue[n] = -1;

@@ -1,3 +1,4 @@
+/*	$OpenBSD: proc.h,v 1.3 1996/10/30 22:39:19 niklas Exp $	*/
 /*	$NetBSD: proc.h,v 1.2 1995/03/24 15:01:36 cgd Exp $	*/
 
 /*
@@ -38,3 +39,7 @@ struct mdproc {
 };
 
 #define	MDP_FPUSED	0x0001		/* Process used the FPU */
+
+#ifdef _KERNEL
+void switch_exit __P((struct proc *));
+#endif

@@ -1,3 +1,4 @@
+/*	$OpenBSD: reg.h,v 1.2 1995/03/28 18:14:07 jtc Exp $	*/
 /*	$NetBSD: reg.h,v 1.2 1995/03/28 18:14:07 jtc Exp $	*/
 
 /*
@@ -93,6 +94,8 @@ struct fpreg {
 #ifdef _KERNEL
 void	restorefpstate __P((struct fpreg *));
 void	savefpstate __P((struct fpreg *));
+void	frametoreg __P((struct trapframe *, struct reg *));
+void	regtoframe __P((struct reg *, struct trapframe *));
 #endif
 
 #endif /* _ALPHA_REG_H_ */

@@ -1,22 +1,22 @@
-#	$NetBSD: Makefile,v 1.23 1995/10/07 09:56:54 mycroft Exp $
+#	$OpenBSD: Makefile,v 1.11 1997/11/30 21:30:12 mickey Exp $
+#	$NetBSD: Makefile,v 1.31 1996/08/10 04:01:31 mycroft Exp $
 
 LIB=	kern
 NOPIC=
 
-DIR=${KERNREL}${KERNDIR}
+MACHINE=	${XMACHINE}
+MACHINE_ARCH=	${XMACHINE_ARCH}
 
-.if exists (${DIR}/arch/${MACHINE_ARCH}/Makefile.inc)
-.PATH:	${DIR}/arch/${MACHINE_ARCH}
-.include "${DIR}/arch/${MACHINE_ARCH}/Makefile.inc"
+M=	${.CURDIR}/arch/${MACHINE_ARCH}
+
+CPPFLAGS=	-I$M ${KERNCPPFLAGS}
+
+.if exists ($M/Makefile.inc)
+.PATH:	$M
+.include "$M/Makefile.inc"
 .endif
 
-.PATH: ${DIR}
-
-CC = ${KERNCC}
-CFLAGS += -I${DIR}/arch/${MACHINE_ARCH} \
-	${KERNCFLAGS:S/-D_KERNEL//:S@-I.@-I${KERNREL}.@g}
-
-.if (${MACHINE_ARCH} != "alpha")
+.if (${MACHINE_ARCH} != "alpha" && ${MACHINE} != "sgi")
 # Quad support
 SRCS+=	adddi3.c anddi3.c ashldi3.c ashrdi3.c cmpdi2.c divdi3.c iordi3.c \
 	lshldi3.c lshrdi3.c moddi3.c muldi3.c negdi2.c notdi2.c qdivrem.c \
@@ -24,7 +24,10 @@ SRCS+=	adddi3.c anddi3.c ashldi3.c ashrdi3.c cmpdi2.c divdi3.c iordi3.c \
 .endif
 
 # Other stuff
-SRCS+=	
+SRCS+=	md5.c getsn.c srandom.c bcd.c
+
+# Files to clean up
+CLEANFILES+= lib${LIB}.o lib${LIB}.po
 
 # mcount cannot be compiled with profiling
 mcount.po: mcount.o

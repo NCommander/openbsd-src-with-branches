@@ -1,3 +1,4 @@
+/*	$OpenBSD: netstat.c,v 1.9 1997/12/19 09:22:55 deraadt Exp $	*/
 /*	$NetBSD: netstat.c,v 1.3 1995/06/18 23:53:07 cgd Exp $	*/
 
 /*-
@@ -37,7 +38,7 @@
 #if 0
 static char sccsid[] = "@(#)netstat.c	8.1 (Berkeley) 6/6/93";
 #endif
-static char rcsid[] = "$NetBSD: netstat.c,v 1.3 1995/06/18 23:53:07 cgd Exp $";
+static char rcsid[] = "$OpenBSD: netstat.c,v 1.9 1997/12/19 09:22:55 deraadt Exp $";
 #endif /* not lint */
 
 /*
@@ -67,6 +68,7 @@ static char rcsid[] = "$NetBSD: netstat.c,v 1.3 1995/06/18 23:53:07 cgd Exp $";
 #include <netinet/tcp_debug.h>
 #include <netinet/udp.h>
 #include <netinet/udp_var.h>
+#include <arpa/inet.h>
 
 #include <netdb.h>
 #include <stdlib.h>
@@ -81,7 +83,7 @@ static char *inetname __P((struct in_addr));
 static void inetprint __P((struct in_addr *, int, char *));
 
 #define	streq(a,b)	(strcmp(a,b)==0)
-#define	YMAX(w)		((w)->maxy-1)
+#define	YMAX(w)		((w)->_maxy-1)
 
 WINDOW *
 opennetstat()
@@ -384,19 +386,21 @@ inetprint(in, port, proto)
 	char *proto;
 {
 	struct servent *sp = 0;
-	char line[80], *cp, *index();
+	char line[80], *cp;
 
-	sprintf(line, "%.*s.", 16, inetname(*in));
-	cp = index(line, '\0');
+	snprintf(line, sizeof line, "%.*s.", 16, inetname(*in));
+	cp = strchr(line, '\0');
 	if (!nflag && port)
 		sp = getservbyport(port, proto);
 	if (sp || port == 0)
-		sprintf(cp, "%.8s", sp ? sp->s_name : "*");
+		snprintf(cp, sizeof line - strlen(cp), "%.8s",
+		    sp ? sp->s_name : "*");
 	else
-		sprintf(cp, "%d", ntohs((u_short)port));
+		snprintf(cp, sizeof line - strlen(cp), "%d",
+		    ntohs((u_short)port));
 	/* pad to full column to clear any garbage */
-	cp = index(line, '\0');
-	while (cp - line < 22)
+	cp = strchr(line, '\0');
+	while (cp - line < 22 && cp - line < sizeof line-1)
 		*cp++ = ' ';
 	*cp = '\0';
 	waddstr(wnd, line);
@@ -431,14 +435,16 @@ inetname(in)
 				cp = hp->h_name;
 		}
 	}
-	if (in.s_addr == INADDR_ANY)
-		strcpy(line, "*");
-	else if (cp)
-		strcpy(line, cp);
-	else {
+	if (in.s_addr == INADDR_ANY) {
+		strncpy(line, "*", sizeof line-1);
+		line[sizeof line-1] = '\0';
+	} else if (cp) {
+		strncpy(line, cp, sizeof line-1);
+		line[sizeof line-1] = '\0';
+	} else {
 		in.s_addr = ntohl(in.s_addr);
 #define C(x)	((x) & 0xff)
-		sprintf(line, "%u.%u.%u.%u", C(in.s_addr >> 24),
+		snprintf(line, sizeof line, "%u.%u.%u.%u", C(in.s_addr >> 24),
 			C(in.s_addr >> 16), C(in.s_addr >> 8), C(in.s_addr));
 	}
 	return (line);
@@ -467,6 +473,8 @@ cmdnetstat(cmd, args)
 			p->ni_flags |= NIF_LACHG|NIF_FACHG;
 		}
 		nflag = new;
+		wclear(wnd);
+		labelnetstat();
 		goto redisplay;
 	}
 	if (!netcmd(cmd, args))

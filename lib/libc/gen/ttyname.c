@@ -1,5 +1,3 @@
-/*	$NetBSD: ttyname.c,v 1.9 1995/05/02 01:45:33 mycroft Exp $	*/
-
 /*
  * Copyright (c) 1988, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -34,11 +32,7 @@
  */
 
 #if defined(LIBC_SCCS) && !defined(lint)
-#if 0
-static char sccsid[] = "@(#)ttyname.c	8.2 (Berkeley) 1/27/94";
-#else
-static char rcsid[] = "$NetBSD: ttyname.c,v 1.9 1995/05/02 01:45:33 mycroft Exp $";
-#endif
+static char rcsid[] = "$OpenBSD: ttyname.c,v 1.3 1996/09/15 09:31:07 tholo Exp $";
 #endif /* LIBC_SCCS and not lint */
 
 #include <sys/types.h>
@@ -74,7 +68,7 @@ ttyname(fd)
 	if (fstat(fd, &sb) || !S_ISCHR(sb.st_mode))
 		return (NULL);
 
-	if (db = dbopen(_PATH_DEVDB, O_RDONLY, 0, DB_HASH, NULL)) {
+	if ((db = dbopen(_PATH_DEVDB, O_RDONLY, 0, DB_HASH, NULL))) {
 		memset(&bkey, 0, sizeof(bkey));
 		bkey.type = S_IFCHR;
 		bkey.dev = sb.st_rdev;
@@ -91,6 +85,7 @@ ttyname(fd)
 	return (oldttyname(fd, &sb));
 }
 
+/* ARGSUSED */
 static char *
 oldttyname(fd, sb)
 	int fd;
@@ -103,7 +98,7 @@ oldttyname(fd, sb)
 	if ((dp = opendir(_PATH_DEV)) == NULL)
 		return (NULL);
 
-	while (dirp = readdir(dp)) {
+	while ((dirp = readdir(dp))) {
 		if (dirp->d_fileno != sb->st_ino)
 			continue;
 		bcopy(dirp->d_name, buf + sizeof(_PATH_DEV) - 1,

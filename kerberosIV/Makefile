@@ -1,20 +1,35 @@
+#	$OpenBSD: Makefile,v 1.22 1998/03/12 17:49:39 art Exp $
 #	from @(#)Makefile	5.1 (Berkeley) 6/25/90
-#	$Id$
 
-# do compile_et and mk_cmds first, used by other directories
+SUBDIR=
 
-.ifmake install
-SUBDIR=	include
-.else
-SUBDIR=	compile_et mk_cmds
+.ifmake includes
+SUBDIR+=include
 .endif
 
-SUBDIR+=acl com_err des krb kadm kafs kdb ss
+SUBDIR+=acl krb kadm kafs kdb
 
-SUBDIR+=ext_srvtab kadmin kadmind kdb_destroy kdb_edit kdb_init kdb_util \
-	kdestroy kerberos kinit klist kpasswdd kprop kpropd ksrvtgt ksrvutil \
-	kstash make_keypair register registerd
+SUBDIR+=ext_srvtab kadmin kadmind kdb_destroy kdb_init kdb_edit \
+	kdb_util kdestroy kerberos kinit klist kprop kpropd ksrvtgt \
+	ksrvutil kstash kauth kauthd
 
-SUBDIR+=man
+SUBDIR+=man doc
 
+.include <bsd.own.mk> # for AFS
+
+.if (${AFS} == "yes")
+SUBDIR+=afslog
+.endif
+
+build:
+	(cd ${.CURDIR}/include && ${MAKE} includes)
+	${MAKE} cleandir
+	${MAKE} includes
+	(cd ${.CURDIR}/acl && ${MAKE} depend && ${MAKE} && ${MAKE} install)
+	(cd ${.CURDIR}/krb && ${MAKE} depend && ${MAKE} && ${MAKE} install)
+	(cd ${.CURDIR}/kadm && ${MAKE} depend && ${MAKE} && ${MAKE} install)
+	(cd ${.CURDIR}/kafs && ${MAKE} depend && ${MAKE} && ${MAKE} install)
+	(cd ${.CURDIR}/kdb && ${MAKE} depend && ${MAKE} && ${MAKE} install)
+
+.include <bsd.dep.mk>
 .include <bsd.subdir.mk>

@@ -1,31 +1,38 @@
+/*	$OpenBSD: get_svc_in_tkt.c,v 1.4 1997/12/22 15:02:06 art Exp $	*/
+/* $KTH: get_svc_in_tkt.c,v 1.8 1997/03/23 03:53:09 joda Exp $ */
+
 /*
- * This software may now be redistributed outside the US.
+ * This source code is no longer held under any constraint of USA
+ * `cryptographic laws' since it was exported legally.  The cryptographic
+ * functions were removed from the code and a "Bones" distribution was
+ * made.  A Commodity Jurisdiction Request #012-94 was filed with the
+ * USA State Department, who handed it to the Commerce department.  The
+ * code was determined to fall under General License GTDA under ECCN 5D96G,
+ * and hence exportable.  The cryptographic interfaces were re-added by Eric
+ * Young, and then KTH proceeded to maintain the code in the free world.
  *
- * $Source: /usr/src/kerberosIV/lib/krb/RCS/get_svc_in_tkt.c,v $
- *
- * $Locker:  $
  */
 
 /* 
-  Copyright (C) 1989 by the Massachusetts Institute of Technology
-
-   Export of this software from the United States of America is assumed
-   to require a specific license from the United States Government.
-   It is the responsibility of any person or organization contemplating
-   export to obtain such a license before exporting.
-
-WITHIN THAT CONSTRAINT, permission to use, copy, modify, and
-distribute this software and its documentation for any purpose and
-without fee is hereby granted, provided that the above copyright
-notice appear in all copies and that both that copyright notice and
-this permission notice appear in supporting documentation, and that
-the name of M.I.T. not be used in advertising or publicity pertaining
-to distribution of the software without specific, written prior
-permission.  M.I.T. makes no representations about the suitability of
-this software for any purpose.  It is provided "as is" without express
-or implied warranty.
-
-  */
+ *  Copyright (C) 1989 by the Massachusetts Institute of Technology
+ *
+ *  Export of this software from the United States of America is assumed
+ *  to require a specific license from the United States Government.
+ *  It is the responsibility of any person or organization contemplating
+ *  export to obtain such a license before exporting.
+ *
+ * WITHIN THAT CONSTRAINT, permission to use, copy, modify, and
+ * distribute this software and its documentation for any purpose and
+ * without fee is hereby granted, provided that the above copyright
+ * notice appear in all copies and that both that copyright notice and
+ * this permission notice appear in supporting documentation, and that
+ * the name of M.I.T. not be used in advertising or publicity pertaining
+ * to distribution of the software without specific, written prior
+ * permission.  M.I.T. makes no representations about the suitability of
+ * this software for any purpose.  It is provided "as is" without express
+ * or implied warranty.
+ *
+ */
 
 #include "krb_locl.h"
 
@@ -52,18 +59,14 @@ or implied warranty.
  * The service key is placed in "key".
  */
 
-static int 
-srvtab_to_key(user, instance, realm, srvtab, key)
-	char *user;
-	char *instance;
-	char *realm;
-	char *srvtab;
-	unsigned char *key;
+int 
+srvtab_to_key(char *user, char *instance, char *realm, void *srvtab,
+	      des_cblock *key)
 {
     if (!srvtab)
         srvtab = KEYFILE;
 
-    return(read_service_key(user, instance, realm, 0, srvtab,
+    return(read_service_key(user, instance, realm, 0, (char *)srvtab,
                             (char *)key));
 }
 
@@ -78,14 +81,8 @@ srvtab_to_key(user, instance, realm, srvtab, key)
  */
 
 int
-krb_get_svc_in_tkt(user, instance, realm, service, sinstance, life, srvtab)
-	char *user;
-	char *instance;
-	char *realm;
-	char *service;
-	char *sinstance;
-	int life;
-	char *srvtab;
+krb_get_svc_in_tkt(char *user, char *instance, char *realm, char *service,
+		   char *sinstance, int life, char *srvtab)
 {
     return(krb_get_in_tkt(user, instance, realm, service, sinstance,
                           life, srvtab_to_key, NULL, srvtab));

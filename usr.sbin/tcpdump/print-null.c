@@ -1,7 +1,5 @@
-/*	$NetBSD: print-null.c,v 1.3 1995/03/06 19:11:24 mycroft Exp $	*/
-
 /*
- * Copyright (c) 1991, 1993, 1994
+ * Copyright (c) 1991, 1993, 1994, 1995, 1996
  *	The Regents of the University of California.  All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -22,8 +20,8 @@
  */
 
 #ifndef lint
-static char rcsid[] =
-    "@(#)Header: print-null.c,v 1.14 94/06/10 17:01:35 mccanne Exp (LBL)";
+static const char rcsid[] =
+    "@(#) $Header: /cvs/src/usr.sbin/tcpdump/print-null.c,v 1.6 1997/07/23 02:59:02 denny Exp $ (LBL)";
 #endif
 
 #include <sys/param.h>
@@ -32,6 +30,10 @@ static char rcsid[] =
 #include <sys/file.h>
 #include <sys/ioctl.h>
 
+#ifdef __STDC__
+struct mbuf;
+struct rtentry;
+#endif
 #include <net/if.h>
 
 #include <netinet/in.h>
@@ -44,21 +46,22 @@ static char rcsid[] =
 #include <netinet/tcp.h>
 #include <netinet/tcpip.h>
 
-
+#include <pcap.h>
 #include <stdio.h>
+#include <string.h>
 
-#include "interface.h"
 #include "addrtoname.h"
-#include "pcap.h"
+#include "interface.h"
 
 #define	NULL_HDRLEN 4
 
-static void
-null_print(const u_char *p, const struct ip *ip, int length)
-{
-	u_int family;
+#ifndef AF_NS
+#define AF_NS		6		/* XEROX NS protocols */
+#endif
 
-	bcopy(p, &family, sizeof(family));
+static void
+null_print(const u_char *p, u_int length, u_int family)
+{
 
 	if (nflag) {
 		/* XXX just dump the header */
@@ -83,9 +86,10 @@ null_print(const u_char *p, const struct ip *ip, int length)
 void
 null_if_print(u_char *user, const struct pcap_pkthdr *h, const u_char *p)
 {
-	int length = h->len;
-	int caplen = h->caplen;
-	const struct ip *ip;
+	u_int length = h->len;
+	u_int caplen = h->caplen;
+	u_int family;
+	const u_char *pkt;
 
 	ts_print(&h->ts);
 
@@ -97,17 +101,25 @@ null_if_print(u_char *user, const struct pcap_pkthdr *h, const u_char *p)
 	packetp = p;
 	snapend = p + caplen;
 
+	pkt = p + NULL_HDRLEN;
 	length -= NULL_HDRLEN;
 
-	ip = (struct ip *)(p + NULL_HDRLEN);
+	memcpy((char *)&family, (char *)p, sizeof(family));
 
 	if (eflag)
-		null_print(p, ip, length);
+		null_print(p, length, family);
 
-	ip_print((const u_char *)ip, length);
+	switch (family) {
+	case AF_INET:
+		ip_print(pkt, length);
+		break;
+	case AF_APPLETALK:
+		atalk_print(pkt, length);
+		break;
+	}
 
 	if (xflag)
-		default_print((const u_char *)ip, caplen - NULL_HDRLEN);
+		default_print(pkt, caplen - NULL_HDRLEN);
 	putchar('\n');
 }
 

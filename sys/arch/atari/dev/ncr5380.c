@@ -1,4 +1,4 @@
-/*	$NetBSD: ncr5380.c,v 1.11 1995/10/08 13:34:23 leo Exp $	*/
+/*	$NetBSD: ncr5380.c,v 1.14 1996/01/06 20:17:15 leo Exp $	*/
 
 /*
  * Copyright (c) 1995 Leo Weppelman.
@@ -50,8 +50,14 @@
 #	define DBG_INFPRINT(a,b,c)
 #endif
 #ifdef DBG_PID
-	static	char	*last_hit = NULL, *olast_hit = NULL;
-#	define	PID(a)	olast_hit = last_hit; last_hit = a; 
+	/* static	char	*last_hit = NULL, *olast_hit = NULL; */
+	static char *last_hit[DBG_PID];
+#	define	PID(a)	\
+	{ int i; \
+	  for (i=0; i< DBG_PID-1; i++) \
+		last_hit[i] = last_hit[i+1]; \
+	  last_hit[DBG_PID-1] = a; } \
+		/* olast_hit = last_hit; last_hit = a; */
 #else
 #	define	PID(a)
 #endif
@@ -67,6 +73,17 @@ u_char	dbg_target_mask = 0x7f;
  * of all transfers while the data is correct!?
  */
 u_char	ncr5380_no_parchk = 0xff;
+
+#ifdef	AUTO_SENSE
+
+/*
+ * Bit masks of targets that accept linked commands, and those
+ * that we've already checked out
+ */
+u_char	ncr_will_link = 0x00;
+u_char	ncr_test_link = 0x00;
+
+#endif	/* AUTO_SENSE */
 
 /*
  * This is the default sense-command we send.
@@ -191,7 +208,6 @@ extern __inline__ void finish_req(SC_REQ *reqp)
 	if (reqp->xs->error != 0)
 		show_request(reqp, "ERR_RET");
 #endif
-
 	/*
 	 * Return request to free-q
 	 */
@@ -201,13 +217,14 @@ extern __inline__ void finish_req(SC_REQ *reqp)
 	splx(sps);
 
 	xs->flags |= ITSDONE;
-	scsi_done(xs);
+	if (!(reqp->dr_flag & DRIVER_LINKCHK))
+		scsi_done(xs);
 }
 
 /*
  * Auto config stuff....
  */
-int	ncr_cprint __P((void *auxp, char *));
+int	ncr_cprint __P((void *auxp, const char *));
 void	ncr_attach __P((struct device *, struct device *, void *));
 int	ncr_match __P((struct device *, struct cfdata *, void *));
 
@@ -289,7 +306,7 @@ void		*auxp;
 int
 ncr_cprint(auxp, name)
 void	*auxp;
-char	*name;
+const char *name;
 {
 	if (name == NULL)
 		return (UNCONF);
@@ -306,7 +323,7 @@ static int
 ncr5380_scsi_cmd(struct scsi_xfer *xs)
 {
 	int	sps;
-	SC_REQ	*reqp;
+	SC_REQ	*reqp, *link, *tmp;
 	int	flags = xs->flags;
 
 	/*
@@ -375,27 +392,59 @@ ncr5380_scsi_cmd(struct scsi_xfer *xs)
 	 * Interrupts are disabled while we are fiddling with the issue-queue.
 	 */
 	sps = splbio();
+	link = NULL;
 	if ((issue_q == NULL) || (reqp->xcmd.opcode == REQUEST_SENSE)) {
 		reqp->next = issue_q;
 		issue_q    = reqp;
 	}
 	else {
-		SC_REQ	*tmp, *link;
-
 		tmp  = issue_q;
-		link = NULL;
 		do {
 		    if (!link && (tmp->targ_id == reqp->targ_id) && !tmp->link)
 				link = tmp;
 		} while (tmp->next && (tmp = tmp->next));
 		tmp->next = reqp;
 #ifdef AUTO_SENSE
-		if (link) {
+		if (link && (ncr_will_link & (1<<reqp->targ_id))) {
 			link->link = reqp;
-			link->xcmd.bytes[link->xs->cmdlen-1] |= 1;
+			link->xcmd.bytes[link->xs->cmdlen-2] |= 1;
 		}
 #endif
 	}
+#ifdef AUTO_SENSE
+	/*
+	 * If we haven't already, check the target for link support.
+	 * Do this by prefixing the current command with a dummy
+	 * Request_Sense command, link the dummy to the current
+	 * command, and insert the dummy command at the head of the
+	 * issue queue.  Set the DRIVER_LINKCHK flag so that we'll
+	 * ignore the results of the dummy command, since we only
+	 * care about whether it was accepted or not.
+	 */
+	if (!link && !(ncr_test_link & (1<<reqp->targ_id)) &&
+	    (tmp = free_head) && !(reqp->dr_flag & DRIVER_NOINT)) {
+		free_head = tmp->next;
+		tmp->dr_flag = (reqp->dr_flag & ~DRIVER_DMAOK) | DRIVER_LINKCHK;
+		tmp->phase = NR_PHASE;
+		tmp->msgout = MSG_NOOP;
+		tmp->status = SCSGOOD;
+		tmp->xs = reqp->xs;
+		tmp->targ_id = reqp->targ_id;
+		tmp->targ_lun = reqp->targ_lun;
+		bcopy(sense_cmd, &tmp->xcmd, sizeof(sense_cmd));
+		tmp->xdata_ptr = (u_char *)&tmp->xs->sense;
+		tmp->xdata_len = sizeof(tmp->xs->sense);
+		ncr_test_link |= 1<<tmp->targ_id;
+		tmp->link = reqp;
+		tmp->xcmd.bytes[sizeof(sense_cmd)-2] |= 1;
+		tmp->next = issue_q;
+		issue_q = tmp;
+#ifdef DBG_REQ
+		if (dbg_target_mask & (1 << tmp->targ_id))
+			show_request(tmp, "LINKCHK");
+#endif
+	}
+#endif
 	splx(sps);
 
 #ifdef DBG_REQ
@@ -406,8 +455,8 @@ ncr5380_scsi_cmd(struct scsi_xfer *xs)
 
 	run_main(xs->sc_link->adapter_softc);
 
-	if (xs->flags & SCSI_POLL)
-		return (COMPLETE);	/* We're booting */
+	if (xs->flags & (SCSI_POLL|ITSDONE))
+		return (COMPLETE); /* We're booting or run_main has completed */
 	return (SUCCESSFULLY_QUEUED);
 }
 
@@ -844,6 +893,8 @@ SC_REQ	*reqp;
 			reqp->xs->error      = code ? code : XS_SELTIMEOUT;
 			DBG_SELPRINT ("Target %d not responding to sel\n",
 								reqp->targ_id);
+			if (reqp->dr_flag & DRIVER_LINKCHK)
+				ncr_test_link &= ~(1<<reqp->targ_id);
 			finish_req(reqp);
 			PID("scsi_select8");
 			return (0);
@@ -1067,6 +1118,7 @@ SC_REQ	*reqp;
 u_int	msg;
 {
 	int	sps;
+	SC_REQ	*prev, *req;
 
 	PID("hmessage1");
 	switch (msg) {
@@ -1086,10 +1138,13 @@ u_int	msg;
 				return (-1);
 			}
 			ack_message();
-			reqp->xs->error = 0;
+			if (!(reqp->dr_flag & DRIVER_AUTOSEN)) {
+				reqp->xs->resid = reqp->xdata_len;
+				reqp->xs->error = 0;
+			}
 
 #ifdef AUTO_SENSE
-			if (check_autosense(reqp, 0) == -1)
+			if (check_autosense(reqp, 1) == -1)
 				return (-1);
 #endif /* AUTO_SENSE */
 
@@ -1098,6 +1153,25 @@ u_int	msg;
 				show_request(reqp->link, "LINK");
 #endif
 			connected = reqp->link;
+
+			/*
+			 * Unlink the 'linked' request from the issue_q
+			 */
+			sps  = splbio();
+			prev = NULL;
+			req  = issue_q;
+			for (; req != NULL; prev = req, req = req->next) {
+				if (req == connected)
+					break;
+			}
+			if (req == NULL)
+				panic("Inconsistent issue_q");
+			if (prev == NULL)
+				issue_q = req->next;
+			else prev->next = req->next;
+			req->next = NULL;
+			splx(sps);
+
 			finish_req(reqp);
 			PID("hmessage3");
 			return (-1);
@@ -1187,15 +1261,8 @@ struct ncr_softc *sc;
 	 * choose something long enough to suit all targets.
 	 */
 	SET_5380_REG(NCR5380_ICOM, SC_A_BSY);
-	len = 1000;
+	len = 250000;
 	while ((GET_5380_REG(NCR5380_IDSTAT) & SC_S_SEL) && (len > 0)) {
-		if(!GET_5380_REG(NCR5380_DATA)) {
-			/*
-			 * We stepped into the reselection timeout....
-			 */
-			SET_5380_REG(NCR5380_ICOM, 0);
-			return;
-		}
 		delay(1);
 		len--;
 	}
@@ -1207,6 +1274,18 @@ struct ncr_softc *sc;
 
 	SET_5380_REG(NCR5380_ICOM, 0);
 	
+	/*
+	 * Check if the reselection is still valid. Check twice because
+	 * of possible line glitches - cheaper than delay(1) and we need
+	 * only a few nanoseconds.
+	 */
+	if (!(GET_5380_REG(NCR5380_IDSTAT) & SC_S_BSY)) {
+	    if (!(GET_5380_REG(NCR5380_IDSTAT) & SC_S_BSY)) {
+		ncr_aprint(sc, "Stepped into the reselection timeout\n");
+		return;
+	    }
+	}
+
 	/*
 	 * Get the expected identify message.
 	 */
@@ -1242,7 +1321,8 @@ struct ncr_softc *sc;
 		phase = PH_MSGOUT;
 
 		SET_5380_REG(NCR5380_ICOM, SC_A_ATN);
-		transfer_pio(&phase, &msg, &len, 0);
+		if (transfer_pio(&phase, &msg, &len, 0) || len)
+			scsi_reset(sc);
 	}
 	else {
 		connected = tmp;
@@ -1410,12 +1490,12 @@ dma_ready()
 	 */
 	if (!is_edma && !(dmstat & (SC_END_DMA|SC_BSY_ERR))
 		     && (dmstat & SC_PHS_MTCH) ) {
-		ncr_tprint(reqp, "dma_ready: spurious call"
+		ncr_tprint(reqp, "dma_ready: spurious call "
 				 "(dm:%x,last_hit: %s)\n",
 #ifdef DBG_PID
-							dmstat, last_hit);
+					dmstat, last_hit[DBG_PID-1]);
 #else
-							dmstat, "unknown");
+					dmstat, "unknown");
 #endif
 		return (0);
 	}
@@ -1504,14 +1584,27 @@ int	linked;
 	int	sps;
 
 	/*
+	 * If this is the driver's Link Check for this target, ignore
+	 * the results of the command.  All we care about is whether we
+	 * got here from a LINK_CMD_COMPLETE or CMD_COMPLETE message.
+	 */
+	PID("linkcheck");
+	if (reqp->dr_flag & DRIVER_LINKCHK) {
+		if (linked)
+			ncr_will_link |= 1<<reqp->targ_id;
+		else ncr_tprint(reqp, "Does not support linked commands\n");
+		return (0);
+	}
+	/*
 	 * If we not executing an auto-sense and the status code
 	 * is request-sense, we automatically issue a request
 	 * sense command.
 	 */
 	PID("cautos1");
 	if (!(reqp->dr_flag & DRIVER_AUTOSEN)) {
-		if (reqp->status == SCSCHKC) {
-			memcpy(&reqp->xcmd, sense_cmd, sizeof(sense_cmd));
+		switch (reqp->status & SCSMASK) {
+		    case SCSCHKC:
+			bcopy(sense_cmd, &reqp->xcmd, sizeof(sense_cmd));
 			reqp->xdata_ptr = (u_char *)&reqp->xs->sense;
 			reqp->xdata_len = sizeof(reqp->xs->sense);
 			reqp->dr_flag  |= DRIVER_AUTOSEN;
@@ -1522,7 +1615,7 @@ int	linked;
 				issue_q    = reqp;
 				splx(sps);
 			}
-			else reqp->xcmd.bytes[4] |= 1;
+			else reqp->xcmd.bytes[sizeof(sense_cmd)-2] |= 1;
 
 #ifdef DBG_REQ
 			bzero(reqp->xdata_ptr, reqp->xdata_len);
@@ -1531,6 +1624,9 @@ int	linked;
 #endif
 			PID("cautos2");
 			return (-1);
+		    case SCSBUSY:
+			reqp->xs->error = XS_BUSY;
+			return (0);
 		}
 	}
 	else {
@@ -1843,10 +1939,11 @@ show_request(reqp, qtxt)
 SC_REQ	*reqp;
 char	*qtxt;
 {
-	printf("REQ-%s: %d %x[%d] cmd[0]=%x S=%x M=%x R=%x resid=%d %s\n",
+	printf("REQ-%s: %d %x[%d] cmd[0]=%x S=%x M=%x R=%x resid=%d dr_flag=%x %s\n",
 			qtxt, reqp->targ_id, reqp->xdata_ptr, reqp->xdata_len,
 			reqp->xcmd.opcode, reqp->status, reqp->message,
-			reqp->xs->error, reqp->xs->resid, reqp->link ? "L":"");
+			reqp->xs->error, reqp->xs->resid, reqp->dr_flag,
+			reqp->link ? "L":"");
 	if (reqp->status == SCSCHKC)
 		show_data_sense(reqp->xs);
 }
@@ -1882,11 +1979,7 @@ scsi_show()
 	SC_REQ	*tmp;
 	int	sps = splhigh();
 	u_char	idstat, dmstat;
-
-#ifndef DBG_PID
-	#define	last_hit	""
-	#define	olast_hit	""
-#endif
+	int	i;
 
 	for (tmp = issue_q; tmp; tmp = tmp->next)
 		show_request(tmp, "ISSUED");
@@ -1899,8 +1992,11 @@ scsi_show()
 	show_signals(dmstat, idstat);
 	if (connected)
 		printf("phase = %d, ", connected->phase);
-	printf("busy:%x, last_hit:%s, olast_hit:%s spl:%04x\n", busy,
-						last_hit, olast_hit, sps);
+	printf("busy:%x, spl:%04x\n", busy, sps);
+#ifdef	DBG_PID
+	for (i=0; i<DBG_PID; i++)
+		printf("\t%d\t%s\n", i, last_hit[i]);
+#endif
 
 	splx(sps);
 }

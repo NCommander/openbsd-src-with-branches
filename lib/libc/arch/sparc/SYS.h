@@ -34,10 +34,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  *
- *	@(#)SYS.h	8.1 (Berkeley) 6/4/93
- *
- *	from: Header: SYS.h,v 1.2 92/07/03 18:57:00 torek Exp
- *	$Id: SYS.h,v 1.3 1994/02/10 20:15:31 pk Exp $
+ *	$OpenBSD: SYS.h,v 1.1.1.1 1995/10/18 08:41:39 deraadt Exp $
  */
 
 #include <machine/asm.h>

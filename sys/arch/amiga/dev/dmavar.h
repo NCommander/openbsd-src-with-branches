@@ -1,3 +1,4 @@
+/*	$OpenBSD: dmavar.h,v 1.9 1995/03/28 18:14:51 jtc Exp $	*/
 /*	$NetBSD: dmavar.h,v 1.9 1995/03/28 18:14:51 jtc Exp $	*/
 
 /*

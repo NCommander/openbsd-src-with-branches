@@ -30,7 +30,7 @@
 .\" SUCH DAMAGE.
 .\"
 .\"     from: @(#)inetd.8	6.7 (Berkeley) 3/16/91
-.\"	$Id: inetd.8,v 1.5 1994/01/14 16:22:39 jtc Exp $
+.\"	$Id: inetd.8,v 1.5 1997/06/26 06:27:27 denny Exp $
 .\"
 .Dd March 16, 1991
 .Dt INETD 8
@@ -42,11 +42,12 @@
 .Sh SYNOPSIS
 .Nm inetd
 .Op Fl d
+.Op Fl R Ar rate
 .Op Ar configuration file
 .Sh DESCRIPTION
 .Nm Inetd
 should be run at boot time by
-.Pa /etc/rc.local
+.Pa /etc/rc
 (see
 .Xr rc 8 ) .
 It then listens for connections on certain
@@ -65,6 +66,9 @@ The option available for
 .Bl -tag -width Ds
 .It Fl d
 Turns on debugging.
+.It Fl R Ar rate
+Specify the maximum number of times a service can be invoked
+in one minute; the default is 256.
 .El
 .Pp
 Upon execution,
@@ -102,6 +106,35 @@ server program
 server program arguments
 .Ed
 .Pp
+For Internet services, the first field of the line may also have a host
+address specifier prefixed to it, separated from the service name by a
+colon.  If this is done, the string before the colon in the first field
+indiciates what local address
+.Nm
+should use when listening for that service. Multiple local addresses
+can be specified on the same line, separated by commas. Numeric IP
+addresses in dotted-quad notation can be used as well as symbolic
+hostnames. Symbolic hostnames are looked up using gethostbyname().
+If a hostname has multiple address mappings, inetd creates a socket
+to listen on each address.
+.Pp
+The single character
+.Dq \&*
+indicates
+.Dv INADDR_ANY ,
+meaning
+.Sq all local addresses .
+To avoid repeating an address that occurs frequently, a line with a
+host address specifier and colon, but no further fields, causes the
+host address specifier to be remembered and used for all further lines
+with no explicit host specifier (until another such line or the end of
+the file).  A line
+.Dl *:
+is implicitly provided at the top of the file; thus, traditional
+configuration files (which have no host address specifiers) will be
+interpreted in the traditional manner, with all services listened for
+on all local addresses.
+.Pp
 The
 .Em service-name
 entry is the name of a valid service in
@@ -125,7 +158,6 @@ is the RPC version number. This
 can simply be a single numeric argument or a range of versions.
 A range is bounded by the low version to the high version - 
 .Dq rusers/1-3 .
-
 .Pp
 The
 .Em socket-type
@@ -152,17 +184,17 @@ Rpc based services are specified with the
 or 
 .Dq rpc/udp 
 service type.
-
 .Pp
 The
 .Em wait/nowait
-entry is applicable to datagram sockets only (other sockets should
-have a
-.Dq nowait
-entry in this space).  If a datagram server connects
+entry is used to tell
+.Nm
+if it should wait for the server program to return,
+or continue processing connections on the socket.
+If a datagram server connects
 to its peer, freeing the socket so
 .Nm inetd
-can received further messages on the socket, it is said to be
+can receive further messages on the socket, it is said to be
 a
 .Dq multi-threaded
 server, and should use the
@@ -200,6 +232,21 @@ spawned from
 within an interval of 60 seconds. When omitted,
 .Dq max
 defaults to 40.
+.Pp
+Stream servers are usually marked as
+.Dq nowait
+but if a single server process is to handle multiple connections, it may be
+marked as
+.Dq wait .
+The master socket will then be passed as fd 0 to the server, which will then
+need to accept the incoming connection.  The server should eventually time
+out and exit when no more connections are active.
+.Nm
+will continue to
+listen on the master socket for connections, so the server should not close
+it when it exits. 
+.Xr identd 8
+is usually the only stream server marked as wait.
 .Pp
 The
 .Em user
@@ -259,6 +306,14 @@ is reread.
 creates a file
 .Em /var/run/inetd.pid
 that contains its process identifier.
+.Sh BUGS
+Host address specifiers, while they make conceptual sense for RPC
+services, do not work entirely correctly.  This is largely because the
+portmapper interface does not provide a way to register different ports
+for the same service on different local addresses.  Provided you never
+have more than one entry for a given RPC service, everything should
+work correctly.  (Note that default host address specifiers do apply to
+RPC lines with no explicit specifier.)
 .Sh SEE ALSO
 .Xr comsat 8 ,
 .Xr fingerd 8 ,

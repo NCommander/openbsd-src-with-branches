@@ -1,5 +1,3 @@
-/*	$NetBSD: fstab.c,v 1.7 1995/02/27 04:34:44 cgd Exp $	*/
-
 /*
  * Copyright (c) 1980, 1988, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -34,11 +32,7 @@
  */
 
 #if defined(LIBC_SCCS) && !defined(lint)
-#if 0
-static char sccsid[] = "@(#)fstab.c	8.1 (Berkeley) 6/4/93";
-#else
-static char rcsid[] = "$NetBSD: fstab.c,v 1.7 1995/02/27 04:34:44 cgd Exp $";
-#endif
+static char rcsid[] = "$OpenBSD: fstab.c,v 1.5 1997/06/14 01:42:09 deraadt Exp $";
 #endif /* LIBC_SCCS and not lint */
 
 #include <sys/types.h>
@@ -53,10 +47,10 @@ static char rcsid[] = "$NetBSD: fstab.c,v 1.7 1995/02/27 04:34:44 cgd Exp $";
 static FILE *_fs_fp;
 static struct fstab _fs_fstab;
 
-static error __P((int));
-static fstabscan __P((void));
+static void error __P((int));
+static int fstabscan __P((void));
 
-static
+static int
 fstabscan()
 {
 	register char *cp;
@@ -82,9 +76,9 @@ fstabscan()
 				_fs_fstab.fs_vfstype =
 				    strcmp(_fs_fstab.fs_type, FSTAB_SW) ?
 				    "ufs" : "swap";
-				if (cp = strtok((char *)NULL, ":\n")) {
+				if ((cp = strtok((char *)NULL, ":\n"))) {
 					_fs_fstab.fs_freq = atoi(cp);
-					if (cp = strtok((char *)NULL, ":\n")) {
+					if ((cp = strtok((char *)NULL, ":\n"))) {
 						_fs_fstab.fs_passno = atoi(cp);
 						return(1);
 					}
@@ -108,7 +102,8 @@ fstabscan()
 			if ((cp = strtok((char *)NULL, " \t\n")) != NULL)
 				_fs_fstab.fs_passno = atoi(cp);
 		}
-		strcpy(subline, _fs_fstab.fs_mntops);
+		strncpy(subline, _fs_fstab.fs_mntops, sizeof subline-1);
+		subline[sizeof subline-1] = '\0';
 		for (typexx = 0, cp = strtok(subline, ","); cp;
 		     cp = strtok((char *)NULL, ",")) {
 			if (strlen(cp) != 2)
@@ -149,8 +144,8 @@ bad:		/* no way to distinguish between EOF and syntax error */
 struct fstab *
 getfsent()
 {
-	if (!_fs_fp && !setfsent() || !fstabscan())
-		return((struct fstab *)NULL);
+	if ((!_fs_fp && !setfsent()) || !fstabscan())
+		return(NULL);
 	return(&_fs_fstab);
 }
 
@@ -176,13 +171,14 @@ getfsfile(name)
 	return((struct fstab *)NULL);
 }
 
+int
 setfsent()
 {
 	if (_fs_fp) {
 		rewind(_fs_fp);
 		return(1);
 	}
-	if (_fs_fp = fopen(_PATH_FSTAB, "r"))
+	if ((_fs_fp = fopen(_PATH_FSTAB, "r")))
 		return(1);
 	error(errno);
 	return(0);
@@ -197,7 +193,7 @@ endfsent()
 	}
 }
 
-static
+static void
 error(err)
 	int err;
 {

@@ -4,7 +4,7 @@
 .\"
 .Dd December 16, 1993
 .Dt ETHERS 5
-.Os NetBSD
+.Os OpenBSD
 .Sh NAME
 .Nm ethers
 .Nd Ethernet host name data base
@@ -30,9 +30,16 @@ file resides in
 .Pa /etc .
 .El
 .Sh SEE ALSO
-.Xr ethers 3
+.Xr ethers 3 ,
+.Xr diskless 8
 .Sh BUGS
 A name server should be used instead of a static file.
+.br
+Lines in
+.Pa /etc/ethers
+are limited to
+.Ev BUFSIZE
+characters (currently 1024).  Longer lines will be ignored.
 .Sh HISTORY
 The
 .Nm ethers

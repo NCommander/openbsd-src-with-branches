@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /*
  * Copyright (c) 1988, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -33,7 +34,7 @@
 
 #if defined(LIBC_SCCS) && !defined(lint)
 /* from: static char sccsid[] = "@(#)login.c	8.1 (Berkeley) 6/4/93"; */
-static char *rcsid = "$Id: login.c,v 1.5 1995/06/05 19:43:53 pk Exp $";
+static char *rcsid = "$Id: login.c,v 1.2 1996/05/22 11:35:05 deraadt Exp $";
 #endif /* LIBC_SCCS and not lint */
 
 #include <sys/types.h>
@@ -44,7 +45,7 @@ static char *rcsid = "$Id: login.c,v 1.5 1995/06/05 19:43:53 pk Exp $";
 #include <utmp.h>
 #include <stdio.h>
 
-void login __P((struct utmp *));
+#include "util.h"
 
 void
 login(ut)

@@ -69,11 +69,15 @@ indicates the reason.
 .Fn Setpgid
 will fail and the process group will not be altered if:
 .Bl -tag -width Er
-.It Bq Er EACCESS
+.It Bq Er EACCES
 The value of the
 .Fa pid
 argument matches the process ID of a child process of the calling process, 
 and the child process has successfully executed one of the exec functions.
+.It Bq Er EINVAL
+The value of the
+.Fa pgrp
+argument is less than zero.
 .It Bq Er EPERM
 The effective user ID of the requested process is different
 from that of the caller and the process is not a descendant

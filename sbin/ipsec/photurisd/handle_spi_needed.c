@@ -34,7 +34,7 @@
  */
 
 #ifndef lint
-static char rcsid[] = "$Id: handle_spi_needed.c,v 1.2 1997/06/12 17:09:20 provos Exp provos $";
+static char rcsid[] = "$Id: handle_spi_needed.c,v 1.4 1997/09/02 17:26:39 provos Exp $";
 #endif
 
 #include <stdio.h>
@@ -49,6 +49,7 @@ static char rcsid[] = "$Id: handle_spi_needed.c,v 1.2 1997/06/12 17:09:20 provos
 #include "packet.h"
 #include "encrypt.h"
 #include "validity.h"
+#include "attributes.h"
 #include "secrets.h"
 #include "schedule.h"
 #include "scheme.h"
@@ -62,11 +63,20 @@ int
 handle_spi_needed(u_char *packet, int size, char *address, 
 			char *local_address)
 {
+        struct packet_sub parts[] = {
+	     { "Verification", FLD_VARPRE, 0, 0, },
+	     { "Attributes", FLD_ATTRIB, FMD_ATT_FILL, 0, },
+	     { NULL }
+	};
+        struct packet spi_msg = {
+	     "SPI Needed", 
+	     SPI_NEEDED_MIN, 0, parts
+	};
 	struct spi_needed *header;
 	struct stateob *st;
 	struct spiob *spi;
-	u_int8_t *p, *attributes;
-	u_int16_t i, asize, attribsize, tmp;
+	u_int8_t *attributes;
+	u_int16_t i, attribsize, tmp;
 	u_int8_t signature[22];  /* XXX - constant */
 
 	if (size < SPI_NEEDED_MIN)
@@ -91,55 +101,33 @@ handle_spi_needed(u_char *packet, int size, char *address,
 	tmp = size - SPI_NEEDED_MIN;
 	if (packet_decrypt(st, SPI_NEEDED_VERIFICATION(header), &tmp) == -1) {
 	     log_error(0, "packet_decrypt() in handle_spi_needed()");
-	     packet_size = PACKET_BUFFER_SIZE;
-	     photuris_error_message(st, packet_buffer, &packet_size,
-				    header->icookie, header->rcookie,
-				    0, VERIFICATION_FAILURE);
-	     send_packet();
+	     goto verification_failed;
+	}
+
+	/* Verify message structure*/
+	if (packet_check((u_int8_t *)header, size - packet[size-1], &spi_msg) == -1) {
+	     log_error(0, "bad packet structure in handle_spi_update()");
 	     return -1;
 	}
 
-	/* Verify message */
-	if (!(i = get_validity_verification_size(st))) {
-	     packet_size = PACKET_BUFFER_SIZE;
-	     photuris_error_message(st, packet_buffer, &packet_size,
-				    header->icookie, header->rcookie,
-				    0, VERIFICATION_FAILURE);
-	     send_packet();
-	     return -1;
+	i = get_validity_verification_size(st);
+	if (!i || i != parts[0].size || i > sizeof(signature)) {
+	     log_error(0, "verification size mismatch in handle_spi_needed()");
+	     goto verification_failed;
 	}
+	bcopy(parts[0].where, signature, i);
 	
-	asize = SPI_NEEDED_MIN + i;
+	attributes = parts[1].where;
+	attribsize = parts[1].size;
 
-	p = SPI_NEEDED_VERIFICATION(header);
-
-	attributes = p + i;
-	asize += packet[size-1];           /* Padding size */
-	attribsize = 0;
-	while(asize + attribsize < size)
-	     attribsize += attributes[attribsize+1] + 2;
-
-	asize += attribsize;
-
-	if (asize != size) {
-	     log_error(0, "wrong packet size in handle_spi_needed()");
-	     return -1;
+	if (!isattribsubset(st->oSPIoattrib,st->oSPIoattribsize,
+			    attributes, attribsize)) {
+	     log_error(0, "attributes are not a subset in handle_spi_needed()");
+	     return 0;
 	}
-
-	if (i > sizeof(signature)) {
-	     log_error(0, "verification too long in handle_spi_needed()");
-	     packet_size = PACKET_BUFFER_SIZE;
-	     photuris_error_message(st, packet_buffer, &packet_size,
-				    header->icookie, header->rcookie,
-				    0, VERIFICATION_FAILURE);
-	     send_packet();
-	     return -1;
-	}
-
-	bcopy(p, signature, i);
-	bzero(p, i);
 
 	if (!verify_validity_verification(st, signature, packet, size)) {
+	verification_failed:
 	     log_error(0, "verification failed in handle_spi_needed()");
 	     packet_size = PACKET_BUFFER_SIZE;
 	     photuris_error_message(st, packet_buffer, &packet_size,
@@ -186,7 +174,7 @@ handle_spi_needed(u_char *packet, int size, char *address,
 	     return -1;
 	}
 	bcopy(st->icookie, spi->icookie, COOKIE_SIZE);
-	spi->owner = 1;
+	spi->flags |= SPI_OWNER;
 	spi->attribsize = st->oSPIattribsize;
 	spi->attributes = calloc(spi->attribsize, sizeof(u_int8_t));
 	if (spi->attributes == NULL) {

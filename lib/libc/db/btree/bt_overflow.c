@@ -1,5 +1,3 @@
-/*	$NetBSD: bt_overflow.c,v 1.5 1995/02/27 13:20:33 cgd Exp $	*/
-
 /*-
  * Copyright (c) 1990, 1993, 1994
  *	The Regents of the University of California.  All rights reserved.
@@ -37,11 +35,7 @@
  */
 
 #if defined(LIBC_SCCS) && !defined(lint)
-#if 0
-static char sccsid[] = "@(#)bt_overflow.c	8.4 (Berkeley) 6/20/94";
-#else
-static char rcsid[] = "$NetBSD: bt_overflow.c,v 1.5 1995/02/27 13:20:33 cgd Exp $";
-#endif
+static char rcsid[] = "$OpenBSD: bt_overflow.c,v 1.6 1996/05/03 21:50:48 cgd Exp $";
 #endif /* LIBC_SCCS and not lint */
 
 #include <sys/param.h>
@@ -87,7 +81,7 @@ __ovfl_get(t, p, ssz, buf, bufsz)
 	BTREE *t;
 	void *p;
 	size_t *ssz;
-	char **buf;
+	void **buf;
 	size_t *bufsz;
 {
 	PAGE *h;

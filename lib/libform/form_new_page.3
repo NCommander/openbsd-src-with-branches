@@ -1,19 +1,20 @@
 '\" t
-.TH form_new_page 3X ""
+.\" $OpenBSD: form_new_page.3,v 1.3 1997/12/03 05:40:07 millert Exp $
+.TH form_new_page 3 ""
 .SH NAME
 \fBform_new_page\fR - form pagination functions
 .SH SYNOPSIS
 \fB#include <form.h>\fR
 .br
-int set_new_page(FIELD *field, int justification);
+int set_new_page(FIELD *field, bool new_page_flag);
 .br
-int new_page(FIELD *field);
+bool new_page(const FIELD *field);
 .br
 .SH DESCRIPTION
-The function \fBset_new_page\fR marks the given field as the beginning of a 
-new page on its form.
+The function \fBset_new_page\fR sets or resets a flag marking the given field 
+as the beginning of a new page on its form.
 
-The function \fBne_page\fR is a predicate which tests if a given field marks
+The function \fBnew_page\fR is a predicate which tests if a given field marks
 a page beginning on its form.
 .SH RETURN VALUE
 The function \fBnew_page\fR returns \fBTRUE\fR or \fBFALSE\fR.
@@ -29,7 +30,7 @@ System error occurred (see \fBerrno\fR).
 \fBE_CONNECTED\fR
 The given field is already connected to a form.
 .SH SEE ALSO
-\fBcurses\fR(3X) and 3X pages whose names begin "form_" for detailed
+\fBcurses\fR(3) and 3 pages whose names begin "form_" for detailed
 descriptions of the entry points.
 .SH NOTES
 The header file \fB<form.h>\fR automatically includes the header file

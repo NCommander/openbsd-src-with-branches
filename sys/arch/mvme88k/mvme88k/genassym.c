@@ -31,7 +31,7 @@
  * SUCH DAMAGE.
  *
  *	@(#)genassym.c	7.8 (Berkeley) 5/7/91
- *	$Id: genassym.c,v 1.3 1996/08/02 02:44:17 build Exp build $
+ *	$Id: genassym.c,v 1.1.1.1 1997/03/03 19:32:33 rahnds Exp $
  */
 
 #ifndef KERNEL

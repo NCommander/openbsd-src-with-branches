@@ -44,13 +44,19 @@ static char *id =
  *
  *---------------------------------------------------------------------------*/
 	
-#include <stdio.h>
 #include <fcntl.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <unistd.h>
 #include <sys/stat.h>
 #include <machine/pcvt_ioctl.h>
 
 #define DEFAULTFD 0
 
+void usage __P((void));
+
+int
 main(argc,argv)
 int argc;
 char *argv[];
@@ -66,9 +72,9 @@ char *argv[];
 	int start = -1;
 	int end = -1;
 	int dflag = -1;
-	char *device;
+	char *device = NULL;
 	
-	while( (c = getopt(argc, argv, "d:n:s:e:")) != EOF)
+	while( (c = getopt(argc, argv, "d:n:s:e:")) != -1)
 	{
 		switch(c)
 		{
@@ -144,14 +150,14 @@ char *argv[];
 		exit(0);
 }
 
+void
 usage()
 {
 	fprintf(stderr,"\ncursor - set cursor shape for pcvt video driver\n");
 	fprintf(stderr,"usage: cursor -d [device] -n [no] -s [line] -e [line]\n");
-	fprintf(stderr,"       -d <device>   device to use (/dev/ttyvX), default current\n");
+	fprintf(stderr,"       -d <device>   device to use (/dev/ttyCX), default current\n");
 	fprintf(stderr,"       -n <no>       screen no if specified, else current screen\n");
 	fprintf(stderr,"       -s <line>     start scan line (topmost scan line)\n");
 	fprintf(stderr,"       -e <line>     ending scan line (bottom scan line)\n\n");
 	exit(1);
 }
-

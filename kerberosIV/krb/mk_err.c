@@ -1,35 +1,40 @@
+/*	$OpenBSD: mk_err.c,v 1.4 1997/12/22 15:02:09 art Exp $	*/
+/* $KTH: mk_err.c,v 1.6 1997/03/23 03:53:14 joda Exp $ */
+
 /*
- * This software may now be redistributed outside the US.
+ * This source code is no longer held under any constraint of USA
+ * `cryptographic laws' since it was exported legally.  The cryptographic
+ * functions were removed from the code and a "Bones" distribution was
+ * made.  A Commodity Jurisdiction Request #012-94 was filed with the
+ * USA State Department, who handed it to the Commerce department.  The
+ * code was determined to fall under General License GTDA under ECCN 5D96G,
+ * and hence exportable.  The cryptographic interfaces were re-added by Eric
+ * Young, and then KTH proceeded to maintain the code in the free world.
  *
- * $Source: /usr/src/kerberosIV/lib/krb/RCS/mk_err.c,v $
- *
- * $Locker:  $
  */
 
 /* 
-  Copyright (C) 1989 by the Massachusetts Institute of Technology
-
-   Export of this software from the United States of America is assumed
-   to require a specific license from the United States Government.
-   It is the responsibility of any person or organization contemplating
-   export to obtain such a license before exporting.
-
-WITHIN THAT CONSTRAINT, permission to use, copy, modify, and
-distribute this software and its documentation for any purpose and
-without fee is hereby granted, provided that the above copyright
-notice appear in all copies and that both that copyright notice and
-this permission notice appear in supporting documentation, and that
-the name of M.I.T. not be used in advertising or publicity pertaining
-to distribution of the software without specific, written prior
-permission.  M.I.T. makes no representations about the suitability of
-this software for any purpose.  It is provided "as is" without express
-or implied warranty.
-
-  */
+ *  Copyright (C) 1989 by the Massachusetts Institute of Technology
+ *
+ *  Export of this software from the United States of America is assumed
+ *  to require a specific license from the United States Government.
+ *  It is the responsibility of any person or organization contemplating
+ *  export to obtain such a license before exporting.
+ *
+ * WITHIN THAT CONSTRAINT, permission to use, copy, modify, and
+ * distribute this software and its documentation for any purpose and
+ * without fee is hereby granted, provided that the above copyright
+ * notice appear in all copies and that both that copyright notice and
+ * this permission notice appear in supporting documentation, and that
+ * the name of M.I.T. not be used in advertising or publicity pertaining
+ * to distribution of the software without specific, written prior
+ * permission.  M.I.T. makes no representations about the suitability of
+ * this software for any purpose.  It is provided "as is" without express
+ * or implied warranty.
+ *
+ */
 
 #include "krb_locl.h"
-
-#include <sys/types.h>
 
 /*
  * This routine creates a general purpose error reply message.  It
@@ -52,26 +57,13 @@ or implied warranty.
  */
 
 int32_t
-krb_mk_err(p, e, e_string)
-	u_char *p;		/* Where to build error packet */
-	int32_t e;		/* Error code */
-	char *e_string;		/* Text of error */
+krb_mk_err(u_char *p, int32_t e, char *e_string)
 {
-    u_char      *start;
-
-    start = p;
-
-    /* Create fixed part of packet */
-    *p++ = (unsigned char) KRB_PROT_VERSION;
-    *p = (unsigned char) AUTH_MSG_APPL_ERR;
-    *p++ |= HOST_BYTE_ORDER;
-
-    /* Add the basic info */
-    bcopy((char *)&e,(char *)p,4); /* err code */
-    p += sizeof(e);
-    (void) strcpy((char *)p,e_string); /* err text */
-    p += strlen(e_string);
-
-    /* And return the length */
-    return p-start;
+    unsigned char *start = p;
+    p += krb_put_int(KRB_PROT_VERSION, p, 1);
+    p += krb_put_int(AUTH_MSG_APPL_ERR, p, 1);
+    
+    p += krb_put_int(e, p, 4);
+    p += krb_put_string(e_string, p);
+    return p - start;
 }

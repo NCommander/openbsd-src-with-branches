@@ -1,4 +1,4 @@
-#	$NetBSD: Makefile.inc,v 1.8 1995/02/25 03:01:33 cgd Exp $
+#	$OpenBSD: Makefile.inc,v 1.5 1998/03/13 00:48:33 deraadt Exp $
 
 # librpc sources
 .PATH:	${.CURDIR}/arch/${MACHINE}/rpc ${.CURDIR}/rpc
@@ -12,15 +12,15 @@ SRCS+=	auth_none.c auth_unix.c  authunix_prot.c bindresvport.c \
 	svc_tcp.c svc_udp.c xdr.c xdr_array.c xdr_float.c xdr_mem.c \
 	xdr_rec.c xdr_reference.c xdr_stdio.c
 
-MAN+=	bindresvport.3 getrpcent.3 getrpcport.3 rpc.3 xdr.3
-MLINKS+=	getrpcport.3 getrpcbyname.3 \
-		getrpcport.3 getrpcbynumber.3 \
-		getrpcport.3 endrpcent.3 \
-		getrpcport.3 setrpcent.3 \
-		rpc.3 auth_destroy.3 \
-		rpc.3 authnone_create.3 \
-		rpc.3 authunix_create.3 \
-		rpc.3 authunix_create_default.3 \
+MAN+=	bindresvport.3 getrpcent.3 getrpcport.3 rpc.3 xdr.3 rpcauth.3
+MLINKS+=	getrpcent.3 getrpcbyname.3 \
+		getrpcent.3 getrpcbynumber.3 \
+		getrpcent.3 endrpcent.3 \
+		getrpcent.3 setrpcent.3 \
+		rpcauth.3 auth_destroy.3 \
+		rpcauth.3 authnone_create.3 \
+		rpcauth.3 authunix_create.3 \
+		rpcauth.3 authunix_create_default.3 \
 		rpc.3 callrpc.3 \
 		rpc.3 clnt_broadcast.3 \
 		rpc.3 clnt_call.3 \
@@ -45,7 +45,7 @@ MLINKS+=	getrpcport.3 getrpcbyname.3 \
 		rpc.3 pmap_rmtcall.3 \
 		rpc.3 pmap_set.3 \
 		rpc.3 pmap_unset.3 \
-		rpc.3 regsterrpc.3 \
+		rpc.3 registerrpc.3 \
 		rpc.3 rpc_createerr.3 \
 		rpc.3 svc_destroy.3 \
 		rpc.3 svc_fds.3 \

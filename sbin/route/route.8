@@ -1,3 +1,4 @@
+.\"	$OpenBSD: route.8,v 1.6 1997/07/13 23:12:08 angelos Exp $
 .\"	$NetBSD: route.8,v 1.6 1995/03/18 15:00:13 cgd Exp $
 .\"
 .\" Copyright (c) 1983, 1991, 1993
@@ -41,7 +42,7 @@
 .Nd manually manipulate the routing tables.
 .Sh SYNOPSIS
 .Nm route
-.Op Fl nqv
+.Op Fl dnqv
 .Ar command
 .Oo
 .Op Ar modifiers
@@ -64,12 +65,14 @@ programmatic interface discussed in
 .Xr route 4 .
 .Pp
 .Bl -tag -width Ds
+.It Fl d
+Run in debug-only mode, i.e. don't actually modify the routing table.
 .It Fl n
 Bypasses attempts to print host and network names symbolically
 when reporting actions.  (The process of translating between symbolic
 names and numerical equivalents can be quite time consuming, and
 may require correct operation of the network; thus it may be expedient
-to forgo this, especially when attempting to repair networking operations),
+to forgo this, especially when attempting to repair networking operations).
 .It Fl v
 (verbose) Print additional details.
 .It Fl q
@@ -78,7 +81,7 @@ Suppress all output.
 .Pp
 The
 .Nm route :
-utility provides six commands:
+utility provides several commands:
 .Pp
 .Bl -tag -width Fl -compact
 .It Cm add
@@ -91,6 +94,9 @@ Delete a specific route.
 Change aspects of a route (such as its gateway).
 .It Cm get
 Lookup and display the route for a destination.
+.It Cm show
+Print out the route table similar to "netstat \-r" (see
+.Xr netstat 8 ).
 .It Cm monitor
 Continuously report any changes to the routing information base,
 routing lookup misses, or suspected network partitionings.
@@ -119,6 +125,7 @@ will ``flush'' the routing tables of all gateway entries.
 When the address family may is specified by any of the
 .Fl osi ,
 .Fl xns ,
+.Fl encap ,
 or
 .Fl inet
 modifiers, only routes having destinations with addresses in the
@@ -170,6 +177,10 @@ and
 .Fl net Li 128.32.130
 is interpreted as
 .Li 128.32.130.0 .
+A more detailed syntax is also available, for example
+.Li net 192.168.64.0/20
+is interpreted to specify that the high 20 bits of the address
+192.168.64.0 are the requested network.
 .Pp
 If the destination is directly reachable
 via an interface requiring
@@ -315,6 +326,7 @@ to create the new entry.
 .Xr esis 4 ,
 .Xr routed 8 ,
 .Xr XNSrouted 8
+.Xr IPXrouted 8
 .Sh HISTORY
 The
 .Nm

@@ -1,3 +1,4 @@
+.\"	$OpenBSD$
 .\"	$NetBSD: hier.7,v 1.7 1994/11/30 19:07:10 jtc Exp $
 .\"
 .\" Copyright (c) 1990, 1993
@@ -46,6 +47,9 @@ A sketch of the filesystem hierarchy.
 root directory of the filesystem
 .It Li /bin/
 user utilities fundamental to both single-user and multi-user environments
+.It Li /bsd
+pure kernel executable (the operating system loaded into memory
+at boot time).  
 .It Li /dev/
 block and character device files
 .Pp
@@ -59,6 +63,13 @@ file descriptor files;
 see
 .Xr \&fd 4
 .El
+.It Li /emul/
+base directory for alternate areas searched first when system call
+emulation is in effect; see
+.Xr compat_freebsd 8 ,
+.Xr compat_linux 8 ,
+.Xr compat_sunos 8 ,
+.Xr compat_svr4 8 .
 .It Li /etc/
 system configuration files and scripts 
 .Pp
@@ -89,9 +100,6 @@ UUCP configuration files;
 .It Li /mnt/
 empty directory commonly used by
 system administrators as a temporary mount point
-.It Li /netbsd
-pure kernel executable (the operating system loaded into memory
-at boot time).  
 .It Li /sbin/
 system programs and administration utilities
 fundamental to both single-user and multi-user environments
@@ -357,10 +365,6 @@ see
 .Xr sendmail 8
 .It Li output/
 line printer spooling directories
-.It Li secretmail/ 
-secretmail spool directory;
-see
-.Xr xget 1
 .It Li uucp/ 
 uucp spool directory
 .It Li uucppublic/

@@ -1,5 +1,29 @@
-/*
- * $Id: defs.c,v 1.5 1997/11/22 03:37:29 brian Exp $
+/*-
+ * Copyright (c) 1997 Brian Somers <brian@Awfulhak.org>
+ * All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions
+ * are met:
+ * 1. Redistributions of source code must retain the above copyright
+ *    notice, this list of conditions and the following disclaimer.
+ * 2. Redistributions in binary form must reproduce the above copyright
+ *    notice, this list of conditions and the following disclaimer in the
+ *    documentation and/or other materials provided with the distribution.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE AUTHOR AND CONTRIBUTORS ``AS IS'' AND
+ * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ * ARE DISCLAIMED.  IN NO EVENT SHALL THE AUTHOR OR CONTRIBUTORS BE LIABLE
+ * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+ * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
+ * OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+ * HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+ * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
+ * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
+ * SUCH DAMAGE.
+ *
+ *	$Id: defs.c,v 1.7 1998/01/21 02:13:31 brian Exp $
  */
 
 #include <sys/param.h>
@@ -32,7 +56,7 @@ void
 SetLabel(const char *label)
 {
   if (label)
-    strncpy(dstsystem, label, sizeof dstsystem);
+    strncpy(dstsystem, label, sizeof dstsystem - 1);
   else
     *dstsystem = '\0';
 }
@@ -46,7 +70,7 @@ GetLabel()
 void
 randinit()
 {
-#ifdef __FreeBSD__
+#if __FreeBSD__ >= 3
   static int initdone;
 
   if (!initdone) {
@@ -64,8 +88,8 @@ GetShortHost()
 {
   char *p;
 
-  if (gethostname(VarShortHost, sizeof(VarShortHost))) {
-    LogPrintf(LogERROR, "GetShortHost: gethostbyname: %s\n", strerror(errno));
+  if (gethostname(VarShortHost, sizeof VarShortHost)) {
+    LogPrintf(LogERROR, "GetShortHost: gethostname: %s\n", strerror(errno));
     return 0;
   }
 
@@ -76,7 +100,7 @@ GetShortHost()
 }
 
 void
-DropClient()
+DropClient(int verbose)
 {
   FILE *oVarTerm;
 
@@ -87,6 +111,7 @@ DropClient()
       fclose(oVarTerm);
     close(netfd);
     netfd = -1;
-    LogPrintf(LogPHASE, "Client connection closed.\n");
+    if (verbose)
+      LogPrintf(LogPHASE, "Client connection dropped.\n");
   }
 }

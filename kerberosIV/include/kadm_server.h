@@ -1,4 +1,16 @@
-/*	$Id$	*/
+/*	$OpenBSD: kadm_server.h,v 1.3 1998/02/18 11:53:34 art Exp $	*/
+/*	$Id: kadm_server.h,v 1.3 1998/02/18 11:53:34 art Exp $	*/
+
+/*
+ * This source code is no longer held under any constraint of USA
+ * `cryptographic laws' since it was exported legally.  The cryptographic
+ * functions were removed from the code and a "Bones" distribution was
+ * made.  A Commodity Jurisdiction Request #012-94 was filed with the
+ * USA State Department, who handed it to the Commerce department.  The
+ * code was determined to fall under General License GTDA under ECCN 5D96G,
+ * and hence exportable.  The cryptographic interfaces were re-added by Eric
+ * Young, and then KTH proceeded to maintain the code in the free world.
+ */
 
 /*-
  * Copyright (C) 1989 by the Massachusetts Institute of Technology
@@ -38,7 +50,7 @@
 
 #include <sys/types.h>
 #include <kerberosIV/krb.h>
-#include <kerberosIV/des.h>
+#include <des.h>
 
 typedef struct {
   struct sockaddr_in admin_addr;

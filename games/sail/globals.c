@@ -284,7 +284,7 @@ int nscene = sizeof scene / sizeof (struct scenario);
 
 struct shipspecs specs[] = {
 /*      bs fs ta guns   hull  crew1   crew3    gunR  carR   rig2  rig4 pts */
-/*                 class   qual   crew2    gunL   carL   rig1  rig3        */
+/*		   class   qual	  crew2	   gunL	  carL	 rig1  rig3	   */
 /*00*/	4, 7, 3,  19, 5,  5, 4,  2,  2,  2,  2,  2, 0, 0,  4, 4, 4,  4,  7,
 /*01*/	4, 7, 3,  17, 5,  5, 4,  2,  2,  2,  0,  0, 4, 4,  3, 3, 3,  3,  6,
 /*02*/	3, 5, 2,  42, 4,  7, 4,  2,  2,  2,  2,  2, 0, 0,  5, 5, 5, -1, 11,
@@ -370,7 +370,7 @@ struct shipspecs specs[] = {
 /*82*/	4, 7, 3, 450, 1, 99, 5, 50, 40, 40, 50, 50,25,25,  9, 9, 9, -1, 75,
 /*83*/	4, 7, 3, 450, 1, 99, 5, 50, 40, 40, 50, 50,25,25,  9, 9, 9, -1, 75,
 /*      bs fs ta guns   hull  crew1   crew3    gunR  carR   rig2  rig4 pts */
-/*                 class   qual   crew2    gunL   carL   rig1  rig3        */
+/*		   class   qual	  crew2	   gunL	  carL	 rig1  rig3	   */
 };
 
 struct windeffects WET[7][6] = {
@@ -470,7 +470,7 @@ char MT[9][3] = {
 	{ 4, 4, 2 }
 };
 
-char rangeofshot[] = {
+char rangeofshot[5] = {
 	0,
 	1,		/* grape */
 	3,		/* chain */
@@ -478,12 +478,12 @@ char rangeofshot[] = {
 	1		/* double */
 };
 
-char *countryname[] = {
+char *countryname[8] = {
 	"American", "British", "Spanish", "French", "Japanese",
 	"Federation", "Klingon", "Orion"
 };
 
-char *classname[] = {
+char *classname[7] = {
 	"Drift wood",
 	"Ship of the Line",
 	"Ship of the Line",
@@ -493,7 +493,7 @@ char *classname[] = {
 	"Brig"
 };
 
-char *directionname[] = {
+char *directionname[9] = {
 	"dead ahead",
 	"off the starboard bow",
 	"off the starboard beam",
@@ -505,9 +505,11 @@ char *directionname[] = {
 	"dead ahead"
 };
 
-char *qualname[] = { "dead", "mutinous", "green", "mundane", "crack", "elite" };
+char *qualname[6] = {
+	"dead", "mutinous", "green", "mundane", "crack", "elite"
+};
 
-char loadname[] = { '-', 'G', 'C', 'R', 'D', 'E' };
+char loadname[6] = { '-', 'G', 'C', 'R', 'D', 'E' };
 
-char dr[] = { 0, 1, 1, 0, -1, -1, -1, 0, 1 };
-char dc[] = { 0, 0, -1, -1, -1, 0, 1, 1, 1 };
+int dr[] = { 0, 1, 1, 0, -1, -1, -1, 0, 1 };
+int dc[] = { 0, 0, -1, -1, -1, 0, 1, 1, 1 };

@@ -1,3 +1,4 @@
+/* *	$OpenBSD: md.c,v 1.3 1997/02/02 03:28:41 deraadt Exp $*/
 /*
  * Copyright (c) 1993 Paul Kranenburg
  * All rights reserved.
@@ -27,7 +28,6 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
- *	$Id: md.c,v 1.7 1995/01/17 06:44:39 mycroft Exp $
  */
 
 #include <sys/param.h>
@@ -266,6 +266,8 @@ struct exec *hp;
 		return 1;
 #if 0
 	return (((md_swap_long(hp->a_midmag)&0x00ff0000) >> 16) == MID_SUN020);
+#else
+	return (0);
 #endif
 }
 #endif /* RTLD */
@@ -292,7 +294,7 @@ void
 md_swapout_exec_hdr(h)
 struct exec *h;
 {
-	/* NetBSD: Always leave magic alone */
+	/* NetBSD/OpenBSD: Always leave magic alone */
 	int skip = 1;
 #if 0
 	if (N_GETMAGIC(*h) == OMAGIC)

@@ -1,4 +1,4 @@
-/*	$NetBSD: morse.c,v 1.3 1995/03/23 08:35:24 cgd Exp $	*/
+/*	$OpenBSD$	*/
 
 /*
  * Copyright (c) 1988, 1993
@@ -43,12 +43,13 @@ static char copyright[] =
 #if 0
 static char sccsid[] = "@(#)morse.c	8.1 (Berkeley) 5/31/93";
 #else
-static char rcsid[] = "$NetBSD: morse.c,v 1.3 1995/03/23 08:35:24 cgd Exp $";
+static char rcsid[] = "$OpenBSD$";
 #endif
 #endif /* not lint */
 
-#include <stdio.h>
 #include <ctype.h>
+#include <stdio.h>
+#include <unistd.h>
 
 static char
 	*digit[] = {
@@ -92,25 +93,31 @@ static char
 	"--..",
 };
 
-static int sflag;
+void	morse __P((int));
+void	show __P((char *));
 
+static int sflag = 0;
+
+int
 main(argc, argv)
 	int argc;
 	char **argv;
 {
-	extern char *optarg;
-	extern int optind;
-	register int ch;
-	register char *p;
+	int ch;
+	char *p;
 
-	while ((ch = getopt(argc, argv, "s")) != EOF)
+	/* revoke */
+	setegid(getgid());
+	setgid(getgid());
+
+	while ((ch = getopt(argc, argv, "hs")) != -1)
 		switch((char)ch) {
 		case 's':
 			sflag = 1;
 			break;
-		case '?':
+		case '?': case 'h':
 		default:
-			fprintf(stderr, "usage: morse [string ...]");
+			fprintf(stderr, "usage: morse [-s] [string ...]");
 			exit(1);
 		}
 	argc -= optind;
@@ -120,32 +127,74 @@ main(argc, argv)
 		do {
 			for (p = *argv; *p; ++p)
 				morse((int)*p);
+			show("");
 		} while (*++argv);
 	else while ((ch = getchar()) != EOF)
 		morse(ch);
+	show("...-.-");	/* SK */
+	exit(0);
 }
 
+void
 morse(c)
-	register int c;
+	int c;
 {
 	if (isalpha(c))
 		show(alph[c - (isupper(c) ? 'A' : 'a')]);
 	else if (isdigit(c))
 		show(digit[c - '0']);
-	else if (c == ',')
-		show("--..--");
-	else if (c == '.')
-		show(".-.-.-");
 	else if (isspace(c))
-		show(" ...\n");
+		show("");  /* could show BT for a pause */
+	else switch((char)c) {
+		case ',':
+			show("--..--");
+			break;
+		case '.':
+			show(".-.-.-");
+			break;
+		case '?':
+			show("..--..");
+			break;
+		case '/':
+			show("-..-.");
+			break;
+		case '-':
+			show("-....-");
+			break;
+		case ':':
+			show("---...");
+			break;
+		case ';':
+			show("-.-.-.");
+			break;
+		case '(':	case ')':
+			show("-.--.-.");
+			break;
+		case '`': case '"':
+			show(".-..-.");
+			break;
+		case '\'':
+			show(".----.");
+			break;
+		case '+':   /* AR */
+			show(".-.-.");
+			break;
+		case '=':   /* BT */
+			show("-...-");
+			break;
+		case '@':   /* SK */
+			show("...-.-");
+			break;
+		}
 }
 
+void
 show(s)
-	register char *s;
+	char *s;
 {
 	if (sflag)
 		printf(" %s", s);
 	else for (; *s; ++s)
 		printf(" %s", *s == '.' ? "dit" : "daw");
-	printf(",\n");
+	printf("\n");
 }

@@ -29,15 +29,15 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#if defined(LIBC_SCCS) && !defined(lint)
-static char rcsid[] = "$NetBSD: semctl.c,v 1.3 1995/02/27 11:23:09 cgd Exp $";
-#endif /* LIBC_SCCS and not lint */
+#if defined(SYSLIBC_SCCS) && !defined(lint)
+static char rcsid[] = "$OpenBSD: semctl.c,v 1.3 1997/04/26 08:50:13 tholo Exp $";
+#endif /* SYSLIBC_SCCS and not lint */
 
 #include <sys/types.h>
 #include <sys/ipc.h>
 #include <sys/sem.h>
 
-#if __STDC__
+#ifdef __STDC__
 int semctl(int semid, int semnum, int cmd, union semun semun)
 #else
 int semctl(semid, int semnum, cmd, semun)

@@ -35,13 +35,12 @@
  * SUCH DAMAGE.
  */
 
-#if defined(LIBC_SCCS) && !defined(lint)
-	.text
-	/*.asciz "from: @(#)bzero.s	5.1 (Berkeley) 5/12/90"*/
-	.asciz "$Id: bzero.S,v 1.2 1995/02/08 18:33:14 mycroft Exp $"
-#endif /* LIBC_SCCS and not lint */
-
 #include "DEFS.h"
+
+#if defined(LIBC_SCCS)
+	.text
+	.asciz "$OpenBSD$"
+#endif /* LIBC_SCCS */
 
 /*
  * This is probably not the best we can do, but it is still much

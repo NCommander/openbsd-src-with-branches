@@ -1,4 +1,4 @@
-/*	$NetBSD: pmap.h,v 1.9 1995/05/11 16:53:03 jtc Exp $	*/
+/*	$OpenBSD: pmap.h,v 1.4 1997/03/31 00:24:05 downsj Exp $ */
 
 /* 
  * Copyright (c) 1987 Carnegie-Mellon University
@@ -40,8 +40,8 @@
  *	@(#)pmap.h	8.1 (Berkeley) 6/10/93
  */
 
-#ifndef	_MACHINE_PMAP_H_
-#define	_MACHINE_PMAP_H_
+#ifndef	_MVME68K_PMAP_H_
+#define	_MVME68K_PMAP_H_
 
 #include <machine/pte.h>
 
@@ -146,7 +146,6 @@ extern struct pmap	kernel_pmap_store;
 extern struct pv_entry	*pv_table;	/* array of entries, one per page */
 
 #define pmap_page_index(pa)		atop(pa - vm_first_phys)
-#define pa_to_pvh(pa)			(&pv_table[pmap_page_index(pa)])
 
 #define	pmap_resident_count(pmap)	((pmap)->pm_stats.resident_count)
 #define	pmap_wired_count(pmap)		((pmap)->pm_stats.wired_count)
@@ -155,4 +154,4 @@ extern pt_entry_t	*Sysmap;
 extern char		*vmmap;		/* map for mem, dumps, etc. */
 #endif /* _KERNEL */
 
-#endif /* !_MACHINE_PMAP_H_ */
+#endif /* !_MVME68K_PMAP_H_ */

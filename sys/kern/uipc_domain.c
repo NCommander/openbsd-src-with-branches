@@ -1,4 +1,5 @@
-/*	$NetBSD: uipc_domain.c,v 1.12 1994/06/29 06:33:33 cgd Exp $	*/
+/*	$OpenBSD: uipc_domain.c,v 1.4 1997/02/20 01:07:26 deraadt Exp $	*/
+/*	$NetBSD: uipc_domain.c,v 1.14 1996/02/09 19:00:44 christos Exp $	*/
 
 /*
  * Copyright (c) 1982, 1986, 1993
@@ -68,6 +69,15 @@ domaininit()
 	ADDDOMAIN(route);
 #ifdef INET
 	ADDDOMAIN(inet);
+#ifdef IPSEC
+	ADDDOMAIN(encap);
+#endif
+#endif
+#ifdef IPX
+	ADDDOMAIN(ipx);
+#endif
+#ifdef NETATALK
+	ADDDOMAIN(atalk);
 #endif
 #ifdef NS
 	ADDDOMAIN(ns);
@@ -195,7 +205,7 @@ pfctlinput(cmd, sa)
 	for (dp = domains; dp; dp = dp->dom_next)
 		for (pr = dp->dom_protosw; pr < dp->dom_protoswNPROTOSW; pr++)
 			if (pr->pr_ctlinput)
-				(*pr->pr_ctlinput)(cmd, sa, (caddr_t)0);
+				(*pr->pr_ctlinput)(cmd, sa, NULL);
 }
 
 void

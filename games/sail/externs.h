@@ -194,18 +194,18 @@ struct File {
 	char struck;			/* 66 */
 	struct ship *captured;		/* 68 */
 	short pcrew;			/* 70 */
-	char movebuf[10];		/* 72 */
-	char drift;			/* 82 */
+	char movebuf[60];		/* 72 */
+	char drift;			/* 132 */
 	short nfoul;
 	short ngrap;
-	struct snag foul[NSHIP];	/* 84 */
-	struct snag grap[NSHIP];	/* 124 */
-	char RH;			/* 224 */
-	char RG;			/* 226 */
-	char RR;			/* 228 */
-	char FS;			/* 230 */
-	char explode;			/* 232 */
-	char sink;			/* 234 */
+	struct snag foul[NSHIP];	/* 134 */
+	struct snag grap[NSHIP];	/* 144 */
+	char RH;			/* 274 */
+	char RG;			/* 276 */
+	char RR;			/* 278 */
+	char FS;			/* 280 */
+	char explode;			/* 282 */
+	char sink;			/* 284 */
 	char dir;
 	short col;
 	short row;
@@ -231,7 +231,7 @@ struct scenario {
 	char *name;			/* 14 */
 	struct ship ship[NSHIP];	/* 16 */
 };
-struct scenario scene[];
+struct scenario scene[32];
 int nscene;
 
 struct shipspecs {
@@ -255,7 +255,7 @@ struct shipspecs {
 	char rig4;
 	short pts;
 };
-struct shipspecs specs[];
+struct shipspecs specs[84];
 
 struct scenario *cc;		/* the current scenario */
 struct ship *ls;		/* &cc->ship[cc->vessels] */
@@ -280,15 +280,15 @@ char HDTrake[9][10];
 char QUAL[9][5];
 char MT[9][3];
 
-char *countryname[];
-char *classname[];
-char *directionname[];
-char *qualname[];
-char loadname[];
+char *countryname[8];
+char *classname[7];
+char *directionname[9];
+char *qualname[6];
+char loadname[6];
 
-char rangeofshot[];
+char rangeofshot[5];
 
-char dr[], dc[];
+int dr[9], dc[9];
 
 int winddir;
 int windspeed;
@@ -305,7 +305,6 @@ char *saywhat();
 struct ship *closestenemy();
 
 char *calloc();
-char *rindex();
 char *strcpy();
 char *strcat();
 char *strncpy();

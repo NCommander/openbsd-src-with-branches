@@ -1,4 +1,4 @@
-/*	$NetBSD: move.c,v 1.11 1995/04/29 01:17:12 mycroft Exp $	*/
+/*	$NetBSD: move.c,v 1.12 1996/05/19 20:22:09 pk Exp $	*/
 
 /*
  * Copyright (c) 1980, 1993
@@ -37,7 +37,7 @@
 #if 0
 static char sccsid[] = "@(#)move.c	8.1 (Berkeley) 7/19/93";
 #else
-static char rcsid[] = "$NetBSD: move.c,v 1.11 1995/04/29 01:17:12 mycroft Exp $";
+static char rcsid[] = "$NetBSD: move.c,v 1.12 1996/05/19 20:22:09 pk Exp $";
 #endif
 #endif /* not lint */
 
@@ -96,7 +96,7 @@ static char rcsid[] = "$NetBSD: move.c,v 1.11 1995/04/29 01:17:12 mycroft Exp $"
  *
  ******************************************************************************/
 
-#if __STDC__
+#ifdef __STDC__
 #include <stdarg.h>
 #else
 #include <varargs.h>
@@ -396,7 +396,7 @@ pch(c)
 }
 
 void
-#if __STDC__
+#ifdef __STDC__
 apr(struct point *ps, const char *fmt, ...)
 #else
 apr(ps, fmt, va_alist)
@@ -410,7 +410,7 @@ apr(ps, fmt, va_alist)
 
 	p.line = ps->line+1; p.col = ps->col+1;
 	move(&p);
-#if __STDC__
+#ifdef __STDC__
 	va_start(ap, fmt);
 #else
 	va_start(ap);
@@ -421,7 +421,7 @@ apr(ps, fmt, va_alist)
 }
 
 void
-#if __STDC__
+#ifdef __STDC__
 pr(const char *fmt, ...)
 #else
 pr(fmt, va_alist)
@@ -431,7 +431,7 @@ pr(fmt, va_alist)
 {
 	va_list ap;
 
-#if __STDC__
+#ifdef __STDC__
 	va_start(ap, fmt);
 #else
 	va_start(ap);
@@ -604,7 +604,7 @@ getcap()
 	if (DO == 0)
 		DO = "\n";
 
-	BS = tgetstr("bc", &ap);
+	BS = tgetstr("le", &ap);
 	if (BS == 0 && tgetflag("bs"))
 		BS = "\b";
 	if (BS)
@@ -642,14 +642,23 @@ getcap()
 	if (xPC)
 		PC = *xPC;
 
-	NDlength = strlen(ND);
-	BSlength = strlen(BS);
 	if ((CM == 0) &&
-		(HO == 0 | UP==0 || BS==0 || ND==0)) {
+		(HO == 0 || UP == 0 || BS == 0 || ND == 0)) {
 		fprintf(stderr, "Terminal must have addressible ");
 		fprintf(stderr, "cursor or home + 4 local motions\n");
 		exit(5);
 	}
+	if (ND == 0) {
+		fprintf(stderr, "Terminal must have `nd' capability\n");
+		exit(5);
+	}
+	NDlength = strlen(ND);
+	if (BS == 0) {
+		fprintf(stderr, "Terminal must have `bs' or `le' capability\n");
+		exit(5);
+	}
+	BSlength = strlen(BS);
+
 	if (tgetflag("os")) {
 		fprintf(stderr, "Terminal must not overstrike\n");
 		exit(5);

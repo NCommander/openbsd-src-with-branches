@@ -1,3 +1,4 @@
+/*	$OpenBSD: com3.c,v 1.3 1997/08/24 21:55:02 deraadt Exp $	*/
 /*	$NetBSD: com3.c,v 1.3 1995/03/21 15:07:00 cgd Exp $	*/
 
 /*
@@ -41,13 +42,14 @@ static char rcsid[] = "$NetBSD: com3.c,v 1.3 1995/03/21 15:07:00 cgd Exp $";
 #endif
 #endif /* not lint */
 
-#include "externs.h"
+#include "extern.h"
 
+void
 dig()
 {
 	if (testbit(inven,SHOVEL)){
 		puts("OK");
-		time++;
+		btime++;
 		switch(position){
 			case 144:		/* copse near beach */
 				if (!notes[DUG]){
@@ -67,6 +69,7 @@ dig()
 		puts("You don't have a shovel.");
 }
 
+int
 jump()
 {
 	register int n;
@@ -106,6 +109,7 @@ jump()
 	return(0);
 }
 
+void
 bury()
 {
 	int value;
@@ -169,6 +173,7 @@ bury()
 		puts("You aren't holding a shovel.");
 }
 
+void
 drink()
 {
 	register int n;
@@ -182,18 +187,20 @@ drink()
 		CUMBER = MAXCUMBER;
 		for (n=0; n < NUMOFINJURIES; n++)
 			injuries[n] = 0;
-		time++;
+		btime++;
 		zzz();
 	}
 	else
 		puts("I'm not thirsty.");
 }
 
+int
 shoot()
 {
 	int firstnumber, value;
 	register int n;
 
+	firstnumber = wordcount + 2;
 	if (!testbit(inven,LASER))
 		puts("You aren't holding a blaster.");
 	else {
@@ -205,10 +212,10 @@ shoot()
 			for (n=0; objsht[value][n]; n++);
 			if (testbit(location[position].objects,value)){
 				clearbit(location[position].objects,value);
-				time++;
+				btime++;
 				printf("The %s explode%s\n",objsht[value],(objsht[value][n-1]=='s' ? (objsht[value][n-2]=='s' ? "s." : ".") : "s."));
 				if (value == BOMB)
-					die();
+					die(0);
 			}
 			else
 				printf("I dont see any %s around here.\n", objsht[value]);
@@ -220,7 +227,7 @@ shoot()
 			    /* special cases with their own return()'s */
 
 		if (wordnumber <= wordcount && wordtype[wordnumber] == NOUNS){
-			time++;
+			btime++;
 			switch(wordvalue[wordnumber]){
 			
 				case DOOR:
@@ -243,7 +250,7 @@ shoot()
 						case 20:
 							puts("The blast hits the door and it explodes into flame.  The magnesium burns");
 							puts("so rapidly that we have no chance to escape.");
-							die();
+							die(0);
 						default:
 							puts("Nothing happens.");
 					}
@@ -290,7 +297,7 @@ shoot()
 					if (testbit(location[position].objects,MAN)){
 						puts("The man falls to the ground with blood pouring all over his white suit.");
 						puts("Your fantasy is over.");
-						die();
+						die(0);
 					}
 					else puts("What man?");
 					break;

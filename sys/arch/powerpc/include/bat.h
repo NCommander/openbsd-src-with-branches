@@ -1,4 +1,4 @@
-/*	$NetBSD: bat.h,v 1.1 1996/09/30 16:34:20 ws Exp $	*/
+/*	$OpenBSD: bat.h,v 1.2 1996/12/28 06:25:00 rahnds Exp $	*/
 
 /*
  * Copyright (C) 1995, 1996 Wolfgang Solfrank.

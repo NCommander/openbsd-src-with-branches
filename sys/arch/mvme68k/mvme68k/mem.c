@@ -1,6 +1,35 @@
-/*	$NetBSD: mem.c,v 1.13 1995/04/10 13:10:51 mycroft Exp $	*/
+/*	$OpenBSD: mem.c,v 1.4 1996/04/28 10:59:03 deraadt Exp $ */
 
 /*
+ * Copyright (c) 1995 Theo de Raadt
+ * 
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions
+ * are met:
+ * 1. Redistributions of source code must retain the above copyright
+ *    notice, this list of conditions and the following disclaimer.
+ * 2. Redistributions in binary form must reproduce the above copyright
+ *    notice, this list of conditions and the following disclaimer in the
+ *    documentation and/or other materials provided with the distribution.
+ * 3. All advertising materials mentioning features or use of this software
+ *    must display the following acknowledgement:
+ *	This product includes software developed under OpenBSD by
+ *	Theo de Raadt for Willowglen Singapore.
+ * 4. The name of the author may not be used to endorse or promote products
+ *    derived from this software without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS
+ * OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ * ARE DISCLAIMED.  IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY
+ * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+ * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
+ * OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+ * HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+ * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
+ * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
+ * SUCH DAMAGE.
+ *
  * Copyright (c) 1988 University of Utah.
  * Copyright (c) 1982, 1986, 1990, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -56,7 +85,7 @@
 #include <vm/vm.h>
 
 extern u_int lowram;
-caddr_t zeropage;
+static caddr_t devzeropage;
 
 /*ARGSUSED*/
 int
@@ -140,6 +169,8 @@ mmrw(dev, uio, flags)
 			if (!kernacc((caddr_t)v, c,
 			    uio->uio_rw == UIO_READ ? B_READ : B_WRITE))
 				return (EFAULT);
+			if (v < NBPG)
+				return (EFAULT);
 			error = uiomove((caddr_t)v, c, uio);
 			continue;
 
@@ -162,18 +193,18 @@ mmrw(dev, uio, flags)
 			 * XXX on the hp300 we already know where there
 			 * is a global zeroed page, the null segment table.
 			 */
-			if (zeropage == NULL) {
+			if (devzeropage == NULL) {
 #if CLBYTES == NBPG
 				extern caddr_t Segtabzero;
-				zeropage = Segtabzero;
+				devzeropage = Segtabzero;
 #else
-				zeropage = (caddr_t)
+				devzeropage = (caddr_t)
 				    malloc(CLBYTES, M_TEMP, M_WAITOK);
-				bzero(zeropage, CLBYTES);
+				bzero(devzeropage, CLBYTES);
 #endif
 			}
 			c = min(iov->iov_len, CLBYTES);
-			error = uiomove(zeropage, c, uio);
+			error = uiomove(devzeropage, c, uio);
 			continue;
 
 		default:

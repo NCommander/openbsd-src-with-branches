@@ -1,19 +1,18 @@
-#	from: @(#)Makefile.inc	5.7 (Berkeley) 6/27/91
-#	$Id: Makefile.inc,v 1.10 1995/02/25 17:06:28 cgd Exp $
+#	$OpenBSD: Makefile.inc,v 1.3 1997/09/26 18:03:40 millert Exp $
 
 # stdio sources
 .PATH: ${.CURDIR}/stdio
 
 CFLAGS+=-DFLOATING_POINT
 
-SRCS+=	clrerr.c fclose.c fdopen.c feof.c ferror.c fflush.c fgetc.c \
+SRCS+=	asprintf.c clrerr.c fclose.c fdopen.c feof.c ferror.c fflush.c fgetc.c \
 	fgetln.c fgetpos.c fgets.c fileno.c findfp.c flags.c fopen.c \
 	fprintf.c fpurge.c fputc.c fputs.c fread.c freopen.c fscanf.c \
 	fseek.c fsetpos.c ftell.c funopen.c fvwrite.c fwalk.c fwrite.c \
 	getc.c getchar.c gets.c getw.c makebuf.c mktemp.c perror.c printf.c \
 	putc.c putchar.c puts.c putw.c refill.c remove.c rewind.c rget.c \
 	scanf.c setbuf.c setbuffer.c setvbuf.c snprintf.c sprintf.c sscanf.c \
-	stdio.c tempnam.c tmpfile.c tmpnam.c ungetc.c vfprintf.c \
+	stdio.c tempnam.c tmpfile.c tmpnam.c ungetc.c vasprintf.c vfprintf.c \
 	vfscanf.c vprintf.c vscanf.c vsnprintf.c vsprintf.c vsscanf.c \
 	wbuf.c wsetup.c
 
@@ -31,9 +30,10 @@ MLINKS+=fseek.3 fgetpos.3 fseek.3 fsetpos.3 fseek.3 ftell.3 fseek.3 rewind.3
 MLINKS+=funopen.3 fropen.3 funopen.3 fwopen.3
 MLINKS+=getc.3 fgetc.3 getc.3 getchar.3 getc.3 getw.3
 MLINKS+=mktemp.3 mkstemp.3
+MLINKS+=mktemp.3 mkdtemp.3
 MLINKS+=printf.3 fprintf.3 printf.3 snprintf.3 printf.3 sprintf.3 \
 	printf.3 vfprintf.3 printf.3 vprintf.3 printf.3 vsnprintf.3 \
-	printf.3 vsprintf.3 
+	printf.3 vsprintf.3 printf.3 asprintf.3 printf.3 vasprintf.3
 MLINKS+=putc.3 fputc.3 putc.3 putchar.3 putc.3 putw.3
 MLINKS+=scanf.3 fscanf.3 scanf.3 sscanf.3 scanf.3 vfscanf.3 scanf.3 vscanf.3 \
 	scanf.3 vsscanf.3

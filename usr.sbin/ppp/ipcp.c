@@ -17,7 +17,7 @@
  * IMPLIED WARRANTIES, INCLUDING, WITHOUT LIMITATION, THE IMPLIED
  * WARRANTIES OF MERCHANTIBILITY AND FITNESS FOR A PARTICULAR PURPOSE.
  *
- * $Id: ipcp.c,v 1.38 1997/11/22 03:37:34 brian Exp $
+ * $Id: ipcp.c,v 1.12 1998/01/20 22:46:25 brian Exp $
  *
  *	TODO:
  *		o More RFC1772 backwoard compatibility
@@ -30,10 +30,9 @@
 #include <sys/socket.h>
 #include <netdb.h>
 
-#include <limits.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
-#include <time.h>
 #include <unistd.h>
 
 #include "command.h"
@@ -44,6 +43,7 @@
 #include "fsm.h"
 #include "lcpproto.h"
 #include "lcp.h"
+#include "iplist.h"
 #include "ipcp.h"
 #include "slcompress.h"
 #include "os.h"
@@ -53,6 +53,8 @@
 #include "vjcomp.h"
 #include "ip.h"
 #include "throughput.h"
+#include "route.h"
+#include "filter.h"
 
 #ifndef NOMSEXT
 struct in_addr ns_entries[2];
@@ -62,6 +64,7 @@ struct in_addr nbns_entries[2];
 struct ipcpstate IpcpInfo;
 struct in_range  DefMyAddress;
 struct in_range  DefHisAddress;
+struct iplist    DefHisChoice;
 struct in_addr   TriggerAddress;
 int HaveTriggerAddress;
 
@@ -75,19 +78,17 @@ static void IpcpLayerUp(struct fsm *);
 static void IpcpLayerDown(struct fsm *);
 static void IpcpInitRestartCounter(struct fsm *);
 
-#define	REJECTED(p, x)	(p->his_reject & (1<<x))
-
 struct fsm IpcpFsm = {
   "IPCP",
   PROTO_IPCP,
   IPCP_MAXCODE,
-  OPEN_ACTIVE,
+  0,
   ST_INITIAL,
   0, 0, 0,
 
-  0,
-  {0, 0, 0, NULL, NULL, NULL},
-  {0, 0, 0, NULL, NULL, NULL},
+  {0, 0, 0, NULL, NULL, NULL},	/* FSM timer */
+  {0, 0, 0, NULL, NULL, NULL},	/* Open timer */
+  {0, 0, 0, NULL, NULL, NULL},	/* Stopped timer */
   LogIPCP,
 
   IpcpLayerUp,
@@ -109,7 +110,7 @@ static const char *cftypes[] = {
   "IPADDR",	/* 3: IP-Address */
 };
 
-#define NCFTYPES (sizeof(cftypes)/sizeof(char *))
+#define NCFTYPES (sizeof cftypes/sizeof cftypes[0])
 
 static const char *cftypes128[] = {
   /* Check out the latest ``Assigned numbers'' rfc (rfc1700.txt) */
@@ -120,9 +121,9 @@ static const char *cftypes128[] = {
   "SECNBNS",	/* 132: Secondary NBNS Server Address */
 };
 
-#define NCFTYPES128 (sizeof(cftypes)/sizeof(char *))
+#define NCFTYPES128 (sizeof cftypes128/sizeof cftypes128[0])
 
-struct pppThroughput throughput;
+static struct pppThroughput throughput;
 
 void
 IpcpAddInOctets(int n)
@@ -139,21 +140,25 @@ IpcpAddOutOctets(int n)
 int
 ReportIpcpStatus(struct cmdargs const *arg)
 {
-  struct ipcpstate *icp = &IpcpInfo;
   struct fsm *fp = &IpcpFsm;
 
   if (!VarTerm)
     return 1;
   fprintf(VarTerm, "%s [%s]\n", fp->name, StateNames[fp->state]);
-  fprintf(VarTerm, " his side: %s, %lx\n",
-	  inet_ntoa(icp->his_ipaddr), icp->his_compproto);
-  fprintf(VarTerm, " my  side: %s, %lx\n",
-	  inet_ntoa(icp->want_ipaddr), icp->want_compproto);
+  if (IpcpFsm.state == ST_OPENED) {
+    fprintf(VarTerm, " his side: %s, %s\n",
+	    inet_ntoa(IpcpInfo.his_ipaddr), vj2asc(IpcpInfo.his_compproto));
+    fprintf(VarTerm, " my  side: %s, %s\n",
+	    inet_ntoa(IpcpInfo.want_ipaddr), vj2asc(IpcpInfo.want_compproto));
+  }
 
   fprintf(VarTerm, "Defaults:\n");
   fprintf(VarTerm, " My Address:  %s/%d\n",
 	  inet_ntoa(DefMyAddress.ipaddr), DefMyAddress.width);
-  fprintf(VarTerm, " His Address: %s/%d\n",
+  if (iplist_isvalid(&DefHisChoice))
+    fprintf(VarTerm, " His Address: %s\n", DefHisChoice.src);
+  else
+    fprintf(VarTerm, " His Address: %s/%d\n",
 	  inet_ntoa(DefHisAddress.ipaddr), DefHisAddress.width);
   if (HaveTriggerAddress)
     fprintf(VarTerm, " Negotiation(trigger): %s\n", inet_ntoa(TriggerAddress));
@@ -172,11 +177,11 @@ IpcpDefAddress()
   struct hostent *hp;
   char name[200];
 
-  memset(&DefMyAddress, '\0', sizeof(DefMyAddress));
-  memset(&DefHisAddress, '\0', sizeof(DefHisAddress));
+  memset(&DefMyAddress, '\0', sizeof DefMyAddress);
+  memset(&DefHisAddress, '\0', sizeof DefHisAddress);
   TriggerAddress.s_addr = 0;
   HaveTriggerAddress = 0;
-  if (gethostname(name, sizeof(name)) == 0) {
+  if (gethostname(name, sizeof name) == 0) {
     hp = gethostbyname(name);
     if (hp && hp->h_addrtype == AF_INET) {
       memcpy(&DefMyAddress.ipaddr.s_addr, hp->h_addr, hp->h_length);
@@ -184,18 +189,56 @@ IpcpDefAddress()
   }
 }
 
+static int VJInitSlots = MAX_STATES;
+static int VJInitComp = 1;
+
+int
+SetInitVJ(struct cmdargs const *args)
+{
+  if (args->argc != 2)
+    return -1;
+  if (!strcasecmp(args->argv[0], "slots")) {
+    int slots;
+
+    slots = atoi(args->argv[1]);
+    if (slots < 4 || slots > 16)
+      return 1;
+    VJInitSlots = slots;
+    return 0;
+  } else if (!strcasecmp(args->argv[0], "slotcomp")) {
+    if (!strcasecmp(args->argv[1], "on"))
+      VJInitComp = 1;
+    else if (!strcasecmp(args->argv[1], "off"))
+      VJInitComp = 0;
+    else
+      return 2;
+    return 0;
+  }
+  return -1;
+}
+
+int
+ShowInitVJ(struct cmdargs const *args)
+{
+  if (VarTerm) {
+    fprintf(VarTerm, "Initial slots: %d\n", VJInitSlots);
+    fprintf(VarTerm, "Initial compression: %s\n", VJInitComp ? "on" : "off");
+  }
+  return 0;
+}
+
 void
 IpcpInit()
 {
-  struct ipcpstate *icp = &IpcpInfo;
-
+  if (iplist_isvalid(&DefHisChoice))
+    iplist_setrandpos(&DefHisChoice);
   FsmInit(&IpcpFsm);
-  memset(icp, '\0', sizeof(struct ipcpstate));
+  memset(&IpcpInfo, '\0', sizeof IpcpInfo);
   if ((mode & MODE_DEDICATED) && !GetLabel()) {
-    icp->want_ipaddr.s_addr = icp->his_ipaddr.s_addr = 0;
+    IpcpInfo.want_ipaddr.s_addr = IpcpInfo.his_ipaddr.s_addr = 0;
   } else {
-    icp->want_ipaddr.s_addr = DefMyAddress.ipaddr.s_addr;
-    icp->his_ipaddr.s_addr = DefHisAddress.ipaddr.s_addr;
+    IpcpInfo.want_ipaddr.s_addr = DefMyAddress.ipaddr.s_addr;
+    IpcpInfo.his_ipaddr.s_addr = DefHisAddress.ipaddr.s_addr;
   }
 
   /*
@@ -204,14 +247,15 @@ IpcpInit()
    * full negotiation (e.g. "0.0.0.0" or Not "0.0.0.0").
    */
   if (HaveTriggerAddress) {
-    icp->want_ipaddr.s_addr = TriggerAddress.s_addr;
+    IpcpInfo.want_ipaddr.s_addr = TriggerAddress.s_addr;
     LogPrintf(LogIPCP, "Using trigger address %s\n", inet_ntoa(TriggerAddress));
   }
   if (Enabled(ConfVjcomp))
-    icp->want_compproto = (PROTO_VJCOMP << 16) | ((MAX_STATES - 1) << 8) | 1;
+    IpcpInfo.want_compproto = (PROTO_VJCOMP << 16) | ((VJInitSlots - 1) << 8) |
+                              VJInitComp;
   else
-    icp->want_compproto = 0;
-  icp->heis1172 = 0;
+    IpcpInfo.want_compproto = 0;
+  IpcpInfo.heis1172 = 0;
   IpcpFsm.maxconfig = 10;
   throughput_init(&throughput);
 }
@@ -227,19 +271,31 @@ static void
 IpcpSendConfigReq(struct fsm * fp)
 {
   u_char *cp;
-  struct ipcpstate *icp = &IpcpInfo;
+  struct lcp_opt o;
 
   cp = ReqBuff;
   LogPrintf(LogIPCP, "IpcpSendConfigReq\n");
-  if (!DEV_IS_SYNC || !REJECTED(icp, TY_IPADDR))
-    PutConfValue(LogIPCP, &cp, cftypes, TY_IPADDR, 6,
-		 ntohl(icp->want_ipaddr.s_addr));
-  if (icp->want_compproto && !REJECTED(icp, TY_COMPPROTO)) {
-    if (icp->heis1172)
-      PutConfValue(LogIPCP, &cp, cftypes, TY_COMPPROTO, 4,
-		   icp->want_compproto >> 16);
-    else
-      PutConfValue(LogIPCP, &cp, cftypes, TY_COMPPROTO, 6, icp->want_compproto);
+  if (!DEV_IS_SYNC || !REJECTED(&IpcpInfo, TY_IPADDR)) {
+    o.id = TY_IPADDR;
+    o.len = 6;
+    *(u_long *)o.data = IpcpInfo.want_ipaddr.s_addr;
+    cp += LcpPutConf(LogIPCP, cp, &o, cftypes[o.id],
+                     inet_ntoa(IpcpInfo.want_ipaddr));
+  }
+
+  if (IpcpInfo.want_compproto && !REJECTED(&IpcpInfo, TY_COMPPROTO)) {
+    const char *args;
+    o.id = TY_COMPPROTO;
+    if (IpcpInfo.heis1172) {
+      o.len = 4;
+      *(u_short *)o.data = htons(PROTO_VJCOMP);
+      args = "";
+    } else {
+      o.len = 6;
+      *(u_long *)o.data = htonl(IpcpInfo.want_compproto);
+      args = vj2asc(IpcpInfo.want_compproto);
+    }
+    cp += LcpPutConf(LogIPCP, cp, &o, cftypes[o.id], args);
   }
   FsmOutput(fp, CODE_CONFIGREQ, fp->reqid++, ReqBuff, cp - ReqBuff);
 }
@@ -290,7 +346,7 @@ IpcpLayerUp(struct fsm * fp)
 
   Prompt();
   LogPrintf(LogIPCP, "IpcpLayerUp(%d).\n", fp->state);
-  snprintf(tbuff, sizeof(tbuff), "myaddr = %s ",
+  snprintf(tbuff, sizeof tbuff, "myaddr = %s ",
 	   inet_ntoa(IpcpInfo.want_ipaddr));
 
   if (IpcpInfo.his_compproto >> 16 == PROTO_VJCOMP)
@@ -298,7 +354,7 @@ IpcpLayerUp(struct fsm * fp)
 
   LogPrintf(LogIsKept(LogIPCP) ? LogIPCP : LogLINK, " %s hisaddr = %s\n",
 	    tbuff, inet_ntoa(IpcpInfo.his_ipaddr));
-  if (OsSetIpaddress(IpcpInfo.want_ipaddr, IpcpInfo.his_ipaddr, ifnetmask) < 0) {
+  if (OsSetIpaddress(IpcpInfo.want_ipaddr, IpcpInfo.his_ipaddr) < 0) {
     if (VarTerm)
       LogPrintf(LogERROR, "IpcpLayerUp: unable to set ip address\n");
     return;
@@ -355,11 +411,11 @@ IpcpDecodeConfig(u_char * cp, int plen, int mode_type)
     type = *cp;
     length = cp[1];
     if (type < NCFTYPES)
-      snprintf(tbuff, sizeof(tbuff), " %s[%d] ", cftypes[type], length);
+      snprintf(tbuff, sizeof tbuff, " %s[%d] ", cftypes[type], length);
     else if (type > 128 && type < 128 + NCFTYPES128)
-      snprintf(tbuff, sizeof(tbuff), " %s[%d] ", cftypes128[type], length);
+      snprintf(tbuff, sizeof tbuff, " %s[%d] ", cftypes128[type-128], length);
     else
-      snprintf(tbuff, sizeof(tbuff), " ??? ");
+      snprintf(tbuff, sizeof tbuff, " <%d>[%d] ", type, length);
 
     switch (type) {
     case TY_IPADDR:		/* RFC1332 */
@@ -369,13 +425,30 @@ IpcpDecodeConfig(u_char * cp, int plen, int mode_type)
 
       switch (mode_type) {
       case MODE_REQ:
-	if (!AcceptableAddr(&DefHisAddress, ipaddr)) {
+        if (iplist_isvalid(&DefHisChoice)) {
+          if (ipaddr.s_addr == INADDR_ANY ||
+              iplist_ip2pos(&DefHisChoice, ipaddr) < 0 ||
+              OsTrySetIpaddress(DefMyAddress.ipaddr, ipaddr) != 0) {
+            LogPrintf(LogIPCP, "%s: Address invalid or already in use\n",
+                      inet_ntoa(ipaddr));
+            IpcpInfo.his_ipaddr = ChooseHisAddr(DefMyAddress.ipaddr);
+            if (IpcpInfo.his_ipaddr.s_addr == INADDR_ANY) {
+	      memcpy(rejp, cp, length);
+	      rejp += length;
+            } else {
+	      memcpy(nakp, cp, 2);
+	      memcpy(nakp+2, &IpcpInfo.his_ipaddr.s_addr, length - 2);
+	      nakp += length;
+            }
+	    break;
+          }
+	} else if (!AcceptableAddr(&DefHisAddress, ipaddr)) {
 	  /*
 	   * If destination address is not acceptable, insist to use what we
 	   * want to use.
 	   */
 	  memcpy(nakp, cp, 2);
-	  memcpy(nakp+2, &IpcpInfo.his_ipaddr.s_addr, length);
+	  memcpy(nakp+2, &IpcpInfo.his_ipaddr.s_addr, length - 2);
 	  nakp += length;
 	  break;
 	}
@@ -385,14 +458,14 @@ IpcpDecodeConfig(u_char * cp, int plen, int mode_type)
 	break;
       case MODE_NAK:
 	if (AcceptableAddr(&DefMyAddress, ipaddr)) {
-
-	  /*
-	   * Use address suggested by peer.
-	   */
-	  snprintf(tbuff2, sizeof(tbuff2), "%s changing address: %s ", tbuff,
+	  /* Use address suggested by peer */
+	  snprintf(tbuff2, sizeof tbuff2, "%s changing address: %s ", tbuff,
 		   inet_ntoa(IpcpInfo.want_ipaddr));
 	  LogPrintf(LogIPCP, "%s --> %s\n", tbuff2, inet_ntoa(ipaddr));
 	  IpcpInfo.want_ipaddr = ipaddr;
+	} else {
+	  LogPrintf(LogIPCP, "%s: Unacceptable address!\n", inet_ntoa(ipaddr));
+          FsmClose(&IpcpFsm);
 	}
 	break;
       case MODE_REJ:
@@ -403,7 +476,7 @@ IpcpDecodeConfig(u_char * cp, int plen, int mode_type)
     case TY_COMPPROTO:
       lp = (u_long *) (cp + 2);
       compproto = htonl(*lp);
-      LogPrintf(LogIPCP, "%s %08x\n", tbuff, compproto);
+      LogPrintf(LogIPCP, "%s %s\n", tbuff, vj2asc(compproto));
 
       switch (mode_type) {
       case MODE_REQ:
@@ -439,7 +512,7 @@ IpcpDecodeConfig(u_char * cp, int plen, int mode_type)
 	      pcomp->proto = htons(PROTO_VJCOMP);
 	      pcomp->slots = MAX_STATES - 1;
 	      pcomp->compcid = 0;
-	      memcpy(nakp+2, &pcomp, sizeof(pcomp));
+	      memcpy(nakp+2, &pcomp, sizeof pcomp);
 	      nakp += length;
 	    }
 	    break;
@@ -465,7 +538,7 @@ IpcpDecodeConfig(u_char * cp, int plen, int mode_type)
       ipaddr.s_addr = *lp;
       lp = (u_long *) (cp + 6);
       dstipaddr.s_addr = *lp;
-      snprintf(tbuff2, sizeof(tbuff2), "%s %s,", tbuff, inet_ntoa(ipaddr));
+      snprintf(tbuff2, sizeof tbuff2, "%s %s,", tbuff, inet_ntoa(ipaddr));
       LogPrintf(LogIPCP, "%s %s\n", tbuff2, inet_ntoa(dstipaddr));
 
       switch (mode_type) {
@@ -476,7 +549,7 @@ IpcpDecodeConfig(u_char * cp, int plen, int mode_type)
 	ackp += length;
 	break;
       case MODE_NAK:
-        snprintf(tbuff2, sizeof(tbuff2), "%s changing address: %s", tbuff,
+        snprintf(tbuff2, sizeof tbuff2, "%s changing address: %s", tbuff,
 		 inet_ntoa(IpcpInfo.want_ipaddr));
 	LogPrintf(LogIPCP, "%s --> %s\n", tbuff2, inet_ntoa(ipaddr));
 	IpcpInfo.want_ipaddr = ipaddr;
@@ -598,4 +671,40 @@ void
 IpcpInput(struct mbuf * bp)
 {
   FsmInput(&IpcpFsm, bp);
+}
+
+int
+UseHisaddr(const char *hisaddr, int setaddr)
+{
+  memset(&DefHisAddress, '\0', sizeof DefHisAddress);
+  iplist_reset(&DefHisChoice);
+  if (strpbrk(hisaddr, ",-")) {
+    iplist_setsrc(&DefHisChoice, hisaddr);
+    if (iplist_isvalid(&DefHisChoice)) {
+      iplist_setrandpos(&DefHisChoice);
+      IpcpInfo.his_ipaddr = ChooseHisAddr(IpcpInfo.want_ipaddr);
+      if (IpcpInfo.his_ipaddr.s_addr == INADDR_ANY) {
+        LogPrintf(LogWARN, "%s: None available !\n", DefHisChoice.src);
+        return(0);
+      }
+      DefHisAddress.ipaddr.s_addr = IpcpInfo.his_ipaddr.s_addr;
+      DefHisAddress.mask.s_addr = 0xffffffff;
+      DefHisAddress.width = 32;
+    } else {
+      LogPrintf(LogWARN, "%s: Invalid range !\n", hisaddr);
+      return 0;
+    }
+  } else if (ParseAddr(1, &hisaddr, &DefHisAddress.ipaddr,
+		       &DefHisAddress.mask, &DefHisAddress.width) != 0) {
+    IpcpInfo.his_ipaddr.s_addr = DefHisAddress.ipaddr.s_addr;
+
+    if (setaddr && OsSetIpaddress
+	(DefMyAddress.ipaddr, DefHisAddress.ipaddr) < 0) {
+      DefMyAddress.ipaddr.s_addr = DefHisAddress.ipaddr.s_addr = 0L;
+      return 0;
+    }
+  } else
+    return 0;
+
+  return 1;
 }

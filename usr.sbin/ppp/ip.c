@@ -17,7 +17,7 @@
  * IMPLIED WARRANTIES, INCLUDING, WITHOUT LIMITATION, THE IMPLIED
  * WARRANTIES OF MERCHANTIBILITY AND FITNESS FOR A PARTICULAR PURPOSE.
  *
- * $Id: ip.c,v 1.32 1997/11/22 03:37:33 brian Exp $
+ * $Id: ip.c,v 1.7 1998/01/21 02:13:33 brian Exp $
  *
  *	TODO:
  *		o Return ICMP message for filterd packet
@@ -25,8 +25,9 @@
  */
 #include <sys/param.h>
 #include <sys/time.h>
-#include <sys/select.h>
 #include <sys/socket.h>
+#include <net/if.h>
+#include <net/if_tun.h>
 #include <netinet/in.h>
 #include <netinet/in_systm.h>
 #include <netinet/ip.h>
@@ -34,11 +35,6 @@
 #include <netinet/udp.h>
 #include <netinet/tcp.h>
 #include <arpa/inet.h>
-#include <net/if.h>
-#ifdef __FreeBSD__
-#include <net/if_var.h>
-#endif
-#include <net/if_tun.h>
 
 #ifndef NOALIAS
 #include <alias.h>
@@ -56,7 +52,6 @@
 #include "defs.h"
 #include "timer.h"
 #include "fsm.h"
-#include "lcpproto.h"
 #include "hdlc.h"
 #include "loadalias.h"
 #include "vars.h"
@@ -86,11 +81,15 @@ IdleTimeout(void *v)
 void
 StartIdleTimer()
 {
+  static time_t IdleStarted;
+
   if (!(mode & (MODE_DEDICATED | MODE_DDIAL))) {
     StopTimer(&IdleTimer);
     IdleTimer.func = IdleTimeout;
     IdleTimer.load = VarIdleTimeout * SECTICKS;
     IdleTimer.state = TIMER_STOPPED;
+    time(&IdleStarted);
+    IdleTimer.arg = (void *)&IdleStarted;
     StartTimer(&IdleTimer);
   }
 }
@@ -108,6 +107,15 @@ StopIdleTimer()
   StopTimer(&IdleTimer);
 }
 
+int
+RemainingIdleTime()
+{
+  if (VarIdleTimeout == 0 || IdleTimer.state != TIMER_RUNNING ||
+      IdleTimer.arg == NULL)
+    return -1;
+  return VarIdleTimeout - (time(NULL) - *(time_t *)IdleTimer.arg);
+}
+
 /*
  *  If any IP layer traffic is detected, refresh IdleTimer.
  */
@@ -115,8 +123,8 @@ static void
 RestartIdleTimer(void)
 {
   if (!(mode & (MODE_DEDICATED | MODE_DDIAL)) && ipKeepAlive) {
+    time((time_t *)IdleTimer.arg);
     StartTimer(&IdleTimer);
-    ipIdleSecs = 0;
   }
 }
 
@@ -273,7 +281,7 @@ PacketCheck(char *cp, int nb, int direction)
   int logit, loglen;
   static char logbuf[200];
 
-  logit = LogIsKept(LogTCPIP);
+  logit = LogIsKept(LogTCPIP) && direction != FL_DIAL;
   loglen = 0;
 
   pip = (struct ip *) cp;
@@ -383,6 +391,12 @@ IpInput(struct mbuf * bp)
   cp = tun.data;
   nb = 0;
   for (wp = bp; wp; wp = wp->next) {	/* Copy to contiguous region */
+    if (sizeof tun.data - (cp - tun.data) < wp->cnt) {
+      LogPrintf(LogERROR, "IpInput: Packet too large (%d) - dropped\n",
+                plength(bp));
+      pfree(bp);
+      return;
+    }
     memcpy(cp, MBUF_CTOP(wp), wp->cnt);
     cp += wp->cnt;
     nb += wp->cnt;
@@ -411,7 +425,7 @@ IpInput(struct mbuf * bp)
       IpcpAddInOctets(nb);
 
       nb = ntohs(((struct ip *) tun.data)->ip_len);
-      nb += sizeof(tun)-sizeof(tun.data);
+      nb += sizeof tun - sizeof tun.data;
       nw = write(tun_out, &tun, nb);
       if (nw != nb)
         if (nw == -1)
@@ -424,8 +438,9 @@ IpInput(struct mbuf * bp)
 	while ((fptr = VarPacketAliasGetFragment(tun.data)) != NULL) {
 	  VarPacketAliasFragmentIn(tun.data, fptr);
 	  nb = ntohs(((struct ip *) fptr)->ip_len);
-          frag = (struct tun_data *)((char *)fptr-sizeof(tun)+sizeof(tun.data));
-          nb += sizeof(tun)-sizeof(tun.data);
+          frag = (struct tun_data *)
+	    ((char *)fptr - sizeof tun + sizeof tun.data);
+          nb += sizeof tun - sizeof tun.data;
 	  nw = write(tun_out, frag, nb);
 	  if (nw != nb)
             if (nw == -1)
@@ -438,13 +453,13 @@ IpInput(struct mbuf * bp)
       }
     } else if (iresult == PKT_ALIAS_UNRESOLVED_FRAGMENT) {
       nb = ntohs(((struct ip *) tun.data)->ip_len);
-      nb += sizeof(tun)-sizeof(tun.data);
+      nb += sizeof tun - sizeof tun.data;
       frag = (struct tun_data *)malloc(nb);
       if (frag == NULL)
 	LogPrintf(LogALERT, "IpInput: Cannot allocate memory for fragment\n");
       else {
         tun_fill_header(*frag, AF_INET);
-	memcpy(frag->data, tun.data, nb-sizeof(tun)+sizeof(tun.data));
+	memcpy(frag->data, tun.data, nb - sizeof tun + sizeof tun.data);
 	VarPacketAliasSaveFragment(frag->data);
       }
     }
@@ -456,13 +471,14 @@ IpInput(struct mbuf * bp)
       return;
     }
     IpcpAddInOctets(nb);
-    nb += sizeof(tun)-sizeof(tun.data);
+    nb += sizeof tun - sizeof tun.data;
     nw = write(tun_out, &tun, nb);
-    if (nw != nb)
+    if (nw != nb) {
       if (nw == -1)
 	LogPrintf(LogERROR, "IpInput: wrote %d, got %s\n", nb, strerror(errno));
       else
         LogPrintf(LogERROR, "IpInput: wrote %d, got %d\n", nb, nw);
+    }
   }
   pfree(bp);
 

@@ -68,8 +68,8 @@
 #define STAT_Y		(STAT_B-STAT_T+1)
 #define STAT_R		(STAT_L+STAT_X-1)
 #define STAT_1		0
-#define STAT_2          (STAT_1+4)
-#define STAT_3          (STAT_2+7)
+#define STAT_2		(STAT_1+4)
+#define STAT_3		(STAT_2+7)
 
 #define SCROLL_T	(BOX_B+1)
 #define SCROLL_L	0
@@ -93,9 +93,9 @@
 #define SLOT_R		(SLOT_L+SLOT_X-1)
 
 #ifdef SIGTSTP
-#define SCREENTEST()	(initscr() != ERR && signal(SIGTSTP, SIG_DFL) != SIG_ERR && STAT_R < COLS && SCROLL_Y > 0)
+#define SCREENTEST()	(initscr() != NULL && signal(SIGTSTP, SIG_DFL) != SIG_ERR && STAT_R < COLS && SCROLL_Y > 0)
 #else
-#define SCREENTEST()	(initscr() != ERR && STAT_R < COLS && SCROLL_Y > 0)
+#define SCREENTEST()	(initscr() != NULL && STAT_R < COLS && SCROLL_Y > 0)
 #endif
 
 WINDOW *view_w;
@@ -109,7 +109,7 @@ char loaded, fired, changed, repaired;
 char dont_adjust;
 int viewrow, viewcol;
 char movebuf[sizeof SHIP(0)->file->movebuf];
-char version[];
+char *version;
 int player;
 struct ship *ms;		/* memorial structure, &cc->ship[player] */
 struct File *mf;		/* ms->file */

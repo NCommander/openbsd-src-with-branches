@@ -32,7 +32,7 @@
  */
 
 #ifndef lint 
-static char rcsid[] = "$Id: photurisd.c,v 1.3 1997/06/12 17:09:20 provos Exp provos $";
+static char rcsid[] = "$Id: photurisd.c,v 1.5 1997/09/14 10:37:52 deraadt Exp $";
 #endif 
 
 #define _PHOTURIS_C_
@@ -67,10 +67,11 @@ usage(void)
 {
      FILE *f = stderr;
 
-     fprintf(f, "usage: photurisd [-fi] [-d directory]\n");
-     fprintf(f, "\t-f  don't check primes on startup\n");
-     fprintf(f, "\t-t  ignore startup file %s\n", PHOTURIS_STARTUP);
+     fprintf(f, "usage: photurisd [-ci] [-d directory] [-p port]\n");
+     fprintf(f, "\t-c  check primes on startup\n");
+     fprintf(f, "\t-i  ignore startup file %s\n", PHOTURIS_STARTUP);
      fprintf(f, "\t-d  specifies the startup dir\n");
+     fprintf(f, "\t-p  specifies the local port to bind to\n");
      exit(1);
 }
      
@@ -107,22 +108,29 @@ init_vars(void)
      return 1;
 }
 
-void main(int argc, char **argv)
+int
+main(int argc, char **argv)
 {
      int ch;
-     int primes = 1, ignore = 0;
+     int primes = 0, ignore = 0;
      char *dir = PHOTURIS_DIR;
 
-     while ((ch = getopt(argc, argv, "fid:")) != -1)
+     daemon_mode = 0;
+     global_port = 0;
+
+     while ((ch = getopt(argc, argv, "cid:p:")) != -1)
 	  switch((char)ch) {
-	  case 'f':
-	       primes = 0;
+	  case 'c':
+	       primes = 1;
 	       break;
 	  case 'i':
 	       ignore = 1;
 	       break;
 	  case 'd':
 	       dir = optarg;
+	       break;
+	  case 'p':
+	       global_port = atoi(optarg);
 	       break;
 	  case '?':
 	  default:
@@ -165,8 +173,9 @@ void main(int argc, char **argv)
      init_signals();
      if (fork())
 	  exit(0);
+     daemon_mode = 1;
 #endif
 
      server();
-
+     exit(0);
 }

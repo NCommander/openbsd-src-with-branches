@@ -1,5 +1,5 @@
 /* strings -- print the strings of printable characters in files
-   Copyright (C) 1993, 94, 95, 96, 1997 Free Software Foundation, Inc.
+   Copyright (C) 1993, 94, 95, 1996 Free Software Foundation, Inc.
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -13,8 +13,7 @@
 
    You should have received a copy of the GNU General Public License
    along with this program; if not, write to the Free Software
-   Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
-   02111-1307, USA.  */
+   Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
 
 /* Usage: strings [options] file...
 
@@ -104,11 +103,9 @@ static struct option long_options[] =
   {NULL, 0, NULL, 0}
 };
 
-static void strings_a_section PARAMS ((bfd *, asection *, PTR));
-static boolean strings_object_file PARAMS ((const char *));
 static boolean strings_file PARAMS ((char *file));
 static int integer_arg PARAMS ((char *s));
-static void print_strings PARAMS ((const char *filename, FILE *stream,
+static void print_strings PARAMS ((char *filename, FILE *stream,
 				  file_ptr address, int stop_point,
 				  int magiccount, char *magic));
 static void usage PARAMS ((FILE *stream, int status));
@@ -208,7 +205,6 @@ main (argc, argv)
     string_min = 4;
 
   bfd_init ();
-  set_default_bfd_target ();
 
   if (optind >= argc)
     {
@@ -241,13 +237,11 @@ main (argc, argv)
    set `got_a_section' and print the strings in it.  */
 
 static void
-strings_a_section (abfd, sect, filearg)
+strings_a_section (abfd, sect, file)
      bfd *abfd;
      asection *sect;
-     PTR filearg;
+     PTR file;
 {
-  const char *file = (const char *) filearg;
-
   if ((sect->flags & DATA_FLAGS) == DATA_FLAGS)
     {
       bfd_size_type sz = bfd_get_section_size_before_reloc (sect);
@@ -269,7 +263,7 @@ strings_a_section (abfd, sect, filearg)
 
 static boolean
 strings_object_file (file)
-     const char *file;
+     char *file;
 {
   bfd *abfd = bfd_openr (file, target);
 
@@ -289,7 +283,7 @@ strings_object_file (file)
     }
 
   got_a_section = false;
-  bfd_map_over_sections (abfd, strings_a_section, (PTR) file);
+  bfd_map_over_sections (abfd, strings_a_section, file);
 
   if (!bfd_close (abfd))
     {
@@ -352,7 +346,7 @@ strings_file (file)
 
 static void
 print_strings (filename, stream, address, stop_point, magiccount, magic)
-     const char *filename;
+     char *filename;
      FILE *stream;
      file_ptr address;
      int stop_point;

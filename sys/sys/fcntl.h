@@ -1,3 +1,4 @@
+/*	$OpenBSD: fcntl.h,v 1.4 1997/10/24 09:04:24 deraadt Exp $	*/
 /*	$NetBSD: fcntl.h,v 1.8 1995/03/26 20:24:12 jtc Exp $	*/
 
 /*-
@@ -93,15 +94,24 @@
 #define	FMARK		0x1000		/* mark during gc() */
 #define	FDEFER		0x2000		/* defer for next gc pass */
 #define	FHASLOCK	0x4000		/* descriptor holds advisory lock */
+
+/* Note: The below is not a flag that can be used in the struct file. 
+   It's an option that can be passed to vn_open to make sure it doesn't
+   follow a symlink on the last lookup */
+#define FNOSYMLINK     0x10000          /* Don't follow symlink for last
+					   component */
 #endif
 
-/* defined by POSIX 1003.1; BSD default, so no bit required */
-#define	O_NOCTTY	0		/* don't assign controlling terminal */
+/* defined by POSIX 1003.1; BSD default, this bit is not required */
+#define	O_NOCTTY	0x8000		/* don't assign controlling terminal */
 
 #ifdef _KERNEL
-/* convert from open() flags to/from fflags; convert O_RD/WR to FREAD/FWRITE */
-#define	FFLAGS(oflags)	((oflags) + 1)
-#define	OFLAGS(fflags)	((fflags) - 1)
+/*
+ * convert from open() flags to/from fflags; convert O_RD/WR to FREAD/FWRITE.
+ * For out-of-range values for the flags, be slightly careful (but lossy).
+ */
+#define	FFLAGS(oflags)	(((oflags) & ~O_ACCMODE) | (((oflags) + 1) & O_ACCMODE))
+#define	OFLAGS(fflags)	(((fflags) & ~O_ACCMODE) | (((fflags) - 1) & O_ACCMODE))
 
 /* bits to save after open */
 #define	FMASK		(FREAD|FWRITE|FAPPEND|FASYNC|FFSYNC|FNONBLOCK)

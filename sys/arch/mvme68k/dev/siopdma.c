@@ -1,4 +1,4 @@
-/*	$NetBSD: afsc.c,v 1.6 1995/02/12 19:19:00 chopps Exp $	*/
+/*	$OpenBSD: siopdma.c,v 1.5 1996/11/23 21:46:01 kstailey Exp $ */
 
 /*
  * Copyright (c) 1995 Theo de Raadt
@@ -60,7 +60,6 @@
 int	afscmatch	__P((struct device *, void *, void *));
 void	afscattach	__P((struct device *, struct device *, void *));
 
-int	afscprint	__P((void *auxp, char *));
 int	siopintr	__P((struct siop_softc *));
 int	afsc_dmaintr	__P((struct siop_softc *));
 
@@ -78,9 +77,13 @@ struct scsi_device afsc_scsidev = {
 	NULL,		/* Use default done routine */
 };
 
-struct cfdriver siopcd = {
-	NULL, "siop", afscmatch, afscattach, 
-	DV_DULL, sizeof(struct siop_softc), NULL, 0 };
+struct cfattach siop_ca = {
+	sizeof(struct siop_softc), afscmatch, afscattach,
+};
+
+struct cfdriver siop_cd = {
+	NULL, "siop", DV_DULL, 0
+};
 
 int
 afscmatch(pdp, vcf, args)
@@ -101,6 +104,7 @@ afscattach(parent, self, auxp)
 	struct siop_softc *sc = (struct siop_softc *)self;
 	struct confargs *ca = auxp;
 	siop_regmap_p rp;
+	int tmp;
 	extern int cpuspeed;
 
 	sc->sc_siopp = rp = ca->ca_vaddr;
@@ -166,22 +170,15 @@ afscattach(parent, self, auxp)
 	evcnt_attach(&sc->sc_dev, "intr", &sc->sc_intrcnt);
 
 	/*
-	 * attach all scsi units on us
+	 * attach all scsi units on us, watching for boot device
+	 * (see dk_establish).
 	 */
-	config_found(self, &sc->sc_link, afscprint);
-}
+	tmp = bootpart;
+	if (ca->ca_paddr != bootaddr) 
+		bootpart = -1;          /* invalid flag to dk_establish */
+	config_found(self, &sc->sc_link, scsiprint);
+	bootpart = tmp;             /* restore old value */
 
-/*
- * print diag if pnp is NULL else just extra
- */
-int
-afscprint(auxp, pnp)
-	void *auxp;
-	char *pnp;
-{
-	if (pnp == NULL)
-		return (UNCONF);
-	return (QUIET);
 }
 
 int

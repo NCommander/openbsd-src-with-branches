@@ -1,5 +1,7 @@
+/*	$OpenBSD: inp.c,v 1.5 1996/09/24 04:19:26 millert Exp $	*/
+
 #ifndef lint
-static char rcsid[] = "$Id: inp.c,v 1.2 1993/08/02 17:55:16 mycroft Exp $";
+static char rcsid[] = "$OpenBSD: inp.c,v 1.5 1996/09/24 04:19:26 millert Exp $";
 #endif /* not lint */
 
 #include "EXTERN.h"
@@ -11,7 +13,7 @@ static char rcsid[] = "$Id: inp.c,v 1.2 1993/08/02 17:55:16 mycroft Exp $";
 
 /* Input-file-with-indexable-lines abstract type */
 
-static long i_size;			/* size of the input file */
+static off_t i_size;			/* size of the input file */
 static char *i_womp;			/* plan a buffer for entire file */
 static char **i_ptr;			/* pointers to lines in i_womp */
 
@@ -101,17 +103,17 @@ char *filename;
 	s = lbuf + 20;
 	strncpy(s, filename, pathlen);
 
-#define try(f, a1, a2) (Sprintf(s + pathlen, f, a1, a2), stat(s, &cstat) == 0)
+#define try(f, a1, a2) (Snprintf(s + pathlen, sizeof lbuf - (s + pathlen - lbuf), f, a1, a2), stat(s, &cstat) == 0)
 	if (   try("RCS/%s%s", filebase, RCSSUFFIX)
 	    || try("RCS/%s"  , filebase,         0)
 	    || try(    "%s%s", filebase, RCSSUFFIX)) {
-	    Sprintf(buf, CHECKOUT, filename);
-	    Sprintf(lbuf, RCSDIFF, filename);
+	    Snprintf(buf, sizeof buf, CHECKOUT, filename);
+	    Snprintf(lbuf, sizeof lbuf, RCSDIFF, filename);
 	    cs = "RCS";
 	} else if (   try("SCCS/%s%s", SCCSPREFIX, filebase)
 		   || try(     "%s%s", SCCSPREFIX, filebase)) {
-	    Sprintf(buf, GET, s);
-	    Sprintf(lbuf, SCCSDIFF, s, filename);
+	    Snprintf(buf, sizeof buf, GET, s);
+	    Snprintf(lbuf, sizeof lbuf, SCCSDIFF, s, filename);
 	    cs = "SCCS";
 	} else if (statfailed)
 	    fatal2("can't find %s\n", filename);
@@ -155,10 +157,10 @@ char *filename;
 #endif
     if (i_womp == Nullch)
 	return FALSE;
-    if ((ifd = open(filename, 0)) < 0)
+    if ((ifd = open(filename, O_RDONLY)) < 0)
 	pfatal2("can't open file %s", filename);
 #ifndef lint
-    if (read(ifd, i_womp, (int)i_size) != i_size) {
+    if (read(ifd, i_womp, (size_t)i_size) != i_size) {
 	Close(ifd);	/* probably means i_size > 15 or 16 bits worth */
 	free(i_womp);	/* at this point it doesn't matter if i_womp was */
 	return FALSE;	/*   undersized. */
@@ -239,7 +241,8 @@ char *filename;
     using_plan_a = FALSE;
     if ((ifp = fopen(filename, "r")) == Nullfp)
 	pfatal2("can't open file %s", filename);
-    if ((tifd = creat(TMPINNAME, 0666)) < 0)
+    (void) unlink(TMPINNAME);
+    if ((tifd = open(TMPINNAME, O_EXCL|O_CREAT|O_WRONLY, 0666)) < 0)
 	pfatal2("can't open file %s", TMPINNAME);
     while (fgets(buf, sizeof buf, ifp) != Nullch) {
 	if (revision != Nullch && !found_revision && rev_in_string(buf))
@@ -293,7 +296,7 @@ char *filename;
     }
     Fclose(ifp);
     Close(tifd);
-    if ((tifd = open(TMPINNAME, 0)) < 0) {
+    if ((tifd = open(TMPINNAME, O_RDONLY)) < 0) {
 	pfatal2("can't reopen file %s", TMPINNAME);
     }
 }
@@ -320,7 +323,7 @@ int whichbuf;				/* ignored when file in memory */
 	else {
 	    tiline[whichbuf] = baseline;
 #ifndef lint		/* complains of long accuracy */
-	    Lseek(tifd, (long)baseline / lines_per_buf * BUFFERSIZE, 0);
+	    Lseek(tifd, (off_t)(baseline / lines_per_buf * BUFFERSIZE), 0);
 #endif
 	    if (read(tifd, tibuf[whichbuf], BUFFERSIZE) < 0)
 		pfatal2("error reading tmp file %s", TMPINNAME);

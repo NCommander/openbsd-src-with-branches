@@ -1,9 +1,11 @@
-/*
- * $Id: alias_cmd.c,v 1.7 1997/11/22 03:37:21 brian Exp $
+/*-
+ * The code in this file was written by Eivind Eklund <perhaps@yes.no>,
+ * who places it in the public domain without restriction.
+ *
+ *	$Id: alias_cmd.c,v 1.4 1997/12/24 10:28:15 brian Exp $
  */
 
 #include <sys/param.h>
-#include <sys/socket.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
 #include <netdb.h>
@@ -33,6 +35,7 @@ AliasRedirectPort(struct cmdargs const *arg)
   if (!(mode & MODE_ALIAS)) {
     if (VarTerm)
       fprintf(VarTerm, "Alias not enabled\n");
+    return 1;
   } else if (arg->argc == 3) {
     char proto_constant;
     const char *proto;
@@ -83,10 +86,10 @@ AliasRedirectPort(struct cmdargs const *arg)
     if (link == NULL && VarTerm)
       fprintf(VarTerm, "port redirect: error returned by packed"
 	      " aliasing engine (code=%d)\n", error);
-  } else if (VarTerm)
-    fprintf(VarTerm, "Usage: alias %s %s\n", arg->cmd->name, arg->cmd->syntax);
+  } else
+    return -1;
 
-  return 1;
+  return 0;
 }
 
 
@@ -96,6 +99,7 @@ AliasRedirectAddr(struct cmdargs const *arg)
   if (!(mode & MODE_ALIAS)) {
     if (VarTerm)
       fprintf(VarTerm, "alias not enabled\n");
+    return 1;
   } else if (arg->argc == 2) {
     int error;
     struct in_addr local_addr;
@@ -121,10 +125,10 @@ AliasRedirectAddr(struct cmdargs const *arg)
       fprintf(VarTerm, "address redirect: packet aliasing engine error\n");
       fprintf(VarTerm, "Usage: alias %s %s\n", arg->cmd->name, arg->cmd->syntax);
     }
-  } else if (VarTerm)
-    fprintf(VarTerm, "Usage: alias %s %s\n", arg->cmd->name, arg->cmd->syntax);
+  } else
+    return -1;
 
-  return 1;
+  return 0;
 }
 
 

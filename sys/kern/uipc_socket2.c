@@ -1,4 +1,5 @@
-/*	$NetBSD: uipc_socket2.c,v 1.10 1995/08/16 01:03:19 mycroft Exp $	*/
+/*	$OpenBSD: uipc_socket2.c,v 1.6 1997/08/31 20:42:26 deraadt Exp $	*/
+/*	$NetBSD: uipc_socket2.c,v 1.11 1996/02/04 02:17:55 christos Exp $	*/
 
 /*
  * Copyright (c) 1982, 1986, 1988, 1990, 1993
@@ -45,6 +46,7 @@
 #include <sys/protosw.h>
 #include <sys/socket.h>
 #include <sys/socketvar.h>
+#include <sys/signalvar.h>
 
 /*
  * Primitive routines for operating on sockets and socket buffers
@@ -158,7 +160,7 @@ sonewconn1(head, connstatus)
 	register struct socket *so;
 	int soqueue = connstatus ? 1 : 0;
 
-	if (head->so_qlen + head->so_q0len > 3 * head->so_qlimit / 2)
+	if (head->so_qlen + head->so_q0len > head->so_qlimit * 3)
 		return ((struct socket *)0);
 	MALLOC(so, struct socket *, sizeof(*so), M_SOCKET, M_DONTWAIT);
 	if (so == NULL) 
@@ -171,6 +173,8 @@ sonewconn1(head, connstatus)
 	so->so_proto = head->so_proto;
 	so->so_timeo = head->so_timeo;
 	so->so_pgid = head->so_pgid;
+	so->so_euid = head->so_euid;
+	so->so_ruid = head->so_ruid;
 	(void) soreserve(so, head->so_snd.sb_hiwat, head->so_rcv.sb_hiwat);
 	soqinsque(head, so, soqueue);
 	if ((*so->so_proto->pr_usrreq)(so, PRU_ATTACH,
@@ -292,9 +296,10 @@ sb_lock(sb)
 
 	while (sb->sb_flags & SB_LOCK) {
 		sb->sb_flags |= SB_WANT;
-		if (error = tsleep((caddr_t)&sb->sb_flags, 
-		    (sb->sb_flags & SB_NOINTR) ? PSOCK : PSOCK|PCATCH,
-		    netio, 0))
+		error = tsleep((caddr_t)&sb->sb_flags, 
+			       (sb->sb_flags & SB_NOINTR) ?
+					PSOCK : PSOCK|PCATCH, netio, 0);
+		if (error)
 			return (error);
 	}
 	sb->sb_flags |= SB_LOCK;
@@ -311,20 +316,14 @@ sowakeup(so, sb)
 	register struct socket *so;
 	register struct sockbuf *sb;
 {
-	struct proc *p;
-
 	selwakeup(&sb->sb_sel);
 	sb->sb_flags &= ~SB_SEL;
 	if (sb->sb_flags & SB_WAIT) {
 		sb->sb_flags &= ~SB_WAIT;
 		wakeup((caddr_t)&sb->sb_cc);
 	}
-	if (so->so_state & SS_ASYNC) {
-		if (so->so_pgid < 0)
-			gsignal(-so->so_pgid, SIGIO);
-		else if (so->so_pgid > 0 && (p = pfind(so->so_pgid)) != 0)
-			psignal(p, SIGIO);
-	}
+	if (so->so_state & SS_ASYNC)
+		csignal(so->so_pgid, SIGIO, so->so_siguid, so->so_sigeuid);
 }
 
 /*
@@ -393,7 +392,7 @@ sbreserve(sb, cc)
 	u_long cc;
 {
 
-	if (cc > sb_max * MCLBYTES / (MSIZE + MCLBYTES))
+	if (cc == 0 || cc > sb_max * MCLBYTES / (MSIZE + MCLBYTES))
 		return (0);
 	sb->sb_hiwat = cc;
 	sb->sb_mbmax = min(cc * 2, sb_max);
@@ -454,7 +453,7 @@ sbappend(sb, m)
 
 	if (m == 0)
 		return;
-	if (n = sb->sb_mb) {
+	if ((n = sb->sb_mb) != NULL) {
 		while (n->m_nextpkt)
 			n = n->m_nextpkt;
 		do {
@@ -504,7 +503,7 @@ sbappendrecord(sb, m0)
 
 	if (m0 == 0)
 		return;
-	if (m = sb->sb_mb)
+	if ((m = sb->sb_mb) != NULL)
 		while (m->m_nextpkt)
 			m = m->m_nextpkt;
 	/*
@@ -540,7 +539,7 @@ sbinsertoob(sb, m0)
 
 	if (m0 == 0)
 		return;
-	for (mp = &sb->sb_mb; m = *mp; mp = &((*mp)->m_nextpkt)) {
+	for (mp = &sb->sb_mb; (m = *mp) != NULL; mp = &((*mp)->m_nextpkt)) {
 	    again:
 		switch (m->m_type) {
 
@@ -548,7 +547,7 @@ sbinsertoob(sb, m0)
 			continue;		/* WANT next train */
 
 		case MT_CONTROL:
-			if (m = m->m_next)
+			if ((m = m->m_next) != NULL)
 				goto again;	/* inspect THIS train further */
 		}
 		break;
@@ -609,7 +608,7 @@ panic("sbappendaddr");
 	m->m_next = control;
 	for (n = m; n; n = n->m_next)
 		sballoc(sb, n);
-	if (n = sb->sb_mb) {
+	if ((n = sb->sb_mb) != NULL) {
 		while (n->m_nextpkt)
 			n = n->m_nextpkt;
 		n->m_nextpkt = m;
@@ -641,7 +640,7 @@ sbappendcontrol(sb, m0, control)
 	n->m_next = m0;			/* concatenate data to control */
 	for (m = control; m; m = m->m_next)
 		sballoc(sb, m);
-	if (n = sb->sb_mb) {
+	if ((n = sb->sb_mb) != NULL) {
 		while (n->m_nextpkt)
 			n = n->m_nextpkt;
 		n->m_nextpkt = control;
@@ -776,6 +775,6 @@ sbdroprecord(sb)
 		do {
 			sbfree(sb, m);
 			MFREE(m, mn);
-		} while (m = mn);
+		} while ((m = mn) != NULL);
 	}
 }

@@ -1,23 +1,26 @@
+/*	$OpenBSD$	*/
 
-/***************************************************************************
-*                            COPYRIGHT NOTICE                              *
-****************************************************************************
-*                ncurses is copyright (C) 1992-1995                        *
-*                          Zeyd M. Ben-Halim                               *
-*                          zmbenhal@netcom.com                             *
-*                          Eric S. Raymond                                 *
-*                          esr@snark.thyrsus.com                           *
-*                                                                          *
-*        Permission is hereby granted to reproduce and distribute ncurses  *
-*        by any means and for any fee, whether alone or as part of a       *
-*        larger distribution, in source or in binary form, PROVIDED        *
-*        this notice is included with any such distribution, and is not    *
-*        removed from any of its header files. Mention of ncurses in any   *
-*        applications linked with it is highly appreciated.                *
-*                                                                          *
-*        ncurses comes AS IS with no warranty, implied or expressed.       *
-*                                                                          *
-***************************************************************************/
+/*-----------------------------------------------------------------------------+
+|           The ncurses form library is  Copyright (C) 1995-1997               |
+|             by Juergen Pfeifer <Juergen.Pfeifer@T-Online.de>                 |
+|                          All Rights Reserved.                                |
+|                                                                              |
+| Permission to use, copy, modify, and distribute this software and its        |
+| documentation for any purpose and without fee is hereby granted, provided    |
+| that the above copyright notice appear in all copies and that both that      |
+| copyright notice and this permission notice appear in supporting             |
+| documentation, and that the name of the above listed copyright holder(s) not |
+| be used in advertising or publicity pertaining to distribution of the        |
+| software without specific, written prior permission.                         | 
+|                                                                              |
+| THE ABOVE LISTED COPYRIGHT HOLDER(S) DISCLAIM ALL WARRANTIES WITH REGARD TO  |
+| THIS SOFTWARE, INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY AND FIT-  |
+| NESS, IN NO EVENT SHALL THE ABOVE LISTED COPYRIGHT HOLDER(S) BE LIABLE FOR   |
+| ANY SPECIAL, INDIRECT OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RE- |
+| SULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, |
+| NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH    |
+| THE USE OR PERFORMANCE OF THIS SOFTWARE.                                     |
++-----------------------------------------------------------------------------*/
 
 #include "mf_common.h"
 #include "form.h"
@@ -38,6 +41,10 @@
 #define _HAS_ARGS        (0x02) /* Type has arguments                     */
 #define _HAS_CHOICE      (0x04) /* Type has choice methods                */
 #define _RESIDENT        (0x08) /* Type is builtin                        */
+
+/* This are the field options required to be a selectable field in field
+   navigation requests */
+#define O_SELECTABLE (O_ACTIVE | O_VISIBLE)
 
 /* If form is NULL replace form argument by default-form */
 #define Normalize_Form(form)  ((form)=(form)?(form):_nc_Default_Form)
@@ -60,6 +67,9 @@
 #define Single_Line_Field(field) \
    (((field)->rows + (field)->nrow) == 1)
 
+/* Logic to determine whether or not a field is selectable */
+#define Field_Is_Selectable(f)     (((f)->opts & O_SELECTABLE)==O_SELECTABLE)
+#define Field_Is_Not_Selectable(f) (((f)->opts & O_SELECTABLE)!=O_SELECTABLE)
 
 typedef struct typearg {
   struct typearg *left;
@@ -91,3 +101,20 @@ typedef struct typearg {
 
 #define C_BLANK ' '
 #define is_blank(c) ((c)==C_BLANK)
+
+extern const FIELDTYPE* _nc_Default_FieldType;
+
+extern TypeArgument* _nc_Make_Argument(const FIELDTYPE*,va_list*,int*);
+extern TypeArgument *_nc_Copy_Argument(const FIELDTYPE*,const TypeArgument*, int*);
+extern void _nc_Free_Argument(const FIELDTYPE*,TypeArgument*);
+extern bool _nc_Copy_Type(FIELD*, FIELD const *);
+extern void _nc_Free_Type(FIELD *);
+
+extern int _nc_Synchronize_Attributes(FIELD*);
+extern int _nc_Synchronize_Options(FIELD*,Field_Options);
+extern int _nc_Set_Form_Page(FORM*,int,FIELD*);
+extern int _nc_Refresh_Current_Field(FORM*);
+extern FIELD* _nc_First_Active_Field(FORM*);
+extern bool _nc_Internal_Validation(FORM*);
+extern int _nc_Set_Current_Field(FORM*,FIELD*);
+extern int _nc_Position_Form_Cursor(FORM*);

@@ -1,10 +1,13 @@
+/*	$OpenBSD: main.c,v 1.2 1996/12/21 22:23:42 millert Exp $	*/
 /*	$NetBSD: main.c,v 1.2 1995/04/20 22:39:51 cgd Exp $	*/
 
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 #include <sys/types.h>
 #include <regex.h>
 #include <assert.h>
+#include <unistd.h>
 
 #include "main.ih"
 
@@ -25,6 +28,7 @@ extern void regprint();
 /*
  - main - do the simple case, hand off to regress() for regression
  */
+int
 main(argc, argv)
 int argc;
 char *argv[];
@@ -43,7 +47,7 @@ char *argv[];
 
 	progname = argv[0];
 
-	while ((c = getopt(argc, argv, "c:e:S:E:x")) != EOF)
+	while ((c = getopt(argc, argv, "c:e:S:E:x")) != -1)
 		switch (c) {
 		case 'c':	/* compile options */
 			copts = options('c', optarg);
@@ -102,10 +106,10 @@ char *argv[];
 		exit(status);
 	}
 	if (!(copts&REG_NOSUB)) {
-		len = (int)(subs[0].rm_eo - subs[0].rm_so);
+		len = (size_t)(subs[0].rm_eo - subs[0].rm_so);
 		if (subs[0].rm_so != -1) {
 			if (len != 0)
-				printf("match `%.*s'\n", len,
+				printf("match `%.*s'\n", (int)len,
 					argv[optind] + subs[0].rm_so);
 			else
 				printf("match `'@%.1s\n",
@@ -501,7 +505,6 @@ efind(name)
 char *name;
 {
 	static char efbuf[100];
-	size_t n;
 	regex_t re;
 
 	sprintf(efbuf, "REG_%s", name);

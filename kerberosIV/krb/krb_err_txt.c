@@ -1,33 +1,41 @@
+/*	$OpenBSD: krb_err_txt.c,v 1.4 1997/12/22 15:02:09 art Exp $	*/
+/*     $KTH: krb_err_txt.c,v 1.12 1997/04/02 05:37:10 joda Exp $    */
+
 /*
- * This software may now be redistributed outside the US.
+ * This source code is no longer held under any constraint of USA
+ * `cryptographic laws' since it was exported legally.  The cryptographic
+ * functions were removed from the code and a "Bones" distribution was
+ * made.  A Commodity Jurisdiction Request #012-94 was filed with the
+ * USA State Department, who handed it to the Commerce department.  The
+ * code was determined to fall under General License GTDA under ECCN 5D96G,
+ * and hence exportable.  The cryptographic interfaces were re-added by Eric
+ * Young, and then KTH proceeded to maintain the code in the free world.
  *
- * $Source: /usr/src/kerberosIV/lib/krb/RCS/krb_err_txt.c,v $
- *
- * $Locker:  $
  */
 
 /* 
-  Copyright (C) 1989 by the Massachusetts Institute of Technology
-
-   Export of this software from the United States of America is assumed
-   to require a specific license from the United States Government.
-   It is the responsibility of any person or organization contemplating
-   export to obtain such a license before exporting.
-
-WITHIN THAT CONSTRAINT, permission to use, copy, modify, and
-distribute this software and its documentation for any purpose and
-without fee is hereby granted, provided that the above copyright
-notice appear in all copies and that both that copyright notice and
-this permission notice appear in supporting documentation, and that
-the name of M.I.T. not be used in advertising or publicity pertaining
-to distribution of the software without specific, written prior
-permission.  M.I.T. makes no representations about the suitability of
-this software for any purpose.  It is provided "as is" without express
-or implied warranty.
-
-  */
+ *  Copyright (C) 1989 by the Massachusetts Institute of Technology
+ *
+ *  Export of this software from the United States of America is assumed
+ *  to require a specific license from the United States Government.
+ *  It is the responsibility of any person or organization contemplating
+ *  export to obtain such a license before exporting.
+ *
+ * WITHIN THAT CONSTRAINT, permission to use, copy, modify, and
+ * distribute this software and its documentation for any purpose and
+ * without fee is hereby granted, provided that the above copyright
+ * notice appear in all copies and that both that copyright notice and
+ * this permission notice appear in supporting documentation, and that
+ * the name of M.I.T. not be used in advertising or publicity pertaining
+ * to distribution of the software without specific, written prior
+ * permission.  M.I.T. makes no representations about the suitability of
+ * this software for any purpose.  It is provided "as is" without express
+ * or implied warranty.
+ *
+ */
 
 #include "krb_locl.h"
+
 
 /*
  * This file contains an array of error text strings.
@@ -47,7 +55,7 @@ const char *krb_err_txt[256] = {
   "Principal unknown (kerberos)",			/* 008 */
   "Principal not unique (kerberos)",			/* 009 */
   "Principal has null key (kerberos)",			/* 010 */
-  "Reserved error message 11 (kerberos)",		/* 011 */
+  "Timeout in request (kerberos)",			/* 011 */
   "Reserved error message 12 (kerberos)",		/* 012 */
   "Reserved error message 13 (kerberos)",		/* 013 */
   "Reserved error message 14 (kerberos)",		/* 014 */
@@ -99,16 +107,16 @@ const char *krb_err_txt[256] = {
   "Reserved error message 60 (send_to_kdc)",		/* 060 */
   "Warning: Not ALL tickets returned",			/* 061 */
   "Password incorrect",					/* 062 */
-  "Protocol error (get_intkt)",				/* 063 */
+  "Protocol error (get_in_tkt)",			/* 063 */
   "Reserved error message 64 (get_in_tkt)",		/* 064 */
   "Reserved error message 65 (get_in_tkt)",		/* 065 */
   "Reserved error message 66 (get_in_tkt)",		/* 066 */
   "Reserved error message 67 (get_in_tkt)",		/* 067 */
   "Reserved error message 68 (get_in_tkt)",		/* 068 */
   "Reserved error message 69 (get_in_tkt)",		/* 069 */
-  "Generic error (get_intkt)",				/* 070 */
+  "Generic error (get_in_tkt)(can't write ticket file)", /* 070 */
   "Don't have ticket granting ticket (get_ad_tkt)",	/* 071 */
-  "Reserved error message 72 (get_ad_tkt)",		/* 072 */
+  "Can't get inter-realm ticket granting ticket (get_ad_tkt)",	/* 072 */
   "Reserved error message 73 (get_ad_tkt)",		/* 073 */
   "Reserved error message 74 (get_ad_tkt)",		/* 074 */
   "Reserved error message 75 (get_ad_tkt)",		/* 075 */
@@ -293,3 +301,13 @@ const char *krb_err_txt[256] = {
   "(reserved)",
   "Generic kerberos error (kfailure)",			/* 255 */
 };
+
+static const char err_failure[] = "Illegal error code passed (krb_get_err_text)";
+
+const char *
+krb_get_err_text(int code)
+{
+  if(code < 0 || code >= MAX_KRB_ERRORS)
+    return err_failure;
+  return krb_err_txt[code];
+}

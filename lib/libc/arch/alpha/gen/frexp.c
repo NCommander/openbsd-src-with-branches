@@ -1,3 +1,4 @@
+/*	$OpenBSD: frexp.c,v 1.3 1996/11/13 21:20:17 niklas Exp $	*/
 /*	$NetBSD: frexp.c,v 1.1 1995/02/10 17:50:22 cgd Exp $	*/
 
 /*
@@ -27,6 +28,10 @@
  * rights to redistribute these changes.
  */
 
+#if defined(LIBC_SCCS) && !defined(lint)
+static char *rcsid = "$OpenBSD: frexp.c,v 1.3 1996/11/13 21:20:17 niklas Exp $";
+#endif /* LIBC_SCCS and not lint */
+
 #include <sys/types.h>
 #include <machine/ieee.h>
 #include <math.h>
@@ -37,9 +42,9 @@ frexp(value, eptr)
 	int *eptr;
 {
 	union doub {
-                double v;
+		double v;
 		struct ieee_double s;
-        } u;
+	} u;
 
 	if (value) {
 		u.v = value;

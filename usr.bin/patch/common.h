@@ -1,4 +1,4 @@
-/*	$Id: common.h,v 1.4 1994/12/24 17:30:18 cgd Exp $ */
+/*	$OpenBSD: common.h,v 1.8 1997/09/06 23:51:31 niklas Exp $ */
 
 #define DEBUGGING
 
@@ -16,8 +16,7 @@
 #define Close (void)close
 #define Fclose (void)fclose
 #define Fflush (void)fflush
-#define Sprintf (void)sprintf
-#define Mktemp (void)mktemp
+#define Snprintf (void)snprintf
 #define Strcpy (void)strcpy
 #define Strcat (void)strcat
 
@@ -29,9 +28,14 @@
 #include <string.h>
 #include <assert.h>
 #include <sys/types.h>
+#include <sys/file.h>
 #include <sys/stat.h>
+#include <sys/param.h>
 #include <ctype.h>
+#include <paths.h>
 #include <signal.h>
+#include <stdlib.h>
+#include <unistd.h>
 #undef malloc
 #undef realloc
 
@@ -49,7 +53,7 @@
 
 #define MAXHUNKSIZE 100000		/* is this enough lines? */
 #define INITHUNKMAX 125			/* initial dynamic allocation size */
-#define MAXLINELEN 1024
+#define MAXLINELEN 8192
 #define BUFFERSIZE 1024
 
 #define SCCSPREFIX "s."
@@ -166,13 +170,13 @@ long atol();
 char *getenv();
 char *strcpy();
 char *strcat();
-char *rindex();
-char *mktemp();
+char *strrchr();
+int  mkstemp();
 #if 0				/* This can cause a prototype conflict.  */
 #ifdef CHARSPRINTF
-char *sprintf();
+char *snprintf();
 #else
-int sprintf();
+int snprintf();
 #endif
 #endif
 

@@ -1,3 +1,4 @@
+/*	$OpenBSD: com6.c,v 1.7 1997/09/01 19:30:55 millert Exp $	*/
 /*	$NetBSD: com6.c,v 1.5 1995/04/27 21:30:23 mycroft Exp $	*/
 
 /*
@@ -41,9 +42,11 @@ static char rcsid[] = "$NetBSD: com6.c,v 1.5 1995/04/27 21:30:23 mycroft Exp $";
 #endif
 #endif /* not lint */
 
-#include "externs.h"
+#include <time.h>
+#include "extern.h"
 #include "pathnames.h"
 
+int
 launch()
 {
 	if (testbit(location[position].objects,VIPER) && !notes[CANTLAUNCH]){
@@ -51,7 +54,7 @@ launch()
 			clearbit(location[position].objects,VIPER);
 			position = location[position].up;
 			notes[LAUNCHED] = 1;
-			time++;
+			btime++;
 			fuel -= 4;
 			puts("You climb into the viper and prepare for launch.");
 			puts("With a touch of your thumb the turbo engines ignite, thrusting you back into\nyour seat.");
@@ -65,6 +68,7 @@ launch()
 	 return(0);
 }
 
+int
 land()
 {
 	if (notes[LAUNCHED] && testbit(location[position].objects,LAND) && location[position].down){
@@ -72,7 +76,7 @@ land()
 		position = location[position].down;
 		setbit(location[position].objects,VIPER);
 		fuel -= 2;
-		time++;
+		btime++;
 		puts("You are down.");
 		return(1);
 	}
@@ -81,13 +85,16 @@ land()
 	return(0);
 }
 
-die() 		/* endgame */
+void
+die(sigraised) 		/* endgame */
+int sigraised;
 {
 	printf("bye.\nYour rating was %s.\n", rate());
 	post(' ');
 	exit(0);
 }
 
+void
 live()
 {
 	puts("\nYou win!");
@@ -95,38 +102,39 @@ live()
 	exit(0);
 }
 
-/*
- * sigh -- this program thinks "time" is an int.  It's easier to not load
- * <time.h> than try and fix it.
- */
-#define _KERNEL
-#include <sys/time.h>
-#undef _KERNEL
+static FILE *score_fp;
 
+open_score_file()
+{
+	if ((score_fp = fopen(_PATH_SCORE, "a")) == NULL)
+		warn("can't append to high scores file (%s)", _PATH_SCORE);
+}
+
+void
 post(ch)
 char ch;
 {
-	FILE *fp;
-	struct timeval tv;
-	char *date, *ctime();
+	time_t tv;
+	char *date;
 	sigset_t sigset, osigset;
 
 	sigemptyset(&sigset);
 	sigaddset(&sigset, SIGINT);
 	sigprocmask(SIG_BLOCK, &sigset, &osigset);
-	gettimeofday(&tv, (struct timezone *)0);	/* can't call time */
-	date = ctime(&tv.tv_sec);
+	tv = time(NULL);
+	date = ctime(&tv);
 	date[24] = '\0';
-	if (fp = fopen(_PATH_SCORE,"a")) {
-		fprintf(fp, "%s  %8s  %c%20s", date, uname, ch, rate());
+
+	if (score_fp != NULL) {
+		fprintf(score_fp, "%s  %8s  %c%20s", date, uname, ch, rate());
 		if (wiz)
-			fprintf(fp, "   wizard\n");
+			fprintf(score_fp, "   wizard\n");
 		else if (tempwiz)
-			fprintf(fp, "   WIZARD!\n");
+			fprintf(score_fp, "   WIZARD!\n");
 		else
-			fprintf(fp, "\n");
-	} else
-		perror(_PATH_SCORE);
+			fprintf(score_fp, "\n");
+	}
+
 	sigprocmask(SIG_SETMASK, &osigset, (sigset_t *)0);
 }
 
@@ -167,6 +175,7 @@ rate()
 	}
 }
 
+int
 drive()
 {
 	if (testbit(location[position].objects,CAR)){
@@ -175,7 +184,7 @@ drive()
 		clearbit(location[position].objects,CAR);
 		setbit(location[position].objects,CRASH);
 		injuries[5] = injuries[6] = injuries[7] = injuries[8] = 1;
-		time += 15;
+		btime += 15;
 		zzz();
 		return(0);
 	}
@@ -184,6 +193,7 @@ drive()
 	return(-1);
 }
 
+int
 ride()
 {
 	if (testbit(location[position].objects,HORSE)){
@@ -206,16 +216,17 @@ ride()
 	return(-1);
 }
 
+void
 light()		/* synonyms = {strike, smoke} */
 {		/* for matches, cigars */
 	if (testbit(inven,MATCHES) && matchcount){
 		puts("Your match splutters to life.");
-		time++;
+		btime++;
 		matchlight = 1;
 		matchcount--;
 		if (position == 217){
 			puts("The whole bungalow explodes with an intense blast.");
-			die();
+			die(0);
 		}
 	}
 	else puts("You're out of matches.");

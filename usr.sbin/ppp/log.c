@@ -1,13 +1,37 @@
-/*
- * $Id: log.c,v 1.22 1997/11/22 03:37:36 brian Exp $
+/*-
+ * Copyright (c) 1997 Brian Somers <brian@Awfulhak.org>
+ * All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions
+ * are met:
+ * 1. Redistributions of source code must retain the above copyright
+ *    notice, this list of conditions and the following disclaimer.
+ * 2. Redistributions in binary form must reproduce the above copyright
+ *    notice, this list of conditions and the following disclaimer in the
+ *    documentation and/or other materials provided with the distribution.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE AUTHOR AND CONTRIBUTORS ``AS IS'' AND
+ * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ * ARE DISCLAIMED.  IN NO EVENT SHALL THE AUTHOR OR CONTRIBUTORS BE LIABLE
+ * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+ * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
+ * OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+ * HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+ * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
+ * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
+ * SUCH DAMAGE.
+ *
+ *	$Id: log.c,v 1.4 1998/01/21 02:13:35 brian Exp $
  */
 
 #include <sys/param.h>
 #include <netinet/in.h>
-#include <sys/socket.h>
 
 #include <stdarg.h>
 #include <stdio.h>
+#include <string.h>
 #include <syslog.h>
 
 #include "command.h"
@@ -213,7 +237,7 @@ LogDumpBuff(int lev, const char *hdr, const u_char * ptr, int n)
       LogPrintf(lev, "%s\n", hdr);
     while (n > 0) {
       b = buf;
-      for (b = buf; b != buf + sizeof(buf) - 2 && n--; b += 3)
+      for (b = buf; b != buf + sizeof buf - 2 && n--; b += 3)
 	sprintf(b, " %02x", (int) *ptr++);
       strcpy(b, "\n");
       LogPrintf(lev, buf);

@@ -1,3 +1,5 @@
+/*	$OpenBSD: expr.h,v 1.2 1998/02/15 18:48:45 niklas Exp $	*/
+
 /* expr.h -> header file for expr.c
    Copyright (C) 1987, 1992 Free Software Foundation, Inc.
    
@@ -16,10 +18,6 @@
    You should have received a copy of the GNU General Public License
    along with GAS; see the file COPYING.  If not, write to
    the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
-/*
- * $Id: expr.h,v 1.3 1993/10/02 20:57:27 pk Exp $
- */
-
 
 /*
  * Abbreviations (mnemonics).
@@ -47,13 +45,12 @@
  */
 
 typedef struct {
-	symbolS *X_add_symbol;		/* foo */
-	symbolS *X_subtract_symbol;	/* bar */
-	symbolS *X_got_symbol;		/* got */
-	long X_add_number;		/* 42.    Must be signed. */
-	segT	X_seg;			/* What segment (expr type)? */
-}
-expressionS;
+	struct symbol *X_add_symbol;		/* foo */
+	struct symbol *X_subtract_symbol;	/* bar */
+	struct symbol *X_got_symbol;		/* got */
+	long	X_add_number;			/* 42.    Must be signed. */
+	segT	X_seg;				/* What segment (expr type)? */
+} expressionS;
 
 /* result should be type (expressionS *). */
 #define expression(result) expr(0,result)

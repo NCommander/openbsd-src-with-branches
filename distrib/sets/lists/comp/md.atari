@@ -1,4 +1,6 @@
-./usr/include/m68k
+./usr/bin/gdb
+./usr/include/dlfcn.h
+./usr/include/link.h
 ./usr/include/m68k/ansi.h
 ./usr/include/m68k/asm.h
 ./usr/include/m68k/cdefs.h
@@ -66,7 +68,14 @@
 ./usr/lib/libpcap_pic.a
 ./usr/lib/libresolv_pic.a
 ./usr/lib/libskey_pic.a
+./usr/lib/libstdc++_pic.a
 ./usr/lib/libtelnet_pic.a
 ./usr/lib/libtermcap_pic.a
 ./usr/lib/libutil_pic.a
 ./usr/lib/scrt0.o
+./usr/share/man/cat3/dlclose.0
+./usr/share/man/cat3/dlctl.0
+./usr/share/man/cat3/dlerror.0
+./usr/share/man/cat3/dlfcn.0
+./usr/share/man/cat3/dlopen.0
+./usr/share/man/cat3/dlsym.0

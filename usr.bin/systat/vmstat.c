@@ -1,4 +1,5 @@
-/*	$NetBSD: vmstat.c,v 1.4 1995/04/29 05:54:55 cgd Exp $	*/
+/*	$OpenBSD: vmstat.c,v 1.13 1997/12/19 09:22:56 deraadt Exp $	*/
+/*	$NetBSD: vmstat.c,v 1.5 1996/05/10 23:16:40 thorpej Exp $	*/
 
 /*-
  * Copyright (c) 1983, 1989, 1992, 1993
@@ -37,7 +38,7 @@
 #if 0
 static char sccsid[] = "@(#)vmstat.c	8.2 (Berkeley) 1/12/94";
 #endif
-static char rcsid[] = "$NetBSD: vmstat.c,v 1.4 1995/04/29 05:54:55 cgd Exp $";
+static char rcsid[] = "$OpenBSD: vmstat.c,v 1.13 1997/12/19 09:22:56 deraadt Exp $";
 #endif /* not lint */
 
 /*
@@ -65,6 +66,12 @@ static char rcsid[] = "$NetBSD: vmstat.c,v 1.4 1995/04/29 05:54:55 cgd Exp $";
 #include <utmp.h>
 #include <unistd.h>
 
+#if defined(i386)
+#define	_KERNEL
+#include <machine/psl.h>
+#undef _KERNEL
+#endif
+
 #include "systat.h"
 #include "extern.h"
 
@@ -72,15 +79,14 @@ static struct Info {
 	long	time[CPUSTATES];
 	struct	vmmeter Cnt;
 	struct	vmtotal Total;
-	long	*dk_time;
-	long	*dk_wds;
-	long	*dk_seek;
-	long	*dk_xfer;
-	int	dk_busy;
 	struct	nchstats nchstats;
 	long	nchcount;
 	long	*intrcnt;
 } s, s1, s2, z;
+
+#include "dkstats.h"
+extern struct _disk	cur;
+
 
 #define	cnt s.Cnt
 #define oldcnt s1.Cnt
@@ -142,26 +148,20 @@ static struct nlist namelist[] = {
 	{ "_cnt" },
 #define X_TOTAL		2
 	{ "_total" },
-#define	X_DK_BUSY	3
-	{ "_dk_busy" },
-#define	X_DK_TIME	4
-	{ "_dk_time" },
-#define	X_DK_XFER	5
-	{ "_dk_xfer" },
-#define	X_DK_WDS	6
-	{ "_dk_wds" },
-#define	X_DK_SEEK	7
-	{ "_dk_seek" },
-#define	X_NCHSTATS	8
+#define	X_NCHSTATS	3
 	{ "_nchstats" },
-#define	X_INTRNAMES	9
+#define	X_INTRNAMES	4
 	{ "_intrnames" },
-#define	X_EINTRNAMES	10
+#define	X_EINTRNAMES	5
 	{ "_eintrnames" },
-#define	X_INTRCNT	11
+#define	X_INTRCNT	6
 	{ "_intrcnt" },
-#define	X_EINTRCNT	12
+#define	X_EINTRCNT	7
 	{ "_eintrcnt" },
+#if defined(i386)
+#define	X_INTRHAND	8
+	{ "_intrhand" },
+#endif
 	{ "" },
 };
 
@@ -215,7 +215,7 @@ initkre()
 		}
 	}
 	hertz = stathz ? stathz : hz;
-	if (! dkinit())
+	if (! dkinit(1))
 		return(0);
 	if (dk_ndrive && !once) {
 #define	allocate(e, t) \
@@ -223,14 +223,41 @@ initkre()
     s1./**/e = (t *)calloc(dk_ndrive, sizeof (t)); \
     s2./**/e = (t *)calloc(dk_ndrive, sizeof (t)); \
     z./**/e = (t *)calloc(dk_ndrive, sizeof (t));
-		allocate(dk_time, long);
-		allocate(dk_wds, long);
-		allocate(dk_seek, long);
-		allocate(dk_xfer, long);
 		once = 1;
 #undef allocate
 	}
 	if (nintr == 0) {
+#if defined(i386)
+		struct intrhand *intrhand[16], *ihp, ih;
+		char iname[16];
+		int namelen, n;
+
+		NREAD(X_INTRHAND, intrhand, sizeof(intrhand));
+		for (namelen = 0, i = 0; i < 16; i++) {
+			ihp = intrhand[i];
+			while (ihp) {
+				nintr++;
+				KREAD(ihp, &ih, sizeof(ih));
+				KREAD(ih.ih_what, iname, 16);
+				namelen += 1 + strlen(iname);
+				ihp = ih.ih_next;
+			}
+		}
+		intrloc = calloc(nintr, sizeof (long));
+		intrname = calloc(nintr, sizeof (char *));
+		cp = intrnamebuf = malloc(namelen);
+		for (namelen = 0, i = 0, n = 0; i < 16; i++) {
+			ihp = intrhand[i];
+			while (ihp) {
+				KREAD(ihp, &ih, sizeof(ih));
+				KREAD(ih.ih_what, iname, 16);
+				/* XXX strcpy is safe, sized & malloc'd buffer */ 
+				strcpy(intrname[n++] = intrnamebuf + namelen, iname);
+				namelen += 1 + strlen(iname);
+				ihp = ih.ih_next;
+			}
+		}
+#else
 		nintr = (namelist[X_EINTRCNT].n_value -
 			namelist[X_INTRCNT].n_value) / sizeof (long);
 		intrloc = calloc(nintr, sizeof (long));
@@ -254,6 +281,7 @@ initkre()
 			intrname[i] = cp;
 			cp += strlen(cp) + 1;
 		}
+#endif
 		nextintsrow = INTSROW + 2;
 		allocinfo(&s);
 		allocinfo(&s1);
@@ -271,8 +299,8 @@ fetchkre()
 	time_t now;
 
 	time(&now);
-	strcpy(buf, ctime(&now));
-	buf[16] = '\0';
+	strncpy(buf, ctime(&now), sizeof buf-1);
+	buf[sizeof buf-1] = '\0';
 	getinfo(&s, state);
 }
 
@@ -331,13 +359,13 @@ labelkre()
 	mvprintw(DISKROW, DISKCOL, "Discs");
 	mvprintw(DISKROW + 1, DISKCOL, "seeks");
 	mvprintw(DISKROW + 2, DISKCOL, "xfers");
-	mvprintw(DISKROW + 3, DISKCOL, " blks");
-	mvprintw(DISKROW + 4, DISKCOL, " msps");
+	mvprintw(DISKROW + 3, DISKCOL, "Kbyte");
+	mvprintw(DISKROW + 4, DISKCOL, "  sec");
 	j = 0;
 	for (i = 0; i < dk_ndrive && j < MAXDRIVES; i++)
 		if (dk_select[i]) {
 			mvprintw(DISKROW, DISKCOL + 5 + 5 * j,
-				"  %3.3s", dr_name[j]);
+				" %4.4s", dr_name[j]);
 			j++;
 		}
 	for (i = 0; i < nintr; i++) {
@@ -367,9 +395,9 @@ showkre()
 	int i, l, c;
 	static int failcnt = 0;
 
-	for (i = 0; i < dk_ndrive; i++) {
-		X(dk_xfer); X(dk_seek); X(dk_wds); X(dk_time);
-	}
+	
+	if (state == TIME)
+		dkswap();
 	etime = 0;
 	for(i = 0; i < CPUSTATES; i++) {
 		X(time);
@@ -473,8 +501,9 @@ showkre()
 	PUTRATE(Cnt.v_reactivated, VMSTATROW + 13, VMSTATCOL, 9);
 	PUTRATE(Cnt.v_scan, VMSTATROW + 14, VMSTATCOL, 9);
 	PUTRATE(Cnt.v_rev, VMSTATROW + 15, VMSTATCOL, 9);
-	if (LINES - 1 > VMSTATROW + 16)
+	if (LINES - 1 > VMSTATROW + 16) {
 		PUTRATE(Cnt.v_intrans, VMSTATROW + 16, VMSTATCOL, 9);
+	}
 	PUTRATE(Cnt.v_pageins, PAGEROW + 2, PAGECOL + 5, 5);
 	PUTRATE(Cnt.v_pageouts, PAGEROW + 2, PAGECOL + 10, 5);
 	PUTRATE(Cnt.v_swpin, PAGEROW + 2, PAGECOL + 15, 5);	/* - */
@@ -493,7 +522,7 @@ showkre()
 	for (i = 0, c = 0; i < dk_ndrive && c < MAXDRIVES; i++)
 		if (dk_select[i]) {
 			mvprintw(DISKROW, DISKCOL + 5 + 5 * c,
-				"  %3.3s", dr_name[i]);
+				" %4.4s", dr_name[i]);
 			dinfo(i, ++c);
 		}
 	putint(s.nchcount, NAMEIROW + 2, NAMEICOL, 9);
@@ -577,7 +606,7 @@ putint(n, l, c, w)
 			addch(' ');
 		return;
 	}
-	sprintf(b, "%*d", w, n);
+	snprintf(b, sizeof b, "%*d", w, n);
 	if (strlen(b) > w) {
 		while (w-- > 0)
 			addch('*');
@@ -599,7 +628,7 @@ putfloat(f, l, c, w, d, nz)
 			addch(' ');
 		return;
 	}
-	sprintf(b, "%*.*f", w, d, f);
+	snprintf(b, sizeof b, "%*.*f", w, d, f);
 	if (strlen(b) > w) {
 		while (--w >= 0)
 			addch('*');
@@ -616,16 +645,28 @@ getinfo(s, st)
 	int mib[2];
 	size_t size;
 	extern int errno;
+#if defined(i386)
+	struct intrhand *intrhand[16], *ihp, ih;
+	int i, n;
+#endif
 
+	dkreadstats();
 	NREAD(X_CPTIME, s->time, sizeof s->time);
 	NREAD(X_CNT, &s->Cnt, sizeof s->Cnt);
-	NREAD(X_DK_BUSY, &s->dk_busy, LONG);
-	NREAD(X_DK_TIME, s->dk_time, dk_ndrive * LONG);
-	NREAD(X_DK_XFER, s->dk_xfer, dk_ndrive * LONG);
-	NREAD(X_DK_WDS, s->dk_wds, dk_ndrive * LONG);
-	NREAD(X_DK_SEEK, s->dk_seek, dk_ndrive * LONG);
 	NREAD(X_NCHSTATS, &s->nchstats, sizeof s->nchstats);
+#if defined(i386)
+	NREAD(X_INTRHAND, intrhand, sizeof(intrhand));
+	for (i = 0, n = 0; i < 16; i++) {
+		ihp = intrhand[i];
+		while (ihp) {
+			KREAD(ihp, &ih, sizeof(ih));
+			s->intrcnt[n++] = ih.ih_count;
+			ihp = ih.ih_next;
+		}
+	}
+#else
 	NREAD(X_INTRCNT, s->intrcnt, nintr * LONG);
+#endif
 	size = sizeof(s->Total);
 	mib[0] = CTL_VM;
 	mib[1] = VM_METER;
@@ -649,21 +690,10 @@ static void
 copyinfo(from, to)
 	register struct Info *from, *to;
 {
-	long *time, *wds, *seek, *xfer;
 	long *intrcnt;
 
-	/*
-	 * time, wds, seek, and xfer are malloc'd so we have to
-	 * save the pointers before the structure copy and then 
-	 * copy by hand.
-	 */
-	time = to->dk_time; wds = to->dk_wds; seek = to->dk_seek;
-	xfer = to->dk_xfer; intrcnt = to->intrcnt;
+	intrcnt = to->intrcnt;
 	*to = *from;
-	bcopy(from->dk_time, to->dk_time = time, dk_ndrive * sizeof (long));
-	bcopy(from->dk_wds, to->dk_wds = wds, dk_ndrive * sizeof (long));
-	bcopy(from->dk_seek, to->dk_seek = seek, dk_ndrive * sizeof (long));
-	bcopy(from->dk_xfer, to->dk_xfer = xfer, dk_ndrive * sizeof (long));
 	bcopy(from->intrcnt, to->intrcnt = intrcnt, nintr * sizeof (int));
 }
 
@@ -671,23 +701,18 @@ static void
 dinfo(dn, c)
 	int dn, c;
 {
-	double words, atime, itime, xtime;
+	double words, atime;
 
 	c = DISKCOL + c * 5;
-	atime = s.dk_time[dn];
-	atime /= hertz;
-	words = s.dk_wds[dn]*32.0;	/* number of words transferred */
-	xtime = dk_mspw[dn]*words;	/* transfer time */
-	itime = atime - xtime;		/* time not transferring */
-	if (xtime < 0)
-		itime += xtime, xtime = 0;
-	if (itime < 0)
-		xtime += itime, itime = 0;
-	putint((int)((float)s.dk_seek[dn]/etime+0.5), DISKROW + 1, c, 5);
-	putint((int)((float)s.dk_xfer[dn]/etime+0.5), DISKROW + 2, c, 5);
-	putint((int)(words/etime/512.0 + 0.5), DISKROW + 3, c, 5);
-	if (s.dk_seek[dn])
-		putfloat(itime*1000.0/s.dk_seek[dn], DISKROW + 4, c, 5, 1, 1);
-	else
-		putint(0, DISKROW + 4, c, 5);
+
+	/* time busy in disk activity */
+	atime = (double)cur.dk_time[dn].tv_sec +
+		((double)cur.dk_time[dn].tv_usec / (double)1000000);
+
+	words = cur.dk_bytes[dn] / 1024.0;	/* # of K transferred */
+
+	putint((int)((float)cur.dk_seek[dn]/etime+0.5), DISKROW + 1, c, 5);
+	putint((int)((float)cur.dk_xfer[dn]/etime+0.5), DISKROW + 2, c, 5);
+	putint((int)(words/etime + 0.5), DISKROW + 3, c, 5);
+	putfloat(atime/etime, DISKROW + 4, c, 5, 1, 1);
 }

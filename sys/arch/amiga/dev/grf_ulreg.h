@@ -1,4 +1,5 @@
-/*	$NetBSD: grf_ulreg.h,v 1.2 1995/10/07 19:54:59 chopps Exp $	*/
+/*	$OpenBSD: grf_ulreg.h,v 1.4 1996/07/08 13:28:42 is Exp $	*/
+/*	$NetBSD: grf_ulreg.h,v 1.4 1996/07/08 13:28:42 is Exp $	*/
 
 /*
  * Copyright (c) 1995 Ignatios Souvatzis
@@ -14,7 +15,8 @@
  *    documentation and/or other materials provided with the distribution.
  * 3. All advertising materials mentioning features or use of this software
  *    must display the following acknowledgement:
- *      This product includes software developed by Lutz Vieweg.
+ *      This product includes software developed by Ignatios Souvatzis
+ *      for the NetBSD project.
  * 4. The name of the author may not be used to endorse or promote products
  *    derived from this software without specific prior written permission
  *
@@ -35,7 +37,7 @@
 
 struct gspregs {
 	/*
-	 * alas, they didn't invert the A1 bit, so be have to write the 
+	 * alas, they didn't invert the A1 bit, so we have to write the 
 	 * address pointer in two parts
 	 */
 	__volatile u_short hstadrl;
@@ -60,8 +62,11 @@ struct gspregs {
 
 /* address macros */
 
-#define GSPSETHADRS(gsp,adrs) (gsp)->hstadrh = (adrs)>>16; (gsp)->hstadrl = (adrs)
-#define GSPGETHADRS(gsp) ((gsp)->hstadrh << 16 | (gsp)->hstadrl)
+#define GSPSETHADRS(gsp,adrs)	do {	\
+    (gsp)->hstadrh = (adrs) >> 16;	\
+    (gsp)->hstadrl = (adrs) & 0xFFFF;	\
+    } while (0)
+#define GSPGETHADRS(gsp)	((gsp)->hstadrh << 16 | (gsp)->hstadrl)
 
 /* Standard addresses in GSP memory */
 

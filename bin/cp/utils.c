@@ -1,4 +1,5 @@
-/*	$NetBSD: utils.c,v 1.4 1995/08/02 07:17:02 jtc Exp $	*/
+/*	$OpenBSD: utils.c,v 1.9 1997/09/01 18:29:19 deraadt Exp $	*/
+/*	$NetBSD: utils.c,v 1.6 1997/02/26 14:40:51 cgd Exp $	*/
 
 /*-
  * Copyright (c) 1991, 1993, 1994
@@ -13,7 +14,7 @@
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
  * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
+ *    must display the following acknowledgment:
  *	This product includes software developed by the University of
  *	California, Berkeley and its contributors.
  * 4. Neither the name of the University nor the names of its contributors
@@ -37,7 +38,7 @@
 #if 0
 static char sccsid[] = "@(#)utils.c	8.3 (Berkeley) 4/1/94";
 #else
-static char rcsid[] = "$NetBSD: utils.c,v 1.4 1995/08/02 07:17:02 jtc Exp $";
+static char rcsid[] = "$OpenBSD: utils.c,v 1.9 1997/09/01 18:29:19 deraadt Exp $";
 #endif
 #endif /* not lint */
 
@@ -68,7 +69,7 @@ copy_file(entp, dne)
 #ifdef VM_AND_BUFFER_CACHE_SYNCHRONIZED
 	char *p;
 #endif
-	
+
 	if ((from_fd = open(entp->fts_path, O_RDONLY, 0)) == -1) {
 		warn("%s", entp->fts_path);
 		return (1);
@@ -117,7 +118,7 @@ copy_file(entp, dne)
 	if (fs->st_size <= 8 * 1048576) {
 		if ((p = mmap(NULL, (size_t)fs->st_size, PROT_READ,
 		    0, from_fd, (off_t)0)) == (char *)-1) {
-			warn("%s", entp->fts_path);
+			warn("mmap: %s", entp->fts_path);
 			rval = 1;
 		} else {
 			if (write(to_fd, p, fs->st_size) != fs->st_size) {
@@ -199,7 +200,7 @@ copy_link(p, exists)
 		warn("symlink: %s", link);
 		return (1);
 	}
-	return (0);
+	return (pflag ? setlink(p->fts_statp) : 0);
 }
 
 int
@@ -237,7 +238,7 @@ copy_special(from_stat, exists)
 
 int
 setfile(fs, fd)
-	register struct stat *fs;
+	struct stat *fs;
 	int fd;
 {
 	static struct timeval tv[2];
@@ -271,19 +272,43 @@ setfile(fs, fd)
 		rval = 1;
 	}
 
-	if (fd ?
-	    fchflags(fd, fs->st_flags) : chflags(to.p_path, fs->st_flags)) {
-		warn("chflags: %s", to.p_path);
-		rval = 1;
-	}
+	/*
+	 * XXX
+	 * NFS doesn't support chflags; ignore errors unless there's reason
+	 * to believe we're losing bits.  (Note, this still won't be right
+	 * if the server supports flags and we were trying to *remove* flags
+	 * on a file that we copied, i.e., that we didn't create.)
+	 */
+	errno = 0;
+	if (fd ? fchflags(fd, fs->st_flags) : chflags(to.p_path, fs->st_flags))
+		if (errno != EOPNOTSUPP || fs->st_flags != 0) {
+			warn("chflags: %s", to.p_path);
+			rval = 1;
+		}
 	return (rval);
 }
+
+
+int
+setlink(fs)
+	register struct stat *fs;
+{
+
+	if (lchown(to.p_path, fs->st_uid, fs->st_gid)) {
+		if (errno != EPERM) {
+			warn("lchown: %s", to.p_path);
+			return (1);
+		}
+	}
+	return (0);
+}
+
 
 void
 usage()
 {
 	(void)fprintf(stderr, "%s\n%s\n",
-"usage: cp [-R [-H | -L | -P] [-fip] src target",
-"       cp [-R [-H | -L | -P] [-fip] src1 ... srcN directory");
+	    "usage: cp [-R [-H | -L | -P]] [-fip] src target",
+	    "       cp [-R [-H | -L | -P]] [-fip] src1 ... srcN directory");
 	exit(1);
 }

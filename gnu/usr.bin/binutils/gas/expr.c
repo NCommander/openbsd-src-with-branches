@@ -1,5 +1,5 @@
 /* expr.c -operands, expressions-
-   Copyright (C) 1987, 90, 91, 92, 93, 94, 95, 96, 1997
+   Copyright (C) 1987, 90, 91, 92, 93, 94, 95, 1996
    Free Software Foundation, Inc.
 
    This file is part of GAS, the GNU Assembler.
@@ -37,8 +37,6 @@ static void integer_constant PARAMS ((int radix, expressionS * expressionP));
 static void mri_char_constant PARAMS ((expressionS *));
 static void current_location PARAMS ((expressionS *));
 static void clean_up_expression PARAMS ((expressionS * expressionP));
-static segT operand PARAMS ((expressionS *));
-static operatorT operator PARAMS ((void));
 
 extern const char EXP_CHARS[], FLT_CHARS[];
 
@@ -71,6 +69,8 @@ make_expr_symbol (expressionP)
       && expressionP->X_add_number == 0)
     return expressionP->X_add_symbol;
 
+  /* FIXME: This should be something which decode_local_label_name
+     will handle.  */
   fake = FAKE_LABEL_NAME;
 
   /* Putting constant symbols in absolute_section rather than
@@ -673,24 +673,40 @@ operand (expressionP)
 	case 'b':
 	  if (LOCAL_LABELS_FB && ! flag_m68k_mri)
 	    {
-	      /* This code used to check for '+' and '-' here, and, in
-		 some conditions, fall through to call
-		 integer_constant.  However, that didn't make sense,
-		 as integer_constant only accepts digits.  */
-	      /* Some of our code elsewhere does permit digits greater
-		 than the expected base; for consistency, do the same
-		 here.  */
-	      if (input_line_pointer[1] < '0'
-		  || input_line_pointer[1] > '9')
+	      switch (input_line_pointer[1])
 		{
-		  /* Parse this as a back reference to label 0.  */
-		  input_line_pointer--;
-		  integer_constant (10, expressionP);
-		  break;
+		case '+':
+		case '-':
+		  /* If unambiguously a difference expression, treat
+		     it as one by indicating a label; otherwise, it's
+		     always a binary number.  */
+		  {
+		    char *cp = input_line_pointer + 1;
+		    while (strchr ("0123456789", *++cp))
+		      ;
+		    if (*cp == 'b' || *cp == 'f')
+		      goto is_0b_label;
+		  }
+		  goto is_0b_binary;
+		case '0':    case '1':
+		  /* Some of our code elsewhere does permit digits
+		     greater than the expected base; for consistency,
+		     do the same here.  */
+		case '2':    case '3':    case '4':    case '5':
+		case '6':    case '7':    case '8':    case '9':
+		  goto is_0b_binary;
+		case 0:
+		  goto is_0b_label;
+		default:
+		  goto is_0b_label;
 		}
-	      /* Otherwise, parse this as a binary number.  */
+	    is_0b_label:
+	      input_line_pointer--;
+	      integer_constant (10, expressionP);
+	      break;
+	    is_0b_binary:
+	      ;
 	    }
-	  /* Fall through.  */
 	case 'B':
 	  input_line_pointer++;
 	  if (flag_m68k_mri)
@@ -830,11 +846,8 @@ operand (expressionP)
       if (! flag_m68k_mri)
 	goto de_fault;
       /* Fall through.  */
-    case '~':
-      /* ~ is permitted to start a label on the Delta.  */
-      if (is_name_beginner (c))
-	goto isname;
     case '!':
+    case '~':
     case '-':
       {
 	operand (expressionP);
@@ -1469,7 +1482,7 @@ expr (rank, resultP)
 	       && SEG_NORMAL (S_GET_SEGMENT (right.X_add_symbol)))
 
 	{
-	  resultP->X_add_number -= right.X_add_number;
+	  resultP->X_add_number += right.X_add_number;
 	  resultP->X_add_number += (S_GET_VALUE (resultP->X_add_symbol)
 				    - S_GET_VALUE (right.X_add_symbol));
 	  resultP->X_op = O_constant;
@@ -1606,10 +1619,9 @@ get_symbol_end ()
 
   /* We accept \001 in a name in case this is being called with a
      constructed string.  */
-  if (is_name_beginner (c = *input_line_pointer++) || c == '\001')
-    while (is_part_of_name (c = *input_line_pointer++)
-	   || c == '\001')
-      ;
+  while (is_part_of_name (c = *input_line_pointer++)
+	 || c == '\001')
+    ;
   *--input_line_pointer = 0;
   return (c);
 }

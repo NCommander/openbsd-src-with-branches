@@ -1,11 +1,12 @@
 '\" t
-.TH menu_cursor 3X ""
+.\" $OpenBSD$
+.TH menu_cursor 3 ""
 .SH NAME
 \fBmenu_cursor\fR - position a menu's cursor
 .SH SYNOPSIS
 \fB#include <menu.h>\fR
 .br
-int pos_menu_cursor(MENU *menu);
+int pos_menu_cursor(const MENU *menu);
 .br
 .SH DESCRIPTION
 The function \fBpos_menu_cursor\fR restores the cursor to the current position
@@ -26,7 +27,7 @@ Routine detected an incorrect or out-of-range argument.
 \fBE_NOT_POSTED\fR
 The menu has not been posted.
 .SH SEE ALSO
-\fBcurses\fR(3X), \fBmenu\fR(3X).
+\fBcurses\fR(3), \fBmenu\fR(3).
 .SH NOTES
 The header file \fB<menu.h>\fR automatically includes the header file
 \fB<curses.h>\fR.

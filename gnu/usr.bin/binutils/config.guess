@@ -70,11 +70,11 @@ case "${UNAME_MACHINE}:${UNAME_SYSTEM}:${UNAME_RELEASE}:${UNAME_VERSION}" in
     amiga:OpenBSD:*:*)
 	echo m68k-unknown-openbsd${UNAME_RELEASE}
 	exit 0 ;;
-    arc64:OpenBSD:*:*)
-	echo mips64el-unknown-openbsd${UNAME_RELEASE}
-	exit 0 ;;
     arc:OpenBSD:*:*)
 	echo mipsel-unknown-openbsd${UNAME_RELEASE}
+	exit 0 ;;
+    arc64:OpenBSD:*:*)
+	echo mips64el-unknown-openbsd${UNAME_RELEASE}
 	exit 0 ;;
     hkmips:OpenBSD:*:*)
 	echo mips-unknown-openbsd${UNAME_RELEASE}

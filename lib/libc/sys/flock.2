@@ -41,6 +41,7 @@
 .Nd "apply or remove an advisory lock on an open file"
 .Sh SYNOPSIS
 .Fd #include <sys/file.h>
+
 .Fd #define	LOCK_SH	1	/* shared lock */
 .Fd #define	LOCK_EX	2	/* exclusive lock */
 .Fd #define	LOCK_NB	4	/* don't block when locking */
@@ -131,14 +132,17 @@ The argument
 is an invalid descriptor.
 .It Bq Er EINVAL
 The argument
-.Fa fd
-refers to an object other than a file.
+.Fa operation
+have an invalid value.
+.It Bq Er EOPNOTSUPP
+The referenced descriptor is not of the correct type.
 .El
 .Sh SEE ALSO
 .Xr open 2 ,
 .Xr close 2 ,
 .Xr dup 2 ,
 .Xr execve 2 ,
+.Xr fcntl 2 ,
 .Xr fork 2
 .Sh HISTORY
 The

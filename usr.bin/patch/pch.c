@@ -1,5 +1,7 @@
+/*	$OpenBSD: pch.c,v 1.7 1996/09/24 04:19:29 millert Exp $	*/
+
 #ifndef lint
-static char rcsid[] = "$Id: pch.c,v 1.2 1993/08/02 17:55:21 mycroft Exp $";
+static char rcsid[] = "$OpenBSD: pch.c,v 1.7 1996/09/24 04:19:29 millert Exp $";
 #endif /* not lint */
 
 #include "EXTERN.h"
@@ -304,7 +306,9 @@ intuit_diff_type()
 	    oldname = fetchname(oldtmp, strippath, ok_to_create_file);
 	if (newtmp != Nullch)
 	    newname = fetchname(newtmp, strippath, ok_to_create_file);
-	if (oldname && newname) {
+	if (indname)
+	    filearg[0] = savestr(indname);
+	else if (oldname && newname) {
 	    if (strlen(oldname) < strlen(newname))
 		filearg[0] = savestr(oldname);
 	    else
@@ -314,8 +318,6 @@ intuit_diff_type()
 	    filearg[0] = savestr(oldname);
 	else if (newname)
 	    filearg[0] = savestr(newname);
-	else if (indname)
-	    filearg[0] = savestr(indname);
     }
     if (bestguess) {
 	free(bestguess);
@@ -779,14 +781,16 @@ another_hunk()
 	fillsrc = 1;
 	filldst = fillsrc + p_ptrn_lines;
 	p_end = filldst + p_repl_lines;
-	Sprintf(buf,"*** %ld,%ld ****\n",p_first,p_first + p_ptrn_lines - 1);
+	Snprintf(buf, sizeof buf, "*** %ld,%ld ****\n", p_first,
+	    p_first + p_ptrn_lines - 1);
 	p_line[0] = savestr(buf);
 	if (out_of_mem) {
 	    p_end = -1;
 	    return FALSE;
 	}
 	p_char[0] = '*';
-        Sprintf(buf,"--- %ld,%ld ----\n",p_newfirst,p_newfirst+p_repl_lines-1);
+        Snprintf(buf, sizeof buf, "--- %ld,%ld ----\n", p_newfirst,
+	    p_newfirst + p_repl_lines - 1);
 	p_line[filldst] = savestr(buf);
 	if (out_of_mem) {
 	    p_end = 0;
@@ -918,7 +922,8 @@ another_hunk()
 	    grow_hunkmax();
 	p_newfirst = min;
 	p_repl_lines = max - min + 1;
-	Sprintf(buf, "*** %ld,%ld\n", p_first, p_first + p_ptrn_lines - 1);
+	Snprintf(buf, sizeof buf, "*** %ld,%ld\n", p_first,
+	    p_first + p_ptrn_lines - 1);
 	p_line[0] = savestr(buf);
 	if (out_of_mem) {
 	    p_end = -1;
@@ -950,7 +955,7 @@ another_hunk()
 	    if (*buf != '-')
 		fatal2("--- expected at line %ld of patch\n", p_input_line);
 	}
-	Sprintf(buf, "--- %ld,%ld\n", min, max);
+	Snprintf(buf, sizeof(buf), "--- %ld,%ld\n", min, max);
 	p_line[i] = savestr(buf);
 	if (out_of_mem) {
 	    p_end = i-1;
@@ -1225,9 +1230,9 @@ do_ed_script()
 	Unlink(TMPOUTNAME);
 	copy_file(filearg[0], TMPOUTNAME);
 	if (verbose)
-	    Sprintf(buf, "/bin/ed %s", TMPOUTNAME);
+	    Snprintf(buf, sizeof buf, "/bin/ed %s", TMPOUTNAME);
 	else
-	    Sprintf(buf, "/bin/ed - %s", TMPOUTNAME);
+	    Snprintf(buf, sizeof buf, "/bin/ed - %s", TMPOUTNAME);
 	pipefp = popen(buf, "w");
     }
     for (;;) {

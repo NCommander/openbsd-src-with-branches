@@ -1,4 +1,5 @@
-/*	$NetBSD: vmparam.h,v 1.7 1995/06/21 03:17:06 briggs Exp $	*/
+/*	$OpenBSD: vmparam.h,v 1.3 1997/01/24 01:35:42 briggs Exp $	*/
+/*	$NetBSD: vmparam.h,v 1.8 1996/11/15 14:21:00 briggs Exp $	*/
 
 /*
  * Copyright (c) 1988 University of Utah.
@@ -79,6 +80,8 @@
 /*
  * Machine dependent constants for mac68k -- mostly derived from hp300.
  */
+#ifndef _MAC68K_VMPARAM_H_
+#define _MAC68K_VMPARAM_H_
 
 /*
  * USRTEXT is the start of the user text/data space, while USRSTACK
@@ -266,8 +269,12 @@
 #define VM_KMEM_SIZE		(NKMEMCLUSTERS*CLBYTES)
 #define VM_PHYS_SIZE		(USRIOSIZE*CLBYTES)
 
+#define MACHINE_NONCONTIG	/* VM <=> pmap interface modifier */
+
 /* # of kernel PT pages (initial only, can grow dynamically) */
 #define VM_KERNEL_PT_PAGES	((vm_size_t)2)		/* XXX: SYSPTSIZE */
 
 /* pcb base */
 #define	pcbb(p)		((u_int)(p)->p_addr)
+
+#endif	/* _MAC68K_VMPARAM_H_ */

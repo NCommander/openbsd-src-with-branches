@@ -60,11 +60,9 @@
 #include <sys/file.h>
 #endif
 
-#ifdef SYSV
 #include <fcntl.h>
 #include <unistd.h>
 #include <sys/utsname.h>
-#endif
 
 #include <signal.h>
 #include <math.h>
@@ -72,8 +70,6 @@
 #include <curses.h>
 
 #ifdef SYSV
-#define	index	strchr
-#define	rindex	strrchr
 #define bcopy(a,b,c)	memcpy((b), (a), (c))
 #define	bzero(a,b)	memset((a), '\0', (b))
 #define	srandom	srand

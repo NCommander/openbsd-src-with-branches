@@ -1,5 +1,3 @@
-/*	$NetBSD: clnt_raw.c,v 1.3 1995/02/25 03:01:40 cgd Exp $	*/
-
 /*
  * Sun RPC is a product of Sun Microsystems, Inc. and is provided for
  * unrestricted use provided that this legend is included on all tape
@@ -30,10 +28,8 @@
  */
 
 #if defined(LIBC_SCCS) && !defined(lint)
-/*static char *sccsid = "from: @(#)clnt_raw.c 1.22 87/08/11 Copyr 1984 Sun Micro";*/
-/*static char *sccsid = "from: @(#)clnt_raw.c	2.2 88/08/01 4.0 RPCSRC";*/
-static char *rcsid = "$NetBSD: clnt_raw.c,v 1.3 1995/02/25 03:01:40 cgd Exp $";
-#endif
+static char *rcsid = "$OpenBSD: clnt_raw.c,v 1.7 1997/11/05 10:17:40 deraadt Exp $";
+#endif /* LIBC_SCCS and not lint */
 
 /*
  * clnt_raw.c
@@ -46,6 +42,7 @@ static char *rcsid = "$NetBSD: clnt_raw.c,v 1.3 1995/02/25 03:01:40 cgd Exp $";
  * any interference from the kernal.
  */
 
+#include <stdio.h>
 #include <stdlib.h>
 #include <rpc/rpc.h>
 
@@ -126,6 +123,7 @@ clntraw_create(prog, vers)
 	return (client);
 }
 
+/* ARGSUSED */
 static enum clnt_stat 
 clntraw_call(h, proc, xargs, argsp, xresults, resultsp, timeout)
 	CLIENT *h;
@@ -152,7 +150,7 @@ call_again:
 	XDR_SETPOS(xdrs, 0);
 	((struct rpc_msg *)clp->mashl_callmsg)->rm_xid ++ ;
 	if ((! XDR_PUTBYTES(xdrs, clp->mashl_callmsg, clp->mcnt)) ||
-	    (! XDR_PUTLONG(xdrs, &proc)) ||
+	    (! XDR_PUTLONG(xdrs, (long *)&proc)) ||
 	    (! AUTH_MARSHALL(h->cl_auth, xdrs)) ||
 	    (! (*xargs)(xdrs, argsp))) {
 		return (RPC_CANTENCODEARGS);
@@ -173,8 +171,14 @@ call_again:
 	msg.acpted_rply.ar_verf = _null_auth;
 	msg.acpted_rply.ar_results.where = resultsp;
 	msg.acpted_rply.ar_results.proc = xresults;
-	if (! xdr_replymsg(xdrs, &msg))
+	if (! xdr_replymsg(xdrs, &msg)) {
+		/* xdr_replymsg() may have left some things allocated */
+		int op = xdrs->x_op;
+		xdrs->x_op = XDR_FREE;
+		xdr_replymsg(xdrs, &msg);
+		xdrs->x_op = op;
 		return (RPC_CANTDECODERES);
+	}
 	_seterr_reply(&msg, &error);
 	status = error.re_status;
 
@@ -206,7 +210,7 @@ clntraw_geterr()
 {
 }
 
-
+/* ARGSUSED */
 static bool_t
 clntraw_freeres(cl, xdr_res, res_ptr)
 	CLIENT *cl;

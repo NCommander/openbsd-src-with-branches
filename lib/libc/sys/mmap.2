@@ -33,7 +33,7 @@
 .\"
 .\"	@(#)mmap.2	8.1 (Berkeley) 6/4/93
 .\"
-.Dd "June 4, 1993"
+.Dd June, 4, 1993
 .Dt MMAP 2
 .Os BSD 4
 .Sh NAME
@@ -42,8 +42,8 @@
 .Sh SYNOPSIS
 .Fd #include <sys/types.h>
 .Fd #include <sys/mman.h>
-.Ft caddr_t
-.Fn mmap "caddr_t addr" "size_t len" "int prot" "int flags" "int fd" "off_t offset"
+.Ft void *
+.Fn mmap "void *addr" "size_t len" "int prot" "int flags" "int fd" "off_t offset"
 .Sh DESCRIPTION
 The
 .Nm mmap
@@ -168,10 +168,9 @@ parameter and
 .Fa fd
 was not open for reading.
 The flags
-.Dv PROT_WRITE ,
 .Dv MAP_SHARED
 and
-.Dv MAP_WRITE
+.Dv PROT_WRITE
 were specified as part
 of the
 .Fa flags
@@ -198,7 +197,7 @@ parameter wasn't available.
 .Dv MAP_ANON
 was specified and insufficient memory was available.
 .Sh "SEE ALSO"
-.Xr getpagesize 2 ,
+.Xr getpagesize 3 ,
 .Xr msync 2 ,
 .Xr munmap 2 ,
 .Xr mprotect 2 ,

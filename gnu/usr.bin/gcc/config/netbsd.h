@@ -1,3 +1,5 @@
+/*	$OpenBSD: netbsd.h,v 1.2 1996/04/29 07:09:44 niklas Exp $	*/
+
 /* NETBSD_NATIVE is defined when gcc is integrated into the NetBSD
    source tree so it can be configured appropriately without using
    the GNU configure/build mechanism. */

@@ -1,30 +1,6 @@
 #!/bin/sh -
 #
-#	$NetBSD: netstart,v 1.21 1995/10/08 18:11:40 thorpej Exp $
-#	@(#)netstart	5.9 (Berkeley) 3/30/91
-
-# set these to "NO" to turn them off.  otherwise, they're used as flags
-routed_flags=-q
-rarpd_flags=NO		# for 'normal' use: rarpd_flags="-a"
-bootparamd_flags=NO	# for 'normal' use: bootparamd_flags=""
-rbootd_flags=NO		# for 'normal' use: rbootd_flags=""
-sendmail_flags=NO	# for 'normal' use: sendmail_flags="-bd -q30m"
-named_flags=NO		# for 'normal' use: named_flags=""
-timed_flags=
-
-# set the following to "YES" to turn them on
-rwhod=NO
-nfs_server=NO
-nfs_client=NO
-gated=NO
-kerberos_server=NO
-amd=NO
-
-# miscellaneous other flags
-# only used if the appropriate server is marked YES above
-gated_flags=
-amd_dir=/amd			# AMD's mount directory
-amd_master=/etc/amd/master	# AMD 'master' map
+#	$OpenBSD: netstart,v 1.36 1998/02/23 20:47:35 niklas Exp $
 
 # /etc/myname contains my symbolic name
 #
@@ -34,7 +10,35 @@ if [ -f /etc/defaultdomain ]; then
 	domainname `cat /etc/defaultdomain`
 fi
 
-# configure all of the interfaces which we know about.
+# pick up option configuration
+. /etc/rc.conf
+
+# Configure the IP filter before configuring network interfaces
+#
+if [ X"${ipfilter}" = X"YES" -a -f "${ipfilter_rules}" ]; then
+	echo 'configuring IP filter'
+	ipf -Fa -f ${ipfilter_rules} -E
+else
+	ipfilter=NO
+fi
+
+# Configure NAT before configuring network interfaces
+#
+if [ "${ipnat}" = "YES" -a "${ipfilter}" = "YES" -a -f "${ipnat_rules}" ]; then
+	echo 'configuring NAT'
+	ipnat -CF -f ${ipnat_rules}
+else
+	ipnat=NO
+fi
+
+# set the address for the loopback interface
+ifconfig lo0 inet localhost
+
+# use loopback, not the wire
+route add -host $hostname localhost
+route add -net 127 127.0.0.1 -reject
+
+# configure all of the non-loopback interfaces which we know about.
 # do this by reading /etc/hostname.* files, where * is the name
 # of a given interface.
 #
@@ -68,7 +72,7 @@ fi
         shift            # get rid of "hostname"
         (
             read af name mask bcaddr extras
-            read dt dtaddr 
+            read dt dtaddr
 
             if [ ! -n "$name" ]; then
                 echo "/etc/hostname.$1: invalid network configuration file"
@@ -89,14 +93,11 @@ fi
     done
 )
 
-# set the address for the loopback interface
-ifconfig lo0 inet localhost
-
-# use loopback, not the wire
-route add $hostname localhost
-
 # /etc/mygate, if it exists, contains the name of my gateway host
 # that name must be in /etc/hosts.
 if [ -f /etc/mygate ]; then
-	route add default `cat /etc/mygate`
+	route add -host default `cat /etc/mygate`
 fi
+
+# default multicast route
+route add -net 224.0.0.0 -interface $hostname

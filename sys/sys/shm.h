@@ -1,4 +1,5 @@
-/*	$NetBSD: shm.h,v 1.18 1995/03/26 20:24:41 jtc Exp $	*/
+/*	$OpenBSD: shm.h,v 1.3 1996/04/21 22:31:57 deraadt Exp $	*/
+/*	$NetBSD: shm.h,v 1.20 1996/04/09 20:55:35 cgd Exp $	*/
 
 /*
  * Copyright (c) 1994 Adam Glass
@@ -44,9 +45,15 @@
 #define	SHM_RND		020000	/* Round attach address to SHMLBA */
 #define	SHMLBA		CLBYTES	/* Segment low boundry address multiple */
 
+/* "official" access mode definitions; somewhat braindead since you have
+   to specify (SHM_* >> 3) for group and (SHM_* >> 6) for world permissions */
+#define SHM_R		(IPC_R)
+#define SHM_W		(IPC_W)
+
 /* Some systems (e.g. HP-UX) take these as the second (cmd) arg to shmctl(). */
 #define	SHM_LOCK	3	/* Lock segment in memory. */
 #define	SHM_UNLOCK	4	/* Unlock a segment locked by SHM_LOCK. */
+
 
 struct shmid_ds {
 	struct ipc_perm	shm_perm;	/* operation permission structure */
@@ -75,6 +82,10 @@ struct shminfo {
 };
 struct shminfo shminfo;
 struct shmid_ds *shmsegs;
+
+void shminit __P((void));
+void shmfork __P((struct proc *, struct proc *));
+void shmexit __P((struct proc *));
 
 #else /* !_KERNEL */
 

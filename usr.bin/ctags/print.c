@@ -1,3 +1,4 @@
+/*	$OpenBSD: print.c,v 1.2 1996/06/26 05:32:30 deraadt Exp $	*/
 /*	$NetBSD: print.c,v 1.4 1995/09/27 01:06:58 jtc Exp $	*/
 
 /*
@@ -37,7 +38,7 @@
 #if 0
 static char sccsid[] = "@(#)print.c	8.3 (Berkeley) 4/2/94";
 #else 
-static char rcsid[] = "$NetBSD: print.c,v 1.4 1995/09/27 01:06:58 jtc Exp $";
+static char rcsid[] = "$OpenBSD: print.c,v 1.2 1996/06/26 05:32:30 deraadt Exp $";
 #endif
 #endif /* not lint */
 
@@ -65,7 +66,7 @@ getline()
 	saveftell = ftell(inf);
 	(void)fseek(inf, lineftell, SEEK_SET);
 	if (xflag)
-		for (cp = lbuf; GETC(!=, '\n'); *cp++ = c)
+		for (cp = lbuf; GETC(!=, EOF) && c != '\n'; *cp++ = c)
 			continue;
 	/*
 	 * do all processing here, so we don't step through the

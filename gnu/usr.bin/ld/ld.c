@@ -1,3 +1,5 @@
+/*	$NetBSD: ld.c,v 1.52 1998/02/20 03:12:51 jonathan Exp $	*/
+
 /*-
  * This code is derived from software copyrighted by the Free Software
  * Foundation.
@@ -8,7 +10,9 @@
  */
 
 #ifndef lint
+#if 0
 static char sccsid[] = "@(#)ld.c	6.10 (Berkeley) 5/22/91";
+#endif
 #endif /* not lint */
 
 /* Linker `ld' for GNU
@@ -31,10 +35,6 @@ static char sccsid[] = "@(#)ld.c	6.10 (Berkeley) 5/22/91";
 /* Written by Richard Stallman with some help from Eric Albert.
    Set, indirect, and warning symbol features added by Randy Smith. */
 
-/*
- *	$Id: ld.c,v 1.44 1995/08/04 21:49:00 pk Exp $
- */
-   
 /* Define how to initialize system-dependent header fields.  */
 
 #include <sys/param.h>
@@ -54,6 +54,9 @@ static char sccsid[] = "@(#)ld.c	6.10 (Berkeley) 5/22/91";
 #include <a.out.h>
 #include <stab.h>
 #include <string.h>
+
+#define GNU_BINUTIL_COMPAT	/* forwards compatiblity with binutils 2.x */
+/*#define DEBUG_COMPAT*/
 
 #include "ld.h"
 
@@ -232,6 +235,18 @@ int	specified_data_size;
 
 long	*set_vectors;
 int	setv_fill_count;
+
+/*
+ * Control warnings if we see syntax obsolete in GNU binutils, or if
+ * our forwards-compatible emulation of binutils flags is not
+ * completely faithful.
+ */
+int	warn_obsolete_syntax = 0;
+#ifdef DEBUG_COMPAT
+int	warn_forwards_compatible_inexact = 1;
+#else
+int	warn_forwards_compatible_inexact = 0;
+#endif
 
 static void	decode_option __P((char *, char *));
 static void	decode_command __P((int, char **));
@@ -449,6 +464,21 @@ classify_arg(arg)
 		if (!strcmp(&arg[2], "data"))
 			return 2;
 		return 1;
+
+	/* GNU binutils 2.x  forward-compatible flags. */
+	case 'r':
+		/* Ignore "-rpath" and hope ld.so.conf will cover our sins. */
+		if (!strcmp(&arg[1], "rpath"))
+			return 2;
+		return 1;
+
+	case 's':
+		/* Treat "-shared" and "-soname' like binutils 2.x does. */
+		if (!strcmp(&arg[1], "shared"))
+			return 1;
+		if (!strcmp(&arg[1], "soname"))
+			return 2;
+		break;
 	}
 
 	return 1;
@@ -626,10 +656,46 @@ decode_option(swt, arg)
 		return;
 	if (!strcmp(swt + 1, "Bforcearchive"))
 		return;
-	if (!strcmp(swt + 1, "Bshareable"))
+	if (!strcmp(swt + 1, "Bshareable")) {
+		if (warn_obsolete_syntax)
+			warnx("-Bshareable: obsolete syntax");
 		return;
+	}			
 	if (!strcmp(swt + 1, "assert"))
 		return;
+#ifdef GNU_BINUTIL_COMPAT
+	if (strcmp(swt + 1, "-whole-archive") == 0) {
+		/* XXX incomplete emulation */
+		link_mode |= FORCEARCHIVE;
+		if (warn_forwards_compatible_inexact)
+			warnx("-no-whole-archive treated as -Bshareable");
+		return;
+	}
+	if (strcmp(swt + 1, "-no-whole-archive") == 0) {
+		/* XXX incomplete emulation */
+		if (warn_forwards_compatible_inexact)
+			warnx("-no-whole-archive ignored");
+		return;
+	}
+	if (strcmp(swt + 1, "shared") == 0) {
+		link_mode |= SHAREABLE;
+#ifdef DEBUG_COMPAT
+		warnx("-shared treated as -Bshareable");
+#endif
+		return;
+	}
+	if (strcmp(swt + 1, "soname") == 0) {
+		if (warn_forwards_compatible_inexact)
+			warnx("-soname %s ignored", arg);
+		return;
+	}
+	if (strcmp(swt + 1, "rpath") == 0) {
+		if (warn_forwards_compatible_inexact)
+			warnx("%s %s ignored", swt, arg);
+		goto do_rpath;
+	}
+#endif /* GNU_BINUTIL_COMPAT */
+
 #ifdef SUN_COMPAT
 	if (!strcmp(swt + 1, "Bsilly"))
 		return;
@@ -689,6 +755,7 @@ decode_option(swt, arg)
 		return;
 
 	case 'R':
+do_rpath:
 		rrs_search_paths = (rrs_search_paths == NULL)
 			? strdup(arg)
 			: concat(rrs_search_paths, ":", arg);
@@ -1364,7 +1431,8 @@ enter_global_ref(lsp, name, entry)
 			lsp->nzlist.nz_value = 0;
 			make_executable = 0;
 		} else {
-			global_alias_count++;
+			if ((entry->flags & E_DYNAMIC) == 0)
+				global_alias_count++;
 		}
 #if 0
 		if (sp->flags & GS_REFERENCED)
@@ -1400,7 +1468,8 @@ enter_global_ref(lsp, name, entry)
 			if (com)
 				common_defined_global_count--;
 			sp->common_size = 0;
-			sp->defined = 0;
+			if (sp != dynamic_symbol)
+				sp->defined = 0;
 		}
 
 		/*
@@ -1693,8 +1762,7 @@ digest_symbols()
 	 */
 
 	if (page_align_segments || page_align_data) {
-		int  text_end = text_size + N_TXTOFF(outheader);
-		text_pad = PALIGN(text_end, page_size) - text_end;
+		text_pad = PALIGN(text_size, page_size) - text_size;
 		text_size += text_pad;
 	}
 	outheader.a_text = text_size;
@@ -1891,7 +1959,14 @@ digest_pass1()
 			}
 		}
 
-		if (sp->defined) {
+		/*
+		 * If this symbol has acquired final definition, we're done.
+		 * Commons must be allowed to bind to shared object data
+		 * definitions.
+		 */
+		if (sp->defined &&
+		    (sp->common_size == 0 ||
+		     relocatable_output || building_shared_object)) {
 			if ((sp->defined & N_TYPE) == N_SETV)
 				/* Allocate zero entry in set vector */
 				setv_fill_count++;
@@ -1924,7 +1999,7 @@ digest_pass1()
 			continue;
 		}
 
-		spsave=sp;
+		spsave=sp; /*XXX*/
 	again:
 		for (lsp = sp->sorefs; lsp; lsp = lsp->next) {
 			register struct nlist *p = &lsp->nzlist.nlist;
@@ -1933,6 +2008,27 @@ digest_pass1()
 			if ((type & N_EXT) && type != (N_UNDF | N_EXT) &&
 			    (type & N_TYPE) != N_FN) {
 				/* non-common definition */
+				if (sp->common_size) {
+					/*
+					 * This common has an so defn; switch
+					 * to it iff defn is: data, first-class
+					 * and not weak.
+					 */
+					if (N_AUX(p) != AUX_OBJECT ||
+					    N_ISWEAK(p) ||
+					    (lsp->entry->flags & E_SECONDCLASS))
+						continue;
+
+					/*
+					 * Change common to so ref. First,
+					 * downgrade common to undefined.
+					 */
+					sp->common_size = 0;
+					sp->defined = 0;
+					common_defined_global_count--;
+					undefined_global_sym_count++;
+				}
+
 				sp->def_lsp = lsp;
 				sp->so_defined = type;
 				sp->aux = N_AUX(p);
@@ -1952,9 +2048,9 @@ printf("pass1: SO definition for %s, type %x in %s at %#x\n",
 	sp->def_lsp->nzlist.nz_value);
 #endif
 			sp->def_lsp->entry->flags |= E_SYMBOLS_USED;
-			if (sp->flags & GS_REFERENCED)
+			if (sp->flags & GS_REFERENCED) {
 				undefined_global_sym_count--;
-			else
+			} else
 				sp->flags |= GS_REFERENCED;
 			if (undefined_global_sym_count < 0)
 				errx(1, "internal error: digest_pass1,2: "
@@ -1965,8 +2061,19 @@ printf("pass1: SO definition for %s, type %x in %s at %#x\n",
 				sp = sp->alias;
 				goto again;
 			}
+		} else if (sp->defined) {
+			if (sp->common_size == 0)
+				errx(1, "internal error: digest_pass1,3: "
+					"%s: not a common: %x",
+					sp->name, sp->defined);
+			/*
+			 * Common not bound to shared object data; treat
+			 * it now like other defined symbols were above.
+			 */
+			if (!sp->alias)
+				defined_global_sym_count++;
 		}
-		sp=spsave;
+		sp=spsave; /*XXX*/
 	} END_EACH_SYMBOL;
 
 	if (setv_fill_count != set_sect_size/sizeof(long))
@@ -2227,7 +2334,7 @@ consider_file_section_lengths(entry)
 	entry->data_start_address = data_size;
 	data_size += entry->header.a_data;
 	entry->bss_start_address = bss_size;
-	bss_size += entry->header.a_bss;
+	bss_size += MALIGN(entry->header.a_bss);
 
 	text_reloc_size += entry->header.a_trsize;
 	data_reloc_size += entry->header.a_drsize;
@@ -2320,6 +2427,10 @@ digest_pass2()
 			 * compute the correct number of symbol table entries.
 			 */
 			if (!sp->defined) {
+				if (building_shared_object &&
+				    !sp->alias->defined)
+					/* Exclude aliases in shared objects */
+					continue;
 				/*
 				 * Change aliased symbol's definition too.
 				 * These things happen if shared object commons
@@ -2734,7 +2845,6 @@ copy_data(entry)
  * relocation info, in core. NRELOC says how many there are.
  */
 
-/* HACK: md.c may need access to this */
 int	pc_relocation;
 
 void
@@ -2754,9 +2864,9 @@ perform_relocation(data, data_size, reloc, nreloc, entry, dataseg)
 	int data_relocation = entry->data_start_address - entry->header.a_text;
 	int bss_relocation = entry->bss_start_address -
 				entry->header.a_text - entry->header.a_data;
-	pc_relocation = dataseg?
-			entry->data_start_address - entry->header.a_text:
-			entry->text_start_address;
+	pc_relocation = dataseg
+			? entry->data_start_address - entry->header.a_text
+			: entry->text_start_address;
 
 	for (; r < end; r++) {
 		int	addr = RELOC_ADDRESS(r);
@@ -2933,7 +3043,7 @@ perform_relocation(data, data_size, reloc, nreloc, entry, dataseg)
 			case N_DATA:
 			case N_DATA | N_EXT:
 				/*
-				 * A word that points to beginning of the the
+				 * A word that points to beginning of the
 				 * data section initially contains not 0 but
 				 * rather the "address" of that section in
 				 * the input file, which is the length of the
@@ -3120,18 +3230,6 @@ coptxtrel(entry)
 				RELOC_SYMBOL(r) = (sp->defined & N_TYPE);
 			} else
 				RELOC_SYMBOL(r) = sp->symbolnum;
-#ifdef RELOC_ADD_EXTRA
-			/*
-			 * If we aren't going to be adding in the
-			 * value in memory on the next pass of the
-			 * loader, then we need to add it in from the
-			 * relocation entry, unless the symbol remains
-			 * external in our output. Otherwise the work we
-			 * did in this pass is lost.
-			 */
-			if (!RELOC_MEMORY_ADD_P(r) && !RELOC_EXTERN_P(r))
-				RELOC_ADD_EXTRA(r) += sp->value;
-#endif
 		} else
 			/*
 			 * Global symbols come first.

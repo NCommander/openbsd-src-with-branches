@@ -98,7 +98,7 @@ main(argc, argv)
 	/*
 	 *  Parse any arguments.
 	 */
-	while ((c = getopt(argc, argv, "adi:")) != EOF)
+	while ((c = getopt(argc, argv, "adi:")) != -1)
 		switch(c) {
 		    case 'a':
 			BootAny++;
@@ -114,7 +114,7 @@ main(argc, argv)
 		if (ConfigFile == NULL)
 			ConfigFile = argv[optind];
 		else {
-			warnx("too many config files (`%s' ignored)\n",
+			warnx("too many config files (`%s' ignored)",
 			    argv[optind]);
 		}
 	}

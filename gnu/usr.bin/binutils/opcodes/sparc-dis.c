@@ -1,5 +1,5 @@
 /* Print SPARC instructions.
-   Copyright (C) 1989, 91-94, 1995, 1996, 1997 Free Software Foundation, Inc.
+   Copyright (C) 1989, 91-93, 1995, 1996 Free Software Foundation, Inc.
 
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -15,13 +15,11 @@ You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
 
-#include <stdio.h>
-
 #include "ansidecl.h"
-#include "sysdep.h"
 #include "opcode/sparc.h"
 #include "dis-asm.h"
 #include "libiberty.h"
+#include <string.h>
 
 /* Bitmask of v9 architectures.  */
 #define MASK_V9 ((1 << SPARC_OPCODE_ARCH_V9) \
@@ -46,12 +44,7 @@ struct opcode_hash {
   struct sparc_opcode *opcode;
 };
 static struct opcode_hash *opcode_hash_table[HASH_SIZE];
-
-static void build_hash_table
-  PARAMS ((struct sparc_opcode *, struct opcode_hash **, int));
-static int is_delayed_branch PARAMS ((unsigned long));
-static int compare_opcodes PARAMS ((const PTR, const PTR));
-static int compute_arch_mask PARAMS ((unsigned long));
+static void build_hash_table ();
 
 /* Sign-extend a value which is N bits long.  */
 #define	SEX(value, bits) \
@@ -184,10 +177,12 @@ is_delayed_branch (insn)
 }
 
 /* extern void qsort (); */
+static int compare_opcodes ();
 
 /* Records current mask of SPARC_OPCODE_ARCH_FOO values, used to pass value
    to compare_opcodes.  */
 static unsigned int current_arch_mask;
+static int compute_arch_mask ();
 
 /* Print one instruction from MEMADDR on INFO->STREAM.
 
@@ -439,7 +434,7 @@ print_insn_sparc (memaddr, info)
 		    {
 		      int mask = X_MEMBAR (insn);
 		      int bit = 0x40, printed_one = 0;
-		      const char *name;
+		      char *name;
 
 		      if (mask == 0)
 			(info->fprintf_func) (stream, "0");
@@ -524,7 +519,7 @@ print_insn_sparc (memaddr, info)
 
 		  case '*':
 		    {
-		      const char *name = sparc_decode_prefetch (X_RD (insn));
+		      char *name = sparc_decode_prefetch (X_RD (insn));
 
 		      if (name)
 			(*info->fprintf_func) (stream, "%s", name);
@@ -558,7 +553,7 @@ print_insn_sparc (memaddr, info)
 
 		  case 'A':
 		    {
-		      const char *name = sparc_decode_asi (X_ASI (insn));
+		      char *name = sparc_decode_asi (X_ASI (insn));
 
 		      if (name)
 			(*info->fprintf_func) (stream, "%s", name);
@@ -609,7 +604,7 @@ print_insn_sparc (memaddr, info)
 		  case 'U':
 		    {
 		      int val = *s == 'U' ? X_RS1 (insn) : X_RD (insn);
-		      const char *name = sparc_decode_sparclet_cpreg (val);
+		      char *name = sparc_decode_sparclet_cpreg (val);
 
 		      if (name)
 			(*info->fprintf_func) (stream, "%s", name);
@@ -736,8 +731,7 @@ compute_arch_mask (mach)
 
 static int
 compare_opcodes (a, b)
-     const PTR a;
-     const PTR b;
+     char *a, *b;
 {
   struct sparc_opcode *op0 = (struct sparc_opcode *) a;
   struct sparc_opcode *op1 = (struct sparc_opcode *) b;

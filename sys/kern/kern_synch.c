@@ -1,4 +1,5 @@
-/*	$NetBSD: kern_synch.c,v 1.33 1995/06/08 23:51:03 mycroft Exp $	*/
+/*	$OpenBSD: kern_synch.c,v 1.11 1997/11/06 05:58:19 csapuntz Exp $	*/
+/*	$NetBSD: kern_synch.c,v 1.37 1996/04/22 01:38:37 christos Exp $	*/
 
 /*-
  * Copyright (c) 1982, 1986, 1990, 1991, 1993
@@ -47,7 +48,7 @@
 #include <sys/buf.h>
 #include <sys/signalvar.h>
 #include <sys/resourcevar.h>
-#include <sys/vmmeter.h>
+#include <vm/vm.h>
 #ifdef KTRACE
 #include <sys/ktrace.h>
 #endif
@@ -56,6 +57,11 @@
 
 u_char	curpriority;		/* usrpri of curproc */
 int	lbolt;			/* once a second sleep address */
+
+void roundrobin __P((void *));
+void schedcpu __P((void *));
+void updatepri __P((struct proc *));
+void endtsleep __P((void *));
 
 /*
  * Force switch among equal priority processes every 100ms.
@@ -168,7 +174,6 @@ schedcpu(arg)
 	register int s;
 	register unsigned int newcpu;
 
-	wakeup((caddr_t)&lbolt);
 	for (p = allproc.lh_first; p != 0; p = p->p_list.le_next) {
 		/*
 		 * Increment time in/out of memory and sleep time
@@ -208,7 +213,7 @@ schedcpu(arg)
 			    p->p_stat == SRUN &&
 			    (p->p_flag & P_INMEM) &&
 			    (p->p_priority / PPQ) != (p->p_usrpri / PPQ)) {
-				remrq(p);
+				remrunqueue(p);
 				p->p_priority = p->p_usrpri;
 				setrunqueue(p);
 			} else
@@ -217,8 +222,7 @@ schedcpu(arg)
 		splx(s);
 	}
 	vmmeter();
-	if (bclnlist != NULL)
-		wakeup((caddr_t)pageproc);
+	wakeup((caddr_t)&lbolt);
 	timeout(schedcpu, (void *)0, hz);
 }
 
@@ -287,7 +291,7 @@ tsleep(ident, priority, wmesg, timo)
 {
 	register struct proc *p = curproc;
 	register struct slpque *qp;
-	register s;
+	register int s;
 	int sig, catch = priority & PCATCH;
 	extern int cold;
 	void endtsleep __P((void *));
@@ -335,7 +339,7 @@ tsleep(ident, priority, wmesg, timo)
 	 */
 	if (catch) {
 		p->p_flag |= P_SINTR;
-		if (sig = CURSIG(p)) {
+		if ((sig = CURSIG(p)) != 0) {
 			if (p->p_wchan)
 				unsleep(p);
 			p->p_stat = SRUN;
@@ -352,7 +356,7 @@ tsleep(ident, priority, wmesg, timo)
 	mi_switch();
 #ifdef	DDB
 	/* handy breakpoint location after process "wakes" */
-	asm(".globl bpendtsleep ; bpendtsleep:");
+	__asm(".globl bpendtsleep ; bpendtsleep:");
 #endif
 resume:
 	curpriority = p->p_usrpri;
@@ -369,7 +373,7 @@ resume:
 		}
 	} else if (timo)
 		untimeout(endtsleep, (void *)p);
-	if (catch && (sig != 0 || (sig = CURSIG(p)))) {
+	if (catch && (sig != 0 || (sig = CURSIG(p)) != 0)) {
 #ifdef KTRACE
 		if (KTRPOINT(p, KTR_CSW))
 			ktrcsw(p->p_tracep, 0, 0);
@@ -420,7 +424,7 @@ sleep(ident, priority)
 {
 	register struct proc *p = curproc;
 	register struct slpque *qp;
-	register s;
+	register int s;
 	extern int cold;
 
 #ifdef DIAGNOSTIC
@@ -465,7 +469,7 @@ sleep(ident, priority)
 	mi_switch();
 #ifdef	DDB
 	/* handy breakpoint location after process "wakes" */
-	asm(".globl bpendsleep ; bpendsleep:");
+	__asm(".globl bpendsleep ; bpendsleep:");
 #endif
 #ifdef KTRACE
 	if (KTRPOINT(p, KTR_CSW))
@@ -513,9 +517,9 @@ wakeup(ident)
 	s = splhigh();
 	qp = &slpque[LOOKUP(ident)];
 restart:
-	for (q = &qp->sq_head; p = *q; ) {
+	for (q = &qp->sq_head; (p = *q) != NULL; ) {
 #ifdef DIAGNOSTIC
-		if (p->p_back || p->p_stat != SSLEEP && p->p_stat != SSTOP)
+		if (p->p_back || (p->p_stat != SSLEEP && p->p_stat != SSTOP))
 			panic("wakeup");
 #endif
 		if (p->p_wchan == ident) {
@@ -683,39 +687,83 @@ resetpriority(p)
 }
 
 #ifdef DDB
+#include <machine/db_machdep.h>
+
+#include <ddb/db_interface.h>
+#include <ddb/db_output.h>
+
 void
 db_show_all_procs(addr, haddr, count, modif)
-	long addr;
+	db_expr_t addr;
 	int haddr;
-	int count;
+	db_expr_t count;
 	char *modif;
 {
-	int map = modif[0] == 'm';
+	char *mode;
 	int doingzomb = 0;
 	struct proc *p, *pp;
     
+	if (modif[0] == 0)
+		modif[0] = 'n';			/* default == normal mode */
+
+	mode = "mawn";
+	while (*mode && *mode != modif[0])
+		mode++;
+	if (*mode == 0 || *mode == 'm') {
+		db_printf("usage: show all procs [/a] [/n] [/w]\n");
+		db_printf("\t/a == show process address info\n");
+		db_printf("\t/n == show normal process info [default]\n");
+		db_printf("\t/w == show process wait/emul info\n");
+		return;
+	}
+	
 	p = allproc.lh_first;
-	db_printf("  pid proc     addr     %s comm         wchan\n",
-	    map ? "map     " : "uid  ppid  pgrp  flag stat em ");
+
+	switch (*mode) {
+
+	case 'a':
+		db_printf("PID        %10s %18s %18s %18s\n",
+		    "COMMAND", "STRUCT PROC *", "UAREA *", "VMSPACE/VM_MAP");
+		break;
+	case 'n':
+		db_printf("PID        %10s %10s %10s S %7s %16s %7s\n",
+		    "PPID", "PGRP", "UID", "FLAGS", "COMMAND", "WAIT");
+		break;
+	case 'w':
+		db_printf("PID        %16s %8s %18s %s\n",
+		    "COMMAND", "EMUL", "WAIT-CHANNEL", "WAIT-MSG");
+		break;
+	}
+
 	while (p != 0) {
 		pp = p->p_pptr;
 		if (p->p_stat) {
-			db_printf("%5d %06x %06x ",
-			    p->p_pid, p, p->p_addr);
-			if (map)
-				db_printf("%06x %s   ",
-				    p->p_vmspace, p->p_comm);
-			else
-				db_printf("%3d %5d %5d  %06x  %d  %s  %s   ",
-				    p->p_cred->p_ruid, pp ? pp->p_pid : -1,
-				    p->p_pgrp->pg_id, p->p_flag, p->p_stat,
-				    p->p_emul->e_name, p->p_comm);
-			if (p->p_wchan) {
-				if (p->p_wmesg)
-					db_printf("%s ", p->p_wmesg);
-				db_printf("%x", p->p_wchan);
+
+			db_printf("%-10d ", p->p_pid);
+
+			switch (*mode) {
+
+			case 'a':
+				db_printf("%10.10s %18p %18p %18p\n",
+				    p->p_comm, p, p->p_addr, p->p_vmspace);
+				break;
+
+			case 'n':
+				db_printf("%10d %10d %10d %d %#7x %16s %7.7s\n",
+				    pp ? pp->p_pid : -1, p->p_pgrp->pg_id,
+				    p->p_cred->p_ruid, p->p_stat, p->p_flag,
+				    p->p_comm, (p->p_wchan && p->p_wmesg) ?
+					p->p_wmesg : "");
+				break;
+
+			case 'w':
+				db_printf("%16s %8s %18p %s\n", p->p_comm,
+				    p->p_emul->e_name, p->p_wchan,
+				    (p->p_wchan && p->p_wmesg) ? 
+					p->p_wmesg : "");
+				break;
+
 			}
-			db_printf("\n");
 		}
 		p = p->p_list.le_next;
 		if (p == 0 && doingzomb == 0) {

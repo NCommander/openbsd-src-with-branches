@@ -1,3 +1,6 @@
+/*	$OpenBSD: ext.h,v 1.4 1998/03/12 04:53:10 art Exp $	*/
+/*	$NetBSD: ext.h,v 1.6 1996/02/28 20:38:13 thorpej Exp $	*/
+
 /*
  * Copyright (c) 1989, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -30,8 +33,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  *
- *	from: @(#)ext.h	8.1 (Berkeley) 6/4/93
- *	$Id: ext.h,v 1.4 1994/02/25 03:20:47 cgd Exp $
+ *	from: @(#)ext.h	8.2 (Berkeley) 12/15/93
  */
 
 /*
@@ -90,13 +92,8 @@ extern int	pty, net;
 extern char	*line;
 extern int	SYNCHing;		/* we are in TELNET SYNCH mode */
 
-#ifndef	P
-# ifdef	__STDC__
-#  define P(x)	x
-# else
-#  define P(x)	()
-# endif
-#endif
+#include <sys/cdefs.h>
+#define P __P
 
 extern void
 	_termstat P((void)),
@@ -126,7 +123,7 @@ extern void
 #ifdef DIAGNOSTICS
 	printoption P((char *, int)),
 	printdata P((char *, char *, int)),
-	printsub P((int, unsigned char *, int)),
+	printsub P((char, unsigned char *, int)),
 #endif
 	ptyflush P((void)),
 	putchr P((int)),
@@ -156,11 +153,13 @@ extern void
 
 extern int
 	end_slc P((unsigned char **)),
+	getent P((char *, char *)),
 	getnpty P((void)),
 #ifndef convex
 	getpty P((int *)),
 #endif
 	login_tty P((int)),
+	output_data P((const char *, ...)),
 	spcset P((int, cc_t *, cc_t **)),
 	stilloob P((int)),
 	terminit P((void)),
@@ -192,7 +191,11 @@ extern void
 	wontoption P((int)),
 	writenet P((unsigned char *, int));
 
-
+#ifdef ENCRYPTION
+extern void     (*encrypt_output) (unsigned char *, int);
+extern int      (*decrypt_input) (int);
+extern char     *nclearto;
+#endif
 
 /*
  * The following are some clocks used to decide how to interpret

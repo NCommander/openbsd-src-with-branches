@@ -1,3 +1,4 @@
+/*	$OpenBSD: vm_param.h,v 1.13 1997/12/12 08:46:00 deraadt Exp $	*/
 /*	$NetBSD: vm_param.h,v 1.12 1995/03/26 20:39:16 jtc Exp $	*/
 
 /* 
@@ -35,7 +36,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  *
- *	@(#)vm_param.h	8.1 (Berkeley) 6/11/93
+ *	@(#)vm_param.h	8.2 (Berkeley) 1/9/95
  *
  *
  * Copyright (c) 1987, 1990 Carnegie-Mellon University.
@@ -76,9 +77,13 @@
 /*
  * This belongs in types.h, but breaks too many existing programs.
  */
-typedef int	boolean_t;
+typedef	int	boolean_t;
+#ifndef TRUE
 #define	TRUE	1
+#endif
+#ifndef FALSE
 #define	FALSE	0
+#endif
 
 /*
  *	The machine independent pages are refered to as PAGES.  A page
@@ -91,10 +96,17 @@ typedef int	boolean_t;
  *	or PAGE_SHIFT.  The fact they are variables is hidden here so that
  *	we can easily make them constant if we so desire.
  */
+#if defined(UVM)
+#define	PAGE_SIZE	uvmexp.pagesize		/* size of page */
+#define	PAGE_MASK	uvmexp.pagemask		/* size of page - 1 */
+#define	PAGE_SHIFT	uvmexp.pageshift	/* bits to shift for pages */
+#else
 #define	PAGE_SIZE	cnt.v_page_size		/* size of page */
 #define	PAGE_MASK	page_mask		/* size of page - 1 */
 #define	PAGE_SHIFT	page_shift		/* bits to shift for pages */
-#ifdef _KERNEL
+#endif
+
+#if defined(_KERNEL) && !defined(UVM)
 extern vm_size_t	page_mask;
 extern int		page_shift;
 #endif
@@ -104,13 +116,38 @@ extern int		page_shift;
  */
 #define	VM_METER	1		/* struct vmmeter */
 #define	VM_LOADAVG	2		/* struct loadavg */
-#define	VM_MAXID	3		/* number of valid vm ids */
+#define	VM_PSSTRINGS	3		/* PSSTRINGS */
+#if !defined(UVM)
+#define	VM_MAXID	4		/* number of valid vm ids */
 
 #define	CTL_VM_NAMES { \
 	{ 0, 0 }, \
 	{ "vmmeter", CTLTYPE_STRUCT }, \
 	{ "loadavg", CTLTYPE_STRUCT }, \
+	{ "psstrings", CTLTYPE_STRUCT }, \
 }
+
+#else
+
+#define VM_UVMEXP	4		/* struct uvmexp */
+#define	VM_MAXID	5		/* number of valid vm ids */
+
+#define	CTL_VM_NAMES { \
+	{ 0, 0 }, \
+	{ "vmmeter", CTLTYPE_STRUCT }, \
+	{ "loadavg", CTLTYPE_STRUCT }, \
+	{ "psstrings", CTLTYPE_STRUCT }, \
+	{ "uvmexp", CTLTYPE_STRUCT }, \
+}
+
+#endif
+
+
+struct _ps_strings {
+	void	*val;
+};
+
+#define SWAPSKIPBYTES	8192	/* never use at the start of a swap space */
 
 /* 
  *	Return values from the VM routines.
@@ -124,6 +161,7 @@ extern int		page_shift;
 #define	KERN_RESOURCE_SHORTAGE	6
 #define	KERN_NOT_RECEIVER	7
 #define	KERN_NO_ACCESS		8
+#define	KERN_PAGES_LOCKED	9
 
 #ifndef ASSEMBLER
 /*

@@ -1,3 +1,4 @@
+/*	$OpenBSD: machdep.c,v 1.11 1997/10/21 11:00:10 pefo Exp $	*/
 /*	$NetBSD: machdep.c,v 1.4 1996/10/16 19:33:11 ws Exp $	*/
 
 /*
@@ -51,13 +52,25 @@
 #include <vm/vm.h>
 #include <vm/vm_kern.h>
 
+#ifdef SYSVSHM
+#include <sys/shm.h>
+#endif
+#ifdef SYSVSEM
+#include <sys/sem.h>
+#endif
+#ifdef SYSVMSG
+#include <sys/msg.h>
+#endif
 #include <net/netisr.h>
 
 #include <machine/bat.h>
 #include <machine/pmap.h>
 #include <machine/powerpc.h>
 #include <machine/trap.h>
+#include <machine/autoconf.h>
+#include <machine/pio.h>
 
+#include <powerpc/pci/mpc106reg.h>
 /*
  * Global variables used here and there
  */
@@ -66,13 +79,19 @@ struct pmap *curpm;
 struct proc *fpuproc;
 
 extern struct user *proc0paddr;
+extern int cold;
 
 struct bat battable[16];
 
 int astpending;
 
+int system_type = POWER4e;	/* XXX Hardwire it for now */
+
+char ofw_eth_addr[6];		/* Save address of first network ifc found */
 char *bootpath;
 char bootpathbuf[512];
+
+int cons_initted;
 
 /*
  * We use the page just above the interrupt vector as message buffer
@@ -81,16 +100,8 @@ struct msgbuf *msgbufp = (struct msgbuf *)0x3000;
 int msgbufmapped = 1;		/* message buffer is always mapped */
 
 caddr_t allocsys __P((caddr_t));
+int power4e_get_eth_addr __P((void));
 
-static void fake_splx __P((int));
-static void fake_irq_establish __P((int, int, void (*)(void *), void *));
-
-struct machvec machine_interface = {
-	fake_splx,
-	fake_irq_establish,
-};
-
-int cold = 1;
 
 void
 initppc(startkernel, endkernel, args)
@@ -114,41 +125,43 @@ initppc(startkernel, endkernel, args)
 	extern void callback __P((void *));
 	int exc, scratch;
 
+
 	proc0.p_addr = proc0paddr;
 	bzero(proc0.p_addr, sizeof *proc0.p_addr);
 	
 	curpcb = &proc0paddr->u_pcb;
 	
 	curpm = curpcb->pcb_pmreal = curpcb->pcb_pm = pmap_kernel();
-	
-	/*
-	 * i386 port says, that this shouldn't be here,
-	 * but I really think the console should be initialized
-	 * as early as possible.
-	 */
-	consinit();
 
-#ifdef	__notyet__		/* Needs some rethinking regarding real/virtual OFW */
-	OF_set_callback(callback);
-#endif
+
 	/*
 	 * Initialize BAT registers to unmapped to not generate
 	 * overlapping mappings below.
 	 */
-	asm volatile ("mtibatu 0,%0" :: "r"(0));
-	asm volatile ("mtibatu 1,%0" :: "r"(0));
-	asm volatile ("mtibatu 2,%0" :: "r"(0));
-	asm volatile ("mtibatu 3,%0" :: "r"(0));
-	asm volatile ("mtdbatu 0,%0" :: "r"(0));
-	asm volatile ("mtdbatu 1,%0" :: "r"(0));
-	asm volatile ("mtdbatu 2,%0" :: "r"(0));
-	asm volatile ("mtdbatu 3,%0" :: "r"(0));
+	__asm__ volatile ("mtibatu 0,%0" :: "r"(0));
+	__asm__ volatile ("mtibatu 1,%0" :: "r"(0));
+	__asm__ volatile ("mtibatu 2,%0" :: "r"(0));
+	__asm__ volatile ("mtibatu 3,%0" :: "r"(0));
+	__asm__ volatile ("mtdbatu 0,%0" :: "r"(0));
+	__asm__ volatile ("mtdbatu 1,%0" :: "r"(0));
+	__asm__ volatile ("mtdbatu 2,%0" :: "r"(0));
+	__asm__ volatile ("mtdbatu 3,%0" :: "r"(0));
 	
 	/*
 	 * Set up initial BAT table to only map the lowest 256 MB area
 	 */
 	battable[0].batl = BATL(0x00000000, BAT_M);
 	battable[0].batu = BATU(0x00000000);
+
+	if(system_type == POWER4e) {
+		/* DBAT1 maps I/O */
+		battable[1].batl = BATL(0x80000000, BAT_I);
+		battable[1].batu = BATU(0x80000000);
+
+		/* DBAT2 maps PCI mem */
+		battable[2].batl = BATL(MPC106_P_PCI_MEM_SPACE, BAT_I);
+		battable[2].batu = BATU(MPC106_V_PCI_MEM_SPACE);
+	}
 
 	/*
 	 * Now setup fixed bat registers
@@ -157,11 +170,16 @@ initppc(startkernel, endkernel, args)
 	 * registers were cleared above.
 	 */
 	/* IBAT0 used for initial 256 MB segment */
-	asm volatile ("mtibatl 0,%0; mtibatu 0,%1"
+	__asm__ volatile ("mtibatl 0,%0; mtibatu 0,%1"
 		      :: "r"(battable[0].batl), "r"(battable[0].batu));
 	/* DBAT0 used similar */
-	asm volatile ("mtdbatl 0,%0; mtdbatu 0,%1"
+	__asm__ volatile ("mtdbatl 0,%0; mtdbatu 0,%1"
 		      :: "r"(battable[0].batl), "r"(battable[0].batu));
+
+	__asm__ volatile ("mtdbatl 1,%0; mtdbatu 1,%1"
+		      :: "r"(battable[1].batl), "r"(battable[1].batu));
+	__asm__ volatile ("mtdbatl 2,%0; mtdbatu 2,%1"
+		      :: "r"(battable[2].batl), "r"(battable[2].batu));
 	
 	/*
 	 * Set up trap vectors
@@ -208,8 +226,24 @@ initppc(startkernel, endkernel, args)
 	/*
 	 * Now enable translation (and machine checks/recoverable interrupts).
 	 */
-	asm volatile ("mfmsr %0; ori %0,%0,%1; mtmsr %0; isync"
+	__asm__ volatile ("mfmsr %0; ori %0,%0,%1; mtmsr %0; isync"
 		      : "=r"(scratch) : "K"(PSL_IR|PSL_DR|PSL_ME|PSL_RI));
+
+	/*
+	 * Now we can set up the console as mapping is enabled.
+         */
+	consinit();
+
+	/*                                                              
+	 * Look at arguments passed to us and compute boothowto.      
+	 * Default to SINGLE and ASKNAME if no args or
+	 * SINGLE and DFLTROOT if this is a ramdisk kernel.                     
+	 */                                                               
+#ifdef RAMDISK_HOOKS                                         
+	boothowto = RB_SINGLE | RB_DFLTROOT;
+#else
+	boothowto = RB_AUTOBOOT;
+#endif /* RAMDISK_HOOKS */
 
 	/*
 	 * Parse arg string.
@@ -250,58 +284,13 @@ initppc(startkernel, endkernel, args)
 	 * Initialize pmap module.
 	 */
 	pmap_bootstrap(startkernel, endkernel);
-}
-
-/*
- * This should probably be in autoconf!				XXX
- */
-int cpu;
-char cpu_model[80];
-char machine[] = "powerpc";	/* cpu architecture */
-
-void
-identifycpu()
-{
-	int phandle, pvr;
-	char name[32];
 
 	/*
-	 * Find cpu type (Do it by OpenFirmware?)
+	 * Figure out ethernet address.
 	 */
-	asm ("mfpvr %0" : "=r"(pvr));
-	cpu = pvr >> 16;
-	switch (cpu) {
-	case 1:
-		sprintf(cpu_model, "601");
-		break;
-	case 3:
-		sprintf(cpu_model, "603");
-		break;
-	case 4:
-		sprintf(cpu_model, "604");
-		break;
-	case 5:
-		sprintf(cpu_model, "602");
-		break;
-	case 6:
-		sprintf(cpu_model, "603e");
-		break;
-	case 7:
-		sprintf(cpu_model, "603ev");
-		break;
-	case 9:
-		sprintf(cpu_model, "604ev");
-		break;
-	case 20:
-		sprintf(cpu_model, "620");
-		break;
-	default:
-		sprintf(cpu_model, "Version %x", cpu);
-		break;
-	}
-	sprintf(cpu_model + strlen(cpu_model), " (Revision %x)", pvr & 0xffff);
-	printf("CPU: %s\n", cpu_model);
+	(void)power4e_get_eth_addr();
 }
+
 
 void
 install_extint(handler)
@@ -316,13 +305,13 @@ install_extint(handler)
 	if (offset > 0x1ffffff)
 		panic("install_extint: too far away");
 #endif
-	asm volatile ("mfmsr %0; andi. %1, %0, %2; mtmsr %1"
+	__asm__ volatile ("mfmsr %0; andi. %1, %0, %2; mtmsr %1"
 		      : "=r"(omsr), "=r"(msr) : "K"((u_short)~PSL_EE));
 	extint_call = (extint_call & 0xfc000003) | offset;
 	bcopy(&extint, (void *)EXC_EXI, (size_t)&extsize);
 	syncicache((void *)&extint_call, sizeof extint_call);
 	syncicache((void *)EXC_EXI, (int)&extsize);
-	asm volatile ("mtmsr %0" :: "r"(omsr));
+	__asm__ volatile ("mtmsr %0" :: "r"(omsr));
 }
 
 /*
@@ -340,7 +329,6 @@ cpu_startup()
 	v = (caddr_t)proc0paddr + USPACE;
 
 	printf("%s", version);
-	identifycpu();
 	
 	printf("real mem = %d\n", ctob(physmem));
 	
@@ -426,7 +414,7 @@ cpu_startup()
 		int msr;
 		
 		splhigh();
-		asm volatile ("mfmsr %0; ori %0, %0, %1; mtmsr %0"
+		__asm__ volatile ("mfmsr %0; ori %0, %0, %1; mtmsr %0"
 			      : "=r"(msr) : "K"(PSL_EE));
 	}
 	
@@ -464,16 +452,29 @@ allocsys(v)
 	valloc(msqids, struct msqid_ds, msginfo.msgmni);
 #endif
 
+#ifndef BUFCACHEPERCENT
+#define BUFCACHEPERCENT 5
+#endif
 	/*
 	 * Decide on buffer space to use.
 	 */
 	if (bufpages == 0)
-		bufpages = (physmem / 20) / CLSIZE;
+		bufpages = (physmem / ((100/BUFCACHEPERCENT) / CLSIZE));
 	if (nbuf == 0) {
 		nbuf = bufpages;
 		if (nbuf < 16)
 			nbuf = 16;
 	}
+	/* Restrict to at most 70% filled kvm */
+	if (nbuf * MAXBSIZE >
+	    (VM_MAX_KERNEL_ADDRESS-VM_MIN_KERNEL_ADDRESS) * 7 / 10)
+		nbuf = (VM_MAX_KERNEL_ADDRESS-VM_MIN_KERNEL_ADDRESS) /
+		    MAXBSIZE * 7 / 10;
+
+	/* More buffer pages than fits into the buffers is senseless.  */
+	if (bufpages > nbuf * MAXBSIZE / CLBYTES)
+		bufpages = nbuf * MAXBSIZE / CLBYTES;
+
 	if (nswbuf == 0) {
 		nswbuf = (nbuf / 2) & ~1;
 		if (nswbuf > 256)
@@ -492,12 +493,11 @@ allocsys(v)
 void
 consinit()
 {
-	static int initted;
 	
-	if (initted)
+	if (cons_initted)
 		return;
-	initted = 1;
 	cninit();
+	cons_initted = 1;
 }
 
 /*
@@ -535,16 +535,19 @@ setregs(p, pack, stack, retval)
  * Send a signal to process.
  */
 void
-sendsig(catcher, sig, mask, code)
+sendsig(catcher, sig, mask, code, type, val)
 	sig_t catcher;
 	int sig, mask;
 	u_long code;
+	int type;
+	union sigval val;
 {
 	struct proc *p = curproc;
 	struct trapframe *tf;
 	struct sigframe *fp, frame;
 	struct sigacts *psp = p->p_sigacts;
 	int oldonstack;
+	int pa;
 	
 	frame.sf_signum = sig;
 	
@@ -564,24 +567,33 @@ sendsig(catcher, sig, mask, code)
 		fp = (struct sigframe *)tf->fixreg[1];
 	fp = (struct sigframe *)((int)(fp - 1) & ~0xf);
 	
-	frame.sf_code = code;
-	
 	/*
 	 * Generate signal context for SYS_sigreturn.
 	 */
 	frame.sf_sc.sc_onstack = oldonstack;
 	frame.sf_sc.sc_mask = mask;
+	frame.sf_sip = NULL;
 	bcopy(tf, &frame.sf_sc.sc_frame, sizeof *tf);
+	if (psp->ps_siginfo & sigmask(sig)) {
+		frame.sf_sip = &fp->sf_si;
+		initsiginfo(&frame.sf_si, sig, code, type, val);
+	}
 	if (copyout(&frame, fp, sizeof frame) != 0)
 		sigexit(p, SIGILL);
 	
+
 	tf->fixreg[1] = (int)fp;
 	tf->lr = (int)catcher;
 	tf->fixreg[3] = (int)sig;
-	tf->fixreg[4] = (int)code;
+	tf->fixreg[4] = (psp->ps_siginfo & sigmask(sig)) ? (int)&fp->sf_si : NULL;
 	tf->fixreg[5] = (int)&frame.sf_sc;
 	tf->srr0 = (int)(((char *)PS_STRINGS)
 			 - (p->p_emul->e_esigcode - p->p_emul->e_sigcode));
+
+#if WHEN_WE_ONLY_FLUSH_DATA_WHEN_DOING_PMAP_ENTER
+	pa = pmap_extract(vm_map_pmap(&p->p_vmspace->vm_map),tf->srr0);
+	syncicache(pa, (p->p_emul->e_esigcode - p->p_emul->e_sigcode));
+#endif
 }
 
 /*
@@ -650,18 +662,13 @@ dumpsys()
 	printf("dumpsys: TBD\n");
 }
 
-int cpl;
-int clockpending, softclockpending, softnetpending;
-
 /*
  * Soft networking interrupts.
  */
 void
-softnet()
+softnet(isr)
+	int isr;
 {
-	int isr = netisr;
-
-	netisr = 0;
 #ifdef	INET
 #include "ether.h"
 #if NETHER > 0
@@ -670,6 +677,10 @@ softnet()
 #endif
 	if (isr & (1 << NETISR_IP))
 		ipintr();
+#endif
+#ifdef NETATALK
+	if (isr & (1 << NETISR_ATALK))
+		atintr();
 #endif
 #ifdef	IMP
 	if (isr & (1 << NETISR_IMP))
@@ -694,156 +705,11 @@ softnet()
 #endif
 }
 
-/*
- * Stray interrupts.
- */
 void
-strayintr(irq)
-	int irq;
+lcsplx(ipl)
+	int ipl;
 {
-	log(LOG_ERR, "stray interrupt %d\n", irq);
-}
-
-int
-splraise(bits)
-	int bits;
-{
-	int old;
-	
-	old = cpl;
-	cpl |= bits;
-
-	if ((bits & SPLMACHINE) & ~old)
-		(*machine_interface.splx)(cpl & SPLMACHINE);
-
-	return old;
-}
-
-int
-splx(new)
-	int new;
-{
-	int pending, old = cpl;
-	int emsr, dmsr;
-	
-	asm ("mfmsr %0" : "=r"(emsr));
-	dmsr = emsr & ~PSL_EE;
-	
-	cpl = new;
-	
-	if ((new & SPLMACHINE) != (old & SPLMACHINE))
-		(*machine_interface.splx)(new & SPLMACHINE);
-
-	while (1) {
-		cpl = new;
-		
-		asm volatile ("mtmsr %0" :: "r"(dmsr));
-		if (clockpending && !(cpl & SPLCLOCK)) {
-			struct clockframe frame;
-			extern int intr_depth;
-			
-			cpl |= SPLCLOCK;
-			clockpending--;
-			asm volatile ("mtmsr %0" :: "r"(emsr));
-			
-			/*
-			 * Fake a clock interrupt frame
-			 */
-			frame.pri = new;
-			frame.depth = intr_depth + 1;
-			frame.srr1 = 0;
-			frame.srr0 = (int)splx;
-			/*
-			 * Do standard timer interrupt stuff
-			 */
-			hardclock(&frame);
-			continue;
-		}
-		if (softclockpending && !(cpl & SPLSOFTCLOCK)) {
-			
-			cpl |= SPLSOFTCLOCK;
-			softclockpending = 0;
-			asm volatile ("mtmsr %0" :: "r"(emsr));
-			
-			softclock();
-			continue;
-		}
-		if (softnetpending && !(cpl & SPLSOFTNET)) {
-			cpl |= SPLSOFTNET;
-			softnetpending = 0;
-			asm volatile ("mtmsr %0" :: "r"(emsr));
-			softnet();
-			continue;
-		}
-		
-		asm volatile ("mtmsr %0" :: "r"(emsr));
-		
-		return old;
-	}
-}
-
-/*
- * This one is similar to the above, but returns with interrupts disabled.
- * It is intended for use during interrupt exit (as the name implies :-)).
- */
-void
-intr_return(level)
-	int level;
-{
-	int pending, old = cpl;
-	int emsr, dmsr;
-	
-	asm ("mfmsr %0" : "=r"(emsr));
-	dmsr = emsr & ~PSL_EE;
-	
-	cpl = level;
-	
-	if ((level & SPLMACHINE) != (old & SPLMACHINE))
-		(*machine_interface.splx)(level & SPLMACHINE);
-
-	while (1) {
-		cpl = level;
-		
-		asm volatile ("mtmsr %0" :: "r"(dmsr));
-		if (clockpending && !(cpl & SPLCLOCK)) {
-			struct clockframe frame;
-			extern int intr_depth;
-			
-			cpl |= SPLCLOCK;
-			clockpending--;
-			asm volatile ("mtmsr %0" :: "r"(emsr));
-			
-			/*
-			 * Fake a clock interrupt frame
-			 */
-			frame.pri = level | (clockpending ? SPLSOFTCLOCK : 0);
-			frame.depth = intr_depth + 1;
-			frame.srr1 = 0;
-			frame.srr0 = (int)splx;
-			/*
-			 * Do standard timer interrupt stuff
-			 */
-			hardclock(&frame);
-			continue;
-		}
-		if (softclockpending && !(cpl & SPLSOFTCLOCK)) {
-			
-			cpl |= SPLSOFTCLOCK;
-			softclockpending = 0;
-			asm volatile ("mtmsr %0" :: "r"(emsr));
-			
-			softclock();
-			continue;
-		}
-		if (softnetpending && !(cpl & SPLSOFTNET)) {
-			cpl |= SPLSOFTNET;
-			softnetpending = 0;
-			asm volatile ("mtmsr %0" :: "r"(emsr));
-			softnet();
-			continue;
-		}
-		break;
-	}
+	splx(ipl);
 }
 
 /*
@@ -864,7 +730,21 @@ boot(howto)
 	if (!cold && !(howto & RB_NOSYNC) && !syncing) {
 		syncing = 1;
 		vfs_shutdown();		/* sync */
-		resettodr();		/* set wall clock */
+#if 0
+		/* resettodr does not currently do anything, address
+		 * this later
+		 */
+		/*
+		 * If we've been adjusting the clock, the todr
+		 * will be out of synch; adjust it now unless
+		 * the system was sitting in ddb.
+		 */
+		if ((howto & RB_TIMEBAD) == 0) {
+			resettodr();
+		} else {
+			printf("WARNING: not updating battery clock\n");
+		}
+#endif
 	}
 	splhigh();
 	if (howto & RB_HALT) {
@@ -899,29 +779,28 @@ boot(howto)
 }
 
 /*
- * OpenFirmware callback routine
+ *  Get Ethernet address for the onboard ethernet chip.
  */
-void
-callback(p)
-	void *p;
+int
+power4e_get_eth_addr()
 {
-	panic("callback");	/* for now			XXX */
-}
+	int qhandle, phandle;
+	char name[32];
 
-/*
- * Fake routines for spl/interrupt handling before autoconfig
- */
-static void
-fake_splx(new)
-	int new;
-{
-}
-
-static void
-fake_irq_establish(irq, level, handler, arg)
-	int irq, level;
-	void (*handler) __P((void *));
-	void *arg;
-{
-	panic("fake_irq_establish");
+	for (qhandle = OF_peer(0); qhandle; qhandle = phandle) {
+		if (OF_getprop(qhandle, "device_type", name, sizeof name) >= 0
+		    && !strcmp(name, "network")
+		    && OF_getprop(qhandle, "local-mac-address",
+				  &ofw_eth_addr, sizeof ofw_eth_addr) >= 0) {
+			return(0);
+		}
+		if (phandle = OF_child(qhandle))
+			continue;
+		while (qhandle) {
+			if (phandle = OF_peer(qhandle))
+				break;
+			qhandle = OF_parent(qhandle);
+		}
+	}
+	return(-1);
 }

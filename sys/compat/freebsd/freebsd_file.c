@@ -1,4 +1,5 @@
-/*	$NetBSD: freebsd_file.c,v 1.1 1995/10/10 01:19:30 mycroft Exp $	*/
+/*	$OpenBSD: freebsd_file.c,v 1.5 1996/08/02 20:34:45 niklas Exp $	*/
+/*	$NetBSD: freebsd_file.c,v 1.3 1996/05/03 17:03:09 christos Exp $	*/
 
 /*
  * Copyright (c) 1995 Frank van der Linden
@@ -54,13 +55,15 @@
 
 const char freebsd_emul_path[] = "/emul/freebsd";
 
+static char * convert_from_freebsd_mount_type __P((int));
+
 static char *
 convert_from_freebsd_mount_type(type)
 	int type;
 {
 	static char *netbsd_mount_type[] = {
 		NULL,     /*  0 = MOUNT_NONE */
-		"ufs",	  /*  1 = UNIX "Fast" Filesystem */
+		"ffs",	  /*  1 = "Fast" Filesystem */
 		"nfs",	  /*  2 = Network Filesystem */
 		"mfs",	  /*  3 = Memory Filesystem */
 		"msdos",  /*  4 = MSDOS Filesystem */
@@ -106,7 +109,7 @@ freebsd_sys_mount(p, v, retval)
 	if ((type = convert_from_freebsd_mount_type(SCARG(uap, type))) == NULL)
 		return ENODEV;
 	s = stackgap_alloc(&sg, MFSNAMELEN + 1);
-	if (error = copyout(type, s, strlen(type) + 1))
+	if ((error = copyout(type, s, strlen(type) + 1)) != 0)
 		return error;
 	SCARG(&bma, type) = s;
 	FREEBSD_CHECK_ALT_EXIST(p, &sg, SCARG(uap, path));
@@ -397,10 +400,17 @@ freebsd_sys_execve(p, v, retval)
 		syscallarg(char **) argp;
 		syscallarg(char **) envp;
 	} */ *uap = v;
-	caddr_t sg = stackgap_init(p->p_emul);
+	struct sys_execve_args ap;
+	caddr_t sg;
 
+	sg = stackgap_init(p->p_emul);
 	FREEBSD_CHECK_ALT_EXIST(p, &sg, SCARG(uap, path));
-	return sys_execve(p, uap, retval);
+
+	SCARG(&ap, path) = SCARG(uap, path);
+	SCARG(&ap, argp) = SCARG(uap, argp);
+	SCARG(&ap, envp) = SCARG(uap, envp);
+
+	return sys_execve(p, &ap, retval);
 }
 
 int

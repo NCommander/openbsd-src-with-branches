@@ -1,4 +1,5 @@
-/*	$NetBSD: if_loop.c,v 1.14 1995/07/23 16:33:08 mycroft Exp $	*/
+/*	$OpenBSD: if_loop.c,v 1.7 1997/07/23 03:46:01 denny Exp $	*/
+/*	$NetBSD: if_loop.c,v 1.15 1996/05/07 02:40:33 thorpej Exp $	*/
 
 /*
  * Copyright (c) 1982, 1986, 1993
@@ -70,9 +71,20 @@
 #include <netns/ns_if.h>
 #endif
 
+#ifdef IPX
+#include <netipx/ipx.h>
+#include <netipx/ipx_if.h>
+#endif
+
 #ifdef ISO
 #include <netiso/iso.h>
 #include <netiso/iso_var.h>
+#endif
+
+#ifdef NETATALK
+#include <netinet/if_ether.h>
+#include <netatalk/at.h>
+#include <netatalk/at_var.h>
 #endif
 
 #if NBPFILTER > 0
@@ -90,10 +102,10 @@ loopattach(n)
 	register int i;
 	register struct ifnet *ifp;
 
-	for (i = 0; i < NLOOP; i++) {
+	for (i = NLOOP; i--; ) {
 		ifp = &loif[i];
-		ifp->if_unit = i;
-		ifp->if_name = "lo";
+		sprintf(ifp->if_xname, "lo%d", i);
+		ifp->if_softc = NULL;
 		ifp->if_mtu = LOMTU;
 		ifp->if_flags = IFF_LOOPBACK | IFF_MULTICAST;
 		ifp->if_ioctl = loioctl;
@@ -101,7 +113,7 @@ loopattach(n)
 		ifp->if_type = IFT_LOOP;
 		ifp->if_hdrlen = 0;
 		ifp->if_addrlen = 0;
-		if_attach(ifp);
+		if_attachhead(ifp);
 #if NBPFILTER > 0
 		bpfattach(&ifp->if_bpf, ifp, DLT_NULL, sizeof(u_int));
 #endif
@@ -122,7 +134,12 @@ looutput(ifp, m, dst, rt)
 		panic("looutput: no header mbuf");
 	ifp->if_lastchange = time;
 #if NBPFILTER > 0
-	if (ifp->if_bpf) {
+	/*
+	 * only send packets to bpf if they are real loopback packets;
+	 * looutput() is also called for SIMPLEX interfaces to duplicate
+	 * packets for local use. But don't dup them to bpf.
+	 */
+	if (ifp->if_bpf && (ifp->if_flags&IFF_LOOPBACK)) {
 		/*
 		 * We need to prepend the address family as
 		 * a four byte field.  Cons up a dummy header
@@ -163,14 +180,26 @@ looutput(ifp, m, dst, rt)
 		isr = NETISR_NS;
 		break;
 #endif
+#ifdef IPX
+	case AF_IPX:
+		ifq = &ipxintrq;
+		isr = NETISR_IPX;
+		break;
+#endif
 #ifdef ISO
 	case AF_ISO:
 		ifq = &clnlintrq;
 		isr = NETISR_ISO;
 		break;
 #endif
+#ifdef NETATALK
+	case AF_APPLETALK:
+		ifq = &atintrq2;
+		isr = NETISR_ATALK;
+		break;
+#endif NETATALK
 	default:
-		printf("lo%d: can't handle af%d\n", ifp->if_unit,
+		printf("%s: can't handle af%d\n", ifp->if_xname,
 			dst->sa_family);
 		m_freem(m);
 		return (EAFNOSUPPORT);

@@ -1,3 +1,4 @@
+/*	$OpenBSD: if_llc.h,v 1.6 1995/03/08 02:56:57 cgd Exp $	*/
 /*	$NetBSD: if_llc.h,v 1.6 1995/03/08 02:56:57 cgd Exp $	*/
 
 /*

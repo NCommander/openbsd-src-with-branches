@@ -1,4 +1,5 @@
-/*	$NetBSD: ptrace.S,v 1.1 1995/02/10 17:50:36 cgd Exp $	*/
+/*	$OpenBSD: ptrace.S,v 1.3 1996/10/17 03:08:19 cgd Exp $	*/
+/*	$NetBSD: ptrace.S,v 1.3 1996/10/17 03:08:19 cgd Exp $	*/
 
 /*
  * Copyright (c) 1994, 1995 Carnegie-Mellon University.
@@ -29,10 +30,16 @@
 
 #include "SYS.h"
 
+#if defined(SYSLIBC_SCCS)
+	.text
+	.asciz "$OpenBSD: ptrace.S,v 1.2 1996/08/19 08:11:11 tholo Exp $"
+#endif /* SYSLIBC_SCCS */
+
 IMPORT(errno, 4)
 
 LEAF(ptrace, 4)
+	LDGP(pv)
 	stl	zero, errno
-	SYSCALL_NOLABEL(ptrace)
+	CALLSYS_ERROR(ptrace)
 	RET
 END(ptrace)

@@ -1,5 +1,6 @@
 '\" t
-.TH menu_new 3X ""
+.\" $OpenBSD$
+.TH menu_new 3 ""
 .SH NAME
 \fBmenu_new\fR - create and destroy menus
 .SH SYNOPSIS
@@ -7,13 +8,13 @@
 .br
 MENU *new_menu(ITEM **items);
 .br
-char *free_menu(MENU *menu);
+int free_menu(MENU *menu);
 .br
 .SH DESCRIPTION
 The function \fBnew_menu\fR creates a new menu connected to a specified item
 pointer array (which must be \fBNULL\fR-terminated).
 
-The function \fBfree_menu\fR discomnnects \fImenu\fR from its item array
+The function \fBfree_menu\fR disconnects \fImenu\fR from its item array
 and frees the storage allocated for the menu.
 .SH RETURN VALUE
 The function \fBnew_menu\fR returns \fBNULL\fR on error.
@@ -32,7 +33,7 @@ Routine detected an incorrect or out-of-range argument.
 \fBE_POSTED\fR
 The menu has already been posted.
 .SH SEE ALSO
-\fBcurses\fR(3X), \fBmenu\fR(3X).
+\fBcurses\fR(3), \fBmenu\fR(3).
 .SH NOTES
 The header file \fB<menu.h>\fR automatically includes the header file
 \fB<curses.h>\fR.

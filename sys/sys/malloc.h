@@ -1,4 +1,5 @@
-/*	$NetBSD: malloc.h,v 1.20 1995/03/26 20:24:20 jtc Exp $	*/
+/*	$OpenBSD: malloc.h,v 1.13 1997/11/06 05:59:08 csapuntz Exp $	*/
+/*	$NetBSD: malloc.h,v 1.23 1996/04/05 04:52:52 mhitch Exp $	*/
 
 /*
  * Copyright (c) 1987, 1993
@@ -38,7 +39,9 @@
 #ifndef _SYS_MALLOC_H_
 #define	_SYS_MALLOC_H_
 
+#ifndef NO_KMEMSTATS
 #define	KMEMSTATS
+#endif
 
 /*
  * flags to malloc
@@ -118,8 +121,34 @@
 #define	M_ADOSFSMNT	66	/* adosfs mount structures */
 #define	M_ADOSFSNODE	67	/* adosfs vnode private part */
 #define	M_ANODE		68	/* adosfs anode structures and tables. */
-#define	M_TEMP		84	/* misc temporary data buffers */
-#define	M_LAST		85	/* Must be last type + 1 */
+#define	M_IPQ		69	/* IP packet queue entry */
+#define	M_AFS		70	/* Andrew File System */
+#define	M_ADOSFSBITMAP	71	/* adosfs bitmap */
+#define	M_EXT2FSNODE	72	/* EXT2FS vnode private part */
+#define	M_PFIL		73	/* packer filter */
+#define	M_TDB		75	/* Transforms database */
+#define	M_XDATA		76	/* IPsec data */
+#define M_VFS           77      /* VFS file systems */
+
+#define	M_PAGEDEP	78	/* File page dependencies */
+#define	M_INODEDEP	79	/* Inode dependencies */
+#define	M_NEWBLK	80	/* New block allocation */
+#define	M_BMSAFEMAP	81	/* Block or frag allocated from cyl group map */
+#define	M_ALLOCDIRECT	82	/* Block or frag dependency for an inode */
+#define	M_INDIRDEP	83	/* Indirect block dependencies */
+#define	M_ALLOCINDIR	84	/* Block dependency for an indirect block */
+#define	M_FREEFRAG	85	/* Previously used frag for an inode */
+#define	M_FREEBLKS	86	/* Blocks freed from an inode */
+#define	M_FREEFILE	87	/* Inode deallocated */
+#define	M_DIRADD	88	/* New directory entry */
+#define	M_MKDIR		89	/* New directory */
+#define	M_DIRREM	90	/* Directory entry deleted */
+
+#define M_VMPBUCKET	91	/* VM page buckets */
+
+#define	M_TEMP		127	/* misc temporary data buffers */
+#define M_LAST          128     /* Must be last type + 1 */
+
 
 #define	INITKMEMNAMES { \
 	"free",		/* 0 M_FREE */ \
@@ -191,10 +220,37 @@
 	"adosfs mount",	/* 66 M_ADOSFSMNT */ \
 	"adosfs node",	/* 67 M_ADOSFSNODE */ \
 	"adosfs anode",	/* 68 M_ANODE */ \
+	"IP queue ent", /* 69 M_IPQ */ \
+	"afs",		/* 70 M_AFS */ \
+	"adosfs bitmap", /* 71 M_ADOSFSBITMAP */ \
+	"EXT2FS node",	/* 72 M_EXT2FSNODE */ \
+	"pfil",		/* 73 M_PFIL */ \
+	NULL, \
+	"tdb",		/* 75 M_TDB */ \
+	"xform_data",	/* 76 M_XDATA */ \
+	"vfs",          /* 77 M_VFS */ \
+ 	"pagedep",	/* 78 M_PAGEDEP */ \
+ 	"inodedep",	/* 79 M_INODEDEP */ \
+ 	"newblk",	/* 80 M_NEWBLK */ \
+ 	"bmsafemap",	/* 81 M_BMSAFEMAP */ \
+ 	"allocdirect",	/* 82 M_ALLOCDIRECT */ \
+ 	"indirdep",	/* 83 M_INDIRDEP */ \
+ 	"allocindir",	/* 84 M_ALLOCINDIR */ \
+ 	"freefrag",	/* 85 M_FREEFRAG */ \
+ 	"freeblks",	/* 86 M_FREEBLKS */ \
+ 	"freefile",	/* 87 M_FREEFILE */ \
+ 	"diradd",	/* 88 M_DIRADD */ \
+ 	"mkdir",	/* 89 M_MKDIR */ \
+ 	"dirrem",	/* 90 M_DIRREM */ \
+ 	"VM page bucket", /* 91 M_VMPBUCKET */ \
 	NULL, NULL, NULL, NULL, NULL, \
 	NULL, NULL, NULL, NULL, NULL, \
 	NULL, NULL, NULL, NULL, NULL, \
-	"temp",		/* 84 M_TEMP */ \
+	NULL, NULL, NULL, NULL, NULL, \
+	NULL, NULL, NULL, NULL, NULL, \
+	NULL, NULL, NULL, NULL, NULL, \
+	NULL, NULL, NULL, NULL, NULL, \
+	"temp",		/* 127 M_TEMP */ \
 }
 
 struct kmemstats {

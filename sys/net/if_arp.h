@@ -1,3 +1,4 @@
+/*	$OpenBSD: if_arp.h,v 1.8 1995/03/08 02:56:52 cgd Exp $	*/
 /*	$NetBSD: if_arp.h,v 1.8 1995/03/08 02:56:52 cgd Exp $	*/
 
 /*

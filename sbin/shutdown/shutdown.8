@@ -1,3 +1,4 @@
+.\"	$OpenBSD: shutdown.8,v 1.6 1997/07/25 14:27:46 kstailey Exp $
 .\"	$NetBSD: shutdown.8,v 1.6 1995/03/18 15:01:07 cgd Exp $
 .\"
 .\" Copyright (c) 1988, 1991, 1993
@@ -42,7 +43,7 @@
 .Sh SYNOPSIS
 .Nm shutdown
 .Op Fl 
-.Op Fl fhkrn
+.Op Fl dfhkrnp
 .Ar time
 .Op Ar warning-message ...
 .Sh DESCRIPTION
@@ -54,6 +55,8 @@ would otherwise not bother with such niceties.
 .Pp
 Available friendlinesses:
 .Bl -tag -width time
+.It Fl d
+The system will perform a crash dump.
 .It Fl f
 .Nm Shutdown
 arranges, in the manner of
@@ -85,6 +88,13 @@ execs
 .Xr reboot 8
 at the specified
 .Ar time .
+.It Fl p
+The
+.Fl p
+flag is passed on to
+.Xr halt 8 ,
+causing machines which support automatic power down to do so after halting.
+(Currently supported on some i386 and sparc platforms.)
 .It Ar time
 .Ar Time
 is the time at which

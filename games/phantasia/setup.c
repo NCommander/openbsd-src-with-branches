@@ -37,7 +37,7 @@
 /	put in these files.
 /	Also, the monster binary data base is created here.
 /
-/************************************************************************/
+*************************************************************************/
 
 static char *files[] = {		/* all files to create */
 	_PATH_MONST,
@@ -65,7 +65,7 @@ main(argc, argv)
 	int ch;
 	char path[MAXPATHLEN], *prefix;
 
-	while ((ch = getopt(argc, argv, "m:")) != EOF)
+	while ((ch = getopt(argc, argv, "m:")) != -1)
 		switch(ch) {
 		case 'm':
 			monsterfile = optarg;
@@ -226,7 +226,7 @@ main(argc, argv)
 / DESCRIPTION:
 /	Print an error message, then exit.
 /
-/************************************************************************/
+*************************************************************************/
 
 Error(str, file)
 char	*str, *file;
@@ -258,7 +258,7 @@ char	*str, *file;
 /
 / DESCRIPTION: 
 /
-/************************************************************************/
+*************************************************************************/
 
 double
 drandom()

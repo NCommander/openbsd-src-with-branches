@@ -40,7 +40,7 @@
 .Nm intro
 .Nd introduction to system calls and error numbers
 .Sh SYNOPSIS
-.Fd #include <sys/errno.h>
+.Fd #include <errno.h>
 .Sh DESCRIPTION
 This section provides an overview of the system calls,
 their error returns, and other common definitions and concepts.
@@ -109,10 +109,9 @@ a tape drive is not online or no disk pack is
 loaded on a drive.
 .It Er 7 E2BIG Em "Arg list too long" .
 The number of bytes used for the argument and environment
-list of the new process exceeded the current limit
-of 20480 bytes
-.Pf ( Dv NCARGS
-in
+list of the new process exceeded the limit
+.Dv NCARGS
+(specified in
 .Aq Pa sys/param.h ) .
 .It Er 8 ENOEXEC Em "Exec format error" .
 A request was made to execute a file
@@ -125,9 +124,9 @@ or a read (write) request was made to a file that was only open for
 writing (reading).
 .It Er 10 ECHILD Em "\&No child processes" .
 A
-.Xr wait
+.Xr wait 2
 or
-.Xr waitpid
+.Xr waitpid 2
 function was executed by a process that had no existing or unwaited-for
 child processes.
 .It Er 11 EDEADLK Em "Resource deadlock avoided" .
@@ -153,7 +152,7 @@ in a manner which would have conflicted with the request.
 .It Er 17 EEXIST Em "File exists" .
 An existing file was mentioned in an inappropriate context,
 for instance, as the new link name in a
-.Xr link
+.Xr link 2
 function.
 .It Er 18 EXDEV Em "Improper link" .
 A hard link to a file on another file system
@@ -171,9 +170,9 @@ An attempt was made to open a directory with write mode specified.
 .It Er 22 EINVAL Em "Invalid argument" .
 Some invalid argument was supplied. (For example,
 specifying an undefined signal to a
-.Xr signal
+.Xr signal 3
 or
-.Xr kill
+.Xr kill 2
 function).
 .It Er 23 ENFILE Em "Too many open files in system" .
 Maximum number of file descriptors allowable on the system
@@ -182,7 +181,7 @@ until at least one has been closed.
 .It Er 24 EMFILE Em "Too many open files" .
 <As released, the limit on the number of
 open files per process is 64.>
-.Xr Getdtablesize 2
+.Xr getdtablesize 3
 will obtain the current limit.
 .It Er 25 ENOTTY Em "Inappropriate ioctl for device" .
 A control function (see
@@ -193,7 +192,7 @@ special device for which the operation was inappropriate.
 The new process was a pure procedure (shared text) file
 which was open for writing by another process, or
 while the pure procedure file was being executed an
-.Xr open
+.Xr open 2
 call requested write access.
 .It Er 27 EFBIG Em "File too large" .
 The size of a file exceeded the maximum (about
@@ -202,7 +201,7 @@ The size of a file exceeded the maximum (about
 bytes).
 .It Er 28 ENOSPC Em "Device out of space" .
 A
-.Xr write
+.Xr write 2
 to an ordinary file, the creation of a
 directory or symbolic link, or the creation of a directory
 entry failed because no more disk blocks were available
@@ -211,7 +210,7 @@ created file failed because no more inodes were available
 on the file system.
 .It Er 29 ESPIPE Em "Illegal seek" .
 An
-.Xr lseek
+.Xr lseek 2
 function was issued on a socket, pipe or
 .Tn FIFO .
 .It Er 30 EROFS Em "Read-only file system" .
@@ -310,12 +309,12 @@ An operation on a socket or pipe was not performed because
 the system lacked sufficient buffer space or because a queue was full.
 .It Er 56 EISCONN Em "Socket is already connected" .
 A
-.Xr connect
+.Xr connect 2
 request was made on an already connected socket; or,
 a
-.Xr sendto
+.Xr sendto 2
 or
-.Xr sendmsg
+.Xr sendmsg 2
 request on a connected socket specified a destination
 when already connected.
 .It Er 57 ENOTCONN Em "Socket is not connected" .
@@ -329,9 +328,9 @@ had already been shut down with a previous
 call.
 .It Er 60 ETIMEDOUT Em "Operation timed out" .
 A
-.Xr connect
+.Xr connect 2
 or
-.Xr send
+.Xr send 2
 request failed because the connected party did not
 properly respond after a period of time.  (The timeout
 period is dependent on the communication protocol.)
@@ -363,7 +362,7 @@ was supplied to a remove directory or rename call.
 The quota system ran out of table entries.
 .It Er 69 EDQUOT Em "Disc quota exceeded" .
 A 
-.Xr write
+.Xr write 2
 to an ordinary file, the creation of a
 directory or symbolic link, or the creation of a directory
 entry failed because the user's quota of disk blocks was
@@ -405,6 +404,8 @@ locks was reached.
 .It Er 78 ENOSYS Em "Function not implemented" .
 Attempted a system call that is not available on this 
 system.
+.It Er 79 EFTYPE Em "Inappropriate file type or format" .
+The file contains invalid data or set to invalid modes.
 .Sh DEFINITIONS
 .Bl -tag -width Ds
 .It  Process ID .
@@ -416,7 +417,7 @@ A new process is created by a currently active process; (see
 The parent process ID of a process is initially the process ID of its creator.
 If the creating process exits,
 the parent process ID of each child is set to the ID of a system process,
-.Xr init .
+.Xr init 8 .
 .It  Process Group
 Each active process is a member of a process group that is identified by
 a non-negative integer called the process group ID.  This is the process
@@ -463,7 +464,7 @@ as the group,
 but is in a different process group.
 Note that when a process exits, the parent process for its children
 is changed to be
-.Xr init ,
+.Xr init 8 ,
 which is in a separate session.
 Not all members of an orphaned process group are necessarily orphaned
 processes (those whose creating process has exited).
@@ -522,7 +523,7 @@ process and is granted special privileges if its effective user ID is 0.
 .It  Special Processes
 The processes with process IDs of 0, 1, and 2 are special.
 Process 0 is the scheduler.  Process 1 is the initialization process
-.Xr init ,
+.Xr init 8 ,
 and is the ancestor of every other process in the system.
 It is used to control the process structure.
 Process 2 is the paging daemon.
@@ -552,8 +553,7 @@ excluding 0 (NUL) and the
 .Tn ASCII
 code for
 .Ql \&/
-(slash).  (The parity bit,
-bit 7, must be 0.)
+(slash).
 .Pp
 Note that it is generally unwise to use
 .Ql \&* ,

@@ -1,4 +1,5 @@
-/*	$NetBSD: pass5.c,v 1.14 1995/03/21 01:30:16 cgd Exp $	*/
+/*	$OpenBSD: pass5.c,v 1.5 1997/10/06 20:22:35 deraadt Exp $	*/
+/*	$NetBSD: pass5.c,v 1.16 1996/09/27 22:45:18 christos Exp $	*/
 
 /*
  * Copyright (c) 1980, 1986, 1993
@@ -37,7 +38,7 @@
 #if 0
 static char sccsid[] = "@(#)pass5.c	8.6 (Berkeley) 11/30/94";
 #else
-static char rcsid[] = "$NetBSD: pass5.c,v 1.14 1995/03/21 01:30:16 cgd Exp $";
+static char rcsid[] = "$OpenBSD: pass5.c,v 1.5 1997/10/06 20:22:35 deraadt Exp $";
 #endif
 #endif /* not lint */
 
@@ -46,6 +47,8 @@ static char rcsid[] = "$NetBSD: pass5.c,v 1.14 1995/03/21 01:30:16 cgd Exp $";
 #include <ufs/ufs/dinode.h>
 #include <ufs/ffs/fs.h>
 #include <string.h>
+
+#include "fsutil.h"
 #include "fsck.h"
 #include "extern.h"
 
@@ -224,7 +227,7 @@ pass5()
 			default:
 				if (j < ROOTINO)
 					break;
-				errexit("BAD STATE %d FOR INODE I=%d",
+				errexit("BAD STATE %d FOR INODE I=%ld",
 				    statemap[j], j);
 			}
 		}

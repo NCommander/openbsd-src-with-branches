@@ -1,3 +1,5 @@
+/*	$OpenBSD: netbsd.h,v 1.2 1996/04/29 07:09:47 niklas Exp $	*/
+
 /* This goes away when the math-emulator is fixed */
 #define TARGET_CPU_DEFAULT 0400		/* TARGET_NO_FANCY_MATH_387 */
 

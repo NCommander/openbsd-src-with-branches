@@ -17,7 +17,7 @@
  * IMPLIED WARRANTIES, INCLUDING, WITHOUT LIMITATION, THE IMPLIED
  * WARRANTIES OF MERCHANTIBILITY AND FITNESS FOR A PARTICULAR PURPOSE.
  *
- * $Id: vars.c,v 1.37 1997/11/22 13:47:02 brian Exp $
+ * $Id: vars.c,v 1.6 1998/01/20 22:46:32 brian Exp $
  *
  */
 #include <sys/param.h>
@@ -38,14 +38,10 @@
 #include "vars.h"
 #include "auth.h"
 
-char VarVersion[] = "PPP Version 1.5";
-char VarLocalVersion[] = "$Date: 1997/11/22 13:47:02 $";
+char VarVersion[] = "PPP Version 1.65";
+char VarLocalVersion[] = "$Date: 1998/01/20 22:46:32 $";
 int Utmp = 0;
-int ipInOctets = 0;
-int ipOutOctets = 0;
 int ipKeepAlive = 0;
-int ipConnectSecs = 0;
-int ipIdleSecs = 0;
 int reconnectState = RECON_UNKNOWN;
 int reconnectCount = 0;
 
@@ -53,26 +49,28 @@ int reconnectCount = 0;
  * Order of conf option is important. See vars.h.
  */
 struct confdesc pppConfs[] = {
-  {"vjcomp", CONF_ENABLE, CONF_ACCEPT},
-  {"lqr", CONF_DISABLE, CONF_ACCEPT},
-  {"chap", CONF_DISABLE, CONF_ACCEPT},
-  {"pap", CONF_DISABLE, CONF_ACCEPT},
   {"acfcomp", CONF_ENABLE, CONF_ACCEPT},
-  {"protocomp", CONF_ENABLE, CONF_ACCEPT},
+  {"chap", CONF_DISABLE, CONF_ACCEPT},
+  {"deflate", CONF_ENABLE, CONF_ACCEPT},
+  {"lqr", CONF_DISABLE, CONF_ACCEPT},
+  {"pap", CONF_DISABLE, CONF_ACCEPT},
+  {"pppd-deflate", CONF_DISABLE, CONF_DENY},
   {"pred1", CONF_ENABLE, CONF_ACCEPT},
-  {"proxy", CONF_DISABLE, CONF_NONE},
+  {"protocomp", CONF_ENABLE, CONF_ACCEPT},
+  {"vjcomp", CONF_ENABLE, CONF_ACCEPT},
   {"msext", CONF_DISABLE, CONF_NONE},
   {"passwdauth", CONF_DISABLE, CONF_NONE},
-  {"utmp", CONF_ENABLE, CONF_NONE},
+  {"proxy", CONF_DISABLE, CONF_NONE},
   {"throughput", CONF_DISABLE, CONF_NONE},
+  {"utmp", CONF_ENABLE, CONF_NONE},
   {NULL},
 };
 
 struct pppvars pppVars = {
   DEF_MRU, DEF_MTU, 0, MODEM_SPEED, CS8, MODEM_CTSRTS, 180, 30, 3,
   RECONNECT_TIMER, RECONNECT_TRIES, REDIAL_PERIOD,
-  NEXT_REDIAL_PERIOD, 1, 1, MODEM_DEV, BASE_MODEM_DEV,
-  OPEN_ACTIVE, LOCAL_NO_AUTH, 0
+  NEXT_REDIAL_PERIOD, 1, 1, MODEM_DEV, "", BASE_MODEM_DEV,
+  1, LOCAL_NO_AUTH, 0
 };
 
 int

@@ -32,17 +32,14 @@
  * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
- *
- *	from: @(#)fabs.s	5.2 (Berkeley) 12/17/90
- *	$Id: fabs.S,v 1.2 1993/10/21 01:39:58 jtc Exp $
  */
+
+#include <machine/asm.h>
 
 #if defined(LIBC_SCCS)
 	.text
-	.asciz "$Id: fabs.S,v 1.2 1993/10/21 01:39:58 jtc Exp $"
+	.asciz "$OpenBSD: fabs.S,v 1.2 1995/12/30 08:15:41 deraadt Exp $"
 #endif
-
-#include "DEFS.h"
 
 ENTRY(fabs)
 	fldl	4(%esp)

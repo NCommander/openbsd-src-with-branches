@@ -116,6 +116,10 @@ must be specified in this manner.  The protocol number to use is
 particular to the \*(lqcommunication domain\*(rq in which communication
 is to take place; see
 .Xr protocols 5 .
+A value of 0 for
+.Fa protocol
+will let the system select an appropriate protocol for the requested
+socket type.
 .Pp
 Sockets of type
 .Dv SOCK_STREAM
@@ -221,7 +225,7 @@ within this domain.
 The per-process descriptor table is full.
 .It Bq Er ENFILE
 The system file table is full.
-.It Bq Er EACCESS
+.It Bq Er EACCES
 Permission to create a socket of the specified type and/or protocol
 is denied.
 .It Bq Er ENOBUFS

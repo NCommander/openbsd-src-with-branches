@@ -1,3 +1,4 @@
+/*	$OpenBSD: csh.h,v 1.3 1997/09/22 05:09:13 millert Exp $	*/
 /*	$NetBSD: csh.h,v 1.9 1995/03/21 09:02:40 cgd Exp $	*/
 
 /*-
@@ -85,7 +86,7 @@ typedef void *ptr_t;
 
 #include "const.h"
 #include "char.h"
-#include "err.h"
+#include "error.h"
 
 #define xmalloc(i)	Malloc(i)
 #define xrealloc(p, i)	Realloc(p, i)
@@ -262,8 +263,8 @@ extern int aret;		/* What was the last character returned */
 #define	fbuf	B.Bfbuf
 
 /*
- * The shell finds commands in loops by reseeking the input
- * For whiles, in particular, it reseeks to the beginning of the
+ * The shell finds commands in loops by re-seeking the input
+ * For whiles, in particular, it re-seeks to the beginning of the
  * line the while was on; hence the while placement restrictions.
  */
 struct Ain lineloc;
@@ -307,7 +308,7 @@ Char   *lap;
  *
  * Each command is parsed to a tree of command structures and
  * flags are set bottom up during this process, to be propagated down
- * as needed during the semantics/exeuction pass (sh.sem.c).
+ * as needed during the semantics/execution pass (sh.sem.c).
  */
 struct command {
     short   t_dtyp;		/* Type of node 		 */

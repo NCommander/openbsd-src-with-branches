@@ -1,4 +1,5 @@
-/*	$NetBSD: vm_machdep.c,v 1.54 1995/10/12 17:56:48 mycroft Exp $	*/
+/*	$OpenBSD: vm_machdep.c,v 1.11 1996/05/07 07:21:59 deraadt Exp $	*/
+/*	$NetBSD: vm_machdep.c,v 1.61 1996/05/03 19:42:35 christos Exp $	*/
 
 /*-
  * Copyright (c) 1995 Charles M. Hannum.  All rights reserved.
@@ -54,6 +55,7 @@
 #include <sys/user.h>
 #include <sys/core.h>
 #include <sys/exec.h>
+#include <sys/ptrace.h>
 
 #include <vm/vm.h>
 #include <vm/vm_kern.h>
@@ -68,6 +70,8 @@
 extern struct proc *npxproc;
 #endif
 
+void	setredzone __P((u_short *, caddr_t));
+
 /*
  * Finish a fork operation, with process p2 nearly set up.
  * Copy and update the kernel stack and pcb, making the child
@@ -77,13 +81,13 @@ extern struct proc *npxproc;
  * address in each process; in the future we will probably relocate
  * the frame pointers on the stack after copying.
  */
+void
 cpu_fork(p1, p2)
 	register struct proc *p1, *p2;
 {
 	register struct pcb *pcb = &p2->p_addr->u_pcb;
 	register struct trapframe *tf;
 	register struct switchframe *sf;
-	extern void proc_trampoline(), child_return();
 
 #if NNPX > 0
 	/*
@@ -98,21 +102,21 @@ cpu_fork(p1, p2)
 		npxsave();
 #endif
 
+	p2->p_md.md_flags = p1->p_md.md_flags;
+
 	/* Sync curpcb (which is presumably p1's PCB) and copy it to p2. */
 	savectx(curpcb);
 	*pcb = p1->p_addr->u_pcb;
-
 	pmap_activate(&p2->p_vmspace->vm_pmap, pcb);
 
 	/*
-	 * Preset these so that gdt_compact() doesn't get confused if called during
-	 * the allocations below.
+	 * Preset these so that gdt_compact() doesn't get confused if called
+	 * during the allocations below.
 	 */
 	pcb->pcb_tss_sel = GSEL(GNULL_SEL, SEL_KPL);
 	pcb->pcb_ldt_sel = GSEL(GLDT_SEL, SEL_KPL);
 
-	/* Fix up the TSS, etc. */
-	pcb->pcb_cr0 |= CR0_TS;
+	/* Fix up the TSS. */
 	pcb->pcb_tss.tss_ss0 = GSEL(GDATA_SEL, SEL_KPL);
 	pcb->pcb_tss.tss_esp0 = (int)p2->p_addr + USPACE - 16;
 	tss_alloc(pcb);
@@ -143,18 +147,30 @@ cpu_fork(p1, p2)
 	sf->sf_ebx = (int)p2;
 	sf->sf_eip = (int)proc_trampoline;
 	pcb->pcb_esp = (int)sf;
-
-	return (0);
 }
 
 void
 cpu_set_kpc(p, pc)
 	struct proc *p;
-	u_long pc;
+	void (*pc) __P((struct proc *));
 {
 	struct switchframe *sf = (struct switchframe *)p->p_addr->u_pcb.pcb_esp;
 
-	sf->sf_esi = pc;
+	sf->sf_esi = (int) pc;
+}
+
+void
+cpu_swapout(p)
+	struct proc *p;
+{
+
+#if NNPX > 0
+	/*
+	 * Make sure we save the FP state before the user area vanishes.
+	 */
+	if (npxproc == p)
+		npxsave();
+#endif
 }
 
 /*
@@ -169,7 +185,9 @@ void
 cpu_exit(p)
 	register struct proc *p;
 {
+#ifdef USER_LDT
 	struct pcb *pcb;
+#endif
 	struct vmspace *vm;
 
 #if NNPX > 0
@@ -245,9 +263,11 @@ cpu_coredump(p, vp, cred, chdr)
 	return 0;
 }
 
+#if 0
 /*
  * Set a red zone in the kernel stack after the u. area.
  */
+void
 setredzone(pte, vaddr)
 	u_short *pte;
 	caddr_t vaddr;
@@ -261,15 +281,17 @@ setredzone(pte, vaddr)
    used by sched (that has physical memory mapped 1:1 at bottom)
    and take the dump while still in mapped mode */
 }
+#endif
 
 /*
  * Move pages from one kernel virtual address to another.
  * Both addresses are assumed to reside in the Sysmap,
  * and size must be a multiple of CLSIZE.
  */
+void
 pagemove(from, to, size)
 	register caddr_t from, to;
-	int size;
+	size_t size;
 {
 	register pt_entry_t *fpte, *tpte;
 
@@ -290,6 +312,7 @@ pagemove(from, to, size)
 /*
  * Convert kernel VA to physical address
  */
+int
 kvtop(addr)
 	register caddr_t addr;
 {
@@ -321,6 +344,7 @@ extern vm_map_t phys_map;
  * All requests are (re)mapped into kernel VA space via the useriomap
  * (a name with only slightly more meaning than "kernelmap")
  */
+void
 vmapbuf(bp, len)
 	struct buf *bp;
 	vm_size_t len;
@@ -352,6 +376,7 @@ vmapbuf(bp, len)
  * Free the io map PTEs associated with this IO operation.
  * We also invalidate the TLB entries and restore the original b_addr.
  */
+void
 vunmapbuf(bp, len)
 	struct buf *bp;
 	vm_size_t len;

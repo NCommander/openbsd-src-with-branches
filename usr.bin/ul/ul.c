@@ -1,3 +1,4 @@
+/*	$OpenBSD: ul.c,v 1.3 1996/06/26 05:42:05 deraadt Exp $	*/
 /*	$NetBSD: ul.c,v 1.3 1994/12/07 00:28:24 jtc Exp $	*/
 
 /*
@@ -43,10 +44,12 @@ static char copyright[] =
 #if 0
 static char sccsid[] = "@(#)ul.c	8.1 (Berkeley) 6/6/93";
 #endif
-static char rcsid[] = "$NetBSD: ul.c,v 1.3 1994/12/07 00:28:24 jtc Exp $";
+static char rcsid[] = "$OpenBSD: ul.c,v 1.3 1996/06/26 05:42:05 deraadt Exp $";
 #endif /* not lint */
 
 #include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 
 #define	IESC	'\033'
 #define	SO	'\016'
@@ -93,12 +96,11 @@ main(argc, argv)
 	char *termtype;
 	FILE *f;
 	char termcap[1024];
-	char *getenv(), *strcpy();
 
 	termtype = getenv("TERM");
 	if (termtype == NULL || (argv[0][0] == 'c' && !isatty(1)))
 		termtype = "lpr";
-	while ((c=getopt(argc, argv, "it:T:")) != EOF)
+	while ((c=getopt(argc, argv, "it:T:")) != -1)
 		switch(c) {
 
 		case 't':
@@ -142,8 +144,10 @@ main(argc, argv)
 		if (f == NULL) {
 			perror(argv[optind]);
 			exit(1);
-		} else
-			filter(f);
+		}
+
+		filter(f);
+		fclose(f);
 	}
 	exit(0);
 }

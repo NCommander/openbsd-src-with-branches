@@ -1,20 +1,36 @@
-/*	$Id$	*/
+/*	$OpenBSD: klist.c,v 1.4 1998/02/18 11:53:56 art Exp $	*/
+/* $KTH: klist.c,v 1.28 1997/05/26 17:33:50 bg Exp $ */
+
+/*
+ * This source code is no longer held under any constraint of USA
+ * `cryptographic laws' since it was exported legally.  The cryptographic
+ * functions were removed from the code and a "Bones" distribution was
+ * made.  A Commodity Jurisdiction Request #012-94 was filed with the
+ * USA State Department, who handed it to the Commerce department.  The
+ * code was determined to fall under General License GTDA under ECCN 5D96G,
+ * and hence exportable.  The cryptographic interfaces were re-added by Eric
+ * Young, and then KTH proceeded to maintain the code in the free world.
+ */
 
 /*-
- * Copyright 1987, 1988 by the Student Information Processing Board
- *	of the Massachusetts Institute of Technology
+ * Copyright (C) 1989 by the Massachusetts Institute of Technology
  *
- * Permission to use, copy, modify, and distribute this software
- * and its documentation for any purpose and without fee is
- * hereby granted, provided that the above copyright notice
- * appear in all copies and that both that copyright notice and
- * this permission notice appear in supporting documentation,
- * and that the names of M.I.T. and the M.I.T. S.I.P.B. not be
- * used in advertising or publicity pertaining to distribution
- * of the software without specific, written prior permission.
- * M.I.T. and the M.I.T. S.I.P.B. make no representations about
- * the suitability of this software for any purpose.  It is
- * provided "as is" without express or implied warranty.
+ * Export of this software from the United States of America is assumed
+ * to require a specific license from the United States Government.
+ * It is the responsibility of any person or organization contemplating
+ * export to obtain such a license before exporting.
+ *
+ * WITHIN THAT CONSTRAINT, permission to use, copy, modify, and
+ * distribute this software and its documentation for any purpose and
+ * without fee is hereby granted, provided that the above copyright
+ * notice appear in all copies and that both that copyright notice and
+ * this permission notice appear in supporting documentation, and that
+ * the name of M.I.T. not be used in advertising or publicity pertaining
+ * to distribution of the software without specific, written prior
+ * permission.  M.I.T. makes no representations about the suitability of
+ * this software for any purpose.  It is provided "as is" without express
+ * or implied warranty.
+ *
  */
 
 /*
@@ -22,30 +38,32 @@
  * Written by Bill Sommerfeld, MIT Project Athena.
  */
 
-#include <kuser_locl.h>
+#include "kuser_locl.h"
 
-char   *whoami;			/* What was I invoked as?? */
+#include <sys/ioctl.h>
+#include <sys/ioccom.h>
+#include <kerberosIV/kafs.h>
+
+static int option_verbose = 0;
+
+static char progname[]="klist";
 
 static char *
-short_date(dp)
-    time_t *dp;
+short_date(time_t dp)
 {
-    register char *cp;
+    char *cp;
+    time_t t = (time_t)dp;
 
-    if (*dp == (time_t)(-1L)) return "***  Never  *** ";
-    cp = ctime(dp) + 4;
+    if (t == (time_t)(-1L)) return "***  Never  *** ";
+    cp = ctime(&t) + 4;
     cp[15] = '\0';
     return (cp);
 }
 
 static void
-display_tktfile(file, tgt_test, long_form)
-char *file;
-int tgt_test, long_form;
+display_tktfile(char *file, int tgt_test, int long_form)
 {
-    char    pname[ANAME_SZ];
-    char    pinst[INST_SZ];
-    char    prealm[REALM_SZ];
+    krb_principal pr;
     char    buf1[20], buf2[20];
     int     k_errno;
     CREDENTIALS c;
@@ -70,11 +88,11 @@ int tgt_test, long_form;
     /* Open ticket file */
     if ((k_errno = tf_init(file, R_TKT_FIL))) {
 	if (!tgt_test)
-		fprintf(stderr, "%s: %s\n", whoami, krb_err_txt[k_errno]);
+	    warnx("%s", krb_get_err_text(k_errno));
 	exit(1);
     }
     /* Close ticket file */
-    (void) tf_close();
+    tf_close();
 
     /* 
      * We must find the realm of the ticket file here before calling
@@ -82,25 +100,25 @@ int tgt_test, long_form;
      * really stored in the principal section of the file, the
      * routine we use must itself call tf_init and tf_close.
      */
-    if ((k_errno = krb_get_tf_realm(file, prealm)) != KSUCCESS) {
+    if ((k_errno = krb_get_tf_realm(file, pr.realm)) != KSUCCESS) {
 	if (!tgt_test)
-	    fprintf(stderr, "%s: can't find realm of ticket file: %s\n",
-		    whoami, krb_err_txt[k_errno]);
+	    warnx("can't find realm of ticket file: %s", 
+		  krb_get_err_text(k_errno));
 	exit(1);
     }
 
     /* Open ticket file */
     if ((k_errno = tf_init(file, R_TKT_FIL))) {
 	if (!tgt_test)
-		fprintf(stderr, "%s: %s\n", whoami, krb_err_txt[k_errno]);
+	    warnx("%s", krb_get_err_text(k_errno));
 	exit(1);
     }
     /* Get principal name and instance */
-    if ((k_errno = tf_get_pname(pname)) ||
-	(k_errno = tf_get_pinst(pinst))) {
-	    if (!tgt_test)
-		    fprintf(stderr, "%s: %s\n", whoami, krb_err_txt[k_errno]);
-	    exit(1);
+    if ((k_errno = tf_get_pname(pr.name)) ||
+	(k_errno = tf_get_pinst(pr.instance))) {
+	if (!tgt_test)
+	    warnx("%s", krb_get_err_text(k_errno));
+	exit(1);
     }
 
     /* 
@@ -111,19 +129,18 @@ int tgt_test, long_form;
      */
        
     if (!tgt_test && long_form)
-	printf("Principal:\t%s%s%s%s%s\n\n", pname,
-	       (pinst[0] ? "." : ""), pinst,
-	       (prealm[0] ? "@" : ""), prealm);
+	printf("Principal:\t%s\n\n", krb_unparse_name(&pr));
     while ((k_errno = tf_get_cred(&c)) == KSUCCESS) {
 	if (!tgt_test && long_form && header) {
-	    printf("%-15s  %-15s  %s\n",
-		   "  Issued", "  Expires", "  Principal");
+	    printf("%-15s  %-15s  %s%s\n",
+		   "  Issued", "  Expires", "  Principal", 
+		   option_verbose ? " (kvno)" : "");
 	    header = 0;
 	}
 	if (tgt_test) {
 	    c.issue_date = krb_life_to_time(c.issue_date, c.lifetime);
-	    if (!strcmp(c.service, TICKET_GRANTING_TICKET) &&
-		!strcmp(c.instance, prealm)) {
+	    if (!strcmp(c.service, KRB_TICKET_GRANTING_TICKET) &&
+		!strcmp(c.instance, pr.realm)) {
 		if (time(0) < c.issue_date)
 		    exit(0);		/* tgt hasn't expired */
 		else
@@ -132,17 +149,18 @@ int tgt_test, long_form;
 	    continue;			/* not a tgt */
 	}
 	if (long_form) {
-	    (void) strcpy(buf1, short_date(&c.issue_date));
+	    strcpy(buf1, short_date(c.issue_date));
 	    c.issue_date = krb_life_to_time(c.issue_date, c.lifetime);
 	    if (time(0) < (unsigned long) c.issue_date)
-	        (void) strcpy(buf2, short_date(&c.issue_date));
+	        strcpy(buf2, short_date(c.issue_date));
 	    else
-	        (void) strcpy(buf2, ">>> Expired <<< ");
+	        strcpy(buf2, ">>> Expired <<<");
 	    printf("%s  %s  ", buf1, buf2);
 	}
-	printf("%s%s%s%s%s\n",
-	       c.service, (c.instance[0] ? "." : ""), c.instance,
-	       (c.realm[0] ? "@" : ""), c.realm);
+	printf("%s", krb_unparse_name_long(c.service, c.instance, c.realm));
+	if(long_form && option_verbose)
+	  printf(" (%d)", c.kvno);
+	printf("\n");
     }
     if (tgt_test)
 	exit(1);			/* no tgt found */
@@ -165,14 +183,15 @@ int tgt_test, long_form;
  */
 
 static int
-ok_getst(fd, s, n)
-    int fd;
-    register char *s;
-    int n;
+ok_getst(int fd, char *s, int n)
 {
-    register count = n;
+    int count = n;
     int err;
-    while ((err = read(fd, s, 1)) > 0 && --count)
+
+    if (s == NULL)
+	return -1;
+
+    while ((err = read(fd, s, 1)) > 0 && (--count) != 0)
         if (*s++ == '\0')
             return (n - count);
     if (err < 0)
@@ -182,8 +201,48 @@ ok_getst(fd, s, n)
 }
 
 static void
-display_srvtab(file)
-char *file;
+display_tokens(void)
+{
+    u_int32_t i;
+    unsigned char t[128];
+    struct ViceIoctl parms;
+
+    parms.in = (void *)&i;
+    parms.in_size = sizeof(i);
+    parms.out = (void *)t;
+    parms.out_size = sizeof(t);
+
+    for (i = 0; k_pioctl(NULL, VIOCGETTOK, &parms, 0) == 0; i++) {
+        int32_t size_secret_tok, size_public_tok;
+        char *cell;
+	struct ClearToken ct;
+	unsigned char *r = t;
+
+	memcpy(&size_secret_tok, r, sizeof(size_secret_tok));
+	/* dont bother about the secret token */
+	r += size_secret_tok + sizeof(size_secret_tok);
+	memcpy(&size_public_tok, r, sizeof(size_public_tok));
+	r += sizeof(size_public_tok);
+	memcpy(&ct, r, size_public_tok);
+	r += size_public_tok;
+	/* there is a int32_t with length of cellname, but we dont read it */
+	r += sizeof(int32_t);
+	cell = r;
+
+	printf("%-15s  ", short_date(ct.BeginTimestamp));
+	printf("%-15s  ", short_date(ct.EndTimestamp));
+	if ((ct.EndTimestamp - ct.BeginTimestamp) & 1)
+	  printf("User's (AFS ID %d) tokens for %s", ct.ViceId, cell);
+	else
+	  printf("Tokens for %s", cell);
+	if (option_verbose)
+	    printf(" (%d)", ct.AuthHandle);
+	putchar('\n');
+    }
+}
+
+static void
+display_srvtab(char *file)
 {
     int stab;
     char serv[SNAME_SZ];
@@ -207,44 +266,44 @@ char *file;
     while (((count = ok_getst(stab, serv, SNAME_SZ)) > 0)
 	   && ((count = ok_getst(stab, inst, INST_SZ)) > 0)
 	   && ((count = ok_getst(stab, rlm, REALM_SZ)) > 0)) {
-	if (((count = read(stab,(char *) &vno,1)) != 1) ||
-	     ((count = read(stab,(char *) key,8)) != 8)) {
+	if (((count = read(stab,  &vno,1)) != 1) ||
+	     ((count = read(stab, key,8)) != 8)) {
 	    if (count < 0)
-		perror("reading from key file");
+		err(1, "reading from key file");
 	    else
-		fprintf(stderr, "key file truncated\n");
-	    exit(1);
+		errx(1, "key file truncated");
 	}
 	printf("%-15s %-15s %-15s %d\n",serv,inst,rlm,vno);
     }
     if (count < 0)
-	perror(file);
-    (void) close(stab);
+	warn(file);
+    close(stab);
 }
 
 static void
-usage()
+usage(void)
 {
     fprintf(stderr,
-        "Usage: %s [ -s | -t ] [ -file filename ] [ -srvtab ]\n", whoami);
+	    "Usage: %s [ -v | -s | -t ] [ -f filename ] [-tokens] [-srvtab ]\n",
+	    progname);
     exit(1);
 }
 
 /* ARGSUSED */
 int
-main(argc, argv)
-    int     argc;
-    char  **argv;
+main(int argc, char **argv)
 {
     int     long_form = 1;
     int     tgt_test = 0;
     int     do_srvtab = 0;
+    int     do_tokens = 0;
     char   *tkt_file = NULL;
-    char   *cp;
 
-    whoami = (cp = strrchr(*argv, '/')) ? cp + 1 : *argv;
-
-    while (*(++argv)) {
+    while (*(++argv) != NULL) {
+	if (!strcmp(*argv, "-v")) {
+	    option_verbose = 1;
+	    continue;
+	}
 	if (!strcmp(*argv, "-s")) {
 	    long_form = 0;
 	    continue;
@@ -254,10 +313,15 @@ main(argc, argv)
 	    long_form = 0;
 	    continue;
 	}
+	if (strcmp(*argv, "-tokens") == 0
+	    || strcmp(*argv, "-T") == 0) {
+	    do_tokens = k_hasafs();
+	    continue;
+	}
 	if (!strcmp(*argv, "-l")) {	/* now default */
 	    continue;
 	}
-	if (!strcmp(*argv, "-file")) {
+	if (!strncmp(*argv, "-f", 2)) {
 	    if (*(++argv)) {
 		tkt_file = *argv;
 		continue;
@@ -278,5 +342,9 @@ main(argc, argv)
 	display_srvtab(tkt_file);
     else
 	display_tktfile(tkt_file, tgt_test, long_form);
+    if (long_form && do_tokens){
+	printf("\nAFS tokens:\n");
+	display_tokens();
+    }
     exit(0);
 }

@@ -1,3 +1,4 @@
+/*	$OpenBSD: com7.c,v 1.4 1997/09/01 18:13:14 millert Exp $	*/
 /*	$NetBSD: com7.c,v 1.3 1995/03/21 15:07:12 cgd Exp $	*/
 
 /*
@@ -41,8 +42,9 @@ static char rcsid[] = "$NetBSD: com7.c,v 1.3 1995/03/21 15:07:12 cgd Exp $";
 #endif
 #endif /* not lint */
 
-#include "externs.h"
+#include "extern.h"
 
+int
 fight(enemy,strength)
 int enemy,strength;
 {
@@ -54,15 +56,15 @@ int enemy,strength;
 	int exhaustion;
 
 fighton:
-	time++;
+	btime++;
 	snooze -= 5;
-	if (snooze > time)
-		exhaustion = CYCLE/(snooze - time);
+	if (snooze > btime)
+		exhaustion = CYCLE/(snooze - btime);
 	else {
 		puts("You collapse exhausted, and he pulverizes your skull.");
-		die();
+		die(0);
 	}
-	if (snooze - time < 20)
+	if (snooze - btime < 20)
 		puts("You look tired! I hope you're able to fight.");
 	next = getcom(auxbuf, LINELENGTH, "<fight!>-: ", 0);
 	for (i=0; next && i < 10; i++)
@@ -78,7 +80,7 @@ fighton:
 				hurt = rnd(50)%(WEIGHT-carrying)-card(injuries,NUMOFINJURIES)-encumber - exhaustion;
 			else if (testbit(inven,KNIFE) || testbit(inven,MALLET) || testbit(inven,CHAIN) || testbit(inven,MACE) || testbit(inven,HALBERD))
 				hurt = rnd(15) - card(injuries,NUMOFINJURIES) - exhaustion;
-			else 
+			else
 				hurt = rnd(7) - encumber;
 			if (hurt < 5)
 				switch(rnd(3)){
@@ -180,7 +182,7 @@ fighton:
 						puts("his power grows and the walls of\nthe earth tremble.");
 						puts("When he touches the medallion, your chest explodes and the foundations of the\nearth collapse.");
 						puts("The planet is consumed by darkness.");
-						die();
+						die(0);
 					}
 					if (testbit(inven,AMULET)){
 						clearbit(inven,AMULET);
@@ -192,12 +194,12 @@ fighton:
 					puts("he flees down the dark caverns.");
 					clearbit(location[position].objects,DARK);
 					injuries[SKULL] = 1;
-					followfight = time;
+					followfight = btime;
 					return (0);
 				}
 				else{
 					puts("I'm afraid you have been killed.");
-					die();
+					die(0);
 				}
 			}
 			else{
@@ -237,7 +239,7 @@ fighton:
 		case DROP:
 		case DRAW:
 			cypher();
-			time--;
+			btime--;
 			break;
 		
 		default:
@@ -268,7 +270,7 @@ fighton:
 		puts("You emerge unscathed.");
 	if (injuries[SKULL] && injuries[INCISE] && injuries[NECK]){
 		puts("I'm afraid you have suffered fatal injuries.");
-		die();
+		die(0);
 	}
 	goto fighton;
 }

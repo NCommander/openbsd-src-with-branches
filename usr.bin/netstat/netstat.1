@@ -1,3 +1,4 @@
+.\"	$OpenBSD: netstat.1,v 1.9 1997/09/19 09:24:22 deraadt Exp $
 .\"	$NetBSD: netstat.1,v 1.11 1995/10/03 21:42:43 thorpej Exp $
 .\"
 .\" Copyright (c) 1983, 1990, 1992, 1993
@@ -103,12 +104,24 @@ are recognized:
 .Ar inet  ,
 for
 .Dv AF_INET  ,
+.Ar ipx ,
+for
+.Dv AF_IPX  ,
+.Ar atalk ,
+for
+.Dv AF_APPLETALK ,
 .Ar ns ,
 for
 .Dv AF_NS  ,
 .Ar iso ,
 for
 .Dv AF_ISO ,
+.Ar encap ,
+for
+.Dv AF_ENCAP ,
+.Ar local  ,
+for
+.Dv AF_LOCAL  ,
 and
 .Ar unix  ,
 for
@@ -147,7 +160,7 @@ Show statistics recorded by the memory management routines
 (the network manages a private pool of memory buffers).
 .It Fl N
 Extract the name list from the specified system instead of the default
-.Pa /netbsd .
+.Pa /bsd .
 .It Fl n
 Show network addresses as numbers (normally
 .Nm netstat
@@ -173,6 +186,8 @@ Show the routing tables.
 When
 .Fl s
 is also present, show routing statistics instead.
+.It Fl v
+be verbose. This currently has no effect.
 .It Fl w Ar wait
 Show network interface statistics at intervals of
 .Ar wait
@@ -200,26 +215,31 @@ refer to
 .Xr inet 3 ) .
 Unspecified,
 or ``wildcard'', addresses and ports appear as ``*''.
+If a local port number is registered as being in use for RPC by
+.Xr portmap 8
+it's RPC service name or RPC service number will be printed in
+[ ] immediately after the port number.
 .Pp
 The interface display provides a table of cumulative
 statistics regarding packets transferred, errors, and collisions.
 The network addresses of the interface
 and the maximum transmission unit (``mtu'') are also displayed.
 .Pp
-The routing table display indicates the available routes and
-their status.  Each route consists of a destination host or network
-and a gateway to use in forwarding packets.  The flags field shows
-a collection of information about the route stored as
-binary choices.  The individual flags are discussed in more
-detail in the
+The routing table display indicates the available routes and their
+status.  Each route consists of a destination host or network and
+a gateway to use in forwarding packets.  If the destination is a
+network in numeric format, the netmask (in /24 style format) is
+appended.  The flags field shows a collection of information about
+the route stored as binary choices.  The individual flags are
+discussed in more detail in the
 .Xr route 8
 and
 .Xr route 4
 manual pages.
 The mapping between letters and flags is:
 .Bl -column XXXX RTF_BLACKHOLE
-1	RTF_PROTO2	Protocol specific routing flag #1 
-2	RTF_PROTO1	Protocol specific routing flag #2 
+1	RTF_PROTO1	Protocol specific routing flag #1 
+2	RTF_PROTO2	Protocol specific routing flag #2 
 B	RTF_BLACKHOLE	Just discard pkts (during updates) 
 C	RTF_CLONING	Generate new routes on use 
 D	RTF_DYNAMIC	Created dynamically (by redirect) 
@@ -287,7 +307,7 @@ command appeared in
 .Bx 4.2 .
 .\" .Sh FILES
 .\" .Bl -tag -width /dev/kmem -compact
-.\" .It Pa /netbsd
+.\" .It Pa /bsd
 .\" default kernel namelist
 .\" .It Pa /dev/kmem
 .\" default memory file

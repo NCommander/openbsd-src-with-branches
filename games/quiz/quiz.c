@@ -84,8 +84,12 @@ main(argc, argv)
 	register int ch;
 	char *indexfile;
 
+	/* revoke */
+	setegid(getgid());
+	setgid(getgid());
+
 	indexfile = _PATH_QUIZIDX;
-	while ((ch = getopt(argc, argv, "i:t")) != EOF)
+	while ((ch = getopt(argc, argv, "i:t")) != -1)
 		switch(ch) {
 		case 'i':
 			indexfile = optarg;
@@ -297,14 +301,21 @@ char *
 next_cat(s)
 	register char *	s;
 {
+	int esc = 0;
+
 	for (;;)
 		switch (*s++) {
 		case '\0':
 			return (NULL);
 		case '\\':
+			esc = 1;
 			break;
 		case ':':
-			return (s);
+			if (!esc)
+				return (s);
+		default:
+			esc = 0;
+			break;
 		}
 	/* NOTREACHED */
 }

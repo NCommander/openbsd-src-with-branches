@@ -1,5 +1,5 @@
+/* * $OpenBSD: warnings.c,v 1.2 1997/07/08 09:34:58 deraadt Exp $*/
 /*
- * $Id: warnings.c,v 1.18 1994/12/28 10:37:38 pk Exp $
  */
 
 #include <sys/param.h>
@@ -745,8 +745,8 @@ do_warnings(outfile)
 	if (list_unresolved_refs &&
 	    reported_undefineds !=
 	    (undefined_global_sym_count - undefined_weak_sym_count))
-		warnx("Spurious undefined symbols: "
-		      "# undefined symbols %d, reported %d",
+		warnx("internal consistency check failure: "
+		      "# undefined symbols %d, accounted for %d",
 		      (undefined_global_sym_count - undefined_weak_sym_count),
 		      reported_undefineds);
 

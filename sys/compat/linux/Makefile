@@ -1,3 +1,4 @@
+#	$OpenBSD$
 #	$NetBSD: Makefile,v 1.1 1995/02/28 23:26:21 fvdl Exp $
 
 DEP=	syscalls.conf syscalls.master ../../kern/makesyscalls.sh

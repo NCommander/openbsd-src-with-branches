@@ -57,11 +57,11 @@ static char rcsid[] = "$NetBSD: main.c,v 1.4 1995/04/22 10:59:10 cgd Exp $";
 int	Mother	= 51 + (51 << 8);
 
 /*
-**	 ####  #####    #    ####          #####  ####   #####  #   #
-**	#        #     # #   #   #           #    #   #  #      #  #
-**	 ###     #    #####  ####            #    ####   ###    ###
-**	    #    #    #   #  #  #            #    #  #   #      #  #
-**	####     #    #   #  #   #           #    #   #  #####  #   #
+**	 ####  #####	#    ####	   #####  ####	 #####	#   #
+**	#	 #     # #   #	 #	     #	  #   #	 #	#  #
+**	 ###	 #    #####  ####	     #	  ####	 ###	###
+**	    #	 #    #	  #  #	#	     #	  #  #	 #	#  #
+**	####	 #    #	  #  #	 #	     #	  #   #	 #####	#   #
 **
 **	C version by Eric P. Allman 5/76 (U.C. Berkeley) with help
 **		from Jeff Poskanzer and Pete Rubinstein.
@@ -155,17 +155,22 @@ int	Mother	= 51 + (51 << 8);
 
 jmp_buf env;
 
+int
 main(argc, argv)
 int	argc;
 char	**argv;
 {
-	long			vect;
+	time_t			vect;
 	/* extern FILE		*f_log; */
 	register char		opencode;
 	int			prio;
 	register int		ac;
 	register char		**av;
 	struct	termios		argp;
+
+	/* revoke privs */
+	setegid(getgid());
+	setgid(getgid());
 
 	av = argv;
 	ac = argc;

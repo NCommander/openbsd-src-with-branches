@@ -1,4 +1,5 @@
-/*	$NetBSD: ansi.h,v 1.5 1994/10/26 07:50:40 cgd Exp $	*/
+/*	$OpenBSD: ansi.h,v 1.4 1997/07/05 21:09:10 millert Exp $	*/
+/*	$NetBSD: ansi.h,v 1.7 1996/11/15 22:38:52 jtc Exp $	*/
 
 /*-
  * Copyright (c) 1990, 1993
@@ -51,8 +52,10 @@
 #define	_BSD_PTRDIFF_T_	int			/* ptr1 - ptr2 */
 #define	_BSD_SIZE_T_	unsigned int		/* sizeof() */
 #define	_BSD_SSIZE_T_	int			/* byte count or error */
-#define	_BSD_TIME_T_	long			/* time() */
+#define	_BSD_TIME_T_	int			/* time() */
 #define	_BSD_VA_LIST_	char *			/* va_list */
+#define _BSD_CLOCKID_T_	int
+#define _BSD_TIMER_T_	int
 
 /*
  * Runes (wchar_t) is declared to be an ``int'' instead of the more natural
@@ -69,6 +72,7 @@
  * defined for ctype.h.
  */
 #define	_BSD_WCHAR_T_	int			/* wchar_t */
+#define _BSD_WINT_T_	int			/* wint_t */
 #define	_BSD_RUNE_T_	int			/* rune_t */
 
 #endif	/* _ANSI_H_ */

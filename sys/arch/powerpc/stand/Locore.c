@@ -1,3 +1,4 @@
+/*	$OpenBSD: Locore.c,v 1.4 1997/02/18 22:36:40 rahnds Exp $	*/
 /*	$NetBSD: Locore.c,v 1.1 1996/09/30 16:34:58 ws Exp $	*/
 
 /*
@@ -33,14 +34,20 @@
 #include <stand.h>
 #include <openfirm.h>
 
+/*
 #include <machine/cpu.h>
+*/
 
 static int (*openfirmware)(void *);
 
 static void
 setup();
 
+void _start();
+
 #define __dead
+
+void const *__start[3] = { &_start, 0, 0};
 
 __dead void
 _start(vpd, res, openfirm, arg, argl)
@@ -52,14 +59,12 @@ _start(vpd, res, openfirm, arg, argl)
 {
 	extern char etext;
 
-#ifdef	FIREPOWERBUGS
-	syncicache((void *)RELOC, &etext - (char *)RELOC);
-#endif
 	openfirmware = openfirm;	/* Save entry to Open Firmware */
 	setup();
 	main(arg, argl);
 	exit();
 }
+
 
 __dead void
 _rtt()
@@ -466,7 +471,7 @@ getchar()
 	int l;
 
 	while ((l = OF_read(stdin, &ch, 1)) != 1)
-		if (l != -2)
+		if (l != -2 && l != 0)
 			return -1;
 	return ch;
 }

@@ -15,7 +15,7 @@
  * IMPLIED WARRANTIES, INCLUDING, WITHOUT LIMITATION, THE IMPLIED
  * WARRANTIES OF MERCHANTIBILITY AND FITNESS FOR A PARTICULAR PURPOSE.
  *
- * $Id: vars.h,v 1.35 1997/11/22 03:37:54 brian Exp $
+ * $Id: vars.h,v 1.6 1998/01/20 22:46:32 brian Exp $
  *
  *	TODO:
  */
@@ -32,19 +32,22 @@ struct confdesc {
 #define	CONF_DENY	0
 #define	CONF_ACCEPT	1
 
-#define	ConfVjcomp	0
-#define	ConfLqr		1
-#define	ConfChap	2
-#define	ConfPap		3
-#define	ConfAcfcomp	4
-#define	ConfProtocomp	5
+#define	ConfAcfcomp	0
+#define	ConfChap	1
+#define	ConfDeflate	2
+#define	ConfLqr		3
+#define	ConfPap		4
+#define	ConfPppdDeflate	5
 #define	ConfPred1	6
-#define	ConfProxy	7
-#define ConfMSExt	8
-#define ConfPasswdAuth	9
-#define ConfUtmp	10
-#define ConfThroughput	11
-#define	MAXCONFS	12
+#define	ConfProtocomp	7
+#define	ConfVjcomp	8
+
+#define ConfMSExt	9
+#define ConfPasswdAuth	10
+#define	ConfProxy	11
+#define ConfThroughput	12
+#define ConfUtmp	13
+#define	MAXCONFS	14
 
 #define	Enabled(x)	(pppConfs[x].myside & CONF_ENABLE)
 #define	Acceptable(x)	(pppConfs[x].hisside & CONF_ACCEPT)
@@ -52,8 +55,8 @@ struct confdesc {
 extern struct confdesc pppConfs[MAXCONFS + 1];
 
 struct pppvars {
-  u_long var_mru;		/* Initial MRU value */
-  u_long pref_mtu;		/* Preferred MTU value */
+  u_short var_mru;		/* Initial MRU value */
+  u_short pref_mtu;		/* Preferred MTU value */
   int var_accmap;		/* Initial ACCMAP value */
   int modem_speed;		/* Current modem speed */
   int modem_parity;		/* Parity setting */
@@ -67,9 +70,10 @@ struct pppvars {
   int redial_next_timeout;	/* Redial next timeout value */
   int dial_tries;		/* Dial attempts before giving up, 0 == inf */
   int loopback;			/* Turn around packets addressed to me */
+  char modem_devlist[LINE_LEN];	/* Comma-separated list of devices */
   char modem_dev[40];		/* Name of device / host:port */
   const char *base_modem_dev;	/* Pointer to base of modem_dev */
-  int open_mode;		/* LCP open mode */
+  int open_mode;		/* Delay before first LCP REQ (-1 = passive) */
 #define LOCAL_AUTH	0x01
 #define LOCAL_NO_AUTH	0x02
 #define LOCAL_DENY	0x03
@@ -99,6 +103,7 @@ struct pppvars {
 #define VarMRU			pppVars.var_mru
 #define VarPrefMTU		pppVars.pref_mtu
 #define	VarDevice		pppVars.modem_dev
+#define	VarDeviceList		pppVars.modem_devlist
 #define	VarBaseDevice		pppVars.base_modem_dev
 #define	VarSpeed		pppVars.modem_speed
 #define	VarParity		pppVars.modem_parity
@@ -151,11 +156,7 @@ extern char VarVersion[];
 extern char VarLocalVersion[];
 
 extern int Utmp;		/* Are we in /etc/utmp ? */
-extern int ipInOctets;
-extern int ipOutOctets;
 extern int ipKeepAlive;
-extern int ipConnectSecs;
-extern int ipIdleSecs;
 extern int reconnectState;
 extern int reconnectCount;
 
@@ -165,8 +166,8 @@ extern int reconnectCount;
 #define RECON_ENVOKED (4)
 #define reconnect(x)                          \
   do                                          \
-    if (reconnectState == RECON_UNKNOWN) { \
-      reconnectState = x;                  \
+    if (reconnectState == RECON_UNKNOWN) {    \
+      reconnectState = x;                     \
       if (x == RECON_FALSE)                   \
         reconnectCount = 0;                   \
     }                                         \

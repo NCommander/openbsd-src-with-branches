@@ -1,4 +1,5 @@
-/*	$NetBSD: swap.c,v 1.4 1995/08/31 22:20:19 jtc Exp $	*/
+/*	$OpenBSD: swap.c,v 1.8 1997/04/01 18:11:58 deraadt Exp $	*/
+/*	$NetBSD: swap.c,v 1.5 1996/05/10 23:16:38 thorpej Exp $	*/
 
 /*-
  * Copyright (c) 1980, 1992, 1993
@@ -37,7 +38,7 @@
 #if 0
 static char sccsid[] = "@(#)swap.c	8.3 (Berkeley) 4/29/95";
 #endif
-static char rcsid[] = "$NetBSD: swap.c,v 1.4 1995/08/31 22:20:19 jtc Exp $";
+static char rcsid[] = "$OpenBSD: swap.c,v 1.8 1997/04/01 18:11:58 deraadt Exp $";
 #endif /* not lint */
 
 /*
@@ -64,8 +65,6 @@ static char rcsid[] = "$NetBSD: swap.c,v 1.4 1995/08/31 22:20:19 jtc Exp $";
 extern char *getbsize __P((int *headerlenp, long *blocksizep));
 void showspace __P((char *header, int hlen, long blocksize));
 
-kvm_t	*kd;
-
 struct nlist syms[] = {
 	{ "_swapmap" },	/* list of free swap areas */
 #define VM_SWAPMAP	0
@@ -79,14 +78,14 @@ struct nlist syms[] = {
 #define VM_NSWDEV	4
 	{ "_dmmax" },	/* maximum size of a swap block */
 #define VM_DMMAX	5
-	0
+	{ 0 }
 };
 
 static int nswap, nswdev, dmmax, nswapmap;
 static struct swdevt *sw;
 static long *perdev, blocksize;
 static struct map *swapmap, *kswapmap;
-static struct mapent *mp;
+static struct mapent *mpp;
 static int nfree, hlen;
 
 #define	SVAR(var) __STRING(var)	/* to force expansion */
@@ -117,6 +116,7 @@ closeswap(w)
 	delwin(w);
 }
 
+int
 initswap()
 {
 	int i;
@@ -129,6 +129,9 @@ initswap()
 		strcpy(msgbuf, "systat: swap: cannot find");
 		for (i = 0; syms[i].n_name != NULL; i++) {
 			if (syms[i].n_value == 0) {
+				if (strlen(msgbuf) + strlen(syms[i].n_name) +2 >
+				    sizeof (msgbuf))
+					continue;
 				strcat(msgbuf, " ");
 				strcat(msgbuf, syms[i].n_name);
 			}
@@ -143,7 +146,7 @@ initswap()
 	KGET(VM_SWAPMAP, kswapmap);	/* kernel `swapmap' is a pointer */
 	if ((sw = malloc(nswdev * sizeof(*sw))) == NULL ||
 	    (perdev = malloc(nswdev * sizeof(*perdev))) == NULL ||
-	    (mp = malloc(nswapmap * sizeof(*mp))) == NULL) {
+	    (mpp = malloc(nswapmap * sizeof(*mpp))) == NULL) {
 		error("swap malloc");
 		return (0);
 	}
@@ -155,9 +158,11 @@ initswap()
 void
 fetchswap()
 {
+	struct mapent *mp;
 	int s, e, i;
 
-	s = nswapmap * sizeof(*mp);
+	s = nswapmap * sizeof(*mpp);
+	mp = mpp;
 	if (kvm_read(kd, (long)kswapmap, mp, s) != s)
 		error("cannot read swapmap: %s", kvm_geterr(kd));
 
@@ -222,7 +227,7 @@ labelswap()
 void
 showswap()
 {
-	int col, row, div, i, j, avail, npfree, used, xsize, xfree;
+	int col, div, i, j, avail, npfree, used, xsize, xfree;
 
 	div = blocksize / 512;
 	avail = npfree = 0;
@@ -243,6 +248,7 @@ showswap()
 		xfree = perdev[i];
 		used = xsize - xfree;
 		mvwprintw(wnd, i + 1, col, "%9d  ", used / div);
+		wclrtoeol(wnd);
 		for (j = (100 * used / xsize + 1) / 2; j > 0; j--)
 			waddch(wnd, 'X');
 		npfree++;

@@ -1,4 +1,4 @@
-.\"	$NetBSD: connect.2,v 1.7 1995/02/27 12:32:17 cgd Exp $
+.\"	$NetBSD: connect.2,v 1.8 1995/10/12 15:40:48 jtc Exp $
 .\"
 .\" Copyright (c) 1983, 1993
 .\"	The Regents of the University of California.  All rights reserved.
@@ -43,7 +43,7 @@
 .Fd #include <sys/types.h>
 .Fd #include <sys/socket.h>
 .Ft int
-.Fn connect "int s" "struct sockaddr *name" "int namelen"
+.Fn connect "int s" "const struct sockaddr *name" "int namelen"
 .Sh DESCRIPTION
 The parameter
 .Fa s
@@ -94,6 +94,9 @@ Addresses in the specified address family cannot be used with this socket.
 The socket is already connected.
 .It Bq Er ETIMEDOUT
 Connection establishment timed out without establishing a connection.
+.It Bq Er EINVAL
+A TCP connection with a local broadcast or the all-ones address as
+the peer was attempted.
 .It Bq Er ECONNREFUSED
 The attempt to connect was forcefully rejected.
 .It Bq Er ENETUNREACH
@@ -111,7 +114,11 @@ and the connection cannot
 be completed immediately.
 It is possible to
 .Xr select 2
-for completion by selecting the socket for writing.
+for completion by selecting the socket for writing, and also use
+.Xr getsockopt 2
+with
+.Dv SO_ERROR
+to check for error conditions.
 .It Bq Er EALREADY
 The socket is non-blocking
 and a previous connection attempt
@@ -142,6 +149,7 @@ Too many symbolic links were encountered in translating the pathname.
 .Xr accept 2 ,
 .Xr select 2 ,
 .Xr socket 2 ,
+.Xr getsockopt 2 ,
 .Xr getsockname 2
 .Sh HISTORY
 The

@@ -88,7 +88,7 @@ int main(int argc, char **argv) {
 	int left = 0, mid = 0, right = 0, accel = 0, sticky = -1;
 	struct mousedefs mdef;
 
-	while((c = getopt(argc, argv, "l:m:r:a:s:")) != EOF)
+	while((c = getopt(argc, argv, "l:m:r:a:s:")) != -1)
 		switch(c) {
 		case 'l':
 			left = nametoscan(optarg);
@@ -147,7 +147,7 @@ int main(int argc, char **argv) {
 	
 	if(errs || argc != 1) {
 		fprintf(stderr, "usage: "
-			"mouse [-l key][-m key][-r key][-a acctime][-s 0|1] "
+			"mcon [-l key] [-m key] [-r key] [-a acctime] [-s 0|1] "
 			"mousedev\n");
 		return 2;
 	}

@@ -42,7 +42,7 @@
 .Sh SYNOPSIS
 .Fd #include <unistd.h>
 .Ft int
-.Fn pipe "int *fildes"
+.Fn pipe "int fildes[2]"
 .Sh DESCRIPTION
 The
 .Fn pipe
@@ -107,6 +107,11 @@ space.
 .Xr write 2 ,
 .Xr fork 2 ,
 .Xr socketpair 2
+.Sh STANDARDS
+The
+.Fn pipe
+function conforms to
+.St -p1003.1-88 .
 .Sh HISTORY
 A
 .Fn pipe

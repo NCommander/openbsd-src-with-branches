@@ -1,3 +1,4 @@
+/*	$OpenBSD: archive.h,v 1.2 1996/06/26 05:31:18 deraadt Exp $	*/
 /*	$NetBSD: archive.h,v 1.6 1995/03/25 06:39:43 glass Exp $	*/
 
 /*-
@@ -53,6 +54,7 @@
 #define	AR_U	0x0800
 #define	AR_V	0x1000
 #define	AR_X	0x2000
+#define	AR_CC	0x4000
 extern u_int options;
 
 /* Set up file copy. */

@@ -1,3 +1,4 @@
+/*	$OpenBSD: dp8390reg.h,v 1.3 1996/07/31 01:51:50 niklas Exp $	*/
 /*	$NetBSD: dp8390reg.h,v 1.2 1995/04/12 16:12:42 mycroft Exp $	*/
 
 /*
@@ -317,8 +318,10 @@
 #define ED_DCR_FT1	0x40
 
 /*
- * bit 7 (0x80) is unused/reserved
+ * QTS: Quad-word Transfer Select.  QTS establishes 32-bit word transfers
+ * for both remote and local DMA transfers.  (XXX - correct name?)
  */
+#define ED_DCR_QTS	0x80
 
 /*
  *		Transmit Configuration Register (TCR) definitions
@@ -527,18 +530,12 @@
  * end block #'s in the NIC.  For each packet that is put into the receive
  * ring, one of these headers (4 bytes each) is tacked onto the front.   The
  * first byte is a copy of the receiver status register at the time the packet
- * was received.
+ * was received.  The following constants are offsets into the headers.
  */
-struct ed_ring	{
-#if BYTE_ORDER == BIG_ENDIAN
-	u_char	next_packet;		/* pointer to next packet */
-	u_char	rsr;			/* receiver status */
-#else
-	u_char	rsr;			/* receiver status */
-	u_char	next_packet;		/* pointer to next packet */
-#endif
-	u_short	count;			/* bytes in packet (length + 4) */
-};
+#define ED_RING_RSR		0	/* receiver status */
+#define ED_RING_NEXT_PACKET	1	/* pointer to next packet */
+#define ED_RING_COUNT		2	/* bytes in packet (length + 4) */
+#define ED_RING_HDRSZ		4	/* Header size */
 
 /*
  * Common constants

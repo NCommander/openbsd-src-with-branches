@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: rtquery.c,v 1.6 1997/06/30 06:33:31 deraadt Exp $	*/
 
 /*-
  * Copyright (c) 1982, 1986, 1993
@@ -114,7 +114,7 @@ main(int argc,
 	OMSG.rip_nets[0].n_metric = htonl(HOPCNT_INFINITY);
 
 	pgmname = argv[0];
-	while ((ch = getopt(argc, argv, "np1w:r:t:")) != EOF)
+	while ((ch = getopt(argc, argv, "np1w:r:t:")) != -1)
 		switch (ch) {
 		case 'n':
 			not_trace = 1;
@@ -170,6 +170,8 @@ main(int argc,
 					"more",
 #				    define TRACE_OFF	2
 					"off",
+#				    define TRACE_DUMP	3
+					"dump",
 					0
 				};
 				switch (getsubopt(&options,traceopts,&value)) {
@@ -178,25 +180,30 @@ main(int argc,
 					if (!value
 					    || strlen(value) > MAXPATHLEN)
 						goto usage;
-					strcpy((char*)OMSG.rip_tracefile,value);
-					omsg_len += (strlen(value)
-						     - sizeof(OMSG.ripun));
 					break;
 				case TRACE_MORE:
 					if (value)
 						goto usage;
 					OMSG.rip_cmd = RIPCMD_TRACEON;
-					OMSG.rip_tracefile[0] = '\0';
+					value = "";
 					break;
 				case TRACE_OFF:
 					if (value)
 						goto usage;
 					OMSG.rip_cmd = RIPCMD_TRACEOFF;
-					OMSG.rip_tracefile[0] = '\0';
+					value = "";
+					break;
+				case TRACE_DUMP:
+					if (value)
+						goto usage;
+					OMSG.rip_cmd = RIPCMD_TRACEON;
+					value = "dump/../table";
 					break;
 				default:
 					goto usage;
 				}
+				strcpy((char*)OMSG.rip_tracefile, value);
+				omsg_len += strlen(value) - sizeof(OMSG.ripun);
 			}
 			break;
 
@@ -517,7 +524,7 @@ rip_input(struct sockaddr_in *from,
 				 * good guess.
 				 */
 				if ((in.s_addr & ~mask) == 0) {
-					np = getnetbyaddr((long)in.s_addr,
+					np = getnetbyaddr(in.s_addr,
 							  AF_INET);
 					if (np != 0)
 						name = np->n_name;
@@ -609,7 +616,7 @@ getnet(char *name,
 
 	/* Detect and separate "1.2.3.4/24"
 	 */
-	if (0 != (mname = rindex(name,'/'))) {
+	if (0 != (mname = strrchr(name,'/'))) {
 		i = (int)(mname - name);
 		if (i > sizeof(hname)-1)	/* name too long */
 			return 0;

@@ -633,6 +633,7 @@ read_scan_file (in_fname, argc, argv)
     exit (FATAL_EXIT_CODE);
   CPP_OPTIONS (&scan_in)->no_line_commands = 1;
 
+  /* Actually (pre-)process the header file. */
   scan_decls (&scan_in, argc, argv);
   for (cur_symbols = &symbol_table[0]; cur_symbols->names; cur_symbols++)
     check_macro_names (&scan_in, cur_symbols->names);

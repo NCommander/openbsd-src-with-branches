@@ -1,4 +1,5 @@
-/*	$NetBSD: in.c,v 1.25 1995/08/12 23:59:32 mycroft Exp $	*/
+/*	$OpenBSD: in.c,v 1.10 1998/03/20 02:45:06 deraadt Exp $	*/
+/*	$NetBSD: in.c,v 1.26 1996/02/13 23:41:39 christos Exp $	*/
 
 /*
  * Copyright (c) 1982, 1986, 1991, 1993
@@ -41,6 +42,7 @@
 #include <sys/malloc.h>
 #include <sys/socket.h>
 #include <sys/socketvar.h>
+#include <sys/systm.h>
 
 #include <net/if.h>
 #include <net/route.h>
@@ -50,13 +52,14 @@
 #include <netinet/in_var.h>
 #include <netinet/if_ether.h>
 #include <netinet/ip_mroute.h>
+#include <netinet/igmp_var.h>
 
 #include "ether.h"
 
 #ifdef INET
 
 #ifndef SUBNETSARELOCAL
-#define	SUBNETSARELOCAL	1
+#define	SUBNETSARELOCAL	0
 #endif
 int subnetsarelocal = SUBNETSARELOCAL;
 /*
@@ -138,7 +141,6 @@ in_control(so, cmd, data, ifp)
 {
 	register struct ifreq *ifr = (struct ifreq *)data;
 	register struct in_ifaddr *ia = 0;
-	register struct ifaddr *ifa;
 	struct in_aliasreq *ifra = (struct in_aliasreq *)data;
 	struct sockaddr_in oldaddr;
 	int error, hostIsNew, maskIsNew;
@@ -206,6 +208,18 @@ in_control(so, cmd, data, ifp)
 	case SIOCGIFNETMASK:
 	case SIOCGIFDSTADDR:
 	case SIOCGIFBRDADDR:
+		if (ia && satosin(&ifr->ifr_addr)->sin_addr.s_addr) {
+			struct in_ifaddr *ia2;
+
+			for (ia2 = ia; ia2; ia2 = ia2->ia_list.tqe_next) {
+				if (ia2->ia_ifp == ifp &&
+				    ia2->ia_addr.sin_addr.s_addr ==
+				    satosin(&ifr->ifr_addr)->sin_addr.s_addr)
+					break;
+			}
+			if (ia2 && ia2->ia_ifp == ifp)
+				ia = ia2;
+		}
 		if (ia == (struct in_ifaddr *)0)
 			return (EADDRNOTAVAIL);
 		break;
@@ -348,7 +362,7 @@ in_ifinit(ifp, ia, sin, scrub)
 {
 	register u_int32_t i = sin->sin_addr.s_addr;
 	struct sockaddr_in oldaddr;
-	int s = splimp(), flags = RTF_UP, error, ether_output();
+	int s = splimp(), flags = RTF_UP, error;
 
 	oldaddr = ia->ia_addr;
 	ia->ia_addr = *sin;
@@ -429,28 +443,58 @@ in_broadcast(in, ifp)
 	struct in_addr in;
 	struct ifnet *ifp;
 {
+	struct ifnet *ifn, *if_first, *if_target;
 	register struct ifaddr *ifa;
 
 	if (in.s_addr == INADDR_BROADCAST ||
 	    in.s_addr == INADDR_ANY)
 		return 1;
-	if ((ifp->if_flags & IFF_BROADCAST) == 0)
+	if (ifp && ((ifp->if_flags & IFF_BROADCAST) == 0))
 		return 0;
+
+	if (ifp == NULL)
+	{
+	  	if_first = ifnet.tqh_first;
+		if_target = 0;
+	}
+	else
+	{
+		if_first = ifp;
+		if_target = ifp->if_list.tqe_next;
+	}
+
+#define ia (ifatoia(ifa))
 	/*
 	 * Look through the list of addresses for a match
 	 * with a broadcast address.
+	 * If ifp is NULL, check against all the interfaces.
 	 */
-#define ia (ifatoia(ifa))
-	for (ifa = ifp->if_addrlist.tqh_first; ifa; ifa = ifa->ifa_list.tqe_next)
-		if (ifa->ifa_addr->sa_family == AF_INET &&
-		    (in.s_addr == ia->ia_broadaddr.sin_addr.s_addr ||
-		     in.s_addr == ia->ia_netbroadcast.s_addr ||
-		     /*
-		      * Check for old-style (host 0) broadcast.
-		      */
-		     in.s_addr == ia->ia_subnet ||
-		     in.s_addr == ia->ia_net))
-			    return 1;
+        for (ifn = if_first; ifn != if_target; ifn = ifn->if_list.tqe_next)
+	  for (ifa = ifn->if_addrlist.tqh_first; ifa;
+	       ifa = ifa->ifa_list.tqe_next)
+	      if (!ifp)
+	      {
+		  if (ifa->ifa_addr->sa_family == AF_INET &&
+		      ((ia->ia_subnetmask != 0xffffffff &&
+			(in.s_addr == ia->ia_broadaddr.sin_addr.s_addr ||
+			 in.s_addr == ia->ia_subnet)) ||
+		       /*
+			* Check for old-style (host 0) broadcast.
+			*/
+		       (in.s_addr == ia->ia_netbroadcast.s_addr ||
+			in.s_addr == ia->ia_net)))
+		              return 1;
+	      }
+	      else
+		  if (ifa->ifa_addr->sa_family == AF_INET &&
+		      (in.s_addr == ia->ia_broadaddr.sin_addr.s_addr ||
+		       in.s_addr == ia->ia_netbroadcast.s_addr ||
+		       /*
+			* Check for old-style (host 0) broadcast.
+			*/
+		       in.s_addr == ia->ia_subnet ||
+		       in.s_addr == ia->ia_net))
+		              return 1;
 	return (0);
 #undef ia
 }
@@ -525,7 +569,7 @@ in_addmulti(ap, ifp)
 /*
  * Delete a multicast address record.
  */
-int
+void
 in_delmulti(inm)
 	register struct in_multi *inm;
 {

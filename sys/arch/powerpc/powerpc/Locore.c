@@ -1,4 +1,4 @@
-/*	$NetBSD: Locore.c,v 1.1 1996/09/30 16:34:39 ws Exp $	*/
+/*	$OpenBSD: Locore.c,v 1.3 1996/12/28 06:21:33 rahnds Exp $	*/
 
 /*
  * Copyright (C) 1995, 1996 Wolfgang Solfrank.
@@ -42,7 +42,7 @@
 int whichqs;
 
 /*
- * Put process p on the run queue indicated by its priority.
+ * Put process p on the run queue, given by its priority.
  * Calls should be made at splstatclock(), and p->p_stat should be SRUN.
  */
 void
@@ -66,12 +66,11 @@ setrunqueue(p)
 }
 
 /*
- * Remove process p from its run queue, which should be the one
- * indicated by its priority.
+ * Remove process p from its run queue, given by its priority.
  * Calls should be made at splstatclock().
  */
 void
-remrq(p)
+remrunqueue(p)
 	struct proc *p;
 {
 	int which = p->p_priority >> 2;
@@ -79,7 +78,7 @@ remrq(p)
 
 #ifdef	DIAGNOSTIC	
 	if (!(whichqs & (0x80000000 >> which)))
-		panic("remrq");
+		panic("remrunqueue");
 #endif
 	p->p_forw->p_back = p->p_back;
 	p->p_back->p_forw = p->p_forw;

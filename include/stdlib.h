@@ -1,4 +1,5 @@
-/*	$NetBSD: stdlib.h,v 1.24 1995/03/22 01:08:31 jtc Exp $	*/
+/*	$OpenBSD: stdlib.h,v 1.6 1998/02/06 01:49:06 deraadt Exp $	*/
+/*	$NetBSD: stdlib.h,v 1.25 1995/12/27 21:19:08 jtc Exp $	*/
 
 /*-
  * Copyright (c) 1990 The Regents of the University of California.
@@ -85,7 +86,7 @@ typedef struct {
 #include <sys/cdefs.h>
 
 __BEGIN_DECLS
-void	 abort __P((void));
+__dead void	 abort __P((void));
 int	 abs __P((int));
 int	 atexit __P((void (*)(void)));
 double	 atof __P((const char *));
@@ -95,7 +96,7 @@ void	*bsearch __P((const void *, const void *, size_t,
 	    size_t, int (*)(const void *, const void *)));
 void	*calloc __P((size_t, size_t));
 div_t	 div __P((int, int));
-void	 exit __P((int));
+__dead void	 exit __P((int));
 void	 free __P((void *));
 char	*getenv __P((const char *));
 long	 labs __P((long));
@@ -165,11 +166,11 @@ int	 radixsort __P((const unsigned char **, int, const unsigned char *,
 int	 sradixsort __P((const unsigned char **, int, const unsigned char *,
 	    unsigned));
 
-char	*initstate __P((unsigned, char *, int));
+char	*initstate __P((unsigned int, char *, size_t));
 long	 random __P((void));
 char	*realpath __P((const char *, char *));
-char	*setstate __P((char *));
-void	 srandom __P((unsigned));
+char	*setstate __P((const char *));
+void	 srandom __P((unsigned int));
 
 int	 putenv __P((const char *));
 int	 setenv __P((const char *, const char *, int));
@@ -190,6 +191,10 @@ long	 mrand48 __P((void));
 long	 nrand48 __P((unsigned short[3]));
 unsigned short *seed48 __P((unsigned short[3]));
 void	 srand48 __P((long));
+
+u_int32_t arc4random __P((void));
+void	arc4random_stir __P((void));
+void	arc4random_addrandom __P((unsigned char *, int));
 #endif /* !_ANSI_SOURCE && !_POSIX_SOURCE */
 
 __END_DECLS

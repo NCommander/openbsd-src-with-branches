@@ -1,4 +1,4 @@
-/*	$Id$	*/
+/*	$Id: site.h,v 1.3 1996/01/29 19:18:40 tholo Exp $	*/
 
 /* 
  * Site-specific definitions.
@@ -12,7 +12,6 @@
  */
 #define	KRB_CONF	"/etc/kerberosIV/krb.conf"
 #define	KRB_RLM_TRANS	"/etc/kerberosIV/krb.realms"
-#define	KRB_EQUIV	"/etc/kerberosIV/krb.equiv"
 #define KRB_ACL		"/etc/kerberosIV/kerberos.acl"
 #define MKEYFILE	"/etc/kerberosIV/master_key"
 #define KEYFILE		"/etc/kerberosIV/srvtab"
@@ -23,10 +22,6 @@
 #define KRBLOG 		"/var/log/kerberos.log"  /* master server  */
 #define KRBSLAVELOG	"/var/log/kerberos_slave.log" /* master (?) server  */
 
-#define	KRB_MASTER	"kerberos"
-#define	KRB_HOST	"kowande.bu.oz.au" 
-#define	KRB_REALM	"KOWANDE.BU.OZ.AU"
-
 /* from: kadm_server.h  */
 /* the default syslog file */
 #define KADM_SYSLOG	"/var/log/admin_server.log"
@@ -36,6 +31,7 @@
 #define	ADD_ACL_FILE		"admin_acl.add"
 #define	GET_ACL_FILE		"admin_acl.get"
 #define	MOD_ACL_FILE		"admin_acl.mod"
+#define DEL_ACL_FILE		"admin_acl.del"
 
 /*
  * Set ORGANIZATION to be the desired organization string printed

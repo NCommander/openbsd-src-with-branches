@@ -1,40 +1,42 @@
+/*	$OpenBSD: getrealm.c,v 1.9 1997/12/22 15:02:07 art Exp $	*/
+/* $KTH: getrealm.c,v 1.26 1997/10/08 22:51:13 joda Exp $ */
+
 /*
- * This software may now be redistributed outside the US.
+ * This source code is no longer held under any constraint of USA
+ * `cryptographic laws' since it was exported legally.  The cryptographic
+ * functions were removed from the code and a "Bones" distribution was
+ * made.  A Commodity Jurisdiction Request #012-94 was filed with the
+ * USA State Department, who handed it to the Commerce department.  The
+ * code was determined to fall under General License GTDA under ECCN 5D96G,
+ * and hence exportable.  The cryptographic interfaces were re-added by Eric
+ * Young, and then KTH proceeded to maintain the code in the free world.
  *
- * $Source: /usr/src/kerberosIV/lib/krb/RCS/getrealm.c,v $
- *
- * $Locker:  $
  */
 
 /* 
-  Copyright (C) 1989 by the Massachusetts Institute of Technology
-
-   Export of this software from the United States of America is assumed
-   to require a specific license from the United States Government.
-   It is the responsibility of any person or organization contemplating
-   export to obtain such a license before exporting.
-
-WITHIN THAT CONSTRAINT, permission to use, copy, modify, and
-distribute this software and its documentation for any purpose and
-without fee is hereby granted, provided that the above copyright
-notice appear in all copies and that both that copyright notice and
-this permission notice appear in supporting documentation, and that
-the name of M.I.T. not be used in advertising or publicity pertaining
-to distribution of the software without specific, written prior
-permission.  M.I.T. makes no representations about the suitability of
-this software for any purpose.  It is provided "as is" without express
-or implied warranty.
-
-  */
+ *  Copyright (C) 1989 by the Massachusetts Institute of Technology
+ *
+ *  Export of this software from the United States of America is assumed
+ *  to require a specific license from the United States Government.
+ *  It is the responsibility of any person or organization contemplating
+ *  export to obtain such a license before exporting.
+ *
+ * WITHIN THAT CONSTRAINT, permission to use, copy, modify, and
+ * distribute this software and its documentation for any purpose and
+ * without fee is hereby granted, provided that the above copyright
+ * notice appear in all copies and that both that copyright notice and
+ * this permission notice appear in supporting documentation, and that
+ * the name of M.I.T. not be used in advertising or publicity pertaining
+ * to distribution of the software without specific, written prior
+ * permission.  M.I.T. makes no representations about the suitability of
+ * this software for any purpose.  It is provided "as is" without express
+ * or implied warranty.
+ *
+ */
 
 #include "krb_locl.h"
 
 #define MATCH_SUBDOMAINS        0
-
-/* for Ultrix and friends ... */
-#ifndef MAXHOSTNAMELEN
-#define MAXHOSTNAMELEN 64
-#endif
 
 /*
  * krb_realmofhost.
@@ -54,79 +56,143 @@ or implied warranty.
  * host names should be in the usual form (e.g. FOO.BAR.BAZ)
  */
 
-static char ret_realm[REALM_SZ+1];
+/* To automagically find the correct realm of a host (without
+ * krb.realms) add a text record for your domain with the name of your
+ * realm, like this:
+ *
+ * krb4-realm	IN	TXT	FOO.SE
+ *
+ * The search is recursive, so you can also add entries for specific
+ * hosts. To find the realm of host a.b.c, it first tries
+ * krb4-realm.a.b.c, then krb4-realm.b.c and so on.
+ */
+
+static int
+dns_find_realm(char *hostname, char *realm)
+{
+    char domain[MAXHOSTNAMELEN + sizeof("krb4-realm..")];
+    char *p;
+    int level = 0;
+    struct dns_reply *r;
+    
+    p = hostname;
+
+    while(1){
+	snprintf(domain, sizeof(domain), "krb4-realm.%s.", p);
+	p = strchr(p, '.');
+	if(p == NULL)
+	    break;
+	p++;
+	r = dns_lookup(domain, "TXT");
+	if(r){
+	    struct resource_record *rr = r->head;
+	    while(rr){
+		if(rr->type == T_TXT){
+		    strncpy(realm, rr->u.txt, REALM_SZ);
+		    realm[REALM_SZ - 1] = 0;
+		    dns_free_data(r);
+		    return level;
+		}
+		rr = rr->next;
+	    }
+	    dns_free_data(r);
+	}
+	level++;
+    }
+    return -1;
+}
+
+
+static FILE *
+open_krb_realms(void)
+{
+    int i;
+    char file[128];
+    FILE *res;
+    for(i = 0; krb_get_krbrealms(i, file, sizeof(file)) == 0; i++)
+	if ((res = fopen(file, "r")) != NULL)
+	    return res;
+
+    return NULL;
+}
+
+static int
+file_find_realm(const char *phost, const char *domain, 
+		char *ret_realm, size_t ret_realm_sz)
+{
+    FILE *trans_file;
+    char buf[1024];
+    int ret = -1;
+    
+    if ((trans_file = open_krb_realms()) == NULL)
+	return -1;
+
+    while (fgets(buf, sizeof(buf), trans_file) != NULL) {
+	char *save = NULL;
+	char *tok;
+	char *tmp_host;
+	char *tmp_realm;
+
+        tok = strtok_r(buf, " \t\r\n", &save);
+        if(tok == NULL)
+            continue;
+	tmp_host = tok;
+	tok = strtok_r(NULL, " \t\r\n", &save);
+	if(tok == NULL)
+	    continue;
+	tmp_realm = tok;
+	if (strcasecmp(tmp_host, phost) == 0) {
+	    /* exact match of hostname, so return the realm */
+	    strncpy(ret_realm, tmp_realm, ret_realm_sz);
+	    ret_realm[ret_realm_sz - 1] = '\0';
+	    ret = 0;
+	    break;
+	}
+	if ((tmp_host[0] == '.') && domain) { 
+	    const char *cp = domain;
+	    do {
+		if(strcasecmp(tmp_host, domain) == 0){
+		    /* domain match, save for later */ 
+		    strncpy(ret_realm, tmp_realm, ret_realm_sz);
+		    ret_realm[ret_realm_sz - 1] = '\0';
+		    ret = 0;
+		    break;
+		}
+		cp = strchr(cp + 1, '.');
+	    } while(MATCH_SUBDOMAINS && cp);
+	}
+    }
+    fclose(trans_file);
+    return ret;
+}
 
 char *
-krb_realmofhost(host)
-	char *host;
+krb_realmofhost(const char *host)
 {
-	char *domain;
-	FILE *trans_file;
-	char trans_host[MAXHOSTNAMELEN+1];
-	char trans_realm[REALM_SZ+1];
-	int retval;
+    static char ret_realm[REALM_SZ];
+    char *domain;
+    char phost[MAXHOSTNAMELEN];
+	
+    krb_name_to_name(host, phost, sizeof(phost));
+	
+    domain = strchr(phost, '.');
 
-	domain = strchr(host, '.');
+    if(file_find_realm(phost, domain, ret_realm, sizeof(ret_realm)) == 0)
+	return ret_realm;
 
-	/* prepare default */
-	if (domain) {
-		char *cp;
-
-		strncpy(ret_realm, &domain[1], REALM_SZ);
-		ret_realm[REALM_SZ] = '\0';
-		/* Upper-case realm */
-		for (cp = ret_realm; *cp; cp++)
-			if (islower(*cp))
-				*cp = toupper(*cp);
-	} else {
-		krb_get_lrealm(ret_realm, 1);
-	}
-
-	if ((trans_file = fopen(KRB_RLM_TRANS, "r")) == (FILE *) 0) {
-	        char tbuf[128];
-		char *tdir = (char *) getenv("KRBCONFDIR");
-		strncpy(tbuf, tdir ? tdir : "/etc", sizeof(tbuf));
-		strncat(tbuf, "/krb.realms", sizeof(tbuf));
-		tbuf[sizeof(tbuf)-1] = 0;
-		if ((trans_file = fopen(tbuf,"r")) == NULL)
-                        return(ret_realm); /* krb_errno = KRB_NO_TRANS */
-	}
-	while (1) {
-		if ((retval = fscanf(trans_file, "%s %s",
-				     trans_host, trans_realm)) != 2) {
-			if (retval == EOF) {
-				fclose(trans_file);
-				return(ret_realm);
-			}
-			continue;	/* ignore broken lines */
-		}
-		trans_host[MAXHOSTNAMELEN] = '\0';
-		trans_realm[REALM_SZ] = '\0';
-		if (!strcasecmp(trans_host, host)) {
-			/* exact match of hostname, so return the realm */
-			(void) strcpy(ret_realm, trans_realm);
-			fclose(trans_file);
-			return(ret_realm);
-		}
-		if ((trans_host[0] == '.') && domain) { 
-#if     MATCH_SUBDOMAINS
-                        char *cp;
-                        for (cp = domain; cp != NULL; cp = strchr(cp+1, '.')) {
-                                /* this is a domain match */
-                                if (!strcasecmp(trans_host, cp)) {
-                                        /* domain match, save for later */
-                                        (void) strcpy(ret_realm, trans_realm);
-                                        continue;
-                                }
-                        }
-#else /* MATCH_SUBDOMAINS */
-			/* this is a domain match */ 
-			if (!strcasecmp(trans_host, domain)) { 
-				/* domain match, save for later */ 
-				(void) strcpy(ret_realm, trans_realm); 
-				continue; 
-			} 
-#endif /* MATCH_SUBDOMAINS */
-		}
-	}
+    if(dns_find_realm(phost, ret_realm) >= 0)
+	return ret_realm;
+  
+    if (domain) {
+	char *cp;
+	  
+	strncpy(ret_realm, &domain[1], REALM_SZ);
+	ret_realm[REALM_SZ - 1] = 0;
+	/* Upper-case realm */
+	for (cp = ret_realm; *cp; cp++)
+	    *cp = toupper(*cp);
+    } else {
+	krb_get_lrealm(ret_realm, 1);
+    }
+    return ret_realm;
 }

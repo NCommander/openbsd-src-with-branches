@@ -4,7 +4,9 @@ PUSHDIVERT(-1)
 # Copyright (c) 1988, 1993
 #	The Regents of the University of California.  All rights reserved.
 #
-#	This assumes you already have Sam Leffler's FAX software.
+#  This assumes you already have Sam Leffler's HylaFAX software.
+#
+#  Tested with HylaFAX 4.0pl1
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions
@@ -35,8 +37,10 @@ PUSHDIVERT(-1)
 # SUCH DAMAGE.
 #
 
+ifdef(`FAX_MAILER_ARGS',,
+	`define(`FAX_MAILER_ARGS', faxmail -d $u@$h $f)')
 ifdef(`FAX_MAILER_PATH',,
-	`define(`FAX_MAILER_PATH', /usr/local/lib/fax/mailfax)')
+	`define(`FAX_MAILER_PATH', /usr/local/bin/faxmail)')
 ifdef(`FAX_MAILER_MAX',,
 	`define(`FAX_MAILER_MAX', 100000)')
 POPDIVERT
@@ -44,7 +48,10 @@ POPDIVERT
 ###   FAX Mailer specification   ###
 ####################################
 
-VERSIONID(`@(#)fax.m4	8.2 (Berkeley) 1/24/94')
+VERSIONID(`@(#)fax.m4	8.6 (Berkeley) 7/6/97')
 
-Mfax,		P=FAX_MAILER_PATH, F=DFMhu, S=14, R=24, M=FAX_MAILER_MAX,
-		A=mailfax $u $h $f
+Mfax,		P=FAX_MAILER_PATH, F=DFMhu, S=14, R=24, M=FAX_MAILER_MAX, T=X-Phone/X-FAX/X-Unix,
+		A=FAX_MAILER_ARGS
+
+LOCAL_CONFIG
+CPFAX

@@ -1,4 +1,5 @@
-/*	$NetBSD: ufs_vfsops.c,v 1.3 1995/05/10 18:00:45 cgd Exp $	*/
+/*	$OpenBSD: ufs_vfsops.c,v 1.5 1997/10/06 20:21:49 deraadt Exp $	*/
+/*	$NetBSD: ufs_vfsops.c,v 1.4 1996/02/09 22:36:12 christos Exp $	*/
 
 /*
  * Copyright (c) 1991, 1993, 1994
@@ -81,7 +82,7 @@ ufs_root(mp, vpp)
 	struct vnode *nvp;
 	int error;
 
-	if (error = VFS_VGET(mp, (ino_t)ROOTINO, &nvp))
+	if ((error = VFS_VGET(mp, (ino_t)ROOTINO, &nvp)) != 0)
 		return (error);
 	*vpp = nvp;
 	return (0);
@@ -98,11 +99,12 @@ ufs_quotactl(mp, cmds, uid, arg, p)
 	caddr_t arg;
 	struct proc *p;
 {
-	int cmd, type, error;
 
 #ifndef QUOTA
 	return (EOPNOTSUPP);
 #else
+	int cmd, type, error;
+
 	if (uid == -1)
 		uid = p->p_cred->p_ruid;
 	cmd = cmds >> SUBCMDSHIFT;
@@ -115,7 +117,7 @@ ufs_quotactl(mp, cmds, uid, arg, p)
 			break;
 		/* fall through */
 	default:
-		if (error = suser(p->p_ucred, &p->p_acflag))
+		if ((error = suser(p->p_ucred, &p->p_acflag)) != 0)
 			return (error);
 	}
 
@@ -123,39 +125,64 @@ ufs_quotactl(mp, cmds, uid, arg, p)
 	if ((u_int)type >= MAXQUOTAS)
 		return (EINVAL);
 
+	if (vfs_busy(mp, LK_NOWAIT, 0, p))
+		return (0);
+ 
+
 	switch (cmd) {
 
 	case Q_QUOTAON:
-		return (quotaon(p, mp, type, arg));
+		error = quotaon(p, mp, type, arg);
+		break;
 
 	case Q_QUOTAOFF:
-		if (vfs_busy(mp))
-			return (0);
 		error = quotaoff(p, mp, type);
-		vfs_unbusy(mp);
-		return (error);
+		break;
 
 	case Q_SETQUOTA:
-		return (setquota(mp, uid, type, arg));
+		error = setquota(mp, uid, type, arg) ;
+		break;
 
 	case Q_SETUSE:
-		return (setuse(mp, uid, type, arg));
+		error = setuse(mp, uid, type, arg);
+		break;
 
 	case Q_GETQUOTA:
-		return (getquota(mp, uid, type, arg));
+		error = getquota(mp, uid, type, arg);
+		break;
 
 	case Q_SYNC:
-		if (vfs_busy(mp))
-			return (0);
 		error = qsync(mp);
-		vfs_unbusy(mp);
-		return (error);
+		break;
 
 	default:
-		return (EINVAL);
+		error = EINVAL;
+		break;
 	}
-	/* NOTREACHED */
+
+	vfs_unbusy(mp, p);
+	return (error);
 #endif
+}
+
+
+/*
+ * Initial UFS filesystems, done only once.
+ */
+int
+ufs_init(vfsp)
+	struct vfsconf *vfsp;
+{
+	static int done;
+
+	if (done)
+		return (0);
+	done = 1;
+	ufs_ihashinit();
+#ifdef QUOTA
+	dqinit();
+#endif
+	return (0);
 }
 
 /*
@@ -187,12 +214,12 @@ ufs_check_export(mp, ufhp, nam, vpp, exflagsp, credanonp)
 	if (np == NULL)
 		return (EACCES);
 
-	if (error = VFS_VGET(mp, ufhp->ufid_ino, &nvp)) {
+	if ((error = VFS_VGET(mp, ufhp->ufid_ino, &nvp)) != 0) {
 		*vpp = NULLVP;
 		return (error);
 	}
 	ip = VTOI(nvp);
-	if (ip->i_mode == 0 || ip->i_gen != ufhp->ufid_gen) {
+	if (ip->i_ffs_mode == 0 || ip->i_ffs_gen != ufhp->ufid_gen) {
 		vput(nvp);
 		*vpp = NULLVP;
 		return (ESTALE);

@@ -1,3 +1,6 @@
+.\"	$OpenBSD: telnet.1,v 1.9 1997/12/25 00:29:26 deraadt Exp $
+.\"	$NetBSD: telnet.1,v 1.5 1996/02/28 21:04:12 thorpej Exp $
+.\"
 .\" Copyright (c) 1983, 1990, 1993
 .\"	The Regents of the University of California.  All rights reserved.
 .\"
@@ -30,7 +33,6 @@
 .\" SUCH DAMAGE.
 .\"
 .\"	from: @(#)telnet.1	8.4 (Berkeley) 2/3/94
-.\"	$Id: telnet.1,v 1.4 1994/02/25 03:00:42 cgd Exp $
 .\"
 .Dd February 3, 1994
 .Dt TELNET 1
@@ -50,6 +52,7 @@ protocol
 .Op Fl S Ar tos
 .Op Fl X Ar authtype
 .Op Fl a
+.Op Fl b Ar hostalias
 .Op Fl c
 .Op Fl d
 .Op Fl e Ar escapechar
@@ -61,7 +64,7 @@ protocol
 .Op Fl x
 .Oo
 .Ar host
-.Op port
+.Op Ar port
 .Oc
 .Sh DESCRIPTION
 The
@@ -125,6 +128,17 @@ The name used is that of the current user as returned by
 .Xr getlogin 2
 if it agrees with the current user ID,
 otherwise it is the name associated with the user ID.
+.It Fl b Ar hostalias
+Uses
+.Xr bind 2
+on the local socket to bind it to an aliased address (See
+.Xr ifconfig 8
+and the \*(Lqalias\*(Rq specifier) or to the address of
+another interface than the one naturally chosen by
+.Xr connect 2 .
+This can be useful when connecting to services which uses IP addresses
+for authentication and reconfiguration of the server is undesirable (or
+impossible).
 .It Fl c
 Disables the reading of the user's
 .Pa \&.telnetrc
@@ -136,14 +150,13 @@ Sets the initial value of the
 .Ic debug
 toggle to
 .Dv TRUE
-.It Fl e Ar escape char 
+.It Fl e Ar escapechar 
 Sets the initial
 .Nm
-.Nm telnet
 escape character to
-.Ar escape char.
+.Ar escapechar Ns .
 If
-.Ar escape char
+.Ar escapechar
 is omitted, then
 there will be no escape character.
 .It Fl f
@@ -154,7 +167,9 @@ option allows the local credentials to be forwarded to the remote system.
 If Kerberos authentication is being used, the
 .Fl k
 option requests that telnet obtain tickets for the remote host in
-realm realm instead of the remote host's realm, as determined
+realm
+.Ar realm
+instead of the remote host's realm, as determined
 by
 .Xr krb_realmofhost 3 .
 .It Fl l Ar user 
@@ -182,11 +197,11 @@ Specifies a user interface similar to
 .Xr rlogin 1 .
 In this
 mode, the escape character is set to the tilde (~) character,
-unless modified by the -e option.
+unless modified by the
+.Fl e
+option.
 .It Fl x
-Turns on encryption of the data stream if possible.  This
-option is not available outside of the United States and
-Canada.
+Turns on encryption of the data stream if possible.
 .It Ar host
 Indicates the official name, an alias, or the Internet address
 of a remote host.
@@ -262,7 +277,7 @@ and
 is sent as a 
 .Dv TELNET ABORT
 instead of 
-.Dv BREAK
+.Dv BREAK .
 There are options (see
 .Ic toggle
 .Ic autoflush
@@ -336,11 +351,7 @@ values (see below).
 The encrypt command manipulates the information sent through the
 .Dv TELNET ENCRYPT
 option.
-.Pp
-Note:  Because of export controls, the
-.Dv TELNET ENCRYPT
-option is not supported outside of the United States and Canada.
-.Pp
+..Pp
 Valid arguments for the encrypt command are as follows:
 .Bl -tag -width Ar
 .It Ic disable Ar type Ic [input|output]
@@ -398,7 +409,7 @@ commands.
 The
 .Ic environ
 command is used to manipulate the
-the variables that my be sent through the
+the variables that may be sent through the
 .Dv TELNET ENVIRON
 option.
 The initial set of variables is taken from the users
@@ -535,9 +546,8 @@ command.
 .El
 .It Xo
 .Ic open Ar host
-.Oo Op Fl l
-.Ar user
-.Oc Ns Oo Fl
+.Op Fl l Ar user
+.Oo Op Fl
 .Ar port Oc
 .Xc
 Open a connection to the named host.
@@ -548,11 +558,11 @@ will attempt to contact a
 .Tn TELNET
 server at the default port.
 The host specification may be either a host name (see
-.Xr hosts  5  )
+.Xr hosts 5 )
 or an Internet address specified in the \*(Lqdot notation\*(Rq (see
 .Xr inet 3 ) .
 The
-.Op Fl l
+.Fl l
 option may be used to specify the user name
 to be passed to the remote system via the
 .Ev ENVIRON
@@ -566,7 +576,7 @@ the initial option negotiation is done.
 After establishing a connection, the file
 .Pa \&.telnetrc
 in the
-users home directory is opened.  Lines beginning with a # are
+user's home directory is opened.  Lines beginning with a # are
 comment lines.  Blank lines are ignored.  Lines that begin
 without white space are the start of a machine entry.  The
 first thing on the line is the name of the machine that is
@@ -931,7 +941,9 @@ escape character is ignored unless it is
 preceded by this character at the beginning of a line.
 This character, at the beginning of a line followed by
 a "."  closes the connection; when followed by a ^Z it
-suspends the telnet command.  The initial state is to
+suspends the
+.Nm telnet
+command.  The initial state is to
 disable the rlogin escape character.
 .It Ic start
 If the
@@ -941,7 +953,7 @@ then this character is taken to
 be the terminal's
 .Ic start
 character.
-The initial value for the kill character is taken to be
+The initial value for the start character is taken to be
 the terminal's
 .Ic start
 character.
@@ -953,7 +965,7 @@ then this character is taken to
 be the terminal's
 .Ic stop
 character.
-The initial value for the kill character is taken to be
+The initial value for the stop character is taken to be
 the terminal's
 .Ic stop
 character.
@@ -1010,7 +1022,7 @@ commands.
 The
 .Ic slc
 command (Set Local Characters) is used to set
-or change the state of the the special
+or change the state of the special
 characters when the 
 .Dv TELNET LINEMODE
 option has
@@ -1120,9 +1132,6 @@ stream does not start automatically.  The autoencrypt
 output (input) stream should be enabled as soon as
 possible.
 .Pp
-Note:  Because of export controls, the
-.Dv TELNET ENCRYPT
-option is not supported outside the United States and Canada.
 .It Ic autologin
 If the remote side supports the
 .Dv TELNET AUTHENTICATION
@@ -1255,11 +1264,11 @@ is sent as
 .Ic abort  ,
 and
 .Ic eof and
-.B suspend
+.Ic suspend
 are sent as
 .Ic eof and
-.Ic susp ,
-see
+.Ic susp
+(see
 .Ic send
 above).
 .It Ic netdata
@@ -1305,12 +1314,10 @@ When the
 .Ic verbose_encrypt
 toggle is
 .Dv TRUE ,
-.Tn TELNET
+.Nm telnet
 prints out a message each time encryption is enabled or
 disabled.  The initial value for this toggle is
 .Dv FALSE.
-Note:  Because of export controls, data encryption
-is not supported outside of the United States and Canada.
 .It Ic \&?
 Displays the legal
 .Ic toggle
@@ -1324,7 +1331,7 @@ This command only works when the user is using the
 .It Ic \&! Op Ar command 
 Execute a single command in a subshell on the local
 system.  If
-.Ic command
+.Ar command
 is omitted, then an interactive
 subshell is invoked.
 .It Ic \&? Op Ar command 

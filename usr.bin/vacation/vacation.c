@@ -1,3 +1,4 @@
+/*	$OpenBSD: vacation.c,v 1.8 1997/08/06 23:47:09 deraadt Exp $	*/
 /*	$NetBSD: vacation.c,v 1.7 1995/04/29 05:58:27 cgd Exp $	*/
 
 /*
@@ -43,7 +44,7 @@ static char copyright[] =
 #if 0
 static char sccsid[] = "@(#)vacation.c	8.2 (Berkeley) 1/26/94";
 #endif
-static char rcsid[] = "$NetBSD: vacation.c,v 1.7 1995/04/29 05:58:27 cgd Exp $";
+static char rcsid[] = "$OpenBSD: vacation.c,v 1.8 1997/08/06 23:47:09 deraadt Exp $";
 #endif /* not lint */
 
 /*
@@ -104,16 +105,15 @@ main(argc, argv)
 	int argc;
 	char **argv;
 {
-	extern int optind, opterr;
-	extern char *optarg;
 	struct passwd *pw;
+	struct stat sb;
 	ALIAS *cur;
 	time_t interval;
-	int ch, iflag;
+	int ch, iflag, flags;
 
 	opterr = iflag = 0;
 	interval = -1;
-	while ((ch = getopt(argc, argv, "a:Iir:")) != EOF)
+	while ((ch = getopt(argc, argv, "a:Iir:")) != -1)
 		switch((char)ch) {
 		case 'a':			/* alias */
 			if (!(cur = (ALIAS *)malloc((u_int)sizeof(ALIAS))))
@@ -147,24 +147,31 @@ main(argc, argv)
 			usage();
 		if (!(pw = getpwuid(getuid()))) {
 			syslog(LOG_ERR,
-			    "vacation: no such user uid %u.\n", getuid());
+			    "vacation: no such user uid %u.", getuid());
 			exit(1);
 		}
 	}
 	else if (!(pw = getpwnam(*argv))) {
-		syslog(LOG_ERR, "vacation: no such user %s.\n", *argv);
+		syslog(LOG_ERR, "vacation: no such user %s.", *argv);
 		exit(1);
 	}
 	if (chdir(pw->pw_dir)) {
 		syslog(LOG_NOTICE,
-		    "vacation: no such directory %s.\n", pw->pw_dir);
+		    "vacation: no such directory %s.", pw->pw_dir);
 		exit(1);
 	}
 
-	db = dbopen(VDB, O_CREAT|O_RDWR | (iflag ? O_TRUNC : 0),
-	    S_IRUSR|S_IWUSR, DB_HASH, NULL);
+	/*
+	 * dbopen(3) can not deal with a zero-length file w/o O_TRUNC.
+	 */
+	if (iflag == 1 || (stat(VDB, &sb) == 0 && sb.st_size == (off_t)0))
+		flags = O_CREAT|O_RDWR|O_TRUNC;
+	else
+		flags = O_CREAT|O_RDWR;
+		
+	db = dbopen(VDB, flags, S_IRUSR|S_IWUSR, DB_HASH, NULL);
 	if (!db) {
-		syslog(LOG_NOTICE, "vacation: %s: %s\n", VDB, strerror(errno));
+		syslog(LOG_NOTICE, "vacation: %s: %m", VDB);
 		exit(1);
 	}
 
@@ -215,7 +222,7 @@ readheaders()
 				for (p = buf + 5; *p && *p != ' '; ++p);
 				*p = '\0';
 				(void)strcpy(from, buf + 5);
-				if (p = index(from, '\n'))
+				if (p = strchr(from, '\n'))
 					*p = '\0';
 				if (junkmail())
 					exit(0);
@@ -226,7 +233,7 @@ readheaders()
 			if (strncasecmp(buf, "Precedence", 10) ||
 			    buf[10] != ':' && buf[10] != ' ' && buf[10] != '\t')
 				break;
-			if (!(p = index(buf, ':')))
+			if (!(p = strchr(buf, ':')))
 				break;
 			while (*++p && isspace(*p));
 			if (!*p)
@@ -257,7 +264,7 @@ findme:			for (cur = names; !tome && cur; cur = cur->next)
 	if (!tome)
 		exit(0);
 	if (!*from) {
-		syslog(LOG_NOTICE, "vacation: no initial \"From\" line.\n");
+		syslog(LOG_NOTICE, "vacation: no initial \"From\" line.");
 		exit(1);
 	}
 }
@@ -304,9 +311,9 @@ junkmail()
 	 *
 	 * From site!site!SENDER%site.domain%site.domain@site.domain
 	 */
-	if (!(p = index(from, '%')))
-		if (!(p = index(from, '@'))) {
-			if (p = rindex(from, '!'))
+	if (!(p = strchr(from, '%')))
+		if (!(p = strchr(from, '@'))) {
+			if (p = strrchr(from, '!'))
 				++p;
 			else
 				p = from;
@@ -403,16 +410,16 @@ sendmessage(myname)
 
 	mfp = fopen(VMSG, "r");
 	if (mfp == NULL) {
-		syslog(LOG_NOTICE, "vacation: no ~%s/%s file.\n", myname, VMSG);
+		syslog(LOG_NOTICE, "vacation: no ~%s/%s file.", myname, VMSG);
 		exit(1);
 	}
 	if (pipe(pvect) < 0) {
-		syslog(LOG_ERR, "vacation: pipe: %s", strerror(errno));
+		syslog(LOG_ERR, "vacation: pipe: %m");
 		exit(1);
 	}
 	i = vfork();
 	if (i < 0) {
-		syslog(LOG_ERR, "vacation: fork: %s", strerror(errno));
+		syslog(LOG_ERR, "vacation: fork: %m");
 		exit(1);
 	}
 	if (i == 0) {
@@ -420,10 +427,10 @@ sendmessage(myname)
 		close(pvect[0]);
 		close(pvect[1]);
 		fclose(mfp);
-		execl(_PATH_SENDMAIL, "sendmail", "-f", myname, from, NULL);
-		syslog(LOG_ERR, "vacation: can't exec %s: %s",
-			_PATH_SENDMAIL, strerror(errno));
-		exit(1);
+		execl(_PATH_SENDMAIL, "sendmail", "-f", myname, "--",
+		    from, NULL);
+		syslog(LOG_ERR, "vacation: can't exec %s: %m", _PATH_SENDMAIL);
+		_exit(1);
 	}
 	close(pvect[0]);
 	sfp = fdopen(pvect[1], "w");
@@ -437,7 +444,7 @@ sendmessage(myname)
 void
 usage()
 {
-	syslog(LOG_NOTICE, "uid %u: usage: vacation [-i] [-a alias] login\n",
+	syslog(LOG_NOTICE, "uid %u: usage: vacation [-i] [-a alias] login",
 	    getuid());
 	exit(1);
 }

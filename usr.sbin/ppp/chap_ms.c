@@ -19,7 +19,7 @@
  * IMPLIED WARRANTIES, INCLUDING, WITHOUT LIMITATION, THE IMPLIED
  * WARRANTIES OF MERCHANTIBILITY AND FITNESS FOR A PARTICULAR PURPOSE.
  *
- * $Id: chap_ms.c,v 1.3 1997/11/22 03:37:26 brian Exp $
+ * $Id: chap_ms.c,v 1.2 1997/12/24 09:30:25 brian Exp $
  *
  */
 
@@ -29,12 +29,9 @@
 #include <stdio.h>
 #include <string.h>
 #include <sys/time.h>
-#include <syslog.h>
 
 #include "command.h"
 #include "mbuf.h"
-#include "timer.h"
-#include "chap.h"
 #include "chap_ms.h"
 
 /* unused, for documentation only */
@@ -53,7 +50,7 @@ ChallengeResponse(u_char *challenge, u_char *pwHash, u_char *response)
 {
     char    ZPasswordHash[21];
 
-    memset(ZPasswordHash, '\0', sizeof(ZPasswordHash));
+    memset(ZPasswordHash, '\0', sizeof ZPasswordHash);
     memcpy(ZPasswordHash, pwHash, 16);
 
     DesEncrypt(challenge, ZPasswordHash +  0, response + 0);

@@ -1,4 +1,5 @@
-/*	$NetBSD: in_pcb.h,v 1.12 1995/06/18 20:01:13 cgd Exp $	*/
+/*	$OpenBSD: in_pcb.h,v 1.8 1997/08/19 06:29:50 millert Exp $	*/
+/*	$NetBSD: in_pcb.h,v 1.14 1996/02/13 23:42:00 christos Exp $	*/
 
 /*
  * Copyright (c) 1982, 1986, 1990, 1993
@@ -45,6 +46,7 @@
  * control block.
  */
 struct inpcb {
+	LIST_ENTRY(inpcb) inp_hash;
 	CIRCLEQ_ENTRY(inpcb) inp_queue;
 	struct	  inpcbtable *inp_table;
 	struct	  in_addr inp_faddr;	/* foreign host table entry */
@@ -58,10 +60,16 @@ struct inpcb {
 	struct	  ip inp_ip;		/* header prototype; should have more */
 	struct	  mbuf *inp_options;	/* IP options */
 	struct	  ip_moptions *inp_moptions; /* IP multicast options */
+	u_char	  inp_seclevel[4];	/* Only the first 3 are used for now */
+#define SL_AUTH           0             /* Authentication level */
+#define SL_ESP_TRANS      1             /* ESP transport level */
+#define SL_ESP_NETWORK    2             /* ESP network (encapsulation) level */
 };
 
 struct inpcbtable {
-	CIRCLEQ_HEAD(inpcbhead, inpcb) inpt_queue;
+	CIRCLEQ_HEAD(, inpcb) inpt_queue;
+	LIST_HEAD(inpcbhead, inpcb) *inpt_hashtbl;
+	u_long	  inpt_hash;
 	u_int16_t inpt_lastport;
 };
 
@@ -71,20 +79,41 @@ struct inpcbtable {
 #define	INP_RECVDSTADDR		0x04	/* receive IP dst address */
 #define	INP_CONTROLOPTS		(INP_RECVOPTS|INP_RECVRETOPTS|INP_RECVDSTADDR)
 #define	INP_HDRINCL		0x08	/* user supplies entire IP header */
+#define INP_HIGHPORT		0x10	/* user wants "high" port binding */
+#define INP_LOWPORT		0x20	/* user wants "low" port binding */
 
 #define	INPLOOKUP_WILDCARD	1
 #define	INPLOOKUP_SETLOCAL	2
 
 #define	sotoinpcb(so)	((struct inpcb *)(so)->so_pcb)
 
+/* macros for handling bitmap of ports not to allocate dynamically */
+#define	DP_MAPBITS	(sizeof(u_int32_t) * NBBY)
+#define	DP_MAPSIZE	(howmany(IPPORT_RESERVED/2, DP_MAPBITS))
+#define	DP_SET(m, p)	((m)[((p) - IPPORT_RESERVED/2) / DP_MAPBITS] |= (1 << ((p) % DP_MAPBITS)))
+#define	DP_CLR(m, p)	((m)[((p) - IPPORT_RESERVED/2) / DP_MAPBITS] &= ~(1 << ((p) % DP_MAPBITS)))
+#define	DP_ISSET(m, p)	((m)[((p) - IPPORT_RESERVED/2) / DP_MAPBITS] & (1 << ((p) % DP_MAPBITS)))
+
+/* default values for baddynamicports [see ip_init()] */
+#define	DEFBADDYNAMICPORTS_TCP	{ 749, 750, 751, 760, 761, 871, 0 }
+#define	DEFBADDYNAMICPORTS_UDP	{ 750, 751, 0 }
+
+struct baddynamicports {
+	u_int32_t tcp[DP_MAPSIZE];
+	u_int32_t udp[DP_MAPSIZE];
+};
+
 #ifdef _KERNEL
-int	 in_losing __P((struct inpcb *));
-int	 in_pcballoc __P((struct socket *, struct inpcbtable *));
-int	 in_pcbbind __P((struct inpcb *, struct mbuf *));
-int	 in_pcbconnect __P((struct inpcb *, struct mbuf *));
-int	 in_pcbdetach __P((struct inpcb *));
-int	 in_pcbdisconnect __P((struct inpcb *));
-void	 in_pcbinit __P((struct inpcbtable *));
+void	 in_losing __P((struct inpcb *));
+int	 in_pcballoc __P((struct socket *, void *));
+int	 in_pcbbind __P((void *, struct mbuf *));
+int	 in_pcbconnect __P((void *, struct mbuf *));
+void	 in_pcbdetach __P((void *));
+void	 in_pcbdisconnect __P((void *));
+struct inpcb *
+	 in_pcbhashlookup __P((struct inpcbtable *, struct in_addr,
+			       u_int, struct in_addr, u_int));
+void	 in_pcbinit __P((struct inpcbtable *, int));
 struct inpcb *
 	 in_pcblookup __P((struct inpcbtable *,
 	    struct in_addr, u_int, struct in_addr, u_int, int));
@@ -92,7 +121,8 @@ void	 in_pcbnotify __P((struct inpcbtable *, struct sockaddr *,
 	    u_int, struct in_addr, u_int, int, void (*)(struct inpcb *, int)));
 void	 in_pcbnotifyall __P((struct inpcbtable *, struct sockaddr *,
 	    int, void (*)(struct inpcb *, int)));
+void	 in_pcbrehash __P((struct inpcb *));
 void	 in_rtchange __P((struct inpcb *, int));
-int	 in_setpeeraddr __P((struct inpcb *, struct mbuf *));
-int	 in_setsockaddr __P((struct inpcb *, struct mbuf *));
+void	 in_setpeeraddr __P((struct inpcb *, struct mbuf *));
+void	 in_setsockaddr __P((struct inpcb *, struct mbuf *));
 #endif

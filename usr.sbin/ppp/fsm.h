@@ -15,7 +15,7 @@
  * IMPLIED WARRANTIES, INCLUDING, WITHOUT LIMITATION, THE IMPLIED
  * WARRANTIES OF MERCHANTIBILITY AND FITNESS FOR A PARTICULAR PURPOSE.
  *
- * $Id: fsm.h,v 1.12 1997/11/22 03:37:32 brian Exp $
+ * $Id: fsm.h,v 1.4 1998/01/20 22:46:25 brian Exp $
  *
  *	TODO:
  */
@@ -41,9 +41,9 @@
 #define	MODE_NAK	1
 #define	MODE_REJ	2
 #define	MODE_NOP	3
+#define	MODE_ACK	4	/* pseudo mode for ccp negotiations */
 
-#define	OPEN_ACTIVE	0
-#define	OPEN_PASSIVE	1
+#define	OPEN_PASSIVE	-1
 
 struct fsm {
   const char *name;		/* Name of protocol */
@@ -51,12 +51,12 @@ struct fsm {
   u_short max_code;
   int open_mode;
   int state;			/* State of the machine */
-  int reqid;			/* Next request id */
+  u_char reqid;			/* Next request id */
   int restart;			/* Restart counter value */
   int maxconfig;
 
-  int reqcode;			/* Request code sent */
   struct pppTimer FsmTimer;	/* Restart Timer */
+  struct pppTimer OpenTimer;	/* Delay before opening */
 
   /*
    * This timer times the ST_STOPPED state out after the given value

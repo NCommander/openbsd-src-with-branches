@@ -36,10 +36,10 @@
 
 #include "SYS.h"
 
-#if defined(LIBC_SCCS) && !defined(lint)
-	ASMSTR("from: @(#)Ovfork.s	8.1 (Berkeley) 6/4/93")
-	ASMSTR("$Id: Ovfork.S,v 1.3 1994/12/15 17:25:07 mycroft Exp $")
-#endif /* LIBC_SCCS and not lint */
+#if defined(SYSLIBC_SCCS)
+	.text
+	.asciz "$OpenBSD$"
+#endif /* SYSLIBC_SCCS */
 
 /*
  * pid = vfork();
@@ -49,10 +49,12 @@
  */
 
 LEAF(vfork)
+	.set	reorder
 	li	v0, SYS_vfork		# system call number for vfork
 	syscall
 	beq	a3, zero, 1f		# jump if no errors
-	j	_C_LABEL(cerror)
+	la	t9, cerror
+	jr	t9
 1:
 	beq	v1, zero, 2f		# parent process ?
 	move	v0, zero		# return zero in child

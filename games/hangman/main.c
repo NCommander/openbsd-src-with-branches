@@ -56,6 +56,10 @@ main()
 {
 	void die();
 
+	/* revoke */
+	setegid(getgid());
+	setgid(getgid());
+
 	initscr();
 	signal(SIGINT, die);
 	setup();

@@ -1,10 +1,10 @@
-
+#	$OpenBSD: Makefile.bsd-wrapper,v 1.3 1998/03/26 17:10:09 pefo Exp $	
 .include <bsd.own.mk>
-
 PROG=httpd
 BINDIR=/usr/sbin
 BINOWN=root
 BINGRP=daemon
+#MAN=	httpd.8
 
 all: Makefile
 	${MAKE}
@@ -20,13 +20,8 @@ config:	.FORCE
 Makefile: helpers/GuessOS
 	sh ${.CURDIR}/Configure -file ${.CURDIR}/Configuration -make ${.CURDIR}/Makefile.tmpl
 
-# apache has no man pages in the dist
-
-maninistall:
-	@echo No man pages for apache
-
-install: maninistall
-	${INSTALL} ${INSTALL_COPY} ${INSTALL_STRIP} -o ${BINOWN} -g ${BINGRP} -m ${BINMODE} ${PROG} ${BINDIR} 
+install:
+	${INSTALL} ${INSTALL_COPY} ${INSTALL_STRIP} -o ${BINOWN} -g ${BINGRP} -m ${BINMODE} ${PROG} ${DESTDIR}${BINDIR} 
 
 clean cleandir:
 .if 	exists(${.OBJDIR}/Makefile)

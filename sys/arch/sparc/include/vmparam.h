@@ -1,4 +1,5 @@
-/*	$NetBSD: vmparam.h,v 1.6 1995/07/05 18:04:48 pk Exp $ */
+/*	$OpenBSD$	*/
+/*	$NetBSD: vmparam.h,v 1.13 1997/07/12 16:20:03 perry Exp $	*/
 
 /*
  * Copyright (c) 1992, 1993
@@ -59,7 +60,7 @@
  * Virtual memory related constants, all in bytes
  */
 #ifndef MAXTSIZ
-#define	MAXTSIZ		(8*1024*1024)		/* max text size */
+#define	MAXTSIZ		(16*1024*1024)		/* max text size */
 #endif
 #ifndef DFLDSIZ
 #define	DFLDSIZ		(16*1024*1024)		/* initial data size limit */
@@ -115,6 +116,10 @@
  * so we loan each swapped in process memory worth 100$, or just admit
  * that we don't consider it worthwhile and swap it out to disk which costs
  * $30/mb or about $0.75.
+ * Update: memory prices have changed recently (9/96). At the current    
+ * value of $6 per megabyte, we lend each swapped in process memory worth
+ * $0.15, or just admit that we don't consider it worthwhile and swap it out
+ * to disk which costs $0.20/MB, or just under half a cent. 
  */
 #define	SAFERSS		4		/* nominal ``small'' resident set size
 					   protected against replacement */
@@ -139,3 +144,9 @@
 #define VM_KMEM_SIZE		(NKMEMCLUSTERS*CLBYTES)
 
 #define MACHINE_NONCONTIG	/* VM <=> pmap interface modifier */
+
+#if defined (_KERNEL) && !defined(_LOCORE)
+struct vm_map;
+vm_offset_t	dvma_mapin __P((struct vm_map *, vm_offset_t, int, int));
+void		dvma_mapout __P((vm_offset_t, vm_offset_t, int));
+#endif

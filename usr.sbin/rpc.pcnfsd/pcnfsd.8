@@ -1,10 +1,14 @@
 .\"	$NetBSD: pcnfsd.8,v 1.4 1995/08/14 19:48:07 gwr Exp $
 .\" @(#) @(#)pcnfsd.8c	1.1 9/3/91;
-.TH PCNFSD 8C "25 April 1991"
+.TH PCNFSD 8 "25 April 1991"
 .SH NAME
 pcnfsd \- (PC)NFS authentication and print request server
 .SH SYNOPSIS
 .B /usr/sbin/rpc.pcnfsd 
+.SH WARNING
+This program probably contains 5 to 6 security holes in it (it has been
+diagnosed to have a few, but they were not yet been fixed).  Use it at
+your own risk.
 .SH DESCRIPTION
 .LP
 .B pcnfsd

@@ -1,4 +1,5 @@
-/*	$NetBSD: kern_exit.c,v 1.33 1995/10/07 06:28:13 mycroft Exp $	*/
+/*	$OpenBSD: kern_exit.c,v 1.11 1997/10/06 20:19:52 deraadt Exp $	*/
+/*	$NetBSD: kern_exit.c,v 1.39 1996/04/22 01:38:25 christos Exp $	*/
 
 /*
  * Copyright (c) 1982, 1986, 1989, 1991, 1993
@@ -59,6 +60,14 @@
 #include <sys/resourcevar.h>
 #include <sys/ptrace.h>
 #include <sys/acct.h>
+#include <sys/filedesc.h>
+#include <sys/signalvar.h>
+#ifdef SYSVSHM
+#include <sys/shm.h>
+#endif
+#ifdef SYSVSEM
+#include <sys/sem.h>
+#endif
 
 #include <sys/mount.h>
 #include <sys/syscallargs.h>
@@ -67,9 +76,6 @@
 
 #include <vm/vm.h>
 #include <vm/vm_kern.h>
-
-void cpu_exit __P((struct proc *));	/* XXX MOVE ME */
-void exit1 __P((struct proc *, int));
 
 /*
  * exit --
@@ -114,11 +120,15 @@ exit1(p, rv)
 	MALLOC(p->p_ru, struct rusage *, sizeof(struct rusage),
 		M_ZOMBIE, M_WAITOK);
 	/*
-	 * If parent is waiting for us to exit or exec,
-	 * P_PPWAIT is set; we will wakeup the parent below.
+	 * If parent is waiting for us to exit or exec, P_PPWAIT is set; we
+	 * wake up the parent early to avoid deadlock.
 	 */
-	p->p_flag &= ~(P_TRACED | P_PPWAIT);
 	p->p_flag |= P_WEXIT;
+	p->p_flag &= ~P_TRACED;
+	if (p->p_flag & P_PPWAIT) {
+		p->p_flag &= ~P_PPWAIT;
+		wakeup((caddr_t)p->p_pptr);
+	}
 	p->p_sigignore = ~0;
 	p->p_siglist = 0;
 	untimeout(realitexpire, (caddr_t)p);
@@ -169,7 +179,7 @@ exit1(p, rv)
 				 * if we blocked.
 				 */
 				if (sp->s_ttyvp)
-					vgoneall(sp->s_ttyvp);
+					VOP_REVOKE(sp->s_ttyvp, REVOKEALL);
 			}
 			if (sp->s_ttyvp)
 				vrele(sp->s_ttyvp);
@@ -205,7 +215,7 @@ exit1(p, rv)
 
 	q = p->p_children.lh_first;
 	if (q)		/* only need this if any child is S_ZOMB */
-		wakeup((caddr_t) initproc);
+		wakeup((caddr_t)initproc);
 	for (; q != 0; q = nq) {
 		nq = q->p_sibling.le_next;
 		proc_reparent(q, initproc);
@@ -229,10 +239,29 @@ exit1(p, rv)
 	ruadd(p->p_ru, &p->p_stats->p_cru);
 
 	/*
-	 * Notify parent that we're gone.
+	 * clear %cpu usage during swap
 	 */
+	p->p_pctcpu = 0;
+
+	/*
+	 * Notify parent that we're gone.  If parent has the P_NOCLDWAIT
+	 * flag set, notify process 1 instead (and hope it will handle
+	 * this situation).
+	 */
+	if (p->p_pptr->p_flag & P_NOCLDWAIT) {
+		struct proc *pp = p->p_pptr;
+		proc_reparent(p, initproc);
+		/*
+		 * If this was the last child of our parent, notify
+		 * parent, so in case he was wait(2)ing, he will
+		 * continue.
+		 */
+		if (pp->p_children.lh_first == NULL)
+			wakeup((caddr_t)pp);
+	}
 	psignal(p->p_pptr, SIGCHLD);
 	wakeup((caddr_t)p->p_pptr);
+
 	/*
 	 * Notify procfs debugger
 	 */
@@ -290,10 +319,9 @@ sys_wait4(q, v, retval)
 
 	if (SCARG(uap, pid) == 0)
 		SCARG(uap, pid) = -q->p_pgid;
-#ifdef notyet
 	if (SCARG(uap, options) &~ (WUNTRACED|WNOHANG))
 		return (EINVAL);
-#endif
+
 loop:
 	nfound = 0;
 	for (p = q->p_children.lh_first; p != 0; p = p->p_sibling.le_next) {
@@ -307,9 +335,10 @@ loop:
 
 			if (SCARG(uap, status)) {
 				status = p->p_xstat;	/* convert to int */
-				if (error = copyout((caddr_t)&status,
-				    (caddr_t)SCARG(uap, status),
-				    sizeof(status)))
+				error = copyout((caddr_t)&status,
+						(caddr_t)SCARG(uap, status),
+						sizeof(status));
+				if (error)
 					return (error);
 			}
 			if (SCARG(uap, rusage) &&
@@ -333,6 +362,14 @@ loop:
 			FREE(p->p_ru, M_ZOMBIE);
 
 			/*
+			 * Finally finished with old proc entry.
+			 * Unlink it from its process group and free it.
+			 */
+			leavepgrp(p);
+			LIST_REMOVE(p, p_list);	/* off zombproc */
+			LIST_REMOVE(p, p_sibling);
+
+			/*
 			 * Decrement the count of procs running with this uid.
 			 */
 			(void)chgproccnt(p->p_cred->p_ruid, -1);
@@ -350,14 +387,6 @@ loop:
 			 */
 			if (p->p_textvp)
 				vrele(p->p_textvp);
-
-			/*
-			 * Finally finished with old proc entry.
-			 * Unlink it from its process group and free it.
-			 */
-			leavepgrp(p);
-			LIST_REMOVE(p, p_list);	/* off zombproc */
-			LIST_REMOVE(p, p_sibling);
 
 			/*
 			 * Give machine-dependent layer a chance
@@ -390,7 +419,7 @@ loop:
 		retval[0] = 0;
 		return (0);
 	}
-	if (error = tsleep((caddr_t)q, PWAIT | PCATCH, "wait", 0))
+	if ((error = tsleep((caddr_t)q, PWAIT | PCATCH, "wait", 0)) != 0)
 		return (error);
 	goto loop;
 }

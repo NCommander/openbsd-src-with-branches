@@ -17,7 +17,7 @@
  * IMPLIED WARRANTIES, INCLUDING, WITHOUT LIMITATION, THE IMPLIED
  * WARRANTIES OF MERCHANTIBILITY AND FITNESS FOR A PARTICULAR PURPOSE.
  *
- * $Id: modem.c,v 1.67 1997/11/22 03:37:41 brian Exp $
+ * $Id: modem.c,v 1.13 1998/03/06 00:30:40 brian Exp $
  *
  *  TODO:
  */
@@ -35,8 +35,6 @@
 #include <string.h>
 #include <sys/ioctl.h>
 #include <sys/tty.h>
-#include <termios.h>
-#include <time.h>
 #include <unistd.h>
 #include <utmp.h>
 
@@ -94,7 +92,7 @@ Enqueue(struct mqueue * queue, struct mbuf * bp)
 }
 
 struct mbuf *
-Dequeue(struct mqueue * queue)
+Dequeue(struct mqueue *queue)
 {
   struct mbuf *bp;
 
@@ -106,10 +104,18 @@ Dequeue(struct mqueue * queue)
     if (queue->top == NULL) {
       queue->last = queue->top;
       if (queue->qlen)
-	LogPrintf(LogDEBUG, "Dequeue: Not zero (%d)!!!\n", queue->qlen);
+	LogPrintf(LogERROR, "Dequeue: Not zero (%d)!!!\n", queue->qlen);
     }
   }
   return (bp);
+}
+
+void
+SequenceQueues()
+{
+  LogPrintf(LogDEBUG, "SequenceQueues\n");
+  while (OutputQueues[PRI_NORMAL].qlen)
+    Enqueue(OutputQueues + PRI_LINK, Dequeue(OutputQueues + PRI_NORMAL));
 }
 
 static struct speeds {
@@ -220,6 +226,14 @@ IntToSpeed(int nspeed)
   return B0;
 }
 
+static void
+ModemSetDevice(const char *name)
+{
+  strncpy(VarDevice, name, sizeof VarDevice - 1);
+  VarDevice[sizeof VarDevice - 1] = '\0';
+  VarBaseDevice = strncmp(VarDevice, "/dev/", 5) ? VarDevice : VarDevice + 5;
+}
+
 void
 DownConnection()
 {
@@ -258,7 +272,7 @@ ModemTimeout(void *data)
 	 * carrier.
 	 */
 	if (mode & MODE_DEDICATED)
-	  PacketMode();
+	  PacketMode(VarOpenMode);
       } else {
         LogPrintf(LogDEBUG, "ModemTimeout: online -> offline\n");
 	reconnect(RECON_TRUE);
@@ -285,7 +299,7 @@ StartModemTimer(void)
   StartTimer(&ModemTimer);
 }
 
-struct parity {
+static struct parity {
   const char *name;
   const char *name1;
   int set;
@@ -364,7 +378,7 @@ OpenConnection(char *host, char *port)
   if (sock < 0) {
     return (sock);
   }
-  if (connect(sock, (struct sockaddr *) & dest, sizeof(dest)) < 0) {
+  if (connect(sock, (struct sockaddr *)&dest, sizeof dest) < 0) {
     LogPrintf(LogWARN, "OpenConnection: connection failed.\n");
     return (-1);
   }
@@ -397,8 +411,11 @@ LockModem(void)
   if (lockfile != NULL) {
     fprintf(lockfile, "tun%d\n", tunno);
     fclose(lockfile);
-  } else
+  }
+#ifndef RELEASE_CRUNCH
+  else
     LogPrintf(LogALERT, "Warning: Can't create %s: %s\n", fn, strerror(errno));
+#endif
 
   return 0;
 }
@@ -410,8 +427,12 @@ UnlockModem(void)
     return;
 
   snprintf(fn, sizeof fn, "%s%s.if", _PATH_VARRUN, VarBaseDevice);
+#ifndef RELEASE_CRUNCH
   if (ID0unlink(fn) == -1)
     LogPrintf(LogALERT, "Warning: Can't remove %s: %s\n", fn, strerror(errno));
+#else
+  ID0unlink(fn);
+#endif
 
   if (!(mode & MODE_DIRECT) && ID0uu_unlock(VarBaseDevice) == -1)
     LogPrintf(LogALERT, "Warning: Can't uu_unlock %s\n", fn);
@@ -434,74 +455,82 @@ OpenModem()
   int oldflag;
   char *host, *port;
   char *cp;
+  char tmpDeviceList[sizeof VarDeviceList];
+  char *tmpDevice;
 
   if (modem >= 0)
     LogPrintf(LogDEBUG, "OpenModem: Modem is already open!\n");
     /* We're going back into "term" mode */
   else if (mode & MODE_DIRECT) {
-    struct cmdargs arg;
-    arg.cmd = NULL;
-    arg.data = (const void *)VAR_DEVICE;
-    if (isatty(0)) {
+    if (isatty(STDIN_FILENO)) {
       LogPrintf(LogDEBUG, "OpenModem(direct): Modem is a tty\n");
-      cp = ttyname(0);
-      arg.argc = 1;
-      arg.argv = (char const *const *)&cp;
-      SetVariable(&arg);
+      ModemSetDevice(ttyname(STDIN_FILENO));
       if (LockModem() == -1) {
-        close(0);
+        close(STDIN_FILENO);
         return -1;
       }
-      modem = 0;
+      modem = STDIN_FILENO;
       HaveModem();
     } else {
       LogPrintf(LogDEBUG, "OpenModem(direct): Modem is not a tty\n");
-      arg.argc = 0;
-      arg.argv = NULL;
-      SetVariable(&arg);
+      ModemSetDevice("");
       /* We don't call ModemTimeout() with this type of connection */
       HaveModem();
-      return modem = 0;
+      return modem = STDIN_FILENO;
     }
   } else {
-    if (strncmp(VarDevice, "/dev/", 5) == 0) {
-      if (LockModem() == -1)
-        return (-1);
-      modem = ID0open(VarDevice, O_RDWR | O_NONBLOCK);
-      if (modem < 0) {
-	LogPrintf(LogERROR, "OpenModem failed: %s: %s\n", VarDevice,
-		  strerror(errno));
-	UnlockModem();
-	return (-1);
-      }
-      HaveModem();
-      LogPrintf(LogDEBUG, "OpenModem: Modem is %s\n", VarDevice);
-    } else {
-      /* PPP over TCP */
-      cp = strchr(VarDevice, ':');
-      if (cp) {
-	*cp = '\0';
-	host = VarDevice;
-	port = cp + 1;
-	if (*host && *port) {
-	  modem = OpenConnection(host, port);
-	  *cp = ':';		/* Don't destroy VarDevice */
-	  if (modem < 0)
-	    return (-1);
-          HaveModem();
-          LogPrintf(LogDEBUG, "OpenModem: Modem is socket %s\n", VarDevice);
-	} else {
-	  *cp = ':';		/* Don't destroy VarDevice */
-	  LogPrintf(LogERROR, "Invalid host:port: \"%s\"\n", VarDevice);
-	  return (-1);
+    strncpy(tmpDeviceList, VarDeviceList, sizeof tmpDeviceList - 1);
+    tmpDeviceList[sizeof tmpDeviceList - 1] = '\0';
+
+    for(tmpDevice=strtok(tmpDeviceList, ","); tmpDevice && (modem < 0);
+	tmpDevice=strtok(NULL,",")) {
+      ModemSetDevice(tmpDevice);
+      if (strncmp(VarDevice, "/dev/", 5) == 0) {
+	if (LockModem() == -1) {
+	  modem = -1;
+	}
+	else {
+	  modem = ID0open(VarDevice, O_RDWR | O_NONBLOCK);
+	  if (modem < 0) {
+	    LogPrintf(LogERROR, "OpenModem failed: %s: %s\n", VarDevice,
+		      strerror(errno));
+	    UnlockModem();
+	    modem = -1;
+	  }
+	  else {
+	    HaveModem();
+	    LogPrintf(LogDEBUG, "OpenModem: Modem is %s\n", VarDevice);
+	  }
 	}
       } else {
-	LogPrintf(LogERROR,
-		  "Device (%s) must be in /dev or be a host:port pair\n",
-		  VarDevice);
-	return (-1);
+	/* PPP over TCP */
+	cp = strchr(VarDevice, ':');
+	if (cp) {
+	  *cp = '\0';
+	  host = VarDevice;
+	  port = cp + 1;
+	  if (*host && *port) {
+	    modem = OpenConnection(host, port);
+	    *cp = ':';		/* Don't destroy VarDevice */
+	    if (modem < 0)
+	      return (-1);
+	    HaveModem();
+	    LogPrintf(LogDEBUG, "OpenModem: Modem is socket %s\n", VarDevice);
+	  } else {
+	    *cp = ':';		/* Don't destroy VarDevice */
+	    LogPrintf(LogERROR, "Invalid host:port: \"%s\"\n", VarDevice);
+	    return (-1);
+	  }
+	} else {
+	  LogPrintf(LogERROR,
+		    "Device (%s) must be in /dev or be a host:port pair\n",
+		    VarDevice);
+	  return (-1);
+	}
       }
     }
+
+    if (modem < 0) return modem;
   }
 
   /*
@@ -680,7 +709,8 @@ HangupModem(int flag)
   if (modem >= 0) {
     char ScriptBuffer[SCRIPT_LEN];
 
-    strcpy(ScriptBuffer, VarHangupScript);	/* arrays are the same size */
+    strncpy(ScriptBuffer, VarHangupScript, sizeof ScriptBuffer - 1);
+    ScriptBuffer[sizeof ScriptBuffer - 1] = '\0';
     LogPrintf(LogDEBUG, "HangupModem: Script: %s\n", ScriptBuffer);
     if (flag || !(mode & MODE_DEDICATED)) {
       DoChat(ScriptBuffer);
@@ -704,18 +734,11 @@ CloseLogicalModem(void)
 {
   LogPrintf(LogDEBUG, "CloseLogicalModem\n");
   if (modem >= 0) {
-    ClosePhysicalModem();
     if (Utmp) {
-      struct utmp ut;
-      strncpy(ut.ut_line, VarBaseDevice, sizeof(ut.ut_line)-1);
-      ut.ut_line[sizeof(ut.ut_line)-1] = '\0';
-      if (logout(ut.ut_line))
-        logwtmp(ut.ut_line, "", ""); 
-      else
-        LogPrintf(LogERROR, "CloseLogicalModem: No longer logged in on %s\n",
-		  ut.ut_line);
+      ID0logout(VarBaseDevice);
       Utmp = 0;
     }
+    ClosePhysicalModem();
     UnlockModem();
   }
 }
@@ -826,12 +849,12 @@ DialModem()
   char ScriptBuffer[SCRIPT_LEN];
   int excode;
 
-  strncpy(ScriptBuffer, VarDialScript, sizeof(ScriptBuffer) - 1);
-  ScriptBuffer[sizeof(ScriptBuffer) - 1] = '\0';
+  strncpy(ScriptBuffer, VarDialScript, sizeof ScriptBuffer - 1);
+  ScriptBuffer[sizeof ScriptBuffer - 1] = '\0';
   if ((excode = DoChat(ScriptBuffer)) > 0) {
     if (VarTerm)
       fprintf(VarTerm, "dial OK!\n");
-    strncpy(ScriptBuffer, VarLoginScript, sizeof(ScriptBuffer) - 1);
+    strncpy(ScriptBuffer, VarLoginScript, sizeof ScriptBuffer - 1);
     if ((excode = DoChat(ScriptBuffer)) > 0) {
       VarAltPhone = NULL;
       if (VarTerm)
@@ -895,11 +918,12 @@ ShowModemStatus(struct cmdargs const *arg)
     fprintf(VarTerm, "fd = %d, modem control = %o\n", modem, mbits);
   fprintf(VarTerm, "connect count: %d\n", connect_count);
 #ifdef TIOCOUTQ
-  if (modem >= 0)
+  if (modem >= 0) {
     if (ioctl(modem, TIOCOUTQ, &nb) >= 0)
       fprintf(VarTerm, "outq: %d\n", nb);
     else
       fprintf(VarTerm, "outq: ioctl probe failed: %s\n", strerror(errno));
+  }
 #endif
   fprintf(VarTerm, "outqlen: %d\n", ModemQlen());
   fprintf(VarTerm, "DialScript  = %s\n", VarDialScript);

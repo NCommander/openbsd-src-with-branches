@@ -1,28 +1,30 @@
-/*	$Id$	*/
+/*	$OpenBSD$	*/
+/* $KTH: krb_dbm.c,v 1.27 1997/05/02 14:29:09 assar Exp $ */
 
-/*-
- * Copyright (C) 1989 by the Massachusetts Institute of Technology
- *
- * Export of this software from the United States of America is assumed
- * to require a specific license from the United States Government.
- * It is the responsibility of any person or organization contemplating
- * export to obtain such a license before exporting.
- *
- * WITHIN THAT CONSTRAINT, permission to use, copy, modify, and
- * distribute this software and its documentation for any purpose and
- * without fee is hereby granted, provided that the above copyright
- * notice appear in all copies and that both that copyright notice and
- * this permission notice appear in supporting documentation, and that
- * the name of M.I.T. not be used in advertising or publicity pertaining
- * to distribution of the software without specific, written prior
- * permission.  M.I.T. makes no representations about the suitability of
- * this software for any purpose.  It is provided "as is" without express
- * or implied warranty.
- */
+/* 
+  Copyright (C) 1989 by the Massachusetts Institute of Technology
+
+   Export of this software from the United States of America is assumed
+   to require a specific license from the United States Government.
+   It is the responsibility of any person or organization contemplating
+   export to obtain such a license before exporting.
+
+WITHIN THAT CONSTRAINT, permission to use, copy, modify, and
+distribute this software and its documentation for any purpose and
+without fee is hereby granted, provided that the above copyright
+notice appear in all copies and that both that copyright notice and
+this permission notice appear in supporting documentation, and that
+the name of M.I.T. not be used in advertising or publicity pertaining
+to distribution of the software without specific, written prior
+permission.  M.I.T. makes no representations about the suitability of
+this software for any purpose.  It is provided "as is" without express
+or implied warranty.
+
+  */
 
 #include "kdb_locl.h"
 
-#include <ndbm.h>
+#include <xdbm.h>
 
 #define KERB_DB_MAX_RETRY 5
 
@@ -32,11 +34,11 @@ extern long kerb_debug;
 extern char *progname;
 #endif
 
-static  init = 0;
+static int init = 0;
 static char default_db_name[] = DBM_FILE;
 static char *current_db_name = default_db_name;
 
-static struct timeval timestamp;/* current time of request */
+static struct timeval timestamp;      /* current time of request */
 static int non_blocking = 0;
 
 /*
@@ -92,87 +94,55 @@ static int non_blocking = 0;
  * retry the operation.
  */
 
-/* Macros to convert ndbm names to dbm names.
- * Note that dbm_nextkey() cannot be simply converted using a macro, since
- * it is invoked giving the database, and nextkey() needs the previous key.
- *
- * Instead, all routines call "dbm_next" instead.
- */
-
-#define dbm_next(db,key) dbm_nextkey(db)
-
-static char *gen_dbsuffix __P((char *db_name, char *sfx));
-static void decode_princ_key __P((datum *key, char *name, char *instance));
-static void encode_princ_contents __P((datum *contents, Principal *principal));
-static void decode_princ_contents __P((datum *contents, Principal *principal));
-static void encode_princ_key __P((datum *key, char *name, char *instance));
-static int kerb_dbl_init __P((void));
-static void kerb_dbl_fini __P((void));
-static int kerb_dbl_lock __P((int mode));
-static void kerb_dbl_unlock __P((void));
-static time_t kerb_start_update __P((char *db_name));
-static int kerb_end_update __P((char *db_name, time_t age));
-static time_t kerb_start_read __P((void));
-static int kerb_end_read __P((time_t age));
 
 /*
  * Utility routine: generate name of database file.
  */
 
 static char *
-gen_dbsuffix(db_name, sfx)
-     char *db_name;
-     char *sfx;
+gen_dbsuffix(char *db_name, char *sfx)
 {
     char *dbsuffix;
     
     if (sfx == NULL)
 	sfx = ".ok";
 
-    dbsuffix = malloc (strlen(db_name) + strlen(sfx) + 1);
-    strcpy(dbsuffix, db_name);
-    strcat(dbsuffix, sfx);
+    asprintf (&dbsuffix, "%s%s", db_name, sfx);
+    if (dbsuffix == NULL) {   /* This might not be the nest solution */
+	fprintf(stderr, "gen_dbsuffix: not enough memory\n");
+	exit(1);
+    }
     return dbsuffix;
 }
 
 static void
-decode_princ_key(key, name, instance)
-     datum *key;
-     char *name;
-     char *instance;
+decode_princ_key(datum *key, char *name, char *instance)
 {
     strncpy(name, key->dptr, ANAME_SZ);
-    strncpy(instance, key->dptr + ANAME_SZ, INST_SZ);
+    strncpy(instance, (char *)key->dptr + ANAME_SZ, INST_SZ);
     name[ANAME_SZ - 1] = '\0';
     instance[INST_SZ - 1] = '\0';
 }
 
 static void
-encode_princ_contents(contents, principal)
-     datum *contents;
-     Principal *principal;
+encode_princ_contents(datum *contents, Principal *principal)
 {
     contents->dsize = sizeof(*principal);
     contents->dptr = (char *) principal;
 }
 
 static void
-decode_princ_contents(contents, principal)
-     datum *contents;
-     Principal *principal;
+decode_princ_contents (datum *contents, Principal *principal)
 {
-    bcopy(contents->dptr, (char *) principal, sizeof(*principal));
+    memcpy(principal, contents->dptr, sizeof(*principal));
 }
 
 static void
-encode_princ_key(key, name, instance)
-     datum *key;
-     char *name;
-     char *instance;
+encode_princ_key (datum *key, char *name, char *instance)
 {
     static char keystring[ANAME_SZ + INST_SZ];
 
-    bzero(keystring, ANAME_SZ + INST_SZ);
+    memset(keystring, 0, ANAME_SZ + INST_SZ);
     strncpy(keystring, name, ANAME_SZ);
     strncpy(&keystring[ANAME_SZ], instance, INST_SZ);
     key->dptr = keystring;
@@ -195,9 +165,10 @@ kerb_dbl_init()
 	    exit(1);
 	}
 	free(filename);
+	filename = NULL;
 	inited++;
     }
-    return (0);
+    return 0;
 }
 
 static void
@@ -210,8 +181,7 @@ kerb_dbl_fini()
 }
 
 static int
-kerb_dbl_lock(mode)
-     int mode;
+kerb_dbl_lock(int mode)
 {
     int flock_mode;
     
@@ -225,17 +195,17 @@ kerb_dbl_lock(mode)
     }
     switch (mode) {
     case KERB_DBL_EXCLUSIVE:
-	flock_mode = LOCK_EX;
+	flock_mode = K_LOCK_EX;
 	break;
     case KERB_DBL_SHARED:
-	flock_mode = LOCK_SH;
+	flock_mode = K_LOCK_SH;
 	break;
     default:
 	fprintf(stderr, "invalid lock mode %d\n", mode);
 	abort();
     }
     if (non_blocking)
-	flock_mode |= LOCK_NB;
+	flock_mode |= K_LOCK_NB;
     
     if (flock(dblfd, flock_mode) < 0) 
 	return errno;
@@ -251,7 +221,7 @@ kerb_dbl_unlock()
 	fflush(stderr);
 	exit(1);
     }
-    if (flock(dblfd, LOCK_UN) < 0) {
+    if (flock(dblfd, K_LOCK_UN) < 0) {
 	fprintf(stderr, "Kerberos database lock error. (unlocking)\n");
 	fflush(stderr);
 	perror("flock");
@@ -261,8 +231,7 @@ kerb_dbl_unlock()
 }
 
 int
-kerb_db_set_lockmode(mode)
-     int mode;
+kerb_db_set_lockmode(int mode)
 {
     int old = non_blocking;
     non_blocking = mode;
@@ -298,8 +267,7 @@ kerb_db_fini()
  */
 
 int
-kerb_db_set_name(name)
-     char *name;
+kerb_db_set_name(char *name)
 {
     DBM *db;
 
@@ -333,6 +301,7 @@ kerb_get_db_age()
 	age = st.st_mtime;
 
     free (okname);
+    okname = NULL;
     return age;
 }
 
@@ -345,8 +314,7 @@ kerb_get_db_age()
  */
 
 static time_t
-kerb_start_update(db_name)
-     char *db_name;
+kerb_start_update(char *db_name)
 {
     char *okname = gen_dbsuffix(db_name, ".ok");
     time_t age = kerb_get_db_age();
@@ -356,13 +324,12 @@ kerb_start_update(db_name)
 	    age = -1;
     }
     free (okname);
+    okname = NULL;
     return age;
 }
 
 static int
-kerb_end_update(db_name, age)
-     char *db_name;
-     time_t age;
+kerb_end_update(char *db_name, time_t age)
 {
     int fd;
     int retval = 0;
@@ -390,7 +357,9 @@ kerb_end_update(db_name, age)
     }
 
     free (new_okname);
+    new_okname = NULL;
     free (okname);
+    okname = NULL;
 
     return retval;
 }
@@ -402,8 +371,7 @@ kerb_start_read()
 }
 
 static int
-kerb_end_read(age)
-     time_t age;
+kerb_end_read(time_t age)
 {
     if (kerb_get_db_age() != age || age == -1) {
 	return -1;
@@ -414,14 +382,13 @@ kerb_end_read(age)
 /*
  * Create the database, assuming it's not there.
  */
-
 int
-kerb_db_create(db_name)
-     char *db_name;
+kerb_db_create(char *db_name)
 {
     char *okname = gen_dbsuffix(db_name, ".ok");
     int fd;
-    register int ret = 0;
+    int ret = 0;
+#ifdef NDBM
     DBM *db;
 
     db = dbm_open(db_name, O_RDWR|O_CREAT|O_EXCL, 0600);
@@ -429,6 +396,24 @@ kerb_db_create(db_name)
 	ret = errno;
     else
 	dbm_close(db);
+#else
+    char *dirname = gen_dbsuffix(db_name, ".dir");
+    char *pagname = gen_dbsuffix(db_name, ".pag");
+
+    fd = open(dirname, O_RDWR|O_CREAT|O_EXCL, 0600);
+    if (fd < 0)
+	ret = errno;
+    else {
+	close(fd);
+	fd = open (pagname, O_RDWR|O_CREAT|O_EXCL, 0600);
+	if (fd < 0)
+	    ret = errno;
+	else
+	    close(fd);
+    }
+    if (dbminit(db_name) < 0)
+	ret = errno;
+#endif
     if (ret == 0) {
 	fd = open (okname, O_CREAT|O_RDWR|O_TRUNC, 0600);
 	if (fd < 0)
@@ -447,13 +432,11 @@ kerb_db_create(db_name)
  */
 
 int
-kerb_db_rename(from, to)
-     char *from;
-     char *to;
+kerb_db_rename(char *from, char *to)
 {
-#if defined(__NetBSD__) || defined(__FreeBSD__)
+#ifdef HAVE_NEW_DB
     char *fromdb = gen_dbsuffix (from, ".db");
-    char *todb = gen_dbsuffix (from, ".db");
+    char *todb = gen_dbsuffix (to, ".db");
 #else
     char *fromdir = gen_dbsuffix (from, ".dir");
     char *todir = gen_dbsuffix (to, ".dir");
@@ -464,30 +447,73 @@ kerb_db_rename(from, to)
     long trans = kerb_start_update(to);
     int ok = 0;
     
-#if defined(__NetBSD__) || defined(__FreeBSD__)
+#ifdef HAVE_NEW_DB
     if (rename (fromdb, todb) == 0) {
-	(void) unlink (fromdb);
+	unlink (fromok);
 	ok = 1;
     }
     free (fromdb);
+    fromdb = NULL;
     free (todb);
+    todb = NULL;
 #else
     if ((rename (fromdir, todir) == 0)
 	&& (rename (frompag, topag) == 0)) {
-	(void) unlink (fromok);
+	unlink (fromok);
 	ok = 1;
     }
     free (fromdir);
+    fromdir = NULL;
     free (todir);
+    todir = NULL;
     free (frompag);
+    frompag = NULL;
     free (topag);
+    topag = NULL;
 #endif
     free (fromok);
+    fromok = NULL;
     if (ok)
 	return kerb_end_update(to, trans);
     else
 	return -1;
 }
+
+int
+kerb_db_delete_principal (char *name, char *inst)
+{
+    DBM *db;
+    int try;
+    int done = 0;
+    int code;
+    datum key;
+    
+    if(!init)
+	kerb_db_init();
+    
+    for(try = 0; try < KERB_DB_MAX_RETRY; try++){
+	if((code = kerb_dbl_lock(KERB_DBL_SHARED)) != 0)
+	    return -1;
+	
+	db = dbm_open(current_db_name, O_RDWR, 0600);
+	if(db == NULL)
+	    return -1;
+	encode_princ_key(&key, name, inst);
+	if(dbm_delete(db, key) == 0)
+	    done = 1;
+	
+	dbm_close(db);
+	kerb_dbl_unlock();
+	if(done)
+	    break;
+	if(!non_blocking)
+	    sleep(1);
+    }
+    if(!done)
+	return -1;
+    return 0;
+}
+
 
 /*
  * look up a principal in the data base returns number of principals
@@ -495,15 +521,10 @@ kerb_db_rename(from, to)
  */
 
 int
-kerb_db_get_principal(name, inst, principal, max, more)
-     char *name;		/* could have wild card */
-     char *inst;		/* could have wild card */
-     Principal *principal;	/* max number of name structs to return */
-     unsigned int max;		/* where there more than 'max' tuples? */
-     int *more;
+kerb_db_get_principal (char *name, char *inst, Principal *principal, 
+		       unsigned int max, int *more)
 {
     int     found = 0, code;
-    extern int errorproc();
     int     wildp, wildi;
     datum   key, contents;
     char    testname[ANAME_SZ], testinst[INST_SZ];
@@ -593,22 +614,12 @@ kerb_db_get_principal(name, inst, principal, max, more)
     return (found);
 }
 
-/*
- * Update a name in the data base.  Returns number of names
- * successfully updated.
- */
+/* Use long * rather than DBM * so that the database structure is private */
 
-int
-kerb_db_put_principal(principal, max)
-     Principal *principal;	/* number of principal structs to */
-     unsigned int max;		/* update */
-
+long *
+kerb_db_begin_update(void)
 {
-    int     found = 0, code;
-    u_long  i;
-    extern int errorproc();
-    datum   key, contents;
-    DBM    *db;
+    int code;
 
     gettimeofday(&timestamp, NULL);
 
@@ -616,9 +627,24 @@ kerb_db_put_principal(principal, max)
 	kerb_db_init();
 
     if ((code = kerb_dbl_lock(KERB_DBL_EXCLUSIVE)) != 0)
-	return -1;
+	return 0;
 
-    db = dbm_open(current_db_name, O_RDWR, 0600);
+    return (long *) dbm_open(current_db_name, O_RDWR, 0600);
+}
+
+void
+kerb_db_end_update(long *db)
+{
+    dbm_close((DBM *)db);
+    kerb_dbl_unlock();		/* unlock database */
+}
+
+int
+kerb_db_update(long *db, Principal *principal, unsigned int max)
+{
+    int     found = 0;
+    u_long  i;
+    datum   key, contents;
 
 #ifdef DEBUG
     if (kerb_debug & 2)
@@ -630,7 +656,7 @@ kerb_db_put_principal(principal, max)
     for (i = 0; i < max; i++) {
 	encode_princ_contents(&contents, principal);
 	encode_princ_key(&key, principal->name, principal->instance);
-	dbm_store(db, key, contents, DBM_REPLACE);
+	dbm_store((DBM *)db, key, contents, DBM_REPLACE);
 #ifdef DEBUG
 	if (kerb_debug & 1) {
 	    fprintf(stderr, "\n put %s %s\n",
@@ -640,18 +666,36 @@ kerb_db_put_principal(principal, max)
 	found++;
 	principal++;		/* bump to next struct			   */
     }
+    return found;
+}
 
-    dbm_close(db);
-    kerb_dbl_unlock();		/* unlock database */
+/*
+ * Update a name in the data base.  Returns number of names
+ * successfully updated.
+ */
+
+int
+kerb_db_put_principal(Principal *principal,
+		      unsigned max)
+
+{
+    int found;
+    long    *db;
+
+    db = kerb_db_begin_update();
+    if (db == 0)
+	return -1;
+
+    found = kerb_db_update(db, principal, max);
+
+    kerb_db_end_update(db);
     return (found);
 }
 
 void
-kerb_db_get_stat(s)
-     DB_stat *s;
+kerb_db_get_stat(DB_stat *s)
 {
     gettimeofday(&timestamp, NULL);
-
 
     s->cpu = 0;
     s->elapsed = 0;
@@ -667,14 +711,12 @@ kerb_db_get_stat(s)
 }
 
 void
-kerb_db_put_stat(s)
-     DB_stat *s;
+kerb_db_put_stat(DB_stat *s)
 {
 }
 
 void
-delta_stat(a, b, c)
-     DB_stat *a, *b, *c;
+delta_stat(DB_stat *a, DB_stat *b, DB_stat *c)
 {
     /* c = a - b then b = a for the next time */
 
@@ -689,8 +731,7 @@ delta_stat(a, b, c)
     c->n_get_stat = a->n_get_stat - b->n_get_stat;
     c->n_put_stat = a->n_put_stat - b->n_put_stat;
 
-    bcopy(a, b, sizeof(DB_stat));
-    return;
+    memcpy(b, a, sizeof(DB_stat));
 }
 
 /*
@@ -699,21 +740,23 @@ delta_stat(a, b, c)
  */
 
 int
-kerb_db_get_dba(dba_name, dba_inst, dba, max, more)
-     char *dba_name;		/* could have wild card */
-     char *dba_inst;		/* could have wild card */
-     Dba *dba;			/* max number of name structs to return */
-     unsigned int max;		/* where there more than 'max' tuples? */
-     int *more;
+kerb_db_get_dba (char *dba_name, char *dba_inst, Dba *dba, unsigned int max, int *more);
+
+int
+kerb_db_get_dba(char *dba_name, char *dba_inst, Dba *dba,
+		unsigned max,
+		int *more)
+		/* could have wild card */
+		/* could have wild card */
+		/* max number of name structs to return */
+		/* where there more than 'max' tuples? */
 {
     *more = 0;
     return (0);
 }
 
 int
-kerb_db_iterate (func, arg)
-     int (*func)();
-     char *arg;			/* void *, really */
+kerb_db_iterate (k_iter_proc_t func, void *arg)
 {
     datum key, contents;
     Principal *principal;

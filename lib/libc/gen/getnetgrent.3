@@ -1,4 +1,4 @@
-.\"	$NetBSD: getnetgrent.3,v 1.4 1995/02/25 08:51:17 cgd Exp $
+.\"	$OpenBSD: getnetgrent.3,v 1.5 1997/06/13 13:03:25 deraadt Exp $
 .\"
 .\" Copyright (c) 1992, 1993
 .\"	The Regents of the University of California.  All rights reserved.
@@ -31,9 +31,7 @@
 .\" OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 .\" SUCH DAMAGE.
 .\"
-.\"     @(#)getnetgrent.3	8.1 (Berkeley) 6/4/93
-.\"
-.Dd June 4, 1993
+.Dd July 8, 1997
 .Dt GETNETGRENT 3
 .Os
 .Sh NAME
@@ -43,10 +41,11 @@
 .Nm endnetgrent
 .Nd netgroup database operations
 .Sh SYNOPSIS
+.Fd #include <netgroup.h>                                                       
 .Ft int
-.Fn getnetgrent "char **host, char **user, char **domain"
+.Fn getnetgrent "const char **host" "const char **user" "const char **domain"
 .Ft int
-.Fn innetgr "const char *netgroup, const char *host, const char *user, const char *domain"
+.Fn innetgr "const char *netgroup" "const char *host" "const char *user" "const char *domain"
 .Ft void
 .Fn setnetgrent "const char *netgroup"
 .Ft void
@@ -58,7 +57,7 @@ which is described
 in
 .Xr netgroup 5 .
 If that file does not exist, and the system supports 
-.Sy YP,
+.Sy YP ,
 then the
 .Sy netgroup 
 .Sy YP
@@ -122,7 +121,7 @@ have no return value.
 netgroup database file
 .El
 .Sh SEE ALSO
-.Fn netgroup 5
+.Xr netgroup 5
 .Sh BUGS
 The function
 .Fn getnetgrent

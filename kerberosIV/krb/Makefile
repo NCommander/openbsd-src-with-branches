@@ -2,18 +2,81 @@
 
 LIB=	krb
 CFLAGS+=-I${.CURDIR}
-SRCS=	cr_err_reply.c create_auth_reply.c create_ciph.c \
-	create_death_packet.c create_ticket.c debug_decl.c decomp_ticket.c \
-	dest_tkt.c extract_ticket.c fgetst.c get_ad_tkt.c get_admhst.c \
-	get_cred.c get_in_tkt.c get_krbhst.c get_krbrlm.c get_phost.c \
-	get_pw_tkt.c get_request.c get_svc_in_tkt.c get_tf_fullname.c \
-	get_tf_realm.c getrealm.c getst.c in_tkt.c k_localtime.c klog.c \
-	kname_parse.c kntoln.c kparse.c krb_equiv.c krb_err.c krb_err_txt.c \
-	krb_get_in_tkt.c kuserok.c lifetime.c log.c mk_err.c mk_priv.c \
-	mk_req.c mk_safe.c month_sname.c netread.c netwrite.c one.c \
-	pkt_cipher.c pkt_clen.c rd_err.c rd_priv.c rd_req.c rd_safe.c \
-	read_service_key.c recvauth.c save_credentials.c send_to_kdc.c \
-	sendauth.c str2key.c tf_util.c tkt_string.c
+SRCS=	base64.c \
+	check_time.c \
+	cr_err_reply.c \
+	create_auth_reply.c \
+	create_ciph.c \
+	create_death_packet.c \
+	create_ticket.c \
+	debug_decl.c \
+	decomp_ticket.c \
+	dest_tkt.c \
+	encrypt_ktext.c \
+	get_ad_tkt.c \
+	get_cred.c \
+	get_default_principal.c \
+	get_host.c \
+	get_in_tkt.c \
+	get_krbrlm.c \
+	get_svc_in_tkt.c \
+	get_tf_fullname.c \
+	get_tf_realm.c \
+	getaddrs.c \
+	getfile.c \
+	getrealm.c \
+	getst.c \
+	k_concat.c \
+	k_getport.c \
+	k_getsockinst.c \
+	k_localtime.c \
+	kdc_reply.c \
+	kntoln.c \
+	krb_check_auth.c \
+	krb_equiv.c \
+	krb_err.c \
+	krb_err_txt.c \
+	krb_get_in_tkt.c \
+	kuserok.c \
+	lifetime.c \
+	logging.c \
+	lsb_addr_comp.c \
+	mk_auth.c \
+	mk_err.c \
+	mk_priv.c \
+	mk_req.c \
+	mk_safe.c \
+	month_sname.c \
+	name2name.c \
+	netread.c \
+	netwrite.c \
+	one.c \
+	parse_name.c \
+	rd_err.c\
+	rd_priv.c \
+	rd_req.c \
+	rd_safe.c \
+	read_service_key.c \
+	realm_parse.c \
+	recvauth.c \
+	resolve.c \
+	rw.c \
+	save_credentials.c \
+	send_to_kdc.c \
+	sendauth.c \
+	stime.c \
+	str2key.c \
+	strtok_r.c \
+	tf_util.c \
+	tkt_string.c \
+	unparse_name.c \
+	verify_user.c \
+	version.c
+
+
+# XXX base64.c and strtok_r.c should really be somewhere else. 
+# (or replaced) (they are from libroken)
+
 MAN=	kerberos.3 krb_realmofhost.3 krb_sendauth.3 krb_set_tkt_string.3 \
 	kuserok.3 tf_util.3
 MLINKS+=kerberos.3 krb_mk_req.3 kerberos.3 krb_rd_req.3 kerberos.3 krb_kntoln.3 \
@@ -32,11 +95,11 @@ CLEANFILES+=	krb_err.c krb_err.h
 
 krb_err.c krb_err.h: krb_err.et
 	test -e krb_err.et || ln -s ${.CURDIR}/krb_err.et .
-	${COMPILE_ET} krb_err.et
+	compile_et krb_err.et
 	-test -h krb_err.et && rm krb_err.et
 
-beforeinstall:
+includes: krb_err.h
 	-cd ${.OBJDIR}; cmp -s krb_err.h ${DESTDIR}/usr/include/kerberosIV/krb_err.h || \
-	    install -c -o ${BINOWN} -g ${BINGRP} -m 444 krb_err.h ${DESTDIR}/usr/include/kerberosIV
+	    ${INSTALL} ${INSTALL_COPY} -o ${BINOWN} -g ${BINGRP} -m 444 krb_err.h ${DESTDIR}/usr/include/kerberosIV
 
 .include <bsd.lib.mk>

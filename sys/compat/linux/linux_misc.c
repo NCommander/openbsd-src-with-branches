@@ -1,4 +1,5 @@
-/*	$NetBSD: linux_misc.c,v 1.22 1995/10/09 11:24:05 mycroft Exp $	*/
+/*	$OpenBSD: linux_misc.c,v 1.14 1998/02/23 08:57:54 niklas Exp $	*/
+/*	$NetBSD: linux_misc.c,v 1.27 1996/05/20 01:59:21 fvdl Exp $	*/
 
 /*
  * Copyright (c) 1995 Frank van der Linden
@@ -39,7 +40,7 @@
 #include <sys/systm.h>
 #include <sys/namei.h>
 #include <sys/proc.h>
-#include <sys/dir.h>
+#include <sys/dirent.h>
 #include <sys/file.h>
 #include <sys/stat.h>
 #include <sys/filedesc.h>
@@ -76,12 +77,18 @@
 #include <compat/linux/linux_util.h>
 #include <compat/linux/linux_dirent.h>
 
+/* linux_misc.c */
+static void bsd_to_linux_wstat __P((int *));
+static void bsd_to_linux_statfs __P((struct statfs *, struct linux_statfs *));
+int linux_select1 __P((struct proc *, register_t *, int, fd_set *, fd_set *,
+		       fd_set *, struct timeval *));
+
 /*
  * The information on a terminated (or stopped) process needs
  * to be converted in order for Linux binaries to get a valid signal
  * number out of it.
  */
-static int
+static void
 bsd_to_linux_wstat(status)
 	int *status;
 {
@@ -181,7 +188,6 @@ linux_sys_wait4(p, v, retval)
 			return error;
 
 		bsd_to_linux_wstat(&tstat);
-
 		return copyout(&tstat, SCARG(uap, status), sizeof tstat);
 	}
 
@@ -198,9 +204,11 @@ linux_sys_break(p, v, retval)
 	void *v;
 	register_t *retval;
 {
+#if 0
 	struct linux_sys_brk_args /* {
 		syscallarg(char *) nsize;
 	} */ *uap = v;
+#endif
 
 	return ENOSYS;
 }
@@ -221,8 +229,7 @@ linux_sys_brk(p, v, retval)
 	char *nbrk = SCARG(uap, nsize);
 	struct sys_obreak_args oba;
 	struct vmspace *vm = p->p_vmspace;
-	int error = 0;
-	caddr_t oldbrk, newbrk;
+	caddr_t oldbrk;
 
 	oldbrk = vm->vm_daddr + ctob(vm->vm_dsize);
 	/*
@@ -395,10 +402,7 @@ linux_sys_uname(p, v, retval)
 	len = sizeof(luts.l_version);
 	for (cp = luts.l_version; len--; ++cp)
 		if (*cp == '\n' || *cp == '\t')
-			if (len > 1)
-				*cp = ' ';
-			else
-				*cp = '\0';
+			*cp = (len > 1) ? ' ' : '\0';
 
 	return copyout(&luts, SCARG(uap, up), sizeof(luts));
 }
@@ -427,10 +431,7 @@ linux_sys_olduname(p, v, retval)
 	len = sizeof(luts.l_version);
 	for (cp = luts.l_version; len--; ++cp)
 		if (*cp == '\n' || *cp == '\t')
-			if (len > 1)
-				*cp = ' ';
-			else
-				*cp = '\0';
+			*cp = (len > 1) ? ' ' : '\0';
 
 	return copyout(&luts, SCARG(uap, up), sizeof(luts));
 }
@@ -459,10 +460,7 @@ linux_sys_oldolduname(p, v, retval)
 	len = sizeof(luts.l_version);
 	for (cp = luts.l_version; len--; ++cp)
 		if (*cp == '\n' || *cp == '\t')
-			if (len > 1)
-				*cp = ' ';
-			else
-				*cp = '\0';
+			*cp = (len > 1) ? ' ' : '\0';
 
 	return copyout(&luts, SCARG(uap, up), sizeof(luts));
 }
@@ -496,6 +494,8 @@ linux_sys_mmap(p, v, retval)
 
 	SCARG(&cma,addr) = lmap.lm_addr;
 	SCARG(&cma,len) = lmap.lm_len;
+	if (lmap.lm_prot & VM_PROT_WRITE)	/* XXX */
+		lmap.lm_prot |= VM_PROT_READ;
  	SCARG(&cma,prot) = lmap.lm_prot;
 	SCARG(&cma,flags) = flags;
 	SCARG(&cma,fd) = lmap.lm_fd;
@@ -505,29 +505,25 @@ linux_sys_mmap(p, v, retval)
 	return sys_mmap(p, &cma, retval);
 }
 
-/*
- * Linux doesn't use the retval[1] value to determine whether
- * we are the child or parent.
- */
 int
-linux_sys_fork(p, v, retval)
+linux_sys_mremap(p, v, retval)
 	struct proc *p;
 	void *v;
 	register_t *retval;
 {
-	int error;
-
-	if ((error = sys_fork(p, v, retval)))
-		return error;
-
-	if (retval[1] == 1)
-		retval[0] = 0;
-
-	return 0;
+#ifdef notyet
+	struct linux_sys_mremap_args /* {
+		syscallarg(void *) old_address;
+		syscallarg(size_t) old_size;
+		syscallarg(size_t) new_size;
+		syscallarg(u_long) flags;
+	} */ *uap = v;
+#endif
+	return (ENOMEM);
 }
 
 /*
- * This code is partly stolen from src/lib/libc/compat-43/times.c
+ * This code is partly stolen from src/lib/libc/gen/times.c
  * XXX - CLK_TCK isn't declared in /sys, just in <time.h>, done here
  */
 
@@ -606,7 +602,7 @@ linux_sys_alarm(p, v, retval)
 	struct linux_sys_alarm_args /* {
 		syscallarg(unsigned int) secs;
 	} */ *uap = v;
-	int error, s;
+	int s;
 	struct itimerval *itp, it;
 
 	itp = &p->p_realtimer;
@@ -750,10 +746,10 @@ linux_sys_getdents(p, v, retval)
 	} */ *uap = v;
 	register struct dirent *bdp;
 	struct vnode *vp;
-	caddr_t	inp, buf;	/* BSD-format */
-	int len, reclen;	/* BSD-format */
-	caddr_t outp;		/* Linux-format */
-	int resid, linux_reclen;/* Linux-format */
+	caddr_t	inp, buf;		/* BSD-format */
+	int len, reclen;		/* BSD-format */
+	caddr_t outp;			/* Linux-format */
+	int resid, linux_reclen = 0;	/* Linux-format */
 	struct file *fp;
 	struct uio auio;
 	struct iovec aiov;
@@ -761,8 +757,8 @@ linux_sys_getdents(p, v, retval)
 	off_t off;		/* true file offset */
 	int buflen, error, eofflag, nbytes, oldcall;
 	struct vattr va;
-	u_long *cookiebuf, *cookie;
-	int ncookies;
+	u_long *cookiebuf = NULL, *cookie;
+	int ncookies = 0;
 
 	if ((error = getvnode(p->p_fd, SCARG(uap, fd), &fp)) != 0)
 		return (error);
@@ -788,9 +784,7 @@ linux_sys_getdents(p, v, retval)
 		oldcall = 0;
 	}
 	buf = malloc(buflen, M_TEMP, M_WAITOK);
-	ncookies = buflen / 16;
-	cookiebuf = malloc(ncookies * sizeof(*cookiebuf), M_TEMP, M_WAITOK);
-	VOP_LOCK(vp);
+	vn_lock(vp, LK_EXCLUSIVE | LK_RETRY, p);
 	off = fp->f_offset;
 again:
 	aiov.iov_base = buf;
@@ -806,9 +800,12 @@ again:
          * First we read into the malloc'ed buffer, then
          * we massage it into user space, one record at a time.
          */
-	error = VOP_READDIR(vp, &auio, fp->f_cred, &eofflag, cookiebuf,
-	    ncookies);
+	error = VOP_READDIR(vp, &auio, fp->f_cred, &eofflag, &ncookies,
+	    &cookiebuf);
 	if (error)
+		goto out;
+
+	if (!error && !cookiebuf)
 		goto out;
 
 	inp = buf;
@@ -874,8 +871,9 @@ again:
 eof:
 	*retval = nbytes - resid;
 out:
-	VOP_UNLOCK(vp);
-	free(cookiebuf, M_TEMP);
+	VOP_UNLOCK(vp, 0, p);
+	if (cookiebuf)
+		free(cookiebuf, M_TEMP);
 	free(buf, M_TEMP);
 	return error;
 }
@@ -1029,9 +1027,10 @@ linux_sys_getpgid(p, v, retval)
 	} */ *uap = v;
 	struct proc *targp;
 
-	if (SCARG(uap, pid) != 0 && SCARG(uap, pid) != p->p_pid)
+	if (SCARG(uap, pid) != 0 && SCARG(uap, pid) != p->p_pid) {
 		if ((targp = pfind(SCARG(uap, pid))) == 0)
 			return ESRCH;
+	}
 	else
 		targp = p;
 
@@ -1102,4 +1101,73 @@ linux_sys_setregid(p, v, retval)
 		(uid_t)-1 : SCARG(uap, egid);
 
 	return compat_43_sys_setregid(p, &bsa, retval);
+}
+
+int
+linux_sys_getsid(p, v, retval)
+	struct proc *p;
+	void *v;
+	register_t *retval;
+{
+	struct linux_sys_getsid_args /* {
+		syscallarg(int) pid;
+	} */ *uap = v;
+	struct proc *p1;
+	pid_t pid;
+
+	pid = (pid_t)SCARG(uap, pid);
+
+	if (pid == 0) {
+		retval[0] = (int)p->p_session;	/* XXX Oh well */
+		return 0;
+	}
+
+	p1 = pfind((int)pid);
+	if (p1 == NULL)
+		return ESRCH;
+
+	retval[0] = (int)p1->p_session;
+	return 0;
+}
+
+int
+linux_sys___sysctl(p, v, retval)
+	struct proc *p;
+	void *v;
+	register_t *retval;
+{
+	struct linux_sys___sysctl_args /* {
+		syscallarg(struct linux___sysctl *) lsp;
+	} */ *uap = v;
+	struct linux___sysctl ls;
+	struct sys___sysctl_args bsa;
+	int error;
+
+	if ((error = copyin(SCARG(uap, lsp), &ls, sizeof ls)))
+		return error;
+	SCARG(&bsa, name) = ls.name;
+	SCARG(&bsa, namelen) = ls.namelen;
+	SCARG(&bsa, old) = ls.old;
+	SCARG(&bsa, oldlenp) = ls.oldlenp;
+	SCARG(&bsa, new) = ls.new;
+	SCARG(&bsa, newlen) = ls.newlen;
+
+	return sys___sysctl(p, &bsa, retval);
+}
+
+int
+linux_sys_nice(p, v, retval)
+	struct proc *p;
+	void *v;
+	register_t *retval;
+{
+	struct linux_sys_nice_args /* {
+		syscallarg(int) incr;
+	} */ *uap = v;
+	struct sys_setpriority_args bsa;
+
+	SCARG(&bsa, which) = PRIO_PROCESS;
+	SCARG(&bsa, who) = 0;
+	SCARG(&bsa, prio) = SCARG(uap, incr);
+	return sys_setpriority(p, &bsa, retval);
 }

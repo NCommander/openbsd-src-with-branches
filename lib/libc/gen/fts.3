@@ -1,4 +1,4 @@
-.\"	$NetBSD: fts.3,v 1.11 1995/02/27 03:43:23 cgd Exp $
+.\"	$OpenBSD: fts.3,v 1.4 1997/09/01 02:48:46 millert Exp $
 .\"
 .\" Copyright (c) 1989, 1991, 1993, 1994
 .\"	The Regents of the University of California.  All rights reserved.
@@ -44,13 +44,13 @@
 .Fd #include <sys/stat.h>
 .Fd #include <fts.h>
 .Ft FTS *
-.Fn fts_open "char * const *path_argv" "int options" "int *compar(const FTSENT **, const FTSENT **)"
+.Fn fts_open "char * const *path_argv" "int options" "int (*compar)(const FTSENT **, const FTSENT **)"
 .Ft FTSENT *
 .Fn fts_read "FTS *ftsp"
 .Ft FTSENT *
 .Fn fts_children "FTS *ftsp" "int options"
 .Ft int
-.Fn fts_set "FTS ftsp" "FTSENT *f" "int options"
+.Fn fts_set "FTS *ftsp" "FTSENT *f" "int options"
 .Ft int
 .Fn fts_close "FTS *ftsp"
 .Sh DESCRIPTION
@@ -316,7 +316,7 @@ Therefore, the
 and
 .Fa fts_accpath
 fields are guaranteed to be
-.Dv NULL Ns -terminated
+.Dv NUL Ns -terminated
 .Em only
 for the file most recently returned by
 .Fn fts_read .
@@ -334,7 +334,7 @@ are attempted.
 The
 .Fa fts_name
 field is always
-.Dv NULL Ns -terminated.
+.Dv NUL Ns -terminated.
 .Sh FTS_OPEN
 The
 .Fn fts_open
@@ -448,6 +448,12 @@ This option prevents
 .Nm fts
 from descending into directories that have a different device number
 than the file from which the descent began.
+.It Dv FTS_CHDIRROOT
+This option causes
+.Fn fts_read
+to change the current directory to the root of the hierarchy when
+starting a new one.  The default is to change to the original
+starting directory.
 .El
 .Pp
 The argument

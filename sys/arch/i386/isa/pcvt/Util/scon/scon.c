@@ -56,8 +56,11 @@ static char *id =
  *
  *---------------------------------------------------------------------------*/
 
-#include <stdio.h>
 #include <fcntl.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <unistd.h>
 #include <machine/pcvt_ioctl.h>
 
 #define DEFAULTFD 0
@@ -185,8 +188,12 @@ static struct colname {
 static void parsepopt(char *arg, unsigned *idx,
 		      unsigned *r, unsigned *g, unsigned *b);
 static void printpalette(int fd);
+void printinfo(int fd);
+void printadaptor(int fd);
+void printmonitor(int fd);
+void usage();
 
-main(argc,argv)
+int main(argc,argv)
 int argc;
 char *argv[];
 {
@@ -197,7 +204,7 @@ char *argv[];
 	int c;
 	int fd;
 	
-	while( (c = getopt(argc, argv, "ac:d:f:HVlms:t:vp:18")) != EOF)
+	while( (c = getopt(argc, argv, "ac:d:f:HVlms:t:vp:18")) != -1)
 	{
 		switch(c)
 		{
@@ -527,11 +534,10 @@ success:
 	exit(0);	
 }			
 
-usage()
+void usage()
 {
-	fprintf(stderr,"\nscon - screen control utility for the pcvt video driver\n");
-	fprintf(stderr,"usage: scon -a -l -m -v -c [n] -d [dev] -f [on|off] -V -H -s [n]\n");
-	fprintf(stderr,"usage: scon -p [default | list | i,r,g,b] | -t [sec] | -1 | -8\n");
+	fprintf(stderr,"usage: scon [-almvVH18] [-c n] [-d dev] [-f [on|off] [-s n]\n");
+	fprintf(stderr,"    [-p [default | list | i,r,g,b]] | [-t sec]\n");
 	fprintf(stderr,"       -a              list video adaptor type (MDA,CGA,EGA or VGA)\n");
 	fprintf(stderr,"       -c <screen no>  switch current virtual screen to <screen no>\n");
 	fprintf(stderr,"       -d <device>     set parameters(-V|-H|-s) for virtual device\n");
@@ -549,11 +555,10 @@ usage()
 	fprintf(stderr,"       -8              set 80 columns mode\n");
 	fprintf(stderr,"       -v              verbose mode\n");
 	fprintf(stderr,"       -V              set pure VT220 emulation for a virtual screen\n");
-	fprintf(stderr,"       -?              display help (this message)\n\n");
 	exit(1);
 }
 
-printadaptor(fd)
+void printadaptor(fd)
 int fd;
 {
 	if(ioctl(fd, VGAGETSCREEN, &screeninfo) == -1)
@@ -586,7 +591,7 @@ int fd;
 	}
 }
 
-printmonitor(fd)
+void printmonitor(fd)
 int fd;
 {
 	if(ioctl(fd, VGAGETSCREEN, &screeninfo) == -1)
@@ -633,11 +638,21 @@ char *vga_type(int number)
 		"TVGA 9000",
 		"TVGA 9100",
 		"TVGA 9200",
+		"TVGA 9440",
 		"Unknown TRIDENT",
 		"S3 80C911",
 		"S3 80C924",
 		"S3 80C801/80C805",
 		"S3 80C928",
+		"S3 864",
+		"S3 964",
+		"S3 732 (Trio32)",
+		"S3 764 (Trio64)",
+		"S3 866",
+		"S3 868",
+		"S3 968",
+		"S3 765 (Trio64 V+)",
+		"S3 ViRGE",
 		"Unknown S3",
  		"CL-GD5402",
  		"CL-GD5402r1",
@@ -669,7 +684,7 @@ char *vga_family(int number)
 	return(vga_tab[number]);
 }
 
-printinfo(fd)
+void printinfo(fd)
 int fd;
 {
 	if(ioctl(fd, VGAGETSCREEN, &screeninfo) == -1)
@@ -678,7 +693,7 @@ int fd;
 		exit(1);
 	}
 
-	printf( "\nVideo Adaptor Type           = ");
+	printf( "Video Adaptor Type           = ");
 	
 	switch(screeninfo.adaptor_type)
 	{
@@ -772,7 +787,7 @@ int fd;
 	printf( "Force 24 Lines               = %s",
 			screeninfo.force_24lines ? "Yes" : "No");
 
-	printf("\n\n");
+	printf("\n");
 }
 
 static const char *findname(unsigned idx)
@@ -823,7 +838,7 @@ static void printpalette(int fd)
 		const char *cp;
 		printf("%5d  %5d  %5d  %5d",
 		       idx, palette[idx].r, palette[idx].g, palette[idx].b);
-		if(cp = findname(idx))
+		if((cp = findname(idx)))
 			printf("  %s\n", cp);
 		else
 			putchar('\n');

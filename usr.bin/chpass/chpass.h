@@ -1,4 +1,5 @@
-/*	$NetBSD: chpass.h,v 1.3 1995/03/26 04:55:26 glass Exp $	*/
+/*	$OpenBSD: chpass.h,v 1.3 1996/06/26 05:31:55 deraadt Exp $	*/
+/*	$NetBSD: chpass.h,v 1.4 1996/05/15 21:50:44 jtc Exp $	*/
 
 /*
  * Copyright (c) 1988, 1993, 1994
@@ -54,8 +55,8 @@ extern ENTRY list[];
 extern uid_t uid;
 
 int	 atot __P((char *, time_t *));
-void	 display __P((int, struct passwd *));
-void	 edit __P((struct passwd *));
+void	 display __P((char *, int, struct passwd *));
+void	 edit __P((char *, struct passwd *));
 char    *ok_shell __P((char *));
 int	 p_change __P((char *, struct passwd *, ENTRY *));
 int	 p_class __P((char *, struct passwd *, ENTRY *));
@@ -68,5 +69,5 @@ int	 p_login __P((char *, struct passwd *, ENTRY *));
 int	 p_passwd __P((char *, struct passwd *, ENTRY *));
 int	 p_shell __P((char *, struct passwd *, ENTRY *));
 int	 p_uid __P((char *, struct passwd *, ENTRY *));
-char    *ttoa __P((time_t));
-int	 verify __P((struct passwd *));
+char    *ttoa __P((char *, size_t, time_t));
+int	 verify __P((char *, struct passwd *));

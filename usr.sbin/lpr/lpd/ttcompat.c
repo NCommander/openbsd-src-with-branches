@@ -1,3 +1,5 @@
+/*	$OpenBSD: $	*/
+
 /*
  * Copyright (c) 1995
  *	The Regents of the University of California.  All rights reserved.
@@ -36,6 +38,10 @@
  * ttcompat.c -- convert sgtty flags to termios
  *	originally from /sys/kern/tty_compat.c
  */
+
+#ifndef lint
+static char rcsid[] = "$OpenBSD: $";
+#endif /* not lint */
 
 #include <sys/param.h>
 #include <sys/types.h>
@@ -82,6 +88,8 @@ sttygetoflags(tp)
 		if (!ISSET(oflag, OPOST))
 			SET(flags, LITOUT);
 	}
+	if (ISSET(lflag, XCASE))
+		SET(flags, LCASE);
 
 	if (!ISSET(lflag, ICANON)) {
 		/* fudge */
@@ -107,7 +115,7 @@ sttysetoflags(tp, flags)
 
 	if (ISSET(flags, RAW)) {
 		iflag &= IXOFF;
-		CLR(lflag, ISIG|ICANON|IEXTEN);
+		CLR(lflag, ISIG|ICANON|IEXTEN|XCASE);
 		CLR(cflag, PARENB);
 	} else {
 		SET(iflag, BRKINT|IXON|IMAXBEL);
@@ -116,6 +124,8 @@ sttysetoflags(tp, flags)
 			CLR(lflag, ICANON);
 		else
 			SET(lflag, ICANON);
+		if (ISSET(iflag, IUCLC) && ISSET(oflag, OLCUC))
+			SET(lflag, XCASE);
 		switch (ISSET(flags, ANYP)) {
 		case 0:
 			CLR(cflag, PARENB);
@@ -180,6 +190,11 @@ sttyclearflags(tp, flags)
 		CLR(iflag, ICRNL);
 		CLR(oflag, ONLCR);
 	}
+	if (ISSET(flags, LCASE)) {
+		CLR(iflag, IUCLC);
+		CLR(oflag, OLCUC);
+		CLR(lflag, XCASE);
+	}
 	if (ISSET(flags, XTABS))
 		CLR(oflag, OXTABS);
 
@@ -210,6 +225,11 @@ sttysetflags(tp, flags)
 	if (ISSET(flags, CRMOD)) {
 		SET(iflag, ICRNL);
 		SET(oflag, ONLCR);
+	}
+	if (ISSET(flags, LCASE)) {
+		SET(iflag, IUCLC);
+		SET(oflag, OLCUC);
+		SET(lflag, XCASE);
 	}
 	if (ISSET(flags, XTABS))
 		SET(oflag, OXTABS);

@@ -1,4 +1,4 @@
-/*	$NetBSD: vector.s,v 1.29 1995/05/08 18:00:20 mycroft Exp $	*/
+/*	$NetBSD: vector.s,v 1.32 1996/01/07 21:29:47 mycroft Exp $	*/
 
 /*
  * Copyright (c) 1993, 1994, 1995 Charles M. Hannum.  All rights reserved.
@@ -50,8 +50,8 @@
 
 #ifdef ICU_SPECIAL_MASK_MODE
 
-#define	ENABLE_ICU1(irq_num)
-#define	ENABLE_ICU1_AND_2(irqnum) \
+#define	ACK1(irq_num)
+#define	ACK2(irq_num) \
 	movb	$(0x60|IRQ_SLAVE),%al	/* specific EOI for IRQ2 */	;\
 	outb	%al,$IO_ICU1
 #define	MASK(irq_num, icu)
@@ -62,21 +62,21 @@
 #else /* ICU_SPECIAL_MASK_MODE */
 
 #ifndef	AUTO_EOI_1
-#define	ENABLE_ICU1(irq_num) \
+#define	ACK1(irq_num) \
 	movb	$(0x60|(irq_num%8)),%al	/* specific EOI */		;\
 	outb	%al,$IO_ICU1
 #else
-#define	ENABLE_ICU1(irq_num)
+#define	ACK1(irq_num)
 #endif
 
 #ifndef AUTO_EOI_2
-#define	ENABLE_ICU1_AND_2(irq_num) \
+#define	ACK2(irq_num) \
 	movb	$(0x60|(irq_num%8)),%al	/* specific EOI */		;\
 	outb	%al,$IO_ICU2		/* do the second ICU first */	;\
 	movb	$(0x60|IRQ_SLAVE),%al	/* specific EOI for IRQ2 */	;\
 	outb	%al,$IO_ICU1
 #else
-#define	ENABLE_ICU1_AND_2(irq_num)
+#define	ACK2(irq_num)
 #endif
 
 #ifdef ICU_HARDWARE_MASK
@@ -111,7 +111,7 @@
  * XXX
  * The interrupt frame is set up to look like a trap frame.  This may be a
  * waste.  The only handler which needs a frame is the clock handler, and it
- * only needs a few bits.  doreti() needs a trap frame for handling ASTs, but
+ * only needs a few bits.  Xdoreti() needs a trap frame for handling ASTs, but
  * it could easily convert the frame on demand.
  *
  * The direct costs of setting up a trap frame are two pushl's (error code and
@@ -143,7 +143,7 @@
  * or softintr; if so, it will be deferred until the next clock tick (or
  * possibly sooner).
  */
-#define	FAST(irq_num, icu, enable_icus) \
+#define	FAST(irq_num, icu, ack) \
 IDTVEC(fast/**/irq_num)							;\
 	pushl	%eax			/* save call-used registers */	;\
 	pushl	%ecx							;\
@@ -158,7 +158,7 @@ IDTVEC(fast/**/irq_num)							;\
 	incl	IH_COUNT(%eax)						;\
 	pushl	IH_ARG(%eax)						;\
 	call	IH_FUN(%eax)						;\
-	enable_icus(irq_num)						;\
+	ack(irq_num)							;\
 	addl	$4,%esp							;\
 	incl	_cnt+V_INTR		/* statistical info */		;\
 	popl	%es							;\
@@ -168,22 +168,22 @@ IDTVEC(fast/**/irq_num)							;\
 	popl	%eax							;\
 	iret
 
-FAST(0, IO_ICU1, ENABLE_ICU1)
-FAST(1, IO_ICU1, ENABLE_ICU1)
-FAST(2, IO_ICU1, ENABLE_ICU1)
-FAST(3, IO_ICU1, ENABLE_ICU1)
-FAST(4, IO_ICU1, ENABLE_ICU1)
-FAST(5, IO_ICU1, ENABLE_ICU1)
-FAST(6, IO_ICU1, ENABLE_ICU1)
-FAST(7, IO_ICU1, ENABLE_ICU1)
-FAST(8, IO_ICU2, ENABLE_ICU1_AND_2)
-FAST(9, IO_ICU2, ENABLE_ICU1_AND_2)
-FAST(10, IO_ICU2, ENABLE_ICU1_AND_2)
-FAST(11, IO_ICU2, ENABLE_ICU1_AND_2)
-FAST(12, IO_ICU2, ENABLE_ICU1_AND_2)
-FAST(13, IO_ICU2, ENABLE_ICU1_AND_2)
-FAST(14, IO_ICU2, ENABLE_ICU1_AND_2)
-FAST(15, IO_ICU2, ENABLE_ICU1_AND_2)
+FAST(0, IO_ICU1, ACK1)
+FAST(1, IO_ICU1, ACK1)
+FAST(2, IO_ICU1, ACK1)
+FAST(3, IO_ICU1, ACK1)
+FAST(4, IO_ICU1, ACK1)
+FAST(5, IO_ICU1, ACK1)
+FAST(6, IO_ICU1, ACK1)
+FAST(7, IO_ICU1, ACK1)
+FAST(8, IO_ICU2, ACK2)
+FAST(9, IO_ICU2, ACK2)
+FAST(10, IO_ICU2, ACK2)
+FAST(11, IO_ICU2, ACK2)
+FAST(12, IO_ICU2, ACK2)
+FAST(13, IO_ICU2, ACK2)
+FAST(14, IO_ICU2, ACK2)
+FAST(15, IO_ICU2, ACK2)
 
 /*
  * Normal vectors.
@@ -199,16 +199,22 @@ FAST(15, IO_ICU2, ENABLE_ICU1_AND_2)
  * interrupt.  On a system with level-triggered interrupts, we could terminate
  * immediately when one of them returns 1; but this is a PC.
  *
- * On exit, we jump to doreti, to process soft interrupts and ASTs.
+ * On exit, we jump to Xdoreti(), to process soft interrupts and ASTs.
  */
-#define	INTR(irq_num, icu, enable_icus) \
-IDTVEC(intr/**/irq_num)							;\
+#define	INTR(irq_num, icu, ack) \
+IDTVEC(recurse/**/irq_num)						;\
+	pushfl								;\
+	pushl	%cs							;\
+	pushl	%esi							;\
+	cli								;\
+_Xintr/**/irq_num/**/:							;\
 	pushl	$0			/* dummy error code */		;\
 	pushl	$T_ASTFLT		/* trap # for doing ASTs */	;\
 	INTRENTRY							;\
 	MAKE_FRAME							;\
 	MASK(irq_num, icu)		/* mask it in hardware */	;\
-	enable_icus(irq_num)		/* and allow other intrs */	;\
+	ack(irq_num)			/* and allow other intrs */	;\
+	incl	_cnt+V_INTR		/* statistical info */		;\
 	testb	$IRQ_BIT(irq_num),_cpl + IRQ_BYTE(irq_num)		;\
 	jnz	_Xhold/**/irq_num	/* currently masked; hold it */	;\
 _Xresume/**/irq_num/**/:						;\
@@ -229,18 +235,20 @@ _Xresume/**/irq_num/**/:						;\
 	call	IH_FUN(%ebx)		/* call it */			;\
 	addl	$4,%esp			/* toss the arg */		;\
 	STRAY_INTEGRATE			/* maybe he claimed it */	;\
+	orl	%eax,%eax		/* should it be counted? */	;\
+	jz	5f			/* no, skip it */		;\
 	incl	IH_COUNT(%ebx)		/* count the intrs */		;\
-	movl	IH_NEXT(%ebx),%ebx	/* next handler in chain */	;\
+5:	movl	IH_NEXT(%ebx),%ebx	/* next handler in chain */	;\
 	testl	%ebx,%ebx						;\
 	jnz	7b							;\
 	STRAY_TEST			/* see if it's a stray */	;\
-5:	UNMASK(irq_num, icu)		/* unmask it in hardware */	;\
-	INTREXIT			/* lower spl and do ASTs */	;\
+6:	UNMASK(irq_num, icu)		/* unmask it in hardware */	;\
+	jmp	_Xdoreti		/* lower spl and do ASTs */	;\
 IDTVEC(stray/**/irq_num)						;\
 	pushl	$irq_num						;\
 	call	_isa_strayintr						;\
 	addl	$4,%esp							;\
-	jmp	5b							;\
+	jmp	6b							;\
 IDTVEC(hold/**/irq_num)							;\
 	orb	$IRQ_BIT(irq_num),_ipending + IRQ_BYTE(irq_num)		;\
 	INTRFASTEXIT
@@ -266,58 +274,22 @@ IDTVEC(hold/**/irq_num)							;\
 #define	MAKE_FRAME
 #endif /* DDB */
 
-INTR(0, IO_ICU1, ENABLE_ICU1)
-INTR(1, IO_ICU1, ENABLE_ICU1)
-INTR(2, IO_ICU1, ENABLE_ICU1)
-INTR(3, IO_ICU1, ENABLE_ICU1)
-INTR(4, IO_ICU1, ENABLE_ICU1)
-INTR(5, IO_ICU1, ENABLE_ICU1)
-INTR(6, IO_ICU1, ENABLE_ICU1)
-INTR(7, IO_ICU1, ENABLE_ICU1)
-INTR(8, IO_ICU2, ENABLE_ICU1_AND_2)
-INTR(9, IO_ICU2, ENABLE_ICU1_AND_2)
-INTR(10, IO_ICU2, ENABLE_ICU1_AND_2)
-INTR(11, IO_ICU2, ENABLE_ICU1_AND_2)
-INTR(12, IO_ICU2, ENABLE_ICU1_AND_2)
-INTR(13, IO_ICU2, ENABLE_ICU1_AND_2)
-INTR(14, IO_ICU2, ENABLE_ICU1_AND_2)
-INTR(15, IO_ICU2, ENABLE_ICU1_AND_2)
-
-/*
- * Recursive interrupts.
- *
- * This is a somewhat nasty hack to deal with resuming interrupts from splx().
- * We can't just jump to the resume point, because some handlers require an
- * interrupt frame.  Instead, we just recursively interrupt.
- *
- * On entry, %esi contains a pointer to where we need to return.  This is a
- * bit faster than a call/ret/jmp to continue the loop.
- *
- * XXX
- * It might be a little faster to build the interrupt frame manually and jump
- * to the resume point.  The code would be larger, though.
- */
-#define	RECURSE(irq_num) \
-IDTVEC(recurse/**/irq_num)						;\
-	int	$(ICU_OFFSET + irq_num)					;\
-	jmp	%esi
-
-RECURSE(0)
-RECURSE(1)
-RECURSE(2)
-RECURSE(3)
-RECURSE(4)
-RECURSE(5)
-RECURSE(6)
-RECURSE(7)
-RECURSE(8)
-RECURSE(9)
-RECURSE(10)
-RECURSE(11)
-RECURSE(12)
-RECURSE(13)
-RECURSE(14)
-RECURSE(15)
+INTR(0, IO_ICU1, ACK1)
+INTR(1, IO_ICU1, ACK1)
+INTR(2, IO_ICU1, ACK1)
+INTR(3, IO_ICU1, ACK1)
+INTR(4, IO_ICU1, ACK1)
+INTR(5, IO_ICU1, ACK1)
+INTR(6, IO_ICU1, ACK1)
+INTR(7, IO_ICU1, ACK1)
+INTR(8, IO_ICU2, ACK2)
+INTR(9, IO_ICU2, ACK2)
+INTR(10, IO_ICU2, ACK2)
+INTR(11, IO_ICU2, ACK2)
+INTR(12, IO_ICU2, ACK2)
+INTR(13, IO_ICU2, ACK2)
+INTR(14, IO_ICU2, ACK2)
+INTR(15, IO_ICU2, ACK2)
 
 /*
  * These tables are used by the ISA configuration code.
@@ -334,7 +306,7 @@ IDTVEC(fast)
 	.long   _Xfast13, _Xfast14, _Xfast15
 
 /*
- * These tables are used by doreti() and spllower().
+ * These tables are used by Xdoreti() and Xspllower().
  */
 /* resume points for suspended interrupts */
 IDTVEC(resume)

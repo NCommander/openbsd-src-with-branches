@@ -1,3 +1,5 @@
+/*	$OpenBSD$ */
+
 /*
  * Copyright (c) 1995 Mats O Jansson.  All rights reserved.
  *
@@ -26,7 +28,7 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
- *	$Id: nma.h,v 1.3 1995/09/28 13:36:55 moj Exp $
+ *	$OpenBSD: nma.h,v 1.1.1.1 1996/09/21 13:49:16 maja Exp $
  *
  */
 

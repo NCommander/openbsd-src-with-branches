@@ -1,4 +1,4 @@
-/*	$NetBSD: init.c,v 1.2 1995/03/21 12:05:04 cgd Exp $	*/
+/*	$NetBSD: init.c,v 1.4 1996/05/21 21:53:05 mrg Exp $	*/
 
 /*-
  * Copyright (c) 1993
@@ -42,13 +42,14 @@
 #if 0
 static char sccsid[] = "@(#)init.c	8.1 (Berkeley) 6/2/93";
 #else
-static char rcsid[] = "$NetBSD: init.c,v 1.2 1995/03/21 12:05:04 cgd Exp $";
+static char rcsid[] = "$NetBSD: init.c,v 1.4 1996/05/21 21:53:05 mrg Exp $";
 #endif
 #endif /* not lint */
 
-/*      Re-coding of advent in C: data initialization                   */
+/*	Re-coding of advent in C: data initialization			*/
 
 #include <sys/types.h>
+#include <signal.h>
 #include <stdio.h>
 #include "hdr.h"
 
@@ -58,10 +59,10 @@ int setbit[16] = {1,2,4,010,020,040,0100,0200,0400,01000,02000,04000,
 		  010000,020000,040000,0100000};
 
 
-init(command)                           /* everything for 1st time run  */
-char *command;                          /* command we were called with  */
+init(command)				/* everything for 1st time run	*/
+char *command;				/* command we were called with	*/
 {
-	rdata();                        /* read data from orig. file    */
+	rdata();			/* read data from orig. file	*/
 	linkdata();
 	poof();
 }
@@ -80,10 +81,10 @@ char a,b,c,d,e;
 	return buf;
 }
 
-linkdata()                              /*  secondary data manipulation */
+linkdata()				/*  secondary data manipulation */
 {       register int i,j;
 
-	/*      array linkages          */
+	/*	array linkages		*/
 	for (i=1; i<=LOCSIZ; i++)
 		if (ltext[i].seekadr!=0 && travel[i] != 0)
 			if ((travel[i]->tverb)==1) cond[i]=2;
@@ -201,9 +202,9 @@ linkdata()                              /*  secondary data manipulation */
 
 
 
-trapdel()                               /* come here if he hits a del   */
+trapdel()				/* come here if he hits a del	*/
 {	delhit++;			/* main checks, treats as QUIT  */
-	signal(2,trapdel);		/* catch subsequent DELs        */
+	signal(SIGINT,trapdel);		/* catch subsequent DELs	*/
 }
 
 
@@ -213,7 +214,7 @@ startup()
 
 	demo=Start(0);
 	srand((int)(time((time_t *)NULL)));	/* random seed */
-	/* srand(371);				/* non-random seed */
+	/* srand(371); */			/* non-random seed */
 	hinted[3]=yes(65,1,0);
 	newloc=1;
 	delhit = 0;

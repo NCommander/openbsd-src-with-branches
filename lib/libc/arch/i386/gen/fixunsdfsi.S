@@ -32,18 +32,14 @@
  * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
- *
- *	from: @(#)fixunsdfsi.s	5.1	12/17/90
- *	$Id: fixunsdfsi.S,v 1.6 1994/01/27 06:34:04 mycroft Exp $
  */
+
+#include <machine/asm.h>
 
 #if defined(LIBC_SCCS)
 	.text
-	.asciz "$Id: fixunsdfsi.S,v 1.6 1994/01/27 06:34:04 mycroft Exp $"
+	.asciz "$OpenBSD: fixunsdfsi.S,v 1.2 1995/12/30 08:15:21 deraadt Exp $"
 #endif
-
-#include "DEFS.h"
-#include "SYS.h"
 
 ENTRY(__fixunsdfsi)
 	fldl	4(%esp)		/* argument double to accum stack */

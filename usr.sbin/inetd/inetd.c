@@ -1,4 +1,5 @@
-/*	$NetBSD: inetd.c,v 1.10 1995/06/02 15:02:18 pk Exp $	*/
+/*	$OpenBSD: inetd.c,v 1.45 1998/02/24 20:21:32 deraadt Exp $	*/
+/*	$NetBSD: inetd.c,v 1.11 1996/02/22 11:14:41 mycroft Exp $	*/
 /*
  * Copyright (c) 1983,1991 The Regents of the University of California.
  * All rights reserved.
@@ -40,7 +41,7 @@ char copyright[] =
 
 #ifndef lint
 /*static char sccsid[] = "from: @(#)inetd.c	5.30 (Berkeley) 6/3/91";*/
-static char rcsid[] = "$Id: inetd.c,v 1.10 1995/06/02 15:02:18 pk Exp $";
+static char rcsid[] = "$OpenBSD: inetd.c,v 1.45 1998/02/24 20:21:32 deraadt Exp $";
 #endif /* not lint */
 
 /*
@@ -85,6 +86,30 @@ static char rcsid[] = "$Id: inetd.c,v 1.10 1995/06/02 15:02:18 pk Exp $";
  *	server program			full path name
  *	server program arguments	maximum of MAXARGS (20)
  *
+ * For non-RPC services, the "service name" can be of the form
+ * hostaddress:servicename, in which case the hostaddress is used
+ * as the host portion of the address to listen on.  If hostaddress
+ * consists of a single `*' character, INADDR_ANY is used.
+ *
+ * A line can also consist of just
+ *      hostaddress:
+ * where hostaddress is as in the preceding paragraph.  Such a line must
+ * have no further fields; the specified hostaddress is remembered and
+ * used for all further lines that have no hostaddress specified,
+ * until the next such line (or EOF).  (This is why * is provided to
+ * allow explicit specification of INADDR_ANY.)  A line
+ *      *:
+ * is implicitly in effect at the beginning of the file.
+ *
+ * The hostaddress specifier may (and often will) contain dots;
+ * the service name must not.
+ *
+ * For RPC services, host-address specifiers are accepted and will
+ * work to some extent; however, because of limitations in the
+ * portmapper interface, it will not work to try to give more than
+ * one line for any given RPC service, even if the host-address
+ * specifiers are different.
+ *
  * Comment lines are indicated by a `#' in column 1.
  */
 
@@ -95,19 +120,19 @@ static char rcsid[] = "$Id: inetd.c,v 1.10 1995/06/02 15:02:18 pk Exp $";
  * 
  * 	a) user = root:	NO setuid() or setgid() is done
  * 
- * 	b) other:	setuid()
- * 			setgid(primary group as found in passwd)
+ * 	b) other:	setgid(primary group as found in passwd)
  * 			initgroups(name, primary group)
- * 
+ * 			setuid()
+ *
  * 2) set-group-option on.
  * 
- * 	a) user = root:	NO setuid()
- * 			setgid(specified group)
+ * 	a) user = root:	setgid(specified group)
  * 			NO initgroups()
- * 
- * 	b) other:	setuid()
- * 			setgid(specified group)
+ * 			NO setuid()
+ *
+ * 	b) other:	setgid(specified group)
  * 			initgroups(name, specified group)
+ * 			setuid()
  * 
  */
 
@@ -125,8 +150,6 @@ static char rcsid[] = "$Id: inetd.c,v 1.10 1995/06/02 15:02:18 pk Exp $";
 #define RLIMIT_NOFILE	RLIMIT_OFILE
 #endif
 
-#define RPC
-
 #include <netinet/in.h>
 #include <arpa/inet.h>
 
@@ -138,13 +161,13 @@ static char rcsid[] = "$Id: inetd.c,v 1.10 1995/06/02 15:02:18 pk Exp $";
 #include <grp.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <unistd.h>
 #include <string.h>
-#ifdef RPC
 #include <rpc/rpc.h>
-#endif
+#include <rpc/pmap_clnt.h>
 #include "pathnames.h"
 
-#define	TOOMANY		40		/* don't start more than TOOMANY */
+#define	TOOMANY		256		/* don't start more than TOOMANY */
 #define	CNT_INTVL	60		/* servers in CNT_INTVL sec. */
 #define	RETRYTIME	(60*10)		/* retry after bind or server fail */
 
@@ -152,16 +175,20 @@ static char rcsid[] = "$Id: inetd.c,v 1.10 1995/06/02 15:02:18 pk Exp $";
 
 extern	int errno;
 
-void	config(), reapchild(), retry(), goaway();
-char	*index();
+void	config __P((int));
+void	reapchild __P((int));
+void	retry __P((int));
+void	goaway __P((int));
 
 int	debug = 0;
 int	nsock, maxsock;
 fd_set	allsock;
+int	toomany = TOOMANY;
 int	options;
 int	timingout;
 struct	servent *sp;
 char	*curdom;
+uid_t	uid;
 
 #ifndef OPEN_MAX
 #define OPEN_MAX	64
@@ -176,6 +203,7 @@ struct rlimit	rlim_ofile;
 #endif
 
 struct	servtab {
+	char	*se_hostaddr;		/* host address to listen on */
 	char	*se_service;		/* name of service */
 	int	se_socktype;		/* type of socket to use */
 	int	se_family;		/* address family */
@@ -212,37 +240,45 @@ struct	servtab {
 	struct	servtab *se_next;
 } *servtab;
 
-int echo_stream(), discard_stream(), machtime_stream();
-int daytime_stream(), chargen_stream();
-int echo_dg(), discard_dg(), machtime_dg(), daytime_dg(), chargen_dg();
+void echo_stream __P((int, struct servtab *));
+void discard_stream __P((int, struct servtab *));
+void machtime_stream __P((int, struct servtab *));
+void daytime_stream __P((int, struct servtab *));
+void chargen_stream __P((int, struct servtab *));
+void echo_dg __P((int, struct servtab *));
+void discard_dg __P((int, struct servtab *));
+void machtime_dg __P((int, struct servtab *));
+void daytime_dg __P((int, struct servtab *));
+void chargen_dg __P((int, struct servtab *));
 
 struct biltin {
 	char	*bi_service;		/* internally provided service name */
 	int	bi_socktype;		/* type of socket supported */
 	short	bi_fork;		/* 1 if should fork before call */
 	short	bi_wait;		/* 1 if should wait for child */
-	int	(*bi_fn)();		/* function which performs it */
+	void	(*bi_fn) __P((int, struct servtab *));
 } biltins[] = {
 	/* Echo received data */
-	"echo",		SOCK_STREAM,	1, 0,	echo_stream,
-	"echo",		SOCK_DGRAM,	0, 0,	echo_dg,
+	{ "echo",	SOCK_STREAM,	1, 0,	echo_stream },
+	{ "echo",	SOCK_DGRAM,	0, 0,	echo_dg },
 
 	/* Internet /dev/null */
-	"discard",	SOCK_STREAM,	1, 0,	discard_stream,
-	"discard",	SOCK_DGRAM,	0, 0,	discard_dg,
+	{ "discard",	SOCK_STREAM,	1, 0,	discard_stream },
+	{ "discard",	SOCK_DGRAM,	0, 0,	discard_dg },
 
 	/* Return 32 bit time since 1900 */
-	"time",		SOCK_STREAM,	0, 0,	machtime_stream,
-	"time",		SOCK_DGRAM,	0, 0,	machtime_dg,
+	{ "time",	SOCK_STREAM,	0, 0,	machtime_stream },
+	{ "time",	SOCK_DGRAM,	0, 0,	machtime_dg },
 
 	/* Return human-readable time */
-	"daytime",	SOCK_STREAM,	0, 0,	daytime_stream,
-	"daytime",	SOCK_DGRAM,	0, 0,	daytime_dg,
+	{ "daytime",	SOCK_STREAM,	0, 0,	daytime_stream },
+	{ "daytime",	SOCK_DGRAM,	0, 0,	daytime_dg },
 
 	/* Familiar character generator */
-	"chargen",	SOCK_STREAM,	1, 0,	chargen_stream,
-	"chargen",	SOCK_DGRAM,	0, 0,	chargen_dg,
-	0
+	{ "chargen",	SOCK_STREAM,	1, 0,	chargen_stream },
+	{ "chargen",	SOCK_DGRAM,	0, 0,	chargen_dg },
+
+	{ 0 }
 };
 
 #define NUMINT	(sizeof(intab) / sizeof(struct inent))
@@ -251,18 +287,9 @@ char	**Argv;
 char 	*LastArg;
 char	*progname;
 
-#ifdef sun
-/*
- * Sun's RPC library caches the result of `dtablesize()'
- * This is incompatible with our "bumping" of file descriptors "on demand"
- */
-int
-_rpc_dtablesize()
-{
-	return rlim_ofile_cur;
-}
-#endif
+void logpid __P((void));
 
+int
 main(argc, argv, envp)
 	int argc;
 	char *argv[], *envp[];
@@ -271,10 +298,11 @@ main(argc, argv, envp)
 	extern int optind;
 	register struct servtab *sep;
 	register struct passwd *pwd;
-	register struct group *grp;
+	register struct group *grp = NULL;
 	register int tmpint;
-	struct sigvec sv;
-	int ch, pid, dofork;
+	struct sigaction sa, sapipe;
+	int ch, dofork;
+	pid_t pid;
 	char buf[50];
 
 	Argv = argv;
@@ -287,25 +315,59 @@ main(argc, argv, envp)
 	progname = strrchr(argv[0], '/');
 	progname = progname ? progname + 1 : argv[0];
 
-	while ((ch = getopt(argc, argv, "d")) != EOF)
+	while ((ch = getopt(argc, argv, "dR:")) != -1)
 		switch(ch) {
 		case 'd':
 			debug = 1;
 			options |= SO_DEBUG;
 			break;
 		case '?':
+		case 'R': {	/* invocation rate */
+			char *p;
+			int val;
+
+			val = strtoul(optarg, &p, 0);
+			if (val >= 1 && p == NULL) {
+				toomany = val;
+				break;
+			}
+			syslog(LOG_ERR,
+		            "-R %s: bad value for service invocation rate",
+			    optarg);
+			break;
+		}
 		default:
-			fprintf(stderr, "usage: %s [-d] [conf]", progname);
+			fprintf(stderr, "usage: %s [-R rate] [-d] [conf]",
+			    progname);
 			exit(1);
 		}
 	argc -= optind;
 	argv += optind;
 
+	uid = getuid();
+	if (uid != 0)
+		CONFIG = NULL;
 	if (argc > 0)
 		CONFIG = argv[0];
+	if (CONFIG == NULL) {
+		fprintf(stderr, "%s: non-root must specify a config file\n",
+		    progname);
+		exit(1);
+	}
 
-	if (debug == 0)
+	if (debug == 0) {
 		daemon(0, 0);
+		if (uid == 0)
+			(void) setlogin("");
+	}
+
+	if (uid == 0) {
+		gid_t gid = getgid();
+
+		/* If run by hand, ensure groups vector gets trashed */
+		setgroups(1, &gid);
+	}
+
 	openlog(progname, LOG_PID | LOG_NOWAIT, LOG_DAEMON);
 	logpid();
 
@@ -319,19 +381,21 @@ main(argc, argv, envp)
 	}
 #endif
 
-	bzero((char *)&sv, sizeof(sv));
-	sv.sv_mask = SIGBLOCK;
-	sv.sv_handler = retry;
-	sigvec(SIGALRM, &sv, (struct sigvec *)0);
-	config();
-	sv.sv_handler = config;
-	sigvec(SIGHUP, &sv, (struct sigvec *)0);
-	sv.sv_handler = reapchild;
-	sigvec(SIGCHLD, &sv, (struct sigvec *)0);
-	sv.sv_handler = goaway;
-	sigvec(SIGTERM, &sv, (struct sigvec *)0);
-	sv.sv_handler = goaway;
-	sigvec(SIGINT, &sv, (struct sigvec *)0);
+	memset((char *)&sa, 0, sizeof(sa));
+	sa.sa_mask = SIGBLOCK;
+	sa.sa_handler = retry;
+	sigaction(SIGALRM, &sa, NULL);
+	config(0);
+	sa.sa_handler = config;
+	sigaction(SIGHUP, &sa, NULL);
+	sa.sa_handler = reapchild;
+	sigaction(SIGCHLD, &sa, NULL);
+	sa.sa_handler = goaway;
+	sigaction(SIGTERM, &sa, NULL);
+	sa.sa_handler = goaway;
+	sigaction(SIGINT, &sa, NULL);
+	sa.sa_handler = SIG_IGN;
+	sigaction(SIGPIPE, &sa, &sapipe);
 
 	{
 		/* space for daemons to overwrite environment for ps */
@@ -355,11 +419,11 @@ main(argc, argv, envp)
 		(void) sigsetmask(0L);
 	    }
 	    readable = allsock;
-	    if ((n = select(maxsock + 1, &readable, (fd_set *)0,
-		(fd_set *)0, (struct timeval *)0)) <= 0) {
-		    if (n < 0 && errno != EINTR)
-			syslog(LOG_WARNING, "select: %m\n");
-		    sleep(1);
+	    if ((n = select(maxsock + 1, &readable, NULL, NULL, NULL)) <= 0) {
+		    if (n < 0 && errno != EINTR) {
+			syslog(LOG_WARNING, "select: %m");
+			sleep(1);
+		    }
 		    continue;
 	    }
 	    for (sep = servtab; n && sep; sep = sep->se_next)
@@ -368,16 +432,32 @@ main(argc, argv, envp)
 		if (debug)
 			fprintf(stderr, "someone wants %s\n", sep->se_service);
 		if (!sep->se_wait && sep->se_socktype == SOCK_STREAM) {
-			ctrl = accept(sep->se_fd, (struct sockaddr *)0,
-			    (int *)0);
+			ctrl = accept(sep->se_fd, NULL, NULL);
 			if (debug)
 				fprintf(stderr, "accept, ctrl %d\n", ctrl);
 			if (ctrl < 0) {
 				if (errno == EINTR)
 					continue;
 				syslog(LOG_WARNING, "accept (for %s): %m",
-					sep->se_service);
+				    sep->se_service);
 				continue;
+			}
+			if (sep->se_family == AF_INET &&
+			    sep->se_socktype == SOCK_STREAM) {
+				struct sockaddr_in peer;
+				int plen = sizeof(peer);
+
+				if (getpeername(ctrl, (struct sockaddr *)&peer,
+				    &plen) < 0) {
+					syslog(LOG_WARNING, "could not getpeername");
+					close(ctrl);
+					continue;
+				}
+				if (ntohs(peer.sin_port) == 20) {
+					/* XXX ftp bounce */
+					close(ctrl);
+					continue;
+				}
 			}
 		} else
 			ctrl = sep->se_fd;
@@ -386,19 +466,32 @@ main(argc, argv, envp)
 		dofork = (sep->se_bi == 0 || sep->se_bi->bi_fork);
 		if (dofork) {
 			if (sep->se_count++ == 0)
-			    (void)gettimeofday(&sep->se_time,
-			        (struct timezone *)0);
+			    (void)gettimeofday(&sep->se_time, NULL);
 			else if (sep->se_count >= sep->se_max) {
 				struct timeval now;
 
-				(void)gettimeofday(&now, (struct timezone *)0);
+				(void)gettimeofday(&now, NULL);
 				if (now.tv_sec - sep->se_time.tv_sec >
 				    CNT_INTVL) {
 					sep->se_time = now;
 					sep->se_count = 1;
 				} else {
+					if (!sep->se_wait &&
+					    sep->se_socktype == SOCK_STREAM)
+						close(ctrl);
+					if (sep->se_family == AF_INET &&
+					    ntohs(sep->se_ctrladdr_in.sin_port) >=
+					    IPPORT_RESERVED) {
+						/*
+						 * Cannot close it -- there are
+						 * thieves on the system.
+						 * Simply ignore the connection.
+						 */
+						--sep->se_count;
+						continue;
+					}
 					syslog(LOG_ERR,
-			"%s/%s server failing (looping), service terminated\n",
+			"%s/%s server failing (looping), service terminated",
 					    sep->se_service, sep->se_proto);
 					FD_CLR(sep->se_fd, &allsock);
 					(void) close(sep->se_fd);
@@ -417,7 +510,7 @@ main(argc, argv, envp)
 		}
 		if (pid < 0) {
 			syslog(LOG_ERR, "fork: %m");
-			if (sep->se_socktype == SOCK_STREAM)
+			if (!sep->se_wait && sep->se_socktype == SOCK_STREAM)
 				close(ctrl);
 			sigsetmask(0L);
 			sleep(1);
@@ -430,36 +523,46 @@ main(argc, argv, envp)
 		}
 		sigsetmask(0L);
 		if (pid == 0) {
-			if (debug && dofork)
-				setsid();
 			if (sep->se_bi)
 				(*sep->se_bi->bi_fn)(ctrl, sep);
 			else {
 				if ((pwd = getpwnam(sep->se_user)) == NULL) {
 					syslog(LOG_ERR,
-						"getpwnam: %s: No such user",
-						sep->se_user);
+					    "getpwnam: %s: No such user",
+					    sep->se_user);
 					if (sep->se_socktype != SOCK_STREAM)
 						recv(0, buf, sizeof (buf), 0);
 					_exit(1);
 				}
+				if (setsid() <0)
+					syslog(LOG_ERR, "%s: setsid: %m",
+					    sep->se_service);
 				if (sep->se_group &&
 				    (grp = getgrnam(sep->se_group)) == NULL) {
 					syslog(LOG_ERR,
-						"getgrnam: %s: No such group",
-						sep->se_group);
+					    "getgrnam: %s: No such group",
+					    sep->se_group);
 					if (sep->se_socktype != SOCK_STREAM)
 						recv(0, buf, sizeof (buf), 0);
 					_exit(1);
 				}
-				if (pwd->pw_uid) {
+				if (uid != 0) {
+					/* a user running private inetd */
+					if (uid != pwd->pw_uid)
+						_exit(1);
+				} else if (pwd->pw_uid) {
+					if (setlogin(sep->se_user) < 0)
+						syslog(LOG_ERR,
+						    "%s: setlogin: %m",
+						    sep->se_service);
 					if (sep->se_group)
 						pwd->pw_gid = grp->gr_gid;
 					(void) setgid((gid_t)pwd->pw_gid);
 					initgroups(pwd->pw_name, pwd->pw_gid);
 					(void) setuid((uid_t)pwd->pw_uid);
 				} else if (sep->se_group) {
-					(void) setgid((gid_t)grp->gr_gid);
+					(void) setgid(grp->gr_gid);
+					(void) setgroups(1, &grp->gr_gid);
 				}
 				if (debug)
 					fprintf(stderr, "%d execl %s\n",
@@ -475,12 +578,14 @@ main(argc, argv, envp)
 #ifdef RLIMIT_NOFILE
 				if (rlim_ofile.rlim_cur != rlim_ofile_cur) {
 					if (setrlimit(RLIMIT_NOFILE,
-							&rlim_ofile) < 0)
+					    &rlim_ofile) < 0)
 						syslog(LOG_ERR,"setrlimit: %m");
 				}
 #endif
+				closelog();
 				for (tmpint = rlim_ofile_cur-1; --tmpint > 2; )
 					(void)close(tmpint);
+				sigaction(SIGPIPE, &sapipe, NULL);
 				execv(sep->se_server, sep->se_argv);
 				if (sep->se_socktype != SOCK_STREAM)
 					recv(0, buf, sizeof (buf), 0);
@@ -494,19 +599,32 @@ main(argc, argv, envp)
 	}
 }
 
-void
-reapchild()
+int
+dg_badinput(sin)
+	struct sockaddr_in *sin;
 {
-	int status;
-	int pid;
+	if (ntohs(sin->sin_port) < IPPORT_RESERVED)
+		return (1);
+	if (sin->sin_addr.s_addr == htonl(INADDR_BROADCAST))
+		return (1);
+	/* XXX compare against broadcast addresses in SIOCGIFCONF list? */
+	return (0);
+}
+
+void
+reapchild(sig)
+	int sig;
+{
+	pid_t pid;
+	int save_errno = errno, status;
 	register struct servtab *sep;
 
 	for (;;) {
-		pid = wait3(&status, WNOHANG, (struct rusage *)0);
+		pid = wait3(&status, WNOHANG, NULL);
 		if (pid <= 0)
 			break;
 		if (debug)
-			fprintf(stderr, "%d reaped\n", pid);
+			fprintf(stderr, "%d reaped, status %x\n", pid, status);
 		for (sep = servtab; sep; sep = sep->se_next)
 			if (sep->se_wait == pid) {
 				if (WIFEXITED(status) && WEXITSTATUS(status))
@@ -525,14 +643,27 @@ reapchild()
 					    sep->se_service, sep->se_fd);
 			}
 	}
+	errno = save_errno;
 }
 
+int setconfig __P((void));
+void endconfig __P((void));
+
+void register_rpc __P((struct servtab *));
+void unregister_rpc __P((struct servtab *));
+void freeconfig __P((struct servtab *));
+void print_service __P((char *, struct servtab *));
+void setup __P((struct servtab *));
+struct servtab *getconfigent __P((void));
+struct servtab *enter __P((struct servtab *));
+int matchconf __P((struct servtab *, struct servtab *));
+
 void
-config()
+config(sig)
+	int sig;
 {
 	register struct servtab *sep, *cp, **sepp;
-	struct servtab *getconfigent(), *enter();
-	long omask;
+	int omask;
 	int n;
 
 	if (!setconfig()) {
@@ -541,10 +672,10 @@ config()
 	}
 	for (sep = servtab; sep; sep = sep->se_next)
 		sep->se_checked = 0;
-	while (cp = getconfigent()) {
+	cp = getconfigent();
+	while (cp != NULL) {
 		for (sep = servtab; sep; sep = sep->se_next)
-			if (strcmp(sep->se_service, cp->se_service) == 0 &&
-			    strcmp(sep->se_proto, cp->se_proto) == 0)
+			if (matchconf(sep, cp))
 				break;
 		if (sep != 0) {
 			int i;
@@ -561,14 +692,10 @@ config()
 			if (cp->se_bi == 0 && 
 			    (sep->se_wait == 1 || cp->se_wait == 0))
 				sep->se_wait = cp->se_wait;
-			if (cp->se_max != sep->se_max)
-				SWAP(int, cp->se_max, sep->se_max);
-			if (cp->se_user)
-				SWAP(char *, sep->se_user, cp->se_user);
-			if (cp->se_group)
-				SWAP(char *, sep->se_group, cp->se_group);
-			if (cp->se_server)
-				SWAP(char *, sep->se_server, cp->se_server);
+			SWAP(int, cp->se_max, sep->se_max);
+			SWAP(char *, sep->se_user, cp->se_user);
+			SWAP(char *, sep->se_group, cp->se_group);
+			SWAP(char *, sep->se_server, cp->se_server);
 			for (i = 0; i < MAXARGV; i++)
 				SWAP(char *, sep->se_argv[i], cp->se_argv[i]);
 #undef SWAP
@@ -595,15 +722,19 @@ config()
 			n = strlen(sep->se_service);
 			if (n > sizeof sep->se_ctrladdr_un.sun_path - 1) 
 				n = sizeof sep->se_ctrladdr_un.sun_path - 1;
-			strncpy(sep->se_ctrladdr_un.sun_path, sep->se_service, n);
+			strncpy(sep->se_ctrladdr_un.sun_path,
+			    sep->se_service, n);
+			sep->se_ctrladdr_un.sun_path[n] = '\0';
 			sep->se_ctrladdr_un.sun_family = AF_UNIX;
 			sep->se_ctrladdr_size = n +
-					sizeof sep->se_ctrladdr_un.sun_family;
+			    sizeof sep->se_ctrladdr_un.sun_family;
 			setup(sep);
 			break;
 		case AF_INET:
 			sep->se_ctrladdr_in.sin_family = AF_INET;
+			/* se_ctrladdr_in was set in getconfigent */
 			sep->se_ctrladdr_size = sizeof sep->se_ctrladdr_in;
+
 			if (isrpcservice(sep)) {
 				struct rpcent *rp;
 
@@ -612,9 +743,9 @@ config()
 					rp = getrpcbyname(sep->se_service);
 					if (rp == 0) {
 						syslog(LOG_ERR,
-							"%s: unknown service",
-							sep->se_service);
-						continue;
+						    "%s: unknown rpc service",
+						    sep->se_service);
+						goto serv_unknown;
 					}
 					sep->se_rpcprog = rp->r_number;
 				}
@@ -627,12 +758,12 @@ config()
 
 				if (!port) {
 					sp = getservbyname(sep->se_service,
-								sep->se_proto);
+					    sep->se_proto);
 					if (sp == 0) {
 						syslog(LOG_ERR,
 						    "%s/%s: unknown service",
 						    sep->se_service, sep->se_proto);
-						continue;
+						goto serv_unknown;
 					}
 					port = sp->s_port;
 				}
@@ -649,6 +780,16 @@ config()
 					setup(sep);
 			}
 		}
+	serv_unknown:
+		if (cp->se_next != NULL) {
+			struct servtab *tmp = cp;
+
+			cp = cp->se_next;
+			free(tmp);
+		} else {
+			free (cp);
+			cp = getconfigent();
+		}
 	}
 	endconfig();
 	/*
@@ -656,7 +797,7 @@ config()
 	 */
 	omask = sigblock(SIGBLOCK);
 	sepp = &servtab;
-	while (sep = *sepp) {
+	while ((sep = *sepp)) {
 		if (sep->se_checked) {
 			sepp = &sep->se_next;
 			continue;
@@ -680,7 +821,8 @@ config()
 }
 
 void
-retry()
+retry(sig)
+	int sig;
 {
 	register struct servtab *sep;
 
@@ -700,7 +842,8 @@ retry()
 }
 
 void
-goaway()
+goaway(sig)
+	int sig;
 {
 	register struct servtab *sep;
 
@@ -723,11 +866,14 @@ goaway()
 	exit(0);
 }
 
+int bump_nofile __P((void));
 
+void
 setup(sep)
 	register struct servtab *sep;
 {
 	int on = 1;
+	int r;
 
 	if ((sep->se_fd = socket(sep->se_family, sep->se_socktype, 0)) < 0) {
 		syslog(LOG_ERR, "%s/%s: socket: %m",
@@ -742,7 +888,37 @@ setsockopt(fd, SOL_SOCKET, opt, (char *)&on, sizeof (on))
 	if (turnon(sep->se_fd, SO_REUSEADDR) < 0)
 		syslog(LOG_ERR, "setsockopt (SO_REUSEADDR): %m");
 #undef turnon
-	if (bind(sep->se_fd, &sep->se_ctrladdr, sep->se_ctrladdr_size) < 0) {
+	if (isrpcservice(sep)) {
+		struct passwd *pwd;
+
+		/*
+		 * for RPC services, attempt to use a reserved port
+		 * if they are going to be running as root.
+		 *
+		 * Also, zero out the port for all RPC services; let bind()
+		 * find one.
+		 */
+		sep->se_ctrladdr_in.sin_port = 0;
+		if (sep->se_user && (pwd = getpwnam(sep->se_user)) &&
+		    pwd->pw_uid == 0 && uid == 0)
+			r = bindresvport(sep->se_fd, &sep->se_ctrladdr_in);
+		else {
+			r = bind(sep->se_fd, &sep->se_ctrladdr,
+			    sep->se_ctrladdr_size);
+			if (r == 0) {
+				int len = sep->se_ctrladdr_size;
+				int saveerrno = errno;
+
+				/* update se_ctrladdr_in.sin_port */
+				r = getsockname(sep->se_fd, &sep->se_ctrladdr,
+				    &len);
+				if (r <= 0)
+					errno = saveerrno;
+			}
+		}
+	} else
+		r = bind(sep->se_fd, &sep->se_ctrladdr, sep->se_ctrladdr_size);
+	if (r < 0) {
 		syslog(LOG_ERR, "%s/%s: bind: %m",
 		    sep->se_service, sep->se_proto);
 		(void) close(sep->se_fd);
@@ -765,10 +941,10 @@ setsockopt(fd, SOL_SOCKET, opt, (char *)&on, sizeof (on))
 	}
 }
 
+void
 register_rpc(sep)
 	register struct servtab *sep;
 {
-#ifdef RPC
 	int n;
 	struct sockaddr_in sin;
 	struct protoent *pp;
@@ -788,30 +964,31 @@ register_rpc(sep)
 	for (n = sep->se_rpcversl; n <= sep->se_rpcversh; n++) {
 		if (debug)
 			fprintf(stderr, "pmap_set: %u %u %u %u\n",
-			sep->se_rpcprog, n, pp->p_proto, ntohs(sin.sin_port));
+			    sep->se_rpcprog, n, pp->p_proto,
+			    ntohs(sin.sin_port));
 		(void)pmap_unset(sep->se_rpcprog, n);
 		if (!pmap_set(sep->se_rpcprog, n, pp->p_proto, ntohs(sin.sin_port)))
-			syslog(LOG_ERR, "pmap_set: %u %u %u %u: %m",
-			sep->se_rpcprog, n, pp->p_proto, ntohs(sin.sin_port));
+			syslog(LOG_ERR, "%s %s: pmap_set: %u %u %u %u: %m",
+			    sep->se_service, sep->se_proto,
+			    sep->se_rpcprog, n, pp->p_proto,
+			    ntohs(sin.sin_port));
 	}
-#endif /* RPC */
 }
 
+void
 unregister_rpc(sep)
 	register struct servtab *sep;
 {
-#ifdef RPC
 	int n;
 
 	for (n = sep->se_rpcversl; n <= sep->se_rpcversh; n++) {
 		if (debug)
 			fprintf(stderr, "pmap_unset(%u, %u)\n",
-				sep->se_rpcprog, n);
+			    sep->se_rpcprog, n);
 		if (!pmap_unset(sep->se_rpcprog, n))
-			syslog(LOG_ERR, "pmap_unset(%u, %u)\n",
-				sep->se_rpcprog, n);
+			syslog(LOG_ERR, "pmap_unset(%u, %u)",
+			    sep->se_rpcprog, n);
 	}
-#endif /* RPC */
 }
 
 
@@ -820,10 +997,10 @@ enter(cp)
 	struct servtab *cp;
 {
 	register struct servtab *sep;
-	long omask;
+	int omask;
 
 	sep = (struct servtab *)malloc(sizeof (*sep));
-	if (sep == (struct servtab *)0) {
+	if (sep == NULL) {
 		syslog(LOG_ERR, "Out of memory.");
 		exit(-1);
 	}
@@ -837,14 +1014,51 @@ enter(cp)
 	return (sep);
 }
 
-FILE	*fconfig = NULL;
-struct	servtab serv;
-char	line[256];
-char	*skip(), *nextline();
+int
+matchconf (old, new)
+	struct servtab	*old;
+	struct servtab	*new;
+{
+	if (strcmp(old->se_service, new->se_service) != 0)
+		return (0);
 
+	if (strcmp(old->se_hostaddr, new->se_hostaddr) != 0)
+		return (0);
+
+	if (strcmp(old->se_proto, new->se_proto) != 0)
+		return (0);
+
+	/*
+	 * If the new servtab is bound to a specific address, check that the
+	 * old servtab is bound to the same entry. If the new service is not
+	 * bound to a specific address then the check of se_hostaddr above
+	 * is sufficient.
+	 */
+
+	if ((old->se_family == AF_INET) &&
+		(new->se_family == AF_INET) &&
+		(bcmp(&old->se_ctrladdr_in.sin_addr,
+		    &new->se_ctrladdr_in.sin_addr,
+		    sizeof(new->se_ctrladdr_in.sin_addr)) != 0)) {
+			return (0);
+	}
+
+	return (1);
+}
+
+FILE		*fconfig = NULL;
+char		line[1024];
+char		*defhost;
+char		*skip __P((char **));
+char		*nextline __P((FILE *));
+char		*newstr __P((char *));
+struct servtab	*dupconfig __P((struct servtab *));
+
+int
 setconfig()
 {
-
+	if (defhost) free(defhost);
+	defhost = newstr("*");
 	if (fconfig != NULL) {
 		fseek(fconfig, 0L, L_SET);
 		return (1);
@@ -853,20 +1067,34 @@ setconfig()
 	return (fconfig != NULL);
 }
 
+void
 endconfig()
 {
 	if (fconfig) {
 		(void) fclose(fconfig);
 		fconfig = NULL;
 	}
+	if (defhost) {
+		free(defhost);
+		defhost = 0;
+	}
 }
 
 struct servtab *
 getconfigent()
 {
-	register struct servtab *sep = &serv;
+	register struct servtab *sep;
 	int argc;
-	char *cp, *arg, *newstr();
+	char *cp, *arg;
+	char *hostdelim;
+	struct servtab *nsep;
+	struct servtab *psep;
+
+	sep = (struct servtab *) malloc(sizeof(struct servtab));
+	if (sep == NULL) {
+		syslog(LOG_ERR, "malloc: %m");
+		exit(-1);
+	}
 
 more:
 #ifdef MULOG
@@ -902,12 +1130,37 @@ more:
 		;
 #endif
 	if (cp == NULL)
-		return ((struct servtab *)0);
-	bzero((char *)sep, sizeof *sep);
-	sep->se_service = newstr(skip(&cp));
+		return (NULL);
+	memset((char *)sep, 0, sizeof *sep);
 	arg = skip(&cp);
-	if (arg == NULL)
+	if (arg == NULL) {
+		/* A blank line. */
 		goto more;
+	}
+
+	/* Check for a host name. */
+	hostdelim = strrchr(arg, ':');
+	if (hostdelim) {
+		*hostdelim = '\0';
+		sep->se_hostaddr = newstr(arg);
+		arg = hostdelim + 1;
+		/*
+		 * If the line is of the form `host:', then just change the
+		 * default host for the following lines.
+		 */
+		if (*arg == '\0') {
+			arg = skip(&cp);
+			if (cp == NULL) {
+				free(defhost);
+				defhost = sep->se_hostaddr;
+				goto more;
+			}
+		}
+	} else
+		sep->se_hostaddr = newstr(defhost);
+
+	sep->se_service = newstr(arg);
+	arg = skip(&cp);
 
 	if (strcmp(arg, "stream") == 0)
 		sep->se_socktype = SOCK_STREAM;
@@ -928,9 +1181,8 @@ more:
 	} else {
 		sep->se_family = AF_INET;
 		if (strncmp(sep->se_proto, "rpc/", 4) == 0) {
-#ifdef RPC
 			char *cp, *ccp;
-			cp = index(sep->se_service, '/');
+			cp = strchr(sep->se_service, '/');
 			if (cp == 0) {
 				syslog(LOG_ERR, "%s: no rpc version",
 				    sep->se_service);
@@ -951,28 +1203,25 @@ more:
 				if (ccp == cp)
 					goto badafterall;
 			}
-#else
-			syslog(LOG_ERR, "%s: rpc services not suported",
-			    sep->se_service);
-			goto more;
-#endif /* RPC */
 		}
 	}
 	arg = skip(&cp);
 	if (arg == NULL)
 		goto more;
 	{
-		char	*s = index(arg, '.');
+		char	*s = strchr(arg, '.');
 		if (s) {
 			*s++ = '\0';
 			sep->se_max = atoi(s);
 		} else
-			sep->se_max = TOOMANY;
+			sep->se_max = toomany;
 	}
 	sep->se_wait = strcmp(arg, "wait") == 0;
 	sep->se_user = newstr(skip(&cp));
-	if (sep->se_group = index(sep->se_user, '.')) {
-		*sep->se_group++ = '\0';
+	arg = strchr(sep->se_user, '.');
+	if (arg) {
+		*arg++ = '\0';
+		sep->se_group = newstr(arg);
 	}
 	sep->se_server = newstr(skip(&cp));
 	if (strcmp(sep->se_server, "internal") == 0) {
@@ -983,8 +1232,8 @@ more:
 			    strcmp(bi->bi_service, sep->se_service) == 0)
 				break;
 		if (bi->bi_service == 0) {
-			syslog(LOG_ERR, "internal service %s unknown\n",
-				sep->se_service);
+			syslog(LOG_ERR, "internal service %s unknown",
+			    sep->se_service);
 			goto more;
 		}
 		sep->se_bi = bi;
@@ -994,9 +1243,9 @@ more:
 	argc = 0;
 	for (arg = skip(&cp); cp; arg = skip(&cp)) {
 #if MULOG
-		char *colon, *rindex();
+		char *colon;
 
-		if (argc == 0 && (colon = rindex(arg, ':'))) {
+		if (argc == 0 && (colon = strrchr(arg, ':'))) {
 			while (arg < colon) {
 				int	x;
 				char	*ccp;
@@ -1028,21 +1277,128 @@ more:
 	}
 	while (argc <= MAXARGV)
 		sep->se_argv[argc++] = NULL;
+
+	/*
+	 * Now that we've processed the entire line, check if the hostname
+	 * specifier was a comma separated list of hostnames. If so
+	 * we'll make new entries for each address.
+	 */
+	while ((hostdelim = strrchr(sep->se_hostaddr, ',')) != NULL) {
+		nsep = dupconfig(sep);
+
+		/*
+		 * NULL terminate the hostname field of the existing entry,
+		 * and make a dup for the new entry.
+		 */
+		*hostdelim++ = '\0';
+		nsep->se_hostaddr = newstr(hostdelim);
+
+		nsep->se_next = sep->se_next;
+		sep->se_next = nsep;
+	}
+
+	nsep = sep;
+	while (nsep != NULL) {
+		nsep->se_checked = 1;
+		if (nsep->se_family == AF_INET) {
+			if (!strcmp(nsep->se_hostaddr,"*"))
+				nsep->se_ctrladdr_in.sin_addr.s_addr =
+				    INADDR_ANY;
+			else if (!inet_aton(nsep->se_hostaddr,
+			    &nsep->se_ctrladdr_in.sin_addr)) {
+				struct hostent *hp;
+
+				hp = gethostbyname(nsep->se_hostaddr);
+				if (hp == 0) {
+					syslog(LOG_ERR, "%s: unknown host",
+					    nsep->se_hostaddr);
+					nsep->se_checked = 0;
+					goto skip;
+				} else if (hp->h_addrtype != AF_INET) {
+					syslog(LOG_ERR,
+					    "%s: address isn't an Internet "
+					    "address",
+					    nsep->se_hostaddr);
+					nsep->se_checked = 0;
+					goto skip;
+				} else {
+					int i = 1;
+
+					memmove(&nsep->se_ctrladdr_in.sin_addr,
+					    hp->h_addr_list[0],
+					    sizeof(struct in_addr));
+					while (hp->h_addr_list[i] != NULL) {
+						psep = dupconfig(nsep);
+						psep->se_hostaddr = newstr(
+						    nsep->se_hostaddr);
+						psep->se_checked = 1;
+						memmove(&psep->se_ctrladdr_in.sin_addr,
+						    hp->h_addr_list[i],
+						    sizeof(struct in_addr));
+						psep->se_ctrladdr_size =
+						    sizeof(psep->se_ctrladdr_in);
+						i++;
+
+						/*
+						 * Prepend to list, don't
+						 * want to look up its
+						 * hostname again.
+						 */
+						psep->se_next = sep;
+						sep = psep;
+					}
+				}
+			}
+		}
+skip:
+		nsep = nsep->se_next;
+	}
+
+	/*
+	 * Finally, free any entries which failed the gethostbyname
+	 * check.
+	 */
+	psep = NULL;
+	nsep = sep;
+	while (nsep != NULL) {
+		struct servtab *tsep;
+
+		if (nsep->se_checked == 0) {
+			tsep = nsep;
+			if (psep == NULL) {
+				sep = nsep->se_next;
+				nsep = sep;
+			} else {
+				nsep = nsep->se_next;
+				psep->se_next = nsep;
+			}
+			freeconfig(tsep);
+		} else {
+			nsep->se_checked = 0;
+			psep = nsep;
+			nsep = nsep->se_next;
+		}
+	}
+
 	return (sep);
 }
 
+void
 freeconfig(cp)
 	register struct servtab *cp;
 {
 	int i;
 
+	if (cp->se_hostaddr)
+		free(cp->se_hostaddr);
 	if (cp->se_service)
 		free(cp->se_service);
 	if (cp->se_proto)
 		free(cp->se_proto);
 	if (cp->se_user)
 		free(cp->se_user);
-	/* Note: se_group is part of the newstr'ed se_user */
+	if (cp->se_group)
+		free(cp->se_group);
 	if (cp->se_server)
 		free(cp->se_server);
 	for (i = 0; i < MAXARGV; i++)
@@ -1058,7 +1414,7 @@ skip(cpp)
 	char *start;
 
 	if (*cpp == NULL)
-		return ((char *)0);
+			return (NULL);
 
 again:
 	while (*cp == ' ' || *cp == '\t')
@@ -1069,10 +1425,10 @@ again:
 		c = getc(fconfig);
 		(void) ungetc(c, fconfig);
 		if (c == ' ' || c == '\t')
-			if (cp = nextline(fconfig))
+			if ((cp = nextline(fconfig)))
 				goto again;
-		*cpp = (char *)0;
-		return ((char *)0);
+		*cpp = NULL;
+		return (NULL);
 	}
 	start = cp;
 	while (*cp && *cp != ' ' && *cp != '\t')
@@ -1090,8 +1446,8 @@ nextline(fd)
 	char *cp;
 
 	if (fgets(line, sizeof (line), fd) == NULL)
-		return ((char *)0);
-	cp = index(line, '\n');
+		return (NULL);
+	cp = strchr(line, '\n');
 	if (cp)
 		*cp = '\0';
 	return (line);
@@ -1101,12 +1457,54 @@ char *
 newstr(cp)
 	char *cp;
 {
-	if (cp = strdup(cp ? cp : ""))
+	if ((cp = strdup(cp ? cp : "")))
 		return(cp);
 	syslog(LOG_ERR, "strdup: %m");
 	exit(-1);
 }
 
+struct servtab *
+dupconfig(sep)
+	struct servtab *sep;
+{
+	struct servtab *newtab;
+	int argc;
+
+	newtab = (struct servtab *) malloc(sizeof(struct servtab));
+
+	if (newtab == NULL) {
+		syslog(LOG_ERR, "malloc: %m");
+		exit (-1);
+	}
+
+	memset((char *)newtab, 0, sizeof(struct servtab));
+
+	newtab->se_service = sep->se_service ? newstr(sep->se_service) : NULL;
+	newtab->se_socktype = sep->se_socktype;
+	newtab->se_family = sep->se_family;
+	newtab->se_proto = sep->se_proto ? newstr(sep->se_proto) : NULL;
+	newtab->se_rpcprog = sep->se_rpcprog;
+	newtab->se_rpcversl = sep->se_rpcversl;
+	newtab->se_rpcversh = sep->se_rpcversh;
+	newtab->se_wait = sep->se_wait;
+	newtab->se_user = sep->se_user ? newstr(sep->se_user) : NULL;
+	newtab->se_group = sep->se_group ? newstr(sep->se_group) : NULL;
+	newtab->se_bi = sep->se_bi;
+	newtab->se_server = sep->se_server ? newstr(sep->se_server) : 0;
+
+	for (argc = 0; argc <= MAXARGV; argc++)
+		newtab->se_argv[argc] = sep->se_argv[argc] ?
+		    newstr(sep->se_argv[argc]) : NULL;
+	newtab->se_max = sep->se_max;
+
+#ifdef MULOG
+	newtab->se_log = sep->se_log;
+#endif
+
+	return (newtab);
+}
+
+void
 inetd_setproctitle(a, s)
 	char *a;
 	int s;
@@ -1118,16 +1516,22 @@ inetd_setproctitle(a, s)
 
 	cp = Argv[0];
 	size = sizeof(sin);
-	if (getpeername(s, (struct sockaddr *)&sin, &size) == 0)
-		(void) sprintf(buf, "-%s [%s]", a, inet_ntoa(sin.sin_addr)); 
-	else
-		(void) sprintf(buf, "-%s", a); 
+	(void) snprintf(buf, sizeof buf, "-%s", a);
+	if (getpeername(s, (struct sockaddr *)&sin, &size) == 0) {
+		char *s = inet_ntoa(sin.sin_addr);
+
+		buf[sizeof(buf) - 1 - strlen(s) - 3] = '\0';
+		strcat(buf, " [");
+		strcat(buf, s);
+		strcat(buf, "]");
+	}
 	strncpy(cp, buf, LastArg - cp);
 	cp += strlen(cp);
 	while (cp < LastArg)
 		*cp++ = ' ';
 }
 
+void
 logpid()
 {
 	FILE *fp;
@@ -1138,6 +1542,7 @@ logpid()
 	}
 }
 
+int
 bump_nofile()
 {
 #ifdef RLIMIT_NOFILE
@@ -1151,10 +1556,11 @@ bump_nofile()
 		return -1;
 	}
 	rl.rlim_cur = MIN(rl.rlim_max, rl.rlim_cur + FD_CHUNK);
+	rl.rlim_cur = MIN(FD_SETSIZE, rl.rlim_cur + FD_CHUNK);
 	if (rl.rlim_cur <= rlim_ofile_cur) {
 		syslog(LOG_ERR,
-			"bump_nofile: cannot extend file limit, max = %d",
-			rl.rlim_cur);
+		    "bump_nofile: cannot extend file limit, max = %d",
+		    (int)rl.rlim_cur);
 		return -1;
 	}
 
@@ -1178,6 +1584,7 @@ bump_nofile()
 #define	BUFSIZE	4096
 
 /* ARGSUSED */
+void
 echo_stream(s, sep)		/* Echo service -- echo data back */
 	int s;
 	struct servtab *sep;
@@ -1193,6 +1600,7 @@ echo_stream(s, sep)		/* Echo service -- echo data back */
 }
 
 /* ARGSUSED */
+void
 echo_dg(s, sep)			/* Echo service -- echo data back */
 	int s;
 	struct servtab *sep;
@@ -1204,10 +1612,13 @@ echo_dg(s, sep)			/* Echo service -- echo data back */
 	size = sizeof(sa);
 	if ((i = recvfrom(s, buffer, sizeof(buffer), 0, &sa, &size)) < 0)
 		return;
+	if (dg_badinput((struct sockaddr_in *)&sa))
+		return;
 	(void) sendto(s, buffer, i, 0, &sa, sizeof(sa));
 }
 
 /* ARGSUSED */
+void
 discard_stream(s, sep)		/* Discard service -- ignore data */
 	int s;
 	struct servtab *sep;
@@ -1216,12 +1627,13 @@ discard_stream(s, sep)		/* Discard service -- ignore data */
 
 	inetd_setproctitle(sep->se_service, s);
 	while ((errno = 0, read(s, buffer, sizeof(buffer)) > 0) ||
-			errno == EINTR)
+	    errno == EINTR)
 		;
 	exit(0);
 }
 
 /* ARGSUSED */
+void
 discard_dg(s, sep)		/* Discard service -- ignore data */
 	int s;
 	struct servtab *sep;
@@ -1236,6 +1648,7 @@ discard_dg(s, sep)		/* Discard service -- ignore data */
 char ring[128];
 char *endring;
 
+void
 initring()
 {
 	register int i;
@@ -1248,6 +1661,7 @@ initring()
 }
 
 /* ARGSUSED */
+void
 chargen_stream(s, sep)		/* Character generator */
 	int s;
 	struct servtab *sep;
@@ -1267,10 +1681,10 @@ chargen_stream(s, sep)		/* Character generator */
 	text[LINESIZ + 1] = '\n';
 	for (rs = ring;;) {
 		if ((len = endring - rs) >= LINESIZ)
-			bcopy(rs, text, LINESIZ);
+			memmove(text, rs, LINESIZ);
 		else {
-			bcopy(rs, text, len);
-			bcopy(ring, text + len, LINESIZ - len);
+			memmove(text, rs, len);
+			memmove(text + len, ring, LINESIZ - len);
 		}
 		if (++rs == endring)
 			rs = ring;
@@ -1281,6 +1695,7 @@ chargen_stream(s, sep)		/* Character generator */
 }
 
 /* ARGSUSED */
+void
 chargen_dg(s, sep)		/* Character generator */
 	int s;
 	struct servtab *sep;
@@ -1298,12 +1713,14 @@ chargen_dg(s, sep)		/* Character generator */
 	size = sizeof(sa);
 	if (recvfrom(s, text, sizeof(text), 0, &sa, &size) < 0)
 		return;
+	if (dg_badinput((struct sockaddr_in *)&sa))
+		return;
 
 	if ((len = endring - rs) >= LINESIZ)
-		bcopy(rs, text, LINESIZ);
+		memmove(text, rs, LINESIZ);
 	else {
-		bcopy(rs, text, len);
-		bcopy(ring, text + len, LINESIZ - len);
+		memmove(text, rs, len);
+		memmove(text + len, ring, LINESIZ - len);
 	}
 	if (++rs == endring)
 		rs = ring;
@@ -1320,46 +1737,54 @@ chargen_dg(s, sep)		/* Character generator */
  * some seventy years Bell Labs was asleep.
  */
 
-long
+u_int
 machtime()
 {
 	struct timeval tv;
 
-	if (gettimeofday(&tv, (struct timezone *)0) < 0) {
+	if (gettimeofday(&tv, NULL) < 0) {
 		fprintf(stderr, "Unable to get time of day\n");
 		return (0L);
 	}
-	return (htonl((long)tv.tv_sec + 2208988800UL));
+	return (htonl((u_int)tv.tv_sec + 2208988800UL));
 }
 
 /* ARGSUSED */
+void
 machtime_stream(s, sep)
 	int s;
 	struct servtab *sep;
 {
-	long result;
+	u_int result;
 
 	result = machtime();
 	(void) write(s, (char *) &result, sizeof(result));
 }
 
 /* ARGSUSED */
+void
 machtime_dg(s, sep)
 	int s;
 	struct servtab *sep;
 {
-	long result;
+	u_int result;
 	struct sockaddr sa;
+	struct sockaddr_in *sin;
 	int size;
 
 	size = sizeof(sa);
 	if (recvfrom(s, (char *)&result, sizeof(result), 0, &sa, &size) < 0)
+		return;
+	sin = (struct sockaddr_in *)&sa;
+	if (sin->sin_addr.s_addr == htonl(INADDR_BROADCAST) || 
+	    ntohs(sin->sin_port) < IPPORT_RESERVED/2)
 		return;
 	result = machtime();
 	(void) sendto(s, (char *) &result, sizeof(result), 0, &sa, sizeof(sa));
 }
 
 /* ARGSUSED */
+void
 daytime_stream(s, sep)		/* Return human-readable time of day */
 	int s;
 	struct servtab *sep;
@@ -1367,13 +1792,14 @@ daytime_stream(s, sep)		/* Return human-readable time of day */
 	char buffer[256];
 	time_t time(), clock;
 
-	clock = time((time_t *) 0);
+	clock = time(NULL);
 
 	(void) sprintf(buffer, "%.24s\r\n", ctime(&clock));
 	(void) write(s, buffer, strlen(buffer));
 }
 
 /* ARGSUSED */
+void
 daytime_dg(s, sep)		/* Return human-readable time of day */
 	int s;
 	struct servtab *sep;
@@ -1388,6 +1814,8 @@ daytime_dg(s, sep)		/* Return human-readable time of day */
 	size = sizeof(sa);
 	if (recvfrom(s, buffer, sizeof(buffer), 0, &sa, &size) < 0)
 		return;
+	if (dg_badinput((struct sockaddr_in *)&sa))
+		return;
 	(void) sprintf(buffer, "%.24s\r\n", ctime(&clock));
 	(void) sendto(s, buffer, strlen(buffer), 0, &sa, sizeof(sa));
 }
@@ -1396,26 +1824,33 @@ daytime_dg(s, sep)		/* Return human-readable time of day */
  * print_service:
  *	Dump relevant information to stderr
  */
+void
 print_service(action, sep)
 	char *action;
 	struct servtab *sep;
 {
-	if (isrpcservice(sep))
-		fprintf(stderr,
-		    "%s: %s rpcprog=%d, rpcvers = %d/%d, proto=%s, wait.max=%d.%d, user.group=%s.%s builtin=%lx server=%s\n",
-		    action, sep->se_service,
-		    sep->se_rpcprog, sep->se_rpcversh, sep->se_rpcversl, sep->se_proto,
-		    sep->se_wait, sep->se_max, sep->se_user, sep->se_group,
-		    (long)sep->se_bi, sep->se_server);
+	if (strcmp(sep->se_hostaddr, "*") == 0)
+		fprintf(stderr, "%s: %s ", action, sep->se_service);
 	else
-		fprintf(stderr,
-		    "%s: %s proto=%s, wait.max=%d.%d, user.group=%s.%s builtin=%lx server=%s\n",
-		    action, sep->se_service, sep->se_proto,
-		    sep->se_wait, sep->se_max, sep->se_user, sep->se_group,
-		    (long)sep->se_bi, sep->se_server);
+		fprintf(stderr, "%s: %s:%s ", action, sep->se_hostaddr,
+		    sep->se_service);
+
+	if (isrpcservice(sep))
+		fprintf(stderr, "rpcprog=%d, rpcvers=%d/%d, proto=%s,",
+		    sep->se_rpcprog, sep->se_rpcversh,
+		    sep->se_rpcversl, sep->se_proto);
+	else
+		fprintf(stderr, "proto=%s,", sep->se_proto);
+
+	fprintf(stderr,
+	    " wait.max=%hd.%d user.group=%s.%s builtin=%lx server=%s\n",
+	    sep->se_wait, sep->se_max, sep->se_user, sep->se_group,
+	    (long)sep->se_bi, sep->se_server);
 }
 
 #ifdef MULOG
+char	*rfc931_name __P((struct sockaddr_in *, int));
+
 dolog(sep, ctrl)
 	struct servtab *sep;
 	int		ctrl;
@@ -1424,7 +1859,7 @@ dolog(sep, ctrl)
 	struct sockaddr_in	*sin = (struct sockaddr_in *)&sa;
 	int			len = sizeof(sa);
 	struct hostent		*hp;
-	char			*host, *dp, buf[BUFSIZ], *rfc931_name();
+	char			*host, *dp, buf[BUFSIZ];
 	int			connected = 1;
 
 	if (sep->se_family != AF_INET)
@@ -1447,7 +1882,7 @@ dolog(sep, ctrl)
 	}
 
 	hp = gethostbyaddr((char *) &sin->sin_addr.s_addr,
-				sizeof (sin->sin_addr.s_addr), AF_INET);
+	    sizeof (sin->sin_addr.s_addr), AF_INET);
 
 	host = hp?hp->h_name:inet_ntoa(sin->sin_addr);
 
@@ -1462,7 +1897,7 @@ dolog(sep, ctrl)
 			break;
 		if (debug)
 			fprintf(stderr, "check \"%s\" against curdom \"%s\"\n",
-					host, curdom);
+			    host, curdom);
 		if (strcasecmp(dp, curdom) == 0)
 			return;
 		break;
@@ -1474,11 +1909,10 @@ dolog(sep, ctrl)
 	openlog("", LOG_NOWAIT, MULOG);
 
 	if (connected && (sep->se_log & MULOG_RFC931))
-		syslog(LOG_INFO, "%s@%s wants %s",
-				rfc931_name(sin, ctrl), host, sep->se_service);
+		syslog(LOG_INFO, "%s@%s wants %s", rfc931_name(sin, ctrl),
+		    host, sep->se_service);
 	else
-		syslog(LOG_INFO, "%s wants %s",
-				host, sep->se_service);
+		syslog(LOG_INFO, "%s wants %s", host, sep->se_service);
 }
 /*
  * From tcp_log by
@@ -1497,15 +1931,14 @@ static char sccsid[] = "@(#) rfc931.c 1.3 92/08/31 22:54:46";
 static jmp_buf timebuf;
 
 /* timeout - handle timeouts */
-
-static void timeout(sig)
-int     sig;
+static void
+timeout(sig)
+	int	sig;
 {
 	longjmp(timebuf, sig);
 }
 
 /* rfc931_name - return remote user name */
-
 char *
 rfc931_name(there, ctrl)
 struct sockaddr_in *there;		/* remote link information */
@@ -1552,7 +1985,6 @@ int	ctrl;
 	alarm(TIMEOUT);
 
 	/* Connect to the RFC931 daemon. */
-
 	sin = *there;
 	sin.sin_port = htons(RFC931_PORT);
 	if (connect(s, (struct sockaddr *) &sin, sizeof(sin)) == -1) {
@@ -1564,9 +1996,9 @@ int	ctrl;
 	/* Query the RFC 931 server. Would 13-byte writes ever be broken up? */
 	sprintf(buf, "%u,%u\r\n", ntohs(there->sin_port), ntohs(here.sin_port));
 
-
 	for (len = 0, cp = buf; len < strlen(buf); ) {
-		int	n;
+		int n;
+
 		if ((n = write(s, cp, strlen(buf) - len)) == -1) {
 			close(s);
 			alarm(0);
@@ -1590,9 +2022,9 @@ int	ctrl;
 	}
 	*cp = '\0';
 
-	if (sscanf(buf, "%u , %u : USERID :%*[^:]:%255s", &remote, &local, user) == 3
-		&& ntohs(there->sin_port) == remote
-		&& ntohs(here.sin_port) == local) {
+	if (sscanf(buf, "%u , %u : USERID :%*[^:]:%255s", &remote,
+	    &local, user) == 3 && ntohs(there->sin_port) == remote &&
+	    ntohs(here.sin_port) == local) {
 
 		/* Strip trailing carriage return. */
 		if (cp = strchr(user, '\r'))

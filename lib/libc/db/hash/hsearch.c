@@ -1,5 +1,3 @@
-/*	$NetBSD: hsearch.c,v 1.8 1995/02/27 13:22:38 cgd Exp $	*/
-
 /*-
  * Copyright (c) 1990, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -37,11 +35,7 @@
  */
 
 #if defined(LIBC_SCCS) && !defined(lint)
-#if 0
-static char sccsid[] = "@(#)hsearch.c	8.3 (Berkeley) 2/21/94";
-#else
-static char rcsid[] = "$NetBSD: hsearch.c,v 1.8 1995/02/27 13:22:38 cgd Exp $";
-#endif
+static char rcsid[] = "$OpenBSD: hsearch.c,v 1.10 1996/05/03 22:16:32 cgd Exp $";
 #endif /* LIBC_SCCS and not lint */
 
 #include <sys/types.h>
@@ -64,7 +58,7 @@ hcreate(nel)
 	info.nelem = nel;
 	info.bsize = 256;
 	info.ffactor = 8;
-	info.cachesize = NULL;
+	info.cachesize = 0;
 	info.hash = NULL;
 	info.lorder = 0;
 	dbp = (DB *)__hash_open(NULL, O_CREAT | O_RDWR, 0600, &info, 0);

@@ -1,3 +1,6 @@
+/*	$OpenBSD: kvm_mips.c,v 1.3 1996/06/07 06:50:42 deraadt Exp $ */
+/*	$NetBSD: kvm_mips.c,v 1.3 1996/03/18 22:33:44 thorpej Exp $	*/
+
 /*-
  * Copyright (c) 1989, 1992, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -36,8 +39,13 @@
  */
 
 #if defined(LIBC_SCCS) && !defined(lint)
+#if 0
 static char sccsid[] = "@(#)kvm_mips.c	8.1 (Berkeley) 6/4/93";
+#else
+static char *rcsid = "$OpenBSD: kvm_mips.c,v 1.3 1996/06/07 06:50:42 deraadt Exp $";
+#endif
 #endif /* LIBC_SCCS and not lint */
+
 /*
  * MIPS machine dependent routines for kvm.  Hopefully, the forthcoming 
  * vm code will one day obsolete this module.
@@ -59,7 +67,7 @@ static char sccsid[] = "@(#)kvm_mips.c	8.1 (Berkeley) 6/4/93";
 
 #include "kvm_private.h"
 
-#include <machine/machConst.h>
+#include <machine/cpu.h>
 #include <machine/pte.h>
 #include <machine/pmap.h>
 
@@ -140,7 +148,7 @@ _kvm_kvatop(kd, va, pa)
 	    va >= VM_MIN_KERNEL_ADDRESS + vm->Sysmapsize * NBPG)
 		goto invalid;
 	if (va < VM_MIN_KERNEL_ADDRESS) {
-		*pa = MACH_CACHED_TO_PHYS(va);
+		*pa = CACHED_TO_PHYS(va);
 		return (NBPG - offset);
 	}
 	addr = (u_long)(vm->Sysmap + ((va - VM_MIN_KERNEL_ADDRESS) >> PGSHIFT));
@@ -157,6 +165,6 @@ _kvm_kvatop(kd, va, pa)
 	return (NBPG - offset);
 
 invalid:
-	_kvm_err(kd, 0, "invalid address (%x)", va);
+	_kvm_err(kd, 0, "invalid address (%lx)", va);
 	return (0);
 }

@@ -1,36 +1,40 @@
+/*	$OpenBSD: tkt_string.c,v 1.6 1997/12/22 15:02:16 art Exp $	*/
+/* $KTH: tkt_string.c,v 1.11 1997/10/24 10:18:07 assar Exp $ */
+
 /*
- * This software may now be redistributed outside the US.
+ * This source code is no longer held under any constraint of USA
+ * `cryptographic laws' since it was exported legally.  The cryptographic
+ * functions were removed from the code and a "Bones" distribution was
+ * made.  A Commodity Jurisdiction Request #012-94 was filed with the
+ * USA State Department, who handed it to the Commerce department.  The
+ * code was determined to fall under General License GTDA under ECCN 5D96G,
+ * and hence exportable.  The cryptographic interfaces were re-added by Eric
+ * Young, and then KTH proceeded to maintain the code in the free world.
  *
- * $Source: /usr/src/kerberosIV/lib/krb/RCS/tkt_string.c,v $
- *
- * $Locker:  $
  */
 
 /* 
-  Copyright (C) 1989 by the Massachusetts Institute of Technology
-
-   Export of this software from the United States of America is assumed
-   to require a specific license from the United States Government.
-   It is the responsibility of any person or organization contemplating
-   export to obtain such a license before exporting.
-
-WITHIN THAT CONSTRAINT, permission to use, copy, modify, and
-distribute this software and its documentation for any purpose and
-without fee is hereby granted, provided that the above copyright
-notice appear in all copies and that both that copyright notice and
-this permission notice appear in supporting documentation, and that
-the name of M.I.T. not be used in advertising or publicity pertaining
-to distribution of the software without specific, written prior
-permission.  M.I.T. makes no representations about the suitability of
-this software for any purpose.  It is provided "as is" without express
-or implied warranty.
-
-  */
+ *  Copyright (C) 1989 by the Massachusetts Institute of Technology
+ *
+ *  Export of this software from the United States of America is assumed
+ *  to require a specific license from the United States Government.
+ *  It is the responsibility of any person or organization contemplating
+ *  export to obtain such a license before exporting.
+ *
+ * WITHIN THAT CONSTRAINT, permission to use, copy, modify, and
+ * distribute this software and its documentation for any purpose and
+ * without fee is hereby granted, provided that the above copyright
+ * notice appear in all copies and that both that copyright notice and
+ * this permission notice appear in supporting documentation, and that
+ * the name of M.I.T. not be used in advertising or publicity pertaining
+ * to distribution of the software without specific, written prior
+ * permission.  M.I.T. makes no representations about the suitability of
+ * this software for any purpose.  It is provided "as is" without express
+ * or implied warranty.
+ *
+ */
 
 #include "krb_locl.h"
-
-#include <sys/param.h>
-#include <sys/types.h>
 
 /*
  * This routine is used to generate the name of the file that holds
@@ -49,20 +53,18 @@ or implied warranty.
 static char krb_ticket_string[MAXPATHLEN] = "";
 
 char *
-tkt_string()
+tkt_string(void)
 {
     char *env;
-    uid_t getuid(void);
 
-    if (!*krb_ticket_string) {
+    if (krb_ticket_string[0] == '\0') {
         if ((env = getenv("KRBTKFILE"))) {
-	    (void) strncpy(krb_ticket_string, env,
+	    strncpy(krb_ticket_string, env,
 			   sizeof(krb_ticket_string)-1);
 	    krb_ticket_string[sizeof(krb_ticket_string)-1] = '\0';
 	} else {
-	    /* 32 bits of signed integer will always fit in 11 characters
-	     (including the sign), so no need to worry about overflow */
-	    (void) sprintf(krb_ticket_string, "%s%d",TKT_ROOT,(int)getuid());
+	    snprintf(krb_ticket_string, sizeof(krb_ticket_string),
+		     "%s%u",TKT_ROOT,(unsigned)getuid());
         }
     }
     return krb_ticket_string;
@@ -80,11 +82,10 @@ tkt_string()
  */
 
 void
-krb_set_tkt_string(val)
-	char *val;
+krb_set_tkt_string(const char *val)
 {
 
-    (void) strncpy(krb_ticket_string, val, sizeof(krb_ticket_string)-1);
+    strncpy(krb_ticket_string, val, sizeof(krb_ticket_string)-1);
     krb_ticket_string[sizeof(krb_ticket_string)-1] = '\0';
 
     return;

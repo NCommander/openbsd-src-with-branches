@@ -20,6 +20,7 @@
 #include <net/if_arp.h>
 #include <netinet/in.h>
 #include <stdio.h>
+#include <stdlib.h>
 #ifndef	NO_UNISTD
 #include <unistd.h>
 #endif
@@ -259,6 +260,7 @@ bitrev(n)
 	return r;
 }
 
+int
 main()
 {
 	int i;

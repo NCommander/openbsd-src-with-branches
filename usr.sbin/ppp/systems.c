@@ -17,7 +17,7 @@
  * IMPLIED WARRANTIES, INCLUDING, WITHOUT LIMITATION, THE IMPLIED
  * WARRANTIES OF MERCHANTIBILITY AND FITNESS FOR A PARTICULAR PURPOSE.
  *
- * $Id: systems.c,v 1.28 1997/11/22 03:37:51 brian Exp $
+ * $Id: systems.c,v 1.7 1997/12/24 09:30:53 brian Exp $
  *
  *  TODO:
  */
@@ -39,11 +39,9 @@
 #include "timer.h"
 #include "fsm.h"
 #include "loadalias.h"
-#include "ipcp.h"
 #include "pathnames.h"
 #include "vars.h"
 #include "server.h"
-#include "chat.h"
 #include "systems.h"
 
 #define issep(ch) ((ch) == ' ' || (ch) == '\t')
@@ -217,7 +215,7 @@ AllowModes(struct cmdargs const *arg)
         break;
       }
     if (modes[m].mode == 0)
-      LogPrintf(LogWARN, "%s: Invalid mode\n", arg->argv[f]);
+      LogPrintf(LogWARN, "allow modes: %s: Invalid mode\n", arg->argv[f]);
   }
 
   modeok = (mode | allowed) == allowed ? 1 : 0;
@@ -232,7 +230,7 @@ ReadSystem(const char *name, const char *file, int doexec)
   int n, len;
   u_char olauth;
   char line[LINE_LEN];
-  char filename[200];
+  char filename[MAXPATHLEN];
   int linenum;
   int argc;
   char **argv;
@@ -250,7 +248,7 @@ ReadSystem(const char *name, const char *file, int doexec)
   LogPrintf(LogDEBUG, "ReadSystem: Checking %s (%s).\n", name, filename);
 
   linenum = 0;
-  while (fgets(line, sizeof(line), fp)) {
+  while (fgets(line, sizeof line, fp)) {
     linenum++;
     cp = line;
     switch (*cp) {
@@ -279,17 +277,17 @@ ReadSystem(const char *name, const char *file, int doexec)
             return 0;	/* got it */
           break;
         default:
-          LogPrintf(LogCOMMAND, "%s: %s: Invalid command\n", name, cp);
+          LogPrintf(LogWARN, "%s: %s: Invalid command\n", filename, cp);
           break;
         }
       } else if (strcmp(cp, name) == 0) {
-	while (fgets(line, sizeof(line), fp)) {
+	while (fgets(line, sizeof line, fp)) {
 	  cp = line;
           if (issep(*cp)) {
 	    n = strspn(cp, " \t");
 	    cp += n;
             len = strlen(cp);
-            if (!len)
+            if (!len || *cp == '#')
               continue;
             if (cp[len-1] == '\n')
               cp[--len] = '\0';
@@ -353,7 +351,7 @@ LoadCommand(struct cmdargs const *arg)
     LogPrintf(LogERROR, "%s: Label not allowed\n", name);
     return 1;
   } else if (SelectSystem(name, CONFFILE) < 0) {
-    LogPrintf(LogWARN, "%s: not found.\n", name);
+    LogPrintf(LogWARN, "%s: label not found.\n", name);
     return -1;
   } else
     SetLabel(arg->argc ? name : NULL);

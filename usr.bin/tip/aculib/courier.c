@@ -1,4 +1,5 @@
-/*	$NetBSD: courier.c,v 1.4 1994/12/08 09:31:35 jtc Exp $	*/
+/*	$OpenBSD: courier.c,v 1.5 1997/04/02 01:47:06 millert Exp $	*/
+/*	$NetBSD: courier.c,v 1.7 1997/02/11 09:24:16 mrg Exp $	*/
 
 /*
  * Copyright (c) 1986, 1993
@@ -37,7 +38,7 @@
 #if 0
 static char sccsid[] = "@(#)courier.c	8.1 (Berkeley) 6/6/93";
 #endif
-static char rcsid[] = "$NetBSD: courier.c,v 1.4 1994/12/08 09:31:35 jtc Exp $";
+static char rcsid[] = "$OpenBSD: courier.c,v 1.5 1997/04/02 01:47:06 millert Exp $";
 #endif /* not lint */
 
 /*
@@ -45,6 +46,7 @@ static char rcsid[] = "$NetBSD: courier.c,v 1.4 1994/12/08 09:31:35 jtc Exp $";
  * Derived from Hayes driver.
  */
 #include "tip.h"
+#include <sys/ioctl.h>
 #include <stdio.h>
 
 #define	MAXRETRY	5
@@ -53,8 +55,13 @@ static	void sigALRM();
 static	int timeout = 0;
 static	int connected = 0;
 static	jmp_buf timeoutbuf, intbuf;
-static	int coursync();
+static	int coursync(), cour_connect(), cour_swallow();
+void	cour_nap();
+static	void cour_napx();
 
+void cour_disconnect __P((void));
+
+int
 cour_dialer(num, acu)
 	register char *num;
 	char *acu;
@@ -63,12 +70,14 @@ cour_dialer(num, acu)
 #ifdef ACULOG
 	char line[80];
 #endif
-	static int cour_connect(), cour_swallow();
+	struct termios cntrl;
 
 	if (boolean(value(VERBOSE)))
 		printf("Using \"%s\"\n", acu);
 
-	ioctl(FD, TIOCHPCL, 0);
+	tcgetattr(FD, &cntrl);
+	cntrl.c_cflag |= HUPCL;
+	tcsetattr(FD, TCSAFLUSH, &cntrl);
 	/*
 	 * Get in synch.
 	 */
@@ -86,7 +95,7 @@ badsynch:
 	if (boolean(value(VERBOSE)))
 		cour_verbose_read();
 #endif
-	ioctl(FD, TIOCFLUSH, 0);	/* flush any clutter */
+	tcflush(FD, TCIOFLUSH);
 	cour_write(FD, "AT C1 E0 H0 Q0 X6 V1\r", 21);
 	if (!cour_swallow("\r\nOK\r\n"))
 		goto badsynch;
@@ -100,7 +109,7 @@ badsynch:
 	connected = cour_connect();
 #ifdef ACULOG
 	if (timeout) {
-		sprintf(line, "%d second dial timeout",
+		(void)sprintf(line, "%d second dial timeout",
 			number(value(DIALTIMEOUT)));
 		logent(value(HOST), num, "cour", line);
 	}
@@ -110,6 +119,7 @@ badsynch:
 	return (connected);
 }
 
+void
 cour_disconnect()
 {
 	 /* first hang up the modem*/
@@ -120,6 +130,7 @@ cour_disconnect()
 	close(FD);
 }
 
+void
 cour_abort()
 {
 	cour_write(FD, "\r", 1);	/* send anything to abort the call */
@@ -136,8 +147,8 @@ sigALRM()
 
 static int
 cour_swallow(match)
-  register char *match;
-  {
+	register char *match;
+{
 	sig_t f;
 	char c;
 
@@ -186,7 +197,6 @@ cour_connect()
 {
 	char c;
 	int nc, nl, n;
-	struct sgttyb sb;
 	char dialer_buf[64];
 	struct baud_msg *bm;
 	sig_t f;
@@ -225,15 +235,12 @@ again:
 			for (bm = baud_msg ; bm->msg ; bm++)
 				if (strcmp(bm->msg,
 				    dialer_buf+sizeof("CONNECT")-1) == 0) {
-					if (ioctl(FD, TIOCGETP, &sb) < 0) {
-						perror("TIOCGETP");
-						goto error;
-					}
-					sb.sg_ispeed = sb.sg_ospeed = bm->baud;
-					if (ioctl(FD, TIOCSETP, &sb) < 0) {
-						perror("TIOCSETP");
-						goto error;
-					}
+					struct termios	cntrl;
+
+					tcgetattr(FD, &cntrl);
+					cfsetospeed(&cntrl, bm->baud);
+					cfsetispeed(&cntrl, bm->baud);
+					tcsetattr(FD, TCSAFLUSH, &cntrl);
 					signal(SIGALRM, f);
 #ifdef DEBUG
 					if (boolean(value(VERBOSE)))
@@ -268,7 +275,7 @@ coursync()
 	char buf[40];
 
 	while (already++ < MAXRETRY) {
-		ioctl(FD, TIOCFLUSH, 0);	/* flush any clutter */
+		tcflush(FD, TCIOFLUSH);
 		cour_write(FD, "\rAT Z\r", 6);	/* reset modem */
 		bzero(buf, sizeof(buf));
 		sleep(1);
@@ -279,8 +286,8 @@ coursync()
 			buf[len] = '\0';
 			printf("coursync: (\"%s\")\n\r", buf);
 #endif
-			if (index(buf, '0') || 
-		   	   (index(buf, 'O') && index(buf, 'K')))
+			if (strchr(buf, '0') || 
+		   	   (strchr(buf, 'O') && strchr(buf, 'K')))
 				return(1);
 		}
 		/*
@@ -307,18 +314,15 @@ int fd;
 char *cp;
 int n;
 {
-	struct sgttyb sb;
 #ifdef notdef
 	if (boolean(value(VERBOSE)))
 		write(1, cp, n);
 #endif
-	ioctl(fd, TIOCGETP, &sb);
-	ioctl(fd, TIOCSETP, &sb);
+	tcdrain(fd);
 	cour_nap();
 	for ( ; n-- ; cp++) {
 		write(fd, cp, 1);
-		ioctl(fd, TIOCGETP, &sb);
-		ioctl(fd, TIOCSETP, &sb);
+		tcdrain(fd);
 		cour_nap();
 	}
 }
@@ -350,10 +354,9 @@ static napms = 50; /* Give the courier 50 milliseconds between characters */
 
 static int ringring;
 
+void
 cour_nap()
 {
-	
-        static void cour_napx();
 	int omask;
         struct itimerval itv, oitv;
         register struct itimerval *itp = &itv;

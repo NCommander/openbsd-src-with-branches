@@ -33,7 +33,7 @@
  */
 
 #ifndef lint
-static char rcsid[] = "$Id: spi.c,v 1.3 1997/06/12 17:09:20 provos Exp provos $";
+static char rcsid[] = "$Id: spi.c,v 1.4 1997/07/26 20:55:17 provos Exp $";
 #endif
 
 #define _SPI_C_
@@ -60,26 +60,11 @@ static char rcsid[] = "$Id: spi.c,v 1.3 1997/06/12 17:09:20 provos Exp provos $"
 
 static struct spiob *spiob = NULL;
 
-int
-isinattrib(u_int8_t *attributes, u_int16_t attribsize, u_int8_t attribute)
-{
-     while(attribsize>0) {
-	  if(*attributes==attribute)
-	       return 1;
-	  if(attribsize - (*(attributes+1)+2) > attribsize) 
-	       return 0;
-
-	  attribsize -= *(attributes+1)+2;
-	  attributes += *(attributes+1)+2;
-     }
-     return 0;
-}
-
 time_t
 getspilifetime(struct stateob *st)
 {
      /* XXX - destination depend lifetimes */
-     return spi_lifetime;
+     return st->spi_lifetime;
 }
 
 int
@@ -91,87 +76,17 @@ make_spi(struct stateob *st, char *local_address,
      u_int16_t i;
 
      if(*attributes == NULL) {           /* We are in need of attributes */
-	  u_int16_t count = 0;
-	  u_int8_t *wanted, *offered, *p;
-	  u_int16_t wantedsize, offeredsize;
-	  u_int16_t mode = 0;            /* We only take when in ah|esp mode */
-	  int first = 0;                 /* Obmit AH|ESP header if not needed*/
-	  struct attribute_list *ob; 
-      
-	  if ((ob = attrib_find(NULL)) == NULL) { 
-	       log_error(0, "attrib_find() for default in make_spi() in "
-			 "exchange to %s", st->address); 
-	       return -1; 
-	  } 
-
-	  /* Take from Owner */
-	  wanted = ob->attributes;
-	  wantedsize = ob->attribsize;
-
-	  /* Take from User */
-	  offered = st->uSPIoattrib;
-	  offeredsize = st->uSPIoattribsize;
-	  
-	  /* This should never happen */
-	  if(wantedsize>BUFFER_SIZE)
-	       return -1;
-
-	  p = buffer;
-	  while(wantedsize>0) {
-	       /* Scan the offered attributes */
-	       if (*wanted == AT_AH_ATTRIB && 
-		   (st->flags & IPSEC_OPT_AUTH)) {
-		    first = 1;
-		    mode = AT_AH_ATTRIB;
-	       } else if (*wanted == AT_ESP_ATTRIB &&
-			  (st->flags & IPSEC_OPT_ENC)) {
-		    mode = AT_ESP_ATTRIB;
-		    first = 1;
-	       }
-	       
-	       /* 
-		* Take attributes only from AH or ESP sections.
-		* Obmit AH or ESP header when there are no entries
-		* in that section.
-		* XXX - put && first && in if to take only one attrib
-		* in each section.
-		*/
-
-	       if (mode && first &&
-		   *wanted != AT_AH_ATTRIB && *wanted != AT_ESP_ATTRIB &&
-		   isinattrib(offered, offeredsize, *wanted)) {
-		    
-		    /* Put prober header in there */
-		    if (first) {
-			 p[0] = mode;
-			 p[1] = 0;
-			 first = 0;
-			 count += 2;
-			 p += 2;
-		    }
-		    /* We are using our own attributes, safe to proceed */
-		    bcopy(wanted, p, *(wanted+1) + 2);
-		    count += *(wanted+1) + 2;
-		    p += *(wanted+1) + 2;
-	       }
-	       if(wantedsize - *(wanted+1) - 2 > wantedsize)
-		    break;
-	       wantedsize -= *(wanted+1) + 2;
-	       wanted += *(wanted+1) + 2;
-	  }
-	  if((*attributes=calloc(count,sizeof(u_int8_t))) == NULL) {
-	       log_error(1, "Out of memory for SPI attributes (%d)", count);
+	  if (select_attrib(st, attributes, attribsize) == -1) {
+	       log_error(0, "select_attrib() in make_spi()");
 	       return -1;
 	  }
-	  *attribsize = count;
-	  bcopy(buffer, *attributes, count);
      }
 	
      /* Just grab a random number, this should be uniq */
      for(i=0; i<SPI_SIZE; i++) {
 	  if(i%4 == 0)
 #ifdef IPSEC
-	       tmp = kernel_reserve_spi(local_address);
+	       tmp = kernel_reserve_spi(local_address, st->flags);
 #else
 	       tmp = arc4random();
 #endif
@@ -182,6 +97,24 @@ make_spi(struct stateob *st, char *local_address,
      *lifetime = getspilifetime(st) + (arc4random() & 0x1F);
 
      return 0;
+}
+
+int
+spi_set_tunnel(struct stateob *st, struct spiob *spi)
+{
+     if (st->flags & IPSEC_OPT_TUNNEL) {
+	  spi->flags |= SPI_TUNNEL;
+	  spi->isrc = st->isrc;
+	  spi->ismask = st->ismask;
+	  spi->idst = st->idst;
+	  spi->idmask = st->idmask;
+     } else {
+	  spi->isrc = inet_addr(spi->local_address);
+	  spi->ismask = inet_addr("255.255.255.255");
+	  spi->idst = inet_addr(spi->address);
+	  spi->idmask = inet_addr("255.255.255.255");
+     }
+     return 1;
 }
 
 
@@ -283,8 +216,8 @@ spi_find_attrib(char *address, u_int8_t *attrib, u_int16_t attribsize)
 
 /* 
  * find the spi ob with matching address
- * Alas this is tweaked, for owner = 1 compare with local_address
- * and for owner = 0 compare with address.
+ * Alas this is tweaked, for SPI_OWNER compare with local_address
+ * and for user compare with address.
  */
 
 struct spiob *
@@ -292,7 +225,7 @@ spi_find(char *address, u_int8_t *spi)
 {
      struct spiob *tmp = spiob;
      while(tmp!=NULL) {
-          if ((address == NULL || (tmp->owner ? 
+          if ((address == NULL || (tmp->flags & SPI_OWNER ? 
 	      !strcmp(address, tmp->local_address) :
 	      !strcmp(address, tmp->address))) &&
 	     !bcmp(spi, tmp->SPI, SPI_SIZE))
@@ -331,7 +264,8 @@ spi_expire(void)
      tm = time(NULL);
      while (tmp != NULL) {
 	  if (tmp->lifetime == -1 || 
-	      tmp->lifetime + (tmp->owner ? CLEANUP_TIMEOUT : 0) > tm) {
+	      tmp->lifetime + (tmp->flags & SPI_OWNER ? 
+			       CLEANUP_TIMEOUT : 0) > tm) {
 	       tmp = tmp->next;
 	       continue;
 	  }
@@ -339,7 +273,8 @@ spi_expire(void)
 	  {
 	       int i = BUFFER_SIZE;
 	       bin2hex(buffer, &i, tmp->SPI, 4);
-	       printf("Expiring %s spi %s to %s\n", tmp->owner ? "Owner" : "User",
+	       printf("Expiring %s spi %s to %s\n", 
+		      tmp->flags & SPI_OWNER ? "Owner" : "User",
 		      buffer, tmp->address);
 	  }
 #endif

@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /*	$NetBSD: skpc.S,v 1.2 1994/10/26 06:39:15 cgd Exp $	*/
 
 /*

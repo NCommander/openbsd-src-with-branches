@@ -1,4 +1,4 @@
-.\"	$NetBSD: rain.6,v 1.4 1995/04/22 08:23:33 cgd Exp $
+.\"	$OpenBSD$
 .\"
 .\" Copyright (c) 1989, 1993
 .\"	The Regents of the University of California.  All rights reserved.
@@ -38,15 +38,20 @@
 .Os
 .Sh NAME
 .Nm rain 
+.Op Fl d Ar delay
 .Nd animated raindrops display
 .Sh SYNOPSIS
 .Nm /usr/games/rain
 .Sh DESCRIPTION
-.Nm Rain 's
+.Nm Rain Ns 's
 display is modeled after the 
 .Tn VAX/VMS 
 program of the same name.
-The terminal has to be set for 9600 baud to obtain the proper effect.
+To obtain the proper effect, either the terminal must be set for 9600 baud
+or the
+.Nm -d
+option must be used to specify a delay, in milliseconds, between each update.  A
+reasonable delay is 120; the default is 0.
 .Pp
 As with all programs that use
 .Tn termcap ,
@@ -55,6 +60,6 @@ the
 environment variable must be set (and exported) to the type of the
 terminal being used.
 .Sh FILES
-.Pa /etc/termcap
+.Pa /usr/share/misc/termcap
 .Sh AUTHOR
 Eric P. Scott

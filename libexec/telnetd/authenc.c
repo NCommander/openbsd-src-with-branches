@@ -1,3 +1,6 @@
+/*	$OpenBSD: authenc.c,v 1.2 1996/03/28 23:21:54 niklas Exp $	*/
+/*	$NetBSD: authenc.c,v 1.3 1996/02/28 20:38:08 thorpej Exp $	*/
+
 /*-
  * Copyright (c) 1991, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -32,8 +35,12 @@
  */
 
 #ifndef lint
-/* from: static char sccsid[] = "@(#)authenc.c	8.1 (Berkeley) 6/4/93"; */
-static char *rcsid = "$Id: authenc.c,v 1.1 1994/02/25 03:20:42 cgd Exp $";
+#if 0
+static char sccsid[] = "@(#)authenc.c	8.2 (Berkeley) 5/30/95";
+static char rcsid[] = "$NetBSD: authenc.c,v 1.3 1996/02/28 20:38:08 thorpej Exp $";
+#else
+static char rcsid[] = "$OpenBSD: authenc.c,v 1.2 1996/03/28 23:21:54 niklas Exp $";
+#endif
 #endif /* not lint */
 
 #if	defined(AUTHENTICATION)
@@ -46,7 +53,7 @@ net_write(str, len)
 	int len;
 {
 	if (nfrontp + len < netobuf + BUFSIZ) {
-		bcopy((void *)str, (void *)nfrontp, len);
+		memmove((void *)nfrontp, (void *)str, len);
 		nfrontp += len;
 		return(len);
 	}
@@ -56,6 +63,13 @@ net_write(str, len)
 	void
 net_encrypt()
 {
+#ifdef ENCRYPTION
+	char *s = (nclearto > nbackp) ? nclearto : nbackp;
+	if (s < nfrontp && encrypt_output) {
+		(*encrypt_output)((unsigned char *)s, nfrontp - s);
+	}
+	nclearto = nfrontp;
+#endif
 }
 
 	int
@@ -69,7 +83,7 @@ telnet_spin()
 telnet_getenv(val)
 	char *val;
 {
-	extern char *getenv();
+	extern char *getenv(const char *);
 	return(getenv(val));
 }
 
@@ -80,6 +94,6 @@ telnet_gets(prompt, result, length, echo)
 	int length;
 	int echo;
 {
-	return((char *)0);
+	return NULL;
 }
 #endif	/* defined(AUTHENTICATION) */

@@ -1,4 +1,5 @@
-/*	$NetBSD: sys_machdep.c,v 1.12 1995/10/08 19:01:26 thorpej Exp $	*/
+/*	$OpenBSD: sys_machdep.c,v 1.4 1997/04/16 11:56:31 downsj Exp $	*/
+/*	$NetBSD: sys_machdep.c,v 1.17 1997/05/19 10:15:00 veego Exp $	*/
 
 /*
  * Copyright (c) 1982, 1986, 1993
@@ -35,6 +36,8 @@
  *	@(#)sys_machdep.c	8.2 (Berkeley) 1/13/94
  */
 
+#include <machine/hp300spu.h>	/* XXX param.h includes cpu.h */
+
 #include <sys/param.h>
 #include <sys/systm.h>
 #include <sys/ioctl.h>
@@ -60,7 +63,7 @@ sys_vtrace(p, v, retval)
 	void *v;
 	register_t *retval;
 {
-	register struct sys_vtrace_args /* {
+	struct sys_vtrace_args /* {
 		syscallarg(int) request;
 		syscallarg(int) value;
 	} */ *uap = v;
@@ -100,8 +103,8 @@ sys_vtrace(p, v, retval)
 vdoualarm(arg)
 	void *arg;
 {
-	register int pid = (int)arg;
-	register struct proc *p;
+	int pid = (int)arg;
+	struct proc *p;
 
 	p = pfind(pid);
 	if (p)
@@ -130,6 +133,7 @@ vdoualarm(arg)
  * do pages, above that we do the entire cache.
  */
 /*ARGSUSED1*/
+int
 cachectl(req, addr, len)
 	int req;
 	caddr_t	addr;
@@ -137,11 +141,11 @@ cachectl(req, addr, len)
 {
 	int error = 0;
 
-#if defined(HP380)
+#if defined(M68040)
 	if (mmutype == MMU_68040) {
-		register int inc = 0;
+		int inc = 0;
 		int pa = 0, doall = 0;
-		caddr_t end;
+		caddr_t end = 0;
 #ifdef COMPAT_HPUX
 		extern struct emul emul_hpux;
 
@@ -151,7 +155,7 @@ cachectl(req, addr, len)
 #endif
 
 		if (addr == 0 ||
-		    (req & ~CC_EXTPURGE) != CC_PURGE && len > 2*NBPG)
+		    ((req & ~CC_EXTPURGE) != CC_PURGE && len > 2*NBPG))
 			doall = 1;
 
 		if (!doall) {
@@ -172,7 +176,7 @@ cachectl(req, addr, len)
 			 */
 			if (!doall &&
 			    (pa == 0 || ((int)addr & PGOFSET) == 0)) {
-				pa = pmap_extract(&curproc->p_vmspace->vm_pmap,
+				pa = pmap_extract(curproc->p_vmspace->vm_map.pmap,
 						  (vm_offset_t)addr);
 				if (pa == 0)
 					doall = 1;
@@ -227,7 +231,7 @@ cachectl(req, addr, len)
 	switch (req) {
 	case CC_EXTPURGE|CC_PURGE:
 	case CC_EXTPURGE|CC_FLUSH:
-#if defined(HP370)
+#if defined(CACHE_HAVE_PAC)
 		if (ectype == EC_PHYS)
 			PCIA();
 		/* fall into... */
@@ -237,7 +241,7 @@ cachectl(req, addr, len)
 		DCIU();
 		break;
 	case CC_EXTPURGE|CC_IPURGE:
-#if defined(HP370)
+#if defined(CACHE_HAVE_PAC)
 		if (ectype == EC_PHYS)
 			PCIA();
 		else
@@ -260,10 +264,12 @@ sys_sysarch(p, v, retval)
 	void *v;
 	register_t *retval;
 {
+#if 0 /* unused */
 	struct sys_sysarch_args /* {
 		syscallarg(int) op; 
 		syscallarg(char *) parms;
 	} */ *uap = v;
+#endif
 
 	return ENOSYS;
 }

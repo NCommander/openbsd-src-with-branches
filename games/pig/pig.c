@@ -66,7 +66,11 @@ main(argc, argv)
 	int ch;
 	char buf[1024];
 
-	while ((ch = getopt(argc, argv, "")) != EOF)
+	/* revoke */
+	setegid(getgid());
+	setgid(getgid());
+
+	while ((ch = getopt(argc, argv, "")) != -1)
 		switch(ch) {
 		case '?':
 		default:
@@ -105,7 +109,7 @@ pigout(buf, len)
 	 * If the word starts with a vowel, append "way".  Don't treat 'y'
 	 * as a vowel if it appears first.
 	 */
-	if (index("aeiouAEIOU", buf[0]) != NULL) {
+	if (strchr("aeiouAEIOU", buf[0]) != NULL) {
 		(void)printf("%.*sway", len, buf);
 		return;
 	}
@@ -115,7 +119,7 @@ pigout(buf, len)
 	 * isn't treated as a vowel.
 	 */
 	for (start = 0, olen = len;
-	    !index("aeiouyAEIOUY", buf[start]) && start < olen;) {
+	    !strchr("aeiouyAEIOUY", buf[start]) && start < olen;) {
 		ch = buf[len++] = buf[start++];
 		if ((ch == 'q' || ch == 'Q') && start < olen &&
 		    (buf[start] == 'u' || buf[start] == 'U'))

@@ -1,4 +1,6 @@
 #! /bin/sh
+#	$OpenBSD$
+
 
 cat <<!
 /* File created from flex.skl via mkskel.sh */

@@ -1,0 +1,15 @@
+#	$OpenBSD$
+
+SRCS=	config_slot.c pcmcia_conf.c
+#dumpreg.c
+
+.PATH:	${.CURDIR}/../../sys/dev/pcmcia
+
+CFLAGS+=-Wmissing-prototypes -I${.CURDIR}/../../sys
+PROG=	config_slot
+NOMAN=
+
+pcmcia_conf.o: pcmcia_conf.c
+	${COMPILE.c} -D_KERNEL $<
+
+.include <bsd.prog.mk>

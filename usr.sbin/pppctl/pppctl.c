@@ -1,5 +1,29 @@
-/*
- * $Id: pppctl.c,v 1.10 1997/11/18 00:22:07 brian Exp $
+/*-
+ * Copyright (c) 1997 Brian Somers <brian@Awfulhak.org>
+ * All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions
+ * are met:
+ * 1. Redistributions of source code must retain the above copyright
+ *    notice, this list of conditions and the following disclaimer.
+ * 2. Redistributions in binary form must reproduce the above copyright
+ *    notice, this list of conditions and the following disclaimer in the
+ *    documentation and/or other materials provided with the distribution.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE AUTHOR AND CONTRIBUTORS ``AS IS'' AND
+ * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ * ARE DISCLAIMED.  IN NO EVENT SHALL THE AUTHOR OR CONTRIBUTORS BE LIABLE
+ * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+ * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
+ * OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+ * HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+ * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
+ * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
+ * SUCH DAMAGE.
+ *
+ *	$Id: pppctl.c,v 1.6 1997/12/27 13:44:15 brian Exp $
  */
 
 #include <sys/types.h>
@@ -75,12 +99,7 @@ Receive(int fd, int display)
         }
         len += Result;
         Buffer[len] = '\0';
-        if (TimedOut) {
-            if (display & REC_VERBOSE)
-                write(1,Buffer,len);
-            Result = -1;
-            break;
-        } else if (len > 2 && !strcmp(Buffer+len-2, "> ")) {
+        if (len > 2 && !strcmp(Buffer+len-2, "> ")) {
             prompt = strrchr(Buffer, '\n');
             if (display & (REC_SHOW|REC_VERBOSE)) {
                 if (display & REC_VERBOSE)
@@ -113,6 +132,17 @@ Receive(int fd, int display)
             } else
                 Result = 0;
             break;
+        }
+        if (len == sizeof Buffer - 1) {
+            int flush;
+            if ((last = strrchr(Buffer, '\n')) == NULL)
+                /* Yeuch - this is one mother of a line ! */
+                flush = sizeof Buffer / 2;
+            else
+                flush = last - Buffer + 1;
+            write(1, Buffer, flush);
+            strcpy(Buffer, Buffer + flush);
+            len -= flush;
         }
     }
 
@@ -210,6 +240,7 @@ main(int argc, char **argv)
         sock = (struct sockaddr *)&ifsun;
         socksz = sizeof ifsun;
 
+        memset(&ifsun, '\0', sizeof ifsun);
         ifsun.sun_len = strlen(argv[arg]);
         if (ifsun.sun_len > sizeof ifsun.sun_path - 1) {
             fprintf(stderr, "%s: Path too long\n", argv[arg]);
@@ -239,8 +270,9 @@ main(int argc, char **argv)
         socksz = sizeof ifsin;
         hlen = strlen(host);
 
+        memset(&ifsin, '\0', sizeof ifsin);
         if (strspn(host, "0123456789.") == hlen) {
-            if (!inet_aton(host, (struct in_addr *)&ifsin.sin_addr.s_addr)) {
+            if (!inet_aton(host, &ifsin.sin_addr)) {
                 fprintf(stderr, "Cannot translate %s\n", host);
                 return 1;
             }
@@ -332,11 +364,12 @@ main(int argc, char **argv)
                 edit = el_init("pppctl", stdin, stdout);
                 el_source(edit, NULL);
                 el_set(edit, EL_PROMPT, GetPrompt);
-                if ((env = getenv("EL_EDITOR")))
+                if ((env = getenv("EL_EDITOR"))) {
                     if (!strcmp(env, "vi"))
                         el_set(edit, EL_EDITOR, "vi");
                     else if (!strcmp(env, "emacs"))
                         el_set(edit, EL_EDITOR, "emacs");
+                }
                 el_set(edit, EL_SIGNAL, 1);
                 el_set(edit, EL_HIST, history, (const char *)hist);
                 while ((l = smartgets(edit, &len, fd))) {
@@ -364,7 +397,7 @@ main(int argc, char **argv)
                         write(1, Buffer, strlen(Buffer));
                     write(fd, Buffer, strlen(Buffer));
                     if (Receive(fd, verbose | REC_SHOW) != 0) {
-                        fprintf(stderr, "No reply from ppp\n");
+                        fprintf(stderr, "Connection closed\n");
                         break;
                     }
                     if (next)

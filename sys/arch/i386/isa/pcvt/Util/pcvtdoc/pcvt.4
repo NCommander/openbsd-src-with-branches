@@ -83,13 +83,25 @@ features not available in
 .Xr pc 4
 standard console device driver. Besides the ability of handling
 multiple virtual screens,
-the probably most important is an emulation of a wide range
+probably the most important is an emulation of a wide range
 of DEC VT-220
 .if t \(tm
 .if n (TM)
 functionality. See
 .Sx Features
 for a detailed description.
+
+.Ss VT Keys
+Despite the complexity of options, if installed in a normal OpenBSD
+configuration with the default options, on a standard i386 architecture
+system, you can use multiple virtual terminals.
+The key sequence used to move among virtual terminals are,
+at least on a North American keyboard, 
+.Em CTRL+ALT+Fn,
+where 
+.Em n
+can be from one to four on the standard system, and higher if you
+have created addition /dev/ttyC* entries.
 
 .Ss Features
 .Bl -bullet
@@ -484,11 +496,11 @@ fakes a three-button mouse using the Mouse Systems protocol. The first
 .Nm pcvt
 device node not used by a virtual screen is the mouse device. I.\& e.,
 for the default value of 8 virtual screens,
-.Pa /dev/ttyv0
+.Pa /dev/ttyC0
 through
-.Pa /dev/ttyv7
+.Pa /dev/ttyC7
 would refer to the virtual screens, and
-.Pa /dev/ttyv8
+.Pa /dev/ttyC8
 were the mouse emulator device. The mouse emulation is turned on by
 pressing the
 .Aq Em NumLock
@@ -764,8 +776,6 @@ struct pcvtinfo {
 	u_int opsysrel;			/* Release for NetBSD/FreeBSD */
 	u_int nscreens;			/* PCVT_NSCREENS */
 	u_int scanset;			/* PCVT_SCANSET */
-	u_int updatefast;		/* PCVT_UPDATEFAST */
-	u_int updateslow;		/* PCVT_UPDATESLOW */
 	u_int sysbeepf;			/* PCVT_SYSBEEPF */
 
 /* config booleans */
@@ -816,7 +826,7 @@ for their documentation.
 Definitions for
 .Xr ioctl 2
 function calls
-.It Pa /dev/ttyv?
+.It Pa /dev/ttyC?
 .It Pa /dev/console
 Device nodes to access the
 .Nm pcvt

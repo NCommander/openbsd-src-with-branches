@@ -15,7 +15,7 @@
  * IMPLIED WARRANTIES, INCLUDING, WITHOUT LIMITATION, THE IMPLIED
  * WARRANTIES OF MERCHANTIBILITY AND FITNESS FOR A PARTICULAR PURPOSE.
  *
- * $Id: ipcp.h,v 1.14 1997/11/22 03:37:35 brian Exp $
+ * $Id: ipcp.h,v 1.4 1998/01/11 17:54:46 brian Exp $
  *
  *	TODO:
  */
@@ -40,13 +40,13 @@ extern struct in_addr nbns_entries[2];
 
 struct ipcpstate {
   struct in_addr his_ipaddr;	/* IP address he is willing to use */
-  u_long his_compproto;
+  u_int32_t his_compproto;
 
   struct in_addr want_ipaddr;	/* IP address I'm willing to use */
-  u_long want_compproto;
+  u_int32_t want_compproto;
 
-  u_long his_reject;		/* Request codes rejected by peer */
-  u_long my_reject;		/* Request codes I have rejected */
+  u_int32_t his_reject;		/* Request codes rejected by peer */
+  u_int32_t my_reject;		/* Request codes I have rejected */
   int heis1172;			/* True if he is speaking rfc1172 */
 };
 
@@ -65,6 +65,7 @@ struct in_range {
 extern struct ipcpstate IpcpInfo;
 extern struct in_range DefMyAddress;
 extern struct in_range DefHisAddress;
+extern struct iplist DefHisChoice;
 extern struct in_addr TriggerAddress;
 extern int HaveTriggerAddress;
 extern struct fsm IpcpFsm;
@@ -73,7 +74,10 @@ extern void IpcpInit(void);
 extern void IpcpDefAddress(void);
 extern void IpcpUp(void);
 extern void IpcpOpen(void);
-extern int ReportIpcpStatus(struct cmdargs const *);
+extern int  ReportIpcpStatus(struct cmdargs const *);
 extern void IpcpInput(struct mbuf *);
 extern void IpcpAddInOctets(int);
 extern void IpcpAddOutOctets(int);
+extern int  UseHisaddr(const char *, int);
+extern int  SetInitVJ(struct cmdargs const *);
+extern int  ShowInitVJ(struct cmdargs const *);

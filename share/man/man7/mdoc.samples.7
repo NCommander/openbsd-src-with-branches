@@ -1,4 +1,5 @@
-.\"	$NetBSD: mdoc.samples.7,v 1.4 1994/11/30 19:07:22 jtc Exp $
+.\"	$OpenBSD: mdoc.samples.7,v 1.6 1997/12/08 20:29:45 deraadt Exp $
+.\"	$NetBSD: mdoc.samples.7,v 1.5 1996/04/03 20:17:34 jtc Exp $
 .\"
 .\" Copyright (c) 1990, 1993
 .\"	The Regents of the University of California.  All rights reserved.
@@ -43,14 +44,14 @@
 .Sh NAME
 .Nm mdoc.samples
 .Nd tutorial sampler for writing
-.Bx
+.Ox
 manuals with
 .Nm \-mdoc
 .Sh SYNOPSIS
 .Nm man mdoc.samples
 .Sh DESCRIPTION
 A tutorial sampler for writing
-.Bx
+.Ox
 manual pages with the
 .Nm \-mdoc
 macro package, a
@@ -81,7 +82,7 @@ perform tasks such as quoting or emphasizing pieces of text.
 The manual domain is defined as macros that are a subset of the
 day to day informal language used to describe commands, routines
 and related
-.Bx
+.Ox
 files.
 Macros in the manual domain handle
 command names, command line arguments and options, function names,
@@ -104,7 +105,7 @@ sexist intention.
 Since a tutorial document is normally read when a person
 desires to use the material immediately, the assumption has
 been made that the user of this document may be impatient.
-The material presented in the remained of this document is
+The material presented in the remainder of this document is
 outlined as follows:
 .Bl -enum -offset indent
 .It
@@ -134,7 +135,7 @@ outlined as follows:
 .It "Addresses" .
 .It "Arguments" .
 .It "Configuration Declarations (section four only)" .
-.It "Command Modifier .
+.It "Command Modifier" .
 .It "Defined Variables" .
 .It "Errno's (Section two only)" .
 .It "Environment Variables" .
@@ -157,6 +158,7 @@ outlined as follows:
 .Bl -tag -width flag -compact -offset indent
 .It "AT&T Macro" .
 .It "BSD Macro" .
+.It "OpenBSD Macro" .
 .It "UNIX Macro" .
 .It "Emphasis Macro" .
 .It "Enclosure/Quoting Macros"
@@ -168,7 +170,7 @@ outlined as follows:
 .It "Single Quotes/Enclosure" .
 .It "Prefix Macro" .
 .El
-.It "Extended  Arguments" .
+.It "Extended Arguments" .
 .It "No\-Op or Normal Text Macro" .
 .It "No Space Macro" .
 .It "Section Cross References" .
@@ -245,7 +247,7 @@ accept nine arguments and,
 in limited cases, arguments may be continued or extended
 on the
 next line (See
-.Sx Extensions ) .
+.Sx Extended Arguments ) .
 A few macros handle quoted arguments (see
 .Sx Passing Space Characters in an Argument
 below).
@@ -441,7 +443,7 @@ the backslash.
 The body of a man page is easily constructed from a basic
 template found in the file:
 .Bd -literal -offset indent
-\&.\e" /usr/share/misc/man.template:
+\&.\e" /usr/share/misc/mdoc.template:
 \&.\e" The following six lines are required.
 \&.Dd Month day, year
 \&.Os OPERATING_SYSTEM [version/release]
@@ -550,7 +552,7 @@ for sections 2, 3, 4, and 5.
 .It Li \&.Os operating_system release#
 The name of the operating system
 should be the common acronym, e.g.
-.Tn BSD
+.Tn OpenBSD
 or
 .Tn ATT .
 The release should be the standard release
@@ -559,19 +561,18 @@ V.4.
 Unrecognized arguments are displayed as given in the page footer.
 For instance, a typical footer might be:
 .Pp
-.Dl \&.Os BSD 4.3
+.Dl \&.Os OpenBSD 2.3
 .Pp
 or for a locally produced set
 .Pp
 .Dl \&.Os CS Department
 .Pp
-The Berkeley default,
+The OpenBSD default,
 .Ql \&.Os
 without an argument, has been defined as
-.Tn BSD
-Experimental in the
-site specific file
-.Pa /usr/src/share/tmac/doc-common .
+.Tn OpenBSD
+in the site specific file
+.Pa /usr/share/tmac/mdoc/doc-common .
 It really should default to
 .Tn LOCAL .
 Note, if the
@@ -1395,6 +1396,18 @@ callable. It accepts at most two arguments.
 The
 .Ql \&.Bx
 macro is parsed and is callable.
+.Ss OpenBSD Macro
+.Dl Usage: .Ox [Version] ... \*(Pu
+.Bl -tag -width ".Ox 2.3 ) ," -compact -offset 14n
+.It Li ".Ox"
+.Ox
+.It Li ".Ox 2.3 ."
+.Ox 2.3 .
+.El
+.Pp
+The
+.Ql \&.Ox
+macro is parsed and is callable.
 .Ss UNIX Macro
 .Dl Usage: .Ux ... \*(Pu
 .Bl -tag -width ".Ux 4.3 ) ," -compact -offset 14n
@@ -1682,7 +1695,7 @@ The
 .Ql \&.Tn
 macro
 is parsed and is callable by other macros.
-.Ss Extended  Arguments
+.Ss Extended Arguments
 The
 .Li \&.Xo
 and
@@ -2744,13 +2757,13 @@ files unsuitable for hardcopy.
 There is a register named
 .Ql \&cR
 which can be set to zero in the site dependent style file
-.Pa /usr/src/share/tmac/doc-nroff
+.Pa /usr/share/tmac/mdoc/doc-nroff
 to restore the old style behavior.
 .Sh FILES
-.Bl -tag -width /usr/share/man0/template.doc -compact
+.Bl -tag -width /usr/share/misc/mdoc.template -compact
 .It Pa /usr/share/tmac/tmac.doc
 manual macro package
-.It Pa /usr/share/man0/template.doc
+.It Pa /usr/share/misc/mdoc.template
 template for writing a man page
 .El
 .Sh SEE ALSO

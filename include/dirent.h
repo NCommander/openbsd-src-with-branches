@@ -1,3 +1,4 @@
+/*	$OpenBSD: dirent.h,v 1.9 1995/03/26 20:13:37 jtc Exp $	*/
 /*	$NetBSD: dirent.h,v 1.9 1995/03/26 20:13:37 jtc Exp $	*/
 
 /*-
@@ -37,6 +38,13 @@
 
 #ifndef _DIRENT_H_
 #define _DIRENT_H_
+
+/*
+ * POSIX doesn't mandate this, but X/Open XPG 4.2 does.
+ */
+#ifndef _POSIX_SOURCE
+#include <sys/types.h>
+#endif
 
 /*
  * The kernel defines the format of directory entries returned by 

@@ -26,7 +26,10 @@
  */
 /*
  * HISTORY
- * $Log:	asm_macro.h,v $
+ * $Log: asm_macro.h,v $
+ * Revision 1.1.1.1  1995/10/18 10:54:22  deraadt
+ * initial 88k import; code by nivas and based on mach luna88k
+ *
  * Revision 2.2  93/01/26  18:07:26  danner
  * 	Created.
  * 	[93/01/24            jfriedl]

@@ -1,3 +1,5 @@
+/*	$OpenBSD: build.c,v 1.4 1997/11/05 19:47:11 deraadt Exp $	*/
+
 /*-
  * Copyright (c) 1990 The Regents of the University of California.
  * All rights reserved.
@@ -36,7 +38,7 @@
 
 #ifndef lint
 /*static char sccsid[] = "from: @(#)build.c	5.3 (Berkeley) 3/12/91";*/
-static char rcsid[] = "$Id: build.c,v 1.8 1995/06/27 00:28:17 jtc Exp $";
+static char rcsid[] = "$OpenBSD: build.c,v 1.4 1997/11/05 19:47:11 deraadt Exp $";
 #endif /* not lint */
 
 #include <sys/types.h>
@@ -47,6 +49,7 @@ static char rcsid[] = "$Id: build.c,v 1.8 1995/06/27 00:28:17 jtc Exp $";
 #include <dirent.h>
 #include <unistd.h>
 #include <ar.h>
+#include <limits.h>
 #include <ranlib.h>
 #include <stdio.h>
 #include <string.h>
@@ -222,6 +225,8 @@ symobj()
 	struct ranlib rn;
 	char hb[sizeof(struct ar_hdr) + 1], pad;
 	long ransize, size, stroff;
+	uid_t uid;
+	gid_t gid;
 
 	/* Rewind the archive, leaving the magic number. */
 	if (fseek(fp, (off_t)SARMAG, SEEK_SET) == (off_t)-1)
@@ -236,9 +241,20 @@ symobj()
 	} else
 		pad = '\0';
 
+	uid = getuid();
+	if (uid > USHRT_MAX) {
+		warnx("warning: uid %u truncated to %u", uid, USHRT_MAX);
+		uid = USHRT_MAX;
+	}
+	gid = getgid();
+	if (gid > USHRT_MAX) {
+		warnx("warning: gid %u truncated to %u", gid, USHRT_MAX);
+		gid = USHRT_MAX;
+	}
+
 	/* Put out the ranlib archive file header. */
 #define	DEFMODE	(S_IRUSR|S_IWUSR|S_IRGRP|S_IWGRP|S_IROTH|S_IWOTH)
-	(void)sprintf(hb, HDR2, RANLIBMAG, 0L, getuid(), getgid(),
+	(void)sprintf(hb, HDR2, RANLIBMAG, 0L, uid, gid,
 	    DEFMODE & ~umask(0), (off_t)ransize, ARFMAG);
 	if (!fwrite(hb, sizeof(struct ar_hdr), 1, fp))
 		error(tname);

@@ -30,35 +30,22 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-/*
- * $Header: /home/ap_sys/provos/arbeit/Photuris/RCS/errlog.h,v 1.1 1997/05/22 17:36:07 provos Exp $
- *
- * $Author: provos $
- *
- * $Log: errlog.h,v $
- * Revision 1.1  1997/05/22 17:36:07  provos
- * Initial revision
- *
- */
+#ifndef _ERRLOG_H_
+#define _ERRLOG_H_
 
+#undef EXTERN
 #ifdef _ERRLOG_C_
-
-#if __STDC__
-void crit_error __P((int, char *, ...));
-void log_error __P((int, char *, ...));
+#define EXTERN
 #else
-void crit_error(); 
-void log_error(); 
+#define EXTERN extern
 #endif
 
+#ifdef __STDC__
+EXTERN void crit_error __P((int, char *, ...));
+EXTERN void log_error __P((int, char *, ...));
 #else
-
-#if __STDC__
-extern void crit_error __P((int, char *, ...));
-extern void log_error __P((int, char *, ...));
-#else
-extern void crit_error();
-extern void log_error();
+EXTERN void crit_error();
+EXTERN void log_error();
 #endif
 
-#endif
+#endif /* _ERRLOG_H_ */

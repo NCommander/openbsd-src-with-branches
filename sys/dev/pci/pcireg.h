@@ -1,8 +1,9 @@
-/*	$NetBSD: pcireg.h,v 1.4 1995/07/27 00:29:02 mycroft Exp $	*/
+/*	$OpenBSD: pcireg.h,v 1.6 1998/02/03 19:42:05 deraadt Exp $	*/
+/*	$NetBSD: pcireg.h,v 1.11 1996/08/10 15:42:33 mycroft Exp $	*/
 
 /*
- * Copyright (c) 1995 Christopher G. Demetriou.  All rights reserved.
- * Copyright (c) 1994 Charles Hannum.  All rights reserved.
+ * Copyright (c) 1995, 1996 Christopher G. Demetriou.  All rights reserved.
+ * Copyright (c) 1994, 1996 Charles Hannum.  All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -29,6 +30,9 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+
+#ifndef _DEV_PCI_PCIREG_H_
+#define	_DEV_PCI_PCIREG_H_
 
 /*
  * Standardized PCI configuration information
@@ -120,6 +124,12 @@ typedef u_int8_t pci_revision_t;
 #define	PCI_CLASS_MULTIMEDIA			0x04
 #define	PCI_CLASS_MEMORY			0x05
 #define	PCI_CLASS_BRIDGE			0x06
+#define	PCI_CLASS_COMMUNICATIONS		0x07
+#define	PCI_CLASS_SYSTEM			0x08
+#define	PCI_CLASS_INPUT				0x09
+#define	PCI_CLASS_DOCK				0x0a
+#define	PCI_CLASS_PROCESSOR			0x0b
+#define	PCI_CLASS_SERIALBUS			0x0c
 #define	PCI_CLASS_UNDEFINED			0xff
 
 /* 0x00 prehistoric subclasses */
@@ -131,12 +141,14 @@ typedef u_int8_t pci_revision_t;
 #define	PCI_SUBCLASS_MASS_STORAGE_IDE		0x01
 #define	PCI_SUBCLASS_MASS_STORAGE_FLOPPY	0x02
 #define	PCI_SUBCLASS_MASS_STORAGE_IPI		0x03
+#define	PCI_SUBCLASS_MASS_STORAGE_RAID		0x04
 #define	PCI_SUBCLASS_MASS_STORAGE_MISC		0x80
 
 /* 0x02 network subclasses */
 #define	PCI_SUBCLASS_NETWORK_ETHERNET		0x00
 #define	PCI_SUBCLASS_NETWORK_TOKENRING		0x01
 #define	PCI_SUBCLASS_NETWORK_FDDI		0x02
+#define	PCI_SUBCLASS_NETWORK_ATM		0x03
 #define	PCI_SUBCLASS_NETWORK_MISC		0x80
 
 /* 0x03 display subclasses */
@@ -161,27 +173,111 @@ typedef u_int8_t pci_revision_t;
 #define	PCI_SUBCLASS_BRIDGE_MC			0x03
 #define	PCI_SUBCLASS_BRIDGE_PCI			0x04
 #define	PCI_SUBCLASS_BRIDGE_PCMCIA		0x05
+#define	PCI_SUBCLASS_BRIDGE_NUBUS		0x06
+#define	PCI_SUBCLASS_BRIDGE_CARDBUS		0x07
 #define	PCI_SUBCLASS_BRIDGE_MISC		0x80
+
+/* 0x07 communications subclasses */
+#define	PCI_SUBCLASS_COMMUNICATIONS_SERIAL	0x00
+#define	PCI_SUBCLASS_COMMUNICATIONS_PARALLEL	0x01
+#define	PCI_SUBCLASS_COMMUNICATIONS_MISC	0x80
+
+/* 0x08 system subclasses */
+#define	PCI_SUBCLASS_SYSTEM_PIC			0x00
+#define	PCI_SUBCLASS_SYSTEM_DMA			0x01
+#define	PCI_SUBCLASS_SYSTEM_TIMER		0x02
+#define	PCI_SUBCLASS_SYSTEM_RTC			0x03
+#define	PCI_SUBCLASS_SYSTEM_MISC		0x80
+
+/* 0x09 input subclasses */
+#define	PCI_SUBCLASS_INPUT_KEYBOARD		0x00
+#define	PCI_SUBCLASS_INPUT_DIGITIZER		0x01
+#define	PCI_SUBCLASS_INPUT_MOUSE		0x02
+#define	PCI_SUBCLASS_INPUT_MISC			0x80
+
+/* 0x0a dock subclasses */
+#define	PCI_SUBCLASS_DOCK_GENERIC		0x00
+#define	PCI_SUBCLASS_DOCK_MISC			0x80
+
+/* 0x0b processor subclasses */
+#define	PCI_SUBCLASS_PROCESSOR_386		0x00
+#define	PCI_SUBCLASS_PROCESSOR_486		0x01
+#define	PCI_SUBCLASS_PROCESSOR_PENTIUM		0x02
+#define	PCI_SUBCLASS_PROCESSOR_ALPHA		0x10
+#define	PCI_SUBCLASS_PROCESSOR_POWERPC		0x20
+#define	PCI_SUBCLASS_PROCESSOR_COPROC		0x40
+
+/* 0x0c serial bus subclasses */
+#define	PCI_SUBCLASS_SERIALBUS_FIREWIRE		0x00
+#define	PCI_SUBCLASS_SERIALBUS_ACCESS		0x01
+#define	PCI_SUBCLASS_SERIALBUS_SSA		0x02
+#define	PCI_SUBCLASS_SERIALBUS_USB		0x03
+#define	PCI_SUBCLASS_SERIALBUS_FIBER		0x04
+
+/*
+ * PCI BIST/Header Type/Latency Timer/Cache Line Size Register.
+ */
+#define	PCI_BHLC_REG			0x0c
+
+#define	PCI_BIST_SHIFT				24
+#define	PCI_BIST_MASK				0xff
+#define	PCI_BIST(bhlcr) \
+	    (((bhlcr) >> PCI_BIST_SHIFT) & PCI_BIST_MASK)
+
+#define	PCI_HDRTYPE_SHIFT			24
+#define	PCI_HDRTYPE_MASK			0xff
+#define	PCI_HDRTYPE(bhlcr) \
+	    (((bhlcr) >> PCI_HDRTYPE_SHIFT) & PCI_HDRTYPE_MASK)
+
+#define	PCI_HDRTYPE_MULTIFN(bhlcr) \
+	    ((PCI_HDRTYPE(bhlcr) & 0x80) != 0)
+
+#define	PCI_LATTIMER_SHIFT			24
+#define	PCI_LATTIMER_MASK			0xff
+#define	PCI_LATTIMER(bhlcr) \
+	    (((bhlcr) >> PCI_LATTIMER_SHIFT) & PCI_LATTIMER_MASK)
+
+#define	PCI_CACHELINE_SHIFT			24
+#define	PCI_CACHELINE_MASK			0xff
+#define	PCI_CACHELINE(bhlcr) \
+	    (((bhlcr) >> PCI_CACHELINE_SHIFT) & PCI_CACHELINE_MASK)
 
 /*
  * Mapping registers
- * XXX ADJUST
  */
-#define	PCI_MAP_REG_START		0x10
-#define	PCI_MAP_REG_END			0x28
+#define	PCI_MAPREG_START		0x10
+#define	PCI_MAPREG_END			0x28
 
-#define	PCI_MAP_MEMORY				0x00000000
+#define	PCI_MAPREG_TYPE(mr)						\
+	    ((mr) & PCI_MAPREG_TYPE_MASK)
+#define	PCI_MAPREG_TYPE_MASK			0x00000001
 
-#define	PCI_MAP_MEMORY_TYPE_32BIT		0x00000000
-#define	PCI_MAP_MEMORY_TYPE_32BIT_1M		0x00000002
-#define	PCI_MAP_MEMORY_TYPE_64BIT		0x00000004
-#define	PCI_MAP_MEMORY_TYPE_MASK		0x00000006
-#define	PCI_MAP_MEMORY_CACHABLE			0x00000008
-#define	PCI_MAP_MEMORY_ADDRESS_MASK		0xfffffff0
+#define	PCI_MAPREG_TYPE_MEM			0x00000000
+#define	PCI_MAPREG_TYPE_IO			0x00000001
 
-#define	PCI_MAP_IO				0x00000001
+#define	PCI_MAPREG_MEM_TYPE(mr)						\
+	    ((mr) & PCI_MAPREG_MEM_TYPE_MASK)
+#define	PCI_MAPREG_MEM_TYPE_MASK		0x00000006
 
-#define	PCI_MAP_IO_ADDRESS_MASK			0xfffffffe
+#define	PCI_MAPREG_MEM_TYPE_32BIT		0x00000000
+#define	PCI_MAPREG_MEM_TYPE_32BIT_1M		0x00000002
+#define	PCI_MAPREG_MEM_TYPE_64BIT		0x00000004
+
+#define	PCI_MAPREG_MEM_CACHEABLE(mr)					\
+	    (((mr) & PCI_MAPREG_MEM_CACHEABLE_MASK) != 0)
+#define	PCI_MAPREG_MEM_CACHEABLE_MASK		0x00000008
+
+#define	PCI_MAPREG_MEM_ADDR(mr)						\
+	    ((mr) & PCI_MAPREG_MEM_ADDR_MASK)
+#define	PCI_MAPREG_MEM_SIZE(mr)						\
+	    (PCI_MAPREG_MEM_ADDR(mr) & -PCI_MAPREG_MEM_ADDR(mr))
+#define	PCI_MAPREG_MEM_ADDR_MASK		0xfffffff0
+
+#define	PCI_MAPREG_IO_ADDR(mr)						\
+	    ((mr) & PCI_MAPREG_IO_ADDR_MASK)
+#define	PCI_MAPREG_IO_SIZE(mr)						\
+	    (PCI_MAPREG_IO_ADDR(mr) & -PCI_MAPREG_IO_ADDR(mr))
+#define	PCI_MAPREG_IO_ADDR_MASK			0xfffffffe
 
 /*
  * Interrupt Configuration Register; contains interrupt pin and line.
@@ -206,3 +302,5 @@ typedef u_int8_t pci_intr_line_t;
 #define	PCI_INTERRUPT_PIN_B			0x02
 #define	PCI_INTERRUPT_PIN_C			0x03
 #define	PCI_INTERRUPT_PIN_D			0x04
+
+#endif /* _DEV_PCI_PCIREG_H_ */

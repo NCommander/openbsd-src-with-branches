@@ -1,3 +1,5 @@
+/*	$OpenBSD: print.c,v 1.4 1997/07/25 21:05:26 mickey Exp $	*/
+
 /*
  * print.c - debugging printout routines
  *
@@ -28,7 +30,7 @@
 #include <stdio.h>
 #include <errno.h>
 #include <string.h>
-#if __STDC__
+#ifdef __STDC__
 # include <stdarg.h>
 #else
 # include <varargs.h>
@@ -39,8 +41,7 @@
 #include "file.h"
 
 #ifndef lint
-static char *moduleid =
-	"@(#)$Id: print.c,v 1.8 1995/04/30 19:39:40 christos Exp $";
+static char *moduleid = "$OpenBSD: print.c,v 1.4 1997/07/25 21:05:26 mickey Exp $";
 #endif  /* lint */
 
 #define SZOF(a)	(sizeof(a) / sizeof(a[0]))
@@ -58,7 +59,7 @@ struct magic *m;
 		       m->offset);
 
 	if (m->flag & INDIR)
-		(void) fprintf(stderr, "(%s,%ld),",
+		(void) fprintf(stderr, "(%s,%d),",
 			       (m->in.type >= 0 && m->in.type < SZOF(typ)) ? 
 					typ[(unsigned char) m->in.type] :
 					"*bad*",
@@ -68,8 +69,8 @@ struct magic *m;
 		       (m->type >= 0 && m->type < SZOF(typ)) ? 
 				typ[(unsigned char) m->type] : 
 				"*bad*");
-	if (m->mask != ~0L)
-		(void) fprintf(stderr, " & %.8lx", m->mask);
+	if (m->mask != ~0)
+		(void) fprintf(stderr, " & %.8x", m->mask);
 
 	(void) fprintf(stderr, ",%c", m->reln);
 
@@ -82,7 +83,7 @@ struct magic *m;
 	    case LELONG:
 	    case BESHORT:
 	    case BELONG:
-		    (void) fprintf(stderr, "%ld", m->value.l);
+		    (void) fprintf(stderr, "%d", m->value.l);
 		    break;
 	    case STRING:
 		    showstr(stderr, m->value.s, -1);
@@ -122,7 +123,7 @@ ckfputs(str, fil)
 
 /*VARARGS*/
 void
-#if __STDC__
+#ifdef __STDC__
 ckfprintf(FILE *f, const char *fmt, ...)
 #else
 ckfprintf(va_alist)
@@ -130,7 +131,7 @@ ckfprintf(va_alist)
 #endif
 {
 	va_list va;
-#if __STDC__
+#ifdef __STDC__
 	va_start(va, fmt);
 #else
 	FILE *f;
@@ -150,7 +151,7 @@ ckfprintf(va_alist)
  */
 /*VARARGS*/
 void
-#if __STDC__
+#ifdef __STDC__
 error(const char *f, ...)
 #else
 error(va_alist)
@@ -158,7 +159,7 @@ error(va_alist)
 #endif
 {
 	va_list va;
-#if __STDC__
+#ifdef __STDC__
 	va_start(va, f);
 #else
 	const char *f;
@@ -177,7 +178,7 @@ error(va_alist)
 
 /*VARARGS*/
 void
-#if __STDC__
+#ifdef __STDC__
 magwarn(const char *f, ...)
 #else
 magwarn(va_alist)
@@ -185,7 +186,7 @@ magwarn(va_alist)
 #endif
 {
 	va_list va;
-#if __STDC__
+#ifdef __STDC__
 	va_start(va, f);
 #else
 	const char *f;

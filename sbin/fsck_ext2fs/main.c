@@ -1,8 +1,8 @@
-/*	$NetBSD: main.c,v 1.23 1996/10/22 16:35:04 christos Exp $	*/
-
-/* Modified for EXT2FS on NetBSD by Manuel Bouyer, April 1997 */
+/*	$OpenBSD: main.c,v 1.3 1997/06/14 04:16:53 downsj Exp $	*/
+/*	$NetBSD: main.c,v 1.1 1997/06/11 11:21:50 bouyer Exp $	*/
 
 /*
+ * Copyright (c) 1997 Manuel Bouyer.
  * Copyright (c) 1980, 1986, 1993
  *	The Regents of the University of California.  All rights reserved.
  *
@@ -45,7 +45,11 @@ static char copyright[] =
 #if 0
 static char sccsid[] = "@(#)main.c	8.2 (Berkeley) 1/23/94";
 #else
-static char rcsid[] = "$NetBSD: main.c,v 1.23 1996/10/22 16:35:04 christos Exp $";
+#if 0
+static char rcsid[] = "$NetBSD: main.c,v 1.1 1997/06/11 11:21:50 bouyer Exp $";
+#else
+static char rcsid[] = "$OpenBSD: main.c,v 1.3 1997/06/14 04:16:53 downsj Exp $";
+#endif
 #endif
 #endif /* not lint */
 
@@ -284,9 +288,9 @@ checkfilesys(filesys, mntpt, auxdata, child)
 			printf("\n");
 		}
 	}
-	zlnhead = (struct zlncnt *)0;
-	duplist = (struct dups *)0;
-	muldup = (struct dups *)0;
+	zlnhead = NULL;
+	duplist = NULL;
+	muldup = NULL;
 	inocleanup();
 	if (fsmodified) {
 		time_t t;

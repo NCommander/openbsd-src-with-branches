@@ -44,7 +44,7 @@ void	fatal __P((char *));
 int	ftpd_pclose __P((FILE *));
 FILE   *ftpd_popen __P((char *, char *));
 char   *getline __P((char *, int, FILE *));
-void	logwtmp __P((char *, char *, char *));
+void	ftpdlogwtmp __P((char *, char *, char *));
 void	lreply __P((int, const char *, ...));
 void	makedir __P((char *));
 void	nack __P((char *));
@@ -65,3 +65,6 @@ void	store __P((char *, char *, int));
 void	upper __P((char *));
 void	user __P((char *));
 void	yyerror __P((char *));
+void	toolong __P((int));
+
+int	yyparse __P((void));

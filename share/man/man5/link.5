@@ -1,4 +1,4 @@
-.\"	$NetBSD: link.5,v 1.4 1995/09/30 21:28:19 pk Exp $
+.\"	$NetBSD: link.5,v 1.5 1996/01/09 00:14:32 pk Exp $
 .\"
 .\" Copyright (c) 1993 Paul Kranenburg
 .\" All rights reserved.
@@ -122,7 +122,7 @@ implementation. The current version numbers understood by ld and ld.so are
 .Em LD_VERSION_SUN (3),
 which is used by the SunOS 4.x releases, and
 .Em LD_VERSION_BSD (8),
-which is currently in use by NetBSD.
+which is currently in use by OpenBSD.
 .It Fa d_un
 Refers to a
 .Em d_version
@@ -423,7 +423,7 @@ run under control of a debugger.
 .It Fa dd_sym_loaded
 Set by the run-time linker whenever it adds symbols by loading shared objects.
 .It Fa dd_bpt_addr
-The address were a breakpoint will be set by the the run-time linker to
+The address were a breakpoint will be set by the run-time linker to
 divert control to the debugger. This address is determined by the start-up
 module,
 .Em crt0.o,
@@ -479,7 +479,7 @@ The virtual address at which ld.so was loaded by crt0.
 .It Fa crt_dzfd
 On SunOS systems, this field contains an open file descriptor to
 .Dq /dev/zero
-used to get demand paged zeroed pages. On NetBSD systems it contains -1.
+used to get demand paged zeroed pages. On OpenBSD systems it contains -1.
 .It Fa crt_ldfd
 Contains an open file descriptor that was used by crt0 to load ld.so.
 .It Fa crt_dp
@@ -521,11 +521,13 @@ struct hints_header {
 #define HH_MAGIC	011421044151
 	long		hh_version;
 #define LD_HINTS_VERSION_1	1
+#define LD_HINTS_VERSION_2	2
 	long		hh_hashtab;
 	long		hh_nbucket;
 	long		hh_strtab;
 	long		hh_strtab_sz;
 	long		hh_ehints;
+	long		hh_dirlist;
 };
 .Ed
 .Bl -tag -width hh_strtab_sz
@@ -541,6 +543,13 @@ Offset of string table.
 Size of strings.
 .It Fa hh_ehints
 Maximum usable offset in hints file.
+.It Fa hh_dirlist
+Offset in string table of a colon-separated list of directories that was
+used in constructing the hints file. See also
+.Xr ldconfig 8 .
+This field is only available with interface version number
+.Dv LD_HINTS_VERSION_2
+and higher.
 .El
 .Pp
 .Bd -literal -offset indent

@@ -1,4 +1,5 @@
-/*	$NetBSD: locore.s,v 1.33 1995/10/10 21:35:42 gwr Exp $	*/
+/*	$OpenBSD: locore.s,v 1.17 1997/02/20 06:30:03 kstailey Exp $	*/
+/*	$NetBSD: locore.s,v 1.40 1996/11/06 20:19:54 cgd Exp $	*/
 
 /*
  * Copyright (c) 1994, 1995 Gordon W. Ross
@@ -43,7 +44,7 @@
  *	@(#)locore.s	8.6 (Berkeley) 5/27/94
  */
 
-#include "assym.s"
+#include "assym.h"
 #include <machine/trap.h>
 
 | Remember this is a fun project.  (Thanks, Adam.  I try! 8^)
@@ -91,7 +92,6 @@ L_per_pmeg:
 
 | Kernel is now double mapped at zero and KERNBASE.
 | Force a long jump to the relocated code (high VA).
-
 	movl	#IC_CLEAR, d0		| Flush the I-cache
 	movc	d0, cacr
 	jmp L_high_code:l		| long jump
@@ -246,12 +246,12 @@ Lbe10:
 
 /*
  * the sun3 specific code
- *	
+ *
  * our mission: figure out whether what we are looking at is
  *              bus error in the UNIX sense, or
  *	        a memory error i.e a page fault
  *
- * [this code replaces similarly mmu specific code in the hp300 code]	
+ * [this code replaces similarly mmu specific code in the hp300 code]
  */
 sun3_mmu_specific:
 	clrl d0				| make sure top bits are cleard too
@@ -421,6 +421,9 @@ _badtrap:
 	addql	#4, sp			| stack adjust count
 	jra	rei			| all done
 
+/*
+ * Trap 0 is for system calls
+ */
 	.globl	_syscall
 _trap0:
 	clrl	sp@-			| stack adjust count
@@ -437,69 +440,16 @@ _trap0:
 	jra	rei			| all done
 
 /*
- * Our native 4.3 implementation uses trap 1 as sigreturn() and trap 2
- * as a breakpoint trap.
+ * Trap 1 is either:
+ * sigreturn (native OpenBSD executable)
+ * breakpoint (HPUX executable)
  */
 _trap1:
-	jra	sigreturn
-
-_trap2:
-	jra	_trace
-
-/*
- * Trap 12 is the entry point for the cachectl "syscall"
- *	cachectl(command, addr, length)
- * command in d0, addr in a1, length in d1
- */
-	.globl	_cachectl
-_trap12:
-	movl	d1,sp@-			| push length
-	movl	a1,sp@-			| push addr
-	movl	d0,sp@-			| push command
-	jbsr	_cachectl		| do it
-	lea	sp@(12),sp		| pop args
-	jra	rei			| all done
-
-/*
- * Trap 15 is used for:
- *	- KGDB traps
- *	- trace traps for SUN binaries (not fully supported yet)
- * We just pass it on and let trap() sort it all out
- */
-_trap15:
-	clrl	sp@-
-	moveml	#0xFFFF,sp@-
-#ifdef KGDB
-	moveq	#T_TRAP15,d0
-	movw	sp@(FR_HW),d1		| get PSW
-	andw	#PSL_S,d1		| from user mode?
-	jeq	fault			| yes, just a regular fault
-	movl	d0,sp@-
-	.globl	_kgdb_trap_glue
-	jbsr	_kgdb_trap_glue		| returns if no debugger
-	addl	#4,sp
+#if 0 /* COMPAT_HPUX */
+	/* If process is HPUX, this is a user breakpoint. */
+	jne	trap15			| breakpoint
 #endif
-	moveq	#T_TRAP15,d0
-	jra	fault
-
-/*
- * Hit a breakpoint (trap 1 or 2) instruction.
- * Push the code and treat as a normal fault.
- */
-_trace:
-	clrl	sp@-
-	moveml	#0xFFFF,sp@-
-#ifdef KGDB
-	moveq	#T_TRACE,d0
-	movw	sp@(FR_HW),d1		| get SSW
-	andw	#PSL_S,d1		| from user mode?
-	jeq	fault			| no, regular fault
-	movl	d0,sp@-
-	jbsr	_kgdb_trap_glue		| returns if no debugger
-	addl	#4,sp
-#endif
-	moveq	#T_TRACE,d0
-	jra	fault
+	/* fall into sigreturn */
 
 /*
  * The sigreturn() syscall comes here.  It requires special handling
@@ -539,8 +489,135 @@ Lsigr1:
 	jra	rei			| all done
 
 /*
+ * Trap 2 is one of:
+ * OpenBSD: not used (ignore)
+ * SunOS:  Some obscure FPU operation
+ * HPUX:   sigreturn
+ */
+_trap2:
+#if 0 /* COMPAT_HPUX */
+	/* XXX:	If HPUX, this is a user breakpoint. */
+	jne	sigreturn
+#endif
+	/* fall into trace (OpenBSD or SunOS) */
+
+/*
+ * Trace (single-step) trap.  Kernel-mode is special.
+ * User mode traps are simply passed on to trap().
+ */
+_trace:
+	clrl	sp@-			| stack adjust count
+	moveml	#0xFFFF,sp@-
+	moveq	#T_TRACE,d0
+	movw	sp@(FR_HW),d1		| get PSW
+	andw	#PSL_S,d1		| from system mode?
+	jne	kbrkpt			| yes, kernel breakpoint
+	jra	fault			| no, user-mode fault
+
+/*
+ * Trap 15 is used for:
+ *	- GDB breakpoints (in user programs)
+ *	- KGDB breakpoints (in the kernel)
+ *	- trace traps for SUN binaries (not fully supported yet)
+ * User mode traps are passed simply passed to trap()
+ */
+_trap15:
+	clrl	sp@-			| stack adjust count
+	moveml	#0xFFFF,sp@-
+	moveq	#T_TRAP15,d0
+	movw	sp@(FR_HW),d1		| get PSW
+	andw	#PSL_S,d1		| from system mode?
+	jne	kbrkpt			| yes, kernel breakpoint
+	jra	fault			| no, user-mode fault
+
+kbrkpt:	| Kernel-mode breakpoint or trace trap. (d0=trap_type)
+	| Save the system sp rather than the user sp.
+	movw	#PSL_HIGHIPL,sr		| lock out interrupts
+	lea	sp@(FR_SIZE),a6		| Save stack pointer
+	movl	a6,sp@(FR_SP)		|  from before trap
+
+	| If we are not on tmpstk switch to it.
+	| (so debugger can change the stack pointer)
+	movl	a6,d1
+	cmpl	#tmpstk,d1
+	jls	Lbrkpt2 		| already on tmpstk
+	| Copy frame to the temporary stack
+	movl	sp,a0			| a0=src
+	lea	tmpstk-96,a1		| a1=dst
+	movl	a1,sp			| sp=new frame
+	moveq	#FR_SIZE,d1
+Lbrkpt1:
+	movl	a0@+,a1@+
+	subql	#4,d1
+	bgt	Lbrkpt1
+
+Lbrkpt2:
+	| Call the trap handler for the kernel debugger.
+	| Do not call trap() to do it, so that we can
+	| set breakpoints in trap() if we want.  We know
+	| the trap type is either T_TRACE or T_BREAKPOINT.
+	| If we have both DDB and KGDB, let KGDB see it first,
+	| because KGDB will just return 0 if not connected.
+	| Save args in d2, a2
+	movl	d0,d2			| trap type
+	movl	sp,a2			| frame ptr
+#ifdef	KGDB
+	| Let KGDB handle it (if connected)
+	movl	a2,sp@-			| push frame ptr
+	movl	d2,sp@-			| push trap type
+	jbsr	_kgdb_trap		| handle the trap
+	addql	#8,sp			| pop args
+	cmpl	#0,d0			| did kgdb handle it
+	jne	Lbrkpt3			| yes, done
+#endif
+#ifdef	DDB
+	| Let DDB handle it.
+	movl	a2,sp@-			| push frame ptr
+	movl	d2,sp@-			| push trap type
+	jbsr	_kdb_trap		| handle the trap
+	addql	#8,sp			| pop args
+	cmpl	#0,d0			| did ddb handle it
+	jne	Lbrkpt3			| yes, done
+#endif
+	| Drop into the PROM temporarily...
+	movl	a2,sp@-			| push frame ptr
+	movl	d2,sp@-			| push trap type
+	jbsr	_nodb_trap		| handle the trap
+	addql	#8,sp			| pop args
+Lbrkpt3:
+	| The stack pointer may have been modified, or
+	| data below it modified (by kgdb push call),
+	| so push the hardware frame at the current sp
+	| before restoring registers and returning.
+
+	movl	sp@(FR_SP),a0		| modified sp
+	lea	sp@(FR_SIZE),a1		| end of our frame
+	movl	a1@-,a0@-		| copy 2 longs with
+	movl	a1@-,a0@-		| ... predecrement
+	movl	a0,sp@(FR_SP)		| sp = h/w frame
+	moveml	sp@+,#0x7FFF		| restore all but sp
+	movl	sp@,sp			| ... and sp
+	rte				| all done
+
+/*
+ * Trap 12 is the entry point for the cachectl "syscall"
+ *	cachectl(command, addr, length)
+ * command in d0, addr in a1, length in d1
+ */
+	.globl	_cachectl
+_trap12:
+	movl	d1,sp@-			| push length
+	movl	a1,sp@-			| push addr
+	movl	d0,sp@-			| push command
+	jbsr	_cachectl		| do it
+	lea	sp@(12),sp		| pop args
+	jra	rei			| all done
+
+/*
  * Interrupt handlers.  Most are auto-vectored,
  * and hard-wired the same way on all sun3 models.
+ * Format in the stack is:
+ *   d0,d1,a0,a1, sr, pc, vo
  */
 
 #define INTERRUPT_SAVEREG \
@@ -585,8 +662,8 @@ __isr_clock:
 	jra	rei
 
 | Handler for all vectored interrupts (i.e. VME interrupts)
-	.globl	_isr_vectored
-	.globl	__isr_vectored
+	.align	2
+	.globl	__isr_vectored, _isr_vectored
 __isr_vectored:
 	INTERRUPT_SAVEREG
 	movw	sp@(22),sp@-		| push exception vector info
@@ -694,7 +771,7 @@ Ldorte:
  * Stack looks like:
  *
  *	sp+0 ->	signal number
- *	sp+4	signal specific code
+ *	sp+4	pointer to siginfo (sip)
  *	sp+8	pointer to signal context frame (scp)
  *	sp+12	address of handler
  *	sp+16	saved hardware state
@@ -723,8 +800,6 @@ _esigcode:
  * Primitives
  */
 #include <machine/asm.h>
-
-/* XXX copypage(fromaddr, toaddr) */
 
 /*
  * non-local gotos
@@ -796,11 +871,11 @@ Lset2:
 #endif
 
 /*
- * remrq(p)
+ * remrunqueue(p)
  *
  * Call should be made at splclock().
  */
-ENTRY(remrq)
+ENTRY(remrunqueue)
 	movl	sp@(4),a0		| proc *p
 	clrl	d0
 	movb	a0@(P_PRIORITY),d0
@@ -829,8 +904,8 @@ Lrem2:
 	movl	#Lrem3,sp@-
 	jbsr	_panic
 Lrem3:
-	.asciz	"remrq"
-
+	.asciz	"remrunqueue"
+	.even
 
 | Message for Lbadsw panic
 Lsw0:
@@ -897,7 +972,7 @@ Lbadsw:
 
 /*
  * cpu_switch()
- * Hacked for sun3	
+ * Hacked for sun3
  * XXX - Arg 1 is a proc pointer (curproc) but this doesn't use it.
  * XXX - Sould we use p->p_addr instead of curpcb? -gwr
  */
@@ -959,7 +1034,7 @@ Lsw2:
 	movl	a0,_curproc
 	clrl	_want_resched
 #ifdef notyet
-	movl	sp@+,a1
+	movl	sp@+,a1			| XXX - Make this work!
 	cmpl	a0,a1			| switching to same proc?
 	jeq	Lswdone			| yes, skip save and restore
 #endif
@@ -971,7 +1046,7 @@ Lsw2:
 	movl	usp,a2			| grab USP (a2 has been saved)
 	movl	a2,a1@(PCB_USP)		| and save it
 
-	tstl	_fpu_type		| Do we have an fpu?
+	tstl	_fputype		| Do we have an fpu?
 	jeq	Lswnofpsave		| No?  Then don't try save.
 	lea	a1@(PCB_FPCTX),a2	| pointer to FP save area
 	fsave	a2@			| save FP state
@@ -980,6 +1055,13 @@ Lsw2:
 	fmovem	fp0-fp7,a2@(FPF_REGS)		| save FP general regs
 	fmovem	fpcr/fpsr/fpi,a2@(FPF_FPCR)	| save FP control regs
 Lswnofpsave:
+
+	/*
+	 * Now that we have saved all the registers that must be
+	 * preserved, we are free to use those registers until
+	 * we load the registers for the switched-to process.
+	 * In this section, keep:  a0=curproc, a1=curpcb
+	 */
 
 #ifdef DIAGNOSTIC
 	tstl	a0@(P_WCHAN)
@@ -990,34 +1072,33 @@ Lswnofpsave:
 	clrl	a0@(P_BACK)		| clear back link
 	movl	a0@(P_ADDR),a1		| get p_addr
 	movl	a1,_curpcb
-	movb	a0@(P_MDFLAG+3),mdpflag	| low byte of p_md.md_flags
 
 	/* see if pmap_activate needs to be called; should remove this */
-	movl	a0@(P_VMSPACE),a0	| vmspace = p->p_vmspace
+	movl	a0@(P_VMSPACE),a2	| a2 = p->p_vmspace
 #ifdef DIAGNOSTIC
-	tstl	a0			| map == VM_MAP_NULL?
+	tstl	a2			| map == VM_MAP_NULL?
 	jeq	Lbadsw			| panic
 #endif
 
 | Important note:  We MUST call pmap_activate to set the
 | MMU context register (like setting a root table pointer).
-	lea	a0@(VM_PMAP),a0		| pmap = &vmspace.vm_pmap
-	pea	a1@			| push pcb (at p_addr)
-	pea	a0@			| push pmap
-	jbsr	_pmap_activate		| pmap_activate(pmap, pcb)
-	addql	#8,sp
+| XXX - Eventually, want to do that here, inline.
+	lea	a2@(VM_PMAP),a2		| pmap = &vmspace.vm_pmap
+	pea	a2@			| push pmap
+	jbsr	_pmap_activate		| pmap_activate(pmap)
+	addql	#4,sp
 	movl	_curpcb,a1		| restore p_addr
+| Note: pmap_activate will clear the cache if needed.
 
-| XXX - Should do this in pmap_activeate only if context reg changed.
-	movl	#IC_CLEAR,d0
-	movc	d0,cacr
-
-Lcxswdone:
+	/*
+	 * Reload the registers for the new process.
+	 * After this point we can only use d0,d1,a0,a1
+	 */
 	moveml	a1@(PCB_REGS),#0xFCFC	| reload registers
 	movl	a1@(PCB_USP),a0
 	movl	a0,usp			| and USP
 
-	tstl	_fpu_type		| If we don't have an fpu,
+	tstl	_fputype		| If we don't have an fpu,
 	jeq	Lres_skip		|  don't try to restore it.
 	lea	a1@(PCB_FPCTX),a0	| pointer to FP save area
 	tstb	a0@			| null state frame?
@@ -1047,7 +1128,7 @@ ENTRY(savectx)
 	movl	a0,a1@(PCB_USP)		| and save it
 	moveml	#0xFCFC,a1@(PCB_REGS)	| save non-scratch registers
 
-	tstl	_fpu_type		| Do we have FPU?
+	tstl	_fputype		| Do we have FPU?
 	jeq	Lsavedone		| No?  Then don't save state.
 	lea	a1@(PCB_FPCTX),a0	| pointer to FP save area
 	fsave	a0@			| save FP state
@@ -1078,8 +1159,8 @@ ENTRY(ICIA)
 ENTRY(DCIU)
 	rts
 
-/* ICPL, ICPP, DCPL, DCPP, DCPA, DCFL, DCFP, PCIA */
-/* ecacheon, ecacheoff */
+/* ICPL, ICPP, DCPL, DCPP, DCPA, DCFL, DCFP */
+/* PCIA, ecacheon, ecacheoff */
 
 /*
  * Get callers current SP value.
@@ -1158,85 +1239,7 @@ ENTRY(_remque)
 	rts
 
 /*
- * {ov}bcopy(from, to, len)
- * memcpy(to, from, len)
- *
- * Works for counts up to 128K.
- */
-ENTRY(memcpy)
-	movl	sp@(12),d0		| get count
-	jeq	Lcpyexit		| if zero, return
-	movl	sp@(8), a0		| src address
-	movl	sp@(4), a1		| dest address
-	jra	Ldocopy			| jump into bcopy
-ALTENTRY(ovbcopy, _bcopy)
-ENTRY(bcopy)
-	movl	sp@(12),d0		| get count
-	jeq	Lcpyexit		| if zero, return
-	movl	sp@(4),a0		| src address
-	movl	sp@(8),a1		| dest address
-Ldocopy:
-	cmpl	a1,a0			| src before dest?
-	jlt	Lcpyback		| yes, copy backwards (avoids overlap)
-	movl	a0,d1
-	btst	#0,d1			| src address odd?
-	jeq	Lcfeven			| no, go check dest
-	movb	a0@+,a1@+		| yes, copy a byte
-	subql	#1,d0			| update count
-	jeq	Lcpyexit		| exit if done
-Lcfeven:
-	movl	a1,d1
-	btst	#0,d1			| dest address odd?
-	jne	Lcfbyte			| yes, must copy by bytes
-	movl	d0,d1			| no, get count
-	lsrl	#2,d1			| convert to longwords
-	jeq	Lcfbyte			| no longwords, copy bytes
-	subql	#1,d1			| set up for dbf
-Lcflloop:
-	movl	a0@+,a1@+		| copy longwords
-	dbf	d1,Lcflloop		| til done
-	andl	#3,d0			| get remaining count
-	jeq	Lcpyexit		| done if none
-Lcfbyte:
-	subql	#1,d0			| set up for dbf
-Lcfbloop:
-	movb	a0@+,a1@+		| copy bytes
-	dbf	d0,Lcfbloop		| til done
-Lcpyexit:
-	rts
-Lcpyback:
-	addl	d0,a0			| add count to src
-	addl	d0,a1			| add count to dest
-	movl	a0,d1
-	btst	#0,d1			| src address odd?
-	jeq	Lcbeven			| no, go check dest
-	movb	a0@-,a1@-		| yes, copy a byte
-	subql	#1,d0			| update count
-	jeq	Lcpyexit		| exit if done
-Lcbeven:
-	movl	a1,d1
-	btst	#0,d1			| dest address odd?
-	jne	Lcbbyte			| yes, must copy by bytes
-	movl	d0,d1			| no, get count
-	lsrl	#2,d1			| convert to longwords
-	jeq	Lcbbyte			| no longwords, copy bytes
-	subql	#1,d1			| set up for dbf
-Lcblloop:
-	movl	a0@-,a1@-		| copy longwords
-	dbf	d1,Lcblloop		| til done
-	andl	#3,d0			| get remaining count
-	jeq	Lcpyexit		| done if none
-Lcbbyte:
-	subql	#1,d0			| set up for dbf
-Lcbbloop:
-	movb	a0@-,a1@-		| copy bytes
-	dbf	d0,Lcbbloop		| til done
-	rts
-
-/*
  * Save and restore 68881 state.
- * Pretty awful looking since our assembler does not
- * recognize FP mnemonics.
  */
 ENTRY(m68881_save)
 	movl	sp@(4),a0		| save area pointer
@@ -1258,26 +1261,23 @@ Lm68881rdone:
 	frestore a0@			| restore state
 	rts
 
-| delay(int usecs)
-| Delay for "usec" microseconds.  Minimum delay is about 5 uS.
-|
-| This routine depends on the variable "cpuspeed"
-| which should be set based on the CPU clock rate.
-| XXX - Currently this is set in sun3_startup.c based on the
-| CPU model but this should be determined at run time...
-|
-	.globl	_delay
-_delay:
-	| d0 = (cpuspeed * usecs)
-	movel	_cpuspeed,d0
-	mulsl	sp@(4),d0
-	| subtract some overhead
-	moveq	#80,d1
+/*
+ * _delay(unsigned N)
+ * Delay for at least (N/256) microseconds.
+ * This routine depends on the variable:  delay_divisor
+ * which should be set based on the CPU clock rate.
+ * XXX: Currently this is set in sun3_startup.c based on the
+ * XXX: CPU model but this should be determined at run time...
+ */
+	.globl	__delay
+__delay:
+	| d0 = arg = (usecs << 8)
+	movl	sp@(4),d0
+	| d1 = delay_divisor;
+	movl	_delay_divisor,d1
+L_delay:
 	subl	d1,d0
-| This loop takes 8 clocks per cycle.
-Ldelay:
-	subql	#8,d0
-	jgt	Ldelay
+	jgt	L_delay
 	rts
 
 

@@ -17,7 +17,7 @@
  * IMPLIED WARRANTIES, INCLUDING, WITHOUT LIMITATION, THE IMPLIED
  * WARRANTIES OF MERCHANTIBILITY AND FITNESS FOR A PARTICULAR PURPOSE.
  *
- * $Id: vjcomp.c,v 1.13 1997/11/22 03:37:54 brian Exp $
+ * $Id: vjcomp.c,v 1.3 1998/01/11 17:54:49 brian Exp $
  *
  *  TODO:
  */
@@ -32,7 +32,6 @@
 #include "command.h"
 #include "mbuf.h"
 #include "log.h"
-#include "defs.h"
 #include "timer.h"
 #include "fsm.h"
 #include "lcpproto.h"
@@ -43,7 +42,7 @@
 
 #define MAX_VJHEADER 16		/* Maximum size of compressed header */
 
-struct slcompress cslc;
+static struct slcompress cslc;
 
 void
 VjInit(int max_state)
@@ -55,14 +54,14 @@ void
 SendPppFrame(struct mbuf * bp)
 {
   int type;
-  int proto;
-  int cproto = IpcpInfo.his_compproto >> 16;
+  u_short proto;
+  u_short cproto = IpcpInfo.his_compproto >> 16;
 
   LogPrintf(LogDEBUG, "SendPppFrame: proto = %x\n", IpcpInfo.his_compproto);
   if (((struct ip *) MBUF_CTOP(bp))->ip_p == IPPROTO_TCP
       && cproto == PROTO_VJCOMP) {
-    type = sl_compress_tcp(bp, (struct ip *) MBUF_CTOP(bp), &cslc, IpcpInfo.his_compproto & 0xff);
-
+    type = sl_compress_tcp(bp, (struct ip *)MBUF_CTOP(bp), &cslc,
+                           IpcpInfo.his_compproto & 0xff);
     LogPrintf(LogDEBUG, "SendPppFrame: type = %x\n", type);
     switch (type) {
     case TYPE_IP:
@@ -103,7 +102,7 @@ VjUncompressTcp(struct mbuf * bp, u_char type)
     len = sl_uncompress_tcp(&bufp, len, type, &cslc);
     if (len <= 0) {
       pfree(bp);
-      bp = NULLBUFF;
+      bp = NULL;
     }
     return (bp);
   }
@@ -121,7 +120,7 @@ VjUncompressTcp(struct mbuf * bp, u_char type)
   len = sl_uncompress_tcp(&bufp, olen, type, &cslc);
   if (len <= 0) {
     pfree(bp);
-    return NULLBUFF;
+    return NULL;
   }
   len -= olen;
   len += rlen;
@@ -152,4 +151,14 @@ VjCompInput(struct mbuf * bp, int proto)
   }
   bp = VjUncompressTcp(bp, type);
   return (bp);
+}
+
+const char *
+vj2asc(u_int32_t val)
+{
+  static char asc[50];
+
+  sprintf(asc, "%d VJ slots %s slot compression",
+          (int)((val>>8)&15)+1, val & 1 ?  "with" : "without");
+  return asc;
 }

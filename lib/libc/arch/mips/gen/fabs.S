@@ -34,14 +34,12 @@
  * SUCH DAMAGE.
  */
 
-#include <machine/machAsmDefs.h>
+#include <machine/asm.h>
 
-#if defined(LIBC_SCCS) && !defined(lint)
-	ASMSTR("from: @(#)fabs.s	8.1 (Berkeley) 2/16/94")
-	ASMSTR("$Id: fabs.S,v 1.3 1994/12/15 17:24:47 mycroft Exp $")
-#endif /* LIBC_SCCS and not lint */
-
-	.set	noreorder
+#if defined(LIBC_SCCS) 
+	.text
+	.asciz "$OpenBSD$"
+#endif /* LIBC_SCCS */
 
 /*
  * fabs(x)
@@ -50,6 +48,7 @@
  * Return absolute value of x.
  */
 LEAF(fabs)
+	.set	noreorder
 	j	ra
 	abs.d	$f0, $f12		# compute absolute value of x
 END(fabs)

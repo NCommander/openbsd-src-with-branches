@@ -1,5 +1,3 @@
-/*	$NetBSD: rec_search.c,v 1.6 1995/02/27 13:25:17 cgd Exp $	*/
-
 /*-
  * Copyright (c) 1990, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -34,11 +32,7 @@
  */
 
 #if defined(LIBC_SCCS) && !defined(lint)
-#if 0
-static char sccsid[] = "@(#)rec_search.c	8.3 (Berkeley) 2/21/94";
-#else
-static char rcsid[] = "$NetBSD: rec_search.c,v 1.6 1995/02/27 13:25:17 cgd Exp $";
-#endif
+static char rcsid[] = "$OpenBSD: rec_search.c,v 1.3 1996/08/19 08:21:08 tholo Exp $";
 #endif /* LIBC_SCCS and not lint */
 
 #include <sys/types.h>
@@ -97,8 +91,7 @@ __rec_search(t, recno, op)
 			total += r->nrecs;
 		}
 
-		if (__bt_push(t, pg, index - 1) == RET_ERROR)
-			return (NULL);
+		BT_PUSH(t, pg, index - 1);
 		
 		pg = r->pgno;
 		switch (op) {
@@ -126,8 +119,8 @@ err:	sverrno = errno;
 				--GETRINTERNAL(h, parent->index)->nrecs;
 			else
 				++GETRINTERNAL(h, parent->index)->nrecs;
-                        mpool_put(t->bt_mp, h, MPOOL_DIRTY);
-                }
+			mpool_put(t->bt_mp, h, MPOOL_DIRTY);
+		}
 	errno = sverrno;
 	return (NULL);
 }

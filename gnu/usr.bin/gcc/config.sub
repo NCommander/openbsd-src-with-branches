@@ -487,6 +487,9 @@ case $basic_machine in
 	pentiumii-* | pentium2-*)
 		basic_machine=i786-`echo $basic_machine | sed 's/^[^-]*-//'`
 		;;
+	mips-arc-*)
+		basic_machine=mips-r4kle
+		;;
 	pn)
 		basic_machine=pn-gould
 		;;

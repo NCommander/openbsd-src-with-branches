@@ -1,4 +1,5 @@
-/*	$NetBSD: ufs_bmap.c,v 1.2 1994/06/29 06:47:24 cgd Exp $	*/
+/*	$OpenBSD: ufs_bmap.c,v 1.3 1996/10/18 14:51:15 mickey Exp $	*/
+/*	$NetBSD: ufs_bmap.c,v 1.3 1996/02/09 22:36:00 christos Exp $	*/
 
 /*
  * Copyright (c) 1989, 1991, 1993
@@ -41,6 +42,7 @@
  */
 
 #include <sys/param.h>
+#include <sys/systm.h>
 #include <sys/buf.h>
 #include <sys/proc.h>
 #include <sys/vnode.h>
@@ -61,15 +63,16 @@
  * number to index into the array of block pointers described by the dinode.
  */
 int
-ufs_bmap(ap)
+ufs_bmap(v)
+	void *v;
+{
 	struct vop_bmap_args /* {
 		struct vnode *a_vp;
 		daddr_t  a_bn;
 		struct vnode **a_vpp;
 		daddr_t *a_bnp;
 		int *a_runp;
-	} */ *ap;
-{
+	} */ *ap = v;
 	/*
 	 * Check for underlying vnode requests and ensure that logical
 	 * to physical mapping is requested.
@@ -114,13 +117,16 @@ ufs_bmaparray(vp, bn, bnp, ap, nump, runp)
 	struct indir a[NIADDR], *xap;
 	daddr_t daddr;
 	long metalbn;
-	int error, maxrun, num;
+#ifdef	TRACE
+	long size;
+#endif
+	int error, maxrun = 0, num;
 
 	ip = VTOI(vp);
 	mp = vp->v_mount;
 	ump = VFSTOUFS(mp);
 #ifdef DIAGNOSTIC
-	if (ap != NULL && nump == NULL || ap == NULL && nump != NULL)
+	if ((ap != NULL && nump == NULL) || (ap == NULL && nump != NULL))
 		panic("ufs_bmaparray: invalid arguments");
 #endif
 
@@ -138,24 +144,24 @@ ufs_bmaparray(vp, bn, bnp, ap, nump, runp)
 	xap = ap == NULL ? a : ap;
 	if (!nump)
 		nump = &num;
-	if (error = ufs_getlbns(vp, bn, xap, nump))
+	if ((error = ufs_getlbns(vp, bn, xap, nump)) != 0)
 		return (error);
 
 	num = *nump;
 	if (num == 0) {
-		*bnp = blkptrtodb(ump, ip->i_db[bn]);
+		*bnp = blkptrtodb(ump, ip->i_ffs_db[bn]);
 		if (*bnp == 0)
 			*bnp = -1;
 		else if (runp)
 			for (++bn; bn < NDADDR && *runp < maxrun &&
-			    is_sequential(ump, ip->i_db[bn - 1], ip->i_db[bn]);
+			    is_sequential(ump, ip->i_ffs_db[bn - 1], ip->i_ffs_db[bn]);
 			    ++bn, ++*runp);
 		return (0);
 	}
 
 
 	/* Get disk address out of indirect block array */
-	daddr = ip->i_ib[xap->in_off];
+	daddr = ip->i_ffs_ib[xap->in_off];
 
 	devvp = VFSTOUFS(vp->v_mount)->um_devvp;
 	for (bp = NULL, ++xap; --num; ++xap) {
@@ -166,7 +172,7 @@ ufs_bmaparray(vp, bn, bnp, ap, nump, runp)
 		 */
 
 		metalbn = xap->in_lbn;
-		if (daddr == 0 && !incore(vp, metalbn) || metalbn == bn)
+		if ((daddr == 0 && !incore(vp, metalbn)) || metalbn == bn)
 			break;
 		/*
 		 * If we get here, we've either got the block in the cache
@@ -190,7 +196,7 @@ ufs_bmaparray(vp, bn, bnp, ap, nump, runp)
 			bp->b_flags |= B_READ;
 			VOP_STRATEGY(bp);
 			curproc->p_stats->p_ru.ru_inblock++;	/* XXX */
-			if (error = biowait(bp)) {
+			if ((error = biowait(bp)) != 0) {
 				brelse(bp);
 				return (error);
 			}
@@ -218,7 +224,7 @@ ufs_bmaparray(vp, bn, bnp, ap, nump, runp)
  * contains the logical block number of the appropriate single, double or
  * triple indirect block and the offset into the inode indirect block array.
  * Note, the logical block number of the inode single/double/triple indirect
- * block appears twice in the array, once with the offset into the i_ib and
+ * block appears twice in the array, once with the offset into the i_ffs_ib and
  * once with the offset into the page itself.
  */
 int

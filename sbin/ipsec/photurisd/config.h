@@ -27,7 +27,7 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-/* $Id: config.h,v 1.2 1997/06/12 17:09:20 provos Exp provos $ */
+/* $Id: config.h,v 1.3 1997/07/23 12:28:47 provos Exp $ */
 /*
  * config.h: 
  * handling config
@@ -74,7 +74,7 @@
 #define EXTERN
 
 #ifndef DEBUG
-void reconfig(int sig, siginfo_t *sip, struct sigcontext *scp);
+void reconfig(int sig);
 #endif
 
 #else
@@ -99,6 +99,12 @@ void reconfig(int sig, siginfo_t *sip, struct sigcontext *scp);
 #define OPT_TSRC            "tsrc"
 #define OPT_TDST            "tdst"
 
+struct cfgx {
+     struct cfgx *next;
+     char *name;
+     int id;
+};
+
 EXTERN int bin2hex(char *, int *, u_int8_t *, u_int16_t);
 EXTERN char *chomp(char *);
 
@@ -106,11 +112,14 @@ EXTERN int init_moduli(int);
 EXTERN int init_schemes(void);
 EXTERN int init_attributes(void);
 EXTERN int init_times(void);
+EXTERN void startup_parse(struct stateob *st, char *line);
+EXTERN void startup_end(struct stateob *st);
 EXTERN int init_startup(void);
 EXTERN int init_signals(void);
 
 EXTERN int pick_scheme(u_int8_t **, u_int16_t *, u_int8_t *, u_int16_t);
 EXTERN int pick_attrib(struct stateob *, u_int8_t **, u_int16_t *);
+EXTERN int select_attrib(struct stateob *, u_int8_t **, u_int16_t *);
 
 #endif /* _CONFIG_H_ */
 

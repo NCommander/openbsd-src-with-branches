@@ -1,30 +1,35 @@
+/*	$OpenBSD$	*/
+
+/*-----------------------------------------------------------------------------+
+|           The ncurses menu library is  Copyright (C) 1995-1997               |
+|             by Juergen Pfeifer <Juergen.Pfeifer@T-Online.de>                 |
+|                          All Rights Reserved.                                |
+|                                                                              |
+| Permission to use, copy, modify, and distribute this software and its        |
+| documentation for any purpose and without fee is hereby granted, provided    |
+| that the above copyright notice appear in all copies and that both that      |
+| copyright notice and this permission notice appear in supporting             |
+| documentation, and that the name of the above listed copyright holder(s) not |
+| be used in advertising or publicity pertaining to distribution of the        |
+| software without specific, written prior permission.                         | 
+|                                                                              |
+| THE ABOVE LISTED COPYRIGHT HOLDER(S) DISCLAIM ALL WARRANTIES WITH REGARD TO  |
+| THIS SOFTWARE, INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY AND FIT-  |
+| NESS, IN NO EVENT SHALL THE ABOVE LISTED COPYRIGHT HOLDER(S) BE LIABLE FOR   |
+| ANY SPECIAL, INDIRECT OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RE- |
+| SULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, |
+| NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH    |
+| THE USE OR PERFORMANCE OF THIS SOFTWARE.                                     |
++-----------------------------------------------------------------------------*/
 
 /***************************************************************************
-*                            COPYRIGHT NOTICE                              *
-****************************************************************************
-*                ncurses is copyright (C) 1992-1995                        *
-*                          Zeyd M. Ben-Halim                               *
-*                          zmbenhal@netcom.com                             *
-*                          Eric S. Raymond                                 *
-*                          esr@snark.thyrsus.com                           *
-*                                                                          *
-*        Permission is hereby granted to reproduce and distribute ncurses  *
-*        by any means and for any fee, whether alone or as part of a       *
-*        larger distribution, in source or in binary form, PROVIDED        *
-*        this notice is included with any such distribution, and is not    *
-*        removed from any of its header files. Mention of ncurses in any   *
-*        applications linked with it is highly appreciated.                *
-*                                                                          *
-*        ncurses comes AS IS with no warranty, implied or expressed.       *
-*                                                                          *
-***************************************************************************/
-
-/***************************************************************************
-* Module menu_driver and menu_pattern                                      *
-* Central dispatching routine and pattern matching handling                *
+* Module m_driver                                                          *
+* Central dispatching routine                                              *
 ***************************************************************************/
 
 #include "menu.priv.h"
+
+MODULE_ID("Id: m_driver.c,v 1.9 1997/10/21 08:44:31 juergen Exp $")
 
 /* Macros */
 
@@ -75,7 +80,7 @@ static bool Is_Sub_String(
 
 /*---------------------------------------------------------------------------
 |   Facility      :  libnmenu  
-|   Function      :  static int Match_Next_Character_In_Item_Name(
+|   Function      :  int _nc_Match_Next_Character_In_Item_Name(
 |                           MENU *menu,
 |                           int  ch,
 |                           ITEM **item)
@@ -98,7 +103,7 @@ static bool Is_Sub_String(
 |   Return Values :  E_OK        - an item matching the pattern was found
 |                    E_NO_MATCH  - nothing found
 +--------------------------------------------------------------------------*/
-static int Match_Next_Character_In_Item_Name(MENU *menu, int ch, ITEM **item)
+int _nc_Match_Next_Character_In_Item_Name(MENU *menu, int ch, ITEM **item)
 {
   bool found = FALSE, passed = FALSE;
   int  idx, last;
@@ -172,81 +177,6 @@ static int Match_Next_Character_In_Item_Name(MENU *menu, int ch, ITEM **item)
     }		
   RETURN(E_NO_MATCH);
 }	
-
-/*---------------------------------------------------------------------------
-|   Facility      :  libnmenu  
-|   Function      :  char *menu_pattern(const MENU *menu)
-|   
-|   Description   :  Return the value of the pattern buffer.
-|
-|   Return Values :  NULL          - if there is no pattern buffer allocated
-|                    EmptyString   - if there is a pattern buffer but no
-|                                    pattern is stored
-|                    PatternString - as expected
-+--------------------------------------------------------------------------*/
-char *menu_pattern(const MENU * menu)
-{
-  return (menu ? (menu->pattern ? menu->pattern : "") : (char *)0);
-}
-
-/*---------------------------------------------------------------------------
-|   Facility      :  libnmenu  
-|   Function      :  int set_menu_pattern(MENU *menu, const char *p)
-|   
-|   Description   :  Set the match pattern for a menu and position to the
-|                    first item that matches.
-|
-|   Return Values :  E_OK              - success
-|                    E_BAD_ARGUMENT    - invalid menu or pattern pointer
-|                    E_NOT_CONNECTED   - no items connected to menu
-|                    E_BAD_STATE       - menu in user hook routine
-|                    E_NO_MATCH        - no item matches pattern
-+--------------------------------------------------------------------------*/
-int set_menu_pattern(MENU *menu, const char *p)
-{
-  ITEM *matchitem;
-  int   matchpos;
-  
-  if (!menu || !p)	
-    RETURN(E_BAD_ARGUMENT);
-  
-  if (!(menu->items))
-    RETURN(E_NOT_CONNECTED);
-  
-  if ( menu->status & _IN_DRIVER )
-    RETURN(E_BAD_STATE);
-  
-  Reset_Pattern(menu);
-  
-  if (!(*p))
-    {
-      pos_menu_cursor(menu);
-      RETURN(E_OK);
-    }
-  
-  if (menu->status & _LINK_NEEDED) 
-    _nc_Link_Items(menu);
-  
-  matchpos  = menu->toprow;
-  matchitem = menu->curitem;
-  assert(matchitem);
-  
-  while(*p)
-    {
-      if ( !isprint(*p) || 
-	  (Match_Next_Character_In_Item_Name(menu,*p,&matchitem) != E_OK) )
-	{
-	  Reset_Pattern(menu);
-	  pos_menu_cursor(menu);
-	  RETURN(E_NO_MATCH);
-	}
-      p++;
-    }			
-  
-  /* This is reached if there was a match. So we position to the new item */
-  Adjust_Current_Item(menu,matchpos,matchitem);
-  RETURN(E_OK);
-}
 
 /*---------------------------------------------------------------------------
 |   Facility      :  libnmenu  
@@ -329,7 +259,7 @@ int menu_driver(MENU * menu, int   c)
 	case REQ_SCR_DLINE:
 	  /*=================*/  
 	  my_top_row++;
-	  if ((menu->rows - menu->height)>0)
+	  if ((menu->rows - menu->arows)>0)
 	    {
 	      /* only if the menu has less items than rows, we can deny the
 		 request. Otherwise the epilogue of this routine adjusts the
@@ -343,9 +273,9 @@ int menu_driver(MENU * menu, int   c)
 	  
 	case REQ_SCR_DPAGE:
 	  /*=================*/  
-	  rdiff = menu->rows - menu->height - my_top_row;
-	  if (rdiff > menu->height) 
-	    rdiff = menu->height;
+	  rdiff = menu->rows - menu->arows - my_top_row;
+	  if (rdiff > menu->arows) 
+	    rdiff = menu->arows;
 	  if (rdiff==0)
 	    result = E_REQUEST_DENIED;
 	  else
@@ -358,8 +288,8 @@ int menu_driver(MENU * menu, int   c)
 	  
 	case REQ_SCR_UPAGE:
 	  /*=================*/  
-	  rdiff = (menu->height < my_top_row) ?
-	    menu->height : my_top_row;
+	  rdiff = (menu->arows < my_top_row) ?
+	    menu->arows : my_top_row;
 	  if (rdiff==0)
 	    result = E_REQUEST_DENIED;
 	  else
@@ -416,7 +346,7 @@ int menu_driver(MENU * menu, int   c)
 	    {
 	      if (menu->curitem->opt & O_SELECTABLE)
 		{
-		  menu->curitem->value = TRUE;
+		  menu->curitem->value = !menu->curitem->value;
 		  Move_And_Post_Item(menu,menu->curitem);
 		  _nc_Show_Menu(menu);
 		}
@@ -446,7 +376,7 @@ int menu_driver(MENU * menu, int   c)
 	  /*==================*/  
 	  assert(menu->pattern);
 	  if (menu->pattern[0])
-	    result = Match_Next_Character_In_Item_Name(menu,0,&item);
+	    result = _nc_Match_Next_Character_In_Item_Name(menu,0,&item);
 	  else
 	    {
 	      if ((item->index+1)<menu->nitems)
@@ -465,7 +395,7 @@ int menu_driver(MENU * menu, int   c)
 	  /*==================*/  
 	  assert(menu->pattern);
 	  if (menu->pattern[0])
-	    result = Match_Next_Character_In_Item_Name(menu,BS,&item);
+	    result = _nc_Match_Next_Character_In_Item_Name(menu,BS,&item);
 	  else
 	    {
 	      if (item->index)
@@ -489,7 +419,7 @@ int menu_driver(MENU * menu, int   c)
   else
     {				/* not a command */
       if ( !(c & ~((int)MAX_REGULAR_CHARACTER)) && isprint(c) )
-	result = Match_Next_Character_In_Item_Name( menu, c, &item );
+	result = _nc_Match_Next_Character_In_Item_Name( menu, c, &item );
       else
 	result = E_UNKNOWN_COMMAND;
     }
@@ -498,8 +428,8 @@ int menu_driver(MENU * menu, int   c)
      doesn't appear in the menu window */
   if ( item->y < my_top_row )
     my_top_row = item->y;
-  else if ( item->y >= (my_top_row + menu->height) )
-    my_top_row = item->y - menu->height + 1;
+  else if ( item->y >= (my_top_row + menu->arows) )
+    my_top_row = item->y - menu->arows + 1;
   
   _nc_New_TopRow_and_CurrentItem( menu, my_top_row, item );
   

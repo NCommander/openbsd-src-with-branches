@@ -1,4 +1,5 @@
-/*	$NetBSD: namei.h,v 1.10 1995/04/15 08:12:35 cgd Exp $	*/
+/*	$OpenBSD: namei.h,v 1.5 1998/01/09 16:21:57 csapuntz Exp $	*/
+/*	$NetBSD: namei.h,v 1.11 1996/02/09 18:25:20 christos Exp $	*/
 
 /*
  * Copyright (c) 1985, 1989, 1991, 1993
@@ -47,7 +48,7 @@ struct nameidata {
 	/*
 	 * Arguments to namei/lookup.
 	 */
-	caddr_t	ni_dirp;		/* pathname pointer */
+	const char *ni_dirp;		/* pathname pointer */
 	enum	uio_seg ni_segflg;	/* location of pathname */
      /* u_long	ni_nameiop;		   namei operation */
      /* u_long	ni_flags;		   flags to namei */
@@ -126,18 +127,20 @@ struct nameidata {
  * name being sought. The caller is responsible for releasing the
  * buffer and for vrele'ing ni_startdir.
  */
-#define	NOCROSSMOUNT	0x00100	/* do not cross mount points */
-#define	RDONLY		0x00200	/* lookup with read-only semantics */
-#define	HASBUF		0x00400	/* has allocated pathname buffer */
-#define	SAVENAME	0x00800	/* save pathanme buffer */
-#define	SAVESTART	0x01000	/* save starting directory */
-#define ISDOTDOT	0x02000	/* current component name is .. */
-#define MAKEENTRY	0x04000	/* entry is to be added to name cache */
-#define ISLASTCN	0x08000	/* this is last component of pathname */
-#define ISSYMLINK	0x10000	/* symlink needs interpretation */
-#define	ISWHITEOUT	0x20000	/* found whiteout */
-#define	DOWHITEOUT	0x40000	/* do whiteouts */
-#define PARAMASK	0xfff00	/* mask of parameter descriptors */
+#define	NOCROSSMOUNT	0x000100      /* do not cross mount points */
+#define	RDONLY		0x000200      /* lookup with read-only semantics */
+#define	HASBUF		0x000400      /* has allocated pathname buffer */
+#define	SAVENAME	0x000800      /* save pathanme buffer */
+#define	SAVESTART	0x001000      /* save starting directory */
+#define ISDOTDOT	0x002000      /* current component name is .. */
+#define MAKEENTRY	0x004000      /* entry is to be added to name cache */
+#define ISLASTCN	0x008000      /* this is last component of pathname */
+#define ISSYMLINK	0x010000      /* symlink needs interpretation */
+#define	ISWHITEOUT	0x020000      /* found whiteout */
+#define	DOWHITEOUT	0x040000      /* do whiteouts */
+#define	REQUIREDIR	0x080000      /* must be a directory */
+#define STRIPSLASHES    0x100000      /* strip trailing slashes */
+#define PARAMASK	0x1fff00      /* mask of parameter descriptors */
 /*
  * Initialization of an nameidata structure.
  */
@@ -175,7 +178,14 @@ u_long	nextvnodeid;
 int	namei __P((struct nameidata *ndp));
 int	lookup __P((struct nameidata *ndp));
 int	relookup __P((struct vnode *dvp, struct vnode **vpp,
-	    struct componentname *cnp));
+		      struct componentname *cnp));
+void cache_purge __P((struct vnode *));
+int cache_lookup __P((struct vnode *, struct vnode **, struct componentname *));
+void cache_enter __P((struct vnode *, struct vnode *, struct componentname *));
+void nchinit __P((void));
+struct mount;
+void cache_purgevfs __P((struct mount *));
+
 #endif
 
 /*

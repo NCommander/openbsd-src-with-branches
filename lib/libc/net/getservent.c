@@ -1,5 +1,3 @@
-/*	$NetBSD: getservent.c,v 1.4 1995/02/25 06:20:38 cgd Exp $	*/
-
 /*
  * Copyright (c) 1983, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -34,11 +32,7 @@
  */
 
 #if defined(LIBC_SCCS) && !defined(lint)
-#if 0
-static char sccsid[] = "@(#)getservent.c	8.1 (Berkeley) 6/4/93";
-#else
-static char rcsid[] = "$NetBSD: getservent.c,v 1.4 1995/02/25 06:20:38 cgd Exp $";
-#endif
+static char rcsid[] = "$OpenBSD: getservent.c,v 1.3 1997/04/05 21:13:09 millert Exp $";
 #endif /* LIBC_SCCS and not lint */
 
 #include <sys/types.h>
@@ -80,20 +74,24 @@ endservent()
 struct servent *
 getservent()
 {
-	char *p;
-	register char *cp, **q;
+	char *p, *cp, **q;
+	size_t len;
 
 	if (servf == NULL && (servf = fopen(_PATH_SERVICES, "r" )) == NULL)
 		return (NULL);
 again:
-	if ((p = fgets(line, BUFSIZ, servf)) == NULL)
+	if ((p = fgetln(servf, &len)) == NULL)
 		return (NULL);
+	if (p[len-1] == '\n')
+		len--;
+	if (len >= sizeof(line) || len == 0)
+		goto again;
+	p = memcpy(line, p, len);
+	line[len] = '\0';
 	if (*p == '#')
 		goto again;
-	cp = strpbrk(p, "#\n");
-	if (cp == NULL)
-		goto again;
-	*cp = '\0';
+	if ((cp = strchr(p, '#')) != NULL)
+		*cp = '\0';
 	serv.s_name = p;
 	p = strpbrk(p, " \t");
 	if (p == NULL)
@@ -105,7 +103,7 @@ again:
 	if (cp == NULL)
 		goto again;
 	*cp++ = '\0';
-	serv.s_port = htons((u_short)atoi(p));
+	serv.s_port = htons((in_port_t)atoi(p));
 	serv.s_proto = cp;
 	q = serv.s_aliases = serv_aliases;
 	cp = strpbrk(cp, " \t");

@@ -17,7 +17,7 @@
  * IMPLIED WARRANTIES, INCLUDING, WITHOUT LIMITATION, THE IMPLIED
  * WARRANTIES OF MERCHANTIBILITY AND FITNESS FOR A PARTICULAR PURPOSE.
  *
- * $Id: fsm.c,v 1.22 1997/11/22 03:37:31 brian Exp $
+ * $Id: fsm.c,v 1.5 1998/01/10 01:55:15 brian Exp $
  *
  *  TODO:
  *		o Refer loglevel for log output
@@ -44,7 +44,6 @@
 #include "modem.h"
 #include "loadalias.h"
 #include "vars.h"
-#include "pred.h"
 
 u_char AckBuff[200];
 u_char NakBuff[200];
@@ -69,6 +68,11 @@ StoppedTimeout(void *v)
   struct fsm *fp = (struct fsm *)v;
 
   LogPrintf(fp->LogLevel, "Stopped timer expired\n");
+  if (fp->OpenTimer.state == TIMER_RUNNING) {
+    LogPrintf(LogWARN, "%s: aborting open delay due to stopped timer\n",
+              fp->name);
+    StopTimer(&fp->OpenTimer);
+  }
   if (modem != -1)
     DownConnection();
   else
@@ -123,6 +127,19 @@ FsmOutput(struct fsm * fp, u_int code, u_int id, u_char * ptr, int count)
   HdlcOutput(PRI_LINK, fp->proto, bp);
 }
 
+static void
+FsmOpenNow(void *v)
+{
+  struct fsm *fp = (struct fsm *)v;
+
+  StopTimer(&fp->OpenTimer);
+  if (fp->state <= ST_STOPPED) {
+    FsmInitRestartCounter(fp);
+    FsmSendConfigReq(fp);
+    NewState(fp, ST_REQSENT);
+  }
+}
+
 void
 FsmOpen(struct fsm * fp)
 {
@@ -136,11 +153,18 @@ FsmOpen(struct fsm * fp)
   case ST_CLOSED:
     if (fp->open_mode == OPEN_PASSIVE) {
       NewState(fp, ST_STOPPED);
-    } else {
-      FsmInitRestartCounter(fp);
-      FsmSendConfigReq(fp);
-      NewState(fp, ST_REQSENT);
-    }
+    } else if (fp->open_mode > 0) {
+      if (fp->open_mode > 1)
+        LogPrintf(LogPHASE, "Entering STOPPED state for %d seconds\n",
+                  fp->open_mode);
+      NewState(fp, ST_STOPPED);
+      fp->OpenTimer.state = TIMER_STOPPED;
+      fp->OpenTimer.load = fp->open_mode * SECTICKS;
+      fp->OpenTimer.func = FsmOpenNow;
+      fp->OpenTimer.arg = (void *)fp;
+      StartTimer(&fp->OpenTimer);
+    } else
+      FsmOpenNow(fp);
     break;
   case ST_STOPPED:		/* XXX: restart option */
   case ST_REQSENT:
@@ -346,7 +370,7 @@ FsmRecvConfigReq(struct fsm * fp, struct fsmheader * lhp, struct mbuf * bp)
   int ackaction = 0;
 
   plen = plength(bp);
-  flen = ntohs(lhp->length) - sizeof(*lhp);
+  flen = ntohs(lhp->length) - sizeof *lhp;
   if (plen < flen) {
     LogPrintf(LogERROR, "FsmRecvConfigReq: plen (%d) < flen (%d)\n",
 	      plen, flen);
@@ -368,7 +392,8 @@ FsmRecvConfigReq(struct fsm * fp, struct fsmheader * lhp, struct mbuf * bp)
     pfree(bp);
     return;
   case ST_CLOSING:
-    LogPrintf(LogERROR, "Got ConfigReq while state = %d\n", fp->state);
+    LogPrintf(fp->LogLevel, "Error: Got ConfigReq while state = %d\n",
+              fp->state);
   case ST_STOPPING:
     pfree(bp);
     return;
@@ -464,7 +489,7 @@ FsmRecvConfigNak(struct fsm * fp, struct fsmheader * lhp, struct mbuf * bp)
   int plen, flen;
 
   plen = plength(bp);
-  flen = ntohs(lhp->length) - sizeof(*lhp);
+  flen = ntohs(lhp->length) - sizeof *lhp;
   if (plen < flen) {
     pfree(bp);
     return;
@@ -574,7 +599,7 @@ FsmRecvConfigRej(struct fsm * fp, struct fsmheader * lhp, struct mbuf * bp)
   int plen, flen;
 
   plen = plength(bp);
-  flen = ntohs(lhp->length) - sizeof(*lhp);
+  flen = ntohs(lhp->length) - sizeof *lhp;
   if (plen < flen) {
     pfree(bp);
     return;
@@ -724,23 +749,29 @@ FsmRecvTimeRemain(struct fsm * fp, struct fsmheader * lhp, struct mbuf * bp)
 static void
 FsmRecvResetReq(struct fsm * fp, struct fsmheader * lhp, struct mbuf * bp)
 {
-  LogPrintf(fp->LogLevel, "RecvResetReq\n");
+  LogPrintf(fp->LogLevel, "RecvResetReq(%d)\n", lhp->id);
   CcpRecvResetReq(fp);
-  LogPrintf(fp->LogLevel, "SendResetAck\n");
-  FsmOutput(fp, CODE_RESETACK, fp->reqid, NULL, 0);
+  /*
+   * All sendable compressed packets are queued in the PRI_NORMAL modem
+   * output queue.... dump 'em to the priority queue so that they arrive
+   * at the peer before our ResetAck.
+   */
+  SequenceQueues();
+  LogPrintf(fp->LogLevel, "SendResetAck(%d)\n", lhp->id);
+  FsmOutput(fp, CODE_RESETACK, lhp->id, NULL, 0);
   pfree(bp);
 }
 
 static void
 FsmRecvResetAck(struct fsm * fp, struct fsmheader * lhp, struct mbuf * bp)
 {
-  LogPrintf(fp->LogLevel, "RecvResetAck\n");
-  Pred1Init(1);			/* Initialize Input part */
+  LogPrintf(fp->LogLevel, "RecvResetAck(%d)\n", lhp->id);
+  CcpResetInput(lhp->id);
   fp->reqid++;
   pfree(bp);
 }
 
-struct fsmcodedesc FsmCodes[] = {
+static const struct fsmcodedesc FsmCodes[] = {
   {FsmRecvConfigReq, "Configure Request",},
   {FsmRecvConfigAck, "Configure Ack",},
   {FsmRecvConfigNak, "Configure Nak",},
@@ -763,7 +794,7 @@ FsmInput(struct fsm * fp, struct mbuf * bp)
 {
   int len;
   struct fsmheader *lhp;
-  struct fsmcodedesc *codep;
+  const struct fsmcodedesc *codep;
 
   len = plength(bp);
   if (len < sizeof(struct fsmheader)) {

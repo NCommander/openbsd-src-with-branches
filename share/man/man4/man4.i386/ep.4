@@ -27,20 +27,26 @@
 .\" (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
 .\" THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 .\"
-.\"	$Id: ep.4,v 1.10 1995/07/11 01:49:42 jtc Exp $
+.\"	$Id: ep.4,v 1.5 1998/02/26 12:14:33 deraadt Exp $
 .\"
 .Dd February 04, 1993
-.Dt EP 4
+.Dt EP 4 i386
 .Os
 .Sh NAME
 .Nm ep
 .Nd Ethernet driver for 3Com Etherlink III (3c5x9)
 .Sh SYNOPSIS
+.Cd "ep? at eisa? slot ?"
 .Cd "ep? at isa? port ? irq ?"
+.Cd "ep? at pci? dev ? function ?"
+.Cd "ep? at pcmcia? port 0x300 size 0x10 irq 10 slot ?"
 .Sh DESCRIPTION
 The
 .Nm ep
-device driver supports the 3c509 (ISA) and 3c579 (EISA) cards.
+device driver supports the 3Com Etherlink III family of ethernet cards.
+This includes, among others,
+the 3c509 (ISA), 3c579 (EISA), 3c589 (PC Card), and 3c500, 3c505,
+3c900, and 3c905 (all PCI).
 Various models of these cards come with a different assortment of
 connectors:
 .Pp
@@ -50,10 +56,13 @@ Standard 15 pin connector
 .It 10Base2
 BNC, also known as thin-net
 .It 10BaseT
-UTP, also known as twisted pair
+10 Mbps UTP, also known as twisted pair
+.It MII
+UTP, switchable between 10 and 100 Mbps
 .El
 .Pp
-The default port to use is the BNC. To choose an alternate port,
+The default port to use is the BNC, if it is available.
+To choose an alternate port,
 use the following flag combinations with
 .Xr ifconfig 8
 or in your /etc/hostname.ep? file.
@@ -69,14 +78,17 @@ Use the UTP port.
 .Pp
 If there are multiple cards in the computer, they are searched for
 in the following order:
-The 3c579 EISA cards are searched for first -- they will be found
-in EISA slot# order.
-Next, the 3c509 ISA cards are searched -- they are found in increasing
-ethernet address order.
-This is an example of how they will probe:
+The PCI cards are found first based on PCI function# order.
+The EISA cards are found next based on EISA slot# order.
+Next, the 3c509 ISA cards are found based on in increasing ethernet
+address order.
+Finally, the 3c509 ISA cards in Plug-and-Play mode will be probed
+for and matched in Plug-and-Play order.
+This is an example of how these will probe:
 .Pp
-ep0 at isa0 port 0x6000-0x600f irq 10: aui/bnc address 00:60:8c:70:e5:c5
-ep1 at isa0 port 0x300-0x30f irq 3: aui/bnc/utp address 00:20:af:10:62:ab
+ep0 at isa0 port 0x300-0x30f irq 3: 3Com 3C509 Ethernet: address 00:a0:24:29:a3:6b, utp (default utp)
+.Pp
+ep0 at pci0 dev 12 function 0 "3Com 3c905 100Base-TX" rev 0x00: address 00:60:97:dd:fc:eb, mii default mii/autoselect isa irq 9
 .Pp
 You may specify the port and irq numbers that the cards are expected
 to be found at, but it is not necessary.
@@ -95,6 +107,13 @@ Some models of 3c5x9 have all three connectors on them.
 In the case of these cards; you must configure the transceiver type
 with the 3Com supplied DOS configuration disk before the link0/link1
 flags will operate correctly.
+.Pp
+Plug and Play mode must currently be disabled on these cards.
+.Pp
+Do not specify link flags for the 3c905.
+If you can not get this card to work, try running the 3Com supplied DOS
+configuration program (available from their web site) and tell it to
+autoselect the connector type.
 .Pp
 .Sh DIAGNOSTICS
 ep0: reset (status: %x)
@@ -119,5 +138,3 @@ card.  Erase the pencil mark and reboot.  (This is not a joke).
 .Xr el 4 ,
 .Xr ie 4 ,
 .Xr le 4
-.Sh STANDARDS
-are great. There's so many to choose from.

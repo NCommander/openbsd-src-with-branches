@@ -4577,17 +4577,23 @@
   if (GET_CODE (operands[4]) == LT && operands[3] == const0_rtx)
     return \"%i5\\t%0, %1, %2, lsr #31\";
 
-  output_asm_insn (\"cmp\\t%2, %3\", operands);
-  if (GET_CODE (operands[5]) == AND)
-    output_asm_insn (\"mov%D4\\t%0, #0\", operands);
-  else if (GET_CODE (operands[5]) == MINUS)
-    output_asm_insn (\"rsb%D4\\t%0, %1, #0\", operands);
-  else if (which_alternative != 0)
-    output_asm_insn (\"mov%D4\\t%0, %1\", operands);
-  return \"%i5%d4\\t%0, %1, #1\";
+  output_asm_insn (dominant ? \"cmp\\t%5, %6\" : \"cmp\\t%2, %3\",
+		   operands);
+  output_asm_insn (\"mov\\t%0, #0\", operands);
+  if (GET_CODE (operands[1]) == GET_CODE (operands[4])
+      || comparison_dominates_p (GET_CODE (operands[1]),
+				 GET_CODE (operands[4]))
+      || dominant)
+    output_asm_insn (dominant ? \"cmp%D4\\t%2, %3\" : \"cmp%D1\\t%5,%6\",
+		     operands);
+  else
+    output_asm_insn (\"mov%d1\\t%0, #1\;cmp\\t%5, %6\", operands);
+  return dominant ? \"mov%d1\\t%0, #1\" : \"mov%d4\\t%0, #1\";
+}
 "
 [(set_attr "conds" "clob")
- (set_attr "length" "12")])
+; worst case length
+ (set_attr "length" "20")])
 
 (define_insn "*cond_sub"
   [(set (match_operand:SI 0 "s_register_operand" "=r,r")

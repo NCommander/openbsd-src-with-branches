@@ -1,5 +1,3 @@
-/*	$NetBSD: vis.c,v 1.6 1995/02/25 15:40:09 cgd Exp $	*/
-
 /*-
  * Copyright (c) 1989, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -34,11 +32,7 @@
  */
 
 #if defined(LIBC_SCCS) && !defined(lint)
-#if 0
-static char sccsid[] = "@(#)vis.c	8.1 (Berkeley) 7/19/93";
-#else
-static char rcsid[] = "$NetBSD: vis.c,v 1.6 1995/02/25 15:40:09 cgd Exp $";
-#endif
+static char rcsid[] = "$OpenBSD: vis.c,v 1.3 1997/07/09 00:28:26 millert Exp $";
 #endif /* LIBC_SCCS and not lint */
 
 #include <sys/types.h>
@@ -57,7 +51,7 @@ vis(dst, c, flag, nextc)
 	int c, nextc;
 	register int flag;
 {
-	if ((u_int)c <= UCHAR_MAX && isascii(c) && isgraph(c) ||
+	if (((u_int)c <= UCHAR_MAX && isascii(c) && isgraph(c)) ||
 	   ((flag & VIS_SP) == 0 && c == ' ') ||
 	   ((flag & VIS_TAB) == 0 && c == '\t') ||
 	   ((flag & VIS_NL) == 0 && c == '\n') ||
@@ -83,7 +77,7 @@ vis(dst, c, flag, nextc)
 			*dst++ = '\\';
 			*dst++ = 'b';
 			goto done;
-#if __STDC__
+#ifdef __STDC__
 		case '\a':
 #else
 		case '\007':
@@ -164,7 +158,7 @@ strvis(dst, src, flag)
 	register char c;
 	char *start;
 
-	for (start = dst; c = *src;)
+	for (start = dst; (c = *src);)
 		dst = vis(dst, c, flag, *++src);
 	*dst = '\0';
 	return (dst - start);

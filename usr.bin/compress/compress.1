@@ -1,3 +1,4 @@
+.\"	$OpenBSD: compress.1,v 1.4 1997/07/06 20:22:53 mickey Exp $
 .\"	$NetBSD: compress.1,v 1.5 1995/03/26 09:44:34 glass Exp $
 .\"
 .\" Copyright (c) 1986, 1990, 1993
@@ -48,11 +49,13 @@
 .Nd compress and expand data
 .Sh SYNOPSIS
 .Nm compress
-.Op Fl cfv
+.Op Fl cftgOqv
 .Op Fl b Ar bits
+.Op Fl o Ar filename
 .Op Ar
 .Nm uncompress
-.Op Fl cfv
+.Op Fl cftoqv
+.Op Fl o Ar filename
 .Op Ar 
 .\".Nm zcat
 .\".Op Ar
@@ -101,11 +104,23 @@ code limit (see below).
 .It Fl c
 Compressed or uncompressed output is written to the standard output.
 No files are modified.
+.It Fl d
+Decompress the source files instead of compressing them.
 .It Fl f
 Force compression of
 .Ar file ,
 even if it is not actually reduced in size.
 Additionally, files are overwritten without prompting for confirmation.
+.It Fl g
+Use deflate scheme wich reported to provide better compression rates.
+.It Fl O
+Use old compression method (default is based on the program name).
+.It Fl o
+Set the output file name.
+.It Fl t
+Test the entefrity of each file leaving any files intact.
+.It Fl q
+Be quite, suppress any messages.
 .It Fl v
 Print the percentage reduction of each file.
 .El
@@ -137,7 +152,7 @@ the algorithm to adapt to the next "block" of the file.
 The
 .Fl b
 flag is omitted for
-.Ar uncompress
+.Nm uncompress
 since the
 .Ar bits
 parameter specified during compression
@@ -158,9 +173,10 @@ time to compute.
 .Pp
 The
 .Nm compress
-utility exits 0 on success, and >0 if an error occurs.
+utility exits 0 on success, 1 if an error occurs, and 2 if one or
+more files were not compressed because they would have grown in
+size (and -f was not specifed).
 .Sh SEE ALSO
-.Xr zcat 1
 .Rs
 .%A Welch, Terry A.
 .%D June, 1984
@@ -169,8 +185,16 @@ utility exits 0 on success, and >0 if an error occurs.
 .%V 17:6
 .%P pp. 8-19
 .Re
+.Sh STANDARDS
+The
+.Nm compress
+utility is compliant with the
+.St -p1003.2-92
+specification.
 .Sh HISTORY
 The
 .Nm
 command appeared in
 .Bx 4.3 .
+The deflate compression support added in
+.Ox 2.1 .

@@ -22,12 +22,15 @@ Boston, MA 02111-1307, USA.  */
 
 /* Names to predefine in the preprocessor for this target machine.  */
 
+#ifndef CPP_PREDEFINES
 #define CPP_PREDEFINES "\
 -Dunix -D__osf__ -D__alpha -D__alpha__ -D_LONGLONG -DSYSTYPE_BSD  \
 -D_SYSTYPE_BSD -Asystem(unix) -Asystem(xpg4) -Acpu(alpha) -Amachine(alpha)"
+#endif
 
 /* Write out the correct language type definition for the header files.  
    Unless we have assembler language, write out the symbols for C.  */
+#ifndef CPP_SPEC
 #define CPP_SPEC "\
 %{!.S:	-D__LANGUAGE_C__ -D__LANGUAGE_C %{!ansi:-DLANGUAGE_C}}  \
 %{.S:	-D__LANGUAGE_ASSEMBLY__ -D__LANGUAGE_ASSEMBLY %{!ansi:-DLANGUAGE_ASSEMBLY}} \
@@ -37,24 +40,31 @@ Boston, MA 02111-1307, USA.  */
 %{.m:	-D__LANGUAGE_OBJECTIVE_C__ -D__LANGUAGE_OBJECTIVE_C} \
 %{mieee:-D_IEEE_FP} \
 %{mieee-with-inexact:-D_IEEE_FP -D_IEEE_FP_INEXACT}"
+#endif
 
 /* Set the spec to use for signed char.  The default tests the above macro
    but DEC's compiler can't handle the conditional in a "constant"
    operand.  */
 
+#ifndef SIGNED_CHAR_SPEC
 #define SIGNED_CHAR_SPEC "%{funsigned-char:-D__CHAR_UNSIGNED__}"
+#endif
 
 /* Under OSF4, -p and -pg require -lprof1, and -lprof1 requires -lpdf.  */
 
+#ifndef LIB_SPEC
 #define LIB_SPEC "%{p:-lprof1 -lpdf} %{pg:-lprof1 -lpdf} %{a:-lprof2} -lc"
+#endif
 
 /* Pass "-G 8" to ld because Alpha's CC does.  Pass -O3 if we are
    optimizing, -O1 if we are not.  Pass -shared, -non_shared or
    -call_shared as appropriate.  Also pass -pg.  */
+#ifndef LINK_SPEC
 #define LINK_SPEC  \
   "-G 8 %{O*:-O3} %{!O*:-O1} %{static:-non_shared} \
    %{!static:%{shared:-shared} %{!shared:-call_shared}} %{pg} %{taso} \
    %{rpath*}"
+#endif
 
 #define WORD_SWITCH_TAKES_ARG(STR)		\
  (!strcmp (STR, "rpath") || !strcmp (STR, "include")	\
@@ -63,15 +73,19 @@ Boston, MA 02111-1307, USA.  */
   || !strcmp (STR, "iwithprefix") || !strcmp (STR, "iwithprefixbefore") \
   || !strcmp (STR, "isystem"))
 
+#ifndef STARTFILE_SPEC
 #define STARTFILE_SPEC  \
   "%{!shared:%{pg:gcrt0.o%s}%{!pg:%{p:mcrt0.o%s}%{!p:crt0.o%s}}}"
+#endif
 
 /* Print subsidiary information on the compiler version in use.  */
 #define TARGET_VERSION
 
 /* Define the location for the startup file on OSF/1 for Alpha.  */
 
+#ifndef MD_STARTFILE_PREFIX
 #define MD_STARTFILE_PREFIX "/usr/lib/cmplrs/cc/"
+#endif
 
 /* Run-time compilation parameters selecting different hardware subsets.  */
 
@@ -222,7 +236,9 @@ extern enum alpha_fp_trap_mode alpha_fptm;
     {"no-max", -MASK_MAX},			\
     {"", TARGET_DEFAULT | TARGET_CPU_DEFAULT} }
 
+#ifndef TARGET_DEFAULT
 #define TARGET_DEFAULT MASK_FP|MASK_FPREGS
+#endif
 
 #ifndef TARGET_CPU_DEFAULT
 #define TARGET_CPU_DEFAULT 0
@@ -2278,6 +2294,7 @@ do {							\
 
 #define PUT_SDB_EPILOGUE_END(NAME)
 
+#ifndef ASM_SPEC
 /* No point in running CPP on our assembler output.  */
 #if ((TARGET_DEFAULT | TARGET_CPU_DEFAULT) & MASK_GAS) != 0
 /* Don't pass -g to GNU as, because some versions don't accept this option.  */
@@ -2291,6 +2308,7 @@ do {							\
    will need to be fixed to work in this case.  Pass -O0 since some
    optimization are broken and don't help us anyway.  */
 #define ASM_SPEC "%{!mgas:-g} -nocpp %{pg} -O0"
+#endif
 #endif
 
 /* Specify to run a post-processor, mips-tfile after the assembler
@@ -2341,6 +2359,9 @@ do {							\
 
 /* The system headers under OSF/1 are C++-aware.  */
 #define NO_IMPLICIT_EXTERN_C
+
+/* Also define __LANGUAGE_C__ when running fix-header. */
+#define FIXPROTO_INIT(CPPFILE)  cpp_define (CPPFILE, "__LANGUAGE_C__")
 
 /* The linker will stick __main into the .init section.  */
 #define HAS_INIT_SECTION

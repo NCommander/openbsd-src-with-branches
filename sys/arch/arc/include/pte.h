@@ -1,4 +1,4 @@
-/*      $OpenBSD: pte.h,v 1.3 1996/06/06 23:07:04 deraadt Exp $	*/
+/*      $OpenBSD: pte.h,v 1.3 1997/01/22 22:41:15 pefo Exp $	*/
 
 /*
  * Copyright (c) 1988 University of Utah.
@@ -79,7 +79,7 @@ struct tlb {
 typedef union pt_entry {
 	unsigned int	pt_entry;	/* for copying, etc. */
 	struct pte	pt_pte;		/* for getting to bits by name */
-} pt_entry_t;	/* Mach page table entry */
+} pt_entry_t;	/* Mips page table entry */
 #endif /* _LOCORE */
 
 #define	PT_ENTRY_NULL	((pt_entry_t *) 0)
@@ -105,7 +105,9 @@ typedef union pt_entry {
 #define	PG_IOPAGE	(PG_G | PG_V | PG_M | PG_UNCACHED)
 #define	PG_FRAME	0x3fffffc0
 #define PG_SHIFT	6
+#define pfn_is_ext(x) ((x) & 0x3c000000)
 #define vad_to_pfn(x) (((unsigned)(x) >> PG_SHIFT) & PG_FRAME)
+#define vad_to_pfn64(x) (((quad_t)(x) >> PG_SHIFT) & PG_FRAME)
 #define pfn_to_vad(x) (((x) & PG_FRAME) << PG_SHIFT)
 #define vad_to_vpn(x) ((unsigned)(x) & PG_SVPN)
 #define vpn_to_vad(x) ((x) & PG_SVPN)

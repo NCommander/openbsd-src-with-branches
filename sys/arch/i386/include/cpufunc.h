@@ -40,15 +40,11 @@
 #include <sys/cdefs.h>
 #include <sys/types.h>
 
-static __inline int bdb(void)
-{
-	extern int bdb_exists;
-
-	if (!bdb_exists)
-		return (0);
-	__asm __volatile("int $3");
-	return (1);
-}
+static __inline void 
+invlpg(u_int addr)
+{ 
+        __asm __volatile("invlpg (%0)" : : "r" (addr) : "memory");
+}  
 
 static __inline void
 lidt(void *p)
@@ -101,6 +97,20 @@ rcr3(void)
 {
 	u_int val;
 	__asm __volatile("movl %%cr3,%0" : "=r" (val));
+	return val;
+}
+
+static __inline void
+lcr4(u_int val)
+{
+	__asm __volatile("movl %0,%%cr4" : : "r" (val));
+}
+
+static __inline u_int
+rcr4(void)
+{
+	u_int val;
+	__asm __volatile("movl %%cr4,%0" : "=r" (val));
 	return val;
 }
 

@@ -1,4 +1,5 @@
-#	$NetBSD: Makefile,v 1.4 1994/10/26 07:48:46 cgd Exp $
+#	$OpenBSD: Makefile,v 1.12 1997/03/25 14:31:07 niklas Exp $
+#	$NetBSD: Makefile,v 1.6 1997/04/25 22:17:33 veego Exp $
 
 #	MOTOROLA MICROPROCESSOR & MEMORY TECHNOLOGY GROUP
 #	M68000 Hi-Performance Microprocessor Division
@@ -38,13 +39,13 @@
 
 TARGET = fpsp
 
-AS		= as -m68040
-LD		= ld
+AS		= cc -x assembler-with-cpp -traditional-cpp -c -m68040 -I${.CURDIR}
+LD		?= ld
 
 #
 # For the Library Version:
 #
-AR		= ar
+AR		?= ar
 LIB_FILTER 	= sed 's/fpsp.defs/l_fpsp.defs/'
 LIB_TARGET	= lib$(TARGET).a
 #
@@ -325,7 +326,7 @@ l_stwotox.s: stwotox.s
 #
 #	Extract all files from SCCS directory
 #
-clean:
+clean cleandir:
 	rm -f $(H_FILES)
 	rm -f $(S_FILES)
 	rm -f $(O_FILES)
@@ -336,3 +337,15 @@ clean:
 
 clobber:	clean
 
+_SUBDIRUSE:
+
+all:
+
+depend:
+
+install:
+
+includes:
+
+.include <bsd.obj.mk>
+.include <bsd.own.mk>

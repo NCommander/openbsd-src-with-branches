@@ -1,4 +1,4 @@
-/*	$NetBSD: config.c,v 1.5 1995/10/09 03:51:37 thorpej Exp $	*/
+/*	$NetBSD: config.c,v 1.6 1995/12/10 10:06:58 mycroft Exp $	*/
 
 /*
  * The mrouted program is covered by the license in the accompanying file
@@ -17,7 +17,8 @@
  * Query the kernel to find network interfaces that are multicast-capable
  * and install them in the uvifs array.
  */
-void config_vifs_from_kernel()
+void
+config_vifs_from_kernel()
 {
     struct ifreq ifbuf[32];
     struct ifreq *ifrp, *ifend;
@@ -77,6 +78,7 @@ void config_vifs_from_kernel()
 	 * valid subnet number, or whose address is of the form {subnet,0}
 	 * or {subnet,-1}.
 	 */
+	((struct sockaddr_in *)&ifr.ifr_addr)->sin_addr.s_addr = addr;
 	if (ioctl(udp_socket, SIOCGIFNETMASK, (char *)&ifr) < 0)
 	    log(LOG_ERR, errno, "ioctl SIOCGIFNETMASK for %s", ifr.ifr_name);
 	mask = ((struct sockaddr_in *)&ifr.ifr_addr)->sin_addr.s_addr;

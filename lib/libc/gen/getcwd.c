@@ -1,5 +1,3 @@
-/*	$NetBSD: getcwd.c,v 1.5 1995/06/16 07:05:30 jtc Exp $	*/
-
 /*
  * Copyright (c) 1989, 1991, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -34,11 +32,7 @@
  */
 
 #if defined(LIBC_SCCS) && !defined(lint)
-#if 0
-static char sccsid[] = "@(#)getcwd.c	8.1 (Berkeley) 6/4/93";
-#else
-static char rcsid[] = "$NetBSD: getcwd.c,v 1.5 1995/06/16 07:05:30 jtc Exp $";
-#endif
+static char rcsid[] = "$OpenBSD: getcwd.c,v 1.3 1996/11/27 22:00:45 millert Exp $";
 #endif /* LIBC_SCCS and not lint */
 
 #include <sys/param.h>
@@ -53,7 +47,7 @@ static char rcsid[] = "$NetBSD: getcwd.c,v 1.5 1995/06/16 07:05:30 jtc Exp $";
 
 #define	ISDOT(dp) \
 	(dp->d_name[0] == '.' && (dp->d_name[1] == '\0' || \
-	    dp->d_name[1] == '.' && dp->d_name[2] == '\0'))
+	    (dp->d_name[1] == '.' && dp->d_name[2] == '\0')))
 
 char *
 getcwd(pt, size)
@@ -61,7 +55,7 @@ getcwd(pt, size)
 	size_t size;
 {
 	register struct dirent *dp;
-	register DIR *dir;
+	register DIR *dir = NULL;
 	register dev_t dev;
 	register ino_t ino;
 	register int first;
@@ -232,5 +226,7 @@ err:
 	if (ptsize)
 		free(pt);
 	free(up);
+	if (dir)
+		(void)closedir(dir);
 	return (NULL);
 }

@@ -1,4 +1,5 @@
-/*	$NetBSD: conf.c,v 1.44 1995/10/08 23:46:27 gwr Exp $	*/
+/*	$OpenBSD: conf.c,v 1.19 1997/02/04 23:25:03 kstailey Exp $	*/
+/*	$NetBSD: conf.c,v 1.51 1996/11/04 16:16:09 gwr Exp $	*/
 
 /*-
  * Copyright (c) 1994 Adam Glass, Gordon W. Ross
@@ -44,47 +45,26 @@
 #include <sys/conf.h>
 #include <sys/vnode.h>
 
+#include <machine/conf.h>
+
 int	ttselect	__P((dev_t, int, struct proc *));
 
-#include "cd.h"
-bdev_decl(cd);
-cdev_decl(cd);
-
+#include "bpfilter.h"
 #include "ccd.h"
-bdev_decl(ccd);
-cdev_decl(ccd);
-
+#include "cd.h"
+#include "kbd.h"
+#include "ms.h"
+#include "pty.h"
 #include "rd.h"
-bdev_decl(rd);
-/* no cdev for rd */
-
 #include "sd.h"
-bdev_decl(sd);
-cdev_decl(sd);
-
+#include "ss.h"
 #include "st.h"
-bdev_decl(st);
-cdev_decl(st);
-
-/* swap device (required) */
-bdev_decl(sw);
-cdev_decl(sw);
-
+#include "tun.h"
+#include "uk.h"
 #include "vnd.h"
-bdev_decl(vnd);
-cdev_decl(vnd);
-
 #include "xd.h"
-bdev_decl(xd);
-cdev_decl(xd);
-
-#define	NXT 0	/* XXX */
-bdev_decl(xt);
-cdev_decl(xt);
-
 #include "xy.h"
-bdev_decl(xy);
-cdev_decl(xy);
+#include "zstty.h"
 
 struct bdevsw	bdevsw[] =
 {
@@ -115,60 +95,10 @@ struct bdevsw	bdevsw[] =
 };
 int	nblkdev = sizeof(bdevsw) / sizeof(bdevsw[0]);
 
-/*
- * Devices that have only CHR nodes are declared below.
- */
-
-cdev_decl(cn);
-cdev_decl(ctty);
-#define	mmread	mmrw
-#define	mmwrite	mmrw
-cdev_decl(mm);
-
-#include "zs.h"
-cdev_decl(zs);
-cdev_decl(kd);
-cdev_decl(ms);
-cdev_decl(kbd);
-
-/* XXX - Should make keyboard/mouse real children of zs. */
-#if NZS > 1
-#define NKD 1
-#else
-#define NKD 0
-#endif
-
-#include "pty.h"
-#define	ptstty		ptytty
-#define	ptsioctl	ptyioctl
-cdev_decl(pts);
-#define	ptctty		ptytty
-#define	ptcioctl	ptyioctl
-cdev_decl(ptc);
-
-/* frame-buffer devices */
-cdev_decl(fb);
-#include "bwtwo.h"
-cdev_decl(bw2);
-#include "cgtwo.h"
-cdev_decl(cg2);
-#include "cgfour.h"
-cdev_decl(cg4);
-
-cdev_decl(log);
-cdev_decl(fd);
-
-#include "bpfilter.h"
-cdev_decl(bpf);
-
-#include "tun.h"
-cdev_decl(tun);
-
-
 struct cdevsw	cdevsw[] =
 {
 	cdev_cn_init(1,cn),		/* 0: virtual console */
-	cdev_tty_init(NKD,kd),	/* 1: Sun keyboard/display */
+	cdev_tty_init(NKBD,kd),		/* 1: Sun keyboard/display */
 	cdev_ctty_init(1,ctty),		/* 2: controlling terminal */
 	cdev_mm_init(1,mm),		/* 3: /dev/{null,mem,kmem,...} */
 	cdev_notdef(),			/* 4: was PROM console */
@@ -179,8 +109,8 @@ struct cdevsw	cdevsw[] =
 	cdev_disk_init(NXY,xy),		/* 9: SMD disk on Xylogics 450/451 */
 	cdev_notdef(),			/* 10: systech multi-terminal board */
 	cdev_notdef(),			/* 11: DES encryption chip */
-	cdev_tty_init(NZS,zs),		/* 12: Zilog 8350 serial port */
-	cdev_mouse_init(NZS-1,ms),	/* 13: Sun mouse */
+	cdev_tty_init(NZSTTY,zs),	/* 12: Zilog 8350 serial port */
+	cdev_mouse_init(NMS,ms),	/* 13: Sun mouse */
 	cdev_notdef(),			/* 14: cgone */
 	cdev_notdef(),			/* 15: /dev/winXXX */
 	cdev_log_init(1,log),		/* 16: /dev/klog */
@@ -190,13 +120,13 @@ struct cdevsw	cdevsw[] =
 	cdev_tty_init(NPTY,pts),	/* 20: pseudo-tty slave */
 	cdev_ptc_init(NPTY,ptc),	/* 21: pseudo-tty master */
 	cdev_fb_init(1,fb),		/* 22: /dev/fb indirect driver */
-	cdev_fd_init(1,fd),		/* 23: file descriptor pseudo-device */
+	cdev_fd_init(1,filedesc),	/* 23: file descriptor pseudo-device */
 	cdev_bpftun_init(NTUN,tun),	/* 24: network tunnel */
 	cdev_notdef(),			/* 25: sun pi? */
 	cdev_notdef(),			/* 26: bwone */
 	cdev_fb_init(NBWTWO,bw2),	/* 27: bwtwo */
 	cdev_notdef(),			/* 28: Systech VPC-2200 versatec/centronics */
-	cdev_mouse_init(NZS-1,kbd),	/* 29: Sun keyboard */
+	cdev_mouse_init(NKBD,kbd),	/* 29: Sun keyboard */
 	cdev_tape_init(NXT,xt),		/* 30: Xylogics tape */
 	cdev_fb_init(NCGTWO,cg2),	/* 31: cgtwo */
 	cdev_notdef(),			/* 32: /dev/gpone */
@@ -219,7 +149,7 @@ struct cdevsw	cdevsw[] =
 	cdev_notdef(),			/* 49: (chat) */
 	cdev_notdef(),			/* 50: (chut) */
 	cdev_notdef(),			/* 51: (chut) */
-	cdev_notdef(),			/* 52: RAM disk - for install tape */
+	cdev_disk_init(NRD,rd),		/* 52: RAM disk - for install tape */
 	cdev_notdef(),			/* 53: (hd - N/A) */
 	cdev_notdef(),			/* 54: (fd - N/A) */
 	cdev_notdef(),			/* 55: cgthree */
@@ -239,6 +169,10 @@ struct cdevsw	cdevsw[] =
 	cdev_notdef(),			/* 69: /dev/audio */
 	cdev_notdef(),			/* 70: open prom */
 	cdev_notdef(),			/* 71: (sg?) */
+	cdev_random_init(1,random),	/* 72: randomness source */
+	cdev_uk_init(NUK,uk),		/* 73: unknown SCSI */
+	cdev_ss_init(NSS,ss),           /* 74: SCSI scanner */
+	cdev_gen_ipf(NIPF,ipl),		/* 75: ip filter log */
 };
 int	nchrdev = sizeof(cdevsw) / sizeof(cdevsw[0]);
 
@@ -258,6 +192,7 @@ dev_t	swapdev = makedev(4, 0);
 /*
  * Returns true if dev is /dev/mem or /dev/kmem.
  */
+int
 iskmemdev(dev)
 	dev_t dev;
 {
@@ -268,6 +203,7 @@ iskmemdev(dev)
 /*
  * Returns true if dev is /dev/zero.
  */
+int
 iszerodev(dev)
 	dev_t dev;
 {
@@ -355,6 +291,7 @@ static int chrtoblktbl[] = {
 /*
  * Convert a character device number to a block device number.
  */
+int
 chrtoblk(dev)
 	dev_t dev;
 {
@@ -369,27 +306,19 @@ chrtoblk(dev)
 }
 
 /*
- * This entire table could be autoconfig()ed but that would mean that
- * the kernel's idea of the console could be out of sync with that of
- * the standalone boot.  I think it best that they both use the same
- * known algorithm unless we see a pressing need otherwise.
+ * Convert a character device number to a block device number.
  */
-#include <dev/cons.h>
+dev_t
+blktochr(dev)
+	dev_t dev;
+{
+	int blkmaj = major(dev);
+	int i;
 
-cons_decl(kd);
-#define	zscnpollc	nullcnpollc
-
-cons_decl(zs);
-dev_type_cnprobe(zscnprobe_a);
-dev_type_cnprobe(zscnprobe_b);
-
-struct	consdev constab[] = {
-#if NZS > 0
-	{ zscnprobe_a, zscninit, zscngetc, zscnputc, zscnpollc },
-	{ zscnprobe_b, zscninit, zscngetc, zscnputc, zscnpollc },
-#endif
-#if NKD > 1
-	cons_init(kd),
-#endif
-	{ 0 },	/* REQIURED! */
-};
+	if (blkmaj >= nblkdev)
+		return (NODEV);
+	for (i = 0; i < sizeof(chrtoblktbl)/sizeof(chrtoblktbl[0]); i++)
+		if (blkmaj == chrtoblktbl[i])
+			return (makedev(i, minor(dev)));
+	return (NODEV);
+}

@@ -1,30 +1,35 @@
+/*	$OpenBSD$	*/
+
+/*-----------------------------------------------------------------------------+
+|           The ncurses menu library is  Copyright (C) 1995-1997               |
+|             by Juergen Pfeifer <Juergen.Pfeifer@T-Online.de>                 |
+|                          All Rights Reserved.                                |
+|                                                                              |
+| Permission to use, copy, modify, and distribute this software and its        |
+| documentation for any purpose and without fee is hereby granted, provided    |
+| that the above copyright notice appear in all copies and that both that      |
+| copyright notice and this permission notice appear in supporting             |
+| documentation, and that the name of the above listed copyright holder(s) not |
+| be used in advertising or publicity pertaining to distribution of the        |
+| software without specific, written prior permission.                         | 
+|                                                                              |
+| THE ABOVE LISTED COPYRIGHT HOLDER(S) DISCLAIM ALL WARRANTIES WITH REGARD TO  |
+| THIS SOFTWARE, INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY AND FIT-  |
+| NESS, IN NO EVENT SHALL THE ABOVE LISTED COPYRIGHT HOLDER(S) BE LIABLE FOR   |
+| ANY SPECIAL, INDIRECT OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RE- |
+| SULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, |
+| NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH    |
+| THE USE OR PERFORMANCE OF THIS SOFTWARE.                                     |
++-----------------------------------------------------------------------------*/
 
 /***************************************************************************
-*                            COPYRIGHT NOTICE                              *
-****************************************************************************
-*                ncurses is copyright (C) 1992-1995                        *
-*                          Zeyd M. Ben-Halim                               *
-*                          zmbenhal@netcom.com                             *
-*                          Eric S. Raymond                                 *
-*                          esr@snark.thyrsus.com                           *
-*                                                                          *
-*        Permission is hereby granted to reproduce and distribute ncurses  *
-*        by any means and for any fee, whether alone or as part of a       *
-*        larger distribution, in source or in binary form, PROVIDED        *
-*        this notice is included with any such distribution, and is not    *
-*        removed from any of its header files. Mention of ncurses in any   *
-*        applications linked with it is highly appreciated.                *
-*                                                                          *
-*        ncurses comes AS IS with no warranty, implied or expressed.       *
-*                                                                          *
-***************************************************************************/
-
-/***************************************************************************
-* Module menu_attribs                                                      *
+* Module m_attribs                                                         *
 * Control menus display attributes                                         *
 ***************************************************************************/
 
 #include "menu.priv.h"
+
+MODULE_ID("Id: m_attribs.c,v 1.5 1997/10/21 08:44:31 juergen Exp $")
 
 /* Macro to redraw menu if it is posted and changed */
 #define Refresh_Menu(menu) \
@@ -125,45 +130,4 @@ GEN_MENU_ATTR_SET_FCT( grey )
 |   Return Values :  Attribute value
 +--------------------------------------------------------------------------*/
 GEN_MENU_ATTR_GET_FCT( grey )
-
-/*---------------------------------------------------------------------------
-|   Facility      :  libnmenu  
-|   Function      :  int set_menu_pad(MENU *menu, int pad)
-|   
-|   Description   :  Set the character to be used to separate the item name
-|                    from its description. This must be a printable 
-|                    character.
-|
-|   Return Values :  E_OK              - success
-|                    E_BAD_ARGUMENT    - an invalid value has been passed
-+--------------------------------------------------------------------------*/
-int set_menu_pad(MENU *menu, int pad)
-{
-  bool do_refresh = !(menu);
-
-  if (!isprint((unsigned char)pad))
-    RETURN(E_BAD_ARGUMENT);
-  
-  Normalize_Menu( menu );
-  menu->pad = pad;
-  
-  if (do_refresh)
-      Refresh_Menu( menu );
-
-  RETURN(E_OK);
-}
-
-/*---------------------------------------------------------------------------
-|   Facility      :  libnmenu  
-|   Function      :  int menu_pad(const MENU *menu)
-|   
-|   Description   :  Return the value of the padding character
-|
-|   Return Values :  The pad character
-+--------------------------------------------------------------------------*/
-int menu_pad(const MENU * menu)
-{
-  return (Normalize_Menu( menu ) -> pad);
-}
-
 /* m_attribs.c ends here */

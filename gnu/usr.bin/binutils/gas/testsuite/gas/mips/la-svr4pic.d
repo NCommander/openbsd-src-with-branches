@@ -1,6 +1,6 @@
 #objdump: -dr --prefix-addresses
 #name: MIPS la-svr4pic
-#as: -mips1 -KPIC --defsym KPIC=1
+#as: -mips1 -KPIC
 #source: la.s
 
 # Test the la macro with -KPIC.

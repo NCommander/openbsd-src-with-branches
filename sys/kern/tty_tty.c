@@ -1,4 +1,5 @@
-/*	$NetBSD: tty_tty.c,v 1.11 1994/10/30 21:48:05 cgd Exp $	*/
+/*	$OpenBSD: tty_tty.c,v 1.5 1997/10/06 20:20:05 deraadt Exp $	*/
+/*	$NetBSD: tty_tty.c,v 1.13 1996/03/30 22:24:46 christos Exp $	*/
 
 /*-
  * Copyright (c) 1982, 1986, 1991, 1993
@@ -40,16 +41,18 @@
  */
 #include <sys/param.h>
 #include <sys/systm.h>
-#include <sys/conf.h>
 #include <sys/ioctl.h>
 #include <sys/proc.h>
 #include <sys/tty.h>
 #include <sys/vnode.h>
 #include <sys/file.h>
+#include <sys/conf.h>
+
 
 #define cttyvp(p) ((p)->p_flag & P_CONTROLT ? (p)->p_session->s_ttyvp : NULL)
 
 /*ARGSUSED*/
+int
 cttyopen(dev, flag, mode, p)
 	dev_t dev;
 	int flag, mode;
@@ -60,7 +63,7 @@ cttyopen(dev, flag, mode, p)
 
 	if (ttyvp == NULL)
 		return (ENXIO);
-	VOP_LOCK(ttyvp);
+	vn_lock(ttyvp, LK_EXCLUSIVE | LK_RETRY, p);
 #ifdef PARANOID
 	/*
 	 * Since group is tty and mode is 620 on most terminal lines
@@ -75,45 +78,50 @@ cttyopen(dev, flag, mode, p)
 	if (!error)
 #endif /* PARANOID */
 		error = VOP_OPEN(ttyvp, flag, NOCRED, p);
-	VOP_UNLOCK(ttyvp);
+	VOP_UNLOCK(ttyvp, 0, p);
 	return (error);
 }
 
 /*ARGSUSED*/
+int
 cttyread(dev, uio, flag)
 	dev_t dev;
 	struct uio *uio;
 	int flag;
 {
+	struct proc *p = uio->uio_procp;
 	register struct vnode *ttyvp = cttyvp(uio->uio_procp);
 	int error;
 
 	if (ttyvp == NULL)
 		return (EIO);
-	VOP_LOCK(ttyvp);
+	vn_lock(ttyvp, LK_EXCLUSIVE | LK_RETRY, p);
 	error = VOP_READ(ttyvp, uio, flag, NOCRED);
-	VOP_UNLOCK(ttyvp);
+	VOP_UNLOCK(ttyvp, 0, p);
 	return (error);
 }
 
 /*ARGSUSED*/
+int
 cttywrite(dev, uio, flag)
 	dev_t dev;
 	struct uio *uio;
 	int flag;
 {
+	struct proc *p = uio->uio_procp;
 	register struct vnode *ttyvp = cttyvp(uio->uio_procp);
 	int error;
 
 	if (ttyvp == NULL)
 		return (EIO);
-	VOP_LOCK(ttyvp);
+	vn_lock(ttyvp, LK_EXCLUSIVE | LK_RETRY, p);
 	error = VOP_WRITE(ttyvp, uio, flag, NOCRED);
-	VOP_UNLOCK(ttyvp);
+	VOP_UNLOCK(ttyvp, 0, p);
 	return (error);
 }
 
 /*ARGSUSED*/
+int
 cttyioctl(dev, cmd, addr, flag, p)
 	dev_t dev;
 	u_long cmd;
@@ -138,6 +146,7 @@ cttyioctl(dev, cmd, addr, flag, p)
 }
 
 /*ARGSUSED*/
+int
 cttyselect(dev, flag, p)
 	dev_t dev;
 	int flag;

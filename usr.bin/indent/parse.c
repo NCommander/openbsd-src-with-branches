@@ -1,3 +1,5 @@
+/*	$OpenBSD: parse.c,v 1.2 1996/06/26 05:34:32 deraadt Exp $	*/
+
 /*
  * Copyright (c) 1985 Sun Microsystems, Inc.
  * Copyright (c) 1980 The Regents of the University of California.
@@ -35,13 +37,16 @@
 
 #ifndef lint
 /*static char sccsid[] = "from: @(#)parse.c	5.12 (Berkeley) 2/26/91";*/
-static char rcsid[] = "$Id: parse.c,v 1.2 1993/08/01 18:14:30 mycroft Exp $";
+static char rcsid[] = "$OpenBSD: parse.c,v 1.2 1996/06/26 05:34:32 deraadt Exp $";
 #endif /* not lint */
 
 #include <stdio.h>
 #include "indent_globs.h"
 #include "indent_codes.h"
 
+void reduce();
+
+void
 parse(tk)
     int         tk;		/* the code for the construct scanned */
 {
@@ -243,6 +248,7 @@ parse(tk)
 /*----------------------------------------------*\
 |   REDUCTION PHASE				    |
 \*----------------------------------------------*/
+void
 reduce()
 {
 

@@ -1,5 +1,3 @@
-/*	$NetBSD: exec.c,v 1.6 1995/02/27 03:42:57 cgd Exp $	*/
-
 /*-
  * Copyright (c) 1991, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -34,11 +32,7 @@
  */
 
 #if defined(LIBC_SCCS) && !defined(lint)
-#if 0
-static char sccsid[] = "@(#)exec.c	8.1 (Berkeley) 6/4/93";
-#else
-static char rcsid[] = "$NetBSD: exec.c,v 1.6 1995/02/27 03:42:57 cgd Exp $";
-#endif
+static char rcsid[] = "$OpenBSD: exec.c,v 1.6 1997/07/25 20:30:01 mickey Exp $";
 #endif /* LIBC_SCCS and not lint */
 
 #include <sys/param.h>
@@ -50,7 +44,7 @@ static char rcsid[] = "$NetBSD: exec.c,v 1.6 1995/02/27 03:42:57 cgd Exp $";
 #include <stdio.h>
 #include <paths.h>
 
-#if __STDC__
+#ifdef __STDC__
 #include <stdarg.h>
 #else
 #include <varargs.h>
@@ -64,19 +58,20 @@ buildargv(ap, arg, envpp)
 	const char *arg;
 	char ***envpp;
 {
-	static size_t memsize;
-	static char **argv;
-	register size_t off;
+	register char **argv, **nargv;
+	register int memsize, off;
 
 	argv = NULL;
-	for (off = 0;; ++off) {
+	for (off = memsize = 0;; ++off) {
 		if (off >= memsize) {
 			memsize += 50;	/* Starts out at 0. */
 			memsize *= 2;	/* Ramp up fast. */
-			if (!(argv = realloc(argv, memsize * sizeof(char *)))) {
-				memsize = 0;
+			nargv = realloc(argv, memsize * sizeof(char *));
+			if (nargv == NULL) {
+				free(argv);
 				return (NULL);
 			}
+			argv = nargv;
 			if (off == 0) {
 				argv[0] = (char *)arg;
 				off = 1;
@@ -92,7 +87,7 @@ buildargv(ap, arg, envpp)
 }
 
 int
-#if __STDC__
+#ifdef __STDC__
 execl(const char *name, const char *arg, ...)
 #else
 execl(name, arg, va_alist)
@@ -105,12 +100,12 @@ execl(name, arg, va_alist)
 	int sverrno;
 	char **argv;
 
-#if __STDC__
+#ifdef __STDC__
 	va_start(ap, arg);
 #else
 	va_start(ap);
 #endif
-	if (argv = buildargv(ap, arg, NULL))
+	if ((argv = buildargv(ap, arg, NULL)))
 		(void)execve(name, argv, environ);
 	va_end(ap);
 	sverrno = errno;
@@ -120,7 +115,7 @@ execl(name, arg, va_alist)
 }
 
 int
-#if __STDC__
+#ifdef __STDC__
 execle(const char *name, const char *arg, ...)
 #else
 execle(name, arg, va_alist)
@@ -130,25 +125,36 @@ execle(name, arg, va_alist)
 #endif
 {
 	va_list ap;
-	int sverrno;
 	char **argv, **envp;
+	int i;
+
+#ifdef __STDC__
+	va_start(ap, arg);
+#else
+	va_start(ap);
+#endif
+	for (i = 1; va_arg(ap, char *) != NULL; i++)
+		;
+	va_end(ap);
+
+	argv = alloca (i * sizeof (char *));
 
 #if __STDC__
 	va_start(ap, arg);
 #else
 	va_start(ap);
 #endif
-	if (argv = buildargv(ap, arg, &envp))
-		(void)execve(name, argv, envp);
+	argv[0] = (char *) arg;
+	for (i = 1; (argv[i] = (char *) va_arg(ap, char *)) != NULL; i++)
+		;
+	envp = (char **) va_arg(ap, char **);
 	va_end(ap);
-	sverrno = errno;
-	free(argv);
-	errno = sverrno;
-	return (-1);
+
+	return execve(name, argv, envp);
 }
 
 int
-#if __STDC__
+#ifdef __STDC__
 execlp(const char *name, const char *arg, ...)
 #else
 execlp(name, arg, va_alist)
@@ -161,12 +167,12 @@ execlp(name, arg, va_alist)
 	int sverrno;
 	char **argv;
 
-#if __STDC__
+#ifdef __STDC__
 	va_start(ap, arg);
 #else
 	va_start(ap);
 #endif
-	if (argv = buildargv(ap, arg, NULL))
+	if ((argv = buildargv(ap, arg, NULL)))
 		(void)execvp(name, argv);
 	va_end(ap);
 	sverrno = errno;
@@ -189,12 +195,19 @@ execvp(name, argv)
 	const char *name;
 	char * const *argv;
 {
-	static int memsize;
-	static char **memp;
+	char **memp;
 	register int cnt, lp, ln;
 	register char *p;
 	int eacces = 0, etxtbsy = 0;
 	char *bp, *cur, *path, buf[MAXPATHLEN];
+
+	/*
+	 * Do not allow null name
+	 */
+	if (name == NULL || *name == '\0') {
+		errno = ENOENT;
+		return (-1);
+ 	}
 
 	/* If it's an absolute or relative path name, it's easy. */
 	if (strchr(name, '/')) {
@@ -209,7 +222,7 @@ execvp(name, argv)
 		path = _PATH_DEFPATH;
 	cur = path = strdup(path);
 
-	while (p = strsep(&cur, ":")) {
+	while ((p = strsep(&cur, ":"))) {
 		/*
 		 * It's a SHELL path -- double, leading and trailing colons
 		 * mean the current directory.
@@ -245,18 +258,16 @@ retry:		(void)execve(bp, argv, environ);
 		case ENOENT:
 			break;
 		case ENOEXEC:
-			for (cnt = 0; argv[cnt]; ++cnt);
-			if ((cnt + 2) * sizeof(char *) > memsize) {
-				memsize = (cnt + 2) * sizeof(char *);
-				if ((memp = realloc(memp, memsize)) == NULL) {
-					memsize = 0;
-					goto done;
-				}
-			}
+			for (cnt = 0; argv[cnt]; ++cnt)
+				;
+			memp = malloc((cnt + 2) * sizeof(char *));
+			if (memp == NULL)
+				goto done;
 			memp[0] = "sh";
 			memp[1] = bp;
 			bcopy(argv + 1, memp + 2, cnt * sizeof(char *));
 			(void)execve(_PATH_BSHELL, memp, environ);
+			free(memp);
 			goto done;
 		case ETXTBSY:
 			if (etxtbsy < 3)

@@ -31,8 +31,11 @@
  * SUCH DAMAGE.
  *
  *	from: @(#)limits.h	8.3 (Berkeley) 1/4/94
- *      $Id: limits.h,v 1.2 1995/11/14 14:00:09 build Exp $
+ *      $Id: limits.h,v 1.4 1997/07/24 14:48:51 deraadt Exp $
  */
+
+#ifndef _MACHINE_LIMITS_H_
+#define _MACHINE_LIMITS_H_
 
 #define	CHAR_BIT	8		/* number of bits in a char */
 #define	MB_LEN_MAX	6		/* Allow 31 bit UTF2 */
@@ -72,6 +75,9 @@
 #if !defined(_POSIX_SOURCE)
 #define	SIZE_T_MAX	UINT_MAX	/* max value for a size_t */
 
+#define	UID_MAX		UINT_MAX	/* max value for a uid_t */
+#define	GID_MAX		UINT_MAX	/* max value for a gid_t */
+
 /* GCC requires that quad constants be written as expressions. */
 #define	UQUAD_MAX	((u_quad_t)0-1)	/* max value for a uquad_t */
 					/* max value for a quad_t */
@@ -80,3 +86,5 @@
 
 #endif /* !_POSIX_SOURCE */
 #endif /* !_ANSI_SOURCE */
+
+#endif /* _MACHINE_LIMITS_H_ */

@@ -1,5 +1,3 @@
-/*	$NetBSD: clnt_perror.c,v 1.7 1995/04/24 16:34:39 cgd Exp $	*/
-
 /*
  * Sun RPC is a product of Sun Microsystems, Inc. and is provided for
  * unrestricted use provided that this legend is included on all tape
@@ -7,33 +5,31 @@
  * may copy or modify Sun RPC without charge, but are not authorized
  * to license or distribute it to anyone else except as part of a product or
  * program developed by the user.
- * 
+ *
  * SUN RPC IS PROVIDED AS IS WITH NO WARRANTIES OF ANY KIND INCLUDING THE
  * WARRANTIES OF DESIGN, MERCHANTIBILITY AND FITNESS FOR A PARTICULAR
  * PURPOSE, OR ARISING FROM A COURSE OF DEALING, USAGE OR TRADE PRACTICE.
- * 
+ *
  * Sun RPC is provided with no support and without any obligation on the
  * part of Sun Microsystems, Inc. to assist in its use, correction,
  * modification or enhancement.
- * 
+ *
  * SUN MICROSYSTEMS, INC. SHALL HAVE NO LIABILITY WITH RESPECT TO THE
  * INFRINGEMENT OF COPYRIGHTS, TRADE SECRETS OR ANY PATENTS BY SUN RPC
  * OR ANY PART THEREOF.
- * 
+ *
  * In no event will Sun Microsystems, Inc. be liable for any lost revenue
  * or profits or other special, indirect and consequential damages, even if
  * Sun has been advised of the possibility of such damages.
- * 
+ *
  * Sun Microsystems, Inc.
  * 2550 Garcia Avenue
  * Mountain View, California  94043
  */
 
 #if defined(LIBC_SCCS) && !defined(lint)
-/*static char *sccsid = "from: @(#)clnt_perror.c 1.15 87/10/07 Copyr 1984 Sun Micro";*/
-/*static char *sccsid = "from: @(#)clnt_perror.c	2.1 88/07/29 4.0 RPCSRC";*/
-static char *rcsid = "$NetBSD: clnt_perror.c,v 1.7 1995/04/24 16:34:39 cgd Exp $";
-#endif
+static char *rcsid = "$OpenBSD: clnt_perror.c,v 1.7 1997/02/09 03:35:23 deraadt Exp $";
+#endif /* LIBC_SCCS and not lint */
 
 /*
  * clnt_perror.c
@@ -50,6 +46,7 @@ static char *rcsid = "$NetBSD: clnt_perror.c,v 1.7 1995/04/24 16:34:39 cgd Exp $
 #include <rpc/clnt.h>
 
 static char *auth_errmsg();
+#define CLNT_PERROR_BUFLEN 256
 
 static char *buf;
 
@@ -58,7 +55,7 @@ _buf()
 {
 
 	if (buf == 0)
-		buf = (char *)malloc(256);
+		buf = (char *)malloc(CLNT_PERROR_BUFLEN);
 	return (buf);
 }
 
@@ -71,7 +68,6 @@ clnt_sperror(rpch, s)
 	char *s;
 {
 	struct rpc_err e;
-	void clnt_perrno();
 	char *err;
 	char *str = _buf();
 	char *strstart = str;
@@ -80,17 +76,15 @@ clnt_sperror(rpch, s)
 		return (0);
 	CLNT_GETERR(rpch, &e);
 
-	(void) sprintf(str, "%s: ", s);  
-	str += strlen(str);
-
-	(void) strcpy(str, clnt_sperrno(e.re_status));  
+	(void) snprintf(str, CLNT_PERROR_BUFLEN, "%s: %s", s,
+		clnt_sperrno(e.re_status));
 	str += strlen(str);
 
 	switch (e.re_status) {
 	case RPC_SUCCESS:
 	case RPC_CANTENCODEARGS:
 	case RPC_CANTDECODERES:
-	case RPC_TIMEDOUT:     
+	case RPC_TIMEDOUT:
 	case RPC_PROGUNAVAIL:
 	case RPC_PROCUNAVAIL:
 	case RPC_CANTDECODEARGS:
@@ -104,48 +98,47 @@ clnt_sperror(rpch, s)
 
 	case RPC_CANTSEND:
 	case RPC_CANTRECV:
-		(void) sprintf(str, "; errno = %s",
-		    strerror(e.re_errno)); 
-		str += strlen(str);
+		(void) snprintf(str, CLNT_PERROR_BUFLEN - (str - strstart),
+			"; errno = %s\n", strerror(e.re_errno));
 		break;
 
 	case RPC_VERSMISMATCH:
-		(void) sprintf(str,
-			"; low version = %lu, high version = %lu", 
+		(void) snprintf(str, CLNT_PERROR_BUFLEN - (str - strstart),
+			"; low version = %u, high version = %u\n",
 			e.re_vers.low, e.re_vers.high);
-		str += strlen(str);
 		break;
 
 	case RPC_AUTHERROR:
 		err = auth_errmsg(e.re_why);
-		(void) sprintf(str,"; why = ");
+		(void) snprintf(str, CLNT_PERROR_BUFLEN - (str - strstart),
+			"; why = ");
 		str += strlen(str);
 		if (err != NULL) {
-			(void) sprintf(str, "%s",err);
+			(void) snprintf(str, CLNT_PERROR_BUFLEN -
+				(str - strstart), "%s\n", err);
 		} else {
-			(void) sprintf(str,
-				"(unknown authentication error - %d)",
+			(void) snprintf(str, CLNT_PERROR_BUFLEN -
+				(str - strstart),
+				"(unknown authentication error - %d)\n",
 				(int) e.re_why);
 		}
-		str += strlen(str);
 		break;
 
 	case RPC_PROGVERSMISMATCH:
-		(void) sprintf(str, 
-			"; low version = %lu, high version = %lu", 
+		(void) snprintf(str, CLNT_PERROR_BUFLEN - (str - strstart),
+			"; low version = %u, high version = %u\n",
 			e.re_vers.low, e.re_vers.high);
-		str += strlen(str);
 		break;
 
 	default:	/* unknown */
-		(void) sprintf(str, 
-			"; s1 = %lu, s2 = %lu", 
+		(void) snprintf(str, CLNT_PERROR_BUFLEN - (str - strstart),
+			"; s1 = %u, s2 = %u\n",
 			e.re_lb.s1, e.re_lb.s2);
-		str += strlen(str);
 		break;
 	}
-	(void) sprintf(str, "\n");
-	return(strstart) ;
+	strstart[CLNT_PERROR_BUFLEN-2] = '\n';
+	strstart[CLNT_PERROR_BUFLEN-1] = '\0';
+	return (strstart) ;
 }
 
 void
@@ -153,7 +146,7 @@ clnt_perror(rpch, s)
 	CLIENT *rpch;
 	char *s;
 {
-	(void) fprintf(stderr,"%s\n",clnt_sperror(rpch,s));
+	(void) fprintf(stderr, "%s\n", clnt_sperror(rpch, s));
 }
 
 static const char *const rpc_errlist[] = {
@@ -185,8 +178,6 @@ char *
 clnt_sperrno(stat)
 	enum clnt_stat stat;
 {
-	int i;
-
 	unsigned int errnum = stat;
 
 	if (errnum < (sizeof(rpc_errlist)/sizeof(rpc_errlist[0])))
@@ -199,7 +190,7 @@ void
 clnt_perrno(num)
 	enum clnt_stat num;
 {
-	(void) fprintf(stderr,"%s\n",clnt_sperrno(num));
+	(void) fprintf(stderr, "%s\n", clnt_sperrno(num));
 }
 
 
@@ -210,22 +201,28 @@ clnt_spcreateerror(s)
 	char *str = _buf();
 
 	if (str == 0)
-		return(0);
-	(void) sprintf(str, "%s: ", s);
-	(void) strcat(str, clnt_sperrno(rpc_createerr.cf_stat));
+		return (0);
+
 	switch (rpc_createerr.cf_stat) {
 	case RPC_PMAPFAILURE:
-		(void) strcat(str, " - ");
-		(void) strcat(str,
+		(void) snprintf(str, CLNT_PERROR_BUFLEN, "%s: %s - %s\n", s,
+		    clnt_sperrno(rpc_createerr.cf_stat),
 		    clnt_sperrno(rpc_createerr.cf_error.re_status));
 		break;
 
 	case RPC_SYSTEMERROR:
-		(void) strcat(str, " - ");
-		(void) strcat(str, strerror(rpc_createerr.cf_error.re_errno));
+		(void) snprintf(str, CLNT_PERROR_BUFLEN, "%s: %s - %s\n", s,
+		    clnt_sperrno(rpc_createerr.cf_stat),
+		    strerror(rpc_createerr.cf_error.re_errno));
+		break;
+
+	default:
+		(void) snprintf(str, CLNT_PERROR_BUFLEN, "%s: %s\n", s,
+		    clnt_sperrno(rpc_createerr.cf_stat));
 		break;
 	}
-	(void) strcat(str, "\n");
+	str[CLNT_PERROR_BUFLEN-2] = '\n';
+	str[CLNT_PERROR_BUFLEN-1] = '\0';
 	return (str);
 }
 
@@ -233,7 +230,7 @@ void
 clnt_pcreateerror(s)
 	char *s;
 {
-	(void) fprintf(stderr,"%s\n",clnt_spcreateerror(s));
+	(void) fprintf(stderr, "%s", clnt_spcreateerror(s));
 }
 
 static const char *const auth_errlist[] = {
@@ -256,5 +253,5 @@ auth_errmsg(stat)
 	if (errnum < (sizeof(auth_errlist)/sizeof(auth_errlist[0])))
 		return (char *)auth_errlist[errnum];
 
-	return(NULL);
+	return (NULL);
 }

@@ -35,6 +35,9 @@
  *	@(#)limits.h	7.2 (Berkeley) 6/28/90
  */
 
+#ifndef _MACHINE_LIMITS_H_
+#define _MACHINE_LIMITS_H_
+
 #define	CHAR_BIT	8		/* number of bits in a char */
 #define	MB_LEN_MAX	1		/* no multibyte characters */
 
@@ -63,6 +66,9 @@
 #if !defined(_POSIX_SOURCE) && !defined(_XOPEN_SOURCE)
 #define	SIZE_T_MAX	UINT_MAX	/* max value for a size_t */
 
+#define	UID_MAX		UINT_MAX	/* max value for a uid_t */
+#define	GID_MAX		UINT_MAX	/* max value for a gid_t */
+
 #define	UQUAD_MAX	0xffffffffffffffffULL		/* max unsigned quad */
 #define	QUAD_MAX	0x7fffffffffffffffLL		/* max signed quad */
 #define	QUAD_MIN	(-0x7fffffffffffffffLL-1)	/* min signed quad */
@@ -82,3 +88,5 @@
 #define FLT_MAX		3.40282347E+38F
 #define FLT_MIN		1.17549435E-38F
 #endif
+
+#endif /* _MACHINE_LIMITS_H_ */

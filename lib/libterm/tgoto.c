@@ -1,3 +1,4 @@
+/*	$OpenBSD: tgoto.c,v 1.5 1995/06/05 19:45:54 pk Exp $	*/
 /*	$NetBSD: tgoto.c,v 1.5 1995/06/05 19:45:54 pk Exp $	*/
 
 /*
@@ -37,7 +38,7 @@
 #if 0
 static char sccsid[] = "@(#)tgoto.c	8.1 (Berkeley) 6/4/93";
 #else
-static char rcsid[] = "$NetBSD: tgoto.c,v 1.5 1995/06/05 19:45:54 pk Exp $";
+static char rcsid[] = "$OpenBSD: tgoto.c,v 1.5 1995/06/05 19:45:54 pk Exp $";
 #endif
 #endif /* not lint */
 
@@ -98,6 +99,8 @@ toohard:
 	added[0] = 0;
 	while ((c = *cp++) != '\0') {
 		if (c != '%') {
+			if (dp >= &result[MAXRETURNSIZE])
+				goto toohard;
 			*dp++ = c;
 			continue;
 		}
@@ -118,14 +121,20 @@ toohard:
 			/* fall into... */
 
 		case '3':
+			if (dp >= &result[MAXRETURNSIZE])
+				goto toohard;
 			*dp++ = (which / 100) | '0';
 			which %= 100;
 			/* fall into... */
 
 		case '2':
 two:	
+			if (dp >= &result[MAXRETURNSIZE])
+				goto toohard;
 			*dp++ = which / 10 | '0';
 one:
+			if (dp >= &result[MAXRETURNSIZE])
+				goto toohard;
 			*dp++ = which % 10 | '0';
 swap:
 			oncol = 1 - oncol;
@@ -173,10 +182,14 @@ setwhich:
 					 * to be the successor of tab.
 					 */
 					do {
+						if (strlen(added) + 1 >= sizeof(added))
+							goto toohard;
 						strcat(added, oncol ? (BC ? BC : "\b") : UP);
 						which++;
 					} while (which == '\n');
 			}
+			if (dp >= &result[MAXRETURNSIZE])
+				goto toohard;
 			*dp++ = which;
 			goto swap;
 
@@ -191,6 +204,8 @@ setwhich:
 			continue;
 
 		case '%':
+			if (dp >= &result[MAXRETURNSIZE])
+				goto toohard;
 			*dp++ = c;
 			continue;
 
@@ -210,6 +225,8 @@ setwhich:
 			goto toohard;
 		}
 	}
+	if (dp - result + strlen(added) >= MAXRETURNSIZE - 1)
+		goto toohard;
 	strcpy(dp, added);
 	return (result);
 }

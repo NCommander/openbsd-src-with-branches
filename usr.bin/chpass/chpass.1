@@ -1,4 +1,5 @@
-.\"	$NetBSD: chpass.1,v 1.6 1995/09/14 06:10:53 jtc Exp $
+.\"	$OpenBSD: chpass.1,v 1.5 1998/03/18 12:28:00 deraadt Exp $
+.\"	$NetBSD: chpass.1,v 1.7 1996/05/15 21:50:40 jtc Exp $
 .\"
 .\" Copyright (c) 1988, 1990, 1993
 .\"	The Regents of the University of California.  All rights reserved.
@@ -56,14 +57,14 @@ Only the information that the user is allowed to change is displayed.
 .Pp
 The options are as follows:
 .Bl -tag -width Ds
-.It Fl a
+.It Fl a Ar list
 The super-user is allowed to directly supply a user database
 entry, in the format specified by
 .Xr passwd 5 ,
 as an argument.
 This argument must be a colon (``:'') separated list of all the
 user database fields, although they may be empty.
-.It Fl s
+.It Fl s Ar newshell
 The
 .Fl s
 option attempts to change the user's shell to
@@ -193,7 +194,9 @@ to update the user database.
 .Sh ENVIRONMENT
 The
 .Xr vi 1
-editor will be used unless the environment variable EDITOR is set to
+editor will be used unless the environment variable
+.Ev EDITOR
+is set to
 an alternate editor.
 When the editor terminates, the information is re-read and used to
 update the user database itself.
@@ -205,8 +208,10 @@ with the user.
 The user database
 .It Pa /etc/passwd
 A Version 7 format password file
-.It Pa /etc/chpass.XXXXXX
-Temporary copy of the password file
+.It Pa /etc/ptmp
+Lock file for the passwd database
+.It Pa /etc/pw.XXXXXX
+Temporary copy of the user passwd information
 .It Pa /etc/shells
 The list of approved shells
 .El
@@ -221,7 +226,7 @@ The list of approved shells
 .Rs
 .%A Robert Morris
 .%A Ken Thompson
-.%T "UNIX Password security"
+.%T "UNIX Password Security"
 .Re
 .Sh BUGS
 User information should (and eventually will) be stored elsewhere.

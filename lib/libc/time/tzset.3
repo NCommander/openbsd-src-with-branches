@@ -1,11 +1,10 @@
-.\"	$NetBSD: tzset.3,v 1.5 1995/08/22 19:28:17 jtc Exp $
+.\"	$OpenBSD: tzset.3,v 1.5 1997/01/14 03:16:54 millert Exp $
 .TH TZSET 3
 .SH NAME
 tzset \- initialize time conversion information
 .SH SYNOPSIS
 .nf
 .B void tzset()
-.PP
 .fi
 .SH DESCRIPTION
 .I Tzset
@@ -231,6 +230,7 @@ UTC leap seconds are loaded from
 .SH SEE ALSO
 getenv(3),
 ctime(3),
-time(2),
+strftime(3),
+time(3),
 tzfile(5)
-.\" @(#)newtzset.3	7.3
+.\" @(#)newtzset.3	7.5

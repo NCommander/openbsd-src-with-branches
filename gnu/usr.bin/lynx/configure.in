@@ -189,7 +189,7 @@ next*)
 	CFLAGS="$CFLAGS -DNEXT -DXMOSAIC_HACK"
 	;;
 openbsd*)
-	LIBS="$LIBS -lcompat"
+	LIBS="$LIBS -lcompat -ltermlib"
 	;;
 os2*)
 	# We make sure -Zexe is not used -- it would interfere with @PROG_EXT@
@@ -585,8 +585,8 @@ srcdir="$srcdir"
 SRCDIR_CLEAN="#"
 if test -n "$srcdir" ; then
 	echo srcdir is $srcdir
-	$srcdir/mkdirs.sh WWW/Library/unix
-	$srcdir/mkdirs.sh src/chrtrans
+	sh $srcdir/mkdirs.sh WWW/Library/unix
+	sh $srcdir/mkdirs.sh src/chrtrans
 	test "$srcdir" != "." && SRCDIR_CLEAN=""
 fi
 

@@ -1,3 +1,5 @@
+/*	$OpenBSD: main.c,v 1.6 1997/06/17 05:35:44 millert Exp $	*/
+
 /*-
  * Copyright (c) 1990, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -33,7 +35,7 @@
 
 #ifndef lint
 /*static char sccsid[] = "@(#)main.c	8.1 (Berkeley) 6/6/93";*/
-static char rcsid[] = "$Id: main.c,v 1.5 1994/01/24 23:08:15 jtc Exp $";
+static char rcsid[] = "$OpenBSD: main.c,v 1.6 1997/06/17 05:35:44 millert Exp $";
 #endif /* not lint */
 
 #include <sys/types.h>
@@ -43,6 +45,7 @@ static char rcsid[] = "$Id: main.c,v 1.5 1994/01/24 23:08:15 jtc Exp $";
 #include <errno.h>
 #include <fcntl.h>
 #include <fts.h>
+#include <signal.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
@@ -64,14 +67,18 @@ main(argc, argv)
 	int argc;
 	char *argv[];
 {
-	register char **p, **start;
+	struct sigaction sa = {	show_path, SA_RESTART, NULL };
+	char **p, **paths;
 	int ch;
 
 	(void)time(&now);	/* initialize the time-of-day */
 
-	p = start = argv;
+	p = paths = (char **) emalloc(sizeof(char *) * argc);
+
+	sigaction(SIGINFO, &sa, NULL);
+
 	ftsoptions = FTS_NOSTAT|FTS_PHYSICAL;
-	while ((ch = getopt(argc, argv, "Hdf:hXx")) != EOF)
+	while ((ch = getopt(argc, argv, "Hdf:hXx")) != -1)
 		switch(ch) {
 		case 'H':
 			ftsoptions |= FTS_COMFOLLOW;
@@ -112,14 +119,17 @@ main(argc, argv)
 		*p++ = *argv++;
 	}
 
-	if (p == start)
+	if (p == paths)
 		usage();
 	*p = NULL;
+
+	if (!(paths = realloc(paths, sizeof(char *) * (p - paths + 1))))
+		err(1, NULL);
 
 	if ((dotfd = open(".", O_RDONLY, 0)) < 0)
 		err(1, ".:");
 
-	find_execute(find_formplan(argv), start);
+	find_execute(find_formplan(argv), paths);
 	exit(0);
 }
 

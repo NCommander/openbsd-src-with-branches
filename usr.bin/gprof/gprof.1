@@ -1,4 +1,5 @@
-.\"	$NetBSD: gprof.1,v 1.5 1995/04/19 07:15:57 cgd Exp $
+.\"	$OpenBSD: gprof.1,v 1.6 1997/07/17 09:05:58 deraadt Exp $
+.\"	$NetBSD: gprof.1,v 1.6 1995/11/21 22:24:55 jtc Exp $
 .\"
 .\" Copyright (c) 1983, 1990, 1993
 .\"	The Regents of the University of California.  All rights reserved.
@@ -93,8 +94,8 @@ Second, a flat profile is given,
 similar to that provided by
 .Xr prof  1  .
 This listing gives the total execution times, the call counts,
-the time in milleseconds the call spent in the routine itself, and
-the time in milleseconds the call spent in the routine itself including
+the time in milliseconds the call spent in the routine itself, and
+the time in milliseconds the call spent in the routine itself including
 its descendents.
 .Pp
 Finally, an index of the function names is provided.
@@ -214,6 +215,17 @@ This is useful with the
 .Fl c
 option for discovering which routines were never called.
 .El
+.Sh ENVIRONMENT
+.Bl -tag -width PROFDIR
+.It Ev PROFDIR
+If the environment variable
+.Ev PROFDIR
+is set, profiling information is placed in that directory in a file named
+.Pa pid.progname .
+If it is set to a null value, no profiling information is output.
+Otherwise, profiling information is placed in the file
+.Pa gmon.out .
+.El
 .Sh FILES
 .Bl -tag -width gmon.sum -compact
 .It Pa a.out
@@ -224,7 +236,7 @@ Dynamic call graph and profile.
 Summarized dynamic call graph and profile.
 .El
 .Sh SEE ALSO
-.Xr monitor 3 ,
+.Xr moncontrol 3 ,
 .Xr profil 2 ,
 .Xr cc 1 ,
 .Xr prof 1
@@ -276,7 +288,7 @@ propagated properly, unless the signal catcher was invoked during
 the execution of the profiling routine, in which case all is lost.
 .Pp
 The profiled program must call
-.Xr exit  2
+.Xr exit 3
 or return normally for the profiling information to be saved
 in the
 .Pa gmon.out

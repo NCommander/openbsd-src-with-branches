@@ -1,6 +1,7 @@
-/*	$Id$	*/
+/*	$OpenBSD: krb.h,v 1.6 1997/11/29 20:08:45 millert Exp $	*/
+/*      $KTH: krb.h,v 1.85 1997/10/24 10:18:16 assar Exp $      */
 
-/*-
+/*
  * Copyright 1987, 1988 by the Student Information Processing Board
  *	of the Massachusetts Institute of Technology
  *
@@ -21,25 +22,33 @@
  * Include file for the Kerberos library. 
  */
 
-/* Only one time, please */
-#ifndef	KRB_DEFS
-#define KRB_DEFS
-
 #include <sys/cdefs.h>
 #include <sys/types.h>
+
+#ifndef __KRB_H__
+#define __KRB_H__
+
+__BEGIN_DECLS
 
 /* Include site.h file to define paths */
 #include <kerberosIV/site.h>
 
 /* Need some defs from des.h	 */
-#include <kerberosIV/des.h>
+#include <des.h>
+
+/* CNS compatibility ahead! */
+#ifndef KRB_INT32
+#define KRB_INT32 int32_t
+#endif
+#ifndef KRB_UINT32
+#define KRB_UINT32 u_int32_t
+#endif
 
 /* Global library variables. */
+extern int krb_ignore_ip_address; /* To turn off IP address comparison */
+extern int krb_no_long_lifetimes; /* To disable AFS compatible lifetimes */
 extern int krbONE;
 #define         HOST_BYTE_ORDER (* (char *) &krbONE)
-extern int private_msg_ver; /* in rd_priv.c */
-extern int req_act_vno; /* this is defined in the kerberos server code */
-
 
 /* Text describing error codes */
 #define		MAX_KRB_ERRORS	256
@@ -63,30 +72,59 @@ extern const char *krb_err_txt[MAX_KRB_ERRORS];
  * the realm. 
  */
 
+/* /etc/kerberosIV is only for backwards compatibility, don't use it! */
+#ifndef KRB_CONF
+#define KRB_CONF	"/etc/krb.conf"
+#endif
+#ifndef KRB_RLM_TRANS
+#define KRB_RLM_TRANS   "/etc/krb.realms"
+#endif
+#ifndef KRB_CNF_FILES
+#define KRB_CNF_FILES	{ KRB_CONF,   "/etc/kerberosIV/krb.conf", 0}
+#endif
+#ifndef KRB_RLM_FILES
+#define KRB_RLM_FILES	{ KRB_RLM_TRANS, "/etc/kerberosIV/krb.realms", 0}
+#endif
+#ifndef KRB_EQUIV
+#define KRB_EQUIV	"/etc/krb.equiv"
+#endif
+#define KRB_MASTER	"kerberos"
+#ifndef KRB_REALM
+#define KRB_REALM	(krb_get_default_realm())
+#endif
+
 /* The maximum sizes for aname, realm, sname, and instance +1 */
 #define 	ANAME_SZ	40
 #define		REALM_SZ	40
 #define		SNAME_SZ	40
 #define		INST_SZ		40
-/* include space for '.' and '@' */
-#define		MAX_K_NAME_SZ	(ANAME_SZ + INST_SZ + REALM_SZ + 2)
+/* Leave space for quoting */
+#define		MAX_K_NAME_SZ	(2*ANAME_SZ + 2*INST_SZ + 2*REALM_SZ - 3)
 #define		KKEY_SZ		100
 #define		VERSION_SZ	1
 #define		MSG_TYPE_SZ	1
 #define		DATE_SZ		26	/* RTI date output */
 
-#define		MAX_HSTNM	100
+#define MAX_HSTNM 100 /* for compatibility */
+
+typedef struct krb_principal{
+    char name[ANAME_SZ];
+    char instance[INST_SZ];
+    char realm[REALM_SZ];
+}krb_principal;
 
 #ifndef DEFAULT_TKT_LIFE	/* allow compile-time override */
 /* default lifetime for krb_mk_req & co., 10 hrs */
 #define	DEFAULT_TKT_LIFE 120
 #endif
 
+#define		KRB_TICKET_GRANTING_TICKET	"krbtgt"
+
 /* Definition of text structure used to pass text around */
 #define		MAX_KTXT_LEN	1250
 
 struct ktext {
-    int     length;		/* Length of the text */
+    unsigned int length;		/* Length of the text */
     unsigned char dat[MAX_KTXT_LEN];	/* The data itself */
     u_int32_t mbz;		/* zero to catch runaway strings */
 };
@@ -107,6 +145,10 @@ typedef struct ktext KTEXT_ST;
 /* Parameters for rd_ap_req */
 /* Maximum alloable clock skew in seconds */
 #define 	CLOCK_SKEW	5*60
+/* Filename for readservkey */
+#ifndef		KEYFILE
+#define		KEYFILE		"/etc/srvtab"
+#endif
 
 /* Structure definition for rd_ap_req */
 
@@ -155,6 +197,13 @@ struct msg_dat {
 
 typedef struct msg_dat MSG_DAT;
 
+struct krb_host {
+    char *realm;
+    char *host;
+    enum krb_host_proto { PROTO_UDP, PROTO_TCP, PROTO_HTTP } proto;
+    int port;
+    int admin;
+};
 
 /* Location of ticket file for save_cred and get_cred */
 #define TKT_FILE        tkt_string()
@@ -232,6 +281,7 @@ typedef struct msg_dat MSG_DAT;
 /* Values returned by get_adtkt */
 #define         AD_OK           0	/* Ticket Obtained */
 #define         AD_NOTGT       71	/* Don't have tgt */
+#define         AD_INTR_RLM_NOTGT 72	/* Can't get inter-realm tgt */
 
 /* Error codes returned by ticket file utilities */
 #define		NO_TKT_FIL	76	/* No ticket file found */
@@ -246,76 +296,6 @@ typedef struct msg_dat MSG_DAT;
 /* Error code returned by krb_mk_safe */
 #define		SAFE_PRIV_ERROR	-1	/* syscall error */
 
-/*
- * macros for byte swapping; also scratch space
- * u_quad  0-->7, 1-->6, 2-->5, 3-->4, 4-->3, 5-->2, 6-->1, 7-->0
- * u_int32_t  0-->3, 1-->2, 2-->1, 3-->0
- * u_int16_t 0-->1, 1-->0
- */
-
-#define     swap_u_16(x) {\
- u_int32_t   _krb_swap_tmp[4];\
- swab(((char *) x) +0, ((char *)  _krb_swap_tmp) +14 ,2); \
- swab(((char *) x) +2, ((char *)  _krb_swap_tmp) +12 ,2); \
- swab(((char *) x) +4, ((char *)  _krb_swap_tmp) +10 ,2); \
- swab(((char *) x) +6, ((char *)  _krb_swap_tmp) +8  ,2); \
- swab(((char *) x) +8, ((char *)  _krb_swap_tmp) +6 ,2); \
- swab(((char *) x) +10,((char *)  _krb_swap_tmp) +4 ,2); \
- swab(((char *) x) +12,((char *)  _krb_swap_tmp) +2 ,2); \
- swab(((char *) x) +14,((char *)  _krb_swap_tmp) +0 ,2); \
- bcopy((char *)_krb_swap_tmp,(char *)x,16);\
-                            }
-
-#define     swap_u_12(x) {\
- u_int32_t   _krb_swap_tmp[4];\
- swab(( char *) x,     ((char *)  _krb_swap_tmp) +10 ,2); \
- swab(((char *) x) +2, ((char *)  _krb_swap_tmp) +8 ,2); \
- swab(((char *) x) +4, ((char *)  _krb_swap_tmp) +6 ,2); \
- swab(((char *) x) +6, ((char *)  _krb_swap_tmp) +4 ,2); \
- swab(((char *) x) +8, ((char *)  _krb_swap_tmp) +2 ,2); \
- swab(((char *) x) +10,((char *)  _krb_swap_tmp) +0 ,2); \
- bcopy((char *)_krb_swap_tmp,(char *)x,12);\
-                            }
-
-#define     swap_C_Block(x) {\
- u_int32_t   _krb_swap_tmp[4];\
- swab(( char *) x,    ((char *)  _krb_swap_tmp) +6 ,2); \
- swab(((char *) x) +2,((char *)  _krb_swap_tmp) +4 ,2); \
- swab(((char *) x) +4,((char *)  _krb_swap_tmp) +2 ,2); \
- swab(((char *) x) +6,((char *)  _krb_swap_tmp)    ,2); \
- bcopy((char *)_krb_swap_tmp,(char *)x,8);\
-                            }
-#define     swap_u_quad(x) {\
- u_int32_t   _krb_swap_tmp[4];\
- swab(( char *) &x,    ((char *)  _krb_swap_tmp) +6 ,2); \
- swab(((char *) &x) +2,((char *)  _krb_swap_tmp) +4 ,2); \
- swab(((char *) &x) +4,((char *)  _krb_swap_tmp) +2 ,2); \
- swab(((char *) &x) +6,((char *)  _krb_swap_tmp)    ,2); \
- bcopy((char *)_krb_swap_tmp,(char *)&x,8);\
-                            }
-
-#define     swap_u_long(x) {\
- u_int32_t   _krb_swap_tmp[4];\
- swab((char *)  &x,    ((char *)  _krb_swap_tmp) +2 ,2); \
- swab(((char *) &x) +2,((char *)  _krb_swap_tmp),2); \
- x = _krb_swap_tmp[0];   \
-                           }
-
-#define     swap_u_short(x) {\
- u_int16_t	_krb_swap_sh_tmp; \
- swab((char *)  &x,    ( &_krb_swap_sh_tmp) ,2); \
- x = (u_int16_t) _krb_swap_sh_tmp; \
-                            }
-/* Kerberos ticket flag field bit definitions */
-#define K_FLAG_ORDER    0       /* bit 0 --> lsb */
-#define K_FLAG_1                /* reserved */
-#define K_FLAG_2                /* reserved */
-#define K_FLAG_3                /* reserved */
-#define K_FLAG_4                /* reserved */
-#define K_FLAG_5                /* reserved */
-#define K_FLAG_6                /* reserved */
-#define K_FLAG_7                /* reserved, bit 7 --> msb */
-
 /* Defines for krb_sendauth and krb_recvauth */
 
 #define	KOPT_DONT_MK_REQ 0x00000001 /* don't call krb_mk_req */
@@ -326,107 +306,34 @@ typedef struct msg_dat MSG_DAT;
 				     * a hostname
 				     */
 
+#define KOPT_IGNORE_PROTOCOL 0x0008
+
 #define	KRB_SENDAUTH_VLEN 8	    /* length for version strings */
 
-#ifdef ATHENA_COMPAT
-#define	KOPT_DO_OLDSTYLE 0x00000008 /* use the old-style protocol */
-#endif /* ATHENA_COMPAT */
 
-struct tm;
-struct tm *k_localtime __P((u_int32_t *));
+/* File locking */
+#define   K_LOCK_SH   1		/* Shared lock */
+#define   K_LOCK_EX   2		/* Exclusive lock */
+#define   K_LOCK_NB   4		/* Don't block when locking */
+#define   K_LOCK_UN   8		/* Unlock */
 
-/* --- Random prototypes */
-#include <sys/types.h> /* to get u_char */
+extern char *krb4_version;
 
-/* Host address comparison */
-int krb_equiv __P((u_int32_t, u_int32_t));
+struct in_addr;
 
-/* Password conversion */
-void mit_string_to_key __P((char *str, char *cell, des_cblock *key));
-void afs_string_to_key __P((char *str, char *cell, des_cblock *key));
-
-/* Lifetime conversion */
-u_int32_t krb_life_to_time __P((u_int32_t start, int life));
-int krb_time_to_life __P((u_int32_t start, u_int32_t end));
-char *krb_life_to_atime __P((int life));
-int krb_atime_to_life __P((char *atime));
-
-/* Ticket manipulation */
-int tf_get_cred __P((CREDENTIALS *));
-int tf_get_pinst __P((char *));
-int tf_get_pname __P((char *));
-int tf_init __P((char *, int));
-int tf_save_cred __P((char *, char *, char *, unsigned char *, int , int , KTEXT ticket, u_int32_t));
-void tf_close __P((void));
-
-/* Private communication */
 struct sockaddr_in;
-int32_t krb_mk_priv __P((u_char *, u_char *, u_int32_t , struct des_ks_struct *, des_cblock *, struct sockaddr_in *, struct sockaddr_in *));
-int32_t krb_rd_priv __P((u_char *, u_int32_t, struct des_ks_struct *, des_cblock *, struct sockaddr_in *, struct sockaddr_in *, MSG_DAT *));
 
-/* Misc */
-KTEXT create_auth_reply __P((char *, char *, char *, int32_t, int, u_int32_t, int, KTEXT));
+typedef int (*key_proc_t) __P((char*, char*, char*, void*, des_cblock*));
 
-char *krb_get_phost __P((char *));
-char *krb_realmofhost __P((char *));
-char *tkt_string __P((void));
+typedef int (*decrypt_proc_t) __P((char*, char*, char*, void*, 
+			      key_proc_t, KTEXT*));
 
-int create_ciph __P((KTEXT, unsigned char *, char *, char *, char *, u_int32_t, int, KTEXT, u_int32_t, des_cblock *));
-int decomp_ticket __P((KTEXT, unsigned char *, char *, char *, char *, u_int32_t *, unsigned char *, int *, u_int32_t *, char *, char *, des_cblock *, struct des_ks_struct *));
-int dest_tkt __P((void));
-int get_ad_tkt __P((char *, char *, char *, int));
-int get_pw_tkt __P((char *, char *, char *, char *));
-int get_request __P((KTEXT, int, char **, char **));
-int get_request __P((KTEXT, int, char **, char **));
-int in_tkt __P((char *, char *));
-int k_isinst __P((char *));
-int k_isname __P((char *));
-int k_isrealm __P((char *));
-int kname_parse __P((char *, char *, char *, char *));
-int krb_create_ticket __P((KTEXT, unsigned char, char *, char *, char *, int32_t, char *, int16_t, int32_t, char *, char *, des_cblock *));
-int krb_get_admhst __P((char *, char *, int));
-int krb_get_admhst __P((char *, char *, int));
-int krb_get_cred __P((char *, char *, char *, CREDENTIALS *));
-int krb_get_in_tkt __P((char *, char *, char *, char *, char *, int , int (*key_proc) (/* ??? */), int (*decrypt_proc) (/* ??? */), char *));
-int krb_get_krbhst __P((char *, char *, int));
-int krb_get_krbhst __P((char *, char *, int));
-int krb_get_krbhst __P((char *, char *, int));
-int krb_get_lrealm __P((char *, int));
-int krb_get_pw_in_tkt __P((char *, char *, char *, char *, char *, int, char *));
-int krb_get_svc_in_tkt __P((char *, char *, char *, char *, char *, int, char *));
-int krb_get_tf_fullname __P((char *, char *, char *, char *));
-int krb_get_tf_realm __P((char *, char *));
-int krb_kntoln __P((AUTH_DAT *, char *));
-int krb_mk_req __P((KTEXT , char *, char *, char *, int32_t));
-int krb_net_read __P((int , char *, int));
-int krb_net_write __P((int , char *, int));
-int krb_rd_err __P((u_char *, u_int32_t, int32_t *, MSG_DAT *));
-int krb_rd_req __P((KTEXT , char *, char *, int32_t, AUTH_DAT *, char *));
-int krb_recvauth __P((int32_t, int, KTEXT, char *, char *, struct sockaddr_in *, struct sockaddr_in *, AUTH_DAT *, char *, struct des_ks_struct *, char *));
-int krb_sendauth __P((int32_t, int, KTEXT, char *, char *, char *, u_int32_t, MSG_DAT *, CREDENTIALS *, struct des_ks_struct *, struct sockaddr_in *, struct sockaddr_in *, char *));
-int krb_set_key __P((char *, int));
-int krb_set_lifetime __P((int));
-int kuserok __P((AUTH_DAT *, char *));
-int read_service_key __P((char *, char *, char *, int , char *, char *));
-int save_credentials __P((char *, char *, char *, unsigned char *, int , int , KTEXT , int32_t));
-int send_to_kdc __P((KTEXT , KTEXT , char *));
+#include <kerberosIV/krb-protos.h>
 
-int32_t krb_mk_err __P((u_char *, int32_t, char *));
-int32_t krb_mk_safe __P((u_char *, u_char *, u_int32_t, des_cblock *, struct sockaddr_in *, struct sockaddr_in *));
-int32_t krb_rd_safe __P((u_char *, u_int32_t, des_cblock *, struct sockaddr_in *, struct sockaddr_in *, MSG_DAT *));
+/* This shouldn't be here */
 
-void ad_print __P((AUTH_DAT *));
-void cr_err_reply __P((KTEXT, char *, char *, char *, u_int32_t, u_int32_t, char *));
-void extract_ticket __P((KTEXT, int, char *, int *, int *, char *, KTEXT));
-void krb_set_tkt_string __P((char *));
+char *strtok_r __P((char *s1, const char *s2, char **lasts));
 
-void kset_logfile __P((char *));
-void set_logfile __P((char *));
+__END_DECLS
 
-void log ();
-char *klog ();
-
-int getst __P((int, char *, int));
-
-
-#endif /* KRB_DEFS */
+#endif /* __KRB_H__ */

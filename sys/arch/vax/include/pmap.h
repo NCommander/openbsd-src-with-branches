@@ -1,4 +1,5 @@
-/*      $NetBSD: pmap.h,v 1.10 1995/05/11 16:53:14 jtc Exp $     */
+/*      $OpenBSD: pmap.h,v 1.7 1998/03/01 00:37:49 niklas Exp $     */
+/*      $NetBSD: pmap.h,v 1.19 1997/07/06 22:38:29 ragge Exp $     */
 
 /* 
  * Copyright (c) 1987 Carnegie-Mellon University
@@ -46,7 +47,7 @@
 #ifndef	PMAP_H
 #define	PMAP_H
 
-#include "machine/mtpr.h"
+#include <machine/mtpr.h>
 
 
 #define VAX_PAGE_SIZE	NBPG
@@ -64,7 +65,7 @@ typedef struct pmap {
 	struct pcb		*pm_pcb; /* Pointer to PCB for this pmap */
 	int                      ref_count;   /* reference count        */
 	struct pmap_statistics   stats;       /* statistics             */
-	simple_lock_data_t       lock;        /* lock on pmap           */
+	simple_lock_data_t       pm_lock;     /* lock on pmap           */
 } *pmap_t;
 
 /*
@@ -83,13 +84,27 @@ typedef struct pv_entry {
 
 #define PHYS_TO_PV(phys_page) (&pv_table[((phys_page)>>PAGE_SHIFT)])
 
-#ifdef	_KERNEL
-pv_entry_t	pv_table;		/* array of entries, 
-					   one per LOGICAL page */
-struct pmap	kernel_pmap_store;
+/* ROUND_PAGE used before vm system is initialized */
+#define ROUND_PAGE(x)   (((uint)(x) + PAGE_SIZE-1)& ~(PAGE_SIZE - 1))
+#define	TRUNC_PAGE(x)	((uint)(x) & ~(PAGE_SIZE - 1))
 
+/* Mapping macros used when allocating SPT */
+#define	MAPVIRT(ptr, count)					\
+	(vm_offset_t)ptr = virtual_avail;			\
+	virtual_avail += (count) * NBPG;
+
+#define	MAPPHYS(ptr, count, perm)				\
+	pmap_map(virtual_avail, avail_start, avail_start +	\
+	    (count) * NBPG, perm);				\
+	(vm_offset_t)ptr = virtual_avail;			\
+	virtual_avail += (count) * NBPG;				\
+	avail_start += (count) * NBPG;
+
+#ifdef	_KERNEL
 #define pa_index(pa)	                atop(pa)
 #define pa_to_pvh(pa)	                (&pv_table[atop(pa)])
+
+extern	struct pmap kernel_pmap_store;
 
 #define	pmap_kernel()			(&kernel_pmap_store)
 
@@ -102,6 +117,11 @@ struct pmap	kernel_pmap_store;
 #define	pmap_collect(pmap)		/* No need so far */
 #define	pmap_reference(pmap)	if(pmap) (pmap)->ref_count++
 #define	pmap_pinit(pmap)	(pmap)->ref_count=1;
-#define	pmap_phys_address(phys) ((u_int)(phys)<<PAGE_SIZE)
+#define	pmap_phys_address(phys) ((u_int)(phys)<<PAGE_SHIFT)
 
+/* Prototypes */
+void	pmap_bootstrap __P((void));
+vm_offset_t pmap_map __P((vm_offset_t, vm_offset_t, vm_offset_t, int));
+void	pmap_expandp0 __P((struct pmap *, int));
+void	pmap_expandp1 __P((struct pmap *));
 #endif PMAP_H

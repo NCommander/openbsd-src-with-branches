@@ -60,13 +60,14 @@ static char rcsid[] = "$NetBSD: mille.c,v 1.4 1995/03/24 05:01:48 cgd Exp $";
 void	rub();
 
 main(ac, av)
-reg int		ac;
-reg char	*av[]; {
+register int		ac;
+register char	*av[]; {
 
-	reg bool	restore;
+	register bool	restore;
 
-	/* run as the user */
-	setuid(getuid());
+	/* revoke */
+	setegid(getgid());
+	setgid(getgid());
 
 	if (strcmp(av[0], "a.out") == 0) {
 		outf = fopen("q", "w");
@@ -87,6 +88,11 @@ reg char	*av[]; {
 	}
 	Play = PLAYER;
 	initscr();
+	if ((LINES < 24) || (COLS < 80)) {
+		endwin();
+		fprintf(stderr, "Screen must be at least 24x80\n");
+		exit(1);
+	}
 	delwin(stdscr);
 	stdscr = Board = newwin(BOARD_Y, BOARD_X, 0, 0);
 	Score = newwin(SCORE_Y, SCORE_X, 0, 40);

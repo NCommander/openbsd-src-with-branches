@@ -1,4 +1,4 @@
-/*	$NetBSD: types.h,v 1.11 1995/07/06 03:39:36 cgd Exp $	*/
+/*	$NetBSD: types.h,v 1.12 1995/12/24 01:08:03 mycroft Exp $	*/
 
 /*-
  * Copyright (c) 1990 The Regents of the University of California.
@@ -64,11 +64,11 @@ typedef	short			  int16_t;
 typedef	unsigned short		u_int16_t;
 typedef	int			  int32_t;
 typedef	unsigned int		u_int32_t;
+/* LONGLONG */
 typedef	long long		  int64_t;
+/* LONGLONG */
 typedef	unsigned long long	u_int64_t;
 
 typedef int32_t			register_t;
-
-#define	__SWAP_BROKEN
 
 #endif	/* _MACHTYPES_H_ */

@@ -1,31 +1,38 @@
+/*	$OpenBSD: read_service_key.c,v 1.5 1997/12/22 15:02:12 art Exp $	*/
+/* $KTH: read_service_key.c,v 1.8 1997/03/23 03:53:16 joda Exp $ */
+
 /*
- * This software may now be redistributed outside the US.
+ * This source code is no longer held under any constraint of USA
+ * `cryptographic laws' since it was exported legally.  The cryptographic
+ * functions were removed from the code and a "Bones" distribution was
+ * made.  A Commodity Jurisdiction Request #012-94 was filed with the
+ * USA State Department, who handed it to the Commerce department.  The
+ * code was determined to fall under General License GTDA under ECCN 5D96G,
+ * and hence exportable.  The cryptographic interfaces were re-added by Eric
+ * Young, and then KTH proceeded to maintain the code in the free world.
  *
- * $Source: /usr/src/kerberosIV/lib/krb/RCS/read_service_key.c,v $
- *
- * $Locker:  $
  */
 
 /* 
-  Copyright (C) 1989 by the Massachusetts Institute of Technology
-
-   Export of this software from the United States of America is assumed
-   to require a specific license from the United States Government.
-   It is the responsibility of any person or organization contemplating
-   export to obtain such a license before exporting.
-
-WITHIN THAT CONSTRAINT, permission to use, copy, modify, and
-distribute this software and its documentation for any purpose and
-without fee is hereby granted, provided that the above copyright
-notice appear in all copies and that both that copyright notice and
-this permission notice appear in supporting documentation, and that
-the name of M.I.T. not be used in advertising or publicity pertaining
-to distribution of the software without specific, written prior
-permission.  M.I.T. makes no representations about the suitability of
-this software for any purpose.  It is provided "as is" without express
-or implied warranty.
-
-  */
+ *  Copyright (C) 1989 by the Massachusetts Institute of Technology
+ *
+ *  Export of this software from the United States of America is assumed
+ *  to require a specific license from the United States Government.
+ *  It is the responsibility of any person or organization contemplating
+ *  export to obtain such a license before exporting.
+ *
+ * WITHIN THAT CONSTRAINT, permission to use, copy, modify, and
+ * distribute this software and its documentation for any purpose and
+ * without fee is hereby granted, provided that the above copyright
+ * notice appear in all copies and that both that copyright notice and
+ * this permission notice appear in supporting documentation, and that
+ * the name of M.I.T. not be used in advertising or publicity pertaining
+ * to distribution of the software without specific, written prior
+ * permission.  M.I.T. makes no representations about the suitability of
+ * this software for any purpose.  It is provided "as is" without express
+ * or implied warranty.
+ *
+ */
 
 #include "krb_locl.h"
 
@@ -62,15 +69,13 @@ or implied warranty.
  */
 
 
-/*ARGSUSED */
 int
-read_service_key(service, instance, realm, kvno, file, key)
-	char *service;		/* Service Name */
-	char *instance;		/* Instance name or "*" */
-	char *realm;		/* Realm */
-	int kvno;		/* Key version number */
-	char *file;		/* Filename */
-	char *key;		/* Pointer to key to be filled in */
+read_service_key(char *service,	/* Service Name */
+		 char *instance, /* Instance name or "*" */
+		 char *realm,	/* Realm */
+		 int kvno,	/* Key version number */
+		 char *file,	/* Filename */
+		 char *key)	/* Pointer to key to be filled in */
 {
     char serv[SNAME_SZ];
     char inst[INST_SZ];
@@ -78,56 +83,52 @@ read_service_key(service, instance, realm, kvno, file, key)
     unsigned char vno;          /* Key version number */
     int wcard;
 
-    int stab, open(const char *, int, ...);
+    int stab;
 
-    if ((stab = open(file, 0, 0)) < 0)
-        return(KFAILURE);
+    if ((stab = open(file, O_RDONLY, 0)) < 0)
+        return KFAILURE;
+
+    if (instance == NULL)
+	return KFAILURE;
 
     wcard = (instance[0] == '*') && (instance[1] == '\0');
 
-    while (getst(stab,serv,SNAME_SZ) > 0) { /* Read sname */
-        (void) getst(stab,inst,INST_SZ); /* Instance */
-        (void) getst(stab,rlm,REALM_SZ); /* Realm */
+    while (getst(stab, serv, SNAME_SZ) > 0) { /* Read sname */
+        getst(stab, inst, INST_SZ); /* Instance */
+        getst(stab, rlm, REALM_SZ); /* Realm */
         /* Vers number */
-        if (read(stab,(char *)&vno,1) != 1) {
+        if (read(stab, &vno, 1) != 1) {
 	    close(stab);
-            return(KFAILURE);
+            return KFAILURE;
 	}
         /* Key */
-        if (read(stab,key,8) != 8) {
+        if (read(stab, key, 8) != 8) {
 	    close(stab);
-            return(KFAILURE);
+            return KFAILURE;
 	}
         /* Is this the right service */
-        if (strcmp(serv,service))
+        if (service != NULL && strcmp(serv, service))
             continue;
         /* How about instance */
-        if (!wcard && strcmp(inst,instance))
+        if (wcard == '\0' && strcmp(inst,instance))
             continue;
-        if (wcard)
-            (void) strncpy(instance,inst,INST_SZ);
+        if (wcard != 0) {
+            strncpy(instance, inst, INST_SZ);
+	    instance[INST_SZ - 1] = '\0';
+	}
         /* Is this the right realm */
-#ifdef ATHENA_COMPAT
-	/* XXX For backward compatibility:  if keyfile says "Athena"
-	   and caller wants "ATHENA.MIT.EDU", call it a match */
-        if (strcmp(rlm,realm) &&
-	    (strcmp(rlm,"Athena") ||
-	     strcmp(realm,"ATHENA.MIT.EDU")))
+        if (realm != NULL && strcmp(rlm, realm)) 
 	    continue;
-#else /* ! ATHENA_COMPAT */
-        if (strcmp(rlm,realm)) 
-	    continue;
-#endif /* ATHENA_COMPAT */
 
         /* How about the key version number */
         if (kvno && kvno != (int) vno)
             continue;
 
-        (void) close(stab);
-        return(KSUCCESS);
+        close(stab);
+        return KSUCCESS;
     }
 
     /* Can't find the requested service */
-    (void) close(stab);
+    close(stab);
     return(KFAILURE);
 }

@@ -1,3 +1,5 @@
+/*	$OpenBSD: wwterminfo.c,v 1.6 1998/01/03 12:32:23 deraadt Exp $	*/
+
 /*
  * Copyright (c) 1982, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -35,7 +37,11 @@
  */
 
 #ifndef lint
+#if 0
 static char sccsid[] = "@(#)wwterminfo.c	8.1 (Berkeley) 6/6/93";
+#else
+static char rcsid[] = "$OpenBSD: wwterminfo.c,v 1.6 1998/01/03 12:32:23 deraadt Exp $";
+#endif
 #endif /* not lint */
 
 #ifdef TERMINFO
@@ -62,7 +68,8 @@ wwterminfoinit()
 	char buf[2048];
 
 		/* make the directory */
-	(void) sprintf(wwterminfopath, "%swwinXXXXXX", _PATH_TMP);
+	(void) snprintf(wwterminfopath, sizeof wwterminfopath,
+	    "%swwinXXXXXX", _PATH_TMP);
 	mktemp(wwterminfopath);
 	if (mkdir(wwterminfopath, 0755) < 0 ||
 	    chmod(wwterminfopath, 00755) < 0) {
@@ -71,7 +78,7 @@ wwterminfoinit()
 	}
 	(void) setenv("TERMINFO", wwterminfopath, 1);
 		/* make a termcap entry and turn it into terminfo */
-	(void) sprintf(buf, "%s/cap", wwterminfopath);
+	(void) snprintf(buf, sizeof buf, "%s/cap", wwterminfopath);
 	if ((fp = fopen(buf, "w")) == NULL) {
 		wwerrno = WWE_SYS;
 		return -1;
@@ -79,10 +86,10 @@ wwterminfoinit()
 	(void) fprintf(fp, "%sco#%d:li#%d:%s\n",
 		WWT_TERMCAP, wwncol, wwnrow, wwwintermcap);
 	(void) fclose(fp);
-	(void) sprintf(buf,
-		"cd %s; %s cap >info 2>/dev/null; %s info >/dev/null 2>&1",
-		wwterminfopath, _PATH_CAPTOINFO, _PATH_TIC);
-	(void) system(buf);
+	(void) snprintf(buf, sizeof buf,
+	    "cd %s; %s cap >info 2>/dev/null; %s info >/dev/null 2>&1",
+	    wwterminfopath, _PATH_CAPTOINFO, _PATH_TIC);
+	(void) system(buf);		/* XXX */
 	return 0;
 }
 
@@ -98,8 +105,9 @@ wwterminfoend()
 		return -1;
 	case 0:
 		execl(_PATH_RM, _PATH_RM, "-rf", wwterminfopath, 0);
-		return -1;
+		_exit(0);
 	default:
+		wait(NULL);
 		return 0;
 	}
 }

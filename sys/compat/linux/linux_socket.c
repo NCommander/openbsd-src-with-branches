@@ -1,4 +1,5 @@
-/*	$NetBSD: linux_socket.c,v 1.12 1995/10/07 06:27:13 mycroft Exp $	*/
+/*	$OpenBSD: linux_socket.c,v 1.10 1998/02/07 16:33:34 deraadt Exp $	*/
+/*	$NetBSD: linux_socket.c,v 1.14 1996/04/05 00:01:50 christos Exp $	*/
 
 /*
  * Copyright (c) 1995 Frank van der Linden
@@ -44,6 +45,8 @@
 #include <sys/socket.h>
 #include <sys/socketvar.h>
 #include <net/if.h>
+#include <net/if_types.h>
+#include <net/if_dl.h>
 #include <netinet/in.h>
 #include <netinet/tcp.h>
 #include <sys/mount.h>
@@ -70,6 +73,36 @@
  * calls to copy them in themselves. To make it look better, they
  * are copied to structures.
  */
+
+int linux_to_bsd_domain __P((int));
+int linux_socket __P((struct proc *, struct linux_socket_args *, register_t *));
+int linux_bind __P((struct proc *, struct linux_bind_args *, register_t *));
+int linux_connect __P((struct proc *, struct linux_connect_args *,
+    register_t *));
+int linux_listen __P((struct proc *, struct linux_listen_args *, register_t *));
+int linux_accept __P((struct proc *, struct linux_accept_args *, register_t *));
+int linux_getsockname __P((struct proc *, struct linux_getsockname_args *,
+    register_t *));
+int linux_getpeername __P((struct proc *, struct linux_getpeername_args *,
+    register_t *));
+int linux_socketpair __P((struct proc *, struct linux_socketpair_args *,
+    register_t *));
+int linux_send __P((struct proc *, struct linux_send_args *, register_t *));
+int linux_recv __P((struct proc *, struct linux_recv_args *, register_t *));
+int linux_sendto __P((struct proc *, struct linux_sendto_args *, register_t *));
+int linux_recvfrom __P((struct proc *, struct linux_recvfrom_args *,
+    register_t *));
+int linux_shutdown __P((struct proc *, struct linux_shutdown_args *,
+    register_t *));
+int linux_to_bsd_sopt_level __P((int));
+int linux_to_bsd_so_sockopt __P((int));
+int linux_to_bsd_ip_sockopt __P((int));
+int linux_to_bsd_tcp_sockopt __P((int));
+int linux_to_bsd_udp_sockopt __P((int));
+int linux_setsockopt __P((struct proc *, struct linux_setsockopt_args *,
+    register_t *));
+int linux_getsockopt __P((struct proc *, struct linux_getsockopt_args *,
+    register_t *));
 
 /*
  * Convert between Linux and BSD socket domain values
@@ -140,7 +173,7 @@ linux_bind(p, uap, retval)
 		return error;
 
 	SCARG(&bba, s) = lba.s;
-	SCARG(&bba, name) = (caddr_t) lba.name;
+	SCARG(&bba, name) = (void *) lba.name;
 	SCARG(&bba, namelen) = lba.namelen;
 
 	return sys_bind(p, &bba, retval);
@@ -164,10 +197,46 @@ linux_connect(p, uap, retval)
 		return error;
 
 	SCARG(&bca, s) = lca.s;
-	SCARG(&bca, name) = (caddr_t) lca.name;
+	SCARG(&bca, name) = (void *) lca.name;
 	SCARG(&bca, namelen) = lca.namelen;
 
-	return sys_connect(p, &bca, retval);
+	error = sys_connect(p, &bca, retval);
+
+	if (error == EISCONN) {
+		struct sys_getsockopt_args bga;
+		struct sys_fcntl_args fca;
+		void *status, *statusl;
+		int stat, statl = sizeof stat;
+		caddr_t sg;
+
+		SCARG(&fca, fd) = lca.s;
+		SCARG(&fca, cmd) = F_GETFL;
+		SCARG(&fca, arg) = 0;
+		if (sys_getsockopt(p, &fca, retval) == -1 ||
+		    (*retval & O_NONBLOCK) == 0)
+			return error;
+
+		sg = stackgap_init(p->p_emul);
+		status = stackgap_alloc(&sg, sizeof stat);
+		statusl = stackgap_alloc(&sg, sizeof statusl);
+
+		if ((error = copyout(&statl, statusl, sizeof statl)))
+			return error;
+
+		SCARG(&bga, s) = lca.s;
+		SCARG(&bga, level) = SOL_SOCKET;
+		SCARG(&bga, name) = SO_ERROR;
+		SCARG(&bga, val) = status;
+		SCARG(&bga, avalsize) = statusl;
+		
+		error = sys_getsockopt(p, &bga, retval);
+		if (error)
+			return error;
+		if ((error = copyin(status, &stat, sizeof stat)))
+			return error;
+		return stat;
+	}
+	return error;
 }
 
 int
@@ -368,7 +437,7 @@ linux_sendto(p, uap, retval)
 	SCARG(&bsa, buf) = lsa.msg;
 	SCARG(&bsa, len) = lsa.len;
 	SCARG(&bsa, flags) = lsa.flags;
-	SCARG(&bsa, to) = (caddr_t) lsa.to;
+	SCARG(&bsa, to) = (void *) lsa.to;
 	SCARG(&bsa, tolen) = lsa.tolen;
 
 	return sys_sendto(p, &bsa, retval);
@@ -510,6 +579,8 @@ linux_to_bsd_ip_sockopt(lopt)
 		return IP_ADD_MEMBERSHIP;
 	case LINUX_IP_DROP_MEMBERSHIP:
 		return IP_DROP_MEMBERSHIP;
+	case LINUX_IP_HDRINCL:
+		return IP_HDRINCL;
 	default:
 		return -1;
 	}
@@ -578,20 +649,20 @@ linux_setsockopt(p, uap, retval)
 	SCARG(&bsa, valsize) = lsa.optlen;
 
 	switch (SCARG(&bsa, level)) {
-		case SOL_SOCKET:
-			name = linux_to_bsd_so_sockopt(lsa.optname);
-			break;
-		case IPPROTO_IP:
-			name = linux_to_bsd_ip_sockopt(lsa.optname);
-			break;
-		case IPPROTO_TCP:
-			name = linux_to_bsd_tcp_sockopt(lsa.optname);
-			break;
-		case IPPROTO_UDP:
-			name = linux_to_bsd_udp_sockopt(lsa.optname);
-			break;
-		default:
-			return EINVAL;
+	case SOL_SOCKET:
+		name = linux_to_bsd_so_sockopt(lsa.optname);
+		break;
+	case IPPROTO_IP:
+		name = linux_to_bsd_ip_sockopt(lsa.optname);
+		break;
+	case IPPROTO_TCP:
+		name = linux_to_bsd_tcp_sockopt(lsa.optname);
+		break;
+	case IPPROTO_UDP:
+		name = linux_to_bsd_udp_sockopt(lsa.optname);
+		break;
+	default:
+		return EINVAL;
 	}
 
 	if (name == -1)
@@ -629,20 +700,20 @@ linux_getsockopt(p, uap, retval)
 	SCARG(&bga, avalsize) = lga.optlen;
 
 	switch (SCARG(&bga, level)) {
-		case SOL_SOCKET:
-			name = linux_to_bsd_so_sockopt(lga.optname);
-			break;
-		case IPPROTO_IP:
-			name = linux_to_bsd_ip_sockopt(lga.optname);
-			break;
-		case IPPROTO_TCP:
-			name = linux_to_bsd_tcp_sockopt(lga.optname);
-			break;
-		case IPPROTO_UDP:
-			name = linux_to_bsd_udp_sockopt(lga.optname);
-			break;
-		default:
-			return EINVAL;
+	case SOL_SOCKET:
+		name = linux_to_bsd_so_sockopt(lga.optname);
+		break;
+	case IPPROTO_IP:
+		name = linux_to_bsd_ip_sockopt(lga.optname);
+		break;
+	case IPPROTO_TCP:
+		name = linux_to_bsd_tcp_sockopt(lga.optname);
+		break;
+	case IPPROTO_UDP:
+		name = linux_to_bsd_udp_sockopt(lga.optname);
+		break;
+	default:
+		return EINVAL;
 	}
 
 	if (name == -1)
@@ -701,4 +772,87 @@ linux_sys_socketcall(p, v, retval)
 	default:
 		return ENOSYS;
 	}
+}
+
+int
+linux_ioctl_socket(p, uap, retval)
+	register struct proc *p;
+	register struct linux_sys_ioctl_args /* {
+		syscallarg(int) fd;
+		syscallarg(u_long) com;
+		syscallarg(caddr_t) data;
+	} */ *uap;
+	register_t *retval;
+{
+	u_long com;
+	struct sys_ioctl_args ia;
+
+	com = SCARG(uap, com);
+	retval[0] = 0;
+
+	switch (com) {
+	case LINUX_SIOCGIFCONF:
+		SCARG(&ia, com) = OSIOCGIFCONF;
+		break;
+	case LINUX_SIOCGIFFLAGS:
+		SCARG(&ia, com) = SIOCGIFFLAGS;
+		break;
+	case LINUX_SIOCGIFADDR:
+		SCARG(&ia, com) = OSIOCGIFADDR;
+		break;
+	case LINUX_SIOCGIFDSTADDR:
+		SCARG(&ia, com) = OSIOCGIFDSTADDR;
+		break;
+	case LINUX_SIOCGIFBRDADDR:
+		SCARG(&ia, com) = OSIOCGIFBRDADDR;
+		break;
+	case LINUX_SIOCGIFNETMASK:
+		SCARG(&ia, com) = OSIOCGIFNETMASK;
+		break;
+	case LINUX_SIOCGIFMETRIC:
+		SCARG(&ia, com) = SIOCGIFMETRIC;
+		break;
+	case LINUX_SIOCGIFMTU:
+		SCARG(&ia, com) = SIOCGIFMTU;
+		break;
+	case LINUX_SIOCADDMULTI:
+		SCARG(&ia, com) = SIOCADDMULTI;
+		break;
+	case LINUX_SIOCDELMULTI:
+		SCARG(&ia, com) = SIOCDELMULTI;
+		break;
+	case LINUX_SIOCGIFHWADDR: {
+		struct linux_ifreq *ifr = (struct linux_ifreq *)SCARG(&ia, data);
+		struct sockaddr_dl *sdl;
+		struct ifnet *ifp;
+		struct ifaddr *ifa;
+
+		/* 
+		 * Note that we don't actually respect the name in the ifreq
+		 * structure, as Linux interface names are all different.
+		 */
+		for (ifp = ifnet.tqh_first; ifp != 0;
+		    ifp = ifp->if_list.tqe_next) {
+			if (ifp->if_type != IFT_ETHER)
+				continue;
+			for (ifa = ifp->if_addrlist.tqh_first; ifa;
+			    ifa = ifa->ifa_list.tqe_next) {
+				if ((sdl = (struct sockaddr_dl *)ifa->ifa_addr) &&
+				    (sdl->sdl_family == AF_LINK) &&
+				    (sdl->sdl_type == IFT_ETHER)) {
+					return copyout(LLADDR(sdl),
+					    (caddr_t)&ifr->ifr_hwaddr.sa_data,
+					    LINUX_IFHWADDRLEN);
+				}
+			}
+		}
+		return ENOENT;
+	    }
+	default:
+		return EINVAL;
+	}
+
+	SCARG(&ia, fd) = SCARG(uap, fd);
+	SCARG(&ia, data) = SCARG(uap, data);
+	return sys_ioctl(p, &ia, retval);
 }

@@ -1,3 +1,4 @@
+/*	$OpenBSD: ppp_defs.h,v 1.1 1995/07/04 06:28:26 paulus Exp $	*/
 /*	$NetBSD: ppp_defs.h,v 1.1 1995/07/04 06:28:26 paulus Exp $	*/
 
 /*
@@ -54,15 +55,18 @@
  * Protocol field values.
  */
 #define PPP_IP		0x21	/* Internet Protocol */
+#define	PPP_IPX		0x2b	/* Internetwork Packet Exchange */
 #define	PPP_VJC_COMP	0x2d	/* VJ compressed TCP */
 #define	PPP_VJC_UNCOMP	0x2f	/* VJ uncompressed TCP */
 #define PPP_COMP	0xfd	/* compressed packet */
 #define PPP_IPCP	0x8021	/* IP Control Protocol */
+#define	PPP_IPXCP	0x802b	/* IPX Control Protocol */
 #define PPP_CCP		0x80fd	/* Compression Control Protocol */
 #define PPP_LCP		0xc021	/* Link Control Protocol */
 #define PPP_PAP		0xc023	/* Password Authentication Protocol */
 #define PPP_LQR		0xc025	/* Link Quality Report protocol */
 #define PPP_CHAP	0xc223	/* Cryptographic Handshake Auth. Protocol */
+#define PPP_CBCP	0xc029	/* Callback Control Protocol */
 
 /*
  * Values for FCS calculations.

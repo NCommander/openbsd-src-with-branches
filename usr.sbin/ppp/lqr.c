@@ -17,7 +17,7 @@
  * IMPLIED WARRANTIES, INCLUDING, WITHOUT LIMITATION, THE IMPLIED
  * WARRANTIES OF MERCHANTIBILITY AND FITNESS FOR A PARTICULAR PURPOSE.
  *
- * $Id: lqr.c,v 1.20 1997/11/22 03:37:37 brian Exp $
+ * $Id: lqr.c,v 1.4 1998/03/12 02:40:42 brian Exp $
  *
  *	o LQR based on RFC1333
  *
@@ -29,6 +29,7 @@
 #include <netinet/in.h>
 
 #include <stdio.h>
+#include <string.h>
 
 #include "command.h"
 #include "mbuf.h"
@@ -42,21 +43,23 @@
 #include "lcp.h"
 #include "loadalias.h"
 #include "vars.h"
-#include "main.h"
 
-struct pppTimer LqrTimer;
+struct lqrdata MyLqrData, HisLqrData;
+struct lqrsave HisLqrSave;
+
+static struct pppTimer LqrTimer;
 
 static u_long lastpeerin = (u_long) - 1;
 
 static int lqmmethod;
-static int echoseq;
-static int gotseq;
+static u_int32_t echoseq;
+static u_int32_t gotseq;
 static int lqrsendcnt;
 
 struct echolqr {
-  u_long magic;
-  u_long signature;
-  u_long sequence;
+  u_int32_t magic;
+  u_int32_t signature;
+  u_int32_t sequence;
 };
 
 #define	SIGNATURE  0x594e4f54
@@ -82,14 +85,17 @@ void
 RecvEchoLqr(struct mbuf * bp)
 {
   struct echolqr *lqr;
-  u_long seq;
+  u_int32_t seq;
 
   if (plength(bp) == sizeof(struct echolqr)) {
     lqr = (struct echolqr *) MBUF_CTOP(bp);
     if (htonl(lqr->signature) == SIGNATURE) {
       seq = ntohl(lqr->sequence);
       LogPrintf(LogLQM, "Got echo LQR [%d]\n", ntohl(lqr->sequence));
-      gotseq = seq;
+      /* careful not to update gotseq with older values */
+      if ((gotseq > (u_int32_t)0 - 5 && seq < 5) ||
+          (gotseq <= (u_int32_t)0 - 5 && seq > gotseq))
+        gotseq = seq;
     }
   }
 }
@@ -102,7 +108,7 @@ LqrChangeOrder(struct lqrdata * src, struct lqrdata * dst)
 
   sp = (u_long *) src;
   dp = (u_long *) dst;
-  for (n = 0; n < sizeof(struct lqrdata) / sizeof(u_long); n++)
+  for (n = 0; n < sizeof(struct lqrdata) / sizeof(u_int32_t); n++)
     *dp++ = ntohl(*sp++);
 }
 
@@ -115,12 +121,12 @@ SendLqrReport(void *v)
 
   if (lqmmethod & LQM_LQR) {
     if (lqrsendcnt > 5) {
-
       /*
        * XXX: Should implement LQM strategy
        */
-      LogPrintf(LogPHASE, "** 1 Too many ECHO packets are lost. **\n");
-      lqmmethod = 0;		/* Prevent rcursion via LcpClose() */
+      LogPrintf(LogPHASE, "** Too many LQR packets lost **\n");
+      LogPrintf(LogLQM, "LqrOutput: Too many LQR packets lost\n");
+      lqmmethod = 0;		/* Prevent recursion via LcpClose() */
       reconnect(RECON_TRUE);
       LcpClose();
     } else {
@@ -129,15 +135,17 @@ SendLqrReport(void *v)
       lqrsendcnt++;
     }
   } else if (lqmmethod & LQM_ECHO) {
-    if (echoseq - gotseq > 5) {
-      LogPrintf(LogPHASE, "** 2 Too many ECHO packets are lost. **\n");
-      lqmmethod = 0;		/* Prevent rcursion via LcpClose() */
+    if ((echoseq > 5 && echoseq - 5 > gotseq) ||
+        (echoseq <= 5 && echoseq > gotseq + 5)) {
+      LogPrintf(LogPHASE, "** Too many ECHO LQR packets lost **\n");
+      LogPrintf(LogLQM, "LqrOutput: Too many ECHO LQR packets lost\n");
+      lqmmethod = 0;		/* Prevent recursion via LcpClose() */
       reconnect(RECON_TRUE);
       LcpClose();
     } else
       SendEchoReq();
   }
-  if (lqmmethod && Enabled(ConfLqr))
+  if (lqmmethod && LqrTimer.load)
     StartTimer(&LqrTimer);
 }
 
@@ -177,12 +185,15 @@ LqrInput(struct mbuf * bp)
     lqrsendcnt = 0;		/* we have received LQR from peer */
 
     /*
-     * Generate LQR responce to peer, if i) We are not running LQR timer. ii)
-     * Two successive LQR's PeerInLQRs are same.
+     * Generate an LQR response to peer we're not running LQR timer OR
+     * two successive LQR's PeerInLQRs are same OR we're not going to
+     * send our next one before the peers max timeout.
      */
-    if (LqrTimer.load == 0 || lastpeerin == HisLqrData.PeerInLQRs) {
+    if (LqrTimer.load == 0 || lastpeerin == HisLqrData.PeerInLQRs ||
+        (LqrTimer.arg &&
+         LqrTimer.rest * 100 / SECTICKS > (u_int32_t)LqrTimer.arg)) {
       lqmmethod |= LQM_LQR;
-      SendLqrReport(0);
+      SendLqrReport(LqrTimer.arg);
     }
     lastpeerin = HisLqrData.PeerInLQRs;
   }
@@ -196,34 +207,34 @@ void
 StartLqm()
 {
   struct lcpstate *lcp = &LcpInfo;
-  int period;
 
   lqrsendcnt = 0;		/* start waiting all over for ECHOs */
   echoseq = 0;
   gotseq = 0;
+  memset(&HisLqrData, '\0', sizeof HisLqrData);
 
   lqmmethod = LQM_ECHO;
-  if (Enabled(ConfLqr))
+  if (Enabled(ConfLqr) && !REJECTED(lcp, TY_QUALPROTO))
     lqmmethod |= LQM_LQR;
   StopTimer(&LqrTimer);
-  LogPrintf(LogLQM, "LQM method = %d\n", lqmmethod);
 
-  if (lcp->his_lqrperiod || lcp->want_lqrperiod) {
+  if (lcp->his_lqrperiod)
+    LogPrintf(LogLQM, "Expecting LQR every %d.%02d secs\n",
+	      lcp->his_lqrperiod / 100, lcp->his_lqrperiod % 100);
 
-    /*
-     * We need to run timer. Let's figure out period.
-     */
-    period = lcp->his_lqrperiod ? lcp->his_lqrperiod : lcp->want_lqrperiod;
-    StopTimer(&LqrTimer);
+  if (lcp->want_lqrperiod) {
+    LogPrintf(LogLQM, "Will send %s every %d.%02d secs\n",
+              lqmmethod & LQM_LQR ? "LQR" : "ECHO LQR",
+	      lcp->want_lqrperiod / 100, lcp->want_lqrperiod % 100);
     LqrTimer.state = TIMER_STOPPED;
-    LqrTimer.load = period * SECTICKS / 100;
+    LqrTimer.load = lcp->want_lqrperiod * SECTICKS / 100;
     LqrTimer.func = SendLqrReport;
-    SendLqrReport(0);
-    StartTimer(&LqrTimer);
-    LogPrintf(LogLQM, "Will send LQR every %d.%d secs\n",
-	      period / 100, period % 100);
+    LqrTimer.arg = (void *)lcp->his_lqrperiod;
+    SendLqrReport(LqrTimer.arg);
   } else {
-    LogPrintf(LogLQM, "LQR is not activated.\n");
+    LqrTimer.load = 0;
+    if (!lcp->his_lqrperiod)
+      LogPrintf(LogLQM, "LQR/ECHO LQR not negotiated\n");
   }
 }
 
@@ -244,7 +255,7 @@ StopLqr(int method)
     LogPrintf(LogLQM, "Stop sending LCP ECHO.\n");
   lqmmethod &= ~method;
   if (lqmmethod)
-    SendLqrReport(0);
+    SendLqrReport(LqrTimer.arg);
   else
     StopTimer(&LqrTimer);
 }

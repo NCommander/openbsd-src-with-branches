@@ -1,4 +1,4 @@
-#	$Id: MYBOX,v 1.3 1995/10/05 03:48:45 build Exp build $
+#	$Id: MYBOX,v 1.1.1.2 1997/03/03 19:31:51 rahnds Exp $
 
 include "std.mvme88k"
 

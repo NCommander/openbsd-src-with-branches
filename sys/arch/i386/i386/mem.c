@@ -1,5 +1,5 @@
-/*	$NetBSD: mem.c,v 1.30 1995/10/11 04:19:46 mycroft Exp $	*/
-
+/*	$NetBSD: mem.c,v 1.31 1996/05/03 19:42:19 christos Exp $	*/
+/*	$OpenBSD: mem.c,v 1.6 1998/02/18 18:00:16 millert Exp $ */
 /*
  * Copyright (c) 1988 University of Utah.
  * Copyright (c) 1982, 1986, 1990, 1993
@@ -45,7 +45,6 @@
  */
 
 #include <sys/param.h>
-#include <sys/conf.h>
 #include <sys/buf.h>
 #include <sys/systm.h>
 #include <sys/uio.h>
@@ -54,17 +53,28 @@
 #include <sys/fcntl.h>
 
 #include <machine/cpu.h>
+#include <machine/conf.h>
 
 #include <vm/vm.h>
 
 extern char *vmmap;            /* poor name! */
 caddr_t zeropage;
 
+/* open counter for aperture */
+#ifdef APERTURE
+static int ap_open_count = 0;
+extern int allowaperture;
+
+#define VGA_START 0xA0000
+#define VGA_END   0xBFFFF
+#endif
+
 /*ARGSUSED*/
 int
-mmopen(dev, flag, mode)
+mmopen(dev, flag, mode, p)
 	dev_t dev;
 	int flag, mode;
+	struct proc *p;
 {
 
 	switch (minor(dev)) {
@@ -78,7 +88,17 @@ mmopen(dev, flag, mode)
 		}
 		break;
 #endif
+#ifdef APERTURE
+	case 4:
+	        if (suser(p->p_ucred, &p->p_acflag) != 0 || !allowaperture)
+			return (EPERM);
 
+		/* authorize only one simultaneous open() */
+		if (ap_open_count > 0)
+			return(EPERM);
+		ap_open_count++;
+		break;
+#endif
 	default:
 		break;
 	}
@@ -87,11 +107,15 @@ mmopen(dev, flag, mode)
 
 /*ARGSUSED*/
 int
-mmclose(dev, flag, mode)
+mmclose(dev, flag, mode, p)
 	dev_t dev;
 	int flag, mode;
+	struct proc *p;
 {
-
+#ifdef APERTURE
+	if (minor(dev) == 4)
+		ap_open_count--;
+#endif
 	return (0);
 }
 
@@ -185,7 +209,6 @@ mmrw(dev, uio, flags)
 		uio->uio_resid -= c;
 	}
 	if (minor(dev) == 0) {
-unlock:
 		if (physlock > 1)
 			wakeup((caddr_t)&physlock);
 		physlock = 0;
@@ -214,7 +237,16 @@ mmmmap(dev, off, prot)
 		if (!kernacc((caddr_t)off, NBPG, B_READ))
 			return -1;
 		return i386_btop(vtophys(off));
-
+#ifdef APERTURE
+/* minor device 4 is aperture driver */
+	case 4:
+		if (allowaperture &&
+		    (((off >= VGA_START && off <= VGA_END) ||
+		    (unsigned)off > (unsigned)ctob(physmem))))
+			return i386_btop(off);
+		else 
+			return -1;
+#endif
 	default:
 		return -1;
 	}

@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 
 /***************************************************************************
 *                            COPYRIGHT NOTICE                              *
@@ -37,7 +38,7 @@ typedef struct panel
 	int wendx;
 	struct panel *below;
 	struct panel *above;
-	char *user;
+	NCURSES_CONST void *user;
 	struct panelcons *obscure;
 }
 PANEL;
@@ -46,7 +47,7 @@ PANEL;
 extern "C" {
 #endif
 
-extern  WINDOW *panel_window(PANEL *);
+extern  WINDOW *panel_window(const PANEL *);
 extern  void update_panels(void);
 extern  int hide_panel(PANEL *);
 extern  int show_panel(PANEL *);
@@ -54,13 +55,13 @@ extern  int del_panel(PANEL *);
 extern  int top_panel(PANEL *);
 extern  int bottom_panel(PANEL *);
 extern  PANEL *new_panel(WINDOW *);
-extern  PANEL *panel_above(PANEL *);
-extern  PANEL *panel_below(PANEL *);
-extern  int set_panel_userptr(PANEL *,char *);
-extern  char *panel_userptr(PANEL *);
+extern  PANEL *panel_above(const PANEL *);
+extern  PANEL *panel_below(const PANEL *);
+extern  int set_panel_userptr(PANEL *, NCURSES_CONST void *);
+extern  NCURSES_CONST void* panel_userptr(const PANEL *);
 extern  int move_panel(PANEL *, int, int);
 extern  int replace_panel(PANEL *,WINDOW *);
-extern	int panel_hidden(PANEL *);
+extern	int panel_hidden(const PANEL *);
 
 #if	defined(__cplusplus)
 }

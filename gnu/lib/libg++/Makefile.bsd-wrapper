@@ -1,0 +1,10 @@
+#	$OpenBSD$
+
+.if (${MACHINE_ARCH} == "mips")
+MAKE+= -DNOPIC
+.endif
+
+
+SUBDIR+= libiberty libio libstdc++ librx libg++ etc
+
+.include <bsd.subdir.mk>

@@ -1,3 +1,4 @@
+/*	$OpenBSD: search.h,v 1.9 1995/08/08 21:14:45 jtc Exp $	*/
 /*	$NetBSD: search.h,v 1.9 1995/08/08 21:14:45 jtc Exp $	*/
 
 /*
@@ -47,7 +48,7 @@ extern void	 remque __P((void *));
 
 extern void	*tdelete __P((const void *, void **,
 			      int (*)(const void *, const void *)));
-extern void	*tfind __P((const void *, void **,
+extern void	*tfind __P((const void *, void * const *,
 			      int (*)(const void *, const void *)));
 extern void	*tsearch __P((const void *, void **, 
 			      int (*)(const void *, const void *)));

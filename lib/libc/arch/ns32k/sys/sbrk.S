@@ -13,15 +13,13 @@
  * LIABILITY OF ANY KIND FOR ANY DAMAGES WHATSOEVER RESULTING FROM THE
  * USE OF THIS SOFTWARE.
  */
-/*
- * HISTORY
- * 29-Apr-92  Johannes Helander (jvh) at Helsinki University of Technology
- *	Created.
- *
- *	$Id: sbrk.S,v 1.4 1994/06/10 22:46:16 phil Exp $
- */
 
 #include "SYS.h"
+
+#if defined(SYSLIBC_SCCS)
+	.text
+	.asciz "$OpenBSD$"
+#endif /* SYSLIBC_SCCS */
 
 	.data
 	.globl	_end

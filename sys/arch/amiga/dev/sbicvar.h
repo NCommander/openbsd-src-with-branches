@@ -1,4 +1,5 @@
-/*	$NetBSD: sbicvar.h,v 1.9 1995/09/04 13:04:48 chopps Exp $	*/
+/*	$OpenBSD$	*/
+/*	$NetBSD: sbicvar.h,v 1.11 1996/04/21 21:12:23 veego Exp $	*/
 
 /*
  * Copyright (c) 1990 The Regents of the University of California.
@@ -162,7 +163,7 @@ struct	sbic_softc {
 #define	DDB_FOLLOW	0x04
 #define DDB_IO		0x08
 #endif
-extern int sbic_inhibit_sync;
+extern u_char sbic_inhibit_sync[8];
 extern int sbic_no_dma;
 extern int sbic_clock_override;
 
@@ -225,5 +226,10 @@ struct scsi_xfer;
 
 void sbic_minphys __P((struct buf *bp));
 int sbic_scsicmd __P((struct scsi_xfer *));
+void sbicinit __P((struct sbic_softc *));
+int  sbicintr __P((struct sbic_softc *));
+#ifdef DEBUG
+void sbic_dump __P((struct sbic_softc *dev));
+#endif
 
 #endif /* _SBICVAR_H_ */

@@ -1,3 +1,4 @@
+/*	$OpenBSD: ldd.c,v 1.12 1995/10/09 00:14:41 pk Exp $	*/
 /*	$NetBSD: ldd.c,v 1.12 1995/10/09 00:14:41 pk Exp $	*/
 /*
  * Copyright (c) 1993 Paul Kranenburg
@@ -107,7 +108,7 @@ char	*argv[];
 		if (read(fd, &hdr, sizeof hdr) != sizeof hdr
 		    || (N_GETFLAG(hdr) & EX_DPMASK) != EX_DYNAMIC
 #if 1 /* Compatibility */
-		    || hdr.a_entry < __LDPGSZ
+		    || hdr.a_entry < N_PAGSIZ(hdr)
 #endif
 		    ) {
 
@@ -151,5 +152,5 @@ char	*argv[];
 		argv++;
 	}
 
-	return rval;
+	return (rval ? 1 : 0);
 }

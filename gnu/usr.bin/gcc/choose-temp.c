@@ -107,9 +107,11 @@ choose_temp_base ()
   base = try (getenv ("TMP"), base);
   base = try (getenv ("TEMP"), base);
 
+#ifdef 0 /* XXX - P_tmpdir is not /tmp - etheisen */
 #ifdef P_tmpdir
   base = try (P_tmpdir, base);
 #endif
+#endif /* XXX */
 
   /* Try /usr/tmp, then /tmp.  */
   base = try (usrtmp, base);

@@ -17,7 +17,7 @@
  * IMPLIED WARRANTIES, INCLUDING, WITHOUT LIMITATION, THE IMPLIED
  * WARRANTIES OF MERCHANTIBILITY AND FITNESS FOR A PARTICULAR PURPOSE.
  *
- * $Id: chap.c,v 1.26 1997/11/22 03:37:25 brian Exp $
+ * $Id: chap.c,v 1.4 1998/02/19 02:02:45 brian Exp $
  *
  *	TODO:
  */
@@ -56,6 +56,7 @@
 #include "loadalias.h"
 #include "vars.h"
 #include "auth.h"
+#include "id.h"
 
 static const char *chapcodes[] = {
   "???", "CHALLENGE", "RESPONSE", "SUCCESS", "FAILURE"
@@ -129,7 +130,7 @@ RecvChapTalk(struct fsmheader *chp, struct mbuf *bp)
   name = cp + valsize;
   namelen = arglen - valsize - 1;
   name[namelen] = 0;
-  LogPrintf(LogPHASE, " Valsize = %d, Name = %s\n", valsize, name);
+  LogPrintf(LogLCP, " Valsize = %d, Name = \"%s\"\n", valsize, name);
 
   switch (chp->code) {
   case CHAP_CHALLENGE:
@@ -224,21 +225,20 @@ RecvChapTalk(struct fsmheader *chp, struct mbuf *bp)
        */
       if (memcmp(cp, cdigest, 16) == 0) {
 	ChapOutput(CHAP_SUCCESS, chp->id, "Welcome!!", 10);
-        if ((mode & MODE_DIRECT) && isatty(modem) && Enabled(ConfUtmp))
+        if ((mode & MODE_DIRECT) && isatty(modem) && Enabled(ConfUtmp)) {
 	  if (Utmp)
 	    LogPrintf(LogERROR, "Oops, already logged in on %s\n",
 		      VarBaseDevice);
 	  else {
 	    struct utmp ut;
-	    memset(&ut, 0, sizeof(ut));
+	    memset(&ut, 0, sizeof ut);
 	    time(&ut.ut_time);
-	    strncpy(ut.ut_name, name, sizeof(ut.ut_name)-1);
-	    strncpy(ut.ut_line, VarBaseDevice, sizeof(ut.ut_line)-1);
-	    if (logout(ut.ut_line))
-	      logwtmp(ut.ut_line, "", "");
-	    login(&ut);
+	    strncpy(ut.ut_name, name, sizeof ut.ut_name);
+	    strncpy(ut.ut_line, VarBaseDevice, sizeof ut.ut_line - 1);
+	    ID0login(&ut);
 	    Utmp = 1;
 	  }
+        }
 	NewPhase(PHASE_NETWORK);
 	break;
       }

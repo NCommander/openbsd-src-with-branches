@@ -1,4 +1,5 @@
-/*	$NetBSD: conv.c,v 1.5 1995/10/08 23:01:23 gwr Exp $	*/
+/*	$OpenBSD: conv.c,v 1.4 1996/12/14 12:17:48 mickey Exp $	*/
+/*	$NetBSD: conv.c,v 1.6 1996/02/20 19:29:02 jtc Exp $	*/
 
 /*-
  * Copyright (c) 1991, 1993, 1994
@@ -41,7 +42,7 @@
 #if 0
 static char sccsid[] = "@(#)conv.c	8.3 (Berkeley) 4/2/94";
 #else
-static char rcsid[] = "$NetBSD: conv.c,v 1.5 1995/10/08 23:01:23 gwr Exp $";
+static char rcsid[] = "$OpenBSD: conv.c,v 1.4 1996/12/14 12:17:48 mickey Exp $";
 #endif
 #endif /* not lint */
 
@@ -62,10 +63,11 @@ static char rcsid[] = "$NetBSD: conv.c,v 1.5 1995/10/08 23:01:23 gwr Exp $";
 void
 def()
 {
-	int cnt;
-	u_char *inp, *t;
+	size_t cnt;
+	u_char *inp;
+	const u_char *t;
 
-	if (t = ctab)
+	if ((t = ctab) != NULL)
 		for (inp = in.dbp - (cnt = in.dbrcnt); cnt--; ++inp)
 			*inp = t[*inp];
 
@@ -116,8 +118,10 @@ void
 block()
 {
 	static int intrunc;
-	int ch, cnt, maxlen;
-	u_char *inp, *outp, *t;
+	int ch = -1;
+	size_t cnt, maxlen;
+	u_char *inp, *outp;
+	const u_char *t;
 
 	/*
 	 * Record truncation can cross block boundaries.  If currently in a
@@ -145,7 +149,7 @@ block()
 	 */
 	for (inp = in.dbp - in.dbcnt, outp = out.dbp; in.dbcnt;) {
 		maxlen = MIN(cbsz, in.dbcnt);
-		if (t = ctab)
+		if ((t = ctab) != NULL)
 			for (cnt = 0;
 			    cnt < maxlen && (ch = *inp++) != '\n'; ++cnt)
 				*outp++ = t[ch];
@@ -158,7 +162,7 @@ block()
 		 * input block.
 		 */
 		if (ch != '\n' && in.dbcnt < cbsz) {
-			memmove(in.db, in.dbp - in.dbcnt, in.dbcnt);
+			(void)memmove(in.db, in.dbp - in.dbcnt, in.dbcnt);
 			break;
 		}
 
@@ -208,7 +212,7 @@ block_close()
 	 */
 	if (in.dbcnt) {
 		++st.trunc;
-		memmove(out.dbp, in.dbp - in.dbcnt, in.dbcnt);
+		(void)memmove(out.dbp, in.dbp - in.dbcnt, in.dbcnt);
 		(void)memset(out.dbp + in.dbcnt,
 		    ctab ? ctab[' '] : ' ', cbsz - in.dbcnt);
 		out.dbcnt += cbsz;
@@ -225,11 +229,12 @@ block_close()
 void
 unblock()
 {
-	int cnt;
-	u_char *inp, *t;
+	size_t cnt;
+	u_char *inp;
+	const u_char *t;
 
 	/* Translation and case conversion. */
-	if (t = ctab)
+	if ((t = ctab) != NULL)
 		for (cnt = in.dbrcnt, inp = in.dbp; cnt--;)
 			*--inp = t[*inp];
 	/*
@@ -241,7 +246,7 @@ unblock()
 		for (t = inp + cbsz - 1; t >= inp && *t == ' '; --t);
 		if (t >= inp) {
 			cnt = t - inp + 1;
-			memmove(out.dbp, inp, cnt);
+			(void)memmove(out.dbp, inp, cnt);
 			out.dbp += cnt;
 			out.dbcnt += cnt;
 		}
@@ -251,14 +256,14 @@ unblock()
 			dd_out(0);
 	}
 	if (in.dbcnt)
-		memmove(in.db, in.dbp - in.dbcnt, in.dbcnt);
+		(void)memmove(in.db, in.dbp - in.dbcnt, in.dbcnt);
 	in.dbp = in.db + in.dbcnt;
 }
 
 void
 unblock_close()
 {
-	int cnt;
+	size_t cnt;
 	u_char *t;
 
 	if (in.dbcnt) {
@@ -266,7 +271,7 @@ unblock_close()
 		for (t = in.db + in.dbcnt - 1; t >= in.db && *t == ' '; --t);
 		if (t >= in.db) {
 			cnt = t - in.db + 1;
-			memmove(out.dbp, in.db, cnt);
+			(void)memmove(out.dbp, in.db, cnt);
 			out.dbp += cnt;
 			out.dbcnt += cnt;
 		}

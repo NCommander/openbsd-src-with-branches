@@ -1,3 +1,4 @@
+#	$OpenBSD: Makefile,v 1.5 1995/10/09 00:09:39 pk Exp $
 #	$NetBSD: Makefile,v 1.5 1995/10/09 00:09:39 pk Exp $
 
 PROG=	ldd

@@ -1,5 +1,3 @@
-/*	$NetBSD: syslog.c,v 1.10 1995/08/31 16:28:01 mycroft Exp $	*/
-
 /*
  * Copyright (c) 1983, 1988, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -34,17 +32,14 @@
  */
 
 #if defined(LIBC_SCCS) && !defined(lint)
-#if 0
-static char sccsid[] = "@(#)syslog.c	8.4 (Berkeley) 3/18/94";
-#else
-static char rcsid[] = "$NetBSD: syslog.c,v 1.10 1995/08/31 16:28:01 mycroft Exp $";
-#endif
+static char rcsid[] = "$OpenBSD: syslog.c,v 1.7 1998/03/06 02:01:38 brian Exp $";
 #endif /* LIBC_SCCS and not lint */
 
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <sys/syslog.h>
 #include <sys/uio.h>
+#include <sys/un.h>
 #include <netdb.h>
 
 #include <errno.h>
@@ -55,7 +50,7 @@ static char rcsid[] = "$NetBSD: syslog.c,v 1.10 1995/08/31 16:28:01 mycroft Exp 
 #include <time.h>
 #include <unistd.h>
 
-#if __STDC__
+#ifdef __STDC__
 #include <stdarg.h>
 #else
 #include <varargs.h>
@@ -74,7 +69,7 @@ extern char	*__progname;		/* Program name, from crt0. */
  *	print message on log file; output is intended for syslogd(8).
  */
 void
-#if __STDC__
+#ifdef __STDC__
 syslog(int pri, const char *fmt, ...)
 #else
 syslog(pri, fmt, va_alist)
@@ -85,7 +80,7 @@ syslog(pri, fmt, va_alist)
 {
 	va_list ap;
 
-#if __STDC__
+#ifdef __STDC__
 	va_start(ap, fmt);
 #else
 	va_start(ap);
@@ -183,7 +178,7 @@ vsyslog(pri, fmt, ap)
 	 * We wouldn't need this mess if printf handled %m, or if 
 	 * strerror() had been invented before syslog().
 	 */
-	for (t = fmt_cpy, fmt_left = FMT_LEN; ch = *fmt; ++fmt) {
+	for (t = fmt_cpy, fmt_left = FMT_LEN; (ch = *fmt); ++fmt) {
 		if (ch == '%' && fmt[1] == 'm') {
 			++fmt;
 			prlen = snprintf(t, fmt_left, "%s",
@@ -241,7 +236,7 @@ vsyslog(pri, fmt, ap)
 	}
 }
 
-static struct sockaddr SyslogAddr;	/* AF_UNIX address of local logger */
+static struct sockaddr_un SyslogAddr;	/* AF_UNIX address of local logger */
 
 void
 openlog(ident, logstat, logfac)
@@ -255,21 +250,26 @@ openlog(ident, logstat, logfac)
 		LogFacility = logfac;
 
 	if (LogFile == -1) {
-		SyslogAddr.sa_family = AF_UNIX;
-		(void)strncpy(SyslogAddr.sa_data, _PATH_LOG,
-		    sizeof(SyslogAddr.sa_data));
+		memset(&SyslogAddr, '\0', sizeof(SyslogAddr));
+		SyslogAddr.sun_len = sizeof(SyslogAddr);
+		SyslogAddr.sun_family = AF_UNIX;
+		(void)strncpy(SyslogAddr.sun_path, _PATH_LOG,
+		    sizeof(SyslogAddr.sun_path) - 1);
+		SyslogAddr.sun_path[sizeof(SyslogAddr.sun_path) - 1] = '\0';
 		if (LogStat & LOG_NDELAY) {
 			if ((LogFile = socket(AF_UNIX, SOCK_DGRAM, 0)) == -1)
 				return;
 			(void)fcntl(LogFile, F_SETFD, 1);
 		}
 	}
-	if (LogFile != -1 && !connected)
-		if (connect(LogFile, &SyslogAddr, sizeof(SyslogAddr)) == -1) {
+	if (LogFile != -1 && !connected) {
+		if (connect(LogFile, (struct sockaddr *)&SyslogAddr,
+			sizeof(SyslogAddr)) == -1) {
 			(void)close(LogFile);
 			LogFile = -1;
 		} else
 			connected = 1;
+	}
 }
 
 void

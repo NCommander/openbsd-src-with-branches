@@ -1,8 +1,8 @@
 %{
-/*	$NetBSD: scanner.l,v 1.2 1995/03/06 11:39:12 mycroft Exp $	*/
+/*	$OpenBSD: scanner.l,v 1.5 1996/07/12 13:19:13 mickey Exp $	*/
 
 /*
- * Copyright (c) 1988, 1989, 1990, 1991, 1992, 1993, 1994
+ * Copyright (c) 1988, 1989, 1990, 1991, 1992, 1993, 1994, 1995, 1996, 1997
  *	The Regents of the University of California.  All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -24,22 +24,25 @@
 
 #ifndef lint
 static char rcsid[] =
-    "@(#) Header: scanner.l,v 1.40 94/06/10 17:21:44 mccanne Exp (LBL)";
+    "@(#) $Header: /cvs/src/lib/libpcap/scanner.l,v 1.5 1996/07/12 13:19:13 mickey Exp $ (LBL)";
 #endif
 
 #include <sys/types.h>
 #include <sys/time.h>
 
 #include <ctype.h>
+#include <unistd.h>
+
 #include <pcap.h>
 #include <pcap-namedb.h>
 
-#include "gencode.h"
-#include "y.tab.h"
-
-#ifndef __GNUC__
-#define inline
+#ifdef HAVE_OS_PROTO_H
+#include "os-proto.h"
 #endif
+
+#include "pcap-int.h"
+#include "gencode.h"
+#include "grammar.tab.h"
 
 static int stoi(char *);
 static inline int xdtoi(int);
@@ -88,6 +91,7 @@ ip		return IP;
 tcp		return TCP;
 udp		return UDP;
 icmp		return ICMP;
+igmp		return IGMP;
 
 decnet		return DECNET;
 lat		return LAT;
@@ -125,14 +129,15 @@ outbound	return OUTBOUND;
 ">>"			return RSH;
 {N}			{ yylval.i = stoi((char *)yytext); return NUM; }
 ({N}\.{N})|({N}\.{N}\.{N})|({N}\.{N}\.{N}\.{N})	{
-			yylval.s = sdup((char *)yytext); return HID;
-}
+			yylval.s = sdup((char *)yytext); return HID; }
 {B}:{B}:{B}:{B}:{B}:{B} { yylval.e = pcap_ether_aton((char *)yytext);
 			  return EID; }
 {B}:+({B}:+)+		{ bpf_error("bogus ethernet address %s", yytext); }
-[A-Za-z][-_.A-Za-z0-9]*	{ yylval.s = sdup((char *)yytext); return ID; }
+[A-Za-z0-9][-_.A-Za-z0-9]*[.A-Za-z0-9] {
+			 yylval.s = sdup((char *)yytext); return ID; }
 "\\"[^ !()\n\t]+	{ yylval.s = sdup((char *)yytext + 1); return ID; }
-[^ \[\]\t\n\-_.A-Za-z0-9!<>()&|=]+    { bpf_error("illegal token: %s\n", yytext); }
+[^ \[\]\t\n\-_.A-Za-z0-9!<>()&|=]+i {
+			bpf_error("illegal token: %s\n", yytext); }
 .			{ bpf_error("illegal char '%c'", *yytext); }
 %%
 void

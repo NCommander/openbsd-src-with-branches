@@ -1,11 +1,10 @@
-#	$Id: Makefile,v 1.1 1993/12/21 03:28:00 cgd Exp $
+#	$OpenBSD: Makefile,v 1.4 1997/11/05 19:20:46 deraadt Exp $
 
-NOMAN=
+MAN=makewhatis.8
 NOPROG=
-NOOBJ=
 
 afterinstall:
-	install -c -o ${BINOWN} -g ${BINGRP} -m ${BINMODE} \
-		$(.CURDIR)/makewhatis.sh $(DESTDIR)$(BINDIR)/makewhatis
+	${INSTALL} ${INSTALL_COPY} -o ${BINOWN} -g ${BINGRP} -m ${BINMODE} \
+		${.CURDIR}/makewhatis.sh ${DESTDIR}${BINDIR}/makewhatis
 
 .include <bsd.prog.mk>

@@ -1,4 +1,5 @@
-/*	$NetBSD: tmscp.c,v 1.1 1995/09/16 12:57:35 ragge Exp $ */
+/*	$OpenBSD: tmscp.c,v 1.4 1997/05/29 00:04:28 niklas Exp $ */
+/*	$NetBSD: tmscp.c,v 1.4 1997/03/15 13:04:31 ragge Exp $ */
 /*
  * Copyright (c) 1995 Ludd, University of Lule}, Sweden.
  * All rights reserved.
@@ -43,7 +44,8 @@
 #include "../include/macros.h"
 #include "../uba/ubareg.h"
 #include "../uba/udareg.h"
-#include "../vax/mscp.h"
+#include "../mscp/mscp.h"
+#include "../mscp/mscpreg.h"
 
 #include "vaxstand.h"
 
@@ -63,7 +65,7 @@ struct ra_softc {
 };
 
 static volatile struct uda {
-        struct  uda1ca uda_ca;           /* communications area */
+        struct  mscp_1ca uda_ca;           /* communications area */
         struct  mscp uda_rsp;     /* response packets */
         struct  mscp uda_cmd;     /* command packets */
 } uda;
@@ -71,7 +73,6 @@ static volatile struct uda {
 static volatile struct uda *ubauda;
 static volatile struct udadevice *udacsr;
 static struct ra_softc ra_softc;
-static char io_buf[MAXBSIZE];
 
 tmscpopen(f, adapt, ctlr, unit, part)
 	struct open_file *f;
@@ -91,7 +92,7 @@ tmscpopen(f, adapt, ctlr, unit, part)
 	ra->ubaddr=(int)mr;
 	ra->unit=unit;
 	udacsr=(void*)ra->udaddr;
-	nisse=&mr->uba_map[0];
+	nisse=(u_int *)&mr->uba_map[0];
 	nisse[494]=PG_V|(((u_int)&uda)>>9);
 	nisse[495]=nisse[494]+1;
 	ubauda=(void*)0x3dc00+(((u_int)(&uda))&0x1ff);
@@ -100,20 +101,20 @@ tmscpopen(f, adapt, ctlr, unit, part)
 	 * Init of this tmscp ctlr.
 	 */
 	udacsr->udaip=0; /* Start init */
-	while((udacsr->udasa&UDA_STEP1) == 0);
+	while((udacsr->udasa&MP_STEP1) == 0);
 	udacsr->udasa=0x8000;
-	while((udacsr->udasa&UDA_STEP2) == 0);
+	while((udacsr->udasa&MP_STEP2) == 0);
 	johan=(((u_int)ubauda)&0xffff)+8;
 	udacsr->udasa=johan;
-	while((udacsr->udasa&UDA_STEP3) == 0);
+	while((udacsr->udasa&MP_STEP3) == 0);
 	udacsr->udasa=3;
-	while((udacsr->udasa&UDA_STEP4) == 0);
+	while((udacsr->udasa&MP_STEP4) == 0);
 	udacsr->udasa=0x0001;
 
 	uda.uda_ca.ca_rspdsc=(int)&ubauda->uda_rsp.mscp_cmdref;
 	uda.uda_ca.ca_cmddsc=(int)&ubauda->uda_cmd.mscp_cmdref;
-	uda.uda_cmd.mscp_un.un_seq.seq_addr = &uda.uda_ca.ca_cmddsc;
-	uda.uda_rsp.mscp_un.un_seq.seq_addr = &uda.uda_ca.ca_rspdsc;
+	uda.uda_cmd.mscp_un.un_seq.seq_addr = (long *)&uda.uda_ca.ca_cmddsc;
+	uda.uda_rsp.mscp_un.un_seq.seq_addr = (long *)&uda.uda_ca.ca_rspdsc;
 	uda.uda_cmd.mscp_vcid = 1;
 	uda.uda_cmd.mscp_un.un_sccc.sccc_ctlrflags = 0;
 
@@ -164,7 +165,7 @@ tmscpstrategy(ra, func, dblk, size, buf, rsize)
 	u_int i,j,pfnum, mapnr, nsize, bn, cn, sn, tn;
 	volatile struct uba_regs *ur=(void *)ra->ubaddr;
 	volatile struct udadevice *udadev=(void*)ra->udaddr;
-	volatile u_int *ptmapp=&ur->uba_map[0];
+	volatile u_int *ptmapp = (u_int *)&ur->uba_map[0];
 	volatile int hej;
 
 	pfnum=(u_int)buf>>PGSHIFT;

@@ -1,3 +1,5 @@
+/*	$OpenBSD$ */
+
 /*
  * Copyright (c) 1993-95 Mats O Jansson.  All rights reserved.
  *
@@ -26,7 +28,7 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
- *	$Id: dl.h,v 1.4 1995/10/13 19:28:38 moj Exp $
+ *	$OpenBSD: dl.h,v 1.1.1.1 1996/09/21 13:49:16 maja Exp $
  *
  */
 

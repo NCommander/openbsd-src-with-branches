@@ -1,3 +1,5 @@
+/*	$OpenBSD: mopprobe.c,v 1.3 1997/01/15 23:44:29 millert Exp $ */
+
 /*
  * Copyright (c) 1993-96 Mats O Jansson.  All rights reserved.
  *
@@ -28,7 +30,7 @@
  */
 
 #ifndef LINT
-static char rcsid[] = "$Id: mopprobe.c,v 1.11 1996/08/11 22:16:10 moj Exp $";
+static char rcsid[] = "$OpenBSD: mopprobe.c,v 1.3 1997/01/15 23:44:29 millert Exp $";
 #endif
 
 /*
@@ -72,7 +74,7 @@ int     oflag = 0;		/* print only once             */
 int	promisc = 1;		/* Need promisc mode           */
 char	*Program;
 
-void
+int
 main(argc, argv)
 	int     argc;
 	char  **argv;
@@ -93,7 +95,7 @@ main(argc, argv)
 	openlog(Program, LOG_PID | LOG_CONS, LOG_DAEMON);
 
 	opterr = 0;
-	while ((op = getopt(argc, argv, "ado")) != EOF) {
+	while ((op = getopt(argc, argv, "ado")) != -1) {
 		switch (op) {
 		case '3':
 			Not3Flag++;

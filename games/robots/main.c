@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /*	$NetBSD: main.c,v 1.5 1995/04/22 10:08:54 cgd Exp $	*/
 
 /*
@@ -60,7 +61,17 @@ char	**av;
 	register bool	show_only;
 	extern char	*Scorefile;
 	extern int	Max_per_uid;
+	int		score_wfd; /* high score writable file descriptor */
 	void quit();
+
+	if ((score_wfd = open(Scorefile, 2)) < 0) {
+		perror(Scorefile);
+		exit(1);
+	}	
+
+	/* revoke */
+	setegid(getgid());
+	setgid(getgid());
 
 	show_only = FALSE;
 	if (ac > 1) {
@@ -70,13 +81,20 @@ char	**av;
 				if (isdigit(av[0][0]))
 					Max_per_uid = atoi(av[0]);
 				else {
-					setuid(getuid());
-					setgid(getgid());
 					Scorefile = av[0];
 # ifdef	FANCY
-					sp = rindex(Scorefile, '/');
+					sp = strrchr(Scorefile, '/');
 					if (sp == NULL)
 						sp = Scorefile;
+					close(score_wfd);
+				/* This file is in the current directory  */
+				/* and requires no special privileges: */
+					if ((score_wfd =
+					     open(Scorefile, 2)) < 0) {
+						perror(Scorefile);
+						exit(1);
+					}
+
 					if (strcmp(sp, "pattern_roll") == 0)
 						Pattern_roll = TRUE;
 					else if (strcmp(sp, "stand_still") == 0)
@@ -148,7 +166,7 @@ char	**av;
 		move(My_pos.y, My_pos.x);
 		printw("AARRrrgghhhh....");
 		refresh();
-		score();
+		score(score_wfd);
 	} while (another());
 	quit();
 }

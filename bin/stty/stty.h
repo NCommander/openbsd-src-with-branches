@@ -1,4 +1,5 @@
-/*	$NetBSD: stty.h,v 1.6 1995/03/21 09:11:31 cgd Exp $	*/
+/*	$OpenBSD: stty.h,v 1.7 1996/05/07 18:20:11 jtc Exp $	*/
+/*	$NetBSD: stty.h,v 1.7 1996/05/07 18:20:11 jtc Exp $	*/
 
 /*-
  * Copyright (c) 1991, 1993
@@ -50,7 +51,7 @@ struct info {
 };
 
 struct cchar {
-	char *name;
+	const char *name;
 	int sub;
 	u_char def;
 };
