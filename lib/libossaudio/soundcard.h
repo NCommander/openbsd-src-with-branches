@@ -1,4 +1,4 @@
-/*	$OpenBSD: soundcard.h,v 1.6 2001/08/18 19:33:30 brad Exp $	*/
+/*	$OpenBSD: soundcard.h,v 1.7 2002/02/16 21:27:27 millert Exp $	*/
 /*	$NetBSD: soundcard.h,v 1.11 2001/05/09 21:49:58 augustss Exp $	*/
 
 /*-
@@ -47,9 +47,9 @@
 #ifndef _SOUNDCARD_H_
 #define _SOUNDCARD_H_
 
-#ifndef	_IOWR
-#include <sys/ioccom.h>
-#endif	/* !_IOWR */
+#ifndef	_SYS_IOCTL_H_
+#include <sys/ioctl.h>
+#endif	/* !_SYS_IOCTL_H_ */
 
 #define SOUND_VERSION	0x030001
 
