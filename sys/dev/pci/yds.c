@@ -1,4 +1,4 @@
-/*	$OpenBSD: yds.c,v 1.14 2002/03/14 01:27:00 millert Exp $	*/
+/*	$OpenBSD: yds.c,v 1.15 2002/03/14 03:16:06 millert Exp $	*/
 /*	$NetBSD: yds.c,v 1.5 2001/05/21 23:55:04 minoura Exp $	*/
 
 /*
@@ -570,7 +570,7 @@ yds_configure_legacy (arg)
 
 	reg = pci_conf_read(sc->sc_pc, sc->sc_pcitag, YDS_PCI_LEGACY);
 	reg &= ~0x8133c03f;	/* these bits are out of interest */
-	reg |= ((YDS_PCI_EX_LEGACY_IMOD) |
+	reg |= YDS_PCI_EX_LEGACY_SBMOD_XXX | ((YDS_PCI_EX_LEGACY_IMOD) |
 		(YDS_PCI_LEGACY_FMEN |
 		 YDS_PCI_LEGACY_MEN /*| YDS_PCI_LEGACY_MIEN*/));
 	if (FLEXIBLE) {
