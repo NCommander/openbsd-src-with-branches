@@ -1,4 +1,4 @@
-/*	$OpenBSD: pfvar.h,v 1.95 2002/10/07 13:23:46 henning Exp $ */
+/*	$OpenBSD: pfvar.h,v 1.96 2002/10/08 05:12:08 kjc Exp $ */
 
 /*
  * Copyright (c) 2001 Daniel Hartmeier
@@ -326,6 +326,7 @@ struct pf_state {
 	u_int8_t	 direction;
 	u_int8_t	 log;
 	u_int8_t	 allow_opts;
+	u_int8_t	 pad[3];
 };
 
 struct pf_tree_node {
