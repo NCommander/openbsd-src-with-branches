@@ -1,4 +1,4 @@
-/*	$OpenBSD: key.c,v 1.4 2001/07/02 02:28:35 deraadt Exp $	*/
+/*	$OpenBSD: key.c,v 1.5 2001/10/26 16:02:20 ho Exp $	*/
 /*
  * The author of this code is Angelos D. Keromytis (angelos@cis.upenn.edu)
  *
@@ -113,7 +113,7 @@ key_printable (int type, int private, u_int8_t *data, int datalen)
 	  return 0;
 	}
       for (i = 0; i < datalen; i++)
-	sprintf (s + (2 * i), "%02x", data[i]);
+	snprintf (s + (2 * i), 2 * (datalen - i), "%02x", data[i]);
       return s;
 
     default:
