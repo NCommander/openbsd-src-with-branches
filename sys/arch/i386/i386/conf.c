@@ -1,4 +1,4 @@
-/*	$OpenBSD: conf.c,v 1.87 2002/01/23 04:48:02 ericj Exp $	*/
+/*	$OpenBSD: conf.c,v 1.88 2002/03/14 01:26:32 millert Exp $	*/
 /*	$NetBSD: conf.c,v 1.75 1996/05/03 19:40:20 christos Exp $	*/
 
 /*
@@ -141,6 +141,8 @@ int	nblkdev = sizeof(bdevsw) / sizeof(bdevsw[0]);
 cdev_decl(mm);
 cdev_decl(wd);
 cdev_decl(crypto);
+#include "systrace.h"
+cdev_decl(systrace);
 #include "pty.h"
 #include "com.h"
 #include "pccom.h"
@@ -337,6 +339,7 @@ struct cdevsw	cdevsw[] =
 	cdev_iop_init(NIOP,iop),	/* 75: I2O IOP control interface */
 	cdev_radio_init(NRADIO, radio), /* 76: generic radio I/O */
 	cdev_ugen_init(NUSCANNER,uscanner),	/* 77: USB scanners */
+	cdev_systrace_init(NSYSTRACE,systrace),	/* 78: system call tracing */
 };
 int	nchrdev = sizeof(cdevsw) / sizeof(cdevsw[0]);
 
