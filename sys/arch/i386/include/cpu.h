@@ -72,7 +72,7 @@
 
 #include <sys/device.h>
 #include <sys/lock.h>                  /* will also get LOCKDEBUG */
-#include <sys/sched.h>
+#include <sys/proc.h>
 
 struct intrsource;
 

@@ -75,7 +75,7 @@
 #include <machine/reg.h>
 #include <machine/intr.h>
 
-#include <sys/sched.h>
+#include <sys/proc.h>
 
 /*
  * The cpu_info structure is part of a 64KB structure mapped both the kernel
