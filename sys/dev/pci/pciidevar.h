@@ -1,4 +1,4 @@
-/*	$OpenBSD: pciidevar.h,v 1.2 1999/07/18 21:25:20 csapuntz Exp $	*/
+/*	$OpenBSD: pciidevar.h,v 1.3 2001/04/04 07:02:55 csapuntz Exp $	*/
 /*	$NetBSD: pciidevar.h,v 1.6 2001/01/12 16:04:00 bouyer Exp $	*/
 
 /*
@@ -46,3 +46,5 @@ struct device;
 /* Attach compat interrupt handler, returning handle or NULL if failed. */
 void	*pciide_machdep_compat_intr_establish __P((struct device *,
 	    struct pci_attach_args *, int, int (*)(void *), void *));
+void	pciide_machdep_compat_intr_disestablish __P((pci_chipset_tag_t pc,
+	    void *));
