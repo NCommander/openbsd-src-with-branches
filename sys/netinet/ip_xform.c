@@ -1,4 +1,4 @@
-/*	$OpenBSD: ip_xform.c,v 1.4 1999/10/29 05:20:46 angelos Exp $	*/
+/*	$OpenBSD: ip_xform.c,v 1.5 2000/01/27 08:09:12 angelos Exp $	*/
 
 /*
  * The authors of this code are John Ioannidis (ji@tla.org),
@@ -276,7 +276,7 @@ skipjack_zerokey(u_int8_t **sched)
 	    bzero(((u_int8_t **)(*sched))[k], 0x100);
 	    FREE(((u_int8_t **)(*sched))[k], M_XDATA);
 	}
-    bzero(*sched, sizeof(cast_key));
+    bzero(*sched, 10 * sizeof(u_int8_t *));
     FREE(*sched, M_XDATA);
     *sched = NULL;
 }
