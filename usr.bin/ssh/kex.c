@@ -23,7 +23,7 @@
  */
 
 #include "includes.h"
-RCSID("$OpenBSD: kex.c,v 1.50 2002/05/15 15:47:49 mouring Exp $");
+RCSID("$OpenBSD: kex.c,v 1.51 2002/06/24 14:55:38 markus Exp $");
 
 #include <openssl/crypto.h>
 
@@ -135,7 +135,7 @@ kex_finish(Kex *kex)
 	/* packet_write_wait(); */
 	debug("SSH2_MSG_NEWKEYS sent");
 
-	debug("waiting for SSH2_MSG_NEWKEYS");
+	debug("expecting SSH2_MSG_NEWKEYS");
 	packet_read_expect(SSH2_MSG_NEWKEYS);
 	packet_check_eom();
 	debug("SSH2_MSG_NEWKEYS received");
@@ -433,7 +433,7 @@ kex_derive_keys(Kex *kex, u_char *hash, BIGNUM *shared_secret)
 	for (i = 0; i < NKEYS; i++)
 		keys[i] = derive_key(kex, 'A'+i, kex->we_need, hash, shared_secret);
 
-	debug("kex_derive_keys");
+	debug2("kex_derive_keys");
 	for (mode = 0; mode < MODE_MAX; mode++) {
 		current_keys[mode] = kex->newkeys[mode];
 		kex->newkeys[mode] = NULL;
