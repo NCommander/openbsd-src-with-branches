@@ -1,9 +1,11 @@
-/*	$OpenBSD: main.c,v 1.50 2003/12/16 22:46:26 henning Exp $	*/
+/*	$OpenBSD: main.c,v 1.51 2003/12/16 23:23:50 henning Exp $	*/
 
+#ifndef SMALL
 static const char copyright[] =
 "@(#) Copyright (c) 1992, 1993\n\
 	The Regents of the University of California.  All rights reserved.\n"
 "Copyright (c) 1997-2002 Michael Shalayeff\n";
+#endif
 
 #ifndef SMALL
 static const char license[] =
@@ -34,7 +36,7 @@ static const char license[] =
 #endif /* SMALL */
 
 #ifndef SMALL
-static const char main_rcsid[] = "$OpenBSD: main.c,v 1.50 2003/12/16 22:46:26 henning Exp $";
+static const char main_rcsid[] = "$OpenBSD: main.c,v 1.51 2003/12/16 23:23:50 henning Exp $";
 #endif
 
 #include <sys/param.h>
@@ -281,9 +283,9 @@ main(int argc, char *argv[])
 		case 'v':
 			verbose++;
 			break;
+#ifndef SMALL
 		case 'L':
 			fputs(copyright, stderr);
-#ifndef SMALL
 			fputs(license, stderr);
 #endif
 			exit (0);
