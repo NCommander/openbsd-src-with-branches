@@ -1,4 +1,4 @@
-/*	$OpenBSD: vm_machdep.c,v 1.36 2002/03/28 07:21:12 deraadt Exp $	*/
+/*	$OpenBSD: vm_machdep.c,v 1.37 2002/04/01 16:05:10 mickey Exp $	*/
 
 /*
  * Copyright (c) 1999-2002 Michael Shalayeff
@@ -107,8 +107,7 @@ pagemove(from, to, size)
 	while (size > 0) {
 		pmap_extract(pmap_kernel(), (vaddr_t)from, &pa);
 		pmap_kremove((vaddr_t)from, PAGE_SIZE);
-		pmap_kenter_pa((vaddr_t)to, pa,
-		    VM_PROT_READ|VM_PROT_WRITE);
+		pmap_kenter_pa((vaddr_t)to, pa, UVM_PROT_RW);
 		from += PAGE_SIZE;
 		to += PAGE_SIZE;
 		size -= PAGE_SIZE;
