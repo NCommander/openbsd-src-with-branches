@@ -35,7 +35,7 @@
  */
 
 #include "includes.h"
-RCSID("$OpenBSD: cipher.c,v 1.48 2001/12/19 07:18:56 deraadt Exp $");
+RCSID("$OpenBSD: cipher.c,v 1.49 2002/01/18 18:14:17 stevesk Exp $");
 
 #include "xmalloc.h"
 #include "log.h"
@@ -389,22 +389,6 @@ Cipher ciphers[] = {
 		rijndael_setkey, rijndael_setiv,
 		rijndael_cbc_encrypt, rijndael_cbc_decrypt },
 	{ "aes256-cbc",
-		SSH_CIPHER_SSH2, 16, 32,
-		rijndael_setkey, rijndael_setiv,
-		rijndael_cbc_encrypt, rijndael_cbc_decrypt },
-	{ "rijndael128-cbc",
-		SSH_CIPHER_SSH2, 16, 16,
-		rijndael_setkey, rijndael_setiv,
-		rijndael_cbc_encrypt, rijndael_cbc_decrypt },
-	{ "rijndael192-cbc",
-		SSH_CIPHER_SSH2, 16, 24,
-		rijndael_setkey, rijndael_setiv,
-		rijndael_cbc_encrypt, rijndael_cbc_decrypt },
-	{ "rijndael256-cbc",
-		SSH_CIPHER_SSH2, 16, 32,
-		rijndael_setkey, rijndael_setiv,
-		rijndael_cbc_encrypt, rijndael_cbc_decrypt },
-	{ "rijndael-cbc@lysator.liu.se",
 		SSH_CIPHER_SSH2, 16, 32,
 		rijndael_setkey, rijndael_setiv,
 		rijndael_cbc_encrypt, rijndael_cbc_decrypt },
