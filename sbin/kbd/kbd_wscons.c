@@ -1,4 +1,4 @@
-/*	$OpenBSD: kbd_wscons.c,v 1.17 2004/09/16 09:53:56 deraadt Exp $ */
+/*	$OpenBSD: kbd_wscons.c,v 1.18 2004/10/08 13:23:41 jaredy Exp $ */
 
 /*
  * Copyright (c) 2001 Mats O Jansson.  All rights reserved.
@@ -158,7 +158,7 @@ kbd_list(void)
 	int	fd, i, kbtype;
 #ifndef NOKVM
 	kvm_t	*kd;
-	char	errbuf[_POSIX2_LINE_MAX];
+	char	errbuf[LINE_MAX];
 #endif
 	char	device[MAXPATHLEN];
 	int	pc_kbd = 0;
@@ -244,7 +244,7 @@ kbd_list(void)
 void
 kbd_set(char *name, int verbose)
 {
-	char	buf[_POSIX2_LINE_MAX];
+	char	buf[LINE_MAX];
 	char	*c,*b;
 	struct nameint *n;
 	int	map = 0,v,i,fd;
