@@ -1,4 +1,4 @@
-/*	$OpenBSD: atapilink.h,v 1.7 1996/09/06 12:19:12 mickey Exp $	*/
+/*	$OpenBSD: atapilink.h,v 1.9 1997/06/06 23:43:07 provos Exp $	*/
 
 /*
  * Copyright (c) 1996 Manuel Bouyer.  All rights reserved.
@@ -154,6 +154,7 @@ struct at_dev_link {
 #define AQUIRK_LITTLETOC	0x02	/* Audio TOC uses wrong byte order */
 #define AQUIRK_NOCAPACITY	0x04	/* no READ_CD_CAPACITY command */
 #define AQUIRK_NODOORLOCK       0x08    /* can't lock the door */
+#define AQUIRK_NOTUR		0x10	/* no TEST_UNIT_READY command */
 	void	(*start) __P((void *));	/* device start routine */
 	int	(*done) __P((void *));	/* device done routine */
 };
