@@ -1,4 +1,4 @@
-/*	$OpenBSD: parser.c,v 1.4 2001/08/16 12:59:43 kjc Exp $	*/
+/*	$OpenBSD: parser.c,v 1.5 2002/02/13 08:21:45 kjc Exp $	*/
 /*	$KAME: parser.c,v 1.13 2002/02/12 10:14:01 kjc Exp $	*/
 /*
  * Copyright (C) 1999-2002
@@ -467,12 +467,12 @@ interface_parser(char *cmdbuf)
 	}
 
 	/* create argment list & look for scheduling discipline options. */
-	sprintf(qdisc_name, "null");
+	snprintf(qdisc_name, sizeof qdisc_name, "null");
 	argc = 0;
 	ap = w;
 	while (next_word(&cp, ap)) {
 		if (is_qdisc_name(ap))
-			strcpy(qdisc_name, ap);
+			strlcpy(qdisc_name, ap, sizeof qdisc_name);
 
 		argv[argc] = ap;
 		ap += strlen(ap) + 1;
