@@ -1,4 +1,4 @@
-/*	$OpenBSD: dn11.c,v 1.5 2001/11/19 19:02:16 mpech Exp $	*/
+/*	$OpenBSD: dn11.c,v 1.6 2002/05/07 06:56:50 hugh Exp $	*/
 /*	$NetBSD: dn11.c,v 1.4 1995/10/29 00:49:53 pk Exp $	*/
 
 /*
@@ -38,7 +38,7 @@
 #if 0
 static char sccsid[] = "@(#)dn11.c	8.1 (Berkeley) 6/6/93";
 #endif
-static const char rcsid[] = "$OpenBSD: dn11.c,v 1.5 2001/11/19 19:02:16 mpech Exp $";
+static const char rcsid[] = "$OpenBSD: dn11.c,v 1.6 2002/05/07 06:56:50 hugh Exp $";
 #endif /* not lint */
 
 /*
@@ -49,7 +49,7 @@ static const char rcsid[] = "$OpenBSD: dn11.c,v 1.5 2001/11/19 19:02:16 mpech Ex
 void dn_abort();
 void alarmtr();
 static jmp_buf jmpbuf;
-static int child = -1, dn;
+static pid_t child = -1, dn;
 
 int
 dn_dialer(num, acu)

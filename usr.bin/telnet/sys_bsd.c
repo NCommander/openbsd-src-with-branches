@@ -1,4 +1,4 @@
-/*	$OpenBSD: sys_bsd.c,v 1.11 2002/03/22 13:49:28 hin Exp $	*/
+/*	$OpenBSD: sys_bsd.c,v 1.12 2002/03/25 10:52:32 hin Exp $	*/
 /*	$NetBSD: sys_bsd.c,v 1.11 1996/02/28 21:04:10 thorpej Exp $	*/
 
 /*
@@ -824,7 +824,7 @@ NetSigIO(fd, onoff)
 NetSetPgrp(fd)
     int fd;
 {
-    int myPid;
+    pid_t myPid;
 
     myPid = getpid();
     fcntl(fd, F_SETOWN, myPid);

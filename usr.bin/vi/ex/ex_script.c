@@ -1,4 +1,4 @@
-/*	$OpenBSD: ex_script.c,v 1.7 2001/11/19 19:02:17 mpech Exp $	*/
+/*	$OpenBSD: ex_script.c,v 1.8 2002/02/16 21:27:57 millert Exp $	*/
 
 /*-
  * Copyright (c) 1992, 1993, 1994
@@ -599,7 +599,7 @@ sscr_end(sp)
 	    (void)close(sc->sh_slave);
 
 	/* This should have killed the child. */
-	(void)proc_wait(sp, (long)sc->sh_pid, "script-shell", 0, 0);
+	(void)proc_wait(sp, sc->sh_pid, "script-shell", 0, 0);
 
 	/* Free memory. */
 	free(sc->sh_prompt);

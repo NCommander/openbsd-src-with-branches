@@ -1,4 +1,4 @@
-/*	$OpenBSD: supcmain.c,v 1.13 2002/02/16 21:27:54 millert Exp $	*/
+/*	$OpenBSD: supcmain.c,v 1.14 2002/02/19 19:39:39 millert Exp $	*/
 
 /*
  * Copyright (c) 1992 Carnegie Mellon University
@@ -329,7 +329,7 @@
  *********************************************/
 
 char program[] = "SUP";			/* program name for SCM messages */
-int progpid = -1;			/* and process id */
+pid_t progpid = -1;			/* and process id */
 
 COLLECTION *firstC, *thisC;		/* collection list pointer */
 

@@ -1,4 +1,4 @@
-/*	$OpenBSD: v831.c,v 1.6 2001/11/19 19:02:16 mpech Exp $	*/
+/*	$OpenBSD: v831.c,v 1.7 2002/05/07 06:56:50 hugh Exp $	*/
 /*	$NetBSD: v831.c,v 1.5 1996/12/29 10:42:01 cgd Exp $	*/
 
 /*
@@ -38,7 +38,7 @@
 #if 0
 static char sccsid[] = "@(#)v831.c	8.1 (Berkeley) 6/6/93";
 #endif
-static const char rcsid[] = "$OpenBSD: v831.c,v 1.6 2001/11/19 19:02:16 mpech Exp $";
+static const char rcsid[] = "$OpenBSD: v831.c,v 1.7 2002/05/07 06:56:50 hugh Exp $";
 #endif /* not lint */
 
 /*
@@ -53,14 +53,15 @@ static	int dialit();
 static	char *sanitize();
 
 static jmp_buf jmpbuf;
-static int child = -1;
+static pid_t child = -1;
 
 int
 v831_dialer(num, acu)
         char *num, *acu;
 {
-        int status, pid;
+        int status;
         int timelim;
+	pid_t pid;
 
         if (boolean(value(VERBOSE)))
                 printf("\nstarting call...");

@@ -1,4 +1,4 @@
-/*	$OpenBSD: xlint.c,v 1.8 2002/02/16 21:27:59 millert Exp $	*/
+/*	$OpenBSD: xlint.c,v 1.9 2002/03/14 06:51:42 mpech Exp $	*/
 /*	$NetBSD: xlint.c,v 1.3 1995/10/23 14:29:30 jpo Exp $	*/
 
 /*
@@ -33,7 +33,7 @@
  */
 
 #ifndef lint
-static char rcsid[] = "$OpenBSD: xlint.c,v 1.8 2002/02/16 21:27:59 millert Exp $";
+static char rcsid[] = "$OpenBSD: xlint.c,v 1.9 2002/03/14 06:51:42 mpech Exp $";
 #endif
 
 #include <sys/param.h>
@@ -611,7 +611,8 @@ runchild(path, args, crfn)
 	const	char *path, *crfn;
 	char	*const *args;
 {
-	int	status, rv, signo, i;
+	int	status, signo, i;
+	pid_t	rv;
 
 	if (Vflag) {
 		for (i = 0; args[i] != NULL; i++)

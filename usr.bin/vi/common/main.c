@@ -1,4 +1,4 @@
-/*	$OpenBSD: main.c,v 1.7 2001/01/29 01:58:30 niklas Exp $	*/
+/*	$OpenBSD: main.c,v 1.8 2002/02/16 21:27:57 millert Exp $	*/
 
 /*-
  * Copyright (c) 1992, 1993, 1994
@@ -591,8 +591,8 @@ attach(gp)
 		return;
 	}
 
-	(void)printf("process %lu waiting, enter <CR> to continue: ",
-	    (u_long)getpid());
+	(void)printf("process %ld waiting, enter <CR> to continue: ",
+	    (long)getpid());
 	(void)fflush(stdout);
 
 	do {
