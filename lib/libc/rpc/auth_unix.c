@@ -28,7 +28,7 @@
  */
 
 #if defined(LIBC_SCCS) && !defined(lint)
-static char *rcsid = "$OpenBSD: auth_unix.c,v 1.10 1998/07/09 06:11:56 deraadt Exp $";
+static char *rcsid = "$OpenBSD: auth_unix.c,v 1.11 1998/12/20 23:45:41 millert Exp $";
 #endif /* LIBC_SCCS and not lint */
 
 /*
@@ -50,6 +50,7 @@ static char *rcsid = "$OpenBSD: auth_unix.c,v 1.10 1998/07/09 06:11:56 deraadt E
 
 #include <rpc/types.h>
 #include <rpc/xdr.h>
+#include <rpc/rpc.h>
 #include <rpc/auth.h>
 #include <rpc/auth_unix.h>
 
