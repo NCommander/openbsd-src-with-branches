@@ -1,4 +1,4 @@
-/*	$OpenBSD: tp_inet.c,v 1.7 2002/03/14 01:27:12 millert Exp $	*/
+/*	$OpenBSD: tp_inet.c,v 1.8 2002/03/15 18:19:53 millert Exp $	*/
 /*	$NetBSD: tp_inet.c,v 1.11 1996/03/16 23:13:49 christos Exp $	*/
 
 /*-
@@ -588,7 +588,6 @@ discard:
 		tptrace(TPPTmisc, "tpip_input DISCARD m", m, 0, 0, 0);
 	}
 #endif
-		m_freem(m);
 	IncStat(ts_recv_drop);
 	splx(s);
 }

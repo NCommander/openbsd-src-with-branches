@@ -1,4 +1,4 @@
-/*	$OpenBSD: spx_usrreq.c,v 1.16 2001/06/27 03:49:54 angelos Exp $	*/
+/*	$OpenBSD: spx_usrreq.c,v 1.17 2001/09/23 10:22:13 mickey Exp $	*/
 
 /*-
  *
@@ -810,7 +810,6 @@ spx_output(cb, m0)
 			if (m0->m_len < sizeof(*sh)) {
 				if((m0 = m_pullup(m0, sizeof(*sh))) == NULL) {
 					(void) m_free(m);
-					m_freem(m0);
 					return (EINVAL);
 				}
 				m->m_next = m0;
