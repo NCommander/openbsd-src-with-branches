@@ -38,6 +38,7 @@
 #include "cvs.h"
 #include "rcs.h"
 #include "log.h"
+#include "proto.h"
 
 
 #define CFT_FILE   1
@@ -88,6 +89,16 @@ cvs_init(int argc, char **argv)
 		return (EX_USAGE);
 
 	root = cvsroot_get(".");
+	if (root->cr_method != CVS_METHOD_LOCAL) {
+		if (cvs_connect(root) < 0)
+			return (EX_DATAERR);
+
+		if (cvs_sendreq(root, CVS_REQ_INIT, root->cr_dir) < 0)
+			return (EX_DATAERR);
+
+		cvs_disconnect(root);
+		return (0);
+	}
 
 	for (i = 0; i < sizeof(cvsroot_files)/sizeof(cvsroot_files[i]); i++) {
 		snprintf(path, sizeof(path), "%s/%s", root->cr_dir,
