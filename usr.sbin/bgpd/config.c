@@ -1,4 +1,4 @@
-/*	$OpenBSD: config.c,v 1.2 2003/12/19 14:23:28 henning Exp $ */
+/*	$OpenBSD: config.c,v 1.3 2003/12/23 01:06:21 henning Exp $ */
 
 /*
  * Copyright (c) 2003 Henning Brauer <henning@openbsd.org>
@@ -69,6 +69,8 @@ merge_config(struct bgpd_config *xconf, struct bgpd_config *conf)
 
 	memcpy(&xconf->listen_addr, &conf->listen_addr,
 	    sizeof(xconf->listen_addr));
+
+	xconf->flags = conf->flags;
 
 	/*
 	 * as we cannot get the negotiated holdtime in the main process,
