@@ -1,4 +1,4 @@
-/*	$OpenBSD: disklabel.c,v 1.6 1996/05/18 19:06:38 pefo Exp $	*/
+/*	$OpenBSD: disklabel.c,v 1.7 1996/06/06 12:10:01 deraadt Exp $	*/
 /*	$NetBSD: disklabel.c,v 1.30 1996/03/14 19:49:24 ghudson Exp $	*/
 
 /*
@@ -941,7 +941,7 @@ editit()
 	if ((ed = getenv("EDITOR")) == (char *)0)
 		ed = DEFEDITOR;
 	p = (char *)malloc(strlen(ed) + 1 + strlen(tmpfil) + 1);
-	if (!p)
+	if (!p) {
 		warn("failed to start editor");
 		return (0);
 	}
