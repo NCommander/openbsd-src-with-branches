@@ -23,7 +23,7 @@
  */
 
 #include "includes.h"
-RCSID("$OpenBSD: auth.c,v 1.54 2004/05/23 23:59:53 dtucker Exp $");
+RCSID("$OpenBSD: auth.c,v 1.55 2004/07/21 08:56:12 markus Exp $");
 
 #include <libgen.h>
 
@@ -173,7 +173,7 @@ auth_log(Authctxt *authctxt, int authenticated, char *method, char *info)
 	authlog("%s %s for %s%.100s from %.200s port %d%s",
 	    authmsg,
 	    method,
-	    authctxt->valid ? "" : "illegal user ",
+	    authctxt->valid ? "" : "invalid user ",
 	    authctxt->user,
 	    get_remote_ipaddr(),
 	    get_remote_port(),
