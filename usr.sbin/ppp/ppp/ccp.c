@@ -17,7 +17,7 @@
  * IMPLIED WARRANTIES, INCLUDING, WITHOUT LIMITATION, THE IMPLIED
  * WARRANTIES OF MERCHANTIBILITY AND FITNESS FOR A PARTICULAR PURPOSE.
  *
- * $OpenBSD: ccp.c,v 1.12 2000/02/27 00:21:06 brian Exp $
+ * $OpenBSD: ccp.c,v 1.13 2000/02/27 01:38:25 brian Exp $
  *
  *	TODO:
  *		o Support other compression protocols
@@ -41,8 +41,6 @@
 #include "timer.h"
 #include "fsm.h"
 #include "proto.h"
-#include "lcp.h"
-#include "ccp.h"
 #include "pred.h"
 #include "deflate.h"
 #include "throughput.h"
@@ -50,6 +48,8 @@
 #include "slcompress.h"
 #include "lqr.h"
 #include "hdlc.h"
+#include "lcp.h"
+#include "ccp.h"
 #include "ipcp.h"
 #include "filter.h"
 #include "descriptor.h"
