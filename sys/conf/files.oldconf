@@ -292,3 +292,4 @@ vm/vnode_pager.c	optional vnodepager
 dev/ccd.c		optional ccd needs-count
 # XXX !! This should not be necessary!
 dev/audio.c		optional audio device-driver
+dev/rnd.c		optional rnd device-driver needs-count
