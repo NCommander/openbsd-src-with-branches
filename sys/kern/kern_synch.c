@@ -1,4 +1,4 @@
-/*	$OpenBSD: kern_synch.c,v 1.3 1996/04/21 22:27:08 deraadt Exp $	*/
+/*	$OpenBSD: kern_synch.c,v 1.5 1996/11/23 23:19:51 kstailey Exp $	*/
 /*	$NetBSD: kern_synch.c,v 1.37 1996/04/22 01:38:37 christos Exp $	*/
 
 /*-
@@ -358,7 +358,7 @@ tsleep(ident, priority, wmesg, timo)
 	mi_switch();
 #ifdef	DDB
 	/* handy breakpoint location after process "wakes" */
-	asm(".globl bpendtsleep ; bpendtsleep:");
+	__asm(".globl bpendtsleep ; bpendtsleep:");
 #endif
 resume:
 	curpriority = p->p_usrpri;
@@ -471,7 +471,7 @@ sleep(ident, priority)
 	mi_switch();
 #ifdef	DDB
 	/* handy breakpoint location after process "wakes" */
-	asm(".globl bpendsleep ; bpendsleep:");
+	__asm(".globl bpendsleep ; bpendsleep:");
 #endif
 #ifdef KTRACE
 	if (KTRPOINT(p, KTR_CSW))
