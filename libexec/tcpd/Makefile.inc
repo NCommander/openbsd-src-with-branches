@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile.inc,v 1.1 1997/02/26 06:00:34 downsj Exp $
+#	$OpenBSD: Makefile.inc,v 1.2 1997/03/04 09:01:39 downsj Exp $
 
 # Configuration options for libwrap.  Keep in sync with libwrap/Makefile.
 CFLAGS+=-DPROCESS_OPTIONS -DFACILITY=LOG_AUTH -DSEVERITY=LOG_INFO \
@@ -6,5 +6,6 @@ CFLAGS+=-DPROCESS_OPTIONS -DFACILITY=LOG_AUTH -DSEVERITY=LOG_INFO \
 	-DHOSTS_DENY=\"/etc/hosts.deny\" -DHOSTS_ALLOW=\"/etc/hosts.allow\" \
 	-DNETGROUP -DSYS_ERRLIST_DEFINED -DREAL_DAEMON_DIR=\"/usr/libexec\" \
 	-D_TCPD_PRIVATE
+CFLAGS+=-DINET6
 
 .include "../Makefile.inc"

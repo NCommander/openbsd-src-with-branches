@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.2 1997/03/04 08:59:23 downsj Exp $
+#	$OpenBSD: Makefile,v 1.3 1997/04/27 20:56:19 millert Exp $
 
 LIB=	wrap
 SRCS=	hosts_access.c options.c shell_cmd.c rfc931.c eval.c \
@@ -12,6 +12,7 @@ CFLAGS+=-DPROCESS_OPTIONS -DFACILITY=LOG_AUTH -DSEVERITY=LOG_INFO \
 	-DRFC931_TIMEOUT=10 -DHOSTS_ACCESS -DALWAYS_HOSTNAME \
 	-DHOSTS_DENY=\"/etc/hosts.deny\" -DHOSTS_ALLOW=\"/etc/hosts.allow\" \
 	-DNETGROUP -DSYS_ERRLIST_DEFINED -D_TCPD_PRIVATE
+CFLAGS+=-DINET6
 
 MAN=	hosts_access.3 hosts_access.5 hosts_options.5
 MLINKS+=hosts_access.5 hosts.allow.5
