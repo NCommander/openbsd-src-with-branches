@@ -1,4 +1,4 @@
-/*	$OpenBSD: uvm_mmap.c,v 1.36 2002/10/29 18:30:21 art Exp $	*/
+/*	$OpenBSD: uvm_mmap.c,v 1.37 2002/11/08 04:06:02 art Exp $	*/
 /*	$NetBSD: uvm_mmap.c,v 1.49 2001/02/18 21:19:08 chs Exp $	*/
 
 /*
@@ -196,9 +196,10 @@ sys_mincore(p, v, retval)
 			KASSERT(!UVM_OBJ_IS_KERN_OBJECT(entry->object.uvm_obj));
 			if (entry->object.uvm_obj->pgops->pgo_releasepg
 			    == NULL) {
+				pgi = 1;
 				for (/* nothing */; start < lim;
 				     start += PAGE_SIZE, vec++)
-					subyte(vec, 1);
+					copyout(&pgi, vec, sizeof(char));
 				continue;
 			}
 		}
@@ -240,7 +241,7 @@ sys_mincore(p, v, retval)
 				}
 			}
 
-			(void) subyte(vec, pgi);
+			copyout(&pgi, vec, sizeof(char));
 		}
 
 		if (uobj != NULL)
