@@ -1,4 +1,4 @@
-/*	$OpenBSD: mbuf.h,v 1.11 1999/07/02 01:02:52 cmetz Exp $	*/
+/*	$OpenBSD: mbuf.h,v 1.12 1999/10/01 02:00:11 jason Exp $	*/
 /*	$NetBSD: mbuf.h,v 1.19 1996/02/09 18:25:14 christos Exp $	*/
 
 /*
@@ -390,6 +390,7 @@ struct	mbuf *m_pullup2 __P((struct mbuf *, int));
 struct	mbuf *m_retry __P((int, int));
 struct	mbuf *m_retryhdr __P((int, int));
 struct	mbuf *m_split __P((struct mbuf *, int, int));
+struct  mbuf *m_inject __P((struct mbuf *, int, int, int));
 void	m_adj __P((struct mbuf *, int));
 int	m_clalloc __P((int, int));
 void	m_copyback __P((struct mbuf *, int, int, caddr_t));
