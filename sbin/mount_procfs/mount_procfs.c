@@ -64,7 +64,7 @@ static char rcsid[] = "$OpenBSD: mount_procfs.c,v 1.11 2003/07/03 22:41:40 tedu 
 
 const struct mntopt mopts[] = {
 	MOPT_STDOPTS,
-	{ "linux", PROCFSMNT_LINUXCOMPAT, 0 },
+	{ "linux", 0, PROCFSMNT_LINUXCOMPAT, 1 },
 	{ NULL }
 };
 
@@ -81,7 +81,7 @@ main(int argc, char *argv[])
 	while ((ch = getopt(argc, argv, "o:")) != -1)
 		switch (ch) {
 		case 'o':
-			altflags |= getmntopts(optarg, mopts, &mntflags);
+			getmntopts(optarg, mopts, &mntflags, &altflags);
 			break;
 		case '?':
 		default:
