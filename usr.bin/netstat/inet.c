@@ -699,6 +699,7 @@ esp_stats(off, name)
         p(esps_pdrops, "\t%u packet%s dropped due to policy\n");
         p(esps_notdb, "\t%u packet%s for which no TDB was found\n");
         p(esps_badkcr, "\t%u input packet%s that failed to be processed\n");
+        p(esps_badenc, "\t%u packet%s with bad encryption received\n");
         p(esps_badauth, "\t%u packet%s that failed verification received\n");
         p(esps_noxform, "\t%u packet%s for which no XFORM was set in TDB received\n");   
         p(esps_qfull, "\t%u packet%s were dropped due to full output queue\n");
