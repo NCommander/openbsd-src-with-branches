@@ -1,4 +1,4 @@
-/*	$OpenBSD: misc.c,v 1.1 2001/01/21 19:05:52 markus Exp $	*/
+/*	$OpenBSD: misc.c,v 1.2 2001/02/22 21:59:44 markus Exp $	*/
 
 /*
  * Copyright (c) 2000 Markus Friedl.  All rights reserved.
@@ -25,10 +25,11 @@
  */
 
 #include "includes.h"
-RCSID("$OpenBSD: misc.c,v 1.1 2001/01/21 19:05:52 markus Exp $");
+RCSID("$OpenBSD: misc.c,v 1.2 2001/02/22 21:59:44 markus Exp $");
 
 #include "misc.h"
 #include "log.h"
+#include "xmalloc.h"
 
 char *
 chop(char *s)
