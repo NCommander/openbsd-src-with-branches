@@ -1,4 +1,4 @@
-/*	$OpenBSD: misc.c,v 1.8 1998/10/29 04:09:21 millert Exp $	*/
+/*	$OpenBSD: misc.c,v 1.9 1999/01/08 20:25:01 millert Exp $	*/
 
 /*
  * Miscellaneous functions
@@ -259,7 +259,7 @@ char *
 getoptions()
 {
 	int i;
-	char m[FNFLAGS + 1];
+	char m[(int) FNFLAGS + 1];
 	register char *cp = m;
 
 	for (i = 0; i < NELEM(options); i++)

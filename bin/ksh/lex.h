@@ -1,4 +1,4 @@
-/*	$OpenBSD: lex.h,v 1.3 1996/10/13 21:32:20 downsj Exp $	*/
+/*	$OpenBSD: lex.h,v 1.4 1998/06/25 19:02:07 millert Exp $	*/
 
 /*
  * Source input, lexer and parser
@@ -12,7 +12,7 @@ typedef struct source Source;
 struct source {
 	const char *str;	/* input pointer */
 	int	type;		/* input type */
-	char const *start;	/* start of current buffer */
+	const char *start;	/* start of current buffer */
 	union {
 		char **strv;	/* string [] */
 		struct shf *shf; /* shell file */
