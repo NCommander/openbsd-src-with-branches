@@ -1,4 +1,4 @@
-/*	$OpenBSD: vmparam.h,v 1.12 2001/05/05 20:56:37 art Exp $	*/
+/*	$OpenBSD: vmparam.h,v 1.13 2001/05/06 00:45:49 art Exp $	*/
 
 /* 
  * Copyright (c) 1988-1994, The University of Utah and
@@ -126,7 +126,6 @@
 #define	VM_FREELIST_DEFAULT	0
 #define	VM_FREELIST_FIRST16	1
 
-#define	MACHINE_NEW_NONCONTIG	1	/* defined this until we rely on vm */
 #define	PMAP_NEW
 
 #ifdef _KERNEL
