@@ -186,7 +186,7 @@ static int loc[%d] = {", locators.used) < 0)
 #endif\n\
 int extraloc[MAXEXTRALOC] = { -1 };\n\
 int nextraloc = MAXEXTRALOC;\n\
-int uextraloc __attribute__((__section__(\"data\")));\n") < 0);
+int uextraloc = 0;\n") < 0);
 }
 
 static int nlocnames, maxlocnames = 8;
