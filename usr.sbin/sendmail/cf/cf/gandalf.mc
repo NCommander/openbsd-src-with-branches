@@ -30,7 +30,7 @@ divert(-1)
 #
 
 include(`../m4/cf.m4')dnl
-VERSIONID(`$OpenBSD$')dnl
+VERSIONID(`$OpenBSD: gandalf.mc,v 1.1 1996/06/02 05:02:45 tholo Exp $')dnl
 OSTYPE(bsd4.4)dnl
 DOMAIN(sigmasoft)dnl
 MASQUERADE_AS(SigmaSoft.COM)dnl
@@ -42,3 +42,4 @@ MAILER(procmail)dnl
 MAILER(smtp)dnl
 
 Cw SigmaSoft.COM
+Cw saruman.SigmaSoft.COM
