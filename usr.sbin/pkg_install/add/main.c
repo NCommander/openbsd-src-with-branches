@@ -1,7 +1,7 @@
-/*	$OpenBSD: main.c,v 1.3 1997/01/15 23:44:09 millert Exp $	*/
+/*	$OpenBSD: main.c,v 1.4 1998/04/04 22:44:13 deraadt Exp $	*/
 
 #ifndef lint
-static char *rcsid = "$OpenBSD: main.c,v 1.3 1997/01/15 23:44:09 millert Exp $";
+static char *rcsid = "$OpenBSD: main.c,v 1.4 1998/04/04 22:44:13 deraadt Exp $";
 #endif
 
 /*
@@ -130,12 +130,13 @@ main(int argc, char **argv)
 		}
 	    }
 	}
+	/* If no packages, yelp */
+	if (!ch)
+	  usage(prog_name, "Missing package name(s)");
+	else if (ch > 1 && AddMode == MASTER)
+	  usage(prog_name,
+		"Only one package name may be specified with master mode");
     }
-    /* If no packages, yelp */
-    else if (!ch)
-	usage(prog_name, "Missing package name(s)");
-    else if (ch > 1 && AddMode == MASTER)
-	usage(prog_name, "Only one package name may be specified with master mode");
     if ((err = pkg_perform(pkgs)) != NULL) {
 	if (Verbose)
 	    fprintf(stderr, "%d package addition(s) failed.\n", err);
