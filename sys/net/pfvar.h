@@ -1,4 +1,4 @@
-/*	$OpenBSD: pfvar.h,v 1.107 2002/12/01 19:54:32 mcbride Exp $ */
+/*	$OpenBSD: pfvar.h,v 1.108 2002/12/06 00:47:32 dhartmei Exp $ */
 
 /*
  * Copyright (c) 2001 Daniel Hartmeier
@@ -465,7 +465,7 @@ struct pf_anchor;
 
 struct pf_ruleset {
 	TAILQ_ENTRY(pf_ruleset)	 entries;
-#define PF_RULESET_NAME_SIZE	 16 
+#define PF_RULESET_NAME_SIZE	 16
 	char			 name[PF_RULESET_NAME_SIZE];
 	struct {
 		struct pf_rulequeue	 queues[2];
