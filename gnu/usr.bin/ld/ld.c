@@ -1,4 +1,4 @@
-/*	$OpenBSD: ld.c,v 1.21 2002/03/31 20:48:16 fgsch Exp $	*/
+/*	$OpenBSD: ld.c,v 1.22 2002/04/17 15:33:16 espie Exp $	*/
 /*	$NetBSD: ld.c,v 1.52 1998/02/20 03:12:51 jonathan Exp $	*/
 
 /*-
@@ -56,7 +56,7 @@ static char sccsid[] = "@(#)ld.c	6.10 (Berkeley) 5/22/91";
 #include <stab.h>
 #include <string.h>
 
-#define GNU_BINUTIL_COMPAT	/* forwards compatiblity with binutils 2.x */
+#define GNU_BINUTIL_COMPAT	/* forwards compatibility with binutils 2.x */
 /*#define DEBUG_COMPAT*/
 
 #include "ld.h"
