@@ -1,5 +1,5 @@
-#	$OpenBSD: Makefile,v 1.4 1996/04/17 05:03:07 mickey Exp $
-#	$NetBSD: Makefile,v 1.26 1996/04/18 02:14:48 cgd Exp $
+#	$OpenBSD: Makefile,v 1.6 1996/05/10 21:27:31 deraadt Exp $
+#	$NetBSD: Makefile,v 1.27 1996/05/10 21:27:32 scottr Exp $
 
 LIB=	kern
 NOPIC=
