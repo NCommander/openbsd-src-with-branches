@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /*	$NetBSD: mkswapconf.c,v 1.11 1995/08/17 17:22:20 thorpej Exp $	*/
 
 /*

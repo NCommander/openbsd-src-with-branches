@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /*	$NetBSD: mkheaders.c,v 1.7 1995/08/17 17:22:15 thorpej Exp $	*/
 
 /*

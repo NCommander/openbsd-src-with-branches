@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /*	$NetBSD: mkglue.c,v 1.10 1995/08/17 17:22:14 thorpej Exp $	*/
 
 /*
