@@ -1,4 +1,4 @@
-/*	$OpenBSD: disksubr.c,v 1.17 1998/10/03 21:18:54 millert Exp $	*/
+/*	$OpenBSD: disksubr.c,v 1.20 2000/10/18 21:00:33 mickey Exp $	*/
 /*	$NetBSD: disksubr.c,v 1.27 1996/10/13 03:06:34 christos Exp $	*/
 
 /*
@@ -85,7 +85,7 @@ dk_establish(dk, dev)
 
 /*
  * Attempt to read a disk label from a device
- * using the indicated stategy routine.
+ * using the indicated strategy routine.
  * The label must be partly set up before this:
  * secpercyl and anything required in the strategy routine
  * (e.g., sector size) must be filled in before calling us.
@@ -336,6 +336,7 @@ readdisklabel(dev, strat, lp, clp, spoofonly)
 		case ADT_NETBSDUSER:
 		case ADT_AMIGADOS:
 		case ADT_AMIX:
+		case ADT_EXT2:
 		case ADT_UNKNOWN:
 			pp = &lp->d_partitions[lp->d_npartitions];
 			break;
@@ -634,6 +635,10 @@ getadostype(dostype)
 		printf(" using: 0x%x instead\n", dostype);
 #endif
 		return (getadostype(dostype));
+	case DOST_EXT2:
+		adt.archtype = ADT_EXT2;
+		adt.fstype = FS_EXT2FS;
+		return(adt);
 	default:
 	unknown:
 #ifdef DIAGNOSTIC

@@ -1,4 +1,4 @@
-/*	$OpenBSD: par.c,v 1.4 1997/01/16 09:25:09 niklas Exp $	*/
+/*	$OpenBSD: par.c,v 1.7 2001/02/07 07:46:50 art Exp $	*/
 /*	$NetBSD: par.c,v 1.16 1996/12/23 09:10:28 veego Exp $	*/
 
 /*
@@ -317,7 +317,9 @@ again:
       /*
        * Check if we timed out during sleep or uiomove
        */
-      (void) splsoftclock();
+      /* XXXX - Ieeeeek! this is a horrible abuse. It's probably not even
+       * right */
+      (void) spllowersoftclock();
       if ((sc->sc_flags & PARF_UIO) == 0) 
 	{
 #ifdef DEBUG

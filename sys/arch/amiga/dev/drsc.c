@@ -1,4 +1,4 @@
-/*	$OpenBSD: drsc.c,v 1.3 1997/01/16 09:23:58 niklas Exp $	*/
+/*	$OpenBSD: drsc.c,v 1.5 2001/02/07 07:46:50 art Exp $	*/
 /*	$NetBSD: drsc.c,v 1.9 1996/12/23 09:09:57 veego Exp $	*/
 
 /*
@@ -189,6 +189,7 @@ drsc_handler()
 	 * interrupt.
 	 */
 #ifdef DRSC_NOCALLBACK
+	/* XXX */
 	(void)spl1();
 	siopintr(sc);
 #else

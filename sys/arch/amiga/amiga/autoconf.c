@@ -1,4 +1,4 @@
-/*	$OpenBSD: autoconf.c,v 1.11 1997/10/07 10:58:42 niklas Exp $	*/
+/*	$OpenBSD: autoconf.c,v 1.13 2000/09/02 13:45:38 espie Exp $	*/
 /*	$NetBSD: autoconf.c,v 1.59 1998/01/15 21:55:51 is Exp $	*/
 
 /*
@@ -271,6 +271,7 @@ mbattach(pdp, dp, auxp)
 	} else 
 #endif
 	{
+		config_found(dp, "joy", simple_devprint);
 		config_found(dp, "ser", simple_devprint);
 		config_found(dp, "par", simple_devprint);
 		config_found(dp, "kbd", simple_devprint);
