@@ -1,4 +1,4 @@
-/*	$OpenBSD: ramdisk.c,v 1.5 1996/04/21 22:19:53 deraadt Exp $	*/
+/*	$OpenBSD: ramdisk.c,v 1.6 1997/02/06 04:30:35 rahnds Exp $	*/
 /*	$NetBSD: ramdisk.c,v 1.8 1996/04/12 08:30:09 leo Exp $	*/
 
 /*
@@ -523,7 +523,7 @@ rdgetdisklabel(dev, sc)
 	 */
 	errstring = readdisklabel(RDLABELDEV(dev), rdstrategy, &lp, &clp);
 	if (errstring) {
-		printf("%s: %s\n", sc->sc_dev.dv_xname, errstring);
+		/*printf("%s: %s\n", sc->sc_dev.dv_xname, errstring);*/
 		return NULL;
 	}
 	return &lp;
