@@ -1,4 +1,4 @@
-# $OpenBSD: Makefile,v 1.18 2001/07/31 20:17:25 deraadt Exp $
+# $OpenBSD: Makefile,v 1.19 2002/02/06 09:13:34 hin Exp $
 
 KRBDEPTH=../..
 .include <${.CURDIR}/../../Makefile.inc>
@@ -238,14 +238,12 @@ SRCS+=	base64.c		\
 	getaddrinfo_hostspec.c	\
 	getarg.c		\
 	get_window_size.c	\
-	getprogname.c \
 	parse_time.c		\
 	parse_units.c		\
 	resolve.c		\
 	roken_gethostby.c	\
 	roken_net_write.c	\
 	roken_net_read.c	\
-	setprogname.c \
 	strupr.c 		\
 	strlwr.c		\
 	strsep_copy.c		\
