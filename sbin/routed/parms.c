@@ -1,4 +1,4 @@
-/*	$OpenBSD: parms.c,v 1.7 2002/08/08 14:00:24 aaron Exp $	*/
+/*	$OpenBSD: parms.c,v 1.8 2003/03/13 09:09:27 deraadt Exp $	*/
 
 /*
  * Copyright (c) 1983, 1993
@@ -326,7 +326,8 @@ gwkludge(void)
 		ifp->int_dstaddr = dst;
 		ifp->int_addr = gate;
 		ifp->int_metric = metric;
-		(void)sprintf(ifp->int_name, "%s-%s", type, naddr_ntoa(dst));
+		(void)snprintf(ifp->int_name, sizeof(ifp->int_name),
+		    "%s-%s", type, naddr_ntoa(dst));
 		ifp->int_index = -1;
 
 		get_parms(ifp);
