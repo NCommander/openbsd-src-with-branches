@@ -1,4 +1,4 @@
-/*	$OpenBSD: mkheaders.c,v 1.13 2002/05/29 09:45:39 deraadt Exp $	*/
+/*	$OpenBSD: mkheaders.c,v 1.14 2002/07/14 02:59:41 deraadt Exp $	*/
 /*	$NetBSD: mkheaders.c,v 1.12 1997/02/02 21:12:34 thorpej Exp $	*/
 
 /*
@@ -154,7 +154,7 @@ emitopt(nv)
 			    option->nv_name);
 	}
 
-	if (totlen >= sizeof new_contents) {
+	if (totlen < 0 || totlen >= sizeof new_contents) {
 		fprintf(stderr, "config: string too long\n");
 		return (1);
 	}
