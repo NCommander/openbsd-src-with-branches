@@ -1,4 +1,4 @@
-/*	$OpenBSD: auth.h,v 1.32 2002/03/17 20:25:56 provos Exp $	*/
+/*	$OpenBSD: auth.h,v 1.29 2002/03/04 17:27:39 stevesk Exp $	*/
 
 /*
  * Copyright (c) 2000 Markus Friedl.  All rights reserved.
@@ -126,6 +126,8 @@ void	auth_log(Authctxt *, int, char *, char *);
 void	userauth_finish(Authctxt *, int, char *);
 int	auth_root_allowed(char *);
 
+void	privsep_challenge_enable(void);
+
 int	auth2_challenge(Authctxt *, char *);
 void	auth2_challenge_stop(Authctxt *);
 
@@ -152,4 +154,5 @@ check_key_in_hostfiles(struct passwd *, Key *, const char *,
 #define AUTH_FAIL_LOG (AUTH_FAIL_MAX/2)
 #define AUTH_FAIL_MSG "Too many authentication failures for %.100s"
 
+#define SKEY_PROMPT "\nS/Key Password: "
 #endif

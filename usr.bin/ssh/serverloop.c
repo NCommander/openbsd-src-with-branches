@@ -35,7 +35,7 @@
  */
 
 #include "includes.h"
-RCSID("$OpenBSD: serverloop.c,v 1.97 2002/02/03 17:53:25 markus Exp $");
+RCSID("$OpenBSD: serverloop.c,v 1.98 2002/02/06 14:55:16 markus Exp $");
 
 #include "xmalloc.h"
 #include "packet.h"
@@ -784,7 +784,7 @@ server_loop2(Authctxt *authctxt)
 	channel_free_all();
 
 	/* free remaining sessions, e.g. remove wtmp entries */
-	session_destroy_all();
+	session_destroy_all(NULL);
 }
 
 static void
