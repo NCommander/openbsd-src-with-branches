@@ -1,4 +1,4 @@
-/*	$OpenBSD: getpar.c,v 1.5 2002/02/16 21:27:12 millert Exp $	*/
+/*	$OpenBSD: getpar.c,v 1.6 2002/02/24 09:07:46 pvalchev Exp $	*/
 /*	$NetBSD: getpar.c,v 1.4 1995/04/24 12:25:57 cgd Exp $	*/
 
 /*
@@ -246,7 +246,7 @@ testnl()
 	while ((c = getchar()) != '\n')
 		if ((c >= '0' && c <= '9') || c == '.' || c == '!' ||
 				(c >= 'A' && c <= 'Z') ||
-				(c >= 'a' && c <= 'z') || c == '-')
+				(c >= 'a' && c <= 'z') || c == '-' || c == EOF)
 		{
 			ungetc(c, stdin);
 			return(0);
