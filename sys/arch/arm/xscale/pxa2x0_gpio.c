@@ -1,4 +1,4 @@
-/*	$OpenBSD: pxa2x0_gpio.c,v 1.4 2005/01/04 05:35:40 drahn Exp $ */
+/*	$OpenBSD: pxa2x0_gpio.c,v 1.5 2005/01/04 23:45:55 drahn Exp $ */
 /*	$NetBSD: pxa2x0_gpio.c,v 1.2 2003/07/15 00:24:55 lukem Exp $	*/
 
 /*
@@ -422,6 +422,7 @@ gpio_intrN(void *arg)
 	handled = gpio_dispatch(sc, 0);
 	handled |= gpio_dispatch(sc, 32);
 	handled |= gpio_dispatch(sc, 64);
+	handled |= gpio_dispatch(sc, 96);
 
 	return (handled);
 }
