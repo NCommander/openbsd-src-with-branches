@@ -1,4 +1,4 @@
-/*	$OpenBSD: ftpd.c,v 1.42 1997/07/25 19:41:16 mickey Exp $	*/
+/*	$OpenBSD: ftpd.c,v 1.43 1997/08/04 19:25:09 deraadt Exp $	*/
 /*	$NetBSD: ftpd.c,v 1.15 1995/06/03 22:46:47 mycroft Exp $	*/
 
 /*
@@ -1781,6 +1781,7 @@ myoob(signo)
 	int signo;
 {
 	char *cp;
+	int save_errno = errno;
 
 	/* only process if transfer occurring */
 	if (!transflag)
@@ -1804,6 +1805,7 @@ myoob(signo)
 		else
 			reply(213, "Status: %qd bytes transferred", byte_count);
 	}
+	errno = save_errno;
 }
 
 /*
