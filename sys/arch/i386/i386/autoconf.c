@@ -1,4 +1,4 @@
-/*	$OpenBSD: autoconf.c,v 1.49 2003/09/11 19:46:22 deraadt Exp $	*/
+/*	$OpenBSD: autoconf.c,v 1.48 2003/09/07 04:02:03 krw Exp $	*/
 /*	$NetBSD: autoconf.c,v 1.20 1996/05/03 19:41:56 christos Exp $	*/
 
 /*-
@@ -85,7 +85,7 @@ void		viac3_rnd(void *);
 #ifdef CRYPTO
 extern int	viac3_crypto_present;
 void		viac3_crypto_setup(void);
-#endif
+#endif /* CRYPTO */
 #endif
 
 /*
@@ -130,10 +130,10 @@ cpu_configure()
 		timeout_set(&viac3_rnd_tmo, viac3_rnd, &viac3_rnd_tmo);
 		viac3_rnd(&viac3_rnd_tmo);
 	}
+#ifdef CRYPTO
 	/*
 	 * Also, if the chip as crypto available, enable it.
 	 */
-#ifdef CRYPTO
 	if (viac3_crypto_present)
 		viac3_crypto_setup();
 #endif /* CRYPTO */
