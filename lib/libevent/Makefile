@@ -1,3 +1,5 @@
+#	$OpenBSD$
+
 LIB=	event
 SRCS=	event.c select.c kqueue.c
 HDRS=	event.h

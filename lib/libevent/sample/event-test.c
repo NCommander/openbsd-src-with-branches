@@ -1,3 +1,5 @@
+/*	$OpenBSD$	*/
+
 /*
  * Compile with:
  * cc -I/usr/local/include -o event-test event-test.c -L/usr/local/lib -levent
