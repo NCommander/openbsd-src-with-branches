@@ -1,4 +1,4 @@
-/*	$OpenBSD: $ */
+/*	$OpenBSD: isp_inline.h,v 1.1 1999/11/22 12:50:53 mjacob Exp $ */
 /*
  * Qlogic Inline Functions
  *
@@ -46,7 +46,7 @@ static INLINE void
 isp_prtstst(sp)
 	ispstatusreq_t *sp;
 {
-	char *p, buf[172];
+	char buf[172], *p = buf;
 	sprintf(p, "states->");
 	if (sp->req_state_flags & RQSF_GOT_BUS) {
 		p += strlen(p);
