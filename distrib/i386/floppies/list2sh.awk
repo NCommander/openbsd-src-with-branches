@@ -10,7 +10,7 @@ BEGIN {
 }
 $1 == "COPY" {
 	printf("echo '%s'\n", $0);
-	printf("rm -f ${TARGDIR}/%s\n", $3);
+	printf("rm -fr ${TARGDIR}/%s\n", $3);
 	printf("cp %s ${TARGDIR}/%s\n", $2, $3);
 	next;
 }
