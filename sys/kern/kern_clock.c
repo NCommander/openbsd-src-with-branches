@@ -1,4 +1,4 @@
-/*	$OpenBSD: kern_clock.c,v 1.21 1999/08/15 00:07:43 pjanzen Exp $	*/
+/*	$OpenBSD: kern_clock.c,v 1.22 2000/03/23 09:59:57 art Exp $	*/
 /*	$NetBSD: kern_clock.c,v 1.34 1996/06/09 04:51:03 briggs Exp $	*/
 
 /*-
@@ -690,7 +690,7 @@ hardclock(frame)
 
 /*
  * Compute number of hz until specified time.  Used to
- * compute third argument to timeout() from an absolute time.
+ * compute the second argument to timeout_add() from an absolute time.
  */
 int
 hzto(tv)
