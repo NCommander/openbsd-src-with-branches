@@ -10,7 +10,7 @@
  */
 
 #include "includes.h"
-RCSID("$OpenBSD: servconf.c,v 1.69 2001/03/04 11:16:06 stevesk Exp $");
+RCSID("$OpenBSD: servconf.c,v 1.70 2001/03/04 17:42:28 millert Exp $");
 
 #ifdef KRB4
 #include <krb.h>
@@ -442,8 +442,9 @@ parse_filename:
 			intptr = &options->permit_root_login;
 			arg = strdelim(&cp);
 			if (!arg || *arg == '\0') {
-				fprintf(stderr, "%s line %d: missing yes/without-password/no argument.\n",
-					filename, linenum);
+				fprintf(stderr, "%s line %d: missing yes/"
+				    "without-password/forced-commands-only/no "
+				    "argument.\n", filename, linenum);
 				exit(1);
 			}
 			if (strcmp(arg, "without-password") == 0)
