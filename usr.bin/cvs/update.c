@@ -59,7 +59,7 @@ cvs_update(int argc, char **argv)
 {
 	int ch, flags;
 
-	flags = CF_SORT|CF_RECURSE|CF_IGNORE|CF_KNOWN;
+	flags = CF_SORT|CF_RECURSE|CF_IGNORE|CF_KNOWN|CF_NOSYMS;
 
 	while ((ch = getopt(argc, argv, "ACD:dflPpQqRr:")) != -1) {
 		switch (ch) {
