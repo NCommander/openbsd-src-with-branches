@@ -23,7 +23,7 @@
  */
 
 #include "includes.h"
-RCSID("$OpenBSD: sshconnect2.c,v 1.23 2000/10/11 20:14:39 markus Exp $");
+RCSID("$OpenBSD: sshconnect2.c,v 1.24 2000/10/11 20:27:24 markus Exp $");
 
 #include <openssl/bn.h>
 #include <openssl/rsa.h>
@@ -80,6 +80,8 @@ ssh_kex2(char *host, struct sockaddr *hostaddr)
 			options.ciphers = "3des-cbc";
 		} else if (options.cipher == SSH_CIPHER_BLOWFISH) {
 			options.ciphers = "blowfish-cbc";
+		} else if (options.cipher == SSH_CIPHER_DES) {
+			fatal("cipher DES not supported for protocol version 2");
 		}
 	}
 	if (options.ciphers != NULL) {
