@@ -168,5 +168,7 @@ leattach(parent, self, aux)
 	sc->sc_wrcsr = lewrcsr;
 	sc->sc_hwinit = lehwinit;
 
+	am7990_config(sc);
+
 	((struct pccreg *)ca->ca_master)->pcc_leirq = pri | PCC_IRQ_IEN;
 }
