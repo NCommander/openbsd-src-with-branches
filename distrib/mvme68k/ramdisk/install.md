@@ -1,4 +1,4 @@
-#       $OpenBSD: install.md,v 1.1 1997/02/15 04:27:15 rahnds Exp $
+#       $OpenBSD: install.md,v 1.2 1997/02/17 11:02:07 deraadt Exp $
 # Copyright (c) 1996 The NetBSD Foundation, Inc.
 # All rights reserved.
 #
@@ -155,7 +155,6 @@ __md_prep_disklabel_1
 }
 
 md_welcome_banner() {
-{
 	if [ "$MODE" = "install" ]; then
 		echo ""
 		echo "Welcome to the OpenBSD/mvme68k ${VERSION} installation program."
@@ -195,7 +194,6 @@ prompt, you may have to hit return.  Also, quitting in the middle of
 installation may leave your system in an inconsistent state.
 
 __welcome_banner_3
-} | more
 }
 
 md_not_going_to_install() {
