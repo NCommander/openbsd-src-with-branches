@@ -1,4 +1,4 @@
-/*	$OpenBSD: cryptodev.c,v 1.20 2001/06/24 17:06:39 angelos Exp $	*/
+/*	$OpenBSD: cryptodev.c,v 1.21 2001/08/17 17:37:12 ben Exp $	*/
 
 /*
  * Copyright (c) 2001 Theo de Raadt
@@ -367,7 +367,7 @@ crypto_op(struct csession *cse, struct crypt_op *cop, struct proc *p)
 		bcopy(cse->tmp_iv, crde->crd_iv, cse->txform->blocksize);
 		crde->crd_flags |= CRD_F_IV_EXPLICIT | CRD_F_IV_PRESENT;
 		crde->crd_skip = 0;
-	} else if(cse->cipher == CRYPTO_ARC4) { /* XXX use flag? */
+	} else if (cse->cipher == CRYPTO_ARC4) { /* XXX use flag? */
 		crde->crd_skip = 0;
 	} else {
 		crde->crd_flags |= CRD_F_IV_PRESENT;
