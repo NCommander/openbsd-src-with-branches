@@ -30,6 +30,7 @@ beforeinstall:
 .else
 	(cd ${.CURDIR}/etc && ${MAKE} distrib-dirs)
 .endif
+	(cd ${.CURDIR}/include; ${MAKE} includes)
 
 afterinstall:
 .ifndef NOMAN
