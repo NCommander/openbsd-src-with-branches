@@ -1,4 +1,5 @@
 #!/usr/bin/perl
+#	$OpenBSD$
 #
 # Copyright (c) 2003 Jason L. Wright (jason@thought.net)
 # All rights reserved.
