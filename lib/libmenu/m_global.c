@@ -1,4 +1,4 @@
-/*	$OpenBSD: m_global.c,v 1.5 1999/05/17 03:04:22 millert Exp $	*/
+/*	$OpenBSD: m_global.c,v 1.6 2001/01/22 18:02:03 millert Exp $	*/
 
 /****************************************************************************
  * Copyright (c) 1998,2000 Free Software Foundation, Inc.                   *
@@ -160,7 +160,7 @@ INLINE static void ResetConnectionInfo(MENU *menu, ITEM **items)
 |                    Decorate all the items with a number and a backward
 |                    pointer to the menu.
 |
-|   Return Values :  TRUE       - successfull connection
+|   Return Values :  TRUE       - successful connection
 |                    FALSE      - connection failed
 +--------------------------------------------------------------------------*/
 NCURSES_EXPORT(bool)
