@@ -1,4 +1,4 @@
-/*	$OpenBSD: swapgeneric.c,v 1.5 1996/05/07 07:21:55 deraadt Exp $	*/
+/*	$OpenBSD: swapgeneric.c,v 1.6 1996/06/01 11:54:32 deraadt Exp $	*/
 /*	$NetBSD: swapgeneric.c,v 1.12 1996/05/03 19:42:28 christos Exp $	*/
 
 /*-
@@ -68,5 +68,4 @@ struct	swdevt swdevt[] = {
 	{ NODEV,	0,	0 },
 };
 
-int (*mountroot) __P((void *)) = NULL;
-
+int (*mountroot) __P((void)) = NULL;
