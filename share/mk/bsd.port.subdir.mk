@@ -1,4 +1,5 @@
-#	$OpenBSD: bsd.port.subdir.mk,v 1.14 1996/04/09 22:54:13 wosch Exp $
+#	$OpenBSD: bsd.port.subdir.mk,v 1.1 1996/06/03 22:47:11 niklas Exp $
+#	FreeBSD Id: bsd.port.subdir.mk,v 1.14 1996/04/09 22:54:13 wosch Exp $
 
 .MAIN: all
 
