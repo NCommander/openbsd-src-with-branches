@@ -22,7 +22,7 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 #include "includes.h"
-RCSID("$OpenBSD: sftp-server.c,v 1.40 2003/03/05 22:33:43 markus Exp $");
+RCSID("$OpenBSD: sftp-server.c,v 1.41 2003/03/26 04:02:51 deraadt Exp $");
 
 #include "buffer.h"
 #include "bufaux.h"
@@ -436,7 +436,7 @@ process_read(void)
 	    (unsigned long long)off, len);
 	if (len > sizeof buf) {
 		len = sizeof buf;
-		log("read change len %d", len);
+		logit("read change len %d", len);
 	}
 	fd = handle_to_fd(handle);
 	if (fd >= 0) {
@@ -489,7 +489,7 @@ process_write(void)
 			} else if (ret == len) {
 				status = SSH2_FX_OK;
 			} else {
-				log("nothing at all written");
+				logit("nothing at all written");
 			}
 		}
 	}

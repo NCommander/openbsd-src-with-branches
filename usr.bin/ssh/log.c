@@ -34,7 +34,7 @@
  */
 
 #include "includes.h"
-RCSID("$OpenBSD: log.c,v 1.24 2002/07/19 15:43:33 markus Exp $");
+RCSID("$OpenBSD: log.c,v 1.25 2003/01/11 18:29:43 markus Exp $");
 
 #include "log.h"
 #include "xmalloc.h"
@@ -124,7 +124,7 @@ error(const char *fmt,...)
 /* Log this message (information that usually should go to the log). */
 
 void
-log(const char *fmt,...)
+logit(const char *fmt,...)
 {
 	va_list args;
 

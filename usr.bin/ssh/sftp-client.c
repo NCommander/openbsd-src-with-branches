@@ -28,7 +28,7 @@
 /* XXX: copy between two remote sites */
 
 #include "includes.h"
-RCSID("$OpenBSD: sftp-client.c,v 1.41 2003/01/14 10:58:00 djm Exp $");
+RCSID("$OpenBSD: sftp-client.c,v 1.42 2003/03/05 22:33:43 markus Exp $");
 
 #include <sys/queue.h>
 
@@ -507,7 +507,7 @@ do_lstat(struct sftp_conn *conn, char *path, int quiet)
 		if (quiet)
 			debug("Server version does not support lstat operation");
 		else
-			log("Server version does not support lstat operation");
+			logit("Server version does not support lstat operation");
 		return(do_stat(conn, path, quiet));
 	}
 
