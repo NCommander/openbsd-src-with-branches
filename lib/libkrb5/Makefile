@@ -1,4 +1,6 @@
-# $OpenBSD: Makefile,v 1.12 2003/07/15 17:22:01 deraadt Exp $
+# $OpenBSD: Makefile,v 1.13 2003/07/15 19:29:29 deraadt Exp $
+
+.include <bsd.own.mk>
 
 KRB5DIR=	${.CURDIR}/../../kerberosV
 GENDIR=		${.CURDIR}/generated
@@ -101,9 +103,11 @@ afterinstall:
 		ln -f $(DESTDIR)$(LIBDIR)/lib$(LIB).a \
 		    $(DESTDIR)$(LIBDIR)/lib$$f.a ; \
 	done
+.if !defined(NOPROFILE)
 	for f in $(ALIB_LINKS); do \
 		ln -f $(DESTDIR)$(LIBDIR)/lib$(LIB)_p.a \
 		    $(DESTDIR)$(LIBDIR)/lib$${f}_p.a ; \
 	done
+.endif
 
 .include <bsd.lib.mk>
