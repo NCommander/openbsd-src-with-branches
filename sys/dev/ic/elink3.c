@@ -1,4 +1,4 @@
-/*	$OpenBSD: elink3.c,v 1.57 2002/03/14 03:16:04 millert Exp $	*/
+/*	$OpenBSD: elink3.c,v 1.58 2002/04/30 22:08:43 mickey Exp $	*/
 /*	$NetBSD: elink3.c,v 1.32 1997/05/14 00:22:00 thorpej Exp $	*/
 
 /*
@@ -1520,7 +1520,6 @@ epioctl(ifp, cmd, data)
 			ifp->if_mtu = ifr->ifr_mtu;
 		}
 		break;
-	
 
 	case SIOCSIFFLAGS:
 		if ((ifp->if_flags & IFF_UP) == 0 &&
@@ -1538,14 +1537,12 @@ epioctl(ifp, cmd, data)
 			 * start it.
 			 */
 			epinit(sc);
-		} else {
+		} else if ((ifp->if_flags & IFF_UP) != 0) {
 			/*
-			 * deal with flags changes:
-			 * IFF_MULTICAST, IFF_PROMISC,
-			 * IFF_LINK0, IFF_LINK1.
+			 * Reset the interface to pick up changes in any other
+			 * flags that affect hardware registers.
 			 */
-			epsetfilter(sc);
-			epsetmedia(sc, sc->sc_mii.mii_media.ifm_cur->ifm_data);
+			epinit(sc);
 		}
 		break;
 
