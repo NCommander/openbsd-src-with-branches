@@ -16,7 +16,7 @@
  * IMPLIED WARRANTIES, INCLUDING, WITHOUT LIMITATION, THE IMPLIED
  * WARRANTIES OF MERCHANTIBILITY AND FITNESS FOR A PARTICULAR PURPOSE.
  *
- *  $OpenBSD: physical.c,v 1.26 2000/09/14 22:02:50 brian Exp $
+ *  $OpenBSD: physical.c,v 1.27 2000/10/09 22:50:57 brian Exp $
  *
  */
 
@@ -99,6 +99,7 @@
 #ifndef NOATM
 #include "atm.h"
 #endif
+#include "tcpmss.h"
 
 #define PPPOTCPLINE "ppp"
 
@@ -1052,6 +1053,7 @@ physical_SetupStack(struct physical *p, const char *who, int how)
   link_Stack(&p->link, &lqrlayer);
   link_Stack(&p->link, &ccplayer);
   link_Stack(&p->link, &vjlayer);
+  link_Stack(&p->link, &tcpmsslayer);
 #ifndef NONAT
   link_Stack(&p->link, &natlayer);
 #endif
