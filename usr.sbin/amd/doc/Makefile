@@ -1,6 +1,6 @@
 #	$OpenBSD: Makefile,v 1.3 2000/12/15 22:31:48 millert Exp $
 
-INFO = amdref.info amdref.info-1 amdref.info-2 amdref.info-3 amdref.info-4
+INFO = amdref.info amdref.info-1 amdref.info-2 amdref.info-3
 SRCS = amdref.texinfo
 
 all: ${INFO}
