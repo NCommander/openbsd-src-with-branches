@@ -1,4 +1,4 @@
-/*	$OpenBSD: comsat.c,v 1.15 2001/01/28 19:34:27 niklas Exp $	*/
+/*	$OpenBSD: comsat.c,v 1.16 2001/05/12 01:46:54 deraadt Exp $	*/
 
 /*
  * Copyright (c) 1980, 1993
@@ -41,7 +41,7 @@ static char copyright[] =
 
 #ifndef lint
 /*static char sccsid[] = "from: @(#)comsat.c	8.1 (Berkeley) 6/4/93";*/
-static char rcsid[] = "$OpenBSD: comsat.c,v 1.15 2001/01/28 19:34:27 niklas Exp $";
+static char rcsid[] = "$OpenBSD: comsat.c,v 1.16 2001/05/12 01:46:54 deraadt Exp $";
 #endif /* not lint */
 
 #include <sys/param.h>
@@ -289,8 +289,8 @@ jkfprintf(tp, name, offset)
 				continue;
 			}
 			if (line[0] == ' ' || line[0] == '\t' ||
-			    strncmp(line, "From:", 5) &&
-			    strncmp(line, "Subject:", 8))
+			    (strncmp(line, "From:", 5) &&
+			    strncmp(line, "Subject:", 8)))
 				continue;
 		}
 		if (linecnt <= 0 || charcnt <= 0) {

@@ -1,4 +1,4 @@
-/*	$OpenBSD: sprayd.c,v 1.2 2001/01/17 19:23:28 deraadt Exp $*/
+/*	$OpenBSD: sprayd.c,v 1.3 2001/01/28 19:34:32 niklas Exp $*/
 
 /*
  * Copyright (c) 1994 Christos Zoulas
@@ -32,14 +32,18 @@
  */
 
 #ifndef lint
-static char rcsid[] = "$OpenBSD: sprayd.c,v 1.2 2001/01/17 19:23:28 deraadt Exp $";
+static char rcsid[] = "$OpenBSD: sprayd.c,v 1.3 2001/01/28 19:34:32 niklas Exp $";
 #endif /* not lint */
 
-#include <stdio.h>
-#include <signal.h>
-#include <rpc/rpc.h>
+#include <sys/types.h>
+#include <sys/socket.h>
 #include <sys/time.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <signal.h>
+#include <unistd.h>
 #include <syslog.h>
+#include <rpc/rpc.h>
 #include <rpcsvc/spray.h>
 
 static void spray_service __P((struct svc_req *, SVCXPRT *));
