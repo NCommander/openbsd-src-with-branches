@@ -1,4 +1,4 @@
-/*	$OpenBSD: openbsd-syscalls.c,v 1.16 2002/11/26 03:48:07 itojun Exp $	*/
+/*	$OpenBSD: openbsd-syscalls.c,v 1.17 2002/11/26 03:50:58 itojun Exp $	*/
 /*
  * Copyright 2002 Niels Provos <provos@citi.umich.edu>
  * All rights reserved.
@@ -184,8 +184,8 @@ obsd_open(void)
 		return (-1);
 	}
 
-	if (ioctl(fd, SYSTR_CLONE, &cfd) == -1) {
-		warn("ioctl(SYSTR_CLONE)");
+	if (ioctl(fd, STRIOCCLONE, &cfd) == -1) {
+		warn("ioctl(STRIOCCLONE)");
 		goto out;
 	}
 
