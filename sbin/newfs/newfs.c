@@ -1,4 +1,4 @@
-/*	$OpenBSD: newfs.c,v 1.20 1999/12/03 19:24:18 art Exp $	*/
+/*	$OpenBSD: newfs.c,v 1.21 2000/03/21 21:58:04 jason Exp $	*/
 /*	$NetBSD: newfs.c,v 1.20 1996/05/16 07:13:03 thorpej Exp $	*/
 
 /*
@@ -44,7 +44,7 @@ static char copyright[] =
 #if 0
 static char sccsid[] = "@(#)newfs.c	8.8 (Berkeley) 4/18/94";
 #else
-static char rcsid[] = "$OpenBSD: newfs.c,v 1.20 1999/12/03 19:24:18 art Exp $";
+static char rcsid[] = "$OpenBSD: newfs.c,v 1.21 2000/03/21 21:58:04 jason Exp $";
 #endif
 #endif /* not lint */
 
@@ -646,7 +646,7 @@ rewritelabel(s, fd, lp)
 		warn("ioctl (WDINFO)");
 		fatal("%s: can't rewrite disk label", s);
 	}
-#if vax
+#ifdef __vax__
 	if (lp->d_type == DTYPE_SMD && lp->d_flags & D_BADSECT) {
 		register i;
 		int cfd;
@@ -681,7 +681,7 @@ rewritelabel(s, fd, lp)
 		}
 		close(cfd);
 	}
-#endif
+#endif	/*__vax__*/
 }
 
 /*VARARGS*/
