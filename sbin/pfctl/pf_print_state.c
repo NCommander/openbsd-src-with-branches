@@ -1,4 +1,4 @@
-/*	$OpenBSD: pf_print_state.c,v 1.6 2002/10/22 12:28:08 mcbride Exp $	*/
+/*	$OpenBSD: pf_print_state.c,v 1.7 2002/10/25 10:40:45 camield Exp $	*/
 
 /*
  * Copyright (c) 2001 Daniel Hartmeier
@@ -74,7 +74,7 @@ print_addr(struct pf_addr_wrap *addr, struct pf_addr *mask, sa_family_t af)
 		int bits = unmask(mask, af);
 
 		if (bits != (af == AF_INET ? 32 : 128))
-			printf("/%u", bits);
+			printf("/%i", bits);
 	}
 }
 
