@@ -1,4 +1,4 @@
-/*	$OpenBSD: ftpd.c,v 1.20 1996/09/22 09:49:58 deraadt Exp $	*/
+/*	$OpenBSD: ftpd.c,v 1.21 1996/09/29 22:11:50 millert Exp $	*/
 /*	$NetBSD: ftpd.c,v 1.15 1995/06/03 22:46:47 mycroft Exp $	*/
 
 /*
@@ -1749,6 +1749,8 @@ passive()
 		reply(530, "Please login with USER and PASS");
 		return;
 	}
+	if (pdata >= 0)
+		close(pdata);
 	pdata = socket(AF_INET, SOCK_STREAM, 0);
 	if (pdata < 0) {
 		perror_reply(425, "Can't open passive connection");
