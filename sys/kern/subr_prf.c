@@ -1,4 +1,4 @@
-/*	$OpenBSD: subr_prf.c,v 1.8 1996/07/19 23:13:39 dm Exp $	*/
+/*	$OpenBSD: subr_prf.c,v 1.9 1996/07/23 23:54:19 deraadt Exp $	*/
 /*	$NetBSD: subr_prf.c,v 1.25 1996/04/22 01:38:46 christos Exp $	*/
 
 /*-
@@ -565,9 +565,9 @@ reswitch:	switch (ch = *(u_char *)fmt++) {
 		case '\0':
 			while(*--fmt != '%')
 				;
-			while(*bp++ = *fmt++)
+			while((*bp++ = *fmt++))
 				;
-			return;
+			return ((bp - buf) - 1);
 		case '0':
 			padc = '0';
 			goto reswitch;
