@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: gdt.c,v 1.1 2004/01/28 01:39:38 mickey Exp $	*/
 /*	$NetBSD: gdt.c,v 1.1 2003/04/26 18:39:28 fvdl Exp $	*/
 
 /*-
@@ -38,7 +38,7 @@
  */
 
 /*
- * Modified to deal with variable-length entries for NetBSD/x86_64 by
+ * Modified to deal with variable-length entries for amd64 by
  * fvdl@wasabisystems.com, may 2001
  * XXX this file should be shared with the i386 code, the difference
  * can be hidden in macros.
