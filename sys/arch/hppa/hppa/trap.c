@@ -1,4 +1,4 @@
-/*	$OpenBSD: trap.c,v 1.79 2004/07/02 04:19:50 mickey Exp $	*/
+/*	$OpenBSD: trap.c,v 1.80 2004/07/13 19:34:23 mickey Exp $	*/
 
 /*
  * Copyright (c) 1998-2004 Michael Shalayeff
@@ -305,7 +305,10 @@ trap(type, frame)
 			else if (stat & (HPPA_FPU_U << 1))
 				flt = FPE_FLTUND;
 			/* still left: under/over-flow w/ inexact */
-			*pex = 0;
+
+			/* cleanup exceptions (XXX deliver all ?) */
+			while (i++ < 7)
+				*pex++ = 0;
 		}
 		/* reset the trap flag, as if there was none */
 		fpp[0] &= ~(((u_int64_t)HPPA_FPU_T) << 32);
