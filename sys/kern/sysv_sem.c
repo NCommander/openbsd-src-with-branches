@@ -1,4 +1,4 @@
-/*	$OpenBSD: sysv_sem.c,v 1.25 2003/12/20 19:06:29 millert Exp $	*/
+/*	$OpenBSD: sysv_sem.c,v 1.26 2004/03/13 07:17:39 tedu Exp $	*/
 /*	$NetBSD: sysv_sem.c,v 1.26 1996/02/09 19:00:25 christos Exp $	*/
 
 /*
@@ -643,12 +643,6 @@ sys_semop(struct proc *p, void *v, register_t *retval)
 
 		suptr = NULL;	/* sem_undo may have been reallocated */
 
-		if (error != 0) {
-			error = EINTR;
-			goto done2;
-		}
-		DPRINTF(("semop:  good morning!\n"));
-
 		/*
 		 * Make sure that the semaphore still exists
 		 */
@@ -666,6 +660,17 @@ sys_semop(struct proc *p, void *v, register_t *retval)
 			semptr->semzcnt--;
 		else
 			semptr->semncnt--;
+
+		/*
+		 * Is it really morning, or was our sleep interrupted?
+		 * Delayed check of tsleep() return code because we
+		 * need to decrement sem[nz]cnt either way.)
+		 */
+		if (error != 0) {
+			error = EINTR;
+			goto done2;
+		}
+		DPRINTF(("semop:  good morning!\n"));
 	}
 
 done:
