@@ -1,4 +1,4 @@
-/*	$OpenBSD: uthread_spinlock.c,v 1.7 2000/01/06 07:22:04 d Exp $	*/
+/*	$OpenBSD: uthread_spinlock.c,v 1.8 2001/08/21 19:24:53 fgsch Exp $	*/
 /*
  * Copyright (c) 1997 John Birrell <jb@cimlogic.com.au>.
  * All rights reserved.
@@ -79,7 +79,7 @@ _spinlock(spinlock_t *lck)
  * returning.
  */
 void
-_spinlock_debug(spinlock_t *lck, const char *fname, int lineno)
+_spinlock_debug(spinlock_t *lck, char *fname, int lineno)
 {
 	struct pthread	*curthread = _get_curthread();
 	int cnt = 0;

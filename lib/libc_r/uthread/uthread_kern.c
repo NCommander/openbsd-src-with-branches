@@ -1,4 +1,4 @@
-/*	$OpenBSD: uthread_kern.c,v 1.12 2001/08/15 23:53:17 fgsch Exp $	*/
+/*	$OpenBSD: uthread_kern.c,v 1.13 2001/08/21 19:24:53 fgsch Exp $	*/
 /*
  * Copyright (c) 1995-1998 John Birrell <jb@cimlogic.com.au>
  * All rights reserved.
@@ -579,7 +579,7 @@ _thread_kern_sched(struct sigcontext * scp)
 }
 
 void
-_thread_kern_sched_state(enum pthread_state state, const char *fname, int lineno)
+_thread_kern_sched_state(enum pthread_state state, char *fname, int lineno)
 {
 	struct pthread	*curthread = _get_curthread();
 
