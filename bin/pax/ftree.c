@@ -171,7 +171,7 @@ ftree_add(str, chflg)
 	 * simple check for bad args
 	 */
 	if ((str == NULL) || (*str == '\0')) {
-		paxwarn(0, "Invalid file name argument");
+		paxwarn(0, "Invalid file name arguement");
 		return(-1);
 	}
 
