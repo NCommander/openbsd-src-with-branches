@@ -25,7 +25,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  *
- * $OpenBSD: command.c,v 1.60 2001/06/19 10:24:51 brian Exp $
+ * $OpenBSD: command.c,v 1.61 2001/07/03 22:23:52 brian Exp $
  */
 
 #include <sys/param.h>
@@ -1636,7 +1636,7 @@ SetVariable(struct cmdargs const *arg)
         l->ccp.cfg.mppe.state = MPPE_ANYSTATE;
       else if (!strcasecmp(arg->argv[arg->argn + 1], "stateless"))
         l->ccp.cfg.mppe.state = MPPE_STATELESS;
-      else if (!strcasecmp(arg->argv[arg->argn + 1], "statefull"))
+      else if (!strcasecmp(arg->argv[arg->argn + 1], "stateful"))
         l->ccp.cfg.mppe.state = MPPE_STATEFUL;
       else {
         log_Printf(LogWARN, "%s: Invalid state value\n",
@@ -2108,7 +2108,7 @@ static struct cmdtab const SetCommands[] = {
   (const void *) VAR_WINSIZE},
 #ifdef HAVE_DES
   {"mppe", NULL, SetVariable, LOCAL_AUTH | LOCAL_CX_OPT,
-  "MPPE key size and state", "set mppe [40|56|128|* [statefull|stateless|*]]", 
+  "MPPE key size and state", "set mppe [40|56|128|* [stateful|stateless|*]]", 
   (const void *) VAR_MPPE},
 #endif
   {"device", "line", SetVariable, LOCAL_AUTH | LOCAL_CX,
