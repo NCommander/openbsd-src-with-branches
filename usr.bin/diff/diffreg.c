@@ -1,4 +1,4 @@
-/*	$OpenBSD: diffreg.c,v 1.23 2003/06/27 20:28:13 tedu Exp $	*/
+/*	$OpenBSD: diffreg.c,v 1.24 2003/07/02 18:54:13 millert Exp $	*/
 
 /*
  * Copyright (C) Caldera International Inc.  2001-2002.
@@ -134,6 +134,7 @@ int len[2];
 struct line *sfile[2];	/* shortened by pruning common prefix and suffix */
 int slen[2];
 int pref, suff;			/* length of prefix and suffix */
+int inifdef;			/* whether or not we are in a #ifdef block */
 int *class;			/* will be overlaid on file[0] */
 int *member;			/* will be overlaid on file[1] */
 int *klist;			/* will be overlaid on file[0] after class */
@@ -231,8 +232,8 @@ diffreg(void)
 
 	if (hflag) {
 		diffargv[0] = "diffh";
-		execv(diffh, diffargv);
-		error("%s", diffh);
+		execv(_PATH_DIFFH, diffargv);
+		error("%s", _PATH_DIFFH);
 	}
 	chrtran = (iflag ? cup2low : clow2low);
 	if (strcmp(file1, "-") == 0 && strcmp(file2, "-") == 0)
