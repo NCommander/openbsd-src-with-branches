@@ -1,7 +1,8 @@
-# $OpenBSD$
+# $OpenBSD: faq-example2,v 1.1 2003/08/02 18:25:49 henning Exp $
 
 #
 # Small, Home Network
+# http://www.openbsd.org/faq/pf/queueing.html#example1
 #
 
 
