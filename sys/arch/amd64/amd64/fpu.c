@@ -1,4 +1,4 @@
-/*	$OpenBSD: fpu.c,v 1.3 2004/02/27 21:15:49 deraadt Exp $	*/
+/*	$OpenBSD: fpu.c,v 1.4 2004/02/28 20:33:33 nordin Exp $	*/
 /*	$NetBSD: fpu.c,v 1.1 2003/04/26 18:39:28 fvdl Exp $	*/
 
 /*-
@@ -288,7 +288,7 @@ fpusave_proc(struct proc *p, int save)
 #ifdef DIAGNOSTIC
 		spincount = 0;
 #endif
-		while (p->dpl_addr->u_pcb.pcb_fpcpu != NULL)
+		while (p->p_addr->u_pcb.pcb_fpcpu != NULL)
 #ifdef DIAGNOSTIC
 		{
 			spincount++;

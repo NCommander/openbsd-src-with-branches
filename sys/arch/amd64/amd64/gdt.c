@@ -1,4 +1,4 @@
-/*	$OpenBSD: gdt.c,v 1.2 2004/02/27 23:45:23 deraadt Exp $	*/
+/*	$OpenBSD: gdt.c,v 1.3 2004/05/20 21:06:46 nordin Exp $	*/
 /*	$NetBSD: gdt.c,v 1.1 2003/04/26 18:39:28 fvdl Exp $	*/
 
 /*-
@@ -81,15 +81,15 @@ void gdt_put_slot(int);
 static __inline void
 gdt_lock()
 {
-
-	(void) lockmgr(&gdt_lock_store, LK_EXCLUSIVE, NULL, curproc);
+	if (curproc != NULL)		/* XXX - ugh. needed for startup */
+		(void) lockmgr(&gdt_lock_store, LK_EXCLUSIVE, NULL, curproc);
 }
 
 static __inline void
 gdt_unlock()
 {
-
-	(void) lockmgr(&gdt_lock_store, LK_RELEASE, NULL, curproc);
+	if (curproc != NULL)
+		(void) lockmgr(&gdt_lock_store, LK_RELEASE, NULL, curproc);
 }
 
 void
