@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: ax88190.c,v 1.1 2001/08/18 16:15:39 aaron Exp $	*/
 /*	$NetBSD$	*/
 
 /*-
@@ -56,7 +56,6 @@
 #endif
 
 #include <machine/bus.h>
-#include <machine/intr.h>
 
 #include <dev/mii/miivar.h>
 #include <dev/mii/mii.h>
