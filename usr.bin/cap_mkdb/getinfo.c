@@ -1,4 +1,4 @@
-/*	$OpenBSD: getinfo.c,v 1.1 1999/03/05 04:47:45 tholo Exp $	*/
+/*	$OpenBSD: getinfo.c,v 1.2 2000/09/22 22:22:22 naddy Exp $	*/
 
 /*-
  * Copyright (c) 1992, 1993
@@ -33,13 +33,12 @@
  */
 
 #ifndef lint
-static char rcsid[] = "$OpenBSD: getinfo.c,v 1.1 1999/03/05 04:47:45 tholo Exp $";
+static char rcsid[] = "$OpenBSD: getinfo.c,v 1.2 2000/09/22 22:22:22 naddy Exp $";
 #endif /* not lint */
 
 #include <sys/types.h>
 
 #include <ctype.h>
-#include <db.h>
 #include <errno.h>	
 #include <fcntl.h>
 #include <limits.h>
