@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /*	$NetBSD: pmap.h,v 1.10 1995/12/11 17:09:23 thorpej Exp $	*/
 
 /* 

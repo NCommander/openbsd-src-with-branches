@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /*	$NetBSD: kgdb_glue.c,v 1.2 1994/10/26 07:25:39 cgd Exp $	*/
 
 /*

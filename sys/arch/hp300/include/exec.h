@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /*	$NetBSD: exec.h,v 1.10 1995/11/20 01:15:26 thorpej Exp $	*/
 
 /*

@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /*	$NetBSD: sys_machdep.c,v 1.13 1995/12/11 17:09:17 thorpej Exp $	*/
 
 /*

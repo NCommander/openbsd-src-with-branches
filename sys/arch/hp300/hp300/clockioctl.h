@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /*	$NetBSD: clockioctl.h,v 1.5 1994/10/26 07:25:25 cgd Exp $	*/
 
 /*

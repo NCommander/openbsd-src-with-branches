@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /*	$NetBSD: ctreg.h,v 1.6 1996/02/09 18:00:35 scottr Exp $	*/
 
 /*

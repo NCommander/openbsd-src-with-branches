@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /*	$NetBSD: hilvar.h,v 1.11 1995/12/11 19:41:47 thorpej Exp $	*/
 
 /*

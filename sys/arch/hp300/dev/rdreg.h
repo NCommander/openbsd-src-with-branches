@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /*	$NetBSD: rdreg.h,v 1.7 1996/02/09 18:00:37 scottr Exp $	*/
 
 /*

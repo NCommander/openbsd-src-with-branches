@@ -1,5 +1,5 @@
+#	$OpenBSD$
 #	$NetBSD: Makefile,v 1.5 1995/08/04 07:40:31 thorpej Exp $
-
 #	@(#)Makefile	7.3 (Berkeley) 6/9/91
 
 # Makefile for hp300 tags file and boot blocks

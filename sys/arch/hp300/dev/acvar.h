@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /*	$NetBSD: acvar.h,v 1.2 1994/10/26 07:23:27 cgd Exp $	*/
 
 /*

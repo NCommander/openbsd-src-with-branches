@@ -1,4 +1,5 @@
-/*	$NetBSD: rdvar.h,v 1.4.4.1 1996/06/06 16:22:03 thorpej Exp $	*/
+/*	$OpenBSD$	*/
+/*	$NetBSD: rdvar.h,v 1.5 1996/06/06 16:17:42 thorpej Exp $	*/
 
 /*
  * Copyright (c) 1988 University of Utah.

@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /*	$NetBSD: hil_keymaps.c,v 1.6 1995/12/06 22:13:23 thorpej Exp $	*/
 
 /*

@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /*	$NetBSD: dcareg.h,v 1.6 1996/02/24 00:55:02 thorpej Exp $	*/
 
 /*

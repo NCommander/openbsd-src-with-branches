@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /*	$NetBSD: hilreg.h,v 1.5 1994/10/26 07:24:15 cgd Exp $	*/
 
 /*

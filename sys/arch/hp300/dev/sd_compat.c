@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /*	$NetBSD: sd_compat.c,v 1.4 1996/01/07 22:02:20 thorpej Exp $	*/
 
 /*

@@ -1,4 +1,5 @@
-/*	$NetBSD: nhpib.c,v 1.11 1996/05/18 23:57:01 thorpej Exp $	*/
+/*	$OpenBSD$	*/
+/*	$NetBSD: nhpib.c,v 1.13 1996/10/13 03:14:19 christos Exp $	*/
 
 /*
  * Copyright (c) 1982, 1990, 1993
