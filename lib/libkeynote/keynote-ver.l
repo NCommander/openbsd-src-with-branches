@@ -177,7 +177,7 @@ mystrncpy(char *s1, char *s2, int len)
 
 	    if (*s2 == '\n')
 	    {
-		while (isspace(*(++s2)) && (len-- > 0))
+		while (isspace((int) *(++s2)) && (len-- > 0))
 		  ;
 	    }
 	    else

@@ -935,7 +935,7 @@ kn_read_asserts(char *buffer, int bufferlen, int *numassertions)
 	else
 	  flag = 0;
 
-	if (!isspace(buffer[i]))
+	if (!isspace((int) buffer[i]))
 	  valid = 1;
     }
 
