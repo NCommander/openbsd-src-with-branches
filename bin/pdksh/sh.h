@@ -1,4 +1,4 @@
-/*	$OpenBSD: sh.h,v 1.2 1996/08/19 20:08:58 downsj Exp $	*/
+/*	$OpenBSD: sh.h,v 1.3 1996/10/01 02:05:47 downsj Exp $	*/
 
 /*
  * Public Domain Bourne/Korn shell
@@ -334,7 +334,7 @@ typedef int bool_t;
 /* Table flag type - needs > 16 and < 32 bits */
 typedef INT32 Tflag;
 
-#define	NUFILE	10		/* Number of user-accessible files */
+#define	NUFILE	32		/* Number of user-accessible files */
 #define	FDBASE	10		/* First file usable by Shell */
 
 /* you're not going to run setuid shell scripts, are you? */
