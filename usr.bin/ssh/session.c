@@ -33,7 +33,7 @@
  */
 
 #include "includes.h"
-RCSID("$OpenBSD: session.c,v 1.42 2000/10/27 07:32:18 markus Exp $");
+RCSID("$OpenBSD: session.c,v 1.43 2000/11/06 23:04:56 markus Exp $");
 
 #include "xmalloc.h"
 #include "ssh.h"
@@ -1421,6 +1421,10 @@ session_auth_agent_req(Session *s)
 {
 	static int called = 0;
 	packet_done();
+	if (no_agent_forwarding_flag) {
+		debug("session_auth_agent_req: no_agent_forwarding_flag");
+		return 0;
+	}
 	if (called) {
 		return 0;
 	} else {
