@@ -318,7 +318,7 @@ int
 ubsec_process(crp)
 	struct cryptop *crp;
 {
-	struct ubsec_q *q;
+	struct ubsec_q *q = NULL;
 	int card, err, i, j, s;
 	struct ubsec_softc *sc;
 	struct cryptodesc *crd1, *crd2, *maccrd, *enccrd;
@@ -335,6 +335,14 @@ ubsec_process(crp)
 	}
 
 	sc = ubsec_cd.cd_devs[card];
+
+	s = splnet();
+	if (sc->sc_nqueue == UBS_MAX_NQUEUE) {
+		splx(s);
+		err = ENOMEM;
+		goto errout;
+	}
+	splx(s);
 
 	q = (struct ubsec_q *)malloc(sizeof(struct ubsec_q),
 	    M_DEVBUF, M_NOWAIT);
