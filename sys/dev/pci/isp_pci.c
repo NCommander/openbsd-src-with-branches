@@ -1,4 +1,4 @@
-/*	$OpenBSD: isp_pci.c,v 1.32 2003/02/28 15:36:39 mickey Exp $	*/
+/*	$OpenBSD: isp_pci.c,v 1.33 2003/03/03 18:27:11 mjacob Exp $	*/
 /*
  * PCI specific probe and attach routines for Qlogic ISP SCSI adapters.
  *
@@ -364,7 +364,7 @@ isp_pci_probe(struct device *parent, void *match, void *aux)
         if (pa->pa_id == PCI_QLOGIC_ISP12160) {
 		pcireg_t subvid =
 		    pci_conf_read(pa->pa_pc, pa->pa_tag, PCI_SUBVEND_0);
-		if (subvid == AMI_RAID_SUBVENDOR_ID) {
+		if (PCI_VENDOR(subvid) == AMI_RAID_SUBVENDOR_ID) {
 			return (0);
                 }
 	}
