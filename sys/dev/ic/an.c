@@ -1,4 +1,4 @@
-/*	$OpenBSD: an.c,v 1.24 2002/06/09 03:14:18 todd Exp $	*/
+/*	$OpenBSD: an.c,v 1.25 2002/07/10 20:21:15 fgsch Exp $	*/
 
 /*
  * Copyright (c) 1997, 1998, 1999
@@ -124,7 +124,6 @@
 #endif
 
 #include <machine/bus.h>
-#include <machine/intr.h>
 
 #include <dev/ic/anvar.h>
 #include <dev/ic/anreg.h>
