@@ -110,21 +110,6 @@ struct sunos_termios {
 #define SUNOS_TCSNDBRK	_IO('T', 12)
 #define SUNOS_TCDRAIN	_IO('T', 13)
 
-struct sunos_pollfd {
-	int	fd;
-	short	events;
-	short	revents;
-};
-#define SUNOS_POLLIN	0x0001
-#define SUNOS_POLLPRI	0x0002
-#define SUNOS_POLLOUT	0x0004
-#define SUNOS_POLLERR	0x0008
-#define SUNOS_POLLHUP	0x0010
-#define SUNOS_POLLNVAL	0x0020
-#define SUNOS_POLLRDNORM 0x0040
-#define SUNOS_POLLRDBAND 0x0080
-#define SUNOS_POLLWRBAND 0x0100
-
 /* Sun audio compatibility */
 struct sunos_audio_prinfo {
 	u_int	sample_rate;
