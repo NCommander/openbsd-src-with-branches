@@ -1,4 +1,4 @@
-/*	$OpenBSD: cpu.h,v 1.31 2000/08/02 14:09:59 deraadt Exp $	*/
+/*	$OpenBSD: cpu.h,v 1.32 2001/01/05 04:27:24 marc Exp $	*/
 /*	$NetBSD: cpu.h,v 1.35 1996/05/05 19:29:26 christos Exp $	*/
 
 /*-
@@ -161,8 +161,8 @@ extern int cpu_feature;
 extern int cpu_apmwarn;
 extern int cpu_apmhalt;
 extern int cpuid_level;
-extern struct cpu_nocpuid_nameclass i386_nocpuid_cpus[];
-extern struct cpu_cpuid_nameclass i386_cpuid_cpus[];
+extern const struct cpu_nocpuid_nameclass i386_nocpuid_cpus[];
+extern const struct cpu_cpuid_nameclass i386_cpuid_cpus[];
 
 #if defined(I586_CPU) || defined(I686_CPU)
 extern int pentium_mhz;
