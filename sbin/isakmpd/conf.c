@@ -1,4 +1,4 @@
-/*	$OpenBSD: conf.c,v 1.48 2002/12/06 07:46:50 ho Exp $	*/
+/*	$OpenBSD: conf.c,v 1.49 2003/02/04 20:02:34 markus Exp $	*/
 /*	$EOM: conf.c,v 1.48 2000/12/04 02:04:29 angelos Exp $	*/
 
 /*
@@ -253,7 +253,8 @@ conf_parse_line (int trans, char *line, size_t sz)
       section = malloc (i);
       if (!section)
 	{
-	  log_print ("conf_parse_line: %d: malloc (%d) failed", ln, i);
+	  log_print ("conf_parse_line: %d: malloc (%lu) failed", ln,
+		(unsigned long)i);
 	  return;
 	}
       strlcpy (section, line + 1, i);
