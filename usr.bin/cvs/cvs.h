@@ -277,7 +277,7 @@ struct cvsroot {
 #define CVS_FST_PATCHED   6
 
 
-TAILQ_HEAD(cvs_flist, cvs_files);
+TAILQ_HEAD(cvs_flist, cvs_file);
 
 
 typedef struct cvs_file {
