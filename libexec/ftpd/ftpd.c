@@ -1,4 +1,4 @@
-/*	$OpenBSD: ftpd.c,v 1.147 2003/10/01 08:06:31 itojun Exp $	*/
+/*	$OpenBSD: ftpd.c,v 1.148 2003/11/12 19:32:01 millert Exp $	*/
 /*	$NetBSD: ftpd.c,v 1.15 1995/06/03 22:46:47 mycroft Exp $	*/
 
 /*
@@ -70,7 +70,7 @@ static const char copyright[] =
 static const char sccsid[] = "@(#)ftpd.c	8.4 (Berkeley) 4/16/94";
 #else
 static const char rcsid[] = 
-    "$OpenBSD: ftpd.c,v 1.147 2003/10/01 08:06:31 itojun Exp $";
+    "$OpenBSD: ftpd.c,v 1.148 2003/11/12 19:32:01 millert Exp $";
 #endif
 #endif /* not lint */
 
@@ -273,7 +273,7 @@ static void
 usage(void)
 {
 	syslog(LOG_ERR,
-	    "usage: ftpd [-AdDlMnPSU46] [-T maxtimeout] [-t timeout] [-u mask]");
+	    "usage: ftpd [-46ADdlMnPSU] [-T maxtimeout] [-t timeout] [-u mask]");
 	exit(2);
 }
 
