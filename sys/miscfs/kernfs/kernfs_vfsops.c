@@ -1,4 +1,4 @@
-/*	$OpenBSD: kernfs_vfsops.c,v 1.11 1999/02/26 03:44:16 art Exp $	*/
+/*	$OpenBSD: kernfs_vfsops.c,v 1.12 1999/05/31 17:34:49 millert Exp $	*/
 /*	$NetBSD: kernfs_vfsops.c,v 1.26 1996/04/22 01:42:27 christos Exp $	*/
 
 /*
@@ -285,5 +285,6 @@ struct vfsops kernfs_vfsops = {
 	kernfs_fhtovp,
 	kernfs_vptofh,
 	kernfs_init,
-	kernfs_sysctl
+	kernfs_sysctl,
+	kernfs_checkexp
 };

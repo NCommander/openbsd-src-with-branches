@@ -1,4 +1,4 @@
-/*	$OpenBSD: mfs_extern.h,v 1.6 1998/02/08 22:41:52 tholo Exp $	*/
+/*	$OpenBSD: mfs_extern.h,v 1.7 1998/08/06 19:35:09 csapuntz Exp $	*/
 /*	$NetBSD: mfs_extern.h,v 1.4 1996/02/09 22:31:27 christos Exp $	*/
 
 /*-
@@ -44,6 +44,7 @@ struct statfs;
 struct ucred;
 struct vnode;
 struct vfsconf;
+struct mbuf;
 
 __BEGIN_DECLS
 /* mfs_vfsops.c */
@@ -55,6 +56,8 @@ int	mfs_start	__P((struct mount *, int, struct proc *));
 int	mfs_statfs	__P((struct mount *, struct statfs *, struct proc *));
 
 int	mfs_init	__P((struct vfsconf *));
+int	mfs_checkexp	__P((struct mount *mp, struct mbuf *nam,
+			     int *extflagsp, struct ucred **credanonp));
 
 /* mfs_vnops.c */
 int	mfs_open	__P((void *));

@@ -1064,6 +1064,21 @@ struct sys_pipe_args {
 	syscallarg(int *) fdp;
 };
 
+struct sys_fhopen_args {
+	syscallarg(const fhandle_t *) fhp;
+	syscallarg(int) flags;
+};
+
+struct sys_fhstat_args {
+	syscallarg(const fhandle_t *) fhp;
+	syscallarg(struct stat *) sb;
+};
+
+struct sys_fhstatfs_args {
+	syscallarg(const fhandle_t *) fhp;
+	syscallarg(struct statfs *) buf;
+};
+
 /*
  * System call prototypes.
  */
@@ -1221,10 +1236,7 @@ int	sys_nfssvc	__P((struct proc *, void *, register_t *));
 int	compat_43_sys_getdirentries	__P((struct proc *, void *, register_t *));
 int	sys_ostatfs	__P((struct proc *, void *, register_t *));
 int	sys_ofstatfs	__P((struct proc *, void *, register_t *));
-#if defined(NFSCLIENT) || defined(NFSSERVER)
 int	sys_getfh	__P((struct proc *, void *, register_t *));
-#else
-#endif
 int	compat_09_sys_getdomainname	__P((struct proc *, void *, register_t *));
 int	compat_09_sys_setdomainname	__P((struct proc *, void *, register_t *));
 int	compat_09_sys_uname	__P((struct proc *, void *, register_t *));
@@ -1337,3 +1349,6 @@ int	sys_getfsstat	__P((struct proc *, void *, register_t *));
 int	sys_statfs	__P((struct proc *, void *, register_t *));
 int	sys_fstatfs	__P((struct proc *, void *, register_t *));
 int	sys_pipe	__P((struct proc *, void *, register_t *));
+int	sys_fhopen	__P((struct proc *, void *, register_t *));
+int	sys_fhstat	__P((struct proc *, void *, register_t *));
+int	sys_fhstatfs	__P((struct proc *, void *, register_t *));

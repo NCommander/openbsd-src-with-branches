@@ -614,4 +614,13 @@
 /* syscall: "pipe" ret: "int" args: "int *" */
 #define	SYS_pipe	263
 
-#define	SYS_MAXSYSCALL	264
+/* syscall: "fhopen" ret: "int" args: "const fhandle_t *" "int" */
+#define	SYS_fhopen	264
+
+/* syscall: "fhstat" ret: "int" args: "const fhandle_t *" "struct stat *" */
+#define	SYS_fhstat	265
+
+/* syscall: "fhstatfs" ret: "int" args: "const fhandle_t *" "struct statfs *" */
+#define	SYS_fhstatfs	266
+
+#define	SYS_MAXSYSCALL	267
