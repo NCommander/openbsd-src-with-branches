@@ -1,4 +1,4 @@
-/*	$OpenBSD: lndir.c,v 1.7 2002/02/16 21:27:47 millert Exp $	*/
+/*	$OpenBSD: lndir.c,v 1.8 2002/03/28 02:36:03 form Exp $	*/
 /* $XConsortium: lndir.c /main/15 1995/08/30 10:56:18 gildea $ */
 
 /* 
@@ -200,7 +200,7 @@ dodir(fn, fs, ts, rel)
 	strcpy(buf, "../");
     else
 	buf[0] = '\0';
-    strcat(buf, fn);
+    strlcat(buf, fn, sizeof buf);
     
     if (!(df = opendir(buf))) {
 	warn("%s: Cannot opendir", buf);
