@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.5 2002/03/15 16:51:29 art Exp $
+#	$OpenBSD: Makefile,v 1.6 2002/05/11 00:20:20 espie Exp $
 
 .include <bsd.own.mk>
 
@@ -9,7 +9,7 @@ NOPROG=no, man
 .else
 
 PROG=pmdb
-SRCS=pmdb.c symbol.c clit.c process.c signal.c break.c
+SRCS=pmdb.c symbol.c clit.c process.c signal.c break.c core.c
 
 # support for NetBSD
 .if defined(OBJECT_FMT)
