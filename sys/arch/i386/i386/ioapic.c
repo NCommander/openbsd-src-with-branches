@@ -1,4 +1,4 @@
-/*	$OpenBSD: ioapic.c,v 1.1.2.8 2003/05/15 16:44:33 niklas Exp $	*/
+/*	$OpenBSD: ioapic.c,v 1.1.2.9 2004/03/14 22:08:20 niklas Exp $	*/
 /* 	$NetBSD: ioapic.c,v 1.7 2003/07/14 22:32:40 lukem Exp $	*/
 
 /*-
@@ -509,7 +509,7 @@ ioapic_enable(void)
 		outb(IMCR_DATA, IMCR_APIC);
 	}
 
-#if 1 /* XXX Will be removed when we have intrsource. */
+#if 0 /* XXX Will be removed when we have intrsource. */
 	isa_nodefaultirq();
 #endif
 			
