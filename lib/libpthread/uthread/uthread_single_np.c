@@ -1,4 +1,4 @@
-/*	$OpenBSD: uthread_single_np.c,v 1.3 1999/11/25 07:01:45 d Exp $	*/
+/*	$OpenBSD: uthread_single_np.c,v 1.4 2001/08/21 19:24:53 fgsch Exp $	*/
 /*
  * Copyright (c) 1996 John Birrell <jb@cimlogic.com.au>.
  * All rights reserved.
@@ -37,7 +37,8 @@
 #include <pthread.h>
 #include "pthread_private.h"
 
-int pthread_single_np()
+int
+pthread_single_np()
 {
 	struct pthread	*curthread = _get_curthread();
 
