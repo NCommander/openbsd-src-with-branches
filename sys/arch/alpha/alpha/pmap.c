@@ -1695,7 +1695,7 @@ pmap_enter(pmap_t pmap, vaddr_t va, paddr_t pa, vm_prot_t prot, int flags)
 #ifdef DEBUG
 	if (pmapdebug & (PDB_FOLLOW|PDB_ENTER))
 		printf("pmap_enter(%p, %lx, %lx, %x, %x)\n",
-		       pmap, va, pa, prot, access_type);
+		       pmap, va, pa, prot, flags);
 #endif
 	managed = PAGE_IS_MANAGED(pa);
 	isactive = PMAP_ISACTIVE(pmap, cpu_id);
