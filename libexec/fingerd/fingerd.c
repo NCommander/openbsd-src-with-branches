@@ -1,4 +1,4 @@
-/*	$OpenBSD: fingerd.c,v 1.10 1997/08/16 21:38:21 millert Exp $	*/
+/*	$OpenBSD: fingerd.c,v 1.11 1997/11/17 00:43:25 millert Exp $	*/
 
 /*
  * Copyright (c) 1983, 1993
@@ -43,7 +43,7 @@ static char copyright[] =
 #if 0
 static char sccsid[] = "from: @(#)fingerd.c	8.1 (Berkeley) 6/4/93";
 #else
-static char rcsid[] = "$OpenBSD: fingerd.c,v 1.10 1997/08/16 21:38:21 millert Exp $";
+static char rcsid[] = "$OpenBSD: fingerd.c,v 1.11 1997/11/17 00:43:25 millert Exp $";
 #endif
 #endif /* not lint */
 
@@ -77,7 +77,7 @@ main(argc, argv)
 
 	prog = _PATH_FINGER;
 	logging = secure = user_required = short_list = 0;
-	openlog("fingerd", LOG_PID | LOG_CONS, LOG_DAEMON);
+	openlog("fingerd", LOG_PID, LOG_DAEMON);
 	opterr = 0;
 	while ((ch = getopt(argc, argv, "sluSmMpP:")) != -1)
 		switch (ch) {
