@@ -1,4 +1,4 @@
-/*	$OpenBSD: kern_ktrace.c,v 1.7 1997/11/11 13:50:13 niklas Exp $	*/
+/*	$OpenBSD: kern_ktrace.c,v 1.8 1997/11/14 23:40:55 csapuntz Exp $	*/
 /*	$NetBSD: kern_ktrace.c,v 1.23 1996/02/09 18:59:36 christos Exp $	*/
 
 /*
@@ -83,7 +83,7 @@ ktrsyscall(vp, code, argsize, args)
 {
 	struct	ktr_header *kth;
 	struct	ktr_syscall *ktp;
-	register len = sizeof(struct ktr_syscall) + argsize;
+	register unsigned int len = sizeof(struct ktr_syscall) + argsize;
 	struct proc *p = curproc;	/* XXX */
 	register_t *argp;
 	int i;
