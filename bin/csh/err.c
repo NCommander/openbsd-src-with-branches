@@ -1,4 +1,4 @@
-/*	$OpenBSD: err.c,v 1.2 1996/06/23 14:19:19 deraadt Exp $	*/
+/*	$OpenBSD: err.c,v 1.3 1996/09/15 22:00:27 millert Exp $	*/
 /*	$NetBSD: err.c,v 1.6 1995/03/21 09:02:47 cgd Exp $	*/
 
 /*-
@@ -38,7 +38,7 @@
 #if 0
 static char sccsid[] = "@(#)err.c	8.1 (Berkeley) 5/31/93";
 #else
-static char rcsid[] = "$OpenBSD: err.c,v 1.2 1996/06/23 14:19:19 deraadt Exp $";
+static char rcsid[] = "$OpenBSD: err.c,v 1.3 1996/09/15 22:00:27 millert Exp $";
 #endif
 #endif /* not lint */
 
@@ -277,7 +277,7 @@ static char *errorlist[] =
     "Alias loop",
 #define ERR_HISTLOOP	106
     "!# History loop",
-#define ERR_ARCH        107
+#define ERR_ARCH	107
     "%s: %s. Wrong Architecture",
 #define ERR_FILEINQ	108
     "Malformed file inquiry",
@@ -325,7 +325,7 @@ seterror(id, va_alist)
  * Special ids:
  *	ERR_SILENT: Print nothing.
  *	ERR_OLD: Print the previously set error if one was there.
- *	         otherwise return.
+ *		 otherwise return.
  *	ERR_NAME: If this bit is set, print the name of the function
  *		  in bname
  *

@@ -1,4 +1,4 @@
-/*	$OpenBSD: csh.c,v 1.4 1996/10/27 23:45:32 millert Exp $	*/
+/*	$OpenBSD: csh.c,v 1.5 1996/11/02 01:00:30 millert Exp $	*/
 /*	$NetBSD: csh.c,v 1.14 1995/04/29 23:21:28 mycroft Exp $	*/
 
 /*-
@@ -44,7 +44,7 @@ static char copyright[] =
 #if 0
 static char sccsid[] = "@(#)csh.c	8.2 (Berkeley) 10/12/93";
 #else
-static char rcsid[] = "$OpenBSD: csh.c,v 1.4 1996/10/27 23:45:32 millert Exp $";
+static char rcsid[] = "$OpenBSD: csh.c,v 1.5 1996/11/02 01:00:30 millert Exp $";
 #endif
 #endif /* not lint */
 
@@ -559,7 +559,7 @@ notty:
 	if ((cp = value(STRhistfile)) != STRNULL)
 	    loadhist[2] = cp;
 	dosource(loadhist, NULL);
-        if (loginsh)
+	if (loginsh)
 	      (void) srccat(value(STRhome), STRsldotlogin);
     }
 
