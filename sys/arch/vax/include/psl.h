@@ -1,4 +1,4 @@
-/*      $OpenBSD: psl.h,v 1.3 1997/05/29 00:04:47 niklas Exp $      */
+/*      $OpenBSD: psl.h,v 1.4 1997/09/12 09:21:23 maja Exp $      */
 /*      $NetBSD: psl.h,v 1.6 1997/06/07 12:15:28 ragge Exp $      */
 
 /*
@@ -84,7 +84,7 @@
 #define	PSL_PREVU	0x00c00000	/* Previous user mode */
 #define	PSL_K		0x00000000	/* kernel mode */
 #define	PSL_E		0x01000000     	/* executive mode */
-#define	PSL_S		0x02000000     	/* executive mode */
+#define	PSL_S		0x02000000     	/* supervisor mode */
 #define	PSL_U		0x03000000	/* user mode */
 #define	PSL_IS		0x04000000	/* interrupt stack select */
 #define	PSL_FPD	        0x08000000	/* first part done flag */
