@@ -1,4 +1,4 @@
-/*	$OpenBSD: usb_port.h,v 1.53 2004/11/23 19:08:54 miod Exp $ */
+/*	$OpenBSD: usb_port.h,v 1.54 2004/12/12 06:13:15 dlg Exp $ */
 /*	$NetBSD: usb_port.h,v 1.62 2003/02/15 18:33:30 augustss Exp $	*/
 /*	$FreeBSD: src/sys/dev/usb/usb_port.h,v 1.21 1999/11/17 22:33:47 n_hibma Exp $	*/
 
@@ -265,7 +265,7 @@ typedef struct proc *usb_proc_ptr;
 
 /*
  * The UHCI/OHCI controllers are little endian, so on big endian machines
- * the data strored in memory needs to be swapped.
+ * the data stored in memory needs to be swapped.
  */
 
 #if defined(letoh32)
