@@ -1,4 +1,4 @@
-/*	$OpenBSD: locore.h,v 1.7 2001/03/09 05:44:40 smurph Exp $	*/
+/*	$OpenBSD: locore.h,v 1.8 2001/03/16 00:05:25 miod Exp $	*/
 
 #ifndef _MACHINE_LOCORE_H_
 #define _MACHINE_LOCORE_H_
@@ -39,7 +39,7 @@ int db_are_interrupts_disabled __P((void));
 
 #if defined(MVME187) || defined(MVME188)
 int guarded_access __P((volatile unsigned char *address,
-    unsigned len, unsigned *vec));
+    unsigned len, u_char *vec));
 #endif 
 
 
