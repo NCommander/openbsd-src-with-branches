@@ -1,4 +1,4 @@
-/*	$OpenBSD: tcp_input.c,v 1.103 2002/01/15 19:18:01 provos Exp $	*/
+/*	$OpenBSD: tcp_input.c,v 1.104 2002/01/24 22:42:48 provos Exp $	*/
 /*	$NetBSD: tcp_input.c,v 1.23 1996/02/13 23:43:44 christos Exp $	*/
 
 /*
@@ -995,7 +995,7 @@ findpcb:
 			if (th->th_flags & TH_PUSH)
 				tp->t_flags |= TF_ACKNOW;
 			else
-				tp->t_flags |= TF_DELACK;
+				TCP_SET_DELACK(tp);
 			m_adj(m, iphlen + off);
 			sbappend(&so->so_rcv, m);
 			sorwakeup(so);
@@ -1981,7 +1981,7 @@ dodata:							/* XXX */
 			if (th->th_flags & TH_PUSH)
 				tp->t_flags |= TF_ACKNOW;
 			else
-				tp->t_flags |= TF_DELACK;
+				TCP_SET_DELACK(tp);
 			tp->rcv_nxt += tlen;
 			tiflags = th->th_flags & TH_FIN;
 			tcpstat.tcps_rcvpack++;
