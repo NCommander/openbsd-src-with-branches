@@ -1,4 +1,4 @@
-/*	$OpenBSD: nfs_socket.c,v 1.28 2002/06/11 15:45:44 hin Exp $	*/
+/*	$OpenBSD: nfs_socket.c,v 1.29 2002/07/03 20:57:00 nate Exp $	*/
 /*	$NetBSD: nfs_socket.c,v 1.27 1996/04/15 20:20:00 thorpej Exp $	*/
 
 /*
@@ -1182,7 +1182,7 @@ nfs_rephead(siz, nd, slp, err, frev, mrq, mbp, bposp)
 	}
 
 	*mrq = mreq;
-	if (mrq != NULL)
+	if (mbp != NULL)
 		*mbp = mb;
 	*bposp = bpos;
 	if (err != 0 && err != NFSERR_RETVOID)
