@@ -1,6 +1,6 @@
 #!/usr/bin/perl
 #
-#	$OpenBSD: adduser.perl,v 1.26 2000/11/26 02:18:06 millert Exp $
+#	$OpenBSD: adduser.perl,v 1.27 2000/12/30 06:43:24 angelos Exp $
 #
 # Copyright (c) 1995-1996 Wolfram Schneider <wosch@FreeBSD.org>. Berlin.
 # All rights reserved.
@@ -89,7 +89,7 @@ sub variables {
     $group = "/etc/group";
     $pwd_mkdb = "pwd_mkdb -p";	# program for building passwd database
     $encryptionmethod = "blowfish";
-    $rcsid = '$OpenBSD: adduser.perl,v 1.26 2000/11/26 02:18:06 millert Exp $';
+    $rcsid = '$OpenBSD: adduser.perl,v 1.27 2000/12/30 06:43:24 angelos Exp $';
 
     # List of directories where shells located
     @path = ('/bin', '/usr/bin', '/usr/local/bin');
@@ -366,8 +366,8 @@ sub new_users_name {
 
     while(1) {
 	$name = &confirm_list("Enter username", 1, "a-z0-9_-", "");
-	if (length($name) > 8) {
-	    warn "Username is longer than 8 chars\a\n";
+	if (length($name) > 32) {
+	    warn "Username is longer than 32 characters\a\n";
 	    next;
 	}
 	last if (&new_users_name_valid($name) eq $name);
