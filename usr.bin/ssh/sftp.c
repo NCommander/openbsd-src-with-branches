@@ -24,9 +24,7 @@
 
 #include "includes.h"
 
-RCSID("$OpenBSD: sftp.c,v 1.32 2002/11/27 17:53:35 markus Exp $");
-
-/* XXX: short-form remote directory listings (like 'ls -C') */
+RCSID("$OpenBSD: sftp.c,v 1.34 2003/01/10 08:19:07 fgsch Exp $");
 
 #include "buffer.h"
 #include "xmalloc.h"
