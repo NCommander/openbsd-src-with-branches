@@ -1,4 +1,4 @@
-/*	$OpenBSD: udp.c,v 1.54 2002/01/03 16:27:41 ho Exp $	*/
+/*	$OpenBSD: udp.c,v 1.55 2002/06/01 07:44:22 deraadt Exp $	*/
 /*	$EOM: udp.c,v 1.57 2001/01/26 10:09:57 niklas Exp $	*/
 
 /*
@@ -713,7 +713,7 @@ udp_handle_message (struct transport *t)
   struct udp_transport *u = (struct udp_transport *)t;
   u_int8_t buf[UDP_SIZE];
   struct sockaddr_storage from;
-  int len = sizeof from;
+  u_int32_t len = sizeof from;
   ssize_t n;
   struct message *msg;
 
