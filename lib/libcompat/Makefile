@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.9 2003/05/08 23:21:36 millert Exp $
+#	$OpenBSD: Makefile,v 1.7 2002/02/16 01:56:03 deraadt Exp $
 #	$NetBSD: Makefile,v 1.15 1995/09/07 07:17:53 jtc Exp $
 
 LIB=	compat
@@ -28,10 +28,12 @@ MLINKS+=stty.3 gtty.3
 # compat 4.3 sources
 # missing: sibuf.c sobuf.c strout.c
 SRCS+=	regex.c rexec.c
+SRCS+=	setrgid.c setruid.c
 
-MAN+=	re_comp.3 rexec.3
+MAN+=	re_comp.3 rexec.3 setruid.3
 
 MLINKS+=re_comp.3 re_exec.3
+MLINKS+=setruid.3 setrgid.3
 
 # compat 4.4 sources
 SRCS+=	cuserid.c
