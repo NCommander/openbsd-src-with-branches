@@ -1,4 +1,4 @@
-/*	$OpenBSD: machdep.c,v 1.42 2002/09/15 09:01:58 deraadt Exp $	*/
+/*	$OpenBSD: machdep.c,v 1.43 2002/09/16 16:06:33 art Exp $	*/
 /*	$NetBSD: machdep.c,v 1.4 1996/10/16 19:33:11 ws Exp $	*/
 
 /*
@@ -1233,6 +1233,9 @@ bus_mem_add_mapping(bpa, size, cacheable, bshp)
 		}
 	} else {
 		vaddr = uvm_km_valloc_wait(phys_map, len);
+		if (vaddr == 0)
+			panic("bus_mem_add_mapping: kvm alloc of 0x%x failed",
+			    len);
 	}
 	*bshp = vaddr + off;
 #ifdef DEBUG_BUS_MEM_ADD_MAPPING
