@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_txp.c,v 1.53 2001/08/25 10:13:29 art Exp $	*/
+/*	$OpenBSD: if_txp.c,v 1.54 2001/08/27 22:06:52 jason Exp $	*/
 
 /*
  * Copyright (c) 2001
@@ -74,7 +74,6 @@
 #endif
 
 #include <vm/vm.h>              /* for vtophys */
-#include <vm/vm_kern.h>
 #include <machine/bus.h>
 
 #include <dev/mii/mii.h>

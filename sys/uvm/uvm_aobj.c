@@ -1,4 +1,4 @@
-/*	$OpenBSD: uvm_aobj.c,v 1.13 2001/08/06 14:03:04 art Exp $	*/
+/*	$OpenBSD: uvm_aobj.c,v 1.14 2001/08/11 10:57:22 art Exp $	*/
 /*	$NetBSD: uvm_aobj.c,v 1.31 2000/05/19 04:34:45 thorpej Exp $	*/
 
 /*
@@ -52,7 +52,6 @@
 
 #include <vm/vm.h>
 #include <vm/vm_page.h>
-#include <vm/vm_kern.h>
 
 #include <uvm/uvm.h>
 

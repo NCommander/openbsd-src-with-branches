@@ -1,4 +1,4 @@
-/*	$OpenBSD: sbic.c,v 1.5 1997/11/24 01:13:51 mickey Exp $ */
+/*	$OpenBSD: sbic.c,v 1.6 2000/11/10 15:33:07 provos Exp $ */
 /*	$NetBSD: sbic.c,v 1.2 1996/04/23 16:32:54 chuck Exp $	*/
 
 /*
@@ -64,7 +64,6 @@
 #include <scsi/scsi_all.h>
 #include <scsi/scsiconf.h>
 #include <vm/vm.h>
-#include <vm/vm_kern.h>
 #include <vm/vm_page.h>
 #include <vm/pmap.h>
 #include <machine/pmap.h>

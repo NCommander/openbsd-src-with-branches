@@ -1,4 +1,4 @@
-/*	$OpenBSD: vme.c,v 1.11 2001/08/24 19:34:21 miod Exp $ */
+/*	$OpenBSD: vme.c,v 1.12 2001/08/26 02:37:07 miod Exp $ */
 /*
  * Copyright (c) 1999 Steve Murphree, Jr.
  * Copyright (c) 1995 Theo de Raadt
@@ -43,7 +43,6 @@
 #include <sys/fcntl.h>
 #include <sys/device.h>
 #include <vm/vm.h>
-#include <vm/vm_kern.h>
 
 #include <machine/autoconf.h>
 #include <machine/cpu.h>

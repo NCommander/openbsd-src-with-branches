@@ -1,4 +1,4 @@
-/*	$OpenBSD: mappedcopy.c,v 1.5 2001/06/08 08:08:57 art Exp $	*/
+/*	$OpenBSD: mappedcopy.c,v 1.6 2001/07/25 13:25:32 art Exp $	*/
 /*	$NetBSD: mappedcopy.c,v 1.1 1997/02/02 06:54:10 thorpej Exp $	*/
 
 /*
@@ -52,7 +52,6 @@
 #include <sys/proc.h>
 
 #include <vm/vm.h>
-#include <vm/vm_kern.h>
 
 #include <machine/cpu.h>
 

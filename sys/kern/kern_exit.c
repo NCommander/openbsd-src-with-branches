@@ -1,4 +1,4 @@
-/*	$OpenBSD: kern_exit.c,v 1.33 2001/06/27 04:49:41 art Exp $	*/
+/*	$OpenBSD: kern_exit.c,v 1.34 2001/08/25 12:11:40 art Exp $	*/
 /*	$NetBSD: kern_exit.c,v 1.39 1996/04/22 01:38:25 christos Exp $	*/
 
 /*
@@ -78,7 +78,6 @@
 #include <machine/cpu.h>
 
 #include <vm/vm.h>
-#include <vm/vm_kern.h>
 
 #include <uvm/uvm_extern.h>
 

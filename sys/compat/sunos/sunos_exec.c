@@ -1,4 +1,4 @@
-/*	$OpenBSD: sunos_exec.c,v 1.11 2000/08/15 17:26:05 brad Exp $	*/
+/*	$OpenBSD: sunos_exec.c,v 1.12 2001/08/11 23:04:48 art Exp $	*/
 /*	$NetBSD: sunos_exec.c,v 1.11 1996/05/05 12:01:47 briggs Exp $	*/
 
 /*
@@ -45,7 +45,6 @@
 
 #include <sys/mman.h>
 #include <vm/vm.h>
-#include <vm/vm_kern.h>
 
 #include <machine/cpu.h>
 #include <machine/reg.h>

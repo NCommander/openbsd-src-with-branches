@@ -1,4 +1,4 @@
-/*	$OpenBSD: uvm_pdaemon.c,v 1.11 2001/07/18 14:27:07 art Exp $	*/
+/*	$OpenBSD: uvm_pdaemon.c,v 1.12 2001/08/11 10:57:22 art Exp $	*/
 /*	$NetBSD: uvm_pdaemon.c,v 1.19 1999/11/04 21:51:42 thorpej Exp $	*/
 
 /* 
@@ -79,7 +79,6 @@
 
 #include <vm/vm.h>
 #include <vm/vm_page.h>
-#include <vm/vm_kern.h>
 
 #include <uvm/uvm.h>
 

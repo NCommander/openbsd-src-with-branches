@@ -1,4 +1,4 @@
-/*	$OpenBSD: sci.c,v 1.4 1996/05/29 10:15:40 niklas Exp $	*/
+/*	$OpenBSD: sci.c,v 1.5 1997/01/16 09:25:19 niklas Exp $	*/
 /*	$NetBSD: sci.c,v 1.19 1996/10/13 03:07:31 christos Exp $	*/
 
 /*
@@ -53,7 +53,6 @@
 #include <scsi/scsi_all.h>
 #include <scsi/scsiconf.h>
 #include <vm/vm.h>
-#include <vm/vm_kern.h>
 #include <vm/vm_page.h>
 #include <machine/pmap.h>
 #include <machine/cpu.h>

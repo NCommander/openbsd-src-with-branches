@@ -1,4 +1,4 @@
-/*	$OpenBSD: cache.c,v 1.5 1997/01/16 04:04:13 kstailey Exp $	*/
+/*	$OpenBSD: cache.c,v 1.6 2000/05/02 21:49:36 miod Exp $	*/
 /*	$NetBSD: cache.c,v 1.5 1996/11/20 18:57:24 gwr Exp $	*/
 
 /*-
@@ -50,7 +50,6 @@
 #include <sys/queue.h>
 
 #include <vm/vm.h>
-#include <vm/vm_kern.h>
 #include <vm/vm_page.h>
 
 #include <machine/cpu.h>

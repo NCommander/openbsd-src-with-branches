@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_rl_pci.c,v 1.3 2001/08/12 20:03:49 mickey Exp $ */
+/*	$OpenBSD: if_rl_pci.c,v 1.4 2001/08/25 10:13:29 art Exp $ */
 
 /*
  * Copyright (c) 1997, 1998
@@ -63,7 +63,6 @@
 #endif
 
 #include <vm/vm.h>              /* for vtophys */
-#include <vm/vm_kern.h>
 #include <machine/bus.h>
 
 #include <dev/mii/mii.h>
