@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_fxp_cardbus.c,v 1.5 2002/10/12 01:09:44 krw Exp $ */
+/*	$OpenBSD: if_fxp_cardbus.c,v 1.6 2004/05/07 23:33:39 brad Exp $ */
 /*	$NetBSD: if_fxp_cardbus.c,v 1.12 2000/05/08 18:23:36 thorpej Exp $	*/
 
 /*
@@ -143,7 +143,6 @@ fxp_cardbus_attach(parent, self, aux)
 	cardbus_function_tag_t cf = psc->sc_cf;
 	bus_space_tag_t iot, memt;
 	bus_space_handle_t ioh, memh;
-	u_int8_t enaddr[6];
 
 	bus_addr_t adr;
 	bus_size_t size;
@@ -198,7 +197,7 @@ fxp_cardbus_attach(parent, self, aux)
 	}
 	snprintf(intrstr, sizeof(intrstr), "irq %d", ca->ca_intrline);
 
-	fxp_attach_common(sc, enaddr, intrstr);
+	fxp_attach_common(sc, intrstr);
 }
 
 void
