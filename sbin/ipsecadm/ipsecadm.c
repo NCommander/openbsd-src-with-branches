@@ -1,4 +1,4 @@
-/* $OpenBSD: ipsecadm.c,v 1.66 2003/02/25 22:29:33 markus Exp $ */
+/* $OpenBSD: ipsecadm.c,v 1.67 2003/07/02 21:44:57 deraadt Exp $ */
 /*
  * The authors of this code are John Ioannidis (ji@tla.org),
  * Angelos D. Keromytis (kermit@csd.uch.gr) and
@@ -103,6 +103,9 @@ transform xf[] = {
 	{ "skipjack", SADB_X_EALG_SKIPJACK, XF_ENC | ESP_NEW },
 	{ "md5", SADB_AALG_MD5HMAC, XF_AUTH | AH_NEW | ESP_NEW },
 	{ "sha1", SADB_AALG_SHA1HMAC, XF_AUTH | AH_NEW | ESP_NEW },
+	{ "sha2-256", SADB_AALG_SHA2_256, XF_AUTH | AH_NEW | ESP_NEW },
+	{ "sha2-384", SADB_AALG_SHA2_384, XF_AUTH | AH_NEW | ESP_NEW },
+	{ "sha2-512", SADB_AALG_SHA2_512, XF_AUTH | AH_NEW | ESP_NEW },
 	{ "md5", SADB_X_AALG_MD5, XF_AUTH | AH_OLD },
 	{ "sha1", SADB_X_AALG_SHA1, XF_AUTH | AH_OLD },
 	{ "rmd160", SADB_AALG_RIPEMD160HMAC, XF_AUTH | AH_NEW | ESP_NEW },
