@@ -1,4 +1,4 @@
-/* *	$OpenBSD: md-static-funcs.c,v 1.1.1.1 1995/10/18 08:40:56 deraadt Exp $*/
+/* *	$OpenBSD: md-static-funcs.c,v 1.2 1998/03/26 19:46:36 niklas Exp $*/
 /*
  *
  * Called by ld.so when onanating.
@@ -11,7 +11,6 @@ struct relocation_info	*r;
 long			relocation;
 char			*addr;
 {
-if (r->r_relative)
-	*(long *)addr += relocation;
+	if (r->r_relative)
+		*(long *)addr += relocation;
 }
-
