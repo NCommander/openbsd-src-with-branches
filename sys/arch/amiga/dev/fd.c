@@ -1,4 +1,4 @@
-/*	$OpenBSD: fd.c,v 1.14 2001/05/05 20:56:33 art Exp $	*/
+/*	$OpenBSD: fd.c,v 1.15 2002/03/14 01:26:28 millert Exp $	*/
 /*	$NetBSD: fd.c,v 1.36 1996/12/23 09:09:59 veego Exp $	*/
 
 /*
@@ -733,7 +733,9 @@ bad:
 	bp->b_flags |= B_ERROR;
 done:
 	bp->b_resid = bp->b_bcount;
+	s = splbio();
 	biodone(bp);
+	splx(s);
 }
 
 /*
