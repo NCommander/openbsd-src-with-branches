@@ -1,4 +1,4 @@
-/*	$OpenBSD: var.c,v 1.7 1997/12/18 21:50:45 deraadt Exp $	*/
+/*	$OpenBSD: var.c,v 1.8 1998/03/30 06:59:39 deraadt Exp $	*/
 /*	$NetBSD: var.c,v 1.18 1997/03/18 19:24:46 christos Exp $	*/
 
 /*
@@ -43,7 +43,7 @@
 #if 0
 static char sccsid[] = "@(#)var.c	8.3 (Berkeley) 3/19/94";
 #else
-static char rcsid[] = "$OpenBSD: var.c,v 1.7 1997/12/18 21:50:45 deraadt Exp $";
+static char rcsid[] = "$OpenBSD: var.c,v 1.8 1998/03/30 06:59:39 deraadt Exp $";
 #endif
 #endif /* not lint */
 
@@ -91,6 +91,7 @@ static char rcsid[] = "$OpenBSD: var.c,v 1.7 1997/12/18 21:50:45 deraadt Exp $";
 
 #include    <ctype.h>
 #ifndef MAKE_BOOTSTRAP
+#include    <sys/types.h>
 #include    <regex.h>
 #endif
 #include    <stdlib.h>
