@@ -1,4 +1,4 @@
-/*	$OpenBSD: comkbd_ebus.c,v 1.8 2002/11/29 01:00:49 miod Exp $	*/
+/*	$OpenBSD: comkbd_ebus.c,v 1.7 2002/05/29 20:43:43 maja Exp $	*/
 
 /*
  * Copyright (c) 2002 Jason L. Wright (jason@thought.net)
@@ -234,26 +234,6 @@ comkbd_attach(parent, self, aux)
                 return;
 	}
 
-	if (ISTYPE5(sc->sc_layout)) {
-		a.keymap = &sunkbd5_keymapdata;
-#ifndef	SUNKBD5_LAYOUT
-		if (sc->sc_layout < MAXSUNLAYOUT &&
-		    sunkbd_layouts[sc->sc_layout] != -1)
-			sunkbd5_keymapdata.layout =
-			    sunkbd_layouts[sc->sc_layout];
-#endif
-	} else {
-		a.keymap = &sunkbd_keymapdata;
-#ifndef	SUNKBD_LAYOUT
-		if (sc->sc_layout < MAXSUNLAYOUT &&
-		    sunkbd_layouts[sc->sc_layout] != -1)
-			sunkbd_keymapdata.layout =
-			    sunkbd_layouts[sc->sc_layout];
-#endif
-	}
-	a.accessops = &comkbd_accessops;
-	a.accesscookie = sc;
-
 	if (console) {
 		comkbd_init(sc);
 		cn_tab->cn_dev = makedev(77, sc->sc_dv.dv_unit); /* XXX */
@@ -271,6 +251,26 @@ comkbd_attach(parent, self, aux)
 	} else
 		printf("\n");
 
+	a.console = console;
+	if (ISTYPE5(sc->sc_layout)) {
+		a.keymap = &sunkbd5_keymapdata;
+#ifndef SUNKBD5_LAYOUT
+		if (sc->sc_layout < MAXSUNLAYOUT &&
+		    sunkbd_layouts[sc->sc_layout] != -1)
+			sunkbd5_keymapdata.layout =
+			    sunkbd_layouts[sc->sc_layout];
+#endif
+	} else {
+		a.keymap = &sunkbd_keymapdata;
+#ifndef SUNKBD_LAYOUT
+		if (sc->sc_layout < MAXSUNLAYOUT &&
+		    sunkbd_layouts[sc->sc_layout] != -1)
+			sunkbd_keymapdata.layout =
+			    sunkbd_layouts[sc->sc_layout];
+#endif
+	}
+	a.accessops = &comkbd_accessops;
+	a.accesscookie = sc;
 	sc->sc_wskbddev = config_found(self, &a, wskbddevprint);
 }
 
