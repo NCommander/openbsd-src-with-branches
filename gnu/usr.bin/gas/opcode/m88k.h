@@ -1,3 +1,5 @@
+/*	$OpenBSD$	*/
+
 /* m88k-opcode.h -- Instruction information for the Motorola 88000
    Contributed by Devon Bowen of Buffalo University
    and Torbjorn Granlund of the Swedish Institute of Computer Science.

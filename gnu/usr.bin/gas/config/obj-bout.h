@@ -1,3 +1,5 @@
+/*	$OpenBSD$	*/
+
 /* b.out object file format
    Copyright (C) 1989, 1990, 1991, 1992 Free Software Foundation, Inc.
    

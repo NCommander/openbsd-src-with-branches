@@ -1,3 +1,5 @@
+/*	$OpenBSD$	*/
+
 /* coff object file format with bfd
    Copyright (C) 1989, 1990, 1991, 1992 Free Software Foundation, Inc.
    

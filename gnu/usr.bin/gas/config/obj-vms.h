@@ -1,3 +1,5 @@
+/*	$OpenBSD$	*/
+
 /* VMS object file format
    Copyright (C) 1989, 1990, 1991 Free Software Foundation, Inc.
 

@@ -1,3 +1,5 @@
+/*	$OpenBSD$	*/
+
 /*
  * This file is tc-vax.h.
  */

@@ -1,3 +1,5 @@
+/*	$OpenBSD$	*/
+
 /* obj-format for ieee-695 records.
    Copyright (C) 1991, 1992 Free Software Foundation, Inc.
    
