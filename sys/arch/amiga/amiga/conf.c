@@ -138,8 +138,8 @@ struct cdevsw	cdevsw[] =
  	cdev_tty_init(NMSC,msc),	/* 31: A2232 MSC Multiport serial */
 	cdev_tty_init(NCOM,com),	/* 32: ISA serial port */
 	cdev_lpt_init(NLPT,lpt),	/* 33: ISA parallel printer */
-	cdev_gen_ipf(NIPF,ipl),         /* 34: IP filter log */
-	cdev_ss_init(NSS,ss),           /* 35: SCSI scanner */
+	cdev_gen_ipf(NIPF,ipl),		/* 34: IP filter log */
+	cdev_scanner_init(NSS,ss),	/* 35: SCSI scanner */
 };
 int	nchrdev = sizeof(cdevsw) / sizeof(cdevsw[0]);
 
