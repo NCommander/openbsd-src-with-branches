@@ -1,4 +1,4 @@
-/*	$OpenBSD: commands.c,v 1.26 2000/01/29 16:07:08 itojun Exp $	*/
+/*	$OpenBSD: commands.c,v 1.27 2000/02/05 18:17:56 itojun Exp $	*/
 /*	$NetBSD: commands.c,v 1.14 1996/03/24 22:03:48 jtk Exp $	*/
 
 /*
@@ -2375,10 +2375,15 @@ tn(argc, argv)
 	    portp++;
 	    telnetport = 1;
 	}
+	h_errno = 0;
 	error = getaddrinfo(hostp, portp, &hints, &res0);
 	if (error) {
-	    warn("%s: %s", hostp, gai_strerror(error));
-	    herror(hostp);
+	    if (error == EAI_SERVICE)
+		warnx("%s: bad port", portp);
+	    else
+		warnx("%s: %s", hostp, gai_strerror(error));
+	    if (h_errno)
+		herror(hostp);
 	    return 0;
 	}
     }
