@@ -1,5 +1,5 @@
-/*	$OpenBSD: ipsec.c,v 1.24 2000/02/19 19:32:53 niklas Exp $	*/
-/*	$EOM: ipsec.c,v 1.118 2000/02/20 19:58:38 niklas Exp $	*/
+/*	$OpenBSD: ipsec.c,v 1.25 2000/02/25 17:23:40 niklas Exp $	*/
+/*	$EOM: ipsec.c,v 1.119 2000/05/04 21:44:30 provos Exp $	*/
 
 /*
  * Copyright (c) 1998, 1999, 2000 Niklas Hallqvist.  All rights reserved.
@@ -701,7 +701,7 @@ ipsec_initiator (struct message *msg)
       script = ike_quick_mode_initiator;
       break;
     default:
-      log_print ("ipsec_initiator: unuspported exchange type %d",
+      log_print ("ipsec_initiator: unsupported exchange type %d",
 		 exchange->type);
       return -1;
     }
