@@ -22,9 +22,9 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#if OPENSSL_VERSION_NUMBER < 0x00907000L
 #include "includes.h"
-RCSID("$OpenBSD: $");
+#if OPENSSL_VERSION_NUMBER < 0x00907000L
+RCSID("$OpenBSD: cipher-aes.c,v 1.2 2003/11/26 21:44:29 djm Exp $");
 
 #include <openssl/evp.h>
 #include "rijndael.h"
