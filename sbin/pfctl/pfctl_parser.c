@@ -1,4 +1,4 @@
-/*	$OpenBSD: pfctl_parser.c,v 1.119 2002/12/07 20:25:40 henning Exp $ */
+/*	$OpenBSD: pfctl_parser.c,v 1.120 2002/12/07 23:15:53 dhartmei Exp $ */
 
 /*
  * Copyright (c) 2001 Daniel Hartmeier
@@ -887,8 +887,10 @@ print_rule(struct pf_rule *r, int verbose)
 	}
 	if (r->label[0])
 		printf("label %s ", r->label);
-	if (r->qname[0])
-		printf("queue %s", r->qname);
+	if (r->qname[0] && r->pqname[0])
+		printf("queue(%s, %s) ", r->qname, r->pqname);
+	else if (r->qname[0])
+		printf("queue %s ", r->qname);
 
 	printf("\n");
 }
