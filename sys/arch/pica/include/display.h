@@ -1,7 +1,8 @@
+/*	$OpenBSD: display.h,v 1.1.1.1 1995/10/18 10:39:15 deraadt Exp $	*/
+
 /*
  * IBM PC display definitions
  *
- *	$Id: display.h,v 1.3 1993/12/20 05:26:02 mycroft Exp $
  */
 
 /* Color attributes for foreground text */

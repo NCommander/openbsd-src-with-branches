@@ -1,7 +1,8 @@
+/*	$OpenBSD: pccons.h,v 1.2 1996/05/01 18:23:41 pefo Exp $	*/
+
 /*
  * pccons.h -- pccons ioctl definitions
  *
- *	$Id: pccons.h,v 1.1.1.1 1995/10/18 10:39:15 deraadt Exp $
  */
 
 #ifndef _PCCONS_H_

@@ -1,3 +1,4 @@
+/*	$OpenBSD: varargs.h,v 1.8 1995/03/28 18:19:30 jtc Exp $	*/
 /*	$NetBSD: varargs.h,v 1.8 1995/03/28 18:19:30 jtc Exp $	*/
 
 /*-

@@ -1,3 +1,5 @@
+/*      $OpenBSD: mips_opcode.h,v 1.1.1.1 1995/10/18 10:39:13 deraadt Exp $	*/
+
 /*-
  * Copyright (c) 1992, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -34,7 +36,6 @@
  * SUCH DAMAGE.
  *
  *	from: @(#)mips_opcode.h	8.1 (Berkeley) 6/10/93
- *      $Id: mips_opcode.h,v 1.3 1994/05/27 09:01:30 glass Exp $
  */
 
 /*

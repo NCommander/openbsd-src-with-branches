@@ -1,3 +1,5 @@
+/*	$OpenBSD$	*/
+
 /* bsd-aout.h
 
    4.4bsd a.out format, for backwards compatibility...  */
