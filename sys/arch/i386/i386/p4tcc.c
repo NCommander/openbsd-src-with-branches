@@ -92,16 +92,6 @@ p4tcc_init(int model, int step)
 	setperf_prio = 1;
 }
 
-#if 0
-/* possible? not sure */
-int
-p4tcc_cpuspeed(int *)
-{
-
-	return EINVAL;
-}
-#endif
-
 int
 p4tcc_setperf(int level)
 {
@@ -118,6 +108,9 @@ p4tcc_setperf(int level)
 	if (tcc[i].reg != 0) /* enable it */
 		msreg |= tcc[i].reg << 1 | 1 << 4;
 	wrmsr(MSR_THERM_CONTROL, msreg);
+
+	if (update_cpuspeed != NULL)
+		update_cpuspeed();
 
 	return (0);
 }

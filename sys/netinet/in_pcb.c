@@ -841,7 +841,8 @@ in_pcbrtentry(inp)
 				break;
 			ro->ro_dst.sa_family = AF_INET;
 			ro->ro_dst.sa_len = sizeof(ro->ro_dst);
-			satosin(&ro->ro_dst)->sin_addr = inp->inp_faddr;
+			satortin(&ro->ro_dst)->rtin_dst = inp->inp_faddr;
+			satortin(&ro->ro_dst)->rtin_src = inp->inp_laddr;
 			rtalloc(ro);
 			break;
 		}

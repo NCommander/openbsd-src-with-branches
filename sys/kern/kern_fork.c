@@ -1,4 +1,4 @@
-/*	$OpenBSD: kern_fork.c,v 1.27.2.14 2004/06/05 23:13:01 niklas Exp $	*/
+/*	$OpenBSD$	*/
 /*	$NetBSD: kern_fork.c,v 1.29 1996/02/09 18:59:34 christos Exp $	*/
 
 /*
@@ -378,8 +378,10 @@ fork1(struct proc *p1, int exitsig, int flags, void *stack, size_t stacksize,
 	 * Return child pid to parent process,
 	 * marking us as parent via retval[1].
 	 */
-	retval[0] = p2->p_pid;
-	retval[1] = 0;
+	if (retval != NULL) {
+		retval[0] = p2->p_pid;
+		retval[1] = 0;
+	}
 	return (0);
 }
 

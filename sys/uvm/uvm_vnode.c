@@ -175,7 +175,7 @@ uvn_attach(arg, accessprot)
 	 */
 	simple_lock(&uvn->u_obj.vmobjlock);
 	while (uvn->u_flags & UVM_VNODE_BLOCKED) {
-		printf("uvn_attach: blocked at 0x%p flags 0x%x\n",
+		printf("uvn_attach: blocked at %p flags 0x%x\n",
 		    uvn, uvn->u_flags);
 		uvn->u_flags |= UVM_VNODE_WANTED;
 		UVMHIST_LOG(maphist, "  SLEEPING on blocked vn",0,0,0,0);

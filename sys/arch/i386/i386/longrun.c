@@ -60,7 +60,6 @@ struct timeout longrun_timo;
 void
 longrun_init(void)
 {
-	cpu_cpuspeed = longrun_cpuspeed;
 	cpu_setperf = longrun_setperf;
 
 	timeout_set(&longrun_timo, longrun_update, NULL);
@@ -88,14 +87,6 @@ longrun_update(void *arg)
 	pentium_mhz = regs[0];
 
 	timeout_add(&longrun_timo, hz);
-}
-
-int
-longrun_cpuspeed(int *freq)
-{
-	longrun_update(NULL);	/* force update */
-	*freq = pentium_mhz;
-	return (0);
 }
 
 /*
@@ -131,6 +122,8 @@ longrun_setperf(int high)
 
 	enable_intr();
 	write_eflags(eflags);
+
+	longrun_update(NULL);
 
 	return (0);
 }

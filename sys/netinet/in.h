@@ -217,6 +217,15 @@ struct sockaddr_in {
 	int8_t	    sin_zero[8];
 };
 
+struct sockaddr_rtin {
+	u_int8_t    rtin_len;
+	sa_family_t rtin_family;
+	in_port_t   rtin_port;
+	struct      in_addr rtin_dst;
+	struct	    in_addr rtin_src;
+	int8_t      rtin_zero[4];
+};
+
 /*
  * Structure used to describe IP options.
  * Used to store options internally, to pass them to a process,
@@ -616,4 +625,6 @@ char	  *inet_ntoa(struct in_addr);
 #define	sintosa(sin)	((struct sockaddr *)(sin))
 #define	ifatoia(ifa)	((struct in_ifaddr *)(ifa))
 #endif /* _KERNEL */
+#define satortin(rtin)	((struct sockaddr_rtin *)(rtin))
+
 #endif /* _NETINET_IN_H_ */

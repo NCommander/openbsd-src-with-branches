@@ -564,7 +564,7 @@ reflect:
 		icmpsrc.sin_addr = icp->icmp_ip.ip_dst;
 		rt = NULL;
 		rtredirect(sintosa(&icmpsrc), sintosa(&icmpdst),
-		    (struct sockaddr *)0, RTF_GATEWAY | RTF_HOST,
+		    (struct sockaddr *)&rt_defmask4, RTF_GATEWAY | RTF_HOST,
 		    sintosa(&icmpgw), (struct rtentry **)&rt);
 		if (rt != NULL && icmp_redirtimeout != 0) {
 			(void)rt_timer_add(rt, icmp_redirect_timeout,
@@ -850,7 +850,7 @@ icmp_mtudisc_clone(struct sockaddr *dst)
 
 		error = rtrequest((int) RTM_ADD, dst,
 		    (struct sockaddr *) rt->rt_gateway,
-		    (struct sockaddr *) 0,
+		    sroute_clone_mask4(rt_mask(rt), NULL),
 		    RTF_GATEWAY | RTF_HOST | RTF_DYNAMIC, &nrt);
 		if (error) {
 			rtfree(rt);

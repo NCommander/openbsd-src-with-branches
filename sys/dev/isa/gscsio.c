@@ -220,6 +220,8 @@ gscsio_attach(struct device *parent, struct device *self, void *aux)
 	if (sc->sc_ld_en[GSCSIO_LDN_ACB1]) {
 		sc->sc_acb[0].sc = sc;
 		sc->sc_acb[0].ioh = sc->sc_ld_ioh0[GSCSIO_LDN_ACB1];
+		lockinit(&sc->sc_acb[0].buslock, PRIBIO | PCATCH,
+		    "iiclk", 0, 0);
 		gscsio_acb_init(&sc->sc_acb[0], &sc->sc_acb1_tag);
 	}
 
@@ -227,6 +229,8 @@ gscsio_attach(struct device *parent, struct device *self, void *aux)
 	if (sc->sc_ld_en[GSCSIO_LDN_ACB2]) {
 		sc->sc_acb[1].sc = sc;
 		sc->sc_acb[1].ioh = sc->sc_ld_ioh0[GSCSIO_LDN_ACB2];
+		lockinit(&sc->sc_acb[1].buslock, PRIBIO | PCATCH,
+		    "iiclk", 0, 0);
 		gscsio_acb_init(&sc->sc_acb[1], &sc->sc_acb2_tag);
 	}
 }

@@ -211,6 +211,9 @@ ichss_setperf(int level)
 		/* Restore bus mastering arbitration state */
 		bus_space_write_1(sc->sc_pm_iot, sc->sc_pm_ioh, ICH_PM_CNTL,
 		    cntl);
+
+		if (update_cpuspeed != NULL)
+			update_cpuspeed();
 	}
 	splx(s);
 
