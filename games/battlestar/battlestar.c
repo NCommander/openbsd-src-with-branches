@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /*	$NetBSD: battlestar.c,v 1.3 1995/03/21 15:06:47 cgd Exp $	*/
 
 /*

@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /*	$NetBSD: dayfile.c,v 1.3 1995/03/21 15:07:18 cgd Exp $	*/
 
 /*

@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /*	$NetBSD: words.c,v 1.3 1995/03/21 15:08:00 cgd Exp $	*/
 
 /*

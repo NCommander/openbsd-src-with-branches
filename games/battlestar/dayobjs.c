@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /*	$NetBSD: dayobjs.c,v 1.3 1995/03/21 15:07:22 cgd Exp $	*/
 
 /*

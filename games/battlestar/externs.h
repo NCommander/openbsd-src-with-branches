@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /*	$NetBSD: externs.h,v 1.5 1995/04/24 12:22:18 cgd Exp $	*/
 
 /*
