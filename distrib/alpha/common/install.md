@@ -1,4 +1,4 @@
-#       $OpenBSD: install.md,v 1.12 2002/07/15 23:17:54 krw Exp $
+#       $OpenBSD: install.md,v 1.13 2002/08/25 19:33:45 krw Exp $
 #
 # Copyright (c) 1996 The NetBSD Foundation, Inc.
 # All rights reserved.
@@ -98,14 +98,6 @@ md_prep_disklabel()
 		echo
 		;;
 	esac
-
-	# display example
-	cat << __EOT
-
-If you are unsure of how to use multiple partitions properly
-(ie. separating /, /usr, /tmp, /var, /usr/local, and other things)
-just split the space into a root and swap partition for now.
-__EOT
 
 	disklabel -W ${_disk}
 	disklabel -f /tmp/fstab.${_disk} -E ${_disk}
