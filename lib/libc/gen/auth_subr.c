@@ -1,4 +1,4 @@
-/*	$OpenBSD: auth_subr.c,v 1.8 2002/02/05 07:51:52 mpech Exp $	*/
+/*	$OpenBSD: auth_subr.c,v 1.9 2002/03/13 21:39:41 millert Exp $	*/
 
 /*-
  * Copyright (c) 1995,1996,1997 Berkeley Software Design, Inc.
@@ -981,7 +981,7 @@ _add_rmlist(auth_session_t *as, char *file)
 	}
 	rm->file = (char *)(rm + 1);
 	rm->next = as->rmlist;
-	strcpy(rm->file, file);
+	strlcpy(rm->file, file, i);
 	as->rmlist = rm;
 }
 

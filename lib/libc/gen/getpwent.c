@@ -33,7 +33,7 @@
  */
 
 #if defined(LIBC_SCCS) && !defined(lint)
-static char rcsid[] = "$OpenBSD: getpwent.c,v 1.23 2002/02/16 21:27:22 millert Exp $";
+static char rcsid[] = "$OpenBSD: getpwent.c,v 1.24 2002/02/19 19:39:36 millert Exp $";
 #endif /* LIBC_SCCS and not lint */
 
 #include <sys/param.h>
@@ -767,7 +767,7 @@ getpwuid(uid_t uid)
 		int s = -1;
 		const char *host, *user, *dom;
 
-		sprintf(uidbuf, "%u", uid);
+		snprintf(uidbuf, sizeof uidbuf, "%u", uid);
 		for (_pw_keynum=1; _pw_keynum; _pw_keynum++) {
 			bf[0] = _PW_KEYBYNUM;
 			bcopy((char *)&_pw_keynum, bf + 1, sizeof(_pw_keynum));
