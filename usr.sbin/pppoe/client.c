@@ -1,4 +1,4 @@
-/*	$OpenBSD: client.c,v 1.14 2002/02/17 19:42:39 millert Exp $	*/
+/*	$OpenBSD: client.c,v 1.15 2002/09/08 04:33:46 jason Exp $	*/
 
 /*
  * Copyright (c) 2000 Network Security Technologies, Inc. http://www.netsec.net
@@ -53,7 +53,6 @@
 #include <unistd.h>
 #include <sysexits.h>
 #include <stdlib.h>
-#include <syslog.h>
 #include <signal.h>
 
 #include "pppoe.h"
