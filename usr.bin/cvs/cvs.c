@@ -199,7 +199,7 @@ static struct cvs_cmd {
 		"Server mode",
 	},
 	{
-		CVS_OP_STATUS, "status",   {}, NULL,
+		CVS_OP_STATUS, "status",   {}, cvs_status,
 		"",
 		"Display status information on checked out files",
 	},
