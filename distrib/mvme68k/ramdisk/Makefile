@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.1 1995/07/18 04:13:06 briggs Exp $
+#	$OpenBSD: Makefile,v 1.10 2000/01/24 04:50:26 smurph Exp $
 
 TOP=		${.CURDIR}/..
 
@@ -55,8 +55,8 @@ rd_teardown:
 	-umount ${MOUNT_POINT}
 	-vnconfig -u ${VND}
 
-rdsetroot:	${TOP}/common/rdsetroot.c
-	${HOSTCC} -DDEBUG -o rdsetroot ${TOP}/common/rdsetroot.c
+rdsetroot:	${TOP}/../common/rdsetroot.c
+	${HOSTCC} -DDEBUG -o rdsetroot ${TOP}/../common/rdsetroot.c
 
 unconfig:
 	-umount -f ${MOUNT_POINT}
