@@ -1,4 +1,4 @@
-/*	$OpenBSD: kvm_arm.c,v 1.1 2004/02/09 04:06:13 drahn Exp $	*/
+/*	$OpenBSD: kvm_arm.c,v 1.2 2004/06/15 03:52:59 deraadt Exp $	*/
 
 /*-
  * Copyright (C) 1996 Wolfgang Solfrank.
@@ -37,6 +37,7 @@
 
 #include <sys/param.h>
 
+#include <stdlib.h>
 #include <db.h>
 #include <limits.h>
 #include <kvm.h>

@@ -1,4 +1,4 @@
-/*	$OpenBSD: kvm_vax.c,v 1.9 2004/06/15 03:52:59 deraadt Exp $ */
+/*	$OpenBSD: kvm_vax.c,v 1.10 2004/07/01 02:04:10 mickey Exp $ */
 /*	$NetBSD: kvm_vax.c,v 1.3 1996/03/18 22:34:06 thorpej Exp $ */
 
 /*-
@@ -46,6 +46,7 @@
 #include <sys/proc.h>
 #include <sys/stat.h>
 #include <unistd.h>
+#include <stdlib.h>
 #include <nlist.h>
 #include <kvm.h>
 

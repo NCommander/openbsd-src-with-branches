@@ -1,4 +1,4 @@
-/*	$OpenBSD: kvm_hppa.c,v 1.2 2003/06/02 16:16:23 miod Exp $	*/
+/*	$OpenBSD: kvm_hppa.c,v 1.3 2004/06/15 03:52:59 deraadt Exp $	*/
 
 /*
  * Copyright (c) 2002, Miodrag Vallat.
@@ -28,6 +28,7 @@
 #include <sys/param.h>
 
 #include <unistd.h>
+#include <stdlib.h>
 #include <kvm.h>
 
 #include <db.h>

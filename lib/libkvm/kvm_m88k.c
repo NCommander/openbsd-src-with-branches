@@ -1,4 +1,4 @@
-/*	$OpenBSD: kvm_m88k.c,v 1.1 2004/04/21 18:35:25 miod Exp $	*/
+/*	$OpenBSD: kvm_m88k.c,v 1.2 2004/06/15 03:52:59 deraadt Exp $	*/
 /*	$NetBSD: kvm_alpha.c,v 1.2 1995/09/29 03:57:48 cgd Exp $	*/
 
 /*
@@ -33,6 +33,7 @@
 #include <sys/proc.h>
 #include <sys/stat.h>
 #include <unistd.h>
+#include <stdlib.h>
 #include <nlist.h>
 #include <kvm.h>
 
