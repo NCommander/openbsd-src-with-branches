@@ -1,4 +1,4 @@
-/*	$OpenBSD: ypserv_db.c,v 1.9 1996/12/02 21:14:16 deraadt Exp $ */
+/*	$OpenBSD: ypserv_db.c,v 1.10 1997/03/11 09:12:25 maja Exp $ */
 
 /*
  * Copyright (c) 1994 Mats O Jansson <moj@stacken.kth.se>
@@ -34,7 +34,7 @@
  */
 
 #ifndef LINT
-static char rcsid[] = "$OpenBSD: ypserv_db.c,v 1.9 1996/12/02 21:14:16 deraadt Exp $";
+static char rcsid[] = "$OpenBSD: ypserv_db.c,v 1.10 1997/03/11 09:12:25 maja Exp $";
 #endif
 
 /*
@@ -273,6 +273,15 @@ ypdb_open_db(domain, map, status, map_info)
 		ypdb_close_last();
 	else
 		close(fd);
+
+	if (strchr(domain, '/')) {
+		*status = YP_NODOM;
+		return (NULL);
+	}
+	if (strchr(domain, '/')) {
+		*status = YP_NOMAP;
+		return (NULL);
+	}
 
 	/*
 	 * check for domain, file.   
