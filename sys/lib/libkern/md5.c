@@ -44,7 +44,8 @@
 
 #include <sys/param.h>
 #include <sys/types.h>
-#include <sys/kernel.h>
+
+#include <lib/libkern/libkern.h>
 
 /*
  * MD5 transform algorithm, taken from code written by Colin Plumb,
