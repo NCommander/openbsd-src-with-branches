@@ -2106,15 +2106,19 @@ API_EXPORT(char *) ap_get_local_host(pool *a)
         str[sizeof(str) - 1] = '\0';
         if ((!(p = gethostbyname(str))) 
             || (!(server_hostname = find_fqdn(a, p)))) {
-            /* Recovery - return the default servername by IP: */
-            if (p && p->h_addr_list && p->h_addr_list[0]) {
-                ap_snprintf(str, sizeof(str), "%pA", p->h_addr_list[0]);
-	        server_hostname = ap_pstrdup(a, str);
-                /* We will drop through to report the IP-named server */
-            }
+           if (p == NULL || p->h_addr_list == NULL)
+              server_hostname=NULL;
+           else {
+              /* Recovery - return the default servername by IP: */
+              if (p->h_addr_list[0]) {
+		      ap_snprintf(str, sizeof(str), "%pA", p->h_addr_list[0]);
+		      server_hostname = ap_pstrdup(a, str);
+                    /* We will drop through to report the IP-named server */
+	      }
+	   }
         }
 	else
-            /* Since we found a fqdn, return it with no logged message. */
+            /* Since we found a fdqn, return it with no logged message. */
             return server_hostname;
     }
 

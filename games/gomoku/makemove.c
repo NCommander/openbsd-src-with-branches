@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: makemove.c,v 1.4 1998/03/26 21:16:50 pjanzen Exp $	*/
 /*
  * Copyright (c) 1994
  *	The Regents of the University of California.  All rights reserved.
@@ -36,7 +36,11 @@
  */
 
 #ifndef lint
+#if 0
 static char sccsid[] = "@(#)makemove.c	8.2 (Berkeley) 5/3/95";
+#else
+static char rcsid[] = "$OpenBSD: makemove.c,v 1.4 1998/03/26 21:16:50 pjanzen Exp $";
+#endif
 #endif /* not lint */
 
 #include "gomoku.h"
@@ -53,18 +57,19 @@ int	weight[5] = { 0, 1, 7, 22, 100 };
  *	MOVEOK	everything is OK.
  *	RESIGN	Player resigned.
  *	ILLEGAL	Illegal move.
- *	WIN	The the winning move was just played.
+ *	WIN	The winning move was just played.
  *	TIE	The game is a tie.
  */
+int
 makemove(us, mv)
 	int us, mv;
 {
-	register struct spotstr *sp, *fsp;
-	register union comboval *cp;
+	struct spotstr *sp, *fsp;
+	union comboval *cp;
 	struct spotstr *osp;
 	struct combostr *cbp, *cbp1;
 	union comboval *cp1;
-	register int i, f, r, d, n;
+	int i, f, r, d, n;
 	int space, val, bmask;
 
 	/* check for end of game */
@@ -213,13 +218,14 @@ makemove(us, mv)
 /*
  * fix up the overlap array due to updating spot osp.
  */
+void
 update_overlap(osp)
 	struct spotstr *osp;
 {
-	register struct spotstr *sp, *sp1, *sp2;
-	register int i, f, r, r1, d, d1, n;
+	struct spotstr *sp, *sp1, *sp2;
+	int i, f, r, r1, d, d1, n;
 	int a, b, bmask, bmask1;
-	struct spotstr *esp;
+	struct spotstr *esp = NULL;
 	char *str;
 
 	for (r = 4; --r >= 0; ) {			/* for each direction */

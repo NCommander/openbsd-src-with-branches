@@ -1,5 +1,3 @@
-/*	$NetBSD: opendir.c,v 1.10 1995/06/18 10:58:32 cgd Exp $	*/
-
 /*
  * Copyright (c) 1983, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -34,11 +32,7 @@
  */
 
 #if defined(LIBC_SCCS) && !defined(lint)
-#if 0
-static char sccsid[] = "@(#)opendir.c	8.7 (Berkeley) 12/10/94";
-#else
-static char rcsid[] = "$NetBSD: opendir.c,v 1.10 1995/06/18 10:58:32 cgd Exp $";
-#endif
+static char rcsid[] = "$OpenBSD: opendir.c,v 1.7 2002/07/08 20:23:14 millert Exp $";
 #endif /* LIBC_SCCS and not lint */
 
 #include <sys/param.h>
@@ -48,8 +42,26 @@ static char rcsid[] = "$NetBSD: opendir.c,v 1.10 1995/06/18 10:58:32 cgd Exp $";
 #include <dirent.h>
 #include <errno.h>
 #include <fcntl.h>
+#include <limits.h>
 #include <stdlib.h>
+#include <string.h>
 #include <unistd.h>
+
+static int direntcmp(const void *, const void *);
+
+/*
+ * Comparison function for sorting dirent structures that never returns 0;
+ * this causes qsort() to emulate a stable sort.
+ */
+static int
+direntcmp(const void *d1, const void *d2)
+{
+	int i;
+
+	i = strcmp((*(struct dirent **)d1)->d_name,
+	    (*(struct dirent **)d2)->d_name);
+	return (i != 0 ? i : (char *)d2 - (char *)d1);
+}
 
 /*
  * Open a directory.
@@ -109,8 +121,8 @@ __opendir2(name, flags)
 			close(fd);
 			return (NULL);
 		}
-		unionstack = !strncmp(sfb.f_fstypename, MOUNT_UNION,
-		    MFSNAMELEN);
+		unionstack = strncmp(sfb.f_fstypename, MOUNT_UNION, MFSNAMELEN) == 0 ||
+			     (sfb.f_flags & MNT_UNION);
 	} else {
 		unionstack = 0;
 	}
@@ -137,14 +149,19 @@ __opendir2(name, flags)
 			 * available to getdirentries
 			 */
 			if (space < DIRBLKSIZ) {
+				char *nbuf;
+
 				space += incr;
 				len += incr;
-				buf = realloc(buf, len);
-				if (buf == NULL) {
+				nbuf = realloc(buf, len);
+				if (nbuf == NULL) {
+					if (buf)
+						free(buf);
 					free(dirp);
 					close(fd);
 					return (NULL);
 				}
+				buf = nbuf;
 				ddptr = buf + (len - space);
 			}
 
@@ -211,7 +228,7 @@ __opendir2(name, flags)
 				/*
 				 * This sort must be stable.
 				 */
-				mergesort(dpv, n, sizeof(*dpv), alphasort);
+				qsort(dpv, n, sizeof(*dpv), direntcmp);
 
 				dpv[n] = NULL;
 				xp = NULL;
@@ -237,6 +254,8 @@ __opendir2(name, flags)
 				free(dpv);
 				break;
 			} else {
+				if (n+1 > SIZE_T_MAX / sizeof(struct dirent *))
+					break;
 				dpv = malloc((n+1) * sizeof(struct dirent *));
 				if (dpv == NULL)
 					break;

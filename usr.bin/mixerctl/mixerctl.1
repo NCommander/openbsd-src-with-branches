@@ -1,4 +1,6 @@
-.\" $NetBSD: mixerctl.1,v 1.4 1997/10/19 05:09:35 lukem Exp $
+.\" $OpenBSD: mixerctl.1,v 1.12 2000/11/10 05:10:35 aaron Exp $
+.\" $NetBSD: mixerctl.1,v 1.8 1998/05/09 12:41:16 augustss Exp $
+.\"
 .\" Copyright (c) 1997 The NetBSD Foundation, Inc.
 .\" All rights reserved.
 .\"
@@ -23,7 +25,7 @@
 .\" THIS SOFTWARE IS PROVIDED BY THE NETBSD FOUNDATION, INC. AND CONTRIBUTORS
 .\" ``AS IS'' AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED
 .\" TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
-.\" PURPOSE ARE DISCLAIMED.  IN NO EVENT SHALL THE FOUNDATION OR CONTRIBUTORS 
+.\" PURPOSE ARE DISCLAIMED.  IN NO EVENT SHALL THE FOUNDATION OR CONTRIBUTORS
 .\" BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
 .\" CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
 .\" SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
@@ -39,51 +41,109 @@
 .Nm mixerctl
 .Nd control audio mixing
 .Sh SYNOPSIS
-.Nm
+.Nm mixerctl
 .Op Fl f Ar file
 .Op Fl n
 .Op Fl v
 .Fl a
-.Nm ""
+.Nm mixerctl
 .Op Fl f Ar file
 .Op Fl n
 .Op Fl v
-.Ar name ...
-.Nm ""
+.Ar name Op Ar ...
+.Nm mixerctl
 .Op Fl f Ar file
 .Op Fl n
 .Fl w
-.Ar name=value ...
+.Ar name=value Op Ar ...
 .Sh DESCRIPTION
-The 
+The
 .Nm
 command displays or sets various audio system mixing variables.
-If a list of variables is present on the command line, then
+If a list of variables is present on the command line,
 .Nm
 prints the current value of those variables for the specified device.
-If the 
-.Fl a
-flag is specified, all variables for the device are printed.
-If the
-.Fl w
-flag is specified
+By default,
 .Nm
-attempts to set the specified variables to the given values.
+operates on the
+.Pa /dev/mixer
+device.
+.Pp
+The options are as follows:
+.Bl -tag -width Ds
+.It Fl a
+Print all device variables and their current values.
+.It Fl w Ar name=value
+Attempt to set the specified variable
+.Ar name
+to
+.Ar value .
+.It Fl v
+Show the possible values of enumeration and set valued variables.
+Enumerated values are shown in
+.Dq []
+and set values are shown in
+.Dq {} .
+.It Fl f Ar file
+Specify an alternative audio mixing device.
+.It Fl n
+Suppress printing of the variable name.
+.El
+.Pp
+Values may be specified in either absolute or relative forms.
+The relative form is indicated by a prefix of
+.Ql +
+or
+.Ql -
+to denote an increase or decrease, respectively.
+.Pp
+The exact set of controls that can be manipulated depends on
+the mixer.
+The general format (in both getting and setting a value) is
+.Pp
+.Va class.name = value
 .Pp
 The
-.Fl f
-flag can be used to give an alternative mixer device, the default is
-.Pa /dev/mixer.
-.Pp
+.Va class
+can have values like
+.Li inputs
+or
+.Li outputs
+indicating that the control affects the input resp. output to the
+mixer.
 The
-.Fl n
-flag suppresses printing of the variable name.
+.Va name
+indicates what part of the mixer the control affects.
+Continuous mixer values, e.g., volume, have numeric values
+in the range 0-255.
+If value can be set for each channel independently
+the values are printed separated by commas.
+Discrete mixer values, e.g.,
+the recording source, have symbolic names.
+Depending on the mixer it
+may either be an enumeration or a set.
+.Sh EXAMPLES
+The command
 .Pp
-The
-.Fl v
-flag shows the possible values of enumeration and set valued
-variables.  Enumerated values are shown in [] and set values
-are shown in {}.
+.Dl "mixerctl -a -v"
+.Pp
+can produce
+.Bd -literal
+inputs.mic=0,0 volume
+inputs.mic.mute=off  [ off on ]
+inputs.cd=220,220 volume
+inputs.cd.mute=off  [ off on ]
+inputs.dac=220,220 volume
+inputs.dac.mute=off  [ off on ]
+record.record=220,220 volume
+record.record.source=mic  [ mic cd dac ]
+monitor.monitor=0 volume
+.Ed
+.Sh ENVIRONMENT
+.Bl -tag -width MIXERDEVICE
+.It Ev MIXERDEVICE
+The audio mixer device to use.
+.El
 .Sh FILES
 .Bl -tag -width /dev/mixer
 .It Pa /dev/mixer
@@ -98,4 +158,3 @@ The
 .Nm
 command first appeared in
 .Nx 1.3 .
-

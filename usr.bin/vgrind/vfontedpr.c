@@ -1,4 +1,5 @@
-/*	$NetBSD: vfontedpr.c,v 1.3 1994/11/17 08:28:03 jtc Exp $	*/
+/*	$OpenBSD: vfontedpr.c,v 1.5 2001/11/19 19:02:17 mpech Exp $	*/
+/*	$NetBSD: vfontedpr.c,v 1.4 1996/03/21 18:08:30 jtc Exp $	*/
 
 /*
  * Copyright (c) 1980, 1993
@@ -43,7 +44,7 @@ static char copyright[] =
 #if 0
 static char sccsid[] = "@(#)vfontedpr.c	8.1 (Berkeley) 6/6/93";
 #endif
-static char rcsid[] = "$NetBSD: vfontedpr.c,v 1.3 1994/11/17 08:28:03 jtc Exp $";
+static char rcsid[] = "$OpenBSD: vfontedpr.c,v 1.5 2001/11/19 19:02:17 mpech Exp $";
 #endif /* not lint */
 
 #include <sys/types.h>
@@ -73,13 +74,13 @@ static char rcsid[] = "$NetBSD: vfontedpr.c,v 1.3 1994/11/17 08:28:03 jtc Exp $"
 #define PNAMELEN 40		/* length of a function/procedure name */
 #define PSMAX 20		/* size of procedure name stacking */
 
-static int       iskw __P((char *));
-static boolean   isproc __P((char *));
-static void      putKcp __P((char *, char *, boolean));
-static void      putScp __P((char *));
-static void      putcp __P((int));
-static int       tabs __P((char *, char *));
-static int       width __P((char *, char *));
+static int       iskw(char *);
+static boolean   isproc(char *);
+static void      putKcp(char *, char *, boolean);
+static void      putScp(char *);
+static void      putcp(int);
+static int       tabs(char *, char *);
+static int       width(char *, char *);
 
 /*
  *	The state variables
@@ -130,7 +131,7 @@ char	*language = "c";	/* the language indicator */
 
 #define	ps(x)	printf("%s", x)
 
-void
+int
 main(argc, argv)
     int argc;
     char *argv[];
@@ -355,7 +356,7 @@ static void
 putScp(os)
     char *os;
 {
-    register char *s = os;		/* pointer to unmatched string */
+    char *s = os;			/* pointer to unmatched string */
     char dummy[BUFSIZ];			/* dummy to be used by expmatch */
     char *comptr;			/* end of a comment delimiter */
     char *acmptr;			/* end of a comment delimiter */
@@ -592,9 +593,9 @@ tabs(s, os)
 
 static int
 width(s, os)
-	register char *s, *os;
+	char *s, *os;
 {
-	register int i = 0;
+	int i = 0;
 
 	while (s < os) {
 		if (*s == '\t') {
@@ -613,7 +614,7 @@ width(s, os)
 
 static void
 putcp(c)
-	register int c;
+	int c;
 {
 
 	switch(c) {
@@ -694,15 +695,15 @@ isproc(s)
 
 static int
 iskw(s)
-	register char *s;
+	char *s;
 {
-	register char **ss = l_keywds;
-	register int i = 1;
-	register char *cp = s;
+	char **ss = l_keywds;
+	int i = 1;
+	char *cp = s;
 
 	while (++cp, isidchr(*cp))
 		i++;
-	while (cp = *ss++)
+	while ((cp = *ss++))
 		if (!STRNCMP(s,cp,i) && !isidchr(cp[i]))
 			return (i);
 	return (0);

@@ -1,4 +1,5 @@
-/*	$NetBSD: disksubr.c,v 1.9 1995/05/30 15:38:14 gwr Exp $	*/
+/*	$OpenBSD: disksubr.c,v 1.16 2002/02/19 02:50:59 deraadt Exp $	*/
+/*	$NetBSD: disksubr.c,v 1.14 1996/09/26 18:10:21 gwr Exp $	*/
 
 /*
  * Copyright (c) 1994, 1995 Gordon W. Ross
@@ -46,15 +47,17 @@
 #include <sys/param.h>
 #include <sys/systm.h>
 #include <sys/buf.h>
-#include <sys/disklabel.h>
-
 #include <sys/device.h>
+#include <sys/disklabel.h>
 #include <sys/disk.h>
+#include <sys/dkbad.h>
 
+#include <machine/cpu.h>
 #include <machine/sun_disklabel.h>
-
-/* XXX encoding of disk minor numbers, should be elsewhere... */
-#define dkpart(dev)		(minor(dev) & 7)
+ 
+#if MAXPARTITIONS != 16
+#warn beware: Sun disklabel compatibility assumes MAXPARTITIONS == 16
+#endif
 
 #define	b_cylin	b_resid
 
@@ -64,10 +67,11 @@
 
 static char * disklabel_sun_to_bsd(char *, struct disklabel *);
 static int disklabel_bsd_to_sun(struct disklabel *, char *);
+static __inline u_long sun_extended_sum(struct sun_disklabel *);
 
 /*
  * Attempt to read a disk label from a device
- * using the indicated stategy routine.
+ * using the indicated strategy routine.
  * The label must be partly set up before this:
  * secpercyl, secsize and anything required for a block i/o read
  * operation in the driver's strategy/start routines
@@ -78,24 +82,33 @@ static int disklabel_bsd_to_sun(struct disklabel *, char *);
  * Returns null on success and an error string on failure.
  */
 char *
-readdisklabel(dev, strat, lp, clp)
+readdisklabel(dev, strat, lp, clp, spoofonly)
 	dev_t dev;
-	void (*strat)();
+	void (*strat)(struct buf *);
 	struct disklabel *lp;
 	struct cpu_disklabel *clp;
+	int spoofonly;
 {
 	struct buf *bp;
 	struct disklabel *dlp;
 	struct sun_disklabel *slp;
-	int error;
+	int error, i;
 
-	/* minimal requirements for archtypal disk label */
+	/* minimal requirements for archetypal disk label */
 	if (lp->d_secperunit == 0)
 		lp->d_secperunit = 0x1fffffff;
-	lp->d_npartitions = 1;
-	if (lp->d_partitions[0].p_size == 0)
-		lp->d_partitions[0].p_size = 0x1fffffff;
+	lp->d_npartitions = RAW_PART + 1;
+	for (i = 0; i < RAW_PART; i++) {
+		lp->d_partitions[i].p_size = 0;
+		lp->d_partitions[i].p_offset = 0;
+	}
+	if (lp->d_partitions[i].p_size == 0)
+		lp->d_partitions[i].p_size = 0x1fffffff;
 	lp->d_partitions[0].p_offset = 0;
+
+	/* don't read the on-disk label if we are in spoofed-only mode */
+	if (spoofonly)
+		return (NULL);
 
 	/* obtain buffer to probe drive with */
 	bp = geteblk((int)lp->d_secsize);
@@ -110,7 +123,7 @@ readdisklabel(dev, strat, lp, clp)
 
 	/* if successful, locate disk label within block and validate */
 	error = biowait(bp);
-	if (!error) {
+	if (error == 0) {
 		/* Save the whole block in case it has info we need. */
 		bcopy(bp->b_un.b_addr, clp->cd_block, sizeof(clp->cd_block));
 	}
@@ -121,19 +134,22 @@ readdisklabel(dev, strat, lp, clp)
 
 	/* Check for a Sun disk label (for PROM compatibility). */
 	slp = (struct sun_disklabel *) clp->cd_block;
-	if (slp->sl_magic == SUN_DKMAGIC) {
-		return(disklabel_sun_to_bsd(clp->cd_block, lp));
-	}
+	if (slp->sl_magic == SUN_DKMAGIC)
+		return (disklabel_sun_to_bsd(clp->cd_block, lp));
 
-	/* Check for a NetBSD disk label (PROM can not boot it). */
+	/* Check for a native disk label (PROM can not boot it). */
 	dlp = (struct disklabel *) (clp->cd_block + LABELOFFSET);
 	if (dlp->d_magic == DISKMAGIC) {
 		if (dkcksum(dlp))
-			return("NetBSD disk label corrupted");
+			return("disk label corrupted");
 		*lp = *dlp; 	/* struct assignment */
 		return(NULL);
 	}
 
+#if defined(CD9660)
+	if (iso_disklabelspoof(dev, strat, lp) == 0)
+		return (NULL);
+#endif
 	bzero(clp->cd_block, sizeof(clp->cd_block));
 	return("no disk label");
 }
@@ -142,6 +158,7 @@ readdisklabel(dev, strat, lp, clp)
  * Check new disk label for sensibility
  * before setting it.
  */
+int
 setdisklabel(olp, nlp, openmask, clp)
 	struct disklabel *olp, *nlp;
 	u_long openmask;
@@ -151,9 +168,9 @@ setdisklabel(olp, nlp, openmask, clp)
 	int i;
 
 	/* sanity clause */
-	if (nlp->d_secpercyl == 0 || nlp->d_secsize == 0
-		|| (nlp->d_secsize % DEV_BSIZE) != 0)
-			return(EINVAL);
+	if ((nlp->d_secpercyl == 0) || (nlp->d_secsize == 0) ||
+	    (nlp->d_secsize % DEV_BSIZE) != 0)
+		return(EINVAL);
 
 	/* special case to allow disklabel to be invalidated */
 	if (nlp->d_magic == 0xffffffff) {
@@ -161,32 +178,24 @@ setdisklabel(olp, nlp, openmask, clp)
 		return (0);
 	}
 
-	if (nlp->d_magic != DISKMAGIC || nlp->d_magic2 != DISKMAGIC ||
+	if (nlp->d_magic != DISKMAGIC ||
+	    nlp->d_magic2 != DISKMAGIC ||
 	    dkcksum(nlp) != 0)
 		return (EINVAL);
 
-	while (openmask != 0) {
-		i = ffs(openmask) - 1;
+	while ((i = ffs((long)openmask)) != 0) {
+		i--;
 		openmask &= ~(1 << i);
 		if (nlp->d_npartitions <= i)
 			return (EBUSY);
 		opp = &olp->d_partitions[i];
 		npp = &nlp->d_partitions[i];
-		if (npp->p_offset != opp->p_offset || npp->p_size < opp->p_size)
+		if (npp->p_offset != opp->p_offset ||
+		    npp->p_size   <  opp->p_size)
 			return (EBUSY);
-		/*
-		 * Copy internally-set partition information
-		 * if new label doesn't include it.		XXX
-		 */
-		if (npp->p_fstype == FS_UNUSED && opp->p_fstype != FS_UNUSED) {
-			npp->p_fstype = opp->p_fstype;
-			npp->p_fsize = opp->p_fsize;
-			npp->p_frag = opp->p_frag;
-			npp->p_cpg = opp->p_cpg;
-		}
 	}
- 	nlp->d_checksum = 0;
- 	nlp->d_checksum = dkcksum(nlp);
+
+	/* We did not modify the new label, so the checksum is OK. */
 	*olp = *nlp;
 	return (0);
 }
@@ -196,9 +205,10 @@ setdisklabel(olp, nlp, openmask, clp)
  * Write disk label back to device after modification.
  * Current label is already in clp->cd_block[]
  */
+int
 writedisklabel(dev, strat, lp, clp)
 	dev_t dev;
-	void (*strat)();
+	void (*strat)(struct buf *);
 	struct disklabel *lp;
 	struct cpu_disklabel *clp;
 {
@@ -209,7 +219,7 @@ writedisklabel(dev, strat, lp, clp)
 	if (error)
 		return(error);
 
-#if 0	/* XXX - Allow writing NetBSD disk labels? */
+#if 0	/* XXX - Allow writing native disk labels? */
 	{
 		struct disklabel *dlp;
 		dlp = (struct disklabel *)(clp->cd_block + LABELOFFSET);
@@ -240,40 +250,51 @@ writedisklabel(dev, strat, lp, clp)
  * if needed, and signal errors or early completion.
  */
 int
-bounds_check_with_label(struct buf *bp, struct disklabel *lp, int wlabel)
+bounds_check_with_label(bp, lp, osdep, wlabel)
+	struct buf *bp;
+	struct disklabel *lp;
+	struct cpu_disklabel *osdep;
+	int wlabel;
 {
-	struct partition *p = lp->d_partitions + dkpart(bp->b_dev);
-	int labelsect = lp->d_partitions[0].p_offset;
-	int maxsz = p->p_size;
-	int sz = (bp->b_bcount + DEV_BSIZE - 1) >> DEV_BSHIFT;
+#define blockpersec(count, lp) ((count) * (((lp)->d_secsize) / DEV_BSIZE))
+	struct partition *p = lp->d_partitions + DISKPART(bp->b_dev);
+	int sz = howmany(bp->b_bcount, DEV_BSIZE);
+
+	/* avoid division by zero */
+	if (lp->d_secpercyl == 0) {
+		bp->b_error = EINVAL;
+		goto bad;
+	}
 
 	/* overwriting disk label ? */
 	/* XXX should also protect bootstrap in first 8K */
-	if (bp->b_blkno + p->p_offset <= LABELSECTOR + labelsect &&
-	    (bp->b_flags & B_READ) == 0 && wlabel == 0)
-	{
+	/* XXX this assumes everything <=LABELSECTOR is label! */
+	/*     But since LABELSECTOR is 0, that's ok for now. */
+	if (((bp->b_blkno + blockpersec(p->p_offset, lp)) <= LABELSECTOR) &&
+	    ((bp->b_flags & B_READ) == 0) && (wlabel == 0)) {
 		bp->b_error = EROFS;
 		goto bad;
 	}
 
 	/* beyond partition? */
-	if (bp->b_blkno < 0 || bp->b_blkno + sz > maxsz) {
-		/* if exactly at end of disk, return an EOF */
-		if (bp->b_blkno == maxsz) {
+	if (bp->b_blkno + sz > blockpersec(p->p_size, lp)) {
+		sz = blockpersec(p->p_size, lp) - bp->b_blkno;
+		if (sz == 0) {
+			/* if exactly at end of disk, return an EOF */
 			bp->b_resid = bp->b_bcount;
 			return(0);
 		}
-		/* or truncate if part of it fits */
-		sz = maxsz - bp->b_blkno;
-		if (sz <= 0) {
+		if (sz < 0) {
 			bp->b_error = EINVAL;
 			goto bad;
 		}
+		/* or truncate if part of it fits */
 		bp->b_bcount = sz << DEV_BSHIFT;
 	}
 
 	/* calculate cylinder for disksort to order transfers with */
-	bp->b_cylin = (bp->b_blkno + p->p_offset) / lp->d_secpercyl;
+	bp->b_resid = (bp->b_blkno + blockpersec(p->p_offset, lp)) /
+	    lp->d_secpercyl;
 	return(1);
 
 bad:
@@ -281,10 +302,16 @@ bad:
 	return(-1);
 }
 
-/* XXX - What is this for?  Where does it belong? -gwr */
+/*
+ * This function appears to be called by each disk driver.
+ * Aparently this is to give this MD code a chance to do
+ * additional "device registration" types of work. (?)
+ * For example, the sparc port uses this to record the
+ * device node for the PROM-specified boot device.
+ */
 void
 dk_establish(dk, dev)
-	struct dkdevice *dk;
+	struct disk *dk;
 	struct device *dev;
 {
 }
@@ -298,17 +325,46 @@ dk_establish(dk, dev)
 
 /* What partition types to assume for Sun disklabels: */
 static u_char
-sun_fstypes[8] = {
+sun_fstypes[16] = {
 	FS_BSDFFS,	/* a */
 	FS_SWAP,	/* b */
-	FS_OTHER,	/* c - whole disk */
+	FS_UNUSED,	/* c - whole disk */
 	FS_BSDFFS,	/* d */
 	FS_BSDFFS,	/* e */
 	FS_BSDFFS,	/* f */
 	FS_BSDFFS,	/* g */
 	FS_BSDFFS,	/* h */
+	FS_BSDFFS,	/* i */
+	FS_BSDFFS,	/* j */
+	FS_BSDFFS,	/* k */
+	FS_BSDFFS,	/* l */
+	FS_BSDFFS,	/* m */
+	FS_BSDFFS,	/* n */
+	FS_BSDFFS,	/* o */
+	FS_BSDFFS 	/* p */
 };
 
+/*
+ * Given a struct sun_disklabel, assume it has an extended partition
+ * table and compute the correct value for sl_xpsum.
+ */
+static __inline u_long
+sun_extended_sum(sl)
+	struct sun_disklabel *sl;
+{
+	u_long lsum;
+	u_long *xp;
+	u_long *ep;
+
+	xp = (u_long *) &sl->sl_xpmag;
+	ep = (u_long *) &sl->sl_xxx1[0];
+
+	lsum = 0;
+	for (; xp < ep; xp++)
+		lsum += *xp;
+	return(lsum);
+}
+	
 /*
  * Given a SunOS disk label, set lp to a BSD disk label.
  * Returns NULL on success, else an error string.
@@ -338,7 +394,8 @@ disklabel_sun_to_bsd(cp, lp)
 		return("SunOS disk label, bad checksum");
 
 	/* Format conversion. */
-	lp->d_magic = 0;	/* denote as pseudo */
+	lp->d_magic = DISKMAGIC;
+	lp->d_magic2 = DISKMAGIC;
 	memcpy(lp->d_packname, sl->sl_text, sizeof(lp->d_packname));
 
 	lp->d_secsize = 512;
@@ -355,7 +412,7 @@ disklabel_sun_to_bsd(cp, lp)
 	lp->d_rpm          = sl->sl_rpm;
 	lp->d_interleave   = sl->sl_interleave;
 
-	lp->d_npartitions = 8;
+	lp->d_npartitions = MAXPARTITIONS;
 	/* These are as defined in <ufs/ffs/fs.h> */
 	lp->d_bbsize = 8192;	/* XXX */
 	lp->d_sbsize = 8192;	/* XXX */
@@ -365,11 +422,58 @@ disklabel_sun_to_bsd(cp, lp)
 		npp = &lp->d_partitions[i];
 		npp->p_offset = spp->sdkp_cyloffset * secpercyl;
 		npp->p_size = spp->sdkp_nsectors;
-		if (npp->p_size)
+		if (npp->p_size == 0) {
+			npp->p_fstype = FS_UNUSED;
+		} else {
 			npp->p_fstype = sun_fstypes[i];
+			if (npp->p_fstype == FS_BSDFFS) {
+				/*
+				 * The sun label does not store the FFS fields,
+				 * so just set them with default values here.
+				 */
+				npp->p_fsize = 1024;
+				npp->p_frag = 8;
+				npp->p_cpg = 16;
+			}
+		}
+	}
+	
+	/* Clear "extended" partition info, tentatively */
+	for (i = 0; i < SUNXPART; i++) {
+		npp = &lp->d_partitions[i+8];
+		npp->p_offset = 0;
+		npp->p_size = 0;
+		npp->p_fstype = FS_UNUSED;
+	}
+	
+	/* Check to see if there's an "extended" partition table */
+	if (sl->sl_xpmag == SL_XPMAG &&
+	    sun_extended_sum(sl) == sl->sl_xpsum) {	/* ...yes! */
+		/*
+		 * There is.  Copy over the "extended" partitions.
+		 * This code parallels the loop for partitions a-h.
+		 */
+		for (i = 0; i < SUNXPART; i++) {
+			spp = &sl->sl_xpart[i];
+			npp = &lp->d_partitions[i+8];
+			npp->p_offset = spp->sdkp_cyloffset * secpercyl;
+			npp->p_size = spp->sdkp_nsectors;
+			if (npp->p_size == 0) {
+				npp->p_fstype = FS_UNUSED;
+				continue;
+			}
+			npp->p_fstype = sun_fstypes[i+8];
+			if (npp->p_fstype == FS_BSDFFS) {
+				npp->p_fsize = 1024;
+				npp->p_frag = 8;
+				npp->p_cpg = 16;
+			}
+		}
 	}
 
-	return(NULL);
+	lp->d_checksum = 0;
+	lp->d_checksum = dkcksum(lp);
+	return (NULL);
 }
 
 /*
@@ -389,13 +493,17 @@ disklabel_bsd_to_sun(lp, cp)
 	int i, secpercyl;
 	u_short cksum, *sp1, *sp2;
 
+	/* Enforce preconditions */
+	if (lp->d_secsize != 512 || lp->d_nsectors == 0 || lp->d_ntracks == 0)
+		return (EINVAL);
+
 	sl = (struct sun_disklabel *)cp;
 
 	/* Format conversion. */
 	memcpy(sl->sl_text, lp->d_packname, sizeof(lp->d_packname));
 	sl->sl_rpm = lp->d_rpm;
-	sl->sl_pcyl = lp->d_ncylinders + lp->d_acylinders;	/* XXX */
 	sl->sl_sparespercyl = lp->d_sparespercyl;
+	sl->sl_pcylinders   = lp->d_ncylinders + lp->d_acylinders; /* XXX */
 	sl->sl_interleave   = lp->d_interleave;
 	sl->sl_ncylinders   = lp->d_ncylinders;
 	sl->sl_acylinders   = lp->d_acylinders;
@@ -414,6 +522,40 @@ disklabel_bsd_to_sun(lp, cp)
 	}
 	sl->sl_magic = SUN_DKMAGIC;
 
+	/*
+	 * The reason we store the extended table stuff only conditionally
+	 * is so that a label that doesn't need it will have NULs there, like
+	 * a "traditional" Sun label.  Since Suns seem to ignore everything
+	 * between sl_text and sl_rpm, this probably doesn't matter, but it
+	 * certainly doesn't hurt anything and it's easy to do.
+	 */
+	for (i = 0; i < SUNXPART; i++) {
+		if (lp->d_partitions[i+8].p_offset ||
+		    lp->d_partitions[i+8].p_size)
+			break;
+	}
+	/* We do need to load the extended table? */
+	if (i < SUNXPART) {
+		sl->sl_xpmag = SL_XPMAG;
+		for (i = 0; i < SUNXPART; i++) {
+			spp = &sl->sl_xpart[i];
+			npp = &lp->d_partitions[i+8];
+			if (npp->p_offset % secpercyl)
+				return (EINVAL);
+			sl->sl_xpart[i].sdkp_cyloffset =
+			    npp->p_offset / secpercyl;
+			sl->sl_xpart[i].sdkp_nsectors = npp->p_size;
+		}
+		sl->sl_xpsum = sun_extended_sum(sl);
+	} else {
+		sl->sl_xpmag = 0;
+		for (i = 0; i < SUNXPART; i++) {
+			sl->sl_xpart[i].sdkp_cyloffset = 0;
+			sl->sl_xpart[i].sdkp_nsectors = 0;
+		}
+		sl->sl_xpsum = 0;
+	}
+
 	/* Correct the XOR check. */
 	sp1 = (u_short *)sl;
 	sp2 = (u_short *)(sl + 1);
@@ -424,3 +566,29 @@ disklabel_bsd_to_sun(lp, cp)
 
 	return(0);
 }
+
+#if 0	/* XXX used by xy.c and xd.c */
+/*
+ * Search the bad sector table looking for the specified sector.
+ * Return index if found.
+ * Return -1 if not found.
+ */
+int
+isbad(bt, cyl, trk, sec)
+	register struct dkbad *bt;
+{
+	register int i;
+	register long blk, bblk;
+
+	blk = ((long)cyl << 16) + (trk << 8) + sec;
+	for (i = 0; i < 126; i++) {
+		bblk = ((long)bt->bt_bad[i].bt_cyl << 16) +
+			bt->bt_bad[i].bt_trksec;
+		if (blk == bblk)
+			return (i);
+		if (blk < bblk || bblk < 0)
+			break;
+	}
+	return (-1);
+}
+#endif

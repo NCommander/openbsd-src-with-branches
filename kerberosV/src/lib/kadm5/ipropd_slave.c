@@ -32,6 +32,7 @@
  */
 
 #include "iprop.h"
+#include <util.h>
 
 RCSID("$KTH: ipropd_slave.c,v 1.24 2001/08/31 03:12:17 assar Exp $");
 
@@ -268,7 +269,7 @@ receive_everything (krb5_context context, int fd,
     if (opcode != NOW_YOU_HAVE)
 	krb5_errx (context, 1, "receive_everything: strange %d", opcode);
 
-    _krb5_get_int ((char *)data.data + 4, &vno, 4);
+    _krb5_get_int ((char *)data.data + 4, (void *)&vno, 4);
 
     ret = kadm5_log_reinit (server_context);
     if (ret)

@@ -293,7 +293,6 @@ main (int argc, char **argv)
     OtpAlgorithm *alg = otp_find_alg (OTP_ALG_DEFAULT);
     int optind = 0;
   
-    setprogname (argv[0]);
     if(getarg(args, num_args, argc, argv, &optind))
 	usage(1);
     if(help_flag)
@@ -323,7 +322,7 @@ main (int argc, char **argv)
 
     if(deletep || openp || listp) {
 	if(argc != 0)
-	    errx(1, "delete, open, and list requires no arguments\n");
+	    errx(1, "delete, open, and list requires no arguments");
     } else {
 	if(argc != 2)
 	    errx(1, "setup, and renew requires `num', and `seed'");

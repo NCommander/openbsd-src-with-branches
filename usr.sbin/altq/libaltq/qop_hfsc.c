@@ -1,5 +1,5 @@
-/*	$OpenBSD$	*/
-/*	$KAME: qop_hfsc.c,v 1.4 2000/10/18 09:15:19 kjc Exp $	*/
+/*	$OpenBSD: qop_hfsc.c,v 1.3 2001/12/03 08:38:48 kjc Exp $	*/
+/*	$KAME: qop_hfsc.c,v 1.6 2001/08/16 10:39:14 kjc Exp $	*/
 /*
  * Copyright (C) 1999-2000
  *	Sony Computer Science Laboratories, Inc.  All rights reserved.
@@ -44,40 +44,38 @@
 #include <errno.h>
 #include <syslog.h>
 #include <netdb.h>
+#include <math.h>
 
 #include <altq/altq.h>
 #include <altq/altq_hfsc.h>
 #include "altq_qop.h"
 #include "qop_hfsc.h"
 
-static int read_sc(int *argcp, char ***argvp,
-		   int *type, u_int *m1, u_int *d, u_int *m2);
-static int qop_hfsc_enable_hook(struct ifinfo *ifinfo);
-static int qop_hfsc_delete_class_hook(struct classinfo *clinfo);
-static int validate_sc(struct service_curve *sc);
+static int read_sc(int *, char ***, int *, u_int *, u_int *, u_int *);
+static int qop_hfsc_enable_hook(struct ifinfo *);
+static int qop_hfsc_delete_class_hook(struct classinfo *);
+static int validate_sc(struct service_curve *);
 
-static void gsc_add_sc(struct gen_sc *gsc, struct service_curve *sc);
-static void gsc_sub_sc(struct gen_sc *gsc, struct service_curve *sc);
-static int is_gsc_under_sc(struct gen_sc *gsc, struct service_curve *sc);
-static void gsc_destroy(struct gen_sc *gsc);
-static struct segment *gsc_getentry(struct gen_sc *gsc, double x);
-static int gsc_add_seg(struct gen_sc *gsc,
-		       double x, double y, double d, double m);
-static int gsc_sub_seg(struct gen_sc *gsc,
-		       double x, double y, double d, double m);
-static void gsc_compress(struct gen_sc *gsc);
-static double sc_x2y(struct service_curve *sc, double x);
+static void gsc_add_sc(struct gen_sc *, struct service_curve *);
+static void gsc_sub_sc(struct gen_sc *, struct service_curve *);
+static int is_gsc_under_sc(struct gen_sc *, struct service_curve *);
+static void gsc_destroy(struct gen_sc *);
+static struct segment *gsc_getentry(struct gen_sc *, double);
+static int gsc_add_seg(struct gen_sc *, double, double, double, double);
+static int gsc_sub_seg(struct gen_sc *, double, double, double, double);
+static void gsc_compress(struct gen_sc *);
+static double sc_x2y(struct service_curve *, double);
 
-static int hfsc_attach(struct ifinfo *ifinfo);
-static int hfsc_detach(struct ifinfo *ifinfo);
-static int hfsc_clear(struct ifinfo *ifinfo);
-static int hfsc_enable(struct ifinfo *ifinfo);
-static int hfsc_disable(struct ifinfo *ifinfo);
-static int hfsc_add_class(struct classinfo *clinfo);
-static int hfsc_modify_class(struct classinfo *clinfo, void *arg);
-static int hfsc_delete_class(struct classinfo *clinfo);
-static int hfsc_add_filter(struct fltrinfo *fltrinfo);
-static int hfsc_delete_filter(struct fltrinfo *fltrinfo);
+static int hfsc_attach(struct ifinfo *);
+static int hfsc_detach(struct ifinfo *);
+static int hfsc_clear(struct ifinfo *);
+static int hfsc_enable(struct ifinfo *);
+static int hfsc_disable(struct ifinfo *);
+static int hfsc_add_class(struct classinfo *);
+static int hfsc_modify_class(struct classinfo *, void *);
+static int hfsc_delete_class(struct classinfo *);
+static int hfsc_add_filter(struct fltrinfo *);
+static int hfsc_delete_filter(struct fltrinfo *);
 
 #define HFSC_DEVICE	"/dev/altq/hfsc"
 
@@ -126,7 +124,7 @@ hfsc_interface_parser(const char *ifname, int argc, char **argv)
 		} else if (EQUAL(*argv, "hfsc")) {
 			/* just skip */
 		} else {
-			LOG(LOG_ERR, 0, "Unknown keyword '%s'\n", argv);
+			LOG(LOG_ERR, 0, "Unknown keyword '%s'", *argv);
 			return (0);
 		}
 		argc--; argv++;
@@ -154,7 +152,7 @@ hfsc_class_parser(const char *ifname, const char *class_name,
 		if (*argv[0] == '[') {
 			if (read_sc(&argc, &argv, &type, &m1, &d, &m2) != 0) {
 				LOG(LOG_ERR, 0,
-				    "Bad service curve in %s, line %d\n",
+				    "Bad service curve in %s, line %d",
 				    altqconfigfile, line_no);
 				return (0);
 			}
@@ -198,7 +196,7 @@ hfsc_class_parser(const char *ifname, const char *class_name,
 					/* nothing */
 				} else {
 					LOG(LOG_ERR, 0,
-					    "unknown admission type - %s, line %d\n",
+					    "unknown admission type - %s, line %d",
 					    *argv, line_no);
 					return (0);
 				}
@@ -213,7 +211,7 @@ hfsc_class_parser(const char *ifname, const char *class_name,
 			flags |= HFCF_CLEARDSCP;
 		} else {
 			LOG(LOG_ERR, 0,
-			    "Unknown keyword '%s' in %s, line %d\n",
+			    "Unknown keyword '%s' in %s, line %d",
 			    *argv, altqconfigfile, line_no);
 			return (0);
 		}
@@ -223,7 +221,7 @@ hfsc_class_parser(const char *ifname, const char *class_name,
 
 	if (type == 0) {
 		LOG(LOG_ERR, 0,
-		    "hfsc: service curve not specified in %s, line %d\n",
+		    "hfsc: service curve not specified in %s, line %d",
 		    altqconfigfile, line_no);
 		return (0);
 	}
@@ -261,7 +259,7 @@ hfsc_class_parser(const char *ifname, const char *class_name,
 
 		if (ifinfo->resv_class != NULL) {
 			LOG(LOG_ERR, 0,
-			    "more than one admission class specified: %s\n",
+			    "more than one admission class specified: %s",
 			    class_name);
 			return (0);
 		}
@@ -269,7 +267,7 @@ hfsc_class_parser(const char *ifname, const char *class_name,
 	}
 
 	if (error) {
-		LOG(LOG_ERR, errno, "hfsc_class_parser: %s\n",
+		LOG(LOG_ERR, errno, "hfsc_class_parser: %s",
 		    qoperror(error));
 		return (0);
 	}
@@ -328,7 +326,7 @@ qcmd_hfsc_add_if(const char *ifname, u_int bandwidth, int flags)
 	
 	error = qop_hfsc_add_if(NULL, ifname, bandwidth, flags);
 	if (error != 0)
-		LOG(LOG_ERR, errno, "%s: can't add hfsc on interface '%s'\n",
+		LOG(LOG_ERR, errno, "%s: can't add hfsc on interface '%s'",
 		    qoperror(error), ifname);
 	return (error);
 }
@@ -359,7 +357,7 @@ qcmd_hfsc_add_class(const char *ifname, const char *class_name,
 					   &sc, qlimit, flags);
 	if (error != 0)
 		LOG(LOG_ERR, errno,
-		    "hfsc: %s: can't add class '%s' on interface '%s'\n",
+		    "hfsc: %s: can't add class '%s' on interface '%s'",
 		    qoperror(error), class_name, ifname);
 	return (error);
 }
@@ -415,7 +413,7 @@ qop_hfsc_add_if(struct ifinfo **rp, const char *ifname,
 	if ((error = qop_hfsc_add_class(&hfsc_ifinfo->root_class, "root",
 					ifinfo, NULL, &sc, 0, 0)) != 0) {
 		LOG(LOG_ERR, errno,
-		    "hfsc: %s: can't create dummy root class on %s!\n",
+		    "hfsc: %s: can't create dummy root class on %s!",
 		    qoperror(error), ifname);
 		(void)qop_delete_if(ifinfo);
 		return (QOPERR_CLASS);
@@ -636,18 +634,19 @@ qop_hfsc_enable_hook(struct ifinfo *ifinfo)
 	
 	hfsc_ifinfo = ifinfo->private;
 	if (hfsc_ifinfo->default_class == NULL) {
-		LOG(LOG_ERR, 0, "hfsc: no default class on interface %s!\n",
+		LOG(LOG_ERR, 0, "hfsc: no default class on interface %s!",
 		    ifinfo->ifname);
 		return (QOPERR_CLASS);
 	} else if (hfsc_ifinfo->default_class->child != NULL) {
-		LOG(LOG_ERR, 0, "hfsc: default class on %s must be a leaf!\n",
+		LOG(LOG_ERR, 0, "hfsc: default class on %s must be a leaf!",
 		    ifinfo->ifname);
 		return (QOPERR_CLASS);
 	}
 
 	LIST_FOREACH(clinfo, &ifinfo->cllist, next) {
 		if (clinfo->child != NULL && !LIST_EMPTY(&clinfo->fltrlist)) {
-			LOG(LOG_ERR, 0, "hfsc: internal class \"%s\" should not have a filter!\n",
+			LOG(LOG_ERR, 0,
+			    "hfsc: internal class \"%s\" should not have a filter!",
 			    clinfo->clname);
 			return (QOPERR_CLASS);
 		}
@@ -661,7 +660,7 @@ validate_sc(struct service_curve *sc)
 {
 	/* the 1st segment of a concave curve must be zero */
 	if (sc->m1 < sc->m2 && sc->m1 != 0) {
-		LOG(LOG_ERR, 0, "m1 must be 0 for convex!\n");
+		LOG(LOG_ERR, 0, "m1 must be 0 for convex!");
 		return (-1);
 	}
 	return (0);
@@ -670,7 +669,7 @@ validate_sc(struct service_curve *sc)
 /*
  * admission control using generalized service curve
  */
-#define	INFINITY	1e500		/* IEEE: positive infinity */
+#define	INFINITY	HUGE_VAL  /* positive infinity defined in <math.h> */
 
 /* add a new service curve to a generilized service curve */
 static void
@@ -913,7 +912,7 @@ hfsc_attach(struct ifinfo *ifinfo)
 	if (hfsc_fd < 0 &&
 	    (hfsc_fd = open(HFSC_DEVICE, O_RDWR)) < 0 &&
 	    (hfsc_fd = open_module(HFSC_DEVICE, O_RDWR)) < 0) {
-		LOG(LOG_ERR, errno, "HFSC open\n");
+		LOG(LOG_ERR, errno, "HFSC open");
 		return (QOPERR_SYSCALL);
 	}
 

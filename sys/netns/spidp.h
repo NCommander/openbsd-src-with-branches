@@ -1,3 +1,4 @@
+/*	$OpenBSD: spidp.h,v 1.5 1994/06/29 06:41:52 cgd Exp $	*/
 /*	$NetBSD: spidp.h,v 1.5 1994/06/29 06:41:52 cgd Exp $	*/
 
 /*

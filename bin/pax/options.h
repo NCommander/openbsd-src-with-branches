@@ -1,3 +1,4 @@
+/*	$OpenBSD: options.h,v 1.3 1995/03/21 09:07:32 cgd Exp $	*/
 /*	$NetBSD: options.h,v 1.3 1995/03/21 09:07:32 cgd Exp $	*/
 
 /*-

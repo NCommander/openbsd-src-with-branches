@@ -24,7 +24,7 @@ static void
 usage (void)
 {
     fprintf (stderr, "Usage: %s [-i] [-s service] [-t srvtab]\n",
-	     getprogname());
+	     __progname);
     exit (1);
 }
 
@@ -49,9 +49,7 @@ main(int argc, char **argv)
 
     /* open a log connection */
 
-    setprogname (argv[0]);
-
-    roken_openlog(getprogname(), LOG_ODELAY, LOG_DAEMON);
+    roken_openlog(__progname, LOG_ODELAY, LOG_DAEMON);
 
     strlcpy (service, SAMPLE_SERVICE, sizeof(service));
     *srvtab = '\0';

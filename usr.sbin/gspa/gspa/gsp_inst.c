@@ -16,7 +16,7 @@
  *    must display the following acknowledgement:
  *      This product includes software developed by Paul Mackerras.
  * 4. The name of the author may not be used to endorse or promote products
- *    derived from this software withough specific prior written permission
+ *    derived from this software without specific prior written permission
  *
  * THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR
  * IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
@@ -328,7 +328,6 @@ char *specs[] = { "B", "L", "W", "XY", NULL };
 int
 specifier(operand op)
 {
-	register int i, k;
 	register char **sl;
 	register expr e;
 	char sp[4];
@@ -432,7 +431,7 @@ encode_instr(struct inst *ip, operand ops, int *spec, u_int16_t *iwords)
 	int opc, nw, class, flags, ms, md, off;
 	int mask, file, bit, i;
 	register operand op0, op1;
-	unsigned line[2];
+	unsigned int line[2];
 	int32_t val[2];
 
 	opc = ip->opcode;

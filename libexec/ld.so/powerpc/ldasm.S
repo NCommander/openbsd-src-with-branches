@@ -1,8 +1,8 @@
-/*	$OpenBSD$ */
+/*	$OpenBSD: ldasm.S,v 1.6 2002/08/11 18:41:17 drahn Exp $ */
 
 /*
  * Copyright (c) 1999 Dale Rahn
- * 
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
  * are met:
@@ -45,9 +45,9 @@
 
 #include <machine/asm.h>
 
-ENTRY(_dl_start)		
+ENTRY(_dl_start)
 	mr	19, 1
-	stwu	1, (-16 -((AUX_entry+1)*4))(1)	# Some space.
+	stwu	1, (-16 -((AUX_entry+3)*4))(1)	# Some space.
 
 	mflr	27		/* save off old link register */
 	stw	27, 4(19)	/* save in normal location */
@@ -60,7 +60,7 @@ ENTRY(_dl_start)
 
 	.local	.L___offset_sym
 	.type .L___offset_sym,@function
-	bl 	1f
+	bl	1f
 .L___offset_sym:
 	# this instruction never gets executed but can be used
 	# to find the virtual address where the page is loaded.
@@ -75,13 +75,13 @@ ENTRY(_dl_start)
 	rlwinm 18,18,0,8,30	# mask off the offset portion of the instr.
 
 	/*
-	 * these adds effectively calculates the value the
+	 * these adds effectively calculate the value the
 	 * bl _GLOBAL_OFFSET_TABLE_@local-4
 	 * operation that would be below would calulate.
 	 */
 	add	28, 18, 5
 
-	li 	0, 0
+	li	0, 0
 	dcbf	5, 18
 	sync
 	isync
@@ -92,7 +92,7 @@ ENTRY(_dl_start)
 	isync
 
 	addi	28, 28, 4
-	mr 	29, 28
+	mr	29, 28
 
 	lwz	30, 0(28)	# this loads the first entry of the GOT
 				# thus forcing it to be paged in when
@@ -104,13 +104,13 @@ ENTRY(_dl_start)
 	mflr 28
 
 
-	lwz 	4, .L___offset_sym@got(28)
-	mr 	6, 4		# make copy of register for debugging
+	lwz	4, .L___offset_sym@got(28)
+	mr	6, 4		# make copy of register for debugging
 
 	/* This cheats and calculates the address of _DYNAMIC
 	 * the same way that the GLOBAL_OFFSET_TABLE was calcuated
 	 */
-	lwz     18, 4(5)
+	lwz	18, 4(5)
 	rlwinm 18,18,0,8,30	# mask off the offset portion of the instr.
 	add	8, 18, 5	# address of _DYNAMIC (arg6 for _dl_boot)
 	addi	18, 8, 4	# correction.
@@ -119,25 +119,21 @@ ENTRY(_dl_start)
 	mr	17, 4
 
 
-	mr	3, 19		# Get stack pointer (arg0 for _dl_boot).
+	subi	3, 21, 4	# Get stack pointer (arg0 for _dl_boot).
 	mr	4, 17		# loff
-	mr	5, 20		# argc
-	mr	6, 21		# argv
-	mr	7, 22		# envp
-	mr	8, 18		# dynamicp
-	addi	9, 1, 8		# dl_data
+	mr	5, 18		# dynamicp
+	addi	6, 1, 8		# dl_data
 
 	bl	_dl_boot_bind@local
 
 	mr	3, 21		# argv
 	mr	4, 22		# envp
 	mr	5, 17		# loff
-	mr	6, 18		# dynamicp
-	addi	7, 1, 8		# dl_data
+	addi	6, 1, 8		# dl_data
 
 	bl	_dl_boot@local
 
-	mtctr 3 		# put return value into ctr to execute
+	mtctr 3			# put return value into ctr to execute
 
 	# get back the squirreled away the arguments for main
 	mr 3, 20
@@ -148,9 +144,41 @@ ENTRY(_dl_start)
 
 	mtlr 27
 	lwz	1, 0(1)		# Restore stack pointer.
-	bctr 			# Go execute the 'real' program.
+	bctr			# Go execute the 'real' program.
 
-	.globl	_dl_rt_resolve
-	.data
-_dl_rt_resolve:
-	.long	0
+ENTRY(_dl_bind_start)
+	stwu	1,-64(1)
+
+	stw	0,8(1)		# save r0 - cerror ;-)
+	mflr	0
+	stw	0,68(1)		# save	lr
+
+	stw	3,12(1)		# save	r3-r10, C calling convention
+	stw	4,20(1)		# r13 - r31 are preserved by called code
+	stw	5,24(1)
+	stw	6,28(1)
+	stw	7,32(1)
+	stw	8,36(1)
+	stw	9,40(1)
+	stw	10,44(1)
+
+	mr	3,12		# obj
+	mr	4,11		# reloff
+	bl	_dl_bind@plt	#	_rtld_bind(obj,	reloff)
+	mtctr	3
+
+	lwz	3,12(1)
+	lwz	4,20(1)
+	lwz	5,24(1)
+	lwz	6,28(1)
+	lwz	7,32(1)
+	lwz	8,36(1)
+	lwz	9,40(1)
+	lwz	10,44(1)
+
+	lwz	0,68(1)		# restore lr
+	mtlr	0
+	lwz	0,8(1)
+
+	addi	1,1,64
+	bctr

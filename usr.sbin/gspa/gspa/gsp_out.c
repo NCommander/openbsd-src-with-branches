@@ -16,7 +16,7 @@
  *    must display the following acknowledgement:
  *      This product includes software developed by Paul Mackerras.
  * 4. The name of the author may not be used to endorse or promote products
- *    derived from this software withough specific prior written permission
+ *    derived from this software without specific prior written permission
  *
  * THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR
  * IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
@@ -30,17 +30,18 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 #include <stdio.h>
+#include <string.h>
 #include "gsp_ass.h"
 
 u_int16_t codes[5];
-unsigned ncode;
-unsigned code_idx;
+unsigned int ncode;
+unsigned int code_idx;
 short show_pc;
 short show_val;
 int32_t val_to_show;
-extern unsigned line_pc;
+extern unsigned int line_pc;
 
-unsigned obj_addr = 0;
+unsigned int obj_addr = 0;
 
 extern FILE *objfile, *listfile;
 extern char line[];
@@ -53,6 +54,7 @@ struct error {
 struct error *error_list, *error_last;
 
 void put1code(u_int16_t);
+void listing_line();
 
 void
 putcode(u_int16_t *v, int n)
@@ -89,18 +91,21 @@ put1code(u_int16_t v)
 	show_pc = TRUE;
 }
 
+void
 start_at(int32_t val)
 {
 	if( objfile != NULL )
 		fprintf(objfile, ":%.lX\n", val);
 }
 
+void
 do_list_pc()
 {
 	if( pass2 )
 		show_pc = TRUE;
 }
 
+void
 do_show_val(int32_t v)
 {
 	if( ncode == 0 ){
@@ -110,6 +115,7 @@ do_show_val(int32_t v)
 	}
 }
 
+void
 list_error(char *string)
 {
 	struct error *p;
@@ -128,6 +134,7 @@ list_error(char *string)
 	error_last = p;
 }
 
+void
 show_errors()
 {
 	struct error *p, *q;
@@ -141,6 +148,7 @@ show_errors()
 	error_list = error_last = NULL;
 }
 
+void
 listing()
 {
 	if( objfile != NULL && ncode % 8 != 0 )
@@ -151,6 +159,7 @@ listing()
 	show_pc = FALSE;
 }
 
+void
 listing_line()
 {
 	register int i;

@@ -1,3 +1,4 @@
+/*	$OpenBSD: time.h,v 1.10 2001/03/09 02:18:00 millert Exp $	*/
 /*	$NetBSD: time.h,v 1.9 1994/10/26 00:56:35 cgd Exp $	*/
 
 /*
@@ -47,7 +48,11 @@
 #include <machine/ansi.h>
 
 #ifndef	NULL
+#ifdef 	__GNUG__
+#define	NULL	__null
+#else
 #define	NULL	0
+#endif
 #endif
 
 #ifdef	_BSD_CLOCK_T_
@@ -76,33 +81,43 @@ struct tm {
 	int	tm_year;	/* years since 1900 */
 	int	tm_wday;	/* days since Sunday [0-6] */
 	int	tm_yday;	/* days since January 1 [0-365] */
-	int	tm_isdst;	/* Daylight Savings Time flag */
-	long	tm_gmtoff;	/* offset from CUT in seconds */
+	int	tm_isdst;	/* Daylight Saving Time flag */
+	long	tm_gmtoff;	/* offset from UTC in seconds */
 	char	*tm_zone;	/* timezone abbreviation */
 };
 
 #include <sys/cdefs.h>
 
 __BEGIN_DECLS
-char *asctime __P((const struct tm *));
-clock_t clock __P((void));
-char *ctime __P((const time_t *));
-double difftime __P((time_t, time_t));
-struct tm *gmtime __P((const time_t *));
-struct tm *localtime __P((const time_t *));
-time_t mktime __P((struct tm *));
-size_t strftime __P((char *, size_t, const char *, const struct tm *));
-time_t time __P((time_t *));
+struct timespec;
+char *asctime(const struct tm *);
+clock_t clock(void);
+char *ctime(const time_t *);
+double difftime(time_t, time_t);
+struct tm *gmtime(const time_t *);
+struct tm *localtime(const time_t *);
+time_t mktime(struct tm *);
+size_t strftime(char *, size_t, const char *, const struct tm *);
+char *strptime(const char *, const char *, struct tm *);
+time_t time(time_t *);
+char *asctime_r(const struct tm *, char *);
+char *ctime_r(const time_t *, char *);
+struct tm *gmtime_r(const time_t *, struct tm *);
+struct tm *localtime_r(const time_t *, struct tm *);
+int nanosleep(const struct timespec *, struct timespec *);
 
 #if !defined(_ANSI_SOURCE)
 #define CLK_TCK		100
 extern char *tzname[2];
-void tzset __P((void));
+void tzset(void);
 #endif /* not ANSI */
 
 #if !defined(_ANSI_SOURCE) && !defined(_POSIX_SOURCE)
-char *timezone __P((int, int));
-void tzsetwall __P((void));
+char *timezone(int, int);
+void tzsetwall(void);
+time_t timelocal(struct tm *);
+time_t timegm(struct tm *);
+time_t timeoff(struct tm *, const long);
 #endif /* neither ANSI nor POSIX */
 __END_DECLS
 

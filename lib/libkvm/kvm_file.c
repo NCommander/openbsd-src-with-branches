@@ -1,3 +1,6 @@
+/*	$OpenBSD: kvm_file.c,v 1.5 2001/11/05 23:04:35 art Exp $ */
+/*	$NetBSD: kvm_file.c,v 1.5 1996/03/18 22:33:18 thorpej Exp $	*/
+
 /*-
  * Copyright (c) 1989, 1992, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -32,7 +35,11 @@
  */
 
 #if defined(LIBC_SCCS) && !defined(lint)
+#if 0
 static char sccsid[] = "@(#)kvm_file.c	8.1 (Berkeley) 6/4/93";
+#else
+static char *rcsid = "$OpenBSD: kvm_file.c,v 1.5 2001/11/05 23:04:35 art Exp $";
+#endif
 #endif /* LIBC_SCCS and not lint */
 
 /*
@@ -54,10 +61,6 @@ static char sccsid[] = "@(#)kvm_file.c	8.1 (Berkeley) 6/4/93";
 #include <sys/tty.h>
 #include <nlist.h>
 #include <kvm.h>
-
-#include <vm/vm.h>
-#include <vm/vm_param.h>
-#include <vm/swap_pager.h>
 
 #include <sys/sysctl.h>
 
@@ -136,7 +139,7 @@ kvm_getfiles(kd, op, arg, cnt)
 		mib[1] = KERN_FILE;
 		st = sysctl(mib, 2, NULL, &size, NULL, 0);
 		if (st == -1) {
-			_kvm_syserr(kd, kd->program, "kvm_getprocs");
+			_kvm_syserr(kd, kd->program, "kvm_getfiles");
 			return (0);
 		}
 		if (kd->argspc == 0)

@@ -1,17 +1,11 @@
-#       $Sendmail: Makefile,v 8.2 1999/09/23 22:36:32 ca Exp $
+#	$OpenBSD: Makefile,v 1.3 2000/05/15 03:37:32 millert Exp $
 
-SHELL= /bin/sh
-BUILD=   ./Build
-OPTIONS= $(CONFIG) $(FLAGS)
+LIB=	smutil
+SRCS=	debug.c err.c lockfile.c safefile.c snprintf.c cf.c
+ENVDEF=	-DNOT_SENDMAIL
 
-all: FRC
-	$(SHELL) $(BUILD) $(OPTIONS) $@
-clean: FRC
-	$(SHELL) $(BUILD) $(OPTIONS) $@
-install: FRC
-	$(SHELL) $(BUILD) $(OPTIONS) $@
+# This is not a library that gets installed so only build the .a version
+NOPROFILE=1
+NOPIC=1
 
-fresh: FRC
-	$(SHELL) $(BUILD) $(OPTIONS) -c
-
-FRC:
+.include <bsd.lib.mk>

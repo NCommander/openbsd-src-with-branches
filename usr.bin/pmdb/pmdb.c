@@ -1,4 +1,4 @@
-/*	$PMDB: pmdb.c,v 1.41 2002/03/12 14:24:30 art Exp $	*/
+/*	$OpenBSD: pmdb.c,v 1.11 2002/07/22 23:26:05 fgsch Exp $	*/
 /*
  * Copyright (c) 2002 Artur Grabowski <art@openbsd.org>
  * All rights reserved. 
@@ -27,6 +27,7 @@
 #include <sys/types.h>
 #include <sys/ptrace.h>
 #include <sys/wait.h>
+#include <sys/endian.h>
 
 #include <stdlib.h>
 #include <stdio.h>
@@ -36,12 +37,11 @@
 #include <errno.h>
 #include <string.h>
 
-#include <sys/endian.h>
-
 #include "pmdb.h"
 #include "symbol.h"
 #include "clit.h"
 #include "break.h"
+#include "core.h"
 
 static int cmd_show_registers(int, char **, void *);
 static int cmd_show_backtrace(int, char **, void *);
@@ -56,6 +56,7 @@ struct clit cmds[] = {
 	{ "run", "run process", 0, 0, cmd_process_run, (void *)-1 },
 	{ "continue", "continue process", 0, 0, cmd_process_cont, (void *)-1 },
 	{ "kill", "kill process", 0, 0, cmd_process_kill, (void *)-1 },
+	{ "setenv", "set env variables", 2, 2, cmd_process_setenv, (void *)-1 },
 
 	/* signal handling commands. */
 	{ "signal", "ignore signal", 2, 2, cmd_signal_ignore, (void *)-1 },
@@ -65,27 +66,62 @@ struct clit cmds[] = {
 	{ "break", "set breakpoint", 1, 1, cmd_bkpt_add, (void *)-1 },
 	{ "step", "single step one insn", 0, 0, cmd_sstep, (void *)-1 },
 
+	/* symbols */
+	{ "sym_load", "load symbol table", 2, 2, cmd_sym_load, (void *)-1 },
+
 	/* misc commands. */
 	{ "help", "print help", 0, 1, cmd_help, NULL },
 	{ "quit", "quit", 0, 0, cmd_quit, (void *)-1 },
 	{ "exit", "quit", 0, 0, cmd_quit, (void *)-1 },
 };
 
+#define NCMDS	sizeof(cmds)/sizeof(cmds[0])
+
+void
+usage()
+{
+	extern char *__progname;
+
+	fprintf(stderr, "Usage: %s [-c core] [-p pid] <program> args\n",
+	    __progname);
+	exit(1);
+}
+
 int
 main(int argc, char **argv)
 {
-	extern const char *__progname;
 	struct pstate ps;
-	int i, ncmds;
+	int i, c;
 	int status;
 	void *cm;
-	char *pmenv;
+	char *pmenv, *core, *perr;
 	int level;
+	pid_t pid;
 
-	if (argc < 2) {
-		fprintf(stderr, "Usage: %s <program> args\n", __progname);
-		exit(1);
+	core = NULL;
+	pid = 0;
+
+	while ((c = getopt(argc, argv, "c:p:")) != -1) {
+		switch(c) {
+			case 'c':
+				core = optarg;
+				break;
+			case 'p':
+				pid = (pid_t) strtol(optarg, &perr, 10);
+				if (*perr != '\0')
+					errx(1, "invalid PID");
+				break;
+			case '?':
+			default:
+				usage();
+				/* NOTREACHED */
+		}
 	}
+	argc -= optind;
+	argv += optind;
+
+	if (argc == 0)
+		usage();
 
 	if ((pmenv = getenv("IN_PMDB")) != NULL) {
 		level = atoi(pmenv);
@@ -98,10 +134,10 @@ main(int argc, char **argv)
 	asprintf(&pmenv, "%d", level);
 	setenv("IN_PMDB", pmenv, 1);
 
-	ps.ps_pid = 0;
+	ps.ps_pid = pid;
 	ps.ps_state = NONE;
-	ps.ps_argc = --argc;
-	ps.ps_argv = ++argv;
+	ps.ps_argc = argc;
+	ps.ps_argv = argv;
 	ps.ps_flags = 0;
 	ps.ps_signum = 0;
 	ps.ps_npc = 1;
@@ -110,18 +146,20 @@ main(int argc, char **argv)
 
 	signal(SIGINT, SIG_IGN);
 
-	ncmds = sizeof(cmds)/sizeof(cmds[0]);
-
-	for (i = 0; i < ncmds; i++)
+	for (i = 0; i < NCMDS; i++)
 		if (cmds[i].arg == (void *)-1)
 			cmds[i].arg = &ps;
 
 	md_def_init();
 	init_sigstate(&ps);
 
-	process_load(&ps);
+	if ((core != NULL) && (read_core(core, &ps) < 0))
+		warnx("failed to load core file");
 
-	cm = cmdinit(cmds, ncmds);
+	if (process_load(&ps) < 0)
+		errx(1, "failed to load process");
+
+	cm = cmdinit(cmds, NCMDS);
 	while (ps.ps_state != TERMINATED) {
 		int signum;
 		int stopped;
@@ -181,7 +219,7 @@ read_from_pid(pid_t pid, off_t from, void *to, size_t size)
 	piod.piod_addr = to;
 	piod.piod_len = size;
 
-	return (ptrace(PT_IO, pid, (caddr_t)&piod, 0) != size);
+	return (ptrace(PT_IO, pid, (caddr_t)&piod, 0));
 }
 
 
@@ -195,7 +233,7 @@ write_to_pid(pid_t pid, off_t to, void *from, size_t size)
 	piod.piod_addr = from;
 	piod.piod_len = size;
 
-	return (ptrace(PT_IO, pid, (caddr_t)&piod, 0) != size);
+	return (ptrace(PT_IO, pid, (caddr_t)&piod, 0));
 }
 
 static int
@@ -207,8 +245,13 @@ cmd_show_registers(int argc, char **argv, void *arg)
 	reg *rg;
 
 	if (ps->ps_state != STOPPED) {
+		if (ps->ps_flags & PSF_CORE) {
+			/* dump registers from core */
+			core_printregs(ps->ps_core);
+			return (0);
+		}
 		fprintf(stderr, "process not stopped\n");
-		return 0;
+		return (0);
 	}
 
 	rg = alloca(sizeof(*rg) * md_def.nregs);
@@ -219,7 +262,7 @@ cmd_show_registers(int argc, char **argv, void *arg)
 		printf("%s:\t0x%.*lx\t%s\n", md_def.md_reg_names[i],
 		    (int)(sizeof(reg) * 2), (long)rg[i],
 		    sym_print(ps, rg[i], buf, sizeof(buf)));
-	return 0;
+	return (0);
 }
 
 static int
@@ -228,9 +271,9 @@ cmd_show_backtrace(int argc, char **argv, void *arg)
 	struct pstate *ps = arg;
 	int i;
 
-	if (ps->ps_state != STOPPED) {
+	if (ps->ps_state != STOPPED && !(ps->ps_flags & PSF_CORE)) {
 		fprintf(stderr, "process not stopped\n");
-		return 0;
+		return (0);
 	}
 
 	/* no more than 100 frames */
@@ -250,6 +293,7 @@ cmd_show_backtrace(int argc, char **argv, void *arg)
 		if (name == NULL) {
 			snprintf(namebuf, sizeof(namebuf), "0x%lx", mfr.pc);
 			name = namebuf;
+			offs = 0;
 		}
 
 		printf("%s(", name);
@@ -258,9 +302,14 @@ cmd_show_backtrace(int argc, char **argv, void *arg)
 			if (j < mfr.nargs - 1)
 				printf(", ");
 		}
-		printf(")+0x%lx\n", offs);
+		if (offs == 0) {
+			printf(")\n");
+		} else {
+			printf(")+0x%lx\n", offs);
+		}
 	}
-	return 0;
+
+	return (0);
 }
 
 static int
@@ -268,13 +317,19 @@ cmd_quit(int argc, char **argv, void *arg)
 {
 	struct pstate *ps = arg;
 
-	ps->ps_flags |= PSF_KILL;
+	if ((ps->ps_flags & PSF_ATCH)) {
+		if ((ps->ps_flags & PSF_ATCH) &&
+		    ptrace(PT_DETACH, ps->ps_pid, NULL, 0) < 0)
+			err(1, "ptrace(PT_DETACH)");
+	} else {
+		ps->ps_flags |= PSF_KILL;
 
-	if (process_kill(ps))
-		return 1;
+		if (process_kill(ps))
+			return (1);
+	}
 
 	ps->ps_state = TERMINATED;
-	return 1;
+	return (1);
 }
 
 /*
@@ -295,7 +350,7 @@ cmd_complt(char *buf, size_t buflen)
 
 	if (!command) {
 		/* XXX - can't handle symbols yet. */
-		return -1;
+		return (-1);
 	}
 
 	start = buf;
@@ -336,7 +391,7 @@ cmd_complt(char *buf, size_t buflen)
 }
 
 /*
- * The "stadard" wrapper
+ * The "standard" wrapper
  */
 void *
 emalloc(size_t sz)

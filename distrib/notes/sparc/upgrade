@@ -1,5 +1,6 @@
-Upgrading NetBSD/sparc is not something someone is likely to do,
-since this is the first real distribution.  Since a number of
-critical interfaces have changed quite significantly, your best
-bet is to reinstall completely, perhaps saving a few files in
-/etc and /usr/local.
+dnl	$OpenBSD$
+Due to important changes affecting the MACHINE port since the previous
+release, upgrades to OpenBSD OSREV are not supported.
+You are strongly advised to reinstall your existing machines from scratch.
+dnl
+dnl OpenBSDUpgrade({:-the CD-ROM, the miniroot, or the installation floppy-:})

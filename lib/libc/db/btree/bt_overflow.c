@@ -1,4 +1,4 @@
-/*	$NetBSD: bt_overflow.c,v 1.5 1995/02/27 13:20:33 cgd Exp $	*/
+/*	$OpenBSD$	*/
 
 /*-
  * Copyright (c) 1990, 1993, 1994
@@ -38,9 +38,9 @@
 
 #if defined(LIBC_SCCS) && !defined(lint)
 #if 0
-static char sccsid[] = "@(#)bt_overflow.c	8.4 (Berkeley) 6/20/94";
+static char sccsid[] = "@(#)bt_overflow.c	8.5 (Berkeley) 7/16/94";
 #else
-static char rcsid[] = "$NetBSD: bt_overflow.c,v 1.5 1995/02/27 13:20:33 cgd Exp $";
+static char rcsid[] = "$OpenBSD: bt_overflow.c,v 1.4 1998/08/14 21:39:18 deraadt Exp $";
 #endif
 #endif /* LIBC_SCCS and not lint */
 
@@ -87,13 +87,14 @@ __ovfl_get(t, p, ssz, buf, bufsz)
 	BTREE *t;
 	void *p;
 	size_t *ssz;
-	char **buf;
+	void **buf;
 	size_t *bufsz;
 {
 	PAGE *h;
 	pgno_t pg;
 	size_t nb, plen;
 	u_int32_t sz;
+	void *tp;
 
 	memmove(&pg, p, sizeof(pgno_t));
 	memmove(&sz, (char *)p + sizeof(pgno_t), sizeof(u_int32_t));
@@ -105,9 +106,10 @@ __ovfl_get(t, p, ssz, buf, bufsz)
 #endif
 	/* Make the buffer bigger as necessary. */
 	if (*bufsz < sz) {
-		*buf = (char *)(*buf == NULL ? malloc(sz) : realloc(*buf, sz));
-		if (*buf == NULL)
+		tp = (char *)(*buf == NULL ? malloc(sz) : realloc(*buf, sz));
+		if (tp == NULL)
 			return (RET_ERROR);
+		*buf = tp;
 		*bufsz = sz;
 	}
 

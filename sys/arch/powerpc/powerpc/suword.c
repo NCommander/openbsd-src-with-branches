@@ -1,3 +1,4 @@
+/*	$OpenBSD: suword.c,v 1.3 2001/07/09 01:14:01 mickey Exp $	*/
 /*	$NetBSD: suword.c,v 1.1 1996/09/30 16:34:55 ws Exp $	*/
 
 /*-
@@ -31,13 +32,16 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#include <sys/param.h>
+#include <sys/systm.h>
+
 /*
  * Emulate suword
  */
 int
 suword(addr,l)
-char *addr;
-unsigned long l;
+	void *addr;
+	long l;
 {
 	if (copyout(&l,addr,sizeof(l)))
 		return -1;

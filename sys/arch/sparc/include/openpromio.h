@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /*	$NetBSD: openpromio.h,v 1.2 1994/11/20 20:53:17 deraadt Exp $ */
 
 /*

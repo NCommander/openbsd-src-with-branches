@@ -1,5 +1,4 @@
-# bootpd/Makefile
-# $Id: Makefile,v 1.2 1994/12/22 11:33:08 cgd Exp $
+#	$OpenBSD$
 
 PROG=	bootpd
 CFLAGS+= -DETC_ETHERS -DSYSLOG -DDEBUG -DVEND_CMU

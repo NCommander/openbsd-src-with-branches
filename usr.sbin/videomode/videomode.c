@@ -43,11 +43,11 @@
 #include <err.h>
 #include <stdio.h>
 
-void dump_mode __P((int));
-void dump_vm   __P((struct grfvideo_mode *));
-int  get_grf __P((void));
-void set_mode __P((int));
-void usage __P((void));
+void dump_mode(int);
+void dump_vm(struct grfvideo_mode *);
+int  get_grf(void);
+void set_mode(int);
+void usage(void);
 
 int
 main(argc, argv)
@@ -61,7 +61,7 @@ main(argc, argv)
 		dump_mode(0);
 		return (0);
 	}
-	while ((c = getopt(argc, argv, "as:")) != EOF) {
+	while ((c = getopt(argc, argv, "as:")) != -1) {
 		switch (c) {
 		case 'a':
 			if (optind < argc)
@@ -101,7 +101,8 @@ get_grf()
 		errx(1, "stdin not a tty");
 	if (major(stb.st_rdev) != 13)
 		errx(1, "stdin not an ite device");
-	(void)sprintf(grfname, "/dev/grf%d", minor(stb.st_rdev) & 0x7);
+	(void)snprintf(grfname, sizeof grfname, "/dev/grf%d",
+	    minor(stb.st_rdev) & 0x7);
 	if ((grffd = open(grfname, 2)) < 0)
 		err(1, "%s", grfname);
 	return (grffd);

@@ -37,17 +37,13 @@
 #include <sys/cdefs.h>
 #include <math.h>
 
-#if defined(vax)||defined(tahoe)
+#if defined(__vax__)||defined(tahoe)
 
-/* Deal with different ways to concatenate in cpp */
-#  ifdef __STDC__
-#    define	cat3(a,b,c) a ## b ## c
-#  else
-#    define	cat3(a,b,c) a/**/b/**/c
-#  endif
+/* Deal with concatenation in cpp */
+#  define	cat3(a,b,c) a ## b ## c
 
 /* Deal with vax/tahoe byte order issues */
-#  ifdef vax
+#  ifdef __vax__
 #    define	cat3t(a,b,c) cat3(a,b,c)
 #  else
 #    define	cat3t(a,b,c) cat3(a,c,b)
@@ -85,7 +81,7 @@
 #  define ic(name, value, bexp, xval) \
 	const static double name = value;
 
-#endif	/* defined(vax)||defined(tahoe) */
+#endif	/* defined(__vax__)||defined(tahoe) */
 
 
 /*
@@ -95,5 +91,5 @@ extern double	__exp__E();
 extern double	__log__L();
 
 struct Double {double a, b;};
-double __exp__D __P((double, double));
-struct Double __log__D __P((double));
+double __exp__D(double, double);
+struct Double __log__D(double);

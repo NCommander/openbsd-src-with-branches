@@ -1,4 +1,5 @@
-/*	$NetBSD: regex.h,v 1.4 1994/10/26 00:56:14 cgd Exp $	*/
+/*	$OpenBSD: regex.h,v 1.4 2002/02/16 21:27:17 millert Exp $	*/
+/*	$NetBSD: regex.h,v 1.4.6.1 1996/06/10 18:57:07 explorer Exp $	*/
 
 /*-
  * Copyright (c) 1992 Henry Spencer.
@@ -43,6 +44,7 @@
 #define	_REGEX_H_
 
 #include <sys/cdefs.h>
+#include <sys/types.h>
 
 /* types */
 typedef off_t regoff_t;
@@ -98,11 +100,10 @@ typedef struct {
 #define	REG_BACKR	02000	/* force use of backref code */
 
 __BEGIN_DECLS
-int	regcomp __P((regex_t *, const char *, int));
-size_t	regerror __P((int, const regex_t *, char *, size_t));
-int	regexec __P((const regex_t *,
-	    const char *, size_t, regmatch_t [], int));
-void	regfree __P((regex_t *));
+int	regcomp(regex_t *, const char *, int);
+size_t	regerror(int, const regex_t *, char *, size_t);
+int	regexec(const regex_t *, const char *, size_t, regmatch_t [], int);
+void	regfree(regex_t *);
 __END_DECLS
 
 #endif /* !_REGEX_H_ */

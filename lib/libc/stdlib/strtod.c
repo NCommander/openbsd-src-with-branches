@@ -90,12 +90,13 @@
  */
 
 #if defined(LIBC_SCCS) && !defined(lint)
-static char *rcsid = "$Id: strtod.c,v 1.19 1994/12/23 22:50:19 jtc Exp $";
+static char *rcsid = "$OpenBSD: strtod.c,v 1.14 2001/07/09 06:57:45 deraadt Exp $";
 #endif /* LIBC_SCCS and not lint */
 
 #if defined(__m68k__) || defined(__sparc__) || defined(__i386__) || \
-    defined(__mips__) || defined(__ns32k__) || defined(__alpha__)
-#include <machine/endian.h>
+    defined(__mips__) || defined(__ns32k__) || defined(__alpha__) || \
+    defined(__powerpc__) || defined(__m88k__) || defined(__hppa__)
+#include <sys/types.h>
 #if BYTE_ORDER == BIG_ENDIAN
 #define IEEE_BIG_ENDIAN
 #else
@@ -103,7 +104,16 @@ static char *rcsid = "$Id: strtod.c,v 1.19 1994/12/23 22:50:19 jtc Exp $";
 #endif
 #endif
 
-#ifdef vax
+#ifdef __arm32__
+/*
+ * Although the CPU is little endian the FP has different
+ * byte and word endianness. The byte order is still little endian
+ * but the word order is big endian.
+ */
+#define IEEE_BIG_ENDIAN
+#endif
+
+#ifdef __vax__
 #define VAX
 #endif
 
@@ -143,7 +153,6 @@ extern void *MALLOC(size_t);
 #include "errno.h"
 
 #ifdef Bad_float_h
-#undef __STDC__
 #ifdef IEEE_BIG_ENDIAN
 #define IEEE_ARITHMETIC
 #endif
@@ -212,19 +221,24 @@ Exactly one of IEEE_LITTLE_ENDIAN IEEE_BIG_ENDIAN, VAX, or
 IBM should be defined.
 #endif
 
+typedef union {
+	double d;
+	ULong ul[2];
+} _double;
+#define value(x) ((x).d)
 #ifdef IEEE_LITTLE_ENDIAN
-#define word0(x) ((ULong *)&x)[1]
-#define word1(x) ((ULong *)&x)[0]
+#define word0(x) ((x).ul[1])
+#define word1(x) ((x).ul[0])
 #else
-#define word0(x) ((ULong *)&x)[0]
-#define word1(x) ((ULong *)&x)[1]
+#define word0(x) ((x).ul[0])
+#define word1(x) ((x).ul[1])
 #endif
 
 /* The following definition of Storeinc is appropriate for MIPS processors.
  * An alternative that might be better on some machines is
  * #define Storeinc(a,b,c) (*a++ = b << 16 | c & 0xffff)
  */
-#if defined(IEEE_LITTLE_ENDIAN) + defined(VAX)
+#if defined(IEEE_LITTLE_ENDIAN) + defined(VAX) + defined(__arm32__)
 #define Storeinc(a,b,c) (((unsigned short *)a)[1] = (unsigned short)b, \
 ((unsigned short *)a)[0] = (unsigned short)c, a++)
 #else
@@ -380,7 +394,7 @@ Balloc
 	int x;
 	Bigint *rv;
 
-	if (rv = freelist[k]) {
+	if ((rv = freelist[k])) {
 		freelist[k] = rv->next;
 		}
 	else {
@@ -628,7 +642,7 @@ mult
 	xc0 = c->x;
 #ifdef Pack_32
 	for(; xb < xbe; xb++, xc0++) {
-		if (y = *xb & 0xffff) {
+		if ((y = *xb & 0xffff)) {
 			x = xa;
 			xc = xc0;
 			carry = 0;
@@ -642,7 +656,7 @@ mult
 				while(x < xae);
 			*xc = carry;
 			}
-		if (y = *xb >> 16) {
+		if ((y = *xb >> 16)) {
 			x = xa;
 			xc = xc0;
 			carry = 0;
@@ -693,7 +707,7 @@ pow5mult
 	int i;
 	static int p05[3] = { 5, 25, 125 };
 
-	if (i = k & 3)
+	if ((i = k & 3))
 		b = multadd(b, p05[i-1], 0);
 
 	if (!(k >>= 2))
@@ -756,7 +770,7 @@ lshift
 			z = *x++ >> k1;
 			}
 			while(x < xe);
-		if (*x1 = z)
+		if ((*x1 = z))
 			++n1;
 		}
 #else
@@ -899,14 +913,16 @@ diff
  static double
 ulp
 #ifdef KR_headers
-	(x) double x;
+	(_x) double _x;
 #else
-	(double x)
+	(double _x)
 #endif
 {
+	_double x;
 	register Long L;
-	double a;
+	_double a;
 
+	value(x) = _x;
 	L = (word0(x) & Exp_mask) - (P-1)*Exp_msk1;
 #ifndef Sudden_Underflow
 	if (L > 0) {
@@ -931,7 +947,7 @@ ulp
 			}
 		}
 #endif
-	return a;
+	return value(a);
 	}
 
  static double
@@ -944,7 +960,7 @@ b2d
 {
 	ULong *xa, *xa0, w, y, z;
 	int k;
-	double d;
+	_double d;
 #ifdef VAX
 	ULong d0, d1;
 #else
@@ -1001,22 +1017,27 @@ b2d
 #undef d0
 #undef d1
 #endif
-	return d;
+	return value(d);
 	}
 
  static Bigint *
 d2b
 #ifdef KR_headers
-	(d, e, bits) double d; int *e, *bits;
+	(_d, e, bits) double d; int *e, *bits;
 #else
-	(double d, int *e, int *bits)
+	(double _d, int *e, int *bits)
 #endif
 {
 	Bigint *b;
 	int de, i, k;
 	ULong *x, y, z;
+	_double d;
 #ifdef VAX
 	ULong d0, d1;
+#endif
+
+	value(d) = _d;
+#ifdef VAX
 	d0 = word0(d) >> 16 | word0(d) << 16;
 	d1 = word1(d) >> 16 | word1(d) << 16;
 #else
@@ -1141,11 +1162,11 @@ ratio
 	(Bigint *a, Bigint *b)
 #endif
 {
-	double da, db;
+	_double da, db;
 	int k, ka, kb;
 
-	da = b2d(a, &ka);
-	db = b2d(b, &kb);
+	value(da) = b2d(a, &ka);
+	value(db) = b2d(b, &kb);
 #ifdef Pack_32
 	k = ka - kb + 32*(a->wds - b->wds);
 #else
@@ -1171,7 +1192,7 @@ ratio
 		word0(db) += k*Exp_msk1;
 		}
 #endif
-	return da / db;
+	return value(da) / value(db);
 	}
 
 static CONST double
@@ -1211,7 +1232,8 @@ strtod
 	int bb2, bb5, bbe, bd2, bd5, bbbits, bs2, c, dsign,
 		 e, e1, esign, i, j, k, nd, nd0, nf, nz, nz0, sign;
 	CONST char *s, *s0, *s1;
-	double aadj, aadj1, adj, rv, rv0;
+	double aadj, aadj1, adj;
+	_double rv, rv0;
 	Long L;
 	ULong y, z;
 	Bigint *bb, *bb1, *bd, *bd0, *bs, *delta;
@@ -1223,10 +1245,10 @@ strtod
 #endif
 
 	sign = nz0 = nz = 0;
-	rv = 0.;
+	value(rv) = 0.;
 
 
-	for(s = s00; isspace(*s); s++)
+	for(s = s00; isspace((unsigned char) *s); s++)
 		;
 
 	if (*s == '-') {
@@ -1340,9 +1362,9 @@ strtod
 	if (!nd0)
 		nd0 = nd;
 	k = nd < DBL_DIG + 1 ? nd : DBL_DIG + 1;
-	rv = y;
+	value(rv) = y;
 	if (k > 9)
-		rv = tens[k - 9] * rv + z;
+		value(rv) = tens[k - 9] * value(rv) + z;
 	bd0 = 0;
 	if (nd <= DBL_DIG
 #ifndef RND_PRODQUOT
@@ -1356,7 +1378,8 @@ strtod
 #ifdef VAX
 				goto vax_ovfl_check;
 #else
-				/* rv = */ rounded_product(rv, tens[e]);
+				/* value(rv) = */ rounded_product(value(rv),
+				    tens[e]);
 				goto ret;
 #endif
 				}
@@ -1366,27 +1389,30 @@ strtod
 				 * this for larger i values.
 				 */
 				e -= i;
-				rv *= tens[i];
+				value(rv) *= tens[i];
 #ifdef VAX
 				/* VAX exponent range is so narrow we must
 				 * worry about overflow here...
 				 */
  vax_ovfl_check:
 				word0(rv) -= P*Exp_msk1;
-				/* rv = */ rounded_product(rv, tens[e]);
+				/* value(rv) = */ rounded_product(value(rv),
+				    tens[e]);
 				if ((word0(rv) & Exp_mask)
 				 > Exp_msk1*(DBL_MAX_EXP+Bias-1-P))
 					goto ovfl;
 				word0(rv) += P*Exp_msk1;
 #else
-				/* rv = */ rounded_product(rv, tens[e]);
+				/* value(rv) = */ rounded_product(value(rv),
+				    tens[e]);
 #endif
 				goto ret;
 				}
 			}
 #ifndef Inaccurate_Divide
 		else if (e >= -Ten_pmax) {
-			/* rv = */ rounded_quotient(rv, tens[-e]);
+			/* value(rv) = */ rounded_quotient(value(rv),
+			    tens[-e]);
 			goto ret;
 			}
 #endif
@@ -1397,13 +1423,13 @@ strtod
 
 	if (e1 > 0) {
 		if (i = e1 & 15)
-			rv *= tens[i];
+			value(rv) *= tens[i];
 		if (e1 &= ~15) {
 			if (e1 > DBL_MAX_10_EXP) {
  ovfl:
 				errno = ERANGE;
-#ifdef __STDC__
-				rv = HUGE_VAL;
+#ifndef Bad_float_h
+				value(rv) = HUGE_VAL;
 #else
 				/* Can't trust HUGE_VAL */
 #ifdef IEEE_Arith
@@ -1421,10 +1447,10 @@ strtod
 			if (e1 >>= 4) {
 				for(j = 0; e1 > 1; j++, e1 >>= 1)
 					if (e1 & 1)
-						rv *= bigtens[j];
+						value(rv) *= bigtens[j];
 			/* The last multiplication could overflow. */
 				word0(rv) -= P*Exp_msk1;
-				rv *= bigtens[j];
+				value(rv) *= bigtens[j];
 				if ((z = word0(rv) & Exp_mask)
 				 > Exp_msk1*(DBL_MAX_EXP+Bias-P))
 					goto ovfl;
@@ -1443,23 +1469,23 @@ strtod
 	else if (e1 < 0) {
 		e1 = -e1;
 		if (i = e1 & 15)
-			rv /= tens[i];
+			value(rv) /= tens[i];
 		if (e1 &= ~15) {
 			e1 >>= 4;
 			if (e1 >= 1 << n_bigtens)
 				goto undfl;
 			for(j = 0; e1 > 1; j++, e1 >>= 1)
 				if (e1 & 1)
-					rv *= tinytens[j];
+					value(rv) *= tinytens[j];
 			/* The last multiplication could underflow. */
-			rv0 = rv;
-			rv *= tinytens[j];
-			if (!rv) {
-				rv = 2.*rv0;
-				rv *= tinytens[j];
-				if (!rv) {
+			value(rv0) = value(rv);
+			value(rv) *= tinytens[j];
+			if (!value(rv)) {
+				value(rv) = 2.*value(rv0);
+				value(rv) *= tinytens[j];
+				if (!value(rv)) {
  undfl:
-					rv = 0.;
+					value(rv) = 0.;
 					errno = ERANGE;
 					if (bd0)
 						goto retfree;
@@ -1483,7 +1509,7 @@ strtod
 	for(;;) {
 		bd = Balloc(bd0->k);
 		Bcopy(bd, bd0);
-		bb = d2b(rv, &bbe, &bbbits);	/* rv = bb * 2^bbe */
+		bb = d2b(value(rv), &bbe, &bbbits);	/* rv = bb * 2^bbe */
 		bs = i2b(1);
 
 		if (e >= 0) {
@@ -1595,12 +1621,12 @@ strtod
 				break;
 #endif
 			if (dsign)
-				rv += ulp(rv);
+				value(rv) += ulp(value(rv));
 #ifndef ROUND_BIASED
 			else {
-				rv -= ulp(rv);
+				value(rv) -= ulp(value(rv));
 #ifndef Sudden_Underflow
-				if (!rv)
+				if (!value(rv))
 					goto undfl;
 #endif
 				}
@@ -1651,10 +1677,10 @@ strtod
 		/* Check for overflow */
 
 		if (y == Exp_msk1*(DBL_MAX_EXP+Bias-1)) {
-			rv0 = rv;
+			value(rv0) = value(rv);
 			word0(rv) -= P*Exp_msk1;
-			adj = aadj1 * ulp(rv);
-			rv += adj;
+			adj = aadj1 * ulp(value(rv));
+			value(rv) += adj;
 			if ((word0(rv) & Exp_mask) >=
 					Exp_msk1*(DBL_MAX_EXP+Bias-P)) {
 				if (word0(rv0) == Big0 && word1(rv0) == Big1)
@@ -1669,10 +1695,10 @@ strtod
 		else {
 #ifdef Sudden_Underflow
 			if ((word0(rv) & Exp_mask) <= P*Exp_msk1) {
-				rv0 = rv;
+				value(rv0) = value(rv);
 				word0(rv) += P*Exp_msk1;
-				adj = aadj1 * ulp(rv);
-				rv += adj;
+				adj = aadj1 * ulp(value(rv));
+				value(rv) += adj;
 #ifdef IBM
 				if ((word0(rv) & Exp_mask) <  P*Exp_msk1)
 #else
@@ -1690,8 +1716,8 @@ strtod
 					word0(rv) -= P*Exp_msk1;
 				}
 			else {
-				adj = aadj1 * ulp(rv);
-				rv += adj;
+				adj = aadj1 * ulp(value(rv));
+				value(rv) += adj;
 				}
 #else
 			/* Compute adj so that the IEEE rounding rules will
@@ -1706,8 +1732,8 @@ strtod
 				if (!dsign)
 					aadj1 = -aadj1;
 				}
-			adj = aadj1 * ulp(rv);
-			rv += adj;
+			adj = aadj1 * ulp(value(rv));
+			value(rv) += adj;
 #endif
 			}
 		z = word0(rv) & Exp_mask;
@@ -1738,7 +1764,7 @@ strtod
  ret:
 	if (se)
 		*se = (char *)s;
-	return sign ? -rv : rv;
+	return sign ? -value(rv) : value(rv);
 	}
 
  static int
@@ -1884,10 +1910,10 @@ quorem
  char *
 __dtoa
 #ifdef KR_headers
-	(d, mode, ndigits, decpt, sign, rve)
-	double d; int mode, ndigits, *decpt, *sign; char **rve;
+	(_d, mode, ndigits, decpt, sign, rve)
+	double _d; int mode, ndigits, *decpt, *sign; char **rve;
 #else
-	(double d, int mode, int ndigits, int *decpt, int *sign, char **rve)
+	(double _d, int mode, int ndigits, int *decpt, int *sign, char **rve)
 #endif
 {
  /*	Arguments ndigits, decpt, sign are similar to those
@@ -1933,11 +1959,13 @@ __dtoa
 	ULong x;
 #endif
 	Bigint *b, *b1, *delta, *mlo, *mhi, *S;
-	double d2, ds, eps;
+	double ds;
 	char *s, *s0;
 	static Bigint *result;
 	static int result_k;
+	_double d, d2, eps;
 
+	value(d) = _d;
 	if (result) {
 		result->k = result_k;
 		result->maxwds = 1 << result_k;
@@ -1977,9 +2005,9 @@ __dtoa
 		}
 #endif
 #ifdef IBM
-	d += 0; /* normalize */
+	value(d) += 0; /* normalize */
 #endif
-	if (!d) {
+	if (!value(d)) {
 		*decpt = 1;
 		s = "0";
 		if (rve)
@@ -1987,18 +2015,18 @@ __dtoa
 		return s;
 		}
 
-	b = d2b(d, &be, &bbits);
+	b = d2b(value(d), &be, &bbits);
 #ifdef Sudden_Underflow
 	i = (int)(word0(d) >> Exp_shift1 & (Exp_mask>>Exp_shift1));
 #else
 	if (i = (int)(word0(d) >> Exp_shift1 & (Exp_mask>>Exp_shift1))) {
 #endif
-		d2 = d;
+		value(d2) = value(d);
 		word0(d2) &= Frac_mask1;
 		word0(d2) |= Exp_11;
 #ifdef IBM
 		if (j = 11 - hi0bits(word0(d2) & Frac_mask))
-			d2 /= 1 << j;
+			value(d2) /= 1 << j;
 #endif
 
 		/* log(x)	~=~ log(1.5) + (x-1.5)/1.5
@@ -2037,19 +2065,20 @@ __dtoa
 		i = bbits + be + (Bias + (P-1) - 1);
 		x = i > 32  ? word0(d) << 64 - i | word1(d) >> i - 32
 			    : word1(d) << 32 - i;
-		d2 = x;
+		value(d2) = x;
 		word0(d2) -= 31*Exp_msk1; /* adjust exponent */
 		i -= (Bias + (P-1) - 1) + 1;
 		denorm = 1;
 		}
 #endif
-	ds = (d2-1.5)*0.289529654602168 + 0.1760912590558 + i*0.301029995663981;
+	ds = (value(d2)-1.5)*0.289529654602168 + 0.1760912590558 +
+	    i*0.301029995663981;
 	k = (int)ds;
 	if (ds < 0. && ds != k)
 		k--;	/* want k = floor(ds) */
 	k_check = 1;
 	if (k >= 0 && k <= Ten_pmax) {
-		if (d < tens[k])
+		if (value(d) < tens[k])
 			k--;
 		k_check = 0;
 		}
@@ -2116,7 +2145,7 @@ __dtoa
 		/* Try to get by with floating-point arithmetic. */
 
 		i = 0;
-		d2 = d;
+		value(d2) = value(d);
 		k0 = k;
 		ilim0 = ilim;
 		ieps = 2; /* conservative */
@@ -2126,7 +2155,7 @@ __dtoa
 			if (j & Bletch) {
 				/* prevent overflows */
 				j &= Bletch - 1;
-				d /= bigtens[n_bigtens-1];
+				value(d) /= bigtens[n_bigtens-1];
 				ieps++;
 				}
 			for(; j; j >>= 1, i++)
@@ -2134,32 +2163,32 @@ __dtoa
 					ieps++;
 					ds *= bigtens[i];
 					}
-			d /= ds;
+			value(d) /= ds;
 			}
 		else if (j1 = -k) {
-			d *= tens[j1 & 0xf];
+			value(d) *= tens[j1 & 0xf];
 			for(j = j1 >> 4; j; j >>= 1, i++)
 				if (j & 1) {
 					ieps++;
-					d *= bigtens[i];
+					value(d) *= bigtens[i];
 					}
 			}
-		if (k_check && d < 1. && ilim > 0) {
+		if (k_check && value(d) < 1. && ilim > 0) {
 			if (ilim1 <= 0)
 				goto fast_failed;
 			ilim = ilim1;
 			k--;
-			d *= 10.;
+			value(d) *= 10.;
 			ieps++;
 			}
-		eps = ieps*d + 7.;
+		value(eps) = ieps*value(d) + 7.;
 		word0(eps) -= (P-1)*Exp_msk1;
 		if (ilim == 0) {
 			S = mhi = 0;
-			d -= 5.;
-			if (d > eps)
+			value(d) -= 5.;
+			if (value(d) > value(eps))
 				goto one_digit;
-			if (d < -eps)
+			if (value(d) < -value(eps))
 				goto no_digits;
 			goto fast_failed;
 			}
@@ -2168,33 +2197,33 @@ __dtoa
 			/* Use Steele & White method of only
 			 * generating digits needed.
 			 */
-			eps = 0.5/tens[ilim-1] - eps;
+			value(eps) = 0.5/tens[ilim-1] - value(eps);
 			for(i = 0;;) {
-				L = d;
-				d -= L;
+				L = value(d);
+				value(d) -= L;
 				*s++ = '0' + (int)L;
-				if (d < eps)
+				if (value(d) < value(eps))
 					goto ret1;
-				if (1. - d < eps)
+				if (1. - value(d) < value(eps))
 					goto bump_up;
 				if (++i >= ilim)
 					break;
-				eps *= 10.;
-				d *= 10.;
+				value(eps) *= 10.;
+				value(d) *= 10.;
 				}
 			}
 		else {
 #endif
 			/* Generate ilim digits, then fix them up. */
-			eps *= tens[ilim-1];
-			for(i = 1;; i++, d *= 10.) {
-				L = d;
-				d -= L;
+			value(eps) *= tens[ilim-1];
+			for(i = 1;; i++, value(d) *= 10.) {
+				L = value(d);
+				value(d) -= L;
 				*s++ = '0' + (int)L;
 				if (i == ilim) {
-					if (d > 0.5 + eps)
+					if (value(d) > 0.5 + value(eps))
 						goto bump_up;
-					else if (d < 0.5 - eps) {
+					else if (value(d) < 0.5 - value(eps)) {
 						while(*--s == '0');
 						s++;
 						goto ret1;
@@ -2207,7 +2236,7 @@ __dtoa
 #endif
  fast_failed:
 		s = s0;
-		d = d2;
+		value(d) = value(d2);
 		k = k0;
 		ilim = ilim0;
 		}
@@ -2219,24 +2248,24 @@ __dtoa
 		ds = tens[k];
 		if (ndigits < 0 && ilim <= 0) {
 			S = mhi = 0;
-			if (ilim < 0 || d <= 5*ds)
+			if (ilim < 0 || value(d) <= 5*ds)
 				goto no_digits;
 			goto one_digit;
 			}
 		for(i = 1;; i++) {
-			L = d / ds;
-			d -= L*ds;
+			L = value(d) / ds;
+			value(d) -= L*ds;
 #ifdef Check_FLT_ROUNDS
 			/* If FLT_ROUNDS == 2, L will usually be high by 1 */
-			if (d < 0) {
+			if (value(d) < 0) {
 				L--;
-				d += ds;
+				value(d) += ds;
 				}
 #endif
 			*s++ = '0' + (int)L;
 			if (i == ilim) {
-				d += d;
-				if (d > ds || d == ds && L & 1) {
+				value(d) += value(d);
+				if (value(d) > ds || value(d) == ds && L & 1) {
  bump_up:
 					while(*--s == '9')
 						if (s == s0) {
@@ -2248,7 +2277,7 @@ __dtoa
 					}
 				break;
 				}
-			if (!(d *= 10.))
+			if (!(value(d) *= 10.))
 				break;
 			}
 		goto ret1;

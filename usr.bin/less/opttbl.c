@@ -1,3 +1,5 @@
+/*	$OpenBSD: opttbl.c,v 1.4 2001/01/29 01:58:03 niklas Exp $	*/
+
 /*
  * Copyright (c) 1984,1985,1989,1994,1995  Mark Nudelman
  * All rights reserved.
@@ -43,6 +45,7 @@ public int pr_type;		/* Type of prompt (short, medium, long) */
 public int bs_mode;		/* How to process backspaces */
 public int know_dumb;		/* Don't complain about dumb terminals */
 public int quit_at_eof;		/* Quit after hitting end of file twice */
+public int be_helpful;		/* more(1) style -d */
 public int squeeze;		/* Squeeze multiple blank lines into one */
 public int tabstop;		/* Tab settings */
 public int back_scroll;		/* Repaint screen on backwards movement */
@@ -88,11 +91,19 @@ static struct option option[] =
 		"Repaint by clearing each line",
 		"Repaint by painting from top of screen"
 	},
+#if 0
 	{ 'd', BOOL|NO_TOGGLE, OPT_OFF, &know_dumb, NULL,
 		"Assume intelligent terminal",
 		"Assume dumb terminal",
 		NULL
 	},
+#else
+	{ 'd', BOOL, OPT_OFF, &be_helpful, NULL,
+		"Be less helpful in prompts",
+		"Be helpful in prompts",
+		NULL,
+	},
+#endif
 #if MSOFTC
 	{ 'D', STRING|REPAINT, 0, NULL, opt_D,
 		"color desc: ", NULL, NULL
@@ -241,7 +252,7 @@ static struct option option[] =
 	public void
 init_option()
 {
-	register struct option *o;
+	struct option *o;
 
 	for (o = option;  o->oletter != '\0';  o++)
 	{
@@ -260,7 +271,7 @@ init_option()
 findopt(c)
 	int c;
 {
-	register struct option *o;
+	struct option *o;
 
 	for (o = option;  o->oletter != '\0';  o++)
 	{

@@ -1,4 +1,5 @@
 /*	$NetBSD: spec.c,v 1.6 1995/03/07 21:12:12 cgd Exp $	*/
+/*	$OpenBSD: spec.c,v 1.15 2002/03/14 16:44:25 mpech Exp $	*/
 
 /*-
  * Copyright (c) 1989, 1993
@@ -35,9 +36,9 @@
 
 #ifndef lint
 #if 0
-static char sccsid[] = "@(#)spec.c	8.1 (Berkeley) 6/6/93";
+static const char sccsid[] = "@(#)spec.c	8.1 (Berkeley) 6/6/93";
 #else
-static char rcsid[] = "$NetBSD: spec.c,v 1.6 1995/03/07 21:12:12 cgd Exp $";
+static const char rcsid[] = "$OpenBSD: spec.c,v 1.15 2002/03/14 16:44:25 mpech Exp $";
 #endif
 #endif /* not lint */
 
@@ -50,24 +51,25 @@ static char rcsid[] = "$NetBSD: spec.c,v 1.6 1995/03/07 21:12:12 cgd Exp $";
 #include <unistd.h>
 #include <stdio.h>
 #include <ctype.h>
+#include <vis.h>
 #include "mtree.h"
 #include "extern.h"
 
 int lineno;				/* Current spec line number. */
 
-static void	 set __P((char *, NODE *));
-static void	 unset __P((char *, NODE *));
+static void	 set(char *, NODE *);
+static void	 unset(char *, NODE *);
 
 NODE *
 spec()
 {
-	register NODE *centry, *last;
-	register char *p;
+	NODE *centry, *last;
+	char *p;
 	NODE ginfo, *root;
 	int c_cur, c_next;
 	char buf[2048];
 
-	root = NULL;
+	centry = last = root = NULL;
 	bzero(&ginfo, sizeof(ginfo));
 	c_cur = c_next = 0;
 	for (lineno = 1; fgets(buf, sizeof(buf), stdin);
@@ -77,8 +79,8 @@ spec()
 			continue;
 
 		/* Find end of line. */
-		if ((p = index(buf, '\n')) == NULL)
-			err("line %d too long", lineno);
+		if ((p = strchr(buf, '\n')) == NULL)
+			error("line %d too long", lineno);
 
 		/* See if next line is continuation line. */
 		if (p[-1] == '\\') {
@@ -106,7 +108,7 @@ spec()
 			
 		/* Grab file name, "$", "set", or "unset". */
 		if ((p = strtok(p, "\n\t ")) == NULL)
-			err("missing field");
+			error("missing field");
 
 		if (p[0] == '/')
 			switch(p[1]) {
@@ -122,8 +124,8 @@ spec()
 				continue;
 			}
 
-		if (index(p, '/'))
-			err("slash character in file name");
+		if (strchr(p, '/'))
+			error("slash character in file name");
 
 		if (!strcmp(p, "..")) {
 			/* Don't go up, if haven't gone down. */
@@ -137,16 +139,20 @@ spec()
 			last->flags |= F_DONE;
 			continue;
 
-noparent:		err("no parent node");
+noparent:		error("no parent node");
 		}
 
 		if ((centry = calloc(1, sizeof(NODE) + strlen(p))) == NULL)
-			err("%s", strerror(errno));
+			error("%s", strerror(errno));
 		*centry = ginfo;
-		(void)strcpy(centry->name, p);
 #define	MAGIC	"?*["
 		if (strpbrk(p, MAGIC))
 			centry->flags |= F_MAGIC;
+		if (strunvis(centry->name, p) == -1) {
+			fprintf(stderr,
+			    "mtree: filename (%s) encoded incorrectly\n", p);
+			strcpy(centry->name, p);
+		}
 		set(NULL, centry);
 
 		if (!root) {
@@ -167,34 +173,49 @@ noparent:		err("no parent node");
 static void
 set(t, ip)
 	char *t;
-	register NODE *ip;
+	NODE *ip;
 {
-	register int type;
-	register char *kw, *val;
+	int type;
+	char *kw, *val = NULL;
 	struct group *gr;
 	struct passwd *pw;
 	mode_t *m;
 	int value;
+	u_int32_t fset, fclr;
 	char *ep;
 
-	for (; kw = strtok(t, "= \t\n"); t = NULL) {
+	for (; (kw = strtok(t, "= \t\n")); t = NULL) {
 		ip->flags |= type = parsekey(kw, &value);
 		if (value && (val = strtok(NULL, " \t\n")) == NULL)
-			err("missing value");
+			error("missing value");
 		switch(type) {
 		case F_CKSUM:
 			ip->cksum = strtoul(val, &ep, 10);
 			if (*ep)
-				err("invalid checksum %s", val);
+				error("invalid checksum %s", val);
 			break;
+		case F_MD5:
+			ip->md5digest = strdup(val);
+			if (!ip->md5digest)
+				error("%s", strerror(errno));
+			break;
+		case F_FLAGS:
+			if (!strcmp(val, "none")) {
+				ip->file_flags = 0;
+				break;
+			}
+			if (strtofflags(&val, &fset, &fclr))
+				error("%s", strerror(errno));
+			ip->file_flags = fset;
+			break; 
 		case F_GID:
 			ip->st_gid = strtoul(val, &ep, 10);
 			if (*ep)
-				err("invalid gid %s", val);
+				error("invalid gid %s", val);
 			break;
 		case F_GNAME:
 			if ((gr = getgrnam(val)) == NULL)
-			    err("unknown group %s", val);
+			    error("unknown group %s", val);
 			ip->st_gid = gr->gr_gid;
 			break;
 		case F_IGN:
@@ -202,31 +223,47 @@ set(t, ip)
 			break;
 		case F_MODE:
 			if ((m = setmode(val)) == NULL)
-				err("invalid file mode %s", val);
+				error("invalid file mode %s", val);
 			ip->st_mode = getmode(m, 0);
+			free(m);
 			break;
 		case F_NLINK:
 			ip->st_nlink = strtoul(val, &ep, 10);
 			if (*ep)
-				err("invalid link count %s", val);
+				error("invalid link count %s", val);
+			break;
+		case F_RMD160:
+			ip->rmd160digest = strdup(val);
+			if (!ip->rmd160digest)
+				error("%s", strerror(errno));
+			break;
+		case F_SHA1:
+			ip->sha1digest = strdup(val);
+			if (!ip->sha1digest)
+				error("%s", strerror(errno));
 			break;
 		case F_SIZE:
 			ip->st_size = strtouq(val, &ep, 10);
 			if (*ep)
-				err("invalid size %s", val);
+				error("invalid size %s", val);
 			break;
 		case F_SLINK:
-			if ((ip->slink = strdup(val)) == NULL)
-				err("%s", strerror(errno));
+			if ((ip->slink = malloc(strlen(val) + 1)) == NULL)
+				error("%s", strerror(errno));
+			if (strunvis(ip->slink, val) == -1) {
+				fprintf(stderr,
+				    "mtree: filename (%s) encoded incorrectly\n", val);
+				strcpy(ip->slink, val);
+			}
 			break;
 		case F_TIME:
-			ip->st_mtimespec.ts_sec = strtoul(val, &ep, 10);
+			ip->st_mtimespec.tv_sec = strtoul(val, &ep, 10);
 			if (*ep != '.')
-				err("invalid time %s", val);
+				error("invalid time %s", val);
 			val = ep + 1;
-			ip->st_mtimespec.ts_nsec = strtoul(val, &ep, 10);
+			ip->st_mtimespec.tv_nsec = strtoul(val, &ep, 10);
 			if (*ep)
-				err("invalid time %s", val);
+				error("invalid time %s", val);
 			break;
 		case F_TYPE:
 			switch(*val) {
@@ -257,17 +294,17 @@ set(t, ip)
 					ip->type = F_SOCK;
 				break;
 			default:
-				err("unknown file type %s", val);
+				error("unknown file type %s", val);
 			}
 			break;
 		case F_UID:
 			ip->st_uid = strtoul(val, &ep, 10);
 			if (*ep)
-				err("invalid uid %s", val);
+				error("invalid uid %s", val);
 			break;
 		case F_UNAME:
 			if ((pw = getpwnam(val)) == NULL)
-			    err("unknown user %s", val);
+			    error("unknown user %s", val);
 			ip->st_uid = pw->pw_uid;
 			break;
 		}
@@ -277,10 +314,10 @@ set(t, ip)
 static void
 unset(t, ip)
 	char *t;
-	register NODE *ip;
+	NODE *ip;
 {
-	register char *p;
+	char *p;
 
-	while (p = strtok(t, "\n\t "))
+	while ((p = strtok(t, "\n\t ")))
 		ip->flags &= ~parsekey(p, NULL);
 }

@@ -1,5 +1,4 @@
-/*	$OpenBSD$	*/
-/*	$NOWHERE: exec_hppa.c,v 2.2 1998/06/22 19:34:46 mickey Exp $	*/
+/*	$OpenBSD: exec_hppa.c,v 1.7 1999/05/06 02:13:15 mickey Exp $	*/
 
 /*
  * Copyright (c) 1998 Michael Shalayeff
@@ -41,24 +40,51 @@
 #include <stand/boot/bootarg.h>
 #include <sys/disklabel.h>
 #include "libsa.h"
+#include <lib/libsa/exec.h>
 
-#define round_to_size(x) (((int)(x) + sizeof(int) - 1) & ~(sizeof(int) - 1))
+#include <machine/pdc.h>
+#include "dev_hppa.h"
 
-typedef void (*startfuncp) __P((int, int, int, caddr_t))
+typedef void (*startfuncp)(int, int, int, int, int, int, caddr_t)
     __attribute__ ((noreturn));
 
 void
-machdep_start(startaddr, howto, loadaddr, ssym, esym)
-	char *startaddr, *loadaddr, *ssym, *esym;
+machdep_exec(xp, howto, loadaddr)
+	struct x_param *xp;
 	int howto;
+	void *loadaddr;
 {
+#ifdef EXEC_DEBUG
+	extern int debug;
+	register int i;
+#endif
 	size_t ac = BOOTARG_LEN;
 	caddr_t av = (caddr_t)BOOTARG_OFF;
+#ifdef notyet
 	makebootargs(av, &ac);
+#endif
+
+#ifdef EXEC_DEBUG
+	if (debug) {
+		printf("ep=0x%x [", xp->xp_entry);
+		for (i = 0; i < 10240; i++) {
+			if (!(i % 8)) {
+				printf("\b\n%p:", &((u_int *)xp->xp_entry)[i]);
+				if (getchar() != ' ')
+					break;
+			}
+			printf("%x,", ((int *)xp->xp_entry)[i]);
+		}
+		printf("\b\b ]\n");
+	}
+#endif
 
 	fcacheall();
 
+	__asm("mtctl %r0, %cr17");
+	__asm("mtctl %r0, %cr17");
 	/* stack and the gung is ok at this point, so, no need for asm setup */
-	(*(startfuncp)startaddr)(BOOTARG_APIVER, round_to_size(esym), ac, av);
+	(*(startfuncp)(xp->xp_entry)) ((int)pdc, howto, bootdev, xp->xp_end,
+				       BOOTARG_APIVER, ac, av);
 	/* not reached */
 }

@@ -1,3 +1,4 @@
+/*	$OpenBSD: support.c,v 1.4 1999/11/29 06:42:20 millert Exp $	*/
 /*	$NetBSD: support.c,v 1.3 1995/03/21 15:08:59 cgd Exp $	*/
 
 /*-
@@ -37,7 +38,7 @@
 #if 0
 static char sccsid[] = "@(#)support.c	8.1 (Berkeley) 5/31/93";
 #else
-static char rcsid[] = "$NetBSD: support.c,v 1.3 1995/03/21 15:08:59 cgd Exp $";
+static char rcsid[] = "$OpenBSD: support.c,v 1.4 1999/11/29 06:42:20 millert Exp $";
 #endif
 #endif /* not lint */
 
@@ -62,7 +63,7 @@ cchose(h, n, s)
 	CARD h[];
 	int n, s;
 {
-	register int i, j, l;
+	int i, j, l;
 
 	if (n <= 1)
 		return (0);
@@ -132,8 +133,8 @@ plyrhand(hand, s)
 	char   *s;
 {
 	static char prompt[BUFSIZ];
-	register int i, j;
-	register BOOLEAN win;
+	int i, j;
+	bool win;
 
 	prhand(hand, CINHAND, Playwin, FALSE);
 	(void) sprintf(prompt, "Your %s scores ", s);
@@ -143,12 +144,18 @@ plyrhand(hand, s)
 	if (i != j) {
 		if (i < j) {
 			win = chkscr(&pscore, i);
-			msg("It's really only %d points; I get %d", i, 2);
-			if (!win)
+			if (!win) {
+				msg("It's really only %d points; I get %d", i, 2);
 				win = chkscr(&cscore, 2);
+			} else
+				msg("It's really only %d points.", i);
 		} else {
 			win = chkscr(&pscore, j);
 			msg("You should have taken %d, not %d!", i, j);
+			if (!win && muggins) {
+				msg("Muggins!  I score %d", i - j);
+				win = chkscr(&cscore, i - j);
+			}
 		}
 		if (explain)
 			msg("Explanation: %s", expl);
@@ -167,7 +174,7 @@ comphand(h, s)
 	CARD h[];
 	char *s;
 {
-	register int j;
+	int j;
 
 	j = scorehand(h, turnover, CINHAND, strcmp(s, "crib") == 0, FALSE);
 	prhand(h, CINHAND, Compwin, FALSE);
@@ -186,12 +193,12 @@ int
 chkscr(scr, inc)
 	int    *scr, inc;
 {
-	BOOLEAN myturn;
+	bool myturn;
 
 	myturn = (scr == &cscore);
 	if (inc != 0) {
-		prpeg(Lastscore[myturn], '.', myturn);
-		Lastscore[myturn] = *scr;
+		prpeg(Lastscore[(int)myturn], '.', myturn);
+		Lastscore[(int)myturn] = *scr;
 		*scr += inc;
 		prpeg(*scr, PEG, myturn);
 		refresh();
@@ -206,11 +213,11 @@ chkscr(scr, inc)
  */
 void
 prpeg(score, peg, myturn)
-	register int score;
+	int score;
 	int peg;
-	BOOLEAN myturn;
+	bool myturn;
 {
-	register int y, x;
+	int y, x;
 
 	if (!myturn)
 		y = SCORE_Y + 2;
@@ -245,10 +252,10 @@ prpeg(score, peg, myturn)
  */
 void
 cdiscard(mycrib)
-	BOOLEAN mycrib;
+	bool mycrib;
 {
 	CARD    d[CARDS], h[FULLHAND], cb[2];
-	register int i, j, k;
+	int i, j, k;
 	int     nc, ns;
 	long    sums[15];
 	static int undo1[15] = {0, 0, 0, 0, 0, 1, 1, 1, 1, 2, 2, 2, 3, 3, 4};
@@ -301,7 +308,7 @@ anymove(hand, n, sum)
 	CARD hand[];
 	int n, sum;
 {
-	register int i, j;
+	int i, j;
 
 	if (n < 1)
 		return (FALSE);
@@ -322,7 +329,7 @@ anysumto(hand, n, s, t)
 	CARD hand[];
 	int n, s, t;
 {
-	register int i;
+	int i;
 
 	for (i = 0; i < n; i++) {
 		if (s + VAL(hand[i].rank) == t)
@@ -339,7 +346,7 @@ numofval(h, n, v)
 	CARD h[];
 	int n, v;
 {
-	register int i, j;
+	int i, j;
 
 	j = 0;
 	for (i = 0; i < n; i++) {
@@ -357,7 +364,7 @@ makeknown(h, n)
 	CARD h[];
 	int n;
 {
-	register int i;
+	int i;
 
 	for (i = 0; i < n; i++)
 		known[knownum++] = h[i];

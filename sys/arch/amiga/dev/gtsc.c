@@ -1,4 +1,5 @@
-/*	$NetBSD: gtsc.c,v 1.13 1995/09/04 13:04:43 chopps Exp $	*/
+/*	$OpenBSD: gtsc.c,v 1.6 1997/01/18 12:26:29 niklas Exp $	*/
+/*	$NetBSD: gtsc.c,v 1.20 1996/12/23 09:10:11 veego Exp $	*/
 
 /*
  * Copyright (c) 1994 Christian E. Hopps
@@ -52,15 +53,18 @@
 #include <amiga/dev/zbusvar.h>
 #include <amiga/dev/gvpbusvar.h>
 
-void gtscattach __P((struct device *, struct device *, void *));
-int gtscmatch __P((struct device *, struct cfdata *, void *));
-int gtscprint __P((void *auxp, char *));
+void gtscattach(struct device *, struct device *, void *);
+int gtscmatch(struct device *, void *, void *);
 
-void gtsc_enintr __P((struct sbic_softc *));
-void gtsc_dmastop __P((struct sbic_softc *));
-int gtsc_dmanext __P((struct sbic_softc *));
-int gtsc_dmaintr __P((struct sbic_softc *));
-int gtsc_dmago __P((struct sbic_softc *, char *, int, int));
+void gtsc_enintr(struct sbic_softc *);
+void gtsc_dmastop(struct sbic_softc *);
+int gtsc_dmanext(struct sbic_softc *);
+int gtsc_dmaintr(void *);
+int gtsc_dmago(struct sbic_softc *, char *, int, int);
+
+#ifdef DEBUG
+void gtsc_dump(void);
+#endif
 
 struct scsi_adapter gtsc_scsiswitch = {
 	sbic_scsicmd,
@@ -85,15 +89,18 @@ int gtsc_clock_override = 0;
 int gtsc_debug = 0;
 #endif
 
-struct cfdriver gtsccd = {
-	NULL, "gtsc", (cfmatch_t)gtscmatch, gtscattach, 
-	DV_DULL, sizeof(struct sbic_softc), NULL, 0 };
+struct cfattach gtsc_ca = {
+	sizeof(struct sbic_softc), gtscmatch, gtscattach
+};
+
+struct cfdriver gtsc_cd = {
+	NULL, "gtsc", DV_DULL, NULL, 0
+};
 
 int
-gtscmatch(pdp, cdp, auxp)
+gtscmatch(pdp, match, auxp)
 	struct device *pdp;
-	struct cfdata *cdp;
-	void *auxp;
+	void *match, *auxp;
 {
 	struct gvpbus_args *gap;
 
@@ -141,7 +148,7 @@ gtscattach(pdp, dp, auxp)
 		sc->sc_dmamask = ~0x01ffffff;
 	else
 		sc->sc_dmamask = ~0x07ffffff;
-	printf(": dmamask 0x%x", ~sc->sc_dmamask);
+	printf(": dmamask 0x%lx", ~sc->sc_dmamask);
 	
 	if ((gap->flags & GVP_NOBANK) == 0)
 		sc->gtsc_bankmask = (~sc->sc_dmamask >> 18) & 0x01c0;
@@ -178,7 +185,7 @@ gtscattach(pdp, dp, auxp)
 	sc->sc_sbicp = (sbic_regmap_p) ((int)rp + 0x61);
 	sc->sc_clkfreq = gtsc_clock_override ? gtsc_clock_override :
 	    ((gap->flags & GVP_14MHZ) ? 143 : 72);
-	printf("sc_clkfreg: %d.%dMhz\n", sc->sc_clkfreq / 10, sc->sc_clkfreq % 10);
+	printf("sc_clkfreg: %ld.%ldMhz\n", sc->sc_clkfreq / 10, sc->sc_clkfreq % 10);
 
 	sc->sc_link.adapter_softc = sc;
 	sc->sc_link.adapter_target = 7;
@@ -196,20 +203,7 @@ gtscattach(pdp, dp, auxp)
 	/*
 	 * attach all scsi units on us
 	 */
-	config_found(dp, &sc->sc_link, gtscprint);
-}
-
-/*
- * print diag if pnp is NULL else just extra
- */
-int
-gtscprint(auxp, pnp)
-	void *auxp;
-	char *pnp;
-{
-	if (pnp == NULL)
-		return(UNCONF);
-	return(QUIET);
+	config_found(dp, &sc->sc_link, scsiprint);
 }
 
 void
@@ -248,7 +242,7 @@ gtsc_dmago(dev, addr, count, flags)
 	sdp->CNTR = dev->sc_dmacmd;
 	if((u_int)dev->sc_cur->dc_addr & dev->sc_dmamask) {
 #if 1
-		printf("gtsc_dmago: pa %08x->%08x dmacmd %x",
+		printf("gtsc_dmago: pa %p->%lx dmacmd %x",
 		    dev->sc_cur->dc_addr,
 		    (u_int)dev->sc_cur->dc_addr & ~dev->sc_dmamask,
 		     dev->sc_dmacmd);
@@ -268,7 +262,7 @@ gtsc_dmago(dev, addr, count, flags)
 		dev->sc_tcnt = gtsc_maxdma;
 #if 1
 	if((u_int)dev->sc_cur->dc_addr & dev->sc_dmamask)
-		printf(" tcnt %d\n", dev->sc_tcnt);
+		printf(" tcnt %ld\n", dev->sc_tcnt);
 #endif
 	return(dev->sc_tcnt);
 }
@@ -299,9 +293,10 @@ gtsc_dmastop(dev)
 }
 
 int
-gtsc_dmaintr(dev)
-	struct sbic_softc *dev;
+gtsc_dmaintr(arg)
+	void *arg;
 {
+	struct sbic_softc *dev = arg;
 	volatile struct sdmac *sdp;
 	int stat;
 
@@ -325,7 +320,6 @@ gtsc_dmanext(dev)
 	struct sbic_softc *dev;
 {
 	volatile struct sdmac *sdp;
-	int i, stat;
 
 	sdp = dev->sc_cregs;
 
@@ -353,7 +347,7 @@ gtsc_dmanext(dev)
 		dev->sc_tcnt = gtsc_maxdma;
 #ifdef DEBUG
 	if (gtsc_debug & DDB_FOLLOW)
-		printf("gtsc_dmanext ret: %d\n", dev->sc_tcnt);
+		printf("gtsc_dmanext ret: %ld\n", dev->sc_tcnt);
 #endif
 	return(dev->sc_tcnt);
 }
@@ -364,8 +358,8 @@ gtsc_dump()
 {
 	int i;
 
-	for (i = 0; i < gtsccd.cd_ndevs; ++i)
-		if (gtsccd.cd_devs[i])
-			sbic_dump(gtsccd.cd_devs[i]);
+	for (i = 0; i < gtsc_cd.cd_ndevs; ++i)
+		if (gtsc_cd.cd_devs[i])
+			sbic_dump(gtsc_cd.cd_devs[i]);
 }
 #endif

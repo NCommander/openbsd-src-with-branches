@@ -1,9 +1,12 @@
-/*	$NetBSD: isr.c,v 1.21 1995/10/08 23:47:34 gwr Exp $	*/
+/*	$OpenBSD: isr.c,v 1.16 2002/03/14 01:26:47 millert Exp $	*/
+/*	$NetBSD: isr.c,v 1.25 1996/11/20 18:57:32 gwr Exp $	*/
 
-/*
- * Copyright (c) 1994 Gordon W. Ross
- * Copyright (c) 1993 Adam Glass
+/*-
+ * Copyright (c) 1996 The NetBSD Foundation, Inc.
  * All rights reserved.
+ *
+ * This code is derived from software contributed to The NetBSD Foundation
+ * by Adam Glass and Gordon W. Ross.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -15,20 +18,23 @@
  *    documentation and/or other materials provided with the distribution.
  * 3. All advertising materials mentioning features or use of this software
  *    must display the following acknowledgement:
- *	This product includes software developed by Adam Glass.
- * 4. The name of the authors may not be used to endorse or promote products
- *    derived from this software without specific prior written permission.
+ *        This product includes software developed by the NetBSD
+ *        Foundation, Inc. and its contributors.
+ * 4. Neither the name of The NetBSD Foundation nor the names of its
+ *    contributors may be used to endorse or promote products derived
+ *    from this software without specific prior written permission.
  *
- * THIS SOFTWARE IS PROVIDED BY THE AUTHORS ``AS IS'' AND ANY EXPRESS OR
- * IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
- * OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.
- * IN NO EVENT SHALL THE AUTHORS BE LIABLE FOR ANY DIRECT, INDIRECT,
- * INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT
- * NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
- * DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
- * THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
- * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
- * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ * THIS SOFTWARE IS PROVIDED BY THE NETBSD FOUNDATION, INC. AND CONTRIBUTORS
+ * ``AS IS'' AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED
+ * TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+ * PURPOSE ARE DISCLAIMED.  IN NO EVENT SHALL THE REGENTS OR CONTRIBUTORS BE
+ * LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+ * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ * POSSIBILITY OF SUCH DAMAGE.
  */
 
 /*
@@ -38,212 +44,44 @@
 
 #include <sys/param.h>
 #include <sys/systm.h>
+#include <sys/device.h>
 #include <sys/malloc.h>
 #include <sys/vmmeter.h>
 
-#include <net/netisr.h>
-
+#include <machine/autoconf.h>
 #include <machine/cpu.h>
+#include <machine/machdep.h>
 #include <machine/mon.h>
 #include <machine/obio.h>
-#include <machine/isr.h>
+
+#include <uvm/uvm_extern.h>
 
 #include "vector.h"
-#include "interreg.h"
-
-#include "ether.h"	/* for NETHER */
 
 extern int intrcnt[];	/* statistics */
 
 #define NUM_LEVELS 8
 
 struct isr {
-	struct	isr *isr_next;
-	int	(*isr_intr)();
-	void *isr_arg;
-	int	isr_ipl;
+	struct isr *isr_next;
+	isr_func_t isr_intr;
+	void	   *isr_arg;
+	int	   isr_ipl;
 };
 
+void set_vector_entry(int, void (*handler)(void));
+unsigned int get_vector_entry(int);
 
-void set_vector_entry __P((int, void (*handler)()));
-unsigned int get_vector_entry __P((int));
-static int nmi_intr();
-static int soft1intr();
+void    isr_autovec(int);
+void    isr_vectored(int);
 
-volatile u_char *interrupt_reg;
-
-/* called early (by internal_configure) */
-void isr_init()
-{
-	interrupt_reg = obio_find_mapping(OBIO_INTERREG, 1);
-	if (!interrupt_reg)
-		mon_panic("interrupt reg VA not found\n");
-	/* Turn off all interrupts until clock_attach */
-	*interrupt_reg = 0;
-}
-
-/* called later, by configure */
-void isr_config()
-{
-	isr_add_autovect(nmi_intr, 0, 7);
-	isr_add_autovect(soft1intr, 0, 1);
-}
-
-void isr_add_custom(level, handler)
+void
+isr_add_custom(level, handler)
 	int level;
-	void (*handler)();
+	void *handler;
 {
 	set_vector_entry(AUTOVEC_BASE + level, handler);
 }
-
-static int isr_soft_pending;
-void isr_soft_request(level)
-	int level;
-{
-	u_char bit, reg_val;
-	int s;
-
-	if ((level < 1) || (level > 3))
-		panic("isr_soft_request");
-
-	bit = 1 << level;
-
-	/* XXX - Should do this in the callers... */
-	if (isr_soft_pending & bit)
-		return;
-
-	s = splhigh();
-	isr_soft_pending |= bit;
-	reg_val = *interrupt_reg;
-	*interrupt_reg &= ~IREG_ALL_ENAB;
-
-	*interrupt_reg |= bit;
-	*interrupt_reg |= IREG_ALL_ENAB;
-	splx(s);
-}
-
-void isr_soft_clear(level)
-	int level;
-{
-	u_char bit, reg_val;
-	int s;
-
-	if ((level < 1) || (level > 3))
-		panic("isr_soft_clear");
-
-	bit = 1 << level;
-
-	s = splhigh();
-	isr_soft_pending &= ~bit;
-	reg_val = *interrupt_reg;
-	*interrupt_reg &= ~IREG_ALL_ENAB;
-
-	*interrupt_reg &= ~bit;
-	*interrupt_reg |= IREG_ALL_ENAB;
-	splx(s);
-}
-
-/*
- * XXX - This really belongs in some common file,
- *	i.e.  src/sys/net/netisr.c
- * Also, should use an array of chars instead of
- * a bitmask to avoid atomicity locking issues.
- */
-void netintr()
-{
-	int n, s;
-
-	s = splhigh();
-	n = netisr;
-	netisr = 0;
-	splx(s);
-
-#if	NETHER > 0
-	if (n & (1 << NETISR_ARP))
-		arpintr();
-#endif
-#ifdef INET
-	if (n & (1 << NETISR_IP))
-		ipintr();
-#endif
-#ifdef NS
-	if (n & (1 << NETISR_NS))
-		nsintr();
-#endif
-#ifdef ISO
-	if (n & (1 << NETISR_ISO))
-		clnlintr();
-#endif
-#ifdef CCITT
-	if (n & (1 << NETISR_CCITT)) {
-		ccittintr();
-	}
-#endif
-#include "ppp.h"
-#if NPPP > 0
-	if (n & (1 << NETISR_PPP)) {
-		pppintr();
-	}
-#endif
-}
-
-
-/*
- * Level 1 software interrupt.
- * Possible reasons:
- *	Network software interrupt
- *	Soft clock interrupt
- */
-int soft1intr(arg)
-	void *arg;
-{
-	union sun3sir sir;
-	int n, s;
-
-	s = splhigh();
-	sir.sir_any = sun3sir.sir_any;
-	sun3sir.sir_any = 0;
-	isr_soft_clear(1);
-	splx(s);
-
-	if (sir.sir_any) {
-		cnt.v_soft++;
-		if (sir.sir_which[SIR_NET]) {
-			sir.sir_which[SIR_NET] = 0;
-			netintr();
-		}
-		if (sir.sir_which[SIR_CLOCK]) {
-			sir.sir_which[SIR_CLOCK] = 0;
-			softclock();
-		}
-		if (sir.sir_which[SIR_SPARE2]) {
-			sir.sir_which[SIR_SPARE2] = 0;
-			/* spare2intr(); */
-		}
-		if (sir.sir_which[SIR_SPARE3]) {
-			sir.sir_which[SIR_SPARE3] = 0;
-			/* spare3intr(); */
-		}
-		return (1);
-	}
-	return(0);
-}
-
-/*
- * Generic handler for the non-maskable interrupt.
- * XXX: Should check memory error register here!
- */
-int nmi_intr(arg)
-	void *arg;
-{
-	static int nmi_cnt;
-	if (!nmi_cnt++) {
-		printf("nmi interrupt received\n");
-		Debugger();
-	}
-	return 1;
-}
-
 
 static struct isr *isr_autovec_list[NUM_LEVELS];
 
@@ -251,7 +89,8 @@ static struct isr *isr_autovec_list[NUM_LEVELS];
  * This is called by the assembly routines
  * for handling auto-vectored interupts.
  */
-void isr_autovec(evec)
+void
+isr_autovec(evec)
 	int evec;		/* format | vector offset */
 {
 	struct isr *isr;
@@ -260,11 +99,11 @@ void isr_autovec(evec)
 	vec = (evec & 0xFFF) >> 2;
 	if ((vec < AUTOVEC_BASE) || (vec >= (AUTOVEC_BASE+8)))
 		panic("isr_autovec: bad vec");
-	ipl = vec - 0x18;
+	ipl = vec - AUTOVEC_BASE;
 
 	n = intrcnt[ipl];
 	intrcnt[ipl] = n+1;
-	cnt.v_intr++;
+	uvmexp.intrs++;
 
 	isr = isr_autovec_list[ipl];
 	if (isr == NULL) {
@@ -287,8 +126,9 @@ void isr_autovec(evec)
  * Establish an interrupt handler.
  * Called by driver attach functions.
  */
-void isr_add_autovect(handler, arg, level)
-	int (*handler)();
+void
+isr_add_autovect(handler, arg, level)
+	isr_func_t handler;
 	void *arg;
 	int level;
 {
@@ -308,9 +148,8 @@ void isr_add_autovect(handler, arg, level)
 	isr_autovec_list[level] = new_isr;
 }
 
-extern void badtrap();
 struct vector_handler {
-	int (*func)();
+	isr_func_t func;
 	void *arg;
 };
 static struct vector_handler isr_vector_handlers[192];
@@ -331,7 +170,7 @@ isr_vectored(evec)
 	ipl = (ipl >> 8) & 7;
 
 	intrcnt[ipl]++;
-	cnt.v_intr++;
+	uvmexp.intrs++;
 
 	if (vec < 64 || vec >= 256) {
 		printf("isr_vectored: vector=0x%x (invalid)\n", vec);
@@ -353,9 +192,12 @@ isr_vectored(evec)
  * Establish an interrupt handler.
  * Called by driver attach functions.
  */
-extern void _isr_vectored();
-void isr_add_vectored(func, arg, level, vec)
-	int (*func)();
+
+extern void _isr_vectored(void);
+
+void
+isr_add_vectored(func, arg, level, vec)
+	isr_func_t func;
 	void *arg;
 	int level, vec;
 {
@@ -378,18 +220,21 @@ void isr_add_vectored(func, arg, level, vec)
 /*
  * XXX - could just kill these...
  */
-void set_vector_entry(entry, handler)
+void
+set_vector_entry(entry, handler)
 	int entry;
-	void (*handler)();
+	void (*handler)(void);
 {
 	if ((entry <0) || (entry >= NVECTORS))
-	panic("set_vector_entry: setting vector too high or low\n");
+		panic("set_vector_entry: setting vector too high or low");
 	vector_table[entry] =  handler;
 }
-unsigned int get_vector_entry(entry)
+
+unsigned int
+get_vector_entry(entry)
 	int entry;
 {
 	if ((entry <0) || (entry >= NVECTORS))
-	panic("get_vector_entry: setting vector too high or low\n");
+		panic("get_vector_entry: setting vector too high or low");
 	return (unsigned int) vector_table[entry];
 }

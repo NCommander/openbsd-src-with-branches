@@ -47,7 +47,7 @@ static long master_key_version;
 static void
 Usage(void)
 {
-    fprintf(stderr, "Usage: %s [-n]\n", getprogname());
+    fprintf(stderr, "Usage: %s [-n]\n", __progname);
     exit(1);
 }
 
@@ -340,8 +340,6 @@ main(int argc, char **argv)
     /* Local Declarations */
 
     long    n;
-
-    setprogname (argv[0]);
 
     while (--argc > 0 && (*++argv)[0] == '-')
 	for (i = 1; argv[0][i] != '\0'; i++) {

@@ -1,3 +1,5 @@
+/*	$OpenBSD: print.h,v 1.5 2002/02/17 19:42:36 millert Exp $ */
+
 /*
  * Copyright (c) 1993-95 Mats O Jansson.  All rights reserved.
  *
@@ -26,37 +28,21 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
- *	$Id: print.h,v 1.8 1995/10/13 19:31:58 moj Exp $
+ *	$OpenBSD: print.h,v 1.5 2002/02/17 19:42:36 millert Exp $
  *
  */
 
 #ifndef _PRINT_H_
 #define _PRINT_H_
 
-#ifdef NO__P
-void	mopPrintHWA	  (/* FILE *, u_char * */);
-void	mopPrintBPTY	  (/* FILE *, u_char */);
-void	mopPrintPGTY      (/* FILE *, u_char */);
-void	mopPrintOneline   (/* FILE *, u_char *, int */);
-void	mopPrintHeader    (/* FILE *, u_char *, int */);
-void	mopPrintMopHeader (/* FILE *, u_char *, int */);
-void	mopPrintDevice    (/* FILE *, u_char */);
-void	mopPrintTime      (/* FILE *, u_char * */);
-void	mopPrintInfo      (/* FILE *, u_char *, int *, u_short,
-			      u_char, int */);
-#else
-__BEGIN_DECLS
-void	mopPrintHWA	  __P((FILE *, u_char *));
-void	mopPrintBPTY	  __P((FILE *, u_char));
-void	mopPrintPGTY      __P((FILE *, u_char));
-void	mopPrintOneline   __P((FILE *, u_char *, int));
-void	mopPrintHeader    __P((FILE *, u_char *, int));
-void	mopPrintMopHeader __P((FILE *, u_char *, int));
-void	mopPrintDevice    __P((FILE *, u_char));
-void	mopPrintTime      __P((FILE *, u_char *));
-void	mopPrintInfo      __P((FILE *, u_char *, int *, u_short,
-			       u_char, int));
-__END_DECLS
-#endif
+void	mopPrintHWA(FILE *, u_char *);
+void	mopPrintBPTY(FILE *, u_char);
+void	mopPrintPGTY(FILE *, u_char);
+void	mopPrintOneline(FILE *, u_char *, int);
+void	mopPrintHeader(FILE *, u_char *, int);
+void	mopPrintMopHeader(FILE *, u_char *, int);
+void	mopPrintDevice(FILE *, u_char);
+void	mopPrintTime(FILE *, u_char *);
+void	mopPrintInfo(FILE *, u_char *, int *, u_short, u_char, int);
 
-#endif _PRINT_H_
+#endif /* _PRINT_H_ */

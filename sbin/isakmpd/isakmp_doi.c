@@ -1,7 +1,8 @@
-/*	$Id: isakmp_doi.c,v 1.32 1998/10/11 12:01:08 niklas Exp $	*/
+/*	$OpenBSD: isakmp_doi.c,v 1.13 2001/07/01 20:43:39 niklas Exp $	*/
+/*	$EOM: isakmp_doi.c,v 1.42 2000/09/12 16:29:41 ho Exp $	*/
 
 /*
- * Copyright (c) 1998 Niklas Hallqvist.  All rights reserved.
+ * Copyright (c) 1998, 1999, 2001 Niklas Hallqvist.  All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -35,21 +36,27 @@
 
 /*
  * XXX This DOI is very fuzzily defined, and should perhaps be short-circuited
- * to the IPSEC DOI instead.  At the moment I will have it as its own DOI,
+ * to the IPsec DOI instead.  At the moment I will have it as its own DOI,
  * as the ISAKMP architecture seems to imply it should be done like this.
  */
 
 #include <sys/types.h>
 
+#include "sysdep.h"
+
 #include "doi.h"
 #include "exchange.h"
 #include "isakmp.h"
+#include "isakmp_doi.h"
+#include "ipsec.h"
 #include "log.h"
 #include "message.h"
 #include "sa.h"
 #include "util.h"
 
+#ifdef USE_DEBUG
 static int isakmp_debug_attribute (u_int16_t, u_int8_t *, u_int16_t, void *);
+#endif
 static void isakmp_finalize_exchange (struct message *);
 static struct keystate *isakmp_get_keystate (struct message *);
 static int isakmp_initiator (struct message *);
@@ -70,7 +77,9 @@ static int isakmp_validate_transform_id (u_int8_t, u_int8_t);
 
 static struct doi isakmp_doi = {
   { 0 }, ISAKMP_DOI_ISAKMP, 0, 0, 0,
+#ifdef USE_DEBUG
   isakmp_debug_attribute,
+#endif
   0,				/* delete_spi not needed.  */
   0,				/* exchange_script not needed.  */
   isakmp_finalize_exchange,
@@ -79,7 +88,11 @@ static struct doi isakmp_doi = {
   0,				/* free_sa_data not needed.  */
   isakmp_get_keystate,
   0,				/* get_spi not needed.  */
+  0,				/* handle_leftover_payload not needed.  */
+  0,				/* informational_post_hook not needed.  */
+  0,				/* informational_pre_hook not needed.  */
   0,				/* XXX need maybe be filled-in.  */
+  0,				/* proto_init not needed.  */
   isakmp_setup_situation,
   isakmp_situation_size,
   isakmp_spi_size,
@@ -92,16 +105,20 @@ static struct doi isakmp_doi = {
   isakmp_validate_situation,
   isakmp_validate_transform_id,
   isakmp_initiator,
-  isakmp_responder
+  isakmp_responder,
+#ifdef USE_DEBUG
+  ipsec_decode_ids
+#endif
 };
 
 /* Requires doi_init to already have been called.  */
 void
-isakmp_doi_init ()
+isakmp_doi_init (void)
 {
   doi_register (&isakmp_doi);
 }
 
+#ifdef USE_DEBUG
 int
 isakmp_debug_attribute (u_int16_t type, u_int8_t *value, u_int16_t len,
 			void *vmsg)
@@ -109,6 +126,7 @@ isakmp_debug_attribute (u_int16_t type, u_int8_t *value, u_int16_t len,
   /* XXX Not implemented yet.  */
   return 0;
 }
+#endif /* USE_DEBUG */
 
 static void
 isakmp_finalize_exchange (struct message *msg)
@@ -201,18 +219,55 @@ isakmp_validate_transform_id (u_int8_t proto, u_int8_t transform_id)
 static int
 isakmp_initiator (struct message *msg)
 {
-  /* XXX Not implemented yet.  */
-  return 0;
+  if (msg->exchange->type != ISAKMP_EXCH_INFO)
+    {
+      log_print ("isakmp_initiator: unsupported exchange type %d in phase %d",
+		 msg->exchange->type, msg->exchange->phase);
+      return -1;
+    }
+
+  return message_send_info (msg);
 }
 
 static int
 isakmp_responder (struct message *msg)
 {
-  /* XXX So far we don't accept any proposals.  */
-  if (TAILQ_FIRST (&msg->payload[ISAKMP_PAYLOAD_SA]))
+  struct payload *p;
+
+  switch (msg->exchange->type)
     {
-      message_drop (msg, ISAKMP_NOTIFY_NO_PROPOSAL_CHOSEN, 0, 0, 0);
-      return -1;
+    case ISAKMP_EXCH_INFO:
+      for (p = TAILQ_FIRST (&msg->payload[ISAKMP_PAYLOAD_NOTIFY]); p;
+	   p = TAILQ_NEXT (p, link))
+	{
+	  LOG_DBG ((LOG_EXCHANGE, 10,
+		    "isakmp_responder: got NOTIFY of type %s, ignoring",
+		    constant_lookup (isakmp_notify_cst,
+				     GET_ISAKMP_NOTIFY_MSG_TYPE (p->p))));
+	  p->flags |= PL_MARK;
+	}
+
+      for (p = TAILQ_FIRST (&msg->payload[ISAKMP_PAYLOAD_DELETE]); p;
+	   p = TAILQ_NEXT (p, link))
+	{
+	  LOG_DBG ((LOG_EXCHANGE, 10,
+		    "isakmp_responder: got DELETE, ignoring"));
+	  p->flags |= PL_MARK;
+	}
+      return 0;
+
+#ifdef USE_ISAKMP_CFG
+    case ISAKMP_EXCH_TRANSACTION:
+      /* return 0 isakmp_cfg_responder (msg); */
+#endif /* USE_ISAKMP_CFG */
+
+    default:
+      /* XXX So far we don't accept any proposals.  */
+      if (TAILQ_FIRST (&msg->payload[ISAKMP_PAYLOAD_SA]))
+	{
+	  message_drop (msg, ISAKMP_NOTIFY_NO_PROPOSAL_CHOSEN, 0, 1, 0);
+	  return -1;
+	}
     }
   return 0;
 }

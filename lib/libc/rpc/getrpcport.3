@@ -1,5 +1,4 @@
-.\"	@(#)getrpcport.3r	2.2 88/08/02 4.0 RPCSRC; from 1.12 88/02/26 SMI
-.\"	$NetBSD: getrpcport.3,v 1.2 1995/02/25 03:01:46 cgd Exp $
+.\"	$OpenBSD: getrpcport.3,v 1.4 1997/07/21 19:59:40 deraadt Exp $
 .\"
 .Dd October 6, 1987
 .Dt GETRPCPORT 3
@@ -8,6 +7,7 @@
 .Nm getrpcport
 .Nd get RPC port number
 .Sh SYNOPSIS
+.Fd #include <rpc/rpc.h>
 .Ft int
 .Fn getrpcport "char *host" "int prognum" "int versnum" "int proto"
 .Sh DESCRIPTION
@@ -22,7 +22,8 @@ and using protocol
 .Fa proto .
 It returns 0 if it cannot contact the portmapper, or if
 .Fa prognum
-is not registered.  If
+is not registered.
+If
 .Fa prognum
 is registered but not with version
 .Fa versnum ,

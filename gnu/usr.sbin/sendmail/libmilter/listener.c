@@ -1,5 +1,5 @@
 /*
- *  Copyright (c) 1999-2001 Sendmail, Inc. and its suppliers.
+ *  Copyright (c) 1999-2002 Sendmail, Inc. and its suppliers.
  *	All rights reserved.
  *
  * By using this file, you agree to the terms and conditions set
@@ -9,7 +9,7 @@
  */
 
 #include <sm/gen.h>
-SM_RCSID("@(#)$Sendmail: listener.c,v 8.72 2001/06/28 20:59:06 ca Exp $")
+SM_RCSID("@(#)$Sendmail: listener.c,v 8.85.2.1 2002/08/09 22:13:36 gshapiro Exp $")
 
 /*
 **  listener.c -- threaded network listener
@@ -24,15 +24,65 @@ SM_RCSID("@(#)$Sendmail: listener.c,v 8.72 2001/06/28 20:59:06 ca Exp $")
 # endif /* NETINET || NETINET6 */
 
 static smutex_t L_Mutex;
+static int L_family;
+static SOCKADDR_LEN_T L_socksize;
+static socket_t listenfd = INVALID_SOCKET;
 
-/*
+static socket_t mi_milteropen __P((char *, int, char *));
+
+/*
+**  MI_OPENSOCKET -- create the socket where this filter and the MTA will meet
+**
+**  	Parameters:
+**		conn -- connection description
+**		backlog -- listen backlog
+**  		dbg -- debug level
+**		smfi -- filter structure to use
+**
+**  	Return value:
+**  		MI_SUCCESS/MI_FAILURE
+*/
+
+int
+mi_opensocket(conn, backlog, dbg, smfi)
+	char *conn;
+	int backlog;
+	int dbg;
+	smfiDesc_ptr smfi;
+{
+	if (smfi == NULL || conn == NULL)
+		return MI_FAILURE;
+
+	if (ValidSocket(listenfd))
+		return MI_SUCCESS;
+
+	if (dbg > 0)
+	{
+		smi_log(SMI_LOG_DEBUG,
+			"%s: Opening listen socket on conn %s",
+			smfi->xxfi_name, conn);
+	}
+	(void) smutex_init(&L_Mutex);
+	(void) smutex_lock(&L_Mutex);
+	listenfd = mi_milteropen(conn, backlog, smfi->xxfi_name);
+	if (!ValidSocket(listenfd))
+	{
+		smi_log(SMI_LOG_FATAL,
+			"%s: Unable to create listening socket on conn %s",
+			smfi->xxfi_name, conn);
+		(void) smutex_unlock(&L_Mutex);
+		return MI_FAILURE;
+	}
+
+	return MI_SUCCESS;
+}
+
+/*
 **  MI_MILTEROPEN -- setup socket to listen on
 **
 **	Parameters:
 **		conn -- connection description
 **		backlog -- listen backlog
-**		socksize -- socksize of created socket
-**		family -- family of created socket
 **		name -- name for logging
 **
 **	Returns:
@@ -47,16 +97,15 @@ static char	*sockpath = NULL;
 #endif /* NETUNIX */
 
 static socket_t
-mi_milteropen(conn, backlog, socksize, family, name)
+mi_milteropen(conn, backlog, name)
 	char *conn;
 	int backlog;
-	SOCKADDR_LEN_T *socksize;
-	int *family;
 	char *name;
 {
 	socket_t sock;
 	int sockopt = 1;
-	size_t len = -1;
+	int fdflags;
+	size_t len = 0;
 	char *p;
 	char *colon;
 	char *at;
@@ -77,22 +126,22 @@ mi_milteropen(conn, backlog, socksize, family, name)
 	{
 		*colon = '\0';
 
- 		if (*p == '\0')
+		if (*p == '\0')
 		{
 #if NETUNIX
 			/* default to AF_UNIX */
- 			addr.sa.sa_family = AF_UNIX;
-			*socksize = sizeof (struct sockaddr_un);
+			addr.sa.sa_family = AF_UNIX;
+			L_socksize = sizeof (struct sockaddr_un);
 #else /* NETUNIX */
 # if NETINET
 			/* default to AF_INET */
 			addr.sa.sa_family = AF_INET;
-			*socksize = sizeof addr.sin;
+			L_socksize = sizeof addr.sin;
 # else /* NETINET */
 #  if NETINET6
 			/* default to AF_INET6 */
 			addr.sa.sa_family = AF_INET6;
-			*socksize = sizeof addr.sin6;
+			L_socksize = sizeof addr.sin6;
 #  else /* NETINET6 */
 			/* no protocols available */
 			smi_log(SMI_LOG_ERR,
@@ -108,21 +157,21 @@ mi_milteropen(conn, backlog, socksize, family, name)
 			 strcasecmp(p, "local") == 0)
 		{
 			addr.sa.sa_family = AF_UNIX;
-			*socksize = sizeof (struct sockaddr_un);
+			L_socksize = sizeof (struct sockaddr_un);
 		}
 #endif /* NETUNIX */
 #if NETINET
 		else if (strcasecmp(p, "inet") == 0)
 		{
 			addr.sa.sa_family = AF_INET;
-			*socksize = sizeof addr.sin;
+			L_socksize = sizeof addr.sin;
 		}
 #endif /* NETINET */
 #if NETINET6
 		else if (strcasecmp(p, "inet6") == 0)
 		{
 			addr.sa.sa_family = AF_INET6;
-			*socksize = sizeof addr.sin6;
+			L_socksize = sizeof addr.sin6;
 		}
 #endif /* NETINET6 */
 		else
@@ -138,18 +187,18 @@ mi_milteropen(conn, backlog, socksize, family, name)
 		colon = p;
 #if NETUNIX
 		/* default to AF_UNIX */
- 		addr.sa.sa_family = AF_UNIX;
-		*socksize = sizeof (struct sockaddr_un);
+		addr.sa.sa_family = AF_UNIX;
+		L_socksize = sizeof (struct sockaddr_un);
 #else /* NETUNIX */
 # if NETINET
 		/* default to AF_INET */
 		addr.sa.sa_family = AF_INET;
-		*socksize = sizeof addr.sin;
+		L_socksize = sizeof addr.sin;
 # else /* NETINET */
 #  if NETINET6
 		/* default to AF_INET6 */
 		addr.sa.sa_family = AF_INET6;
-		*socksize = sizeof addr.sin6;
+		L_socksize = sizeof addr.sin6;
 #  else /* NETINET6 */
 		smi_log(SMI_LOG_ERR, "%s: unknown socket type %s",
 			name, p);
@@ -380,22 +429,32 @@ mi_milteropen(conn, backlog, socksize, family, name)
 		return INVALID_SOCKET;
 	}
 
+	if ((fdflags = fcntl(sock, F_GETFD, 0)) == -1 ||
+	    fcntl(sock, F_SETFD, fdflags | FD_CLOEXEC) == -1)
+	{
+		smi_log(SMI_LOG_ERR,
+			"%s: Unable to set close-on-exec: %s", name,
+			sm_errstring(errno));
+		(void) closesocket(sock);
+		return INVALID_SOCKET;
+	}
+
 	if (setsockopt(sock, SOL_SOCKET, SO_REUSEADDR, (void *) &sockopt,
 		       sizeof(sockopt)) == -1)
 	{
 		smi_log(SMI_LOG_ERR,
 			"%s: Unable to setsockopt: %s", name,
 			sm_errstring(errno));
-		(void) close(sock);
+		(void) closesocket(sock);
 		return INVALID_SOCKET;
 	}
 
-	if (bind(sock, &addr.sa, *socksize) < 0)
+	if (bind(sock, &addr.sa, L_socksize) < 0)
 	{
 		smi_log(SMI_LOG_ERR,
 			"%s: Unable to bind to port %s: %s",
 			name, conn, sm_errstring(errno));
-		(void) close(sock);
+		(void) closesocket(sock);
 		return INVALID_SOCKET;
 	}
 
@@ -404,7 +463,7 @@ mi_milteropen(conn, backlog, socksize, family, name)
 		smi_log(SMI_LOG_ERR,
 			"%s: listen call failed: %s", name,
 			sm_errstring(errno));
-		(void) close(sock);
+		(void) closesocket(sock);
 		return INVALID_SOCKET;
 	}
 
@@ -415,6 +474,7 @@ mi_milteropen(conn, backlog, socksize, family, name)
 		**  Set global variable sockpath so the UNIX socket can be
 		**  unlink()ed at exit.
 		*/
+
 		sockpath = (char *) malloc(len);
 		if (sockpath != NULL)
 			(void) sm_strlcpy(sockpath, colon, len);
@@ -423,15 +483,15 @@ mi_milteropen(conn, backlog, socksize, family, name)
 			smi_log(SMI_LOG_ERR,
 				"%s: can't malloc(%d) for sockpath: %s",
 				name, len, sm_errstring(errno));
-			(void) close(sock);
+			(void) closesocket(sock);
 			return INVALID_SOCKET;
 		}
 	}
 #endif /* NETUNIX */
-	*family = addr.sa.sa_family;
+	L_family = addr.sa.sa_family;
 	return sock;
 }
-/*
+/*
 **  MI_THREAD_HANDLE_WRAPPER -- small wrapper to handle session
 **
 **	Parameters:
@@ -448,9 +508,7 @@ mi_thread_handle_wrapper(arg)
 	return (void *) mi_handle_session(arg);
 }
 
-static socket_t listenfd = INVALID_SOCKET;
-
-/*
+/*
 **  MI_CLOSENER -- close listen socket
 **
 **	NOTE: It is assumed that this function is called from a
@@ -470,21 +528,23 @@ mi_closener()
 	if (ValidSocket(listenfd))
 	{
 #if NETUNIX
-		bool removable = false;
+		bool removable;
 		struct stat sockinfo;
 		struct stat fileinfo;
 
-		if (sockpath != NULL &&
-		    fstat(listenfd, &sockinfo) == 0 &&
-		    (S_ISFIFO(sockinfo.st_mode)
+		removable = sockpath != NULL &&
+#if _FFR_MILTER_ROOT_UNSAFE
+			    geteuid() != 0 &&
+#endif /* _FFR_MILTER_ROOT_UNSAFE */
+			    fstat(listenfd, &sockinfo) == 0 &&
+			    (S_ISFIFO(sockinfo.st_mode)
 # ifdef S_ISSOCK
-		     || !S_ISSOCK(sockinfo.st_mode)
+			     || S_ISSOCK(sockinfo.st_mode)
 # endif /* S_ISSOCK */
-		     ))
-			removable = true;
+			    );
 #endif /* NETUNIX */
 
-		(void) close(listenfd);
+		(void) closesocket(listenfd);
 		listenfd = INVALID_SOCKET;
 
 #if NETUNIX
@@ -493,8 +553,13 @@ mi_closener()
 		{
 			if (removable &&
 			    stat(sockpath, &fileinfo) == 0 &&
-			    fileinfo.st_dev == sockinfo.st_dev &&
-			    fileinfo.st_ino == sockinfo.st_ino &&
+			    ((fileinfo.st_dev == sockinfo.st_dev &&
+			      fileinfo.st_ino == sockinfo.st_ino)
+# ifdef S_ISSOCK
+			     || S_ISSOCK(fileinfo.st_mode)
+# endif /* S_ISSOCK */
+			    )
+			    &&
 			    (S_ISFIFO(fileinfo.st_mode)
 # ifdef S_ISSOCK
 			     || S_ISSOCK(fileinfo.st_mode)
@@ -509,7 +574,7 @@ mi_closener()
 	(void) smutex_unlock(&L_Mutex);
 }
 
-/*
+/*
 **  MI_LISTENER -- Generic listener harness
 **
 **	Open up listen port
@@ -520,6 +585,7 @@ mi_closener()
 **		dbg -- debug level
 **		smfi -- filter structure to use
 **		timeout -- timeout for reads/writes
+**  		backlog -- listen queue backlog size
 **
 **	Returns:
 **		MI_SUCCESS -- Exited normally
@@ -555,12 +621,19 @@ mi_closener()
 	st.tv_sec = (s);						\
 	st.tv_usec = 0;							\
 	if (st.tv_sec > 0)						\
-		rs = select(0, NULL, NULL, NULL, &st);			\
-	if (rs != 0)							\
 	{								\
-		smi_log(SMI_LOG_ERR,					\
-			"MI_SLEEP(): select() returned non-zero result %d, errno = %d",								\
-			rs, errno);					\
+		for (;;)						\
+		{							\
+			rs = select(0, NULL, NULL, NULL, &st);		\
+			if (rs < 0 && errno == EINTR)			\
+				continue;				\
+			if (rs != 0)					\
+			{						\
+				smi_log(SMI_LOG_ERR,			\
+					"MI_SLEEP(): select() returned non-zero result %d, errno = %d",						\
+					rs, errno);			\
+			}						\
+		}							\
 	}								\
 }
 #else /* BROKEN_PTHREAD_SLEEP */
@@ -576,7 +649,6 @@ mi_listener(conn, dbg, smfi, timeout, backlog)
 	int backlog;
 {
 	socket_t connfd = INVALID_SOCKET;
-	int family = AF_UNSPEC;
 	int sockopt = 1;
 	int r;
 	int ret = MI_SUCCESS;
@@ -587,29 +659,15 @@ mi_listener(conn, dbg, smfi, timeout, backlog)
 	int save_errno = 0;
 	sthread_t thread_id;
 	_SOCK_ADDR cliaddr;
-	SOCKADDR_LEN_T socksize;
 	SOCKADDR_LEN_T clilen;
 	SMFICTX_PTR ctx;
 	fd_set readset, excset;
 	struct timeval chktime;
 
-	if (dbg > 0)
-		smi_log(SMI_LOG_DEBUG,
-			"%s: Opening listen socket on conn %s",
-			smfi->xxfi_name, conn);
-	(void) smutex_init(&L_Mutex);
-	(void) smutex_lock(&L_Mutex);
-	listenfd = mi_milteropen(conn, backlog, &socksize, &family,
-				 smfi->xxfi_name);
-	if (!ValidSocket(listenfd))
-	{
-		smi_log(SMI_LOG_FATAL,
-			"%s: Unable to create listening socket on conn %s",
-			smfi->xxfi_name, conn);
-		(void) smutex_unlock(&L_Mutex);
+	if (mi_opensocket(conn, backlog, dbg, smfi) == MI_FAILURE)
 		return MI_FAILURE;
-	}
-	clilen = socksize;
+
+	clilen = L_socksize;
 
 	if (listenfd >= FD_SETSIZE)
 	{
@@ -690,9 +748,9 @@ mi_listener(conn, dbg, smfi, timeout, backlog)
 # ifdef BSD4_4_SOCKADDR
 		     cliaddr.sa.sa_len == 0 ||
 # endif /* BSD4_4_SOCKADDR */
-		     cliaddr.sa.sa_family != family))
+		     cliaddr.sa.sa_family != L_family))
 		{
-			(void) close(connfd);
+			(void) closesocket(connfd);
 			connfd = INVALID_SOCKET;
 			save_errno = EINVAL;
 		}
@@ -725,7 +783,7 @@ mi_listener(conn, dbg, smfi, timeout, backlog)
 		}
 		if ((ctx = (SMFICTX_PTR) malloc(sizeof *ctx)) == NULL)
 		{
-			(void) close(connfd);
+			(void) closesocket(connfd);
 			mcnt++;
 			smi_log(SMI_LOG_ERR, "%s: malloc(ctx) failed (%s), %s",
 				smfi->xxfi_name, sm_errstring(save_errno),
@@ -775,7 +833,7 @@ mi_listener(conn, dbg, smfi, timeout, backlog)
 				smfi->xxfi_name,  r,
 				tcnt >= MAX_FAILS_T ? "abort" : "try again");
 			MI_SLEEP(tcnt);
-			(void) close(connfd);
+			(void) closesocket(connfd);
 			free(ctx);
 			if (tcnt >= MAX_FAILS_T)
 			{

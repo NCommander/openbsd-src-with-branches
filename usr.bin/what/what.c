@@ -1,3 +1,4 @@
+/*	$OpenBSD: what.c,v 1.6 2001/11/19 19:02:17 mpech Exp $	*/
 /*	$NetBSD: what.c,v 1.4 1994/12/20 16:01:03 jtc Exp $	*/
 
 /*
@@ -43,12 +44,17 @@ static char copyright[] =
 #if 0
 static char sccsid[] = "@(#)what.c	8.1 (Berkeley) 6/6/93";
 #endif
-static char rcsid[] = "$NetBSD: what.c,v 1.4 1994/12/20 16:01:03 jtc Exp $";
+static char rcsid[] = "$OpenBSD: what.c,v 1.6 2001/11/19 19:02:17 mpech Exp $";
 #endif /* not lint */
 
+#include <sys/types.h>
+#include <sys/utsname.h>
 #include <stdio.h>
+#include <ctype.h>
+#include <err.h>
+#include <string.h>
 
-void search __P((void));
+void search(char *);
 
 /*
  * what
@@ -59,26 +65,45 @@ main(argc, argv)
 	int argc;
 	char **argv;
 {
+	struct utsname utsn;
+	char match[256];
+
+	if (uname(&utsn) == -1)
+		err(1, "uname");
+	strncpy(match, utsn.sysname, sizeof match);
+
 	if (!*++argv) 
-		search();
+		search(match);
 	else do {
 		if (!freopen(*argv, "r", stdin)) {
 			perror(*argv);
 			exit(1);
 		}
 		printf("%s\n", *argv);
-		search();
+		search(match);
 	} while(*++argv);
 	exit(0);
 }
 
 void
-search()
+search(match)
+	char *match;
 {
-	register int c;
+	int c;
+	int i;
 
 	while ((c = getchar()) != EOF) {
-loop:		if (c != '@')
+loop:		if (c == '$') {
+			for (i = 0; match[i]; i++)
+				if ((c = getchar()) != match[i])
+					goto loop;
+			printf("\t$%s", match);
+			while (isprint(c = getchar()))
+				putchar(c);
+			putchar('\n');
+			goto loop;
+		}
+		if (c != '@')
 			continue;
 		if ((c = getchar()) != '(')
 			goto loop;

@@ -19,7 +19,7 @@
 #ifdef _DEFINE
 # define EXTERN
 # define INIT(x)	= x
-SM_IDSTR(MilterlId, "@(#)$Sendmail: libmilter.h,v 8.26 2001/07/20 02:48:37 gshapiro Exp $")
+SM_IDSTR(MilterlId, "@(#)$Sendmail: libmilter.h,v 8.33 2002/04/30 23:52:24 msk Exp $")
 #else /* _DEFINE */
 # define EXTERN extern
 # define INIT(x)
@@ -33,9 +33,11 @@ SM_IDSTR(MilterlId, "@(#)$Sendmail: libmilter.h,v 8.26 2001/07/20 02:48:37 gshap
 #include "libmilter/milter.h"
 
 # define ValidSocket(sd)	((sd) >= 0)
-# define INVALID_SOCKET		-1
-# define MI_SOCK_READ(s, b, l)	(read(s, b, l))
-# define MI_SOCK_WRITE(s, b, l)	(write(s, b, l))
+# define INVALID_SOCKET		(-1)
+# define closesocket		close
+# define MI_SOCK_READ(s, b, l)	read(s, b, l)
+# define MI_SOCK_READ_FAIL(x)	((x) < 0)
+# define MI_SOCK_WRITE(s, b, l)	write(s, b, l)
 
 # define thread_create(ptid,wr,arg) pthread_create(ptid, NULL, wr, arg)
 # define sthread_get_id()	pthread_self()
@@ -108,10 +110,12 @@ extern void	mi_clean_signals __P((void));
 extern struct hostent *mi_gethostbyname __P((char *, int));
 extern int	mi_inet_pton __P((int, const char *, void *));
 extern void	mi_closener __P((void));
+extern int	mi_opensocket __P((char *, int, int, smfiDesc_ptr));
 
 /* communication functions */
 extern char	*mi_rd_cmd __P((socket_t, struct timeval *, char *, size_t *, char *));
 extern int	mi_wr_cmd __P((socket_t, struct timeval *, int, char *, size_t));
 extern bool	mi_sendok __P((SMFICTX_PTR, int));
+
 
 #endif /* !_LIBMILTER_H */

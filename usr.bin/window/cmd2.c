@@ -1,3 +1,4 @@
+/*	$OpenBSD: cmd2.c,v 1.3 1997/02/25 00:03:56 downsj Exp $	*/
 /*	$NetBSD: cmd2.c,v 1.3 1995/09/28 10:34:05 tls Exp $	*/
 
 /*
@@ -40,7 +41,7 @@
 #if 0
 static char sccsid[] = "@(#)cmd2.c	8.1 (Berkeley) 6/6/93";
 #else
-static char rcsid[] = "$NetBSD: cmd2.c,v 1.3 1995/09/28 10:34:05 tls Exp $";
+static char rcsid[] = "$OpenBSD: cmd2.c,v 1.3 1997/02/25 00:03:56 downsj Exp $";
 #endif
 #endif /* not lint */
 
@@ -108,7 +109,7 @@ char *help_longcmd[] = {
 
 c_help()
 {
-	register struct ww *w;
+	struct ww *w;
 
 	if ((w = openiwin(wwnrow - 3, "Help")) == 0) {
 		error("Can't open help window: %s.", wwerror());
@@ -122,9 +123,9 @@ c_help()
 }
 
 help_print(w, name, list)
-register struct ww *w;
+struct ww *w;
 char *name;
-register char **list;
+char **list;
 {
 	wwprintf(w, "%s:\n\n", name);
 	while (*list)

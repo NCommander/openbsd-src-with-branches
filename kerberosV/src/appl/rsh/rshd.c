@@ -839,7 +839,7 @@ doit (int do_kerberos, int check_rhosts)
 #endif /* KRB5 */
     }
 #endif /* KRB4 */
-    execle (pwd->pw_shell, pwd->pw_shell, "-c", cmd, NULL, env);
+    execle (pwd->pw_shell, pwd->pw_shell, "-c", cmd, (char *)NULL, env);
     err(1, "exec %s", pwd->pw_shell);
 }
 
@@ -875,7 +875,7 @@ usage (int ret)
 			NULL,
 			"");
     else
-	syslog (LOG_ERR, "Usage: %s [-ikxlvPL] [-p port]", getprogname());
+	syslog (LOG_ERR, "Usage: %s [-ikxlvPL] [-p port]", __progname);
     exit (ret);
 }
 
@@ -886,7 +886,6 @@ main(int argc, char **argv)
     int optind = 0;
     int port = 0;
 
-    setprogname (argv[0]);
     roken_openlog ("rshd", LOG_ODELAY | LOG_PID, LOG_AUTH);
 
     if (getarg(args, sizeof(args) / sizeof(args[0]), argc, argv,

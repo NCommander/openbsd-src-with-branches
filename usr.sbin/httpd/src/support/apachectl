@@ -75,6 +75,18 @@ do
 	    ERROR=3
 	fi
 	;;
+    startssl|sslstart|start-SSL)
+	if [ $RUNNING -eq 1 ]; then
+	    echo "$0 $ARG: httpd (pid $PID) already running"
+	    continue
+	fi
+	if $HTTPD -DSSL; then
+	    echo "$0 $ARG: httpd started"
+	else
+	    echo "$0 $ARG: httpd could not be started"
+	    ERROR=3
+	fi
+	;;
     stop)
 	if [ $RUNNING -eq 0 ]; then
 	    echo "$0 $ARG: $STATUS"
@@ -149,16 +161,19 @@ do
 	fi
 	;;
     *)
-	echo "usage: $0 (start|stop|restart|fullstatus|status|graceful|configtest|help)"
+	BNAME=`basename $0`
+	echo "usage: $BNAME [ start | startssl | stop | restart | graceful | "
+	echo "                   status | fullstatus | configtest | help ]"
 	cat <<EOF
 
 start      - start httpd
+startssl   - start httpd with SSL enabled
 stop       - stop httpd
 restart    - restart httpd if running by sending a SIGHUP or start if 
              not running
-fullstatus - dump a full status screen; requires lynx and mod_status enabled
-status     - dump a short status screen; requires lynx and mod_status enabled
 graceful   - do a graceful restart by sending a SIGUSR1 or start if not running
+status     - dump a short status screen; requires lynx and mod_status enabled
+fullstatus - dump a full status screen; requires lynx and mod_status enabled
 configtest - do a configuration syntax test
 help       - this screen
 

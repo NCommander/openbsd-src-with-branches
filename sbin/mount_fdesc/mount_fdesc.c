@@ -1,4 +1,5 @@
-/*	$NetBSD: mount_fdesc.c,v 1.6 1995/03/18 14:57:20 cgd Exp $	*/
+/*	$OpenBSD: mount_fdesc.c,v 1.6 1997/08/24 08:07:11 downsj Exp $	*/
+/*	$NetBSD: mount_fdesc.c,v 1.7 1996/04/13 01:31:15 jtc Exp $	*/
 
 /*
  * Copyright (c) 1990, 1992 Jan-Simon Pendry
@@ -47,7 +48,7 @@ char copyright[] =
 #if 0
 static char sccsid[] = "@(#)mount_fdesc.c	8.2 (Berkeley) 3/27/94";
 #else
-static char rcsid[] = "$NetBSD: mount_fdesc.c,v 1.6 1995/03/18 14:57:20 cgd Exp $";
+static char rcsid[] = "$OpenBSD: mount_fdesc.c,v 1.6 1997/08/24 08:07:11 downsj Exp $";
 #endif
 #endif /* not lint */
 
@@ -55,6 +56,7 @@ static char rcsid[] = "$NetBSD: mount_fdesc.c,v 1.6 1995/03/18 14:57:20 cgd Exp 
 #include <sys/mount.h>
 
 #include <err.h>
+#include <errno.h>
 #include <unistd.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -62,12 +64,12 @@ static char rcsid[] = "$NetBSD: mount_fdesc.c,v 1.6 1995/03/18 14:57:20 cgd Exp 
 
 #include "mntopts.h"
 
-struct mntopt mopts[] = {
+const struct mntopt mopts[] = {
 	MOPT_STDOPTS,
 	{ NULL }
 };
 
-void	usage __P((void));
+void	usage(void);
 
 int
 main(argc, argv)
@@ -77,7 +79,7 @@ main(argc, argv)
 	int ch, mntflags;
 
 	mntflags = 0;
-	while ((ch = getopt(argc, argv, "o:")) != EOF)
+	while ((ch = getopt(argc, argv, "o:")) != -1)
 		switch (ch) {
 		case 'o':
 			getmntopts(optarg, mopts, &mntflags);
@@ -92,8 +94,13 @@ main(argc, argv)
 	if (argc != 2)
 		usage();
 
-	if (mount(MOUNT_FDESC, argv[1], mntflags, NULL))
-		err(1, NULL);
+	if (mount(MOUNT_FDESC, argv[1], mntflags, NULL)) {
+		if (errno == EOPNOTSUPP)
+			errx(1, "%s: Filesystem not supported by kernel",
+			    argv[1]);
+		else
+			err(1, "%s", argv[1]);
+	}
 	exit(0);
 }
 

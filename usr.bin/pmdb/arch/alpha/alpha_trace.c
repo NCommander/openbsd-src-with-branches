@@ -1,4 +1,4 @@
-/*	$PMDB: alpha_trace.c,v 1.5 2002/03/10 10:52:16 art Exp $	*/
+/*	$OpenBSD: alpha_trace.c,v 1.4 2002/07/22 02:54:23 art Exp $	*/
 /*
  * Copyright (c) 2002 Artur Grabowski <art@openbsd.org>
  * All rights reserved. 
@@ -172,11 +172,11 @@ inst_load(int ins)
 	return (0);
 }
 
-static __inline int sext __P((u_int));
-static __inline int rega __P((u_int));
-static __inline int regb __P((u_int));
-static __inline int regc __P((u_int));
-static __inline int disp __P((u_int));
+static __inline int sext(u_int);
+static __inline int rega(u_int);
+static __inline int regb(u_int);
+static __inline int regc(u_int);
+static __inline int disp(u_int);
 
 static __inline int
 sext(x)
@@ -247,8 +247,8 @@ md_getframe(struct pstate *ps, int framec, struct md_frame *fram)
 
 	bzero(slot, sizeof(slot));
 
-	if (ptrace(PT_GETREGS, ps->ps_pid, (caddr_t)&regs, 0) != 0)
-		return -1;
+	if (process_getregs(ps, &regs))
+		return (-1);
 
 	for (i = 0; i < 32; i++)
 		slot[i] = -1;
@@ -272,7 +272,7 @@ md_getframe(struct pstate *ps, int framec, struct md_frame *fram)
 
 		framesize = 0;
 		for (i = sizeof (int); i <= offset; i += sizeof (int)) {
-			if (read_from_pid(ps->ps_pid, pc - i, &inst, sizeof(inst)) < 0)
+			if (process_read(ps, pc - i, &inst, sizeof(inst)) < 0)
 				return -1;
 	
 			/*
@@ -324,7 +324,7 @@ md_getframe(struct pstate *ps, int framec, struct md_frame *fram)
 			if (slot[R_RA] == -1)
 				ra = regs.r_regs[R_RA];
 			else
-				if (read_from_pid(ps->ps_pid, (off_t)slot[R_RA],
+				if (process_read(ps, (off_t)slot[R_RA],
 				    &ra, sizeof(ra)) < 0)
 					return -1;
 		} else {

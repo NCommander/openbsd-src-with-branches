@@ -1,3 +1,4 @@
+/*	$OpenBSD: screen.c,v 1.9 2002/07/26 20:19:22 mickey Exp $	*/
 /*	$NetBSD: screen.c,v 1.4 1995/04/29 01:11:36 mycroft Exp $	*/
 
 /*-
@@ -44,43 +45,32 @@
 
 #include <sys/ioctl.h>
 
+#include <err.h>
 #include <setjmp.h>
 #include <signal.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <term.h>
 #include <termios.h>
 #include <unistd.h>
 
-#ifndef sigmask
-#define sigmask(s) (1 << ((s) - 1))
-#endif
-
 #include "screen.h"
 #include "tetris.h"
-
-/*
- * XXX - need a <termcap.h>
- */
-int	tgetent __P((char *, const char *));
-int	tgetflag __P((const char *));
-int	tgetnum __P((const char *));
-int	tputs __P((const char *, int, int (*)(int)));
 
 static cell curscreen[B_SIZE];	/* 1 => standout (or otherwise marked) */
 static int curscore;
 static int isset;		/* true => terminal is in game mode */
 static struct termios oldtt;
-static void (*tstp)();
+static void (*tstp)(int);
 
-char	*tgetstr(), *tgoto();
-
+static void	scr_stop(int);
+static void	stopset(int);
 
 /*
  * Capabilities from TERMCAP.
  */
 char	PC, *BC, *UP;		/* tgoto requires globals: ugh! */
-speed_t	ospeed;
 
 static char
 	*bcstr,			/* backspace char */
@@ -104,25 +94,25 @@ static int
 	MSflag;			/* can move in standout mode */
 
 
-struct tcsinfo {	/* termcap string info; some abbrevs above */
+struct tcsinfo {		/* termcap string info; some abbrevs above */
 	char tcname[3];
 	char **tcaddr;
 } tcstrings[] = {
-	"bc", &bcstr,
-	"ce", &CEstr,
-	"cl", &CLstr,
-	"cm", &CMstr,
+	{"bc", &bcstr},
+	{"ce", &CEstr},
+	{"cl", &CLstr},
+	{"cm", &CMstr},
 #ifdef unneeded
-	"cr", &CRstr,
+	{"cr", &CRstr},
 #endif
-	"le", &BC,		/* move cursor left one space */
-	"pc", &pcstr,
-	"se", &SEstr,
-	"so", &SOstr,
-	"te", &TEstr,
-	"ti", &TIstr,
-	"up", &UP,		/* cursor up */
-	0
+	{"le", &BC},		/* move cursor left one space */
+	{"pc", &pcstr},
+	{"se", &SEstr},
+	{"so", &SOstr},
+	{"te", &TEstr},
+	{"ti", &TIstr},
+	{"up", &UP},		/* cursor up */
+	{ {0}, NULL}
 };
 
 /* This is where we will actually stuff the information */
@@ -164,18 +154,18 @@ scr_init()
 		char tcname[3];
 		int *tcaddr;
 	} tcflags[] = {
-		"bs", &bsflag,
-		"ms", &MSflag,
+		{"bs", &bsflag},
+		{"ms", &MSflag},
 #ifdef unneeded
-		"nc", &ncflag,
+		{"nc", &ncflag},
 #endif
-		"xs", &xsflag,
-		0
+		{"xs", &xsflag},
+		{ {0}, NULL}
 	}, tcnums[] = {
-		"co", &COnum,
-		"li", &LInum,
-		"sg", &sgnum,
-		0
+		{"co", &COnum},
+		{"li", &LInum},
+		{"sg", &sgnum},
+		{ {0}, NULL}
 	};
 	
 	if ((term = getenv("TERM")) == NULL)
@@ -184,13 +174,15 @@ scr_init()
 		stop("cannot find your termcap");
 	fill = combuf;
 	{
-		register struct tcsinfo *p;
+		struct tcsinfo *p;
 
 		for (p = tcstrings; p->tcaddr; p++)
 			*p->tcaddr = tgetstr(p->tcname, &fill);
 	}
+	if (classic)
+		SOstr = SEstr = NULL;
 	{
-		register struct tcninfo *p;
+		struct tcninfo *p;
 
 		for (p = tcflags; p->tcaddr; p++)
 			*p->tcaddr = tgetflag(p->tcname);
@@ -206,7 +198,7 @@ scr_init()
 	if (CMstr == NULL || UP == NULL || BC == NULL)
 		stop("cannot do random cursor positioning via tgoto()");
 	PC = pcstr ? *pcstr : 0;
-	if (sgnum >= 0 || xsflag)
+	if (sgnum > 0 || xsflag)
 		SOstr = SEstr = NULL;
 #ifdef unneeded
 	if (ncflag)
@@ -257,7 +249,7 @@ scr_set()
 	struct winsize ws;
 	struct termios newtt;
 	sigset_t sigset, osigset;
-	void (*ttou)();
+	void (*ttou)(int);
 
 	sigemptyset(&sigset);
 	sigaddset(&sigset, SIGTSTP);
@@ -284,10 +276,12 @@ scr_set()
 	if (Cols == 0)
 	Cols = COnum;
 	if (Rows < MINROWS || Cols < MINCOLS) {
-		(void) fprintf(stderr,
-		    "the screen is too small: must be at least %d x %d",
+		char smallscr[55];
+
+		(void) snprintf(smallscr, 55,
+		    "the screen is too small (must be at least %dx%d)",
 		    MINROWS, MINCOLS);
-		stop("");	/* stop() supplies \n */
+		stop(smallscr);
 	}
 	if (tcgetattr(0, &oldtt) < 0)
 		stop("tcgetattr() fails");
@@ -296,7 +290,6 @@ scr_set()
 	newtt.c_oflag &= ~OXTABS;
 	if (tcsetattr(0, TCSADRAIN, &newtt) < 0)
 		stop("tcsetattr() fails");
-	ospeed = cfgetospeed(&newtt);
 	(void) sigprocmask(SIG_BLOCK, &sigset, &osigset);
 
 	/*
@@ -350,8 +343,7 @@ stop(why)
 
 	if (isset)
 		scr_end();
-	(void) fprintf(stderr, "aborting: %s\n", why);
-	exit(1);
+	errx(1, "aborting: %s", why);
 }
 
 /*
@@ -363,7 +355,7 @@ scr_clear()
 
 	putpad(CLstr);
 	curscore = -1;
-	bzero((char *)curscreen, sizeof(curscreen));
+	memset((char *)curscreen, 0, sizeof(curscreen));
 }
 
 #if vax && !__GNUC__
@@ -378,10 +370,11 @@ typedef cell regcell;
 void
 scr_update()
 {
-	register cell *bp, *sp;
-	register regcell so, cur_so = 0;
-	register int i, ccol, j;
+	cell *bp, *sp;
+	regcell so, cur_so = 0;
+	int i, ccol, j;
 	sigset_t sigset, osigset;
+	static const struct shape *lastshape;
 
 	sigemptyset(&sigset);
 	sigaddset(&sigset, SIGTSTP);
@@ -395,8 +388,44 @@ scr_update()
 			putpad(HOstr);
 		else
 			moveto(0, 0);
-		(void) printf("%d", score);
+		(void) printf("Score: %d", score);
 		curscore = score;
+	}
+
+	/* draw preview of next pattern */
+	if (showpreview && (nextshape != lastshape)) {
+		int i;
+		static int r=5, c=2;
+		int tr, tc, t;
+
+		lastshape = nextshape;
+
+		/* clean */
+		putpad(SEstr);
+		moveto(r-1, c-1); putstr("          ");
+		moveto(r,   c-1); putstr("          ");
+		moveto(r+1, c-1); putstr("          ");
+		moveto(r+2, c-1); putstr("          ");
+
+		moveto(r-3, c-2);
+		putstr("Next shape:");
+
+		/* draw */
+		if (SOstr)
+			putpad(SOstr);
+		moveto(r, 2 * c);
+		putstr(SOstr ? "  " : "[]");
+		for (i = 0; i < 3; i++) {
+			t = c + r * B_COLS;
+			t += nextshape->off[i];
+
+			tr = t / B_COLS;
+			tc = t % B_COLS;
+
+			moveto(tr, 2*tc);
+			putstr(SOstr ? "  " : "[]");
+		}
+		putpad(SEstr);
 	}
 
 	bp = &board[D_FIRST * B_COLS];
@@ -421,7 +450,7 @@ scr_update()
 				}
 				putstr("  ");
 			} else
-				putstr(so ? "XX" : "  ");
+				putstr(so ? "[]" : "  ");
 			ccol = i + 1;
 			/*
 			 * Look ahead a bit, to avoid extra motion if
@@ -454,12 +483,12 @@ scr_update()
  */
 void
 scr_msg(s, set)
-	register char *s;
+	char *s;
 	int set;
 {
 	
 	if (set || CEstr == NULL) {
-		register int l = strlen(s);
+		int l = strlen(s);
 
 		moveto(Rows - 2, ((Cols - l) >> 1) - 1);
 		if (set)

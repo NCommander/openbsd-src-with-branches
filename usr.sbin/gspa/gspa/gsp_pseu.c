@@ -16,7 +16,7 @@
  *    must display the following acknowledgement:
  *      This product includes software developed by Paul Mackerras.
  * 4. The name of the author may not be used to endorse or promote products
- *    derived from this software withough specific prior written permission
+ *    derived from this software without specific prior written permission
  *
  * THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR
  * IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
@@ -32,14 +32,14 @@
 #include "gsp_ass.h"
 #include "gsp_code.h"
 
-extern unsigned highest_pc, line_pc;
+extern unsigned int highest_pc, line_pc;
 
 void
 pseudo(int code, operand ops)
 {
 	operand o;
 	int32_t val;
-	unsigned ln;
+	unsigned int ln;
 	u_int16_t words[2];
 
 	switch( code ){

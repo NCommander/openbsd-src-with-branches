@@ -1,3 +1,4 @@
+/*	$OpenBSD: sync.c,v 1.3 2001/05/18 07:32:36 mickey Exp $	*/
 /*	$NetBSD: sync.c,v 1.7 1995/03/21 09:11:37 cgd Exp $	*/
 
 /*
@@ -43,17 +44,15 @@ static char copyright[] =
 #if 0
 static char sccsid[] = "@(#)sync.c	8.1 (Berkeley) 5/31/93";
 #else
-static char rcsid[] = "$NetBSD: sync.c,v 1.7 1995/03/21 09:11:37 cgd Exp $";
+static char rcsid[] = "$OpenBSD: sync.c,v 1.3 2001/05/18 07:32:36 mickey Exp $";
 #endif
 #endif /* not lint */
 
 #include <unistd.h>
 
 int
-main(argc, argv)
-	int argc;
-	char *argv[];
+main(int argc, char *argv[])
 {
 	sync();
-	exit(0);
+	return(0);
 }

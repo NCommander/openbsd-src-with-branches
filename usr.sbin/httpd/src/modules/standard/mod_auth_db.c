@@ -1,3 +1,5 @@
+/*	$OpenBSD$ */
+
 /* ====================================================================
  * The Apache Software License, Version 1.1
  *
@@ -166,6 +168,8 @@ static char *get_db_pw(request_rec *r, char *user, const char *auth_dbpwfile)
 
     q.data = user;
     q.size = strlen(q.data);
+
+    ap_server_strip_chroot(auth_dbpwfile, 1);
 
 #if defined(DB3)
     if (   db_create(&f, NULL, 0) != 0 

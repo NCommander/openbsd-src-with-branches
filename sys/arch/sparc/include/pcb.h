@@ -1,3 +1,4 @@
+/*	$OpenBSD: pcb.h,v 1.3 1999/04/22 17:02:25 art Exp $	*/
 /*	$NetBSD: pcb.h,v 1.4 1995/03/28 18:19:56 jtc Exp $ */
 
 /*
@@ -43,6 +44,9 @@
  *
  *	@(#)pcb.h	8.1 (Berkeley) 6/11/93
  */
+
+#ifndef _SPARC_PCB_H_
+#define _SPARC_PCB_H_
 
 #include <machine/reg.h>
 
@@ -101,7 +105,7 @@ struct pcb {
 	int	pcb_winof;	/* number of window overflow traps */
 	int	pcb_winuf;	/* number of window underflow traps */
 #endif
-	int	pcb_pad;	/* pad to doubleword boundary */
+	u_int32_t pcb_wcookie;	/* StackGhost cookie (must be unsigned) */
 
 	/* the following MUST be aligned on a doubleword boundary */
 	struct	rwindow pcb_rw[PCB_MAXWIN];	/* saved windows */
@@ -114,10 +118,13 @@ struct pcb {
  * stack itself need not be dumped).
  */
 struct md_coredump {
-	struct	trapframe md_tf;
-	struct	fpstate md_fpstate;
+	struct trapframe	md_tf;
+	struct fpstate		md_fpstate;
+	u_int32_t		md_wcookie;
 };
 
 #ifdef _KERNEL
 extern struct pcb *cpcb;
 #endif /* _KERNEL */
+
+#endif

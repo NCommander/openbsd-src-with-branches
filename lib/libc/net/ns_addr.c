@@ -1,5 +1,3 @@
-/*	$NetBSD: ns_addr.c,v 1.5 1995/02/25 06:20:51 cgd Exp $	*/
-
 /*
  * Copyright (c) 1986, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -37,11 +35,7 @@
  */
 
 #if defined(LIBC_SCCS) && !defined(lint)
-#if 0
-static char sccsid[] = "@(#)ns_addr.c	8.1 (Berkeley) 6/7/93";
-#else
-static char rcsid[] = "$NetBSD: ns_addr.c,v 1.5 1995/02/25 06:20:51 cgd Exp $";
-#endif
+static char rcsid[] = "$OpenBSD: ns_addr.c,v 1.6 2001/06/27 00:58:55 lebel Exp $";
 #endif /* LIBC_SCCS and not lint */
 
 #include <sys/param.h>
@@ -51,7 +45,8 @@ static char rcsid[] = "$NetBSD: ns_addr.c,v 1.5 1995/02/25 06:20:51 cgd Exp $";
 
 static struct ns_addr addr, zero_addr;
 
-static void Field(), cvtbase();
+static void Field(char *, u_int8_t *, int);
+static void cvtbase(long, int, int[], int, u_int8_t[], int);
 
 struct ns_addr 
 ns_addr(name)
@@ -61,16 +56,15 @@ ns_addr(name)
 	char *hostname, *socketname, *cp;
 	char buf[50];
 
-	(void)strncpy(buf, name, sizeof(buf) - 1);
-	buf[sizeof(buf) - 1] = '\0';
+	strlcpy(buf, name, sizeof(buf));
 
 	/*
 	 * First, figure out what he intends as a field separtor.
 	 * Despite the way this routine is written, the prefered
 	 * form  2-272.AA001234H.01777, i.e. XDE standard.
-	 * Great efforts are made to insure backward compatability.
+	 * Great efforts are made to insure backward compatibility.
 	 */
-	if (hostname = strchr(buf, '#'))
+	if ((hostname = strchr(buf, '#')))
 		separator = '#';
 	else {
 		hostname = strchr(buf, '.');
@@ -95,7 +89,7 @@ ns_addr(name)
 		Field(socketname, (u_char *)&addr.x_port, 2);
 	}
 
-	Field(hostname, addr.x_host.c_host, 6);
+	Field(hostname, (u_char *)addr.x_host.c_host, 6);
 
 	return (addr);
 }

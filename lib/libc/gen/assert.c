@@ -1,5 +1,3 @@
-/*	$NetBSD: assert.c,v 1.6 1995/02/25 08:50:56 cgd Exp $	*/
-
 /*-
  * Copyright (c) 1992, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -34,11 +32,7 @@
  */
 
 #if defined(LIBC_SCCS) && !defined(lint)
-#if 0
-static char sccsid[] = "@(#)assert.c	8.1 (Berkeley) 6/4/93";
-#else
-static char *rcsid = "$NetBSD: assert.c,v 1.6 1995/02/25 08:50:56 cgd Exp $";
-#endif
+static char *rcsid = "$OpenBSD: assert.c,v 1.4 2002/04/19 15:48:35 deraadt Exp $";
 #endif /* LIBC_SCCS and not lint */
 
 #include <sys/types.h>
@@ -54,6 +48,16 @@ __assert(file, line, failedexpr)
 	(void)fprintf(stderr,
 	    "assertion \"%s\" failed: file \"%s\", line %d\n",
 	    failedexpr, file, line);
+	abort();
+	/* NOTREACHED */
+}
+
+void
+__assert2(const char *file, int line, const char *func, const char *failedexpr)
+{
+	(void)fprintf(stderr,
+	    "assertion \"%s\" failed: file \"%s\", line %d, function \"%s\"\n",
+	    failedexpr, file, line, func);
 	abort();
 	/* NOTREACHED */
 }

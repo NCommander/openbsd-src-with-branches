@@ -32,10 +32,9 @@
 .\" OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 .\" SUCH DAMAGE.
 .\"
-.\"     from: @(#)realpath.3	8.2 (Berkeley) 2/16/94
-.\"	$Id: realpath.3,v 1.1.1.1 1994/05/17 12:42:30 mycroft Exp $
+.\"	$OpenBSD: realpath.3,v 1.7 2000/04/20 13:50:02 aaron Exp $
 .\"
-.Dd "February 16, 1994"
+.Dd February 16, 1994
 .Dt REALPATH 3
 .Os
 .Sh NAME
@@ -57,8 +56,7 @@ and
 .Pa /../
 in
 .Fa pathname ,
-and copies the resulting absolute pathname into
-the memory referenced by
+and copies the resulting absolute pathname into the memory referenced by
 .Fa resolvedname .
 The
 .Fa resolvedname
@@ -68,7 +66,7 @@ refer to a buffer capable of storing at least
 .Dv MAXPATHLEN
 characters.
 .Pp
-The 
+The
 .Fn realpath
 function will resolve both absolute and relative paths
 and return the absolute pathname corresponding to
@@ -82,14 +80,14 @@ is called.
 The
 .Fn realpath
 function returns
-.Fa resolved_name
+.Fa resolvedname
 on success.
 If an error occurs,
 .Fn realpath
 returns
 .Dv NULL ,
 and
-.Fa resolved_name
+.Fa resolvedname
 contains the pathname which caused the problem.
 .Sh ERRORS
 The function
@@ -102,7 +100,7 @@ for any of the errors specified for the library functions
 .Xr fchdir 2 ,
 .Xr lstat 2 ,
 .Xr open 2 ,
-.Xr readlink 2
+.Xr readlink 2 ,
 and
 .Xr getcwd 3 .
 .Sh CAVEATS
@@ -114,10 +112,10 @@ The
 version always returns absolute pathnames,
 whereas the Solaris implementation will,
 under certain circumstances, return a relative
-.Fa resolved_path
+.Fa resolvedname
 when given a relative
 .Fa pathname .
-.Sh "SEE ALSO"
+.Sh SEE ALSO
 .Xr getcwd 3
 .Sh HISTORY
 The

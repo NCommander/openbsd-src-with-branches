@@ -71,6 +71,8 @@
 # define OPENSSL_EXTERN OPENSSL_EXPORT
 #endif
 
+#define des_SPtrans DES_SPtrans
+
 #ifdef  __cplusplus
 extern "C" {
 #endif

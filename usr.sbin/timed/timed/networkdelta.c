@@ -1,3 +1,5 @@
+/*	$OpenBSD: networkdelta.c,v 1.4 2001/05/05 05:10:04 mickey Exp $	*/
+
 /*-
  * Copyright (c) 1985, 1993 The Regents of the University of California.
  * All rights reserved.
@@ -34,10 +36,6 @@
 #ifndef lint
 static char sccsid[] = "@(#)networkdelta.c	5.1 (Berkeley) 5/11/93";
 #endif /* not lint */
-
-#ifdef sgi
-#ident "$Revision: 1.3 $"
-#endif
 
 #include "globals.h"
 
@@ -216,13 +214,13 @@ median(float a,				/* initial guess for the median */
 		aa = (sumx/sum-a)*AMP;
 		if (npts >= 2) {	/* guess was too low */
 			am = a;
-			aa = xp + max(0.0, aa);;
+			aa = xp + max(0.0, aa);
 			if (aa > ap)
 				aa = (a + ap)/2;
 
 		} else if (npts <= -2) {  /* guess was two high */
 			ap = a;
-			aa = xm + min(0.0, aa);;
+			aa = xm + min(0.0, aa);
 			if (aa < am)
 				aa = (a + am)/2;
 
@@ -250,7 +248,7 @@ median(float a,				/* initial guess for the median */
 		else
 			a = (xm+a)/2;
 
-	} else 	if (npts != 0) {	/* odd number of points */
+	} else	if (npts != 0) {	/* odd number of points */
 		if (npts > 0)
 			a = xp;
 		else

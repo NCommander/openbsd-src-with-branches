@@ -1,3 +1,4 @@
+/*	$OpenBSD: proc.h,v 1.7 1994/11/21 21:34:06 gwr Exp $	*/
 /*	$NetBSD: proc.h,v 1.7 1994/11/21 21:34:06 gwr Exp $	*/
 
 /*
@@ -43,7 +44,6 @@
 struct mdproc {
 	int	*md_regs;		/* registers on current frame */
 	int	md_flags;		/* machine-dependent flags */
-	int	md_upte[UPAGES];	/* ptes for mapping u page */
 };
 
 /* md_flags */

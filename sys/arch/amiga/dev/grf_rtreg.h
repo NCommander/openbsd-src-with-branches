@@ -1,4 +1,5 @@
-/*	$NetBSD: grf_rtreg.h,v 1.6 1995/02/16 21:57:41 chopps Exp $	*/
+/*	$OpenBSD: grf_rtreg.h,v 1.3 1998/04/17 15:55:52 niklas Exp $	*/
+/*	$NetBSD: grf_rtreg.h,v 1.7 1996/04/21 21:11:23 veego Exp $	*/
 
 /*
  * Copyright (c) 1993 Markus Wild
@@ -41,7 +42,7 @@
  * initial driver, has made an agreement with MS not to document
  * the driver source (see also his comment below).
  * -> ALL comments and register defines after
- * -> "/* -------------- START OF CODE -------------- * /"
+ * -> " -------------- START OF CODE -------------- "
  * -> have been added by myself (mw) from studying the publically
  * -> available "NCR 77C22E+" Data Manual
  */	 
@@ -502,26 +503,26 @@ extern unsigned char NCRStdPalette[];
 #define Map(m) \
 	do { WGfx(ba, GCT_ID_READ_MAP_SELECT, m & 3 ); WSeq(ba, SEQ_ID_MAP_MASK, (1 << (m & 3))); } while (0)
 
-static inline unsigned char RAttr(volatile void * ba, short idx) {
+static __inline unsigned char RAttr(volatile void * ba, short idx) {
 	vgaw (ba, ACT_ADDRESS, idx);
 	return vgar (ba, ACT_ADDRESS_R);
 }
 
-static inline unsigned char RSeq(volatile void * ba, short idx) {
+static __inline unsigned char RSeq(volatile void * ba, short idx) {
 	vgaw (ba, SEQ_ADDRESS, idx);
 	return vgar (ba, SEQ_ADDRESS_R);
 }
 
-static inline unsigned char RCrt(volatile void * ba, short idx) {
+static __inline unsigned char RCrt(volatile void * ba, short idx) {
 	vgaw (ba, CRT_ADDRESS, idx);
 	return vgar (ba, CRT_ADDRESS_R);
 }
 
-static inline unsigned char RGfx(volatile void * ba, short idx) {
+static __inline unsigned char RGfx(volatile void * ba, short idx) {
 	vgaw(ba, GCT_ADDRESS, idx);
 	return vgar (ba, GCT_ADDRESS_R);
 }
 
-int grfrt_cnprobe __P((void));
-void grfrt_iteinit __P((struct grf_softc *));
+int grfrt_cnprobe(void);
+void grfrt_iteinit(struct grf_softc *);
 #endif /* _GRF_RTREG_H */

@@ -33,8 +33,7 @@
 .\" OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 .\" SUCH DAMAGE.
 .\"
-.\"     from: @(#)exit.3	6.6 (Berkeley) 6/29/91
-.\"	$Id: exit.3,v 1.2 1993/08/01 07:44:29 mycroft Exp $
+.\"	$OpenBSD: exit.3,v 1.5 2001/03/08 20:43:42 deraadt Exp $
 .\"
 .Dd June 29, 1991
 .Dt EXIT 3
@@ -47,8 +46,9 @@
 .Ft void
 .Fn exit "int status"
 .Sh DESCRIPTION
-.Fn Exit
-terminates a process.
+The
+.Fn exit
+function terminates a process.
 .Pp
 Before termination it performs the following functions in the
 order listed:
@@ -66,19 +66,27 @@ Unlink all files created with the
 .Xr tmpfile 3
 function.
 .El
+Following this,
+.Fn exit
+calls
+.Xr _exit 2 .
+Note that typically
+.Xr exit 2
+only passes the lower 8 bits of
+.Fa status
+on to the parent, thus negative values have less meaning.
 .Sh RETURN VALUES
 The
 .Fn exit
-function
-never returns.
+function never returns.
 .Sh SEE ALSO
 .Xr _exit 2 ,
 .Xr atexit 3 ,
 .Xr intro 3 ,
+.Xr sysexits 3 ,
 .Xr tmpfile 3
 .Sh STANDARDS
 The
 .Fn exit
-function
-conforms to
+function conforms to
 .St -ansiC .

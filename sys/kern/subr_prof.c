@@ -1,4 +1,5 @@
-/*	$NetBSD: subr_prof.c,v 1.7 1995/10/07 06:28:33 mycroft Exp $	*/
+/*	$OpenBSD: subr_prof.c,v 1.10 2002/06/07 21:20:02 art Exp $	*/
+/*	$NetBSD: subr_prof.c,v 1.12 1996/04/22 01:38:50 christos Exp $	*/
 
 /*-
  * Copyright (c) 1982, 1986, 1993
@@ -40,7 +41,6 @@
 #include <sys/kernel.h>
 #include <sys/proc.h>
 #include <sys/user.h>
-
 #include <sys/mount.h>
 #include <sys/syscallargs.h>
 
@@ -49,6 +49,7 @@
 #ifdef GPROF
 #include <sys/malloc.h>
 #include <sys/gmon.h>
+#include <uvm/uvm_extern.h>
 
 /*
  * Froms is actually a bunch of unsigned shorts indexing tos
@@ -57,10 +58,14 @@ struct gmonparam _gmonparam = { GMON_PROF_OFF };
 
 extern char etext[];
 
+
+void
 kmstartup()
 {
 	char *cp;
 	struct gmonparam *p = &_gmonparam;
+	int size;
+
 	/*
 	 * Round lowpc and highpc to multiples of the density we're using
 	 * so the rest of the scaling (here and in gprof) stays in ints.
@@ -68,7 +73,7 @@ kmstartup()
 	p->lowpc = ROUNDDOWN(KERNBASE, HISTFRACTION * sizeof(HISTCOUNTER));
 	p->highpc = ROUNDUP((u_long)etext, HISTFRACTION * sizeof(HISTCOUNTER));
 	p->textsize = p->highpc - p->lowpc;
-	printf("Profiling kernel, textsize=%d [%p..%p]\n",
+	printf("Profiling kernel, textsize=%ld [%lx..%lx]\n",
 	       p->textsize, p->lowpc, p->highpc);
 	p->kcountsize = p->textsize / HISTFRACTION;
 	p->hashfraction = HASHFRACTION;
@@ -79,13 +84,12 @@ kmstartup()
 	else if (p->tolimit > MAXARCS)
 		p->tolimit = MAXARCS;
 	p->tossize = p->tolimit * sizeof(struct tostruct);
-	cp = (char *)malloc(p->kcountsize + p->fromssize + p->tossize,
-	    M_GPROF, M_NOWAIT);
+	size = p->kcountsize + p->fromssize + p->tossize;
+	cp = (char *)uvm_km_zalloc(kernel_map, round_page(size));
 	if (cp == 0) {
 		printf("No memory for profiling.\n");
 		return;
 	}
-	bzero(cp, p->kcountsize + p->tossize + p->fromssize);
 	p->tos = (struct tostruct *)cp;
 	cp += p->tossize;
 	p->kcount = (u_short *)cp;
@@ -96,7 +100,8 @@ kmstartup()
 /*
  * Return kernel profiling information.
  */
-sysctl_doprof(name, namelen, oldp, oldlenp, newp, newlen, p)
+int
+sysctl_doprof(name, namelen, oldp, oldlenp, newp, newlen)
 	int *name;
 	u_int namelen;
 	void *oldp;
@@ -146,13 +151,14 @@ sysctl_doprof(name, namelen, oldp, oldlenp, newp, newlen, p)
  * 1.0 is represented as 0x10000.  A scale factor of 0 turns off profiling.
  */
 /* ARGSUSED */
+int
 sys_profil(p, v, retval)
 	struct proc *p;
 	void *v;
 	register_t *retval;
 {
 	register struct sys_profil_args /* {
-		syscallarg(caddr_t) samples;
+		syscallarg(char *) samples;
 		syscallarg(u_int) size;
 		syscallarg(u_int) offset;
 		syscallarg(u_int) scale;
@@ -172,7 +178,7 @@ sys_profil(p, v, retval)
 	s = splstatclock();
 	upp->pr_off = SCARG(uap, offset);
 	upp->pr_scale = SCARG(uap, scale);
-	upp->pr_base = SCARG(uap, samples);
+	upp->pr_base = (caddr_t)SCARG(uap, samples);
 	upp->pr_size = SCARG(uap, size);
 	startprofclock(p);
 	splx(s);
@@ -192,55 +198,34 @@ sys_profil(p, v, retval)
 /*
  * Collect user-level profiling statistics; called on a profiling tick,
  * when a process is running in user-mode.  This routine may be called
- * from an interrupt context.  We try to update the user profiling buffers
- * cheaply with fuswintr() and suswintr().  If that fails, we revert to
- * an AST that will vector us to trap() with a context in which copyin
- * and copyout will work.  Trap will then call addupc_task().
- *
- * Note that we may (rarely) not get around to the AST soon enough, and
- * lose profile ticks when the next tick overwrites this one, but in this
- * case the system is overloaded and the profile is probably already
- * inaccurate.
+ * from an interrupt context. Schedule an AST that will vector us to
+ * trap() with a context in which copyin and copyout will work.
+ * Trap will then call addupc_task().
  */
 void
-addupc_intr(p, pc, ticks)
-	register struct proc *p;
-	register u_long pc;
-	u_int ticks;
+addupc_intr(struct proc *p, u_long pc)
 {
-	register struct uprof *prof;
-	register caddr_t addr;
-	register u_int i;
-	register int v;
+	struct uprof *prof;
 
-	if (ticks == 0)
-		return;
 	prof = &p->p_stats->p_prof;
-	if (pc < prof->pr_off ||
-	    (i = PC_TO_INDEX(pc, prof)) >= prof->pr_size)
+	if (pc < prof->pr_off || PC_TO_INDEX(pc, prof) >= prof->pr_size)
 		return;			/* out of range; ignore */
 
-	addr = prof->pr_base + i;
-	if ((v = fuswintr(addr)) == -1 || suswintr(addr, v + ticks) == -1) {
-		prof->pr_addr = pc;
-		prof->pr_ticks = ticks;
-		need_proftick(p);
-	}
+	prof->pr_addr = pc;
+	need_proftick(p);
 }
+
 
 /*
  * Much like before, but we can afford to take faults here.  If the
  * update fails, we simply turn off profiling.
  */
 void
-addupc_task(p, pc, ticks)
-	register struct proc *p;
-	register u_long pc;
-	u_int ticks;
+addupc_task(struct proc *p, u_long pc, u_int ticks)
 {
-	register struct uprof *prof;
-	register caddr_t addr;
-	register u_int i;
+	struct uprof *prof;
+	caddr_t addr;
+	u_int i;
 	u_short v;
 
 	/* Testing P_PROFIL may be unnecessary, but is certainly safe. */

@@ -1,3 +1,4 @@
+/*	$OpenBSD: torped.c,v 1.4 2002/02/16 21:27:12 millert Exp $	*/
 /*	$NetBSD: torped.c,v 1.3 1995/04/22 10:59:34 cgd Exp $	*/
 
 /*
@@ -37,12 +38,16 @@
 #if 0
 static char sccsid[] = "@(#)torped.c	8.1 (Berkeley) 5/31/93";
 #else
-static char rcsid[] = "$NetBSD: torped.c,v 1.3 1995/04/22 10:59:34 cgd Exp $";
+static char rcsid[] = "$OpenBSD: torped.c,v 1.4 2002/02/16 21:27:12 millert Exp $";
 #endif
 #endif /* not lint */
 
-# include	<stdio.h>
-# include	"trek.h"
+#include <stdio.h>
+#include <math.h>
+#include "trek.h"
+#include "getpar.h"
+
+static int randcourse(int);
 
 /*
 **  PHOTON TORPEDO CONTROL
@@ -63,28 +68,30 @@ static char rcsid[] = "$NetBSD: torped.c,v 1.3 1995/04/22 10:59:34 cgd Exp $";
 **	the misfire damages your torpedo tubes.
 */
 
-
-torped()
+void
+torped(v)
+	int v;
 {
-	register int		ix, iy;
-	double			x, y, dx, dy;
-	double			angle;
-	int			course, course2;
-	register int		k;
-	double			bigger;
-	double			sectsize;
-	int			burst;
-	int			n;
+	int	ix, iy;
+	double	x, y, dx, dy;
+	double	angle;
+	int	course, course2;
+	int	k;
+	double	bigger;
+	double	sectsize;
+	int	burst, n;
 
 	if (Ship.cloaked)
 	{
-		return (printf("Federation regulations do not permit attack while cloaked.\n"));
+		printf("Federation regulations do not permit attack while cloaked.\n");
+		return;
 	}
 	if (check_out(TORPED))
 		return;
 	if (Ship.torped <= 0)
 	{
-		return (printf("All photon torpedos expended\n"));
+		printf("All photon torpedos expended\n");
+		return;
 	}
 
 	/* get the course */
@@ -104,7 +111,7 @@ torped()
 		/* see if the user wants one */
 		if (!testnl())
 		{
-			k = ungetc(cgetc(0), stdin);
+			k = ungetc(getchar(), stdin);
 			if (k >= '0' && k <= '9')
 				burst = 1;
 		}
@@ -119,7 +126,10 @@ torped()
 		if (burst <= 0)
 			return;
 		if (burst > 15)
-			return (printf("Maximum burst angle is 15 degrees\n"));
+		{
+			printf("Maximum burst angle is 15 degrees\n");
+			return;
+		}
 	}
 	sectsize = NSECTS;
 	n = -1;
@@ -221,11 +231,12 @@ torped()
 **	to the tubes, etc.
 */
 
+static int
 randcourse(n)
-int	n;
+	int	n;
 {
-	double			r;
-	register int		d;
+	double	r;
+	int	d;
 
 	d = ((franf() + franf()) - 1.0) * 20;
 	if (abs(d) > 12)

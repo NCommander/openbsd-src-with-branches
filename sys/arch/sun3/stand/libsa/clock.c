@@ -1,3 +1,5 @@
+/*	$OpenBSD$	*/
+
 
 #include <sys/types.h>
 #include <machine/mon.h>

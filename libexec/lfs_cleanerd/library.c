@@ -1,3 +1,5 @@
+/*	$OpenBSD: library.c,v 1.8 2002/05/27 20:32:08 deraadt Exp $	*/
+
 /*-
  * Copyright (c) 1992, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -32,8 +34,8 @@
  */
 
 #ifndef lint
-/*static char sccsid[] = "from: @(#)library.c	8.1 (Berkeley) 6/4/93";*/
-static char *rcsid = "$Id: library.c,v 1.1 1994/06/08 18:42:15 mycroft Exp $";
+/*static char sccsid[] = "@(#)library.c	8.3 (Berkeley) 5/24/95";*/
+static char rcsid[] = "$OpenBSD: library.c,v 1.8 2002/05/27 20:32:08 deraadt Exp $";
 #endif /* not lint */
 
 #include <sys/param.h>
@@ -54,20 +56,19 @@ static char *rcsid = "$Id: library.c,v 1.1 1994/06/08 18:42:15 mycroft Exp $";
 
 #include "clean.h"
 
-void	 add_blocks __P((FS_INFO *, BLOCK_INFO *, int *, SEGSUM *, caddr_t,
-	     daddr_t, daddr_t));
-void	 add_inodes __P((FS_INFO *, BLOCK_INFO *, int *, SEGSUM *, caddr_t,
-	     daddr_t));
-int	 bi_compare __P((const void *, const void *));
-int	 bi_toss __P((const void *, const void *, const void *));
-void	 get_ifile __P((FS_INFO *, int));
-int	 get_superblock __P((FS_INFO *, struct lfs *));
-int	 pseg_valid __P((FS_INFO *, SEGSUM *));
+void	 add_blocks(FS_INFO *, BLOCK_INFO *, int *, SEGSUM *, caddr_t,
+	     daddr_t, daddr_t);
+void	 add_inodes(FS_INFO *, BLOCK_INFO *, int *, SEGSUM *, caddr_t, daddr_t);
+int	 bi_compare(const void *, const void *);
+int	 bi_toss(const void *, const void *, const void *);
+void	 get_ifile(FS_INFO *, int);
+int	 get_superblock(FS_INFO *, struct lfs *);
+int	 pseg_valid(FS_INFO *, SEGSUM *);
 
 /*
- * This function will get information on a a filesystem which matches
+ * This function will get information on a filesystem which matches
  * the name and type given.  If a "name" is in a filesystem of the given
- * type, then buf is filled with that filesystem's info, and the
+ * type, then buf is filled with that filesystem's info, and 
  * a non-zero value is returned.
  */
 int
@@ -88,7 +89,7 @@ fs_getmntinfo(buf, name, type)
 	}
 
 	/* check to see if it's the one we want */
-	if (strncmp(type, (*buf)->f_fstypename, MFSNAMELEN) ||
+	if (strcmp((*buf)->f_fstypename, type) ||
 	    strncmp(name, (*buf)->f_mntonname, MNAMELEN)) {
 		/* "this is not the filesystem you're looking for */
 		free(*buf);
@@ -108,7 +109,6 @@ get_fs_info (lstatfsp, use_mmap)
 	int use_mmap;			/* IN: mmap or read */
 {
 	FS_INFO	*fsp;
-	int	i;
 	
 	fsp = (FS_INFO *)malloc(sizeof(FS_INFO));
 	if (fsp == NULL)
@@ -134,8 +134,6 @@ reread_fs_info(fsp, use_mmap)
 	FS_INFO *fsp;	/* IN: prointer fs_infos to reread */
 	int use_mmap;
 {
-	int i;
-	
 	if (statfs(fsp->fi_statfsp->f_mntonname, fsp->fi_statfsp))
 		err(1, "reread_fs_info: statfs failed");
 	get_ifile (fsp, use_mmap);
@@ -150,19 +148,17 @@ get_superblock (fsp, sbp)
 	struct lfs *sbp;
 {
 	char mntfromname[MNAMELEN+1];
-	char buf[LFS_SBPAD];
-        int fid;
+	int fid;
 
-	strcpy(mntfromname, "/dev/r");
-	strcat(mntfromname, fsp->fi_statfsp->f_mntfromname+5);
+	snprintf(mntfromname, sizeof mntfromname, "/dev/r%s",
+	    fsp->fi_statfsp->f_mntfromname+5);
 
 	if ((fid = open(mntfromname, O_RDONLY, (mode_t)0)) < 0) {
 		err(0, "get_superblock: bad open");
 		return (-1);
 	}
 
-	get(fid, LFS_LABELPAD, buf, LFS_SBPAD);
-	bcopy(buf, sbp, sizeof(struct lfs));
+	get(fid, LFS_LABELPAD, sbp, sizeof(struct lfs));
 	close (fid);
 	
 	return (0);
@@ -182,11 +178,13 @@ get_ifile (fsp, use_mmap)
 	caddr_t ifp;
 	char *ifile_name;
 	int count, fid;
+	int len;
 
 	ifp = NULL;
-	ifile_name = malloc(strlen(fsp->fi_statfsp->f_mntonname) +
-	    strlen(IFILE_NAME)+2);
-	strcat(strcat(strcpy(ifile_name, fsp->fi_statfsp->f_mntonname), "/"),
+	len = strlen(fsp->fi_statfsp->f_mntonname) + strlen(IFILE_NAME) + 2;
+	ifile_name = malloc(len);
+	
+	snprintf(ifile_name, len, "%s/%s", fsp->fi_statfsp->f_mntonname,
 	    IFILE_NAME);
 
 	if ((fid = open(ifile_name, O_RDWR, (mode_t)0)) < 0)
@@ -233,7 +231,7 @@ redo_read:
 	fsp->fi_ifilep  = (IFILE *)((caddr_t)fsp->fi_segusep + SEGTABSIZE(fsp));
 
 	/*
-	 * The number of ifile entries is equal to the number of blocks
+	 * The number of ifile entries is equal to the number of 
 	 * blocks in the ifile minus the ones allocated to cleaner info
 	 * and segment usage table multiplied by the number of ifile
 	 * entries per page.
@@ -267,7 +265,7 @@ lfs_segmapv(fsp, seg, seg_buf, blocks, bcount)
 	struct lfs *lfsp;
 	caddr_t s, segend;
 	daddr_t pseg_addr, seg_addr;
-	int i, nelem, nblocks, sumsize;
+	int i, nelem, nblocks, nsegs, sumsize;
 	time_t timestamp;
 
 	lfsp = &fsp->fi_lfs;
@@ -284,8 +282,15 @@ lfs_segmapv(fsp, seg, seg_buf, blocks, bcount)
 #endif /* VERBOSE */
 
 	*bcount = 0;
-	for (segend = seg_buf + seg_size(lfsp), timestamp = 0; s < segend; ) {
+	for (nsegs = 0, timestamp = 0; nsegs < sup->su_nsums; nsegs++) {
 		sp = (SEGSUM *)s;
+
+		nblocks = pseg_valid(fsp, sp);
+		if (nblocks <= 0) {
+			printf("Warning: invalid segment summary at 0x%x\n",
+			    pseg_addr);
+			break;
+		}
 
 #ifdef VERBOSE
 		printf("\tpartial at: 0x%x\n", pseg_addr);
@@ -293,20 +298,16 @@ lfs_segmapv(fsp, seg, seg_buf, blocks, bcount)
 		fflush(stdout);
 #endif /* VERBOSE */
 
-		nblocks = pseg_valid(fsp, sp);
-		if (nblocks <= 0)
-			break;
-
 		/* Check if we have hit old data */
 		if (timestamp > ((SEGSUM*)s)->ss_create)
 			break;
 		timestamp = ((SEGSUM*)s)->ss_create;
 
 #ifdef DIAGNOSTIC
-		/* Verfiy size of summary block */
+		/* Verifiy size of summary block */
 		sumsize = sizeof(SEGSUM) +
 		    (sp->ss_ninos + INOPB(lfsp) - 1) / INOPB(lfsp);
-		for (fip = (FINFO *)(sp + 1); i < sp->ss_nfinfo; ++i) {
+		for (i = 0, fip = (FINFO *)(sp + 1); i < sp->ss_nfinfo; ++i) {
 			sumsize += sizeof(FINFO) +
 			    (fip->fi_nblocks - 1) * sizeof(daddr_t);
 			fip = (FINFO *)(&fip->fi_blocks[fip->fi_nblocks]);
@@ -361,7 +362,7 @@ add_blocks (fsp, bip, countp, sp, seg_buf, segaddr, psegaddr)
 	FS_INFO *fsp;		/* pointer to super block */
 	BLOCK_INFO *bip;	/* Block info array */
 	int *countp;		/* IN/OUT: number of blocks in array */
-	SEGSUM	*sp;		/* segment summmary pointer */
+	SEGSUM	*sp;		/* segment summary pointer */
 	caddr_t seg_buf;	/* buffer containing segment */
 	daddr_t segaddr;	/* address of this segment */
 	daddr_t psegaddr;	/* address of this partial segment */
@@ -371,6 +372,7 @@ add_blocks (fsp, bip, countp, sp, seg_buf, segaddr, psegaddr)
 	caddr_t	bp;
 	daddr_t	*dp, *iaddrp;
 	int db_per_block, i, j;
+	int db_frag;
 	u_long page_size;
 
 #ifdef VERBOSE
@@ -403,8 +405,24 @@ add_blocks (fsp, bip, countp, sp, seg_buf, segaddr, psegaddr)
 			bip->bi_segcreate = (time_t)(sp->ss_create);
 			bip->bi_bp = bp;
 			bip->bi_version = ifp->if_version;
-			psegaddr += db_per_block;
-			bp += page_size;
+			if (fip->fi_lastlength == page_size) {
+				bip->bi_size = page_size;
+				psegaddr += db_per_block;
+				bp += page_size;
+			} else {
+				db_frag = fragstodb(&(fsp->fi_lfs), 
+				    numfrags(&(fsp->fi_lfs),
+				    fip->fi_lastlength));
+#ifdef VERBOSE
+				printf("lastlength, frags: %d, %d, %d\n", 
+				    fip->fi_lastlength, temp,
+				    bytetoda(fsp, temp));
+				fflush(stdout);
+#endif
+				bip->bi_size = fip->fi_lastlength;
+				bp += fip->fi_lastlength;
+				psegaddr += db_frag;
+			}
 			++bip;
 			++(*countp);
 		}
@@ -489,6 +507,9 @@ pseg_valid (fsp, ssp)
 	int i, nblocks;
 	u_long *datap;
 
+	if (ssp->ss_magic != SS_MAGIC)
+		return(0);
+
 	if ((nblocks = dump_summary(&fsp->fi_lfs, ssp, 0, NULL)) <= 0 ||
 	    nblocks > fsp->fi_lfs.lfs_ssize - 1)
 		return(0);
@@ -532,8 +553,8 @@ mmap_segment (fsp, segment, segbuf, use_mmap)
 	seg_byte = datobyte(fsp, seg_daddr);
 	ssize = seg_size(lfsp);
 
-	strcpy(mntfromname, "/dev/r");
-	strcat(mntfromname, fsp->fi_statfsp->f_mntfromname+5);
+	strlcpy(mntfromname, "/dev/r", sizeof mntfromname);
+	strlcat(mntfromname, fsp->fi_statfsp->f_mntfromname+5, sizeof mntfromname);
 
 	if ((fid = open(mntfromname, O_RDONLY, (mode_t)0)) < 0) {
 		err(0, "mmap_segment: bad open");
@@ -654,7 +675,7 @@ toss(p, nump, size, dotoss, client)
 	void *p;
 	int *nump;
 	size_t size;
-	int (*dotoss) __P((const void *, const void *, const void *));
+	int (*dotoss)(const void *, const void *, const void *);
 	void *client;
 {
 	int i;

@@ -60,7 +60,7 @@ usage(void)
 	    "  %s [-ad] [-n name] [-r remoteuser] [-t remote ticketfile]\n"
 	    "        [-l lifetime (in minutes) ] [-f srvtab ] [-c AFS cell name ]\n"
 	    "        [-h hosts... [--]] [command ... ]\n\n",
-	    getprogname(), getprogname());
+	    __progname, __progname);
     fprintf(stderr, 
 	    "A fully qualified name can be given: user[.instance][@realm]\n"
 	    "Realm is converted to uppercase!\n");
@@ -89,23 +89,25 @@ doexec(int argc, char **argv)
 static RETSIGTYPE
 renew(int sig)
 {
+    int save_errno = errno;
     int code;
 
     signal(SIGALRM, renew);
 
+    /* XXX signal race */
     code = krb_get_svc_in_tkt(princ.name, princ.instance, princ.realm,
-			      KRB_TICKET_GRANTING_TICKET,
-			      princ.realm, lifetime, srvtab);
+	KRB_TICKET_GRANTING_TICKET, princ.realm, lifetime, srvtab);
     if (code)
 	warnx ("%s", krb_get_err_text(code));
-    else if (k_hasafs())
-	{
-	    if ((code = krb_afslog(cell, NULL)) != 0 && code != KDC_PR_UNKNOWN) {
-		warnx ("%s", krb_get_err_text(code));
-	    }
+    else if (k_hasafs()) {
+	/* XXX signal race */
+	if ((code = krb_afslog(cell, NULL)) != 0 && code != KDC_PR_UNKNOWN) {
+	    warnx ("%s", krb_get_err_text(code));
 	}
+    }
 
     alarm(krb_life_to_time(0, lifetime)/2 - 60);
+    errno = save_errno;
     SIGRETURN(0);
 }
 
@@ -118,8 +120,8 @@ zrefresh(void)
 	return -1;
     case 0:
 	/* Child */
-	execlp("zrefresh", "zrefresh", 0);
-	execl(BINDIR "/zrefresh", "zrefresh", 0);
+	execlp("zrefresh", "zrefresh", (char *)NULL);
+	execl(BINDIR "/zrefresh", "zrefresh", (char *)NULL);
 	exit(1);
     default:
 	/* Parent */
@@ -155,12 +157,12 @@ get_ticket_address(krb_principal *princ, des_cblock *key)
 	
     code = get_ad_tkt(princ->name, princ->instance, princ->realm, 0);
     if(code) {
-	warnx("get_ad_tkt: %s\n", krb_get_err_text(code));
+	warnx("get_ad_tkt: %s", krb_get_err_text(code));
 	return code;
     }
     code = krb_get_cred(princ->name, princ->instance, princ->realm, &c);
     if(code) {
-	warnx("krb_get_cred: %s\n", krb_get_err_text(code));
+	warnx("krb_get_cred: %s", krb_get_err_text(code));
 	return code;
     }
 
@@ -179,7 +181,7 @@ get_ticket_address(krb_principal *princ, des_cblock *key)
 			 key,
 			 schedule);
     if(code) {
-	warnx("decomp_ticket: %s\n", krb_get_err_text(code));
+	warnx("decomp_ticket: %s", krb_get_err_text(code));
 	return code;
     }
     memset(&session, 0, sizeof(session));
@@ -204,8 +206,6 @@ main(int argc, char **argv)
     char **host;
     int nhost;
     char tf[MaxPathLen];
-
-    setprogname (argv[0]);
 
     if ((file =  getenv("KRBTKFILE")) == 0)
 	file = TKT_FILE;  

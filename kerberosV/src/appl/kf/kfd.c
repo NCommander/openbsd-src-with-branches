@@ -315,12 +315,11 @@ main(int argc, char **argv)
     int port;
     int ret;
 
-    setprogname (argv[0]);
     roken_openlog (argv[0], LOG_ODELAY | LOG_PID,LOG_AUTH);
     port = server_setup(&context, argc, argv);
     ret = doit (port, service);
     closelog();
     if (ret == 0 && regpag_str != NULL)
-        ret = execl(regpag_str, "regpag", "-t", krb5_tkfile, "-r", NULL);
+        ret = execl(regpag_str, "regpag", "-t", krb5_tkfile, "-r", (char *)NULL);
     return ret;
 }

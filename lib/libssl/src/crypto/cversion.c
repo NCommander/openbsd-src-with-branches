@@ -61,7 +61,9 @@
 #include "cryptlib.h"
 #include <openssl/crypto.h>
 
+#ifndef NO_WINDOWS_BRAINDEATH
 #include "buildinf.h"
+#endif
 
 const char *SSLeay_version(int t)
 	{

@@ -1,5 +1,4 @@
-/*	$OpenBSD$	*/
-/*	$NOWHERE: ct.c,v 2.2 1998/06/22 18:41:34 mickey Exp $	*/
+/*	$OpenBSD: ct.c,v 1.5 1999/04/20 20:01:01 mickey Exp $	*/
 
 /*
  * Copyright (c) 1998 Michael Shalayeff
@@ -30,7 +29,6 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-
 /*
  * Copyright 1996 1995 by Open Software Foundation, Inc.   
  *              All Rights Reserved 
@@ -58,41 +56,21 @@
 #include <sys/param.h>
 #include <sys/disklabel.h>
 #include <sys/reboot.h>
+
 #include <machine/pdc.h>
-#include <machine/iodc.h>
 #include <machine/iomod.h>
 
 #include "dev_hppa.h"
 
-int (*ctiodc)();	/* cartridge tape IODC entry point */
+struct pz_device ctdev;
+iodcio_t ctiodc;	/* cartridge tape IODC entry point */
 int ctcode[IODC_MAXSIZE/sizeof(int)];
 
-/* hp800-specific comments:
- *
- * Tape driver ALWAYS uses "Alternate Boot Device", which is assumed to ALWAYS
- * be the boot device in pagezero (meaning we booted from it).
- *
- * NOTE about skipping file, below:  It's assumed that a read gets 2k (a page).
- * This is done because, even though the cartridge tape has record sizes of 1k,
- * and an EOF takes one record, reads through the IODC must be in 2k chunks,
- * and must start on a 2k-byte boundary.  This means that ANY TAPE FILE TO BE
- * SKIPPED OVER IS GOING TO HAVE TO BE AN ODD NUMBER OF 1 KBYTE RECORDS so the
- * read of the subsequent file can start on a 2k boundary.  If a real error
- * occurs, the record count is reset below, so this isn't a problem.
- */
-int	ctbyteno;	/* block number on tape to access next */
-int	ctworking;	/* flag:  have we read anything successfully? */
-
 int
-#ifdef __STDC__
 ctopen(struct open_file *f, ...)
-#else
-ctopen(f)
-	struct open_file *f;
-#endif
 {
-	struct hppa_dev *dp = f->f_devdata;
-	int i, ret, part = B_PARTITION(dp->bootdev);
+	register struct hppa_dev *dp = f->f_devdata;
+	int ret;
 
 	if (ctiodc == 0) {
 
@@ -101,33 +79,17 @@ ctopen(f)
 			printf("ct: device ENTRY_IO Read ret'd %d\n", ret);
 			return (EIO);
 		} else
-			ctdev.pz_iodc_io = ctiodc = (int (*)()) ctcode;
+			ctdev.pz_iodc_io = ctiodc = (iodcio_t) ctcode;
 	}
+
+	dp->pz_dev = &ctdev;
 
 	if (ctiodc != NULL)
-		if ((ret = (*ctiodc)(ctdev.pz_hpa, IODC_IO_BOOTIN, ctdev.pz_spa,
-				     ctdev.pz_layers, pdcbuf,0, btbuf,0,0)) < 0)
+		if ((ret = (*ctiodc)(ctdev.pz_hpa, IODC_IO_READ, ctdev.pz_spa,
+				     ctdev.pz_layers, pdcbuf, 0,
+				     dp->buf, 0, 0)) < 0)
 			printf("ct: device rewind ret'd %d\n", ret);
 
-	ctbyteno = 0;
-	for (i = part; --i >= 0; ) {
-		ctworking = 0;
-		for (;;) {
-			ret = iodc_rw(btbuf, ctbyteno, IONBPG, F_READ, &ctdev);
-			ctbyteno += IONBPG;
-			if (ret <= 0)
-				break;
-			ctworking = 1;
-		}
-		if (ret < 0 && (ret != -4 || !ctworking)) {
-			printf("ct: error %d after %d %d-byte records\n",
-				ret, ctbyteno >> IOPGSHIFT, IONBPG);
-			ctbyteno = 0;
-			ctworking = 0;
-			return (EIO);
-		}
-	}
-	ctworking = 0;
 	return (0);
 }
 
@@ -136,32 +98,7 @@ int
 ctclose(f)
 	struct open_file *f;
 {
-	ctbyteno = 0;
-	ctworking = 0;
-
+	free (f->f_devdata, sizeof(struct hppa_dev));
+	f->f_devdata = NULL;
 	return 0;
-}
-
-int
-ctstrategy(devdata, rw, dblk, size, buf, rsize)
-	void *devdata;
-	int rw;
-	daddr_t dblk;
-	size_t size;
-	void *buf;
-	size_t *rsize;
-{
-	int ret;
-
-	if ((ret = iodc_rw(buf, ctbyteno, size, rw, &ctdev)) < 0) {
-		if (ret == -4 && ctworking)
-			ret = 0;
-
-		ctworking = 0;
-	} else {
-		ctworking = 1;
-		ctbyteno += ret;
-	}
-
-	return (ret);
 }

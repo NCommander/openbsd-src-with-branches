@@ -32,12 +32,13 @@
  */
 
 #if defined(LIBC_SCCS) && !defined(lint)
-/*static char *sccsid = "from: @(#)calloc.c	5.6 (Berkeley) 2/23/91";*/
-static char *rcsid = "$Id: calloc.c,v 1.5 1993/11/30 21:55:35 jtc Exp $";
+static char *rcsid = "$OpenBSD: calloc.c,v 1.6 2002/07/30 00:11:07 deraadt Exp $";
 #endif /* LIBC_SCCS and not lint */
 
 #include <stdlib.h>
 #include <string.h>
+#include <limits.h>
+#include <errno.h>
 
 void *
 calloc(num, size)
@@ -46,8 +47,13 @@ calloc(num, size)
 {
 	register void *p;
 
+	if (num && size && SIZE_T_MAX / num < size) {
+		errno = ENOMEM;
+		return NULL;
+	}
 	size *= num;
-	if (p = malloc(size))
-		memset(p, '\0', size);
+	p = malloc(size);
+	if (p)
+		memset(p, 0, size);
 	return(p);
 }

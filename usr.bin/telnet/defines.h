@@ -1,3 +1,6 @@
+/*	$OpenBSD: defines.h,v 1.4 1998/05/15 03:16:37 art Exp $	*/
+/*	$NetBSD: defines.h,v 1.5 1996/02/28 21:03:55 thorpej Exp $	*/
+
 /*
  * Copyright (c) 1988, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -31,7 +34,6 @@
  * SUCH DAMAGE.
  *
  *	from: @(#)defines.h	8.1 (Berkeley) 6/6/93
- *	$Id: defines.h,v 1.3 1994/02/25 03:00:24 cgd Exp $
  */
 
 #define	settimer(x)	clocks.x = clocks.system++
@@ -60,3 +62,8 @@
 #define	MODE_COMMAND_LINE(m)	((m)==-1)
 
 #define	CONTROL(x)	((x)&0x1f)		/* CTRL(x) is not portable */
+
+#define MODE_OUT8      0x8000 /* binary mode sans -opost */
+
+void upcase(register char *);
+

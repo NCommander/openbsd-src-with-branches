@@ -115,14 +115,14 @@ static char sccsid[] = "@(#)j0.c	8.2 (Berkeley) 11/30/93";
 #include <float.h>
 #include <errno.h>
 
-#if defined(vax) || defined(tahoe)
+#if defined(__vax__) || defined(tahoe)
 #define _IEEE	0
 #else
 #define _IEEE	1
 #define infnan(x) (0.0)
 #endif
 
-static double pzero __P((double)), qzero __P((double));
+static double pzero(double), qzero(double);
 
 static double 
 huge 	= 1e300,

@@ -31,7 +31,7 @@
  * SUCH DAMAGE.
  */
 
-/* $Id: xfs_message.h,v 1.1.1.1 2002/06/05 17:24:11 hin Exp $ */
+/* $Id: xfs_message.h,v 1.4 2000/09/11 14:26:52 art Exp $ */
 
 #ifndef _xmsg_h
 #define _xmsg_h

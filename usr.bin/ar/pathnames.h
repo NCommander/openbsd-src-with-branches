@@ -1,3 +1,4 @@
+/*	$OpenBSD: pathnames.h,v 1.2 1996/06/26 05:31:22 deraadt Exp $	*/
 /*	$NetBSD: pathnames.h,v 1.4 1995/03/25 06:39:50 glass Exp $	*/
 
 /*-
@@ -38,5 +39,5 @@
  *	@(#)pathnames.h	8.1 (Berkeley) 6/6/93
  */
 
-#define	_NAME_ARTMP	"ar.XXXXXX"
-#define	_PATH_ARTMP	"/tmp/ar.XXXXXX"
+#define	_NAME_ARTMP	"ar.XXXXXXXXXX"
+#define	_PATH_ARTMP	"/tmp/ar.XXXXXXXXXX"

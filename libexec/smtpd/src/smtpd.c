@@ -1,8 +1,9 @@
+/* $OpenBSD: smtpd.c,v 1.12 2002/05/13 07:44:48 mpech Exp $*/
+
 /*
  * smtpd, Obtuse SMTP daemon, storing agent. does simple collection of
  * mail messages, for later forwarding by smtpfwdd.
  *
- * $Id: smtpd.c,v 1.47 1997/12/12 04:15:41 beck Exp $
  * 
  * Copyright (c) 1996, 1997 Obtuse Systems Corporation. All rights
  * reserved.
@@ -40,7 +41,7 @@
 
 char *obtuse_copyright =
 "Copyright 1996 - Obtuse Systems Corporation - All rights reserved.";
-char *obtuse_rcsid = "$Id: smtpd.c,v 1.47 1997/12/12 04:15:41 beck Exp $";
+char *obtuse_rcsid = "$OpenBSD: smtpd.c,v 1.12 2002/05/13 07:44:48 mpech Exp $";
 
 #include <stdarg.h>
 #include <stdlib.h>
@@ -140,7 +141,7 @@ char *client_claimed_name = "UNKNOWN";
 char *spoolfile = NULL;
 char *spooldir = SPOOLSUBDIR;		/* this is relative to our chroot. */
 int read_timeout = READ_TIMEOUT;
-int maxsize = 0;
+long maxsize = 0;
 int outfd, replyfd;
 #ifdef SUNOS_GETOPT
 extern char *optarg;
@@ -154,6 +155,20 @@ int NoHostChecks = NO_HOSTCHECKS;
 int Paranoid_Smtp = PARANOID_SMTP;
 int Paranoid_Dns = PARANOID_DNS;
 int exiting = 0;
+int VerboseSyslog = 1;
+
+#ifndef SMTPD_PID_DIR
+#if defined(OpenBSD) || defined(FreeBSD) || defined(NetBSD)
+# define SMTPD_PID_DIR "/var/run"
+#else
+# define SMTPD_PID_DIR SPOOLDIR
+#endif
+#endif
+
+#ifndef SMTPD_PID_FILENAME
+#define SMTPD_PID_FILENAME "smtpd.pid"
+#endif
+
 
 /*
  * Generate the usual cryptic usage statement
@@ -209,6 +224,12 @@ char * make_check_fail_reply(char *user, char *host, char *hostIP,
       int len;
       c++;
       switch (*c) {
+      case '%':
+	add = "%";
+	break;
+      case 'C':
+	add = ":";
+	break;
       case 'F':
 	add = from;
 	break;
@@ -421,7 +442,7 @@ flush_smtp_mbuf(struct smtp_mbuf *buf, int fd, int len)
       }
     }
   } else {
-    syslog(LOG_CRIT, "You can't write %d bytes from a buffer with only %d in it!", len, buf->offset);
+    syslog(LOG_CRIT, "You can't write %d bytes from a buffer with only %d in it!", len, (int) buf->offset);
   }
 }
 
@@ -509,7 +530,7 @@ write_smtp_mbuf(struct smtp_mbuf *mbuf,
        * let's hope there is enough to syslog :-) 
        */
       syslog(LOG_CRIT, "malloc said no to a %d byte buffer!",
-	     (mbuf->size + len + 1024));
+	    (int)(mbuf->size + len + 1024));
       return (0);
     }
   }
@@ -545,7 +566,7 @@ read_smtp_mbuf(struct smtp_mbuf *mbuf,
        * let's hope there is enough to syslog :-) 
        */
       syslog(LOG_ERR, "malloc said no to a %d byte buffer!",
-	     (mbuf->size + len + 1024));
+	    (int)(mbuf->size + len + 1024));
       errno = ENOMEM;
       return (-1);
     }
@@ -553,6 +574,8 @@ read_smtp_mbuf(struct smtp_mbuf *mbuf,
   /*
    * buffer is now big enough 
    */
+ 
+  fflush(NULL); 
   signal(SIGALRM, read_alarm_timeout);
   alarm(read_timeout);
   howmany = read(fd, mbuf->tail, len);
@@ -628,6 +651,8 @@ smtp_open_spoolfile()
   strncat(spoolfile, "/smtpdXXXXXX", 12);
   if ((fd = mkstemp(spoolfile)) < 0) {
     syslog(LOG_CRIT, "Couldn't create spool file %s!", spoolfile);
+    free(spoolfile);
+    spoolfile=NULL;
     smtp_exit(EX_CONFIG);
   }
 #else /* USE_MKSTEMP */
@@ -796,6 +821,10 @@ smtp_exit(int val)
   }
   if (exiting++<3) {
 	  flush_smtp_mbuf(reply_buf, replyfd, reply_buf->offset);
+  }
+
+  if (!VerboseSyslog) {
+    accumlog(LOG_INFO, 0);		/* flush? */
   }
      
   exit(val);
@@ -1041,22 +1070,6 @@ smtp_cleanitup(const unsigned char *s)
 
 
 /*
- * does string s look like a source routed mail address? 
- */
-
-int
-is_src_route(const unsigned char *s) 
-{
-  while (*s != '\0') {
-    if ( (*s == '%') || (*s == '!') )
-      return 1;
-    s++;
-  }
-  return 0;
-}
-
-
-/*
  * is smtp command "cmd" legal in state "state" 
  */
 int
@@ -1144,7 +1157,7 @@ state_change(smtp_state state, int cmd, int status)
       return;
 
     default:
-      syslog(LOG_CRIT, "Hey, I shouldn't be here (Bad HELO status in change_state)!\n");
+      syslog(LOG_CRIT, "Hey, I shouldn't be here (Bad HELO status in change_state)!");
       abort();
     }
 #if EHLO_KLUDGE
@@ -1163,7 +1176,7 @@ state_change(smtp_state state, int cmd, int status)
       return;
 
     default:
-      syslog(LOG_CRIT, "Hey, I shouldn't be here (Bad EHLO status in change_state)!\n");
+      syslog(LOG_CRIT, "Hey, I shouldn't be here (Bad EHLO status in change_state)!");
       abort();
     }
 #endif
@@ -1181,7 +1194,7 @@ state_change(smtp_state state, int cmd, int status)
       reset_state(state);
       return;
     default:
-      syslog(LOG_CRIT, "Hey, I shouldn't be here (Bad MAIL status in change_state)!\n");
+      syslog(LOG_CRIT, "Hey, I shouldn't be here (Bad MAIL status in change_state)!");
       abort();
     }
   case RCPT:
@@ -1198,7 +1211,7 @@ state_change(smtp_state state, int cmd, int status)
       reset_state(state);
       return;
     default:
-      syslog(LOG_CRIT, "Hey, I shouldn't be here (Bad RCPT status in change_state)!\n");
+      syslog(LOG_CRIT, "Hey, I shouldn't be here (Bad RCPT status in change_state)!");
       abort();
     }
   case NOOP:
@@ -1206,7 +1219,7 @@ state_change(smtp_state state, int cmd, int status)
     case SUCCESS:
       return;
     default:
-      syslog(LOG_CRIT, "Hey, I shouldn't be here (Bad NOOP status in change_state)!\n");
+      syslog(LOG_CRIT, "Hey, I shouldn't be here (Bad NOOP status in change_state)!");
       abort();
     }
   case DATA:
@@ -1223,7 +1236,7 @@ state_change(smtp_state state, int cmd, int status)
       reset_state(state);
       return;
     default:
-      syslog(LOG_CRIT, "Hey, I shouldn't be here (Bad DATA status in change_state)!\n");
+      syslog(LOG_CRIT, "Hey, I shouldn't be here (Bad DATA status in change_state)!");
       abort();
     }
   case UNKNOWN:
@@ -1236,7 +1249,7 @@ state_change(smtp_state state, int cmd, int status)
       reset_state(state);
       return;
     default:
-      syslog(LOG_CRIT, "Hey, I shouldn't be here (Bad UNKNOWN status in change_state)!\n");
+      syslog(LOG_CRIT, "Hey, I shouldn't be here (Bad UNKNOWN status in change_state)!");
       abort();
     }
   case QUIT:
@@ -1255,7 +1268,7 @@ state_change(smtp_state state, int cmd, int status)
     /*
      * shouldn't get here on valid input. 
      */
-    syslog(LOG_CRIT, "Hey, I shouldn't be here (end of change_state)!\n");
+    syslog(LOG_CRIT, "Hey, I shouldn't be here (end of change_state)!");
     abort();
   }
 }
@@ -1380,8 +1393,18 @@ smtp_parse_cmd(unsigned char *inbuf,
     /*
      * log the connection 
      */
-    syslog(LOG_INFO, "SMTP HELO from %s(%s) as \"%s\"",
-	   peerinfo.peer_clean_reverse_name, peerinfo.peer_ok_addr, client_claimed_name);
+    if (VerboseSyslog) {
+      syslog(LOG_INFO, "SMTP HELO from %s(%s) as \"%s\"",
+	     peerinfo.peer_clean_reverse_name,
+	     peerinfo.peer_ok_addr, client_claimed_name);
+    }
+    else {
+      accumlog(LOG_INFO, 0);		/* flush anything left */
+      accumlog(LOG_INFO, "relay=%s/%s",
+	       peerinfo.peer_clean_reverse_name, peerinfo.peer_ok_addr);
+      if (strcasecmp(peerinfo.peer_clean_reverse_name, client_claimed_name))
+	accumlog(LOG_INFO, " as \"%s\"", client_claimed_name);
+    }     
     state_change(state, HELO, SUCCESS);
   } else if (strcasecmp(verb, "MAIL") == 0) {
     if (!cmd_ok(MAIL, state)) {
@@ -1417,9 +1440,9 @@ smtp_parse_cmd(unsigned char *inbuf,
      */
     cp = NULL;
     if (buf[0] == '"' || buf[1] == '"')
-          cp = strrchr(buf, '"');             /* REVISIT: find last " */
+      cp = strrchr(buf, '"');             /* REVISIT: find last " */
     if (cp == NULL)
-          cp = buf;
+      cp = buf+1;
     cp = strchr(cp+1, ' ');
     if (cp != NULL) {
       /* stuff on the end */
@@ -1465,8 +1488,12 @@ smtp_parse_cmd(unsigned char *inbuf,
     /*
      * log the connection 
      */
-    syslog(LOG_INFO, "mail from %s",
-	   current_from_mailpath);
+    if (VerboseSyslog) {
+      syslog(LOG_INFO, "mail from %s", current_from_mailpath);
+    } else {
+      accumlog(LOG_INFO, " from=%s", current_from_mailpath);
+    }
+
     /*
      * put our output in the outbuf 
      */
@@ -1510,8 +1537,15 @@ smtp_parse_cmd(unsigned char *inbuf,
     }
     buf += 3;
     SPANBLANK(buf);
+    /*
+     * <sjg> if local-part contains ", then spaces are allowed
+     */
     cp = NULL;
-    cp = strchr(buf, ' ');
+    if (buf[0] == '"' || buf[1] == '"')
+      cp = strrchr(buf, '"');             /* REVISIT: find last " */
+    if (cp == NULL)
+      cp = buf;
+    cp = strchr(cp+1, ' ');
     if (cp != NULL) {
       /* stuff on the end */
       *cp = '\0';
@@ -1626,7 +1660,14 @@ smtp_parse_cmd(unsigned char *inbuf,
 	break; 
       case 0:
 	/* we matched a "deny" rule.  syslog and send back failure message */
-	syslog(LOG_INFO, "Forbidden FROM or RCPT for host %s(%s) - Abandoning session", peerinfo.peer_clean_reverse_name, peerinfo.peer_ok_addr);
+	if (VerboseSyslog) {
+	  syslog(LOG_INFO, "Forbidden FROM or RCPT for host %s(%s) - Abandoning session",
+		 peerinfo.peer_clean_reverse_name, peerinfo.peer_ok_addr);
+	}
+	else {
+	  accumlog(LOG_INFO, " forbidden FROM or RCPT");
+	  accumlog(LOG_INFO, 0);	/* flush it */
+	}
 	{
 	  char *c;
 	  c = make_check_fail_reply(peerinfo.peer_clean_ident,
@@ -1657,7 +1698,12 @@ smtp_parse_cmd(unsigned char *inbuf,
 	  }
 	}
 	badrcpt = 1;
-	syslog(LOG_INFO, "Discarded bad recipient %s", victim);
+
+ 	if (VerboseSyslog) {
+	  syslog(LOG_INFO, "Discarded bad recipient %s", victim);
+ 	} else {
+	  accumlog(LOG_INFO, " discarded bad recipient=%s", victim);
+ 	}
 	state_change(state, RCPT, ERROR);
 	break;
 
@@ -1678,7 +1724,11 @@ smtp_parse_cmd(unsigned char *inbuf,
       /*
        * log the recipient.
        */
-      syslog(LOG_INFO, "Recipient %s", victim);
+      if (VerboseSyslog) {
+	syslog(LOG_INFO, "Recipient %s", victim);
+      } else {
+	accumlog(LOG_INFO, " to=%s",  victim);
+      }	
       if (write_smtp_mbuf(outbuf, "RCPT ", strlen("RCPT ")) &&
 	  write_smtp_mbuf(outbuf, victim, strlen(victim)) &&
 	  write_smtp_mbuf(outbuf, "\n", 1)) {
@@ -1751,7 +1801,7 @@ snarfdata(int in, int out, long *size, int bin)
   /*
    * initial message size 
    */
-  max = (*size ? *size : INT_MAX);
+  max = (*size ? *size : LONG_MAX);
 
 
   /*
@@ -1761,12 +1811,12 @@ snarfdata(int in, int out, long *size, int bin)
    * the program will probably die and the bug will (hopefully) get fixed).
    */
 
-  buf = alloc_smtp_mbuf(64);
+  buf = alloc_smtp_mbuf(1024);
   if (buf == NULL) {
     syslog(LOG_DEBUG, "Couldn't allocate input buffer for data command");
     return (5);
   }
-  outbuf = alloc_smtp_mbuf(64);
+  outbuf = alloc_smtp_mbuf(1024);
   if (outbuf == NULL) {
     syslog(LOG_DEBUG, "Couldn't allocate output buffer for data command");
     return (5);
@@ -1780,11 +1830,20 @@ snarfdata(int in, int out, long *size, int bin)
 
     snarfed = read_smtp_mbuf(buf, in, 1024);
     if (snarfed < 0) {
-      syslog(LOG_INFO, "read error receiving message body: %m");
+      if (VerboseSyslog) {	
+	syslog(LOG_INFO, "read error receiving message body: %m");
+      } else {
+	accumlog(LOG_INFO, " read error receiving message body: %s",
+		 strerror(errno));
+      }
       return (2);
     }
     if (snarfed == 0) {
-      syslog(LOG_INFO, "EOF while receiving message body");
+      if (VerboseSyslog) {      
+	syslog(LOG_INFO, "EOF while receiving message body");
+      } else {
+	accumlog(LOG_INFO, " EOF while receiving message body");
+      }
       return (2);
     }
     if (outbuf->size < buf->size) {
@@ -1957,11 +2016,12 @@ snarfdata(int in, int out, long *size, int bin)
  * The brains of this operation
  */
 
-void
+int
 main(int argc, char **argv)
 {
   int opt;
-  char *optstring = "xc:d:u:s:g:m:HPDL";
+  long smtp_port = 25;
+  char *optstring = "l:p:d:u:s:g:m:i:c:HPDLq";
   int i, k;
   smtp_state_set last_state_s, current_state_s;	 /* The real state vector. */
   smtp_state last_state, current_state; /* Pointers to the state vector. */
@@ -1971,9 +2031,12 @@ main(int argc, char **argv)
   char *groupname = SMTP_GROUP;
   struct passwd *user = NULL;
   struct group *group = NULL;
-  struct sigaction new_sa, old_sa;
+  struct sigaction new_sa;
   int daemon_mode = 0;
   int listen_fd = -1; /* make gcc be quiet */
+  int pid_fd = -1;
+  char *pid_fname = NULL;
+  struct in_addr listen_addr;
   int child_no_openlog = 0; /* don't openlog() in children - use inherited 
 			     * parent fd
 			     */
@@ -1982,10 +2045,11 @@ main(int argc, char **argv)
   peerinfo.peer_clean_forward_name = "UNKNOWN";
   peerinfo.peer_clean_reverse_name = "UNKNOWN";
   peerinfo.peer_ok_addr = "";
-  
+
   umask (077);
 
   openlog("smtpd", LOG_PID | LOG_NDELAY, LOG_FACILITY);
+  listen_addr.s_addr = INADDR_ANY;
 
 #if SET_LOCALE
   /* try to set our localization to the one specified */
@@ -2002,12 +2066,43 @@ main(int argc, char **argv)
 #ifdef GETOPT_EOF
   while ((opt = getopt(argc, argv, optstring)) != EOF) {
 #else
-  while ((opt = getopt(argc, argv, optstring)) > 0) {
+  while ((opt = getopt(argc, argv, optstring)) != -1) {
 #endif
     switch (opt) {
+    case 'p':
+      {
+	char *foo; 
+	smtp_port = strtol(optarg, &foo, 10);
+	if (*foo != '\0') {
+	  /* this doesn't smell like a number. Bail */
+	  syslog(LOG_ERR, "Invalid port argument for the \"-p\" option");
+	  show_usage();
+	  exit(EX_USAGE);
+	}
+      }
+      break;
+    case 'l':
+      listen_addr.s_addr = inet_addr(optarg);
+      if (listen_addr.s_addr == htonl(INADDR_NONE)) {
+	  syslog(LOG_ERR, "Invalid ip address given for the \"-l\" option");
+	  show_usage();
+	  exit(EX_USAGE);
+      }
+      break;
+    case 'i':
+      if (optarg[0] != '/') {
+	syslog(LOG_ERR, "The \"-i\" option requires an absolute pathname argument");
+	show_usage();
+	exit(EX_USAGE);
+      }
+      pid_fname = optarg;
+      break;
+    case 'q':
+      VerboseSyslog = 0;
+      break;
     case 'c':
       if (optarg[0] != '/') {
-	syslog(LOG_ERR, "The \"-c\" option requires an absolute pathname argument\n");
+	syslog(LOG_ERR, "The \"-c\" option requires an absolute pathname argument");
 	show_usage();
 	exit(EX_USAGE);
       }
@@ -2033,7 +2128,7 @@ main(int argc, char **argv)
       break;
     case 'd':
       if (optarg[0] != '/') {
-	syslog(LOG_ERR, "%s, The \"-d\" option requires an absolute pathname argument\n", optarg);
+	syslog(LOG_ERR, "%s, The \"-d\" option requires an absolute pathname argument", optarg);
 	show_usage();
 	exit(EX_USAGE);
       }
@@ -2052,7 +2147,7 @@ main(int argc, char **argv)
 	   */
 	  user = getpwuid((uid_t) userid);
 	  if (user == NULL) {
-	    syslog(LOG_ERR, "Invalid uid argument for the \"-u\" option, no user found for uid %s\n", optarg);
+	    syslog(LOG_ERR, "Invalid uid argument for the \"-u\" option, no user found for uid %s", optarg);
 	    show_usage();
 	    exit(EX_USAGE);
 	  }
@@ -2064,7 +2159,7 @@ main(int argc, char **argv)
 	   */
 	  user = getpwnam(optarg);
 	  if (user == NULL) {
-	    syslog(LOG_ERR, "Invalid username argument for the \"-u\" option, no user found for name %s\n", optarg);
+	    syslog(LOG_ERR, "Invalid username argument for the \"-u\" option, no user found for name %s", optarg);
 	    show_usage();
 	    exit(EX_USAGE);
 	  }
@@ -2085,7 +2180,7 @@ main(int argc, char **argv)
 	   */
 	  group = getgrgid((gid_t) grpid);
 	  if (group == NULL) {
-	    syslog(LOG_ERR, "Invalid gid argument for the \"-g\" option, no group found for gid %s\n", optarg);
+	    syslog(LOG_ERR, "Invalid gid argument for the \"-g\" option, no group found for gid %s", optarg);
 	    show_usage();
 	    exit(EX_USAGE);
 	  }
@@ -2097,7 +2192,7 @@ main(int argc, char **argv)
 	   */
 	  group = getgrnam(optarg);
 	  if (group == NULL) {
-	    syslog(LOG_ERR, "Invalid groupname argument for the \"-g\" option, no group found for name %s\n", optarg);
+	    syslog(LOG_ERR, "Invalid groupname argument for the \"-g\" option, no group found for name %s", optarg);
 	    show_usage();
 	    exit(EX_USAGE);
 	  }
@@ -2111,19 +2206,19 @@ main(int argc, char **argv)
 
 	maxsize = strtol(optarg, &foo, 10);
 	if (*foo != '\0') {
-	  syslog(LOG_ERR, "The \"-s\" option requires a size argument\n");
+	  syslog(LOG_ERR, "The \"-s\" option requires a size argument");
 	  show_usage();
 	  exit(EX_USAGE);
 	}
 	if (maxsize <= 0) {
-	  syslog(LOG_ERR, "\"-s\" argument must be positive!\n");
+	  syslog(LOG_ERR, "\"-s\" argument must be positive!");
 	  show_usage();
 	  exit(EX_USAGE);
 	}
       }
       break;
     default:
-      syslog(LOG_ERR, "Unknown option \"-%c\"\n", opt);
+      syslog(LOG_ERR, "Unknown option \"-%c\"", opt);
       show_usage();
       exit(EX_USAGE);
       break;
@@ -2149,8 +2244,8 @@ main(int argc, char **argv)
        */
       user = getpwuid((uid_t) userid);
       if (user == NULL) {
-	syslog(LOG_ERR, "Eeek! I was compiled to run as uid %s, but no user found for uid %s\n", username, username);
-	syslog(LOG_ERR, "Please recompile me to use a valid user, or specify one with the \"-u\" option.\n");
+	syslog(LOG_ERR, "Eeek! I was compiled to run as uid %s, but no user found for uid %s", username, username);
+	syslog(LOG_ERR, "Please recompile me to use a valid user, or specify one with the \"-u\" option.");
 	exit(EX_CONFIG);
       }
       username = user->pw_name;
@@ -2161,8 +2256,8 @@ main(int argc, char **argv)
        */
       user = getpwnam(username);
       if (user == NULL) {
-	syslog(LOG_ERR, "Eeek! I was compiled to run as user \"%s\", but no user found for username \"%s\"\n", username, username);
-	syslog(LOG_ERR, "Please recompile me to use a valid user, or specify one with the \"-u\" option.\n");
+	syslog(LOG_ERR, "Eeek! I was compiled to run as user \"%s\", but no user found for username \"%s\"", username, username);
+	syslog(LOG_ERR, "Please recompile me to use a valid user, or specify one with the \"-u\" option.");
 	exit(EX_CONFIG);
       }
       username = user->pw_name;
@@ -2183,8 +2278,8 @@ main(int argc, char **argv)
        */
       group = getgrgid((gid_t) grpid);
       if (group == NULL) {
-	syslog(LOG_ERR, "Eeek! I was compiled to run as gid %s, but no group found for gid %s\n", groupname, groupname);
-	syslog(LOG_ERR, "Please recompile me to use a valid group, or specify one with the \"-g\" option.\n");
+	syslog(LOG_ERR, "Eeek! I was compiled to run as gid %s, but no group found for gid %s", groupname, groupname);
+	syslog(LOG_ERR, "Please recompile me to use a valid group, or specify one with the \"-g\" option.");
 	exit(EX_CONFIG);
       }
       groupname = group->gr_name;
@@ -2195,8 +2290,8 @@ main(int argc, char **argv)
        */
       group = getgrnam(groupname);
       if (group == NULL) {
-	syslog(LOG_ERR, "Eeek! I was compiled to run as group \"%s\", but no group found for groupname \"%s\"\n", groupname, groupname);
-	syslog(LOG_ERR, "Please recompile me to use a valid group, or specify one with the \"-g\" option.\n");
+	syslog(LOG_ERR, "Eeek! I was compiled to run as group \"%s\", but no group found for groupname \"%s\"", groupname, groupname);
+	syslog(LOG_ERR, "Please recompile me to use a valid group, or specify one with the \"-g\" option.");
 	exit(EX_CONFIG);
       }
       groupname = group->gr_name;
@@ -2206,17 +2301,17 @@ main(int argc, char **argv)
    * If we're here, we have a valid user and group to run as 
    */
   if (group == NULL || user == NULL) {
-    syslog(LOG_CRIT, "Didn't find a user or group, (Shouldn't happen)\n");
+    syslog(LOG_CRIT, "Didn't find a user or group, (Shouldn't happen)");
     abort();
   }
   if (user->pw_uid == 0) {
     syslog(LOG_CRIT, "Sorry, I don't want to run as root! It's a bad idea!");
-    syslog(LOG_CRIT, "Please recompile me to use a valid user, or specify one with the \"-u\" option.\n");
+    syslog(LOG_CRIT, "Please recompile me to use a valid user, or specify one with the \"-u\" option.");
     exit(EX_CONFIG);
   }
   if (group->gr_gid == 0) {
     syslog(LOG_CRIT, "Sorry, I don't want to run as group 0. It's a bad idea!");
-    syslog(LOG_CRIT, "Please recompile me to use a valid group, or specify one with the \"-g\" option.\n");
+    syslog(LOG_CRIT, "Please recompile me to use a valid group, or specify one with the \"-g\" option.");
     exit(EX_CONFIG);
   }
   if ( daemon_mode ) {
@@ -2230,13 +2325,14 @@ main(int argc, char **argv)
 
     memset(&sa, 0, sizeof(sa));
     sa.sin_family = AF_INET;
-    sa.sin_port = htons(25);
-    sa.sin_addr.s_addr = INADDR_ANY;
+    sa.sin_port = htons(smtp_port);
+    sa.sin_addr.s_addr = listen_addr.s_addr;
 
     /* Need to do this while we're still root */
 
     if ( bind(listen_fd, (struct sockaddr *)&sa, sizeof(sa)) < 0 ) {
-      syslog(LOG_ERR, "Can't bind listen socket to port 25 in daemon mode (%m)");
+      syslog(LOG_ERR, "Can't bind listen socket to port %ld in daemon mode (%m)"
+	     , smtp_port);
       exit(EX_OSERR);
     }
 
@@ -2254,15 +2350,31 @@ main(int argc, char **argv)
     syslog(LOG_INFO, "Log reopened.");
   }
 
-  if (chrootdir != NULL) {
-    if (chdir(chrootdir) != 0) {
-      syslog(LOG_CRIT, "Couldn't chdir to directory %s! (%m)",
-	     chrootdir);
-      exit(EX_CONFIG);
+  if (daemon_mode) {
+    /* open pid file fd while we're still root. */
+
+    if ( (pid_fname == NULL) && 
+	 (((pid_fname = malloc(sizeof(SMTPD_PID_DIR)
+			       + sizeof(SMTPD_PID_FILENAME) + 2)))
+	  != NULL ) ) {
+      (void) sprintf(pid_fname, "%s/%s", SMTPD_PID_DIR, SMTPD_PID_FILENAME);
     }
+    if (pid_fname != NULL) {
+      if ((pid_fd = open(pid_fname, O_CREAT | O_WRONLY, 0644)) < 0) {
+	syslog(LOG_ERR, "Couldn't create pid file %s: %m", pid_fname);
+	exit(EX_CONFIG);
+      }
+    }
+  }
+      
+  if (chrootdir != NULL) {
     if (chroot(chrootdir) != 0) {
       syslog(LOG_CRIT, "Couldn't chroot to directory %s! (%m)",
 	     chrootdir);
+      exit(EX_CONFIG);
+    }
+    if (chdir("/") != 0) {
+      syslog(LOG_CRIT, "Couldn't chdir! (%m)");
       exit(EX_CONFIG);
     }
   } else {
@@ -2274,6 +2386,7 @@ main(int argc, char **argv)
     syslog(LOG_CRIT, "NULL spool directory! Aborting.");
     abort();
   }
+
   if (setgid(group->gr_gid) != 0) {
     syslog(LOG_ERR, "I can't change groups! Setgid failed! (%m)");
     syslog(LOG_ERR, "Exiting due to setgid failure");
@@ -2302,6 +2415,26 @@ main(int argc, char **argv)
     }
     setsid();
 
+    /* write our pid into the (inherited) pid_fd */
+
+   if (pid_fd >= 0) {
+      char buf[80];
+#ifdef USE_FLOCK
+      if (lockf(pid_fd, F_TLOCK, 0) != 0) 
+#else
+      if (flock(pid_fd, LOCK_EX|LOCK_NB) != 0)
+#endif
+	{
+	  syslog(LOG_ERR,
+		 "Couldn't get lock on pid file %s! Am I already running?", pid_fname);
+	  exit(1);
+	}
+      sprintf(buf, "%d\n", getpid());
+      write(pid_fd, buf, strlen(buf));
+      /* do not close - leave this fd open to keep lock */
+    }
+
+
     if ( listen(listen_fd,10) < 0 ) {
       syslog(LOG_ERR, "Can't listen on socket in daemon mode (%m)");
       exit(EX_OSERR);
@@ -2309,6 +2442,7 @@ main(int argc, char **argv)
 
     failures = 0;
     syslog(LOG_INFO,"smtpd running in daemon mode - ready to accept connections");
+
 
     while (1) {
       int fd;
@@ -2334,7 +2468,7 @@ main(int argc, char **argv)
 	failures = 0;
 
 	rval = fork();
-	if ( rval == 0 ) {
+	if ( rval > 0 ) {
 
 	  /*
 	   * Parent - close the accepted fd and continue the loop
@@ -2342,13 +2476,14 @@ main(int argc, char **argv)
 
 	  close(fd);
 
-	} else if ( rval > 0 ) {
+	} else if ( rval == 0 ) {
 
 	  /*
 	   * Child - make ourselves look like an inetd child
 	   * and break out of the loop to allow the regular inetd-style
 	   * processing to occur.
 	   */
+	  close(pid_fd); /* we don't need this anymore */
 
 	  dup2(fd,0);
 	  dup2(fd,1);
@@ -2377,13 +2512,11 @@ main(int argc, char **argv)
 #ifdef BSD_SIGNAL
   signal(SIGPIPE, SIG_IGN);
 #else
+  memset(&new_sa, 0, sizeof(new_sa));
   new_sa.sa_handler = SIG_IGN;
   (void)sigemptyset(&new_sa.sa_mask);
   new_sa.sa_flags = SA_RESTART;
-#ifdef __linux__
-  new_sa.sa_restorer = NULL;
-#endif
-  if ( sigaction( SIGPIPE, &new_sa, &old_sa ) != 0 ) {
+  if ( sigaction( SIGPIPE, &new_sa, NULL ) != 0 ) {
     syslog(LOG_CRIT,"CRITICAL - sigaction failed (%m)");
     exit(EX_OSERR);
   }
@@ -2422,7 +2555,7 @@ main(int argc, char **argv)
 	  exit(EX_CONFIG);
 	}
 	if (strcmp(tmp_he->h_name, peerinfo.my_clean_reverse_name) != 0) {
-	  syslog(LOG_CRIT, "CRITICAL - Suspicious characters in MY hostname! (for ip=%s) cleaned to %s.\n", peerinfo.peer_ok_addr, peerinfo.my_clean_reverse_name);
+	  syslog(LOG_CRIT, "CRITICAL - Suspicious characters in MY hostname! (for ip=%s) cleaned to %s.", peerinfo.peer_ok_addr, peerinfo.my_clean_reverse_name);
 	  syslog(LOG_CRIT, "CRITICAL - YOUR DNS IS EITHER COMPROMISED OR MISCONFIGURED! INVESTIGATE!");
 	  smtp_exit(EX_CONFIG);
 	}
@@ -2536,14 +2669,13 @@ main(int argc, char **argv)
      * didn't get one from a getsockname. get our hostname and use
      * that. 
      */
-    char hname[66];
+    char hname[MAXHOSTNAMELEN];
     struct hostent *hp;
 
-    if (gethostname(hname, 65) != 0) {
+    if (gethostname(hname, sizeof hname) != 0) {
       syslog(LOG_ERR, "gethostname() call failed! (%m) Who am I?");
       exit(EX_OSERR);
     }
-    hname[65] = '\0';
     if ((hp = gethostbyname(hname)) != NULL) {
       peerinfo.my_clean_reverse_name = strdup(hp->h_name);
     } else {
@@ -2579,6 +2711,30 @@ main(int argc, char **argv)
   zap_state(current_state);
   zap_state(last_state);
 
+  if (!daemon_mode && listen_addr.s_addr != INADDR_ANY) {
+    /* Are we allowed to talk on the address we accepted this connection
+     * on? - check to see that we are the defined listening address, or
+     * the loopback.
+     */
+    if ((listen_addr.s_addr != peerinfo.my_sa->sin_addr.s_addr)
+	&& (listen_addr.s_addr != htonl(INADDR_LOOPBACK)) 
+	)
+      {
+      /* tell the client to go away - we're not allowed to talk. */
+      writereply(reply_buf, 521, 0,
+		 peerinfo.my_clean_reverse_name,
+		 " ",
+		 m521msg,
+		 NULL);
+      flush_smtp_mbuf(reply_buf, replyfd, reply_buf->offset);
+      syslog(LOG_INFO, "Refused connection attempt from %s(%s) to %s(%s)",
+	     peerinfo.peer_clean_reverse_name, peerinfo.peer_ok_addr,
+	     peerinfo.my_clean_reverse_name, inet_ntoa(listen_addr));
+      smtp_exit(EX_OK);
+    }
+  }
+    
+
   writereply(reply_buf, 220, 0,
 	     peerinfo.my_clean_reverse_name,
 	     " ",
@@ -2600,7 +2756,11 @@ main(int argc, char **argv)
       /*
        * eof 
        */
-      syslog(LOG_INFO, "EOF on client fd.  At least they could say goodbye!");
+      if (VerboseSyslog) {
+	syslog(LOG_INFO, "EOF on client fd.  At least they could say goodbye!");
+      } else {
+	accumlog(LOG_INFO, "EOF on client fd.");
+      }
       smtp_exit(EX_OSERR);
     }
     offset = 0;
@@ -2658,8 +2818,14 @@ main(int argc, char **argv)
 	    smtp_close_spoolfile(outfd);
 	    writereply(reply_buf, 250, 0, m250gotit, NULL);
 	    flush_smtp_mbuf(reply_buf, replyfd, reply_buf->offset);
-	    syslog(LOG_INFO, "Received %ld bytes of message body from %s(%s)",
-		   msize, peerinfo.peer_clean_reverse_name, peerinfo.peer_ok_addr);
+	    if (VerboseSyslog) {
+	      syslog(LOG_INFO, "Received %ld bytes of message body from %s(%s)",
+		     msize, peerinfo.peer_clean_reverse_name,
+		     peerinfo.peer_ok_addr);
+	    } else {
+	      accumlog(LOG_INFO, " bytes=%ld", msize);
+	      accumlog(LOG_INFO, 0);	/* flush */
+ 	    }	    
 	    clear_state(SNARF_DATA, current_state);
 	    clear_state(OK_RCPT, current_state);
 	    clear_state(OK_MAIL, current_state);

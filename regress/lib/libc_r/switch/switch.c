@@ -1,4 +1,4 @@
-/*	$OpenBSD: test_switch.c,v 1.7 2000/10/04 05:50:58 d Exp $	*/
+/*	$OpenBSD: switch.c,v 1.1.1.1 2001/08/15 14:37:16 fgsch Exp $	*/
 /*
  * Copyright (c) 1993, 1994, 1995, 1996 by Chris Provenzano and contributors, 
  * proven@mit.edu All rights reserved.
@@ -126,5 +126,6 @@ main(argc, argv)
 	for (i = 0; i < count; i++)
 		ASSERT(x[i]);	/* make sure each thread ran */
 
+	CHECKe(write(STDOUT_FILENO, "\n", 1));
 	SUCCEED;
 }

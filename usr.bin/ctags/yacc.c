@@ -1,3 +1,4 @@
+/*	$OpenBSD: yacc.c,v 1.3 2000/07/25 19:26:23 deraadt Exp $	*/
 /*	$NetBSD: yacc.c,v 1.3 1995/03/26 20:14:12 glass Exp $	*/
 
 /*
@@ -37,7 +38,7 @@
 #if 0
 static char sccsid[] = "@(#)yacc.c	8.3 (Berkeley) 4/2/94";
 #else
-static char rcsid[] = "$NetBSD: yacc.c,v 1.3 1995/03/26 20:14:12 glass Exp $";
+static char rcsid[] = "$OpenBSD: yacc.c,v 1.3 2000/07/25 19:26:23 deraadt Exp $";
 #endif
 #endif /* not lint */
 
@@ -97,7 +98,7 @@ y_entries()
 			in_rule = NO;
 			break;
 		default:
-			if (in_rule || !isalpha(c) && c != '.' && c != '_')
+			if (in_rule || (!isalpha(c) && c != '.' && c != '_'))
 				break;
 			sp = tok;
 			*sp++ = c;
@@ -134,7 +135,7 @@ toss_yysec()
 	 * state == 0 : waiting
 	 * state == 1 : received a newline
 	 * state == 2 : received first %
-	 * state == 3 : recieved second %
+	 * state == 3 : received second %
 	 */
 	lineftell = ftell(inf);
 	for (state = 0; GETC(!=, EOF);)

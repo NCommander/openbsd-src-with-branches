@@ -1,3 +1,4 @@
+.\"     $OpenBSD: apropos.1,v 1.6 2000/07/06 04:06:53 aaron Exp $
 .\"     $NetBSD: apropos.1,v 1.4 1995/09/04 20:46:17 tls Exp $
 .\"
 .\" Copyright (c) 1989, 1990, 1993
@@ -43,21 +44,22 @@
 .Nm apropos
 .Op Fl M Ar path
 .Op Fl m Ar path
-.Ar keyword ...
+.Ar keyword
+.Op Ar ...
 .Sh DESCRIPTION
-.Nm Apropos
+.Nm
 shows which manual pages contain instances of any of the given
 .Ar keyword(s)
 in their title line.
 Each word is considered separately and case of letters is ignored.
 Words which are part of other words are considered; when looking for
 .Dq compile ,
-.Nm apropos
+.Nm
 will also list all instances of
 .Dq compiler .
 .Pp
 If the line output by
-.Nm apropos
+.Nm
 starts
 .Dq Li name(section) ...
 you can enter
@@ -66,27 +68,27 @@ to get
 its documentation.
 .Pp
 The options are as follows:
-.Bl -tag -width flag
-.It Fl M
+.Bl -tag -width Ds
+.It Fl M Ar path
 Override the list of standard directories
-.Nm apropos
+.Nm
 searches for a database named
 .Pa whatis.db .
 The supplied
 .Ar path
 must be a colon
-.Dq \&:
+.Pq Sq \&:
 separated list of directories.
 This search path may also be set using the environment variable
 .Ev MANPATH .
-.It Fl m
+.It Fl m Ar path
 Augment the list of standard directories
-.Nm apropos
+.Nm
 searches for its database.
 The supplied
 .Ar path
 must be a colon
-.Dq \&:
+.Pq Sq \&:
 separated list of directories.
 These directories will be searched before the standard directories,
 or the directories supplied with the
@@ -94,6 +96,7 @@ or the directories supplied with the
 option or the
 .Ev MANPATH
 environment variable.
+.El
 .Sh ENVIRONMENT
 .Bl -tag -width MANPATH
 .It Ev MANPATH
@@ -103,7 +106,7 @@ may be overridden by specifying a path in the
 .Ev MANPATH
 environment variable.
 The format of the path is a colon
-.Dq \&:
+.Pq Sq \&:
 separated list of directories.
 .El
 .Sh FILES
@@ -117,6 +120,6 @@ name of the apropos database
 .Xr whereis 1
 .Sh HISTORY
 The
-.Nm apropos
+.Nm
 command appeared in
 .Bx 3.0 .

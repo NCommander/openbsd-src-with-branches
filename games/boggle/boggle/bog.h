@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /*	$NetBSD: bog.h,v 1.2 1995/03/21 12:14:32 cgd Exp $	*/
 
 /*-

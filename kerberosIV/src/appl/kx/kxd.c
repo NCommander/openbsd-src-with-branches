@@ -45,6 +45,7 @@ static int   done        = 0;
 static RETSIGTYPE
 childhandler (int sig)
 {
+     int save_errno = errno;
      pid_t pid;
      int status;
 
@@ -54,6 +55,7 @@ childhandler (int sig)
 	   done = 1;
      } while(pid > 0);
      signal (SIGCHLD, childhandler);
+     errno = save_errno;
      SIGRETURN(0);
 }
 
@@ -708,7 +710,6 @@ main (int argc, char **argv)
     int port;
     int optind = 0;
 
-    setprogname (argv[0]);
     roken_openlog ("kxd", LOG_ODELAY | LOG_PID, LOG_DAEMON);
 
     if (getarg (args, sizeof(args) / sizeof(args[0]), argc, argv,

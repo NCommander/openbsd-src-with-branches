@@ -1,3 +1,5 @@
+/*	$OpenBSD: fsmagic.c,v 1.5 1999/12/06 00:32:29 deraadt Exp $	*/
+
 /*
  * fsmagic - magic based on filesystem info - directory, special files, etc.
  *
@@ -31,6 +33,12 @@
 #include <sys/stat.h>
 #include <unistd.h>
 #include <stdlib.h>
+#include <err.h>
+#ifndef major
+# if defined(__SVR4) || defined(_SVR4_SOURCE)
+#  include <sys/mkdev.h>
+# endif
+#endif
 #ifndef	major			/* if `major' not defined in types.h, */
 #include <sys/sysmacros.h>	/* try this one. */
 #endif
@@ -45,8 +53,7 @@
 #include "file.h"
 
 #ifndef	lint
-static char *moduleid = 
-	"@(#)$Id: fsmagic.c,v 1.7 1995/04/28 19:23:51 christos Exp $";
+static char *moduleid = "$OpenBSD: fsmagic.c,v 1.5 1999/12/06 00:32:29 deraadt Exp $";
 #endif	/* lint */
 
 int
@@ -84,12 +91,12 @@ struct stat *sb;
 		ckfputs("directory", stdout);
 		return 1;
 	case S_IFCHR:
-		(void) printf("character special (%d/%d)",
-			major(sb->st_rdev), minor(sb->st_rdev));
+		(void) printf("character special (%ld/%ld)",
+			(long) major(sb->st_rdev), (long) minor(sb->st_rdev));
 		return 1;
 	case S_IFBLK:
-		(void) printf("block special (%d/%d)",
-			major(sb->st_rdev), minor(sb->st_rdev));
+		(void) printf("block special (%ld/%ld)",
+			(long) major(sb->st_rdev), (long) minor(sb->st_rdev));
 		return 1;
 	/* TODO add code to handle V7 MUX and Blit MUX files */
 #ifdef	S_IFIFO
@@ -101,7 +108,7 @@ struct stat *sb;
 	case S_IFLNK:
 		{
 			char buf[BUFSIZ+4];
-			register int nch;
+			int nch;
 			struct stat tstatbuf;
 
 			if ((nch = readlink(fn, buf, BUFSIZ-1)) <= 0) {
@@ -125,11 +132,13 @@ struct stat *sb;
 
 			    if ((tmp = strrchr(fn,  '/')) == NULL) {
 				tmp = buf; /* in current directory anyway */
-			    }
-			    else {
-				strcpy (buf2, fn);  /* take directory part */
+			    } else if (strlen(fn) + strlen(buf) > sizeof(buf2)-1) {
+				ckfprintf(stdout, "name too long %s", fn);
+				return 1;
+			    } else {
+				strcpy (buf2, fn);  /* ok; take directory part */
 				buf2[tmp-fn+1] = '\0';
-				strcat (buf2, buf); /* plus (relative) symlink */
+				strcat (buf2, buf); /* ok; plus (relative) symlink */
 				tmp = buf2;
 			    }
 			    if (stat(tmp, &tstatbuf) < 0) {
@@ -160,7 +169,7 @@ struct stat *sb;
 	case S_IFREG:
 		break;
 	default:
-		error("invalid mode 0%o.\n", sb->st_mode);
+		errx(1, "invalid mode 0%o", sb->st_mode);
 		/*NOTREACHED*/
 	}
 

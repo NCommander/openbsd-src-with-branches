@@ -1,4 +1,5 @@
-/*	$NetBSD: math_emulate.c,v 1.15 1995/10/10 04:45:30 mycroft Exp $	*/
+/*	$OpenBSD: math_emulate.c,v 1.4 1996/05/07 07:21:48 deraadt Exp $	*/
+/*	$NetBSD: math_emulate.c,v 1.17 1996/05/03 19:42:17 christos Exp $	*/
 
 /*
  * expediant "port" of linux 8087 emulator to 386BSD, with apologies -wfj
@@ -68,7 +69,9 @@ static temp_real_unaligned * __st(int i);
 	I387.twd = 0x0000;		\
 } while (0)
 
-math_emulate(struct trapframe *info)
+int
+math_emulate(info)
+	struct trapframe *info;
 {
 	u_short code;
 	temp_real tmp;
@@ -577,7 +580,7 @@ char * ea(struct trapframe * info, u_short code)
 		I387.fos = 0x17;
 		return (char *) offset;
 	}
-	tmp = (long*)&REG(rm);
+	tmp = (long *)&REG(rm);
 	switch (mod) {
 		case 0: offset = 0; break;
 		case 1:
@@ -652,7 +655,7 @@ void get_short_int(temp_real * tmp,
 	addr = ea(info,code);
 	ti.a = (signed short) fusword((u_short *) addr);
 	ti.b = 0;
-	if (ti.sign = (ti.a < 0))
+	if ((ti.sign = (ti.a < 0)) != 0)
 		ti.a = - ti.a;
 	int_to_real(&ti,tmp);
 }
@@ -666,7 +669,7 @@ void get_long_int(temp_real * tmp,
 	addr = ea(info,code);
 	ti.a = fuword((u_long *) addr);
 	ti.b = 0;
-	if (ti.sign = (ti.a < 0))
+	if ((ti.sign = (ti.a < 0)) != 0)
 		ti.a = - ti.a;
 	int_to_real(&ti,tmp);
 }
@@ -680,7 +683,7 @@ void get_longlong_int(temp_real * tmp,
 	addr = ea(info,code);
 	ti.a = fuword((u_long *) addr);
 	ti.b = fuword((u_long *) addr + 1);
-	if (ti.sign = (ti.b < 0))
+	if ((ti.sign = (ti.b < 0)) != 0)
 		__asm__("notl %0 ; notl %1\n\t"
 			"addl $1,%0 ; adcl $0,%1"
 			:"=r" (ti.a),"=r" (ti.b)
@@ -909,7 +912,7 @@ void fmul(const temp_real * src1, const temp_real * src2, temp_real * result)
  * temporary real division routine.
  */
 
-#include "i386/i386/math_emu.h"
+#include <i386/i386/math_emu.h>
 
 static void shift_left(int * c)
 {

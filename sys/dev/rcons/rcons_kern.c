@@ -1,4 +1,5 @@
-/*	$NetBSD: rcons_kern.c,v 1.2 1995/10/04 23:57:25 pk Exp $ */
+/*	$OpenBSD: rcons_kern.c,v 1.5 2001/08/19 15:07:34 miod Exp $ */
+/*	$NetBSD: rcons_kern.c,v 1.4 1996/03/14 19:02:33 christos Exp $ */
 
 /*
  * Copyright (c) 1991, 1993
@@ -50,6 +51,7 @@
 #include <sys/systm.h>
 #include <sys/ioctl.h>
 #include <sys/tty.h>
+#include <sys/proc.h>
 #include <dev/rcons/raster.h>
 #include <dev/rcons/rcons.h>
 
@@ -60,6 +62,7 @@ static void rcons_belltmr(void *);
 #include "rcons_subr.h"
 
 static struct rconsole *mydevicep;
+static void rcons_output(struct tty *);
 
 void
 rcons_cnputc(c)
@@ -79,7 +82,7 @@ static void
 rcons_output(tp)
 	register struct tty *tp;
 {
-	register int s, n, i;
+	register int s, n;
 	char buf[OBUFSIZ];
 
 	s = spltty();
@@ -97,7 +100,7 @@ rcons_output(tp)
 	/* Come back if there's more to do */
 	if (tp->t_outq.c_cc) {
 		tp->t_state |= TS_TIMEOUT;
-		timeout(ttrstrt, tp, 1);
+		timeout_add(&tp->t_rstrt_to, 1);
 	}
 	if (tp->t_outq.c_cc <= tp->t_lowat) {
 		if (tp->t_state&TS_ASLEEP) {
@@ -134,7 +137,7 @@ rcons_bell(rc)
 		splx(s);
 		(*rc->rc_bell)(1);
 		/* XXX Chris doesn't like the following divide */
-		timeout(rcons_belltmr, rc, hz/10);
+		timeout_add(&rc->bell_timeout, hz / 10);
 	}
 }
 
@@ -153,12 +156,12 @@ rcons_belltmr(p)
 		(*rc->rc_bell)(0);
 		if (i != 0)
 			/* XXX Chris doesn't like the following divide */
-			timeout(rcons_belltmr, rc, hz/30);
+			timeout_add(&rc->bell_timeout, hz / 30);
 	} else {
 		rc->rc_ringing = 1;
 		splx(s);
 		(*rc->rc_bell)(1);
-		timeout(rcons_belltmr, rc, hz/10);
+		timeout_add(&rc->bell_timeout, hz / 10);
 	}
 }
 
@@ -185,7 +188,7 @@ rcons_init(rc)
 		return;
 	}
 	rp->linelongs = rc->rc_linebytes >> 2;
-	rp->pixels = (u_long *)rc->rc_pixels;
+	rp->pixels = (u_int32_t *)rc->rc_pixels;
 
 	rc->rc_ras_blank = RAS_CLEAR;
 
@@ -244,6 +247,8 @@ rcons_init(rc)
 		/* Prom emulator cursor is currently visible */
 		rc->rc_bits |= FB_CURSOR;
 	}
+
+	timeout_set(&rc->bell_timeout, rcons_belltmr, rc);
 
 	/* Initialization done; hook us up */
 	fbconstty->t_oproc = rcons_output;

@@ -1,3 +1,4 @@
+/*	$OpenBSD: dir.h,v 1.6 1995/03/21 09:02:44 cgd Exp $	*/
 /*	$NetBSD: dir.h,v 1.6 1995/03/21 09:02:44 cgd Exp $	*/
 
 /*-

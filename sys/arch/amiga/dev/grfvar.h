@@ -1,4 +1,5 @@
-/*	$NetBSD: grfvar.h,v 1.12 1995/10/09 02:08:48 chopps Exp $	*/
+/*	$OpenBSD: grfvar.h,v 1.3 1996/05/29 10:15:23 niklas Exp $	*/
+/*	$NetBSD: grfvar.h,v 1.14 1996/05/19 21:05:54 veego Exp $	*/
 
 /*
  * Copyright (c) 1988 University of Utah.
@@ -59,14 +60,15 @@ struct	grf_softc {
 	dev_t	g_itedev;		/* ite device number */
 	dev_t	g_grfdev;		/* grf device number */
 	caddr_t g_data;			/* device dependent data */
-	int  (*g_mode)();
+	int  (*g_mode)(struct grf_softc *, u_long, void *,
+								u_long, int);
 	int    g_conpri;		/* priority of ite as console */
-	void (*g_iteinit)	__P((struct ite_softc *));
-	void (*g_itedeinit)	__P((struct ite_softc *));
-	void (*g_iteclear)	__P((struct ite_softc *,int,int,int,int));
-	void (*g_iteputc)	__P((struct ite_softc *,int,int,int,int));
-	void (*g_itecursor)	__P((struct ite_softc *,int));
-	void (*g_itescroll)	__P((struct ite_softc *,int,int,int,int));
+	void (*g_iteinit)(struct ite_softc *);
+	void (*g_itedeinit)(struct ite_softc *);
+	void (*g_iteclear)(struct ite_softc *,int,int,int,int);
+	void (*g_iteputc)(struct ite_softc *,int,int,int,int);
+	void (*g_itecursor)(struct ite_softc *,int);
+	void (*g_itescroll)(struct ite_softc *,int,int,int,int);
 };
 
 /* flags */
@@ -91,7 +93,7 @@ struct	grf_softc {
 #define GM_GRFSETBANK	10
 #define GM_GRFGETCURBANK 11
 #define GM_GRFIOCTL	12
-#define GM_GRFTOGGLE 13
+#define GM_GRFTOGGLE	13
 
 /* minor device interpretation */
 #define GRFOVDEV	0x10	/* used by grf_ul, overlay planes */
@@ -107,5 +109,6 @@ enum grfunits {
 	GRF_RETINAIII_UNIT,
 	GRF_CL5426_UNIT,
 	GRF_ULOWELL_UNIT,
-	GRF_CV64_UNIT
+	GRF_CV64_UNIT,
+	GRF_ET4000_UNIT
 };

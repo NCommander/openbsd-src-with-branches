@@ -359,9 +359,9 @@ DES3_string_to_key(krb5_context context,
 	    des_set_key(keys + i, s[i]);
 	}
 	memset(&ivec, 0, sizeof(ivec));
-	des_ede3_cbc_encrypt((des_cblock *)tmp,
-			     (des_cblock *)tmp, sizeof(tmp), 
-			     s[0], s[1], s[2], &ivec, DES_ENCRYPT);
+	des_ede3_cbc_encrypt((des_cblock *)tmp, (des_cblock *)tmp,
+			     sizeof(tmp), s[0], s[1], s[2], &ivec,
+			     DES_ENCRYPT);
 	memset(s, 0, sizeof(s));
 	memset(&ivec, 0, sizeof(ivec));
 	for(i = 0; i < 3; i++){
@@ -895,8 +895,8 @@ RSA_MD4_DES_checksum(krb5_context context,
     MD4_Update (&md4, data, len);
     MD4_Final (p + 8, &md4);
     memset (&ivec, 0, sizeof(ivec));
-    des_cbc_encrypt((des_cblock*)p, 
-		    (des_cblock*)p, 
+    des_cbc_encrypt((des_cblock *)p, 
+		    (des_cblock *)p, 
 		    24, 
 		    key->schedule->data, 
 		    &ivec, 
@@ -970,8 +970,8 @@ RSA_MD5_DES_checksum(krb5_context context,
     MD5_Update (&md5, data, len);
     MD5_Final (p + 8, &md5);
     memset (&ivec, 0, sizeof(ivec));
-    des_cbc_encrypt((des_cblock*)p, 
-		    (des_cblock*)p, 
+    des_cbc_encrypt((des_cblock *)p, 
+		    (des_cblock *)p, 
 		    24, 
 		    key->schedule->data, 
 		    &ivec, 
@@ -1032,8 +1032,8 @@ RSA_MD5_DES3_checksum(krb5_context context,
     MD5_Update (&md5, data, len);
     MD5_Final (p + 8, &md5);
     memset (&ivec, 0, sizeof(ivec));
-    des_ede3_cbc_encrypt((des_cblock*)p, 
-			 (des_cblock*)p, 
+    des_ede3_cbc_encrypt((des_cblock *)p, 
+			 (des_cblock *)p, 
 			 24, 
 			 sched[0], sched[1], sched[2],
 			 &ivec, 
@@ -2687,7 +2687,7 @@ seed_something(void)
 
 	/* Try using egd */
 	if (!krb5_init_context(&context)) {
-	    p = krb5_config_get_string(context, NULL, "libdefaults",
+	    (const char *)p = krb5_config_get_string(context, NULL, "libdefaults",
 		"egd_socket", NULL);
 	    if (p != NULL)
 		RAND_egd_bytes(p, ENTROPY_NEEDED);

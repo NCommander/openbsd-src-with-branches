@@ -1,4 +1,5 @@
-/*	$NetBSD: wesc.c,v 1.10 1995/09/16 16:11:32 chopps Exp $	*/
+/*	$OpenBSD: wesc.c,v 1.7 1997/01/18 12:26:35 niklas Exp $	*/
+/*	$NetBSD: wesc.c,v 1.19 1996/12/23 09:10:30 veego Exp $	*/
 
 /*
  * Copyright (c) 1994 Michael L. Hitch
@@ -50,10 +51,12 @@
 #include <amiga/dev/siopvar.h>
 #include <amiga/dev/zbusvar.h>
 
-int wescprint __P((void *auxp, char *));
-void wescattach __P((struct device *, struct device *, void *));
-int wescmatch __P((struct device *, struct cfdata *, void *));
-int wesc_dmaintr __P((struct siop_softc *));
+void wescattach(struct device *, struct device *, void *);
+int wescmatch(struct device *, void *, void *);
+int wesc_dmaintr(void *);
+#ifdef DEBUG
+void wesc_dump(void);
+#endif
 
 struct scsi_adapter wesc_scsiswitch = {
 	siop_scsicmd,
@@ -73,18 +76,21 @@ struct scsi_device wesc_scsidev = {
 #ifdef DEBUG
 #endif
 
-struct cfdriver wesccd = {
-	NULL, "wesc", (cfmatch_t)wescmatch, wescattach, 
-	DV_DULL, sizeof(struct siop_softc), NULL, 0 };
+struct cfattach wesc_ca = {
+	sizeof(struct siop_softc), wescmatch, wescattach
+};
+
+struct cfdriver wesc_cd = {
+	NULL, "wesc", DV_DULL, NULL, 0
+};
 
 /*
  * if we are an MacroSystemsUS Warp Engine
  */
 int
-wescmatch(pdp, cdp, auxp)
+wescmatch(pdp, match, auxp)
 	struct device *pdp;
-	struct cfdata *cdp;
-	void *auxp;
+	void *match, *auxp;
 {
 	struct zbus_args *zap;
 
@@ -114,7 +120,8 @@ wescattach(pdp, dp, auxp)
 	 * CTEST7 = SC0, TT1
 	 */
 	sc->sc_clock_freq = 50;		/* Clock = 50Mhz */
-	sc->sc_ctest7 = 0x22;		/* SC0 + TT1 */
+	sc->sc_ctest7 = SIOP_CTEST7_SC0 | SIOP_CTEST7_TT1;
+	sc->sc_dcntl = 0x00;
 
 	sc->sc_link.adapter_softc = sc;
 	sc->sc_link.adapter_target = 7;
@@ -132,27 +139,14 @@ wescattach(pdp, dp, auxp)
 	/*
 	 * attach all scsi units on us
 	 */
-	config_found(dp, &sc->sc_link, wescprint);
+	config_found(dp, &sc->sc_link, scsiprint);
 }
 
-/*
- * print diag if pnp is NULL else just extra
- */
 int
-wescprint(auxp, pnp)
-	void *auxp;
-	char *pnp;
+wesc_dmaintr(arg)
+	void *arg;
 {
-	if (pnp == NULL)
-		return(UNCONF);
-	return(QUIET);
-}
-
-
-int
-wesc_dmaintr(sc)
-	struct siop_softc *sc;
-{
+	struct siop_softc *sc = arg;
 	siop_regmap_p rp;
 	u_char istat;
 
@@ -179,8 +173,8 @@ wesc_dump()
 {
 	int i;
 
-	for (i = 0; i < wesccd.cd_ndevs; ++i)
-		if (wesccd.cd_devs[i])
-			siop_dump(wesccd.cd_devs[i]);
+	for (i = 0; i < wesc_cd.cd_ndevs; ++i)
+		if (wesc_cd.cd_devs[i])
+			siop_dump(wesc_cd.cd_devs[i]);
 }
 #endif

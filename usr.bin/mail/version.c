@@ -1,3 +1,6 @@
+/*	$OpenBSD: version.c,v 1.4 2001/01/16 05:36:09 millert Exp $	*/
+/*	$NetBSD: version.c,v 1.4 1996/06/08 19:48:46 christos Exp $	*/
+
 /*
  * Copyright (c) 1980, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -32,12 +35,15 @@
  */
 
 #ifndef lint
-static char sccsid[] = "from: @(#)version.c	8.1 (Berkeley) 6/6/93";
-static char rcsid[] = "$Id: version.c,v 1.3 1994/06/29 05:09:52 deraadt Exp $";
+#if 0
+static const char sccsid[] = "@(#)version.c	8.1 (Berkeley) 6/6/93";
+#else
+static const char rcsid[] = "$OpenBSD: version.c,v 1.4 2001/01/16 05:36:09 millert Exp $";
+#endif
 #endif /* not lint */
 
 /*
  * Just keep track of the date/sid of this version of Mail.
  * Load this file first to get a "total" Mail version.
  */
-char	*version = "8.1 6/6/93";
+const char version[] = "8.1.2 01/15/2001";

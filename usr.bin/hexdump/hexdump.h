@@ -1,6 +1,9 @@
+/*	$OpenBSD: hexdump.h,v 1.5 2002/02/16 21:27:47 millert Exp $	*/
+/*	$NetBSD: hexdump.h,v 1.7 2001/12/07 15:14:29 bjh21 Exp $	*/
+
 /*
- * Copyright (c) 1989 The Regents of the University of California.
- * All rights reserved.
+ * Copyright (c) 1989, 1993
+ *	The Regents of the University of California.  All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -30,8 +33,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  *
- *	from: @(#)hexdump.h	5.4 (Berkeley) 6/1/90
- *	$Id: hexdump.h,v 1.2 1993/08/01 18:14:51 mycroft Exp $
+ *	from: @(#)hexdump.h	8.1 (Berkeley) 6/6/93
  */
 
 typedef struct _pr {
@@ -71,7 +73,37 @@ typedef struct _fs {			/* format strings */
 	int bcnt;
 } FS;
 
-extern FS *fshead;			/* head of format strings list */
-extern int blocksize;			/* data block size */
 enum _vflag { ALL, DUP, FIRST, WAIT };	/* -v values */
-char *emalloc();
+
+extern int blocksize;			/* data block size */
+extern int deprecated;			/* od compatibility */
+extern FU *endfu;			/* format at end-of-data */
+extern int exitval;			/* final exit value */
+extern FS *fshead;			/* head of format strings list */
+extern int length;			/* max bytes to read */
+extern off_t skip;			/* bytes to skip */
+extern enum _vflag vflag;
+
+void	 add(const char *);
+void	 addfile(char *);
+void	 badcnt(char *);
+void	 badconv(char *);
+void	 badfmt(const char *);
+void	 badsfmt(void);
+void	 bpad(PR *);
+void	 conv_c(PR *, u_char *);
+void	 conv_u(PR *, u_char *);
+void	 display(void);
+void	 doskip(const char *, int);
+/*void	 err(const char *, ...);*/
+void	*emalloc(int);
+void	 escape(char *);
+u_char	*get(void);
+void	 newsyntax(int, char ***);
+int	 next(char **);
+void	 nomem(void);
+void	 oldsyntax(int, char ***);
+void	 rewrite(FS *);
+int	 size(FS *);
+void	 usage(void);
+void	 oldusage(void);

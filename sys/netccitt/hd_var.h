@@ -1,4 +1,5 @@
-/*	$NetBSD: hd_var.h,v 1.6 1995/03/26 20:33:44 jtc Exp $	*/
+/*	$OpenBSD: hd_var.h,v 1.3 2002/03/14 01:27:10 millert Exp $	*/
+/*	$NetBSD: hd_var.h,v 1.7 1996/02/13 22:04:34 christos Exp $	*/
 
 /*
  * Copyright (c) University of British Columbia, 1984
@@ -76,7 +77,8 @@ struct	hdcb {
 	struct	ifaddr *hd_ifa;	/* device's X.25 network address */
 	struct	x25config *hd_xcp;
 	caddr_t	hd_pkp;		/* Level III junk */
-	int	(*hd_output)();	/* separate entry for HDLC direct output */
+				/* separate entry for HDLC direct output */
+	int	(*hd_output)(struct mbuf *, ...);
 
 	/* link statistics */
 
@@ -102,8 +104,47 @@ struct	hdcb {
 struct	hdcb *hdcbhead;		/* head of linked list of hdcb's */
 struct	Frmr_frame hd_frmr;	/* rejected frame diagnostic info */
 struct	ifqueue hdintrq;	/* hdlc packet input queue */
+struct	Hdlc_frame;
+struct	Hdlc_iframe;
+struct	Hdlc_sframe;
 
 int	hd_t1;			/* timer T1 value */
 int	hd_t3;			/* RR send timer */
 int	hd_n2;			/* frame retransmission limit */
+
+
+/* hd_debug.c */
+void hd_trace(struct hdcb *, int , struct Hdlc_frame *);
+int hd_dumptrace(struct hdcb *);
+
+/* hd_input.c */
+void hdintr(void);
+int process_rxframe(struct hdcb *, struct mbuf *);
+int process_iframe(struct hdcb *, struct mbuf *, struct Hdlc_iframe *);
+bool range_check(int, int , int );
+void process_sframe(struct hdcb *, struct Hdlc_sframe *, int);
+bool valid_nr(struct hdcb *, int , int);
+
+/* hd_output.c */
+int hd_output(struct mbuf *, ...);
+void hd_start(struct hdcb *);
+void hd_send_iframe(struct hdcb *, struct mbuf *, int);
+int hd_ifoutput(struct mbuf *, ...);
+void hd_resend_iframe(struct hdcb *);
+
+/* hd_subr.c */
+void hd_init(void);
+void *hd_ctlinput(int , struct sockaddr *, void *);
+void hd_initvars(struct hdcb *);
+int hd_decode(struct hdcb *, struct Hdlc_frame *);
+void hd_writeinternal(struct hdcb *, int, int );
+void hd_append(struct hdtxq *, struct mbuf *);
+void hd_flush(struct ifnet *);
+void hd_message(struct hdcb *, char *);
+int hd_status(struct hdcb *);
+struct mbuf *hd_remove(struct hdtxq *);
+
+/* hd_timer.c */
+void hd_timer(void);
+
 #endif

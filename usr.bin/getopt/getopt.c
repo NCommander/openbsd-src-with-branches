@@ -1,9 +1,13 @@
+/*	$OpenBSD: getopt.c,v 1.3 1997/01/15 23:42:32 millert Exp $	*/
+
 #ifndef lint
-static char rcsid[] = "$Id: getopt.c,v 1.2 1993/08/02 17:54:29 mycroft Exp $";
+static char rcsid[] = "$OpenBSD: getopt.c,v 1.3 1997/01/15 23:42:32 millert Exp $";
 #endif /* not lint */
 
 #include <stdio.h>
+#include <unistd.h>
 
+int
 main(argc, argv)
 int argc;
 char *argv[];
@@ -14,7 +18,7 @@ char *argv[];
 	int status = 0;
 
 	optind = 2;	/* Past the program name and the option letters. */
-	while ((c = getopt(argc, argv, argv[1])) != EOF)
+	while ((c = getopt(argc, argv, argv[1])) != -1)
 		switch (c) {
 		case '?':
 			status = 1;	/* getopt routine gave message */

@@ -32,18 +32,22 @@
  */
 
 #if defined(LIBC_SCCS) && !defined(lint)
-/*static char *sccsid = "from: @(#)abort.c	5.11 (Berkeley) 2/23/91";*/
-static char *rcsid = "$Id: abort.c,v 1.5 1995/02/28 01:46:24 jtc Exp $";
+static char *rcsid = "$OpenBSD: abort.c,v 1.7 2001/08/12 12:03:01 heko Exp $";
 #endif /* LIBC_SCCS and not lint */
 
 #include <signal.h>
 #include <stdlib.h>
 #include <unistd.h>
+#include "thread_private.h"
+#include "atexit.h"
 
 void
 abort()
 {
+	struct atexit *p = __atexit;
+	static int cleanup_called = 0;
 	sigset_t mask;
+
 
 	sigfillset(&mask);
 	/*
@@ -51,7 +55,24 @@ abort()
 	 * any errors -- X311J doesn't allow abort to return anyway.
 	 */
 	sigdelset(&mask, SIGABRT);
+#ifdef _THREAD_SAFE
+	(void)_thread_sys_sigprocmask(SIG_SETMASK, &mask, (sigset_t *)NULL);
+#else  /* _THREAD_SAFE */
 	(void)sigprocmask(SIG_SETMASK, &mask, (sigset_t *)NULL);
+#endif /* _THREAD_SAFE */
+
+	/*
+	 * POSIX requires we flush stdio buffers on abort
+	 */
+	if (cleanup_called == 0) {
+		while (p != NULL && p->next != NULL)
+			p = p->next;
+		if (p != NULL && p->fns[0] != NULL) {
+			cleanup_called = 1;
+			(*p->fns[0])();
+		}
+	}
+
 	(void)kill(getpid(), SIGABRT);
 
 	/*
@@ -59,7 +80,11 @@ abort()
 	 * it again, only harder.
 	 */
 	(void)signal(SIGABRT, SIG_DFL);
+#ifdef _THREAD_SAFE
+	(void)_thread_sys_sigprocmask(SIG_SETMASK, &mask, (sigset_t *)NULL);
+#else  /* _THREAD_SAFE */
 	(void)sigprocmask(SIG_SETMASK, &mask, (sigset_t *)NULL);
+#endif /* _THREAD_SAFE */
 	(void)kill(getpid(), SIGABRT);
 	exit(1);
 }

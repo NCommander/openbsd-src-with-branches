@@ -16,7 +16,7 @@
  *    must display the following acknowledgement:
  *      This product includes software developed by Paul Mackerras.
  * 4. The name of the author may not be used to endorse or promote products
- *    derived from this software withough specific prior written permission
+ *    derived from this software without specific prior written permission
  *
  * THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR
  * IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
@@ -29,6 +29,8 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+
+#include <string.h>
 #include "gsp_ass.h"
 
 #define NHASH	64		/* must be power of 2 */
@@ -66,7 +68,7 @@ lookup(char *id, bool makeit)
 }
 
 void
-define_sym(char *id, unsigned val, unsigned lineno, int flags)
+define_sym(char *id, unsigned int val, unsigned int lineno, int flags)
 {
 	register symbol ptr;
 
@@ -100,7 +102,7 @@ void
 do_asg(char *name, expr value, int flags)
 {
 	int32_t val;
-	unsigned line;
+	unsigned int line;
 
 	if( eval_expr(value, &val, &line) )
 		flags |= DEFINED;
@@ -119,7 +121,7 @@ set_numeric_label(int lnum)
 	char id[32];
 
 	/* define the backward reference symbol */
-	sprintf(id, "%dB", lnum);
+	snprintf(id, sizeof id, "%dB", lnum);
 	bp = lookup(id, TRUE);
 	bp->flags = NUMERIC_LABEL | DEFINED;
 	bp->value = pc;
@@ -133,7 +135,7 @@ set_numeric_label(int lnum)
 		/* Record a new numeric label and link it into the
 		   chain.  fp->nlab points to the head of the chain,
 		   bp->nlab points to the tail.  */
-		new(nl);
+		ALLOC(nl, struct numlab *);
 		nl->value = pc;
 		nl->lineno = lineno;
 		nl->next = NULL;
@@ -178,7 +180,7 @@ reset_numeric_labels()
 
 	for( h = 0; h < NHASH; ++h )
 		for( p = symbol_hash[h]; p != NULL; p = p->next )
-			if( (p->flags & NUMERIC_LABEL) != 0 )
+			if( (p->flags & NUMERIC_LABEL) != 0 ) {
 				if( (p->flags & DEFINED) != 0 ){
 					/* a backward reference */
 					p->flags &= ~DEFINED;
@@ -189,4 +191,5 @@ reset_numeric_labels()
 					p->value = nl->value;
 					p->lineno = nl->lineno;
 				}
+			}
 }

@@ -1,9 +1,11 @@
+/*	$OpenBSD: hack.unix.c,v 1.7 2001/01/28 23:41:46 niklas Exp $	*/
+
 /*
  * Copyright (c) Stichting Mathematisch Centrum, Amsterdam, 1985.
  */
 
 #ifndef lint
-static char rcsid[] = "$NetBSD: hack.unix.c,v 1.3 1995/03/23 08:31:55 cgd Exp $";
+static char rcsid[] = "$OpenBSD: hack.unix.c,v 1.7 2001/01/28 23:41:46 niklas Exp $";
 #endif /* not lint */
 
 /* This file collects some Unix dependencies; hack.pager.c contains some more */
@@ -19,7 +21,7 @@ static char rcsid[] = "$NetBSD: hack.unix.c,v 1.3 1995/03/23 08:31:55 cgd Exp $"
 
 #include <stdio.h>
 #include <errno.h>
-#include "hack.h"	/* mainly for index() which depends on BSD */
+#include "hack.h"
 
 #include	<sys/types.h>		/* for time_t and stat */
 #include	<sys/stat.h>
@@ -27,7 +29,7 @@ static char rcsid[] = "$NetBSD: hack.unix.c,v 1.3 1995/03/23 08:31:55 cgd Exp $"
 #include	<sys/time.h>
 #else
 #include	<time.h>
-#endif BSD
+#endif /* BSD */
 
 extern char *getenv();
 extern time_t time();
@@ -58,10 +60,8 @@ getdate()
 	static char datestr[7];
 	register struct tm *lt = getlt();
 
-	(void) sprintf(datestr, "%2d%2d%2d",
-		lt->tm_year, lt->tm_mon + 1, lt->tm_mday);
-	if(datestr[2] == ' ') datestr[2] = '0';
-	if(datestr[4] == ' ') datestr[4] = '0';
+	(void) snprintf(datestr, sizeof(datestr), "%02d%02d%02d",
+		lt->tm_year % 100, lt->tm_mon + 1, lt->tm_mday);
 	return(datestr);
 }
 
@@ -97,12 +97,12 @@ struct stat buf, hbuf;
 gethdate(name) char *name; {
 /* old version - for people short of space */
 /*
-/* register char *np;
-/*	if(stat(name, &hbuf))
-/*		error("Cannot get status of %s.",
-/*			(np = rindex(name, '/')) ? np+1 : name);
-/*
-/* version using PATH from: seismo!gregc@ucsf-cgl.ARPA (Greg Couch) */
+    register char *np;
+  	if(stat(name, &hbuf))
+  		error("Cannot get status of %s.",
+  			(np = strrchr(name, '/')) ? np+1 : name);
+  
+   version using PATH from: seismo!gregc@ucsf-cgl.ARPA (Greg Couch) */
 
 
 /*
@@ -114,11 +114,11 @@ gethdate(name) char *name; {
 
 register char *np, *path;
 char filename[MAXPATHLEN+1];
-	if (index(name, '/') != NULL || (path = getenv("PATH")) == NULL)
+	if (strchr(name, '/') != NULL || (path = getenv("PATH")) == NULL)
 		path = "";
 
 	for (;;) {
-		if ((np = index(path, ':')) == NULL)
+		if ((np = strchr(path, ':')) == NULL)
 			np = path + strlen(path);	/* point to end str */
 		if (np - path <= 1)			/* %% */
 			(void) strcpy(filename, name);
@@ -134,7 +134,7 @@ char filename[MAXPATHLEN+1];
 		path = np + 1;
 	}
 	error("Cannot get status of %s.",
-		(np = rindex(name, '/')) ? np+1 : name);
+		(np = strrchr(name, '/')) ? np+1 : name);
 }
 
 uptodate(fd) {
@@ -158,7 +158,6 @@ veryold(fd) {
 	if(buf.st_size != sizeof(int)) return(0);	/* not an xlock file */
 	(void) time(&date);
 	if(date - buf.st_mtime < 3L*24L*60L*60L) {	/* recent */
-		extern int errno;
 		int lockedpid;	/* should be the same size as hackpid */
 
 		if(read(fd, (char *)&lockedpid, sizeof(lockedpid)) !=
@@ -167,8 +166,8 @@ veryold(fd) {
 			return(0);
 
 		/* From: Rick Adams <seismo!rick>
-		/* This will work on 4.1cbsd, 4.2bsd and system 3? & 5.
-		/* It will do nothing on V7 or 4.1bsd. */
+		   This will work on 4.1cbsd, 4.2bsd and system 3? & 5.
+		   It will do nothing on V7 or 4.1bsd. */
 		if(!(kill(lockedpid, 0) == -1 && errno == ESRCH))
 			return(0);
 	}
@@ -184,7 +183,7 @@ veryold(fd) {
 
 getlock()
 {
-	extern int errno, hackpid, locknum;
+      extern int hackpid, locknum;
 	register int i = 0, fd;
 
 	(void) fflush(stdout);
@@ -220,7 +219,7 @@ getlock()
 	do {
 		if(locknum) lock[0] = 'a' + i++;
 
-		if((fd = open(lock, 0)) == -1) {
+		if((fd = open(lock, O_RDONLY)) == -1) {
 			if(errno == ENOENT) goto gotlock;    /* no such file */
 			perror(lock);
 			(void) unlink(LLOCK);
@@ -298,7 +297,7 @@ getmailstatus() {
 		mailbox = 0;
 #else
 		omstat.st_mtime = 0;
-#endif PERMANENT_MAILBOX
+#endif /* PERMANENT_MAILBOX */
 	}
 }
 
@@ -306,7 +305,7 @@ ckmailstatus() {
 	if(!mailbox
 #ifdef MAILCKFREQ
 		    || moves < laststattime + MAILCKFREQ
-#endif MAILCKFREQ
+#endif /* MAILCKFREQ */
 							)
 		return;
 	laststattime = moves;
@@ -316,7 +315,7 @@ ckmailstatus() {
 		mailbox = 0;
 #else
 		nmstat.st_mtime = 0;
-#endif PERMANENT_MAILBOX
+#endif /* PERMANENT_MAILBOX */
 	} else if(nmstat.st_mtime > omstat.st_mtime) {
 		if(nmstat.st_size)
 			newmail();
@@ -416,20 +415,20 @@ readmail() {
 		execl(mr, mr, (char *) 0);
 		exit(1);
 	}
-#else DEF_MAILREADER
+#else /* DEF_MAILREADER */
 	(void) page_file(mailbox, FALSE);
-#endif DEF_MAILREADER
+#endif /* DEF_MAILREADER */
 	/* get new stat; not entirely correct: there is a small time
 	   window where we do not see new mail */
 	getmailstatus();
 }
-#endif MAIL
+#endif /* MAIL */
 
 regularize(s)	/* normalize file name - we don't like ..'s or /'s */
 register char *s;
 {
 	register char *lp;
 
-	while((lp = index(s, '.')) || (lp = index(s, '/')))
+	while((lp = strchr(s, '.')) || (lp = strchr(s, '/')))
 		*lp = '_';
 }

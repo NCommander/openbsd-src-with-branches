@@ -1,3 +1,4 @@
+/*      $OpenBSD: regular.c,v 1.5 2000/10/12 13:33:47 deraadt Exp $      */
 /*      $NetBSD: regular.c,v 1.2 1995/09/08 03:22:59 tls Exp $      */
 
 /*-
@@ -37,7 +38,7 @@
 #if 0
 static char sccsid[] = "@(#)regular.c	8.3 (Berkeley) 4/2/94";
 #else
-static char rcsid[] = "$NetBSD: regular.c,v 1.2 1995/09/08 03:22:59 tls Exp $";
+static char rcsid[] = "$OpenBSD: regular.c,v 1.5 2000/10/12 13:33:47 deraadt Exp $";
 #endif
 #endif /* not lint */
 
@@ -74,25 +75,32 @@ c_regular(fd1, file1, skip1, len1, fd2, file2, skip2, len2)
 	len2 -= skip2;
 
 	length = MIN(len1, len2);
-	if (length > SIZE_T_MAX)
-		return (c_special(fd1, file1, skip1, fd2, file2, skip2));
+	if (length > SIZE_T_MAX) {
+	mmap_failed:
+		c_special(fd1, file1, skip1, fd2, file2, skip2);
+		return;
+	}
 
-	if ((p1 = (u_char *)mmap(NULL,
-	    (size_t)length, PROT_READ, 0, fd1, skip1)) == (u_char *)-1)
-		err(ERR_EXIT, "%s", file1);
-	if ((p2 = (u_char *)mmap(NULL,
-	    (size_t)length, PROT_READ, 0, fd2, skip2)) == (u_char *)-1)
-		err(ERR_EXIT, "%s", file2);
+	if ((p1 = mmap(NULL, (size_t)length, PROT_READ,
+	    MAP_PRIVATE, fd1, skip1)) == MAP_FAILED)
+		goto mmap_failed;
+	if ((p2 = mmap(NULL, (size_t)length, PROT_READ,
+	    MAP_PRIVATE, fd2, skip2)) == MAP_FAILED) {
+		munmap(p1, (size_t)length);
+		goto mmap_failed;
+	}
 
 	dfound = 0;
 	for (byte = line = 1; length--; ++p1, ++p2, ++byte) {
-		if ((ch = *p1) != *p2)
+		if ((ch = *p1) != *p2) {
 			if (lflag) {
 				dfound = 1;
-				(void)printf("%6qd %3o %3o\n", byte, ch, *p2);
+				(void)printf("%6lld %3o %3o\n", (long long)byte,
+				    ch, *p2);
 			} else
 				diffmsg(file1, file2, byte, line);
 				/* NOTREACHED */
+		}
 		if (ch == '\n')
 			++line;
 	}

@@ -1,3 +1,4 @@
+/*	$OpenBSD: char.h,v 1.2 1996/06/23 14:19:13 deraadt Exp $	*/
 /*	$NetBSD: char.h,v 1.6 1995/03/21 09:02:29 cgd Exp $	*/
 
 /*-
@@ -70,7 +71,7 @@ extern unsigned char _cmap_lower[], _cmap_upper[];
 #define letter(c)	(((c) & QUOTE) ? 0 : \
 			 (isalpha((unsigned char) (c)) || (c) == '_'))
 #define alnum(c)	(((c) & QUOTE) ? 0 : \
-		         (isalnum((unsigned char) (c)) || (c) == '_'))
+			 (isalnum((unsigned char) (c)) || (c) == '_'))
 #ifdef NLS
 #define Isspace(c)	(((c) & QUOTE) ? 0 : isspace((unsigned char) (c)))
 #define Isdigit(c)	(((c) & QUOTE) ? 0 : isdigit((unsigned char) (c)))

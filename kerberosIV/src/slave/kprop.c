@@ -408,8 +408,6 @@ main(int argc, char **argv)
     static struct slave_host *slave_host_list = NULL;
     struct slave_host *sh;
 
-    setprogname (argv[0]);
-
     transfer_mode = KPROP_TRANSFER_PRIVATE;
 
     time(&l_init);

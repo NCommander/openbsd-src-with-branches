@@ -1,3 +1,4 @@
+/*	$OpenBSD: set.c,v 1.6 2002/02/16 21:27:06 millert Exp $	*/
 /*	$NetBSD: set.c,v 1.8 1995/03/21 18:35:52 mycroft Exp $	*/
 
 /*-
@@ -37,7 +38,7 @@
 #if 0
 static char sccsid[] = "@(#)set.c	8.1 (Berkeley) 5/31/93";
 #else
-static char rcsid[] = "$NetBSD: set.c,v 1.8 1995/03/21 18:35:52 mycroft Exp $";
+static char rcsid[] = "$OpenBSD: set.c,v 1.6 2002/02/16 21:27:06 millert Exp $";
 #endif
 #endif /* not lint */
 
@@ -46,27 +47,23 @@ static char rcsid[] = "$NetBSD: set.c,v 1.8 1995/03/21 18:35:52 mycroft Exp $";
 #ifndef SHORT_STRINGS
 #include <string.h>
 #endif /* SHORT_STRINGS */
-#if __STDC__
-# include <stdarg.h>
-#else
-# include <varargs.h>
-#endif
+#include <stdarg.h>
 
 #include "csh.h"
 #include "extern.h"
 
-static Char	*getinx __P((Char *, int *));
-static void	 asx __P((Char *, int, Char *));
+static Char	*getinx(Char *, int *);
+static void	 asx(Char *, int, Char *);
 static struct varent
-		*getvx __P((Char *, int));
-static Char	*xset __P((Char *, Char ***));
-static Char	*operate __P((int, Char *, Char *));
-static void	 putn1 __P((int));
+		*getvx(Char *, int);
+static Char	*xset(Char *, Char ***);
+static Char	*operate(int, Char *, Char *);
+static void	 putn1(int);
 static struct varent
-		*madrof __P((Char *, struct varent *));
-static void	 unsetv1 __P((struct varent *));
-static void	 exportpath __P((Char **));
-static void	 balance __P((struct varent *, int, int));
+		*madrof(Char *, struct varent *);
+static void	 unsetv1(struct varent *);
+static void	 exportpath(Char **);
+static void	 balance(struct varent *, int, int);
 
 
 /*
@@ -167,7 +164,7 @@ doset(v, t)
 	    cp = Strsave(value(vp));	/* get the old value back */
 
 	    /*
-	     * convert to cononical pathname (possibly resolving symlinks)
+	     * convert to canonical pathname (possibly resolving symlinks)
 	     */
 	    cp = dcanon(cp, cp);
 
@@ -457,7 +454,7 @@ adrof1(name, v)
     register Char *name;
     register struct varent *v;
 {
-    register cmp;
+    register int cmp;
 
     v = v->v_left;
     while (v && ((cmp = *name - *v->v_name) ||
@@ -512,7 +509,7 @@ setq(name, vec, p)
     register struct varent *p;
 {
     register struct varent *c;
-    register f;
+    register int f;
 
     f = 0;			/* tree hangs off the header's left link */
     while ((c = p->v_link[f]) != NULL) {
@@ -586,7 +583,7 @@ unsetv1(p)
     register struct varent *p;
 {
     register struct varent *c, *pp;
-    register f;
+    register int f;
 
     /*
      * Free associated memory first to avoid complications.
@@ -726,7 +723,7 @@ balance(p, f, d)
     register struct varent *t;	/* used by the rotate macros */
 
 #endif
-    register ff;
+    register int ff;
 
     /*
      * Ok, from here on, p is the node we're operating on; pp is it's parent; f
@@ -745,7 +742,7 @@ balance(p, f, d)
 		break;
 	    case 1:		/* was already right heavy */
 		switch (p->v_right->v_bal) {
-		case 1:	/* sigle rotate */
+		case 1:	/* single rotate */
 		    pp->v_link[ff] = rleft(p);
 		    p->v_left->v_bal = 0;
 		    p->v_bal = 0;
@@ -783,7 +780,7 @@ balance(p, f, d)
 		    p->v_right->v_bal = 0;
 		    p->v_bal = 0;
 		    break;
-		case 0:	/* signle rotate */
+		case 0:	/* single rotate */
 		    pp->v_link[ff] = rright(p);
 		    p->v_right->v_bal = -1;
 		    p->v_bal = 1;
@@ -815,7 +812,7 @@ plist(p)
     register struct varent *p;
 {
     register struct varent *c;
-    register len;
+    register int len;
     sigset_t sigset;
 
     if (setintr) {

@@ -34,14 +34,15 @@
  * SUCH DAMAGE.
  */
 
-#include <machine/machAsmDefs.h>
+#include <machine/asm.h>
 
-#if defined(LIBC_SCCS) && !defined(lint)
-	ASMSTR("from: @(#)strlen.s	8.1 (Berkeley) 6/4/93")
-	ASMSTR("$Id: strlen.S,v 1.3 1994/12/15 17:25:05 mycroft Exp $")
-#endif /* LIBC_SCCS and not lint */
+#if defined(LIBC_SCCS)
+	.text
+	.asciz "$OpenBSD$"
+#endif /* LIBC_SCCS */
 
 LEAF(strlen)
+	.set	reorder
 	addu	v1, a0, 1
 1:
 	lb	v0, 0(a0)		# get byte from string

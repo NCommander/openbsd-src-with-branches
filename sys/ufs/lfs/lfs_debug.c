@@ -1,4 +1,5 @@
-/*	$NetBSD: lfs_debug.c,v 1.2 1994/06/29 06:46:54 cgd Exp $	*/
+/*	$OpenBSD: lfs_debug.c,v 1.3 1996/04/21 22:32:42 deraadt Exp $	*/
+/*	$NetBSD: lfs_debug.c,v 1.4 1996/03/17 02:16:28 christos Exp $	*/
 
 /*
  * Copyright (c) 1991, 1993
@@ -37,6 +38,7 @@
 
 #ifdef DEBUG
 #include <sys/param.h>
+#include <sys/systm.h>
 #include <sys/namei.h>
 #include <sys/vnode.h>
 #include <sys/mount.h>
@@ -87,7 +89,7 @@ lfs_dump_super(lfsp)
 		"fbmask   ", lfsp->lfs_fbmask,
 		"fbshift  ", lfsp->lfs_fbshift);
 
-	(void)printf("%s%d\t%s%d\t%s%lx\t%s%qx\n", 
+	(void)printf("%s%d\t%s%d\t%s%lx\t%s%qx\n",
 		"sushift  ", lfsp->lfs_sushift,
 		"fsbtodb  ", lfsp->lfs_fsbtodb,
 		"cksum    ", lfsp->lfs_cksum,
@@ -119,7 +121,7 @@ lfs_dump_dinode(dip)
 {
 	int i;
 
-	(void)printf("%s%u\t%s%d\t%s%u\t%s%u\t%s%lu\n",
+	(void)printf("%s%u\t%s%d\t%s%u\t%s%u\t%s%qu\n",
 		"mode  ", dip->di_mode,
 		"nlink ", dip->di_nlink,
 		"uid   ", dip->di_uid,

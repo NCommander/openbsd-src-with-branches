@@ -1,3 +1,6 @@
+/*	$OpenBSD: ttcompat.c,v 1.4 2001/08/30 17:38:13 millert Exp $	*/
+/*	$NetBSD: ttcompat.c,v 1.9 1995/11/15 22:50:00 pk Exp $	*/
+
 /*
  * Copyright (c) 1995
  *	The Regents of the University of California.  All rights reserved.
@@ -37,6 +40,10 @@
  *	originally from /sys/kern/tty_compat.c
  */
 
+#ifndef lint
+static const char rcsid[] = "$OpenBSD: ttcompat.c,v 1.4 2001/08/30 17:38:13 millert Exp $";
+#endif /* not lint */
+
 #include <sys/param.h>
 #include <sys/types.h>
 
@@ -57,15 +64,17 @@
 #define	CLR(t, f)	(t) &= ~(f)
 #define	ISSET(t, f)	((t) & (f))
 
+static int	sttygetoflags(struct termios *);
+static void	sttysetoflags(struct termios *, int);
+
 static int
-sttygetoflags(tp)
-	struct termios *tp;
+sttygetoflags(struct termios *tp)
 {
-	register tcflag_t iflag = tp->c_iflag;
-	register tcflag_t lflag = tp->c_lflag;
-	register tcflag_t oflag = tp->c_oflag;
-	register tcflag_t cflag = tp->c_cflag;
-	register int flags = 0;
+	tcflag_t iflag = tp->c_iflag;
+	tcflag_t lflag = tp->c_lflag;
+	tcflag_t oflag = tp->c_oflag;
+	tcflag_t cflag = tp->c_cflag;
+	int flags = 0;
 
 	if (ISSET(cflag, PARENB)) {
 		if (ISSET(iflag, INPCK)) {
@@ -82,6 +91,8 @@ sttygetoflags(tp)
 		if (!ISSET(oflag, OPOST))
 			SET(flags, LITOUT);
 	}
+	if (ISSET(lflag, XCASE))
+		SET(flags, LCASE);
 
 	if (!ISSET(lflag, ICANON)) {
 		/* fudge */
@@ -96,18 +107,16 @@ sttygetoflags(tp)
 }
 
 static void
-sttysetoflags(tp, flags)
-	struct termios *tp;
-	int flags;
+sttysetoflags(struct termios *tp, int flags)
 {
-	register tcflag_t iflag = tp->c_iflag;
-	register tcflag_t oflag = tp->c_oflag;
-	register tcflag_t lflag = tp->c_lflag;
-	register tcflag_t cflag = tp->c_cflag;
+	tcflag_t iflag = tp->c_iflag;
+	tcflag_t oflag = tp->c_oflag;
+	tcflag_t lflag = tp->c_lflag;
+	tcflag_t cflag = tp->c_cflag;
 
 	if (ISSET(flags, RAW)) {
 		iflag &= IXOFF;
-		CLR(lflag, ISIG|ICANON|IEXTEN);
+		CLR(lflag, ISIG|ICANON|IEXTEN|XCASE);
 		CLR(cflag, PARENB);
 	} else {
 		SET(iflag, BRKINT|IXON|IMAXBEL);
@@ -116,6 +125,8 @@ sttysetoflags(tp, flags)
 			CLR(lflag, ICANON);
 		else
 			SET(lflag, ICANON);
+		if (ISSET(iflag, IUCLC) && ISSET(oflag, OLCUC))
+			SET(lflag, XCASE);
 		switch (ISSET(flags, ANYP)) {
 		case 0:
 			CLR(cflag, PARENB);
@@ -162,15 +173,13 @@ sttysetoflags(tp, flags)
 }
 
 void
-sttyclearflags(tp, flags)
-	struct termios *tp;
-	int flags;
+sttyclearflags(struct termios *tp, int flags)
 {
-	register tcflag_t iflag = tp->c_iflag;
-	register tcflag_t oflag = tp->c_oflag;
-	register tcflag_t lflag = tp->c_lflag;
-	register tcflag_t cflag = tp->c_cflag;
-	register int oflags = sttygetoflags(tp) & ~flags;
+	tcflag_t iflag = tp->c_iflag;
+	tcflag_t oflag = tp->c_oflag;
+	tcflag_t lflag = tp->c_lflag;
+	tcflag_t cflag = tp->c_cflag;
+	int oflags = sttygetoflags(tp) & ~flags;
 
 	if (ISSET(flags, TANDEM))
 		CLR(iflag, IXOFF);
@@ -179,6 +188,11 @@ sttyclearflags(tp, flags)
 	if (ISSET(flags, CRMOD)) {
 		CLR(iflag, ICRNL);
 		CLR(oflag, ONLCR);
+	}
+	if (ISSET(flags, LCASE)) {
+		CLR(iflag, IUCLC);
+		CLR(oflag, OLCUC);
+		CLR(lflag, XCASE);
 	}
 	if (ISSET(flags, XTABS))
 		CLR(oflag, OXTABS);
@@ -193,15 +207,13 @@ sttyclearflags(tp, flags)
 }
 
 void
-sttysetflags(tp, flags)
-	struct termios *tp;
-	int flags;
+sttysetflags(struct termios *tp, int flags)
 {
-	register tcflag_t iflag = tp->c_iflag;
-	register tcflag_t oflag = tp->c_oflag;
-	register tcflag_t lflag = tp->c_lflag;
-	register tcflag_t cflag = tp->c_cflag;
-	register int oflags = sttygetoflags(tp) | flags;
+	tcflag_t iflag = tp->c_iflag;
+	tcflag_t oflag = tp->c_oflag;
+	tcflag_t lflag = tp->c_lflag;
+	tcflag_t cflag = tp->c_cflag;
+	int oflags = sttygetoflags(tp) | flags;
 
 	if (ISSET(flags, TANDEM))
 		SET(iflag, IXOFF);
@@ -210,6 +222,11 @@ sttysetflags(tp, flags)
 	if (ISSET(flags, CRMOD)) {
 		SET(iflag, ICRNL);
 		SET(oflag, ONLCR);
+	}
+	if (ISSET(flags, LCASE)) {
+		SET(iflag, IUCLC);
+		SET(oflag, OLCUC);
+		SET(lflag, XCASE);
 	}
 	if (ISSET(flags, XTABS))
 		SET(oflag, OXTABS);
@@ -223,15 +240,13 @@ sttysetflags(tp, flags)
 }
 
 void
-sttyclearlflags(tp, flags)
-	struct termios *tp;
-	int flags;
+sttyclearlflags(struct termios *tp, int flags)
 {
-	register tcflag_t iflag = tp->c_iflag;
-	register tcflag_t oflag = tp->c_oflag;
-	register tcflag_t lflag = tp->c_lflag;
-	register tcflag_t cflag = tp->c_cflag;
-	register int oflags = sttygetoflags(tp) & ~flags;
+	tcflag_t iflag = tp->c_iflag;
+	tcflag_t oflag = tp->c_oflag;
+	tcflag_t lflag = tp->c_lflag;
+	tcflag_t cflag = tp->c_cflag;
+	int oflags = sttygetoflags(tp) & ~flags;
 
 	/* Nothing we can do with CRTBS. */
 	if (ISSET(flags, PRTERA))
@@ -260,15 +275,13 @@ sttyclearlflags(tp, flags)
 }
 
 void
-sttysetlflags(tp, flags)
-	struct termios *tp;
-	int flags;
+sttysetlflags(struct termios *tp, int flags)
 {
-	register tcflag_t iflag = tp->c_iflag;
-	register tcflag_t oflag = tp->c_oflag;
-	register tcflag_t lflag = tp->c_lflag;
-	register tcflag_t cflag = tp->c_cflag;
-	register int oflags = sttygetoflags(tp) | flags;
+	tcflag_t iflag = tp->c_iflag;
+	tcflag_t oflag = tp->c_oflag;
+	tcflag_t lflag = tp->c_lflag;
+	tcflag_t cflag = tp->c_cflag;
+	int oflags = sttygetoflags(tp) | flags;
 
 	/* Nothing we can do with CRTBS. */
 	if (ISSET(flags, PRTERA))

@@ -1,3 +1,5 @@
+/* $OpenBSD$ */
+
 /* ====================================================================
  * The Apache Software License, Version 1.1
  *
@@ -599,6 +601,20 @@ API_EXPORT(void) ap_add_module(module *m)
 	m->name = tmp;
     }
 #endif /*_OSD_POSIX*/
+
+#ifdef EAPI
+    /*
+     * Invoke the `add_module' hook inside the now existing set
+     * of modules to let them all now that this module was added.
+     */
+    {
+        module *m2;
+        for (m2 = top_module; m2 != NULL; m2 = m2->next)
+            if (m2->magic == MODULE_MAGIC_COOKIE_EAPI)
+                if (m2->add_module != NULL)
+                    (*m2->add_module)(m);
+    }
+#endif /* EAPI */
 }
 
 /* 
@@ -612,6 +628,21 @@ API_EXPORT(void) ap_add_module(module *m)
 API_EXPORT(void) ap_remove_module(module *m)
 {
     module *modp;
+
+#ifdef EAPI
+    /*
+     * Invoke the `remove_module' hook inside the now existing
+     * set of modules to let them all now that this module is
+     * beeing removed.
+     */
+    {
+        module *m2;
+        for (m2 = top_module; m2 != NULL; m2 = m2->next)
+            if (m2->magic == MODULE_MAGIC_COOKIE_EAPI)
+                if (m2->remove_module != NULL)
+                    (*m2->remove_module)(m);
+    }
+#endif /* EAPI */
 
     modp = top_module;
     if (modp == m) {
@@ -1006,6 +1037,27 @@ CORE_EXPORT(const char *) ap_handle_command(cmd_parms *parms, void *config, cons
     const command_rec *cmd;
     module *mod = top_module;
 
+#ifdef EAPI
+    /*
+     * Invoke the `rewrite_command' of modules to allow
+     * they to rewrite the directive line before we
+     * process it.
+     */
+    {
+        module *m;
+        char *cp;
+        for (m = top_module; m != NULL; m = m->next) {
+            if (m->magic == MODULE_MAGIC_COOKIE_EAPI) {
+                if (m->rewrite_command != NULL) {
+                    cp = (m->rewrite_command)(parms, config, l);
+                    if (cp != NULL)
+                        l = cp;
+                }
+            }
+        }
+    }
+#endif /* EAPI */
+
     if ((l[0] == '#') || (!l[0]))
 	return NULL;
 
@@ -1213,6 +1265,9 @@ CORE_EXPORT(void) ap_process_resource_config(server_rec *s, char *fname, pool *p
     struct stat finfo;
 
     fname = ap_server_root_relative(p, fname);
+
+    /* if we are already chrooted here, it's a restart. strip chroot then. */
+    ap_server_strip_chroot(fname, 0);
 
     if (!(strcmp(fname, ap_server_root_relative(p, RESOURCE_CONFIG_FILE))) ||
 	!(strcmp(fname, ap_server_root_relative(p, ACCESS_CONFIG_FILE)))) {
@@ -1440,6 +1495,10 @@ CORE_EXPORT(const char *) ap_init_virtual_host(pool *p, const char *hostname,
     s->limit_req_fieldsize = main_server->limit_req_fieldsize;
     s->limit_req_fields = main_server->limit_req_fields;
 
+#ifdef EAPI
+    s->ctx = ap_ctx_new(p);
+#endif /* EAPI */
+
     *ps = s;
 
     return ap_parse_vhost_addrs(p, hostname, s);
@@ -1500,8 +1559,11 @@ static void init_config_globals(pool *p)
 
     ap_standalone = 1;
     ap_user_name = DEFAULT_USER;
-    ap_user_id = ap_uname2id(DEFAULT_USER);
-    ap_group_id = ap_gname2id(DEFAULT_GROUP);
+    if (!ap_server_is_chrooted()) { 
+	/* can't work, just keep old setting */
+	ap_user_id = ap_uname2id(DEFAULT_USER);
+	ap_group_id = ap_gname2id(DEFAULT_GROUP);
+    }
     ap_daemons_to_start = DEFAULT_START_DAEMON;
     ap_daemons_min_free = DEFAULT_MIN_FREE_DAEMON;
     ap_daemons_max_free = DEFAULT_MAX_FREE_DAEMON;
@@ -1550,6 +1612,10 @@ static server_rec *init_server_config(pool *p)
 
     s->module_config = create_server_config(p, s);
     s->lookup_defaults = create_default_per_dir_config(p);
+
+#ifdef EAPI
+    s->ctx = ap_ctx_new(p);
+#endif /* EAPI */
 
     return s;
 }

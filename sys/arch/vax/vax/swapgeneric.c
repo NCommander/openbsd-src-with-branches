@@ -1,4 +1,5 @@
-/*	$NetBSD: swapgeneric.c,v 1.5 1995/03/30 21:25:41 ragge Exp $	*/
+/*	$OpenBSD: swapgeneric.c,v 1.9 2001/09/29 18:40:33 miod Exp $	*/
+/*	$NetBSD: swapgeneric.c,v 1.13 1996/10/13 03:36:01 christos Exp $	*/
 
 /*-
  * Copyright (c) 1982, 1986 The Regents of the University of California.
@@ -35,178 +36,19 @@
  *	@(#)swapgeneric.c	7.11 (Berkeley) 5/9/91
  */
 
-#include "mba.h"
-#include "uda.h"
-
-
-#include "sys/param.h"
-#include "sys/conf.h"
-#include "sys/buf.h"
-#include "sys/systm.h"
-#include "sys/reboot.h"
-
-#include "machine/pte.h"
-#include "machine/mtpr.h"
-#if NMBA > 0
-#include "../mba/mbareg.h"
-#include "../mba/mbavar.h"
-#endif
-#include "../uba/ubareg.h"
-#include "../uba/ubavar.h"
-
 /*
- * Generic configuration;  all in one
+ * fake swapgeneric.c -- should do this differently.
  */
+
+#include <sys/param.h>
+#include <sys/conf.h>
+
+int (*mountroot)(void) = NULL;
+
 dev_t	rootdev = NODEV;
-dev_t	argdev = NODEV;
 dev_t	dumpdev = NODEV;
-int	nswap;
+
 struct	swdevt swdevt[] = {
-	{ -1,	1,	0 },
-	{ -1,	1,	0 },
-	{ -1,	1,	0 },
-	{ 0,	0,	0 },
+	{ NODEV, 0, 0 },	/* to be filled in */
+	{ NODEV, 0, 0 }
 };
-long	dumplo;
-int	dmmin, dmmax, dmtext;
-
-extern int ffs_mountroot();
-int (*mountroot)() = ffs_mountroot;
-
-extern	struct mba_driver hpdriver;
-extern	struct uba_driver scdriver;
-extern	struct uba_driver hkdriver;
-extern	struct uba_driver idcdriver;
-extern	struct uba_driver hldriver;
-extern	struct uba_driver udadriver;
-extern	struct uba_driver kdbdriver;
-
-struct	genericconf {
-	caddr_t	gc_driver;
-	char	*gc_name;
-	dev_t	gc_root;
-} genericconf[] = {
-/*	{ (caddr_t)&hpdriver,	"hp",	makedev(0, 0),	},
-	{ (caddr_t)&scdriver,	"up",	makedev(2, 0),	}, */
-#if NUDA > 0
-	{ (caddr_t)&udadriver,	"ra",	makedev(9, 0),	},
-#endif
-/*	{ (caddr_t)&idcdriver,	"rb",	makedev(11, 0),	},
-	{ (caddr_t)&hldriver,	"rl",	makedev(14, 0),	},
-	{ (caddr_t)&hkdriver,	"hk",	makedev(3, 0),	},
-	{ (caddr_t)&hkdriver,	"rk",	makedev(3, 0),	},
-	{ (caddr_t)&kdbdriver,	"kra",	makedev(16, 0), }, */
-	{ 0 },
-};
-
-setconf()
-{
-#if NMBA > 0
-	register struct mba_device *mi;
-#endif
-#if NUDA > 0
-	register struct uba_device *ui;
-#endif
-	register struct genericconf *gc;
-	register char *cp, *gp;
-	int unit, swaponroot = 0;
-
-	if (rootdev != NODEV)
-		goto doswap;
-	unit = 0;
-	if (boothowto & RB_ASKNAME) {
-		char name[128];
-retry:
-		printf("root device? ");
-		gets(name);
-		for (gc = genericconf; gc->gc_driver; gc++)
-		    for (cp = name, gp = gc->gc_name; *cp == *gp; cp++)
-			if (*++gp == 0)
-				goto gotit;
-		printf(
-		  "use hp%%d, up%%d, ra%%d, rb%%d, rl%%d, hk%%d or kra%%d\n");
-		goto retry;
-gotit:
-		if (*++cp < '0' || *cp > '9') {
-			printf("bad/missing unit number\n");
-			goto retry;
-		}
-		while (*cp >= '0' && *cp <= '9')
-			unit = 10 * unit + *cp++ - '0';
-		if (*cp == '*')
-			swaponroot++;
-		goto found;
-	}
-	for (gc = genericconf; gc->gc_driver; gc++) {
-#if NMBA > 0
-		for (mi = mbdinit; mi->mi_driver; mi++) {
-			if (mi->mi_alive == 0)
-				continue;
-			if (mi->mi_unit == unit && mi->mi_driver ==
-			    (struct mba_driver *)gc->gc_driver) {
-				printf("root on %s%d\n",
-				    mi->mi_driver->md_dname, unit);
-				goto found;
-			}
-		}
-#endif
-#if NUDA > 0
-		for (ui = ubdinit; ui->ui_driver; ui++) {
-			if (ui->ui_alive == 0)
-				continue;
-			if (ui->ui_unit == unit && ui->ui_driver ==
-			    (struct uba_driver *)gc->gc_driver) {
-				printf("root on %s%d\n",
-				    ui->ui_driver->ud_dname, unit);
-				goto found;
-			}
-		}
-#endif
-	}
-
-	printf("no suitable root\n");
-	asm("halt");
-
-found:
-	gc->gc_root = makedev(major(gc->gc_root), unit*8);
-	rootdev = gc->gc_root;
-doswap:
-	swdevt[0].sw_dev = argdev = dumpdev =
-	    makedev(major(rootdev), minor(rootdev)+1);
-	/* swap size and dumplo set during autoconfigure */
-	if (swaponroot)
-		rootdev = dumpdev;
-
-}
-
-gets(cp)
-	char *cp;
-{
-	register char *lp;
-	register c;
-
-	lp = cp;
-	for (;;) {
-		cnputc(c = (cngetc()&0x7f));
-		switch (c) {
-		case '\n':
-		case '\r':
-			*lp++ = '\0';
-			return;
-		case '\b':
-		case '#':
-		case '\177':
-			lp--;
-			if (lp < cp)
-				lp = cp;
-			continue;
-		case '@':
-		case 'u'&037:
-			lp = cp;
-			cnputc('\n');
-			continue;
-		default:
-			*lp++ = c;
-		}
-	}
-}

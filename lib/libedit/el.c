@@ -1,3 +1,6 @@
+/*	$OpenBSD: el.c,v 1.8 2001/04/13 20:35:19 millert Exp $	*/
+/*	$NetBSD: el.c,v 1.6 1997/04/24 18:54:16 christos Exp $	*/
+
 /*-
  * Copyright (c) 1992, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -35,7 +38,11 @@
  */
 
 #if !defined(lint) && !defined(SCCSID)
+#if 0
 static char sccsid[] = "@(#)el.c	8.2 (Berkeley) 1/3/94";
+#else
+static char rcsid[] = "$OpenBSD: el.c,v 1.8 2001/04/13 20:35:19 millert Exp $";
+#endif
 #endif /* not lint && not SCCSID */
 
 /*
@@ -47,11 +54,8 @@ static char sccsid[] = "@(#)el.c	8.2 (Berkeley) 1/3/94";
 #include <sys/param.h>
 #include <string.h>
 #include <stdlib.h>
-#if __STDC__
-# include <stdarg.h>
-#else
-# include <varargs.h>
-#endif
+#include <stdarg.h>
+#include <unistd.h>
 #include "el.h"
 
 /* el_init():
@@ -77,11 +81,11 @@ el_init(prog, fin, fout)
     el->el_prog = strdup(prog);
 
 #ifdef DEBUG
-    if ((tty = getenv("DEBUGTTY")) != NULL) {
+    if (issetugid() == 0 && (tty = getenv("DEBUGTTY")) != NULL) {
 	el->el_errfile = fopen(tty, "w");
 	if (el->el_errfile == NULL) {
 		extern errno;
-		(void) fprintf(stderr, "Cannot open %s (%s).\n",
+		(void)fprintf(stderr, "Cannot open %s (%s).\n",
 			       tty, strerror(errno));
 		return NULL;
 	}
@@ -93,15 +97,15 @@ el_init(prog, fin, fout)
     /*
      * Initialize all the modules. Order is important!!!
      */
-    (void) term_init(el);
-    (void) tty_init(el);
-    (void) key_init(el);
-    (void) map_init(el);
-    (void) ch_init(el);
-    (void) search_init(el);
-    (void) hist_init(el);
-    (void) prompt_init(el);
-    (void) sig_init(el);
+    (void)term_init(el);
+    (void)tty_init(el);
+    (void)key_init(el);
+    (void)map_init(el);
+    (void)ch_init(el);
+    (void)search_init(el);
+    (void)hist_init(el);
+    (void)prompt_init(el);
+    (void)sig_init(el);
     el->el_flags = 0;
 
     return el;
@@ -151,26 +155,13 @@ el_reset(el)
  *	set the editline parameters
  */
 public int
-#if __STDC__
 el_set(EditLine *el, int op, ...)
-#else
-el_set(va_alist)
-    va_dcl
-#endif
 {
     va_list va;
     int rv;
-#if __STDC__
-    va_start(va, op);
-#else
-    EditLine *el;
-    int op;
-
-    va_start(va);
-    el = va_arg(va, EditLine *);
-    op = va_arg(va, int);
-#endif
     
+    va_start(va, op);
+
     switch (op) {
     case EL_PROMPT:
 	rv = prompt_set(el, va_arg(va, el_pfunc_t));
@@ -289,27 +280,27 @@ el_source(el, fname)
     char *ptr, path[MAXPATHLEN];
 
     if (fname == NULL) {
-	fname = &elpath[1];
-	if ((fp = fopen(fname, "r")) == NULL) {
-	    if ((ptr = getenv("HOME")) == NULL) 
-		return -1;
-	    fname = strncpy(path, ptr, MAXPATHLEN);
-	    (void) strncat(path, elpath, MAXPATHLEN);
-	    path[MAXPATHLEN-1] = '\0';
-	}
+        ptr = getenv("HOME");
+        if (issetugid() != 0 || ptr == NULL || *ptr == '\0')
+	        return -1;
+        (void) snprintf(path, sizeof(path), "%s%s", ptr, elpath);
+        fname = path;
     }
 
     if ((fp = fopen(fname, "r")) == NULL) 
 	return -1;
 
-    while ((ptr = fgetln(fp, &len)) != NULL)
-	ptr[len - 1] = '\0';
+    while ((ptr = fgetln(fp, &len)) != NULL) {
+	if (ptr[len - 1] == '\n')
+		--len;
+	ptr[len] = '\0';
 	if (parse_line(el, ptr) == -1) {
-	    (void) fclose(fp);
+	    (void)fclose(fp);
 	    return -1;
 	}
+    }
 
-    (void) fclose(fp);
+    (void)fclose(fp);
     return 0;
 }
 
@@ -323,13 +314,13 @@ el_resize(el)
 {
     int lins, cols;
     sigset_t oset, nset;
-    (void) sigemptyset(&nset);
-    (void) sigaddset(&nset, SIGWINCH);
-    (void) sigprocmask(SIG_BLOCK, &nset, &oset);
+    (void)sigemptyset(&nset);
+    (void)sigaddset(&nset, SIGWINCH);
+    (void)sigprocmask(SIG_BLOCK, &nset, &oset);
 
     /* get the correct window size */
     if (term_get_size(el, &lins, &cols))
 	term_change_size(el, lins, cols);
 
-    (void) sigprocmask(SIG_SETMASK, &oset, NULL);
+    (void)sigprocmask(SIG_SETMASK, &oset, NULL);
 }

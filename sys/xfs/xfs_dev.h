@@ -31,7 +31,7 @@
  * SUCH DAMAGE.
  */
 
-/* $Id: xfs_dev.h,v 1.1.1.1 2002/06/05 17:24:11 hin Exp $ */
+/* $Id: xfs_dev.h,v 1.1.1.1 2002/06/07 03:32:59 hin Exp $ */
 
 #ifndef _xfs_dev_h
 #define _xfs_dev_h

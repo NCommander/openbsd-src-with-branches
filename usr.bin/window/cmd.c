@@ -1,4 +1,5 @@
-/*	$NetBSD: cmd.c,v 1.3 1995/09/28 10:34:02 tls Exp $	*/
+/*	$OpenBSD: cmd.c,v 1.5 2000/04/15 05:22:14 millert Exp $	*/
+/*	$NetBSD: cmd.c,v 1.4 1996/02/08 20:44:57 mycroft Exp $	*/
 
 /*
  * Copyright (c) 1983, 1993
@@ -40,7 +41,7 @@
 #if 0
 static char sccsid[] = "@(#)cmd.c	8.1 (Berkeley) 6/6/93";
 #else
-static char rcsid[] = "$NetBSD: cmd.c,v 1.3 1995/09/28 10:34:02 tls Exp $";
+static char rcsid[] = "$OpenBSD: cmd.c,v 1.5 2000/04/15 05:22:14 millert Exp $";
 #endif
 #endif /* not lint */
 
@@ -49,8 +50,8 @@ static char rcsid[] = "$NetBSD: cmd.c,v 1.3 1995/09/28 10:34:02 tls Exp $";
 
 docmd()
 {
-	register char c;
-	register struct ww *w;
+	int c;
+	struct ww *w;
 	char out = 0;
 
 	while (!out && !quit) {
@@ -99,7 +100,7 @@ docmd()
 				 out = 1;
 			break;
 		case '%':
-			if ((w = getwin()) != 0)
+			if ((w = getwindow()) != 0)
 				setselwin(w);
 			break;
 		case ctrl('^'):
@@ -111,26 +112,26 @@ docmd()
 				error("No previous window.");
 			break;
 		case 'c':
-			if ((w = getwin()) != 0)
+			if ((w = getwindow()) != 0)
 				closewin(w);
 			break;
 		case 'w':
 			c_window();
 			break;
 		case 'm':
-			if ((w = getwin()) != 0)
+			if ((w = getwindow()) != 0)
 				c_move(w);
 			break;
 		case 'M':
-			if ((w = getwin()) != 0)
+			if ((w = getwindow()) != 0)
 				movewin(w, w->ww_alt.t, w->ww_alt.l);
 			break;
 		case 's':
-			if ((w = getwin()) != 0)
+			if ((w = getwindow()) != 0)
 				c_size(w);
 			break;
 		case 'S':
-			if ((w = getwin()) != 0)
+			if ((w = getwindow()) != 0)
 				sizewin(w, w->ww_alt.nr, w->ww_alt.nc);
 			break;
 		case 'y':
@@ -219,9 +220,9 @@ docmd()
 }
 
 struct ww *
-getwin()
+getwindow()
 {
-	register int c;
+	int c;
 	struct ww *w = 0;
 
 	if (!terse)

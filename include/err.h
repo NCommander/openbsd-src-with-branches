@@ -1,3 +1,4 @@
+/*	$OpenBSD: err.h,v 1.7 2001/08/07 21:34:42 millert Exp $	*/
 /*	$NetBSD: err.h,v 1.11 1994/10/26 00:55:52 cgd Exp $	*/
 
 /*-
@@ -49,22 +50,45 @@
 #include <sys/cdefs.h>
 
 __BEGIN_DECLS
-__dead void	err __P((int, const char *, ...))
-			__attribute__((noreturn, format (printf, 2, 3)));
-__dead void	verr __P((int, const char *, _BSD_VA_LIST_))
-			__attribute__((noreturn, format (printf, 2, 0)));
-__dead void	errx __P((int, const char *, ...))
-			__attribute__((noreturn, format (printf, 2, 3)));
-__dead void	verrx __P((int, const char *, _BSD_VA_LIST_))
-			__attribute__((noreturn, format (printf, 2, 0)));
-void		warn __P((const char *, ...))
-			__attribute__((format (printf, 1, 2)));
-void		vwarn __P((const char *, _BSD_VA_LIST_))
-			__attribute__((format (printf, 1, 0)));
-void		warnx __P((const char *, ...))
-			__attribute__((format (printf, 1, 2)));
-void		vwarnx __P((const char *, _BSD_VA_LIST_))
-			__attribute__((format (printf, 1, 0)));
+
+__dead void	err(int, const char *, ...)
+			__attribute__((__format__ (printf, 2, 3)));
+__dead void	verr(int, const char *, _BSD_VA_LIST_)
+			__attribute__((__format__ (printf, 2, 0)));
+__dead void	errx(int, const char *, ...)
+			__attribute__((__format__ (printf, 2, 3)));
+__dead void	verrx(int, const char *, _BSD_VA_LIST_)
+			__attribute__((__format__ (printf, 2, 0)));
+void		warn(const char *, ...)
+			__attribute__((__format__ (printf, 1, 2)));
+void		vwarn(const char *, _BSD_VA_LIST_)
+			__attribute__((__format__ (printf, 1, 0)));
+void		warnx(const char *, ...)
+			__attribute__((__format__ (printf, 1, 2)));
+void		vwarnx(const char *, _BSD_VA_LIST_)
+			__attribute__((__format__ (printf, 1, 0)));
+
+/*
+ * The _* versions are for use in library functions so user-defined
+ * versions of err*,warn* do not get used.
+ */
+__dead void	_err(int, const char *, ...)
+			__attribute__((__format__ (printf, 2, 3)));
+__dead void	_verr(int, const char *, _BSD_VA_LIST_)
+			__attribute__((__format__ (printf, 2, 0)));
+__dead void	_errx(int, const char *, ...)
+			__attribute__((__format__ (printf, 2, 3)));
+__dead void	_verrx(int, const char *, _BSD_VA_LIST_)
+			__attribute__((__format__ (printf, 2, 0)));
+void		_warn(const char *, ...)
+			__attribute__((__format__ (printf, 1, 2)));
+void		_vwarn(const char *, _BSD_VA_LIST_)
+			__attribute__((__format__ (printf, 1, 0)));
+void		_warnx(const char *, ...)
+			__attribute__((__format__ (printf, 1, 2)));
+void		_vwarnx(const char *, _BSD_VA_LIST_)
+			__attribute__((__format__ (printf, 1, 0)));
+
 __END_DECLS
 
 #endif /* !_ERR_H_ */

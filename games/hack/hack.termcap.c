@@ -1,9 +1,11 @@
+/*	$OpenBSD: hack.termcap.c,v 1.4 2001/01/28 23:41:45 niklas Exp $	*/
+
 /*
  * Copyright (c) Stichting Mathematisch Centrum, Amsterdam, 1985.
  */
 
 #ifndef lint
-static char rcsid[] = "$NetBSD: hack.termcap.c,v 1.6 1995/04/29 01:20:00 mycroft Exp $";
+static char rcsid[] = "$OpenBSD: hack.termcap.c,v 1.4 2001/01/28 23:41:45 niklas Exp $";
 #endif /* not lint */
 
 #include <stdio.h>
@@ -16,7 +18,7 @@ extern long *alloc();
 
 #ifndef lint
 extern			/* it is defined in libtermlib (libtermcap) */
-#endif lint
+#endif /* lint */
 	speed_t ospeed;		/* terminal baudrate; used by tputs */
 static char tbuf[512];
 static char *HO, *CL, *CE, *UP, *CM, *ND, *XD, *BC, *SO, *SE, *TI, *TE;
@@ -43,7 +45,7 @@ startup()
 		error("Unknown terminal type: %s.", term);
 	if(pc = tgetstr("pc", &tbufptr))
 		PC = *pc;
-	if(!(BC = tgetstr("bc", &tbufptr))) {	
+	if(!(BC = tgetstr("le", &tbufptr))) {	
 		if(!tgetflag("bs"))
 			error("Terminal must backspace.");
 		BC = tbufptr;
@@ -237,6 +239,7 @@ bell()
 	(void) fflush(stdout);
 }
 
+#if 0
 delay_output() {
 	/* delay 50 ms - could also use a 'nap'-system call */
 	/* BUG: if the padding character is visible, as it is on the 5620
@@ -258,6 +261,7 @@ delay_output() {
 		}
 	}
 }
+#endif
 
 cl_eos()			/* free after Robert Viduya */
 {				/* must only be called with curx = 1 */

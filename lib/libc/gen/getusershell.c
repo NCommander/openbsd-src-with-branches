@@ -1,5 +1,3 @@
-/*	$NetBSD: getusershell.c,v 1.5 1995/02/27 04:13:27 cgd Exp $	*/
-
 /*
  * Copyright (c) 1985, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -34,11 +32,7 @@
  */
 
 #if defined(LIBC_SCCS) && !defined(lint)
-#if 0
-static char sccsid[] = "@(#)getusershell.c	8.1 (Berkeley) 6/4/93";
-#else
-static char rcsid[] = "$NetBSD: getusershell.c,v 1.5 1995/02/27 04:13:27 cgd Exp $";
-#endif
+static char rcsid[] = "$OpenBSD: getusershell.c,v 1.2 1996/08/19 08:24:15 tholo Exp $";
 #endif /* LIBC_SCCS and not lint */
 
 #include <sys/param.h>
@@ -57,7 +51,7 @@ static char rcsid[] = "$NetBSD: getusershell.c,v 1.5 1995/02/27 04:13:27 cgd Exp
 
 static char *okshells[] = { _PATH_BSHELL, _PATH_CSHELL, NULL };
 static char **curshell, **shells, *strings;
-static char **initshells __P((void));
+static char **initshells(void);
 
 /*
  * Get a list of shells from _PATH_SHELLS, if it exists.

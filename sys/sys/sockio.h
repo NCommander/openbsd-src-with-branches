@@ -1,3 +1,4 @@
+/*	$OpenBSD: sockio.h,v 1.19 2001/02/20 13:50:53 itojun Exp $	*/
 /*	$NetBSD: sockio.h,v 1.5 1995/08/23 00:40:47 thorpej Exp $	*/
 
 /*-
@@ -72,15 +73,72 @@
 #define	SIOCSIFMETRIC	 _IOW('i', 24, struct ifreq)	/* set IF metric */
 #define	SIOCDIFADDR	 _IOW('i', 25, struct ifreq)	/* delete IF addr */
 #define	SIOCAIFADDR	 _IOW('i', 26, struct ifaliasreq)/* add/chg IF alias */
+#define	SIOCGIFDATA	_IOWR('i', 27, struct ifreq)	/* get if_data */
+
+/* KAME IPv6 */
+/* SIOCAIFALIAS? */
+#define SIOCALIFADDR	 _IOW('i', 28, struct if_laddrreq) /* add IF addr */
+#define SIOCGLIFADDR	_IOWR('i', 29, struct if_laddrreq) /* get IF addr */
+#define SIOCDLIFADDR	 _IOW('i', 30, struct if_laddrreq) /* delete IF addr */
 
 #define	SIOCADDMULTI	 _IOW('i', 49, struct ifreq)	/* add m'cast addr */
 #define	SIOCDELMULTI	 _IOW('i', 50, struct ifreq)	/* del m'cast addr */
 #define	SIOCGETVIFCNT	_IOWR('u', 51, struct sioc_vif_req)/* vif pkt cnt */
 #define	SIOCGETSGCNT	_IOWR('u', 52, struct sioc_sg_req) /* sg pkt cnt */
 
+#define	SIOCSIFMEDIA	_IOWR('i', 53, struct ifreq)	/* set net media */
+#define	SIOCGIFMEDIA	_IOWR('i', 54, struct ifmediareq) /* get net media */
+
+#define	SIOCSIFGENERIC	 _IOW('i', 57, struct ifreq)	/* generic IF set op */
+#define	SIOCGIFGENERIC	_IOWR('i', 58, struct ifreq)	/* generic IF get op */
+
+#define SIOCSIFPHYADDR   _IOW('i', 70, struct ifaliasreq) /* set gif addres */
+#define	SIOCGIFPSRCADDR	_IOWR('i', 71, struct ifreq)	/* get gif psrc addr */
+#define	SIOCGIFPDSTADDR	_IOWR('i', 72, struct ifreq)	/* get gif pdst addr */
+#define	SIOCDIFPHYADDR	 _IOW('i', 73, struct ifreq)	/* delete gif addrs */
+#define	SIOCSLIFPHYADDR	 _IOW('i', 74, struct if_laddrreq) /* set gif addrs */
+#define	SIOCGLIFPHYADDR	_IOWR('i', 75, struct if_laddrreq) /* get gif addrs */
+
+#define	SIOCBRDGADD	 _IOW('i', 60, struct ifbreq)	/* add bridge ifs */
+#define	SIOCBRDGGSIFS	_IOWR('i', 60, struct ifbreq)	/* get span ifs */
+#define	SIOCBRDGDEL	 _IOW('i', 61, struct ifbreq)	/* del bridge ifs */
+#define	SIOCBRDGGIFFLGS	_IOWR('i', 62, struct ifbreq)	/* get brdg if flags */
+#define	SIOCBRDGSIFFLGS	 _IOW('i', 63, struct ifbreq)	/* set brdg if flags */
+#define	SIOCBRDGSCACHE	 _IOW('i', 64, struct ifbrparam)/* set cache size */
+#define	SIOCBRDGGCACHE	_IOWR('i', 65, struct ifbrparam)/* get cache size */
+#define	SIOCBRDGADDS	 _IOW('i', 65, struct ifbreq)	/* add span port */
+#define	SIOCBRDGIFS	_IOWR('i', 66, struct ifbreq)	/* get member ifs */
+#define	SIOCBRDGDELS	 _IOW('i', 66, struct ifbreq)	/* del span port */
+#define	SIOCBRDGRTS	_IOWR('i', 67, struct ifbaconf)	/* get addresses */
+#define	SIOCBRDGSADDR	_IOWR('i', 68, struct ifbareq)	/* set addr flags */
+#define	SIOCBRDGSTO	 _IOW('i', 69, struct ifbrparam)/* cache timeout */
+#define	SIOCBRDGGTO	_IOWR('i', 70, struct ifbrparam)/* cache timeout */
+#define	SIOCBRDGDADDR	 _IOW('i', 71, struct ifbareq)	/* delete addr */
+#define	SIOCBRDGFLUSH	 _IOW('i', 72, struct ifbreq)	/* flush addr cache */
+
+#define SIOCBRDGARL	 _IOW('i', 77, struct ifbrlreq)	/* add bridge rule */
+#define SIOCBRDGFRL	 _IOW('i', 78, struct ifbrlreq)	/* flush brdg rules */
+#define SIOCBRDGGRL	_IOWR('i', 79, struct ifbrlconf)/* get bridge rules */
+#define	SIOCBRDGGPRI	_IOWR('i', 80, struct ifbrparam)/* get priority */
+#define	SIOCBRDGSPRI	 _IOW('i', 80, struct ifbrparam)/* set priority */
+#define	SIOCBRDGGHT	_IOWR('i', 81, struct ifbrparam)/* get hello time */
+#define	SIOCBRDGSHT	 _IOW('i', 81, struct ifbrparam)/* set hello time */
+#define	SIOCBRDGGFD	_IOWR('i', 82, struct ifbrparam)/* get forward delay */
+#define	SIOCBRDGSFD	 _IOW('i', 82, struct ifbrparam)/* set forward delay */
+#define	SIOCBRDGGMA	_IOWR('i', 83, struct ifbrparam)/* get max age */
+#define	SIOCBRDGSMA	 _IOW('i', 83, struct ifbrparam)/* set max age */
+#define	SIOCBRDGSIFPRIO	 _IOW('i', 84, struct ifbreq)	/* set if priority */
+
+#define	SIOCBRDGS
+#define GRESADDRS        _IOW('i', 101, struct ifreq)
+#define GRESADDRD        _IOW('i', 102, struct ifreq)   
+#define GREGADDRS       _IOWR('i', 103, struct ifreq)
+#define GREGADDRD       _IOWR('i', 104, struct ifreq)
+#define GRESPROTO        _IOW('i', 105, struct ifreq)
+#define GREGPROTO       _IOWR('i', 106, struct ifreq)
+
 #define	SIOCSIFMTU	 _IOW('i', 127, struct ifreq)	/* set ifnet mtu */
 #define	SIOCGIFMTU	_IOWR('i', 126, struct ifreq)	/* get ifnet mtu */
 #define	SIOCSIFASYNCMAP  _IOW('i', 125, struct ifreq)	/* set ppp asyncmap */
 #define	SIOCGIFASYNCMAP _IOWR('i', 124, struct ifreq)	/* get ppp asyncmap */
-
 #endif /* !_SYS_SOCKIO_H_ */

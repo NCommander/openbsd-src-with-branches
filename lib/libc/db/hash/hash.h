@@ -1,4 +1,4 @@
-/*	$NetBSD: hash.h,v 1.5 1995/02/27 13:22:08 cgd Exp $	*/
+/*	$OpenBSD: hash.h,v 1.6 2002/02/16 21:27:22 millert Exp $	*/
 
 /*-
  * Copyright (c) 1990, 1993, 1994
@@ -65,28 +65,28 @@ typedef BUFHEAD **SEGMENT;
 
 /* Hash Table Information */
 typedef struct hashhdr {		/* Disk resident portion */
-	int		magic;		/* Magic NO for hash tables */
-	int		version;	/* Version ID */
+	int32_t		magic;		/* Magic NO for hash tables */
+	int32_t		version;	/* Version ID */
 	u_int32_t	lorder;		/* Byte Order */
-	int		bsize;		/* Bucket/Page Size */
-	int		bshift;		/* Bucket shift */
-	int		dsize;		/* Directory Size */
-	int		ssize;		/* Segment Size */
-	int		sshift;		/* Segment shift */
-	int		ovfl_point;	/* Where overflow pages are being 
+	int32_t		bsize;		/* Bucket/Page Size */
+	int32_t		bshift;		/* Bucket shift */
+	int32_t		dsize;		/* Directory Size */
+	int32_t		ssize;		/* Segment Size */
+	int32_t		sshift;		/* Segment shift */
+	int32_t		ovfl_point;	/* Where overflow pages are being 
 					 * allocated */
-	int		last_freed;	/* Last overflow page freed */
-	int		max_bucket;	/* ID of Maximum bucket in use */
-	int		high_mask;	/* Mask to modulo into entire table */
-	int		low_mask;	/* Mask to modulo into lower half of 
+	int32_t		last_freed;	/* Last overflow page freed */
+	int32_t		max_bucket;	/* ID of Maximum bucket in use */
+	int32_t		high_mask;	/* Mask to modulo into entire table */
+	int32_t		low_mask;	/* Mask to modulo into lower half of 
 					 * table */
-	int		ffactor;	/* Fill factor */
-	int		nkeys;		/* Number of keys in hash table */
-	int		hdrpages;	/* Size of table header */
-	int		h_charkey;	/* value of hash(CHARKEY) */
+	int32_t		ffactor;	/* Fill factor */
+	int32_t		nkeys;		/* Number of keys in hash table */
+	int32_t		hdrpages;	/* Size of table header */
+	int32_t		h_charkey;	/* value of hash(CHARKEY) */
 #define NCACHED	32			/* number of bit maps and spare 
 					 * points */
-	int		spares[NCACHED];/* spare pages for overflow */
+	int32_t		spares[NCACHED];/* spare pages for overflow */
 	u_int16_t	bitmaps[NCACHED];	/* address of overflow page 
 						 * bitmaps */
 } HASHHDR;
@@ -97,7 +97,7 @@ typedef struct htab	 {		/* Memory resident data structure */
 	int		exsegs;		/* Number of extra allocated 
 					 * segments */
 	u_int32_t			/* Hash function */
-	    (*hash)__P((const void *, size_t));
+	    (*hash)(const void *, size_t);
 	int		flags;		/* Flag values */
 	int		fp;		/* File pointer */
 	char		*tmp_buf;	/* Temporary Buffer for BIG data */
@@ -106,7 +106,7 @@ typedef struct htab	 {		/* Memory resident data structure */
 	int		cbucket;	/* Current bucket */
 	int		cndx;		/* Index of next item on cpage */
 	int		errno;		/* Error Number -- for DBM 
-					 * compatability */
+					 * compatibility */
 	int		new_file;	/* Indicates if fd is backing store 
 					 * or no */
 	int		save_file;	/* Indicates whether we need to flush 

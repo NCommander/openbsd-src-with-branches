@@ -1,4 +1,5 @@
-/*	$NetBSD: audioctl.c,v 1.12 1997/10/19 07:44:12 augustss Exp $	*/
+/*	$OpenBSD: audioctl.c,v 1.5 2000/11/21 13:58:06 aaron Exp $	*/
+/*	$NetBSD: audioctl.c,v 1.14 1998/04/27 16:55:23 augustss Exp $	*/
 
 /*
  * Copyright (c) 1997 The NetBSD Foundation, Inc.
@@ -36,6 +37,7 @@
  */
 
 #include <stdio.h>
+#include <stdlib.h>
 #include <fcntl.h>
 #include <err.h>
 #include <unistd.h>
@@ -45,12 +47,12 @@
 #include <sys/ioctl.h>
 #include <sys/audioio.h>
 
-struct field *findfield __P((char *name));
-void prfield __P((struct field *p, char *sep));
-void rdfield __P((struct field *p, char *q));
-void getinfo __P((int fd));
-void usage __P((void));
-int main __P((int argc, char **argv));
+struct field *findfield(char *name);
+void prfield(struct field *p, char *sep);
+void rdfield(struct field *p, char *q);
+void getinfo(int fd);
+void usage(void);
+int main(int argc, char **argv);
 
 FILE *out = stdout;
 
@@ -87,7 +89,8 @@ struct field {
 	{ "config",		&adev.config,		STRING, READONLY },
 	{ "encodings",		encbuf,			STRING, READONLY },
 	{ "properties",		&properties,		PROPS,	READONLY },
-	{ "full_duplex",	&fullduplex,		INT,    0 },
+	{ "full_duplex",	&fullduplex,		UINT,	0 },
+	{ "fullduplex",		&fullduplex,		UINT,	0 },
 	{ "blocksize",		&info.blocksize,	UINT,	0 },
 	{ "hiwat",		&info.hiwat,		UINT,	0 },
 	{ "lowat",		&info.lowat,		UINT,	0 },
@@ -320,9 +323,9 @@ getinfo(fd)
 void
 usage()
 {
-	fprintf(out, "%s [-f file] [-n] name ...\n", prog);
-	fprintf(out, "%s [-f file] [-n] -w name=value ...\n", prog);
-	fprintf(out, "%s [-f file] [-n] -a\n", prog);
+	fprintf(out, "%s [-n] [-f file] -a\n", prog);
+	fprintf(out, "%s [-n] [-f file] name [...]\n", prog);
+	fprintf(out, "%s [-n] [-f file] -w name=value [...]\n", prog);
 	exit(1);
 }
 
@@ -334,9 +337,13 @@ main(argc, argv)
 	int fd, i, ch;
 	int aflag = 0, wflag = 0;
 	struct stat dstat, ostat;
-	char *file = "/dev/audioctl";
+	char *file;
 	char *sep = "=";
     
+	file = getenv("AUDIOCTLDEVICE");
+	if (file == 0)
+		file = "/dev/audioctl";
+
 	prog = *argv;
     
 	while ((ch = getopt(argc, argv, "af:nw")) != -1) {

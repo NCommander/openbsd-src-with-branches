@@ -1,4 +1,5 @@
-/*	$NetBSD: if_ed.c,v 1.16 1995/10/01 19:30:22 chopps Exp $	*/
+/*	$OpenBSD: if_ed.c,v 1.13 2001/02/20 19:39:29 mickey Exp $	*/
+/*	$NetBSD: if_ed.c,v 1.26 1997/03/17 17:51:42 is Exp $	*/
 
 /*
  * Device driver for National Semiconductor DS8390/WD83C690 based ethernet
@@ -12,7 +13,7 @@
  * the author responsible for the proper functioning of this software, nor does
  * the author assume any responsibility for damages incurred with its use.
  *
- * Currently supports the Hydra Systems ethernet card.
+ * Currently supports the Hydra Systems and ASDG ethernet cards.
  */
 
 #include "bpfilter.h"
@@ -95,28 +96,37 @@ struct ed_softc {
 	u_char	next_packet;	/* pointer to next unread RX packet */
 };
 
-int edmatch __P((struct device *, void *, void *));
-void edattach __P((struct device *, struct device *, void *));
-int edintr __P((struct ed_softc *));
-int ed_ioctl __P((struct ifnet *, u_long, caddr_t));
-void ed_start __P((struct ifnet *));
-void ed_watchdog __P((/* short */));
-void ed_reset __P((struct ed_softc *));
-void ed_init __P((struct ed_softc *));
-void ed_stop __P((struct ed_softc *));
-void ed_getmcaf __P((struct arpcom *, u_long *));
-u_short ed_put __P((struct ed_softc *, struct mbuf *, caddr_t));
+int ed_zbus_match(struct device *, void *, void *);
+void ed_zbus_attach(struct device *, struct device *, void *);
+int edintr(void *);
+int ed_ioctl(struct ifnet *, u_long, caddr_t);
+void ed_start(struct ifnet *);
+void ed_watchdog(struct ifnet *);
+void ed_reset(struct ed_softc *);
+void ed_init(struct ed_softc *);
+void ed_stop(struct ed_softc *);
+void ed_getmcaf(struct arpcom *, u_long *);
+u_short ed_put(struct ed_softc *, struct mbuf *, caddr_t);
 
-#define inline	/* XXX for debugging porpoises */
+#define inline	/* XXX for debugging purposes */
 
-void ed_get_packet __P((/* struct ed_softc *, caddr_t, u_short */));
-static inline void ed_rint __P((struct ed_softc *));
-static inline void ed_xmit __P((struct ed_softc *));
-static inline caddr_t ed_ring_copy __P((/* struct ed_softc *, caddr_t, caddr_t,
-					u_short */));
+void ed_get_packet(struct ed_softc *, caddr_t, u_short);
+static inline void ed_rint(struct ed_softc *);
+static inline void ed_xmit(struct ed_softc *);
+static inline caddr_t ed_ring_copy(struct ed_softc *, caddr_t, caddr_t,
+					u_short);
 
-struct cfdriver edcd = {
-	NULL, "ed", edmatch, edattach, DV_IFNET, sizeof(struct ed_softc)
+static inline void NIC_PUT(struct ed_softc *, int, u_char); 
+static inline u_char NIC_GET(struct ed_softc *, int);
+static inline void word_copy(caddr_t, caddr_t, int);
+struct mbuf *ed_ring_to_mbuf(struct ed_softc *, caddr_t, struct mbuf *, u_short);
+
+struct cfattach ed_zbus_ca = {
+	sizeof(struct ed_softc), ed_zbus_match, ed_zbus_attach
+};
+
+struct cfdriver ed_cd = {
+	NULL, "ed", DV_IFNET
 };
 
 #define	ETHER_MIN_LEN	64
@@ -176,7 +186,7 @@ word_copy(a, b, len)
 }
 
 int
-edmatch(parent, match, aux)
+ed_zbus_match(parent, match, aux)
 	struct device *parent;
 	void *match, *aux;
 {
@@ -190,7 +200,7 @@ edmatch(parent, match, aux)
 }
 
 void
-edattach(parent, self, aux)
+ed_zbus_attach(parent, self, aux)
 	struct device *parent, *self;
 	void *aux;
 {
@@ -234,6 +244,14 @@ edattach(parent, self, aux)
 	    sc->mem_start + ((sc->txb_cnt * ED_TXBUF_SIZE) << ED_PAGE_SHIFT);
 
 	/*
+	 * Interupts must be inactive when reading the prom, as the interupt
+	 * line is shared with one of its address lines.
+	 */
+
+	NIC_PUT(sc, ED_P0_IMR, 0x00); /* disable ints */
+	NIC_PUT(sc, ED_P0_ISR, 0xff); /* clear ints */
+
+	/*
 	 * read the ethernet address from the board
 	 */
 	for (i = 0; i < ETHER_ADDR_LEN; i++)
@@ -243,8 +261,8 @@ edattach(parent, self, aux)
 	ed_stop(sc);
 
 	/* Initialize ifnet structure. */
-	ifp->if_unit = sc->sc_dev.dv_unit;
-	ifp->if_name = edcd.cd_name;
+	bcopy(sc->sc_dev.dv_xname, ifp->if_xname, IFNAMSIZ);
+	ifp->if_softc = sc;
 	ifp->if_start = ed_start;
 	ifp->if_ioctl = ed_ioctl;
 	ifp->if_watchdog = ed_watchdog;
@@ -257,10 +275,6 @@ edattach(parent, self, aux)
 
 	/* Print additional info when attached. */
 	printf(": address %s\n", ether_sprintf(sc->sc_arpcom.ac_enaddr));
-
-#if NBPFILTER > 0
-	bpfattach(&ifp->if_bpf, ifp, DLT_EN10MB, sizeof(struct ether_header));
-#endif
 
 	sc->sc_isr.isr_intr = edintr;
 	sc->sc_isr.isr_arg = sc;
@@ -277,7 +291,7 @@ ed_reset(sc)
 {
 	int s;
 
-	s = splimp();
+	s = splnet();
 	ed_stop(sc);
 	ed_init(sc);
 	splx(s);
@@ -309,10 +323,10 @@ ed_stop(sc)
  * an interrupt after a transmit has been started on it.
  */
 void
-ed_watchdog(unit)
-	short unit;
+ed_watchdog(ifp)
+	struct ifnet *ifp;
 {
-	struct ed_softc *sc = edcd.cd_devs[unit];
+	struct ed_softc *sc = ifp->if_softc;
 
 	log(LOG_ERR, "%s: device timeout\n", sc->sc_dev.dv_xname);
 	++sc->sc_arpcom.ac_if.if_oerrors;
@@ -329,7 +343,6 @@ ed_init(sc)
 {
 	struct ifnet *ifp = &sc->sc_arpcom.ac_if;
 	int i, s;
-	u_char command;
 	u_long mcaf[2];
 
 	/*
@@ -337,7 +350,7 @@ ed_init(sc)
 	 * This init procedure is "mandatory"...don't change what or when
 	 * things happen.
 	 */
-	s = splimp();
+	s = splnet();
 
 	/* Reset transmitter flags. */
 	sc->xmit_busy = 0;
@@ -476,7 +489,7 @@ ed_xmit(sc)
 /*
  * Start output on interface.
  * We make two assumptions here:
- *  1) that the current priority is set to splimp _before_ this code
+ *  1) that the current priority is set to splnet _before_ this code
  *     is called *and* is returned to the appropriate priority after
  *     return
  *  2) that the IFF_OACTIVE flag is checked before this code is called
@@ -486,7 +499,7 @@ void
 ed_start(ifp)
 	struct ifnet *ifp;
 {
-	struct ed_softc *sc = edcd.cd_devs[ifp->if_unit];
+	struct ed_softc *sc = ifp->if_softc;
 	struct mbuf *m0, *m;
 	caddr_t buffer;
 	int len;
@@ -559,10 +572,12 @@ static inline void
 ed_rint(sc)
 	struct ed_softc *sc;
 {
-	u_char boundary, current;
-	u_short len;
-	u_char nlen;
-	struct ed_ring packet_hdr;
+	u_int8_t boundary, current;
+	u_int16_t len;
+	u_int8_t nlen;
+	u_int8_t next_packet;		/* pointer to next packet */
+	u_int16_t count;		/* bytes in packet (length + 4) */
+	u_int8_t packet_hdr[ED_RING_HDRSZ];
 	caddr_t packet_ptr;
 
 loop:
@@ -593,10 +608,10 @@ loop:
 		 * The byte count includes a 4 byte header that was added by
 		 * the NIC.
 		 */
-		packet_hdr = *(struct ed_ring *)packet_ptr;
-		packet_hdr.count = ((packet_hdr.count >> 8) & 0xff)
-		     | ((packet_hdr.count & 0xff) << 8);
-		len = packet_hdr.count;
+		bcopy(packet_ptr, packet_hdr, ED_RING_HDRSZ);
+		next_packet = packet_hdr[ED_RING_NEXT_PACKET];
+		len = count =  packet_hdr[ED_RING_COUNT] +
+		    256 * packet_hdr[ED_RING_COUNT + 1];
 		/*
 		 * Try do deal with old, buggy chips that sometimes duplicate
 		 * the low byte of the length into the high byte.  We do this
@@ -605,23 +620,25 @@ loop:
 		 *
 		 * NOTE: sc->next_packet is pointing at the current packet.
 		 */
-		if (packet_hdr.next_packet >= sc->next_packet)
-			nlen = (packet_hdr.next_packet - sc->next_packet);
+		if (next_packet >= sc->next_packet)
+			nlen = next_packet - sc->next_packet;
 		else
-			nlen = ((packet_hdr.next_packet - sc->rec_page_start) +
-				(sc->rec_page_stop - sc->next_packet));
+			nlen = next_packet - sc->rec_page_start +
+			    sc->rec_page_stop - sc->next_packet;
 		--nlen;
-		if ((len & ED_PAGE_MASK) + sizeof(packet_hdr) > ED_PAGE_SIZE)
+		if ((len & ED_PAGE_MASK) + ED_RING_HDRSZ > ED_PAGE_SIZE)
 			--nlen;
 		len = (len & ED_PAGE_MASK) | (nlen << ED_PAGE_SHIFT);
 #ifdef DIAGNOSTIC
-		if (len != packet_hdr.count) {
+		if (len != count) {
 			printf("%s: length does not match next packet pointer\n",
 			    sc->sc_dev.dv_xname);
-			printf("%s: len %04x nlen %04x start %02x first %02x curr %02x next %02x stop %02x\n",
-			    sc->sc_dev.dv_xname, packet_hdr.count, len,
+			printf("%s: len %04x nlen %04x start %02x first %02x "
+			    "curr %02x next %02x stop %02x\n",
+			    sc->sc_dev.dv_xname, count, len,
 			    sc->rec_page_start, sc->next_packet, current,
-			    packet_hdr.next_packet, sc->rec_page_stop);
+			    packet_hdr[ED_RING_NEXT_PACKET],
+			    sc->rec_page_stop);
 		}
 #endif
 
@@ -632,16 +649,12 @@ loop:
 		 * important is that we have a length that will fit into one
 		 * mbuf cluster or less; the upper layer protocols can then
 		 * figure out the length from their own length field(s).
-		 *
-		 * MCLBYTES may be less than a valid packet len.  Thus
-		 * we use a constant that is large enough.
 		 */
-		if (len <= 2048 &&
-		    packet_hdr.next_packet >= sc->rec_page_start &&
-		    packet_hdr.next_packet < sc->rec_page_stop) {
+		if (len <= MCLBYTES && next_packet >= sc->rec_page_start &&
+		    next_packet < sc->rec_page_stop) {
 			/* Go get packet. */
-			ed_get_packet(sc, packet_ptr + sizeof(struct ed_ring),
-			    len - sizeof(struct ed_ring));
+			ed_get_packet(sc, packet_ptr + ED_RING_HDRSZ,
+			    len - ED_RING_HDRSZ);
 			++sc->sc_arpcom.ac_if.if_ipackets;
 		} else {
 			/* Really BAD.  The ring pointers are corrupted. */
@@ -654,7 +667,7 @@ loop:
 		}
 
 		/* Update next packet pointer. */
-		sc->next_packet = packet_hdr.next_packet;
+		sc->next_packet = next_packet;
 
 		/*
 		 * Update NIC boundary pointer - being careful to keep it one
@@ -671,9 +684,10 @@ loop:
 
 /* Ethernet interface interrupt processor. */
 int
-edintr(sc)
-	struct ed_softc *sc;
+edintr(arg)
+	void *arg;
 {
+	struct ed_softc *sc = arg;
 	u_char isr;
 
 	/* Set NIC to page 0 registers. */
@@ -845,12 +859,17 @@ ed_ioctl(ifp, command, data)
 	u_long command;
 	caddr_t data;
 {
-	struct ed_softc *sc = edcd.cd_devs[ifp->if_unit];
+	struct ed_softc *sc = ifp->if_softc;
 	register struct ifaddr *ifa = (struct ifaddr *)data;
 	struct ifreq *ifr = (struct ifreq *)data;
 	int s, error = 0;
 
-	s = splimp();
+	s = splnet();
+
+	if ((error = ether_ioctl(ifp, &sc->sc_arpcom, command, data)) > 0) {
+		splx(s);
+		return error;
+	}
 
 	switch (command) {
 
@@ -872,7 +891,7 @@ ed_ioctl(ifp, command, data)
 
 			if (ns_nullhost(*ina))
 				ina->x_host =
-				    *(union ns_host *)(sc->sc_arpcom.sc_enaddr);
+				    *(union ns_host *)(sc->sc_arpcom.ac_enaddr);
 			else
 				bcopy(ina->x_host.c_host,
 				    sc->sc_arpcom.ac_enaddr,
@@ -951,7 +970,7 @@ ed_get_packet(sc, buf, len)
 	u_short len;
 {
 	struct ether_header *eh;
-	struct mbuf *m, *ed_ring_to_mbuf();
+	struct mbuf *m;
 
 	/* round length to word boundry */
 	len = (len + 1) & ~1;
@@ -991,22 +1010,8 @@ ed_get_packet(sc, buf, len)
 	 * Check if there's a BPF listener on this interface.  If so, hand off
 	 * the raw packet to bpf.
 	 */
-	if (sc->sc_arpcom.ac_if.if_bpf) {
+	if (sc->sc_arpcom.ac_if.if_bpf)
 		bpf_mtap(sc->sc_arpcom.ac_if.if_bpf, m);
-
-		/*
-		 * Note that the interface cannot be in promiscuous mode if
-		 * there are no BPF listeners.  And if we are in promiscuous
-		 * mode, we have to check if this packet is really ours.
-		 */
-		if ((sc->sc_arpcom.ac_if.if_flags & IFF_PROMISC) &&
-		    (eh->ether_dhost[0] & 1) == 0 && /* !mcast and !bcast */
-		    bcmp(eh->ether_dhost, sc->sc_arpcom.ac_enaddr,
-			    sizeof(eh->ether_dhost)) != 0) {
-			m_freem(m);
-			return;
-		}
-	}
 #endif
 
 	/* Fix up data start offset in mbuf to point past ether header. */

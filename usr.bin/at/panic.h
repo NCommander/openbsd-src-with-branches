@@ -1,9 +1,9 @@
+/*	$OpenBSD: panic.h,v 1.5 2002/05/11 23:02:33 millert Exp $	*/
 /*	$NetBSD: panic.h,v 1.2 1995/03/25 18:13:35 glass Exp $	*/
 
 /*
- * panic.h -  header for at(1)
- * Copyright (c) 1993 Thomas Koenig
- * All rights reserved.
+ *  panic.h -  header for at(1)
+ *  Copyright (c) 1993 Thomas Koenig
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -17,17 +17,16 @@
  * THIS SOFTWARE IS PROVIDED BY THE AUTHOR(S) ``AS IS'' AND ANY EXPRESS OR
  * IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
  * OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.
- * IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY DIRECT, INDIRECT,
+ * IN NO EVENT SHALL THE AUTHOR(S) BE LIABLE FOR ANY DIRECT, INDIRECT,
  * INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT
  * NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
  * DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
  * THEORY OF LIABILITY, WETHER IN CONTRACT, STRICT LIABILITY, OR TORT
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- *
  */
 
-void panic	__P((char *a));
-void perr	__P((char *a));
-void perr2	__P((char *a, char *b));
-void usage	__P((void));
+__dead void panic(const char *);
+__dead void perr(const char *);
+__dead void perr2(const char *, const char *);
+__dead void usage(void);

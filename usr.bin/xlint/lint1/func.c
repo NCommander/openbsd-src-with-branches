@@ -1,3 +1,4 @@
+/*	$OpenBSD: func.c,v 1.3 1999/10/29 09:01:00 todd Exp $	*/
 /*	$NetBSD: func.c,v 1.7 1995/10/02 17:31:40 jpo Exp $	*/
 
 /*
@@ -32,7 +33,7 @@
  */
 
 #ifndef lint
-static char rcsid[] = "$NetBSD: func.c,v 1.7 1995/10/02 17:31:40 jpo Exp $";
+static char rcsid[] = "$OpenBSD: func.c,v 1.3 1999/10/29 09:01:00 todd Exp $";
 #endif
 
 #include <stdlib.h>
@@ -105,7 +106,7 @@ pos_t	prflpos;
 pos_t	scflpos;
 
 /*
- * Are both plibflg and llibflg set, prototypes are writen as function
+ * Are both plibflg and llibflg set, prototypes are written as function
  * definitions to the output file.
  */
 int	plibflg;
@@ -368,7 +369,7 @@ funcend()
 	/*
 	 * write the information about the function definition to the
 	 * output file
-	 * inline functions explicitely declared extern are written as
+	 * inline functions explicitly declared extern are written as
 	 * declarations only.
 	 */
 	if (dcs->d_scl == EXTERN && funcsym->s_inline) {

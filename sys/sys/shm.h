@@ -1,4 +1,5 @@
-/*	$NetBSD: shm.h,v 1.18 1995/03/26 20:24:41 jtc Exp $	*/
+/*	$OpenBSD: shm.h,v 1.12 2002/03/14 01:27:14 millert Exp $	*/
+/*	$NetBSD: shm.h,v 1.20 1996/04/09 20:55:35 cgd Exp $	*/
 
 /*
  * Copyright (c) 1994 Adam Glass
@@ -42,11 +43,12 @@
 
 #define	SHM_RDONLY	010000	/* Attach read-only (else read-write) */
 #define	SHM_RND		020000	/* Round attach address to SHMLBA */
-#define	SHMLBA		CLBYTES	/* Segment low boundry address multiple */
+#define	SHMLBA		PAGE_SIZE /* Segment low boundry address multiple */
 
-/* Some systems (e.g. HP-UX) take these as the second (cmd) arg to shmctl(). */
-#define	SHM_LOCK	3	/* Lock segment in memory. */
-#define	SHM_UNLOCK	4	/* Unlock a segment locked by SHM_LOCK. */
+/* "official" access mode definitions; somewhat braindead since you have
+   to specify (SHM_* >> 3) for group and (SHM_* >> 6) for world permissions */
+#define SHM_R		(IPC_R)
+#define SHM_W		(IPC_W)
 
 struct shmid_ds {
 	struct ipc_perm	shm_perm;	/* operation permission structure */
@@ -61,9 +63,27 @@ struct shmid_ds {
 };
 
 #ifdef _KERNEL
+struct oshmid_ds {
+	struct oipc_perm shm_perm;	/* operation permission structure */
+	int		shm_segsz;	/* size of segment in bytes */
+	pid_t		shm_lpid;	/* process ID of last shm op */
+	pid_t		shm_cpid;	/* process ID of creator */
+	short		shm_nattch;	/* number of current attaches */
+	time_t		shm_atime;	/* time of last shmat() */
+	time_t		shm_dtime;	/* time of last shmdt() */
+	time_t		shm_ctime;	/* time of last change by shmctl() */
+	void		*shm_internal;	/* sysv stupidity */
+};
+#endif
+
+#ifdef _KERNEL
+
+/* Some systems (e.g. HP-UX) take these as the second (cmd) arg to shmctl(). */
+#define	SHM_LOCK	3	/* Lock segment in memory. */
+#define	SHM_UNLOCK	4	/* Unlock a segment locked by SHM_LOCK. */
 
 /*
- * System 5 style catch-all structure for shared memory constants that
+ * System V style catch-all structure for shared memory constants that
  * might be of interest to user programs.  Do we really want/need this?
  */
 struct shminfo {
@@ -73,18 +93,35 @@ struct shminfo {
 	int	shmseg;		/* max shared memory segments per process */
 	int	shmall;		/* max amount of shared memory (pages) */
 };
-struct shminfo shminfo;
-struct shmid_ds *shmsegs;
+
+struct shm_sysctl_info {
+	struct	shminfo shminfo;
+	struct	shmid_ds shmids[1];
+};
+
+extern struct shminfo shminfo;
+extern struct shmid_ds *shmsegs;
+
+/* initial values for machdep.c */
+extern int shmseg;
+extern int shmmaxpgs;
+
+struct vmspace;
+
+void shminit(void);
+void shmfork(struct vmspace *, struct vmspace *);
+void shmexit(struct vmspace *);
+void shmid_n2o(struct shmid_ds *, struct oshmid_ds *);
 
 #else /* !_KERNEL */
 
 #include <sys/cdefs.h>
 
 __BEGIN_DECLS
-void *shmat __P((int, void *, int));
-int shmctl __P((int, int, struct shmid_ds *));
-int shmdt __P((void *));
-int shmget __P((key_t, int, int));
+void *shmat(int, const void *, int);
+int shmctl(int, int, struct shmid_ds *);
+int shmdt(const void *);
+int shmget(key_t, int, int);
 __END_DECLS
 
 #endif /* !_KERNEL */

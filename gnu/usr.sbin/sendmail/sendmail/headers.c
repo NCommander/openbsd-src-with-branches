@@ -13,7 +13,7 @@
 
 #include <sendmail.h>
 
-SM_RCSID("@(#)$Sendmail: headers.c,v 8.262 2001/09/04 22:43:03 ca Exp $")
+SM_RCSID("@(#)$Sendmail: headers.c,v 8.266.4.1 2002/08/16 14:56:01 ca Exp $")
 
 static size_t	fix_mime_header __P((char *));
 static int	priencode __P((char *));
@@ -42,7 +42,7 @@ setupheaders()
 		s->s_header.hi_ruleset = NULL;
 	}
 }
-/*
+/*
 **  CHOMPHEADER -- process and save a header line.
 **
 **	Called by collect, readcf, and readqf to deal with header lines.
@@ -285,23 +285,27 @@ hse:
 
 	if (bitset(pflag, CHHDR_CHECK))
 	{
-		bool stripcom = false;
+		int rscheckflags;
 		char *rs;
 
 		/* no ruleset? look for default */
 		rs = hi->hi_ruleset;
+		rscheckflags = RSF_COUNT;
+		if (!bitset(hi->hi_flags, H_FROM|H_RCPT))
+			rscheckflags |= RSF_UNSTRUCTURED;
 		if (rs == NULL)
 		{
 			s = stab("*", ST_HEADER, ST_FIND);
 			if (s != NULL)
 			{
 				rs = (&s->s_header)->hi_ruleset;
-				stripcom = bitset((&s->s_header)->hi_flags,
-						  H_STRIPCOMM);
+				if (bitset((&s->s_header)->hi_flags,
+					   H_STRIPCOMM))
+					rscheckflags |= RSF_RMCOMM;
 			}
 		}
-		else
-			stripcom = bitset(hi->hi_flags, H_STRIPCOMM);
+		else if (bitset(hi->hi_flags, H_STRIPCOMM))
+			rscheckflags |= RSF_RMCOMM;
 		if (rs != NULL)
 		{
 			int l, k;
@@ -366,7 +370,7 @@ hse:
 #endif /* _FFR_HDR_TYPE */
 				macdefine(&e->e_macro, A_PERM,
 					macid("{addr_type}"), "h");
-			(void) rscheck(rs, fvalue, NULL, e, stripcom, true, 3,
+			(void) rscheck(rs, fvalue, NULL, e, rscheckflags, 3,
 				       NULL, e->e_id);
 		}
 	}
@@ -457,7 +461,7 @@ hse:
 
 	return h->h_flags;
 }
-/*
+/*
 **  ADDHEADER -- add a header entry to the end of the queue.
 **
 **	This bypasses the special checking of chompheader.
@@ -509,7 +513,7 @@ addheader(field, value, flags, e)
 	h->h_macro = '\0';
 	*hp = h;
 }
-/*
+/*
 **  HVALUE -- return value of a header.
 **
 **	Only "real" fields (i.e., ones that have not been supplied
@@ -542,7 +546,7 @@ hvalue(field, header)
 	}
 	return NULL;
 }
-/*
+/*
 **  ISHEADER -- predicate telling if argument is a header.
 **
 **	A line is a header if it has a single word followed by
@@ -586,7 +590,7 @@ isheader(h)
 
 	return (*s == ':');
 }
-/*
+/*
 **  EATHEADER -- run through the stored header and extract info.
 **
 **	Parameters:
@@ -698,8 +702,8 @@ eatheader(e, full, log)
 			int saveflags = e->e_flags;
 #endif /* 0 */
 
-			(void) sendtolist(h->h_value, NULLADDR,
-					  &e->e_sendqueue, 0, e);
+			(void) sendtolist(denlstring(h->h_value, true, false),
+					  NULLADDR, &e->e_sendqueue, 0, e);
 
 #if 0
 			/*
@@ -830,7 +834,7 @@ eatheader(e, full, log)
 		e->e_flags &= ~EF_LOGSENDER;
 	}
 }
-/*
+/*
 **  LOGSENDER -- log sender information
 **
 **	Parameters:
@@ -959,7 +963,7 @@ logsender(e, msgid)
 		  "%.400srelay=%.100s", sbuf, name);
 #endif /* (SYSLOG_BUFSIZE) >= 256 */
 }
-/*
+/*
 **  PRIENCODE -- encode external priority names into internal values.
 **
 **	Parameters:
@@ -987,7 +991,7 @@ priencode(p)
 	/* unknown priority */
 	return 0;
 }
-/*
+/*
 **  CRACKADDR -- parse an address and turn it into a macro
 **
 **	This doesn't actually parse the address -- it just extracts
@@ -1346,7 +1350,7 @@ crackaddr(addr)
 
 	return buf;
 }
-/*
+/*
 **  PUTHEADER -- put the header part of a message from the in-core copy
 **
 **	Parameters:
@@ -1590,7 +1594,7 @@ putheader(mci, hdr, e, flags)
 	}
 #endif /* MIME8TO7 */
 }
-/*
+/*
 **  PUT_VANILLA_HEADER -- output a fairly ordinary header
 **
 **	Parameters:
@@ -1637,7 +1641,7 @@ put_vanilla_header(h, v, mci)
 			   (int) (SPACELEFT(obuf, obp) - 1), v);
 	putxline(obuf, strlen(obuf), mci, putflags);
 }
-/*
+/*
 **  COMMAIZE -- output a header field, making a comma-translated list.
 **
 **	Parameters:
@@ -1807,7 +1811,7 @@ commaize(h, p, oldstyle, mci, e)
 	*obp = '\0';
 	putxline(obuf, strlen(obuf), mci, putflags);
 }
-/*
+/*
 **  COPYHEADER -- copy header list
 **
 **	This routine is the equivalent of newstr for header lists
@@ -1844,7 +1848,7 @@ copyheader(header, rpool)
 
 	return ret;
 }
-/*
+/*
 **  FIX_MIME_HEADER -- possibly truncate/rebalance parameters in a MIME header
 **
 **	Run through all of the parameters of a MIME header and

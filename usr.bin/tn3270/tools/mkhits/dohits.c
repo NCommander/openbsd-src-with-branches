@@ -1,3 +1,5 @@
+/*	$OpenBSD: dohits.c,v 1.3 1998/05/02 02:27:18 mickey Exp $	*/
+
 /*-
  * Copyright (c) 1988 The Regents of the University of California.
  * All rights reserved.
@@ -33,7 +35,7 @@
 
 #ifndef lint
 /*static char sccsid[] = "from: @(#)dohits.c	4.2 (Berkeley) 4/26/91";*/
-static char rcsid[] = "$Id: dohits.c,v 1.3 1994/04/10 07:20:47 cgd Exp $";
+static char rcsid[] = "$OpenBSD: dohits.c,v 1.3 1998/05/02 02:27:18 mickey Exp $";
 #endif /* not lint */
 
 /*
@@ -55,6 +57,7 @@ static char rcsid[] = "$Id: dohits.c,v 1.3 1994/04/10 07:20:47 cgd Exp $";
  */
 
 #include <stdio.h>
+#include <stdlib.h>
 #if	defined(unix)
 #include <strings.h>
 #else	/* defined(unix) */
@@ -72,15 +75,13 @@ struct Hits Hits[256];		/* one for each of 0x00-0xff */
 
 struct thing *table[100];
 
-extern char *malloc();
-
 unsigned int
 dohash(seed, string)
 unsigned int seed;
 char *string;
 {
-    register unsigned int i = seed;
-    register unsigned char c;
+    unsigned int i = seed;
+    unsigned char c;
 
     while (c = *string++) {
 	if (c >= 0x60) {
@@ -103,6 +104,7 @@ int value;
     item = &firstentry(second);
     this = (struct thing *) malloc(sizeof *this);
     this->next = *item;
+    this->hits = NULL;
     *item = this;
     this->value = value;
     strcpy(this->name, first);

@@ -1,3 +1,4 @@
+/*	$OpenBSD: select.h,v 1.4 2000/11/16 20:02:20 provos Exp $	*/
 /*	$NetBSD: select.h,v 1.10 1995/03/26 20:24:38 jtc Exp $	*/
 
 /*-
@@ -38,12 +39,15 @@
 #ifndef _SYS_SELECT_H_
 #define	_SYS_SELECT_H_
 
+#include <sys/event.h>			/* for struct klist */
+
 /*
  * Used to maintain information about processes that wish to be
  * notified when I/O becomes possible.
  */
 struct selinfo {
-	pid_t	si_pid;		/* process to be notified */
+	pid_t	si_selpid;	/* process to be notified */
+	struct	klist si_note;	/* kernel note list */
 	short	si_flags;	/* see below */
 };
 #define	SI_COLL	0x0001		/* collision occurred */
@@ -51,8 +55,8 @@ struct selinfo {
 #ifdef _KERNEL
 struct proc;
 
-void	selrecord __P((struct proc *selector, struct selinfo *));
-void	selwakeup __P((struct selinfo *));
+void	selrecord(struct proc *selector, struct selinfo *);
+void	selwakeup(struct selinfo *);
 #endif
 
 #endif /* !_SYS_SELECT_H_ */

@@ -1,3 +1,4 @@
+/*	$OpenBSD: conf.c,v 1.3 2001/12/01 23:27:23 miod Exp $	*/
 /*	$NetBSD: conf.c,v 1.5 1995/10/06 05:12:13 thorpej Exp $	*/
 
 /*
@@ -48,7 +49,7 @@
 
 #ifndef lint
 /*static char sccsid[] = "@(#)conf.c	8.1 (Berkeley) 6/4/93";*/
-static char rcsid[] = "$NetBSD: conf.c,v 1.5 1995/10/06 05:12:13 thorpej Exp $";
+static char rcsid[] = "$OpenBSD: conf.c,v 1.3 2001/12/01 23:27:23 miod Exp $";
 #endif /* not lint */
 
 #include <sys/param.h>
@@ -68,14 +69,12 @@ static char rcsid[] = "$NetBSD: conf.c,v 1.5 1995/10/06 05:12:13 thorpej Exp $";
 **	simplify the boot file search code.
 */
 
-char	MyHost[MAXHOSTNAMELEN+1];		/* host name */
-pid_t	MyPid;					/* process id */
+char	MyHost[MAXHOSTNAMELEN];			/* host name */
 int	DebugFlg = 0;				/* set true if debugging */
 int	BootAny = 0;				/* set true if we boot anyone */
 
 char	*ConfigFile = NULL;			/* configuration file */
 char	*DfltConfig = _PATH_RBOOTDCONF;		/* default configuration file */
-char	*PidFile = _PATH_RBOOTDPID;		/* file w/pid of server */
 char	*BootDir = _PATH_RBOOTDLIB;		/* directory w/boot files */
 char	*DbgFile = _PATH_RBOOTDDBG;		/* debug output file */
 

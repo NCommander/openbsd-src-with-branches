@@ -1,9 +1,12 @@
-/*	$NetBSD: pmap.h,v 1.13 1995/04/10 12:42:29 mycroft Exp $	*/
+/*	$OpenBSD: pmap.h,v 1.12 2001/12/05 00:11:51 millert Exp $	*/
+/*	$NetBSD: pmap.h,v 1.18 1997/01/27 19:41:06 gwr Exp $	*/
 
-/*
- * Copyright (c) 1994 Gordon W. Ross
- * Copyright (c) 1993 Adam Glass
+/*-
+ * Copyright (c) 1996 The NetBSD Foundation, Inc.
  * All rights reserved.
+ *
+ * This code is derived from software contributed to The NetBSD Foundation
+ * by Adam Glass and Gordon W. Ross.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -15,20 +18,23 @@
  *    documentation and/or other materials provided with the distribution.
  * 3. All advertising materials mentioning features or use of this software
  *    must display the following acknowledgement:
- *	This product includes software developed by Adam Glass.
- * 4. The name of the Authors may not be used to endorse or promote products
- *    derived from this software without specific prior written permission.
+ *        This product includes software developed by the NetBSD
+ *        Foundation, Inc. and its contributors.
+ * 4. Neither the name of The NetBSD Foundation nor the names of its
+ *    contributors may be used to endorse or promote products derived
+ *    from this software without specific prior written permission.
  *
- * THIS SOFTWARE IS PROVIDED BY THE AUTHORS ``AS IS'' AND ANY EXPRESS OR
- * IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
- * OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.
- * IN NO EVENT SHALL THE AUTHORS BE LIABLE FOR ANY DIRECT, INDIRECT,
- * INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT
- * NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
- * DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
- * THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
- * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
- * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ * THIS SOFTWARE IS PROVIDED BY THE NETBSD FOUNDATION, INC. AND CONTRIBUTORS
+ * ``AS IS'' AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED
+ * TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+ * PURPOSE ARE DISCLAIMED.  IN NO EVENT SHALL THE FOUNDATION OR CONTRIBUTORS
+ * BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+ * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ * POSSIBILITY OF SUCH DAMAGE.
  */
 
 #ifndef	_MACHINE_PMAP_
@@ -40,7 +46,7 @@
 
 struct pmap {
 	int	                pm_refcount;	/* pmap reference count */
-	simple_lock_data_t      pm_lock;	/* lock on pmap */
+	struct simplelock	pm_lock;	/* lock on pmap */
 	struct pmap_statistics	pm_stats;	/* pmap statistics */
 	int                     pm_version;
 	int                     pm_ctxnum;
@@ -50,18 +56,21 @@ struct pmap {
 typedef struct pmap *pmap_t;
 
 #ifdef _KERNEL
-struct pmap	kernel_pmap_store;
-
+extern struct pmap	kernel_pmap_store;
 #define	pmap_kernel()			(&kernel_pmap_store)
 
-#define PMAP_ACTIVATE(pmap, pcbp, iscurproc) \
-	pmap_activate(pmap, pcbp)
-#define PMAP_DEACTIVATE(pmap, pcbp) \
-	pmap_deactivate(pmap, pcbp)
+/* This is called from locore.s:cpu_switch() */
+void pmap_switch(pmap_t pmap);
 
-/* XXX - Need a (silly) #define get code in kern_sysctl.c */
+/* This lets us have some say in choosing VA locations. */
+extern void pmap_prefer(vm_offset_t, vm_offset_t *);
+#define PMAP_PREFER(fo, ap) pmap_prefer((fo), (ap))
+
+/* This needs to be a macro to get code in kern_sysctl.c */
 extern segsz_t pmap_resident_pages(pmap_t);
 #define	pmap_resident_count(pmap)	pmap_resident_pages(pmap)
+
+#define pmap_update(pmap)	/* nothing (yet) */
 
 /*
  * Since PTEs also contain type bits, we have to have some way

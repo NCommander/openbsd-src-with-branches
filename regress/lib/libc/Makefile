@@ -1,6 +1,7 @@
-#	$NetBSD: Makefile,v 1.6 1995/04/24 05:52:15 cgd Exp $
+#	$OpenBSD: Makefile,v 1.8 2002/07/05 15:54:30 itojun Exp $
 
-SUBDIR+= _setjmp db regex setjmp sigsetjmp
+SUBDIR+= _setjmp db getaddrinfo regex setjmp sigsetjmp malloc sigreturn popen
+SUBDIR+= longjmp atexit
 .if (${MACHINE_ARCH} != "vax")
 SUBDIR+= ieeefp
 .endif
@@ -8,8 +9,6 @@ SUBDIR+= ieeefp
 .if exists(arch/${MACHINE_ARCH})
 SUBDIR+= arch/${MACHINE_ARCH}
 .endif
-
-regress: _SUBDIRUSE
 
 install:
 

@@ -1,3 +1,4 @@
+/*	$OpenBSD: in_systm.h,v 1.3 2001/06/09 07:03:41 angelos Exp $	*/
 /*	$NetBSD: in_systm.h,v 1.8 1995/04/13 06:29:22 cgd Exp $	*/
 
 /*
@@ -35,6 +36,9 @@
  *	@(#)in_systm.h	8.1 (Berkeley) 6/10/93
  */
 
+#ifndef _NETINET_IN_SYSTM_H_
+#define _NETINET_IN_SYSTM_H_
+
 /*
  * Miscellaneous internetwork
  * definitions for kernel.
@@ -54,5 +58,7 @@ typedef u_int32_t n_long;		/* long as received from the net */
 typedef u_int32_t n_time;		/* ms since 00:00 GMT, byte rev */
 
 #ifdef _KERNEL
-n_time	 iptime __P((void));
-#endif
+n_time	 iptime(void);
+#endif /* _KERNEL */
+#endif /* _NETINET_IN_SYSTM_H_ */
+

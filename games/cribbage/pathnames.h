@@ -1,3 +1,4 @@
+/*	$OpenBSD: pathnames.h,v 1.3 1995/03/21 15:08:56 cgd Exp $	*/
 /*	$NetBSD: pathnames.h,v 1.3 1995/03/21 15:08:56 cgd Exp $	*/
 
 /*-
@@ -36,5 +37,7 @@
  */
 
 #define	_PATH_INSTR	"/usr/share/games/cribbage.instr"
+#ifdef LOGGING
 #define	_PATH_LOG	"/var/games/criblog"
+#endif
 #define	_PATH_MORE	"/usr/bin/more"

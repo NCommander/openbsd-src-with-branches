@@ -1,3 +1,4 @@
+/*	$OpenBSD: defs.h,v 1.4 2002/02/16 21:28:08 millert Exp $	*/
 /*	$NetBSD: defs.h,v 1.5 1995/10/06 05:12:14 thorpej Exp $	*/
 
 /*
@@ -129,14 +130,12 @@ typedef struct rmpconn_s {
  *  All these variables are defined in "conf.c".
  */
 extern	char	MyHost[];		/* this hosts' name */
-extern	pid_t	MyPid;			/* this processes' ID */
 extern	int	DebugFlg;		/* set true if debugging */
 extern	int	BootAny;		/* set true if we can boot anyone */
 
 extern	char	*ConfigFile;		/* configuration file */
 extern	char	*DfltConfig;		/* default configuration file */
 extern	char	*DbgFile;		/* debug output file */
-extern	char	*PidFile;		/* file containing pid of server */
 extern	char	*BootDir;		/* directory w/boot files */
 
 extern	FILE	*DbgFp;			/* debug file pointer */
@@ -151,36 +150,30 @@ extern	RMPCONN	*RmpConns;		/* list of active connections */
 
 extern	u_int8_t RmpMcastAddr[];	/* RMP multicast address */
 
-void	 AddConn __P((RMPCONN *));
-int	 BootDone __P((RMPCONN *));
-void	 BpfClose __P((void));
-char	*BpfGetIntfName __P((char **));
-int	 BpfOpen __P((void));
-int	 BpfRead __P((RMPCONN *, int));
-int	 BpfWrite __P((RMPCONN *));
-void	 DebugOff __P((int));
-void	 DebugOn __P((int));
-void	 DispPkt __P((RMPCONN *, int));
-void	 DoTimeout __P((void));
-void	 DspFlnm __P((u_int, char *));
-void	 Exit __P((int));
-CLIENT	*FindClient __P((RMPCONN *));
-RMPCONN	*FindConn __P((RMPCONN *));
-void	 FreeClients __P((void));
-void	 FreeConn __P((RMPCONN *));
-void	 FreeConns __P((void));
-int	 GetBootFiles __P((void));
-char	*GetEtherAddr __P((u_int8_t *));
-CLIENT	*NewClient __P((u_int8_t *));
-RMPCONN	*NewConn __P((RMPCONN *));
-char	*NewStr __P((char *));
-u_int8_t *ParseAddr __P((char *));
-int	 ParseConfig __P((void));
-void	 ProcessPacket __P((RMPCONN *, CLIENT *));
-void	 ReConfig __P((int));
-void	 RemoveConn __P((RMPCONN *));
-int	 SendBootRepl __P((struct rmp_packet *, RMPCONN *, char *[]));
-int	 SendFileNo __P((struct rmp_packet *, RMPCONN *, char *[]));
-int	 SendPacket __P((RMPCONN *));
-int	 SendReadRepl __P((RMPCONN *));
-int	 SendServerID __P((RMPCONN *));
+void	 AddConn(RMPCONN *);
+int	 BootDone(RMPCONN *);
+char	*BpfGetIntfName(char **);
+int	 BpfOpen(void);
+int	 BpfRead(RMPCONN *, int);
+int	 BpfWrite(RMPCONN *);
+void	 DispPkt(RMPCONN *, int);
+void	 DoExit(void);
+void	 DspFlnm(u_int, char *);
+RMPCONN	*FindConn(RMPCONN *);
+void	 FreeClients(void);
+void	 FreeConn(RMPCONN *);
+void	 FreeConns(void);
+int	 GetBootFiles(void);
+char	*GetEtherAddr(u_int8_t *);
+CLIENT	*NewClient(u_int8_t *);
+RMPCONN	*NewConn(RMPCONN *);
+char	*NewStr(char *);
+u_int8_t *ParseAddr(char *);
+int	 ParseConfig(void);
+void	 ProcessPacket(RMPCONN *, CLIENT *);
+void	 RemoveConn(RMPCONN *);
+int	 SendBootRepl(struct rmp_packet *, RMPCONN *, char *[]);
+int	 SendFileNo(struct rmp_packet *, RMPCONN *, char *[]);
+int	 SendPacket(RMPCONN *);
+int	 SendReadRepl(RMPCONN *);
+int	 SendServerID(RMPCONN *);

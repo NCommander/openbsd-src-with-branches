@@ -1,4 +1,5 @@
-/*	$NetBSD: rarp.c,v 1.10 1995/09/23 03:36:10 gwr Exp $	*/
+/*	$OpenBSD: rarp.c,v 1.7 2002/03/14 01:27:07 millert Exp $	*/
+/*	$NetBSD: rarp.c,v 1.13 1996/10/13 02:29:05 christos Exp $	*/
 
 /*
  * Copyright (c) 1992 Regents of the University of California.
@@ -46,14 +47,12 @@
 #include <netinet/if_ether.h>
 #include <netinet/in_systm.h>
 
-#include <string.h>
-
 #include "stand.h"
 #include "net.h"
 #include "netif.h"
 
-static ssize_t rarpsend __P((struct iodesc *, void *, size_t));
-static ssize_t rarprecv __P((struct iodesc *, void *, size_t, time_t));
+static ssize_t rarpsend(struct iodesc *, void *, size_t);
+static ssize_t rarprecv(struct iodesc *, void *, size_t, time_t);
 
 /*
  * Ethernet (Reverse) Address Resolution Protocol (see RFC 903, and 826).
@@ -92,7 +91,7 @@ rarp_getipaddress(sock)
 		printf("rarp: d=%x\n", (u_int)d);
 #endif
 
-	bzero((char*)&wbuf.data, sizeof(wbuf.data));
+	bzero((char *)&wbuf.data, sizeof(wbuf.data));
 	ap = &wbuf.data.arp;
 	ap->arp_hrd = htons(ARPHRD_ETHER);
 	ap->arp_pro = htons(ETHERTYPE_IP);
@@ -169,7 +168,7 @@ rarprecv(d, pkt, len, tleft)
 
 	n = readether(d, pkt, len, tleft, &etype);
 	errno = 0;	/* XXX */
-	if (n == -1 || n < sizeof(struct ether_arp)) {
+	if (n < 0 || (size_t)n < sizeof(struct ether_arp)) {
 #ifdef RARP_DEBUG
 		if (debug)
 			printf("bad len=%d\n", n);
@@ -193,7 +192,7 @@ rarprecv(d, pkt, len, tleft)
 	{
 #ifdef RARP_DEBUG
 		if (debug)
-			printf("bad hrd/pro/hln/pln\n")
+			printf("bad hrd/pro/hln/pln\n");
 #endif
 		return (-1);
 	}

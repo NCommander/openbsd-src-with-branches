@@ -1,4 +1,4 @@
-/*	$OpenBSD: test_sleep.c,v 1.4 2000/01/06 06:58:34 d Exp $	*/
+/*	$OpenBSD: sleep.c,v 1.2 2001/09/20 16:43:15 todd Exp $	*/
 /*
  * Copyright (c) 1993, 1994, 1995, 1996 by Chris Provenzano and contributors, 
  * proven@mit.edu All rights reserved.
@@ -44,6 +44,7 @@
 #include <pthread.h>
 #include <stdio.h>
 #include <unistd.h>
+#include <stdlib.h>
 #include "test.h"
 
 const char buf[] = "abcdefghijklimnopqrstuvwxyz";
@@ -78,5 +79,6 @@ main()
 	for (i = 0; i < count; i++)
 		CHECKr(pthread_join(thread[i], NULL));
 
+	CHECKe(write(STDOUT_FILENO, "\n", 1));
 	SUCCEED;
 }

@@ -31,10 +31,10 @@
  * SUCH DAMAGE.
  */
 
-#if defined(LIBC_SCCS) && !defined(lint)
-	/* .asciz "@(#)modf.s	8.1 (Berkeley) 6/4/93" */
-	.asciz "$NetBSD: modf.S,v 1.1 1995/04/17 12:23:45 ragge Exp $"
-#endif /* LIBC_SCCS and not lint */
+#if defined(LIBC_SCCS)
+	.text
+	.asciz "$OpenBSD: modf.S,v 1.3 2001/03/18 07:29:04 bjc Exp $"
+#endif /* LIBC_SCCS */
 
 /*
  * double modf (value, iptr)
@@ -46,9 +46,15 @@
 
 #include "DEFS.h"
 
-ENTRY(modf, 0)
+ENTRY(modf, R2)
+	cvtdl	4(ap),r2
+	bvs	0f
+	cvtld	r2,*12(ap)
+	subd3	*12(ap),4(ap),r0
+	ret
+0:
 	emodd	4(ap),$0,$0f1.0,r2,r0
-	jvs	1f			# integer overflow
+	bvs	1f			# integer overflow
 	cvtld	r2,*12(ap)
 	ret
 1:

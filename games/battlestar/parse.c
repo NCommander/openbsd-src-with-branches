@@ -1,3 +1,4 @@
+/*	$OpenBSD: parse.c,v 1.10 2000/09/26 04:42:56 pjanzen Exp $	*/
 /*	$NetBSD: parse.c,v 1.3 1995/03/21 15:07:48 cgd Exp $	*/
 
 /*
@@ -35,26 +36,38 @@
 
 #ifndef lint
 #if 0
-static char sccsid[] = "@(#)parse.c	8.1 (Berkeley) 5/31/93";
+static char sccsid[] = "@(#)parse.c	8.2 (Berkeley) 4/28/95";
 #else
-static char rcsid[] = "$NetBSD: parse.c,v 1.3 1995/03/21 15:07:48 cgd Exp $";
+static char rcsid[] = "$OpenBSD: parse.c,v 1.10 2000/09/26 04:42:56 pjanzen Exp $";
 #endif
 #endif /* not lint */
 
-#include "externs.h"
+#include "extern.h"
 
+#define HASHSIZE	256
+#define HASHMUL		81
+#define HASHMASK	(HASHSIZE - 1)
+
+static int hash(const char *);
+static void install(struct wlist *);
+static struct wlist *lookup(const char *);
+
+struct wlist *hashtab[HASHSIZE];
+
+void
 wordinit()
 {
-	register struct wlist *w;
+	struct wlist *w;
 
 	for (w = wlist; w->string; w++)
 		install(w);
 }
 
+static int
 hash(s)
-	register char *s;
+	const char   *s;
 {
-	register hashval = 0;
+	int     hashval = 0;
 
 	while (*s) {
 		hashval += *s++;
@@ -64,11 +77,11 @@ hash(s)
 	return hashval;
 }
 
-struct wlist *
+static struct wlist *
 lookup(s)
-	char *s;
+	const char   *s;
 {
-	register struct wlist *wp;
+	struct wlist *wp;
 
 	for (wp = hashtab[hash(s)]; wp != NULL; wp = wp->next)
 		if (*s == *wp->string && strcmp(s, wp->string) == 0)
@@ -76,10 +89,11 @@ lookup(s)
 	return NULL;
 }
 
+static void
 install(wp)
-	register struct wlist *wp;
+	struct wlist *wp;
 {
-	int hashval;
+	int     hashval;
 
 	if (lookup(wp->string) == NULL) {
 		hashval = hash(wp->string);
@@ -89,19 +103,92 @@ install(wp)
 		printf("Multiply defined %s.\n", wp->string);
 }
 
+void
 parse()
 {
-	register struct wlist *wp;
-	register n;
+	struct wlist *wp;
+	int     n;
+	int     flag;
 
-	wordnumber = 0;           /* for cypher */
+	wordnumber = 0;		/* for cypher */
 	for (n = 0; n <= wordcount; n++) {
 		if ((wp = lookup(words[n])) == NULL) {
 			wordvalue[n] = -1;
 			wordtype[n] = -1;
 		} else {
-			wordvalue[n] = wp -> value;
-			wordtype[n] = wp -> article;
+			wordvalue[n] = wp->value;
+			wordtype[n] = wp->article;
 		}
+	}
+	/* We never use adjectives, so yank them all; disambiguation
+	 * code would need to go before this.
+	 */
+	for (n = 1; n < wordcount; n++)
+		if (wordtype[n] == ADJS) {
+			int i;
+			for (i = n + 1; i <= wordcount; i++) {
+				wordtype[i - 1] = wordtype[i];
+				wordvalue[i - 1] = wordvalue[i];
+				strlcpy(words[i - 1], words[i], WORDLEN);
+			}
+			wordcount--;
+			n--;
+		}
+	/* Don't let a comma mean AND if followed by a verb. */
+	for (n = 0; n < wordcount; n++)
+		if (wordvalue[n] == AND && words[n][0] == ','
+		    && wordtype[n + 1] == VERB) {
+			wordvalue[n] = -1;
+			wordtype[n] = -1;
+		}
+	/* Trim "AND AND" which can happen naturally at the end of a
+	 * comma-delimited list.
+	 */
+	for (n = 1; n < wordcount; n++)
+		if (wordvalue[n - 1] == AND && wordvalue[n] == AND) {
+			int i;
+			for (i = n + 1; i <= wordcount; i++) {
+				wordtype[i - 1] = wordtype[i];
+				wordvalue[i - 1] = wordvalue[i];
+				strlcpy(words[i - 1], words[i], WORDLEN);
+			}
+			wordcount--;
+		}
+
+	/* If there is a sequence (NOUN | OBJECT) AND EVERYTHING
+	 * then move all the EVERYTHINGs to the beginning, since that's where
+	 * they're expected.  We can't get rid of the NOUNs and OBJECTs in
+	 * case they aren't in EVERYTHING (i.e. not here or nonexistant).
+	 */
+	flag = 1;
+	while (flag) {
+		flag = 0;
+		for (n = 1; n < wordcount; n++)
+			if ((wordtype[n - 1] == NOUNS || wordtype[n - 1] == OBJECT) &&
+			    wordvalue[n] == AND && wordvalue[n + 1] == EVERYTHING) {
+				char tmpword[WORDLEN];
+				wordvalue[n + 1] = wordvalue[n - 1];
+				wordvalue[n - 1] = EVERYTHING;
+				wordtype[n + 1] = wordtype[n - 1];
+				wordtype[n - 1] = OBJECT;
+				strlcpy(tmpword, words[n - 1], WORDLEN);
+				strlcpy(words[n - 1], words[n + 1], WORDLEN);
+				strlcpy(words[n + 1], tmpword, WORDLEN);
+				flag = 1;
+		}
+		/* And trim EVERYTHING AND EVERYTHING */
+		for (n = 1; n < wordcount; n++)
+			if (wordvalue[n - 1] == EVERYTHING &&
+			    wordvalue[n] == AND && wordvalue[n + 1] == EVERYTHING) {
+				int i;
+				for (i = n + 1; i < wordcount; i++) {
+					wordtype[i - 1] = wordtype[i + 1];
+					wordvalue[i - 1] = wordvalue[i + 1];
+					strlcpy(words[i - 1], words[i + 1], WORDLEN);
+				}
+				wordcount--;
+				wordcount--;
+				flag = 1;
+			}
 	}
 }

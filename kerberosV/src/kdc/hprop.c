@@ -334,10 +334,11 @@ read_block(krb5_context context, int fd, int32_t pos, void *buf, size_t len)
 	krb5_err(context, 1, errno, "lseek(%u)", 64 + pos);
     ret = read(fd, buf, len);
     if(ret < 0)
-	krb5_err(context, 1, errno, "read(%u)", len);
+	krb5_err(context, 1, errno, "read(%lu)", (unsigned long)len);
 #endif
     if(ret != len)
-	krb5_errx(context, 1, "read(%u) = %u", len, ret);
+	krb5_errx(context, 1, "read(%lu) = %lu", (unsigned long)len,
+	    (unsigned long)ret);
 }
 
 static int
@@ -733,8 +734,6 @@ main(int argc, char **argv)
     int optind = 0;
 
     int type = 0;
-
-    setprogname(argv[0]);
 
     if(getarg(args, num_args, argc, argv, &optind))
 	usage(1);

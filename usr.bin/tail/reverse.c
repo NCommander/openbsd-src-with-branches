@@ -1,3 +1,4 @@
+/*	$OpenBSD: reverse.c,v 1.11 2001/11/19 19:02:16 mpech Exp $	*/
 /*	$NetBSD: reverse.c,v 1.6 1994/11/23 07:42:10 jtc Exp $	*/
 
 /*-
@@ -40,23 +41,25 @@
 #if 0
 static char sccsid[] = "@(#)reverse.c	8.1 (Berkeley) 6/6/93";
 #endif
-static char rcsid[] = "$NetBSD: reverse.c,v 1.6 1994/11/23 07:42:10 jtc Exp $";
+static char rcsid[] = "$OpenBSD: reverse.c,v 1.11 2001/11/19 19:02:16 mpech Exp $";
 #endif /* not lint */
 
 #include <sys/param.h>
 #include <sys/stat.h>
 #include <sys/mman.h>
 
-#include <limits.h>
+#include <err.h>
 #include <errno.h>
-#include <unistd.h>
+#include <limits.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <unistd.h>
+
 #include "extern.h"
 
-static void r_buf __P((FILE *));
-static void r_reg __P((FILE *, enum STYLE, long, struct stat *));
+static void r_buf(FILE *);
+static int r_reg(FILE *, enum STYLE, long, struct stat *);
 
 /*
  * reverse -- display input in reverse order by line.
@@ -86,17 +89,15 @@ reverse(fp, style, off, sbp)
 	if (style != REVERSE && off == 0)
 		return;
 
-	if (S_ISREG(sbp->st_mode))
-		r_reg(fp, style, off, sbp);
-	else
+	if (!S_ISREG(sbp->st_mode) || r_reg(fp, style, off, sbp) != 0)
 		switch(style) {
 		case FBYTES:
 		case RBYTES:
-			bytes(fp, off);
+			(void)bytes(fp, off);
 			break;
 		case FLINES:
 		case RLINES:
-			lines(fp, off);
+			(void)lines(fp, off);
 			break;
 		case REVERSE:
 			r_buf(fp);
@@ -107,31 +108,27 @@ reverse(fp, style, off, sbp)
 /*
  * r_reg -- display a regular file in reverse order by line.
  */
-static void
+static int
 r_reg(fp, style, off, sbp)
 	FILE *fp;
-	register enum STYLE style;
+	enum STYLE style;
 	long off;
 	struct stat *sbp;
 {
-	register off_t size;
-	register int llen;
-	register char *p;
+	off_t size;
+	int llen;
+	char *p;
 	char *start;
 
 	if (!(size = sbp->st_size))
-		return;
+		return (0);
 
-	if (size > SIZE_T_MAX) {
-		err(0, "%s: %s", fname, strerror(EFBIG));
-		return;
-	}
+	if (size > SIZE_T_MAX)
+		return (1);
 
-	if ((start = mmap(NULL, (size_t)size,
-	    PROT_READ, 0, fileno(fp), (off_t)0)) == (caddr_t)-1) {
-		err(0, "%s: %s", fname, strerror(EFBIG));
-		return;
-	}
+	if ((start = mmap(NULL, (size_t)size, PROT_READ, MAP_PRIVATE,
+	    fileno(fp), (off_t)0)) == MAP_FAILED)
+		return (1);
 	p = start + size - 1;
 
 	if (style == RBYTES && off < size)
@@ -150,7 +147,9 @@ r_reg(fp, style, off, sbp)
 	if (llen)
 		WR(p, llen);
 	if (munmap(start, (size_t)sbp->st_size))
-		err(0, "%s: %s", fname, strerror(errno));
+		ierr();
+
+	return (0);
 }
 
 typedef struct bf {
@@ -174,9 +173,9 @@ static void
 r_buf(fp)
 	FILE *fp;
 {
-	register BF *mark, *tl, *tr;
-	register int ch, len, llen;
-	register char *p;
+	BF *mark, *tr, *tl = NULL;
+	int ch, len, llen;
+	char *p;
 	off_t enomem;
 
 #define	BSZ	(128 * 1024)
@@ -189,7 +188,7 @@ r_buf(fp)
 		if (enomem || (tl = malloc(sizeof(BF))) == NULL ||
 		    (tl->l = malloc(BSZ)) == NULL) {
 			if (!mark)
-				err(1, "%s", strerror(errno));
+				err(1, NULL);
 			tl = enomem ? tl->next : mark;
 			enomem += tl->len;
 		} else if (mark) {
@@ -197,8 +196,13 @@ r_buf(fp)
 			tl->prev = mark->prev;
 			mark->prev->next = tl;
 			mark->prev = tl;
-		} else
-			mark->next = mark->prev = (mark = tl);
+		} else {
+			mark = tl;
+			mark->next = mark->prev = mark;
+		}
+
+		if (!enomem)
+			tl->len = 0;
 
 		/* Fill the block with input data. */
 		for (p = tl->l, len = 0;
@@ -223,7 +227,7 @@ r_buf(fp)
 
 	if (enomem) {
 		(void)fprintf(stderr,
-		    "tail: warning: %ld bytes discarded\n", enomem);
+		    "tail: warning: %lld bytes discarded\n", (long long)enomem);
 		rval = 1;
 	}
 

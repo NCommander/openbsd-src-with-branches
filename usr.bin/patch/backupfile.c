@@ -1,3 +1,5 @@
+/*	$OpenBSD: backupfile.c,v 1.6 1999/01/03 05:33:48 millert Exp $	*/
+
 /* backupfile.c -- make Emacs style backup file names
    Copyright (C) 1990 Free Software Foundation, Inc.
 
@@ -12,13 +14,14 @@
    Some algorithms adapted from GNU Emacs. */
 
 #ifndef lint
-static char rcsid[] = "$Id: backupfile.c,v 1.3 1994/12/24 17:30:13 cgd Exp $";
+static char rcsid[] = "$OpenBSD: backupfile.c,v 1.6 1999/01/03 05:33:48 millert Exp $";
 #endif /* not lint */
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
+#include <libgen.h>
 #include <sys/types.h>
 #include "backupfile.h"
 #include "config.h"
@@ -70,8 +73,6 @@ enum backup_type backup_type = none;
    to numbered) backup file name. */
 char *simple_backup_suffix = "~";
 
-char *basename ();
-char *dirname ();
 static char *concat ();
 char *find_backup_file_name ();
 static char *make_version_name ();
@@ -105,7 +106,6 @@ find_backup_file_name (file)
     }
   highest_backup = max_backup_version (base_versions, dir);
   free (base_versions);
-  free (dir);
   if (backup_type == numbered_existing && highest_backup == 0)
     return concat (file, simple_backup_suffix);
   return make_version_name (file, highest_backup + 1);
@@ -195,7 +195,7 @@ concat (str1, str2)
      char *str1, *str2;
 {
   char *newstr;
-  char str1_length = strlen (str1);
+  int str1_length = strlen (str1);
 
   newstr = malloc (str1_length + strlen (str2) + 1);
   if (newstr == 0)
@@ -203,54 +203,6 @@ concat (str1, str2)
   strcpy (newstr, str1);
   strcpy (newstr + str1_length, str2);
   return newstr;
-}
-
-/* Return NAME with any leading path stripped off.  */
-
-char *
-basename (name)
-     char *name;
-{
-  char *base;
-
-  base = rindex (name, '/');
-  return base ? base + 1 : name;
-}
-
-/* Return the leading directories part of PATH,
-   allocated with malloc.  If out of memory, return 0.
-   Assumes that trailing slashes have already been
-   removed.  */
-
-char *
-dirname (path)
-     char *path;
-{
-  char *newpath;
-  char *slash;
-  int length;    /* Length of result, not including NUL. */
-
-  slash = rindex (path, '/');
-  if (slash == 0)
-	{
-	  /* File is in the current directory.  */
-	  path = ".";
-	  length = 1;
-	}
-  else
-	{
-	  /* Remove any trailing slashes from result. */
-	  while (slash > path && *slash == '/')
-		--slash;
-
-	  length = slash - path + 1;
-	}
-  newpath = malloc (length + 1);
-  if (newpath == 0)
-    return 0;
-  strncpy (newpath, path, length);
-  newpath[length] = 0;
-  return newpath;
 }
 
 /* If ARG is an unambiguous match for an element of the

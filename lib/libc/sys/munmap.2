@@ -1,3 +1,4 @@
+.\"	$OpenBSD: munmap.2,v 1.8 1999/06/16 08:45:12 alex Exp $
 .\"	$NetBSD: munmap.2,v 1.5 1995/02/27 12:35:03 cgd Exp $
 .\"
 .\" Copyright (c) 1991, 1993
@@ -43,7 +44,7 @@
 .Fd #include <sys/types.h>
 .Fd #include <sys/mman.h>
 .Ft int
-.Fn munmap "caddr_t addr" "size_t len"
+.Fn munmap "void *addr" "size_t len"
 .Sh DESCRIPTION
 The
 .Fn munmap
@@ -55,11 +56,11 @@ to generate invalid memory references.
 Upon successful completion,
 .Nm munmap
 returns zero.
-Otherwise, a value of -1 is returned and
+Otherwise, a value of \-1 is returned and
 .Va errno
 is set to indicate the error.
 .Sh ERRORS
-.Fn Munmap
+.Fn munmap
 will fail if:
 .Bl -tag -width Er
 .It Bq Er EINVAL
@@ -70,14 +71,15 @@ parameter was not page aligned, the
 parameter was negative, or
 some part of the region being unmapped is not part of the currently
 valid address space.
-.Sh "SEE ALSO"
-.Xr getpagesize 3 ,
-.Xr msync 2 ,
-.Xr munmap 2 ,
-.Xr mprotect 2 ,
+.El
+.Sh SEE ALSO
 .Xr madvise 2 ,
-.Xr mincore 2
+.Xr mincore 2 ,
+.Xr mprotect 2 ,
+.Xr msync 2 ,
+.Xr getpagesize 3
 .Sh HISTORY
 The
 .Fn munmap
-function first appeared in 4.4BSD.
+function first appeared in
+.Bx 4.4 .

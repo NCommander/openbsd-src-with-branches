@@ -1,4 +1,5 @@
-/*	$NetBSD: if_le.c,v 1.15 1995/09/29 13:51:56 chopps Exp $	*/
+/*	$OpenBSD: if_le_zbus.c,v 1.8 1998/09/16 22:41:16 jason Exp $	*/
+/*	$NetBSD: if_le.c,v 1.22 1996/12/23 09:10:18 veego Exp $	*/
 
 /*-
  * Copyright (c) 1995 Charles M. Hannum.  All rights reserved.
@@ -55,47 +56,50 @@
 #include <netinet/if_ether.h>
 #endif
 
+#include <net/if_media.h>
+
 #include <machine/cpu.h>
 #include <machine/mtpr.h>
 
 #include <amiga/amiga/device.h>
 #include <amiga/amiga/isr.h>
-#include <amiga/dev/zbusvar.h>
-#include <amiga/dev/if_levar.h>
+
 #include <dev/ic/am7990reg.h>
 #include <dev/ic/am7990var.h>
+
+#include <amiga/dev/zbusvar.h>
+#include <amiga/dev/if_levar.h>
 
 /* offsets for:	   ID,   REGS,    MEM */
 int	lestd[] = { 0, 0x4000, 0x8000 };
 
-#define	LE_SOFTC(unit)	lecd.cd_devs[unit]
-#define	LE_DELAY(x)	DELAY(x)
+int le_zbus_match(struct device *, void *, void *);
+void le_zbus_attach(struct device *, struct device *, void *);
 
-int lematch __P((struct device *, void *, void *));
-void leattach __P((struct device *, struct device *, void *));
-int leintr __P((void *));
-
-struct cfdriver lecd = {
-	NULL, "le", lematch, leattach, DV_IFNET, sizeof(struct le_softc)
+struct cfattach le_zbus_ca = {
+	sizeof(struct le_softc), le_zbus_match, le_zbus_attach
 };
 
-integrate void
+hide void lewrcsr(struct am7990_softc *, u_int16_t, u_int16_t);
+hide u_int16_t lerdcsr(struct am7990_softc *, u_int16_t);
+
+hide void
 lewrcsr(sc, port, val)
-	struct le_softc *sc;
+	struct am7990_softc *sc;
 	u_int16_t port, val;
 {
-	struct lereg1 *ler1 = sc->sc_r1;
+	struct lereg1 *ler1 = ((struct le_softc *)sc)->sc_r1;
 
 	ler1->ler1_rap = port;
 	ler1->ler1_rdp = val;
 }
 
-integrate u_int16_t
+hide u_int16_t
 lerdcsr(sc, port)
-	struct le_softc *sc;
+	struct am7990_softc *sc;
 	u_int16_t port;
 {
-	struct lereg1 *ler1 = sc->sc_r1;
+	struct lereg1 *ler1 = ((struct le_softc *)sc)->sc_r1;
 	u_int16_t val;
 
 	ler1->ler1_rap = port;
@@ -104,7 +108,7 @@ lerdcsr(sc, port)
 }
 
 int
-lematch(parent, match, aux)
+le_zbus_match(parent, match, aux)
 	struct device *parent;
 	void *match, *aux;
 {
@@ -122,24 +126,28 @@ lematch(parent, match, aux)
 }
 
 void
-leattach(parent, self, aux)
+le_zbus_attach(parent, self, aux)
 	struct device *parent, *self;
 	void *aux;
 {
-	struct le_softc *sc = (void *)self;
+	struct le_softc *lesc = (struct le_softc *)self;
+	struct am7990_softc *sc = &lesc->sc_am7990;
 	struct zbus_args *zap = aux;
-	char *cp;
-	int i;
 	u_long ser;
 
-	sc->sc_r1 = (struct lereg1 *)(lestd[1] + (int)zap->va);
+	lesc->sc_r1 = (struct lereg1 *)(lestd[1] + (int)zap->va);
 	sc->sc_mem = (void *)(lestd[2] + (int)zap->va);
 
-	sc->sc_copytodesc = copytobuf_contig;
-	sc->sc_copyfromdesc = copyfrombuf_contig;
-	sc->sc_copytobuf = copytobuf_contig;
-	sc->sc_copyfrombuf = copyfrombuf_contig;
-	sc->sc_zerobuf = zerobuf_contig;
+	sc->sc_copytodesc = am7990_copytobuf_contig;
+	sc->sc_copyfromdesc = am7990_copyfrombuf_contig;
+	sc->sc_copytobuf = am7990_copytobuf_contig;
+	sc->sc_copyfrombuf = am7990_copyfrombuf_contig;
+	sc->sc_zerobuf = am7990_zerobuf_contig;
+
+	sc->sc_rdcsr = lerdcsr;
+	sc->sc_wrcsr = lewrcsr;
+	sc->sc_hwreset = NULL;
+	sc->sc_hwinit = NULL;
 
 	sc->sc_conf3 = LE_C3_BSWP;
 	sc->sc_addr = 0x8000;
@@ -165,7 +173,7 @@ leattach(parent, self, aux)
 		break;
 
 	default:
-		panic("leattach: bad manid");
+		panic("le_zbus_attach: bad manid");
 	}
 
 	/*
@@ -176,58 +184,10 @@ leattach(parent, self, aux)
 	sc->sc_arpcom.ac_enaddr[4] = (ser >>  8) & 0xff;
 	sc->sc_arpcom.ac_enaddr[5] = (ser      ) & 0xff;
 
-	sc->sc_arpcom.ac_if.if_name = lecd.cd_name;
-	leconfig(sc);
+	am7990_config(sc);
 
-	sc->sc_isr.isr_intr = leintr;
-	sc->sc_isr.isr_arg = sc;
-	sc->sc_isr.isr_ipl = 2;
-	add_isr(&sc->sc_isr);
+	lesc->sc_isr.isr_intr = am7990_intr;
+	lesc->sc_isr.isr_arg = sc;
+	lesc->sc_isr.isr_ipl = 2;
+	add_isr(&lesc->sc_isr);
 }
-
-/*
- * Routines for accessing the transmit and receive buffers.
- */
-
-void
-copytobuf_contig(sc, from, boff, len)
-	struct le_softc *sc;
-	caddr_t from;
-	int boff, len;
-{
-	volatile caddr_t buf = sc->sc_mem;
-
-	/*
-	 * Just call bcopy() to do the work.
-	 */
-	bcopy(from, buf + boff, len);
-}
-
-void
-copyfrombuf_contig(sc, to, boff, len)
-	struct le_softc *sc;
-	caddr_t to;
-	int boff, len;
-{
-	volatile caddr_t buf = sc->sc_mem;
-
-	/*
-	 * Just call bcopy() to do the work.
-	 */
-	bcopy(buf + boff, to, len);
-}
-
-void
-zerobuf_contig(sc, boff, len)
-	struct le_softc *sc;
-	int boff, len;
-{
-	volatile caddr_t buf = sc->sc_mem;
-
-	/*
-	 * Just call bzero() to do the work.
-	 */
-	bzero(buf + boff, len);
-}
-
-#include <dev/ic/am7990.c>

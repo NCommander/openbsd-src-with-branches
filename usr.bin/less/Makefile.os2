@@ -1,3 +1,5 @@
+#	$OpenBSD$
+
 # Makefile for less.
 # OS/2 version, for emx+gcc compiler
 

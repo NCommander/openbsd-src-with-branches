@@ -1,9 +1,11 @@
+/*	$OpenBSD: hack.bones.c,v 1.3 2001/01/28 23:41:43 niklas Exp $	*/
+
 /*
  * Copyright (c) Stichting Mathematisch Centrum, Amsterdam, 1985.
  */
 
 #ifndef lint
-static char rcsid[] = "$NetBSD: hack.bones.c,v 1.3 1995/03/23 08:29:48 cgd Exp $";
+static char rcsid[] = "$OpenBSD: hack.bones.c,v 1.3 2001/01/28 23:41:43 niklas Exp $";
 #endif /* not lint */
 
 #include "hack.h"
@@ -24,7 +26,7 @@ register struct monst *mtmp;
 	if(!rn2(1 + dlevel/2)) return;	/* not so many ghosts on low levels */
 	bones[6] = '0' + (dlevel/10);
 	bones[7] = '0' + (dlevel%10);
-	if((fd = open(bones,0)) >= 0){
+	if((fd = open(bones, O_RDONLY)) >= 0){
 		(void) close(fd);
 		return;
 	}
@@ -82,7 +84,7 @@ register fd,x,y,ok;
 	if(rn2(3)) return(0);	/* only once in three times do we find bones */
 	bones[6] = '0' + dlevel/10;
 	bones[7] = '0' + dlevel%10;
-	if((fd = open(bones, 0)) < 0) return(0);
+	if((fd = open(bones, O_RDONLY)) < 0) return(0);
 	if((ok = uptodate(fd)) != 0){
 		getlev(fd, 0, dlevel);
 		for(x = 0; x < COLNO; x++) for(y = 0; y < ROWNO; y++)
@@ -91,7 +93,7 @@ register fd,x,y,ok;
 	(void) close(fd);
 #ifdef WIZARD
 	if(!wizard)	/* duvel!frans: don't remove bones while debugging */
-#endif WiZARD
+#endif /* WiZARD */
 	    if(unlink(bones) < 0){
 		pline("Cannot unlink %s .", bones);
 		return(0);

@@ -1,3 +1,5 @@
+/*	$OpenBSD$	*/
+
 /*
  * Copyright 2000 Niels Provos <provos@citi.umich.edu>
  * All rights reserved.
@@ -56,8 +58,10 @@ usage(char *name)
 	fprintf(stderr, "Usage: %s <subcmd> [arguments]\n", name);
 
 	fprintf(stderr, "Possible sub commands:");
-	for (i = sizeof(subcmds)/sizeof(struct subprg) - 1; i >= 0; i--)
+
+	for (i = sizeof(subcmds) / sizeof(struct subprg) - 1; i >= 0; i--)
 		fprintf(stderr, " %s", subcmds[i].name);
+
 	fprintf(stderr, "\n");
 }
 
@@ -72,12 +76,12 @@ main (int argc, char **argv)
 		exit(1);
 	}
 
-	for (i = sizeof(subcmds)/sizeof(struct subprg) - 1; i >= 0; i--) {
+	for (i = sizeof(subcmds) / sizeof(struct subprg) - 1; i >= 0; i--) {
 		if (!strcmp(argv[1], subcmds[i].name))
 			return (*subcmds[i].function)(argc - 1, argv + 1);
 	}
 
 	fprintf(stderr, "%s: unknown command %s\n\n", argv[0], argv[1]);
 	usage(argv[0]);
-	exit (1);
+	exit(1);
 }

@@ -1,3 +1,5 @@
+/*	$OpenBSD: cksum.c,v 1.3 2002/03/14 16:44:25 mpech Exp $	*/
+
 /*-
  * Copyright (c) 1985, 1993 The Regents of the University of California.
  * All rights reserved.
@@ -35,10 +37,6 @@
 static char sccsid[] = "@(#)cksum.c	5.2 (Berkeley) 5/11/93";
 #endif /* not lint */
 
-#ifdef sgi
-#ident "$Revision: 1.1 $"
-#endif
-
 #include <sys/types.h>
 
 /*
@@ -55,10 +53,10 @@ static char sccsid[] = "@(#)cksum.c	5.2 (Berkeley) 5/11/93";
 int
 in_cksum(u_short *addr, int len)
 {
-	register int nleft = len;
-	register u_short *w = addr;
-	register u_short answer;
-	register int sum = 0;
+	int nleft = len;
+	u_short *w = addr;
+	u_short answer;
+	int sum = 0;
 
 	/*
 	 *  Our algorithm is simple, using a 32 bit accumulator (sum),

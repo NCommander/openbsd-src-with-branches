@@ -1,4 +1,5 @@
-/*	$NetBSD: ufs.c,v 1.12 1995/09/17 00:49:48 pk Exp $	*/
+/*	$OpenBSD: ufs.c,v 1.12 1998/02/23 20:32:31 niklas Exp $	*/
+/*	$NetBSD: ufs.c,v 1.16 1996/09/30 16:01:22 ws Exp $	*/
 
 /*-
  * Copyright (c) 1993
@@ -66,9 +67,9 @@
  *	Stand-alone file reading package.
  */
 
-#include <string.h>
 #include <sys/param.h>
 #include <sys/time.h>
+#include <sys/stat.h>
 #include <ufs/ffs/fs.h>
 #include <ufs/ufs/dinode.h>
 #include <ufs/ufs/dir.h>
@@ -88,16 +89,20 @@ struct file {
 					   indirect block at level i */
 	char		*f_blk[NIADDR];	/* buffer for indirect block at
 					   level i */
-	u_long		f_blksize[NIADDR];
+	size_t		f_blksize[NIADDR];
 					/* size of buffer */
 	daddr_t		f_blkno[NIADDR];/* disk address of block in buffer */
 	char		*f_buf;		/* buffer for data block */
-	u_int		f_buf_size;	/* size of data block */
+	size_t		f_buf_size;	/* size of data block */
 	daddr_t		f_buf_blkno;	/* block number of data block */
 };
 
+static int	read_inode(ino_t, struct open_file *);
+static int	block_map(struct open_file *, daddr_t, daddr_t *);
+static int	buf_read_file(struct open_file *, char **, size_t *);
+static int	search_directory(char *, struct open_file *, ino_t *);
 #ifdef COMPAT_UFS
-void ffs_oldfscompat __P((struct fs *));
+static void	ffs_oldfscompat(struct fs *);
 #endif
 
 /*
@@ -111,7 +116,7 @@ read_inode(inumber, f)
 	register struct file *fp = (struct file *)f->f_fsdata;
 	register struct fs *fs = fp->f_fs;
 	char *buf;
-	u_int rsize;
+	size_t rsize;
 	int rc;
 
 	/*
@@ -120,10 +125,11 @@ read_inode(inumber, f)
 	buf = alloc(fs->fs_bsize);
 	twiddle();
 	rc = (f->f_dev->dv_strategy)(f->f_devdata, F_READ,
-		fsbtodb(fs, ino_to_fsba(fs, inumber)), fs->fs_bsize, buf, &rsize);
+		fsbtodb(fs, ino_to_fsba(fs, inumber)), fs->fs_bsize,
+		buf, &rsize);
 	if (rc)
 		goto out;
-	if (rsize != fs->fs_bsize) {
+	if (rsize != (size_t)fs->fs_bsize) {
 		rc = EIO;
 		goto out;
 	}
@@ -147,7 +153,7 @@ read_inode(inumber, f)
 	}
 out:
 	free(buf, fs->fs_bsize);
-	return (0);	 
+	return (rc);	 
 }
 
 /*
@@ -232,10 +238,10 @@ block_map(f, file_block, disk_block_p)
 				fsbtodb(fp->f_fs, ind_block_num),
 				fs->fs_bsize,
 				fp->f_blk[level],
-				(u_int *)&fp->f_blksize[level]);
+				&fp->f_blksize[level]);
 			if (rc)
 				return (rc);
-			if (fp->f_blksize[level] != fs->fs_bsize)
+			if (fp->f_blksize[level] != (size_t)fs->fs_bsize)
 				return (EIO);
 			fp->f_blkno[level] = ind_block_num;
 		}
@@ -264,14 +270,14 @@ static int
 buf_read_file(f, buf_p, size_p)
 	struct open_file *f;
 	char **buf_p;		/* out */
-	u_int *size_p;		/* out */
+	size_t *size_p;		/* out */
 {
 	register struct file *fp = (struct file *)f->f_fsdata;
 	register struct fs *fs = fp->f_fs;
 	long off;
 	register daddr_t file_block;
 	daddr_t	disk_block;
-	long block_size;
+	size_t block_size;
 	int rc;
 
 	off = blkoff(fs, fp->f_seekp);
@@ -332,7 +338,7 @@ search_directory(name, f, inumber_p)
 	register struct direct *dp;
 	struct direct *edp;
 	char *buf;
-	u_int buf_size;
+	size_t buf_size;
 	int namlen, length;
 	int rc;
 
@@ -383,7 +389,7 @@ ufs_open(path, f)
 	struct file *fp;
 	struct fs *fs;
 	int rc;
-	u_int buf_size;
+	size_t buf_size;
 	int nlinks = 0;
 	char namebuf[MAXPATHLEN+1];
 	char *buf = NULL;
@@ -506,7 +512,7 @@ ufs_open(path, f)
 				/*
 				 * Read file for symbolic link
 				 */
-				u_int buf_size;
+				size_t buf_size;
 				daddr_t	disk_block;
 				register struct fs *fs = fp->f_fs;
 
@@ -548,8 +554,10 @@ ufs_open(path, f)
 out:
 	if (buf)
 		free(buf, fs->fs_bsize);
-	if (rc)
+	if (rc) {
+		free(fp->f_fs, SBSIZE);
 		free(fp, sizeof(struct file));
+	}
 	return (rc);
 }
 
@@ -589,7 +597,7 @@ ufs_read(f, start, size, resid)
 	register struct file *fp = (struct file *)f->f_fsdata;
 	register size_t csize;
 	char *buf;
-	u_int buf_size;
+	size_t buf_size;
 	int rc = 0;
 	register char *addr = start;
 
@@ -669,13 +677,61 @@ ufs_stat(f, sb)
 	return (0);
 }
 
+#ifndef	NO_READDIR
+int
+ufs_readdir(f, name)
+	struct open_file *f;
+	char	*name;
+{
+	register struct file *fp = (struct file *)f->f_fsdata;
+	char *buf;
+	size_t buf_size;
+	register struct direct *dp, *edp;
+	int rc, namlen;
+
+	if (name == NULL)
+		fp->f_seekp = 0;
+	else {
+			/* end of dir */
+		if (fp->f_seekp >= fp->f_di.di_size) {
+			*name = '\0';
+			return -1;
+		}
+
+		do {
+			if ((rc = buf_read_file(f, &buf, &buf_size)) != 0)
+				return rc;
+
+			dp = (struct direct *)buf;
+			edp = (struct direct *)(buf + buf_size);
+			while (dp < edp && dp->d_ino == (ino_t)0)
+				dp = (struct direct *)((char *)dp + dp->d_reclen);
+			fp->f_seekp += buf_size -
+				((u_int8_t *)edp - (u_int8_t *)dp);
+		} while (dp >= edp);
+
+#if BYTE_ORDER == LITTLE_ENDIAN
+		if (fp->f_fs->fs_maxsymlinklen <= 0)
+			namlen = dp->d_type;
+		else
+#endif
+			namlen = dp->d_namlen;
+		strncpy(name, dp->d_name, namlen + 1);
+
+		fp->f_seekp += dp->d_reclen;
+	}
+
+	return 0;
+}
+#endif
+
 #ifdef COMPAT_UFS
 /*
  * Sanity checks for old file systems.
  *
  * XXX - goes away some day.
  */
-void
+static void
 ffs_oldfscompat(fs)
 	struct fs *fs;
 {

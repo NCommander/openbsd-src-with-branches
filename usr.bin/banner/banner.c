@@ -1,3 +1,4 @@
+/*	$OpenBSD: banner.c,v 1.4 2001/06/21 16:35:18 lebel Exp $	*/
 /*	$NetBSD: banner.c,v 1.2 1995/04/09 06:00:15 cgd Exp $	*/
 
 /*
@@ -61,11 +62,14 @@ static char copyright[] =
 #if 0
 static char sccsid[] = "@(#)printjob.c	8.2 (Berkeley) 4/16/94";
 #else
-static char rcsid[] = "$NetBSD: banner.c,v 1.2 1995/04/09 06:00:15 cgd Exp $";
+static char rcsid[] = "$OpenBSD: banner.c,v 1.4 2001/06/21 16:35:18 lebel Exp $";
 #endif
 #endif /* not lint */
 
 #include <stdio.h>
+#include <unistd.h>
+#include <stdlib.h>
+#include <string.h>
 
 #include "banner.h"
 
@@ -75,11 +79,11 @@ static long PW = LINELEN;
 
 static char *
 scnline(key, p, c)
-	register int key;
-	register char *p;
+	int key;
+	char *p;
 	int c;
 {
-	register scnwidth;
+	int scnwidth;
 
 	/*
 	 * <sjg> lpd makes chars out of the letter in question.
@@ -126,8 +130,8 @@ scan_out(scfd, scsp, dlm)
 	int scfd, dlm;
 	char *scsp;
 {
-	register char *strp;
-	register nchrs, j;
+	char *strp;
+	int nchrs, j;
 	char outbuf[LINELEN+1], *sp, c, cc;
 	int d, scnhgt;
 	extern char scnkey[][HEIGHT];	/* in lpdchar.c */
@@ -136,12 +140,13 @@ scan_out(scfd, scsp, dlm)
 		strp = &outbuf[0];
 		sp = scsp;
 		for (nchrs = 0; ; ) {
-			d = dropit(c = TRC(cc = *sp++));
+			c = TRC(cc = *sp++);
+			d = dropit(c);
 			if ((!d && scnhgt > HEIGHT) || (scnhgt <= DROP && d))
 				for (j = WIDTH; --j;)
 					*strp++ = BACKGND;
 			else
-				strp = scnline(scnkey[c][scnhgt-1-d], strp, cc);
+				strp = scnline(scnkey[(int)c][scnhgt-1-d], strp, cc);
 			if (*sp == dlm || *sp == '\0' || nchrs++ >= PW/(WIDTH+1)-1)
 				break;
 			*strp++ = BACKGND;
@@ -168,8 +173,7 @@ main(argc, argv)
 	char word[10+1];			/* strings limited to 10 chars */
 	
 	while (*++argv) {
-		(void)strncpy(word, *argv, sizeof (word) - 1);
-		word[sizeof (word) - 1] = '\0';
+		(void)strlcpy(word, *argv, sizeof (word));
 		scan_out(1, word, '\0');
 	}
 	exit(0);

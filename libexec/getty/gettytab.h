@@ -1,3 +1,5 @@
+/*	$OpenBSD: gettytab.h,v 1.4 2001/01/28 19:34:28 niklas Exp $*/
+
 /*
  * Copyright (c) 1983, 1993, 1994
  *	The Regents of the University of California.  All rights reserved.
@@ -31,7 +33,6 @@
  * SUCH DAMAGE.
  *
  *	from: @(#)gettytab.h	8.2 (Berkeley) 3/30/94
- *	$Id: gettytab.h,v 1.7 1994/08/17 20:10:34 pk Exp $
  */
 
 /*
@@ -85,6 +86,7 @@ struct gettyflags {
 #define FL	gettystrs[21].value
 #define WE	gettystrs[22].value
 #define LN	gettystrs[23].value
+#define PP	gettystrs[24].value
 
 /*
  * Numeric definitions.
@@ -160,10 +162,10 @@ struct gettyflags {
 #define	NP	gettyflags[21].value
 #define	MB	gettyflags[22].value
 
-int	getent __P((char *, char *));
-long	getnum __P((char *));
-int	getflag __P((char *));
-char	*getstr __P((char *, char **));
+int	getent(char *, char *);
+long	getnum(char *);
+int	getflag(char *);
+char	*getstr(char *, char **);
 
 extern	struct gettyflags gettyflags[];
 extern	struct gettynums gettynums[];

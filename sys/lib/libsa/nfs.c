@@ -1,4 +1,5 @@
-/*	$NetBSD: nfs.c,v 1.12 1995/09/23 03:36:08 gwr Exp $	*/
+/*	$OpenBSD: nfs.c,v 1.7 1997/02/16 14:39:39 mickey Exp $	*/
+/*	$NetBSD: nfs.c,v 1.19 1996/10/13 02:29:04 christos Exp $	*/
 
 /*-
  *  Copyright (c) 1993 John Brezak
@@ -32,16 +33,15 @@
 #include <sys/time.h>
 #include <sys/socket.h>
 #include <sys/stat.h>
-#include <string.h>
 
 #include <netinet/in.h>
 #include <netinet/in_systm.h>
 
-#include <nfs/rpcv2.h>
-#include <nfs/nfsv2.h>
-#include <nfs/xdr_subs.h>
+#include "rpcv2.h"
+#include "nfsv2.h"
 
 #include "stand.h"
+#include "saerrno.h"
 #include "net.h"
 #include "netif.h"
 #include "nfs.h"
@@ -80,6 +80,12 @@ struct nfs_read_repl {
 	struct	nfsv2_fattrs fa;
 	n_long	count;
 	u_char	data[NFSREAD_SIZE];
+};
+
+struct nfs_readlnk_repl {
+	n_long	errno;
+	n_long	len;
+	char	path[NFS_MAXPATHLEN];
 };
 
 struct nfs_iodesc {
@@ -222,6 +228,51 @@ nfs_lookupfh(d, name, newfd)
 }
 
 /*
+ * Get the destination of a symbolic link.
+ */
+int
+nfs_readlink(d, buf)
+	struct nfs_iodesc *d;
+	char *buf;
+{
+	struct {
+		n_long	h[RPC_HEADER_WORDS];
+		u_char fh[NFS_FHSIZE];
+	} sdata;
+	struct {
+		n_long	h[RPC_HEADER_WORDS];
+		struct nfs_readlnk_repl d;
+	} rdata;
+	ssize_t cc;
+
+#ifdef NFS_DEBUG
+	if (debug)
+		printf("readlink: called\n");
+#endif
+
+	bcopy(d->fh, sdata.fh, NFS_FHSIZE);
+	cc = rpc_call(d->iodesc, NFS_PROG, NFS_VER2, NFSPROC_READLINK,
+		      sdata.fh, NFS_FHSIZE,
+		      &rdata.d, sizeof(rdata.d));
+	if (cc == -1)
+		return (errno);
+
+	if (cc < 4)
+		return (EIO);
+	
+	if (rdata.d.errno)
+		return (ntohl(rdata.d.errno));
+
+	rdata.d.len = ntohl(rdata.d.len);
+	if (rdata.d.len > NFS_MAXPATHLEN)
+		return (ENAMETOOLONG);
+
+	bcopy(rdata.d.path, buf, rdata.d.len);
+	buf[rdata.d.len] = 0;
+	return (0);
+}
+
+/*
  * Read data from a file.
  * Return transfer count or -1 (and set errno)
  */
@@ -250,11 +301,11 @@ nfs_readdata(d, off, addr, len)
 	repl = &rdata.d;
 
 	bcopy(d->fh, args->fh, NFS_FHSIZE);
-	args->off = txdr_unsigned(off);
+	args->off = htonl((n_long)off);
 	if (len > NFSREAD_SIZE)
 		len = NFSREAD_SIZE;
-	args->len = txdr_unsigned(len);
-	args->xxx = txdr_unsigned(0);
+	args->len = htonl((n_long)len);
+	args->xxx = htonl((n_long)0);
 	hlen = sizeof(*repl) - NFSREAD_SIZE;
 
 	cc = rpc_call(d->iodesc, NFS_PROG, NFS_VER2, NFSPROC_READ,
@@ -275,7 +326,7 @@ nfs_readdata(d, off, addr, len)
 	rlen = cc - hlen;
 	x = ntohl(repl->count);
 	if (rlen < x) {
-		printf("nfsread: short packet, %d < %d\n", rlen, x);
+		printf("nfsread: short packet, %d < %ld\n", rlen, x);
 		errno = EBADRPC;
 		return(-1);
 	}
@@ -330,7 +381,12 @@ nfs_open(path, f)
 	char *path;
 	struct open_file *f;
 {
-	struct nfs_iodesc *newfd;
+	struct nfs_iodesc *newfd, *currfd;
+	register char *cp, *ncp;
+	register int c;
+	char namebuf[NFS_MAXPATHLEN + 1];
+	char linkbuf[NFS_MAXPATHLEN + 1];
+	int nlinks = 0;
 	int error = 0;
 
 #ifdef NFS_DEBUG
@@ -342,24 +398,118 @@ nfs_open(path, f)
 		return (ENXIO);
 	}
 
-	/* allocate file system specific data structure */
-	newfd = alloc(sizeof(*newfd));
-	newfd->iodesc = nfs_root_node.iodesc;
-	newfd->off = 0;
+	currfd = &nfs_root_node;
+	newfd = 0;
+	
+	cp = path;
+	while (*cp) {
+		/*
+		 * Remove extra separators
+		 */
+		while (*cp == '/')
+			cp++;
 
-	/* lookup a file handle */
-	error = nfs_lookupfh(&nfs_root_node, path, newfd);
-	if (!error) {
-		f->f_fsdata = (void *)newfd;
-		return (0);
+		if (*cp == '\0')
+			break;
+		/*
+		 * Check that current node is a directory.
+		 */
+		if (currfd->fa.fa_type != htonl(NFDIR)) {
+			error = ENOTDIR;
+			goto out;
+		}
+		
+		/* allocate file system specific data structure */
+		newfd = alloc(sizeof(*newfd));
+		newfd->iodesc = currfd->iodesc;
+		newfd->off = 0;
+	
+		/*
+		 * Get next component of path name.
+		 */
+		{
+			register int len = 0;
+			
+			ncp = cp;
+			while ((c = *cp) != '\0' && c != '/') {
+				if (++len > NFS_MAXNAMLEN) {
+					error = ENOENT;
+					goto out;
+				}
+				cp++;
+			}
+			*cp = '\0';
+		}
+		
+		/* lookup a file handle */
+		error = nfs_lookupfh(currfd, ncp, newfd);
+		*cp = c;
+		if (error)
+			goto out;
+		
+		/*
+		 * Check for symbolic link
+		 */
+		if (newfd->fa.fa_type == htonl(NFLNK)) {
+			int link_len, len;
+			
+			error = nfs_readlink(newfd, linkbuf);
+			if (error)
+				goto out;
+
+			link_len = strlen(linkbuf);
+			len = strlen(cp);
+
+			if (link_len + len > MAXPATHLEN
+			    || ++nlinks > MAXSYMLINKS) {
+				error = ENOENT;
+				goto out;
+			}
+
+			bcopy(cp, &namebuf[link_len], len + 1);
+			bcopy(linkbuf, namebuf, link_len);
+			
+			/*
+			 * If absolute pathname, restart at root.
+			 * If relative pathname, restart at parent directory.
+			 */
+			cp = namebuf;
+			if (*cp == '/') {
+				if (currfd != &nfs_root_node)
+					free(currfd, sizeof(*currfd));
+				currfd = &nfs_root_node;
+			}
+
+			free(newfd, sizeof(*newfd));
+			newfd = 0;
+			
+			continue;
+		}
+		
+		if (currfd != &nfs_root_node)
+			free(currfd, sizeof(*currfd));
+		currfd = newfd;
+		newfd = 0;
 	}
 
+	error = 0;
+
+out:
+	if (!error) {
+		f->f_fsdata = (void *)currfd;
+		return (0);
+	}
+		
 #ifdef NFS_DEBUG
 	if (debug)
 		printf("nfs_open: %s lookupfh failed: %s\n",
-			path, strerror(error));
+		    path, strerror(error));
 #endif
-	free(newfd, sizeof(*newfd));
+	if (currfd != &nfs_root_node)
+		free(currfd, sizeof(*currfd));
+	if (newfd)
+		free(newfd, sizeof(*newfd));
+
 	return (error);
 }
 
@@ -371,7 +521,7 @@ nfs_close(f)
 
 #ifdef NFS_DEBUG
 	if (debug)
-		printf("nfs_close: fp=0x%x\n", fp);
+		printf("nfs_close: fp=%p\n", fp);
 #endif
 
 	if (fp)
@@ -489,3 +639,16 @@ nfs_stat(f, sb)
 
 	return (0);
 }
+
+/*
+ * Not implemented.
+ */
+#ifndef NO_READDIR
+int
+nfs_readdir(f, name)
+	struct open_file *f;
+	char *name;
+{
+	return (EROFS);
+}
+#endif

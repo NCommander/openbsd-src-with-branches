@@ -1,4 +1,5 @@
-/*	$NetBSD: freebsd_ptrace.c,v 1.1 1995/10/10 01:19:34 mycroft Exp $	*/
+/*	$OpenBSD: freebsd_ptrace.c,v 1.4 2001/02/03 02:45:31 mickey Exp $	*/
+/*	$NetBSD: freebsd_ptrace.c,v 1.2 1996/05/03 17:03:12 christos Exp $	*/
 
 /*-
  * Copyright (c) 1994 Christopher G. Demetriou.  All rights reserved.
@@ -54,6 +55,7 @@
 #include <machine/reg.h>
 #include <machine/freebsd_machdep.h>
 
+#include <compat/freebsd/freebsd_signal.h>
 #include <compat/freebsd/freebsd_syscallargs.h>
 #include <compat/freebsd/freebsd_util.h>
 #include <compat/freebsd/freebsd_ptrace.h>
@@ -105,13 +107,11 @@ freebsd_sys_ptrace(p, v, retval)
 	case FREEBSD_PT_WRITE_U:
 		sg = stackgap_init(p->p_emul);
 		nrp = stackgap_alloc(&sg, sizeof(*nrp));
-#ifdef PT_GETREGS
 		SCARG(&npa, req) = PT_GETREGS;
 		SCARG(&npa, pid) = SCARG(uap, pid);
 		SCARG(&npa, addr) = (caddr_t)&nrp->regs;
 		if ((error = sys_ptrace(p, &npa, retval)) != 0)
 			return error;
-#endif
 #ifdef PT_GETFPREGS
 		SCARG(&npa, req) = PT_GETFPREGS;
 		SCARG(&npa, pid) = SCARG(uap, pid);
@@ -126,18 +126,17 @@ freebsd_sys_ptrace(p, v, retval)
 						      retval);
 
 		case FREEBSD_PT_WRITE_U:
-			if (error = freebsd_ptrace_setregs(&fr,
-				SCARG(uap, addr), SCARG(uap, data)))
+			error = freebsd_ptrace_setregs(&fr,
+			    SCARG(uap, addr), SCARG(uap, data));
+			if (error)
 			    return error;
 			freebsd_to_netbsd_ptrace_regs(&fr,
 						&nrp->regs, &nrp->fpregs);
-#ifdef PT_SETREGS
 			SCARG(&npa, req) = PT_SETREGS;
 			SCARG(&npa, pid) = SCARG(uap, pid);
 			SCARG(&npa, addr) = (caddr_t)&nrp->regs;
 			if ((error = sys_ptrace(p, &npa, retval)) != 0)
 				return error;
-#endif
 #ifdef PT_SETFPREGS
 			SCARG(&npa, req) = PT_SETFPREGS;
 			SCARG(&npa, pid) = SCARG(uap, pid);

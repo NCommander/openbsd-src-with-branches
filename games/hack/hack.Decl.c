@@ -1,9 +1,11 @@
+/*	$OpenBSD: hack.Decl.c,v 1.2 2001/01/28 23:41:43 niklas Exp $	*/
+
 /*
  * Copyright (c) Stichting Mathematisch Centrum, Amsterdam, 1985.
  */
 
 #ifndef lint
-static char rcsid[] = "$NetBSD: hack.Decl.c,v 1.3 1995/03/23 08:29:45 cgd Exp $";
+static char rcsid[] = "$OpenBSD: hack.Decl.c,v 1.2 2001/01/28 23:41:43 niklas Exp $";
 #endif /* not lint */
 
 #include	"hack.h"
@@ -18,7 +20,7 @@ struct rm levl[COLNO][ROWNO];	/* level map */
 #include "def.mkroom.h"
 struct mkroom rooms[MAXNROFROOMS+1];
 coord doors[DOORMAX];
-#endif QUEST
+#endif /* QUEST */
 struct monst *fmon = 0;
 struct trap *ftrap = 0;
 struct gold *fgold = 0;

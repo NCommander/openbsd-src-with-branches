@@ -1,3 +1,5 @@
+/*	$OpenBSD: prompt.c,v 1.4 2001/01/29 01:58:03 niklas Exp $	*/
+
 /*
  * Copyright (c) 1984,1985,1989,1994,1995  Mark Nudelman
  * All rights reserved.
@@ -57,7 +59,7 @@ extern char *editor;
 static char s_proto[] =
   "?n?f%f .?m(file %i of %m) ..?e(END) ?x- Next\\: %x..%t";
 static char m_proto[] =
-  "?n?f%f .?m(file %i of %m) ..?e(END) ?x- Next\\: %x.:?pB%pB\\%:byte %bB?s/%s...%t";
+  "?f%f .?m(file %i of %m) .?e(END) ?x- Next\\: %x.:(?pB%pB\\%:byte %bB?s/%s..).%t";
 static char M_proto[] =
   "?f%f .?n?m(file %i of %m) ..?ltline %lt?L/%L. :byte %bB?s/%s. .?e(END) ?x- Next\\: %x.:?pB%pB\\%..%t";
 static char e_proto[] =
@@ -98,7 +100,7 @@ setmp()
 ap_pos(pos)
 	POSITION pos;
 {
-	sprintf(mp, "%ld", (long)pos);
+	sprintf(mp, "%qd", pos);
 	setmp();
 }
 
@@ -285,9 +287,9 @@ protochar(c, where)
  */
 	static char *
 skipcond(p)
-	register char *p;
+	char *p;
 {
-	register int iflevel;
+	int iflevel;
 
 	/*
 	 * We came in here after processing a ? or :,
@@ -367,8 +369,8 @@ pr_expand(proto, maxwidth)
 	char *proto;
 	int maxwidth;
 {
-	register char *p;
-	register int c;
+	char *p;
+	int c;
 	int where;
 
 	mp = message;

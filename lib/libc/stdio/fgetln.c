@@ -1,5 +1,3 @@
-/*	$NetBSD: fgetln.c,v 1.2 1995/02/02 02:09:10 jtc Exp $	*/
-
 /*-
  * Copyright (c) 1990, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -37,8 +35,7 @@
  */
 
 #if defined(LIBC_SCCS) && !defined(lint)
-/* from: static char sccsid[] = "@(#)fgetline.c	8.1 (Berkeley) 6/4/93"; */
-static char *rcsid = "$Id: fgetln.c,v 1.2 1995/02/02 02:09:10 jtc Exp $";
+static char *rcsid = "$OpenBSD: fgetln.c,v 1.2 1996/08/19 08:32:29 tholo Exp $";
 #endif /* LIBC_SCCS and not lint */
 
 #include <stdio.h>
@@ -117,7 +114,7 @@ fgetln(fp, lenp)
 	 * As a bonus, though, we can leave off the __SMOD.
 	 *
 	 * OPTIMISTIC is length that we (optimistically) expect will
-	 * accomodate the `rest' of the string, on each trip through the
+	 * accommodate the `rest' of the string, on each trip through the
 	 * loop below.
 	 */
 #define OPTIMISTIC 80

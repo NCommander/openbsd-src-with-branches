@@ -1,6 +1,6 @@
 divert(-1)
 #
-# Copyright (c) 1998-2001 Sendmail, Inc. and its suppliers.
+# Copyright (c) 1998-2002 Sendmail, Inc. and its suppliers.
 #	All rights reserved.
 # Copyright (c) 1983, 1995 Eric P. Allman.  All rights reserved.
 # Copyright (c) 1988, 1993
@@ -13,7 +13,7 @@ divert(-1)
 #
 divert(0)
 
-VERSIONID(`$Sendmail: proto.m4,v 8.620 2001/08/20 00:55:08 ca Exp $')
+VERSIONID(`$Sendmail: proto.m4,v 8.649.2.5 2002/08/15 02:39:01 ca Exp $')
 
 # level CF_LEVEL config file format
 V`'CF_LEVEL/ifdef(`VENDOR_NAME', `VENDOR_NAME', `Berkeley')
@@ -291,7 +291,7 @@ _OPTION(TempFileMode, `confTEMP_FILE_MODE', `0600')
 _OPTION(MatchGECOS, `confMATCH_GECOS', `False')
 
 # maximum hop count
-_OPTION(MaxHopCount, `confMAX_HOP', `17')
+_OPTION(MaxHopCount, `confMAX_HOP', `25')
 
 # location of help file
 O HelpFile=ifdef(`HELP_FILE', HELP_FILE, `MAIL_SETTINGS_DIR`'helpfile')
@@ -337,7 +337,8 @@ _OPTION(OldStyleHeaders, `confOLD_STYLE_HEADERS', `False')
 
 # SMTP daemon options
 ifelse(defn(`confDAEMON_OPTIONS'), `', `dnl',
-`errprint(WARNING: `confDAEMON_OPTIONS' is no longer valid.  See cf/README for more information.
+`errprint(WARNING: `confDAEMON_OPTIONS' is no longer valid.
+	Use `DAEMON_OPTIONS()'; see cf/README.
 )'dnl
 `DAEMON_OPTIONS(`confDAEMON_OPTIONS')')
 ifelse(defn(`_DPO_'), `',
@@ -394,6 +395,10 @@ O QueueDirectory=ifdef(`QUEUE_DIR', QUEUE_DIR, `/var/spool/mqueue')
 
 # key for shared memory; 0 to turn off
 _OPTION(SharedMemoryKey, `confSHARED_MEMORY_KEY', `0')
+
+ifdef(`confSHARED_MEMORY_KEY_FILE', `dnl
+# file to store key for shared memory (if SharedMemoryKey = -1)
+O SharedMemoryKeyFile=confSHARED_MEMORY_KEY_FILE')
 
 # timeouts (many of these)
 _OPTION(Timeout.initial, `confTO_INITIAL', `5m')
@@ -474,7 +479,7 @@ _OPTION(RefuseLA, `confREFUSE_LA', `12')
 _OPTION(DelayLA, `confDELAY_LA', `0')
 
 # maximum number of children we allow at one time
-_OPTION(MaxDaemonChildren, `confMAX_DAEMON_CHILDREN', `12')
+_OPTION(MaxDaemonChildren, `confMAX_DAEMON_CHILDREN', `0')
 
 # maximum number of new connections per second
 _OPTION(ConnectionRateThrottle, `confCONNECTION_RATE_THROTTLE', `0')
@@ -616,7 +621,7 @@ _OPTION(TLSSrvOptions, `confTLS_SRV_OPTIONS', `')
 # Input mail filters
 _OPTION(InputMailFilters, `confINPUT_MAIL_FILTERS', `')
 
-ifdef(`confINPUT_MAIL_FILTERS', `dnl
+ifelse(len(X`'_MAIL_FILTERS_DEF), `1', `dnl', `dnl
 # Milter options
 _OPTION(Milter.LogLevel, `confMILTER_LOG_LEVEL', `')
 _OPTION(Milter.macros.connect, `confMILTER_MACROS_CONNECT', `')
@@ -862,6 +867,11 @@ dnl but add a trailing dot to qualified hostnames so other rules will work
 dnl should we do this for every hostname: even unqualified?
 R$* CC $* $| $* < @ $+.$+ > $*	$: $3 < @ $4.$5 . > $6
 R$* CC $* $| $*			$: $3
+ifdef(`_FFR_NOCANONIFY_HEADERS', `dnl
+# do not canonify header addresses
+R$* $| $* < @ $* $~P > $*	$: $&{addr_type} $| $2 < @ $3 $4 > $5
+R$* h $* $| $* < @ $+.$+ > $*	$: $3 < @ $4.$5 . > $6
+R$* h $* $| $*			$: $3', `dnl')
 # pass to name server to make hostname canonical
 R$* $| $* < @ $* > $*		$: $2 < @ $[ $3 $] > $4')
 dnl remove {daemon_flags} for other cases
@@ -1047,8 +1057,9 @@ R<@> $+ + $+ < @ $+ . >	$: < $(virtuser + + @ $3 $@ $1 $@ $2 $@ +$2 $: @ $) > $1
 dnl +*@domain
 R<@> $+ + $* < @ $+ . >	$: < $(virtuser + * @ $3 $@ $1 $@ $2 $@ +$2 $: @ $) > $1 + $2 < @ $3 . >
 dnl @domain if +detail exists
-R<@> $+ + $* < @ $+ . >	$: < $(virtuser @ $3 $@ $1 $@ $2 $@ +$2 $: @ $) > $1 + $2 < @ $3 . >
-dnl without +detail (or no match)
+dnl if no match, change marker to prevent a second @domain lookup
+R<@> $+ + $* < @ $+ . >	$: < $(virtuser @ $3 $@ $1 $@ $2 $@ +$2 $: ! $) > $1 + $2 < @ $3 . >
+dnl without +detail
 R<@> $+ < @ $+ . >	$: < $(virtuser @ $2 $@ $1 $: @ $) > $1 < @ $2 . >
 dnl no match
 R<@> $+			$: $1
@@ -1168,6 +1179,7 @@ R$+			$: $1 $| $&h $| $&{Host}	check h and {Host}
 R$+ $| $|		$: $(macro {Host} $@ $) $1	no h or {Host}
 R$+ $| $| $+		$: $1			h not set, {Host} set
 R$+ $| +$* $| $*	$: $1			h is +detail, {Host} set
+R$+ $| $* @ $+ $| $*	$: $(macro {Host} $@ @$3 $) $1	set {Host} to host in h
 R$+ $| $+ $| $*		$: $(macro {Host} $@ @$2 $) $1	set {Host} to h
 ')dnl
 
@@ -1411,6 +1423,10 @@ SLDAPExpand
 # do the LDAP lookups
 R<$+><$+><$*>	$: <$(ldapmra $2 $: $)> <$(ldapmh $2 $: $)> <$1> <$2> <$3>
 
+# look for temporary failures (return original address, MTA will queue up)
+R<$* <TMPF>> <$*> <$+> <$+> <$*>	$@ $3
+R<$*> <$* <TMPF>> <$+> <$+> <$*>	$@ $3
+
 # if mailRoutingAddress and local or non-existant mailHost,
 # return the new mailRoutingAddress
 ifelse(_LDAP_ROUTE_DETAIL_, `_PRESERVE_', `dnl
@@ -1418,6 +1434,7 @@ R<$+@$+> <$=w> <$+> <$+> <$*>	$@ $>Parse0 $>canonify $1 $6 @ $2
 R<$+@$+> <> <$+> <$+> <$*>	$@ $>Parse0 $>canonify $1 $5 @ $2')
 R<$+> <$=w> <$+> <$+> <$*>	$@ $>Parse0 $>canonify $1
 R<$+> <> <$+> <$+> <$*>		$@ $>Parse0 $>canonify $1
+
 
 # if mailRoutingAddress and non-local mailHost,
 # relay to mailHost with new mailRoutingAddress
@@ -1434,6 +1451,7 @@ R<$+> <$+> <$+> <$+> <$*>	$>LDAPMailertable <$2> $>canonify $1',
 # if no mailRoutingAddress and local mailHost,
 # return original address
 R<> <$=w> <$+> <$+> <$*>	$@ $2
+
 
 # if no mailRoutingAddress and non-local mailHost,
 # relay to mailHost with original address
@@ -1515,6 +1533,9 @@ R<?> <[$+:$-]> <$+> <$- $-> <$*>	$: $>D <[$1]> <$3> <$4 $5> <$6>')
 dnl not found, but subdomain: try again
 dnl   1  2    3    4  5    6
 R<?> <$+.$+> <$+> <$- $-> <$*>	$@ $>D <$2> <$3> <$4 $5> <$6>
+ifdef(`_FFR_LOOKUPTAG_', `dnl lookup Tag:
+dnl   1    2      3    4
+R<?> <$+> <$+> <! $-> <$*>	$: < $(access $3`'_TAG_DELIM_ $: ? $) > <$1> <$2> <! $3> <$4>', `dnl')
 dnl not found, no subdomain: return <default> and <passthru>
 dnl   1    2    3  4    5
 R<?> <$+> <$+> <$- $-> <$*>	$@ <$2> <$5>
@@ -1668,7 +1689,7 @@ R$* $| $* $| $*		$@ $>"Basic_check_relay" $1 $| $2
 
 SBasic_check_relay
 # check for deferred delivery mode
-R$*			$: < ${deliveryMode} > $1
+R$*			$: < $&{deliveryMode} > $1
 R< d > $*		$@ deferred
 R< $* > $*		$: $2
 
@@ -1683,6 +1704,8 @@ dnl workspace: <result-of-lookup> (<>|<{client_addr}>) | OK
 R<$={Accept}> <$*>	$@ $1				return value of lookup
 R<REJECT> <$*>		$#error ifdef(`confREJECT_MSG', `$: "confREJECT_MSG"', `$@ 5.7.1 $: "550 Access denied"')
 R<DISCARD> <$*>		$#discard $: discard
+ifdef(`_FFR_QUARANTINE',
+`R<QUARANTINE:$+> <$*>	$#error $@ quarantine $: $1', `dnl')
 dnl error tag
 R<ERROR:$-.$-.$-:$+> <$*>	$#error $@ $1.$2.$3 $: $4
 R<ERROR:$+> <$*>		$#error $: $1
@@ -1696,7 +1719,7 @@ dnl workspace: ignored...
 R$*			$: $&{client_addr}
 R$-.$-.$-.$-		$: <?> $(host $4.$3.$2.$1._RBL_. $: OK $)
 R<?>OK			$: OKSOFAR
-R<?>$+			$#error $@ 5.7.1 $: "550 Mail from " $&{client_addr} " refused by blackhole site _RBL_"',
+R<?>$+			$#error $@ 5.7.1 $: "550 Rejected: " $&{client_addr} " listed at _RBL_"',
 `dnl')
 undivert(8)
 
@@ -1712,7 +1735,7 @@ R$* $| $*		$@ $>"Basic_check_mail" $1
 
 SBasic_check_mail
 # check for deferred delivery mode
-R$*			$: < ${deliveryMode} > $1
+R$*			$: < $&{deliveryMode} > $1
 R< d > $*		$@ deferred
 R< $* > $*		$: $2
 
@@ -1777,8 +1800,10 @@ dnl workspace: <?> CanonicalAddress (i.e. address in canonical form localpart<@h
 dnl there is nothing behind the <@host> so no trailing $* needed
 R<?> $* < @ $+ . >	<?> $1 < @ $2 >			strip trailing dots
 # handle non-DNS hostnames (*.bitnet, *.decnet, *.uucp, etc)
-R<?> $* < @ $* $=P >	$: <OK> $1 < @ $2 $3 >
+R<?> $* < @ $* $=P >	$: <_RES_OK_> $1 < @ $2 $3 >
 dnl workspace <mark> CanonicalAddress	where mark is ? or OK
+dnl A sender address with my local host name ($j) is safe
+R<?> $* < @ $j >	$: <_RES_OK_> $1 < @ $j >
 ifdef(`_ACCEPT_UNRESOLVABLE_DOMAINS_',
 `R<?> $* < @ $+ >	$: <_RES_OK_> $1 < @ $2 >		... unresolvable OK',
 `R<?> $* < @ $+ >	$: <? $(resolve $2 $: $2 <PERM> $) > $1 < @ $2 >
@@ -1817,7 +1842,7 @@ R$* u $* $| <?> $*	$: <_RES_OK_> $3
 dnl remove daemon_flags
 R$* $| $*		$: $2
 R<?> $*			$: < ? $&{client_name} > $1
-R<?> $*			$@ <OK>				...local unqualed ok
+R<?> $*			$@ <_RES_OK_>			...local unqualed ok
 R<? $+> $*		$#error $@ 5.5.4 $: "_CODE553 Domain name required for sender address " $&f
 							...remote is not')
 # check results
@@ -1828,6 +1853,8 @@ R<PERM> $*		$#error $@ 5.1.8 $: "_CODE553 Domain of sender address " $&f " does 
 ifdef(`_ACCESS_TABLE_', `dnl
 R<$={Accept}> $*	$# $1		accept from access map
 R<DISCARD> $*		$#discard $: discard
+ifdef(`_FFR_QUARANTINE',
+`R<QUARANTINE:$+> $*	$#error $@ quarantine $: $1', `dnl')
 R<REJECT> $*		$#error ifdef(`confREJECT_MSG', `$: "confREJECT_MSG"', `$@ 5.7.1 $: "550 Access denied"')
 dnl error tag
 R<ERROR:$-.$-.$-:$+> $*		$#error $@ $1.$2.$3 $: $4
@@ -1852,7 +1879,7 @@ SBasic_check_rcpt
 R<>			$#error $@ nouser $: "553 User address required"
 R$@			$#error $@ nouser $: "553 User address required"
 # check for deferred delivery mode
-R$*			$: < ${deliveryMode} > $1
+R$*			$: < $&{deliveryMode} > $1
 R< d > $*		$@ deferred
 R< $* > $*		$: $2
 
@@ -1965,6 +1992,8 @@ dnl maybe we should stop checks already here (if SPAM_xyx)?
 R<$={SpamTag}> <$*>	$: @ $2		mark address as no match')
 R<REJECT> $*		$#error $@ 5.2.1 $: confRCPTREJ_MSG
 R<DISCARD> $*		$#discard $: discard
+ifdef(`_FFR_QUARANTINE',
+`R<QUARANTINE:$+> $*	$#error $@ quarantine $: $1', `dnl')
 dnl error tag
 R<ERROR:$-.$-.$-:$+> $*		$#error $@ $1.$2.$3 $: $4
 R<ERROR:$+> $*		$#error $: $1
@@ -2073,6 +2102,12 @@ R$=R $*			$@ RELAY		relayable IP address
 ifdef(`_ACCESS_TABLE_', `dnl
 R$*			$: $>A <$1> <?> <+ Connect> <$1>
 R<RELAY> $* 		$@ RELAY		relayable IP address
+ifdef(`_FFR_REJECT_IP_IN_CHECK_RCPT_',`dnl
+dnl this will cause rejections in cases like:
+dnl Connect:My.Host.Domain	RELAY
+dnl Connect:My.Net		REJECT
+dnl since in check_relay client_name is checked before client_addr
+R<REJECT> $* 		$@ REJECT		rejected IP address')
 ifdef(`_ATMPF_', `R<_ATMPF_> $*		$#TEMP $@ 4.3.0 $: "451 Temporary system failure. Please try again later."', `dnl')
 R<$*> <$*>		$: $2', `dnl')
 R$*			$: [ $1 ]		put brackets around it...
@@ -2090,7 +2125,7 @@ ifdef(`_RELAY_LOCAL_FROM_', `dnl
 # check whether local FROM is ok
 R<?> $+ < @ $=w >	$@ RELAY		FROM local', `dnl')
 ifdef(`_RELAY_DB_FROM_', `dnl
-R<?> $+ < @ $+ >	$: <@> $>SearchList <! From> $| <F:$1@$2> ifdef(`_RELAY_DB_FROM_DOMAIN_', `<D:$2>') <>
+R<?> $+ < @ $+ >	$: <@> $>SearchList <! From> $| <F:$1@$2> ifdef(`_RELAY_DB_FROM_DOMAIN_', ifdef(`_RELAY_HOSTS_ONLY_', `<E:$2>', `<D:$2>')) <>
 R<@> <RELAY>		$@ RELAY		RELAY FROM sender ok
 ifdef(`_ATMPF_', `R<@> <_ATMPF_>		$#TEMP $@ 4.3.0 $: "451 Temporary system failure. Please try again later."', `dnl')
 ', `dnl
@@ -2184,10 +2219,13 @@ R<$*> $+		$@ NOSPAMHATER		everyone else: stop
 dnl',`dnl')
 dnl run further checks: check_mail
 dnl should we "clean up" $&f?
-R$*			$: $1 $| $>checkmail <$&f>
+ifdef(`_FFR_MAIL_MACRO',
+`R$*			$: $1 $| $>checkmail $&{mail_from}',
+`R$*			$: $1 $| $>checkmail <$&f>')
+dnl recipient (canonical format) $| result of checkmail
 R$* $| $#$*		$#$2
 dnl run further checks: check_relay
-R$*			$: $1 $| $>checkrelay $&{client_name} $| $&{client_addr}
+R$* $| $*		$: $1 $| $>checkrelay $&{client_name} $| $&{client_addr}
 R$* $| $#$*		$#$2
 R$* $| $*		$: $1
 ', `dnl')
@@ -2416,7 +2454,7 @@ R$* $| $#$*		$#$2
 R$* $| $*		$: $1', `dnl')
 R$*		$: $>D <$&{client_name}> <?> <! SRV_FEAT_TAG> <>
 R<?>$*		$: $>A <$&{client_addr}> <?> <! SRV_FEAT_TAG> <>
-R<?>$*		$: <$(access SRV_FEAT_TAG: $: ? $)>
+R<?>$*		$: <$(access SRV_FEAT_TAG`'_TAG_DELIM_ $: ? $)>
 R<?>$*		$@ OK
 ifdef(`_ATMPF_', `dnl tempfail?
 R<$* _ATMPF_>$*	$#temp', `dnl')
@@ -2433,12 +2471,12 @@ R$* $| $#$*		$#$2
 R$* $| $*		$: $1', `dnl')
 R$*		$: $>D <$&{server_name}> <?> <! TLS_TRY_TAG> <>
 R<?>$*		$: $>A <$&{server_addr}> <?> <! TLS_TRY_TAG> <>
-R<?>$*		$: <$(access TLS_TRY_TAG: $: ? $)>
+R<?>$*		$: <$(access TLS_TRY_TAG`'_TAG_DELIM_ $: ? $)>
 R<?>$*		$@ OK
 ifdef(`_ATMPF_', `dnl tempfail?
 R<$* _ATMPF_>$*	$#error $@ 4.3.0 $: "451 Temporary system failure. Please try again later."', `dnl')
 R<NO>$*		$#error $@ 5.7.1 $: "550 do not try TLS with " $&{server_name} " ["$&{server_addr}"]"
-  
+ 
 ######################################################################
 ###  tls_rcpt: is connection with server "good" enough?
 ###	(done in client, per recipient)
@@ -2697,13 +2735,13 @@ R<?> $*			$@ NO		not authenticated
 ifdef(`_CERT_REGEX_ISSUER_', `dnl
 R$*			$: $(CERTIssuer $&{cert_issuer} $)',
 `R$*			$: $&{cert_issuer}')
-R$+			$: $(access CERTISSUER:$1 $)
+R$+			$: $(access CERTISSUER`'_TAG_DELIM_`'$1 $)
 dnl use $# to stop further checks (delay_check)
 RRELAY			$# RELAY
 ifdef(`_CERT_REGEX_SUBJECT_', `dnl
 RSUBJECT		$: <@> $(CERTSubject $&{cert_subject} $)',
 `RSUBJECT		$: <@> $&{cert_subject}')
-R<@> $+			$: <@> $(access CERTSUBJECT:$1 $)
+R<@> $+			$: <@> $(access CERTSUBJECT`'_TAG_DELIM_`'$1 $)
 R<@> RELAY		$# RELAY
 R$*			$: NO', `dnl')
 
@@ -2732,7 +2770,7 @@ dnl', `dnl
 ifdef(`_ACCESS_TABLE_', `dnl
 R$*		$: $1 $| $>D <$&{server_name}> <?> <! AuthInfo> <>
 R$* $| <?>$*	$: $1 $| $>A <$&{server_addr}> <?> <! AuthInfo> <>
-R$* $| <?>$*	$: $1 $| <$(access AuthInfo: $: ? $)> <>
+R$* $| <?>$*	$: $1 $| <$(access AuthInfo`'_TAG_DELIM_ $: ? $)> <>
 R$* $| <?>$*	$@ no				no authinfo available
 R$* $| <$*> <>	$# $2
 dnl', `dnl')')

@@ -43,6 +43,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include <assert.h>
+#include <utime.h>
 
 #ifdef HAVE_SYS_TYPES_H
 #include <sys/types.h>
@@ -94,5 +95,7 @@
 #ifdef HAVE_OPENSSL
 #define des_new_random_key des_random_key
 #endif
+
+extern char *__progname;
 
 #endif /*  __adm_locl_h */

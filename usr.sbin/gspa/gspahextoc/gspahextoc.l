@@ -35,10 +35,10 @@
 	unsigned long binads;
 
 
-	void dumpstart __P((char *address));
-	void dumpbuf __P((void));
-	void initbuf __P((char *address));
-        void checkbuf __P((void));
+	void dumpstart(char *address);
+	void dumpbuf(void);
+	void initbuf(char *address);
+        void checkbuf(void);
 %%
 :[0-9A-Za-z]+	{if (bufptr>0) dumpbuf(); dumpstart(yytext+1);}
 @[0-9A-Za-z]+	{if (bufptr>0) dumpbuf(); initbuf(yytext+1);}
@@ -113,6 +113,7 @@ main(argc, argv)
 
 	printf(" * Do not edit manually..\n");
 	printf(" */\n");
+	printf("#include <sys/types.h>\n");
 	printf("u_int16_t tmscode[] = {\n\t");
 	yylex();
 	if (bufptr>0)

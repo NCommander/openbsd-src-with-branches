@@ -1,3 +1,4 @@
+/*	$OpenBSD: cdefs.h,v 1.3 2001/09/01 15:49:05 drahn Exp $	*/
 /*	$NetBSD: cdefs.h,v 1.1 1996/09/30 16:34:21 ws Exp $	*/
 
 /*
@@ -5,8 +6,8 @@
  * Public domain.
  */
 
-#ifndef	_MACHINE_CDEFS_H_
-#define	_MACHINE_CDEFS_H_
+#ifndef	_POWERPC_CDEFS_H_
+#define	_POWERPC_CDEFS_H_
 
 #ifdef __STDC__
 #define _C_LABEL(x)	_STRING(_ ## x)
@@ -14,29 +15,9 @@
 #define _C_LABEL(x)	_STRING(_/**/x)
 #endif
 
-#if 0
-#ifdef __GNUC__
-#ifdef __STDC__
-#define __indr_reference(sym,alias)	\
-	__asm__(".stabs \"_" #alias "\",11,0,0,0");	\
-	__asm__(".stabs \"_" #sym "\",1,0,0,0")
-#define __warn_references(sym,msg)	\
-	__asm__(".stabs \"" msg "\",30,0,0,0");		\
-	__asm__(".stabs \"_" #sym "\",1,0,0,0")
-#else
-#define __indr_reference(sym,alias)	\
-	__asm__(".stabs \"_/**/alias\",11,0,0,0");	\
-	__asm__(".stabs \"_/**/sym\",1,0,0,0")
-#define __warn_references(sym,msg)	\
-	__asm__(".stabs msg,30,0,0,0");			\
-	__asm__(".stabs \"_/**/sym\",1,0,0,0")
-#endif
-#endif
-#else
-#define __warn_references(sym,msg)
-/*
-#define __indr_reference(sym,alias)
-*/
-#endif
+#define __weak_alias(alias,sym)                                         \
+    __asm__(".weak " __STRING(alias) " ; " __STRING(alias) " = " __STRING(sym))
+#define	__warn_references(sym,msg)					\
+    __asm__(".section .gnu.warning." __STRING(sym) " ; .ascii \"" msg "\" ; .text")
 
-#endif /* !_MACHINE_CDEFS_H_ */
+#endif /* !_POWERPC_CDEFS_H_ */

@@ -1,4 +1,5 @@
-/*	$NetBSD: forward.c,v 1.6 1994/11/23 07:42:02 jtc Exp $	*/
+/*	$OpenBSD: forward.c,v 1.13 2001/11/19 19:02:16 mpech Exp $	*/
+/*	$NetBSD: forward.c,v 1.7 1996/02/13 16:49:10 ghudson Exp $	*/
 
 /*-
  * Copyright (c) 1991, 1993
@@ -40,24 +41,26 @@
 #if 0
 static char sccsid[] = "@(#)forward.c	8.1 (Berkeley) 6/6/93";
 #endif
-static char rcsid[] = "$NetBSD: forward.c,v 1.6 1994/11/23 07:42:02 jtc Exp $";
+static char rcsid[] = "$OpenBSD: forward.c,v 1.13 2001/11/19 19:02:16 mpech Exp $";
 #endif /* not lint */
 
 #include <sys/types.h>
 #include <sys/stat.h>
-#include <sys/time.h>
 #include <sys/mman.h>
+#include <sys/event.h>
 
-#include <limits.h>
-#include <fcntl.h>
+#include <err.h>
 #include <errno.h>
-#include <unistd.h>
+#include <fcntl.h>
+#include <limits.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <unistd.h>
+
 #include "extern.h"
 
-static void rlines __P((FILE *, long, struct stat *));
+static int rlines(FILE *, long, struct stat *);
 
 /*
  * forward -- display the file, from an offset, forward.
@@ -88,9 +91,10 @@ forward(fp, style, off, sbp)
 	long off;
 	struct stat *sbp;
 {
-	register int ch;
-	struct timeval second;
-	fd_set zero;
+	int ch;
+	struct stat nsb;
+	int kq;
+	struct kevent ke;
 
 	switch(style) {
 	case FBYTES:
@@ -135,88 +139,138 @@ forward(fp, style, off, sbp)
 				return;
 			}
 		} else if (off == 0) {
-			while (getc(fp) != EOF);
+			while (getc(fp) != EOF)
+				;
 			if (ferror(fp)) {
 				ierr();
 				return;
 			}
-		} else
-			bytes(fp, off);
+		} else {
+			if (bytes(fp, off))
+				return;
+		}
 		break;
 	case RLINES:
-		if (S_ISREG(sbp->st_mode))
+		if (S_ISREG(sbp->st_mode)) {
 			if (!off) {
 				if (fseek(fp, 0L, SEEK_END) == -1) {
 					ierr();
 					return;
 				}
-			} else
-				rlines(fp, off, sbp);
-		else if (off == 0) {
-			while (getc(fp) != EOF);
+			} else if (rlines(fp, off, sbp) != 0)
+				lines(fp, off);
+		} else if (off == 0) {
+			while (getc(fp) != EOF)
+				;
 			if (ferror(fp)) {
 				ierr();
 				return;
 			}
-		} else
-			lines(fp, off);
+		} else {
+			if (lines(fp, off))
+				return;
+		}
 		break;
 	}
 
-	/*
-	 * We pause for one second after displaying any data that has
-	 * accumulated since we read the file.
-	 */
-	if (fflag) {
-		FD_ZERO(&zero);
-		second.tv_sec = 1;
-		second.tv_usec = 0;
+	kq = -1;
+kq_retry:
+	if (fflag && ((kq = kqueue()) >= 0)) {
+		ke.ident = fileno(fp);
+		ke.flags = EV_ENABLE|EV_ADD|EV_CLEAR;
+		ke.filter = EVFILT_READ;
+		ke.fflags = ke.data = 0;
+		ke.udata = NULL;
+		if (kevent(kq, &ke, 1, NULL, 0, NULL) < 0) {
+			close(kq);
+			kq = -1;
+		} else if (S_ISREG(sbp->st_mode)) {
+			ke.ident = fileno(fp);
+			ke.flags = EV_ENABLE|EV_ADD|EV_CLEAR;
+			ke.filter = EVFILT_VNODE;
+			ke.fflags = NOTE_DELETE | NOTE_RENAME;
+			if (kevent(kq, &ke, 1, NULL, 0, NULL) < 0) {
+				close(kq);
+				kq = -1;
+			}
+		}
 	}
 
 	for (;;) {
-		while ((ch = getc(fp)) != EOF)
+		while (!feof(fp) && (ch = getc(fp)) != EOF)
 			if (putchar(ch) == EOF)
 				oerr();
 		if (ferror(fp)) {
 			ierr();
+			if (kq != -1)
+				close(kq);
 			return;
 		}
 		(void)fflush(stdout);
 		if (!fflag)
 			break;
-		/* Sleep(3) is eight system calls.  Do it fast. */
-		if (select(0, &zero, &zero, &zero, &second) == -1)
-			err(1, "select: %s", strerror(errno));
 		clearerr(fp);
+		if (kq < 0 || kevent(kq, NULL, 0, &ke, 1, NULL) <= 0) {
+			sleep(1);
+		} else if (ke.filter == EVFILT_READ) {
+			continue;
+		} else {
+			/*
+			 * File was renamed or deleted.
+			 *
+			 * Continue to look at it until a new file reappears
+			 * with the same name. 
+			 * Fall back to the old algorithm for that.
+			 */
+			close(kq);
+			kq = -1;
+		}
+
+		if (is_stdin || stat(fname, &nsb) != 0)
+			continue;
+		/* Reopen file if the inode changes or file was truncated */
+		if (nsb.st_ino != sbp->st_ino) {
+			warnx("%s has been replaced, reopening.", fname);
+			if ((fp = freopen(fname, "r", fp)) == NULL) {
+				ierr();
+				if (kq >= 0)
+					close(kq);
+				return;
+			}
+			(void)memcpy(sbp, &nsb, sizeof(nsb));
+			goto kq_retry;
+		} else if (nsb.st_size < sbp->st_size) {
+			warnx("%s has been truncated, resetting.", fname);
+			rewind(fp);
+			(void)memcpy(sbp, &nsb, sizeof(nsb));
+		}
 	}
+	if (kq >= 0)
+		close(kq);
 }
 
 /*
  * rlines -- display the last offset lines of the file.
  */
-static void
+static int
 rlines(fp, off, sbp)
 	FILE *fp;
 	long off;
 	struct stat *sbp;
 {
-	register off_t size;
-	register char *p;
+	off_t size;
+	char *p;
 	char *start;
 
 	if (!(size = sbp->st_size))
-		return;
+		return (0);
 
-	if (size > SIZE_T_MAX) {
-		err(0, "%s: %s", fname, strerror(EFBIG));
-		return;
-	}
+	if (size > SIZE_T_MAX)
+		return (1);
 
-	if ((start = mmap(NULL, (size_t)size,
-	    PROT_READ, 0, fileno(fp), (off_t)0)) == (caddr_t)-1) {
-		err(0, "%s: %s", fname, strerror(EFBIG));
-		return;
-	}
+	if ((start = mmap(NULL, (size_t)size, PROT_READ, MAP_PRIVATE,
+	    fileno(fp), (off_t)0)) == MAP_FAILED)
+		return (1);
 
 	/* Last char is special, ignore whether newline or not. */
 	for (p = start + size - 1; --size;)
@@ -230,10 +284,12 @@ rlines(fp, off, sbp)
 	WR(p, size);
 	if (fseek(fp, (long)sbp->st_size, SEEK_SET) == -1) {
 		ierr();
-		return;
+		return (1);
 	}
 	if (munmap(start, (size_t)sbp->st_size)) {
-		err(0, "%s: %s", fname, strerror(errno));
-		return;
+		ierr();
+		return (1);
 	}
+
+	return (0);
 }

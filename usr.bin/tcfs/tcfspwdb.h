@@ -1,3 +1,5 @@
+/*	$OpenBSD$	*/
+
 /*
  *	Transparent Cryptographic File System (TCFS) for NetBSD 
  *	Author and mantainer: 	Luigi Catuogno [luicat@tcfs.unisa.it]
@@ -26,14 +28,14 @@
 
 typedef struct tcfspwdb_r
 {
-	char user[UserLen];
-	char upw[PassLen];
+	char user[LOGIN_NAME_MAX];
+	char upw[UUKEYSIZE + 1];
 } tcfspwdb;
 
 typedef struct tcfsgpwdb_r
 {
-	char user[UserLen];
-	char gkey[PassLen];
+	char user[LOGIN_NAME_MAX];
+	char gkey[UUGKEYSIZE + 1];
 	gid_t gid;
 	int n;
 	int soglia;

@@ -1,3 +1,5 @@
+/*	$OpenBSD: device.h,v 1.4 2002/04/01 17:09:09 danh Exp $ */
+
 /*
  * Copyright (c) 1993-95 Mats O Jansson.  All rights reserved.
  *
@@ -26,27 +28,17 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
- *	$Id: device.h,v 1.3 1995/09/28 10:49:41 moj Exp $
+ *	$OpenBSD: device.h,v 1.4 2002/04/01 17:09:09 danh Exp $
  *
  */
 
 #ifndef _DEVICE_H_
 #define _DEVICE_H_
 
-#ifdef NO__P
 #ifdef	DEV_NEW_CONF
-void	deviceEthAddr (/* char *,u_char * */);
+void	deviceEthAddr(char *,u_char *);
 #endif
-void	deviceInitOne (/* char * */);
-void	deviceInitAll (/* void */);
-#else
-__BEGIN_DECLS
-#ifdef	DEV_NEW_CONF
-void	deviceEthAddr __P((char *,u_char *));
-#endif
-void	deviceInitOne __P((char *));
-void	deviceInitAll __P((void));
-__END_DECLS
-#endif
+void	deviceInitOne(char *);
+void	deviceInitAll(void);
 
-#endif _DEVICE_H_
+#endif /* _DEVICE_H_ */

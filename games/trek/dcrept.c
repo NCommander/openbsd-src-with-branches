@@ -1,3 +1,4 @@
+/*	$OpenBSD: dcrept.c,v 1.2 1998/08/19 07:41:23 pjanzen Exp $	*/
 /*	$NetBSD: dcrept.c,v 1.3 1995/04/22 10:58:43 cgd Exp $	*/
 
 /*
@@ -37,11 +38,12 @@
 #if 0
 static char sccsid[] = "@(#)dcrept.c	8.1 (Berkeley) 5/31/93";
 #else
-static char rcsid[] = "$NetBSD: dcrept.c,v 1.3 1995/04/22 10:58:43 cgd Exp $";
+static char rcsid[] = "$OpenBSD: dcrept.c,v 1.2 1998/08/19 07:41:23 pjanzen Exp $";
 #endif
 #endif /* not lint */
 
-# include	"trek.h"
+#include <stdio.h>
+#include "trek.h"
 
 /*
 **  damage control report
@@ -55,12 +57,14 @@ static char rcsid[] = "$NetBSD: dcrept.c,v 1.3 1995/04/22 10:58:43 cgd Exp $";
 **	fix things if you are docked.
 */
 
-dcrept()
+void
+dcrept(v)
+	int v;
 {
-	register int		i, f;
-	double			x;
-	double			m1, m2;
-	register struct event	*e;
+	int		i, f;
+	double		x;
+	double		m1, m2;
+	struct event	*e;
 
 	/* set up the magic factors to output the time till fixed */
 	if (Ship.cond == DOCKED)

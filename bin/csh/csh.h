@@ -1,3 +1,4 @@
+/*	$OpenBSD: csh.h,v 1.7 2000/10/30 17:16:46 millert Exp $	*/
 /*	$NetBSD: csh.h,v 1.9 1995/03/21 09:02:40 cgd Exp $	*/
 
 /*-
@@ -85,7 +86,7 @@ typedef void *ptr_t;
 
 #include "const.h"
 #include "char.h"
-#include "err.h"
+#include "error.h"
 
 #define xmalloc(i)	Malloc(i)
 #define xrealloc(p, i)	Realloc(p, i)
@@ -138,7 +139,6 @@ int     onelflg;		/* 2 -> need line for -t, 1 -> exit on read */
 Char   *ffile;			/* Name of shell file for $0 */
 
 char   *seterr;			/* Error message from scanner/parser */
-Char   *shtemp;			/* Temp name for << shell files in /tmp */
 
 #include <sys/types.h>
 #include <sys/time.h>
@@ -152,8 +152,8 @@ struct rusage ru0;
  */
 Char   *doldol;			/* Character pid for $$ */
 int	backpid;		/* Pid of the last background process */
-int     uid, euid;		/* Invokers uid */
-int     gid, egid;		/* Invokers gid */
+uid_t	uid, euid;		/* Invokers uid */
+gid_t	gid, egid;		/* Invokers gid */
 time_t  chktim;			/* Time mail last checked */
 int     shpgrp;			/* Pgrp of shell */
 int     tpgrp;			/* Terminal process group */
@@ -184,6 +184,7 @@ int   OLDSTD;			/* Old standard input (def for cmds) */
 
 #include <setjmp.h>
 jmp_buf reslab;
+int exitset;
 
 #define	setexit()	(setjmp(reslab))
 #define	reset()		longjmp(reslab, 1)
@@ -262,8 +263,8 @@ extern int aret;		/* What was the last character returned */
 #define	fbuf	B.Bfbuf
 
 /*
- * The shell finds commands in loops by reseeking the input
- * For whiles, in particular, it reseeks to the beginning of the
+ * The shell finds commands in loops by re-seeking the input
+ * For whiles, in particular, it re-seeks to the beginning of the
  * line the while was on; hence the while placement restrictions.
  */
 struct Ain lineloc;
@@ -307,7 +308,7 @@ Char   *lap;
  *
  * Each command is parsed to a tree of command structures and
  * flags are set bottom up during this process, to be propagated down
- * as needed during the semantics/exeuction pass (sh.sem.c).
+ * as needed during the semantics/execution pass (sh.sem.c).
  */
 struct command {
     short   t_dtyp;		/* Type of node 		 */
@@ -359,7 +360,7 @@ struct command {
 
 extern struct biltins {
     char   *bname;
-    void    (*bfunct) __P((Char **, struct command *));
+    void    (*bfunct)(Char **, struct command *);
     short   minargs, maxargs;
 }       bfunc[];
 extern int nbfunc;

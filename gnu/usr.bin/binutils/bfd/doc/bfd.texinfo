@@ -64,7 +64,7 @@ notice identical to this one except for the removal of this paragraph
 
 @tex
 \def\$#1${{#1}}  % Kluge: collect RCS revision info without $...$
-\xdef\manvers{\$Revision: 1.2.2.1 $}  % For use in headers, footers too
+\xdef\manvers{\$Revision: 1.1.1.4 $}  % For use in headers, footers too
 {\parskip=0pt
 \hfill Cygnus Support\par
 \hfill sac\@cygnus.com\par

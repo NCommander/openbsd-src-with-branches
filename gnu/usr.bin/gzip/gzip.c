@@ -45,7 +45,7 @@ static char  *license_msg[] = {
  */
 
 #ifdef RCSID
-static char rcsid[] = "$Id: gzip.c,v 1.2 1993/10/15 23:05:39 jtc Exp $";
+static char rcsid[] = "$Id: gzip.c,v 1.4 1998/11/22 20:03:21 deraadt Exp $";
 #endif
 
 #include <ctype.h>
@@ -521,7 +521,13 @@ int main (argc, argv)
             if (*optarg == '.') optarg++;
 #endif
             z_len = strlen(optarg);
-            strcpy(z_suffix, optarg);
+	    if (z_len > sizeof(z_suffix)-1) {
+		fprintf(stderr, "%s: -S suffix too long\n", progname);
+		usage();
+		do_exit(ERROR);
+	    }
+            strncpy(z_suffix, optarg, sizeof z_suffix-1);
+	    z_suffix[sizeof z_suffix-1] = '\0';
             break;
 	case 't':
 	    test = decompress = to_stdout = 1;
@@ -1005,6 +1011,15 @@ local int get_istat(iname, sbuf)
 #ifdef NO_MULTIPLE_DOTS
     char *dot; /* pointer to ifname extension, or NULL */
 #endif
+    int max_suffix_len = (z_len > 3 ? z_len : 3);
+
+    /* Make sure there is enough room in ifname for iname + suffix. */
+    if (strlen(iname) >= sizeof(ifname) - max_suffix_len) {
+	errno = ENAMETOOLONG;
+	perror(iname);
+	exit_code = ERROR;
+	return ERROR;
+    }
 
     strcpy(ifname, iname);
 
@@ -1573,7 +1588,6 @@ local int check_ofname()
 	    return ERROR;
 	}
     }
-    (void) chmod(ofname, 0777);
     if (unlink(ofname)) {
 	fprintf(stderr, "%s: ", progname);
 	perror(ofname);
@@ -1633,7 +1647,6 @@ local void copy_stat(ifstat)
 #endif
     remove_ofname = 0;
     /* It's now safe to remove the input file: */
-    (void) chmod(ifname, 0777);
     if (unlink(ifname)) {
 	WARN((stderr, "%s: ", progname));
 	if (!quiet) perror(ifname);

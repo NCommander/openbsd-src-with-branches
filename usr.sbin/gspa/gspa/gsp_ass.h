@@ -16,7 +16,7 @@
  *    must display the following acknowledgement:
  *      This product includes software developed by Paul Mackerras.
  * 4. The name of the author may not be used to endorse or promote products
- *    derived from this software withough specific prior written permission
+ *    derived from this software without specific prior written permission
  *
  * THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR
  * IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
@@ -30,8 +30,10 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <stddef.h>
 #include <sys/types.h>
+#include <unistd.h>
+#include <stdlib.h>
+#include <stddef.h>
 /*#include <alloca.h>*/
 
 #define MAXLINE		133
@@ -46,8 +48,8 @@ typedef char	bool;
 typedef struct symbol {
 	int16_t	flags;
 	int16_t	ndefn;
-	unsigned	value;
-	unsigned	lineno;
+	unsigned int	value;
+	unsigned int	lineno;
 	struct symbol	*next;
 	struct numlab	*nlab;
 	char		name[1];
@@ -62,8 +64,8 @@ typedef struct symbol {
 
 /* Info about successive numeric labels */
 struct numlab {
-	unsigned	value;
-	unsigned	lineno;
+	unsigned int	value;
+	unsigned int	lineno;
 	struct numlab	*next;
 };
 
@@ -151,19 +153,19 @@ char *alloc(size_t nbytes);
 
 symbol lookup(char *id, bool makeit);
 expr fold(expr);
-int eval_expr(expr, int32_t *, unsigned *);
+int eval_expr(expr, int32_t *, unsigned int *);
 void pseudo(int code, operand operands);
 
 void putcode(u_int16_t *, int);
 
-extern unsigned pc;
+extern unsigned int pc;
 extern short pass2;
 
 extern int lineno;
 extern int err_count;
 extern char line[], *lineptr;
 
-#if defined(sparc) && !defined(__NetBSD__)
+#if defined(sparc) && !(defined(__NetBSD__) || defined(__OpenBSD__))
 #include <alloca.h>
 #else
 #ifdef __GNUC__
@@ -171,10 +173,4 @@ extern char line[], *lineptr;
 #endif
 #endif
 
-#ifndef BSD
-#ifndef amiga
-#define bcopy(s, d, l) memcpy(d, s, l)
-#endif
-#endif
-
-#define new(x)	((x) = (typeof (x)) alloc (sizeof(*(x))))
+#define ALLOC(x, type)	((x) = (type) alloc (sizeof(*(x))))

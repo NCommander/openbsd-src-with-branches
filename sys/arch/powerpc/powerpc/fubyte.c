@@ -1,3 +1,4 @@
+/*	$OpenBSD: fubyte.c,v 1.3 2001/06/24 23:29:33 drahn Exp $	*/
 /*	$NetBSD: fubyte.c,v 1.1 1996/09/30 16:34:45 ws Exp $	*/
 
 /*-
@@ -31,12 +32,15 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#include <sys/types.h>
+#include <sys/systm.h>
+
 /*
  * Emulate fubyte.
  */
 int
 fubyte(addr)
-char *addr;
+	void *addr;
 {
 	unsigned char c;
 	

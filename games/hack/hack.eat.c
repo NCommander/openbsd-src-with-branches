@@ -1,9 +1,11 @@
+/*	$OpenBSD: hack.eat.c,v 1.3 2001/01/28 23:41:43 niklas Exp $	*/
+
 /*
  * Copyright (c) Stichting Mathematisch Centrum, Amsterdam, 1985.
  */
 
 #ifndef lint
-static char rcsid[] = "$NetBSD: hack.eat.c,v 1.3 1995/03/23 08:30:01 cgd Exp $";
+static char rcsid[] = "$OpenBSD: hack.eat.c,v 1.3 2001/01/28 23:41:43 niklas Exp $";
 #endif /* not lint */
 
 #include	"hack.h"
@@ -230,7 +232,7 @@ gotit:
 				setsee();
 				pline("Your vision improves.");
 			} else
-#endif QUEST
+#endif /* QUEST */
 			if(otmp->otyp == FORTUNE_COOKIE) {
 			  if(Blind) {
 			    pline("This cookie has a scrap of paper inside!");
@@ -360,7 +362,7 @@ newuhs(incr) boolean incr; {
 poisonous(otmp)
 register struct obj *otmp;
 {
-	return(index(POISONOUS, CORPSE_I_TO_C(otmp->otyp)) != 0);
+	return(strchr(POISONOUS, CORPSE_I_TO_C(otmp->otyp)) != 0);
 }
 
 /* returns 1 if some text was printed */
@@ -373,7 +375,7 @@ register tp = 0;
 		pline("You get very sick.");
 		Sick = 10 + rn2(10);
 		u.usick_cause = objects[otmp->otyp].oc_name;
-	} else if(index(POISONOUS, let) && rn2(5)){
+	} else if(strchr(POISONOUS, let) && rn2(5)){
 		tp++;
 		pline("Ecch -- that must have been poisonous!");
 		if(!Poison_resistance){
@@ -381,7 +383,7 @@ register tp = 0;
 			losehp(rnd(15), "poisonous corpse");
 		} else
 			pline("You don't seem affected by the poison.");
-	} else if(index("ELNOPQRUuxz", let) && rn2(5)){
+	} else if(strchr("ELNOPQRUuxz", let) && rn2(5)){
 		tp++;
 		pline("You feel sick.");
 		losehp(rnd(8), "cadaver");
@@ -419,7 +421,7 @@ register tp = 0;
 	case 'y':
 #ifdef QUEST
 		u.uhorizon++;
-#endif QUEST
+#endif /* QUEST */
 		/* fall into next case */
 	case 'B':
 		Confusion = 50;

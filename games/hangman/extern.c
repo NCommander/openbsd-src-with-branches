@@ -1,3 +1,4 @@
+/*	$OpenBSD: extern.c,v 1.2 1998/08/19 07:40:31 pjanzen Exp $	*/
 /*	$NetBSD: extern.c,v 1.3 1995/03/23 08:32:41 cgd Exp $	*/
 
 /*
@@ -37,43 +38,43 @@
 #if 0
 static char sccsid[] = "@(#)extern.c	8.1 (Berkeley) 5/31/93";
 #else
-static char rcsid[] = "$NetBSD: extern.c,v 1.3 1995/03/23 08:32:41 cgd Exp $";
+static char rcsid[] = "$OpenBSD: extern.c,v 1.2 1998/08/19 07:40:31 pjanzen Exp $";
 #endif
 #endif /* not lint */
 
-# include	"hangman.h"
+#include	"hangman.h"
 
 bool	Guessed[26];
 
-char	Word[BUFSIZ],
-	Known[BUFSIZ],
-	*Noose_pict[] = {
-		"     ______",
-		"     |    |",
-		"     |",
-		"     |",
-		"     |",
-		"     |",
-		"   __|_____",
-		"   |      |___",
-		"   |_________|",
+char	Word[BUFSIZ], Known[BUFSIZ];
+const char	*const Noose_pict[] = {
+	"     ______",
+	"     |    |",
+	"     |",
+	"     |",
+	"     |",
+	"     |",
+	"   __|_____",
+	"   |      |___",
+	"   |_________|",
 		NULL
 	};
 
-int	Errors,
-	Wordnum = 0;
+int	Errors, Wordnum = 0;
 
 double	Average = 0.0;
 
-ERR_POS	Err_pos[MAXERRS] = {
-	{  2, 10, 'O' },
-	{  3, 10, '|' },
-	{  4, 10, '|' },
-	{  5,  9, '/' },
-	{  3,  9, '/' },
-	{  3, 11, '\\' },
-	{  5, 11, '\\' }
+const ERR_POS	Err_pos[MAXERRS] = {
+	{ 2, 10, 'O' },
+	{ 3, 10, '|' },
+	{ 4, 10, '|' },
+	{ 5,  9, '/' },
+	{ 3,  9, '/' },
+	{ 3, 11, '\\'},
+	{ 5, 11, '\\'}
 };
+
+const char *Dict_name = _PATH_DICT;
 
 FILE	*Dict = NULL;
 

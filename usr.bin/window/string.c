@@ -1,3 +1,4 @@
+/*	$OpenBSD: string.c,v 1.4 1998/04/26 22:49:06 millert Exp $	*/
 /*	$NetBSD: string.c,v 1.5 1995/09/29 00:44:06 cgd Exp $	*/
 
 /*
@@ -40,7 +41,7 @@
 #if 0
 static char sccsid[] = "@(#)string.c	8.1 (Berkeley) 6/6/93";
 #else
-static char rcsid[] = "$NetBSD: string.c,v 1.5 1995/09/29 00:44:06 cgd Exp $";
+static char rcsid[] = "$OpenBSD: string.c,v 1.4 1998/04/26 22:49:06 millert Exp $";
 #endif
 #endif /* not lint */
 
@@ -50,10 +51,10 @@ static char rcsid[] = "$NetBSD: string.c,v 1.5 1995/09/29 00:44:06 cgd Exp $";
 
 char *
 str_cpy(s)
-register char *s;
+char *s;
 {
 	char *str;
-	register char *p;
+	char *p;
 
 	str = p = str_alloc(strlen(s) + 1);
 	if (p == 0)
@@ -65,12 +66,12 @@ register char *s;
 
 char *
 str_ncpy(s, n)
-register char *s;
-register n;
+char *s;
+int n;
 {
 	int l = strlen(s);
 	char *str;
-	register char *p;
+	char *p;
 
 	if (n > l)
 		n = l;
@@ -98,7 +99,7 @@ str_cat(s1, s2)
 char *s1, *s2;
 {
 	char *str;
-	register char *p, *q;
+	char *p, *q;
 
 	str = p = str_alloc(strlen(s1) + strlen(s2) + 1);
 	if (p == 0)
@@ -115,8 +116,8 @@ char *s1, *s2;
  * s can be a prefix of p with at least min characters.
  */
 str_match(s, p, min)
-register char *s, *p;
-register min;
+char *s, *p;
+int min;
 {
 	for (; *s && *p && *s == *p; s++, p++, min--)
 		;
@@ -128,9 +129,9 @@ char *
 str_alloc(l)
 int l;
 {
-	register struct string *s;
+	struct string *s;
 
-	s = (struct string *) malloc((unsigned)l + str_offset);
+	s = (struct string *) malloc(l + str_offset);
 	if (s == 0)
 		return 0;
 	if (str_head.s_forw == 0)
@@ -145,7 +146,7 @@ int l;
 str_free(str)
 char *str;
 {
-	register struct string *s;
+	struct string *s;
 
 	for (s = str_head.s_forw; s != &str_head && s->s_data != str;
 	     s = s->s_forw)

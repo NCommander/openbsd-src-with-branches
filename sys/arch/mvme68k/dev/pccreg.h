@@ -1,4 +1,4 @@
-/*	$NetBSD$ */
+/*	$OpenBSD: pccreg.h,v 1.4 2002/03/14 01:26:37 millert Exp $ */
 
 /*
  * Copyright (c) 1995 Theo de Raadt
@@ -14,7 +14,8 @@
  *    documentation and/or other materials provided with the distribution.
  * 3. All advertising materials mentioning features or use of this software
  *    must display the following acknowledgement:
- *      This product includes software developed by Theo de Raadt
+ *      This product includes software developed under OpenBSD by
+ *	Theo de Raadt for Willowglen Singapore.
  * 4. The name of the author may not be used to endorse or promote products
  *    derived from this software without specific prior written permission.
  *
@@ -152,6 +153,7 @@ extern struct pccreg *sys_pcc;
 #define ZS1_PHYS_147	(INTIOBASE_147 + 0x3800)
 
 /* XXX */
-int	pccintr_establish __P((int vec, struct intrhand *ih));
+int	pccintr_establish(int vec, struct intrhand *ih);
+int	pccspeed(struct pccreg *);
 
 #define PCC_GENCTL_IEN	0x10

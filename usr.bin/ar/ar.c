@@ -1,3 +1,4 @@
+/*	$OpenBSD: ar.c,v 1.6 2000/11/20 14:03:30 deraadt Exp $	*/
 /*	$NetBSD: ar.c,v 1.5 1995/03/26 03:27:44 glass Exp $	*/
 
 /*-
@@ -46,7 +47,7 @@ static char copyright[] =
 #if 0
 static char sccsid[] = "@(#)ar.c	8.3 (Berkeley) 4/2/94";
 #else
-static char rcsid[] = "$NetBSD: ar.c,v 1.5 1995/03/26 03:27:44 glass Exp $";
+static char rcsid[] = "$OpenBSD: ar.c,v 1.6 2000/11/20 14:03:30 deraadt Exp $";
 #endif
 #endif /* not lint */
 
@@ -67,8 +68,8 @@ static char rcsid[] = "$NetBSD: ar.c,v 1.5 1995/03/26 03:27:44 glass Exp $";
 CHDR chdr;
 u_int options;
 char *archive, *envtmp, *posarg, *posname;
-static void badoptions __P((char *));
-static void usage __P((void));
+static void badoptions(char *);
+static void usage(void);
 
 /*
  * main --
@@ -83,7 +84,7 @@ main(argc, argv)
 {
 	int c;
 	char *p;
-	int (*fcall) __P((char **));
+	int (*fcall)(char **);
 
 	if (argc < 3)
 		usage();
@@ -96,11 +97,11 @@ main(argc, argv)
 		if (!(p = malloc((u_int)(strlen(argv[1]) + 2))))
 			err(1, NULL);
 		*p = '-';
-		(void)strcpy(p + 1, argv[1]);
+		(void)strcpy(p + 1, argv[1]);	/* ok */
 		argv[1] = p;
 	}
 
-	while ((c = getopt(argc, argv, "abcdilmopqrTtuvx")) != EOF) {
+	while ((c = getopt(argc, argv, "abcCdilmopqrTtuvx")) != -1) {
 		switch(c) {
 		case 'a':
 			options |= AR_A;
@@ -111,6 +112,9 @@ main(argc, argv)
 			break;
 		case 'c':
 			options |= AR_C;
+			break;
+		case 'C':
+			options |= AR_CC;
 			break;
 		case 'd':
 			options |= AR_D;
@@ -199,8 +203,8 @@ main(argc, argv)
 	/* -t only valid with -Tv. */
 	if (options & AR_T && options & ~(AR_T|AR_TR|AR_V))
 		badoptions("-t");
-	/* -x only valid with -ouTv. */
-	if (options & AR_X && options & ~(AR_O|AR_U|AR_TR|AR_V|AR_X))
+	/* -x only valid with -CouTv. */
+	if (options & AR_X && options & ~(AR_O|AR_U|AR_TR|AR_V|AR_X|AR_CC))
 		badoptions("-x");
 
 	if (!(archive = *argv++)) {
@@ -238,6 +242,6 @@ usage()
 	(void)fprintf(stderr, "\tar -r [-cuTv] archive file ...\n");
 	(void)fprintf(stderr, "\tar -r [-abciuTv] position archive file ...\n");
 	(void)fprintf(stderr, "\tar -t [-Tv] archive [file ...]\n");
-	(void)fprintf(stderr, "\tar -x [-ouTv] archive [file ...]\n");
+	(void)fprintf(stderr, "\tar -x [-CouTv] archive [file ...]\n");
 	exit(1);
 }	

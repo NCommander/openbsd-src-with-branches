@@ -1,4 +1,5 @@
-	$NetBSD: syscalls.master,v 1.6 1995/10/07 06:26:56 mycroft Exp $
+	$OpenBSD: syscalls.master,v 1.7 1999/06/07 07:17:47 deraadt Exp $
+;	$NetBSD: syscalls.master,v 1.10 1996/09/07 14:21:59 mycroft Exp $
 
 ;	@(#)syscalls.master	8.1 (Berkeley) 7/19/93
 
@@ -35,7 +36,9 @@
 #include <sys/systm.h>
 #include <sys/signal.h>
 #include <sys/mount.h>
+#include <sys/poll.h>
 #include <sys/syscallargs.h>
+
 #include <compat/ibcs2/ibcs2_types.h>
 #include <compat/ibcs2/ibcs2_signal.h>
 #include <compat/ibcs2/ibcs2_syscallargs.h>
@@ -55,11 +58,11 @@
 11	STD		{ int ibcs2_sys_execv(char *path, char **argp); }
 12	STD		{ int ibcs2_sys_chdir(char *path); }
 13	STD		{ int ibcs2_sys_time(ibcs2_time_t *tp); }
-14	STD		{ int ibcs2_sys_mknod(char* path, int mode, int dev); }
+14	STD		{ int ibcs2_sys_mknod(char *path, int mode, int dev); }
 15	STD		{ int ibcs2_sys_chmod(char *path, int mode); }
 16	STD		{ int ibcs2_sys_chown(char *path, int uid, int gid); }
 17	NOARGS		{ int sys_obreak(caddr_t nsize); }
-18	STD		{ int ibcs2_sys_stat(char* path, \
+18	STD		{ int ibcs2_sys_stat(char *path, \
 			    struct ibcs2_stat *st); }
 19	NOARGS		{ long compat_43_sys_lseek(int fd, long offset, \
 			    int whence); }
@@ -90,7 +93,7 @@
 			    int pid, int pgid); }
 40	UNIMPL		ibcs2_xenix
 41	NOARGS		{ int sys_dup(u_int fd); }
-42	NOARGS		{ int sys_pipe(void); }
+42	NOARGS		{ int sys_opipe(void); }
 43	STD		{ int ibcs2_sys_times(struct tms *tp); }
 44	UNIMPL		profil
 45	STD		{ int ibcs2_sys_plock(int cmd); }
@@ -103,7 +106,7 @@
 #else
 49	UNIMPL		msgsys
 #endif
-50	UNIMPL		ibcs2_sys3b
+50	STD		{ int ibcs2_sys_sysi86(int cmd, int arg); }
 51	UNIMPL		ibcs2_acct
 #ifdef SYSVSHM
 52	STD		{ int ibcs2_sys_shmsys(int which, int a2, int a3, \
@@ -157,8 +160,8 @@
 86	STD		{ int ibcs2_sys_putmsg(int fd, \
 			    struct ibcs2_stropts *ctl, \
 			    struct ibcs2_stropts *dat, int flags); }
-87	STD		{ int ibcs2_sys_poll(struct ibcs2_pollfd *fds, \
-			    long nfds, int timeout); }
+87	NOARGS		{ int sys_poll(struct pollfd *fds, u_long nfds, \
+			    int timeout); }
 88	UNIMPL
 89	UNIMPL
 90	STD		{ int ibcs2_sys_symlink(char *path, char *link); }
@@ -239,7 +242,7 @@
 163	UNIMPL
 164	NOARGS		{ int sys_select(u_int nd, fd_set *in, fd_set *ou, \
 			    fd_set *ex, struct timeval *tv); }
-165	UNIMPL		xenix_eaccess
+165	STD		{ int ibcs2_sys_eaccess(char *path, int flags); }
 166	UNIMPL		xenix_paccess
 167	STD		{ int ibcs2_sys_sigaction(int signum, \
 			    struct ibcs2_sigaction *nsa, \

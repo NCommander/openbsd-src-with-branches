@@ -36,7 +36,7 @@
  * SUCH DAMAGE.
  *
  *	from: @(#)mtab.c	8.1 (Berkeley) 6/6/93
- *	$Id: mtab.c,v 1.3 1994/06/13 20:47:42 mycroft Exp $
+ *	$Id: mtab.c,v 1.3 2002/08/03 08:29:31 pvalchev Exp $
  */
 
 #include "am.h"
@@ -44,40 +44,37 @@
 /*
  * Firewall /etc/mtab entries
  */
-void mnt_free P((struct mntent *mp));
-void mnt_free(mp)
-struct mntent *mp;
+void
+mnt_free(struct mntent *mp)
 {
 	free(mp->mnt_fsname);
 	free(mp->mnt_dir);
 	free(mp->mnt_type);
 	free(mp->mnt_opts);
-	free((voidp) mp);
+	free((void *)mp);
 }
 
 /*
  * Discard memory allocated for mount list
  */
-void discard_mntlist P((mntlist *mp));
-void discard_mntlist(mp)
-mntlist *mp;
+void
+discard_mntlist(mntlist *mp)
 {
 	mntlist *mp2;
 
-	while (mp2 = mp) {
+	while ((mp2 = mp)) {
 		mp = mp->mnext;
 		if (mp2->mnt)
 			mnt_free(mp2->mnt);
-		free((voidp) mp2);
+		free((void *)mp2);
 	}
 }
 
 /*
  * Throw away a mount list
  */
-void free_mntlist P((mntlist *mp));
-void free_mntlist(mp)
-mntlist *mp;
+void
+free_mntlist(mntlist *mp)
 {
 	discard_mntlist(mp);
 	unlock_mntlist();
@@ -88,10 +85,8 @@ mntlist *mp;
  * numeric option in the mount options (such as port=%d).
  * Returns 0 if the option is not specified.
  */
-int hasmntval P((struct mntent *mnt, char *opt));
-int hasmntval(mnt, opt)
-struct mntent *mnt;
-char *opt;
+int
+hasmntval(struct mntent *mnt, char *opt)
 {
 	char *str = hasmntopt(mnt, opt);
 	if (str) {

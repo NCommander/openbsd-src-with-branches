@@ -1,4 +1,5 @@
-/*	$NetBSD: mount_msdos.c,v 1.10 1995/03/18 14:57:38 cgd Exp $	*/
+/*	$OpenBSD: mount_msdos.c,v 1.13 2002/02/16 21:27:36 millert Exp $	*/
+/*	$NetBSD: mount_msdos.c,v 1.16 1996/10/24 00:12:50 cgd Exp $	*/
 
 /*
  * Copyright (c) 1994 Christopher G. Demetriou
@@ -31,7 +32,7 @@
  */
 
 #ifndef lint
-static char rcsid[] = "$NetBSD: mount_msdos.c,v 1.10 1995/03/18 14:57:38 cgd Exp $";
+static char rcsid[] = "$OpenBSD: mount_msdos.c,v 1.13 2002/02/16 21:27:36 millert Exp $";
 #endif /* not lint */
 
 #include <sys/cdefs.h>
@@ -46,18 +47,20 @@ static char rcsid[] = "$NetBSD: mount_msdos.c,v 1.10 1995/03/18 14:57:38 cgd Exp
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+#include <errno.h>
 
 #include "mntopts.h"
 
-struct mntopt mopts[] = {
+const struct mntopt mopts[] = {
 	MOPT_STDOPTS,
+	MOPT_UPDATE,
 	{ NULL }
 };
 
-gid_t	a_gid __P((char *));
-uid_t	a_uid __P((char *));
-mode_t	a_mask __P((char *));
-void	usage __P((void));
+gid_t	a_gid(char *);
+uid_t	a_uid(char *);
+mode_t	a_mask(char *);
+void	usage(void);
 
 int
 main(argc, argv)
@@ -68,12 +71,25 @@ main(argc, argv)
 	struct stat sb;
 	int c, mntflags, set_gid, set_uid, set_mask;
 	char *dev, *dir, ndir[MAXPATHLEN+1];
+	char *errcause;
 
 	mntflags = set_gid = set_uid = set_mask = 0;
 	(void)memset(&args, '\0', sizeof(args));
 
-	while ((c = getopt(argc, argv, "u:g:m:o:")) != EOF) {
+	while ((c = getopt(argc, argv, "Gsl9u:g:m:o:")) != -1) {
 		switch (c) {
+		case 'G':
+			args.flags |= MSDOSFSMNT_GEMDOSFS;
+			break;
+		case 's':
+			args.flags |= MSDOSFSMNT_SHORTNAME;
+			break;
+		case 'l':
+			args.flags |= MSDOSFSMNT_LONGNAME;
+			break;
+		case '9':
+			args.flags |= MSDOSFSMNT_NOWIN95;
+			break;
 		case 'u':
 			args.uid = a_uid(optarg);
 			set_uid = 1;
@@ -105,18 +121,18 @@ main(argc, argv)
 		warnx("\"%s\" is a relative path.", dir);
 		if (getcwd(ndir, sizeof(ndir)) == NULL)
 			err(1, "getcwd");
-		strncat(ndir, "/", sizeof(ndir) - strlen(ndir) - 1);
-		strncat(ndir, dir, sizeof(ndir) - strlen(ndir) - 1);
+		strncat(ndir, "/", sizeof(ndir) - strlen(ndir));
+		strncat(ndir, dir, sizeof(ndir) - strlen(ndir));
 		dir = ndir;
 		warnx("using \"%s\" instead.", dir);
 	}
 
 	args.fspec = dev;
-	args.export.ex_root = -2;	/* unchecked anyway on DOS fs */
+	args.export_info.ex_root = -2;	/* unchecked anyway on DOS fs */
 	if (mntflags & MNT_RDONLY)
-		args.export.ex_flags = MNT_EXRDONLY;
+		args.export_info.ex_flags = MNT_EXRDONLY;
 	else
-		args.export.ex_flags = 0;
+		args.export_info.ex_flags = 0;
 	if (!set_gid || !set_uid || !set_mask) {
 		if (stat(dir, &sb) == -1)
 			err(1, "stat %s", dir);
@@ -129,8 +145,24 @@ main(argc, argv)
 			args.mask = sb.st_mode & (S_IRWXU | S_IRWXG | S_IRWXO);
 	}
 
-	if (mount(MOUNT_MSDOS, dir, mntflags, &args) < 0)
-		err(1, "mount");
+	if (mount(MOUNT_MSDOS, dir, mntflags, &args) < 0) {
+		switch (errno) {
+		case EOPNOTSUPP:
+			errcause = "filesystem not supported by kernel";
+			break;
+		case EMFILE:
+			errcause = "mount table full";
+			break;
+		case EINVAL:
+			errcause =
+			    "not an MSDOS filesystem";
+			break;
+		default:
+			errcause = strerror(errno);
+			break;
+		}
+		errx(1, "%s on %s: %s", args.fspec, dir, errcause);
+	}
 
 	exit (0);
 }

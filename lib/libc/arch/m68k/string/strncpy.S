@@ -35,13 +35,12 @@
  * SUCH DAMAGE.
  */
 
-#if defined(LIBC_SCCS) && !defined(lint)
-	.text
-	/*.asciz "from: @(#)strncpy.s	5.1 (Berkeley) 5/12/90"*/
-	.asciz "$Id: strncpy.S,v 1.2 1995/02/08 18:33:28 mycroft Exp $"
-#endif /* LIBC_SCCS and not lint */
-
 #include "DEFS.h"
+
+#if defined(LIBC_SCCS)
+	.text
+	.asciz "$OpenBSD$"
+#endif /* LIBC_SCCS */
 
 ENTRY(strncpy)
 	movl	sp@(4),d0		| return value is toaddr

@@ -1,8 +1,12 @@
-/*	$NetBSD: uvaxII.c,v 1.2 1995/04/18 22:08:25 ragge Exp $	*/
+/*	$OpenBSD: uvaxII.c,v 1.9 2001/11/06 19:53:17 miod Exp $	*/
+/*	$NetBSD: uvaxII.c,v 1.10 1996/10/13 03:36:04 christos Exp $	*/
 
 /*-
- * Copyright (c) 1988 The Regents of the University of California.
- * All rights reserved.
+ * Copyright (c) 1994 Gordon W. Ross 
+ * Copyright (c) 1993 Adam Glass 
+ * Copyright (c) 1988 University of Utah.
+ * Copyright (c) 1982, 1988, 1990, 1993
+ * 	The Regents of the University of California.  All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -35,66 +39,73 @@
  *      @(#)ka630.c     7.8 (Berkeley) 5/9/91
  */
 
-/* All bugs are subject to removal without further notice */
+#include <sys/param.h>
+#include <sys/types.h>
+#include <sys/device.h>
+#include <sys/systm.h>
+#include <uvm/uvm_extern.h>
 
-#if VAX630 || VAX410
+#include <machine/uvaxII.h>
+#include <machine/pte.h>
+#include <machine/mtpr.h>
+#include <machine/sid.h>
+#include <machine/pmap.h>
+#include <machine/nexus.h>
 
-#include "sys/param.h"
-#include "sys/types.h"
-#include "sys/device.h"
-#include "machine/uvaxII.h"
-#include "machine/nexus.h"
-#include "machine/pte.h"
-#include "machine/mtpr.h"
-#include "machine/sid.h"
-#include "vax/uba/ubavar.h"
-#include "vax/uba/ubareg.h"
-
-#include "mba.h"
-#include "uba.h"
-
-#include "vm/vm.h"
-#include "vm/vm_kern.h"
-#include "vax/include/pmap.h"
-
-struct nexus *nexus;
 struct uvaxIIcpu *uvaxIIcpu_ptr;
-#if VAX630
-struct ka630clock *ka630clk_ptr;
-u_long ka630_clkread();
-void ka630_clkwrite();
-#endif
-extern int cpu_type, nmba, numuba;
 
-int
-uvaxII_conf()
+#if VAX630
+struct	ka630clock *ka630clk_ptr;
+static	time_t	ka630_clkread(int *);
+static	void	ka630_clkwrite(time_t);
+
+struct watclk {
+    u_short wat_sec;
+    u_short wat_min;
+    u_short wat_hour;
+    u_short wat_dow;
+    u_short wat_day;
+    u_short wat_month;
+    u_short wat_year;
+};
+
+void gmt_to_wat (time_t *tp, struct watclk *wt);
+void wat_to_gmt (struct watclk *wt, time_t *tp);
+#endif
+
+/*
+ * uvaxII_conf() is called by cpu_attach to do the cpu_specific setup.
+ */
+void
+uvaxII_conf(parent, self, aux)
+	struct	device *parent, *self;
+	void	*aux;
 {
 	extern char cpu_model[];
 
 	switch (cpu_type) {
 	case VAX_630:
-		strcpy(cpu_model,"MicroVAXII");
+		strcpy(cpu_model,"MicroVAX II");
 		break;
 	case VAX_410:
 		strcpy(cpu_model,"MicroVAX 2000");
 		break;
+	default:
+		strcpy(cpu_model, "MicroVAX 78032/78132");
+		break;
 	};
-	config_rootfound("backplane",(void*)75);
+	printf(": %s\n", cpu_model);
 }
 
 int
-conf_uvaxII(){
-
-	printf(": UvaxII CPU (78032/78132)\n");
-}
-
-uvaxII_clock(){
-
-	mtpr(0x40,PR_ICCS); /* Start clock and enable interrupt */
+uvaxII_clock()
+{
+	mtpr(0x40, PR_ICCS); /* Start clock and enable interrupt */
 	return 1;
 }
 
 /* log crd errors */
+void
 uvaxII_memerr()
 {
 	printf("memory err!\n");
@@ -116,6 +127,7 @@ struct mc78032frame {
 	int	mc63_psl;		/* trapped psl */
 };
 
+int
 uvaxII_mchk(cmcf)
 	caddr_t cmcf;
 {
@@ -129,11 +141,11 @@ uvaxII_mchk(cmcf)
 	    mcf->mc63_mrvaddr, mcf->mc63_istate,
 	    mcf->mc63_pc, mcf->mc63_psl);
 	if (uvaxIIcpu_ptr && uvaxIIcpu_ptr->uvaxII_mser & UVAXIIMSER_MERR) {
-		printf("\tmser=0x%x ", uvaxIIcpu_ptr->uvaxII_mser);
+		printf("\tmser=0x%x ", (int)uvaxIIcpu_ptr->uvaxII_mser);
 		if (uvaxIIcpu_ptr->uvaxII_mser & UVAXIIMSER_CPUE)
-			printf("page=%d", uvaxIIcpu_ptr->uvaxII_cear);
+			printf("page=%d", (int)uvaxIIcpu_ptr->uvaxII_cear);
 		if (uvaxIIcpu_ptr->uvaxII_mser & UVAXIIMSER_DQPE)
-			printf("page=%d", uvaxIIcpu_ptr->uvaxII_dear);
+			printf("page=%d", (int)uvaxIIcpu_ptr->uvaxII_dear);
 		printf("\n");
 	}
 	return (-1);
@@ -144,9 +156,9 @@ uvaxII_mchk(cmcf)
  */
 u_long
 uvaxII_gettodr(stopped_flag)
-	int *stopped_flag;
+	int	*stopped_flag;
 {
-	register u_long year_secs;
+	register time_t year_secs;
 
 	switch (cpu_type) {
 #if VAX630
@@ -163,9 +175,9 @@ uvaxII_gettodr(stopped_flag)
 
 void
 uvaxII_settodr(year_ticks)
-	u_long year_ticks;
+	time_t year_ticks;
 {
-	register u_long year_secs;
+	register time_t year_secs;
 
 	year_secs = year_ticks / 100;
 	switch (cpu_type) {
@@ -178,43 +190,46 @@ uvaxII_settodr(year_ticks)
 }
 
 #if VAX630
-static short dayyr[12] = { 0,31,59,90,120,151,181,212,243,273,304,334 };
 /* init system time from tod clock */
 /* ARGSUSED */
-u_long
+time_t
 ka630_clkread(stopped_flag)
-	int *stopped_flag;
+	int	*stopped_flag;
 {
 	register struct ka630clock *claddr = ka630clk_ptr;
-	register int days, yr;
-	register u_long year_secs;
+	struct watclk wt;
+	time_t year_secs;
 
 	*stopped_flag = 0;
+
 	claddr->csr1 = KA630CLK_SET;
 	while ((claddr->csr0 & KA630CLK_UIP) != 0)
 		;
+
+	wt.wat_sec   = claddr->sec;
+	wt.wat_min   = claddr->min;
+	wt.wat_hour  = claddr->hr;
+	wt.wat_day   = claddr->day;
+	wt.wat_month = claddr->mon;
+	wt.wat_year  = claddr->yr;
+
 	/* If the clock is valid, use it. */
 	if ((claddr->csr3 & KA630CLK_VRT) != 0 &&
 	    (claddr->csr1 & KA630CLK_ENABLE) == KA630CLK_ENABLE) {
 		/* simple sanity checks */
-		if (claddr->mon < 1 || claddr->mon > 12 ||
-		    claddr->day < 1 || claddr->day > 31) {
+		if (wt.wat_month < 1 || wt.wat_month > 12 ||
+		    wt.wat_day < 1 || wt.wat_day > 31) {
 			printf("WARNING: preposterous clock chip time.\n");
 			year_secs = 0;
-		} else {
-			days = dayyr[claddr->mon - 1] + claddr->day - 1;
-			year_secs = days * DAYSEC + claddr->hr * HRSEC +
-				claddr->min * MINSEC + claddr->sec;
-		}
-		claddr->yr = 70;	/* any non-leap year */
-#ifndef lint
-		{ volatile int t = claddr->csr2; }	/* ??? */
-#endif
+		} else
+			wat_to_gmt (&wt, &year_secs);
+
 		claddr->csr0 = KA630CLK_RATE;
 		claddr->csr1 = KA630CLK_ENABLE;
 
 		return (year_secs);
 	}
+
 	printf("WARNING: TOY clock invalid.\n");
 	return (0);
 }
@@ -222,41 +237,194 @@ ka630_clkread(stopped_flag)
 /* Set the time of day clock, called via. stime system call.. */
 void
 ka630_clkwrite(year_secs)
-	u_long year_secs;
+	time_t year_secs;
 {
 	register struct ka630clock *claddr = ka630clk_ptr;
-	register int t, t2;
+	struct watclk wt;
 	int s;
 
+	gmt_to_wat (&year_secs, &wt);
+
 	s = splhigh();
+
 	claddr->csr1 = KA630CLK_SET;
 	while ((claddr->csr0 & KA630CLK_UIP) != 0)
 		;
-	claddr->yr = 70;	/* any non-leap year is ok */
+ 
+	claddr->sec = wt.wat_sec;
+	claddr->min = wt.wat_min;
+	claddr->hr  = wt.wat_hour;
+	claddr->day = wt.wat_day;
+	claddr->mon = wt.wat_month;
+	claddr->yr  = wt.wat_year;
 
-	/* t = month + day; separate */
-	t = year_secs % YEARSEC;
-	for (t2 = 1; t2 < 12; t2++)
-		if (t < dayyr[t2])
-			break;
-
-	/* t2 is month */
-	claddr->mon = t2;
-	claddr->day = t - dayyr[t2 - 1] + 1;
-
-	/* the rest is easy */
-	t = year_secs % DAYSEC;
-	claddr->hr = t / HRSEC;
-	t %= HRSEC;
-	claddr->min = t / MINSEC;
-	claddr->sec = t % MINSEC;
-#ifndef lint
-	{ int t = claddr->csr2; }	/* ??? */
-	{ int t = claddr->csr3; }	/* ??? */
-#endif
 	claddr->csr0 = KA630CLK_RATE;
 	claddr->csr1 = KA630CLK_ENABLE;
+
 	splx(s);
 }
 #endif
-#endif
+
+void
+uvaxII_steal_pages()
+{
+	extern  vm_offset_t avail_start, virtual_avail, avail_end;
+	int	junk;
+
+	/*
+	 * MicroVAX II: get 10 pages from top of memory,
+	 * map in Qbus map registers, cpu and clock registers.
+	 */
+	avail_end -= 10;
+
+	MAPPHYS(junk, 2, VM_PROT_READ|VM_PROT_WRITE);
+	MAPVIRT(nexus, btoc(0x400000));
+	pmap_map((vm_offset_t)nexus, 0x20088000, 0x20090000,
+	    VM_PROT_READ|VM_PROT_WRITE);
+
+	MAPVIRT(uvaxIIcpu_ptr, 1);
+	pmap_map((vm_offset_t)uvaxIIcpu_ptr, (vm_offset_t)UVAXIICPU,
+	    (vm_offset_t)UVAXIICPU + NBPG, VM_PROT_READ|VM_PROT_WRITE);
+
+	MAPVIRT(ka630clk_ptr, 1);
+	pmap_map((vm_offset_t)ka630clk_ptr, (vm_offset_t)KA630CLK,
+	    (vm_offset_t)KA630CLK + NBPG, VM_PROT_READ|VM_PROT_WRITE);
+
+	/*
+	 * Clear restart and boot in progress flags
+	 * in the CPMBX.
+	 */
+	ka630clk_ptr->cpmbx = (ka630clk_ptr->cpmbx & KA630CLK_LANG);
+
+	/*
+	 * Enable memory parity error detection and clear error bits.
+	 */
+	uvaxIIcpu_ptr->uvaxII_mser = (UVAXIIMSER_PEN | UVAXIIMSER_MERR |
+	    UVAXIIMSER_LEB);
+
+	/*
+	 * Set up cpu_type so that we can differ between 630 and 420.
+	 */
+        if (cpunumber == VAX_78032)
+                cpu_type = (((*UVAXIISID) >> 24) & 0xff) |
+		    (cpu_type & 0xff000000);
+}
+
+#if VAX630
+/*
+ * Generic routines to convert to or from a POSIX date
+ * (seconds since 1/1/1970) and  yr/mo/day/hr/min/sec
+ * (These are derived from the sun3 clock chip code.)
+ */
+
+/*
+ * Machine dependent base year:
+ * Note: must be < 1970
+ */
+#define	CLOCK_BASE_YEAR	1900
+
+/* Traditional UNIX base year */
+#define	POSIX_BASE_YEAR	1970
+#define FEBRUARY	2
+
+#define SECDAY		86400L
+#define SECYR		(SECDAY * 365)
+
+#define	leapyear(year)		((year) % 4 == 0)
+#define	days_in_year(a) 	(leapyear(a) ? 366 : 365)
+#define	days_in_month(a) 	(month_days[(a) - 1])
+
+static int month_days[12] = {
+	31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31
+};
+
+void
+gmt_to_wat(tp, wt)
+	time_t	*tp;
+	struct	watclk *wt;
+{
+	register int i;
+	register long days, secs;
+
+	days = *tp / SECDAY;
+	secs = *tp % SECDAY;
+
+	/* Hours, minutes, seconds are easy */
+	wt->wat_hour = secs / 3600;
+	secs = secs % 3600;
+	wt->wat_min  = secs / 60;
+	secs = secs % 60;
+	wt->wat_sec  = secs;
+
+	/* Day of week (Note: 1/1/1970 was a Thursday) */
+	wt->wat_dow = (days + 4) % 7;
+
+	/* Number of years in days */
+	i = POSIX_BASE_YEAR;
+	while (days >= days_in_year(i)) {
+		days -= days_in_year(i);
+		i++;
+	}
+	wt->wat_year = i - CLOCK_BASE_YEAR;
+
+	/* Number of months in days left */
+	if (leapyear(i))
+		days_in_month(FEBRUARY) = 29;
+	for (i = 1; days >= days_in_month(i); i++)
+		days -= days_in_month(i);
+	days_in_month(FEBRUARY) = 28;
+	wt->wat_month = i;
+
+	/* Days are what is left over (+1) from all that. */
+	wt->wat_day = days + 1;  
+}
+
+void
+wat_to_gmt(wt, tp)
+	time_t	*tp;
+	struct	watclk *wt;
+{
+	register int i;
+	register long tmp;
+	int year;
+
+	/*
+	 * Hours are different for some reason. Makes no sense really.
+	 */
+
+	tmp = 0;
+
+	if (wt->wat_hour >= 24) goto out;
+	if (wt->wat_day  >  31) goto out;
+	if (wt->wat_month > 12) goto out;
+
+	year = wt->wat_year + CLOCK_BASE_YEAR;
+
+	/*
+	 * Compute days since start of time
+	 * First from years, then from months.
+	 */
+	for (i = POSIX_BASE_YEAR; i < year; i++)
+		tmp += days_in_year(i);
+	if (leapyear(year) && wt->wat_month > FEBRUARY)
+		tmp++;
+
+	/* Months */
+	for (i = 1; i < wt->wat_month; i++)
+	  	tmp += days_in_month(i);
+	tmp += (wt->wat_day - 1);
+
+	/* Now do hours */
+	tmp = tmp * 24 + wt->wat_hour;
+
+	/* Now do minutes */
+	tmp = tmp * 60 + wt->wat_min;
+
+	/* Now do seconds */
+	tmp = tmp * 60 + wt->wat_sec;
+
+ out:
+	*tp = tmp;
+}
+#endif /* VAX630 */
+

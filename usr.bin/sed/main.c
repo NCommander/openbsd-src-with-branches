@@ -1,3 +1,5 @@
+/*	$OpenBSD: main.c,v 1.5 1998/06/23 22:40:42 millert Exp $	*/
+
 /*-
  * Copyright (c) 1992 Diomidis Spinellis.
  * Copyright (c) 1992, 1993
@@ -43,7 +45,7 @@ static char copyright[] =
 
 #ifndef lint
 /* from: static char sccsid[] = "@(#)main.c	8.2 (Berkeley) 1/3/94"; */
-static char *rcsid = "$Id: main.c,v 1.7 1995/02/23 17:25:23 jtc Exp $";
+static char *rcsid = "$OpenBSD: main.c,v 1.5 1998/06/23 22:40:42 millert Exp $";
 #endif /* not lint */
 
 #include <sys/types.h>
@@ -100,8 +102,8 @@ char *fname;			/* File name. */
 u_long linenum;
 int lastline;			/* TRUE on the last line of the last file */
 
-static void add_compunit __P((enum e_cut, char *));
-static void add_file __P((char *));
+static void add_compunit(enum e_cut, char *);
+static void add_file(char *);
 
 int
 main(argc, argv)
@@ -111,7 +113,7 @@ main(argc, argv)
 	int c, fflag;
 
 	fflag = 0;
-	while ((c = getopt(argc, argv, "ae:f:n")) != EOF)
+	while ((c = getopt(argc, argv, "ae:f:n")) != -1)
 		switch (c) {
 		case 'a':
 			aflag = 1;
@@ -189,7 +191,7 @@ again:
 		case CU_STRING:
 			if ((snprintf(string_ident,
 			    sizeof(string_ident), "\"%s\"", script->s)) >=
-			    sizeof(string_ident) - 1)
+			    sizeof(string_ident))
 				(void)strcpy(string_ident +
 				    sizeof(string_ident) - 6, " ...\"");
 			fname = string_ident;
@@ -255,7 +257,8 @@ mf_fgets(sp, spflag)
 {
 	static FILE *f;		/* Current open file */
 	size_t len;
-	char c, *p;
+	char *p;
+	int c;
 
 	if (f == NULL)
 		/* Advance to first non-empty file */

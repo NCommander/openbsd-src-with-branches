@@ -1,3 +1,4 @@
+/*	$OpenBSD: main.c,v 1.3 1998/08/22 08:55:32 pjanzen Exp $	*/
 /*	$NetBSD: main.c,v 1.3 1995/04/22 10:27:41 cgd Exp $	*/
 
 /*
@@ -37,7 +38,7 @@
  */
 
 #ifndef lint
-static char copyright[] =
+static const char copyright[] =
 "@(#) Copyright (c) 1988, 1993\n\
 	The Regents of the University of California.  All rights reserved.\n";
 #endif /* not lint */
@@ -46,7 +47,7 @@ static char copyright[] =
 #if 0
 static char sccsid[] = "@(#)main.c	8.1 (Berkeley) 5/31/93";
 #else
-static char rcsid[] = "$NetBSD: main.c,v 1.3 1995/04/22 10:27:41 cgd Exp $";
+static const char rcsid[] = "$OpenBSD$";
 #endif
 #endif /* not lint */
 
@@ -64,11 +65,10 @@ static char rcsid[] = "$NetBSD: main.c,v 1.3 1995/04/22 10:27:41 cgd Exp $";
 
 #include "rogue.h"
 
-extern short party_room;
-
+int
 main(argc, argv)
-int argc;
-char *argv[];
+	int argc;
+	char *argv[];
 {
 	if (init(argc, argv)) {		/* restored game */
 		goto PL;

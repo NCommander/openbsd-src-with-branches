@@ -1,3 +1,6 @@
+/*	$OpenBSD: prompt.c,v 1.3 1997/03/14 05:12:57 millert Exp $	*/
+/*	$NetBSD: prompt.c,v 1.2 1997/01/11 06:48:04 lukem Exp $	*/
+
 /*-
  * Copyright (c) 1992, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -35,7 +38,11 @@
  */
 
 #if !defined(lint) && !defined(SCCSID)
+#if 0
 static char sccsid[] = "@(#)prompt.c	8.1 (Berkeley) 6/4/93";
+#else
+static char rcsid[] = "$OpenBSD: prompt.c,v 1.3 1997/03/14 05:12:57 millert Exp $";
+#endif
 #endif /* not lint && not SCCSID */
 
 /*
@@ -45,7 +52,7 @@ static char sccsid[] = "@(#)prompt.c	8.1 (Berkeley) 6/4/93";
 #include <stdio.h>
 #include "el.h"
 
-private char *prompt_default	__P((EditLine *));
+private char *prompt_default(EditLine *);
 
 /* prompt_default():
  *	Just a default prompt, in case the user did not provide one

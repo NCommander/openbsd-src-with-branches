@@ -1,10 +1,12 @@
-/*	$NetBSD: difftime.c,v 1.2 1995/03/09 23:41:15 jtc Exp $	*/
+/*
+** This file is in the public domain, so clarified as of
+** June 5, 1996 by Arthur David Olson (arthur_david_olson@nih.gov).
+*/
 
-#ifndef lint
-#ifndef NOID
-static char	elsieid[] = "@(#)difftime.c	7.5";
-#endif /* !defined NOID */
-#endif /* !defined lint */
+#if defined(LIBC_SCCS) && !defined(lint) && !defined(NOID)
+static char elsieid[] = "@(#)difftime.c	7.9";
+static char rcsid[] = "$OpenBSD: difftime.c,v 1.5 1998/01/18 23:24:51 millert Exp $";
+#endif /* LIBC_SCCS and not lint */
 
 /*LINTLIBRARY*/
 
@@ -29,10 +31,16 @@ const time_t	time0;
 	time_t	delta;
 	time_t	hibit;
 
-	if (sizeof(time_t) < sizeof(double))
-		return (double) time1 - (double) time0;
-	if (sizeof(time_t) < sizeof(long_double))
-		return (long_double) time1 - (long_double) time0;
+	{
+		time_t		tt;
+		double		d;
+		long_double	ld;
+
+		if (sizeof tt < sizeof d)
+			return (double) time1 - (double) time0;
+		if (sizeof tt < sizeof ld)
+			return (long_double) time1 - (long_double) time0;
+	}
 	if (time1 < time0)
 		return -difftime(time0, time1);
 	/*
@@ -45,9 +53,7 @@ const time_t	time0;
 	/*
 	** Repair delta overflow.
 	*/
-	hibit = 1;
-	while ((hibit <<= 1) > 0)
-		continue;
+	hibit = (~ (time_t) 0) << (TYPE_BIT(time_t) - 1);
 	/*
 	** The following expression rounds twice, which means
 	** the result may not be the closest to the true answer.
@@ -67,10 +73,10 @@ const time_t	time0;
 	** This problem occurs only with very large differences.
 	** It's too painful to fix this portably.
 	** We are not alone in this problem;
-	** many C compilers round twice when converting
+	** some C compilers round twice when converting
 	** large unsigned types to small floating types,
 	** so if time_t is unsigned the "return delta" above
-	** has the same double-rounding problem.
+	** has the same double-rounding problem with those compilers.
 	*/
 	return delta - 2 * (long_double) hibit;
 }

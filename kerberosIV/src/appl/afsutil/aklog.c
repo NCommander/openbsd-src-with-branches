@@ -173,8 +173,6 @@ main(int argc, char **argv)
   const char *realm = NULL;
   char cellbuf[64];
   
-  setprogname (argv[0]);
-
   if(!k_hasafs())
     exit(1);
 

@@ -1,4 +1,4 @@
-/*	$NetBSD$ */
+/*	$OpenBSD: vmes.c,v 1.9 2002/03/14 03:15:57 millert Exp $ */
 
 /*
  * Copyright (c) 1995 Theo de Raadt
@@ -31,14 +31,16 @@
  */
 
 #include <sys/param.h>
-#include <sys/conf.h>
 #include <sys/proc.h>
 #include <sys/user.h>
 #include <sys/systm.h>
 #include <sys/kernel.h>
 #include <sys/device.h>
+
 #include <machine/autoconf.h>
+#include <machine/conf.h>
 #include <machine/cpu.h>
+
 #include <mvme88k/dev/vme.h>
 
 /*
@@ -47,13 +49,8 @@
  * functions will decide how many address bits are relevant.
  */
 
-void vmesattach __P((struct device *, struct device *, void *));
-int  vmesmatch __P((struct device *, void *, void *));
-
-struct vmessoftc {
-	struct device		sc_dev;
-	struct vmesoftc		*sc_vme;
-};
+void vmesattach(struct device *, struct device *, void *);
+int  vmesmatch(struct device *, void *, void *);
 
 struct cfattach vmes_ca = {
         sizeof(struct vmessoftc), vmesmatch, vmesattach
@@ -63,6 +60,7 @@ struct cfdriver vmes_cd = {
         NULL, "vmes", DV_DULL, 0
 };
 
+int vmesscan(struct device *, void *, void *);
 
 int
 vmesmatch(parent, cf, args)
@@ -96,9 +94,10 @@ vmesattach(parent, self, args)
 
 /*ARGSUSED*/
 int
-vmesopen(dev, flag, mode)
+vmesopen(dev, flag, mode, p)
 	dev_t dev;
 	int flag, mode;
+	struct proc *p;
 {
 	if (minor(dev) >= vmes_cd.cd_ndevs ||
 	    vmes_cd.cd_devs[minor(dev)] == NULL)
@@ -108,9 +107,10 @@ vmesopen(dev, flag, mode)
 
 /*ARGSUSED*/
 int
-vmesclose(dev, flag, mode)
+vmesclose(dev, flag, mode, p)
 	dev_t dev;
 	int flag, mode;
+	struct proc *p;
 {
 
 	return (0);
@@ -119,13 +119,12 @@ vmesclose(dev, flag, mode)
 /*ARGSUSED*/
 int
 vmesioctl(dev, cmd, data, flag, p)
-	dev_t   dev;
+	dev_t dev;
+	u_long cmd;
 	caddr_t data;
-	int     cmd, flag;
+	int flag;
 	struct proc *p;
 {
-	int unit = minor(dev);
-	struct vmessoftc *sc = (struct vmessoftc *) vmes_cd.cd_devs[unit];
 	int error = 0;
 
 	switch (cmd) {
@@ -160,18 +159,19 @@ vmeswrite(dev, uio, flags)
 	return (vmerw(sc->sc_vme, uio, flags, BUS_VMES));
 }
 
-int
+paddr_t
 vmesmmap(dev, off, prot)
 	dev_t dev;
-	int off, prot;
+	off_t off;
+	int prot;
 {
 	int unit = minor(dev);
 	struct vmessoftc *sc = (struct vmessoftc *) vmes_cd.cd_devs[unit];
-	caddr_t pa;
+	void * pa;
 
-	pa = vmepmap(sc->sc_vme, (caddr_t)off, NBPG, BUS_VMES);
+	pa = vmepmap(sc->sc_vme, off, NBPG, BUS_VMES);
 	printf("vmes %x pa %x\n", off, pa);
 	if (pa == NULL)
 		return (-1);
-	return (m88k_btop(pa));
+	return (atop(pa));
 }

@@ -1,4 +1,5 @@
-/*	$Id: cookie.h,v 1.5 1998/08/05 09:21:43 niklas Exp $	*/
+/*	$OpenBSD: cookie.h,v 1.3 1998/11/17 11:10:09 niklas Exp $	*/
+/*	$EOM: cookie.h,v 1.5 1998/08/05 09:21:43 niklas Exp $	*/
 
 /*
  * Copyright (c) 1998 Niklas Hallqvist.  All rights reserved.
@@ -44,7 +45,5 @@ struct transport;
 
 extern void cookie_gen (struct transport *, struct exchange *, u_int8_t *,
 			size_t);
-extern void cookie_init (void);
-extern void cookie_reset_event (void *);
 
 #endif /* _COOKIE_H_ */

@@ -1,3 +1,4 @@
+/*	$OpenBSD: apply.c,v 1.10 2001/09/04 23:35:58 millert Exp $	*/
 /*	$NetBSD: apply.c,v 1.3 1995/03/25 03:38:23 glass Exp $	*/
 
 /*-
@@ -40,7 +41,7 @@
 #if 0
 static char sccsid[] = "@(#)apply.c	8.4 (Berkeley) 4/4/94";
 #else
-static char rcsid[] = "$NetBSD: apply.c,v 1.3 1995/03/25 03:38:23 glass Exp $";
+static char rcsid[] = "$OpenBSD: apply.c,v 1.10 2001/09/04 23:35:58 millert Exp $";
 #endif
 #endif /* not lint */
 
@@ -55,8 +56,8 @@ static char rcsid[] = "$NetBSD: apply.c,v 1.3 1995/03/25 03:38:23 glass Exp $";
 #include <string.h>
 #include <unistd.h>
 
-void	usage __P((void));
-int	system __P((const char *));
+void	usage(void);
+int	system(const char *);
 
 int
 main(argc, argv)
@@ -69,7 +70,7 @@ main(argc, argv)
 	debug = 0;
 	magic = '%';		/* Default magic char is `%'. */
 	nargs = -1;
-	while ((ch = getopt(argc, argv, "a:d0123456789")) != EOF)
+	while ((ch = getopt(argc, argv, "a:d0123456789")) != -1)
 		switch (ch) {
 		case 'a':
 			if (optarg[1] != '\0')
@@ -158,7 +159,7 @@ main(argc, argv)
 		 * there's enough space to build it.
 		 */
 		for (l = strlen(cmd), i = 0; i < nargs; i++)
-			l += strlen(argv[i]);
+			l += strlen(argv[i+1]);
 		if (l > clen && (c = realloc(c, clen = l)) == NULL)
 			err(1, NULL);
 
@@ -196,9 +197,9 @@ system(command)
 	const char *command;
 {
 	static char *name, *shell;
-	union wait pstat;
 	pid_t pid;
-	int omask;
+	int pstat;
+	sigset_t mask, omask;
 	sig_t intsave, quitsave;
 
 	if (shell == NULL) {
@@ -212,29 +213,30 @@ system(command)
 	if (!command)		/* just checking... */
 		return(1);
 
-	omask = sigblock(sigmask(SIGCHLD));
-	switch(pid = vfork()) {
+	sigemptyset(&mask);
+	sigaddset(&mask, SIGCHLD);
+	sigprocmask(SIG_BLOCK, &mask, &omask);
+	switch(pid = fork()) {
 	case -1:			/* error */
 		err(1, "fork");
 	case 0:				/* child */
-		(void)sigsetmask(omask);
-		execl(shell, name, "-c", command, NULL);
+		sigprocmask(SIG_SETMASK, &omask, NULL);
+		execl(shell, name, "-c", command, (char *)NULL);
 		err(1, "%s", shell);
 	}
 	intsave = signal(SIGINT, SIG_IGN);
 	quitsave = signal(SIGQUIT, SIG_IGN);
-	pid = waitpid(pid, (int *)&pstat, 0);
-	(void)sigsetmask(omask);
+	pid = waitpid(pid, &pstat, 0);
+	sigprocmask(SIG_SETMASK, &omask, NULL);
 	(void)signal(SIGINT, intsave);
 	(void)signal(SIGQUIT, quitsave);
-	return(pid == -1 ? -1 : pstat.w_status);
+	return(pid == -1 ? -1 : pstat);
 }
 
 void
 usage()
 {
-
 	(void)fprintf(stderr,
-	    "usage: apply [-a magic] [-0123456789] command arguments ...\n");
+	    "usage: apply [-#] [-a magic] [-d] command argument [...]\n");
 	exit(1);
 }

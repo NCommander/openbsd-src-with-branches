@@ -1,5 +1,6 @@
 #!/bin/sh
-#	$Id: check.sh,v 1.4 1998/07/17 21:33:13 niklas Exp $
+#	$OpenBSD: check.sh,v 1.2 1998/11/15 00:44:06 niklas Exp $
+#	$EOM: check.sh,v 1.4 1998/07/17 21:33:13 niklas Exp $
 
 #
 # Copyright (c) 1998 Niklas Hallqvist.  All rights reserved.

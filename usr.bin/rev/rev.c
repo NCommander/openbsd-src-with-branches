@@ -1,3 +1,4 @@
+/*	$OpenBSD: rev.c,v 1.4 2001/11/19 19:02:16 mpech Exp $	*/
 /*	$NetBSD: rev.c,v 1.5 1995/09/28 08:49:40 tls Exp $	*/
 
 /*-
@@ -43,7 +44,7 @@ static char copyright[] =
 #if 0
 static char sccsid[] = "@(#)rev.c	8.3 (Berkeley) 5/4/95";
 #else
-static char rcsid[] = "$NetBSD: rev.c,v 1.5 1995/09/28 08:49:40 tls Exp $";
+static char rcsid[] = "$OpenBSD: rev.c,v 1.4 2001/11/19 19:02:16 mpech Exp $";
 #endif
 #endif /* not lint */
 
@@ -56,19 +57,19 @@ static char rcsid[] = "$NetBSD: rev.c,v 1.5 1995/09/28 08:49:40 tls Exp $";
 #include <string.h>
 #include <unistd.h>
 
-void usage __P((void));
+void usage(void);
 
 int
 main(argc, argv)
 	int argc;
 	char *argv[];
 {
-	register char *filename, *p, *t;
+	char *filename, *p, *t;
 	FILE *fp;
 	size_t len;
 	int ch, rval;
 
-	while ((ch = getopt(argc, argv, "")) != EOF)
+	while ((ch = getopt(argc, argv, "")) != -1)
 		switch(ch) {
 		case '?':
 		default:

@@ -1,4 +1,5 @@
-/*	$NetBSD: sbicvar.h,v 1.9 1995/09/04 13:04:48 chopps Exp $	*/
+/*	$OpenBSD: sbicvar.h,v 1.5 2002/03/14 01:26:29 millert Exp $	*/
+/*	$NetBSD: sbicvar.h,v 1.11 1996/04/21 21:12:23 veego Exp $	*/
 
 /*
  * Copyright (c) 1990 The Regents of the University of California.
@@ -95,7 +96,7 @@ struct sbic_tinfo {
 	int	touts;		/* #timeouts */
 	int	perrs;		/* #parity errors */
 	int	senses;		/* #request sense commands sent */
-	u_char*	bounce;		/* Bounce buffer for this device */
+	u_char *bounce;		/* Bounce buffer for this device */
 	ushort	lubusy;		/* What local units/subr. are busy? */
 	u_char  flags;
 	u_char  period;		/* Period suggestion */
@@ -131,16 +132,16 @@ struct	sbic_softc {
 	u_char	sc_stat[2];
 	u_char	sc_msg[7];
 	u_long	sc_clkfreq;
-	u_long	sc_tcnt;		/* number of bytes transfered */
+	u_long	sc_tcnt;		/* number of bytes transferred */
 	u_short sc_dmacmd;		/* used by dma drivers */
 	u_short	sc_dmatimo;		/* dma timeout */
 	u_long	sc_dmamask;		/* dma valid mem mask */
 	struct	dma_chain *sc_cur;
 	struct	dma_chain *sc_last;
-	int  (*sc_dmago)	__P((struct sbic_softc *, char *, int, int));
-	int  (*sc_dmanext)	__P((struct sbic_softc *));
-	void (*sc_enintr)	__P((struct sbic_softc *));
-	void (*sc_dmastop)	__P((struct sbic_softc *));
+	int  (*sc_dmago)(struct sbic_softc *, char *, int, int);
+	int  (*sc_dmanext)(struct sbic_softc *);
+	void (*sc_enintr)(struct sbic_softc *);
+	void (*sc_dmastop)(struct sbic_softc *);
 	u_short	gtsc_bankmask;		/* GVP specific bank selected */
 };
 
@@ -162,7 +163,7 @@ struct	sbic_softc {
 #define	DDB_FOLLOW	0x04
 #define DDB_IO		0x08
 #endif
-extern int sbic_inhibit_sync;
+extern u_char sbic_inhibit_sync[8];
 extern int sbic_no_dma;
 extern int sbic_clock_override;
 
@@ -223,7 +224,12 @@ struct scsi_fmt_cdb {
 struct buf;
 struct scsi_xfer;
 
-void sbic_minphys __P((struct buf *bp));
-int sbic_scsicmd __P((struct scsi_xfer *));
+void sbic_minphys(struct buf *bp);
+int sbic_scsicmd(struct scsi_xfer *);
+void sbicinit(struct sbic_softc *);
+int  sbicintr(struct sbic_softc *);
+#ifdef DEBUG
+void sbic_dump(struct sbic_softc *dev);
+#endif
 
 #endif /* _SBICVAR_H_ */

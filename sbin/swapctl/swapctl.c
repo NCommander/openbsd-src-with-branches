@@ -1,3 +1,4 @@
+/*	$OpenBSD: swapctl.c,v 1.9 2002/05/15 23:30:08 art Exp $	*/
 /*	$NetBSD: swapctl.c,v 1.9 1998/07/26 20:23:15 mycroft Exp $	*/
 
 /*
@@ -104,37 +105,23 @@ char	*tflag;		/* swap device type (blk or noblk) */
 
 int	pri;		/* uses 0 as default pri */
 
-static	void change_priority __P((char *));
-static	void add_swap __P((char *));
-static	void del_swap __P((char *));
-	int  main __P((int, char *[]));
-static	void do_fstab __P((void));
-static	void usage __P((void));
-static	void swapon_command __P((int, char **));
-#if 0
-static	void swapoff_command __P((int, char **));
-#endif
+static	void change_priority(char *);
+static	void add_swap(char *);
+static	void del_swap(char *);
+	int  main(int, char *[]);
+static	void do_fstab(void);
+static	void usage(void);
+static	int  swapon_command(int, char **);
 
 extern	char *__progname;	/* from crt0.o */
 
 int
-main(argc, argv)
-	int	argc;
-	char	*argv[];
+main(int argc, char *argv[])
 {
 	int	c;
 
-	if (strcmp(__progname, "swapon") == 0) {
-		swapon_command(argc, argv);
-		/* NOTREACHED */
-	}
-
-#if 0
-	if (strcmp(__progname, "swapoff") == 0) {
-		swapoff_command(argc, argv);
-		/* NOTREACHED */
-	}
-#endif
+	if (strcmp(__progname, "swapon") == 0)
+		return swapon_command(argc, argv);
 
 	while ((c = getopt(argc, argv, "Aacdlkp:st:")) != -1) {
 		switch (c) {
@@ -246,16 +233,14 @@ main(argc, argv)
 		break;
 	}
 
-	exit(0);
+	return (0);
 }
 
 /*
  * swapon_command: emulate the old swapon(8) program.
  */
-void
-swapon_command(argc, argv)
-	int argc;
-	char **argv;
+int
+swapon_command(int argc, char **argv)
 {
 	int ch, fiztab = 0;
 
@@ -286,7 +271,7 @@ swapon_command(argc, argv)
 				usage();
 		}
 		do_fstab();
-		exit(0);
+		return (0);
 	} else if (argc == 0 || tflag != NULL)
 		goto swapon_usage;
 
@@ -295,21 +280,20 @@ swapon_command(argc, argv)
 		argc--;
 		argv++;
 	}
-	exit(0);
-	/* NOTREACHED */
+	return (0);
 
  swapon_usage:
-	fprintf(stderr, "usage: %s -a [-t blk|noblk]\n", __progname);
-	fprintf(stderr, "       %s <path> ...\n", __progname);
-	exit(1);
+	fprintf(stderr, "usage: %s -a [-t blk|noblk]\n"
+			"       %s <path> ...\n",
+	    __progname, __progname);
+	return (1);
 }
 
 /*
  * change_priority:  change the priority of a swap device.
  */
 void
-change_priority(path)
-	char	*path;
+change_priority(char *path)
 {
 
 	if (swapctl(SWAP_CTL, path, pri) < 0)
@@ -320,20 +304,19 @@ change_priority(path)
  * add_swap:  add the pathname to the list of swap devices.
  */
 void
-add_swap(path)
-	char *path;
+add_swap(char *path)
 {
 
 	if (swapctl(SWAP_ON, path, pri) < 0)
-		err(1, "%s", path);
+		if (errno != EBUSY)
+			err(1, "%s", path);
 }
 
 /*
- * del_swap:  remove the pathname to the list of swap devices.
+ * del_swap:  remove the pathname from the list of swap devices.
  */
 void
-del_swap(path)
-	char *path;
+del_swap(char *path)
 {
 
 	if (swapctl(SWAP_OFF, path, pri) < 0)
@@ -341,14 +324,26 @@ del_swap(path)
 }
 
 void
-do_fstab()
+do_fstab(void)
 {
 	struct	fstab *fp;
 	char	*s;
 	long	priority;
 	struct	stat st;
-	int	isblk;
+	mode_t	rejecttype;
 	int	gotone = 0;
+
+	/*
+	 * Select which mount point types to reject, depending on the
+	 * value of the -t parameter.
+	 */
+	if (tflag != NULL) {
+		if (strcmp(tflag, "blk") == 0)
+			rejecttype = S_IFREG;
+		else if (strcmp(tflag, "noblk") == 0)
+			rejecttype = S_IFBLK;
+	} else
+		rejecttype = 0;
 
 #define PRIORITYEQ	"priority="
 #define NFSMNTPT	"nfsmntpt="
@@ -360,7 +355,6 @@ do_fstab()
 			continue;
 
 		spec = fp->fs_spec;
-		isblk = 0;
 
 		if ((s = strstr(fp->fs_mntops, PRIORITYEQ)) != NULL) {
 			s += sizeof(PRIORITYEQ) - 1;
@@ -369,14 +363,13 @@ do_fstab()
 			priority = pri;
 
 		if ((s = strstr(fp->fs_mntops, NFSMNTPT)) != NULL) {
-			char *t, cmd[2*PATH_MAX+sizeof(PATH_MOUNT)+2];
+			char *t, cmd[strlen(PATH_MOUNT)+1+PATH_MAX+1+PATH_MAX+1];
 
 			/*
 			 * Skip this song and dance if we're only
 			 * doing block devices.
 			 */
-			if (tflag != NULL &&
-			    strcmp(tflag, "blk") == 0)
+			if (rejecttype == S_IFREG)
 				continue;
 
 			t = strpbrk(s, ",");
@@ -395,36 +388,39 @@ do_fstab()
 				continue;
 			}
 			snprintf(cmd, sizeof(cmd), "%s %s %s",
-				PATH_MOUNT, fp->fs_spec, spec);
+			    PATH_MOUNT, fp->fs_spec, spec);
 			if (system(cmd) != 0) {
 				warnx("%s: mount failed", fp->fs_spec);
 				continue;
 			}
 		} else {
 			/*
-			 * Determine blk-ness.
+			 * Determine blk-ness.  Don't even consider a
+			 * mountpoint outside /dev as a block device.
 			 */
+			if (rejecttype == S_IFREG) {
+				if (strncmp("/dev/", spec, 5) != 0)
+					continue;
+			}
 			if (stat(spec, &st) < 0) {
-				warn(spec);
+				warn("%s", spec);
 				continue;
 			}
-			if (S_ISBLK(st.st_mode))
-				isblk = 1;
-		}
-
-		/*
-		 * Skip this type if we're told to.
-		 */
-		if (tflag != NULL) {
-			if (strcmp(tflag, "blk") == 0 && isblk == 0)
+			if ((st.st_mode & S_IFMT) == rejecttype)
 				continue;
-			if (strcmp(tflag, "noblk") == 0 && isblk == 1)
+
+			/*
+			 * Do not allow fancy objects to be swap areas.
+			 */
+			if (!S_ISREG(st.st_mode) &&
+			    !S_ISBLK(st.st_mode))
 				continue;
 		}
 
-		if (swapctl(SWAP_ON, spec, (int)priority) < 0)
-			warn("%s", spec);
-		else {
+		if (swapctl(SWAP_ON, spec, (int)priority) < 0) {
+			if (errno != EBUSY)
+				warn("%s", spec);
+		} else {
 			gotone = 1;
 			printf("%s: adding %s as swap device at priority %d\n",
 			    __progname, fp->fs_spec, (int)priority);
@@ -438,7 +434,7 @@ do_fstab()
 }
 
 void
-usage()
+usage(void)
 {
 
 	fprintf(stderr, "usage: %s -A [-p priority] [-t blk|noblk]\n",

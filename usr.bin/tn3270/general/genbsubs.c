@@ -1,3 +1,5 @@
+/*	$OpenBSD: genbsubs.c,v 1.2 1996/06/26 05:41:25 deraadt Exp $	*/
+
 /*-
  * Copyright (c) 1988 The Regents of the University of California.
  * All rights reserved.
@@ -33,7 +35,7 @@
 
 #ifndef lint
 /*static char sccsid[] = "from: @(#)genbsubs.c	4.2 (Berkeley) 4/26/91";*/
-static char rcsid[] = "$Id: genbsubs.c,v 1.2 1993/08/01 18:05:28 mycroft Exp $";
+static char rcsid[] = "$OpenBSD: genbsubs.c,v 1.2 1996/06/26 05:41:25 deraadt Exp $";
 #endif /* not lint */
 
 /* The output of bunequal is the offset of the byte which didn't match;
@@ -42,10 +44,10 @@ static char rcsid[] = "$Id: genbsubs.c,v 1.2 1993/08/01 18:05:28 mycroft Exp $";
 
 int
 bunequal(s1, s2, n)
-register char *s1, *s2;
-register n;
+char *s1, *s2;
+int n;
 {
-    register int i = 0;
+    int i = 0;
 
     while (i++ < n) {
 	if (*s1++ != *s2++) {
@@ -61,11 +63,11 @@ register n;
 
 int
 bskip(s1, n, b)
-register char *s1;
-register int n;
-register int b;
+char *s1;
+int n;
+int b;
 {
-    register int i = 0;
+    int i = 0;
 
     while (i++ < n) {
 	if (*s1++ != b) {
@@ -92,7 +94,7 @@ unsigned int n;
 int and;
 int stride;
 {
-    register unsigned char _c, *_s, _and;
+    unsigned char _c, *_s, _and;
 
     _and = and;
     _c = (c&_and);

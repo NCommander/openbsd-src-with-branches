@@ -1,4 +1,4 @@
-/*	$NetBSD: bt_conv.c,v 1.5 1995/02/27 13:20:04 cgd Exp $	*/
+/*	$OpenBSD: bt_conv.c,v 1.4 1999/02/15 05:11:22 millert Exp $	*/
 
 /*-
  * Copyright (c) 1990, 1993, 1994
@@ -38,9 +38,9 @@
 
 #if defined(LIBC_SCCS) && !defined(lint)
 #if 0
-static char sccsid[] = "@(#)bt_conv.c	8.3 (Berkeley) 5/31/94";
+static char sccsid[] = "@(#)bt_conv.c	8.5 (Berkeley) 8/17/94";
 #else
-static char rcsid[] = "$NetBSD: bt_conv.c,v 1.5 1995/02/27 13:20:04 cgd Exp $";
+static char rcsid[] = "$OpenBSD: bt_conv.c,v 1.4 1999/02/15 05:11:22 millert Exp $";
 #endif
 #endif /* LIBC_SCCS and not lint */
 
@@ -51,7 +51,7 @@ static char rcsid[] = "$NetBSD: bt_conv.c,v 1.5 1995/02/27 13:20:04 cgd Exp $";
 #include <db.h>
 #include "btree.h"
 
-static void mswap __P((PAGE *));
+static void mswap(PAGE *);
 
 /*
  * __BT_BPGIN, __BT_BPGOUT --
@@ -74,7 +74,7 @@ __bt_pgin(t, pg, pp)
 	u_char flags;
 	char *p;
 
-	if (!ISSET(((BTREE *)t), B_NEEDSWAP))
+	if (!F_ISSET(((BTREE *)t), B_NEEDSWAP))
 		return;
 	if (pg == P_META) {
 		mswap(pp);
@@ -142,7 +142,7 @@ __bt_pgout(t, pg, pp)
 	u_char flags;
 	char *p;
 
-	if (!ISSET(((BTREE *)t), B_NEEDSWAP))
+	if (!F_ISSET(((BTREE *)t), B_NEEDSWAP))
 		return;
 	if (pg == P_META) {
 		mswap(pp);
@@ -212,16 +212,16 @@ mswap(pg)
 	char *p;
 
 	p = (char *)pg;
-	P_32_SWAP(p);		/* m_magic */
+	P_32_SWAP(p);		/* magic */
 	p += sizeof(u_int32_t);
-	P_32_SWAP(p);		/* m_version */
+	P_32_SWAP(p);		/* version */
 	p += sizeof(u_int32_t);
-	P_32_SWAP(p);		/* m_psize */
+	P_32_SWAP(p);		/* psize */
 	p += sizeof(u_int32_t);
-	P_32_SWAP(p);		/* m_free */
+	P_32_SWAP(p);		/* free */
 	p += sizeof(u_int32_t);
-	P_32_SWAP(p);		/* m_nrecs */
+	P_32_SWAP(p);		/* nrecs */
 	p += sizeof(u_int32_t);
-	P_32_SWAP(p);		/* m_flags */
+	P_32_SWAP(p);		/* flags */
 	p += sizeof(u_int32_t);
 }

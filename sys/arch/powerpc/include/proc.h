@@ -1,3 +1,4 @@
+/*	$OpenBSD: proc.h,v 1.2 1996/12/28 06:25:22 rahnds Exp $	*/
 /*	$NetBSD: proc.h,v 1.1 1996/09/30 16:34:31 ws Exp $	*/
 
 /*-
@@ -31,9 +32,14 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#ifndef	_POWERPC_PROC_H_
+#define	_POWERPC_PROC_H_
+
 /*
  * Machine-dependent part of the proc structure
  */
 struct mdproc {
 	int dummy;
 };
+
+#endif	/* _POWERPC_PROC_H_ */

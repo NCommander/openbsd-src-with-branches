@@ -1,5 +1,3 @@
-/*	$NetBSD: readdir.c,v 1.5 1995/02/25 08:51:35 cgd Exp $	*/
-
 /*
  * Copyright (c) 1983, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -34,15 +32,14 @@
  */
 
 #if defined(LIBC_SCCS) && !defined(lint)
-#if 0
-static char sccsid[] = "@(#)readdir.c	8.3 (Berkeley) 9/29/94";
-#else
-static char rcsid[] = "$NetBSD: readdir.c,v 1.5 1995/02/25 08:51:35 cgd Exp $";
-#endif
+static char rcsid[] = "$OpenBSD: readdir.c,v 1.4 1999/09/01 23:19:41 deraadt Exp $";
 #endif /* LIBC_SCCS and not lint */
 
 #include <sys/param.h>
 #include <dirent.h>
+#include <string.h>
+#include <errno.h>
+#include "thread_private.h"
 
 /*
  * get next entry in a directory.
@@ -78,4 +75,34 @@ readdir(dirp)
 			continue;
 		return (dp);
 	}
+}
+
+int
+readdir_r(dirp, entry, result)
+	DIR *dirp;
+	struct dirent *entry;
+	struct dirent **result;
+{
+	struct dirent *dp;
+	int ret;
+
+	if (dirp->dd_fd < 0) {
+		return EBADF;
+	}
+	if ((ret = _FD_LOCK(dirp->dd_fd, FD_READ, NULL)) != 0)
+		return ret;
+	errno = 0;
+	dp = readdir(dirp);
+	if (dp == NULL && errno != 0) {
+		_FD_UNLOCK(dirp->dd_fd, FD_READ);
+		return errno;
+	}
+	if (dp != NULL) 
+		memcpy(entry, dp, sizeof (struct dirent) - MAXNAMLEN + dp->d_namlen);
+	_FD_UNLOCK(dirp->dd_fd, FD_READ);
+	if (dp != NULL)
+	*result = entry;
+	else
+		*result = NULL;
+	return 0;
 }

@@ -1,6 +1,6 @@
 .\" Copyright (c) 1988, 1989, 1991 Carnegie Mellon University
 .\"
-.\"	$Header: /a/cvsroot/src/usr.sbin/bootpd/bootpd.8,v 1.2 1994/08/22 22:14:41 gwr Exp $
+.\"	$Header: /cvs/src/usr.sbin/bootpd/bootpd.8,v 1.7 1999/06/05 22:16:32 aaron Exp $
 .\"
 .TH BOOTPD 8 "November 06, 1993" "Carnegie Mellon University"
 .SH NAME
@@ -39,7 +39,7 @@ RFC951, RFC1532, and RFC1533.
 .I Bootpgw
 implements a simple BOOTP gateway which can be used to forward
 requests and responses between clients on one subnet and a
-BOOTP server (i.e.
+BOOTP server (i.e.,
 .IR bootpd )
 on another subnet. While either
 .I bootpd
@@ -58,9 +58,9 @@ from
 by including one of the following lines in the file
 .IR /etc/inetd.conf :
 .IP
-bootps dgram udp wait root /etc/bootpd bootpd bootptab
+bootps dgram udp wait root /usr/sbin/bootpd bootpd bootptab
 .br
-bootps dgram udp wait root /etc/bootpgw bootpgw server
+bootps dgram udp wait root /usr/sbin/bootpgw bootpgw server
 .PP
 This mode of operation is referred to as "inetd mode" and causes
 .I bootpd
@@ -89,14 +89,14 @@ from within
 .IR /etc/rc.local ,
 for example.)
 Standalone mode is less useful for
-.I bootgw
+.I bootpgw
 which
 has very little start up delay because
 it does not read a configuration file.
 .PP
 Either program automatically detects whether it was invoked from inetd
 or from a shell and automatically selects the appropriate mode.
-The 
+The
 .B \-s
 or
 .B \-i
@@ -112,9 +112,9 @@ value (in minutes) that a
 or
 .I bootpgw
 process will wait for a BOOTP packet before exiting.
-If no packets are recieved for
+If no packets are received for
 .I timeout
-seconds, then the program will exit.
+minutes, then the program will exit.
 A timeout value of zero means "run forever".
 In standalone mode, this option is forced to zero.
 .TP
@@ -125,7 +125,7 @@ variable that controls the amount of debugging messages generated.
 For example, -d4 or -d 4 will set the debugging level to 4.
 For compatibility with older versions of
 .IR bootpd ,
-omitting the numeric parameter (i.e. just -d) will
+omitting the numeric parameter (i.e., just -d) will
 simply increment the debug level by one.
 .TP
 .BI \-c \ chdir\-path
@@ -221,13 +221,13 @@ If
 .I bootpd
 is compiled with the -DDEBUG option, receipt of a SIGUSR1 signal causes
 it to dump its internal database to the file
-.I /etc/bootpd.dump
+.I /var/run/bootpd.dump
 or the dumpfile specified as a command line parameter.
 .PP
 During initialization, both programs
 determine the UDP port numbers to be used by calling
 .I getservbyname
-(which nomally uses
+(which normally uses
 .IR /etc/services).
 Two service names (and port numbers) are used:
 .IP
@@ -245,7 +245,7 @@ then the values default to boopts=67 and bootpc=68.
 Database file read by
 .IR bootpd .
 .TP
-/etc/bootpd.dump
+/var/run/bootpd.dump
 Debugging dump file created by
 .IR bootpd .
 .TP

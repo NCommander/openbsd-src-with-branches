@@ -1,3 +1,4 @@
+/*	$OpenBSD: fts.h,v 1.7 2002/02/16 21:27:17 millert Exp $	*/
 /*	$NetBSD: fts.h,v 1.5 1994/12/28 01:41:50 mycroft Exp $	*/
 
 /*
@@ -45,22 +46,22 @@ typedef struct {
 	dev_t fts_dev;			/* starting device # */
 	char *fts_path;			/* path for this descent */
 	int fts_rfd;			/* fd for root */
-	int fts_pathlen;		/* sizeof(path) */
+	size_t fts_pathlen;		/* sizeof(path) */
 	int fts_nitems;			/* elements in the sort array */
 	int (*fts_compar)();		/* compare function */
 
-#define	FTS_COMFOLLOW	0x001		/* follow command line symlinks */
-#define	FTS_LOGICAL	0x002		/* logical walk */
-#define	FTS_NOCHDIR	0x004		/* don't change directories */
-#define	FTS_NOSTAT	0x008		/* don't get stat info */
-#define	FTS_PHYSICAL	0x010		/* physical walk */
-#define	FTS_SEEDOT	0x020		/* return dot and dot-dot */
-#define	FTS_XDEV	0x040		/* don't cross devices */
-#define	FTS_WHITEOUT	0x080		/* return whiteout information */
-#define	FTS_OPTIONMASK	0x0ff		/* valid user option mask */
+#define	FTS_COMFOLLOW	0x0001		/* follow command line symlinks */
+#define	FTS_LOGICAL	0x0002		/* logical walk */
+#define	FTS_NOCHDIR	0x0004		/* don't change directories */
+#define	FTS_NOSTAT	0x0008		/* don't get stat info */
+#define	FTS_PHYSICAL	0x0010		/* physical walk */
+#define	FTS_SEEDOT	0x0020		/* return dot and dot-dot */
+#define	FTS_XDEV	0x0040		/* don't cross devices */
+#define	FTS_WHITEOUT	0x0080		/* return whiteout information */
+#define	FTS_OPTIONMASK	0x00ff		/* valid user option mask */
 
-#define	FTS_NAMEONLY	0x100		/* (private) child names only */
-#define	FTS_STOP	0x200		/* (private) unrecoverable error */
+#define	FTS_NAMEONLY	0x1000		/* (private) child names only */
+#define	FTS_STOP	0x2000		/* (private) unrecoverable error */
 	int fts_options;		/* fts_open options, global flags */
 } FTS;
 
@@ -74,8 +75,8 @@ typedef struct _ftsent {
 	char *fts_path;			/* root path */
 	int fts_errno;			/* errno for this node */
 	int fts_symfd;			/* fd for symlink */
-	u_short fts_pathlen;		/* strlen(fts_path) */
-	u_short fts_namelen;		/* strlen(fts_name) */
+	size_t fts_pathlen;		/* strlen(fts_path) */
+	size_t fts_namelen;		/* strlen(fts_name) */
 
 	ino_t fts_ino;			/* inode */
 	dev_t fts_dev;			/* device */
@@ -119,12 +120,12 @@ typedef struct _ftsent {
 #include <sys/cdefs.h>
 
 __BEGIN_DECLS
-FTSENT	*fts_children __P((FTS *, int));
-int	 fts_close __P((FTS *));
-FTS	*fts_open __P((char * const *, int,
-	    int (*)(const FTSENT **, const FTSENT **)));
-FTSENT	*fts_read __P((FTS *));
-int	 fts_set __P((FTS *, FTSENT *, int));
+FTSENT	*fts_children(FTS *, int);
+int	 fts_close(FTS *);
+FTS	*fts_open(char * const *, int,
+	    int (*)(const FTSENT **, const FTSENT **));
+FTSENT	*fts_read(FTS *);
+int	 fts_set(FTS *, FTSENT *, int);
 __END_DECLS
 
 #endif /* !_FTS_H_ */

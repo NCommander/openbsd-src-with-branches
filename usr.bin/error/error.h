@@ -1,3 +1,4 @@
+/*	$OpenBSD: error.h,v 1.5 2001/07/12 05:17:01 deraadt Exp $	*/
 /*	$NetBSD: error.h,v 1.3 1995/09/02 06:15:25 jtc Exp $	*/
 
 /*
@@ -115,7 +116,6 @@ FILE	*errorfile;	/* where error file comes from */
 FILE	*queryfile;	/* where the query responses from the user come from*/
 
 extern	char	*currentfilename;
-extern	char	*processname;
 extern	char	*scriptname;
 
 extern	boolean	query;
@@ -164,7 +164,7 @@ extern struct lang_desc lang_table[];
 #define	MOD2INCOMMENT	"(*###"
 #define	MOD2OUTCOMMENT	"%%%*)\n"
 /*
- *	Defines and resources for determing if a given line
+ *	Defines and resources for determining if a given line
  *	is to be discarded because it refers to a file not to
  *	be touched, or if the function reference is to a
  *	function the user doesn't want recorded.
@@ -180,7 +180,7 @@ typedef struct edesc	Edesc;
 typedef	Edesc	*Eptr;
 
 struct edesc{
-	Eptr	error_next;		/*linked together*/
+	Eptr	error_next;		/* linked together*/
 	int	error_lgtext;		/* how many on the right hand side*/
 	char	**error_text;		/* the right hand side proper*/
 	Errorclass	error_e_class;	/* error category of this error*/
@@ -203,10 +203,10 @@ extern	int	nfiles;
 extern	Eptr	**files;	/* array of pointers into errors*/
 boolean	*touchedfiles;			/* which files we touched */
 /*
- *	The langauge the compilation is in, as intuited from
+ *	The language the compilation is in, as intuited from
  *	the flavor of error messages analyzed.
  */
-extern	int	langauge;
+extern	int	language;
 extern	char	*currentfilename;
 /*
  *	Functional forwards
@@ -220,7 +220,43 @@ char	next_lastchar();
 char	**wordvsplice();
 int	wordvcmp();
 boolean	persperdexplode();
+
 /*
  *	Printing hacks
  */
 char	*plural(), *verbform();
+
+void	getignored(char *);
+void	eaterrors(int *, Eptr **);
+void	printerrors(boolean, int, Eptr []);
+void	wordvbuild(char *, int *, char ***);
+Errorclass discardit(Eptr);
+void	erroradd(int, char **, Errorclass, Errorclass);
+void	arrayify(int *, Eptr **, Eptr);
+Errorclass catchall(void);
+char *	substitute(char *, char, char);
+void	clob_last(char *, char);
+int	f77(void);
+void	wordvprint(FILE *, int, char *[]);
+void	wordvbuild(char *, int *, char ***);
+void	findfiles(int, Eptr *, int *, Eptr ***);
+boolean	touchfiles(int, Eptr **, int *, char ***);
+void	forkvi(int, char **);
+void	try(char *, int, char **);
+void	filenames(int, Eptr **);
+int	countfiles(Eptr *);
+void	errorprint(FILE *, Eptr, boolean);
+void	hackfile(char *, Eptr **, int, int);
+void	execvarg(int, int *, char ***);
+int	nopertain(Eptr **);
+int	oktotouch(char *);
+boolean	preview(char *, int, Eptr **, int);
+int	settotouch(char *);
+void	diverterrors(char *, int, Eptr **, int, boolean, int);
+int	writetouched(int);
+boolean	edit(char *);
+void	insert(int);
+void	text(Eptr, boolean);
+int	mustoverwrite(FILE *, FILE *);
+int	mustwrite(char *, int, FILE *);
+int	position(char *, char);

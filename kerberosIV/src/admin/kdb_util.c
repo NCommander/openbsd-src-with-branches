@@ -353,7 +353,7 @@ convert_key_old_db (Principal *p)
   copy_to_key(&p->key_low, &p->key_high, key);
 
 #ifndef NOENCRYPTION
-  des_pcbc_encrypt(key,key,
+  des_pcbc_encrypt((des_cblock *)key, (des_cblock *)key,
 		   (long)sizeof(des_cblock),master_key_schedule,
 		   (des_cblock *)master_key_schedule, DES_DECRYPT);
 #endif
@@ -455,8 +455,6 @@ main(int argc, char **argv)
     }       op;
     char *file_name;
     char *db_name;
-
-    setprogname (argv[0]);
 
     if (getarg (args, sizeof(args) / sizeof(args[0]), argc, argv,
 		&optind))

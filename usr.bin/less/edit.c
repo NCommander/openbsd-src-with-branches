@@ -1,3 +1,5 @@
+/*	$OpenBSD: edit.c,v 1.2 2001/01/29 01:58:01 niklas Exp $	*/
+
 /*
  * Copyright (c) 1984,1985,1989,1994,1995  Mark Nudelman
  * All rights reserved.
@@ -553,7 +555,7 @@ edit_stdin()
 	public void
 cat_file()
 {
-	register int c;
+	int c;
 
 	while ((c = ch_forw_get()) != EOI)
 		putchr(c);
@@ -571,8 +573,8 @@ cat_file()
 use_logfile(filename)
 	char *filename;
 {
-	register int exists;
-	register int answer;
+	int exists;
+	int answer;
 	PARG parg;
 
 	if (ch_getflags() & CH_CANSEEK)

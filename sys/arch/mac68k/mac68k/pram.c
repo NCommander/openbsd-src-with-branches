@@ -1,4 +1,5 @@
-/*	$NetBSD: pram.c,v 1.6 1995/09/17 18:50:17 briggs Exp $	*/
+/*	$OpenBSD: pram.c,v 1.5 1997/02/23 06:05:04 briggs Exp $	*/
+/*	$NetBSD: pram.c,v 1.11 1996/10/21 05:42:29 scottr Exp $	*/
 
 /*-
  * Copyright (C) 1993	Allen K. Briggs, Chris P. Caputo,
@@ -35,12 +36,22 @@
 
 
 /* #include "stand.h"  */
-#include "via.h"
-#include "pram.h"
-#include "macrom.h"
+#include <sys/types.h>
+#ifdef DEBUG
+#include <sys/systm.h>
+#endif
+#include <sys/param.h>
+
+#include <machine/viareg.h>
+
+#include <arch/mac68k/mac68k/pram.h>
+#include <arch/mac68k/mac68k/macrom.h>
+#ifndef MRG_ADB
+#include <arch/mac68k/dev/adbvar.h>
+#endif
 
 #if DEBUG
-char *convtime(unsigned long t)
+static char *convtime(unsigned long t)
 {
   static long daypmon[] = { 31,28,31,30,31,30,31,31,30,31,30,31 };
   static char *monstr[] = {"January","February","March","April","May","June",
@@ -109,7 +120,7 @@ char *convtime(unsigned long t)
     t=0;
   }
 
-  sprintf(s,"%s %d, %d   %d:%d:%d",monstr[month],day,year,hour,minute,seconds);
+  sprintf(s,"%s %ld, %ld   %ld:%ld:%ld",monstr[month],day,year,hour,minute,seconds);
 
   return s;
 }
@@ -126,7 +137,7 @@ pram_readtime(void)
    else
 	timedata = getPramTime();
 #if DEBUG
-   printf("time read from PRAM: 0x%x\n", timedata);
+   printf("time read from PRAM: 0x%lx\n", timedata);
    printf("Date and time: %s\n",convtime(timedata));
 #endif
 
@@ -141,3 +152,71 @@ pram_settime(unsigned long time)
    else
 	return setPramTime(time);
 }
+
+#ifndef MRG_ADB         /* These routines are defined here only
+                         * when the MRG_ADB method for accessing
+                         * the ADB/PRAM/RTC isn't enabled. */
+
+extern int adbHardware;         /* from newadb.c */
+
+/*
+ * getPramTime
+ * This function can be called regrardless of the machine
+ * type. It calls the correct hardware-specific code.
+ * (It's sort of redundant with the above, but it was
+ * added later.)
+ */
+unsigned long
+getPramTime(void)
+{
+        unsigned long time;
+
+        switch (adbHardware) {
+        case ADB_HW_II:         /* access PRAM via VIA interface */
+                time=(long)getPramTimeII();
+                return time;
+
+        case ADB_HW_IISI:       /* access PRAM via pseudo-adb functions */
+                if (0 != adb_read_date_time(&time))
+                        return 0;
+                else
+                        return time;
+
+        case ADB_HW_PB:         /* don't know how to access this yet */
+                return 0;
+
+        case ADB_HW_UNKNOWN:
+        default:
+                return 0;
+        }
+}
+
+/*
+ * setPramTime
+ * This function can be called regrardless of the machine
+ * type. It calls the correct hardware-specific code.
+ * (It's sort of redundant with the above, but it was
+ * added later.)
+ */
+void
+setPramTime(unsigned long time)
+{
+        switch (adbHardware) {
+        case ADB_HW_II:         /* access PRAM via ADB interface */
+                setPramTimeII(time);
+                return;
+
+        case ADB_HW_IISI:       /* access PRAM via pseudo-adb functions */
+                adb_set_date_time(time);
+                return;
+
+        case ADB_HW_PB:         /* don't know how to access this yet */
+                return;
+
+        case ADB_HW_UNKNOWN:
+                return;
+        }
+
+}
+
+#endif  /* ifndef MRG_ADB */

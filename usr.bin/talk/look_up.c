@@ -1,3 +1,4 @@
+/*	$OpenBSD: look_up.c,v 1.6 1999/03/03 20:43:30 millert Exp $	*/
 /*	$NetBSD: look_up.c,v 1.3 1994/12/09 02:14:21 jtc Exp $	*/
 
 /*
@@ -37,24 +38,21 @@
 #if 0
 static char sccsid[] = "@(#)look_up.c	8.1 (Berkeley) 6/6/93";
 #endif
-static char rcsid[] = "$NetBSD: look_up.c,v 1.3 1994/12/09 02:14:21 jtc Exp $";
+static char rcsid[] = "$OpenBSD: look_up.c,v 1.6 1999/03/03 20:43:30 millert Exp $";
 #endif /* not lint */
 
-#include <sys/types.h>
-#include <sys/socket.h>
-#include <netinet/in.h>
-#include <protocols/talkd.h>
-#include <errno.h>
-#include "talk_ctl.h"
 #include "talk.h"
+#include <errno.h>
+#include <unistd.h>
+#include "talk_ctl.h"
 
 /*
  * See if the local daemon has an invitation for us.
  */
+int
 check_local()
 {
 	CTL_RESPONSE response;
-	register CTL_RESPONSE *rp = &response;
 
 	/* the rest of msg was set up in get_names */
 #ifdef MSG_EOR
@@ -65,45 +63,45 @@ check_local()
 	msg.ctl_addr = *(struct sockaddr *)&ctl_addr;
 #endif
 	/* must be initiating a talk */
-	if (!look_for_invite(rp))
+	if (!look_for_invite(&response))
 		return (0);
 	/*
-	 * There was an invitation waiting for us, 
-	 * so connect with the other (hopefully waiting) party 
+	 * There was an invitation waiting for us,
+	 * so connect with the other (hopefully waiting) party
 	 */
 	current_state = "Waiting to connect with caller";
 	do {
-		if (rp->addr.sa_family != AF_INET)
-			p_error("Response uses invalid network address");
+		if (ntohs(response.addr.sa_family) != AF_INET)
+			quit("Response uses invalid network address", 1);
 		errno = 0;
-		if (connect(sockt,
-		    (struct sockaddr *)&rp->addr, sizeof (rp->addr)) != -1)
+		if (connect(sockt, (struct sockaddr *)&response.addr,
+			    sizeof (response.addr)) != -1)
 			return (1);
 	} while (errno == EINTR);
 	if (errno == ECONNREFUSED) {
 		/*
 		 * The caller gave up, but his invitation somehow
-		 * was not cleared. Clear it and initiate an 
+		 * was not cleared. Clear it and initiate an
 		 * invitation. (We know there are no newer invitations,
 		 * the talkd works LIFO.)
 		 */
-		ctl_transact(his_machine_addr, msg, DELETE, rp);
+		ctl_transact(his_machine_addr, msg, DELETE, &response);
 		close(sockt);
 		open_sockt();
 		return (0);
 	}
-	p_error("Unable to connect with initiator");
+	quit("Unable to connect with initiator", 1);
 	/*NOTREACHED*/
+	return (0);
 }
 
 /*
  * Look for an invitation on 'machine'
  */
+int
 look_for_invite(rp)
 	CTL_RESPONSE *rp;
 {
-	struct in_addr machine_addr;
-
 	current_state = "Checking for invitation on caller's machine";
 	ctl_transact(his_machine_addr, msg, LOOK_UP, rp);
 	/* the switch is for later options, such as multiple invitations */

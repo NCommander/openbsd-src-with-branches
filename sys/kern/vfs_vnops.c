@@ -1,4 +1,5 @@
-/*	$NetBSD: vfs_vnops.c,v 1.19 1995/05/23 06:11:29 mycroft Exp $	*/
+/*	$OpenBSD: vfs_vnops.c,v 1.40 2002/03/14 01:27:06 millert Exp $	*/
+/*	$NetBSD: vfs_vnops.c,v 1.20 1996/02/04 02:18:41 christos Exp $	*/
 
 /*
  * Copyright (c) 1982, 1986, 1989, 1993
@@ -52,16 +53,29 @@
 #include <sys/vnode.h>
 #include <sys/ioctl.h>
 #include <sys/tty.h>
+#include <sys/cdio.h>
 
-#include <vm/vm.h>
+#include <uvm/uvm_extern.h>
+
+int	vn_read(struct file *fp, off_t *off, struct uio *uio, 
+	    struct ucred *cred);
+int	vn_write(struct file *fp, off_t *off, struct uio *uio, 
+	    struct ucred *cred);
+int	vn_select(struct file *fp, int which, struct proc *p);
+int	vn_kqfilter(struct file *fp, struct knote *kn);
+int 	vn_closefile(struct file *fp, struct proc *p);
+int	vn_ioctl(struct file *fp, u_long com, caddr_t data,
+	    struct proc *p);
 
 struct 	fileops vnops =
-	{ vn_read, vn_write, vn_ioctl, vn_select, vn_closefile };
+	{ vn_read, vn_write, vn_ioctl, vn_select, vn_kqfilter, vn_statfile,
+	  vn_closefile };
 
 /*
  * Common code for vnode open operations.
  * Check permissions, and call the VOP_OPEN or VOP_CREATE routine.
  */
+int
 vn_open(ndp, fmode, cmode)
 	register struct nameidata *ndp;
 	int fmode, cmode;
@@ -72,20 +86,26 @@ vn_open(ndp, fmode, cmode)
 	struct vattr va;
 	int error;
 
+	if ((fmode & (FREAD|FWRITE)) == 0)
+		return (EINVAL);
+	if ((fmode & (O_TRUNC | FWRITE)) == O_TRUNC)
+		return (EINVAL);
 	if (fmode & O_CREAT) {
 		ndp->ni_cnd.cn_nameiop = CREATE;
 		ndp->ni_cnd.cn_flags = LOCKPARENT | LOCKLEAF;
-		if ((fmode & O_EXCL) == 0)
+		if ((fmode & O_EXCL) == 0 && (fmode & O_NOFOLLOW) == 0)
 			ndp->ni_cnd.cn_flags |= FOLLOW;
-		if (error = namei(ndp))
+		if ((error = namei(ndp)) != 0)
 			return (error);
+
 		if (ndp->ni_vp == NULL) {
 			VATTR_NULL(&va);
 			va.va_type = VREG;
 			va.va_mode = cmode;
 			VOP_LEASE(ndp->ni_dvp, p, cred, LEASE_WRITE);
-			if (error = VOP_CREATE(ndp->ni_dvp, &ndp->ni_vp,
-			    &ndp->ni_cnd, &va))
+			error = VOP_CREATE(ndp->ni_dvp, &ndp->ni_vp,
+					   &ndp->ni_cnd, &va);
+			if (error)
 				return (error);
 			fmode &= ~O_TRUNC;
 			vp = ndp->ni_vp;
@@ -105,8 +125,9 @@ vn_open(ndp, fmode, cmode)
 		}
 	} else {
 		ndp->ni_cnd.cn_nameiop = LOOKUP;
-		ndp->ni_cnd.cn_flags = FOLLOW | LOCKLEAF;
-		if (error = namei(ndp))
+		ndp->ni_cnd.cn_flags =
+		    ((fmode & O_NOFOLLOW) ? NOFOLLOW : FOLLOW) | LOCKLEAF;
+		if ((error = namei(ndp)) != 0)
 			return (error);
 		vp = ndp->ni_vp;
 	}
@@ -114,31 +135,35 @@ vn_open(ndp, fmode, cmode)
 		error = EOPNOTSUPP;
 		goto bad;
 	}
+	if (vp->v_type == VLNK) {
+		error = EMLINK;
+		goto bad;
+	}
 	if ((fmode & O_CREAT) == 0) {
 		if (fmode & FREAD) {
-			if (error = VOP_ACCESS(vp, VREAD, cred, p))
+			if ((error = VOP_ACCESS(vp, VREAD, cred, p)) != 0)
 				goto bad;
 		}
-		if (fmode & (FWRITE | O_TRUNC)) {
+		if (fmode & FWRITE) {
 			if (vp->v_type == VDIR) {
 				error = EISDIR;
 				goto bad;
 			}
-			if ((error = vn_writechk(vp)) ||
-			    (error = VOP_ACCESS(vp, VWRITE, cred, p)))
+			if ((error = vn_writechk(vp)) != 0 ||
+			    (error = VOP_ACCESS(vp, VWRITE, cred, p)) != 0)
 				goto bad;
 		}
 	}
-	if (fmode & O_TRUNC) {
-		VOP_UNLOCK(vp);				/* XXX */
+	if ((fmode & O_TRUNC) && vp->v_type == VREG) {
+		VOP_UNLOCK(vp, 0, p);				/* XXX */
 		VOP_LEASE(vp, p, cred, LEASE_WRITE);
-		VOP_LOCK(vp);				/* XXX */
+		vn_lock(vp, LK_EXCLUSIVE | LK_RETRY, p);	/* XXX */
 		VATTR_NULL(&va);
 		va.va_size = 0;
-		if (error = VOP_SETATTR(vp, &va, cred, p))
+		if ((error = VOP_SETATTR(vp, &va, cred, p)) != 0)
 			goto bad;
 	}
-	if (error = VOP_OPEN(vp, fmode, cred, p))
+	if ((error = VOP_OPEN(vp, fmode, cred, p)) != 0)
 		goto bad;
 	if (fmode & FWRITE)
 		vp->v_writecount++;
@@ -150,9 +175,9 @@ bad:
 
 /*
  * Check for write permissions on the specified vnode.
- * The read-only status of the file system is checked.
- * Also, prototype text segments cannot be written.
+ * Prototype text segments cannot be written.
  */
+int
 vn_writechk(vp)
 	register struct vnode *vp;
 {
@@ -166,6 +191,9 @@ vn_writechk(vp)
 		switch (vp->v_type) {
 		case VREG: case VDIR: case VLNK:
 			return (EROFS);
+		case VNON: case VCHR: case VSOCK:
+		case VFIFO: case VBAD: case VBLK:
+			break;
 		}
 	}
 	/*
@@ -173,14 +201,26 @@ vn_writechk(vp)
 	 * the vnode, try to free it up once.  If
 	 * we fail, we can't allow writing.
 	 */
-	if ((vp->v_flag & VTEXT) && !vnode_pager_uncache(vp))
+	if ((vp->v_flag & VTEXT) && !uvm_vnp_uncache(vp))
 		return (ETXTBSY);
+
 	return (0);
+}
+
+/*
+ * Mark a vnode as being the text image of a running process.
+ */
+void
+vn_marktext(vp)
+	struct vnode *vp;
+{
+	vp->v_flag |= VTEXT;
 }
 
 /*
  * Vnode close call
  */
+int
 vn_close(vp, flags, cred, p)
 	register struct vnode *vp;
 	int flags;
@@ -199,6 +239,7 @@ vn_close(vp, flags, cred, p)
 /*
  * Package up an I/O request on a vnode into a uio and do it.
  */
+int
 vn_rdwr(rw, vp, base, len, offset, segflg, ioflg, cred, aresid, p)
 	enum uio_rw rw;
 	struct vnode *vp;
@@ -208,7 +249,7 @@ vn_rdwr(rw, vp, base, len, offset, segflg, ioflg, cred, aresid, p)
 	enum uio_seg segflg;
 	int ioflg;
 	struct ucred *cred;
-	int *aresid;
+	size_t *aresid;
 	struct proc *p;
 {
 	struct uio auio;
@@ -216,7 +257,7 @@ vn_rdwr(rw, vp, base, len, offset, segflg, ioflg, cred, aresid, p)
 	int error;
 
 	if ((ioflg & IO_NODELOCKED) == 0)
-		VOP_LOCK(vp);
+		vn_lock(vp, LK_EXCLUSIVE | LK_RETRY, p);
 	auio.uio_iov = &aiov;
 	auio.uio_iovcnt = 1;
 	aiov.iov_base = base;
@@ -237,63 +278,90 @@ vn_rdwr(rw, vp, base, len, offset, segflg, ioflg, cred, aresid, p)
 		if (auio.uio_resid && error == 0)
 			error = EIO;
 	if ((ioflg & IO_NODELOCKED) == 0)
-		VOP_UNLOCK(vp);
+		VOP_UNLOCK(vp, 0, p);
 	return (error);
 }
 
 /*
  * File table vnode read routine.
  */
-vn_read(fp, uio, cred)
+int
+vn_read(fp, poff, uio, cred)
 	struct file *fp;
+	off_t *poff;
 	struct uio *uio;
 	struct ucred *cred;
 {
 	register struct vnode *vp = (struct vnode *)fp->f_data;
-	int count, error;
+	int error = 0;
+	size_t count;
+	struct proc *p = uio->uio_procp;
 
 	VOP_LEASE(vp, uio->uio_procp, cred, LEASE_READ);
-	VOP_LOCK(vp);
-	uio->uio_offset = fp->f_offset;
+	vn_lock(vp, LK_EXCLUSIVE | LK_RETRY, p);
+	uio->uio_offset = *poff;
 	count = uio->uio_resid;
-	error = VOP_READ(vp, uio, (fp->f_flag & FNONBLOCK) ? IO_NDELAY : 0,
-		cred);
-	fp->f_offset += count - uio->uio_resid;
-	VOP_UNLOCK(vp);
+	if (vp->v_type != VDIR)
+		error = VOP_READ(vp, uio,
+		    (fp->f_flag & FNONBLOCK) ? IO_NDELAY : 0, cred);
+	*poff += count - uio->uio_resid;
+	VOP_UNLOCK(vp, 0, p);
 	return (error);
 }
 
 /*
  * File table vnode write routine.
  */
-vn_write(fp, uio, cred)
+int
+vn_write(fp, poff, uio, cred)
 	struct file *fp;
+	off_t *poff;
 	struct uio *uio;
 	struct ucred *cred;
 {
 	register struct vnode *vp = (struct vnode *)fp->f_data;
-	int count, error, ioflag = IO_UNIT;
+	struct proc *p = uio->uio_procp;
+	int error, ioflag = IO_UNIT;
+	size_t count;
 
 	if (vp->v_type == VREG && (fp->f_flag & O_APPEND))
 		ioflag |= IO_APPEND;
 	if (fp->f_flag & FNONBLOCK)
 		ioflag |= IO_NDELAY;
+	if ((fp->f_flag & FFSYNC) ||
+	    (vp->v_mount && (vp->v_mount->mnt_flag & MNT_SYNCHRONOUS)))
+		ioflag |= IO_SYNC;
 	VOP_LEASE(vp, uio->uio_procp, cred, LEASE_WRITE);
-	VOP_LOCK(vp);
-	uio->uio_offset = fp->f_offset;
+	vn_lock(vp, LK_EXCLUSIVE | LK_RETRY, p);
+	uio->uio_offset = *poff;
 	count = uio->uio_resid;
 	error = VOP_WRITE(vp, uio, ioflag, cred);
 	if (ioflag & IO_APPEND)
-		fp->f_offset = uio->uio_offset;
+		*poff = uio->uio_offset;
 	else
-		fp->f_offset += count - uio->uio_resid;
-	VOP_UNLOCK(vp);
+		*poff += count - uio->uio_resid;
+	VOP_UNLOCK(vp, 0, p);
 	return (error);
 }
 
 /*
- * File table vnode stat routine.
+ * File table wrapper for vn_stat
  */
+int
+vn_statfile(fp, sb, p)
+	struct file *fp;
+	struct stat *sb;
+	struct proc *p;
+{
+	struct vnode *vp = (struct vnode *)fp->f_data;
+
+	return vn_stat(vp, sb, p);
+}
+
+/*
+ * vnode stat routine.
+ */
+int
 vn_stat(vp, sb, p)
 	struct vnode *vp;
 	register struct stat *sb;
@@ -336,7 +404,7 @@ vn_stat(vp, sb, p)
 		break;
 	default:
 		return (EBADF);
-	};
+	}
 	sb->st_mode = mode;
 	sb->st_nlink = va.va_nlink;
 	sb->st_uid = va.va_uid;
@@ -356,6 +424,7 @@ vn_stat(vp, sb, p)
 /*
  * File table vnode ioctl routine.
  */
+int
 vn_ioctl(fp, com, data, p)
 	struct file *fp;
 	u_long com;
@@ -371,18 +440,22 @@ vn_ioctl(fp, com, data, p)
 	case VREG:
 	case VDIR:
 		if (com == FIONREAD) {
-			if (error = VOP_GETATTR(vp, &vattr, p->p_ucred, p))
+			error = VOP_GETATTR(vp, &vattr, p->p_ucred, p);
+			if (error)
 				return (error);
 			*(int *)data = vattr.va_size - fp->f_offset;
 			return (0);
 		}
-		if (com == FIONBIO || com == FIOASYNC)	/* XXX */
+		if (com == FIBMAP)
+			return VOP_IOCTL(vp, com, data, fp->f_flag,
+					 p->p_ucred, p);
+		if (com == FIONBIO || com == FIOASYNC)  /* XXX */
 			return (0);			/* XXX */
-		/* fall into ... */
+		/* fall into... */
 
 	default:
 		return (ENOTTY);
-
+		
 	case VFIFO:
 	case VCHR:
 	case VBLK:
@@ -400,6 +473,7 @@ vn_ioctl(fp, com, data, p)
 /*
  * File table vnode select routine.
  */
+int
 vn_select(fp, which, p)
 	struct file *fp;
 	int which;
@@ -407,12 +481,43 @@ vn_select(fp, which, p)
 {
 
 	return (VOP_SELECT(((struct vnode *)fp->f_data), which, fp->f_flag,
-		fp->f_cred, p));
+			   fp->f_cred, p));
+}
+
+/*
+ * Check that the vnode is still valid, and if so
+ * acquire requested lock.
+ */
+int
+vn_lock(struct vnode *vp, int flags, struct proc *p)
+{
+	int error;
+
+	if ((flags & LK_RECURSEFAIL) == 0)
+		flags |= LK_CANRECURSE;
+	
+	do {
+		if ((flags & LK_INTERLOCK) == 0)
+			simple_lock(&vp->v_interlock);
+		if (vp->v_flag & VXLOCK) {
+			vp->v_flag |= VXWANT;
+			simple_unlock(&vp->v_interlock);
+			tsleep((caddr_t)vp, PINOD, "vn_lock", 0);
+			error = ENOENT;
+		} else {
+			error = VOP_LOCK(vp, flags | LK_INTERLOCK, p);
+			if (error == 0)
+				return (error);
+		}
+		flags &= ~LK_INTERLOCK;
+	} while (flags & LK_RETRY);
+	return (error);
 }
 
 /*
  * File table vnode close routine.
  */
+int
 vn_closefile(fp, p)
 	struct file *fp;
 	struct proc *p;
@@ -420,4 +525,11 @@ vn_closefile(fp, p)
 
 	return (vn_close(((struct vnode *)fp->f_data), fp->f_flag,
 		fp->f_cred, p));
+}
+
+/*ARGSUSED*/
+int
+vn_kqfilter(struct file *fp, struct knote *kn)
+{
+	return (VOP_KQFILTER(((struct vnode *)fp->f_data), kn));
 }

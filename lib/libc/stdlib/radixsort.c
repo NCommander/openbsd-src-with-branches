@@ -35,8 +35,7 @@
  */
 
 #if defined(LIBC_SCCS) && !defined(lint)
-/*static char sccsid[] = "from: @(#)radixsort.c	8.1 (Berkeley) 6/4/93";*/
-static char *rcsid = "$Id: radixsort.c,v 1.5 1995/02/28 01:46:48 jtc Exp $";
+static char *rcsid = "$OpenBSD: radixsort.c,v 1.4 2002/02/16 21:27:24 millert Exp $";
 #endif /* LIBC_SCCS and not lint */
 
 /*
@@ -61,11 +60,11 @@ typedef struct {
 	int sn, si;
 } stack;
 
-static inline void simplesort
-	    __P((const u_char **, int, int, const u_char *, u_int));
-static void r_sort_a __P((const u_char **, int, int, const u_char *, u_int));
-static void r_sort_b __P((const u_char **,
-	    const u_char **, int, int, const u_char *, u_int));
+static __inline void simplesort
+(const u_char **, int, int, const u_char *, u_int);
+static void r_sort_a(const u_char **, int, int, const u_char *, u_int);
+static void r_sort_b(const u_char **,
+	    const u_char **, int, int, const u_char *, u_int);
 
 #define	THRESHOLD	20		/* Divert to simplesort(). */
 #define	SIZE		512		/* Default stack size. */
@@ -295,7 +294,7 @@ r_sort_b(a, ta, n, i, tr, endch)
 	}
 }
 		
-static inline void
+static __inline void
 simplesort(a, n, b, tr, endch)	/* insertion sort */
 	register const u_char **a;
 	int n, b;

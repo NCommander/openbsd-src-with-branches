@@ -1,3 +1,4 @@
+/*	$OpenBSD: htons.S,v 1.2 1994/10/26 06:39:27 cgd Exp $	*/
 /*	$NetBSD: htons.S,v 1.2 1994/10/26 06:39:27 cgd Exp $	*/
 
 /*-
@@ -42,7 +43,7 @@
 #ifdef notdef
 	.asciz "@(#)htons.s	5.1 (Berkeley) 5/12/90"
 #endif
-	.asciz "$NetBSD: htons.S,v 1.2 1994/10/26 06:39:27 cgd Exp $"
+	.asciz "$OpenBSD: htons.S,v 1.2 1994/10/26 06:39:27 cgd Exp $"
 #endif /* LIBC_SCCS and not lint */
 
 /* hostorder = htons(netorder) */

@@ -1,8 +1,10 @@
-/*	$NetBSD: lstInsert.c,v 1.4 1995/06/14 15:21:21 christos Exp $	*/
+/*	$OpenPackages$ */
+/*	$OpenBSD: lstInsert.c,v 1.4 1998/12/05 00:06:32 espie Exp $	*/
+/*	$NetBSD: lstInsert.c,v 1.5 1996/11/06 17:59:44 christos Exp $	*/
 
 /*
- * Copyright (c) 1988, 1989, 1990 The Regents of the University of California.
- * All rights reserved.
+ * Copyright (c) 1988, 1989, 1990, 1993
+ *	The Regents of the University of California.  All rights reserved.
  *
  * This code is derived from software contributed to Berkeley by
  * Adam de Boor.
@@ -36,20 +38,15 @@
  * SUCH DAMAGE.
  */
 
-#ifndef lint
-#if 0
-static char sccsid[] = "@(#)lstInsert.c	5.3 (Berkeley) 6/1/90";
-#else
-static char rcsid[] = "$NetBSD: lstInsert.c,v 1.4 1995/06/14 15:21:21 christos Exp $";
-#endif
-#endif /* not lint */
-
 /*-
  * LstInsert.c --
  *	Insert a new datum before an old one
  */
 
-#include	"lstInt.h"
+#include "lstInt.h"
+#include <sys/types.h>
+#include <stdlib.h>
+#include "memory.h"
 
 /*-
  *-----------------------------------------------------------------------
@@ -57,63 +54,62 @@ static char rcsid[] = "$NetBSD: lstInsert.c,v 1.4 1995/06/14 15:21:21 christos E
  *	Insert a new node with the given piece of data before the given
  *	node in the given list.
  *
- * Results:
- *	SUCCESS or FAILURE.
- *
  * Side Effects:
  *	the firstPtr field will be changed if ln is the first node in the
  *	list.
  *
  *-----------------------------------------------------------------------
  */
-ReturnStatus
-Lst_Insert (l, ln, d)
-    Lst	    	  	l;	/* list to manipulate */
-    LstNode	  	ln;	/* node before which to insert d */
-    ClientData	  	d;	/* datum to be inserted */
+void
+Lst_Insert(l, ln, d)
+    Lst 		l;	/* list to manipulate */
+    LstNode		ln;	/* node before which to insert d */
+    void		*d;	/* datum to be inserted */
 {
-    register ListNode	nLNode;	/* new lnode for d */
-    register ListNode	lNode = (ListNode)ln;
-    register List 	list = (List)l;
+    LstNode		nLNode; /* new lnode for d */
 
 
-    /*
-     * check validity of arguments
-     */
-    if (LstValid (l) && (LstIsEmpty (l) && ln == NILLNODE))
-	goto ok;
-    
-    if (!LstValid (l) || LstIsEmpty (l) || !LstNodeValid (ln, l)) {
-	return (FAILURE);
-    }
-    
-    ok:
-    PAlloc (nLNode, ListNode);
-    
+    if (ln == NULL && !Lst_IsEmpty(l))
+	return;
+
+    if (ln != NULL && Lst_IsEmpty(l))
+	return;
+
+    PAlloc(nLNode, LstNode);
+
     nLNode->datum = d;
-    nLNode->useCount = nLNode->flags = 0;
-    
-    if (ln == NILLNODE) {
-	if (list->isCirc) {
-	    nLNode->prevPtr = nLNode->nextPtr = nLNode;
-	} else {
-	    nLNode->prevPtr = nLNode->nextPtr = NilListNode;
-	}
-	list->firstPtr = list->lastPtr = nLNode;
+
+    if (ln == NULL) {
+	nLNode->prevPtr = nLNode->nextPtr = NULL;
+	l->firstPtr = l->lastPtr = nLNode;
     } else {
-	nLNode->prevPtr = lNode->prevPtr;
-	nLNode->nextPtr = lNode;
-	
-	if (nLNode->prevPtr != NilListNode) {
+	nLNode->prevPtr = ln->prevPtr;
+	nLNode->nextPtr = ln;
+
+	if (nLNode->prevPtr != NULL)
 	    nLNode->prevPtr->nextPtr = nLNode;
-	}
-	lNode->prevPtr = nLNode;
-	
-	if (lNode == list->firstPtr) {
-	    list->firstPtr = nLNode;
-	}
+	ln->prevPtr = nLNode;
+
+	if (ln == l->firstPtr)
+	    l->firstPtr = nLNode;
     }
-    
-    return (SUCCESS);
 }
-	
+
+void
+Lst_AtFront(l, d)
+    Lst 	l;
+    void	*d;
+{
+    LstNode	ln;
+
+    PAlloc(ln, LstNode);
+    ln->datum = d;
+
+    ln->nextPtr = l->firstPtr;
+    ln->prevPtr = NULL;
+    if (l->firstPtr == NULL)
+	l->lastPtr = ln;
+    else
+	l->firstPtr->prevPtr = ln;
+    l->firstPtr = ln;
+}

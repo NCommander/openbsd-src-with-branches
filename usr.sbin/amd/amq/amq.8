@@ -36,7 +36,7 @@
 .\" SUCH DAMAGE.
 .\"
 .\"     from: @(#)amq.8	8.3 (Berkeley) 4/18/94
-.\"	$Id: amq.8,v 1.6 1995/09/27 19:49:25 jtc Exp $
+.\"	$Id: amq.8,v 1.7 2001/08/02 18:37:34 mpech Exp $
 .\"
 .Dd March 16, 1991
 .Dt AMQ 8
@@ -48,7 +48,7 @@
 .Nm amq
 .Op Fl f
 .Op Fl h Ar hostname
-.Op Fl M Ar mountmap_entry
+.\".Op Fl M Ar mountmap_entry
 .Op Fl m
 .Op Fl s
 .Op Fl u
@@ -56,7 +56,7 @@
 .Op Ar directory
 .Ar ...
 .Sh DESCRIPTION
-.Nm Amq
+.Nm amq
 provides a simple way of determining the current state of the
 .Xr amd 8
 program.
@@ -71,14 +71,16 @@ option.
 .Pp
 If directory names are given, as output by default,
 then per-filesystem information is displayed.
-.Sh OPTIONS
+.Pp
+The options are as follows:
 .Bl -tag -width Ds
 .It Fl f
 Request automounter to flush the internal caches.
 .It Fl h Ar hostname
 Query alternate host
 .Ar hostname .
-By default the local host is used.  In an
+By default the local host is used.
+In an
 .Tn HP-UX
 cluster, the root server is queried by default, since
 that is the system on which the automounter is normally run.
@@ -90,40 +92,40 @@ which occurred while mounting.
 Request the automounter to provide system-wide mount statistics.
 .It Fl u
 Request the automounter to unmount the named filesystems
-instead of providing information about them.  Unmounts are requested,
-not forced.  They merely cause the mounted filesystem to timeout,
+instead of providing information about them.
+Unmounts are requested, not forced.
+They merely cause the mounted filesystem to timeout,
 which will be picked up by
-.Xr amd Ns \'s
+.Nm amd Ns \'s
 main scheduler thus causing the normal timeout action to be taken.
 .It Fl v
-Request the automounter to provide version information.  This is a subset
-of the information provided by
+Request the automounter to provide version information.
+This is a subset of the information provided by
 .Xr amd Ns \'s Fl v
 option.
-.It Fl M
-Request automounter to add the given map entry to the root map and then
-trigger a mount request for it.
+.\".It Fl M
+.\"Request automounter to add the given map entry to the root map and then
+.\"trigger a mount request for it.
 .El
 .Sh FILES
 .Bl -tag -width amq.xxxxx -compact
-.Bl -tag -width Ds
 .It Pa amq.x
 .Tn RPC
-protocol description.
+protocol description
 .El
+.Sh SEE ALSO
+.Xr amd 8
+.Sh AUTHORS
+.An Jan-Simon Pendry
+<jsp@doc.ic.ac.uk>, Department of Computing, Imperial College, London, UK.
+.\" .Sh HISTORY
+.\" .Nm amq
+.\" .At
 .Sh CAVEATS
-.Nm Amq
+.Nm amq
 uses a Sun registered
 .Tn RPC
 program number (300019 decimal) which may not
 be in the
 .Pa /etc/rpc
 database.
-.Sh SEE ALSO
-.Xr amd 8
-.Sh AUTHOR
-.An Jan-Simon Pendry
-<jsp@doc.ic.ac.uk>, Department of Computing, Imperial College, London, UK.
-.\" .Sh HISTORY
-.\" .Nm Amq
-.\" .At

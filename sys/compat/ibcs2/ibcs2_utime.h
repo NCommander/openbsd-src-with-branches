@@ -1,3 +1,6 @@
+/*	$OpenBSD: ibcs2_utime.h,v 1.2 1996/05/03 17:05:35 christos Exp $	*/
+/*	$NetBSD: ibcs2_utime.h,v 1.2 1996/05/03 17:05:35 christos Exp $	*/
+
 /*
  * Copyright (c) 1995 Scott Bartram
  * All rights reserved.

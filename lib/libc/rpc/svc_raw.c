@@ -1,5 +1,3 @@
-/*	$NetBSD: svc_raw.c,v 1.3 1995/02/25 03:01:59 cgd Exp $	*/
-
 /*
  * Sun RPC is a product of Sun Microsystems, Inc. and is provided for
  * unrestricted use provided that this legend is included on all tape
@@ -30,10 +28,8 @@
  */
 
 #if defined(LIBC_SCCS) && !defined(lint)
-/*static char *sccsid = "from: @(#)svc_raw.c 1.15 87/08/11 Copyr 1984 Sun Micro";*/
-/*static char *sccsid = "from: @(#)svc_raw.c	2.1 88/07/29 4.0 RPCSRC";*/
-static char *rcsid = "$NetBSD: svc_raw.c,v 1.3 1995/02/25 03:01:59 cgd Exp $";
-#endif
+static char *rcsid = "$OpenBSD: svc_raw.c,v 1.5 2001/03/03 06:50:28 deraadt Exp $";
+#endif /* LIBC_SCCS and not lint */
 
 /*
  * svc_raw.c,   This a toy for simple testing and timing.
@@ -77,12 +73,12 @@ static struct xp_ops server_ops = {
 SVCXPRT *
 svcraw_create()
 {
-	register struct svcraw_private *srp = svcraw_private;
+	struct svcraw_private *srp = svcraw_private;
 
-	if (srp == 0) {
+	if (srp == NULL) {
 		srp = (struct svcraw_private *)calloc(1, sizeof (*srp));
-		if (srp == 0)
-			return (0);
+		if (srp == NULL)
+			return (NULL);
 	}
 	srp->server.xp_sock = 0;
 	srp->server.xp_port = 0;
@@ -99,15 +95,16 @@ svcraw_stat()
 	return (XPRT_IDLE);
 }
 
+/* ARGSUSED */
 static bool_t
 svcraw_recv(xprt, msg)
 	SVCXPRT *xprt;
 	struct rpc_msg *msg;
 {
-	register struct svcraw_private *srp = svcraw_private;
-	register XDR *xdrs;
+	struct svcraw_private *srp = svcraw_private;
+	XDR *xdrs;
 
-	if (srp == 0)
+	if (srp == NULL)
 		return (0);
 	xdrs = &srp->xdr_stream;
 	xdrs->x_op = XDR_DECODE;
@@ -117,15 +114,16 @@ svcraw_recv(xprt, msg)
 	return (TRUE);
 }
 
+/* ARGSUSED */
 static bool_t
 svcraw_reply(xprt, msg)
 	SVCXPRT *xprt;
 	struct rpc_msg *msg;
 {
-	register struct svcraw_private *srp = svcraw_private;
-	register XDR *xdrs;
+	struct svcraw_private *srp = svcraw_private;
+	XDR *xdrs;
 
-	if (srp == 0)
+	if (srp == NULL)
 		return (FALSE);
 	xdrs = &srp->xdr_stream;
 	xdrs->x_op = XDR_ENCODE;
@@ -136,29 +134,31 @@ svcraw_reply(xprt, msg)
 	return (TRUE);
 }
 
+/* ARGSUSED */
 static bool_t
 svcraw_getargs(xprt, xdr_args, args_ptr)
 	SVCXPRT *xprt;
 	xdrproc_t xdr_args;
 	caddr_t args_ptr;
 {
-	register struct svcraw_private *srp = svcraw_private;
+	struct svcraw_private *srp = svcraw_private;
 
-	if (srp == 0)
+	if (srp == NULL)
 		return (FALSE);
 	return ((*xdr_args)(&srp->xdr_stream, args_ptr));
 }
 
+/* ARGSUSED */
 static bool_t
 svcraw_freeargs(xprt, xdr_args, args_ptr)
 	SVCXPRT *xprt;
 	xdrproc_t xdr_args;
 	caddr_t args_ptr;
 { 
-	register struct svcraw_private *srp = svcraw_private;
-	register XDR *xdrs;
+	struct svcraw_private *srp = svcraw_private;
+	XDR *xdrs;
 
-	if (srp == 0)
+	if (srp == NULL)
 		return (FALSE);
 	xdrs = &srp->xdr_stream;
 	xdrs->x_op = XDR_FREE;

@@ -326,7 +326,7 @@ usage(void)
 {
     fprintf(stderr,
 	    "Usage: %s [ -v | -s | -t ] [ -f filename ] [-tokens] [-srvtab ]\n",
-	    getprogname());
+	    __progname);
     exit(1);
 }
 
@@ -340,8 +340,6 @@ main(int argc, char **argv)
     int     do_tokens = 0;
     const char *tkt_file = NULL;
     int     eval;
-
-    setprogname(argv[0]);
 
     while (*(++argv)) {
 	if (!strcmp(*argv, "-v")) {

@@ -1,3 +1,4 @@
+/*	$OpenBSD: printf.c,v 1.10 2000/12/22 22:53:10 deraadt Exp $	*/
 /*	$NetBSD: printf.c,v 1.6 1995/03/21 09:03:15 cgd Exp $	*/
 
 /*
@@ -33,7 +34,7 @@
  * SUCH DAMAGE.
  */
 
-#if !defined(BUILTIN) && !defined(SHELL)
+#if !defined(BUILTIN)
 #ifndef lint
 static char copyright[] =
 "@(#) Copyright (c) 1989, 1993\n\
@@ -45,36 +46,19 @@ static char copyright[] =
 #if 0
 static char sccsid[] = "@(#)printf.c	8.1 (Berkeley) 7/20/93";
 #else
-static char rcsid[] = "$NetBSD: printf.c,v 1.6 1995/03/21 09:03:15 cgd Exp $";
+static char rcsid[] = "$OpenBSD: printf.c,v 1.10 2000/12/22 22:53:10 deraadt Exp $";
 #endif
 #endif /* not lint */
 
 #include <sys/types.h>
 
-#include <err.h>
 #include <errno.h>
 #include <limits.h>
-#ifdef SHELL
-#define	EOF	-1
-#else
 #include <stdio.h>
-#endif
 #include <stdlib.h>
+#include <unistd.h>
 #include <string.h>
-
-/*
- * XXX
- * This *has* to go away.  TK.
- */
-#ifdef SHELL
-#define main printfcmd
-#define warnx(a, b, c) {						\
-	char buf[64];							\
-	(void)sprintf(buf, sizeof(buf), a, b, c);			\
-	error(buf);							\
-}
-#include "../../bin/sh/bltin/bltin.h"
-#endif
+#include <err.h>
 
 #define PF(f, func) { \
 	if (fieldwidth) \
@@ -88,15 +72,15 @@ static char rcsid[] = "$NetBSD: printf.c,v 1.6 1995/03/21 09:03:15 cgd Exp $";
 		(void)printf(f, func); \
 }
 
-static int	 asciicode __P((void));
-static void	 escape __P((char *));
-static int	 getchr __P((void));
-static double	 getdouble __P((void));
-static int	 getint __P((int *));
-static int	 getlong __P((long *));
-static char	*getstr __P((void));
-static char	*mklong __P((char *, int));
-static void	 usage __P((void));
+static int	 asciicode(void);
+static void	 escape(char *);
+static int	 getchr(void);
+static double	 getdouble(void);
+static int	 getint(int *);
+static int	 getlong(long *);
+static char	*getstr(void);
+static char	*mklong(char *, int);
+static void	 usage(void);
 
 static char **gargv;
 
@@ -109,14 +93,12 @@ main(argc, argv)
 	int argc;
 	char *argv[];
 {
-	extern int optind;
 	static char *skip1, *skip2;
 	int ch, end, fieldwidth, precision;
 	char convch, nextch, *format, *fmt, *start;
 
-	while ((ch = getopt(argc, argv, "")) != EOF)
+	while ((ch = getopt(argc, argv, "")) != -1)
 		switch (ch) {
-		case '?':
 		default:
 			usage();
 			return (1);
@@ -149,8 +131,7 @@ next:		for (start = fmt;; ++fmt) {
 			if (!*fmt) {
 				/* avoid infinite loop */
 				if (end == 1) {
-					warnx("missing format character",
-					    NULL, NULL);
+					warnx("missing format character");
 					return (1);
 				}
 				end = 1;
@@ -192,7 +173,7 @@ next:		for (start = fmt;; ++fmt) {
 		/* skip to conversion char */
 		for (; strchr(skip2, *fmt); ++fmt);
 		if (!*fmt) {
-			warnx("missing format character", NULL, NULL);
+			warnx("missing format character");
 			return (1);
 		}
 
@@ -233,7 +214,7 @@ next:		for (start = fmt;; ++fmt) {
 			break;
 		}
 		default:
-			warnx("illegal format character", NULL, NULL);
+			warnx("illegal format character");
 			return (1);
 		}
 		*fmt = nextch;
@@ -246,10 +227,24 @@ mklong(str, ch)
 	char *str;
 	int ch;
 {
-	static char copy[64];
+	static char *copy;
+	static int copysize;
 	int len;
 
 	len = strlen(str) + 2;
+	if (copysize < len) {
+		char *newcopy;
+		copysize = len + 256;
+
+		newcopy = realloc(copy, copysize);
+		if (newcopy == NULL) {
+			copysize = 0;
+			free(copy);
+			copy = NULL;
+			return (NULL);
+		}
+		copy = newcopy;
+	}
 	memmove(copy, str, len - 3);
 	copy[len - 3] = 'l';
 	copy[len - 2] = ch;
@@ -264,7 +259,7 @@ escape(fmt)
 	register char *store;
 	register int value, c;
 
-	for (store = fmt; c = *fmt; ++fmt, ++store) {
+	for (store = fmt; (c = *fmt) != 0; ++fmt, ++store) {
 		if (c != '\\') {
 			*store = c;
 			continue;
@@ -280,6 +275,9 @@ escape(fmt)
 			break;
 		case 'a':		/* bell/alert */
 			*store = '\7';
+			break;
+		case 'e':		/* escape */
+			*store = '\033';
 			break;
 		case 'b':		/* backspace */
 			*store = '\b';
@@ -366,7 +364,7 @@ getlong(lp)
 		errno = 0;
 		val = strtol(*gargv, &ep, 0);
 		if (*ep != '\0') {
-			warnx("%s: illegal number", *gargv, NULL);
+			warnx("%s: illegal number", *gargv);
 			return (1);
 		}
 		if (errno == ERANGE)

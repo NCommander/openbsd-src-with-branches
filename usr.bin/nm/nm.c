@@ -1,4 +1,5 @@
-/*	$NetBSD: nm.c,v 1.6 1995/08/31 23:42:00 jtc Exp $	*/
+/*	$OpenBSD: nm.c,v 1.15 2001/11/19 19:02:15 mpech Exp $	*/
+/*	$NetBSD: nm.c,v 1.7 1996/01/14 23:04:03 pk Exp $	*/
 
 /*
  * Copyright (c) 1989, 1993
@@ -46,38 +47,55 @@ static char copyright[] =
 #if 0
 static char sccsid[] = "@(#)nm.c	8.1 (Berkeley) 6/6/93";
 #endif
-static char rcsid[] = "$NetBSD: nm.c,v 1.6 1995/08/31 23:42:00 jtc Exp $";
+static char rcsid[] = "$OpenBSD: nm.c,v 1.15 2001/11/19 19:02:15 mpech Exp $";
 #endif /* not lint */
 
+#include <sys/param.h>
 #include <sys/types.h>
 #include <a.out.h>
 #include <stab.h>
 #include <ar.h>
 #include <ranlib.h>
 #include <unistd.h>
-#include <errno.h>
+#include <err.h>
 #include <ctype.h>
+#include <link.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+/* XXX get shared code to handle byte-order swaps */
+#include "byte.c"
 
+
+int demangle = 0;
 int ignore_bad_archive_entries = 1;
 int print_only_external_symbols;
 int print_only_undefined_symbols;
 int print_all_symbols;
 int print_file_each_line;
+int show_extensions = 0;
 int fcount;
 
 int rev;
-int fname(), rname(), value();
-int (*sfunc)() = fname;
+int fname(const void *, const void *);
+int rname(const void *, const void *);
+int value(const void *, const void *);
+int (*sfunc)(const void *, const void *) = fname;
+char *otherstring(struct nlist *);
+char *typestring(unsigned int);
+char typeletter(unsigned int);
+
 
 /* some macros for symbol type (nlist.n_type) handling */
 #define	IS_DEBUGGER_SYMBOL(x)	((x) & N_STAB)
 #define	IS_EXTERNAL(x)		((x) & N_EXT)
 #define	SYMBOL_TYPE(x)		((x) & (N_TYPE | N_STAB))
 
-void *emalloc(), *erealloc();
+void	*emalloc(size_t);
+void	 pipe2cppfilt(void);
+void	 usage(void);
+char	*symname(struct nlist *);
+void 	print_symbol(const char *, struct nlist *);
 
 /*
  * main()
@@ -91,10 +109,19 @@ main(argc, argv)
 	extern int optind;
 	int ch, errors;
 
-	while ((ch = getopt(argc, argv, "agnopruw")) != EOF) {
+	while ((ch = getopt(argc, argv, "aBCegnopruw")) != -1) {
 		switch (ch) {
 		case 'a':
 			print_all_symbols = 1;
+			break;
+		case 'B':
+			/* no-op, compat with gnu-nm */
+			break;
+		case 'C':
+			demangle = 1;
+			break;
+		case 'e':
+			show_extensions = 1;
 			break;
 		case 'g':
 			print_only_external_symbols = 1;
@@ -122,6 +149,9 @@ main(argc, argv)
 			usage();
 		}
 	}
+
+	if (demangle)
+		pipe2cppfilt();
 	fcount = argc - optind;
 	argv += optind;
 
@@ -153,7 +183,7 @@ process_file(fname)
 	char magic[SARMAG];
     
 	if (!(fp = fopen(fname, "r"))) {
-		(void)fprintf(stderr, "nm: cannot read %s.\n", fname);
+		warn("cannot read %s", fname);
 		return(1);
 	}
 
@@ -165,18 +195,17 @@ process_file(fname)
 	 * header, and skip back to the beginning
 	 */
 	if (fread((char *)&exec_head, sizeof(exec_head), (size_t)1, fp) != 1) {
-		(void)fprintf(stderr, "nm: %s: bad format.\n", fname);
+		warnx("%s: bad format", fname);
 		(void)fclose(fp);
 		return(1);
 	}
 	rewind(fp);
 
+	if (BAD_OBJECT(exec_head)) {
 	/* this could be an archive */
-	if (N_BADMAG(exec_head)) {
 		if (fread(magic, sizeof(magic), (size_t)1, fp) != 1 ||
 		    strncmp(magic, ARMAG, SARMAG)) {
-			(void)fprintf(stderr,
-			    "nm: %s: not object file or archive.\n", fname);
+			warnx("%s: not object file or archive", fname);
 			(void)fclose(fp);
 			return(1);
 		}
@@ -212,8 +241,7 @@ show_archive(fname, fp)
 	while (fread((char *)&ar_head, sizeof(ar_head), (size_t)1, fp) == 1) {
 		/* bad archive entry - stop processing this archive */
 		if (strncmp(ar_head.ar_fmag, ARFMAG, sizeof(ar_head.ar_fmag))) {
-			(void)fprintf(stderr,
-			    "nm: %s: bad format archive header", fname);
+			warnx("%s: bad format archive header", fname);
 			(void)free(name);
 			return(1);
 		}
@@ -246,13 +274,13 @@ show_archive(fname, fp)
 			int len = atoi(&ar_head.ar_name[3]);
 			if (len > namelen) {
 				p -= (long)name;
-				name = (char *)erealloc(name, baselen+len);
+				if ((name = realloc(name, baselen+len)) == NULL)
+					err(1, NULL);
 				namelen = len;
 				p += (long)name;
 			}
 			if (fread(p, len, 1, fp) != 1) {
-				(void)fprintf(stderr,
-				    "nm: %s: premature EOF.\n", name);
+				warnx("%s: premature EOF", name);
 				(void)free(name);
 				return 1;
 			}
@@ -267,20 +295,18 @@ show_archive(fname, fp)
 		/* get and check current object's header */
 		if (fread((char *)&exec_head, sizeof(exec_head),
 		    (size_t)1, fp) != 1) {
-			(void)fprintf(stderr, "nm: %s: premature EOF.\n", name);
+			warnx("%s: premature EOF", name);
 			(void)free(name);
 			return(1);
 		}
 
-		if (N_BADMAG(exec_head)) {
+		if (BAD_OBJECT(exec_head)) {
 			if (!ignore_bad_archive_entries) {
-				(void)fprintf(stderr,
-				    "nm: %s: bad format.\n", name);
+				 warnx("%s: bad format", name);
 				rval = 1;
 			}
 		} else {
-			(void)fseek(fp, (long)-sizeof(exec_head),
-			    SEEK_CUR);
+			(void)fseek(fp, (long)-sizeof(exec_head), SEEK_CUR);
 			if (!print_file_each_line)
 				(void)printf("\n%s:\n", name);
 			rval |= show_objfile(name, fp);
@@ -293,8 +319,7 @@ show_archive(fname, fp)
 #define even(x) (((x) + 1) & ~1)
 skip:		if (fseek(fp, last_ar_off + even(atol(ar_head.ar_size)),
 		    SEEK_SET)) {
-			(void)fprintf(stderr,
-			    "nm: %s: %s\n", fname, strerror(errno));
+			warn("%s", fname);
 			(void)free(name);
 			return(1);
 		}
@@ -313,16 +338,16 @@ show_objfile(objname, fp)
 	char *objname;
 	FILE *fp;
 {
-	register struct nlist *names, *np;
-	register int i, nnames, nrawnames;
+	struct nlist *names, *np;
+	struct nlist **snames;
+	int i, nnames, nrawnames;
 	struct exec head;
 	long stabsize;
 	char *stab;
 
 	/* read a.out header */
 	if (fread((char *)&head, sizeof(head), (size_t)1, fp) != 1) {
-		(void)fprintf(stderr,
-		    "nm: %s: cannot read header.\n", objname);
+		warnx("%s: cannot read header", objname);
 		return(1);
 	}
 
@@ -331,40 +356,41 @@ show_objfile(objname, fp)
 	 * to the beginning of the a.out header
 	 */
 	if (fseek(fp, (long)-sizeof(head), SEEK_CUR)) {
-		(void)fprintf(stderr,
-		    "nm: %s: %s\n", objname, strerror(errno));
+		warn("%s", objname);
 		return(1);
 	}
 
-	/* stop if this is no valid object file */
-	if (N_BADMAG(head)) {
-		(void)fprintf(stderr,
-		    "nm: %s: bad format.\n", objname);
+	/* stop if this is no valid object file, or a format we don't dare
+	 * playing with
+	 */
+	if (BAD_OBJECT(head)) {
+		warnx("%s: bad format", objname);
 		return(1);
 	}
+
+	fix_header_order(&head);
 
 	/* stop if the object file contains no symbol table */
 	if (!head.a_syms) {
-		(void)fprintf(stderr,
-		    "nm: %s: no name list.\n", objname);
+		warnx("%s: no name list", objname);
 		return(1);
 	}
 
 	if (fseek(fp, (long)N_SYMOFF(head), SEEK_CUR)) {
-		(void)fprintf(stderr,
-		    "nm: %s: %s\n", objname, strerror(errno));
+		warn("%s", objname);
 		return(1);
 	}
 
 	/* get memory for the symbol table */
 	names = emalloc((size_t)head.a_syms);
 	nrawnames = head.a_syms / sizeof(*names);
+	snames = emalloc(nrawnames*sizeof(struct nlist *));
 	if (fread((char *)names, (size_t)head.a_syms, (size_t)1, fp) != 1) {
-		(void)fprintf(stderr,
-		    "nm: %s: cannot read symbol table.\n", objname);
+		warnx("%s: cannot read symbol table", objname);
 		(void)free((char *)names);
 		return(1);
 	}
+	fix_nlists_order(names, nrawnames, N_GETMID(head));
 
 	/*
 	 * Following the symbol table comes the string table.  The first
@@ -372,11 +398,11 @@ show_objfile(objname, fp)
 	 * _including_ the size specification itself.
 	 */
 	if (fread((char *)&stabsize, sizeof(stabsize), (size_t)1, fp) != 1) {
-		(void)fprintf(stderr,
-		    "nm: %s: cannot read stab size.\n", objname);
+		warnx("%s: cannot read stab size", objname);
 		(void)free((char *)names);
 		return(1);
 	}
+	stabsize = fix_long_order(stabsize, N_GETMID(head));
 	stab = emalloc((size_t)stabsize);
 
 	/*
@@ -385,8 +411,7 @@ show_objfile(objname, fp)
 	 */
 	stabsize -= 4;		/* we already have the size */
 	if (fread(stab + 4, (size_t)stabsize, (size_t)1, fp) != 1) {
-		(void)fprintf(stderr,
-		    "nm: %s: stab truncated..\n", objname);
+		warnx("%s: stab truncated..", objname);
 		(void)free((char *)names);
 		(void)free(stab);
 		return(1);
@@ -402,16 +427,6 @@ show_objfile(objname, fp)
 	 * filter out all entries which we don't want to print anyway
 	 */
 	for (np = names, i = nnames = 0; i < nrawnames; np++, i++) {
-		if (SYMBOL_TYPE(np->n_type) == N_UNDF && np->n_value)
-			np->n_type = N_COMM | (np->n_type & N_EXT);
-		if (!print_all_symbols && IS_DEBUGGER_SYMBOL(np->n_type))
-			continue;
-		if (print_only_external_symbols && !IS_EXTERNAL(np->n_type))
-			continue;
-		if (print_only_undefined_symbols &&
-		    SYMBOL_TYPE(np->n_type) != N_UNDF)
-			continue;
-
 		/*
 		 * make n_un.n_name a character pointer by adding the string
 		 * table's base to n_un.n_strx
@@ -422,59 +437,107 @@ show_objfile(objname, fp)
 			np->n_un.n_name = stab + np->n_un.n_strx;
 		else
 			np->n_un.n_name = "";
-		names[nnames++] = *np;
+		if (SYMBOL_TYPE(np->n_type) == N_UNDF && np->n_value)
+			np->n_type = N_COMM | (np->n_type & N_EXT);
+		if (!print_all_symbols && IS_DEBUGGER_SYMBOL(np->n_type))
+			continue;
+		if (print_only_external_symbols && !IS_EXTERNAL(np->n_type))
+			continue;
+		if (print_only_undefined_symbols &&
+		    SYMBOL_TYPE(np->n_type) != N_UNDF)
+			continue;
+
+		snames[nnames++] = np;
 	}
 
 	/* sort the symbol table if applicable */
 	if (sfunc)
-		qsort((char *)names, (size_t)nnames, sizeof(*names), sfunc);
+		qsort(snames, (size_t)nnames, sizeof(*snames), sfunc);
 
 	/* print out symbols */
-	for (np = names, i = 0; i < nnames; np++, i++)
-		print_symbol(objname, np);
+	for (i = 0; i < nnames; i++) {
+		if (show_extensions && snames[i] != names &&
+		    SYMBOL_TYPE((snames[i] -1)->n_type) == N_INDR)
+			continue;
+		print_symbol(objname, snames[i]);
+	}
 
-	(void)free((char *)names);
+	(void)free(snames);
+	(void)free(names);
 	(void)free(stab);
 	return(0);
+}
+
+char *
+symname(sym)
+	struct nlist *sym;
+{
+	if (demangle && sym->n_un.n_name[0] == '_') 
+		return sym->n_un.n_name + 1;
+	else
+		return sym->n_un.n_name;
 }
 
 /*
  * print_symbol()
  *	show one symbol
  */
+void
 print_symbol(objname, sym)
-	char *objname;
-	register struct nlist *sym;
+	const char *objname;
+	struct nlist *sym;
 {
-	char *typestring(), typeletter();
-
 	if (print_file_each_line)
 		(void)printf("%s:", objname);
 
 	/*
-	 * handle undefined-only format seperately (no space is
+	 * handle undefined-only format especially (no space is
 	 * left for symbol values, no type field is printed)
 	 */
-	if (print_only_undefined_symbols) {
-		(void)puts(sym->n_un.n_name);
-		return;
+	if (!print_only_undefined_symbols) {
+		/* print symbol's value */
+		if (SYMBOL_TYPE(sym->n_type) == N_UNDF || 
+		    (show_extensions && SYMBOL_TYPE(sym->n_type) == N_INDR && 
+		     sym->n_value == 0))
+			(void)printf("        ");
+		else
+			(void)printf("%08lx", sym->n_value);
+
+		/* print type information */
+		if (IS_DEBUGGER_SYMBOL(sym->n_type))
+			(void)printf(" - %02x %04x %5s ", sym->n_other,
+			    sym->n_desc&0xffff, typestring(sym->n_type));
+		else if (show_extensions)
+			(void)printf(" %c%2s ", typeletter(sym->n_type),
+			    otherstring(sym));
+		else
+			(void)printf(" %c ", typeletter(sym->n_type));
 	}
 
-	/* print symbol's value */
-	if (SYMBOL_TYPE(sym->n_type) == N_UNDF)
-		(void)printf("        ");
+	if (SYMBOL_TYPE(sym->n_type) == N_INDR && show_extensions) {
+		printf("%s -> %s\n", symname(sym), symname(sym+1));
+	}
 	else
-		(void)printf("%08lx", sym->n_value);
+		(void)puts(symname(sym));
+}
 
-	/* print type information */
-	if (IS_DEBUGGER_SYMBOL(sym->n_type))
-		(void)printf(" - %02x %04x %5s ", sym->n_other,
-		    sym->n_desc&0xffff, typestring(sym->n_type));
-	else
-		(void)printf(" %c ", typeletter(sym->n_type));
+char *
+otherstring(sym)
+	struct nlist *sym;
+{
+	static char buf[3];
+	char *result;
 
-	/* print the symbol's name */
-	(void)puts(sym->n_un.n_name);
+	result = buf;
+
+	if (N_BIND(sym) == BIND_WEAK)
+		*result++ = 'w';
+	if (N_AUX(sym) == AUX_OBJECT)
+		*result++ = 'o';
+	else if (N_AUX(sym) == AUX_FUNC)
+		*result++ = 'f';
+	*result++ = 0;
+	return buf;
 }
 
 /*
@@ -483,7 +546,7 @@ print_symbol(objname, sym)
  */
 char *
 typestring(type)
-	register u_char type;
+	unsigned int type;
 {
 	switch(type) {
 	case N_BCOMM:
@@ -538,7 +601,7 @@ typestring(type)
  */
 char
 typeletter(type)
-	u_char type;
+	unsigned int type;
 {
 	switch(SYMBOL_TYPE(type)) {
 	case N_ABS:
@@ -567,42 +630,45 @@ typeletter(type)
 	return('?');
 }
 
+int
 fname(a0, b0)
-	void *a0, *b0;
+	const void *a0, *b0;
 {
-	struct nlist *a = a0, *b = b0;
+	struct nlist * const *a = a0, * const *b = b0;
 
-	return(strcmp(a->n_un.n_name, b->n_un.n_name));
+	return(strcmp((*a)->n_un.n_name, (*b)->n_un.n_name));
 }
 
+int
 rname(a0, b0)
-	void *a0, *b0;
+	const void *a0, *b0;
 {
-	struct nlist *a = a0, *b = b0;
+	struct nlist * const *a = a0, * const *b = b0;
 
-	return(strcmp(b->n_un.n_name, a->n_un.n_name));
+	return(strcmp((*b)->n_un.n_name, (*a)->n_un.n_name));
 }
 
+int
 value(a0, b0)
-	void *a0, *b0;
+	const void *a0, *b0;
 {
-	register struct nlist *a = a0, *b = b0;
+	struct nlist * const *a = a0, * const *b = b0;
 
-	if (SYMBOL_TYPE(a->n_type) == N_UNDF)
-		if (SYMBOL_TYPE(b->n_type) == N_UNDF)
+	if (SYMBOL_TYPE((*a)->n_type) == N_UNDF)
+		if (SYMBOL_TYPE((*b)->n_type) == N_UNDF)
 			return(0);
 		else
 			return(-1);
-	else if (SYMBOL_TYPE(b->n_type) == N_UNDF)
+	else if (SYMBOL_TYPE((*b)->n_type) == N_UNDF)
 		return(1);
 	if (rev) {
-		if (a->n_value == b->n_value)
+		if ((*a)->n_value == (*b)->n_value)
 			return(rname(a0, b0));
-		return(b->n_value > a->n_value ? 1 : -1);
+		return((*b)->n_value > (*a)->n_value ? 1 : -1);
 	} else {
-		if (a->n_value == b->n_value)
+		if ((*a)->n_value == (*b)->n_value)
 			return(fname(a0, b0));
-		return(a->n_value > b->n_value ? 1 : -1);
+		return((*a)->n_value > (*b)->n_value ? 1 : -1);
 	}
 }
 
@@ -615,24 +681,41 @@ emalloc(size)
 	/* NOSTRICT */
 	if (p = malloc(size))
 		return(p);
-	(void)fprintf(stderr, "nm: %s\n", strerror(errno));
-	exit(1);
+	err(1, NULL);
 }
 
-void *
-erealloc(p, size)
-	void   *p;
-	size_t size;
+#define CPPFILT	"/usr/bin/c++filt"
+
+void
+pipe2cppfilt()
 {
-	/* NOSTRICT */
-	if (p = realloc(p, size))
-		return(p);
-	(void)fprintf(stderr, "nm: %s\n", strerror(errno));
-	exit(1);
+	int pip[2];
+	char *argv[2];
+
+	argv[0] = "c++filt";
+	argv[1] = NULL;
+
+	if (pipe(pip) == -1)
+		err(1, "pipe");
+	switch(fork()) {
+	case -1:
+		err(1, "fork");
+	default:
+		dup2(pip[0], 0);
+		close(pip[0]);
+		close(pip[1]);
+		execve(CPPFILT, argv, NULL);
+		err(1, "execve");
+	case 0:
+		dup2(pip[1], 1);
+		close(pip[1]);
+		close(pip[0]);
+	}
 }
 
+void
 usage()
 {
-	(void)fprintf(stderr, "usage: nm [-agnopruw] [file ...]\n");
+	(void)fprintf(stderr, "usage: nm [-aCgnopruw] [file ...]\n");
 	exit(1);
 }

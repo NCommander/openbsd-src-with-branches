@@ -1,20 +1,19 @@
-#
+#	$OpenBSD: Makefile.inc,v 1.4 2000/06/19 01:49:30 miod Exp $
 #	etc.sun3/Makefile.inc -- sun3-specific etc Makefile targets
-#
-#	$Id: Makefile.inc,v 1.1 1995/07/07 16:05:20 gwr Exp $
 
 .ifdef DESTDIR
-snap_md: netbsd-gen netbsd-dl
-	cp -p ${.CURDIR}/etc.sun3/README ${DESTDIR}/snapshot/README
+snap_md: bsd bootblocks distrib
+	cp ${.CURDIR}/../sys/arch/sun3/compile/GENERIC/bsd \
+	    ${DESTDIR}/snapshot/bsd
 
-netbsd-gen:
-	cd ${.CURDIR}/../sys/arch/sun3/compile/GENERIC && make
-	gzip -9 < ${.CURDIR}/../sys/arch/sun3/compile/GENERIC/netbsd \
-	  > ${DESTDIR}/snapshot/netbsd-gen.gz
+bsd:
+	cd ${.CURDIR}/../sys/arch/sun3/conf && config GENERIC
+	cd ${.CURDIR}/../sys/arch/sun3/compile/GENERIC && \
+	    ${MAKE} clean && ${MAKE} depend && exec ${MAKE}
 
-netbsd-dl:
-	cd ${.CURDIR}/../sys/arch/sun3/compile/DISKLESS && make
-	gzip -9 < ${.CURDIR}/../sys/arch/sun3/compile/DISKLESS/netbsd \
-	  > ${DESTDIR}/snapshot/netbsd-dl.gz
+bootblocks:
+	cp ${DESTDIR}/usr/mdec/*boot* ${DESTDIR}/snapshot
+
+.PHONY: bsd bootblocks
 
 .endif	# DESTDIR check

@@ -1,4 +1,5 @@
-/*	$NetBSD: net.c,v 1.9 1995/09/23 17:14:40 thorpej Exp $	*/
+/*	$OpenBSD: net.c,v 1.10 1998/05/31 23:39:15 mickey Exp $	*/
+/*	$NetBSD: net.c,v 1.14 1996/10/13 02:29:02 christos Exp $	*/
 
 /*
  * Copyright (c) 1992 Regents of the University of California.
@@ -42,9 +43,8 @@
 #include <sys/param.h>
 #include <sys/socket.h>
 
-#include <string.h>
-
 #include <net/if.h>
+#include <netinet/in.h>
 
 #include <netinet/in.h>
 #include <netinet/if_ether.h>
@@ -76,9 +76,9 @@ sendudp(d, pkt, len)
 		printf("sendudp: d=%x called.\n", (u_int)d);
 		if (d) {
 			printf("saddr: %s:%d",
-				inet_ntoa(d->myip), ntohs(d->myport));
+			    inet_ntoa(d->myip), ntohs(d->myport));
 			printf(" daddr: %s:%d\n",
-				inet_ntoa(d->destip), ntohs(d->destport));
+			    inet_ntoa(d->destip), ntohs(d->destport));
 		}
 	}
 #endif
@@ -105,9 +105,7 @@ sendudp(d, pkt, len)
 	/* Calculate checksum (must save and restore ip header) */
 	tip = *ip;
 	ui = (struct udpiphdr *)ip;
-	ui->ui_next = 0;
-	ui->ui_prev = 0;
-	ui->ui_x1 = 0;
+	bzero(ui->ui_x1, sizeof(ui->ui_x1));
 	ui->ui_len = uh->uh_ulen;
 	uh->uh_sum = in_cksum(ui, len);
 	*ip = tip;
@@ -119,9 +117,9 @@ sendudp(d, pkt, len)
 		ea = arpwhohas(d, gateip);
 
 	cc = sendether(d, ip, len, ea, ETHERTYPE_IP);
-	if (cc == -1)
+	if (cc < 0)
 		return (-1);
-	if (cc != len)
+	if ((size_t)cc != len)
 		panic("sendudp: bad write (%d != %d)", cc, len);
 	return (cc - (sizeof(*ip) + sizeof(*uh)));
 }
@@ -154,7 +152,7 @@ readudp(d, pkt, len, tleft)
 	ip = (struct ip *)uh - 1;
 
 	n = readether(d, ip, len + sizeof(*ip) + sizeof(*uh), tleft, &etype);
-	if (n == -1 || n < sizeof(*ip) + sizeof(*uh))
+	if (n < 0 || (size_t)n < sizeof(*ip) + sizeof(*uh))
 		return -1;
 
 	/* Ethernet address checks now in readether() */
@@ -232,16 +230,14 @@ readudp(d, pkt, len, tleft)
 	if (uh->uh_sum) {
 		n = ntohs(uh->uh_ulen) + sizeof(*ip);
 		if (n > RECV_SIZE - ETHER_SIZE) {
-			printf("readudp: huge packet, udp len %d\n", n);
+			printf("readudp: huge packet, udp len %ld\n", (long)n);
 			return -1;
 		}
 
 		/* Check checksum (must save and restore ip header) */
 		tip = *ip;
 		ui = (struct udpiphdr *)ip;
-		ui->ui_next = 0;
-		ui->ui_prev = 0;
-		ui->ui_x1 = 0;
+		bzero(ui->ui_x1, sizeof(ui->ui_x1));
 		ui->ui_len = uh->uh_ulen;
 		if (in_cksum(ui, n) != 0) {
 #ifdef NET_DEBUG
@@ -290,7 +286,8 @@ sendrecv(d, sproc, sbuf, ssize, rproc, rbuf, rsize)
 	register size_t rsize;
 {
 	register ssize_t cc;
-	register time_t t, tmo, tlast, tleft;
+	register time_t t, tmo, tlast;
+	long tleft;
 
 #ifdef NET_DEBUG
 	if (debug)
@@ -302,12 +299,12 @@ sendrecv(d, sproc, sbuf, ssize, rproc, rbuf, rsize)
 	t = getsecs();
 	for (;;) {
 		if (tleft <= 0) {
-			if (tmo == MAXTMO) {
+			if (tmo >= MAXTMO) {
 				errno = ETIMEDOUT;
 				return -1;
 			}
 			cc = (*sproc)(d, sbuf, ssize);
-			if (cc == -1 || cc < ssize)
+			if (cc < 0 || (size_t)cc < ssize)
 				panic("sendrecv: short write! (%d < %d)",
 				    cc, ssize);
 
@@ -428,7 +425,7 @@ intoa(addr)
 	register char *cp;
 	register u_int byte;
 	register int n;
-	static char buf[17];	/* strlen(".255.255.255.255") + 1 */
+	static char buf[sizeof(".255.255.255.255")];
 
 	NTOHL(addr);
 	cp = &buf[sizeof buf];

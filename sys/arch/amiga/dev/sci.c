@@ -1,4 +1,5 @@
-/*	$NetBSD: sci.c,v 1.14 1995/09/29 13:52:02 chopps Exp $	*/
+/*	$OpenBSD: sci.c,v 1.7 2001/11/06 01:47:02 art Exp $	*/
+/*	$NetBSD: sci.c,v 1.19 1996/10/13 03:07:31 christos Exp $	*/
 
 /*
  * Copyright (c) 1994 Michael L. Hitch
@@ -51,10 +52,7 @@
 #include <sys/buf.h>
 #include <scsi/scsi_all.h>
 #include <scsi/scsiconf.h>
-#include <vm/vm.h>
-#include <vm/vm_kern.h>
-#include <vm/vm_page.h>
-#include <machine/pmap.h>
+#include <uvm/uvm_extern.h>
 #include <machine/cpu.h>
 #include <amiga/amiga/device.h>
 #include <amiga/amiga/custom.h>
@@ -72,16 +70,17 @@
 
 #define	b_cylin		b_resid
 
-int  sciicmd __P((struct sci_softc *, int, void *, int, void *, int,u_char));
-int  scigo __P((struct sci_softc *, struct scsi_xfer *));
-int  scigetsense __P((struct sci_softc *, struct scsi_xfer *));
-int  sciselectbus __P((struct sci_softc *, u_char, u_char));
-void sciabort __P((struct sci_softc *, char *));
-void scierror __P((struct sci_softc *, u_char));
-void scireset __P((struct sci_softc *));
-void scisetdelay __P((int));
-void sci_scsidone __P((struct sci_softc *, int));
-void sci_donextcmd __P((struct sci_softc *));
+int  sciicmd(struct sci_softc *, int, void *, int, void *, int,u_char);
+int  scigo(struct sci_softc *, struct scsi_xfer *);
+int  scigetsense(struct sci_softc *, struct scsi_xfer *);
+int  sciselectbus(struct sci_softc *, u_char, u_char);
+void sciabort(struct sci_softc *, char *);
+void scierror(struct sci_softc *, u_char);
+void scisetdelay(int);
+void sci_scsidone(struct sci_softc *, int);
+void sci_donextcmd(struct sci_softc *);
+int  sci_ixfer_out(struct sci_softc *, int, register u_char *, int); 
+void sci_ixfer_in(struct sci_softc *, int, register u_char *, int); 
 
 int sci_cmd_wait = SCI_CMD_WAIT;
 int sci_data_wait = SCI_DATA_WAIT;
@@ -93,7 +92,7 @@ int sci_no_dma = 0;
 #define QPRINTF(a) if (sci_debug > 1) printf a
 int	sci_debug = 0;
 #else
-#define QPRINTF
+#define QPRINTF(a)
 #endif
 
 /*
@@ -215,9 +214,6 @@ sci_scsidone(dev, stat)
 	if (xs == NULL)
 		panic("sci_scsidone");
 #endif
-	if (xs->sc_link->device_softc &&
-	    ((struct device *)(xs->sc_link->device_softc))->dv_unit < dk_ndrive)
-		++dk_xfer[((struct device *)(xs->sc_link->device_softc))->dv_unit];
 	/*
 	 * is this right?
 	 */
@@ -228,7 +224,8 @@ sci_scsidone(dev, stat)
 	else {
 		switch(stat) {
 		case SCSI_CHECK:
-			if (stat = scigetsense(dev, xs))
+			stat = scigetsense(dev, xs);
+			if (stat != 0)
 				goto bad_sense;
 			xs->error = XS_SENSE;
 			break;
@@ -273,7 +270,6 @@ scigetsense(dev, xs)
 {
 	struct scsi_sense rqs;
 	struct scsi_link *slp;
-	int stat;
 
 	slp = xs->sc_link;
 
@@ -342,8 +338,8 @@ void
 scireset(dev)
 	struct sci_softc *dev;
 {
-	u_int i, s;
-	u_char my_id, csr;
+	u_int s;
+	u_char my_id;
 
 	dev->sc_flags &= ~SCI_SELECTED;
 	if (dev->sc_flags & SCI_ALIVE)
@@ -490,11 +486,13 @@ sci_ixfer_in(dev, len, buf, phase)
 	int phase;
 {
 	int wait = sci_data_wait;
-	u_char *obp = buf;
 	u_char csr;
 	volatile register u_char *sci_bus_csr = dev->sci_bus_csr;
 	volatile register u_char *sci_data = dev->sci_data;
 	volatile register u_char *sci_icmd = dev->sci_icmd;
+#ifdef DEBUG
+	u_char *obp = buf;
+#endif
 
 	csr = *sci_bus_csr;
 
@@ -550,7 +548,7 @@ sciicmd(dev, target, cbuf, clen, buf, len, xferphase)
 	int clen, len;
 	u_char xferphase;
 {
-	u_char phase, csr, asr;
+	u_char phase;
 	register int wait;
 
 	/* select the SCSI bus (it's an error if bus isn't free) */
@@ -641,9 +639,8 @@ scigo(dev, xs)
 	struct sci_softc *dev;
 	struct scsi_xfer *xs;
 {
-	int i, count, target;
-	u_char phase, csr, asr, cmd, *addr;
-	int wait;
+	int count, target;
+	u_char phase, *addr;
 
 	target = xs->sc_link->target;
 	count = xs->datalen;
@@ -679,7 +676,7 @@ scigo(dev, xs)
 
 		switch (phase) {
 		case CMD_PHASE:
-			if (sci_ixfer_out (dev, xs->cmdlen, xs->cmd, phase))
+			if (sci_ixfer_out (dev, xs->cmdlen, (u_char *) xs->cmd, phase))
 				goto abort;
 			phase = xs->flags & SCSI_DATA_IN ? DATA_IN_PHASE : DATA_OUT_PHASE;
 			break;

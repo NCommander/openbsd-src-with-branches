@@ -1,9 +1,9 @@
+/*	$OpenBSD: panic.c,v 1.9 2002/05/13 16:12:07 millert Exp $	*/
 /*	$NetBSD: panic.c,v 1.2 1995/03/25 18:13:33 glass Exp $	*/
 
 /*
  * panic.c - terminate fast in case of error
  * Copyright (c) 1993 by Thomas Koenig
- * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -17,7 +17,7 @@
  * THIS SOFTWARE IS PROVIDED BY THE AUTHOR(S) ``AS IS'' AND ANY EXPRESS OR
  * IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
  * OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.
- * IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY DIRECT, INDIRECT,
+ * IN NO EVENT SHALL THE AUTHOR(S) BE LIABLE FOR ANY DIRECT, INDIRECT,
  * INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT
  * NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
  * DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
@@ -26,70 +26,89 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-/* System Headers */
-
 #include <errno.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
 
-/* Local headers */
-
-#include "panic.h"
 #include "at.h"
-
-/* File scope variables */
+#include "panic.h"
+#include "privs.h"
 
 #ifndef lint
-static char rcsid[] = "$NetBSD: panic.c,v 1.2 1995/03/25 18:13:33 glass Exp $";
+static const char rcsid[] = "$OpenBSD: panic.c,v 1.9 2002/05/13 16:12:07 millert Exp $";
 #endif
 
-/* External variables */
-
-/* Global functions */
-
-void
-panic(a)
-	char *a;
-{
-/* Something fatal has happened, print error message and exit.
+/*
+ * Something fatal has happened, print error message and exit.
  */
-	fprintf(stderr, "%s: %s\n", namep, a);
-	if (fcreated)
+__dead void
+panic(const char *a)
+{
+	(void)fprintf(stderr, "%s: %s\n", __progname, a);
+	if (fcreated) {
+		PRIV_START;
 		unlink(atfile);
+		PRIV_END;
+	}
 
 	exit(EXIT_FAILURE);
 }
 
-void
-perr(a)
-	char *a;
-{
-/* Some operating system error; print error message and exit.
+/*
+ * Some operating system error; print error message and exit.
  */
-	perror(a);
-	if (fcreated)
+__dead void
+perr(const char *a)
+{
+	if (!force)
+		perror(a);
+	if (fcreated) {
+		PRIV_START;
 		unlink(atfile);
+		PRIV_END;
+	}
 
 	exit(EXIT_FAILURE);
 }
 
-void 
-perr2(a, b)
-	char *a, *b;
+/*
+ * Two-parameter version of perr().
+ */
+__dead void 
+perr2(const char *a, const char *b)
 {
-	fprintf(stderr, "%s", a);
+	if (!force)
+		(void)fputs(a, stderr);
 	perr(b);
 }
 
-void
+__dead void
 usage(void)
 {
-/* Print usage and exit.
-*/
-	fprintf(stderr, "Usage: at [-q x] [-f file] [-m] time\n"
-	    "       atq [-q x] [-v]\n"
-	    "       atrm [-q x] job ...\n"
-	    "       batch [-f file] [-m]\n");
+	/* Print usage and exit.  */
+	switch (program) {
+	case AT:
+	case CAT:
+		(void)fprintf(stderr,
+		    "usage: at [-bm] [-f file] [-q queue] -t time_arg\n"
+		    "       at [-bm] [-f file] [-q queue] timespec\n"
+		    "       at -c job [job ...]\n"
+		    "       at -l [-q queue] [job ...]\n"
+		    "       at -r job [job ...]\n");
+		break;
+	case ATQ:
+		(void)fprintf(stderr,
+		    "usage: atq [-cnv] [-q queue] [name...]\n");
+		break;
+	case ATRM:
+		(void)fprintf(stderr,
+		    "usage: atrm [-afi] [[job] [name] ...]\n");
+		break;
+	case BATCH:
+		(void)fprintf(stderr,
+		    "usage: batch [-m] [-f file] [-q queue] [timespec]\n");
+		break;
+	}
 	exit(EXIT_FAILURE);
 }

@@ -33,7 +33,7 @@
  * SUCH DAMAGE.
  *
  *	from: @(#)fsi_util.c	8.1 (Berkeley) 6/6/93
- *	$Id: fsi_util.c,v 1.4 1995/05/21 16:59:39 mycroft Exp $
+ *	$Id: fsi_util.c,v 1.5 2001/01/02 20:01:35 mickey Exp $
  */
 
 #include "../fsinfo/fsinfo.h"
@@ -45,7 +45,7 @@ void error(s, s1, s2, s3, s4)
 char *s, *s1, *s2, *s3, *s4;
 {
 	col_cleanup(0);
-	fprintf(stderr, "%s: Error, ", progname);
+	fprintf(stderr, "%s: Error, ", __progname);
 	fprintf(stderr, s, s1, s2, s3, s4);
 	fputc('\n', stderr);
 	errors++;
@@ -77,12 +77,13 @@ void fatal(s, s1, s2, s3, s4)
 char *s, *s1, *s2, *s3, *s4;
 {
 	col_cleanup(1);
-	fprintf(stderr, "%s: Fatal, ", progname);
+	fprintf(stderr, "%s: Fatal, ", __progname);
 	fprintf(stderr, s, s1, s2, s3, s4);
 	fputc('\n', stderr);
 	exit(1);
 }
 
+#if !(defined(__NetBSD__) || defined(__OpenBSD__))
 /*
  * Dup a string
  */
@@ -97,6 +98,7 @@ char *s;
 
 	return sp;
 }
+#endif /* !(defined(__NetBSD__) || defined(__OpenBSD)) */
 
 /*
  * Debug log
@@ -106,7 +108,7 @@ char *s, *s1, *s2, *s3, *s4;
 {
 	if (verbose > 0) {
 		fputc('#', stdout);
-		fprintf(stdout, "%s: ", progname);
+		fprintf(stdout, "%s: ", __progname);
 		fprintf(stdout, s, s1, s2, s3, s4);
 		putc('\n', stdout);
 	}
@@ -138,7 +140,7 @@ FILE *fp;
 # \"%s\" run by %s@%s on %s\
 #\n\
 ",
-	progname, username, hostname, cp);
+	__progname, username, hostname, cp);
 }
 
 static int show_range = 10;
@@ -166,7 +168,7 @@ static void show_total()
 		int len;
 		if (total_mmm < 0)
 			fputc('*', stdout);
-		sprintf(n, "%d", total_shown);
+		snprintf(n, sizeof(n), "%d", total_shown);
 		len = strlen(n);
 		if (col_output(len))
 			fputc(' ', stdout);
@@ -245,7 +247,7 @@ char *arg;
 {
 	char p[MAXPATHLEN];
 	FILE *ef;
-	sprintf(p, "%s%s", pref, hn);
+	snprintf(p, sizeof(p), "%s%s", pref, hn);
 	log("Writing %s info for %s to %s", pref, hn, p);
 	ef = fopen(p, "w");
 	if (ef) {
@@ -267,15 +269,16 @@ FILE *fp;
 /*
  * Determine where Amd would automount the host/volname pair
  */
-void compute_automount_point(buf, hp, vn)
+void compute_automount_point(buf, buflen, hp, vn)
 char *buf;
+size_t buflen;
 host *hp;
 char *vn;
 {
 #ifdef AMD_USES_HOSTPATH
-	sprintf(buf, "%s/%s%s", autodir, hp->h_hostpath, vn);
+	snprintf(buf, buflen, "%s/%s%s", autodir, hp->h_hostpath, vn);
 #else
-	sprintf(buf, "%s/%s%s", autodir, hp->h_lochost, vn);
+	snprintf(buf, buflen, "%s/%s%s", autodir, hp->h_lochost, vn);
 #endif
 }
 
@@ -419,8 +422,8 @@ char *v;
 		free(v);
 	} break;
 	case EF_NETMASK: {
-		u_long nm = 0;
-		if ((sscanf(v, "0x%lx", &nm) == 1 || sscanf(v, "%lx", &nm) == 1) && nm != 0)
+		u_int32_t nm = 0;
+		if ((sscanf(v, "0x%x", &nm) == 1 || sscanf(v, "%x", &nm) == 1) && nm != 0)
 			ep->e_netmask = htonl(nm);
 		else
 			yyerror("malformed netmask: %s", v);

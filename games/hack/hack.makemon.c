@@ -1,14 +1,15 @@
+/*	$OpenBSD: hack.makemon.c,v 1.3 2001/01/28 23:41:44 niklas Exp $	*/
+
 /*
  * Copyright (c) Stichting Mathematisch Centrum, Amsterdam, 1985.
  */
 
 #ifndef lint
-static char rcsid[] = "$NetBSD: hack.makemon.c,v 1.3 1995/03/23 08:30:38 cgd Exp $";
+static char rcsid[] = "$OpenBSD: hack.makemon.c,v 1.3 2001/01/28 23:41:44 niklas Exp $";
 #endif /* not lint */
 
 #include	"hack.h"
 extern char fut_geno[];
-extern char *index();
 extern struct obj *mkobj_at();
 struct monst zeromonst;
 
@@ -31,18 +32,18 @@ register struct permonst *ptr;
 
 	if(x != 0 || y != 0) if(m_at(x,y)) return((struct monst *) 0);
 	if(ptr){
-		if(index(fut_geno, ptr->mlet)) return((struct monst *) 0);
+		if(strchr(fut_geno, ptr->mlet)) return((struct monst *) 0);
 	} else {
 		ct = CMNUM - strlen(fut_geno);
-		if(index(fut_geno, 'm')) ct++;  /* make only 1 minotaur */
-		if(index(fut_geno, '@')) ct++;
+		if(strchr(fut_geno, 'm')) ct++;  /* make only 1 minotaur */
+		if(strchr(fut_geno, '@')) ct++;
 		if(ct <= 0) return(0); 		  /* no more monsters! */
 		tmp = rn2(ct*dlevel/24 + 7);
 		if(tmp < dlevel - 4) tmp = rn2(ct*dlevel/24 + 12);
 		if(tmp >= ct) tmp = rn1(ct - ct/2, ct/2);
 		for(ct = 0; ct < CMNUM; ct++){
 			ptr = &mons[ct];
-			if(index(fut_geno, ptr->mlet))
+			if(strchr(fut_geno, ptr->mlet))
 				continue;
 			if(!tmp--) goto gotmon;
 		}
@@ -87,13 +88,13 @@ gotmon:
 	if(ptr->mlet == 'I' || ptr->mlet == ';')
 		mtmp->minvis = 1;
 	if(ptr->mlet == 'L' || ptr->mlet == 'N'
-	    || (in_mklev && index("&w;", ptr->mlet) && rn2(5))
+	    || (in_mklev && strchr("&w;", ptr->mlet) && rn2(5))
 	) mtmp->msleep = 1;
 
 #ifndef NOWORM
 	if(ptr->mlet == 'w' && getwn(mtmp))
 		initworm(mtmp);
-#endif NOWORM
+#endif /* NOWORM */
 
 	if(anything) if(ptr->mlet == 'O' || ptr->mlet == 'k') {
 		coord enexto();
@@ -169,7 +170,7 @@ struct monst *mtmp;
 
 #ifndef NOWORM
 	if(ch == 'w' && mtmp->mx) return;	/* do not relocate worms */
-#endif NOWORM
+#endif /* NOWORM */
 	do {
 		tx = rn1(COLNO-3,2);
 		ty = rn2(ROWNO);

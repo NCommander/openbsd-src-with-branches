@@ -1,3 +1,5 @@
+/*	$OpenBSD: linenum.c,v 1.2 2001/01/29 01:58:02 niklas Exp $	*/
+
 /*
  * Copyright (c) 1984,1985,1989,1994,1995  Mark Nudelman
  * All rights reserved.
@@ -94,7 +96,7 @@ extern int sc_height;
 	public void
 clr_linenum()
 {
-	register struct linenum *p;
+	struct linenum *p;
 
 	/*
 	 * Put all the entries on the free list.
@@ -121,7 +123,7 @@ clr_linenum()
  */
 	static void
 calcgap(p)
-	register struct linenum *p;
+	struct linenum *p;
 {
 	/*
 	 * Don't bother to compute a gap for the anchor.
@@ -144,11 +146,11 @@ add_lnum(lno, pos)
 	int lno;
 	POSITION pos;
 {
-	register struct linenum *p;
-	register struct linenum *new;
-	register struct linenum *nextp;
-	register struct linenum *prevp;
-	register POSITION mingap;
+	struct linenum *p;
+	struct linenum *new;
+	struct linenum *nextp;
+	struct linenum *prevp;
+	POSITION mingap;
 
 	/*
 	 * Find the proper place in the list for the new one.
@@ -274,8 +276,8 @@ longish()
 find_linenum(pos)
 	POSITION pos;
 {
-	register struct linenum *p;
-	register int lno;
+	struct linenum *p;
+	int lno;
 	POSITION cpos;
 
 	if (!linenums)
@@ -384,7 +386,7 @@ find_linenum(pos)
 find_pos(lno)
 	int lno;
 {
-	register struct linenum *p;
+	struct linenum *p;
 	POSITION cpos;
 	int clno;
 

@@ -1,3 +1,4 @@
+/*	$OpenBSD: undo.c,v 1.5 2001/01/16 03:04:46 deraadt Exp $	*/
 /*	$NetBSD: undo.c,v 1.2 1995/03/21 09:04:52 cgd Exp $	*/
 
 /* undo.c: This file contains the undo routines for the ed line editor */
@@ -31,7 +32,7 @@
 #if 0
 static char *rcsid = "@(#)undo.c,v 1.1 1994/02/01 00:34:44 alm Exp";
 #else
-static char rcsid[] = "$NetBSD: undo.c,v 1.2 1995/03/21 09:04:52 cgd Exp $";
+static char rcsid[] = "$OpenBSD: undo.c,v 1.5 2001/01/16 03:04:46 deraadt Exp $";
 #endif
 #endif /* not lint */
 
@@ -40,23 +41,23 @@ static char rcsid[] = "$NetBSD: undo.c,v 1.2 1995/03/21 09:04:52 cgd Exp $";
 
 #define USIZE 100				/* undo stack size */
 undo_t *ustack = NULL;				/* undo stack */
-long usize = 0;					/* stack size variable */
-long u_p = 0;					/* undo stack pointer */
+int usize = 0;					/* stack size variable */
+int u_p = 0;					/* undo stack pointer */
 
 /* push_undo_stack: return pointer to intialized undo node */
 undo_t *
 push_undo_stack(type, from, to)
 	int type;
-	long from;
-	long to;
+	int from;
+	int to;
 {
 	undo_t *t;
 
 #if defined(sun) || defined(NO_REALLOC_NULL)
 	if (ustack == NULL &&
 	    (ustack = (undo_t *) malloc((usize = USIZE) * sizeof(undo_t))) == NULL) {
-		fprintf(stderr, "%s\n", strerror(errno));
-		sprintf(errmsg, "out of memory");
+		perror(NULL);
+		seterrmsg("out of memory");
 		return NULL;
 	}
 #endif
@@ -70,8 +71,8 @@ push_undo_stack(type, from, to)
 		return ustack + u_p++;
 	}
 	/* out of memory - release undo stack */
-	fprintf(stderr, "%s\n", strerror(errno));
-	sprintf(errmsg, "out of memory");
+	perror(NULL);
+	seterrmsg("out of memory");
 	clear_undo_stack();
 	free(ustack);
 	ustack = NULL;
@@ -87,19 +88,19 @@ push_undo_stack(type, from, to)
 }
 
 
-long u_current_addr = -1;	/* if >= 0, undo enabled */
-long u_addr_last = -1;		/* if >= 0, undo enabled */
+int u_current_addr = -1;	/* if >= 0, undo enabled */
+int u_addr_last = -1;		/* if >= 0, undo enabled */
 
 /* pop_undo_stack: undo last change to the editor buffer */
 int
 pop_undo_stack()
 {
-	long n;
-	long o_current_addr = current_addr;
-	long o_addr_last = addr_last;
+	int n;
+	int o_current_addr = current_addr;
+	int o_addr_last = addr_last;
 
 	if (u_current_addr == -1 || u_addr_last == -1) {
-		sprintf(errmsg, "nothing to undo");
+		seterrmsg("nothing to undo");
 		return ERR;
 	} else if (u_p)
 		modified = 1;

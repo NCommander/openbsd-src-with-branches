@@ -1,3 +1,4 @@
+#	$OpenBSD: Makefile,v 1.6 2000/09/03 18:41:17 espie Exp $
 #
 # Makefile for newsyscall
 #
@@ -33,7 +34,6 @@
 # OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 # SUCH DAMAGE.
 #
-#	$Id: Makefile,v 1.5 1995/04/27 19:15:22 jtc Exp $
 #
 
 SRCS=kernfsmod.c
@@ -45,12 +45,12 @@ KOBJS=kernfs_vfsops.o kernfs_vnops.o
 MODOBJ=combined.o
 
 KMOD=kernfsmod
-CFLAGS= -O6 -D_KERNEL -I/sys -I.
+CFLAGS+= -D_KERNEL -I/sys -I.
 
 all:	$(MODOBJ)
 
 clean:
-	rm -f vnode_if.[ch] $(OBJS) $(KOBJS) $(MODOBJ) $(KMOD)
+	rm -f $(OBJS) $(KOBJS) $(MODOBJ) $(KMOD)
 
 load:
 	modload -o $(KMOD) -e$(KMOD) $(MODOBJ)
@@ -58,18 +58,17 @@ load:
 unload:
 	modunload -n $(KMOD)
 
-kernfs_vfsops.o: /sys/miscfs/kernfs/kernfs_vfsops.c vnode_if.h
+kernfs_vfsops.o: /sys/miscfs/kernfs/kernfs_vfsops.c
 	$(CC) $(CFLAGS) -c -o $@ $<
 
-kernfs_vnops.o: /sys/miscfs/kernfs/kernfs_vnops.c vnode_if.h
+kernfs_vnops.o: /sys/miscfs/kernfs/kernfs_vnops.c
 	$(CC) $(CFLAGS) -c -o $@ $<
-
-vnode_if.h: /sys/kern/vnode_if.sh /sys/kern/vnode_if.src
-	sh /sys/kern/vnode_if.sh /sys/kern/vnode_if.src
 
 $(MODOBJ): $(OBJS) $(KOBJS)
 	$(LD) -r -o $(MODOBJ) $(OBJS) $(KOBJS)
 
+.include <bsd.own.mk>
+
 #
-# EOF -- This file has not been truncated
+# EOF -- This file has not been truncated.
 #

@@ -31,7 +31,7 @@
  * SUCH DAMAGE.
  */
 
-/* $Id: xfs_locl.h,v 1.1.1.1 2002/06/05 17:24:11 hin Exp $ */
+/* $Id: xfs_locl.h,v 1.4 2001/06/27 04:58:49 art Exp $ */
 
 #ifdef HAVE_CONFIG_H
 #include <config.h>

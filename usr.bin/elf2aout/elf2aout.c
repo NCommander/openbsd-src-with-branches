@@ -1,3 +1,5 @@
+/*	$OpenBSD$	*/
+
 /*
  * Copyright (c) 1995
  *	Ted Lemon (hereinafter referred to as the author)

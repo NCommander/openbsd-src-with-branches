@@ -1,4 +1,4 @@
-.\"	$NetBSD: isblank.3,v 1.3 1995/02/27 04:34:36 cgd Exp $
+.\"	$OpenBSD: isblank.3,v 1.6 1999/07/09 13:35:17 aaron Exp $
 .\"
 .\" Copyright (c) 1991 The Regents of the University of California.
 .\" All rights reserved.
@@ -35,8 +35,6 @@
 .\" OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 .\" SUCH DAMAGE.
 .\"
-.\"     @(#)isspace.3	5.3 (Berkeley) 7/31/91
-.\"
 .Dd September 14, 1993
 .Dt ISBLANK 3
 .Os
@@ -60,20 +58,18 @@ Space character.
 Horizontal tab.
 .El
 .Pp
-In the 
-.Em ``C''
-locale,
+In the C locale,
 .Fn isblank
 returns true only for the standard blank-space characters.
 .Sh RETURN VALUES
 The
 .Fn isblank
-macro returns zero if the character tests false and
-returns non-zero if the character tests true.
+macro returns zero if the character tests false or
+non-zero if the character tests true.
 .Sh SEE ALSO
-.Xr isascii 3 ,
 .Xr isalnum 3 ,
 .Xr isalpha 3 ,
+.Xr isascii 3 ,
 .Xr iscntrl 3 ,
 .Xr isdigit 3 ,
 .Xr isgraph 3 ,
@@ -83,8 +79,16 @@ returns non-zero if the character tests true.
 .Xr isspace 3 ,
 .Xr isupper 3 ,
 .Xr isxdigit 3 ,
+.Xr stdio 3 ,
 .Xr toascii 3 ,
 .Xr tolower 3 ,
 .Xr toupper 3 ,
-.Xr stdio 3 ,
 .Xr ascii 7
+.Sh CAVEATS
+The argument to
+.Fn isblank
+must be
+.Dv EOF
+or representable as an
+.Li unsigned char ;
+otherwise, the result is undefined.

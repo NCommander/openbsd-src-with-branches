@@ -1,4 +1,5 @@
-/*	$NetBSD: idesc.c,v 1.14 1995/10/05 12:41:22 chopps Exp $	*/
+/*	$OpenBSD: idesc.c,v 1.11 2002/03/14 01:26:29 millert Exp $	*/
+/*	$NetBSD: idesc.c,v 1.29 1996/12/23 09:10:12 veego Exp $	*/
 
 /*
  * Copyright (c) 1994 Michael L. Hitch
@@ -234,23 +235,22 @@ struct idec_softc
 	struct ide_softc	sc_ide[2];
 };
 
-int ide_scsicmd __P((struct scsi_xfer *));
+int ide_scsicmd(struct scsi_xfer *);
 
-int idescprint __P((void *auxp, char *));
-void idescattach __P((struct device *, struct device *, void *));
-int idescmatch __P((struct device *, struct cfdata *, void *));
+void idescattach(struct device *, struct device *, void *);
+int idescmatch(struct device *, void *, void *);
 
-int  ideicmd __P((struct idec_softc *, int, void *, int, void *, int));
-int  idego __P((struct idec_softc *, struct scsi_xfer *));
-int  idegetsense __P((struct idec_softc *, struct scsi_xfer *));
-void ideabort __P((struct idec_softc *, ide_regmap_p, char *));
-void ideerror __P((struct idec_softc *, ide_regmap_p, u_char));
-int idestart __P((struct idec_softc *));
-int idereset __P((struct idec_softc *));
-void idesetdelay __P((int));
-void ide_scsidone __P((struct idec_softc *, int));
-void ide_donextcmd __P((struct idec_softc *));
-int  idesc_intr __P((struct idec_softc *));
+int  ideicmd(struct idec_softc *, int, void *, int, void *, int);
+int  idego(struct idec_softc *, struct scsi_xfer *);
+int  idegetsense(struct idec_softc *, struct scsi_xfer *);
+void ideabort(struct idec_softc *, ide_regmap_p, char *);
+void ideerror(struct idec_softc *, ide_regmap_p, u_char);
+int idestart(struct idec_softc *);
+int idereset(struct idec_softc *);
+void idesetdelay(int);
+void ide_scsidone(struct idec_softc *, int);
+void ide_donextcmd(struct idec_softc *);
+int  idesc_intr(void *);
 
 struct scsi_adapter idesc_scsiswitch = {
 	ide_scsicmd,
@@ -266,9 +266,13 @@ struct scsi_device idesc_scsidev = {
 	NULL,		/* Use default done routine */
 };
 
-struct cfdriver idesccd = {
-	NULL, "idesc", (cfmatch_t)idescmatch, idescattach, 
-	DV_DULL, sizeof(struct idec_softc), NULL, 0 };
+struct cfattach idesc_ca = {
+	sizeof(struct idec_softc), idescmatch, idescattach
+};
+
+struct cfdriver idesc_cd = {
+	NULL, "idesc", DV_DULL, NULL, 0
+};
 
 struct {
 	short	ide_err;
@@ -288,9 +292,11 @@ struct {
  * protos.
  */
 
-int idecommand __P((struct ide_softc *, int, int, int, int, int));
-int idewait __P((struct idec_softc *, int));
-int idegetctlr __P((struct ide_softc *));
+int idecommand(struct ide_softc *, int, int, int, int, int);
+int idewait(struct idec_softc *, int);
+int idegetctlr(struct ide_softc *);
+int ideiread(struct ide_softc *, long, u_char *, int);
+int ideiwrite(struct ide_softc *, long, u_char *, int);
 
 #define wait_for_drq(ide) idewait(ide, IDES_DRQ)
 #define wait_for_ready(ide) idewait(ide, IDES_READY | IDES_SEEKCMPLT)
@@ -299,6 +305,7 @@ int idegetctlr __P((struct ide_softc *));
 int ide_no_int = 0;
 
 #ifdef DEBUG 
+void ide_dump_regs(ide_regmap_p);
 
 int ide_debug = 0;
 
@@ -310,7 +317,7 @@ int ide_debug = 0;
 
 #define TRACE0(arg)
 #define TRACE1(arg1,arg2)
-#define QPRINTF
+#define QPRINTF(a)
 
 #endif	/* !DEBUG */
 
@@ -319,10 +326,9 @@ int ide_debug = 0;
  * if we are an A4000 we are here.
  */
 int
-idescmatch(pdp, cdp, auxp)
+idescmatch(pdp, match, auxp)
 	struct device *pdp;
-	struct cfdata *cdp;
-	void *auxp;
+	void *match, *auxp;
 {
 	char *mbusstr;
 
@@ -349,7 +355,7 @@ idescattach(pdp, dp, auxp)
 		sc->sc_cregs = rp = (ide_regmap_p) ztwomap(0xda0000);
 		sc->sc_a1200 = ztwomap(0xda8000 + 0x1000);
 		sc->sc_flags |= IDECF_A1200;
-		printf(" A1200 @ %x:%x", rp, sc->sc_a1200);
+		printf(" A1200 @ %p:%p", rp, sc->sc_a1200);
 	}
 
 #ifdef DEBUG
@@ -358,8 +364,10 @@ idescattach(pdp, dp, auxp)
 #endif
 	rp->ide_error = 0x5a;
 	rp->ide_cyl_lo = 0xa5;
-	if (rp->ide_error == 0x5a || rp->ide_cyl_lo != 0xa5)
+	if (rp->ide_error == 0x5a || rp->ide_cyl_lo != 0xa5) {
+		printf ("\n");
 		return;
+	}
 	/* test if controller will reset */
 	if (idereset(sc) != 0) {
 		delay (500000);
@@ -412,20 +420,7 @@ idescattach(pdp, dp, auxp)
 	/*
 	 * attach all "scsi" units on us
 	 */
-	config_found(dp, &sc->sc_link, idescprint);
-}
-
-/*
- * print diag if pnp is NULL else just extra
- */
-int
-idescprint(auxp, pnp)
-	void *auxp;
-	char *pnp;
-{
-	if (pnp == NULL)
-		return(UNCONF);
-	return(QUIET);
+	config_found(dp, &sc->sc_link, scsiprint);
 }
 
 /*
@@ -487,7 +482,7 @@ ide_donextcmd(dev)
 {
 	struct scsi_xfer *xs;
 	struct scsi_link *slp;
-	int flags, phase, stat;
+	int flags, stat;
 
 	xs = dev->sc_xs;
 	slp = xs->sc_link;
@@ -504,7 +499,7 @@ ide_donextcmd(dev)
 	}
 	if (flags & SCSI_POLL || ide_no_int)
 		stat = ideicmd(dev, slp->target, xs->cmd, xs->cmdlen, 
-		    xs->data, xs->datalen/*, phase*/);
+		    xs->data, xs->datalen);
 	else if (idego(dev, xs) == 0)
 		return;
 	else 
@@ -527,11 +522,6 @@ ide_scsidone(dev, stat)
 	if (xs == NULL)
 		panic("ide_scsidone");
 #endif
-#if 1
-	if (xs->sc_link && xs->sc_link->device_softc &&
-	    ((struct device *)(xs->sc_link->device_softc))->dv_unit < dk_ndrive)
-		++dk_xfer[((struct device *)(xs->sc_link->device_softc))->dv_unit];
-#endif
 	/*
 	 * is this right?
 	 */
@@ -542,7 +532,7 @@ ide_scsidone(dev, stat)
 	else {
 		switch(stat) {
 		case SCSI_CHECK:
-			if (stat = idegetsense(dev, xs))
+			if ((stat = idegetsense(dev, xs)) != 0)
 				goto bad_sense;
 			xs->error = XS_SENSE;
 			break;
@@ -587,7 +577,6 @@ idegetsense(dev, xs)
 {
 	struct scsi_sense rqs;
 	struct scsi_link *slp;
-	int stat;
 
 	slp = xs->sc_link;
 	
@@ -607,6 +596,7 @@ idegetsense(dev, xs)
 }
 
 #ifdef DEBUG
+void
 ide_dump_regs(regs)
 	ide_regmap_p regs;
 {
@@ -835,7 +825,7 @@ ideicmd(dev, target, cbuf, clen, buf, len)
 	struct {
 		struct scsi_mode_header header;
 		struct scsi_blk_desc blk_desc;
-		union disk_pages pages;
+		union scsi_disk_pages pages;
 	} *mdsnbuf;
 
 #ifdef DEBUG
@@ -890,8 +880,10 @@ ideicmd(dev, target, cbuf, clen, buf, len)
 		return (ideiread(ide, lba, buf, nblks));
 
 	case READ_COMMAND:
-		lba = *((long *)cbuf) & 0x000fffff;
+		lba = *((long *)cbuf) & 0x001fffff;
 		nblks = *((u_char *)(cbuf + 4));
+		if (nblks == 0)
+			nblks = 256;
 		return (ideiread(ide, lba, buf, nblks));
 
 	case WRITE_BIG:
@@ -900,8 +892,10 @@ ideicmd(dev, target, cbuf, clen, buf, len)
 		return (ideiwrite(ide, lba, buf, nblks));
 
 	case WRITE_COMMAND:
-		lba = *((long *)cbuf) & 0x000fffff;
+		lba = *((long *)cbuf) & 0x001fffff;
 		nblks = *((u_char *)(cbuf + 4));
+		if (nblks == 0)
+			nblks = 256;
 		return (ideiwrite(ide, lba, buf, nblks));
 
 	case PREVENT_ALLOW:
@@ -910,7 +904,7 @@ ideicmd(dev, target, cbuf, clen, buf, len)
 		return (0);
 
 	case MODE_SENSE:
-		mdsnbuf = (void*) buf;
+		mdsnbuf = (void *) buf;
 		bzero(buf, *((u_char *)cbuf + 4));
 		switch (*((u_char *)cbuf + 2) & 0x3f) {
 		case 4:
@@ -919,12 +913,8 @@ ideicmd(dev, target, cbuf, clen, buf, len)
 			mdsnbuf->blk_desc.blklen[1] = 512 >> 8;
 			mdsnbuf->pages.rigid_geometry.pg_code = 4;
 			mdsnbuf->pages.rigid_geometry.pg_length = 16;
-			mdsnbuf->pages.rigid_geometry.ncyl_2 =
-			    ide->sc_params.idep_fixedcyl >> 16;
-			mdsnbuf->pages.rigid_geometry.ncyl_1 =
-			    ide->sc_params.idep_fixedcyl >> 8;
-			mdsnbuf->pages.rigid_geometry.ncyl_0 =
-			    ide->sc_params.idep_fixedcyl;
+			_lto3b(ide->sc_params.idep_fixedcyl,
+			    mdsnbuf->pages.rigid_geometry.ncyl);
 			mdsnbuf->pages.rigid_geometry.nheads =
 			    ide->sc_params.idep_heads;
 			dev->sc_stat[0] = 0;
@@ -974,8 +964,6 @@ idego(dev, xs)
 	struct scsi_xfer *xs;
 {
 	struct ide_softc *ide = &dev->sc_ide[xs->sc_link->target];
-	char *addr;
-	int count;
 	long lba;
 	int nblks;
 
@@ -998,7 +986,7 @@ idego(dev, xs)
 	switch (xs->cmd->opcode) {
 	case READ_COMMAND:
 	case WRITE_COMMAND:
-		lba = *((long *)xs->cmd) & 0x000fffff;
+		lba = *((long *)xs->cmd) & 0x001fffff;
 		nblks = xs->cmd->bytes[3];
 		if (nblks == 0)
 			nblks = 256;
@@ -1073,12 +1061,10 @@ idestart(dev)
 
 
 int
-idesc_intr(dev)
-	struct idec_softc *dev;
+idesc_intr(arg)
+	void *arg;
 {
-#if 0
-	struct idec_softc *dev;
-#endif
+	struct idec_softc *dev = arg;
 	ide_regmap_p regs;
 	struct ide_softc *ide;
 	short dummy;
@@ -1086,7 +1072,7 @@ idesc_intr(dev)
 	int i;
 
 #if 0
-	if (idesccd.cd_ndevs == 0 || (dev = idesccd.cd_devs[0]) == NULL)
+	if (idesc_cd.cd_ndevs == 0 || (dev = idesc_cd.cd_devs[0]) == NULL)
 		return (0);
 #endif
 	regs = dev->sc_cregs;
@@ -1137,7 +1123,7 @@ printf("idesc_intr: error %02x, %02x\n", dev->sc_stat[1], dummy);
 	ide->sc_mbcount -= DEV_BSIZE;
 #ifdef DEBUG
 	if (ide_debug)
-		printf ("idesc_intr: sc_bcount %d\n", ide->sc_bcount);
+		printf ("idesc_intr: sc_bcount %ld\n", ide->sc_bcount);
 #endif
 	if (ide->sc_bcount == 0)
 		ide_scsidone(dev, dev->sc_stat[0]);

@@ -1,12 +1,12 @@
 /*
- * Copyright (c) 2000-2001 Sendmail, Inc. and its suppliers.
+ * Copyright (c) 2000-2002 Sendmail, Inc. and its suppliers.
  *	All rights reserved.
  *
  * By using this file, you agree to the terms and conditions set
  * forth in the LICENSE file which can be found at the top level of
  * the sendmail distribution.
  *
- *	$Sendmail: gen.h,v 1.17 2001/07/19 21:13:19 gshapiro Exp $
+ *	$Sendmail: gen.h,v 1.22 2002/04/03 00:40:42 ca Exp $
  */
 
 /*

@@ -1,4 +1,5 @@
-/*	$NetBSD: igmp_var.h,v 1.8 1995/05/31 06:08:24 mycroft Exp $	*/
+/*	$OpenBSD: igmp_var.h,v 1.4 2001/06/09 07:03:40 angelos Exp $	*/
+/*	$NetBSD: igmp_var.h,v 1.9 1996/02/13 23:41:31 christos Exp $	*/
 
 /*
  * Copyright (c) 1988 Stephen Deering.
@@ -39,6 +40,9 @@
  *	@(#)igmp_var.h	8.1 (Berkeley) 7/19/93
  */
 
+#ifndef _NETINET_IGMP_VAR_H_
+#define _NETINET_IGMP_VAR_H_
+
 /*
  * Internet Group Management Protocol (IGMP),
  * implementation-specific definitions.
@@ -70,12 +74,13 @@ struct igmpstat igmpstat;
  * DELAY * countdown frequency).  We assume that the routine random()
  * is defined somewhere (and that it returns a positive number).
  */
-#define	IGMP_RANDOM_DELAY(X)	(random() % (X) + 1)
+#define	IGMP_RANDOM_DELAY(X)	(arc4random() % (X) + 1)
 
-void	igmp_init __P((void));
-void	igmp_input __P((struct mbuf *, int));
-void	igmp_joingroup __P((struct in_multi *));
-void	igmp_leavegroup __P((struct in_multi *));
-void	igmp_fasttimo __P((void));
-void	igmp_slowtimo __P((void));
-#endif
+void	igmp_init(void);
+void	igmp_input(struct mbuf *, ...);
+void	igmp_joingroup(struct in_multi *);
+void	igmp_leavegroup(struct in_multi *);
+void	igmp_fasttimo(void);
+void	igmp_slowtimo(void);
+#endif /* _KERNEL */
+#endif /* _NETINET_IGMP_VAR_H_ */

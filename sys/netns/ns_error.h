@@ -1,3 +1,4 @@
+/*	$OpenBSD: ns_error.h,v 1.3 2001/09/20 17:02:32 mpech Exp $	*/
 /*	$NetBSD: ns_error.h,v 1.6 1995/03/26 20:36:20 jtc Exp $	*/
 
 /*
@@ -56,7 +57,7 @@ struct  ns_epidp {
 #define	NS_ERR_BADSUM	1	/* Bad Checksum detected at dest */
 #define	NS_ERR_NOSOCK	2	/* Specified socket does not exist at dest*/
 #define	NS_ERR_FULLUP	3	/* Dest. refuses packet due to resource lim.*/
-#define	NS_ERR_UNSPEC_T	0x200	/* Unspec. Error occured before reaching dest*/
+#define	NS_ERR_UNSPEC_T	0x200	/* Unspec. Error occurred before reaching dest*/
 #define	NS_ERR_BADSUM_T	0x201	/* Bad Checksum detected in transit */
 #define	NS_ERR_UNREACH_HOST	0x202	/* Dest cannot be reached from here*/
 #define	NS_ERR_TOO_OLD	0x203	/* Packet x'd 15 routers without delivery*/
@@ -73,8 +74,8 @@ struct  ns_epidp {
 struct	ns_errstat {
 /* statistics related to ns_err packets generated */
 	int	ns_es_error;		/* # of calls to ns_error */
-	int	ns_es_oldshort;		/* no error 'cuz old ip too short */
-	int	ns_es_oldns_err;	/* no error 'cuz old was ns_err */
+	int	ns_es_oldshort;		/* no error because old ip too short */
+	int	ns_es_oldns_err;	/* no error because old was ns_err */
 	int	ns_es_outhist[NS_ERR_MAX];
 /* statistics related to input messages processed */
 	int	ns_es_badcode;		/* ns_err_code out of range */

@@ -17,7 +17,7 @@ static void
 usage (void)
 {
     fprintf (stderr, "Usage: %s [-p port] [-s service] [-t srvtab]\n",
-	     getprogname());
+	     __progname);
     exit (1);
 }
 
@@ -39,7 +39,6 @@ main(int argc, char **argv)
     MSG_DAT msg_data;
     des_key_schedule sched;
 
-    setprogname (argv[0]);
     strlcpy (service, SAMPLE_SERVICE, sizeof(service));
     strlcpy (instance, "*", sizeof(instance));
     *srvtab = '\0';

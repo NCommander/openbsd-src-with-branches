@@ -1,4 +1,5 @@
-/*	$NetBSD: null_vnops.c,v 1.4 1994/08/19 11:25:37 mycroft Exp $	*/
+/*	$OpenBSD: null_vnops.c,v 1.14 2001/12/04 22:44:32 art Exp $	*/
+/*	$NetBSD: null_vnops.c,v 1.7 1996/05/10 22:51:01 jtk Exp $	*/
 
 /*
  * Copyright (c) 1992, 1993
@@ -97,10 +98,18 @@
  * Although bypass handles most operations, 
  * vop_getattr, _inactive, _reclaim, and _print are not bypassed.
  * Vop_getattr must change the fsid being returned.
+ * Vop_lock and vop_unlock must handle any locking for the
+ * current vnode as well as pass the lock request down.
  * Vop_inactive and vop_reclaim are not bypassed so that
- * they can handle freeing null-layer specific data.
- * Vop_print is not bypassed to avoid excessive debugging
- * information.
+ * the can handle freeing null-layer specific data. Vop_print
+ * is not bypassed to avoid excessive debugging information.
+ * Also, certain vnod eoperations change the locking state within
+ * the operation (create, mknod, remove, link, rename, mkdir, rmdir,
+ * and symlink). Ideally, these operations should not change the
+ * lock state, but should be changed to let the caller of the
+ * function unlock them.Otherwise all intermediate vnode layers
+ * (such as union, umapfs, etc) must catch these functions
+ * to the necessary locking at their layer
  *
  *
  * INSTANTIATING VNODE STACKS
@@ -181,6 +190,18 @@
 
 int null_bug_bypass = 0;   /* for debugging: enables bypass printf'ing */
 
+int	null_getattr(void *);
+int	null_inactive(void *);
+int	null_reclaim(void *);
+int	null_print(void *);
+int	null_strategy(void *);
+int	null_bwrite(void *);
+int	null_lock(void *);
+int	null_unlock(void *);
+int	null_islocked(void *);
+int	null_lookup(void *);
+int	null_open(void *);
+
 /*
  * This is the 10-Apr-92 bypass routine.
  *    This version has been optimized for speed, throwing away some
@@ -207,13 +228,13 @@ int null_bug_bypass = 0;   /* for debugging: enables bypass printf'ing */
  *   problems on rmdir'ing mount points and renaming?)
  */ 
 int
-null_bypass(ap)
-	struct vop_generic_args /* {
-		struct vnodeop_desc *a_desc;
-		<other random data follows, presumably>
-	} */ *ap;
+null_bypass(v)
+	void *v;
 {
-	extern int (**null_vnodeop_p)();  /* not extern, really "forward" */
+	struct vop_generic_args /* {
+				   struct vnodeop_desc *a_desc;
+				   <other random data follows, presumably>
+				   } */ *ap = v;
 	register struct vnode **this_vp_p;
 	int error;
 	struct vnode *old_vps[VDESC_MAX_VPS];
@@ -231,7 +252,7 @@ null_bypass(ap)
 	 */
 	if (descp->vdesc_vp_offsets == NULL ||
 	    descp->vdesc_vp_offsets[0] == VDESC_NO_OFFSET)
-		panic ("null_bypass: no vp's in map.\n");
+		panic ("null_bypass: no vp's in map.");
 #endif
 
 	/*
@@ -251,7 +272,7 @@ null_bypass(ap)
 		 * that aren't.  (We must always map first vp or vclean fails.)
 		 */
 		if (i && (*this_vp_p == NULLVP ||
-		    (*this_vp_p)->v_op != null_vnodeop_p)) {
+			  (*this_vp_p)->v_op != null_vnodeop_p)) {
 			old_vps[i] = NULLVP;
 		} else {
 			old_vps[i] = *this_vp_p;
@@ -284,64 +305,93 @@ null_bypass(ap)
 			break;   /* bail out at end of list */
 		if (old_vps[i] != NULLVP) {
 			*(vps_p[i]) = old_vps[i];
-			if (reles & 1)
+			if (reles & 1) {
 				vrele(*(vps_p[i]));
+			}
 		}
-	}
 
-	/*
-	 * Map the possible out-going vpp
-	 * (Assumes that the lower layer always returns
-	 * a VREF'ed vpp unless it gets an error.)
-	 */
-	if (descp->vdesc_vpp_offset != VDESC_NO_OFFSET &&
-	    !(descp->vdesc_flags & VDESC_NOMAP_VPP) &&
-	    !error) {
 		/*
-		 * XXX - even though some ops have vpp returned vp's,
-		 * several ops actually vrele this before returning.
-		 * We must avoid these ops.
-		 * (This should go away when these ops are regularized.)
+		 * Map the possible out-going vpp
+		 * (Assumes that the lower layer always returns
+		 * a VREF'ed vpp unless it gets an error.)
 		 */
-		if (descp->vdesc_flags & VDESC_VPP_WILLRELE)
-			goto out;
-		vppp = VOPARG_OFFSETTO(struct vnode***,
-				 descp->vdesc_vpp_offset,ap);
-		error = null_node_create(old_vps[0]->v_mount, **vppp, *vppp);
+		if (descp->vdesc_vpp_offset != VDESC_NO_OFFSET &&
+		    !(descp->vdesc_flags & VDESC_NOMAP_VPP) &&
+		    !error) {
+			/*
+			 * XXX - even though some ops have vpp returned vp's,
+			 * several ops actually vrele this before returning.
+			 * We must avoid these ops.
+			 * (This should go away when these ops are regularized.)
+			 */
+			if (descp->vdesc_flags & VDESC_VPP_WILLRELE)
+				goto out;
+			vppp = VOPARG_OFFSETTO(struct vnode***,
+					       descp->vdesc_vpp_offset,ap);
+			/*
+			 * This assumes that **vppp is a locked vnode (it is always
+			 * so as of this writing, NetBSD-current 1995/02/16)
+			 *
+			 * (don't want to lock it if being called on behalf
+			 * of lookup--it plays weird locking games depending
+			 * on whether or not it's looking up ".", "..", etc.
+			 */
+			error = null_node_create(old_vps[0]->v_mount, **vppp, *vppp,
+						 descp == &vop_lookup_desc ? 0 : 1);
+		}
 	}
 
  out:
 	return (error);
+	
 }
-
 
 /*
  *  We handle getattr only to change the fsid.
  */
 int
-null_getattr(ap)
+null_getattr(v)
+	void *v;
+{
 	struct vop_getattr_args /* {
 		struct vnode *a_vp;
 		struct vattr *a_vap;
 		struct ucred *a_cred;
 		struct proc *a_p;
-	} */ *ap;
-{
+	} */ *ap = v;
 	int error;
-	if (error = null_bypass(ap))
+	if ((error = null_bypass(ap)) != NULL)
 		return (error);
 	/* Requires that arguments be restored. */
 	ap->a_vap->va_fsid = ap->a_vp->v_mount->mnt_stat.f_fsid.val[0];
 	return (0);
 }
 
+/*
+ * We must handle open to be able to catch MNT_NODEV and friends.
+ */
+int
+null_open(v)
+	void *v;
+{
+	struct vop_open_args *ap = v;
+	struct vnode *vp = ap->a_vp;
+	enum vtype lower_type = VTONULL(vp)->null_lowervp->v_type;
+
+
+	if (((lower_type == VBLK) || (lower_type == VCHR)) &&
+	    (vp->v_mount->mnt_flag & MNT_NODEV))
+		return ENXIO;
+
+	return null_bypass(ap);
+}
 
 int
-null_inactive(ap)
-	struct vop_inactive_args /* {
-		struct vnode *a_vp;
-	} */ *ap;
+null_inactive(v)
+	void *v;
 {
+	struct vop_inactive_args *ap = v;
+
 	/*
 	 * Do nothing (and _don't_ bypass).
 	 * Wait to vrele lowervp until reclaim,
@@ -354,15 +404,18 @@ null_inactive(ap)
 	 * like they do in the name lookup cache code.
 	 * That's too much work for now.
 	 */
+	VOP_UNLOCK(ap->a_vp, 0, ap->a_p);
+
 	return (0);
 }
 
 int
-null_reclaim(ap)
+null_reclaim(v)
+	void *v;
+{
 	struct vop_reclaim_args /* {
 		struct vnode *a_vp;
-	} */ *ap;
-{
+	} */ *ap = v;
 	struct vnode *vp = ap->a_vp;
 	struct null_node *xp = VTONULL(vp);
 	struct vnode *lowervp = xp->null_lowervp;
@@ -382,13 +435,16 @@ null_reclaim(ap)
 
 
 int
-null_print(ap)
+null_print(v)
+	void *v;
+{
 	struct vop_print_args /* {
 		struct vnode *a_vp;
-	} */ *ap;
-{
+	} */ *ap = v;
 	register struct vnode *vp = ap->a_vp;
-	printf ("\ttag VT_NULLFS, vp=%x, lowervp=%x\n", vp, NULLVPTOLOWERVP(vp));
+
+	printf ("\ttag VT_NULLFS, vp=%p, lowervp=%p\n", vp, NULLVPTOLOWERVP(vp));
+	vprint("nullfs lowervp", NULLVPTOLOWERVP(vp));
 	return (0);
 }
 
@@ -396,14 +452,14 @@ null_print(ap)
 /*
  * XXX - vop_strategy must be hand coded because it has no
  * vnode in its arguments.
- * This goes away with a merged VM/buffer cache.
  */
 int
-null_strategy(ap)
+null_strategy(v)
+	void *v;
+{
 	struct vop_strategy_args /* {
 		struct buf *a_bp;
-	} */ *ap;
-{
+	} */ *ap = v;
 	struct buf *bp = ap->a_bp;
 	int error;
 	struct vnode *savedvp;
@@ -422,14 +478,14 @@ null_strategy(ap)
 /*
  * XXX - like vop_strategy, vop_bwrite must be hand coded because it has no
  * vnode in its arguments.
- * This goes away with a merged VM/buffer cache.
  */
 int
-null_bwrite(ap)
+null_bwrite(v)
+	void *v;
+{
 	struct vop_bwrite_args /* {
 		struct buf *a_bp;
-	} */ *ap;
-{
+	} */ *ap = v;
 	struct buf *bp = ap->a_bp;
 	int error;
 	struct vnode *savedvp;
@@ -445,21 +501,137 @@ null_bwrite(ap)
 }
 
 /*
+ * We need a separate null lock routine, to avoid deadlocks at reclaim time.
+ * If a process holds the lower-vnode locked when it tries to reclaim
+ * the null upper-vnode, _and_ null_bypass is used as the locking operation,
+ * then a process can end up locking against itself.
+ * This has been observed when a null mount is set up to "tunnel" beneath a
+ * union mount (that setup is useful if you still wish to be able to access
+ * the non-union version of either the above or below union layer)
+ */
+int
+null_lock(v)
+	void *v;
+{
+	struct vop_lock_args *ap = v;
+
+#if 0
+	vop_generic_lock(ap);
+#endif
+	if ((ap->a_flags & LK_TYPE_MASK) == LK_DRAIN)
+		return (0);
+	ap->a_flags &= ~LK_INTERLOCK;
+
+	return (null_bypass((struct vop_generic_args *)ap));
+}
+
+int
+null_unlock(v)
+	void *v;
+{
+	struct vop_unlock_args *ap = v;
+#if 0
+	vop_generic_unlock(ap);
+#endif
+	ap->a_flags &= ~LK_INTERLOCK;
+
+	return (null_bypass((struct vop_generic_args *)ap));
+}
+
+int
+null_islocked(v)
+	void *v;
+{
+	/* XXX */
+	return (0);
+}
+
+int
+null_lookup(v)
+	void *v;
+{
+	register struct vop_lookup_args /* {
+		struct vnodeop_desc *a_desc;
+		struct vnode *a_dvp;
+		struct vnode **a_vpp;
+		struct componentname *a_cnp;
+	} */ *ap = v;
+	register int error;
+	int flags = ap->a_cnp->cn_flags;
+	struct componentname *cnp = ap->a_cnp;
+#if 0
+	register struct vnode *dvp, *vp;
+	struct proc *p = cnp->cn_proc;
+	struct vop_unlock_args unlockargs;
+	struct vop_lock_args lockargs;
+#endif
+
+#ifdef NULLFS_DIAGNOSTIC
+	printf("null_lookup: dvp=%lx, name='%s'\n",
+	       ap->a_dvp, cnp->cn_nameptr);
+#endif
+
+	if ((flags & ISLASTCN) && (ap->a_dvp->v_mount->mnt_flag & MNT_RDONLY) &&
+	    (cnp->cn_nameiop == DELETE || cnp->cn_nameiop == RENAME))
+		return (EROFS);
+	error = null_bypass((struct vop_generic_args *)ap);
+	if (error == EJUSTRETURN && (flags & ISLASTCN) &&
+	    (ap->a_dvp->v_mount->mnt_flag & MNT_RDONLY) &&
+	    (cnp->cn_nameiop == CREATE || cnp->cn_nameiop == RENAME))
+		error = EROFS;
+
+#if 0
+	/*
+	 * We must do the same locking and unlocking at this layer as 
+	 * is done in the layers below us. We could figure this out 
+	 * based on the error return and the LASTCN, LOCKPARENT, and
+	 * LOCKLEAF flags. However, it is more expidient to just find 
+	 * out the state of the lower level vnodes and set ours to the
+	 * same state.
+	 */
+	dvp = ap->a_dvp;
+	vp = *ap->a_vpp;
+	if (dvp == vp)
+		return (error);
+	if (!VOP_ISLOCKED(dvp)) {
+		unlockargs.a_vp = dvp;
+		unlockargs.a_flags = 0;
+		unlockargs.a_p = p;
+		vop_generic_unlock(&unlockargs);
+	}
+	if (vp != NULLVP && VOP_ISLOCKED(vp)) {
+		lockargs.a_vp = vp;
+		lockargs.a_flags = LK_SHARED;
+		lockargs.a_p = p;
+		vop_generic_lock(&lockargs);
+	}
+#endif
+	return (error);
+}
+
+/*
  * Global vfs data structures
  */
-int (**null_vnodeop_p)();
+int (**null_vnodeop_p)(void *);
 struct vnodeopv_entry_desc null_vnodeop_entries[] = {
-	{ &vop_default_desc, null_bypass },
+	{ &vop_default_desc,	null_bypass },
 
-	{ &vop_getattr_desc, null_getattr },
-	{ &vop_inactive_desc, null_inactive },
-	{ &vop_reclaim_desc, null_reclaim },
-	{ &vop_print_desc, null_print },
+	{ &vop_getattr_desc,	null_getattr },
+	{ &vop_inactive_desc,	null_inactive },
+	{ &vop_reclaim_desc,	null_reclaim },
+	{ &vop_print_desc,	null_print },
 
-	{ &vop_strategy_desc, null_strategy },
-	{ &vop_bwrite_desc, null_bwrite },
+	{ &vop_open_desc,	null_open },	/* mount option handling */
 
-	{ (struct vnodeop_desc*)NULL, (int(*)())NULL }
+	{ &vop_lock_desc,	null_lock },
+	{ &vop_unlock_desc,	null_unlock },
+	{ &vop_islocked_desc,	null_islocked },
+	{ &vop_lookup_desc,	null_lookup },	/* special locking frob */
+
+	{ &vop_strategy_desc,	null_strategy },
+	{ &vop_bwrite_desc,	null_bwrite },
+
+	{ NULL,	NULL }
 };
 struct vnodeopv_desc null_vnodeop_opv_desc =
 	{ &null_vnodeop_p, null_vnodeop_entries };

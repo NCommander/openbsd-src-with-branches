@@ -1,3 +1,4 @@
+/*	$OpenBSD: touch.c,v 1.6 2000/10/13 13:54:59 pjanzen Exp $	*/
 /*	$NetBSD: touch.c,v 1.11 1995/08/31 22:10:06 jtc Exp $	*/
 
 /*
@@ -43,7 +44,7 @@ static char copyright[] =
 #if 0
 static char sccsid[] = "@(#)touch.c	8.2 (Berkeley) 4/28/95";
 #endif
-static char rcsid[] = "$NetBSD: touch.c,v 1.11 1995/08/31 22:10:06 jtc Exp $";
+static char rcsid[] = "$OpenBSD: touch.c,v 1.6 2000/10/13 13:54:59 pjanzen Exp $";
 #endif /* not lint */
 
 #include <sys/types.h>
@@ -58,13 +59,14 @@ static char rcsid[] = "$NetBSD: touch.c,v 1.11 1995/08/31 22:10:06 jtc Exp $";
 #include <string.h>
 #include <locale.h>
 #include <time.h>
+#include <tzfile.h>
 #include <unistd.h>
 
-int	rw __P((char *, struct stat *, int));
-void	stime_arg1 __P((char *, struct timeval *));
-void	stime_arg2 __P((char *, int, struct timeval *));
-void	stime_file __P((char *, struct timeval *));
-void	usage __P((void));
+int	rw(char *, struct stat *, int);
+void	stime_arg1(char *, struct timeval *);
+void	stime_arg2(char *, int, struct timeval *);
+void	stime_file(char *, struct timeval *);
+void	usage(void);
 
 int
 main(argc, argv)
@@ -82,7 +84,7 @@ main(argc, argv)
 	if (gettimeofday(&tv[0], NULL))
 		err(1, "gettimeofday");
 
-	while ((ch = getopt(argc, argv, "acfmr:t:")) != EOF)
+	while ((ch = getopt(argc, argv, "acfmr:t:")) != -1)
 		switch(ch) {
 		case 'a':
 			aflag = 1;
@@ -137,7 +139,7 @@ main(argc, argv)
 
 	for (rval = 0; *argv; ++argv) {
 		/* See if the file exists. */
-		if (stat(*argv, &sb))
+		if (stat(*argv, &sb)) {
 			if (!cflag) {
 				/* Create the file. */
 				fd = open(*argv,
@@ -153,6 +155,7 @@ main(argc, argv)
 					continue;
 			} else
 				continue;
+		}
 
 		if (!aflag)
 			TIMESPEC_TO_TIMEVAL(&tv[0], &sb.st_atimespec);
@@ -185,7 +188,7 @@ main(argc, argv)
 	exit(rval);
 }
 
-#define	ATOI2(ar)	((ar)[0] - '0') * 10 + ((ar)[1] - '0'); (ar) += 2;
+#define	ATOI2(s)	((s) += 2, ((s)[-2] - '0') * 10 + ((s)[-1] - '0'))
 
 void
 stime_arg1(arg, tvp)
@@ -213,8 +216,7 @@ stime_arg1(arg, tvp)
 	yearset = 0;
 	switch(strlen(arg)) {
 	case 12:			/* CCYYMMDDhhmm */
-		t->tm_year = ATOI2(arg);
-		t->tm_year *= 100;
+		t->tm_year = ATOI2(arg) * 100 - TM_YEAR_BASE;
 		yearset = 1;
 		/* FALLTHOUGH */
 	case 10:			/* YYMMDDhhmm */
@@ -224,11 +226,10 @@ stime_arg1(arg, tvp)
 		} else {
 			yearset = ATOI2(arg);
 			if (yearset < 69)
-				t->tm_year = yearset + 2000;
+				t->tm_year = yearset + 2000 - TM_YEAR_BASE;
 			else
-				t->tm_year = yearset + 1900;
+				t->tm_year = yearset + 1900 - TM_YEAR_BASE;
 		}
-		t->tm_year -= 1900;	/* Convert to UNIX time. */
 		/* FALLTHROUGH */
 	case 8:				/* MMDDhhmm */
 		t->tm_mon = ATOI2(arg);
@@ -263,19 +264,25 @@ stime_arg2(arg, year, tvp)
 	if ((t = localtime(&tmptime)) == NULL)
 		err(1, "localtime");
 
-	t->tm_mon = ATOI2(arg);		/* MMDDhhmm[yy] */
+	t->tm_mon = ATOI2(arg);		/* MMDDhhmm[YY] */
 	--t->tm_mon;			/* Convert from 01-12 to 00-11 */
 	t->tm_mday = ATOI2(arg);
 	t->tm_hour = ATOI2(arg);
 	t->tm_min = ATOI2(arg);
-	if (year)
-		t->tm_year = ATOI2(arg);
+	if (year) {
+		year = ATOI2(arg);
+		if (year < 69)
+			t->tm_year = year + 2000 - TM_YEAR_BASE;
+		else
+			t->tm_year = year + 1900 - TM_YEAR_BASE;
+	}
+	t->tm_sec = 0;
 
 	t->tm_isdst = -1;		/* Figure out DST. */
 	tvp[0].tv_sec = tvp[1].tv_sec = mktime(t);
 	if (tvp[0].tv_sec == -1)
 		errx(1,
-	"out of range or illegal time specification: MMDDhhmm[yy]");
+	"out of range or illegal time specification: MMDDhhmm[YY]");
 
 	tvp[0].tv_usec = tvp[1].tv_usec = 0;
 }

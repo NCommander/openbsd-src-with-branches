@@ -1,6 +1,8 @@
-/*	$NetBSD: hpux.h,v 1.8 1995/05/10 16:45:29 christos Exp $	*/
+/*	$OpenBSD: hpux.h,v 1.7 2000/11/10 15:33:09 provos Exp $	*/
+/*	$NetBSD: hpux.h,v 1.11 1997/04/01 19:58:58 scottr Exp $	*/
 
 /*
+ * Copyright (c) 1995 Jason R. Thorpe.  All rights reserved.
  * Copyright (c) 1988 University of Utah.
  * Copyright (c) 1990, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -95,27 +97,39 @@ struct hpux_sgttyb {
 #define bsdtohpuxdev(d)	((major(d) << 24) | minor(d))
 
 struct	hpux_stat {
-	long	hst_dev;
-	u_long	hst_ino;
-	u_short	hst_mode;
-	short	hst_nlink;
-	u_short	hst_uid;
-	u_short	hst_gid;
-	long	hst_rdev;
-	long	hst_size;
-	time_t	hst_atime;
-	int	hst_spare1;
-	time_t	hst_mtime;
-	int	hst_spare2;
-	time_t	hst_ctime;
-	int	hst_spare3;
-	long	hst_blksize;
-	long	hst_blocks;
-	u_int	hst_remote;
-	long	hst_netdev;  	
-	u_long	hst_netino;
-	long	hst_spare4[9];
+	long		hst_dev;
+	u_long		hst_ino;
+	u_short		hst_mode;
+	short		hst_nlink;
+	u_short		hst_old_uid;	/* these have since moved */
+	u_short		hst_old_gid;	/* ... */
+	long		hst_rdev;
+	long		hst_size;
+	long		hst_atime;
+	int		hst_spare1;
+	long		hst_mtime;
+	int		hst_spare2;
+	long		hst_ctime;
+	int		hst_spare3;
+	long		hst_blksize;
+	long		hst_blocks;
+	u_int		hst_remote;
+	long		hst_netdev;  	
+	u_long		hst_netino;
+	u_short		hst_cnode;
+	u_short		hst_rcnode;
+	u_short		hst_netsite;
+	short		hst_fstype;
+	long		hst_realdev;
+	u_short		hst_basemode;
+	u_short		hst_spareshort1;
+	long		hst_uid;
+	long		hst_gid;
+	long		hst_spare4[3];
 };
+
+#define	HST_REMOTE_REMOTE	0x01	/* set if file is remote */
+#define	HST_REMOTE_ACL		0x02	/* set if file has ACL entries */
 
 /* from old timeb.h */
 struct hpux_otimeb {
@@ -268,13 +282,16 @@ struct hpux_shmid_ds {
 /* HP-UX POSIX signal stuff implementation */
 typedef struct __hpux_sigset_t { long sigset[8]; } hpux_sigset_t;
 struct hpux_sigaction {
-	void		(*sa_handler)();
+	void		(*sa__handler)(int);
 	hpux_sigset_t	sa_mask;
 	int		sa_flags;
 };
 #define HPUXSA_ONSTACK		1
 #define HPUXSA_RESETHAND	4
 #define HPUXSA_NOCLDSTOP	8
+#define HPUXSA_NODEFER		32
+#define HPUXSA_RESTART		64
+#define HPUXSA_NOCLDWAIT	128
 
 #define	HPUXSIG_BLOCK	0	/* block specified signal set */
 #define	HPUXSIG_UNBLOCK	1	/* unblock specified signal set */
@@ -300,7 +317,7 @@ struct hpux_sigaction {
 
 /*
  * In BSD EAGAIN and EWOULDBLOCK are the same error code.
- * However, for HP-UX we must split them out to seperate codes.
+ * However, for HP-UX we must split them out to separate codes.
  * The easiest way to do this was to check the return value of
  * BSD routines which are known to return EAGAIN (but never
  * EWOULDBLOCK) and change it to the pseudo-code OEAGAIN when
@@ -308,3 +325,10 @@ struct hpux_sigaction {
  * code to the HP-UX EAGAIN value.
  */
 #define OEAGAIN	82
+
+/*
+ * Extensions to the fd_ofileflags flags.
+ */
+#define	HPUX_UF_NONBLOCK_ON	0x10
+#define	HPUX_UF_FNDELAY_ON	0x20
+#define	HPUX_UF_FIONBIO_ON	0x40 

@@ -56,7 +56,7 @@ usage(void)
 {
     fprintf(stderr,
 	    "Usage: %s [-c AFS cellname] [ -5 krb5salt ] [ password ]\n",
-	    getprogname());
+	    __progname);
     fprintf(stderr,
 	    "       krb5salt is realmname APPEND principal APPEND instance\n");
     exit(1);
@@ -84,8 +84,6 @@ main(int argc, char **argv)
     des_cblock key;
     char buf[1024];
     char *cellname = 0, *salt = 0;
-
-    setprogname (argv[0]);
 
     if (argc >= 3 && argv[1][0] == '-' && argv[1][1] == 'c')
 	{

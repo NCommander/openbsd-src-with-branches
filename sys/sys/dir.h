@@ -1,4 +1,5 @@
-/*	$NetBSD: dir.h,v 1.8 1994/06/29 06:43:52 cgd Exp $	*/
+/*	$OpenBSD: dir.h,v 1.3 1996/10/24 17:56:17 tholo Exp $	*/
+/*	$NetBSD: dir.h,v 1.9 1996/10/27 19:27:54 gwr Exp $	*/
 
 /*
  * Copyright (c) 1982, 1986, 1989, 1993
@@ -42,6 +43,11 @@
 
 #ifndef _SYS_DIR_H_
 #define	_SYS_DIR_H_
+
+#ifdef	_KERNEL
+/* This file should only be used by old user-level code. */
+#error "Please use <sys/dirent.h> instead"
+#endif
 
 #include <dirent.h>
 

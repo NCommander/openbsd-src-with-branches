@@ -1,3 +1,5 @@
+/*	$OpenBSD: tcfsrmkey.c,v 1.7 2000/06/20 18:15:57 aaron Exp $	*/
+
 /*
  *	Transparent Cryptographic File System (TCFS) for NetBSD 
  *	Author and mantainer: 	Luigi Catuogno [luicat@tcfs.unisa.it]
@@ -10,14 +12,15 @@
  *	Base utility set v0.1
  */
 
-#include <stdio.h>
 #include <sys/types.h>
-#include <ctype.h>
-#include <pwd.h>
-#include <unistd.h>
 #include <sys/param.h>
 #include <sys/mount.h>
-#include <des.h>
+#include <ctype.h>
+#include <pwd.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <unistd.h>
 
 #include <miscfs/tcfs/tcfs.h>
 #include "tcfslib.h"
@@ -27,22 +30,20 @@
 extern char *optarg;
 extern int optind;
 char *rmkey_usage=
-"usage: tcfsrmkey [-f fliesystem-label][-g group][-p mount-point]\n";
+"usage: tcfsrmkey [-f filesystem-label] [-g group] [-p mount-point]\n";
 
 int
 rmkey_main(int argc, char *argv[])
 {
-	char *fs;
 	uid_t uid;
-	gid_t gid;
-	int es;
+	gid_t gid = 0;
+	int es = 0;
 	char x;
 	char fslabel[MAXPATHLEN], fspath[MAXPATHLEN];
 	int havempname = FALSE, havefsname = FALSE, isgroupkey = FALSE;
-	int havefs = FALSE;
 	int havename = FALSE, havefspath = FALSE;
 
-	while ((x = getopt(argc,argv,"f:p:g:")) != EOF) {
+	while ((x = getopt(argc, argv, "f:p:g:")) != -1) {
 		switch(x) {
 		case 'p':
 			havempname = TRUE;
@@ -70,12 +71,10 @@ rmkey_main(int argc, char *argv[])
 		}
 	}
 	if (argc-optind)
-		tcfs_error(ER_UNKOPT,NULL);
+		tcfs_error(ER_UNKOPT, NULL);
 
-	if (havefsname && havempname) {
+	if (havefsname && havempname)
 		tcfs_error(ER_CUSTOM, rmkey_usage);
-		exit(1);
-	}
 			 
 	if (havefsname) {
 		es = tcfs_getfspath(fslabel, fspath);
@@ -86,26 +85,26 @@ rmkey_main(int argc, char *argv[])
 		havename = TRUE;
 
 	if (!havename)
-		es = tcfs_getfspath("default",fspath);
+		es = tcfs_getfspath("default", fspath);
 
 	if(!es) {
-		tcfs_error(ER_CUSTOM,"fs-label not found!\n");
+		tcfs_error(ER_CUSTOM, "fs-label not found!\n");
 		exit(1);
 	}
 		
 	uid = getuid();
 
 	if (isgroupkey) {
-		es = tcfs_group_disable(fspath,uid,gid);
+		es = tcfs_group_disable(fspath, uid, gid);
 		if(es == -1)
 			tcfs_error(ER_CUSTOM, "problems updating filesystem");
 		exit(0);
 	}
 
-	es = tcfs_user_disable(fspath,uid);
+	es = tcfs_user_disable(fspath, uid);
 
 	if (es == -1)
-		tcfs_error(ER_CUSTOM,"problems updating filesystem");
+		tcfs_error(ER_CUSTOM, "problems updating filesystem");
 
 	exit(0);
 }

@@ -1,3 +1,5 @@
+/*	$OpenBSD: tcfsrmuser.c,v 1.8 2000/06/20 08:59:53 fgsch Exp $	*/
+
 /*
  *	Transparent Cryptographic File System (TCFS) for NetBSD 
  *	Author and mantainer: 	Luigi Catuogno [luicat@tcfs.unisa.it]
@@ -11,7 +13,10 @@
  */
 
 
+#include <err.h>
 #include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 #include <unistd.h>
 
 #include <miscfs/tcfs/tcfs.h>
@@ -26,11 +31,11 @@ Remove an user entry from the TCFS dabatase.
   -v          Makes the output a little more verbose\n";
 
 int 
-rmuser_main (int argn, char *argv[])
+rmuser_main(int argn, char *argv[])
 {
-	int have_user=FALSE;
-	int be_verbose=FALSE;
-	char *user, *passwd;
+	int have_user = FALSE;
+	int be_verbose = FALSE;
+	char *user;
 	tcfspwdb *user_info;
 	int val;
 
@@ -38,63 +43,66 @@ rmuser_main (int argn, char *argv[])
 	 * Going to check the arguments
 	 */
 
-	 user=(char *) malloc(20);
+	 if ((user = (char *)malloc(LOGIN_NAME_MAX + 1)) == NULL)
+		 err(1, NULL);
 
-	 while ((val=getopt (argn, argv, "l:hv"))!=EOF)
-                switch (val)
-		{
-			case 'l':
-				strncpy (user, optarg, 9);
-				have_user=TRUE;
-				break;
-
-			case 'h':
-				show_usage (rmuser_usage, argv[0]);
-				exit (OK);
-				break;
-	
-			case 'v':
-				be_verbose=TRUE;
-				break;
-	
-			default:
-				fprintf (stderr, "Try %s --help for more information.\n", argv[0]);
-				exit (ER_UNKOPT);
-				break;
+	 while ((val = getopt(argn, argv, "l:hv")) != -1)
+		switch (val) {
+		case 'l':
+			strlcpy(user, optarg, LOGIN_NAME_MAX + 1);
+			have_user = TRUE;
+			break;
+		case 'h':
+			printf(rmuser_usage, argv[0]);
+			exit(OK);
+			break;
+		case 'v':
+			be_verbose = TRUE;
+			break;
+		default:
+			fprintf(stderr, "Try %s --help for more information.\n", argv[0]);
+			exit(ER_UNKOPT);
+			break;
 		}
 
-	if (argn-optind)
-		tcfs_error (ER_UNKOPT, NULL);
+	if (argn - optind)
+		tcfs_error(ER_UNKOPT, NULL);
 
 	/*
 	 * Here we don't have to drop root privileges because only root
 	 * should run us.
 	 * However we can do better. Maybe in next versions.
 	 */
-	if (!have_user)
-	{
-		printf ("Username to remove from TCFS database: ");
-		fgets (user,9,stdin);
-		user[strlen(user)-1]='\0';
+	if (!have_user) {
+		int len;
+
+		printf("Username to remove from TCFS database: ");
+		fgets(user, LOGIN_NAME_MAX + 1, stdin);
+		len = strlen(user) - 2;
+		if (len < 0)
+			exit(1);
+		user[len] = user[len] == '\n' ? 0 : user[len];
 	}
 
 	if (be_verbose)
-		printf ("Deleting the entry for user %s from the TCFS database...\n", user);
+		printf("Deleting the entry for user %s from the TCFS database...\n", user);
 
 	/*
 	 * Deleting an entry from the key database
 	 */
-	if (!tcfspwdbr_new (&user_info))
-		tcfs_error (ER_MEM, NULL);
+	if (!tcfspwdbr_new(&user_info))
+		tcfs_error(ER_MEM, NULL);
 
-	if (!tcfspwdbr_edit (&user_info, F_USR, user))
-		tcfs_error (ER_MEM, NULL);
+	if (!tcfspwdbr_edit(&user_info, F_USR, user))
+		tcfs_error(ER_MEM, NULL);
 
-	if (!tcfs_putpwnam (user, user_info, U_DEL))
-		tcfs_error (ER_CUSTOM, "Error: cannot remove user.");
+	if (!tcfs_putpwnam(user, user_info, U_DEL))
+		tcfs_error(ER_CUSTOM, "Error: cannot remove user.");
 
 	if (be_verbose)
-		printf ("User entry removed with success.\n");
+		printf("User entry removed with success.\n");
 
-	tcfs_error (OK, NULL);
+	tcfs_error(OK, NULL);
+
+	exit(0);
 }

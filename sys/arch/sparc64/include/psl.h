@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: psl.h,v 1.7 2002/06/11 05:01:17 art Exp $	*/
 /*	$NetBSD: psl.h,v 1.20 2001/04/13 23:30:05 thorpej Exp $ */
 
 /*
@@ -86,11 +86,12 @@
 #define PIL_TTY		6
 #define PIL_LPT		6
 #define PIL_NET		6
-#define PIL_IMP		7
+#define PIL_VM		7
 #define PIL_CLOCK	10
 #define PIL_FD		11
 #define PIL_SER		12
 #define	PIL_AUD		13
+#define PIL_STATCLOCK	14
 #define PIL_HIGH	15
 #define PIL_SCHED	PIL_CLOCK
 #define PIL_LOCK	PIL_HIGH
@@ -149,21 +150,12 @@
  * about possible memory barrier bugs.
  */
 
-#ifdef __arch64__
 #define PSTATE_PROM	(PSTATE_MM_TSO|PSTATE_PRIV)
 #define PSTATE_NUCLEUS	(PSTATE_MM_TSO|PSTATE_PRIV|PSTATE_AG)
 #define PSTATE_KERN	(PSTATE_MM_TSO|PSTATE_PRIV)
 #define PSTATE_INTR	(PSTATE_KERN|PSTATE_IE)
 #define PSTATE_USER32	(PSTATE_MM_TSO|PSTATE_AM|PSTATE_IE)
 #define PSTATE_USER	(PSTATE_MM_RMO|PSTATE_IE)
-#else
-#define PSTATE_PROM	(PSTATE_MM_TSO|PSTATE_PRIV)
-#define PSTATE_NUCLEUS	(PSTATE_MM_TSO|PSTATE_AM|PSTATE_PRIV|PSTATE_AG)
-#define PSTATE_KERN	(PSTATE_MM_TSO|PSTATE_AM|PSTATE_PRIV)
-#define PSTATE_INTR	(PSTATE_KERN|PSTATE_IE)
-#define PSTATE_USER32	(PSTATE_MM_TSO|PSTATE_AM|PSTATE_IE)
-#define PSTATE_USER	(PSTATE_MM_TSO|PSTATE_AM|PSTATE_IE)
-#endif
 
 
 /*
@@ -253,14 +245,31 @@
 #if defined(_KERNEL) && !defined(_LOCORE)
 
 extern u_int64_t ver;	/* Copy of v9 version register.  We need to read this only once, in locore.s. */
-static __inline int getpstate __P((void));
-static __inline void setpstate __P((int));
-static __inline int getcwp __P((void));
-static __inline void setcwp __P((int));
+static __inline int getpstate(void);
+static __inline void setpstate(int);
+static __inline int getcwp(void);
+static __inline void setcwp(int);
 #ifndef SPLDEBUG
-static __inline void splx __P((int));
+static __inline void splx(int);
 #endif
-static __inline u_int64_t getver __P((void));
+static __inline u_int64_t getver(void);
+
+#ifdef DIAGNOSTIC
+/*
+ * Although this function is implemented in MI code, it must be in this MD
+ * header because we don't want this header to include MI includes.
+ */
+void splassert_fail(int, int, const char *);
+extern int splassert_ctl;
+void splassert_check(int, const char *);
+#define splassert(__wantipl) do {			\
+	if (__predict_false(splassert_ctl > 0)) {	\
+		splassert_check(__wantipl, __func__);	\
+	}						\
+} while (0)
+#else
+#define splassert(wantipl) do { /* nada */ } while (0)
+#endif
 
 /*
  * GCC pseudo-functions for manipulating privileged registers
@@ -306,12 +315,12 @@ static __inline u_int64_t getver()
  */
 
 #ifdef SPLDEBUG
-void prom_printf __P((const char *fmt, ...));
+void prom_printf(const char *fmt, ...);
 extern int printspl;
 #define SPLPRINT(x)	if(printspl) { int i=10000000; prom_printf x ; while(i--); }
 #define	SPL(name, newpil) \
-static __inline int name##X __P((const char*, int)); \
-static __inline int name##X(const char* file, int line) \
+static __inline int name##X(const char *, int); \
+static __inline int name##X(const char *file, int line) \
 { \
 	int oldpil; \
 	__asm __volatile("rdpr %%pil,%0" : "=r" (oldpil)); \
@@ -321,8 +330,8 @@ static __inline int name##X(const char* file, int line) \
 }
 /* A non-priority-decreasing version of SPL */
 #define	SPLHOLD(name, newpil) \
-static __inline int name##X __P((const char*, int)); \
-static __inline int name##X(const char* file, int line) \
+static __inline int name##X(const char *, int); \
+static __inline int name##X(const char * file, int line) \
 { \
 	int oldpil; \
 	__asm __volatile("rdpr %%pil,%0" : "=r" (oldpil)); \
@@ -336,7 +345,7 @@ static __inline int name##X(const char* file, int line) \
 #else
 #define SPLPRINT(x)	
 #define	SPL(name, newpil) \
-static __inline int name __P((void)); \
+static __inline int name(void); \
 static __inline int name() \
 { \
 	int oldpil; \
@@ -346,7 +355,7 @@ static __inline int name() \
 }
 /* A non-priority-decreasing version of SPL */
 #define	SPLHOLD(name, newpil) \
-static __inline int name __P((void)); \
+static __inline int name(void); \
 static __inline int name() \
 { \
 	int oldpil; \
@@ -387,7 +396,8 @@ SPLHOLD(spllpt, PIL_LPT)
 /*
  * Memory allocation (must be as high as highest network, tty, or disk device)
  */
-SPLHOLD(splvm, PIL_IMP)
+SPLHOLD(splvm, PIL_VM)
+#define	splimp splvm
 
 SPLHOLD(splclock, PIL_CLOCK)
 
@@ -402,7 +412,7 @@ SPLHOLD(splserial, PIL_SER)
 SPLHOLD(splaudio, PIL_AUD)
 
 /* second sparc timer interrupts at level 14 */
-SPLHOLD(splstatclock, 14)
+SPLHOLD(splstatclock, PIL_STATCLOCK)
 
 SPLHOLD(splsched, PIL_SCHED)
 SPLHOLD(spllock, PIL_LOCK)
@@ -445,10 +455,10 @@ static __inline void splx(newpil)
 #define	splhigh()	splhighX(__FILE__, __LINE__)
 #define splx(x)		splxX((x),__FILE__, __LINE__)
 
-static __inline void splxX __P((int, const char*, int));
+static __inline void splxX(int, const char *, int);
 static __inline void splxX(newpil, file, line)
 	int newpil, line;
-	const char* file;
+	const char *file;
 #else
 static __inline void splx(newpil)
 	int newpil;

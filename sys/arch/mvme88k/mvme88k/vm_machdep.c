@@ -1,4 +1,7 @@
+/*	$OpenBSD: vm_machdep.c,v 1.47 2002/01/16 20:50:17 miod Exp $	*/
+
 /*
+ * Copyright (c) 1998 Steve Murphree, Jr.
  * Copyright (c) 1996 Nivas Madhur
  * Copyright (c) 1993 Adam Glass 
  * Copyright (c) 1988 University of Utah.
@@ -40,26 +43,38 @@
  *	from: Utah $Hdr: vm_machdep.c 1.21 91/04/06$
  *	from: @(#)vm_machdep.c	7.10 (Berkeley) 5/7/91
  *	vm_machdep.c,v 1.3 1993/07/07 07:09:32 cgd Exp
- *	$Id: vm_machdep.c,v 1.5 1996/08/02 02:44:31 build Exp build $
  */
 
 #include <sys/param.h>
 #include <sys/systm.h>
 #include <sys/proc.h>
+#include <sys/signalvar.h>
 #include <sys/malloc.h>
 #include <sys/buf.h>
 #include <sys/user.h>
 #include <sys/vnode.h>
+#include <sys/extent.h>
 
-#include <vm/vm.h>
-#include <vm/vm_kern.h>
-#include <vm/vm_map.h>
+#include <uvm/uvm_extern.h>
 
+#include <machine/mmu.h>
+#include <machine/board.h>
+#include <machine/cmmu.h>
 #include <machine/cpu.h>
+#include <machine/cpu_number.h>
+#include <machine/locore.h>
+#include <machine/trap.h>
 
-#ifdef XXX_FUTURE
-extern struct map *iomap;
-#endif
+extern struct extent *iomap_extent;
+extern struct vm_map *iomap_map;
+
+vm_offset_t iomap_mapin(vm_offset_t, vm_size_t, boolean_t);
+void iomap_mapout(vm_offset_t, vm_size_t);
+void *mapiodev(void *, int);
+void unmapiodev(void *, int);
+vm_offset_t mapiospace(caddr_t, int);
+void unmapiospace(vm_offset_t);
+int badpaddr(caddr_t, int);
 
 /*
  * Finish a fork operation, with process p2 nearly set up.
@@ -71,47 +86,61 @@ extern struct map *iomap;
  * the frame pointers on the stack after copying.
  */
 
-#ifdef __FORK_BRAINDAMAGE
-int
-#else
 void
-#endif
-cpu_fork(struct proc *p1, struct proc *p2)
+cpu_fork(p1, p2, stack, stacksize, func, arg)
+	struct proc *p1, *p2;
+	void *stack;
+	size_t stacksize;
+	void (*func)(void *);
+	void *arg;
 {
 	struct switchframe *p2sf;
-	int off, ssz;
+	int cpu;
 	struct ksigframe {
-		void (*func)(struct proc *);
+		void (*func)(void *);
 		void *proc;
 	} *ksfp;
-	extern void proc_do_uret(), child_return();
-	extern void proc_trampoline();
-	
-	savectx(p1->p_addr);
+	extern struct pcb *curpcb;
+	extern void proc_trampoline(void);
+        extern void save_u_area(struct proc *, vm_offset_t);
 
+	cpu = cpu_number();
+/*	
+	savectx(p1->p_addr->u_pcb);
+*/
+	savectx(curpcb);
+	
+	/* copy p1 pcb to p2 */
 	bcopy((void *)&p1->p_addr->u_pcb, (void *)&p2->p_addr->u_pcb, sizeof(struct pcb));
 	p2->p_addr->u_pcb.kernel_state.pcb_ipl = 0;
 
 	p2->p_md.md_tf = USER_REGS(p2);
 
 	/*XXX these may not be necessary nivas */
-	save_u_area(p2, p2->p_addr);
-#ifdef notneeded
-	PMAP_ACTIVATE(&p2->p_vmspace->vm_pmap, &p2->p_addr->u_pcb, 0);
+	save_u_area(p2, (vm_offset_t)p2->p_addr);
+#ifdef notneeded 
+	pmap_activate(p2);
 #endif /* notneeded */
 
 	/*
 	 * Create a switch frame for proc 2
 	 */
 	p2sf = (struct switchframe *)((char *)p2->p_addr + USPACE - 8) - 1;
+
 	p2sf->sf_pc = (u_int)proc_do_uret;
 	p2sf->sf_proc = p2;
 	p2->p_addr->u_pcb.kernel_state.pcb_sp = (u_int)p2sf;
 
+	/*
+	 * If specified, give the child a different stack.
+	 */
+	if (stack != NULL)
+		USER_REGS(p2)->r[31] = (u_int)stack + stacksize;
+
 	ksfp = (struct ksigframe *)p2->p_addr->u_pcb.kernel_state.pcb_sp - 1;
 
-	ksfp->func = child_return;
-	ksfp->proc = p2;
+	ksfp->func = func;
+	ksfp->proc = arg;
 
 	/*
 	 * When this process resumes, r31 will be ksfp and
@@ -123,30 +152,6 @@ cpu_fork(struct proc *p1, struct proc *p2)
 
 	p2->p_addr->u_pcb.kernel_state.pcb_sp = (u_int)ksfp;
 	p2->p_addr->u_pcb.kernel_state.pcb_pc = (u_int)proc_trampoline;
-
-#ifdef __FORK_BRAINDAMAGE
-	return(0);
-#else
-	return;
-#endif
-}
-
-void
-cpu_set_kpc(struct proc *p, void (*func)(struct proc *))
-{
-	/*
-	 * override func pointer in ksigframe with func.
-	 */
-
-	struct ksigframe {
-		void (*func)(struct proc *);
-		void *proc;
-	} *ksfp;
-
-	ksfp = (struct ksigframe *)p->p_addr->u_pcb.kernel_state.pcb_sp;
-
-	ksfp->func = func;
-
 }
 
 /*
@@ -157,14 +162,12 @@ cpu_set_kpc(struct proc *p, void (*func)(struct proc *))
  * pcb and stack and never returns.  We block memory allocation
  * until switch_exit has made things safe again.
  */
-volatile void
+void
 cpu_exit(struct proc *p)
 {
-	extern volatile void switch_exit();
-	vmspace_free(p->p_vmspace);
-
 	(void) splimp();
-	kmem_free(kernel_map, (vm_offset_t)p->p_addr, ctob(UPAGES));
+
+	uvmexp.swtch++;
 	switch_exit(p);
 	/* NOTREACHED */
 }
@@ -172,10 +175,8 @@ cpu_exit(struct proc *p)
 int
 cpu_coredump(struct proc *p, struct vnode *vp, struct ucred *cred, struct core *corep)
 {
-
 	return (vn_rdwr(UIO_WRITE, vp, (caddr_t) p->p_addr, ctob(UPAGES),
-	    (off_t)0, UIO_SYSSPACE, IO_NODELOCKED|IO_UNIT, cred, (int *)NULL,
-	    p));
+	    (off_t)0, UIO_SYSSPACE, IO_NODELOCKED|IO_UNIT, cred, NULL, p));
 }
 
 /*
@@ -187,10 +188,10 @@ cpu_coredump(struct proc *p, struct vnode *vp, struct ucred *cred, struct core *
 void
 cpu_swapin(struct proc *p)
 {
+        extern void save_u_area(struct proc *, vm_offset_t);
+
 	save_u_area(p, (vm_offset_t)p->p_addr);
 }
-
-extern vm_map_t phys_map;
 
 /*
  * Map an IO request into kernel virtual address space.  Requests fall into
@@ -215,19 +216,24 @@ extern vm_map_t phys_map;
  * be reflected in the higher-level VM structures to avoid problems.
  */
 void
-vmapbuf(struct buf *bp, vm_size_t len)
+vmapbuf(bp, len)
+	struct buf *bp;
+	vm_size_t len;
 {
 	register caddr_t addr;
-	register vm_offset_t pa, kva, off;
-	struct proc *p;
+	register vm_offset_t kva, off;
+	vm_offset_t pa;
+	struct pmap *pmap;
 
+#ifdef DIAGNOSTIC
 	if ((bp->b_flags & B_PHYS) == 0)
 		panic("vmapbuf");
+#endif
 
-	addr = (caddr_t)trunc_page(bp->b_saveaddr = bp->b_data);
+	addr = (caddr_t)trunc_page((vaddr_t)(bp->b_saveaddr = bp->b_data));
 	off = (vm_offset_t)bp->b_saveaddr & PGOFSET;
 	len = round_page(off + len);
-	p = bp->b_proc;
+	pmap = vm_map_pmap(&bp->b_proc->p_vmspace->vm_map);
 
 	/*
 	 * You may ask: Why phys_map? kernel_map should be OK - after all,
@@ -236,7 +242,7 @@ vmapbuf(struct buf *bp, vm_size_t len)
 	 * when the address gets a new mapping.
 	 */
 
-	kva = kmem_alloc_wait(phys_map, len);
+	kva = uvm_km_valloc_wait(phys_map, len);
 	
 	/*
 	 * Flush the TLB for the range [kva, kva + off]. Strictly speaking,
@@ -248,16 +254,15 @@ vmapbuf(struct buf *bp, vm_size_t len)
 
 	bp->b_data = (caddr_t)(kva + off);
 	while (len > 0) {
-		pa = pmap_extract(vm_map_pmap(&p->p_vmspace->vm_map),
-		    (vm_offset_t)addr);
-		if (pa == 0)
+		if (pmap_extract(pmap, (vm_offset_t)addr, &pa) == FALSE)
 			panic("vmapbuf: null page frame");
 		pmap_enter(vm_map_pmap(phys_map), kva, pa,
-			   VM_PROT_READ|VM_PROT_WRITE, TRUE);
+			   VM_PROT_READ|VM_PROT_WRITE, PMAP_WIRED);
 		addr += PAGE_SIZE;
 		kva += PAGE_SIZE;
 		len -= PAGE_SIZE;
 	}
+	pmap_update(pmap_kernel());
 }
 
 /*
@@ -265,22 +270,26 @@ vmapbuf(struct buf *bp, vm_size_t len)
  * We also restore the original b_addr.
  */
 void
-vunmapbuf(struct buf *bp, vm_size_t len)
+vunmapbuf(bp, len)
+	struct buf *bp;
+	vm_size_t len;
 {
 	register vm_offset_t addr, off;
 
+#ifdef DIAGNOSTIC
 	if ((bp->b_flags & B_PHYS) == 0)
 		panic("vunmapbuf");
+#endif
 
-	addr = trunc_page(bp->b_data);
+	addr = trunc_page((vaddr_t)bp->b_data);
 	off = (vm_offset_t)bp->b_data & PGOFSET;
 	len = round_page(off + len);
-	kmem_free_wakeup(phys_map, addr, len);
+	uvm_km_free_wakeup(phys_map, addr, len);
 	bp->b_data = bp->b_saveaddr;
 	bp->b_saveaddr = 0;
 }
 
-#ifdef XXX_FUTURE
+
 /*
  * Map a range [pa, pa+len] in the given map to a kernel address
  * in iomap space.
@@ -292,64 +301,99 @@ vunmapbuf(struct buf *bp, vm_size_t len)
 vm_offset_t
 iomap_mapin(vm_offset_t pa, vm_size_t len, boolean_t canwait)
 {
-	vm_offset_t		iova, tva, off;
-	register int 		npf, s;
+	vm_offset_t	iova, tva, off, ppa;
+	int 		s, error;
 
 	if (len == 0)
 		return NULL;
-
-	off = (u_long)pa & PGOFSET;
+	
+	ppa = pa;
+	off = (u_long)ppa & PGOFSET;
 
 	len = round_page(off + len);
 
-	s = splimp();
-	for (;;) {
-		iova = rmalloc(iomap, len);
-		if (iova != 0)
-			break;
-		if (canwait) {
-			(void)tsleep(iomap, PRIBIO+1, "iomapin", 0);
-			continue;
-		}
-		splx(s);
-		return NULL;
-	}
+	s = splhigh();
+	error = extent_alloc(iomap_extent, len, PAGE_SIZE, 0, EX_NOBOUNDARY,
+	    canwait ? EX_WAITSPACE : EX_NOWAIT, &iova);
 	splx(s);
 
-	tva = iova;
-	pa = trunc_page(pa);
+	if (error != 0)
+		return NULL;
+	
+	cmmu_flush_tlb(1, iova, len);
 
-	while (len) {
-		pmap_enter(kernel_pmap, tva, pa,
-		    	VM_PROT_READ|VM_PROT_WRITE, 1);
+	ppa = trunc_page(ppa);
+
+#ifndef NEW_MAPPING
+	tva = iova;
+#else
+	tva = ppa;
+#endif 
+
+	while (len>0) {
+		pmap_enter(vm_map_pmap(iomap_map), tva, ppa,
+			   VM_PROT_WRITE|VM_PROT_READ|(CACHE_INH << 16), PMAP_WIRED);
 		len -= PAGE_SIZE;
 		tva += PAGE_SIZE;
-		pa += PAGE_SIZE;
+		ppa += PAGE_SIZE;
 	}
+	pmap_update(pmap_kernel());
+#ifndef NEW_MAPPING
 	return (iova + off);
+#else
+	return (pa + off);
+#endif 
+
 }
 
 /*
  * Free up the mapping in iomap.
  */
-int
+void
 iomap_mapout(vm_offset_t kva, vm_size_t len)
 {
-	register int 		s;
-	vm_offset_t 		off;
+	vm_offset_t 	off;
+	int 		s, error;
 
 	off = kva & PGOFSET;
 	kva = trunc_page(kva);
 	len = round_page(off + len);
 
-	pmap_remove(pmap_kernel(), kva, kva + len);
+	pmap_remove(vm_map_pmap(iomap_map), kva, kva + len);
+	pmap_update(vm_map_pmap(iomap_map));
 
-	s = splimp();
-	rmfree(iomap, len, kva);
-	wakeup(iomap);
+	s = splhigh();
+	error = extent_free(iomap_extent, kva, len, EX_NOWAIT);
 	splx(s);
+
+	if (error != 0)
+		printf("iomap_mapout: extent_free failed\n");
 }
-#endif /* XXX_FUTURE */
+
+/*
+ * Allocate/deallocate a cache-inhibited range of kernel virtual address
+ * space mapping the indicated physical address range [pa - pa+size)
+ */
+void *
+mapiodev(pa, size)
+	void *pa;
+	int size;
+{
+	vm_offset_t ppa;
+	ppa = (vm_offset_t)pa;
+	return ((void *)iomap_mapin(ppa, size, 0));
+}
+
+void
+unmapiodev(kva, size)
+	void *kva;
+	int size;
+{
+	vm_offset_t va;
+	va = (vm_offset_t)kva;
+	iomap_mapout(va, size);
+}
+
 /*
  * Map the given physical IO address into the kernel temporarily.
  * Maps one page.
@@ -362,10 +406,11 @@ mapiospace(caddr_t pa, int len)
 	int off = (u_long)pa & PGOFSET;
 	extern vm_offset_t phys_map_vaddr1;
 
-	pa = (caddr_t)trunc_page(pa);
+	pa = (caddr_t)trunc_page((paddr_t)pa);
 
-	pmap_enter(kernel_pmap, phys_map_vaddr1, (vm_offset_t)pa,
-		   VM_PROT_READ|VM_PROT_WRITE, 1);
+	pmap_kenter_pa(phys_map_vaddr1, (vm_offset_t)pa,
+	    VM_PROT_READ|VM_PROT_WRITE);
+	pmap_update(pmap_kernel());
 	
 	return (phys_map_vaddr1 + off);
 }
@@ -379,32 +424,32 @@ unmapiospace(vm_offset_t va)
 {
 	va = trunc_page(va);
 
-	pmap_remove(kernel_pmap, va, va + NBPG);
+	pmap_kremove(va, PAGE_SIZE);
+	pmap_update(pmap_kernel());
 }
 
 int
 badvaddr(vm_offset_t va, int size)
 {
 	register int 	x;
-
 	if (badaddr(va, size)) {
 		return -1;
 	}
 
 	switch (size) {
 	case 1:
-		x = *(volatile unsigned char *)va;
+		x = *(unsigned char *volatile)va;
 		break;
 	case 2:
-		x = *(volatile unsigned short *)va;
+		x = *(unsigned short *volatile)va;
 		break;
 	case 4:
-		x = *(volatile unsigned long *)va;
+		x = *(unsigned long *volatile)va;
 		break;
 	default:
-		break;	
+                return -1;
 	}
-	return(x);
+	return(0);
 }
 
 int
@@ -414,7 +459,7 @@ badpaddr(caddr_t pa, int size)
 	int val;
 
 	/*
-	 * Do not allow crossing the page boundary.
+	 * Do not allow crossing a page boundary.
 	 */
 	if (((int)pa & PGOFSET) + size > NBPG) {
 		return -1;
@@ -428,39 +473,42 @@ badpaddr(caddr_t pa, int size)
 
 /*
  * Move pages from one kernel virtual address to another.
- * Size must be a multiple of CLSIZE.
  */
 void
-pagemove(caddr_t from, caddr_t to, size_t size)
+pagemove(from, to, size)
+	caddr_t from, to;
+	size_t size;
 {
-	register vm_offset_t pa;
+	paddr_t pa;
+	boolean_t rv;
 
 #ifdef DEBUG
-	if (size & CLOFSET)
+	if ((size & PAGE_MASK) != 0)
 		panic("pagemove");
 #endif
 	while (size > 0) {
-		pa = pmap_extract(kernel_pmap, (vm_offset_t)from);
+		rv = pmap_extract(pmap_kernel(), (vaddr_t)from, &pa);
 #ifdef DEBUG
-		if (pa == 0)
+		if (rv == FALSE)
 			panic("pagemove 2");
-		if (pmap_extract(kernel_pmap, (vm_offset_t)to) != 0)
+		if (pmap_extract(pmap_kernel(), (vaddr_t)to, NULL) == TRUE)
 			panic("pagemove 3");
 #endif
-		pmap_remove(kernel_pmap,
-			    (vm_offset_t)from, (vm_offset_t)from + NBPG);
-		pmap_enter(kernel_pmap,
-			   (vm_offset_t)to, pa, VM_PROT_READ|VM_PROT_WRITE, 1);
-		from += NBPG;
-		to += NBPG;
-		size -= NBPG;
+		pmap_kremove((vaddr_t)from, PAGE_SIZE);
+		pmap_kenter_pa((vaddr_t)to, pa, VM_PROT_READ|VM_PROT_WRITE);
+		from += PAGE_SIZE;
+		to += PAGE_SIZE;
+		size -= PAGE_SIZE;
 	}
+	pmap_update(pmap_kernel());
 }
 
 u_int
-kvtop(vm_offset_t va)
+kvtop(va)
+	vm_offset_t va;
 {
-	extern pmap_t kernel_pmap;
+	vm_offset_t pa;
 
-	return ((u_int)pmap_extract(kernel_pmap, va));
+	pmap_extract(pmap_kernel(), va, &pa);
+	return ((u_int)pa);
 }

@@ -1,5 +1,3 @@
-/*	$NetBSD: vsprintf.c,v 1.5 1995/02/02 02:10:56 jtc Exp $	*/
-
 /*-
  * Copyright (c) 1990, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -37,15 +35,13 @@
  */
 
 #if defined(LIBC_SCCS) && !defined(lint)
-#if 0
-static char sccsid[] = "@(#)vsprintf.c	8.1 (Berkeley) 6/4/93";
-#endif
-static char rcsid[] = "$NetBSD: vsprintf.c,v 1.5 1995/02/02 02:10:56 jtc Exp $";
+static char rcsid[] = "$OpenBSD: vsprintf.c,v 1.3 1998/01/12 06:14:32 millert Exp $";
 #endif /* LIBC_SCCS and not lint */
 
 #include <stdio.h>
 #include <limits.h>
 
+int
 vsprintf(str, fmt, ap)
 	char *str;
 	const char *fmt;
@@ -54,10 +50,11 @@ vsprintf(str, fmt, ap)
 	int ret;
 	FILE f;
 
+	f._file = -1;
 	f._flags = __SWR | __SSTR;
 	f._bf._base = f._p = (unsigned char *)str;
 	f._bf._size = f._w = INT_MAX;
 	ret = vfprintf(&f, fmt, ap);
-	*f._p = 0;
+	*f._p = '\0';
 	return (ret);
 }

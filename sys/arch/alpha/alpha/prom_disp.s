@@ -1,7 +1,8 @@
-/*	$NetBSD: prom_disp.s,v 1.1 1995/02/13 23:07:10 cgd Exp $	*/
+/* $OpenBSD$ */
+/* $NetBSD: prom_disp.s,v 1.8 1997/11/03 04:22:03 ross Exp $ */
 
 /*
- * Copyright (c) 1994, 1995 Carnegie-Mellon University.
+ * Copyright (c) 1994, 1995, 1996 Carnegie-Mellon University.
  * All rights reserved.
  *
  * Author: Chris G. Demetriou
@@ -27,18 +28,17 @@
  * rights to redistribute these changes.
  */
 
-#ifndef LOCORE
-#include "../include/asm.h"
-#include "../include/prom.h"
-#include "../include/rpb.h"
+#ifndef _LOCORE
+#include <machine/asm.h>
 #endif
 
 	.globl	prom_dispatch_v
-	.comm	prom_dispatch_v	16
+	.comm	prom_dispatch_v,16
 
 	.text
 	.align	4
 
+inc3:	.stabs	__FILE__,132,0,0,inc3; .loc	1 __LINE__
 /*
  * Dispatcher routine.  Implements prom's calling machinery, saves our
  * callee-saved registers as required by C.

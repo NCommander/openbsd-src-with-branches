@@ -1,4 +1,5 @@
-/*	$NetBSD: clock.c,v 1.10 1995/02/20 00:53:42 chopps Exp $	*/
+/*	$OpenBSD: clock.c,v 1.14 2002/01/24 20:31:08 miod Exp $	*/
+/*	$NetBSD: clock.c,v 1.25 1997/01/02 20:59:42 is Exp $	*/
 
 /*
  * Copyright (c) 1988 University of Utah.
@@ -45,11 +46,17 @@
 #include <sys/param.h>
 #include <sys/kernel.h>
 #include <sys/device.h>
+#include <sys/systm.h>
 #include <machine/psl.h>
 #include <machine/cpu.h>
+#include <machine/intr.h>
 #include <amiga/amiga/device.h>
 #include <amiga/amiga/custom.h>
 #include <amiga/amiga/cia.h>
+#ifdef DRACO
+#include <amiga/amiga/drcustom.h>
+#endif
+#include <amiga/amiga/isr.h>
 #include <amiga/dev/rtc.h>
 #include <amiga/dev/zbusvar.h>
 
@@ -63,6 +70,16 @@
 #define CLK_INTERVAL amiga_clk_interval
 int amiga_clk_interval;
 int eclockfreq;
+struct CIA *clockcia;
+
+#if defined(IPL_REMAP_1) || defined(IPL_REMAP_2)
+/*
+ * The INT6 handler copies the clockframe from the stack in here as hardclock
+ * may be delayed by the IPL-remapping code.  At that time the original stack
+ * location will no longer be valid.
+ */
+struct clockframe hardclock_frame;
+#endif
 
 /*
  * Machine-dependent clock routines.
@@ -81,19 +98,25 @@ int eclockfreq;
  * periods where N is the value loaded into the counter.
  */
 
-int clockmatch __P((struct device *, struct cfdata *, void *));
-void clockattach __P((struct device *, struct device *, void *));
+int clockmatch(struct device *, void *, void *);
+void clockattach(struct device *, struct device *, void *);
+void cpu_initclocks(void);
+void calibrate_delay(struct device *);
+int clockintr(void *);
 
-struct cfdriver clockcd = {
-	NULL, "clock", (cfmatch_t)clockmatch, clockattach, 
-	DV_DULL, sizeof(struct device), NULL, 0 };
+struct cfattach clock_ca = {
+	sizeof(struct device), clockmatch, clockattach
+};
+
+struct cfdriver clock_cd = {
+	NULL, "clock", DV_DULL, NULL, 0 };
 
 int
-clockmatch(pdp, cfp, auxp)
+clockmatch(pdp, match, auxp)
 	struct device *pdp;
-	struct cfdata *cfp;
-	void *auxp;
+	void *match, *auxp;
 {
+
 	if (matchname("clock", auxp))
 		return(1);
 	return(0);
@@ -107,21 +130,62 @@ clockattach(pdp, dp, auxp)
 	struct device *pdp, *dp;
 	void *auxp;
 {
+	char *clockchip;
 	unsigned short interval;
+#ifdef DRACO
+	u_char dracorev;
+#endif
 
 	if (eclockfreq == 0)
 		eclockfreq = 715909;	/* guess NTSC */
 		
 	CLK_INTERVAL = (eclockfreq / 100);
 
-	printf(": system hz %d hardware hz %d\n", hz, eclockfreq);
+#ifdef DRACO
+	dracorev = is_draco();
+	if (dracorev >= 4) {
+		CLK_INTERVAL = (eclockfreq / 700);
+		clockchip = "QuickLogic";
+	} else if (dracorev) {
+		clockcia = (struct CIA *)CIAAbase;
+		clockchip = "CIA A";
+	} else 
+#endif
+	{
+		clockcia = (struct CIA *)CIABbase;
+		clockchip = "CIA B";
+	}
+
+	if (dp)
+		printf(": %s system hz %d hardware hz %d\n", clockchip, hz,
+#ifdef DRACO
+		dracorev >= 4 ? eclockfreq / 7 : eclockfreq);
+#else
+		eclockfreq);
+#endif
+
+#ifdef DRACO
+	if (dracorev >= 4) {
+		/* 
+		 * can't preload anything beforehand, timer is free_running;
+		 * but need this for delay calibration.
+		 */
+
+		draco_ioct->io_timerlo = CLK_INTERVAL & 0xff;
+		draco_ioct->io_timerhi = CLK_INTERVAL >> 8;
+
+		calibrate_delay(dp);
+
+		return;
+	}
+#endif
 
 	/*
 	 * stop timer A 
 	 */
-	ciab.cra = ciab.cra & 0xc0;
-	ciab.icr = 1 << 0;		/* disable timer A interrupt */
-	interval = ciab.icr;		/* and make sure it's clear */
+	clockcia->cra = clockcia->cra & 0xc0;
+	clockcia->icr = 1 << 0;		/* disable timer A interrupt */
+	interval = clockcia->icr;		/* and make sure it's clear */
 
 	/*
 	 * load interval into registers.
@@ -133,29 +197,140 @@ clockattach(pdp, dp, auxp)
 	/*
 	 * order of setting is important !
 	 */
-	ciab.talo = interval & 0xff;
-	ciab.tahi = interval >> 8;
+	clockcia->talo = interval & 0xff;
+	clockcia->tahi = interval >> 8;
+
+	/*
+	 * start timer A in continuous mode
+	 */
+	clockcia->cra = (clockcia->cra & 0xc0) | 1;
+
+	calibrate_delay(dp);
+}
+
+#if defined(IPL_REMAP_1) || defined(IPL_REMAP_2)
+int
+clockintr (arg)
+	void *arg;
+{
+	/* Is it a timer A interrupt? */
+	if (ciab.icr & 1) {
+		hardclock(&hardclock_frame);
+		return 1;
+	}
+	return 0;
+}
+#endif
+
+/*
+ * Calibrate delay loop.
+ * We use two iterations because we don't have enough bits to do a factor of
+ * 8 with better than 1%.
+ *
+ * XXX Note that we MUST stay below 1 tick if using clkread(), even for 
+ * underestimated values of delaydivisor. 
+ *
+ * XXX the "ns" below is only correct for a shift of 10 bits, and even then
+ * off by 2.4%
+ */
+
+void calibrate_delay(dp)
+	struct device *dp;
+{
+	unsigned long t1, t2;
+	extern u_int32_t delaydivisor;
+		/* XXX this should be defined elsewhere */
+
+	if (dp)
+		printf("Calibrating delay loop... "); 
+
+	do {
+		t1 = clkread();
+		delay(1024);
+		t2 = clkread();
+	} while (t2 <= t1);
+	t2 -= t1;
+	delaydivisor = (delaydivisor * t2 + 1023) >> 10;
+#ifdef DIAGNOSTIC
+	if (dp)
+		printf("\ndiff %ld us, new divisor %u/1024 us\n", t2,
+		    delaydivisor); 
+	do {
+		t1 = clkread();
+		delay(1024);
+		t2 = clkread();
+	} while (t2 <= t1);
+	t2 -= t1;
+	delaydivisor = (delaydivisor * t2 + 1023) >> 10;
+	if (dp)
+		printf("diff %ld us, new divisor %u/1024 us\n", t2,
+		    delaydivisor); 
+#endif
+	do {
+		t1 = clkread();
+		delay(1024);
+		t2 = clkread();
+	} while (t2 <= t1);
+	t2 -= t1;
+	delaydivisor = (delaydivisor * t2 + 1023) >> 10;
+#ifdef DIAGNOSTIC
+	if (dp)
+		printf("diff %ld us, new divisor ", t2);
+#endif
+	if (dp)
+		printf("%u/1024 us\n", delaydivisor); 
 }
 
 void
 cpu_initclocks()
 {
+#if defined(IPL_REMAP_1) || defined(IPL_REMAP_2)
+	static struct isr isr;
+#endif
+
+#ifdef DRACO
+	unsigned char dracorev;
+
+	dracorev = is_draco();
+	if (dracorev >= 4) {
+		draco_ioct->io_timerlo = CLK_INTERVAL & 0xFF;
+		draco_ioct->io_timerhi = CLK_INTERVAL >> 8;
+		draco_ioct->io_timerrst = 0;	/* any value resets */
+		draco_ioct->io_status2 |= DRSTAT2_TMRINTENA;
+
+		return;
+	}
+#endif
+
 	/*
 	 * enable interrupts for timer A
 	 */
-	ciab.icr = (1<<7) | (1<<0);
+	clockcia->icr = (1<<7) | (1<<0);
 
 	/*
 	 * start timer A in continuous shot mode
 	 */
-	ciab.cra = (ciab.cra & 0xc0) | 1;
+	clockcia->cra = (clockcia->cra & 0xc0) | 1;
   
+#if defined(IPL_REMAP_1) || defined(IPL_REMAP_2)
+	isr.isr_intr = clockintr;
+	isr.isr_ipl = 6;
+	isr.isr_mapped_ipl = IPL_CLOCK;
+	add_isr(&isr);
+#else
 	/*
 	 * and globally enable interrupts for ciab
 	 */
-	custom.intena = INTF_SETCLR | INTF_EXTER;
+#ifdef DRACO
+	if (dracorev)		/* we use cia a on DraCo */
+		*draco_intena |= DRIRQ_INT2;
+	else
+#endif
+		custom.intena = INTF_SETCLR | INTF_EXTER;
+#endif
 }
 
+void
 setstatclockrate(hz)
 	int hz;
 {
@@ -165,170 +340,44 @@ setstatclockrate(hz)
  * Returns number of usec since last recorded clock "tick"
  * (i.e. clock interrupt).
  */
+u_long
 clkread()
 {
-	u_char hi, hi2, lo;
 	u_int interval;
-   
-	hi  = ciab.tahi;
-	lo  = ciab.talo;
-	hi2 = ciab.tahi;
-	if (hi != hi2) {
-		lo = ciab.talo;
-		hi = hi2;
-	}
+	u_char hi, hi2, lo;
 
-	interval = (CLK_INTERVAL - 1) - ((hi<<8) | lo);
+#ifdef DRACO
+	if (is_draco() >= 4) {
+		hi2 = draco_ioct->io_chiprev;	/* latch timer */
+		hi = draco_ioct->io_timerhi;
+		lo = draco_ioct->io_timerlo;
+		interval = ((hi<<8) | lo);
+		if (interval > CLK_INTERVAL)	/* timer underflow */
+			interval = 65536 + CLK_INTERVAL - interval;
+		else
+			interval = CLK_INTERVAL - interval;
+
+	} else
+#endif
+	{
+		hi  = clockcia->tahi;
+		lo  = clockcia->talo;
+		hi2 = clockcia->tahi;
+		if (hi != hi2) {
+			lo = clockcia->talo;
+			hi = hi2;
+		}
+
+		interval = (CLK_INTERVAL - 1) - ((hi<<8) | lo);
    
-	/*
-	 * should read ICR and if there's an int pending, adjust interval.
-	 * However, * since reading ICR clears the interrupt, we'd lose a
-	 * hardclock int, and * this is not tolerable.
-	 */
+		/*
+		 * should read ICR and if there's an int pending, adjust
+		 * interval. However, since reading ICR clears the interrupt,
+		 * we'd lose a hardclock int, and this is not tolerable.
+		 */
+	}
 
 	return((interval * tick) / CLK_INTERVAL);
-}
-
-u_int micspertick;
-
-/*
- * we set up as much of the CIAa as possible
- * as all access to chip memory are very slow.
- */
-void
-setmicspertick()
-{
-	micspertick = (1000000ULL << 20) / 715909;
-
-	/*
-	 * disable interrupts (just in case.)
-	 */
-	ciaa.icr = 0x3;
-
-	/*
-	 * stop both timers if not already
-	 */
-	ciaa.cra &= ~1;
-	ciaa.crb &= ~1;
-
-	/*
-	 * set timer B in "count timer A underflows" mode
-	 * set tiemr A in one-shot mode
-	 */
-	ciaa.crb = (ciaa.crb & 0x80) | 0x48;
-	ciaa.cra = (ciaa.cra & 0xc0) | 0x08;
-}
-
-/*
- * this function assumes that on any entry beyond the first
- * the following condintions exist:
- * Interrupts for Timers A and B are disabled.
- * Timers A and B are stoped. 
- * Timers A and B are in one-shot mode with B counting timer A underflows
- *
- */
-void
-delay(mic)
-	int mic;
-{
-	u_int temp;
-	int s;
-
-	if (micspertick == 0)
-		setmicspertick();
-
-	if (mic <= 1)
-		return;
-
-	/*
-	 * basically this is going to do an integer
-	 * usec / (1000000 / 715909) with no loss of
-	 * precision
-	 */
-	temp = mic >> 12;
-	asm("divul %3,%1:%0" : "=d" (temp) : "d" (mic >> 12), "0" (mic << 20),
-	    "d" (micspertick));
-
-	if ((temp & 0xffff0000) > 0x10000) {
-		mic = (temp >> 16) - 1;
-		temp &= 0xffff;
-
-		/*
-		 * set timer A in continous mode
-		 */
-		ciaa.cra = (ciaa.cra & 0xc0) | 0x00;
-	
-		/*
-		 * latch/load/start "counts of timer A underflows" in B
-		 */
-		ciaa.tblo = mic & 0xff;
-		ciaa.tbhi = mic >> 8;
-		
-		/*
-		 * timer A latches 0xffff
-		 * and start it.
-		 */
-		ciaa.talo = 0xff;
-		ciaa.tahi = 0xff;
-		ciaa.cra |= 1;
-
-		while (ciaa.crb & 1)
-			;
-
-		/* 
-		 * stop timer A 
-		 */
-		ciaa.cra &= ~1;
-
-		/*
-		 * set timer A in one shot mode
-		 */
-		ciaa.cra = (ciaa.cra & 0xc0) | 0x08;
-	} else if ((temp & 0xffff0000) == 0x10000) {
-		temp &= 0xffff;
-
-		/*
-		 * timer A is in one shot latch/load/start 1 full turn
-		 */
-		ciaa.talo = 0xff;
-		ciaa.tahi = 0xff;
-		while (ciaa.cra & 1)
-			;
-	}
-	if (temp < 1)
-		return;
-
-	/*
-	 * temp is now residual ammount, latch/load/start it.
-	 */
-	ciaa.talo = temp & 0xff;
-	ciaa.tahi = temp >> 8;
-	while (ciaa.cra & 1)
-		;
-}
-
-/*
- * Needs to be calibrated for use, its way off most of the time
- */
-void
-DELAY(mic)
-	int mic;
-{
-	u_long n;
-	short hpos;
-
-	/*
-	 * this function uses HSync pulses as base units. The custom chips 
-	 * display only deals with 31.6kHz/2 refresh, this gives us a
-	 * resolution of 1/15800 s, which is ~63us (add some fuzz so we really
-	 * wait awhile, even if using small timeouts)
-	 */
-	n = mic/63 + 2;
-	do {
-		hpos = custom.vhposr & 0xff00;
-		while (hpos == (custom.vhposr & 0xff00))
-			;
-	} while (n--);
 }
 
 #if notyet
@@ -354,7 +403,7 @@ DELAY(mic)
 #include <sys/resourcevar.h>
 #include <sys/ioctl.h>
 #include <sys/malloc.h>
-#include <vm/vm.h>
+#include <uvm/uvm_extern.h>
 #include <amiga/amiga/clockioctl.h>
 #include <sys/specdev.h>
 #include <sys/vnode.h>
@@ -510,7 +559,7 @@ stopclock()
  * The advantage of this is that the profiling timer can be turned up to
  * a higher interrupt rate, giving finer resolution timing. The profclock
  * routine is called from the lev6intr in locore, and is a specialized
- * routine that calls addupc. The overhead then is far less than if
+ * routine that calls addupc_task. The overhead then is far less than if
  * hardclock/softclock was called. Further, the context switch code in
  * locore has been changed to turn the profile clock on/off when switching
  * into/out of a process that is profiling (startprofclock/stopprofclock).
@@ -570,7 +619,7 @@ startprofclock()
   unsigned short interval;
 
   /* stop timer B */
-  ciab.crb = ciab.crb & 0xc0;
+  clockcia->crb = clockcia->crb & 0xc0;
 
   /* load interval into registers.
      the clocks run at NTSC: 715.909kHz or PAL: 709.379kHz */
@@ -578,20 +627,20 @@ startprofclock()
   interval = profint - 1;
 
   /* order of setting is important ! */
-  ciab.tblo = interval & 0xff;
-  ciab.tbhi = interval >> 8;
+  clockcia->tblo = interval & 0xff;
+  clockcia->tbhi = interval >> 8;
 
   /* enable interrupts for timer B */
-  ciab.icr = (1<<7) | (1<<1);
+  clockcia->icr = (1<<7) | (1<<1);
 
   /* start timer B in continuous shot mode */
-  ciab.crb = (ciab.crb & 0xc0) | 1;
+  clockcia->crb = (clockcia->crb & 0xc0) | 1;
 }
 
 stopprofclock()
 {
   /* stop timer B */
-  ciab.crb = ciab.crb & 0xc0;
+  clockcia->crb = clockcia->crb & 0xc0;
 }
 
 #ifdef PROF
@@ -609,7 +658,7 @@ profclock(pc, ps)
 	 */
 	if (USERMODE(ps)) {
 		if (p->p_stats.p_prof.pr_scale)
-			addupc(pc, &curproc->p_stats.p_prof, 1);
+			addupc_task(&curproc, pc, 1);
 	}
 	/*
 	 * Came from kernel (supervisor) mode.
@@ -635,28 +684,17 @@ profclock(pc, ps)
 #endif
 #endif
 
-/* this is a hook set by a clock driver for the configured realtime clock,
-   returning plain current unix-time */
-long (*gettod) __P((void));
-int (*settod) __P((long));
-void *clockaddr;
-
-long a3gettod __P((void));
-long a2gettod __P((void));
-int a3settod __P((long));
-int a2settod __P((long));
-int rtcinit __P((void));
-
 /*
  * Initialize the time of day register, based on the time base which is, e.g.
  * from a filesystem.
  */
+void
 inittodr(base)
 	time_t base;
 {
-	u_long timbuf = base;	/* assume no battery clock exists */
+	time_t timbuf = base;	/* assume no battery clock exists */
   
-	if (gettod == NULL && rtcinit() == 0)
+	if (gettod == NULL)
 		printf("WARNING: no battery clock\n");
 	else
 		timbuf = gettod();
@@ -670,317 +708,9 @@ inittodr(base)
 	time.tv_sec = timbuf;
 }
 
+void
 resettodr()
 {
-	if (settod && settod(time.tv_sec) == 1)
-		return;
-	printf("Cannot set battery backed clock\n");
-}
-
-int
-rtcinit()
-{
-	clockaddr = (void *)ztwomap(0xdc0000);
-	if (is_a3000() || is_a4000()) {
-		if (a3gettod() == 0)
-			return(0);
-		gettod = a3gettod;
-		settod = a3settod;
-	} else {
-		if (a2gettod() == 0)
-			return(0);
-		gettod = a2gettod;
-		settod = a2settod;
-	}
-	return(1);
-}
-
-static int month_days[12] = {
-	31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31
-};
-
-long
-a3gettod()
-{
-	struct rtclock3000 *rt;
-	int i, year, month, day, wday, hour, min, sec;
-	u_long tmp;
-
-	rt = clockaddr;
-
-	/* hold clock */
-	rt->control1 = A3CONTROL1_HOLD_CLOCK;
-
-	/* read it */
-	sec   = rt->second1 * 10 + rt->second2;
-	min   = rt->minute1 * 10 + rt->minute2;
-	hour  = rt->hour1   * 10 + rt->hour2;
-	wday  = rt->weekday;
-	day   = rt->day1    * 10 + rt->day2;
-	month = rt->month1  * 10 + rt->month2;
-	year  = rt->year1   * 10 + rt->year2   + 1900;
-
-	/* let it run again.. */
-	rt->control1 = A3CONTROL1_FREE_CLOCK;
-
-	if (range_test(hour, 0, 23))
-		return(0);
-	if (range_test(wday, 0, 6))
-		return(0);
-	if (range_test(day, 1, 31))
-		return(0);
-	if (range_test(month, 1, 12))
-		return(0);
-	if (range_test(year, STARTOFTIME, 2000))
-		return(0);
-
-	tmp = 0;
-
-	for (i = STARTOFTIME; i < year; i++)
-		tmp += days_in_year(i);
-	if (leapyear(year) && month > FEBRUARY)
-		tmp++;
-
-	for (i = 1; i < month; i++)
-		tmp += days_in_month(i);
-
-	tmp += (day - 1);
-	tmp = ((tmp * 24 + hour) * 60 + min) * 60 + sec;
-
-	return(tmp);
-}
-
-int
-a3settod(tim)
-	long tim;
-{
-	register int i;
-	register long hms, day;
-	u_char sec1, sec2;
-	u_char min1, min2;
-	u_char hour1, hour2;
-/*	u_char wday; */
-	u_char day1, day2;
-	u_char mon1, mon2;
-	u_char year1, year2;
-	struct rtclock3000 *rt;
-
-	rt = clockaddr;
-	/*
-	 * there seem to be problems with the bitfield addressing
-	 * currently used..
-	 */
-
-	if (! rt)
-		return 0;
-
-	/* prepare values to be written to clock */
-	day = tim / SECDAY;
-	hms = tim % SECDAY;
-
-	hour2 = hms / 3600;
-	hour1 = hour2 / 10;
-	hour2 %= 10;
-
-	min2 = (hms % 3600) / 60;
-	min1 = min2 / 10;
-	min2 %= 10;
-
-
-	sec2 = (hms % 3600) % 60;
-	sec1 = sec2 / 10;
-	sec2 %= 10;
-
-	/* Number of years in days */
-	for (i = STARTOFTIME - 1900; day >= days_in_year(i); i++)
-		day -= days_in_year(i);
-	year1 = i / 10;
-	year2 = i % 10;
-
-	/* Number of months in days left */
-	if (leapyear(i))
-		days_in_month(FEBRUARY) = 29;
-	for (i = 1; day >= days_in_month(i); i++)
-		day -= days_in_month(i);
-	days_in_month(FEBRUARY) = 28;
-
-	mon1 = i / 10;
-	mon2 = i % 10;
-
-	/* Days are what is left over (+1) from all that. */
-	day ++;
-	day1 = day / 10;
-	day2 = day % 10;
-
-	rt->control1 = A3CONTROL1_HOLD_CLOCK;
-	rt->second1 = sec1;
-	rt->second2 = sec2;
-	rt->minute1 = min1;
-	rt->minute2 = min2;
-	rt->hour1   = hour1;
-	rt->hour2   = hour2;
-/*	rt->weekday = wday; */
-	rt->day1    = day1;
-	rt->day2    = day2;
-	rt->month1  = mon1;
-	rt->month2  = mon2;
-	rt->year1   = year1;
-	rt->year2   = year2;
-	rt->control1 = A3CONTROL1_FREE_CLOCK;
-
-	return 1;
-}
-
-long
-a2gettod()
-{
-	struct rtclock2000 *rt;
-	int i, year, month, day, hour, min, sec;
-	u_long tmp;
-
-	rt = clockaddr;
-
-	/*
-	 * hold clock
-	 */
-	rt->control1 |= A2CONTROL1_HOLD;
-	i = 0x1000;
-	while (rt->control1 & A2CONTROL1_BUSY && i--)
-		;
-	if (rt->control1 & A2CONTROL1_BUSY)
-		return (0);	/* Give up and say it's not there */
-
-	/*
-	 * read it
-	 */
-	sec = rt->second1 * 10 + rt->second2;
-	min = rt->minute1 * 10 + rt->minute2;
-	hour = (rt->hour1 & 3)  * 10 + rt->hour2;
-	day = rt->day1 * 10 + rt->day2;
-	month = rt->month1 * 10 + rt->month2;
-	year = rt->year1 * 10 + rt->year2   + 1900;
-
-	if ((rt->control3 & A2CONTROL3_24HMODE) == 0) {
-		if ((rt->hour1 & A2HOUR1_PM) == 0 && hour == 12)
-			hour = 0;
-		else if ((rt->hour1 & A2HOUR1_PM) && hour != 12)
-			hour += 12;
-	}
-
-	/* 
-	 * release the clock 
-	 */
-	rt->control1 &= ~A2CONTROL1_HOLD;
-
-	if (range_test(hour, 0, 23))
-		return(0);
-	if (range_test(day, 1, 31))
-		return(0);
-	if (range_test(month, 1, 12))
-		return(0);
-	if (range_test(year, STARTOFTIME, 2000))
-		return(0);
-  
-	tmp = 0;
-  
-	for (i = STARTOFTIME; i < year; i++)
-		tmp += days_in_year(i);
-	if (leapyear(year) && month > FEBRUARY)
-		tmp++;
-  
-	for (i = 1; i < month; i++)
-		tmp += days_in_month(i);
-  
-	tmp += (day - 1);
-	tmp = ((tmp * 24 + hour) * 60 + min) * 60 + sec;
-  
-	return(tmp);
-}
-
-/*
- * there is some question as to whether this works
- * I guess
- */
-int
-a2settod(tim)
-	long tim;
-{
-
-	int i;
-	long hms, day;
-	u_char sec1, sec2;
-	u_char min1, min2;
-	u_char hour1, hour2;
-	u_char day1, day2;
-	u_char mon1, mon2;
-	u_char year1, year2;
-	struct rtclock2000 *rt;
-
-	rt = clockaddr;
-	/* 
-	 * there seem to be problems with the bitfield addressing
-	 * currently used..
-	 *
-	 * XXX Check out the above where we (hour1 & 3)
-	 */
-	if (! rt)
-		return 0;
-
-	/* prepare values to be written to clock */
-	day = tim / SECDAY;
-	hms = tim % SECDAY;
-
-	hour2 = hms / 3600;
-	hour1 = hour2 / 10;
-	hour2 %= 10;
-
-	min2 = (hms % 3600) / 60;
-	min1 = min2 / 10;
-	min2 %= 10;
-
-
-	sec2 = (hms % 3600) % 60;
-	sec1 = sec2 / 10;
-	sec2 %= 10;
-
-	/* Number of years in days */
-	for (i = STARTOFTIME - 1900; day >= days_in_year(i); i++)
-		day -= days_in_year(i);
-	year1 = i / 10;
-	year2 = i % 10;
-
-	/* Number of months in days left */
-	if (leapyear(i))
-		days_in_month(FEBRUARY) = 29;
-	for (i = 1; day >= days_in_month(i); i++)
-		day -= days_in_month(i);
-	days_in_month(FEBRUARY) = 28;
-
-	mon1 = i / 10;
-	mon2 = i % 10;
-  
-	/* Days are what is left over (+1) from all that. */
-	day ++;
-	day1 = day / 10;
-	day2 = day % 10;
-
-	/* 
-	 * XXXX spin wait as with reading???
-	 */
-	rt->control1 |= A2CONTROL1_HOLD;
-	rt->second1 = sec1;
-	rt->second2 = sec2;
-	rt->minute1 = min1;
-	rt->minute2 = min2;
-	rt->hour1   = hour1;
-	rt->hour2   = hour2;
-	rt->day1    = day1;
-	rt->day2    = day2;
-	rt->month1  = mon1;
-	rt->month2  = mon2;
-	rt->year1   = year1;
-	rt->year2   = year2;
-	rt->control2 &= ~A2CONTROL1_HOLD;
-
-  return 1;
+	if (settod && settod(time.tv_sec) == 0)
+		printf("Cannot set battery backed clock\n");
 }

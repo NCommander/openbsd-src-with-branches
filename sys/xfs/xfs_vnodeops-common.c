@@ -44,7 +44,7 @@
 #include <xfs/xfs_syscalls.h>
 #include <xfs/xfs_vnodeops.h>
 
-RCSID("$Id: xfs_vnodeops-common.c,v 1.1.1.1 2002/06/05 17:24:11 hin Exp $");
+RCSID("$Id: xfs_vnodeops-common.c,v 1.1.1.1 2002/06/07 03:33:00 hin Exp $");
 
 static void
 xfs_handle_stale(struct xfs_node *xn)

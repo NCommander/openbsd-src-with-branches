@@ -1,4 +1,4 @@
-/*	$NetBSD: recno.h,v 1.4 1995/02/27 13:25:35 cgd Exp $	*/
+/*	$OpenBSD$	*/
 
 /*-
  * Copyright (c) 1991, 1993

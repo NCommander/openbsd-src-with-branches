@@ -1,9 +1,12 @@
-/*	$NetBSD: vector.c,v 1.13 1995/08/21 21:37:41 gwr Exp $	*/
+/*	$OpenBSD: vector.c,v 1.8 2002/03/14 01:26:47 millert Exp $	*/
+/*	$NetBSD: vector.c,v 1.15 1996/11/20 18:57:40 gwr Exp $	*/
 
-/*
- * Copyright (c) 1994 Gordon W. Ross
- * Copyright (c) 1993 Adam Glass
+/*-
+ * Copyright (c) 1996 The NetBSD Foundation, Inc.
  * All rights reserved.
+ *
+ * This code is derived from software contributed to The NetBSD Foundation
+ * by Adam Glass and Gordon W. Ross.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -15,38 +18,38 @@
  *    documentation and/or other materials provided with the distribution.
  * 3. All advertising materials mentioning features or use of this software
  *    must display the following acknowledgement:
- *	This product includes software developed by Adam Glass.
- * 4. The name of the Author may not be used to endorse or promote products
- *    derived from this software without specific prior written permission.
+ *        This product includes software developed by the NetBSD
+ *        Foundation, Inc. and its contributors.
+ * 4. Neither the name of The NetBSD Foundation nor the names of its
+ *    contributors may be used to endorse or promote products derived
+ *    from this software without specific prior written permission.
  *
- * THIS SOFTWARE IS PROVIDED BY Adam Glass ``AS IS'' AND
- * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
- * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
- * ARE DISCLAIMED.  IN NO EVENT SHALL THE REGENTS OR CONTRIBUTORS BE LIABLE
- * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
- * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
- * OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
- * HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
- * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
- * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
- * SUCH DAMAGE.
+ * THIS SOFTWARE IS PROVIDED BY THE NETBSD FOUNDATION, INC. AND CONTRIBUTORS
+ * ``AS IS'' AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED
+ * TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+ * PURPOSE ARE DISCLAIMED.  IN NO EVENT SHALL THE REGENTS OR CONTRIBUTORS BE
+ * LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+ * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ * POSSIBILITY OF SUCH DAMAGE.
+ */
+
+/*
+ * The interrupt vector table.
  */
 
 #include <sys/param.h>
 #include <sys/systm.h>
 
-#include "vector.h"
+#include <sun3/sun3/vector.h>
 
 #define BADTRAP16 badtrap, badtrap, badtrap, badtrap, \
                   badtrap, badtrap, badtrap, badtrap, \
                   badtrap, badtrap, badtrap, badtrap, \
                   badtrap, badtrap, badtrap, badtrap
-
-void addrerr(), badtrap(), buserr(), chkinst(), coperr(), fmterr(),
-    fpfline(),  fpunsupp(), illinst(), privinst(), trace(), trap0(),
-    trap1(), trap12(), trap15(), trap2(), trapvinst(), zerodiv(), fpfault();
-
-void _isr_autovec();
 
 #define fpbsun fpfault
 #define fpdz fpfault
@@ -56,9 +59,9 @@ void _isr_autovec();
 #define fpsnan fpfault
 #define fpunfl fpfault
 
-void (*vector_table[NVECTORS])() = {
-	(void*)0xfffe000,		/* 0: NOT USED (reset SP) */
-	(void*)0xfef0000,		/* 1: NOT USED (reset PC) */
+void (*vector_table[NVECTORS])(void) = {
+	(void *)0xfffe000,		/* 0: NOT USED (reset SP) */
+	(void *)0xfef0000,		/* 1: NOT USED (reset PC) */
 	buserr,				/* 2: bus error */
 	addrerr,			/* 3: address error */
 	illinst,			/* 4: illegal instruction */
@@ -66,7 +69,7 @@ void (*vector_table[NVECTORS])() = {
 	chkinst,			/* 6: CHK instruction */
 	trapvinst,			/* 7: TRAPV instruction */
 	privinst,			/* 8: privilege violation */
-	trace,				/* 9: trace */
+	trace,				/* 9: trace (single-step) */
 	illinst,			/* 10: line 1010 emulator */
 	fpfline,			/* 11: line 1111 emulator */
 	badtrap,			/* 12: unassigned, reserved */
@@ -90,8 +93,8 @@ void (*vector_table[NVECTORS])() = {
 	_isr_autovec,			/* 30: level 6 interrupt autovector */
 	_isr_autovec,			/* 31: level 7 interrupt autovector */
 	trap0,				/* 32: syscalls (at least on hp300) */
-	trap1,				/* 33: sigreturn syscall or breakpoi */
-	trap2,				/* 34: breakpoint or sigreturn sysca */
+	trap1,				/* 33: sigreturn syscall */
+	trap2,				/* 34: HPUX breakpoint */
 	illinst,			/* 35: TRAP instruction vector */
 	illinst,			/* 36: TRAP instruction vector */
 	illinst,			/* 37: TRAP instruction vector */
@@ -101,10 +104,10 @@ void (*vector_table[NVECTORS])() = {
 	illinst,			/* 41: TRAP instruction vector */
 	illinst,			/* 42: TRAP instruction vector */
 	illinst,			/* 43: TRAP instruction vector */
-	trap12,  			/* 44: TRAP instruction vector */
+	trap12,  			/* 44: TRAP 12: cachectl */
 	illinst,			/* 45: TRAP instruction vector */
 	illinst,			/* 46: TRAP instruction vector */
-	trap15,				/* 47: TRAP instruction vector */
+	trap15,				/* 47: TRAP 15: breakpoint */
 	fpbsun, 			/* 48: FPCP branch/set on unordered */
 	fpinex, 			/* 49: FPCP inexact result */
 	fpdz,   			/* 50: FPCP divide by zero */

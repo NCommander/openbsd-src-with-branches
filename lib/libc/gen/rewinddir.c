@@ -1,5 +1,3 @@
-/*	$NetBSD: rewinddir.c,v 1.4 1995/02/25 08:51:37 cgd Exp $	*/
-
 /*-
  * Copyright (c) 1990, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -34,15 +32,13 @@
  */
 
 #if defined(LIBC_SCCS) && !defined(lint)
-#if 0
-static char sccsid[] = "@(#)rewinddir.c	8.1 (Berkeley) 6/8/93";
-#else
-static char rcsid[] = "$NetBSD: rewinddir.c,v 1.4 1995/02/25 08:51:37 cgd Exp $";
-#endif
+static char rcsid[] = "$OpenBSD: rewinddir.c,v 1.3 1997/07/09 00:28:24 millert Exp $";
 #endif /* LIBC_SCCS and not lint */
 
 #include <sys/types.h>
 #include <dirent.h>
+
+void __seekdir(DIR *, long);
 
 void
 rewinddir(dirp)

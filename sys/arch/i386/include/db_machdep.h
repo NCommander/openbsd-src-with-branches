@@ -1,4 +1,5 @@
-/*	$NetBSD: db_machdep.h,v 1.8 1994/10/27 04:16:02 cgd Exp $	*/
+/*	$OpenBSD: db_machdep.h,v 1.6 2001/11/06 19:53:14 miod Exp $	*/
+/*	$NetBSD: db_machdep.h,v 1.9 1996/05/03 19:23:59 christos Exp $	*/
 
 /* 
  * Mach Operating System
@@ -34,11 +35,11 @@
  */
 
 #include <sys/param.h>
-#include <vm/vm.h>
+#include <uvm/uvm_extern.h>
 #include <machine/trap.h>
 
-typedef	vm_offset_t	db_addr_t;	/* address - unsigned */
-typedef	int		db_expr_t;	/* expression - signed */
+typedef	vaddr_t		db_addr_t;	/* address - unsigned */
+typedef	long		db_expr_t;	/* expression - signed */
 
 typedef struct trapframe db_regs_t;
 db_regs_t	ddb_regs;	/* register state */
@@ -50,7 +51,7 @@ db_regs_t	ddb_regs;	/* register state */
 #define	BKPT_SIZE	(1)		/* size of breakpoint inst */
 #define	BKPT_SET(inst)	(BKPT_INST)
 
-#define	FIXUP_PC_AFTER_BREAK		ddb_regs.tf_eip -= BKPT_SIZE;
+#define	FIXUP_PC_AFTER_BREAK(regs)	((regs)->tf_eip -= BKPT_SIZE)
 
 #define	db_clear_single_step(regs)	((regs)->tf_eflags &= ~PSL_T)
 #define	db_set_single_step(regs)	((regs)->tf_eflags |=  PSL_T)
@@ -85,8 +86,10 @@ db_regs_t	ddb_regs;	/* register state */
 	((!(user) && DB_VALID_KERN_ADDR(addr)) ||		\
 	 ((user) && (addr) < VM_MAX_ADDRESS))
 
-boolean_t 	db_check_access(/* vm_offset_t, int, task_t */);
-boolean_t	db_phys_eq(/* task_t, vm_offset_t, task_t, vm_offset_t */);
+#if 0
+boolean_t 	db_check_access(vaddr_t, int, task_t);
+boolean_t	db_phys_eq(task_t, vaddr_t, task_t, vaddr_t);
+#endif
 
 /* macros for printing OS server dependent task name */
 
@@ -95,10 +98,21 @@ boolean_t	db_phys_eq(/* task_t, vm_offset_t, task_t, vm_offset_t */);
 #define DB_TASK_NAME_LEN	23
 #define DB_NULL_TASK_NAME	"?                      "
 
+/*
+ * Constants for KGDB.
+ */
+typedef	long		kgdb_reg_t;
+#define	KGDB_NUMREGS	14
+#define	KGDB_BUFLEN	512
+
+#if 0
 void		db_task_name(/* task_t */);
+#endif
 
 /* macro for checking if a thread has used floating-point */
 
 #define db_thread_fp_used(thread)	((thread)->pcb->ims.ifps != 0)
+
+int kdb_trap(int, int, db_regs_t *);
 
 #endif	/* _I386_DB_MACHDEP_H_ */

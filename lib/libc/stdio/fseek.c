@@ -1,5 +1,3 @@
-/*	$NetBSD: fseek.c,v 1.8 1995/03/05 06:56:09 jtc Exp $	*/
-
 /*-
  * Copyright (c) 1990, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -37,10 +35,7 @@
  */
 
 #if defined(LIBC_SCCS) && !defined(lint)
-#if 0
-static char sccsid[] = "@(#)fseek.c	8.3 (Berkeley) 1/2/94";
-#endif
-static char rcsid[] = "$NetBSD: fseek.c,v 1.8 1995/03/05 06:56:09 jtc Exp $";
+static char rcsid[] = "$OpenBSD: fseek.c,v 1.3 2000/02/21 22:11:22 millert Exp $";
 #endif /* LIBC_SCCS and not lint */
 
 #include <sys/types.h>
@@ -58,12 +53,12 @@ static char rcsid[] = "$NetBSD: fseek.c,v 1.8 1995/03/05 06:56:09 jtc Exp $";
  * `Whence' must be one of the three SEEK_* macros.
  */
 int
-fseek(fp, offset, whence)
+fseeko(fp, offset, whence)
 	register FILE *fp;
-	long offset;
+	off_t offset;
 	int whence;
 {
-	register fpos_t (*seekfn) __P((void *, fpos_t, int));
+	register fpos_t (*seekfn)(void *, fpos_t, int);
 	fpos_t target, curoff;
 	size_t n;
 	struct stat st;
@@ -98,7 +93,7 @@ fseek(fp, offset, whence)
 			curoff = fp->_offset;
 		else {
 			curoff = (*seekfn)(fp->_cookie, (fpos_t)0, SEEK_CUR);
-			if (curoff == -1L)
+			if (curoff == (fpos_t)-1)
 				return (EOF);
 		}
 		if (fp->_flags & __SRD) {
@@ -250,3 +245,21 @@ dumb:
 	fp->_flags &= ~__SEOF;
 	return (0);
 }
+
+/*
+ * fseek()'s offset is a long and sizeof(off_t) != sizeof(long) on all arches
+ */
+#if defined(__alpha__) && defined(__indr_reference)
+__indr_reference(fseeko, fseek);
+#else
+int
+fseek(fp, offset, whence)
+	register FILE *fp;
+	long offset;
+	int whence;
+{
+	off_t off = offset;
+
+	return(fseeko(fp, off, whence));
+}
+#endif

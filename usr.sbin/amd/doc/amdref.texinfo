@@ -36,7 +36,7 @@
 @c OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 @c
 @c	from: @(#)amdref.texinfo	8.1 (Berkeley) 6/6/93
-@c	$Id: amdref.texinfo,v 1.4 1995/03/22 17:18:01 mycroft Exp $
+@c	$Id: amdref.texinfo,v 1.6 2002/07/18 01:44:18 deraadt Exp $
 @c
 @setfilename amdref.info
 @c @setfilename /usr/local/emacs/info/amd
@@ -45,6 +45,11 @@
 @end tex
 
 @settitle 4.4 BSD Automounter Reference Manual
+@dircategory Miscellaneous
+@direntry
+* Amdref: (amdref).                 4.4 BSD Automounter Reference Manual
+@end direntry
+
 @titlepage
 @sp 6
 @center @titlefont{Amd}
@@ -753,26 +758,10 @@ continues to the end of the line.  There is no way to escape or change
 the comment lead-in character.
 
 Note that continuation lines and comment support @dfn{only} apply to
-file maps, or ndbm maps built with the @code{mk-amd-map} program.
+file maps.
 
 When caching is enabled, file maps have a default cache mode of
 @code{all} (@pxref{Automount Filesystem}).
-
-@node     ndbm maps, NIS maps, File maps, Map Types
-@comment  node-name,  next,  previous,  up
-@subsection ndbm maps
-@cindex ndbm maps
-
-An ndbm map may be used as a fast access form of a file map.  The program,
-@code{mk-amd-map}, converts a normal map file into an ndbm database.
-This program supports the same continuation and comment conventions that
-are provided for file maps.  Note that ndbm format files may @emph{not}
-be sharable across machine architectures.  The notion of speed generally
-only applies to large maps; a small map, less than a single disk block,
-is almost certainly better implemented as a file map.
-
-ndbm maps do not support cache mode @samp{all} and, when caching is
-enabled, have a default cache mode of @samp{inc} (@pxref{Automount Filesystem}).
 
 @node     NIS maps, Hesiod maps, ndbm maps, Map Types
 @comment  node-name,  next,  previous,  up
@@ -1389,8 +1378,14 @@ Don't make a connection on datagram transports.
 No close-to-open consistency.
 @item nodevs
 Don't allow local special devices on this filesystem.
+@item nolooklease
+When nqnfs is selected, disable the automatic acquiring of leases on
+lookups.
 @item nosuid
 Don't allow set-uid or set-gid executables on this filesystem.
+@item nqnfs
+Enable leasing extensions to the NFS protocol know as Not Quite NFS.
+Only supported by the 4.4BSD NFS implementation.
 @item quota
 Enable quota checking on this mount.
 @item resvport
@@ -2225,7 +2220,7 @@ which would return a symbolic link pointing to @file{/home/charm/jsp}.
 
 @node     Symbolic Link Filesystem II, Automount Filesystem, Program Filesystem, Filesystem Types
 @comment  node-name,  next,  previous,  up
-@section Symbolic Link Filesystem II (@samp{type:=link})
+@section Symbolic Link Filesystem II (@samp{type:=linkx})
 @cindex Symbolic link filesystem II
 @cindex Referencing an existing part of the local name space
 @cindex Mounting an existing part of the local name space
@@ -2364,7 +2359,7 @@ dylan/dk5    type:=ufs;dev:=/dev/dsk/5s0
 The @dfn{direct} filesystem is almost identical to the automount
 filesystem.  Instead of appearing to be a directory of mount points, it
 appears as a symbolic link to a mounted filesystem.  The mount is done
-at the time the link is accessed.  @xref{Automount Filesystem} for a
+at the time the link is accessed.  @xref{Automount Filesystem}, for a
 list of required options.
 
 Direct automount points are created by specifying the @samp{direct}
@@ -3869,7 +3864,7 @@ once.
 
 @item malformed IP dotted quad: @var{address}
 If the Internet address of an interface is incorrectly specified.  An
-Internet address definition is handled to @b{inet_addr}(3N) to see if it
+Internet address definition is handled to @b{inet_aton}(3N) to see if it
 can cope.  If not, then this message will be displayed.
 
 @item malformed netmask: @var{netmask}
@@ -3975,7 +3970,7 @@ will produce this warning.@refill
 @item pass number for @var{host}:@var{device} is non-zero
 Occurs if @var{device} has its @samp{fstype} declared to be @samp{swap}
 or @samp{export} and the @b{fsck}(8) pass number is set. Swap devices should not be
-fsck'd.  @xref{FSinfo filesystems fstype}@refill
+fsck'd.  @xref{FSinfo filesystems fstype}.@refill
 
 @item dump frequency for @var{host}:@var{device} is non-zero
 Occurs if @var{device} has its @samp{fstype} declared to be @samp{swap}

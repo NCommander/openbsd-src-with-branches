@@ -1,3 +1,6 @@
+/*	$OpenBSD: pathnames.h,v 1.5 2001/01/16 05:36:08 millert Exp $	*/
+/*	$NetBSD: pathnames.h,v 1.4 1996/06/08 19:48:34 christos Exp $	*/
+
 /*
  * Copyright (c) 1989, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -30,14 +33,21 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  *
- *	from: @(#)pathnames.h	8.1 (Berkeley) 6/6/93
- *	$Id: pathnames.h,v 1.3 1994/06/29 05:09:36 deraadt Exp $
+ *	@(#)pathnames.h	8.1 (Berkeley) 6/6/93
+ *	$NetBSD: pathnames.h,v 1.4 1996/06/08 19:48:34 christos Exp $
  */
 
 #include <paths.h>
 
-#define	_PATH_EX	"/usr/bin/ex"
-#define	_PATH_HELP	"/usr/share/misc/mail.help"
-#define	_PATH_TILDE	"/usr/share/misc/mail.tildehelp"
-#define	_PATH_MASTER_RC	"/etc/mail.rc"
-#define	_PATH_MORE	"/usr/bin/more"
+/* executables */
+#define _PATH_EX	"/usr/bin/ex"
+#define _PATH_MORE	"/usr/bin/more"
+#define _PATH_LS	"/bin/ls"
+#define _PATH_LOCKSPOOL	"/usr/libexec/lockspool"
+
+/* directories & files */
+#define _PATH_MAILDIR	"/var/mail"
+#define _PATH_HELP	"/usr/share/misc/mail.help"
+#define _PATH_TILDE	"/usr/share/misc/mail.tildehelp"
+#define _PATH_MASTER_RC	"/etc/mail.rc"
+#define _PATH_LOCTMP	"/tmp/local.XXXXXXXXXX"

@@ -1,4 +1,6 @@
+/*	$OpenBSD: autoconf.h,v 1.9 2001/11/09 00:12:19 miod Exp $ */
 /*
+ * Copyright (c) 1999, Steve Murphree, Jr.
  * Copyright (c) 1996 Nivas Madhur
  * All rights reserved.
  *
@@ -31,24 +33,45 @@
 /*
  * Autoconfiguration information.
  */
+
+#ifndef _MVME88K_AUTOCONF_H_
+#define _MVME88K_AUTOCONF_H_
+
 struct confargs {
 	int	ca_bustype;
-	caddr_t	ca_parent;
-	caddr_t	ca_vaddr;
-	caddr_t	ca_paddr;
-	int	ca_size;
+	void	*ca_vaddr;
+	void	*ca_paddr;
+	int	ca_offset;
+	int	ca_len;
 	int	ca_ipl;
 	int	ca_vec;
+	char	*ca_name;
+	void	*ca_master;	/* points to bus-dependent data */
 };
 
-#define BUS_MAIN	0
-#define BUS_MC		1
-#define BUS_PCC		2
-#define BUS_PCCTWO	3
-#define BUS_VMES	4
-#define BUS_VMEL	5
+#define BUS_MAIN      0
+#define BUS_MC        1
+#define BUS_PCC       2
+#define BUS_PCCTWO    3
+#define BUS_VMES      4
+#define BUS_VMEL      5
+#define BUS_SYSCON    6
+#define BUS_BUSSWITCH 7
 
-int always_match __P((struct device *, struct cfdata *, void *));
+int always_match(struct device *, struct cfdata *, void *);
 
 #define DEVICE_UNIT(device) (device->dv_unit)
 #define CFDATA_LOC(cfdata) (cfdata->cf_loc)
+
+/* the following are from the prom/bootblocks */
+extern void	*bootaddr;	/* PA of boot device */
+extern int	bootpart;	/* boot partition (disk) */
+
+extern	struct device *bootdv; /* boot device */
+
+void	*mapiodev(void *pa, int size);
+void	unmapiodev(void *kva, int size);
+
+struct device *getdevunit(char *name, int unit);
+
+#endif

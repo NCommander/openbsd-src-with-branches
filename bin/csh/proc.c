@@ -1,3 +1,4 @@
+/*	$OpenBSD: proc.c,v 1.14 2002/02/16 21:27:06 millert Exp $	*/
 /*	$NetBSD: proc.c,v 1.9 1995/04/29 23:21:33 mycroft Exp $	*/
 
 /*-
@@ -37,7 +38,7 @@
 #if 0
 static char sccsid[] = "@(#)proc.c	8.1 (Berkeley) 5/31/93";
 #else
-static char rcsid[] = "$NetBSD: proc.c,v 1.9 1995/04/29 23:21:33 mycroft Exp $";
+static char rcsid[] = "$OpenBSD: proc.c,v 1.14 2002/02/16 21:27:06 millert Exp $";
 #endif
 #endif /* not lint */
 
@@ -47,11 +48,7 @@ static char rcsid[] = "$NetBSD: proc.c,v 1.9 1995/04/29 23:21:33 mycroft Exp $";
 #include <unistd.h>
 #include <stdlib.h>
 #include <string.h>
-#if __STDC__
-# include <stdarg.h>
-#else
-# include <varargs.h>
-#endif
+#include <stdarg.h>
 
 #include "csh.h"
 #include "dir.h"
@@ -62,17 +59,17 @@ static char rcsid[] = "$NetBSD: proc.c,v 1.9 1995/04/29 23:21:33 mycroft Exp $";
 
 static struct rusage zru;
 
-static void	 pflushall __P((void));
-static void	 pflush __P((struct process *));
-static void	 pclrcurr __P((struct process *));
-static void	 padd __P((struct command *));
-static int	 pprint __P((struct process *, int));
-static void	 ptprint __P((struct process *));
-static void	 pads __P((Char *));
-static void	 pkill __P((Char **v, int));
+static void	 pflushall(void);
+static void	 pflush(struct process *);
+static void	 pclrcurr(struct process *);
+static void	 padd(struct command *);
+static int	 pprint(struct process *, int);
+static void	 ptprint(struct process *);
+static void	 pads(Char *);
+static void	 pkill(Char **v, int);
 static struct	process
-		*pgetcurr __P((struct process *));
-static void	 okpcntl __P((void));
+		*pgetcurr(struct process *);
+static void	 okpcntl(void);
 
 /*
  * pchild - called at interrupt level by the SIGCHLD signal
@@ -90,6 +87,7 @@ pchild(notused)
     register struct process *fp;
     register int pid;
     extern int insource;
+    int save_errno = errno;
     union wait w;
     int     jobflags;
     struct rusage ru;
@@ -105,6 +103,7 @@ loop:
 	    goto loop;
 	}
 	pnoprocesses = pid == -1;
+	errno = save_errno;
 	return;
     }
     for (pp = proclist.p_next; pp != NULL; pp = pp->p_next)
@@ -668,7 +667,7 @@ pprint(pp, flag)
     register struct process *pp;
     bool    flag;
 {
-    register status, reason;
+    register int status, reason;
     struct process *tp;
     int     jobflags, pstatus;
     bool hadnl = 1;	/* did we just have a newline */
@@ -740,16 +739,16 @@ pprint(pp, flag)
 		case PINTERRUPTED:
 		case PSTOPPED:
 		case PSIGNALED:
-                    /*
-                     * tell what happened to the background job
-                     * From: Michael Schroeder
-                     * <mlschroe@immd4.informatik.uni-erlangen.de>
-                     */
-                    if ((flag & REASON)
-                        || ((flag & AREASON)
-                            && reason != SIGINT
-                            && (reason != SIGPIPE
-                                || (pp->p_flags & PPOU) == 0))) {
+		    /*
+		     * tell what happened to the background job
+		     * From: Michael Schroeder
+		     * <mlschroe@immd4.informatik.uni-erlangen.de>
+		     */
+		    if ((flag & REASON)
+			|| ((flag & AREASON)
+			    && reason != SIGINT
+			    && (reason != SIGPIPE
+				|| (pp->p_flags & PPOU) == 0))) {
 			(void) fprintf(cshout, format,
 				       sys_siglist[(unsigned char)
 						   pp->p_reason]);
@@ -978,10 +977,23 @@ dokill(v, t)
     v++;
     if (v[0] && v[0][0] == '-') {
 	if (v[0][1] == 'l') {
-	    for (signum = 1; signum < NSIG; signum++) {
-		(void) fprintf(cshout, "%s ", sys_signame[signum]);
-		if (signum == NSIG / 2)
-		    (void) fputc('\n', cshout);
+	    if (v[1]) {
+		if (!Isdigit(v[1][0]))
+		    stderror(ERR_NAME | ERR_BADSIG);
+
+		signum = atoi(short2str(v[1]));
+		if (signum < 0 || signum >= NSIG)
+		    stderror(ERR_NAME | ERR_BADSIG);
+		else if (signum == 0)
+		    (void) fputc('0', cshout); /* 0's symbolic name is '0' */
+		else
+		    (void) fprintf(cshout, "%s ", sys_signame[signum]);
+	    } else {
+		for (signum = 1; signum < NSIG; signum++) {
+		    (void) fprintf(cshout, "%s ", sys_signame[signum]);
+		    if (signum == NSIG / 2)
+			(void) fputc('\n', cshout);
+	    	}
 	    }
 	    (void) fputc('\n', cshout);
 	    return;
@@ -992,17 +1004,31 @@ dokill(v, t)
 		stderror(ERR_NAME | ERR_BADSIG);
 	}
 	else {
-	    name = short2str(&v[0][1]);
-	    if (!strncasecmp(name, "sig", 3))
-		name += 3;
+	    if (v[0][1] == 's' && (Isspace(v[0][2]) || v[0][2] == '\0')) {
+		v++;
+		name = short2str(&v[0][0]);
+	    } else {
+		name = short2str(&v[0][1]);
+	    }
+
+	    if (v[0] == NULL || v[1] == NULL) {
+		stderror(ERR_NAME | ERR_TOOFEW);
+		return;
+	    }
 
 	    for (signum = 1; signum < NSIG; signum++)
-		if (!strcasecmp(sys_signame[signum], name))
-		    break;
+		if (!strcasecmp(sys_signame[signum], name) ||
+		    (strlen(name) > 3 && !strncasecmp("SIG", name, 3) &&
+		     !strcasecmp(sys_signame[signum], name + 3)))
+			break;
 
 	    if (signum == NSIG) {
-		setname(vis_str(&v[0][1]));
-		stderror(ERR_NAME | ERR_UNKSIG);
+		if (name[0] == '0')
+		    signum = 0;
+		else {
+		    setname(vis_str(&v[0][0]));
+		    stderror(ERR_NAME | ERR_UNKSIG);
+		}
 	    }
 	}
 	v++;
@@ -1075,7 +1101,15 @@ pkill(v, signum)
 	else if (!(Isdigit(*cp) || *cp == '-'))
 	    stderror(ERR_NAME | ERR_JOBARGS);
 	else {
-	    pid = atoi(short2str(cp));
+	    char *ep;
+	    char *pidnam = short2str(cp);
+
+	    pid = strtol(pidnam, &ep, 10);
+	    if (!*pidnam || *ep) {
+		(void) fprintf(csherr, "%s: illegal process id\n", pidnam);
+		err1++;
+		goto cont;
+	    }
 	    if (kill((pid_t) pid, signum) < 0) {
 		(void) fprintf(csherr, "%d: %s\n", pid, strerror(errno));
 		err1++;
@@ -1189,7 +1223,7 @@ pfind(cp)
 	}
     if (np)
 	return (np);
-    stderror(ERR_NAME | cp[1] == '?' ? ERR_JOBPAT : ERR_NOSUCHJOB);
+    stderror(ERR_NAME | (cp[1] == '?' ? ERR_JOBPAT : ERR_NOSUCHJOB));
     /* NOTREACHED */
     return (0);
 }

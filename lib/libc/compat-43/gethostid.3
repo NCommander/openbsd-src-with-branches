@@ -29,11 +29,11 @@
 .\" OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 .\" SUCH DAMAGE.
 .\"
-.\"     @(#)gethostid.3	8.1 (Berkeley) 6/2/93
+.\"	$OpenBSD: gethostid.3,v 1.7 2000/04/15 11:46:01 aaron Exp $
 .\"
 .Dd June 2, 1993
 .Dt GETHOSTID 3
-.Os BSD 4.2
+.Os
 .Sh NAME
 .Nm gethostid ,
 .Nm sethostid
@@ -45,23 +45,25 @@
 .Ft int
 .Fn sethostid "long hostid"
 .Sh DESCRIPTION
-.Fn Sethostid
-establishes a 32-bit identifier for the
+The
+.Fn sethostid
+function establishes a 32-bit identifier for the
 current processor that is intended to be unique among all
-UNIX systems in existence.  This is normally a DARPA Internet
-address for the local machine.  This call is allowed only to the
-super-user and is normally performed at boot time.
+UNIX systems in existence.
+This is normally a DARPA Internet address for the local machine.
+This call is allowed only to the
+superuser and is normally performed at boot-time.
 .Pp
-.Fn Gethostid
+.Fn gethostid
 returns the 32-bit identifier for the current processor.
 .Pp
 This function has been deprecated.
 The hostid should be set or retrieved by use of
 .Xr sysctl 3 .
 .Sh SEE ALSO
-.Xr sysctl 3 ,
 .Xr gethostname 3 ,
-.Xr sysctl 8 .
+.Xr sysctl 3 ,
+.Xr sysctl 8
 .Sh BUGS
 32 bits for the identifier is too small.
 .Sh HISTORY
@@ -69,7 +71,7 @@ The
 .Fn gethostid
 and
 .Fn sethostid
-syscalls appeared in 
+syscalls appeared in
 .Bx 4.2
 and were dropped in
 .Bx 4.4 .

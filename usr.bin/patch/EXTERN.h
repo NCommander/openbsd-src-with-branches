@@ -1,4 +1,4 @@
-/*	$Id: EXTERN.h,v 1.2 1993/08/02 17:55:10 mycroft Exp $ */
+/*	$OpenBSD: EXTERN.h,v 1.1.1.1 1995/10/18 08:45:54 deraadt Exp $ */
 
 #ifdef EXT
 #undef EXT

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1998-2001 Sendmail, Inc. and its suppliers.
+ * Copyright (c) 1998-2002 Sendmail, Inc. and its suppliers.
  *	All rights reserved.
  * Copyright (c) 1994, 1996-1997 Eric P. Allman.  All rights reserved.
  * Copyright (c) 1994
@@ -14,7 +14,7 @@
 #include <sendmail.h>
 #include <string.h>
 
-SM_RCSID("@(#)$Sendmail: mime.c,v 8.121 2001/09/04 22:43:04 ca Exp $")
+SM_RCSID("@(#)$Sendmail: mime.c,v 8.130 2002/05/21 03:39:34 ca Exp $")
 
 /*
 **  MIME support.
@@ -56,7 +56,7 @@ static char	*MimeBoundaryNames[] =
 
 static bool	MapNLtoCRLF;
 
-/*
+/*
 **  MIME8TO7 -- output 8 bit body in 7 bit format
 **
 **	The header has already been output -- this has to do the
@@ -377,7 +377,8 @@ mime8to7(mci, header, e, boundaries, flags)
 			putheader(mci, hdr, e, flags);
 			if (tTd(43, 101))
 				putline("+++after putheader", mci);
-			if (hvalue("MIME-Version", hdr) == NULL)
+			if (hvalue("MIME-Version", hdr) == NULL &&
+			    !bitset(M87F_NO8TO7, flags))
 				putline("MIME-Version: 1.0", mci);
 			bt = mime8to7(mci, hdr, e, boundaries, flags);
 			mci->mci_flags &= ~MCIF_INMIME;
@@ -399,7 +400,8 @@ mime8to7(mci, header, e, boundaries, flags)
 		/* remember where we were */
 		offset = sm_io_tell(e->e_dfp, SM_TIME_DEFAULT);
 		if (offset == -1)
-			syserr("mime8to7: cannot sm_io_tell on df%s", e->e_id);
+			syserr("mime8to7: cannot sm_io_tell on %cf%s",
+			       DATAFL_LETTER, e->e_id);
 
 		/* do a scan of this body type to count character types */
 		while (sm_io_fgets(e->e_dfp, SM_TIME_DEFAULT, buf, sizeof buf)
@@ -429,7 +431,8 @@ mime8to7(mci, header, e, boundaries, flags)
 		/* return to the original offset for processing */
 		/* XXX use relative seeks to handle >31 bit file sizes? */
 		if (sm_io_seek(e->e_dfp, SM_TIME_DEFAULT, offset, SEEK_SET) < 0)
-			syserr("mime8to7: cannot sm_io_fseek on df%s", e->e_id);
+			syserr("mime8to7: cannot sm_io_fseek on %cf%s",
+			       DATAFL_LETTER, e->e_id);
 		else
 			sm_io_clearerr(e->e_dfp);
 	}
@@ -665,7 +668,7 @@ mime8to7(mci, header, e, boundaries, flags)
 		sm_dprintf("\t\t\tmime8to7=>%s (basic)\n", MimeBoundaryNames[bt]);
 	return bt;
 }
-/*
+/*
 **  MIME_GETCHAR -- get a character for MIME processing
 **
 **	Treats boundaries as SM_IO_EOF.
@@ -774,7 +777,7 @@ mime_getchar(fp, boundaries, btp)
 	bp = buf;
 	return *bp++;
 }
-/*
+/*
 **  MIME_GETCHAR_CRLF -- do mime_getchar, but translate NL => CRLF
 **
 **	Parameters:
@@ -809,7 +812,7 @@ mime_getchar_crlf(fp, boundaries, btp)
 	}
 	return c;
 }
-/*
+/*
 **  MIMEBOUNDARY -- determine if this line is a MIME boundary & its type
 **
 **	Parameters:
@@ -865,7 +868,7 @@ mimeboundary(line, boundaries)
 		sm_dprintf("%s\n", MimeBoundaryNames[type]);
 	return type;
 }
-/*
+/*
 **  DEFCHARSET -- return default character set for message
 **
 **	The first choice for character set is for the mailer
@@ -892,7 +895,7 @@ defcharset(e)
 		return DefaultCharSet;
 	return "unknown-8bit";
 }
-/*
+/*
 **  ISBOUNDARY -- is a given string a currently valid boundary?
 **
 **	Parameters:
@@ -920,9 +923,9 @@ isboundary(line, boundaries)
 	return -1;
 }
 #endif /* MIME8TO7 */
-
+
 #if MIME7TO8
-static int	mime_fromqp __P((unsigned char *, unsigned char **, int, int));
+static int	mime_fromqp __P((unsigned char *, unsigned char **, int));
 
 /*
 **  MIME7TO8 -- output 7 bit encoded MIME body in 8 bit format
@@ -934,7 +937,7 @@ static int	mime_fromqp __P((unsigned char *, unsigned char **, int, int));
 **  will be able to deal with encoded MIME bodies if it can parse MIME
 **  multipart messages.
 **
-**  Note also that we wont be called unless it is a text/plain MIME
+**  Note also that we won't be called unless it is a text/plain MIME
 **  message, encoded base64 or QP and mailer flag '9' has been defined
 **  on mailer.
 **
@@ -969,6 +972,7 @@ mime7to8(mci, header, e)
 	HDR *header;
 	register ENVELOPE *e;
 {
+	int pxflags;
 	register char *p;
 	char *cte;
 	char **pvp;
@@ -1022,6 +1026,7 @@ mime7to8(mci, header, e)
 	**  it is not base64.
 	*/
 
+	pxflags = PXLF_MAPFROM;
 	if (sm_strcasecmp(cte, "base64") == 0)
 	{
 		int c1, c2, c3, c4;
@@ -1064,9 +1069,13 @@ mime7to8(mci, header, e)
 			{
 				if (*--fbufp != '\n' ||
 				    (fbufp > fbuf && *--fbufp != '\r'))
+				{
+					pxflags |= PXLF_NOADDEOL;
 					fbufp++;
+				}
 				putxline((char *) fbuf, fbufp - fbuf,
-					 mci, PXLF_MAPFROM);
+					 mci, pxflags);
+				pxflags &= ~PXLF_NOADDEOL;
 				fbufp = fbuf;
 			}
 			if (c3 == '=')
@@ -1077,9 +1086,13 @@ mime7to8(mci, header, e)
 			{
 				if (*--fbufp != '\n' ||
 				    (fbufp > fbuf && *--fbufp != '\r'))
+				{
+					pxflags |= PXLF_NOADDEOL;
 					fbufp++;
+				}
 				putxline((char *) fbuf, fbufp - fbuf,
-					 mci, PXLF_MAPFROM);
+					 mci, pxflags);
+				pxflags &= ~PXLF_NOADDEOL;
 				fbufp = fbuf;
 			}
 			if (c4 == '=')
@@ -1090,28 +1103,44 @@ mime7to8(mci, header, e)
 			{
 				if (*--fbufp != '\n' ||
 				    (fbufp > fbuf && *--fbufp != '\r'))
+				{
+					pxflags |= PXLF_NOADDEOL;
 					fbufp++;
+				}
 				putxline((char *) fbuf, fbufp - fbuf,
-					 mci, PXLF_MAPFROM);
+					 mci, pxflags);
+				pxflags &= ~PXLF_NOADDEOL;
 				fbufp = fbuf;
 			}
 		}
 	}
 	else
 	{
+		int off;
+
 		/* quoted-printable */
+		pxflags |= PXLF_NOADDEOL;
 		fbufp = fbuf;
-		while (sm_io_fgets(e->e_dfp, SM_TIME_DEFAULT, buf, sizeof buf)
-			!= NULL)
+		while (sm_io_fgets(e->e_dfp, SM_TIME_DEFAULT, buf,
+				   sizeof buf) != NULL)
 		{
-			if (mime_fromqp((unsigned char *) buf, &fbufp, 0,
-					&fbuf[MAXLINE] - fbufp) == 0)
+			off = mime_fromqp((unsigned char *) buf, &fbufp,
+					  &fbuf[MAXLINE] - fbufp);
+again:
+			if (off < -1)
 				continue;
 
 			if (fbufp - fbuf > 0)
 				putxline((char *) fbuf, fbufp - fbuf - 1, mci,
-					 PXLF_MAPFROM);
+					 pxflags);
 			fbufp = fbuf;
+			if (off >= 0 && buf[off] != '\0')
+			{
+				off = mime_fromqp((unsigned char *) (buf + off),
+						  &fbufp,
+						  &fbuf[MAXLINE] - fbufp);
+				goto again;
+			}
 		}
 	}
 
@@ -1119,12 +1148,22 @@ mime7to8(mci, header, e)
 	if (fbufp > fbuf)
 	{
 		*fbufp = '\0';
-		putxline((char *) fbuf, fbufp - fbuf, mci, PXLF_MAPFROM);
+		putxline((char *) fbuf, fbufp - fbuf, mci, pxflags);
 	}
+
+	/*
+	**  The decoded text may end without an EOL.  Since this function
+	**  is only called for text/plain MIME messages, it is safe to
+	**  add an extra one at the end just in case.  This is a hack,
+	**  but so is auto-converting MIME in the first place.
+	*/
+
+	putline("", mci);
+
 	if (tTd(43, 3))
 		sm_dprintf("\t\t\tmime7to8 => %s to 8bit done\n", cte);
 }
-/*
+/*
 **  The following is based on Borenstein's "codes.c" module, with simplifying
 **  changes as we do not deal with multipart, and to do the translation in-core,
 **  with an attempt to prevent overrun of output buffers.
@@ -1147,31 +1186,47 @@ static char index_hex[128] =
 
 # define HEXCHAR(c)  (((c) < 0 || (c) > 127) ? -1 : index_hex[(c)])
 
+/*
+**  MIME_FROMQP -- decode quoted printable string
+**
+**	Parameters:
+**		infile -- input (encoded) string
+**		outfile -- output string
+**		maxlen -- size of output buffer
+**
+**	Returns:
+**		-2 if decoding failure
+**		-1 if infile completely decoded into outfile
+**		>= 0 is the position in infile decoding
+**			reached before maxlen was reached
+*/
+
 static int
-mime_fromqp(infile, outfile, state, maxlen)
+mime_fromqp(infile, outfile, maxlen)
 	unsigned char *infile;
 	unsigned char **outfile;
-	int state;		/* Decoding body (0) or header (1) */
 	int maxlen;		/* Max # of chars allowed in outfile */
 {
 	int c1, c2;
 	int nchar = 0;
+	unsigned char *b;
 
-	if (maxlen < 0)
+	/* decrement by one for trailing '\0', at least one other char */
+	if (--maxlen < 1)
 		return 0;
 
-	while ((c1 = *infile++) != '\0')
+	b = infile;
+	while ((c1 = *infile++) != '\0' && nchar < maxlen)
 	{
 		if (c1 == '=')
 		{
-			if ((c1 = *infile++) == 0)
+			if ((c1 = *infile++) == '\0')
 				break;
 
 			if (c1 == '\n' || (c1 = HEXCHAR(c1)) == -1)
 			{
-				/* ignore it */
-				if (state == 0)
-					return 0;
+				/* ignore it and the rest of the buffer */
+				return -2;
 			}
 			else
 			{
@@ -1184,27 +1239,23 @@ mime_fromqp(infile, outfile, state, maxlen)
 					}
 				} while ((c2 = HEXCHAR(c2)) == -1);
 
-				if (c2 == -1 || ++nchar > maxlen)
+				if (c2 == -1)
 					break;
-
+				nchar++;
 				*(*outfile)++ = c1 << 4 | c2;
 			}
 		}
 		else
 		{
-			if (state == 1 && c1 == '_')
-				c1 = ' ';
-
-			if (++nchar > maxlen)
-				break;
-
+			nchar++;
 			*(*outfile)++ = c1;
-
 			if (c1 == '\n')
 				break;
 		}
 	}
 	*(*outfile)++ = '\0';
-	return 1;
+	if (nchar >= maxlen)
+		return (infile - b - 1);
+	return -1;
 }
 #endif /* MIME7TO8 */

@@ -1,8 +1,8 @@
-/*	$NetBSD: ffs_subr.c,v 1.9 1996/10/12 21:58:45 christos Exp $	*/
-
-/* Modified for EXT2FS on NetBSD by Manuel Bouyer, April 1997 */
+/*	$OpenBSD: ext2fs_subr.c,v 1.6 2001/09/18 01:39:13 art Exp $	*/
+/*	$NetBSD: ext2fs_subr.c,v 1.1 1997/06/11 09:34:03 bouyer Exp $	*/
 
 /*
+ * Copyright (c) 1997 Manuel Bouyer.
  * Copyright (c) 1982, 1986, 1989, 1993
  *	The Regents of the University of California.  All rights reserved.
  *
@@ -35,18 +35,19 @@
  * SUCH DAMAGE.
  *
  *	@(#)ffs_subr.c	8.2 (Berkeley) 9/21/93
+ * Modified for ext2fs by Manuel Bouyer.
  */
 
 #include <sys/param.h>
 #include <sys/systm.h>
-#include <ufs/ext2fs/ext2fs.h>
-#include <ufs/ext2fs/ext2fs_extern.h>
-
-#ifdef _KERNEL
 #include <sys/vnode.h>
 #include <sys/buf.h>
 #include <ufs/ufs/quota.h>
 #include <ufs/ufs/inode.h>
+#include <ufs/ext2fs/ext2fs.h>
+#include <ufs/ext2fs/ext2fs_extern.h>
+
+#ifdef _KERNEL
 
 /*
  * Return buffer with the contents of block "offset" from the beginning of
@@ -54,33 +55,26 @@
  * remaining space in the directory.
  */
 int
-ext2fs_blkatoff(v)
-	void *v;
+ext2fs_bufatoff(struct inode *ip, off_t offset, char **res, struct buf **bpp)
 {
-	struct vop_blkatoff_args /* {
-		struct vnode *a_vp;
-		off_t a_offset;
-		char **a_res;
-		struct buf **a_bpp;
-	} */ *ap = v;
-	struct inode *ip;
-	register struct m_ext2fs *fs;
+	struct vnode *vp;
+	struct m_ext2fs *fs;
 	struct buf *bp;
-	daddr_t lbn;
+	ufs_daddr_t lbn;
 	int error;
 
-	ip = VTOI(ap->a_vp);
+	vp = ITOV(ip);
 	fs = ip->i_e2fs;
-	lbn = lblkno(fs, ap->a_offset);
+	lbn = lblkno(fs, offset);
 
-	*ap->a_bpp = NULL;
-	if ((error = bread(ap->a_vp, lbn, fs->e2fs_bsize, NOCRED, &bp)) != 0) {
+	*bpp = NULL;
+	if ((error = bread(vp, lbn, fs->e2fs_bsize, NOCRED, &bp)) != 0) {
 		brelse(bp);
 		return (error);
 	}
-	if (ap->a_res)
-		*ap->a_res = (char *)bp->b_data + blkoff(fs, ap->a_offset);
-	*ap->a_bpp = bp;
+	if (res)
+		*res = (char *)bp->b_data + blkoff(fs, offset);
+	*bpp = bp;
 	return (0);
 }
 #endif
@@ -91,8 +85,8 @@ ext2fs_checkoverlap(bp, ip)
 	struct buf *bp;
 	struct inode *ip;
 {
-	register struct buf *ebp, *ep;
-	register daddr_t start, last;
+	struct buf *ebp, *ep;
+	ufs_daddr_t start, last;
 	struct vnode *vp;
 
 	ebp = &buf[nbuf];
@@ -100,7 +94,7 @@ ext2fs_checkoverlap(bp, ip)
 	last = start + btodb(bp->b_bcount) - 1;
 	for (ep = buf; ep < ebp; ep++) {
 		if (ep == bp || (ep->b_flags & B_INVAL) ||
-		    ep->b_vp == NULLVP)
+			ep->b_vp == NULLVP)
 			continue;
 		if (VOP_BMAP(ep->b_vp, (daddr_t)0, &vp, (daddr_t)0, NULL))
 			continue;
@@ -108,12 +102,12 @@ ext2fs_checkoverlap(bp, ip)
 			continue;
 		/* look for overlap */
 		if (ep->b_bcount == 0 || ep->b_blkno > last ||
-		    ep->b_blkno + btodb(ep->b_bcount) <= start)
+			ep->b_blkno + btodb(ep->b_bcount) <= start)
 			continue;
 		vprint("Disk overlap", vp);
 		printf("\tstart %d, end %d overlap start %d, end %ld\n",
-		    start, last, ep->b_blkno,
-		    ep->b_blkno + btodb(ep->b_bcount) - 1);
+			start, last, ep->b_blkno,
+			ep->b_blkno + btodb(ep->b_bcount) - 1);
 		panic("Disk buffer overlap");
 	}
 }

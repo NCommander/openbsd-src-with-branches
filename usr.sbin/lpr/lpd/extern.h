@@ -1,3 +1,5 @@
+/*	$OpenBSD: extern.h,v 1.4 2002/02/16 21:28:03 millert Exp $	*/
+
 /*
  * Copyright (c) 1989, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -34,8 +36,8 @@
  */
 
 #include <sys/cdefs.h>
-#include <termios.h>
 #include <sys/ioctl.h>
+#include <termios.h>
 
 /*
  * from stty.h
@@ -51,9 +53,11 @@ struct info {
 	struct winsize win;                     /* window info */
 }; 
 
-void       printjob __P((void));
-void       recvjob __P((void));
-void       sttyclearflags __P((struct termios *tp, int flags));
-void       sttysetflags __P((struct termios *tp, int flags));
-void       sttyclearlflags __P((struct termios *tp, int flags));
-void       sttysetlflags __P((struct termios *tp, int flags));
+int	   ksearch(char ***, struct info *);
+int	   msearch(char ***, struct info *);
+void       printjob(void);
+void       recvjob(void);
+void       sttyclearflags(struct termios *tp, int flags);
+void       sttysetflags(struct termios *tp, int flags);
+void       sttyclearlflags(struct termios *tp, int flags);
+void       sttysetlflags(struct termios *tp, int flags);

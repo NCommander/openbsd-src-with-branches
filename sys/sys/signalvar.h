@@ -1,4 +1,5 @@
-/*	$NetBSD: signalvar.h,v 1.14 1995/08/13 22:48:47 mycroft Exp $	*/
+/*	$OpenBSD: signalvar.h,v 1.8 2001/04/02 21:43:12 niklas Exp $	*/
+/*	$NetBSD: signalvar.h,v 1.17 1996/04/22 01:23:31 christos Exp $	*/
 
 /*
  * Copyright (c) 1991, 1993
@@ -53,12 +54,14 @@ struct	sigacts {
 	sigset_t ps_sigonstack;		/* signals to take on sigstack */
 	sigset_t ps_sigintr;		/* signals that interrupt syscalls */
 	sigset_t ps_sigreset;		/* signals that reset when caught */
+	sigset_t ps_siginfo;		/* signals that provide siginfo */
 	sigset_t ps_oldmask;		/* saved mask from before sigpause */
 	int	ps_flags;		/* signal flags, below */
 	struct	sigaltstack ps_sigstk;	/* sp & on stack state variable */
 	int	ps_sig;			/* for core dump/debugger XXX */
 	long	ps_code;		/* for core dump/debugger XXX */
 	sigset_t ps_usertramp;		/* SunOS compat; libc sigtramp XXX */
+	int	ps_refcnt;		/* reference count */
 };
 
 /* signal flags */
@@ -66,8 +69,8 @@ struct	sigacts {
 #define	SAS_ALTSTACK	0x02		/* have alternate signal stack */
 
 /* additional signal action values, used only temporarily/internally */
-#define	SIG_CATCH	(void (*)())2
-#define	SIG_HOLD	(void (*)())3
+#define	SIG_CATCH	(void (*)(int))2
+#define	SIG_HOLD	(void (*)(int))3
 
 /*
  * get signal action for process and signal; currently only for current process
@@ -81,8 +84,8 @@ struct	sigacts {
  */
 #define	CURSIG(p)							\
 	(((p)->p_siglist == 0 ||					\
-	    ((p)->p_flag & P_TRACED) == 0 &&				\
-	    ((p)->p_siglist & ~(p)->p_sigmask) == 0) ?			\
+	    (((p)->p_flag & P_TRACED) == 0 &&				\
+	    ((p)->p_siglist & ~(p)->p_sigmask) == 0)) ?			\
 	    0 : issignal(p))
 
 /*
@@ -151,19 +154,37 @@ int sigprop[NSIG + 1] = {
 /*
  * Machine-independent functions:
  */
-int	coredump __P((struct proc *p));
-void	execsigs __P((struct proc *p));
-void	gsignal __P((int pgid, int sig));
-int	issignal __P((struct proc *p));
-void	pgsignal __P((struct pgrp *pgrp, int sig, int checkctty));
-void	postsig __P((int sig));
-void	psignal __P((struct proc *p, int sig));
-void	siginit __P((struct proc *p));
-void	trapsignal __P((struct proc *p, int sig, u_long code));
+int	coredump(struct proc *p);
+void	execsigs(struct proc *p);
+void	gsignal(int pgid, int sig);
+void	csignal(pid_t pgid, int signum, uid_t uid, uid_t euid);
+int	issignal(struct proc *p);
+void	pgsignal(struct pgrp *pgrp, int sig, int checkctty);
+void	postsig(int sig);
+void	psignal(struct proc *p, int sig);
+void	siginit(struct proc *p);
+void	trapsignal(struct proc *p, int sig, u_long code, int type,
+	    union sigval val);
+void	sigexit(struct proc *, int);
+void	setsigvec(struct proc *, int, struct sigaction *);
+int	killpg1(struct proc *, int, int, int);
+
+void	signal_init(void);
+
+struct sigacts *sigactsinit(struct proc *);
+void	sigactsshare(struct proc *, struct proc *);
+void	sigactsunshare(struct proc *);
+void	sigactsfree(struct proc *);
 
 /*
  * Machine-dependent functions:
  */
-void	sendsig __P((sig_t action, int sig, int returnmask, u_long code));
+void	sendsig(sig_t action, int sig, int returnmask, u_long code,
+	    int type, union sigval val);
+struct core;
+struct vnode;
+struct ucred;
+int	cpu_coredump(struct proc *, struct vnode *, struct ucred *,
+			  struct core *);
 #endif	/* _KERNEL */
 #endif	/* !_SYS_SIGNALVAR_H_ */

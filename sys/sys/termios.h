@@ -1,4 +1,5 @@
-/*	$NetBSD: termios.h,v 1.13 1995/04/22 13:03:10 cgd Exp $	*/
+/*	$OpenBSD: termios.h,v 1.6 1996/12/16 20:04:56 tholo Exp $	*/
+/*	$NetBSD: termios.h,v 1.14 1996/04/09 20:55:41 cgd Exp $	*/
 
 /*
  * Copyright (c) 1988, 1989, 1993, 1994
@@ -38,12 +39,12 @@
 #ifndef _SYS_TERMIOS_H_
 #define _SYS_TERMIOS_H_
 
-/* 
- * Special Control Characters 
+/*
+ * Special Control Characters
  *
  * Index into c_cc[] character array.
  *
- *	Name	     Subscript	Enabled by 
+ *	Name	     Subscript	Enabled by
  */
 #define	VEOF		0	/* ICANON */
 #define	VEOL		1	/* ICANON */
@@ -53,7 +54,7 @@
 #define	VERASE		3	/* ICANON */
 #ifndef _POSIX_SOURCE
 #define VWERASE 	4	/* ICANON */
-#endif 
+#endif
 #define VKILL		5	/* ICANON */
 #ifndef _POSIX_SOURCE
 #define	VREPRINT 	6	/* ICANON */
@@ -79,7 +80,7 @@
 #endif
 #define	NCCS		20
 
-#define _POSIX_VDISABLE	((unsigned char)'\377')
+#define _POSIX_VDISABLE	(0377)
 
 #ifndef _POSIX_SOURCE
 #define CCEQ(val, c)	(c == val ? val != _POSIX_VDISABLE : 0)
@@ -101,6 +102,7 @@
 #define	IXOFF		0x00000400	/* enable input flow control */
 #ifndef _POSIX_SOURCE
 #define	IXANY		0x00000800	/* any char will restart after stop */
+#define	IUCLC		0x00001000	/* translate upper to lower case */
 #define IMAXBEL		0x00002000	/* ring bell on input queue full */
 #endif  /*_POSIX_SOURCE */
 
@@ -112,6 +114,10 @@
 #define ONLCR		0x00000002	/* map NL to CR-NL (ala CRMOD) */
 #define OXTABS		0x00000004	/* expand tabs to spaces */
 #define ONOEOT		0x00000008	/* discard EOT's (^D) on output) */
+#define OCRNL		0x00000010	/* map CR to NL */
+#define OLCUC		0x00000020	/* translate lower case to upper case */
+#define ONOCR		0x00000040	/* No CR output at column 0 */
+#define ONLRET		0x00000080	/* NL performs the CR function */
 #endif  /*_POSIX_SOURCE */
 
 /*
@@ -140,7 +146,7 @@
 #endif
 
 
-/* 
+/*
  * "Local" flags - dumping ground for other state
  *
  * Warning: some flags in this structure begin with
@@ -169,6 +175,7 @@
 #define TOSTOP		0x00400000	/* stop background jobs from output */
 #ifndef _POSIX_SOURCE
 #define FLUSHO		0x00800000	/* output being flushed (state) */
+#define XCASE		0x01000000	/* canonical upper/lower case */
 #define	NOKERNINFO	0x02000000	/* no kernel output from VSTATUS */
 #define PENDIN		0x20000000	/* XXX retype pending input (state) */
 #endif  /*_POSIX_SOURCE */
@@ -188,7 +195,7 @@ struct termios {
 	int		c_ospeed;	/* output speed */
 };
 
-/* 
+/*
  * Commands passed to tcsetattr() for setting the termios structure.
  */
 #define	TCSANOW		0		/* make change immediate */
@@ -242,20 +249,20 @@ struct termios {
 #include <sys/cdefs.h>
 
 __BEGIN_DECLS
-speed_t	cfgetispeed __P((const struct termios *));
-speed_t	cfgetospeed __P((const struct termios *));
-int	cfsetispeed __P((struct termios *, speed_t));
-int	cfsetospeed __P((struct termios *, speed_t));
-int	tcgetattr __P((int, struct termios *));
-int	tcsetattr __P((int, int, const struct termios *));
-int	tcdrain __P((int));
-int	tcflow __P((int, int));
-int	tcflush __P((int, int));
-int	tcsendbreak __P((int, int));
+speed_t	cfgetispeed(const struct termios *);
+speed_t	cfgetospeed(const struct termios *);
+int	cfsetispeed(struct termios *, speed_t);
+int	cfsetospeed(struct termios *, speed_t);
+int	tcgetattr(int, struct termios *);
+int	tcsetattr(int, int, const struct termios *);
+int	tcdrain(int);
+int	tcflow(int, int);
+int	tcflush(int, int);
+int	tcsendbreak(int, int);
 
 #ifndef _POSIX_SOURCE
-void	cfmakeraw __P((struct termios *));
-int	cfsetspeed __P((struct termios *, speed_t));
+void	cfmakeraw(struct termios *);
+int	cfsetspeed(struct termios *, speed_t);
 #endif /* !_POSIX_SOURCE */
 __END_DECLS
 

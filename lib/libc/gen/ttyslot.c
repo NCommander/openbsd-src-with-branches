@@ -1,5 +1,3 @@
-/*	$NetBSD: ttyslot.c,v 1.5 1995/02/27 05:55:04 cgd Exp $	*/
-
 /*
  * Copyright (c) 1988, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -34,11 +32,7 @@
  */
 
 #if defined(LIBC_SCCS) && !defined(lint)
-#if 0
-static char sccsid[] = "@(#)ttyslot.c	8.1 (Berkeley) 6/4/93";
-#else
-static char rcsid[] = "$NetBSD: ttyslot.c,v 1.5 1995/02/27 05:55:04 cgd Exp $";
-#endif
+static char rcsid[] = "$OpenBSD: ttyslot.c,v 1.2 1996/08/19 08:27:04 tholo Exp $";
 #endif /* LIBC_SCCS and not lint */
 
 #include <ttyent.h>
@@ -56,13 +50,13 @@ ttyslot()
 	char *name;
 
 	setttyent();
-	for (cnt = 0; cnt < 3; ++cnt) 
-		if (name = ttyname(cnt)) {
-			if (p = strrchr(name, '/')) 
+	for (cnt = 0; cnt < 3; ++cnt)
+		if ((name = ttyname(cnt))) {
+			if ((p = strrchr(name, '/')))
 				++p;
 			else
 				p = name;
-			for (slot = 1; ttyp = getttyent(); ++slot)
+			for (slot = 1; (ttyp = getttyent()); ++slot)
 				if (!strcmp(ttyp->ty_name, p)) {
 					endttyent();
 					return(slot);

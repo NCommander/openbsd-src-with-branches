@@ -1,4 +1,5 @@
-/*	$NetBSD: procfs_status.c,v 1.10 1995/06/01 22:44:28 jtc Exp $	*/
+/*	$OpenBSD: procfs_status.c,v 1.4 2000/12/18 18:44:28 provos Exp $	*/
+/*	$NetBSD: procfs_status.c,v 1.11 1996/03/16 23:52:50 christos Exp $	*/
 
 /*
  * Copyright (c) 1993 Jan-Simon Pendry
@@ -43,6 +44,7 @@
 #include <sys/systm.h>
 #include <sys/time.h>
 #include <sys/kernel.h>
+#include <sys/malloc.h>
 #include <sys/proc.h>
 #include <sys/vnode.h>
 #include <sys/ioctl.h>
@@ -51,6 +53,106 @@
 #include <sys/resourcevar.h>
 #include <miscfs/procfs/procfs.h>
 
+int	procfs_stat_gen(struct proc *, char *s, int);
+
+#define COUNTORCAT(s, l, ps, n)	do { \
+					if (s) \
+						strlcat(s, ps, l); \
+					else \
+						n += strlen(ps); \
+				} while (0)
+
+/* Generates:
+ *  comm pid ppid pgid sid maj,min ctty,sldr start ut st wmsg uid gid groups
+ */
+int
+procfs_stat_gen(p, s, l)
+	struct proc *p;
+	char *s;
+	int l;
+{
+	struct session *sess;
+	struct tty *tp;
+	struct ucred *cr;
+	int pid, ppid, pgid, sid;
+	struct timeval ut, st;
+	char ps[256], *sep;
+	int i, n;
+
+	pid = p->p_pid;
+	ppid = p->p_pptr ? p->p_pptr->p_pid : 0;
+	pgid = p->p_pgrp->pg_id;
+	sess = p->p_pgrp->pg_session;
+	sid = sess->s_leader ? sess->s_leader->p_pid : 0;
+
+	n = 0;
+	if (s)
+		bzero(s, l);
+
+	bcopy(p->p_comm, ps, MAXCOMLEN-1);
+	ps[MAXCOMLEN] = '\0';
+	COUNTORCAT(s, l, ps, n);
+
+	(void) snprintf(ps, sizeof(ps), " %d %d %d %d ",
+	    pid, ppid, pgid, sid);
+	COUNTORCAT(s, l, ps, n);
+
+	if ((p->p_flag&P_CONTROLT) && (tp = sess->s_ttyp))
+		snprintf(ps, sizeof(ps), "%d,%d ",
+		    major(tp->t_dev), minor(tp->t_dev));
+	else
+		snprintf(ps, sizeof(ps), "%d,%d ",
+		    -1, -1);
+	COUNTORCAT(s, l, ps, n);
+
+	sep = "";
+	if (sess->s_ttyvp) {
+		snprintf(ps, sizeof(ps), "%sctty", sep);
+		sep = ",";
+	}
+	COUNTORCAT(s, l, ps, n);
+
+	if (SESS_LEADER(p)) {
+		snprintf(ps, sizeof(ps), "%ssldr", sep);
+		sep = ",";
+	}
+	COUNTORCAT(s, l, ps, n);
+
+	if (*sep != ',')
+		snprintf(ps, sizeof(ps), "noflags");
+	COUNTORCAT(s, l, ps, n);
+
+	if (p->p_flag & P_INMEM)
+		snprintf(ps, sizeof(ps), " %ld,%ld",
+		    p->p_stats->p_start.tv_sec, p->p_stats->p_start.tv_usec);
+	else
+		snprintf(ps, sizeof(ps), " -1,-1");
+	COUNTORCAT(s, l, ps, n);
+
+	calcru(p, &ut, &st, (void *) 0);
+	snprintf(ps, sizeof(ps), " %ld,%ld %ld,%ld",
+	    ut.tv_sec, ut.tv_usec, st.tv_sec, st.tv_usec);
+	COUNTORCAT(s, l, ps, n);
+
+	snprintf(ps, sizeof(ps), " %s",
+	    (p->p_wchan && p->p_wmesg) ? p->p_wmesg : "nochan");
+	COUNTORCAT(s, l, ps, n);
+
+	cr = p->p_ucred;
+
+	snprintf(ps, sizeof(ps), " %u, %u", cr->cr_uid, cr->cr_gid);
+	COUNTORCAT(s, l, ps, n);
+	for (i = 0; i < cr->cr_ngroups; i++) {
+		snprintf(ps, sizeof(ps), ",%u", cr->cr_groups[i]);
+		COUNTORCAT(s, l, ps, n);
+	}
+
+	snprintf(ps, sizeof(ps), "\n");
+	COUNTORCAT(s, l, ps, n);
+
+	return (s != NULL ? strlen(s) + 1 : n + 1);
+}
+
 int
 procfs_dostatus(curp, p, pfs, uio)
 	struct proc *curp;
@@ -58,88 +160,24 @@ procfs_dostatus(curp, p, pfs, uio)
 	struct pfsnode *pfs;
 	struct uio *uio;
 {
-	struct session *sess;
-	struct tty *tp;
-	struct ucred *cr;
 	char *ps;
-	char *sep;
-	int pid, ppid, pgid, sid;
-	int i;
-	int xlen;
-	int error;
-	char psbuf[256];		/* XXX - conservative */
+	int error, len;
 
 	if (uio->uio_rw != UIO_READ)
 		return (EOPNOTSUPP);
 
-	pid = p->p_pid;
-	ppid = p->p_pptr ? p->p_pptr->p_pid : 0,
-	pgid = p->p_pgrp->pg_id;
-	sess = p->p_pgrp->pg_session;
-	sid = sess->s_leader ? sess->s_leader->p_pid : 0;
+	len = procfs_stat_gen(p, NULL, 0);
+	ps = malloc(len, M_TEMP, M_WAITOK);
+	(void) procfs_stat_gen(p, ps, len);
 
-/* comm pid ppid pgid sid maj,min ctty,sldr start ut st wmsg uid gid groups ... */
-
-	ps = psbuf;
-	bcopy(p->p_comm, ps, MAXCOMLEN);
-	ps[MAXCOMLEN] = '\0';
-	ps += strlen(ps);
-	ps += sprintf(ps, " %d %d %d %d ", pid, ppid, pgid, sid);
-
-	if ((p->p_flag&P_CONTROLT) && (tp = sess->s_ttyp))
-		ps += sprintf(ps, "%d,%d ", major(tp->t_dev), minor(tp->t_dev));
-	else
-		ps += sprintf(ps, "%d,%d ", -1, -1);
-
-	sep = "";
-	if (sess->s_ttyvp) {
-		ps += sprintf(ps, "%sctty", sep);
-		sep = ",";
-	}
-	if (SESS_LEADER(p)) {
-		ps += sprintf(ps, "%ssldr", sep);
-		sep = ",";
-	}
-	if (*sep != ',')
-		ps += sprintf(ps, "noflags");
-
-	if (p->p_flag & P_INMEM)
-		ps += sprintf(ps, " %d,%d",
-			p->p_stats->p_start.tv_sec,
-			p->p_stats->p_start.tv_usec);
-	else
-		ps += sprintf(ps, " -1,-1");
-	
-	{
-		struct timeval ut, st;
-
-		calcru(p, &ut, &st, (void *) 0);
-		ps += sprintf(ps, " %d,%d %d,%d",
-			ut.tv_sec,
-			ut.tv_usec,
-			st.tv_sec,
-			st.tv_usec);
-	}
-
-	ps += sprintf(ps, " %s",
-		(p->p_wchan && p->p_wmesg) ? p->p_wmesg : "nochan");
-
-	cr = p->p_ucred;
-
-	ps += sprintf(ps, " %d", cr->cr_uid);
-	ps += sprintf(ps, " %d", cr->cr_gid);
-	for (i = 0; i < cr->cr_ngroups; i++)
-		ps += sprintf(ps, ",%d", cr->cr_groups[i]);
-	ps += sprintf(ps, "\n");
-
-	xlen = ps - psbuf;
-	xlen -= uio->uio_offset;
-	ps = psbuf + uio->uio_offset;
-	xlen = imin(xlen, uio->uio_resid);
-	if (xlen <= 0)
+	len -= uio->uio_offset;
+	len = imin(len, uio->uio_resid);
+	if (len <= 0)
 		error = 0;
 	else
-		error = uiomove(ps, xlen, uio);
+		error = uiomove(ps + uio->uio_offset, len, uio);
 
+	free(ps, M_TEMP);
 	return (error);
 }
+

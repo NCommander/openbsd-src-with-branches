@@ -1,23 +1,13 @@
-/*	$NetBSD: ialloc.c,v 1.2 1995/03/10 18:12:38 jtc Exp $	*/
-
-#ifndef lint
-#ifndef NOID
-static char	elsieid[] = "@(#)ialloc.c	8.28";
-#endif /* !defined NOID */
-#endif /* !defined lint */
+#if defined(LIBC_SCCS) && !defined(lint) && !defined(NOID)
+static char elsieid[] = "@(#)ialloc.c	8.29";
+static char rcsid[] = "$OpenBSD: ialloc.c,v 1.5 1998/08/14 21:39:43 deraadt Exp $";
+#endif /* LIBC_SCCS and not lint */
 
 /*LINTLIBRARY*/
 
 #include "private.h"
 
 #define nonzero(n)	(((n) == 0) ? 1 : (n))
-
-char *	icalloc P((int nelem, int elsize));
-char *	icatalloc P((char * old, const char * new));
-char *	icpyalloc P((const char * string));
-char *	imalloc P((int n));
-void *	irealloc P((void * pointer, int size));
-void	ifree P((char * pointer));
 
 char *
 imalloc(n)
@@ -41,9 +31,14 @@ irealloc(pointer, size)
 void * const	pointer;
 const int	size;
 {
+	void *p;
+
 	if (pointer == NULL)
 		return imalloc(size);
-	return realloc((void *) pointer, (size_t) nonzero(size));
+	p = realloc((void *) pointer, (size_t) nonzero(size));
+	if (p == NULL && pointer)
+		free(pointer);
+	return p;
 }
 
 char *
@@ -59,10 +54,13 @@ const char * const	new;
 		oldsize = 0;
 	else if (newsize == 0)
 		return old;
-	else	oldsize = strlen(old);
+	else
+		oldsize = strlen(old);
 	if ((result = irealloc(old, oldsize + newsize + 1)) != NULL)
 		if (new != NULL)
 			(void) strcpy(result + oldsize, new);
+	else
+		free(old);
 	return result;
 }
 

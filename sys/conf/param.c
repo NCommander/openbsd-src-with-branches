@@ -1,4 +1,5 @@
-/*	$NetBSD: param.c,v 1.15 1995/03/08 00:54:44 cgd Exp $	*/
+/*	$OpenBSD: param.c,v 1.18 2002/02/17 22:59:53 maja Exp $	*/
+/*	$NetBSD: param.c,v 1.16 1996/03/12 03:08:40 mrg Exp $	*/
 
 /*
  * Copyright (c) 1980, 1986, 1989 Regents of the University of California.
@@ -46,10 +47,7 @@
 #include <sys/proc.h>
 #include <sys/vnode.h>
 #include <sys/file.h>
-#include <sys/callout.h>
-#ifdef REAL_CLISTS
-#include <sys/clist.h>
-#endif
+#include <sys/timeout.h>
 #include <sys/mbuf.h>
 #include <ufs/ufs/quota.h>
 #include <sys/kernel.h>
@@ -75,6 +73,12 @@
  * Compiled with -DHZ=xx -DTIMEZONE=x -DDST=x -DMAXUSERS=xx
  */
 
+#ifndef TIMEZONE
+# define TIMEZONE 0
+#endif
+#ifndef DST
+# define DST 0
+#endif
 #ifndef HZ
 #define	HZ 100
 #endif
@@ -84,26 +88,36 @@ int	tickadj = 240000 / (60 * HZ);		/* can adjust 240ms in 60s */
 struct	timezone tz = { TIMEZONE, DST };
 #define	NPROC (20 + 16 * MAXUSERS)
 int	maxproc = NPROC;
-#define	NTEXT (80 + NPROC / 8)			/* actually the object cache */
-#define	NVNODE (NPROC + NTEXT + 100)
+#define	NTEXT (80 + NPROC / 8)	/* actually the object cache */
+#define	NVNODE (NPROC * 2 + NTEXT + 100)
 int	desiredvnodes = NVNODE;
 int	maxfiles = 3 * (NPROC + MAXUSERS) + 80;
-int	ncallout = 16 + NPROC;
-#ifdef REAL_CLISTS
-int	nclist = 60 + 12 * MAXUSERS;
+int	nmbclust = NMBCLUSTERS;
+
+#ifndef MBLOWAT
+#define MBLOWAT		16
 #endif
-int	nmbclusters = NMBCLUSTERS;
+int	mblowat = MBLOWAT;
+
+#ifndef MCLLOWAT
+#define MCLLOWAT	8
+#endif
+int	mcllowat = MCLLOWAT;
+
+
 int	fscale = FSCALE;	/* kernel uses `FSCALE', user uses `fscale' */
 
+int	shmseg = 8;
+int 	shmmaxpgs = SHMMAXPGS;
 /*
  * Values in support of System V compatible shared memory.	XXX
  */
 #ifdef SYSVSHM
-#define	SHMMAX	SHMMAXPGS	/* shminit() performs a `*= NBPG' */
+#define	SHMMAX	SHMMAXPGS	/* shminit() performs a `*= PAGE_SIZE' */
 #define	SHMMIN	1
 #define	SHMMNI	32			/* <= SHMMMNI in shm.h */
 #define	SHMSEG	8
-#define	SHMALL	(SHMMAXPGS/CLSIZE)
+#define	SHMALL	(SHMMAXPGS)
 
 struct	shminfo shminfo = {
 	SHMMAX,
@@ -119,7 +133,6 @@ struct	shminfo shminfo = {
  */
 #ifdef SYSVSEM
 struct	seminfo seminfo = {
-	SEMMAP,		/* # of entries in semaphore map */
 	SEMMNI,		/* # of semaphore identifiers */
 	SEMMNS,		/* # of semaphores in system */
 	SEMMNU,		/* # of undo structures in system */
@@ -151,15 +164,13 @@ struct	msginfo msginfo = {
  * These are initialized at bootstrap time
  * to values dependent on memory size
  */
-int	nbuf, nswbuf;
+int	nbuf;
 
 /*
  * These have to be allocated somewhere; allocating
  * them here forces loader errors if this file is omitted
  * (if they've been externed everywhere else; hah!).
  */
-struct 	callout *callout;
-struct	cblock *cfree;
 struct	buf *buf, *swbuf;
 char	*buffers;
 

@@ -1,5 +1,10 @@
-#	$Id: Makefile,v 1.2 1995/11/07 08:50:32 deraadt Exp $
+#	$OpenBSD: Makefile,v 1.4 1998/08/22 08:57:27 smurph Exp $
+.if ${MACHINE} == "mvme88k"
 
-SUBDIR=  netboot sboot bootsd bootst libsa bugcrt libbug wrtvid
+SUBDIR=  bugcrt libbug libsa libz wrtvid bootsd bootxx bootst netboot
+#sboot XXX future
+.endif
+
+SUBDIR+=installboot
 
 .include <bsd.subdir.mk>

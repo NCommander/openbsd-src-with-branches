@@ -1,7 +1,8 @@
-/*	$Id: constants.c,v 1.4 1998/08/28 23:04:27 niklas Exp $	*/
+/*	$OpenBSD: constants.c,v 1.5 1999/02/26 03:35:06 niklas Exp $	*/
+/*	$EOM: constants.c,v 1.7 1999/04/02 00:57:31 niklas Exp $	*/
 
 /*
- * Copyright (c) 1998 Niklas Hallqvist.  All rights reserved.
+ * Copyright (c) 1998, 1999 Niklas Hallqvist.  All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -36,6 +37,8 @@
 #include <stdio.h>
 #include <string.h>
 
+#include "sysdep.h"
+
 #include "constants.h"
 
 int
@@ -57,6 +60,17 @@ constant_lookup (struct constant_map *map, int value)
   for (entry = map; entry->name; entry++)
     if (entry->value == value)
       return entry->name;
+  return 0;
+}
+
+struct constant_map *
+constant_link_lookup (struct constant_map *map, int value)
+{
+  struct constant_map *entry = map;
+
+  for (entry = map; entry->name; entry++)
+    if (entry->value == value)
+      return entry->link;
   return 0;
 }
 

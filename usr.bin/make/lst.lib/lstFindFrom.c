@@ -1,8 +1,10 @@
-/*	$NetBSD: lstFindFrom.c,v 1.5 1995/06/14 15:21:09 christos Exp $	*/
+/*	$OpenPackages$ */
+/*	$OpenBSD: lstFindFrom.c,v 1.4 1998/12/05 00:06:32 espie Exp $	*/
+/*	$NetBSD: lstFindFrom.c,v 1.6 1996/11/06 17:59:40 christos Exp $ */
 
 /*
- * Copyright (c) 1988, 1989, 1990 The Regents of the University of California.
- * All rights reserved.
+ * Copyright (c) 1988, 1989, 1990, 1993
+ *	The Regents of the University of California.  All rights reserved.
  *
  * This code is derived from software contributed to Berkeley by
  * Adam de Boor.
@@ -36,17 +38,13 @@
  * SUCH DAMAGE.
  */
 
-#ifndef lint
-/* from: static char sccsid[] = "@(#)lstFindFrom.c	5.3 (Berkeley) 6/1/90"; */
-static char *rcsid = "$Id: lstFindFrom.c,v 1.5 1995/06/14 15:21:09 christos Exp $";
-#endif /* not lint */
-
 /*-
  * LstFindFrom.c --
  *	Find a node on a list from a given starting point. Used by Lst_Find.
  */
 
 #include	"lstInt.h"
+#include	<stddef.h>
 
 /*-
  *-----------------------------------------------------------------------
@@ -56,42 +54,21 @@ static char *rcsid = "$Id: lstFindFrom.c,v 1.5 1995/06/14 15:21:09 christos Exp 
  *	determine when it has been found.
  *
  * Results:
- *	The found node or NILLNODE
- *
- * Side Effects:
- *	None.
- *
+ *	The found node or NULL
  *-----------------------------------------------------------------------
  */
 LstNode
-Lst_FindFrom (l, ln, d, cProc)
-    Lst		      	l;
-    register LstNode    ln;
-    register ClientData d;
-    register int	(*cProc) __P((ClientData, ClientData));
+Lst_FindFrom(ln, cProc, d)
+    LstNode		ln;
+    FindProc		cProc;
+    void		*d;
 {
-    register ListNode	tln;
-    Boolean		found = FALSE;
-    
-    if (!LstValid (l) || LstIsEmpty (l) || !LstNodeValid (ln, l)) {
-	return (NILLNODE);
-    }
-    
-    tln = (ListNode)ln;
-    
-    do {
-	if ((*cProc) (tln->datum, d) == 0) {
-	    found = TRUE;
-	    break;
-	} else {
-	    tln = tln->nextPtr;
-	}
-    } while (tln != (ListNode)ln && tln != NilListNode);
-    
-    if (found) {
-	return ((LstNode)tln);
-    } else {
-	return (NILLNODE);
-    }
+    LstNode		tln;
+
+    for (tln = ln; tln != NULL; tln = tln->nextPtr)
+	if ((*cProc)(tln->datum, d) == 0)
+	    return tln;
+
+    return NULL;
 }
 

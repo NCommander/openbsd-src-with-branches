@@ -1,4 +1,5 @@
-/*	$NetBSD: clock.c,v 1.13 1994/12/29 03:48:38 mycroft Exp $	*/
+/*	$OpenBSD: clock.c,v 1.6 2000/01/14 09:09:47 downsj Exp $	*/
+/*	$NetBSD: clock.c,v 1.20 1997/04/27 20:43:38 thorpej Exp $	*/
 
 /*
  * Copyright (c) 1988 University of Utah.
@@ -51,12 +52,18 @@
  */
 
 #include <sys/param.h>
+#include <sys/systm.h>
 #include <sys/kernel.h>
-#include <hp300/dev/hilreg.h>
-#include <hp300/hp300/clockreg.h>
+#include <sys/tty.h>
 
 #include <machine/psl.h>
 #include <machine/cpu.h>
+#include <machine/hp300spu.h>
+
+#include <hp300/dev/hilreg.h>
+#include <hp300/dev/hilioctl.h>
+#include <hp300/dev/hilvar.h>
+#include <hp300/hp300/clockreg.h>
 
 #ifdef GPROF
 #include <sys/gmon.h>
@@ -82,10 +89,17 @@ static int statprev;		/* previous value in stat timer */
 static int month_days[12] = {
 	31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31
 };
-struct bbc_tm *gmt_to_bbc();
 u_char bbc_registers[13];
-u_char write_bbc_reg(), read_bbc_reg();
 struct hil_dev *bbcaddr = NULL;
+
+void	statintr(struct clockframe *);
+
+void	hp300_calibrate_delay(void);
+struct bbc_tm *gmt_to_bbc(long);
+int	bbc_to_gmt(u_long *);
+void	read_bbc(void);
+u_char	read_bbc_reg(int);
+u_char	write_bbc_reg(int, u_int);
 
 /*
  * Machine-dependent clock routines.
@@ -101,14 +115,94 @@ struct hil_dev *bbcaddr = NULL;
 #define	COUNTS_PER_SEC	(1000000 / CLK_RESOLUTION)
 
 /*
+ * Calibrate the delay constant, based on Chuck Cranor's
+ * mvme68k delay calibration algorithm.
+ */
+void
+hp300_calibrate_delay()
+{
+	extern int delay_divisor;
+	volatile struct clkreg *clk;
+	volatile u_char csr;
+	int intvl;
+
+	clkstd[0] = IIOV(0x5F8000);		/* XXX yuck */
+	clk = (volatile struct clkreg *)clkstd[0];
+
+	/*
+	 * Calibrate delay() using the 4 usec counter.
+	 * We adjust delay_divisor until we get the result we want.
+	 * We assume we've been called at splhigh().
+	 */
+	for (delay_divisor = 140; delay_divisor > 1; delay_divisor--) {
+		/* Reset clock chip */
+		clk->clk_cr2 = CLK_CR1;
+		clk->clk_cr1 = CLK_RESET;
+
+		/*
+		 * Prime the timer.  We're looking for
+		 * 10,000 usec (10ms).  See interval comment
+		 * above.
+		 */
+		intvl = (10000 / CLK_RESOLUTION) - 1;
+		asm volatile(" movpw %0,%1@(5)" : : "d" (intvl), "a" (clk));
+
+		/* Enable the timer */
+		clk->clk_cr2 = CLK_CR1;
+		clk->clk_cr1 = CLK_IENAB;
+		
+		delay(10000);
+
+		/* Timer1 interrupt flag high? */
+		csr = clk->clk_sr;
+		if (csr & CLK_INT1) {
+			/*
+			 * Got it.  Clear interrupt and get outta here.
+			 */
+			asm volatile(" movpw %0@(5),%1" : :
+			    "a" (clk), "d" (intvl));
+			break;
+		}
+
+		/*
+		 * Nope.  Poll for completion of the interval,
+		 * clear interrupt, and try again.
+		 */
+		do {
+			csr = clk->clk_sr;
+		} while ((csr & CLK_INT1) == 0);
+
+		asm volatile(" movpw %0@(5),%1" : : "a" (clk), "d" (intvl));
+	}
+
+	/*
+	 * Make sure the clock interrupt is disabled.  Otherwise,
+	 * we can end up calling hardclock() before proc0 is set up,
+	 * causing a bad pointer deref.
+	 */
+	clk->clk_cr2 = CLK_CR1;
+	clk->clk_cr1 = CLK_RESET;
+
+	/*
+	 * Sanity check the delay_divisor value.  If we totally lost,
+	 * assume a 50MHz CPU;
+	 */
+	if (delay_divisor == 0)
+		delay_divisor = 2048 / 50;
+
+	/* Calculate CPU speed. */
+	cpuspeed = 2048 / delay_divisor;
+}
+
+/*
  * Set up the real-time and statistics clocks.  Leave stathz 0 only if
  * no alternative timer is available.
- *
  */
+void
 cpu_initclocks()
 {
-	register volatile struct clkreg *clk;
-	register int intvl, statint, profint, minint;
+	volatile struct clkreg *clk;
+	int intvl, statint, profint, minint;
 
 	clkstd[0] = IIOV(0x5F8000);		/* XXX grot */
 	clk = (volatile struct clkreg *)clkstd[0];
@@ -194,8 +288,8 @@ void
 statintr(fp)
 	struct clockframe *fp;
 {
-	register volatile struct clkreg *clk;
-	register int newint, r, var;
+	volatile struct clkreg *clk;
+	int newint, r, var;
 
 	clk = (volatile struct clkreg *)clkstd[0];
 	var = statvar;
@@ -224,10 +318,10 @@ statintr(fp)
  */
 void
 microtime(tvp)
-	register struct timeval *tvp;
+	struct timeval *tvp;
 {
-	register volatile struct clkreg *clk;
-	register int s, u, t, u2, s2;
+	volatile struct clkreg *clk;
+	int s, u, t, u2, s2;
 
 	/*
 	 * Read registers from slowest-changing to fastest-changing,
@@ -262,6 +356,7 @@ microtime(tvp)
  * Initialize the time of day register, based on the time base which is, e.g.
  * from a filesystem.
  */
+void
 inittodr(base)
 	time_t base;
 {
@@ -270,7 +365,7 @@ inittodr(base)
 
 	/* XXX */
 	if (!bbcinited) {
-		if (badbaddr(&BBCADDR->hil_stat))
+		if (badbaddr((caddr_t)&BBCADDR->hil_stat))
 			printf("WARNING: no battery clock\n");
 		else
 			bbcaddr = BBCADDR;
@@ -300,10 +395,11 @@ inittodr(base)
 /*
  * Restore the time of day hardware after a time change.
  */
+void
 resettodr()
 {
-	register int i;
-	register struct bbc_tm *tmptr;
+	int i;
+	struct bbc_tm *tmptr;
 
 	tmptr = gmt_to_bbc(time.tv_sec);
 
@@ -330,8 +426,8 @@ struct bbc_tm *
 gmt_to_bbc(tim)
 	long tim;
 {
-	register int i;
-	register long hms, day;
+	int i;
+	long hms, day;
 	static struct bbc_tm rt;
 
 	day = tim / SECDAY;
@@ -361,11 +457,12 @@ gmt_to_bbc(tim)
 	return(&rt);
 }
 
+int
 bbc_to_gmt(timbuf)
 	u_long *timbuf;
 {
-	register int i;
-	register u_long tmp;
+	int i;
+	u_long tmp;
 	int year, month, day, hour, min, sec;
 
 	read_bbc();
@@ -384,7 +481,7 @@ bbc_to_gmt(timbuf)
 	range_test(hour, 0, 23);
 	range_test(day, 1, 31);
 	range_test(month, 1, 12);
-	range_test(year, STARTOFTIME, 2000);
+	range_test(year, STARTOFTIME, 2038);	/* 2038 is the end of time. */
 
 	tmp = 0;
 
@@ -403,9 +500,10 @@ bbc_to_gmt(timbuf)
 	return(1);
 }
 
+void
 read_bbc()
 {
-  	register int i, read_okay;
+  	int i, read_okay;
 
 	read_okay = 0;
 	while (!read_okay) {

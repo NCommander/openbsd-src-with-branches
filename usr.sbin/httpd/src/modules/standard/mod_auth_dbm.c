@@ -1,3 +1,5 @@
+/*	$OpenBSD$ */
+
 /* ====================================================================
  * The Apache Software License, Version 1.1
  *
@@ -160,6 +162,7 @@ static char *get_dbm_pw(request_rec *r, char *user, char *auth_dbmpwfile)
     q.dsize = strlen(q.dptr) + 1;
 #endif
 
+    ap_server_strip_chroot(auth_dbmpwfile, 1);
 
     if (!(f = dbm_open(auth_dbmpwfile, O_RDONLY, 0664))) {
 	ap_log_rerror(APLOG_MARK, APLOG_ERR, r,

@@ -1,9 +1,11 @@
+/*	$OpenBSD: hack.save.c,v 1.3 2001/01/28 23:41:45 niklas Exp $	*/
+
 /*
  * Copyright (c) Stichting Mathematisch Centrum, Amsterdam, 1985.
  */
 
 #ifndef lint
-static char rcsid[] = "$NetBSD: hack.save.c,v 1.5 1995/03/23 08:31:27 cgd Exp $";
+static char rcsid[] = "$OpenBSD: hack.save.c,v 1.3 2001/01/28 23:41:45 niklas Exp $";
 #endif /* not lint */
 
 #include "hack.h"
@@ -24,7 +26,7 @@ dosave(){
 	}
 #ifdef lint
 	return(0);
-#endif lint
+#endif /* lint */
 }
 
 #ifndef NOSAVEONHANGUP
@@ -32,7 +34,7 @@ hangup(){
 	(void) dosave0(1);
 	exit(1);
 }
-#endif NOSAVEONHANGUP
+#endif /* NOSAVEONHANGUP */
 
 /* returns 1 if save successful */
 dosave0(hu) int hu; {
@@ -71,7 +73,7 @@ dosave0(hu) int hu; {
 
 		if(tmp == dlevel || !level_exists[tmp]) continue;
 		glo(tmp);
-		if((ofd = open(lock, 0)) < 0) {
+		if((ofd = open(lock, O_RDONLY)) < 0) {
 		    if(!hu) pline("Error while saving: cannot read %s.", lock);
 		    (void) close(fd);
 		    (void) unlink(SAVEF);
@@ -168,7 +170,7 @@ register fd;
 	}
 #ifndef QUEST
 	setsee();  /* only to recompute seelx etc. - these weren't saved */
-#endif QUEST
+#endif /* QUEST */
 	docrt();
 	restoring = FALSE;
 	return(1);
@@ -184,7 +186,7 @@ register fd;
 #ifdef lint
 	/* suppress "used before set" warning from lint */
 	otmp2 = 0;
-#endif lint
+#endif /* lint */
 	while(1) {
 		mread(fd, (char *) &xl, sizeof(xl));
 		if(xl == -1) break;
@@ -219,7 +221,7 @@ register fd;
 #ifdef lint
 	/* suppress "used before set" warning from lint */
 	mtmp2 = 0;
-#endif lint
+#endif /* lint */
 	while(1) {
 		mread(fd, (char *) &xl, sizeof(xl));
 		if(xl == -1) break;

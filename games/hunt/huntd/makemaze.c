@@ -1,3 +1,4 @@
+/*	$OpenBSD: makemaze.c,v 1.4 2001/02/13 11:55:11 pjanzen Exp $	*/
 /*	$NetBSD: makemaze.c,v 1.2 1997/10/10 16:33:43 lukem Exp $	*/
 /*
  *  Hunt
@@ -5,20 +6,19 @@
  *  San Francisco, California
  */
 
-#include <sys/cdefs.h>
-#ifndef lint
-__RCSID("$NetBSD: makemaze.c,v 1.2 1997/10/10 16:33:43 lukem Exp $");
-#endif /* not lint */
+#include <string.h>
 
-# include	"hunt.h"
+#include "hunt.h"
+#include "server.h"
+#include "conf.h"
 
 # define	ISCLEAR(y,x)	(Maze[y][x] == SPACE)
 # define	ODD(n)		((n) & 01)
 
-static	int	candig __P((int, int));
-static	void	dig __P((int, int));
-static	void	dig_maze __P((int, int));
-static	void	remap __P((void));
+static	int	candig(int, int);
+static	void	dig(int, int);
+static	void	dig_maze(int, int);
+static	void	remap(void);
 
 void
 makemaze()
@@ -111,7 +111,7 @@ candig(y, x)
 	return TRUE;			/* OK */
 }
 
-void
+static void
 dig_maze(x, y)
 	int	x, y;
 {
@@ -159,7 +159,7 @@ dig_maze(x, y)
 	}
 }
 
-void
+static void
 remap()
 {
 	int	y, x;
@@ -171,6 +171,7 @@ remap()
 			sp = &Maze[y][x];
 			if (*sp == SPACE)
 				continue;
+			/* Find occupied adjacent cells. */
 			stat = 0;
 			if (y - 1 >= 0 && Maze[y - 1][x] != SPACE)
 				stat |= NORTH;
@@ -184,25 +185,23 @@ remap()
 			  case WEST | EAST:
 			  case EAST:
 			  case WEST:
-				*sp = WALL1;
+				*sp = WALL1;			   /* - */
 				break;
 			  case NORTH | SOUTH:
 			  case NORTH:
 			  case SOUTH:
-				*sp = WALL2;
+				*sp = WALL2;			   /* | */
 				break;
 			  case 0:
-# ifdef RANDOM
-				*sp = DOOR;
-# endif
-# ifdef REFLECT
-				*sp = rand_num(2) ? WALL4 : WALL5;
-# endif
+				if (conf_random)
+					*sp = DOOR;
+				if (conf_reflect)
+					*sp = rand_num(2) ? WALL4 : WALL5;
 				break;
 			  default:
-				*sp = WALL3;
+				*sp = WALL3;			   /* + */
 				break;
 			}
 		}
-	memcpy(Orig_maze, Maze, sizeof Maze);
+	memcpy(Orig_maze, Maze, sizeof Orig_maze);
 }

@@ -1,3 +1,4 @@
+/*	$OpenBSD: wwredraw.c,v 1.3 1997/02/25 00:05:04 downsj Exp $	*/
 /*	$NetBSD: wwredraw.c,v 1.3 1995/09/28 10:35:49 tls Exp $	*/
 
 /*
@@ -40,7 +41,7 @@
 #if 0
 static char sccsid[] = "@(#)wwredraw.c	8.1 (Berkeley) 6/6/93";
 #else
-static char rcsid[] = "$NetBSD: wwredraw.c,v 1.3 1995/09/28 10:35:49 tls Exp $";
+static char rcsid[] = "$OpenBSD: wwredraw.c,v 1.3 1997/02/25 00:05:04 downsj Exp $";
 #endif
 #endif /* not lint */
 
@@ -49,8 +50,8 @@ static char rcsid[] = "$NetBSD: wwredraw.c,v 1.3 1995/09/28 10:35:49 tls Exp $";
 
 wwredraw()
 {
-	register i, j;
-	register union ww_char *os;
+	int i, j;
+	union ww_char *os;
 
 	xxclear();
 	for (i = 0; i < wwnrow; i++) {

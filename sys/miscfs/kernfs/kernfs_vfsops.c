@@ -1,4 +1,5 @@
-/*	$NetBSD: kernfs_vfsops.c,v 1.24 1995/06/18 14:47:27 cgd Exp $	*/
+/*	$OpenBSD: kernfs_vfsops.c,v 1.17 2002/02/17 04:29:52 art Exp $	*/
+/*	$NetBSD: kernfs_vfsops.c,v 1.26 1996/04/22 01:42:27 christos Exp $	*/
 
 /*
  * Copyright (c) 1992, 1993
@@ -52,15 +53,20 @@
 #include <sys/namei.h>
 #include <sys/malloc.h>
 
+#include <uvm/uvm_extern.h>	/* for uvmexp */
+
 #include <miscfs/specfs/specdev.h>
 #include <miscfs/kernfs/kernfs.h>
 
 dev_t rrootdev = NODEV;
 
-kernfs_init()
-{
-
-}
+void	kernfs_get_rrootdev(void);
+int	kernfs_mount(struct mount *, const char *, void *, struct nameidata *,
+			  struct proc *);
+int	kernfs_start(struct mount *, int, struct proc *);
+int	kernfs_unmount(struct mount *, int, struct proc *);
+int	kernfs_root(struct mount *, struct vnode **);
+int	kernfs_statfs(struct mount *, struct statfs *, struct proc *);
 
 void
 kernfs_get_rrootdev()
@@ -88,20 +94,18 @@ kernfs_get_rrootdev()
 /*
  * Mount the Kernel params filesystem
  */
+int
 kernfs_mount(mp, path, data, ndp, p)
 	struct mount *mp;
-	char *path;
-	caddr_t data;
+	const char *path;
+	void *data;
 	struct nameidata *ndp;
 	struct proc *p;
 {
-	int error = 0;
 	size_t size;
-	struct kernfs_mount *fmp;
-	struct vnode *rvp;
 
 #ifdef KERNFS_DIAGNOSTIC
-	printf("kernfs_mount(mp = %x)\n", mp);
+	printf("kernfs_mount(mp = %p)\n", mp);
 #endif
 
 	/*
@@ -110,20 +114,8 @@ kernfs_mount(mp, path, data, ndp, p)
 	if (mp->mnt_flag & MNT_UPDATE)
 		return (EOPNOTSUPP);
 
-	if (error = getnewvnode(VT_KERNFS, mp, kernfs_vnodeop_p, &rvp))
-		return (error);
-
-	MALLOC(fmp, struct kernfs_mount *, sizeof(struct kernfs_mount),
-	    M_MISCFSMNT, M_WAITOK);
-	rvp->v_type = VDIR;
-	rvp->v_flag |= VROOT;
-#ifdef KERNFS_DIAGNOSTIC
-	printf("kernfs_mount: root vp = %x\n", rvp);
-#endif
-	fmp->kf_root = rvp;
 	mp->mnt_flag |= MNT_LOCAL;
-	mp->mnt_data = (qaddr_t)fmp;
-	getnewfsid(mp, makefstype(MOUNT_KERNFS));
+	vfs_getnewfsid(mp);
 
 	(void) copyinstr(path, mp->mnt_stat.f_mntonname, MNAMELEN - 1, &size);
 	bzero(mp->mnt_stat.f_mntonname + size, MNAMELEN - size);
@@ -137,15 +129,16 @@ kernfs_mount(mp, path, data, ndp, p)
 	return (0);
 }
 
+int
 kernfs_start(mp, flags, p)
 	struct mount *mp;
 	int flags;
 	struct proc *p;
 {
-
 	return (0);
 }
 
+int
 kernfs_unmount(mp, mntflags, p)
 	struct mount *mp;
 	int mntflags;
@@ -153,153 +146,79 @@ kernfs_unmount(mp, mntflags, p)
 {
 	int error;
 	int flags = 0;
-	extern int doforce;
-	struct vnode *rootvp = VFSTOKERNFS(mp)->kf_root;
 
 #ifdef KERNFS_DIAGNOSTIC
-	printf("kernfs_unmount(mp = %x)\n", mp);
+	printf("kernfs_unmount(mp = %p)\n", mp);
 #endif
 
 	if (mntflags & MNT_FORCE) {
-		/* kernfs can never be rootfs so don't check for it */
-		if (!doforce)
-			return (EINVAL);
 		flags |= FORCECLOSE;
 	}
 
-	/*
-	 * Clear out buffer cache.  I don't think we
-	 * ever get anything cached at this level at the
-	 * moment, but who knows...
-	 */
-	if (rootvp->v_usecount > 1)
-		return (EBUSY);
 #ifdef KERNFS_DIAGNOSTIC
 	printf("kernfs_unmount: calling vflush\n");
 #endif
-	if (error = vflush(mp, rootvp, flags))
+	if ((error = vflush(mp, 0, flags)) != 0)
 		return (error);
 
-#ifdef KERNFS_DIAGNOSTIC
-	vprint("kernfs root", rootvp);
-#endif
-	/*
-	 * Clean out the old root vnode for reuse.
-	 */
-	vrele(rootvp);
-	vgone(rootvp);
-	/*
-	 * Finally, throw away the kernfs_mount structure
-	 */
-	free(mp->mnt_data, M_MISCFSMNT);
-	mp->mnt_data = 0;
 	return (0);
 }
 
+int
 kernfs_root(mp, vpp)
 	struct mount *mp;
 	struct vnode **vpp;
 {
-	struct vnode *vp;
+	struct kern_target *kt;
+	int error;
 
 #ifdef KERNFS_DIAGNOSTIC
-	printf("kernfs_root(mp = %x)\n", mp);
+	printf("kernfs_root(mp = %p)\n", mp);
 #endif
+	kt = kernfs_findtarget(".", 1);
+	/* this should never happen */
+	if (kt == NULL) 
+		panic("kernfs_root: findtarget returned NULL\n");
+	
+	error = kernfs_allocvp(kt, mp, vpp);
+	/* this should never happen */
+	if (error) 
+		panic("kernfs_root: couldn't find root\n");
 
-	/*
-	 * Return locked reference to root.
-	 */
-	vp = VFSTOKERNFS(mp)->kf_root;
-	VREF(vp);
-	VOP_LOCK(vp);
-	*vpp = vp;
-	return (0);
+	return(0);
+	
 }
 
-kernfs_quotactl(mp, cmd, uid, arg, p)
-	struct mount *mp;
-	int cmd;
-	uid_t uid;
-	caddr_t arg;
-	struct proc *p;
-{
-
-	return (EOPNOTSUPP);
-}
-
+int
 kernfs_statfs(mp, sbp, p)
 	struct mount *mp;
 	struct statfs *sbp;
 	struct proc *p;
 {
+	extern long numvnodes; /* XXX */
 
 #ifdef KERNFS_DIAGNOSTIC
-	printf("kernfs_statfs(mp = %x)\n", mp);
+	printf("kernfs_statfs(mp = %p)\n", mp);
 #endif
 
-#ifdef COMPAT_09
-	sbp->f_type = 7;
-#else
-	sbp->f_type = 0;
-#endif
-	sbp->f_bsize = DEV_BSIZE;
-	sbp->f_iosize = DEV_BSIZE;
-	sbp->f_blocks = 2;		/* 1K to keep df happy */
-	sbp->f_bfree = 0;
+	sbp->f_flags = 0;
+	sbp->f_bsize = uvmexp.pagesize;
+	sbp->f_iosize = uvmexp.pagesize;
+	sbp->f_bfree = physmem - uvmexp.wired;
+	sbp->f_blocks = physmem;
 	sbp->f_bavail = 0;
-	sbp->f_files = 0;
-	sbp->f_ffree = 0;
+	sbp->f_files = desiredvnodes;
+	sbp->f_ffree = desiredvnodes - numvnodes;
 	if (sbp != &mp->mnt_stat) {
 		bcopy(&mp->mnt_stat.f_fsid, &sbp->f_fsid, sizeof(sbp->f_fsid));
 		bcopy(mp->mnt_stat.f_mntonname, sbp->f_mntonname, MNAMELEN);
 		bcopy(mp->mnt_stat.f_mntfromname, sbp->f_mntfromname, MNAMELEN);
 	}
-	strncpy(sbp->f_fstypename, mp->mnt_op->vfs_name, MFSNAMELEN);
+	strncpy(sbp->f_fstypename, mp->mnt_vfc->vfc_name, MFSNAMELEN);
 	return (0);
-}
-
-kernfs_sync(mp, waitfor)
-	struct mount *mp;
-	int waitfor;
-{
-
-	return (0);
-}
-
-/*
- * Kernfs flat namespace lookup.
- * Currently unsupported.
- */
-kernfs_vget(mp, ino, vpp)
-	struct mount *mp;
-	ino_t ino;
-	struct vnode **vpp;
-{
-
-	return (EOPNOTSUPP);
-}
-
-
-kernfs_fhtovp(mp, fhp, setgen, vpp)
-	struct mount *mp;
-	struct fid *fhp;
-	int setgen;
-	struct vnode **vpp;
-{
-
-	return (EOPNOTSUPP);
-}
-
-kernfs_vptofh(vp, fhp)
-	struct vnode *vp;
-	struct fid *fhp;
-{
-
-	return (EOPNOTSUPP);
 }
 
 struct vfsops kernfs_vfsops = {
-	MOUNT_KERNFS,
 	kernfs_mount,
 	kernfs_start,
 	kernfs_unmount,
@@ -311,4 +230,6 @@ struct vfsops kernfs_vfsops = {
 	kernfs_fhtovp,
 	kernfs_vptofh,
 	kernfs_init,
+	kernfs_sysctl,
+	kernfs_checkexp
 };

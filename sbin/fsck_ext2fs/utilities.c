@@ -1,8 +1,8 @@
-/*	$NetBSD: utilities.c,v 1.18 1996/09/27 22:45:20 christos Exp $	*/
-
-/* Modified for EXT2FS on NetBSD by Manuel Bouyer, April 1997 */
+/*	$OpenBSD: utilities.c,v 1.10 2002/02/16 21:27:34 millert Exp $	*/
+/*	$NetBSD: utilities.c,v 1.6 2001/02/04 21:19:34 christos Exp $	*/
 
 /*
+ * Copyright (c) 1997 Manuel Bouyer.
  * Copyright (c) 1980, 1986, 1993
  *	The Regents of the University of California.  All rights reserved.
  *
@@ -35,14 +35,6 @@
  * SUCH DAMAGE.
  */
 
-#ifndef lint
-#if 0
-static char sccsid[] = "@(#)utilities.c	8.1 (Berkeley) 6/5/93";
-#else
-static char rcsid[] = "$NetBSD: utilities.c,v 1.18 1996/09/27 22:45:20 christos Exp $";
-#endif
-#endif /* not lint */
-
 #include <sys/param.h>
 #include <sys/time.h>
 #include <ufs/ext2fs/ext2fs_dinode.h>
@@ -61,13 +53,15 @@ static char rcsid[] = "$NetBSD: utilities.c,v 1.18 1996/09/27 22:45:20 christos 
 
 long	diskreads, totalreads;	/* Disk cache statistics */
 
-static void rwerror __P((char *, daddr_t));
+static void rwerror(char *, daddr_t);
+
+extern int returntosingle;
 
 int
 ftypeok(dp)
 	struct ext2fs_dinode *dp;
 {
-	switch (dp->e2di_mode & IFMT) {
+	switch (fs2h16(dp->e2di_mode) & IFMT) {
 
 	case IFDIR:
 	case IFREG:
@@ -80,7 +74,7 @@ ftypeok(dp)
 
 	default:
 		if (debug)
-			printf("bad file type 0%o\n", dp->e2di_mode);
+			printf("bad file type 0%o\n", fs2h16(dp->e2di_mode));
 		return (0);
 	}
 }
@@ -90,7 +84,7 @@ reply(question)
 	char *question;
 {
 	int persevere;
-	char c;
+	int c;
 
 	if (preen)
 		pfatal("INTERNAL ERROR: GOT TO reply()");
@@ -124,10 +118,11 @@ reply(question)
 void
 bufinit()
 {
-	register struct bufarea *bp;
+	struct bufarea *bp;
 	long bufcnt, i;
 	char *bufp;
 
+	diskreads = totalreads = 0;
 	pbp = pdirbp = (struct bufarea *)0;
 	bufhead.b_next = bufhead.b_prev = &bufhead;
 	bufcnt = MAXBUFSPACE / sblock.e2fs_bsize;
@@ -159,7 +154,7 @@ getdatablk(blkno, size)
 	daddr_t blkno;
 	long size;
 {
-	register struct bufarea *bp;
+	struct bufarea *bp;
 
 	for (bp = bufhead.b_next; bp != &bufhead; bp = bp->b_next)
 		if (bp->b_bno == fsbtodb(&sblock, blkno))
@@ -170,6 +165,7 @@ getdatablk(blkno, size)
 	if (bp == &bufhead)
 		errexit("deadlocked buffer pool\n");
 	getblk(bp, blkno, size);
+	diskreads++;
 	/* fall through */
 foundit:
 	totalreads++;
@@ -185,7 +181,7 @@ foundit:
 
 void
 getblk(bp, blk, size)
-	register struct bufarea *bp;
+	struct bufarea *bp;
 	daddr_t blk;
 	long size;
 {
@@ -204,9 +200,9 @@ getblk(bp, blk, size)
 void
 flush(fd, bp)
 	int fd;
-	register struct bufarea *bp;
+	struct bufarea *bp;
 {
-	register int i, j;
+	int i;
 
 	if (!bp->b_dirty)
 		return;
@@ -244,7 +240,7 @@ void
 ckfini(markclean)
 	int markclean;
 {
-	register struct bufarea *bp, *nbp;
+	struct bufarea *bp, *nbp;
 	int cnt = 0;
 
 	if (fswritefd < 0) {
@@ -253,10 +249,13 @@ ckfini(markclean)
 	}
 	flush(fswritefd, &sblk);
 	if (havesb && sblk.b_bno != SBOFF / dev_bsize &&
-	    !preen && reply("UPDATE STANDARD SUPERBLOCK")) {
+	    !preen && reply("UPDATE STANDARD SUPERBLOCKS")) {
 		sblk.b_bno = SBOFF / dev_bsize;
 		sbdirty();
 		flush(fswritefd, &sblk);
+		copyback_sb(&asblk);
+		asblk.b_dirty = 1;
+		flush(fswritefd, &asblk);
 	}
 	for (bp = bufhead.b_prev; bp && bp != &bufhead; bp = nbp) {
 		cnt++;
@@ -368,7 +367,7 @@ bwrite(fd, buf, blk, size)
 int
 allocblk()
 {
-	register int i;
+	int i;
 
 	for (i = 0; i < maxfsblock - 1; i++) {
 		if (testbmap(i))
@@ -403,7 +402,7 @@ getpathname(namebuf, curdir, ino)
 	ino_t curdir, ino;
 {
 	int len;
-	register char *cp;
+	char *cp;
 	struct inodesc idesc;
 	static int busy = 0;
 
@@ -457,6 +456,7 @@ void
 catch(n)
 	int n;
 {
+	/* XXX signal race */
 	ckfini(0);
 	exit(12);
 }
@@ -470,8 +470,8 @@ void
 catchquit(n)
 	int n;
 {
-	extern returntosingle;
 
+	/* XXX signal race */
 	printf("returning to single-user after filesystem check\n");
 	returntosingle = 1;
 	(void)signal(SIGQUIT, SIG_DFL);
@@ -486,6 +486,7 @@ voidquit(n)
 	int n;
 {
 
+	/* XXX signal race */
 	sleep(1);
 	(void)signal(SIGQUIT, SIG_IGN);
 	(void)signal(SIGQUIT, SIG_DFL);
@@ -496,7 +497,7 @@ voidquit(n)
  */
 int
 dofix(idesc, msg)
-	register struct inodesc *idesc;
+	struct inodesc *idesc;
 	char *msg;
 {
 
@@ -506,7 +507,7 @@ dofix(idesc, msg)
 		if (idesc->id_type == DATA)
 			direrror(idesc->id_number, msg);
 		else
-			pwarn(msg);
+			pwarn("%s", msg);
 		if (preen) {
 			printf(" (SALVAGED)\n");
 			idesc->id_fix = FIX;

@@ -1,5 +1,3 @@
-/*	$NetBSD: tmpnam.c,v 1.6 1995/02/02 02:10:45 jtc Exp $	*/
-
 /*-
  * Copyright (c) 1990, 1993, 1994
  *	The Regents of the University of California.  All rights reserved.
@@ -37,16 +35,18 @@
  */
 
 #if defined(LIBC_SCCS) && !defined(lint)
-#if 0
-static char sccsid[] = "@(#)tmpnam.c	8.3 (Berkeley) 3/28/94";
-#endif
-static char rcsid[] = "$NetBSD: tmpnam.c,v 1.6 1995/02/02 02:10:45 jtc Exp $";
+static char rcsid[] = "$OpenBSD: tmpnam.c,v 1.6 1997/04/03 05:31:38 millert Exp $";
 #endif /* LIBC_SCCS and not lint */
 
 #include <sys/types.h>
 
 #include <stdio.h>
 #include <unistd.h>
+
+__warn_references(tmpnam,
+    "warning: tmpnam() possibly used unsafely; consider using mkstemp()");
+
+extern char *_mktemp(char *);
 
 char *
 tmpnam(s)
@@ -57,7 +57,7 @@ tmpnam(s)
 
 	if (s == NULL)
 		s = buf;
-	(void)snprintf(s, L_tmpnam, "%stmp.%lu.XXXXXX", P_tmpdir, tmpcount);
+	(void)snprintf(s, L_tmpnam, "%stmp.%lu.XXXXXXXXX", P_tmpdir, tmpcount);
 	++tmpcount;
-	return (mktemp(s));
+	return (_mktemp(s));
 }

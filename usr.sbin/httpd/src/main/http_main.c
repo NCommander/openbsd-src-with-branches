@@ -1,3 +1,5 @@
+/* $OpenBSD: http_main.c,v 1.24 2002/09/08 17:14:57 markus Exp $ */
+
 /* ====================================================================
  * The Apache Software License, Version 1.1
  *
@@ -122,6 +124,9 @@ int ap_main(int argc, char *argv[]);
 #endif
 #ifdef HAVE_BSTRING_H
 #include <bstring.h>		/* for IRIX, FD_SET calls bzero() */
+#endif
+#ifdef MOD_SSL
+#include <openssl/evp.h>
 #endif
 
 #ifdef MULTITHREAD
@@ -279,6 +284,9 @@ int ap_acceptfilter =
 
 int ap_dump_settings = 0;
 API_VAR_EXPORT int ap_extended_status = 0;
+#ifdef EAPI
+API_VAR_EXPORT ap_ctx *ap_global_ctx;
+#endif /* EAPI */
 
 /*
  * The max child slot ever assigned, preserved across restarts.  Necessary
@@ -314,6 +322,9 @@ API_VAR_EXPORT char ap_coredump_dir[MAX_STRING_LEN]="";
 API_VAR_EXPORT array_header *ap_server_pre_read_config=NULL;
 API_VAR_EXPORT array_header *ap_server_post_read_config=NULL;
 API_VAR_EXPORT array_header *ap_server_config_defines=NULL;
+
+API_VAR_EXPORT int ap_server_chroot=1;
+API_VAR_EXPORT int is_chrooted=0;
 
 /* *Non*-shared http_main globals... */
 
@@ -462,6 +473,30 @@ static void ap_set_version(void)
 	version_locked++;
     }
 }
+
+#ifdef EAPI
+API_EXPORT(void) ap_add_config_define(const char *define)
+{
+    char **var;
+    var = (char **)ap_push_array(ap_server_config_defines);
+    *var = ap_pstrdup(pcommands, define);
+    return;
+}
+
+/*
+ * Invoke the `close_connection' hook of modules to let them do
+ * some connection dependent actions before we close it.
+ */
+static void ap_call_close_connection_hook(conn_rec *c)
+{
+    module *m;
+    for (m = top_module; m != NULL; m = m->next)
+        if (m->magic == MODULE_MAGIC_COOKIE_EAPI)
+            if (m->close_connection != NULL)
+                (*m->close_connection)(c);
+    return;
+}
+#endif /* EAPI */
 
 #ifndef NETWARE
 static APACHE_TLS int volatile exit_after_unblock = 0;
@@ -953,6 +988,7 @@ static void accept_mutex_child_init_flock(pool *p)
 static void accept_mutex_init_flock(pool *p)
 {
     expand_lock_fname(p);
+    ap_server_strip_chroot(ap_lock_fname, 0);
     unlink(ap_lock_fname);
     flock_fd = ap_popenf(p, ap_lock_fname, O_CREAT | O_WRONLY | O_EXCL, 0600);
     if (flock_fd == -1) {
@@ -1359,7 +1395,7 @@ static void usage(char *bin)
     fprintf(stderr, "Usage: %s [-D name] [-d directory] [-f file]\n", bin);
 #endif
     fprintf(stderr, "       %s [-C \"directive\"] [-c \"directive\"]\n", pad);
-    fprintf(stderr, "       %s [-v] [-V] [-h] [-l] [-L] [-S] [-t] [-T] [-F]\n", pad);
+    fprintf(stderr, "       %s [-v] [-V] [-h] [-l] [-L] [-S] [-t] [-T] [-F] [-u]\n", pad);
     fprintf(stderr, "Options:\n");
 #ifdef SHARED_CORE
     fprintf(stderr, "  -R directory     : specify an alternate location for shared object files\n");
@@ -1384,6 +1420,7 @@ static void usage(char *bin)
     fprintf(stderr, "  -T               : run syntax check for config files (without docroot check)\n");
 #ifndef WIN32
     fprintf(stderr, "  -F               : run main process in foreground, for process supervisors\n");
+    fprintf(stderr, "  -u               : Unsecure mode. Do not chroot into ServerRoot.\n");
 #endif
 #ifdef WIN32
     fprintf(stderr, "  -n name          : name the Apache service for -k options below;\n");
@@ -1518,6 +1555,10 @@ static void timeout(int sig)
 	    ap_log_transaction(log_req);
 	}
 
+#ifdef EAPI
+	ap_call_close_connection_hook(save_req->connection);
+#endif /* EAPI */
+
 	ap_bsetflag(save_req->connection->client, B_EOUT, 1);
 	ap_bclose(save_req->connection->client);
 	
@@ -1526,6 +1567,9 @@ static void timeout(int sig)
         ap_longjmp(jmpbuffer, 1);
     }
     else {			/* abort the connection */
+#ifdef EAPI
+	ap_call_close_connection_hook(current_conn);
+#endif /* EAPI */
 	ap_bsetflag(current_conn->client, B_EOUT, 1);
 	ap_bclose(current_conn->client);
 	current_conn->aborted = 1;
@@ -1828,10 +1872,16 @@ static void lingering_close(request_rec *r)
     /* Send any leftover data to the client, but never try to again */
 
     if (ap_bflush(r->connection->client) == -1) {
+#ifdef EAPI
+	ap_call_close_connection_hook(r->connection);
+#endif /* EAPI */
 	ap_kill_timeout(r);
 	ap_bclose(r->connection->client);
 	return;
     }
+#ifdef EAPI
+    ap_call_close_connection_hook(r->connection);
+#endif /* EAPI */
     ap_bsetflag(r->connection->client, B_EOUT, 1);
 
     /* Close our half of the connection --- send the client a FIN */
@@ -2559,6 +2609,10 @@ static void clean_parent_exit(int code)
     /* Clear the pool - including any registered cleanups */
     ap_destroy_pool(pglobal);
 #endif
+#ifdef EAPI
+    ap_kill_alloc_shared();
+#endif
+    fdcache_closeall();
     exit(code);
 }
 
@@ -3275,8 +3329,10 @@ static void set_signals(void)
 #elif defined(SA_RESETHAND)
 	sa.sa_flags = SA_RESETHAND;
 #endif
+#ifdef SIGSEGV_CHECK
 	if (sigaction(SIGSEGV, &sa, NULL) < 0)
 	    ap_log_error(APLOG_MARK, APLOG_WARNING, server_conf, "sigaction(SIGSEGV)");
+#endif /* SIGSEGV_CHECK */
 #ifdef SIGBUS
 	if (sigaction(SIGBUS, &sa, NULL) < 0)
 	    ap_log_error(APLOG_MARK, APLOG_WARNING, server_conf, "sigaction(SIGBUS)");
@@ -3328,7 +3384,9 @@ static void set_signals(void)
 	ap_log_error(APLOG_MARK, APLOG_WARNING, server_conf, "sigaction(SIGUSR1)");
 #else
     if (!one_process) {
+#ifdef SIGSEGV_CHECK
 	signal(SIGSEGV, sig_coredump);
+#endif /* SIGSEGV_CHECK */
 #ifdef SIGBUS
 	signal(SIGBUS, sig_coredump);
 #endif /* SIGBUS */
@@ -3570,6 +3628,24 @@ static conn_rec *new_connection(pool *p, server_rec *server, BUFF *inout,
     conn->remote_addr = *remaddr;
     conn->remote_ip = ap_pstrdup(conn->pool,
 			      inet_ntoa(conn->remote_addr.sin_addr));
+#ifdef EAPI
+    conn->ctx = ap_ctx_new(conn->pool);
+#endif /* EAPI */
+
+#ifdef EAPI
+    /*
+     * Invoke the `new_connection' hook of modules to let them do
+     * some connection dependent actions before we go on with
+     * processing the request on this connection.
+     */
+    {
+        module *m;
+        for (m = top_module; m != NULL; m = m->next)
+            if (m->magic == MODULE_MAGIC_COOKIE_EAPI)
+                if (m->new_connection != NULL)
+                    (*m->new_connection)(conn);
+    }
+#endif /* EAPI */
 
     return conn;
 }
@@ -3998,6 +4074,15 @@ static void show_compile_settings(void)
     printf("Server's Module Magic Number: %u:%u\n",
 	   MODULE_MAGIC_NUMBER_MAJOR, MODULE_MAGIC_NUMBER_MINOR);
     printf("Server compiled with....\n");
+#ifdef EAPI
+    printf(" -D EAPI\n");
+#endif
+#ifdef EAPI_MM
+    printf(" -D EAPI_MM\n");
+#ifdef EAPI_MM_CORE_PATH
+    printf(" -D EAPI_MM_CORE_PATH=\"" EAPI_MM_CORE_PATH "\"\n");
+#endif
+#endif
 #ifdef TPF
     show_os_specific_compile_settings();
 #endif
@@ -4167,6 +4252,22 @@ static void common_init(void)
     ap_server_pre_read_config  = ap_make_array(pcommands, 1, sizeof(char *));
     ap_server_post_read_config = ap_make_array(pcommands, 1, sizeof(char *));
     ap_server_config_defines   = ap_make_array(pcommands, 1, sizeof(char *));
+
+#ifdef EAPI
+    ap_hook_init();
+    ap_hook_configure("ap::buff::read", 
+                      AP_HOOK_SIG4(int,ptr,ptr,int), AP_HOOK_TOPMOST);
+    ap_hook_configure("ap::buff::write",  
+                      AP_HOOK_SIG4(int,ptr,ptr,int), AP_HOOK_TOPMOST);
+    ap_hook_configure("ap::buff::writev",  
+                      AP_HOOK_SIG4(int,ptr,ptr,int), AP_HOOK_TOPMOST);
+    ap_hook_configure("ap::buff::sendwithtimeout", 
+                      AP_HOOK_SIG4(int,ptr,ptr,int), AP_HOOK_TOPMOST);
+    ap_hook_configure("ap::buff::recvwithtimeout", 
+                      AP_HOOK_SIG4(int,ptr,ptr,int), AP_HOOK_TOPMOST);
+
+    ap_global_ctx = ap_ctx_new(NULL);
+#endif /* EAPI */
 }
 
 #ifndef MULTITHREAD
@@ -4213,6 +4314,8 @@ static void child_main(int child_num_arg)
     my_child_num = child_num_arg;
     requests_this_child = 0;
 
+    setproctitle("child");
+
     /* Get a sub pool for global allocations in this child, so that
      * we can have cleanups occur when the child exits.
      */
@@ -4248,7 +4351,7 @@ static void child_main(int child_num_arg)
 #endif
 	setuid(ap_user_id) == -1)) {
 	ap_log_error(APLOG_MARK, APLOG_ALERT, server_conf,
-		    "setuid: unable to change to uid: %ld", (long) ap_user_id);
+		    "setuid: unable to change to uid: %u", ap_user_id);
 	clean_child_exit(APEXIT_CHILDFATAL);
     }
 #endif
@@ -4269,7 +4372,9 @@ static void child_main(int child_num_arg)
     signal(SIGURG, timeout);
 #endif
 #endif
-    signal(SIGALRM, alrm_handler);
+    if (signal(SIGALRM, alrm_handler) == SIG_ERR) {
+	   fprintf(stderr, "installing signal handler for SIGALRM failed, errno %u\n", errno);
+	}
 #ifdef TPF
     signal(SIGHUP, just_die);
     signal(SIGTERM, just_die);
@@ -4617,6 +4722,9 @@ static void child_main(int child_num_arg)
 
 	    ap_sync_scoreboard_image();
 	    if (ap_scoreboard_image->global.running_generation != ap_my_generation) {
+#ifdef EAPI
+		ap_call_close_connection_hook(current_conn);
+#endif /* EAPI */
 		ap_bclose(conn_io);
 		clean_child_exit(0);
 	    }
@@ -4645,6 +4753,9 @@ static void child_main(int child_num_arg)
 	 */
 
 #ifdef NO_LINGCLOSE
+#ifdef EAPI
+	ap_call_close_connection_hook(current_conn);
+#endif /* EAPI */
 	ap_bclose(conn_io);	/* just close it */
 #else
 	if (r && r->connection
@@ -4655,6 +4766,9 @@ static void child_main(int child_num_arg)
 	    lingering_close(r);
 	}
 	else {
+#ifdef EAPI
+	    ap_call_close_connection_hook(current_conn);
+#endif /* EAPI */
 	    ap_bsetflag(conn_io, B_EOUT, 1);
 	    ap_bclose(conn_io);
 	}
@@ -5063,11 +5177,60 @@ static void standalone_main(int argc, char **argv)
 	server_conf = ap_read_config(pconf, ptrans, ap_server_confname);
 	setup_listeners(pconf);
 	ap_clear_pool(plog);
-	ap_open_logs(server_conf, plog);
-	ap_log_pid(pconf, ap_pid_fname);
+
+	/* 
+	 * we cannot reopen the logfiles once we dropped permissions, 
+	 * we cannot write the pidfile (pointless anyway), and we can't
+	 * reload & reinit the modules.
+	 */
+
+	if (!is_chrooted) {
+	    ap_open_logs(server_conf, plog);
+	    ap_log_pid(pconf, ap_pid_fname);
+	}
 	ap_set_version();	/* create our server_version string */
 	ap_init_modules(pconf, server_conf);
 	version_locked++;	/* no more changes to server_version */
+
+	if(!is_graceful && !is_chrooted)
+	    if (ap_server_chroot) {
+		if (geteuid()) {
+		    ap_log_error(APLOG_MARK, APLOG_NOERRNO|APLOG_EMERG, 
+			server_conf, "can't run in secure mode if not "
+			"started with root privs.");
+		    exit(1);
+		}
+
+		/* initialize /dev/crypto, XXX check for -DSSL option */
+#ifdef MOD_SSL
+		OpenSSL_add_all_algorithms();
+#endif
+
+		if (chroot(ap_server_root) < 0) {
+		    ap_log_error(APLOG_MARK, APLOG_EMERG, server_conf,
+			"unable to chroot into %s!", ap_server_root);
+		    exit(1);
+		}
+		ap_log_error(APLOG_MARK, APLOG_NOERRNO|APLOG_NOTICE, 
+		    server_conf, "chrooted in %s", ap_server_root);
+		chdir("/");
+		is_chrooted = 1;
+		setproctitle("parent [chroot %s]", ap_server_root);
+
+		if (setgroups(1, &ap_group_id) || setegid(ap_group_id) ||
+		    setgid(ap_group_id) || seteuid(ap_user_id) || 
+		    setuid(ap_user_id)) {
+			ap_log_error(APLOG_MARK, APLOG_CRIT, server_conf,
+			    "can't drop priviliges!");
+			exit(1);
+		} else
+		    ap_log_error(APLOG_MARK, APLOG_NOERRNO|APLOG_NOTICE,
+			server_conf, "changed to uid %u, gid %u",
+			ap_user_id, ap_group_id);
+		} else
+		    setproctitle("parent");
+
+
 	SAFE_ACCEPT(accept_mutex_init(pconf));
 	if (!is_graceful) {
 	    reinit_scoreboard(pconf);
@@ -5208,11 +5371,12 @@ static void standalone_main(int argc, char **argv)
 	    {
 		const char *pidfile = NULL;
 		pidfile = ap_server_root_relative (pconf, ap_pid_fname);
+		ap_server_strip_chroot(pidfile, 0);
 		if ( pidfile != NULL && unlink(pidfile) == 0)
 		    ap_log_error(APLOG_MARK, APLOG_NOERRNO|APLOG_INFO,
 				 server_conf,
-				 "removed PID file %s (pid=%ld)",
-				 pidfile, (long)getpid());
+				 "removed PID file %s (pid=%u)",
+				 pidfile, getpid());
 	    }
 
 	    ap_log_error(APLOG_MARK, APLOG_NOERRNO|APLOG_NOTICE, server_conf,
@@ -5336,7 +5500,7 @@ int REALMAIN(int argc, char *argv[])
     ap_setup_prelinked_modules();
 
     while ((c = getopt(argc, argv,
-				    "D:C:c:xXd:Ff:vVlLR:StTh"
+				    "D:C:c:xXd:Ff:vVlLR:StThu"
 #ifdef DEBUG_SIGSTOP
 				    "Z:"
 #endif
@@ -5416,20 +5580,38 @@ int REALMAIN(int argc, char *argv[])
 	    break;
 	case 'h':
 	    usage(argv[0]);
+	case 'u':
+	    ap_server_chroot = 0;
+	    break;
 	case '?':
 	    usage(argv[0]);
 	}
     }
+#ifdef EAPI
+    ap_init_alloc_shared(TRUE);
+#endif
 
     ap_suexec_enabled = init_suexec();
     server_conf = ap_read_config(pconf, ptrans, ap_server_confname);
 
+#ifdef EAPI
+    ap_init_alloc_shared(FALSE);
+#endif
+
     if (ap_configtestonly) {
         fprintf(stderr, "Syntax OK\n");
+#ifdef EAPI
+        clean_parent_exit(0);
+#else
         exit(0);
+#endif
     }
     if (ap_dump_settings) {
+#ifdef EAPI
+        clean_parent_exit(0);
+#else
         exit(0);
+#endif
     }
 
     child_timeouts = !ap_standalone || one_process;
@@ -5522,8 +5704,8 @@ int REALMAIN(int argc, char *argv[])
 	if (!geteuid() && setuid(ap_user_id) == -1) {
 #endif
 	    ap_log_error(APLOG_MARK, APLOG_ALERT, server_conf,
-			"setuid: unable to change to uid: %ld",
-			(long) ap_user_id);
+			"setuid: unable to change to uid: %u",
+			ap_user_id);
 	    exit(1);
 	}
 #endif
@@ -5575,6 +5757,10 @@ int REALMAIN(int argc, char *argv[])
 
 	    ap_destroy_pool(r->pool);
 	}
+
+#ifdef EAPI
+	ap_call_close_connection_hook(conn);
+#endif /* EAPI */
 
 	ap_bclose(cio);
     }
@@ -5952,6 +6138,9 @@ static void child_sub_main(int child_num)
 	ap_kill_cleanups_for_socket(ptrans, csd);
 
 #ifdef NO_LINGCLOSE
+#ifdef EAPI
+	ap_call_close_connection_hook(current_conn);
+#endif /* EAPI */
 	ap_bclose(conn_io);	/* just close it */
 #else
 	if (r && r->connection
@@ -5962,6 +6151,9 @@ static void child_sub_main(int child_num)
 	    lingering_close(r);
 	}
 	else {
+#ifdef EAPI
+	    ap_call_close_connection_hook(current_conn);
+#endif /* EAPI */
 	    ap_bsetflag(conn_io, B_EOUT, 1);
 	    ap_bclose(conn_io);
 	}
@@ -7046,8 +7238,8 @@ die_now:
 	if ( pidfile != NULL && unlink(pidfile) == 0)
 	    ap_log_error(APLOG_MARK, APLOG_NOERRNO|APLOG_INFO,
 			 server_conf,
-			 "removed PID file %s (pid=%ld)",
-			 pidfile, (long)getpid());
+			 "removed PID file %s (pid=%u)",
+			 pidfile, getpid());
     }
 
     if (pparent) {
@@ -7530,6 +7722,10 @@ int REALMAIN(int argc, char *argv[])
     if (!conf_specified)
         ap_cpystrn(ap_server_confname, SERVER_CONFIG_FILE, sizeof(ap_server_confname));
 
+#ifdef EAPI
+    ap_init_alloc_shared(TRUE);
+#endif
+
     if (!ap_os_is_path_absolute(ap_server_confname))
         ap_cpystrn(ap_server_confname,
                    ap_server_root_relative(pcommands, ap_server_confname),
@@ -7569,6 +7765,9 @@ int REALMAIN(int argc, char *argv[])
     }
 #else /* ndef WIN32 */
     server_conf = ap_read_config(pconf, ptrans, ap_server_confname);
+#endif
+#ifdef EAPI
+    ap_init_alloc_shared(FALSE);
 #endif
 
     if (ap_configtestonly) {
@@ -7889,3 +8088,24 @@ const XML_LChar *suck_in_expat(void)
 }
 #endif /* USE_EXPAT */
 
+API_EXPORT(int) ap_server_strip_chroot(char *src, int force)
+{
+    char buf[MAX_STRING_LEN];
+
+    if(src != NULL && ap_server_chroot && (is_chrooted || force)) {
+	if (strncmp(ap_server_root, src, strlen(ap_server_root)) == 0) {
+	    strlcpy(buf, src+strlen(ap_server_root), MAX_STRING_LEN);
+	    strlcpy(src, buf, strlen(src));
+	} 
+    }
+}
+
+API_EXPORT(int) ap_server_is_chrooted()
+{
+    return(is_chrooted);
+}
+
+API_EXPORT(int) ap_server_chroot_desired()
+{
+    return(ap_server_chroot);
+}

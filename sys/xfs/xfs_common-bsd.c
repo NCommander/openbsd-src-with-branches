@@ -35,7 +35,7 @@
 #include <xfs/xfs_common.h>
 #include <xfs/xfs_deb.h>
 
-RCSID("$Id: xfs_common-bsd.c,v 1.1.1.1 2002/06/05 17:24:11 hin Exp $");
+RCSID("$Id: xfs_common-bsd.c,v 1.1.1.1 2002/06/07 03:32:58 hin Exp $");
 
 #ifdef MALLOC_DEFINE
 MALLOC_DEFINE(M_XFS, "xfs", "xfs buffer");

@@ -1,81 +1,83 @@
+/*	$OpenBSD: env.c,v 1.12 2002/07/09 18:59:12 millert Exp $	*/
 /* Copyright 1988,1990,1993,1994 by Paul Vixie
  * All rights reserved
+ */
+
+/*
+ * Copyright (c) 1997,2000 by Internet Software Consortium, Inc.
  *
- * Distribute freely, except: don't remove my name from the source or
- * documentation (don't take credit for my work), mark your changes (don't
- * get me blamed for your possible bugs), don't alter or remove this
- * notice.  May be sold if buildable source is provided to buyer.  No
- * warrantee of any kind, express or implied, is included with this
- * software; use at your own risk, responsibility for damages (if any) to
- * anyone resulting from the use of this software rests entirely with the
- * user.
+ * Permission to use, copy, modify, and distribute this software for any
+ * purpose with or without fee is hereby granted, provided that the above
+ * copyright notice and this permission notice appear in all copies.
  *
- * Send bug reports, bug fixes, enhancements, requests, flames, etc., and
- * I'll try to keep a version up to date.  I can be reached as follows:
- * Paul Vixie          <paul@vix.com>          uunet!decwrl!vixie!paul
+ * THE SOFTWARE IS PROVIDED "AS IS" AND INTERNET SOFTWARE CONSORTIUM DISCLAIMS
+ * ALL WARRANTIES WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES
+ * OF MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL INTERNET SOFTWARE
+ * CONSORTIUM BE LIABLE FOR ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL
+ * DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR
+ * PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS
+ * ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
+ * SOFTWARE.
  */
 
 #if !defined(lint) && !defined(LINT)
-static char rcsid[] = "$Id: env.c,v 1.1.1.5 1994/01/26 19:09:39 jtc Exp $";
+static char const rcsid[] = "$OpenBSD: env.c,v 1.12 2002/07/09 18:59:12 millert Exp $";
 #endif
-
 
 #include "cron.h"
 
-
 char **
-env_init()
-{
-	register char	**p = (char **) malloc(sizeof(char **));
+env_init(void) {
+	char **p = (char **) malloc(sizeof(char **));
 
-	p[0] = NULL;
+	if (p != NULL)
+		p[0] = NULL;
 	return (p);
 }
 
-
 void
-env_free(envp)
-	char	**envp;
-{
-	char	**p;
+env_free(char **envp) {
+	char **p;
 
-	for (p = envp;  *p;  p++)
+	for (p = envp; *p != NULL; p++)
 		free(*p);
 	free(envp);
 }
 
-
 char **
-env_copy(envp)
-	register char	**envp;
-{
-	register int	count, i;
-	register char	**p;
+env_copy(char **envp) {
+	int count, i, save_errno;
+	char **p;
 
-	for (count = 0;  envp[count] != NULL;  count++)
-		;
+	for (count = 0; envp[count] != NULL; count++)
+		continue;
 	p = (char **) malloc((count+1) * sizeof(char *));  /* 1 for the NULL */
-	for (i = 0;  i < count;  i++)
-		p[i] = strdup(envp[i]);
-	p[count] = NULL;
+	if (p != NULL) {
+		for (i = 0; i < count; i++)
+			if ((p[i] = strdup(envp[i])) == NULL) {
+				save_errno = errno;
+				while (--i >= 0)
+					free(p[i]);
+				free(p);
+				errno = save_errno;
+				return (NULL);
+			}
+		p[count] = NULL;
+	}
 	return (p);
 }
 
-
 char **
-env_set(envp, envstr)
-	char	**envp;
-	char	*envstr;
-{
-	register int	count, found;
-	register char	**p;
+env_set(char **envp, char *envstr) {
+	int count, found;
+	char **p, *envtmp;
 
 	/*
 	 * count the number of elements, including the null pointer;
 	 * also set 'found' to -1 or index of entry if already in here.
 	 */
 	found = -1;
-	for (count = 0;  envp[count] != NULL;  count++) {
+	for (count = 0; envp[count] != NULL; count++) {
 		if (!strcmp_until(envp[count], envstr, '='))
 			found = count;
 	}
@@ -86,8 +88,10 @@ env_set(envp, envstr)
 		 * it exists already, so just free the existing setting,
 		 * save our new one there, and return the existing array.
 		 */
+		if ((envtmp = strdup(envstr)) == NULL)
+			return (NULL);
 		free(envp[found]);
-		envp[found] = strdup(envstr);
+		envp[found] = envtmp;
 		return (envp);
 	}
 
@@ -96,27 +100,29 @@ env_set(envp, envstr)
 	 * one, save our string over the old null pointer, and return resized
 	 * array.
 	 */
+	if ((envtmp = strdup(envstr)) == NULL)
+		return (NULL);
 	p = (char **) realloc((void *) envp,
-			      (unsigned) ((count+1) * sizeof(char **)));
+			      (size_t) ((count+1) * sizeof(char **)));
+	if (p == NULL) {
+		free(envtmp);
+		return (NULL);
+	}
 	p[count] = p[count-1];
-	p[count-1] = strdup(envstr);
+	p[count-1] = envtmp;
 	return (p);
 }
-
 
 /* return	ERR = end of file
  *		FALSE = not an env setting (file was repositioned)
  *		TRUE = was an env setting
  */
 int
-load_env(envstr, f)
-	char	*envstr;
-	FILE	*f;
-{
-	long	filepos;
-	int	fileline;
-	char	name[MAX_TEMPSTR], val[MAX_ENVSTR];
-	int	fields;
+load_env(char *envstr, FILE *f) {
+	long filepos;
+	int fileline;
+	char name[MAX_ENVSTR], val[MAX_ENVSTR];
+	int fields;
 
 	filepos = ftell(f);
 	fileline = LineNumber;
@@ -135,7 +141,8 @@ load_env(envstr, f)
 		return (FALSE);
 	}
 
-	/* 2 fields from scanf; looks like an env setting
+	/*
+	 * 2 fields from scanf; looks like an env setting.
 	 */
 
 	/*
@@ -148,27 +155,27 @@ load_env(envstr, f)
 			if (val[0] == '\'' || val[0] == '"') {
 				if (val[len-1] == val[0]) {
 					val[len-1] = '\0';
-					(void) strcpy(val, val+1);
+					memmove(val, val+1, len);
 				}
 			}
 		}
 	}
 
-	(void) sprintf(envstr, "%s=%s", name, val);
+	/*
+	 * This can't overflow because get_string() limited the size of the
+	 * name and val fields.  Still, it doesn't hurt...
+	 */
+	(void) snprintf(envstr, MAX_ENVSTR, "%s=%s", name, val);
 	Debug(DPARS, ("load_env, <%s> <%s> -> <%s>\n", name, val, envstr))
 	return (TRUE);
 }
 
-
 char *
-env_get(name, envp)
-	register char	*name;
-	register char	**envp;
-{
-	register int	len = strlen(name);
-	register char	*p, *q;
+env_get(char *name, char **envp) {
+	int len = strlen(name);
+	char *p, *q;
 
-	while (p = *envp++) {
+	while ((p = *envp++) != NULL) {
 		if (!(q = strchr(p, '=')))
 			continue;
 		if ((q - p) == len && !strncmp(p, name, len))

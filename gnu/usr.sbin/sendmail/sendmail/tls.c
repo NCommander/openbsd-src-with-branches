@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2000-2001 Sendmail, Inc. and its suppliers.
+ * Copyright (c) 2000-2002 Sendmail, Inc. and its suppliers.
  *	All rights reserved.
  *
  * By using this file, you agree to the terms and conditions set
@@ -10,7 +10,7 @@
 
 #include <sendmail.h>
 
-SM_RCSID("@(#)$Sendmail: tls.c,v 8.72 2001/09/04 22:43:06 ca Exp $")
+SM_RCSID("@(#)$Sendmail: tls.c,v 8.79 2002/03/21 22:24:13 gshapiro Exp $")
 
 #if STARTTLS
 #  include <openssl/err.h>
@@ -26,9 +26,18 @@ SM_RCSID("@(#)$Sendmail: tls.c,v 8.72 2001/09/04 22:43:06 ca Exp $")
 static RSA *rsa_tmp = NULL;	/* temporary RSA key */
 static RSA *tmp_rsa_key __P((SSL *, int, int));
 # endif /* !TLS_NO_RSA */
+#  if !defined(OPENSSL_VERSION_NUMBER) || OPENSSL_VERSION_NUMBER < 0x00907000L
 static int	tls_verify_cb __P((X509_STORE_CTX *));
+#  else /* !defined() || OPENSSL_VERSION_NUMBER < 0x00907000L */
+static int	tls_verify_cb __P((X509_STORE_CTX *, void *));
+#  endif /* !defined() || OPENSSL_VERSION_NUMBER < 0x00907000L */
 
-static void	apps_ssl_info_cb __P((SSL *, int , int));
+# if !defined(OPENSSL_VERSION_NUMBER) || OPENSSL_VERSION_NUMBER < 0x00907000L
+#  define CONST097
+# else /* !defined() || OPENSSL_VERSION_NUMBER < 0x00907000L */
+#  define CONST097 const
+# endif /* !defined() || OPENSSL_VERSION_NUMBER < 0x00907000L */
+static void	apps_ssl_info_cb __P((CONST097 SSL *, int , int));
 
 # if !NO_DH
 static DH *get_dh512 __P((void));
@@ -63,7 +72,7 @@ get_dh512()
 # endif /* !NO_DH */
 
 
-/*
+/*
 **  TLS_RAND_INIT -- initialize STARTTLS random generator
 **
 **	Parameters:
@@ -139,6 +148,8 @@ tls_rand_init(randfile, logl)
 		      | SFF_NOGWFILES | SFF_NOWWFILES
 		      | SFF_NOGRFILES | SFF_NOWRFILES
 		      | SFF_MUSTOWN | SFF_ROOTOK | SFF_OPENASROOT;
+		if (DontLockReadFiles)
+			sff |= SFF_NOLOCK;
 		if ((fd = safeopen(randfile, O_RDONLY, 0, sff)) >= 0)
 		{
 			if (fstat(fd, &st) < 0)
@@ -248,7 +259,7 @@ tls_rand_init(randfile, logl)
 	return true;
 # endif /* ! HASURANDOMDEV */
 }
-/*
+/*
 **  INIT_TLS_LIBRARY -- Calls functions which setup TLS library for global use.
 **
 **	Parameters:
@@ -271,7 +282,7 @@ init_tls_library()
 
 	return tls_rand_init(RandFile, 7);
 }
-/*
+/*
 **  TLS_SET_VERIFY -- request client certificate?
 **
 **	Parameters:
@@ -336,7 +347,7 @@ tls_set_verify(ctx, ssl, vrfy)
 # define TLS_S_DHPAR_EX	0x00400000	/* DH param file exists */
 # define TLS_S_DHPAR_OK	0x00800000	/* DH param file is ok to use */
 
-/*
+/*
 **  TLS_OK_F -- can var be an absolute filename?
 **
 **	Parameters:
@@ -362,7 +373,7 @@ tls_ok_f(var, fn, srv)
 			  srv ? "Server" : "Client", fn);
 	return false;
 }
-/*
+/*
 **  TLS_SAFE_F -- is a file safe to use?
 **
 **	Parameters:
@@ -457,7 +468,7 @@ tls_safe_f(var, sff, srv)
 			ok = false;	\
 	}
 
-/*
+/*
 **  INITTLS -- initialize TLS
 **
 **	Parameters:
@@ -977,7 +988,7 @@ inittls(ctx, req, srv, certfile, keyfile, cacertpath, cacertfile, dhparam)
 
 	return ok;
 }
-/*
+/*
 **  TLS_GET_INFO -- get information about TLS connection
 **
 **	Parameters:
@@ -1140,7 +1151,7 @@ tls_get_info(ssl, srv, host, mac, certreq)
 	}
 	return r;
 }
-/*
+/*
 **  ENDTLS -- shutdown secure connection
 **
 **	Parameters:
@@ -1230,7 +1241,7 @@ endtls(ssl, side)
 }
 
 # if !TLS_NO_RSA
-/*
+/*
 **  TMP_RSA_KEY -- return temporary RSA key
 **
 **	Parameters:
@@ -1294,7 +1305,7 @@ tmp_rsa_key(s, export, keylength)
 	return rsa_tmp;
 }
 # endif /* !TLS_NO_RSA */
-/*
+/*
 **  APPS_SSL_INFO_CB -- info callback for TLS connections
 **
 **	Parameters:
@@ -1308,7 +1319,7 @@ tmp_rsa_key(s, export, keylength)
 
 static void
 apps_ssl_info_cb(s, where, ret)
-	SSL *s;
+	CONST097 SSL *s;
 	int where;
 	int ret;
 {
@@ -1366,7 +1377,7 @@ apps_ssl_info_cb(s, where, ret)
 		}
 	}
 }
-/*
+/*
 **  TLS_VERIFY_LOG -- log verify error for TLS certificates
 **
 **	Parameters:
@@ -1408,7 +1419,7 @@ tls_verify_log(ok, ctx)
 		  depth, buf, ok, X509_verify_cert_error_string(reason));
 	return 1;
 }
-/*
+/*
 **  TLS_VERIFY_CB -- verify callback for TLS certificates
 **
 **	Parameters:
@@ -1420,8 +1431,14 @@ tls_verify_log(ok, ctx)
 */
 
 static int
+#  if !defined(OPENSSL_VERSION_NUMBER) || OPENSSL_VERSION_NUMBER < 0x00907000L
 tls_verify_cb(ctx)
 	X509_STORE_CTX *ctx;
+#  else /* !defined() || OPENSSL_VERSION_NUMBER < 0x00907000L */
+tls_verify_cb(ctx, unused)
+	X509_STORE_CTX *ctx;
+	void *unused;
+#  endif /* !defined() || OPENSSL_VERSION_NUMBER < 0x00907000L */
 {
 	int ok;
 
@@ -1434,7 +1451,7 @@ tls_verify_cb(ctx)
 	}
 	return ok;
 }
-/*
+/*
 **  TLSLOGERR -- log the errors from the TLS error stack
 **
 **	Parameters:

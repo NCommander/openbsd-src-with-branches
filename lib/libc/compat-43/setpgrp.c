@@ -32,20 +32,14 @@
  */
 
 #if defined(LIBC_SCCS) && !defined(lint)
-/*static char *sccsid = "from: @(#)setpgrp.c	5.2 (Berkeley) 2/24/91";*/
-static char *rcsid = "$Id: setpgrp.c,v 1.4 1993/11/11 19:04:07 jtc Exp $";
+static char *rcsid = "$OpenBSD: setpgrp.c,v 1.3 1997/07/25 20:29:59 mickey Exp $";
 #endif /* LIBC_SCCS and not lint */
 
 #include <sys/types.h>
 #include <unistd.h>
 
 int
-#if __STDC__
 setpgrp(pid_t pid, pid_t pgid)
-#else
-setpgrp(pid, pgid)
-	pid_t pid, pgid;
-#endif
 {
 	return(setpgid(pid, pgid));
 }

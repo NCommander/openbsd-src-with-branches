@@ -1,3 +1,5 @@
+/*	$OpenBSD: look.c,v 1.9 2002/02/16 21:27:48 millert Exp $	*/
+
 /*
  * Copyright (c) 1989, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -47,32 +49,35 @@ static char sccsid[] = "@(#)look.c	8.1 (Berkeley) 6/6/93";
 #include <sys/types.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <stddef.h>
 #include <string.h>
 #include "mdef.h"
 #include "stdd.h"
 #include "extern.h"
 
-int
-hash(name)
-register char *name;
+static void freent(ndptr);
+
+unsigned int
+hash(const char *name)
 {
-	register unsigned long h = 0;
+	unsigned int h = 0;
 	while (*name)
 		h = (h << 5) + h + *name++;
-	return (h % HASHSIZE);
+	return (h);
 }
 
 /*
  * find name in the hash table
  */
 ndptr 
-lookup(name)
-char *name;
+lookup(const char *name)
 {
-	register ndptr p;
+	ndptr p;
+	unsigned int h;
 
-	for (p = hashtab[hash(name)]; p != nil; p = p->nxtptr)
-		if (STREQ(name, p->name))
+	h = hash(name);
+	for (p = hashtab[h % HASHSIZE]; p != nil; p = p->nxtptr)
+		if (h == p->hv && STREQ(name, p->name))
 			break;
 	return (p);
 }
@@ -82,29 +87,26 @@ char *name;
  * The new entry is added in front of a hash bucket.
  */
 ndptr 
-addent(name)
-char *name;
+addent(const char *name)
 {
-	register int h;
+	unsigned int h;
 	ndptr p;
 
 	h = hash(name);
 	p = (ndptr) xalloc(sizeof(struct ndblock));
-	p->nxtptr = hashtab[h];
-	hashtab[h] = p;
+	p->nxtptr = hashtab[h % HASHSIZE];
+	hashtab[h % HASHSIZE] = p;
 	p->name = xstrdup(name);
+	p->hv = h;
 	return p;
 }
 
 static void
-freent(p)
-ndptr p;
+freent(ndptr p)
 {
-	if (!(p->type & STATIC)) {
-		free((char *) p->name);
-		if (p->defn != null)
-			free((char *) p->defn);
-	}
+	free((char *) p->name);
+	if (p->defn != null)
+		free((char *) p->defn);
 	free((char *) p);
 }
 
@@ -112,22 +114,20 @@ ndptr p;
  * remove an entry from the hashtable
  */
 void
-remhash(name, all)
-char *name;
-int all;
+remhash(const char *name, int all)
 {
-	register int h;
-	register ndptr xp, tp, mp;
+	unsigned int h;
+	ndptr xp, tp, mp;
 
 	h = hash(name);
-	mp = hashtab[h];
+	mp = hashtab[h % HASHSIZE];
 	tp = nil;
 	while (mp != nil) {
-		if (STREQ(mp->name, name)) {
+		if (mp->hv == h && STREQ(mp->name, name)) {
 			mp = mp->nxtptr;
 			if (tp == nil) {
-				freent(hashtab[h]);
-				hashtab[h] = mp;
+				freent(hashtab[h % HASHSIZE]);
+				hashtab[h % HASHSIZE] = mp;
 			}
 			else {
 				xp = tp->nxtptr;

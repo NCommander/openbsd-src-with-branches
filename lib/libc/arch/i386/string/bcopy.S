@@ -1,3 +1,5 @@
+/*	$OpenBSD$	*/
+
 /*-
  * Copyright (c) 1990 The Regents of the University of California.
  * All rights reserved.
@@ -36,7 +38,8 @@
 #include <machine/asm.h>
 
 #if defined(LIBC_SCCS)
-	RCSID("$NetBSD: bcopy.S,v 1.5 1995/04/28 22:57:57 jtc Exp $")
+	.text
+	.asciz "$OpenBSD: bcopy.S,v 1.2 1996/08/19 08:12:54 tholo Exp $"
 #endif
 
 	/*
@@ -58,24 +61,23 @@ ENTRY(bcopy)
 #if defined(MEMCOPY) || defined(MEMMOVE)
 	movl	12(%esp),%edi
 	movl	16(%esp),%esi
+	movl	%edi, %eax
 #else
 	movl	12(%esp),%esi
 	movl	16(%esp),%edi
 #endif
 	movl	20(%esp),%ecx
+	movl	%ecx,%edx
 	cmpl	%esi,%edi	/* potentially overlapping? */
 	jnb	1f
 	cld			/* nope, copy forwards. */
 	shrl	$2,%ecx		/* copy by words */
 	rep
 	movsl
-	movl	20(%esp),%ecx
+	movl	%edx,%ecx
 	andl	$3,%ecx		/* any bytes left? */
 	rep
 	movsb
-#if defined(MEMCOPY) || defined(MEMMOVE)
-	movl	12(%esp),%eax
-#endif
 	popl	%edi
 	popl	%esi
 	ret
@@ -88,15 +90,12 @@ ENTRY(bcopy)
 	decl	%esi
 	rep
 	movsb
-	movl	20(%esp),%ecx	/* copy remainder by words */
+	movl	%edx,%ecx
 	shrl	$2,%ecx
 	subl	$3,%esi
 	subl	$3,%edi
 	rep
 	movsl
-#if defined(MEMCOPY) || defined(MEMMOVE)
-	movl	12(%esp),%eax
-#endif
 	popl	%edi
 	popl	%esi
 	cld

@@ -1,30 +1,35 @@
+/*	$OpenBSD: pathnames.h,v 1.7 2002/07/09 18:59:12 millert Exp $	*/
+
 /* Copyright 1993,1994 by Paul Vixie
  * All rights reserved
- *
- * Distribute freely, except: don't remove my name from the source or
- * documentation (don't take credit for my work), mark your changes (don't
- * get me blamed for your possible bugs), don't alter or remove this
- * notice.  May be sold if buildable source is provided to buyer.  No
- * warrantee of any kind, express or implied, is included with this
- * software; use at your own risk, responsibility for damages (if any) to
- * anyone resulting from the use of this software rests entirely with the
- * user.
- *
- * Send bug reports, bug fixes, enhancements, requests, flames, etc., and
- * I'll try to keep a version up to date.  I can be reached as follows:
- * Paul Vixie          <paul@vix.com>          uunet!decwrl!vixie!paul
  */
 
 /*
- * $Id: pathnames.h,v 1.2 1994/01/13 21:59:27 jtc Exp $
+ * Copyright (c) 1997,2000 by Internet Software Consortium, Inc.
+ *
+ * Permission to use, copy, modify, and distribute this software for any
+ * purpose with or without fee is hereby granted, provided that the above
+ * copyright notice and this permission notice appear in all copies.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS" AND INTERNET SOFTWARE CONSORTIUM DISCLAIMS
+ * ALL WARRANTIES WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES
+ * OF MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL INTERNET SOFTWARE
+ * CONSORTIUM BE LIABLE FOR ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL
+ * DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR
+ * PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS
+ * ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
+ * SOFTWARE.
  */
+
+#ifndef _PATHNAMES_H_
+#define _PATHNAMES_H_
 
 #if (defined(BSD)) && (BSD >= 199103) || defined(__linux) || defined(AIX)
 # include <paths.h>
 #endif /*BSD*/
-
+ 
 #ifndef CRONDIR
-			/* CRONDIR is where crond(8) and crontab(1) both chdir
+			/* CRONDIR is where cron(8) and crontab(1) both chdir
 			 * to; SPOOL_DIR, ALLOW_FILE, DENY_FILE, and LOG_FILE
 			 * are all relative to this directory.
 			 */
@@ -34,31 +39,41 @@
 			/* SPOOLDIR is where the crontabs live.
 			 * This directory will have its modtime updated
 			 * whenever crontab(1) changes a crontab; this is
-			 * the signal for crond(8) to look at each individual
+			 * the signal for cron(8) to look at each individual
 			 * crontab file and reload those whose modtimes are
 			 * newer than they were last time around (or which
 			 * didn't exist last time around...)
 			 */
 #define SPOOL_DIR	"tabs"
 
+			/* CRONSOCK is the name of the socket used by crontab
+			 * to poke cron while it is sleeping to re-read the
+			 * cron spool files.  It lives in the spool directory.
+			 */
+#define CRONSOCK	".sock"
+
 			/* undefining these turns off their features.  note
 			 * that ALLOW_FILE and DENY_FILE must both be defined
 			 * in order to enable the allow/deny code.  If neither
 			 * LOG_FILE or SYSLOG is defined, we don't log.  If
-			 * both are defined, we log both ways.
+			 * both are defined, we log both ways.  Note that if
+			 * LOG_CRON is defined by <syslog.h>, LOG_FILE will not
+			 * be used.
 			 */
-#define	ALLOW_FILE	"allow"		/*-*/
-#define DENY_FILE	"deny"		/*-*/
-/* #define LOG_FILE	"log"		/*-*/
+#define	ALLOW_FILE	"allow"
+#define DENY_FILE	"deny"
+#define LOG_FILE	"log"
 
 			/* where should the daemon stick its PID?
+			 * PIDDIR must end in '/'.
 			 */
 #ifdef _PATH_VARRUN
 # define PIDDIR	_PATH_VARRUN
 #else
 # define PIDDIR "/etc/"
 #endif
-#define PIDFILE		"%scron.pid"
+#define PIDFILE		"cron.pid"
+#define _PATH_CRON_PID	PIDDIR PIDFILE
 
 			/* 4.3BSD-style crontab */
 #define SYSCRONTAB	"/etc/crontab"
@@ -79,3 +94,22 @@
 #ifndef _PATH_DEFPATH
 # define _PATH_DEFPATH "/usr/bin:/bin"
 #endif
+
+#ifndef _PATH_TMP
+# define _PATH_TMP "/tmp"
+#endif
+
+#ifndef _PATH_DEVNULL
+# define _PATH_DEVNULL "/dev/null"
+#endif
+
+#if !defined(_PATH_SENDMAIL)
+# define _PATH_SENDMAIL "/usr/lib/sendmail"
+#endif /*SENDMAIL*/
+
+/* XXX */
+#define _PATH_ATJOBS	"/var/at/jobs"
+#define _PATH_AT_ALLOW	"/var/at/at.allow"
+#define _PATH_AT_DENY	"/var/at/at.deny"
+
+#endif /* _PATHNAMES_H_ */

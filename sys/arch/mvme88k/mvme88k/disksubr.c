@@ -1,4 +1,6 @@
+/*	$OpenBSD: disksubr.c,v 1.16 2001/08/26 14:31:12 miod Exp $	*/
 /*
+ * Copyright (c) 1998 Steve Murphree, Jr.
  * Copyright (c) 1995 Dale Rahn.
  * All rights reserved.
  *   
@@ -29,9 +31,17 @@
  */
 
 #include <sys/param.h>
+#include <sys/systm.h>
 #include <sys/buf.h>
-#define DKTYPENAMES
+#include <sys/device.h>
+#undef DKTYPENAMES
 #include <sys/disklabel.h>
+#include <sys/disk.h>
+
+#include <scsi/scsi_all.h>
+#include <scsi/scsiconf.h>
+
+#include <machine/autoconf.h>
 
 #define b_cylin b_resid
 
@@ -39,30 +49,158 @@
 int disksubr_debug = 0;
 #endif
 
-static void bsdtocpulabel __P((struct disklabel *lp,
-	struct cpu_disklabel *clp));
-static void cputobsdlabel __P((struct disklabel *lp,
-	struct cpu_disklabel *clp));
+static void bsdtocpulabel(struct disklabel *lp,
+	struct cpu_disklabel *clp);
+static void cputobsdlabel(struct disklabel *lp,
+	struct cpu_disklabel *clp);
+int get_target(void);
 
 #ifdef DEBUG
-static void printlp __P((struct disklabel *lp, char *str));
-static void printclp __P((struct cpu_disklabel *clp, char *str));
+static void printlp(struct disklabel *lp, char *str);
+static void printclp(struct cpu_disklabel *clp, char *str);
 #endif
 
+/* 
+ * Returns the ID of the SCSI disk based on Motorola's CLUN/DLUN stuff
+ * bootdev == CLUN << 8 | DLUN.
+ * This handles SBC SCSI and MVME328.  It will need to be modified for 
+ * MVME327.  We do not handle MVME328 daughter cards.  smurph
+ */
 int
-dk_establish()
+get_target()
 {
-	return(-1);
+	extern int bootdev;
+
+	switch (bootdev) {
+	case 0x0000: case 0x0600: case 0x0700: case 0x1600: case 0x1700: case 0x1800: case 0x1900:
+		return 0;
+	case 0x0010: case 0x0608: case 0x0708: case 0x1608: case 0x1708: case 0x1808: case 0x1908:
+		return 1;
+	case 0x0020: case 0x0610: case 0x0710: case 0x1610: case 0x1710: case 0x1810: case 0x1910:
+		return 2;
+	case 0x0030: case 0x0618: case 0x0718: case 0x1618: case 0x1718: case 0x1818: case 0x1918:
+		return 3;
+	case 0x0040: case 0x0620: case 0x0720: case 0x1620: case 0x1720: case 0x1820: case 0x1920:
+		return 4;
+	case 0x0050: case 0x0628: case 0x0728: case 0x1628: case 0x1728: case 0x1828: case 0x1928:
+		return 5;
+	case 0x0060: case 0x0630: case 0x0730: case 0x1630: case 0x1730: case 0x1830: case 0x1930:
+		return 6;
+	default:
+		return 0;
+	}
 }
+
+void
+dk_establish(dk, dev)
+	struct disk *dk;
+	struct device *dev;
+{
+	struct scsibus_softc *sbsc;
+	int target, lun;
+
+	if (bootpart == -1) /* ignore flag from controller driver? */
+		return;
+
+	/*
+	 * scsi: sd,cd
+	 */
+
+	if (strncmp("sd", dev->dv_xname, 2) == 0 ||
+	    strncmp("cd", dev->dv_xname, 2) == 0) {
+
+		sbsc = (struct scsibus_softc *)dev->dv_parent;
+		target = get_target(); /* Work the Motorola Magic */
+		lun = 0;
+    		
+		if (sbsc->sc_link[target][lun] != NULL &&
+		    sbsc->sc_link[target][lun]->device_softc == (void *)dev) {
+			bootdv = dev;
+			return;
+		}
+	}
+}
+
 
 /*
  * Attempt to read a disk label from a device
- * using the indicated stategy routine.
+ * using the indicated strategy routine.
  * The label must be partly set up before this:
  * secpercyl and anything required in the strategy routine
  * (e.g., sector size) must be filled in before calling us.
  * Returns null on success and an error string on failure.
  */
+
+char *
+readdisklabel(dev, strat, lp, clp, spoofonly)
+	dev_t dev;
+	void (*strat)(struct buf *);
+	struct disklabel *lp;
+	struct cpu_disklabel *clp;
+	int spoofonly;
+{
+	struct buf *bp;
+	int error, i;
+
+	/* minimal requirements for archetypal disk label */
+	if (lp->d_secsize == 0)
+		lp->d_secsize = DEV_BSIZE;
+	if (lp->d_secperunit == 0)
+		lp->d_secperunit = 0x1fffffff;
+	lp->d_npartitions = RAW_PART + 1;
+	for (i = 0; i < RAW_PART ; i++) {
+		lp->d_partitions[i].p_size = 0;
+		lp->d_partitions[i].p_offset = 0;
+	}
+	if (lp->d_partitions[i].p_size == 0)
+		lp->d_partitions[i].p_size = lp->d_secperunit;
+
+	/* don't read the on-disk label if we are in spoofed-only mode */
+	if (spoofonly)
+		return (NULL);
+
+	/* obtain buffer to probe drive with */
+	bp = geteblk((int)lp->d_secsize);
+
+	/* request no partition relocation by driver on I/O operations */
+	bp->b_dev = dev;
+	bp->b_blkno = LABELSECTOR;
+	bp->b_bcount = lp->d_secsize;
+	bp->b_flags = B_BUSY | B_READ;
+	bp->b_cylin = 0; /* contained in block 0 */
+	(*strat)(bp);
+
+	error = biowait(bp);
+	if (error == 0)
+		bcopy(bp->b_data, clp, sizeof (struct cpu_disklabel));
+	bp->b_flags = B_INVAL | B_AGE | B_READ;
+	brelse(bp);
+
+	if (error)
+		return ("disk label read error");
+
+#if defined(CD9660)
+	if (iso_disklabelspoof(dev, strat, lp) == 0)
+		return (NULL);
+#endif
+	if (clp->magic1 != DISKMAGIC || clp->magic2 != DISKMAGIC)
+		return ("no disk label");
+
+	cputobsdlabel(lp, clp);
+
+	if (dkcksum(lp) != 0)
+		return ("disk label corrupted");
+
+#ifdef DEBUG
+	if (disksubr_debug > 0) {
+		printlp(lp, "readdisklabel:bsd label");
+		printclp(clp, "readdisklabel:cpu label");
+	}
+#endif
+	return (NULL);
+}
+
+#if 0
 char *
 readdisklabel(dev, strat, lp, clp)
 	dev_t dev;
@@ -94,6 +232,10 @@ readdisklabel(dev, strat, lp, clp)
 	brelse(bp);
 
 	if (msg || clp->magic1 != DISKMAGIC || clp->magic2 != DISKMAGIC) {
+#if defined(CD9660)
+		if (iso_disklabelspoof(dev, strat, lp) == 0)
+			msg = NULL;
+#endif
 		return (msg); 
 	}
 
@@ -107,6 +249,7 @@ readdisklabel(dev, strat, lp, clp)
 	return (msg);
 }
 
+#endif /* 0 */
 /*
  * Check new disk label for sensibility
  * before setting it.
@@ -117,7 +260,7 @@ setdisklabel(olp, nlp, openmask, clp)
 	u_long openmask;
 	struct cpu_disklabel *clp;
 {
-	register i;
+	register int i;
 	register struct partition *opp, *npp;
 
 #ifdef DEBUG
@@ -179,9 +322,10 @@ setdisklabel(olp, nlp, openmask, clp)
 /*
  * Write disk label back to device after modification.
  */
+int
 writedisklabel(dev, strat, lp, clp)
 	dev_t dev;
-	void (*strat)();
+	void (*strat)(struct buf *);
 	register struct disklabel *lp;
 	struct cpu_disklabel *clp;
 {
@@ -199,13 +343,13 @@ writedisklabel(dev, strat, lp, clp)
 
 	/* request no partition relocation by driver on I/O operations */
 	bp->b_dev = dev;
-	bp->b_blkno = 0; /* contained in block 0 */
+	bp->b_blkno = LABELSECTOR;
 	bp->b_bcount = lp->d_secsize;
 	bp->b_flags = B_BUSY | B_READ;
 	bp->b_cylin = 0; /* contained in block 0 */
 	(*strat)(bp);
 
-	if (error = biowait(bp)) {
+	if ((error = biowait(bp)) != 0 ) {
 		/* nothing */
 	} else {
 		bcopy(bp->b_data, clp, sizeof(struct cpu_disklabel));
@@ -251,45 +395,54 @@ writedisklabel(dev, strat, lp, clp)
 
 
 int
-bounds_check_with_label(bp, lp, wlabel)
+bounds_check_with_label(bp, lp, osdep, wlabel)
 	struct buf *bp;
 	struct disklabel *lp;
+	struct cpu_disklabel *osdep;
 	int wlabel;
 {
+#define blockpersec(count, lp) ((count) * (((lp)->d_secsize) / DEV_BSIZE))
 	struct partition *p = lp->d_partitions + DISKPART(bp->b_dev);
-	int labelsect = lp->d_partitions[0].p_offset;
-	int maxsz = p->p_size;
-	int sz = (bp->b_bcount + DEV_BSIZE - 1) >> DEV_BSHIFT;
+	int labelsect = blockpersec(lp->d_partitions[0].p_offset, lp) +
+	    LABELSECTOR;
+	int sz = howmany(bp->b_bcount, DEV_BSIZE);
+
+	/* avoid division by zero */
+	if (lp->d_secpercyl == 0) {
+		bp->b_error = EINVAL;
+		goto bad;
+	}
 
 	/* overwriting disk label ? */
 	/* XXX should also protect bootstrap in first 8K */
-        if (bp->b_blkno + p->p_offset <= LABELSECTOR + labelsect &&
+	if (bp->b_blkno + blockpersec(p->p_offset, lp) <= labelsect &&
 #if LABELSECTOR != 0
-            bp->b_blkno + p->p_offset + sz > LABELSECTOR + labelsect &&
+	    bp->b_blkno + blockpersec(p->p_offset, lp) + sz > labelsect &&
 #endif
-            (bp->b_flags & B_READ) == 0 && wlabel == 0) {
-                bp->b_error = EROFS;
-                goto bad;
-        }
+	    (bp->b_flags & B_READ) == 0 && wlabel == 0) {
+		bp->b_error = EROFS;
+		goto bad;
+	}
 
 	/* beyond partition? */
-        if (bp->b_blkno < 0 || bp->b_blkno + sz > maxsz) {
-                /* if exactly at end of disk, return an EOF */
-                if (bp->b_blkno == maxsz) {
-                        bp->b_resid = bp->b_bcount;
-                        return(0);
-                }
-                /* or truncate if part of it fits */
-                sz = maxsz - bp->b_blkno;
-                if (sz <= 0) {
-			bp->b_error = EINVAL;
-                        goto bad;
+	if (bp->b_blkno + sz > blockpersec(p->p_size, lp)) {
+		sz = blockpersec(p->p_size, lp) - bp->b_blkno;
+		if (sz == 0) {
+			/* if exactly at end of disk, return an EOF */
+			bp->b_resid = bp->b_bcount;
+			return(0);
 		}
-                bp->b_bcount = sz << DEV_BSHIFT;
-        }
+		if (sz <= 0) {
+			bp->b_error = EINVAL;
+			goto bad;
+		}
+		/* or truncate if part of it fits */
+		bp->b_bcount = sz << DEV_BSHIFT;
+	}
 
 	/* calculate cylinder for disksort to order transfers with */
-        bp->b_cylin = (bp->b_blkno + p->p_offset) / lp->d_secpercyl;
+	bp->b_cylin = (bp->b_blkno + blockpersec(p->p_offset, lp)) /
+	    lp->d_secpercyl;
 	return(1);
 
 bad:
@@ -441,8 +594,11 @@ cputobsdlabel(lp, clp)
 	int i;
 
 	if (clp->version == 0) {
-		struct cpu_disklabel_old *clpo = (void *) clp;
-		printf("Reading old disklabel\n");
+#ifdef DEBUG
+		if (disksubr_debug > 0) {
+			printf("Reading old disklabel\n");
+		}
+#endif
 		lp->d_magic = clp->magic1;
 		lp->d_type = clp->type;
 		lp->d_subtype = clp->subtype;
@@ -502,7 +658,11 @@ cputobsdlabel(lp, clp)
 		lp->d_checksum = 0;
 		lp->d_checksum = dkcksum(lp);
 	} else {
-		printf("Reading new disklabel\n");
+#ifdef DEBUG
+		if (disksubr_debug > 0) {
+			printf("Reading new disklabel\n");
+		}
+#endif
 		lp->d_magic = clp->magic1;
 		lp->d_type = clp->type;
 		lp->d_subtype = clp->subtype;
@@ -562,7 +722,7 @@ cputobsdlabel(lp, clp)
 		lp->d_checksum = 0;
 		lp->d_checksum = dkcksum(lp);
 	}
-#if DEBUG
+#if defined(DEBUG)
 	if (disksubr_debug > 0) {
 		printlp(lp, "translated label read from disk\n");
 	}

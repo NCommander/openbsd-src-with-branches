@@ -1,3 +1,4 @@
+/*	$OpenBSD: pcb.h,v 1.8 2001/08/12 12:03:02 heko Exp $ */
 /*
  * Copyright (c) 1996 Nivas Madhur
  * Mach Operating System
@@ -30,8 +31,10 @@
  */
 /*
  */
-#ifndef _PCB_H_
-#define _PCB_H_
+#ifndef _M88K_PCB_H_
+#define _M88K_PCB_H_
+
+#include <machine/reg.h>
 
 /* 
  * Our PCB is the regular PCB+Save area for kernel frame.
@@ -46,7 +49,7 @@
 
 /*
  * This must always be an even number of words long so that our stack
- * will always be properly aligned (88k need 8 byte alignmet). Also,
+ * will always be properly aligned (88k need 8 byte alignment). Also,
  * place r14 on double word boundary so that we can use st.d while
  * saving the regs.
  */
@@ -74,54 +77,7 @@ struct m88100_pcb {
     unsigned pcb_sp; 	/* kernel stack pointer */
 };
 
-
-/*
- *	m88100_saved_state	this structure corresponds to the state
- *				of the user registers as saved on the
- *				stack upon kernel entry.  This structure
- *				is used internally only.  Since this
- *				structure may change from version to
- *				version, it is hidden from the user.
- */
-
-/* This must always be an even number of words long */
-
-struct m88100_saved_state {
-    unsigned r[32];
-    unsigned fpsr;
-    unsigned fpcr;
-    unsigned epsr;
-    unsigned sxip;
-    unsigned snip;
-    unsigned sfip;
-    unsigned ssbr;
-    unsigned dmt0;
-    unsigned dmd0;
-    unsigned dma0;
-    unsigned dmt1;
-    unsigned dmd1;
-    unsigned dma1;
-    unsigned dmt2;
-    unsigned dmd2;
-    unsigned dma2;
-    unsigned fpecr;
-    unsigned fphs1;
-    unsigned fpls1;
-    unsigned fphs2;
-    unsigned fpls2;
-    unsigned fppt;
-    unsigned fprh;
-    unsigned fprl;
-    unsigned fpit;
-    unsigned vector;	/* exception vector number */
-    unsigned mask;	/* interrupt mask level */
-    unsigned mode;	/* interrupt mode */
-    unsigned scratch1;	/* used by locore trap handling code */
-    unsigned ipfsr;      /* P BUS status - used in inst fault handling */
-    unsigned dpfsr;      /* P BUS status - used in data fault handling */
-    unsigned pad;	/* alignment */
-};
-
+#define m88100_saved_state reg
 #define trapframe m88100_saved_state
 
 struct pcb
@@ -149,4 +105,4 @@ struct md_coredump {
 	struct	trapframe md_tf;
 };
 
-#endif  _PCB_H_
+#endif /* _M88K_PCB_H_ */

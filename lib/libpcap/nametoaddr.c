@@ -1,7 +1,7 @@
-/*	$NetBSD: nametoaddr.c,v 1.3 1995/04/29 05:42:23 cgd Exp $	*/
+/*	$OpenBSD: nametoaddr.c,v 1.8 2000/04/26 21:25:53 jakob Exp $	*/
 
 /*
- * Copyright (c) 1990, 1991, 1992, 1993, 1994
+ * Copyright (c) 1990, 1991, 1992, 1993, 1994, 1995, 1996
  *	The Regents of the University of California.  All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -25,32 +25,41 @@
  */
 
 #ifndef lint
-static char rcsid[] =
-    "@(#) Header: nametoaddr.c,v 1.21 94/06/20 19:07:54 leres Exp (LBL)";
+static const char rcsid[] =
+    "@(#) $Header: /cvs/src/lib/libpcap/nametoaddr.c,v 1.8 2000/04/26 21:25:53 jakob Exp $ (LBL)";
 #endif
 
 #include <sys/param.h>
+#include <sys/types.h>				/* concession to AIX */
 #include <sys/socket.h>
+#include <sys/time.h>
+
+struct mbuf;
+struct rtentry;
+
 #include <net/if.h>
 #include <netinet/in.h>
 #include <netinet/if_ether.h>
 #include <arpa/inet.h>
+#ifdef INET6
+#include <netdb.h>
+#include <sys/socket.h>
+#endif /*INET6*/
 
 #include <ctype.h>
 #include <errno.h>
-#include <netdb.h>
-#include <pcap.h>
-#include <pcap-namedb.h>
-#include <stdio.h>
-#ifdef __NetBSD__
 #include <stdlib.h>
-#include <string.h>
-#endif
+#include <memory.h>
+#include <netdb.h>
+#include <stdio.h>
+
+#include "pcap-int.h"
 
 #include "gencode.h"
+#include <pcap-namedb.h>
 
-#ifndef __GNUC__
-#define inline
+#ifdef HAVE_OS_PROTO_H
+#include "os-proto.h"
 #endif
 
 #ifndef NTOHL
@@ -58,41 +67,59 @@ static char rcsid[] =
 #define NTOHS(x) (x) = ntohs(x)
 #endif
 
-static inline int xdtoi(int);
+static __inline int xdtoi(int);
 
 /*
  *  Convert host name to internet address.
  *  Return 0 upon failure.
  */
-u_long **
+bpf_u_int32 **
 pcap_nametoaddr(const char *name)
 {
 #ifndef h_addr
-	static u_long *hlist[2];
+	static bpf_u_int32 *hlist[2];
 #endif
-	u_long **p;
+	bpf_u_int32 **p;
 	struct hostent *hp;
 
 	if ((hp = gethostbyname(name)) != NULL) {
 #ifndef h_addr
-		hlist[0] = (u_long *)hp->h_addr;
+		hlist[0] = (bpf_u_int32 *)hp->h_addr;
 		NTOHL(hp->h_addr);
 		return hlist;
 #else
-		for (p = (u_long **)hp->h_addr_list; *p; ++p)
+		for (p = (bpf_u_int32 **)hp->h_addr_list; *p; ++p)
 			NTOHL(**p);
-		return (u_long **)hp->h_addr_list;
+		return (bpf_u_int32 **)hp->h_addr_list;
 #endif
 	}
 	else
 		return 0;
 }
 
+#ifdef INET6
+struct addrinfo *
+pcap_nametoaddrinfo(const char *name)
+{
+	struct addrinfo hints, *res;
+	int error;
+
+	memset(&hints, 0, sizeof(hints));
+	hints.ai_family = PF_UNSPEC;
+	hints.ai_socktype = SOCK_STREAM;	/*not really*/
+	error = getaddrinfo(name, NULL, &hints, &res);
+	if (error)
+		return NULL;
+	else
+		return res;
+}
+#endif /*INET6*/
+
 /*
  *  Convert net name to internet address.
  *  Return 0 upon failure.
  */
-u_long
+bpf_u_int32
 pcap_nametonetaddr(const char *name)
 {
 	struct netent *np;
@@ -133,14 +160,12 @@ pcap_nametoport(const char *name, int *port, int *proto)
 		sp = getservbyname(name, other);
 		if (sp != 0) {
 			NTOHS(sp->s_port);
+#ifdef notdef
 			if (*port != sp->s_port)
 				/* Can't handle ambiguous names that refer
 				   to different port numbers. */
-#ifdef notdef
 				warning("ambiguous port %s in /etc/services",
 					name);
-#else
-			;
 #endif
 			*proto = PROTO_UNDEF;
 		}
@@ -181,6 +206,9 @@ struct eproto eproto_db[] = {
 	{ "pup", ETHERTYPE_PUP },
 	{ "xns", ETHERTYPE_NS },
 	{ "ip", ETHERTYPE_IP },
+#ifdef INET6
+	{ "ip6", ETHERTYPE_IPV6 },
+#endif
 	{ "arp", ETHERTYPE_ARP },
 	{ "rarp", ETHERTYPE_REVARP },
 	{ "sprite", ETHERTYPE_SPRITE },
@@ -188,6 +216,7 @@ struct eproto eproto_db[] = {
 	{ "moprc", ETHERTYPE_MOPRC },
 	{ "decnet", ETHERTYPE_DN },
 	{ "lat", ETHERTYPE_LAT },
+	{ "sca", ETHERTYPE_SCA },
 	{ "lanbridge", ETHERTYPE_LANBRIDGE },
 	{ "vexp", ETHERTYPE_VEXP },
 	{ "vprod", ETHERTYPE_VPROD },
@@ -213,7 +242,7 @@ pcap_nametoeproto(const char *s)
 }
 
 /* Hex digit to integer. */
-static inline int
+static __inline int
 xdtoi(c)
 	register int c;
 {
@@ -225,42 +254,44 @@ xdtoi(c)
 		return c - 'A' + 10;
 }
 
-u_long
-__pcap_atoin(const char *s)
+int
+__pcap_atoin(const char *s, bpf_u_int32 *addr)
 {
-	u_long addr = 0;
 	u_int n;
+	int len;
 
+	*addr = 0;
+	len = 0;
 	while (1) {
 		n = 0;
 		while (*s && *s != '.')
 			n = n * 10 + *s++ - '0';
-		addr <<= 8;
-		addr |= n & 0xff;
+		*addr <<= 8;
+		*addr |= n & 0xff;
+		len += 8;
 		if (*s == '\0')
-			return addr;
+			return len;
 		++s;
 	}
 	/* NOTREACHED */
 }
 
-u_long
-__pcap_atodn(const char *s)
+int
+__pcap_atodn(const char *s, bpf_u_int32 *addr)
 {
 #define AREASHIFT 10
 #define AREAMASK 0176000
 #define NODEMASK 01777
 
-	u_long addr = 0;
 	u_int node, area;
 
 	if (sscanf((char *)s, "%d.%d", &area, &node) != 2)
 		bpf_error("malformed decnet address '%s'", s);
 
-	addr = (area << AREASHIFT) & AREAMASK;
-	addr |= (node & NODEMASK);
+	*addr = (area << AREASHIFT) & AREAMASK;
+	*addr |= (node & NODEMASK);
 
-	return(addr);
+	return(32);
 }
 
 /*
@@ -289,7 +320,7 @@ pcap_ether_aton(const char *s)
 	return (e);
 }
 
-#ifndef ETHER_SERVICE
+#ifndef HAVE_ETHER_HOSTTON
 /* Roll our own */
 u_char *
 pcap_ether_hostton(const char *name)
@@ -322,21 +353,23 @@ pcap_ether_hostton(const char *name)
 	return (NULL);
 }
 #else
+
+#if !defined(sgi) && !defined(__NetBSD__)
+extern int ether_hostton(char *, struct ether_addr *);
+#endif
+
 /* Use the os supplied routines */
 u_char *
 pcap_ether_hostton(const char *name)
 {
 	register u_char *ap;
 	u_char a[6];
-#ifndef sgi
-	extern int ether_hostton(char *, struct ether_addr *);
-#endif
 
 	ap = NULL;
-	if (ether_hostton((char*)name, (struct ether_addr *)a) == 0) {
+	if (ether_hostton((char *)name, (struct ether_addr *)a) == 0) {
 		ap = (u_char *)malloc(6);
 		if (ap != NULL)
-			memcpy(ap, a, 6);
+			memcpy((char *)ap, (char *)a, 6);
 	}
 	return (ap);
 }
@@ -359,5 +392,16 @@ __pcap_nametodnaddr(const char *name)
 #else
 	bpf_error("decnet name support not included, '%s' cannot be translated\n",
 		name);
+	/* NOTREACHED */
+#ifdef lint
+	/*
+	 * Arguably, lint should assume that functions which don't return
+	 * (i.e. that contain no return statements and whose ends are
+	 * unreachable) actually return a value, so callers won't get
+	 * warnings for using that value (since they won't actually
+	 * be doing so).  However, most lints don't seem to do that...
+	 */
+	return (0);
+#endif
 #endif
 }

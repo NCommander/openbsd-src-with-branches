@@ -1,6 +1,7 @@
+.\"	$OpenBSD: compat_sunos.8,v 1.10 2001/08/17 11:13:58 mpech Exp $
 .\"	$NetBSD: compat_sunos.8,v 1.6 1995/06/11 23:05:17 pk Exp $
 .\"
-.\" Copyright (c) 1984 Theo de Raadt
+.\" Copyright (c) 1994 Theo de Raadt
 .\" All rights reserved.
 .\"
 .\" Redistribution and use in source and binary forms, with or without
@@ -31,14 +32,27 @@
 .\" SUCH DAMAGE.
 .\"
 .Dd June 15, 1994
-.Dt COMPAT_SUNOS 8
-.Os BSD 4
+.Dt compat_sunos 8
+.Os
 .Sh NAME
-.Nm COMPAT_SUNOS
-.Nd setup procedure for m68k and sparc architectures
+.Nm compat_sunos
+.Nd setup procedure for running SunOS binaries under emulation
 .Sh DESCRIPTION
-NetBSD/sparc and some of the NetBSD/m68k architectures can run
-SunOS executables.  Most executables will work.
+OpenBSD/sparc and some of the OpenBSD/m68k architectures can run
+SunOS executables.
+Most executables will work.
+.Pp
+The SunOS compatibility feature is active
+for kernels compiled with the
+.Nm COMPAT_SUNOS
+option enabled.
+.Pp
+Compatibility with SunOS version 5 and later, better known as Solaris,
+is
+.Em not
+addressed by these instructions; please read the
+.Xr compat_svr4 8
+manual page instead.
 .Pp
 The exceptions include programs that use the SunOS kvm library,
 and various system calls, ioctl()'s, or kernel semantics
@@ -53,7 +67,9 @@ setup to allow dynamically linked executables to work.
 The files you need are on your SunOS machine.
 You need to worry about the legal issues of ensuring that you
 have a right to use the required files on your machine.
-On your NetBSD machine, do the following:
+On your
+.Ox
+machine, do the following:
 .Pp
 .Bl -enum -inset -offset 123 -compact
 .It
@@ -61,13 +77,13 @@ On your NetBSD machine, do the following:
 .fi
 .Pp
 .It
-.Li cp SunOS:/usr/lib/lib*.so.*.* NetBSD:/emul/sunos/usr/lib
+.Li cp SunOS:/usr/lib/lib*.so.*.* OpenBSD:/emul/sunos/usr/lib
 .Pp
 .It
-.Li cp SunOS:/usr/5lib/lib*.so.*.* NetBSD:/emul/sunos/usr/5lib
+.Li cp SunOS:/usr/5lib/lib*.so.*.* OpenBSD:/emul/sunos/usr/5lib
 .Pp
 .It
-.Li cp SunOS:/usr/lib/ld.so NetBSD:/emul/sunos/usr/lib/ld.so
+.Li cp SunOS:/usr/lib/ld.so OpenBSD:/emul/sunos/usr/lib/ld.so
 .Pp
 .It
 If you ever expect to use YP, you will want to create a link:
@@ -78,7 +94,9 @@ If you ever expect to use YP, you will want to create a link:
 .Pp
 Alternatively, you can use an NFS mount to accomplish the same
 effect.
-On your NetBSD machine, do the following:
+On your
+.Ox
+machine, do the following:
 .Pp
 .Bl -enum -inset -offset 123 -compact
 .Pp
@@ -90,10 +108,12 @@ On your NetBSD machine, do the following:
 .fi
 .El
 .Pp
-This will place the SunOS libraries on your NetBSD machine
-in a location where the SunOS compatibility code will look for
+This will place the SunOS libraries on your
+.Ox
+machine in a location where the SunOS compatibility code will look for
 first, where they do not conflict with the standard libraries.
-.Pp
+.Sh SEE ALSO
+.Xr compat_svr4 8
 .Sh BUGS
 A list of things which fail to work in compatibility mode should
 be here.

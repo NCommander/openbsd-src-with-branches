@@ -1,3 +1,5 @@
+/*	$OpenBSD: os.c,v 1.3 2001/01/29 01:58:03 niklas Exp $	*/
+
 /*
  * Copyright (c) 1984,1985,1989,1994,1995  Mark Nudelman
  * All rights reserved.
@@ -38,6 +40,7 @@
  */
 
 #include "less.h"
+#include <limits.h>
 #include <signal.h>
 #include <setjmp.h>
 #if HAVE_TIME_H
@@ -86,7 +89,7 @@ iread(fd, buf, len)
 	char *buf;
 	unsigned int len;
 {
-	register int n;
+	int n;
 
 #if MSOFTC
 	if (kbhit())
@@ -174,8 +177,8 @@ strerror(err)
 errno_message(filename)
 	char *filename;
 {
-	register char *p;
-	register char *m;
+	char *p;
+	char *m;
 #if HAVE_ERRNO
 	extern int errno;
 	p = strerror(errno);
@@ -188,27 +191,27 @@ errno_message(filename)
 }
 
 /*
- * Return the largest possible number that can fit in a long.
+ * Return the largest possible number that can fit in a POSITION.
  */
-#ifdef MAXLONG
-	static long
-get_maxlong()
+#ifdef QUAD_MAX
+	static POSITION
+get_maxpos()
 {
-	return (MAXLONG);
+	return (QUAD_MAX);
 }
 #else
-	static long
-get_maxlong()
+	static POSITION
+get_maxpos()
 {
-	long n, n2;
+	POSITION n, n2;
 
 	/*
 	 * Keep doubling n until we overflow.
 	 * {{ This actually only returns the largest power of two that
-	 *    can fit in a long, but percentage() doesn't really need
+	 *    can fit in a POSITION, but percentage() doesn't really need
 	 *    it any more accurate than that. }}
 	 */
-	n2 = 128;  /* Hopefully no maxlong is less than 128! */
+	n2 = 128;  /* Hopefully no maxpos is less than 128! */
 	do {
 		n = n2;
 		n2 *= 2;
@@ -218,17 +221,17 @@ get_maxlong()
 #endif
 
 /*
- * Return the ratio of two longs, as a percentage.
+ * Return the ratio of two POSITIONs, as a percentage.
  */
 	public int
 percentage(num, den)
-	long num, den;
+	POSITION num, den;
 {
-	static long maxlong100 = 0;
+	static POSITION maxpos100 = 0;
 	
-	if (maxlong100 == 0)
-		maxlong100 = get_maxlong() / 100;
-	if (num > maxlong100)
+	if (maxpos100 == 0)
+		maxpos100 = get_maxpos() / 100;
+	if (num > maxpos100)
 		return (num / (den/100));
 	else
 		return (100*num / den);

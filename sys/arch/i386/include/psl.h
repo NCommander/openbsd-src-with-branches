@@ -1,4 +1,5 @@
-/*	$NetBSD: psl.h,v 1.22 1995/10/11 04:20:23 mycroft Exp $	*/
+/*	$OpenBSD: psl.h,v 1.11 2000/08/05 22:07:32 niklas Exp $	*/
+/*	$NetBSD: psl.h,v 1.30 1996/05/13 01:28:05 mycroft Exp $	*/
 
 /*-
  * Copyright (c) 1990 The Regents of the University of California.
@@ -67,109 +68,32 @@
 
 #define	PSL_USERSET	(PSL_MBO | PSL_I)
 #ifdef VM86
-#define	PSL_USERSTATIC	(PSL_MBO | PSL_MBZ | PSL_I | PSL_IOPL | PSL_VIF | PSL_VIP)
+#define	PSL_USERSTATIC	(PSL_MBO | PSL_MBZ | PSL_I | PSL_IOPL | PSL_NT | PSL_VIF | PSL_VIP)
 #else
-#define	PSL_USERSTATIC	(PSL_MBO | PSL_MBZ | PSL_I | PSL_IOPL | PSL_VM | PSL_VIF | PSL_VIP)
+#define	PSL_USERSTATIC	(PSL_MBO | PSL_MBZ | PSL_I | PSL_IOPL | PSL_NT | PSL_VM | PSL_VIF | PSL_VIP)
 #endif
 
 #ifdef _KERNEL
+#include <machine/intr.h>
 
-/* Interrupt priority `levels'; not mutually exclusive. */
-#define	IPL_NONE	-1
-#define	IPL_BIO		0	/* block I/O */
-#define	IPL_NET		1	/* network */
-#define	IPL_TTY		2	/* terminal */
-#define	IPL_CLOCK	3	/* clock */
-#define	IPL_IMP		4	/* memory allocation */
-
-/* Interrupt sharing types. */
-#define	IST_NONE	0	/* none */
-#define	IST_PULSE	1	/* pulsed */
-#define	IST_EDGE	2	/* edge-triggered */
-#define	IST_LEVEL	3	/* level-triggered */
-
-/* Soft interrupt masks. */
-#define	SIR_CLOCK	31
-#define	SIR_CLOCKMASK	((1 << SIR_CLOCK))
-#define	SIR_NET		30
-#define	SIR_NETMASK	((1 << SIR_NET) | SIR_CLOCKMASK)
-#define	SIR_TTY		29
-#define	SIR_TTYMASK	((1 << SIR_TTY) | SIR_CLOCKMASK)
-#define	SIR_ALLMASK	(SIR_CLOCKMASK | SIR_NETMASK | SIR_TTYMASK)
-
-#ifndef LOCORE
-
-int cpl, ipending, astpending, imask[5];
+#ifndef _LOCORE
 
 /*
- * Add a mask to cpl, and return the old value of cpl.
+ * Interrupt handler chains.  isa_intr_establish() inserts a handler into
+ * the list.  The handler is called with its (single) argument.
  */
-static __inline int
-splraise(ncpl)
-	register int ncpl;
-{
-	register int ocpl = cpl;
-	cpl |= ncpl;
-	return (ocpl);
-}
 
-extern void spllower __P((void));
+struct intrhand {
+	int	(*ih_fun)(void *);
+	void	*ih_arg;
+	u_long	ih_count;
+	struct	intrhand *ih_next;
+	int	ih_level;
+	int	ih_irq;
+	char	*ih_what;
+};
 
-/*
- * Restore a value to cpl (unmasking interrupts).  If any unmasked
- * interrupts are pending, call spllower() to process them.
- *
- * NOTE: We go to the trouble of returning the old value of cpl for
- * the benefit of some splsoftclock() callers.  This extra work is
- * usually optimized away by the compiler.
- */
-static __inline int
-splx(ncpl)
-	register int ncpl;
-{
-	register int ocpl = cpl;
-	cpl = ncpl;
-	if (ipending & ~ncpl)
-		spllower();
-	return (ocpl);
-}
-
-/*
- * Hardware interrupt masks
- */
-#define	splbio()	splraise(imask[IPL_BIO])
-#define	splnet()	splraise(imask[IPL_NET])
-#define	spltty()	splraise(imask[IPL_TTY])
-#define	splclock()	splraise(imask[IPL_CLOCK])
-#define	splimp()	splraise(imask[IPL_IMP])
-#define	splstatclock()	splclock()
-
-/*
- * Software interrupt masks
- *
- * NOTE: splsoftclock() is used by hardclock() to lower the priority from
- * clock to softclock before it calls softclock().
- */
-#define	splsoftclock()	splx(SIR_CLOCKMASK)
-#define	splsoftnet()	splraise(SIR_NETMASK)
-#define	splsofttty()	splraise(SIR_TTYMASK)
-
-/*
- * Miscellaneous
- */
-#define	splhigh()	splraise(-1)
-#define	spl0()		splx(0)
-
-/*
- * Software interrupt registration
- */
-#define	softintr(n)	(ipending |= (1 << (n)))
-#define	setsoftast()	(astpending = 1)
-#define	setsoftclock()	softintr(SIR_CLOCK)
-#define	setsoftnet()	softintr(SIR_NET)
-#define	setsofttty()	softintr(SIR_TTY)
-
-#endif /* !LOCORE */
+#endif /* _LOCORE */
 #endif /* _KERNEL */
-
+ 
 #endif /* !_I386_PSL_H_ */

@@ -41,7 +41,7 @@
 #include <xfs/xfs_vnodeops.h>
 #include <xfs/xfs_dev.h>
 
-RCSID("$Id: xfs_message.c,v 1.1.1.1 2002/06/05 17:24:11 hin Exp $");
+RCSID("$Id: xfs_message.c,v 1.1.1.1 2002/06/07 03:32:59 hin Exp $");
 
 int
 xfs_message_installroot(int fd,

@@ -1,3 +1,4 @@
+/* *	$OpenBSD: pr.h,v 1.1.1.1 1995/10/18 08:45:57 deraadt Exp $*/
 /*-
  * Copyright (c) 1991 Keith Muller.
  * Copyright (c) 1993
@@ -35,7 +36,6 @@
  * SUCH DAMAGE.
  *
  *      from: @(#)pr.h	8.1 (Berkeley) 6/6/93
- *	$Id: pr.h,v 1.1 1994/01/06 15:57:29 cgd Exp $
  */
 
 /*
@@ -63,6 +63,15 @@
 #define	FNAME		""
 #define	LBUF		8192
 #define	HDBUF		512
+#define INFF		'\f'
+#define OUTFF		'\f'
+
+/*
+ * termination return code from inln (also returns a byte count)
+ */
+#define END		-1
+#define FORM		1
+#define NORMAL		0
 
 /*
  * structure for vertical columns. Used to balance cols on last page

@@ -1,3 +1,5 @@
+/*	$OpenBSD: forwback.c,v 1.3 2001/01/29 01:58:01 niklas Exp $	*/
+
 /*
  * Copyright (c) 1984,1985,1989,1994,1995  Mark Nudelman
  * All rights reserved.
@@ -42,6 +44,7 @@ extern int top_scroll;
 extern int quiet;
 extern int sc_width, sc_height;
 extern int quit_at_eof;
+extern int less_mode;
 extern int plusoption;
 extern int forw_scroll;
 extern int back_scroll;
@@ -111,7 +114,7 @@ squish_check()
  */
 	public void
 forw(n, pos, force, only_last, nblank)
-	register int n;
+	int n;
 	POSITION pos;
 	int force;
 	int only_last;
@@ -260,7 +263,7 @@ forw(n, pos, force, only_last, nblank)
  */
 	public void
 back(n, pos, force, only_last)
-	register int n;
+	int n;
 	POSITION pos;
 	int force;
 	int only_last;
@@ -350,8 +353,7 @@ forward(n, force, only_last)
 					pos = position(BOTTOM_PLUS_ONE);
 				} while (pos == NULL_POSITION);
 			}
-		} else
-		{
+		} else {
 			eof_bell();
 			hit_eof++;
 			return;

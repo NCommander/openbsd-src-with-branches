@@ -1,3 +1,4 @@
+/*	$OpenBSD: fetch.c,v 1.5 2001/12/07 09:18:08 deraadt Exp $	*/
 /*	$NetBSD: fetch.c,v 1.2 1995/01/20 08:51:56 jtc Exp $	*/
 
 /*-
@@ -37,23 +38,21 @@
 #if 0
 static char sccsid[] = "@(#)fetch.c	8.1 (Berkeley) 6/6/93";
 #endif
-static char rcsid[] = "$NetBSD: fetch.c,v 1.2 1995/01/20 08:51:56 jtc Exp $";
+static char rcsid[] = "$OpenBSD: fetch.c,v 1.5 2001/12/07 09:18:08 deraadt Exp $";
 #endif /* not lint */
 
 #include <sys/types.h>
+#include <signal.h>
 #include "systat.h"
 #include "extern.h"
 
 int
-kvm_ckread(a, b, l)
-	void *a, *b;
-	int l;
+kvm_ckread(void *a, void *b, int l)
 {
 	if (kvm_read(kd, (u_long)a, b, l) != l) {
 		if (verbose)
 			error("error reading kmem at %x\n", a);
 		return (0);
-	} 
-	else
+	} else
 		return (1);
 }

@@ -1,4 +1,5 @@
-/*	$NetBSD: utils.c,v 1.4 1995/08/02 07:17:02 jtc Exp $	*/
+/*	$OpenBSD: utils.c,v 1.19 2002/05/30 06:20:27 deraadt Exp $	*/
+/*	$NetBSD: utils.c,v 1.6 1997/02/26 14:40:51 cgd Exp $	*/
 
 /*-
  * Copyright (c) 1991, 1993, 1994
@@ -13,7 +14,7 @@
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
  * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
+ *    must display the following acknowledgment:
  *	This product includes software developed by the University of
  *	California, Berkeley and its contributors.
  * 4. Neither the name of the University nor the names of its contributors
@@ -37,7 +38,7 @@
 #if 0
 static char sccsid[] = "@(#)utils.c	8.3 (Berkeley) 4/1/94";
 #else
-static char rcsid[] = "$NetBSD: utils.c,v 1.4 1995/08/02 07:17:02 jtc Exp $";
+static char rcsid[] = "$OpenBSD: utils.c,v 1.19 2002/05/30 06:20:27 deraadt Exp $";
 #endif
 #endif /* not lint */
 
@@ -58,9 +59,7 @@ static char rcsid[] = "$NetBSD: utils.c,v 1.4 1995/08/02 07:17:02 jtc Exp $";
 #include "extern.h"
 
 int
-copy_file(entp, dne)
-	FTSENT *entp;
-	int dne;
+copy_file(FTSENT *entp, int dne)
 {
 	static char buf[MAXBSIZE];
 	struct stat to_stat, *fs;
@@ -68,13 +67,20 @@ copy_file(entp, dne)
 #ifdef VM_AND_BUFFER_CACHE_SYNCHRONIZED
 	char *p;
 #endif
-	
+
 	if ((from_fd = open(entp->fts_path, O_RDONLY, 0)) == -1) {
 		warn("%s", entp->fts_path);
 		return (1);
 	}
 
 	fs = entp->fts_statp;
+
+	/*
+	 * In -f (force) mode, we always unlink the destination first
+	 * if it exists.  Note that -i and -f are mutually exclusive.
+	 */
+	if (!dne && fflag)
+		(void)unlink(to.p_path);
 
 	/*
 	 * If the file exists and we're interactive, verify with the user.
@@ -84,7 +90,7 @@ copy_file(entp, dne)
 	 * other choice is 666 or'ed with the execute bits on the from file
 	 * modified by the umask.)
 	 */
-	if (!dne) {
+	if (!dne && !fflag) {
 		if (iflag) {
 			(void)fprintf(stderr, "overwrite %s? ", to.p_path);
 			checkch = ch = getchar();
@@ -98,7 +104,7 @@ copy_file(entp, dne)
 		to_fd = open(to.p_path, O_WRONLY | O_TRUNC, 0);
 	} else
 		to_fd = open(to.p_path, O_WRONLY | O_TRUNC | O_CREAT,
-		    fs->st_mode & ~(S_ISUID | S_ISGID));
+		    fs->st_mode & ~(S_ISTXT | S_ISUID | S_ISGID));
 
 	if (to_fd == -1) {
 		warn("%s", to.p_path);
@@ -116,8 +122,8 @@ copy_file(entp, dne)
 #ifdef VM_AND_BUFFER_CACHE_SYNCHRONIZED
 	if (fs->st_size <= 8 * 1048576) {
 		if ((p = mmap(NULL, (size_t)fs->st_size, PROT_READ,
-		    0, from_fd, (off_t)0)) == (char *)-1) {
-			warn("%s", entp->fts_path);
+		    MAP_FILE|MAP_SHARED, from_fd, (off_t)0)) == MAP_FAILED) {
+			warn("mmap: %s", entp->fts_path);
 			rval = 1;
 		} else {
 			if (write(to_fd, p, fs->st_size) != fs->st_size) {
@@ -161,7 +167,7 @@ copy_file(entp, dne)
 	 */
 #define	RETAINBITS \
 	(S_ISUID | S_ISGID | S_ISVTX | S_IRWXU | S_IRWXG | S_IRWXO)
-	else if (fs->st_mode & (S_ISUID | S_ISGID) && fs->st_uid == myuid)
+	else if (fs->st_mode & (S_ISUID | S_ISGID) && fs->st_uid == myuid) {
 		if (fstat(to_fd, &to_stat)) {
 			warn("%s", to.p_path);
 			rval = 1;
@@ -170,6 +176,7 @@ copy_file(entp, dne)
 			warn("%s", to.p_path);
 			rval = 1;
 		}
+	}
 	(void)close(from_fd);
 	if (close(to_fd)) {
 		warn("%s", to.p_path);
@@ -179,14 +186,12 @@ copy_file(entp, dne)
 }
 
 int
-copy_link(p, exists)
-	FTSENT *p;
-	int exists;
+copy_link(FTSENT *p, int exists)
 {
 	int len;
 	char link[MAXPATHLEN];
 
-	if ((len = readlink(p->fts_path, link, sizeof(link))) == -1) {
+	if ((len = readlink(p->fts_path, link, sizeof(link)-1)) == -1) {
 		warn("readlink: %s", p->fts_path);
 		return (1);
 	}
@@ -199,13 +204,11 @@ copy_link(p, exists)
 		warn("symlink: %s", link);
 		return (1);
 	}
-	return (0);
+	return (pflag ? setlink(p->fts_statp) : 0);
 }
 
 int
-copy_fifo(from_stat, exists)
-	struct stat *from_stat;
-	int exists;
+copy_fifo(struct stat *from_stat, int exists)
 {
 	if (exists && unlink(to.p_path)) {
 		warn("unlink: %s", to.p_path);
@@ -219,9 +222,7 @@ copy_fifo(from_stat, exists)
 }
 
 int
-copy_special(from_stat, exists)
-	struct stat *from_stat;
-	int exists;
+copy_special(struct stat *from_stat, int exists)
 {
 	if (exists && unlink(to.p_path)) {
 		warn("unlink: %s", to.p_path);
@@ -236,15 +237,13 @@ copy_special(from_stat, exists)
 
 
 int
-setfile(fs, fd)
-	register struct stat *fs;
-	int fd;
+setfile(struct stat *fs, int fd)
 {
 	static struct timeval tv[2];
 	int rval;
 
 	rval = 0;
-	fs->st_mode &= S_ISUID | S_ISGID | S_IRWXU | S_IRWXG | S_IRWXO;
+	fs->st_mode &= S_ISTXT | S_ISUID | S_ISGID | S_IRWXU | S_IRWXG | S_IRWXO;
 
 	TIMESPEC_TO_TIMEVAL(&tv[0], &fs->st_atimespec);
 	TIMESPEC_TO_TIMEVAL(&tv[1], &fs->st_mtimespec);
@@ -264,26 +263,51 @@ setfile(fs, fd)
 			warn("chown: %s", to.p_path);
 			rval = 1;
 		}
-		fs->st_mode &= ~(S_ISUID | S_ISGID);
+		fs->st_mode &= ~(S_ISTXT | S_ISUID | S_ISGID);
 	}
 	if (fd ? fchmod(fd, fs->st_mode) : chmod(to.p_path, fs->st_mode)) {
 		warn("chown: %s", to.p_path);
 		rval = 1;
 	}
 
-	if (fd ?
-	    fchflags(fd, fs->st_flags) : chflags(to.p_path, fs->st_flags)) {
-		warn("chflags: %s", to.p_path);
-		rval = 1;
-	}
+	/*
+	 * XXX
+	 * NFS doesn't support chflags; ignore errors unless there's reason
+	 * to believe we're losing bits.  (Note, this still won't be right
+	 * if the server supports flags and we were trying to *remove* flags
+	 * on a file that we copied, i.e., that we didn't create.)
+	 */
+	errno = 0;
+	if (fd ? fchflags(fd, fs->st_flags) : chflags(to.p_path, fs->st_flags))
+		if (errno != EOPNOTSUPP || fs->st_flags != 0) {
+			warn("chflags: %s", to.p_path);
+			rval = 1;
+		}
 	return (rval);
 }
 
-void
-usage()
+
+int
+setlink(struct stat *fs)
 {
-	(void)fprintf(stderr, "%s\n%s\n",
-"usage: cp [-R [-H | -L | -P] [-fip] src target",
-"       cp [-R [-H | -L | -P] [-fip] src1 ... srcN directory");
+
+	if (lchown(to.p_path, fs->st_uid, fs->st_gid)) {
+		if (errno != EPERM) {
+			warn("lchown: %s", to.p_path);
+			return (1);
+		}
+	}
+	return (0);
+}
+
+
+void
+usage(void)
+{
+	(void)fprintf(stderr,
+            "usage: %s [-R [-H | -L | -P]] [-fip] src target\n", __progname);
+	(void)fprintf(stderr,
+            "       %s [-R [-H | -L | -P]] [-fip] src1 ... srcN directory\n",
+             __progname);
 	exit(1);
 }

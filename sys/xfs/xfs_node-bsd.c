@@ -37,7 +37,7 @@
 #include <xfs/xfs_deb.h>
 #include <xfs/xfs_vnodeops.h>
 
-RCSID("$Id: xfs_node-bsd.c,v 1.1.1.1 2002/06/05 17:24:11 hin Exp $");
+RCSID("$Id: xfs_node-bsd.c,v 1.1.1.1 2002/06/07 03:32:59 hin Exp $");
 
 extern vop_t **xfs_vnodeop_p;
 

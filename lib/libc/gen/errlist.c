@@ -1,5 +1,3 @@
-/*	$NetBSD: errlist.c,v 1.4 1995/02/25 13:40:51 cgd Exp $	*/
-
 /*
  * Copyright (c) 1982, 1985, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -34,14 +32,15 @@
  */
 
 #if defined(LIBC_SCCS) && !defined(lint)
-#if 0
-static char sccsid[] = "@(#)errlst.c	8.2 (Berkeley) 11/16/93";
-#else
-static char *rcsid = "$NetBSD: errlist.c,v 1.4 1995/02/25 13:40:51 cgd Exp $";
-#endif
+static char *rcsid = "$OpenBSD: errlist.c,v 1.5 2002/05/01 13:36:18 drahn Exp $";
 #endif /* LIBC_SCCS and not lint */
 
-const char *const _sys_errlist[] = {
+#ifdef lint
+char *
+#else
+const char *const
+#endif
+	_sys_errlist[] = {
 	"Undefined error: 0",			/*  0 - ENOERROR */
 	"Operation not permitted",		/*  1 - EPERM */
 	"No such file or directory",		/*  2 - ENOENT */
@@ -126,7 +125,7 @@ const char *const _sys_errlist[] = {
 /* quotas & mush */
 	"Too many processes",			/* 67 - EPROCLIM */
 	"Too many users",			/* 68 - EUSERS */
-	"Disc quota exceeded",			/* 69 - EDQUOT */
+	"Disk quota exceeded",			/* 69 - EDQUOT */
 
 /* Network File System */
 	"Stale NFS file handle",		/* 70 - ESTALE */
@@ -140,5 +139,9 @@ const char *const _sys_errlist[] = {
 	"No locks available",			/* 77 - ENOLCK */
 	"Function not implemented",		/* 78 - ENOSYS */
 	"Inappropriate file type or format",	/* 79 - EFTYPE */
+	"Authentication error",			/* 80 - EAUTH */
+	"Need authenticator",			/* 81 - ENEEDAUTH */
+	"IPsec processing failure",		/* 82 - EIPSEC */
+	"Attribute not found",			/* 83 - ENOATTR */
 };
 int _sys_nerr = { sizeof _sys_errlist/sizeof _sys_errlist[0] };

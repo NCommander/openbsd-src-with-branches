@@ -1,5 +1,3 @@
-/*	$NetBSD: getttyent.c,v 1.9 1995/06/16 07:05:31 jtc Exp $	*/
-
 /*
  * Copyright (c) 1989, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -34,11 +32,7 @@
  */
 
 #if defined(LIBC_SCCS) && !defined(lint)
-#if 0
-static char sccsid[] = "@(#)getttyent.c	8.1 (Berkeley) 6/4/93";
-#else
-static char rcsid[] = "$NetBSD: getttyent.c,v 1.9 1995/06/16 07:05:31 jtc Exp $";
-#endif
+static char rcsid[] = "$OpenBSD: getttyent.c,v 1.4 1997/07/09 00:28:22 millert Exp $";
 #endif /* LIBC_SCCS and not lint */
 
 #include <ttyent.h>
@@ -49,6 +43,9 @@ static char rcsid[] = "$NetBSD: getttyent.c,v 1.9 1995/06/16 07:05:31 jtc Exp $"
 static char zapchar;
 static FILE *tf;
 
+static char *skip(char *);
+static char *value(char *);
+
 struct ttyent *
 getttynam(tty)
 	const char *tty;
@@ -56,7 +53,7 @@ getttynam(tty)
 	register struct ttyent *t;
 
 	setttyent();
-	while (t = getttyent())
+	while ((t = getttyent()))
 		if (!strcmp(tty, t->ty_name))
 			break;
 	endttyent();
@@ -71,7 +68,6 @@ getttyent()
 	register char *p;
 #define	MAXLINELENGTH	200
 	static char line[MAXLINELENGTH];
-	static char *skip(), *value();
 
 	if (!tf && !setttyent())
 		return (NULL);
@@ -134,7 +130,7 @@ getttyent()
 	tty.ty_comment = p;
 	if (*p == 0)
 		tty.ty_comment = 0;
-	if (p = strchr(p, '\n'))
+	if ((p = strchr(p, '\n')))
 		*p = '\0';
 	return (&tty);
 }
@@ -194,7 +190,7 @@ setttyent()
 	if (tf) {
 		rewind(tf);
 		return (1);
-	} else if (tf = fopen(_PATH_TTYS, "r"))
+	} else if ((tf = fopen(_PATH_TTYS, "r")))
 		return (1);
 	return (0);
 }

@@ -1,4 +1,5 @@
-/*	$NetBSD: grfvar.h,v 1.6 1995/03/28 18:16:06 jtc Exp $	*/
+/*	$OpenBSD: grfvar.h,v 1.7 2002/03/14 01:26:30 millert Exp $	*/
+/*	$NetBSD: grfvar.h,v 1.10 1997/03/31 07:34:19 scottr Exp $	*/
 
 /*
  * Copyright (c) 1988 University of Utah.
@@ -49,19 +50,8 @@ struct	grf_lockpage {
 };
 #define gl_lockslot gl_locks[0]
 
-/*
- * Static configuration info for display types
- */
-struct	grfsw {
-	int	gd_hwid;	/* id returned by hardware */
-	int	gd_swid;	/* id to be returned by software */
-	char	*gd_desc;	/* description printed at config time */
-	int	(*gd_init)();	/* boot time init routine */
-	int	(*gd_mode)();	/* misc function routine */
-};
-
 /* per display info */
-struct	grf_softc {
+struct	grf_data {
 	int	g_flags;		/* software flags */
 	struct  grfsw *g_sw;		/* static configuration info */
 	caddr_t	g_regkva;		/* KVA of registers */
@@ -72,6 +62,43 @@ struct	grf_softc {
 	short	*g_pid;			/* array of pids with device open */
 	int	g_lockpslot;		/* g_pid entry of g_lockp */
 	caddr_t	g_data;			/* device dependent data */
+};
+
+/*
+ * Static configuration info for display types
+ */
+struct	grfsw {
+	int	gd_hwid;	/* id returned by hardware */
+	int	gd_swid;	/* id to be returned by software */
+	char	*gd_desc;	/* description printed at config time */
+				/* boot time init routine */
+	int	(*gd_init)(struct grf_data *, int, caddr_t);
+				/* misc function routine */
+	int	(*gd_mode)(struct grf_data *, int, caddr_t);
+};
+
+struct	grf_softc {
+	struct	device sc_dev;		/* generic device info */
+	int	sc_scode;		/* select code; for grfdevno() */
+	struct	grf_data *sc_data;	/* display state information */
+	struct	ite_softc *sc_ite;	/* pointer to ite; may be NULL */
+};
+
+struct	grfdev_softc {
+	struct	device sc_dev;		/* generic device info */
+	struct	grf_data *sc_data;	/* generic grf data */
+	int	sc_scode;		/* select code, -1 for intio */
+};
+
+/*
+ * Set up by the hardware driver, and passed all the way down to
+ * the ITE, if appropriate.
+ */
+struct	grfdev_attach_args {
+	int	ga_scode;		/* XXX select code, -1 for intio */
+	int	ga_isconsole;		/* from hardware; is console? */
+	void	*ga_data;		/* hardware-dependent data */
+	void	*ga_ite;		/* ITE switch table */
 };
 
 /* flags */
@@ -97,7 +124,34 @@ struct	grf_softc {
 #define GRFUNIT(d)	((d) & 0x7)
 
 #ifdef _KERNEL
-extern	struct grf_softc grf_softc[];
-extern	struct grfsw grfsw[];
-extern	int ngrfsw;
-#endif
+extern	struct grf_data grf_cn;		/* grf_data for console device */
+
+/* grf.c prototypes */
+int	grfmap(dev_t, caddr_t *, struct proc *);
+int	grfunmap(dev_t, caddr_t, struct proc *);
+int	grfon(dev_t);
+int	grfoff(dev_t);
+int	grfaddr(struct grf_softc *, int);
+
+#ifdef COMPAT_HPUX
+int	hpuxgrfioctl(dev_t, int, caddr_t, int, struct proc *);
+
+int	grflock(struct grf_data *, int);
+int	grfunlock(struct grf_data *);
+int	grfdevno(dev_t);
+
+int	iommap(dev_t, caddr_t *);
+int	iounmmap(dev_t, caddr_t);
+
+int	grffindpid(struct grf_data *);
+void	grfrmpid(struct grf_data *);
+int	grflckmmap(dev_t, caddr_t *);
+int	grflckunmmap(dev_t, caddr_t);
+#endif /* COMPAT_HPUX */
+
+/* grf_subr.c prototypes */
+struct itesw;
+void	grfdev_attach(struct grfdev_softc *,
+	    int (*init)(struct grf_data *, int, caddr_t),
+	    caddr_t, struct grfsw *, struct itesw *itesw);
+#endif /* _KERNEL */

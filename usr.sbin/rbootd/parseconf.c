@@ -1,3 +1,4 @@
+/*	$OpenBSD: parseconf.c,v 1.5 2001/09/04 23:35:59 millert Exp $	*/
 /*	$NetBSD: parseconf.c,v 1.4 1995/10/06 05:12:16 thorpej Exp $	*/
 
 /*
@@ -48,7 +49,7 @@
 
 #ifndef lint
 /*static char sccsid[] = "@(#)parseconf.c	8.1 (Berkeley) 6/4/93";*/
-static char rcsid[] = "$NetBSD: parseconf.c,v 1.4 1995/10/06 05:12:16 thorpej Exp $";
+static char rcsid[] = "$OpenBSD: parseconf.c,v 1.5 2001/09/04 23:35:59 millert Exp $";
 #endif /* not lint */
 
 #include <sys/param.h>
@@ -87,9 +88,10 @@ ParseConfig()
 	CLIENT *client;
 	u_int8_t *addr;
 	char line[C_LINELEN];
-	register char *cp, *bcp;
-	register int i, j;
-	int omask, linecnt = 0;
+	char *cp, *bcp;
+	int i, j;
+	int linecnt = 0;
+	sigset_t mask, omask;
 
 	if (BootAny)				/* ignore config file */
 		return(1);
@@ -109,7 +111,9 @@ ParseConfig()
 	 *  this could have unexpected results if the server was HUP'd
 	 *  whilst reconfiguring.  Hence, it is done here.
 	 */
-	omask = sigblock(sigmask(SIGHUP));
+	sigemptyset(&mask);
+	sigaddset(&mask, SIGHUP);
+	sigprocmask(SIG_BLOCK, &mask, &omask);
 
 	/*
 	 *  GETSTR positions `bcp' at the start of the current token,
@@ -130,7 +134,7 @@ ParseConfig()
 		if (*line == '\0' || *line == '#')	/* ignore comment */
 			continue;
 
-		if ((cp = index(line,'#')) != NULL)	/* trash comments */
+		if ((cp = strchr(line,'#')) != NULL)	/* trash comments */
 			*cp = '\0';
 
 		cp = line;				/* init `cp' */
@@ -211,7 +215,7 @@ ParseConfig()
 
 	(void) fclose(fp);				/* close config file */
 
-	(void) sigsetmask(omask);			/* reset signal mask */
+	sigprocmask(SIG_SETMASK, &omask, NULL);		/* reset signal mask */
 
 	return(1);					/* return success */
 }
@@ -250,9 +254,9 @@ ParseAddr(str)
 	char *str;
 {
 	static u_int8_t addr[RMP_ADDRLEN];
-	register char *cp;
-	register unsigned i;
-	register int part, subpart;
+	char *cp;
+	unsigned int i;
+	int part, subpart;
 
 	bzero((char *)&addr[0], RMP_ADDRLEN);	/* zero static buffer */
 
@@ -314,8 +318,8 @@ GetBootFiles()
 {
 	DIR *dfd;
 	struct stat statb;
-	register struct dirent *dp;
-	register int i;
+	struct dirent *dp;
+	int i;
 
 	/*
 	 *  Free the current list of boot files.
@@ -329,7 +333,7 @@ GetBootFiles()
 	 *  Open current directory to read boot file names.
 	 */
 	if ((dfd = opendir(".")) == NULL) {	/* open BootDir */
-		syslog(LOG_ERR, "GetBootFiles: can't open directory (%s)\n",
+		syslog(LOG_ERR, "GetBootFiles: can't open directory (%s)",
 		       BootDir);
 		return(0);
 	}
@@ -355,7 +359,7 @@ GetBootFiles()
 	(void) closedir(dfd);			/* close BootDir */
 
 	if (i == 0)				/* cant find any boot files */
-		syslog(LOG_ERR, "GetBootFiles: no boot files (%s)\n", BootDir);
+		syslog(LOG_ERR, "GetBootFiles: no boot files (%s)", BootDir);
 
 	return(i);
 }

@@ -1,3 +1,5 @@
+/*	$OpenBSD: grf_clreg.h,v 1.7 1997/09/18 13:39:49 niklas Exp $	*/
+/*	$NetBSD: grf_clreg.h,v 1.6 1997/03/21 09:40:58 veego Exp $	*/
 
 /*
  * Copyright (c) 1995 Ezra Story
@@ -164,6 +166,7 @@ struct grfcltext_mode {
 #define GCT_ID_BLT_MODE		0x30
 #define GCT_ID_BLT_STAT_START	0x31
 #define GCT_ID_BLT_ROP		0x32
+#define GCT_ID_RESERVED		0x33
 #define GCT_ID_TRP_COL_LOW	0x34	/* transparent color */
 #define GCT_ID_TRP_COL_HIGH	0x35
 #define GCT_ID_TRP_MASK_LOW	0x38
@@ -244,6 +247,8 @@ struct grfcltext_mode {
 #define CRT_ID_LACE_END         0x19
 #define CRT_ID_LACE_CNTL        0x1A
 #define CRT_ID_EXT_DISP_CNTL    0x1B
+#define CRT_ID_SYNC_ADJ_GENLOCK 0x1C
+#define CRT_ID_OVERLAY_EXT_CTRL_REG    0x1D
 
 #define CRT_ID_GD_LATCH_RBACK	0x22
 
@@ -257,131 +262,55 @@ struct grfcltext_mode {
 #define PASS_ADDRESS_WP		0x9000
 
 /* Video DAC */
-#define VDAC_ADDRESS		0x03c8
-#define VDAC_ADDRESS_W		0x03c8
-#define VDAC_ADDRESS_R		0x03c7
-#define VDAC_STATE		0x03c7
-#define VDAC_DATA		0x03c9
-#define VDAC_MASK		0x03c6
-#define HDR			0x03c6	/* Hidden DAC register, 4 reads to access */
+#define VDAC_ADDRESS	0x03c8
+#define VDAC_ADDRESS_W	0x03c8
+#define VDAC_ADDRESS_R	\
+    (((cltype == PICASSO) && (cl_64bit == 0)) ? 0x03c7 + 0xfff : 0x3c7)
+#define VDAC_STATE	0x03c7
+#define VDAC_DATA	\
+    (((cltype == PICASSO) && (cl_64bit == 0)) ? 0x03c9 + 0xfff : 0x3c9)
+#define VDAC_MASK       0x03c6
+#define HDR	        0x03c6	/* Hidden DAC register, 4 reads to access */
 
 
 #define WGfx(ba, idx, val) \
-	do { vgaw(ba, GCT_ADDRESS, idx); vgaw(ba, GCT_ADDRESS_W , val); } while (0)
+	do { \
+		vgaw(ba, GCT_ADDRESS, idx); \
+		vgaw(ba, GCT_ADDRESS_W , val); \
+	} while (0)
 
 #define WSeq(ba, idx, val) \
-	do { vgaw(ba, SEQ_ADDRESS, idx); vgaw(ba, SEQ_ADDRESS_W , val); } while (0)
+	do { \
+		vgaw(ba, SEQ_ADDRESS, idx); \
+		vgaw(ba, SEQ_ADDRESS_W , val); \
+	} while (0) \
+
+/*		asm volatile ("nop"); \ */
 
 #define WCrt(ba, idx, val) \
-	do { vgaw(ba, CRT_ADDRESS, idx); vgaw(ba, CRT_ADDRESS_W , val); } while (0)
+	do { \
+		vgaw(ba, CRT_ADDRESS, idx); \
+		vgaw(ba, CRT_ADDRESS_W , val); \
+	} while (0)
 
 #define WAttr(ba, idx, val) \
 	do {	\
-		unsigned char tmp;\
-		vgaw(ba, CRT_ADDRESS, CRT_ID_ACT_TOGGLE_RBACK);\
-		tmp = vgar(ba, CRT_ADDRESS_R);\
-		if(tmp & 0x80)vgaw(ba,ACT_ADDRESS_W,vgar(ba,ACT_ADDRESS_R));\
-		vgaw(ba, ACT_ADDRESS_W, idx);\
-		vgaw(ba, ACT_ADDRESS_W, val);\
+		vgar(ba, ACT_ADDRESS_RESET); \
+		vgaw(ba, ACT_ADDRESS_W, idx); \
+		vgaw(ba, ACT_ADDRESS_W, val); \
 	} while (0)
 
 #define SetTextPlane(ba, m) \
 	do { \
-    	     WGfx(ba, GCT_ID_READ_MAP_SELECT, m & 3 );\
-	     WSeq(ba, SEQ_ID_MAP_MASK, (1 << (m & 3)));\
-        } while (0)
+		WGfx(ba, GCT_ID_READ_MAP_SELECT, m & 3 ); \
+		WSeq(ba, SEQ_ID_MAP_MASK, (1 << (m & 3))); \
+	} while (0)
 
-/* Special wakeup/passthrough registers on graphics boards
- *
- * The methods have diverged a bit for each board, so
- * WPass(P) has been converted into a set of specific
- * inline functions.
- */
-static inline void RegWakeup(volatile void *ba) {
-    	extern int cltype;
-    	extern unsigned char pass_toggle;
-
-    	switch (cltype) { 
-    	case SPECTRUM: 
-    	    	vgaw(ba, PASS_ADDRESS_W, 0x1f); 
-    	    	break; 
-    	case PICASSO: 
-    	    	vgaw(ba, PASS_ADDRESS_W, 0xff); 
-    	    	break; 
-    	case PICCOLO: 
-    	    	vgaw(ba, PASS_ADDRESS_W, vgar(ba, PASS_ADDRESS) | 0x10); 
-    	    	break; 
-    	} 
-    	delay(200000);
-}
-static inline void RegOnpass(volatile void *ba) {
-    	extern int cltype;
-    	extern unsigned char pass_toggle;
-
-    	switch (cltype) { 
-    	case SPECTRUM:
-    	    	vgaw(ba, PASS_ADDRESS_W, 0x4f); 
-    	    	break; 
-    	case PICASSO: 
-    	    	vgaw(ba, PASS_ADDRESS_WP, 0x01); 
-    	    	break; 
-    	case PICCOLO: 
-    	    	vgaw(ba, PASS_ADDRESS_W, vgar(ba, PASS_ADDRESS) & 0xdf); 
-    	    	break; 
-    	} 
-    	pass_toggle = 1;
-    	delay(200000);
-}
-static inline void RegOffpass(volatile void *ba) {
-    	extern int cltype;
-    	extern unsigned char pass_toggle;
-
-    	switch (cltype) { 
-    	case SPECTRUM: 
-    	    	vgaw(ba, PASS_ADDRESS_W, 0x6f); 
-    	    	break; 
-    	case PICASSO: 
-    	    	vgaw(ba, PASS_ADDRESS_W, 0xff); 
-    	    	delay(200000); 
-    	    	vgaw(ba, PASS_ADDRESS_W, 0xff); 
-    	    	break; 
-    	case PICCOLO: 
-    	    	vgaw(ba, PASS_ADDRESS_W, vgar(ba, PASS_ADDRESS) | 0x20); 
-    	    	break; 
-    	} 
-    	pass_toggle = 0;
-    	delay(200000);
-}
-
-static inline unsigned char RAttr(volatile void * ba, short idx) {
-
-	unsigned char tmp;
-	vgaw(ba, CRT_ADDRESS, CRT_ID_ACT_TOGGLE_RBACK);
-	tmp = vgar(ba, CRT_ADDRESS_R);
-	if(tmp & 0x80)vgar(ba,ACT_ADDRESS_R);
-	vgaw(ba, ACT_ADDRESS_W, idx);
-	return vgar (ba, ACT_ADDRESS_R);
-}
-
-static inline unsigned char RSeq(volatile void * ba, short idx) {
-	vgaw (ba, SEQ_ADDRESS, idx);
-	return vgar (ba, SEQ_ADDRESS_R);
-}
-
-static inline unsigned char RCrt(volatile void * ba, short idx) {
-	vgaw (ba, CRT_ADDRESS, idx);
-	return vgar (ba, CRT_ADDRESS_R);
-}
-
-static inline unsigned char RGfx(volatile void * ba, short idx) {
-	vgaw(ba, GCT_ADDRESS, idx);
-	return vgar (ba, GCT_ADDRESS_R);
-}
-
-int cl_mode __P((register struct grf_softc *gp, int cmd, void *arg, int a2, int a3));
-int cl_load_mon __P((struct grf_softc *gp, struct grfcltext_mode *gv)); 
-int grfcl_cnprobe __P((void));
-void grfcl_iteinit __P((struct grf_softc *gp));
+int cl_mode(register struct grf_softc *gp, u_long cmd, void *arg,
+			u_long a2, int a3);
+int cl_load_mon(struct grf_softc *gp, struct grfcltext_mode *gv); 
+int grfcl_cnprobe(void);
+void grfcl_iteinit(struct grf_softc *gp);
 
 #endif /* _GRF_RHREG_H */
 

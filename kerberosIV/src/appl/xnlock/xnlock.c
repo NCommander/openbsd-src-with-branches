@@ -199,7 +199,7 @@ get_words(void)
 static void
 usage(void)
 {
-    fprintf(stderr, "usage: %s [options] [message]\n", getprogname());
+    fprintf(stderr, "usage: %s [options] [message]\n", __progname);
     fprintf(stderr, "-fg color     foreground color\n");
     fprintf(stderr, "-bg color     background color\n");
     fprintf(stderr, "-rv           reverse foreground/background colors\n");
@@ -286,8 +286,8 @@ zrefresh(void)
       return -1;
   case 0:
       /* Child */
-      execlp("zrefresh", "zrefresh", 0);
-      execl(BINDIR "/zrefresh", "zrefresh", 0);
+      execlp("zrefresh", "zrefresh", (char *)NULL);
+      execl(BINDIR "/zrefresh", "zrefresh", (char *)NULL);
       return -1;
   default:
       /* Parent */
@@ -950,8 +950,6 @@ main (int argc, char **argv)
     int i;
     Widget override;
     XGCValues gcvalues;
-
-    setprogname (argv[0]);
 
     /*
      * Must be setuid root to read /etc/shadow, copy encrypted

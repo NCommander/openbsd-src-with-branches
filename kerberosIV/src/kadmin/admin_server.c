@@ -60,7 +60,7 @@ doexit(int sig)
     SIGRETURN(0);
 }
    
-static sig_atomic_t do_wait;
+static volatile sig_atomic_t do_wait;
 
 static
 RETSIGTYPE
@@ -116,7 +116,8 @@ cleanexit(int val)
 static RETSIGTYPE
 sigalrm(int sig)
 {
-    cleanexit(1);
+    kerb_fini();	/* not a signal race -- kerb_fini() does NOTHING */
+    _exit(1);
 }
 
 /*
@@ -531,8 +532,6 @@ main(int argc, char **argv)		/* admin_server main routine */
     int c;
     struct in_addr i_addr;
     int port = 0;
-
-    setprogname (argv[0]);
 
     umask(077);		/* Create protected files */
 

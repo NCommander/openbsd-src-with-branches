@@ -1,4 +1,5 @@
-/*	$NetBSD: fdesc.h,v 1.8 1995/03/29 22:08:11 briggs Exp $	*/
+/*	$OpenBSD: fdesc.h,v 1.6 2001/05/15 06:53:29 art Exp $	*/
+/*	$NetBSD: fdesc.h,v 1.9 1996/02/09 22:40:03 christos Exp $	*/
 
 /*
  * Copyright (c) 1992, 1993
@@ -41,10 +42,6 @@
  */
 
 #ifdef _KERNEL
-struct fdescmount {
-	struct vnode	*f_root;	/* Root node */
-};
-
 #define FD_ROOT		2
 #define FD_DEVFD	3
 #define FD_STDIN	4
@@ -71,13 +68,12 @@ struct fdescnode {
 	int		fd_ix;		/* filesystem index */
 };
 
-#define VFSTOFDESC(mp)	((struct fdescmount *)((mp)->mnt_data))
 #define	VTOFDESC(vp) ((struct fdescnode *)(vp)->v_data)
 
 extern dev_t devctty;
-extern int fdesc_init __P((void));
-extern int fdesc_root __P((struct mount *, struct vnode **));
-extern int fdesc_allocvp __P((fdntype, int, struct mount *, struct vnode **));
-extern int (**fdesc_vnodeop_p)();
+extern int fdesc_init(struct vfsconf *);
+extern int fdesc_root(struct mount *, struct vnode **);
+extern int fdesc_allocvp(fdntype, int, struct mount *, struct vnode **);
+extern int (**fdesc_vnodeop_p)(void *);
 extern struct vfsops fdesc_vfsops;
 #endif /* _KERNEL */

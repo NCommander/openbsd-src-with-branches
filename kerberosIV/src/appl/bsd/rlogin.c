@@ -343,12 +343,12 @@ static void
 stop(int all)
 {
 	mode(0);
-	signal(SIGCHLD, SIG_IGN);
+	signal(SIGCHLD, SIG_DFL);
 	kill(all ? 0 : getpid(), SIGTSTP);
 	signal(SIGCHLD, catch_child);
 	mode(1);
 #ifdef SIGWINCH
-	kill(SIGWINCH, getpid()); /* check for size changes, if caught */
+	kill(getpid(), SIGWINCH); /* check for size changes, if caught */
 #endif
 }
 
@@ -492,7 +492,7 @@ doit(void)
 	    done(1);
 	}
 	if (child == 0) {
-	        signal(SIGCHLD, SIG_IGN);
+	        signal(SIGCHLD, SIG_DFL);
 	        signal(SIGTTOU, SIG_IGN);
 		if (reader() == 0)
 		    errx(1, "connection closed.\r");
@@ -548,8 +548,6 @@ main(int argc, char **argv)
 	argoff = dflag = Dflag = 0;
 	one = 1;
 	host = user = NULL;
-
-	setprogname(argv[0]);
 
 	/* handle "rlogin host flags" */
 	if (argc > 2 && argv[1][0] != '-') {

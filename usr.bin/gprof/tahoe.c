@@ -1,3 +1,4 @@
+/*	$OpenBSD: tahoe.c,v 1.3 2001/03/22 05:18:30 mickey Exp $	*/
 /*	$NetBSD: tahoe.c,v 1.5 1995/04/19 07:16:27 cgd Exp $	*/
 
 /*
@@ -37,7 +38,7 @@
 #if 0
 static char sccsid[] = "@(#)tahoe.c	8.1 (Berkeley) 6/6/93";
 #else
-static char rcsid[] = "$NetBSD: tahoe.c,v 1.5 1995/04/19 07:16:27 cgd Exp $";
+static char rcsid[] = "$OpenBSD: tahoe.c,v 1.3 2001/03/22 05:18:30 mickey Exp $";
 #endif
 #endif /* not lint */
 
@@ -210,7 +211,7 @@ reladdr( modep )
     cp += 1;			/* skip over the mode */
     switch ( mode ) {
 	default:
-	    fprintf( stderr , "[reladdr] not relative address\n" );
+	    warnx("[reladdr] not relative address");
 	    return (unsigned long) modep;
 	case byterel:
 	    return (unsigned long) ( cp + sizeof *cp + *cp );
@@ -225,6 +226,7 @@ reladdr( modep )
     }
 }
 
+void
 findcall( parentp , p_lowpc , p_highpc )
     nltype		*parentp;
     unsigned long	p_lowpc;
@@ -251,7 +253,7 @@ findcall( parentp , p_lowpc , p_highpc )
 	    printf( "[findcall] %s: 0x%x to 0x%x\n" ,
 		    parentp -> name , p_lowpc , p_highpc );
 	}
-#   endif DEBUG
+#   endif /* DEBUG */
     for (   instructp = textspace + p_lowpc ;
 	    instructp < textspace + p_highpc ;
 	    instructp += length ) {
@@ -265,7 +267,7 @@ findcall( parentp , p_lowpc , p_highpc )
 		if ( debug & CALLDEBUG ) {
 		    printf( "[findcall]\t0x%x:callf" , instructp - textspace );
 		}
-#	    endif DEBUG
+#	    endif /* DEBUG */
 	    firstmode = operandmode( instructp+length );
 	    switch ( firstmode ) {
 		case literal:
@@ -281,7 +283,7 @@ findcall( parentp , p_lowpc , p_highpc )
 		    printf( "\tfirst operand is %s", operandname( firstmode ) );
 		    printf( "\tsecond operand is %s\n" , operandname( mode ) );
 		}
-#	    endif DEBUG
+#	    endif /* DEBUG */
 	    switch ( mode ) {
 		case regdef:
 		case bytedispdef:
@@ -320,7 +322,7 @@ findcall( parentp , p_lowpc , p_highpc )
 				printf( " childp->value 0x%x\n" ,
 					childp -> value );
 			    }
-#			endif DEBUG
+#			endif /* DEBUG */
 			if ( childp -> value == destpc ) {
 				/*
 				 *	a hit
@@ -346,7 +348,7 @@ findcall( parentp , p_lowpc , p_highpc )
 			if ( debug & CALLDEBUG ) {
 			    printf( "[findcall]\tbut it's a botch\n" );
 			}
-#		    endif DEBUG
+#		    endif /* DEBUG */
 		    length = 1;
 		    continue;
 	    }

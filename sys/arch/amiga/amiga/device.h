@@ -1,4 +1,5 @@
-/*	$NetBSD: device.h,v 1.4 1994/10/26 02:01:48 cgd Exp $	*/
+/*	$OpenBSD: device.h,v 1.4 1997/01/16 09:23:17 niklas Exp $	*/
+/*	$NetBSD: device.h,v 1.6 1996/08/27 21:54:26 cgd Exp $	*/
 
 /*
  * Copyright (c) 1994 Christian E. Hopps
@@ -37,10 +38,11 @@
  * *and know it* (i.e. everything is really tight certain params won't be 
  * passed in some cases and the devices will deal with it)
  */
-int amiga_config_found __P((struct cfdata *, struct device *,
-    void *, cfprint_t ));
-int simple_devprint __P((void *, char *));
-int matchname __P((char *, char *));
+void config_console(void);
+int amiga_config_found(struct cfdata *, struct device *,
+    void *, cfprint_t );
+int simple_devprint(void *, const char *);
+int matchname(char *, char *);
 /*
  * false when initing for the console.
  */

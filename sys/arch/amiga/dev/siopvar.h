@@ -1,4 +1,5 @@
-/*	$NetBSD: siopvar.h,v 1.12 1995/09/16 16:11:31 chopps Exp $	*/
+/*	$OpenBSD: siopvar.h,v 1.3 1996/05/02 06:44:36 niklas Exp $	*/
+/*	$NetBSD: siopvar.h,v 1.14 1996/04/21 21:12:38 veego Exp $	*/
 
 /*
  * Copyright (c) 1990 The Regents of the University of California.
@@ -141,7 +142,8 @@ struct	siop_softc {
 				       nexus_list;
 
 	struct siop_acb *sc_nexus;	/* current command */
-	struct siop_acb sc_acb[8];	/* the real command blocks */
+#define SIOP_NACB 8
+	struct siop_acb *sc_acb;	/* the real command blocks */
 	struct siop_tinfo sc_tinfo[8];
 
 	u_short	sc_clock_freq;
@@ -194,7 +196,12 @@ struct	siop_softc {
 #define	STS_INTERMED	0x10	/* Intermediate status sent */
 #define	STS_EXT		0x80	/* Extended status valid */
 
-void siop_minphys __P((struct buf *bp));
-int siop_scsicmd __P((struct scsi_xfer *));
+void siop_minphys(struct buf *bp);
+int siop_scsicmd(struct scsi_xfer *);
+void siopinitialize(struct siop_softc *);
+void siopintr(struct siop_softc *);
+#ifdef DEBUG
+void siop_dump(struct siop_softc *);
+#endif
 
 #endif /* _SIOPVAR_H */

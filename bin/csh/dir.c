@@ -1,3 +1,4 @@
+/*	$OpenBSD: dir.c,v 1.7 2002/06/09 05:47:27 todd Exp $	*/
 /*	$NetBSD: dir.c,v 1.9 1995/03/21 09:02:42 cgd Exp $	*/
 
 /*-
@@ -37,7 +38,7 @@
 #if 0
 static char sccsid[] = "@(#)dir.c	8.1 (Berkeley) 5/31/93";
 #else
-static char rcsid[] = "$NetBSD: dir.c,v 1.9 1995/03/21 09:02:42 cgd Exp $";
+static char rcsid[] = "$OpenBSD: dir.c,v 1.7 2002/06/09 05:47:27 todd Exp $";
 #endif
 #endif /* not lint */
 
@@ -47,11 +48,7 @@ static char rcsid[] = "$NetBSD: dir.c,v 1.9 1995/03/21 09:02:42 cgd Exp $";
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
-#if __STDC__
-# include <stdarg.h>
-#else
-# include <varargs.h>
-#endif
+#include <stdarg.h>
 
 #include "csh.h"
 #include "dir.h"
@@ -60,12 +57,12 @@ static char rcsid[] = "$NetBSD: dir.c,v 1.9 1995/03/21 09:02:42 cgd Exp $";
 /* Directory management. */
 
 static struct directory
-		*dfind __P((Char *));
-static Char	*dfollow __P((Char *));
-static void	 printdirs __P((void));
-static Char	*dgoto __P((Char *));
-static void	 dnewcwd __P((struct directory *));
-static void	 dset __P((Char *));
+		*dfind(Char *);
+static Char	*dfollow(Char *);
+static void	 printdirs(void);
+static Char	*dgoto(Char *);
+static void	 dnewcwd(struct directory *);
+static void	 dset(Char *);
 
 struct directory dhead;		/* "head" of loop */
 int     printd;			/* force name to be printed */
@@ -132,7 +129,7 @@ dinit(hp)
 	}
     }
 
-    dp = (struct directory *) xcalloc(sizeof(struct directory), 1);
+    dp = (struct directory *) xcalloc(1, sizeof(struct directory));
     dp->di_name = Strsave(cp);
     dp->di_count = 0;
     dhead.di_next = dhead.di_prev = dp;
@@ -225,7 +222,7 @@ printdirs()
 	}
 	if (!(dirflag & DIR_LONG) && hp != NULL && !eq(hp, STRslash) &&
 	    (len = Strlen(hp), Strncmp(hp, dp->di_name, len) == 0) &&
-	    (dp->di_name[len] == '\0' || dp->di_name[len] == '/')) 
+	    (dp->di_name[len] == '\0' || dp->di_name[len] == '/'))
 	    len = Strlen(s = (dp->di_name + len)) + 2;
 	else
 	    len = Strlen(s = dp->di_name) + 1;
@@ -375,7 +372,7 @@ dochngd(v, t)
     }
     else
 	cp = dfollow(*v);
-    dp = (struct directory *) xcalloc(sizeof(struct directory), 1);
+    dp = (struct directory *) xcalloc(1, sizeof(struct directory));
     dp->di_name = cp;
     dp->di_count = 0;
     dp->di_next = dcwd->di_next;
@@ -707,7 +704,7 @@ dcanon(cp, p)
 	    *--sp = 0;		/* form the pathname for readlink */
 	    if (sp != cp && !adrof(STRignore_symlinks) &&
 		(cc = readlink(short2str(cp), tlink,
-			       sizeof tlink)) >= 0) {
+			       sizeof tlink-1)) >= 0) {
 		(void) Strcpy(link, str2short(tlink));
 		link[cc] = '\0';
 
@@ -792,7 +789,7 @@ dcanon(cp, p)
 	    if (sp != cp && adrof(STRchase_symlinks) &&
 		!adrof(STRignore_symlinks) &&
 		(cc = readlink(short2str(cp), tlink,
-			       sizeof tlink)) >= 0) {
+			       sizeof tlink-1)) >= 0) {
 		(void) Strcpy(link, str2short(tlink));
 		link[cc] = '\0';
 

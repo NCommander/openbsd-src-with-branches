@@ -1,4 +1,5 @@
-/*	$NetBSD: rtc.h,v 1.2 1994/10/26 02:04:32 cgd Exp $	*/
+/*	$OpenBSD: rtc.h,v 1.4 2000/01/24 16:02:04 espie Exp $	*/
+/*	$NetBSD: rtc.h,v 1.5 1997/07/17 23:29:28 is Exp $	*/
 
 /*
  * Copyright (c) 1994 Christian E. Hopps
@@ -35,6 +36,12 @@
 #ifndef _RTCVAR_H_
 #define _RTCVAR_H_
 
+/* this is a hook set by a clock driver for the configured realtime clock,
+   returning plain current unix-time */
+
+time_t (*gettod)(void);
+int (*settod)(time_t);
+
 struct rtclock2000 {
 	u_int  :28, second2:4;	/* lower digit */
 	u_int  :28, second1:4;	/* upper digit */
@@ -48,7 +55,7 @@ struct rtclock2000 {
 	u_int  :28, month1:4;	/* upper digit */
 	u_int  :28, year2:4;	/* lower digit */
 	u_int  :28, year1:4;	/* upper digit */
-	u_int  :28, week:4;	/* week */
+	u_int  :28, weekday:4;	/* weekday */
 	u_int  :28, control1:4;	/* control-byte 1 */
 	u_int  :28, control2:4;	/* control-byte 2 */  
 	u_int  :28, control3:4;	/* control-byte 3 */
@@ -86,20 +93,18 @@ struct rtclock3000 {
 #define A3CONTROL1_HOLD_CLOCK	0
 #define A3CONTROL1_FREE_CLOCK	9
 
+/* mode1 registers we use */
+#define leapyear year2
+
 #define A3BBC_SET_REG 	0xe0
 #define A3BBC_WRITE_REG	0xc2
 #define A3BBC_READ_REG	0xc3
 #define A3NUM_BBC_REGS	12
 
-#define FEBRUARY	2
+/*
+ * Our clock starts at 1/1/1970, but counts the years from 1900.
+ */
 #define	STARTOFTIME	1970
-#define SECDAY		86400L
-#define SECYR		(SECDAY * 365)
-
-
-#define	leapyear(y)		(((y)%4)==0 && ((y)%100)!=0 || ((y)%400) == 0)
-#define	range_test(n, l, h)	((n) < (l) || (n) > (h))
-#define	days_in_year(a) 	(leapyear(a) ? 366 : 365)
-#define	days_in_month(a) 	(month_days[(a) - 1])
+#define	CLOCK_BASE_YEAR	1900
 
 #endif /* _RTCVAR_H_ */

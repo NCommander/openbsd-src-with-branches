@@ -1,3 +1,5 @@
+/*	$OpenBSD: hack.tty.c,v 1.4 2001/01/28 23:41:46 niklas Exp $	*/
+
 /*-
  * Copyright (c) 1988, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -35,7 +37,7 @@
 #if 0
 static char sccsid[] = "@(#)hack.tty.c	8.1 (Berkeley) 5/31/93";
 #else
-static char rcsid[] = "$NetBSD: hack.tty.c,v 1.5 1995/04/29 01:08:54 mycroft Exp $";
+static char rcsid[] = "$OpenBSD: hack.tty.c,v 1.4 2001/01/28 23:41:46 niklas Exp $";
 #endif
 #endif /* not lint */
 
@@ -54,7 +56,7 @@ static char rcsid[] = "$NetBSD: hack.tty.c,v 1.5 1995/04/29 01:08:54 mycroft Exp
  */
 #ifndef BSD
 #define	NR_OF_EOFS	20
-#endif BSD
+#endif /* BSD */
 
 extern speed_t ospeed;
 static char erase_char, kill_char;
@@ -87,7 +89,7 @@ gettty(){
 settty(s) char *s; {
 	clear_screen();
 	end_screen();
-	if(s) printf(s);
+	if(s) printf("%s", s);
 	(void) fflush(stdout);
 	if(tcsetattr(0, TCSADRAIN, &inittyb) < 0)
 		perror("Hack (settty)");
@@ -216,7 +218,7 @@ register int c;
 	while((c = readchar()) != '\n') {
 	    if(flags.cbreak) {
 		if(c == ' ') break;
-		if(s && index(s,c)) {
+		if(s && strchr(s,c)) {
 			morc = c;
 			break;
 		}
@@ -245,7 +247,7 @@ parse()
 		inputline[1] = getchar();
 #ifdef QUEST
 		if(inputline[1] == foo) inputline[2] = getchar(); else
-#endif QUEST
+#endif /* QUEST */
 		inputline[2] = 0;
 	}
 	if(foo == 'm' || foo == 'M'){
@@ -278,7 +280,7 @@ readchar() {
 	}
 #else
 		end_of_input();
-#endif NR_OF_EOFS
+#endif /* NR_OF_EOFS */
 	if(flags.toplin == 1)
 		flags.toplin = 2;
 	return((char) sym);

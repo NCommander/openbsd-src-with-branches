@@ -1,7 +1,15 @@
-#	$Id: Makefile,v 1.1 1994/04/04 21:52:21 cgd Exp $
+#	$OpenBSD: Makefile,v 1.3 2000/05/18 16:46:38 espie Exp $
 
+.if ${MACHINE}=="hp300"
 PROG=	hilinfo
-NOMAN=
 CFLAGS+= -I${.CURDIR}/../../sys/arch/hp300
+DPADD=	${LIBUTIL}
+LDADD=	-lutil
+.else
+NOPROG=yes
+.endif
+
+MAN=hilinfo.8
+MANSUBDIR=hp300
 
 .include <bsd.prog.mk>

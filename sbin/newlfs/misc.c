@@ -1,3 +1,4 @@
+/*	$OpenBSD: misc.c,v 1.4 2001/11/05 07:39:17 mpech Exp $	*/
 /*	$NetBSD: misc.c,v 1.2 1995/03/18 14:58:51 cgd Exp $	*/
 
 /*-
@@ -37,49 +38,35 @@
 #if 0
 static char sccsid[] = "@(#)misc.c	8.1 (Berkeley) 6/5/93";
 #else
-static char rcsid[] = "$NetBSD: misc.c,v 1.2 1995/03/18 14:58:51 cgd Exp $";
+static char rcsid[] = "$OpenBSD: misc.c,v 1.4 2001/11/05 07:39:17 mpech Exp $";
 #endif
 #endif /* not lint */
 
 #include <sys/types.h>
 #include <sys/types.h>
 #include <sys/disklabel.h>
-#include <stdlib.h>
+#include <stdarg.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include "extern.h"
 
 u_int
 log2(num)
         u_int num;
 {
-        register u_int i, limit;
+        u_int i, limit;
 
         limit = 1;
         for (i = 0; limit < num; limit = limit << 1, i++);
         return (i);
 }
 
-#if __STDC__
-#include <stdarg.h>
-#else
-#include <varargs.h>
-#endif
-
 void
-#if __STDC__
 fatal(const char *fmt, ...)
-#else
-fatal(fmt, va_alist)
-	char *fmt;
-	va_dcl
-#endif
 {
 	va_list ap;
-#if __STDC__
+
 	va_start(ap, fmt);
-#else
-	va_start(ap);
-#endif
 	(void)fprintf(stderr, "%s: ", progname);
 	(void)vfprintf(stderr, fmt, ap);
 	va_end(ap);
