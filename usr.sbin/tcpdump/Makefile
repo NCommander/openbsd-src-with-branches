@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.37 2002/11/30 00:20:45 deraadt Exp $
+#	$OpenBSD: Makefile,v 1.38 2002/11/30 13:56:23 mickey Exp $
 #
 #  Copyright (c) 1988, 1989, 1990, 1991, 1992, 1993, 1994
 # 	The Regents of the University of California.  All rights reserved.
@@ -23,7 +23,7 @@
 PROG=	tcpdump
 MAN=	tcpdump.8
 
-CFLAGS+=-Wall -Werror -I${.CURDIR}/../../sbin/pfctl
+CFLAGS+=-Wall -I${.CURDIR}/../../sbin/pfctl
 .PATH:	${.CURDIR}/../../sbin/pfctl
 
 CFLAGS+=-DCSLIP -DPPP -DHAVE_FDDI -DETHER_SERVICE -DRETSIGTYPE=void -DHAVE_NET_SLIP_H -DHAVE_ETHER_NTOHOST -DINET6
