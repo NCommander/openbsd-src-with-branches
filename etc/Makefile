@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.114 2000/07/18 18:46:05 deraadt Exp $
+#	$OpenBSD: Makefile,v 1.115 2000/08/20 18:42:36 millert Exp $
 
 TZDIR=		/usr/share/zoneinfo
 LOCALTIME=	US/Pacific
@@ -70,6 +70,7 @@ distribution-etc-root-var: distrib-dirs
 	${INSTALL} -c -o root -g wheel -m 644 login.conf ${DESTDIR}/etc
 	${INSTALL} -c -o root -g wheel -m 600 master.passwd ${DESTDIR}/etc
 	pwd_mkdb -p -d ${DESTDIR}/etc /etc/master.passwd
+	${INSTALL} -c -o root -g wheel -m 644 primes ${DESTDIR}/etc
 	${INSTALL} -c -o ${BINOWN} -g ${BINGRP} -m 555 \
 	     MAKEDEV.local etc.${MACHINE}/MAKEDEV ${DESTDIR}/dev
 	(cd root; \
