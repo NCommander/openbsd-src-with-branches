@@ -1,4 +1,4 @@
-/*	$OpenBSD: dlfcn.c,v 1.35 2004/05/25 15:56:18 deraadt Exp $ */
+/*	$OpenBSD: dlfcn.c,v 1.36 2004/05/25 18:07:20 mickey Exp $ */
 
 /*
  * Copyright (c) 1998 Per Fogelstrom, Opsycon AB
@@ -116,6 +116,9 @@ dlopen(const char *libname, int flags)
 		_dl_debug_map->r_state = RT_CONSISTENT;
 		(*((void (*)(void))_dl_debug_map->r_brk))();
 	}
+
+	DL_DEB(("dlopen: %s: done.\n", libname));
+
 	return((void *)object);
 }
 
