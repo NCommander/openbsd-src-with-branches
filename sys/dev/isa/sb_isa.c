@@ -114,7 +114,7 @@ sbfind(parent, sc, ia)
 
 	sc->sc_iot = ia->ia_iot;
 
-	/* Map i/o space [we map 24 ports which is the max of the sb and pro */
+	/* Map i/o space [we map 24 ports which is the max of the sb and pro] */
 	if (bus_space_map(sc->sc_iot, ia->ia_iobase, SBP_NPORT, 0,
 	    &sc->sc_ioh))
 		return 0;
