@@ -1,4 +1,4 @@
-/*	$OpenBSD: isakmp_cfg.c,v 1.22 2002/08/23 18:01:33 ho Exp $	*/
+/*	$OpenBSD: isakmp_cfg.c,v 1.23 2003/01/09 12:46:45 ho Exp $	*/
 
 /*
  * Copyright (c) 2001 Niklas Hallqvist.  All rights reserved.
@@ -360,6 +360,8 @@ cfg_initiator_send_ATTR (struct message *msg)
 	SET_ISAKMP_ATTR_LENGTH_VALUE (attr, length);
 	memcpy (attr + ISAKMP_ATTR_VALUE_OFF, sockaddr_addrdata (sa),
 		length);
+
+	free (sa);
 
 	off += ISAKMP_ATTR_SZ + length;
       }
