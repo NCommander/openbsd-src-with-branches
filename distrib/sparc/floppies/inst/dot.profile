@@ -1,4 +1,4 @@
-#       $OpenBSD: dot.profile,v 1.2 1996/10/18 23:35:12 deraadt Exp $
+#       $OpenBSD: dot.profile,v 1.3 1997/05/01 11:30:49 niklas Exp $
 #
 # Copyright (c) 1994 Christopher G. Demetriou
 # All rights reserved.
@@ -31,7 +31,7 @@
 
 PATH=/sbin:/bin:/usr/bin:/usr/sbin:/
 export PATH
-TERM=pc3
+TERM=sun
 export TERM
 
 umask 022
@@ -47,6 +47,9 @@ if [ "X${DONEPROFILE}" = "X" ]; then
 	# pull in the functions that people will use from the shell prompt.
 	. /.commonutils
 	. /.instutils
+
+	# mount /kern so install can peek at msgbuf
+	mount -t kernfs /kern /kern
 
 	# run the installation script.
 	install
