@@ -1,4 +1,4 @@
-/* * $OpenBSD: os-openbsd.h,v 1.3 1996/06/26 05:38:15 deraadt Exp $*/
+/* * $OpenBSD: os-openbsd.h,v 1.4 1997/02/09 23:58:44 millert Exp $*/
 /*
  * Copyright (c) 1993 Michael A. Cooper
  * Copyright (c) 1993 Regents of the University of California.
@@ -150,6 +150,8 @@ typedef void POINTER;
  * Things we need
  */
 #define NEED_UNISTD_H			/* Need <unistd.h> */
+#define NEED_STDLIB_H			/* Need <stdlib.h> */
+#define NEED_STRING_H			/* Need <string.h> */
 
 /*
  * Path to the remote shell command.
