@@ -23,7 +23,7 @@
  */
 
 #include "includes.h"
-RCSID("$OpenBSD: kexdh.c,v 1.8 2001/12/27 18:22:16 markus Exp $");
+RCSID("$OpenBSD: kexdh.c,v 1.9 2001/12/27 19:37:22 markus Exp $");
 
 #include <openssl/crypto.h>
 #include <openssl/bn.h>
@@ -142,7 +142,7 @@ kexdh_client(Kex *kex)
 
 	/* signed H */
 	signature = packet_get_string(&slen);
-	packet_done();
+	packet_check_eom();
 
 	if (!dh_pub_is_valid(dh, dh_server_pub))
 		packet_disconnect("bad server public DH value");

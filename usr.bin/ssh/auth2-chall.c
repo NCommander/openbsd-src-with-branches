@@ -23,7 +23,7 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 #include "includes.h"
-RCSID("$OpenBSD: auth2-chall.c,v 1.10 2001/12/19 07:18:56 deraadt Exp $");
+RCSID("$OpenBSD: auth2-chall.c,v 1.11 2001/12/20 22:50:24 djm Exp $");
 
 #include "ssh2.h"
 #include "auth.h"
@@ -257,7 +257,7 @@ input_userauth_info_response(int type, int plen, u_int32_t seq, void *ctxt)
 		for (i = 0; i < nresp; i++)
 			response[i] = packet_get_string(NULL);
 	}
-	packet_done();
+	packet_check_eom();
 
 	if (authctxt->valid) {
 		res = kbdintctxt->device->respond(kbdintctxt->ctxt,

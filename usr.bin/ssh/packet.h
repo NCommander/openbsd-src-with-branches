@@ -11,7 +11,7 @@
  * called by a name other than "ssh" or "Secure Shell".
  */
 
-/* RCSID("$OpenBSD: packet.h,v 1.28 2001/12/20 22:50:24 djm Exp $"); */
+/* RCSID("$OpenBSD: packet.h,v 1.29 2001/12/27 20:39:58 markus Exp $"); */
 
 #ifndef PACKET_H
 #define PACKET_H
@@ -74,7 +74,8 @@ extern int max_packet_size;
 int      packet_set_maxsize(int);
 #define  packet_get_maxsize() max_packet_size
 
-#define packet_done() \
+/* don't allow remaining bytes after the end of the message */
+#define packet_check_eom() \
 do { \
 	int _len = packet_remaining(); \
 	if (_len > 0) { \
