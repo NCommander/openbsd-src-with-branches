@@ -1,4 +1,4 @@
-/*	$OpenBSD: dma.c,v 1.4 2001/11/05 17:25:58 art Exp $	*/
+/*	$OpenBSD: dma.c,v 1.5 2001/11/06 19:53:15 miod Exp $	*/
 /*	$NetBSD: machdep.c,v 1.214 1996/11/10 03:16:17 thorpej Exp $	*/
 
 /*-
@@ -246,8 +246,8 @@ _dmamap_load_uio(t, map, uio, flags)
 	struct uio *uio;
 	int flags;
 {
-
-	panic("_bus_dmamap_load_uio: not implemented");
+	/* XXX Need a real implementation. */
+	return (EOPNOTSUPP);
 }
 
 /*
