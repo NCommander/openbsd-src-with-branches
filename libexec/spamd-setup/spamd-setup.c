@@ -1,4 +1,4 @@
-/*	$OpenBSD: spamd-setup.c,v 1.17 2004/02/26 08:18:56 deraadt Exp $ */
+/*	$OpenBSD: spamd-setup.c,v 1.18 2004/04/28 07:32:57 deraadt Exp $ */
 
 /*
  * Copyright (c) 2003 Bob Beck.  All rights reserved.
@@ -37,7 +37,6 @@
 #include <err.h>
 #include <netinet/ip_ipsp.h>
 #include <netdb.h>
-#include <machine/endian.h>
 #include <zlib.h>
 
 #define PATH_FTP		"/usr/bin/ftp"
