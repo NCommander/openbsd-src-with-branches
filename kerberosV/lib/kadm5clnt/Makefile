@@ -1,4 +1,4 @@
-# $OpenBSD: Makefile,v 1.1 2001/05/25 08:18:54 hin Exp $
+# $OpenBSD: Makefile,v 1.3 2001/06/05 10:38:34 hin Exp $
 
 LIB=	kadm5clnt
 
@@ -36,6 +36,8 @@ SRCS=	admin.h         \
 
 CFLAGS+=-I${KRB5SRC}/lib/krb5 -I${KRB5SRC}/lib/asn1 -I../asn1 -I../krb5 \
 	-I${KRB5SRC}/lib/hdb -I../hdb -I.
+
+CLEANFILES+=kadm5_err.[ch]
 
 kadm5_err.c kadm5_err.h: ${KRB5SRC}/lib/kadm5/kadm5_err.et
 	compile_et ${KRB5SRC}/lib/kadm5/kadm5_err.et
