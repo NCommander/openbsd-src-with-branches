@@ -1,5 +1,5 @@
 /*	$OpenBSD: ss_scanjet.c,v 1.3 1996/04/21 22:31:17 deraadt Exp $	*/
-/*	$NetBSD: ss_scanjet.c,v 1.3 1996/03/30 21:47:07 christos Exp $	*/
+/*	$NetBSD: ss_scanjet.c,v 1.4 1996/05/05 19:52:58 christos Exp $	*/
 
 /*
  * Copyright (c) 1995 Kenneth Stailey.  All rights reserved.
@@ -204,9 +204,6 @@ scanjet_trigger_scanner(ss)
 	struct ss_softc *ss;
 {
 	char escape_codes[20];
-#ifdef SCSIDEBUG
-	struct scsi_link *sc_link = ss->sc_link;
-#endif
 	int error;
 
 	scanjet_compute_sizes(ss);

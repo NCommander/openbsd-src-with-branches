@@ -1,5 +1,5 @@
 /*	$OpenBSD: st.c,v 1.9 1996/04/19 16:10:28 niklas Exp $	*/
-/*	$NetBSD: st.c,v 1.65 1996/03/30 21:45:04 christos Exp $	*/
+/*	$NetBSD: st.c,v 1.66 1996/05/05 19:53:01 christos Exp $	*/
 
 /*
  * Copyright (c) 1994 Charles Hannum.  All rights reserved.
@@ -829,7 +829,7 @@ ststrategy(bp)
 	int s;
 
 	SC_DEBUG(st->sc_link, SDEV_DB1,
-	    ("ststrategy %d bytes @ blk %d\n", bp->b_bcount, bp->b_blkno));
+	    ("ststrategy %ld bytes @ blk %d\n", bp->b_bcount, bp->b_blkno));
 	/*
 	 * If it's a null transfer, return immediatly
 	 */
