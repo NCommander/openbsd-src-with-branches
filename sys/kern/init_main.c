@@ -1,4 +1,4 @@
-/*	$OpenBSD: init_main.c,v 1.108 2003/11/03 18:24:52 tedu Exp $	*/
+/*	$OpenBSD: init_main.c,v 1.109 2004/01/01 00:04:35 deraadt Exp $	*/
 /*	$NetBSD: init_main.c,v 1.84.4.1 1996/06/02 09:08:06 mrg Exp $	*/
 
 /*
@@ -57,6 +57,7 @@
 #include <sys/buf.h>
 #include <sys/device.h>
 #include <sys/socketvar.h>
+#include <sys/lockf.h>
 #include <sys/protosw.h>
 #include <sys/reboot.h>
 #include <sys/user.h>
@@ -228,6 +229,9 @@ main(framep)
 	 * Initialize process and pgrp structures.
 	 */
 	procinit();
+
+	/* Initialize file locking. */
+	lf_init();
 
 	/*
 	 * Initialize filedescriptors.
