@@ -928,8 +928,10 @@ ccdbuffer(cs, bp, bn, addr, bcount, cbpp, old_io)
 		else {
 			do {
 				s = splbio();
+				vm_map_lock(ccdmap);
 				nbp->b_data = (caddr_t)kmem_alloc_pageable(
 				    ccdmap, bp->b_bcount);
+				vm_map_unlock(ccdmap);
 				splx(s);
 
 				/*
