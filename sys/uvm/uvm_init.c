@@ -1,3 +1,4 @@
+/*	$OpenBSD: uvm_init.c,v 1.6 2001/01/29 02:07:44 niklas Exp $	*/
 /*	$NetBSD: uvm_init.c,v 1.11 1999/03/25 18:48:51 mrg Exp $	*/
 
 /*
@@ -89,7 +90,7 @@ uvm_init()
 	 * step 1: zero the uvm structure
 	 */
 
-	bzero(&uvm, sizeof(uvm));
+	memset(&uvm, 0, sizeof(uvm));
 	averunnable.fscale = FSCALE;
 
 	/*

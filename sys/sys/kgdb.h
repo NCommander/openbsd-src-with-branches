@@ -1,9 +1,18 @@
-/*	$OpenBSD: user.h,v 1.4 2001/04/02 21:43:12 niklas Exp $	*/
-/*	$NetBSD: user.h,v 1.10 1996/04/09 20:55:49 cgd Exp $	*/
+/*	$OpenBSD: kgdb.h,v 1.1 2001/01/24 09:37:57 hugh Exp $	*/
+/*	$NetBSD: kgdb.h,v 1.5 1998/09/13 14:46:24 christos Exp $	*/
 
 /*
- * Copyright (c) 1982, 1986, 1989, 1991, 1993
+ * Copyright (c) 1992, 1993
  *	The Regents of the University of California.  All rights reserved.
+ *
+ * This software was developed by the Computer Systems Engineering group
+ * at Lawrence Berkeley Laboratory under DARPA contract BG 91-66 and
+ * contributed to Berkeley.
+ *
+ * All advertising materials mentioning features or use of this software
+ * must display the following acknowledgement:
+ *	This product includes software developed by the University of
+ *	California, Lawrence Berkeley Laboratories.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -33,56 +42,65 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  *
- *	@(#)user.h	8.2 (Berkeley) 9/23/93
+ *	@(#)remote-sl.h	8.1 (Berkeley) 6/11/93
  */
 
-#include <machine/pcb.h>
-#ifndef _KERNEL
-/* stuff that *used* to be included by user.h, or is now needed */
-#include <errno.h>
-#include <sys/time.h>
-#include <sys/resource.h>
-#include <sys/ucred.h>
-#include <sys/uio.h>
-#endif
-#include <sys/resourcevar.h>
-#include <vm/vm.h>		/* XXX */
-#include <sys/sysctl.h>
-
+#ifndef _SYS_KGDB_H_
+#define _SYS_KGDB_H_
 
 /*
- * Per process structure containing data that isn't needed in core
- * when the process isn't running (esp. when swapped out).
- * This structure may or may not be at the same kernel address
- * in all processes.
+ * Protocol definition for KGDB
+ * (gdb over remote serial line)
  */
 
-struct	user {
-	struct	pcb u_pcb;
-
-	struct	pstats u_stats;		/* p_stats points here (use it!) */
-
-	/*
-	 * Remaining fields only for core dump and/or ptrace--
-	 * not valid at other times!
-	 */
-	struct	kinfo_proc u_kproc;	/* proc + eproc */
-	struct	md_coredump u_md;	/* machine dependent glop */
-};
+#include <machine/db_machdep.h>
 
 /*
- * Redefinitions to make the debuggers happy for now...  This subterfuge
- * brought to you by coredump() and trace_req().  These fields are *only*
- * valid at those times!
+ * Message types.
  */
-#define	U_ar0	u_kproc.kp_proc.p_md.md_regs /* copy of curproc->p_md.md_regs */
-#define	U_tsize	u_kproc.kp_eproc.e_vm.vm_tsize
-#define	U_dsize	u_kproc.kp_eproc.e_vm.vm_dsize
-#define	U_ssize	u_kproc.kp_eproc.e_vm.vm_ssize
+#define KGDB_MEM_R	'm'
+#define KGDB_MEM_W	'M'
+#define KGDB_REG_R	'g'
+#define KGDB_REG_W	'G'
+#define KGDB_CONT	'c'
+#define KGDB_STEP	's'
+#define KGDB_KILL	'k'
+#define KGDB_SIGNAL	'?'
+#define KGDB_DEBUG	'd'
+#define KGDB_DETACH	'D'
 
-#ifndef _KERNEL
-#define	u_ar0	U_ar0
-#define	u_tsize	U_tsize
-#define	u_dsize	U_dsize
-#define	u_ssize	U_ssize
-#endif /* _KERNEL */
+/*
+ * start of frame/end of frame
+ */
+#define KGDB_START	'$'
+#define KGDB_END	'#'
+#define KGDB_GOODP	'+'
+#define KGDB_BADP	'-'
+
+#ifdef	_KERNEL
+
+#include <ddb/db_run.h>
+#include <ddb/db_access.h>
+
+/*
+ * Functions and variables exported from kgdb_stub.c
+ */
+extern int kgdb_dev, kgdb_rate, kgdb_active;
+extern int kgdb_debug_init, kgdb_debug_panic;
+extern label_t *kgdb_recover;
+
+void kgdb_attach __P((int (*)(void *), void (*)(void *, int), void *ioarg));
+void kgdb_connect __P((int));
+void kgdb_panic __P((void));
+int kgdb_trap __P((int, db_regs_t *));
+
+/*
+ * Machine dependent functions needed by kgdb_stub.c
+ */
+int kgdb_signal __P((int));
+int kgdb_acc __P((vaddr_t, size_t));
+void kgdb_getregs __P((db_regs_t *, kgdb_reg_t *));
+void kgdb_setregs __P((db_regs_t *, kgdb_reg_t *));
+
+#endif	/* _KERNEL */
+#endif /* !_SYS_KGDB_H_ */
