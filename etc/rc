@@ -1,4 +1,4 @@
-#	$OpenBSD: rc,v 1.18 1996/06/28 01:53:53 deraadt Exp $
+#	$OpenBSD: rc,v 1.19 1996/07/05 02:18:43 deraadt Exp $
 
 # System startup script run by init on autoboot
 # or after single-user.
@@ -281,7 +281,7 @@ rm -f $T
 
 if [ -f /sbin/ldconfig ]; then
 	echo 'creating runtime link editor directory cache.'
-	ldconfig /usr/X11R6/lib
+	ldconfig /usr/local/lib /usr/X11R6/lib
 fi 
 
 # Kerberos runs ONLY on the Kerberos server machine
