@@ -1,3 +1,4 @@
+# $OpenBSD$
 # advanced queue example.
 # give interactive ssh traffic priority over ssh bulk transfers (scp, sftp)
 

@@ -1,3 +1,5 @@
+# $OpenBSD$
+
 ext_if = "dc0"
 
 altq on $ext_if cbq bandwidth 10Mb \

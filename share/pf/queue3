@@ -1,3 +1,4 @@
+# $OpenBSD$
 # simple PRIQ example
 
 ext_if="lo0"
