@@ -38,7 +38,7 @@
 
 #if defined(SYSLIBC_SCCS)
 	.text
-	.asciz "$OpenBSD: syscall.S,v 1.3 1998/11/20 11:18:30 d Exp $"
+	.asciz "$OpenBSD: syscall.S,v 1.4 2002/10/06 23:24:13 art Exp $"
 #endif /* SYSLIBC_SCCS */
 
 SYSENTRY(syscall)
@@ -51,7 +51,10 @@ SYSENTRY(syscall)
 	ret
 err:
 #ifdef PIC
-	jmp	PIC_PLT(__cerror)
+	PIC_PROLOGUE             
+	movl	PIC_GOT(CERROR), %ecx
+	PIC_EPILOGUE
+	jmp	*%ecx
 #else
-	jmp	__cerror
+	jmp	CERROR
 #endif

@@ -39,7 +39,7 @@
 
 #if defined(SYSLIBC_SCCS)
 	.text
-	.asciz "$OpenBSD: exect.S,v 1.2 1996/08/19 08:13:31 tholo Exp $"
+	.asciz "$OpenBSD: exect.S,v 1.3 2002/10/06 23:24:13 art Exp $"
 #endif /* SYSLIB_SCCS */
 
 ENTRY(exect)
@@ -51,7 +51,11 @@ ENTRY(exect)
 	popf
 	int	$0x80
 #ifdef PIC
-	jmp	PIC_PLT(__cerror)		/* exect(file, argv, env); */
+	PIC_PROLOGUE             
+	movl	PIC_GOT(CERROR), %ecx
+	PIC_EPILOGUE
+	jmp	*%ecx
+
 #else
-	jmp	__cerror
+	jmp	CERROR
 #endif
