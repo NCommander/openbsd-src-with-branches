@@ -1,4 +1,4 @@
-/*	$OpenBSD: tcp_usrreq.c,v 1.64 2002/08/08 17:07:32 provos Exp $	*/
+/*	$OpenBSD: tcp_usrreq.c,v 1.66 2002/08/08 19:18:13 provos Exp $	*/
 /*	$NetBSD: tcp_usrreq.c,v 1.20 1996/02/13 23:44:16 christos Exp $	*/
 
 /*
@@ -814,7 +814,7 @@ tcp_ident(oldp, oldlenp, newp, newlen)
 		lin = (struct sockaddr_in *)&tir.laddr;
 		break;
 	default:
-		return(EINVAL);
+		return (EINVAL);
 	}
 
 	s = splsoftnet();
