@@ -1,4 +1,4 @@
-/*	$OpenBSD: ppp_tty.c,v 1.7 1997/09/05 04:27:03 millert Exp $	*/
+/*	$OpenBSD: ppp_tty.c,v 1.8 1999/07/04 20:39:28 deraadt Exp $	*/
 /*	$NetBSD: ppp_tty.c,v 1.12 1997/03/24 21:23:10 christos Exp $	*/
 
 /*
@@ -192,6 +192,7 @@ pppopen(dev, tp)
     if (sc->sc_relinq)
 	(*sc->sc_relinq)(sc);	/* get previous owner to relinquish the unit */
 
+    timeout_set(&sc->sc_timo, ppp_timeout, sc);
     sc->sc_ilen = 0;
     sc->sc_m = NULL;
     bzero(sc->sc_asyncmap, sizeof(sc->sc_asyncmap));
@@ -262,7 +263,7 @@ pppasyncrelinq(sc)
 	sc->sc_m = NULL;
     }
     if (sc->sc_flags & SC_TIMEOUT) {
-	untimeout(ppp_timeout, (void *) sc);
+	timeout_del(&sc->sc_timo);
 	sc->sc_flags &= ~SC_TIMEOUT;
     }
     splx(s);
@@ -670,7 +671,7 @@ pppasyncstart(sc)
      * drained the t_outq.
      */
     if (!idle && (sc->sc_flags & SC_TIMEOUT) == 0) {
-	timeout(ppp_timeout, (void *) sc, 1);
+	timeout_add(&sc->sc_timo, 1);
 	sc->sc_flags |= SC_TIMEOUT;
     }
 
