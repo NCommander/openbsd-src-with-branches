@@ -1,4 +1,4 @@
-/*	$OpenBSD: elink3.c,v 1.20 1997/10/30 23:49:28 niklas Exp $	*/
+/*	$OpenBSD: elink3.c,v 1.21 1998/01/17 16:40:38 mickey Exp $	*/
 /*	$NetBSD: elink3.c,v 1.32 1997/05/14 00:22:00 thorpej Exp $	*/
 
 /*
@@ -680,11 +680,9 @@ epsetmedia(sc, medium)
 	if (!(ifp->if_flags & IFF_LINK0) && (sc->ep_connectors & EPC_BNC))
 		medium = EPMEDIA_10BASE_2;
 	else if (ifp->if_flags & IFF_LINK0)
-		if ((ifp->if_flags & IFF_LINK1) &&
-		    (sc->ep_connectors & EPC_UTP))
-			medium = EPMEDIA_10BASE_T;
-		else
-			medium = EPMEDIA_AUI;
+		medium = ((ifp->if_flags & IFF_LINK1) &&
+		    (sc->ep_connectors & EPC_UTP)) ?
+		    EPMEDIA_10BASE_T :  EPMEDIA_AUI;
 #endif
 
 	/*
