@@ -23,7 +23,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  *
- *	$OpenBSD: bundle.c,v 1.67 2003/04/04 20:25:06 deraadt Exp $
+ *	$OpenBSD: bundle.c,v 1.68 2004/01/23 03:48:43 deraadt Exp $
  */
 
 #include <sys/param.h>
@@ -1782,7 +1782,7 @@ bundle_setsid(struct bundle *bundle, int holdsession)
       write(fds[1], "!", 1);	/* done */
       close(fds[1]);
       if (holdsession) {
-        int fd, status;
+        int status;
 
         timer_TermService();
         signal(SIGPIPE, SIG_DFL);
