@@ -1,4 +1,4 @@
-/*	$OpenBSD: isa_machdep.c,v 1.16 1996/08/26 06:52:29 deraadt Exp $	*/
+/*	$OpenBSD: isa_machdep.c,v 1.17 1996/10/16 12:46:27 deraadt Exp $	*/
 /*	$NetBSD: isa_machdep.c,v 1.14 1996/05/12 23:06:18 mycroft Exp $	*/
 
 /*-
@@ -350,7 +350,7 @@ isa_attach_hook(parent, self, iba)
 
 #define MAX_CHUNK 256		/* number of low memory segments */
 
-static unsigned long bitmap[MAX_CHUNK / 32 + 1];
+static u_int32_t bitmap[MAX_CHUNK / 32 + 1];
 
 #define set(i) (bitmap[(i) >> 5] |= (1 << (i)))
 #define clr(i) (bitmap[(i) >> 5] &= ~(1 << (i)))
