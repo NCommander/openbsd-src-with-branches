@@ -1,4 +1,4 @@
-/*	$OpenBSD: conf.c,v 1.7 2001/12/05 23:58:41 tdeval Exp $ */
+/*	$OpenBSD: conf.c,v 1.8 2001/12/11 23:19:02 miod Exp $ */
 
 /*
  * Copyright (c) 1997 Per Fogelstrom
@@ -133,6 +133,8 @@ cdev_decl(ucom);
 #include "uscanner.h"
 cdev_decl(uscanner);
 
+#include "inet.h"
+
 #include "apm.h"
 cdev_decl(apm);
 
@@ -197,7 +199,7 @@ struct cdevsw cdevsw[] = {
 	cdev_audio_init(NAUDIO,audio),	/* 44: generic audio I/O */
 	cdev_notdef(),			/* 45 */
 	cdev_notdef(),			/* 46 */
-	cdev_notdef(),			/* 47 */
+	cdev_crypto_init(NCRYPTO,crypto), /* 47: /dev/crypto */
 	cdev_notdef(),			/* 48 */
 	cdev_notdef(),			/* 49 */
 	cdev_notdef(),			/* 50 */
