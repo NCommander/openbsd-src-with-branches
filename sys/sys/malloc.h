@@ -1,4 +1,4 @@
-/*	$OpenBSD: malloc.h,v 1.75 2005/01/14 12:04:02 grange Exp $	*/
+/*	$OpenBSD: malloc.h,v 1.76 2005/01/14 21:15:08 mcbride Exp $	*/
 /*	$NetBSD: malloc.h,v 1.39 1998/07/12 19:52:01 augustss Exp $	*/
 
 /*
@@ -401,10 +401,11 @@ struct kmembuckets {
 
 #else /* do not collect statistics */
 #define	MALLOC(space, cast, size, type, flags) do { \
-	register struct kmembuckets *kbp = &bucket[BUCKETINDX(size)]; \
+	u_long kbp_size = (u_long)(size); \
+	register struct kmembuckets *kbp = &bucket[BUCKETINDX(kbp_size)]; \
 	long __s = splvm(); \
 	if (kbp->kb_next == NULL) { \
-		(space) = (cast)malloc((u_long)(size), type, flags); \
+		(space) = (cast)malloc(kbp_size, type, flags); \
 	} else { \
 		(space) = (cast)kbp->kb_next; \
 		kbp->kb_next = *(caddr_t *)(space); \
