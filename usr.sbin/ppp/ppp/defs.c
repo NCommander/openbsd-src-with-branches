@@ -23,7 +23,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  *
- *	$OpenBSD: defs.c,v 1.16 2000/08/31 00:46:12 brian Exp $
+ *	$OpenBSD: defs.c,v 1.17 2000/09/07 00:05:26 brian Exp $
  */
 
 
@@ -375,4 +375,16 @@ SetTitle(const char *title)
     setproctitle("-%s", title + 1);
   else
     setproctitle("%s", title);
+}
+
+fd_set *
+mkfdset()
+{
+  return (fd_set *)malloc(howmany(getdtablesize(), NFDBITS) * sizeof (fd_mask));
+}
+
+void
+zerofdset(fd_set *s)
+{
+  memset(s, '\0', howmany(getdtablesize(), NFDBITS) * sizeof (fd_mask));
 }
