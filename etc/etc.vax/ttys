@@ -1,6 +1,5 @@
-#	$NetBSD: ttys,v 1.1 1995/08/25 21:25:14 ragge Exp $
 #
-#	@(#)ttys	5.2 (Berkeley) 6/10/93
+#	$OpenBSD$
 #
 # name	getty				type	status		comments
 #
