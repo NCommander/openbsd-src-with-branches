@@ -1,4 +1,3 @@
-#define DEBUG
 /*	$OpenBSD$	*/
 /*
  * Copyright (c) 2004 Jean-Francois Brousseau <jfb@openbsd.org>
