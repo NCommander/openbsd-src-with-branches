@@ -1,5 +1,5 @@
 # ex:ts=8 sw=4:
-# $OpenBSD: SharedLibs.pm,v 1.3 2004/11/22 01:56:13 espie Exp $
+# $OpenBSD: SharedLibs.pm,v 1.4 2004/11/23 11:12:56 espie Exp $
 #
 # Copyright (c) 2003-2004 Marc Espie <espie@openbsd.org>
 #
@@ -118,6 +118,10 @@ sub add_package_libs
 	$done_plist->{$pkgname} = 1;
 	my $plist = OpenBSD::PackingList->from_installation($pkgname, 
 	    \&OpenBSD::PackingList::LibraryOnly);
+	if (!defined $plist) {
+		Warn "Can't read plist for $pkgname\n";
+		return;
+	}
 	if (defined $wantpath) {
 		if (defined $plist->{extrainfo}) {
 			$pkgname = $plist->{extrainfo}->{subdir};
