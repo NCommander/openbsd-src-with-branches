@@ -1,4 +1,4 @@
-/*	$OpenBSD: ac97.c,v 1.34 2003/04/07 21:01:14 mickey Exp $	*/
+/*	$OpenBSD: ac97.c,v 1.35 2003/04/09 20:05:47 mickey Exp $	*/
 
 /*
  * Copyright (c) 1999, 2000 Constantine Sapuntzakis
@@ -778,7 +778,7 @@ ac97_query_devinfo(codec_if, dip)
 			name = si->class;
 
 		if (name)
-			strcpy(dip->label.name, name);
+			strlcpy(dip->label.name, name, sizeof dip->label.name);
 
 		bcopy(si->info, &dip->un, si->info_size);
 

@@ -1,4 +1,4 @@
-/*	$OpenBSD: esa.c,v 1.4 2002/10/04 20:01:19 mickey Exp $	*/
+/*	$OpenBSD: esa.c,v 1.5 2002/11/19 18:40:17 jason Exp $	*/
 /* $NetBSD: esa.c,v 1.12 2002/03/24 14:17:35 jmcneill Exp $ */
 
 /*
@@ -1020,7 +1020,7 @@ esa_attach(struct device *parent, struct device *self, void *aux)
 	int revision, len;
 	int i;
 
-	pci_devinfo(pa->pa_id, pa->pa_class, 0, devinfo);
+	pci_devinfo(pa->pa_id, pa->pa_class, 0, devinfo, sizeof devinfo);
 	revision = PCI_REVISION(pa->pa_class);
 	printf(": %s (rev. 0x%02x)\n", devinfo, revision);
 
