@@ -1,4 +1,4 @@
-/* $OpenBSD: dec_axppci_33.c,v 1.11 2000/11/08 21:48:44 art Exp $ */
+/* $OpenBSD: dec_axppci_33.c,v 1.12 2000/11/16 23:32:20 ericj Exp $ */
 /* $NetBSD: dec_axppci_33.c,v 1.44 2000/05/22 20:13:32 thorpej Exp $ */
 
 /*
@@ -39,7 +39,6 @@
 #include <sys/conf.h>
 
 #include <machine/rpb.h>
-#include <machine/alpha.h>
 #include <machine/autoconf.h>
 #include <machine/cpuconf.h>
 

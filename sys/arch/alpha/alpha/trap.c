@@ -1,4 +1,4 @@
-/* $OpenBSD: trap.c,v 1.23 2000/11/15 07:50:42 nate Exp $ */
+/* $OpenBSD: trap.c,v 1.24 2000/11/16 18:38:34 ericj Exp $ */
 /* $NetBSD: trap.c,v 1.52 2000/05/24 16:48:33 thorpej Exp $ */
 
 /*-
@@ -111,7 +111,6 @@
 
 #include <machine/cpu.h>
 #include <machine/reg.h>
-#include <machine/alpha.h>
 #ifdef DDB
 #include <machine/db_machdep.h>
 #endif

@@ -1,4 +1,4 @@
-/* $OpenBSD$ */
+/* $OpenBSD: interrupt.c,v 1.10 2000/11/08 19:16:59 ericj Exp $ */
 /* $NetBSD: interrupt.c,v 1.44 2000/05/23 05:12:53 thorpej Exp $ */
 
 /*
@@ -54,7 +54,6 @@
 #include <machine/frame.h>
 #include <machine/cpuconf.h>
 #include <machine/intrcnt.h>
-#include <machine/alpha.h>
 
 #if defined(MULTIPROCESSOR)
 #include <sys/device.h>
