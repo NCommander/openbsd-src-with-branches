@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /*	$NetBSD: nametoaddr.c,v 1.3 1995/04/29 05:42:23 cgd Exp $	*/
 
 /*

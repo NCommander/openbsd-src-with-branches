@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /*	$NetBSD: pcap-bpf.c,v 1.3 1995/04/29 05:42:31 cgd Exp $	*/
 
 /*

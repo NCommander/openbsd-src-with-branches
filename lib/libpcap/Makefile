@@ -1,3 +1,4 @@
+#	$OpenBSD$
 #	$NetBSD: Makefile,v 1.1 1995/03/06 11:38:04 mycroft Exp $
 
 LIB=	pcap

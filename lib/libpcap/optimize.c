@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /*	$NetBSD: optimize.c,v 1.3 1995/04/29 05:42:28 cgd Exp $	*/
 
 /*
