@@ -1,4 +1,4 @@
-/*	$OpenBSD: traceroute6.c,v 1.14 2000/12/22 15:17:25 itojun Exp $	*/
+/*	$OpenBSD: traceroute6.c,v 1.15 2001/01/12 19:10:48 brad Exp $	*/
 /*	$KAME: traceroute6.c,v 1.39 2000/12/22 15:11:05 itojun Exp $	*/
 
 /*
@@ -419,7 +419,7 @@ main(argc, argv)
 
 	seq = 0;
 	
-	while ((ch = getopt(argc, argv, "df:g:lm:np:q:rs:w:v")) != EOF)
+	while ((ch = getopt(argc, argv, "df:g:lm:np:q:rs:w:v")) != -1)
 		switch(ch) {
 		case 'd':
 			options |= SO_DEBUG;
