@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_ed.c,v 1.30 1997/06/20 20:25:27 mickey Exp $	*/
+/*	$OpenBSD: if_ed.c,v 1.31 1997/08/01 07:40:10 deraadt Exp $	*/
 /*	$NetBSD: if_ed.c,v 1.105 1996/10/21 22:40:45 thorpej Exp $	*/
 
 /*
@@ -877,6 +877,8 @@ ed_find_WD80x3(sc, cf, ia)
 
 	/* XXX Figure out the shared memory address. */
 
+	if (ia->ia_maddr == MADDRUNK)
+		goto out;
 	sc->isa16bit = isa16bit;
 	sc->mem_shared = 1;
 	ia->ia_msize = memsize;
