@@ -1,5 +1,4 @@
-/* $Id: base64.c,v 1.1 2001/01/23 11:38:40 ho Exp $ */
-/* $OpenBSD: base64.c,v 1.3 1999/04/04 22:02:46 ho Exp $ */
+/* $OpenBSD: base64.c,v 1.1 2001/08/15 12:31:40 ho Exp $ */
 
 /*
  * Copyright (c) 1996-1999 by Internet Software Consortium.
