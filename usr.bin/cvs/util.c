@@ -401,7 +401,7 @@ cvs_mkadmin(struct cvs_file *cdir, mode_t mode)
 
 	root = cdir->cf_ddat->cd_root;
 	snprintf(path, sizeof(path), "%s/" CVS_PATH_ROOTSPEC, cdir->cf_path);
-	if ((stat(path, &st) != 0) && (errno == ENOENT) && (root != NULL)) {
+	if ((root != NULL) && (stat(path, &st) != 0) && (errno == ENOENT)) {
 		fp = fopen(path, "w");
 		if (fp == NULL) {
 			cvs_log(LP_ERRNO, "failed to open %s", path);
