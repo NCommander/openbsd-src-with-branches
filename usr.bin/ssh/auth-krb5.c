@@ -1,6 +1,6 @@
 /*
  *    Kerberos v5 authentication and ticket-passing routines.
- * 
+ *
  * $FreeBSD: src/crypto/openssh/auth-krb5.c,v 1.6 2001/02/13 16:58:04 assar Exp $
  */
 /*
@@ -28,7 +28,7 @@
  */
 
 #include "includes.h"
-RCSID("$OpenBSD: auth-krb5.c,v 1.6 2002/03/04 17:27:39 stevesk Exp $");
+RCSID("$OpenBSD: auth-krb5.c,v 1.7 2002/03/16 17:41:25 stevesk Exp $");
 
 #include "ssh.h"
 #include "ssh1.h"

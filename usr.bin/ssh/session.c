@@ -33,7 +33,7 @@
  */
 
 #include "includes.h"
-RCSID("$OpenBSD: session.c,v 1.130 2002/03/18 17:50:31 provos Exp $");
+RCSID("$OpenBSD: session.c,v 1.131 2002/03/19 10:35:39 markus Exp $");
 
 #include "ssh.h"
 #include "ssh1.h"
@@ -1244,7 +1244,7 @@ session_pty_req(Session *s)
 {
 	u_int len;
 	int n_bytes;
-	
+
 	if (no_pty_flag) {
 		debug("Allocating a pty not permitted for this authentication.");
 		return 0;
