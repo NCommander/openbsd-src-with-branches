@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.48 1998/04/26 21:58:16 provos Exp $
+#	$OpenBSD: Makefile,v 1.49 1998/04/27 03:35:22 mickey Exp $
 
 .include <bsd.own.mk>
 
@@ -10,7 +10,7 @@ SUBDIR= apply apropos arch asa at aucat audioctl awk banner basename bdes biff \
 	id indent \
 	info_mkdb ipcrm ipcs join jot kdump ktrace lam last lastcomm leave \
 	less lex lndir locate lock logger login logname look lorder m4 \
-	machine mail make man mesg mixerctl mk_cmds mkdep mkfifo mkstr mktemp \
+	machine mail make man mesg mixerctl mkdep mkfifo mkstr mktemp \
 	modstat msgs nc netstat newsyslog \
 	nfsstat nice nohup oldrdist pagesize passwd paste patch pr printenv \
 	printf quota rdist rdistd readlink renice rev rlogin rpcgen rpcinfo rs \
