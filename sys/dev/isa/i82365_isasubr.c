@@ -1,4 +1,4 @@
-/*	$OpenBSD: i82365_isasubr.c,v 1.2 1998/12/19 15:58:24 fgsch Exp $	*/
+/*	$OpenBSD: i82365_isasubr.c,v 1.3 1998/12/27 00:27:18 deraadt Exp $	*/
 /*	$NetBSD: i82365_isasubr.c,v 1.1 1998/06/07 18:28:31 sommerfe Exp $  */
 
 /*
@@ -226,7 +226,7 @@ pcic_isa_chip_intr_establish(pch, pf, ipl, fct, arg)
 		if (isa_intr_check(ic, pcic_isa_intr_list[i], ist) == 2)
 			goto found;
 	for (i = 0; i < npcic_isa_intr_list; i++)
-		if (isa_intr_check(ic, pcic_isa_intr_list[i], ist))
+		if (isa_intr_check(ic, pcic_isa_intr_list[i], ist) == 1)
 			goto found;
 	return (NULL);
 
