@@ -1,4 +1,4 @@
-/*	$OpenBSD: vsdma.c,v 1.4 2001/03/07 23:45:52 miod Exp $ */
+/*	$OpenBSD: vsdma.c,v 1.5 2001/03/09 05:44:39 smurph Exp $ */
 /*
  * Copyright (c) 1999 Steve Murphree, Jr.
  * All rights reserved.
@@ -46,7 +46,7 @@
 #include <scsi/scsiconf.h>
 #include <machine/autoconf.h>
 
-#if defined(MVME187)
+#ifdef mvme88k
 #include <machine/board.h>
 #include <mvme88k/dev/vsreg.h>
 #include <mvme88k/dev/vsvar.h>
@@ -55,7 +55,7 @@
 #include <mvme68k/dev/vsreg.h>
 #include <mvme68k/dev/vsvar.h>
 #include <mvme68k/dev/vme.h>
-#endif /* defined(MVME187) */
+#endif /* mvme88k */
 
 int     vsmatch         __P((struct device *, void *, void *));
 void    vsattach        __P((struct device *, struct device *, void *));
