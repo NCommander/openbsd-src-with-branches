@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.31.2.5 2001/09/27 00:16:05 miod Exp $
+#	$OpenBSD: Makefile,v 1.46 2002/03/05 00:49:51 deraadt Exp $
 
 .PATH:		${.CURDIR}/..
 
@@ -39,7 +39,7 @@ DPADD+=	 ${LIBKRB}
 
 .include <bsd.prog.mk>
 
-LDADD+=	-lcrypto -lutil -lz
+LDADD+=	-lcrypto -lutil -lz -ldes
 DPADD+=	${LIBCRYPTO} ${LIBUTIL} ${LIBZ}
 
 .if (${TCP_WRAPPERS:L} == "yes")
@@ -48,8 +48,8 @@ LDADD+= -lwrap
 DPADD+= ${LIBWRAP}
 .endif
 
-#.if (${SKEY:L} == "yes")
-#CFLAGS+= -DSKEY
-#LDADD+= -lskey
-#DPADD+= ${SKEY}
-#.endif
+.if (${SKEY:L} == "yes")
+CFLAGS+= -DSKEY
+LDADD+= -lskey
+DPADD+= ${SKEY}
+.endif
