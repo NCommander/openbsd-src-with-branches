@@ -1,7 +1,7 @@
-/*	$OpenBSD: perform.c,v 1.1 1996/06/04 07:56:08 niklas Exp $	*/
+/*	$OpenBSD: perform.c,v 1.2 1996/06/04 08:43:38 niklas Exp $	*/
 
 #ifndef lint
-static const char *rcsid = "$OpenBSD: perform.c,v 1.1 1996/06/04 07:56:08 niklas Exp $";
+static const char *rcsid = "$OpenBSD: perform.c,v 1.2 1996/06/04 08:43:38 niklas Exp $";
 #endif
 
 /*
@@ -177,7 +177,7 @@ undepend(PackingList p, char *pkgname)
 	 whinge("Couldn't open dependency file `%s'", fname);
 	 return;
      }
-     sprintf(ftmp, "%s.XXXXXX", fname);
+     sprintf(ftmp, "%s.XXXXXXXXXX", fname);
      s = mkstemp(ftmp);
      if (s == -1) {
 	 fclose(fp);
