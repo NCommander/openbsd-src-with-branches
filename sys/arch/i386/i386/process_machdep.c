@@ -1,4 +1,4 @@
-/*	$OpenBSD: process_machdep.c,v 1.16 2004/06/13 21:49:15 niklas Exp $	*/
+/*	$OpenBSD: process_machdep.c,v 1.17 2004/07/02 16:29:55 niklas Exp $	*/
 /*	$NetBSD: process_machdep.c,v 1.22 1996/05/03 19:42:25 christos Exp $	*/
 
 /*
@@ -76,6 +76,8 @@
 #ifdef VM86
 #include <machine/vm86.h>
 #endif
+
+#include "npx.h"
 
 static __inline struct trapframe *process_frame(struct proc *);
 static __inline union savefpu *process_fpframe(struct proc *);
