@@ -1,4 +1,4 @@
-/*	$OpenBSD: glue.h,v 1.2 1996/08/19 08:32:53 tholo Exp $	*/
+/*	$OpenBSD: glue.h,v 1.3 2003/06/02 20:18:37 millert Exp $	*/
 
 /*-
  * Copyright (c) 1990, 1993
@@ -40,4 +40,6 @@ struct glue {
 	struct	glue *next;
 	int	niobs;
 	FILE	*iobs;
-} __sglue;
+};
+
+extern struct glue __sglue;
