@@ -1,4 +1,4 @@
-#	$OpenBSD: dot.profile,v 1.5 2000/10/25 16:38:11 millert Exp $
+#	$OpenBSD: dot.profile,v 1.6 2001/06/23 19:44:39 deraadt Exp $
 #	$NetBSD: dot.profile,v 1.1 1995/12/18 22:54:43 pk Exp $
 #
 # Copyright (c) 1995 Jason R. Thorpe
@@ -56,7 +56,7 @@ EDITBIN=/bin
 if [ "X${DONEPROFILE}" = "X" ]; then
 	DONEPROFILE=YES
 
-	mount_ffs -o update /dev/rd0a /
+	mount_ffs -u /dev/rd0a /
 
 	# set up some sane defaults
 	echo 'erase ^H, werase ^W, kill ^U, intr ^C, status ^T'
