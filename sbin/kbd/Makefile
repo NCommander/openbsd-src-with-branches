@@ -1,10 +1,15 @@
-#	$OpenBSD: Makefile,v 1.3 1996/09/28 08:49:07 pefo Exp $
+#	$OpenBSD: Makefile,v 1.4 1997/09/21 11:36:52 deraadt Exp $
 
 PROG=	kbd
 MAN=	kbd.8
 
 SRCS=	main.c
 CFLAGS+=-I${.CURDIR}
+
+.if (${MACHINE} == "i386")
+CFLAGS+=-DHAVEPCVT
+.endif
+
 .if (${MACHINE} == "i386") || (${MACHINE} == "arc")
 SRCS+=	kbd_i386.c
 .else
