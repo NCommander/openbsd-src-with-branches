@@ -141,9 +141,10 @@ file	arch/i386/isa/spkr.c		spkr needs-flag
 # National Semiconductor DS8390/WD83C690-based boards
 # (WD/SMC 80x3 family, SMC Ultra [8216], 3Com 3C503, NE[12]000, and clones)
 # XXX conflicts with other ports; can't be in files.isa
-#device	ed: ether, ifnet
-#attach	ed at isa
-#file	dev/isa/if_ed.c			ed
+device	ed: ether, ifnet
+attach	ed at isa with ed_isa
+attach	ed at pcmcia with ed_pcmcia
+file	dev/isa/if_ed.c			ed & (ed_isa | ed_pcmcia) needs-flag
 
 # AMD am7990 (Lance) -based boards
 # (BICC Isolan, NE2100, DEPCA)
