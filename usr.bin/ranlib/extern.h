@@ -1,11 +1,8 @@
-/*	$OpenBSD: misc.c,v 1.4 1999/08/27 08:43:22 fgsch Exp $	*/
+/*	$OpenBSD$ */
 
 /*-
  * Copyright (c) 1990 The Regents of the University of California.
  * All rights reserved.
- *
- * This code is derived from software contributed to Berkeley by
- * Hugh Smith at The University of Guelph.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -36,87 +33,21 @@
  * SUCH DAMAGE.
  */
 
-#ifndef lint
-/*static char sccsid[] = "from: @(#)misc.c	5.2 (Berkeley) 2/26/91";*/
-static char rcsid[] = "$OpenBSD: misc.c,v 1.4 1999/08/27 08:43:22 fgsch Exp $";
-#endif /* not lint */
+/* misc.c */
+extern int tmp __P((void));
+extern void *emalloc __P((size_t));
+extern void badfmt __P((void));
+extern void error __P((const char *));
+extern const char *rname __P((const char *));
+extern char *tname;			/* temporary file "name" */
 
-#include <sys/param.h>
-#include <signal.h>
-#include <errno.h>
-#include <unistd.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include "pathnames.h"
-#include "extern.h"
+/* touch.c */
+extern int touch __P((void));
+extern void settime __P((int));
 
-char *tname = "temporary file";
+/* build.c */
+extern int build __P((void));
 
-int
-tmp()
-{
-	static char *envtmp;
-	sigset_t set, oset;
-	static int first;
-	int fd;
-	char path[MAXPATHLEN];
+/* main.c */
+extern char *archive;			/* archive name */
 
-	if (!first) {
-		envtmp = getenv("TMPDIR");
-		first = 1;
-	}
-
-	if (envtmp)
-		(void)snprintf(path, sizeof(path), "%s/%s", envtmp,
-		    _NAME_RANTMP);
-	else
-		strlcpy(path, _PATH_RANTMP, sizeof(path));
-
-	sigemptyset(&set);
-	sigaddset(&set, SIGHUP);
-	sigaddset(&set, SIGINT);
-	sigaddset(&set, SIGQUIT);
-	sigaddset(&set, SIGTERM);
-	(void)sigprocmask(SIG_BLOCK, &set, &oset);
-	if ((fd = mkstemp(path)) == -1)
-		error(tname);
-   	(void)unlink(path);
-	(void)sigprocmask(SIG_SETMASK, &oset, (sigset_t *)NULL);
-	return(fd);
-}
-
-void *
-emalloc(len)
-	size_t len;
-{
-	void *p;
-
-	if (!(p = malloc(len)))
-		error(archive);
-	return(p);
-}
-
-const char *
-rname(path)
-	const char *path;
-{
-	register const char *ind;
-
-	return((ind = strrchr(path, '/')) ? ind + 1 : path);
-}
-
-void
-badfmt()
-{
-	errno = EFTYPE;
-	error(archive);
-}
-
-void
-error(name)
-	const char *name;
-{
-
-	err(1, "%s", name);
-}
