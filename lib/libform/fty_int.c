@@ -1,4 +1,4 @@
-/*	$OpenBSD: fty_int.c,v 1.5 1999/05/17 03:04:18 millert Exp $	*/
+/*	$OpenBSD: fty_int.c,v 1.6 2001/01/22 18:02:17 millert Exp $	*/
 
 
 /*
@@ -119,7 +119,7 @@ static bool Check_Integer_Field(FIELD * field, const void * argp)
 	    {
 	      if (val<low || val>high) return FALSE;
 	    }
-	  sprintf(buf,"%.*ld",(prec>0?prec:0),val);
+	  snprintf(buf, sizeof(buf), "%.*ld",(prec>0?prec:0),val);
 	  set_field_buffer(field,0,buf);
 	  return TRUE;
 	}
