@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile.mvme88k,v 1.26 2003/05/23 22:16:16 tedu Exp $
+#	$OpenBSD: Makefile.mvme88k,v 1.27 2003/07/22 19:39:50 otto Exp $
 #
 # Makefile for OpenBSD
 #
@@ -37,6 +37,7 @@ INCLUDES=	-nostdinc -I. -I$S/arch -I$S
 CPPFLAGS=	${INCLUDES} ${IDENT} ${PARAM} -D_KERNEL -Dmvme88k -Dm88k
 CWARNFLAGS=	-Wall -Werror -Wmissing-prototypes \
 		-Wno-uninitialized -Wno-format -Wno-main -Wstrict-prototypes
+CMACHFLAGS=	-mno-check-zero-division
 .if ${IDENT:M-DNO_PROPOLICE}
 CMACHFLAGS+=	-fno-stack-protector
 .endif
