@@ -1,4 +1,4 @@
-/*	$NetBSD: cpu_exec.c,v 1.4 1995/04/25 19:16:46 mellon Exp $	*/
+/*	$OpenBSD$	*/
 
 /*
  * Copyright (c) 1992, 1993
