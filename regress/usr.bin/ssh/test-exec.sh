@@ -1,10 +1,15 @@
-#	$OpenBSD: test-exec.sh,v 1.19 2004/06/13 15:16:54 djm Exp $
+#	$OpenBSD: test-exec.sh,v 1.20 2004/06/22 22:45:52 dtucker Exp $
 #	Placed in the Public Domain.
 
-PORT=4242
 USER=`id -un`
 SUDO=
 #SUDO=sudo
+
+if [ ! -z "$TEST_SSH_PORT" ]; then
+	PORT="$TEST_SSH_PORT"
+else
+	PORT=4242
+fi
 
 OBJ=$1
 if [ "x$OBJ" = "x" ]; then
