@@ -1,4 +1,4 @@
-/*	$OpenBSD: macrom.h,v 1.6 1997/03/30 21:53:26 briggs Exp $	*/
+/*	$OpenBSD: macrom.h,v 1.7 1997/04/05 15:29:12 briggs Exp $	*/
 /*	$NetBSD: macrom.h,v 1.9 1996/05/25 14:45:35 briggs Exp $	*/
 
 /*-
@@ -111,8 +111,8 @@ int MyOwnTrap(
 void KnownRTS(
 	void);
 
-#ifndef HWDIRECT	/* These routines are NOT defined here
-			 * if using the HWDIRECT method for accessing
+#ifdef MRG_ADB		/* These routines are defined here
+			 * if using the MRG_ADB method for accessing
 			 * the ADB/PRAM/RTC. They are 
 			 * defined in adb_direct.h */
 /* ADB Manager */
