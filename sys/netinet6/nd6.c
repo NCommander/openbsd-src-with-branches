@@ -1,4 +1,4 @@
-/*	$OpenBSD: nd6.c,v 1.66 2004/05/19 17:48:19 itojun Exp $	*/
+/*	$OpenBSD: nd6.c,v 1.67 2004/06/21 23:50:37 tholo Exp $	*/
 /*	$KAME: nd6.c,v 1.280 2002/06/08 19:52:07 itojun Exp $	*/
 
 /*
@@ -1926,6 +1926,7 @@ nd6_need_cache(ifp)
 	case IFT_PROPVIRTUAL:
 	case IFT_L2VLAN:
 	case IFT_IEEE80211:
+	case IFT_CARP:
 	case IFT_GIF:		/* XXX need more cases? */
 		return (1);
 	default:
