@@ -1,4 +1,4 @@
-/*	$OpenBSD: login_cap.c,v 1.17 2003/06/25 21:16:47 deraadt Exp $	*/
+/*	$OpenBSD: login_cap.c,v 1.18 2003/10/24 20:31:00 avsm Exp $	*/
 
 /*-
  * Copyright (c) 1995,1997 Berkeley Software Design, Inc. All rights reserved.
@@ -929,7 +929,7 @@ multiply(n1, n2)
 	 * overflow.
 	 *
 	 * Finally, if MAX - ((h1 * l2) + (l1 * h2) + (l1 * l2)) < (h1*h2)
-	 * then adding in residual amout will cause an overflow.
+	 * then adding in residual amount will cause an overflow.
 	 */
 
 	m = (n1 >> 1) * (n2 >> 1);
