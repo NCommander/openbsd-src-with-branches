@@ -1,4 +1,4 @@
-/*	$OpenBSD: grf_tc.c,v 1.8 2000/11/10 15:33:05 provos Exp $	*/
+/*	$OpenBSD$	*/
 /*	$NetBSD: grf_tc.c,v 1.11 1997/03/31 07:34:18 scottr Exp $	*/
 
 /*
@@ -260,7 +260,7 @@ topcat_common_attach(sc, grf, secid)
 		break;
 #endif
 	default:
-		printf("%s: unkown device 0x%x\n",
+		printf("%s: unknown device 0x%x\n",
 		    sc->sc_dev.dv_xname, secid);
 		panic("topcat_common_attach");
 	}

@@ -1,4 +1,4 @@
-/*	$OpenBSD: hp300spu.h,v 1.4 2001/08/26 00:15:37 miod Exp $	*/
+/*	$OpenBSD$	*/
 /*	$NetBSD: hp300spu.h,v 1.2 1997/05/01 05:26:48 thorpej Exp $	*/
 
 /*-
@@ -68,7 +68,7 @@
 #define	MMUID_425_S	7	/* 425s - 25MHz Strider */
 #define	MMUID_433_T	4	/* 433t - 33MHz Trailways */
 #define	MMUID_433_S	6	/* 433s - 33MHz Strider */
-#define MMUID_425_E	9	/* 425e - 25Mhz Woody */
+#define MMUID_425_E	9	/* 425e - 25MHz Woody */
 
 #define	MMUID_SHIFT	8	/* left shift by this... */
 #define	MMUID_MASK	0xff	/* ...and mask with this to get mmuid */

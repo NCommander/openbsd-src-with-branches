@@ -211,7 +211,7 @@ ioasicattach(parent, self, aux)
 		cp = malloc(12, M_DEVBUF, M_NOWAIT);
 		if (cp == NULL)
 			panic("ioasicattach");
-		sprintf(cp, "slot %lu", i);
+		snprintf(cp, 12, "slot %lu", i);
 #ifdef EVCNT_COUNTERS
 		evcnt_attach_dynamic(&ioasicintrs[i].iai_evcnt,
 		    EVCNT_TYPE_INTR, pevcnt, self->dv_xname, cp);

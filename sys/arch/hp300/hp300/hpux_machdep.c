@@ -1,4 +1,4 @@
-/*	$OpenBSD: hpux_machdep.c,v 1.11.2.1 2002/06/11 03:35:20 art Exp $	*/
+/*	$OpenBSD$	*/
 /*	$NetBSD: hpux_machdep.c,v 1.19 1998/02/16 20:58:30 thorpej Exp $	*/
 
 /*
@@ -614,17 +614,13 @@ hpux_sys_sigreturn(p, v, retval)
 	 * See if there is anything to do before we go to the
 	 * expense of copying in close to 1/2K of data
 	 */
-	flags = fuword((caddr_t)rf);
+	if (copyin((caddr_t)rf, &flags, sizeof(int)) != 0)
+		return (EINVAL);
 #ifdef DEBUG
 	if (hpuxsigdebug & SDB_FOLLOW)
 		printf("sigreturn(%d): sc_ap %x flags %x\n",
 		       p->p_pid, rf, flags);
 #endif
-	/*
-	 * fuword failed (bogus _hsc_ap value).
-	 */
-	if (flags == -1)
-		return (EINVAL);
 	if (flags == 0 || copyin((caddr_t)rf, (caddr_t)&tstate, sizeof tstate))
 		return (EJUSTRETURN);
 #ifdef DEBUG

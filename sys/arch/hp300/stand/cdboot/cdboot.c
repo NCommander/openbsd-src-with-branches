@@ -1,4 +1,4 @@
-/*	$OpenBSD: cdboot.c,v 1.2 1999/08/16 10:20:07 downsj Exp $	*/
+/*	$OpenBSD$	*/
 /*	$NetBSD: uboot.c,v 1.3 1997/04/27 21:17:13 thorpej Exp $	*/
 
 /*-
@@ -77,7 +77,7 @@ main()
 {
 	int currname = 0;
 
-	printf("\n>> OpenBSD [%dKB] CDROM BOOT %s HP9000/%s CPU\n",
+	printf("\n>> OpenBSD [%dKB] CDROM BOOT %s HP 9000/%s CPU\n",
 	       (__LDPGSZ / 1024), version, getmachineid());
 
 	bdev   = B_TYPE(bootdev);

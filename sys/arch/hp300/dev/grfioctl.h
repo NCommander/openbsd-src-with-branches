@@ -44,7 +44,7 @@
  */
 
 struct	grfinfo {
-	int	gd_id;			/* HPUX identifier */
+	int	gd_id;			/* HP-UX identifier */
 	caddr_t	gd_regaddr;		/* control registers physaddr */
 	int	gd_regsize;		/* control registers size */
 	caddr_t	gd_fbaddr;		/* frame buffer physaddr */
@@ -69,7 +69,7 @@ struct	grfinfo {
 #define GRFDAVINCI	14
 
 /*
- * HPUX ioctls (here for the benefit of the driver)
+ * HP-UX ioctls (here for the benefit of the driver)
  */
 struct	grf_slot {
 	int	slot;

@@ -1,4 +1,4 @@
-/* $OpenBSD: cpu.c,v 1.11.2.1 2002/06/11 03:33:39 art Exp $ */
+/* $OpenBSD$ */
 /* $NetBSD: cpu.c,v 1.44 2000/05/23 05:12:53 thorpej Exp $ */
 
 /*-
@@ -559,7 +559,8 @@ cpu_iccb_send(cpu_id, msg)
 	 * Copy the message into the ICCB, and tell the secondary console
 	 * that it's there.  The atomic operation performs a memory barrier.
 	 */
-	strcpy(pcsp->pcs_iccb.iccb_rxbuf, msg);
+	strlcpy(pcsp->pcs_iccb.iccb_rxbuf, msg,
+	    sizeof pcsp->pcs_iccb.iccb_rxbuf);
 	pcsp->pcs_iccb.iccb_rxlen = strlen(msg);
 	atomic_setbits_ulong(&hwrpb->rpb_rxrdy, cpumask);
 

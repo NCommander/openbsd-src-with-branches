@@ -140,10 +140,13 @@ main(argc, argv)
 		outfilename = outfile;
 	else {
 		/* name + 12 for enet addr + '.' before enet addr + NUL */
-		outfilename = malloc(strlen(netboot) + 14);
+		size_t len = strlen(netboot) + 14;
+
+		outfilename = malloc(len);
 		if (outfilename == NULL)
 			err(1, "malloc of output file name failed");
-		sprintf(outfilename, "%s.%02x%02x%02x%02x%02x%02x", netboot,
+		snprintf(outfilename, len,
+		    "%s.%02x%02x%02x%02x%02x%02x", netboot,
 		    ether_addr->ether_addr_octet[0],
 		    ether_addr->ether_addr_octet[1],
 		    ether_addr->ether_addr_octet[2],

@@ -1,4 +1,4 @@
-/*	$OpenBSD: pci_kn20aa.c,v 1.16 2001/12/14 00:44:59 nate Exp $	*/
+/*	$OpenBSD$	*/
 /*	$NetBSD: pci_kn20aa.c,v 1.21 1996/11/17 02:05:27 cgd Exp $	*/
 
 /*
@@ -187,7 +187,7 @@ dec_kn20aa_intr_string(ccv, ih)
         if (ih > KN20AA_MAX_IRQ)
 		panic("dec_kn20aa_intr_string: bogus kn20aa IRQ 0x%x", ih);
 
-        sprintf(irqstr, "kn20aa irq %ld", ih);
+        snprintf(irqstr, sizeof irqstr, "kn20aa irq %ld", ih);
         return (irqstr);
 }
 

@@ -40,7 +40,6 @@
 #ifndef _ALPHA_SYSARCH_H_
 #define _ALPHA_SYSARCH_H_
 
-#include <machine/bus.h>
 #include <machine/ieeefp.h>
 
 /*

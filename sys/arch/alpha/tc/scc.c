@@ -138,7 +138,7 @@ struct scc_softc {
  *	BRGconstant =	---------------------------  -  2
  *			2 * BaudRate * ClockDivider
  *
- * Speed selections with Pclk=7.3728Mhz, clock x16
+ * Speed selections with Pclk=7.3728MHz, clock x16
  */
 struct speedtab sccspeedtab[] = {
 	{ 0,		0,	},

@@ -1,4 +1,4 @@
-/*	$OpenBSD: hdvar.h,v 1.2 1997/02/10 01:33:56 downsj Exp $	*/
+/*	$OpenBSD$	*/
 /*	$NetBSD: rdvar.h,v 1.6 1997/01/30 09:14:19 thorpej Exp $	*/
 
 /*
@@ -92,9 +92,9 @@ struct	hd_softc {
 #define HDF_WANTED	0x20
 #define HDF_WLABEL	0x40
 
-#define	hdunit(x)	DISKUNIT(x)
-#define hdpart(x)	DISKPART(x)
-#define hdlabdev(d)	MAKEDISKDEV(major(d), hdunit(d), RAW_PART)
+#define	HDUNIT(x)	DISKUNIT(x)
+#define HDPART(x)	DISKPART(x)
+#define HDLABELDEV(d)	MAKEDISKDEV(major(d), HDUNIT(d), RAW_PART)
 
 #define	b_cylin		b_resid
 
