@@ -2807,8 +2807,14 @@ init386(paddr_t first_avail)
 	/* call pmap initialization to make new kernel address space */
 	pmap_bootstrap((vaddr_t)atdevbase + IOM_SIZE);
 
-	/* Boot arguments are in a single page specified by /boot */
-	if (bootapiver & BAPIV_VECTOR) {
+	/*
+	 * Boot arguments are in a single page specified by /boot.
+	 *
+	 * We require the "new" vector form, as well as memory ranges
+	 * to be given in bytes rather than KB.
+	 */
+	if ((bootapiver & (BAPIV_VECTOR | BAPIV_BMEMMAP)) ==
+	    (BAPIV_VECTOR | BAPIV_BMEMMAP)) {
 		if (bootargc > NBPG)
 			panic("too many boot args");
 
