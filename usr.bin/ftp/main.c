@@ -1,4 +1,4 @@
-/*	$OpenBSD: main.c,v 1.47 2000/06/21 19:22:54 itojun Exp $	*/
+/*	$OpenBSD: main.c,v 1.48 2001/06/23 22:48:45 millert Exp $	*/
 /*	$NetBSD: main.c,v 1.24 1997/08/18 10:20:26 lukem Exp $	*/
 
 /*
@@ -73,7 +73,7 @@ static char copyright[] =
 #if 0
 static char sccsid[] = "@(#)main.c	8.6 (Berkeley) 10/9/94";
 #else
-static char rcsid[] = "$OpenBSD: main.c,v 1.47 2000/06/21 19:22:54 itojun Exp $";
+static char rcsid[] = "$OpenBSD: main.c,v 1.48 2001/06/23 22:48:45 millert Exp $";
 #endif
 #endif /* not lint */
 
@@ -94,6 +94,8 @@ static char rcsid[] = "$OpenBSD: main.c,v 1.47 2000/06/21 19:22:54 itojun Exp $"
 #include <unistd.h>
 
 #include "ftp_var.h"
+
+int family = PF_UNSPEC;
 
 int
 main(argc, argv)
@@ -180,8 +182,14 @@ main(argc, argv)
 	if (isatty(fileno(ttyout)) && !dumb_terminal && foregroundproc())
 		progress = 1;		/* progress bar on if tty is usable */
 
-	while ((ch = getopt(argc, argv, "Aadegimno:pP:r:tvV")) != -1) {
+	while ((ch = getopt(argc, argv, "46Aadegimno:pP:r:tvV")) != -1) {
 		switch (ch) {
+		case '4':
+			family = PF_INET;
+			break;
+		case '6':
+			family = PF_INET6;
+			break;
 		case 'A':
 			activefallback = 0;
 			passivemode = 0;

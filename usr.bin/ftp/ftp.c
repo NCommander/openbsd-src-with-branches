@@ -1,4 +1,4 @@
-/*	$OpenBSD: ftp.c,v 1.43 2002/02/19 19:39:38 millert Exp $	*/
+/*	$OpenBSD: ftp.c,v 1.44 2002/04/25 10:58:05 itojun Exp $	*/
 /*	$NetBSD: ftp.c,v 1.27 1997/08/18 10:20:23 lukem Exp $	*/
 
 /*
@@ -67,7 +67,7 @@
 #if 0
 static char sccsid[] = "@(#)ftp.c	8.6 (Berkeley) 10/27/94";
 #else
-static char rcsid[] = "$OpenBSD: ftp.c,v 1.43 2002/02/19 19:39:38 millert Exp $";
+static char rcsid[] = "$OpenBSD: ftp.c,v 1.44 2002/04/25 10:58:05 itojun Exp $";
 #endif
 #endif /* not lint */
 
@@ -139,7 +139,7 @@ hookup(host, port)
 	memset((char *)&hisctladdr, 0, sizeof (hisctladdr));
 	memset(&hints, 0, sizeof(hints));
 	hints.ai_flags = AI_CANONNAME;
-	hints.ai_family = AF_UNSPEC;
+	hints.ai_family = family;
 	hints.ai_socktype = SOCK_STREAM;
 	hints.ai_protocol = 0;
 	error = getaddrinfo(host, port, &hints, &res0);
