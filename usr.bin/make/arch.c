@@ -1,4 +1,4 @@
-/*	$OpenBSD: arch.c,v 1.22 1999/12/18 21:58:07 espie Exp $	*/
+/*	$OpenBSD: arch.c,v 1.23 1999/12/19 00:04:24 espie Exp $	*/
 /*	$NetBSD: arch.c,v 1.17 1996/11/06 17:58:59 christos Exp $	*/
 
 /*
@@ -43,7 +43,7 @@
 #if 0
 static char sccsid[] = "@(#)arch.c	8.2 (Berkeley) 1/2/94";
 #else
-static char rcsid[] = "$OpenBSD: arch.c,v 1.22 1999/12/18 21:58:07 espie Exp $";
+static char rcsid[] = "$OpenBSD: arch.c,v 1.23 1999/12/19 00:04:24 espie Exp $";
 #endif
 #endif /* not lint */
 
@@ -221,7 +221,7 @@ Arch_ParseArchive (linePtr, nodeLst, ctxt)
 	     * Variable spec, so call the Var module to parse the puppy
 	     * so we can safely advance beyond it...
 	     */
-	    int 	length;
+	    size_t 	length;
 	    Boolean	freeIt;
 	    char	*result;
 
@@ -263,7 +263,7 @@ Arch_ParseArchive (linePtr, nodeLst, ctxt)
 		 * Variable spec, so call the Var module to parse the puppy
 		 * so we can safely advance beyond it...
 		 */
-		int 	length;
+		size_t 	length;
 		Boolean	freeIt;
 		char	*result;
 

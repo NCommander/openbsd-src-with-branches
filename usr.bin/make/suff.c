@@ -1,4 +1,4 @@
-/*	$OpenBSD: suff.c,v 1.20 1999/12/18 21:58:07 espie Exp $	*/
+/*	$OpenBSD: suff.c,v 1.21 1999/12/19 00:04:25 espie Exp $	*/
 /*	$NetBSD: suff.c,v 1.13 1996/11/06 17:59:25 christos Exp $	*/
 
 /*
@@ -43,7 +43,7 @@
 #if 0
 static char sccsid[] = "@(#)suff.c	8.4 (Berkeley) 3/21/94";
 #else
-static char rcsid[] = "$OpenBSD: suff.c,v 1.20 1999/12/18 21:58:07 espie Exp $";
+static char rcsid[] = "$OpenBSD: suff.c,v 1.21 1999/12/19 00:04:25 espie Exp $";
 #endif
 #endif /* not lint */
 
@@ -1407,7 +1407,7 @@ SuffExpandChildren(cgnp, pgnp)
 			 * to find the end so we can skip over it.
 			 */
 			char	*junk;
-			int 	len;
+			size_t 	len;
 			Boolean	doFree;
 
 			junk = Var_Parse(cp, pgn, TRUE, &len, &doFree);
