@@ -1,5 +1,5 @@
 %{
-/*	$OpenBSD: gram.y,v 1.11 2001/01/23 06:02:58 angelos Exp $	*/
+/*	$OpenBSD: gram.y,v 1.12 2002/02/16 21:28:01 millert Exp $	*/
 /*	$NetBSD: gram.y,v 1.14 1997/02/02 21:12:32 thorpej Exp $	*/
 
 /*
@@ -457,7 +457,7 @@ setmachine(mch, mcharch)
 		(void)sprintf(buf, "arch/%s/conf/files.%s",
 		    machinearch, machinearch);
 	else
-		strcpy(buf, _PATH_DEVNULL);
+		strlcpy(buf, _PATH_DEVNULL, sizeof buf);
 	if (include(buf, ENDFILE) != 0)
 		exit(1);
 

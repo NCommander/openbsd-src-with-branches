@@ -1,4 +1,4 @@
-/*	$OpenBSD: procs.c,v 1.8 1998/07/10 08:06:52 deraadt Exp $	*/
+/*	$OpenBSD: procs.c,v 1.9 2000/06/29 00:30:39 millert Exp $	*/
 
 /*
  * Copyright (c) 1995
@@ -63,11 +63,11 @@ log_from_addr(fun_name, req)
 
 	addr = svc_getcaller(req->rq_xprt);
 	host = gethostbyaddr((char *) &(addr->sin_addr), addr->sin_len, AF_INET);
-	if (host) {
-		strncpy(hostname_buf, host->h_name, sizeof(hostname_buf) - 1);
-		hostname_buf[sizeof(hostname_buf) - 1] = '\0';
-	} else
-		strcpy(hostname_buf, inet_ntoa(addr->sin_addr));
+	if (host)
+		strlcpy(hostname_buf, host->h_name, sizeof(hostname_buf));
+	else
+		strlcpy(hostname_buf, inet_ntoa(addr->sin_addr),
+		    sizeof hostname_buf);
 	syslog(LOG_DEBUG, "%s from %s", fun_name, hostname_buf);
 }
 
