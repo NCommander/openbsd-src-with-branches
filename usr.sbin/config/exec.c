@@ -1,4 +1,4 @@
-/*	$OpenBSD$ */
+/*	$OpenBSD: exec.c,v 1.1 1999/10/04 20:00:51 deraadt Exp $ */
 
 /*
  * Copyright (c) 1999 Mats O Jansson.  All rights reserved.
@@ -34,7 +34,7 @@
 #include <stdio.h>
 
 #ifndef LINT
-static char rcsid[] = "$OpenBSD$";
+static char rcsid[] = "$OpenBSD: exec.c,v 1.1 1999/10/04 20:00:51 deraadt Exp $";
 #endif
 
 #ifdef AOUT_SUPPORT
@@ -67,7 +67,7 @@ caddr_t	elf_readjust __P((caddr_t));
 
 int current_exec = -1;
 
-caddr_t 
+caddr_t
 adjust(x)
 	caddr_t x;
 {
