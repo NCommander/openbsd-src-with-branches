@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_ne_pcmcia.c,v 1.8 1999/03/26 06:34:28 fgsch Exp $	*/
+/*	$OpenBSD: if_ne_pcmcia.c,v 1.9 1999/06/03 06:40:28 fgsch Exp $	*/
 /*	$NetBSD: if_ne_pcmcia.c,v 1.17 1998/08/15 19:00:04 thorpej Exp $	*/
 
 /*
@@ -250,9 +250,6 @@ struct ne2000dev {
     { "DataTrek NetCard",
       0x0000, 0x0000, NULL, NULL, 0,
       0x0ff0, { 0x00, 0x20, 0xe8 } },
-    { "Dayna CommuniCard E",
-      0x0000, 0x0000, NULL, NULL, 0,
-      0x0110, { 0x00, 0x80, 0x19 } },
     { "EP-210 Ethernet",
       0x0000, 0x0000, NULL, NULL, 0,
       0x0110, { 0x00, 0x40, 0x33 } },
