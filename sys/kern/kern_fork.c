@@ -1,4 +1,4 @@
-/*	$OpenBSD: kern_fork.c,v 1.19 1999/03/02 22:19:08 niklas Exp $	*/
+/*	$OpenBSD: kern_fork.c,v 1.20 1999/03/12 17:49:37 deraadt Exp $	*/
 /*	$NetBSD: kern_fork.c,v 1.29 1996/02/09 18:59:34 christos Exp $	*/
 
 /*
@@ -117,7 +117,7 @@ fork1(p1, forktype, rforkflags, retval)
 	int count;
 	static int pidchecked = 0;
 	int dupfd = 1, cleanfd = 0;
-	vm_offset_t uaddr;
+	vaddr_t uaddr;
 
 	if (forktype == ISRFORK) {
 		dupfd = 0;
