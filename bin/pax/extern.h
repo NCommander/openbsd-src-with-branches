@@ -1,4 +1,4 @@
-/*	$OpenBSD: extern.h,v 1.26 2003/06/13 17:51:14 millert Exp $	*/
+/*	$OpenBSD: extern.h,v 1.27 2003/06/26 00:10:17 deraadt Exp $	*/
 /*	$NetBSD: extern.h,v 1.5 1996/03/26 23:54:16 mrg Exp $	*/
 
 /*-
@@ -135,6 +135,7 @@ int bcpio_wr(ARCHD *);
 /*
  * file_subs.c
  */
+extern char *gnu_name_string, *gnu_link_string;
 int file_creat(ARCHD *);
 void file_close(ARCHD *, int);
 int lnk_creat(ARCHD *);
