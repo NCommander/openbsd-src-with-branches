@@ -1,4 +1,4 @@
-/*	$OpenBSD: siop.c,v 1.28 2003/07/01 17:15:06 krw Exp $ */
+/*	$OpenBSD: siop.c,v 1.29 2003/09/29 18:52:53 mickey Exp $ */
 /*	$NetBSD: siop.c,v 1.65 2002/11/08 22:04:41 bouyer Exp $	*/
 
 /*
@@ -1739,8 +1739,8 @@ siop_morecbd(sc)
 		    sc->sc_c.sc_dev.dv_xname, error);
 		goto bad1;
 	}
-	error = bus_dmamap_load_raw(sc->sc_c.sc_dmat, newcbd->xferdma, &seg,
-	    rseg, PAGE_SIZE, BUS_DMA_NOWAIT);
+	error = bus_dmamap_load(sc->sc_c.sc_dmat, newcbd->xferdma, newcbd->xfers,
+	    PAGE_SIZE, NULL, BUS_DMA_NOWAIT);
 	if (error) {
 		printf("%s: unable to load cbd DMA map, error = %d\n",
 		    sc->sc_c.sc_dev.dv_xname, error);
