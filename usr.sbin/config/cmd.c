@@ -1,4 +1,4 @@
-/*	$OpenBSD: cmd.c,v 1.9 2002/06/01 20:16:15 deraadt Exp $ */
+/*	$OpenBSD: cmd.c,v 1.10 2003/06/02 21:19:03 maja Exp $ */
 
 /*
  * Copyright (c) 1999-2001 Mats O Jansson.  All rights reserved.
@@ -25,7 +25,7 @@
  */
 
 #ifndef LINT
-static char rcsid[] = "$OpenBSD: cmd.c,v 1.9 2002/06/01 20:16:15 deraadt Exp $";
+static char rcsid[] = "$OpenBSD: cmd.c,v 1.10 2003/06/02 21:19:03 maja Exp $";
 #endif
 
 #include <sys/types.h>
@@ -302,7 +302,7 @@ int_variable_adjust(const cmd_t *cmd, int idx, const char *name)
 				printf("Unknown argument\n");
 		}
 	} else
-		printf("This kernel does not support modification of %s.\n", 
+		printf("This kernel does not support modification of %s.\n",
 		    name);
 }
 
