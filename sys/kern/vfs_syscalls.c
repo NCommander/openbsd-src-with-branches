@@ -1,4 +1,4 @@
-/*	$OpenBSD: vfs_syscalls.c,v 1.47 1998/11/12 04:30:01 csapuntz Exp $	*/
+/*	$OpenBSD: vfs_syscalls.c,v 1.48 1998/12/10 23:48:13 art Exp $	*/
 /*	$NetBSD: vfs_syscalls.c,v 1.71 1996/04/23 10:29:02 mycroft Exp $	*/
 
 /*
@@ -229,7 +229,7 @@ sys_mount(p, v, retval)
 
 	if (vfsp == NULL) {
 		vput(vp);
-		return (ENODEV);
+		return EOPNOTSUPP;
 	}
 
 	if (vp->v_mountedhere != NULL) {
