@@ -1,4 +1,4 @@
-/*      $OpenBSD: wdcvar.h,v 1.8 2000/04/10 07:06:15 csapuntz Exp $     */
+/*      $OpenBSD: wdcvar.h,v 1.9 2000/06/30 01:03:41 art Exp $     */
 /*	$NetBSD: wdcvar.h,v 1.17 1999/04/11 20:50:29 bouyer Exp $	*/
 
 /*-
@@ -47,6 +47,9 @@ struct channel_queue {  /* per channel queue (may be shared) */
 };
 
 struct channel_softc_vtbl;
+
+
+#define WDC_OPTION_PROBE_VERBOSE   0x10000
 
 struct channel_softc { /* Per channel data */
 	struct channel_softc_vtbl  *_vtbl;
