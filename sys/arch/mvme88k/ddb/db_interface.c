@@ -1,4 +1,4 @@
-/*	$OpenBSD: db_interface.c,v 1.35 2004/01/07 16:22:17 miod Exp $	*/
+/*	$OpenBSD: db_interface.c,v 1.36 2004/01/07 17:52:30 miod Exp $	*/
 /*
  * Mach Operating System
  * Copyright (c) 1993-1991 Carnegie Mellon University
@@ -423,8 +423,8 @@ m88k_db_trap(type, regs)
 #endif
 }
 
-extern char *trap_type[];
-extern int trap_types;
+extern const char *trap_type[];
+extern const int trap_types;
 
 /*
  * Print trap reason.
