@@ -1,4 +1,4 @@
-/*	$OpenBSD: in_proto.c,v 1.3 1996/03/04 08:21:53 niklas Exp $	*/
+/*	$OpenBSD: in_proto.c,v 1.4 1996/04/24 06:00:43 mickey Exp $	*/
 /*	$NetBSD: in_proto.c,v 1.14 1996/02/18 18:58:32 christos Exp $	*/
 
 /*
@@ -88,6 +88,11 @@
 #ifdef MROUTING
 #include <netinet/ip_mroute.h>
 #endif /* MROUTING */
+
+#ifdef IPFILTER
+void	iplinit();
+#define ip_init	iplinit
+#endif
 
 extern	struct domain inetdomain;
 

@@ -1,4 +1,4 @@
-/*	$OpenBSD: ip_input.c,v 1.10 1996/03/09 21:30:22 dm Exp $	*/
+/*	$OpenBSD: ip_input.c,v 1.12 1996/05/07 15:20:25 mickey Exp $	*/
 /*	$NetBSD: ip_input.c,v 1.30 1996/03/16 23:53:58 christos Exp $	*/
 
 /*
@@ -100,8 +100,8 @@ int	ipqmaxlen = IFQ_MAXLEN;
 struct	in_ifaddrhead in_ifaddr;
 struct	ifqueue ipintrq;
 #if defined(IPFILTER) || defined(IPFILTER_LKM)
-int	(*fr_checkp) __P((struct ip *, int, struct ifnet *, int, struct mbuf **)
-);
+int	(*fr_checkp) __P((struct ip *, int, struct ifnet *, int,
+			  struct mbuf **));
 #endif
 
 
