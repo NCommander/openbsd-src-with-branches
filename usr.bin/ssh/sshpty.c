@@ -12,7 +12,7 @@
  */
 
 #include "includes.h"
-RCSID("$OpenBSD: sshpty.c,v 1.8 2003/02/03 08:56:16 markus Exp $");
+RCSID("$OpenBSD: sshpty.c,v 1.9 2003/05/24 09:30:40 djm Exp $");
 
 #include <util.h>
 #include "sshpty.h"
@@ -181,7 +181,7 @@ pty_release(const char *ttyname)
 		error("chmod %.100s 0666 failed: %.100s", ttyname, strerror(errno));
 }
 
-/* Makes the tty the processes controlling tty and sets it to sane modes. */
+/* Makes the tty the process's controlling tty and sets it to sane modes. */
 
 void
 pty_make_controlling_tty(int *ttyfd, const char *ttyname)
