@@ -1,4 +1,4 @@
-/*	$OpenBSD: mem.c,v 1.10 1999/11/16 12:21:41 art Exp $	*/
+/*	$OpenBSD: mem.c,v 1.11 1999/11/22 19:22:02 matthieu Exp $	*/
 /*	$NetBSD: mem.c,v 1.13 1996/03/30 21:12:16 christos Exp $ */
 
 /*
@@ -219,12 +219,6 @@ mmrw(dev, uio, flags)
 		default:
 			return (ENXIO);
 		}
-		if (error)
-			break;
-		iov->iov_base += c;
-		iov->iov_len -= c;
-		uio->uio_offset += c;
-		uio->uio_resid -= c;
 	}
 	if (minor(dev) == 0) {
 unlock:
