@@ -1,4 +1,4 @@
-/*	$OpenBSD: net.c,v 1.4 1997/04/23 19:17:29 millert Exp $	*/
+/*	$OpenBSD: net.c,v 1.5 1997/05/30 23:35:52 kstailey Exp $	*/
 
 /*
  * Copyright (c) 1989 The Regents of the University of California.
@@ -38,7 +38,7 @@
 
 #ifndef lint
 /*static char sccsid[] = "from: @(#)net.c	5.5 (Berkeley) 6/1/90";*/
-static char rcsid[] = "$OpenBSD: net.c,v 1.4 1997/04/23 19:17:29 millert Exp $";
+static char rcsid[] = "$OpenBSD: net.c,v 1.5 1997/05/30 23:35:52 kstailey Exp $";
 #endif /* not lint */
 
 #include <sys/types.h>
@@ -50,6 +50,7 @@ static char rcsid[] = "$OpenBSD: net.c,v 1.4 1997/04/23 19:17:29 millert Exp $";
 #include <string.h>
 #include <ctype.h>
 #include <unistd.h>
+#include <err.h>
 #include "finger.h"
 #include "extern.h"
 
@@ -72,8 +73,7 @@ netfinger(name)
 	if (inet_aton(host, &sin.sin_addr) == 0) {
 		hp = gethostbyname(host);
 		if (hp == 0) {
-			(void)fprintf(stderr,
-			    "finger: unknown host: %s\n", host);
+			warnx("unknown host: %s", host);
 			return;
 		}
 		sin.sin_family = hp->h_addrtype;
@@ -82,7 +82,7 @@ netfinger(name)
 	} else
 		sin.sin_family = AF_INET;
 	if (!(sp = getservbyname("finger", "tcp"))) {
-		(void)fprintf(stderr, "finger: tcp/finger: unknown service\n");
+		warnx("tcp/finger: unknown service\n");
 		return;
 	}
 	sin.sin_port = sp->s_port;
