@@ -1,11 +1,12 @@
-#	$OpenBSD: Makefile,v 1.20 2001/06/26 17:40:42 markus Exp $
+#	$OpenBSD: Makefile,v 1.21 2001/06/27 19:29:16 markus Exp $
 
 .PATH:		${.CURDIR}/..
 
 PROG=	ssh-agent
 BINOWN=	root
+BINGRP=	_sshagnt
 
-BINMODE?=555
+BINMODE?=2555
 
 BINDIR=	/usr/bin
 MAN=	ssh-agent.1
