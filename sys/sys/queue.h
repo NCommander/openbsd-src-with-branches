@@ -1,4 +1,4 @@
-/*	$OpenBSD: queue.h,v 1.9 1998/06/02 06:15:45 deraadt Exp $	*/
+/*	$OpenBSD: queue.h,v 1.10 1998/07/15 22:11:48 deraadt Exp $	*/
 /*	$NetBSD: queue.h,v 1.11 1996/05/16 05:17:14 mycroft Exp $	*/
 
 /*
@@ -173,6 +173,13 @@ struct {								\
 	if (((head)->sqh_first = (elm)->field.sqe_next) == NULL)	\
 		(head)->sqh_last = &(head)->sqh_first;			\
 } while (0)
+
+/*
+ * Simple queue access methods.
+ */
+#define	SIMPLEQ_FIRST(head)		((head)->sqh_first)
+
+#define	SIMPLEQ_NEXT(elm, field)	((elm)->field.sqe_next)
 
 /*
  * Tail queue definitions.
