@@ -1,4 +1,4 @@
-/*	$OpenBSD: cpu.h,v 1.18 2002/02/23 00:31:11 miod Exp $	*/
+/*	$OpenBSD: cpu.h,v 1.17 2001/12/20 19:02:26 miod Exp $	*/
 /*	$NetBSD: cpu.h,v 1.36 1996/09/11 00:11:42 thorpej Exp $	*/
 
 /*
@@ -184,10 +184,12 @@ struct fpframe;
 struct user;
 struct pcb;
 
+void	clearseg(vm_offset_t);
 void	doboot(void) __attribute__((__noreturn__));
 void	loadustp(int);
 void	m68881_save(struct fpframe *);
 void	m68881_restore(struct fpframe *);
+void	physcopyseg(vm_offset_t, vm_offset_t);
 u_int	probeva(u_int, u_int);
 void	proc_trampoline(void);
 void	savectx(struct pcb *);

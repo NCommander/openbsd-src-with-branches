@@ -359,8 +359,7 @@ file	arch/amiga/amiga/disksubr.c
 file	arch/amiga/amiga/dkbad.c
 file	arch/amiga/amiga/machdep.c
 file	arch/amiga/amiga/mem.c
-file	arch/m68k/m68k/pmap_motorola.c
-file	arch/amiga/amiga/pmap_bootstrap.c
+file	arch/amiga/amiga/pmap.c
 file	arch/amiga/amiga/sys_machdep.c
 file	arch/amiga/amiga/trap.c
 file	arch/amiga/amiga/vm_machdep.c
