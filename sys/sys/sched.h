@@ -1,4 +1,4 @@
-/*	$OpenBSD: sched.h,v 1.1.4.6 2003/06/07 11:09:08 ho Exp $	*/
+/*	$OpenBSD: sched.h,v 1.1.4.7 2004/02/21 02:49:00 niklas Exp $	*/
 /* $NetBSD: sched.h,v 1.2 1999/02/28 18:14:58 ross Exp $ */
 
 /*-
@@ -144,7 +144,6 @@ scheduler_wait_hook(parent, child)
 	parent->p_estcpu = ESTCPULIM(parent->p_estcpu + child->p_estcpu);
 }
 #endif	/* _SYS_PROC_H_ */
-
 
 #if defined(MULTIPROCESSOR) || defined(LOCKDEBUG)
 #include <sys/lock.h>
