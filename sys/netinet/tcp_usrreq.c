@@ -1,4 +1,4 @@
-/*	$OpenBSD: tcp_usrreq.c,v 1.58 2002/03/08 03:49:58 provos Exp $	*/
+/*	$OpenBSD: tcp_usrreq.c,v 1.59 2002/03/14 01:27:11 millert Exp $	*/
 /*	$NetBSD: tcp_usrreq.c,v 1.20 1996/02/13 23:44:16 christos Exp $	*/
 
 /*
@@ -924,6 +924,11 @@ tcp_sysctl(name, namelen, oldp, oldlenp, newp, newlen)
 	case TCPCTL_ACK_ON_PUSH:
 		return (sysctl_int(oldp, oldlenp, newp, newlen,
 		    &tcp_ack_on_push));
+#ifdef TCP_ECN
+	case TCPCTL_ECN:
+		return (sysctl_int(oldp, oldlenp, newp, newlen,
+		   &tcp_do_ecn));
+#endif
 	default:
 		return (ENOPROTOOPT);
 	}
