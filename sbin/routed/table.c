@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: $	*/
 
 /*
  * Copyright (c) 1983, 1988, 1993
