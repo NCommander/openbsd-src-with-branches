@@ -32,7 +32,7 @@
  */
 
 #if defined(LIBC_SCCS) && !defined(lint)
-static char rcsid[] = "$OpenBSD: nlist.c,v 1.40 2001/07/09 06:57:43 deraadt Exp $";
+static char rcsid[] = "$OpenBSD: nlist.c,v 1.41 2002/02/16 21:27:23 millert Exp $";
 #endif /* LIBC_SCCS and not lint */
 
 #include <sys/types.h>
@@ -423,7 +423,7 @@ __elf_fdnlist(fd, list)
 		symsize -= cc;
 		symoff += cc;
 		for (s = sbuf; cc > 0; ++s, cc -= sizeof(*s)) {
-			register int soff = s->st_name;
+			int soff = s->st_name;
 
 			if (soff == 0)
 				continue;
