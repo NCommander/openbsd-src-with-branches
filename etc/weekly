@@ -1,13 +1,10 @@
 #!/bin/sh -
 #
-#	$OpenBSD: weekly,v 1.6 1997/01/04 01:36:52 millert Exp $
+#	$OpenBSD: weekly,v 1.7 1997/09/15 09:54:40 deraadt Exp $
 #
 
 PATH=/bin:/sbin:/usr/sbin:/usr/bin:/usr/libexec
 export PATH
-
-host=`hostname -s`
-echo "Subject: $host weekly run output"
 
 if [ -f /etc/weekly.local ];then
 	echo ""

@@ -1,8 +1,5 @@
 #!/bin/sh -
-#	$OpenBSD: monthly,v 1.3 1996/05/26 10:25:32 deraadt Exp $
-
-host=`hostname -s`
-echo "Subject: $host monthly run output"
+#	$OpenBSD: monthly,v 1.4 1997/09/15 09:54:40 deraadt Exp $
 
 if [ -f /etc/monthly.local ];then
 	echo ""
