@@ -1,4 +1,4 @@
-/*	$OpenBSD: lp.h,v 1.9 2002/05/20 23:13:50 millert Exp $	*/
+/*	$OpenBSD: lp.h,v 1.10 2002/06/08 01:53:43 millert Exp $	*/
 /*	$NetBSD: lp.h,v 1.14 2000/04/16 14:43:58 mrg Exp $	*/
 
 /*
@@ -138,7 +138,6 @@ int	 getline(FILE *);
 int	 getport(char *, int);
 int	 getq(struct queue *(*[]));
 void     header(void);
-void     inform(char *);
 int      inlist(char *, char *);
 int      iscf(struct dirent *);
 int      isowner(char *, char *);
