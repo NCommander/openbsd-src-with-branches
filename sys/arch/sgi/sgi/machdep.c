@@ -1,4 +1,4 @@
-/*	$OpenBSD: machdep.c,v 1.18 2004/10/22 10:15:42 pefo Exp $ */
+/*	$OpenBSD: machdep.c,v 1.19 2004/12/02 19:37:25 miod Exp $ */
 
 /*
  * Copyright (c) 2003-2004 Opsycon AB  (www.opsycon.se / www.opsycon.com)
@@ -307,7 +307,7 @@ bios_printf("SR=%08x\n", getsr()); /* leave this in for now. need to see sr */
 	 *  Set pagesize to enable use of page macros and functions.
 	 *  Commit available memory to UVM system
 	 */
-	uvmexp.pagesize = 4096;
+	uvmexp.pagesize = PAGE_SIZE;
 	uvm_setpagesize();
 
 	for(i = 0; i < MAXMEMSEGS && mem_layout[i].mem_first_page != 0; i++) {
