@@ -1,4 +1,4 @@
-/*	$OpenBSD: pmap.c,v 1.9 1999/07/18 16:23:47 deraadt Exp $ */
+/*	$OpenBSD: pmap.c,v 1.8 1999/01/11 05:11:39 millert Exp $ */
 
 /* 
  * Copyright (c) 1995 Theo de Raadt
@@ -909,11 +909,10 @@ pmap_reference(pmap)
 }
 
 void
-pmap_activate(p)
-	struct proc *p;
+pmap_activate(pmap, pcb)
+	register pmap_t pmap;
+	struct pcb *pcb;
 {
-	struct pcb *pcb = &p->p_addr->u_pcb;
-	pmap_t pmap = p->p_vmspace->vm_map.pmap;
 
 	if (pmap == NULL)
 		return;
@@ -927,8 +926,9 @@ pmap_activate(p)
 }
 
 void
-pmap_deactivate(p)
-	struct proc *p;
+pmap_deactivate(pmap, pcb)
+	register pmap_t pmap;
+	struct pcb *pcb;
 {
 }
 

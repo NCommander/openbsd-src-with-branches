@@ -1392,10 +1392,9 @@ ok:
 }
 
 void
-pmap_activate(p)
-	struct proc *p;
+pmap_activate(pmap)
+	register pmap_t pmap;
 {
-	pmap_t pmap = p->p_vmspace->vm_map.pmap;
 	int iscurproc;
 
 #ifdef DEBUG

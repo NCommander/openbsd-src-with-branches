@@ -91,6 +91,8 @@ extern	pmap_t	kernel_pmap;
 
 void _pmap_activate(pmap_t pmap, pcb_t, int my_cpu);
 void _pmap_deactivate(pmap_t pmap, pcb_t, int my_cpu);
+void pmap_activate(pmap_t my_pmap, pcb_t);
+void pmap_deactivate(pmap_t pmap, pcb_t);
 int pmap_check_transaction(pmap_t pmap, vm_offset_t va, vm_prot_t type);
 
 vm_offset_t pmap_map(

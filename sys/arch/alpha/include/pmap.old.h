@@ -123,6 +123,7 @@ extern	pt_entry_t *Sysmap;
 extern	char *vmmap;			/* map for mem, dumps, etc. */
 
 /* Machine-specific functions. */
+void	pmap_activate __P((pmap_t));
 void	pmap_emulate_reference __P((struct proc *, vm_offset_t, int, int));
 void	pmap_bootstrap __P((vm_offset_t, vm_offset_t));
 void	pmap_unmap_prom __P((void));
