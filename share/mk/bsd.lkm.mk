@@ -1,4 +1,4 @@
-#	$OpenBSD: bsd.lkm.mk,v 1.2 1996/03/02 21:01:23 tholo Exp $
+#	$OpenBSD: bsd.lkm.mk,v 1.3 1996/03/05 11:12:45 mickey Exp $
 #	from @(#)bsd.prog.mk	5.26 (Berkeley) 6/25/91
 
 .if exists(${.CURDIR}/../Makefile.inc)
@@ -49,6 +49,7 @@ cleandir: _SUBDIRUSE clean
 .if !target(install)
 .if !target(beforeinstall)
 beforeinstall:
+	@-[ -d ${DESTDIR}${LKMDIR} ] || mkdir ${DESTDIR}${LKMDIR}
 .endif
 .if !target(afterinstall)
 afterinstall:
