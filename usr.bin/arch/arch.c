@@ -29,7 +29,7 @@
  */
 
 #ifndef lint
-static char rcsid[] = "$OpenBSD: arch.c,v 1.3 1999/08/19 22:17:38 niklas Exp $";
+static char rcsid[] = "$OpenBSD: arch.c,v 1.4 1999/08/20 09:20:39 millert Exp $";
 #endif /* not lint */
 
 #include <sys/param.h>
@@ -48,7 +48,6 @@ main(argc, argv)
 	int argc;
 	char *argv[];
 {
-	struct utsname uts;
 	char *arch;
 	char *opts;
 	int c;
