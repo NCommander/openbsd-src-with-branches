@@ -1,4 +1,4 @@
-/*	$OpenBSD: nfs_syscalls.c,v 1.23 2002/01/11 01:20:56 nate Exp $	*/
+/*	$OpenBSD: nfs_syscalls.c,v 1.24 2002/01/16 21:51:16 ericj Exp $	*/
 /*	$NetBSD: nfs_syscalls.c,v 1.19 1996/02/18 11:53:52 fvdl Exp $	*/
 
 /*
@@ -93,6 +93,7 @@ extern int nfsrvw_procrastinate;
 struct nfssvc_sock *nfs_udpsock, *nfs_cltpsock;
 int nuidhash_max = NFS_MAXUIDHASH;
 int nfsd_waiting = 0;
+int nfs_norsvport = 0;
 #ifdef NFSSERVER
 static int nfs_numnfsd = 0;
 static struct nfsdrt nfsdrt;
@@ -108,7 +109,6 @@ int nfs_niothreads = -1;
 
 #ifdef NFSSERVER
 static void nfsd_rt __P((int, struct nfsrv_descript *, int));
-int nfs_norsvport = 0;
 #endif
 
 int nfs_clientd(struct nfsmount *nmp, struct ucred *cred, 
