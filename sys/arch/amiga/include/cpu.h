@@ -1,4 +1,4 @@
-/*	$OpenBSD: cpu.h,v 1.11 1997/09/19 17:16:18 niklas Exp $	*/
+/*	$OpenBSD: cpu.h,v 1.12 1998/03/01 00:37:22 niklas Exp $	*/
 /*	$NetBSD: cpu.h,v 1.36 1996/09/11 00:11:42 thorpej Exp $	*/
 
 /*
@@ -153,7 +153,6 @@ void	*alloc_z2mem __P((long));
 /*
  * Prototypes from autoconf.c
  */
-void	configure __P((void));
 int	is_a1200 __P((void));
 int	is_a3000 __P((void));
 int	is_a4000 __P((void));

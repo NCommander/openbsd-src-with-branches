@@ -1,4 +1,4 @@
-/*	$OpenBSD: machdep.c,v 1.156 2001/04/30 13:23:11 art Exp $	*/
+/*	$OpenBSD: machdep.c,v 1.157 2001/05/05 20:56:38 art Exp $	*/
 /*	$NetBSD: machdep.c,v 1.214 1996/11/10 03:16:17 thorpej Exp $	*/
 
 /*-
@@ -469,7 +469,6 @@ cpu_startup()
 #endif
 	}
 	ioport_malloc_safe = 1;
-	configure();
 }
 
 /*

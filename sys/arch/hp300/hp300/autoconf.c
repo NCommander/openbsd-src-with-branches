@@ -1,4 +1,4 @@
-/*	$OpenBSD: autoconf.c,v 1.16 1997/07/06 08:01:57 downsj Exp $	*/
+/*	$OpenBSD: autoconf.c,v 1.17 1999/05/25 08:37:49 downsj Exp $	*/
 /*	$NetBSD: autoconf.c,v 1.45 1999/04/10 17:31:02 kleink Exp $	*/
 
 /*
@@ -59,7 +59,7 @@
 /*
  * Setup the system to run on the current machine.
  *
- * Configure() is called at boot time.  Available
+ * cpu_configure() is called at boot time.  Available
  * devices are determined (from possibilities mentioned in ioconf.c),
  * and the drivers are initialized.
  */
@@ -239,7 +239,7 @@ mainbussearch(parent, match, aux)
  * Determine the device configuration for the running system.
  */
 void
-configure()
+cpu_configure()
 {
 	/*
 	 * Initialize the dev_data_lists.

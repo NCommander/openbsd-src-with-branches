@@ -1,4 +1,4 @@
-/* $OpenBSD: autoconf.h,v 1.9 2000/11/08 21:27:17 ericj Exp $ */
+/* $OpenBSD: autoconf.h,v 1.10 2000/11/08 21:44:35 art Exp $ */
 /* $NetBSD: autoconf.h,v 1.19 2000/06/08 03:10:06 thorpej Exp $ */
 
 /*
@@ -118,6 +118,5 @@ const char *alpha_variation_name(u_int64_t,
     const struct alpha_variation_table *);
 const char *alpha_unknown_sysname(void);
 
-void	configure	__P((void));
 void	device_register __P((struct device *, void *));
 #endif /* _KERNEL */

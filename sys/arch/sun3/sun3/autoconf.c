@@ -1,4 +1,4 @@
-/*	$OpenBSD: autoconf.c,v 1.8 1999/11/09 14:30:39 art Exp $	*/
+/*	$OpenBSD: autoconf.c,v 1.9 2000/07/14 14:28:56 miod Exp $	*/
 /*	$NetBSD: autoconf.c,v 1.37 1996/11/20 18:57:22 gwr Exp $	*/
 
 /*-
@@ -40,7 +40,7 @@
 /*
  * Setup the system to run on the current machine.
  *
- * Configure() is called at boot time.  Available
+ * cpu_configure() is called at boot time.  Available
  * devices are determined (from possibilities mentioned in ioconf.c),
  * and the drivers are initialized.
  */
@@ -69,14 +69,14 @@
 int cold;
 
 void
-configure()
+cpu_configure()
 {
 	struct device *mainbus;
 
 	/* General device autoconfiguration. */
 	mainbus = config_rootfound("mainbus", NULL);
 	if (mainbus == NULL)
-		panic("configure: mainbus not found");
+		panic("cpu_configure: mainbus not found");
 
 	/* Choose root and swap devices. */
 	swapgeneric();

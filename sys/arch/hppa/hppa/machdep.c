@@ -1,4 +1,4 @@
-/*	$OpenBSD: machdep.c,v 1.31 2001/03/29 00:47:53 mickey Exp $	*/
+/*	$OpenBSD: machdep.c,v 1.32 2001/05/05 20:56:36 art Exp $	*/
 
 /*
  * Copyright (c) 1999-2000 Michael Shalayeff
@@ -704,7 +704,6 @@ cpu_startup()
 		printf("kernel does not support -c; continuing..\n");
 #endif
 	}
-	configure();
 }
 
 /*

@@ -1,4 +1,4 @@
-/*	$OpenBSD: cpu.h,v 1.34 2001/02/19 04:57:02 ho Exp $	*/
+/*	$OpenBSD: cpu.h,v 1.35 2001/04/30 13:23:11 art Exp $	*/
 /*	$NetBSD: cpu.h,v 1.35 1996/05/05 19:29:26 christos Exp $	*/
 
 /*-
@@ -173,9 +173,6 @@ extern int pentium_mhz;
 extern int cpu_f00f_bug;
 void fix_f00f __P((void));
 #endif
-
-/* autoconf.c */
-void	configure __P((void));
 
 /* dkcsum.c */
 void	dkcsumattach __P((void));
