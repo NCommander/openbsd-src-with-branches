@@ -1,8 +1,6 @@
-.\"	$OpenBSD: aic.4,v 1.5 1998/10/03 06:29:03 fgsch Exp $
-.\"	$NetBSD: aic.4,v 1.5 1998/06/07 09:08:45 enami Exp $
+.\"	$OpenBSD: xe.4,v 1.2 1999/07/23 22:25:31 deraadt Exp $
 .\"
-.\" Copyright (c) 1997 Jason R. Thorpe.  All rights reserved.
-.\" Copyright (c) 1994 James A. Jegers
+.\" Copyright (c) 1999 Niklas Hallqvist
 .\" All rights reserved.
 .\"
 .\" Redistribution and use in source and binary forms, with or without
@@ -24,67 +22,35 @@
 .\" (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
 .\" THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 .\"
-.\"
-.Dd November 10, 1997
-.Dt AIC 4
+.Dd July 24, 1999
+.Dt XE 4 i386
 .Os
 .Sh NAME
-.Nm aic
-.Nd Adaptec AIC-6260 and AIC-6360 SCSI driver
+.Nm xe
+.Nd Ethernet driver for Xircom based 16-bit PCMCIA Ethernet boards
 .Sh SYNOPSIS
-.Cd "aic0 at isa? port 0x340 irq 12"
-.\".Cd "aic* at isapnp?"
-.Cd "aic* at pcmcia? function ?"
-.Cd "scsibus* at aic?"
+.Cd "xe* at pcmcia?"
 .Sh DESCRIPTION
 The
 .Nm
-driver provides support for the
-.Tn Adaptec
-AIC-6260 and AIC-6360
-.Tn SCSI
-controller chips.
-.Pp
-The
-.Tn ISA
-attachment of the
+interface provides access to a 10/100 Mb/s Ethernet network via a
+Xircom Ethernet card.  The Ethernet cards known to be supported by the
 .Nm
-driver supports the
-.Tn Adaptec
-152x, the
-.Tn "Creative Labs"
-SoundBlaster
-.Tn SCSI
-host adapter, and compatibles.
-Many
-.Tn ISA
-cards that use this chip do not have boot ROMs, and therefore cannot
-be used to connect the boot device.
-.\".Pp
-.\"The
-.\".Tn "ISA Plug-and-Play"
-.\"attachment of the
-.\".Nm
-.\"driver supports the
-.\".Tn Adaptec
-.\"AHA-1520B host adapter.
+interface are:
 .Pp
-The
-.Tn PCMCIA
-attachment of the
-.Nm
-driver supports the
-.Tn Adaptec
-APA-14[56]0.
-These
-.Tn SCSI
-host adapters do not include boot ROMs and therefore cannot be used
-to connect the boot device.
+.Bl -tag -width -offset indet -compact
+.It Xircom Realport
+.It Xircom CE3
+.El
+.Pp
+However, most 16bit Xircom Ethernet cards should work.
 .Sh SEE ALSO
-.Xr cd 4 ,
-.Xr ch 4 ,
+.Xr pcmcia 4 ,
 .Xr intro 4 ,
-.Xr scsi 4 ,
-.Xr sd 4 ,
-.Xr ss 4 ,
-.Xr st 4
+.Xr ifconfig 8 ,
+.Sh HISTORY
+The
+.Nm
+driver
+appeared in
+.Ox 2.5 .
