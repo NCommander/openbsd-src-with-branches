@@ -1,13 +1,13 @@
-/*	$OpenBSD: ukphy.c,v 1.5 1999/09/17 01:38:56 jason Exp $	*/
-/*	$NetBSD: ukphy.c,v 1.1.6.1 1999/04/23 15:39:00 perry Exp $	*/
+/*	$OpenBSD$	*/
+/*	$NetBSD: tqphy.c,v 1.4 1999/11/12 18:13:01 thorpej Exp $	*/
 
-/*-
+/*
  * Copyright (c) 1998, 1999 The NetBSD Foundation, Inc.
  * All rights reserved.
  *
  * This code is derived from software contributed to The NetBSD Foundation
  * by Jason R. Thorpe of the Numerical Aerospace Simulation Facility,
- * NASA Ames Research Center, and by Frank van der Linden.
+ * NASA Ames Research Center.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -68,7 +68,9 @@
  */
 
 /*
- * driver for generic unknown PHYs
+ * TDK TSC78Q2120 PHY driver
+ *
+ * Documentation available at http://www.tsc.tdk.com/lan/78Q2120.pdf .
  */
 
 #include <sys/param.h>
@@ -77,42 +79,50 @@
 #include <sys/device.h>
 #include <sys/malloc.h>
 #include <sys/socket.h>
-#include <sys/errno.h>
 
 #include <net/if.h>
 #include <net/if_media.h>
 
 #include <dev/mii/mii.h>
 #include <dev/mii/miivar.h>
+#include <dev/mii/miidevs.h>
 
-int	ukphymatch __P((struct device *, void *, void *));
-void	ukphyattach __P((struct device *, struct device *, void *));
+#include <dev/mii/tqphyreg.h>
 
-struct cfattach ukphy_ca = {
-	sizeof(struct mii_softc), ukphymatch, ukphyattach
+int	tqphymatch __P((struct device *, void *, void *));
+void	tqphyattach __P((struct device *, struct device *, void *));
+
+struct cfattach tqphy_ca = {
+	sizeof(struct mii_softc), tqphymatch, tqphyattach
 };
 
-struct cfdriver ukphy_cd = {
-	NULL, "ukphy", DV_DULL
+struct cfdriver tqphy_cd = {
+	NULL, "tqphy", DV_DULL
 };
 
-int	ukphy_service __P((struct mii_softc *, struct mii_data *, int));
+int	tqphy_service __P((struct mii_softc *, struct mii_data *, int));
+void	tqphy_status __P((struct mii_softc *));
 
 int
-ukphymatch(parent, match, aux)
+tqphymatch(parent, match, aux)
 	struct device *parent;
 	void *match;
 	void *aux;
 {
+	struct mii_attach_args *ma = aux;
 
-	/*
-	 * We know something is here, so always match at a low priority.
-	 */
-	return (1);
+	if (MII_OUI(ma->mii_id1, ma->mii_id2) == MII_OUI_TSC)
+		switch MII_MODEL(ma->mii_id2) {
+		case MII_MODEL_TSC_78Q2120:
+		/* case MII_MODEL_TSC_78Q2121: */
+			return (10);
+	}
+
+	return (0);
 }
 
 void
-ukphyattach(parent, self, aux)
+tqphyattach(parent, self, aux)
 	struct device *parent, *self;
 	void *aux;
 {
@@ -120,26 +130,33 @@ ukphyattach(parent, self, aux)
 	struct mii_attach_args *ma = aux;
 	struct mii_data *mii = ma->mii_data;
 
-	printf(": Generic IEEE 802.3u media interface\n");
-	printf("%s: OUI 0x%06x, model 0x%04x, rev. %d\n",
-	    sc->mii_dev.dv_xname, MII_OUI(ma->mii_id1, ma->mii_id2),
-	    MII_MODEL(ma->mii_id2), MII_REV(ma->mii_id2));
+	printf(": %s, rev. %d\n", MII_STR_TSC_78Q2120,
+	    MII_REV(ma->mii_id2));
 
 	sc->mii_inst = mii->mii_instance;
 	sc->mii_phy = ma->mii_phyno;
-	sc->mii_service = ukphy_service;
+	sc->mii_service = tqphy_service;
 	sc->mii_pdata = mii;
+
+	/*
+	 * Apparently, we can't do loopback on this PHY.
+	 */
+	sc->mii_flags |= MIIF_NOLOOP;
 
 	mii_phy_reset(sc);
 
 	sc->mii_capabilities =
 	    PHY_READ(sc, MII_BMSR) & ma->mii_capmask;
-	if (sc->mii_capabilities & BMSR_MEDIAMASK)
+	printf("%s: ", sc->mii_dev.dv_xname);
+	if ((sc->mii_capabilities & BMSR_MEDIAMASK) == 0)
+		printf("no media present");
+	else
 		mii_add_media(sc);
+	printf("\n");
 }
 
 int
-ukphy_service(sc, mii, cmd)
+tqphy_service(sc, mii, cmd)
 	struct mii_softc *sc;
 	struct mii_data *mii;
 	int cmd;
@@ -221,7 +238,7 @@ ukphy_service(sc, mii, cmd)
 		 */
 		if (++sc->mii_ticks != 5)
 			return (0);
-		
+
 		sc->mii_ticks = 0;
 		mii_phy_reset(sc);
 		if (mii_phy_auto(sc, 0) == EJUSTRETURN)
@@ -234,7 +251,7 @@ ukphy_service(sc, mii, cmd)
 	}
 
 	/* Update the media status. */
-	ukphy_status(sc);
+	tqphy_status(sc);
 
 	/* Callback if something changed. */
 	if (sc->mii_active != mii->mii_media_active || cmd == MII_MEDIACHG) {
@@ -242,4 +259,47 @@ ukphy_service(sc, mii, cmd)
 		sc->mii_active = mii->mii_media_active;
 	}
 	return (0);
+}
+
+void
+tqphy_status(sc)
+	struct mii_softc *sc;
+{
+	struct mii_data *mii = sc->mii_pdata;
+	struct ifmedia_entry *ife = mii->mii_media.ifm_cur;
+	int bmsr, bmcr, diag;
+
+	mii->mii_media_status = IFM_AVALID;
+	mii->mii_media_active = IFM_ETHER;
+
+	bmsr = PHY_READ(sc, MII_BMSR) |
+	    PHY_READ(sc, MII_BMSR);
+	if (bmsr & BMSR_LINK)
+		mii->mii_media_status |= IFM_ACTIVE;
+ 
+	bmcr = PHY_READ(sc, MII_BMCR);
+	if (bmcr & BMCR_ISO) {
+		mii->mii_media_active |= IFM_NONE;
+		mii->mii_media_status = 0;
+		return;
+	}
+ 
+	if (bmcr & BMCR_LOOP)
+		mii->mii_media_active |= IFM_LOOP;
+ 
+	if (bmcr & BMCR_AUTOEN) {
+		if ((bmsr & BMSR_ACOMP) == 0) { 
+			/* Erg, still trying, I guess... */
+			mii->mii_media_active |= IFM_NONE;
+			return;
+		}
+		diag = PHY_READ(sc, MII_TQPHY_DIAG);
+		if (diag & DIAG_RATE)
+			mii->mii_media_active |= IFM_100_TX;
+		else
+			mii->mii_media_active |= IFM_10_T;
+		if (diag & DIAG_DPLX)
+			mii->mii_media_active |= IFM_FDX;
+	} else 
+		mii->mii_media_active = ife->ifm_media;
 }
