@@ -1,5 +1,5 @@
 /*	$NetBSD: create.c,v 1.11 1996/09/05 09:24:19 mycroft Exp $	*/
-/*	$OpenBSD: create.c,v 1.9 1997/07/18 05:49:02 millert Exp $	*/
+/*	$OpenBSD: create.c,v 1.10 1997/07/25 20:12:15 mickey Exp $	*/
 
 /*-
  * Copyright (c) 1989, 1993
@@ -38,7 +38,7 @@
 #if 0
 static char sccsid[] = "@(#)create.c	8.1 (Berkeley) 6/6/93";
 #else
-static char rcsid[] = "$OpenBSD: create.c,v 1.9 1997/07/18 05:49:02 millert Exp $";
+static char rcsid[] = "$OpenBSD: create.c,v 1.10 1997/07/25 20:12:15 mickey Exp $";
 #endif
 #endif /* not lint */
 
@@ -65,7 +65,7 @@ static char rcsid[] = "$OpenBSD: create.c,v 1.9 1997/07/18 05:49:02 millert Exp 
 extern u_int32_t crc_total;
 extern int ftsoptions;
 extern int dflag, iflag, nflag, sflag;
-extern u_short keys;
+extern u_int keys;
 extern char fullpath[MAXPATHLEN];
 
 static gid_t gid;
