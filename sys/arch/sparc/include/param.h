@@ -1,4 +1,4 @@
-/*	$OpenBSD: param.h,v 1.18 2001/05/10 09:23:11 art Exp $	*/
+/*	$OpenBSD: param.h,v 1.19 2001/07/06 02:07:43 provos Exp $	*/
 /*	$NetBSD: param.h,v 1.29 1997/03/10 22:50:37 pk Exp $ */
 
 /*
@@ -132,8 +132,6 @@ extern int nbpg, pgofset, pgshift;
 #ifndef	NKMEMCLUSTERS
 #define	NKMEMCLUSTERS	(6 * 1024 * 1024 / PAGE_SIZE)
 #endif
-
-#define PMAP_NEW
 
 /* pages ("clicks") to disk blocks */
 #define	ctod(x)		((x) << (PGSHIFT - DEV_BSHIFT))
