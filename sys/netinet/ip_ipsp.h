@@ -1,4 +1,4 @@
-/*	$OpenBSD: ip_ipsp.h,v 1.50 1999/12/08 12:10:25 angelos Exp $	*/
+/*	$OpenBSD: ip_ipsp.h,v 1.51 1999/12/25 04:48:16 angelos Exp $	*/
 
 /*
  * The authors of this code are John Ioannidis (ji@tla.org),
@@ -551,9 +551,9 @@ extern int tcp_signature_tdb_attach __P((void));
 extern int tcp_signature_tdb_init __P((struct tdb *, struct xformsw *,
 				       struct ipsecinit *));
 extern int tcp_signature_tdb_zeroize __P((struct tdb *));
-extern struct mbuf *tcp_signature_tdb_input __P((struct mbuf *, struct tdb *));
+extern struct mbuf *tcp_signature_tdb_input __P((struct mbuf *, struct tdb *, int, int));
 extern int tcp_signature_tdb_output __P((struct mbuf *, struct tdb *,
-					 struct mbuf **));
+					 struct mbuf **, int, int));
 
 /* Padding */
 extern caddr_t m_pad(struct mbuf *, int, int);
