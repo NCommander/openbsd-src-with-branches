@@ -1,5 +1,5 @@
 vers(__file__,
-        {-$OpenBSD: MAKEDEV.md,v 1.16 2004/04/11 18:05:23 millert Exp $-},
+	{-$OpenBSD: MAKEDEV.md,v 1.17 2005/01/28 18:56:27 danh Exp $-},
 etc.MACHINE)dnl
 dnl
 dnl Copyright (c) 2001-2004 Todd T. Fries <todd@OpenBSD.org>
@@ -354,17 +354,17 @@ ttyCcfg)
 	rm -f ttyCcfg
 	mknod ttyCcfg c $major $minor
 	chown root:wheel ttyCcfg
-        ;;
+	;;
 
 ttyC*)
 	type=C
 	unit=${i##ttyC}
 	major=67
 	minor=$unit
-        rm -f tty$type$unit
-        mknod tty$type$unit c $major $minor
-        chown root:wheel tty$type$unit
-        ;;
+	rm -f tty$type$unit
+	mknod tty$type$unit c $major $minor
+	chown root:wheel tty$type$unit
+	;;
 
 bpf*)
 	unit=${i##*[a-z]}
