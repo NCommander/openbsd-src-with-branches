@@ -166,3 +166,12 @@ struct mvmeprom_args {
 #define MVMEPROM_STATRET(ret) \
 	asm volatile ("movew ccr,%0": "=d" (ret)); \
 	return (!(ret & 0x4));		/* return a 'status' */
+
+#define MVMEPROM_REG_DEVLUN	"d0"
+#define MVMEPROM_REG_CTRLLUN	"d1"
+#define MVMEPROM_REG_FLAGS	"d4"
+#define MVMEPROM_REG_CTRLADDR	"a0"
+#define MVMEPROM_REG_ENTRY	"a1"
+#define MVMEPROM_REG_CONFBLK	"a2"
+#define MVMEPROM_REG_ARGSTART	"a5"
+#define MVMEPROM_REG_ARGEND	"a6"
