@@ -1,4 +1,4 @@
-/*	$OpenBSD: deattack.c,v 1.11 2000/12/19 23:17:56 markus Exp $	*/
+/*	$OpenBSD: deattack.c,v 1.12 2001/01/21 19:05:48 markus Exp $	*/
 
 /*
  * Cryptographic attack detector for ssh - source code
@@ -44,7 +44,7 @@
 /* Hash function (Input keys are cipher results) */
 #define HASH(x)		GET_32BIT(x)
 
-#define CMP(a,b)	(memcmp(a, b, SSH_BLOCKSIZE))
+#define CMP(a, b)	(memcmp(a, b, SSH_BLOCKSIZE))
 
 
 void
