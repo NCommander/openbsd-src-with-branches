@@ -1,4 +1,4 @@
-/*	$OpenBSD: jobs.c,v 1.13 1999/01/19 20:41:53 millert Exp $	*/
+/*	$OpenBSD: jobs.c,v 1.14 1999/07/14 13:37:23 millert Exp $	*/
 
 /*
  * Process and job control
@@ -288,7 +288,7 @@ j_exit()
 	int	killed = 0;
 
 	for (j = job_list; j != (Job *) 0; j = j->next) {
-		if (j->ppid == procpid
+		if (j->ppid == procpid && j->pgrp != 0
 		    && (j->state == PSTOPPED
 			|| (j->state == PRUNNING
 			    && ((j->flags & JF_FG)
