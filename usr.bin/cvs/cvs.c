@@ -155,7 +155,7 @@ static struct cvs_cmd {
 		"Show repository access history",
 	},
 	{
-		CVS_OP_IMPORT, "import",   { "im",  "imp" }, cvs_import,
+		CVS_OP_IMPORT, "import",   { "im",  "imp" }, NULL,
 		"[-d] [-b branch] [-I ign] [-k subst] [-m msg] "
 		"repository vendor-tag release-tags ...",
 		"b:dI:k:m:",
