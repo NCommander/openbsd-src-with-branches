@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_kue.c,v 1.27 2004/09/23 17:45:17 brad Exp $ */
+/*	$OpenBSD: if_kue.c,v 1.28 2004/10/16 01:22:52 jsg Exp $ */
 /*	$NetBSD: if_kue.c,v 1.50 2002/07/16 22:00:31 augustss Exp $	*/
 /*
  * Copyright (c) 1997, 1998, 1999, 2000
@@ -529,7 +529,7 @@ USB_ATTACH(kue)
 	ifp->if_ioctl = kue_ioctl;
 	ifp->if_start = kue_start;
 	ifp->if_watchdog = kue_watchdog;
-	strncpy(ifp->if_xname, USBDEVNAME(sc->kue_dev), IFNAMSIZ);
+	strlcpy(ifp->if_xname, USBDEVNAME(sc->kue_dev), IFNAMSIZ);
 
 	IFQ_SET_READY(&ifp->if_snd);
 
