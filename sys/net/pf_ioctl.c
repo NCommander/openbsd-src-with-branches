@@ -1,7 +1,8 @@
-/*	$OpenBSD: pf_ioctl.c,v 1.93 2003/12/18 20:52:19 mcbride Exp $ */
+/*	$OpenBSD: pf_ioctl.c,v 1.94 2003/12/18 20:55:20 mcbride Exp $ */
 
 /*
  * Copyright (c) 2001 Daniel Hartmeier
+ * Copyright (c) 2002,2003 Henning Brauer
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without

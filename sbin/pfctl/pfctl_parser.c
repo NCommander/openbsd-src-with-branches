@@ -1,7 +1,8 @@
-/*	$OpenBSD: pfctl_parser.c,v 1.183 2003/12/15 07:11:30 mcbride Exp $ */
+/*	$OpenBSD: pfctl_parser.c,v 1.184 2003/12/17 16:36:30 dhartmei Exp $ */
 
 /*
  * Copyright (c) 2001 Daniel Hartmeier
+ * Copyright (c) 2002,2003 Henning Brauer
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
