@@ -531,7 +531,7 @@ exec_elf_makecmds(p, epp)
 	} else
 		epp->ep_entry = eh->e_entry;
 
-#ifdef COMPAT_SVR4_MAP_PAGE_ZERO
+#ifdef ELF_MAP_PAGE_ZERO
 	/* Dell SVR4 maps page zero, yeuch! */
 	NEW_VMCMD(&epp->ep_vmcmds, vmcmd_map_readvn, NBPG, 0, epp->ep_vp, 0,
 	    VM_PROT_READ);
