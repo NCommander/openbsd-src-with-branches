@@ -1,4 +1,4 @@
-/*	$OpenBSD: socket.h,v 1.26 1999/02/24 22:22:34 angelos Exp $	*/
+/*	$OpenBSD: socket.h,v 1.27 1999/02/25 01:19:07 deraadt Exp $	*/
 /*	$NetBSD: socket.h,v 1.14 1996/02/09 18:25:36 christos Exp $	*/
 
 /*
@@ -252,9 +252,9 @@ struct sockcred {
 	{ "pip", CTLTYPE_NODE }, \
 	{ "isdn", CTLTYPE_NODE }, \
 	{ "natm", CTLTYPE_NODE }, \
-	{ "ipsec", CTLTYPE_NODE }, \
+	{ "encap", CTLTYPE_NODE }, \
 	{ "sip", CTLTYPE_NODE }, \
-	{ "pfkey", CTLTYPE_NODE }, \
+	{ "key", CTLTYPE_NODE }, \
 }
 
 /*
