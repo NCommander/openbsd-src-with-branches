@@ -1,4 +1,4 @@
-M/*	$OpenBSD: soundcard.h,v 1.2 1999/02/17 01:27:36 millert Exp $	*/
+/*	$OpenBSD: soundcard.h,v 1.3 1999/08/31 19:41:06 deraadt Exp $	*/
 /*	$NetBSD: soundcard.h,v 1.4 1997/10/29 20:23:27 augustss Exp $	*/
 
 /*
