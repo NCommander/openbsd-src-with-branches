@@ -1,4 +1,4 @@
-/*	$OpenBSD: conf.c,v 1.57 2003/07/25 08:31:16 markus Exp $	*/
+/*	$OpenBSD: conf.c,v 1.58 2003/08/28 14:43:35 markus Exp $	*/
 /*	$EOM: conf.c,v 1.48 2000/12/04 02:04:29 angelos Exp $	*/
 
 /*
@@ -321,7 +321,7 @@ conf_parse (int trans, char *buf, size_t sz)
  *
  * Resulting section names can be:
  *  For main mode:
- *     {DES,BLF,3DES,CAST}-{MD5,SHA}[-GRP{1,2,5}][-{DSS,RSA_SIG}]
+ *     {DES,BLF,3DES,CAST,AES}-{MD5,SHA}[-GRP{1,2,5}][-{DSS,RSA_SIG}]
  *  For quick mode:
  *     QM-{proto}[-TRP]-{cipher}[-{hash}][-PFS[-{group}]]-SUITE
  *     where
