@@ -666,7 +666,7 @@ cvs_sendreq(struct cvsroot *root, u_int rid, const char *arg)
 
 	/* is this request supported by the server? */
 	if (!CVS_GETVR(root, req->req_id)) {
-		cvs_log(LP_ERR, "remote end does not support request `%s'",
+		cvs_log(LP_WARN, "remote end does not support request `%s'",
 		    req->req_str);
 		return (-1);
 	}
