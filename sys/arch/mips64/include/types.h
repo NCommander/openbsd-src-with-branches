@@ -1,4 +1,4 @@
-/*	$OpenBSD: types.h,v 1.6 1999/01/27 04:46:06 imp Exp $	*/
+/*	$OpenBSD: types.h,v 1.1 2004/08/06 20:56:02 pefo Exp $	*/
 
 /*-
  * Copyright (c) 1992, 1993
@@ -84,8 +84,6 @@ typedef int64_t		     f_register_t;
 typedef int32_t		       register_t;
 typedef int32_t		     f_register_t;
 #endif
-
-#define	__SWAP_BROKEN
 
 #if !defined(_ANSI_SOURCE) && !defined(_POSIX_SOURCE)
 typedef struct label_t {
