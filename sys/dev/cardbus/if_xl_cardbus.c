@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_xl_cardbus.c,v 1.12 2002/10/12 01:09:44 krw Exp $ */
+/*	$OpenBSD: if_xl_cardbus.c,v 1.13 2003/10/21 10:07:33 jmc Exp $ */
 /*	$NetBSD: if_xl_cardbus.c,v 1.13 2000/03/07 00:32:52 mycroft Exp $	*/
 
 /*
@@ -168,6 +168,7 @@ const struct xl_cardbus_product {
 	  "3c656C-TX Ethernet" },
 
 	{ 0,
+	  0,
 	  0,
 	  0,
 	  NULL },
