@@ -728,9 +728,6 @@ ray_detach(self, flags)
 
 	ifmedia_delete_instance(&sc->sc_media, IFM_INST_ANY);
 
-#if NBPFILTER > 0
-	bpfdetach(ifp);
-#endif
 	ether_ifdetach(ifp);
 	if_detach(ifp);
 	powerhook_disestablish(sc->sc_pwrhook);
