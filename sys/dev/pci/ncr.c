@@ -1,4 +1,4 @@
-/*	$OpenBSD: ncr.c,v 1.69 2004/06/21 23:50:35 tholo Exp $	*/
+/*	$OpenBSD: ncr.c,v 1.70 2004/06/24 19:35:23 tholo Exp $	*/
 /*	$NetBSD: ncr.c,v 1.63 1997/09/23 02:39:15 perry Exp $	*/
 
 /**************************************************************************
@@ -1466,7 +1466,7 @@ static	void	ncr_attach	(pcici_t tag, int unit);
 
 #if 0
 static char ident[] =
-	"\n$OpenBSD: ncr.c,v 1.69 2004/06/21 23:50:35 tholo Exp $\n";
+	"\n$OpenBSD: ncr.c,v 1.70 2004/06/24 19:35:23 tholo Exp $\n";
 #endif
 
 static const u_long	ncr_version = NCR_VERSION	* 11
@@ -1621,7 +1621,7 @@ static char *ncr_name (ncb_p np)
  */
 #ifdef __OpenBSD__
 /*
- * XXX - set up a timer that will update a local copy or microuptime once
+ * XXX - set up a timer that will update a local copy of microuptime once
  * every tick.
  */
 static unsigned long script_kvars[] = {
