@@ -1,5 +1,5 @@
 #!/bin/sh
-#	$OpenBSD: install.sh,v 1.73 2000/06/01 21:01:28 millert Exp $
+#	$OpenBSD: install.sh,v 1.74 2000/06/16 03:19:42 deraadt Exp $
 #	$NetBSD: install.sh,v 1.5.2.8 1996/08/27 18:15:05 gwr Exp $
 #
 # Copyright (c) 1997,1998 Todd Miller, Theo de Raadt
@@ -70,7 +70,7 @@
 #	In a perfect world, this would be a nice C program, with a reasonable
 #	user interface.
 
-FILESYSTEMS="/tmp/filesystems"		# used thoughout
+FILESYSTEMS="/tmp/filesystems"		# used throughout
 FQDN=					# domain name
 
 trap "umount /tmp > /dev/null 2>&1" 0
@@ -329,7 +329,7 @@ if [ "`df /`" = "`df /mnt`" ]; then
 		done
 	) < ${FILESYSTEMS} > /tmp/fstab
 
-# XXX We no longer do the following. It is not neccessary. It can be done
+# XXX We no longer do the following. It is not necessary. It can be done
 # XXX after the install is complete.
 #
 #	echo	"The fstab is configured as follows:"
