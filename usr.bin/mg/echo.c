@@ -1,4 +1,4 @@
-/*	$OpenBSD: echo.c,v 1.15 2001/05/24 09:34:05 mickey Exp $	*/
+/*	$OpenBSD: echo.c,v 1.16 2001/05/24 09:47:33 art Exp $	*/
 
 /*
  *	Echo line reading and writing.
@@ -417,7 +417,7 @@ complt_list(flags, c, buf, cpos)
 	int	 oldrow = ttrow;
 	int	 oldcol = ttcol;
 	int	 oldhue = tthue;
-	char	 linebuf[NCOL + 1];
+	char	 *linebuf;
 	char	*cp;
 
 	lh = NULL;
@@ -504,6 +504,8 @@ complt_list(flags, c, buf, cpos)
 		 * Now do the display.  objects are written into linebuf until
 		 * it fills, and then put into the help buffer.
 		 */
+		if ((linebuf = malloc((nrow + 1) * sizeof(char))) == NULL)
+			return FALSE;
 		cp = linebuf;
 		width = 0;
 		lh2 = lh;
@@ -532,6 +534,7 @@ complt_list(flags, c, buf, cpos)
 			*cp = 0;
 			addline(bp, linebuf);
 		}
+		free(linebuf);
 	}
 	/*
 	 * Note that we free lists only if they are put in wholelist lists
