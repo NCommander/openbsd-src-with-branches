@@ -1,3 +1,6 @@
+/*	$OpenBSD$ */
+/*	$NetBSD: rarpd.c,v 1.12 1996/03/21 18:28:23 jtc Exp $	*/
+
 /*
  * Copyright (c) 1990 The Regents of the University of California.
  * All rights reserved.
@@ -25,8 +28,7 @@ char    copyright[] =
 #endif				/* not lint */
 
 #ifndef lint
-static char rcsid[] =
-"@(#) $Id: rarpd.c,v 1.1.1.1 1995/10/18 08:48:02 deraadt Exp $";
+static char rcsid[] = "$OpenBSD: rarpd.c,v 1.2 1995/11/15 07:04:09 deraadt Exp $";
 #endif
 
 
@@ -100,7 +102,7 @@ int     aflag = 0;		/* listen on "all" interfaces  */
 int     dflag = 0;		/* print debugging messages */
 int     fflag = 0;		/* don't fork */
 
-void
+int
 main(argc, argv)
 	int     argc;
 	char  **argv;

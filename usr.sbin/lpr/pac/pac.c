@@ -1,3 +1,6 @@
+/*	$OpenBSD$ */
+/*	$NetBSD: pac.c,v 1.7 1996/03/21 18:21:20 jtc Exp $	*/
+
 /*
  * Copyright (c) 1983, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -100,7 +103,7 @@ static struct	hent *lookup __P((char []));
 static int	qucmp __P((const void *, const void *));
 static void	rewrite __P((void));
 
-void
+int
 main(argc, argv)
 	int argc;
 	char **argv;
