@@ -1,4 +1,4 @@
-/*	$OpenBSD: mail.c,v 1.12 2004/12/18 21:25:44 millert Exp $	*/
+/*	$OpenBSD: mail.c,v 1.13 2004/12/20 11:34:26 otto Exp $	*/
 
 /*
  * Mailbox checking code by Robert J. Gibson, adapted for PD ksh by
@@ -188,7 +188,7 @@ mprintit(mbox_t *mbp)
 	if (!Flag(FSH))
 #endif
 		/* Ignore setstr errors here (arbitrary) */
-		setstr((vp = local("_", FALSE)), mbp->mb_path, KSH_RETURN_ERROR);
+		setstr((vp = local("_", false)), mbp->mb_path, KSH_RETURN_ERROR);
 
 	shellf("%s\n", substitute(mbp->mb_msg ? mbp->mb_msg : MBMESSAGE, 0));
 
