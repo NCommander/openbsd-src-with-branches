@@ -1,0 +1,4 @@
+#	$OpenBSD$
+
+BINDIR=	/sbin
+NOMAN=
