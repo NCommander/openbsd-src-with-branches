@@ -1,4 +1,4 @@
-/*	$OpenBSD: common.h,v 1.19 2003/07/28 18:35:36 otto Exp $	*/
+/*	$OpenBSD: common.h,v 1.20 2003/07/28 19:15:34 deraadt Exp $	*/
 
 #define DEBUGGING
 
@@ -72,6 +72,7 @@ extern int	strippath;
 extern bool	canonicalize;
 /* TRUE if -C was specified on command line.  */
 extern bool	check_only;
+extern bool	warn_on_invalid_line;
 
 
 #define CONTEXT_DIFF 1
