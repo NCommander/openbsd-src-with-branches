@@ -1,5 +1,5 @@
 %{
-/*	$OpenBSD$	*/
+/*	$OpenBSD: iplang_y.y,v 1.2 2001/01/17 06:01:26 fgsch Exp $	*/
 
 /*
  * Copyright (C) 1997-1998 by Darren Reed.
@@ -46,7 +46,7 @@
 #include <resolv.h>
 #include <ctype.h>
 #include "ipsend.h"
-#include "ip_compat.h"
+#include "ip_fil_compat.h"
 #include "ipf.h"
 #include "iplang.h"
 
