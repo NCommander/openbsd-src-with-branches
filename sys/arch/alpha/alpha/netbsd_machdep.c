@@ -1,4 +1,4 @@
-/*	$OpenBSD: netbsd_machdep.c,v 1.3 1999/09/26 11:07:32 kstailey Exp $	*/
+/*	$OpenBSD: netbsd_machdep.c,v 1.4 2001/01/15 12:00:09 art Exp $	*/
 
 /*
  * Copyright (c) 1994, 1995, 1996 Carnegie-Mellon University.
@@ -41,6 +41,7 @@
 
 #include <vm/vm.h>
 
+#include <compat/netbsd/netbsd_types.h>
 #include <compat/netbsd/netbsd_signal.h>
 #include <compat/netbsd/netbsd_syscallargs.h>
 
