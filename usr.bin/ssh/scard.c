@@ -24,7 +24,7 @@
 
 #ifdef SMARTCARD
 #include "includes.h"
-RCSID("$OpenBSD: scard.c,v 1.13 2001/08/02 16:14:05 jakob Exp $");
+RCSID("$OpenBSD: scard.c,v 1.14 2001/09/17 20:22:14 markus Exp $");
 
 #include <openssl/engine.h>
 #include <sectok.h>
@@ -123,6 +123,7 @@ sc_read_pubkey(Key * k)
 	int len, sw, status = -1;
 
 	len = sw = 0;
+	n = NULL;
 
 	if (sc_fd < 0) {
 		status = sc_init();
