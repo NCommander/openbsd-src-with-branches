@@ -1,5 +1,5 @@
-/*	$OpenBSD: udp.c,v 1.13 1999/04/30 11:46:59 niklas Exp $	*/
-/*	$EOM: udp.c,v 1.40 1999/04/29 18:46:54 niklas Exp $	*/
+/*	$OpenBSD: udp.c,v 1.14 1999/06/05 22:54:42 niklas Exp $	*/
+/*	$EOM: udp.c,v 1.41 1999/06/05 23:08:53 niklas Exp $	*/
 
 /*
  * Copyright (c) 1998, 1999 Niklas Hallqvist.  All rights reserved.
