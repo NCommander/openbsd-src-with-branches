@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_devar.h,v 1.8 1998/10/08 05:51:19 jason Exp $	*/
+/*	$OpenBSD: if_devar.h,v 1.9 1999/01/11 04:31:14 jason Exp $	*/
 /*	$NetBSD: if_devar.h,v 1.13 1997/06/08 18:46:36 thorpej Exp $	*/
 
 /*-
@@ -534,6 +534,7 @@ struct _tulip_softc_t {
 #endif
 #if !defined(__NetBSD__)
     struct arpcom tulip_ac;
+    struct timeout tulip_ftmo, tulip_stmo;
 #endif
     tulip_regfile_t tulip_csrs;
     u_int32_t tulip_flags;
