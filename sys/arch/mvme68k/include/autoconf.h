@@ -52,5 +52,16 @@ struct confargs {
 #define BUS_VMEL	6	/* 32 bit VME access */
 #define BUS_IP		7	/* VME162 IP module bus */
 
+/* the following are from the prom/bootblocks */
+void	*bootaddr;	/* PA of boot device */
+int	bootctrllun;	/* ctrl_lun of boot device */
+int	bootdevlun;	/* dev_lun of boot device */
+int	bootpart;	/* boot partition (disk) */
+
+struct	device *bootdv; /* boot device */
+
+/* PARTITIONSHIFT from disklabel.h */
+#define PARTITIONMASK   ((1 << PARTITIONSHIFT) - 1) 
+
 caddr_t	mapiodev __P((caddr_t pa, int size));
 void	unmapiodev __P((caddr_t kva, int size));
