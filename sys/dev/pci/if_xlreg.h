@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_xlreg.h,v 1.15 1999/09/26 17:50:07 jason Exp $	*/
+/*	$OpenBSD: if_xlreg.h,v 1.16 1999/12/07 20:19:37 jason Exp $	*/
 
 /*
  * Copyright (c) 1997, 1998
@@ -625,6 +625,7 @@ struct xl_stats {
 /*
  * 3Com chip device IDs.
  */
+#define TC_DEVICEID_TORNADO_HOMECONNECT		0x4500
 #define	TC_DEVICEID_BOOMERANG_10BT		0x9000
 #define TC_DEVICEID_BOOMERANG_10BT_COMBO	0x9001
 #define TC_DEVICEID_BOOMERANG_10_100BT		0x9050
