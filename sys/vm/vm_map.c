@@ -1,4 +1,4 @@
-/*	$OpenBSD: vm_map.c,v 1.2 1996/03/03 17:45:30 niklas Exp $	*/
+/*	$OpenBSD: vm_map.c,v 1.3 1996/07/23 23:54:23 deraadt Exp $	*/
 /*	$NetBSD: vm_map.c,v 1.23 1996/02/10 00:08:08 christos Exp $	*/
 
 /* 
@@ -1753,13 +1753,11 @@ vm_map_copy_entry(src_map, dst_map, src_entry, dst_entry)
 		 *	Make a copy of the object.
 		 */
 		temp_object = dst_entry->object.vm_object;
-		vm_object_copy(src_entry->object.vm_object,
-				src_entry->offset,
-				(vm_size_t)(src_entry->end -
-					    src_entry->start),
-				&dst_entry->object.vm_object,
-				&dst_entry->offset,
-				&src_needs_copy);
+		vm_object_copy(src_entry->object.vm_object, src_entry->offset,
+		    (vm_size_t)(src_entry->end - src_entry->start),
+		    &dst_entry->object.vm_object, &dst_entry->offset,
+		    &src_needs_copy);
+
 		/*
 		 *	If we didn't get a copy-object now, mark the
 		 *	source map entry so that a shadow will be created
@@ -1770,9 +1768,12 @@ vm_map_copy_entry(src_map, dst_map, src_entry, dst_entry)
 
 		/*
 		 *	The destination always needs to have a shadow
-		 *	created.
+		 *	created, unless it's a zero-fill entry.
 		 */
-		dst_entry->needs_copy = TRUE;
+		if (dst_entry->object.vm_object != NULL)
+			dst_entry->needs_copy = TRUE;
+		else
+			dst_entry->needs_copy = FALSE;
 
 		/*
 		 *	Mark the entries copy-on-write, so that write-enabling
