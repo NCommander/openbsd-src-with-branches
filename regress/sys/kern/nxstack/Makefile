@@ -1,8 +1,9 @@
-#	$OpenBSD: Makefile,v 1.1 2002/07/01 18:15:51 mickey Exp $
+#	$OpenBSD: Makefile,v 1.2 2002/07/26 01:32:07 deraadt Exp $
 
 .if ${MACHINE} == "sparc64" || ${MACHINE} == "sparc" || \
     ${MACHINE} == "alpha" || ${MACHINE} == "macppc" || \
-    ${MACHINE} == "mvmeppc" || ${MACHINE} == "i386"
+    ${MACHINE} == "mvmeppc" || ${MACHINE} == "i386" || \
+    ${MACHINE} == "hppa"
 
 PROG=	nxstack
 LDSTATIC= ${STATIC}

@@ -1,7 +1,7 @@
-#	$OpenBSD: Makefile,v 1.1 2002/07/26 01:20:44 deraadt Exp $
+#	$OpenBSD: Makefile,v 1.2 2002/07/26 01:32:07 deraadt Exp $
 
 .if ${MACHINE} == "sparc64" || ${MACHINE} == "sparc" || \
-    ${MACHINE} == "alpha"
+    ${MACHINE} == "alpha" || ${MACHINE} == "hppa"
 
 PROG=	nxbss
 LDSTATIC= ${STATIC}
