@@ -1,4 +1,4 @@
-/* $OpenBSD: xf_esp3desmd5.c,v 1.3 1997/07/01 22:18:06 provos Exp $ */
+/* $OpenBSD: xf_espdes.c,v 1.4 1997/07/11 23:50:24 provos Exp $ */
 /*
  * The author of this code is John Ioannidis, ji@tla.org,
  * 	(except when noted otherwise).
@@ -6,9 +6,11 @@
  * This code was written for BSD/OS in Athens, Greece, in November 1995.
  *
  * Ported to OpenBSD and NetBSD, with additional transforms, in December 1996,
- * by Angelos D. Keromytis, kermit@forthnet.gr.
- *
- * Copyright (C) 1995, 1996, 1997 by John Ioannidis and Angelos D. Keromytis.
+ * by Angelos D. Keromytis, kermit@forthnet.gr. Additional code written by
+ * Niels Provos in Germany.
+ * 
+ * Copyright (C) 1995, 1996, 1997 by John Ioannidis, Angelos D. Keromytis and
+ * Niels Provos.
  *	
  * Permission to use, copy, and modify this software without fee
  * is hereby granted, provided that this entire notice is included in
@@ -56,39 +58,42 @@ int xf_set __P(( struct encap_msghdr *));
 int x2i __P((char *));
 
 int
-xf_esp3desmd5(argc, argv)
-int argc;
-char **argv;
+xf_esp_old(src, dst, spi, enc, ivp, keyp)
+struct in_addr src, dst;
+u_int32_t spi;
+int enc;
+u_char *ivp, *keyp;
 {
-	int i;
+	int i, ivlen, klen;
 
 	struct encap_msghdr *em;
-	struct esp_new_xencap *xd;
+	struct esp_old_xencap *xd;
 
-	if (argc != 6) {
-	  fprintf(stderr, "usage: %s src dst spi iv key\n", argv[0]);
-	  return 0;
-	}
-	
+	klen = strlen(keyp)/2;
+	ivlen = ivp == NULL ? 0 : strlen(ivp)/2;
+
 	em = (struct encap_msghdr *)&buf[0];
 	
-	em->em_msglen = EMT_SETSPI_FLEN + ESP_NEW_XENCAP_LEN;
+	em->em_msglen = EMT_SETSPI_FLEN + ESP_OLD_XENCAP_LEN + ivlen + klen;
 	em->em_version = PFENCAP_VERSION_1;
 	em->em_type = EMT_SETSPI;
-	em->em_spi = htonl(strtoul(argv[3], NULL, 16));
-	em->em_src.s_addr = inet_addr(argv[1]);
-	em->em_dst.s_addr = inet_addr(argv[2]);
-	em->em_alg = XF_NEW_ESP;
+	em->em_spi = spi;
+	em->em_src = src;
+	em->em_dst = dst;
+	em->em_alg = XF_OLD_ESP;
 	em->em_sproto = IPPROTO_ESP;
 
-	xd = (struct esp_new_xencap *)(em->em_dat);
+	xd = (struct esp_old_xencap *)(em->em_dat);
 
-	xd->edx_ivlen = 0;
-	xd->edx_keylen = 8;
-	xd->edx_wnd = 32;
+	xd->edx_enc_algorithm = enc;
+	xd->edx_ivlen = ivlen;
+	xd->edx_keylen = klen;
 
-	for (i = 0; i < 8; i++)
-	  xd->edx_data[i] = x2i(&(argv[5][2*i]));
+	for (i = 0; i < ivlen; i++)
+	  xd->edx_data[i] = x2i(ivp+2*i);
+
+	for (i = 0; i < klen; i++)
+	  xd->edx_data[i+ivlen] = x2i(keyp+2*i);
 
 	return xf_set(em);
 }
