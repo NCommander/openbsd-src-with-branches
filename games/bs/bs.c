@@ -1,4 +1,4 @@
-/*	$OpenBSD: bs.c,v 1.17 2002/08/09 09:54:30 pjanzen Exp $	*/
+/*	$OpenBSD: bs.c,v 1.18 2002/12/06 21:48:51 millert Exp $	*/
 /*
  * bs.c - original author: Bruce Holloway
  *		salvo option by: Chuck A DeGaul
@@ -11,7 +11,7 @@
  */
 
 #ifndef lint
-static const char rcsid[] = "$OpenBSD: bs.c,v 1.17 2002/08/09 09:54:30 pjanzen Exp $";
+static const char rcsid[] = "$OpenBSD: bs.c,v 1.18 2002/12/06 21:48:51 millert Exp $";
 #endif
 
 /* #define _POSIX_SOURCE  */  /* ( random() ) */
@@ -26,15 +26,6 @@ static const char rcsid[] = "$OpenBSD: bs.c,v 1.17 2002/08/09 09:54:30 pjanzen E
 #include <string.h>
 #include <time.h>
 #include <unistd.h>
-
-#ifndef A_UNDERLINE	/* BSD curses */
-#define	beep()	write(1,"\007",1);
-#define	cbreak	crmode
-#define	saveterm savetty
-#define	resetterm resetty
-#define	nocbreak nocrmode
-#define strchr	index
-#endif /* !A_UNDERLINE */
 
 static int getcoord(int atcpu);
 
