@@ -1,4 +1,4 @@
-/*	$OpenBSD: fingerd.c,v 1.14 1999/07/03 18:24:13 deraadt Exp $	*/
+/*	$OpenBSD: fingerd.c,v 1.15 1999/07/20 22:40:37 deraadt Exp $	*/
 
 /*
  * Copyright (c) 1983, 1993
@@ -43,7 +43,7 @@ static char copyright[] =
 #if 0
 static char sccsid[] = "from: @(#)fingerd.c	8.1 (Berkeley) 6/4/93";
 #else
-static char rcsid[] = "$OpenBSD: fingerd.c,v 1.14 1999/07/03 18:24:13 deraadt Exp $";
+static char rcsid[] = "$OpenBSD: fingerd.c,v 1.15 1999/07/20 22:40:37 deraadt Exp $";
 #endif
 #endif /* not lint */
 
@@ -68,7 +68,7 @@ void
 usage()
 {
 	syslog(LOG_ERR,
-	    "usage: ftpd [-slumMpS] [-P filename]");
+	    "usage: fingerd [-slumMpS] [-P filename]");
 	exit(2);
 }
 
