@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile.arc,v 1.1.1.1 1996/06/24 09:07:20 pefo Exp $
+#	$OpenBSD: Makefile.arc,v 1.2 1996/07/16 07:46:15 pefo Exp $
 
 #	@(#)Makefile.arc	8.2 (Berkeley) 2/16/94
 #
@@ -142,10 +142,10 @@ assym.h: genassym
 	./genassym >assym.h
 
 genassym: genassym.o
-	${CC} -o $@ genassym.o
+	${HOSTCC} -o $@ genassym.o
 
 genassym.o: ${ARC}/arc/genassym.c
-	${CC} ${INCLUDES} ${IDENT} -D_KERNEL -Darc -c $<
+	${HOSTCC} ${INCLUDES} ${IDENT} -D_KERNEL -Darc -c $<
 
 links:
 	egrep '#if' ${CFILES} | sed -f $S/conf/defines | \
