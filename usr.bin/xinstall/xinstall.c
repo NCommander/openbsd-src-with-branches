@@ -1,4 +1,4 @@
-/*	$OpenBSD: xinstall.c,v 1.39 2003/11/22 14:17:32 mickey Exp $	*/
+/*	$OpenBSD: xinstall.c,v 1.40 2004/02/10 07:33:23 jmc Exp $	*/
 /*	$NetBSD: xinstall.c,v 1.9 1995/12/20 10:25:17 jonathan Exp $	*/
 
 /*
@@ -40,7 +40,7 @@ static char copyright[] =
 #if 0
 static char sccsid[] = "@(#)xinstall.c	8.1 (Berkeley) 7/21/93";
 #endif
-static char rcsid[] = "$OpenBSD: xinstall.c,v 1.39 2003/11/22 14:17:32 mickey Exp $";
+static char rcsid[] = "$OpenBSD: xinstall.c,v 1.40 2004/02/10 07:33:23 jmc Exp $";
 #endif /* not lint */
 
 #include <sys/param.h>
@@ -93,7 +93,7 @@ int
 main(int argc, char *argv[])
 {
 	struct stat from_sb, to_sb;
-	mode_t *set;
+	void *set;
 	u_int32_t fset;
 	u_int iflags;
 	int ch, no_target;
