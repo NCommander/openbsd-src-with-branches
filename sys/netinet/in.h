@@ -1,4 +1,4 @@
-/*	$OpenBSD: in.h,v 1.19 1999/02/24 04:39:39 cmetz Exp $	*/
+/*	$OpenBSD: in.h,v 1.20 1999/03/24 02:31:03 cmetz Exp $	*/
 /*	$NetBSD: in.h,v 1.20 1996/02/13 23:41:47 christos Exp $	*/
 
 /*
@@ -378,6 +378,8 @@ struct ip_opts {
 #define IPV6_CHECKSUM		37   /* int; offset to place send checksum */
 #define ICMPV6_FILTER		38   /* struct icmpv6_filter; get/set filter */
 #define ICMP6_FILTER		ICMP6_FILTER
+
+#define IPSEC_OUTSA		39   /* set the outbound SA for a socket */
 
 /*
  * Security levels - IPsec, not IPSO
