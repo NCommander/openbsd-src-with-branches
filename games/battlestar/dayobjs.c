@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: dayobjs.c,v 1.2 1997/06/30 19:56:34 kstailey Exp $	*/
 /*	$NetBSD: dayobjs.c,v 1.3 1995/03/21 15:07:22 cgd Exp $	*/
 
 /*
@@ -42,7 +42,7 @@ static char rcsid[] = "$NetBSD: dayobjs.c,v 1.3 1995/03/21 15:07:22 cgd Exp $";
 #endif
 #endif /* not lint */
 
-#include "externs.h"
+#include "extern.h"
 
 struct objs dayobjs[] = {
 	{ 236,	HORSE },
