@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_axe.c,v 1.20 2004/11/11 13:01:45 dlg Exp $	*/
+/*	$OpenBSD: if_axe.c,v 1.21 2004/12/31 02:21:32 dlg Exp $	*/
 
 /*
  * Copyright (c) 1997, 1998, 1999, 2000-2003
@@ -1252,6 +1252,7 @@ axe_ioctl(struct ifnet *ifp, u_long cmd, caddr_t data)
 		error = (cmd == SIOCADDMULTI) ?
 		    ether_addmulti(ifr, &sc->arpcom) :
 		    ether_delmulti(ifr, &sc->arpcom);
+
 		if (error == ENETRESET) {
 			/*
 			 * Multicast list has changed; set the hardware
