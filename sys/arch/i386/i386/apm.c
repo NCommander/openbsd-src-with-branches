@@ -1,4 +1,4 @@
-/*	$OpenBSD: apm.c,v 1.57 2003/01/09 17:43:56 mickey Exp $	*/
+/*	$OpenBSD: apm.c,v 1.58 2003/01/29 00:00:44 tedu Exp $	*/
 
 /*-
  * Copyright (c) 1998-2001 Michael Shalayeff. All rights reserved.
@@ -586,7 +586,7 @@ apm_devpowmgt_enable(onoff, dev)
 	struct apmregs regs;
 	if (apm_minver == 0)
 		return;
-	/* enable is auto BIOS managment.
+	/* enable is auto BIOS management.
 	 * disable is program control.
 	 */
 	bzero(&regs, sizeof(regs));
