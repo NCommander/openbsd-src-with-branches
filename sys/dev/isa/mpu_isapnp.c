@@ -1,4 +1,4 @@
-/*	$OpenBSD: mpu_isapnp.c,v 1.4 2001/07/08 06:41:38 fgsch Exp $	*/
+/*	$OpenBSD: mpu_isapnp.c,v 1.5 2002/03/14 01:26:56 millert Exp $	*/
 
 #include "midi.h"
 
@@ -30,10 +30,6 @@ struct mpu_isapnp_softc {
 	void *sc_ih;
 
 	struct mpu_softc sc_mpu;
-};
-
-struct cfdriver mpu_cd = {
-	NULL, "mpu", DV_DULL
 };
 
 struct cfattach mpu_isapnp_ca = {
