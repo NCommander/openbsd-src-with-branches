@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.59 2001/06/24 21:04:13 kjell Exp $
+#	$OpenBSD: Makefile,v 1.60 2001/07/05 02:14:37 mickey Exp $
 
 # Not ported: XNSrouted enpload scsiformat startslip
 # Missing: icheck
@@ -31,6 +31,6 @@ SUBDIR+= mount_tcfs
 SUBDIR+= ping6 rtsol
 
 # Man pages (and manpages to do)
-SUBDIR+= fdisk pdisk ancontrol wicontrol edlabel wsconsctl
+SUBDIR+= fdisk pdisk ancontrol wicontrol wsconsctl
 
 .include <bsd.subdir.mk>
