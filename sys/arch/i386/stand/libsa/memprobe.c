@@ -36,6 +36,7 @@
 
 u_int cnvmem, extmem;		/* XXX - compatibility */
 
+
 /* Check gateA20
  *
  * A sanity check.
@@ -356,7 +357,7 @@ memprobe(void)
 	}
 
 	/* Check if gate A20 is on */
-	printf("a20=o%s]", checkA20()? "n" : "ff!");
+	printf("a20=o%s] ", checkA20()? "n" : "ff!");
 }
 #endif
 
