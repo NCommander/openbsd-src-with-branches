@@ -1,4 +1,4 @@
-/*	$OpenBSD: cpu.h,v 1.40 2004/04/02 20:56:31 mickey Exp $	*/
+/*	$OpenBSD: cpu.h,v 1.41 2004/04/07 18:24:19 mickey Exp $	*/
 
 /*
  * Copyright (c) 2000-2004 Michael Shalayeff
@@ -65,7 +65,7 @@
 #ifndef _LOCORE
 /* types */
 enum hppa_cpu_type {
-	hpcx, hpcxs, hpcxt, hpcxta, hpcxl, hpcxl2, hpcxu, hpcxu2, hpcxw
+	hpcxs, hpcxt, hpcxta, hpcxl, hpcxl2, hpcxu, hpcxu2, hpcxw
 };
 extern enum hppa_cpu_type cpu_type;
 extern const char *cpu_typename;
