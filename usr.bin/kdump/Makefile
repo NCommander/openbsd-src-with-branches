@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.4 2002/10/17 15:14:57 jason Exp $
+#	$OpenBSD: Makefile,v 1.5 2002/11/26 13:45:17 mickey Exp $
 
 LDSTATIC=${STATIC}
 PROG=	kdump
@@ -11,6 +11,7 @@ ioctl.c: mkioctls
 	/bin/sh ${.CURDIR}/mkioctls ${DESTDIR}/usr/include/sys/ioctl.h \
 	    ${DESTDIR}/usr/include/sys/ioctl_compat.h \
 	    ${DESTDIR}/usr/include/dev/wscons/wsconsio.h \
+	    ${DESTDIR}/usr/include/dev/systrace.h \
 	    ${DESTDIR}/usr/include/sys/ataio.h \
 	    ${DESTDIR}/usr/include/sys/audioio.h \
 	    ${DESTDIR}/usr/include/sys/cdio.h \
