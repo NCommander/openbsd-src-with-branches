@@ -1,5 +1,5 @@
-/*	$OpenBSD: uvm_km.c,v 1.15 2001/09/19 20:50:59 mickey Exp $	*/
-/*	$NetBSD: uvm_km.c,v 1.36 2000/06/26 14:21:18 mrg Exp $	*/
+/*	$OpenBSD: uvm_km.c,v 1.16 2001/11/05 22:14:54 art Exp $	*/
+/*	$NetBSD: uvm_km.c,v 1.37 2000/06/27 17:29:24 mrg Exp $	*/
 
 /* 
  * Copyright (c) 1997 Charles D. Cranor and Washington University.
@@ -144,8 +144,6 @@
 #include <sys/param.h>
 #include <sys/systm.h>
 #include <sys/proc.h>
-
-#include <vm/vm.h>
 
 #include <uvm/uvm.h>
 
