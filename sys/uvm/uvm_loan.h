@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /*	$NetBSD: uvm_loan.h,v 1.5 1998/08/13 02:11:01 eeh Exp $	*/
 
 /*

@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /*	$NetBSD: uvm_device.h,v 1.5 1998/03/09 00:58:56 mrg Exp $	*/
 
 /*

@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /*	$NetBSD: uvm_stat.c,v 1.10 1998/06/20 13:19:00 mrg Exp $	 */
 
 /*

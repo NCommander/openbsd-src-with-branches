@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /*	$NetBSD: uvm_anon.h,v 1.9 1999/01/24 23:53:15 chuck Exp $	*/
 
 /*

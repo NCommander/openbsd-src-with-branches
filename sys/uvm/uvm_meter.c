@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /*	$NetBSD: uvm_meter.c,v 1.7 1998/08/09 22:36:39 perry Exp $	*/
 
 /*

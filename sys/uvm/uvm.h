@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /*	$NetBSD: uvm.h,v 1.13 1998/10/11 22:59:53 chuck Exp $	*/
 
 /*

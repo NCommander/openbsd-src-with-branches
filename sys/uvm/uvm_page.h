@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /*	$NetBSD: uvm_page.h,v 1.10 1998/08/13 02:11:02 eeh Exp $	*/
 
 /*

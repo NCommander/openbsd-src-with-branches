@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /*	$NetBSD: uvm_pager.h,v 1.7 1998/08/13 02:11:03 eeh Exp $	*/
 
 /*

@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /*	$NetBSD: uvm_loan.c,v 1.13 1999/01/24 23:53:15 chuck Exp $	*/
 
 /*

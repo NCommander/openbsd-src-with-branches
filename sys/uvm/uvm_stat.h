@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /*	$NetBSD: uvm_stat.h,v 1.13 1998/08/09 22:36:39 perry Exp $	*/
 
 /*

@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /*	$NetBSD: uvm_mmap.c,v 1.15 1998/10/11 23:18:20 chuck Exp $	*/
 
 /*

@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /*	$NetBSD: uvm_map_i.h,v 1.10 1998/10/11 23:14:48 chuck Exp $	*/
 
 /*

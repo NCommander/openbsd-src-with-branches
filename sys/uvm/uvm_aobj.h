@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /*	$NetBSD: uvm_aobj.h,v 1.6 1998/02/12 07:36:45 chs Exp $	*/
 
 /*

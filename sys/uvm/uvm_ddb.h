@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /*	$NetBSD: uvm_ddb.h,v 1.1 1998/07/04 22:18:53 jonathan Exp $	*/
 
 /*
