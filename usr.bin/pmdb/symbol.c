@@ -1,4 +1,4 @@
-/*	$OpenBSD: symbol.c,v 1.5 2002/03/16 01:12:47 art Exp $	*/
+/*	$OpenBSD: symbol.c,v 1.6 2002/07/24 14:06:27 vincent Exp $	*/
 /*
  * Copyright (c) 2002 Artur Grabowski <art@openbsd.org>
  * All rights reserved. 
@@ -132,7 +132,11 @@ sym_print(struct pstate *ps, reg pc, char *buf, size_t buflen)
 	if (name == NULL) {
 		snprintf(buf, buflen, "0x%lx", pc);
 	} else {
-		snprintf(buf, buflen, "%s+0x%lx(0x%lx)", name, offs, pc);
+		if (offs)
+			snprintf(buf, buflen, "%s+0x%lx(0x%lx)",
+			    name, offs, pc);
+		else
+			snprintf(buf, buflen, "%s(0x%lx)", name, pc);
 	}
 
 	return (buf);
