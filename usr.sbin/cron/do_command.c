@@ -1,4 +1,4 @@
-/*	$OpenBSD: do_command.c,v 1.15 2002/06/21 21:10:32 millert Exp $	*/
+/*	$OpenBSD: do_command.c,v 1.16 2002/06/23 03:07:19 deraadt Exp $	*/
 /* Copyright 1988,1990,1993,1994 by Paul Vixie
  * All rights reserved
  */
@@ -21,7 +21,7 @@
  */
 
 #if !defined(lint) && !defined(LINT)
-static char rcsid[] = "$OpenBSD: do_command.c,v 1.15 2002/06/21 21:10:32 millert Exp $";
+static char const rcsid[] = "$OpenBSD: do_command.c,v 1.16 2002/06/23 03:07:19 deraadt Exp $";
 #endif
 
 #include "cron.h"

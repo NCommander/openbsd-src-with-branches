@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: user.c,v 1.3 2001/02/18 19:48:36 millert Exp $	*/
 /* Copyright 1988,1990,1993,1994 by Paul Vixie
  * All rights reserved
  */
@@ -21,7 +21,7 @@
  */
 
 #if !defined(lint) && !defined(LINT)
-static char rcsid[] = "$OpenBSD: user.c,v 1.3 2000/01/02 20:53:44 vixie Exp $";
+static const char rcsid[] = "$OpenBSD: user.c,v 1.3 2001/02/18 19:48:36 millert Exp $";
 #endif
 
 /* vix 26jan87 [log is in RCS file]

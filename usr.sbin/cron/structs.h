@@ -1,4 +1,4 @@
-/*	$OpenBSD: structs.h,v 1.1 2001/02/18 19:48:36 millert Exp $	*/
+/*	$OpenBSD: structs.h,v 1.2 2001/02/19 14:33:33 millert Exp $	*/
 
 /*
  * Copyright (c) 1997,2000 by Internet Software Consortium, Inc.
@@ -59,4 +59,3 @@ typedef	struct _cron_db {
 				 * variables for the main program, just
 				 * extern them elsewhere.
 				 */
-
