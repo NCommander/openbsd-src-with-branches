@@ -1,4 +1,4 @@
-/*	$OpenBSD: rde_filter.c,v 1.7 2004/03/11 17:12:51 claudio Exp $ */
+/*	$OpenBSD: rde_filter.c,v 1.8 2004/05/07 10:06:15 djm Exp $ */
 
 /*
  * Copyright (c) 2004 Claudio Jeker <claudio@openbsd.org>
@@ -78,6 +78,17 @@ rde_apply_set(struct attr_flags *attrs, struct filter_set *set)
 	}
 	if (set->flags & SET_PFTABLE)
 		strlcpy(attrs->pftable, set->pftable, sizeof(attrs->pftable));
+	if (set->flags & SET_COMMUNITY) {
+		struct attr *a;
+
+		if ((a = attr_optget(attrs, ATTR_COMMUNITIES)) == NULL) {
+			attr_optadd(attrs, ATTR_OPTIONAL|ATTR_TRANSITIVE,
+			    ATTR_COMMUNITIES, NULL, 0);
+			if ((a = attr_optget(attrs, ATTR_COMMUNITIES)) == NULL)
+				fatalx("internal community bug");
+		}
+		community_set(a, set->community.as, set->community.type);
+	}
 }
 
 int
