@@ -1,4 +1,4 @@
-/*	$OpenBSD: w.c,v 1.11 1996/12/22 03:26:10 tholo Exp $	*/
+/*	$OpenBSD: w.c,v 1.12 1997/01/15 23:43:35 millert Exp $	*/
 
 /*-
  * Copyright (c) 1980, 1991, 1993, 1994
@@ -457,7 +457,7 @@ usage(wcmd)
 {
 	if (wcmd)
 		(void)fprintf(stderr,
-		    "usage: w: [-hin] [-M core] [-N system] [user]\n");
+		    "usage: w: [-hia] [-M core] [-N system] [user]\n");
 	else
 		(void)fprintf(stderr, "uptime\n");
 	exit (1);
