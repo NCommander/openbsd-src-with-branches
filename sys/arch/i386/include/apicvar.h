@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /* $NetBSD: apicvar.h,v 1.1.2.3 2000/02/27 20:25:00 sommerfeld Exp $ */
 
 /*-

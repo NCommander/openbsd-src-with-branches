@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /* $NetBSD: cpu.c,v 1.1.2.7 2000/06/26 02:04:05 sommerfeld Exp $ */
 
 /*-

@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /* $NetBSD: i82093var.h,v 1.1.2.3 2000/02/27 20:26:06 sommerfeld Exp $ */
 
 /*-

@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /* $NetBSD: apic.c,v 1.1.2.2 2000/02/21 18:51:00 sommerfeld Exp $ */
 
 /*-

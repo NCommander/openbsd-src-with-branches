@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /* $NetBSD: mpbiosvar.h,v 1.1.2.3 2000/02/29 13:17:20 sommerfeld Exp $ */
 
 /*-

@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /* $NetBSD: lock_machdep.c,v 1.1.2.3 2000/05/03 14:40:30 sommerfeld Exp $ */
 
 /*-

@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /* $NetBSD: ioapic.c,v 1.1.2.4 2000/06/25 20:46:08 sommerfeld Exp $ */
 
 /*-
