@@ -1,4 +1,4 @@
-/* $OpenBSD: aicasm.c,v 1.1.12.1 2002/06/11 03:42:22 art Exp $ */
+/* $OpenBSD$ */
 /*
  * Aic7xxx SCSI host adapter firmware asssembler
  *
@@ -197,15 +197,15 @@ main(argc, argv)
 							"times\n", appname);
 				}
 				includes_search_curdir = 0;
-				for (include_dir = search_path.slh_first;
-				     include_dir != NULL;
-				     include_dir = include_dir->links.sle_next)
+				SLIST_FOREACH(include_dir, &search_path,
+				    links) {
 					/*
 					 * All entries before a '-I-' only
 					 * apply to includes specified with
 					 * quotes instead of "<>".
 					 */
 					include_dir->quoted_includes_only = 1;
+				}
 			} else {
 				include_dir =
 				    (path_entry_t)malloc(sizeof(*include_dir));

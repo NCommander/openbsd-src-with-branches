@@ -1,4 +1,4 @@
-/*	$OpenBSD: emuxkivar.h,v 1.3 2001/11/26 18:16:02 mickey Exp $	*/
+/*	$OpenBSD$	*/
 /*	$NetBSD: emuxkivar.h,v 1.1 2001/10/17 18:39:41 jdolecek Exp $	*/
 
 /*-
@@ -44,7 +44,7 @@
 #define	EMU_SUBSYS_APS		0x40011102
 
 /*
- * dma memory managment
+ * dma memory management
  */
 
 struct dmamem {
@@ -78,7 +78,7 @@ struct dmamem {
 #define	EMU_DMAMEM_NSEG	1
 
 /*
- * Emu10k1 memory managment
+ * Emu10k1 memory management
  */
 
 struct emuxki_mem {
@@ -99,7 +99,7 @@ struct emuxki_chanparms_fxsend {
 };
 
 struct emuxki_chanparms_pitch {
-	u_int16_t       intial;	/* 4 bits of octave, 12 bits of fractional
+	u_int16_t       initial;/* 4 bits of octave, 12 bits of fractional
 				 * octave */
 	u_int16_t       current;/* 0x4000 == unity pitch shift */
 	u_int16_t       target;	/* 0x4000 == unity pitch shift */

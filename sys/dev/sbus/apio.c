@@ -175,7 +175,7 @@ apio_print(aux, name)
 	void *aux;
 	const char *name;
 {
-	struct apio_attach_args *aaa;
+	struct apio_attach_args *aaa = aux;
 
 	if (name != NULL)
 		printf("%s at %s", aaa->aaa_name, name);

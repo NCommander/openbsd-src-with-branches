@@ -74,6 +74,10 @@ struct cfattach amdpm_ca = {
 	sizeof(struct amdpm_softc), amdpm_match, amdpm_attach
 };
 
+struct cfdriver amdpm_cd = {
+	NULL, "amdpm", DV_DULL
+};
+
 #ifdef AMDPM_RND_COUNTERS
 #define	AMDPM_RNDCNT_INCR(ev)	(ev)->ev_count++
 #else

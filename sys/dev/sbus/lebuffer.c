@@ -99,7 +99,7 @@ lebufattach(parent, self, aux)
 	struct lebuf_softc *sc = (void *)self;
 	int node;
 	int sbusburst;
-	bus_space_tag_t sbt;
+	struct sparc_bus_space_tag *sbt;
 	bus_space_handle_t bh;
 
 	sc->sc_bustag = sa->sa_bustag;
@@ -140,18 +140,19 @@ lebufattach(parent, self, aux)
 	sbus_establish(&sc->sc_sd, &sc->sc_dev);
 
 	/* Allocate a bus tag */
-	sbt = (bus_space_tag_t) malloc(sizeof(struct sparc_bus_space_tag), 
-	    M_DEVBUF, M_NOWAIT);
+	sbt = malloc(sizeof(*sbt), M_DEVBUF, M_NOWAIT);
 	if (sbt == NULL) {
 		printf("%s: attach: out of memory\n", self->dv_xname);
 		return;
 	}
-	bzero(sbt, sizeof(struct sparc_bus_space_tag));
+	bzero(sbt, sizeof(*sbt));
 
 	printf(": %dK memory\n", sc->sc_bufsiz / 1024);
 
 	sbt->cookie = sc;
 	sbt->parent = sc->sc_bustag;
+	sbt->asi = sbt->parent->asi;
+	sbt->sasi = sbt->parent->sasi;
 
 	/* search through children */
 	for (node = firstchild(node); node; node = nextsibling(node)) {

@@ -1,9 +1,13 @@
-/*	$OpenBSD: iha_pci.c,v 1.6 2001/10/07 23:19:55 jason Exp $ */
-/*
- * Initio INI-9xxxU/UW SCSI Device Driver
+/*	$OpenBSD$ */
+/*-------------------------------------------------------------------------
  *
- * Copyright (c) 2000 Ken Westerback
- * All rights reserved.
+ * Device driver for the INI-9XXXU/UW or INIC-940/950  PCI SCSI Controller.
+ *
+ * Written for 386bsd and FreeBSD by
+ *	Winston Hung		<winstonh@initio.com>
+ *
+ * Copyright (c) 1997-1999 Initio Corp
+ * Copyright (c) 2000-2002 Ken Westerback
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -25,19 +29,6 @@
  * STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING
  * IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
  * THE POSSIBILITY OF SUCH DAMAGE.
- *
- *-------------------------------------------------------------------------
- *
- * Ported from i91u.c, provided by Initio Corporation, which credits:
- *
- * Device driver for the INI-9XXXU/UW or INIC-940/950  PCI SCSI Controller.
- *
- * FreeBSD
- *
- *  Written for 386bsd and FreeBSD by
- *	Winston Hung		<winstonh@initio.com>
- *
- * Copyright (c) 1997-99 Initio Corp.  All rights reserved.
  *
  *-------------------------------------------------------------------------
  */

@@ -1,4 +1,4 @@
-/*	$OpenBSD: pci.c,v 1.22 2001/08/25 12:48:35 art Exp $	*/
+/*	$OpenBSD$	*/
 /*	$NetBSD: pci.c,v 1.31 1997/06/06 23:48:04 thorpej Exp $	*/
 
 /*
@@ -292,12 +292,14 @@ pciprint(aux, pnp)
 	char devinfo[256];
 
 	if (pnp) {
-		pci_devinfo(pa->pa_id, pa->pa_class, 1, devinfo);
+		pci_devinfo(pa->pa_id, pa->pa_class, 1, devinfo,
+		    sizeof devinfo);
 		printf("%s at %s", devinfo, pnp);
 	}
 	printf(" dev %d function %d", pa->pa_device, pa->pa_function);
 	if (!pnp) {
-		pci_devinfo(pa->pa_id, pa->pa_class, 0, devinfo);
+		pci_devinfo(pa->pa_id, pa->pa_class, 0, devinfo,
+		    sizeof devinfo);
 		printf(" %s", devinfo);
 	}
 
@@ -384,6 +386,20 @@ pci_get_capability(pc, tag, capid, offset, value)
 		ofs = PCI_CAPLIST_NEXT(reg);
 	}
 
+	return (0);
+}
+
+int
+pci_matchbyid(struct pci_attach_args *pa, const struct pci_matchid *ids,
+    int nent)
+{
+	const struct pci_matchid *pm;
+	int i;
+
+	for (i = 0, pm = ids; i < nent; i++, pm++)
+		if (PCI_VENDOR(pa->pa_id) == pm->pm_vid &&
+		    PCI_PRODUCT(pa->pa_id) == pm->pm_pid)
+			return (1);
 	return (0);
 }
 

@@ -1,4 +1,4 @@
-/*	$OpenBSD: ncrstat.c,v 1.3 1997/02/23 06:06:25 millert Exp $	*/
+/*	$OpenBSD$	*/
 /*	$NetBSD: ncrstat.c,v 1.7 1996/03/17 00:55:36 thorpej Exp $	*/
 
 /**************************************************************************
@@ -939,7 +939,7 @@ static const char * sn (u_long a)
 
 	if (!*s) return s;
 
-	sprintf (buffer, "%s:%d%c", s, m/4, 0);
+	snprintf (buffer, sizeof buffer, "%s:%d%c", s, m/4, 0);
 	return (buffer);
 }
 

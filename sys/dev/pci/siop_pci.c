@@ -1,5 +1,5 @@
 /*	$OpenBSD$ */
-/*	$NetBSD: siop_pci.c,v 1.11 2002/04/23 20:41:18 bouyer Exp $ */
+/*	$NetBSD: siop_pci.c,v 1.14 2002/10/02 16:51:54 thorpej Exp $	*/
 
 /*
  * Copyright (c) 2000 Manuel Bouyer.

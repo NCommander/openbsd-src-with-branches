@@ -1,4 +1,4 @@
-/*	$OpenBSD: opl_yds.c,v 1.2 2001/07/08 06:43:27 fgsch Exp $	*/
+/*	$OpenBSD$	*/
 /*	$NetBSD$	*/
 
 /*
@@ -104,7 +104,7 @@ opl_yds_attach(parent, self, aux)
 	sc->ioh = ssc->sc_opl_ioh;
 	sc->iot = ssc->sc_opl_iot;
 	sc->offs = 0;
-	strcpy(sc->syn.name, "DS-1 integrated ");
+	strlcpy(sc->syn.name, "DS-1 integrated ", sizeof sc->syn.name);
 
 	opl_attach(sc);
 }
