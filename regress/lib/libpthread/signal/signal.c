@@ -1,4 +1,4 @@
-/*	$OpenBSD: signal.c,v 1.2 2001/11/03 04:33:48 marc Exp $	*/
+/*	$OpenBSD: signal.c,v 1.3 2001/11/11 23:26:35 deraadt Exp $	*/
 /* David Leonard <d@openbsd.org>, 2001. Public Domain. */
 
 /*
@@ -24,6 +24,7 @@ sleeper(arg)
 	sigfillset(&mask);
 	CHECKe(sigprocmask(SIG_SETMASK, &mask, NULL));
 	ASSERT(sleep(3) == 0);
+	CHECKe(write(STDOUT_FILENO, "\n", 1));
 	SUCCEED;
 }
 
