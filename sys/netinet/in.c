@@ -1,4 +1,4 @@
-/*	$OpenBSD: in.c,v 1.21 2001/07/23 14:23:21 itojun Exp $	*/
+/*	$OpenBSD: in.c,v 1.22 2001/07/27 02:17:54 itojun Exp $	*/
 /*	$NetBSD: in.c,v 1.26 1996/02/13 23:41:39 christos Exp $	*/
 
 /*
@@ -246,7 +246,7 @@ in_control(so, cmd, data, ifp)
 	case SIOCDIFADDR:
 		if (ifra->ifra_addr.sin_family == AF_INET)
 		    for (; ia != 0; ia = ia->ia_list.tqe_next) {
-			if (ia->ia_ifp == ifp  &&
+			if (ia->ia_ifp == ifp &&
 			    ia->ia_addr.sin_addr.s_addr ==
 				ifra->ifra_addr.sin_addr.s_addr)
 			    break;
