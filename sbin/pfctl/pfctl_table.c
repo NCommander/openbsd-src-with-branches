@@ -1,4 +1,4 @@
-/*	$OpenBSD: pfctl_table.c,v 1.26 2003/01/23 16:10:29 cedric Exp $ */
+/*	$OpenBSD: pfctl_table.c,v 1.27 2003/01/25 16:33:19 cedric Exp $ */
 
 /*
  * Copyright (c) 2002 Cedric Berger
@@ -607,12 +607,12 @@ pfctl_append_file(char *file)
 }
 
 void
-pfctl_define_table(char *name, int flags, int addrs)
+pfctl_define_table(char *name, int flags, int addrs, int noaction)
 {
 	struct pfr_table tbl;
 	int rv;
 
-	if ((loadopt & (PFCTL_FLAG_TABLE | PFCTL_FLAG_ALL)) == 0) {
+	if (noaction || (loadopt & (PFCTL_FLAG_TABLE | PFCTL_FLAG_ALL)) == 0) {
 		size = 0;
 		return;
 	}
