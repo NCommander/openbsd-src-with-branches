@@ -1,4 +1,4 @@
-/*	$OpenBSD: ohci.c,v 1.10 2000/03/30 16:19:32 aaron Exp $ */
+/*	$OpenBSD: ohci.c,v 1.11 2000/04/01 19:11:35 aaron Exp $ */
 /*	$NetBSD: ohci.c,v 1.85 2000/04/01 09:27:35 augustss Exp $	*/
 /*	$FreeBSD: src/sys/dev/usb/ohci.c,v 1.22 1999/11/17 22:33:40 n_hibma Exp $	*/
 
@@ -106,9 +106,13 @@ int ohcidebug = 0;
 #if BYTE_ORDER == BIG_ENDIAN
 #define htole32(x) (bswap32(x))
 #define le32toh(x) (bswap32(x))
+#define htole16(x) (bswap16(x))
+#define le16toh(x) (bswap16(x))
 #else
 #define htole32(x) (x)
 #define le32toh(x) (x)
+#define htole16(x) (x)
+#define le16toh(x) (x)
 #endif
 #endif
 
