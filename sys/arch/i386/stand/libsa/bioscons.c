@@ -1,4 +1,4 @@
-/*	$OpenBSD: bioscons.c,v 1.6 1997/08/22 00:25:58 mickey Exp $	*/
+/*	$OpenBSD: bioscons.c,v 1.7 1997/08/31 06:56:39 mickey Exp $	*/
 
 /*
  * Copyright (c) 1997 Michael Shalayeff
@@ -75,7 +75,7 @@ pc_getc(dev)
 	register int rv;
 
 	if (dev & 0x80) {
-		__asm __volatile(DOINT(0x16) "; setnz %%al" : "=a" (rv) :
+		__asm __volatile(DOINT(0x16) "; setnz %b0" : "=a" (rv) :
 		    "0" (0x100) : "%ecx", "%edx", "cc" );
 		return (rv & 0xff);
 	}
