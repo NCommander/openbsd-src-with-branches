@@ -683,9 +683,9 @@ writedisklabel(dev, strat, lp, osdep)
 		/* Write it in the regular place with native byte order. */
 		labeloffset = LABELOFFSET;
 		endian = BYTE_ORDER;
-		bp->bp_blkno = partoff + LABELSECTOR;
-		bp->bp_cylin = cyl;
-		bp->bp_bcount = lp->d_secsize;
+		bp->b_blkno = partoff + LABELSECTOR;
+		bp->b_cylin = cyl;
+		bp->b_bcount = lp->d_secsize;
 	}
 
 	if (endian != BYTE_ORDER) {
