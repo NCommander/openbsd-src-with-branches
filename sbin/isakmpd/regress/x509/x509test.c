@@ -1,4 +1,4 @@
-/*	$OpenBSD: x509test.c,v 1.9 1999/08/26 22:30:46 niklas Exp $	*/
+/*	$OpenBSD: x509test.c,v 1.10 1999/10/01 14:10:45 niklas Exp $	*/
 /*	$EOM: x509test.c,v 1.8 1999/09/30 13:40:39 niklas Exp $	*/
 
 /*
@@ -50,7 +50,6 @@
 #include <ctype.h>
 #include <fcntl.h>
 #include <stdio.h>
-#include <gmp.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
