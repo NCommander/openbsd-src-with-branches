@@ -6,7 +6,7 @@ divert(-1)
 #
 
 divert(0)dnl
-VERSIONID(`$OpenBSD: courtesan-lists.mc,v 1.4 2001/09/11 19:02:48 millert Exp $')
+VERSIONID(`$OpenBSD: courtesan-lists.mc,v 1.5 2001/12/04 02:23:56 millert Exp $')
 OSTYPE(openbsd)dnl
 dnl
 dnl Advertise ourselves as ``lists.courtesan.com''
@@ -60,6 +60,7 @@ dnl FEATURE(dnsbl, `dul.maps.vix.com', `Dialup - see http://www.mail-abuse.org/d
 dnl FEATURE(dnsbl, `relays.mail-abuse.org', `Open spam relay - see http://www.mail-abuse.org/rss/')dnl
 dnl
 dnl List the mailers we support
+FEATURE(`no_default_msa')dnl
 MAILER(local)dnl
 MAILER(smtp)dnl
 dnl
