@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.2 1997/09/14 12:54:29 downsj Exp $
+#	$OpenBSD: Makefile,v 1.3 1999/08/16 09:43:11 downsj Exp $
 
 PROG=	uboot
 
@@ -24,7 +24,8 @@ uboot.lif:	uboot
 	${MKBOOT_PROG} uboot $@
 
 uboot:	${OBJS} ${LIBS}
-	${LD} -N -T ${RELOC} -e begin ${OBJS} ${LIBS} -o $@
+	${LD} -N -T ${RELOC} -e begin ${OBJS} ${LIBS} \
+	    `${CC} -print-libgcc-file-name` -o $@
 	@size $@
 	@echo $@ total size should not exceed 1044480 bytes
 
