@@ -1,4 +1,4 @@
-/*	$OpenBSD: mount_ados.c,v 1.7 1997/08/24 08:07:05 downsj Exp $	*/
+/*	$OpenBSD: mount_ados.c,v 1.8 2002/02/16 21:27:36 millert Exp $	*/
 /*	$NetBSD: mount_ados.c,v 1.5 1996/04/13 01:30:59 jtc Exp $	*/
 
 /*
@@ -32,7 +32,7 @@
  */
 
 #ifndef lint
-static char rcsid[] = "$OpenBSD: mount_ados.c,v 1.7 1997/08/24 08:07:05 downsj Exp $";
+static char rcsid[] = "$OpenBSD: mount_ados.c,v 1.8 2002/02/16 21:27:36 millert Exp $";
 #endif /* not lint */
 
 #include <sys/cdefs.h>
@@ -114,11 +114,11 @@ main(argc, argv)
 	}
 
 	args.fspec = dev;
-	args.export.ex_root = -2;	/* unchecked anyway on DOS fs */
+	args.export_info.ex_root = -2;	/* unchecked anyway on DOS fs */
 	if (mntflags & MNT_RDONLY)
-		args.export.ex_flags = MNT_EXRDONLY;
+		args.export_info.ex_flags = MNT_EXRDONLY;
 	else
-		args.export.ex_flags = 0;
+		args.export_info.ex_flags = 0;
 	if (!set_gid || !set_uid || !set_mask) {
 		if (stat(dir, &sb) == -1)
 			err(1, "stat %s", dir);

@@ -1,4 +1,4 @@
-/*	$OpenBSD: main.c,v 1.7 2000/04/26 23:26:06 jasoni Exp $	*/
+/*	$OpenBSD: main.c,v 1.8 2002/02/16 21:27:34 millert Exp $	*/
 /*	$NetBSD: main.c,v 1.1 1997/06/11 11:21:50 bouyer Exp $	*/
 
 /*
@@ -48,7 +48,7 @@ static char sccsid[] = "@(#)main.c	8.2 (Berkeley) 1/23/94";
 #if 0
 static char rcsid[] = "$NetBSD: main.c,v 1.1 1997/06/11 11:21:50 bouyer Exp $";
 #else
-static char rcsid[] = "$OpenBSD: main.c,v 1.7 2000/04/26 23:26:06 jasoni Exp $";
+static char rcsid[] = "$OpenBSD: main.c,v 1.8 2002/02/16 21:27:34 millert Exp $";
 #endif
 #endif
 #endif /* not lint */
@@ -309,8 +309,8 @@ checkfilesys(filesys, mntpt, auxdata, child)
 
 			if (flags & MNT_RDONLY) {
 				args.fspec = 0;
-				args.export.ex_flags = 0;
-				args.export.ex_root = 0;
+				args.export_info.ex_flags = 0;
+				args.export_info.ex_root = 0;
 				flags |= MNT_UPDATE | MNT_RELOAD;
 				ret = mount(MOUNT_EXT2FS, "/", flags, &args);
 				if (ret == 0)

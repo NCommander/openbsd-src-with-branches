@@ -1,4 +1,4 @@
-/*	$OpenBSD: ext2fs_vfsops.c,v 1.21 2002/02/22 20:37:45 drahn Exp $	*/
+/*	$OpenBSD: ext2fs_vfsops.c,v 1.22 2002/03/14 01:27:14 millert Exp $	*/
 /*	$NetBSD: ext2fs_vfsops.c,v 1.1 1997/06/11 09:34:07 bouyer Exp $	*/
 
 /*
@@ -245,7 +245,8 @@ ext2fs_mount(mp, path, data, ndp, p)
 			/*
 			 * Process export requests.
 			 */
-			return (vfs_export(mp, &ump->um_export, &args.export));
+			return (vfs_export(mp, &ump->um_export, 
+			    &args.export_info));
 		}
 	}
 	/*

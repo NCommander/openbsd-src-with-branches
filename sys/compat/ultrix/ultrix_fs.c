@@ -1,4 +1,4 @@
-/*	$OpenBSD: ultrix_fs.c,v 1.6 2001/11/06 19:53:18 miod Exp $	*/
+/*	$OpenBSD: ultrix_fs.c,v 1.7 2002/03/14 03:16:03 millert Exp $	*/
 /*	$NetBSD: ultrix_fs.c,v 1.4 1996/04/07 17:23:06 jonathan Exp $	*/
 
 /*
@@ -376,7 +376,7 @@ ultrix_sys_mount(p, v, retval)
 		struct ufs_args ua;
 
 		ua.fspec = SCARG(uap, special);
-		bzero(&ua.export, sizeof(ua.export));
+		bzero(&ua.export_info, sizeof(ua.export_info));
 		SCARG(&nuap, data) = usp;
 	
 		if ((error = copyout(&ua, SCARG(&nuap, data),

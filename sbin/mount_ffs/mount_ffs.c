@@ -1,4 +1,4 @@
-/*	$OpenBSD: mount_ffs.c,v 1.11 2001/04/04 20:19:01 gluk Exp $	*/
+/*	$OpenBSD: mount_ffs.c,v 1.12 2002/02/16 21:27:36 millert Exp $	*/
 /*	$NetBSD: mount_ffs.c,v 1.3 1996/04/13 01:31:19 jtc Exp $	*/
 
 /*-
@@ -44,7 +44,7 @@ static char copyright[] =
 #if 0
 static char sccsid[] = "@(#)mount_ufs.c	8.2 (Berkeley) 3/27/94";
 #else
-static char rcsid[] = "$OpenBSD: mount_ffs.c,v 1.11 2001/04/04 20:19:01 gluk Exp $";
+static char rcsid[] = "$OpenBSD: mount_ffs.c,v 1.12 2002/02/16 21:27:36 millert Exp $";
 #endif
 #endif /* not lint */
 
@@ -103,11 +103,11 @@ main(argc, argv)
 	fs_name = argv[1];		/* The mount point. */
 
 #define DEFAULT_ROOTUID	-2
-	args.export.ex_root = DEFAULT_ROOTUID;
+	args.export_info.ex_root = DEFAULT_ROOTUID;
 	if (mntflags & MNT_RDONLY)
-		args.export.ex_flags = MNT_EXRDONLY;
+		args.export_info.ex_flags = MNT_EXRDONLY;
 	else
-		args.export.ex_flags = 0;
+		args.export_info.ex_flags = 0;
 
 	if (mount(MOUNT_FFS, fs_name, mntflags, &args) < 0) {
 		switch (errno) {
