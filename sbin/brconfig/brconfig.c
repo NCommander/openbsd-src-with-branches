@@ -1,4 +1,4 @@
-/*	$OpenBSD: brconfig.c,v 1.10 2000/12/12 03:41:22 jason Exp $	*/
+/*	$OpenBSD: brconfig.c,v 1.11 2001/02/12 15:45:18 jakob Exp $	*/
 
 /*
  * Copyright (c) 1999, 2000 Jason L. Wright (jason@thought.net)
@@ -650,7 +650,7 @@ bridge_cfg(s, brdg, delim)
 	}
 	ma = ifbp.ifbrp_maxage;
 
-	printf("%spriority %u hellotime %u fwddelay %u maxage: %u\n",
+	printf("%spriority %u hellotime %u fwddelay %u maxage %u\n",
 	    delim, pri, ht, fd, ma);
 
 	return (0);
