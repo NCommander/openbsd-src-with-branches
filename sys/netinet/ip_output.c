@@ -1,4 +1,4 @@
-/*	$OpenBSD: ip_output.c,v 1.46 1999/05/14 23:36:20 niklas Exp $	*/
+/*	$OpenBSD: ip_output.c,v 1.47 1999/05/16 21:48:36 niklas Exp $	*/
 /*	$NetBSD: ip_output.c,v 1.28 1996/02/13 23:43:07 christos Exp $	*/
 
 /*
@@ -666,6 +666,7 @@ no_encap:
 	} else
 		m->m_flags &= ~M_BCAST;
 
+sendit:
 #if defined(IPFILTER) || defined(IPFILTER_LKM)
 	/*
 	 * looks like most checking has been done now...do a filter check
@@ -679,7 +680,6 @@ no_encap:
 			ip = mtod(m = m0, struct ip *);
 	}
 #endif
-sendit:
 	/*
 	 * If small enough for interface, can just send directly.
 	 */
