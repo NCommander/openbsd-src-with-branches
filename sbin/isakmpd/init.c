@@ -1,4 +1,5 @@
-/*	$OpenBSD: init.c,v 1.1.1.1 1998/11/15 00:03:48 niklas Exp $	*/
+/*	$OpenBSD: init.c,v 1.2 1998/11/15 00:43:55 niklas Exp $	*/
+/*	$EOM: init.c,v 1.10 1998/09/12 19:34:36 niklas Exp $	*/
 
 /*
  * Copyright (c) 1998 Niklas Hallqvist.  All rights reserved.

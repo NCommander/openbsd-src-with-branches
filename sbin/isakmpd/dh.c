@@ -1,4 +1,5 @@
-/*	$OpenBSD: dh.c,v 1.1.1.1 1998/11/15 00:03:48 niklas Exp $	*/
+/*	$OpenBSD: dh.c,v 1.2 1998/11/15 00:43:52 niklas Exp $	*/
+/*	$EOM: dh.c,v 1.2 1998/07/18 22:08:59 provos Exp $	*/
 
 /*
  * Copyright (c) 1998 Niels Provos.  All rights reserved.

@@ -1,4 +1,5 @@
-/*	$OpenBSD: sa.c,v 1.1.1.1 1998/11/15 00:03:49 niklas Exp $	*/
+/*	$OpenBSD: sa.c,v 1.2 1998/11/15 00:44:02 niklas Exp $	*/
+/*	$EOM: sa.c,v 1.55 1998/11/14 23:42:26 niklas Exp $	*/
 
 /*
  * Copyright (c) 1998 Niklas Hallqvist.  All rights reserved.
