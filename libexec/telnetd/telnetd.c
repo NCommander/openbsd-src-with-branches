@@ -1,4 +1,4 @@
-/*	$OpenBSD: telnetd.c,v 1.14 1998/07/27 18:28:20 millert Exp $	*/
+/*	$OpenBSD: telnetd.c,v 1.15 1998/07/28 20:18:22 marc Exp $	*/
 /*	$NetBSD: telnetd.c,v 1.6 1996/03/20 04:25:57 tls Exp $	*/
 
 /*
@@ -45,7 +45,7 @@ static char copyright[] =
 static char sccsid[] = "@(#)telnetd.c	8.4 (Berkeley) 5/30/95";
 static char rcsid[] = "$NetBSD: telnetd.c,v 1.5 1996/02/28 20:38:23 thorpej Exp $";
 #else
-static char rcsid[] = "$OpenBSD: telnetd.c,v 1.14 1998/07/27 18:28:20 millert Exp $";
+static char rcsid[] = "$OpenBSD: telnetd.c,v 1.15 1998/07/28 20:18:22 marc Exp $";
 #endif
 #endif /* not lint */
 
@@ -812,7 +812,7 @@ doit(who)
 #ifndef	convex
 	pty = getpty(&ptynum);
 	if (pty < 0)
-		fatal(net, "All network ports in use");
+		fatal(net, "No free pseudo-tty devices.");
 #else
 	for (;;) {
 		char *lp;
