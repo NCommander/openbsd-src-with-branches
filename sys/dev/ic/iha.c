@@ -1,4 +1,4 @@
-/*	$OpenBSD: iha.c,v 1.12 2001/11/11 21:59:19 krw Exp $ */
+/*	$OpenBSD: iha.c,v 1.12.2.1 2002/06/11 03:42:18 art Exp $ */
 /*
  * Initio INI-9xxxU/UW SCSI Device Driver
  *
@@ -2686,7 +2686,7 @@ iha_read_eeprom(iot, ioh, nvram)
 	if ((nvram->NVM_Signature != SIGNATURE)
 	    ||
 	    (nvram->NVM_CheckSum  != chksum))
-		panic("iha: invalid EEPROM,  bad signature or checksum\n");
+		panic("iha: invalid EEPROM,  bad signature or checksum");
 }
 
 /*

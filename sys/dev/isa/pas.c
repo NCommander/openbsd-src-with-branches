@@ -1,4 +1,4 @@
-/*	$OpenBSD: pas.c,v 1.21 2001/06/06 10:18:57 d Exp $	*/
+/*	$OpenBSD: pas.c,v 1.21.4.1 2002/06/11 03:42:22 art Exp $	*/
 /*	$NetBSD: pas.c,v 1.37 1998/01/12 09:43:43 thorpej Exp $	*/
 
 /*
@@ -43,7 +43,7 @@
  */
 /*
  * Todo:
- * 	- look at other PAS drivers (for PAS native suport)
+ * 	- look at other PAS drivers (for PAS native support)
  * 	- use common sb.c once emulation is setup
  */
 

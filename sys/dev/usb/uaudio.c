@@ -1,5 +1,5 @@
 /*	$OpenBSD$ */
-/*	$NetBSD: uaudio.c,v 1.59 2002/04/20 17:36:16 kent Exp $	*/
+/*	$NetBSD: uaudio.c,v 1.60 2002/05/18 15:14:39 kent Exp $	*/
 
 /*
  * Copyright (c) 1999 The NetBSD Foundation, Inc.

@@ -1,4 +1,4 @@
-/*	$OpenBSD: uvm_page.h,v 1.16.2.1 2002/02/02 03:28:27 art Exp $	*/
+/*	$OpenBSD: uvm_page.h,v 1.16.2.2 2002/06/11 03:33:04 art Exp $	*/
 /*	$NetBSD: uvm_page.h,v 1.31 2001/09/15 20:36:46 chs Exp $	*/
 
 /*
@@ -138,7 +138,6 @@ struct vm_page {
 #ifdef __HAVE_VM_PAGE_MD
 	struct vm_page_md	mdpage;		/* pmap-specific data */
 #endif
-
 #if defined(UVM_PAGE_TRKOWN)
 	/* debugging fields to track page ownership */
 	pid_t			owner;		/* proc that set PG_BUSY */

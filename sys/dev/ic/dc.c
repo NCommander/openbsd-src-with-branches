@@ -1,4 +1,4 @@
-/*	$OpenBSD: dc.c,v 1.44 2001/12/13 17:43:02 nate Exp $	*/
+/*	$OpenBSD: dc.c,v 1.44.2.1 2002/06/11 03:42:18 art Exp $	*/
 
 /*
  * Copyright (c) 1997, 1998, 1999
@@ -128,7 +128,6 @@
 #include <machine/bus.h>
 #include <dev/pci/pcidevs.h>
 
-#define DC_USEIOSPACE
 #include <dev/ic/dcreg.h>
 
 int dc_intr(void *);
@@ -1433,6 +1432,9 @@ void dc_reset(sc)
 		CSR_WRITE_4(sc, DC_WATCHDOG, 0);
 	}
 
+	if (sc->dc_type == DC_TYPE_21145)
+		dc_setcfg(sc, IFM_10_T);
+
 	return;
 }
 
@@ -1638,6 +1640,7 @@ void dc_attach(sc)
 		break;
 	case DC_TYPE_DM9102:
 	case DC_TYPE_21143:
+	case DC_TYPE_21145:
 	case DC_TYPE_ASIX:
 		dc_read_eeprom(sc, (caddr_t)&sc->sc_arpcom.ac_enaddr,	
 		    DC_EE_NODEADDR, 3, 0);
@@ -1760,6 +1763,8 @@ hasmac:
 		error = ENXIO;
 		ifmedia_add(&sc->sc_mii.mii_media, IFM_ETHER|IFM_NONE, 0, NULL);
 		ifmedia_set(&sc->sc_mii.mii_media, IFM_ETHER|IFM_NONE);
+	} else if (sc->dc_type == DC_TYPE_21145) {
+		ifmedia_set(&sc->sc_mii.mii_media, IFM_ETHER|IFM_10_T);
 	} else
 		ifmedia_set(&sc->sc_mii.mii_media, IFM_ETHER|IFM_AUTO);
 

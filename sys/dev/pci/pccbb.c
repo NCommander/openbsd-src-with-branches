@@ -1,4 +1,4 @@
-/*	$OpenBSD: pccbb.c,v 1.26.4.1 2002/01/31 22:55:35 niklas Exp $ */
+/*	$OpenBSD: pccbb.c,v 1.26.4.2 2002/06/11 03:42:26 art Exp $ */
 /*	$NetBSD: pccbb.c,v 1.42 2000/06/16 23:41:35 cgd Exp $	*/
 
 /*
@@ -400,8 +400,8 @@ pccbbattach(parent, self, aux)
 	TAILQ_INIT(&sc->sc_iowindow);
 
 #if rbus
-	sc->sc_rbus_iot = rbus_pccbb_parent_io(pa);
-	sc->sc_rbus_memt = rbus_pccbb_parent_mem(pa);
+	sc->sc_rbus_iot = rbus_pccbb_parent_io(self, pa);
+	sc->sc_rbus_memt = rbus_pccbb_parent_mem(self, pa);
 #endif /* rbus */
 
 	sc->sc_base_memh = 0;

@@ -1,4 +1,4 @@
-/*	$OpenBSD: bktr_os.c,v 1.7.2.1 2002/01/31 22:55:37 niklas Exp $	*/
+/*	$OpenBSD: bktr_os.c,v 1.7.2.2 2002/06/11 03:42:27 art Exp $	*/
 /* $FreeBSD: src/sys/dev/bktr/bktr_os.c,v 1.20 2000/10/20 08:16:53 roger Exp $ */
 
 /*
@@ -1423,12 +1423,13 @@ bktr_attach(struct device *parent, struct device *self, void *aux)
 		return;
 	}
 	intrstr = pci_intr_string(pa->pa_pc, ih);
-	bktr->ih = pci_intr_establish(pa->pa_pc, ih, IPL_VIDEO,
-				      bktr_intr, bktr
 #ifdef __OpenBSD__
-				      , bktr->bktr_dev.dv_xname
+	bktr->ih = pci_intr_establish(pa->pa_pc, ih, IPL_VIDEO,
+	    bktr_intr, bktr, bktr->bktr_dev.dv_xname);
+#else
+	bktr->ih = pci_intr_establish(pa->pa_pc, ih, IPL_VIDEO,
+	    bktr_intr, bktr);
 #endif
-	);
 	if (bktr->ih == NULL) {
 		printf("%s: couldn't establish interrupt",
 		       bktr_name(bktr));

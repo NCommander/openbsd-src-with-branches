@@ -1,4 +1,4 @@
-/*	$OpenBSD: ad1848.c,v 1.23.2.1 2002/01/31 22:55:32 niklas Exp $	*/
+/*	$OpenBSD: ad1848.c,v 1.23.2.2 2002/06/11 03:42:20 art Exp $	*/
 /*	$NetBSD: ad1848.c,v 1.45 1998/01/30 02:02:38 augustss Exp $	*/
 
 /*
@@ -1265,7 +1265,7 @@ ad1848_commit_settings(addr)
 	(void)ADREAD(sc, AD1848_IDATA);
 	(void)ADREAD(sc, AD1848_IDATA);
 	/*
-	 * Write to I8 starts resyncronization. Wait until it completes.
+	 * Write to I8 starts resynchronization. Wait until it completes.
 	 */
 	timeout = 100000;
 	while (timeout > 0 && ADREAD(sc, AD1848_IADDR) == SP_IN_INIT)
@@ -1280,7 +1280,7 @@ ad1848_commit_settings(addr)
 	/* Now wait for resync for capture side of the house */
     }
     /*
-     * Write to I8 starts resyncronization. Wait until it completes.
+     * Write to I8 starts resynchronization. Wait until it completes.
      */
     timeout = 100000;
     while (timeout > 0 && ADREAD(sc, AD1848_IADDR) == SP_IN_INIT)

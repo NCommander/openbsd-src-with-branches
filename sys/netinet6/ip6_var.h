@@ -1,4 +1,4 @@
-/*	$OpenBSD: ip6_var.h,v 1.13 2001/05/28 05:28:48 angelos Exp $	*/
+/*	$OpenBSD: ip6_var.h,v 1.13.4.1 2002/06/11 03:31:37 art Exp $	*/
 /*	$KAME: ip6_var.h,v 1.33 2000/06/11 14:59:20 jinmei Exp $	*/
 
 /*
@@ -244,7 +244,7 @@ void	ip6intr(void);
 void	ip6_input(struct mbuf *);
 void	ip6_freemoptions(struct ip6_moptions *);
 int	ip6_unknown_opt(u_int8_t *, struct mbuf *, int);
-char *	ip6_get_prevhdr(struct mbuf *, int);
+u_int8_t *ip6_get_prevhdr(struct mbuf *, int);
 int	ip6_nexthdr(struct mbuf *, int, int, int *);
 int	ip6_lasthdr(struct mbuf *, int, int, int *);
 int	ip6_mforward(struct ip6_hdr *, struct ifnet *, struct mbuf *);

@@ -1,4 +1,4 @@
-/*	$OpenBSD: vfs_cluster.c,v 1.26 2001/11/06 19:53:20 miod Exp $	*/
+/*	$OpenBSD: vfs_cluster.c,v 1.26.2.1 2002/06/11 03:29:40 art Exp $	*/
 /*	$NetBSD: vfs_cluster.c,v 1.12 1996/04/22 01:39:05 christos Exp $	*/
 
 /*-
@@ -688,7 +688,7 @@ redo:
 
 		/*
 		 * Get the desired block buffer (unless it is the final
-		 * sequential block whose buffer was passed in explictly
+		 * sequential block whose buffer was passed in explicitly
 		 * as last_bp).
 		 */
 		if (last_bp == NULL || start_lbn != lbn) {

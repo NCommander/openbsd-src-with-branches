@@ -1,4 +1,4 @@
-/*	$OpenBSD: ami.c,v 1.15 2001/12/12 16:44:11 mickey Exp $	*/
+/*	$OpenBSD: ami.c,v 1.15.2.1 2002/06/11 03:42:17 art Exp $	*/
 
 /*
  * Copyright (c) 2001 Michael Shalayeff
@@ -1169,6 +1169,7 @@ ami_scsi_cmd(xs)
 
 	case PREVENT_ALLOW:
 		AMI_DPRINTF(AMI_D_CMD, ("PREVENT/ALLOW "));
+		AMI_UNLOCK_AMI(sc, lock);
 		return (COMPLETE);
 
 	case SYNCHRONIZE_CACHE:

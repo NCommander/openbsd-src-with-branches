@@ -1,8 +1,7 @@
-/*	$OpenBSD: strlcpy.S,v 1.5 2001/06/04 23:20:04 mickey Exp $	*/
+/*	$OpenBSD$	*/
 
 /*
- * Copyright (c) 1999-2001 Michael Shalayeff
- * All rights reserved.
+ * Copyright (c) 2002 Niklas Hallqvist.  All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -14,7 +13,7 @@
  *    documentation and/or other materials provided with the distribution.
  * 3. All advertising materials mentioning features or use of this software
  *    must display the following acknowledgement:
- *      This product includes software developed by Michael Shalayeff.
+ *	This product includes software developed by Niklas Hallqvist.
  * 4. The name of the author may not be used to endorse or promote products
  *    derived from this software without specific prior written permission.
  *
@@ -30,39 +29,24 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <machine/asm.h>
-
-#if defined(LIBC_SCCS)
-	.text
-	.asciz "$OpenBSD: strlcpy.S,v 1.5 2001/06/04 23:20:04 mickey Exp $"
-	.align	4
-#endif
-
-/* size_t strlcpy(char *dst, const char *src, size_t siz)
- *
- * it will never be a string of 2^32, so we assume 2^31 as a max size
+/*
+ * Devices getting ioctls through this interface should use ioctl class 'B'
+ * and command numbers starting from 32, lower ones are reserved for generic
+ * ioctls.  All ioctl data must be structures which start with a void *
+ * cookie.
  */
-LEAF_ENTRY(strlcpy)
 
-	addi	1, arg1, ret0
-	subi	1, arg2, t2
+struct bio_common {
+	void *cookie;
+};
 
-$strlcpy_loop
-	ldbs,ma	1(arg1), t1
-	comb,=	r0, t1, $strlcpy_exit
+#define BIOCLOCATE _IOWR('B', 0, struct bio_locate)
+struct bio_locate {
+	void *cookie;
+	char *name;
+};
 
-	addib,>,n -1, t2, $strlcpy_loop
-	stbs,ma	t1, 1(arg0)
-
-$strlcpy_exit
-
-	comb,=,n r0, arg2, $strlcpy_nzero
-	stbs	r0, -1(arg0)
-$strlcpy_nzero
-
-	bv	0(rp)
-	sub	arg1, ret0, ret0
-
-EXIT(strlcpy)
-
-	.end
+#ifdef _KERNEL
+int	bio_register(struct device *, int (*)(struct device *, u_long,
+    caddr_t));
+#endif

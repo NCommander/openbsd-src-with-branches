@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_wb.c,v 1.15 2001/11/06 19:53:19 miod Exp $	*/
+/*	$OpenBSD: if_wb.c,v 1.15.2.1 2002/06/11 03:42:26 art Exp $	*/
 
 /*
  * Copyright (c) 1997, 1998
@@ -202,7 +202,7 @@ void wb_eeprom_putbyte(sc, addr)
 	d = addr | WB_EECMD_READ;
 
 	/*
-	 * Feed in each bit and stobe the clock.
+	 * Feed in each bit and strobe the clock.
 	 */
 	for (i = 0x400; i; i >>= 1) {
 		if (d & i) {

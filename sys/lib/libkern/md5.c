@@ -1,8 +1,8 @@
-/*	$OpenBSD: md5.c,v 1.7 2000/11/08 15:26:40 art Exp $	*/
+/*	$OpenBSD: md5.c,v 1.7.6.1 2002/06/11 03:30:09 art Exp $	*/
 
 /*
  * The rest of the code is derived from MD5C.C by RSADSI. Minor cosmetic
- * changes to accomodate it in the kernel by ji.
+ * changes to accommodate it in the kernel by ji.
  */
 
 /* MD5C.C - RSA Data Security, Inc., MD5 message-digest algorithm

@@ -1,4 +1,4 @@
-/*	$OpenBSD: aha.c,v 1.41.2.1 2002/01/31 22:55:32 niklas Exp $	*/
+/*	$OpenBSD: aha.c,v 1.41.2.2 2002/06/11 03:42:21 art Exp $	*/
 /*	$NetBSD: aha.c,v 1.11 1996/05/12 23:51:23 mycroft Exp $	*/
 
 #undef AHADIAG

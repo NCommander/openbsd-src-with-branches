@@ -1,4 +1,4 @@
-/*	$OpenBSD: uvm_pglist.c,v 1.11 2001/11/28 19:28:15 art Exp $	*/
+/*	$OpenBSD: uvm_pglist.c,v 1.11.2.1 2002/02/02 03:28:27 art Exp $	*/
 /*	$NetBSD: uvm_pglist.c,v 1.19 2001/11/10 07:37:01 lukem Exp $	*/
 
 /*-

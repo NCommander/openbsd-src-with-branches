@@ -1,4 +1,4 @@
-/*	$OpenBSD: scsi_base.c,v 1.31.4.1 2002/01/31 22:55:48 niklas Exp $	*/
+/*	$OpenBSD: scsi_base.c,v 1.31.4.2 2002/06/11 03:32:13 art Exp $	*/
 /*	$NetBSD: scsi_base.c,v 1.43 1997/04/02 02:29:36 mycroft Exp $	*/
 
 /*
@@ -279,7 +279,7 @@ scsi_change_def(sc_link, flags)
 }
 
 /*
- * Do a scsi operation asking a device what it is
+ * Do a scsi operation asking a device what it is.
  * Use the scsi_cmd routine in the switch table.
  */
 int 

@@ -1,4 +1,4 @@
-/*	$OpenBSD: tp_subr2.c,v 1.3 1996/04/21 22:29:59 deraadt Exp $	*/
+/*	$OpenBSD: tp_subr2.c,v 1.3.26.1 2002/06/11 03:31:38 art Exp $	*/
 /*	$NetBSD: tp_subr2.c,v 1.11 1996/03/26 22:27:01 christos Exp $	*/
 
 /*-
@@ -548,7 +548,7 @@ tp_mss(tpcb, nhdr_size)
 	 * While we're here, check if there's an initial rtt
 	 * or rttvar.  Convert from the route-table units
 	 * to hz ticks for the smoothed timers and slow-timeout units
-	 * for other inital variables.
+	 * for other initial variables.
 	 */
 	if (tpcb->tp_rtt == 0 && (rtt = rt->rt_rmx.rmx_rtt)) {
 		tpcb->tp_rtt = rtt * hz / RTM_RTTUNIT;
