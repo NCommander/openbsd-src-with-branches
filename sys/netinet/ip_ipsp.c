@@ -1,4 +1,4 @@
-/*	$OpenBSD: ip_ipsp.c,v 1.101 2000/09/19 08:38:59 angelos Exp $	*/
+/*	$OpenBSD: ip_ipsp.c,v 1.102 2000/12/15 06:24:03 provos Exp $	*/
 
 /*
  * The authors of this code are John Ioannidis (ji@tla.org),
@@ -330,6 +330,10 @@ gettdbbyaddr(union sockaddr_union *dst, u_int8_t proto, struct mbuf *m, int af)
 	       (tdbp->tdb_dstid_type != SADB_IDENTTYPE_CONNECTION)) ||
 	      ((tdbp->tdb_dstid_type != SADB_IDENTTYPE_PREFIX) &&
 	       (tdbp->tdb_dstid_type != SADB_IDENTTYPE_CONNECTION)))
+	    continue;
+
+	  /* Sanity */
+	  if ((m == NULL) || (af == 0))
 	    continue;
 
 	  /* XXX Check the IDs ? */
