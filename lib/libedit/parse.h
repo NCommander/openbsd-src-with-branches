@@ -1,4 +1,5 @@
-/*	$OpenBSD: $	*/
+/*	$OpenBSD: parse.h,v 1.2 1997/01/16 05:18:40 millert Exp $	*/
+/*	$NetBSD: parse.h,v 1.2 1997/01/11 06:48:03 lukem Exp $	*/
 
 /*-
  * Copyright (c) 1992, 1993
