@@ -1,4 +1,4 @@
-/*	$OpenBSD: printf.c,v 1.6 2002/02/16 21:27:51 millert Exp $	*/
+/*	$OpenBSD: printf.c,v 1.7 2002/02/19 19:39:39 millert Exp $	*/
 
 /*
  * Copyright (c) 1989 The Regents of the University of California.
@@ -43,7 +43,7 @@ char copyright[] =
 
 #ifndef lint
 /*static char sccsid[] = "from: @(#)printf.c	5.9 (Berkeley) 6/1/90";*/
-static char rcsid[] = "$OpenBSD: printf.c,v 1.6 2002/02/16 21:27:51 millert Exp $";
+static char rcsid[] = "$OpenBSD: printf.c,v 1.7 2002/02/19 19:39:39 millert Exp $";
 #endif /* not lint */
 
 #include <ctype.h>
@@ -88,7 +88,7 @@ warnx(const char *fmt, ...)
 	va_list ap;
 
 	va_start(ap, fmt);
-	vsprintf(buf, fmt, ap);
+	vsnprintf(buf, sizeof buf, fmt, ap);
 	va_end(ap);
 
 	error(buf);
