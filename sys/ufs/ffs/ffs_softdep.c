@@ -1,4 +1,4 @@
-/*	$OpenBSD: ffs_softdep.c,v 1.36 2002/02/22 20:37:46 drahn Exp $	*/
+/*	$OpenBSD: ffs_softdep.c,v 1.37 2002/03/14 01:27:14 millert Exp $	*/
 /*
  * Copyright 1998, 2000 Marshall Kirk McKusick. All Rights Reserved.
  *
@@ -3206,7 +3206,9 @@ initiate_write_inodeblock(inodedep, bp)
 	struct allocdirect *adp, *lastadp;
 	struct dinode *dp;
 	struct fs *fs;
+#ifdef DIAGNOSTIC
 	ufs_lbn_t prevlbn = 0;
+#endif
 	int i, deplist;
 
 	if (inodedep->id_state & IOSTARTED)
