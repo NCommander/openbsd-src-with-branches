@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: ipf.c,v 1.23 2000/03/13 23:40:19 kjell Exp $	*/
 
 /*
  * Copyright (C) 1993-1998 by Darren Reed.
@@ -39,7 +39,6 @@
 #include <netinet/ip_fil_compat.h>
 #include <netinet/ip_fil.h>
 #include <netinet/ip_nat.h>
-#include <netinet/ip_state.h>
 #include "ipf.h"
 #include <netinet/ipl.h>
 
