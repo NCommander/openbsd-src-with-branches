@@ -1,4 +1,4 @@
-/*	$OpenBSD: pfvar.h,v 1.13 2001/06/26 04:17:11 frantzen Exp $ */
+/*	$OpenBSD: pfvar.h,v 1.14 2001/06/26 15:33:01 provos Exp $ */
 
 /*
  * Copyright (c) 2001, Daniel Hartmeier
@@ -192,7 +192,7 @@ struct pfioc_if {
 
 #ifdef _KERNEL
 
-int	pf_test(int, struct ifnet *, struct mbuf **);
+int	pf_test(int, struct ifnet *, struct mbuf *);
 
 #endif /* _KERNEL */
 
