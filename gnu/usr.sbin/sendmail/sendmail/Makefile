@@ -1,11 +1,22 @@
-#	$OpenBSD: Makefile,v 1.8 2000/08/01 12:57:47 millert Exp $
+#	$OpenBSD: Makefile,v 1.12 2001/05/05 22:00:17 millert Exp $
 
 PROG=	sendmail
 
 WANT_LIBWRAP=1
 WANT_LIBSMUTIL=1
 
-# To casue sendmail to drop privs in test mode (-bt) uncomment the following
+# For TLS/SSL support
+ENVDEF+= -DSTARTTLS -D_FFR_TLS_TOREK
+LDADD+= -lssl -lcrypto
+DPADD=	${LIBSSL} ${LIBCRYPTO}
+
+# Work around broken name servers that return SERV_FAIL for AAAA records
+ENVDEF+= -D_FFR_WORKAROUND_BROKEN_NAMESERVERS
+
+# Since we have random PIDs we need to be careful to avoid filename collisions
+ENVDEF+= -DFAST_PID_RECYCLE
+
+# To cause sendmail to drop privs in test mode (-bt) uncomment the following
 #ENVDEF+= -D_FFR_TESTMODE_DROP_PRIVS
 
 SRCS=	main.c alias.c arpadate.c bf_torek.c clock.c collect.c \
