@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.2 1997/09/17 03:29:31 downsj Exp $
+#	$OpenBSD: Makefile,v 1.3 1997/09/22 05:25:48 millert Exp $
 
 PROG=	mkisofs
 MAN=	mkisofs.8
@@ -10,6 +10,6 @@ CFLAGS+=-DSYSTEM_ID_DEFAULT=\"OpenBSD\" -I${.CURDIR}
 
 # XXX: alpha gcc bug
 write.o: write.c
-	${CC} ${CFLAGS} -O0 -c $<
+	${CC} ${CFLAGS} -O0 -c ${.CURDIR}/write.c
 
 .include <bsd.prog.mk>
