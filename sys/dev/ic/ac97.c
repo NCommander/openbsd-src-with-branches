@@ -712,12 +712,14 @@ ac97_attach(host_if)
 	if (as->ext_id)
 		DPRINTF(("ac97: ext id %b\n", as->ext_id,
 		    AC97_EXT_AUDIO_BITS));
-	ac97_read(as, AC97_REG_EXT_AUDIO_ID, &id1);
-	if (as->ext_id & AC97_EXT_AUDIO_VRA)
-		id1 |= AC97_EXT_AUDIO_VRA;
-	if (as->ext_id & AC97_EXT_AUDIO_VRM)
-		id1 |= AC97_EXT_AUDIO_VRM;
-	ac97_write(as, AC97_REG_EXT_AUDIO_CTRL, id1);
+	if (as->ext_id & (AC97_EXT_AUDIO_VRA | AC97_EXT_AUDIO_VRM)) {
+		ac97_read(as, AC97_REG_EXT_AUDIO_CTRL, &id1);
+		if (as->ext_id & AC97_EXT_AUDIO_VRA)
+			id1 |= AC97_EXT_AUDIO_VRA;
+		if (as->ext_id & AC97_EXT_AUDIO_VRM)
+			id1 |= AC97_EXT_AUDIO_VRM;
+		ac97_write(as, AC97_REG_EXT_AUDIO_CTRL, id1);
+	}
 
 	ac97_setup_source_info(as);
 
