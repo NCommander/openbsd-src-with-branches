@@ -1,4 +1,4 @@
-/*	$OpenBSD: init_main.c,v 1.24 1997/07/28 09:13:17 deraadt Exp $	*/
+/*	$OpenBSD: init_main.c,v 1.26 1997/10/06 20:19:49 deraadt Exp $	*/
 /*	$NetBSD: init_main.c,v 1.84.4.1 1996/06/02 09:08:06 mrg Exp $	*/
 
 /*
@@ -333,6 +333,14 @@ main(framep)
 	/* Kick off timeout driven events by calling first time. */
 	roundrobin(NULL);
 	schedcpu(NULL);
+
+#ifdef i386
+	/* XXX This is only a transient solution */
+	{
+		extern dkcsumattach __P((void));
+		dkcsumattach();
+	}
+#endif
 
 	/* Mount the root file system. */
 	if ((*mountroot)())
