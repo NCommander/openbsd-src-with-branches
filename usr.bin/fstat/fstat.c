@@ -408,7 +408,7 @@ vtrans(vp, i, flag)
 				badtype = "error";
 			break;
 		default: {
-			static char unknown[10];
+			static char unknown[20];
 			sprintf(badtype = unknown, "?(%x)", vn.v_tag);
 			break;;
 		}
@@ -588,7 +588,7 @@ socktrans(sock, i)
 	struct inpcb	inpcb;
 	struct unpcb	unpcb;
 	int len;
-	char dname[32], *strcpy();
+	char dname[32];
 
 	PREFIX(i);
 
