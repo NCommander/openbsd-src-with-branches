@@ -1,4 +1,4 @@
-/*	$OpenBSD: pramasm.s,v 1.3 1997/02/23 06:05:05 briggs Exp $	*/
+/*	$OpenBSD$	*/
 /*	$NetBSD: pramasm.s,v 1.4 1995/09/28 03:15:54 briggs Exp $	*/
 
 /*
@@ -254,7 +254,7 @@ gotTime:
 				|  time bytes!!!
 	movel	#0x00d50035,d1	| we have to set the write protect bit
 				| so the clock doesn't run down !
-	bsr	_Transfer	| (so sezs Apple...)
+	bsr	_Transfer	| (so says Apple...)
 	moveml	sp@+, #0x033e	| restore our regs
 	rts			| and return to caller
 
@@ -274,7 +274,7 @@ putSecb:
 	dbf	d4,putSecb	| any more bytes to put ?
 	movel	#0x00d50035,d1	| we have to set the write protect bit
 				| so the clock doesn't run down !
-	bsr	_Transfer	| (so sezs Apple...)
+	bsr	_Transfer	| (so says Apple...)
 	moveml	sp@+, #0x031e	| restore our regs
 	rts			| and return to caller
 
@@ -349,7 +349,7 @@ tagain:
 				| thanks to the oriw #$3880 above !!!)
 	dbf	d4,tagain	| repeat until we've got all we want
 	movel	#0x00d50035,d1	| remember that command to write the wp byte ?
-				| set the high bit in the wp reg (Apple sezs
+				| set the high bit in the wp reg (Apple says
 				| this way the battery won't wear down !! )
 	bsr	_Transfer	| so we'll play by the rules
 	moveml	sp@+, #0x031f	| restore all our registers

@@ -391,7 +391,6 @@ grfunmap(dev, addr, p)
 {
 	struct grf_softc *gp;
 	vm_size_t size;
-	int     rv;
 
 	gp = grf_cd.cd_devs[GRFUNIT(dev)];
 
@@ -405,8 +404,8 @@ grfunmap(dev, addr, p)
 
 	size = round_page(gp->sc_grfmode->fbsize);
 
-	rv = uvm_unmap(&p->p_vmspace->vm_map, (vm_offset_t)addr,
+	uvm_unmap(&p->p_vmspace->vm_map, (vm_offset_t)addr,
 	    (vm_offset_t)addr + size);
 
-	return (rv == 0 ? 0 : EINVAL);
+	return (0);
 }

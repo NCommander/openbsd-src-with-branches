@@ -100,7 +100,7 @@
 #define DACC_BIT	0x4		/* data access exception	*/
 #define MACC_BIT	0x8		/* misaligned access exception	*/
 #define UOPC_BIT	0x10		/* unimplemented opcode exception*/
-#define PRIV_BIT	0x20		/* priviledge violation exception*/
+#define PRIV_BIT	0x20		/* privilege violation exception*/
 #define BND_BIT		0x40		/* bounds check violation	*/
 #define IDE_BIT		0x80		/* illegal integer divide	*/
 #define IOV_BIT		0x100		/* integer overflow exception	*/

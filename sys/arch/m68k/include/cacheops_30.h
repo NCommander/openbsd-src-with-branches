@@ -112,6 +112,8 @@ ICPA_30()
 #define	DCIS_30()
 #define	DCIU_30()
 #define	DCIAS_30(va)
+#define	DCFA_30()
+#define	DCPA_30()
 
 
 void PCIA_30(void);

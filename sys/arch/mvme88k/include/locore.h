@@ -50,13 +50,7 @@ void dae_print(unsigned *eframe);
 void data_access_emulation(unsigned *eframe);
 #endif 
 
-unsigned spl(void);
 unsigned getipl(void);
-#ifdef DDB
-unsigned db_spl(void);
-unsigned db_getipl(void);
-#endif
-
 
 /* machdep.c */
 

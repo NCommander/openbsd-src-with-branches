@@ -83,6 +83,7 @@
 
 
 #ifdef _KERNEL
+extern void delay(int);
 #define DELAY(n)	delay(n)
 #endif
 

@@ -76,7 +76,6 @@ struct firmware {
 #endif
 };
 extern  struct firmware *fw;
-void ofwconprobe(void);
 int ppc_open_pci_bridge(void);
 void ppc_close_pci_bridge(int);
 void install_extint(void (*handler) (void));

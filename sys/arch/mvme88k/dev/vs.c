@@ -806,7 +806,7 @@ vs_nintr(sc)
 	/*
 	 * If this is a controller error, there won't be a m328_cmd
 	 * pointer in the CTAG feild.  Bad things happen if you try 
-	 * to point to address 0.  Controller error should be handeled
+	 * to point to address 0.  Controller error should be handled
 	 * in vsdma.c  I'll change this soon - steve.
 	 */
 	if (m328_cmd) {
@@ -995,8 +995,8 @@ vs_build_memory_structure(xs, iopb)
 
 	/*
 	 * We have the following things:
-	 *	virt			the virtuell address of the contiguous virtual memory block
-	 *	len			the lenght of the contiguous virtual memory block
+	 *	virt			the virtual address of the contiguous virtual memory block
+	 *	len			the length of the contiguous virtual memory block
 	 *	starting_point_virt	the virtual address of the contiguous *physical* memory block
 	 *	starting_point_phys	the *physical* address of the contiguous *physical* memory block
 	 *	point_virt		the pointer to the virtual memory we are checking at the moment

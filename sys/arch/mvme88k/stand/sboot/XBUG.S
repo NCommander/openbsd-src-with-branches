@@ -32,7 +32,7 @@
  */
 
 /*
- * Theo sez: I wrote a bootrom for the MVME147 *years* ago. To write
+ * Theo says: I wrote a bootrom for the MVME147 *years* ago. To write
  * this ROM I copied a few chunks from the old bootrom, like this piece:
  * 
  * "watch this, the moto bastard struck here, shouldn't have hired people

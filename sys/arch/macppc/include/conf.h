@@ -43,7 +43,6 @@ cdev_decl(mm);
 	(dev_type_stop((*))) enodev, 0, (dev_type_select((*))) enodev, \
 	(dev_type_mmap((*))) enodev, D_KQFILTER, dev_init(c,n,kqfilter) }
 
-
+cdev_decl(aed);
+cdev_decl(apm);
 cdev_decl(zs);
-
-cdev_decl(crypto);

@@ -38,8 +38,6 @@
 
 /* types of adb hardware that we (will eventually) support */
 #define ADB_HW_UNKNOWN		0x01	/* don't know */
-#define ADB_HW_II		0x02	/* Mac II series */
-#define ADB_HW_IISI		0x03	/* Mac IIsi series */
 #define ADB_HW_PB		0x04	/* PowerBook series */
 #define ADB_HW_CUDA		0x05	/* Machines with a Cuda chip */
 
@@ -49,7 +47,6 @@ void	ADBReInit(void);
 int	GetIndADB(ADBDataBlock *info, int index);
 int	GetADBInfo(ADBDataBlock *info, int adbAddr);
 int	SetADBInfo(ADBSetInfoBlock *info, int adbAddr);
-int	ADBOp(Ptr buffer, Ptr compRout, Ptr data, short commandNum);
 int	adb_read_date_time(unsigned long *);
 int	adb_set_date_time(unsigned long);
 int	adb_op_sync(Ptr, Ptr, Ptr, short);

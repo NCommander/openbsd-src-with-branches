@@ -266,7 +266,7 @@ nubus_video_resource(slot)
  * end of the slot.  If so, then we check for a bytelanes byte.  We
  * could probably just return a failure status if we bus error on
  * the first try, but there really is little reason not to go ahead
- * and check the other three locations in case there's a wierd card
+ * and check the other three locations in case there's a weird card
  * out there.
  *
  * Checking for a card involves locating the "bytelanes" byte which

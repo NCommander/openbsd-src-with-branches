@@ -79,11 +79,10 @@ memcmatch(parent, vcf, args)
 	struct device *parent;
 	void *vcf, *args;
 {
-	struct cfdata *cf = vcf;
 	struct confargs *ca = args;
 	struct memcreg *memc = (struct memcreg *)ca->ca_vaddr;
 
-	if (badvaddr(memc, 1))
+	if (badvaddr((vaddr_t)memc, 1))
 		return (0);
 	if (memc->memc_chipid==MEMC_CHIPID || memc->memc_chipid==MCECC_CHIPID)
 		return (1);
@@ -110,7 +109,6 @@ memcattach(parent, self, args)
 
 #if 0
 	sc->sc_ih.ih_fn = memcintr;
-	sc->sc_ih.ih_arg = 0;
 	sc->sc_ih.ih_ipl = 7;
 	sc->sc_ih.ih_wantframe = 1;
 	mcintr_establish(xxx, &sc->sc_ih);

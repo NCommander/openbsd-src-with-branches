@@ -19,7 +19,7 @@ BINDIR=         /usr/mdec
 NEWVERSWHAT=	"OpenFirmware Boot"
 
 # For now...
-RELOC=		20074
+RELOC=		20000
 
 ENTRY=		_start
 
@@ -32,7 +32,7 @@ CPPFLAGS+=	-DXCOFF_GLUE		# for booting PCI Powermacs
 LIBS!=          cd $(.CURDIR)/$(R); $(MAKE) libdep
 
 ${PROG}: ${OBJS} ${LIBSA} ${LIBZ} ${LIBKERN}
-	${LD} -X -Ttext ${RELOC} -e ${ENTRY} -o ${PROG} \
+	${LD} -N -X -Ttext ${RELOC} -e ${ENTRY} -o ${PROG} \
 	    ${OBJS} ${LIBS}
 
 .include <bsd.prog.mk>

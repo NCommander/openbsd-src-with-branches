@@ -43,6 +43,10 @@
 #include <machine/cpu.h>
 #include <machine/frame.h>
 
+#ifdef DDB
+#include <machine/db_machdep.h>
+#endif
+
 #include "fpu_emulate.h"
 
 static int fpu_emul_fmovmcr(struct fpemu *fe, struct instruction *insn);
@@ -135,8 +139,7 @@ fpu_emulate(frame, fpf)
 	frame->f_pc = frame->f_fmt4.f_fslw;
     }
 
-    word = fusword((void *) (frame->f_pc));
-    if (word < 0) {
+    if (copyin((void *)frame->f_pc, &word, sizeof(int)) != 0) {
 #ifdef DEBUG
 	printf("  fpu_emulate: fault reading opcode\n");
 #endif
@@ -166,8 +169,7 @@ fpu_emulate(frame, fpf)
     insn.is_opcode = word;
     optype = (word & 0x01C0);
 
-    word = fusword((void *) (frame->f_pc + 2));
-    if (word < 0) {
+    if (copyin((void *)(frame->f_pc + 2), &word, sizeof(int)) != 0) {
 #ifdef DEBUG
 	printf("  fpu_emulate: fault reading word1\n");
 #endif
@@ -250,7 +252,7 @@ fpu_emulate(frame, fpf)
     else {
 	printf(" fpu_emulate: sig=%d, opcode=%x, word1=%x\n",
 	       sig, insn.is_opcode, insn.is_word1);
-	kdb_trap(-1, frame);
+	kdb_trap(-1, (db_regs_t *)frame);
     }
 #endif
     if (frame->f_format == 4)
@@ -1075,8 +1077,8 @@ fpu_emul_type1(fe, insn)
 	    u_int16_t count = frame->f_regs[insn->is_opcode & 7];
 
 	    if (count-- != 0) {
-		displ = fusword((void *) (frame->f_pc + insn->is_advance));
-		if (displ < 0) {
+    		if (copyin((void *)(frame->f_pc + insn->is_advance),
+		    &displ, sizeof(int)) != 0) {
 #ifdef DEBUG
 		    printf("  fpu_emul_type1: fault reading displacement\n");
 #endif
@@ -1165,8 +1167,8 @@ fpu_emul_brcc(fe, insn)
     displ = insn->is_word1;
 
     if (insn->is_opcode & 0x40) {
-	word2 = fusword((void *) (frame->f_pc + insn->is_advance));
-	if (word2 < 0) {
+    	if (copyin((void *)(frame->f_pc + insn->is_advance), &word2,
+	    sizeof(int)) != 0) {
 #ifdef DEBUG
 	    printf("  fpu_emul_brcc: fault reading word2\n");
 #endif

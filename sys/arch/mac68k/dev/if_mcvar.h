@@ -26,14 +26,6 @@
  *
  */
 
-#ifdef DDB
-#define	integrate
-#define hide
-#else
-#define	integrate	static __inline
-#define hide		static
-#endif
-
 #define	MC_REGSPACING	16
 #define	MC_REGSIZE	MACE_NREGS * MC_REGSPACING
 #define	MACE_REG(x)	((x)*MC_REGSPACING)

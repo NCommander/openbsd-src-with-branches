@@ -7,7 +7,8 @@
 
 #ifdef	_KERNEL
 
-void mac68k_set_pte(vaddr_t va, paddr_t pge);
+vaddr_t	pmap_map(vaddr_t, paddr_t, paddr_t, int);
+void mac68k_set_pte(vaddr_t, paddr_t);
 
 void pmap_init_md(void);
 #define	PMAP_INIT_MD()	pmap_init_md()

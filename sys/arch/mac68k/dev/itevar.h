@@ -53,4 +53,4 @@ struct tty	*itetty(dev_t dev);
 int	itecnprobe(struct consdev * cp);
 int	itecninit(struct consdev * cp);
 int	itecngetc(dev_t dev);
-int	itecnputc(dev_t dev, int c);
+void	itecnputc(dev_t dev, int c);

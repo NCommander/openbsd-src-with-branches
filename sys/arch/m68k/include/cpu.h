@@ -201,10 +201,6 @@ extern	u_int mappedcopysize;
 u_long getdfc(void);
 u_long getsfc(void);
 
-/* copy.s */
-int	fusword(caddr_t);
-int	susword(caddr_t, u_short);
-
 /* m68k_machdep.c */
 struct proc;
 struct frame;

@@ -23,7 +23,8 @@
  *
  */
 
-#include "machine/pio.h"
+#include <machine/bus.h>
+#include <machine/pio.h>
 
 #ifndef _POWERMAC_DBDMA_H_
 #define _POWERMAC_DBDMA_H_

@@ -1,4 +1,4 @@
-/*	$OpenBSD: proc.h,v 1.3 1996/05/26 18:35:59 briggs Exp $	*/
+/*	$OpenBSD$	*/
 /*	$NetBSD: proc.h,v 1.5 1994/10/26 08:46:40 cgd Exp $	*/
 
 /*
@@ -43,8 +43,8 @@
 #define _MAC68K_PROC_H_
 
 struct mdproc {
-	int	md_flags;		/* machine-dependent flags */
 	int	*md_regs;		/* registers on current frame */
+	int	md_flags;		/* machine-dependent flags */
 };
 
 /* md_flags */

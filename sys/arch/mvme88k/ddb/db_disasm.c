@@ -293,7 +293,7 @@ symofset(int  disp, int  bit, int iadr)
 	} else {
 		addr = iadr + (disp << 2);
 	}
-	db_printsym(addr,DB_STGY_PROC);
+	db_printsym(addr,DB_STGY_PROC, db_printf);
 	return;
 }
 

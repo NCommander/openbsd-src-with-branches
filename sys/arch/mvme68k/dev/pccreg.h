@@ -154,5 +154,6 @@ extern struct pccreg *sys_pcc;
 
 /* XXX */
 int	pccintr_establish(int vec, struct intrhand *ih);
+int	pccspeed(struct pccreg *);
 
 #define PCC_GENCTL_IEN	0x10

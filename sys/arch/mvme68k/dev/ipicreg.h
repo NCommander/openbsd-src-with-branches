@@ -113,3 +113,5 @@ struct ipicsoftc {
 	caddr_t		sc_ipspace;
 	int		sc_nip;
 };
+
+int ipicintr_establish(int, struct intrhand *);

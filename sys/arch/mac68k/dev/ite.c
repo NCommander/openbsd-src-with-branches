@@ -1334,7 +1334,7 @@ itecngetc(dev)
 	return ite_pollforchar();
 }
 
-int
+void
 itecnputc(dev, c)
 	dev_t	dev;
 	int	c;
@@ -1347,6 +1347,4 @@ itecnputc(dev, c)
 	drawcursor();
 	if (mac68k_machine.serial_boot_echo)
 		zscnputc(mac68k_zsdev, c);
-
-	return c;
 }

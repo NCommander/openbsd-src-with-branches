@@ -47,7 +47,7 @@
 #define	DMAMAXIO	(MAXPHYS/NBPG+1)
 #define  LO(x) (u_short)((unsigned long)x & 0x0000FFFF)
 #define  HI(x) (u_short)((unsigned long)x >> 16)
-#define  OFF(x) (u_short)((long)kvtop(x) - (long)kvtop(sc->sc_vsreg))
+#define  OFF(x) (u_short)((long)kvtop((vaddr_t)x) - (long)kvtop((vaddr_t)sc->sc_vsreg))
 
 struct vs_tinfo {
 	int	cmds;		/* #commands processed */

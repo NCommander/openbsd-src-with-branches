@@ -149,12 +149,8 @@ nvram_cmd(sc, cmd, addr)
 	u_short addr;
 {
 	int i;
-	u_char rcmd = 0;
 	struct vereg1 *reg1 = ((struct ve_softc *)sc)->sc_r1;
 
-	rcmd = addr;
-	rcmd = rcmd << 3;
-	rcmd |= cmd;
 	for (i=0;i<8;i++) {
 		reg1->ver1_ear=((cmd|(addr<<1))>>i); 
 		CDELAY; 

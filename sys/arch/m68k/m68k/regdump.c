@@ -104,11 +104,11 @@ regdump(tf, sbytes)
 
 void
 dumpmem(ptr, sz, ustack)
-	register int *ptr;
+	int *ptr;
 	int sz, ustack;
 {
-	register int i, val;
-	register int limit;
+	int i, val;
+	int limit;
 
 	/* Stay in the same page */
 	limit = ((int)ptr) | (NBPG-3);
@@ -119,7 +119,7 @@ dumpmem(ptr, sz, ustack)
 		else
 			printf(" ");
 		if (ustack == 1) {
-			if ((val = fuword(ptr++)) == -1)
+			if (copyin(ptr++, &val, sizeof(int)) != 0)
 				break;
 		} else {
 			if (((int) ptr) >= limit)

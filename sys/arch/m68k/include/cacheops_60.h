@@ -199,7 +199,7 @@ ICPP_60(pa)
 void DCPL_60(paddr_t);
 extern __inline__ void
 DCPL_60(pa)
-	paddr_t	va;
+	paddr_t	pa;
 {
 	register paddr_t	r_pa __asm("a0") = pa;
 

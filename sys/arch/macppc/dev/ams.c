@@ -544,6 +544,13 @@ ams_ioctl(v, cmd, data, flag, p)
 	int flag;
 	struct proc *p;
 {
+	switch (cmd) {
+	case WSMOUSEIO_GTYPE:
+		*(u_int *)data = WSMOUSE_TYPE_ADB;
+		return (0);
+	}
+
+
 	return -1;
 }
 

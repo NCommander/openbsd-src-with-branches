@@ -1666,8 +1666,6 @@ adb_reinit(void)
 	int nonewtimes;		/* times thru loop w/o any new devices */
 	ADBDataBlock data;	/* temp. holder for getting device info */
 
-	(void)(&s);		/* work around lame GCC bug */
-
 	/* Make sure we are not interrupted while building the table. */
 	if (adbHardware != ADB_HW_PB)	/* ints must be on for PB? */
 		s = splhigh();
@@ -1739,8 +1737,8 @@ adb_reinit(void)
 	default:
 		via_reg(VIA1, vIER) = 0x04;	/* turn interrupts off - TO
 						 * DO: turn PB ints off? */
+		splx(s);
 		return;
-		break;
 	}
 
 	/*

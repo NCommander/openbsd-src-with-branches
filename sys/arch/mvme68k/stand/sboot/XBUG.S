@@ -1,4 +1,4 @@
-/*	$OpenBSD: XBUG.S,v 1.4 1998/04/02 10:49:05 deraadt Exp $ */
+/*	$OpenBSD$ */
 
 /*
  * Copyright (c) 1989,1990,1995 Theo de Raadt
@@ -32,7 +32,7 @@
  */
 
 /*
- * Theo sez: I wrote a bootrom for the MVME147 *years* ago. To write
+ * Theo says: I wrote a bootrom for the MVME147 *years* ago. To write
  * this ROM I copied a few chunks from the old bootrom, like this piece:
  * 
  * "watch this, the moto bastard struck here, shouldn't have hired people

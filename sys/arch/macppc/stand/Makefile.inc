@@ -22,6 +22,7 @@ INCLUDES+=	-I. -I$(.OBJDIR) -I$(.CURDIR)/.. -I$(S)/arch -I$(S)
 INCLUDES+=	-I$(S)/lib/libsa
 DEFS+=		-DSTANDALONE -DFIREPOWERBUGS
 CFLAGS+=	$(INCLUDES) $(DEFS) $(EXTRACFLAGS)
+CFLAGS+=	-fno-stack-protector
 LDFLAGS?=	-X -N -Ttext $(RELOC) -e $(ENTRY)
 
 cleandir:

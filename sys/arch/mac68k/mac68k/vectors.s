@@ -46,7 +46,7 @@
 	VECTOR(badtrap) ; VECTOR(badtrap) ;	\
 	VECTOR(badtrap) ; VECTOR(badtrap)
 
-	.text
+	.data
 GLOBAL(vectab)
 	VECTOR_UNUSED		/* 0: NOT USED (reset SSP) */
 	VECTOR_UNUSED		/* 1: NOT USED (reset PC) */

@@ -38,7 +38,7 @@ MacRISC
 OpenBSD/macppc bootloader
 </DESCRIPTION>
 <BOOT-SCRIPT>
-boot cd:,ofwboot /3.0/macppc/bsd.rd
+boot cd:,ofwboot /3.3/macppc/bsd.rd
 </BOOT-SCRIPT>
 <OS-BADGE-ICONS>
 201B

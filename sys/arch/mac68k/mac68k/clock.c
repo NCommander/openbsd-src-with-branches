@@ -80,13 +80,13 @@
 
 #include <sys/param.h>
 #include <sys/device.h>
+#include <sys/limits.h>
 #include <sys/kernel.h>
 #include <sys/systm.h>
 
 #include <machine/autoconf.h>
 #include <machine/psl.h>
 #include <machine/cpu.h>
-#include <machine/limits.h>
 
 #if defined(GPROF) && defined(PROFTIMER)
 #include <sys/gprof.h>

@@ -215,7 +215,7 @@ typedef	u_int32_t	pt_ind_entry_t;
 #define	PDTIDX(va)	(((va) & PDT_MASK) >> PDT_SHIFT)
 
 /* XXX uses knowledge of pmap structure */
-#define SDTENT(map, va)	((sdt_entry_t *)((map)->sdt_vaddr + SDTIDX(va)))
+#define SDTENT(map, va)	((sdt_entry_t *)((map)->pm_stab + SDTIDX(va)))
 
 /*
  * Size of a PDT table group.

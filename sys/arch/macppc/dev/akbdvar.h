@@ -49,6 +49,15 @@ struct akbd_softc {
 
 	u_int8_t	sc_leds;	/* current LED state */
 	struct device	*sc_wskbddev;
+#ifdef WSDISPLAY_COMPAT_RAWKBD
+#define MAXKEYS 20
+#define REP_DELAY1 400
+#define REP_DELAYN 100
+	int sc_rawkbd;
+	int sc_nrep;
+	char sc_rep[MAXKEYS];
+	struct timeout sc_rawrepeat_ch;
+#endif /* defined(WSDISPLAY_COMPAT_RAWKBD) */
 };
 
 /* LED register bits, inverse of actual register value */

@@ -174,3 +174,4 @@ void mc_enableflashwrite(int on);
 #define MC_DISFLASHWRITE_OFFSET	0xc8000
 int mc_hasflash(void);
 
+int  mcintr_establish(int, struct intrhand *);

@@ -1,4 +1,4 @@
-/*	$OpenBSD: sunos_machdep.c,v 1.10.14.1 2001/04/18 16:10:03 niklas Exp $	*/
+/*	$OpenBSD$	*/
 /*	$NetBSD: sunos_machdep.c,v 1.12 1996/10/13 03:19:22 christos Exp $	*/
 
 /*
@@ -219,7 +219,7 @@ sunos_sendsig(catcher, sig, mask, code, type, val)
  * Return to previous pc and psl as specified by
  * context left by sendsig. Check carefully to
  * make sure that the user has not modified the
- * psl to gain improper priviledges or to cause
+ * psl to gain improper privileges or to cause
  * a machine fault.
  */
 int

@@ -357,3 +357,14 @@ asc_stop_bell(arg)
 	if (--sc->sc_ringing == 0)	/* disable ASC */
 		bus_space_write_1(sc->sc_tag, sc->sc_handle, 0x801, 0);
 }
+
+int asckqfilter(dev_t, struct knote *);
+
+int
+asckqfilter(dev, kn)
+	dev_t dev;
+	struct knote *kn;
+{
+
+	return (1);
+}

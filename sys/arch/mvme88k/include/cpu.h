@@ -84,7 +84,6 @@ struct clockframe {
 extern int intstack;
 
 #define	CLKF_USERMODE(framep)	((((struct trapframe *)(framep))->epsr & PSR_MODE) == 0)
-#define	CLKF_BASEPRI(framep)	(((struct trapframe *)(framep))->mask == 0)
 #define	CLKF_PC(framep)		(((struct trapframe *)(framep))->sxip & ~3)
 #define	CLKF_INTR(framep)	(((struct trapframe *)(framep))->r[31] > intstack)
 

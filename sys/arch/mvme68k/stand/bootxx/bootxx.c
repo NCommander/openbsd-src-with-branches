@@ -52,7 +52,7 @@
 /*
  * Boot device is derived from ROM provided information.
  */
-#define LOADADDR	0x3F0000 /* where to load level 2 bootstrap */
+#define LOADADDR	0x6F0000 /* where to load level 2 bootstrap */
 				/* (l2 must relocate itself) */
 
 /* This determines the largest boot program we can load. */

@@ -1,4 +1,4 @@
-/*	$OpenBSD: vectors.s,v 1.4.16.1 2001/07/04 10:19:43 niklas Exp $ */
+/*	$OpenBSD$ */
 
 | Copyright (c) 1995 Theo de Raadt
 |
@@ -74,7 +74,7 @@
 	VECTOR(badtrap) ; VECTOR(badtrap) ; \
 	VECTOR(badtrap) ; VECTOR(badtrap)
 
-	.text
+	.data
 GLOBAL(vectab)
 	.long	0x12345678	/* 0: jmp 0x7400:w (unused reset SSP) */
 	VECTOR_UNUSED		/* 1: NOT USED (reset PC) */

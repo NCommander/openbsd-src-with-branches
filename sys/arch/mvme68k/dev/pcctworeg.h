@@ -149,3 +149,5 @@ extern struct pcctworeg *sys_pcc2;
 #define PCC2_SC_SNOOP		(1 << 6)
 #define PCC2_SC_INVAL		(2 << 6)
 #define PCC2_SC_RESV		(3 << 6)
+
+int  pcctwointr_establish(int, struct intrhand *);

@@ -338,3 +338,6 @@ void * vmepmap(struct vmesoftc *sc, void * vmeaddr, int len,
 void * vmemap(struct vmesoftc *sc, void * vmeaddr, int len,
 	    int bustype);
 int	vmerw(struct vmesoftc *sc, struct uio *uio, int flags, int bus);
+
+int vmeintr_establish(int, struct intrhand *);
+int vmescan(struct device *, void *, void *, int);

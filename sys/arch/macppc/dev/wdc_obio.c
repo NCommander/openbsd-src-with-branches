@@ -365,6 +365,8 @@ wdc_obio_ata4_adjust_timing(chp)
 		if (drvp->drive_flags & DRIVE_UDMA) {
 			if (udmamode == -1 || udmamode > drvp->UDMA_mode)
 				udmamode = drvp->UDMA_mode;
+		} else {
+			udmamode = -2;
 		}
 	}
 	if (piomode == -1)
@@ -375,10 +377,19 @@ wdc_obio_ata4_adjust_timing(chp)
 			drvp->PIO_mode = piomode;
 			if (drvp->drive_flags & DRIVE_DMA)
 				drvp->DMA_mode = dmamode;
-			if (drvp->drive_flags & DRIVE_UDMA)
-				drvp->UDMA_mode = udmamode;
+			if (drvp->drive_flags & DRIVE_UDMA) {
+				if (udmamode == -2) {
+					drvp->drive_flags &= ~DRIVE_UDMA;
+				} else {
+					drvp->UDMA_mode = udmamode;
+				}
+			}
 		}
 	}
+
+	if (udmamode == -2)
+		udmamode = -1;
+
 	min_cycle = pio_timing[piomode].cycle;
 	min_active = pio_timing[piomode].active;
 
