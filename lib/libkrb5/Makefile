@@ -88,12 +88,23 @@ SHLIB_LINKS	= kafs asn1
 ALIB_LINKS	= $(SHLIB_LINKS) hdb com_err
 
 afterinstall:
+.if !defined(NOPIC)
 	for f in $(SHLIB_LINKS); do \
-		ln -f $(DESTDIR)/$(LIBDIR)/lib$(LIB).so.$(SHLIB_MAJOR).$(SHLIB_MINOR) \
-		$(DESTDIR)$(LIBDIR)/lib$$f.so.$(SHLIB_MAJOR).$(SHLIB_MINOR) ;\
+		ln -f $(DESTDIR)$(LIBDIR)/lib$(LIB).so.$(SHLIB_MAJOR).$(SHLIB_MINOR) \
+		    $(DESTDIR)$(LIBDIR)/lib$$f.so.$(SHLIB_MAJOR).$(SHLIB_MINOR) ;\
+	done
+	for f in $(SHLIB_LINKS); do \
+		ln -f $(DESTDIR)$(LIBDIR)/lib$(LIB)_pic.a \
+		    $(DESTDIR)$(LIBDIR)/lib$${f}_pic.a ;\
+	done
+.endif
+	for f in $(ALIB_LINKS); do \
+		ln -f $(DESTDIR)$(LIBDIR)/lib$(LIB).a \
+		    $(DESTDIR)$(LIBDIR)/lib$$f.a ; \
 	done
 	for f in $(ALIB_LINKS); do \
-		ln -f $(DESTDIR)/$(LIBDIR)/lib$(LIB).a $(DESTDIR)$(LIBDIR)/lib$$f.a ; \
+		ln -f $(DESTDIR)$(LIBDIR)/lib$(LIB)_p.a \
+		    $(DESTDIR)$(LIBDIR)/lib$${f}_p.a ; \
 	done
 
 .include <bsd.lib.mk>
