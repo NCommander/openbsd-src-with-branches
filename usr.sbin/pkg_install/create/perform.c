@@ -1,7 +1,7 @@
-/*	$OpenBSD: perform.c,v 1.10 2000/03/24 00:24:18 espie Exp $	*/
+/*	$OpenBSD: perform.c,v 1.11 2000/04/04 15:12:02 espie Exp $	*/
 
 #ifndef lint
-static const char *rcsid = "$OpenBSD: perform.c,v 1.10 2000/03/24 00:24:18 espie Exp $";
+static const char *rcsid = "$OpenBSD: perform.c,v 1.11 2000/04/04 15:12:02 espie Exp $";
 #endif
 
 /*
@@ -282,7 +282,7 @@ make_dist(char *home, char *pkg, char *suffix, package_t *plist)
 		    errx(2, "can't make temp file");
 		if (! (flist = fdopen(fd, "w")))
 		    errx(2, "can't write to temp file");
-		args[nargs++] = "-T";
+		args[nargs++] = "-I";
 		args[nargs++] = tempfile[current++];
 	    }
 	    fprintf(flist, "%s\n", p->name);
