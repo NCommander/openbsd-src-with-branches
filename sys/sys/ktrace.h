@@ -1,4 +1,4 @@
-/*	$OpenBSD: ktrace.h,v 1.4 2000/11/10 18:15:49 art Exp $	*/
+/*	$OpenBSD: ktrace.h,v 1.2.16.1 2001/05/14 22:45:02 niklas Exp $	*/
 /*	$NetBSD: ktrace.h,v 1.12 1996/02/04 02:12:29 christos Exp $	*/
 
 /*

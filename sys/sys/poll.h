@@ -1,4 +1,4 @@
-/*	$OpenBSD: poll.h,v 1.5 2001/03/01 01:32:50 deraadt Exp $ */
+/*	$OpenBSD: poll.h,v 1.4.8.1 2001/05/14 22:45:03 niklas Exp $ */
 
 /*
  * Copyright (c) 1996 Theo de Raadt
@@ -46,6 +46,8 @@ struct pollfd {
 #define POLLWRNORM      POLLOUT
 #define	POLLRDBAND	0x0080
 #define	POLLWRBAND	0x0100
+
+#define INFTIM		(-1)
 
 #ifndef _KERNEL
 #include <ctype.h>

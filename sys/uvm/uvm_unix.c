@@ -1,5 +1,5 @@
-/*	$OpenBSD: uvm_unix.c,v 1.4.4.2 2001/05/14 22:47:49 niklas Exp $	*/
-/*	$NetBSD: uvm_unix.c,v 1.8 1999/03/25 18:48:56 mrg Exp $	*/
+/*	$OpenBSD$	*/
+/*	$NetBSD: uvm_unix.c,v 1.12 2000/03/30 12:31:50 augustss Exp $	*/
 
 /*
  * Copyright (c) 1997 Charles D. Cranor and Washington University.
@@ -128,8 +128,8 @@ uvm_grow(p, sp)
 	struct proc *p;
 	vaddr_t sp;
 {
-	register struct vmspace *vm = p->p_vmspace;
-	register int si;
+	struct vmspace *vm = p->p_vmspace;
+	int si;
 
 	/*
 	 * For user defined stacks (from sendsig).
@@ -196,9 +196,9 @@ uvm_coredump(p, vp, cred, chdr)
 	struct ucred *cred;
 	struct core *chdr;
 {
-	register struct vmspace *vm = p->p_vmspace;
-	register vm_map_t map = &vm->vm_map;
-	register vm_map_entry_t entry;
+	struct vmspace *vm = p->p_vmspace;
+	vm_map_t map = &vm->vm_map;
+	vm_map_entry_t entry;
 	vaddr_t start, end;
 	struct coreseg cseg;
 	off_t offset;

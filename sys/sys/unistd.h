@@ -1,4 +1,4 @@
-/*	$OpenBSD: unistd.h,v 1.7 1998/07/13 00:56:54 millert Exp $	*/
+/*	$OpenBSD: unistd.h,v 1.8 1998/11/20 11:19:01 d Exp $	*/
 /*	$NetBSD: unistd.h,v 1.10 1994/06/29 06:46:06 cgd Exp $	*/
 
 /*
@@ -119,6 +119,7 @@
 #define	_SC_FSYNC		29
 #define	_SC_XOPEN_SHM		30
 
+#ifdef notyet
 /* P1003.1c */
 #define _SC_GETGR_R_SIZE_MAX
 #define _SC_GETPW_R_SIZE_MAX
@@ -136,6 +137,7 @@
 #define _SC_THREAD_PRIO_PROTECT
 #define _SC_THREAD_PROCESS_SHARED
 #define _SC_THREAD_SAFE_FUNCTIONS
+#endif
 
 /* configurable system strings */
 #define	_CS_PATH		 1

@@ -1,4 +1,4 @@
-/*	$OpenBSD: ext2fs_subr.c,v 1.3 1997/06/12 21:09:35 downsj Exp $	*/
+/*	$OpenBSD: ext2fs_subr.c,v 1.3.12.1 2001/07/04 11:00:45 niklas Exp $	*/
 /*	$NetBSD: ext2fs_subr.c,v 1.1 1997/06/11 09:34:03 bouyer Exp $	*/
 
 /*
@@ -40,14 +40,14 @@
 
 #include <sys/param.h>
 #include <sys/systm.h>
-#include <ufs/ext2fs/ext2fs.h>
-#include <ufs/ext2fs/ext2fs_extern.h>
-
-#ifdef _KERNEL
 #include <sys/vnode.h>
 #include <sys/buf.h>
 #include <ufs/ufs/quota.h>
 #include <ufs/ufs/inode.h>
+#include <ufs/ext2fs/ext2fs.h>
+#include <ufs/ext2fs/ext2fs_extern.h>
+
+#ifdef _KERNEL
 
 /*
  * Return buffer with the contents of block "offset" from the beginning of
@@ -60,7 +60,7 @@ ext2fs_bufatoff(struct inode *ip, off_t offset, char **res, struct buf **bpp)
 	struct vnode *vp;
 	struct m_ext2fs *fs;
 	struct buf *bp;
-	daddr_t lbn;
+	ufs_daddr_t lbn;
 	int error;
 
 	vp = ITOV(ip);
@@ -85,8 +85,8 @@ ext2fs_checkoverlap(bp, ip)
 	struct buf *bp;
 	struct inode *ip;
 {
-	register struct buf *ebp, *ep;
-	register daddr_t start, last;
+	struct buf *ebp, *ep;
+	ufs_daddr_t start, last;
 	struct vnode *vp;
 
 	ebp = &buf[nbuf];

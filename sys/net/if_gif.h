@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_gif.h,v 1.5 2001/02/16 08:48:03 itojun Exp $	*/
+/*	$OpenBSD: if_gif.h,v 1.3.2.1 2001/05/14 22:40:00 niklas Exp $	*/
 /*	$KAME: if_gif.h,v 1.17 2000/09/11 11:36:41 sumikawa Exp $	*/
 
 /*
@@ -66,7 +66,7 @@ struct gif_softc {
 #define	GIF_MTU_MAX	(8192)	/* Maximum MTU */
 
 extern int ngif;
-extern struct gif_softc *gif;
+extern struct gif_softc *gif_softc;
 
 /* Prototypes */
 int gif_output __P((struct ifnet *, struct mbuf *,
