@@ -1,4 +1,4 @@
-/*	$OpenBSD: m8820x.h,v 1.5 2001/12/22 09:49:39 smurph Exp $ */
+/*	$OpenBSD: m8820x.h,v 1.6 2002/03/14 01:26:39 millert Exp $ */
 /* 
  * Mach Operating System
  * Copyright (c) 1993-1992 Carnegie Mellon University
@@ -145,8 +145,7 @@ void m8820x_cmmu_set_pair_batc_entry(unsigned, unsigned, unsigned);
 void m8820x_cmmu_flush_remote_tlb(unsigned, unsigned, vm_offset_t, int);
 void m8820x_cmmu_flush_tlb(unsigned, vm_offset_t, int);
 void m8820x_cmmu_pmap_activate(unsigned, unsigned, 
-    batc_template_t i_batc[BATC_MAX],
-				  batc_template_t d_batc[BATC_MAX]);
+    u_int32_t i_batc[BATC_MAX], u_int32_t d_batc[BATC_MAX]);
 void m8820x_cmmu_flush_remote_cache(int, vm_offset_t, int);
 void m8820x_cmmu_flush_cache(vm_offset_t, int);
 void m8820x_cmmu_flush_remote_inst_cache(int, vm_offset_t, int);
