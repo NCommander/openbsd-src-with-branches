@@ -1,4 +1,4 @@
-/*	$OpenBSD: su.c,v 1.54 2003/06/21 23:27:33 deraadt Exp $	*/
+/*	$OpenBSD: su.c,v 1.55 2003/09/26 21:43:32 miod Exp $	*/
 
 /*
  * Copyright (c) 1988 The Regents of the University of California.
@@ -39,7 +39,7 @@ static const char copyright[] =
 #if 0
 static const char sccsid[] = "from: @(#)su.c	5.26 (Berkeley) 7/6/91";
 #else
-static const char rcsid[] = "$OpenBSD: su.c,v 1.54 2003/06/21 23:27:33 deraadt Exp $";
+static const char rcsid[] = "$OpenBSD: su.c,v 1.55 2003/09/26 21:43:32 miod Exp $";
 #endif
 #endif /* not lint */
 
@@ -395,7 +395,7 @@ ontty(void)
 
 /*
  * Allow for a '.' and 16 characters for any instance as well as
- * space for a ':' and 16 charcters defining the authentication type.
+ * space for a ':' and 16 characters defining the authentication type.
  */
 #define NBUFSIZ		(UT_NAMESIZE + 1 + 16 + 1 + 16)
 

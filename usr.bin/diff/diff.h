@@ -1,4 +1,4 @@
-/*	$OpenBSD: diff.h,v 1.23 2003/08/01 20:54:18 deraadt Exp $	*/
+/*	$OpenBSD: diff.h,v 1.24 2003/10/07 23:37:27 millert Exp $	*/
 
 /*-
  * Copyright (c) 1991, 1993
@@ -61,7 +61,7 @@
 #define	D_ONLY		4	/* Only exists in one directory */
 #define	D_MISMATCH1	5	/* path1 was a dir, path2 a file */
 #define	D_MISMATCH2	6	/* path1 was a file, path2 a dir */
-#define	D_ERROR		7	/* An error ocurred */
+#define	D_ERROR		7	/* An error occurred */
 
 struct excludes {
 	char *pattern;

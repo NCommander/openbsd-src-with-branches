@@ -1,4 +1,4 @@
-/*	$OpenBSD: login.c,v 1.50 2003/06/03 02:56:10 millert Exp $	*/
+/*	$OpenBSD: login.c,v 1.51 2003/08/12 13:14:58 hin Exp $	*/
 /*	$NetBSD: login.c,v 1.13 1996/05/15 23:50:16 jtc Exp $	*/
 
 /*-
@@ -73,7 +73,7 @@ static const char copyright[] =
 #if 0
 static const char sccsid[] = "@(#)login.c	8.4 (Berkeley) 4/2/94";
 #endif
-static const char rcsid[] = "$OpenBSD: login.c,v 1.50 2003/06/03 02:56:10 millert Exp $";
+static const char rcsid[] = "$OpenBSD: login.c,v 1.51 2003/08/12 13:14:58 hin Exp $";
 #endif /* not lint */
 
 /*
@@ -848,7 +848,7 @@ motd(void)
 void
 sigint(int signo)
 {
-	return;			/* just interupt syscall */
+	return;			/* just interrupt syscall */
 }
 
 /* ARGSUSED */
