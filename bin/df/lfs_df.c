@@ -1,4 +1,4 @@
-/*	$OpenBSD: lfs_df.c,v 1.6 2001/05/11 18:40:46 mickey Exp $	*/
+/*	$OpenBSD: lfs_df.c,v 1.7 2002/02/16 21:27:06 millert Exp $	*/
 
 /*
  * This file is substantially duplicated from src/sys/ufs/lfs/lfs_vfsops.c:lfs_statfs().
@@ -64,10 +64,7 @@ union {
 #define sblock sb.il_fs
 
 int
-lfs_df(rfd, file, sfsp)
-	int rfd;
-	char *file;
-	struct statfs *sfsp;
+lfs_df(int rfd, char *file, struct statfs *sfsp)
 {
 	char *mntpt;
 

@@ -1,4 +1,4 @@
-/*	$OpenBSD: mt.c,v 1.19 2002/01/16 18:44:21 mpech Exp $	*/
+/*	$OpenBSD: mt.c,v 1.20 2002/02/16 21:27:07 millert Exp $	*/
 /*	$NetBSD: mt.c,v 1.14.2.1 1996/05/27 15:12:11 mrg Exp $	*/
 
 /*
@@ -44,7 +44,7 @@ static char copyright[] =
 #if 0
 static char sccsid[] = "@(#)mt.c	8.2 (Berkeley) 6/6/93";
 #else
-static char rcsid[] = "$OpenBSD: mt.c,v 1.19 2002/01/16 18:44:21 mpech Exp $";
+static char rcsid[] = "$OpenBSD: mt.c,v 1.20 2002/02/16 21:27:07 millert Exp $";
 #endif
 #endif /* not lint */
 
@@ -106,9 +106,7 @@ char	*progname;
 int	eject = 0;
 
 int
-main(argc, argv)
-	int argc;
-	char *argv[];
+main(int argc, char *argv[])
 {
 	struct commands *comp;
 	struct mtget mt_status;
@@ -243,8 +241,7 @@ struct tape_desc {
  * Interpret the status buffer returned
  */
 void
-status(bp)
-	struct mtget *bp;
+status(struct mtget *bp)
 {
 	struct tape_desc *mt;
 
@@ -273,10 +270,7 @@ status(bp)
  * Print a register a la the %b format of the kernel's printf.
  */
 void
-printreg(s, v, bits)
-	char *s;
-	u_int v;
-	char *bits;
+printreg(char *s, u_int v, char *bits)
 {
 	int i, any = 0;
 	char c;
@@ -306,7 +300,7 @@ printreg(s, v, bits)
 }
 
 void
-usage()
+usage(void)
 {
 	if (eject)
 		(void)fprintf(stderr, "usage: %s [-f] device\n", progname);
