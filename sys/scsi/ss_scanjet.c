@@ -1,4 +1,4 @@
-/*	$OpenBSD: ss_scanjet.c,v 1.9 1996/10/31 02:49:45 deraadt Exp $	*/
+/*	$OpenBSD: ss_scanjet.c,v 1.10 1996/11/03 19:09:46 kstailey Exp $	*/
 /*	$NetBSD: ss_scanjet.c,v 1.6 1996/05/18 22:58:01 christos Exp $	*/
 
 /*
@@ -515,7 +515,7 @@ scanjet_compute_sizes(ss, flags)
 		uprintf(wfail, ss->sc_dev.dv_xname);
 		return (error);
 	}
-	error = scanjet_ctl_read(ss, response, 20, 0);
+	error = scanjet_ctl_read(ss, response, 20, flags);
 	if (error) {
 		uprintf(rfail, ss->sc_dev.dv_xname);
 		return (error);
