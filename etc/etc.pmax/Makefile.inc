@@ -1,9 +1,9 @@
-#	$OpenBSD: Makefile.inc,v 1.13 1998/03/18 10:45:05 graichen Exp $
+#	$OpenBSD: Makefile.inc,v 1.14 1998/03/19 15:21:51 graichen Exp $
 #	etc.pmax/Makefile.inc -- pmax-specific etc Makefile targets
 
 .ifdef DESTDIR
 
-snap_md: binutils bsd bsd.nfs bsd.rz0 bootblocks distrib
+snap_md: binutils bsd bsd.nfs bsd.rz0 distrib
 
 binutils:
 	cd ${DESTDIR} && tar cf - usr/*openbsd* \
