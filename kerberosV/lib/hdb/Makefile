@@ -3,8 +3,7 @@
 KRBDEPTH=../..
 .include <${.CURDIR}/../../Makefile.inc>
 
-INCLUDE_FILES=	${KRB5SRC}/lib/hdb/hdb.h ${KRB5SRC}/lib/hdb/hdb-protos.h \
-		${KRB5SRC}/lib/hdb/hdb-private.h \
+INCLUDE_FILES=	${KRB5SRC}/lib/hdb/{hdb.h,hdb-protos.h,hdb-private.h} \
 		hdb_err.h hdb_asn1.h
 
 includes:	hdb_err.h hdb_asn1.h

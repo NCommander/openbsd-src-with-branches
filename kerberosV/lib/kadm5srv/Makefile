@@ -6,8 +6,7 @@ KRBDEPTH=../..
 .include <${.CURDIR}/../../Makefile.inc>
 
 INCLUDE_DIR=	${DESTDIR}/usr/include/kerberosV/kadm5
-INCLUDE_FILES=	${KRB5SRC}/lib/kadm5/admin.h ${KRB5SRC}/lib/kadm5/private.h \
-		kadm5_err.h
+INCLUDE_FILES=	${KRB5SRC}/lib/kadm5/{admin.h,private.h} kadm5_err.h
 
 includes:	kadm5_err.h
 

@@ -5,8 +5,7 @@ LIB=	asn1
 KRBDEPTH=../..
 .include <${.CURDIR}/../../Makefile.inc>
 
-INCLUDE_FILES=	${KRB5SRC}/lib/asn1/der.h ${KRB5SRC}/lib/asn1/asn1-common.h \
-		asn1.h asn1_err.h 
+INCLUDE_FILES=	asn1.h asn1_err.h ${KRB5SRC}/lib/asn1/{der.h,asn1-common.h}
 
 includes:	asn1.h asn1_err.h
 
