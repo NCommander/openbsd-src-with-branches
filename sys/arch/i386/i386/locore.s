@@ -1,4 +1,4 @@
-/*	$OpenBSD: locore.s,v 1.76 2004/01/29 19:01:53 tedu Exp $	*/
+/*	$OpenBSD: locore.s,v 1.77 2004/02/01 19:05:23 deraadt Exp $	*/
 /*	$NetBSD: locore.s,v 1.145 1996/05/03 19:41:19 christos Exp $	*/
 
 /*-
@@ -1129,6 +1129,8 @@ ENTRY(copyoutstr)
 
 1:	decl	%edx
 	jz	2f
+	cmpl	$VM_MAXUSER_ADDRESS,%edi
+	jae	_C_LABEL(copystr_fault)
 	lodsb
 	stosb
 	testb	%al,%al
