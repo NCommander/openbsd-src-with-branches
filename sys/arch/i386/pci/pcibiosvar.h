@@ -1,4 +1,4 @@
-/*	$OpenBSD: pcibios.h,v 1.6 2000/09/04 16:58:41 mickey Exp $	*/
+/*	$OpenBSD: pcibios.h,v 1.7 2000/09/07 20:50:39 mickey Exp $	*/
 /*	$NetBSD: pcibios.h,v 1.2 2000/04/28 17:15:16 uch Exp $	*/
 
 /*

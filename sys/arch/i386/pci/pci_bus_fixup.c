@@ -1,4 +1,4 @@
-/*	$OpenBSD: pci_bus_fixup.c,v 1.4 2000/04/07 22:22:57 aaron Exp $	*/
+/*	$OpenBSD: pci_bus_fixup.c,v 1.5 2000/08/08 19:12:47 mickey Exp $	*/
 /*	$NetBSD: pci_bus_fixup.c,v 1.1 1999/11/17 07:32:58 thorpej Exp $  */
 
 /*
@@ -43,7 +43,7 @@
 #include <dev/pci/ppbreg.h>
 
 #include <i386/pci/pci_bus_fixup.h>
-#include <i386/pci/pcibios.h>
+#include <i386/pci/pcibiosvar.h>
 
 int
 pci_bus_fixup(pc, bus)
