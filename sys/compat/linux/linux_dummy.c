@@ -1,4 +1,4 @@
-/*	$OpenBSD: linux_dummy.c,v 1.4 2001/04/02 21:43:11 niklas Exp $ */
+/*	$OpenBSD: linux_dummy.c,v 1.6 2002/02/04 20:04:52 provos Exp $ */
 
 /*-
  * Copyright (c) 1994-1995 Søren Schmidt
@@ -57,7 +57,9 @@ unsupported_msg(struct proc *p, const char *fname)
 }
 
 DUMMY(ostat);			/* #18 */
+#ifdef PTRACE
 DUMMY(ptrace);			/* #26 */
+#endif
 DUMMY(ofstat);			/* #28 */
 DUMMY(stty);			/* #31 */
 DUMMY(gtty);			/* #32 */
