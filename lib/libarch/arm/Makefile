@@ -1,9 +1,9 @@
-#	$OpenBSD$
+#	$OpenBSD: Makefile,v 1.1 2005/02/03 17:12:41 drahn Exp $
 
-#MAN+=	arm_sync_icache.2 arm_drain_writebuf.2
-#MANSUBDIR=zaurus cats
+MAN+=	arm_sync_icache.2 arm_drain_writebuf.2
+MANSUBDIR=cats zaurus
 
-.if ${MACHINE_ARCH} == "arm"
+.if ${MACHINE} == "cats" || ${MACHINE} == "zaurus"
 NOPIC=
 SRCS+=	arm_sync_icache.c arm_drain_writebuf.c
 .include <bsd.lib.mk>
