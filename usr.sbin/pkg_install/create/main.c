@@ -1,7 +1,7 @@
-/*	$OpenBSD: main.c,v 1.9 2001/04/08 16:45:46 espie Exp $	*/
+/*	$OpenBSD: main.c,v 1.10 2002/02/16 21:28:06 millert Exp $	*/
 
 #ifndef lint
-static const char *rcsid = "$OpenBSD: main.c,v 1.9 2001/04/08 16:45:46 espie Exp $";
+static const char *rcsid = "$OpenBSD: main.c,v 1.10 2002/02/16 21:28:06 millert Exp $";
 #endif
 
 /*
@@ -91,7 +91,7 @@ main(int argc, char **argv)
 	    break;
 
 	case 't':
-	    strcpy(PlayPen, optarg);
+	    strlcpy(PlayPen, optarg, PlayPenSize);
 	    break;
 
 	case 'X':
