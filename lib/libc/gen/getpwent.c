@@ -33,7 +33,7 @@
  */
 
 #if defined(LIBC_SCCS) && !defined(lint)
-static char rcsid[] = "$OpenBSD: getpwent.c,v 1.24 2002/02/19 19:39:36 millert Exp $";
+static char rcsid[] = "$OpenBSD: getpwent.c,v 1.25 2002/05/24 21:22:37 deraadt Exp $";
 #endif /* LIBC_SCCS and not lint */
 
 #include <sys/param.h>
@@ -1002,6 +1002,7 @@ __hashpw(key)
 			if (line)
 				free(line);
 			line = NULL;
+			max = 0;
 			return 0;
 		}
 		line = nline;
