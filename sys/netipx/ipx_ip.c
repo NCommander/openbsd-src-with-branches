@@ -1,4 +1,4 @@
-/*	$OpenBSD: ipx_ip.c,v 1.4 1999/01/11 05:12:33 millert Exp $	*/
+/*	$OpenBSD: ipx_ip.c,v 1.5 2000/01/11 19:31:56 fgsch Exp $	*/
 
 /*-
  *
@@ -386,7 +386,7 @@ ipxip_route(m)
 		(caddr_t)&ifr_ipxip, (struct ifnet *)ifn);
 
 	satoipx_addr(ifr_ipxip.ifr_addr).ipx_host =
-	    ipx_ifaddr->ia_addr.sipx_addr.x_host;
+	    ipx_ifaddr.tqh_first->ia_addr.sipx_addr.ipx_host;
 		
 	return (ipx_control((struct socket *)0, (int)SIOCSIFADDR,
 			(caddr_t)&ifr_ipxip, (struct ifnet *)ifn));
