@@ -1,4 +1,4 @@
-/*	$OpenBSD: parse.y,v 1.410 2003/08/22 21:50:34 david Exp $	*/
+/*	$OpenBSD: parse.y,v 1.411 2003/08/24 13:02:28 cedric Exp $	*/
 
 /*
  * Copyright (c) 2001 Markus Friedl.  All rights reserved.
@@ -1600,6 +1600,10 @@ blockspec	: /* empty */		{
 			$$.w2 = 0;
 		}
 		| RETURNRST '(' TTL number ')'	{
+			if ($4 > 255) {
+				yyerror("illegal ttl value %d", $4);
+				YYERROR;
+			}
 			$$.b2 = PFRULE_RETURNRST;
 			$$.w = $4;
 			$$.w2 = 0;
