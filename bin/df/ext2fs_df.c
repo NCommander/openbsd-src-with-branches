@@ -1,3 +1,5 @@
+/*	$OpenBSD$	*/
+
 /*
  * This file is substantially derived from src/sys/ufs/ext2fs/ext2fs_vfsops.c:e2fs_statfs().
  * That file's copyright is applied here.

@@ -1,3 +1,5 @@
+#	$OpenBSD$
+
 #
 # The first 39 of these tests are from the old Bugs script.
 #

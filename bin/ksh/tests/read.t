@@ -1,3 +1,5 @@
+#	$OpenBSD$
+
 #
 # To test:
 #   POSIX:

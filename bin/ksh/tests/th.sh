@@ -1,4 +1,6 @@
 #!/bin/sh
+#	$OpenBSD$
+
 
 #
 # Simple script to find perl and run it

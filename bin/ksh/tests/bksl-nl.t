@@ -1,3 +1,5 @@
+#	$OpenBSD$
+
 #
 #  These tests deal with how \newline is handled in various situations.  The
 # first group of tests are places where it shouldn't be collapsed, the next

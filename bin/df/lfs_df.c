@@ -1,3 +1,5 @@
+/*	$OpenBSD$	*/
+
 /*
  * This file is substantially duplicated from src/sys/ufs/lfs/lfs_vfsops.c:lfs_statfs().
  * That file's copyright is applied here.

@@ -1,3 +1,5 @@
+#	$OpenBSD$
+
 # Not tested yet:
 #	- commands in history file are not numbered negatively
 # (and a few hundred other things)
