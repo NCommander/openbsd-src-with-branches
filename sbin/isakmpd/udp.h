@@ -1,4 +1,4 @@
-/* $OpenBSD: udp.h,v 1.8 2004/04/15 18:39:26 deraadt Exp $	 */
+/* $OpenBSD: udp.h,v 1.9 2004/06/20 15:24:05 ho Exp $	 */
 /* $EOM: udp.h,v 1.4 1998/12/22 02:23:43 niklas Exp $	 */
 
 /*
@@ -47,7 +47,6 @@ struct udp_transport {
 	struct sockaddr	 *src;
 	struct sockaddr	 *dst;
 	int		  s;
-	LIST_ENTRY(udp_transport) link;
 };
 
 #endif				/* _UDP_H_ */
