@@ -1,4 +1,4 @@
-/*	$OpenBSD: whois.c,v 1.12 2001/10/04 19:28:58 millert Exp $	*/
+/*	$OpenBSD: whois.c,v 1.13 2002/01/21 00:55:55 stevesk Exp $	*/
 
 /*
  * Copyright (c) 1980, 1993
@@ -43,7 +43,7 @@ static char copyright[] =
 #if 0
 static char sccsid[] = "@(#)whois.c	8.1 (Berkeley) 6/6/93";
 #else
-static char rcsid[] = "$OpenBSD: whois.c,v 1.12 2001/10/04 19:28:58 millert Exp $";
+static char rcsid[] = "$OpenBSD: whois.c,v 1.13 2002/01/21 00:55:55 stevesk Exp $";
 #endif
 #endif /* not lint */
 
@@ -75,8 +75,8 @@ static char rcsid[] = "$OpenBSD: whois.c,v 1.12 2001/10/04 19:28:58 millert Exp 
 #define WHOIS_INIC_FALLBACK	0x02
 #define WHOIS_QUICK		0x04
 
-static void usage	__P((void));
-static void whois	__P((char *, struct addrinfo *, int));
+static void usage(void);
+static void whois(char *, struct addrinfo *, int);
 
 int
 main(argc, argv)

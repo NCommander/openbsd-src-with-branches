@@ -1,4 +1,4 @@
-/*	$OpenBSD: main.c,v 1.6 2000/06/30 16:00:25 millert Exp $	*/
+/*	$OpenBSD: main.c,v 1.7 2001/09/20 20:42:25 jason Exp $	*/
 /*	$NetBSD: main.c,v 1.3 1996/05/16 16:00:55 thorpej Exp $	*/
 
 /*-
@@ -100,11 +100,11 @@ struct	keytabent eekeytab[] = {
 	{ NULL,			0,	ee_notsupp },
 };
 
-static	void action __P((char *));
-static	void dump_prom __P((void));
-static	void usage __P((void));
+static	void action(char *);
+static	void dump_prom(void);
+static	void usage(void);
 #ifdef __sparc__
-static	int getcputype __P((void));
+static	int getcputype(void);
 #endif /* __sparc__ */
 
 char	*path_eeprom = "/dev/eeprom";

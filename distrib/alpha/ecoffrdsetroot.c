@@ -1,4 +1,4 @@
-/*	$OpenBSD: ecoffrdsetroot.c,v 1.2 1997/05/07 21:43:04 niklas Exp $	*/
+/*	$OpenBSD: ecoffrdsetroot.c,v 1.3 2001/05/11 14:04:30 art Exp $	*/
 
 /*
  * Copyright (c) 1997 Todd C. Milller
@@ -45,7 +45,7 @@
 #include <sys/exec_ecoff.h>
 #include <nlist.h>
 
-void find_rd_root_image __P((char *));
+void find_rd_root_image(char *);
 
 struct ecoff_exechdr head;
 char *file;

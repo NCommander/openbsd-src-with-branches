@@ -1,4 +1,4 @@
-/*	$OpenBSD: date.c,v 1.19 2001/12/02 02:02:25 deraadt Exp $	*/
+/*	$OpenBSD: date.c,v 1.20 2002/01/16 18:44:21 mpech Exp $	*/
 /*	$NetBSD: date.c,v 1.11 1995/09/07 06:21:05 jtc Exp $	*/
 
 /*
@@ -44,7 +44,7 @@ static char copyright[] =
 #if 0
 static char sccsid[] = "@(#)date.c	8.2 (Berkeley) 4/28/95";
 #else
-static char rcsid[] = "$OpenBSD: date.c,v 1.19 2001/12/02 02:02:25 deraadt Exp $";
+static char rcsid[] = "$OpenBSD: date.c,v 1.20 2002/01/16 18:44:21 mpech Exp $";
 #endif
 #endif /* not lint */
 
@@ -72,9 +72,9 @@ time_t tval;
 int retval, nflag;
 int slidetime;
 
-static void setthetime __P((char *));
-static void badformat __P((void));
-static void usage __P((void));
+static void setthetime(char *);
+static void badformat(void);
+static void usage(void);
 
 int
 main(argc, argv)

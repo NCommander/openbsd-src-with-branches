@@ -1,4 +1,4 @@
-/*	$OpenBSD: tape.c,v 1.11 2001/01/19 17:57:35 deraadt Exp $	*/
+/*	$OpenBSD: tape.c,v 1.12 2001/11/05 07:39:16 mpech Exp $	*/
 /*	$NetBSD: tape.c,v 1.11 1997/06/05 11:13:26 lukem Exp $	*/
 
 /*-
@@ -38,7 +38,7 @@
 #if 0
 static char sccsid[] = "@(#)tape.c	8.2 (Berkeley) 3/17/94";
 #else
-static char rcsid[] = "$OpenBSD: tape.c,v 1.11 2001/01/19 17:57:35 deraadt Exp $";
+static char rcsid[] = "$OpenBSD: tape.c,v 1.12 2001/11/05 07:39:16 mpech Exp $";
 #endif
 #endif /* not lint */
 
@@ -86,11 +86,11 @@ extern	char *host;
 char	*nexttape;
 
 static	ssize_t atomic __P((ssize_t (*)(), int, char *, int));
-static	void doslave __P((int, int));
-static	void enslave __P((void));
-static	void flushtape __P((void));
-static	void killall __P((void));
-static	void rollforward __P((void));
+static	void doslave(int, int);
+static	void enslave(void);
+static	void flushtape(void);
+static	void killall(void);
+static	void rollforward(void);
 
 /*
  * Concurrent dump mods (Caltech) - disk block reading and tape writing

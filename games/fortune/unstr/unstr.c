@@ -1,4 +1,4 @@
-/*	$OpenBSD: unstr.c,v 1.5 2001/01/28 23:41:41 niklas Exp $	*/
+/*	$OpenBSD: unstr.c,v 1.6 2001/03/30 04:47:33 pjanzen Exp $	*/
 /*	$NetBSD: unstr.c,v 1.3 1995/03/23 08:29:00 cgd Exp $	*/
 
 /*-
@@ -73,8 +73,8 @@ char	*Infile,			/* name of input file */
 
 FILE	*Inf, *Dataf;
 
-void getargs __P((char *[]));
-void order_unstr __P((STRFILE *));
+void getargs(char *[]);
+void order_unstr(STRFILE *);
 
 /* ARGSUSED */
 int

@@ -1,4 +1,4 @@
-/*	$OpenBSD: supcparse.c,v 1.6 2001/05/02 22:56:53 millert Exp $	*/
+/*	$OpenBSD: supcparse.c,v 1.7 2001/05/04 22:16:16 millert Exp $	*/
 
 /*
  * Copyright (c) 1992 Carnegie Mellon University
@@ -99,7 +99,7 @@ struct option {
  	{ "compress", 	OCOMPRESS }
 };
 
-static void passdelim __P((char **, int ));
+static void passdelim(char **, int );
 
 static void
 passdelim(ptr, delim)		/* skip over delimiter */

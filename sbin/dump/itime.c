@@ -1,4 +1,4 @@
-/*	$OpenBSD: itime.c,v 1.5 1998/08/07 17:29:24 millert Exp $	*/
+/*	$OpenBSD: itime.c,v 1.6 2001/11/05 07:39:16 mpech Exp $	*/
 /*	$NetBSD: itime.c,v 1.4 1997/04/15 01:09:50 lukem Exp $	*/
 
 /*-
@@ -38,7 +38,7 @@
 #if 0
 static char sccsid[] = "@(#)itime.c	8.1 (Berkeley) 6/5/93";
 #else
-static char rcsid[] = "$OpenBSD: itime.c,v 1.5 1998/08/07 17:29:24 millert Exp $";
+static char rcsid[] = "$OpenBSD: itime.c,v 1.6 2001/11/05 07:39:16 mpech Exp $";
 #endif
 #endif /* not lint */
 
@@ -73,10 +73,10 @@ int	nddates = 0;
 int	ddates_in = 0;
 struct	dumptime *dthead = 0;
 
-static	void dumprecout __P((FILE *, struct dumpdates *));
-static	int getrecord __P((FILE *, struct dumpdates *));
-static	int makedumpdate __P((struct dumpdates *, char *));
-static	void readdumptimes __P((FILE *));
+static	void dumprecout(FILE *, struct dumpdates *);
+static	int getrecord(FILE *, struct dumpdates *);
+static	int makedumpdate(struct dumpdates *, char *);
+static	void readdumptimes(FILE *);
 
 void
 initdumptimes()

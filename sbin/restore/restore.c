@@ -1,4 +1,4 @@
-/*	$OpenBSD: restore.c,v 1.5 1997/07/05 23:10:21 deraadt Exp $	*/
+/*	$OpenBSD: restore.c,v 1.6 2001/11/05 07:39:17 mpech Exp $	*/
 /*	$NetBSD: restore.c,v 1.9 1997/06/18 07:10:16 lukem Exp $	*/
 
 /*
@@ -38,7 +38,7 @@
 #if 0
 static char sccsid[] = "@(#)restore.c	8.3 (Berkeley) 9/13/94";
 #else
-static char rcsid[] = "$OpenBSD: restore.c,v 1.5 1997/07/05 23:10:21 deraadt Exp $";
+static char rcsid[] = "$OpenBSD: restore.c,v 1.6 2001/11/05 07:39:17 mpech Exp $";
 #endif
 #endif /* not lint */
 
@@ -53,7 +53,7 @@ static char rcsid[] = "$OpenBSD: restore.c,v 1.5 1997/07/05 23:10:21 deraadt Exp
 #include "restore.h"
 #include "extern.h"
 
-static char *keyval __P((int));
+static char *keyval(int);
 
 /*
  * This implements the 't' option.

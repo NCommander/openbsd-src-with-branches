@@ -1,4 +1,4 @@
-/*	$OpenBSD: archdep.h,v 1.2 2001/05/31 13:26:09 art Exp $ */
+/*	$OpenBSD: archdep.h,v 1.3 2001/06/08 06:52:32 art Exp $ */
 
 /*
  * Copyright (c) 1998 Per Fogelstrom, Opsycon AB
@@ -45,7 +45,7 @@
 #include <elf_abi.h>
 #include <machine/reloc.h>
 
-int	_dl_write __P((int, const char *, int));
+int	_dl_write(int, const char *, int);
 
 /*
  *	The following functions are declared inline so they can

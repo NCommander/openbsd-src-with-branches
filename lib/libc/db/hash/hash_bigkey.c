@@ -1,4 +1,4 @@
-/*	$OpenBSD: hash_bigkey.c,v 1.7 2000/10/03 18:16:48 mickey Exp $	*/
+/*	$OpenBSD: hash_bigkey.c,v 1.8 2002/02/01 18:15:24 millert Exp $	*/
 
 /*-
  * Copyright (c) 1990, 1993, 1994
@@ -40,7 +40,7 @@
 #if 0
 static char sccsid[] = "@(#)hash_bigkey.c	8.3 (Berkeley) 5/31/94";
 #else
-static char rcsid[] = "$OpenBSD: hash_bigkey.c,v 1.7 2000/10/03 18:16:48 mickey Exp $";
+static char rcsid[] = "$OpenBSD: hash_bigkey.c,v 1.8 2002/02/01 18:15:24 millert Exp $";
 #endif
 #endif /* LIBC_SCCS and not lint */
 
@@ -78,8 +78,8 @@ static char rcsid[] = "$OpenBSD: hash_bigkey.c,v 1.7 2000/10/03 18:16:48 mickey 
 #include "page.h"
 #include "extern.h"
 
-static int collect_key __P((HTAB *, BUFHEAD *, int, DBT *, int));
-static int collect_data __P((HTAB *, BUFHEAD *, int, int));
+static int collect_key(HTAB *, BUFHEAD *, int, DBT *, int);
+static int collect_data(HTAB *, BUFHEAD *, int, int);
 
 /*
  * Big_insert

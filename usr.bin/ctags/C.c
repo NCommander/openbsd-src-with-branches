@@ -1,4 +1,4 @@
-/*	$OpenBSD: C.c,v 1.5 2000/07/25 19:28:30 deraadt Exp $	*/
+/*	$OpenBSD: C.c,v 1.6 2000/07/26 17:46:52 espie Exp $	*/
 /*	$NetBSD: C.c,v 1.3 1995/03/26 20:14:02 glass Exp $	*/
 
 /*
@@ -38,7 +38,7 @@
 #if 0
 static char sccsid[] = "@(#)C.c	8.4 (Berkeley) 4/2/94";
 #else
-static char rcsid[] = "$OpenBSD: C.c,v 1.5 2000/07/25 19:28:30 deraadt Exp $";
+static char rcsid[] = "$OpenBSD: C.c,v 1.6 2000/07/26 17:46:52 espie Exp $";
 #endif
 #endif /* not lint */
 
@@ -48,10 +48,10 @@ static char rcsid[] = "$OpenBSD: C.c,v 1.5 2000/07/25 19:28:30 deraadt Exp $";
 
 #include "ctags.h"
 
-static int	func_entry __P((void));
-static void	hash_entry __P((void));
-static void	skip_string __P((int));
-static int	str_entry __P((int));
+static int	func_entry(void);
+static void	hash_entry(void);
+static void	skip_string(int);
+static int	str_entry(int);
 
 /*
  * c_entries --

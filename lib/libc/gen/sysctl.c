@@ -32,7 +32,7 @@
  */
 
 #if defined(LIBC_SCCS) && !defined(lint)
-static char rcsid[] = "$OpenBSD: sysctl.c,v 1.2 1996/08/19 08:26:28 tholo Exp $";
+static char rcsid[] = "$OpenBSD: sysctl.c,v 1.3 1997/08/24 21:25:46 millert Exp $";
 #endif /* LIBC_SCCS and not lint */
 
 #include <sys/param.h>
@@ -45,7 +45,7 @@ static char rcsid[] = "$OpenBSD: sysctl.c,v 1.2 1996/08/19 08:26:28 tholo Exp $"
 #include <string.h>
 #include <unistd.h>
 
-int __sysctl __P((int *, u_int, void *, size_t *, void *, size_t));
+int __sysctl(int *, u_int, void *, size_t *, void *, size_t);
 
 int
 sysctl(name, namelen, oldp, oldlenp, newp, newlen)

@@ -1,4 +1,4 @@
-/*	$OpenBSD: pax.c,v 1.17 2001/05/16 03:04:57 mickey Exp $	*/
+/*	$OpenBSD: pax.c,v 1.18 2001/11/05 09:38:52 deraadt Exp $	*/
 /*	$NetBSD: pax.c,v 1.5 1996/03/26 23:54:20 mrg Exp $	*/
 
 /*-
@@ -48,7 +48,7 @@ static char copyright[] =
 #if 0
 static char sccsid[] = "@(#)pax.c	8.2 (Berkeley) 4/18/94";
 #else
-static char rcsid[] = "$OpenBSD: pax.c,v 1.17 2001/05/16 03:04:57 mickey Exp $";
+static char rcsid[] = "$OpenBSD: pax.c,v 1.18 2001/11/05 09:38:52 deraadt Exp $";
 #endif
 #endif /* not lint */
 
@@ -68,7 +68,7 @@ static char rcsid[] = "$OpenBSD: pax.c,v 1.17 2001/05/16 03:04:57 mickey Exp $";
 #include <paths.h>
 #include "pax.h"
 #include "extern.h"
-static int gen_init __P((void));
+static int gen_init(void);
 
 /*
  * PAX main routines, general globals and some simple start up routines

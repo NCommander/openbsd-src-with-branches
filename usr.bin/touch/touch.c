@@ -1,4 +1,4 @@
-/*	$OpenBSD: touch.c,v 1.5 2000/09/20 22:25:26 pjanzen Exp $	*/
+/*	$OpenBSD: touch.c,v 1.6 2000/10/13 13:54:59 pjanzen Exp $	*/
 /*	$NetBSD: touch.c,v 1.11 1995/08/31 22:10:06 jtc Exp $	*/
 
 /*
@@ -44,7 +44,7 @@ static char copyright[] =
 #if 0
 static char sccsid[] = "@(#)touch.c	8.2 (Berkeley) 4/28/95";
 #endif
-static char rcsid[] = "$OpenBSD: touch.c,v 1.5 2000/09/20 22:25:26 pjanzen Exp $";
+static char rcsid[] = "$OpenBSD: touch.c,v 1.6 2000/10/13 13:54:59 pjanzen Exp $";
 #endif /* not lint */
 
 #include <sys/types.h>
@@ -62,11 +62,11 @@ static char rcsid[] = "$OpenBSD: touch.c,v 1.5 2000/09/20 22:25:26 pjanzen Exp $
 #include <tzfile.h>
 #include <unistd.h>
 
-int	rw __P((char *, struct stat *, int));
-void	stime_arg1 __P((char *, struct timeval *));
-void	stime_arg2 __P((char *, int, struct timeval *));
-void	stime_file __P((char *, struct timeval *));
-void	usage __P((void));
+int	rw(char *, struct stat *, int);
+void	stime_arg1(char *, struct timeval *);
+void	stime_arg2(char *, int, struct timeval *);
+void	stime_file(char *, struct timeval *);
+void	usage(void);
 
 int
 main(argc, argv)

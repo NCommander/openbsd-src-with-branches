@@ -1,4 +1,4 @@
-/*	$OpenBSD: look.c,v 1.7 1999/11/25 00:54:22 millert Exp $	*/
+/*	$OpenBSD: look.c,v 1.8 2001/09/17 08:11:13 espie Exp $	*/
 
 /*
  * Copyright (c) 1989, 1993
@@ -55,7 +55,7 @@ static char sccsid[] = "@(#)look.c	8.1 (Berkeley) 6/6/93";
 #include "stdd.h"
 #include "extern.h"
 
-static void freent __P((ndptr));
+static void freent(ndptr);
 
 unsigned
 hash(name)

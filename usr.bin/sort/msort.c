@@ -1,4 +1,4 @@
-/*	$OpenBSD: msort.c,v 1.9 2001/02/04 21:27:01 ericj Exp $	*/
+/*	$OpenBSD: msort.c,v 1.10 2002/01/04 16:33:14 art Exp $	*/
 
 /*-
  * Copyright (c) 1993
@@ -40,7 +40,7 @@
 #if 0
 static char sccsid[] = "@(#)msort.c	8.1 (Berkeley) 6/6/93";
 #else
-static char rcsid[] = "$OpenBSD: msort.c,v 1.9 2001/02/04 21:27:01 ericj Exp $";
+static char rcsid[] = "$OpenBSD: msort.c,v 1.10 2002/01/04 16:33:14 art Exp $";
 #endif
 #endif /* not lint */
 
@@ -68,8 +68,8 @@ typedef struct tmfile {
 u_char *wts, *wts1 = 0;
 struct mfile *cfilebuf;
 
-static int cmp __P((RECHEADER *, RECHEADER *));
-static int insert __P((struct mfile **, struct mfile **, int, int));
+static int cmp(RECHEADER *, RECHEADER *);
+static int insert(struct mfile **, struct mfile **, int, int);
 
 void
 fmerge(binno, files, nfiles, get, outfp, fput, ftbl)

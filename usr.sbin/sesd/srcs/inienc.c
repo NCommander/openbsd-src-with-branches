@@ -1,6 +1,6 @@
 /* $NetBSD: $ */ 
 /* $FreeBSD: $ */
-/* $OpenBSD: inienc.c,v 1.1 2000/02/21 08:45:15 mjacob Exp $ */
+/* $OpenBSD: inienc.c,v 1.2 2000/02/22 06:21:36 mjacob Exp $ */
 /*
  * Copyright (c) 2000 by Matthew Jacob
  * All rights reserved.
@@ -41,7 +41,7 @@
 #include <sys/ioctl.h>
 #include SESINC
 
-int __P((int, char **));
+int(int, char **);
 
 int
 main(a, v)

@@ -1,4 +1,4 @@
-/*	$OpenBSD: sort.c,v 1.16 2001/02/04 21:27:01 ericj Exp $	*/
+/*	$OpenBSD: sort.c,v 1.17 2001/11/17 19:51:34 millert Exp $	*/
 
 /*-
  * Copyright (c) 1993
@@ -46,7 +46,7 @@ static char copyright[] =
 #if 0
 static char sccsid[] = "@(#)sort.c	8.1 (Berkeley) 6/6/93";
 #else
-static char rcsid[] = "$OpenBSD: sort.c,v 1.16 2001/02/04 21:27:01 ericj Exp $";
+static char rcsid[] = "$OpenBSD: sort.c,v 1.17 2001/11/17 19:51:34 millert Exp $";
 #endif
 #endif /* not lint */
 
@@ -93,9 +93,9 @@ char devstdin[] = _PATH_STDIN;
 char toutpath[_POSIX_PATH_MAX];
 char *tmpdir = _PATH_VARTMP;
 
-static void cleanup __P((void));
-static void onsig __P((int));
-static void usage __P((char *));
+static void cleanup(void);
+static void onsig(int);
+static void usage(char *);
 
 #define CHECK_NFIELDS						\
 	if (++nfields == ND) {					\

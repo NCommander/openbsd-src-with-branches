@@ -1,4 +1,4 @@
-/*	$OpenBSD: safe_finger.c,v 1.1 1997/02/26 06:17:03 downsj Exp $	*/
+/*	$OpenBSD: safe_finger.c,v 1.2 2001/01/17 19:24:28 deraadt Exp $	*/
 
  /*
   * safe_finger - finger client wrapper that protects against nasty stuff
@@ -20,7 +20,7 @@
 #if 0
 static char sccsid[] = "@(#) safe_finger.c 1.4 94/12/28 17:42:41";
 #else
-static char rcsid[] = "$OpenBSD: safe_finger.c,v 1.1 1997/02/26 06:17:03 downsj Exp $";
+static char rcsid[] = "$OpenBSD: safe_finger.c,v 1.2 2001/01/17 19:24:28 deraadt Exp $";
 #endif
 #endif
 
@@ -50,7 +50,7 @@ char    path[] = "PATH=/bin:/usr/bin:/usr/sbin:/sbin";
 
 int     finger_pid;
 
-int	pipe_stdin __P((char **));
+int	pipe_stdin(char **);
 
 void    cleanup(sig)
 int     sig;

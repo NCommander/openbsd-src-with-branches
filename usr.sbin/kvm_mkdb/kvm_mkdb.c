@@ -1,4 +1,4 @@
-/*	$OpenBSD: kvm_mkdb.c,v 1.9 1999/03/29 20:42:50 millert Exp $	*/
+/*	$OpenBSD: kvm_mkdb.c,v 1.10 1999/04/18 17:11:11 espie Exp $	*/
 
 /*-
  * Copyright (c) 1990, 1993
@@ -43,7 +43,7 @@ static char copyright[] =
 #if 0
 static char sccsid[] = "from: @(#)kvm_mkdb.c	8.3 (Berkeley) 5/4/95";
 #else
-static char *rcsid = "$OpenBSD: kvm_mkdb.c,v 1.9 1999/03/29 20:42:50 millert Exp $";
+static char *rcsid = "$OpenBSD: kvm_mkdb.c,v 1.10 1999/04/18 17:11:11 espie Exp $";
 #endif
 #endif /* not lint */
 
@@ -67,8 +67,8 @@ static char *rcsid = "$OpenBSD: kvm_mkdb.c,v 1.9 1999/03/29 20:42:50 millert Exp
 
 #include "extern.h"
 
-void usage __P((void));
-int kvm_mkdb __P((int, char *, char *, int));
+void usage(void);
+int kvm_mkdb(int, char *, char *, int);
 
 HASHINFO openinfo = {
 	4096,		/* bsize */

@@ -1,4 +1,4 @@
-/*	$OpenBSD: atalk.c,v 1.5 2001/11/19 19:02:15 mpech Exp $	*/
+/*	$OpenBSD: atalk.c,v 1.6 2002/01/17 21:34:58 mickey Exp $	*/
 /*	$NetBSD: atalk.c,v 1.2 1997/05/22 17:21:26 christos Exp $	*/
 
 /*
@@ -38,7 +38,7 @@
 #if 0
 static char sccsid[] = "from @(#)atalk.c	1.1 (Whistle) 6/6/96";
 #else
-static char rcsid[] = "$OpenBSD: atalk.c,v 1.5 2001/11/19 19:02:15 mpech Exp $";
+static char rcsid[] = "$OpenBSD: atalk.c,v 1.6 2002/01/17 21:34:58 mickey Exp $";
 #endif
 #endif /* not lint */
 
@@ -69,10 +69,10 @@ struct socket   sockb;
 
 static int first = 1;
 
-static char *at_pr_net __P((struct sockaddr_at *, int));
-static char *at_pr_host __P((struct sockaddr_at *, int));
-static char *at_pr_range __P((struct sockaddr_at *));
-static char *at_pr_port __P((struct sockaddr_at *));
+static char *at_pr_net(struct sockaddr_at *, int);
+static char *at_pr_host(struct sockaddr_at *, int);
+static char *at_pr_range(struct sockaddr_at *);
+static char *at_pr_port(struct sockaddr_at *);
 
 /*
  * Print a summary of connections related to a Network Systems

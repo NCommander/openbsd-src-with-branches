@@ -1,4 +1,4 @@
-/*	$OpenBSD: chap.h,v 1.5 1996/12/23 13:22:39 mickey Exp $	*/
+/*	$OpenBSD: chap.h,v 1.6 1997/09/05 04:32:35 millert Exp $	*/
 
 /*
  * chap.h - Challenge Handshake Authentication Protocol definitions.
@@ -117,8 +117,8 @@ typedef struct chap_state {
 
 extern chap_state chap[];
 
-void ChapAuthWithPeer __P((int, char *, int));
-void ChapAuthPeer __P((int, char *, int));
+void ChapAuthWithPeer(int, char *, int);
+void ChapAuthPeer(int, char *, int);
 
 extern struct protent chap_protent;
 

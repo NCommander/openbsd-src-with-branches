@@ -1,7 +1,7 @@
-/*	$OpenBSD: main.c,v 1.8 1998/10/13 23:09:50 marc Exp $	*/
+/*	$OpenBSD: main.c,v 1.9 2001/04/08 16:45:46 espie Exp $	*/
 
 #ifndef lint
-static const char *rcsid = "$OpenBSD: main.c,v 1.8 1998/10/13 23:09:50 marc Exp $";
+static const char *rcsid = "$OpenBSD: main.c,v 1.9 2001/04/08 16:45:46 espie Exp $";
 #endif
 
 /*
@@ -39,7 +39,7 @@ size_t	PlayPenSize	= sizeof(PlayPen);
 int	Dereference	= 0;
 int	PlistOnly	= 0;
 
-static void usage __P((void));
+static void usage(void);
 
 int
 main(int argc, char **argv)

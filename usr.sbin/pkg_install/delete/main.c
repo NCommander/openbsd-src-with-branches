@@ -1,8 +1,8 @@
-/*	$OpenBSD: main.c,v 1.7 1998/09/07 22:30:15 marc Exp $	*/
+/*	$OpenBSD: main.c,v 1.8 2001/04/08 16:45:47 espie Exp $	*/
 
 #include <sys/cdefs.h>
 #ifndef lint
-static char *rcsid = "$OpenBSD: main.c,v 1.7 1998/09/07 22:30:15 marc Exp $";
+static char *rcsid = "$OpenBSD: main.c,v 1.8 2001/04/08 16:45:47 espie Exp $";
 #endif
 
 /*
@@ -36,7 +36,7 @@ char	*Prefix		= NULL;
 Boolean	NoDeInstall	= FALSE;
 Boolean	CleanDirs	= FALSE;
 
-static void usage __P((void));
+static void usage(void);
 
 int
 main(int argc, char **argv)

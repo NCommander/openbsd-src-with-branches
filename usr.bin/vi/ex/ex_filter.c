@@ -1,4 +1,4 @@
-/*	$OpenBSD: ex_filter.c,v 1.3 2001/01/29 01:58:42 niklas Exp $	*/
+/*	$OpenBSD: ex_filter.c,v 1.4 2001/07/09 07:04:57 deraadt Exp $	*/
 
 /*-
  * Copyright (c) 1991, 1993, 1994
@@ -29,7 +29,7 @@ static const char sccsid[] = "@(#)ex_filter.c	10.34 (Berkeley) 10/23/96";
 
 #include "../common/common.h"
 
-static int filter_ldisplay __P((SCR *, FILE *));
+static int filter_ldisplay(SCR *, FILE *);
 
 /*
  * ex_filter --

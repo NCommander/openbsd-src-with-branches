@@ -32,7 +32,7 @@
  */
 
 #if !defined(lint) && !defined(_KERNEL) && defined(LIBC_SCCS)
-static char rcsid[] = "$OpenBSD: mcount.c,v 1.5 1997/01/30 05:05:00 deraadt Exp $";
+static char rcsid[] = "$OpenBSD: mcount.c,v 1.6 1997/07/23 21:11:27 kstailey Exp $";
 #endif
 
 #include <sys/param.h>
@@ -53,7 +53,7 @@ static char rcsid[] = "$OpenBSD: mcount.c,v 1.5 1997/01/30 05:05:00 deraadt Exp 
  * both frompcindex and frompc.  Any reasonable, modern compiler will
  * perform this optimization.
  */
-_MCOUNT_DECL __P((u_long frompc, u_long selfpc));
+_MCOUNT_DECL(u_long frompc, u_long selfpc);
 _MCOUNT_DECL(frompc, selfpc)	/* _mcount; may be static, inline, etc */
 	register u_long frompc, selfpc;
 {

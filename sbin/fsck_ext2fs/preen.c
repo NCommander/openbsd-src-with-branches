@@ -1,4 +1,4 @@
-/*	$OpenBSD: preen.c,v 1.3 1997/06/14 04:16:58 downsj Exp $	*/
+/*	$OpenBSD: preen.c,v 1.4 2001/09/18 17:43:15 art Exp $	*/
 /*	$NetBSD: preen.c,v 1.2 1997/09/14 14:27:30 lukem Exp $	*/
 
 /*
@@ -63,7 +63,7 @@ int	nrun, ndisks;
 char	hotroot;
 
 char	*rawname(), *unrawname(), *blockcheck();
-void addpart __P((char *, char *, long));
+void addpart(char *, char *, long);
 int startdisk __P((struct disk *, int (*)() ));
 
 int

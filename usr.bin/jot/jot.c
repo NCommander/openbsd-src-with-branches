@@ -1,4 +1,4 @@
-/*	$OpenBSD: jot.c,v 1.7 2000/12/21 15:34:51 aaron Exp $	*/
+/*	$OpenBSD: jot.c,v 1.8 2001/03/08 01:39:17 pjanzen Exp $	*/
 /*	$NetBSD: jot.c,v 1.3 1994/12/02 20:29:43 pk Exp $	*/
 
 /*-
@@ -44,7 +44,7 @@ static char copyright[] =
 #if 0
 static char sccsid[] = "@(#)jot.c	8.1 (Berkeley) 6/6/93";
 #endif
-static char rcsid[] = "$OpenBSD: jot.c,v 1.7 2000/12/21 15:34:51 aaron Exp $";
+static char rcsid[] = "$OpenBSD: jot.c,v 1.8 2001/03/08 01:39:17 pjanzen Exp $";
 #endif /* not lint */
 
 /*
@@ -82,11 +82,11 @@ int	nofinalnl;
 char	sepstring[BUFSIZ] = "\n";
 char	format[BUFSIZ];
 
-void		getargs __P((int, char *[]));
-void		getformat __P((void));
-int		getprec __P((char *));
-void		putdata __P((double, long));
-static void	usage __P((void));
+void		getargs(int, char *[]);
+void		getformat(void);
+int		getprec(char *);
+void		putdata(double, long);
+static void	usage(void);
 
 int
 main(argc, argv)

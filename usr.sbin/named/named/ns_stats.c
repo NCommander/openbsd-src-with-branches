@@ -1,11 +1,11 @@
-/*	$OpenBSD: ns_stats.c,v 1.3 2000/06/29 01:52:49 deraadt Exp $	*/
+/*	$OpenBSD: ns_stats.c,v 1.4 2000/06/29 07:20:52 deraadt Exp $	*/
 
 #if !defined(lint) && !defined(SABER)
 #if 0
 static char sccsid[] = "@(#)ns_stats.c	4.10 (Berkeley) 6/27/90";
 static char rcsid[] = "$From: ns_stats.c,v 8.8 1996/09/22 00:13:10 vixie Exp $";
 #else
-static char rcsid[] = "$OpenBSD: ns_stats.c,v 1.3 2000/06/29 01:52:49 deraadt Exp $";
+static char rcsid[] = "$OpenBSD: ns_stats.c,v 1.4 2000/06/29 07:20:52 deraadt Exp $";
 #endif
 #endif /* not lint */
 
@@ -114,7 +114,7 @@ static const char *typenames[T_ANY+1] = {
 	0, 0, "AXFR", "MAILB", "MAILA", "ANY" 
 };
 
-static void		nameserStats __P((FILE *));
+static void		nameserStats(FILE *);
 
 void
 ns_stats()

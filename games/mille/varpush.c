@@ -1,4 +1,4 @@
-/*	$OpenBSD: varpush.c,v 1.3 1998/09/22 04:08:25 pjanzen Exp $	*/
+/*	$OpenBSD: varpush.c,v 1.4 2001/09/03 21:36:12 pjanzen Exp $	*/
 /*	$NetBSD: varpush.c,v 1.4 1995/03/24 05:02:35 cgd Exp $	*/
 
 /*
@@ -38,7 +38,7 @@
 #if 0
 static char sccsid[] = "@(#)varpush.c	8.1 (Berkeley) 5/31/93";
 #else
-static char rcsid[] = "$OpenBSD$";
+static char rcsid[] = "$OpenBSD: varpush.c,v 1.4 2001/09/03 21:36:12 pjanzen Exp $";
 #endif
 #endif /* not lint */
 
@@ -56,7 +56,7 @@ static char rcsid[] = "$OpenBSD$";
 bool
 varpush(file, func)
 	int	file;
-	ssize_t	(*func) __P((int, const struct iovec *, int));
+	ssize_t	(*func)(int, const struct iovec *, int);
 {
 	int	temp;
 	const struct iovec vec[] = {

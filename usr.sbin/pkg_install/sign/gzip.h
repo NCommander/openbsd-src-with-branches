@@ -1,4 +1,4 @@
-/* $OpenBSD: gzip.h,v 1.1 1999/09/27 21:40:04 espie Exp $ */
+/* $OpenBSD: gzip.h,v 1.2 1999/10/04 21:46:28 espie Exp $ */
 /*-
  * Copyright (c) 1999 Marc Espie.
  *
@@ -77,8 +77,8 @@ extern int gzip_copy_header __P((const struct mygzip_header *h, \
 	/*@null@*/struct signature *sign, \
 	void (*add)(void *, const char *, size_t), void *data));
 
-extern void free_signature __P((/*@null@*/struct signature *sign));
-extern void sign_fill_tag __P((struct signature *sign));
+extern void free_signature(/*@null@*/struct signature *sign);
+extern void sign_fill_tag(struct signature *sign);
 #define KNOWN_TAGS 3
 #define TAG_PGP 0
 #define TAG_SHA1 1

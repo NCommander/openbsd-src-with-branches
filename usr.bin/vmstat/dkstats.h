@@ -1,4 +1,4 @@
-/*	$OpenBSD: dkstats.h,v 1.5 2001/02/07 20:32:55 todd Exp $	*/
+/*	$OpenBSD: dkstats.h,v 1.6 2001/05/14 07:09:59 angelos Exp $	*/
 /*	$NetBSD: dkstats.h,v 1.1 1996/05/10 23:19:28 thorpej Exp $	*/
 
 /*
@@ -49,6 +49,6 @@ struct _disk {
 	long	cp_time[CPUSTATES];	/* System timer ticks. */
 };
 
-void dkswap __P((void));
-void dkreadstats __P((void));
-int dkinit __P((int));
+void dkswap(void);
+void dkreadstats(void);
+int dkinit(int);

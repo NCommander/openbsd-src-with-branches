@@ -1,6 +1,6 @@
 /* $NetBSD: $ */
 /* $FreeBSD: $ */
-/* $OpenBSD: sesd.c,v 1.1 2000/02/21 08:45:15 mjacob Exp $ */
+/* $OpenBSD: sesd.c,v 1.2 2000/02/22 06:21:36 mjacob Exp $ */
 /*
  * Copyright (c) 2000 by Matthew Jacob
  * All rights reserved.
@@ -45,7 +45,7 @@
 
 #define	ALLSTAT (SES_ENCSTAT_UNRECOV | SES_ENCSTAT_CRITICAL | \
 	SES_ENCSTAT_NONCRITICAL | SES_ENCSTAT_INFO)
-int main __P((int, char **));
+int main(int, char **);
 
 /*
  * Monitor named SES devices and note (via syslog) any changes in status.

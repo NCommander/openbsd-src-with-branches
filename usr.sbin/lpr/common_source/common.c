@@ -1,4 +1,4 @@
-/*	$OpenBSD: common.c,v 1.13 2001/11/23 03:58:17 deraadt Exp $	*/
+/*	$OpenBSD: common.c,v 1.14 2001/12/06 03:12:30 ericj Exp $	*/
 
 /*
  * Copyright (c) 1983, 1993
@@ -42,7 +42,7 @@
 #if 0
 static const char sccsid[] = "@(#)common.c	8.5 (Berkeley) 4/28/95";
 #else
-static const char rcsid[] = "$OpenBSD: common.c,v 1.13 2001/11/23 03:58:17 deraadt Exp $";
+static const char rcsid[] = "$OpenBSD: common.c,v 1.14 2001/12/06 03:12:30 ericj Exp $";
 #endif
 #endif /* not lint */
 
@@ -121,7 +121,7 @@ char	*printcapdb[2] = { _PATH_PRINTCAP, 0 };
 
 extern uid_t	uid, euid;
 
-static int compar __P((const void *, const void *));
+static int compar(const void *, const void *);
 
 /*
  * Create a TCP connection to host "rhost" at port "rport".

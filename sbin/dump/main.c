@@ -1,4 +1,4 @@
-/*	$OpenBSD: main.c,v 1.29 2000/10/09 23:19:26 mickey Exp $	*/
+/*	$OpenBSD: main.c,v 1.30 2001/11/05 07:39:16 mpech Exp $	*/
 /*	$NetBSD: main.c,v 1.14 1997/06/05 11:13:24 lukem Exp $	*/
 
 /*-
@@ -95,9 +95,9 @@ long	blocksperfile;	/* output blocks per file */
 char	*host = NULL;	/* remote host (if any) */
 int	maxbsize = 64*1024;	/* XXX MAXBSIZE from sys/param.h */
 
-static long numarg __P((char *, long, long));
-static void obsolete __P((int *, char **[]));
-static void usage __P((void));
+static long numarg(char *, long, long);
+static void obsolete(int *, char **[]);
+static void usage(void);
 
 int
 main(argc, argv)

@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: mntopts.h,v 1.1 1996/03/21 00:16:00 niklas Exp $	*/
 
 /*-
  * Copyright (c) 1994
@@ -78,5 +78,5 @@ struct mntopt {
 	MOPT_RDONLY,							\
 	MOPT_UNION
 
-void getmntopts __P((const char *, const struct mntopt *, int *, int *));
+void getmntopts(const char *, const struct mntopt *, int *, int *);
 extern int getmnt_silent;

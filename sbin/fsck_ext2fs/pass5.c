@@ -1,4 +1,4 @@
-/*	$OpenBSD: pass5.c,v 1.7 2001/09/18 03:24:09 deraadt Exp $	*/
+/*	$OpenBSD: pass5.c,v 1.8 2001/09/18 17:43:15 art Exp $	*/
 /*	$NetBSD: pass5.c,v 1.7 2000/01/28 16:01:46 bouyer Exp $ */
 
 /*
@@ -50,7 +50,7 @@
 #include "extern.h"
 
 
-void print_bmap __P((u_char *,u_int32_t));
+void print_bmap(u_char *,u_int32_t);
 
 void
 pass5()

@@ -1,4 +1,4 @@
-/*	$OpenBSD: mkstr.c,v 1.3 1997/07/05 23:11:12 deraadt Exp $	*/
+/*	$OpenBSD: mkstr.c,v 1.4 2001/11/19 19:02:15 mpech Exp $	*/
 /*	$NetBSD: mkstr.c,v 1.4 1995/09/28 06:22:20 tls Exp $	*/
 
 /*
@@ -44,7 +44,7 @@ static char copyright[] =
 #if 0
 static char sccsid[] = "@(#)mkstr.c	8.1 (Berkeley) 6/6/93";
 #else
-static char rcsid[] = "$OpenBSD: mkstr.c,v 1.3 1997/07/05 23:11:12 deraadt Exp $";
+static char rcsid[] = "$OpenBSD: mkstr.c,v 1.4 2001/11/19 19:02:15 mpech Exp $";
 #endif
 #endif /* not lint */
 
@@ -88,13 +88,13 @@ char	*progname;
 char	usagestr[] =	"usage: %s [ - ] mesgfile prefix file ...\n";
 char	name[100], *np;
 
-void inithash __P((void));
-void process __P((void));
-int match __P((char *));
-void copystr __P((void));
-int octdigit __P((char));
-unsigned hashit __P((char *, char, unsigned));
-int fgetNUL __P((char *, int, FILE *));
+void inithash(void);
+void process(void);
+int match(char *);
+void copystr(void);
+int octdigit(char);
+unsigned hashit(char *, char, unsigned);
+int fgetNUL(char *, int, FILE *);
 
 int
 main(argc, argv)

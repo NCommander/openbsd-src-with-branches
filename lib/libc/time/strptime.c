@@ -36,7 +36,7 @@
  */
 
 #if defined(LIBC_SCCS) && !defined(lint)
-static char rcsid[] = "$OpenBSD: strptime.c,v 1.6 2001/01/08 15:23:20 d Exp $";
+static char rcsid[] = "$OpenBSD: strptime.c,v 1.7 2001/08/23 16:32:19 espie Exp $";
 #endif /* LIBC_SCCS and not lint */
 
 #include <sys/localedef.h>
@@ -57,8 +57,8 @@ static char rcsid[] = "$OpenBSD: strptime.c,v 1.6 2001/01/08 15:23:20 d Exp $";
 #define	_LEGAL_ALT(x)		{ if (alt_format & ~(x)) return (0); }
 
 
-static	int _conv_num __P((const char **, int *, int, int));
-static	char *_strptime __P((const char *, const char *, struct tm *, int));
+static	int _conv_num(const char **, int *, int, int);
+static	char *_strptime(const char *, const char *, struct tm *, int);
 
 
 char *

@@ -1,4 +1,4 @@
-/*	$OpenBSD: tcopy.c,v 1.5 2000/06/30 16:00:22 millert Exp $	*/
+/*	$OpenBSD: tcopy.c,v 1.6 2001/07/12 05:17:21 deraadt Exp $	*/
 /*	$NetBSD: tcopy.c,v 1.5 1997/04/15 07:23:08 lukem Exp $	*/
 
 /*
@@ -44,7 +44,7 @@ static char copyright[] =
 #if 0
 static char sccsid[] = "@(#)tcopy.c	8.3 (Berkeley) 1/23/95";
 #endif
-static char rcsid[] = "$OpenBSD: tcopy.c,v 1.5 2000/06/30 16:00:22 millert Exp $";
+static char rcsid[] = "$OpenBSD: tcopy.c,v 1.6 2001/07/12 05:17:21 deraadt Exp $";
 #endif /* not lint */
 
 #include <sys/types.h>
@@ -70,11 +70,11 @@ long	lastrec, record;
 off_t	size, tsize;
 FILE	*msg = stdout;
 
-void	*getspace __P((int));
-void	 intr __P((int));
-void	 usage __P((void));
-void	 verify __P((int, int, char *));
-void	 writeop __P((int, int));
+void	*getspace(int);
+void	 intr(int);
+void	 usage(void);
+void	 verify(int, int, char *);
+void	 writeop(int, int);
 
 int
 main(argc, argv)

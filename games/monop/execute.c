@@ -1,4 +1,4 @@
-/*	$OpenBSD: execute.c,v 1.3 1998/11/29 19:45:11 pjanzen Exp $	*/
+/*	$OpenBSD: execute.c,v 1.4 2000/06/30 16:00:04 millert Exp $	*/
 /*	$NetBSD: execute.c,v 1.3 1995/03/23 08:34:38 cgd Exp $	*/
 
 /*
@@ -38,7 +38,7 @@
 #if 0
 static char sccsid[] = "@(#)execute.c	8.1 (Berkeley) 5/31/93";
 #else
-static char rcsid[] = "$OpenBSD: execute.c,v 1.3 1998/11/29 19:45:11 pjanzen Exp $";
+static char rcsid[] = "$OpenBSD: execute.c,v 1.4 2000/06/30 16:00:04 millert Exp $";
 #endif
 #endif /* not lint */
 
@@ -60,7 +60,7 @@ static char	buf[257];
 
 static bool	new_play;	/* set if move on to new player		*/
 
-static void	show_move __P((void));
+static void	show_move(void);
 
 /*
  *	This routine takes user input and puts it in buf

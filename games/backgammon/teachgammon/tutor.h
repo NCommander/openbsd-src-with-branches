@@ -1,4 +1,4 @@
-/*	$OpenBSD: tutor.h,v 1.2 1998/03/19 11:13:37 pjanzen Exp $	*/
+/*	$OpenBSD: tutor.h,v 1.3 1999/07/31 21:57:41 pjanzen Exp $	*/
 
 /*
  * Copyright (c) 1980, 1993
@@ -65,7 +65,7 @@ extern	const char	*const stragy[];
 extern	const struct situatn	test[];
 
 
-int	brdeq __P((const int *, const int *));
-void	clrest __P((void));
-void	leave __P((void));
-void	tutor __P((void));
+int	brdeq(const int *, const int *);
+void	clrest(void);
+void	leave(void);
+void	tutor(void);

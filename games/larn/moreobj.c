@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: moreobj.c,v 1.3 1998/09/15 05:12:32 pjanzen Exp $	*/
 /*	$NetBSD: moreobj.c,v 1.4 1997/10/18 20:03:32 christos Exp $	*/
 
 /*
@@ -9,7 +9,7 @@
  * oaltar() othrone() ochest() ofountain()
  */
 #ifndef lint
-static char rcsid[] = "$OpenBSD$";
+static char rcsid[] = "$OpenBSD: moreobj.c,v 1.3 1998/09/15 05:12:32 pjanzen Exp $";
 #endif				/* not lint */
 
 #include <stdio.h>
@@ -18,8 +18,8 @@ static char rcsid[] = "$OpenBSD$";
 #include "header.h"
 #include "extern.h"
 
-static void ohear __P((int));
-static void fch __P((int, long *));
+static void ohear(int);
+static void fch(int, long *);
 
 /*
  *	******

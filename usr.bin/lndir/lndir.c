@@ -1,4 +1,4 @@
-/*	$OpenBSD: lndir.c,v 1.5 2000/07/20 17:47:17 ericj Exp $	*/
+/*	$OpenBSD: lndir.c,v 1.6 2001/07/04 04:56:15 jasoni Exp $	*/
 /* $XConsortium: lndir.c /main/15 1995/08/30 10:56:18 gildea $ */
 
 /* 
@@ -67,10 +67,10 @@ int ignore_links = 0;		/* -ignorelinks */
 char *rcurdir;
 char *curdir;
 
-int equivalent __P((char *, char *));
-void addexcept __P((char *));
-int dodir __P((char *, struct stat *, struct stat *, int));
-void usage __P((void));
+int equivalent(char *, char *);
+void addexcept(char *);
+int dodir(char *, struct stat *, struct stat *, int);
+void usage(void);
 
 struct except {
 	char *name;

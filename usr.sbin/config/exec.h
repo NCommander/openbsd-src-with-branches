@@ -1,4 +1,4 @@
-/*	$OpenBSD: exec.h,v 1.1 1999/10/04 20:00:51 deraadt Exp $ */
+/*	$OpenBSD: exec.h,v 1.2 2001/08/12 12:03:03 heko Exp $ */
 
 /*
  * Copyright (c) 1999 Mats O Jansson.  All rights reserved.
@@ -32,10 +32,10 @@
 #ifndef _EXEC_H
 #define _EXEC_H
 
-void	loadkernel __P((char *));
-void	savekernel __P((char *));
-caddr_t	adjust __P((caddr_t));
-caddr_t	readjust __P((caddr_t));
+void	loadkernel(char *);
+void	savekernel(char *);
+caddr_t	adjust(caddr_t);
+caddr_t	readjust(caddr_t);
 
 #endif /* _EXEC_H */
 

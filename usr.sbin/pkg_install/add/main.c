@@ -1,7 +1,7 @@
-/*	$OpenBSD: main.c,v 1.12 2000/02/04 05:05:45 deraadt Exp $	*/
+/*	$OpenBSD: main.c,v 1.13 2001/04/08 16:45:46 espie Exp $	*/
 
 #ifndef lint
-static char *rcsid = "$OpenBSD: main.c,v 1.12 2000/02/04 05:05:45 deraadt Exp $";
+static char *rcsid = "$OpenBSD: main.c,v 1.13 2001/04/08 16:45:46 espie Exp $";
 #endif
 
 /*
@@ -47,7 +47,7 @@ add_mode_t AddMode	= NORMAL;
 char **pkgs;
 int pkg_count = 0;
 
-static void usage __P((void));
+static void usage(void);
 
 int
 main(int argc, char **argv)

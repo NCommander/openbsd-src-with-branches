@@ -1,4 +1,4 @@
-/*	$OpenBSD: parse.c,v 1.27 2001/12/01 18:54:43 deraadt Exp $	*/
+/*	$OpenBSD: parse.c,v 1.28 2002/01/07 08:13:31 mpech Exp $	*/
 
 /*
  * This program is in the public domain and may be used freely by anyone
@@ -30,10 +30,10 @@
 
 #define IO_TIMEOUT	30	/* Timeout I/O operations after N seconds */
 
-int check_noident __P((char *));
-ssize_t timed_read __P((int, void *, size_t, time_t));
-ssize_t timed_write __P((int, const void *, size_t, time_t));
-void gentoken __P((char *, int));
+int check_noident(char *);
+ssize_t timed_read(int, void *, size_t, time_t);
+ssize_t timed_write(int, const void *, size_t, time_t);
+void gentoken(char *, int);
 
 /*
  * A small routine to check for the existence of the ".noident"

@@ -1,4 +1,4 @@
-/*	$OpenBSD: upap.h,v 1.3 1996/07/20 12:02:15 joshd Exp $	*/
+/*	$OpenBSD: upap.h,v 1.4 1997/09/05 04:32:46 millert Exp $	*/
 
 /*
  * upap.h - User/Password Authentication Protocol definitions.
@@ -83,7 +83,7 @@ typedef struct upap_state {
 
 extern upap_state upap[];
 
-void upap_authwithpeer __P((int, char *, char *));
-void upap_authpeer __P((int));
+void upap_authwithpeer(int, char *, char *);
+void upap_authpeer(int);
 
 extern struct protent pap_protent;

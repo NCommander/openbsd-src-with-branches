@@ -1,4 +1,4 @@
-/*	$OpenBSD: cat.c,v 1.10 2001/09/06 13:29:08 mpech Exp $	*/
+/*	$OpenBSD: cat.c,v 1.11 2001/11/05 07:39:16 mpech Exp $	*/
 /*	$NetBSD: cat.c,v 1.11 1995/09/07 06:12:54 jtc Exp $	*/
 
 /*
@@ -47,7 +47,7 @@ static char copyright[] =
 #if 0
 static char sccsid[] = "@(#)cat.c	8.2 (Berkeley) 4/27/95";
 #else
-static char rcsid[] = "$OpenBSD: cat.c,v 1.10 2001/09/06 13:29:08 mpech Exp $";
+static char rcsid[] = "$OpenBSD: cat.c,v 1.11 2001/11/05 07:39:16 mpech Exp $";
 #endif
 #endif /* not lint */
 
@@ -70,10 +70,10 @@ int bflag, eflag, nflag, sflag, tflag, vflag;
 int rval;
 char *filename;
 
-void cook_args __P((char *argv[]));
-void cook_buf __P((FILE *));
-void raw_args __P((char *argv[]));
-void raw_cat __P((int));
+void cook_args(char *argv[]);
+void cook_buf(FILE *);
+void raw_args(char *argv[]);
+void raw_cat(int);
 
 int
 main(argc, argv)

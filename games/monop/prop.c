@@ -1,4 +1,4 @@
-/*	$OpenBSD: prop.c,v 1.2 1998/09/20 23:36:55 pjanzen Exp $	*/
+/*	$OpenBSD: prop.c,v 1.3 2001/01/17 00:27:21 pjanzen Exp $	*/
 /*	$NetBSD: prop.c,v 1.3 1995/03/23 08:35:06 cgd Exp $	*/
 
 /*
@@ -38,14 +38,14 @@
 #if 0
 static char sccsid[] = "@(#)prop.c	8.1 (Berkeley) 5/31/93";
 #else
-static char rcsid[] = "$OpenBSD: prop.c,v 1.2 1998/09/20 23:36:55 pjanzen Exp $";
+static char rcsid[] = "$OpenBSD: prop.c,v 1.3 2001/01/17 00:27:21 pjanzen Exp $";
 #endif
 #endif /* not lint */
 
 #include	<err.h>
 #include	"monop.ext"
 
-static int	value __P((SQUARE *));
+static int	value(SQUARE *);
 
 /*
  *	This routine deals with buying property, setting all the

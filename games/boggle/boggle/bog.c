@@ -1,4 +1,4 @@
-/*	$OpenBSD: bog.c,v 1.6 1999/07/31 18:13:30 pjanzen Exp $	*/
+/*	$OpenBSD: bog.c,v 1.7 2001/06/03 23:10:50 pjanzen Exp $	*/
 /*	$NetBSD: bog.c,v 1.5 1995/04/24 12:22:32 cgd Exp $	*/
 
 /*-
@@ -47,7 +47,7 @@ static char copyright[] =
 #if 0
 static char sccsid[] = "@(#)bog.c	8.1 (Berkeley) 6/11/93";
 #else
-static char rcsid[] = "$OpenBSD: bog.c,v 1.6 1999/07/31 18:13:30 pjanzen Exp $";
+static char rcsid[] = "$OpenBSD: bog.c,v 1.7 2001/06/03 23:10:50 pjanzen Exp $";
 #endif
 #endif /* not lint */
 
@@ -62,7 +62,7 @@ static char rcsid[] = "$OpenBSD: bog.c,v 1.6 1999/07/31 18:13:30 pjanzen Exp $";
 #include "bog.h"
 #include "extern.h"
 
-static int	compar __P((const void *, const void *));
+static int	compar(const void *, const void *);
 
 struct dictindex dictindex[26];
 

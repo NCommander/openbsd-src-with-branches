@@ -1,4 +1,4 @@
-/*	$OpenBSD: loop-bsd.c,v 1.3 1997/08/18 03:11:30 millert Exp $ */
+/*	$OpenBSD: loop-bsd.c,v 1.4 1998/07/07 17:32:46 art Exp $ */
 
 /*
  * Copyright (c) 1993-95 Mats O Jansson.  All rights reserved.
@@ -30,7 +30,7 @@
  */
 
 #ifndef LINT
-static char rcsid[] = "$OpenBSD: loop-bsd.c,v 1.3 1997/08/18 03:11:30 millert Exp $";
+static char rcsid[] = "$OpenBSD: loop-bsd.c,v 1.4 1998/07/07 17:32:46 art Exp $";
 #endif
 
 #include <stdlib.h>
@@ -93,7 +93,7 @@ mopReadDL()
  */
 struct if_info *iflist;
 
-void   mopProcess    __P((struct if_info *, u_char *));
+void   mopProcess(struct if_info *, u_char *);
 
 /*
  * Loop indefinitely listening for MOP requests on the

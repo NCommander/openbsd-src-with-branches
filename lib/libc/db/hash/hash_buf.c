@@ -1,4 +1,4 @@
-/*	$OpenBSD: hash_buf.c,v 1.7 1999/02/15 05:11:24 millert Exp $	*/
+/*	$OpenBSD: hash_buf.c,v 1.8 2000/10/03 18:16:48 mickey Exp $	*/
 
 /*-
  * Copyright (c) 1990, 1993, 1994
@@ -40,7 +40,7 @@
 #if 0
 static char sccsid[] = "@(#)hash_buf.c	8.5 (Berkeley) 7/15/94";
 #else
-static char rcsid[] = "$OpenBSD: hash_buf.c,v 1.7 1999/02/15 05:11:24 millert Exp $";
+static char rcsid[] = "$OpenBSD: hash_buf.c,v 1.8 2000/10/03 18:16:48 mickey Exp $";
 #endif
 #endif /* LIBC_SCCS and not lint */
 
@@ -77,7 +77,7 @@ static char rcsid[] = "$OpenBSD: hash_buf.c,v 1.7 1999/02/15 05:11:24 millert Ex
 #include "page.h"
 #include "extern.h"
 
-static BUFHEAD *newbuf __P((HTAB *, u_int32_t, BUFHEAD *));
+static BUFHEAD *newbuf(HTAB *, u_int32_t, BUFHEAD *);
 
 /* Unlink B from its place in the lru */
 #define BUF_REMOVE(B) { \

@@ -1,4 +1,4 @@
-/*	$OpenBSD: sprayd.c,v 1.3 2001/01/28 19:34:32 niklas Exp $*/
+/*	$OpenBSD: sprayd.c,v 1.4 2001/07/08 21:18:11 deraadt Exp $*/
 
 /*
  * Copyright (c) 1994 Christos Zoulas
@@ -32,7 +32,7 @@
  */
 
 #ifndef lint
-static char rcsid[] = "$OpenBSD: sprayd.c,v 1.3 2001/01/28 19:34:32 niklas Exp $";
+static char rcsid[] = "$OpenBSD: sprayd.c,v 1.4 2001/07/08 21:18:11 deraadt Exp $";
 #endif /* not lint */
 
 #include <sys/types.h>
@@ -46,7 +46,7 @@ static char rcsid[] = "$OpenBSD: sprayd.c,v 1.3 2001/01/28 19:34:32 niklas Exp $
 #include <rpc/rpc.h>
 #include <rpcsvc/spray.h>
 
-static void spray_service __P((struct svc_req *, SVCXPRT *));
+static void spray_service(struct svc_req *, SVCXPRT *);
 
 static int from_inetd = 1;
 

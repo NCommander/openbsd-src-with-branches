@@ -1,4 +1,4 @@
-/*	$OpenBSD: keyword.c,v 1.12 1997/11/06 15:59:54 kstailey Exp $	*/
+/*	$OpenBSD: keyword.c,v 1.13 1998/11/25 22:33:38 aaron Exp $	*/
 /*	$NetBSD: keyword.c,v 1.12.6.1 1996/05/30 21:25:13 cgd Exp $	*/
 
 /*-
@@ -38,7 +38,7 @@
 #if 0
 static char sccsid[] = "@(#)keyword.c	8.5 (Berkeley) 4/2/94";
 #else
-static char rcsid[] = "$OpenBSD: keyword.c,v 1.12 1997/11/06 15:59:54 kstailey Exp $";
+static char rcsid[] = "$OpenBSD: keyword.c,v 1.13 1998/11/25 22:33:38 aaron Exp $";
 #endif
 #endif /* not lint */
 
@@ -59,8 +59,8 @@ static char rcsid[] = "$OpenBSD: keyword.c,v 1.12 1997/11/06 15:59:54 kstailey E
 #include <sys/ucred.h>
 #include <sys/sysctl.h>
 
-static VAR *findvar __P((char *));
-static int  vcmp __P((const void *, const void *));
+static VAR *findvar(char *);
+static int  vcmp(const void *, const void *);
 
 #ifdef NOTINUSE
 int	utime(), stime(), ixrss(), idrss(), isrss();

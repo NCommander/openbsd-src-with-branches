@@ -1,4 +1,4 @@
-/*	$OpenBSD: print.c,v 1.23 2002/01/30 17:52:40 mickey Exp $	*/
+/*	$OpenBSD: print.c,v 1.24 2002/02/10 21:07:00 naddy Exp $	*/
 /*	$NetBSD: print.c,v 1.27 1995/09/29 21:58:12 cgd Exp $	*/
 
 /*-
@@ -38,7 +38,7 @@
 #if 0
 static char sccsid[] = "@(#)print.c	8.6 (Berkeley) 4/16/94";
 #else
-static char rcsid[] = "$OpenBSD: print.c,v 1.23 2002/01/30 17:52:40 mickey Exp $";
+static char rcsid[] = "$OpenBSD: print.c,v 1.24 2002/02/10 21:07:00 naddy Exp $";
 #endif
 #endif /* not lint */
 
@@ -70,7 +70,7 @@ static char rcsid[] = "$OpenBSD: print.c,v 1.23 2002/01/30 17:52:40 mickey Exp $
 extern kvm_t *kd;
 extern int needenv, needcomm, commandonly;
 
-static char *cmdpart __P((char *));
+static char *cmdpart(char *);
 
 #define	min(a,b)	((a) < (b) ? (a) : (b))
 

@@ -1,7 +1,7 @@
-/*	$OpenBSD: main.c,v 1.12 1999/02/28 18:55:25 deraadt Exp $	*/
+/*	$OpenBSD: main.c,v 1.13 2001/04/08 16:45:47 espie Exp $	*/
 
 #ifndef lint
-static char *rcsid = "$OpenBSD: main.c,v 1.12 1999/02/28 18:55:25 deraadt Exp $";
+static char *rcsid = "$OpenBSD: main.c,v 1.13 2001/04/08 16:45:47 espie Exp $";
 #endif
 
 /*
@@ -39,7 +39,7 @@ char PlayPen[FILENAME_MAX];
 size_t PlayPenSize	= sizeof(PlayPen);
 char *CheckPkg		= NULL;
 
-static void usage __P((void));
+static void usage(void);
 
 int
 main(int argc, char **argv)

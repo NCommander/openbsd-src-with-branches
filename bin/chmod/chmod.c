@@ -1,4 +1,4 @@
-/*	$OpenBSD: chmod.c,v 1.11 2000/07/19 19:42:31 mickey Exp $	*/
+/*	$OpenBSD: chmod.c,v 1.12 2000/07/31 19:02:38 ericj Exp $	*/
 /*	$NetBSD: chmod.c,v 1.12 1995/03/21 09:02:09 cgd Exp $	*/
 
 /*
@@ -44,7 +44,7 @@ static char copyright[] =
 #if 0
 static char sccsid[] = "@(#)chmod.c	8.8 (Berkeley) 4/1/94";
 #else
-static char rcsid[] = "$OpenBSD: chmod.c,v 1.11 2000/07/19 19:42:31 mickey Exp $";
+static char rcsid[] = "$OpenBSD: chmod.c,v 1.12 2000/07/31 19:02:38 ericj Exp $";
 #endif
 #endif /* not lint */
 
@@ -66,9 +66,9 @@ static char rcsid[] = "$OpenBSD: chmod.c,v 1.11 2000/07/19 19:42:31 mickey Exp $
 int ischflags, ischown, ischgrp, ischmod;
 extern char *__progname;
 
-gid_t a_gid __P((const char *));
-uid_t a_uid __P((const char *));
-void usage __P((void));
+gid_t a_gid(const char *);
+uid_t a_uid(const char *);
+void usage(void);
 
 int
 main(argc, argv)

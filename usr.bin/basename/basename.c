@@ -1,4 +1,4 @@
-/*	$OpenBSD: basename.c,v 1.2 1996/06/26 05:31:37 deraadt Exp $	*/
+/*	$OpenBSD: basename.c,v 1.3 1997/08/17 21:25:01 millert Exp $	*/
 /*	$NetBSD: basename.c,v 1.9 1995/09/02 05:29:46 jtc Exp $	*/
 
 /*-
@@ -44,7 +44,7 @@ static char copyright[] =
 #if 0
 static char sccsid[] = "@(#)basename.c	8.4 (Berkeley) 5/4/95";
 #endif
-static char rcsid[] = "$OpenBSD: basename.c,v 1.2 1996/06/26 05:31:37 deraadt Exp $";
+static char rcsid[] = "$OpenBSD: basename.c,v 1.3 1997/08/17 21:25:01 millert Exp $";
 #endif /* not lint */
 
 #include <stdio.h>
@@ -53,7 +53,7 @@ static char rcsid[] = "$OpenBSD: basename.c,v 1.2 1996/06/26 05:31:37 deraadt Ex
 #include <locale.h>
 #include <unistd.h>
 
-void usage __P((void));
+void usage(void);
 
 int
 main(argc, argv)

@@ -1,4 +1,4 @@
-/*	$OpenBSD: top.c,v 1.13 2001/11/17 19:57:36 deraadt Exp $	*/
+/*	$OpenBSD: top.c,v 1.14 2001/11/19 19:02:17 mpech Exp $	*/
 
 const char copyright[] = "Copyright (c) 1984 through 1996, William LeFebvre";
 
@@ -58,18 +58,18 @@ char stdoutbuf[Buffersize];
 extern int overstrike;
 
 /* signal handling routines */
-static void leave __P((int));
-static void onalrm __P((int));
-static void tstop __P((int));
+static void leave(int);
+static void onalrm(int);
+static void tstop(int);
 #ifdef SIGWINCH
-static void winch __P((int));
+static void winch(int);
 #endif
 
 volatile sig_atomic_t leaveflag;
 volatile sig_atomic_t tstopflag;
 volatile sig_atomic_t winchflag;
 
-static void reset_display __P((void));
+static void reset_display(void);
 
 /* values which need to be accessed by signal handlers */
 static int max_topn;		/* maximum displayable processes */

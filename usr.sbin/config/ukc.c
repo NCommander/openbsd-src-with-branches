@@ -1,4 +1,4 @@
-/*	$OpenBSD: ukc.c,v 1.5 2001/02/04 20:42:12 maja Exp $ */
+/*	$OpenBSD: ukc.c,v 1.6 2001/12/05 10:11:23 deraadt Exp $ */
 
 /*
  * Copyright (c) 1999-2001 Mats O Jansson.  All rights reserved.
@@ -30,7 +30,7 @@
  */
 
 #ifndef LINT
-static char rcsid[] = "$OpenBSD: ukc.c,v 1.5 2001/02/04 20:42:12 maja Exp $";
+static char rcsid[] = "$OpenBSD: ukc.c,v 1.6 2001/12/05 10:11:23 deraadt Exp $";
 #endif
 
 #include <sys/types.h>
@@ -51,8 +51,8 @@ static char rcsid[] = "$OpenBSD: ukc.c,v 1.5 2001/02/04 20:42:12 maja Exp $";
 #include "ukc.h"
 #include "exec.h"
 
-void	init __P((void));
-void	usage __P((void));
+void	init(void);
+void	usage(void);
 
 int	ukc_mod_kernel = 0;
 

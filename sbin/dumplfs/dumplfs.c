@@ -1,4 +1,4 @@
-/*	$OpenBSD: dumplfs.c,v 1.4 1996/06/23 14:30:18 deraadt Exp $	*/
+/*	$OpenBSD: dumplfs.c,v 1.5 2001/06/04 14:59:48 mickey Exp $	*/
 /*	$NetBSD: dumplfs.c,v 1.7 1995/12/14 22:36:34 thorpej Exp $	*/
 
 /*-
@@ -44,7 +44,7 @@ static char copyright[] =
 #if 0
 static char sccsid[] = "@(#)dumplfs.c	8.1 (Berkeley) 6/5/93";
 #else
-static char rcsid[] = "$OpenBSD: dumplfs.c,v 1.4 1996/06/23 14:30:18 deraadt Exp $";
+static char rcsid[] = "$OpenBSD: dumplfs.c,v 1.5 2001/06/04 14:59:48 mickey Exp $";
 #endif
 #endif /* not lint */
 
@@ -66,16 +66,16 @@ static char rcsid[] = "$OpenBSD: dumplfs.c,v 1.4 1996/06/23 14:30:18 deraadt Exp
 #include <unistd.h>
 #include "extern.h"
 
-static void	addseg __P((char *));
-static void	dump_cleaner_info __P((struct lfs *, void *));
-static void	dump_dinode __P((struct dinode *));
-static void	dump_ifile __P((int, struct lfs *, int));
-static int	dump_ipage_ifile __P((int, IFILE *, int));
-static int	dump_ipage_segusage __P((struct lfs *, int, IFILE *, int));
-static void	dump_segment __P((int, int, daddr_t, struct lfs *, int));
-static int	dump_sum __P((int, struct lfs *, SEGSUM *, int, daddr_t));
-static void	dump_super __P((struct lfs *));
-static void	usage __P((void));
+static void	addseg(char *);
+static void	dump_cleaner_info(struct lfs *, void *);
+static void	dump_dinode(struct dinode *);
+static void	dump_ifile(int, struct lfs *, int);
+static int	dump_ipage_ifile(int, IFILE *, int);
+static int	dump_ipage_segusage(struct lfs *, int, IFILE *, int);
+static void	dump_segment(int, int, daddr_t, struct lfs *, int);
+static int	dump_sum(int, struct lfs *, SEGSUM *, int, daddr_t);
+static void	dump_super(struct lfs *);
+static void	usage(void);
 
 typedef struct seglist SEGLIST;
 struct seglist {

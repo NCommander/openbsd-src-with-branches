@@ -1,4 +1,4 @@
-/*	$OpenBSD: mailwrapper.c,v 1.8 2000/01/10 05:34:32 imp Exp $	*/
+/*	$OpenBSD: mailwrapper.c,v 1.9 2001/08/08 00:47:52 jakob Exp $	*/
 /*	$NetBSD: mailwrapper.c,v 1.2 1999/02/20 22:10:07 thorpej Exp $	*/
 
 /*
@@ -48,11 +48,11 @@ struct arglist {
 	char **argv;
 };
 
-int main __P((int, char *[], char *[]));
+int main(int, char *[], char *[]);
 
-static void initarg __P((struct arglist *));
-static void addarg __P((struct arglist *, const char *, int));
-static void freearg __P((struct arglist *, int));
+static void initarg(struct arglist *);
+static void addarg(struct arglist *, const char *, int);
+static void freearg(struct arglist *, int);
 
 extern const char *__progname;	/* from crt0.o */
 

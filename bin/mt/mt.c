@@ -1,4 +1,4 @@
-/*	$OpenBSD: mt.c,v 1.18 1998/07/16 22:31:14 deraadt Exp $	*/
+/*	$OpenBSD: mt.c,v 1.19 2002/01/16 18:44:21 mpech Exp $	*/
 /*	$NetBSD: mt.c,v 1.14.2.1 1996/05/27 15:12:11 mrg Exp $	*/
 
 /*
@@ -44,7 +44,7 @@ static char copyright[] =
 #if 0
 static char sccsid[] = "@(#)mt.c	8.2 (Berkeley) 6/6/93";
 #else
-static char rcsid[] = "$OpenBSD: mt.c,v 1.18 1998/07/16 22:31:14 deraadt Exp $";
+static char rcsid[] = "$OpenBSD: mt.c,v 1.19 2002/01/16 18:44:21 mpech Exp $";
 #endif
 #endif /* not lint */
 
@@ -96,9 +96,9 @@ struct commands {
 };
 #define COM_EJECT	9	/* element in the above array */
 
-void printreg __P((char *, u_int, char *));
-void status __P((struct mtget *));
-void usage __P((void));
+void printreg(char *, u_int, char *);
+void status(struct mtget *);
+void usage(void);
 
 char	*host = NULL;	/* remote host (if any) */
 

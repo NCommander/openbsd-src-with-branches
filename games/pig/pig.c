@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: pig.c,v 1.6 1998/08/19 07:40:49 pjanzen Exp $	*/
 /*	$NetBSD: pig.c,v 1.2 1995/03/23 08:41:40 cgd Exp $	*/
 
 /*-
@@ -44,7 +44,7 @@ static char copyright[] =
 #if 0
 static char sccsid[] = "@(#)pig.c	8.2 (Berkeley) 5/4/95";
 #else
-static char rcsid[] = "$OpenBSD$";
+static char rcsid[] = "$OpenBSD: pig.c,v 1.6 1998/08/19 07:40:49 pjanzen Exp $";
 #endif
 #endif /* not lint */
 
@@ -57,8 +57,8 @@ static char rcsid[] = "$OpenBSD$";
 #include <string.h>
 #include <unistd.h>
 
-void pigout __P((char *, int));
-void usage __P((void));
+void pigout(char *, int);
+void usage(void);
 
 int
 main(argc, argv)

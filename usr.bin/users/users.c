@@ -1,4 +1,4 @@
-/*	$OpenBSD: users.c,v 1.3 1997/01/15 23:43:30 millert Exp $	*/
+/*	$OpenBSD: users.c,v 1.4 2001/11/19 19:02:17 mpech Exp $	*/
 /*	$NetBSD: users.c,v 1.5 1994/12/20 15:58:19 jtc Exp $	*/
 
 /*
@@ -44,7 +44,7 @@ static char copyright[] =
 #if 0
 static char sccsid[] = "@(#)users.c	8.1 (Berkeley) 6/6/93";
 #endif
-static char rcsid[] = "$OpenBSD: users.c,v 1.3 1997/01/15 23:43:30 millert Exp $";
+static char rcsid[] = "$OpenBSD: users.c,v 1.4 2001/11/19 19:02:17 mpech Exp $";
 #endif /* not lint */
 
 #include <sys/types.h>
@@ -56,7 +56,7 @@ static char rcsid[] = "$OpenBSD: users.c,v 1.3 1997/01/15 23:43:30 millert Exp $
 
 typedef char	namebuf[UT_NAMESIZE];
 
-int scmp __P((const void *, const void *));
+int scmp(const void *, const void *);
 
 int
 main(argc, argv)

@@ -1,4 +1,4 @@
-/*	$OpenBSD: which.c,v 1.4 1998/05/07 19:12:20 deraadt Exp $	*/
+/*	$OpenBSD: which.c,v 1.5 1998/06/21 22:14:05 millert Exp $	*/
 
 /*
  * Copyright (c) 1997 Todd C. Miller <Todd.Miller@courtesan.com>
@@ -28,7 +28,7 @@
  */
 
 #ifndef lint                                                              
-static char rcsid[] = "$OpenBSD: which.c,v 1.4 1998/05/07 19:12:20 deraadt Exp $";
+static char rcsid[] = "$OpenBSD: which.c,v 1.5 1998/06/21 22:14:05 millert Exp $";
 #endif /* not lint */                                                        
 
 #include <sys/param.h>
@@ -48,8 +48,8 @@ static char rcsid[] = "$OpenBSD: which.c,v 1.4 1998/05/07 19:12:20 deraadt Exp $
 
 extern char *__progname;
 
-int findprog __P((char *, char *, int, int));
-void usage __P((void));
+int findprog(char *, char *, int, int);
+void usage(void);
 
 /*
  * which(1) -- find an executable(s) in the user's path

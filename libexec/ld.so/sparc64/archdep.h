@@ -1,4 +1,4 @@
-/*	$OpenBSD: archdep.h,v 1.3 2001/09/24 23:40:10 art Exp $ */
+/*	$OpenBSD: archdep.h,v 1.4 2001/09/25 06:57:03 art Exp $ */
 
 /*
  * Copyright (c) 1998 Per Fogelstrom, Opsycon AB
@@ -47,7 +47,7 @@
 #include <machine/reloc.h>
 #include <sys/syscall.h>
 
-int	_dl_write __P((int, const char *, int));
+int	_dl_write(int, const char *, int);
 
 /*
  *	The following functions are declared inline so they can

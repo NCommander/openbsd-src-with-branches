@@ -1,11 +1,11 @@
-/*	$OpenBSD: db_dump.c,v 1.3 1997/04/27 23:09:42 deraadt Exp $	*/
+/*	$OpenBSD: db_dump.c,v 1.4 1998/06/23 22:40:36 millert Exp $	*/
 
 #if !defined(lint) && !defined(SABER)
 #if 0
 static char sccsid[] = "@(#)db_dump.c	4.33 (Berkeley) 3/3/91";
 static char rcsid[] = "$From: db_dump.c,v 8.19 1996/10/08 04:51:03 vixie Exp $";
 #else
-static char rcsid[] = "$OpenBSD: db_dump.c,v 1.3 1997/04/27 23:09:42 deraadt Exp $";
+static char rcsid[] = "$OpenBSD: db_dump.c,v 1.4 1998/06/23 22:40:36 millert Exp $";
 #endif
 #endif /* not lint */
 
@@ -101,11 +101,11 @@ static char rcsid[] = "$OpenBSD: db_dump.c,v 1.3 1997/04/27 23:09:42 deraadt Exp
 
 #include "named.h"
 
-static int		scan_root __P((struct hashbuf *));
-static const char	*MkCredStr __P((int));
+static int		scan_root(struct hashbuf *);
+static const char	*MkCredStr(int);
 
 #ifdef ALLOW_T_UNSPEC
-static void		putbyte __P((int, char **));
+static void		putbyte(int, char **);
 #endif
 
 /*

@@ -1,4 +1,4 @@
-/*	$OpenBSD: ls.c,v 1.14 2000/07/19 19:27:36 mickey Exp $	*/
+/*	$OpenBSD: ls.c,v 1.15 2001/07/09 00:37:53 deraadt Exp $	*/
 /*	$NetBSD: ls.c,v 1.18 1996/07/09 09:16:29 mycroft Exp $	*/
 
 /*
@@ -47,7 +47,7 @@ static char copyright[] =
 #if 0
 static char sccsid[] = "@(#)ls.c	8.7 (Berkeley) 8/5/94";
 #else
-static char rcsid[] = "$OpenBSD: ls.c,v 1.14 2000/07/19 19:27:36 mickey Exp $";
+static char rcsid[] = "$OpenBSD: ls.c,v 1.15 2001/07/09 00:37:53 deraadt Exp $";
 #endif
 #endif /* not lint */
 
@@ -67,15 +67,15 @@ static char rcsid[] = "$OpenBSD: ls.c,v 1.14 2000/07/19 19:27:36 mickey Exp $";
 #include "ls.h"
 #include "extern.h"
 
-char	*group_from_gid __P((u_int, int));
-char	*user_from_uid __P((u_int, int));
+char	*group_from_gid(u_int, int);
+char	*user_from_uid(u_int, int);
 
-static void	 display __P((FTSENT *, FTSENT *));
-static int	 mastercmp __P((const FTSENT **, const FTSENT **));
-static void	 traverse __P((int, char **, int));
+static void	 display(FTSENT *, FTSENT *);
+static int	 mastercmp(const FTSENT **, const FTSENT **);
+static void	 traverse(int, char **, int);
 
-static void (*printfcn) __P((DISPLAY *));
-static int (*sortfcn) __P((const FTSENT *, const FTSENT *));
+static void (*printfcn)(DISPLAY *);
+static int (*sortfcn)(const FTSENT *, const FTSENT *);
 
 #define	BY_NAME 0
 #define	BY_SIZE 1

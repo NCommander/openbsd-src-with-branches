@@ -1,4 +1,4 @@
-/*	$OpenBSD: pass2.c,v 1.4 2000/04/26 23:26:06 jasoni Exp $	*/
+/*	$OpenBSD: pass2.c,v 1.5 2001/09/18 17:43:15 art Exp $	*/
 /*	$NetBSD: pass2.c,v 1.6 2000/01/28 16:01:46 bouyer Exp $	*/
 
 /*
@@ -53,8 +53,8 @@
 
 #define MINDIRSIZE	(sizeof (struct ext2fs_dirtemplate))
 
-static int pass2check __P((struct inodesc *));
-static int blksort __P((const void *, const void *));
+static int pass2check(struct inodesc *);
+static int blksort(const void *, const void *);
 
 void
 pass2()

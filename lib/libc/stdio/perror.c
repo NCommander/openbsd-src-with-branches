@@ -32,7 +32,7 @@
  */
 
 #if defined(LIBC_SCCS) && !defined(lint)
-static char rcsid[] = "$OpenBSD: perror.c,v 1.2 1996/08/19 08:32:56 tholo Exp $";
+static char rcsid[] = "$OpenBSD: perror.c,v 1.3 1998/09/10 06:44:53 deraadt Exp $";
 #endif /* LIBC_SCCS and not lint */
 
 #include <sys/types.h>
@@ -48,7 +48,7 @@ static char rcsid[] = "$OpenBSD: perror.c,v 1.2 1996/08/19 08:32:56 tholo Exp $"
  * internal function __strerror().
  */
 
-extern char *__strerror __P((int , char *));
+extern char *__strerror(int , char *);
 
 void
 perror(s)

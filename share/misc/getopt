@@ -1,4 +1,4 @@
-/*	$OpenBSD: getopt,v 1.4 2001/07/15 20:54:20 pvalchev Exp $	*/
+/*	$OpenBSD: getopt,v 1.5 2001/12/05 09:59:16 deraadt Exp $	*/
 /*
  * Main/getopt(3) fragment.
  *
@@ -8,7 +8,7 @@
 #include <sys/types.h>
 #include <stdlib.h>
 
-void usage __P((void));
+void usage(void);
 
 int
 main(argc, argv)

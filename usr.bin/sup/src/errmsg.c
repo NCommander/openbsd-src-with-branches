@@ -1,4 +1,4 @@
-/*	$OpenBSD: errmsg.c,v 1.6 2001/05/02 22:56:52 millert Exp $	*/
+/*	$OpenBSD: errmsg.c,v 1.7 2001/05/04 22:16:15 millert Exp $	*/
 
 /*
  * Copyright (c) 1991 Carnegie Mellon University
@@ -37,7 +37,7 @@
 #include "supextern.h"
 
 #ifndef HAS_STRERROR
-static char *itoa __P((char *, unsigned int));
+static char *itoa(char *, unsigned int);
 
 static char *itoa(p, n)
 	char *p;

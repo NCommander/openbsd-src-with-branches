@@ -1,4 +1,4 @@
-/*	$OpenBSD: tty.c,v 1.12 2002/02/05 20:47:32 art Exp $	*/
+/*	$OpenBSD: tty.c,v 1.13 2002/02/14 14:24:21 deraadt Exp $	*/
 
 /*
  * Terminfo display driver
@@ -33,7 +33,7 @@
 #include <term.h>
 #include <signal.h>
 
-static int	 charcost	__P((char *));
+static int	 charcost(char *);
 
 static int	 cci;
 static int	 insdel;	/* Do we have both insert & delete line? */

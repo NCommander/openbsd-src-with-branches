@@ -1,4 +1,4 @@
-/*	$OpenBSD: logger.c,v 1.3 1997/01/15 23:42:45 millert Exp $	*/
+/*	$OpenBSD: logger.c,v 1.4 2001/11/19 19:02:15 mpech Exp $	*/
 /*	$NetBSD: logger.c,v 1.4 1994/12/22 06:27:00 jtc Exp $	*/
 
 /*
@@ -44,7 +44,7 @@ static char copyright[] =
 #if 0
 static char sccsid[] = "@(#)logger.c	8.1 (Berkeley) 6/6/93";
 #endif
-static char rcsid[] = "$OpenBSD: logger.c,v 1.3 1997/01/15 23:42:45 millert Exp $";
+static char rcsid[] = "$OpenBSD: logger.c,v 1.4 2001/11/19 19:02:15 mpech Exp $";
 #endif /* not lint */
 
 #include <errno.h>
@@ -57,9 +57,9 @@ static char rcsid[] = "$OpenBSD: logger.c,v 1.3 1997/01/15 23:42:45 millert Exp 
 #define	SYSLOG_NAMES
 #include <syslog.h>
 
-int	decode __P((char *, CODE *));
-int	pencode __P((char *));
-void	usage __P((void));
+int	decode(char *, CODE *);
+int	pencode(char *);
+void	usage(void);
 
 /*
  * logger -- read and log utility

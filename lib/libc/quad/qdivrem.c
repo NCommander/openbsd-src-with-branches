@@ -36,7 +36,7 @@
  */
 
 #if defined(LIBC_SCCS) && !defined(lint)
-static char rcsid[] = "$OpenBSD: qdivrem.c,v 1.4 1995/02/27 17:30:53 cgd Exp $";
+static char rcsid[] = "$OpenBSD: qdivrem.c,v 1.2 1996/08/19 08:30:42 tholo Exp $";
 #endif /* LIBC_SCCS and not lint */
 
 /*
@@ -58,7 +58,7 @@ typedef unsigned short digit;
 typedef u_long digit;
 #endif
 
-static void shl __P((digit *p, int len, int sh));
+static void shl(digit *p, int len, int sh);
 
 /*
  * __qdivrem(u, v, rem) returns u/v and, optionally, sets *rem to u%v.

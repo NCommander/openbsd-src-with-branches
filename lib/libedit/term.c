@@ -1,4 +1,4 @@
-/*	$OpenBSD: term.c,v 1.3 1997/03/14 05:13:05 millert Exp $	*/
+/*	$OpenBSD: term.c,v 1.4 1997/07/03 14:25:29 niklas Exp $	*/
 /*	$NetBSD: term.c,v 1.8 1997/01/23 14:02:49 mrg Exp $	*/
 
 /*-
@@ -41,7 +41,7 @@
 #if 0
 static char sccsid[] = "@(#)term.c	8.1 (Berkeley) 6/4/93";
 #else
-static char rcsid[] = "$OpenBSD: term.c,v 1.3 1997/03/14 05:13:05 millert Exp $";
+static char rcsid[] = "$OpenBSD: term.c,v 1.4 1997/07/03 14:25:29 niklas Exp $";
 #endif
 #endif /* not lint && not SCCSID */
 
@@ -251,13 +251,13 @@ private struct termcapval {
 
 /* do two or more of the attributes use me */
 
-private	void	term_rebuffer_display	__P((EditLine *));
-private	void	term_free_display	__P((EditLine *));
-private	void	term_alloc_display	__P((EditLine *));
+private	void	term_rebuffer_display(EditLine *);
+private	void	term_free_display(EditLine *);
+private	void	term_alloc_display(EditLine *);
 private	void	term_alloc		__P((EditLine *,
 					     struct termcapstr *, char *)); 
-private void	term_init_arrow		__P((EditLine *));
-private void	term_reset_arrow	__P((EditLine *));
+private void	term_init_arrow(EditLine *);
+private void	term_reset_arrow(EditLine *);
 
 
 private FILE *term_outfile = NULL;	/* XXX: How do we fix that? */

@@ -1,4 +1,4 @@
-/*	$OpenBSD: setlocale.c,v 1.6 1997/07/09 01:08:21 millert Exp $	*/
+/*	$OpenBSD: setlocale.c,v 1.7 2001/06/27 00:58:54 lebel Exp $	*/
 /*
  * Copyright (c) 1991, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -36,7 +36,7 @@
  */
 
 #if defined(LIBC_SCCS) && !defined(lint)
-static char rcsid[] = "$OpenBSD: setlocale.c,v 1.6 1997/07/09 01:08:21 millert Exp $";
+static char rcsid[] = "$OpenBSD: setlocale.c,v 1.7 2001/06/27 00:58:54 lebel Exp $";
 #endif /* LIBC_SCCS and not lint */
 
 #include <sys/localedef.h>
@@ -82,8 +82,8 @@ static char new_categories[_LC_LAST][32];
 static char current_locale_string[_LC_LAST * 33];
 static char *PathLocale;
 
-static char	*currentlocale __P((void));
-static char	*loadlocale __P((int));
+static char	*currentlocale(void);
+static char	*loadlocale(int);
 
 char *
 setlocale(category, locale)

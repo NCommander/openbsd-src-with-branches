@@ -32,7 +32,7 @@
  */
 
 #if defined(LIBC_SCCS) && !defined(lint)
-static char rcsid[] = "$OpenBSD: nlist.c,v 1.39 2001/05/11 12:51:23 art Exp $";
+static char rcsid[] = "$OpenBSD: nlist.c,v 1.40 2001/07/09 06:57:43 deraadt Exp $";
 #endif /* LIBC_SCCS and not lint */
 
 #include <sys/types.h>
@@ -485,7 +485,7 @@ elf_done:
 
 
 static struct nlist_handlers {
-	int	(*fn) __P((int fd, struct nlist *list));
+	int	(*fn)(int fd, struct nlist *list);
 } nlist_fn[] = {
 #ifdef _NLIST_DO_AOUT
 	{ __aout_fdnlist },

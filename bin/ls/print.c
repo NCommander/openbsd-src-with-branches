@@ -1,4 +1,4 @@
-/*	$OpenBSD: print.c,v 1.11 1999/05/01 23:54:48 deraadt Exp $	*/
+/*	$OpenBSD: print.c,v 1.15 2000/01/06 21:32:40 espie Exp $	*/
 /*	$NetBSD: print.c,v 1.15 1996/12/11 03:25:39 thorpej Exp $	*/
 
 /*
@@ -41,7 +41,7 @@
 #if 0
 static char sccsid[] = "@(#)print.c	8.5 (Berkeley) 7/28/94";
 #else
-static char rcsid[] = "$OpenBSD: print.c,v 1.11 1999/05/01 23:54:48 deraadt Exp $";
+static char rcsid[] = "$OpenBSD: print.c,v 1.15 2000/01/06 21:32:40 espie Exp $";
 #endif
 #endif /* not lint */
 
@@ -64,11 +64,11 @@ static char rcsid[] = "$OpenBSD: print.c,v 1.11 1999/05/01 23:54:48 deraadt Exp 
 #include "ls.h"
 #include "extern.h"
 
-static int	printaname __P((FTSENT *, u_long, u_long));
-static void	printlink __P((FTSENT *));
-static void	printtime __P((time_t));
-static int	printtype __P((u_int));
-static int	compute_columns __P((DISPLAY *, int *));
+static int	printaname(FTSENT *, u_long, u_long);
+static void	printlink(FTSENT *);
+static void	printtime(time_t);
+static int	printtype(u_int);
+static int	compute_columns(DISPLAY *, int *);
 
 #define	IS_NOPRINT(p)	((p)->fts_number == NO_PRINT)
 

@@ -1,4 +1,4 @@
-/*	$OpenBSD: kill.c,v 1.3 1997/02/06 13:29:08 deraadt Exp $	*/
+/*	$OpenBSD: kill.c,v 1.4 2001/09/06 13:29:08 mpech Exp $	*/
 /*	$NetBSD: kill.c,v 1.11 1995/09/07 06:30:27 jtc Exp $	*/
 
 /*
@@ -44,7 +44,7 @@ static char copyright[] =
 #if 0
 static char sccsid[] = "@(#)kill.c	8.4 (Berkeley) 4/28/95";
 #else
-static char rcsid[] = "$OpenBSD: kill.c,v 1.3 1997/02/06 13:29:08 deraadt Exp $";
+static char rcsid[] = "$OpenBSD: kill.c,v 1.4 2001/09/06 13:29:08 mpech Exp $";
 #endif
 #endif /* not lint */
 
@@ -58,10 +58,10 @@ static char rcsid[] = "$OpenBSD: kill.c,v 1.3 1997/02/06 13:29:08 deraadt Exp $"
 
 extern	char *__progname;
 
-void nosig __P((char *));
-void printsignals __P((FILE *));
-int signame_to_signum __P((char *));
-void usage __P((void));
+void nosig(char *);
+void printsignals(FILE *);
+int signame_to_signum(char *);
+void usage(void);
 
 int
 main(argc, argv)

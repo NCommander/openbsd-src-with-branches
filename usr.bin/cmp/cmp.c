@@ -1,4 +1,4 @@
-/*      $OpenBSD: cmp.c,v 1.7 1998/01/21 22:16:32 deraadt Exp $      */
+/*      $OpenBSD: cmp.c,v 1.8 1999/08/03 16:02:44 mickey Exp $      */
 /*      $NetBSD: cmp.c,v 1.7 1995/09/08 03:22:56 tls Exp $      */
 
 /*
@@ -44,7 +44,7 @@ static char copyright[] =
 #if 0
 static char sccsid[] = "@(#)cmp.c	8.3 (Berkeley) 4/2/94";
 #else
-static char rcsid[] = "$OpenBSD: cmp.c,v 1.7 1998/01/21 22:16:32 deraadt Exp $";
+static char rcsid[] = "$OpenBSD: cmp.c,v 1.8 1999/08/03 16:02:44 mickey Exp $";
 #endif
 #endif /* not lint */
 
@@ -63,7 +63,7 @@ static char rcsid[] = "$OpenBSD: cmp.c,v 1.7 1998/01/21 22:16:32 deraadt Exp $";
 
 int	lflag, sflag;
 
-static void usage __P((void));
+static void usage(void);
 
 int
 main(argc, argv)

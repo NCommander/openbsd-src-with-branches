@@ -1,4 +1,4 @@
-/*	$OpenBSD: sysdep-os.h,v 1.3 2001/01/26 11:34:04 niklas Exp $	*/
+/*	$OpenBSD: sysdep-os.h,v 1.4 2001/01/28 22:38:49 niklas Exp $	*/
 
 /*
  * Copyright (c) 1998, 1999 Niklas Hallqvist.  All rights reserved.
@@ -43,7 +43,7 @@ typedef u_int32_t in_addr_t;
 /*
  * Why -D__USE_GNU does not work in order to get this from stdio.h beats me.
  */
-extern int asprintf __P((char **, const char *, ...));
+extern int asprintf(char **, const char *, ...);
 #endif
 
 #define DL_LAZY RTLD_LAZY

@@ -41,7 +41,7 @@
 #if 0
 static char sccsid[] = "@(#)regerror.c	8.4 (Berkeley) 3/20/94";
 #else
-static char rcsid[] = "$OpenBSD: regerror.c,v 1.5 1998/03/19 00:30:10 millert Exp $";
+static char rcsid[] = "$OpenBSD: regerror.c,v 1.6 2001/06/27 00:58:55 lebel Exp $";
 #endif
 #endif /* LIBC_SCCS and not lint */
 
@@ -61,7 +61,7 @@ extern "C" {
 #endif
 
 /* === regerror.c === */
-static char *regatoi __P((const regex_t *preg, char *localbuf));
+static char *regatoi(const regex_t *preg, char *localbuf);
 
 #ifdef __cplusplus
 }

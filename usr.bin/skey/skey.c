@@ -1,4 +1,4 @@
-/*	$OpenBSD: skey.c,v 1.15 2001/06/20 17:12:30 millert Exp $	*/
+/*	$OpenBSD: skey.c,v 1.16 2001/12/28 17:32:04 millert Exp $	*/
 /*
  * OpenBSD S/Key (skey.c)
  *
@@ -29,7 +29,7 @@
 #include <unistd.h>
 #include <skey.h>
 
-void    usage __P((char *));
+void    usage(char *);
 
 int
 main(argc, argv)

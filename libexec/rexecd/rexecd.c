@@ -1,4 +1,4 @@
-/*	$OpenBSD: rexecd.c,v 1.17 2001/05/29 21:37:16 millert Exp $	*/
+/*	$OpenBSD: rexecd.c,v 1.18 2001/07/09 07:04:44 deraadt Exp $	*/
 
 /*
  * Copyright (c) 1983 The Regents of the University of California.
@@ -41,7 +41,7 @@ char copyright[] =
 
 #ifndef lint
 /*static char sccsid[] = "from: @(#)rexecd.c	5.12 (Berkeley) 2/25/91";*/
-static char rcsid[] = "$OpenBSD: rexecd.c,v 1.17 2001/05/29 21:37:16 millert Exp $";
+static char rcsid[] = "$OpenBSD: rexecd.c,v 1.18 2001/07/09 07:04:44 deraadt Exp $";
 #endif /* not lint */
 
 #include <sys/param.h>
@@ -68,7 +68,7 @@ static char rcsid[] = "$OpenBSD: rexecd.c,v 1.17 2001/05/29 21:37:16 millert Exp
 #include <bsd_auth.h>
 
 /*VARARGS1*/
-void error __P(());
+void error();
 
 char	*remote;
 char	*envinit[1];
@@ -77,8 +77,8 @@ login_cap_t *lc;
 
 struct	sockaddr_in asin = { AF_INET };
 
-void doit __P((int, struct sockaddr_in *));
-void getstr __P((char *buf, int cnt, char *err));
+void doit(int, struct sockaddr_in *);
+void getstr(char *buf, int cnt, char *err);
 
 /*
  * remote execute server:

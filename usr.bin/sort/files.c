@@ -1,4 +1,4 @@
-/*	$OpenBSD: files.c,v 1.6 2000/06/30 16:00:23 millert Exp $	*/
+/*	$OpenBSD: files.c,v 1.7 2001/02/04 21:27:00 ericj Exp $	*/
 
 /*-
  * Copyright (c) 1993
@@ -40,7 +40,7 @@
 #if 0
 static char sccsid[] = "@(#)files.c	8.1 (Berkeley) 6/6/93";
 #else
-static char rcsid[] = "$OpenBSD: files.c,v 1.6 2000/06/30 16:00:23 millert Exp $";
+static char rcsid[] = "$OpenBSD: files.c,v 1.7 2001/02/04 21:27:00 ericj Exp $";
 #endif
 #endif /* not lint */
 
@@ -49,7 +49,7 @@ static char rcsid[] = "$OpenBSD: files.c,v 1.6 2000/06/30 16:00:23 millert Exp $
 
 #include <string.h>
 
-static int	seq __P((FILE *, DBT *, DBT *));
+static int	seq(FILE *, DBT *, DBT *);
 
 /*
  * this is the subroutine for file management for fsort().

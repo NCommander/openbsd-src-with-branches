@@ -1,4 +1,4 @@
-/*	$OpenBSD: setup.c,v 1.6 2000/04/26 23:26:06 jasoni Exp $	*/
+/*	$OpenBSD: setup.c,v 1.7 2001/09/18 17:43:15 art Exp $	*/
 /*	$NetBSD: setup.c,v 1.1 1997/06/11 11:22:01 bouyer Exp $	*/
 
 /*
@@ -58,10 +58,10 @@
 
 #define POWEROF2(num)	(((num) & ((num) - 1)) == 0)
 
-void badsb __P((int, char *));
-int calcsb __P((char *, int, struct m_ext2fs *));
-static struct disklabel *getdisklabel __P((char *, int));
-static int readsb __P((int));
+void badsb(int, char *);
+int calcsb(char *, int, struct m_ext2fs *);
+static struct disklabel *getdisklabel(char *, int);
+static int readsb(int);
 
 int
 setup(dev)

@@ -1,4 +1,4 @@
-/*	$OpenBSD: if.c,v 1.27 2001/11/19 19:02:15 mpech Exp $	*/
+/*	$OpenBSD: if.c,v 1.28 2002/01/17 21:34:58 mickey Exp $	*/
 /*	$NetBSD: if.c,v 1.16.4.2 1996/06/07 21:46:46 thorpej Exp $	*/
 
 /*
@@ -38,7 +38,7 @@
 #if 0
 static char sccsid[] = "from: @(#)if.c	8.2 (Berkeley) 2/21/94";
 #else
-static char *rcsid = "$OpenBSD: if.c,v 1.27 2001/11/19 19:02:15 mpech Exp $";
+static char *rcsid = "$OpenBSD: if.c,v 1.28 2002/01/17 21:34:58 mickey Exp $";
 #endif
 #endif /* not lint */
 
@@ -71,8 +71,8 @@ static char *rcsid = "$OpenBSD: if.c,v 1.27 2001/11/19 19:02:15 mpech Exp $";
 #define	YES	1
 #define	NO	0
 
-static void sidewaysintpr __P((u_int, u_long));
-static void catchalarm __P((int));
+static void sidewaysintpr(u_int, u_long);
+static void catchalarm(int);
 
 /*
  * Print a description of the network interfaces.

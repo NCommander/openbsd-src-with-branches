@@ -1,4 +1,4 @@
-/*	$OpenBSD: dmesg.c,v 1.13 2001/07/07 18:26:11 deraadt Exp $	*/
+/*	$OpenBSD: dmesg.c,v 1.14 2001/11/05 07:39:16 mpech Exp $	*/
 /*	$NetBSD: dmesg.c,v 1.8 1995/03/18 14:54:49 cgd Exp $	*/
 
 /*-
@@ -44,7 +44,7 @@ static char copyright[] =
 #if 0
 static char sccsid[] = "@(#)dmesg.c	8.1 (Berkeley) 6/5/93";
 #else
-static char rcsid[] = "$OpenBSD: dmesg.c,v 1.13 2001/07/07 18:26:11 deraadt Exp $";
+static char rcsid[] = "$OpenBSD: dmesg.c,v 1.14 2001/11/05 07:39:16 mpech Exp $";
 #endif
 #endif /* not lint */
 
@@ -70,7 +70,7 @@ struct nlist nl[] = {
 	{ NULL },
 };
 
-void usage __P((void));
+void usage(void);
 
 #define	KREAD(addr, var) \
 	kvm_read(kd, addr, &var, sizeof(var)) != sizeof(var)

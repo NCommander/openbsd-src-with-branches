@@ -1,4 +1,4 @@
-/*	$OpenBSD: ruserpass.c,v 1.11 1998/03/30 06:59:35 deraadt Exp $	*/
+/*	$OpenBSD: ruserpass.c,v 1.12 2000/07/27 19:59:13 millert Exp $	*/
 /*	$NetBSD: ruserpass.c,v 1.14 1997/07/20 09:46:01 lukem Exp $	*/
 
 /*
@@ -38,7 +38,7 @@
 #if 0
 static char sccsid[] = "@(#)ruserpass.c	8.4 (Berkeley) 4/27/95";
 #else
-static char rcsid[] = "$OpenBSD: ruserpass.c,v 1.11 1998/03/30 06:59:35 deraadt Exp $";
+static char rcsid[] = "$OpenBSD: ruserpass.c,v 1.12 2000/07/27 19:59:13 millert Exp $";
 #endif
 #endif /* not lint */
 
@@ -55,7 +55,7 @@ static char rcsid[] = "$OpenBSD: ruserpass.c,v 1.11 1998/03/30 06:59:35 deraadt 
 
 #include "ftp_var.h"
 
-static	int token __P((void));
+static	int token(void);
 static	FILE *cfile;
 
 #define	DEFAULT	1

@@ -1,4 +1,4 @@
-/*	$OpenBSD: dump.c,v 1.5 2000/10/06 02:46:58 itojun Exp $	*/
+/*	$OpenBSD: dump.c,v 1.6 2001/08/22 05:34:54 itojun Exp $	*/
 /*	$KAME: dump.c,v 1.9 2001/08/20 06:55:54 itojun Exp $	*/
 
 /*
@@ -50,8 +50,8 @@ static FILE *fp;
 
 extern struct ifinfo *iflist;
 
-static void dump_interface_status __P((void));
-static char *sec2str __P((time_t));
+static void dump_interface_status(void);
+static char *sec2str(time_t);
 char *ifstatstr[] = {"IDLE", "DELAY", "PROBE", "DOWN", "TENTATIVE"};
 
 static void

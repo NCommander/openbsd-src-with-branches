@@ -1,4 +1,4 @@
-/*	$OpenBSD: pass1b.c,v 1.4 1999/03/01 07:45:18 d Exp $	*/
+/*	$OpenBSD: pass1b.c,v 1.5 2001/11/05 07:39:16 mpech Exp $	*/
 /*	$NetBSD: pass1b.c,v 1.10 1996/09/23 16:18:37 christos Exp $	*/
 
 /*
@@ -38,7 +38,7 @@
 #if 0
 static char sccsid[] = "@(#)pass1b.c	8.1 (Berkeley) 6/5/93";
 #else
-static char rcsid[] = "$OpenBSD: pass1b.c,v 1.4 1999/03/01 07:45:18 d Exp $";
+static char rcsid[] = "$OpenBSD: pass1b.c,v 1.5 2001/11/05 07:39:16 mpech Exp $";
 #endif
 #endif /* not lint */
 
@@ -52,7 +52,7 @@ static char rcsid[] = "$OpenBSD: pass1b.c,v 1.4 1999/03/01 07:45:18 d Exp $";
 #include "fsck.h"
 #include "extern.h"
 
-static int	pass1bcheck __P((struct inodesc *));
+static int	pass1bcheck(struct inodesc *);
 static  struct dups *duphead;
 
 static ino_t info_inumber;
