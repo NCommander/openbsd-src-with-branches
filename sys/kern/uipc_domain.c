@@ -1,4 +1,4 @@
-/*	$OpenBSD: uipc_domain.c,v 1.19 2004/11/25 21:40:46 markus Exp $	*/
+/*	$OpenBSD: uipc_domain.c,v 1.20 2004/11/27 14:50:55 pat Exp $	*/
 /*	$NetBSD: uipc_domain.c,v 1.14 1996/02/09 19:00:44 christos Exp $	*/
 
 /*
@@ -45,6 +45,7 @@
 #include <sys/sysctl.h>
 #include <sys/timeout.h>
 
+#include "bluetooth.h"
 #include "bpfilter.h"
 
 struct	domain *domains;
@@ -112,6 +113,9 @@ domaininit(void)
 #ifdef __KAME__
 	ADDDOMAIN(key);
 #endif
+#endif
+#if NBLUETOOTH > 0
+	ADDDOMAIN(bt);
 #endif
 	ADDDOMAIN(route);
 #endif
