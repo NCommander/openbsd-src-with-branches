@@ -125,12 +125,11 @@
 #endif	/* NMBCLUSTERS */
 
 /*
- * Size of kernel malloc arena in NBPG-sized logical pages
- */ 
-
-#ifndef NKMEMCLUSTERS
-#define	NKMEMCLUSTERS	(4096*1024/NBPG)
-#endif
+ * Minimum and maximum sizes of the kernel malloc arena in PAGE_SIZE-sized
+ * logical pages.
+ */
+#define	NKMEMPAGES_MIN_DEFAULT	((4 * 1024 * 1024) >> PAGE_SHIFT)
+#define	NKMEMPAGES_MAX_DEFAULT	((4 * 1024 * 1024) >> PAGE_SHIFT)
 
 /*
  * Some macros for units conversion
