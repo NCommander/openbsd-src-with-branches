@@ -65,7 +65,7 @@ STRIP?=		-s
 
 # don't try to generate PIC versions of libraries on machines
 # which don't support PIC.
-.if (${MACHINE_ARCH} == "mips") || (${MACHINE_ARCH} == "alpha") || \
+.if (${MACHINE_ARCH} == "alpha") || \
     (${MACHINE_ARCH} == "vax")
 NOPIC=
 .endif
