@@ -44,6 +44,14 @@ struct linux_dirent {
 	char		d_name[LINUX_MAXNAMLEN + 1];
 };
 
+struct linux_dirent64 {
+	linux_ino64_t	d_ino;
+	linux_off64_t	d_off;
+	u_short		d_reclen;
+	u_char		d_type;
+	char		d_name[LINUX_MAXNAMLEN + 1];
+};
+
 #define LINUX_NAMEOFF(dp)       ((char *)&(dp)->d_name - (char *)dp)
 #define LINUX_RECLEN(de,namlen) ALIGN((LINUX_NAMEOFF(de) + (namlen) + 1))
 

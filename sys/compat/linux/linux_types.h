@@ -42,11 +42,13 @@ typedef struct {
 typedef unsigned short linux_uid_t;
 typedef unsigned short linux_gid_t;
 typedef unsigned short linux_dev_t;
+typedef unsigned long long linux_ino64_t;
 typedef unsigned long linux_ino_t;
 typedef unsigned short linux_mode_t;
 typedef unsigned short linux_nlink_t;
 typedef long linux_time_t;
 typedef long linux_clock_t;
+typedef long long linux_off64_t;
 typedef long linux_off_t;
 typedef u_int64_t linux_loff_t;
 typedef int linux_pid_t;
