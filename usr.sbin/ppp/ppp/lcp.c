@@ -17,7 +17,7 @@
  * IMPLIED WARRANTIES, INCLUDING, WITHOUT LIMITATION, THE IMPLIED
  * WARRANTIES OF MERCHANTIBILITY AND FITNESS FOR A PARTICULAR PURPOSE.
  *
- * $OpenBSD: lcp.c,v 1.22 2000/11/02 00:54:34 brian Exp $
+ * $OpenBSD: lcp.c,v 1.23 2000/11/22 02:13:09 brian Exp $
  *
  */
 
@@ -189,7 +189,7 @@ lcp_ReportStatus(struct cmdargs const *arg)
   prompt_Printf(arg->prompt, "           CHAP =      %s\n",
                 command_ShowNegval(lcp->cfg.chap05));
 #ifdef HAVE_DES
-  prompt_Printf(arg->prompt, "           MSCHAP =    %s\n",
+  prompt_Printf(arg->prompt, "           CHAP80 =    %s\n",
                 command_ShowNegval(lcp->cfg.chap80nt));
   prompt_Printf(arg->prompt, "           LANMan =    %s\n",
                 command_ShowNegval(lcp->cfg.chap80lm));
