@@ -31,7 +31,7 @@
  */
 
 #if defined(LIBC_SCCS) && !defined(lint)
-static char rcsid[] = "$OpenBSD: stdio.c,v 1.5 2003/06/02 20:18:37 millert Exp $";
+static char rcsid[] = "$OpenBSD: stdio.c,v 1.6 2004/09/28 18:12:44 otto Exp $";
 #endif /* LIBC_SCCS and not lint */
 
 #include <fcntl.h>
@@ -86,9 +86,7 @@ __sseek(void *cookie, fpos_t offset, int whence)
 }
 
 int
-__sclose(cookie)
-	void *cookie;
+__sclose(void *cookie)
 {
-
 	return (close(((FILE *)cookie)->_file));
 }
