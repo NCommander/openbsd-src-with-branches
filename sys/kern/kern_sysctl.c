@@ -1,4 +1,4 @@
-/*	$OpenBSD: kern_sysctl.c,v 1.38 2001/01/31 09:59:51 deraadt Exp $	*/
+/*	$OpenBSD: kern_sysctl.c,v 1.39 2001/03/16 08:49:09 art Exp $	*/
 /*	$NetBSD: kern_sysctl.c,v 1.17 1996/05/20 17:49:05 mrg Exp $	*/
 
 /*-
@@ -877,7 +877,9 @@ fill_eproc(p, ep)
 		ep->e_vm.vm_tsize = vm->vm_tsize;
 		ep->e_vm.vm_dsize = vm->vm_dsize;
 		ep->e_vm.vm_ssize = vm->vm_ssize;
+#ifndef UVM
 		ep->e_vm.vm_pmap = *vm->vm_map.pmap;
+#endif
 	}
 	if (p->p_pptr)
 		ep->e_ppid = p->p_pptr->p_pid;
