@@ -1,4 +1,4 @@
-/*	$OpenBSD: krb_passwd.c,v 1.12 1999/08/16 19:51:26 art Exp $	*/
+/*	$OpenBSD: krb_passwd.c,v 1.13 2000/02/25 22:09:14 hin Exp $	*/
 /* $KTH: kpasswd.c,v 1.25 1997/05/02 14:28:51 assar Exp $ */
 
 /*
@@ -63,6 +63,8 @@
 char realm[REALM_SZ];
 
 extern void usage(int value);
+extern int get_pw_new_pwd(char *pword, int pwlen, krb_principal *pr,
+	    int print_realm);
 
 int
 krb_passwd(int argc, char **argv)
