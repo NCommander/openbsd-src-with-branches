@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile.inc,v 1.7 1997/10/19 10:35:29 downsj Exp $
+#	$OpenBSD: Makefile.inc,v 1.8 1997/10/19 20:19:03 deraadt Exp $
 #	etc.hp300/Makefile.inc -- hp300-specific etc Makefile targets
 
 .ifdef DESTDIR
@@ -19,6 +19,6 @@ bsd-dl:
 	    ${DESTDIR}/snapshot/bsd-dl
 
 bootblocks:
-	-cp -R ${DESTDIR}/usr/mdec/*boot* ${DESTDIR}/snapshot
+	-cp -R ${DESTDIR}/usr/mdec/?boot* ??boot boot?? ${DESTDIR}/snapshot
 
 .endif	# DESTDIR check
