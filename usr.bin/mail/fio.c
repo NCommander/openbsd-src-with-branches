@@ -1,4 +1,4 @@
-/*	$OpenBSD: fio.c,v 1.22 2002/03/14 06:51:42 mpech Exp $	*/
+/*	$OpenBSD: fio.c,v 1.23 2003/06/03 02:56:11 millert Exp $	*/
 /*	$NetBSD: fio.c,v 1.8 1997/07/07 22:57:55 phil Exp $	*/
 
 /*
@@ -34,7 +34,7 @@
 #if 0
 static const char sccsid[] = "@(#)fio.c	8.2 (Berkeley) 4/20/95";
 #else
-static const char rcsid[] = "$OpenBSD: fio.c,v 1.22 2002/03/14 06:51:42 mpech Exp $";
+static const char rcsid[] = "$OpenBSD: fio.c,v 1.23 2003/06/03 02:56:11 millert Exp $";
 #endif
 #endif /* not lint */
 
@@ -58,7 +58,7 @@ static volatile sig_atomic_t fiosignal;
 /*
  * Wrapper for read() to catch EINTR.
  */
-ssize_t
+static ssize_t
 myread(int fd, char *buf, int len)
 {
 	ssize_t nread;
