@@ -199,9 +199,6 @@ int	select;
 
 	if (dk_ndrive < 0)
 		errx(1, "invalid _disk_count %d.", dk_ndrive);
-	else if (dk_ndrive == 0) {
-		warnx("No drives attached.");
-	}
 	else {
 		/* Get a pointer to the first disk. */
 		deref_nl(X_DISKLIST, &disk_head, sizeof(disk_head));
