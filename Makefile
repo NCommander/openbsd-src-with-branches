@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.54 2000/03/10 22:05:49 niklas Exp $
+#	$OpenBSD: Makefile,v 1.55 2000/04/09 07:48:14 deraadt Exp $
 
 #
 # For more information on building in tricky environments, please see
@@ -88,7 +88,6 @@ build:
 	    ${SUDO} ${MAKE} install)
 .endif
 	(cd ${.CURDIR}/gnu/usr.bin/perl && \
-	    ${MAKE} -f Makefile.bsd-wrapper config.sh && \
 	    ${MAKE} -f Makefile.bsd-wrapper depend && \
 	    ${MAKE} -f Makefile.bsd-wrapper perl.lib && \
 	    ${SUDO} ${MAKE} -f Makefile.bsd-wrapper install.lib)
