@@ -1,4 +1,4 @@
-/*	$OpenBSD: inet.c,v 1.74 2003/12/02 23:16:29 markus Exp $	*/
+/*	$OpenBSD: inet.c,v 1.75 2003/12/15 07:11:31 mcbride Exp $	*/
 /*	$NetBSD: inet.c,v 1.14 1995/10/03 21:42:37 thorpej Exp $	*/
 
 /*
@@ -34,7 +34,7 @@
 #if 0
 static char sccsid[] = "from: @(#)inet.c	8.4 (Berkeley) 4/20/94";
 #else
-static char *rcsid = "$OpenBSD: inet.c,v 1.74 2003/12/02 23:16:29 markus Exp $";
+static char *rcsid = "$OpenBSD: inet.c,v 1.75 2003/12/15 07:11:31 mcbride Exp $";
 #endif
 #endif /* not lint */
 
@@ -931,9 +931,6 @@ pfsync_stats(u_long off, char *name)
 #undef p2
 }
 
-/*
- * Dump IPCOMP statistics structure.
- */
 /*
  * Dump IPCOMP statistics structure.
  */
