@@ -627,7 +627,7 @@ alpha_fp_complete(u_long a0, u_long a1, struct proc *p, u_int64_t *ucode)
 	if (!(a0 & 1))
 		return sig;
 /*
- * At this point we are somwhere in the trap shadow of one or more instruc-
+ * At this point we are somewhere in the trap shadow of one or more instruc-
  * tions that have trapped with software completion specified.  We have a mask
  * of the registers written by trapping instructions.
  * 

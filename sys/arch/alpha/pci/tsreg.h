@@ -1,4 +1,4 @@
-/* $OpenBSD: tsreg.h,v 1.1 1999/06/29 06:46:47 ross Exp $ */
+/* $OpenBSD: tsreg.h,v 1.1 2000/11/16 04:50:18 ericj Exp $ */
 /* $NetBSD: tsreg.h,v 1.1 1999/06/29 06:46:47 ross Exp $ */
 
 /*-
@@ -71,7 +71,7 @@
 
 /*
  * This hack allows us to map the I/O address space without using
- * the KSEG sign extention hack.
+ * the KSEG sign extension hack.
  */
 #define	TS_PHYSADDR(x)							\
 	(((x) & ~0x0100##0000##0000) | 0x0800##0000##0000)
