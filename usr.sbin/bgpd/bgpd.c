@@ -1,4 +1,4 @@
-/*	$OpenBSD: bgpd.c,v 1.12 2003/12/21 23:28:39 henning Exp $ */
+/*	$OpenBSD: bgpd.c,v 1.13 2003/12/22 11:00:19 henning Exp $ */
 
 /*
  * Copyright (c) 2003 Henning Brauer <henning@openbsd.org>
@@ -105,7 +105,7 @@ main(int argc, char *argv[])
 	log_init(1);		/* log to stderr until daemonized */
 
 	if (geteuid())
-		fatal("need root privileges", 0);
+		errx(1, "need root privileges");
 
 	bzero(&conf, sizeof(conf));
 	bzero(&mrtconf, sizeof(mrtconf));
