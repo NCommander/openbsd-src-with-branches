@@ -1,4 +1,4 @@
-/*	$OpenBSD: rarp.c,v 1.2 1996/09/23 14:19:01 mickey Exp $	*/
+/*	$OpenBSD: rarp.c,v 1.3 1996/10/15 09:15:59 mickey Exp $	*/
 /*	$NetBSD: rarp.c,v 1.10 1995/09/23 03:36:10 gwr Exp $	*/
 
 /*
@@ -46,8 +46,6 @@
 
 #include <netinet/if_ether.h>
 #include <netinet/in_systm.h>
-
-#include <string.h>
 
 #include "stand.h"
 #include "net.h"
