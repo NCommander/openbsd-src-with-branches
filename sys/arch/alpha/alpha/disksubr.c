@@ -1,4 +1,4 @@
-/*	$OpenBSD: disksubr.c,v 1.23 1998/10/03 21:18:54 millert Exp $	*/
+/*	$OpenBSD: disksubr.c,v 1.24 1998/11/21 20:43:42 deraadt Exp $	*/
 /*	$NetBSD: disksubr.c,v 1.21 1996/05/03 19:42:03 christos Exp $	*/
 
 /*
@@ -721,6 +721,7 @@ writedisklabel(dev, strat, lp, osdep)
 	(*strat)(bp);
 	error = biowait(bp);
 
+done:
 	bp->b_flags |= B_INVAL;
 	brelse(bp);
 	return (error);
