@@ -11,7 +11,7 @@
  * called by a name other than "ssh" or "Secure Shell".
  */
 
-/* RCSID("$OpenBSD: servconf.h,v 1.50 2001/12/06 13:30:05 markus Exp $"); */
+/* RCSID("$OpenBSD: servconf.h,v 1.51 2001/12/19 07:18:56 deraadt Exp $"); */
 
 #ifndef SERVCONF_H
 #define SERVCONF_H
@@ -55,6 +55,7 @@ typedef struct {
 	int     x11_forwarding;	/* If true, permit inet (spoofing) X11 fwd. */
 	int     x11_display_offset;	/* What DISPLAY number to start
 					 * searching at */
+	int     x11_use_localhost;	/* If true, use localhost for fake X11 server. */
 	char   *xauth_location;	/* Location of xauth program */
 	int     strict_modes;	/* If true, require string home dir modes. */
 	int     keepalives;	/* If true, set SO_KEEPALIVE. */
