@@ -1,4 +1,4 @@
-/*	$OpenBSD: lock.c,v 1.15 2002/02/16 21:27:48 millert Exp $	*/
+/*	$OpenBSD: lock.c,v 1.16 2002/05/08 18:04:43 millert Exp $	*/
 /*	$NetBSD: lock.c,v 1.8 1996/05/07 18:32:31 jtc Exp $	*/
 
 /*
@@ -47,7 +47,7 @@ static char copyright[] =
 #if 0
 static char sccsid[] = "@(#)lock.c	8.1 (Berkeley) 6/6/93";
 #endif
-static char rcsid[] = "$OpenBSD: lock.c,v 1.15 2002/02/16 21:27:48 millert Exp $";
+static char rcsid[] = "$OpenBSD: lock.c,v 1.16 2002/05/08 18:04:43 millert Exp $";
 #endif /* not lint */
 
 /*
@@ -109,7 +109,7 @@ main(argc, argv)
 	no_timeout = 0;
 
 	if (!(pw = getpwuid(getuid())))
-		errx(1, "unknown uid %d.", getuid());
+		errx(1, "unknown uid %u.", getuid());
 
 	lc = login_getclass(pw->pw_class);
 	
