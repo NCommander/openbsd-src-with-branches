@@ -1,4 +1,4 @@
-/*	$OpenBSD: locore.s,v 1.13 1996/10/14 01:20:38 briggs Exp $	*/
+/*	$OpenBSD: locore.s,v 1.14 1996/10/23 04:49:47 briggs Exp $	*/
 /*	$NetBSD: locore.s,v 1.70 1996/10/17 06:32:13 scottr Exp $	*/
 
 /*
@@ -1199,7 +1199,7 @@ Lset2:
  *
  * Call should be made at spl6().
  */
-ENTRY(remrq)
+ENTRY(remrunqueue)
 	movl	sp@(4),a0		| proc *p
 	movb	a0@(P_PRIORITY),d0	| d0 = processes priority
 #ifdef DIAGNOSTIC
@@ -1229,7 +1229,7 @@ Lrem2:
 	movl	#Lrem3,sp@-
 	jbsr	_panic
 Lrem3:
-	.asciz	"remrq"
+	.asciz	"remrunqueue"
 	.even
 #endif
 

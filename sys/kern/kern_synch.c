@@ -214,7 +214,7 @@ schedcpu(arg)
 			    p->p_stat == SRUN &&
 			    (p->p_flag & P_INMEM) &&
 			    (p->p_priority / PPQ) != (p->p_usrpri / PPQ)) {
-				remrq(p);
+				remrunqueue(p);
 				p->p_priority = p->p_usrpri;
 				setrunqueue(p);
 			} else
