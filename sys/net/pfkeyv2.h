@@ -1,3 +1,5 @@
+/*	$OpenBSD$	*/
+
 /*
  * The author of this code is Angelos D. Keromytis, angelos@openbsd.org
  * 	(except when noted otherwise).
