@@ -1,4 +1,4 @@
-/*	$OpenBSD$ */
+/*	$OpenBSD: parse_args.c,v 1.1 1996/05/16 02:30:37 chuck Exp $ */
 
 /*-
  * Copyright (c) 1995 Theo de Raadt
@@ -48,6 +48,7 @@ struct flags {
 } bf[] = {
 	{ 'a', RB_ASKNAME },
 	{ 'b', RB_HALT },
+	{ 'c', RB_CONFIG },
 	{ 'y', RB_NOSYM },
 	{ 'd', RB_KDB },
 	{ 'm', RB_MINIROOT },
