@@ -1,4 +1,4 @@
-/*	$OpenBSD: cl_main.c,v 1.12 2002/02/16 21:27:56 millert Exp $	*/
+/*	$OpenBSD: cl_main.c,v 1.13 2002/02/17 19:42:33 millert Exp $	*/
 
 /*-
  * Copyright (c) 1993, 1994
@@ -26,6 +26,7 @@ static const char sccsid[] = "@(#)cl_main.c	10.36 (Berkeley) 10/14/96";
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <term.h>
 #include <termios.h>
 #include <unistd.h>
 

@@ -1,4 +1,4 @@
-/*	$OpenBSD: termout.c,v 1.10 2003/04/06 22:02:05 tedu Exp $	*/
+/*	$OpenBSD: termout.c,v 1.11 2003/06/03 02:56:19 millert Exp $	*/
 
 /*-
  * Copyright (c) 1988 The Regents of the University of California.
@@ -31,7 +31,7 @@
 
 #ifndef lint
 /*static char sccsid[] = "from: @(#)termout.c	4.3 (Berkeley) 4/26/91";*/
-static char rcsid[] = "$OpenBSD: termout.c,v 1.10 2003/04/06 22:02:05 tedu Exp $";
+static char rcsid[] = "$OpenBSD: termout.c,v 1.11 2003/06/03 02:56:19 millert Exp $";
 #endif /* not lint */
 
 #if defined(unix)
@@ -41,6 +41,7 @@ static char rcsid[] = "$OpenBSD: termout.c,v 1.10 2003/04/06 22:02:05 tedu Exp $
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <unistd.h>
 #include <curses.h>
 #include <term.h>
 #if	defined(ultrix)

@@ -1,4 +1,4 @@
-/*	$OpenBSD: api_exch.c,v 1.4 2003/04/06 22:02:05 tedu Exp $	*/
+/*	$OpenBSD: api_exch.c,v 1.5 2003/06/03 02:56:18 millert Exp $	*/
 
 /*-
  * Copyright (c) 1988 The Regents of the University of California.
@@ -31,10 +31,13 @@
 
 #ifndef lint
 /*static char sccsid[] = "from: @(#)api_exch.c	4.2 (Berkeley) 4/26/91";*/
-static char rcsid[] = "$OpenBSD: api_exch.c,v 1.4 2003/04/06 22:02:05 tedu Exp $";
+static char rcsid[] = "$OpenBSD: api_exch.c,v 1.5 2003/06/03 02:56:18 millert Exp $";
 #endif /* not lint */
 
+#include <sys/types.h>
+
 #include <stdio.h>
+#include <unistd.h>
 
 #include "../general/general.h"
 

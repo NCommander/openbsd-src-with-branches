@@ -1,4 +1,4 @@
-/*	$OpenBSD: cmd.c,v 1.6 2001/11/19 19:02:18 mpech Exp $	*/
+/*	$OpenBSD: cmd.c,v 1.7 2003/06/03 02:56:23 millert Exp $	*/
 /*	$NetBSD: cmd.c,v 1.4 1996/02/08 20:44:57 mycroft Exp $	*/
 
 /*
@@ -37,12 +37,15 @@
 #if 0
 static char sccsid[] = "@(#)cmd.c	8.1 (Berkeley) 6/6/93";
 #else
-static char rcsid[] = "$OpenBSD: cmd.c,v 1.6 2001/11/19 19:02:18 mpech Exp $";
+static char rcsid[] = "$OpenBSD: cmd.c,v 1.7 2003/06/03 02:56:23 millert Exp $";
 #endif
 #endif /* not lint */
 
 #include "defs.h"
 #include "char.h"
+
+#include <sys/types.h>
+#include <unistd.h>
 
 docmd()
 {
