@@ -1,4 +1,4 @@
-/*	$OpenBSD: pmdb.c,v 1.19 2003/08/18 17:55:57 jfb Exp $	*/
+/*	$OpenBSD$	*/
 /*
  * Copyright (c) 2004 Jean-Francois Brousseau <jfb@openbsd.org>
  * All rights reserved. 
