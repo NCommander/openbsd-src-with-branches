@@ -1,4 +1,4 @@
-/*	$OpenBSD: tcp_usrreq.c,v 1.11 1997/07/24 00:25:25 deraadt Exp $	*/
+/*	$OpenBSD: tcp_usrreq.c,v 1.12 1997/08/09 23:36:26 millert Exp $	*/
 /*	$NetBSD: tcp_usrreq.c,v 1.20 1996/02/13 23:44:16 christos Exp $	*/
 
 /*
@@ -257,6 +257,8 @@ tcp_usrreq(so, req, m, nam, control)
 	 * Mark the connection as being incapable of further output.
 	 */
 	case PRU_SHUTDOWN:
+		if (so->so_state & SS_CANTSENDMORE)
+			break;
 		socantsendmore(so);
 		tp = tcp_usrclosed(tp);
 		if (tp)

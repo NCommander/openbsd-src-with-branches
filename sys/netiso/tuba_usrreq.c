@@ -267,6 +267,8 @@ tuba_usrreq(so, req, m, nam, control)
 		 * Mark the connection as being incapable of further output.
 		 */
 	case PRU_SHUTDOWN:
+		if (so->so_state & SS_CANTSENDMORE)
+			break;
 		socantsendmore(so);
 		tp = tcp_usrclosed(tp);
 		if (tp)
