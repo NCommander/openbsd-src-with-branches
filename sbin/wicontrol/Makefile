@@ -1,9 +1,9 @@
-#	$OpenBSD: Makefile,v 1.6 2002/06/20 02:52:40 fgsch Exp $
+#	$OpenBSD: Makefile,v 1.7 2003/06/23 09:32:24 miod Exp $
 #	From: Makefile,v 1.1 1999/05/05 07:37:06 wpaul Exp $
 
-.if (${MACHINE} == "i386") || (${MACHINE_ARCH} == "powerpc") || \
+.if (${MACHINE} == "i386") || (${MACHINE} == "amd64") || \
     (${MACHINE} == "alpha") || (${MACHINE} == "sparc") || \
-    (${MACHINE} == "sparc64")
+    (${MACHINE} == "sparc64") || (${MACHINE_ARCH} == "powerpc")
 PROG=	wicontrol
 SRCS=	wicontrol.c
 .else

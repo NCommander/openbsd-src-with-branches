@@ -1,9 +1,11 @@
-#	$OpenBSD: Makefile,v 1.16.6.1 2003/10/10 17:04:13 drahn Exp $
+#	$OpenBSD: Makefile,v 1.17 2003/10/31 04:05:29 drahn Exp $
 
-.if (${MACHINE} == "alpha") || (${MACHINE} == "hppa") || \
-    (${MACHINE} == "i386") || (${MACHINE} == "macppc") || \
+.if (${MACHINE} == "i386") || (${MACHINE} == "amd64") || \
+    (${MACHINE} == "macppc") || (${MACHINE} == "pegasos") || \
+    (${MACHINE} == "alpha") || (${MACHINE} == "hppa") || \
     (${MACHINE} == "sparc") || (${MACHINE} == "sparc64") || \
-    (${MACHINE} == "vax") || (${MACHINE} == "pegasos")
+    (${MACHINE} == "vax")
+    
 PROG=	kbd
 
 SRCS=	main.c kbd_wscons.c
@@ -15,6 +17,6 @@ NOPROG=	Yes
 .endif
 
 MAN=		kbd.8
-MANSUBDIR=	alpha hppa i386 macppc sparc sparc64 vax
+MANSUBDIR=	alpha hppa i386 macppc sparc sparc64 vax pegosos amd64
 
 .include <bsd.prog.mk>
