@@ -1,4 +1,4 @@
-/*	$OpenBSD: udp_usrreq.c,v 1.32 1999/12/19 02:52:21 itojun Exp $	*/
+/*	$OpenBSD: udp_usrreq.c,v 1.33 1999/12/21 15:41:08 itojun Exp $	*/
 /*	$NetBSD: udp_usrreq.c,v 1.28 1996/03/16 23:54:03 christos Exp $	*/
 
 /*
@@ -461,9 +461,12 @@ udp_input(m, va_alist)
 #endif /* INET6 */
 					    &srcsa.sa, n, opts) == 0) {
 						m_freem(n);
+						if (opts)
+							m_freem(opts);
 						udpstat.udps_fullsock++;
 					} else
 						sorwakeup(last);
+					opts = NULL;
 				}
 			}
 			last = inp->inp_socket;
