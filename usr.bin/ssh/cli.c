@@ -1,5 +1,5 @@
 #include "includes.h"
-RCSID("$Id$");
+RCSID("$OpenBSD: cli.c,v 1.1 2000/10/11 20:14:39 markus Exp $");
 
 #include "xmalloc.h"
 #include "ssh.h"

@@ -35,6 +35,8 @@
  */
 
 #include "includes.h"
+RCSID("$OpenBSD$");
+
 #include "xmalloc.h"
 #include "ssh.h"
 #include "packet.h"
