@@ -22,7 +22,7 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 #include "includes.h"
-RCSID("$OpenBSD: auth2-chall.c,v 1.2 2001/01/21 19:05:43 markus Exp $");
+RCSID("$OpenBSD: auth2-chall.c,v 1.3 2001/03/02 18:54:31 deraadt Exp $");
 
 #include "ssh2.h"
 #include "auth.h"
@@ -104,10 +104,9 @@ input_userauth_info_response(int type, int plen, void *ctxt)
 		}
 		xfree(response);
 	}
-	auth_log(authctxt, authenticated, method, " ssh2");
-	if (!authctxt->postponed) {
-		/* unregister callback and send reply */
+	/* unregister callback */
+	if (!authctxt->postponed)
 		dispatch_set(SSH2_MSG_USERAUTH_INFO_RESPONSE, NULL);
-		userauth_reply(authctxt, authenticated);
-	}
+
+	userauth_finish(authctxt, authenticated, method);
 }
