@@ -1,4 +1,4 @@
-/*	$OpenBSD: emacs.c,v 1.18 2003/02/28 09:45:09 jmc Exp $	*/
+/*	$OpenBSD: emacs.c,v 1.19 2003/04/16 23:11:52 tdeval Exp $	*/
 
 /*
  *  Emacs-like command line editing and history
@@ -437,6 +437,8 @@ x_ins_string(c)
 	}
 	return KSTD;
 }
+
+static int x_do_ins(const char *cp, int len);
 
 static int
 x_do_ins(cp, len)
@@ -1532,6 +1534,8 @@ x_init_emacs()
 	if (locale == NULL || !strcmp(locale, "C") || !strcmp(locale, "POSIX"))
 		x_usemeta = 1;
 }
+
+static void bind_if_not_bound(int p, int k, int func);
 
 static void
 bind_if_not_bound(p, k, func)

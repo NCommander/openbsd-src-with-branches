@@ -1,4 +1,4 @@
-/*	$OpenBSD: main.c,v 1.23 2003/03/10 03:48:16 david Exp $	*/
+/*	$OpenBSD: main.c,v 1.24 2003/04/04 23:12:02 deraadt Exp $	*/
 
 /*
  * startup, main loop, environments and error handling
@@ -83,9 +83,7 @@ static const char *const initcoms [] = {
 };
 
 int
-main(argc, argv)
-	int argc;
-	register char **argv;
+main(int argc, char *argv[])
 {
 	register int i;
 	int argi;
