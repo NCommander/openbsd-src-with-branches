@@ -1,4 +1,4 @@
-/*	$OpenBSD: sbic.c,v 1.13 2001/11/06 01:47:02 art Exp $	*/
+/*	$OpenBSD: sbic.c,v 1.14 2001/11/06 19:53:14 miod Exp $	*/
 /*	$NetBSD: sbic.c,v 1.28 1996/10/13 03:07:29 christos Exp $	*/
 
 /*
@@ -1789,7 +1789,7 @@ sbicgo(dev, xs)
 	 * push the data cache ( I think this won't work (EH))
 	 */
 #if defined(M68040) || defined(M68060)
-	if (mmutype == MMU_68040 && usedma && count) {
+	if (mmutype <= MMU_68040 && usedma && count) {
 		dma_cachectl(addr, count);
 		if (((u_int)addr & 0xF) || (((u_int)addr + count) & 0xF))
 			dev->sc_flags |= SBICF_DCFLUSH;
