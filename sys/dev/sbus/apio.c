@@ -1,4 +1,4 @@
-/*	$OpenBSD: apio.c,v 1.1 2002/03/14 19:18:29 jason Exp $	*/
+/*	$OpenBSD: apio.c,v 1.2 2002/04/08 17:49:42 jason Exp $	*/
 
 /*
  * Copyright (c) 2002 Jason L. Wright (jason@thought.net)
@@ -175,7 +175,7 @@ apio_print(aux, name)
 	void *aux;
 	const char *name;
 {
-	struct apio_attach_args *aaa;
+	struct apio_attach_args *aaa = aux;
 
 	if (name != NULL)
 		printf("%s at %s", aaa->aaa_name, name);
