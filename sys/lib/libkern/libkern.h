@@ -1,4 +1,4 @@
-/*	$OpenBSD: libkern.h,v 1.11 1997/05/05 14:35:09 millert Exp $	*/
+/*	$OpenBSD: libkern.h,v 1.12 1997/09/14 19:10:49 niklas Exp $	*/
 /*	$NetBSD: libkern.h,v 1.7 1996/03/14 18:52:08 christos Exp $	*/
 
 /*-
@@ -157,6 +157,7 @@ void	 __assert __P((const char *, const char *, int, const char *))
 int	 bcmp __P((const void *, const void *, size_t));
 int	 ffs __P((int));
 int	 locc __P((int, char *, u_int));
+void	*memchr __P((const void *, int, size_t));
 u_long	 random __P((void));
 void	 srandom __P((u_long));
 int	 scanc __P((u_int, const u_char *, const u_char *, int));
