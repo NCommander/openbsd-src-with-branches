@@ -1,4 +1,4 @@
-/*	$OpenBSD: proto.h,v 1.11 2003/05/16 19:58:57 jsyn Exp $	*/
+/*	$OpenBSD: proto.h,v 1.12 2004/11/04 19:20:07 deraadt Exp $	*/
 
 /*
  * prototypes for PD-KSH
@@ -99,6 +99,9 @@ int 	histN	 	ARGS((void));
 int 	histnum	 	ARGS((int n));
 int	findhist	ARGS((int start, int fwd, const char *str,
 			      int anchored));
+int	findhistrel	ARGS((const char *str));
+char  **hist_get_newest ARGS((int allow_cur));
+
 #endif /* HISTORY */
 /* io.c */
 void 	errorf		ARGS((const char *fmt, ...))
