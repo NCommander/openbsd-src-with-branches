@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: clockreg.h,v 1.4 1996/05/26 18:36:15 briggs Exp $	*/
 /*	$NetBSD: clockreg.h,v 1.5 1996/04/01 05:16:52 scottr Exp $	*/
 
 /*-
@@ -40,6 +40,9 @@
  */
 
 
+#ifndef HZ
+#define	HZ		60		/* Seems to be universal for mac68k */
+#endif
 #define CLK_SPEED	0.0000012766	/* time to complete a clock (3 MHz) */
 
 /*
