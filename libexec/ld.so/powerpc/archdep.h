@@ -1,4 +1,4 @@
-/*	$OpenBSD: archdep.h,v 1.5 2002/04/29 15:52:30 drahn Exp $ */
+/*	$OpenBSD: archdep.h,v 1.6 2002/05/24 03:44:38 deraadt Exp $ */
 
 /*
  * Copyright (c) 1998 Per Fogelstrom, Opsycon AB
@@ -60,12 +60,12 @@
 static inline void
 _dl_dcbf(Elf32_Addr *addr)
 {
-  __asm__ volatile ("dcbst 0, %0\n\t"
-		    "sync\n\t"
-		    "icbi 0, %0\n\t"
-		    "sync\n\t"
-		    "isync"
-                    : : "r" (addr) : "0");
+	__asm__ volatile ("dcbst 0, %0\n\t"
+	    "sync\n\t"
+	    "icbi 0, %0\n\t"
+	    "sync\n\t"
+	    "isync"
+	    : : "r" (addr) : "0");
 }
 
 static inline void
