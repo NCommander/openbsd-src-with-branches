@@ -31,11 +31,11 @@
  */
 
 /*
- * $OpenBSD: errlog.c,v 1.6 1998/07/10 20:27:42 provos Exp $
+ * $OpenBSD: errlog.c,v 1.3 2000/07/05 23:41:46 deraadt Exp $
  */
 
 #ifndef lint
-static char rcsid[] = "$Id: errlog.c,v 1.6 1998/07/10 20:27:42 provos Exp $";
+static char rcsid[] = "$Id: errlog.c,v 1.3 2000/07/05 23:41:46 deraadt Exp $";
 #endif
 
 #define _ERRLOG_C_
@@ -138,9 +138,9 @@ _log_error(int flag, char *fmt, va_list ap)
      buffer[LOG_SIZE-1] = '\0';
 
      if (daemon_mode)
-	  syslog(LOG_WARNING, buffer);
+	  syslog(LOG_WARNING, "%s", buffer);
      else {
-	  fprintf(stderr, buffer);
+	  fprintf(stderr, "%s", buffer);
 	  if (flag)
 	       fprintf(stderr, " : %s", sys_errlist[errno]);
 	  fprintf(stderr, ".\n");
