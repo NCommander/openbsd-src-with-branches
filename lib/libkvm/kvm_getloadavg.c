@@ -1,4 +1,4 @@
-/*	$OpenBSD: kvm_getloadavg.c,v 1.2 1996/05/05 14:57:12 deraadt Exp $ */
+/*	$OpenBSD: kvm_getloadavg.c,v 1.3 2001/11/05 23:04:35 art Exp $ */
 /*	$NetBSD: kvm_getloadavg.c,v 1.2 1996/03/18 22:33:31 thorpej Exp $	*/
 
 /*-
@@ -13,11 +13,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -38,7 +34,7 @@
 #if 0
 static char sccsid[] = "@(#)kvm_getloadavg.c	8.1 (Berkeley) 6/4/93";
 #else
-static char *rcsid = "$OpenBSD: kvm_getloadavg.c,v 1.2 1996/05/05 14:57:12 deraadt Exp $";
+static char *rcsid = "$OpenBSD: kvm_getloadavg.c,v 1.3 2001/11/05 23:04:35 art Exp $";
 #endif
 #endif /* LIBC_SCCS and not lint */
 
