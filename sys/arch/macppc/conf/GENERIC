@@ -1,4 +1,4 @@
-#	$OpenBSD: GENERIC,v 1.16 2002/03/25 15:08:58 lebel Exp $
+#	$OpenBSD: GENERIC,v 1.17 2002/03/28 14:39:45 drahn Exp $
 #
 # PPC GENERIC config file
 #
@@ -18,7 +18,7 @@ option		USBVERBOSE
 #option		MACOBIOVERBOSE
 option		ALTIVEC
 option		APERTURE	# in-kernel aperture driver for XFree86
-#option		WSDISPLAY_COMPAT_RAWKBD
+option		WSDISPLAY_COMPAT_RAWKBD
 
 
 
