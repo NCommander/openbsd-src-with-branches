@@ -42,7 +42,6 @@
 #include <sys/disk.h>
 #include <sys/dkbad.h>
 #include <sys/proc.h>
-#include <sys/cpu.h>
 #include <machine/cpu.h>
 #include <amiga/amiga/device.h>
 #include <amiga/amiga/custom.h>
