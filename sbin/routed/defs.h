@@ -1,4 +1,4 @@
-/*	$OpenBSD: defs.h,v 1.4 1996/10/02 06:51:41 mickey Exp $	*/
+/*	$OpenBSD: defs.h,v 1.6 1997/07/30 23:28:40 deraadt Exp $	*/
 
 /*
  * Copyright (c) 1983, 1988, 1993
@@ -115,7 +115,9 @@
 
 /* Router Discovery parameters */
 #ifndef sgi
+#ifndef INADDR_ALLROUTERS_GROUP
 #define INADDR_ALLROUTERS_GROUP		0xe0000002  /* 224.0.0.2 */
+#endif
 #endif
 #define	MaxMaxAdvertiseInterval		1800
 #define	MinMaxAdvertiseInterval		4
