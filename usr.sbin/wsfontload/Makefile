@@ -2,7 +2,7 @@
 
 .if ${MACHINE} == "i386" || ${MACHINE} == "amd64" || \
     ${MACHINE} == "alpha" || ${MACHINE} == "hppa" || \
-    ${MACHINE} == "cats"
+    ${MACHINE_ARCH} == "arm"
 
 PROG=	wsfontload
 SRCS=	wsfontload.c
