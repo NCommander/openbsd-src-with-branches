@@ -36,10 +36,10 @@
  */
 
 #include "includes.h"
-RCSID("$OpenBSD: log-client.c,v 1.12 2000/09/12 20:53:10 markus Exp $");
+RCSID("$OpenBSD: log-client.c,v 1.15 2001/01/21 19:05:50 markus Exp $");
 
 #include "xmalloc.h"
-#include "ssh.h"
+#include "log.h"
 
 static LogLevel log_level = SYSLOG_LEVEL_INFO;
 
@@ -53,8 +53,8 @@ log_init(char *av0, LogLevel level, SyslogFacility ignored1, int ignored2)
 {
 	switch (level) {
 	case SYSLOG_LEVEL_QUIET:
-	case SYSLOG_LEVEL_ERROR:
 	case SYSLOG_LEVEL_FATAL:
+	case SYSLOG_LEVEL_ERROR:
 	case SYSLOG_LEVEL_INFO:
 	case SYSLOG_LEVEL_VERBOSE:
 	case SYSLOG_LEVEL_DEBUG1:

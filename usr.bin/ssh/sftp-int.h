@@ -1,5 +1,7 @@
+/* $OpenBSD: sftp-int.h,v 1.1 2001/02/04 11:11:54 djm Exp $ */
+
 /*
- * Copyright (c) 2000 Markus Friedl.  All rights reserved.
+ * Copyright (c) 2001 Damien Miller.  All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -21,14 +23,5 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-#ifndef HMAC_H
-#define HMAC_H
 
-unsigned char *
-hmac(
-    EVP_MD *evp_md,
-    unsigned int seqno,
-    unsigned char *data, int datalen,
-    unsigned char *key, int len);
-
-#endif
+void interactive_loop(int fd_in, int fd_out);

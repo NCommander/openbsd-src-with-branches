@@ -23,125 +23,55 @@
  */
 
 #include "includes.h"
-RCSID("$OpenBSD: dsa.c,v 1.11 2000/09/07 20:27:51 deraadt Exp $");
+RCSID("$OpenBSD: ssh-dss.c,v 1.6 2001/02/08 19:30:52 itojun Exp $");
 
-#include "ssh.h"
+#include <openssl/bn.h>
+#include <openssl/evp.h>
+
 #include "xmalloc.h"
 #include "buffer.h"
 #include "bufaux.h"
 #include "compat.h"
-
-#include <openssl/bn.h>
-#include <openssl/dh.h>
-#include <openssl/rsa.h>
-#include <openssl/dsa.h>
-#include <openssl/evp.h>
-#include <openssl/bio.h>
-#include <openssl/pem.h>
-
-#include <openssl/hmac.h>
-#include "kex.h"
+#include "log.h"
 #include "key.h"
-#include "uuencode.h"
+#include "ssh-dss.h"
 
 #define INTBLOB_LEN	20
 #define SIGBLOB_LEN	(2*INTBLOB_LEN)
 
-Key *
-dsa_key_from_blob(char *blob, int blen)
-{
-	Buffer b;
-	char *ktype;
-	int rlen;
-	DSA *dsa;
-	Key *key;
-
-#ifdef DEBUG_DSS
-	dump_base64(stderr, blob, blen);
-#endif
-	/* fetch & parse DSA/DSS pubkey */
-	buffer_init(&b);
-	buffer_append(&b, blob, blen);
-	ktype = buffer_get_string(&b, NULL);
-	if (strcmp(KEX_DSS, ktype) != 0) {
-		error("dsa_key_from_blob: cannot handle type %s", ktype);
-		buffer_free(&b);
-		xfree(ktype);
-		return NULL;
-	}
-	key = key_new(KEY_DSA);
-	dsa = key->dsa;
-	buffer_get_bignum2(&b, dsa->p);
-	buffer_get_bignum2(&b, dsa->q);
-	buffer_get_bignum2(&b, dsa->g);
-	buffer_get_bignum2(&b, dsa->pub_key);
-	rlen = buffer_len(&b);
-	if(rlen != 0)
-		error("dsa_key_from_blob: remaining bytes in key blob %d", rlen);
-	buffer_free(&b);
-	xfree(ktype);
-
-#ifdef DEBUG_DSS
-	DSA_print_fp(stderr, dsa, 8);
-#endif
-	return key;
-}
 int
-dsa_make_key_blob(Key *key, unsigned char **blobp, unsigned int *lenp)
-{
-	Buffer b;
-	int len;
-	unsigned char *buf;
-
-	if (key == NULL || key->type != KEY_DSA)
-		return 0;
-	buffer_init(&b);
-	buffer_put_cstring(&b, KEX_DSS);
-	buffer_put_bignum2(&b, key->dsa->p);
-	buffer_put_bignum2(&b, key->dsa->q);
-	buffer_put_bignum2(&b, key->dsa->g);
-	buffer_put_bignum2(&b, key->dsa->pub_key);
-	len = buffer_len(&b);
-	buf = xmalloc(len);
-	memcpy(buf, buffer_ptr(&b), len);
-	memset(buffer_ptr(&b), 0, len);
-	buffer_free(&b);
-	if (lenp != NULL)
-		*lenp = len;
-	if (blobp != NULL)
-		*blobp = buf;
-	return len;
-}
-int
-dsa_sign(
+ssh_dss_sign(
     Key *key,
-    unsigned char **sigp, int *lenp,
-    unsigned char *data, int datalen)
+    u_char **sigp, int *lenp,
+    u_char *data, int datalen)
 {
-	unsigned char *digest;
-	unsigned char *ret;
+	u_char *digest;
+	u_char *ret;
 	DSA_SIG *sig;
 	EVP_MD *evp_md = EVP_sha1();
 	EVP_MD_CTX md;
-	unsigned int rlen;
-	unsigned int slen;
-	unsigned int len;
-	unsigned char sigblob[SIGBLOB_LEN];
+	u_int rlen;
+	u_int slen;
+	u_int len, dlen;
+	u_char sigblob[SIGBLOB_LEN];
 	Buffer b;
 
 	if (key == NULL || key->type != KEY_DSA || key->dsa == NULL) {
-		error("dsa_sign: no DSA key");
+		error("ssh_dss_sign: no DSA key");
 		return -1;
 	}
-	digest = xmalloc(evp_md->md_size);
+	dlen = evp_md->md_size;
+	digest = xmalloc(dlen);
 	EVP_DigestInit(&md, evp_md);
 	EVP_DigestUpdate(&md, data, datalen);
 	EVP_DigestFinal(&md, digest, NULL);
 
-	sig = DSA_do_sign(digest, evp_md->md_size, key->dsa);
+	sig = DSA_do_sign(digest, dlen, key->dsa);
 	if (sig == NULL) {
-		fatal("dsa_sign: cannot sign");
+		fatal("ssh_dss_sign: cannot sign");
 	}
+	memset(digest, 0, dlen);
+	xfree(digest);
 
 	rlen = BN_num_bytes(sig->r);
 	slen = BN_num_bytes(sig->s);
@@ -168,7 +98,7 @@ dsa_sign(
 	} else {
 		/* ietf-drafts */
 		buffer_init(&b);
-		buffer_put_cstring(&b, KEX_DSS);
+		buffer_put_cstring(&b, "ssh-dss");
 		buffer_put_string(&b, sigblob, SIGBLOB_LEN);
 		len = buffer_len(&b);
 		ret = xmalloc(len);
@@ -182,24 +112,24 @@ dsa_sign(
 	return 0;
 }
 int
-dsa_verify(
+ssh_dss_verify(
     Key *key,
-    unsigned char *signature, int signaturelen,
-    unsigned char *data, int datalen)
+    u_char *signature, int signaturelen,
+    u_char *data, int datalen)
 {
 	Buffer b;
-	unsigned char *digest;
+	u_char *digest;
 	DSA_SIG *sig;
 	EVP_MD *evp_md = EVP_sha1();
 	EVP_MD_CTX md;
-	unsigned char *sigblob;
+	u_char *sigblob;
 	char *txt;
-	unsigned int len;
+	u_int len, dlen;
 	int rlen;
 	int ret;
 
 	if (key == NULL || key->type != KEY_DSA || key->dsa == NULL) {
-		error("dsa_verify: no DSA key");
+		error("ssh_dss_verify: no DSA key");
 		return -1;
 	}
 
@@ -225,12 +155,12 @@ dsa_verify(
 		buffer_init(&b);
 		buffer_append(&b, (char *) signature, signaturelen);
 		ktype = buffer_get_string(&b, NULL);
-		if (strcmp(KEX_DSS, ktype) != 0) {
-			error("dsa_verify: cannot handle type %s", ktype);
+		if (strcmp("ssh-dss", ktype) != 0) {
+			error("ssh_dss_verify: cannot handle type %s", ktype);
 			buffer_free(&b);
 			return -1;
 		}
-		sigblob = (unsigned char *)buffer_get_string(&b, &len);
+		sigblob = (u_char *)buffer_get_string(&b, &len);
 		rlen = buffer_len(&b);
 		if(rlen != 0) {
 			error("remaining bytes in signature %d", rlen);
@@ -256,16 +186,17 @@ dsa_verify(
 		memset(sigblob, 0, len);
 		xfree(sigblob);
 	}
-	
+
 	/* sha1 the data */
-	digest = xmalloc(evp_md->md_size);
+	dlen = evp_md->md_size;
+	digest = xmalloc(dlen);
 	EVP_DigestInit(&md, evp_md);
 	EVP_DigestUpdate(&md, data, datalen);
 	EVP_DigestFinal(&md, digest, NULL);
 
-	ret = DSA_do_verify(digest, evp_md->md_size, sig, key->dsa);
+	ret = DSA_do_verify(digest, dlen, sig, key->dsa);
 
-	memset(digest, 0, evp_md->md_size);
+	memset(digest, 0, dlen);
 	xfree(digest);
 	DSA_SIG_free(sig);
 
@@ -281,24 +212,6 @@ dsa_verify(
 		txt = "error";
 		break;
 	}
-	debug("dsa_verify: signature %s", txt);
+	debug("ssh_dss_verify: signature %s", txt);
 	return ret;
-}
-
-Key *
-dsa_generate_key(unsigned int bits)
-{
-	DSA *dsa = DSA_generate_parameters(bits, NULL, 0, NULL, NULL, NULL, NULL);
-	Key *k;
-	if (dsa == NULL) {
-		fatal("DSA_generate_parameters failed");
-	}
-	if (!DSA_generate_key(dsa)) {
-		fatal("DSA_generate_keys failed");
-	}
-
-	k = key_new(KEY_EMPTY);
-	k->type = KEY_DSA;
-	k->dsa = dsa;
-	return k;
 }
