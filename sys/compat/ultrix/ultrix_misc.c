@@ -1,4 +1,4 @@
-/*	$OpenBSD: ultrix_misc.c,v 1.17 2001/05/05 21:26:44 art Exp $	*/
+/*	$OpenBSD: ultrix_misc.c,v 1.18 2001/05/16 12:50:21 ho Exp $	*/
 /*	$NetBSD: ultrix_misc.c,v 1.23 1996/04/07 17:23:04 jonathan Exp $	*/
 
 /*
@@ -140,9 +140,9 @@ extern char *ultrix_syscallnames[];
 #define ULTRIX_EXEC_SETREGS cpu_exec_ecoff_setregs
 #endif /* __mips__ */
 
-#ifdef vax
+#ifdef __vax__
 #define ULTRIX_EXEC_SETREGS setregs
-#endif /* mips */
+#endif /* __vax__ */
 
 
 extern void ULTRIX_EXEC_SETREGS __P((struct proc *, struct exec_package *,
