@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.38 1998/05/18 18:29:07 mickey Exp $
+#	$OpenBSD: Makefile,v 1.39 1998/08/28 22:46:02 mickey Exp $
 
 #
 # For more information on building in tricky environments, please see
@@ -72,11 +72,13 @@ build:
 .ifdef GLOBAL_AUTOCONF_CACHE
 	rm -f ${GLOBAL_AUTOCONF_CACHE}
 .endif
-	(cd ${.CURDIR}/share/mk && ${MAKE} install)
-	(cd ${.CURDIR}/include; ${MAKE} includes)
+	(cd ${.CURDIR}/share/mk && ${SUDO} ${MAKE} install)
+	(cd ${.CURDIR}/include; ${SUDO} ${MAKE} includes)
 	${MAKE} cleandir
-	(cd ${.CURDIR}/lib && ${MAKE} depend && ${MAKE} && ${MAKE} install)
-	(cd ${.CURDIR}/gnu/lib && ${MAKE} depend && ${MAKE} && ${MAKE} install)
+	(cd ${.CURDIR}/lib && ${MAKE} depend && ${MAKE} && \
+	    ${SUDO} ${MAKE} install)
+	(cd ${.CURDIR}/gnu/lib && ${MAKE} depend && ${MAKE} && \
+	    ${SUDO} ${MAKE} install)
 .if (${MACHINE_ARCH} == "mips")
 	ldconfig
 .endif
@@ -86,7 +88,7 @@ build:
 .if (${MACHINE_ARCH} == "mips")
 	ldconfig
 .endif
-	${MAKE} depend && ${MAKE} && ${MAKE} install
+	${MAKE} depend && ${MAKE} && ${SUDO} ${MAKE} install
 
 .if !defined(TARGET)
 cross-tools:
