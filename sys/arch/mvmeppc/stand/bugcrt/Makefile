@@ -1,18 +1,18 @@
-#	$OpenBSD: Makefile,v 1.8 2001/02/01 03:38:22 smurph Exp $
+#	$OpenBSD: Makefile,v 1.1 2001/06/26 21:58:02 smurph Exp $
 #
 # DO NOT OPTMIZE bugcrt (i.e. no "-O2")
 #
 S=${.CURDIR}/../../../..
 
 CFLAGS=-I${.CURDIR}/../../include -I${.CURDIR}/../libbug -I${S}/lib/libsa \
-	-fomit-frame-pointer -save-temps
+	-fomit-frame-pointer
 STAGE1_CFLAGS=-DSTACK_ASM_OP="\".long ${STAGE1_RELOC}\"" -DSTAGE1
 STAGE2_CFLAGS=-DSTACK_ASM_OP="\".long ${STAGE2_RELOC}\""
 SINGLE_CFLAGS=-DSTACK_ASM_OP="\".long ${STAGE2_RELOC}\"" -DSTAGE1
 SRCS=crt.c
 OBJS=stage1crt.o stage2crt.o singlecrt.o
 
-CLEANFILES+=a.out ${OBJS} *.i *.s
+CLEANFILES+=a.out ${OBJS}
 
 all:	${OBJS}
 
