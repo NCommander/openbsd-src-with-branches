@@ -1,7 +1,7 @@
 /*	$OpenBSD$ */
 
 /* mopa.out - Convert a Unix format kernel into something that
- * can be transfered via MOP.
+ * can be transferred via MOP.
  *
  * This code was written while refering to the NetBSD/vax boot
  * loader. Therefore anything that can be booted by the Vax
