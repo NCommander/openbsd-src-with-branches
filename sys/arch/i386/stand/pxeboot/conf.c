@@ -46,7 +46,7 @@
 #include "pxeboot.h"
 #include "pxe_net.h"
 
-const char version[] = "1.00";
+const char version[] = "1.01";
 int	debug = 1;
 
 #undef _TEST
