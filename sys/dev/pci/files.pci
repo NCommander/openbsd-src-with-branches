@@ -1,4 +1,4 @@
-#	$OpenBSD: files.pci,v 1.44 1999/08/04 23:38:03 niklas Exp $
+#	$OpenBSD: files.pci,v 1.45 1999/08/13 05:32:29 fgsch Exp $
 #	$NetBSD: files.pci,v 1.20 1996/09/24 17:47:15 christos Exp $
 #
 # Config file and device description for machine-independent PCI code.
@@ -183,6 +183,11 @@ file	dev/pci/aeon.c			aeon
 device	wb: ether, ifnet
 attach	wb at pci
 file	dev/pci/if_wb.c			wb
+
+# ASIX AX88140A ethernet
+device	ax: ether, ifnet
+attach	ax at pci
+file	dev/pci/if_ax.c			ax
 
 # Industrial Computer Source WDT-50x
 device	wdt: pcibus
