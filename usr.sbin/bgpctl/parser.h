@@ -1,4 +1,4 @@
-/*	$OpenBSD: parser.h,v 1.4 2004/05/21 11:52:32 claudio Exp $ */
+/*	$OpenBSD: parser.h,v 1.5 2004/08/20 15:49:35 henning Exp $ */
 
 /*
  * Copyright (c) 2003, 2004 Henning Brauer <henning@openbsd.org>
@@ -49,7 +49,7 @@ struct parse_result {
 	int			flags;
 	struct bgpd_addr	addr;
 	u_int8_t		prefixlen;
-	struct as_filter	as;
+	struct filter_as	as;
 };
 
 struct parse_result	*parse(int, char *[]);
