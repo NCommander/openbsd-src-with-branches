@@ -1,4 +1,4 @@
-/*	$OpenBSD: ip_ip4.h,v 1.13 1999/02/24 23:45:51 angelos Exp $	*/
+/*	$OpenBSD: ip_ip4.h,v 1.14 1999/04/09 23:28:45 niklas Exp $	*/
 
 /*
  * The authors of this code are John Ioannidis (ji@tla.org),
@@ -45,13 +45,12 @@ struct ip4stat
     u_int32_t	ip4s_ipackets;		/* total input packets */
     u_int32_t	ip4s_opackets;		/* total output packets */
     u_int32_t	ip4s_hdrops;		/* packet shorter than header shows */
-    u_int32_t	ip4s_badlen;
-    u_int32_t	ip4s_notip4;
     u_int32_t	ip4s_qfull;
     u_int64_t   ip4s_ibytes;
     u_int64_t   ip4s_obytes;
     u_int32_t	ip4s_pdrops;		/* packet dropped due to policy */
     u_int32_t	ip4s_spoof;		/* IP spoofing attempts */
+    u_int32_t   ip4s_family;		/* Protocol family mismatch */
 };
 
 #define IP4_DEFAULT_TTL    0
