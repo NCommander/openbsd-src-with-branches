@@ -1,4 +1,4 @@
-/*	$OpenBSD: do_command.c,v 1.26 2004/04/26 17:15:37 millert Exp $	*/
+/*	$OpenBSD: do_command.c,v 1.27 2004/06/03 19:54:04 millert Exp $	*/
 
 /* Copyright 1988,1990,1993,1994 by Paul Vixie
  * All rights reserved
@@ -22,7 +22,7 @@
  */
 
 #if !defined(lint) && !defined(LINT)
-static char const rcsid[] = "$OpenBSD: do_command.c,v 1.26 2004/04/26 17:15:37 millert Exp $";
+static char const rcsid[] = "$OpenBSD: do_command.c,v 1.27 2004/06/03 19:54:04 millert Exp $";
 #endif
 
 #include "cron.h"
@@ -233,7 +233,7 @@ child_process(entry *e, user *u) {
 			}
 		}
 #else
-		if (setgid(e->pwd->pw_gid) || initgroups(usernm, e->pwd->pw_gid) {
+		if (setgid(e->pwd->pw_gid) || initgroups(usernm, e->pwd->pw_gid)) {
 			fprintf(stderr,
 			    "unable to set groups for %s\n", e->pwd->pw_name);
 			_exit(ERROR_EXIT);
