@@ -1,4 +1,4 @@
-/*	$OpenBSD: id.c,v 1.6 1997/07/25 21:33:39 mickey Exp $	*/
+/*	$OpenBSD: id.c,v 1.7 1999/07/23 19:24:33 aaron Exp $	*/
 
 /*-
  * Copyright (c) 1991, 1993
@@ -41,7 +41,7 @@ static char copyright[] =
 
 #ifndef lint
 /*static char sccsid[] = "@(#)id.c	8.3 (Berkeley) 4/28/95";*/
-static char rcsid[] = "$OpenBSD: id.c,v 1.6 1997/07/25 21:33:39 mickey Exp $";
+static char rcsid[] = "$OpenBSD: id.c,v 1.7 1999/07/23 19:24:33 aaron Exp $";
 #endif /* not lint */
 
 #include <sys/param.h>
@@ -249,7 +249,7 @@ user(pw)
 		if (lastid == (id = groups[cnt]))
 			continue;
 		(void)printf(fmt, id);
-		fmt = " %u";
+		fmt = ", %u";
 		if ((gr = getgrgid(id)))
 			(void)printf("(%s)", gr->gr_name);
 		lastid = id;
