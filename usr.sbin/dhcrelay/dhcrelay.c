@@ -1,4 +1,4 @@
-/*	$OpenBSD: dhcrelay.c,v 1.13 2004/04/13 23:16:17 henning Exp $ */
+/*	$OpenBSD: dhcrelay.c,v 1.14 2004/04/15 00:36:37 henning Exp $ */
 
 /*
  * Copyright (c) 2004 Henning Brauer <henning@cvs.openbsd.org>
@@ -49,7 +49,6 @@ char	*print_hw_addr(int, int, unsigned char *);
 time_t cur_time;
 time_t default_lease_time = 43200; /* 12 hours... */
 time_t max_lease_time = 86400; /* 24 hours... */
-struct tree_cache *global_options [256];
 
 int log_perror = 1;
 
