@@ -1,2 +1,0 @@
-dnl	$OpenBSD: upgrade,v 1.9 2002/03/23 23:58:50 miod Exp $
-OpenBSDUpgrade({:-CDROM, the miniroot, or the installation floppy-:})

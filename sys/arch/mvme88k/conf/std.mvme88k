@@ -1,6 +1,0 @@
-# standard mvme88k information
-#	$OpenBSD: std.mvme88k,v 1.2 1999/02/09 06:36:24 smurph Exp $
-machine mvme88k
-
-mainbus0	at root
-
