@@ -1,4 +1,4 @@
-/*	$OpenBSD: df.c,v 1.26 2000/03/24 19:07:49 millert Exp $	*/
+/*	$OpenBSD: df.c,v 1.27 2000/10/18 20:37:42 mickey Exp $	*/
 /*	$NetBSD: df.c,v 1.21.2.1 1995/11/01 00:06:11 jtc Exp $	*/
 
 /*
@@ -49,7 +49,7 @@ static char copyright[] =
 #if 0
 static char sccsid[] = "@(#)df.c	8.7 (Berkeley) 4/2/94";
 #else
-static char rcsid[] = "$OpenBSD: df.c,v 1.26 2000/03/24 19:07:49 millert Exp $";
+static char rcsid[] = "$OpenBSD: df.c,v 1.27 2000/10/18 20:37:42 mickey Exp $";
 #endif
 #endif /* not lint */
 
@@ -320,7 +320,7 @@ unit_adjust(val)
 	} else if (abval < 1125899906842624ULL) {
 		unit = TERA;
 		*val /= 1099511627776ULL;
-	} else if (abval < 1152921504606846976ULL) {
+	} else /* if (abval < 1152921504606846976ULL) */ {
 		unit = PETA;
 		*val /= 1125899906842624ULL;
 	}
