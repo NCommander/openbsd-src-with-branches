@@ -1,4 +1,4 @@
-/*	$OpenBSD: stand.h,v 1.16 1996/12/12 08:16:30 mickey Exp $	*/
+/*	$OpenBSD: stand.h,v 1.17 1997/01/17 07:28:15 downsj Exp $	*/
 /*	$NetBSD: stand.h,v 1.18 1996/11/30 04:35:51 gwr Exp $	*/
 
 /*-
@@ -187,6 +187,13 @@ int	null_readdir __P((struct open_file *f, char *name));
 
 void	putchar __P((int));    
 int	getchar __P((void));
+
+#ifdef __INTERNAL_LIBSA_CREAD
+int	oopen __P((const char *, int));
+int	oclose __P((int));
+ssize_t	oread __P((int, void *, size_t));
+off_t	olseek __P((int, off_t, int));
+#endif
 
 /* Machine dependent functions */
 int	devopen __P((struct open_file *, const char *, char **));

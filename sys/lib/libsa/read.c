@@ -1,4 +1,4 @@
-/*	$OpenBSD: read.c,v 1.2 1996/09/23 14:19:02 mickey Exp $	*/
+/*	$OpenBSD: read.c,v 1.3 1996/12/08 15:15:55 niklas Exp $	*/
 /*	$NetBSD: read.c,v 1.7 1996/06/21 20:29:28 pk Exp $	*/
 
 /*-
@@ -69,7 +69,11 @@
 #include "stand.h"
 
 ssize_t
+#ifndef __INTERNAL_LIBSA_CREAD
 read(fd, dest, bcount)
+#else
+oread(fd, dest, bcount)
+#endif
 	int fd;
 	void *dest;
 	size_t bcount;

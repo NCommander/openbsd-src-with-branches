@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: close.c,v 1.4 1996/09/23 14:18:49 mickey Exp $	*/
 /*	$NetBSD: close.c,v 1.5 1995/09/06 19:53:29 pk Exp $	*/
 
 /*-
@@ -69,7 +69,11 @@
 #include "saerrno.h"
 
 int
+#ifndef __INTERNAL_LIBSA_CREAD
 close(fd)
+#else
+oclose(fd)
+#endif
 	int fd;
 {
 	register struct open_file *f = &files[fd];
