@@ -1,4 +1,4 @@
-/*	$OpenBSD: hash.h,v 1.3 1998/11/17 11:10:11 niklas Exp $	*/
+/*	$OpenBSD: hash.h,v 1.4 2002/09/11 09:50:43 ho Exp $	*/
 /*	$EOM: hash.h,v 1.6 1998/07/25 22:04:36 niklas Exp $	*/
 
 /*
@@ -59,7 +59,7 @@ struct hash {
   void (*Init) (void *);
   void (*Update) (void *, unsigned char *, unsigned int);
   void (*Final) (unsigned char *, void *);
-  void (*HMACInit) (struct hash *, unsigned char *, int);
+  void (*HMACInit) (struct hash *, unsigned char *, unsigned int);
   void (*HMACFinal) (unsigned char *, struct hash *);
 };
 
@@ -70,6 +70,6 @@ struct hash {
 #define HMAC_BLOCKLEN	64
 
 extern struct hash *hash_get (enum hashes);
-extern void hmac_init (struct hash *, unsigned char *, int);
+extern void hmac_init (struct hash *, unsigned char *, unsigned int);
 
 #endif /* _HASH_H_ */
