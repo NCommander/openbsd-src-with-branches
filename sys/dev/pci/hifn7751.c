@@ -1,4 +1,4 @@
-/*	$OpenBSD: hifn7751.c,v 1.118 2002/04/30 16:03:19 jason Exp $	*/
+/*	$OpenBSD: hifn7751.c,v 1.119 2002/05/07 20:37:24 jason Exp $	*/
 
 /*
  * Invertex AEON / Hifn 7751 driver
@@ -275,7 +275,7 @@ hifn_attach(parent, self, aux)
 		rbase = 'M';
 		rseg /= 1024;
 	}
-	printf(", %d%cB %cram, %s\n", rseg, rbase,
+	printf("%d%cB %cram, %s\n", rseg, rbase,
 	    sc->sc_drammodel ? 'd' : 's', intrstr);
 
 	sc->sc_cid = crypto_get_driverid(0);
@@ -675,18 +675,14 @@ report:
 	WRITE_REG_0(sc, HIFN_0_PUCNFG, ramcfg);
 	WRITE_REG_1(sc, HIFN_1_DMA_CNFG, dmacfg);
 
+	printf(": ");
 	switch (encl) {
-	case HIFN_PUSTAT_ENA_0:
-		printf(": no encr/auth");
-		break;
 	case HIFN_PUSTAT_ENA_1:
-		printf(": DES");
-		break;
 	case HIFN_PUSTAT_ENA_2:
-		printf(": 3DES");
 		break;
+	case HIFN_PUSTAT_ENA_0:
 	default:
-		printf(": disabled");
+		printf("disabled, ");
 		break;
 	}
 
