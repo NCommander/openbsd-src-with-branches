@@ -28,15 +28,14 @@
  */
 
 #if defined(SYSLIBC_SCCS) && !defined(lint)
-static char rcsid[] = "$OpenBSD: truncate.c,v 1.9 2003/06/02 20:18:39 millert Exp $";
+static char rcsid[] = "$OpenBSD: truncate.c,v 1.10 2003/06/11 21:03:10 deraadt Exp $";
 #endif /* SYSLIBC_SCCS and not lint */
 
 #include <sys/types.h>
 #include <sys/syscall.h>
+#include <unistd.h>
 
-#ifdef lint
-quad_t __syscall(quad_t, ...);
-#endif
+register_t __syscall(quad_t, ...);
 
 /*
  * This function provides 64-bit offset padding that
