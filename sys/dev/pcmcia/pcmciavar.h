@@ -131,7 +131,6 @@ struct pcmcia_function {
 	void		*ih_arg;
 	int		ih_ipl;
 	int		pf_flags;
-	int		irq;
 };
 
 /* pf_flags */
