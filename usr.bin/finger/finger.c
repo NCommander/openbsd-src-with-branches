@@ -1,4 +1,4 @@
-/*	$OpenBSD: finger.c,v 1.8 1998/07/10 15:45:15 mickey Exp $	*/
+/*	$OpenBSD: finger.c,v 1.9 1999/12/22 22:30:20 downsj Exp $	*/
 
 /*
  * Copyright (c) 1989 The Regents of the University of California.
@@ -54,7 +54,7 @@ char copyright[] =
 
 #ifndef lint
 /*static char sccsid[] = "from: @(#)finger.c	5.22 (Berkeley) 6/29/90";*/
-static char rcsid[] = "$OpenBSD: finger.c,v 1.8 1998/07/10 15:45:15 mickey Exp $";
+static char rcsid[] = "$OpenBSD: finger.c,v 1.9 1999/12/22 22:30:20 downsj Exp $";
 #endif /* not lint */
 
 /*
@@ -94,7 +94,7 @@ main(argc, argv)
 	extern int optind;
 	extern char *__progname;
 	int ch;
-	char domain[256];
+	char domain[MAXHOSTNAMELEN];
 	struct stat sb;
 
 	oflag = 1;		/* default to old "office" behavior */
