@@ -1,3 +1,4 @@
+/* $OpenBSD$ */
 /* $NetBSD: db_instruction.h,v 1.6 2000/03/20 02:54:45 thorpej Exp $ */
 
 /*

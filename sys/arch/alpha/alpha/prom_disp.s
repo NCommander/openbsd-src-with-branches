@@ -1,3 +1,4 @@
+/* $OpenBSD$ */
 /* $NetBSD: prom_disp.s,v 1.8 1997/11/03 04:22:03 ross Exp $ */
 
 /*

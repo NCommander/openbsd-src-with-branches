@@ -1,3 +1,4 @@
+/* $OpenBSD$ */
 /* $NetBSD: debug.s,v 1.5 1999/06/18 18:11:56 thorpej Exp $ */
 
 /*-

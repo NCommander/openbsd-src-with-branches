@@ -1,3 +1,4 @@
+/* $OpenBSD$ */
 /* $NetBSD: interrupt.c,v 1.44 2000/05/23 05:12:53 thorpej Exp $ */
 
 /*

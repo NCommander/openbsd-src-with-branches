@@ -1,3 +1,4 @@
+/* $OpenBSD$ */
 /* $NetBSD: db_trace.c,v 1.6 2000/05/26 03:34:24 jhawk Exp $ */
 
 /*-

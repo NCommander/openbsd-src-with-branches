@@ -1,3 +1,4 @@
+/* $OpenBSD$ */
 /* $NetBSD: cpuconf.c,v 1.27 2000/06/26 02:42:04 enami Exp $ */
 
 /*-

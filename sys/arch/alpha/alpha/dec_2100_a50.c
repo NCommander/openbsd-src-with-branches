@@ -1,3 +1,4 @@
+/* $OpenBSD$ */
 /* $NetBSD: dec_2100_a50.c,v 1.43 2000/05/22 20:13:31 thorpej Exp $ */
 
 /*

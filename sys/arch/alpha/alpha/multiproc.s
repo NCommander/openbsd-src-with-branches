@@ -1,3 +1,4 @@
+/* $OpenBSD$ */
 /* $NetBSD: multiproc.s,v 1.5 1999/12/16 20:17:23 thorpej Exp $ */
 
 /*-

@@ -1,3 +1,4 @@
+/* $OpenBSD$ */
 /* $NetBSD: prom.c,v 1.39 2000/03/06 21:36:05 thorpej Exp $ */
 
 /* 

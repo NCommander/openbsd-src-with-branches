@@ -1,3 +1,4 @@
+/* $OpenBSD$ */
 /* $NetBSD: pal.s,v 1.14 1999/12/02 22:08:04 thorpej Exp $ */
 
 /*

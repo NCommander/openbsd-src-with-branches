@@ -1,3 +1,4 @@
+/* $OpenBSD$ */
 /* $NetBSD: dec_axppci_33.c,v 1.44 2000/05/22 20:13:32 thorpej Exp $ */
 
 /*

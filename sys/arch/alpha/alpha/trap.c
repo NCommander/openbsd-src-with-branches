@@ -1,3 +1,4 @@
+/* $OpenBSD$ */
 /* $NetBSD: trap.c,v 1.52 2000/05/24 16:48:33 thorpej Exp $ */
 
 /*-

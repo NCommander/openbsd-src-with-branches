@@ -1,3 +1,4 @@
+/* $OpenBSD$ */
 /* $NetBSD: mainbus.c,v 1.27 1998/06/24 01:10:35 ross Exp $ */
 
 /*

@@ -1,3 +1,4 @@
+/* $OpenBSD$ */
 /* $NetBSD: mem.c,v 1.26 2000/03/29 03:48:20 simonb Exp $ */
 
 /*
