@@ -17,15 +17,9 @@
 #define _KERN_DO_ELF64
 #define _NLIST_DO_ELF
 
-#ifdef __arch64__
 #define ARCH_ELFSIZE		64	/* MD native binary size */
 #define ELF_TARG_CLASS		ELFCLASS64
 #define ELF_TARG_MACH		EM_SPARCV9
-#else
-#define ARCH_ELFSIZE		32	/* MD native binary size */
-#define ELF_TARG_CLASS		ELFCLASS32
-#define ELF_TARG_MACH		EM_SPARC
-#endif
 
 #define ELF_TARG_DATA		ELFDATA2MSB
 

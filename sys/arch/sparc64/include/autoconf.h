@@ -162,7 +162,6 @@ struct bootpath {
 	struct device *dev;	/* device that recognised this component */
 };
 struct bootpath	*bootpath_store(int, struct bootpath *);
-int		sd_crazymap(int);
 
 /* Parse a disk string into a dev_t, return device struct pointer */
 struct	device *parsedisk(char *, int, int, dev_t *);

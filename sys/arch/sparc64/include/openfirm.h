@@ -39,13 +39,8 @@
 
 /* All cells are 8 byte slots */
 typedef u_int64_t cell_t;
-#ifdef __arch64__
 #define HDL2CELL(x)	(cell_t)(u_int)(int)(x)
 #define ADR2CELL(x)	(cell_t)(x)
-#else
-#define HDL2CELL(x)	(cell_t)(u_int)(int)(x)
-#define ADR2CELL(x)	(cell_t)(u_int)(int)(x)
-#endif
 
 int OF_test (char *service);
 int OF_test_method (int handle, char *method);

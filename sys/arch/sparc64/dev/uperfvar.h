@@ -1,7 +1,7 @@
 /*	$OpenBSD$	*/
 
 /*
- * Copyright (c) 1999 Jason L. Wright (jason@thought.net)
+ * Copyright (c) 2002 Jason L. Wright (jason@thought.net)
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -36,62 +36,19 @@
  *
  */
 
-/*
- * Driver for CS4231/EBDMA based audio found in some sun4u systems
- */
-
-/*
- * List of device memory allocations (see ce4231_malloc/ce4231_free).
- */
-struct cs_dma {
-	struct cs_dma *		next;
-	caddr_t			addr;
-	bus_dmamap_t		dmamap;
-	bus_dma_segment_t	segs[1];
-	int			nsegs;
-	size_t			size;
+struct uperf_softc {
+	struct device sc_dv;
+	void *usc_cookie;		/* cookie to pass upwards */
+	int (*usc_getcntsrc)(void *, int, u_int *, u_int *);
+	int (*usc_setcntsrc)(void *, int, u_int, u_int);
+	int (*usc_clrcnt)(void *, int);
+	int (*usc_getcnt)(void *, int, u_int32_t *, u_int32_t *);
+	struct uperf_src *usc_srcs;
 };
 
-struct cs_volume {
-	u_int8_t	left;
-	u_int8_t	right;
-};
-
-struct ce4231_softc {
-	struct	device sc_dev;		/* base device */
-	struct	sbusdev sc_sd;		/* sbus device */
-	struct	intrhand sc_ih;		/* interrupt vectoring */
-	bus_dma_tag_t sc_dmatag;
-	bus_space_tag_t	sc_bustag;	/* CS4231/DMA register tag */
-	bus_space_handle_t sc_cshandle;	/* CS4231 handle */
-	bus_space_handle_t sc_cdmahandle; /* capture DMA handle */
-	bus_space_handle_t sc_pdmahandle; /* playback DMA handle */
-	bus_space_handle_t sc_auxhandle;  /* AUX handle */
-	struct	evcnt sc_intrcnt;	/* statistics */
-	int	sc_open;		/* already open? */
-	int	sc_locked;		/* locked? */
-
-	void	(*sc_rintr)(void *);	/* input completion intr handler */
-	void	*sc_rarg;		/* arg for sc_rintr() */
-	void	(*sc_pintr)(void *);	/* output completion intr handler */
-	void	*sc_parg;		/* arg for sc_pintr() */
-
-	char		sc_mute[9];	/* which devs are muted */
-	u_int8_t	sc_out_port;	/* output port */
-	struct	cs_volume sc_volume[9];	/* software volume */
-
-	int sc_format_bits;
-	int sc_speed_bits;
-	int sc_precision;
-	int sc_need_commit;
-	int sc_channels;
-	u_int sc_last_format;
-	u_int32_t	sc_blksz;
-	u_int32_t	sc_playcnt;
-	u_int32_t	sc_playsegsz;
-	u_int32_t	sc_burst;
-	u_int32_t	sc_lastaddr;
-	struct cs_dma	*sc_dmas;	/* dma list */
-	struct cs_dma	*sc_nowplaying;
-	void *sc_pih, *sc_cih;
+/* Table should be terminated with us_src = -1 */
+struct uperf_src {
+	int	us_src;		/* source number (user) */
+	int	us_flags;	/* counters this source is valid for */
+	u_int32_t us_val;	/* value to put in register */
 };

@@ -48,9 +48,6 @@
 
 #include <machine/autoconf.h>
 #include <machine/cpu.h>
-#if defined(SUN4)
-#include <machine/oldmon.h>
-#endif
 
 #include <dev/sbus/sbusvar.h>
 #include "cd.h"

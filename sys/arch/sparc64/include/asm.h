@@ -50,12 +50,6 @@
 #endif
 #include <machine/frame.h>
 
-#ifdef __arch64__
-#ifndef __ELF__
-#define __ELF__
-#endif
-#endif
-
 /* Pull in CCFSZ, CC64FSZ, and BIAS from frame.h */
 #ifndef _LOCORE
 #define _LOCORE

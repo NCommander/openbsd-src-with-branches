@@ -13,6 +13,7 @@ BINDIR=		/usr/mdec
 CPPFLAGS+=	-D_STANDALONE -DSUN4U
 CPPFLAGS+=	-I.
 
+CFLAGS+=	-fno-stack-protector
 CFLAGS+=	-msoft-float
 .endif
 

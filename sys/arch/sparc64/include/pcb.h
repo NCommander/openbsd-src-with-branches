@@ -45,6 +45,9 @@
  *	@(#)pcb.h	8.1 (Berkeley) 6/11/93
  */
 
+#ifndef _SPARC64_PCB_H_
+#define _SPARC64_PCB_H_
+
 #include <machine/reg.h>
 
 #ifdef notyet
@@ -159,3 +162,5 @@ extern struct pcb *cpcb;
 #define pcb_psr	pcb_pstate
 #define pcb_wim	pcb_cwp
 #endif /* _KERNEL */
+
+#endif /* _SPARC64_PCB_H_ */

@@ -57,7 +57,7 @@ int fpu_emulate(struct proc *, struct trapframe *, struct fpstate *);
 void fpu_cleanup(struct proc *, struct fpstate64 *);
 int fpu_emulate(struct proc *, struct trapframe64 *, struct fpstate64 *);
 #endif /* SUN4U */
-int fpu_execute(struct fpemu *, union instr);
+int fpu_execute(struct proc *, struct fpemu *, union instr);
 
 /* fpu_add.c */
 struct fpn *fpu_add(struct fpemu *);

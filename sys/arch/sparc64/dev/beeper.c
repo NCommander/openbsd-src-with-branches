@@ -29,6 +29,11 @@
  * STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
+ *
+ * Effort sponsored in part by the Defense Advanced Research Projects
+ * Agency (DARPA) and Air Force Research Laboratory, Air Force
+ * Materiel Command, USAF, under agreement number F30602-01-2-0537.
+ *
  */
 
 /*
@@ -103,16 +108,18 @@ beeper_attach(parent, self, aux)
 	struct beeper_softc *sc = (void *)self;
 	struct ebus_attach_args *ea = aux;
 
-	sc->sc_iot = ea->ea_bustag;
+	sc->sc_iot = ea->ea_iotag;
 
 	/* Use prom address if available, otherwise map it. */
-	if (ea->ea_nvaddrs)
-		sc->sc_ioh = (bus_space_handle_t)ea->ea_vaddrs[0];
-	else if (ebus_bus_map(sc->sc_iot, 0,
-			      EBUS_PADDR_FROM_REG(&ea->ea_regs[0]),
-			      ea->ea_regs[0].size,
-			      BUS_SPACE_MAP_LINEAR,
-			      0, &sc->sc_ioh) != 0) {
+	if (ea->ea_nvaddrs) {
+		if (bus_space_map(sc->sc_iot, ea->ea_vaddrs[0], 0,
+		    BUS_SPACE_MAP_PROMADDRESS, &sc->sc_ioh)) {
+			printf(": can't map PROM register space\n");
+			return;
+		}
+	} else if (ebus_bus_map(sc->sc_iot, 0,
+	    EBUS_PADDR_FROM_REG(&ea->ea_regs[0]), ea->ea_regs[0].size,
+	    BUS_SPACE_MAP_LINEAR, 0, &sc->sc_ioh) != 0) {
 		printf(": can't map register space\n");
                 return;
 	}

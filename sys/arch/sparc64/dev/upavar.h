@@ -99,15 +99,6 @@ struct upadev {
 	void	(*ud_reset)(struct device *);
 };
 
-/* variables per Upa */
-struct upa_softc {
-	struct	device uc_dev;		/* base device */
-	bus_space_tag_t	uc_bustag;
-	bus_dma_tag_t	uc_dmatag;
-	int	uc_clockfreq;		/* clock frequency (in Hz) */
-	struct	upadev *uc_sbdev;	/* list of all children */
-};
-
 /*
  * Upa driver attach arguments.
  */
@@ -125,20 +116,10 @@ struct upa_attach_args {
 	int		ua_pri;		/* priority (IPL) */
 };
 
-/* upa_attach() is also used from obio.c */
-void	upa_attach(struct upa_softc *, char *, int,
-			 const char * const *);
 int	upa_print(void *, const char *);
 
 int	upadev_match(struct cfdata *, void *);
 void	upa_establish(struct upadev *, struct device *);
-
-int	upa_setup_attach_args(
-		struct upa_softc *,
-		bus_space_tag_t,
-		bus_dma_tag_t,
-		int,			/*node*/
-		struct upa_attach_args *);
 
 #define upa_bus_map(t, bt, a, s, f, v, hp) \
 	bus_space_map2(t, bt, a, s, f, v, hp)

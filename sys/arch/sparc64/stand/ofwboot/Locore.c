@@ -408,7 +408,7 @@ OF_chain(virt, size, entry, arg, len)
 			(unsigned long)romp, (unsigned long)romp);
 	}
 	entry(0, arg, len, (unsigned long)romp, (unsigned long)romp);
-	panic("OF_chain: kernel returned!\n");
+	panic("OF_chain: kernel returned!");
 	__asm("ta 2" : :);
 }
 

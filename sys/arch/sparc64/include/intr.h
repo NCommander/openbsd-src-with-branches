@@ -46,12 +46,13 @@
 #define	IPL_NET		PIL_NET		/* network */
 #define	IPL_SOFTSERIAL	4		/* serial */
 #define	IPL_TTY		PIL_TTY		/* terminal */
-#define	IPL_IMP		PIL_IMP		/* memory allocation */
+#define	IPL_VM		PIL_VM		/* memory allocation */
 #define	IPL_AUDIO	PIL_AUD		/* audio */
 #define	IPL_CLOCK	PIL_CLOCK	/* clock */
 #define	IPL_SERIAL	PIL_SER		/* serial */
 #define	IPL_SCHED	PIL_SCHED	/* scheduler */
 #define	IPL_LOCK	PIL_LOCK	/* locks */
+#define IPL_STATCLOCK	PIL_STATCLOCK	/* statclock */
 #define	IPL_HIGH	PIL_HIGH	/* everything */
 
 void *

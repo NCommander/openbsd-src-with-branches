@@ -57,12 +57,7 @@
  * is the top (end) of the user stack.
  */
 #define	USRTEXT		0x2000			/* Start of user text */
-#define USRSTACK32	0xffffe000L
-#ifdef __arch64__
 #define USRSTACK	0xffffffffffffe000L
-#else
-#define USRSTACK	USRSTACK32
-#endif
 
 /*
  * Virtual memory related constants, all in bytes
@@ -158,8 +153,6 @@
 
 #define	VM_NFREELIST		1
 #define	VM_FREELIST_DEFAULT	0
-
-#define	__HAVE_PMAP_PHYSSEG
 
 /*
  * pmap specific data stored in the vm_physmem[] array
