@@ -1,4 +1,4 @@
-/*	$OpenBSD: ises.c,v 1.11 2001/06/25 22:30:07 ho Exp $	*/
+/*	$OpenBSD: ises.c,v 1.12 2001/06/27 00:20:16 ho Exp $	*/
 
 /*
  * Copyright (c) 2000, 2001 Håkan Olsson (ho@crt.se)
@@ -56,6 +56,7 @@
 
 #include <dev/pci/isesreg.h>
 #include <dev/pci/isesvar.h>
+#include <dev/microcode/ises/ises_fw.h>
 
 /*
  * Prototypes and count for the pci_device structure
