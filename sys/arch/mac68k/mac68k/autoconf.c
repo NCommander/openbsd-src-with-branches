@@ -1,4 +1,4 @@
-/*	$OpenBSD: autoconf.c,v 1.11 1997/11/28 21:09:54 gene Exp $	*/
+/*	$OpenBSD: autoconf.c,v 1.12 2001/05/05 22:33:52 art Exp $	*/
 /*	$NetBSD: autoconf.c,v 1.38 1996/12/18 05:46:09 scottr Exp $	*/
 
 /*
@@ -96,7 +96,6 @@ cpu_configure()
 {
 	extern int	cold;
 
-	VIA_initialize();	/* Init VIA hardware */
 	mrg_init();		/* Init Mac ROM Glue */
 	startrtclock();		/* start before adb_init() */
 	adb_init();		/* ADB device subsystem & driver */
