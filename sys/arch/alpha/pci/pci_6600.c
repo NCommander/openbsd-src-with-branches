@@ -1,4 +1,4 @@
-/* $OpenBSD: pci_6600.c,v 1.10 2002/06/25 21:33:21 miod Exp $ */
+/* $OpenBSD: pci_6600.c,v 1.11 2004/06/28 02:28:43 aaron Exp $ */
 /* $NetBSD: pci_6600.c,v 1.5 2000/06/06 00:50:15 thorpej Exp $ */
 
 /*-
@@ -187,7 +187,7 @@ dec_6600_intr_string(acv, ih)
 	pci_intr_handle_t ih;
 {
 
-	static const char irqfmt[] = "%lddec6600";
+	static const char irqfmt[] = "dec 6600 irq %ld";
 	static char irqstr[sizeof irqfmt];
 
 #if NSIO
