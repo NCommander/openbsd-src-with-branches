@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_iy.c,v 1.10 2001/06/23 02:09:21 angelos Exp $	*/
+/*	$OpenBSD: if_iy.c,v 1.11 2001/06/23 03:52:47 angelos Exp $	*/
 /*	$NetBSD: if_iy.c,v 1.4 1996/05/12 23:52:53 mycroft Exp $	*/
 /* #define IYDEBUG */
 /* #define IYMEMDEBUG */
@@ -81,9 +81,6 @@
 #include <dev/isa/isareg.h>
 #include <dev/isa/isavar.h>
 #include <dev/ic/i82595reg.h>
-
-#define	ETHER_MIN_LEN	64
-#define	ETHER_MAX_LEN	1518
 
 /*
  * Ethernet status, per interface.
