@@ -72,6 +72,9 @@ ENTRY(stray/**/vecnr)		; \
 	popr $0x3f		; \
 	rei
 
+#define	PUSHR	pushr	$0x3f
+#define	POPR	popr	$0x3f
+
 #define KSTACK 0
 #define ISTACK 1
 #define INTVEC(label,stack)	\
