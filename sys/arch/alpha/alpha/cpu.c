@@ -541,7 +541,7 @@ cpu_hatch(ci)
 
 int
 cpu_iccb_send(cpu_id, msg)
-	long cpu_id;
+	cpuid_t cpu_id;
 	const char *msg;
 {
 	struct pcs *pcsp = LOCATE_PCS(hwrpb, cpu_id);
@@ -589,7 +589,7 @@ cpu_iccb_receive()
 	char *cp1, *cp2, buf[80];
 	struct pcs *pcsp;
 	u_int cnt;
-	long cpu_id;
+	cpuid_t cpu_id;
 
 	txrdy = hwrpb->rpb_txrdy;
 

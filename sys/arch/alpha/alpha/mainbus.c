@@ -76,7 +76,6 @@ mbattach(parent, self, aux)
 	struct mainbus_attach_args ma;
 	struct pcs *pcsp;
 	int i, cpuattachcnt;
-	extern int ncpus;
 
 	mainbus_found = 1;
 

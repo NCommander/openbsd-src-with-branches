@@ -618,6 +618,8 @@ u_long	 tcp_seq_subtract(u_long, u_long );
 #endif /* TCP_SACK */
 #ifdef TCP_SIGNATURE
 int	tcp_signature_apply(caddr_t, caddr_t, unsigned int);
+int	tcp_signature(struct tdb *, int, struct mbuf *, struct tcphdr *,
+	    int, int, char *);
 #endif /* TCP_SIGNATURE */
 void	tcp_rndiss_init(void);
 tcp_seq	tcp_rndiss_next(void);

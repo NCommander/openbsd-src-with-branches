@@ -191,9 +191,6 @@ struct	user *proc0paddr;
 /* Number of machine cycles per microsecond */
 u_int64_t	cycles_per_usec;
 
-/* number of cpus in the box.  really! */
-int		ncpus;
-
 struct bootinfo_kernel bootinfo;
 
 /* For built-in TCDS */
@@ -760,7 +757,7 @@ nobootinfo:
 	 * Figure out the number of cpus in the box, from RPB fields.
 	 * Really.  We mean it.
 	 */
-	for (i = 0; i < hwrpb->rpb_pcs_cnt; i++) {
+	for (ncpus = 0, i = 0; i < hwrpb->rpb_pcs_cnt; i++) {
 		struct pcs *pcsp;
 
 		pcsp = LOCATE_PCS(hwrpb, i);
