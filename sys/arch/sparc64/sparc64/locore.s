@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /*	$NetBSD: locore.s,v 1.137 2001/08/13 06:10:10 jdolecek Exp $	*/
 
 /*
