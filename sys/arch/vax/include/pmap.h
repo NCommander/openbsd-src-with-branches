@@ -1,4 +1,4 @@
-/*      $OpenBSD: pmap.h,v 1.22 2004/06/09 20:17:24 tedu Exp $     */
+/*      $OpenBSD: pmap.h,v 1.23 2004/07/13 14:51:29 tedu Exp $     */
 /*	$NetBSD: pmap.h,v 1.37 1999/08/01 13:48:07 ragge Exp $	   */
 
 /* 
@@ -144,6 +144,7 @@ extern	struct pmap kernel_pmap_store;
 } while (0)
 
 #define pmap_proc_iflush(p,va,len)	/* nothing */
+#define pmap_unuse_final(p)		/* nothing */
 
 /* Prototypes */
 void	pmap_bootstrap(void);

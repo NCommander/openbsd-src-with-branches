@@ -1,4 +1,4 @@
-/*	$OpenBSD: pmap.h,v 1.31 2004/06/09 20:17:23 tedu Exp $	*/
+/*	$OpenBSD: pmap.h,v 1.32 2004/07/13 14:51:29 tedu Exp $	*/
 
 /*
  * Copyright (c) 2002-2004 Michael Shalayeff
@@ -112,6 +112,7 @@ extern struct pdc_hwtlb pdc_hwtlb;
 #define pmap_phys_address(ppn)	((ppn) << PAGE_SHIFT)
 
 #define pmap_proc_iflush(p,va,len)	/* nothing */
+#define pmap_unuse_final(p)		/* nothing */
 
 void pmap_bootstrap(vaddr_t);
 boolean_t pmap_changebit(struct vm_page *, u_int, u_int);
