@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.16 2002/07/16 09:14:06 markus Exp $
+#	$OpenBSD: Makefile,v 1.17 2002/09/02 20:01:44 avsm Exp $
 
 REGRESS_TARGETS=	t1 t2 t3 t4 t5 t6 t7
 
@@ -18,6 +18,7 @@ LTESTS= 	connect \
 		yes-head \
 		agent \
 		agent-timeout \
+		agent-ptrace \
 		keyscan \
 		keygen-change \
 		sftp \
