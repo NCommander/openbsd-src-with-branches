@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.10 2003/11/20 23:23:09 avsm Exp $
+#	$OpenBSD: Makefile,v 1.11 2004/04/25 18:40:42 beck Exp $
 
 PROG=	authpf
 MAN=	authpf.8
@@ -7,8 +7,5 @@ BINGRP= authpf
 BINMODE= 6555
 SRCS=	authpf.c
 CFLAGS+= -Wall
-
-LDADD+= -lm
-DPADD+= ${LIBM}
 
 .include <bsd.prog.mk>
