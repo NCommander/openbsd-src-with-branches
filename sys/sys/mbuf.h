@@ -1,4 +1,4 @@
-/*	$OpenBSD: mbuf.h,v 1.7 1998/06/10 23:57:08 provos Exp $	*/
+/*	$OpenBSD: mbuf.h,v 1.8 1999/01/07 22:28:01 deraadt Exp $	*/
 /*	$NetBSD: mbuf.h,v 1.19 1996/02/09 18:25:14 christos Exp $	*/
 
 /*
@@ -250,13 +250,11 @@ union mcluster {
 	  } \
 	)
 
-#ifdef INET6
 /*
  * For cluster mbufs (regardless of header or not).
  */
 #define MCL_ALIGN(m, len) \
 	{ (m)->m_data += (MCLBYTES - (len)) &~ (sizeof(long) -1); }
-#endif /* INET6 */
 
 /*
  * MFREE(struct mbuf *m, struct mbuf *n)
