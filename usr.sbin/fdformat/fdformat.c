@@ -1,4 +1,4 @@
-/*	$OpenBSD: fdformat.c,v 1.9 2000/06/30 16:00:25 millert Exp $	*/
+/*	$OpenBSD: fdformat.c,v 1.10 2002/03/14 16:44:24 mpech Exp $	*/
 
 /*
  * Copyright (C) 1992-1994 by Joerg Wunsch, Dresden
@@ -141,7 +141,6 @@ usage ()
 	printf("\t-q\tsupress any normal output, don't ask for confirmation\n");
 	printf("\t-n\tdon't verify floppy after formatting\n");
 	printf("\t-v\tdon't format, verify only\n");
-	printf("\t\tvalid choices are 360, 720, 800, 820, 1200, 1440, 1480, 1720\n");
 	printf("\tdevname\tthe full name of floppy device or in short form fd0, fd1\n");
 	printf("Obscure options:\n");
 	printf("\t-c #\tspecify number of cylinders, 40 or 80\n");
