@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.22 1997/08/13 03:28:11 mickey Exp $
+#	$OpenBSD: Makefile,v 1.23 1997/08/13 04:03:30 mickey Exp $
 
 
 LIB=	sa
@@ -38,7 +38,7 @@ SRCS+=	bootp.c bootparam.c rarp.c
 SRCS+=	ufs.c nfs.c cd9660.c
 
 # debugger
-SRCS+=	debug.c debug_aout.c
+SRCS+=	debug.c
 
 NOPROFILE=noprofile
 NOPIC=nopic
