@@ -1,4 +1,4 @@
-/*	$OpenBSD: installboot.c,v 1.20 1997/10/15 15:54:52 weingart Exp $	*/
+/*	$OpenBSD: installboot.c,v 1.21 1997/10/22 23:34:41 mickey Exp $	*/
 /*	$NetBSD: installboot.c,v 1.5 1995/11/17 23:23:50 gwr Exp $ */
 
 /*
@@ -156,7 +156,7 @@ main(argc, argv)
 			bios_diskinfo_t di;
 
 			mib[2] = BIOS_DISKINFO;
-			mib[3] = 0xa0000004;
+			mib[3] = biosdev;
 			size = sizeof(di);
 
 			if (sysctl(mib, 4, &di, &size, NULL, 0) == -1)
