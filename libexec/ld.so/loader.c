@@ -1,4 +1,4 @@
-/*	$OpenBSD: loader.c,v 1.23 2001/09/26 22:58:23 jason Exp $ */
+/*	$OpenBSD: loader.c,v 1.24 2002/02/21 23:17:53 drahn Exp $ */
 
 /*
  * Copyright (c) 1998 Per Fogelstrom, Opsycon AB
@@ -279,6 +279,7 @@ _dl_boot(const char **argv, const char **envp, const long loff,
 		_dl_exit(0);
 	}
 
+	DL_DEB(("entry point: 0x%lx\n", dl_data[AUX_entry]));
 	/*
 	 * Return the entry point.
 	 */
