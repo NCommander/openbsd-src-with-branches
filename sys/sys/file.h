@@ -1,4 +1,4 @@
-/*	$OpenBSD: file.h,v 1.4 1998/03/01 19:33:54 deraadt Exp $	*/
+/*	$OpenBSD: file.h,v 1.5 2000/02/01 04:00:50 assar Exp $	*/
 /*	$NetBSD: file.h,v 1.11 1995/03/26 20:24:13 jtc Exp $	*/
 
 /*
@@ -60,10 +60,12 @@ struct file {
 	long	f_msgcount;	/* references from message queue */
 	struct	ucred *f_cred;	/* credentials associated with descriptor */
 	struct	fileops {
-		int	(*fo_read)	__P((struct file *fp, struct uio *uio,
-					    struct ucred *cred));
-		int	(*fo_write)	__P((struct file *fp, struct uio *uio,
-					    struct ucred *cred));
+		int	(*fo_read)	__P((struct file *fp, off_t *, 
+					     struct uio *uio,
+					     struct ucred *cred));
+		int	(*fo_write)	__P((struct file *fp, off_t *,
+					     struct uio *uio,
+					     struct ucred *cred));
 		int	(*fo_ioctl)	__P((struct file *fp, u_long com,
 					    caddr_t data, struct proc *p));
 		int	(*fo_select)	__P((struct file *fp, int which,
