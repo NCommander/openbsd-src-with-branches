@@ -1,4 +1,4 @@
-/*	$OpenBSD: pccom.c,v 1.36 2001/01/24 09:38:01 hugh Exp $	*/
+/*	$OpenBSD: pccom.c,v 1.37 2001/03/15 17:52:20 deraadt Exp $	*/
 /*	$NetBSD: com.c,v 1.82.4.1 1996/06/02 09:08:00 mrg Exp $	*/
 
 /*
@@ -226,7 +226,7 @@ comspeed(freq, speed)
 		return -1;
 	return x;
 
-#undef	divrnd(n, q)
+#undef	divrnd
 }
 
 int

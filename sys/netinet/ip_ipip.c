@@ -1,4 +1,4 @@
-/*	$OpenBSD: ip_ipip.c,v 1.18 2001/06/25 05:11:58 angelos Exp $ */
+/*	$OpenBSD: ip_ipip.c,v 1.19 2001/06/26 04:29:05 angelos Exp $ */
 /*
  * The authors of this code are John Ioannidis (ji@tla.org),
  * Angelos D. Keromytis (kermit@csd.uch.gr) and 
@@ -189,7 +189,7 @@ ipip_input(struct mbuf *m, int iphlen)
 			return;
 		}
 	}
-#endif MROUTING
+#endif /* MROUTING */
 
 	/* Keep outer ecn field. */
 #ifdef INET
