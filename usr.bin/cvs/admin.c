@@ -1,4 +1,4 @@
-/*	$OpenBSD: status.c,v 1.8 2005/02/27 00:22:08 jfb Exp $	*/
+/*	$OpenBSD: admin.c,v 1.1 2005/03/06 21:09:00 joris Exp $	*/
 /*
  * Copyright (c) 2004 Jean-Francois Brousseau <jfb@openbsd.org>
  * Copyright (c) 2005 Joris Vink <joris@openbsd.org>
@@ -188,6 +188,7 @@ cvs_admin(int argc, char **argv)
 			    replace_msg);
 			return (EX_PROTOCOL);
 		}
+		rcsnum_free(rcs);
 		*q = ':';
 	}
 
