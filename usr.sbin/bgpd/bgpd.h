@@ -1,4 +1,4 @@
-/*	$OpenBSD: bgpd.h,v 1.139 2004/08/06 12:04:08 claudio Exp $ */
+/*	$OpenBSD: bgpd.h,v 1.140 2004/08/10 13:02:07 claudio Exp $ */
 
 /*
  * Copyright (c) 2003, 2004 Henning Brauer <henning@openbsd.org>
@@ -287,6 +287,7 @@ enum imsg_type {
 	IMSG_CTL_FIB_DECOUPLE,
 	IMSG_CTL_NEIGHBOR_UP,
 	IMSG_CTL_NEIGHBOR_DOWN,
+	IMSG_CTL_NEIGHBOR_CLEAR,
 	IMSG_CTL_KROUTE,
 	IMSG_CTL_KROUTE_ADDR,
 	IMSG_CTL_SHOW_NEXTHOP,

@@ -240,6 +240,7 @@ control_dispatch_msg(struct pollfd *pfd, u_int *ctl_cnt)
 			break;
 		case IMSG_CTL_NEIGHBOR_UP:
 		case IMSG_CTL_NEIGHBOR_DOWN:
+		case IMSG_CTL_NEIGHBOR_CLEAR:
 			if (imsg.hdr.len == IMSG_HEADER_SIZE +
 			    sizeof(struct bgpd_addr)) {
 				addr = imsg.data;
@@ -255,6 +256,10 @@ control_dispatch_msg(struct pollfd *pfd, u_int *ctl_cnt)
 					break;
 				case IMSG_CTL_NEIGHBOR_DOWN:
 					bgp_fsm(p, EVNT_STOP);
+					break;
+				case IMSG_CTL_NEIGHBOR_CLEAR:
+					bgp_fsm(p, EVNT_STOP);
+					bgp_fsm(p, EVNT_START);
 					break;
 				default:
 					fatal("king bula wants more humppa");
