@@ -1,6 +1,6 @@
 #!/bin/sh -
 #
-#	$OpenBSD: newvers.sh,v 1.14 1999/03/30 22:12:44 deraadt Exp $
+#	$OpenBSD: newvers.sh,v 1.15 1999/04/18 02:44:18 deraadt Exp $
 #	$NetBSD: newvers.sh,v 1.17.2.1 1995/10/12 05:17:11 jtc Exp $
 #
 # Copyright (c) 1984, 1986, 1990, 1993
@@ -44,6 +44,13 @@ fi
 touch version
 v=`cat version` u=${USER-root} d=`pwd` h=`hostname` t=`date`
 id=`basename ${d}`
+
+# additional things which need version number upgrades:
+#	src/sys/sys/param.h:
+#		OpenBSD symbol
+#		OpenBSD_X_X symbol
+#	src/share/tmac/mdoc/doc-common
+#		.       ds oS OpenBSD X.X
 
 ost="OpenBSD"
 osr="2.5"
