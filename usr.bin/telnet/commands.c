@@ -1,4 +1,4 @@
-/*	$OpenBSD: commands.c,v 1.4 1996/04/21 23:44:11 deraadt Exp $	*/
+/*	$OpenBSD: commands.c,v 1.5 1996/07/03 14:01:55 niklas Exp $	*/
 /*	$NetBSD: commands.c,v 1.14 1996/03/24 22:03:48 jtk Exp $	*/
 
 /*
@@ -39,7 +39,7 @@
 static char sccsid[] = "@(#)commands.c	8.4 (Berkeley) 5/30/95";
 static char rcsid[] = "$NetBSD: commands.c,v 1.14 1996/03/24 22:03:48 jtk Exp $";
 #else
-static char rcsid[] = "$OpenBSD: commands.c,v 1.4 1996/04/21 23:44:11 deraadt Exp $";
+static char rcsid[] = "$OpenBSD: commands.c,v 1.5 1996/07/03 14:01:55 niklas Exp $";
 #endif
 #endif /* not lint */
 
@@ -116,6 +116,39 @@ static char line[256];
 static char saveline[256];
 static int margc;
 static char *margv[20];
+
+#if	defined(SKEY)
+#include <sys/wait.h>
+#define PATH_SKEY	"/usr/bin/skey"
+    int
+skey_calc(argc, argv)
+	int argc;
+	char **argv;
+{
+	int status;
+
+	if(argc != 3) {
+		printf("%s sequence challenge\n", argv[0]);
+		return;
+	}
+
+	switch(fork()) {
+	case 0:
+		execv(PATH_SKEY, argv);
+		exit (1);
+	case -1:
+		perror("fork");
+		break;
+	default:
+		(void) wait(&status);
+		if (WIFEXITED(status))
+			return (WEXITSTATUS(status));
+		return (0);
+	}
+}
+#endif
+   	
+
 
     static void
 makeargv()
@@ -2415,6 +2448,9 @@ static Command cmdtab[] = {
 #endif
 	{ "environ",	envhelp,	env_cmd,	0 },
 	{ "?",		helphelp,	help,		0 },
+#if	defined(SKEY)
+	{ "skey",	NULL,		skey_calc,	0 },
+#endif		
 	0
 };
 
