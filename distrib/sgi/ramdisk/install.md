@@ -1,4 +1,4 @@
-#	$OpenBSD: install.md,v 1.1 2004/08/06 22:33:27 deraadt Exp $
+#	$OpenBSD: install.md,v 1.2 2004/08/26 13:32:15 pefo Exp $
 #
 #
 # Copyright (c) 1996 The NetBSD Foundation, Inc.
@@ -40,7 +40,6 @@
 #
 
 # Machine-dependent install sets
-MDSETS=kernel
 MDTERM=vt220
 ARCH=ARCH
 
