@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_txpreg.h,v 1.24 2001/05/15 14:57:28 jason Exp $ */
+/*	$OpenBSD: if_txpreg.h,v 1.25 2001/05/16 14:34:30 fgsch Exp $ */
 
 /*
  * Copyright (c) 2001 Aaron Campbell <aaron@monkey.org>.
@@ -589,6 +589,7 @@ struct txp_softc {
 	struct txp_dma_alloc	sc_cmdring_dma, sc_rspring_dma;
 	struct txp_dma_alloc	sc_rxbufring_dma;
 	int			sc_cold;
+	u_int32_t		sc_rx_capability, sc_tx_capability;
 };
 
 #define	TXP_DEVNAME(sc)		((sc)->sc_cold ? "" : (sc)->sc_dev.dv_xname)
