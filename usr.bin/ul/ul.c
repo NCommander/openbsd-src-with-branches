@@ -1,4 +1,4 @@
-/*	$OpenBSD: ul.c,v 1.9 2003/06/03 02:56:20 millert Exp $	*/
+/*	$OpenBSD: ul.c,v 1.10 2003/06/10 22:20:53 deraadt Exp $	*/
 /*	$NetBSD: ul.c,v 1.3 1994/12/07 00:28:24 jtc Exp $	*/
 
 /*
@@ -40,7 +40,7 @@ static char copyright[] =
 #if 0
 static char sccsid[] = "@(#)ul.c	8.1 (Berkeley) 6/6/93";
 #endif
-static char rcsid[] = "$OpenBSD: ul.c,v 1.9 2003/06/03 02:56:20 millert Exp $";
+static char rcsid[] = "$OpenBSD: ul.c,v 1.10 2003/06/10 22:20:53 deraadt Exp $";
 #endif /* not lint */
 
 #include <stdio.h>
@@ -418,7 +418,6 @@ initcap(void)
 {
 	static char tcapbuf[512];
 	char *bp = tcapbuf;
-	char *getenv(), *tgetstr();
 
 	/* This nonsense attempts to work with both old and new termcap */
 	CURS_UP =		tgetstr("up", &bp);

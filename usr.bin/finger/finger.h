@@ -1,4 +1,4 @@
-/* *	$OpenBSD: finger.h,v 1.3 1997/05/30 23:35:51 kstailey Exp $*/
+/* *	$OpenBSD: finger.h,v 1.4 2003/06/03 02:56:08 millert Exp $*/
 /*
  * Copyright (c) 1989 The Regents of the University of California.
  * All rights reserved.
@@ -77,6 +77,3 @@ typedef struct where {
 
 PERSON *htab[HSIZE];			/* the buckets */
 PERSON *phead, *ptail;			/* the linked list of all people */
-
-PERSON *enter_person(), *find_person(), *palloc();
-WHERE *walloc();
