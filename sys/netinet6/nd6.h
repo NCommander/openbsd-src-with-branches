@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: nd6.h,v 1.1 1999/12/08 06:50:23 itojun Exp $	*/
 
 /*
  * Copyright (C) 1995, 1996, 1997, and 1998 WIDE Project.
@@ -121,7 +121,7 @@ struct	in6_ndireq {
 #define MIN_RANDOM_FACTOR		512	/* 1024 * 0.5 */
 #define MAX_RANDOM_FACTOR		1536	/* 1024 * 1.5 */
 #define ND_COMPUTE_RTIME(x) \
-		(((MIN_RANDOM_FACTOR * (x >> 10)) + (random() & \
+		(((MIN_RANDOM_FACTOR * (x >> 10)) + (arc4random() & \
 		((MAX_RANDOM_FACTOR - MIN_RANDOM_FACTOR) * (x >> 10)))) /1000)
 
 struct	nd_defrouter {

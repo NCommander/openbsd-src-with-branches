@@ -1,4 +1,4 @@
-/*	$OpenBSD: frag6.c,v 1.1 1999/12/08 06:50:20 itojun Exp $	*/
+/*	$OpenBSD: frag6.c,v 1.2 1999/12/10 10:04:27 angelos Exp $	*/
 
 /*
  * Copyright (C) 1995, 1996, 1997, and 1998 WIDE Project.
@@ -75,15 +75,8 @@ struct	ip6q ip6q;	/* ip6 reassemble queue */
 void
 frag6_init()
 {
-	struct timeval tv;
-
-	/*
-	 * in many cases, random() here does NOT return random number
-	 * as initialization during bootstrap time occur in fixed order.
-	 */
-	microtime(&tv);
 	ip6q.ip6q_next = ip6q.ip6q_prev = &ip6q;
-	ip6_id = random() ^ tv.tv_usec;
+	ip6_id = arc4random();
 }
 
 /*
