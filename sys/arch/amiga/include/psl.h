@@ -8,13 +8,6 @@
 
 #if defined(_KERNEL) && !defined(_LOCORE)
 
-/*
- * spl functions; all are normally done in-line
- */
-#include <machine/psl.h>
-
-#ifdef _KERNEL
-
 static __inline int
 splraise(npsl)
 	register int npsl;
