@@ -1,4 +1,4 @@
-/*	$OpenBSD: macros.h,v 1.3 2002/07/15 19:13:29 millert Exp $	*/
+/*	$OpenBSD: macros.h,v 1.4 2003/02/20 20:38:08 millert Exp $	*/
 
 /*
  * Copyright (c) 1997,2000 by Internet Software Consortium, Inc.
@@ -80,7 +80,7 @@
 
 #if DEBUGGING
 # define Debug(mask, message) \
-			if ( (DebugFlags & (mask) ) == (mask) ) \
+			if (DebugFlags & (mask)) \
 				printf message;
 #else /* !DEBUGGING */
 # define Debug(mask, message) \
