@@ -1,4 +1,4 @@
-/*	$OpenBSD: mount_portal.c,v 1.6 1997/03/23 03:04:29 millert Exp $	*/
+/*	$OpenBSD: mount_portal.c,v 1.7 1997/03/23 03:52:14 millert Exp $	*/
 /*	$NetBSD: mount_portal.c,v 1.8 1996/04/13 01:31:54 jtc Exp $	*/
 
 /*
@@ -47,7 +47,7 @@ char copyright[] =
 #if 0
 static char sccsid[] = "@(#)mount_portal.c	8.6 (Berkeley) 4/26/95";
 #else
-static char rcsid[] = "$OpenBSD: mount_portal.c,v 1.6 1997/03/23 03:04:29 millert Exp $";
+static char rcsid[] = "$OpenBSD: mount_portal.c,v 1.7 1997/03/23 03:52:14 millert Exp $";
 #endif
 #endif /* not lint */
 
@@ -182,22 +182,25 @@ main(argc, argv)
 	(void)listen(so, 5);
 
 	args.pa_socket = so;
-	(void)snprintf(tag, sizeof(tag), "portal:%d", getpid() + 1);
-	args.pa_config = tag;
-
-	rc = mount(MOUNT_PORTAL, mountpt, mntflags, &args);
-	if (rc < 0)
-		err(1, "mount(2)");
 
 	/*
-	 * Everything is ready to go - now is a good time to fork
+	 * Must fork before mount to get pid in name right.
 	 */
 	daemon(0, 0);
+
+	(void)snprintf(tag, sizeof(tag), "portal:%d", getpid());
+	args.pa_config = tag;
 
 	/*
 	 * Start logging (and change name)
 	 */
 	openlog("portald", LOG_CONS|LOG_PID, LOG_DAEMON);
+
+	rc = mount(MOUNT_PORTAL, mountpt, mntflags, &args);
+	if (rc < 0) {
+		syslog(LOG_ERR, "mount: %m");
+		exit(1);
+	}
 
 	q.q_forw = q.q_back = &q;
 	readcf = 1;
