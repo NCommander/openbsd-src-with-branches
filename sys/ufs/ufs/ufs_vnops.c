@@ -1573,7 +1573,7 @@ ufs_readdir(v)
 			auio.uio_iovcnt = 1;
 			auio.uio_segflg = UIO_SYSSPACE;
 			aiov.iov_len = count;
-			dirbuf = malloc(count, M_TEMP, M_WAITOK);
+			MALLOC(dirbuf, caddr_t, count, M_TEMP, M_WAITOK);
 			aiov.iov_base = dirbuf;
 			error = VOP_READ(ap->a_vp, &auio, 0, ap->a_cred);
 			if (error == 0) {
@@ -1625,7 +1625,8 @@ ufs_readdir(v)
                 }
                 lost += uio->uio_offset - off;
                 uio->uio_offset = off;
-                cookies = malloc(ncookies * sizeof(u_long), M_TEMP, M_WAITOK);
+                MALLOC(cookies, u_long *, ncookies * sizeof(u_long), M_TEMP,
+                    M_WAITOK);
                 *ap->a_ncookies = ncookies;
                 *ap->a_cookies = cookies;
                 for (off = offstart, dp = dpstart; off < uio->uio_offset; ) {

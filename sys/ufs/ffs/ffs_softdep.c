@@ -3110,7 +3110,7 @@ softdep_disk_io_initiation(bp)
 			/*
 			 * Replace up-to-date version with safe version.
 			 */
-			indirdep->ir_saveddata = malloc(bp->b_bcount,
+			MALLOC(indirdep->ir_saveddata, caddr_t, bp->b_bcount,
 			    M_INDIRDEP, M_WAITOK);
 			ACQUIRE_LOCK(&lk);
 			indirdep->ir_state &= ~ATTACHED;
