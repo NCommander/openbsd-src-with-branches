@@ -1,4 +1,4 @@
-/*	$OpenBSD: trap.c,v 1.32 2001/11/06 20:58:48 mickey Exp $	*/
+/*	$OpenBSD: trap.c,v 1.33 2001/11/28 13:47:38 art Exp $	*/
 
 /*
  * Copyright (c) 1998-2001 Michael Shalayeff
@@ -141,8 +141,8 @@ trap(type, frame)
 {
 	struct proc *p = curproc;
 	struct pcb *pcbp;
-	register vaddr_t va;
-	register vm_map_t map;
+	vaddr_t va;
+	struct vm_map *map;
 	struct vmspace *vm;
 	register vm_prot_t vftype;
 	register pa_space_t space;

@@ -1,4 +1,4 @@
-/*	$OpenBSD: machdep.c,v 1.88 2001/11/24 17:53:41 miod Exp $	*/
+/*	$OpenBSD: machdep.c,v 1.89 2001/11/28 13:47:38 art Exp $	*/
 /*	$NetBSD: machdep.c,v 1.207 1998/07/08 04:39:34 thorpej Exp $	*/
 
 /*
@@ -180,9 +180,9 @@ u_int32_t mac68k_vidlen;	/* mem length */
 int	(*mac68k_bell_callback) __P((void *, int, int, int));
 caddr_t	mac68k_bell_cookie;
 
-vm_map_t exec_map = NULL;  
-vm_map_t mb_map = NULL;
-vm_map_t phys_map = NULL;
+struct vm_map *exec_map = NULL;  
+struct vm_map *mb_map = NULL;
+struct vm_map *phys_map = NULL;
 
 /*
  * Declare these as initialized data so we can patch them.
