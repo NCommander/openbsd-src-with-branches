@@ -1,4 +1,4 @@
-/*	$OpenBSD: ffs_alloc.c,v 1.44 2003/06/02 23:28:22 millert Exp $	*/
+/*	$OpenBSD: ffs_alloc.c,v 1.45 2003/10/17 15:08:11 mpech Exp $	*/
 /*	$NetBSD: ffs_alloc.c,v 1.11 1996/05/11 18:27:09 mycroft Exp $	*/
 
 /*
@@ -48,6 +48,7 @@
 #include <ufs/ufs/extattr.h>
 #include <ufs/ufs/quota.h>
 #include <ufs/ufs/inode.h>
+#include <ufs/ufs/ufsmount.h>
 #include <ufs/ufs/ufs_extern.h>
 
 #include <ufs/ffs/fs.h>
