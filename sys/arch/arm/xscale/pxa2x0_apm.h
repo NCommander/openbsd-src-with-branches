@@ -1,4 +1,4 @@
-/*	$OpenBSD: pxa2x0_apm.h,v 1.1 2005/01/19 02:02:34 uwe Exp $	*/
+/*	$OpenBSD: pxa2x0_apm.h,v 1.2 2005/01/20 23:34:36 uwe Exp $	*/
 
 /*
  * Copyright (c) 2005 Uwe Stuehler <uwe@bsdx.de>
@@ -22,16 +22,7 @@
 #include <sys/event.h>
 
 #include <machine/bus.h>
-
-#define PXAAPM_AC_PRESENT	(1<<0)
-#define PXAAPM_BATT_PRESENT	(1<<1)
-
-struct pxaapm_battery_info {
-	int	flags;
-	u_int	cur_charge;
-	u_int	max_charge;
-	int	draw;
-};
+#include <machine/apmvar.h>
 
 struct pxa2x0_apm_softc {
 	struct	device sc_dev;
@@ -41,8 +32,9 @@ struct pxa2x0_apm_softc {
 	int	sc_flags;
 	bus_space_tag_t sc_iot;
 	bus_space_handle_t sc_pm_ioh;
-	void	(*sc_battery_info)(struct pxaapm_battery_info *);
 	void	(*sc_periodic_check)(struct pxa2x0_apm_softc *);
+	void	(*sc_power_info)(struct pxa2x0_apm_softc *,
+	    struct apm_power_info *);
 };
 
 extern	void pxa2x0_apm_attach_sub(struct pxa2x0_apm_softc *);
