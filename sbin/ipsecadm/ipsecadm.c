@@ -1,4 +1,4 @@
-/* $OpenBSD: ipsecadm.c,v 1.36 2000/04/22 02:40:01 angelos Exp $ */
+/* $OpenBSD: ipsecadm.c,v 1.37 2000/04/22 02:43:15 angelos Exp $ */
 /*
  * The authors of this code are John Ioannidis (ji@tla.org),
  * Angelos D. Keromytis (kermit@csd.uch.gr) and 
@@ -497,7 +497,7 @@ main(int argc, char **argv)
 		exit(1);
 	    }
 
-	    fd = open(argv[i++], O_RDONLY);
+	    fd = open(argv[i], O_RDONLY);
 	    if (fd < 0)
 	    {
 		perror("open()");
@@ -558,7 +558,7 @@ main(int argc, char **argv)
 		exit(1);
 	    }
 
-	    fd = open(argv[i++], O_RDONLY);
+	    fd = open(argv[i], O_RDONLY);
 	    if (fd < 0)
 	    {
 		perror("open()");
