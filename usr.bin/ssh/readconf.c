@@ -12,7 +12,7 @@
  */
 
 #include "includes.h"
-RCSID("$OpenBSD: readconf.c,v 1.82 2001/06/26 16:15:23 dugsong Exp $");
+RCSID("$OpenBSD: readconf.c,v 1.83 2001/07/22 22:04:19 markus Exp $");
 
 #include "ssh.h"
 #include "xmalloc.h"
@@ -841,7 +841,7 @@ fill_default_options(Options * options)
 	if (options->port == -1)
 		options->port = 0;	/* Filled in ssh_connect. */
 	if (options->connection_attempts == -1)
-		options->connection_attempts = 4;
+		options->connection_attempts = 1;
 	if (options->number_of_password_prompts == -1)
 		options->number_of_password_prompts = 3;
 	/* Selected in ssh_login(). */
