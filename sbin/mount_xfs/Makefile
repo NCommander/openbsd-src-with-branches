@@ -1,8 +1,10 @@
-#	$OpenBSD: Makefile,v 1.3 1997/09/21 11:37:26 deraadt Exp $
+#	$OpenBSD: Makefile,v 1.1 1998/09/05 17:33:30 art Exp $
 
 PROG=	mount_xfs
 SRCS=	mount_xfs.c getmntopts.c
 MAN=	mount_xfs.8
+LINKS=	${BINDIR}/mount_xfs ${BINDIR}/mount_afs
+MLINKS=	mount_xfs.8 mount_afs.8
 
 MOUNT=	${.CURDIR}/../mount
 CFLAGS+= -I${.CURDIR}/../../sys -I${MOUNT}
