@@ -12,7 +12,7 @@
  */
 
 #include "includes.h"
-RCSID("$OpenBSD: compress.c,v 1.13 2001/02/08 19:30:51 itojun Exp $");
+RCSID("$OpenBSD: compress.c,v 1.14 2001/04/05 10:39:01 markus Exp $");
 
 #include "log.h"
 #include "buffer.h"
@@ -33,7 +33,7 @@ void
 buffer_compress_init_send(int level)
 {
 	if (compress_init_send_called == 1)
-		deflateEnd(&incoming_stream);
+		deflateEnd(&outgoing_stream);
 	compress_init_send_called = 1;
 	debug("Enabling compression at level %d.", level);
 	if (level < 1 || level > 9)
