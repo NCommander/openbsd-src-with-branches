@@ -1,4 +1,4 @@
-/*	$OpenBSD: transport.c,v 1.13 2001/04/09 22:09:53 ho Exp $	*/
+/*	$OpenBSD: transport.c,v 1.14 2001/08/23 23:11:02 angelos Exp $	*/
 /*	$EOM: transport.c,v 1.43 2000/10/10 12:36:39 provos Exp $	*/
 
 /*
@@ -88,7 +88,7 @@ void
 transport_reference (struct transport *t)
 {
   t->refcnt++;
-  LOG_DBG ((LOG_TRANSPORT, 90,
+  LOG_DBG ((LOG_TRANSPORT, 95,
 	    "transport_reference: transport %p now has %d references", t,
 	    t->refcnt));
 }
@@ -99,7 +99,7 @@ transport_reference (struct transport *t)
 void
 transport_release (struct transport *t)
 {
-  LOG_DBG ((LOG_TRANSPORT, 90,
+  LOG_DBG ((LOG_TRANSPORT, 95,
 	    "transport_release: transport %p had %d references", t,
 	    t->refcnt));
   if (--t->refcnt)
