@@ -1,4 +1,4 @@
-/*	$OpenBSD: autoconf.c,v 1.6 1999/09/27 19:13:20 smurph Exp $	*/
+/*	$OpenBSD: autoconf.c,v 1.7 2000/03/03 00:54:53 todd Exp $	*/
 /*
  * Copyright (c) 1998 Steve Murphree, Jr.
  * Copyright (c) 1996 Nivas Madhur
@@ -492,20 +492,3 @@ int size;
       }
    }
 }
-
-/*
- * Slave CPU pre-main routine.
- * Determine CPU number and set it.
- *
- * Running on an interrupt stack here; do nothing fancy.
- *
- * Called from "mvme88k/locore.S"
- */
-void slave_pre_main(void)
-{
-   set_cpu_number(cmmu_cpu_number()); /* Determine cpu number by CMMU */
-   splhigh();
-   enable_interrupt();
-}
-
-

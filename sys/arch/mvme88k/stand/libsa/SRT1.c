@@ -1,4 +1,4 @@
-/*	$OpenBSD: SRT1.c,v 1.1.1.1 1997/03/03 19:30:35 rahnds Exp $ */
+/*	$OpenBSD: SRT1.c,v 1.2 2000/03/03 00:54:54 todd Exp $ */
 
 /*
  * Copyright (c) 1996 Nivas Madhur
@@ -88,6 +88,7 @@ exit()
 
 	asm volatile ("or r9, r0, 0x63; tb0 0, r0, 496");
 	/* NOTREACHED */
+	for(;;); /* keep compiler happy */
 }
 
 struct brdid brdid;
