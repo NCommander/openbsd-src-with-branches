@@ -1,4 +1,4 @@
-/*	$OpenBSD: crypto.c,v 1.43 2003/02/19 03:41:31 jason Exp $	*/
+/*	$OpenBSD: crypto.c,v 1.44 2003/06/03 15:28:06 beck Exp $	*/
 /*
  * The author of this code is Angelos D. Keromytis (angelos@cis.upenn.edu)
  *
@@ -664,7 +664,7 @@ crypto_thread(void)
 			crp_ret_queue = crpt->crp_next;
 			splx(s);
 			crpt->crp_callback(crpt);
-			splimp();
+			s = splimp();
 		}
 		if (krpt) {
 			/* Remove from the queue. */
