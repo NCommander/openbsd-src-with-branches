@@ -1,4 +1,4 @@
-/*	$OpenBSD: psycho.c,v 1.17 2002/04/04 17:03:00 jason Exp $	*/
+/*	$OpenBSD: psycho.c,v 1.18 2002/04/04 23:16:22 jason Exp $	*/
 /*	$NetBSD: psycho.c,v 1.39 2001/10/07 20:30:41 eeh Exp $	*/
 
 /*
@@ -68,7 +68,7 @@ int psycho_debug = 0x0;
 #define DPRINTF(l, s)
 #endif
 
-static pci_chipset_tag_t psycho_alloc_chipset(struct psycho_pbm *, int,
+pci_chipset_tag_t psycho_alloc_chipset(struct psycho_pbm *, int,
     pci_chipset_tag_t);
 void psycho_get_bus_range(int, int *);
 void psycho_get_ranges(int, struct psycho_ranges **, int *);
