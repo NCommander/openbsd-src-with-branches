@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: magic.c,v 1.2 1996/03/25 15:55:48 niklas Exp $	*/
 
 /*
  * magic.c - PPP Magic Number routines.
@@ -20,7 +20,11 @@
  */
 
 #ifndef lint
-static char rcsid[] = "$OpenBSD$";
+#if 0
+static char rcsid[] = "Id: magic.c,v 1.6 1996/04/04 03:58:41 paulus Exp";
+#else
+static char rcsid[] = "$OpenBSD: magic.c,v 1.2 1996/03/25 15:55:48 niklas Exp $";
+#endif
 #endif
 
 #include <stdio.h>
