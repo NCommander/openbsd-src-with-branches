@@ -1,4 +1,3 @@
-/*	$OpenBSD: usb_port.h,v 1.10 2000/03/31 22:11:37 aaron Exp $ */
 /*	$NetBSD: usb_port.h,v 1.28 2000/03/30 08:53:31 augustss Exp $	*/
 /*	$FreeBSD: src/sys/dev/usb/usb_port.h,v 1.21 1999/11/17 22:33:47 n_hibma Exp $	*/
 
@@ -188,6 +187,9 @@ __CONCAT(dname,_detach)(self, flags) \
 #endif
 
 #define Static
+
+#define UCOMBUSCF_PORTNO		-1
+#define UCOMBUSCF_PORTNO_DEFAULT	-1
 
 #define SCSI_MODE_SENSE		MODE_SENSE
 #define XS_STS_DONE		ITSDONE
