@@ -1,4 +1,4 @@
-/* $OpenBSD: wskbd.c,v 1.14 2001/04/18 02:24:22 aaron Exp $ */
+/* $OpenBSD: wskbd.c,v 1.15 2001/04/18 02:26:58 aaron Exp $ */
 /* $NetBSD: wskbd.c,v 1.38 2000/03/23 07:01:47 thorpej Exp $ */
 
 /*
@@ -981,6 +981,8 @@ getkeyrepeat:
 		if ((flag & FWRITE) == 0)
 			return (EACCES);
 		umdp = (struct wskbd_map_data *)data;
+		if (umdp->maplen > WSKBDIO_MAXMAPLEN)
+			return (EINVAL);
 		len = umdp->maplen*sizeof(struct wscons_keymap);
 		buf = malloc(len, M_TEMP, M_WAITOK);
 		error = copyin(umdp->map, buf, len);

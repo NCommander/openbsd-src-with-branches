@@ -1,4 +1,4 @@
-/*	$OpenBSD: cgtwo.c,v 1.13 1999/09/10 23:32:02 art Exp $	*/
+/*	$OpenBSD: cgtwo.c,v 1.14 2001/04/06 04:42:05 csapuntz Exp $	*/
 /*	$NetBSD: cgtwo.c,v 1.22 1997/05/24 20:16:12 pk Exp $ */
 
 /*
@@ -336,7 +336,8 @@ cgtwogetcmap(sc, cmap)
 	register struct fbcmap *cmap;
 {
 	u_char red[CG2_CMSIZE], green[CG2_CMSIZE], blue[CG2_CMSIZE];
-	int error, start, count, ecount;
+	int error;
+	u_int start, count, ecount;
 	register u_int i;
 	register volatile u_short *p;
 
@@ -378,7 +379,8 @@ cgtwoputcmap(sc, cmap)
 	register struct fbcmap *cmap;
 {
 	u_char red[CG2_CMSIZE], green[CG2_CMSIZE], blue[CG2_CMSIZE];
-	int error, start, count, ecount;
+	int error;
+	u_int start, count, ecount;
 	register u_int i;
 	register volatile u_short *p;
 
