@@ -1,7 +1,7 @@
 /*	$OpenBSD$	*/
 
 /*
- * chap.h - Cryptographic Handshake Authentication Protocol definitions.
+ * chap.h - Challenge-Handshake Authentication Protocol definitions.
  *
  * Copyright (c) 1991 Gregory M. Christy
  * All rights reserved.
