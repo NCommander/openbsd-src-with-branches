@@ -60,6 +60,10 @@ struct inpcb {
 	struct	  ip inp_ip;		/* header prototype; should have more */
 	struct	  mbuf *inp_options;	/* IP options */
 	struct	  ip_moptions *inp_moptions; /* IP multicast options */
+	u_char 	  inp_seclevel[4];	/* Only the first 3 are used for now */
+#define SL_AUTH           0             /* Authentication level */
+#define SL_ESP_TRANS      1             /* ESP transport level */
+#define SL_ESP_NETWORK    2             /* ESP network (encapsulation) level */
 };
 
 struct inpcbtable {
