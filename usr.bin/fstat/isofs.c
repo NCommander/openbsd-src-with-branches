@@ -1,4 +1,4 @@
-/*	$OpenBSD: isofs.c,v 1.5 2002/07/13 06:02:57 deraadt Exp $	*/
+/*	$OpenBSD: isofs.c,v 1.6 2003/06/03 02:56:08 millert Exp $	*/
 
 /*-
  * Copyright (c) 1988, 1993
@@ -72,6 +72,8 @@
 #include "fstat.h"
 
 extern pid_t Pid;
+
+int	isofs_filestat(struct vnode *, struct filestat *);
 
 int
 isofs_filestat(struct vnode *vp, struct filestat *fsp)

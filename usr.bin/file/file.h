@@ -1,4 +1,4 @@
-/*	$OpenBSD: file.h,v 1.12 2003/03/11 21:26:26 ian Exp $	*/
+/*	$OpenBSD: file.h,v 1.13 2003/06/13 18:31:14 deraadt Exp $	*/
 
 /*
  * file.h - definitions for file(1) program
@@ -146,5 +146,8 @@ extern char *sys_errlist[];
 #ifndef MAXPATHLEN
 #define	MAXPATHLEN	512
 #endif
+
+int	pipe2file(int, void *, size_t);
+void	error(const char *, ...);
 
 #endif /* __file_h__ */

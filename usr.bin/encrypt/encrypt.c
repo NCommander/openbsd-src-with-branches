@@ -1,4 +1,4 @@
-/*	$OpenBSD: encrypt.c,v 1.17 2003/04/06 21:22:31 deraadt Exp $	*/
+/*	$OpenBSD: encrypt.c,v 1.18 2003/06/14 23:19:18 millert Exp $	*/
 
 /*
  * Copyright (c) 1996, Jason Downs.  All rights reserved.
@@ -48,6 +48,10 @@
 
 extern char *__progname;
 char buffer[_PASSWORD_LEN];
+
+void	usage(void);
+char	*trim(char *);
+void	print_passwd(char *, int, void *);
 
 void
 usage(void)

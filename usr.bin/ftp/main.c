@@ -1,4 +1,4 @@
-/*	$OpenBSD: main.c,v 1.52 2003/04/05 17:19:47 deraadt Exp $	*/
+/*	$OpenBSD: main.c,v 1.53 2003/06/03 02:56:08 millert Exp $	*/
 /*	$NetBSD: main.c,v 1.24 1997/08/18 10:20:26 lukem Exp $	*/
 
 /*
@@ -69,7 +69,7 @@ static char copyright[] =
 #if 0
 static char sccsid[] = "@(#)main.c	8.6 (Berkeley) 10/9/94";
 #else
-static char rcsid[] = "$OpenBSD: main.c,v 1.52 2003/04/05 17:19:47 deraadt Exp $";
+static char rcsid[] = "$OpenBSD: main.c,v 1.53 2003/06/03 02:56:08 millert Exp $";
 #endif
 #endif /* not lint */
 
@@ -94,9 +94,7 @@ static char rcsid[] = "$OpenBSD: main.c,v 1.52 2003/04/05 17:19:47 deraadt Exp $
 int family = PF_UNSPEC;
 
 int
-main(argc, argv)
-	volatile int argc;
-	char ** volatile argv;
+main(volatile int argc, char *argv[])
 {
 	int ch, top, rval;
 	struct passwd *pw = NULL;

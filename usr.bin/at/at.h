@@ -1,4 +1,4 @@
-/*	$OpenBSD: at.h,v 1.8 2003/02/20 20:38:08 millert Exp $	*/
+/*	$OpenBSD: at.h,v 1.9 2003/03/14 04:15:04 millert Exp $	*/
 
 /*
  *  at.h -  header for at(1)
@@ -44,3 +44,7 @@ struct atjob {
 
 #define DEFAULT_BATCH_QUEUE	'E'
 #define DEFAULT_AT_QUEUE	'c'
+
+
+time_t	parsetime(int, char **);
+
