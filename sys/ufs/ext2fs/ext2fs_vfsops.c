@@ -1,4 +1,4 @@
-/*	$OpenBSD: ext2fs_vfsops.c,v 1.31 2004/01/20 03:44:06 tedu Exp $	*/
+/*	$OpenBSD: ext2fs_vfsops.c,v 1.32 2004/05/06 17:41:03 grange Exp $	*/
 /*	$NetBSD: ext2fs_vfsops.c,v 1.1 1997/06/11 09:34:07 bouyer Exp $	*/
 
 /*
@@ -123,7 +123,6 @@ ext2fs_init(vfsp)
 int
 ext2fs_mountroot()
 {
-	extern struct vnode *rootvp;
 	register struct m_ext2fs *fs;
         struct mount *mp;
 	struct proc *p = curproc;	/* XXX */
@@ -491,7 +490,6 @@ ext2fs_mountfs(devvp, mp, p)
 	struct partinfo dpart;
 	int error, i, size, ronly;
 	struct ucred *cred;
-	extern struct vnode *rootvp;
 
 	dev = devvp->v_rdev;
 	cred = p ? p->p_ucred : NOCRED;
