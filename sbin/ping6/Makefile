@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.5 2002/05/12 17:14:04 deraadt Exp $
+#	$OpenBSD: Makefile,v 1.6 2002/05/26 13:02:17 itojun Exp $
 
 PROG=	ping6
 MAN=	ping6.8
@@ -6,7 +6,7 @@ MAN=	ping6.8
 LDADD=	-lm
 DPADD=	${LIBM}
 
-CPPFLAGS+= -DINET6
+CPPFLAGS+= -DINET6 -DHAVE_POLL_H
 
 BINOWN=	root
 BINGRP=	bin
