@@ -1,4 +1,4 @@
-/*	$OpenBSD: brgphy.c,v 1.9 2002/04/02 17:24:24 drahn Exp $	*/
+/*	$OpenBSD: brgphy.c,v 1.10 2002/04/08 20:55:29 nate Exp $	*/
 
 /*
  * Copyright (c) 2000
@@ -258,7 +258,7 @@ brgphy_service(sc, mii, cmd)
 		 */
 		if (++sc->mii_ticks != sc->mii_anegticks)
 			return (0);
-		
+
 		sc->mii_ticks = 0;
 
 		/*

@@ -1,4 +1,4 @@
-/*	$OpenBSD: sqphy.c,v 1.6 2001/05/30 21:41:14 deraadt Exp $	*/
+/*	$OpenBSD: sqphy.c,v 1.7 2002/03/14 01:26:58 millert Exp $	*/
 /*	$NetBSD: sqphy.c,v 1.17 2000/02/02 23:34:57 thorpej Exp $	*/
 
 /*-
@@ -37,7 +37,7 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
- 
+
 /*
  * Copyright (c) 1997 Manuel Bouyer.  All rights reserved.
  *
@@ -136,13 +136,13 @@ sqphyattach(parent, self, aux)
 	    MII_MODEL(ma->mii_id2) == MII_MODEL_xxSEEQ_80220)
            printf(": %s, rev. %d\n", MII_STR_xxSEEQ_80220,
 	            MII_REV(ma->mii_id2));
-		
+
 
    	if (MII_OUI(ma->mii_id1, ma->mii_id2) == MII_OUI_xxSEEQ &&
 	    MII_MODEL(ma->mii_id2) == MII_MODEL_xxSEEQ_84220)
            printf(": %s, rev. %d\n", MII_STR_xxSEEQ_84220,
 	            MII_REV(ma->mii_id2));
-		
+
 
 	sc->mii_inst = mii->mii_instance;
 	sc->mii_phy = ma->mii_phyno;

@@ -1,4 +1,4 @@
-/*	$OpenBSD: nsgphy.c,v 1.6 2001/10/05 18:29:15 nate Exp $	*/
+/*	$OpenBSD: nsgphy.c,v 1.7 2002/03/14 01:26:58 millert Exp $	*/
 /*
  * Copyright (c) 2001 Wind River Systems
  * Copyright (c) 2001
@@ -260,7 +260,7 @@ nsgphy_service(sc, mii, cmd)
 		 */
 		if (++sc->mii_ticks != sc->mii_anegticks)
 			return (0);
-		
+
 		sc->mii_ticks = 0;
 
 		/*

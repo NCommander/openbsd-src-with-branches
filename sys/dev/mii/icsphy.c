@@ -1,4 +1,4 @@
-/*	$OpenBSD: icsphy.c,v 1.7 2001/06/03 15:54:44 deraadt Exp $	*/
+/*	$OpenBSD: icsphy.c,v 1.8 2002/03/14 01:26:57 millert Exp $	*/
 /*	$NetBSD: icsphy.c,v 1.17 2000/02/02 23:34:56 thorpej Exp $	*/
 
 /*-
@@ -37,7 +37,7 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
- 
+
 /*
  * Copyright (c) 1997 Manuel Bouyer.  All rights reserved.
  *
@@ -116,7 +116,7 @@ icsphymatch(parent, match, aux)
 	if (MII_OUI(ma->mii_id1, ma->mii_id2) == MII_OUI_xxICS &&
 	    MII_MODEL(ma->mii_id2) == MII_MODEL_xxICS_1890)
 		return (10);
-   
+
         if (MII_OUI(ma->mii_id1, ma->mii_id2) == MII_OUI_xxICS &&
 	    MII_MODEL(ma->mii_id2) == MII_MODEL_xxICS_1892)
 		return (10);
@@ -278,7 +278,7 @@ icsphy_reset(sc)
 
 	mii_phy_reset(sc);
 	PHY_WRITE(sc, MII_ICSPHY_ECR2, ECR2_10TPROT|ECR2_Q10T);
-   
+
 	/*
 	 * XXX the ICS1892 doesn't set the BMCR properly after
 	 * XXX reset, which breaks autonegotiation.
