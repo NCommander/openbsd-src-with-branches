@@ -259,6 +259,9 @@ readline(char *buf, size_t n, int to)
 		while (!cnischar())
 			;
 
+	/* User has typed something.  Turn off timeouts. */
+	cmd.timeout = 0;
+
 	while (1) {
 		switch ((ch = getchar())) {
 		case CTRL('u'):
