@@ -1,4 +1,4 @@
-/*	$OpenBSD: part.h,v 1.7 2001/05/18 07:15:18 mickey Exp $	*/
+/*	$OpenBSD: part.h,v 1.8 2001/08/12 12:03:01 heko Exp $	*/
 
 /*
  * Copyright (c) 1997 Tobias Weingartner
@@ -48,7 +48,7 @@ void	PRT_printall __P((void));
 const char *PRT_ascii_id __P((int));
 void PRT_parse __P((disk_t *, void *, off_t, off_t, prt_t *, int));
 void PRT_make __P((prt_t *, off_t, off_t, void *));
-void PRT_print __P((int, prt_t *));
+void PRT_print __P((int, prt_t *, char *));
 
 /* This does CHS -> bs/ns */
 void PRT_fix_BN __P((disk_t *, prt_t *, int));
