@@ -1,4 +1,4 @@
-/*	$OpenBSD: savecore.c,v 1.35 2003/06/10 16:41:29 deraadt Exp $	*/
+/*	$OpenBSD: savecore.c,v 1.36 2003/07/29 18:38:36 deraadt Exp $	*/
 /*	$NetBSD: savecore.c,v 1.26 1996/03/18 21:16:05 leo Exp $	*/
 
 /*-
@@ -40,7 +40,7 @@ static char copyright[] =
 #if 0
 static char sccsid[] = "@(#)savecore.c	8.3 (Berkeley) 1/2/94";
 #else
-static char rcsid[] = "$OpenBSD: savecore.c,v 1.35 2003/06/10 16:41:29 deraadt Exp $";
+static char rcsid[] = "$OpenBSD: savecore.c,v 1.36 2003/07/29 18:38:36 deraadt Exp $";
 #endif
 #endif /* not lint */
 
@@ -104,7 +104,7 @@ struct nlist dump_nl[] = {	/* Name list for dumped system. */
 
 /* Types match kernel declarations. */
 long	dumplo;				/* where dump starts on dumpdev */
-int	dumpmag;			/* magic number in dump */
+u_long	dumpmag;			/* magic number in dump */
 int	dumpsize;			/* amount of memory dumped */
 
 char	*kernel;
