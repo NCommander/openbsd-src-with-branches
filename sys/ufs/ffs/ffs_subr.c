@@ -1,4 +1,4 @@
-/*	$OpenBSD: ffs_subr.c,v 1.7 2001/03/20 19:54:08 art Exp $	*/
+/*	$OpenBSD: ffs_subr.c,v 1.8 2001/06/23 02:07:55 csapuntz Exp $	*/
 /*	$NetBSD: ffs_subr.c,v 1.6 1996/03/17 02:16:23 christos Exp $	*/
 
 /*
@@ -146,6 +146,10 @@ ffs_checkoverlap(bp, ip)
 	}
 }
 #endif /* DIAGNOSTIC */
+
+#ifndef _KERNEL
+void panic __P((const char *, ...));
+#endif
 
 /*
  * block operations
