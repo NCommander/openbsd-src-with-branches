@@ -1,4 +1,4 @@
-/*	$OpenBSD: pfctl_osfp.c,v 1.2 2003/08/22 15:17:03 henning Exp $ */
+/*	$OpenBSD: pfctl_osfp.c,v 1.3 2003/08/22 21:50:34 david Exp $ */
 
 /*
  * Copyright (c) 2003 Mike Frantzen <frantzen@openbsd.org>
@@ -926,7 +926,7 @@ get_tcpopts(const char *filename, int lineno, const char *tcpopts,
 			if (tcpopts[i] == '%') {
 				*this_mod = T_MOD;
 				i++;
-			} else
+			}
 			do {
 				if (!isdigit(tcpopts[i])) {
 					fprintf(stderr, "%s:%d unknown "
