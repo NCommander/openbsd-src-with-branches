@@ -69,6 +69,9 @@ void	udp_stats __P((u_long, char *));
 void	ip_stats __P((u_long, char *));
 void	icmp_stats __P((u_long, char *));
 void	igmp_stats __P((u_long, char *));
+void	ah_stats __P((u_long, char *));
+void	esp_stats __P((u_long, char *));
+void	ip4_stats __P((u_long, char *));
 void	protopr __P((u_long, char *));
 
 void	mbpr(u_long);
