@@ -1,4 +1,4 @@
-/*	$OpenBSD: options.c,v 1.42 2000/06/09 16:37:54 espie Exp $	*/
+/*	$OpenBSD: options.c,v 1.43 2000/11/09 03:36:10 provos Exp $	*/
 /*	$NetBSD: options.c,v 1.6 1996/03/26 23:54:18 mrg Exp $	*/
 
 /*-
@@ -42,7 +42,7 @@
 #if 0
 static char sccsid[] = "@(#)options.c	8.2 (Berkeley) 4/18/94";
 #else
-static char rcsid[] = "$OpenBSD: options.c,v 1.42 2000/06/09 16:37:54 espie Exp $";
+static char rcsid[] = "$OpenBSD: options.c,v 1.43 2000/11/09 03:36:10 provos Exp $";
 #endif
 #endif /* not lint */
 
@@ -1581,7 +1581,7 @@ void
 tar_usage()
 #endif
 {
-	(void)fputs("usage: tar -{txru}[cevfbmopqswzBHLPXZ014578] [tapefile] ",
+	(void)fputs("usage: tar [-]{txru}[cevfbmopqswzBHLPXZ014578] [tapefile] ",
 		 stderr);
 	(void)fputs("[blocksize] [replstr] [-C directory] [-T file] file1 file2...\n",
 	    stderr);
