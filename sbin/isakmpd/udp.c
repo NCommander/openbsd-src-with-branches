@@ -1,4 +1,4 @@
-/*	$OpenBSD: udp.c,v 1.60 2003/05/18 18:16:34 ho Exp $	*/
+/*	$OpenBSD: udp.c,v 1.61 2003/05/18 20:06:14 ho Exp $	*/
 /*	$EOM: udp.c,v 1.57 2001/01/26 10:09:57 niklas Exp $	*/
 
 /*
@@ -876,7 +876,7 @@ udp_decode_ids (struct transport *t)
   strlcpy (iddst, inet_ntoa (((struct udp_transport *)t)->dst.sin_addr), 256);
 #endif /* HAVE_GETNAMEINFO */
 
-  snprintf (result, 1024, "src: %s dst: %s", idsrc, iddst);
+  snprintf (result, sizeof result, "src: %s dst: %s", idsrc, iddst);
 
   return result;
 }
