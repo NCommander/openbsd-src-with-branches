@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_ethersubr.c,v 1.24 1997/09/27 02:35:57 deraadt Exp $	*/
+/*	$OpenBSD: if_ethersubr.c,v 1.25 1998/02/03 19:06:28 deraadt Exp $	*/
 /*	$NetBSD: if_ethersubr.c,v 1.19 1996/05/07 02:40:30 thorpej Exp $	*/
 
 /*
@@ -241,7 +241,7 @@ ether_output(ifp, m0, dst, rt0)
 #endif
 #ifdef IPX
 	case AF_IPX:
-		etype = ETHERTYPE_IPX;
+		etype = htons(ETHERTYPE_IPX);
  		bcopy((caddr_t)&satosipx(dst)->sipx_addr.ipx_host,
 		    (caddr_t)edst, sizeof (edst));
 		if (!bcmp((caddr_t)edst, (caddr_t)&ipx_thishost, sizeof(edst)))
