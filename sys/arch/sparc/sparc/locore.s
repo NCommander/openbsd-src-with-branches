@@ -5918,19 +5918,51 @@ ENTRY(ffs)
 	add	%o0, 24, %o0
 
 /*
- * V8 sparc mul/umul replacements.
+ * V8 sparc {,u}{mul,div,rem} replacements.
  */
 .globl __mulreplace, __mulreplace_end
 __mulreplace:
 	retl
-	 smul	%o0, %o1, %o0
+	 smulcc	%o0, %o1, %o0
 __mulreplace_end:
 
 .globl __umulreplace, __umulreplace_end
 __umulreplace:
 	retl
-	 umul	%o0, %o1, %o0
+	 umulcc	%o0, %o1, %o0
 __umulreplace_end:
+
+.globl __divreplace, __divreplace_end
+__divreplace:
+	mov	%g0, %y
+	retl
+	 sdivcc	%o0, %o1, %o0
+__divreplace_end:
+
+.globl __udivreplace, __udivreplace_end
+__udivreplace:
+	mov	%g0, %y
+	retl
+	 udivcc	%o0, %o1, %o0
+__udivreplace_end:
+
+.globl __remreplace, __remreplace_end
+__remreplace:
+	mov	%g0, %y
+	sdiv	%o0, %o1, %o2
+	smul	%o1, %o2, %o2
+	retl
+	 subcc	%o0, %o2, %o0
+__remreplace_end:
+
+.globl __uremreplace, __uremreplace_end
+__uremreplace:
+	mov	%g0, %y
+	udiv	%o0, %o1, %o2
+	umul	%o1, %o2, %o2
+	retl
+	 subcc	%o0, %o2, %o0
+__uremreplace_end:
 
 /*
  * Signed multiply, from Appendix E of the Sparc Version 8
