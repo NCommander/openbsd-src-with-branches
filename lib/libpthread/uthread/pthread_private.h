@@ -1,4 +1,4 @@
-/*	$OpenBSD: pthread_private.h,v 1.39 2002/12/08 04:06:01 marc Exp $	*/
+/*	$OpenBSD: pthread_private.h,v 1.40 2002/12/11 23:21:19 marc Exp $	*/
 /*
  * Copyright (c) 1995-1998 John Birrell <jb@cimlogic.com.au>.
  * All rights reserved.
@@ -1073,7 +1073,7 @@ struct pthread *_get_curthread(void);
 void	_set_curthread(struct pthread *);
 int     _thread_create(pthread_t *, const pthread_attr_t *,
 		       void *(*start_routine)(void *), void *,pthread_t);
-void    _dispatch_signals(pthread_t, struct sigcontext *);
+void    _dispatch_signals(struct sigcontext *);
 void    _thread_signal(pthread_t, int);
 int	_mutex_cv_lock(pthread_mutex_t *);
 int	_mutex_cv_unlock(pthread_mutex_t *);
