@@ -35,10 +35,23 @@
  */
 
 #if defined(LIBC_SCCS) && !defined(lint)
-static char rcsid[] = "$OpenBSD: putchar.c,v 1.2 1996/08/19 08:32:59 tholo Exp $";
+static char rcsid[] = "$OpenBSD: putchar.c,v 1.3 2001/07/09 06:57:44 deraadt Exp $";
 #endif /* LIBC_SCCS and not lint */
 
 #include <stdio.h>
+
+#undef putchar_unlocked
+/*
+ * A subrouting version of the macro putchar_unlocked
+ */
+int
+putchar_unlocked(c)
+	int c;
+{
+	FILE *so = stdout;
+
+	return (putc_unlocked(c,so));
+}
 
 #undef putchar
 
@@ -49,7 +62,7 @@ int
 putchar(c)
 	int c;
 {
-	register FILE *so = stdout;
+	FILE *so = stdout;
 
-	return (__sputc(c, so));
+	return (putc(c, so));
 }
