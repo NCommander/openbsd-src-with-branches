@@ -1,4 +1,4 @@
-/*	$OpenBSD: aucc.c,v 1.3 1998/04/26 22:31:03 niklas Exp $	*/
+/*	$OpenBSD: aucc.c,v 1.4 1998/11/03 21:22:34 downsj Exp $	*/
 /*	$NetBSD: aucc.c,v 1.22 1998/01/12 10:39:10 thorpej Exp $	*/
 
 /*
@@ -253,7 +253,7 @@ auccattach(parent, self, args)
 		return;
 	}
 
-	audio_attach_mi(&sa_hw_if, 0, sc, &sc->sc_dev);
+	audio_attach_mi(&sa_hw_if, sc, &sc->sc_dev);
 }
 
 int

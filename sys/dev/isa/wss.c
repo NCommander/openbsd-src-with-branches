@@ -1,4 +1,4 @@
-/*	$OpenBSD: wss.c,v 1.16 1998/05/08 18:37:24 csapuntz Exp $	*/
+/*	$OpenBSD: wss.c,v 1.17 1998/11/03 21:15:01 downsj Exp $	*/
 /*	$NetBSD: wss.c,v 1.42 1998/01/19 22:18:23 augustss Exp $	*/
 
 /*
@@ -153,7 +153,7 @@ wssattach(sc)
 
     sc->sc_ad1848.parent = sc;
 
-    audio_attach_mi(&wss_hw_if, 0, &sc->sc_ad1848, &sc->sc_dev);
+    audio_attach_mi(&wss_hw_if, &sc->sc_ad1848, &sc->sc_dev);
 }
 
 int
