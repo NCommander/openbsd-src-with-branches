@@ -1,4 +1,4 @@
-/*	$OpenBSD: vfs_subr.c,v 1.52 2001/02/26 00:18:33 csapuntz Exp $	*/
+/*	$OpenBSD: vfs_subr.c,v 1.53 2001/02/26 02:36:39 csapuntz Exp $	*/
 /*	$NetBSD: vfs_subr.c,v 1.53 1996/04/22 01:39:13 christos Exp $	*/
 
 /*
@@ -134,6 +134,7 @@ vntblinit()
 	TAILQ_INIT(&vnode_free_list);
 	simple_lock_init(&vnode_free_list_slock);
 	CIRCLEQ_INIT(&mountlist);
+	simple_lock_init(&mountlist_slock);
 	/*
 	 * Initialize the filesystem syncer.
 	 */
