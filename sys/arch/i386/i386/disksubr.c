@@ -1,4 +1,4 @@
-/*	$OpenBSD: disksubr.c,v 1.35 1998/11/21 20:43:43 deraadt Exp $	*/
+/*	$OpenBSD: disksubr.c,v 1.36 1999/01/08 04:29:06 millert Exp $	*/
 /*	$NetBSD: disksubr.c,v 1.21 1996/05/03 19:42:03 christos Exp $	*/
 
 /*
@@ -83,7 +83,7 @@ readdisklabel(dev, strat, lp, osdep, spoofonly)
 {
 	struct dos_partition *dp = osdep->dosparts, *dp2;
 	struct dkbad *bdp = &DKBAD(osdep);
-	struct buf *bp;
+	struct buf *bp = NULL;
 	struct disklabel *dlp;
 	char *msg = NULL, *cp;
 	int dospartoff, cyl, i, ourpart = -1;
@@ -323,8 +323,10 @@ donot:
 	}
 
 done:
-	bp->b_flags |= B_INVAL;
-	brelse(bp);
+	if (bp) {
+		bp->b_flags |= B_INVAL;
+		brelse(bp);
+	}
 	return (msg);
 }
 
