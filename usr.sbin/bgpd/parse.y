@@ -1,4 +1,4 @@
-/*	$OpenBSD: parse.y,v 1.43 2004/01/28 23:31:28 henning Exp $ */
+/*	$OpenBSD: parse.y,v 1.44 2004/01/28 23:49:55 henning Exp $ */
 
 /*
  * Copyright (c) 2002, 2003, 2004 Henning Brauer <henning@openbsd.org>
@@ -810,7 +810,7 @@ alloc_peer(void)
 	p->state = STATE_NONE;
 	p->next = NULL;
 	p->conf.distance = 1;
-	p->conf.announce_type = ANNOUNCE_SELF;
+	p->conf.announce_type = ANNOUNCE_UNDEF;
 	p->conf.max_prefix = ULONG_MAX;
 
 	return (p);
@@ -832,11 +832,7 @@ new_peer(void)
 		    sizeof(p->conf.descr)) >= sizeof(p->conf.descr))
 			fatalx("new_peer descr strlcpy");
 	}
-	p->state = STATE_NONE;
 	p->next = NULL;
-	p->conf.distance = 1;
-	p->conf.announce_type = ANNOUNCE_SELF;
-	p->conf.max_prefix = ULONG_MAX;
 
 	return (p);
 }

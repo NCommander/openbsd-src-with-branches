@@ -1,4 +1,4 @@
-/*	$OpenBSD: rde_decide.c,v 1.24 2004/01/22 20:34:56 henning Exp $ */
+/*	$OpenBSD: rde_decide.c,v 1.25 2004/01/27 16:49:53 henning Exp $ */
 
 /*
  * Copyright (c) 2003, 2004 Claudio Jeker <claudio@openbsd.org>
@@ -437,6 +437,7 @@ up_generate_updates(struct rde_peer *peer,
 
 		/* announce type handling */
 		switch (peer->conf.announce_type) {
+		case ANNOUNCE_UNDEF:
 		case ANNOUNCE_NONE:
 			return;
 		case ANNOUNCE_ALL:
@@ -471,6 +472,7 @@ up_generate_updates(struct rde_peer *peer,
 
 		/* announce type handling */
 		switch (peer->conf.announce_type) {
+		case ANNOUNCE_UNDEF:
 		case ANNOUNCE_NONE:
 			return;
 		case ANNOUNCE_ALL:
