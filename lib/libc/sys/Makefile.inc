@@ -6,7 +6,7 @@
 .PATH: ${LIBCSRCDIR}/arch/${MACHINE_ARCH}/sys ${LIBCSRCDIR}/sys
 
 # for now, only i386 has usable weak aliases
-.if ${MACHINE_ARCH} != "i386" && ${MACHINE_ARCH} != "sparc"
+.if ${MACHINE_ARCH} != "i386"
 CFLAGS+=	-D_NO_WEAK_ALIASES
 .endif
 
