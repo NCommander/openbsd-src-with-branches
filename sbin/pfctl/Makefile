@@ -1,7 +1,8 @@
-#	$OpenBSD: Makefile,v 1.9 2002/11/18 22:49:15 henning Exp $
+#	$OpenBSD: Makefile,v 1.10 2002/12/06 16:16:15 henning Exp $
 
 PROG=	pfctl
 SRCS=	pfctl.c parse.y pfctl_parser.c pf_print_state.c pfctl_altq.c
+SRCS+=	pfctl_radix.c pfctl_table.c
 CFLAGS+= -Wall -Wmissing-prototypes -Wno-uninitialized
 CFLAGS+= -Wstrict-prototypes
 YFLAGS=
