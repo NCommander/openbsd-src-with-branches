@@ -1,4 +1,4 @@
-/*	$OpenBSD: mountd.c,v 1.22 1997/09/29 19:31:05 millert Exp $	*/
+/*	$OpenBSD: mountd.c,v 1.23 1997/12/19 09:21:40 deraadt Exp $	*/
 /*	$NetBSD: mountd.c,v 1.31 1996/02/18 11:57:53 fvdl Exp $	*/
 
 /*
@@ -885,6 +885,10 @@ get_exportlist()
 			cp = endcp;
 			nextfield(&cp, &endcp);
 			len = endcp - cp;
+		}
+		if (has_host == FALSE && tgrp->gr_type == GT_NULL)  {
+			getexp_err(ep, tgrp);
+			goto nextline;
 		}
 		if (check_options(dirhead)) {
 			getexp_err(ep, tgrp);
