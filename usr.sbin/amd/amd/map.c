@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: map.c,v 1.2 1996/03/25 15:54:48 niklas Exp $	*/
 
 /*-
  * Copyright (c) 1990 Jan-Simon Pendry
@@ -40,7 +40,7 @@
 
 #ifndef lint
 /*static char sccsid[] = "from: @(#)map.c	8.1 (Berkeley) 6/6/93";*/
-static char *rcsid = "$OpenBSD$";
+static char *rcsid = "$OpenBSD: map.c,v 1.2 1996/03/25 15:54:48 niklas Exp $";
 #endif /* not lint */
 
 #include "am.h"
@@ -621,10 +621,10 @@ char *dir;
 		 * Patch up PID to match main server...
 		 */
 		if (!foreground) {
-			long pid = getppid();
+			pid_t pid = getppid();
 			((struct am_fh *) &nfh)->fhh_pid = pid;
 #ifdef DEBUG
-			dlog("root_fh substitutes pid %d", pid);
+			dlog("root_fh substitutes pid %d", (int)pid);
 #endif
 		}
 		return &nfh;
