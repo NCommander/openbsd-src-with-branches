@@ -1,4 +1,4 @@
-/*	$OpenBSD: union_vnops.c,v 1.8 1997/10/06 21:04:51 deraadt Exp $	*/
+/*	$OpenBSD: union_vnops.c,v 1.9 1997/11/06 05:58:54 csapuntz Exp $	*/
 /*	$NetBSD: union_vnops.c,v 1.30.4.1 1996/05/25 22:10:14 jtc Exp $	*/
 
 /*
@@ -1591,8 +1591,10 @@ union_inactive(v)
 
 	union_diruncache(un);
 
+	VOP_UNLOCK(ap->a_vp, 0, ap->a_p);
+
 	if ((un->un_flags & UN_CACHED) == 0)
-		vgone(ap->a_vp);
+		vrecycle(ap->a_vp, (struct simplelock *)0, ap->a_p);
 
 	return (0);
 }
