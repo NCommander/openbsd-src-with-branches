@@ -350,7 +350,6 @@ int     cvs_file_init       (void);
 int     cvs_file_ignore     (const char *);
 int     cvs_file_isignored  (const char *);
 char**  cvs_file_getv       (const char *, int *);
-void    cvs_file_free       (char **, int);
 
 
 /* Entries API */
@@ -378,6 +377,8 @@ int    cvs_modetostr  (mode_t, char *, size_t);
 int    cvs_strtomode  (const char *, mode_t *);
 int    cvs_cksum      (const char *, char *, size_t);
 int    cvs_exec       (int, char **, int []);
+int    cvs_getargv    (const char *, char **, int);
+void   cvs_freeargv   (char **, int);
 
 
 #endif /* CVS_H */
