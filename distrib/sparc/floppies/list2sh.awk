@@ -1,4 +1,4 @@
-#	$OpenBSD: list2sh.awk,v 1.1 1995/10/27 22:27:49 deraadt Exp $
+#	$OpenBSD: list2sh.awk,v 1.2 1997/05/01 11:30:46 niklas Exp $
 
 BEGIN {
 	printf("cd ${CURDIR}\n");
@@ -35,13 +35,18 @@ $1 == "COPYDIR" {
 	next;
 }
 $1 == "SPECIAL" {
-	printf("echo '%s'\n", $0);
-	printf("(cd ${TARGDIR};");
-	for (i = 2; i <= NF; i++)
-		printf(" %s", $i);
-	printf(")\n");
-	next;
-}
+# escaping shell quotation is ugly whether you use " or ', use cat <<'!' ...
+	work=$0;
+	gsub("[\\\\]", "\\\\", work);
+	gsub("[\"]", "\\\"", work);
+	gsub("[$]", "\\$", work);
+	gsub("[`]", "\\`", work);
+	printf("echo \"%s\"\n", work);
+	work=$0;
+	sub("^[ 	]*" $1 "[ 	]*", "", work);
+	printf("(cd ${TARGDIR}; %s)\n", work);
+ 	next;
+ }
 {
 	printf("echo '%s'\n", $0);
 	printf("echo 'Unknown keyword \"%s\" at line %d of input.'\n", $1, NR);
