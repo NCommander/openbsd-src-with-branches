@@ -1,4 +1,4 @@
-/*	$OpenBSD: conf.h,v 1.24 2003/06/03 14:28:16 ho Exp $	*/
+/*	$OpenBSD: conf.h,v 1.25 2004/03/19 14:04:43 hshoexer Exp $	*/
 /*	$EOM: conf.h,v 1.13 2000/09/18 00:01:47 ho Exp $	*/
 
 /*
@@ -75,7 +75,7 @@ struct conf_list_node {
 };
 
 struct conf_list {
-  int cnt;
+  size_t cnt;
   TAILQ_HEAD (conf_list_fields_head, conf_list_node) fields;
 };
 
