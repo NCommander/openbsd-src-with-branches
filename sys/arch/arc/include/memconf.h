@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: memconf.h,v 1.1 1996/08/26 11:12:02 pefo Exp $	*/
 
 /*
  * Copyright (c) 1996 Per Fogelstrom
@@ -43,7 +43,7 @@ struct mem_descriptor {
 };
 
 #ifdef _KERNEL
-#define	MAXMEMSEGS	8
+#define	MAXMEMSEGS	16
 extern struct mem_descriptor mem_layout[];
 #endif
 
