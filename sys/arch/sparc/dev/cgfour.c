@@ -1,4 +1,4 @@
-/*	$OpenBSD: cgfour.c,v 1.16 2002/09/23 18:13:38 miod Exp $	*/
+/*	$OpenBSD: cgfour.c,v 1.17 2002/11/06 21:06:20 miod Exp $	*/
 /*	$NetBSD: cgfour.c,v 1.13 1997/05/24 20:16:06 pk Exp $	*/
 
 /*
@@ -282,7 +282,7 @@ cgfour_ioctl(v, cmd, data, flags, p)
 
 	switch (cmd) {
 	case WSDISPLAYIO_GTYPE:
-		*(u_int *)data = WSDISPLAY_TYPE_UNKNOWN;
+		*(u_int *)data = WSDISPLAY_TYPE_SUNCG4;
 		break;
 	case WSDISPLAYIO_GINFO:
 		wdf = (struct wsdisplay_fbinfo *)data;

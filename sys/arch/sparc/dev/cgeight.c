@@ -1,4 +1,4 @@
-/*	$OpenBSD: cgeight.c,v 1.17 2002/11/06 21:06:20 miod Exp $	*/
+/*	$OpenBSD: cgeight.c,v 1.18 2002/12/12 20:21:34 miod Exp $	*/
 /*	$NetBSD: cgeight.c,v 1.13 1997/05/24 20:16:04 pk Exp $	*/
 
 /*
@@ -268,7 +268,7 @@ cgeight_ioctl(v, cmd, data, flags, p)
 
 	switch (cmd) {
 	case WSDISPLAYIO_GTYPE:
-		*(u_int *)data = WSDISPLAY_TYPE_UNKNOWN;
+		*(u_int *)data = WSDISPLAY_TYPE_SUNCG8;
 		break;
 	case WSDISPLAYIO_GINFO:
 		wdf = (struct wsdisplay_fbinfo *)data;
