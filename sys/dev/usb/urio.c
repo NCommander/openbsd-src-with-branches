@@ -1,5 +1,5 @@
-/*	$OpenBSD: urio.c,v 1.12 2002/07/10 21:41:51 mickey Exp $	*/
-/*	$NetBSD: urio.c,v 1.11 2002/02/11 15:11:49 augustss Exp $	*/
+/*	$OpenBSD: urio.c,v 1.13 2002/07/25 02:18:11 nate Exp $	*/
+/*	$NetBSD: urio.c,v 1.12 2002/07/11 21:14:33 augustss Exp $ */
 
 /*
  * Copyright (c) 2000 The NetBSD Foundation, Inc.

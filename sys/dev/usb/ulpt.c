@@ -1,5 +1,5 @@
-/*	$OpenBSD: ulpt.c,v 1.11 2002/07/10 21:41:51 mickey Exp $ */
-/*	$NetBSD: ulpt.c,v 1.49 2002/02/25 22:39:01 augustss Exp $	*/
+/*	$OpenBSD: ulpt.c,v 1.12 2002/07/25 02:18:10 nate Exp $ */
+/*	$NetBSD: ulpt.c,v 1.50 2002/07/11 21:14:31 augustss Exp $	*/
 /*	$FreeBSD: src/sys/dev/usb/ulpt.c,v 1.24 1999/11/17 22:33:44 n_hibma Exp $	*/
 
 /*

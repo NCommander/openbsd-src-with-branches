@@ -1,5 +1,5 @@
-/*	$OpenBSD: uhid.c,v 1.21 2002/07/11 03:11:17 nate Exp $ */
-/*	$NetBSD: uhid.c,v 1.51 2002/03/17 18:02:53 augustss Exp $	*/
+/*	$OpenBSD: uhid.c,v 1.22 2002/07/25 02:18:10 nate Exp $ */
+/*	$NetBSD: uhid.c,v 1.52 2002/07/11 21:14:29 augustss Exp $	*/
 
 /*
  * Copyright (c) 1998 The NetBSD Foundation, Inc.

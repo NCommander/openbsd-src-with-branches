@@ -1,5 +1,5 @@
-/*	$OpenBSD: uyap.c,v 1.4 2002/05/06 05:40:43 nate Exp $ */
-/*	$NetBSD: uyap.c,v 1.5 2001/11/13 06:24:57 lukem Exp $	*/
+/*	$OpenBSD: uyap.c,v 1.5 2002/07/25 02:18:11 nate Exp $ */
+/*	$NetBSD: uyap.c,v 1.6 2002/07/11 21:14:37 augustss Exp $	*/
 
 /*
  * Copyright (c) 2000 The NetBSD Foundation, Inc.
