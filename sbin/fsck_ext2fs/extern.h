@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /*	$NetBSD: extern.h,v 1.1 1997/06/11 11:21:46 bouyer Exp $	*/
 
 /*

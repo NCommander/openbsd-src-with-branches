@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /*	$NetBSD: dir.c,v 1.1 1997/06/11 11:21:46 bouyer Exp $	*/
 
 /*
@@ -38,7 +39,11 @@
 #if 0
 static char sccsid[] = "@(#)dir.c	8.5 (Berkeley) 12/8/94";
 #else
+#if 0
 static char rcsid[] = "$NetBSD: dir.c,v 1.1 1997/06/11 11:21:46 bouyer Exp $";
+#else
+static char rcsid[] = "$OpenBSD$";
+#endif
 #endif
 #endif /* not lint */
 
