@@ -399,7 +399,7 @@ svr4_sys_uname(p, v, retval)
 	struct svr4_sys_uname_args *uap = v;
 	struct svr4_utsname	sut;
 	extern char ostype[], hostname[], osrelease[], version[], machine[];
-
+	char *cp, *dp, *ep;
 
 	bzero(&sut, sizeof(sut));
 
@@ -412,8 +412,17 @@ svr4_sys_uname(p, v, retval)
 	strncpy(sut.release, osrelease, sizeof(sut.release));
 	sut.release[sizeof(sut.release) - 1] = '\0';
 
-	strncpy(sut.version, version, sizeof(sut.version));
-	sut.version[sizeof(sut.version) - 1] = '\0';
+	dp = sut.version;
+	ep = &sut.version[sizeof(sut.version) - 1];
+	for (cp = version; *cp && *cp != '('; cp++)
+		;
+	for (cp++; *cp && *cp != ')' && dp < ep; cp++)
+		*dp++ = *cp;
+	for (; *cp && *cp != '#'; cp++)
+		;
+	for (; *cp && *cp != ':' && dp < ep; cp++)
+		*dp++ = *cp;
+	*dp = '\0';
 
 	strncpy(sut.machine, machine, sizeof(sut.machine));
 	sut.machine[sizeof(sut.machine) - 1] = '\0';
