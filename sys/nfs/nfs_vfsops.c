@@ -1,4 +1,4 @@
-/*	$OpenBSD: nfs_vfsops.c,v 1.43 2002/01/11 01:20:56 nate Exp $	*/
+/*	$OpenBSD: nfs_vfsops.c,v 1.44 2002/01/16 21:51:16 ericj Exp $	*/
 /*	$NetBSD: nfs_vfsops.c,v 1.46.4.1 1996/05/25 22:40:35 fvdl Exp $	*/
 
 /*
@@ -930,10 +930,6 @@ nfs_sysctl(int *name, u_int namelen, void *oldp, size_t *oldlenp, void *newp,
 
 		return rv;
 
-	case NFS_NORSVPORT:
-		rv = sysctl_int(oldp, oldlenp, newp, newlen, &nfs_norsvport);
-		return rv;
-		
 	default:
 		return EOPNOTSUPP;
 	}
