@@ -127,7 +127,7 @@ dofile()
 	(void)fprintf(stderr, "nohup: can't open a nohup.out file.\n");
 	exit(EXIT_MISC);
 
-dupit:	(void)lseek(fd, 0L, SEEK_END);
+dupit:	(void)lseek(fd, 0, SEEK_END);
 	if (dup2(fd, STDOUT_FILENO) == -1) {
 		(void)fprintf(stderr, "nohup: %s\n", strerror(errno));
 		exit(EXIT_MISC);
