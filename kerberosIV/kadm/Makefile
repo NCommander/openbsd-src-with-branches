@@ -1,4 +1,6 @@
-#	$OpenBSD: Makefile,v 1.5 1996/11/11 05:35:15 downsj Exp $
+#	$OpenBSD: Makefile,v 1.6 1996/11/11 05:43:25 tholo Exp $
+
+.include <bsd.obj.mk>
 
 LIB=	kadm
 SRCS=	kadm_err.c kadm_cli_wrap.c kadm_stream.c kadm_supp.c

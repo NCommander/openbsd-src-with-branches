@@ -1,4 +1,6 @@
-#	$OpenBSD: Makefile,v 1.2 1996/06/02 14:42:02 niklas Exp $
+#	$OpenBSD: Makefile,v 1.3 1996/11/15 09:21:28 downsj Exp $
+
+.include <bsd.obj.mk>
 
 PROG=   kadmind
 SRCS=   admin_server.c kadm_funcs.c kadm_ser_wrap.c kadm_server.c
