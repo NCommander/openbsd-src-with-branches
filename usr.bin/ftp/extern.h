@@ -1,4 +1,4 @@
-/*	$OpenBSD: extern.h,v 1.16 1997/09/04 04:37:14 millert Exp $	*/
+/*	$OpenBSD: extern.h,v 1.17 1998/02/17 23:22:53 millert Exp $	*/
 /*	$NetBSD: extern.h,v 1.17 1997/08/18 10:20:19 lukem Exp $	*/
 
 /*-
@@ -36,7 +36,7 @@
  *	@(#)extern.h	8.3 (Berkeley) 10/9/94
  */
 
-struct fd_set;
+#include <sys/types.h>
 
 void    abort_remote __P((FILE *));
 void    abortpt __P((int));
@@ -67,7 +67,7 @@ void	domacro __P((int, char **));
 char   *domap __P((char *));
 void	doproxy __P((int, char **));
 char   *dotrans __P((char *));
-int     empty __P((struct fd_set *, int));
+int     empty __P((fd_set *, int));
 int	foregroundproc __P((void));
 void	get __P((int, char **));
 struct cmd *getcmd __P((const char *));
