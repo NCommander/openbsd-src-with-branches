@@ -1,4 +1,4 @@
-/*	$OpenBSD: termcap.h,v 1.5 2000/07/10 03:06:11 millert Exp $	*/
+/*	$OpenBSD: termcap.h,v 1.6 2000/10/08 22:46:56 millert Exp $	*/
 
 /****************************************************************************
  * Copyright (c) 1998 Free Software Foundation, Inc.                        *
@@ -39,7 +39,7 @@
 #define _NCU_TERMCAP_H	1
 
 #undef  NCURSES_VERSION
-#define NCURSES_VERSION "5.1"
+#define NCURSES_VERSION "5.2"
 
 #ifdef __cplusplus
 extern "C"
