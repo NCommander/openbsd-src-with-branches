@@ -1,4 +1,4 @@
-/* 	$OpenBSD$ */
+/* 	$OpenBSD: compat_aout.c,v 1.1 2003/06/24 22:45:33 espie Exp $ */
 
 /*
  * Copyright (c) 2003 Marc Espie
@@ -39,7 +39,7 @@ extern char sigcode[], esigcode[];
 struct sysent aout_sysent[SYS_MAXSYSCALL];
 
 struct emul emul_aout = {
-	"native",
+	"aout",
 	NULL,
 	sendsig,
 	SYS_syscall,
