@@ -1,4 +1,4 @@
-/*	$OpenBSD: pci_machdep.c,v 1.10 2003/01/13 16:04:38 jason Exp $	*/
+/*	$OpenBSD: pci_machdep.c,v 1.11 2003/02/17 01:29:20 henric Exp $	*/
 /*	$NetBSD: pci_machdep.c,v 1.22 2001/07/20 00:07:13 eeh Exp $	*/
 
 /*
@@ -426,7 +426,7 @@ pci_intr_string(pc, ih)
 	static char str[16];
 
 	DPRINTF(SPDB_INTR, ("pci_intr_string: ih %u", ih));
-	sprintf(str, "ivec %x", ih);
+	snprintf(str, sizeof str, "ivec %x", ih);
 	DPRINTF(SPDB_INTR, ("; returning %s\n", str));
 
 	return (str);
