@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: uthread_read.c,v 1.5 1999/11/25 07:01:41 d Exp $	*/
 /*
  * Copyright (c) 1995-1998 John Birrell <jb@cimlogic.com.au>
  * All rights reserved.
@@ -45,7 +45,7 @@
 ssize_t
 read(int fd, void *buf, size_t nbytes)
 {
-	int	ret;
+	ssize_t	ret;
 	int	type;
 
 	/* This is a cancellation point: */
