@@ -1,4 +1,4 @@
-/*	$OpenBSD: history.c,v 1.6 2005/01/31 21:46:43 jfb Exp $	*/
+/*	$OpenBSD: history.c,v 1.7 2005/01/31 22:04:58 jfb Exp $	*/
 /*
  * Copyright (c) 2004 Jean-Francois Brousseau <jfb@openbsd.org>
  * All rights reserved.
@@ -166,6 +166,9 @@ cvs_history(int argc, char **argv)
 		}
 		cvs_hist_close(hp);
 	} else {
+		if (cvs_connect(root) < 0)
+			return (EX_PROTOCOL);
+
 		if ((flags & CVS_HF_C) && (cvs_sendarg(root, "-c", 0) < 0))
 			return (EX_PROTOCOL);
 
