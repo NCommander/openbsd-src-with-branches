@@ -172,10 +172,10 @@ pagemove(from, to, size)
 		if (pmap_extract(pmap_kernel(), (vm_offset_t)to) != 0)
 			panic("pagemove 3");
 #endif
-		pmap_remove(pmap_kernel(),
-			    (vm_offset_t)from, (vm_offset_t)from + PAGE_SIZE);
-		pmap_enter(pmap_kernel(),
-			   (vm_offset_t)to, pa, VM_PROT_READ|VM_PROT_WRITE, 1);
+		pmap_remove(pmap_kernel(), (vm_offset_t)from,
+		    (vm_offset_t)from + PAGE_SIZE);
+		pmap_enter(pmap_kernel(),  (vm_offset_t)to, pa,
+		    VM_PROT_READ|VM_PROT_WRITE, 1);
 		from += PAGE_SIZE;
 		to += PAGE_SIZE;
 		size -= PAGE_SIZE;
