@@ -1,4 +1,4 @@
-# $OpenBSD: Makefile,v 1.1 2000/02/25 16:35:28 hin Exp $
+# $OpenBSD: Makefile,v 1.2 2000/03/01 08:55:01 deraadt Exp $
 
 PROG	= kerberos
 
@@ -12,6 +12,6 @@ LDADD	+= ${LIBROKEN} -lkafs -lkdb -lkrb -ldes
 
 SRCS	= kerberos.c
 
-MAN	= ${PROG}.8
+MAN	= ${PROG}.8 ${PROG}.1
 
 .include <bsd.prog.mk>
