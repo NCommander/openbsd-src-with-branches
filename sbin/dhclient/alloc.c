@@ -1,4 +1,4 @@
-/*	$OpenBSD: alloc.c,v 1.7 2004/04/14 20:22:27 henning Exp $	*/
+/*	$OpenBSD: alloc.c,v 1.8 2004/05/04 18:58:50 deraadt Exp $	*/
 
 /* Memory allocation... */
 
@@ -73,10 +73,4 @@ new_hash_bucket(void)
 	struct hash_bucket *rval = calloc(1, sizeof(struct hash_bucket));
 
 	return (rval);
-}
-
-void
-free_hash_bucket(struct hash_bucket *ptr)
-{
-	free(ptr);
 }

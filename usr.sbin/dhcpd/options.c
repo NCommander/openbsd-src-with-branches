@@ -1,4 +1,4 @@
-/*	$OpenBSD: options.c,v 1.7 2004/03/02 18:49:21 deraadt Exp $	*/
+/*	$OpenBSD: options.c,v 1.2 2004/04/14 01:27:49 henning Exp $	*/
 
 /* DHCP options parsing and reassembly. */
 
@@ -457,6 +457,7 @@ store_options(unsigned char *buffer, int buflen, struct tree_cache **options,
 	return (bufix);
 }
 
+#ifdef DEBUG_PACKET
 /*
  * Format the specified option so that a human can easily read it.
  */
@@ -701,6 +702,7 @@ pretty_print_option(unsigned int code, unsigned char *data, int len,
 	warn("dhcp option too large");
 	return ("<error>");
 }
+#endif /* DEBUG_PACKET */
 
 void
 do_packet(struct interface_info *interface, struct dhcp_packet *packet,
