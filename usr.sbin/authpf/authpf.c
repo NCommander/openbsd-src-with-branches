@@ -1,4 +1,4 @@
-/*	$OpenBSD: authpf.c,v 1.20 2002/06/11 04:45:32 kjell Exp $	*/
+/*	$OpenBSD: authpf.c,v 1.21 2002/06/11 17:13:55 beck Exp $	*/
 
 /*
  * Copyright (C) 1998 - 2002 Bob Beck (beck@openbsd.org).
@@ -177,7 +177,7 @@ main(int argc, char *argv[])
 
 		if ((pidfd = open(pidfile, O_RDWR|O_CREAT, 0644)) == -1 ||
 		    (pidfp = fdopen(pidfd, "r+")) == NULL) {
-			if (pidfd == -1)
+			if (pidfd != -1)
 				close(pidfd);
 			syslog(LOG_ERR, "can't open or create %s: %s", pidfile,
 			    strerror(errno));
