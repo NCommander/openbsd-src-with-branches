@@ -1,4 +1,4 @@
-/*	$OpenBSD: files.c,v 1.8 2002/02/16 21:27:52 millert Exp $	*/
+/*	$OpenBSD: files.c,v 1.9 2003/06/03 02:56:16 millert Exp $	*/
 
 /*-
  * Copyright (c) 1993
@@ -36,7 +36,7 @@
 #if 0
 static char sccsid[] = "@(#)files.c	8.1 (Berkeley) 6/6/93";
 #else
-static char rcsid[] = "$OpenBSD: files.c,v 1.8 2002/02/16 21:27:52 millert Exp $";
+static char rcsid[] = "$OpenBSD: files.c,v 1.9 2003/06/03 02:56:16 millert Exp $";
 #endif
 #endif /* not lint */
 
@@ -147,7 +147,7 @@ makeline(flno, filelist, nfiles, buffer, bufend, dummy2)
 		 *   buffer from start (see fsort())
 		 * * realloc buffer and bump bufend
 		 *
-		 * The former is perferred, realloc is only done when
+		 * The former is preferred, realloc is only done when
 		 * there is exactly one item in buffer which does not fit.
 		 */
 		if (bufend == obufend)
