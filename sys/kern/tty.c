@@ -1,4 +1,4 @@
-/*	$OpenBSD: tty.c,v 1.36 1998/03/28 10:03:04 deraadt Exp $	*/
+/*	$OpenBSD: tty.c,v 1.37 1999/06/01 08:23:52 art Exp $	*/
 /*	$NetBSD: tty.c,v 1.68.4.2 1996/06/06 16:04:52 thorpej Exp $	*/
 
 /*-
@@ -2031,7 +2031,7 @@ ttyinfo(tp)
 		ttyprintf(tp, "%ld.%02lds ", stime.tv_sec,
 		    stime.tv_usec / 10000);
 
-#define	pgtok(a)	(((u_long) ((a) * NBPG) / 1024))
+#define	pgtok(a)	(((u_long) ((a) * PAGE_SIZE) / 1024))
 		/* Print percentage cpu, resident set size. */
 		tmp = (pick->p_pctcpu * 10000 + FSCALE / 2) >> FSHIFT;
 		ttyprintf(tp, "%d%% %ldk\n",
