@@ -1,9 +1,7 @@
-/*	$OpenBSD: pch.h,v 1.5 2003/07/21 14:32:21 deraadt Exp $	*/
-
-EXT FILE	*pfp INIT(NULL);	/* patch file pointer */
+/*	$OpenBSD: pch.h,v 1.6 2003/07/22 17:18:49 otto Exp $	*/
 
 void		re_patch(void);
-void		open_patch_file(char *);
+void		open_patch_file(const char *);
 void		set_hunkmax(void);
 bool		there_is_another_patch(void);
 bool		another_hunk(void);
