@@ -80,7 +80,7 @@
 #endif
 #define	NCCS		20
 
-#define _POSIX_VDISABLE	((unsigned char)'\377')
+#define _POSIX_VDISABLE	'\377'
 
 #ifndef _POSIX_SOURCE
 #define CCEQ(val, c)	(c == val ? val != _POSIX_VDISABLE : 0)
