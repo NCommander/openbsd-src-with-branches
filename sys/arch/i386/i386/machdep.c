@@ -1,4 +1,4 @@
-/*	$OpenBSD: machdep.c,v 1.30 1996/12/09 08:36:41 deraadt Exp $	*/
+/*	$OpenBSD: machdep.c,v 1.31 1996/12/09 09:54:04 niklas Exp $	*/
 /*	$NetBSD: machdep.c,v 1.202 1996/05/18 15:54:59 christos Exp $	*/
 
 /*-
@@ -315,6 +315,7 @@ cpu_startup()
 		printf("kernel does not support -c; continuing..\n");
 #endif
 	}
+	ioport_malloc_safe = 1;
 	configure();
 
 	/*
