@@ -1,4 +1,4 @@
-/*	$OpenBSD: uvm_map.c,v 1.41 2002/02/28 18:50:26 provos Exp $	*/
+/*	$OpenBSD: uvm_map.c,v 1.42 2002/03/07 01:08:57 provos Exp $	*/
 /*	$NetBSD: uvm_map.c,v 1.86 2000/11/27 08:40:03 chs Exp $	*/
 
 /* 
@@ -340,7 +340,7 @@ _uvm_tree_sanity(vm_map_t map, char *name)
  error:
 #ifdef	DDB
 	/* handy breakpoint location for error case */
-	__asm(".globl treesanity_label ; treesanity_label:");
+	__asm(".globl treesanity_label\ntreesanity_label:");
 #endif
 	return (-1);
 }
