@@ -1,4 +1,4 @@
-/*	$OpenBSD: elan520.c,v 1.5 2003/12/24 10:35:59 markus Exp $	*/
+/*	$OpenBSD: elan520.c,v 1.6 2004/02/14 15:09:22 grange Exp $	*/
 /*	$NetBSD: elan520.c,v 1.4 2002/10/02 05:47:15 thorpej Exp $	*/
 
 /*-
@@ -43,7 +43,6 @@
  * extra features on the SC520, such as the watchdog timer and GPIO.
  */
 
-#include <sys/cdefs.h>
 #include <sys/param.h>
 #include <sys/systm.h>
 #include <sys/device.h>
