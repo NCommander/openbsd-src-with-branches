@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: sysv_shm.c,v 1.12 1999/06/23 09:44:28 art Exp $	*/
 /*	$NetBSD: sysv_shm.c,v 1.50 1998/10/21 22:24:29 tron Exp $	*/
 
 /*
@@ -83,11 +83,6 @@ struct shm_handle {
 	vm_object_t shm_object;
 #endif
 };
-
-#ifndef UVM
-typedef vm_offset_t vaddr_t;	/* XXXCDC: tmp, yuck */
-typedef vm_offset_t vsize_t;	/* XXXCDC: tmp, yuck */
-#endif
 
 struct shmmap_state {
 	vaddr_t va;
