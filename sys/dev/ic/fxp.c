@@ -995,11 +995,10 @@ fxp_stop(sc, drain)
 	/*
 	 * Release any xmit buffers.
 	 */
-	txp = sc->cbl_base;
-	for (i = 0; i < FXP_NTXCB; i++) {
-		if (txp[i].mb_head != NULL)
-			m_freem(txp[i].mb_head);
-		txp[i].mb_head = NULL;
+	for (txp = sc->cbl_first; txp != NULL && txp->mb_head != NULL;
+	    txp = txp->next) {
+		m_freem(txp->mb_head);
+		txp->mb_head = NULL;
 	}
 	sc->tx_queued = 0;
 
