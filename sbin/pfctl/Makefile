@@ -2,8 +2,7 @@
 
 PROG=	pfctl
 SRCS=	pfctl.c parse.y pfctl_parser.c pf_print_state.c
-CFLAGS+= -Wall -Werror -Wmissing-prototypes -Wno-uninitialized
-CFLAGS+= -Wstrict-prototypes
+CFLAGS+= -Wall
 YFLAGS=
 MAN=	pfctl.8
 
