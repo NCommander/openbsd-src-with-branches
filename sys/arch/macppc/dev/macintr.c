@@ -1,4 +1,4 @@
-/*	$OpenBSD: macintr.c,v 1.24 2004/06/28 02:49:43 deraadt Exp $	*/
+/*	$OpenBSD: macintr.c,v 1.25 2004/10/01 20:28:42 miod Exp $	*/
 
 /*-
  * Copyright (c) 1995 Per Fogelstrom
@@ -603,7 +603,7 @@ read_irq()
 	state0 = in32rb(INT_STATE_REG0);
 	if (state0)
 		out32rb(INT_CLEAR_REG0, state0);
-		state0save = state0;
+	state0save = state0;
 	while (state0) {
 		p = 31 - cntlzw(state0);
 		rv |= 1 << m_virq[p];
