@@ -1,4 +1,4 @@
-/*	$OpenBSD: basename.c,v 1.3 1999/05/28 22:00:21 espie Exp $	*/
+/*	$OpenBSD: basename.c,v 1.4 1999/05/30 17:10:30 espie Exp $	*/
 
 /*
  * Copyright (c) 1997 Todd C. Miller <Todd.Miller@courtesan.com>
@@ -28,7 +28,7 @@
  */
 
 #ifndef lint
-static char rcsid[] = "$OpenBSD: basename.c,v 1.3 1999/05/28 22:00:21 espie Exp $";
+static char rcsid[] = "$OpenBSD: basename.c,v 1.4 1999/05/30 17:10:30 espie Exp $";
 #endif /* not lint */
 
 #include <errno.h>
@@ -69,7 +69,6 @@ basename(path)
 		errno = ENAMETOOLONG;
 		return(NULL);
 	}
-	(void)strncpy(bname, startp, endp - startp + 1);
-	bname[endp - startp + 1] = '\0';
+	strlcpy(bname, startp, endp - startp + 2);
 	return(bname);
 }
