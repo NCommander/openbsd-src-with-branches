@@ -1,4 +1,4 @@
-/*	$OpenBSD: Locore.c,v 1.3 1997/02/06 23:44:54 rahnds Exp $	*/
+/*	$OpenBSD: Locore.c,v 1.4 1997/02/18 22:36:40 rahnds Exp $	*/
 /*	$NetBSD: Locore.c,v 1.1 1996/09/30 16:34:58 ws Exp $	*/
 
 /*
@@ -471,7 +471,7 @@ getchar()
 	int l;
 
 	while ((l = OF_read(stdin, &ch, 1)) != 1)
-		if (l != -2)
+		if (l != -2 && l != 0)
 			return -1;
 	return ch;
 }
