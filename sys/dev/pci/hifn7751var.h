@@ -1,4 +1,4 @@
-/*	$OpenBSD: hifn7751var.h,v 1.40 2001/11/12 18:04:06 jason Exp $	*/
+/*	$OpenBSD: hifn7751var.h,v 1.41 2002/01/08 23:17:24 jason Exp $	*/
 
 /*
  * Invertex AEON / Hifn 7751 driver
@@ -33,6 +33,10 @@
  * THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ *
+ * Effort sponsored in part by the Defense Advanced Research Projects
+ * Agency (DARPA) and Air Force Research Laboratory, Air Force
+ * Materiel Command, USAF, under agreement number F30602-01-2-0537.
  *
  */
 
