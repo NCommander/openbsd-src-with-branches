@@ -1,4 +1,4 @@
-/* *	$OpenBSD: finger.h,v 1.1.1.1 1995/10/18 08:45:14 deraadt Exp $*/
+/* *	$OpenBSD: finger.h,v 1.2 1996/06/26 05:33:16 deraadt Exp $*/
 /*
  * Copyright (c) 1989 The Regents of the University of California.
  * All rights reserved.
@@ -82,9 +82,5 @@ typedef struct where {
 PERSON *htab[HSIZE];			/* the buckets */
 PERSON *phead, *ptail;			/* the linked list of all people */
 
-int entries;				/* number of people */
-
 PERSON *enter_person(), *find_person(), *palloc();
 WHERE *walloc();
-
-extern char tbuf[1024];			/* temp buffer for anybody */
