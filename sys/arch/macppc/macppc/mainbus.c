@@ -1,4 +1,4 @@
-/*	$OpenBSD: mainbus.c,v 1.8 2001/07/09 04:41:28 mickey Exp $	*/
+/*	$OpenBSD: mainbus.c,v 1.1 2001/09/01 15:44:20 drahn Exp $	*/
 
 /*
  * Copyright (c) 1994, 1995 Carnegie-Mellon University.
@@ -123,7 +123,8 @@ mbattach(parent, self, aux)
 			if (OF_getprop(node, "device_type", name, sizeof(name)) <= 0)
 			{
 				if (OF_getprop(node, "name", name, sizeof(name)) <= 0)
-					printf ("name not found on node %x\n");
+					printf ("name not found on node %x\n",
+					    node);
 					continue;
 			}
 			if (strcmp(name, "memory-controller") == 0) {

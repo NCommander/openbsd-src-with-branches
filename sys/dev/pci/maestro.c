@@ -1,4 +1,4 @@
-/*	$OpenBSD: maestro.c,v 1.9 2001/08/25 10:13:29 art Exp $	*/
+/*	$OpenBSD: maestro.c,v 1.10 2001/09/05 08:29:55 espie Exp $	*/
 /* $FreeBSD: /c/ncvs/src/sys/dev/sound/pci/maestro.c,v 1.3 2000/11/21 12:22:11 julian Exp $ */
 /*
  * FreeBSD's ESS Agogo/Maestro driver 
@@ -1223,7 +1223,8 @@ maestro_powerhook(why, self)
 		/* Power up device on resume. */
 		DPRINTF(("maestro: power resume\n"));
 		if (sc->suspend == PWR_RESUME) {
-			printf("%s: resume without suspend?\n");
+			printf("%s: resume without suspend?\n",
+			    sc->dev.dv_xname);
 			sc->suspend = why;
 			return;
 		}
