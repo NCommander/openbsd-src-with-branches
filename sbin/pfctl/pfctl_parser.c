@@ -1,4 +1,4 @@
-/*	$OpenBSD: pfm_parser.c,v 1.20 2001/06/23 23:09:25 dhartmei Exp $ */
+/*	$OpenBSD: pfm_parser.c,v 1.1 2001/06/24 20:18:12 kjell Exp $ */
 
 /*
  * Copyright (c) 2001, Daniel Hartmeier
@@ -37,7 +37,7 @@
 #include <netdb.h>
 #include <netinet/in.h>
 
-#include "pfm_parser.h"
+#include "pfctl_parser.h"
 
 static void		 print_addr (u_int32_t);
 static void		 print_host (struct host *);

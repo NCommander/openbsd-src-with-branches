@@ -1,4 +1,4 @@
-/*	$OpenBSD: pfm_parser.h,v 1.20 2001/06/23 23:09:25 dhartmei Exp $ */
+/*	$OpenBSD: pfm_parser.h,v 1.1 2001/06/24 20:18:12 kjell Exp $ */
 
 /*
  * Copyright (c) 2001, Daniel Hartmeier

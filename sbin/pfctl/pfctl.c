@@ -1,4 +1,4 @@
-/*	$OpenBSD: pfm.c,v 1.20 2001/06/23 23:43:59 dhartmei Exp $ */
+/*	$OpenBSD: pfm.c,v 1.1 2001/06/24 20:18:12 kjell Exp $ */
 
 /*
  * Copyright (c) 2001, Daniel Hartmeier
@@ -39,7 +39,7 @@
 #include <errno.h>
 #include <netinet/in.h>
 
-#include "pfm_parser.h"
+#include "pfctl_parser.h"
 
 static void	 printerror(char *);
 static void	 usage(char *);
