@@ -1,4 +1,4 @@
-/*	$OpenBSD: ip_ah_old.c,v 1.15 1998/06/03 09:50:19 provos Exp $	*/
+/*	$OpenBSD: ip_ah_old.c,v 1.16 1998/11/25 02:01:26 niklas Exp $	*/
 
 /*
  * The authors of this code are John Ioannidis (ji@tla.org),
@@ -495,7 +495,7 @@ ah_old_output(struct mbuf *m, struct sockaddr_encap *gw, struct tdb *tdb,
 		tdb->tdb_dst, ntohl(tdb->tdb_spi));
 	m_freem(m);
 	ahstat.ahs_toobig++;
-        return ENOBUFS;
+        return EMSGSIZE;
     }
 	
     ipo.ip_v = IPVERSION;
