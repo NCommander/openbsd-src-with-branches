@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_cnw.c,v 1.6 2000/04/24 19:43:35 niklas Exp $	*/
+/*	$OpenBSD: if_cnw.c,v 1.7 2001/02/20 19:39:46 mickey Exp $	*/
 /*-
  * Copyright (c) 1998 The NetBSD Foundation, Inc.
  * All rights reserved.
@@ -683,9 +683,7 @@ cnw_recv(sc)
 			continue;
 		}
 
-		/* Pass the packet up, with the ether header sort-of removed */
-		m_adj(m, sizeof(struct ether_header));
-		ether_input(ifp, eh, m);
+		ether_input_mbuf(ifp, m);
 	}
 }
 
