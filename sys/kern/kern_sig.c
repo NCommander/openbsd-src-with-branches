@@ -1,4 +1,4 @@
-/*	$OpenBSD: kern_sig.c,v 1.47 2001/08/09 14:44:42 niklas Exp $	*/
+/*	$OpenBSD: kern_sig.c,v 1.48 2001/09/20 23:30:29 art Exp $	*/
 /*	$NetBSD: kern_sig.c,v 1.54 1996/04/22 01:38:32 christos Exp $	*/
 
 /*
@@ -387,10 +387,11 @@ void
 execsigs(p)
 	register struct proc *p;
 {
-	register struct sigacts *ps = p->p_sigacts;
+	register struct sigacts *ps;
 	register int nc, mask;
 
 	sigactsunshare(p);
+	ps = p->p_sigacts;
 
 	/*
 	 * Reset caught signals.  Held signals remain held
