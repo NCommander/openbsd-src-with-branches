@@ -1,13 +1,11 @@
-/*	$OpenBSD: inchr.c,v 1.1 1998/08/22 07:39:55 smurph Exp $ */
+/*	$OpenBSD: inchr.c,v 1.1 2001/06/26 21:58:04 smurph Exp $ */
 
 /*
  * bug routines -- assumes that the necessary sections of memory
  * are preserved.
  */
 #include <sys/types.h>
-#include <machine/prom.h>
 
-#include "stand.h"
 #include "libbug.h"
 
 /* returns 0 if no characters ready to read */
