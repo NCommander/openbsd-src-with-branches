@@ -1,4 +1,4 @@
-/*      $OpenBSD: if_atmsubr.c,v 1.8 1996/11/09 23:02:32 chuck Exp $       */
+/*      $OpenBSD: if_atmsubr.c,v 1.9 1998/03/25 23:57:36 chuck Exp $       */
 
 /*
  *
@@ -143,7 +143,7 @@ atm_output(ifp, m0, dst, rt0)
 				/* XXX: put ATMARP stuff here */
 				/* XXX: watch who frees m on failure */
 			}
-			etype = htons(ETHERTYPE_IP);
+			etype = ETHERTYPE_IP;
 			break;
 #endif
 
@@ -258,7 +258,7 @@ atm_input(ifp, ah, m, rxhand)
 	      m_freem(m);
               return;
 	    }
-	    etype = ntohs(ATM_LLC_TYPE(alc));
+	    etype = ATM_LLC_TYPE(alc);
 	    m_adj(m, sizeof(*alc));
 	  }
 
