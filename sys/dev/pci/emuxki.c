@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /*	$NetBSD: emuxki.c,v 1.1 2001/10/17 18:39:41 jdolecek Exp $	*/
 
 /*-
