@@ -1,4 +1,4 @@
-/* $OpenBSD: wsdisplay.c,v 1.45 2002/05/05 17:16:39 matthieu Exp $ */
+/* $OpenBSD: wsdisplay.c,v 1.46 2002/06/08 02:43:56 drahn Exp $ */
 /* $NetBSD: wsdisplay.c,v 1.37.4.1 2000/06/30 16:27:53 simonb Exp $ */
 
 /*
@@ -1100,8 +1100,8 @@ wsdisplay_internal_ioctl(sc, scr, cmd, data, flag, p)
 		    }
 		    else {
 			    /* reenable the burner after exiting from X */
-			    if (sc->sc_burnout)
-				    timeout_add(&sc->sc_burner, sc->sc_burnout);
+			    if (!sc->sc_burnman)
+				    wsdisplay_burn(sc, sc->sc_burnflags);
 
 			    /*
 			     * wsmoused cohabitation with X-Window support
