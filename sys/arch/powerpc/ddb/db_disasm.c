@@ -1,5 +1,5 @@
 /*	$NetBSD: db_disasm.c,v 1.8 2001/06/12 05:31:44 simonb Exp $	*/
-/*	$OpenBSD: db_disasm.c,v 1.7 2001/09/09 23:28:16 drahn Exp $	*/
+/*	$OpenBSD: db_disasm.c,v 1.8 2001/09/21 17:55:39 miod Exp $	*/
 /*
  * Copyright (c) 1996 Dale Rahn. All rights reserved.
  *
