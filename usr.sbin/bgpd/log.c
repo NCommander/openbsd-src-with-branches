@@ -1,4 +1,4 @@
-/*	$OpenBSD: log.c,v 1.28 2004/02/25 23:55:40 henning Exp $ */
+/*	$OpenBSD: log.c,v 1.29 2004/03/05 21:44:26 henning Exp $ */
 
 /*
  * Copyright (c) 2003, 2004 Henning Brauer <henning@openbsd.org>
@@ -158,6 +158,7 @@ vlog(int pri, const char *fmt, va_list ap)
 			vfprintf(stderr, nfmt, ap);
 			free(nfmt);
 		}
+		fflush(stderr);
 	} else
 		vsyslog(pri, fmt, ap);
 }
