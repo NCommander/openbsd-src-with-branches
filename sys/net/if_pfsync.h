@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_pfsync.h,v 1.13 2004/03/22 04:54:17 mcbride Exp $	*/
+/*	$OpenBSD: if_pfsync.h,v 1.14 2004/04/28 00:47:06 mcbride Exp $	*/
 
 /*
  * Copyright (c) 2001 Michael Shalayeff
@@ -151,8 +151,8 @@ struct pfsync_softc {
 	struct timeout		 sc_bulk_tmo;
 	struct timeout		 sc_bulkfail_tmo;
 	struct in_addr		 sc_sendaddr;
-	struct mbuf		*sc_mbuf;	/* current cummulative mbuf */
-	struct mbuf		*sc_mbuf_net;	/* current cummulative mbuf */
+	struct mbuf		*sc_mbuf;	/* current cumulative mbuf */
+	struct mbuf		*sc_mbuf_net;	/* current cumulative mbuf */
 	union sc_statep		 sc_statep;
 	union sc_statep		 sc_statep_net;
 	u_int32_t		 sc_ureq_received;
