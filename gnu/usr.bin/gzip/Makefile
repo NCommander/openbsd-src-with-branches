@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.6 1997/01/26 09:53:18 downsj Exp $
+#	$OpenBSD: Makefile,v 1.7 1997/04/27 20:55:56 millert Exp $
 #	$NetBSD: Makefile,v 1.17 1995/10/24 22:18:34 jtc Exp $
 
 PROG=	gzip
@@ -10,6 +10,8 @@ CFLAGS+=-DSTDC_HEADERS=1 -DHAVE_UNISTD_H=1 -DDIRENT=1
 .if (${MACHINE_ARCH} == "m68k" || ${MACHINE_ARCH} == "i386")
 SRCS+=	match.S
 CFLAGS+=-DASMV
+.else
+CFLAGS+=-DDYN_ALLOC
 .endif
 
 CLEANFILES+=	gzip.info
