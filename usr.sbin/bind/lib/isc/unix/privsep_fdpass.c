@@ -1,4 +1,4 @@
-/*	$OpenBSD: privsep_fdpass.c,v 1.2 2004/04/19 23:33:46 avsm Exp $	*/
+/*	$OpenBSD: privsep_fdpass.c,v 1.1 2004/03/12 18:40:15 canacar Exp $	*/
 
 /*
  * Copyright 2001 Niels Provos <provos@citi.umich.edu>
@@ -105,10 +105,6 @@ receive_fd(int sock)
 		    __func__, (long)n);
 	if (result == 0) {
 		cmsg = CMSG_FIRSTHDR(&msg);
-		if (cmsg == NULL) {
-			warnx("%s: no message header", __func__);
-			return (-1);
-		}
 		if (cmsg->cmsg_type != SCM_RIGHTS)
 			warnx("%s: expected type %d got %d", __func__,
 			    SCM_RIGHTS, cmsg->cmsg_type);
