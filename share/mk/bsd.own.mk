@@ -1,4 +1,4 @@
-#	$OpenBSD: bsd.own.mk,v 1.86 2004/07/08 01:29:23 pvalchev Exp $
+#	$OpenBSD: bsd.own.mk,v 1.87 2004/07/24 19:14:08 miod Exp $
 #	$NetBSD: bsd.own.mk,v 1.24 1996/04/13 02:08:09 thorpej Exp $
 
 # Host-specific overrides
@@ -32,9 +32,10 @@ ELF_TOOLCHAIN?=	yes
 .endif
 
 # do the dew
-.if ${MACHINE} == "amd64" || (${MACHINE_ARCH} == "arm" || \
+.if ${MACHINE} == "amd64" || ${MACHINE_ARCH} == "arm" || \
     ${MACHINE_ARCH} == "hppa" || ${MACHINE_ARCH} == "hppa64" || \
-    ${MACHINE_ARCH} == "sparc64" || ${MACHINE_ARCH} == "x86_64")
+    ${MACHINE_ARCH} == "sparc64" || ${MACHINE_ARCH} == "x86_64" || \
+    ${MACHINE_ARCH} == "mips64"
 USE_GCC3?=yes
 .else
 USE_GCC3?=no
