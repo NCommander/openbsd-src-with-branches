@@ -1,4 +1,4 @@
-/* *	$OpenBSD: md.c,v 1.2 1998/03/26 19:47:07 niklas Exp $*/
+/* *	$OpenBSD: md.c,v 1.1 1999/02/09 05:35:14 smurph Exp $*/
 /*
  * Copyright (c) 1993 Paul Kranenburg
  * All rights reserved.
@@ -263,7 +263,7 @@ long	*savep;
 }
 
 #ifndef MID_M88K
-#define MID_M88K 151
+#define MID_M88K 153
 #endif
 
 #ifndef RTLD
