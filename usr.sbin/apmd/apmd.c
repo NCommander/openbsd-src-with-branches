@@ -1,4 +1,4 @@
-/*	$OpenBSD: apmd.c,v 1.16 2001/07/09 07:05:00 deraadt Exp $	*/
+/*	$OpenBSD: apmd.c,v 1.17 2001/08/17 22:35:01 mickey Exp $	*/
 
 /*
  *  Copyright (c) 1995, 1996 John T. Kohl
@@ -74,7 +74,7 @@ void do_etc_file(const char *file);
 void
 sigexit(int signo)
 {
-    _exit(1);
+	_exit(1);
 }
 
 void
