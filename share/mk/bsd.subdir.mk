@@ -1,4 +1,4 @@
-#	$OpenBSD: bsd.subdir.mk,v 1.9 1997/06/02 23:58:34 mickey Exp $
+#	$OpenBSD: bsd.subdir.mk,v 1.10 1998/03/01 09:18:06 niklas Exp $
 #	$NetBSD: bsd.subdir.mk,v 1.11 1996/04/04 02:05:06 jtc Exp $
 #	@(#)bsd.subdir.mk	5.9 (Berkeley) 2/1/91
 
@@ -104,6 +104,10 @@ obj: _SUBDIRUSE
 
 .if !target(tags)
 tags: _SUBDIRUSE
+.endif
+
+.if !target(regress)
+regress: _SUBDIRUSE
 .endif
 
 .include <bsd.own.mk>
