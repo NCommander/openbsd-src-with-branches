@@ -1,4 +1,4 @@
-/*	$OpenBSD: ehci.c,v 1.39 2005/03/07 12:58:19 pascoe Exp $ */
+/*	$OpenBSD: ehci.c,v 1.40 2005/03/08 08:06:36 pascoe Exp $ */
 /*	$NetBSD: ehci.c,v 1.66 2004/06/30 03:11:56 mycroft Exp $	*/
 
 /*
@@ -1485,7 +1485,7 @@ ehci_set_qh_qtd(ehci_soft_qh_t *sqh, ehci_soft_qtd_t *sqtd)
 	    htole32(EHCI_QTD_SET_STATUS(EHCI_QTD_HALTED));
 	sqh->qh.qh_curqtd = 0;
 	sqh->qh.qh_qtd.qtd_next = htole32(sqtd->physaddr);
-	sqh->qh.qh_qtd.qtd_altnext = 0;
+	sqh->qh.qh_qtd.qtd_altnext = EHCI_NULL;
 	for (i = 0; i < EHCI_QTD_NBUFFERS; i++)
 		sqh->qh.qh_qtd.qtd_buffer[i] = 0;
 	sqh->sqtd = sqtd;
