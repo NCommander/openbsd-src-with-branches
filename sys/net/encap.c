@@ -1,4 +1,4 @@
-/*	$OpenBSD: encap.c,v 1.18 1997/11/04 09:10:53 provos Exp $	*/
+/*	$OpenBSD: encap.c,v 1.19 1997/11/15 00:07:06 deraadt Exp $	*/
 
 /*
  * The author of this code is John Ioannidis, ji@tla.org,
@@ -481,11 +481,12 @@ va_dcl
 					 emp->em_ena_protocol,
 				    	 emp->em_ena_sport, emp->em_ena_dport);
 		if (flow4 != (struct flow *) NULL)
+		{
 		  if (!(emp->em_ena_flags & ENABLE_FLAG_REPLACE))
 		    SENDERR(EEXIST);
-		  else
-		    if (flow3 == flow4)
-		      SENDERR(EINVAL);
+		  else if (flow3 == flow4)
+		    SENDERR(EINVAL);
+		}
 	    }
 
 	    flow = get_flow();
