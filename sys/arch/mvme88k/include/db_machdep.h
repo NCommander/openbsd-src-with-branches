@@ -1,4 +1,4 @@
-/*	$OpenBSD: db_machdep.h,v 1.13 2001/08/31 01:06:29 miod Exp $ */
+/*	$OpenBSD: db_machdep.h,v 1.14 2001/11/06 00:30:38 art Exp $ */
 /*
  * Mach Operating System
  * Copyright (c) 1993-1991 Carnegie Mellon University
@@ -50,11 +50,11 @@
 #define ENTRY_ASM       	"tb0 0, r0, 132"
 #define DDB_ENTRY_TRAP_NO	132
 
-typedef vm_offset_t   db_addr_t;
-typedef int           db_expr_t;
-typedef struct m88100_saved_state db_regs_t;
-db_regs_t	      ddb_regs;	/* register state */
-#define DDB_REGS      (&ddb_regs)
+typedef	vm_offset_t		db_addr_t;
+typedef	int			db_expr_t;
+typedef	struct m88100_saved_state db_regs_t;
+extern db_regs_t	ddb_regs;	/* register state */
+#define	DDB_REGS	(&ddb_regs)
 
 /*
  * the low two bits of sxip, snip, sfip have valid bits

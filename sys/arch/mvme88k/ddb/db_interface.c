@@ -1,4 +1,4 @@
-/*	$OpenBSD: db_interface.c,v 1.15 2001/09/23 02:52:02 miod Exp $	*/
+/*	$OpenBSD: db_interface.c,v 1.16 2001/11/06 19:53:15 miod Exp $	*/
 /*
  * Mach Operating System
  * Copyright (c) 1993-1991 Carnegie Mellon University
@@ -87,6 +87,8 @@ int	quiet_db_read_bytes = 0;
 /************************/
 /* 	DB_REGISTERS ****/
 /************************/
+
+db_regs_t	ddb_regs;
 
 /*
  *
