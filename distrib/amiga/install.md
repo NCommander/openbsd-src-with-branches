@@ -1,4 +1,4 @@
-#	$OpenBSD: install.md,v 1.12 2002/03/31 17:30:30 deraadt Exp $
+#	$OpenBSD: install.md,v 1.13 2002/04/25 21:28:10 miod Exp $
 #	$NetBSD: install.md,v 1.3.2.5 1996/08/26 15:45:28 gwr Exp $
 #
 #
@@ -48,8 +48,7 @@ md_set_term() {
 	if [ ! -z "$TERM" ]; then
 		return
 	fi
-	echo -n "Specify terminal type [vt220]: "
-	getresp "vt220"
+	ask "Specify terminal type:" vt220
 	TERM="$resp"
 	export TERM
 }

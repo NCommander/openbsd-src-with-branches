@@ -1,4 +1,4 @@
-#	$OpenBSD: install.md,v 1.36 2002/02/14 03:34:15 deraadt Exp $
+#	$OpenBSD: install.md,v 1.37 2002/03/31 17:30:31 deraadt Exp $
 #	$NetBSD: install.md,v 1.3.2.5 1996/08/26 15:45:28 gwr Exp $
 #
 #
@@ -46,8 +46,7 @@ ARCH=ARCH
 
 md_set_term() {
 	test -n "$TERM" && return
-	echo -n "Specify terminal type [sun]: "
-	getresp sun
+	ask "Specify terminal type:" sun
 	TERM=$resp
 	export TERM
 }
