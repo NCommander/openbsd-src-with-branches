@@ -5,3 +5,5 @@
 
 /bin/sh
 /bin/csh
+/bin/ksh
+/bin/pdksh
