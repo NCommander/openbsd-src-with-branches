@@ -1,5 +1,4 @@
 /* $OpenBSD$ */
-
 /*
  * The author of this code is Angelos D. Keromytis (angelos@dsl.cis.upenn.edu)
  *
@@ -31,16 +30,30 @@
 #include <unistd.h>
 #endif
 
-#include "environment.h"
-#include "signature.h"
+#include "keynote.h"
+#include "assertion.h"
 
 static int sessioncounter = 0;
 
-/* Globals */
+char **keynote_values = (char **) NULL;
+char *keynote_privkey = (char *) NULL;
+
+struct assertion *keynote_current_assertion = (struct assertion *) NULL;
+
+struct environment *keynote_init_list = (struct environment *) NULL;
+struct environment *keynote_temp_list = (struct environment *) NULL;
+
+struct keylist *keynote_keypred_keylist = (struct keylist *) NULL;
+
 struct keynote_session *keynote_sessions[SESSIONTABLESIZE];
-struct keynote_session *keynote_current_session;
-int    keynote_justrecord = 0;
-int    keynote_returnvalue = 0;
+struct keynote_session *keynote_current_session = NULL;
+
+int keynote_exceptionflag = 0;
+int keynote_used_variable = 0;
+int keynote_returnvalue = 0;
+int keynote_justrecord = 0;
+int keynote_donteval = 0;
+int keynote_errno = 0;
 
 /*
  * Construct the _ACTION_AUTHORIZERS variable value.

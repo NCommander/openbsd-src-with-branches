@@ -1,5 +1,4 @@
 /* $OpenBSD$ */
-
 /*
  * Copyright (c) 1996 by Internet Software Consortium.
  *
@@ -47,6 +46,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+
 #include "keynote.h"
 
 #define Assert(Cond) if (!(Cond)) return -1;

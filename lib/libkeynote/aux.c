@@ -1,5 +1,4 @@
-/* $OpenBSD: aux.c,v 1.1.1.1 1999/05/23 22:11:04 angelos Exp $ */
-
+/* $OpenBSD$ */
 /*
  * The author of this code is Angelos D. Keromytis (angelos@dsl.cis.upenn.edu)
  *
@@ -29,7 +28,9 @@
 #ifndef PILOT
 #include <time.h>
 #endif /* PILOT */
-#include "environment.h"
+
+#include "keynote.h"
+#include "assertion.h"
 #include "signature.h"
 
 /*

@@ -1,5 +1,4 @@
-/* $OpenBSD: keynote-sigver.c,v 1.1.1.1 1999/05/23 22:11:06 angelos Exp $ */
-
+/* $OpenBSD$ */
 /*
  * The author of this code is Angelos D. Keromytis (angelos@dsl.cis.upenn.edu)
  *
@@ -35,8 +34,8 @@
 #include <unistd.h>
 #endif /* WIN32 */
 
-#include "assertion.h"
-#include "signature.h"
+#include "keynote.h"
+#include "header.h"
 
 void
 sigverusage(void)

@@ -1,5 +1,4 @@
 /* $OpenBSD$ */
-
 /*
  * The author of this code is Angelos D. Keromytis (angelos@dsl.cis.upenn.edu)
  *
@@ -35,8 +34,7 @@
 #include <unistd.h>
 #endif /* WIN32 */
 
-extern int keynote_sign(int, char **), keynote_sigver(int, char **);
-extern int keynote_verify(int, char **), keynote_keygen(int, char **);
+#include "header.h"
 
 void
 mainusage()

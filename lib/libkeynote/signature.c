@@ -1,5 +1,4 @@
-/* $OpenBSD: signature.c,v 1.2 1999/05/25 21:42:23 angelos Exp $ */
-
+/* $OpenBSD$ */
 /*
  * The author of this code is Angelos D. Keromytis (angelos@dsl.cis.upenn.edu)
  *
@@ -29,6 +28,9 @@
 #include <stdlib.h>
 #include <limits.h>
 #include <string.h>
+
+#include "keynote.h"
+#include "assertion.h"
 #include "signature.h"
 
 static const char hextab[] = {

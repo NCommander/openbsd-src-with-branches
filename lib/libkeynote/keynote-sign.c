@@ -1,5 +1,4 @@
-/* $OpenBSD: keynote-sign.c,v 1.3 1999/05/24 01:29:22 angelos Exp $ */
-
+/* $OpenBSD$ */
 /*
  * The author of this code is Angelos D. Keromytis (angelos@dsl.cis.upenn.edu)
  *
@@ -35,14 +34,8 @@
 #include <unistd.h>
 #endif /* WIN32 */
 
-#include "assertion.h"
-#include "signature.h"
-
-#define SIG_PRINT_OFFSET      12
-#define SIG_PRINT_LENGTH      50
-
-extern void print_key(FILE *, char *, char *, int, int);
-extern void print_space(FILE *, int);
+#include "keynote.h"
+#include "header.h"
 
 void
 signusage(void)
@@ -51,7 +44,6 @@ signusage(void)
     fprintf(stderr, "\t[-v] <AlgorithmName> <AssertionFile> "
 	    "<PrivateKeyFile>\n");
 }
-
 
 #ifdef WIN32
 void

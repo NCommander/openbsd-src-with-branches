@@ -1,5 +1,4 @@
 /* $OpenBSD$ */
-
 /*
  * The author of this code is Angelos D. Keromytis (angelos@dsl.cis.upenn.edu)
  *
@@ -26,15 +25,10 @@
 #include <ctype.h>
 #include <string.h>
 #include <limits.h>
+
+#include "keynote.h"
 #include "assertion.h"
-#include "environment.h"
 #include "signature.h"
-
-/* Globals */
-struct assertion *keynote_current_assertion = (struct assertion *) NULL;
-int keynote_errno = 0;
-
-extern int keynote_in_action_authorizers(void *, int);
 
 /*
  * Recurse on graph discovery.
