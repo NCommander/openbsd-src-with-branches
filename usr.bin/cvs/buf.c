@@ -88,7 +88,7 @@ cvs_buf_alloc(size_t len, u_int flags)
 		free(b);
 		return (NULL);
 	}
-	memset(b->cb_buf, 0, sizeof(b->cb_buf));
+	memset(b->cb_buf, 0, len);
 
 	b->cb_flags = flags;
 	b->cb_size = len;
