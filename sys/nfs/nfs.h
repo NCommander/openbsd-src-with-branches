@@ -1,4 +1,4 @@
-/*	$OpenBSD: nfs.h,v 1.8 2000/05/19 16:36:03 mickey Exp $	*/
+/*	$OpenBSD: nfs.h,v 1.9 2000/05/19 16:54:52 mickey Exp $	*/
 /*	$NetBSD: nfs.h,v 1.10.4.1 1996/05/27 11:23:56 fvdl Exp $	*/
 
 /*
@@ -239,6 +239,7 @@ struct nfsstats {
  */
 #define	NFS_NFSSTATS	1	/* struct: struct nfsstats */
 #define	NFS_NIOTHREADS	2	/* number of i/o threads */
+#define	NFS_MAXID	3
 
 #define FS_NFS_NAMES { \
 			{ 0, 0 }, \
