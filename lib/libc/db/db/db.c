@@ -1,4 +1,4 @@
-/*	$OpenBSD: db.c,v 1.7 2003/06/02 20:18:33 millert Exp $	*/
+/*	$OpenBSD: db.c,v 1.8 2003/06/25 21:15:04 deraadt Exp $	*/
 
 /*-
  * Copyright (c) 1991, 1993
@@ -33,7 +33,7 @@
 #if 0
 static char sccsid[] = "@(#)db.c	8.4 (Berkeley) 2/21/94";
 #else
-static const char rcsid[] = "$OpenBSD: db.c,v 1.7 2003/06/02 20:18:33 millert Exp $";
+static const char rcsid[] = "$OpenBSD: db.c,v 1.8 2003/06/25 21:15:04 deraadt Exp $";
 #endif
 #endif /* LIBC_SCCS and not lint */
 
@@ -49,11 +49,8 @@ static const char rcsid[] = "$OpenBSD: db.c,v 1.7 2003/06/02 20:18:33 millert Ex
 static int __dberr(void);
 
 DB *
-dbopen(fname, flags, mode, type, openinfo)
-	const char *fname;
-	int flags, mode;
-	DBTYPE type;
-	const void *openinfo;
+dbopen(const char *fname, int flags, int mode, DBTYPE type,
+    const void *openinfo)
 {
 
 #define	DB_FLAGS	(DB_LOCK | DB_SHMEM | DB_TXN)
@@ -90,8 +87,7 @@ __dberr(void)
  *	dbp:	pointer to the DB structure.
  */
 void
-__dbpanic(dbp)
-	DB *dbp;
+__dbpanic(DB *dbp)
 {
 	/* The only thing that can succeed is a close. */
 	dbp->del = (int (*)(const struct __db *, const DBT*, u_int))__dberr;
