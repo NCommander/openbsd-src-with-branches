@@ -1,4 +1,4 @@
-/*	$OpenBSD: pmdb.h,v 1.4 2002/07/22 01:20:50 art Exp $	*/
+/*	$OpenBSD: pmdb.h,v 1.5 2002/08/08 18:27:57 art Exp $	*/
 /*
  * Copyright (c) 2002 Artur Grabowski <art@openbsd.org>
  * All rights reserved. 
@@ -82,8 +82,6 @@ struct pstate {
 
 /* misc helper functions */
 int process_kill(struct pstate *);
-int read_from_pid(pid_t pid, off_t from, void *to, size_t size);
-int write_to_pid(pid_t pid, off_t to, void *from, size_t size);
 
 /* process.c */
 int process_load(struct pstate *);
