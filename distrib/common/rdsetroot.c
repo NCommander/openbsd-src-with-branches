@@ -120,6 +120,14 @@ main(argc,argv)
 	 * The file offset needs to be page aligned.
 	 */
 	data_off = N_DATOFF(head);
+
+	/*
+	 * XXX it seems that our ld has a bug when generating NMAGIC files.
+	 * the data segment ends up one page too far into the file.
+	 */
+	if (N_GETMAGIC(head) == NMAGIC)
+		data_off += __LDPGSZ;
+
 	data_len = head.a_data;
 	/* align... */
 	data_pgoff = N_PAGSIZ(head) - 1;
