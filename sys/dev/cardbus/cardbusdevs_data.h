@@ -59,6 +59,18 @@ struct cardbus_knowndev cardbus_knowndevs[] = {
 	    "3CCFE575CT 100Base-TX",
 	},
 	{
+	    CARDBUS_VENDOR_3COM, CARDBUS_PRODUCT_3COM_3CCFE656B,
+	    0,
+	    "3Com",
+	    "3CCFE656B 100Base-TX",
+	},
+	{
+	    CARDBUS_VENDOR_3COM, CARDBUS_PRODUCT_3COM_MODEM56,
+	    0,
+	    "3Com",
+	    "56k Modem",
+	},
+	{
 	    CARDBUS_VENDOR_ADP, CARDBUS_PRODUCT_ADP_1480,
 	    0,
 	    "Adaptec",
