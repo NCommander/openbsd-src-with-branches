@@ -1,4 +1,4 @@
-/*	$OpenBSD: mk_cmds.c,v 1.1.1.1 1995/12/14 06:52:48 tholo Exp $	*/
+/*	$OpenBSD: mk_cmds.c,v 1.1 1996/11/15 09:26:06 downsj Exp $	*/
 
 /*-
  * Copyright 1987, 1988 by the Student Information Processing Board
@@ -49,7 +49,7 @@ main(argc, argv)
     if (argc != 2) {
 	fputs("Usage: ", stderr);
 	fputs(argv[0], stderr);
-	fputs("cmdtbl.ct\n", stderr);
+	fputs(" cmdtbl.ct\n", stderr);
 	exit(1);
     }
 
