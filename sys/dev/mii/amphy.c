@@ -1,4 +1,4 @@
-/*	$OpenBSD: amphy.c,v 1.10 2005/01/28 18:27:55 brad Exp $	*/
+/*	$OpenBSD: amphy.c,v 1.11 2005/02/05 19:11:34 brad Exp $	*/
 
 /*
  * Copyright (c) 1997, 1998, 1999
@@ -95,7 +95,7 @@ amphymatch(struct device *parent, void *match, void *aux)
 {
 	struct mii_attach_args *ma = aux;
 
-	if(mii_phy_match(ma, amphys) != NULL)
+	if (mii_phy_match(ma, amphys) != NULL)
 		return(10);
 
 	return(0);
