@@ -57,7 +57,8 @@ void OF_set_symbol_lookup (void (*s2v)(void *), void (*v2s)(void *));
 void OF_poweroff (void) __attribute__((__noreturn__));
 void OF_sym2val (void *);
 void OF_val2sym (void *);
-/* void OF_interpret (char *); */
 int OF_milliseconds (void);
 int OF_searchprop (int node, char *prop, void *buf, int buflen);
 int OF_mapintr(int node, int *interrupt, int validlen, int buflen);
+
+void (*OF_set_callback(void (*)(void *)))(void *);
