@@ -373,7 +373,6 @@ cdev_decl(log);
 # define	lkmenodev	enodev
 #else
 # define	NLKM	1
-int	lkmenodev();
 #endif
 cdev_decl(lkm);
 
