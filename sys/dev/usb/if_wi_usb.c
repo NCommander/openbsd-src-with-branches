@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_wi_usb.c,v 1.2 2003/10/26 15:46:37 drahn Exp $ */
+/*	$OpenBSD: if_wi_usb.c,v 1.3 2003/11/08 19:17:28 jmc Exp $ */
 
 /*
  * Copyright (c) 2003 Dale Rahn. All rights reserved.
@@ -450,6 +450,9 @@ wi_send_packet(struct wi_usb_softc *sc, int id)
 
 		bzero(((char *)c->wi_usb_buf)+total_len,
 		    rnd_len - total_len);
+
+		/* zero old packet for next TX */
+		bzero(wibuf, total_len);
 
 		total_len = rnd_len;
 
