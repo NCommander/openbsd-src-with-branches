@@ -211,6 +211,7 @@ snap_tar:
 	    | ${GZIP} ${GZIPFLAGS} > snapshot/usr.share.tar${GZIPEXT}
 	cd ${DESTDIR} && tar cf - var \
 	    | ${GZIP} ${GZIPFLAGS} > snapshot/var.tar${GZIPEXT}
+	cd ../distrib/notes; ${MAKE}; ${MAKE} install
 
 snap_md:
 # nothing here -- look in the machine-dependent Makefile.inc
