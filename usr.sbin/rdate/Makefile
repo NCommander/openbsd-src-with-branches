@@ -3,6 +3,8 @@
 
 PROG=	rdate
 SRCS=	rdate.c
+DPADD+= ${LIBUTIL}
+LDADD+= -lutil
 
 MAN=	rdate.8
 
