@@ -1,4 +1,4 @@
-/*	$OpenBSD: display.c,v 1.11 2002/03/11 13:02:56 vincent Exp $	*/
+/*	$OpenBSD: display.c,v 1.12 2002/03/16 04:17:36 vincent Exp $	*/
 
 /*
  * The functions in this file handle redisplay. The
@@ -629,11 +629,15 @@ updext(int currow, int curcol)
 	LINE	*lp;			/* pointer to current line */
 	int	j;			/* index into line */
 
+	if (ncol < 2)
+		return;
+
 	/*
 	 * calculate what column the left bound should be
 	 * (force cursor into middle half of screen)
 	 */
 	lbound = curcol - (curcol % (ncol >> 1)) - (ncol >> 2);
+
 	/*
 	 * scan through the line outputing characters to the virtual screen
 	 * once we reach the left edge
