@@ -1,4 +1,4 @@
-/*	$OpenBSD: power.c,v 1.3 1997/06/22 22:45:34 downsj Exp $	*/
+/*	$OpenBSD: power.c,v 1.4 1997/08/08 08:25:22 downsj Exp $	*/
 /*	$NetBSD: power.c,v 1.2 1996/05/16 15:56:56 abrown Exp $ */
 
 /*
@@ -103,4 +103,5 @@ powerdown()
 {
 	if (power_attached)
 		*POWER_REG |= POWER_OFF;
+	DELAY(1000000);
 }
