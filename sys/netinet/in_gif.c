@@ -1,4 +1,4 @@
-/*	$OpenBSD: in_gif.c,v 1.8.2.2 2001/07/04 10:54:32 niklas Exp $	*/
+/*	$OpenBSD$	*/
 /*	$KAME: in_gif.c,v 1.50 2001/01/22 07:27:16 itojun Exp $	*/
 
 /*
@@ -28,10 +28,6 @@
  * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
- */
-
-/*
- * in_gif.c
  */
 
 #include <sys/param.h>

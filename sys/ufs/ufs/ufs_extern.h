@@ -121,7 +121,6 @@ void ufs_ihashrem __P((struct inode *));
 /* ufs_inode.c */
 int ufs_init __P((struct vfsconf *));
 int ufs_reclaim __P((struct vnode *, struct proc *));
-int ufs_balloc_range __P((struct vnode *, off_t, off_t, struct ucred *, int));
 
 /* ufs_lookup.c */
 void ufs_dirbad __P((struct inode *, doff_t, char *));

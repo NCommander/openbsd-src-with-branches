@@ -55,6 +55,7 @@
 #include <sys/tprintf.h>
 #include <sys/syslog.h>
 #include <sys/malloc.h>
+#include <sys/pool.h>
 
 #include <dev/cons.h>
 

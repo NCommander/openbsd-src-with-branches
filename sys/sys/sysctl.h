@@ -165,7 +165,9 @@ struct ctlname {
 #define	KERN_POOL		49	/* struct: pool information */
 #define	KERN_STACKGAPRANDOM	50	/* int: stackgap_random */
 #define	KERN_SYSVIPC_INFO	51	/* struct: SysV sem/shm/msg info */
-#define	KERN_MAXID		52	/* number of valid kern ids */
+#define KERN_USERCRYPTO		52	/* int: usercrypto */
+#define KERN_CRYPTODEVALLOWSOFT	53	/* int: cryptodevallowsoft */
+#define	KERN_MAXID		54	/* number of valid kern ids */
 
 #define	CTL_KERN_NAMES { \
 	{ 0, 0 }, \
@@ -220,6 +222,8 @@ struct ctlname {
 	{ "pool", CTLTYPE_NODE }, \
 	{ "stackgap_random", CTLTYPE_INT }, \
 	{ "sysvipc_info", CTLTYPE_INT }, \
+	{ "usercrypto", CTLTYPE_INT }, \
+	{ "cryptodevallowsoft", CTLTYPE_INT }, \
 }
 
 /*

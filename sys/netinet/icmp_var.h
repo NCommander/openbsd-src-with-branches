@@ -1,4 +1,4 @@
-/*	$OpenBSD: icmp_var.h,v 1.4.10.1 2001/05/14 22:40:06 niklas Exp $	*/
+/*	$OpenBSD$	*/
 /*	$NetBSD: icmp_var.h,v 1.8 1995/03/26 20:32:19 jtc Exp $	*/
 
 /*
@@ -65,13 +65,17 @@ struct	icmpstat {
 #define	ICMPCTL_MASKREPL	1	/* allow replies to netmask requests */
 #define ICMPCTL_BMCASTECHO	2	/* reply to icmps to broadcast/mcast */
 #define ICMPCTL_ERRPPSLIMIT	3	/* ICMP error pps limitation */
-#define ICMPCTL_MAXID		4
+#define	ICMPCTL_REDIRACCEPT	4	/* Accept redirects from routers */
+#define	ICMPCTL_REDIRTIMEOUT	5	/* Remove routes added via redirects */
+#define ICMPCTL_MAXID		6
 
 #define ICMPCTL_NAMES { \
 	{ 0, 0 }, \
 	{ "maskrepl", CTLTYPE_INT }, \
 	{ "bmcastecho", CTLTYPE_INT }, \
 	{ "errppslimit", CTLTYPE_INT }, \
+	{ "rediraccept", CTLTYPE_INT }, \
+	{ "redirtimeout", CTLTYPE_INT }, \
 }
 
 #ifdef _KERNEL

@@ -87,21 +87,6 @@ physio(strategy, bp, dev, flags, minphys, uio)
 	error = 0;
 	flags &= B_READ | B_WRITE;
 
-	/*
-	 * [check user read/write access to the data buffer]
-	 *
-	 * Check each iov one by one.  Note that we know if we're reading or
-	 * writing, so we ignore the uio's rw parameter.  Also note that if
-	 * we're doing a read, that's a *write* to user-space.
-	 */
-	if (uio->uio_segflg == UIO_USERSPACE)
-		for (i = 0; i < uio->uio_iovcnt; i++)
-			/* XXX - obsolete now that vslock can error? */
-			if (!uvm_useracc(uio->uio_iov[i].iov_base,
-			    uio->uio_iov[i].iov_len,
-			    (flags == B_READ) ? B_WRITE : B_READ))
-				return (EFAULT);
-
 	/* Make sure we have a buffer, creating one if necessary. */
 	if ((nobuf = (bp == NULL)) != 0)
 		bp = getphysbuf();

@@ -526,6 +526,7 @@ _simple_unlock(lkp, id, l)
 void
 _simple_lock_assert(lkp, state, id, l)
 	__volatile struct simplelock *lkp;
+	int state;
 	const char *id;
 	int l;
 {

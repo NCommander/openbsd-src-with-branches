@@ -140,6 +140,7 @@ debug_malloc(unsigned long size, int type, int flags, void **addr)
 	splx(s);
 
 	pmap_kenter_pa(md->md_va, md->md_pa, VM_PROT_ALL);
+	pmap_update(pmap_kernel());
 
 	md->md_size = size;
 	md->md_type = type;
@@ -196,6 +197,7 @@ debug_free(void *addr, int type)
 	 * unmap the page.
 	 */
 	pmap_kremove(md->md_va, PAGE_SIZE);
+	pmap_update(pmap_kernel());
 	splx(s);
 
 	return (1);
@@ -214,7 +216,7 @@ debug_malloc_init(void)
 	debug_malloc_chunks_on_freelist = 0;
 
 	pool_init(&debug_malloc_pool, sizeof(struct debug_malloc_entry),
-	    0, 0, 0, "mdbepl", 0, NULL, NULL, 0);
+	    0, 0, 0, "mdbepl", NULL);
 }
 
 /*

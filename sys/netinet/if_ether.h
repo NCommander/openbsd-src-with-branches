@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_ether.h,v 1.11.2.2 2001/05/14 22:40:07 niklas Exp $	*/
+/*	$OpenBSD$	*/
 /*	$NetBSD: if_ether.h,v 1.22 1996/05/11 13:00:00 mycroft Exp $	*/
 
 /*
@@ -285,9 +285,6 @@ void revarprequest __P((struct ifnet *));
 int revarpwhoarewe __P((struct ifnet *, struct in_addr *, struct in_addr *));
 int revarpwhoami __P((struct in_addr *, struct ifnet *));
 int db_show_arptab __P((void));
-#ifdef ALTQ
-void altq_etherclassify(struct ifaltq *, struct mbuf *, struct altq_pktattr *);
-#endif /* ALTQ */
 
 #else
 

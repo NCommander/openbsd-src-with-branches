@@ -1,5 +1,5 @@
 /*	$OpenBSD$	*/
-/*	$NetBSD: uvm_pglist.h,v 1.4 2001/05/25 04:06:17 chs Exp $	*/
+/*	$NetBSD: uvm_pglist.h,v 1.3 2001/05/02 01:22:20 thorpej Exp $	*/
 
 /*-
  * Copyright (c) 2000, 2001 The NetBSD Foundation, Inc.
@@ -54,12 +54,8 @@ TAILQ_HEAD(pglist, vm_page);
 #define	PGFL_ZEROS	1
 #define	PGFL_NQUEUES	2
 
-struct pgflbucket {
+struct pgfreelist {
 	struct pglist pgfl_queues[PGFL_NQUEUES];
 };
 
-struct pgfreelist {
-	struct pgflbucket *pgfl_buckets;
-};
-
-#endif /* _PGLIST_H */
+#endif

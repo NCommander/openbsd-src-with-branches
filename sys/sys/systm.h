@@ -213,6 +213,7 @@ int	suswintr __P((caddr_t, u_int));
 
 struct timeval;
 int	hzto __P((struct timeval *));
+int	tvtohz __P((struct timeval *));
 void	realitexpire __P((void *));
 
 struct clockframe;
@@ -298,7 +299,7 @@ void	kmstartup __P((void));
 
 int nfs_mountroot __P((void));
 int dk_mountroot __P((void));
-int (*mountroot)__P((void));
+extern int (*mountroot)__P((void));
 
 #include <lib/libkern/libkern.h>
 

@@ -36,7 +36,7 @@
  *	@(#)ttydev.h	8.2 (Berkeley) 1/4/94
  */
 
-/* COMPATABILITY HEADER FILE */
+/* COMPATIBILITY HEADER FILE */
 
 #ifndef _SYS_TTYDEV_H_
 #define	_SYS_TTYDEV_H_

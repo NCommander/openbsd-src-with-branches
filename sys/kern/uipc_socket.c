@@ -79,8 +79,7 @@ void
 soinit(void)
 {
 
-	pool_init(&socket_pool, sizeof(struct socket), 0, 0, 0,
-	    "sockpl", 0, NULL, NULL, M_SOCKET);
+	pool_init(&socket_pool, sizeof(struct socket), 0, 0, 0, "sockpl", NULL);
 }
 
 /*
@@ -936,7 +935,9 @@ sosetopt(so, level, optname, m0)
 		switch (optname) {
 
 		case SO_LINGER:
-			if (m == NULL || m->m_len != sizeof (struct linger)) {
+			if (m == NULL || m->m_len != sizeof (struct linger) ||
+			    mtod(m, struct linger *)->l_linger < 0 ||
+			    mtod(m, struct linger *)->l_linger > SHRT_MAX) {
 				error = EINVAL;
 				goto bad;
 			}

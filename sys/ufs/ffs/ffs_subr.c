@@ -43,6 +43,7 @@
 #include <sys/systm.h>
 #include <sys/vnode.h>
 #include <sys/buf.h>
+#include <ufs/ufs/extattr.h>
 #include <ufs/ufs/quota.h>
 #include <ufs/ufs/inode.h>
 #include <ufs/ffs/ffs_extern.h>

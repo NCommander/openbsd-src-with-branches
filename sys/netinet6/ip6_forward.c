@@ -263,7 +263,7 @@ ip6_forward(m, srcrt)
 			break;
 		default:
 			printf("ip6_output (ipsec): error code %d\n", error);
-			/*fall through*/
+			/* fall through */
 		case ENOENT:
 			/* don't show these error codes to the user */
 			break;
@@ -517,7 +517,6 @@ senderr:
 #endif
 	if (mcopy == NULL)
 		return;
-
 	switch (error) {
 	case 0:
 #if 1

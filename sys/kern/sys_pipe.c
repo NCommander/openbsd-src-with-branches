@@ -146,11 +146,13 @@ sys_opipe(p, v, retval)
 	FILE_SET_MATURE(wf);
 	return (0);
 free3:
-	ffree(rf);
 	fdremove(fdp, retval[0]);
+	closef(rf, p);
+	rpipe = NULL;
 free2:
 	(void)pipeclose(wpipe);
-	(void)pipeclose(rpipe);
+	if (rpipe != NULL)
+		(void)pipeclose(rpipe);
 	return (error);
 }
 
@@ -846,7 +848,6 @@ void
 pipe_init()
 {
 	pool_init(&pipe_pool, sizeof(struct pipe), 0, 0, 0, "pipepl",
-		0, pool_page_alloc_nointr, pool_page_free_nointr,
-		M_PIPE);
+	    &pool_allocator_nointr);
 }
 

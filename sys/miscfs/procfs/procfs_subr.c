@@ -211,7 +211,7 @@ procfs_rw(v)
 	struct pfsnode *pfs = VTOPFS(vp);
 	struct proc *p;
 
-	p = PFIND(pfs->pfs_pid);
+	p = pfind(pfs->pfs_pid);
 	if (p == 0)
 		return (EINVAL);
 	/* Do not permit games to be played with init(8) */

@@ -169,4 +169,21 @@ struct sgttyb {
 
 #define TIOCGSID	_IOR('t', 99, int)	/* For svr4 -- get session id */
 
+/*
+ * Passthrough ioctl commands. These are passed through to devices
+ * as they are, it is expected that the device (an LKM, for example),
+ * will know how to deal with them. One for each emulation, so that
+ * no namespace clashes will occur between them, for devices that
+ * may be dealing with specific ioctls for multiple emulations.
+ *
+ * XXX: Currently only implemented for Linux.
+ */
+
+struct ioctl_pt {
+	unsigned long com;
+	void *data;
+};
+
+#define PTIOCLINUX  _IOW('Z', 3, struct ioctl_pt)
+
 #endif /* !_SYS_IOCTL_COMPAT_H_ */

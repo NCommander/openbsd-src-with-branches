@@ -84,7 +84,6 @@ struct inode {
 #define i_e2fs  inode_u.e2fs
 
 	struct   cluster_info i_ci;
-	LIST_HEAD(,buf) i_pcbufhd;
 	struct	 dquot *i_dquot[MAXQUOTAS]; /* Dquot structures. */
 	u_quad_t i_modrev;	/* Revision level for NFS lease. */
 	struct	 lockf *i_lockf;/* Head of byte-level lock list. */

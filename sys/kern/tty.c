@@ -156,11 +156,6 @@ u_char const char_type[] = {
 #undef	TB
 #undef	VT
 
-/* Macros to clear/set/test flags. */
-#define	SET(t, f)	(t) |= (f)
-#define	CLR(t, f)	(t) &= ~((unsigned)(f))
-#define	ISSET(t, f)	((t) & (f))
-
 #define	islower(c)	((c) >= 'a' && (c) <= 'z')
 #define	isupper(c)	((c) >= 'A' && (c) <= 'Z')
 
@@ -982,6 +977,7 @@ ttioctl(tp, cmd, data, flag, p)
 		    ((p->p_session->s_ttyvp || tp->t_session) &&
 		     (tp->t_session != p->p_session)))
 			return (EPERM);
+		SESSHOLD(p->p_session);
 		tp->t_session = p->p_session;
 		tp->t_pgrp = p->p_pgrp;
 		p->p_session->s_ttyp = tp;

@@ -193,6 +193,8 @@ int	exec_aout_prep_oldomagic __P((struct proc *, struct exec_package *));
 /*
  * MD portion
  */
+#if !defined(cpu_exec_aout_makecmds)
 int cpu_exec_aout_makecmds __P((struct proc *, struct exec_package *));
+#endif
 
 #endif /* _KERNEL */

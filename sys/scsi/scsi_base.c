@@ -1,4 +1,4 @@
-/*	$OpenBSD: scsi_base.c,v 1.25.4.3 2001/07/04 11:00:03 niklas Exp $	*/
+/*	$OpenBSD$	*/
 /*	$NetBSD: scsi_base.c,v 1.43 1997/04/02 02:29:36 mycroft Exp $	*/
 
 /*
@@ -75,7 +75,7 @@ scsi_init()
 
 	/* Initialize the scsi_xfer pool. */
 	pool_init(&scsi_xfer_pool, sizeof(struct scsi_xfer), 0,
-	    0, 0, "scxspl", 0, NULL, NULL, M_DEVBUF);
+	    0, 0, "scxspl", NULL);
 }
 
 /*

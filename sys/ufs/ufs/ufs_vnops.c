@@ -63,6 +63,7 @@
 #include <miscfs/specfs/specdev.h>
 #include <miscfs/fifofs/fifo.h>
 
+#include <ufs/ufs/extattr.h>
 #include <ufs/ufs/quota.h>
 #include <ufs/ufs/inode.h>
 #include <ufs/ufs/dir.h>
@@ -469,6 +470,8 @@ ufs_chmod(vp, mode, cred, p)
 	ip->i_ffs_mode &= ~ALLPERMS;
 	ip->i_ffs_mode |= (mode & ALLPERMS);
 	ip->i_flag |= IN_CHANGE;
+	if ((vp->v_flag & VTEXT) && (ip->i_ffs_mode & S_ISTXT) == 0)
+		(void) uvm_vnp_uncache(vp);
 	return (0);
 }
 
@@ -601,28 +604,6 @@ ufs_select(v)
 	 * We should really check to see if I/O is possible.
 	 */
 	return (1);
-}
-
-/*
- * Mmap a file
- *
- * NB Currently unsupported.
- */
-/* ARGSUSED */
-int
-ufs_mmap(v)
-	void *v;
-{
-#if 0
-	struct vop_mmap_args /* {
-		struct vnode *a_vp;
-		int  a_fflags;
-		struct ucred *a_cred;
-		struct proc *a_p;
-	} */ *ap = v;
-#endif
-
-	return (EINVAL);
 }
 
 /*

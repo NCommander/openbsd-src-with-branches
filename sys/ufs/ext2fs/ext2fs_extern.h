@@ -1,5 +1,5 @@
 /*	$OpenBSD$	*/
-/*	$NetBSD: ext2fs_extern.h,v 1.9 2000/11/27 08:39:53 chs Exp $	*/
+/*	$NetBSD: ext2fs_extern.h,v 1.1 1997/06/11 09:33:55 bouyer Exp $	*/
 
 /*-
  * Copyright (c) 1997 Manuel Bouyer.
@@ -74,9 +74,6 @@ int ext2fs_inode_free(struct inode *pip, ino_t ino, int mode);
 /* ext2fs_balloc.c */
 int ext2fs_buf_alloc(struct inode *, daddr_t, int, struct ucred *,
 			struct buf **, int);
-int ext2fs_ballocn __P((void *));
-int ext2fs_balloc_range __P((struct vnode *, off_t, off_t, struct ucred *,
-			     int));
 
 /* ext2fs_bmap.c */
 int ext2fs_bmap __P((void *));

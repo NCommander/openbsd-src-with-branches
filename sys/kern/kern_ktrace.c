@@ -244,14 +244,15 @@ ktrgenio(p, fd, rw, iov, len, error)
 }
 
 void
-ktrpsig(p, sig, action, mask, code)
+ktrpsig(p, sig, action, mask, code, si)
 	struct proc *p;
 	int sig;
 	sig_t action;
 	int mask, code;
+	siginfo_t *si;
 {
 	struct ktr_header kth;
-	struct ktr_psig	kp;
+	struct ktr_psig kp;
 
 	p->p_traceflag |= KTRFAC_ACTIVE;
 	ktrinitheader(&kth, p, KTR_PSIG);
@@ -259,6 +260,7 @@ ktrpsig(p, sig, action, mask, code)
 	kp.action = action;
 	kp.mask = mask;
 	kp.code = code;
+	kp.si = *si;
 	kth.ktr_buf = (caddr_t)&kp;
 	kth.ktr_len = sizeof (struct ktr_psig);
 

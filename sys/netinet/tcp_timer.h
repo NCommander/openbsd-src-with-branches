@@ -1,4 +1,4 @@
-/*	$OpenBSD: tcp_timer.h,v 1.3 1997/02/24 14:06:46 niklas Exp $	*/
+/*	$OpenBSD$	*/
 /*	$NetBSD: tcp_timer.h,v 1.6 1995/03/26 20:32:37 jtc Exp $	*/
 
 /*
@@ -109,10 +109,27 @@
 
 #define	TCP_MAXRXTSHIFT	12			/* maximum retransmits */
 
+#define	TCP_DELACK_TICKS (hz / PR_FASTHZ)	/* time to delay ACK */
+
 #ifdef	TCPTIMERS
 char *tcptimers[] =
     { "REXMT", "PERSIST", "KEEP", "2MSL" };
 #endif /* TCPTIMERS */
+
+/*
+ * Init, arm, disarm, and test TCP timers.
+ */
+#define	TCP_TIMER_INIT(tp, timer)					\
+	(tp)->t_timer[(timer)] = 0
+
+#define	TCP_TIMER_ARM(tp, timer, nticks)				\
+	(tp)->t_timer[(timer)] = (nticks)
+
+#define	TCP_TIMER_DISARM(tp, timer)					\
+	(tp)->t_timer[(timer)] = 0
+
+#define	TCP_TIMER_ISARMED(tp, timer)					\
+	(tp)->t_timer[(timer)]
 
 /*
  * Force a time value to be in a certain range.
@@ -132,5 +149,7 @@ extern int tcp_keepintvl;		/* time between keepalive probes */
 extern int tcp_maxidle;			/* time to drop after starting probes */
 extern int tcp_ttl;			/* time to live for TCP segs */
 extern int tcp_backoff[];
+
+void	tcp_timer_init(void);
 #endif /* _KERNEL */
 #endif /* _NETINET_TCP_TIMER_H_ */

@@ -1,4 +1,4 @@
-/*	$OpenBSD: signal.h,v 1.8 1997/09/20 01:55:58 deraadt Exp $	*/
+/*	$OpenBSD$	*/
 /*	$NetBSD: signal.h,v 1.21 1996/02/09 18:25:32 christos Exp $	*/
 
 /*
@@ -148,9 +148,6 @@ struct	sigaction {
 #define	SIG_SETMASK	3	/* set specified signal set */
 
 #ifndef _POSIX_SOURCE
-#ifndef _KERNEL
-#include <sys/cdefs.h>
-#endif
 typedef	void (*sig_t) __P((int));	/* type of signal function */
 
 /*

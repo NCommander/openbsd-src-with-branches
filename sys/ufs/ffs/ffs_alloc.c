@@ -49,6 +49,7 @@
 
 #include <dev/rndvar.h>
 
+#include <ufs/ufs/extattr.h>
 #include <ufs/ufs/quota.h>
 #include <ufs/ufs/inode.h>
 #include <ufs/ufs/ufs_extern.h>
@@ -169,7 +170,7 @@ ffs_realloccg(ip, lbprev, bpref, osize, nsize, cred, bpp, blknop)
 	struct buf **bpp;
 	ufs_daddr_t *blknop;
 {
-	struct fs *fs;
+	register struct fs *fs;
 	struct buf *bp = NULL;
 	ufs_daddr_t quota_updated = 0;
 	int cg, request, error;
@@ -177,7 +178,6 @@ ffs_realloccg(ip, lbprev, bpref, osize, nsize, cred, bpp, blknop)
 
 	if (bpp != NULL)
 		*bpp = NULL;
-
 	fs = ip->i_fs;
 #ifdef DIAGNOSTIC
 	if ((u_int)osize > fs->fs_bsize || fragoff(fs, osize) != 0 ||
@@ -283,6 +283,7 @@ ffs_realloccg(ip, lbprev, bpref, osize, nsize, cred, bpp, blknop)
 	if (bno <= 0) 
 		goto nospace;
 
+	(void) uvm_vnp_uncache(ITOV(ip));
 	if (!DOINGSOFTDEP(ITOV(ip)))
 		ffs_blkfree(ip, bprev, (long)osize);
 	if (nsize < request)
@@ -362,8 +363,7 @@ ffs_reallocblks(v)
 	struct indir start_ap[NIADDR + 1], end_ap[NIADDR + 1], *idp;
 	int i, len, start_lvl, end_lvl, pref, ssize;
 
-	/* XXXUBC - don't reallocblks for now */
-	if (1 || doreallocblks == 0)
+	if (doreallocblks == 0)
 		return (ENOSPC);
 
 	vp = ap->a_vp;
