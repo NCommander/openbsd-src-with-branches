@@ -111,9 +111,14 @@ __do_init()
 void
 __do_fini()
 {
-	/*
-	 * Call global destructors.
-	 */
-	(__dtors)();
+	static int finalized = 0;
+
+	if (!finalized) {
+		finalized = 1;
+		/*
+		 * Call global destructors.
+		 */
+		(__dtors)();
+	}
 }
 

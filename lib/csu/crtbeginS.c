@@ -108,9 +108,13 @@ _do_init(void)
 void
 _do_fini(void)
 {
-	/*
-	 * since the _init() function sets up the destructors to be called
-	 * by atexit, do not call the destructors here.
-	 */
-	__dtors();
+	static int finalized = 0;
+	if (!finalized) {
+		finalized = 1;
+		/*
+		 * since the _init() function sets up the destructors to 
+		 * be called by atexit, do not call the destructors here.
+		 */
+		__dtors();
+	}
 }
