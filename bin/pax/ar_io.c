@@ -1,4 +1,4 @@
-/*	$OpenBSD: ar_io.c,v 1.32 2003/02/03 09:06:42 jmc Exp $	*/
+/*	$OpenBSD: ar_io.c,v 1.33 2003/06/02 23:32:08 millert Exp $	*/
 /*	$NetBSD: ar_io.c,v 1.5 1996/03/26 23:54:13 mrg Exp $	*/
 
 /*-
@@ -38,7 +38,7 @@
 #if 0
 static const char sccsid[] = "@(#)ar_io.c	8.2 (Berkeley) 4/18/94";
 #else
-static const char rcsid[] = "$OpenBSD: ar_io.c,v 1.32 2003/02/03 09:06:42 jmc Exp $";
+static const char rcsid[] = "$OpenBSD: ar_io.c,v 1.33 2003/06/02 23:32:08 millert Exp $";
 #endif
 #endif /* not lint */
 
@@ -302,6 +302,7 @@ ar_open(const char *name)
 void
 ar_close(void)
 {
+	int status;
 
 	if (arfd < 0) {
 		did_io = io_ok = flcnt = 0;
@@ -337,13 +338,14 @@ ar_close(void)
 	 * for a quick extract/list, pax frequently exits before the child
 	 * process is done
 	 */
-	if ((act == LIST || act == EXTRACT) && nflag && zpid > 0) {
-		int status;
+	if ((act == LIST || act == EXTRACT) && nflag && zpid > 0)
 		kill(zpid, SIGINT);
-		waitpid(zpid, &status, 0);
-	}
 
 	(void)close(arfd);
+
+	/* Do not exit before child to ensure data integrity */
+	if (zpid > 0)
+		waitpid(zpid, &status, 0);
 
 	if (vflag && (artyp == ISTAPE)) {
 		(void)fputs("done.\n", listf);
