@@ -1,4 +1,4 @@
-/*      $OpenBSD: isp_openbsd.h,v 1.24 2003/03/30 16:57:42 krw Exp $ */
+/*      $OpenBSD: isp_openbsd.h,v 1.25 2004/06/24 19:35:23 tholo Exp $ */
 /*
  * OpenBSD Specific definitions for the Qlogic ISP Host Adapter
  */
@@ -110,7 +110,10 @@ struct isposinfo {
  * Required Macros/Defines
  */
 
-#define	INLINE			inline
+#define	INLINE			__inline
+
+/* We don't want expensive inline functions. */
+#define EXP_INLINE
 
 #define	ISP2100_SCRLEN		0x800
 
