@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.1 1997/09/17 10:46:24 downsj Exp $
+#	$OpenBSD: Makefile,v 1.1.1.1 2001/08/18 15:51:10 jason Exp $
 
 LIB=	z
 
@@ -12,7 +12,7 @@ SRCS=	adler32.c crc32.c infblock.c infcodes.c inffast.c \
 	inflate.c inftrees.c infutil.c
 
 .NOPATH:machine
-${SRCS}: machine
+beforedepend: machine
 
 ${OBJS}:	${.CURDIR}/../Makefile.inc
 
