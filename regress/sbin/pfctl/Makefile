@@ -1,9 +1,9 @@
-# $OpenBSD: Makefile,v 1.9 2001/09/15 23:25:23 wilfried Exp $
+# $OpenBSD: Makefile,v 1.10 2001/10/07 11:56:58 dhartmei Exp $
 
 NOMAN=
 NOPROG=
-PFTESTS=1 2 3 4 5 6 7 8 9 10 11 12
-PFFAIL=1 2 3 4 5 6 7
+PFTESTS=1 2 3 4 5 6 7 8 9 10 11 12 13
+PFFAIL=1 2 3 4 5 6 7 8
 
 .for n in ${PFFAIL}
 regress: pfail${n}
