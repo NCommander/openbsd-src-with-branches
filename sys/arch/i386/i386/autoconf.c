@@ -1,4 +1,4 @@
-/*	$OpenBSD: autoconf.c,v 1.35 2001/05/05 22:33:44 art Exp $	*/
+/*	$OpenBSD: autoconf.c,v 1.36 2001/06/25 00:43:11 mickey Exp $	*/
 /*	$NetBSD: autoconf.c,v 1.20 1996/05/03 19:41:56 christos Exp $	*/
 
 /*-
@@ -87,9 +87,8 @@ cpu_configure()
 	if (config_rootfound("mainbus", NULL) == NULL)
 		panic("cpu_configure: mainbus not configured");
 
-	printf("biomask %x netmask %x ttymask %x\n",
-	    (u_short)imask[IPL_BIO], (u_short)imask[IPL_NET],
-	    (u_short)imask[IPL_TTY]);
+	printf("biomask %x netmask %x ttymask %x\n", (u_short)IMASK(IPL_BIO),
+	    (u_short)IMASK(IPL_NET), (u_short)IMASK(IPL_TTY));
 
 	spl0();
 
