@@ -32,13 +32,15 @@
  */
 
 #if defined(LIBC_SCCS) && !defined(lint)
-static char *rcsid = "$OpenBSD: setrgid.c,v 1.3 1996/03/25 21:28:35 tholo Exp $";
+static char *rcsid = "$OpenBSD: setrgid.c,v 1.4 1996/08/19 08:19:34 tholo Exp $";
 #endif /* LIBC_SCCS and not lint */
 
 #include <sys/types.h>
 #include <unistd.h>
 
+#ifndef NO_WARN_REFERENCES
 __warn_references(setrgid, "warning: this program uses setrgid(), which is deprecated.");
+#endif
 
 extern int __setregid __P((gid_t, gid_t));
 
