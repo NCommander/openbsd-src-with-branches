@@ -1,4 +1,4 @@
-/*	$OpenBSD: afssys.c,v 1.10 1999/03/19 10:43:33 art Exp $	*/
+/*	$OpenBSD: afssys_openbsd.c,v 1.1 2000/03/02 10:17:28 art Exp $	*/
 /*	$KTH: afssys.c,v 1.57 1998/05/09 17:19:03 joda Exp $	*/
 
 /*
@@ -40,6 +40,11 @@
  */
 
 #include "kafs_locl.h"
+
+int
+xfspioctl(int operation, char *a_pathP,
+	  int a_opcode, struct ViceIoctl *a_paramsP,
+	  int a_followSymlinks);
 
 int _kafs_debug;
 
