@@ -1,4 +1,4 @@
-/*	$OpenBSD: conf.c,v 1.4 1996/04/28 10:49:18 deraadt Exp $ */
+/*	$OpenBSD: conf.c,v 1.2 1998/08/22 08:37:55 smurph Exp $ */
 
 #include <sys/types.h>
 #include <netinet/in.h>
@@ -17,13 +17,16 @@ struct devsw devsw[] = {
 	{ "net",  net_strategy,  net_open,  net_close,  net_ioctl },
 };
 int	ndevs = sizeof(devsw) / sizeof(devsw[0]);
-
+/*
 extern struct netif_driver le_driver;
+*/
 extern struct netif_driver ie_driver;
 
 struct netif_driver *netif_drivers[] = {
-	&ie_driver,
-	&le_driver,
+   &ie_driver,
+/*	
+   &le_driver,
+*/
 };
 int n_netif_drivers = sizeof(netif_drivers) / sizeof(netif_drivers[0]);
 

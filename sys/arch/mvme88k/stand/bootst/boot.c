@@ -1,4 +1,4 @@
-/*	$OpenBSD: boot.c,v 1.2 1997/04/22 16:02:20 gvf Exp $ */
+/*	$OpenBSD: boot.c,v 1.1 1998/12/15 06:09:51 smurph Exp $ */
 /*-
  * Changes Copyright (c) 1998 steve Murphree, Jr.
  * Copyright (c) 1982, 1986, 1990, 1993
@@ -53,7 +53,7 @@ int main()
 	char line[80];
 	char *cp, *filename;
 	int bflag = 0;
-	printf(">> OpenBSD MVME%x tapeboot [%s]\n", bugargs.cputyp, version);
+	printf(">> OpenBSD/mvme88k tapeboot [%s]\n", version);
 
 	*bugargs.arg_end = 0; /* ensure */
 	parse_args(&filename, &bflag);
