@@ -1,4 +1,4 @@
-/*	$OpenBSD: uvm_glue.c,v 1.33 2002/06/09 02:11:47 jsyn Exp $	*/
+/*	$OpenBSD: uvm_glue.c,v 1.34 2003/01/29 22:57:10 mickey Exp $	*/
 /*	$NetBSD: uvm_glue.c,v 1.44 2001/02/06 19:54:44 eeh Exp $	*/
 
 /* 
@@ -223,6 +223,8 @@ uvm_vslock(p, addr, len, access_type)
 	map = &p->p_vmspace->vm_map;
 	start = trunc_page((vaddr_t)addr);
 	end = round_page((vaddr_t)addr + len);
+	if (end <= start)
+		return (EINVAL);
 
 	rv = uvm_fault_wire(map, start, end, access_type);
 
@@ -242,8 +244,14 @@ uvm_vsunlock(p, addr, len)
 	caddr_t	addr;
 	size_t	len;
 {
-	uvm_fault_unwire(&p->p_vmspace->vm_map, trunc_page((vaddr_t)addr),
-		round_page((vaddr_t)addr + len));
+	vaddr_t start, end;
+
+	start = trunc_page((vaddr_t)addr);
+	end = round_page((vaddr_t)addr + len);
+	if (end <= start)
+		return;
+
+	uvm_fault_unwire(&p->p_vmspace->vm_map, start, end);
 }
 
 /*
