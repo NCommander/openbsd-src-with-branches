@@ -1,4 +1,4 @@
-/*	$OpenBSD: lsack.c,v 1.5 2005/02/08 12:56:48 claudio Exp $ */
+/*	$OpenBSD: lsack.c,v 1.6 2005/03/17 21:17:12 claudio Exp $ */
 
 /*
  * Copyright (c) 2004, 2005 Esben Norby <norby@openbsd.org>
@@ -210,7 +210,7 @@ ls_ack_list_clr(struct iface *iface)
 	iface->ls_ack_cnt = 0;
 }
 
-bool
+int
 ls_ack_list_empty(struct iface *iface)
 {
 	return (TAILQ_EMPTY(&iface->ls_ack_list));
