@@ -1,4 +1,4 @@
-/*	$OpenBSD: yppasswdd_proc.c,v 1.6 2001/12/09 14:58:30 miod Exp $	*/
+/*	$OpenBSD: yppasswdd_proc.c,v 1.7 2002/02/16 21:27:31 millert Exp $	*/
 
 /*
  * Copyright (c) 1994 Mats O Jansson <moj@stacken.kth.se>
@@ -32,7 +32,7 @@
  */
 
 #ifndef LINT
-static char rcsid[] = "$OpenBSD: yppasswdd_proc.c,v 1.6 2001/12/09 14:58:30 miod Exp $";
+static char rcsid[] = "$OpenBSD: yppasswdd_proc.c,v 1.7 2002/02/16 21:27:31 millert Exp $";
 #endif
 
 #include <sys/types.h>
@@ -46,10 +46,7 @@ static char rcsid[] = "$OpenBSD: yppasswdd_proc.c,v 1.6 2001/12/09 14:58:30 miod
 int make_passwd(yppasswd *);
 
 int *
-yppasswdproc_update_1_svc(argp, rqstp, transp)
-	yppasswd *argp;
-	struct svc_req *rqstp;
-	SVCXPRT *transp;
+yppasswdproc_update_1_svc(yppasswd *argp, struct svc_req *rqstp, SVCXPRT *transp)
 {
 	static int res;
 
