@@ -29,8 +29,8 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  *
- * $FreeBSD: uthread_fd.c,v 1.9 1998/09/13 15:33:42 dt Exp $
- * $OpenBSD: uthread_fd.c,v 1.3 1998/12/23 22:49:46 d Exp $
+ * $FreeBSD: uthread_fd.c,v 1.10 1999/03/23 05:07:55 jb Exp $
+ * $OpenBSD: uthread_fd.c,v 1.4 1999/01/10 23:09:36 d Exp $
  *
  */
 #include <errno.h>
@@ -200,7 +200,7 @@ _thread_fd_unlock(int fd, int lock_type)
 				} else {
 					/*
 					 * Set the state of the new owner of
-					 * the thread to  running: 
+					 * the thread to running: 
 					 */
 					PTHREAD_NEW_STATE(_thread_fd_table[fd]->r_owner,PS_RUNNING);
 
