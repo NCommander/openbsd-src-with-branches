@@ -1,4 +1,4 @@
-/*	$OpenBSD: cd.c,v 1.60 2002/03/14 03:16:12 millert Exp $	*/
+/*	$OpenBSD: cd.c,v 1.61 2002/05/23 20:29:07 csapuntz Exp $	*/
 /*	$NetBSD: cd.c,v 1.100 1997/04/02 02:29:30 mycroft Exp $	*/
 
 /*
@@ -569,7 +569,9 @@ done:
 	 * Correctly set the buf to indicate a completed xfer
 	 */
 	bp->b_resid = bp->b_bcount;
+	opri = splbio();
 	biodone(bp);
+	splx(opri);
 	if (cd != NULL)
 		device_unref(&cd->sc_dev);
 }
