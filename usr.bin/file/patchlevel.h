@@ -1,7 +1,7 @@
-/*	$OpenBSD: patchlevel.h,v 1.5 2003/03/11 21:26:26 ian Exp $	*/
+/*	$OpenBSD: patchlevel.h,v 1.6 2003/06/13 18:31:14 deraadt Exp $	*/
 
-#define	FILE_VERSION_MAJOR	3
-#define	patchlevel		22
+#define	FILE_VERSION_MAJOR	4
+#define	patchlevel		9
 
 /*
  * Patchlevel file for Ian Darwin's file(1) command.
