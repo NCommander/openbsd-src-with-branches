@@ -1,4 +1,4 @@
-/*	$OpenBSD: ancontrol.c,v 1.1 2000/04/03 01:08:09 mickey Exp $	*/
+/*	$OpenBSD: ancontrol.c,v 1.2 2000/05/20 17:28:41 deraadt Exp $	*/
 /*
  * Copyright 1997, 1998, 1999
  *	Bill Paul <wpaul@ee.columbia.edu>.  All rights reserved.
@@ -129,7 +129,7 @@ an_getval(iface, areq)
 
 	bzero((char *)&ifr, sizeof(ifr));
 
-	strcpy(ifr.ifr_name, iface);
+	strlcpy(ifr.ifr_name, iface, sizeof(ifr.ifr_name));
 	ifr.ifr_data = (caddr_t)areq;
 
 	s = socket(AF_INET, SOCK_DGRAM, 0);
@@ -155,7 +155,7 @@ an_setval(iface, areq)
 
 	bzero((char *)&ifr, sizeof(ifr));
 
-	strcpy(ifr.ifr_name, iface);
+	strlcpy(ifr.ifr_name, iface, sizeof(ifr.ifr_name));
 	ifr.ifr_data = (caddr_t)areq;
 
 	s = socket(AF_INET, SOCK_DGRAM, 0);
