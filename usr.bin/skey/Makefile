@@ -1,7 +1,6 @@
-# $OpenBSD: Makefile,v 1.1.1.1 1995/10/18 08:46:07 deraadt Exp $
+# $OpenBSD: Makefile,v 1.2 1996/06/26 05:39:19 deraadt Exp $
 
 PROG= skey
-CFLAGS+= -I${.CURDIR}/../../lib/libskey
 MAN= skey.1 skeyinfo.1 skeyaudit.1
 DPADD=	${LIBSKEY}
 LDADD=	-lskey
