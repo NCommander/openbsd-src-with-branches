@@ -1,11 +1,12 @@
-/*	$OpenBSD: private.h,v 1.5 1996/01/20 02:31:20 jtc Exp $	*/
+/*	$OpenBSD: private.h,v 1.4 1996/08/19 08:34:51 tholo Exp $	*/
 
 #ifndef PRIVATE_H
 #define PRIVATE_H
 
-/* NetBSD defaults */
+/* OpenBSD defaults */
 #define TM_GMTOFF	tm_gmtoff
 #define TM_ZONE		tm_zone
+#define PCTS		1
 #define STD_INSPIRED	1
 #define HAVE_LONG_DOUBLE 1
 
