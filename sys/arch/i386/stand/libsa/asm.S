@@ -1,5 +1,4 @@
-/*	$OpenBSD: srt0.S,v 1.1.2.3 1997/01/23 06:57:32 mickey Exp $	*/
-/*	$NetBSD: srt0.c,v 1.3 1994/10/27 04:21:59 cgd Exp $	*/
+/*	$OpenBSD: asm.S,v 1.1 1997/03/31 03:12:08 weingart Exp $	*/
 
 /*-
  * Copyright (c) 1990 The Regents of the University of California.
@@ -37,13 +36,6 @@
  * SUCH DAMAGE.
  *
  *	@(#)srt0.c	5.3 (Berkeley) 4/28/91
- */
-
-/*
- * Startup code for standalone system
- * Non-relocating version -- for programs which are loaded by boot
- * Relocating version for boot
- * Small relocating version for "micro" boot
  */
 
 	.globl	_inb
