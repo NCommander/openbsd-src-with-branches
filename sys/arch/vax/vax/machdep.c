@@ -1,4 +1,4 @@
-/* $OpenBSD: machdep.c,v 1.33 2001/06/11 01:33:48 miod Exp $ */
+/* $OpenBSD: machdep.c,v 1.34 2001/06/15 22:45:33 miod Exp $ */
 /* $NetBSD: machdep.c,v 1.108 2000/09/13 15:00:23 thorpej Exp $	 */
 
 /*
@@ -760,9 +760,6 @@ allocsys(v)
     register caddr_t v;
 {
 
-#ifdef REAL_CLISTS
-    VALLOC(cfree, struct cblock, nclist);
-#endif
     VALLOC(timeouts, struct timeout, ntimeout);
 #ifdef SYSVSHM
     VALLOC(shmsegs, struct shmid_ds, shminfo.shmmni);

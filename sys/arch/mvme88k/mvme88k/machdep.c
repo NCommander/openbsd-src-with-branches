@@ -1,4 +1,4 @@
-/* $OpenBSD: machdep.c,v 1.43 2001/06/27 06:19:50 art Exp $	*/
+/* $OpenBSD: machdep.c,v 1.44 2001/07/01 23:27:52 miod Exp $	*/
 /*
  * Copyright (c) 1998, 1999, 2000, 2001 Steve Murphree, Jr.
  * Copyright (c) 1996 Nivas Madhur
@@ -741,9 +741,6 @@ allocsys(v)
 #define	valloc(name, type, num) \
 	    v = (caddr_t)(((name) = (type *)v) + (num))
 
-#ifdef REAL_CLISTS
-	valloc(cfree, struct cblock, nclist);
-#endif
 	valloc(timeouts, struct timeout, ntimeout);
 #if 0
 	valloc(swapmap, struct map, nswapmap = maxproc * 2);
