@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: pchb.c,v 1.7 2000/04/10 20:07:47 mickey Exp $	*/
 /*	$NetBSD: pchb.c,v 1.6 1997/06/06 23:29:16 thorpej Exp $	*/
 
 /*
@@ -277,7 +277,7 @@ pchb_rnd(v)
 			sc->ax = (sc->ax << 8) + ret;
 		else {
 			sc->i = 4;
-			add_true_randomness(ret);
+			add_true_randomness(sc->ax);
 		}
 	}
 	timeout_add(&sc->sc_tmo, 1);
