@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: kbd.c,v 1.4 2001/01/29 01:58:07 niklas Exp $	*/
 
 /*
  *	Terminal independent keyboard handling.
@@ -85,7 +85,7 @@ getkey(flag)
 
 #ifndef NO_DPROMPT
 	if (flag && !pushed) {
-		if (prompt[0] != '\0' && ttwait()) {
+		if (prompt[0] != '\0' && ttwait(2000)) {
 			/* avoid problems with % */
 			ewprintf("%s", prompt);
 			/* put the cursor back */
