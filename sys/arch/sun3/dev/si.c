@@ -1,4 +1,4 @@
-/*	$OpenBSD: si.c,v 1.8 1997/01/16 19:42:49 kstailey Exp $	*/
+/*	$OpenBSD: si.c,v 1.9 1999/01/11 05:12:02 millert Exp $	*/
 /*	$NetBSD: si.c,v 1.31 1996/11/20 18:56:59 gwr Exp $	*/
 
 /*-
@@ -94,6 +94,10 @@
 #include <machine/autoconf.h>
 #include <machine/obio.h>
 #include <machine/dvma.h>
+
+#ifndef DDB
+#define Debugger()
+#endif
 
 #define DEBUG XXX
 
@@ -365,8 +369,10 @@ si_dma_alloc(ncr_sc)
 	 * XXX - Should just segment these...
 	 */
 	if (xlen > MAX_DMA_LEN) {
+#ifdef DEBUG
 		printf("si_dma_alloc: excessive xlen=0x%x\n", xlen);
 		Debugger();
+#endif
 		ncr_sc->sc_datalen = xlen = MAX_DMA_LEN;
 	}
 
