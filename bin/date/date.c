@@ -1,4 +1,4 @@
-/*	$OpenBSD: date.c,v 1.18 2001/09/06 13:29:08 mpech Exp $	*/
+/*	$OpenBSD: date.c,v 1.19 2001/12/02 02:02:25 deraadt Exp $	*/
 /*	$NetBSD: date.c,v 1.11 1995/09/07 06:21:05 jtc Exp $	*/
 
 /*
@@ -44,7 +44,7 @@ static char copyright[] =
 #if 0
 static char sccsid[] = "@(#)date.c	8.2 (Berkeley) 4/28/95";
 #else
-static char rcsid[] = "$OpenBSD: date.c,v 1.18 2001/09/06 13:29:08 mpech Exp $";
+static char rcsid[] = "$OpenBSD: date.c,v 1.19 2001/12/02 02:02:25 deraadt Exp $";
 #endif
 #endif /* not lint */
 
@@ -156,9 +156,9 @@ main(argc, argv)
 #define	ATOI2(ar)	((ar)[0] - '0') * 10 + ((ar)[1] - '0'); (ar) += 2;
 void
 setthetime(p)
-	register char *p;
+	char *p;
 {
-	register struct tm *lt;
+	struct tm *lt;
 	struct timeval tv;
 	char *dot, *t;
 	int bigyear;
