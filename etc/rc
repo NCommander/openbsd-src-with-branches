@@ -117,7 +117,7 @@ fi
 if [ -d /var/yp/binding ]; then
 	if [ -d /var/yp/`domainname` ]; then
 		# yp server capabilities needed...
-		echo -n ' ypserv';		ypserv
+		echo -n ' ypserv';		ypserv ${ypserv_flags}
 		#echo -n ' ypxfrd';		ypxfrd
 	fi
 
