@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.6 2000/07/23 21:58:27 pjanzen Exp $
+#	$OpenBSD: Makefile,v 1.7 2002/05/23 18:43:00 deraadt Exp $
 #	@(#)Makefile	8.1 (Berkeley) 5/31/93
 
 PROG=	rogue
@@ -9,6 +9,7 @@ SRCS=	hit.c init.c inventory.c level.c machdep.c main.c \
 DPADD=	${LIBCURSES}
 LDADD=	-lcurses
 MAN=	rogue.6
+BINMODE=2555
 
 .if make(install)
 SUBDIR+= USD.doc
