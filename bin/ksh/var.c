@@ -1,4 +1,4 @@
-/*	$OpenBSD: var.c,v 1.6 1997/09/01 18:30:16 deraadt Exp $	*/
+/*	$OpenBSD: var.c,v 1.7 1998/06/25 19:02:27 millert Exp $	*/
 
 #include "sh.h"
 #include "ksh_time.h"
@@ -841,6 +841,17 @@ makenv()
 			}
 	XPput(env, NULL);
 	return (char **) XPclose(env);
+}
+
+/*
+ * Called after a fork in parent to bump the random number generator.
+ * Done to ensure children will not get the same random number sequence
+ * if the parent doesn't use $RANDOM.
+ */
+void
+change_random()
+{
+    rand();
 }
 
 /*

@@ -1,4 +1,4 @@
-/*	$OpenBSD: c_ksh.c,v 1.8 1998/06/25 19:01:44 millert Exp $	*/
+/*	$OpenBSD: c_ksh.c,v 1.9 1998/10/29 04:09:19 millert Exp $	*/
 
 /*
  * built-in Korn commands: c_*
@@ -1177,7 +1177,7 @@ c_kill(wp)
 
 	/* assume old style options if -digits or -UPPERCASE */
 	if ((p = wp[1]) && *p == '-' && (digit(p[1]) || isupper(p[1]))) {
-		if (!(t = gettrap(p + 1))) {
+		if (!(t = gettrap(p + 1, TRUE))) {
 			bi_errorf("bad signal `%s'", p + 1);
 			return 1;
 		}
@@ -1191,7 +1191,7 @@ c_kill(wp)
 				lflag = 1;
 				break;
 			  case 's':
-				if (!(t = gettrap(builtin_opt.optarg))) {
+				if (!(t = gettrap(builtin_opt.optarg, TRUE))) {
 					bi_errorf("bad signal `%s'",
 						builtin_opt.optarg);
 					return 1;

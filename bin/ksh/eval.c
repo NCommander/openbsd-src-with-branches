@@ -1,4 +1,4 @@
-/*	$OpenBSD: eval.c,v 1.5 1998/06/25 19:01:53 millert Exp $	*/
+/*	$OpenBSD: eval.c,v 1.6 1998/10/29 04:09:20 millert Exp $	*/
 
 /*
  * Expansion - quoting, separation, substitution, globbing
@@ -719,7 +719,7 @@ varsub(xp, sp, word, stypep, slenp)
 			if (vp->flag & (ISSET|ARRAY))
 				zero_ok = 1;
 			for (; vp; vp = vp->u.array)
-				if (vp->flag * ISSET) {
+				if (vp->flag & ISSET) {
 					max = vp->index + 1;
 					n++;
 				}

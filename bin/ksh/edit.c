@@ -1,4 +1,4 @@
-/*	$OpenBSD: edit.c,v 1.6 1997/06/19 13:58:39 kstailey Exp $	*/
+/*	$OpenBSD: edit.c,v 1.7 1998/06/25 19:01:50 millert Exp $	*/
 
 /*
  * Command line editing - common code
@@ -292,9 +292,10 @@ x_mode(onoff)
 			x_emacs_keys(&edchars);
 #endif
 		}
-	} else
+	} else {
 		/* TF_WAIT doesn't seem to be necessary when leaving xmode */
 		set_tty(tty_fd, &tty_state, TF_NONE);
+	}
 
 	return prev;
 }

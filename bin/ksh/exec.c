@@ -1,4 +1,4 @@
-/*	$OpenBSD: exec.c,v 1.12 1998/06/27 15:23:29 deraadt Exp $	*/
+/*	$OpenBSD: exec.c,v 1.13 1998/10/29 04:09:20 millert Exp $	*/
 
 /*
  * execute command tree
@@ -104,7 +104,7 @@ execute(t, flags)
  
 	if (t->type == TCOM) {
 		/* Clear subst_exstat before argument expansion.  Used by
-		 * null commands (see comexec()) and by c_set().
+		 * null commands (see comexec() and c_eval()) and by c_set().
 		 */
 		subst_exstat = 0;
 
