@@ -1,4 +1,4 @@
-/*	$OpenBSD: vfs_cluster.c,v 1.11 1997/11/06 05:58:26 csapuntz Exp $	*/
+/*	$OpenBSD: vfs_cluster.c,v 1.12 1998/01/08 15:51:56 csapuntz Exp $	*/
 /*	$NetBSD: vfs_cluster.c,v 1.12 1996/04/22 01:39:05 christos Exp $	*/
 
 /*-
@@ -239,18 +239,20 @@ cluster_read(vp, filesize, lblkno, size, cred, bpp)
 
 	/* XXX Kirk, do we need to make sure the bp has creds? */
 skip_readahead:
-	if (bp)
+	if (bp) {
 		if (bp->b_flags & (B_DONE | B_DELWRI))
 			panic("cluster_read: DONE bp");
 		else 
 			error = VOP_STRATEGY(bp);
+	}
 
-	if (rbp)
+	if (rbp) {
 		if (error || rbp->b_flags & (B_DONE | B_DELWRI)) {
 			rbp->b_flags &= ~(B_ASYNC | B_READ);
 			brelse(rbp);
 		} else
 			(void) VOP_STRATEGY(rbp);
+	}
 
 	/*
 	 * Recalculate our maximum readahead
