@@ -1,4 +1,4 @@
-/*	$OpenBSD: kern_time.c,v 1.42 2004/06/21 23:50:36 tholo Exp $	*/
+/*	$OpenBSD: kern_time.c,v 1.43 2004/06/24 19:35:24 tholo Exp $	*/
 /*	$NetBSD: kern_time.c,v 1.20 1996/02/18 11:57:06 fvdl Exp $	*/
 
 /*
@@ -234,7 +234,8 @@ sys_nanosleep(p, v, retval)
 	if (SCARG(uap, rmtp))
 		getnanouptime(&sts);
 
-	error = tsleep(&nanowait, PWAIT | PCATCH, "nanosleep", tvtohz(&tv));
+	error = tsleep(&nanowait, PWAIT | PCATCH, "nanosleep",
+	    MAX(1, tvtohz(&tv)));
 	if (error == ERESTART)
 		error = EINTR;
 	if (error == EWOULDBLOCK)
