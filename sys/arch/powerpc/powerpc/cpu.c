@@ -1,4 +1,4 @@
-/*	$OpenBSD: cpu.c,v 1.9 1997/06/14 23:28:53 deraadt Exp $ */
+/*	$OpenBSD: cpu.c,v 1.1 1997/10/13 13:42:56 pefo Exp $ */
 
 /*
  * Copyright (c) 1997 Per Fogelstrom
@@ -102,6 +102,9 @@ cpuattach(parent, dev, aux)
 		break;
 	case 7:
 		sprintf(cpu_model, "603ev");
+		break;
+	case 8:
+		sprintf(cpu_model, "750");
 		break;
 	case 9:
 		sprintf(cpu_model, "604ev");
