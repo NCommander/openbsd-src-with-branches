@@ -101,6 +101,9 @@ bsd_to_linux_stat(bsp, lsp)
 	lsp->lst_atime   = bsp->st_atime;
 	lsp->lst_mtime   = bsp->st_mtime;
 	lsp->lst_ctime   = bsp->st_ctime;
+#if LINUX_STAT64_HAS_BROKEN_ST_INO
+	lsp->__lst_ino   = (linux_ino_t)bsp->st_ino;
+#endif
 }
 
 /*
