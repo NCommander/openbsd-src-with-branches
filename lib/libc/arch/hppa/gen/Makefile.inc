@@ -1,3 +1,0 @@
-#	$OpenBSD$
-
-SRCS+=	milli.S
