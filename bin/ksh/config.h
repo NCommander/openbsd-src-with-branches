@@ -1,4 +1,4 @@
-/*	$OpenBSD: config.h,v 1.4 1999/01/08 20:24:58 millert Exp $	*/
+/*	$OpenBSD: config.h,v 1.5 1999/10/04 16:44:00 deraadt Exp $	*/
 
 /* config.h.  Generated automatically by configure.  */
 /* config.h.in.  Generated automatically from configure.in by autoheader.  */
@@ -218,7 +218,7 @@
 #define HISTORY 1
 
 /* Include complex history? (see comments in configure.in for more details) */
-/* #undef COMPLEX_HISTORY */
+#define COMPLEX_HISTORY
 
 /* Strict POSIX behaviour? (see comments in configure.in for more details) */
 /* #undef POSIXLY_CORRECT */
