@@ -209,9 +209,8 @@ typedef struct cvs_histfile {
 
 
 #ifdef CVS
-extern struct cvsroot *cvs_root;
+extern char *cvs_editor;
 #endif
-
 
 
 

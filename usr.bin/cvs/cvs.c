@@ -63,8 +63,6 @@ char *cvs_rootstr;
 char *cvs_rsh = CVS_RSH_DEFAULT;
 char *cvs_editor = CVS_EDITOR_DEFAULT;
 
-struct cvsroot *cvs_root = NULL;
-
 
 /*
  * Command dispatch table
