@@ -1,4 +1,4 @@
-/*	$OpenBSD: magmareg.h,v 1.5 2002/03/14 01:27:02 millert Exp $	*/
+/*	$OpenBSD: magmareg.h,v 1.6 2003/02/11 19:20:28 mickey Exp $	*/
 
 /* magmareg.h
  *
@@ -125,7 +125,7 @@ struct magma_softc {
 	int ms_ncd1190;
 	struct cd1190 ms_cd1190[MAGMA_MAX_CD1190];
 
-	struct magma_board_info *ms_board;	/* what am I? */
+	const struct magma_board_info *ms_board;	/* what am I? */
 
 	struct mtty_softc *ms_mtty;
 	struct mbpp_softc *ms_mbpp;

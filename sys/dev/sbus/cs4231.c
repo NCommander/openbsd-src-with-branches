@@ -1,4 +1,4 @@
-/*	$OpenBSD: cs4231.c,v 1.15 2002/10/04 01:51:45 jason Exp $	*/
+/*	$OpenBSD: cs4231.c,v 1.16 2003/02/17 01:29:20 henric Exp $	*/
 
 /*
  * Copyright (c) 1999 Jason L. Wright (jason@thought.net)
@@ -323,7 +323,7 @@ cs4231_set_speed(sc, argp)
 	} speed_struct;
 	u_long arg = *argp;
 
-	static speed_struct speed_table[] = {
+	const static speed_struct speed_table[] = {
 		{5510,	(0 << 1) | CLOCK_XTAL2},
 		{5510,	(0 << 1) | CLOCK_XTAL2},
 		{6620,	(7 << 1) | CLOCK_XTAL2},
