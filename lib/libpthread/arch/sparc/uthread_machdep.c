@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: uthread_machdep.c,v 1.1 2000/09/25 01:16:40 d Exp $	*/
 
 /*
  * Machine-dependent thread state functions for OpenBSD/sparc.
@@ -35,6 +35,9 @@ void
 _thread_machdep_save_float_state(statep)
 	struct _machdep_state* statep;
 {
+	u_int32_t zero = 0;
+
+	_thread_machdep_fpsave(&statep->fs_csr, &statep->fs_regs[0], &zero);
 }
 
 void
