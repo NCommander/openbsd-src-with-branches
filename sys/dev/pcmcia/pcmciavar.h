@@ -1,4 +1,4 @@
-/*	$Id: pcmciavar.h,v 1.3 1996/11/28 23:28:17 niklas Exp $	*/
+/*	$OpenBSD: pcmciavar.h,v 1.4 1997/03/01 22:42:59 niklas Exp $	*/
 /*
  * Copyright (c) 1995,1996 John T. Kohl.  All rights reserved.
  * Copyright (c) 1993, 1994 Stefan Grefen.  All rights reserved.

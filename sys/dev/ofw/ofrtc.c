@@ -1,3 +1,4 @@
+/*	$OpenBSD: ofrtc.c,v 1.3 1996/10/13 01:38:14 christos Exp $	*/
 /*	$NetBSD: ofrtc.c,v 1.3 1996/10/13 01:38:14 christos Exp $	*/
 
 /*

@@ -1,3 +1,4 @@
+/*	$OpenBSD: ascvar.h,v 1.1 1996/09/25 21:07:56 jonathan Exp $	*/
 /*	$NetBSD: ascvar.h,v 1.1 1996/09/25 21:07:56 jonathan Exp $	*/
 
 

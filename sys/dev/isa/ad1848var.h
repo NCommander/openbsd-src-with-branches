@@ -1,3 +1,4 @@
+/*	$OpenBSD: ad1848var.h,v 1.8 1996/04/29 20:02:37 christos Exp $	*/
 /*	$NetBSD: ad1848var.h,v 1.8 1996/04/29 20:02:37 christos Exp $	*/
 
 /*

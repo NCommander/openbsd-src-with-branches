@@ -1,3 +1,5 @@
+/*	$OpenBSD$	*/
+
 #ifndef __PCMCIA_H__
 #define __PCMCIA_H__
 

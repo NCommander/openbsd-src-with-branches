@@ -1,3 +1,4 @@
+/*	$OpenBSD: if_ep_isa.c,v 1.5 1996/05/12 23:52:36 mycroft Exp $	*/
 /*	$NetBSD: if_ep_isa.c,v 1.5 1996/05/12 23:52:36 mycroft Exp $	*/
 
 /*

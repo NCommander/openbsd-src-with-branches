@@ -1,3 +1,5 @@
+/*	$OpenBSD$	*/
+
 /*
  * ST01/02, Future Domain TMC-885, TMC-950 SCSI driver
  *

@@ -1,3 +1,4 @@
+/*	$OpenBSD: mcdreg.h,v 1.7 1995/07/10 01:27:27 cgd Exp $	*/
 /*	$NetBSD: mcdreg.h,v 1.7 1995/07/10 01:27:27 cgd Exp $	*/
 
 /*

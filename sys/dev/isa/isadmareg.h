@@ -1,3 +1,4 @@
+/*	$OpenBSD: isadmareg.h,v 1.4 1995/06/28 04:31:48 cgd Exp $	*/
 /*	$NetBSD: isadmareg.h,v 1.4 1995/06/28 04:31:48 cgd Exp $	*/
 
 #include <dev/ic/i8237reg.h>

@@ -1,4 +1,4 @@
-/*	$Id: pcmcia_ioctl.h,v 1.3 1996/04/01 00:53:39 jtk Exp $	*/
+/*	$OpenBSD: pcmcia_ioctl.h,v 1.2 1996/04/29 14:17:25 hvozda Exp $	*/
 /*
  * Copyright (c) 1993, 1994 Stefan Grefen.  All rights reserved.
  *

@@ -1,3 +1,4 @@
+/*	$OpenBSD: elink.h,v 1.4 1996/04/30 22:16:31 thorpej Exp $	*/
 /*	$NetBSD: elink.h,v 1.4 1996/04/30 22:16:31 thorpej Exp $	*/
 
 /*

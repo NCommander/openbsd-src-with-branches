@@ -1,3 +1,4 @@
+/*	$OpenBSD: if_le_ibus.c,v 1.3 1996/05/20 23:19:16 jonathan Exp $	*/
 /*	$NetBSD: if_le_ibus.c,v 1.3 1996/05/20 23:19:16 jonathan Exp $	*/
 
 /*

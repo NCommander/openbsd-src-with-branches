@@ -1,3 +1,4 @@
+/*	$OpenBSD: raster_text.c,v 1.3 1995/11/24 23:50:56 cgd Exp $ */
 /*	$NetBSD: raster_text.c,v 1.3 1995/11/24 23:50:56 cgd Exp $ */
 
 /*-

@@ -1,3 +1,5 @@
+#	$OpenBSD$
+
 #--Interrupt Controllers--
 #	PNP0000	#AT Interrupt Controller
 #	PNP0001	#EISA Interrupt Controller

@@ -1,3 +1,4 @@
+/*	$OpenBSD: if_le_pci.c,v 1.13 1996/10/25 21:33:32 cgd Exp $	*/
 /*	$NetBSD: if_le_pci.c,v 1.13 1996/10/25 21:33:32 cgd Exp $	*/
 
 /*-

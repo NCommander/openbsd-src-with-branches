@@ -1,3 +1,4 @@
+/*	$OpenBSD: ioasicvar.h,v 1.2 1996/03/17 21:37:45 jonathan Exp $	*/
 /*	$NetBSD: ioasicvar.h,v 1.2 1996/03/17 21:37:45 jonathan Exp $	*/
 
 /*

@@ -1,3 +1,5 @@
+/*	$OpenBSD$	*/
+
 typedef u_int8_t physaddr[3];
 typedef u_int8_t physlen[3];
 #define	ltophys	_lto3b

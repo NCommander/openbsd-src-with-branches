@@ -1,3 +1,4 @@
+/*	$OpenBSD: if_fta.c,v 1.7 1996/10/22 21:37:26 cgd Exp $	*/
 /*	$NetBSD: if_fta.c,v 1.7 1996/10/22 21:37:26 cgd Exp $	*/
 
 /*-

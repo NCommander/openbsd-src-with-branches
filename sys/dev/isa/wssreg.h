@@ -1,3 +1,4 @@
+/*	$OpenBSD: wssreg.h,v 1.3 1995/07/07 02:15:15 brezak Exp $	*/
 /*	$NetBSD: wssreg.h,v 1.3 1995/07/07 02:15:15 brezak Exp $	*/
 
 /*
