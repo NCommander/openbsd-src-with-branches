@@ -1,4 +1,4 @@
-/*	$OpenBSD: adb.c,v 1.8 1997/03/12 13:36:56 briggs Exp $	*/
+/*	$OpenBSD: adb.c,v 1.9 1997/04/06 02:59:57 briggs Exp $	*/
 /*	$NetBSD: adb.c,v 1.13 1996/12/16 16:17:02 scottr Exp $	*/
 
 /*-
@@ -205,7 +205,7 @@ adb_dokeyupdown(event)
 	adb_handoff(event);
 }
 
-static  adb_ms_buttons = 0;
+static int adb_ms_buttons = 0;
 
 void 
 adb_keymaybemouse(event)
