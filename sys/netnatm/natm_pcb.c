@@ -1,4 +1,4 @@
-/*	$OpenBSD: natm_pcb.c,v 1.4 1996/11/09 03:26:27 chuck Exp $	*/
+/*	$OpenBSD: natm_pcb.c,v 1.3 1996/11/09 03:29:00 chuck Exp $	*/
 
 /*
  *
@@ -66,10 +66,6 @@ int wait;
   struct natmpcb *npcb;
 
   MALLOC(npcb, struct natmpcb *, sizeof(*npcb), M_PCB, wait);
-
-#ifdef DIAGNOSTIC
-  if (wait == M_WAITOK && npcb == NULL) panic("npcb_alloc: malloc didn't wait");
-#endif
 
   if (npcb) {
     bzero(npcb, sizeof(*npcb));

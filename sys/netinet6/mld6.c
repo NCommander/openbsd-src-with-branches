@@ -1,4 +1,4 @@
-/*	$OpenBSD: mld6.c,v 1.9 2001/02/16 16:00:58 itojun Exp $	*/
+/*	$OpenBSD: mld6.c,v 1.5.2.2 2001/05/14 22:40:19 niklas Exp $	*/
 /*	$KAME: mld6.c,v 1.26 2001/02/16 14:50:35 itojun Exp $	*/
 
 /*
@@ -85,8 +85,6 @@
 #include <netinet6/ip6_var.h>
 #include <netinet/icmp6.h>
 #include <netinet6/mld6_var.h>
-
-#include <net/net_osdep.h>
 
 /*
  * Protocol constants

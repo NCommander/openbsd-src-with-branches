@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: if_token.h,v 1.1 1999/12/27 21:47:23 fgsch Exp $	*/
 /*	$NetBSD: if_token.h,v 1.6 1999/11/19 20:41:19 thorpej Exp $	*/
 
 /*
@@ -129,4 +129,4 @@ void    token_ifattach __P((struct ifnet *));
 void	token_input __P((struct ifnet *, struct mbuf *));
 #endif
 
-#endif /* !_NET_IF_TOKEN_H_ */
+#endif /* _NET_IF_TOKEN_H_ */

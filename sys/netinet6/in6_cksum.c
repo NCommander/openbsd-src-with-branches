@@ -1,4 +1,4 @@
-/*	$OpenBSD: in6_cksum.c,v 1.8 2001/02/16 15:59:38 itojun Exp $	*/
+/*	$OpenBSD: in6_cksum.c,v 1.4.2.2 2001/05/14 22:40:17 niklas Exp $	*/
 /*	$KAME: in6_cksum.c,v 1.10 2000/12/03 00:53:59 itojun Exp $	*/
 
 /*
@@ -70,8 +70,6 @@
 #include <sys/systm.h>
 #include <netinet/in.h>
 #include <netinet/ip6.h>
-
-#include <net/net_osdep.h>
 
 /*
  * Checksum routine for Internet Protocol family headers (Portable Version).

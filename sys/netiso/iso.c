@@ -1,4 +1,4 @@
-/*	$OpenBSD: iso.c,v 1.2 1996/03/04 10:35:26 mickey Exp $	*/
+/*	$OpenBSD: iso.c,v 1.3 1996/04/21 22:29:25 deraadt Exp $	*/
 /*	$NetBSD: iso.c,v 1.14 1996/04/13 01:34:48 cgd Exp $	*/
 
 /*-
@@ -488,8 +488,6 @@ iso_control(so, cmd, data, ifp)
 #endif
 			MALLOC(ia, struct iso_ifaddr *, sizeof(*ia),
 			       M_IFADDR, M_WAITOK);
-			if (ia == 0)
-				return (ENOBUFS);
 			bzero((caddr_t) ia, sizeof(*ia));
 			TAILQ_INSERT_TAIL(&iso_ifaddr, ia, ia_list);
 			TAILQ_INSERT_TAIL(&ifp->if_addrlist, (struct ifaddr *) ia,
