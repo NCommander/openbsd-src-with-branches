@@ -34,7 +34,7 @@
  */
 
 #include "includes.h"
-RCSID("$OpenBSD: log.c,v 1.16 2001/03/03 23:59:34 markus Exp $");
+RCSID("$OpenBSD: log.c,v 1.17 2001/03/04 17:42:28 millert Exp $");
 
 #include "log.h"
 #include "xmalloc.h"
@@ -84,6 +84,8 @@ static struct {
 	{ "DEBUG3",	SYSLOG_LEVEL_DEBUG3 },
 	{ NULL, 0 }
 };
+
+static void	 do_log(LogLevel level, const char *fmt, va_list args);
 
 SyslogFacility
 log_facility_number(char *name)
@@ -318,7 +320,7 @@ log_init(char *av0, LogLevel level, SyslogFacility facility, int on_stderr)
 
 #define MSGBUFSIZ 1024
 
-void
+static void
 do_log(LogLevel level, const char *fmt, va_list args)
 {
 	char msgbuf[MSGBUFSIZ];

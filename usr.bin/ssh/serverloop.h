@@ -1,4 +1,4 @@
-/*	$OpenBSD: serverloop.h,v 1.2 2001/01/29 01:58:17 niklas Exp $	*/
+/*	$OpenBSD: serverloop.h,v 1.3 2001/06/26 06:33:00 itojun Exp $	*/
 
 /*
  * Author: Tatu Ylonen <ylo@cs.hut.fi>
@@ -18,5 +18,10 @@
  * (of the child program), and reads from stdout and stderr (of the child
  * program).
  */
+#ifndef SERVERLOOP_H
+#define SERVERLOOP_H
+
 void    server_loop(pid_t, int, int, int);
 void    server_loop2(void);
+
+#endif

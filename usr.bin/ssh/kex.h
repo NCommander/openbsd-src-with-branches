@@ -1,4 +1,4 @@
-/*	$OpenBSD: kex.h,v 1.24 2001/06/25 08:25:37 markus Exp $	*/
+/*	$OpenBSD: kex.h,v 1.25 2001/06/26 06:32:53 itojun Exp $	*/
 
 /*
  * Copyright (c) 2000, 2001 Markus Friedl.  All rights reserved.
@@ -112,14 +112,14 @@ struct Kex {
 };
 
 Kex	*kex_setup(char *[PROPOSAL_MAX]);
-void	kex_finish(Kex *);
+void	 kex_finish(Kex *);
 
-void	kex_send_kexinit(Kex *);
-void	kex_input_kexinit(int, int, void *);
-void	kex_derive_keys(Kex *, u_char *, BIGNUM *);
+void	 kex_send_kexinit(Kex *);
+void	 kex_input_kexinit(int, int, void *);
+void	 kex_derive_keys(Kex *, u_char *, BIGNUM *);
 
-void	kexdh(Kex *);
-void	kexgex(Kex *);
+void	 kexdh(Kex *);
+void	 kexgex(Kex *);
 
 Newkeys *kex_get_newkeys(int);
 

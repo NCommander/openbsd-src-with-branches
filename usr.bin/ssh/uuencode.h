@@ -1,4 +1,4 @@
-/*	$OpenBSD: uuencode.h,v 1.6 2001/06/25 08:25:41 markus Exp $	*/
+/*	$OpenBSD: uuencode.h,v 1.7 2001/06/26 06:33:06 itojun Exp $	*/
 
 /*
  * Copyright (c) 2000 Markus Friedl.  All rights reserved.
@@ -26,7 +26,7 @@
 
 #ifndef UUENCODE_H
 #define UUENCODE_H
-int	uuencode(u_char *, u_int, char *, size_t);
-int	uudecode(const char *, u_char *, size_t);
-void	dump_base64(FILE *, u_char *, int);
+int	 uuencode(u_char *, u_int, char *, size_t);
+int	 uudecode(const char *, u_char *, size_t);
+void	 dump_base64(FILE *, u_char *, int);
 #endif
