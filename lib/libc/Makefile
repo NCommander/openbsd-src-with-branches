@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.6 1996/08/19 08:10:10 tholo Exp $
+#	$OpenBSD: Makefile,v 1.7 1996/09/04 22:52:00 deraadt Exp $
 #
 # All library objects contain sccsid strings by default; they may be
 # excluded as a space-saving measure.  To produce a library that does
@@ -12,6 +12,8 @@
 #
 # The YP functions are always in libc. To choose that getpwent() and friends
 # actually call the YP functions, put -DYP on the CFLAGS line below.
+
+.include <bsd.own.mk>
 
 LIB=c
 CFLAGS+=-DNLS -DLIBC_SCCS -DSYSLIBC_SCCS -I${.CURDIR}/include
