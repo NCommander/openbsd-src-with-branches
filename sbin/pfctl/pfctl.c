@@ -1,4 +1,4 @@
-/*	$OpenBSD: pfctl.c,v 1.230 2004/12/29 15:09:30 danh Exp $ */
+/*	$OpenBSD: pfctl.c,v 1.231 2005/01/05 18:23:10 mcbride Exp $ */
 
 /*
  * Copyright (c) 2001 Daniel Hartmeier
@@ -1410,9 +1410,10 @@ pfctl_set_debug(struct pfctl *pf, char *d)
 int
 pfctl_load_debug(struct pfctl *pf, unsigned int level)
 {
-	if (ioctl(pf->dev, DIOCSETDEBUG, &level))
+	if (ioctl(pf->dev, DIOCSETDEBUG, &level)) {
 		warnx("DIOCSETDEBUG");
 		return (1);
+	}
 	return (0);
 }
 
