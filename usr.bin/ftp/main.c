@@ -1,4 +1,4 @@
-/*	$OpenBSD: main.c,v 1.24 1997/03/14 05:36:02 millert Exp $	*/
+/*	$OpenBSD: main.c,v 1.25 1997/03/21 20:59:30 millert Exp $	*/
 /*	$NetBSD: main.c,v 1.20 1997/03/16 14:24:21 lukem Exp $	*/
 
 /*
@@ -44,7 +44,7 @@ static char copyright[] =
 #if 0
 static char sccsid[] = "@(#)main.c	8.6 (Berkeley) 10/9/94";
 #else
-static char rcsid[] = "$OpenBSD: main.c,v 1.24 1997/03/14 05:36:02 millert Exp $";
+static char rcsid[] = "$OpenBSD: main.c,v 1.25 1997/03/21 20:59:30 millert Exp $";
 #endif
 #endif /* not lint */
 
@@ -199,6 +199,8 @@ main(argc, argv)
 	}
 
 #ifndef SMALL
+	if (argc > 0)				/* batch mode */
+		editing = 0;
 	if (editing) {
 		el = el_init(__progname, stdin, stdout); /* init editline */
 
