@@ -10,7 +10,7 @@
  *
  * Main client header
  *
- * $OpenBSD: skey.h,v 1.14 2001/06/20 22:14:20 millert Exp $
+ * $OpenBSD: skey.h,v 1.15 2001/06/23 21:09:11 millert Exp $
  */
 
 #ifndef _SKEY_H_
@@ -71,7 +71,7 @@ void rip __P((char *));
 int skeychallenge __P((struct skey *, char *, char *));
 int skeylookup __P((struct skey *, char *));
 int skeyverify __P((struct skey *, char *));
-int skeyzero __P((struct skey *, char *));
+int skeyzero __P((struct skey *));
 void sevenbit __P((char *));
 void backspace __P((char *));
 char *skipspace __P((char *));
