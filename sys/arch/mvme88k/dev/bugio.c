@@ -1,4 +1,4 @@
-/*	$OpenBSD: bugio.c,v 1.9 2002/03/05 22:11:37 miod Exp $ */
+/*	$OpenBSD: bugio.c,v 1.10 2003/09/01 19:14:01 miod Exp $ */
 /*  Copyright (c) 1998 Steve Murphree, Jr. */
 
 #include <sys/param.h>
@@ -172,4 +172,13 @@ bugbrdid(struct mvmeprom_brdid *id)
 	OSCTXT();
 
 	bcopy(ptr, id, sizeof(struct mvmeprom_brdid));
+}
+
+void
+bugdiskrd(struct mvmeprom_dskio *dio)
+{
+	BUGCTXT();
+	__asm__ __volatile__ ("or r2, r0, %0" : : "r" (dio));
+	MVMEPROM_CALL(MVMEPROM_DSKRD);
+	OSCTXT();
 }
