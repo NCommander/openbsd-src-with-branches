@@ -1,0 +1,5 @@
+#       $OpenBSD: list,v 1.6 1996/09/27 03:24:03 deraadt Exp $
+
+COPY	${DESTDIR}/usr/mdec/boot	boot
+COPY	${OBJDIR}/bsd.gz		bsd.gz
+
