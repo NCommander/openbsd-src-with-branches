@@ -1,4 +1,4 @@
-/* $OpenBSD: ringbuf.c,v 1.1 2004/01/04 08:28:49 djm Exp $ */
+/* $OpenBSD: ringbuf.c,v 1.2 2004/02/26 11:02:32 avsm Exp $ */
 
 /*
  * Copyright (c) 2004 Damien Miller
@@ -73,6 +73,7 @@ int
 ringbuf_append_line(struct ringbuf *rb, char *line)
 {
 	size_t llen, used, copy_len;
+	int overflow = 0;
 
 	if (rb == NULL || line == NULL)
 		return (-1);
@@ -98,6 +99,8 @@ ringbuf_append_line(struct ringbuf *rb, char *line)
 			rb->start = (rb->start + 1) % rb->len;
 		/* Skip it */
 		rb->start = (rb->start + 1) % rb->len;
+
+		overflow = 1;
 	}
 
 	/*
@@ -116,7 +119,7 @@ ringbuf_append_line(struct ringbuf *rb, char *line)
 
 	rb->end = (rb->end + llen) % rb->len;
 
-	return (0);
+	return (overflow);
 }
 
 /*
