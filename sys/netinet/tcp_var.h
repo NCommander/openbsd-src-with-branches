@@ -326,6 +326,7 @@ extern	int tcp_do_rfc1323;	/* enabled/disabled? */
 extern	int tcp_mssdflt;	/* default maximum segment size */
 #ifdef TCP_SACK
 extern	int tcp_do_sack;	/* SACK enabled/disabled */
+extern	struct pool sackhl_pool;
 #endif
 
 int	 tcp_attach __P((struct socket *));
