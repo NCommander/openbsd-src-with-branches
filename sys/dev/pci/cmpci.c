@@ -1,4 +1,4 @@
-/*	$OpenBSD: cmpci.c,v 1.2 2001/06/12 15:40:30 niklas Exp $	*/
+/*	$OpenBSD: cmpci.c,v 1.3 2001/08/25 10:13:29 art Exp $	*/
 
 /*
  * Copyright (c) 2000 Takuya SHIOZAKI
@@ -434,7 +434,7 @@ cmpci_intr(handle)
 		    CMPCI_REG_CH1_INTR_ENABLE);
 	splx(s);
 
-	return 0;
+	return 1;
 }
 
 /* open/close */
