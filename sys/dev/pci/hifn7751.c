@@ -1,4 +1,4 @@
-/*	$OpenBSD: hifn7751.c,v 1.65 2001/05/14 22:29:28 jason Exp $	*/
+/*	$OpenBSD: hifn7751.c,v 1.66 2001/06/12 15:40:31 niklas Exp $	*/
 
 /*
  * Invertex AEON / Hi/fn 7751 driver
@@ -188,7 +188,7 @@ hifn_attach(parent, self, aux)
 		printf(": can't alloc dma buffer\n");
 		bus_dmamap_destroy(sc->sc_dmat, sc->sc_dmamap);
 		goto fail_io1;
-        }
+	}
 	if (bus_dmamem_map(sc->sc_dmat, sc->sc_dmamap->dm_segs,
 	    sc->sc_dmamap->dm_nsegs, sizeof(*sc->sc_dma), &kva,
 	    BUS_DMA_NOWAIT)) {
@@ -1259,9 +1259,9 @@ hifn_newsession(sidp, cri)
 			if (cry)
 				return (EINVAL);
 			cry = 1;
-		}
-		else
+		} else
 			return (EINVAL);
+
 	}
 	if (mac == 0 && cry == 0)
 		return (EINVAL);
