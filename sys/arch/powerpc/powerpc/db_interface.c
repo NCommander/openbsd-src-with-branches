@@ -1,4 +1,5 @@
-/*	$OpenBSD: db_interface.c,v 1.5 2001/07/01 04:34:24 drahn Exp $	*/
+/*	$OpenBSD: db_interface.c,v 1.6 2001/07/09 02:14:05 mickey Exp $	*/
+/*      $NetBSD: db_interface.c,v 1.12 2001/07/22 11:29:46 wiz Exp $ */
 
 #include <sys/param.h>
 #include <sys/proc.h>
