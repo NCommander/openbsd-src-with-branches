@@ -1,4 +1,4 @@
-/*	$OpenBSD: rmail.c,v 1.15 2003/06/02 23:32:09 millert Exp $	*/
+/*	$OpenBSD: rmail.c,v 1.16 2003/06/10 21:15:18 millert Exp $	*/
 /*	$NetBSD: rmail.c,v 1.8 1995/09/07 06:51:50 jtc Exp $	*/
 
 /*
@@ -40,7 +40,7 @@ static char copyright[] =
 #if 0
 static char sccsid[] = "@(#)rmail.c	8.3 (Berkeley) 5/15/95";
 #else
-static char rcsid[] = "$OpenBSD: rmail.c,v 1.15 2003/06/02 23:32:09 millert Exp $";
+static char rcsid[] = "$OpenBSD: rmail.c,v 1.16 2003/06/10 21:15:18 millert Exp $";
 #endif
 #endif /* not lint */
 
@@ -358,6 +358,6 @@ void
 usage(void)
 {
 	(void)fprintf(stderr, "usage: %s [-T] [-D domain] user ...\n",
-            __progname);
+	    __progname);
 	exit(EX_USAGE);
 }
