@@ -238,12 +238,14 @@ SRCS+=	base64.c		\
 	getaddrinfo_hostspec.c	\
 	getarg.c		\
 	get_window_size.c	\
+	getprogname.c \
 	parse_time.c		\
 	parse_units.c		\
 	resolve.c		\
 	roken_gethostby.c	\
 	roken_net_write.c	\
 	roken_net_read.c	\
+	setprogname.c \
 	strupr.c 		\
 	strlwr.c		\
 	strsep_copy.c		\
