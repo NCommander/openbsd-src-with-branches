@@ -1,4 +1,4 @@
-/*	$OpenBSD: dart.c,v 1.17 2002/04/28 15:17:09 miod Exp $	*/
+/*	$OpenBSD: dart.c,v 1.18 2002/06/12 03:49:56 miod Exp $	*/
 
 /*
  * Mach Operating System
@@ -50,7 +50,7 @@
 #include <mvme88k/dev/dartreg.h>
 
 #include "dart.h"
-#define spldart()	splx(IPL_TTY)
+#define spldart()	spltty()
 
 #ifdef	DDB
 #include <ddb/db_var.h>
