@@ -1,4 +1,4 @@
-# $OpenBSD: Makefile,v 1.7 1996/11/14 15:04:50 mickey Exp $
+# $OpenBSD: Makefile,v 1.8 1996/12/08 14:32:34 downsj Exp $
 
 PROG=	skey
 MAN=	skey.1 skeyinfo.1 skeyaudit.1 skeyprune.8
@@ -12,11 +12,11 @@ DPADD=	${LIBSKEY}
 LDADD=	-lskey
 
 beforeinstall:
-	${INSTALL} ${COPY} -m 755 ${.CURDIR}/skeyaudit.sh \
+	${INSTALL} ${INSTALL_COPY} -m 755 ${.CURDIR}/skeyaudit.sh \
 		${DESTDIR}${BINDIR}/skeyaudit
-	${INSTALL} ${COPY} -m 755 ${.CURDIR}/skeyinfo.sh \
+	${INSTALL} ${INSTALL_COPY} -m 755 ${.CURDIR}/skeyinfo.sh \
 		${DESTDIR}${BINDIR}/skeyinfo
-	${INSTALL} ${COPY} -m 755 ${.CURDIR}/skeyprune.pl \
+	${INSTALL} ${INSTALL_COPY} -m 755 ${.CURDIR}/skeyprune.pl \
 		${DESTDIR}${BINDIR}/skeyprune
 
 .include <bsd.prog.mk>

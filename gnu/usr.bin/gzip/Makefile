@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.5 1996/09/16 10:21:32 downsj Exp $
+#	$OpenBSD: Makefile,v 1.6 1997/01/26 09:53:18 downsj Exp $
 #	$NetBSD: Makefile,v 1.17 1995/10/24 22:18:34 jtc Exp $
 
 PROG=	gzip
@@ -33,7 +33,7 @@ gzip.info:	gzip.texi
 	${MAKEINFO} -I${.CURDIR} ${.CURDIR}/gzip.texi
 
 beforeinstall:
-	${INSTALL} ${COPY} -m 444 -o ${BINOWN} -g ${BINGRP} *.info* \
+	${INSTALL} ${INSTALL_COPY} -m 444 -o ${BINOWN} -g ${BINGRP} *.info* \
 		${DESTDIR}/usr/share/info
 
 afterinstall:

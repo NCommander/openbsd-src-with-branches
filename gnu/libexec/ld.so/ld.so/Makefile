@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.2 1996/09/23 18:58:55 pefo Exp $
+#	$OpenBSD: Makefile,v 1.3 1996/09/26 12:22:02 deraadt Exp $
 
 SUBDIR= # libdl
 
@@ -9,7 +9,7 @@ SRCS=	boot1.c hash.c readelflib1.c vsprintf.c elfinterp.c
 PROG=	ld.so
 MAN=	ld.so.8
 BINDIR=/usr/libexec
-STRIP=
+INSTALL_STRIP=
 
 .PATH:	${.CURDIR}/${MACHINE_ARCH}
 

@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.2 1996/08/20 05:14:05 tholo Exp $
+#	$OpenBSD: Makefile,v 1.3 1997/01/26 09:35:10 downsj Exp $
 #	$NetBSD: Makefile,v 1.3 1995/04/23 07:58:27 cgd Exp $
 
 PROG= cpio
@@ -18,7 +18,7 @@ cpio.info:	cpio.texi
 	${MAKEINFO} -I${.CURDIR} ${.CURDIR}/cpio.texi
 
 beforeinstall:
-	${INSTALL} ${COPY} -m 444 -o ${BINOWN} -g ${BINGRP} *.info* \
+	${INSTALL} ${INSTALL_COPY} -m 444 -o ${BINOWN} -g ${BINGRP} *.info* \
 		${DESTDIR}/usr/share/info
 
 .include <bsd.prog.mk>

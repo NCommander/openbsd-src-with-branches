@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.1 1997/02/26 03:06:49 downsj Exp $
+#	$OpenBSD: Makefile,v 1.2 1997/03/04 08:59:23 downsj Exp $
 
 LIB=	wrap
 SRCS=	hosts_access.c options.c shell_cmd.c rfc931.c eval.c \
@@ -23,7 +23,7 @@ MLINKS+=hosts_access.3 request_set.3
 includes:
 	@cd ${.CURDIR}; for i in $(HDRS); do \
 	    j="cmp -s $$i ${DESTDIR}/usr/include/$$i || \
-		${INSTALL} ${COPY} -o ${BINOWN} -g ${BINGRP} -m 444 $$i \
+		${INSTALL} ${INSTALL_COPY} -o ${BINOWN} -g ${BINGRP} -m 444 $$i \
 		${DESTDIR}/usr/include"; \
 	    echo $$j; \
 	    eval "$$j"; \
