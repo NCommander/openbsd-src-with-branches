@@ -1,6 +1,6 @@
 #!/usr/bin/perl
 
-# $OpenBSD: spamd-setup.pl,v 1.1 2003/03/02 19:22:00 beck Exp $
+# $OpenBSD: spamd-setup.pl,v 1.2 2003/03/03 14:49:59 deraadt Exp $
 #
 # Copyright (c) 2003 Bob Beck <beck@openbsd.org>.  All rights reserved.
 #
@@ -194,7 +194,7 @@ sub addblack () {
 
 	# tell spamd about it
 	$remote = '127.0.0.1';
-	$port = 8025;
+	$port = 8026;
 	$iaddr = inet_aton($remote);
 	$paddr = sockaddr_in($port, $iaddr);
 	$proto = getprotobyname('tcp');
