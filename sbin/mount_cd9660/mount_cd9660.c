@@ -1,4 +1,4 @@
-/*	$OpenBSD: mount_cd9660.c,v 1.5 1997/04/19 20:07:24 flipk Exp $	*/
+/*	$OpenBSD: mount_cd9660.c,v 1.6 1997/04/19 20:10:13 deraadt Exp $	*/
 /*	$NetBSD: mount_cd9660.c,v 1.3 1996/04/13 01:31:08 jtc Exp $	*/
 
 /*
@@ -49,7 +49,7 @@ static char copyright[] =
 #if 0
 static char sccsid[] = "@(#)mount_cd9660.c	8.4 (Berkeley) 3/27/94";
 #else
-static char rcsid[] = "$OpenBSD: mount_cd9660.c,v 1.5 1997/04/19 20:07:24 flipk Exp $";
+static char rcsid[] = "$OpenBSD: mount_cd9660.c,v 1.6 1997/04/19 20:10:13 deraadt Exp $";
 #endif
 #endif /* not lint */
 
@@ -58,6 +58,7 @@ static char rcsid[] = "$OpenBSD: mount_cd9660.c,v 1.5 1997/04/19 20:07:24 flipk 
 #include <sys/mount.h>
 
 #include <err.h>
+#include <errno.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
@@ -123,8 +124,12 @@ main(argc, argv)
 		args.export.ex_flags = 0;
 	args.flags = opts;
 
-	if (mount(MOUNT_CD9660, dir, mntflags, &args) < 0)
-		err(1, NULL);
+	if (mount(MOUNT_CD9660, dir, mntflags, &args) < 0) {
+		if (errno == EOPNOTSUPP)
+			errx(1, "%s: Filesystem not supported by kernel", dir);
+		else
+			err(1, dir);
+	}
 	exit(0);
 }
 
