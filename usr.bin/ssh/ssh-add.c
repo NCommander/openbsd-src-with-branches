@@ -35,7 +35,7 @@
  */
 
 #include "includes.h"
-RCSID("$OpenBSD: ssh-add.c,v 1.22 2000/09/07 20:27:54 deraadt Exp $");
+RCSID("$OpenBSD: ssh-add.c,v 1.23 2000/11/12 19:50:38 markus Exp $");
 
 #include <openssl/evp.h>
 #include <openssl/rsa.h>
@@ -85,7 +85,7 @@ delete_all(AuthenticationConnection *ac)
 	if (success)
 		fprintf(stderr, "All identities removed.\n");
 	else
-		fprintf(stderr, "Failed to remove all identitities.\n");
+		fprintf(stderr, "Failed to remove all identities.\n");
 }
 
 char *
