@@ -69,6 +69,7 @@
 #include <netiso/iso_pcb.h>
 #include <netiso/iso_var.h>
 #include <netiso/tuba_table.h>
+#include <dev/rndvar.h>
 
 #include <machine/stdarg.h>
 
