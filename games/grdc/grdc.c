@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: grdc.c,v 1.1 1996/08/21 07:58:08 downsj Exp $	*/
 /*
  * Grand digital clock for curses compatible terminals
  * Usage: grdc [-s] [n]   -- run for n seconds (default infinity)
@@ -56,6 +56,8 @@ int i, j, s, k;
 int n = 0;
 
 	initscr();
+
+	setgid(getgid());
 
 	signal(SIGINT,sighndl);
 	signal(SIGTERM,sighndl);
