@@ -1,4 +1,4 @@
-/*	$OpenBSD: param.h,v 1.17 2002/02/01 08:47:43 mickey Exp $	*/
+/*	$OpenBSD: param.h,v 1.18 2002/02/08 23:24:08 mickey Exp $	*/
 
 /* 
  * Copyright (c) 1988-1994, The University of Utah and
@@ -66,7 +66,7 @@
 #define	SSIZE		(4)		/* initial stack size/NBPG */
 #define	SINCR		(1)		/* increment of stack/NBPG */
 
-#define	UADDR		0x7ffe6000	/* u-area lives here */
+#define	UADDR		0x7fff7000	/* u-area lives here */
 #define	USHIFT		(3)		/* log2(UPAGES) */
 #define	UPAGES		(1<<USHIFT)	/* pages of u-area */
 #define	USPACE		(UPAGES * NBPG)	/* pages for user struct and kstack */
