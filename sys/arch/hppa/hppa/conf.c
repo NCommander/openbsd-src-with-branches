@@ -1,4 +1,4 @@
-/*	$OpenBSD: conf.c,v 1.12 2001/08/01 20:30:58 miod Exp $	*/
+/*	$OpenBSD: conf.c,v 1.13 2001/08/06 22:34:43 mickey Exp $	*/
 
 /*-
  * Copyright (c) 1991 The Regents of the University of California.
@@ -100,7 +100,6 @@ cdev_decl(mm);
 #include "wskbd.h"
 #include "wsmouse.h"
 #include "wsmux.h"
-cdev_decl(wsmux);
 
 #include "bpfilter.h"
 #include "tun.h"
