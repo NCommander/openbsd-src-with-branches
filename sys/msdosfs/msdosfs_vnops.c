@@ -485,10 +485,10 @@ msdosfs_read(v)
 			return (error);
 		}
 		error = uiomove(bp->b_data + on, (int) n, uio);
-		if (!isadir)
-			dep->de_flag |= DE_ACCESS;
 		brelse(bp);
 	} while (error == 0 && uio->uio_resid > 0 && n != 0);
+	if (!isadir && !(vp->v_mount->mnt_flag & MNT_NOATIME))
+		dep->de_flag |= DE_ACCESS;
 	return (error);
 }
 
