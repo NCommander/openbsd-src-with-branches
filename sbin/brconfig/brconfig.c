@@ -1,4 +1,4 @@
-/*	$OpenBSD: brconfig.c,v 1.21 2002/12/09 12:34:08 markus Exp $	*/
+/*	$OpenBSD: brconfig.c,v 1.22 2002/12/09 23:57:31 deraadt Exp $	*/
 
 /*
  * Copyright (c) 1999, 2000 Jason L. Wright (jason@thought.net)
@@ -47,7 +47,6 @@
 #include <string.h>
 #include <err.h>
 #include <sysexits.h>
-#include <stdlib.h>
 #include <limits.h>
 
 void usage(void);
