@@ -1,4 +1,6 @@
-#	$OpenBSD: Makefile,v 1.3 1996/12/08 15:22:18 downsj Exp $
+#	$OpenBSD: Makefile,v 1.4 1997/04/27 20:56:00 millert Exp $
+
+.include <bsd.own.mk>
 
 CFLAGS+=	-DLIBC_SCCS
 .if !defined(NOPIC)
