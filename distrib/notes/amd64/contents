@@ -1,4 +1,4 @@
-dnl	$OpenBSD: contents,v 1.12 2004/07/28 05:28:23 miod Exp $
+dnl	$OpenBSD: contents,v 1.13 2004/08/10 19:34:40 miod Exp $
 TopPart
 
 dnl uncomment as stuff becomes available
@@ -49,7 +49,7 @@ OpenBSDbase(36412569,110755840,shared)
 
 OpenBSDcomp(25802362,94586880,shared)
 
-OpenBSDetc(1683193,7045120,noupgrade)
+OpenBSDetc(1683193,7045120)
 
 OpenBSDgame(2677997,6266880)
 
