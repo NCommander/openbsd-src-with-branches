@@ -1,4 +1,4 @@
-/*	$OpenBSD: rbus.c,v 1.4 2002/03/14 01:26:53 millert Exp $ */
+/*	$OpenBSD: rbus.c,v 1.5 2002/06/07 02:06:09 nordin Exp $ */
 /*	$NetBSD: rbus.c,v 1.3 1999/11/06 06:20:53 soren Exp $	*/
 /*
  * Copyright (c) 1999
@@ -130,7 +130,7 @@ rbus_space_alloc_subregion(rbt, substart, subend, addr, size, mask, align, flags
       /* maybe, the resister is overflowed. */
       
       if (extent_alloc_subregion(rbt->rb_ext, addr, addr + size, size,
-				 0, 0, 0, exflags, (u_long *)&result)) {
+				 1, 0, 0, exflags, (u_long *)&result)) {
 	return 1;
       }
     } else {
