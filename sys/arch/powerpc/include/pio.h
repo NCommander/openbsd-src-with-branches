@@ -1,4 +1,4 @@
-/*	$OpenBSD: pio.h,v 1.4 1999/11/09 04:13:54 rahnds Exp $ */
+/*	$OpenBSD: pio.h,v 1.5 2001/06/24 04:45:45 drahn Exp $ */
 
 /*
  * Copyright (c) 1997 Per Fogelstrom, Opsycon AB and RTMX Inc, USA.
@@ -38,6 +38,7 @@
  * I/O macros.
  */
 void *mapiodev(paddr_t pa, psize_t len);
+void unmapiodev(void * va, psize_t len);
 
 static __inline void
 __outb(volatile u_int8_t *a, int v)
