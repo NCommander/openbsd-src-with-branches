@@ -1,4 +1,4 @@
-/*	$OpenBSD: machdep.c,v 1.19 2001/11/06 19:53:16 miod Exp $	*/
+/*	$OpenBSD: machdep.c,v 1.20 2001/11/07 01:18:00 art Exp $	*/
 /*	$NetBSD: machdep.c,v 1.108 2001/07/24 19:30:14 eeh Exp $ */
 
 /*-
@@ -386,11 +386,6 @@ allocsys(caddr_t v)
 	if (bufpages > nbuf * MAXBSIZE / PAGE_SIZE)
 		bufpages = nbuf * MAXBSIZE / PAGE_SIZE;
 
-	if (nswbuf == 0) {
-		nswbuf = (nbuf / 2) &~ 1;       /* force even */
-		if (nswbuf > 256)
-			nswbuf = 256;           /* sanity */
-	}
 	valloc(buf, struct buf, nbuf);
 
 	return (v);

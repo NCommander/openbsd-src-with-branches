@@ -1,4 +1,4 @@
-/*	$OpenBSD: machdep.c,v 1.41 2001/11/06 19:53:14 miod Exp $	*/
+/*	$OpenBSD: machdep.c,v 1.42 2001/11/07 01:18:00 art Exp $	*/
 
 /*
  * Copyright (c) 1999-2000 Michael Shalayeff
@@ -96,7 +96,6 @@
 /*
  * Patchable buffer cache parameters
  */
-int nswbuf = 0;
 #ifdef NBUF
 int nbuf = NBUF;
 #else
@@ -463,12 +462,6 @@ hptsize=256;	/* XXX one page for now */
 	/* More buffer pages than fits into the buffers is senseless. */
 	if (bufpages > nbuf * MAXBSIZE / PAGE_SIZE)
 		bufpages = nbuf * MAXBSIZE / PAGE_SIZE;
-
-	if (nswbuf == 0) {
-		nswbuf = (nbuf / 2) &~ 1;
-		if (nswbuf > 256)
-			nswbuf = 256;
-	}
 	
 	v = vstart;
 #define valloc(name, type, num) (name) = (type *)v; v = (vaddr_t)((name)+(num))
