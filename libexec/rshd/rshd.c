@@ -1,4 +1,4 @@
-/*	$OpenBSD: rshd.c,v 1.37 2001/05/29 21:37:16 millert Exp $	*/
+/*	$OpenBSD: rshd.c,v 1.38 2001/06/11 15:18:51 mickey Exp $	*/
 
 /*-
  * Copyright (c) 1988, 1989, 1992, 1993, 1994
@@ -41,7 +41,7 @@ static char copyright[] =
 
 #ifndef lint
 /* from: static char sccsid[] = "@(#)rshd.c	8.2 (Berkeley) 4/6/94"; */
-static char *rcsid = "$OpenBSD: rshd.c,v 1.37 2001/05/29 21:37:16 millert Exp $";
+static char *rcsid = "$OpenBSD: rshd.c,v 1.38 2001/06/11 15:18:51 mickey Exp $";
 #endif /* not lint */
 
 /*
@@ -751,7 +751,7 @@ fail:
 		    syslog(LOG_INFO|LOG_AUTH, "%s@%s as %s: cmd='%.80s'",
 			remuser, hostname, locuser, cmdbuf);
 	}
-	execl(pwd->pw_shell, cp, "-c", cmdbuf, 0);
+	execl(pwd->pw_shell, cp, "-c", cmdbuf, (char *)NULL);
 	perror(pwd->pw_shell);
 	exit(1);
 }

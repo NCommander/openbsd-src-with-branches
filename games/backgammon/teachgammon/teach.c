@@ -1,4 +1,4 @@
-/*	$OpenBSD: teach.c,v 1.8 2001/03/08 21:18:32 deraadt Exp $	*/
+/*	$OpenBSD: teach.c,v 1.9 2001/06/23 23:50:05 pjanzen Exp $	*/
 
 /*
  * Copyright (c) 1980, 1993
@@ -43,7 +43,7 @@ static char copyright[] =
 #if 0
 static char sccsid[] = "@(#)teach.c	8.1 (Berkeley) 5/31/93";
 #else
-static char rcsid[] = "$OpenBSD: teach.c,v 1.8 2001/03/08 21:18:32 deraadt Exp $";
+static char rcsid[] = "$OpenBSD: teach.c,v 1.9 2001/06/23 23:50:05 pjanzen Exp $";
 #endif
 #endif /* not lint */
 
@@ -139,6 +139,6 @@ leave()
 {
 	clear();
 	endwin();
-	execl(EXEC, "backgammon", "-n", args, 0);
+	execl(EXEC, "backgammon", "-n", args, (char *)NULL);
 	errx(1, "help! Backgammon program is missing!!");
 }

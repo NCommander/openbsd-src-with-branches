@@ -1,4 +1,4 @@
-/*	$OpenBSD: fileio.c,v 1.17 2001/05/24 10:19:51 art Exp $	*/
+/*	$OpenBSD: fileio.c,v 1.18 2001/07/06 13:32:45 art Exp $	*/
 
 /*
  *	POSIX fileio.c
@@ -401,7 +401,7 @@ copy(frname, toname)
 	if ((pid = vfork())) {
 		if (pid == -1)
 			return -1;
-		execl("/bin/cp", "cp", frname, toname, NULL);
+		execl("/bin/cp", "cp", frname, toname, (char *)NULL);
 		_exit(1);	/* shouldn't happen */
 	}
 	waitpid(pid, &status, 0);

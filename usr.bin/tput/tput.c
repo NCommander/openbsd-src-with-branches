@@ -1,4 +1,4 @@
-/*	$OpenBSD: tput.c,v 1.9 1999/07/02 16:00:13 millert Exp $	*/
+/*	$OpenBSD: tput.c,v 1.10 1999/09/12 10:29:01 millert Exp $	*/
 
 /*
  * Copyright (c) 1999 Todd C. Miller <Todd.Miller@courtesan.com>
@@ -69,7 +69,7 @@ static char copyright[] =
 #if 0
 static char sccsid[] = "@(#)tput.c	8.3 (Berkeley) 4/28/95";
 #endif
-static char rcsid[] = "$OpenBSD: tput.c,v 1.9 1999/07/02 16:00:13 millert Exp $";
+static char rcsid[] = "$OpenBSD: tput.c,v 1.10 1999/09/12 10:29:01 millert Exp $";
 #endif /* not lint */
 
 #include <sys/param.h>
@@ -301,7 +301,7 @@ init()
 			break;
 		case 0:
 			/* child */
-			execl(init_prog, init_prog, NULL);
+			execl(init_prog, init_prog, (char *)NULL);
 			_exit(127);
 			break;
 		default:

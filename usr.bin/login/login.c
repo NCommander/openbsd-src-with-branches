@@ -1,4 +1,4 @@
-/*	$OpenBSD: login.c,v 1.40 2001/06/28 22:49:42 millert Exp $	*/
+/*	$OpenBSD: login.c,v 1.41 2001/07/06 18:12:06 pvalchev Exp $	*/
 /*	$NetBSD: login.c,v 1.13 1996/05/15 23:50:16 jtc Exp $	*/
 
 /*-
@@ -77,7 +77,7 @@ static char copyright[] =
 #if 0
 static char sccsid[] = "@(#)login.c	8.4 (Berkeley) 4/2/94";
 #endif
-static char rcsid[] = "$OpenBSD: login.c,v 1.40 2001/06/28 22:49:42 millert Exp $";
+static char rcsid[] = "$OpenBSD: login.c,v 1.41 2001/07/06 18:12:06 pvalchev Exp $";
 #endif /* not lint */
 
 /*
@@ -769,7 +769,7 @@ failed:
         kgettokens(pwd->pw_dir);
 #endif
 
-	execlp(shell, tbuf, 0);
+	execlp(shell, tbuf, (char *)NULL);
 	err(1, "%s", shell);
 }
 

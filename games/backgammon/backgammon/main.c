@@ -1,4 +1,4 @@
-/*	$OpenBSD: main.c,v 1.8 2001/02/18 03:32:49 pjanzen Exp $	*/
+/*	$OpenBSD: main.c,v 1.9 2001/06/23 23:49:54 pjanzen Exp $	*/
 
 /*
  * Copyright (c) 1980, 1993
@@ -43,7 +43,7 @@ static char copyright[] =
 #if 0
 static char sccsid[] = "@(#)main.c	8.1 (Berkeley) 5/31/93";
 #else
-static char rcsid[] = "$OpenBSD: main.c,v 1.8 2001/02/18 03:32:49 pjanzen Exp $";
+static char rcsid[] = "$OpenBSD: main.c,v 1.9 2001/06/23 23:49:54 pjanzen Exp $";
 #endif
 #endif /* not lint */
 
@@ -143,7 +143,7 @@ main (argc,argv)
 			addstr(rules);
 			if (yorn(0)) {
 				endwin();
-				execl(TEACH, "teachgammon", args, 0);
+				execl(TEACH, "teachgammon", args, (char *)NULL);
 
 				err(1, "%s", noteach);
 			} else {/* if not rules, then instructions */

@@ -1,4 +1,4 @@
-/*	$OpenBSD: misc.c,v 1.6 2000/06/29 07:39:45 pjanzen Exp $	*/
+/*	$OpenBSD: misc.c,v 1.7 2001/02/04 02:51:25 pjanzen Exp $	*/
 /*	$NetBSD: misc.c,v 1.2 1995/03/24 03:59:03 cgd Exp $	*/
 
 /*
@@ -932,7 +932,7 @@ death(how)
 	if (ch == 'Y') {
 		cleanup(FALSE);
 		execl(_PATH_GAMEPROG, "phantasia", "-s",
-		    (Wizard ? "-S" : (char *) NULL), 0);
+		    (Wizard ? "-S" : (char *)NULL), (char *)NULL);
 		exit(0);
 		/* NOTREACHED */
 	}

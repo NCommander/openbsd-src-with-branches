@@ -1,4 +1,4 @@
-/*	$OpenBSD: wwterminfo.c,v 1.7 1998/03/17 04:11:55 deraadt Exp $	*/
+/*	$OpenBSD: wwterminfo.c,v 1.8 1999/11/14 17:34:24 millert Exp $	*/
 
 /*
  * Copyright (c) 1982, 1993
@@ -40,7 +40,7 @@
 #if 0
 static char sccsid[] = "@(#)wwterminfo.c	8.1 (Berkeley) 6/6/93";
 #else
-static char rcsid[] = "$OpenBSD: wwterminfo.c,v 1.7 1998/03/17 04:11:55 deraadt Exp $";
+static char rcsid[] = "$OpenBSD: wwterminfo.c,v 1.8 1999/11/14 17:34:24 millert Exp $";
 #endif
 #endif /* not lint */
 
@@ -102,7 +102,7 @@ wwterminfoend()
 		/* can't really do (or say) anything about errors */
 		return -1;
 	case 0:
-		execl(_PATH_RM, _PATH_RM, "-rf", wwterminfopath, 0);
+		execl(_PATH_RM, _PATH_RM, "-rf", wwterminfopath, (char *)NULL);
 		_exit(0);
 	default:
 		wait(NULL);

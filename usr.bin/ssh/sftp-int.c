@@ -26,7 +26,7 @@
 /* XXX: recursive operations */
 
 #include "includes.h"
-RCSID("$OpenBSD: sftp-int.c,v 1.36 2001/04/15 08:43:46 markus Exp $");
+RCSID("$OpenBSD: sftp-int.c,v 1.37 2001/06/23 15:12:20 itojun Exp $");
 
 #include <glob.h>
 
@@ -165,10 +165,10 @@ local_do_shell(const char *args)
 		/* XXX: child has pipe fds to ssh subproc open - issue? */
 		if (args) {
 			debug3("Executing %s -c \"%s\"", shell, args);
-			execl(shell, shell, "-c", args, NULL);
+			execl(shell, shell, "-c", args, (char *)NULL);
 		} else {
 			debug3("Executing %s", shell);
-			execl(shell, shell, NULL);
+			execl(shell, shell, (char *)NULL);
 		}
 		fprintf(stderr, "Couldn't execute \"%s\": %s\n", shell,
 		    strerror(errno));

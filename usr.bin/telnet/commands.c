@@ -1,4 +1,4 @@
-/*	$OpenBSD: commands.c,v 1.34 2000/11/08 21:49:44 aaron Exp $	*/
+/*	$OpenBSD: commands.c,v 1.35 2001/04/30 10:00:04 markus Exp $	*/
 /*	$NetBSD: commands.c,v 1.14 1996/03/24 22:03:48 jtk Exp $	*/
 
 /*
@@ -1382,9 +1382,9 @@ shell(argc, argv)
 	    else
 		shellname++;
 	    if (argc > 1)
-		execl(shellp, shellname, "-c", &saveline[1], 0);
+		execl(shellp, shellname, "-c", &saveline[1], (char *)NULL);
 	    else
-		execl(shellp, shellname, 0);
+		execl(shellp, shellname, (char *)NULL);
 	    perror("Execl");
 	    _exit(1);
 	}
