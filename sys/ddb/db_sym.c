@@ -41,14 +41,6 @@
 /*
  * Multiple symbol tables
  */
-#ifndef MAXLKMS
-#define MAXLKMS 20
-#endif
-
-#ifndef MAXNOSYMTABS
-#define	MAXNOSYMTABS	MAXLKMS+1	/* Room for kernel + LKM's */
-#endif
-
 static TAILQ_HEAD(, db_symtab)	db_symtabs;
 static struct db_symtab	db_sym_kernel;
 size_t			db_nsymtabs = 0;
