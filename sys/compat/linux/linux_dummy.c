@@ -120,4 +120,3 @@ DUMMY(pivot_root);		/* #217 */
 DUMMY(mincore);			/* #218 */
 DUMMY(madvise);			/* #219 */
 DUMMY(getdents64);		/* #220 */
-DUMMY(fcntl64);			/* #221 */

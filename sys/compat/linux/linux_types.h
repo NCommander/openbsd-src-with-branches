@@ -48,6 +48,7 @@ typedef unsigned short linux_nlink_t;
 typedef long linux_time_t;
 typedef long linux_clock_t;
 typedef long linux_off_t;
+typedef u_int64_t linux_loff_t;
 typedef int linux_pid_t;
 
 struct linux_statfs {

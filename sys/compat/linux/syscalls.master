@@ -346,4 +346,4 @@
 218	NOARGS		{ int linux_sys_mincore(void); }
 219	NOARGS		{ int linux_sys_madvise(void); }
 220	NOARGS		{ int linux_sys_getdents64(void); }
-221	NOARGS		{ int linux_sys_fcntl64(void); }
+221	STD		{ int linux_sys_fcntl64(u_int fd, u_int cmd, void *arg); }
