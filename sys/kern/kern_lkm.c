@@ -1,4 +1,4 @@
-/*	$OpenBSD: kern_lkm.c,v 1.26 2000/01/02 06:28:06 assar Exp $	*/
+/*	$OpenBSD: kern_lkm.c,v 1.27 2001/02/06 16:38:13 fgsch Exp $	*/
 /*	$NetBSD: kern_lkm.c,v 1.31 1996/03/31 21:40:27 christos Exp $	*/
 
 /*
@@ -509,7 +509,7 @@ lkmioctl(dev, cmd, data, flag, p)
 			curp->sym_id = db_add_symbol_table(curp->syms,
 			    curp->syms + curp->sym_symsize,
 			    curp->private.lkm_any->lkm_name,
-			    curp->syms, curp->syms + curp->sym_size);
+			    curp->syms);
 			printf("DDB symbols added: %ld bytes\n",
 			    curp->sym_symsize);
 		}
