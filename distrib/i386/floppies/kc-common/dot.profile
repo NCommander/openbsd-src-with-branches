@@ -1,4 +1,4 @@
-#	$Id: dot.profile,v 1.1.1.1 1994/08/29 15:30:16 cgd Exp $
+#	$OpenBSD$
 
 PATH=/sbin:/bin:/
 export PATH

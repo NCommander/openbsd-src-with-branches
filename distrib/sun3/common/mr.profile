@@ -1,4 +1,4 @@
-#
+#	$OpenBSD$
 #	$NetBSD: mr.profile,v 1.2 1995/11/21 21:19:08 gwr Exp $
 #
 # Copyright (c) 1995 Jason R. Thorpe
@@ -52,7 +52,7 @@ update
 sh /.remount
 
 # run the installation script.
-echo 'To install NetBSD, enter the command:  install'
+echo 'To install OpenBSD, enter the command:  install'
 echo 'Otherwise, enter the command:  halt'
 # /install  XXX - Not yet...
 

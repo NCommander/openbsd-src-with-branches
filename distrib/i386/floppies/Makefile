@@ -1,4 +1,4 @@
-#	$Id
+#	$OpenBSD$
 
 SUBDIR= inst kcadp kcoth upgr
 
