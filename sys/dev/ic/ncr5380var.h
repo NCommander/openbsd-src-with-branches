@@ -111,6 +111,9 @@ struct ncr5380_softc {
 #define	NCR5380_PERMIT_RESELECT		1  /* Allow disconnect/reselect */
 #define	NCR5380_FORCE_POLLING		2  /* Do not use interrupts. */
 
+	/* Set bits in this to disable disconnect per-target. */
+	int	sc_no_disconnect;
+
 	/* Set bits in this to disable parity for some target. */
 	int		sc_parity_disable;
 
