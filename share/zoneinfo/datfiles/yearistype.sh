@@ -1,4 +1,5 @@
-#!/bin/sh
+#! /bin/sh
+#       $OpenBSD$
 
 : '@(#)yearistype.sh	7.4'
 
