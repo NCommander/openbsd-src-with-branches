@@ -1,4 +1,4 @@
-/* 	$OpenBSD: isp.c,v 1.33 2003/04/23 20:13:07 mickey Exp $ */
+/* 	$OpenBSD: isp.c,v 1.34 2003/10/21 18:58:49 jmc Exp $ */
 /*
  * Machine and OS Independent (well, as best as possible)
  * code for the Qlogic ISP SCSI adapters.
@@ -4873,6 +4873,10 @@ static const u_int16_t mbpscsi[] = {
 	ISPOPMAP(0x0f, 0x0f),	/* 0x5c: SET HOST DATA */
 	ISPOPMAP(0x01, 0x01)	/* 0x5d: GET NOST DATA */
 };
+
+#ifdef SMALL_KERNEL
+#define ISP_STRIPPED
+#endif
 
 #ifndef	ISP_STRIPPED
 static char *scsi_mbcmd_names[] = {
