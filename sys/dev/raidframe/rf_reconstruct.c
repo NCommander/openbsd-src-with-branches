@@ -1,4 +1,4 @@
-/*	$OpenBSD: rf_reconstruct.c,v 1.3 1999/07/30 14:45:33 peter Exp $	*/
+/*	$OpenBSD: rf_reconstruct.c,v 1.4 1999/08/03 13:56:37 peter Exp $	*/
 /*	$NetBSD: rf_reconstruct.c,v 1.5 1999/03/02 03:18:49 oster Exp $	*/
 /*
  * Copyright (c) 1995 Carnegie-Mellon University.
@@ -258,9 +258,9 @@ rf_FreeReconDesc(reconDesc)
 
 	printf("RAIDframe: %qu max exec uSec\n", reconDesc->maxReconExecuSecs);
 
-#if (RF_RECON_STATS > 0) || defined(KERNEL)
+#if (RF_RECON_STATS > 0) || defined(_KERNEL)
 	printf("\n");
-#endif /* (RF_RECON_STATS > 0) || KERNEL */
+#endif /* (RF_RECON_STATS > 0) || _KERNEL */
 	RF_FREELIST_FREE(rf_recond_freelist, reconDesc, next);
 }
 

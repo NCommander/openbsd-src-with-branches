@@ -1,4 +1,4 @@
-/*	$OpenBSD: rf_raid.h,v 1.2 1999/02/16 00:03:13 niklas Exp $	*/
+/*	$OpenBSD: rf_raid.h,v 1.3 1999/07/30 14:45:33 peter Exp $	*/
 /*	$NetBSD: rf_raid.h,v 1.6 1999/07/08 00:45:24 oster Exp $	*/
 /*
  * Copyright (c) 1995 Carnegie-Mellon University.
@@ -179,7 +179,7 @@ struct RF_Raid_s {
          */
 #if !defined(_KERNEL) && !defined(SIMULATE)
 	RF_ThroughputStats_t throughputstats;
-#endif				/* !KERNEL && !SIMULATE */
+#endif				/* !_KERNEL && !SIMULATE */
 	RF_CumulativeStats_t userstats;
 
 	/*
