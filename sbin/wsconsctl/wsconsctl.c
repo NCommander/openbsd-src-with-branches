@@ -1,4 +1,4 @@
-/*	$OpenBSD: wsconsctl.c,v 1.6 2001/07/07 18:26:22 deraadt Exp $	*/
+/*	$OpenBSD: wsconsctl.c,v 1.7 2001/07/15 19:29:04 mickey Exp $	*/
 /*	$NetBSD: wsconsctl.c,v 1.2 1998/12/29 22:40:20 hannken Exp $ */
 
 /*-
@@ -79,7 +79,7 @@ usage(msg)
 	char *msg;
 {
 	if (msg != NULL)
-		fprintf(stderr, "%s: %s\n\n", __progname, msg);
+		fprintf(stderr, "%s: %s\n", __progname, msg);
 
 	fprintf(stderr,
 	    "usage: %s [-f file] [-n] name ...\n"
