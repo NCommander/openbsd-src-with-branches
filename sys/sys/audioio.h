@@ -1,4 +1,4 @@
-/*	$OpenBSD: audioio.h,v 1.7 1998/04/26 21:03:17 provos Exp $	*/
+/*	$OpenBSD: audioio.h,v 1.8 1998/06/02 11:01:11 provos Exp $	*/
 /*	$NetBSD: audioio.h,v 1.21 1998/05/27 17:21:29 augustss Exp $	*/
 
 /*
@@ -48,7 +48,7 @@ struct audio_prinfo {
 	u_int	encoding;	/* data encoding (AUDIO_ENCODING_* below) */
 	u_int	gain;		/* volume level */
 	u_int	port;		/* selected I/O port */
-	u_long	seek;		/* BSD extension */
+	u_int	seek;		/* BSD extension */
 	u_int	avail_ports;	/* available I/O ports */
 	u_int	buffer_size;	/* total size audio buffer */
 	u_int	_ispare[1];
