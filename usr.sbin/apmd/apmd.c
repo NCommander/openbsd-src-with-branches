@@ -1,4 +1,4 @@
-/*	$OpenBSD: apmd.c,v 1.26 2002/07/04 07:31:16 deraadt Exp $	*/
+/*	$OpenBSD: apmd.c,v 1.27 2002/09/06 19:46:52 deraadt Exp $	*/
 
 /*
  *  Copyright (c) 1995, 1996 John T. Kohl
@@ -257,8 +257,7 @@ handle_client(int sock_fd, int ctl_fd)
 int speaker_ok = TRUE;
 
 void
-make_noise(howmany)
-int howmany;
+make_noise(int howmany)
 {
 	int spkrfd = -1;
 	int trycnt;

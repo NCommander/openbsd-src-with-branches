@@ -1,4 +1,4 @@
-/*	$OpenBSD: ndp.c,v 1.25 2002/07/17 13:49:03 itojun Exp $	*/
+/*	$OpenBSD: ndp.c,v 1.26 2003/06/02 23:36:54 millert Exp $	*/
 /*	$KAME: ndp.c,v 1.101 2002/07/17 08:46:33 itojun Exp $	*/
 
 /*
@@ -376,9 +376,9 @@ set(argc, argv)
 	int argc;
 	char **argv;
 {
-	register struct sockaddr_in6 *sin = &sin_m;
-	register struct sockaddr_dl *sdl;
-	register struct rt_msghdr *rtm = &(m_rtmsg.m_rtm);
+	struct sockaddr_in6 *sin = &sin_m;
+	struct sockaddr_dl *sdl;
+	struct rt_msghdr *rtm = &(m_rtmsg.m_rtm);
 	struct addrinfo hints, *res;
 	int gai_error;
 	u_char *ea;
@@ -497,7 +497,7 @@ delete(host)
 	char *host;
 {
 	struct sockaddr_in6 *sin = &sin_m;
-	register struct rt_msghdr *rtm = &m_rtmsg.m_rtm;
+	struct rt_msghdr *rtm = &m_rtmsg.m_rtm;
 	struct sockaddr_dl *sdl;
 	struct addrinfo hints, *res;
 	int gai_error;
@@ -859,9 +859,9 @@ rtmsg(cmd)
 {
 	static int seq;
 	int rlen;
-	register struct rt_msghdr *rtm = &m_rtmsg.m_rtm;
-	register char *cp = m_rtmsg.m_space;
-	register int l;
+	struct rt_msghdr *rtm = &m_rtmsg.m_rtm;
+	char *cp = m_rtmsg.m_space;
+	int l;
 
 	errno = 0;
 	if (cmd == RTM_DELETE)
