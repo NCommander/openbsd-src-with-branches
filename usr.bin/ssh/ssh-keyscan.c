@@ -8,7 +8,7 @@
  */
 
 #include "includes.h"
-RCSID("$OpenBSD: ssh-keyscan.c,v 1.13 2001/02/07 18:04:50 itojun Exp $");
+RCSID("$OpenBSD: ssh-keyscan.c,v 1.14 2001/02/07 22:43:16 markus Exp $");
 
 #include <sys/queue.h>
 #include <errno.h>
@@ -578,6 +578,7 @@ main(int argc, char **argv)
 	if (maxfd > fdlim_get(0))
 		fdlim_set(maxfd);
 	fdcon = xmalloc(maxfd * sizeof(con));
+	memset(fdcon, 0, maxfd * sizeof(con));
 
 	do {
 		while (ncon < maxcon) {
