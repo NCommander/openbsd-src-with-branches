@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_uba.c,v 1.5.12.1 2001/05/14 21:37:55 niklas Exp $	*/
+/*	$OpenBSD$	*/
 /*	$NetBSD: if_uba.c,v 1.15 1999/01/01 21:43:18 ragge Exp $	*/
 
 /*
@@ -41,7 +41,6 @@
 #include <sys/systm.h>
 #include <sys/malloc.h>
 #include <sys/mbuf.h>
-#include <sys/map.h>
 #include <sys/buf.h>
 #include <sys/socket.h>
 #include <sys/syslog.h>

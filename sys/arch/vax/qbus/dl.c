@@ -1,4 +1,4 @@
-/*	$OpenBSD: dl.c,v 1.1 2000/04/27 03:14:47 bjc Exp $	*/
+/*	$OpenBSD$	*/
 /*	$NetBSD: dl.c,v 1.11 2000/01/24 02:40:29 matt Exp $	*/
 
 /*-
@@ -86,7 +86,6 @@
 #include <sys/ioctl.h>
 #include <sys/tty.h>
 #include <sys/proc.h>
-#include <sys/map.h>
 #include <sys/buf.h>
 #include <sys/conf.h>
 #include <sys/file.h>

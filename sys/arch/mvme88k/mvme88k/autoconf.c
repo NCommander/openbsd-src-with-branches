@@ -1,4 +1,4 @@
-/*	$OpenBSD: autoconf.c,v 1.6.4.5 2001/11/13 21:04:15 niklas Exp $	*/
+/*	$OpenBSD$	*/
 /*
  * Copyright (c) 1998 Steve Murphree, Jr.
  * Copyright (c) 1996 Nivas Madhur
@@ -33,10 +33,8 @@
  */
 #include <sys/param.h>
 #include <sys/systm.h>
-#include <sys/map.h>
 #include <sys/buf.h>
 #include <sys/dkstat.h>
-#include <sys/dmap.h>
 #include <sys/reboot.h>
 #include <sys/conf.h>
 #include <sys/device.h>
@@ -47,7 +45,6 @@
 #include <machine/autoconf.h>
 #include <machine/cpu.h>
 #include <machine/disklabel.h>
-#include <machine/pte.h>
 #include <machine/vmparam.h>
 
 /*

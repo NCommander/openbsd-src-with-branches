@@ -781,9 +781,11 @@ fvmescan(parent, child, aux)
 
 	if ((*cf->cf_attach->ca_match)(parent, cf, &oca) == 0) {
 		pmap_remove(pmap_kernel(), TMPMAP_VA, TMPMAP_VA + NBPG);
+		pmap_update(pmap_kernel());
 		return (0);
 	}
 	pmap_remove(pmap_kernel(), TMPMAP_VA, TMPMAP_VA + NBPG);
+	pmap_update(pmap_kernel());
 
 	oca.ca_ra.ra_reg[0].rr_paddr = (void *)paddr;
 	config_attach(parent, cf, &oca, fvmeprint);

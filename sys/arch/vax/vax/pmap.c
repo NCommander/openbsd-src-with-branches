@@ -733,6 +733,7 @@ if (startpmapdebug)
 			bzero((caddr_t)(phys|KERNBASE), NBPG);
 			pmap_kenter_pa(ptaddr, phys,
 			    VM_PROT_READ|VM_PROT_WRITE);
+			pmap_update(pmap_kernel());
 		}
 	}
 
@@ -779,11 +780,11 @@ if (startpmapdebug)
 			pv->pv_next = tmp;
 		}
 		splx(s);
+		pmap->pm_stats.resident_count++;
 	} else {
 		/* No mapping change, just flush the TLB; necessary? */
 		mtpr(0, PR_TBIA);
 	}
-	pmap->pm_stats.resident_count++;
 
 	if (flags & VM_PROT_READ) {
 		pv->pv_attr |= PG_V;

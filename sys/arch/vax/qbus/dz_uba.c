@@ -1,4 +1,4 @@
-/*	$OpenBSD: dz_uba.c,v 1.1.8.1 2001/05/14 21:38:21 niklas Exp $	*/
+/*	$OpenBSD$	*/
 /*	$NetBSD: dz_uba.c,v 1.11 2000/06/04 06:17:02 matt Exp $ */
 /*
  * Copyright (c) 1998 Ludd, University of Lule}, Sweden. All rights reserved.
@@ -36,7 +36,6 @@
 #include <sys/ioctl.h>
 #include <sys/tty.h>
 #include <sys/proc.h>
-#include <sys/map.h>
 #include <sys/buf.h>
 #include <sys/conf.h>
 #include <sys/file.h>

@@ -153,7 +153,7 @@ bugttymctl(dev, bits, how)
 	case DMGET:
 		break;
 	}
-	(void)splx(s);
+	splx(s);
 
 	bits = 0;
 	/* proper defaults? */

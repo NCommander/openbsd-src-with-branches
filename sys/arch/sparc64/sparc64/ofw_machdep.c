@@ -557,15 +557,15 @@ prom_get_msgbuf(len, align)
  * Low-level prom I/O routines.
  */
 
-static u_int stdin = NULL;
-static u_int stdout = NULL;
+static u_int stdin;
+static u_int stdout;
 
 int 
 OF_stdin() 
 {
 	u_int chosen;
 
-	if (stdin != NULL) 
+	if (stdin != 0) 
 		return stdin;
 		
 	chosen = OF_finddevice("/chosen");
@@ -578,7 +578,7 @@ OF_stdout()
 {
 	u_int chosen;
 
-	if (stdout != NULL) 
+	if (stdout != 0) 
 		return stdout;
 		
 	chosen = OF_finddevice("/chosen");

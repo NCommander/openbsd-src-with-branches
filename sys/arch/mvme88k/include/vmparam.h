@@ -1,4 +1,4 @@
-/*	$OpenBSD: vmparam.h,v 1.6.4.3 2001/10/31 03:01:19 nate Exp $ */
+/*	$OpenBSD$ */
 /* 
  * Mach Operating System
  * Copyright (c) 1992 Carnegie Mellon University
@@ -90,8 +90,6 @@
 #define INTSTACK_SIZE		(3 * PAGE_SIZE)	/* interrupt stack size */
 
 /* virtual sizes (bytes) for various kernel submaps */
-#define VM_MBUF_SIZE		(NMBCLUSTERS * MCLBYTES)
-#define VM_KMEM_SIZE		(NKMEMCLUSTERS * PAGE_SIZE)
 #define VM_PHYS_SIZE		(1 * NPTEPG * PAGE_SIZE)
 
 /*
@@ -113,7 +111,6 @@
 struct pmap_physseg {
 	struct pv_entry *pvent;		/* pv table for this seg */
 	char *attrs;			/* page modify list for this seg */
-	struct simplelock *plock;	/* page lock for this seg */
 };
 #endif /* _LOCORE */
 

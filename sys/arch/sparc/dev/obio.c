@@ -302,6 +302,8 @@ vmesattach(parent, self, args)
 	if (vmeints == NULL) {
 		vmeints = (struct intrhand **)malloc(256 *
 		    sizeof(struct intrhand *), M_TEMP, M_NOWAIT);
+		if (vmeints == NULL)
+			panic("vmesattach: can't allocate intrhand");
 		bzero(vmeints, 256 * sizeof(struct intrhand *));
 	}
 	(void)config_search(vmes_scan, self, args);
@@ -323,6 +325,8 @@ vmelattach(parent, self, args)
 	if (vmeints == NULL) {
 		vmeints = (struct intrhand **)malloc(256 *
 		    sizeof(struct intrhand *), M_TEMP, M_NOWAIT);
+		if (vmeints == NULL)
+			panic("vmelattach: can't allocate intrhand");
 		bzero(vmeints, 256 * sizeof(struct intrhand *));
 	}
 	(void)config_search(vmel_scan, self, args);
@@ -663,4 +667,5 @@ void
 bus_untmp()
 {
 	pmap_remove(pmap_kernel(), TMPMAP_VA, TMPMAP_VA+NBPG);
+	pmap_update(pmap_kernel());
 }

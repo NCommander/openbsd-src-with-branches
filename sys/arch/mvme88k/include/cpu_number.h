@@ -39,8 +39,7 @@ static unsigned cpu_number __P((void));
 static __inline__ unsigned cpu_number(void)
 {
 	register unsigned cpu;
-
-	if (cputyp != CPU_188 || number_cpus == 1) return 0;
+	if (brdtyp != BRD_188 || number_cpus == 1) return 0;
 	__asm__ ("ldcr %0, cr18" : "=r" (cpu));
 	return (cpu & 3);
 }

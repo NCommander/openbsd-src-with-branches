@@ -1,4 +1,4 @@
-/*	$OpenBSD: zs.c,v 1.22.4.1 2001/05/14 21:37:11 niklas Exp $	*/
+/*	$OpenBSD$	*/
 /*	$NetBSD: zs.c,v 1.49 1997/08/31 21:26:37 pk Exp $ */
 
 /*
@@ -90,11 +90,6 @@
 
 #define DEVUNIT(x)      (minor(x) & 0x7f)
 #define DEVCUA(x)       (minor(x) & 0x80)
-
-/* Macros to clear/set/test flags. */
-#define SET(t, f)       (t) |= (f)
-#define CLR(t, f)       (t) &= ~(f)
-#define ISSET(t, f)     ((t) & (f))
 
 #define	ZSMAJOR	12		/* XXX */
 
@@ -353,6 +348,8 @@ zsattach(parent, dev, aux)
 	cs->cs_ringmask = ringsize - 1;
 	cs->cs_rbuf = malloc((u_long)ringsize * sizeof(*cs->cs_rbuf),
 			      M_DEVBUF, M_NOWAIT);
+	if (cs->cs_rbuf == NULL)
+		panic("zsattach");
 
 	unit++;
 	cs++;
@@ -390,6 +387,8 @@ zsattach(parent, dev, aux)
 	cs->cs_ringmask = ringsize - 1;
 	cs->cs_rbuf = malloc((u_long)ringsize * sizeof(*cs->cs_rbuf),
 			      M_DEVBUF, M_NOWAIT);
+	if (cs->cs_rbuf == NULL)
+		panic("zsattach");
 }
 
 #ifdef KGDB

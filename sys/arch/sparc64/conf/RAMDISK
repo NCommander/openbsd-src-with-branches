@@ -42,11 +42,13 @@ ebus*	at pci?
 
 hme*	at pci? dev ? function ?
 gem*	at pci? dev ? function ?
+dc*	at pci? dev ? function ?
 
 auxio*	at ebus?
 #com*	at ebus?
 clock*	at sbus? slot ? offset ?		# Mostek clock 
 clock*	at ebus?
+rtc*	at ebus?				# DS1287/M5819 clock
 timer*	at mainbus0				# Timer chip
 
 ## PROM console driver -- if all else fails

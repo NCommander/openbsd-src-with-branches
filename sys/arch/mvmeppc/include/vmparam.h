@@ -98,8 +98,6 @@ extern vm_offset_t ppc_kvm_size;
 #define	VM_MAX_KERNEL_ADDRESS	((vm_offset_t)((KERNEL_SR << ADDR_SR_SHFT) \
 						+ SEGMENT_LENGTH))
 
-#define	VM_KMEM_SIZE		(NKMEMCLUSTERS * PAGE_SIZE)
-#define	VM_MBUF_SIZE		(NMBCLUSTERS * PAGE_SIZE)
 #define	VM_PHYS_SIZE		(USRIOSIZE * PAGE_SIZE)
 
 struct pmap_physseg {

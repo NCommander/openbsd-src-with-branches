@@ -117,4 +117,10 @@ bus_space_tag_t psycho_alloc_bus_tag __P((struct psycho_pbm *, int));
 #define psycho_alloc_mem_tag(pp) psycho_alloc_bus_tag((pp), PCI_MEMORY_BUS_SPACE)
 #define psycho_alloc_io_tag(pp) psycho_alloc_bus_tag((pp), PCI_IO_BUS_SPACE)
 
+/* uperf attachment to psycho's */
+struct uperf_psycho_attach_args {
+	char *upaa_name;
+	struct perfmon *upaa_regs;
+};
+
 #endif /* _SPARC64_DEV_PSYCHOVAR_H_ */

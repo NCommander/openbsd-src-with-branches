@@ -55,7 +55,7 @@
 #include <uvm/uvm_pmap.h>
 
 #include <machine/autoconf.h>
-#include <machine/mmu.h>
+#include <machine/cmmu.h>
 #include <machine/pmap.h>
 
 #include <scsi/scsi_all.h>

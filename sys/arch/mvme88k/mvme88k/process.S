@@ -1,4 +1,4 @@
-/*	$OpenBSD: process.S,v 1.5.6.3 2001/10/31 03:01:20 nate Exp $	*/
+/*	$OpenBSD$	*/
 /*
  * Copyright (c) 1996 Nivas Madhur
  * All rights reserved.
@@ -265,7 +265,7 @@ Lswnochg:
 	subu	r31, r31,48
 	/* r2 = 1 : kernel ? user, r3 = address, r4 = size */
 	/* cmmu_flush_tlb(0, 0, 0xffff) */
-	bsr.n	_cmmu_flush_tlb
+	bsr.n	_md_cmmu_flush_tlb
 	or	r4, r0, 0xffff		/* cmmu_flush_tlb flushes entire tlb */
 					/* for sizes > 4096		     */
 	addu	r31, r31,48

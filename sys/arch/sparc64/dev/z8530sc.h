@@ -125,6 +125,7 @@ struct zs_chanstate {
 
 struct consdev;
 struct zsc_attach_args {
+	char *type;		/* type name 'serial', 'keyboard', 'mouse' */
 	int channel;		/* two serial channels per zsc */
 	int hwflags;		/* see definitions below */
 	/* `consdev' is only valid if ZS_HWFLAG_USE_CONSDEV is set */

@@ -88,4 +88,5 @@ struct ce4231_softc {
 	u_int32_t	sc_lastaddr;
 	struct cs_dma	*sc_dmas;	/* dma list */
 	struct cs_dma	*sc_nowplaying;
+	void *sc_pih, *sc_cih;
 };

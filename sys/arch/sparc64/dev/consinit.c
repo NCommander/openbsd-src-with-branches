@@ -30,6 +30,7 @@
  */
 
 #include "pcons.h"
+#include "ukbd.h"
 
 #include <sys/param.h>
 #include <sys/systm.h>
@@ -56,6 +57,8 @@
 #include <dev/cons.h>
 
 #include <sparc64/dev/cons.h>
+
+#include <dev/usb/ukbdvar.h>
 
 static void prom_cnprobe __P((struct consdev *));
 static void prom_cninit __P((struct consdev *));
@@ -200,8 +203,15 @@ consinit()
 	
 	if ((stdinnode = OF_instance_to_package(stdin)) == 0) {
 		printf("WARNING: no PROM stdin\n");
-	} 
-		
+	}
+#if NUKBD > 0
+	else {
+		if (OF_getprop(stdinnode, "compatible", buffer,
+		    sizeof(buffer)) != -1 && strncmp("usb", buffer, 3) == 0)
+			ukbd_cnattach();
+	}
+#endif
+
 	DBPRINT(("setting up stdout\r\n"));
 	OF_getprop(chosen, "stdout", &stdout, sizeof(stdout));
 	
@@ -213,9 +223,6 @@ consinit()
 	DBPRINT(("stdout package = %x\r\n", fbnode));
 	
 	if (stdinnode && (OF_getproplen(stdinnode,"keyboard") >= 0)) {
-#if NKBD > 0		
-		printf("cninit: kdb/display not configured\n");
-#endif
 		consname = "keyboard/display";
 	} else if (fbnode && 
 		   (OF_instance_to_path(stdin, buffer, sizeof(buffer)) >= 0)) {

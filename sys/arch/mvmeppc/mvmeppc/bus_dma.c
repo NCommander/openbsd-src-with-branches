@@ -521,6 +521,7 @@ _bus_dmamem_map(t, segs, nsegs, size, kvap, flags)
                             VM_PROT_READ | VM_PROT_WRITE | PMAP_WIRED);
                 }
         }
+	pmap_update(pmap_kernel());
 
         return (0);
 }

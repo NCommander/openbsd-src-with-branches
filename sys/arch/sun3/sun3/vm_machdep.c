@@ -271,6 +271,7 @@ pagemove(from, to, size)
 		to += NBPG;
 		size -= NBPG;
 	}
+	pmap_update(pmap_kernel());
 }
 
 /*
@@ -368,6 +369,7 @@ vunmapbuf(bp, sz)
 
 	/* Actually remove mappings, which does cache flush. */
 	pmap_remove(pmap_kernel(), pgva, pgva + size);
+	pmap_update(pmap_kernel());
 
 	/*
 	 * Now remove the map entry, which may also call

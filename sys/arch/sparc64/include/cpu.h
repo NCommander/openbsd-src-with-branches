@@ -52,11 +52,13 @@
  * CTL_MACHDEP definitions.
  */
 #define	CPU_BOOTED_KERNEL	1	/* string: booted kernel name */
-#define	CPU_MAXID		2	/* number of valid machdep ids */
+#define	CPU_LED_BLINK		2	/* int: blink leds? */
+#define	CPU_MAXID		3	/* number of valid machdep ids */
 
 #define	CTL_MACHDEP_NAMES {			\
 	{ 0, 0 },				\
 	{ "booted_kernel", CTLTYPE_STRING },	\
+	{ "led_blink", CTLTYPE_INT },		\
 }
 
 #ifdef _KERNEL

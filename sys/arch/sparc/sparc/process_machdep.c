@@ -74,6 +74,8 @@
 #include <machine/frame.h>
 #include <sys/ptrace.h>
 
+u_int32_t process_get_wcookie(struct proc *p);
+
 int
 process_read_regs(p, regs)
 	struct proc *p;
@@ -140,4 +142,11 @@ struct fpreg	*regs;
 
 	bcopy(regs, p->p_md.md_fpstate, sizeof(struct fpreg));
 	return 0;
+}
+
+u_int32_t
+process_get_wcookie(p)
+	struct proc *p;
+{
+	return p->p_addr->u_pcb.pcb_wcookie;
 }

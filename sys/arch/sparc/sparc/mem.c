@@ -146,10 +146,12 @@ mmrw(dev, uio, flags)
 			pmap_enter(pmap_kernel(), mem_page,
 			    trunc_page(pa), uio->uio_rw == UIO_READ ?
 			    VM_PROT_READ : VM_PROT_WRITE, PMAP_WIRED);
+			pmap_update(pmap_kernel());
 			o = uio->uio_offset & PGOFSET;
 			c = min(uio->uio_resid, (int)(NBPG - o));
 			error = uiomove((caddr_t)mem_page + o, c, uio);
 			pmap_remove(pmap_kernel(), mem_page, mem_page + NBPG);
+			pmap_update(pmap_kernel());
 			continue;
 
 		/* minor device 1 is kernel memory */

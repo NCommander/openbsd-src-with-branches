@@ -1,4 +1,4 @@
-/*	$OpenBSD: smg.c,v 1.2.4.2 2001/07/04 10:24:50 niklas Exp $	*/
+/*	$OpenBSD$	*/
 /*	$NetBSD: smg.c,v 1.21 2000/03/23 06:46:44 thorpej Exp $ */
 /*
  * Copyright (c) 1998 Ludd, University of Lule}, Sweden.
@@ -570,7 +570,6 @@ smg_show_screen(void *v, void *cookie, int waitok,
 }
 
 cons_decl(smg);
-cdev_decl(wsdisplay);
 
 void
 smgcninit(cndev)

@@ -1,4 +1,4 @@
-/*	$OpenBSD: vmparam.h,v 1.8.12.2 2001/07/04 10:24:28 niklas Exp $	*/
+/*	$OpenBSD$	*/
 /*	$NetBSD: vmparam.h,v 1.32 2000/03/07 00:05:59 matt Exp $	*/
 
 /*-
@@ -129,10 +129,5 @@ struct pmap_physseg {
 
 #define	USRIOSIZE		(8 * VAX_NPTEPG)	/* 512MB */
 #define	VM_PHYS_SIZE		(USRIOSIZE*VAX_NBPG)
-
-/* virtual sizes (bytes) for various kernel submaps */
-#define VM_KMEM_SIZE		(NKMEMCLUSTERS*PAGE_SIZE)
-
-#define VM_MBUF_SIZE          (NMBCLUSTERS*MCLBYTES)
 
 #endif

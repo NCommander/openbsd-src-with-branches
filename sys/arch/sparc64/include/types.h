@@ -83,7 +83,8 @@ typedef unsigned long int	paddr_t;
 typedef paddr_t			psize_t;
 #endif
 
-#define __HAVE_DEVICE_REGISTER
+#define	__HAVE_NWSCONS
+#define	__HAVE_DEVICE_REGISTER
 #define	__HAVE_GENERIC_SOFT_INTERRUPTS
 
 #endif	/* _MACHTYPES_H_ */

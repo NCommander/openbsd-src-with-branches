@@ -52,8 +52,6 @@
 #include <sys/device.h>
 #include <sys/disklabel.h>
 #include <sys/dkstat.h>
-#include <sys/dmap.h>
-#include <sys/map.h>
 #include <sys/reboot.h>
 
 #include <scsi/scsi_all.h>
@@ -291,6 +289,7 @@ bus_mapin(bustype, paddr, sz)
 		pa += NBPG;
 	} while ((sz -= NBPG) > 0);
 #endif
+	pmap_update(pmap_kernel());
 
 	return ((char*)retval);
 }
