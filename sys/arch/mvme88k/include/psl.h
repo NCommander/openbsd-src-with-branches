@@ -1,4 +1,4 @@
-/*	$OpenBSD: psl.h,v 1.12 2001/12/20 06:33:16 smurph Exp $ */
+/*	$OpenBSD: psl.h,v 1.13 2003/09/26 19:04:28 miod Exp $ */
 /*
  * Copyright (c) 1996 Nivas Madhur
  * All rights reserved.
@@ -46,7 +46,7 @@
 #ifndef __M88K_PSL_H__
 #define __M88K_PSL_H__
 
-/* 
+/*
  * 88100 control registers
  */
 

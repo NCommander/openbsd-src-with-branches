@@ -1,4 +1,4 @@
-/*	$OpenBSD: sram.c,v 1.9 2002/04/28 15:17:09 miod Exp $ */
+/*	$OpenBSD: sram.c,v 1.10 2003/06/02 07:06:56 deraadt Exp $ */
 
 /*
  * Copyright (c) 1995 Theo de Raadt
@@ -165,7 +165,7 @@ sramioctl(dev, cmd, data, flag, p)
 	int unit = minor(dev);
 	struct sramsoftc *sc = (struct sramsoftc *) sram_cd.cd_devs[unit];
 	int error = 0;
-	
+
 	switch (cmd) {
 	case MIOCGSIZ:
 		*(int *)data = sc->sc_len;
