@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_lmc_common.c,v 1.3 2000/02/01 18:01:41 chris Exp $ */
+/*	$OpenBSD: if_lmc_common.c,v 1.4 2001/07/09 13:13:43 espie Exp $ */
 /*	$NetBSD: if_lmc_common.c,v 1.1 1999/03/25 03:32:43 explorer Exp $	*/
 
 /*-
@@ -102,7 +102,6 @@
 #endif
 
 #include <vm/vm.h>
-#include <vm/vm_param.h>
 #include <vm/vm_kern.h>
 
 #if defined(__FreeBSD__) || defined(__NetBSD__) || defined(__OpenBSD__)

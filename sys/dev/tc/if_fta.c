@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_fta.c,v 1.5 1999/11/30 04:00:44 jason Exp $	*/
+/*	$OpenBSD: if_fta.c,v 1.6 1999/12/03 16:01:59 jason Exp $	*/
 /*	$NetBSD: if_fta.c,v 1.7 1996/10/22 21:37:26 cgd Exp $	*/
 
 /*-
@@ -58,7 +58,6 @@
 
 #include <vm/vm.h>
 #include <vm/vm_kern.h>
-#include <vm/vm_param.h>
 
 #include <dev/tc/tcvar.h>
 #include <dev/ic/pdqvar.h>

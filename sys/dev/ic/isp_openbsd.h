@@ -1,4 +1,4 @@
-/*      $OpenBSD: isp_openbsd.h,v 1.13 2001/04/04 22:08:08 mjacob Exp $ */
+/*      $OpenBSD: isp_openbsd.h,v 1.14 2001/08/12 20:12:12 mickey Exp $ */
 /*
  * OpenBSD Specific definitions for the Qlogic ISP Host Adapter
  */
@@ -49,7 +49,6 @@
 #include <scsi/scsi_debug.h>
 
 #include <vm/vm.h>
-#include <vm/vm_param.h>
 
 
 #define	ISP_PLATFORM_VERSION_MAJOR	2

@@ -1,4 +1,4 @@
-/*	$OpenBSD: adv.c,v 1.6 2000/12/13 15:49:15 mickey Exp $	*/
+/*	$OpenBSD: adv.c,v 1.7 2001/08/12 20:12:11 mickey Exp $	*/
 /*	$NetBSD: adv.c,v 1.6 1998/10/28 20:39:45 dante Exp $	*/
 
 /*
@@ -54,7 +54,6 @@
 #include <machine/intr.h>
 
 #include <vm/vm.h>
-#include <vm/vm_param.h>
 
 #include <scsi/scsi_all.h>
 #include <scsi/scsiconf.h>

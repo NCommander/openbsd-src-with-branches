@@ -1,4 +1,4 @@
-/*	$OpenBSD: kern_lkm.c,v 1.30 2001/05/16 12:52:58 ho Exp $	*/
+/*	$OpenBSD: kern_lkm.c,v 1.31 2001/06/27 04:49:42 art Exp $	*/
 /*	$NetBSD: kern_lkm.c,v 1.31 1996/03/31 21:40:27 christos Exp $	*/
 
 /*
@@ -60,7 +60,6 @@
 #include <sys/syscall.h>
 
 #include <vm/vm.h>
-#include <vm/vm_param.h>
 #include <vm/vm_kern.h>
 
 #ifdef DDB
