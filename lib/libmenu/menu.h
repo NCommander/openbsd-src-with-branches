@@ -1,4 +1,4 @@
-/*	$OpenBSD: menu.h,v 1.4 1998/07/24 16:39:23 millert Exp $	*/
+/*	$OpenBSD: menu.h,v 1.5 1999/05/17 03:04:26 millert Exp $	*/
 
 /****************************************************************************
  * Copyright (c) 1998 Free Software Foundation, Inc.                        *
@@ -34,6 +34,10 @@
 
 #ifndef ETI_MENU
 #define ETI_MENU
+
+#ifdef AMIGA
+#define TEXT TEXT_ncurses
+#endif
 
 #include <curses.h>
 #include <eti.h>
