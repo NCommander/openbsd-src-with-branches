@@ -1,5 +1,3 @@
-# $OpenBSD$
-# Minimal /etc/protocols file for use during installation
 ip	0	IP
 icmp	1	ICMP
 tcp	6	TCP
