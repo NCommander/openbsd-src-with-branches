@@ -1,4 +1,4 @@
-/*     $OpenBSD: supextern.h,v 1.6 2002/02/16 21:27:54 millert Exp $  */
+/*     $OpenBSD: supextern.h,v 1.7 2002/02/17 19:42:33 millert Exp $  */
 
 /* atoo.c */
 unsigned int atoo(char *);
@@ -40,7 +40,7 @@ void encode(char *, char *, int);
 char *nxtarg(char **, char *);
 
 /* path.c */
-void path(char *, char *, char *, int);
+void path(char *, char *, int, char *, int);
 
 /* quit.c */
 void quit(int, char *, ...);
