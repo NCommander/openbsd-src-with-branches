@@ -327,7 +327,7 @@ pchbattach(parent, self, aux)
 					if (tv1.tv_sec)
 						tv1.tv_usec +=
 						    1000000 * tv1.tv_sec;
-					printf(": rng active, %dK/sec",
+					printf(": rng active, %dKb/sec",
 					    8 * 1000000 / tv1.tv_usec);
 
 					timeout_set(&sc->sc_tmo, pchb_rnd, sc);
