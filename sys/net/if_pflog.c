@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_pflog.c,v 1.3 2001/06/25 23:02:18 provos Exp $	*/
+/*	$OpenBSD: if_pflog.c,v 1.4 2001/06/27 01:58:03 provos Exp $	*/
 /*
  * The authors of this code are John Ioannidis (ji@tla.org),
  * Angelos D. Keromytis (kermit@csd.uch.gr) and 
@@ -104,9 +104,6 @@ pflogattach(int npflog)
 #if NBPFILTER > 0
 		bpfattach(&pflogif[i].sc_if.if_bpf, ifp, DLT_PFLOG,
 			  PFLOG_HDRLEN);
-#endif
-#ifdef INET6
-		nd6_ifattach(ifp);
 #endif
 	}
 }
