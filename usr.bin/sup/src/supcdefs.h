@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: supcdefs.h,v 1.2 1996/06/26 05:39:50 deraadt Exp $	*/
 
 /*
  * Copyright (c) 1992 Carnegie Mellon University
@@ -35,6 +35,9 @@
  *	across the network to save BandWidth
  *
  * $Log: supcdefs.h,v $
+ * Revision 1.2  1996/06/26 05:39:50  deraadt
+ * rcsid
+ *
  * Revision 1.1  1995/12/16 11:46:55  deraadt
  * add sup to the tree
  *
@@ -87,7 +90,6 @@
 extern int errno;
 extern uid_t getuid();
 extern gid_t getgid();
-extern long time();
 
 extern int PGMVERSION;
 
