@@ -1,5 +1,3 @@
-/*	$OpenBSD$	*/
-
 /* inftrees.h -- header to use inftrees.c
  * Copyright (C) 1995-1996 Mark Adler
  * For conditions of distribution and use, see copyright notice in zlib.h 
@@ -29,7 +27,7 @@ struct inflate_huft_s {
   } more;
 };
 
-#ifdef DEBUG_ZLIB
+#ifdef DEBUG
   extern uInt inflate_hufts;
 #endif
 

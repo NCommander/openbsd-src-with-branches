@@ -1,5 +1,3 @@
-/*	$OpenBSD$	*/
-
 /* zlib.h -- interface of the 'zlib' general purpose compression library
   version 1.0.4, Jul 24th, 1996.
 
