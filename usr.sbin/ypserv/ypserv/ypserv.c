@@ -1,4 +1,4 @@
-/*	$OpenBSD: ypserv.c,v 1.4 1996/06/26 21:26:38 maja Exp $ */
+/*	$OpenBSD: ypserv.c,v 1.5 1996/06/30 19:46:08 maja Exp $ */
 
 /*
  * Copyright (c) 1994 Mats O Jansson <moj@stacken.kth.se>
@@ -32,7 +32,7 @@
  */
 
 #ifndef LINT
-static char rcsid[] = "$OpenBSD: ypserv.c,v 1.4 1996/06/26 21:26:38 maja Exp $";
+static char rcsid[] = "$OpenBSD: ypserv.c,v 1.5 1996/06/30 19:46:08 maja Exp $";
 #endif
 
 #include "yp.h"
@@ -243,7 +243,7 @@ char *argv[];
 	int asize = sizeof (saddr);
 	int	 usage = 0;
 	int	 xflag = 0;
-	char	 ch;
+	int	 ch;
 	extern	 char *optarg;
 	
 	while ((ch = getopt(argc, argv, "a:dx")) != EOF)
