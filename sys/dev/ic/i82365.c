@@ -1,4 +1,4 @@
-/*	$OpenBSD: i82365.c,v 1.4 1999/01/28 04:58:33 fgsch Exp $	*/
+/*	$OpenBSD: i82365.c,v 1.5 1999/02/06 17:01:17 fgsch Exp $	*/
 /*	$NetBSD: i82365.c,v 1.10 1998/06/09 07:36:55 thorpej Exp $	*/
 
 /*
@@ -836,7 +836,7 @@ pcic_chip_io_alloc(pch, start, size, align, pcihp)
 	struct pcic_handle *h = (struct pcic_handle *) pch;
 	bus_space_tag_t iot;
 	bus_space_handle_t ioh;
-	bus_addr_t ioaddr = 0, beg, fin;
+	bus_addr_t ioaddr, beg, fin;
 	int flags = 0;
 	struct pcic_ranges *range;
 
@@ -875,8 +875,8 @@ pcic_chip_io_alloc(pch, start, size, align, pcihp)
 			fin = min(range->start + range->len,
 			    h->sc->iobase + h->sc->iosize);
 
-			/* Short-circuit easy case. */
-			if (fin - beg < size)
+			/* Short-circuit easy cases. */
+			if (fin < beg || fin - beg < size)
 				continue;
 
 			/*
