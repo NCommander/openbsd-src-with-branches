@@ -1,8 +1,13 @@
-/*	$OpenBSD: biosboot.S,v 1.9 1997/05/29 04:31:48 mickey Exp $	*/
+/*	$OpenBSD: biosboot.S,v 1.10 1997/07/28 23:02:17 mickey Exp $	*/
 
 	.file	"bootbios.S"
 
 #include <machine/asm.h>
+#include <machine/param.h>
+#include <machine/specialreg.h>
+#define _LOCORE
+#include <machine/segments.h>
+#undef _LOCORE
 #include <assym.h>
 
 #define addr32  .byte 0x67
