@@ -1,4 +1,4 @@
-/*	$OpenBSD: cvsd.c,v 1.13 2004/12/06 21:03:12 deraadt Exp $	*/
+/*	$OpenBSD: cvsd.c,v 1.14 2004/12/07 17:10:56 tedu Exp $	*/
 /*
  * Copyright (c) 2004 Jean-Francois Brousseau <jfb@openbsd.org>
  * All rights reserved.
@@ -306,7 +306,7 @@ cvsd_checkperms(const char *path)
 	int fd, nbwarn, ret;
 	mode_t fmode;
 	long base;
-	void *dp, *endp;
+	u_char *dp, *endp;
 	char buf[1024], spath[MAXPATHLEN];
 	struct stat st;
 	struct dirent *dep;
