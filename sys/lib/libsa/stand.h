@@ -1,4 +1,4 @@
-/*	$OpenBSD: stand.h,v 1.28 1997/08/12 21:28:39 mickey Exp $	*/
+/*	$OpenBSD: stand.h,v 1.29 1997/08/13 14:18:10 niklas Exp $	*/
 /*	$NetBSD: stand.h,v 1.18 1996/11/30 04:35:51 gwr Exp $	*/
 
 /*-
@@ -186,6 +186,7 @@ int	cnset __P((dev_t));
 void	cnputc __P((int));
 int	cngetc __P((void));
 int	cnischar __P((void));
+int	cnspeed __P((dev_t, int));
 u_int	sleep __P((u_int));
 void	usleep __P((u_int));
 
