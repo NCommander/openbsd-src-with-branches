@@ -1,3 +1,4 @@
+# $OpenBSD$
 .PATH: ${.CURDIR}/lib
 
 LIB=	expat
