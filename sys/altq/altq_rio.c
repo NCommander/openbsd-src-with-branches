@@ -1,4 +1,4 @@
-/*	$OpenBSD: altq_rio.c,v 1.4 2002/06/14 21:34:58 todd Exp $	*/
+/*	$OpenBSD: altq_rio.c,v 1.5 2002/11/26 01:03:34 henning Exp $	*/
 /*	$KAME: altq_rio.c,v 1.8 2000/12/14 08:12:46 thorpej Exp $	*/
 
 /*
@@ -144,7 +144,6 @@
 	delta = (a)->tv_usec - (b)->tv_usec; 			\
 	if ((xxs = (a)->tv_sec - (b)->tv_sec) != 0) { 		\
 		if (xxs < 0) { 					\
-			printf("rm_class: bogus time values");	\
 			delta = 60000000;			\
 		} else if (xxs > 4)  {				\
 			if (xxs > 60)				\
