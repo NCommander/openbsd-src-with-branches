@@ -1,4 +1,4 @@
-/*	$OpenBSD: asc_ioasic.c,v 1.3 1997/11/07 08:07:43 niklas Exp $	*/
+/*	$OpenBSD: asc_ioasic.c,v 1.4 1998/05/18 00:25:08 millert Exp $	*/
 /*	$NetBSD: asc_ioasic.c,v 1.12 1998/01/12 09:51:30 thorpej Exp $	*/
 
 /*
@@ -18,6 +18,7 @@
 
 #include <sys/param.h>
 #include <sys/systm.h>
+#include <sys/timeout.h>
 #include <sys/device.h>
 #include <dev/tc/tcvar.h>
 #include <dev/tc/ioasicvar.h>

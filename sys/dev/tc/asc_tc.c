@@ -1,4 +1,4 @@
-/*	$OpenBSD: asc_tc.c,v 1.2 1997/11/07 08:07:44 niklas Exp $	*/
+/*	$OpenBSD: asc_tc.c,v 1.3 1998/05/18 00:25:09 millert Exp $	*/
 /*	$NetBSD: asc_tc.c,v 1.8 1997/10/31 06:29:59 jonathan Exp $	*/
 
 /*
@@ -17,6 +17,7 @@
 
 #include <sys/param.h>
 #include <sys/systm.h>
+#include <sys/timeout.h>
 #include <sys/types.h>
 #include <sys/device.h>
 #include <dev/tc/tcvar.h>
