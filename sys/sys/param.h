@@ -45,8 +45,8 @@
 #define BSD4_3	1
 #define BSD4_4	1
 
-#define NetBSD	199603		/* NetBSD version (year & month). */
-#define NetBSD1_1 3		/* NetBSD 1.1B */
+#define NetBSD	199606		/* NetBSD version (year & month). */
+#define NetBSD1_2 1		/* NetBSD 1.2 */
 
 #ifndef NULL
 #define	NULL	0
