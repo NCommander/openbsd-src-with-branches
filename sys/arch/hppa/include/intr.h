@@ -1,4 +1,4 @@
-/*	$OpenBSD: intr.h,v 1.14 2002/12/17 21:54:25 mickey Exp $	*/
+/*	$OpenBSD: intr.h,v 1.15 2003/10/15 17:43:48 mickey Exp $	*/
 
 /*
  * Copyright (c) 2002 Michael Shalayeff
@@ -37,7 +37,6 @@
 #include <machine/psl.h>
 
 #define	CPU_NINTS	32
-#define	CPU_INTITMR	0x80000000
 #define	NIPL		16
 
 #define	IPL_NONE	0
