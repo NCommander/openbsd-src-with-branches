@@ -1,4 +1,4 @@
-/*	$OpenBSD: ping6.c,v 1.44 2002/05/26 13:02:17 itojun Exp $	*/
+/*	$OpenBSD: ping6.c,v 1.45 2002/05/26 13:22:40 itojun Exp $	*/
 /*	$KAME: ping6.c,v 1.155 2002/05/26 13:18:25 itojun Exp $	*/
 
 /*
@@ -1628,7 +1628,7 @@ pr_pack(buf, cc, mhdr)
 					comma++;
 					break;
 				case ICMP6_NI_UNKNOWN:
-					(void)printf("unknwon qtype");
+					(void)printf("unknown qtype");
 					comma++;
 					break;
 				}
