@@ -1,4 +1,4 @@
-/*	$OpenBSD: connection.c,v 1.20 2001/07/02 02:28:35 deraadt Exp $	*/
+/*	$OpenBSD: connection.c,v 1.21 2001/07/05 12:36:49 ho Exp $	*/
 /*	$EOM: connection.c,v 1.28 2000/11/23 12:21:18 niklas Exp $	*/
 
 /*
@@ -90,7 +90,7 @@ TAILQ_HEAD (passive_head, connection_passive) connections_passive;
  * start.
  */
 void
-connection_init ()
+connection_init (void)
 {
   struct conf_list *conns, *attrs;
   struct conf_list_node *conn, *attr = NULL;

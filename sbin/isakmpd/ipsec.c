@@ -1,4 +1,4 @@
-/*	$OpenBSD: ipsec.c,v 1.52 2001/07/01 20:43:39 niklas Exp $	*/
+/*	$OpenBSD: ipsec.c,v 1.53 2001/07/04 22:23:24 angelos Exp $	*/
 /*	$EOM: ipsec.c,v 1.143 2000/12/11 23:57:42 niklas Exp $	*/
 
 /*
@@ -637,7 +637,7 @@ ipsec_exchange_script (u_int8_t type)
 
 /* Initialize this DOI, requires doi_init to already have been called.  */
 void
-ipsec_init ()
+ipsec_init (void)
 {
   doi_register (&ipsec_doi);
 }
