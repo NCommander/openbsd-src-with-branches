@@ -1,4 +1,4 @@
-/*	$OpenBSD: if.h,v 1.58 2004/10/14 21:28:15 mickey Exp $	*/
+/*	$OpenBSD: if.h,v 1.59 2004/11/10 21:10:53 grange Exp $	*/
 /*	$NetBSD: if.h,v 1.23 1996/05/07 02:40:27 thorpej Exp $	*/
 
 /*
@@ -141,7 +141,7 @@ struct	ifqueue {
 	int	ifq_len;
 	int	ifq_maxlen;
 	int	ifq_drops;
-	int	ifq_congestion;
+	struct	timeout *ifq_congestion;
 };
 
 /*
