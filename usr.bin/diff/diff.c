@@ -1,4 +1,4 @@
-/*	$OpenBSD: diff.c,v 1.34 2003/07/22 16:42:58 millert Exp $	*/
+/*	$OpenBSD: diff.c,v 1.35 2003/07/27 07:39:52 otto Exp $	*/
 
 /*
  * Copyright (c) 2003 Todd C. Miller <Todd.Miller@courtesan.com>
@@ -21,7 +21,7 @@
  */
 
 #ifndef lint
-static const char rcsid[] = "$OpenBSD: diff.c,v 1.34 2003/07/22 16:42:58 millert Exp $";
+static const char rcsid[] = "$OpenBSD: diff.c,v 1.35 2003/07/27 07:39:52 otto Exp $";
 #endif /* not lint */
 
 #include <sys/param.h>
@@ -207,7 +207,7 @@ main(int argc, char **argv)
 		err(2, "%s", argv[1]);
 	if (gotstdin && (S_ISDIR(stb1.st_mode) || S_ISDIR(stb2.st_mode)))
 		errx(2, "can't compare - to a directory");
-	set_argstr(oargv, argv);
+	set_argstr(oargv + 1, argv);
 	if (S_ISDIR(stb1.st_mode) && S_ISDIR(stb2.st_mode)) {
 		if (format == D_IFDEF)
 			errx(2, "-D option not supported with directories");
@@ -270,7 +270,7 @@ set_argstr(char **av, char **ave)
 	size_t argsize;
 	char **ap;
 
-	argsize = 4 + (char *)ave - (char *)av + 1;
+	argsize = 4 + *ave - *av + 1;
 	diffargs = emalloc(argsize);
 	strlcpy(diffargs, "diff", argsize);
 	for (ap = av + 1; ap < ave; ap++) {
