@@ -1,4 +1,4 @@
-/*	$OpenBSD: ip_ah_new.c,v 1.5 1997/07/24 01:37:10 deraadt Exp $	*/
+/*	$OpenBSD: ip_ah_new.c,v 1.6 1997/07/27 23:30:34 niklas Exp $	*/
 
 /*
  * The author of this code is John Ioannidis, ji@tla.org,
@@ -367,7 +367,7 @@ ah_new_input(struct mbuf *m, struct tdb *tdb)
 
 		case 2:
 	        case 3:
-		    log(LOG_WARNING, "ahhmachmd5_input(): duplicate packet received, %x->%x spi %08x", ip->ip_src, ip->ip_dst, ntohl(ah->ah_spi));
+		    log(LOG_WARNING, "ah_new_input(): duplicate packet received, %x->%x spi %08x", ip->ip_src, ip->ip_dst, ntohl(ah->ah_spi));
 		    ahstat.ahs_replay++;
 		    break;
 	    }
