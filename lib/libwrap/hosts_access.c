@@ -1,4 +1,4 @@
-/*	$OpenBSD: hosts_access.c,v 1.3 1997/06/30 06:05:59 deraadt Exp $	*/
+/*	$OpenBSD: hosts_access.c,v 1.4 1999/06/06 15:34:44 deraadt Exp $	*/
 
  /*
   * This module implements a simple access control language that is based on
@@ -23,7 +23,7 @@
 #if 0
 static char sccsid[] = "@(#) hosts_access.c 1.21 97/02/12 02:13:22";
 #else
-static char rcsid[] = "$OpenBSD: hosts_access.c,v 1.3 1997/06/30 06:05:59 deraadt Exp $";
+static char rcsid[] = "$OpenBSD: hosts_access.c,v 1.4 1999/06/06 15:34:44 deraadt Exp $";
 #endif
 #endif
 
@@ -43,7 +43,6 @@ static char rcsid[] = "$OpenBSD: hosts_access.c,v 1.3 1997/06/30 06:05:59 deraad
 #include <netgroup.h>
 #endif
 
-extern int errno;
 
 #ifndef	INADDR_NONE
 #define	INADDR_NONE	(-1)		/* XXX should be 0xffffffff */

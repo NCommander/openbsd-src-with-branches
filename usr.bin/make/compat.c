@@ -1,4 +1,4 @@
-/*	$OpenBSD: compat.c,v 1.19 1999/12/18 21:56:07 espie Exp $	*/
+/*	$OpenBSD: compat.c,v 1.20 1999/12/18 21:58:07 espie Exp $	*/
 /*	$NetBSD: compat.c,v 1.14 1996/11/06 17:59:01 christos Exp $	*/
 
 /*
@@ -43,7 +43,7 @@
 #if 0
 static char sccsid[] = "@(#)compat.c	8.2 (Berkeley) 3/19/94";
 #else
-static char rcsid[] = "$OpenBSD: compat.c,v 1.19 1999/12/18 21:56:07 espie Exp $";
+static char rcsid[] = "$OpenBSD: compat.c,v 1.20 1999/12/18 21:58:07 espie Exp $";
 #endif
 #endif /* not lint */
 
@@ -71,7 +71,6 @@ static char rcsid[] = "$OpenBSD: compat.c,v 1.19 1999/12/18 21:56:07 espie Exp $
 #include    "hash.h"
 #include    "dir.h"
 #include    "job.h"
-extern int errno;
 
 /*
  * The following array is used to make a fast determination of which

@@ -1,4 +1,4 @@
-/*	$OpenBSD: rsh.c,v 1.17 1998/03/25 19:53:21 art Exp $	*/
+/*	$OpenBSD: rsh.c,v 1.18 2000/01/27 05:27:42 itojun Exp $	*/
 
 /*-
  * Copyright (c) 1983, 1990 The Regents of the University of California.
@@ -41,7 +41,7 @@ char copyright[] =
 
 #ifndef lint
 /*static char sccsid[] = "from: @(#)rsh.c	5.24 (Berkeley) 7/1/91";*/
-static char rcsid[] = "$OpenBSD: rsh.c,v 1.17 1998/03/25 19:53:21 art Exp $";
+static char rcsid[] = "$OpenBSD: rsh.c,v 1.18 2000/01/27 05:27:42 itojun Exp $";
 #endif /* not lint */
 
 #include <sys/types.h>
@@ -92,7 +92,6 @@ void talk __P((int, int, int, register int));
 /*
  * rsh - remote shell
  */
-extern int errno;
 int rfd2;
 
 int
