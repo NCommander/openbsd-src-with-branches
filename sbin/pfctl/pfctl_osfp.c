@@ -1,4 +1,4 @@
-/*	$OpenBSD: pfctl_osfp.c,v 1.9 2004/04/09 12:42:06 cedric Exp $ */
+/*	$OpenBSD: pfctl_osfp.c,v 1.10 2004/12/19 13:27:50 deraadt Exp $ */
 
 /*
  * Copyright (c) 2003 Mike Frantzen <frantzen@openbsd.org>
@@ -276,9 +276,9 @@ pfctl_flush_my_fingerprints(struct name_list *list)
 	while ((nm = LIST_FIRST(list)) != NULL) {
 		LIST_REMOVE(nm, nm_entry);
 		pfctl_flush_my_fingerprints(&nm->nm_sublist);
-		fingerprint_count--;
 		free(nm);
 	}
+	fingerprint_count = 0;
 	class_count = 0;
 }
 
