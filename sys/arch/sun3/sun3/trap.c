@@ -1,4 +1,4 @@
-/*	$OpenBSD: trap.c,v 1.19 1998/08/23 16:53:00 kstailey Exp $	*/
+/*	$OpenBSD: trap.c,v 1.20 2000/03/02 23:02:14 todd Exp $	*/
 /*	$NetBSD: trap.c,v 1.63-1.65ish 1997/01/16 15:41:40 gwr Exp $	*/
 
 /*
@@ -522,7 +522,7 @@ trap(type, code, v, frame)
 			}
 		} else {
 			/* User map.  Try shortcut. */
-			if (pmap_fault_reload(&vm->vm_pmap, va, ftype))
+			if (pmap_fault_reload(vm->vm_map.pmap, va, ftype))
 				goto finish;
 		}
 
