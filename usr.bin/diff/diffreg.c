@@ -1,4 +1,4 @@
-/*	$OpenBSD: diffreg.c,v 1.28 2003/07/06 22:17:21 millert Exp $	*/
+/*	$OpenBSD: diffreg.c,v 1.29 2003/07/08 04:45:32 millert Exp $	*/
 
 /*
  * Copyright (C) Caldera International Inc.  2001-2002.
@@ -65,7 +65,7 @@
  */
 
 #ifndef lint
-static const char rcsid[] = "$OpenBSD: diffreg.c,v 1.28 2003/07/06 22:17:21 millert Exp $";
+static const char rcsid[] = "$OpenBSD: diffreg.c,v 1.29 2003/07/08 04:45:32 millert Exp $";
 #endif /* not lint */
 
 #include <sys/types.h>
@@ -311,7 +311,7 @@ diffreg(char *ofile1, char *ofile2, int flags)
 				status |= 2;
 				goto closem;
 			}
-		} else if (!S_ISREG(stb1.st_mode)) {
+		} else if (!S_ISREG(stb2.st_mode)) {
 			file2 = copytemp(file2, 2);
 			if (file2 == NULL || stat(file2, &stb2) < 0) {
 				warn("%s", file2);
