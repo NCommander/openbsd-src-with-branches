@@ -1,4 +1,4 @@
-/*	$OpenBSD: param.h,v 1.42 2001/11/27 05:27:12 art Exp $	*/
+/*	$OpenBSD: param.h,v 1.43 2001/11/28 13:47:39 art Exp $	*/
 /*	$NetBSD: param.h,v 1.23 1996/03/17 01:02:29 thorpej Exp $	*/
 
 /*-
@@ -231,6 +231,7 @@
 #ifdef _KERNEL
 /*
  * Defaults for Unified Buffer Cache parameters.
+ * May be overridden in  <machine/param.h>
  */
 
 #ifndef UBC_WINSHIFT
