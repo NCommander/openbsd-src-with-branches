@@ -1,4 +1,4 @@
-/*      $OpenBSD: asm.h,v 1.3 1997/05/11 16:12:12 pefo Exp $	*/
+/*      $OpenBSD: asm.h,v 1.4 1997/06/10 14:18:56 graichen Exp $	*/
 
 /*
  * Copyright (c) 1992, 1993
@@ -64,13 +64,13 @@
 /*
  * Define how to access unaligned data word 
  */
-#ifdef MIPSEL
+#ifdef __MIPSEL__
 #define LWLO    lwl
 #define LWHI    lwr
 #define	SWLO	swl
 #define	SWHI	swr
 #endif
-#ifdef MIPSEB
+#ifdef __MIPSEB__
 #define LWLO    lwr
 #define LWHI    lwl
 #define	SWLO	swr
