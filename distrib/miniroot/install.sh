@@ -340,6 +340,12 @@ case "$resp" in
 		done
 		FQDN=$resp
 
+		echo ""
+		echo "If you have any devices being configured by a DHCP server"
+		echo "it is recommended that you do not enter a default route or"
+		echo "any name servers."
+		echo ""
+
 		configurenetwork
 
 		resp="none"
