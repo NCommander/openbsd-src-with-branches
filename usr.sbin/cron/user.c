@@ -1,4 +1,4 @@
-/*	$OpenBSD: user.c,v 1.3 2001/02/18 19:48:36 millert Exp $	*/
+/*	$OpenBSD: user.c,v 1.4 2002/07/08 18:11:02 millert Exp $	*/
 /* Copyright 1988,1990,1993,1994 by Paul Vixie
  * All rights reserved
  */
@@ -21,7 +21,7 @@
  */
 
 #if !defined(lint) && !defined(LINT)
-static const char rcsid[] = "$OpenBSD: user.c,v 1.3 2001/02/18 19:48:36 millert Exp $";
+static const char rcsid[] = "$OpenBSD: user.c,v 1.4 2002/07/08 18:11:02 millert Exp $";
 #endif
 
 /* vix 26jan87 [log is in RCS file]
@@ -95,15 +95,14 @@ load_user(int crontab_fd, struct passwd	*pw, const char *name) {
 			}
 			break;
 		case TRUE:
-			if ((tenvp = env_set(envp, envstr))) {
-				envp = tenvp;
-			} else {
+			if ((tenvp = env_set(envp, envstr)) == NULL) {
 				save_errno = errno;
 				free_user(u);
 				u = NULL;
 				errno = save_errno;
 				goto done;
 			}
+			envp = tenvp;
 			break;
 		}
 	}
