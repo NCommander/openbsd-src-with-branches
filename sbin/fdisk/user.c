@@ -1,4 +1,4 @@
-/*	$OpenBSD: user.c,v 1.17 2001/12/15 02:12:26 kjell Exp $	*/
+/*	$OpenBSD: user.c,v 1.18 2002/01/18 08:38:26 kjell Exp $	*/
 
 /*
  * Copyright (c) 1997 Tobias Weingartner
@@ -157,7 +157,7 @@ again:
 			printf("Invalid command '%s'.  Try 'help'.\n", cmd.cmd);
 			continue;
 		} else
-			strcpy(cmd.cmd, cmd_table[i].cmd);
+			strlcpy(cmd.cmd, cmd_table[i].cmd, sizeof cmd.cmd);
 
 		/* Call function */
 		st = cmd_table[i].fcn(&cmd, disk, &mbr, tt, offset);

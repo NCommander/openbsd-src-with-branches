@@ -1,4 +1,4 @@
-/*	$OpenBSD: savecore.c,v 1.27 2001/11/05 07:39:17 mpech Exp $	*/
+/*	$OpenBSD: savecore.c,v 1.28 2002/02/16 21:27:37 millert Exp $	*/
 /*	$NetBSD: savecore.c,v 1.26 1996/03/18 21:16:05 leo Exp $	*/
 
 /*-
@@ -44,7 +44,7 @@ static char copyright[] =
 #if 0
 static char sccsid[] = "@(#)savecore.c	8.3 (Berkeley) 1/2/94";
 #else
-static char rcsid[] = "$OpenBSD: savecore.c,v 1.27 2001/11/05 07:39:17 mpech Exp $";
+static char rcsid[] = "$OpenBSD: savecore.c,v 1.28 2002/02/16 21:27:37 millert Exp $";
 #endif
 #endif /* not lint */
 
@@ -532,15 +532,16 @@ find_dev(dev, type)
 	DIR *dfd;
 	struct dirent *dir;
 	struct stat sb;
-	char *dp, devname[MAXPATHLEN + 1];
+	char *dp, devname[MAXPATHLEN];
 
 	if ((dfd = opendir(_PATH_DEV)) == NULL) {
 		syslog(LOG_ERR, "%s: %s", _PATH_DEV, strerror(errno));
 		exit(1);
 	}
-	(void)strcpy(devname, _PATH_DEV);
+	(void)strlcpy(devname, _PATH_DEV, sizeof devname);
 	while ((dir = readdir(dfd))) {
-		(void)strcpy(devname + sizeof(_PATH_DEV) - 1, dir->d_name);
+		(void)strlcpy(devname + sizeof(_PATH_DEV) - 1, dir->d_name,
+		    sizeof devname + sizeof(_PATH_DEV) - 1);
 		if (lstat(devname, &sb)) {
 			syslog(LOG_ERR, "%s: %s", devname, strerror(errno));
 			continue;
