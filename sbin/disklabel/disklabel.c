@@ -1,4 +1,4 @@
-/*	$OpenBSD: disklabel.c,v 1.44 1997/10/17 07:30:03 deraadt Exp $	*/
+/*	$OpenBSD: disklabel.c,v 1.45 1997/10/20 07:09:41 deraadt Exp $	*/
 /*	$NetBSD: disklabel.c,v 1.30 1996/03/14 19:49:24 ghudson Exp $	*/
 
 /*
@@ -44,7 +44,7 @@ static char copyright[] =
 #endif /* not lint */
 
 #ifndef lint
-static char rcsid[] = "$OpenBSD: disklabel.c,v 1.44 1997/10/17 07:30:03 deraadt Exp $";
+static char rcsid[] = "$OpenBSD: disklabel.c,v 1.45 1997/10/20 07:09:41 deraadt Exp $";
 #endif /* not lint */
 
 #include <sys/param.h>
@@ -898,7 +898,7 @@ display_partition(f, lp, i, unit, width)
 			fprintf(f, "  %c: %*u %*u  ", 'a' + i,
 			    width, pp->p_size, width, pp->p_offset);
 		else
-			fprintf(f, "  %c: %*.1lf%c %*.1lf%c  ", 'a' + i,
+			fprintf(f, "  %c: %*.1f%c %*.1f%c  ", 'a' + i,
 			    width-1, p_size, unit, width-1, p_offset, unit);
 		if ((unsigned) pp->p_fstype < FSMAXTYPES)
 			fprintf(f, "%8.8s", fstypenames[pp->p_fstype]);
