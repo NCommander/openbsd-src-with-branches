@@ -1,5 +1,5 @@
-/*	$OpenBSD: param.h,v 1.5 1996/03/05 02:30:00 dm Exp $	*/
-/*	$NetBSD: param.h,v 1.18.2.1 1995/10/12 05:42:01 jtc Exp $	*/
+/*	$OpenBSD: param.h,v 1.6 1996/03/19 21:10:48 mickey Exp $	*/
+/*	$NetBSD: param.h,v 1.21 1996/03/16 05:35:45 thorpej Exp $	*/
 
 /*-
  * Copyright (c) 1982, 1986, 1989, 1993
@@ -45,8 +45,8 @@
 #define BSD4_3	1
 #define BSD4_4	1
 
-#define NetBSD	199511		/* NetBSD version (year & month). */
-#define NetBSD1_1 1		/* NetBSD 1.1 */
+#define NetBSD	199603		/* NetBSD version (year & month). */
+#define NetBSD1_1 2		/* NetBSD 1.1A */
 
 #ifndef NULL
 #define	NULL	0
