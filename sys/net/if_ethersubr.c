@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_ethersubr.c,v 1.46 2001/06/14 02:13:58 itojun Exp $	*/
+/*	$OpenBSD: if_ethersubr.c,v 1.47 2001/06/15 03:38:33 itojun Exp $	*/
 /*	$NetBSD: if_ethersubr.c,v 1.19 1996/05/07 02:40:30 thorpej Exp $	*/
 
 /*
@@ -631,7 +631,7 @@ ether_input(ifp, eh, m)
 #if NVLAN > 0
 	if (etype == ETHERTYPE_8021Q) {
 		if (vlan_input(eh, m) < 0)
-			ifp->if_data.ifi_noproto++;
+			ifp->if_noproto++;
 		return;
        }
 #endif /* NVLAN > 0 */
