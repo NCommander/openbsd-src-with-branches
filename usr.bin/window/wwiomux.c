@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: wwiomux.c,v 1.5 1997/02/25 00:04:57 downsj Exp $	*/
 /*	$NetBSD: wwiomux.c,v 1.5 1996/02/08 20:45:09 mycroft Exp $	*/
 
 /*
@@ -41,7 +41,7 @@
 #if 0
 static char sccsid[] = "@(#)wwiomux.c	8.1 (Berkeley) 6/6/93";
 #else
-static char rcsid[] = "$OpenBSD$";
+static char rcsid[] = "$OpenBSD: wwiomux.c,v 1.5 1997/02/25 00:04:57 downsj Exp $";
 #endif
 #endif /* not lint */
 
@@ -52,6 +52,7 @@ static char rcsid[] = "$OpenBSD$";
 #include <sys/ioctl.h>
 #endif
 #include <fcntl.h>
+#include <string.h>
 
 /*
  * Multiple window output handler.
