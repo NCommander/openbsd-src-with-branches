@@ -34,14 +34,12 @@
 static char rcsid[] = "$OpenBSD$";
 #endif
 
-#include <sys/cdefs.h>
+#include <stdlib.h>
+#include "term.h"
 
-#ifdef __indr_reference
-__indr_reference(_vidputs, vidputs);
-#else
-
-#define _vidputs	vidputs
-#define rcsid		_rcsid
-#include "_vidputs.c"
-
-#endif
+int
+_vidattr(attrs)
+    chtype attrs;
+{
+    return vidputs(attrs, _ti_outc);
+}
