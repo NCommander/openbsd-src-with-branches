@@ -1,4 +1,4 @@
-/*	$OpenBSD: vm_machdep.c,v 1.16 2000/01/25 12:55:04 mickey Exp $	*/
+/*	$OpenBSD: vm_machdep.c,v 1.18 2000/06/08 21:11:58 niklas Exp $	*/
 
 /*
  * Copyright (c) 1999-2000 Michael Shalayeff
@@ -35,6 +35,7 @@
 #include <sys/param.h>
 #include <sys/systm.h>
 #include <sys/proc.h>
+#include <sys/signalvar.h>
 #include <sys/malloc.h>
 #include <sys/buf.h>
 #include <sys/vnode.h>

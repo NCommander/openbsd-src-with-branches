@@ -1,4 +1,4 @@
-/*	$OpenBSD: bsdos_exec.c,v 1.1 1997/09/02 08:54:12 downsj Exp $	*/
+/*	$OpenBSD: bsdos_exec.c,v 1.3 2000/06/08 21:12:11 niklas Exp $	*/
 
 /*
  * Copyright (c) 1993, 1994 Christopher G. Demetriou
@@ -33,6 +33,7 @@
 #include <sys/param.h>
 #include <sys/systm.h>
 #include <sys/proc.h>
+#include <sys/signalvar.h>
 #include <sys/malloc.h>
 #include <sys/vnode.h>
 #include <sys/exec.h>
@@ -51,7 +52,6 @@ extern struct sysent bsdos_sysent[];
 extern char *bsdos_syscallnames[];
 #endif
 
-extern void sendsig __P((sig_t, int, int, u_long, int, union sigval));
 extern char sigcode[], esigcode[];
 
 struct emul emul_bsdos = {

@@ -1,4 +1,4 @@
-/*	$OpenBSD: bpf.c,v 1.19 2000/02/19 08:59:04 niklas Exp $	*/
+/*	$OpenBSD: bpf.c,v 1.21 2000/06/08 21:12:12 niklas Exp $	*/
 /*	$NetBSD: bpf.c,v 1.33 1997/02/21 23:59:35 thorpej Exp $	*/
 
 /*
@@ -48,6 +48,7 @@
 #include <sys/mbuf.h>
 #include <sys/time.h>
 #include <sys/proc.h>
+#include <sys/signalvar.h>
 #include <sys/user.h>
 #include <sys/ioctl.h>
 #include <sys/map.h>

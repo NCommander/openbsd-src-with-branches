@@ -1,4 +1,4 @@
-/*	$OpenBSD: sys_machdep.c,v 1.3 1997/04/19 17:19:47 pefo Exp $	*/
+/*	$OpenBSD: sys_machdep.c,v 1.2 2000/06/08 21:12:04 niklas Exp $	*/
 
 /*
  * Copyright (c) 1992, 1993
@@ -44,6 +44,7 @@
 #include <sys/file.h>
 #include <sys/time.h>
 #include <sys/proc.h>
+#include <sys/signalvar.h>
 #include <sys/uio.h>
 #include <sys/kernel.h>
 #include <sys/mtio.h>

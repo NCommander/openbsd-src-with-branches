@@ -1,4 +1,4 @@
-/*	$OpenBSD: machdep.c,v 1.40 2000/04/02 00:14:31 rahnds Exp $	*/
+/*	$OpenBSD: machdep.c,v 1.42 2000/06/08 21:12:06 niklas Exp $	*/
 /*	$NetBSD: machdep.c,v 1.4 1996/10/16 19:33:11 ws Exp $	*/
 
 /*
@@ -43,6 +43,7 @@
 #include <sys/mount.h>
 #include <sys/msgbuf.h>
 #include <sys/proc.h>
+#include <sys/signalvar.h>
 #include <sys/reboot.h>
 #include <sys/syscallargs.h>
 #include <sys/syslog.h>
