@@ -1,4 +1,4 @@
-/*	$OpenBSD: openfirm.c,v 1.4 2002/09/15 09:01:58 deraadt Exp $	*/
+/*	$OpenBSD: openfirm.c,v 1.5 2003/10/15 17:50:16 drahn Exp $	*/
 /*	$NetBSD: openfirm.c,v 1.1 1996/09/30 16:34:52 ws Exp $	*/
 
 /*
@@ -33,9 +33,8 @@
  */
 #include <sys/param.h>
 #include <sys/systm.h>
-
+#include <sys/stdarg.h>
 #include <machine/psl.h>
-#include <machine/stdarg.h>
 
 #include <dev/ofw/openfirm.h>
 
