@@ -1,4 +1,4 @@
-/*	$OpenBSD: w.c,v 1.18 1997/05/30 18:40:46 deraadt Exp $	*/
+/*	$OpenBSD: w.c,v 1.19 1997/07/25 05:04:07 mickey Exp $	*/
 
 /*-
  * Copyright (c) 1980, 1991, 1993, 1994
@@ -139,7 +139,8 @@ main(argc, argv)
 		wcmd = 0;
 		p = "";
 	} else
-		errx(1, "bad program name");
+		errx(1,
+		 "this program should be invoked only as \"w\" or \"uptime\"");
 
 	memf = nlistf = NULL;
 	while ((ch = getopt(argc, argv, p)) != -1)
