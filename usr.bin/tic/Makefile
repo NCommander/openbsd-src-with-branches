@@ -1,4 +1,4 @@
-#	$OpenBSD$
+#	$OpenBSD: Makefile,v 1.1 1998/07/24 19:37:33 millert Exp $
 
 PROG=	tic
 SRCS=	dump_entry.c tic.c
@@ -8,6 +8,7 @@ DPADD=	${LIBCURSES}
 LDADD=	-lcurses
 CURSES=	${.CURDIR}/../../lib/libcurses
 CFLAGS+= -I${CURSES} -I${.CURDIR} -I.
+CLEANFILES+= termsort.c
 
 beforedepend: termsort.c
 
