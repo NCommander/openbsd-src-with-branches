@@ -1,4 +1,4 @@
-/*       $OpenBSD: vfs_default.c,v 1.4 2001/03/16 01:09:48 csapuntz Exp $  */
+/*       $OpenBSD: vfs_default.c,v 1.5 2001/06/05 20:54:52 provos Exp $  */
 
 
 /*
@@ -67,7 +67,7 @@ vop_generic_revoke(v)
 	void *v;
 {
 	struct vop_revoke_args /* {
-	        struct vnode *a_vp;
+		struct vnode *a_vp;
 		int a_flags;
 	} */ *ap = v;
 	struct vnode *vp, *vq;
@@ -208,13 +208,13 @@ vop_generic_lock(v)
 		vnflags |= LK_INTERLOCK;
 	return(lockmgr(vp->v_vnlock, vnflags, &vp->v_interlock, ap->a_p));
 #else /* for now */
-        /*
-         * Since we are not using the lock manager, we must clear
-         * the interlock here.
-         */
-        if (ap->a_flags & LK_INTERLOCK)
-                simple_unlock(&ap->a_vp->v_interlock);
-        return (0);
+	/*
+	 * Since we are not using the lock manager, we must clear
+	 * the interlock here.
+	 */
+	if (ap->a_flags & LK_INTERLOCK)
+		simple_unlock(&ap->a_vp->v_interlock);
+	return (0);
 #endif
 }
  

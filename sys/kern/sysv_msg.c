@@ -1,4 +1,4 @@
-/*	$OpenBSD: sysv_msg.c,v 1.8 1999/08/09 21:44:24 deraadt Exp $	*/
+/*	$OpenBSD: sysv_msg.c,v 1.9 2001/05/16 17:14:35 millert Exp $	*/
 /*	$NetBSD: sysv_msg.c,v 1.19 1996/02/09 19:00:18 christos Exp $	*/
 
 /*
@@ -825,8 +825,8 @@ sys_msgrcv(p, v, retval)
 			struct msg **prev;
 
 			for (previous = NULL, prev = &msqptr->msg_first;
-			     (msghdr = *prev) != NULL;
-			     previous = msghdr, prev = &msghdr->msg_next) {
+			    (msghdr = *prev) != NULL;
+			    previous = msghdr, prev = &msghdr->msg_next) {
 				/*
 				 * Is this message's type an exact match or is
 				 * this message's type less than or equal to
