@@ -1,4 +1,4 @@
-/*	$OpenBSD: netboot.c,v 1.1 1996/09/18 20:03:12 cgd Exp $	*/
+/*	$OpenBSD: netboot.c,v 1.1 1996/10/30 22:40:57 niklas Exp $	*/
 /*	$NetBSD: netboot.c,v 1.1 1996/09/18 20:03:12 cgd Exp $	*/
 
 /*
@@ -39,8 +39,8 @@
  *	@(#)boot.c	8.1 (Berkeley) 6/10/93
  */
 
-#include <lib/libsa/stand.h>
 #include <lib/libkern/libkern.h>
+#include <lib/libsa/stand.h>
 
 #include <sys/param.h>
 #include <sys/exec.h>
