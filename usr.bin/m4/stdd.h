@@ -52,8 +52,8 @@
  * STREQ is an optimised strcmp(a,b)==0 
  * STREQN is an optimised strncmp(a,b,n)==0; assumes n > 0 
  */
-#define STREQ(a, b) ((a)[0] == (b)[0] && strcmp((a)+1, (b)+1) == 0)
-#define STREQN(a, b, n) ((a)[0] == (b)[0] && strncmp((a)+1, (b)+1, (n)-1) == 0)
+#define STREQ(a, b) ((a)[0] == (b)[0] && strcmp(a, b) == 0)
+#define STREQN(a, b, n) ((a)[0] == (b)[0] && strncmp(a, b, n) == 0)
 
 #define YES 1
 #define NO 0
