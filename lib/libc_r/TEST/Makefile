@@ -1,12 +1,5 @@
-# Generated automatically from Makefile.in by configure.
-# === GNUmakefile ============================================================
+# $OpenBSD$
 # Copyright (c) 1993 Chris Provenzano, proven@athena.mit.edu
-#
-#	Description: This file is for creating the test programs for libpthread.a
-#
-#	1.00 93/08/03 proven
-#		-Initial cut for pthreads.
-#
 
 LIBC_R?=	/usr/lib/libc_r.a
 LIBPTHREAD?=	/usr/lib/libpthread.a
