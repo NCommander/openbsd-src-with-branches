@@ -1,4 +1,4 @@
-/*	$OpenBSD: cpu.c,v 1.33 2001/11/06 19:53:16 miod Exp $	*/
+/*	$OpenBSD: cpu.c,v 1.34 2001/12/05 14:40:48 art Exp $	*/
 /*	$NetBSD: cpu.c,v 1.56 1997/09/15 20:52:36 pk Exp $ */
 
 /*
@@ -252,7 +252,6 @@ cpu_attach(parent, self, aux)
 		 */
 		s = splhigh();
 		sc->cache_enable();
-		pmap_cache_enable();
 		splx(s);
 		return;
 	}
