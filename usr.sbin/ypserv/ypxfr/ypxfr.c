@@ -1,4 +1,4 @@
-/*	$OpenBSD$ */
+/*	$OpenBSD: ypxfr.c,v 1.6 1996/05/30 09:53:35 deraadt Exp $ */
 
 /*
  * Copyright (c) 1994 Mats O Jansson <moj@stacken.kth.se>
@@ -32,7 +32,7 @@
  */
 
 #ifndef LINT
-static char rcsid[] = "$OpenBSD$";
+static char rcsid[] = "$OpenBSD: ypxfr.c,v 1.6 1996/05/30 09:53:35 deraadt Exp $";
 #endif
 
 #include <stdio.h>
@@ -481,6 +481,11 @@ char *argv[];
 	    srcdomain = optarg;
 	    break;
 	  case 'C':
+	    if (optind + 3 >= argc) {
+		usage++;
+		optind = argc;
+		break;
+	    }
 	    Cflag++;
 	    tid = optarg;
 	    prog = argv[optind++];
