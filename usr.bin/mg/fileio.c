@@ -1,4 +1,4 @@
-/*	$OpenBSD: fileio.c,v 1.45 2005/02/01 16:04:15 henning Exp $	*/
+/*	$OpenBSD: fileio.c,v 1.42 2004/07/09 13:50:40 vincent Exp $	*/
 
 /*
  *	POSIX fileio.c
@@ -244,9 +244,9 @@ extern char	*wdir;
 char *
 adjustname(const char *fn)
 {
-	static char path[MAXPATHLEN];
+	static char fnb[MAXPATHLEN];
 	const char *cp;
-	char user[LOGIN_NAME_MAX + 1];
+	char user[LOGIN_NAME_MAX + 1], path[MAXPATHLEN];
 	int len;
 
 	path[0] = '\0';
@@ -283,7 +283,10 @@ adjustname(const char *fn)
 	}
 	strlcat(path, fn, sizeof path);
 
-	return (path);
+	if (realpath(path, fnb) == NULL)
+		strlcpy(fnb, path, sizeof(fnb));
+
+	return (fnb);
 }
 
 #ifndef NO_STARTUP
