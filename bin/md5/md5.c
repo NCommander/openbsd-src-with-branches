@@ -1,4 +1,4 @@
-/*	$OpenBSD: md5.c,v 1.14 2001/09/06 13:29:08 mpech Exp $	*/
+/*	$OpenBSD: md5.c,v 1.15 2002/01/20 13:32:04 camield Exp $	*/
 
 /*
  * Copyright (c) 2001 Todd C. Miller <Todd.Miller@courtesan.com>
@@ -170,6 +170,12 @@ digest_file(char *file, struct hash_functions *hf, int echo)
 		if (echo)
 			write(STDOUT_FILENO, data, (size_t)nread);
 		hf->update(&context, data, nread);
+	}
+	if (nread == -1) {
+		warn("%s: read error", file);
+		if (fd != STDIN_FILENO)
+			close(fd);
+		return;
 	}
 	digest = hf->end(&context, NULL);
 
