@@ -37,12 +37,12 @@
 
 #if defined(SYSLIBC_SCCS) 
 	.text
-	.asciz "$OpenBSD$"
+	.asciz "$OpenBSD: sigreturn.S,v 1.2 1996/08/19 08:18:14 tholo Exp $"
 #endif /* SYSLIBC_SCCS */
 
 #include "SYS.h"
 
-ENTRY(sigreturn)
+SYSENTRY(sigreturn)
 	mov	SYS_sigreturn, %g1
 	t	ST_SYSCALL
 	ERROR()
