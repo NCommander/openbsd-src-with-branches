@@ -650,7 +650,7 @@ strerror (errnoval)
   else if ((sys_errlist == NULL) || (sys_errlist[errnoval] == NULL))
     {
       /* In range, but no sys_errlist or no entry at this index. */
-      snprintf (buf, sizeof buf, "Error %d", errnoval);
+      sprintf (buf, "Error %d", errnoval);
       msg = buf;
     }
   else
@@ -713,7 +713,7 @@ strerrno (errnoval)
   else if ((error_names == NULL) || (error_names[errnoval] == NULL))
     {
       /* In range, but no error_names or no entry at this index. */
-      snprintf (buf, sizeof buf, "Error %d", errnoval);
+      sprintf (buf, "Error %d", errnoval);
       name = (const char *) buf;
     }
   else

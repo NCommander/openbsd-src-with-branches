@@ -148,7 +148,7 @@ void test03()
 
 int main ()
 {
-#if defined(_GLIBCPP_USE_WCHAR_T)
+#if _GLIBCPP_USE_WCHAR_T
   test01();
   test02();
   test03();

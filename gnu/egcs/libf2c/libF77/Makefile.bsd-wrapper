@@ -1,8 +1,0 @@
-# $OpenBSD$
-
-# This needs to be separate from libg2c to allow for  mixed
-# Fortran/other language programs.
-LIB=frtbegin
-SRCS=main.c
-
-.include <bsd.lib.mk>

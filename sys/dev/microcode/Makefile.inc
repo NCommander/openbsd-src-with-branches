@@ -1,3 +1,0 @@
-#	$OpenBSD$
-
-CFLAGS+=-I${.CURDIR}/../../..

@@ -298,11 +298,11 @@ xscale-*-*)
 	;;
 i[34567]86-*-*)
 	cpu_type=i386
-	extra_headers="mmintrin.h xmmintrin.h"
+	extra_headers="mmintrin.h xmmintrin.h emmintrin.h pmmintrin.h"
 	;;
 x86_64-*-*)
 	cpu_type=i386
-	extra_headers="mmintrin.h xmmintrin.h"
+	extra_headers="mmintrin.h xmmintrin.h emmintrin.h pmmintrin.h"
 	;;
 ia64-*-*)
 	extra_headers=ia64intrin.h
@@ -402,19 +402,9 @@ case $machine in
 	esac
 	;;
 *-*-openbsd*)
-	case $machine in
-	*-*-openbsd2* | *-*-openbsd3.[012])
-		openbsd_libspec="openbsd-libc_r.h"
-		;;
-	*)
-		openbsd_libspec="openbsd-libpthread.h"
-		;;
-	esac
-	tm_file="${openbsd_libspec} ${cpu_type}/openbsd.h"
+	tm_file=${cpu_type}/openbsd.h
 	tmake_file="t-libc-ok t-openbsd t-libgcc-pic"
 	xm_defines=POSIX
-	# for gcc in tree, we use our own fragment
-	xmake_file=x-openbsd
 	if test x$enable_threads = xyes; then
 		thread_file='posix'
 		tmake_file="${tmake_file} t-openbsd-thread"
@@ -588,12 +578,10 @@ alpha*-*-netbsd*)
 	;;
 
 alpha*-*-openbsd*)
- 	tm_file="alpha/alpha.h alpha/elf.h alpha/openbsd1.h openbsd.h ${tm_file}"
-	tm_file="${tm_file} exec-stack.h"
+	tm_file="${cpu_type}/${cpu_type}.h ${tm_file}"
 	# default x-alpha is only appropriate for dec-osf.
 	target_cpu_default="MASK_GAS"
 	tmake_file="alpha/t-alpha alpha/t-ieee"
-	gas=yes gnu_ld=yes
 	;;
 
 alpha*-dec-osf[45]*)
@@ -703,11 +691,6 @@ arm*-*-netbsdelf*)
 	tm_file="dbxelf.h elfos.h netbsd.h netbsd-elf.h arm/elf.h arm/aout.h arm/arm.h arm/netbsd-elf.h"
 	tmake_file="${tmake_file} arm/t-netbsd"
 	;;
-arm*-*-openbsd*)
-	tm_file="dbxelf.h elfos.h arm/openbsd1.h arm/elf.h arm/aout.h arm/arm.h openbsd.h ${tm_file}"
-	tm_file="${tm_file} exec-stack.h"
-	tmake_file="${tmake_file} arm/t-openbsd"
-	;;
 arm*-*-netbsd*)
 	tm_file="arm/aout.h arm/arm.h netbsd.h netbsd-aout.h arm/netbsd.h"
 	tmake_file="t-netbsd arm/t-netbsd"
@@ -715,7 +698,7 @@ arm*-*-netbsd*)
 	use_collect2=yes
 	;;
 arm*-*-linux*)			# ARM GNU/Linux with ELF
-	tm_file="dbxelf.h elfos.h arm/unknown-elf.h arm/elf.h arm/aout.h arm/arm.h arm/linux-gas.h arm/linux-elf.h"
+	tm_file="dbxelf.h elfos.h arm/elf.h arm/linux-gas.h arm/linux-elf.h arm/aout.h arm/arm.h"
 	tmake_file="t-slibgcc-elf-ver t-linux arm/t-linux"
 	extra_parts="crtbegin.o crtbeginS.o crtend.o crtendS.o"
 	gnu_ld=yes
@@ -809,7 +792,7 @@ frv-*-elf)
 	;;
 h8300-*-rtems*)
 	xm_defines=POSIX
-	tmake_file="h8300/t-h8300 t-rtems"
+	tmake_file="h8300/t-h8300 t-rtems h8300/t-rtems"
 	tm_file="h8300/h8300.h h8300/rtems.h rtems.h"
 	if test x$enable_threads = xyes; then
 	  thread_file='rtems'
@@ -835,13 +818,12 @@ hppa*-*-linux* | parisc*-*-linux*)
 	tmake_file="t-slibgcc-elf-ver t-linux pa/t-linux"
 	;;
 hppa*-*-openbsd*)
-	target_cpu_default="MASK_PA_11 | MASK_NO_SPACE_REGS"
-	tmake_file="t-libc-ok t-openbsd t-openbsd-thread pa/t-openbsd"
+	target_cpu_default="MASK_PA_11"
+	tmake_file=pa/t-bsd
 	;;
 hppa1.1-*-pro*)
 	target_cpu_default="(MASK_JUMP_IN_DELAY | MASK_PORTABLE_RUNTIME | MASK_GAS | MASK_NO_SPACE_REGS | MASK_SOFT_FLOAT)"
 	tm_file="${tm_file} pa/pa32-regs.h dbxelf.h elfos.h pa/elf.h pa/pa-pro-end.h libgloss.h"
-	tm_file="${tm_file} exec-stack.h"
 	tmake_file="pa/t-bsd pa/t-pro"
 	xmake_file="pa/x-ada"
 	;;
@@ -1160,27 +1142,12 @@ i[34567]86-*-netbsd*)
 x86_64-*-netbsd*)
 	tm_file="${tm_file} i386/unix.h i386/att.h dbxelf.h elfos.h netbsd.h netbsd-elf.h i386/x86-64.h i386/netbsd64.h"
 	;;
-i[34567]86-*-openbsd2* | i[34567]86-*-openbsd3.[0123])
+i[34567]86-*-openbsd*)
 	tm_file="${cpu_type}/${cpu_type}.h i386/unix.h i386/bsd.h i386/gas.h i386/gstabs.h openbsd-oldgas.h openbsd.h ${tm_file}"
 	# needed to unconfuse gdb
 	tmake_file="t-libc-ok t-openbsd i386/t-openbsd"
 	# we need collect2 until our bug is fixed...
 	use_collect2=yes
-	;;
-i[34567]86-*-openbsd*)
-	# needed to unconfuse gdb
-	tmake_file="t-libc-ok t-openbsd i386/t-openbsd"
-	tm_file="${cpu_type}/${cpu_type}.h i386/unix.h i386/att.h dbxelf.h elfos.h i386/i386elf.h"
-	tm_file="${tm_file} exec-stack.h"
-	tm_file="${tm_file} openbsd.h openbsd-libpthread.h i386/openbsdelf.h"
-	gas=yes
-	gnu_ld=yes
-	stabs=yes
-  	;;
-x86_64-*-openbsd*)
-	tm_file="i386/biarch64.h i386/i386.h i386/unix.h i386/att.h dbxelf.h elfos.h openbsd.h openbsd-libpthread.h i386/x86-64.h i386/openbsd64.h"
-	tm_file="${tm_file} exec-stack.h"
-	tmake_file="t-libc-ok t-openbsd i386/t-openbsd"
 	;;
 i[34567]86-*-coff*)
 	tm_file="${tm_file} i386/unix.h i386/bsd.h i386/gas.h dbxcoff.h i386/i386-coff.h"
@@ -1744,7 +1711,6 @@ m68k*-*-openbsd*)
 	tmake_file="t-libc-ok t-openbsd m68k/t-openbsd"
 	# we need collect2 until our bug is fixed...
 	use_collect2=yes
-	tm_file="${tm_file} exec-stack.h"
 	;;
 m68k-*-sysv4*)			# Motorola m68k's running system V.4
 	tm_file=m68k/m68kv4.h
@@ -1796,7 +1762,6 @@ m88k-*-aout*)
 m88k-*-openbsd*)
 	tmake_file="${tmake_file} m88k/t-luna-gas"
 	tm_file="m88k/aout-dbx.h aoutos.h m88k/m88k.h openbsd.h ${tm_file}"
-	tm_file="${tm_file} exec-stack.h"
 	;;
 m88k-*-sysv4*)
 	xm_defines=POSIX
@@ -1928,18 +1893,12 @@ mips*-*-linux*)				# Linux MIPS, either endian.
         esac
 	tmake_file="t-slibgcc-elf-ver t-linux mips/t-linux"
 	;;
-mips*-*-openbsd*)
+mips*el-*-openbsd*)	# mips little endian
 	target_cpu_default="MASK_GAS|MASK_ABICALLS"
-	tm_file="elfos.h ${tm_file}"
-	case $machine in
-        mips64*-*)
-		tm_defines="MIPS_ISA_DEFAULT=3 MIPS_ABI_DEFAULT=ABI_64"
-		tmake_file="mips/t-openbsd64"
-		;;
-        mips*-*)
-		tm_defines="MIPS_ISA_DEFAULT=3 MIPS_ABI_DEFAULT=ABI_N32"
-		;;
-	esac
+	;;
+mips*-*-openbsd*)		# mips big endian
+	target_cpu_default="MASK_GAS|MASK_ABICALLS"
+	tm_file="mips/openbsd-be.h ${tm_file}"
 	;;
 mips-*-ecoff* | mipsel-*-ecoff*)
 	if test x$stabs = xyes; then
@@ -2057,9 +2016,8 @@ romp-*-openbsd*)
 	# Nothing special
 	;;
 powerpc-*-openbsd*)
-	tm_file="rs6000/rs6000.h rs6000/openbsd1.h dbxelf.h elfos.h svr4.h freebsd-spec.h rs6000/sysv4.h openbsd.h ${tm_file}"
-	tmake_file="${tmake_file} rs6000/t-ppcos rs6000/t-openbsd"
-	tm_file="${tm_file} exec-stack.h"
+	tmake_file="${tmake_file} rs6000/t-rs6000 rs6000/t-openbsd"
+	extra_headers=
 	;;
 powerpc64-*-linux*)
 	tm_file="${tm_file} dbxelf.h elfos.h svr4.h freebsd-spec.h rs6000/sysv4.h rs6000/linux64.h"
@@ -2153,7 +2111,7 @@ powerpc-*-eabi*)
 powerpc-*-rtems*)
 	xm_defines=POSIX
 	tm_file="${tm_file} dbxelf.h elfos.h svr4.h freebsd-spec.h rs6000/sysv4.h rs6000/eabi.h rs6000/rtems.h rtems.h"
-	tmake_file="rs6000/t-rtems t-rtems rs6000/t-ppccomm"
+	tmake_file="rs6000/t-fprules rs6000/t-rtems t-rtems rs6000/t-ppccomm"
 	if test x$enable_threads = xyes; then
 	  thread_file='rtems'
 	fi
@@ -2347,7 +2305,7 @@ sh-*-rtems*)
 	fi
 	;;
 sh-*-linux* | sh[2346lbe]*-*-linux*)
-	tmake_file="sh/t-sh sh/t-elf"
+	tmake_file="sh/t-sh sh/t-elf t-slibgcc-elf-ver t-linux"
 	case $machine in
 	sh*be-*-* | sh*eb-*-*) ;;
 	*)
@@ -2439,21 +2397,17 @@ sparc-*-netbsd*)
 	use_collect2=yes
 	;;
 sparc-*-openbsd*)
-	tm_file="sparc/sparc.h elfos.h svr4.h sparc/sysv4.h ${tm_file}"
-	tm_file="${tm_file} exec-stack.h"
+	tm_file="sparc/sparc.h ${tm_file}"
 	# needed to unconfuse gdb
 	tmake_file="t-libc-ok t-openbsd sparc/t-openbsd"
 	# we need collect2 until our bug is fixed...
-	gas=yes gnu_ld=yes
 	use_collect2=yes
 	;;
 sparc64-*-openbsd*)
-	tm_file="sparc/openbsd1-64.h sparc/sparc.h elfos.h svr4.h sparc/sysv4.h sparc/sp64-elf.h openbsd.h ${openbsd_libspec} sparc/openbsd64.h"
-	tm_file="${tm_file} exec-stack.h"
+	tm_file="sparc/openbsd1-64.h sparc/sparc.h elfos.h svr4.h sparc/sysv4.h sparc/sol2.h sparc/sp64-elf.h openbsd.h sparc/openbsd64.h"
 	xm_file=sparc/xm-sp64.h
 	gas=yes gnu_ld=yes
 	with_cpu=ultrasparc
-	float_format=i128
 	;;
 sparc-*-bsd*)
 	tm_file="${tm_file} sparc/bsd.h"
@@ -2763,7 +2717,6 @@ vax-*-netbsd*)
 	;;
 vax-*-openbsd*)
 	tm_file="vax/vax.h vax/openbsd1.h openbsd.h ${tm_file}"
-	tm_file="${tm_file} exec-stack.h"
 	use_collect2=yes
 	;;
 vax-*-ultrix*)			# VAXen running ultrix
@@ -2874,7 +2827,25 @@ x86_64-*-*)
 	# We should have hammer chip here, but it does not exist yet and
 	# thus it is not supported.  Athlon_SSE is probably equivalent feature
 	# wise to hammer from our point of view except for 64bit mode.
-	target_cpu_default2=TARGET_CPU_DEFAULT_athlon_sse
+	case "x$with_cpu" in
+		x)
+			target_cpu_default2=TARGET_CPU_DEFAULT_athlon_sse
+			;;
+		xnocona)
+			target_cpu_default2=TARGET_CPU_DEFAULT_pentium4
+			;;
+		xyes|xno)
+			echo "--with-cpu must be passed a value" 1>&2
+			exit 1
+			;;
+		*)
+			if test x$pass2done = xyes
+			then
+				echo "Unknown cpu used with --with-cpu=$with_cpu" 1>&2
+				exit 1
+			fi
+			;;
+	esac
 	;;
 alpha*-*-*)
 	case $machine in

@@ -1572,7 +1572,7 @@ collect_execute (prog, argv, redir)
   if (redir)
     {
       /* Open response file.  */
-      redir_handle = open (redir, O_WRONLY | O_TRUNC | O_CREAT, 0666);
+      redir_handle = open (redir, O_WRONLY | O_TRUNC | O_CREAT);
 
       /* Duplicate the stdout and stderr file handles
 	 so they can be restored later.  */
@@ -2645,7 +2645,7 @@ scan_libraries (prog_name)
 
 #ifdef OBJECT_FORMAT_COFF
 
-#if defined(EXTENDED_COFF)
+#if defined (EXTENDED_COFF)
 
 #   define GCC_SYMBOLS(X)	(SYMHEADER(X).isymMax + SYMHEADER(X).iextMax)
 #   define GCC_SYMENT		SYMR
@@ -2658,14 +2658,26 @@ scan_libraries (prog_name)
 
 #   define GCC_SYMBOLS(X)	(HEADER(ldptr).f_nsyms)
 #   define GCC_SYMENT		SYMENT
-#   define GCC_OK_SYMBOL(X) \
-     (((X).n_sclass == C_EXT) && \
-      ((X).n_scnum > N_UNDEF) && \
-      (aix64_flag \
-       || (((X).n_type & N_TMASK) == (DT_NON << N_BTSHFT) \
-           || ((X).n_type & N_TMASK) == (DT_FCN << N_BTSHFT))))
-#   define GCC_UNDEF_SYMBOL(X) \
-     (((X).n_sclass == C_EXT) && ((X).n_scnum == N_UNDEF))
+#   if defined (C_WEAKEXT)
+#     define GCC_OK_SYMBOL(X) \
+       (((X).n_sclass == C_EXT || (X).n_sclass == C_WEAKEXT) && \
+        ((X).n_scnum > N_UNDEF) && \
+        (aix64_flag \
+         || (((X).n_type & N_TMASK) == (DT_NON << N_BTSHFT) \
+             || ((X).n_type & N_TMASK) == (DT_FCN << N_BTSHFT))))
+#     define GCC_UNDEF_SYMBOL(X) \
+       (((X).n_sclass == C_EXT || (X).n_sclass == C_WEAKEXT) && \
+        ((X).n_scnum == N_UNDEF))
+#   else
+#     define GCC_OK_SYMBOL(X) \
+       (((X).n_sclass == C_EXT) && \
+        ((X).n_scnum > N_UNDEF) && \
+        (aix64_flag \
+         || (((X).n_type & N_TMASK) == (DT_NON << N_BTSHFT) \
+             || ((X).n_type & N_TMASK) == (DT_FCN << N_BTSHFT))))
+#     define GCC_UNDEF_SYMBOL(X) \
+       (((X).n_sclass == C_EXT) && ((X).n_scnum == N_UNDEF))
+#   endif
 #   define GCC_SYMINC(X)	((X).n_numaux+1)
 #   define GCC_SYMZERO(X)	0
 

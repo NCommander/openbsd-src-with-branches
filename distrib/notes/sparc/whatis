@@ -1,4 +1,0 @@
-dnl	$OpenBSD$
-OpenBSD/MACHINE is a port to machines based on the SPARC (32-bit)
-processor, including most of Sun Microsystems workstations and their
-clones.

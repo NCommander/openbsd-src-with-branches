@@ -703,26 +703,6 @@ expand_binop (mode, binoptab, op0, op1, target, unsignedp, methods)
   if (target)
     target = protect_from_queue (target, 1);
 
-  if (flag_propolice_protection
-      && binoptab->code == PLUS
-      && op0 == virtual_stack_vars_rtx
-      && GET_CODE(op1) == CONST_INT)
-    {
-      int icode = (int) binoptab->handlers[(int) mode].insn_code;
-      if (target)
-	temp = target;
-      else
-	temp = gen_reg_rtx (mode);
-
-      if (! (*insn_data[icode].operand[0].predicate) (temp, mode)
-	  || GET_CODE (temp) != REG)
-	temp = gen_reg_rtx (mode);
-
-      emit_insn (gen_rtx_SET (VOIDmode, temp,
-			      gen_rtx_PLUS (GET_MODE (op0), op0, op1)));
-      return temp;
-    }
-
   if (flag_force_mem)
     {
       op0 = force_not_mem (op0);
@@ -3436,6 +3416,40 @@ prepare_cmp_insn (px, py, pcomparison, size, pmode, punsignedp, purpose)
 
       if (size == 0)
 	abort ();
+#ifdef HAVE_cmpmemqi
+      if (HAVE_cmpmemqi
+	  && GET_CODE (size) == CONST_INT
+	  && INTVAL (size) < (1 << GET_MODE_BITSIZE (QImode)))
+	{
+	  result_mode = insn_data[(int) CODE_FOR_cmpmemqi].operand[0].mode;
+	  result = gen_reg_rtx (result_mode);
+	  emit_insn (gen_cmpmemqi (result, x, y, size, opalign));
+	}
+      else
+#endif
+#ifdef HAVE_cmpmemhi
+      if (HAVE_cmpmemhi
+	  && GET_CODE (size) == CONST_INT
+	  && INTVAL (size) < (1 << GET_MODE_BITSIZE (HImode)))
+	{
+	  result_mode = insn_data[(int) CODE_FOR_cmpmemhi].operand[0].mode;
+	  result = gen_reg_rtx (result_mode);
+	  emit_insn (gen_cmpmemhi (result, x, y, size, opalign));
+	}
+      else
+#endif
+#ifdef HAVE_cmpmemsi
+      if (HAVE_cmpmemsi)
+	{
+	  result_mode = insn_data[(int) CODE_FOR_cmpmemsi].operand[0].mode;
+	  result = gen_reg_rtx (result_mode);
+	  size = protect_from_queue (size, 0);
+	  emit_insn (gen_cmpmemsi (result, x, y,
+				   convert_to_mode (SImode, size, 1),
+				   opalign));
+	}
+      else
+#endif
 #ifdef HAVE_cmpstrqi
       if (HAVE_cmpstrqi
 	  && GET_CODE (size) == CONST_INT
@@ -3494,6 +3508,16 @@ prepare_cmp_insn (px, py, pcomparison, size, pmode, punsignedp, purpose)
       *py = const0_rtx;
       *pmode = result_mode;
       return;
+    }
+
+  /* Don't allow operands to the compare to trap, as that can put the
+     compare and branch in different basic blocks.  */
+  if (flag_non_call_exceptions)
+    {
+      if (may_trap_p (x))
+	x = force_reg (mode, x);
+      if (may_trap_p (y))
+	y = force_reg (mode, y);
     }
 
   *px = x;

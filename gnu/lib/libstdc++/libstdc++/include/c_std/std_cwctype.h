@@ -73,7 +73,7 @@
 #undef wctrans
 #undef wctype
 
-#if defined(_GLIBCPP_USE_WCHAR_T)
+#if _GLIBCPP_USE_WCHAR_T
 namespace std
 {
   using ::wint_t; 	  // cwchar

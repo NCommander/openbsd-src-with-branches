@@ -86,8 +86,7 @@ plus_constant_wide (x, c)
   rtx tem;
   int all_constant = 0;
 
-  if (c == 0
-      && !(flag_propolice_protection && x == virtual_stack_vars_rtx))
+  if (c == 0)
     return x;
 
  restart:
@@ -188,8 +187,7 @@ plus_constant_wide (x, c)
       break;
     }
 
-  if (c != 0
-      || (flag_propolice_protection && x == virtual_stack_vars_rtx))
+  if (c != 0)
     x = gen_rtx_PLUS (mode, x, GEN_INT (c));
 
   if (GET_CODE (x) == SYMBOL_REF || GET_CODE (x) == LABEL_REF)
@@ -358,8 +356,6 @@ break_out_memory_refs (x)
   return x;
 }
 
-#ifdef POINTERS_EXTEND_UNSIGNED
-
 /* Given X, a memory address in ptr_mode, convert it to an address
    in Pmode, or vice versa (TO_MODE says which way).  We take advantage of
    the fact that pointers are not allowed to overflow by commuting arithmetic
@@ -368,12 +364,21 @@ break_out_memory_refs (x)
 
 rtx
 convert_memory_address (to_mode, x)
-     enum machine_mode to_mode;
+     enum machine_mode to_mode ATTRIBUTE_UNUSED;
      rtx x;
 {
-  enum machine_mode from_mode = to_mode == ptr_mode ? Pmode : ptr_mode;
+#ifndef POINTERS_EXTEND_UNSIGNED
+  return x;
+#else /* defined(POINTERS_EXTEND_UNSIGNED) */
+  enum machine_mode from_mode;
   rtx temp;
   enum rtx_code code;
+
+  /* If X already has the right mode, just return it.  */
+  if (GET_MODE (x) == to_mode)
+    return x;
+
+  from_mode = to_mode == ptr_mode ? Pmode : ptr_mode;
 
   /* Here we handle some special cases.  If none of them apply, fall through
      to the default case.  */
@@ -438,8 +443,8 @@ convert_memory_address (to_mode, x)
 
   return convert_modes (to_mode, from_mode,
 			x, POINTERS_EXTEND_UNSIGNED);
+#endif /* defined(POINTERS_EXTEND_UNSIGNED) */
 }
-#endif
 
 /* Given a memory address or facsimile X, construct a new address,
    currently equivalent, that is stable: future stores won't change it.
@@ -533,21 +538,6 @@ memory_address (mode, x)
 	 in certain cases.  This is not necessary since the code
 	 below can handle all possible cases, but machine-dependent
 	 transformations can make better code.  */
-      if (flag_propolice_protection)
-	{
-#define FRAMEADDR_P(X) (GET_CODE (X) == PLUS				\
-			&& XEXP (X, 0) == virtual_stack_vars_rtx	\
-			&& GET_CODE (XEXP (X, 1)) == CONST_INT)
-	  rtx y;
-	  if (FRAMEADDR_P (x)) goto win;
-	  for (y=x; y!=0 && GET_CODE (y)==PLUS; y = XEXP (y, 0))
-	    {
-	      if (FRAMEADDR_P (XEXP (y, 0)))
-		XEXP (y, 0) = force_reg (GET_MODE (XEXP (y, 0)), XEXP (y, 0));
-	      if (FRAMEADDR_P (XEXP (y, 1)))
-		XEXP (y, 1) = force_reg (GET_MODE (XEXP (y, 1)), XEXP (y, 1));
-	    }
-	}
       LEGITIMIZE_ADDRESS (x, oldx, mode, win);
 
       /* PLUS and MULT can appear in special ways

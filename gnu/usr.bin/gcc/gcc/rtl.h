@@ -1,6 +1,6 @@
 /* Register Transfer Language (RTL) definitions for GNU C-Compiler
    Copyright (C) 1987, 1991, 1992, 1993, 1994, 1995, 1996, 1997, 1998,
-   1999, 2000, 2001, 2002 Free Software Foundation, Inc.
+   1999, 2000, 2001, 2002, 2004 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -440,18 +440,6 @@ extern void rtvec_check_failed_bounds PARAMS ((rtvec, int,
        			     __FUNCTION__);				\
    _rtx; })
 
-#define RTL_FLAG_CHECK9(NAME, RTX, C1, C2, C3, C4, C5, C6, C7, C8, C9)	\
-  __extension__								\
-({ rtx const _rtx = (RTX);						\
-   if (GET_CODE(_rtx) != C1 && GET_CODE(_rtx) != C2	 		\
-       && GET_CODE(_rtx) != C3 && GET_CODE(_rtx) != C4			\
-       && GET_CODE(_rtx) != C5 && GET_CODE(_rtx) != C6			\
-       && GET_CODE(_rtx) != C7 && GET_CODE(_rtx) != C8 			\
-       && GET_CODE(_rtx) != C9)						\
-     rtl_check_failed_flag  (NAME, _rtx, __FILE__, __LINE__,		\
-       			     __FUNCTION__);				\
-   _rtx; })
-
 extern void rtl_check_failed_flag PARAMS ((const char *, rtx, const char *,
       					   int, const char *))
     ATTRIBUTE_NORETURN
@@ -467,7 +455,6 @@ extern void rtl_check_failed_flag PARAMS ((const char *, rtx, const char *,
 #define RTL_FLAG_CHECK6(NAME, RTX, C1, C2, C3, C4, C5, C6)		(RTX)
 #define RTL_FLAG_CHECK7(NAME, RTX, C1, C2, C3, C4, C5, C6, C7)		(RTX)
 #define RTL_FLAG_CHECK8(NAME, RTX, C1, C2, C3, C4, C5, C6, C7, C8)	(RTX)
-#define RTL_FLAG_CHECK9(NAME, RTX, C1, C2, C3, C4, C5, C6, C7, C8, C9)	(RTX)
 #endif
 
 #define CLEAR_RTX_FLAGS(RTX)	\
@@ -562,9 +549,9 @@ do {				\
 #define LOG_LINKS(INSN)	XEXP(INSN, 7)
 
 #define RTX_INTEGRATED_P(RTX)						\
-  (RTL_FLAG_CHECK9("RTX_INTEGRATED_P", (RTX), INSN, CALL_INSN,		\
+  (RTL_FLAG_CHECK8("RTX_INTEGRATED_P", (RTX), INSN, CALL_INSN,		\
 		   JUMP_INSN, INSN_LIST, BARRIER, CODE_LABEL, CONST,	\
-		   NOTE, PLUS)->integrated)
+		   NOTE)->integrated)
 #define RTX_UNCHANGING_P(RTX)						\
   (RTL_FLAG_CHECK3("RTX_UNCHANGING_P", (RTX), REG, MEM, CONCAT)->unchanging)
 #define RTX_FRAME_RELATED_P(RTX)					\
@@ -1945,6 +1932,9 @@ extern int cse_main			PARAMS ((rtx, int, int, FILE *));
 extern void cse_end_of_basic_block	PARAMS ((rtx,
 						struct cse_basic_block_data *,
 						int, int, int));
+extern void cse_condition_code_reg	PARAMS ((void));
+extern enum machine_mode default_cc_modes_compatible PARAMS ((enum machine_mode,
+							      enum machine_mode));
 
 /* In jump.c */
 extern int comparison_dominates_p	PARAMS ((enum rtx_code, enum rtx_code));
@@ -2268,6 +2258,8 @@ extern void init_alias_once		PARAMS ((void));
 extern void init_alias_analysis		PARAMS ((void));
 extern void end_alias_analysis		PARAMS ((void));
 extern rtx addr_side_effect_eval	PARAMS ((rtx, int, int));
+extern rtx get_reg_known_value		PARAMS ((unsigned int));
+extern bool get_reg_known_equiv_p	PARAMS ((unsigned int));
 
 /* In sibcall.c */
 typedef enum {

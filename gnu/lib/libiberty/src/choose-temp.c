@@ -53,7 +53,6 @@ not recommended.
 
 */
 
-#if defined(__MSDOS__) && !defined(__GO32__)
 char *
 choose_temp_base ()
 {
@@ -71,4 +70,3 @@ choose_temp_base ()
     abort ();
   return temp_filename;
 }
-#endif

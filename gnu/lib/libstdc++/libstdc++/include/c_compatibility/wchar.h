@@ -34,7 +34,7 @@
 
 using std::mbstate_t;
 
-#if defined(_GLIBCPP_USE_WCHAR_T)
+#if _GLIBCPP_USE_WCHAR_T
 using std::wint_t;
 
 using std::btowc;
@@ -95,7 +95,7 @@ using std::wmemmove;
 using std::wmemset;
 using std::wcsftime;
 
-#if defined(_GLIBCPP_USE_C99)
+#if _GLIBCPP_USE_C99
 using std::wcstold;
 using std::wcstoll;
 using std::wcstoull;

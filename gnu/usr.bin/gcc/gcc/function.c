@@ -59,7 +59,6 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "tm_p.h"
 #include "integrate.h"
 #include "langhooks.h"
-#include "protector.h"
 
 #ifndef TRAMPOLINE_ALIGNMENT
 #define TRAMPOLINE_ALIGNMENT FUNCTION_BOUNDARY
@@ -123,6 +122,9 @@ int current_function_uses_only_leaf_regs;
    post-instantiation libcalls.  */
 int virtuals_instantiated;
 
+/* Nonzero if at least one trampoline has been created.  */
+int trampolines_created;
+
 /* Assign unique numbers to labels generated for profiling, debugging, etc.  */
 static int funcdef_no;
 
@@ -143,10 +145,6 @@ static GTY(()) varray_type epilogue;
 /* Array of INSN_UIDs to hold the INSN_UIDs for each sibcall epilogue
    in this function.  */
 static GTY(()) varray_type sibcall_epilogue;
-
-/* Current boundary mark for character arrays.  */
-int temp_boundary_mark = 0;
-
 
 /* In order to evaluate some expressions, such as function calls returning
    structures in memory, we need to temporarily allocate stack locations.
@@ -200,8 +198,6 @@ struct temp_slot GTY(())
   /* The size of the slot, including extra space for alignment.  This
      info is for combine_temp_slots.  */
   HOST_WIDE_INT full_size;
-  /* Boundary mark of a character array and the others. This info is for propolice */
-  int boundary_mark;
 };
 
 /* This structure is used to record MEMs or pseudos used to replace VAR, any
@@ -636,7 +632,6 @@ assign_stack_local (mode, size, align)
    whose lifetime is controlled by CLEANUP_POINT_EXPRs.  KEEP is 3
    if we are to allocate something at an inner level to be treated as
    a variable in the block (e.g., a SAVE_EXPR).
-   KEEP is 5 if we allocate a place to return structure.
 
    TYPE is the type that will be used for the stack slot.  */
 
@@ -650,8 +645,6 @@ assign_stack_temp_for_type (mode, size, keep, type)
   unsigned int align;
   struct temp_slot *p, *best_p = 0;
   rtx slot;
-  int char_array = (flag_propolice_protection
-		    && keep == 1 && search_string_def (type));
 
   /* If SIZE is -1 it means that somebody tried to allocate a temporary
      of a variable size.  */
@@ -677,8 +670,7 @@ assign_stack_temp_for_type (mode, size, keep, type)
 	&& ! p->in_use
 	&& objects_must_conflict_p (p->type, type)
 	&& (best_p == 0 || best_p->size > p->size
-	    || (best_p->size == p->size && best_p->align > p->align))
-	&& (! char_array || p->boundary_mark != 0))
+	    || (best_p->size == p->size && best_p->align > p->align)))
       {
 	if (p->align == align && p->size == size)
 	  {
@@ -713,7 +705,6 @@ assign_stack_temp_for_type (mode, size, keep, type)
 	      p->address = 0;
 	      p->rtl_expr = 0;
 	      p->type = best_p->type;
-	      p->boundary_mark = best_p->boundary_mark;
 	      p->next = temp_slots;
 	      temp_slots = p;
 
@@ -774,7 +765,6 @@ assign_stack_temp_for_type (mode, size, keep, type)
       p->full_size = frame_offset - frame_offset_old;
 #endif
       p->address = 0;
-      p->boundary_mark = char_array?++temp_boundary_mark:0;
       p->next = temp_slots;
       temp_slots = p;
     }
@@ -787,7 +777,7 @@ assign_stack_temp_for_type (mode, size, keep, type)
   if (keep == 2)
     {
       p->level = target_temp_slot_level;
-      p->keep = 0;
+      p->keep = 1;
     }
   else if (keep == 3)
     {
@@ -945,16 +935,14 @@ combine_temp_slots ()
 	    int delete_q = 0;
 	    if (! q->in_use && GET_MODE (q->slot) == BLKmode)
 	      {
-		if (p->base_offset + p->full_size == q->base_offset &&
-		    p->boundary_mark == q->boundary_mark)
+		if (p->base_offset + p->full_size == q->base_offset)
 		  {
 		    /* Q comes after P; combine Q into P.  */
 		    p->size += q->size;
 		    p->full_size += q->full_size;
 		    delete_q = 1;
 		  }
-		else if (q->base_offset + q->full_size == p->base_offset &&
-			 p->boundary_mark == q->boundary_mark)
+		else if (q->base_offset + q->full_size == p->base_offset)
 		  {
 		    /* P comes after Q; combine P into Q.  */
 		    q->size += p->size;
@@ -1511,12 +1499,14 @@ put_reg_into_stack (function, reg, type, promoted_mode, decl_mode, volatile_p,
     regno = REGNO (reg);
 
   if (regno < func->x_max_parm_reg)
-    new = func->x_parm_reg_stack_loc[regno];
+    {
+      if (!func->x_parm_reg_stack_loc)
+	abort ();
+      new = func->x_parm_reg_stack_loc[regno];
+    }
 
   if (new == 0)
-    new = function ?
-	assign_stack_local_1 (decl_mode, GET_MODE_SIZE (decl_mode), 0, func):
-	assign_stack_local_for_pseudo_reg (decl_mode, GET_MODE_SIZE (decl_mode), 0);
+    new = assign_stack_local_1 (decl_mode, GET_MODE_SIZE (decl_mode), 0, func);
 
   PUT_CODE (reg, MEM);
   PUT_MODE (reg, decl_mode);
@@ -2194,7 +2184,23 @@ fixup_var_refs_1 (var, promoted_mode, loc, insn, replacements, no_share)
 	  replacement = find_fixup_replacement (replacements, x);
 	  if (replacement->new)
 	    {
+	      enum machine_mode mode = GET_MODE (x);
 	      *loc = replacement->new;
+
+	      /* Careful!  We may have just replaced a SUBREG by a MEM, which
+		 means that the insn may have become invalid again.  We can't
+		 in this case make a new replacement since we already have one
+		 and we must deal with MATCH_DUPs.  */
+	      if (GET_CODE (replacement->new) == MEM)
+		{
+		  INSN_CODE (insn) = -1;
+		  if (recog_memoized (insn) >= 0)
+		    return;
+
+		  fixup_var_refs_1 (replacement->new, mode, &PATTERN (insn),
+				    insn, replacements, no_share);
+		}
+
 	      return;
 	    }
 
@@ -3980,8 +3986,7 @@ instantiate_virtual_regs_1 (loc, object, extra_insns)
 		 constant with that register.  */
 	      temp = gen_reg_rtx (Pmode);
 	      XEXP (x, 0) = new;
-	      if (validate_change (object, &XEXP (x, 1), temp, 0)
-		  && ! flag_propolice_protection)
+	      if (validate_change (object, &XEXP (x, 1), temp, 0))
 		emit_insn_before (gen_move_insn (temp, new_offset), object);
 	      else
 		{
@@ -6899,6 +6904,7 @@ expand_function_end (filename, line, end_bindings)
       emit_block_move (blktramp, initial_trampoline,
 		       GEN_INT (TRAMPOLINE_SIZE), BLOCK_OP_NORMAL);
 #endif
+      trampolines_created = 1;
       INITIALIZE_TRAMPOLINE (tramp, XEXP (DECL_RTL (function), 0), context);
       seq = get_insns ();
       end_sequence ();
@@ -6958,6 +6964,14 @@ expand_function_end (filename, line, end_bindings)
 
   clear_pending_stack_adjust ();
   do_pending_stack_adjust ();
+
+  /* ???  This is a kludge.  We want to ensure that instructions that
+     may trap are not moved into the epilogue by scheduling, because
+     we don't always emit unwind information for the epilogue.
+     However, not all machine descriptions define a blockage insn, so
+     emit an ASM_INPUT to act as one.  */
+  if (flag_non_call_exceptions)
+    emit_insn (gen_rtx_ASM_INPUT (VOIDmode, ""));
 
   /* Mark the end of the function body.
      If control reaches this insn, the function can drop through

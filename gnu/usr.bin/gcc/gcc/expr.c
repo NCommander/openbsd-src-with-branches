@@ -45,7 +45,6 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "langhooks.h"
 #include "intl.h"
 #include "tm_p.h"
-#include "protector.h"
 
 /* Decide whether a function's arguments should be processed
    from first to last or from last to first.
@@ -130,6 +129,8 @@ struct store_by_pieces
 };
 
 static rtx enqueue_insn		PARAMS ((rtx, rtx));
+static rtx mark_queue		PARAMS ((void));
+static void emit_insns_enqueued_after_mark PARAMS ((rtx));
 static unsigned HOST_WIDE_INT move_by_pieces_ninsns
 				PARAMS ((unsigned HOST_WIDE_INT,
 					 unsigned int));
@@ -501,13 +502,31 @@ queued_subexp_p (x)
     }
 }
 
-/* Perform all the pending incrementations.  */
+/* Retrieve a mark on the queue.  */
+  
+static rtx
+mark_queue ()
+{
+  return pending_chain;
+}
 
-void
-emit_queue ()
+/* Perform all the pending incrementations that have been enqueued
+   after MARK was retrieved.  If MARK is null, perform all the
+   pending incrementations.  */
+
+static void
+emit_insns_enqueued_after_mark (mark)
+     rtx mark;
 {
   rtx p;
-  while ((p = pending_chain))
+
+  /* The marked incrementation may have been emitted in the meantime
+     through a call to emit_queue.  In this case, the mark is not valid
+     anymore so do nothing.  */
+  if (mark && ! QUEUED_BODY (mark))
+    return;
+
+  while ((p = pending_chain) != mark)
     {
       rtx body = QUEUED_BODY (p);
 
@@ -534,8 +553,17 @@ emit_queue ()
 	  break;
 	}
 
+      QUEUED_BODY (p) = 0;
       pending_chain = QUEUED_NEXT (p);
     }
+}
+
+/* Perform all the pending incrementations.  */
+
+void
+emit_queue ()
+{
+  emit_insns_enqueued_after_mark (NULL_RTX);
 }
 
 /* Copy data from FROM to TO, where the machine modes are not the same.
@@ -887,7 +915,11 @@ convert_move (to, from, unsignedp)
 		   != CODE_FOR_nothing))
 	{
 	  if (GET_CODE (to) == REG)
-	    emit_insn (gen_rtx_CLOBBER (VOIDmode, to));
+	    {
+	      if (reg_overlap_mentioned_p (to, from))
+		from = force_reg (from_mode, from);
+	      emit_insn (gen_rtx_CLOBBER (VOIDmode, to));
+	    }
 	  convert_move (gen_lowpart (word_mode, to), from, unsignedp);
 	  emit_unop_insn (code, to,
 			  gen_lowpart (word_mode, to), equiv_code);
@@ -1528,7 +1560,7 @@ move_by_pieces (to, from, len, align)
 
       if (USE_LOAD_PRE_DECREMENT (mode) && data.reverse && ! data.autinc_from)
 	{
-	  data.from_addr = copy_addr_to_reg (plus_constant (from_addr, len-GET_MODE_SIZE (mode)));
+	  data.from_addr = copy_addr_to_reg (plus_constant (from_addr, len));
 	  data.autinc_from = 1;
 	  data.explicit_inc_from = -1;
 	}
@@ -1542,7 +1574,7 @@ move_by_pieces (to, from, len, align)
 	data.from_addr = copy_addr_to_reg (from_addr);
       if (USE_STORE_PRE_DECREMENT (mode) && data.reverse && ! data.autinc_to)
 	{
-	  data.to_addr = copy_addr_to_reg (plus_constant (to_addr, len-GET_MODE_SIZE (mode)));
+	  data.to_addr = copy_addr_to_reg (plus_constant (to_addr, len));
 	  data.autinc_to = 1;
 	  data.explicit_inc_to = -1;
 	}
@@ -1659,13 +1691,11 @@ move_by_pieces_1 (genfun, mode, data)
 	from1 = adjust_address (data->from, mode, data->offset);
 
       if (HAVE_PRE_DECREMENT && data->explicit_inc_to < 0)
-	if (data->explicit_inc_to < -1)
-	  emit_insn (gen_add2_insn (data->to_addr,
-				    GEN_INT (-(HOST_WIDE_INT)size)));
+	emit_insn (gen_add2_insn (data->to_addr,
+				  GEN_INT (-(HOST_WIDE_INT)size)));
       if (HAVE_PRE_DECREMENT && data->explicit_inc_from < 0)
-	if (data->explicit_inc_from < -1)
-	  emit_insn (gen_add2_insn (data->from_addr,
-				    GEN_INT (-(HOST_WIDE_INT)size)));
+	emit_insn (gen_add2_insn (data->from_addr,
+				  GEN_INT (-(HOST_WIDE_INT)size)));
 
       if (data->to)
 	emit_insn ((*genfun) (to1, from1));
@@ -2838,7 +2868,7 @@ store_by_pieces_1 (data, align)
 
       if (USE_STORE_PRE_DECREMENT (mode) && data->reverse && ! data->autinc_to)
 	{
-	  data->to_addr = copy_addr_to_reg (plus_constant (to_addr, data->len-GET_MODE_SIZE (mode)));
+	  data->to_addr = copy_addr_to_reg (plus_constant (to_addr, data->len));
 	  data->autinc_to = 1;
 	  data->explicit_inc_to = -1;
 	}
@@ -2909,9 +2939,8 @@ store_by_pieces_2 (genfun, mode, data)
 	to1 = adjust_address (data->to, mode, data->offset);
 
       if (HAVE_PRE_DECREMENT && data->explicit_inc_to < 0)
-	if (data->explicit_inc_to < -1)
-	  emit_insn (gen_add2_insn (data->to_addr,
-				    GEN_INT (-(HOST_WIDE_INT) size)));
+	emit_insn (gen_add2_insn (data->to_addr,
+				  GEN_INT (-(HOST_WIDE_INT) size)));
 
       cst = (*data->constfun) (data->constfundata, data->offset, mode);
       emit_insn ((*genfun) (to1, cst));
@@ -4132,7 +4161,11 @@ expand_assignment (to, from, want_value, suggest_reg)
 	}
 
       if (TREE_CODE (to) == COMPONENT_REF
-	  && TREE_READONLY (TREE_OPERAND (to, 1)))
+	  && TREE_READONLY (TREE_OPERAND (to, 1))
+	  /* We can't assert that a MEM won't be set more than once
+	     if the component is not addressable because another
+	     non-addressable component may be referenced by the same MEM.  */
+	  && ! (GET_CODE (to_rtx) == MEM && ! can_address_p (to)))
 	{
 	  if (to_rtx == orig_to_rtx)
 	    to_rtx = copy_rtx (to_rtx);
@@ -4314,6 +4347,7 @@ store_expr (exp, target, want_value)
      int want_value;
 {
   rtx temp;
+  rtx mark = mark_queue ();
   int dont_return_target = 0;
   int dont_store_target = 0;
 
@@ -4523,7 +4557,11 @@ store_expr (exp, target, want_value)
 			  temp, TREE_UNSIGNED (TREE_TYPE (exp)));
 
   /* If value was not generated in the target, store it there.
-     Convert the value to TARGET's type first if necessary.
+     Convert the value to TARGET's type first if necessary and emit the
+     pending incrementations that have been queued when expanding EXP.
+     Note that we cannot emit the whole queue blindly because this will
+     effectively disable the POST_INC optimization later.
+
      If TEMP and TARGET compare equal according to rtx_equal_p, but
      one or both of them are volatile memory refs, we have to distinguish
      two cases:
@@ -4552,7 +4590,9 @@ store_expr (exp, target, want_value)
 	 bit-initialized.  */
       && expr_size (exp) != const0_rtx)
     {
+      emit_insns_enqueued_after_mark (mark);
       target = protect_from_queue (target, 1);
+      temp = protect_from_queue (temp, 0);
       if (GET_MODE (temp) != GET_MODE (target)
 	  && GET_MODE (temp) != VOIDmode)
 	{
@@ -4936,7 +4976,10 @@ store_constructor (exp, target, cleared, size)
 				       highest_pow2_factor (offset));
 	    }
 
-	  if (TREE_READONLY (field))
+	  /* If the constructor has been cleared, setting RTX_UNCHANGING_P
+	     on the MEM might lead to scheduling the clearing after the
+	     store.  */
+	  if (TREE_READONLY (field) && !cleared)
 	    {
 	      if (GET_CODE (to_rtx) == MEM)
 		to_rtx = copy_rtx (to_rtx);
@@ -5319,7 +5362,7 @@ store_constructor (exp, target, cleared, size)
 		{
 		  if (word != 0 || ! cleared)
 		    {
-		      rtx datum = GEN_INT (word);
+		      rtx datum = gen_int_mode (word, mode);
 		      rtx to_rtx;
 
 		      /* The assumption here is that it is safe to use
@@ -5907,9 +5950,7 @@ force_operand (value, target)
 	  && GET_CODE (XEXP (value, 0)) == PLUS
 	  && GET_CODE (XEXP (XEXP (value, 0), 0)) == REG
 	  && REGNO (XEXP (XEXP (value, 0), 0)) >= FIRST_VIRTUAL_REGISTER
-	  && REGNO (XEXP (XEXP (value, 0), 0)) <= LAST_VIRTUAL_REGISTER
-	  && (!flag_propolice_protection
-	      || XEXP (XEXP (value, 0), 0) != virtual_stack_vars_rtx))
+	  && REGNO (XEXP (XEXP (value, 0), 0)) <= LAST_VIRTUAL_REGISTER)
 	{
 	  rtx temp = expand_simple_binop (GET_MODE (value), code,
 					  XEXP (XEXP (value, 0), 0), op2,
@@ -8085,8 +8126,7 @@ expand_expr (exp, target, tmode, modifier)
       /* If adding to a sum including a constant,
 	 associate it to put the constant outside.  */
       if (GET_CODE (op1) == PLUS
-	  && CONSTANT_P (XEXP (op1, 1))
-	  && !(flag_propolice_protection && (contains_fp (op0) || contains_fp (op1))))
+	  && CONSTANT_P (XEXP (op1, 1)))
 	{
 	  rtx constant_term = const0_rtx;
 
@@ -8951,8 +8991,6 @@ expand_expr (exp, target, tmode, modifier)
 	    else
 	      {
 		target = assign_temp (type, 2, 0, 1);
-		/* All temp slots at this level must not conflict.  */
-		preserve_temp_slots (target);
 		SET_DECL_RTL (slot, target);
 		if (TREE_ADDRESSABLE (slot))
 		  put_var_into_stack (slot, /*rescan=*/false);
@@ -9851,6 +9889,9 @@ do_jump (exp, if_false_label, if_true_label)
       break;
 
     case INTEGER_CST:
+      /* ??? This should never happen - but it does, GCC PR opt/14749.  */
+      if (TREE_CONSTANT_OVERFLOW (exp))
+	goto normal;
       temp = integer_zerop (exp) ? if_false_label : if_true_label;
       if (temp)
 	emit_jump (temp);
@@ -11296,6 +11337,10 @@ const_vector_from_tree (exp)
 					       TREE_INT_CST_HIGH (elt),
 					       inner);
     }
+  
+  /* Initialize remaining elements to 0.  */
+  for (; i < units; ++i)
+    RTVEC_ELT (v, i) = CONST0_RTX (inner);
 
   return gen_rtx_raw_CONST_VECTOR (mode, v);
 }

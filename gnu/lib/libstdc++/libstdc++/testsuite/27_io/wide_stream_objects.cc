@@ -66,7 +66,7 @@
 #include <cstdlib>
 #include <cstring>
 #include <ctime>
-#if defined(_GLIBCPP_USE_WCHAR_T)
+#if _GLIBCPP_USE_WCHAR_T
   #include <bits/c++config.h>
   #include <cwchar>
   #include <cwctype>
