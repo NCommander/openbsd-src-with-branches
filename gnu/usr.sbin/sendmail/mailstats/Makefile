@@ -1,8 +1,8 @@
-#	$OpenBSD: Makefile,v 1.2 1996/12/14 21:16:45 downsj Exp $
+#	$OpenBSD: Makefile,v 1.2 2000/04/02 19:48:32 millert Exp $
 
 PROG=	mailstats
 MAN=	mailstats.8
-ENVDEF+=-DNOT_SENDMAIL
+ENVDEF=	-DNOT_SENDMAIL
 
 WANT_LIBSMUTIL=1
 
