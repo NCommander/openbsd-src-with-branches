@@ -1,4 +1,4 @@
-/*	$OpenBSD: kern_lkm.c,v 1.8 1996/09/04 22:24:23 niklas Exp $	*/
+/*	$OpenBSD: kern_lkm.c,v 1.9 1996/09/09 14:29:26 mickey Exp $	*/
 /*	$NetBSD: kern_lkm.c,v 1.31 1996/03/31 21:40:27 christos Exp $	*/
 
 /*
@@ -983,7 +983,9 @@ lkmdispatch(lkmtp, cmd)
 {
 	int error = 0;		/* default = success */
 
+#ifdef DEBUG
 	printf("lkmdispatch: %x %d\n", lkmtp, cmd);
+#endif /* DEBUG */
 
 	switch(lkmtp->private.lkm_any->lkm_type) {
 	case LM_SYSCALL:
