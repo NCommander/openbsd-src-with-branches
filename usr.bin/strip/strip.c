@@ -1,4 +1,4 @@
-/*	$OpenBSD: strip.c,v 1.6 1997/01/15 23:43:15 millert Exp $	*/
+/*	$OpenBSD: strip.c,v 1.7 1997/02/09 16:37:13 mickey Exp $	*/
 
 /*
  * Copyright (c) 1988 Regents of the University of California.
@@ -41,7 +41,7 @@ char copyright[] =
 
 #ifndef lint
 /*static char sccsid[] = "from: @(#)strip.c	5.8 (Berkeley) 11/6/91";*/
-static char rcsid[] = "$OpenBSD: strip.c,v 1.6 1997/01/15 23:43:15 millert Exp $";
+static char rcsid[] = "$OpenBSD: strip.c,v 1.7 1997/02/09 16:37:13 mickey Exp $";
 #endif /* not lint */
 
 #include <sys/param.h>
@@ -96,7 +96,7 @@ main(argc, argv)
 	argv += optind;
 
 	errors = 0;
-#define	ERROR(x) errors |= 1; warn(fn); continue;
+#define	ERROR(x) errors |= 1; warnx("%s: %s", fn, strerror(x)); continue;
 	while (fn = *argv++) {
 		if ((fd = open(fn, O_RDWR)) < 0) {
 			ERROR(errno);
