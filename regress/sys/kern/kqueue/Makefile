@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.11 2003/12/07 15:45:57 markus Exp $
+#	$OpenBSD: Makefile,v 1.12 2003/12/07 15:52:52 markus Exp $
 
 PROG=	kqueue-test
 CFLAGS+=-Wall
@@ -27,6 +27,7 @@ kq-pty: ${PROG}
 	${SUDO} ./${PROG} -T
 
 REGRESS_TARGETS=kq-pipe kq-fork kq-process kq-random kq-tun kq-pty
+REGRESS_ROOT_TARGETS=${REGRESS_TARGETS}
 .PHONY: ${REGRESS_TARGETS}
 
 .include <bsd.regress.mk>

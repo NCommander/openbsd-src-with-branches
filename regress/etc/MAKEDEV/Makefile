@@ -1,5 +1,5 @@
 
-# $OpenBSD: Makefile,v 1.16 2004/02/15 23:03:21 miod Exp $
+# $OpenBSD: Makefile,v 1.18 2004/05/03 15:18:19 drahn Exp $
 
 MAKEDEVARCHS+=alpha amd64 cats hp300 hppa i386 luna88k mac68k macppc mvme68k
 #MAKEDEVARCHS+=mvmeppc
@@ -16,6 +16,7 @@ REGRESS_SLOW_TARGETS=${REGRESS_TARGETS}
 # t2 = ramdisk
 
 REGRESS_TARGETS+= ${MAKEDEVARCHS}
+REGRESS_ROOT_TARGETS=${REGRESS_TARGETS}
 
 ${REGRESS_TARGETS}:
 . for _T in ${MAKEDEVTARGS}
