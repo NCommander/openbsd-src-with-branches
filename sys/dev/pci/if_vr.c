@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_vr.c,v 1.22 2002/02/15 20:45:31 nordin Exp $	*/
+/*	$OpenBSD: if_vr.c,v 1.25 2002/04/03 08:44:08 deraadt Exp $	*/
 
 /*
  * Copyright (c) 1997, 1998
@@ -1300,8 +1300,12 @@ vr_start(ifp)
 
 		/* Pack the data into the descriptor. */
 		if (vr_encap(sc, cur_tx, m_head)) {
-			IF_PREPEND(&ifp->if_snd, m_head);
-			ifp->if_flags |= IFF_OACTIVE;
+			if (ALTQ_IS_ENABLED(&ifp->if_snd)) {
+				m_freem(m_head);
+			} else {
+				IF_PREPEND(&ifp->if_snd, m_head);
+				ifp->if_flags |= IFF_OACTIVE;
+			}
 			cur_tx = NULL;
 			break;
 		}
