@@ -1,4 +1,4 @@
-/*	$OpenBSD: pfvar.h,v 1.73 2002/05/19 22:31:28 deraadt Exp $ */
+/*	$OpenBSD: pfvar.h,v 1.74 2002/06/07 21:14:02 frantzen Exp $ */
 
 /*
  * Copyright (c) 2001 Daniel Hartmeier
@@ -243,6 +243,9 @@ struct pf_rule {
 
 	struct ifnet		*ifp;
 	struct ifnet		*rt_ifp;
+
+	u_int32_t		 states;
+	u_int32_t		 max_states;
 
 	u_int16_t		 nr;
 	u_int16_t		 return_icmp;
