@@ -1,7 +1,7 @@
-/*	$OpenBSD: dev_i386.c,v 1.28 2004/03/09 19:12:12 tom Exp $	*/
+/*	$OpenBSD: devopen.c,v 1.1 2004/03/19 13:48:19 tom Exp $	*/
 
 /*
- * Copyright (c) 1994 Tom Cosgrove
+ * Copyright (c) 2004 Tom Cosgrove
  * Copyright (c) 1996-1999 Michael Shalayeff
  * All rights reserved.
  *
