@@ -1,4 +1,4 @@
-/*	$OpenBSD: whois.c,v 1.3 1997/01/15 23:43:39 millert Exp $	*/
+/*	$OpenBSD: whois.c,v 1.4 1998/02/24 10:09:50 deraadt Exp $	*/
 /*	$NetBSD: whois.c,v 1.5 1994/11/14 05:13:25 jtc Exp $	*/
 
 /*
@@ -44,18 +44,20 @@ static char copyright[] =
 #if 0
 static char sccsid[] = "@(#)whois.c	8.1 (Berkeley) 6/6/93";
 #endif
-static char rcsid[] = "$OpenBSD: whois.c,v 1.3 1997/01/15 23:43:39 millert Exp $";
+static char rcsid[] = "$OpenBSD: whois.c,v 1.4 1998/02/24 10:09:50 deraadt Exp $";
 #endif /* not lint */
 
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
+#include <arpa/inet.h>
 #include <netdb.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <sysexits.h>
 #include <unistd.h>
+#include <err.h>
 
 #define	NICHOST		"whois.internic.net"
 #define	DNICHOST	"nic.ddn.mil"
