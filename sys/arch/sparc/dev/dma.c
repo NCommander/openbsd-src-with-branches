@@ -1,4 +1,4 @@
-/*	$OpenBSD: dma.c,v 1.17 2002/03/14 01:26:42 millert Exp $	*/
+/*	$OpenBSD: dma.c,v 1.18 2003/06/05 12:27:02 deraadt Exp $	*/
 /*	$NetBSD: dma.c,v 1.46 1997/08/27 11:24:16 bouyer Exp $ */
 
 /*
@@ -356,6 +356,7 @@ dma_reset(sc, isledma)
 			DMACSR(sc) |= 0x800;
 		break;
 	default:
+		break;
 	}
 
 	sc->sc_active = 0;			/* and of course we aren't */
