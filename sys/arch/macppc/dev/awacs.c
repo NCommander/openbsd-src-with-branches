@@ -1,4 +1,4 @@
-/*	$OpenBSD: awacs.c,v 1.15 2003/06/16 03:45:40 jason Exp $	*/
+/*	$OpenBSD: awacs.c,v 1.16 2003/10/16 03:31:25 drahn Exp $	*/
 /*	$NetBSD: awacs.c,v 1.4 2001/02/26 21:07:51 wiz Exp $	*/
 
 /*-
@@ -248,8 +248,10 @@ awacs_match(struct device *parent, void *match, void *aux)
 	    strcmp(ca->ca_name, "davbus") != 0)
 		return 0;
 
+#ifdef DEBUG
 	printf("awacs: matched %s nreg %d nintr %d\n",
 		ca->ca_name, ca->ca_nreg, ca->ca_nintr);
+#endif
 
 	if (ca->ca_nreg < 24 || ca->ca_nintr < 12)
 		return 0;
