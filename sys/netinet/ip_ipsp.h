@@ -1,4 +1,4 @@
-/*	$OpenBSD: ip_ipsp.h,v 1.15 1997/11/04 09:11:17 provos Exp $	*/
+/*	$OpenBSD: ip_ipsp.h,v 1.16 1997/11/24 19:14:15 provos Exp $	*/
 
 /*
  * The author of this code is John Ioannidis, ji@tla.org,
@@ -216,6 +216,7 @@ extern int ipe4_zeroize(struct tdb *);
 extern int ipe4_output(struct mbuf *, struct sockaddr_encap *, struct tdb *,
 		       struct mbuf **);
 extern void ipe4_input __P((struct mbuf *, ...));
+extern void ip4_input __P((struct mbuf *, int));
 
 /* XF_OLD_AH */
 extern int ah_old_attach(void);
