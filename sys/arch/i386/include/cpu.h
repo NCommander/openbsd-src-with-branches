@@ -1,4 +1,4 @@
-/*	$OpenBSD: cpu.h,v 1.25 1999/02/23 04:10:12 marc Exp $	*/
+/*	$OpenBSD: cpu.h,v 1.26 1999/03/08 23:47:25 downsj Exp $	*/
 /*	$NetBSD: cpu.h,v 1.35 1996/05/05 19:29:26 christos Exp $	*/
 
 /*-
@@ -249,7 +249,8 @@ void	setconf __P((void));
 #define CPU_CPUID		7	/* cpuid */
 #define CPU_CPUFEATURE		8	/* cpuid features */
 #define CPU_APMWARN		9	/* APM battery warning percentage */
-#define	CPU_MAXID		10	/* number of valid machdep ids */
+#define CPU_KBDRESET		10	/* keyboard reset under pcvt */
+#define	CPU_MAXID		11	/* number of valid machdep ids */
 
 #define	CTL_MACHDEP_NAMES { \
 	{ 0, 0 }, \
@@ -262,6 +263,7 @@ void	setconf __P((void));
 	{ "cpuid", CTLTYPE_INT }, \
 	{ "cpufeature", CTLTYPE_INT }, \
 	{ "apmwarn", CTLTYPE_INT }, \
+	{ "kbdreset", CTLTYPE_INT }, \
 }
 
 #endif /* !_I386_CPU_H_ */
