@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_le.c,v 1.22 2003/05/22 07:28:11 miod Exp $	*/
+/*	$OpenBSD: if_le.c,v 1.23 2003/06/04 22:08:17 deraadt Exp $	*/
 /*	$NetBSD: if_le.c,v 1.50 1997/09/09 20:54:48 pk Exp $	*/
 
 /*-
@@ -575,7 +575,7 @@ leattach(parent, self, aux)
 		lesc->sc_ih.ih_fun = myleintr;
 #endif
 	lesc->sc_ih.ih_arg = sc;
-	intr_establish(pri, &lesc->sc_ih, IPL_NET);
+	intr_establish(pri, &lesc->sc_ih, IPL_NET, self->dv_xname);
 
 	/* now initialize DMA */
 	lehwreset(sc);
