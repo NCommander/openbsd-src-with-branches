@@ -1,4 +1,4 @@
-/*	$OpenBSD: pfctl_altq.c,v 1.26 2002/12/23 15:56:24 henning Exp $	*/
+/*	$OpenBSD: pfctl_altq.c,v 1.27 2002/12/24 13:29:13 mcbride Exp $	*/
 
 /*
  * Copyright (C) 2002
@@ -1052,8 +1052,8 @@ pfctl_find_altq_node(struct pf_altq_node *root, const char *qname,
 	struct pf_altq_node	*node, *child;
 
 	for (node = root; node != NULL; node = node->next) {
-		if (!strcmp(node->altq.qname, qname)
-		    && !(strcmp(node->altq.ifname, ifname)))
+		if (!strcmp(node->altq.qname, qname) &&
+		    !(strcmp(node->altq.ifname, ifname)))
 			return (node);
 		if (node->children != NULL) {
 			child = pfctl_find_altq_node(node->children, qname,
