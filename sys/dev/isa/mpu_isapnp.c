@@ -1,3 +1,5 @@
+/*	$OpenBSD$	*/
+
 #include "midi.h"
 
 #include <sys/param.h>
