@@ -1,4 +1,4 @@
-# $OpenBSD: Makefile.krb5.inc,v 1.7 2003/07/15 19:22:16 deraadt Exp $
+# $OpenBSD: Makefile.krb5.inc,v 1.8 2003/07/15 19:29:29 deraadt Exp $
 
 DIR_KRB5INC=	${.CURDIR}/../../kerberosV/include
 DIR_KRB5LIB=	${KRB5SRC}/lib/krb5
@@ -232,9 +232,6 @@ SRCS+=	add_et_list.c \
 	version.c \
 	krb5_warn.c \
 	write_message.c \
-	krb5_err.c \
-	heim_err.c \
-	k524_err.c \
 	${gen_files_krb5}
 
 CFLAGS+=-I${DIR_KRB5LIB} -I${KRB5SRC}/lib/ \
