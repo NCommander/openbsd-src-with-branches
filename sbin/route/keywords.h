@@ -51,5 +51,4 @@ extern struct keytab {
 #define	K_SHOW	41
 #define	K_SSTHRESH	42
 #define	K_STATIC	43
-#define	K_X25	44
-#define	K_XRESOLVE	45
+#define	K_XRESOLVE	44

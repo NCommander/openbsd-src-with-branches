@@ -49,7 +49,6 @@ struct keytab keywords[] = {
 	{"show", K_SHOW},
 	{"ssthresh", K_SSTHRESH},
 	{"static", K_STATIC},
-	{"x25", K_X25},
 	{"xresolve", K_XRESOLVE},
 	{0, 0}
 };
