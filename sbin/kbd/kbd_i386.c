@@ -56,6 +56,9 @@ struct {
 #include "tables/koi8"
   },
   {
+#include "tables/french"
+  },
+  {
   { NULL }
   }
 };
