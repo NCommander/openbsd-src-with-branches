@@ -1,4 +1,4 @@
-/*	$OpenBSD: dh.c,v 1.4 1999/02/26 03:36:07 niklas Exp $	*/
+/*	$OpenBSD: dh.c,v 1.5 1999/04/19 20:00:24 niklas Exp $	*/
 /*	$EOM: dh.c,v 1.5 1999/04/17 23:20:22 niklas Exp $	*/
 
 /*
@@ -78,7 +78,7 @@ dh_create_exchange (struct group *group, u_int8_t *buf)
 int
 dh_create_shared (struct group *group, u_int8_t *secret, u_int8_t *exchange)
 {
-  if (group->setraw (group, group->b, exchange, group->getlen(group)))
+  if (group->setraw (group, group->b, exchange, group->getlen (group)))
     return -1;
   if (group->operation (group, group->a, group->b, group->c))
     return -1;
