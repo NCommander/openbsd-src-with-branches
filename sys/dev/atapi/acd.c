@@ -1,4 +1,4 @@
-/*	$OpenBSD: acd.c,v 1.14 1996/10/05 07:17:00 downsj Exp $	*/
+/*	$OpenBSD: acd.c,v 1.16 1996/12/05 13:12:11 deraadt Exp $	*/
 
 /*
  * Copyright (c) 1996 Manuel Bouyer.  All rights reserved.
@@ -589,6 +589,7 @@ acdstart(vp)
 		if ((ad_link->flags & ADEV_MEDIA_LOADED) == 0) {
 			bp->b_error = EIO;
 			bp->b_flags |= B_ERROR;
+			bp->b_resid = bp->b_bcount;
 			biodone(bp);
 			continue;
 		}
