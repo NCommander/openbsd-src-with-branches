@@ -1,4 +1,5 @@
-/*	$NetBSD: cia.h,v 1.8 1995/03/28 18:14:28 jtc Exp $	*/
+/*	$OpenBSD$	*/
+/*	$NetBSD: cia.h,v 1.9 1996/02/01 22:29:06 mycroft Exp $	*/
 
 /*
  * Mach Operating System
