@@ -1,4 +1,4 @@
-.\"	$OpenBSD: ssh-add.1,v 1.26 2001/08/03 10:31:19 jakob Exp $
+.\"	$OpenBSD: ssh-add.1,v 1.27 2001/08/23 18:08:59 stevesk Exp $
 .\"
 .\"  -*- nroff -*-
 .\"
@@ -55,7 +55,10 @@
 .Nm
 adds RSA or DSA identities to the authentication agent,
 .Xr ssh-agent 1 .
-When run without arguments, it adds the file
+When run without arguments, it adds the files
+.Pa $HOME/.ssh/id_rsa ,
+.Pa $HOME/.ssh/id_dsa 
+and
 .Pa $HOME/.ssh/identity .
 Alternative file names can be given on the command line.
 If any file requires a passphrase,
