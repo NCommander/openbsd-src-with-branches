@@ -13,13 +13,7 @@ Options		Kernel configuration options that are either defined in
 		the prototype makefile or that can be specified in a config
 		file.
 
-Pmap.notes	Some (mostly HP-specific) observations I made while cleaning
-		up the hp300 pmap module.
-
 README		This.
-
-README.68040	Notes and copyright information for the 68040 floating point
-		emulation package.
 
 TODO.dev	A fairly ancient list of projects related to IO devices.
 

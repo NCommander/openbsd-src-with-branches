@@ -94,7 +94,7 @@ The HP maintains the p0br/p0lr and p1br/p1lr PCB fields the same as the
 VAX even though they have no meaning to the hardware.  This also keeps many
 utilities happy.
 
-There is no seperate interrupt stack (right now) on the HPs.  Interrupt
+There is no separate interrupt stack (right now) on the HPs.  Interrupt
 processing is handled on the kernel stack of the "current" process.
 
 Following is a list of things you might want to be able to do with a kernel

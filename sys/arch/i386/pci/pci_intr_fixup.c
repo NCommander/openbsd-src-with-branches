@@ -1,4 +1,4 @@
-/*	$OpenBSD: pci_intr_fixup.c,v 1.13.2.3 2001/10/31 03:01:13 nate Exp $	*/
+/*	$OpenBSD$	*/
 /*	$NetBSD: pci_intr_fixup.c,v 1.10 2000/08/10 21:18:27 soda Exp $	*/
 
 /*
@@ -149,6 +149,10 @@ const struct pciintr_icu_table {
 	  piix_init },
 	{ PCI_VENDOR_INTEL,     PCI_PRODUCT_INTEL_82801AA_LPC,
 	  piix_init },
+	{ PCI_VENDOR_INTEL,     PCI_PRODUCT_INTEL_82801BA_LPC,
+	  piix_init },
+	{ PCI_VENDOR_INTEL,     PCI_PRODUCT_INTEL_82801BAM_LPC,
+	  piix_init },
 
 	{ PCI_VENDOR_OPTI,	PCI_PRODUCT_OPTI_82C558,
 	  opti82c558_init },
@@ -166,6 +170,8 @@ const struct pciintr_icu_table {
 	  sis85c503_init },
 
 	{ PCI_VENDOR_AMD,	PCI_PRODUCT_AMD_PBC756_PMC,
+	  amd756_init },
+	{ PCI_VENDOR_AMD,	PCI_PRODUCT_AMD_766_ISA,
 	  amd756_init },
 
 	{ PCI_VENDOR_ALI,	PCI_PRODUCT_ALI_M1543,

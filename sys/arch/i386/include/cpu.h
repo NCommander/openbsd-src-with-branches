@@ -344,7 +344,6 @@ int	isa_nmi __P((void));
 
 /* pmap.c */
 void	pmap_bootstrap __P((vm_offset_t));
-vm_offset_t pmap_map __P((vm_offset_t, vm_offset_t, vm_offset_t, int));
 
 /* vm_machdep.c */
 int	kvtop __P((caddr_t));

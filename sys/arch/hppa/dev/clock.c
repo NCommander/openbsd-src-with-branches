@@ -119,7 +119,7 @@ inittodr(t)
 
 		if (dt < 2 * SECDAY)
 			return;
-		printf("WARNING: clock %s %d days",
+		printf("WARNING: clock %s %ld days",
 		    time.tv_sec < t? "lost" : "gained", dt / SECDAY);
 	}
 

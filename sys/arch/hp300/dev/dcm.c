@@ -1,4 +1,4 @@
-/*	$OpenBSD: dcm.c,v 1.10 1997/07/14 04:25:13 downsj Exp $	*/
+/*	$OpenBSD$	*/
 /*	$NetBSD: dcm.c,v 1.41 1997/05/05 20:59:16 thorpej Exp $	*/
 
 /*
@@ -1339,7 +1339,7 @@ dcmmctl(dev, bits, how)
 		dcm->dcm_cr |= CR_MODM;
 		SEM_UNLOCK(dcm);
 		DELAY(10); /* delay until done */
-		(void) splx(s);
+		splx(s);
 	}
 	return (bits);
 }

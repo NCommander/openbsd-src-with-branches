@@ -1,4 +1,4 @@
-/*	$OpenBSD: dca.c,v 1.11.12.1 2001/07/04 10:15:26 niklas Exp $	*/
+/*	$OpenBSD$	*/
 /*	$NetBSD: dca.c,v 1.35 1997/05/05 20:58:18 thorpej Exp $	*/
 
 /*
@@ -935,7 +935,7 @@ dcamctl(sc, bits, how)
 		bits = dca->dca_msr;
 		break;
 	}
-	(void) splx(s);
+	splx(s);
 	return (bits);
 }
 

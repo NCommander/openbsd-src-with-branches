@@ -222,9 +222,8 @@ gdt_get_slot()
 			if (gdt_size >= MAXGDTSIZ)
 				panic("gdt_get_slot botch 2");
 			if (dynamic_gdt == gdt)
-				gdt_init();
-			else
-				gdt_grow();
+				panic("gdt_get_slot called before gdt_init");
+			gdt_grow();
 		}
 		slot = gdt_next++;
 	}

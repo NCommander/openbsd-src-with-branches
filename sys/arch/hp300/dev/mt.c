@@ -1,4 +1,4 @@
-/*	$OpenBSD: mt.c,v 1.6 1997/04/16 11:56:13 downsj Exp $	*/
+/*	$OpenBSD$	*/
 /*	$NetBSD: mt.c,v 1.8 1997/03/31 07:37:29 scottr Exp $	*/
 
 /* 
@@ -509,7 +509,7 @@ spl_mtintr(arg)
 
 	hpibppclear(sc->sc_hpibno);
 	mtintr(sc);
-	(void) splx(s);
+	splx(s);
 }
 
 void
@@ -519,7 +519,7 @@ spl_mtstart(arg)
 	int s = splbio();
 
 	mtstart(arg);
-	(void) splx(s);
+	splx(s);
 }
 
 void

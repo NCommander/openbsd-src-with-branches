@@ -1,4 +1,4 @@
-/*	$OpenBSD: intr.h,v 1.4.4.7 2001/11/13 21:00:52 niklas Exp $	*/
+/*	$OpenBSD$	*/
 /*	$NetBSD: intr.h,v 1.5 1996/05/13 06:11:28 mycroft Exp $	*/
 
 /*
@@ -118,7 +118,7 @@ extern void Xspllower __P((void));
 
 static __inline int splraise __P((int));
 static __inline int spllower __P((int));
-static __inline void splx __P((int));
+#define SPLX_DECL void splx __P((int));
 static __inline void softintr __P((int, int));
 
 /*
@@ -126,12 +126,13 @@ static __inline void softintr __P((int, int));
  */
 static __inline int
 splraise(ncpl)
-	register int ncpl;
+	int ncpl;
 {
-	register int ocpl = lapic_tpr;
+	int ocpl = lapic_tpr;
 
 	if (ncpl > ocpl)
 		lapic_tpr = ncpl;
+	__asm __volatile("");
 	return (ocpl);
 }
 
@@ -139,14 +140,29 @@ splraise(ncpl)
  * Restore an old interrupt priority level.  If any thereby unmasked
  * interrupts are pending, call Xspllower() to process them.
  */
-static __inline void
-splx(ncpl)
-	register int ncpl;
-{
-	lapic_tpr = ncpl;
-	if (ipending & IUNMASK(ncpl))
-		Xspllower();
+#define SPLX_BODY							\
+void									\
+splx(ncpl)								\
+	int ncpl;							\
+{									\
+	__asm __volatile("");						\
+	lapic_tpr = ncpl;						\
+	if (ipending & IUNMASK(ncpl))					\
+		Xspllower();						\
 }
+
+/* If SMALL_KERNEL make splx out of line, otherwise inline it.  */
+#ifdef SMALL_KERNEL
+#define SPLX_INLINED_BODY
+#define SPLX_OUTLINED_BODY	SPLX_BODY
+SPLX_DECL
+#else
+#define SPLX_INLINED_BODY	static __inline SPLX_BODY
+#define SPLX_OUTLINED_BODY
+static __inline SPLX_DECL
+#endif
+
+SPLX_INLINED_BODY
 
 /*
  * Same as splx(), but we return the old value of spl, for the
@@ -154,9 +170,9 @@ splx(ncpl)
  */
 static __inline int
 spllower(ncpl)
-	register int ncpl;
+	int ncpl;
 {
-	register int ocpl = lapic_tpr;
+	int ocpl = lapic_tpr;
 
 	splx(ncpl);
 

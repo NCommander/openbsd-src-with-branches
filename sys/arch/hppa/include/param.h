@@ -1,4 +1,4 @@
-/*	$OpenBSD: param.h,v 1.8.2.4 2001/10/31 02:52:47 nate Exp $	*/
+/*	$OpenBSD$	*/
 
 /* 
  * Copyright (c) 1988-1994, The University of Utah and
@@ -63,7 +63,7 @@
 
 #define	MACHINE_STACK_GROWS_UP	1	/* stack grows to higher addresses */
 
-#define	SSIZE		(1)		/* initial stack size/NBPG */
+#define	SSIZE		(4)		/* initial stack size/NBPG */
 #define	SINCR		(1)		/* increment of stack/NBPG */
 
 #define	UADDR		0x7ffe6000	/* u-area lives here */
@@ -91,11 +91,11 @@
 #endif
 
 /*
- * Size of kernel malloc arena in logical pages
+ * Minimum and maximum sizes of the kernel malloc arena in PAGE_SIZE-sized
+ * logical pages.
  */
-#ifndef NKMEMCLUSTERS
-#define	NKMEMCLUSTERS	(16 * 1024 * 1024 / PAGE_SIZE)
-#endif
+#define	NKMEMPAGES_MIN_DEFAULT	((4 * 1024 * 1024) >> PAGE_SHIFT)
+#define	NKMEMPAGES_MAX_DEFAULT	((64 * 1024 * 1024) >> PAGE_SHIFT)
 
 /* pages ("clicks") (4096 bytes) to disk blocks */
 #define	ctod(x)	((x)<<(PGSHIFT-DEV_BSHIFT))
@@ -136,4 +136,11 @@
 #define HPMMBASEADDR(v)	((unsigned)(v) & ~HPMMMASK)
 #endif
 
+#ifndef _LOCORE
+#define	CONADDR	conaddr
+#define	CONUNIT	conunit
+#define	COM_FREQ	7372800
+extern hppa_hpa_t conaddr;
+extern int conunit;
+#endif
 #endif
