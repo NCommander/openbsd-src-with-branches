@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: filesys.c,v 1.3 1996/06/26 05:38:21 deraadt Exp $	*/
 
 /*
  * Copyright (c) 1983 Regents of the University of California.
@@ -35,7 +35,7 @@
 
 #ifndef lint
 static char RCSid[] = 
-"$OpenBSD: filesys.c,v 1.2 1996/03/05 03:16:17 dm Exp $";
+"$OpenBSD: filesys.c,v 1.3 1996/06/26 05:38:21 deraadt Exp $";
 
 static char sccsid[] = "@(#)filesys.c";
 
@@ -119,9 +119,13 @@ char *find_file(pathname, statbuf, isvalid)
 			 * Normally we want to change /dir1/dir2/file
 			 * into "/dir1/dir2/."
 			 */
-			if (p = (char *) strrchr(file, '/')) {
-				*++p = '.';
-				*++p = CNULL;
+			if ((p = (char *) strrchr(file, '/'))) {
+				if (strcmp(p, "/.") == 0) {
+				    *p = CNULL;
+				} else {
+				    *++p = '.';
+				    *++p = CNULL;
+				}
 			} else {
 				/*
 				 * Couldn't find anything, so give up.
