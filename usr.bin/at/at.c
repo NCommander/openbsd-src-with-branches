@@ -1,4 +1,4 @@
-/*	$OpenBSD: at.c,v 1.13 1997/06/17 20:48:04 kstailey Exp $	*/
+/*	$OpenBSD: at.c,v 1.14 1997/10/06 18:31:01 deraadt Exp $	*/
 /*	$NetBSD: at.c,v 1.4 1995/03/25 18:13:31 glass Exp $	*/
 
 /*
@@ -73,7 +73,7 @@ enum { ATQ, ATRM, AT, BATCH, CAT };	/* what program we want to run */
 
 /* File scope variables */
 #ifndef lint
-static char rcsid[] = "$OpenBSD: at.c,v 1.13 1997/06/17 20:48:04 kstailey Exp $";
+static char rcsid[] = "$OpenBSD: at.c,v 1.14 1997/10/06 18:31:01 deraadt Exp $";
 #endif
 
 char *no_export[] =
@@ -189,6 +189,7 @@ writefile(runtimer, queue)
 	 * Install the signal handler for SIGINT; terminate after removing the
 	 * spool file if necessary
 	 */
+	memset(&act, 0, sizeof act);
 	act.sa_handler = sigc;
 	sigemptyset(&(act.sa_mask));
 	act.sa_flags = 0;

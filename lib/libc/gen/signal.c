@@ -32,7 +32,7 @@
  */
 
 #if defined(LIBC_SCCS) && !defined(lint)
-static char rcsid[] = "$OpenBSD: signal.c,v 1.7 1995/03/04 01:56:04 cgd Exp $";
+static char rcsid[] = "$OpenBSD: signal.c,v 1.2 1996/08/19 08:26:09 tholo Exp $";
 #endif /* LIBC_SCCS and not lint */
 
 /*
@@ -49,6 +49,7 @@ signal(s, a)
 {
 	struct sigaction sa, osa;
 
+	memset(&sa, 0, sizeof sa);
 	sa.sa_handler = a;
 	sigemptyset(&sa.sa_mask);
 	sa.sa_flags = 0;
