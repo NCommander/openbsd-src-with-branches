@@ -1,4 +1,4 @@
-/*	$OpenBSD: encap.c,v 1.15 1997/07/28 18:53:21 provos Exp $	*/
+/*	$OpenBSD: encap.c,v 1.16 1997/09/28 22:57:52 deraadt Exp $	*/
 
 /*
  * The author of this code is John Ioannidis, ji@tla.org,
@@ -876,7 +876,8 @@ encap_sendnotify(int subtype, struct tdb *tdbp)
     m = m_gethdr(M_DONTWAIT, MT_DATA);
     if (m == NULL)
     {
-	log(LOG_ERR, "encap_sendnotify(): m_gethdr() returned NULL\n");
+	if (encdebug)
+	  log(LOG_ERR, "encap_sendnotify(): m_gethdr() returned NULL\n");
 	return;
     }
     
