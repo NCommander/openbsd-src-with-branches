@@ -751,6 +751,7 @@ swcr_init(void)
         crypto_register(swcr_id, CRYPTO_RIPEMD160_HMAC96, NULL, NULL, NULL);
         crypto_register(swcr_id, CRYPTO_MD5_KPDK, NULL, NULL, NULL);
         crypto_register(swcr_id, CRYPTO_SHA1_KPDK, NULL, NULL, NULL);
+        crypto_register(swcr_id, CRYPTO_RIJNDAEL128_CBC, NULL, NULL, NULL);
 	return;
     }
 
