@@ -1,4 +1,4 @@
-/*	$OpenBSD: machdep.c,v 1.58 2001/05/05 20:56:51 art Exp $	*/
+/*	$OpenBSD: machdep.c,v 1.59 2001/05/05 22:34:14 art Exp $	*/
 /*	$NetBSD: machdep.c,v 1.4 1996/10/16 19:33:11 ws Exp $	*/
 
 /*
@@ -1277,8 +1277,8 @@ mapiodev(pa, len)
 	return (void*) (va+off);
 }
 void 
-unmapiodev(va, p_size)
-	void *va;
+unmapiodev(kva, p_size)
+	void *kva;
 	psize_t p_size;
 {
 	vaddr_t vaddr;
@@ -1286,7 +1286,7 @@ unmapiodev(va, p_size)
 
 	size = p_size;
 
-	vaddr = trunc_page(va);
+	vaddr = trunc_page((vaddr_t)kva);
 
 #ifdef UVM
 	uvm_km_free_wakeup(phys_map, vaddr, size);
