@@ -1,4 +1,4 @@
-/*	$OpenBSD: vm_machdep.c,v 1.4 2004/09/17 19:28:05 miod Exp $	*/
+/*	$OpenBSD: vm_machdep.c,v 1.5 2004/09/17 21:29:38 miod Exp $	*/
 /*
  * Copyright (c) 1988 University of Utah.
  * Copyright (c) 1992, 1993
@@ -55,6 +55,7 @@
 
 #include <machine/pte.h>
 #include <machine/cpu.h>
+#include <machine/autoconf.h>
 
 extern void proc_trampoline __P((void));
 /*
