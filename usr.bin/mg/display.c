@@ -1,4 +1,4 @@
-/*	$OpenBSD: display.c,v 1.12 2002/03/16 04:17:36 vincent Exp $	*/
+/*	$OpenBSD: display.c,v 1.13 2002/03/27 17:42:37 millert Exp $	*/
 
 /*
  * The functions in this file handle redisplay. The
@@ -770,7 +770,10 @@ modeline(MGWIN *wp)
 	vtputc('-');
  	if ((bp->b_flag & BFREADONLY) != 0) {
 		vtputc('%');
-		vtputc('%');
+		if ((bp->b_flag & BFCHG) != 0)
+			vtputc('*');
+		else
+			vtputc('%');
 	} else if ((bp->b_flag & BFCHG) != 0) {	/* "*" if changed.	 */
 		vtputc('*');
 		vtputc('*');
