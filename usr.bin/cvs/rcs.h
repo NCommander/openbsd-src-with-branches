@@ -1,4 +1,4 @@
-/*	$OpenBSD: rcs.h,v 1.1.1.1 2004/07/13 22:02:40 jfb Exp $	*/
+/*	$OpenBSD: rcs.h,v 1.2 2004/12/07 17:10:56 tedu Exp $	*/
 /*
  * Copyright (c) 2004 Jean-Francois Brousseau <jfb@openbsd.org>
  * All rights reserved.
@@ -143,5 +143,10 @@ char*     rcsnum_tostr  (const RCSNUM *, char *, size_t);
 int       rcsnum_cpy    (const RCSNUM *, RCSNUM *, u_int);
 int       rcsnum_cmp    (const RCSNUM *, const RCSNUM *, u_int);
 
+/* from cache.c */
+int       rcs_cache_init    (u_int);
+RCSFILE  *rcs_cache_fetch   (const char *path);
+int       rcs_cache_store   (RCSFILE *);
+void      rcs_cache_destroy (void);
 
 #endif /* RCS_H */
