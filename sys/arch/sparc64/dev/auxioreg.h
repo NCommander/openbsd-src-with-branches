@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /*	$NetBSD: auxioreg.h,v 1.3 2000/04/15 03:08:13 mrg Exp $	*/
 
 /*

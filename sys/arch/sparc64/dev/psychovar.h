@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /*	$NetBSD: psychovar.h,v 1.6 2001/07/20 00:07:13 eeh Exp $	*/
 
 /*

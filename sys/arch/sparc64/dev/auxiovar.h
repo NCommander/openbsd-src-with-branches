@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /*	$NetBSD: auxiovar.h,v 1.4 2000/04/15 03:08:13 mrg Exp $	*/
 
 /*
