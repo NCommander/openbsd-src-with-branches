@@ -1,4 +1,4 @@
-/*	$OpenBSD: util.c,v 1.16 2002/12/17 07:10:25 mickey Exp $ */
+/*	$OpenBSD: util.c,v 1.17 2003/02/05 19:25:54 mickey Exp $ */
 /*	$NetBSD: util.c,v 1.8 2000/03/14 08:11:53 sato Exp $ */
 
 /*-
@@ -68,6 +68,7 @@ static const struct nameint kbtype_tab[] = {
 	{ WSKBD_TYPE_ADB,	"adb" },
 	{ WSKBD_TYPE_SUN,	"sun" },
 	{ WSKBD_TYPE_SUN5,	"sun5" },
+	{ WSKBD_TYPE_HIL,	"hil" },
 };
 
 static const struct nameint mstype_tab[] = {
