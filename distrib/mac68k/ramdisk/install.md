@@ -1,4 +1,4 @@
-#       $OpenBSD: install.md,v 1.23 2004/12/03 06:37:49 miod Exp $
+#       $OpenBSD: install.md,v 1.24 2004/12/10 20:18:34 miod Exp $
 #
 # Copyright (c) 2002, Miodrag Vallat.
 # All rights reserved.
@@ -67,12 +67,7 @@ MDSETS="bsdsbc bsdsbc.rd"
 MDTERM=vt100
 ARCH=ARCH
 
-md_set_term() {
-}
-
 md_installboot() {
-	# no standalone boot block
-	:
 }
 
 # $1 is the disk to check

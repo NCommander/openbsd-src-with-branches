@@ -1,4 +1,4 @@
-#       $OpenBSD: install.md,v 1.22 2003/10/12 13:18:37 krw Exp $
+#       $OpenBSD: install.md,v 1.23 2003/10/15 04:32:28 deraadt Exp $
 # Copyright (c) 1996 The NetBSD Foundation, Inc.
 # All rights reserved.
 #
@@ -40,9 +40,6 @@
 
 MDTERM=vt100
 ARCH=ARCH
-
-md_set_term() {
-}
 
 md_installboot() {
 	echo "Installing boot block..."
