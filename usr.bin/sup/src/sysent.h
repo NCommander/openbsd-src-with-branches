@@ -1,4 +1,4 @@
-/*	$OpenBSD: sysent.h,v 1.4 2001/04/29 21:52:17 millert Exp $	*/
+/*	$OpenBSD: sysent.h,v 1.5 2001/05/02 22:56:54 millert Exp $	*/
 
 /*
  * Copyright (c) 1991 Carnegie Mellon University
@@ -118,7 +118,6 @@ extern int truncate(const char *, off_t);
 extern int ftruncate(int, off_t);
 extern int umask(int);
 extern int unlink(const char *);
-extern int vfork(void);
 extern void vhangup(void);
 extern int write(int, void *, int);
 
