@@ -1,4 +1,4 @@
-/*	$OpenBSD: ip6_forward.c,v 1.29 2004/06/21 19:26:02 mcbride Exp $	*/
+/*	$OpenBSD: ip6_forward.c,v 1.30 2004/06/21 23:50:37 tholo Exp $	*/
 /*	$KAME: ip6_forward.c,v 1.75 2001/06/29 12:42:13 jinmei Exp $	*/
 
 /*
@@ -91,7 +91,7 @@ ip6_forward(m, srcrt)
 	struct ip6_hdr *ip6 = mtod(m, struct ip6_hdr *);
 	struct sockaddr_in6 *dst;
 	struct rtentry *rt;
-	int error, type = 0, code = 0;
+	int error = 0, type = 0, code = 0;
 	struct mbuf *mcopy = NULL;
 	struct ifnet *origifp;	/* maybe unnecessary */
 #ifdef IPSEC
