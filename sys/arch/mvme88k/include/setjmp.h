@@ -1,9 +1,3 @@
-/*	$OpenBSD: setjmp.h,v 1.6 2001/08/12 12:03:02 heko Exp $	*/
-
-/*
- * machine/setjmp.h: machine dependent setjmp-related information.
- */
-#ifndef __MACHINE_SETJMP_H__
-#define __MACHINE_SETJMP_H__
-#define	_JBLEN	21		/* size, in longs, of a jmp_buf */
-#endif /* __MACHINE_SETJMP_H__ */
+/* $OpenBSD */
+/* public domain */
+#include <m88k/setjmp.h>

@@ -1,6 +1,6 @@
-#	$OpenBSD: M187,v 1.27 2004/01/05 20:07:59 miod Exp $
+#	$OpenBSD: M187,v 1.28 2004/04/24 19:51:44 miod Exp $
 
-machine mvme88k
+machine mvme88k m88k
 
 include "../../../conf/GENERIC"
 

@@ -1,6 +1,6 @@
-#	$OpenBSD: RAMDISK,v 1.20 2004/01/12 13:15:34 miod Exp $
+#	$OpenBSD: RAMDISK,v 1.21 2004/04/24 19:51:44 miod Exp $
 
-machine		mvme88k
+machine		mvme88k m88k
 
 # 4 meg ramdisk
 option		MINIROOTSIZE=4096

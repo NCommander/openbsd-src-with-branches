@@ -1,6 +1,6 @@
-#	$OpenBSD: GENERIC,v 1.31 2001/12/22 18:48:50 smurph Exp $
+#	$OpenBSD: GENERIC,v 1.1.1.1 2004/04/21 15:23:44 aoyama Exp $
 
-machine		luna88k 
+machine		luna88k m88k
 
 include "../../../conf/GENERIC"
 
