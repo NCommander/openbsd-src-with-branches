@@ -36,7 +36,7 @@
  */
 
 #include "includes.h"
-RCSID("$OpenBSD: authfile.c,v 1.46 2002/02/14 23:41:01 markus Exp $");
+RCSID("$OpenBSD: authfile.c,v 1.47 2002/02/24 19:14:59 markus Exp $");
 
 #include <openssl/err.h>
 #include <openssl/evp.h>
@@ -169,7 +169,7 @@ key_save_private_pem(Key *key, const char *filename, const char *_passphrase,
 	int success = 0;
 	int len = strlen(_passphrase);
 	u_char *passphrase = (len > 0) ? (u_char *)_passphrase : NULL;
-	EVP_CIPHER *cipher = (len > 0) ? EVP_des_ede3_cbc() : NULL;
+	const EVP_CIPHER *cipher = (len > 0) ? EVP_des_ede3_cbc() : NULL;
 
 	if (len > 0 && len <= 4) {
 		error("passphrase too short: have %d bytes, need > 4", len);
