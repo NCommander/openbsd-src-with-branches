@@ -1,4 +1,4 @@
-/*	$OpenBSD: locore.s,v 1.28 1997/07/18 06:49:26 mickey Exp $	*/
+/*	$OpenBSD: locore.s,v 1.29 1997/07/25 17:15:22 mickey Exp $	*/
 /*	$NetBSD: locore.s,v 1.145 1996/05/03 19:41:19 christos Exp $	*/
 
 /*-
@@ -65,7 +65,6 @@
 #include <machine/trap.h>
 
 #include <dev/isa/isareg.h>
-#include <i386/isa/debug.h>
 
 #define	ALIGN_DATA	.align	2
 #define	ALIGN_TEXT	.align	2,0x90	/* 4-byte boundaries, NOP-filled */
