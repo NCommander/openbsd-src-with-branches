@@ -35,7 +35,7 @@
  */
 
 #if defined(LIBC_SCCS) && !defined(lint)
-static char rcsid[] = "$OpenBSD: putchar.c,v 1.4 1995/02/02 02:10:16 jtc Exp $";
+static char rcsid[] = "$OpenBSD: putchar.c,v 1.2 1996/08/19 08:32:59 tholo Exp $";
 #endif /* LIBC_SCCS and not lint */
 
 #include <stdio.h>
@@ -45,6 +45,7 @@ static char rcsid[] = "$OpenBSD: putchar.c,v 1.4 1995/02/02 02:10:16 jtc Exp $";
 /*
  * A subroutine version of the macro putchar
  */
+int
 putchar(c)
 	int c;
 {

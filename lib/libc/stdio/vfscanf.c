@@ -35,7 +35,7 @@
  */
 
 #if defined(LIBC_SCCS) && !defined(lint)
-static char rcsid[] = "$OpenBSD: vfscanf.c,v 1.4 1997/07/25 20:30:13 mickey Exp $";
+static char rcsid[] = "$OpenBSD: vfscanf.c,v 1.6 1998/01/20 21:25:39 millert Exp $";
 #endif /* LIBC_SCCS and not lint */
 
 #include <stdio.h>
@@ -96,6 +96,7 @@ static u_char *__sccl();
 /*
  * vfscanf
  */
+int
 __svfscanf(fp, fmt0, ap)
 	register FILE *fp;
 	char const *fmt0;

@@ -32,7 +32,7 @@
  */
 
 #if defined(LIBC_SCCS) && !defined(lint)
-static char rcsid[] = "$OpenBSD: nlist.c,v 1.38 2001/05/11 12:33:09 art Exp $";
+static char rcsid[] = "$OpenBSD: nlist.c,v 1.39 2001/05/11 12:51:23 art Exp $";
 #endif /* LIBC_SCCS and not lint */
 
 #include <sys/types.h>
@@ -429,7 +429,6 @@ __elf_fdnlist(fd, list)
 				continue;
 			for (p = list; !ISLAST(p); p++) {
 				char *sym;
-				int again = 0;
 
 				/*
 				 * First we check for the symbol as it was

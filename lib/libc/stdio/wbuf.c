@@ -35,7 +35,7 @@
  */
 
 #if defined(LIBC_SCCS) && !defined(lint)
-static char rcsid[] = "$OpenBSD: wbuf.c,v 1.3 1997/05/31 08:45:51 tholo Exp $";
+static char rcsid[] = "$OpenBSD: wbuf.c,v 1.4 1997/05/31 22:41:32 tholo Exp $";
 #endif /* LIBC_SCCS and not lint */
 
 #include <stdio.h>
@@ -47,6 +47,7 @@ static char rcsid[] = "$OpenBSD: wbuf.c,v 1.3 1997/05/31 08:45:51 tholo Exp $";
  * the given file.  Flush the buffer out if it is or becomes full,
  * or if c=='\n' and the file is line buffered.
  */
+int
 __swbuf(c, fp)
 	register int c;
 	register FILE *fp;

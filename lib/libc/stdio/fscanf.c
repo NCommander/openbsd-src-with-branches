@@ -35,7 +35,7 @@
  */
 
 #if defined(LIBC_SCCS) && !defined(lint)
-static char rcsid[] = "$OpenBSD: fscanf.c,v 1.2 1996/08/19 08:32:45 tholo Exp $";
+static char rcsid[] = "$OpenBSD: fscanf.c,v 1.3 1997/07/25 20:30:09 mickey Exp $";
 #endif /* LIBC_SCCS and not lint */
 
 #include <stdio.h>
@@ -45,6 +45,7 @@ static char rcsid[] = "$OpenBSD: fscanf.c,v 1.2 1996/08/19 08:32:45 tholo Exp $"
 #include <varargs.h>
 #endif
 
+int
 #ifdef __STDC__
 fscanf(FILE *fp, char const *fmt, ...) {
 	int ret;

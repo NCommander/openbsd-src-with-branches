@@ -35,7 +35,7 @@
  */
 
 #if defined(LIBC_SCCS) && !defined(lint)
-static char rcsid[] = "$OpenBSD: refill.c,v 1.3 1996/08/19 08:33:00 tholo Exp $";
+static char rcsid[] = "$OpenBSD: refill.c,v 1.4 1999/08/07 17:35:58 millert Exp $";
 #endif /* LIBC_SCCS and not lint */
 
 #include <errno.h>
@@ -43,7 +43,7 @@ static char rcsid[] = "$OpenBSD: refill.c,v 1.3 1996/08/19 08:33:00 tholo Exp $"
 #include <stdlib.h>
 #include "local.h"
 
-static
+static int
 lflush(fp)
 	FILE *fp;
 {
@@ -57,6 +57,7 @@ lflush(fp)
  * Refill a stdio buffer.
  * Return EOF on eof or error, 0 otherwise.
  */
+int
 __srefill(fp)
 	register FILE *fp;
 {

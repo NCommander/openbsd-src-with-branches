@@ -35,7 +35,7 @@
  */
 
 #if defined(LIBC_SCCS) && !defined(lint)
-static char rcsid[] = "$OpenBSD: fvwrite.c,v 1.8 1998/11/20 06:13:26 millert Exp $";
+static char rcsid[] = "$OpenBSD: fvwrite.c,v 1.10 1999/08/07 17:42:48 millert Exp $";
 #endif /* LIBC_SCCS and not lint */
 
 #include <stdio.h>
@@ -51,6 +51,7 @@ static char rcsid[] = "$OpenBSD: fvwrite.c,v 1.8 1998/11/20 06:13:26 millert Exp
  * This routine is large and unsightly, but most of the ugliness due
  * to the three different kinds of output buffering is handled here.
  */
+int
 __sfvwrite(fp, uio)
 	register FILE *fp;
 	register struct __suio *uio;

@@ -35,12 +35,13 @@
  */
 
 #if defined(LIBC_SCCS) && !defined(lint)
-static char rcsid[] = "$OpenBSD: vsprintf.c,v 1.2 1996/08/19 08:33:14 tholo Exp $";
+static char rcsid[] = "$OpenBSD: vsprintf.c,v 1.3 1998/01/12 06:14:32 millert Exp $";
 #endif /* LIBC_SCCS and not lint */
 
 #include <stdio.h>
 #include <limits.h>
 
+int
 vsprintf(str, fmt, ap)
 	char *str;
 	const char *fmt;

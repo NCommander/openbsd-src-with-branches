@@ -35,7 +35,7 @@
  */
 
 #if defined(LIBC_SCCS) && !defined(lint)
-static char *rcsid = "$OpenBSD: vfprintf.c,v 1.10 2001/04/20 00:10:11 millert Exp $";
+static char *rcsid = "$OpenBSD: vfprintf.c,v 1.11 2001/05/31 18:11:38 deraadt Exp $";
 #endif /* LIBC_SCCS and not lint */
 
 /*
@@ -740,7 +740,7 @@ number:			if ((dprec = prec) >= 0)
 					ox[0] = *cp++;
 					ox[1] = '.';
 					PRINT(ox, 2);
-					if (_double || flags & ALT == 0) {
+					if (_double || (flags & ALT) == 0) {
 						PRINT(cp, ndig-1);
 					} else	/* 0.[0..] */
 						/* __dtoa irregularity */
