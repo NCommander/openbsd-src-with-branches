@@ -1,4 +1,5 @@
 #
+# $OpenBSD: iskeletn.s,v 1.2 1996/05/15 19:48:41 is Exp $
 # $NetBSD: iskeletn.s,v 1.2 1996/05/15 19:48:41 is Exp $
 #
 
