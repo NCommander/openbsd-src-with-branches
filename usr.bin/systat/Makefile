@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.12 2000/09/03 18:41:20 espie Exp $
+#	$OpenBSD: Makefile,v 1.13 2001/06/27 07:13:39 art Exp $
 
 PROG=	systat
 
@@ -13,6 +13,11 @@ BINGRP=	kmem
 BINMODE=2555
 
 CPPFLAGS+=-DINET6
+
+.if (${MACHINE_ARCH} == "vax")
+cmds.o:
+	${CC} ${CFLAGS} ${CPPFLAGS} -O0 -c $<
+.endif
 
 .include <bsd.prog.mk>
 
