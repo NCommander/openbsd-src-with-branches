@@ -1,4 +1,4 @@
-/*	$OpenBSD: spamd.c,v 1.24 2003/03/09 19:27:30 beck Exp $	*/
+/*	$OpenBSD: spamd.c,v 1.25 2003/03/13 21:20:42 beck Exp $	*/
 
 /*
  * Copyright (c) 2002 Theo de Raadt.  All rights reserved.
@@ -118,7 +118,7 @@ void
 usage(void)
 {
 	fprintf(stderr,
-	    "usage: spamd [-45d] [-r reply] [-c maxcon] [-p port] [-n name]\n");
+	    "usage: spamd [-45d] [-c maxcon] [-n name] [-p port] [-r reply]\n");
 	exit(1);
 }
 
