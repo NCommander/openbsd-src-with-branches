@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_dc_pci.c,v 1.5 2000/08/02 19:01:07 aaron Exp $	*/
+/*	$OpenBSD: if_dc_pci.c,v 1.6 2000/09/13 00:29:35 aaron Exp $	*/
 
 /*
  * Copyright (c) 1997, 1998, 1999
@@ -386,7 +386,7 @@ void dc_pci_attach(parent, self, aux)
 	 * which have no LEDs, and twiddling these bits has adverse effects
 	 * on them. (I.e. you suddenly can't get a link.)
 	 *
-	 * If mii_phy_probe() returns an error, we leave the DC_TULIP_LEDS
+	 * If mii_attach() returns an error, we leave the DC_TULIP_LEDS
 	 * bit set, else we clear it. Since our dc(4) driver is split into
 	 * bus-dependent and bus-independent parts, we must do set this bit
 	 * here while we are able to do PCI configuration reads.
