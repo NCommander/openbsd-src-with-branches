@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: ipx.c,v 1.1 1996/08/16 09:15:57 mickey Exp $	*/
 /*	$NOWHERE: ipx.c,v 1.2 1996/05/07 09:49:37 mickey Exp $	*/
 
 /*-
@@ -73,7 +73,6 @@ ipx_control(so, cmd, data, ifp)
 	register struct ifreq *ifr = (struct ifreq *)data;
 	register struct ipx_aliasreq *ifra = (struct ipx_aliasreq *)data;
 	register struct ipx_ifaddr *ia;
-	struct ifaddr *ifa;
 	int dstIsNew, hostIsNew;
 	int error = 0;
 
