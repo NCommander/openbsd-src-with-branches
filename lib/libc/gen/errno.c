@@ -1,5 +1,7 @@
+/* PUBLIC DOMAIN: No Rights Reserved.   Marco S Hyman <marc@snafu.org> */
+
 #if defined(LIBC_SCCS) && !defined(lint)
-static char rcsid[] = "$OpenBSD: errno.c,v 1.2 1996/08/19 08:22:34 tholo Exp $";
+static char rcsid[] = "$OpenBSD: errno.c,v 1.3 2004/07/13 21:03:35 marc Exp $";
 #endif /* LIBC_SCCS and not lint */
 
 #include <errno.h>
