@@ -1,4 +1,4 @@
-/*	$OpenBSD: busswitch.c,v 1.6 2001/12/16 23:49:46 miod Exp $ */
+/*	$OpenBSD: bussw.c,v 1.3 2001/12/19 04:02:25 smurph Exp $ */
 
 /*
  * Copyright (c) 1999 Steve Murphree, Jr.
@@ -79,8 +79,8 @@ bussw_match(parent, vcf, args)
 {
 	struct confargs *ca = args;
 	struct bussw_reg *bussw;
-   /* Don't match if wrong cpu */
-	if (cputyp != CPU_197) return (0);
+	/* Don't match if wrong cpu */
+	if (brdtyp != BRD_197) return (0);	/* The only one... */
 	
 	bussw = (struct bussw_reg *)(IIOV(ca->ca_paddr));
 	if (badvaddr((vm_offset_t)bussw, 4)) {
