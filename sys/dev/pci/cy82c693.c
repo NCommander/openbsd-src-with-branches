@@ -1,4 +1,4 @@
-/*	$OpenBSD: cy82c693.c,v 1.1 2000/06/09 17:10:58 chris Exp $	*/
+/*	$OpenBSD: cy82c693.c,v 1.2 2001/01/16 15:37:53 art Exp $	*/
 /* $NetBSD: cy82c693.c,v 1.1 2000/06/06 03:07:39 thorpej Exp $ */
 
 /*-
@@ -60,9 +60,7 @@
 static struct cy82c693_handle cyhc_handle;
 static int cyhc_initialized;
 
-#if 0 /* SMP */
-static struct simplelock cyhc_slock = SIMPLELOCK_INITIALIZER;
-#endif
+static struct simplelock cyhc_slock = SLOCK_INITIALIZER;
 
 #define	CYHC_LOCK(s)							\
 do {									\
