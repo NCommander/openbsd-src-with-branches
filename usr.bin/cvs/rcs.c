@@ -487,16 +487,12 @@ rcs_patch(const char *data, const char *patch)
 	}
 
 	/* once we're done patching, rebuild the line numbers */
-	lineno = 1;
+	lineno = 0;
 	TAILQ_FOREACH(lp, &(dlines->rl_lines), rl_list) {
-		if (lineno == 1) {
-			lineno++;
-			continue;
-		}
-		cvs_buf_fappend(res, "%s\n", lp->rl_line);
+		if (lineno != 0)
+			cvs_buf_fappend(res, "%s\n", lp->rl_line);
 		lp->rl_lineno = lineno++;
 	}
-
 	dlines->rl_nblines = lineno - 1;
 
 	return (res);
