@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.108 2004/11/30 15:46:01 mickey Exp $
+#	$OpenBSD: Makefile,v 1.109 2004/12/25 16:17:33 grange Exp $
 
 #
 # For more information on building in tricky environments, please see
@@ -258,6 +258,7 @@ ${CROSSBINUTILS}:	${CROSSINCLUDES}
 # bsd.own.mk can't do it for us
 .if ${TARGET} == "amd64" || ${TARGET} == "cats" || \
     ${TARGET} == "hppa" || ${TARGET} == "hppa64" || \
+    ${TARGET} == "i386" || \
     ${TARGET} == "sparc64" || ${TARGET} == "sgi"
 USE_GCC3=yes
 .endif
