@@ -1,4 +1,4 @@
-/*	$OpenBSD: boot.c,v 1.16 1997/09/02 21:37:38 mickey Exp $	*/
+/*	$OpenBSD: boot.c,v 1.17 1998/02/24 22:16:02 weingart Exp $	*/
 
 /*
  * Copyright (c) 1997 Michael Shalayeff
@@ -65,7 +65,7 @@ boot(bootdev)
 
 	st = read_conf();
 
-	printf(">> OpenBSD BOOT %s\n", version);
+	printf(">> OpenBSD/" MACHINE_ARCH " BOOT %s\n", version);
 
 	while (1) {
 		if (st <= 0) /* no boot.conf, or no boot cmd in there */
