@@ -1,4 +1,4 @@
-/*	$OpenBSD: pfctl_qstats.c,v 1.14 2003/03/08 14:26:31 henning Exp $ */
+/*	$OpenBSD: pfctl_qstats.c,v 1.15 2003/03/11 11:53:28 henning Exp $ */
 
 /*
  * Copyright (c) 2003 Henning Brauer
@@ -229,7 +229,7 @@ pfctl_print_altq_node(int dev, const struct pf_altq_node *node, unsigned level,
 	if (node == NULL)
 		return;
 
-	print_altq(&node->altq, level, 0);
+	print_altq(&node->altq, level, NULL);
 
 	if (node->children != NULL) {
 		printf("{");
