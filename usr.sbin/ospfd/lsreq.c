@@ -1,4 +1,4 @@
-/*	$OpenBSD: lsreq.c,v 1.1 2005/01/28 14:05:40 claudio Exp $ */
+/*	$OpenBSD: lsreq.c,v 1.2 2005/01/28 17:53:33 norby Exp $ */
 
 /*
  * Copyright (c) 2004, 2005 Esben Norby <norby@openbsd.org>
@@ -211,7 +211,7 @@ ls_req_tx_timer(int fd, short event, void *arg)
 	case NBR_STA_SNAP:
 	case NBR_STA_XSTRT:
 	case NBR_STA_XCHNG:
-		return; 
+		return;
 	case NBR_STA_LOAD:
 		send_ls_req(nbr);
 		break;

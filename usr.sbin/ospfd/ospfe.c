@@ -1,4 +1,4 @@
-/*	$OpenBSD: ospfe.c,v 1.1 2005/01/28 14:05:40 claudio Exp $ */
+/*	$OpenBSD: ospfe.c,v 1.2 2005/01/28 17:53:33 norby Exp $ */
 
 /*
  * Copyright (c) 2005 Claudio Jeker <claudio@openbsd.org>
@@ -697,8 +697,7 @@ ospfe_iface_ctl(struct ctl_conn *c, unsigned int idx)
 			if (idx == 0 || idx == iface->ifindex) {
 				ictl = if_to_ctl(iface);
 				imsg_compose(&c->ibuf, IMSG_CTL_SHOW_INTERFACE,
-                                            0, 0, -1,
-					    ictl, sizeof(struct ctl_iface));
+				    0, 0, -1, ictl, sizeof(struct ctl_iface));
 			}
 }
 

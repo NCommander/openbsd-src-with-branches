@@ -1,4 +1,4 @@
-/*	$OpenBSD: interface.c,v 1.1 2005/01/28 14:05:40 claudio Exp $ */
+/*	$OpenBSD: interface.c,v 1.2 2005/01/28 17:53:33 norby Exp $ */
 
 /*
  * Copyright (c) 2005 Claudio Jeker <claudio@openbsd.org>
@@ -631,7 +631,7 @@ if_to_ctl(struct iface *iface)
 	gettimeofday(&now, NULL);
 	if (evtimer_pending(&iface->hello_timer, &tv)) {
 		timersub(&tv, &now, &res);
- 		ictl.hello_timer = res.tv_sec;
+		ictl.hello_timer = res.tv_sec;
 	} else
 		ictl.hello_timer = -1;
 
