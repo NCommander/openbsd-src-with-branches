@@ -1,3 +1,4 @@
+/*	$OpenBSD: authfd.h,v 1.33 2003/06/11 11:18:38 djm Exp $	*/
 /*
  * Copyright (c) 2001-2003 Simon Wilkinson. All rights reserved.
  *
