@@ -1,4 +1,4 @@
-/*	$OpenBSD: yppush.c,v 1.4 1996/11/08 21:53:32 niklas Exp $ */
+/*	$OpenBSD: yppush.c,v 1.5 1996/12/14 22:10:27 maja Exp $ */
 
 /*
  * Copyright (c) 1995 Mats O Jansson <moj@stacken.kth.se>
@@ -32,7 +32,7 @@
  */
 
 #ifndef lint
-static char rcsid[] = "$OpenBSD: yppush.c,v 1.4 1996/11/08 21:53:32 niklas Exp $";
+static char rcsid[] = "$OpenBSD: yppush.c,v 1.5 1996/12/14 22:10:27 maja Exp $";
 #endif /* not lint */
 
 #include <sys/types.h>
@@ -281,6 +281,7 @@ char **argv;
 		exit(1);
 	}
 		
+	
 	/* Check map */
 	snprintf(map_path,sizeof map_path,"%s/%s/%s%s",
 	    YP_DB_PATH,domain,Map,YPDB_SUFFIX);
@@ -324,7 +325,11 @@ char **argv;
 
 	yp_bind(Domain);
 
-        r = yp_master(Domain, ypmap, &master);
+	r = yp_master(Domain, ypmap, &master);
+        if (r != 0) {
+		fprintf(stderr, "yppush: could not get ypservers map\n");
+		exit(1);
+	}
 
 	if (hostname != NULL) {
 	  push(strlen(hostname), hostname);
