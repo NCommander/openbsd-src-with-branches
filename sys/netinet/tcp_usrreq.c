@@ -1,4 +1,4 @@
-/*	$OpenBSD: tcp_usrreq.c,v 1.49 2000/12/11 08:04:56 itojun Exp $	*/
+/*	$OpenBSD: tcp_usrreq.c,v 1.50 2000/12/13 09:47:08 provos Exp $	*/
 /*	$NetBSD: tcp_usrreq.c,v 1.20 1996/02/13 23:44:16 christos Exp $	*/
 
 /*
@@ -391,9 +391,6 @@ tcp_usrreq(so, req, m, nam, control)
 	 * marker if URG set.  Possibly send more data.
 	 */
 	case PRU_SEND:
-#ifdef IPSEC
-	    /* XXX Find IPsec TDB */
-#endif
 		sbappend(&so->so_snd, m);
 		error = tcp_output(tp);
 		break;
