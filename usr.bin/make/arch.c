@@ -1,5 +1,5 @@
 /*	$OpenPackages$ */
-/*	$OpenBSD: arch.c,v 1.48 2001/06/05 11:59:10 espie Exp $ */
+/*	$OpenBSD: arch.c,v 1.49 2001/06/07 13:53:22 espie Exp $ */
 /*	$NetBSD: arch.c,v 1.17 1996/11/06 17:58:59 christos Exp $	*/
 
 /*
@@ -634,7 +634,7 @@ ArchMTimeMember(archive, member, hash)
  *
  * Results:
  *	svr4list: just read a list of names
- *	NULL:	  error occured
+ *	NULL:	  error occurred
  *	extended name
  *
  * Side-effect:

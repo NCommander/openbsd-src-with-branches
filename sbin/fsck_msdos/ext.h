@@ -1,4 +1,4 @@
-/*	$OpenBSD: ext.h,v 1.4 1997/03/02 05:25:54 millert Exp $	*/
+/*	$OpenBSD: ext.h,v 1.5 1998/01/11 20:40:33 provos Exp $	*/
 /*	$NetBSD: ext.h,v 1.5 1997/10/17 11:19:48 ws Exp $	*/
 
 /*
@@ -73,7 +73,7 @@ int checkfilesys __P((const char *));
 #define	FSDIRMOD	2		/* Some directory was modified */
 #define	FSFATMOD	4		/* The FAT was modified */
 #define	FSERROR		8		/* Some unrecovered error remains */
-#define	FSFATAL		16		/* Some unrecoverable error occured */
+#define	FSFATAL		16		/* Some unrecoverable error occurred */
 
 /*
  * read a boot block in a machine independend fashion and translate

@@ -1,4 +1,4 @@
-/*	$OpenBSD: decl.c,v 1.3 1998/07/27 16:53:39 deraadt Exp $	*/
+/*	$OpenBSD: decl.c,v 1.4 1998/07/29 03:14:48 millert Exp $	*/
 /*	$NetBSD: decl.c,v 1.11 1995/10/02 17:34:16 jpo Exp $	*/
 
 /*
@@ -33,7 +33,7 @@
  */
 
 #ifndef lint
-static char rcsid[] = "$OpenBSD: decl.c,v 1.3 1998/07/27 16:53:39 deraadt Exp $";
+static char rcsid[] = "$OpenBSD: decl.c,v 1.4 1998/07/29 03:14:48 millert Exp $";
 #endif
 
 #include <sys/param.h>
@@ -3090,7 +3090,7 @@ glchksz(sym)
 	if (sym->s_def == TDEF) {
 		if (sym->s_type->t_tspec == FUNC)
 			/*
-			 * this can happen if an syntax error occured
+			 * this can happen if an syntax error occurred
 			 * after a function declaration
 			 */
 			return;
