@@ -1,4 +1,4 @@
-/*	$OpenBSD: tcp_output.c,v 1.65 2004/02/16 21:51:03 markus Exp $	*/
+/*	$OpenBSD: tcp_output.c,v 1.66 2004/04/26 18:12:25 frantzen Exp $	*/
 /*	$NetBSD: tcp_output.c,v 1.16 1997/06/03 16:17:09 kml Exp $	*/
 
 /*
@@ -104,7 +104,7 @@
 #endif /* INET6 */
 
 #ifdef TCP_SIGNATURE
-#include <sys/md5k.h>
+#include <crypto/md5.h>
 #endif /* TCP_SIGNATURE */
 
 #ifdef notyet

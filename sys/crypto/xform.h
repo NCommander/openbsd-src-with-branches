@@ -1,4 +1,4 @@
-/*	$OpenBSD: xform.h,v 1.12 2003/02/15 22:57:58 jason Exp $	*/
+/*	$OpenBSD: xform.h,v 1.13 2003/07/24 08:03:19 itojun Exp $	*/
 
 /*
  * The author of this code is Angelos D. Keromytis (angelos@cis.upenn.edu)
@@ -24,7 +24,7 @@
 #ifndef _CRYPTO_XFORM_H_
 #define _CRYPTO_XFORM_H_
 
-#include <sys/md5k.h>
+#include <crypto/md5.h>
 #include <crypto/sha1.h>
 #include <crypto/rmd160.h>
 #include <crypto/sha2.h>

@@ -1,4 +1,4 @@
-/*	$OpenBSD: tcp_subr.c,v 1.78 2004/04/26 18:12:25 frantzen Exp $	*/
+/*	$OpenBSD: tcp_subr.c,v 1.79 2004/05/04 22:50:18 claudio Exp $	*/
 /*	$NetBSD: tcp_subr.c,v 1.22 1996/02/13 23:44:00 christos Exp $	*/
 
 /*
@@ -100,7 +100,7 @@
 #endif /* INET6 */
 
 #ifdef TCP_SIGNATURE
-#include <sys/md5k.h>
+#include <crypto/md5.h>
 #endif /* TCP_SIGNATURE */
 
 /* patchable/settable parameters for tcp */
