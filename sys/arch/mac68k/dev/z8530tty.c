@@ -1,4 +1,4 @@
-/*	$OpenBSD: z8530tty.c,v 1.6 1997/01/24 01:35:38 briggs Exp $	*/
+/*	$OpenBSD: z8530tty.c,v 1.7 1997/03/11 21:03:02 gene Exp $	*/
 /*	$NetBSD: z8530tty.c,v 1.10 1996/12/18 05:17:44 scottr Exp $	*/
 
 /*
@@ -122,6 +122,7 @@ zstty_match(parent, vcf, aux)
 	void *vcf;
 	void *aux;
 {
+	struct cfdata *cf = (struct cfdata *) vcf;
 	struct zsc_attach_args *args = aux;
 	struct cfdata *cf = vcf;
 
