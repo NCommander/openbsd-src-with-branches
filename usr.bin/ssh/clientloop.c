@@ -59,7 +59,7 @@
  */
 
 #include "includes.h"
-RCSID("$OpenBSD: clientloop.c,v 1.123 2004/06/13 15:03:02 djm Exp $");
+RCSID("$OpenBSD: clientloop.c,v 1.124 2004/06/14 01:44:38 djm Exp $");
 
 #include "ssh.h"
 #include "ssh1.h"
@@ -156,7 +156,7 @@ static void
 leave_non_blocking(void)
 {
 	if (in_non_blocking_mode) {
-		(void) fcntl(fileno(stdin), F_SETFL, 0);
+		unset_nonblock(fileno(stdin));
 		in_non_blocking_mode = 0;
 	}
 }
