@@ -1,5 +1,7 @@
 #include "includes.h"
-RCSID("$OpenBSD: aux.c,v 1.12 2000/04/14 10:30:32 markus Exp $");
+RCSID("$OpenBSD: aux.c,v 1.1 2000/05/17 08:20:15 markus Exp $");
+
+#include "ssh.h"
 
 char *
 chop(char *s)
