@@ -1,4 +1,5 @@
 /*	$OpenBSD: db_command.c,v 1.4 1996/03/11 11:16:01 mickey Exp $	*/
+/*	$NetBSD: db_command.c,v 1.19 1996/03/13 21:06:38 christos Exp $	*/
 
 /* 
  * Mach Operating System
