@@ -1,8 +1,8 @@
-# $OpenBSD: Makefile,v 1.1 2003/09/21 19:30:07 otto Exp $
+# $OpenBSD: Makefile,v 1.2 2003/10/18 19:48:10 otto Exp $
 
 DC=dc
 
-REGRESS_TARGETS=t1 t2 t4 t5 t6 t7 t8 t9 t10
+REGRESS_TARGETS=t1 t2 t4 t5 t6 t7 t8 t9 t10 t11
 
 # .in: input file
 # .out: desired result
