@@ -22,7 +22,7 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 #include "includes.h"
-RCSID("$OpenBSD: sftp-server.c,v 1.28 2001/06/23 15:12:20 itojun Exp $");
+RCSID("$OpenBSD: sftp-server.c,v 1.29 2001/06/25 08:25:40 markus Exp $");
 
 #include "buffer.h"
 #include "bufaux.h"
@@ -736,8 +736,8 @@ process_readdir(void)
 				stats = xrealloc(stats, nstats * sizeof(Stat));
 			}
 /* XXX OVERFLOW ? */
-			snprintf(pathname, sizeof pathname,
-			    "%s/%s", path, dp->d_name);
+			snprintf(pathname, sizeof pathname, "%s%s%s", path,
+			    strcmp(path, "/") ? "/" : "", dp->d_name);
 			if (lstat(pathname, &st) < 0)
 				continue;
 			stat_to_attrib(&st, &(stats[count].attrib));
