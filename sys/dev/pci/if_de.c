@@ -1,4 +1,4 @@
-/*    $OpenBSD: if_de.c,v 1.14 1996/11/12 20:30:51 niklas Exp $       */
+/*    $OpenBSD: if_de.c,v 1.15 1996/11/28 23:28:04 niklas Exp $       */
 /*    $NetBSD: if_de.c,v 1.29 1996/10/25 21:33:30 cgd Exp $       */
 
 /*-
@@ -1953,12 +1953,6 @@ tulip_ioctl(
 		    break;
 		}
 	    }
-	    break;
-	}
-	case SIOCGIFADDR: {
-	    bcopy((caddr_t) sc->tulip_ac.ac_enaddr,
-		  (caddr_t) ((struct sockaddr *)&ifr->ifr_data)->sa_data,
-		  6);
 	    break;
 	}
 
