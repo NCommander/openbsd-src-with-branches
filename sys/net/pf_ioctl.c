@@ -1,4 +1,4 @@
-/*	$OpenBSD: pf_ioctl.c,v 1.90 2003/12/15 07:11:30 mcbride Exp $ */
+/*	$OpenBSD: pf_ioctl.c,v 1.91 2003/12/15 07:28:25 mcbride Exp $ */
 
 /*
  * Copyright (c) 2001 Daniel Hartmeier
@@ -166,7 +166,7 @@ pfattach(int num)
 
 	/* XXX do our best to avoid a conflict */
 	pf_status.hostid = arc4random();
-	pf_status.stateid = 1; 	/* might want 0 for something special */
+	pf_status.stateid = 1;	/* might want 0 for something special */
 }
 
 int
