@@ -1,3 +1,4 @@
+%{
 /* $OpenBSD$ */
 /*
  * Copyright (c) 2004 Marc Espie <espie@cvs.openbsd.org>
@@ -14,30 +15,50 @@
  * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
+#include "parser.h"
+#include <stdlib.h>
+#include <errno.h>
 #include <sys/types.h>
-#include <stdio.h>
-#include <stddef.h>
-#include "mdef.h"
-#include "extern.h"
+#include <limits.h>
+extern int32_t yylval;
 
-int32_t end_result;
-const char *copy_toeval;
+int32_t number(void);
+%}
 
-extern void yy_scan_string(const char *);
-extern int yyparse(void);
+delim 	[ \t\n]
+ws	{delim}+
+hex	0[xX][0-9a-fA-F]+
+oct	0[0-7]*
+dec	[1-9][0-9]*
 
-int
-yyerror(const char *msg)
+%%
+{ws}	{/* just skip it */}
+{hex}	{ yylval = number(); return(NUMBER); }
+{oct}	{ yylval = number(); return(NUMBER); }
+{dec}	{ yylval = number(); return(NUMBER); }
+"<="	{ return(LE); }
+">="	{ return(GE); }
+"<<"	{ return(LSHIFT); }
+">>"	{ return(RSHIFT); }
+"=="	{ return(EQ); }
+"!="	{ return(NE); }
+"&&"	{ return(LAND); }
+"||"	{ return(LOR); }
+.	{ return yytext[0]; }
+%%
+
+int32_t
+number()
 {
-	fprintf(stderr, "m4: %s in expr %s\n", msg, copy_toeval);
-	return(0);
+	long l;
+
+	errno = 0;
+	l = strtol(yytext, NULL, 0);
+	if (((l == LONG_MAX || l == LONG_MIN) && errno == ERANGE) ||
+	    l > 0x7fffffff || l < (-0x7fffffff - 1)) {
+		fprintf(stderr, "m4: numeric overflow in expr: %s\n", yytext);
+	}
+	return l;
+
 }
 
-int 
-expr(const char *toeval)
-{
-	copy_toeval = toeval;
-	yy_scan_string(toeval);
-	yyparse();
-	return end_result;
-}
