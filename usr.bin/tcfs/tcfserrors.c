@@ -1,4 +1,4 @@
-/*	$OpenBSD: tcfserrors.c,v 1.4 2000/06/19 20:35:47 fgsch Exp $	*/
+/*	$OpenBSD: tcfserrors.c,v 1.5 2000/06/19 22:42:28 aaron Exp $	*/
 
 /*
  *	Transparent Cryptographic File System (TCFS) for NetBSD 
@@ -63,9 +63,4 @@ void tcfs_error(int error_type, char *custom_message)
 		fprintf(stderr, "internal error.\n");
 		exit(1);
 	}
-}
-
-void show_usage(char *fmt, char *arg)
-{
-	printf(fmt, arg);
 }

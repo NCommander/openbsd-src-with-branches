@@ -1,4 +1,4 @@
-/*	$OpenBSD: tcfsgenkey.c,v 1.6 2000/06/19 22:42:28 aaron Exp $	*/
+/*	$OpenBSD: tcfsgenkey.c,v 1.7 2000/06/19 23:06:25 aaron Exp $	*/
 
 /*
  *	Transparent Cryptographic File System (TCFS) for NetBSD 
@@ -40,7 +40,7 @@ genkey_main(int argn, char *argv[])
 	while ((val = getopt(argn, argv, "h")) != EOF)
 		switch (val) {
 		case 'h':
-			show_usage(genkey_usage, argv[0]);
+			printf(genkey_usage, argv[0]);
 			exit(OK);
 			break; /* Useless code */
 		default:
