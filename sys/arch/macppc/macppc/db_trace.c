@@ -114,8 +114,7 @@ db_dumpframe(u_int32_t pframe)
 		name = "?";
 		offset = 65536;
 	}
-	db_printf("%x %s+0x%x fp %x nfp %x\n",
-		lr-4, name, offset, pframe, nextframe);
+	db_printf("%s+0x%x fp %x nfp %x\n", name, offset, pframe, nextframe);
 
 	return nextframe;
 }

@@ -1,4 +1,4 @@
-/*	$OpenBSD: machdep.c,v 1.79 2001/08/23 12:02:04 art Exp $	*/
+/*	$OpenBSD: machdep.c,v 1.80 2001/08/23 14:01:03 art Exp $	*/
 /*	$NetBSD: machdep.c,v 1.4 1996/10/16 19:33:11 ws Exp $	*/
 
 /*
@@ -83,8 +83,8 @@
 
 #include "adb.h"
 #if NADB > 0
-#include <arch/powerpc/mac/adbvar.h>
-#include <arch/powerpc/mac/adb_direct.h>
+#include <arch/macppc/dev/adbvar.h>
+#include <arch/macppc/dev/adb_direct.h>
 #endif
 
 #ifdef DDB
