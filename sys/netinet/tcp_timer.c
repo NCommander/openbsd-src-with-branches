@@ -1,4 +1,4 @@
-/*	$OpenBSD: tcp_timer.c,v 1.20 2000/12/13 09:47:08 provos Exp $	*/
+/*	$OpenBSD: tcp_timer.c,v 1.21 2001/05/31 16:27:08 provos Exp $	*/
 /*	$NetBSD: tcp_timer.c,v 1.14 1996/02/13 23:44:09 christos Exp $	*/
 
 /*
@@ -39,14 +39,11 @@
 #ifndef TUBA_INCLUDE
 #include <sys/param.h>
 #include <sys/systm.h>
-#include <sys/malloc.h>
 #include <sys/mbuf.h>
 #include <sys/socket.h>
 #include <sys/socketvar.h>
 #include <sys/protosw.h>
-#include <sys/errno.h>
 
-#include <net/if.h>
 #include <net/route.h>
 
 #include <netinet/in.h>
@@ -56,12 +53,9 @@
 #include <netinet/ip_var.h>
 #include <netinet/tcp.h>
 #include <netinet/tcp_fsm.h>
-#include <netinet/tcp_seq.h>
 #include <netinet/tcp_timer.h>
 #include <netinet/tcp_var.h>
-#include <netinet/tcpip.h>
 #include <netinet/ip_icmp.h>
-#include <dev/rndvar.h>
 
 int	tcp_keepidle = TCPTV_KEEP_IDLE;
 int	tcp_keepintvl = TCPTV_KEEPINTVL;

@@ -1,4 +1,4 @@
-/* $OpenBSD: ip_id.c,v 1.2 1999/08/26 13:37:01 provos Exp $ */
+/* $OpenBSD: ip_id.c,v 1.3 2001/06/04 19:57:22 mickey Exp $ */
 
 /*
  * Copyright 1998 Niels Provos <provos@citi.umich.edu>
@@ -56,7 +56,6 @@
  */
 
 #include <sys/param.h>
-#include <sys/time.h>
 #include <sys/kernel.h>
 
 #include <dev/rndvar.h>
