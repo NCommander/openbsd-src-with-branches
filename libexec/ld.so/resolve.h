@@ -1,4 +1,4 @@
-/*	$OpenBSD: resolve.h,v 1.2 2001/03/30 01:35:21 drahn Exp $ */
+/*	$OpenBSD: resolve.h,v 1.3 2001/04/02 23:11:21 drahn Exp $ */
 
 /*
  * Copyright (c) 1998 Per Fogelstrom, Opsycon AB
@@ -111,9 +111,9 @@ typedef struct elf_object {
 #define	OBJTYPE_LIB	3
 #define	OBJTYPE_DLO	4
 
-	u_long		*buckets;
+	Elf_Word	*buckets;
 	u_int32_t	nbuckets;
-	u_long		*chains;
+	Elf_Word	*chains;
 	u_int32_t	nchains;
 	Elf_Dyn	*dynamic;
 
