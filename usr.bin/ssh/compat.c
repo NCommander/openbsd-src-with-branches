@@ -23,7 +23,7 @@
  */
 
 #include "includes.h"
-RCSID("$OpenBSD: compat.c,v 1.35 2001/02/19 09:53:31 markus Exp $");
+RCSID("$OpenBSD: compat.c,v 1.36 2001/02/27 11:00:11 markus Exp $");
 
 #include <regex.h>
 
@@ -70,11 +70,12 @@ compat_datafellows(const char *version)
 					SSH_OLD_SESSIONID|SSH_BUG_DEBUG },
 		{ "^2\\.0\\.1[3-9]",	SSH_BUG_SIGBLOB|SSH_BUG_HMAC|
 					SSH_OLD_SESSIONID|SSH_BUG_DEBUG|
-					SSH_BUG_PKSERVICE|SSH_BUG_X11FWD },
+					SSH_BUG_PKSERVICE|SSH_BUG_X11FWD|
+					SSH_BUG_PKOK },
 		{ "^2\\.0\\.",		SSH_BUG_SIGBLOB|SSH_BUG_HMAC|
 					SSH_OLD_SESSIONID|SSH_BUG_DEBUG|
 					SSH_BUG_PKSERVICE|SSH_BUG_X11FWD|
-					SSH_BUG_PKAUTH },
+					SSH_BUG_PKAUTH|SSH_BUG_PKOK },
 		{ "^2\\.[23]\\.0",	SSH_BUG_HMAC},
 		{ "^2\\.[2-9]\\.",	0 },
 		{ "^2\\.4$",		SSH_OLD_SESSIONID}, /* Van Dyke */
