@@ -1,4 +1,4 @@
-/*	$OpenBSD: display.c,v 1.8 2002/12/17 07:10:25 mickey Exp $	*/
+/*	$OpenBSD: display.c,v 1.9 2003/07/10 00:00:58 david Exp $	*/
 /*	$NetBSD: display.c,v 1.1 1998/12/28 14:01:16 hannken Exp $ */
 
 /*-
@@ -143,7 +143,8 @@ display_get_values(const char *pre, int fd)
 			pc->min = param.min;
 			pc->cur = param.curval;
 			pc->max = param.max;
-		}
+		} else if (ptr == &gscr)
+			focus = gscr.idx;
 	}
 }
 
