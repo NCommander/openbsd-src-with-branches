@@ -1,4 +1,4 @@
-/*	$OpenBSD: pfvar.h,v 1.202 2004/07/12 00:50:22 itojun Exp $ */
+/*	$OpenBSD: pfvar.h,v 1.203 2004/09/21 16:59:12 aaron Exp $ */
 
 /*
  * Copyright (c) 2001 Daniel Hartmeier
@@ -645,6 +645,7 @@ struct pf_state {
 	u_int8_t	 sync_flags;
 #define	PFSTATE_NOSYNC	 0x01
 #define	PFSTATE_FROMSYNC 0x02
+#define	PFSTATE_STALE	 0x04
 	u_int8_t	 pad;
 };
 
