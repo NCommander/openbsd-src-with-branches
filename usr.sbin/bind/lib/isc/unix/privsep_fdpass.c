@@ -1,4 +1,4 @@
-/*	$OpenBSD: privsep_fdpass.c,v 1.1 2004/01/28 19:44:55 canacar Exp $	*/
+/*	$OpenBSD: privsep_fdpass.c,v 1.1 2004/03/12 18:40:15 canacar Exp $	*/
 
 /*
  * Copyright 2001 Niels Provos <provos@citi.umich.edu>
@@ -40,6 +40,7 @@
 #include <errno.h>
 #include <fcntl.h>
 #include <unistd.h>
+#include <string.h>
 
 #include <isc/privsep.h>
 
