@@ -39,7 +39,7 @@
  */
 
 #include "includes.h"
-RCSID("$OpenBSD: channels.c,v 1.159 2002/01/14 13:55:55 markus Exp $");
+RCSID("$OpenBSD: channels.c,v 1.160 2002/01/16 13:17:51 markus Exp $");
 
 #include "ssh.h"
 #include "ssh1.h"
@@ -1793,6 +1793,8 @@ channel_input_ieof(int type, u_int32_t seq, void *ctxt)
 	if (c->force_drain && c->istate == CHAN_INPUT_OPEN) {
 		debug("channel %d: FORCE input drain", c->self);
 		c->istate = CHAN_INPUT_WAIT_DRAIN;
+		if (buffer_len(&c->input) == 0)
+			chan_ibuf_empty(c);
 	}
 
 }
