@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: rd_root.c,v 1.3 1996/05/26 18:35:33 briggs Exp $	*/
 /*	$NetBSD: rd_root.c,v 1.3 1996/05/05 06:17:09 briggs Exp $	*/
 
 /*
@@ -70,8 +70,4 @@ rd_open_hook(unit, rd)
 	int unit;
 	struct rd_conf *rd;
 {
-	if (unit == 0) {
-		/* The root ramdisk only works single-user. */
-		boothowto |= RB_SINGLE;
-	}
 }
