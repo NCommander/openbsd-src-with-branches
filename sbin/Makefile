@@ -32,6 +32,8 @@ SUBDIR+= bim config_slot edlabel fdisk pcmcia_cntrl
 SUBDIR+= config_slot
 SUBDIR+= fdisk
 SUBDIR+= pcmcia_cntrl
+.elif ${MACHINE} == "pica"
+SUBDIR+= fdisk
 .elif ${MACHINE} == "pc532"
 SUBDIR+= bim
 .elif ${MACHINE} == "sun3"
