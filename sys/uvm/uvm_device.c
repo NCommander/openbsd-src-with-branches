@@ -149,6 +149,9 @@ udv_attach(arg, accessprot, off, size)
 			mapfn == (paddr_t (*) __P((dev_t, off_t, int)))nullop)
 		return(NULL);
 
+	if (off < 0)
+		return (NULL);
+
 	/*
 	 * Check that the specified range of the device allows the
 	 * desired protection.
@@ -408,8 +411,8 @@ udv_fault(ufi, vaddr, pps, npages, centeridx, fault_type, access_type, flags)
 	struct uvm_device *udv = (struct uvm_device *)uobj;
 	vaddr_t curr_va;
 	int curr_offset;
-	paddr_t paddr;
-	int lcv, retval, mdpgno;
+	paddr_t paddr, mdpgno;
+	int lcv, retval;
 	dev_t device;
 	paddr_t (*mapfn) __P((dev_t, off_t, int));
 	vm_prot_t mapprot;
