@@ -1,4 +1,4 @@
-/*	$OpenBSD: dir.c,v 1.1.4.1 1996/05/31 18:41:38 jtc Exp $	*/
+/*	$OpenBSD: dir.c,v 1.3 1996/06/23 14:30:42 deraadt Exp $	*/
 /*	$NetBSD: dir.c,v 1.1.4.1 1996/05/31 18:41:38 jtc Exp $	*/
 
 /*
@@ -37,7 +37,7 @@
 
 
 #ifndef lint
-static char rcsid[] = "$OpenBSD: dir.c,v 1.1.4.1 1996/05/31 18:41:38 jtc Exp $";
+static char rcsid[] = "$OpenBSD: dir.c,v 1.3 1996/06/23 14:30:42 deraadt Exp $";
 #endif /* not lint */
 
 #include <stdio.h>
@@ -168,7 +168,7 @@ fullpath(dir)
 		memcpy(cp, np, nl);
 		*--cp = '/';
 	} while (dir = dir->parent);
-	if (dir->parent)
+	if (dir)
 		*--cp = '?';
 	return cp;
 }
