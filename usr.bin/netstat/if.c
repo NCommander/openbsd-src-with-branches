@@ -1,4 +1,4 @@
-/*	$OpenBSD: if.c,v 1.36 2003/07/10 00:06:51 david Exp $	*/
+/*	$OpenBSD: if.c,v 1.37 2003/09/26 06:17:02 deraadt Exp $	*/
 /*	$NetBSD: if.c,v 1.16.4.2 1996/06/07 21:46:46 thorpej Exp $	*/
 
 /*
@@ -34,7 +34,7 @@
 #if 0
 static char sccsid[] = "from: @(#)if.c	8.2 (Berkeley) 2/21/94";
 #else
-static char *rcsid = "$OpenBSD: if.c,v 1.36 2003/07/10 00:06:51 david Exp $";
+static char *rcsid = "$OpenBSD: if.c,v 1.37 2003/09/26 06:17:02 deraadt Exp $";
 #endif
 #endif /* not lint */
 
@@ -228,7 +228,7 @@ intpr(int interval, u_long ifnetaddr)
 				if (IN6_IS_ADDR_LINKLOCAL(&sin6->sin6_addr)) {
 					sin6->sin6_scope_id =
 					    ntohs(*(u_int16_t *)
-					      &sin6->sin6_addr.s6_addr[2]);
+					    &sin6->sin6_addr.s6_addr[2]);
 					sin6->sin6_addr.s6_addr[2] = 0;
 					sin6->sin6_addr.s6_addr[3] = 0;
 				}
@@ -263,7 +263,7 @@ intpr(int interval, u_long ifnetaddr)
 						if (IN6_IS_ADDR_MC_LINKLOCAL(&m6.sin6_addr)) {
 							m6.sin6_scope_id =
 							    ntohs(*(u_int16_t *)
-							      &m6.sin6_addr.s6_addr[2]);
+							    &m6.sin6_addr.s6_addr[2]);
 							m6.sin6_addr.s6_addr[2] = 0;
 							m6.sin6_addr.s6_addr[3] = 0;
 						}
