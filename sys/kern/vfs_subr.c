@@ -1,4 +1,4 @@
-/*	$OpenBSD: vfs_subr.c,v 1.58 2001/03/22 00:31:56 art Exp $	*/
+/*	$OpenBSD: vfs_subr.c,v 1.59 2001/04/29 20:42:45 art Exp $	*/
 /*	$NetBSD: vfs_subr.c,v 1.53 1996/04/22 01:39:13 christos Exp $	*/
 
 /*
@@ -395,7 +395,6 @@ getnewvnode(tag, mp, vops, vpp)
 	toggle ^= 1;
 	if (numvnodes > 2 * desiredvnodes)
 		toggle = 0;
-
 
 	simple_lock(&vnode_free_list_slock);
 	s = splbio();
