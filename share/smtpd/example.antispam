@@ -1,3 +1,5 @@
+#	$OpenBSD$
+
 # example antispam file. Modify to suit your needs.
 #
 # This file goes in /var/spool/smtpd/etc/smtpd_check_rules

@@ -1,3 +1,5 @@
+#	$OpenBSD$
+
 # SCSI mode page data base.
 
 # Copyright (c) 1995 HD Associates

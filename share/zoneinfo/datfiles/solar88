@@ -1,3 +1,5 @@
+#	$OpenBSD$
+
 # @(#)solar88	7.3
 
 # Apparent noon times below are for Riyadh; they're a bit off for other places.

@@ -1,3 +1,5 @@
+#	$OpenBSD$
+
 #
 # example smtpd rules file.
 # Also note, this isn't real. It's chosen for illustrative purposes.

@@ -1,3 +1,5 @@
+.\"	$OpenBSD$
+.\"
 .\" The following requests are required for all man pages.
 .Dd Month DD, YYYY
 .Dt NAME SECTION#
