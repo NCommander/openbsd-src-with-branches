@@ -1,4 +1,4 @@
-/*	$OpenBSD: tty.c,v 1.25 1997/01/05 11:09:02 niklas Exp $	*/
+/*	$OpenBSD: tty.c,v 1.26 1997/01/12 09:08:27 tholo Exp $	*/
 /*	$NetBSD: tty.c,v 1.68.4.2 1996/06/06 16:04:52 thorpej Exp $	*/
 
 /*-
@@ -239,7 +239,7 @@ ttyinput(c, tp)
 
 	add_tty_randomness(tp->t_dev << 8 | c);
 	/*
-	 * If receiver is not enable, drop it.
+	 * If receiver is not enabled, drop it.
 	 */
 	if (!ISSET(tp->t_cflag, CREAD))
 		return (0);
