@@ -1,4 +1,4 @@
-/*	$OpenBSD: dkcsum.c,v 1.1 1997/10/27 08:06:30 niklas Exp $	*/
+/*	$OpenBSD: dkcsum.c,v 1.2 1997/10/27 14:42:03 niklas Exp $	*/
 
 /*-
  * Copyright (c) 1997 Niklas Hallqvist.  All rights reserved.
@@ -68,6 +68,10 @@ dkcsumattach()
 	int error;
 	u_int32_t csum;
 	bios_diskinfo_t *bdi, *hit;
+
+	/* do nothing if no diskinfo passed from /boot */
+	if (bios_diskinfo == NULL)
+		return;
 
 	/*
 	 * XXX Whatif DEV_BSIZE is changed to something else than the BIOS
