@@ -1,4 +1,4 @@
-/*	$OpenBSD: ldasm.S,v 1.8 2002/10/21 16:01:55 drahn Exp $ */
+/*	$OpenBSD: ldasm.S,v 1.9 2002/12/09 20:56:34 drahn Exp $ */
 
 /*
  * Copyright (c) 1999 Dale Rahn
@@ -80,7 +80,7 @@ ENTRY(_dl_start)
 	 * operation that would be below would calulate.
 	 */
 	add	28, 18, 5
-	mr	6, 5 	# save offset for later use
+	mr	6, 5		# save offset for later use
 
 	/* mprotect GOT-4 for correct execution of blrl instruction */
 	li	0, SYS_mprotect
