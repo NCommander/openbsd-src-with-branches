@@ -1,6 +1,6 @@
 #!/bin/ksh -
 #
-# $OpenBSD: spell.ksh,v 1.1 2002/03/01 22:01:11 millert Exp $
+# $OpenBSD: spell.ksh,v 1.2 2002/03/02 16:33:51 millert Exp $
 #
 # Copyright (c) 2001 Todd C. Miller <Todd.Miller@courtesan.com>
 # All rights reserved.
@@ -66,7 +66,7 @@ while test "${argv[$OPTIND]#+}" = "${argv[$OPTIND]}" && \
 		;;
 	i)	DEROFF="$DEROFF -i"
 		;;
-	i)	DEROFF="$DEROFF -i"
+	l)	DEROFF="delatex"
 		;;
 	m)	DEROFF="$DEROFF -m $OPTARG"
 		;;
