@@ -188,7 +188,7 @@ aed_emulate_mouse(event)
 			aed_handoff(&new_event);
 		}
 	} else if (emulmodkey_down) {
-		switch (event->u.k.key) {
+		switch(event->u.k.key) {
 #ifdef ALTXBUTTONS
 		case ADBK_KEYDOWN(ADBK_1):
 			aed_sc->sc_buttons |= 1;	/* left down */

@@ -36,7 +36,7 @@
 
 #include <powerpc/cpu.h>
 
-/*
+/* 
  * CTL_MACHDEP definitions.
  */
 #define CPU_ALLOWAPERTURE	1	/* allow mmap of /dev/xf86 */

@@ -124,7 +124,7 @@ mbattach(parent, self, aux)
 			    sizeof(name)) <= 0) {
 				if (OF_getprop(node, "name", name,
 				    sizeof(name)) <= 0)
-					printf("name not found on node %x\n",
+					printf ("name not found on node %x\n",
 					    node);
 					continue;
 			}

@@ -30,11 +30,11 @@
 
 #define	DEVICE_IS_VGA_PCI(class, id)					\
 	    (((PCI_CLASS(class) == PCI_CLASS_DISPLAY &&			\
-	    PCI_SUBCLASS(class) == PCI_SUBCLASS_DISPLAY_VGA) ||	\
+	      PCI_SUBCLASS(class) == PCI_SUBCLASS_DISPLAY_VGA) ||	\
 	    (((PCI_CLASS(class) == PCI_CLASS_DISPLAY &&			\
-	    PCI_SUBCLASS(class) == PCI_SUBCLASS_DISPLAY_MISC) ||	\
-	    (PCI_CLASS(class) == PCI_CLASS_PREHISTORIC &&		\
-	    PCI_SUBCLASS(class) == PCI_SUBCLASS_PREHISTORIC_VGA)) ? 1 : 0)
+	      PCI_SUBCLASS(class) == PCI_SUBCLASS_DISPLAY_MISC) ||	\
+	     (PCI_CLASS(class) == PCI_CLASS_PREHISTORIC &&		\
+	      PCI_SUBCLASS(class) == PCI_SUBCLASS_PREHISTORIC_VGA)) ? 1 : 0)
 
 void    vgafb_pci_console(bus_space_tag_t,
 		u_int32_t ioaddr, u_int32_t iosize,

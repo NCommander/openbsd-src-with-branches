@@ -82,7 +82,7 @@ int		pci_intr_line(pci_intr_handle_t ih);
 #define	pci_conf_write(c, t, r, v)					\
     (*(c)->pc_conf_write)((c)->pc_conf_v, (t), (r), (v))
 #define	pci_intr_map(pa, ihp)						\
-    (*((pa)->pa_pc)->pc_intr_map)((pa)->pa_pc->pc_intr_v,		\
+    (*((pa)->pa_pc)->pc_intr_map)((pa)->pa_pc->pc_intr_v, 		\
 	(pa)->pa_intrtag, (pa)->pa_intrpin, (pa)->pa_intrline, (ihp))
 #define	pci_intr_string(c, ih)						\
     (*(c)->pc_intr_string)((c)->pc_intr_v, (ih))

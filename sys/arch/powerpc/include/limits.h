@@ -39,7 +39,7 @@
 
 #if !defined(_ANSI_SOURCE)
 #define	SIZE_MAX	UINT_MAX	/* max value for a size_t */
-#define SSIZE_MAX	INT_MAX		/* max value for a ssize_t */
+#define SSIZE_MAX	INT_MAX		/* max value for a ssize_t */  
 
 #if !defined(_POSIX_SOURCE) && !defined(_XOPEN_SOURCE)
 #define	SIZE_T_MAX	UINT_MAX	/* max value for a size_t */

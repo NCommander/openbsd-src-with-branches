@@ -91,7 +91,7 @@ _TMP_LABEL(y):; \
 	addis 11, 11, _TMP_LABEL(y)@ha; \
 	stw 0, 4(1); \
 	addi 0, 11,_TMP_LABEL(y)@l; \
-	bl _mcount;
+	bl _mcount; 
 #else
 # define _PROF_PROLOGUE(y)
 #endif

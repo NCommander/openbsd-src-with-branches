@@ -62,7 +62,7 @@ typedef unsigned long	vsize_t;
 typedef unsigned long	psize_t;
 
 typedef struct label_t {
-	int val[40]; /* double check this XXX */
+        int val[40]; /* double check this XXX */
 } label_t;
 
 #define	__BROKEN_INDIRECT_CONFIG

@@ -62,7 +62,7 @@
  * Size of shared memory map
  */
 #ifndef	SHMMAXPGS
-#define	SHMMAXPGS	4096
+#define	SHMMAXPGS       4096
 #endif
 
 /*
@@ -79,7 +79,7 @@
  * It is related to human patience and other factors which don't really
  * change over time.
  */
-#define	MAXSLP		20
+#define	MAXSLP 		20
 
 /*
  * Would like to have MAX addresses = 0, but this doesn't (currently) work

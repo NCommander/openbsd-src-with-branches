@@ -56,7 +56,7 @@ in_cksum(m, len)
 	u_int sum = 0;
 	int mlen;
 	int byte_swapped = 0;
-
+	
 	for (; m && len; m = m->m_next) {
 		if (m->m_len == 0)
 			continue;

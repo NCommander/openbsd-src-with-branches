@@ -69,7 +69,7 @@ syncicache(void *from, int len)
 
 	len = len + (((u_int32_t) from) & (CACHELINESIZE - 1));
 	l = len;
-
+	
 	do {
 		__asm__ __volatile__ ("dcbst 0,%0" :: "r"(p));
 		p += CACHELINESIZE;
@@ -89,10 +89,10 @@ invdcache(void *from, int len)
 {
 	int l;
 	char *p = from;
-
+	
 	len = len + (((u_int32_t) from) & (CACHELINESIZE - 1));
 	l = len;
-
+	
 	do {
 		__asm__ __volatile__ ("dcbi 0,%0" :: "r"(p));
 		p += CACHELINESIZE;

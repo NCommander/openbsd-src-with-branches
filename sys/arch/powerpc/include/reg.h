@@ -61,7 +61,7 @@ struct reg {
 };
 
 struct vreg {
-	u_int32_t vreg[32][4];
+        u_int32_t vreg[32][4];
 	u_int64_t vscr;
 	u_int32_t vrsave;
 	u_int32_t pad;

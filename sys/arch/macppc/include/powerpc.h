@@ -70,7 +70,7 @@ struct firmware {
 	exit_f		*exit;
 	boot_f		*boot;
 	vmon_f		*vmon;
-
+	
 #ifdef FW_HAS_PUTC
 	boot_f		*putc;
 #endif

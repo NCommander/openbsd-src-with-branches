@@ -55,7 +55,7 @@ struct vgafb_config {
 		    caddr_t, int, struct proc *);
 	paddr_t	(*vc_mmap)(void *, off_t, int);
 
-	struct rasops_info    dc_rinfo;	/* raster display data*/
+	struct rasops_info    dc_rinfo;       /* raster display data*/
 
 	bus_addr_t	membase;
 	bus_size_t	memsize;

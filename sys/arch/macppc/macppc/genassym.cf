@@ -39,7 +39,7 @@ include <sys/time.h>
 include <sys/proc.h>
 include <uvm/uvm_extern.h>
 
-include <machine/pcb.h>
+include <machine/pcb.h>               
 include <machine/pmap.h>
 
 export	FRAMELEN

@@ -74,14 +74,14 @@ mmopen(dev, flag, mode, p)
 {
 
 	switch (minor(dev)) {
-	case 0:
-	case 1:
-	case 2:
-	case 12:
-		break;
+		case 0:
+		case 1:
+		case 2:
+		case 12:
+			break;
 #ifdef APERTURE
 	case 4:
-		if (suser(p->p_ucred, &p->p_acflag) != 0 || !allowaperture)
+	        if (suser(p->p_ucred, &p->p_acflag) != 0 || !allowaperture)
 			return (EPERM);
 
 		/* authorize only one simultaneous open() */
@@ -188,8 +188,8 @@ mmrw(dev, uio, flags)
 
 paddr_t
 mmmmap(dev, off, prot)
-	dev_t dev;
-	off_t off;
+        dev_t dev;
+        off_t off;
 	int prot;
 {
 	return (-1);

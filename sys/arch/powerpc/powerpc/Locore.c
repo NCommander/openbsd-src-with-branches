@@ -53,7 +53,7 @@ setrunqueue(p)
 	struct  prochd *q;
 	struct proc *oldlast;
 	int which = p->p_priority >> 2;
-
+	
 #ifdef	DIAGNOSTIC
 	if (p->p_back)
 		panic("setrunqueue");
@@ -77,7 +77,7 @@ remrunqueue(p)
 	int which = p->p_priority >> 2;
 	struct prochd *q;
 
-#ifdef	DIAGNOSTIC
+#ifdef	DIAGNOSTIC	
 	if (!(whichqs & (0x80000000 >> which)))
 		panic("remrunqueue");
 #endif

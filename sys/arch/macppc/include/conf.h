@@ -38,8 +38,8 @@ cdev_decl(mm);
 
 /* open, close, write, ioctl, kqueue */
 #define cdev_apm_init(c,n) { \
-	dev_init(c,n,open), dev_init(c,n,close), (dev_type_read((*))) enodev, \
-	(dev_type_write((*))) enodev, dev_init(c,n,ioctl), \
+        dev_init(c,n,open), dev_init(c,n,close), (dev_type_read((*))) enodev, \
+        (dev_type_write((*))) enodev, dev_init(c,n,ioctl), \
 	(dev_type_stop((*))) enodev, 0, (dev_type_select((*))) enodev, \
 	(dev_type_mmap((*))) enodev, D_KQFILTER, dev_init(c,n,kqfilter) }
 

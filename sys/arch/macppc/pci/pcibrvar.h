@@ -45,7 +45,7 @@ struct pcibr_config {
 	int	config_type;
 	int	bus;
 	int	pci_init_done;
-	int	node;
+	int     node;
 };
 
 struct pcibr_softc {

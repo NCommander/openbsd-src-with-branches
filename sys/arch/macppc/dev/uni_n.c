@@ -68,7 +68,7 @@ memcmatch(parent, cf, aux)
 
 	/* allow only one instance */
 	if (memc_attached == 0) {
-		if (0 == strcmp(ca->ca_name, "memc")) {
+		if (0 == strcmp (ca->ca_name, "memc")) {
 			return 1;
 		}
 	}
@@ -89,10 +89,10 @@ memcattach(parent, self, aux)
 	if (len > 0) {
 		name[len] = 0;
 	}
-	if (strcmp(name, "uni-n")== 0) {
+	if (strcmp (name, "uni-n")== 0) {
 		sc->baseaddr = uni_n_config(ca->ca_node);
 	}
-	printf(": %s\n", name);
+	printf (": %s\n", name);
 }
 void *
 uni_n_config(int handle)
@@ -104,7 +104,7 @@ uni_n_config(int handle)
 
 	if (OF_getprop(handle, "name", name, sizeof name) > 0) {
 		/* sanity test */
-		if (!strcmp(name, "uni-n")) {
+		if (!strcmp (name, "uni-n")) {
 			if (OF_getprop(handle, "reg", &address,
 			    sizeof address) > 0) {
 				baseaddr = mapiodev(address, NBPG);

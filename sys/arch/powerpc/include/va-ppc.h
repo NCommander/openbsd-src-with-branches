@@ -249,6 +249,7 @@ __extension__ ({ \
            (struct __va_list_tag *)__builtin_alloca(sizeof(__gnuc_va_list)); \
         *(dest) = *(src);\
   })
+   
 
 
 #endif /* __VA_PPC_H__ */
