@@ -1,4 +1,4 @@
-/*	$OpenBSD: tcp_input.c,v 1.168 2004/05/21 11:36:23 markus Exp $	*/
+/*	$OpenBSD: tcp_input.c,v 1.169 2004/05/26 22:47:40 markus Exp $	*/
 /*	$NetBSD: tcp_input.c,v 1.23 1996/02/13 23:43:44 christos Exp $	*/
 
 /*
@@ -551,8 +551,6 @@ tcp_input(struct mbuf *m, ...)
 #endif
 	}
 #endif /* TUBA_INCLUDE */
-
-	th = (struct tcphdr *)(mtod(m, caddr_t) + iphlen);
 
 	/*
 	 * Check that TCP offset makes sense,
