@@ -16,20 +16,18 @@
  */
 
 #include "includes.h"
-RCSID("$OpenBSD: clientloop.c,v 1.27 2000/06/20 01:39:40 markus Exp $");
+RCSID("$OpenBSD: clientloop.c,v 1.28 2000/07/13 23:14:08 provos Exp $");
 
 #include "xmalloc.h"
 #include "ssh.h"
 #include "packet.h"
 #include "buffer.h"
-#include "authfd.h"
 #include "readconf.h"
 
 #include "ssh2.h"
 #include "compat.h"
 #include "channels.h"
 #include "dispatch.h"
-
 
 /* Flag indicating that stdin should be redirected from /dev/null. */
 extern int stdin_null_flag;

@@ -17,13 +17,12 @@
  */
 
 #include "includes.h"
-RCSID("$OpenBSD: channels.c,v 1.62 2000/06/20 01:39:39 markus Exp $");
+RCSID("$OpenBSD: channels.c,v 1.63 2000/06/25 20:17:57 provos Exp $");
 
 #include "ssh.h"
 #include "packet.h"
 #include "xmalloc.h"
 #include "buffer.h"
-#include "authfd.h"
 #include "uidswap.h"
 #include "readconf.h"
 #include "servconf.h"
@@ -33,6 +32,11 @@ RCSID("$OpenBSD: channels.c,v 1.62 2000/06/20 01:39:39 markus Exp $");
 #include "compat.h"
 
 #include "ssh2.h"
+
+#include <openssl/rsa.h>
+#include <openssl/dsa.h>
+#include "key.h"
+#include "authfd.h"
 
 /* Maximum number of fake X11 displays to try. */
 #define MAX_DISPLAYS  1000
