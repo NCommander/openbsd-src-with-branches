@@ -1,4 +1,4 @@
-/*	$OpenBSD: ipft_tx.c,v 1.17 2001/01/17 06:01:22 fgsch Exp $	*/
+/*	$OpenBSD: ipft_tx.c,v 1.18 2001/01/17 07:26:58 fgsch Exp $	*/
 
 /*
  * Copyright (C) 1995-2000 by Darren Reed.
@@ -38,7 +38,7 @@
 #include <netdb.h>
 #include <arpa/nameser.h>
 #include <resolv.h>
-#include <netinet/ip_compat.h>
+#include <netinet/ip_fil_compat.h>
 #include <netinet/tcpip.h>
 #include "ipf.h"
 #include "ipt.h"
