@@ -1,4 +1,4 @@
-/*	$OpenBSD: suff.c,v 1.35 2000/06/23 16:41:53 espie Exp $	*/
+/*	$OpenBSD: suff.c,v 1.36 2000/09/14 13:32:07 espie Exp $	*/
 /*	$NetBSD: suff.c,v 1.13 1996/11/06 17:59:25 christos Exp $	*/
 
 /*
@@ -100,7 +100,7 @@
 static char sccsid[] = "@(#)suff.c	8.4 (Berkeley) 3/21/94";
 #else
 UNUSED
-static char rcsid[] = "$OpenBSD: suff.c,v 1.35 2000/06/23 16:41:53 espie Exp $";
+static char rcsid[] = "$OpenBSD: suff.c,v 1.36 2000/09/14 13:32:07 espie Exp $";
 #endif
 #endif /* not lint */
 
@@ -567,7 +567,7 @@ Suff_AddTransform (line)
 	 * Make a new graph node for the transformation. It will be filled in
 	 * by the Parse module.
 	 */
-	gn = Targ_NewGN (line);
+	gn = Targ_NewGN(line, NULL);
 	Lst_AtEnd(&transforms, gn);
     } else {
 	/*
