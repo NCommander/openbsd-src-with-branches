@@ -1,8 +1,9 @@
-#	$OpenBSD: Makefile,v 1.4 2001/09/18 17:59:41 drahn Exp $
+#	$OpenBSD: Makefile,v 1.5 2001/09/21 02:38:17 miod Exp $
+
+REV=	${OSrev}
 
 TOP=		${.CURDIR}/..
 
-.include "${TOP}/Makefile.inc"
 BSD_RD=		bsd.rd
 IMAGE=		mr.fs
 CBIN?=		instbin
@@ -92,7 +93,8 @@ ${CBIN}: ${CBIN}.mk ${CBIN}.cache ${CBIN}.c
 do_files:
 	mtree -def ${MTREE} -p ${MOUNT_POINT}/ -u
 	TOPDIR=${TOP} CURDIR=${.CURDIR} OBJDIR=${.OBJDIR} \
-	    REV=${REV} TARGDIR=${MOUNT_POINT} sh ${TOP}/runlist.sh ${LISTS}
+	    REV=${REV} TARGDIR=${MOUNT_POINT} UTILS=${UTILS} \
+	    sh ${TOP}/../miniroot/runlist.sh ${LISTS}
 
 clean cleandir:
 	/bin/rm -f core ${IMAGE} ${CBIN} ${CBIN}.mk ${CBIN}.cache \
