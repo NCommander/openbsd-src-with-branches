@@ -306,6 +306,7 @@ ipsec_common_input_cb(struct mbuf *m, struct tdb *tdbp, int skip, int protoff,
 		}
 
 		ip = mtod(m, struct ip *);
+		ip->ip_len = htons(m->m_pkthdr.len);
 		ip->ip_sum = 0;
 		ip->ip_sum = in_cksum(m, ip->ip_hl << 2);
 		prot = ip->ip_p;
