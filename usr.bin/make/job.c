@@ -1,4 +1,4 @@
-/*	$OpenBSD: job.c,v 1.8 1997/12/16 22:26:21 deraadt Exp $	*/
+/*	$OpenBSD: job.c,v 1.9 1998/03/15 22:19:24 flipk Exp $	*/
 /*	$NetBSD: job.c,v 1.16 1996/11/06 17:59:08 christos Exp $	*/
 
 /*
@@ -43,7 +43,7 @@
 #if 0
 static char sccsid[] = "@(#)job.c	8.2 (Berkeley) 3/19/94";
 #else
-static char rcsid[] = "$OpenBSD: job.c,v 1.8 1997/12/16 22:26:21 deraadt Exp $";
+static char rcsid[] = "$OpenBSD: job.c,v 1.9 1998/03/15 22:19:24 flipk Exp $";
 #endif
 #endif /* not lint */
 
@@ -412,6 +412,7 @@ JobPassSig(signo)
     sigemptyset(&nmask);
     sigaddset(&nmask, signo);
     sigprocmask(SIG_SETMASK, &nmask, &omask);
+    memset(&act, 0, sizeof act);
     act.sa_handler = SIG_DFL;
     sigemptyset(&act.sa_mask);
     act.sa_flags = 0;
