@@ -1,4 +1,4 @@
-/*	$OpenBSD: pfctl_table.c,v 1.33 2003/02/04 17:29:06 cedric Exp $ */
+/*	$OpenBSD: pfctl_table.c,v 1.34 2003/02/05 08:52:08 cedric Exp $ */
 
 /*
  * Copyright (c) 2002 Cedric Berger
@@ -175,12 +175,6 @@ pfctl_table(int argc, char *argv[], char *tname, char *command,
 			else
 				print_table(buffer.tables+i,
 				    opts & PF_OPT_VERBOSE);
-	} else if (!strcmp(command, "create")) {
-		if (argc || file != NULL)
-			usage();
-		table.pfrt_flags = PFR_TFLAG_PERSIST;
-		RVTEST(pfr_add_tables(&table, 1, &nadd, flags));
-		xprintf(opts, "%d table added", nadd);
 	} else if (!strcmp(command, "kill")) {
 		if (argc || file != NULL)
 			usage();
