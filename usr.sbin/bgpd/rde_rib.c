@@ -1,4 +1,4 @@
-/*	$OpenBSD: rde_rib.c,v 1.25 2004/01/17 19:35:36 claudio Exp $ */
+/*	$OpenBSD: rde_rib.c,v 1.26 2004/01/18 00:44:44 deraadt Exp $ */
 
 /*
  * Copyright (c) 2003, 2004 Claudio Jeker <claudio@openbsd.org>
@@ -793,7 +793,7 @@ prefix_move(struct rde_aspath *asp, struct prefix *p)
 	asp->peer->prefix_cnt++;
 	/* XXX for debugging */
 	if (asp->prefix_cnt == MAX_PREFIX_PER_AS)
-		logit(LOG_INFO, "RDE: prefix hog, prefix %s/%d",
+		log_warnx("RDE: prefix hog, prefix %s/%d",
 		    inet_ntoa(np->prefix->prefix.v4), np->prefix->prefixlen);
 	ENSURE(asp->prefix_cnt < MAX_PREFIX_PER_AS);
 
@@ -958,7 +958,7 @@ prefix_link(struct prefix *pref, struct pt_entry *pte, struct rde_aspath *asp)
 
 	/* XXX for debugging */
 	if (asp->prefix_cnt == MAX_PREFIX_PER_AS)
-		logit(LOG_INFO, "RDE: prefix hog, prefix %s/%d",
+		log_warnx("RDE: prefix hog, prefix %s/%d",
 		    inet_ntoa(pte->prefix.v4), pte->prefixlen);
 	ENSURE(asp->prefix_cnt < MAX_PREFIX_PER_AS);
 
@@ -1167,7 +1167,7 @@ nexthop_update(struct kroute_nexthop *msg)
 
 	nh = nexthop_get(msg->nexthop.v4.s_addr);
 	if (nh == NULL) {
-		logit(LOG_INFO, "nexthop_update: non-existent nexthop");
+		log_warnx("nexthop_update: non-existent nexthop");
 		return;
 	}
 	ENSURE(nh->exit_nexthop.v4.s_addr == msg->nexthop.v4.s_addr);
