@@ -1,4 +1,4 @@
-/*	$OpenBSD: cd9660_vnops.c,v 1.29 2003/09/23 16:51:12 millert Exp $	*/
+/*	$OpenBSD: cd9660_vnops.c,v 1.30 2004/05/14 04:00:34 tedu Exp $	*/
 /*	$NetBSD: cd9660_vnops.c,v 1.42 1997/10/16 23:56:57 christos Exp $	*/
 
 /*-
@@ -98,7 +98,7 @@ cd9660_mknod(ndp, vap, cred, p)
 	struct proc *p;
 {
 #ifndef	ISODEVMAP
-	pool_put(i&namei_pool, ndp->ni_pnbuf);
+	pool_put(&namei_pool, ndp->ni_pnbuf);
 	vput(ndp->ni_dvp);
 	vput(ndp->ni_vp);
 	return (EINVAL);
