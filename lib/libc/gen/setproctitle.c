@@ -30,7 +30,7 @@
  */
 
 #if defined(LIBC_SCCS) && !defined(lint)
-static char rcsid[] = "$OpenBSD: setproctitle.c,v 1.8 2001/11/06 19:21:40 art Exp $";
+static char rcsid[] = "$OpenBSD: setproctitle.c,v 1.9 2002/02/19 19:39:36 millert Exp $";
 #endif /* LIBC_SCCS and not lint */
 
 #include <sys/param.h>
@@ -54,13 +54,15 @@ setproctitle(const char *fmt, ...)
 	va_list ap;
 	
 	static char buf[MAX_PROCTITLE], *bufp = buf;
-	size_t used;
+	int used;
 
 	va_start(ap, fmt);
 	if (fmt != NULL) {
 		used = snprintf(buf, MAX_PROCTITLE, "%s: ", __progname);
 		if (used >= MAX_PROCTITLE)
 			used = MAX_PROCTITLE - 1;
+		else if (used < 0)
+			used = 0;
 		(void)vsnprintf(buf + used, MAX_PROCTITLE - used, fmt, ap);
 	} else
 		(void)snprintf(buf, MAX_PROCTITLE, "%s", __progname);
