@@ -1,3 +1,5 @@
+/*	$OpenBSD$ */
+
 /* ====================================================================
  * The Apache Software License, Version 1.1
  *
@@ -689,9 +691,9 @@ extern char *crypt();
 #define USE_MMAP_FILES
 #if defined __OpenBSD__
 #define HAVE_SYSVSEM_SERIALIZED_ACCEPT
-#else
+#define USE_SYSVSEM_SERIALIZED_ACCEPT
+#endif
 #define HAVE_FLOCK_SERIALIZED_ACCEPT
-#endif	
 #define SINGLE_LISTEN_UNSERIALIZED_ACCEPT
 
 #elif defined(UTS21)
