@@ -1,4 +1,4 @@
-/*	$OpenBSD: nfs_syscalls.c,v 1.20 2001/11/15 23:15:15 art Exp $	*/
+/*	$OpenBSD: nfs_syscalls.c,v 1.22 2001/12/19 08:58:06 art Exp $	*/
 /*	$NetBSD: nfs_syscalls.c,v 1.19 1996/02/18 11:53:52 fvdl Exp $	*/
 
 /*
@@ -108,6 +108,7 @@ int nfs_niothreads = -1;
 
 #ifdef NFSSERVER
 static void nfsd_rt __P((int, struct nfsrv_descript *, int));
+int nfs_norsvport = 0;
 #endif
 
 int nfs_clientd(struct nfsmount *nmp, struct ucred *cred, 
