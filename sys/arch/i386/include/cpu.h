@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /*	$NetBSD: cpu.h,v 1.35 1996/05/05 19:29:26 christos Exp $	*/
 
 /*-
