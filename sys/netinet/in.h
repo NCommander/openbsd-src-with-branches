@@ -1,4 +1,4 @@
-/*	$OpenBSD: in.h,v 1.25 1999/10/28 03:29:49 angelos Exp $	*/
+/*	$OpenBSD: in.h,v 1.26 1999/12/08 06:50:19 itojun Exp $	*/
 /*	$NetBSD: in.h,v 1.20 1996/02/13 23:41:47 christos Exp $	*/
 
 /*
@@ -632,6 +632,7 @@ struct in6_pktinfo {
 
 __BEGIN_DECLS
 int	   bindresvport __P((int, struct sockaddr_in *));
+int	   bindresvport_af __P((int, struct sockaddr *, int af));
 __END_DECLS
 
 #else
