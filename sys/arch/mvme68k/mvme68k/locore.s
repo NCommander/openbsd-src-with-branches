@@ -1,4 +1,4 @@
-/*	$OpenBSD: locore.s,v 1.16 1997/03/31 00:24:13 downsj Exp $ */
+/*	$OpenBSD: locore.s,v 1.17 1997/07/27 09:10:55 deraadt Exp $ */
 
 /*
  * Copyright (c) 1995 Theo de Raadt
@@ -512,6 +512,9 @@ Lnocache0:
 	movl	d7, _boothowto		| save boothowto
 	/* d3-d7 now free */
 
+/* Final setup for call to main(). */
+	jbsr	_C_LABEL(mvme68k_init)
+ 
 /*
  * Create a fake exception frame so that cpu_fork() can copy it.
  * main() nevers returns; we exit to user mode from a forked process

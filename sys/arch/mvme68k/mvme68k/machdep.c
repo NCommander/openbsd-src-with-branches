@@ -1,4 +1,4 @@
-/*	$OpenBSD: machdep.c,v 1.21 1997/03/31 00:24:14 downsj Exp $ */
+/*	$OpenBSD: machdep.c,v 1.22 1997/07/23 06:58:21 denny Exp $ */
 
 /*
  * Copyright (c) 1995 Theo de Raadt
@@ -154,6 +154,26 @@ extern struct emul emul_hpux;
 #ifdef COMPAT_SUNOS
 extern struct emul emul_sunos;
 #endif
+
+void
+mvme68k_init()
+{
+#if defined(MACHINE_NEW_NONCONTIG)
+	extern vm_offset_t avail_start, avail_end;
+        
+	/*
+ 	 * Tell the VM system about available physical memory.  The
+ 	 * hp300 only has one segment.
+ 	 */
+#if defined(UVM)
+	uvm_page_physload(atop(avail_start), atop(avail_end),
+    		atop(avail_start), atop(avail_end));
+#else
+	vm_page_physload(atop(avail_start), atop(avail_end),
+    		atop(avail_start), atop(avail_end));
+#endif /* UVM */
+#endif /* MACHINE_NEW_NONCONTIG */
+}
 
 /*
  * Console initialization: called early on from main,

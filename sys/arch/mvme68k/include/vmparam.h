@@ -42,6 +42,9 @@
  *	@(#)vmparam.h	8.2 (Berkeley) 4/19/94
  */
 
+#ifndef _MVME68K_VMPARAM_H_
+#define       _MVME68K_VMPARAM_H_
+
 /*
  * Machine dependent constants for MVME68K
  */
@@ -244,3 +247,26 @@
 
 /* pcb base */
 #define	pcbb(p)		((u_int)(p)->p_addr)
+
+/* Use new VM page bootstrap interface. */
+#define	MACHINE_NEW_NONCONTIG
+
+#if defined(MACHINE_NEW_NONCONTIG)
+/*
+ * Constants which control the way the VM system deals with memory segments.
+ * The hp300 only has one physical memory segment.
+ */
+#define	VM_PHYSSEG_MAX		1
+#define	VM_PHYSSEG_STRAT	VM_PSTRAT_BSEARCH
+#define	VM_PHYSSEG_NOADD
+
+/*
+ * pmap-specific data stored in the vm_physmem[] array.
+ */
+struct pmap_physseg {
+	struct pv_entry *pvent;		/* pv table for this seg */
+	char *attrs;			/* page attributes for this seg */
+};
+#endif /* MACHINE_NEW_NONCONTIG */
+
+#endif /* _MVME68K_VMPARAM_H_ */
