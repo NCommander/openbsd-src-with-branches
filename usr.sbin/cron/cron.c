@@ -1,4 +1,4 @@
-/*	$OpenBSD: cron.c,v 1.28 2002/08/08 18:13:35 millert Exp $	*/
+/*	$OpenBSD: cron.c,v 1.29 2003/02/17 18:40:11 millert Exp $	*/
 /* Copyright 1988,1990,1993,1994 by Paul Vixie
  * All rights reserved
  */
@@ -21,7 +21,7 @@
  */
 
 #if !defined(lint) && !defined(LINT)
-static const char rcsid[] = "$OpenBSD: cron.c,v 1.28 2002/08/08 18:13:35 millert Exp $";
+static const char rcsid[] = "$OpenBSD: cron.c,v 1.29 2003/02/17 18:40:11 millert Exp $";
 #endif
 
 #define	MAIN_PROGRAM
@@ -118,7 +118,7 @@ main(int argc, char *argv[]) {
 			break;
 		case 0:
 			/* child process */
-			log_it("CRON",getpid(),"STARTUP","CRON_VERSION");
+			log_it("CRON",getpid(),"STARTUP",CRON_VERSION);
 			(void) setsid();
 			if ((fd = open(_PATH_DEVNULL, O_RDWR, 0)) >= 0) {
 				(void) dup2(fd, STDIN);
