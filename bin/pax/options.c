@@ -1,4 +1,4 @@
-/*	$OpenBSD: options.c,v 1.9 1996/09/22 20:09:54 tholo Exp $	*/
+/*	$OpenBSD: options.c,v 1.12 1996/12/09 12:02:16 deraadt Exp $	*/
 /*	$NetBSD: options.c,v 1.6 1996/03/26 23:54:18 mrg Exp $	*/
 
 /*-
@@ -42,7 +42,7 @@
 #if 0
 static char sccsid[] = "@(#)options.c	8.2 (Berkeley) 4/18/94";
 #else
-static char rcsid[] = "$OpenBSD: options.c,v 1.11 1996/12/09 12:00:15 deraadt Exp $";
+static char rcsid[] = "$OpenBSD: options.c,v 1.12 1996/12/09 12:02:16 deraadt Exp $";
 #endif
 #endif /* not lint */
 
@@ -697,7 +697,7 @@ tar_options(argc, argv)
 			/*
 			 * verbose operation mode
 			 */
-			vflag = 1;
+			vflag++;
 			break;
 		case 'w':
 			/*

@@ -1,4 +1,4 @@
-/*	$OpenBSD: extern.h,v 1.4 1996/06/23 14:20:33 deraadt Exp $	*/
+/*	$OpenBSD: extern.h,v 1.7 1996/12/09 12:00:14 deraadt Exp $	*/
 /*	$NetBSD: extern.h,v 1.5 1996/03/26 23:54:16 mrg Exp $	*/
 
 /*-
@@ -166,7 +166,7 @@ int next_file __P((register ARCHD *));
 /*
  * gen_subs.c
  */
-void ls_list __P((register ARCHD *, time_t));
+void ls_list __P((register ARCHD *, time_t, FILE *));
 void ls_tty __P((register ARCHD *));
 void zf_strncpy __P((register char *, register char *, int));
 int l_strncpy __P((register char *, register char *, int));
