@@ -60,12 +60,12 @@
 #define	DPRINTF(arg)
 #endif
 
-int	pcic_isa_probe __P((struct device *, void *, void *));
-void	pcic_isa_attach __P((struct device *, struct device *, void *));
+int	pcic_isa_probe(struct device *, void *, void *);
+void	pcic_isa_attach(struct device *, struct device *, void *);
 
-void	*pcic_isa_chip_intr_establish __P((pcmcia_chipset_handle_t,
-	    struct pcmcia_function *, int, int (*) (void *), void *, char *));
-void	pcic_isa_chip_intr_disestablish __P((pcmcia_chipset_handle_t, void *));
+void	*pcic_isa_chip_intr_establish(pcmcia_chipset_handle_t,
+	    struct pcmcia_function *, int, int (*) (void *), void *, char *);
+void	pcic_isa_chip_intr_disestablish(pcmcia_chipset_handle_t, void *);
 
 struct cfattach pcic_isa_ca = {
 	sizeof(struct pcic_softc), pcic_isa_probe, pcic_isa_attach

@@ -76,8 +76,8 @@ struct wss_softc {
 	bus_space_handle_t mad_ioh1, mad_ioh2, mad_ioh3;
 };
 
-void	wssattach __P((struct wss_softc *));
+void	wssattach(struct wss_softc *);
 
-u_int	mad_read __P((struct wss_softc *, int));
-void	mad_write __P((struct wss_softc *, int, int));
-void	madattach __P((struct wss_softc *));
+u_int	mad_read(struct wss_softc *, int);
+void	mad_write(struct wss_softc *, int, int);
+void	madattach(struct wss_softc *);

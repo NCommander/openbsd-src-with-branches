@@ -54,8 +54,8 @@
 
 #include <dev/isa/isavar.h>
 
-static int rln_isa_probe __P((struct device *, void *, void *));
-static void rln_isa_attach __P((struct device *, struct device *, void *));
+static int rln_isa_probe(struct device *, void *, void *);
+static void rln_isa_attach(struct device *, struct device *, void *);
 
 struct cfattach rln_isa_ca = {
 	sizeof(struct rln_softc), rln_isa_probe, rln_isa_attach

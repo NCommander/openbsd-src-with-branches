@@ -32,5 +32,5 @@
 
 
 struct sbdsp_softc;
-int sbmatch __P((struct sbdsp_softc *));
-void sbattach __P((struct sbdsp_softc *));
+int sbmatch(struct sbdsp_softc *);
+void sbattach(struct sbdsp_softc *);

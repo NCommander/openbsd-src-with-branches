@@ -58,15 +58,15 @@
 
 #include <dev/isa/sbdspvar.h>
 
-static	int sbfind __P((struct device *, struct sbdsp_softc *, struct isa_attach_args *));
+static	int sbfind(struct device *, struct sbdsp_softc *, struct isa_attach_args *);
 
 #define __BROKEN_INDIRECT_CONFIG /* XXX */
 #ifdef __BROKEN_INDIRECT_CONFIG
-int	sb_isa_match __P((struct device *, void *, void *));
+int	sb_isa_match(struct device *, void *, void *);
 #else
-int	sb_isa_match __P((struct device *, struct cfdata *, void *));
+int	sb_isa_match(struct device *, struct cfdata *, void *);
 #endif
-void	sb_isa_attach __P((struct device *, struct device *, void *));
+void	sb_isa_attach(struct device *, struct device *, void *);
 
 struct cfattach sb_isa_ca = {
 	sizeof(struct sbdsp_softc), sb_isa_match, sb_isa_attach

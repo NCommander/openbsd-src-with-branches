@@ -87,8 +87,8 @@
 
 #include <dev/isa/isavar.h>
 
-int	sm_isa_match __P((struct device *, void *, void *));
-void	sm_isa_attach __P((struct device *, struct device *, void *));
+int	sm_isa_match(struct device *, void *, void *);
+void	sm_isa_attach(struct device *, struct device *, void *);
 
 struct sm_isa_softc {
 	struct	smc91cxx_softc sc_smc;		/* real "smc" softc */

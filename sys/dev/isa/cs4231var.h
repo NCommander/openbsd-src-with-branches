@@ -49,10 +49,10 @@ struct cs4231_softc {
 #define CS4231_MUX_LINE_IN	3
 };
 
-int	cs4231_set_linein_gain __P((struct ad1848_softc *, struct ad1848_volume *));
-int	cs4231_get_linein_gain __P((struct ad1848_softc *, struct ad1848_volume *));
-int	cs4231_set_mono_gain __P((struct ad1848_softc *, struct ad1848_volume *));
-int	cs4231_get_mono_gain __P((struct ad1848_softc *, struct ad1848_volume *));
-void	cs4231_mute_mono __P((struct ad1848_softc *, int /* onoff */));
-void	cs4231_mute_line __P((struct ad1848_softc *, int /* onoff */));
-void	cs4231_mute_monitor __P((struct ad1848_softc *, int /* onoff */));
+int	cs4231_set_linein_gain(struct ad1848_softc *, struct ad1848_volume *);
+int	cs4231_get_linein_gain(struct ad1848_softc *, struct ad1848_volume *);
+int	cs4231_set_mono_gain(struct ad1848_softc *, struct ad1848_volume *);
+int	cs4231_get_mono_gain(struct ad1848_softc *, struct ad1848_volume *);
+void	cs4231_mute_mono(struct ad1848_softc *, int /* onoff */);
+void	cs4231_mute_line(struct ad1848_softc *, int /* onoff */);
+void	cs4231_mute_monitor(struct ad1848_softc *, int /* onoff */);

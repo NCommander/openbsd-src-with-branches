@@ -106,10 +106,10 @@ static int slave_iobases[8] = {
 	0x208
 };
 
-int addcomprobe __P((struct device *, void *, void *));
-void addcomattach __P((struct device *, struct device *, void *));
-int addcomintr __P((void *));
-int addcomprint __P((void *, const char *));
+int addcomprobe(struct device *, void *, void *);
+void addcomattach(struct device *, struct device *, void *);
+int addcomintr(void *);
+int addcomprint(void *, const char *);
 
 struct cfattach addcom_isa_ca = {
 	sizeof(struct addcom_softc), addcomprobe, addcomattach,

@@ -160,8 +160,8 @@ int
 mpu_open(v, flags, iintr, ointr, arg)
 	void *v;
 	int flags;
-	void (*iintr)__P((void *, int));
-	void (*ointr)__P((void *));
+	void (*iintr)(void *, int);
+	void (*ointr)(void *);
 	void *arg;
 {
 	struct mpu_softc *sc = v;

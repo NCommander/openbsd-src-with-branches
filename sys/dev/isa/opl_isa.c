@@ -1,4 +1,4 @@
-/*	$OpenBSD: opl_isa.c,v 1.1 1999/01/02 00:02:44 niklas Exp $	*/
+/*	$OpenBSD$	*/
 /*	$NetBSD: opl_isa.c,v 1.1 1998/08/26 13:33:59 augustss Exp $	*/
 
 /*
@@ -60,8 +60,8 @@
 
 #define OPL_SIZE 4
 
-int	opl_isa_match __P((struct device *, void *, void *));
-void	opl_isa_attach __P((struct device *, struct device *, void *));
+int	opl_isa_match(struct device *, void *, void *);
+void	opl_isa_attach(struct device *, struct device *, void *);
 
 struct cfattach opl_isa_ca = {
 	sizeof (struct opl_softc), opl_isa_match, opl_isa_attach

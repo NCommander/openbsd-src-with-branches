@@ -1,4 +1,4 @@
-/* $OpenBSD: ics2101.c,v 1.3 1996/05/07 07:36:42 deraadt Exp $ */
+/* $OpenBSD$ */
 /* $NetBSD: ics2101.c,v 1.6 1997/10/09 07:57:23 jtc Exp $ */
 
 /*-
@@ -68,8 +68,8 @@
 
 #define cvt_value(val) ((val) >> 1)
 
-static void ics2101_mix_doit __P((struct ics2101_softc *, u_int, u_int, u_int,
-    u_int));
+static void ics2101_mix_doit(struct ics2101_softc *, u_int, u_int, u_int,
+    u_int);
 /*
  * Program one channel of the ICS mixer
  */

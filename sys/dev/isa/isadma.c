@@ -90,8 +90,8 @@ static u_int8_t dmamode[4] = {
 	DMA37MD_WRITE | DMA37MD_SINGLE | DMA37MD_LOOP
 };
 
-int isadmamatch __P((struct device *, void *, void *));
-void isadmaattach __P((struct device *, struct device *, void *));
+int isadmamatch(struct device *, void *, void *);
+void isadmaattach(struct device *, struct device *, void *);
 
 struct cfattach isadma_ca = {
 	sizeof(struct device), isadmamatch, isadmaattach
@@ -138,8 +138,8 @@ isadmaattach(parent, self, aux)
 	printf("\n");
 }
 
-static inline void isa_dmaunmask __P((struct isa_softc *, int));
-static inline void isa_dmamask __P((struct isa_softc *, int));
+static inline void isa_dmaunmask(struct isa_softc *, int);
+static inline void isa_dmamask(struct isa_softc *, int);
 
 static inline void
 isa_dmaunmask(sc, chan)

@@ -69,8 +69,8 @@
 #define OPTI_SB		(1)	/* Sound Blaster Pro(tm) compatible */
 
 #ifdef _KERNEL
-int	opti_cd_setup __P(( int, int, int, int ));
-int	opti_snd_setup __P(( int, int, int, int ));
+int	opti_cd_setup( int, int, int, int );
+int	opti_snd_setup( int, int, int, int );
 #endif
 
 #endif	/* __OPTI_HEADER__ */

@@ -22,8 +22,8 @@
 
 #include <dev/ic/mpuvar.h>
 
-int	mpu_isapnp_match __P((struct device *, void *, void *));
-void	mpu_isapnp_attach __P((struct device *, struct device *, void *));
+int	mpu_isapnp_match(struct device *, void *, void *);
+void	mpu_isapnp_attach(struct device *, struct device *, void *);
 
 struct mpu_isapnp_softc {
 	struct device sc_dev;

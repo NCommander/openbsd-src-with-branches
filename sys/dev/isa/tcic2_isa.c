@@ -108,12 +108,12 @@ int	tcic_isa_debug = 1;
 #define	DPRINTF(arg)
 #endif
 
-int	tcic_isa_probe __P((struct device *, void *, void *));
-void	tcic_isa_attach __P((struct device *, struct device *, void *));
+int	tcic_isa_probe(struct device *, void *, void *);
+void	tcic_isa_attach(struct device *, struct device *, void *);
 
-void	*tcic_isa_chip_intr_establish __P((pcmcia_chipset_handle_t,
-	    struct pcmcia_function *, int, int (*) (void *), void *, char *));
-void	tcic_isa_chip_intr_disestablish __P((pcmcia_chipset_handle_t, void *));
+void	*tcic_isa_chip_intr_establish(pcmcia_chipset_handle_t,
+	    struct pcmcia_function *, int, int (*) (void *), void *, char *);
+void	tcic_isa_chip_intr_disestablish(pcmcia_chipset_handle_t, void *);
 
 struct cfattach tcic_isa_ca = {
 	sizeof(struct tcic_softc), tcic_isa_probe, tcic_isa_attach
@@ -312,7 +312,7 @@ tcic_isa_chip_intr_establish(pch, pf, ipl, fct, arg, xname)
 	pcmcia_chipset_handle_t pch;
 	struct pcmcia_function *pf;
 	int ipl;
-	int (*fct) __P((void *));
+	int (*fct)(void *);
 	void *arg;
 	char *xname;
 {

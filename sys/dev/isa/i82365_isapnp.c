@@ -66,8 +66,8 @@ int	pcicisapnp_debug = 0 /* XXX */ ;
 #define	DPRINTF(arg)
 #endif
 
-int	pcic_isapnp_match __P((struct device *, void *, void *));
-void	pcic_isapnp_attach __P((struct device *, struct device *, void *));
+int	pcic_isapnp_match(struct device *, void *, void *);
+void	pcic_isapnp_attach(struct device *, struct device *, void *);
 
 struct cfattach pcic_isapnp_ca = {
 	sizeof(struct pcic_softc), pcic_isapnp_match, pcic_isapnp_attach
