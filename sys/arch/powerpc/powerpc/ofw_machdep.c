@@ -1,4 +1,4 @@
-/*	$OpenBSD: ofw_machdep.c,v 1.10 1999/07/05 20:56:26 rahnds Exp $	*/
+/*	$OpenBSD: ofw_machdep.c,v 1.11 1999/09/03 18:01:49 art Exp $	*/
 /*	$NetBSD: ofw_machdep.c,v 1.1 1996/09/30 16:34:50 ws Exp $	*/
 
 /*
@@ -241,7 +241,6 @@ ofw_intr_init()
 void
 ofw_do_pending_int()
 {
-	struct intrhand *ih;
 	int vector;
 	int pcpl;
 	int hwpend;
