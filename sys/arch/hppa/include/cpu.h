@@ -1,4 +1,4 @@
-/*	$OpenBSD: cpu.h,v 1.19 2000/08/15 19:50:42 mickey Exp $	*/
+/*	$OpenBSD: cpu.h,v 1.20 2001/01/29 00:01:58 mickey Exp $	*/
 
 /*
  * Copyright (c) 2000-2001 Michael Shalayeff
@@ -148,7 +148,6 @@ int	spcopy __P((pa_space_t ssp, const void *src,
 int	spstrcpy __P((pa_space_t ssp, const void *src,
 		      pa_space_t dsp, void *dst, size_t size, size_t *rsize));
 int	copy_on_fault __P((void));
-void	child_return __P((struct proc *p));
 void	switch_trampoline __P((void));
 void	switch_exit __P((struct proc *p));
 int	cpu_dumpsize __P((void));

@@ -1,4 +1,4 @@
-/*	$OpenBSD: linux_sched.c,v 1.1 2001/04/02 21:43:11 niklas Exp $	*/
+/*	$OpenBSD: linux_sched.c,v 1.2 2001/05/15 09:34:44 jasoni Exp $	*/
 /*	$NetBSD: linux_sched.c,v 1.6 2000/05/28 05:49:05 thorpej Exp $	*/
 
 /*-
@@ -96,7 +96,7 @@ linux_sys_clone(p, v, retval)
 	 * or down.  So, we pass a stack size of 0, so that the code
 	 * that makes this adjustment is a noop.
 	 */
-	return (fork1(p, sig, flags, SCARG(uap, stack), 0, retval));
+	return (fork1(p, sig, flags, SCARG(uap, stack), 0, NULL, NULL, retval));
 }
 
 int
