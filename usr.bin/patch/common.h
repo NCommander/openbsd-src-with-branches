@@ -1,4 +1,4 @@
-/*	$OpenBSD: common.h,v 1.23 2003/08/10 21:28:48 otto Exp $	*/
+/*	$OpenBSD: common.h,v 1.24 2003/08/15 08:00:51 otto Exp $	*/
 
 /*
  * patch - a program to apply diffs to original files
@@ -110,4 +110,5 @@ extern int	diff_type;
 extern char	*revision;	/* prerequisite revision, if any */
 extern LINENUM	input_lines;	/* how long is input file in lines */
 
+extern int	posix;
 
