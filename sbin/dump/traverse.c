@@ -1,4 +1,4 @@
-/*	$OpenBSD: traverse.c,v 1.4 1997/07/05 05:35:59 millert Exp $	*/
+/*	$OpenBSD: traverse.c,v 1.5 1998/11/24 01:25:47 deraadt Exp $	*/
 /*	$NetBSD: traverse.c,v 1.17 1997/06/05 11:13:27 lukem Exp $	*/
 
 /*-
@@ -38,7 +38,7 @@
 #if 0
 static char sccsid[] = "@(#)traverse.c	8.2 (Berkeley) 9/23/93";
 #else
-static char rcsid[] = "$OpenBSD: traverse.c,v 1.4 1997/07/05 05:35:59 millert Exp $";
+static char rcsid[] = "$OpenBSD: traverse.c,v 1.5 1998/11/24 01:25:47 deraadt Exp $";
 #endif
 #endif /* not lint */
 
@@ -647,7 +647,6 @@ bread(blkno, buf, size)
 	int size;	
 {
 	int cnt, i;
-	extern int errno;
 
 loop:
 	if (lseek(diskfd, ((off_t)blkno << dev_bshift), 0) < 0)

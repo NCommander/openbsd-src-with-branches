@@ -1,4 +1,4 @@
-/*	$OpenBSD: ping.c,v 1.39 1999/07/18 16:21:55 hugh Exp $	*/
+/*	$OpenBSD: ping.c,v 1.40 1999/10/12 18:10:16 hugh Exp $	*/
 /*	$NetBSD: ping.c,v 1.20 1995/08/11 22:37:58 cgd Exp $	*/
 
 /*
@@ -47,7 +47,7 @@ static char copyright[] =
 #if 0
 static char sccsid[] = "@(#)ping.c	8.1 (Berkeley) 6/5/93";
 #else
-static char rcsid[] = "$OpenBSD: ping.c,v 1.39 1999/07/18 16:21:55 hugh Exp $";
+static char rcsid[] = "$OpenBSD: ping.c,v 1.40 1999/10/12 18:10:16 hugh Exp $";
 #endif
 #endif /* not lint */
 
@@ -187,8 +187,6 @@ main(argc, argv)
 	int argc;
 	char **argv;
 {
-	extern int errno, optind;
-	extern char *optarg;
 	struct timeval timeout;
 	struct hostent *hp;
 	struct sockaddr_in *to;

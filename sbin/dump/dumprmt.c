@@ -1,4 +1,4 @@
-/*	$OpenBSD: dumprmt.c,v 1.11 1998/11/24 01:25:47 deraadt Exp $	*/
+/*	$OpenBSD: dumprmt.c,v 1.12 1999/01/04 08:11:53 deraadt Exp $	*/
 /*	$NetBSD: dumprmt.c,v 1.17 1997/06/05 16:10:47 mrg Exp $	*/
 
 /*-
@@ -215,7 +215,6 @@ rmtread(buf, count)
 {
 	char line[30];
 	int n, i, cc;
-	extern int errno;
 
 	(void)snprintf(line, sizeof(line), "R%d\n", count);
 	n = rmtcall("read", line);

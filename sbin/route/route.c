@@ -1,4 +1,4 @@
-/*	$OpenBSD: route.c,v 1.34 1999/09/22 05:10:04 deraadt Exp $	*/
+/*	$OpenBSD: route.c,v 1.35 1999/12/08 07:55:54 itojun Exp $	*/
 /*	$NetBSD: route.c,v 1.16 1996/04/15 18:27:05 cgd Exp $	*/
 
 /*
@@ -44,7 +44,7 @@ static char copyright[] =
 #if 0
 static char sccsid[] = "@(#)route.c	8.3 (Berkeley) 3/19/94";
 #else
-static char rcsid[] = "$OpenBSD: route.c,v 1.34 1999/09/22 05:10:04 deraadt Exp $";
+static char rcsid[] = "$OpenBSD: route.c,v 1.35 1999/12/08 07:55:54 itojun Exp $";
 #endif
 #endif /* not lint */
 
@@ -158,7 +158,6 @@ main(argc, argv)
 	int argc;
 	char **argv;
 {
-	extern int optind;
 	int ch;
 
 	if (argc < 2)
