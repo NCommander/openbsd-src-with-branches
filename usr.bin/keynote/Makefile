@@ -1,4 +1,4 @@
-# $OpenBSD: Makefile,v 1.4 1999/05/31 18:30:46 angelos Exp $
+# $OpenBSD: Makefile,v 1.5 1999/05/31 20:08:52 angelos Exp $
 
 PROG=	keynote
 
@@ -10,7 +10,7 @@ LDADD=	-lkeynote -lm -lcrypto
 MAN=	keynote.1
 CLEANFILES+= lex.kv.c z.tab.c z.tab.h
 
-CFLAGS+= -Wall -DCRYPTO -I. -I${.CURDIR}
+CFLAGS+= -Wall -DCRYPTO -I. -I${.CURDIR} -I/usr/include/ssl
 LEXFLAGS2 = -Pkv -s -i
 YACCFLAGS2 = -d -p kv -b z
 
