@@ -1,4 +1,4 @@
-/*	$OpenBSD: intr.c,v 1.7 2002/01/10 00:06:17 nordin Exp $	*/
+/*	$OpenBSD: intr.c,v 1.8 2002/03/14 01:26:45 millert Exp $	*/
 /*	$NetBSD: intr.c,v 1.39 2001/07/19 23:38:11 eeh Exp $ */
 
 /*
@@ -344,3 +344,16 @@ softintr_schedule(cookie)
 
 	send_softint(-1, ih->ih_pil, ih);
 }
+
+void
+splassert_check(int wantipl, const char *func)
+{
+	int oldipl;
+
+	__asm __volatile("rdpr %%pil,%0" : "=r" (oldipl));
+
+	if (oldipl < wantipl) {
+		splassert_fail(wantipl, oldipl, func);
+	}
+}
+
