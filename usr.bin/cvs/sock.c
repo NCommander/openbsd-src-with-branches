@@ -130,7 +130,9 @@ cvsd_sock_close(void)
 	if (close(cvsd_sock) == -1) {
 		cvs_log(LP_ERRNO, "failed to close local socket");
 	}
-	if (unlink(cvsd_sock_path) == -1)
+	if (seteuid(0) == -1)
+		cvs_log(LP_ERRNO, "failed to regain privileges");
+	else if (unlink(cvsd_sock_path) == -1)
 		cvs_log(LP_ERRNO, "failed to unlink local socket `%s'",
 		    cvsd_sock_path);
 }
