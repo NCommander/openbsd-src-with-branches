@@ -1,4 +1,4 @@
-/*	$OpenBSD: cs4280.c,v 1.16 2002/11/19 18:40:17 jason Exp $	*/
+/*	$OpenBSD: cs4280.c,v 1.17 2003/04/27 11:22:53 ho Exp $	*/
 /*	$NetBSD: cs4280.c,v 1.5 2000/06/26 04:56:23 simonb Exp $	*/
 
 /*
@@ -65,14 +65,13 @@ int cs4280debug = 0;
 #define DPRINTFN(n,x)
 #endif
 
+#include <sys/types.h>
 #include <sys/param.h>
 #include <sys/systm.h>
 #include <sys/kernel.h>
 #include <sys/fcntl.h>
 #include <sys/malloc.h>
 #include <sys/device.h>
-#include <sys/types.h>
-#include <sys/systm.h>
 
 #include <dev/pci/pcidevs.h>
 #include <dev/pci/pcivar.h>
