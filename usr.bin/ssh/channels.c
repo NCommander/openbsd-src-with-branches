@@ -40,7 +40,7 @@
  */
 
 #include "includes.h"
-RCSID("$OpenBSD: channels.c,v 1.117 2001/05/19 19:57:09 stevesk Exp $");
+RCSID("$OpenBSD: channels.c,v 1.118 2001/05/28 23:14:49 markus Exp $");
 
 #include <openssl/rsa.h>
 #include <openssl/dsa.h>
@@ -312,12 +312,11 @@ channel_free(Channel *c)
 	for (n = 0, i = 0; i < channels_alloc; i++)
 		if (channels[i])
 			n++;
-
-	debug("channel_free: channel %d: (%s) nchannels: %d", c->self,
+	debug("channel_free: channel %d: %s, nchannels %d", c->self,
 	    c->remote_name ? c->remote_name : "???", n);
 
 	s = channel_open_message();
-	debug3("channel_free: status: %s", c->self, s);
+	debug3("channel_free: status: %s", s);
 	xfree(s);
 
 	if (c->dettach_user != NULL) {
