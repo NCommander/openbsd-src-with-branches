@@ -1,4 +1,4 @@
-/*	$OpenBSD: init.c,v 1.5 1996/07/12 06:45:29 deraadt Exp $	*/
+/*	$OpenBSD: init.c,v 1.6 1996/07/12 10:16:15 deraadt Exp $	*/
 /*	$NetBSD: init.c,v 1.22 1996/05/15 23:29:33 jtc Exp $	*/
 
 /*-
@@ -47,7 +47,7 @@ static char copyright[] =
 #if 0
 static char sccsid[] = "@(#)init.c	8.1 (Berkeley) 7/15/93";
 #else
-static char rcsid[] = "$OpenBSD: init.c,v 1.5 1996/07/12 06:45:29 deraadt Exp $";
+static char rcsid[] = "$OpenBSD: init.c,v 1.6 1996/07/12 10:16:15 deraadt Exp $";
 #endif
 #endif /* not lint */
 
@@ -1179,6 +1179,7 @@ collect_child(pid)
 		return;
 
 	clear_session_logs(sp);
+	login_fbtab(sp->se_device, 0, 0);
 	del_session(sp);
 	sp->se_process = 0;
 
