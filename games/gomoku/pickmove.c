@@ -1,4 +1,4 @@
-/*	$OpenBSD: pickmove.c,v 1.3 1996/12/21 21:17:52 tholo Exp $	*/
+/*	$OpenBSD: pickmove.c,v 1.4 1997/01/26 08:00:54 downsj Exp $	*/
 /*
  * Copyright (c) 1994
  *	The Regents of the University of California.  All rights reserved.
@@ -36,7 +36,11 @@
  */
 
 #ifndef lint
+#if 0
 static char sccsid[] = "@(#)pickmove.c	8.2 (Berkeley) 5/3/95";
+#else
+static char rcsid[] = "$OpenBSD$";
+#endif
 #endif /* not lint */
 
 #include "gomoku.h"
