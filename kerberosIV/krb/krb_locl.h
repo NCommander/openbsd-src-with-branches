@@ -1,4 +1,4 @@
-/*	$OpenBSD: krb_locl.h,v 1.5 1998/03/25 21:50:14 art Exp $	*/
+/*	$OpenBSD: krb_locl.h,v 1.6 1998/05/18 00:53:49 art Exp $	*/
 /*	$KTH: krb_locl.h,v 1.48 1998/04/04 17:56:49 assar Exp $		*/
 
 /*
@@ -73,7 +73,7 @@
 #include <errno.h>
 
 #include <kerberosIV/krb.h>
-#include <prot.h>
+#include <kerberosIV/prot.h>
 
 #include "resolve.h"
 #include "krb_log.h"
