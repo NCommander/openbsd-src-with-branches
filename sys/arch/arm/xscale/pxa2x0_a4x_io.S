@@ -1,3 +1,4 @@
+/*	$OpenBSD$ */
 /*	$NetBSD: pxa2x0_a4x_io.S,v 1.1 2002/10/19 19:31:39 bsh Exp $ */
 
 /*

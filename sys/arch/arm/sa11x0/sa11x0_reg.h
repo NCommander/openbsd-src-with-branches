@@ -1,3 +1,4 @@
+/*	$OpenBSD$ */
 /*	$NetBSD: sa11x0_reg.h,v 1.4 2002/07/19 18:26:56 ichiro Exp $	*/
 
 /*-

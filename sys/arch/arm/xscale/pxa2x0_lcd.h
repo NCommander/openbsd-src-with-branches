@@ -1,3 +1,4 @@
+/*	$OpenBSD$ */
 /* $NetBSD: pxa2x0_lcd.h,v 1.2 2003/06/17 09:43:14 bsh Exp $ */
 /*
  * Copyright (c) 2002  Genetec Corporation.  All rights reserved.

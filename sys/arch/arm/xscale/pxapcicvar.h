@@ -1,3 +1,4 @@
+/*	$OpenBSD$ */
 struct pxapcic_socket {
         struct pxapcic_softc *sc;
         int socket;                     /* socket number */

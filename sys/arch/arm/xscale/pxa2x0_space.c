@@ -1,3 +1,4 @@
+/*	$OpenBSD$ */
 /*	$NetBSD: pxa2x0_space.c,v 1.5 2004/06/07 19:45:22 nathanw Exp $ */
 
 /*

@@ -1,3 +1,4 @@
+/*	$OpenBSD$ */
 /*	$NetBSD: pxa2x0_a4x_space.c,v 1.2 2003/07/15 00:24:54 lukem Exp $ */
 
 /*

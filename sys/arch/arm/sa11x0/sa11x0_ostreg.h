@@ -1,3 +1,4 @@
+/*	$OpenBSD$ */
 /*	$NetBSD: sa11x0_ostreg.h,v 1.1 2001/07/08 23:37:53 rjs Exp $	*/
 
 /*-

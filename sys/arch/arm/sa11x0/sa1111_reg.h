@@ -1,3 +1,4 @@
+/*	$OpenBSD$ */
 /*	$NetBSD: sa1111_reg.h,v 1.3 2002/12/18 04:09:31 bsh Exp $	*/
 
 /*-

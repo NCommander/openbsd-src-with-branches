@@ -1,3 +1,4 @@
+/*	$OpenBSD$ */
 /*	$NetBSD: pxa2x0_dma.c,v 1.3 2003/08/07 16:58:35 bsh Exp $ */
 
 /*

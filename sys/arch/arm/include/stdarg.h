@@ -1,3 +1,4 @@
+/*	$OpenBSD$ */
 /*	$NetBSD: stdarg.h,v 1.7 2003/08/07 16:26:53 agc Exp $	*/
 
 /*

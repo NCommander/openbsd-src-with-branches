@@ -1,3 +1,4 @@
+/*	$OpenBSD$ */
 /*	$NetBSD: sa11x0_ost.c,v 1.11 2003/07/15 00:24:51 lukem Exp $	*/
 
 /*

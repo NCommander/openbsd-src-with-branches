@@ -1,3 +1,4 @@
+/*	$OpenBSD$ */
 /* $NetBSD: pxa2x0_lcd.c,v 1.8 2003/10/03 07:24:05 bsh Exp $ */
 
 /*

@@ -1,3 +1,4 @@
+/*	$OpenBSD$ */
 /*      $NetBSD: sa11x0_var.h,v 1.4 2003/04/14 14:18:41 rjs Exp $        */
 
 /*-
