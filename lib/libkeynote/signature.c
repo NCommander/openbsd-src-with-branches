@@ -1,4 +1,4 @@
-/* $OpenBSD: signature.c,v 1.13 2002/06/09 02:12:55 deraadt Exp $ */
+/* $OpenBSD: signature.c,v 1.14 2002/06/17 19:39:20 angelos Exp $ */
 /*
  * The author of this code is Angelos D. Keromytis (angelos@dsl.cis.upenn.edu)
  *
@@ -565,6 +565,14 @@ kn_decode_key(struct keynote_deckey *dc, char *key, int keytype)
                 keynote_errno = ERROR_SYNTAX; /* Could be a memory error */
                 return -1;
             }
+	    if (RSA_blinding_on ((RSA *) kk, NULL) != 1)
+	    {
+                if (ptr != (unsigned char *) NULL)
+                  free(ptr);
+                RSA_free(kk);
+                keynote_errno = ERROR_MEMORY;
+                return -1;
+	    }		
         }
         else
         {
