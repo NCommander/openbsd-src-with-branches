@@ -1,4 +1,4 @@
-/*	$OpenBSD: readelf.c,v 1.1 1997/02/09 23:58:33 millert Exp $	*/
+/*	$OpenBSD: readelf.c,v 1.2 1998/07/10 15:05:26 mickey Exp $	*/
 
 #ifdef BUILTIN_ELF
 #include <sys/types.h>
@@ -227,8 +227,8 @@ tryelf(fd, buf, nbytes)
 	int nbytes;
 {
 	union {
-		int32 l;
-		char c[sizeof (int32)];
+		int32_t l;
+		char c[sizeof (int32_t)];
 	} u;
 
 	/*
