@@ -1,4 +1,4 @@
-/*	$OpenBSD: systrace.c,v 1.25 2002/11/10 04:34:56 art Exp $	*/
+/*	$OpenBSD: systrace.c,v 1.26 2002/12/04 17:37:39 mickey Exp $	*/
 /*
  * Copyright 2002 Niels Provos <provos@citi.umich.edu>
  * All rights reserved.
@@ -839,6 +839,7 @@ systrace_redirect(int code, struct proc *p, void *v, register_t *retval)
 
 		systrace_msg_ugid(fst, strp);
 	nougid:
+		;
 	}
 
 	/* Report result from system call */
