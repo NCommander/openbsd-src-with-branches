@@ -12,12 +12,6 @@
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
 
-# You should have received a copy of the GNU General Public License
-# along with this program; if not, write to the Free Software
-# Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
-
-# $CVSid: @(#)Makefile.in 1.8 94/10/22 $
-
 SHELL = /bin/sh
 
 srcdir = @srcdir@
@@ -34,12 +28,13 @@ INSTALL_DATA = @INSTALL_DATA@
 
 DISTFILES = \
 	.cvsignore ChangeLog ChangeLog.fsf Makefile.in \
+	RCSFILES \
 	cvs-paper.ms cvs-paper.ps \
 	cvs.texinfo \
 	cvsclient.texi
 
 OBJDIR_DISTFILES = cvs.ps cvs.info cvs.aux \
-	cvsclient.ps cvsclient.info cvsclient.aux
+	cvsclient.ps cvsclient.info cvsclient.aux CVSvn.texi
 
 # these are part of the texinfo distribution
 MAKEINFO=makeinfo
@@ -73,15 +68,38 @@ doc: cvs.ps cvs-paper.ps cvsclient.ps
 
 info: cvs.info cvsclient.info
 
-cvs.info: cvs.texinfo
+cvs.info: cvs.texinfo CVSvn.texi
+	if [ ! -f ./CVSvn.texi ]; then \
+		ln -s $(srcdir)/CVSvn.texi . || \
+		ln $(srcdir)/CVSvn.texi . || \
+		cp $(srcdir)/CVSvn.texi . ; else true; fi
 	$(MAKEINFO) $(srcdir)/cvs.texinfo -o cvs.info
 
-cvsclient.info: cvsclient.texi
+cvsclient.info: cvsclient.texi CVSvn.texi
+	if [ ! -f ./CVSvn.texi ]; then \
+		ln -s $(srcdir)/CVSvn.texi . || \
+		ln $(srcdir)/CVSvn.texi . || \
+		cp $(srcdir)/CVSvn.texi . ; else true; fi
 	$(MAKEINFO) $(srcdir)/cvsclient.texi -o cvsclient.info
 
-install-info: info
-	for i in *.info* ; do \
-	  $(INSTALL_DATA) $$i $(infodir)/$$i ; \
+# Version of the protocol suitable for emailing
+cvsclient.txt: cvsclient.texi CVSvn.texi
+	if [ ! -f ./CVSvn.texi ]; then \
+		ln -s $(srcdir)/CVSvn.texi . || \
+		ln $(srcdir)/CVSvn.texi . || \
+		cp $(srcdir)/CVSvn.texi . ; else true; fi
+	$(MAKEINFO) $(srcdir)/cvsclient.texi --no-headers -o cvsclient.txt
+
+# If the user gets a distribution (which contains *.info), unpacks
+# it, and builds it in a seperate build dir, then *.info* are in srcdir.
+# If the user builds *.info (e.g. after editing *.texi), then *.info* are
+# in the build dir.
+# (Note: don't solve this problem with "cd"; INSTALL_DATA might be a
+# relative path to install-sh).
+install-info: info installdirs
+	if test -f cvs.info ; then docdir=.; else docdir=$(srcdir);fi; \
+	for i in $$docdir/*.info* ; do \
+	  $(INSTALL_DATA) $$i $(infodir)/`basename $$i` ; \
 	done
 
 installdirs: 
@@ -90,10 +108,25 @@ installdirs:
 
 dvi: cvs.dvi cvsclient.dvi
 
-cvs.dvi cvs.aux: cvs.texinfo
+CVSvn.texi: $(top_srcdir)/src/version.c
+	echo "@set CVSVN `sed < $(top_srcdir)/src/version.c \
+		    -e '/version_string/!d' \
+		    -e 's/[^0-9.]*\([0-9.]*\).*/\1/' \
+		    -e q`" >CVSvn.new
+	mv CVSvn.new CVSvn.texi
+
+cvs.dvi cvs.aux: cvs.texinfo CVSvn.texi
+	if [ ! -f ./CVSvn.texi ]; then \
+		ln -s $(srcdir)/CVSvn.texi . || \
+		ln $(srcdir)/CVSvn.texi . || \
+		cp $(srcdir)/CVSvn.texi . ; else true; fi
 	$(TEXI2DVI) $(srcdir)/cvs.texinfo
 
-cvsclient.dvi cvsclient.aux: cvsclient.texi
+cvsclient.dvi cvsclient.aux: cvsclient.texi CVSvn.texi
+	if [ ! -f ./CVSvn.texi ]; then \
+		ln -s $(srcdir)/CVSvn.texi . || \
+		ln $(srcdir)/CVSvn.texi . || \
+		cp $(srcdir)/CVSvn.texi . ; else true; fi
 	$(SET_TEXINPUTS) $(TEX) cvsclient.texi
 	$(SET_TEXINPUTS) $(TEX) cvsclient.texi
 	$(TEXINDEX) cvsclient.??
@@ -109,7 +142,7 @@ cvs-paper.ps: cvs-paper.ms
 
 cvsclient.ps: cvsclient.dvi
 	$(DVIPS) $(DVIPSFLAGS) cvsclient.dvi -o cvsclient.ps
-	
+
 tags:
 .PHONY: tags
 

@@ -15,30 +15,40 @@ exec_prefix = @exec_prefix@
 
 HEADERS = \
   config.h \
+  mac_config.h \
   options.h \
+  pwd.h \
   maccvs.pch
-  
+
 SOURCES = \
+  ae_if.c \
+  filesubr.c \
+  mac_init.c \
   macos_filesys.c \
   pwd.c \
   rcmd.c \
   run.c \
   server_if.c
-  
+
 DISTFILES = \
   ${HEADERS} \
   ${SOURCES} \
   README.MacCVS \
+  ChangeLog \
   Makefile.in \
   services \
-  maccvs.rsrc.sit.hqx \
-  maccvs165.patch \
-  maccvs.projects.sit.hqx
+  AE_example.pl \
+  maccvs.r \
+  MacCVS68k.sit.hqx \
+  MacCVSPPC.sit.hqx
 
 all:
 
 .PHONY: all install uninstall
 all install uninstall:
+
+installdirs:
+.PHONY: installdirs
 
 .PHONY: tags TAGS
 tags TAGS:
@@ -59,8 +69,10 @@ dist-dir:
 	for i in ${DISTFILES}; do \
 		ln $(srcdir)/$${i} ${DISTDIR}; \
 	done
-	ln Makefile ${DISTDIR}
 
 clean:
 	@echo make clean does nothing in macintosh subdir
 
+subdir = macintosh
+Makefile: ../config.status Makefile.in
+	cd .. && CONFIG_FILES=$(subdir)/$@ CONFIG_HEADERS= ./config.status

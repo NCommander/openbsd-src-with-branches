@@ -543,7 +543,7 @@ serve_root (arg)
     }
     (void) strcat (path, "/");
     (void) strcat (path, CVSROOTADM_HISTORY);
-    if (readonlyfs == 0 && isfile (path) && !isaccessible (path, R_OK | W_OK))
+    if (isfile (path) && !isaccessible (path, R_OK | W_OK))
     {
 	save_errno = errno;
 	pending_error_text = malloc (80 + strlen (path));
@@ -565,7 +565,6 @@ Sorry, you don't have read/write access to the history file %s", path);
     (void) putenv (env);
     /* do not free env, as putenv has control of it */
 #endif
-    parseopts(CVSroot_directory);
 }
 
 /*
@@ -2388,7 +2387,6 @@ server_pause_check()
 {
     int paused = 0;
     char buf[1];
-    int n;
 
     while (read (flowcontrol_pipe[0], buf, 1) == 1)
     {

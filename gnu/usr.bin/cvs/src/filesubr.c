@@ -11,22 +11,13 @@
    This program is distributed in the hope that it will be useful,
    but WITHOUT ANY WARRANTY; without even the implied warranty of
    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-   GNU General Public License for more details.
-
-   You should have received a copy of the GNU General Public License
-   along with this program; if not, write to the Free Software
-   Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
+   GNU General Public License for more details.  */
 
 /* These functions were moved out of subr.c because they need different
    definitions under operating systems (like, say, Windows NT) with different
    file system semantics.  */
 
 #include "cvs.h"
-
-#ifndef lint
-static const char rcsid[] = "$CVSid:$";
-USE(rcsid);
-#endif
 
 /*
  * I don't know of a convenient way to test this at configure time, or else
@@ -151,33 +142,88 @@ int
 isfile (file)
     const char *file;
 {
-    struct stat sb;
-
-    if (stat (file, &sb) < 0)
-	return (0);
-    return (1);
+    return isaccessible(file, F_OK);
 }
 
 /*
  * Returns non-zero if the argument file is readable.
- * XXX - must be careful if "cvs" is ever made setuid!
  */
 int
 isreadable (file)
     const char *file;
 {
-    return (access (file, R_OK) != -1);
+    return isaccessible(file, R_OK);
 }
 
 /*
- * Returns non-zero if the argument file is writable
- * XXX - muct be careful if "cvs" is ever made setuid!
+ * Returns non-zero if the argument file is writable.
  */
 int
 iswritable (file)
     const char *file;
 {
-    return (access (file, W_OK) != -1);
+    return isaccessible(file, W_OK);
+}
+
+/*
+ * Returns non-zero if the argument file is accessable according to
+ * mode.  If compiled with SETXID_SUPPORT also works if cvs has setxid
+ * bits set.
+ */
+int
+isaccessible (file, mode)
+    const char *file;
+    const int mode;
+{
+#ifdef SETXID_SUPPORT
+    struct stat sb;
+    int umask = 0;
+    int gmask = 0;
+    int omask = 0;
+    int uid;
+    
+    if (stat(file, &sb) == -1)
+	return 0;
+    if (mode == F_OK)
+	return 1;
+
+    uid = geteuid();
+    if (uid == 0)		/* superuser */
+    {
+	if (mode & X_OK)
+	    return sb.st_mode & (S_IXUSR|S_IXGRP|S_IXOTH);
+	else
+	    return 1;
+    }
+	
+    if (mode & R_OK)
+    {
+	umask |= S_IRUSR;
+	gmask |= S_IRGRP;
+	omask |= S_IROTH;
+    }
+    if (mode & W_OK)
+    {
+	umask |= S_IWUSR;
+	gmask |= S_IWGRP;
+	omask |= S_IWOTH;
+    }
+    if (mode & X_OK)
+    {
+	umask |= S_IXUSR;
+	gmask |= S_IXGRP;
+	omask |= S_IXOTH;
+    }
+
+    if (sb.st_uid == uid)
+	return (sb.st_mode & umask) == umask;
+    else if (sb.st_gid == getegid())
+	return (sb.st_mode & gmask) == gmask;
+    else
+	return (sb.st_mode & omask) == omask;
+#else
+    return access(file, mode) == 0;
+#endif
 }
 
 /*
@@ -202,9 +248,9 @@ void
 make_directory (name)
     const char *name;
 {
-    struct stat buf;
+    struct stat sb;
 
-    if (stat (name, &buf) == 0 && (!S_ISDIR (buf.st_mode)))
+    if (stat (name, &sb) == 0 && (!S_ISDIR (sb.st_mode)))
 	    error (0, 0, "%s already exists but is not a directory", name);
     if (!noexec && mkdir (name, 0777) < 0)
 	error (1, errno, "cannot make directory %s", name);
@@ -225,7 +271,7 @@ make_directories (name)
 
     if (mkdir (name, 0777) == 0 || errno == EEXIST)
 	return;
-    if (errno != ENOENT)
+    if (! existence_error (errno))
     {
 	error (0, errno, "cannot make path to %s", name);
 	return;
@@ -240,10 +286,25 @@ make_directories (name)
     (void) mkdir (name, 0777);
 }
 
+/* Create directory NAME if it does not already exist; fatal error for
+   other errors.  Returns 0 if directory was created; 1 if it already
+   existed.  */
+int
+mkdir_if_needed (name)
+    char *name;
+{
+    if (mkdir (name, 0777) < 0)
+    {
+	if (errno != EEXIST)
+	    error (1, errno, "cannot make directory %s", name);
+	return 1;
+    }
+    return 0;
+}
+
 /*
  * Change the mode of a file, either adding write permissions, or removing
- * all write permissions.  Adding write permissions honors the current umask
- * setting.
+ * all write permissions.  Either change honors the current umask setting.
  */
 void
 xchmod (fname, writable)
@@ -259,25 +320,28 @@ xchmod (fname, writable)
 	    error (0, errno, "cannot stat %s", fname);
 	return;
     }
+    oumask = umask (0);
+    (void) umask (oumask);
     if (writable)
     {
-	oumask = umask (0);
-	(void) umask (oumask);
-	mode = sb.st_mode | ~oumask & (((sb.st_mode & S_IRUSR) ? S_IWUSR : 0) |
-				       ((sb.st_mode & S_IRGRP) ? S_IWGRP : 0) |
-				       ((sb.st_mode & S_IROTH) ? S_IWOTH : 0));
+	mode = sb.st_mode | (~oumask
+			     & (((sb.st_mode & S_IRUSR) ? S_IWUSR : 0)
+				| ((sb.st_mode & S_IRGRP) ? S_IWGRP : 0)
+				| ((sb.st_mode & S_IROTH) ? S_IWOTH : 0)));
     }
     else
     {
-	mode = sb.st_mode & ~(S_IWRITE | S_IWGRP | S_IWOTH);
+	mode = sb.st_mode & ~(S_IWRITE | S_IWGRP | S_IWOTH) & ~oumask;
     }
 
     if (trace)
 #ifdef SERVER_SUPPORT
 	(void) fprintf (stderr, "%c-> chmod(%s,%o)\n",
-			(server_active) ? 'S' : ' ', fname, mode);
+			(server_active) ? 'S' : ' ', fname,
+			(unsigned int) mode);
 #else
-	(void) fprintf (stderr, "-> chmod(%s,%o)\n", fname, mode);
+	(void) fprintf (stderr, "-> chmod(%s,%o)\n", fname,
+			(unsigned int) mode);
 #endif
     if (noexec)
 	return;
@@ -309,7 +373,9 @@ rename_file (from, to)
 }
 
 /*
- * link a file, if possible.
+ * link a file, if possible.  Warning: the Windows NT version of this
+ * function just copies the file, so only use this function in ways
+ * that can deal with either a link or a copy.
  */
 int
 link_file (from, to)
@@ -368,22 +434,20 @@ unlink_file_dir (f)
     if (noexec)
 	return (0);
 
-    if (unlink (f) != 0)
+    /* For at least some unices, if root tries to unlink() a directory,
+       instead of doing something rational like returning EISDIR,
+       the system will gleefully go ahead and corrupt the filesystem.
+       So we first call isdir() to see if it is OK to call unlink().  This
+       doesn't quite work--if someone creates a directory between the
+       call to isdir() and the call to unlink(), we'll still corrupt
+       the filesystem.  Where is the Unix Haters Handbook when you need
+       it?  */
+    if (isdir(f)) 
+	return deep_remove_dir(f);
+    else
     {
-	/* under NEXTSTEP errno is set to return EPERM if
-	 * the file is a directory,or if the user is not
-	 * allowed to read or write to the file.
-	 * [This is probably a bug in the O/S]
-	 * other systems will return EISDIR to indicate
-	 * that the path is a directory.
-	 */
-        if (errno == EISDIR || errno == EPERM)
-                return deep_remove_dir (f);
-        else
-		/* The file wasn't a directory and some other
-		 * error occured
-		 */
-                return -1;
+	if (unlink (f) != 0)
+	    return -1;
     }
     /* We were able to remove the file from the disk */
     return 0;
@@ -399,47 +463,63 @@ deep_remove_dir (path)
 {
     DIR		  *dirp;
     struct dirent *dp;
-    char	   buf[PATH_MAX];
 
-    if ( rmdir (path) != 0 && errno == ENOTEMPTY )
+    if (rmdir (path) != 0)
     {
-	if ((dirp = opendir (path)) == NULL)
-	    /* If unable to open the directory return
-	     * an error
-	     */
-	    return -1;
-
-	while ((dp = readdir (dirp)) != NULL)
+	if (errno == ENOTEMPTY
+	    || errno == EEXIST
+	    /* Ugly workaround for ugly AIX 4.1 (and 3.2) header bug
+	       (it defines ENOTEMPTY and EEXIST to 17 but actually
+	       returns 87).  */
+	    || (ENOTEMPTY == 17 && EEXIST == 17 && errno == 87))
 	{
-	    if (strcmp (dp->d_name, ".") == 0 ||
-			strcmp (dp->d_name, "..") == 0)
-		continue;
+	    if ((dirp = opendir (path)) == NULL)
+		/* If unable to open the directory return
+		 * an error
+		 */
+		return -1;
 
-	    sprintf (buf, "%s/%s", path, dp->d_name);
-
-	    if (unlink (buf) != 0 )
+	    while ((dp = readdir (dirp)) != NULL)
 	    {
-		if (errno == EISDIR || errno == EPERM)
+		char *buf;
+
+		if (strcmp (dp->d_name, ".") == 0 ||
+			    strcmp (dp->d_name, "..") == 0)
+		    continue;
+
+		buf = xmalloc (strlen (path) + strlen (dp->d_name) + 5);
+		sprintf (buf, "%s/%s", path, dp->d_name);
+
+		/* See comment in unlink_file_dir explanation of why we use
+		   isdir instead of just calling unlink and checking the
+		   status.  */
+		if (isdir(buf)) 
 		{
-		    if (deep_remove_dir (buf))
+		    if (deep_remove_dir(buf))
 		    {
-			closedir (dirp);
+			closedir(dirp);
+			free (buf);
 			return -1;
 		    }
 		}
 		else
 		{
-		    /* buf isn't a directory, or there are
-		     * some sort of permision problems
-		     */
-		    closedir (dirp);
-		    return -1;
+		    if (unlink (buf) != 0)
+		    {
+			closedir(dirp);
+			free (buf);
+			return -1;
+		    }
 		}
+		free (buf);
 	    }
+	    closedir (dirp);
+	    return rmdir (path);
 	}
-	closedir (dirp);
-	return rmdir (path);
+	else
+	    return -1;
     }
+
     /* Was able to remove the directory return 0 */
     return 0;
 }
@@ -543,24 +623,42 @@ xcmp (file1, file2)
     (void) close (fd2);
     return (ret);
 }
-
-#ifdef LOSING_TMPNAM_FUNCTION
-char *tmpnam(char *s)
-{
-    static char value[L_tmpnam+1];
-
-    if (s){
-       strcpy(s,"/tmp/cvsXXXXXX");
-       mktemp(s);
-       return s;
-    }else{
-       strcpy(value,"/tmp/cvsXXXXXX");
-       mktemp(s);
-       return value;
-    }
-}
+
+/* Just in case this implementation does not define this.  */
+#ifndef L_tmpnam
+#define	L_tmpnam 50
 #endif
 
+#ifdef LOSING_TMPNAM_FUNCTION
+char *
+cvs_temp_name ()
+{
+    char value[L_tmpnam + 1];
+
+    /* FIXME: Should be using TMPDIR.  */
+    strcpy (value, "/tmp/cvsXXXXXX");
+    mktemp (value);
+    return xstrdup (value);
+}
+#else
+/* Generate a unique temporary filename.  Returns a pointer to a newly
+   malloc'd string containing the name.  Returns successfully or not at
+   all.  */
+char *
+cvs_temp_name ()
+{
+    char value[L_tmpnam + 1];
+    char *retval;
+
+    /* FIXME: should be using TMPDIR, perhaps by using tempnam on systems
+       which have it.  */
+    retval = tmpnam (value);
+    if (retval == NULL)
+	error (1, errno, "cannot generate temporary filename");
+    return xstrdup (retval);
+}
+#endif
+
 /* Return non-zero iff FILENAME is absolute.
    Trivial under Unix, but more complicated under other systems.  */
 int
@@ -583,3 +681,157 @@ last_component (path)
     else
         return path;
 }
+
+/* Return the home directory.  Returns a pointer to storage
+   managed by this function or its callees (currently getenv).
+   This function will return the same thing every time it is
+   called.  */
+char *
+get_homedir ()
+{
+    static char *home = NULL;
+    char *env = getenv ("HOME");
+    struct passwd *pw;
+
+    if (home != NULL)
+	return home;
+
+    if (env)
+	home = env;
+    else if ((pw = (struct passwd *) getpwuid (getuid ()))
+	     && pw->pw_dir)
+	home = xstrdup (pw->pw_dir);
+    else
+	return 0;
+
+    return home;
+}
+
+/* See cvs.h for description.  On unix this does nothing, because the
+   shell expands the wildcards.  */
+void
+expand_wild (argc, argv, pargc, pargv)
+    int argc;
+    char **argv;
+    int *pargc;
+    char ***pargv;
+{
+    int i;
+    *pargc = argc;
+    *pargv = (char **) xmalloc (argc * sizeof (char *));
+    for (i = 0; i < argc; ++i)
+	(*pargv)[i] = xstrdup (argv[i]);
+}
+
+#ifdef SERVER_SUPPORT
+/* Case-insensitive string compare.  I know that some systems
+   have such a routine, but I'm not sure I see any reasons for
+   dealing with the hair of figuring out whether they do (I haven't
+   looked into whether this is a performance bottleneck; I would guess
+   not).  */
+int
+cvs_casecmp (str1, str2)
+    char *str1;
+    char *str2;
+{
+    char *p;
+    char *q;
+    int pqdiff;
+
+    p = str1;
+    q = str2;
+    while ((pqdiff = tolower (*p) - tolower (*q)) == 0)
+    {
+	if (*p == '\0')
+	    return 0;
+	++p;
+	++q;
+    }
+    return pqdiff;
+}
+
+/* Case-insensitive file open.  As you can see, this is an expensive
+   call.  We don't regard it as our main strategy for dealing with
+   case-insensitivity.  Returns errno code or 0 for success.  Puts the
+   new file in *FP.  NAME and MODE are as for fopen.  If PATHP is not
+   NULL, then put a malloc'd string containing the pathname as found
+   into *PATHP.  Note that a malloc'd string is put into *PATHP
+   even if we return an error.  It doesn't mean anything, but it still
+   must be freed.
+
+   Might be cleaner to separate the file finding (which just gives
+   *PATHP) from the file opening (which the caller can do).  For one
+   thing, might make it easier to know whether to put NAME or *PATHP
+   into error messages.  */
+int
+fopen_case (name, mode, fp, pathp)
+    char *name;
+    char *mode;
+    FILE **fp;
+    char **pathp;
+{
+    struct dirent *dp;
+    DIR *dirp;
+    char *dir;
+    char *fname;
+    char *found_name;
+    int retval;
+
+    /* Separate NAME into directory DIR and filename within the directory
+       FNAME.  */
+    dir = xstrdup (name);
+    fname = strrchr (dir, '/');
+    if (fname == NULL)
+	error (1, 0, "internal error: relative pathname in fopen_case");
+    *fname++ = '\0';
+
+    found_name = NULL;
+    dirp = CVS_OPENDIR (dir);
+    if (dirp == NULL)
+	error (1, errno, "cannot read directory %s", dir);
+    errno = 0;
+    while ((dp = readdir (dirp)) != NULL)
+    {
+	if (cvs_casecmp (dp->d_name, fname) == 0)
+	{
+	    if (found_name != NULL)
+		error (1, 0, "%s is ambiguous; could mean %s or %s",
+		       fname, dp->d_name, found_name);
+	    found_name = xstrdup (dp->d_name);
+	}
+    }
+    if (errno != 0)
+	error (1, errno, "cannot read directory %s", dir);
+    closedir (dirp);
+
+    if (found_name == NULL)
+    {
+	*fp = NULL;
+	retval = ENOENT;
+    }
+    else
+    {
+	char *p;
+
+	/* Copy the found name back into DIR.  We are assuming that
+	   found_name is the same length as fname, which is true as
+	   long as the above code is just ignoring case and not other
+	   aspects of filename syntax.  */
+	p = dir + strlen (dir);
+	*p++ = '/';
+	strcpy (p, found_name);
+	*fp = fopen (dir, mode);
+	if (*fp == NULL)
+	    retval = errno;
+	else
+	    retval = 0;
+    }
+
+    if (pathp == NULL)
+	free (dir);
+    else
+	*pathp = dir;
+    free (found_name);
+    return retval;
+}
+#endif /* SERVER_SUPPORT */

@@ -35,7 +35,7 @@ static int ign_hold = -1;		/* Index where first "temporary" item
 
 const char *ign_default = ". .. core RCSLOG tags TAGS RCS SCCS .make.state\
  .nse_depinfo #* .#* cvslog.* ,* CVS CVS.adm .del-* *.a *.olb *.o *.obj\
- *.so *.Z *~ *.old *.elc *.ln *.bak *.BAK *.orig *.rej *.exe _$* *$ *.depend";
+ *.so *.Z *~ *.old *.elc *.ln *.bak *.BAK *.orig *.rej *.exe _$* *$";
 
 #define IGN_GROW 16			/* grow the list by 16 elements at a
 					 * time */
@@ -250,8 +250,9 @@ ign_add (ign, hold)
     }
 }
 
-/* Set to 1 if ignore file patterns should be matched in a case-insensitive
-   fashion.  */
+/* Set to 1 if filenames should be matched in a case-insensitive
+   fashion.  Note that, contrary to the name and placement in ignore.c,
+   this is no longer just for ignore patterns.  */
 int ign_case;
 
 /* Return 1 if the given filename should be ignored by update or import. */
