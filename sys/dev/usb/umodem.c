@@ -1,4 +1,4 @@
-/*	$OpenBSD: umodem.c,v 1.12 2002/07/25 04:07:33 nate Exp $ */
+/*	$OpenBSD: umodem.c,v 1.13 2002/11/11 02:32:32 nate Exp $ */
 /*	$NetBSD: umodem.c,v 1.45 2002/09/23 05:51:23 simonb Exp $	*/
 
 /*
@@ -193,7 +193,7 @@ USB_ATTACH(umodem)
 	int i;
 	struct ucom_attach_args uca;
 
-	usbd_devinfo(uaa->device, 0, devinfo);
+	usbd_devinfo(uaa->device, 0, devinfo, sizeof devinfo);
 	USB_ATTACH_SETUP;
 
 	sc->sc_udev = dev;
