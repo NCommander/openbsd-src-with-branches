@@ -1,4 +1,4 @@
-/*	$OpenBSD: dca.c,v 1.19 2004/09/19 21:34:42 mickey Exp $	*/
+/*	$OpenBSD: dca.c,v 1.20 2004/09/29 07:35:52 miod Exp $	*/
 /*	$NetBSD: dca.c,v 1.35 1997/05/05 20:58:18 thorpej Exp $	*/
 
 /*
@@ -1020,7 +1020,7 @@ dca_console_scan(scode, va, arg)
 			dioiidev = (u_char *)va;
 			return ((dioiidev[0x101] + 1) * 0x100000);
 		}
-		return (DIOCSIZE);
+		return (DIO_DEVSIZE);
 	}
 	return (0);
 }
