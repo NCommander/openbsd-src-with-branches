@@ -1,14 +1,14 @@
-#	$OpenBSD: Makefile.inc,v 1.14 1998/10/20 23:22:17 rahnds Exp $
+#	$OpenBSD: Makefile.inc,v 1.15 2000/02/03 03:06:55 rahnds Exp $
 #	etc.powerpc/Makefile.inc -- powerpc-specific etc Makefile targets
 
 .ifdef DESTDIR
 snap_md: bsd distrib
 
 bsd:
-	cd ${.CURDIR}/../sys/arch/powerpc/conf && config GENERICMAC
-	cd ${.CURDIR}/../sys/arch/powerpc/compile/GENERICMAC && \
+	cd ${.CURDIR}/../sys/arch/powerpc/conf && config GENERIC
+	cd ${.CURDIR}/../sys/arch/powerpc/compile/GENERIC && \
 	    make clean && make depend && make
-	cp ${.CURDIR}/../sys/arch/powerpc/compile/GENERICMAC/bsd \
+	cp ${.CURDIR}/../sys/arch/powerpc/compile/GENERIC/bsd \
 	    ${DESTDIR}/snapshot/bsd
 
 # knows about  bsd.rd and bsdofw.rd
