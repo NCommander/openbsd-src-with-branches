@@ -1,4 +1,4 @@
-/*	$OpenBSD: diffdir.c,v 1.4 2003/06/25 03:25:29 tedu Exp $	*/
+/*	$OpenBSD: diffdir.c,v 1.5 2003/06/25 03:29:46 deraadt Exp $	*/
 
 /*
  * Copyright (C) Caldera International Inc.  2001-2002.
@@ -419,7 +419,7 @@ ascii(int f)
 	int cnt;
 	char *cp;
 
-	lseek(f, 0, 0);
+	lseek(f, (off_t)0, SEEK_SET);
 	cnt = read(f, buf, BUFSIZ);
 	cp = buf;
 	while (--cnt >= 0)
