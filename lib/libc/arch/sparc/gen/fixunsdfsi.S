@@ -37,7 +37,7 @@
 
 #if defined(LIBC_SCCS) 
 	.text
-	.asciz "$OpenBSD: fixunsdfsi.S,v 1.2 1996/08/19 08:17:27 tholo Exp $"
+	.asciz "$OpenBSD: fixunsdfsi.S,v 1.3 1997/07/23 20:55:29 kstailey Exp $"
 #endif /* LIBC_SCCS */
 
 /*
@@ -81,10 +81,10 @@ ENTRY(__fixunsdfsi)
 	sethi	%hi(0x80000000), %o1
 	add	%o0, %o1, %o0		! add 2^31
 	retl
-	add	%sp, 8, %sp
+	 add	%sp, 8, %sp
 
 1:
 	st	%f0, [%sp + 64]		! return result
 	ld	[%sp + 64], %o0
 	retl
-	add	%sp, 8, %sp
+	 add	%sp, 8, %sp
