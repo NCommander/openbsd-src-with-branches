@@ -222,7 +222,6 @@ RETSIGTYPE	(*fn)();
 		if (SIG_handlers[sig] == (struct SIG_hlist *) NULL)
 		{
 #ifdef POSIX_SIGNALS
-			memset(&act, 0, sizeof act);
 			act.sa_handler = SIG_handle;
 			(void) sigemptyset(&act.sa_mask);
 			act.sa_flags = 0;
@@ -382,6 +381,16 @@ void SIG_beginCrSect()
 		}
 		SIG_crSectNest++;
 	}
+}
+
+/*
+ * Return nonzero if currently in a critical section.
+ * Otherwise return zero.
+ */
+
+int SIG_inCrSect()
+{
+	return SIG_crSectNest > 0;
 }
 
 /*

@@ -22,16 +22,13 @@ prefix = @prefix@
 exec_prefix = @exec_prefix@
 
 # Where to install the executables.
-bindir = $(exec_prefix)/bin
+bindir = @bindir@
 
 # Where to put the system-wide .cvsrc file
-libexecdir = $(prefix)/libexec
-
-# Where to put the system-wide .cvsrc file
-datadir = $(prefix)/share
+libdir = @libdir@
 
 # Where to put the manual pages.
-mandir = $(prefix)/man
+mandir = @mandir@
 
 # where to find command interpreters
 perl_path = @perl_path@
@@ -49,7 +46,7 @@ DISTFILES = \
 	descend.man dirfns.shar log.pl log_accum.pl mfpipe.pl rcs-to-cvs.sh \
 	rcs2log.sh rcslock.pl sccs2rcs.csh rcs2sccs.sh
 
-# files installed in $(datadir)/cvs/contrib
+# files installed in $(libdir)/cvs/contrib
 #
 CONTRIB_FILES = README intro.doc cvscheck.man
 
@@ -83,10 +80,10 @@ all: Makefile $(PROGS) $(CONTRIB_PROGS)
 
 install: all installdirs
 	for f in $(CONTRIB_FILES) ; do\
-		$(INSTALL_DATA) $(srcdir)/$$f $(datadir)/cvs/contrib/$$f; \
+		$(INSTALL_DATA) $(srcdir)/$$f $(libdir)/cvs/contrib/$$f; \
 	done
 	for f in $(CONTRIB_PROGS) ; do\
-		$(INSTALL_PROGRAM) $$f $(libexecdir)/cvs/contrib/$$f; \
+		$(INSTALL_PROGRAM) $$f $(libdir)/cvs/contrib/$$f; \
 	done
 	for f in $(PROGS) ; do\
 		$(INSTALL_PROGRAM) $$f $(bindir)/$$f; \
@@ -94,8 +91,7 @@ install: all installdirs
 .PHONY: install
 
 installdirs:
-	$(SHELL) $(top_srcdir)/mkinstalldirs $(datadir)/cvs/contrib
-	$(SHELL) $(top_srcdir)/mkinstalldirs $(libexecdir)/cvs/contrib
+	$(top_srcdir)/mkinstalldirs $(libdir)/cvs/contrib
 .PHONY: installdirs
 
 tags:
