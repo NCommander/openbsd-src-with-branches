@@ -12,7 +12,7 @@
  */
 
 #include "includes.h"
-RCSID("$OpenBSD: readconf.c,v 1.79 2001/05/24 18:57:53 stevesk Exp $");
+RCSID("$OpenBSD: readconf.c,v 1.80 2001/06/08 15:25:40 markus Exp $");
 
 #include "ssh.h"
 #include "xmalloc.h"
@@ -162,9 +162,9 @@ static struct {
 	{ "host", oHost },
 	{ "escapechar", oEscapeChar },
 	{ "globalknownhostsfile", oGlobalKnownHostsFile },
-	{ "userknownhostsfile", oUserKnownHostsFile },
+	{ "userknownhostsfile", oUserKnownHostsFile },		/* obsolete */
 	{ "globalknownhostsfile2", oGlobalKnownHostsFile2 },
-	{ "userknownhostsfile2", oUserKnownHostsFile2 },
+	{ "userknownhostsfile2", oUserKnownHostsFile2 },	/* obsolete */
 	{ "connectionattempts", oConnectionAttempts },
 	{ "batchmode", oBatchMode },
 	{ "checkhostip", oCheckHostIP },
