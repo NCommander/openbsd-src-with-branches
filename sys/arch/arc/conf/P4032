@@ -1,4 +1,4 @@
-#	$OpenBSD: P4032,v 1.1 1997/05/18 13:45:23 pefo Exp $
+#	$OpenBSD: P4032,v 1.2 1997/06/23 19:05:36 kstailey Exp $
 #
 #	Generic configuration file for Algorithmics P4032 board
 #
@@ -59,9 +59,6 @@ option		IPFILTER_LOG	# use /dev/ipl to log IPF
 #options 	TCP_COMPAT_42	# compatibility with 4.2BSD TCP/IP
 #options 	MULTICAST	# Multicast support
 #options 	MROUTING	# Multicast routing support
-
-# Special options
-options 	MACHINE_NONCONTIG # Support noncontigous memory.
 
 # Specify storage configuration (its a joke..)
 config		bsd	swap generic
