@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.7 2003/09/23 08:52:04 markus Exp $
+#	$OpenBSD: Makefile,v 1.8 2004/04/28 06:53:12 brad Exp $
 
 LIB=	event
 SRCS=	buffer.c evbuffer.c event.c kqueue.c poll.c select.c signal.c
@@ -25,8 +25,7 @@ CFLAGS+= -I${.CURDIR} \
 	-DHAVE_POLL \
 	-DHAVE_SYS_TIME_H \
 	-DHAVE_STDARG_H \
-	-DHAVE_UNISTD_H \
-	-DNOTE_EOF
+	-DHAVE_UNISTD_H
 
 NOPIC=
 
