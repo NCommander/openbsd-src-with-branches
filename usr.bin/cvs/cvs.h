@@ -144,13 +144,13 @@ struct cvsroot {
 	FILE   *cr_srvin;
 	FILE   *cr_srvout;
 	FILE   *cr_srverr;
-	char   *cr_version;   /* version of remote server */
-	u_char  cr_vrmask[10];  /* mask of valid requests supported by server */
+	char   *cr_version;     /* version of remote server */
+	u_char  cr_vrmask[16];  /* mask of valid requests supported by server */
 };
 
-#define CVS_SETVR(rt, rq)  (rt)->cr_vrmask[(rq) / 8] |=  (1 << ((rq) % 8))
-#define CVS_GETVR(rt, rq)  (rt)->cr_vrmask[(rq) / 8] &   (1 << ((rq) % 8))
-#define CVS_CLRVR(rt, rq)  (rt)->cr_vrmask[(rq) / 8] &= ~(1 << ((rq) % 8))
+#define CVS_SETVR(rt, rq)  ((rt)->cr_vrmask[(rq) / 8] |=  (1 << ((rq) % 8)))
+#define CVS_GETVR(rt, rq)  ((rt)->cr_vrmask[(rq) / 8] &   (1 << ((rq) % 8)))
+#define CVS_CLRVR(rt, rq)  ((rt)->cr_vrmask[(rq) / 8] &= ~(1 << ((rq) % 8)))
 #define CVS_RSTVR(rt)      memset((rt)->cr_vrmask, 0, sizeof((rt)->cr_vrmask))
 
 
