@@ -1,4 +1,4 @@
-#	$OpenBSD: test-exec.sh,v 1.12 2002/03/23 16:38:09 markus Exp $
+#	$OpenBSD: test-exec.sh,v 1.13 2002/03/26 15:14:33 markus Exp $
 #	Placed in the Public Domain.
 
 PORT=4242
@@ -64,7 +64,7 @@ if [ "x$TEST_SSH_SFTP" != "x" ]; then
 	SFTP=${TEST_SSH_SFTP}
 fi
 if [ "x$TEST_SSH_SFTPSERVER" != "x" ]; then
-	SFTPSERVER=${TEST_SSH_SFTP}
+	SFTPSERVER=${TEST_SSH_SFTPSERVER}
 fi
 
 # these should be used in tests
