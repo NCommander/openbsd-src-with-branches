@@ -1,4 +1,4 @@
-/*	$OpenBSD: timex.h,v 1.3 1996/04/18 21:41:16 niklas Exp $	*/
+/*	$OpenBSD: timex.h,v 1.4 1996/04/21 22:32:08 deraadt Exp $	*/
 /*	$NetBSD: timex.h,v 1.2 1996/02/27 04:20:34 jonathan Exp $	*/
 
 /******************************************************************************
@@ -287,7 +287,7 @@ struct timex {
 
 };
 
-#if defined(__FreeBSD__) || defined(__NetBSD__)
+#if defined(__FreeBSD__) || defined(__NetBSD__) || defined(__OpenBSD__)
 
 #ifndef _KERNEL
 #include <sys/cdefs.h>

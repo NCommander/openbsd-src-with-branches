@@ -70,7 +70,7 @@
 /*
  * 4.4 doesn't provide NIS, but NetBSD does.
  */
-#ifndef __NetBSD__
+#if !(defined(__NetBSD__) || defined(__OpenBSD__))
 #undef HAS_NIS_MAPS
 #endif
 
@@ -97,7 +97,7 @@
 #undef MTAB_TYPE_UFS
 #define	MTAB_TYPE_UFS	"ufs"
 #define	MTAB_TYPE_MFS	"mfs"
-#ifdef __NetBSD__
+#if defined(__NetBSD__) || defined(__OpenBSD__)
 #undef MTYPE_TYPE
 #define MTYPE_TYPE char *
 #endif
@@ -178,7 +178,7 @@ struct mntent {
  * Type of a file handle
  */
 #undef NFS_FH_TYPE
-#if __NetBSD__
+#if defined(__NetBSD__) || defined(__OpenBSD__)
 #define NFS_FH_TYPE void *
 #endif
 

@@ -52,7 +52,7 @@
 #endif
 
 #if defined(sparc) || defined(mips) || defined(ibm032) || \
-    (defined(__NetBSD__) && !defined(UNALIGNED_ACCESS))
+    ((defined(__NetBSD__) || defined(__OpenBSD__)) && !defined(UNALIGNED_ACCESS))
 #define BPF_ALIGN
 #endif
 
