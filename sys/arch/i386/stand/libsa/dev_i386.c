@@ -1,4 +1,4 @@
-/*	$OpenBSD: dev_i386.c,v 1.8 1997/04/15 21:35:13 mickey Exp $	*/
+/*	$OpenBSD: dev_i386.c,v 1.9 1997/04/17 21:28:22 deraadt Exp $	*/
 
 /*
  * Copyright (c) 1996 Michael Shalayeff
@@ -37,9 +37,10 @@
 
 extern int debug;
 
+/* XXX use slot for 'rd' for 'hd' pseudo-device */
 const char bdevs[19][4] = {
 	"wd", "", "fd", "wt", "sd", "st", "cd", "mcd",
-	"", "", "", "", "", "", "", "scd", "", "", "acd"
+	"", "", "", "", "", "", "", "scd", "", "hd", "acd"
 };
 
 /* pass dev_t to the open routines */
