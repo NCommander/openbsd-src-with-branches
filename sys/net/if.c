@@ -510,7 +510,7 @@ ifioctl(so, cmd, data, p)
 	default:
 		if (so->so_proto == 0)
 			return (EOPNOTSUPP);
-#ifndef COMPAT_43
+#if !defined(COMPAT_43) && !defined(COMPAT_LINUX) && !defined(COMPAT_SVR4)
 		return ((*so->so_proto->pr_usrreq)(so, PRU_CONTROL,
 			(struct mbuf *) cmd, (struct mbuf *) data,
 			(struct mbuf *) ifp));
@@ -520,8 +520,8 @@ ifioctl(so, cmd, data, p)
 
 		switch (cmd) {
 
-		case SIOCSIFDSTADDR:
 		case SIOCSIFADDR:
+		case SIOCSIFDSTADDR:
 		case SIOCSIFBRDADDR:
 		case SIOCSIFNETMASK:
 #if BYTE_ORDER != BIG_ENDIAN
@@ -623,7 +623,7 @@ ifconf(cmd, data)
 		} else 
 		    for (; space > sizeof (ifr) && ifa != 0; ifa = ifa->ifa_list.tqe_next) {
 			register struct sockaddr *sa = ifa->ifa_addr;
-#ifdef COMPAT_43
+#if defined(COMPAT_43) || defined(COMPAT_LINUX) || defined(COMPAT_SVR4)
 			if (cmd == OSIOCGIFCONF) {
 				struct osockaddr *osa =
 					 (struct osockaddr *)&ifr.ifr_addr;
