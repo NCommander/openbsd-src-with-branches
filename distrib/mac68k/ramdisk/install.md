@@ -1,4 +1,4 @@
-#       $OpenBSD$
+#       $OpenBSD: install.md,v 1.8 2002/04/24 22:33:41 miod Exp $
 #
 # Copyright (c) 2002, Miodrag Vallat.
 # All rights reserved.
@@ -70,8 +70,7 @@ md_set_term() {
 	if [ ! -z "$TERM" ]; then
 		return
 	fi
-	echo -n "Specify terminal type [vt100]: "
-	getresp "vt100"
+	ask "Specify terminal type:" vt100
 	TERM="$resp"
 	export TERM
 }
