@@ -1,4 +1,4 @@
-/*	$OpenBSD: ftpd.c,v 1.138 2002/11/15 19:52:15 millert Exp $	*/
+/*	$OpenBSD: ftpd.c,v 1.139 2002/11/25 22:45:39 millert Exp $	*/
 /*	$NetBSD: ftpd.c,v 1.15 1995/06/03 22:46:47 mycroft Exp $	*/
 
 /*
@@ -74,7 +74,7 @@ static const char copyright[] =
 static const char sccsid[] = "@(#)ftpd.c	8.4 (Berkeley) 4/16/94";
 #else
 static const char rcsid[] = 
-    "$OpenBSD: ftpd.c,v 1.138 2002/11/15 19:52:15 millert Exp $";
+    "$OpenBSD: ftpd.c,v 1.139 2002/11/25 22:45:39 millert Exp $";
 #endif
 #endif /* not lint */
 
@@ -2070,7 +2070,7 @@ pwd()
 	char path[MAXPATHLEN];
 
 	if (getcwd(path, sizeof(path)) == NULL)
-		reply(550, "Can't get current directory: %s.", strerror(errno));
+		perror_reply(550, "Can't get current directory");
 	else
 		replydirname(path, "is current directory.");
 }
