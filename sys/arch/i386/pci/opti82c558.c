@@ -1,4 +1,4 @@
-/*	$OpenBSD: opti82c558.c,v 1.3 2000/03/28 03:37:59 mickey Exp $	*/
+/*	$OpenBSD: opti82c558.c,v 1.4 2000/08/02 02:42:50 mickey Exp $	*/
 /*	$NetBSD: opti82c558.c,v 1.2 2000/07/18 11:24:09 soda Exp $	*/
 
 /*-
@@ -79,7 +79,7 @@
 #include <dev/pci/pcireg.h>
 #include <dev/pci/pcidevs.h>
 
-#include <i386/pci/pci_intr_fixup.h>
+#include <i386/pci/pcibiosvar.h>
 #include <i386/pci/opti82c558reg.h>
 
 int	opti82c558_getclink __P((pciintr_icu_handle_t, int, int *));
