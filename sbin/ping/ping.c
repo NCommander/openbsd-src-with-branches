@@ -1,4 +1,4 @@
-/*	$OpenBSD: ping.c,v 1.34 1998/05/16 05:57:46 deraadt Exp $	*/
+/*	$OpenBSD: ping.c,v 1.35 1998/05/17 01:46:51 angelos Exp $	*/
 /*	$NetBSD: ping.c,v 1.20 1995/08/11 22:37:58 cgd Exp $	*/
 
 /*
@@ -47,7 +47,7 @@ static char copyright[] =
 #if 0
 static char sccsid[] = "@(#)ping.c	8.1 (Berkeley) 6/5/93";
 #else
-static char rcsid[] = "$OpenBSD: ping.c,v 1.34 1998/05/16 05:57:46 deraadt Exp $";
+static char rcsid[] = "$OpenBSD: ping.c,v 1.35 1998/05/17 01:46:51 angelos Exp $";
 #endif
 #endif /* not lint */
 
@@ -217,7 +217,7 @@ main(argc, argv)
 	while ((ch = getopt(argc, argv, "DI:LRS:c:dfh:i:l:np:qrs:T:t:vw:")) != -1)
 		switch(ch) {
 		case 'c':
-			npackets = strtol(optarg, 0, NULL);
+			npackets = strtol(optarg, NULL, 0);
 			if (npackets <= 0)
 				errx(1, "bad number of packets to transmit: %s",
 				    optarg);
