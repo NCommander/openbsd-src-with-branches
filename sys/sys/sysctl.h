@@ -1,4 +1,4 @@
-/*	$OpenBSD: sysctl.h,v 1.22 1997/11/06 15:59:52 kstailey Exp $	*/
+/*	$OpenBSD: sysctl.h,v 1.23 1997/12/08 21:25:34 deraadt Exp $	*/
 /*	$NetBSD: sysctl.h,v 1.16 1996/04/09 20:55:36 cgd Exp $	*/
 
 /*
@@ -36,7 +36,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  *
- *	@(#)sysctl.h	8.1 (Berkeley) 6/2/93
+ *	@(#)sysctl.h	8.2 (Berkeley) 3/30/95
  */
 
 #ifndef _SYS_SYSCTL_H_
