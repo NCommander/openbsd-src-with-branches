@@ -1,4 +1,4 @@
-/*	$OpenBSD: nlist.c,v 1.25 2002/03/14 16:44:25 mpech Exp $	*/
+/*	$OpenBSD: nlist.c,v 1.26 2002/03/25 16:41:43 deraadt Exp $	*/
 
 /*-
  * Copyright (c) 1990, 1993
@@ -37,7 +37,7 @@
 #if 0
 static char sccsid[] = "from: @(#)nlist.c	8.1 (Berkeley) 6/6/93";
 #else
-static char *rcsid = "$OpenBSD: nlist.c,v 1.25 2002/03/14 16:44:25 mpech Exp $";
+static char *rcsid = "$OpenBSD: nlist.c,v 1.26 2002/03/25 16:41:43 deraadt Exp $";
 #endif
 #endif /* not lint */
 
@@ -147,7 +147,7 @@ __aout_knlist(fd, db, ksyms)
 		warn("fseek %s", kfile);
 		return (-1);
 	}
-	
+
 	data.data = (u_char *)&nbuf;
 	data.size = sizeof(NLIST);
 
@@ -361,7 +361,7 @@ __elf_knlist(fd, db, ksyms)
 		}
 	}
 
-	
+
 	/* Check for files too large to mmap. */
 	/* XXX is this really possible? */
 	if (symstrsize > SIZE_T_MAX) {
@@ -641,7 +641,6 @@ __ecoff_knlist(fd, db, ksyms)
 			data.data = (u_char *)&nbuf;
 			data.size = sizeof(nbuf);
 		}
-		
 	}
 
 unmap:
