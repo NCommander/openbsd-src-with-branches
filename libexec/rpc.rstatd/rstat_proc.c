@@ -1,4 +1,4 @@
-/*	$OpenBSD: rstat_proc.c,v 1.24 2003/07/29 18:39:23 deraadt Exp $	*/
+/*	$OpenBSD: rstat_proc.c,v 1.25 2004/02/15 02:45:47 tedu Exp $	*/
 
 /*
  * Sun RPC is a product of Sun Microsystems, Inc. and is provided for
@@ -31,7 +31,7 @@
 #ifndef lint
 /*static char sccsid[] = "from: @(#)rpc.rstatd.c 1.1 86/09/25 Copyr 1984 Sun Micro";*/
 /*static char sccsid[] = "from: @(#)rstat_proc.c	2.2 88/08/01 4.0 RPCSRC";*/
-static char rcsid[] = "$OpenBSD: rstat_proc.c,v 1.24 2003/07/29 18:39:23 deraadt Exp $";
+static char rcsid[] = "$OpenBSD: rstat_proc.c,v 1.25 2004/02/15 02:45:47 tedu Exp $";
 #endif
 
 /*
@@ -160,6 +160,7 @@ rstatproc_havedisk_1_svc(void *arg, struct svc_req *rqstp)
 	return (rstatproc_havedisk_3_svc(arg, rqstp));
 }
 
+/* ARGSUSED */
 void
 updatestatsig(int sig)
 {
