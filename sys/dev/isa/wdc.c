@@ -1,4 +1,4 @@
-/*	$OpenBSD: wdc.c,v 1.5 1996/08/17 06:24:54 downsj Exp $	*/
+/*	$OpenBSD: wdc.c,v 1.6 1996/09/04 00:51:15 downsj Exp $	*/
 /*	$NetBSD: wd.c,v 1.150 1996/05/12 23:54:03 mycroft Exp $ */
 
 /*
@@ -590,7 +590,7 @@ wdc_atapi_start(wdc, xfer)
 		wdc->sc_flags |= WDCF_IRQ_WAIT;
 		return;
 	}
-	if ((acp->flags & 0x0300) != ACAP_DRQ_INTR) {
+	if ((acp->flags & (ACAP_DRQ_INTR|ACAP_DRQ_ACCEL)) != ACAP_DRQ_INTR) {
 		int i, phase;
 		for (i=20000; i>0; --i) {
 			phase = (bus_io_read_1(bc, ioh, wd_ireason) &
@@ -603,6 +603,7 @@ wdc_atapi_start(wdc, xfer)
 		}
 		if (phase != PHASE_CMDOUT ) {
 			printf("wdc_atapi_start: timout waiting PHASE_CMDOUT");
+			printf("(0x%x)\n", phase);
 			acp->status = ERROR;
 			wdc_atapi_done(wdc, xfer);
 			return;
