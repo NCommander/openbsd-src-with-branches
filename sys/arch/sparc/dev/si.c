@@ -1,4 +1,4 @@
-/*	$OpenBSD: si.c,v 1.17 2002/04/30 01:12:29 art Exp $	*/
+/*	$OpenBSD: si.c,v 1.18 2002/10/12 01:09:43 krw Exp $	*/
 /*	$NetBSD: si.c,v 1.38 1997/08/27 11:24:20 bouyer Exp $	*/
 
 /*-
@@ -72,7 +72,7 @@
  * and Chris Torek for bits of insight needed along the way.  Thanks to
  * David Gilbert and Andrew Gillham who risked filesystem life-and-limb
  * for the sake of testing.  Andrew Gillham helped work out the bugs
- * the the 4/100 DMA code.
+ * in the 4/100 DMA code.
  */
 
 /*
