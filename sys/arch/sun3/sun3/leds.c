@@ -1,6 +1,6 @@
-/*	$OpenBSD: leds.c,v 1.3 1997/01/13 21:28:24 kstailey Exp $	*/
+/*	$OpenBSD: leds.c,v 1.4 1997/01/16 04:04:26 kstailey Exp $	*/
 
-#include <sys/types.h>
+#include <sys/param.h>
 #include <sys/systm.h>
 #include <sys/errno.h>
 #include <sys/uio.h>
