@@ -1,4 +1,4 @@
-/*	$OpenBSD: autoconf.c,v 1.24 2002/06/07 19:31:08 jason Exp $	*/
+/*	$OpenBSD: autoconf.c,v 1.25 2002/06/15 17:23:31 art Exp $	*/
 /*	$NetBSD: autoconf.c,v 1.51 2001/07/24 19:32:11 eeh Exp $ */
 
 /*
@@ -1631,7 +1631,8 @@ device_register(dev, aux)
 		/* IDE disks. */
 		struct ata_atapi_attach *aa = aux;
 
-		if (aa->aa_channel == bp->val[0]) {
+		if ((bp->val[0] / 2) == aa->aa_channel &&
+		    (bp->val[0] % 2) == aa->aa_drv_data->drive) {
 			nail_bootdev(dev, bp);
 			DPRINTF(ACDB_BOOTDEV, ("\t-- found wd disk %s\n",
 			    dev->dv_xname));
