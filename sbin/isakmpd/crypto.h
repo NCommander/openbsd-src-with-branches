@@ -1,4 +1,4 @@
-/*	$OpenBSD: crypto.h,v 1.4 2000/10/16 23:28:04 niklas Exp $	*/
+/*	$OpenBSD: crypto.h,v 1.5 2002/06/09 08:13:06 todd Exp $	*/
 /*	$EOM: crypto.h,v 1.12 2000/10/15 21:56:41 niklas Exp $	*/
 
 /*
@@ -37,6 +37,18 @@
 #ifndef _CRYPTO_H_
 #define _CRYPTO_H_
 
+#if defined (__APPLE__)
+
+#include <openssl/des.h>
+#ifdef USE_BLOWFISH
+#include <openssl/blowfish.h>
+#endif
+#ifdef USE_CAST
+#include <openssl/cast.h>
+#endif
+
+#else
+
 #include <des.h>
 #ifdef USE_BLOWFISH
 #include <blf.h>
@@ -44,6 +56,8 @@
 #ifdef USE_CAST
 #include <cast.h>
 #endif
+
+#endif /* __APPLE__ */
 
 #define USE_32BIT
 #if defined (USE_64BIT)
