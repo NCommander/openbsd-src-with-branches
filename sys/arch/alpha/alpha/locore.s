@@ -1455,6 +1455,23 @@ LEAF(copyerr, 0)
 	RET
 END(copyerr)
 
+/**************************************************************************/
+
+	.data
+/* Some bogus data, to keep vmstat happy, for now. */
+EXPORT(intrnames)
+	.type intrnames,@object
+EXPORT(eintrnames)
+	.type eintrnames,@object
+	.align 3
+EXPORT(intrcnt)
+	.type intrcnt,@object
+EXPORT(eintrcnt)
+	.type eintrcnt,@object
+	.text
+
+/**************************************************************************/
+
 /*
  * console 'restart' routine to be placed in HWRPB.
  */
