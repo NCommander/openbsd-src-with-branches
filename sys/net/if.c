@@ -1,4 +1,4 @@
-/*	$OpenBSD: if.c,v 1.36 2000/10/04 23:17:27 itojun Exp $	*/
+/*	$OpenBSD: if.c,v 1.37 2000/10/05 02:12:51 itojun Exp $	*/
 /*	$NetBSD: if.c,v 1.35 1996/05/07 05:26:04 thorpej Exp $	*/
 
 /*
@@ -797,6 +797,8 @@ ifioctl(so, cmd, data, p)
 		if ((error = suser(p->p_ucred, &p->p_acflag)) != 0)
 			return (error);
 		/* FALLTHROUGH */
+	case SIOCGIFPSRCADDR:
+	case SIOCGIFPDSTADDR:
 	case SIOCGIFMEDIA:
 		if (ifp->if_ioctl == 0)
 			return (EOPNOTSUPP);
