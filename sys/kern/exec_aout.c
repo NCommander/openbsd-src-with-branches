@@ -1,4 +1,4 @@
-/*	$OpenBSD: exec_aout.c,v 1.7 2001/11/15 06:22:30 art Exp $	*/
+/*	$OpenBSD: exec_aout.c,v 1.8 2002/07/26 23:32:50 deraadt Exp $	*/
 /*	$NetBSD: exec_aout.c,v 1.14 1996/02/04 02:15:01 christos Exp $	*/
 
 /*
@@ -41,6 +41,9 @@
 #include <uvm/uvm_extern.h>
 
 #if defined(_KERN_DO_AOUT)
+#if defined(COMPAT_AOUT)
+void aout_compat_setup(struct exec_package *epp);
+#endif
 
 /*
  * exec_aout_makecmds(): Check if it's an a.out-format executable.
@@ -89,6 +92,9 @@ exec_aout_makecmds(p, epp)
 
 	if (error)
 		kill_vmcmds(&epp->ep_vmcmds);
+#ifdef COMPAT_AOUT
+	aout_compat_setup(epp);
+#endif
 
 	return error;
 }
