@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /*	$NetBSD: wdreg.h,v 1.13 1995/03/29 21:56:46 briggs Exp $	*/
 
 /*-

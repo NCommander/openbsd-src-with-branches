@@ -1,4 +1,4 @@
-/*	$NetBSD: $	*/
+/*	$OpenBSD$	*/
 
 /*
  * Copyright (c) 1996 Manuel Bouyer.  All rights reserved.
