@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.29 2000/10/19 17:14:01 fgsch Exp $
+#	$OpenBSD: Makefile,v 1.30 2003/04/17 03:43:18 drahn Exp $
 
 .include "${.CURDIR}/../Makefile.inc"
 
@@ -20,7 +20,7 @@ CLEANFILES+=	crt0.o
 SRCS=	srt0.S
 .endif
 
-SRCS+=	boot_loadfile.c cmd.c vars.c bootarg.c conf.c
+SRCS+=	boot.c cmd.c vars.c bootarg.c conf.c
 S	=${.CURDIR}/../../../..
 SADIR=	${.CURDIR}/..
 

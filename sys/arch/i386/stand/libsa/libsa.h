@@ -1,4 +1,4 @@
-/*	$OpenBSD: libsa.h,v 1.35 2002/06/20 20:22:58 weingart Exp $	*/
+/*	$OpenBSD: libsa.h,v 1.36 2003/04/17 03:43:19 drahn Exp $	*/
 
 /*
  * Copyright (c) 1996-1999 Michael Shalayeff
@@ -36,7 +36,7 @@
 
 #define	EXEC_ELF
 
-#define	DEFAULT_KERNEL_ADDRESS	0x100000
+#define	DEFAULT_KERNEL_ADDRESS	0
 
 void gateA20(int);
 
