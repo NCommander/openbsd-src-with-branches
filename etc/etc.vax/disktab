@@ -500,7 +500,7 @@ bootroot|fake-type used in install boot:\
 
 miniroot|fake-type used when installation:\
 	:ty=fake:se#512:nt#1:rm#3600:ns#2048:nc#1:\
-	:pa#4096:oa#0:ba#4096:fa#512:\
+	:pa#4096:oa#0:ba#4096:fa#512:ta=4.2BSD:ba#4096:fa#512: \
 	:pb#4096:ob#0:bb#4096:fb#512:\
 	:pc#4096:oc#0:bc#4096:fc#512:
 
