@@ -60,6 +60,6 @@ struct	scsi_addr {
 #define SCIOCDECONFIG	_IO('Q', 5)	/* please dissappear */
 #define SCIOCRECONFIG	_IO('Q', 6)	/* please check again */
 #define SCIOCRESET	_IO('Q', 7)	/* reset the device */
-
+#define	SCIOCREASSIGN	_IO('Q', 8)	/* reassign block */
 
 #endif /* _SYS_SCSIIO_H_ */
