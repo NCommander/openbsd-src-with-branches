@@ -1,4 +1,4 @@
-/*	$OpenBSD: split.c,v 1.3 1997/01/15 23:43:14 millert Exp $	*/
+/*	$OpenBSD: split.c,v 1.4 1999/02/04 03:53:48 millert Exp $	*/
 /*	$NetBSD: split.c,v 1.5 1995/08/31 22:22:05 jtc Exp $	*/
 
 /*
@@ -44,7 +44,7 @@ static char copyright[] =
 #if 0
 static char sccsid[] = "@(#)split.c	8.3 (Berkeley) 4/25/94";
 #else
-static char rcsid[] = "$OpenBSD: split.c,v 1.3 1997/01/15 23:43:14 millert Ex $";
+static char rcsid[] = "$OpenBSD: split.c,v 1.4 1999/02/04 03:53:48 millert Exp $";
 #endif
 #endif /* not lint */
 
@@ -145,7 +145,7 @@ main(argc, argv)
 			++argv;
 		}
 	if (*argv != NULL)			/* File name prefix. */
-		(void)strcpy(fname, *argv++);
+		(void)strlcpy(fname, *argv++, sizeof(fname));
 	if (*argv != NULL)
 		usage();
 
