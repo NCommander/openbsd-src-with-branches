@@ -1,8 +1,10 @@
-/*	$OpenBSD: rint.c,v 1.2 2003/07/31 03:23:41 mickey Exp $	*/
+/*	$OpenBSD: rint.c,v 1.3 2003/07/31 21:48:04 deraadt Exp $	*/
 
 /*	Written by Michael Shalayeff, 2003,  Public domain.	*/
 
 #include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 #include <signal.h>
 #include <unistd.h>
 #include <math.h>

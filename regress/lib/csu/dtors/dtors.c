@@ -1,4 +1,4 @@
-/*	$OpenBSD: dtors.c,v 1.3 2002/02/18 11:09:48 art Exp $	*/
+/*	$OpenBSD: dtors.c,v 1.4 2003/08/02 01:24:35 david Exp $	*/
 /*
  *	Written by Artur Grabowski <art@openbsd.org>, 2002 Public Domain.
  */
@@ -7,6 +7,7 @@
 #include <sys/wait.h>
 
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 #include <err.h>
 #include <unistd.h>

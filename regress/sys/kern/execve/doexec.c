@@ -1,4 +1,4 @@
-/*	$OpenBSD: doexec.c,v 1.3 2001/01/29 02:05:55 niklas Exp $	*/
+/*	$OpenBSD: doexec.c,v 1.4 2003/07/31 21:48:08 deraadt Exp $	*/
 /*	$NetBSD: doexec.c,v 1.3 1995/04/20 22:43:13 cgd Exp $	*/
 
 /*
@@ -33,6 +33,7 @@
 
 #include <errno.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
 
