@@ -1,3 +1,4 @@
+dnl	$OpenBSD$
 Installation is supported from several media types, including:
 
 	CDROM
@@ -15,7 +16,7 @@ is possible to boot from those files.  Then install the rest of the files
 from any of the above sources.
 
 Note: Once a OpenBSD partition exists, it is not possible to load the
-kernel (bsd.rd) from a HFS paritition on that disk.
+kernel (bsd.rd) from a HFS partition on that disk.
 
 
 OpenBSDXferBareTape(xbase xfont xserv xshare)
