@@ -117,8 +117,7 @@ main(argc, argv)
 	hname = argv[optind];
 
 	if ((hp = gethostbyname(hname)) == NULL) {
-		(void) fprintf(stderr, "%s: ", __progname);
-		herror(hname);
+		warnx("%s: %s", hname, hstrerror(h_errno));
 		return 1;
 	}
 
