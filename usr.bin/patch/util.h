@@ -1,8 +1,9 @@
-/*	$OpenBSD: util.h,v 1.7 2003/07/22 17:18:49 otto Exp $	*/
+/*	$OpenBSD: util.h,v 1.8 2003/07/22 17:21:07 deraadt Exp $	*/
 
 char		*fetchname(char *, int, int);
+int		backup_file(char *);
 int		move_file(char *, char *);
-void		copy_file(char *, char *);
+int		copy_file(char *, char *);
 void		say(char *, ...);
 void		fatal(char *, ...)
 		    __attribute__((__format__(__printf__, 1, 2)));
