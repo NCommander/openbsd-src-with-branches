@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: getinfo.c,v 1.1 1996/07/22 03:16:30 tholo Exp $	*/
 
 /*-
  * Copyright (c) 1996 SigmaSoft, Th. Lockert <tholo@sigmasoft.com>
@@ -31,7 +31,7 @@
  */
 
 #ifndef lint
-static char rcsid[] = "$OpenBSD$";
+static char rcsid[] = "$OpenBSD: getinfo.c,v 1.1 1996/07/22 03:16:30 tholo Exp $";
 #endif /* not lint */
 
 #include <sys/types.h>
@@ -353,7 +353,7 @@ getent(cap, len, db_array, fd, name, depth)
 						*(s - 1) = '\0';
 						break;
 					}
-			tcstart = tc - 3;
+			tcstart = tc - 4;
 			tclen = s - tcstart;
 			tcend = s;
 
