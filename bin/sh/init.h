@@ -1,3 +1,4 @@
+/*	$OpenBSD: init.h,v 1.8 1995/05/11 21:29:14 christos Exp $	*/
 /*	$NetBSD: init.h,v 1.8 1995/05/11 21:29:14 christos Exp $	*/
 
 /*-

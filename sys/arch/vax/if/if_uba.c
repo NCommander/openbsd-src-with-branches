@@ -1,4 +1,4 @@
-/*	$NetBSD: if_uba.c,v 1.6 1995/04/11 06:19:09 mycroft Exp $	*/
+/*	$NetBSD: if_uba.c,v 1.12 1996/08/20 14:07:46 ragge Exp $	*/
 
 /*
  * Copyright (c) 1982, 1986, 1988 Regents of the University of California.
@@ -35,28 +35,30 @@
  *	@(#)if_uba.c	7.16 (Berkeley) 12/16/90
  */
 
-#include "sys/param.h"
-#include "sys/systm.h"
-#include "sys/malloc.h"
-#include "sys/mbuf.h"
-#include "sys/map.h"
-#include "sys/buf.h"
-#include "sys/socket.h"
-#include "sys/syslog.h"
 
-#include "net/if.h"
+#include <sys/param.h>
+#include <sys/systm.h>
+#include <sys/malloc.h>
+#include <sys/mbuf.h>
+#include <sys/map.h>
+#include <sys/buf.h>
+#include <sys/socket.h>
+#include <sys/syslog.h>
 
-#include "vax/include/pte.h"
-#include "vax/include/mtpr.h"
-#include "if_uba.h"
-#include "vax/include/vmparam.h"
-#include "vax/uba/ubareg.h"
-#include "vax/uba/ubavar.h"
-#include "machine/macros.h"
+#include <net/if.h>
 
-static if_ubaalloc(struct ifubinfo *, struct ifrw *, int);
-static rcv_xmtbuf(struct ifxmt *);
-static restor_xmtbuf(struct ifxmt *);
+#include <machine/pte.h>
+#include <machine/mtpr.h>
+#include <machine/vmparam.h>
+#include <machine/cpu.h>
+
+#include <vax/if/if_uba.h>
+#include <vax/uba/ubareg.h>
+#include <vax/uba/ubavar.h>
+
+static	int if_ubaalloc __P((struct ifubinfo *, struct ifrw *, int));
+static	void rcv_xmtbuf __P((struct ifxmt *));
+static	void restor_xmtbuf __P((struct ifxmt *));
 
 /*
  * Routines supporting UNIBUS network interfaces.
@@ -66,15 +68,17 @@ static restor_xmtbuf(struct ifxmt *);
  */
 
 /*
- * Init UNIBUS for interface on uban whose headers of size hlen are to
+ * Init UNIBUS for interface whose headers of size hlen are to
  * end on a page boundary.  We allocate a UNIBUS map register for the page
  * with the header, and nmr more UNIBUS map registers for i/o on the adapter,
  * doing this once for each read and once for each write buffer.  We also
  * allocate page frames in the mbuffer pool for these pages.
  */
-if_ubaminit(ifu, uban, hlen, nmr, ifr, nr, ifw, nw)
+int
+if_ubaminit(ifu, uh, hlen, nmr, ifr, nr, ifw, nw)
 	register struct ifubinfo *ifu;
-	int uban, hlen, nmr, nr, nw;
+	struct uba_softc *uh;
+	int hlen, nmr, nr, nw;
 	register struct ifrw *ifr;
 	register struct ifxmt *ifw;
 {
@@ -107,9 +111,9 @@ if_ubaminit(ifu, uban, hlen, nmr, ifr, nr, ifw, nw)
 			p += nclbytes;
 		}
 		ifu->iff_hlen = hlen;
-		ifu->iff_uban = uban;
-		ifu->iff_uba = uba_hd[uban].uh_uba;
-		ifu->iff_ubamr = uba_hd[uban].uh_mr;
+		ifu->iff_softc = uh;
+		ifu->iff_uba = uh->uh_uba;
+		ifu->iff_ubamr = uh->uh_mr;
 	}
 	for (i = 0; i < nr; i++)
 		if (if_ubaalloc(ifu, &ifr[i], nmr) == 0) {
@@ -132,9 +136,9 @@ if_ubaminit(ifu, uban, hlen, nmr, ifr, nr, ifw, nw)
 	return (1);
 bad:
 	while (--nw >= 0)
-		ubarelse(ifu->iff_uban, &ifw[nw].ifw_info);
+		ubarelse(ifu->iff_softc, &ifw[nw].ifw_info);
 	while (--nr >= 0)
-		ubarelse(ifu->iff_uban, &ifr[nr].ifrw_info);
+		ubarelse(ifu->iff_softc, &ifr[nr].ifrw_info);
 	free(cp, M_DEVBUF);
 	ifr[0].ifrw_addr = 0;
 	return (0);
@@ -145,7 +149,7 @@ bad:
  * possibly a buffered data path, and initializing the fields of
  * the ifrw structure to minimize run-time overhead.
  */
-static
+static int
 if_ubaalloc(ifu, ifrw, nmr)
 	struct ifubinfo *ifu;
 	register struct ifrw *ifrw;
@@ -154,7 +158,7 @@ if_ubaalloc(ifu, ifrw, nmr)
 	register int info;
 
 	info =
-	    uballoc(ifu->iff_uban, ifrw->ifrw_addr, nmr*NBPG + ifu->iff_hlen,
+	    uballoc(ifu->iff_softc, ifrw->ifrw_addr, nmr*NBPG + ifu->iff_hlen,
 	        ifu->iff_flags);
 	if (info == 0)
 		return (0);
@@ -233,7 +237,7 @@ if_ubaget(ifu, ifr, totlen, ifp)
 			pp = mtod(m, char *);
 			cpte = (struct pte *)kvtopte(cp);
 			ppte = (struct pte *)kvtopte(pp);
-			x = vax_btop(cp - ifr->ifrw_addr);
+			x = btop(cp - ifr->ifrw_addr);
 			ip = (int *)&ifr->ifrw_mr[x];
 			for (i = 0; i < MCLBYTES/NBPG; i++) {
 				struct pte t;
@@ -279,7 +283,7 @@ out:
  * of the fact that clusters are placed on the xtofree list
  * in inverse order, finding the last one.
  */
-static
+static void
 rcv_xmtbuf(ifw)
 	register struct ifxmt *ifw;
 {
@@ -288,7 +292,7 @@ rcv_xmtbuf(ifw)
 	register i;
 	char *cp;
 
-	while (i = ffs((long)ifw->ifw_xswapd)) {
+	while ((i = ffs((long)ifw->ifw_xswapd)) != 0) {
 		cp = ifw->ifw_base + i * MCLBYTES;
 		i--;
 		ifw->ifw_xswapd &= ~(1<<i);
@@ -310,7 +314,7 @@ rcv_xmtbuf(ifw)
  * Put a transmit buffer back together after doing an if_ubaget on it,
  * which may have swapped pages.
  */
-static
+static void
 restor_xmtbuf(ifw)
 	register struct ifxmt *ifw;
 {
@@ -327,6 +331,7 @@ restor_xmtbuf(ifw)
  * header which is copied to be in the mapped, aligned
  * i/o space.
  */
+int
 if_ubaput(ifu, ifw, m)
 	struct ifubinfo *ifu;
 	register struct ifxmt *ifw;
@@ -347,7 +352,7 @@ if_ubaput(ifu, ifw, m)
 			int *ip;
 
 			pte = (struct pte *)kvtopte(dp);
-			x = vax_btop(cp - ifw->ifw_addr);
+			x = btop(cp - ifw->ifw_addr);
 			ip = (int *)&ifw->ifw_mr[x];
 			for (i = 0; i < MCLBYTES/NBPG; i++)
 				*ip++ = ifw->ifw_proto | pte++->pg_pfn;
@@ -374,7 +379,7 @@ if_ubaput(ifu, ifw, m)
 	cc = cp - ifw->ifw_addr;
 	x = ((cc - ifu->iff_hlen) + MCLBYTES - 1) >> MCLSHIFT;
 	ifw->ifw_xswapd &= ~xswapd;
-	while (i = ffs((long)ifw->ifw_xswapd)) {
+	while ((i = ffs((long)ifw->ifw_xswapd)) != 0) {
 		i--;
 		if (i >= x)
 			break;

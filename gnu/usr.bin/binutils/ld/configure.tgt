@@ -23,6 +23,7 @@ sparc*-*-elf)		targ_emul=elf32_sparc ;;
 sparc*-*-sysv4*)	targ_emul=elf32_sparc ;;
 sparc*-*-lynxos*)	targ_emul=sparclynx ;;
 sparc*-*-netbsd*)	targ_emul=sparcnbsd ;;
+sparc*-*-openbsd*)	targ_emul=sparcnbsd ;;
 sparc*-*-solaris2*)	targ_emul=elf32_sparc ;;
 sparc*-wrs-vxworks*)	targ_emul=sparcaout ;;
 sparc*-*-rtems*)	targ_emul=sparcaout ;;
@@ -62,6 +63,7 @@ i[3456]86-*-linux*)	targ_emul=elf_i386
 i[3456]86-*-sysv4*)	targ_emul=elf_i386 ;;
 i[3456]86-*-unixware)	targ_emul=elf_i386 ;;
 i[3456]86-*-netbsd*)	targ_emul=i386nbsd ;;
+i[3456]86-*-openbsd*)	targ_emul=i386nbsd ;;
 i[3456]86-*-netware)	targ_emul=i386nw ;;
 i[3456]86-*-elf*)	targ_emul=elf_i386 ;;
 i[3456]86-*-freebsdelf*) targ_emul=elf_i386 ;;
@@ -108,7 +110,9 @@ m68k-*-linux*)		targ_emul=m68kelf
 			;;
 m68*-*-lynxos*)		targ_emul=m68klynx ;;
 m68*-hp*-netbsd*)	targ_emul=m68k4knbsd ;;
+m68*-hp*-openbsd*)	targ_emul=m68k4knbsd ;;
 m68*-*-netbsd*)		targ_emul=m68knbsd ;;
+m68*-*-openbsd*)	targ_emul=m68knbsd ;;
 m68*-*-psos*)		targ_emul=m68kpsos ;;
 m68*-*-rtems*)		targ_emul=m68kcoff ;;
 hppa*-*-*elf*)		targ_emul=hppaelf ;;
@@ -122,6 +126,9 @@ mips*el-*-ecoff*)	targ_emul=mipsidtl ;;
 mips*-*-ecoff*)		targ_emul=mipsidt ;;
 mips*-dec-bsd*)		targ_emul=mipsbsd ;;
 mips*-dec-netbsd*)	targ_emul=elf32lmip ;;
+mips*el-*-openbsd*)	targ_emul=mipsel_obsd ;;
+mips*-*-openbsd*)	targ_emul=mipseb_obsd ;;
+# mips*-dec-openbsd*)	targ_emul=elf32lmip ;;
 mips*-*-bsd*)		targ_emul=mipsbig ;;
 mips*vr4300el-*-elf*)	targ_emul=elf32l4300 ;;
 mips*vr4300-*-elf*)	targ_emul=elf32b4300 ;;
@@ -138,13 +145,16 @@ alpha-*-linuxecoff*)	targ_emul=alpha targ_extra_emuls=elf64alpha
 alpha-*-linux*)		targ_emul=elf64alpha targ_extra_emuls=alpha
 			tdir_alpha=`echo ${targ_alias} | sed -e 's/linux/linuxecoff/'`
 			;;
+alpha-*-netbsd*)	targ_emul=alphabsd targ_extra_emuls="alpha elf64alpha";;
+alpha-*-openbsd*)	targ_emul=alphabsd targ_extra_emuls="alpha";;
 alpha-*-osf*)		targ_emul=alpha ;;
 alpha-*-gnu*)		targ_emul=elf64alpha ;;
 alpha-*-netware*)	targ_emul=alpha ;;
 z8k-*-coff) 		targ_emul=z8002; targ_extra_emuls=z8001 ;;
 ns32k-pc532-mach* | ns32k-pc532-ux*)	targ_emul=pc532macha ;;
 ns32k-pc532-netbsd* | ns32k-pc532-lites*) targ_emul=ns32knbsd ;;
-powerpc-*-elf* | powerpc-*-eabi* | powerpc-*-linux* | powerpc-*-sysv*)
+ns32k-pc532-openbsd*)	targ_emul=ns32knbsd ;;
+powerpc-*-*bsd* | powerpc-*-elf* | powerpc-*-eabi* | powerpc-*-linux* | powerpc-*-sysv*)
 	targ_emul=elf32ppc ;;
 powerpcle-*-elf* | powerpcle-*-eabi* | powerpcle-*-solaris* | powerpcle-*-sysv*)	targ_emul=elf32lppc ;;
 powerpc-*-rtems*)	targ_emul=elf32ppc ;;

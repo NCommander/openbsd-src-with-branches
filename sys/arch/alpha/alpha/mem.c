@@ -1,4 +1,5 @@
-/*	$NetBSD: mem.c,v 1.4 1995/06/28 02:45:13 cgd Exp $	*/
+/*	$OpenBSD: mem.c,v 1.5 1996/10/30 22:38:17 niklas Exp $	*/
+/*	$NetBSD: mem.c,v 1.10 1996/11/13 21:13:10 cgd Exp $	*/
 
 /*
  * Copyright (c) 1988 University of Utah.
@@ -55,14 +56,19 @@
 
 #include <vm/vm.h>
 
+#define mmread  mmrw
+#define mmwrite mmrw
+cdev_decl(mm);
+
 caddr_t zeropage;
 extern int firstusablepage, lastusablepage;
 
 /*ARGSUSED*/
 int
-mmopen(dev, flag, mode)
+mmopen(dev, flag, mode, p)
 	dev_t dev;
 	int flag, mode;
+	struct proc *p;
 {
 
 	return (0);
@@ -70,15 +76,17 @@ mmopen(dev, flag, mode)
 
 /*ARGSUSED*/
 int
-mmclose(dev, flag, mode)
+mmclose(dev, flag, mode, p)
 	dev_t dev;
 	int flag, mode;
+	struct proc *p;
 {
 
 	return (0);
 }
 
 /*ARGSUSED*/
+int
 mmrw(dev, uio, flags)
 	dev_t dev;
 	struct uio *uio;
@@ -103,6 +111,7 @@ mmrw(dev, uio, flags)
 /* minor device 0 is physical memory */
 		case 0:
 			v = uio->uio_offset;
+kmemphys:
 #ifndef DEBUG
 			/* allow reads only in RAM (except for DEBUG) */
 			if (v < ctob(firstusablepage) ||
@@ -111,12 +120,19 @@ mmrw(dev, uio, flags)
 #endif
 			o = uio->uio_offset & PGOFSET;
 			c = min(uio->uio_resid, (int)(NBPG - o));
-			error = uiomove(phystok0seg(v), c, uio);
+			error =
+			    uiomove((caddr_t)ALPHA_PHYS_TO_K0SEG(v), c, uio);
 			continue;
 
 /* minor device 1 is kernel memory */
 		case 1:
 			v = uio->uio_offset;
+
+			if (v >= ALPHA_K0SEG_BASE && v <= ALPHA_K0SEG_END) {
+				v = ALPHA_K0SEG_TO_PHYS(v);
+				goto kmemphys;
+			}
+
 			c = min(iov->iov_len, MAXPHYS);
 			if (!kernacc((caddr_t)v, c,
 			    uio->uio_rw == UIO_READ ? B_READ : B_WRITE))
@@ -144,7 +160,7 @@ mmrw(dev, uio, flags)
 			 * is a global zeroed page, the null segment table.
 			 */
 			if (zeropage == NULL) {
-#if CLBYTES == NBPG
+#if (CLBYTES == NBPG) && !defined(NEW_PMAP)
 				extern caddr_t Segtabzero;
 				zeropage = Segtabzero;
 #else
@@ -173,7 +189,7 @@ mmrw(dev, uio, flags)
 int
 mmmmap(dev, off, prot)
 	dev_t dev;
-	vm_offset_t off;
+	int off;			/* XXX */
 	int prot;
 {
 	/*

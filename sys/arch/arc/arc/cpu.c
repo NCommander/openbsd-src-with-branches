@@ -1,35 +1,44 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: cpu.c,v 1.7 1997/04/10 16:29:04 pefo Exp $ */
 
 /*
- * Copyright (c) 1994, 1995 Carnegie-Mellon University.
- * All rights reserved.
- *
- * Author: Per Fogelstrom
+ * Copyright (c) 1997 Per Fogelstrom
  * 
- * Permission to use, copy, modify and distribute this software and
- * its documentation is hereby granted, provided that both the copyright
- * notice and this permission notice appear in all copies of the
- * software, derivative works or modified versions, and any portions
- * thereof, and that both notices appear in supporting documentation.
- * 
- * CARNEGIE MELLON ALLOWS FREE USE OF THIS SOFTWARE IN ITS "AS IS" 
- * CONDITION.  CARNEGIE MELLON DISCLAIMS ANY LIABILITY OF ANY KIND 
- * FOR ANY DAMAGES WHATSOEVER RESULTING FROM THE USE OF THIS SOFTWARE.
- * 
- * Carnegie Mellon requests users of this software to return to
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions
+ * are met:
+ * 1. Redistributions of source code must retain the above copyright
+ *    notice, this list of conditions and the following disclaimer.
+ * 2. Redistributions in binary form must reproduce the above copyright
+ *    notice, this list of conditions and the following disclaimer in the
+ *    documentation and/or other materials provided with the distribution.
+ * 3. All advertising materials mentioning features or use of this software
+ *    must display the following acknowledgement:
+ *	This product includes software developed under OpenBSD by
+ *	Per Fogelstrom.
+ * 4. The name of the author may not be used to endorse or promote products
+ *    derived from this software without specific prior written permission.
  *
- *  Software Distribution Coordinator  or  Software.Distribution@CS.CMU.EDU
- *  School of Computer Science
- *  Carnegie Mellon University
- *  Pittsburgh PA 15213-3890
+ * THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS
+ * OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ * ARE DISCLAIMED.  IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY
+ * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+ * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
+ * OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+ * HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+ * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
+ * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
+ * SUCH DAMAGE.
  *
- * any improvements or extensions that they make and grant Carnegie the
- * rights to redistribute these changes.
  */
 
 #include <sys/param.h>
+#include <sys/systm.h>
+#include <sys/proc.h>
+#include <sys/user.h>
 #include <sys/device.h>
 
+#include <machine/pte.h>
 #include <machine/cpu.h>
 #include <machine/autoconf.h>
 
@@ -45,15 +54,12 @@ struct cfdriver cpu_cd = {
 	NULL, "cpu", DV_DULL, NULL, 0
 };
 
-static int	cpuprint __P((void *, char *pnp));
-
 static int
 cpumatch(parent, cfdata, aux)
 	struct device *parent;
 	void *cfdata;
 	void *aux;
 {
-	struct cfdata *cf = cfdata;
 	struct confargs *ca = aux;
 
 	/* make sure that we're looking for a CPU. */
@@ -69,8 +75,6 @@ cpuattach(parent, dev, aux)
 	struct device *dev;
 	void *aux;
 {
-        struct pcs *p;
-	int needcomma, needrev, i;
 
 	printf(": ");
 
@@ -86,7 +90,7 @@ cpuattach(parent, dev, aux)
 		printf("MIPS R6000 CPU");
 		break;
 	case MIPS_R4000:
-		if(machPrimaryInstCacheSize == 16384)
+		if(CpuPrimaryInstCacheSize == 16384)
 			printf("MIPS R4400 CPU");
 		else
 			printf("MIPS R4000 CPU");
@@ -101,10 +105,13 @@ cpuattach(parent, dev, aux)
 		printf("IDT R3000 derivate");
 		break;
 	case MIPS_R10000:
-		printf("MIPS R10000/T5 CPU");
+		printf("MIPS R10000 CPU");
 		break;
 	case MIPS_R4200:
-		printf("MIPS R4200 CPU (ICE)");
+		printf("NEC VR4200 CPU (ICE)");
+		break;
+	case MIPS_R4300:
+		printf("NEC VR4300 CPU");
 		break;
 	case MIPS_R8000:
 		printf("MIPS R8000 Blackbird/TFP CPU");
@@ -112,16 +119,15 @@ cpuattach(parent, dev, aux)
 	case MIPS_R4600:
 		printf("QED R4600 Orion CPU");
 		break;
-	case MIPS_R3SONY:
-		printf("Sony R3000 based CPU");
+	case MIPS_R4700:
+		printf("QED R4700 Orion CPU");
 		break;
 	case MIPS_R3TOSH:
 		printf("Toshiba R3000 based CPU");
 		break;
-	case MIPS_R3NKK:
-		printf("NKK R3000 based CPU");
+	case MIPS_RM5230:
+		printf("QED RM5230 based CPU");
 		break;
-	case MIPS_UNKC1:
 	case MIPS_UNKC2:
 	default:
 		printf("Unknown CPU type (0x%x)",cpu_id.cpu.cp_imp);
@@ -154,24 +160,28 @@ cpuattach(parent, dev, aux)
 		printf("FPC");
 		break;
 	case MIPS_R10010:
-		printf("MIPS R10000/T5 FPU");
+		printf("MIPS R10000 FPU");
 		break;
 	case MIPS_R4210:
-		printf("MIPS R4200 FPC (ICE)");
+		printf("NEC VR4200 FPC (ICE)");
+		break;
 	case MIPS_R8000:
 		printf("MIPS R8000 Blackbird/TFP");
 		break;
 	case MIPS_R4600:
 		printf("QED R4600 Orion FPC");
 		break;
-	case MIPS_R3SONY:
-		printf("Sony R3000 based FPC");
+	case MIPS_R4700:
+		printf("QED R4700 Orion FPC");
 		break;
 	case MIPS_R3TOSH:
 		printf("Toshiba R3000 based FPC");
 		break;
-	case MIPS_R3NKK:
-		printf("NKK R3000 based FPC");
+	case MIPS_R5000:
+		printf("MIPS R5000 based FPC");
+		break;
+	case MIPS_RM5230:
+		printf("QED RM5230 based FPC");
 		break;
 	case MIPS_UNKF1:
 	default:
@@ -181,8 +191,17 @@ cpuattach(parent, dev, aux)
 	printf(" Rev. %d.%d", fpu_id.cpu.cp_majrev, fpu_id.cpu.cp_minrev);
 	printf("\n");
 
-	printf("        Primary cache size: %dkb Instruction, %dkb Data.\n",
-		machPrimaryInstCacheSize / 1024,
-		machPrimaryDataCacheSize / 1024);
+	printf("Primary cache size: %dkb Instruction, %dkb Data.",
+		CpuPrimaryInstCacheSize / 1024,
+		CpuPrimaryDataCacheSize / 1024);
+	if(CpuTwoWayCache)
+		printf(" Two way set associative.\n");
+	else
+		printf(" Direct mapped.\n");
+
+	if(l2cache_is_snooping)
+		printf("No L2 cache or Snooping L2 cache.\n");
+	else
+		printf("No Snooping L2 cache!.\n");
 }
 

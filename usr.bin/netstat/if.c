@@ -1,4 +1,5 @@
-/*	$NetBSD: if.c,v 1.13 1995/10/03 21:42:36 thorpej Exp $	*/
+/*	$OpenBSD: if.c,v 1.9 1996/08/16 09:38:56 mickey Exp $	*/
+/*	$NetBSD: if.c,v 1.16.4.2 1996/06/07 21:46:46 thorpej Exp $	*/
 
 /*
  * Copyright (c) 1983, 1988, 1993
@@ -37,7 +38,7 @@
 #if 0
 static char sccsid[] = "from: @(#)if.c	8.2 (Berkeley) 2/21/94";
 #else
-static char *rcsid = "$NetBSD: if.c,v 1.13 1995/10/03 21:42:36 thorpej Exp $";
+static char *rcsid = "$OpenBSD: if.c,v 1.9 1996/08/16 09:38:56 mickey Exp $";
 #endif
 #endif /* not lint */
 
@@ -47,10 +48,13 @@ static char *rcsid = "$NetBSD: if.c,v 1.13 1995/10/03 21:42:36 thorpej Exp $";
 
 #include <net/if.h>
 #include <net/if_dl.h>
+#include <net/if_types.h>
 #include <netinet/in.h>
 #include <netinet/in_var.h>
 #include <netns/ns.h>
 #include <netns/ns_if.h>
+#include <netipx/ipx.h>
+#include <netipx/ipx_if.h>
 #include <netiso/iso.h>
 #include <netiso/iso_var.h>
 #include <arpa/inet.h>
@@ -70,6 +74,8 @@ static void catchalarm __P((int));
 
 /*
  * Print a description of the network interfaces.
+ * NOTE: ifnetaddr is the location of the kernel global "ifnet",
+ * which is a TAILQ_HEAD.
  */
 void
 intpr(interval, ifnetaddr)
@@ -81,11 +87,13 @@ intpr(interval, ifnetaddr)
 		struct ifaddr ifa;
 		struct in_ifaddr in;
 		struct ns_ifaddr ns;
+		struct ipx_ifaddr ipx;
 		struct iso_ifaddr iso;
 	} ifaddr;
 	u_long ifaddraddr;
 	struct sockaddr *sa;
-	char name[16];
+	struct ifnet_head ifhead;	/* TAILQ_HEAD */
+	char name[IFNAMSIZ];
 
 	if (ifnetaddr == 0) {
 		printf("ifnet: symbol not defined\n");
@@ -95,9 +103,17 @@ intpr(interval, ifnetaddr)
 		sidewaysintpr((unsigned)interval, ifnetaddr);
 		return;
 	}
-	if (kread(ifnetaddr, (char *)&ifnetaddr, sizeof ifnetaddr))
+
+	/*
+	 * Find the pointer to the first ifnet structure.  Replace
+	 * the pointer to the TAILQ_HEAD with the actual pointer
+	 * to the first list element.
+	 */
+	if (kread(ifnetaddr, (char *)&ifhead, sizeof ifhead))
 		return;
-	printf("%-5.5s %-5.5s %-11.11s %-15.15s %10.10s %5.5s %8.8s %5.5s",
+	ifnetaddr = (u_long)ifhead.tqh_first;
+
+	printf("%-5.5s %-5.5s %-11.11s %-17.17s %8.8s %5.5s %8.8s %5.5s",
 		"Name", "Mtu", "Network", "Address", "Ipkts", "Ierrs",
 		"Opkts", "Oerrs");
 	printf(" %5s", "Coll");
@@ -113,16 +129,14 @@ intpr(interval, ifnetaddr)
 		int n, m;
 
 		if (ifaddraddr == 0) {
-			if (kread(ifnetaddr, (char *)&ifnet, sizeof ifnet) ||
-			    kread((u_long)ifnet.if_name, name, 16))
+			if (kread(ifnetaddr, (char *)&ifnet, sizeof ifnet))
 				return;
-			name[15] = '\0';
+			bcopy(ifnet.if_xname, name, IFNAMSIZ);
+			name[IFNAMSIZ - 1] = '\0';	/* sanity */
 			ifnetaddr = (u_long)ifnet.if_list.tqe_next;
-			if (interface != 0 && (strcmp(name, interface) != 0 ||
-			    unit != ifnet.if_unit))
+			if (interface != 0 && strcmp(name, interface) != 0)
 				continue;
-			cp = index(name, '\0');
-			cp += sprintf(cp, "%d", ifnet.if_unit);
+			cp = strchr(name, '\0');
 			if ((ifnet.if_flags & IFF_UP) == 0)
 				*cp++ = '*';
 			*cp = '\0';
@@ -177,6 +191,21 @@ intpr(interval, ifnetaddr)
 					}
 				}
 				break;
+			case AF_IPX:
+				{
+				struct sockaddr_ipx *sipx =
+					(struct sockaddr_ipx *)sa;
+				u_long net;
+				char netnum[8];
+
+				*(union ipx_net *) &net = sipx->sipx_addr.ipx_net;
+				sprintf(netnum, "%xH", ntohl(net));
+				upHex(netnum);
+				printf("ipx:%-8s", netnum);
+				printf("%-17s ",
+				    ipx_phost((struct sockaddr *)sipx));
+				}
+				break;
 			case AF_NS:
 				{
 				struct sockaddr_ns *sns =
@@ -185,7 +214,7 @@ intpr(interval, ifnetaddr)
 				char netnum[8];
 
 				*(union ns_net *) &net = sns->sns_addr.x_net;
-		sprintf(netnum, "%lxH", ntohl(net));
+				sprintf(netnum, "%xH", ntohl(net));
 				upHex(netnum);
 				printf("ns:%-8s ", netnum);
 				printf("%-17s ",
@@ -196,11 +225,18 @@ intpr(interval, ifnetaddr)
 				{
 				struct sockaddr_dl *sdl =
 					(struct sockaddr_dl *)sa;
-				    cp = (char *)LLADDR(sdl);
-				    n = sdl->sdl_alen;
-				}
 				m = printf("%-11.11s ", "<Link>");
-				goto hexprint;
+				if (sdl->sdl_type == IFT_ETHER ||
+				    sdl->sdl_type == IFT_FDDI)
+					printf("%-17.17s ",
+					    ether_ntoa(LLADDR(sdl)));
+				else {
+					cp = (char *)LLADDR(sdl);
+					n = sdl->sdl_alen;
+					goto hexprint;
+				}
+				}
+				break;
 			default:
 				m = printf("(%d)", sa->sa_family);
 				for (cp = sa->sa_len + (char *)sa;
@@ -230,9 +266,9 @@ intpr(interval, ifnetaddr)
 	}
 }
 
-#define	MAXIF	10
+#define	MAXIF	100
 struct	iftot {
-	char	ift_name[16];		/* interface name */
+	char	ift_name[IFNAMSIZ];	/* interface name */
 	int	ift_ip;			/* input packets */
 	int	ift_ie;			/* input errors */
 	int	ift_op;			/* output packets */
@@ -259,32 +295,38 @@ sidewaysintpr(interval, off)
 	register struct iftot *ip, *total;
 	register int line;
 	struct iftot *lastif, *sum, *interesting;
+	struct ifnet_head ifhead;	/* TAILQ_HEAD */
 	int oldmask;
 
-	if (kread(off, (char *)&firstifnet, sizeof (u_long)))
+	/*
+	 * Find the pointer to the first ifnet structure.  Replace
+	 * the pointer to the TAILQ_HEAD with the actual pointer
+	 * to the first list element.
+	 */
+	if (kread(off, (char *)&ifhead, sizeof ifhead))
 		return;
+	firstifnet = (u_long)ifhead.tqh_first;
+
 	lastif = iftot;
 	sum = iftot + MAXIF - 1;
 	total = sum - 1;
-	interesting = iftot;
+	interesting = (interface == NULL) ? iftot : NULL;
 	for (off = firstifnet, ip = iftot; off;) {
-		char *cp;
-
 		if (kread(off, (char *)&ifnet, sizeof ifnet))
 			break;
-		ip->ift_name[0] = '(';
-		if (kread((u_long)ifnet.if_name, ip->ift_name + 1, 15))
-			break;
-		if (interface && strcmp(ip->ift_name + 1, interface) == 0 &&
-		    unit == ifnet.if_unit)
+		bzero(ip->ift_name, sizeof(ip->ift_name));
+		snprintf(ip->ift_name, IFNAMSIZ, "(%s)", ifnet.if_xname);
+		if (interface && strcmp(ifnet.if_xname, interface) == 0)
 			interesting = ip;
-		ip->ift_name[15] = '\0';
-		cp = index(ip->ift_name, '\0');
-		sprintf(cp, "%d)", ifnet.if_unit);
 		ip++;
 		if (ip >= iftot + MAXIF - 2)
 			break;
 		off = (u_long)ifnet.if_list.tqe_next;
+	}
+	if (interesting == NULL) {
+		fprintf(stderr, "%s: %s: unknown interface\n",
+		    __progname, interface);
+		exit(1);
 	}
 	lastif = ip;
 

@@ -40,8 +40,12 @@
 # include	<string.h>
 
 # define	reg	register
+#ifdef __CHAR_UNSIGNED__
+# define	shrt	short
+#else
 # define	shrt	char
-# define	bool	char
+#endif
+# define	bool	int8_t
 # define	unsgn	unsigned
 
 # define	TRUE	(1)

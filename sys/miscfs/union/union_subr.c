@@ -1,4 +1,5 @@
-/*	$NetBSD: union_subr.c,v 1.17 1995/10/05 06:26:12 mycroft Exp $	*/
+/*	$OpenBSD: union_subr.c,v 1.3 1996/12/07 13:00:16 deraadt Exp $	*/
+/*	$NetBSD: union_subr.c,v 1.18 1996/02/09 22:41:10 christos Exp $	*/
 
 /*
  * Copyright (c) 1994 Jan-Simon Pendry
@@ -69,7 +70,77 @@
 static LIST_HEAD(unhead, union_node) unhead[NHASH];
 static int unvplock[NHASH];
 
-int
+static int union_list_lock __P((int));
+static void union_list_unlock __P((int));
+void union_updatevp __P((struct union_node *, struct vnode *, struct vnode *));
+static int union_relookup __P((struct union_mount *, struct vnode *,
+			       struct vnode **, struct componentname *,
+			       struct componentname *, char *, int));
+int union_vn_close __P((struct vnode *, int, struct ucred *, struct proc *));
+static void union_dircache_r __P((struct vnode *, struct vnode ***, int *));
+struct vnode *union_dircache __P((struct vnode *));
+
+/*
+ * This variable is used to hold a pointer to a function
+ * that is called from vfs_syscalls.c and vfs_syscalls_43.c 
+ * - by keeping a pointer to the function we enable the real
+ * union filesystem code to replace the stub value provided
+ * by vfs_syscalls.c and thus vfs_syscalls.c no longer needs
+ * to know if UNION is built in, lkm'ed, or not even there.
+ */
+extern
+int (*union_check_p) __P((struct proc *, struct vnode **, 
+			   struct file *, struct uio, int *));
+
+int union_check(struct proc *, struct vnode **, struct file *,
+		 struct uio, int *);
+
+int union_check(p, vpp, fp, auio, error)
+	struct proc	*p;
+	struct vnode	**vpp;
+	struct file	*fp;
+	struct uio	auio;
+	int		*error;
+{
+	if ((*vpp)->v_op == union_vnodeop_p) {
+		struct vnode *lvp;
+
+		lvp = union_dircache(*vpp);
+		if (lvp != NULLVP) {
+			struct vattr va;
+
+			/*
+			 * If the directory is opaque,
+			 * then don't show lower entries
+			 */
+			*error = VOP_GETATTR(*vpp, &va, fp->f_cred, p);
+			if (va.va_flags & OPAQUE) {
+				vput(lvp);
+				lvp = NULL;
+			}
+		}
+
+		if (lvp != NULLVP) {
+			*error = VOP_OPEN(lvp, FREAD, fp->f_cred, p);
+			VOP_UNLOCK(lvp);
+
+			if (*error) {
+				vrele(lvp);
+				return (0);
+			}
+			fp->f_data = (caddr_t) lvp;
+			fp->f_offset = 0;
+			*error = vn_close(*vpp, FREAD, fp->f_cred, p);
+			if (*error)
+				return (0);
+			*vpp = lvp;
+			return (1);
+		}
+	}
+	return (0);
+};
+
+void
 union_init()
 {
 	int i;
@@ -77,6 +148,7 @@ union_init()
 	for (i = 0; i < NHASH; i++)
 		LIST_INIT(&unhead[i]);
 	bzero((caddr_t) unvplock, sizeof(unvplock));
+	union_check_p = union_check;
 }
 
 static int
@@ -275,11 +347,10 @@ union_allocvp(vpp, mp, undvp, dvp, cnp, uppervp, lowervp, docache)
 	int docache;
 {
 	int error;
-	struct union_node *un;
-	struct union_node **pp;
+	struct union_node *un = NULL;
 	struct vnode *xlowervp = NULLVP;
 	struct union_mount *um = MOUNTTOUNIONMOUNT(mp);
-	int hash;
+	int hash = 0;
 	int vflag;
 	int try;
 
@@ -732,6 +803,10 @@ union_relookup(um, dvp, vpp, cnp, cn, path, pathlen)
 	error = relookup(dvp, vpp, cn);
 	if (!error)
 		vrele(dvp);
+	else {
+		free(cn->cn_pnbuf, M_NAMEI);
+		cn->cn_pnbuf = 0;
+	}
 
 	return (error);
 }
@@ -809,7 +884,6 @@ union_mkwhiteout(um, dvp, cnp, path)
 	char *path;
 {
 	int error;
-	struct vattr va;
 	struct proc *p = cnp->cn_proc;
 	struct vnode *wvp;
 	struct componentname cn;
@@ -861,7 +935,6 @@ union_vn_create(vpp, un, p)
 	int fmode = FFLAGS(O_WRONLY|O_CREAT|O_TRUNC|O_EXCL);
 	int error;
 	int cmode = UN_FILEMODE & ~p->p_fd->fd_cmask;
-	char *cp;
 	struct componentname cn;
 
 	*vpp = NULLVP;
@@ -876,7 +949,7 @@ union_vn_create(vpp, un, p)
 	 * copied in the first place).
 	 */
 	cn.cn_namelen = strlen(un->un_path);
-	cn.cn_pnbuf = (caddr_t) malloc(cn.cn_namelen, M_NAMEI, M_WAITOK);
+	cn.cn_pnbuf = (caddr_t) malloc(cn.cn_namelen+1, M_NAMEI, M_WAITOK);
 	bcopy(un->un_path, cn.cn_pnbuf, cn.cn_namelen+1);
 	cn.cn_nameiop = CREATE;
 	cn.cn_flags = (LOCKPARENT|HASBUF|SAVENAME|SAVESTART|ISLASTCN);
@@ -887,7 +960,7 @@ union_vn_create(vpp, un, p)
 	cn.cn_consume = 0;
 
 	VREF(un->un_dirvp);
-	if (error = relookup(un->un_dirvp, &vp, &cn))
+	if ((error = relookup(un->un_dirvp, &vp, &cn)) != 0)
 		return (error);
 	vrele(un->un_dirvp);
 
@@ -915,10 +988,10 @@ union_vn_create(vpp, un, p)
 	vap->va_type = VREG;
 	vap->va_mode = cmode;
 	VOP_LEASE(un->un_dirvp, p, cred, LEASE_WRITE);
-	if (error = VOP_CREATE(un->un_dirvp, &vp, &cn, vap))
+	if ((error = VOP_CREATE(un->un_dirvp, &vp, &cn, vap)) != 0)
 		return (error);
 
-	if (error = VOP_OPEN(vp, fmode, cred, p)) {
+	if ((error = VOP_OPEN(vp, fmode, cred, p)) != 0) {
 		vput(vp);
 		return (error);
 	}

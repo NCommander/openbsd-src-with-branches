@@ -1,4 +1,4 @@
-/*      $OpenBSD: asm.h,v 1.2 1996/06/06 23:06:30 deraadt Exp $	*/
+/*      $OpenBSD: asm.h,v 1.5 1997/05/02 08:38:45 pefo Exp $	*/
 
 /*
  * Copyright (c) 1992, 1993
@@ -49,23 +49,64 @@
 
 #include <machine/regdef.h>
 
-#define	ABICALLS
+#ifndef ABICALLS
+#define	ABICALLS	.abicalls
+#endif
+
+#if defined(ABICALLS) && !defined(_KERNEL)
+	ABICALLS
+#endif
 
 #define RCSID(x)
 
 #define _C_LABEL(x) x
 
 /*
+ * Define how to access unaligned data word 
+ */
+#ifdef MIPSEL
+#define LWLO    lwl
+#define LWHI    lwr
+#define	SWLO	swl
+#define	SWHI	swr
+#endif
+#ifdef MIPSEB
+#define LWLO    lwr
+#define LWHI    lwl
+#define	SWLO	swr
+#define	SWHI	swl
+#endif
+
+/*
+ * Code for setting gp reg if abicalls are used.
+ */
+#if defined(ABICALLS) && !defined(_KERNEL)
+#define	ABISETUP		\
+	.set	noreorder;	\
+	.cpload	t9;		\
+	.set	reorder;
+#else
+#define	ABISETUP
+#endif
+
+/*
  * Define -pg profile entry code.
  */
 #if defined(GPROF) || defined(PROF)
-#define	MCOUNT	.set noreorder; \
-		.set noat; \
-		move $1,$31; \
-		jal _mcount; \
-		subu sp,sp,8; \
-		.set reorder; \
-		.set at;
+#define	MCOUNT			\
+	subu 	sp, sp, 32;	\
+	.cprestore 16;		\
+	sw	ra, 28(sp);	\
+	sw	gp, 24(sp);	\
+	.set	noat;		\
+	.set	noreorder;	\
+	move	AT, ra;		\
+	jal	_mcount;	\
+	subu	sp, sp, 8;	\
+	lw	ra, 28(sp);	\
+	addu	sp, sp, 32;	\
+	.set reorder;		\
+	.set	at;
 #else
 #define	MCOUNT
 #endif
@@ -75,30 +116,31 @@
  *
  *	Declare a leaf routine.
  */
-#define LEAF(x) \
-	.globl x; \
-	.ent x, 0; \
-x: ; \
-	.frame sp, 0, ra; \
+#define LEAF(x)			\
+	.align	3;		\
+	.globl x;		\
+	.ent x, 0;		\
+x: ;				\
+	.frame sp, 0, ra;	\
+	ABISETUP		\
 	MCOUNT
+
+#define	ALEAF(x)		\
+	.globl	x;		\
+x:
 
 /*
  * NLEAF(x)
  *
  *	Declare a non-profiled leaf routine.
  */
-#define NLEAF(x) \
-	.globl x; \
-	.ent x, 0; \
-x: ; \
-	.frame sp, 0, ra
-
-/*
- * ALEAF -- declare alternate entry to a leaf routine.
- */
-#define	ALEAF(x)					\
-	.globl	x;					\
-x:
+#define NLEAF(x)		\
+	.align	3;		\
+	.globl x;		\
+	.ent x, 0;		\
+x: ;				\
+	.frame sp, 0, ra;	\
+	ABISETUP
 
 /*
  * NON_LEAF(x)
@@ -106,10 +148,12 @@ x:
  *	Declare a non-leaf routine (a routine that makes other C calls).
  */
 #define NON_LEAF(x, fsize, retpc) \
-	.globl x; \
-	.ent x, 0; \
-x: ; \
+	.align	3;		\
+	.globl x;		\
+	.ent x, 0;		\
+x: ;				\
 	.frame sp, fsize, retpc; \
+	ABISETUP		\
 	MCOUNT
 
 /*
@@ -119,10 +163,12 @@ x: ; \
  *	(a routine that makes other C calls).
  */
 #define NNON_LEAF(x, fsize, retpc) \
-	.globl x; \
-	.ent x, 0; \
-x: ; \
-	.frame sp, fsize, retpc
+	.align	3;		\
+	.globl x;		\
+	.ent x, 0;		\
+x: ;				\
+	.frame sp, fsize, retpc	\
+	ABISETUP
 
 /*
  * END(x)

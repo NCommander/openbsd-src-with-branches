@@ -1,4 +1,5 @@
-/*	$NetBSD: ad1848.c,v 1.6 1995/07/07 02:11:51 brezak Exp $	*/
+/*	$OpenBSD: ad1848.c,v 1.6 1996/07/04 21:00:57 deraadt Exp $	*/
+/*	$NetBSD: ad1848.c,v 1.10 1996/04/29 20:02:32 christos Exp $	*/
 
 /*
  * Copyright (c) 1994 John Brezak
@@ -118,9 +119,9 @@ static int ad1848_init_values[] = {
     0x19,		/* Left DAC output Control */
     0x19,		/* Right DAC output Control */
     			/* Clock and Data Format */
-    CLOCK_XTAL1|FMT_PCM8|AUTO_CAL_ENABLE,
+    CLOCK_XTAL1|FMT_PCM8,
     			/* Interface Config */
-    SINGLE_DMA,
+    SINGLE_DMA|AUTO_CAL_ENABLE,
     INTERRUPT_ENABLE,	/* Pin control */
     0x00,		/* Test and Init */
     0xca,		/* Misc control */
@@ -148,11 +149,16 @@ static int ad1848_init_values[] = {
 
 };
 
-int	ad1848_probe();
-void	ad1848_attach();
-
 void	ad1848_reset __P((struct ad1848_softc *));
 int	ad1848_set_speed __P((struct ad1848_softc *, int));
+int	ad1848_set_format __P((struct ad1848_softc *, int, int)); 
+void	ad1848_mute_monitor __P((void *, int));
+
+static int ad_read __P((struct ad1848_softc *, int));
+static __inline void ad_write __P((struct ad1848_softc *, int, int));
+static void ad_set_MCE __P((struct ad1848_softc *, int));
+static void wait_for_calibration __P((struct ad1848_softc *));
+
 
 static int
 ad_read(sc, reg)
@@ -168,7 +174,7 @@ ad_read(sc, reg)
     return x;
 }
 
-static __inline__ void
+static __inline void
 ad_write(sc, reg, data)
     struct ad1848_softc *sc;
     int reg;
@@ -276,7 +282,7 @@ ad1848_forceintr(sc)
      * it is needed (and you pay the latency).  Also, you might
      * never need the buffer anyway.)
      */
-    isa_dmastart(B_READ, &dmabuf, 1, sc->sc_drq);
+    isa_dmastart(DMAMODE_READ, &dmabuf, 1, sc->sc_drq);
 
     ad_write(sc, SP_LOWER_BASE_COUNT, 0);
     ad_write(sc, SP_UPPER_BASE_COUNT, 0);
@@ -291,7 +297,7 @@ int
 ad1848_probe(sc)
     struct ad1848_softc *sc;
 {
-    register u_short iobase = sc->sc_iobase;
+    register int iobase = sc->sc_iobase;
     u_char tmp, tmp1 = 0xff, tmp2 = 0xff;
     int i;
     
@@ -316,7 +322,9 @@ ad1848_probe(sc)
      * If the I/O address is unused, inb() typically returns 0xff.
      */
     if (((tmp = inb(iobase+AD1848_IADDR)) & SP_IN_INIT) != 0x00) { /* Not a AD1848 */
+#if 0
 	DPRINTF(("ad_detect_A %x\n", tmp));
+#endif
 	return 0;
     }
 
@@ -468,7 +476,6 @@ void
 ad1848_attach(sc)
     struct ad1848_softc *sc;
 {
-    register u_short iobase = sc->sc_iobase;
     int i;
     struct ad1848_volume vol_mid = {150, 150};
     struct ad1848_volume vol_0   = {0, 0};
@@ -651,7 +658,6 @@ ad1848_set_mic_gain(sc, gp)
     struct ad1848_volume *gp;
 {
     u_char reg;
-    u_int atten;
     
     DPRINTF(("cs4231_set_mic_gain: %d\n", gp->left));
 
@@ -1049,7 +1055,6 @@ ad1848_set_channels(addr, chans)
     int chans;
 {
     register struct ad1848_softc *sc = addr;
-    int mode;
 	
     DPRINTF(("ad1848_set_channels: %d\n", chans));
 
@@ -1124,8 +1129,7 @@ ad1848_round_blocksize(addr, blk)
     sc->sc_lastcc = -1;
 
     /* Higher speeds need bigger blocks to avoid popping and silence gaps. */
-    if ((sc->sc_orate > 8000 || sc->sc_irate > 8000) &&
-	(blk > NBPG/2 || blk < NBPG/4))
+    if ((sc->sc_orate > 8000 || sc->sc_irate > 8000) && blk < NBPG/2)
 	    blk = NBPG/2;
     /* don't try to DMA too much at once, though. */
     if (blk > NBPG)
@@ -1296,7 +1300,9 @@ void
 ad1848_reset(sc)
     register struct ad1848_softc *sc;
 {
+#if 0
     u_char r;
+#endif
     
     DPRINTF(("ad1848_reset\n"));
     
@@ -1502,11 +1508,10 @@ ad1848_dma_input(addr, p, cc, intr, arg)
     void *addr;
     void *p;
     int cc;
-    void (*intr)();
+    void (*intr) __P((void *));
     void *arg;
 {
     register struct ad1848_softc *sc = addr;
-    register u_short iobase;
     register u_char reg;
     
     if (sc->sc_locked) {
@@ -1521,10 +1526,10 @@ ad1848_dma_input(addr, p, cc, intr, arg)
     sc->sc_locked = 1;
     sc->sc_intr = intr;
     sc->sc_arg = arg;
-    sc->sc_dma_flags = B_READ;
+    sc->sc_dma_flags = DMAMODE_READ;
     sc->sc_dma_bp = p;
     sc->sc_dma_cnt = cc;
-    isa_dmastart(B_READ, p, cc, sc->sc_recdrq);
+    isa_dmastart(DMAMODE_READ, p, cc, sc->sc_recdrq);
 
     if (sc->precision == 16)
 	cc >>= 1;
@@ -1557,11 +1562,10 @@ ad1848_dma_output(addr, p, cc, intr, arg)
     void *addr;
     void *p;
     int cc;
-    void (*intr)();
+    void (*intr) __P((void *));
     void *arg;
 {
     register struct ad1848_softc *sc = addr;
-    register u_short iobase;
     register u_char reg;
     
     if (sc->sc_locked) {
@@ -1576,10 +1580,10 @@ ad1848_dma_output(addr, p, cc, intr, arg)
     sc->sc_locked = 1;
     sc->sc_intr = intr;
     sc->sc_arg = arg;
-    sc->sc_dma_flags = B_WRITE;
+    sc->sc_dma_flags = DMAMODE_WRITE;
     sc->sc_dma_bp = p;
     sc->sc_dma_cnt = cc;
-    isa_dmastart(B_WRITE, p, cc, sc->sc_drq);
+    isa_dmastart(DMAMODE_WRITE, p, cc, sc->sc_drq);
     
     if (sc->precision == 16)
 	cc >>= 1;
@@ -1622,7 +1626,7 @@ ad1848_intr(arg)
     if (sc->sc_intr && (status & INTERRUPT_STATUS)) {
 	/* ACK DMA read because it may be in a bounce buffer */
 	/* XXX Do write to mask DMA ? */
-	if (sc->sc_dma_flags & B_READ)
+	if (sc->sc_dma_flags & DMAMODE_READ)
 	    isa_dmadone(sc->sc_dma_flags, sc->sc_dma_bp, sc->sc_dma_cnt - 1, sc->sc_recdrq);
 	(*sc->sc_intr)(sc->sc_arg);
 	retval = 1;

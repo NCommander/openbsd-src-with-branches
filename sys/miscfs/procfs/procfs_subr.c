@@ -1,4 +1,5 @@
-/*	$NetBSD: procfs_subr.c,v 1.13 1994/06/29 06:34:57 cgd Exp $	*/
+/*	$OpenBSD: procfs_subr.c,v 1.4 1996/07/02 06:52:03 niklas Exp $	*/
+/*	$NetBSD: procfs_subr.c,v 1.15 1996/02/12 15:01:42 christos Exp $	*/
 
 /*
  * Copyright (c) 1993 Jan-Simon Pendry
@@ -48,8 +49,14 @@
 #include <sys/malloc.h>
 #include <miscfs/procfs/procfs.h>
 
-static struct pfsnode *pfshead;
+static TAILQ_HEAD(, pfsnode)	pfshead;
 static int pfsvplock;
+
+void
+procfs_init(void)
+{
+	TAILQ_INIT(&pfshead);
+}
 
 /*
  * allocate a pfsnode/vnode pair.  the vnode is
@@ -86,11 +93,10 @@ procfs_allocvp(mp, vpp, pid, pfs_type)
 {
 	struct pfsnode *pfs;
 	struct vnode *vp;
-	struct pfsnode **pp;
 	int error;
 
 loop:
-	for (pfs = pfshead; pfs != 0; pfs = pfs->pfs_next) {
+	for (pfs = pfshead.tqh_first; pfs != NULL; pfs = pfs->list.tqe_next) {
 		vp = PFSTOV(pfs);
 		if (pfs->pfs_pid == pid &&
 		    pfs->pfs_type == pfs_type &&
@@ -113,14 +119,13 @@ loop:
 	}
 	pfsvplock |= PROCFS_LOCKED;
 
-	if (error = getnewvnode(VT_PROCFS, mp, procfs_vnodeop_p, vpp))
+	if ((error = getnewvnode(VT_PROCFS, mp, procfs_vnodeop_p, vpp)) != 0)
 		goto out;
 	vp = *vpp;
 
 	MALLOC(pfs, void *, sizeof(struct pfsnode), M_TEMP, M_WAITOK);
 	vp->v_data = pfs;
 
-	pfs->pfs_next = 0;
 	pfs->pfs_pid = (pid_t) pid;
 	pfs->pfs_type = pfs_type;
 	pfs->pfs_vnode = vp;
@@ -177,9 +182,7 @@ loop:
 	}
 
 	/* add to procfs vnode list */
-	for (pp = &pfshead; *pp; pp = &(*pp)->pfs_next)
-		continue;
-	*pp = pfs;
+	TAILQ_INSERT_TAIL(&pfshead, pfs, list);
 
 out:
 	pfsvplock &= ~PROCFS_LOCKED;
@@ -196,25 +199,19 @@ int
 procfs_freevp(vp)
 	struct vnode *vp;
 {
-	struct pfsnode **pfspp;
 	struct pfsnode *pfs = VTOPFS(vp);
 
-	for (pfspp = &pfshead; *pfspp != 0; pfspp = &(*pfspp)->pfs_next) {
-		if (*pfspp == pfs) {
-			*pfspp = pfs->pfs_next;
-			break;
-		}
-	}
-
+	TAILQ_REMOVE(&pfshead, pfs, list);
 	FREE(vp->v_data, M_TEMP);
 	vp->v_data = 0;
 	return (0);
 }
 
 int
-procfs_rw(ap)
-	struct vop_read_args *ap;
+procfs_rw(v)
+	void *v;
 {
+	struct vop_read_args *ap = v;
 	struct vnode *vp = ap->a_vp;
 	struct uio *uio = ap->a_uio;
 	struct proc *curp = uio->uio_procp;
@@ -281,7 +278,7 @@ vfs_getuserstr(uio, buf, buflenp)
 		return (EMSGSIZE);
 	xlen = uio->uio_resid;
 
-	if (error = uiomove(buf, xlen, uio))
+	if ((error = uiomove(buf, xlen, uio)) != 0)
 		return (error);
 
 	/* allow multiple writes without seeks */
@@ -305,7 +302,8 @@ vfs_findname(nm, buf, buflen)
 {
 
 	for (; nm->nm_name; nm++)
-		if (bcmp(buf, (char *) nm->nm_name, buflen+1) == 0)
+		if (bcmp((const void *) buf, (const void *) nm->nm_name,
+		    buflen + 1) == 0)
 			return (nm);
 
 	return (0);

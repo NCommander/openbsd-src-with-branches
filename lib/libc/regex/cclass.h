@@ -1,4 +1,4 @@
-/*	$NetBSD: cclass.h,v 1.3 1995/02/27 13:28:29 cgd Exp $	*/
+/*	$OpenBSD: cclass.h,v 1.2 1996/08/19 08:31:04 tholo Exp $	*/
 
 /*-
  * Copyright (c) 1992, 1993, 1994 Henry Spencer.

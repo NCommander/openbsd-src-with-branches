@@ -1,3 +1,4 @@
+/*	$OpenBSD: vm_init.c,v 1.9 1994/06/29 06:48:00 cgd Exp $	*/
 /*	$NetBSD: vm_init.c,v 1.9 1994/06/29 06:48:00 cgd Exp $	*/
 
 /* 

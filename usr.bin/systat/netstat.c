@@ -1,3 +1,4 @@
+/*	$OpenBSD: netstat.c,v 1.5 1996/08/06 18:48:15 deraadt Exp $	*/
 /*	$NetBSD: netstat.c,v 1.3 1995/06/18 23:53:07 cgd Exp $	*/
 
 /*-
@@ -37,7 +38,7 @@
 #if 0
 static char sccsid[] = "@(#)netstat.c	8.1 (Berkeley) 6/6/93";
 #endif
-static char rcsid[] = "$NetBSD: netstat.c,v 1.3 1995/06/18 23:53:07 cgd Exp $";
+static char rcsid[] = "$OpenBSD: netstat.c,v 1.5 1996/08/06 18:48:15 deraadt Exp $";
 #endif /* not lint */
 
 /*
@@ -81,7 +82,7 @@ static char *inetname __P((struct in_addr));
 static void inetprint __P((struct in_addr *, int, char *));
 
 #define	streq(a,b)	(strcmp(a,b)==0)
-#define	YMAX(w)		((w)->maxy-1)
+#define	YMAX(w)		((w)->_maxy-1)
 
 WINDOW *
 opennetstat()
@@ -384,10 +385,10 @@ inetprint(in, port, proto)
 	char *proto;
 {
 	struct servent *sp = 0;
-	char line[80], *cp, *index();
+	char line[80], *cp;
 
 	sprintf(line, "%.*s.", 16, inetname(*in));
-	cp = index(line, '\0');
+	cp = strchr(line, '\0');
 	if (!nflag && port)
 		sp = getservbyport(port, proto);
 	if (sp || port == 0)
@@ -395,7 +396,7 @@ inetprint(in, port, proto)
 	else
 		sprintf(cp, "%d", ntohs((u_short)port));
 	/* pad to full column to clear any garbage */
-	cp = index(line, '\0');
+	cp = strchr(line, '\0');
 	while (cp - line < 22)
 		*cp++ = ' ';
 	*cp = '\0';
@@ -434,7 +435,7 @@ inetname(in)
 	if (in.s_addr == INADDR_ANY)
 		strcpy(line, "*");
 	else if (cp)
-		strcpy(line, cp);
+		strncpy(line, cp, sizeof line);
 	else {
 		in.s_addr = ntohl(in.s_addr);
 #define C(x)	((x) & 0xff)
@@ -467,6 +468,8 @@ cmdnetstat(cmd, args)
 			p->ni_flags |= NIF_LACHG|NIF_FACHG;
 		}
 		nflag = new;
+		wclear(wnd);
+		labelnetstat();
 		goto redisplay;
 	}
 	if (!netcmd(cmd, args))

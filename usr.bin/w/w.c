@@ -1,3 +1,5 @@
+/*	$OpenBSD: w.c,v 1.15 1997/03/30 18:16:02 millert Exp $	*/
+
 /*-
  * Copyright (c) 1980, 1991, 1993, 1994
  *	The Regents of the University of California.  All rights reserved.
@@ -74,6 +76,7 @@ static char sccsid[] = "@(#)w.c	8.4 (Berkeley) 4/16/94";
 #include <string.h>
 #include <tzfile.h>
 #include <unistd.h>
+#include <limits.h>
 #include <utmp.h>
 #include <vis.h>
 
@@ -88,7 +91,7 @@ time_t		uptime;		/* time of last reboot & elapsed time since */
 int		ttywidth;	/* width of tty */
 int		argwidth;	/* width of tty */
 int		header = 1;	/* true if -h flag: don't print heading */
-int		nflag;		/* true if -n flag: don't convert addrs */
+int		nflag = 1;	/* true if -n flag: don't convert addrs */
 int		sortidle;	/* sort bu idle time */
 char	       *sel_user;	/* login of particular user selected */
 char		domain[MAXHOSTNAMELEN];
@@ -123,7 +126,7 @@ main(argc, argv)
 	u_long l;
 	int ch, i, nentries, nusers, wcmd;
 	char *memf, *nlistf, *p, *x;
-	char buf[MAXHOSTNAMELEN], errbuf[256];
+	char buf[MAXHOSTNAMELEN], errbuf[_POSIX2_LINE_MAX];
 
 	/* Are we w(1) or uptime(1)? */
 	p = __progname;
@@ -134,11 +137,11 @@ main(argc, argv)
 		p = "";
 	} else {
 		wcmd = 1;
-		p = "hiflM:N:nsuw";
+		p = "hiflM:N:asuw";
 	}
 
 	memf = nlistf = NULL;
-	while ((ch = getopt(argc, argv, p)) != EOF)
+	while ((ch = getopt(argc, argv, p)) != -1)
 		switch (ch) {
 		case 'h':
 			header = 0;
@@ -153,8 +156,8 @@ main(argc, argv)
 		case 'N':
 			nlistf = optarg;
 			break;
-		case 'n':
-			nflag = 1;
+		case 'a':
+			nflag = 0;
 			break;
 		case 'f': case 'l': case 's': case 'u': case 'w':
 			warnx("[-flsuw] no longer supported");
@@ -165,6 +168,15 @@ main(argc, argv)
 		}
 	argc -= optind;
 	argv += optind;
+
+	/*
+	 * Discard setgid privileges if not the running kernel so that bad
+	 * guys can't print interesting stuff from kernel memory.
+	 */
+	if (nlistf != NULL || memf != NULL) {
+		setegid(getgid());
+		setgid(getgid());
+	}
 
 	if ((kd = kvm_openfiles(nlistf, memf, NULL, O_RDONLY, errbuf)) == NULL)
 		errx(1, "%s", errbuf);
@@ -222,7 +234,7 @@ main(argc, argv)
 	(void)printf(HEADER);
 
 	if ((kp = kvm_getprocs(kd, KERN_PROC_ALL, 0, &nentries)) == NULL)
-		err(1, "%s", kvm_geterr(kd));
+		errx(1, "%s", kvm_geterr(kd));
 	for (i = 0; i < nentries; i++, kp++) {
 		struct proc *p = &kp->kp_proc;
 		struct eproc *e;
@@ -231,7 +243,17 @@ main(argc, argv)
 			continue;
 		e = &kp->kp_eproc;
 		for (ep = ehead; ep != NULL; ep = ep->next) {
-			if (ep->tdev == e->e_tdev && e->e_pgid == e->e_tpgid) {
+			/* ftp is a special case. */
+			if (strncmp(ep->utmp.ut_line, "ftp", 3) == 0) {
+				pid_t fp = (pid_t)strtol(&ep->utmp.ut_line[3],
+							 NULL, 10);
+				if (p->p_pid == fp) {
+					ep->kp = kp;
+
+					break;
+				}
+			} else if (ep->tdev == e->e_tdev
+				   && e->e_pgid == e->e_tpgid) {
 				/*
 				 * Proc is in foreground of this terminal
 				 */
@@ -278,8 +300,12 @@ main(argc, argv)
 
 	for (ep = ehead; ep != NULL; ep = ep->next) {
 		p = *ep->utmp.ut_host ? ep->utmp.ut_host : "-";
-		if ((x = strchr(p, ':')) != NULL)
-			*x++ = '\0';
+		for (x = NULL, i = 0; p[i] != '\0' && i < UT_HOSTSIZE; i++)
+			if (p[i] == ':') {
+				x = &p[i];
+				*x++ = '\0';
+				break;
+			}
 		if (!nflag && isdigit(*p) &&
 		    (long)(l = inet_addr(p)) != -1 &&
 		    (hp = gethostbyaddr((char *)&l, sizeof(l), AF_INET))) {
@@ -314,17 +340,28 @@ static void
 pr_args(kp)
 	struct kinfo_proc *kp;
 {
-	char **argv;
+	char **argv, *str;
 	int left;
 
 	if (kp == 0)
 		goto nothing;
 	left = argwidth;
-	argv = kvm_getargv(kd, kp, argwidth);
+	argv = kvm_getargv(kd, kp, argwidth+60);  /*+60 for ftpd snip */
 	if (argv == 0)
 		goto nothing;
+
 	while (*argv) {
-		fmt_puts(*argv, &left);
+		/* ftp is a special case... */
+		if (strncmp(*argv, "ftpd:", 5) == 0) {
+			str = strrchr(*argv, ':');
+			if (str != (char *)NULL) {
+				if ((str[0] == ':') && isspace(str[1]))
+					str += 2;
+				fmt_puts(str, &left);
+			} else
+				fmt_puts(*argv, &left);
+		} else
+			fmt_puts(*argv, &left);
 		argv++;
 		fmt_putc(' ', &left);
 	}
@@ -351,8 +388,9 @@ pr_header(nowp, nusers)
 	 * SCCS forces the string manipulation below, as it replaces
 	 * %, M, and % in a character string with the file name.
 	 */
-	(void)strftime(buf, sizeof(buf),
+	(void)strftime(buf, sizeof(buf) - 1,
 	    __CONCAT("%l:%","M%p"), localtime(nowp));
+	buf[sizeof buf -1] = '\0';
 	(void)printf("%s ", buf);
 
 	/*
@@ -380,9 +418,9 @@ pr_header(nowp, nusers)
 			if (hrs > 0)
 				(void)printf(" %d hr%s,",
 				    hrs, hrs > 1 ? "s" : "");
-			if (mins > 0)
+			if (mins > 0 || (days == 0 && hrs == 0))
 				(void)printf(" %d min%s,",
-				    mins, mins > 1 ? "s" : "");
+				    mins, mins != 1 ? "s" : "");
 		}
 	}
 
@@ -424,7 +462,7 @@ usage(wcmd)
 {
 	if (wcmd)
 		(void)fprintf(stderr,
-		    "usage: w: [-hin] [-M core] [-N system] [user]\n");
+		    "usage: w: [-hia] [-M core] [-N system] [user]\n");
 	else
 		(void)fprintf(stderr, "uptime\n");
 	exit (1);

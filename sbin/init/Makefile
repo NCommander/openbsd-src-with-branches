@@ -1,10 +1,11 @@
-#	$NetBSD: Makefile,v 1.16 1995/03/18 14:56:28 cgd Exp $
-#	@(#)Makefile	8.1 (Berkeley) 7/19/93
+#	$OpenBSD: Makefile,v 1.4 1996/09/16 10:51:31 downsj Exp $
+
+STATIC=	-static
 
 PROG=	init
 MAN=	init.8
-DPADD=	${LIBUTIL} ${LIBCRYPT}
-LDADD=	-lutil -lcrypt
+DPADD=	${LIBUTIL} 
+LDADD=	-lutil 
 BINMODE=500
 INSTALLFLAGS=-fschg
 CFLAGS+=-DDEBUGSHELL -DSECURE

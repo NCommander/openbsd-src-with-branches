@@ -171,6 +171,10 @@ CXX_FOR_TARGET = ` \
 # install.
 LD_PROG	= ld.new
 
+# Target to use for installing unformatted man-pages.  Some systems may not
+# want them installed.
+INSTALL_MAN = install-man
+
 all: $(LD_PROG)
 .PHONY: all
 
@@ -200,6 +204,7 @@ ALL_EMULATIONS = \
 	eaixppc.o \
 	eaixrs6.o \
 	ealpha.o \
+	ealphabsd.o \
 	earmaoutb.o \
 	earmaoutl.o \
 	earmcoff.o \
@@ -257,6 +262,8 @@ ALL_EMULATIONS = \
 	em88kbcs.o \
 	emipsbig.o \
 	emipsbsd.o \
+	emipsel_obsd.o \
+	emipseb_obsd.o \
 	emipsidt.o \
 	emipsidtl.o \
 	emipslit.o \
@@ -364,6 +371,9 @@ eaixrs6.c: $(srcdir)/emulparams/aixrs6.sh \
 ealpha.c: $(srcdir)/emulparams/alpha.sh \
   $(srcdir)/emultempl/generic.em $(srcdir)/scripttempl/alpha.sc ${GEN_DEPENDS}
 	${GENSCRIPTS} alpha "$(tdir_alpha)"
+ealphabsd.c: $(srcdir)/emulparams/alphabsd.sh \
+  $(srcdir)/emultempl/generic.em $(srcdir)/scripttempl/alphabsd.sc ${GEN_DEPENDS}
+	${GENSCRIPTS} alphabsd "$(tdir_alpha)"
 earmaoutb.c:	$(srcdir)/emulparams/armaoutb.sh \
   $(srcdir)/emultempl/generic.em $(srcdir)/scripttempl/armaout.sc ${GEN_DEPENDS}
 	${GENSCRIPTS} armaoutb "$(tdir_armaoutb)"
@@ -538,6 +548,12 @@ emipsbig.c:  $(srcdir)/emulparams/mipsbig.sh \
 emipsbsd.c: $(srcdir)/emulparams/mipsbsd.sh \
   $(srcdir)/emultempl/generic.em $(srcdir)/scripttempl/mipsbsd.sc ${GEN_DEPENDS}
 	${GENSCRIPTS} mipsbsd
+emipsel_obsd.c: $(srcdir)/emulparams/mipsel_obsd.sh \
+  $(srcdir)/emultempl/elfobsd.em $(srcdir)/scripttempl/elfmips.sc ${GEN_DEPENDS}
+	${GENSCRIPTS} mipsel_obsd "$(tdir_mipsel_obsd)"
+emipseb_obsd.c: $(srcdir)/emulparams/mipseb_obsd.sh \
+  $(srcdir)/emultempl/elfarc.em $(srcdir)/scripttempl/elfmips.sc ${GEN_DEPENDS}
+	${GENSCRIPTS} mipseb_obsd "$(tdir_mipseb_obsd)"
 emipsidt.c: $(srcdir)/emulparams/mipsidt.sh \
   $(srcdir)/emultempl/mipsecoff.em $(srcdir)/scripttempl/mips.sc ${GEN_DEPENDS}
 	${GENSCRIPTS} mipsidt "$(tdir_mipsidt)"
@@ -916,9 +932,8 @@ TAGS:
 	etags -t $(srcdir)/*.[chly] *.[chly]
 
 
-install: 
+install: $(INSTALL_MAN)
 	$(INSTALL_XFORM) ld.new $(bindir)/ld
-	$(INSTALL_XFORM1) $(srcdir)/ld.1 $(man1dir)/ld.1
 	for f in ldscripts/*; do \
 	  $(INSTALL_DATA) $$f $(scriptdir)/$$f ; \
 	done
@@ -928,6 +943,9 @@ install:
 	  rm -f $(tooldir)/bin/ld; \
 	  ln $(bindir)/$$n $(tooldir)/bin/ld >/dev/null 2>/dev/null \
 	   || $(INSTALL_PROGRAM) ld.new $(tooldir)/bin/ld
+
+install-man:
+	$(INSTALL_XFORM1) $(srcdir)/ld.1 $(man1dir)/ld.1
 
 install-info: ld.info
 	if [ -r ld.info ]; then \

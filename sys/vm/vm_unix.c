@@ -1,4 +1,5 @@
-/*	$NetBSD: vm_unix.c,v 1.18 1995/10/07 06:29:04 mycroft Exp $	*/
+/*	$OpenBSD: vm_unix.c,v 1.2 1996/03/03 17:45:39 niklas Exp $	*/
+/*	$NetBSD: vm_unix.c,v 1.19 1996/02/10 00:08:14 christos Exp $	*/
 
 /*
  * Copyright (c) 1988 University of Utah.
@@ -136,9 +137,11 @@ sys_ovadvise(p, v, retval)
 	void *v;
 	register_t *retval;
 {
+#if 0
 	struct sys_ovadvise_args /* {
 		syscallarg(int) anom;
 	} */ *uap = v;
+#endif
 
 	return (EINVAL);
 }
@@ -181,6 +184,15 @@ vm_coredump(p, vp, cred, chdr)
 			    "vm_coredump: entry: share=0x%lx, offset=0x%lx\n",
                             (long) entry->object.share_map,
                             (long) entry->offset);
+#endif
+			continue;
+		}
+
+		if (entry->object.vm_object &&
+		    entry->object.vm_object->pager &&
+		    entry->object.vm_object->pager->pg_type == PG_DEVICE) {
+#ifdef DEBUG
+			printf("vm_coredump: skipping dev @ %lx\n", (unsigned long)entry->start);
 #endif
 			continue;
 		}

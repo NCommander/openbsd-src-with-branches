@@ -1,4 +1,4 @@
-/*	$NetBSD: locore.s,v 1.9.2.1 1995/10/12 08:15:56 leo Exp $	*/
+/*	$NetBSD: locore.s,v 1.14 1995/12/18 20:40:59 leo Exp $	*/
 
 /*
  * Copyright (c) 1988 University of Utah.
@@ -53,6 +53,8 @@
 #include <atari/atari/vectors.s>
 
 	.text
+_C_LABEL(kernel_text):
+
 /*
  * This is where we wind up if the kernel jumps to location 0.
  * (i.e. a bogus PC)  This is known to immediately follow the vector
@@ -498,7 +500,6 @@ _spurintr:
 	jra	rei
 
 	/* MFP timer A handler --- System clock --- */
-	/* Note: Reduce by factor 4 before handling  */
 mfp_tima:
 	moveml	d0-d1/a0-a1,sp@-	|  save scratch registers
 	lea	sp@(16),a1		|  get pointer to PS
@@ -509,7 +510,21 @@ mfp_tima:
 	moveml	sp@+,d0-d1/a0-a1	|  restore scratch regs	
 	addql	#1,_cnt+V_INTR		|  chalk up another interrupt
 	jra	rei			|  all done
-	
+
+#ifdef STATCLOCK
+	/* MFP timer C handler --- Stat/Prof clock --- */
+mfp_timc:
+	moveml	d0-d1/a0-a1,sp@-	|  save scratch registers
+	lea	sp@(16),a1		|  get pointer to PS
+	movl	a1,sp@-			|  push pointer to PS, PC
+	jbsr	_statintr		|  call statistics clock handler
+	addql	#4,sp			|  pop params
+	addql	#1,_intrcnt+36		|  add another stat clock interrupt
+	moveml	sp@+,d0-d1/a0-a1	|  restore scratch regs	
+	addql	#1,_cnt+V_INTR		|  chalk up another interrupt
+	jra	rei			|  all done
+#endif /* STATCLOCK */
+
 	/* MFP ACIA handler --- keyboard/midi --- */
 mfp_kbd:
 	addql	#1,_intrcnt+8		|  add another kbd/mouse interrupt
@@ -585,7 +600,22 @@ _lev1intr:
 	addql	#1,_cnt+V_INTR		|  chalk up another interrupt
 	jra	rei
 
-_lev7intr:	/* Should never occur */
+	/*
+	 * Should never occur, except when special hardware modification
+	 * is installed. In this case, one expects to be dropped into
+	 * the debugger.
+	 */
+_lev7intr:
+#ifdef DDB
+	/*
+	 * Note that the nmi has to be turned off while handling it because
+	 * the hardware modification has no de-bouncing logic....
+	 */
+	movb	SYSMASK_ADDR, sp@-	|  save current sysmask
+	movb	#0, SYSMASK_ADDR	|  disable all interrupts
+	trap	#15			|  drop into the debugger
+	movb	sp@+, SYSMASK_ADDR	|  restore sysmask
+#endif
 	addql	#1,_intrcnt+28		|  add another nmi interrupt
 	rte				|  all done
 
@@ -800,10 +830,13 @@ Lstartnot040:
 	movl	a2,a1@(PCB_USP)		| and save it
 	movl	a1,_curpcb		| proc0 is running
 	clrw	a1@(PCB_FLAGS)		| clear flags
-	clrl	a1@(PCB_FPCTX)		|  ensure null FP context
-	pea	a1@(PCB_FPCTX)
-	jbsr	_m68881_restore		|  restore it (does not kill a1)
-	addql	#4,sp
+| LWP: The next part can be savely ommitted I think. The fpu probing
+|      code resets the m6888? fpu. How about a 68040 fpu?
+|
+|	clrl	a1@(PCB_FPCTX)		|  ensure null FP context
+|	pea	a1@(PCB_FPCTX)
+|	jbsr	_m68881_restore		|  restore it (does not kill a1)
+|	addql	#4,sp
 
 	/* flush TLB and turn on caches */
 	jbsr	_TBIA			|  invalidate TLB
@@ -1057,7 +1090,7 @@ Lset2:
  *
  * Call should be made at spl6().
  */
-ENTRY(remrq)
+ENTRY(remrunqueue)
 	movl	sp@(4),a0
 	clrl	d0
 	movb	a0@(P_PRIORITY),d0
@@ -1087,7 +1120,7 @@ Lrem2:
 	rts
 
 Lrem3:
-	.asciz	"remrq"
+	.asciz	"remrunqueue"
 Lsw0:
 	.asciz	"cpu_switch"
 	.even
@@ -1288,7 +1321,7 @@ Lres5:
 	movl	a1@(PCB_USP),a0
 	movl	a0,usp			|  and USP
 	tstl	_fputype		|  do we have an FPU?
-	jeq	Lresfprest		|  no, don't attempt to restore
+	jeq	Lnofprest		|  no, don't attempt to restore
 	lea	a1@(PCB_FPCTX),a0	|  pointer to FP save area
 	tstb	a0@			|  null state frame?
 	jeq	Lresfprest		|  yes, easy
@@ -1296,6 +1329,8 @@ Lres5:
 	fmovem	a0@(216),fp0-fp7	|  restore FP general registers
 Lresfprest:
 	frestore a0@			|  restore state
+
+Lnofprest:
 	movw	a1@(PCB_PS),sr		|  no, restore PS
 	moveq	#1,d0			|  return 1 (for alternate returns)
 	rts
@@ -1741,83 +1776,6 @@ ENTRY(_remque)
 	rts
 
 /*
- * {ov}bcopy(from, to, len)
- * memcpy(to, from, len)
- *
- * Works for counts up to 128K.
- */
-ENTRY(memcpy)
-	movl	sp@(12),d0		|  get count
-	jeq	Lcpyexit		|  if zero, return
-	movl	sp@(8),a0		|  src address
-	movl	sp@(4),a1		|  dest address
-	jra	Ldocopy
-	
-ALTENTRY(ovbcopy, _bcopy)
-ENTRY(bcopy)
-	movl	sp@(12),d0		|  get count
-	jeq	Lcpyexit		|  if zero, return
-	movl	sp@(4),a0		|  src address
-	movl	sp@(8),a1		|  dest address
-Ldocopy:
-	cmpl	a1,a0			|  src before dest?
-	jlt	Lcpyback		|  yes, copy backwards (avoids overlap)
-	movl	a0,d1
-	btst	#0,d1			|  src address odd?
-	jeq	Lcfeven			|  no, go check dest
-	movb	a0@+,a1@+		|  yes, copy a byte
-	subql	#1,d0			|  update count
-	jeq	Lcpyexit		|  exit if done
-Lcfeven:
-	movl	a1,d1
-	btst	#0,d1			|  dest address odd?
-	jne	Lcfbyte			|  yes, must copy by bytes
-	movl	d0,d1			|  no, get count
-	lsrl	#2,d1			|  convert to longwords
-	jeq	Lcfbyte			|  no longwords, copy bytes
-	subql	#1,d1			|  set up for dbf
-Lcflloop:
-	movl	a0@+,a1@+		|  copy longwords
-	dbf	d1,Lcflloop		|  til done
-	andl	#3,d0			|  get remaining count
-	jeq	Lcpyexit		|  done if none
-Lcfbyte:
-	subql	#1,d0			|  set up for dbf
-Lcfbloop:
-	movb	a0@+,a1@+		|  copy bytes
-	dbf	d0,Lcfbloop		|  til done
-Lcpyexit:
-	rts
-Lcpyback:
-	addl	d0,a0			|  add count to src
-	addl	d0,a1			|  add count to dest
-	movl	a0,d1
-	btst	#0,d1			|  src address odd?
-	jeq	Lcbeven			|  no, go check dest
-	movb	a0@-,a1@-		|  yes, copy a byte
-	subql	#1,d0			|  update count
-	jeq	Lcpyexit		|  exit if done
-Lcbeven:
-	movl	a1,d1
-	btst	#0,d1			|  dest address odd?
-	jne	Lcbbyte			|  yes, must copy by bytes
-	movl	d0,d1			|  no, get count
-	lsrl	#2,d1			|  convert to longwords
-	jeq	Lcbbyte			|  no longwords, copy bytes
-	subql	#1,d1			|  set up for dbf
-Lcblloop:
-	movl	a0@-,a1@-		|  copy longwords
-	dbf	d1,Lcblloop		|  til done
-	andl	#3,d0			|  get remaining count
-	jeq	Lcpyexit		|  done if none
-Lcbbyte:
-	subql	#1,d0			|  set up for dbf
-Lcbbloop:
-	movb	a0@-,a1@-		|  copy bytes
-	dbf	d0,Lcbbloop		|  til done
-	rts
-
-/*
  * Save and restore 68881 state.
  * Pretty awful looking since our assembler does not
  * recognize FP mnemonics.
@@ -1942,8 +1900,9 @@ _intrnames:
 	.asciz	"5380-DMA"
 	.asciz	"nmi"
 	.asciz	"8530-SCC"
+	.asciz	"statclock"
 _eintrnames:
 	.even
 _intrcnt:
-	.long	0,0,0,0,0,0,0,0,0
+	.long	0,0,0,0,0,0,0,0,0,0
 _eintrcnt:

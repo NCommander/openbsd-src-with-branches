@@ -1,13 +1,15 @@
-#	$NetBSD: Makefile.inc,v 1.4 1995/10/09 23:25:55 pk Exp $
+#	$NetBSD: Makefile.inc,v 1.5 1996/02/01 22:33:01 mycroft Exp $
 
 .if !defined(__stand_makefile_inc)
 __stand_makefile_inc=1
 
 S= ${.CURDIR}/../../../${R}
 
+.ifndef TOPLEVEL
 .if !make(libdep) && !make(sadep) && !make(salibdir) && !make(kernlibdir)
 .BEGIN:
-	@([ -h machine ] || ln -s ${S}/arch/${MACHINE}/include machine)
+	-@([ -h machine ] || ln -s ${S}/arch/${MACHINE}/include machine)
+.endif
 .endif
 
 RELOC_SUN4=	0x240000
@@ -22,9 +24,9 @@ DEFS+=		-DSTANDALONE -DRELOC=${RELOC} -DSUN4 -DSUN4C -DSUN_BOOTPARAMS
 CFLAGS+=	-O2 ${INCLUDES} ${DEFS}
 
 srt0.o: srt0.S
-	${CC} ${CFLAGS} -DLOCORE -c ${.IMPSRC}
+	${CC} ${CFLAGS} -D_LOCORE -c ${.IMPSRC}
 
 cleandir:
-	rm -rf lib machine
+	-@rm -rf lib machine
 
 .endif

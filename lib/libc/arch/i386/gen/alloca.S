@@ -32,19 +32,16 @@
  * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
- *
- *	from: @(#)alloca.s	5.2 (Berkeley) 5/14/90
- *	$Id: alloca.S,v 1.3 1994/01/27 06:34:02 mycroft Exp $
  */
+
+#include <machine/asm.h>
 
 #if defined(LIBC_SCCS)
 	.text
-	.asciz "$Id: alloca.S,v 1.3 1994/01/27 06:34:02 mycroft Exp $"
+	.asciz "$OpenBSD: alloca.S,v 1.2 1995/12/30 08:15:39 deraadt Exp $"
 #endif
 
 /* like alloc, but automatic automatic free in return */
-
-#include "DEFS.h"
 
 ENTRY(alloca)
 	popl	%edx		/*  pop return addr */

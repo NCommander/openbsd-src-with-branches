@@ -1,3 +1,4 @@
+/*	$OpenBSD: arith.h,v 1.1 1995/05/11 21:28:44 christos Exp $	*/
 /*	$NetBSD: arith.h,v 1.1 1995/05/11 21:28:44 christos Exp $	*/
 
 /*-

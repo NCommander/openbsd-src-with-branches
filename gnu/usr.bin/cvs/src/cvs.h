@@ -182,6 +182,7 @@ extern int errno;
 #define CVSROOTADM_READERS	"readers"
 #define CVSROOTADM_WRITERS	"writers"
 #define CVSROOTADM_PASSWD	"passwd"
+#define CVSROOTADM_OPTIONS	"options"
 
 #define CVSNULLREPOS		"Emptydir"	/* an empty directory */
 
@@ -254,6 +255,8 @@ extern int errno;
 /* Environment variable used by CVS */
 #define	CVSREAD_ENV	"CVSREAD"	/* make files read-only */
 #define	CVSREAD_DFLT	FALSE		/* writable files by default */
+
+#define	CVSREADONLYFS_ENV "CVSREADONLYFS" /* repository is read-only */
 
 #define	RCSBIN_ENV	"RCSBIN"	/* RCS binary directory */
 /* #define	RCSBIN_DFLT		   Set by options.h */
@@ -360,6 +363,7 @@ extern int really_quiet, quiet;
 extern int use_editor;
 extern int cvswrite;
 extern mode_t cvsumask;
+extern char *RCS_citag;
 
 /* Access method specified in CVSroot. */
 typedef enum {
@@ -377,6 +381,7 @@ extern char *CVSroot_directory;	/* the directory name */
 
 extern int trace;		/* Show all commands */
 extern int noexec;		/* Don't modify disk anywhere */
+extern int readonlyfs;		/* fail on all write locks; succeed all read locks */
 extern int logoff;		/* Don't write history entry */
 
 #ifdef AUTH_SERVER_SUPPORT
@@ -448,6 +453,7 @@ int isabsolute PROTO((const char *filename));
 char *last_component PROTO((char *path));
 char *get_homedir PROTO ((void));
 char *cvs_temp_name PROTO ((void));
+void parseopts PROTO ((const char *root));
 
 int numdots PROTO((const char *s));
 int unlink_file PROTO((const char *f));

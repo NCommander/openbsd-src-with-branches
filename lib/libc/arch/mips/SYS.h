@@ -33,21 +33,48 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  *
- *	from: @(#)SYS.h	8.1 (Berkeley) 6/4/93
- *      $Id: SYS.h,v 1.3 1994/12/15 17:24:44 mycroft Exp $ 
+ *      $OpenBSD: SYS.h,v 1.3 1996/07/30 20:27:48 pefo Exp $ 
  */
 
 #include <sys/syscall.h>
-#include <machine/machAsmDefs.h>
+#include <machine/asm.h>
 
 #ifdef __STDC__
-#define RSYSCALL(x)     LEAF(x); li v0,SYS_ ## x; syscall; \
-			bne a3,zero,err; j ra; err: j _C_LABEL(cerror); END(x);
-#define PSEUDO(x,y)     LEAF(x); li v0,SYS_ ## y; syscall; \
-			bne a3,zero,err; j ra; err: j _C_LABEL(cerror); END(x);
+#define RSYSCALL(x)      \
+			LEAF(x);		\
+			li	v0,SYS_ ## x;	\
+			syscall;		\
+			bne	a3,zero,err;	\
+			j	ra;		\
+			err: la t9, cerror;	\
+			jr t9;			\
+			END(x);
+#define PSEUDO(x,y)     \
+			LEAF(x);		\
+			li	v0,SYS_ ## y;	\
+			syscall;		\
+			bne	a3,zero,err;	\
+			j	ra;		\
+			err: la t9, cerror;	\
+			jr t9;			\
+			END(x);
 #else
-#define RSYSCALL(x)     LEAF(x); li v0,SYS_/**/x; syscall; \
-			bne a3,zero,err; j ra; err: j _C_LABEL(cerror); END(x);
-#define PSEUDO(x,y)     LEAF(x); li v0,SYS_/**/y; syscall; \
-			bne a3,zero,err; j ra; err: j _C_LABEL(cerror); END(x);
+#define RSYSCALL(x)     \
+			LEAF(x);		\
+			li	v0,SYS_/**/x;	\
+			syscall;		\
+			bne	a3,zero,err;	\
+			j	ra;		\
+			err: la t9, cerror;	\
+			jr	t9;		\
+			END(x);
+#define PSEUDO(x,y)     \
+			LEAF(x);		\
+			li	v0,SYS_/**/y;	\
+			syscall;		\
+			bne	a3,zero,err;	\
+			j	ra;		\
+			err: la t9, cerror;	\
+			jr t9;			\
+			END(x);
 #endif

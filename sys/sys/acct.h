@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /*	$NetBSD: acct.h,v 1.16 1995/03/26 20:23:52 jtc Exp $	*/
 
 /*-

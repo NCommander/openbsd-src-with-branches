@@ -1,23 +1,16 @@
-#	from @(#)Makefile.inc	8.1 (Berkeley) 6/1/93
-#	$Id$
+#	$OpenBSD: Makefile.inc,v 1.6 1996/11/11 05:43:08 tholo Exp $
 
 CFLAGS+=-I${.CURDIR}/../include
 BINDIR?=/usr/sbin
 
-.if exists(${.CURDIR}/../mk_cmds/obj)
-MK_CMDS=${.CURDIR}/../mk_cmds/obj/mk_cmds
+.if defined(OBJMACHINE)
+__objdir=	obj.${MACHINE}
 .else
-MK_CMDS=${.CURDIR}/../mk_cmds/mk_cmds
+__objdir=	obj
 .endif
 
-.if exists(${.CURDIR}/../compile_et/obj)
-COMPILE_ET=${.CURDIR}/../compile_et/obj/compile_et
+.if (${MACHINE_ARCH} != "mips")
+COM_ERR=	-lcom_err_pic
 .else
-COMPILE_ET=${.CURDIR}/../compile_et/compile_et
-.endif
-
-.if exists(${.CURDIR}/../com_err/obj)
-COM_ERR=-L${.CURDIR}/../com_err/obj -lcom_err_pic
-.else
-COM_ERR=-L${.CURDIR}/../com_err -lcom_err_pic
+COM_ERR=	-lcom_err
 .endif

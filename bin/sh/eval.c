@@ -1,4 +1,5 @@
-/*	$NetBSD: eval.c,v 1.27 1995/09/11 17:05:41 christos Exp $	*/
+/*	$OpenBSD: eval.c,v 1.4 1996/10/20 00:54:47 millert Exp $	*/
+/*	$NetBSD: eval.c,v 1.33 1996/11/09 01:04:07 christos Exp $	*/
 
 /*-
  * Copyright (c) 1993
@@ -40,7 +41,7 @@
 #if 0
 static char sccsid[] = "@(#)eval.c	8.9 (Berkeley) 6/8/95";
 #else
-static char sccsid[] = "$NetBSD: eval.c,v 1.27 1995/09/11 17:05:41 christos Exp $";
+static char sccsid[] = "$OpenBSD: eval.c,v 1.29.4.1 1996/06/10 19:36:36 jtc Exp $";
 #endif
 #endif /* not lint */
 
@@ -207,8 +208,11 @@ evaltree(n, flags)
 		break;
 	case NAND:
 		evaltree(n->nbinary.ch1, EV_TESTED);
-		if (evalskip || exitstatus != 0)
+		if (evalskip || exitstatus != 0) {
+			/* don't bomb out on "set -e; false && true" */
+			flags |= EV_TESTED;
 			goto out;
+		}
 		evaltree(n->nbinary.ch2, flags);
 		break;
 	case NOR:
@@ -230,17 +234,15 @@ evaltree(n, flags)
 		evalsubshell(n, flags);
 		break;
 	case NIF: {
-		int status; 
-
 		evaltree(n->nif.test, EV_TESTED);
-		status = exitstatus;
-		exitstatus = 0;
 		if (evalskip)
 			goto out;
-		if (status == 0)
+		if (exitstatus == 0)
 			evaltree(n->nif.ifpart, flags);
 		else if (n->nif.elsepart)
 			evaltree(n->nif.elsepart, flags);
+		else
+			exitstatus = 0;
 		break;
 	}
 	case NWHILE:
@@ -684,7 +686,7 @@ evalcommand(cmd, flags, backcmd)
 
 		find_command(argv[0], &cmdentry, 1, path);
 		if (cmdentry.cmdtype == CMDUNKNOWN) {	/* command not found */
-			exitstatus = 1;
+			exitstatus = 127;
 			flushout(&errout);
 			return;
 		}
@@ -696,7 +698,7 @@ evalcommand(cmd, flags, backcmd)
 					break;
 				if ((cmdentry.u.index = find_builtin(*argv)) < 0) {
 					outfmt(&errout, "%s: not found\n", *argv);
-					exitstatus = 1;
+					exitstatus = 127;
 					flushout(&errout);
 					return;
 				}
@@ -737,10 +739,13 @@ evalcommand(cmd, flags, backcmd)
 	/* This is the child process if a fork occurred. */
 	/* Execute the command. */
 	if (cmdentry.cmdtype == CMDFUNCTION) {
+#ifdef DEBUG
 		trputs("Shell function:  ");  trargs(argv);
+#endif
 		redirect(cmd->ncmd.redirect, REDIR_PUSH);
 		saveparam = shellparam;
 		shellparam.malloc = 0;
+		shellparam.reset = 1;
 		shellparam.nparam = argc - 1;
 		shellparam.p = argv + 1;
 		shellparam.optnext = NULL;
@@ -782,7 +787,9 @@ evalcommand(cmd, flags, backcmd)
 		if (flags & EV_EXIT)
 			exitshell(exitstatus);
 	} else if (cmdentry.cmdtype == CMDBUILTIN) {
+#ifdef DEBUG
 		trputs("builtin command:  ");  trargs(argv);
+#endif
 		mode = (cmdentry.u.index == EXECCMD)? 0 : REDIR_PUSH;
 		if (flags == EV_BACKCMD) {
 			memout.nleft = 0;
@@ -818,7 +825,8 @@ cmddone:
 		}
 		handler = savehandler;
 		if (e != -1) {
-			if (e != EXERROR || cmdentry.u.index == BLTINCMD
+			if ((e != EXERROR && e != EXEXEC)
+					       || cmdentry.u.index == BLTINCMD
 					       || cmdentry.u.index == DOTCMD
 					       || cmdentry.u.index == EVALCMD
 #ifndef NO_HISTORY
@@ -836,7 +844,9 @@ cmddone:
 			memout.buf = NULL;
 		}
 	} else {
+#ifdef DEBUG
 		trputs("normal command:  ");  trargs(argv);
+#endif
 		clearredir();
 		redirect(cmd->ncmd.redirect, 0);
 		for (sp = varlist.list ; sp ; sp = sp->next)
@@ -927,11 +937,8 @@ breakcmd(argc, argv)
 	int argc;
 	char **argv; 
 {
-	int n;
+	int n = argc > 1 ? number(argv[1]) : 1;
 
-	n = 1;
-	if (argc > 1)
-		n = number(argv[1]);
 	if (n > loopnest)
 		n = loopnest;
 	if (n > 0) {
@@ -951,11 +958,8 @@ returncmd(argc, argv)
 	int argc;
 	char **argv; 
 {
-	int ret;
+	int ret = argc > 1 ? number(argv[1]) : oexitstatus;
 
-	ret = exitstatus;
-	if (argc > 1)
-		ret = number(argv[1]);
 	if (funcnest) {
 		evalskip = SKIPFUNC;
 		skipcount = 1;

@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /*	$NetBSD: nhpib.c,v 1.5 1995/08/05 16:47:46 thorpej Exp $	*/
 
 /*

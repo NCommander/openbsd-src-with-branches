@@ -1,4 +1,5 @@
-/*	$NetBSD: df.c,v 1.21 1995/08/11 00:38:15 jtc Exp $	*/
+/*	$OpenBSD: df.c,v 1.13 1997/04/14 17:38:22 kstailey Exp $	*/
+/*	$NetBSD: df.c,v 1.21.2.1 1995/11/01 00:06:11 jtc Exp $	*/
 
 /*
  * Copyright (c) 1980, 1990, 1993, 1994
@@ -48,7 +49,7 @@ static char copyright[] =
 #if 0
 static char sccsid[] = "@(#)df.c	8.7 (Berkeley) 4/2/94";
 #else
-static char rcsid[] = "$NetBSD: df.c,v 1.21 1995/08/11 00:38:15 jtc Exp $";
+static char rcsid[] = "$OpenBSD: df.c,v 1.13 1997/04/14 17:38:22 kstailey Exp $";
 #endif
 #endif /* not lint */
 
@@ -73,7 +74,7 @@ void	 maketypelist __P((char *));
 long	 regetmntinfo __P((struct statfs **, long));
 void	 usage __P((void));
 
-int	iflag, kflag, lflag, nflag;
+int	hflag, iflag, kflag, lflag, nflag;
 char	**typelist = NULL;
 struct	ufs_args mdev;
 
@@ -88,13 +89,18 @@ main(argc, argv)
 	int ch, i, maxwidth, width;
 	char *mntpt;
 
-	while ((ch = getopt(argc, argv, "iklnt:")) != -1)
+	while ((ch = getopt(argc, argv, "hiklnt:")) != -1)
 		switch (ch) {
+		case 'h':
+			hflag = 1;
+			kflag = 0;
+			break;
 		case 'i':
 			iflag = 1;
 			break;
 		case 'k':
 			kflag = 1;
+			hflag = 0;
 			break;
 		case 'l':
 			lflag = 1;
@@ -107,15 +113,11 @@ main(argc, argv)
 				errx(1, "only one -t option may be specified.");
 			maketypelist(optarg);
 			break;
-		case '?':
 		default:
 			usage();
 		}
 	argc -= optind;
 	argv += optind;
-
-	if (*argv && (lflag || typelist != NULL))
-		errx(1, "-l or -t does not make sense with list of mount points");
 
 	mntsize = getmntinfo(&mntbuf, MNT_NOWAIT);
 	if (mntsize == 0)
@@ -138,13 +140,14 @@ main(argc, argv)
 				continue;
 			} else if (S_ISBLK(stbuf.st_mode)) {
 				if ((mntpt = getmntpt(*argv)) == 0) {
-					mntpt = mktemp(strdup("/tmp/df.XXXXXX"));
+					/* XXX can be DOS'd, not very important */
+					mntpt = mktemp(strdup("/tmp/df.XXXXXXXXXX"));
 					mdev.fspec = *argv;
 					if (mkdir(mntpt, DEFFILEMODE) != 0) {
 						warn("%s", mntpt);
 						continue;
 					}
-					if (mount(MOUNT_UFS, mntpt, MNT_RDONLY,
+					if (mount(MOUNT_FFS, mntpt, MNT_RDONLY,
 					    &mdev) != 0) {
 						(void)rmdir(mntpt);
 						if (!ufs_df(*argv, &mntbuf[mntsize]))
@@ -166,7 +169,14 @@ main(argc, argv)
 			 * implement nflag here.
 			 */
 			if (!statfs(mntpt, &mntbuf[mntsize]))
-				++mntsize;
+			        if (lflag && (mntbuf[mntsize].f_flags & MNT_LOCAL) == 0)
+			                warnx("%s is not a local file system",
+					    *argv);
+			        else if (!selected(mntbuf[mntsize].f_fstypename))
+			                warnx("%s mounted as a %s file system",
+					    *argv, mntbuf[mntsize].f_fstypename);
+			        else
+					++mntsize;
 			else
 				warn("%s", *argv);
 		}
@@ -237,14 +247,14 @@ maketypelist(fslist)
 		which = IN_LIST;
 
 	/* Count the number of types. */
-	for (i = 1, nextcp = fslist; nextcp = strchr(nextcp, ','); i++)
+	for (i = 1, nextcp = fslist; (nextcp = strchr(nextcp, ',')) != NULL; i++)
 		++nextcp;
 
 	/* Build an array of that many types. */
 	if ((av = typelist = malloc((i + 1) * sizeof(char *))) == NULL)
 		err(1, NULL);
 	av[0] = fslist;
-	for (i = 1, nextcp = fslist; nextcp = strchr(nextcp, ','); i++) {
+	for (i = 1, nextcp = fslist; (nextcp = strchr(nextcp, ',')) != NULL; i++) {
 		*nextcp = '\0';
 		av[i] = ++nextcp;
 	}
@@ -285,6 +295,66 @@ regetmntinfo(mntbufp, mntsize)
 }
 
 /*
+ * "human-readable" output: use 3 digits max.--put unit suffixes at
+ * the end.  Makes output compact and easy-to-read esp. on huge disks.
+ */
+
+typedef enum { NONE = 0, KILO, MEGA, GIGA, TERA, PETA /* , EXA */ } unit_t;
+
+unit_t
+unit_adjust(val)
+	double *val;
+{
+	unit_t unit;
+
+	if (*val < 1024)
+		unit = NONE;
+	else if (*val < 1024000ULL) {
+		unit = KILO;
+		*val /= 1024;
+	} else if (*val < 1024000000ULL) {
+		unit = MEGA;
+		*val /= 1024000;
+	} else if (*val < 1024000000000ULL) {
+		unit = GIGA;
+		*val /= 1024000000ULL;
+	} else if (*val < 1024000000000000ULL) {
+		unit = TERA;
+		*val /= 1024000000000ULL;
+	} else if (*val < 1024000000000000000ULL) {
+		unit = PETA;
+		*val /= 1024000000000000ULL;
+	}
+	return (unit);
+}
+
+void
+prthumanval(bytes)
+	double bytes;
+{
+	unit_t unit;
+
+	unit = unit_adjust(&bytes);
+
+	if (bytes == 0)
+		(void)printf("     0B");
+	else if (bytes > 10)
+		(void)printf(" %5.0f%c", bytes, "BKMGTPE"[unit]);
+	else
+		(void)printf(" %5.1f%c", bytes, "BKMGTPE"[unit]);
+}
+
+void
+prthuman(sfsp, used)
+	struct statfs *sfsp;
+	long used;
+{
+	prthumanval((double)(sfsp->f_blocks) * (double)(sfsp->f_bsize));
+	prthumanval((double)(used) * (double)(sfsp->f_bsize));
+	prthumanval((double)(sfsp->f_bavail) * (double)(sfsp->f_bsize));
+}
+
+/*
  * Convert statfs returned filesystem size into BLOCKSIZE units.
  * Attempts to avoid overflow for large filesystems.
  */
@@ -308,14 +378,21 @@ prtstat(sfsp, maxwidth)
 	if (maxwidth < 11)
 		maxwidth = 11;
 	if (++timesthrough == 1) {
-		if (kflag) {
-			blocksize = 1024;
-			header = "1K-blocks";
+		if (hflag) {
+			header = "  Size";
 			headerlen = strlen(header);
-		} else
-			header = getbsize(&headerlen, &blocksize);
-		(void)printf("%-*.*s %s     Used    Avail Capacity",
-		    maxwidth, maxwidth, "Filesystem", header);
+			(void)printf("%-*.*s %s   Used  Avail Capacity",
+				     maxwidth, maxwidth, "Filesystem", header);
+		} else {
+			if (kflag) {
+				blocksize = 1024;
+				header = "1K-blocks";
+				headerlen = strlen(header);
+			} else
+				header = getbsize(&headerlen, &blocksize);
+			(void)printf("%-*.*s %s     Used    Avail Capacity",
+				     maxwidth, maxwidth, "Filesystem", header);
+		}
 		if (iflag)
 			(void)printf(" iused   ifree  %%iused");
 		(void)printf("  Mounted on\n");
@@ -323,10 +400,13 @@ prtstat(sfsp, maxwidth)
 	(void)printf("%-*.*s", maxwidth, maxwidth, sfsp->f_mntfromname);
 	used = sfsp->f_blocks - sfsp->f_bfree;
 	availblks = sfsp->f_bavail + used;
-	(void)printf(" %*ld %8ld %8ld", headerlen,
-	    fsbtoblk(sfsp->f_blocks, sfsp->f_bsize, blocksize),
-	    fsbtoblk(used, sfsp->f_bsize, blocksize),
-	    fsbtoblk(sfsp->f_bavail, sfsp->f_bsize, blocksize));
+	if (hflag)
+		prthuman(sfsp, used);
+	else
+		(void)printf(" %*ld %8ld %8ld", headerlen,
+		    fsbtoblk(sfsp->f_blocks, sfsp->f_bsize, blocksize),
+		    fsbtoblk(used, sfsp->f_bsize, blocksize),
+		    fsbtoblk(sfsp->f_bavail, sfsp->f_bsize, blocksize));
 	(void)printf(" %5.0f%%",
 	    availblks == 0 ? 100.0 : (double)used / (double)availblks * 100.0);
 	if (iflag) {
@@ -393,7 +473,7 @@ ufs_df(file, sfsp)
 		mntpt = "";
 	memmove(&sfsp->f_mntonname[0], mntpt, MNAMELEN);
 	memmove(&sfsp->f_mntfromname[0], file, MNAMELEN);
-	strncpy(sfsp->f_fstypename, MOUNT_UFS, MFSNAMELEN);
+	strncpy(sfsp->f_fstypename, MOUNT_FFS, MFSNAMELEN);
 	(void)close(rfd);
 	return (0);
 }

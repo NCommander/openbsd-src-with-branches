@@ -1,3 +1,4 @@
+#	$OpenBSD: Makefile,v 1.3 1996/12/08 15:36:11 downsj Exp $
 #	$NetBSD: Makefile,v 1.9 1995/03/21 15:03:38 cgd Exp $
 #	@(#)Makefile	8.1 (Berkeley) 5/31/93
 
@@ -6,8 +7,8 @@ CFLAGS+=-DBSD -I${.CURDIR} -I.
 SRCS=	extern.c grammar.c graphics.c input.c lex.c list.c log.c \
 	main.c tunable.c update.c
 MAN=	atc.6
-LDADD=	-ll -lm -lcurses -ltermcap
-DPADD=	${LIBL} ${LIBM} ${LIBTERM} ${LIBCURSES}
+LDADD=	-ll -lm -lcurses -ltermlib
+DPADD=	${LIBL} ${LIBM} ${LIBTERMLIB} ${LIBCURSES}
 GAMES=	ATC_scores Game_List Killer crossover default easy game_2 \
 	Atlantis OHare Tic-Tac-Toe airports box crosshatch game_3 \
 	game_4 novice two-corners
@@ -23,7 +24,7 @@ beforeinstall:
         else \
                 true ; \
         fi
-	(cd ${.CURDIR}/games; install -c -o ${BINOWN} -g ${BINGRP} -m 400 \
-	    ${GAMES} ${DESTDIR}/usr/share/games/atc)
+	(cd ${.CURDIR}/games; ${INSTALL} ${INSTALL_COPY} -o ${BINOWN} -g ${BINGRP} \
+	    -m 400 ${GAMES} ${DESTDIR}/usr/share/games/atc)
 
 .include <bsd.prog.mk>

@@ -1,3 +1,6 @@
+/*	$OpenBSD: histedit.h,v 1.3 1997/01/16 05:18:34 millert Exp $	*/
+/*	$NetBSD: histedit.h,v 1.4 1997/01/14 04:17:24 lukem Exp $	*/
+
 /*-
  * Copyright (c) 1992, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -72,6 +75,7 @@ typedef struct lineinfo {
 #define	CC_CURSOR	5
 #define	CC_ERROR	6
 #define CC_FATAL	7
+#define CC_REDISPLAY	8
 
 /*
  * Initialization, cleanup, and resetting
@@ -168,5 +172,8 @@ __const HistEvent *	history		__P((History *, int, ...));
 #define H_PREV_STR	11	/* , const char*);	*/
 #define H_NEXT_EVENT	12	/* , const int);	*/
 #define H_PREV_EVENT	13	/* , const int);	*/
+#define H_LOAD		14	/* , const char *);	*/
+#define H_SAVE		15	/* , const char *);	*/
+#define H_CLEAR		16	/* , void);		*/
 
 #endif /* _h_editline */

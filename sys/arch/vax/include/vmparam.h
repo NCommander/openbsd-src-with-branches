@@ -1,4 +1,4 @@
-/*	$NetBSD: vmparam.h,v 1.9 1995/08/22 04:28:20 ragge Exp $	*/
+/*	$NetBSD: vmparam.h,v 1.12 1996/07/20 17:58:26 ragge Exp $	*/
 
 /*-
  * Copyright (c) 1990 The Regents of the University of California.
@@ -39,7 +39,7 @@
  *
  *	@(#)vmparam.h	5.9 (Berkeley) 5/12/91
  */
-#ifndef ASSEMBLER
+#ifndef _LOCORE
 #include <vm/vm_param.h>
 #endif
 
@@ -99,6 +99,11 @@
 #endif
 
 /*
+ * Size of User Raw I/O map
+ */
+#define	USRIOSIZE	300
+
+/*
  * Sizes of the system and user portions of the system page table.
  * USRPTSIZE is maximum possible user virtual memory to be used.
  * KALLOCMEM is kernel malloc area size. How much needed for each process?
@@ -106,9 +111,9 @@
  * Ptsizes are in PTEs.
  */
 
-#define	USRPTSIZE 	((MAXDSIZ >> PG_SHIFT) * maxproc)
-#define	KALLOCMEM	(((1*1024*1024*maxproc)>>PG_SHIFT)/4)
-#define SYSPTSIZE	(((USRPTSIZE * 4) >> PG_SHIFT) + UPAGES * maxproc + \
+#define	USRPTSIZE 	((MAXDSIZ >> PGSHIFT) * maxproc)
+#define	KALLOCMEM	(((1*1024*1024*maxproc)>>PGSHIFT)/4)
+#define SYSPTSIZE	(((USRPTSIZE * 4) >> PGSHIFT) + UPAGES * maxproc + \
 			    KALLOCMEM)
 
 /*

@@ -1,4 +1,5 @@
-/*	$NetBSD: socket.h,v 1.12 1995/03/29 22:10:11 briggs Exp $	*/
+/*	$OpenBSD: socket.h,v 1.15 1997/03/12 13:30:42 downsj Exp $	*/
+/*	$NetBSD: socket.h,v 1.14 1996/02/09 18:25:36 christos Exp $	*/
 
 /*
  * Copyright (c) 1982, 1985, 1986, 1988, 1993, 1994
@@ -119,10 +120,15 @@ struct	linger {
 #define	AF_CNT		21		/* Computer Network Technology */
 #define pseudo_AF_RTIP	22		/* Help Identify RTIP packets */
 #define	AF_IPX		23		/* Novell Internet Protocol */
-#define	AF_SIP		24		/* Simple Internet Protocol */
+#define	AF_INET6	24		/* IPv6 */
 #define pseudo_AF_PIP	25		/* Help Identify PIP packets */
-
-#define	AF_MAX		26
+#define AF_ISDN		26		/* Integrated Services Digital Network*/
+#define AF_E164		AF_ISDN		/* CCITT E.164 recommendation */
+#define AF_NATM		27		/* native ATM access */
+#define	AF_ENCAP	28
+#define	AF_SIP		29		/* Simple Internet Protocol */
+#define AF_KEY		30
+#define	AF_MAX		31
 
 /*
  * Structure used by kernel to store most
@@ -170,11 +176,15 @@ struct sockproto {
 #define	PF_XTP		pseudo_AF_XTP	/* really just proto family, no AF */
 #define	PF_COIP		AF_COIP
 #define	PF_CNT		AF_CNT
-#define	PF_SIP		AF_SIP
 #define	PF_IPX		AF_IPX		/* same format as AF_NS */
+#define PF_INET6	AF_INET6
 #define PF_RTIP		pseudo_AF_FTIP	/* same format as AF_INET */
 #define PF_PIP		pseudo_AF_PIP
-
+#define PF_ISDN		AF_ISDN
+#define PF_NATM		AF_NATM
+#define PF_ENCAP	AF_ENCAP
+#define	PF_SIP		AF_SIP
+#define PF_KEY		AF_KEY
 #define	PF_MAX		AF_MAX
 
 /*
@@ -214,6 +224,9 @@ struct sockproto {
 	{ "ipx", CTLTYPE_NODE }, \
 	{ "sip", CTLTYPE_NODE }, \
 	{ "pip", CTLTYPE_NODE }, \
+	{ "natm", CTLTYPE_NODE }, \
+	{ "ipsec", CTLTYPE_NODE }, \
+	{ "pfkey", CTLTYPE_NODE }, \
 }
 
 /*
@@ -237,9 +250,9 @@ struct sockproto {
 }
 
 /*
- * Maximum queue length specifiable by listen.
+ * Maximum queue length specifiable by listen(2).
  */
-#define	SOMAXCONN	5
+#define	SOMAXCONN	128
 
 /*
  * Message header for recvmsg and sendmsg calls.
@@ -336,6 +349,12 @@ int	shutdown __P((int, int));
 int	socket __P((int, int, int));
 int	socketpair __P((int, int, int, int *));
 __END_DECLS
-
+#else
+# if defined(COMPAT_43) || defined(COMPAT_SUNOS) || defined(COMPAT_LINUX) || \
+     defined(COMPAT_HPUX) || defined(COMPAT_FREEBSD)
+#  define COMPAT_OLDSOCK
+#  define MSG_COMPAT	0x8000
+# endif
 #endif /* !_KERNEL */
+
 #endif /* !_SYS_SOCKET_H_ */

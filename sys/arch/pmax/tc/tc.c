@@ -1,10 +1,10 @@
-/*	$NetBSD: tc.c,v 1.5 1995/10/09 01:45:30 jonathan Exp $	*/
+/*	$NetBSD: tc.c,v 1.12 1996/10/13 03:40:02 christos Exp $	*/
 
 /*
  * Copyright (c) 1994, 1995 Carnegie-Mellon University.
  * All rights reserved.
  *
- * Author: Chris G. Demetriou
+ * Author: Jonathan Stone
  * 
  * Permission to use, copy, modify and distribute this software and
  * its documentation is hereby granted, provided that both the copyright
@@ -27,48 +27,63 @@
  * rights to redistribute these changes.
  */
 
+#define TC_DEBUG	/* until decstatn autoconfig works with dev/tc/tc.c*/
+
 #include <sys/param.h>
 #include <sys/device.h>
-
+#include <dev/cons.h>
+#include <dev/tc/tcvar.h>
 #include <machine/autoconf.h>
 
-#ifdef alpha
-#include <machine/rpb.h>
-#include <alpha/tc/tc.h>
-#endif
 
-#ifdef pmax
-#include <pmax/tc/tc.h>
-#endif
+/* Which TC framebuffers have drivers, for configuring a console device. */
+#include "cfb.h"
+#include "mfb.h"
+#include "sfb.h"
 
-struct tc_softc {
-	struct	device sc_dv;
-	struct	abus sc_bus;
-	struct	tc_cpu_desc *sc_desc;
+extern int pmax_boardtype;
+
+
+/*
+ * Old-style model-specific autoconfiguration description.
+ */
+struct tcbus_attach_args {
+	u_int	tca_nslots;
+	struct	tc_slotdesc *tca_slots;
+
+	u_int	tca_nbuiltins;
+	const struct	tc_builtin *tca_builtins;
+
+	void	(*tca_intr_establish) __P((struct device *dev, void *cookie,
+					   tc_intrlevel_t level,
+					   intr_handler_t handler,
+					   void *arg));
+	void	(*tca_intr_disestablish) __P((struct device *, void *));
 };
+
+/* Return the appropriate tc_attach_args for a given cputype */
+extern struct tc_attach_args *  cpu_tcdesc __P ((int cputype));
+
 
 /* Definition of the driver for autoconfig. */
 int	tcmatch(struct device *, void *, void *);
 void	tcattach(struct device *, struct device *, void *);
-int	tcprint(void *, char *);
-struct cfdriver tccd =
-    { NULL, "tc", tcmatch, tcattach, DV_DULL, sizeof (struct tc_softc) };
+int	tcprint(void *, const char *);
 
-void	tc_intr_establish __P((struct confargs *, intr_handler_t handler,
-			       intr_arg_t));
-void	tc_intr_disestablish __P((struct confargs *));
+void	tc_ds_intr_establish __P((struct device *, void *, tc_intrlevel_t,
+				intr_handler_t handler, intr_arg_t arg));
+void	tc_intr_disestablish __P((struct device *dev, void *cookie));
 caddr_t	tc_cvtaddr __P((struct confargs *));
-int	tc_matchname __P((struct confargs *, char *));
 
 extern int cputype;
+extern int tc_findconsole __P((int prom_slot));
+
+/* Forward declarations */
+int consprobeslot __P((int slot));
 
 
-/*XXX*/ /* should be in separate source file  */
-
 /*
- *  tc config structures for DECstations.
- *  Since there will never be new decstations, we just
- *  bash it in here, for now.
+ *  TurboChannel autoconfiguration declarations and tables for DECstations.
  */
 
 #include <machine/machConst.h>
@@ -82,13 +97,17 @@ extern int cputype;
 
 #include <pmax/pmax/turbochannel.h>
 
-#include <pmax/pmax/nameglue.h>
+/*#include <pmax/pmax/nameglue.h>*/
+#define KV(x) ((tc_addr_t)MACH_PHYS_TO_UNCACHED(x))
+
 
 
 void	tc_ds_ioasic_intr_setup __P((void));
-void	tc_ds_ioasic_intr_establish
-	    __P((struct confargs *, intr_handler_t, void *));
-void	tc_ds_ioasic_intr_disestablish __P((struct confargs *));
+void	tc_ds_ioasic_intr_establish __P((struct device *dev, void *cookie,
+					 tc_intrlevel_t level,
+					 intr_handler_t handler,
+					 void *arg));
+void	tc_ds_ioasic_intr_disestablish __P((struct device *, void *));
 void	tc_ds_ioasic_iointr __P((void *, int));
 int	tc_ds_ioasic_getdev __P((struct confargs *));
 
@@ -111,48 +130,22 @@ extern void xine_enable_intr __P ((u_int slot, tc_handler_t,
 				   void *intr_arg, int on)); 
 
 /*
- * configuration tables for the four models of
+ * Configuration tables for the four models of
  * Decstation that have turbochannels. 
  * None of the four are the same.
  */
 #include "ds-tc-conf.c"
 
-
-/*
- * Mapping from CPU type to a tc_cpu_desc for that CPU type.
- * (Alpha-specific.)
- */
-struct tc_cpu_desc *tc_cpu_devs[] = {
-        NULL,                   /* Unused */
-        NULL,                   /* ST_ADU */
-        NULL,                   /* ST_DEC_4000 */
-        NULL,                   /* ST_DEC_7000 */
-#ifdef DEC_3000_500
-        &dec_3000_500_cpu,      /* ST_DEC_3000_500 */
-#else
-        NULL,
-#endif
-        NULL,                   /* Unused  */
-        NULL,                   /* ST_DEC_2000_300 */
-#ifdef DEC_3000_300
-        &dec_3000_300_cpu,      /* ST_DEC_3000_300 */
-#else
-        NULL,
-#endif
-};
-int ntc_cpu_devs = sizeof tc_cpu_devs / sizeof tc_cpu_devs[0];
 
 /*
- * Function to map from a CPU code to a tc_cpu_desc.
- * This hould really be in machine-dependent code, where
+ * Function to map from a CPU code to a tcbus tc_attach_args struct.
+ * This should really be in machine-dependent code, where
  * it could even be a macro.
  */
-struct tc_cpu_desc *
+struct tc_attach_args *
 cpu_tcdesc(cpu)
     int cpu;
 {
- /*XXX*/
-#ifdef	pmax
 	if (cpu == DS_3MAXPLUS) {
 		tc_enable_interrupt = kn03_enable_intr;
 		return &kn03_tc_desc;
@@ -160,236 +153,181 @@ cpu_tcdesc(cpu)
 		tc_enable_interrupt = kn02_enable_intr;
 		return &kn02_tc_desc;
 	} else if (cpu == DS_3MIN) {
-		DPRINTF(("tcattach: 3MIN Turbochannel\n"));
 		tc_enable_interrupt = kmin_enable_intr;
 		return &kmin_tc_desc;
 	} else if (cpu == DS_MAXINE) {
-		DPRINTF(("MAXINE turbochannel\n"));
 		tc_enable_interrupt = xine_enable_intr;
 		return &xine_tc_desc;
 	} else if (cpu == DS_PMAX) {
-		DPRINTF(("tcattach: PMAX, no turbochannel\n"));
+#ifdef DIAGNOSTIC
+		printf("tcattach: PMAX, no turbochannel\n");
+#endif
+		return NULL;
+	} else if (cpu == DS_MIPSFAIR) {
+		printf("tcattach: Mipsfair (5100), no turbochannel\n");
 		return NULL;
 	} else {
-		panic("tcattach: Unrecognized bus type 0x%x\n", cpu);
+		panic("cpu_tc: Unrecognized bus type 0x%x\n", cpu);
 	}
-
-#else  /* alpha?*/
-	return tc_cpu_devs[cputype];
-#endif /* alpha?*/
-}
-
-int
-tcmatch(parent, cfdata, aux)
-	struct device *parent;
-	void *cfdata;
-	void *aux;
-{
-	struct cfdata *cf = cfdata;
-	struct confargs *ca = aux;
-
-
-        /* Make sure that we're looking for a TC. */
-        if (strcmp(ca->ca_name, tccd.cd_name) != 0)
-                return (0);
-
-        /* Make sure that unit exists. */
-	if (cf->cf_unit != 0 ||
-#ifdef pmax
-	    0
-#else
-	    cputype > ntc_cpu_devs || tc_cpu_devs[cputype] == NULL
-#endif
-	    )
-		return (0);
-
-	return (1);
 }
 
 /*
- * Attach a turbochannel bus.   Once the turbochannel is attached,
- * search recursively for a system slot (which contains registers
- * for baseboard devices  in "subslots"), and for "real" on-board or
- * option turbochannel slots (that have their own turbochannel ROM
- * signature.
+ * We have a TurboChannel bus.  Configure it.
  */
 void
-tcattach(parent, self, aux)
-	struct device *parent;
-	struct device *self;
-	void *aux;
+config_tcbus(parent, cputype, printfn)
+     	struct device *parent;
+	int cputype;
+	int	printfn __P((void *, const char *));
+
 {
-	struct tc_softc *sc = (struct tc_softc *)self;
-	struct confargs *nca;
-	char namebuf[TC_ROM_LLEN+1];
-	int i;
+	struct tc_attach_args tc;
 
-	printf("\n");
+	struct tc_attach_args * tcbus = cpu_tcdesc(pmax_boardtype);
 
-	/* keep our CPU description handy */
-	sc->sc_desc = cpu_tcdesc(cputype);
+	/*
+	 * Set up important CPU/chipset information.
+	 */
+	tc.tca_nslots = tcbus->tca_nslots;
+	tc.tca_slots = tcbus->tca_slots;
 
-#ifndef pmax /*XXX*/
-	/* set up interrupt handlers */
-	(*sc->sc_desc->tc_intr_setup)();
-	set_iointr(sc->sc_desc->tc_iointr);
-#endif /*!PMAX*/
+	tc.tca_nbuiltins = tcbus->tca_nbuiltins;
+	tc.tca_builtins = tcbus->tca_builtins;
+	tc.tca_intr_establish = tc_ds_intr_establish;	/*XXX*/
+	tc.tca_intr_disestablish = tc_ds_ioasic_intr_disestablish;	/*XXX*/
 
-	sc->sc_bus.ab_dv = (struct device *)sc;
-	sc->sc_bus.ab_type = BUS_TC;
-	sc->sc_bus.ab_intr_establish = tc_intr_establish;
-	sc->sc_bus.ab_intr_disestablish = tc_intr_disestablish;
-	sc->sc_bus.ab_cvtaddr = tc_cvtaddr;
-	sc->sc_bus.ab_matchname = tc_matchname;
-
-	if (sc->sc_desc == NULL)
-		return;
-
-	/* Try to configure each turbochannel (or CPU-internal) device */
-	for (i = 0; i < sc->sc_desc->tcd_ndevs; i++) {
-
-		nca = &sc->sc_desc->tcd_devs[i];
-		if (nca == NULL) {
-			printf("tcattach: bad config for slot %d\n", i);
-			break;
-		}
-		nca->ca_bus = &sc->sc_bus;
-
-#if defined(DIAGNOSTIC) || defined(DEBUG)
-		if (nca->ca_slot > sc->sc_desc->tcd_nslots)
-			panic("tcattach: dev slot > number of slots for %s",
-			    nca->ca_name);
-#endif
-
-		if (tc_checkdevmem(BUS_CVTADDR(nca)) == 0)
-			continue;
-
-		/* If no name, we have to see what might be there. */
-		if (nca->ca_name == NULL) {
-			if (tc_checkslot(BUS_CVTADDR(nca), namebuf) == 0)
-				continue;
-			nca->ca_name = namebuf;
-		}
-		/* Tell the autoconfig machinery we've found the hardware. */
-		config_found(self, nca, tcprint);
-	}
+	config_found(parent, (struct confargs*)&tc, printfn);
 }
 
+/*
+ * Probe the turbochannel for a framebuffer option card, starting
+ * at the preferred slot and then scanning all slots. Configure the first
+ * supported framebuffer device found, if any, as the console, and return
+ * 1 if found.
+ * Called before autoconfiguration, to find a system console.
+ */
 int
-tcprint(aux, pnp)
-	void *aux;
-	char *pnp;
+tc_findconsole(preferred_slot)
+	int preferred_slot;
 {
-	struct confargs *ca = aux;
+	int slot;
 
-        if (pnp)
-                printf("%s at %s", ca->ca_name, pnp);
-        printf(" slot %ld offset 0x%lx", ca->ca_slot, ca->ca_offset);
-        return (UNCONF);
-}
+	struct tc_attach_args * sc_desc;
 
-caddr_t
-tc_cvtaddr(ca)
-	struct confargs *ca;
-{
-	struct tc_softc *sc = tccd.cd_devs[0];
+	/* First, try the slot configured as console in NVRAM. */
+	 /* if (consprobeslot(preferred_slot)) return (1); */
 
-	return (sc->sc_desc->tcd_slots[ca->ca_slot].tsd_dense + ca->ca_offset);
+	/*
+	 * Try to configure each turbochannel (or CPU-internal) device.
+	 * Knows about gross internals of TurboChannel bus autoconfig
+	 * descriptor, which needs to be fixed badly.
+	 */
+	if ((sc_desc = cpu_tcdesc(pmax_boardtype)) == NULL)
+		return 0;
+	for (slot = 0; slot < sc_desc->tca_nslots; slot++) {
 
-}
-
-void
-tc_intr_establish(ca, handler, val)
-	struct confargs *ca;
-	intr_handler_t handler;
-	intr_arg_t val;
-{
-	struct tc_softc *sc = tccd.cd_devs[0];
-
-	(*sc->sc_desc->tc_intr_establish)(ca, handler, val);
-}
-
-void
-tc_intr_disestablish(ca)
-	struct confargs *ca;
-{
-	struct tc_softc *sc = tccd.cd_devs[0];
-
-	(*sc->sc_desc->tc_intr_disestablish)(ca);
-}
-
-int
-tc_matchname(ca, name)
-	struct confargs *ca;
-	char *name;
-{
-
-	return (bcmp(name, ca->ca_name, TC_ROM_LLEN) == 0);
-}
-
-int
-tc_checkdevmem(addr)
-	caddr_t addr;
-{
-	u_int32_t *datap = (u_int32_t *) addr;
-
-	/* Return non-zero if memory was there (i.e. address wasn't bad). */
-	return (!badaddr(datap, sizeof (u_int32_t)));
-}
-
-u_int tc_slot_romoffs[] = { TC_SLOT_ROM, TC_SLOT_PROTOROM };
-int ntc_slot_romoffs = sizeof tc_slot_romoffs / sizeof tc_slot_romoffs[0];
-
-int
-tc_checkslot(addr, namep)
-	caddr_t addr;
-	char *namep;
-{
-	struct tc_rommap *romp;
-	int i, j;
-
-	for (i = 0; i < ntc_slot_romoffs; i++) {
-		romp = (struct tc_rommap *)
-		    (addr + tc_slot_romoffs[i]);
-
-		switch (romp->tcr_width.v) {
-		case 1:
-		case 2:
-		case 4:
-			break;
-
-		default:
-			continue;
-		}
-
-		if (romp->tcr_stride.v != 4)
-			continue;
-
-		for (j = 0; j < 4; j++)
-			if (romp->tcr_test[j+0*romp->tcr_stride.v] != 0x55 ||
-			    romp->tcr_test[j+1*romp->tcr_stride.v] != 0x00 ||
-			    romp->tcr_test[j+2*romp->tcr_stride.v] != 0xaa ||
-			    romp->tcr_test[j+3*romp->tcr_stride.v] != 0xff)
-				continue;
-
-		for (j = 0; j < TC_ROM_LLEN; j++)
-			namep[j] = romp->tcr_modname[j].v;
-		namep[TC_ROM_LLEN] = '\0';
-		return (1);
+		if (tc_consprobeslot(slot))
+			return (1);
 	}
 	return (0);
 }
 
+/*
+ * Try and configure one slot as framebuffer console.
+ * Accept only the framebuffers for which driver are configured into
+ * the kernel.  If a suitable framebuffer is found, attach it and
+ * set up glass-tty emulation.
+ */
 int
-tc_intrnull(val)
-	void *val;
+tc_consprobeslot(slot)
+	int slot;
+{
+	void *slotaddr;
+	char name[20];
+	struct tc_attach_args * sc_desc;
+
+	if (slot < 0 || ((sc_desc = cpu_tcdesc(pmax_boardtype)) == NULL))
+		return 0;
+	slotaddr = (void *)(sc_desc->tca_slots[slot].tcs_addr);
+
+	if (tc_badaddr(slotaddr))
+		return (0);
+
+	if (tc_checkslot(slotaddr, name) == 0)
+		return (0);
+
+	/*
+	 * We found an device in the given slot. Now see if it's a
+	 * framebuffer for which we have a driver. 
+	 */
+
+	/*printf(", trying to init a \"%s\"", name);*/
+
+#define DRIVER_FOR_SLOT(slotname, drivername) \
+	(strcmp (slotname, drivername) == 0)
+
+#if NMFB > 0
+	if (DRIVER_FOR_SLOT(name, "PMAG-AA ") &&
+	    mfbinit(slotaddr, 0, 1)) {
+		return (1);
+	}
+#endif /* NMFB */
+
+#if NSFB > 0
+	if (DRIVER_FOR_SLOT(name, "PMAGB-BA") &&
+	    sfbinit(slotaddr, 0, 1)) {
+		return (1);
+	}
+#endif /* NSFB */
+
+#if NCFB > 0
+	/*"cfb"*/
+	if (DRIVER_FOR_SLOT(name, "PMAG-BA ") &&
+	    cfbinit(NULL, slotaddr, 0, 1)) {
+		return (1);
+	}
+#endif /* NCFB */
+	return (0);
+}
+
+/*
+ * Estabish an interrupt handler, but on what bus -- TC or ioctl asic?
+ */
+void
+tc_ds_intr_establish(dev, cookie, level, handler, val)
+    struct device *dev;
+    void *cookie;
+    tc_intrlevel_t level;
+    intr_handler_t handler;
+    void *val;
 {
 
-	panic("uncaught TC intr for slot %ld\n", (long)val);
+	/* Never tested on these processors */
+	if (cputype == DS_3MIN || cputype == DS_MAXINE)
+	    printf("tc_enable %s sc %x slot %d\n",
+		   dev->dv_xname, (int)val, cookie);
+
+#ifdef DIAGNOSTIC
+	if (tc_enable_interrupt == NULL)
+	    panic("tc_intr_establish: tc_enable not set\n");
+#endif
+
+#ifdef DEBUG
+	printf("tc_intr_establish: slot %d level %d handler %p sc %p on\n",
+		(int) cookie, (int) level, handler,  val);
+#endif
+
+	 /*
+	  * Enable the interrupt from tc (or ioctl asic) slot with NetBSD/pmax
+	  * sw-convention name ``cookie'' on this CPU.
+	  * XXX store the level somewhere for selective enabling of
+	  * interrupts from TC option slots.
+	  */
+	 (*tc_enable_interrupt) ((int)cookie, handler, val, 1);
 }
 
 
-/* hack for kn03 */
+/* hack for kn03 ioasic */
 
 void
 tc_ds_ioasic_intr_setup ()
@@ -397,52 +335,39 @@ tc_ds_ioasic_intr_setup ()
 	printf("not setting up TC intrs\n");
 }
 
+
+/*
+ * establish an interrupt handler for an ioasic device.
+ * On NetBSD/pmax, there is currently a single, merged interrupt handler for
+ * both TC and ioasic.  Just use the tc interrupt-establish function.
+*/
 void
-tc_ds_ioasic_intr_establish(ca, handler, val)
-    struct confargs *ca;
+tc_ds_ioasic_intr_establish(dev, cookie, level, handler, val)
+    struct device *dev;
+    void *cookie;
+    tc_intrlevel_t level;
     intr_handler_t handler;
     void *val;
 {
-	int unit = (int) val;
-
-	 if (BUS_MATCHNAME(ca, "IOCTL   ")) {
-		 printf("(no interrupt for asic");
-		 return;
-	 }
-
-	/* The kn02 doesn't really have an ASIC */
-	 if (BUS_MATCHNAME(ca, KN02_ASIC_NAME)) {
-		 printf("(no interrupt for proto-asic)\n");
-		 return;
-	 }
-
-	/* Never tested on these processors */
-	if (cputype == DS_3MIN || cputype == DS_MAXINE)
-	    printf("tc_enable %s%d slot %d\n",
-		   ca->ca_name, (int)unit, ca->ca_slotpri);
-
-#ifdef DIAGNOSTIC
-	if (tc_enable_interrupt == NULL)
-	    panic("tc_intr_establish: tc_enable not set\n");
-#endif
-
-	(*tc_enable_interrupt) (ca->ca_slotpri, handler, (void*)unit, 1);
+	tc_intr_establish(dev, cookie, level, handler, val);
 }
 
 void
-tc_ds_ioasic_intr_disestablish(args)
-    struct confargs *args;
+tc_ds_ioasic_intr_disestablish(dev, arg)
+    struct device *dev;
+    void *arg;
 {
 	/*(*tc_enable_interrupt) (ca->ca_slot, handler, 0);*/
-    	printf("cannot dis-establish TC intrs\n");
+    	printf("cannot dis-establish IOASIC interrupts\n");
 }
 
 void
 tc_ds_ioasic_iointr (framep, vec)
     void * framep;
     int vec;
-    
-			   
 {
-	printf("bogus interrupt handler\n");
+	printf("bogus interrupt handler fp %x vec %d\n", framep, vec);
 }
+
+/* XXX */
+#include <dev/tc/tc.c>

@@ -130,12 +130,14 @@ main(argc, argv)
 	int ch, done, i, selfuse, sflag;
 	char *bspec, *p;
 
+	setgid(getgid());
+
 	batch = debug = reuse = selfuse = sflag = 0;
 	bspec = NULL;
 	minlength = 3;
 	tlimit = 180;		/* 3 minutes is standard */
 
-	while ((ch = getopt(argc, argv, "bds:t:w:")) != EOF)
+	while ((ch = getopt(argc, argv, "bds:t:w:")) != -1)
 		switch(ch) {
 		case 'b':
 			batch = 1;

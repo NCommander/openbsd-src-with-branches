@@ -1,4 +1,5 @@
-/*	$NetBSD: vfs_lookup.c,v 1.15 1995/03/08 01:20:50 cgd Exp $	*/
+/*	$OpenBSD: vfs_lookup.c,v 1.6 1997/03/01 23:03:38 tholo Exp $	*/
+/*	$NetBSD: vfs_lookup.c,v 1.17 1996/02/09 19:00:59 christos Exp $	*/
 
 /*
  * Copyright (c) 1982, 1986, 1989, 1993
@@ -85,7 +86,7 @@ namei(ndp)
 	register struct vnode *dp;	/* the directory we are searching */
 	struct iovec aiov;		/* uio for reading symbolic links */
 	struct uio auio;
-	int error, linklen;
+	int error, linklen, dironly = 0;
 	struct componentname *cnp = &ndp->ni_cnd;
 
 	ndp->ni_cnd.cn_cred = ndp->ni_cnd.cn_proc->p_ucred;
@@ -111,16 +112,40 @@ namei(ndp)
 	else
 		error = copyinstr(ndp->ni_dirp, cnp->cn_pnbuf,
 			    MAXPATHLEN, &ndp->ni_pathlen);
+
+#ifdef KTRACE
+	if (KTRPOINT(cnp->cn_proc, KTR_NAMEI))
+		ktrnamei(cnp->cn_proc->p_tracep, cnp->cn_pnbuf);
+#endif
+
+	/*
+	 * Fail on null pathnames
+	 */
+	if (error == 0 && ndp->ni_pathlen == 1)
+		error = ENOENT;
 	if (error) {
 		free(cnp->cn_pnbuf, M_NAMEI);
 		ndp->ni_vp = NULL;
 		return (error);
 	}
+
+	/*
+	 * Ignore trailing /'s, except require the last path element
+	 * to be a directory
+	 */
+	if (ndp->ni_pathlen > 2 && cnp->cn_pnbuf[ndp->ni_pathlen - 2] == '/') {
+		/*
+		 * Since the last name is no longer the terminal,
+		 * force the FOLLOW flag
+		 */
+		cnp->cn_flags |= FOLLOW;
+		dironly = 1;
+		while (ndp->ni_pathlen > 2 &&
+		       cnp->cn_pnbuf[ndp->ni_pathlen - 2] == '/')
+			cnp->cn_pnbuf[--ndp->ni_pathlen - 1] = '\0';
+	}
+
 	ndp->ni_loopcnt = 0;
-#ifdef KTRACE
-	if (KTRPOINT(cnp->cn_proc, KTR_NAMEI))
-		ktrnamei(cnp->cn_proc->p_tracep, cnp->cn_pnbuf);
-#endif
 
 	/*
 	 * Get starting point for the translation.
@@ -145,7 +170,7 @@ namei(ndp)
 			VREF(dp);
 		}
 		ndp->ni_startdir = dp;
-		if (error = lookup(ndp)) {
+		if ((error = lookup(ndp)) != 0) {
 			FREE(cnp->cn_pnbuf, M_NAMEI);
 			return (error);
 		}
@@ -153,6 +178,19 @@ namei(ndp)
 		 * Check for symbolic link
 		 */
 		if ((cnp->cn_flags & ISSYMLINK) == 0) {
+			/*
+			 * Check for directory if dironly
+			 */
+			if (dironly && ndp->ni_vp != NULL && ndp->ni_vp->v_type != VDIR) {
+				if ((cnp->cn_flags & LOCKPARENT) && ndp->ni_pathlen == 1)
+					VOP_UNLOCK(ndp->ni_dvp);
+				if (cnp->cn_flags & LOCKLEAF)
+					vput(ndp->ni_vp);
+				else
+					vrele(ndp->ni_vp);
+				FREE(cnp->cn_pnbuf, M_NAMEI);
+				return (ENOTDIR);
+			}
 			if ((cnp->cn_flags & (SAVENAME | SAVESTART)) == 0)
 				FREE(cnp->cn_pnbuf, M_NAMEI);
 			else
@@ -178,7 +216,8 @@ namei(ndp)
 		auio.uio_segflg = UIO_SYSSPACE;
 		auio.uio_procp = (struct proc *)0;
 		auio.uio_resid = MAXPATHLEN;
-		if (error = VOP_READLINK(ndp->ni_vp, &auio, cnp->cn_cred)) {
+		error = VOP_READLINK(ndp->ni_vp, &auio, cnp->cn_cred);
+		if (error) {
 			if (ndp->ni_pathlen > 1)
 				free(cp, M_NAMEI);
 			break;
@@ -375,7 +414,7 @@ dirloop:
 	 */
 unionlookup:
 	ndp->ni_dvp = dp;
-	if (error = VOP_LOOKUP(dp, &ndp->ni_vp, cnp)) {
+	if ((error = VOP_LOOKUP(dp, &ndp->ni_vp, cnp)) != 0) {
 #ifdef DIAGNOSTIC
 		if (ndp->ni_vp != NULL)
 			panic("leaf should be empty");
@@ -442,7 +481,7 @@ unionlookup:
 			sleep((caddr_t)mp, PVFS);
 			continue;
 		}
-		if (error = VFS_ROOT(dp->v_mountedhere, &tdp))
+		if ((error = VFS_ROOT(dp->v_mountedhere, &tdp)) != 0)
 			goto bad2;
 		vput(dp);
 		ndp->ni_vp = dp = tdp;
@@ -587,7 +626,7 @@ relookup(dvp, vpp, cnp)
 	/*
 	 * We now have a segment name to search for, and a directory to search.
 	 */
-	if (error = VOP_LOOKUP(dp, vpp, cnp)) {
+	if ((error = VOP_LOOKUP(dp, vpp, cnp)) != 0) {
 #ifdef DIAGNOSTIC
 		if (*vpp != NULL)
 			panic("leaf should be empty");

@@ -1,4 +1,4 @@
-/*	$NetBSD: param.h,v 1.9 1995/03/28 18:15:38 jtc Exp $	*/
+/*	$OpenBSD: param.h,v 1.4 1996/04/28 10:55:42 deraadt Exp $ */
 
 /*
  * Copyright (c) 1988 University of Utah.
@@ -45,7 +45,9 @@
 /*
  * Machine dependent constants for mvme68k, based on HP9000 series 300.
  */
+#define	_MACHINE 	"mvme68k"
 #define	MACHINE 	"mvme68k"
+#define	_MACHINE_ARCH	"m68k"
 #define	MACHINE_ARCH	"m68k"
 #define	MID_MACHINE	MID_M68K
 
@@ -98,9 +100,9 @@
 
 #ifndef NMBCLUSTERS
 #ifdef GATEWAY
-#define	NMBCLUSTERS	512		/* map size, max cluster allocation */
+#define	NMBCLUSTERS	2048		/* map size, max cluster allocation */
 #else
-#define	NMBCLUSTERS	256		/* map size, max cluster allocation */
+#define	NMBCLUSTERS	1024		/* map size, max cluster allocation */
 #endif
 #endif
 
@@ -178,4 +180,18 @@
 
 #ifdef _KERNEL
 #define DELAY(n)	delay(n)
+#endif
+
+#ifdef COMPAT_HPUX
+/*
+ * Constants/macros for HPUX multiple mapping of user address space.
+ * Pages in the first 256Mb are mapped in at every 256Mb segment.
+ */
+#define HPMMMASK	0xF0000000
+#define ISHPMMADDR(v) \
+	((curproc->p_md.md_flags & MDP_HPUXMMAP) && \
+	 ((unsigned)(v) & HPMMMASK) && \
+	 ((unsigned)(v) & HPMMMASK) != HPMMMASK)
+#define HPMMBASEADDR(v) \
+	((unsigned)(v) & ~HPMMMASK)
 #endif

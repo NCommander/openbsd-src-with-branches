@@ -1,4 +1,5 @@
-/*	$NetBSD: ufs_readwrite.c,v 1.7 1995/07/24 21:20:53 cgd Exp $	*/
+/*	$OpenBSD: ufs_readwrite.c,v 1.7 1996/10/29 08:03:22 tholo Exp $	*/
+/*	$NetBSD: ufs_readwrite.c,v 1.9 1996/05/11 18:27:57 mycroft Exp $	*/
 
 /*-
  * Copyright (c) 1993
@@ -32,11 +33,16 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  *
- *	@(#)ufs_readwrite.c	8.8 (Berkeley) 8/4/94
+ *	@(#)ufs_readwrite.c	8.11 (Berkeley) 5/8/95
+ */
+
+/*
+ * ext2fs support added to this module by Jason Downs, based on Godmar Back's
+ * original ext2_readwrite.c.
  */
 
 #ifdef LFS_READWRITE
-#define	BLKSIZE(a, b, c)	blksize(a)
+#define	BLKSIZE(a, b, c)	blksize(a, b, c)
 #define	FS			struct lfs
 #define	I_FS			i_lfs
 #define	READ			lfs_read
@@ -44,7 +50,18 @@
 #define	WRITE			lfs_write
 #define	WRITE_S			"lfs_write"
 #define	fs_bsize		lfs_bsize
-#define	fs_maxfilesize		lfs_maxfilesize
+#define MAXFILESIZE		fs->lfs_maxfilesize
+#else
+#ifdef EXT2_READWRITE
+#define BLKSIZE(a, b, c)	blksize(a, b, c)
+#define FS			struct ext2_sb_info
+#define I_FS			i_e2fs
+#define READ			ext2_read
+#define READ_S			"ext2_read"
+#define WRITE			ext2_write
+#define WRITE_S			"ext2_write"
+#define fs_bsize		s_frag_size
+#define MAXFILESIZE		((u_int64_t)0x80000000 * fs->s_frag_size - 1)
 #else
 #define	BLKSIZE(a, b, c)	blksize(a, b, c)
 #define	FS			struct fs
@@ -53,20 +70,24 @@
 #define	READ_S			"ffs_read"
 #define	WRITE			ffs_write
 #define	WRITE_S			"ffs_write"
+#define MAXFILESIZE		fs->fs_maxfilesize
+#endif
 #endif
 
 /*
  * Vnode op for reading.
  */
 /* ARGSUSED */
-READ(ap)
+int
+READ(v)
+	void *v;
+{
 	struct vop_read_args /* {
 		struct vnode *a_vp;
 		struct uio *a_uio;
 		int a_ioflag;
 		struct ucred *a_cred;
-	} */ *ap;
-{
+	} */ *ap = v;
 	register struct vnode *vp;
 	register struct inode *ip;
 	register struct uio *uio;
@@ -96,8 +117,11 @@ READ(ap)
 		panic("%s: type %d", READ_S, vp->v_type);
 #endif
 	fs = ip->I_FS;
-	if ((u_int64_t)uio->uio_offset > fs->fs_maxfilesize)
+	if ((u_int64_t)uio->uio_offset > MAXFILESIZE)
 		return (EFBIG);
+
+	if (uio->uio_resid == 0)
+		return (0);
 
 	for (error = 0, bp = NULL; uio->uio_resid > 0; bp = NULL) {
 		if ((bytesinfile = ip->i_size - uio->uio_offset) <= 0)
@@ -116,7 +140,11 @@ READ(ap)
 		(void)lfs_check(vp, lbn);
 		error = cluster_read(vp, ip->i_size, lbn, size, NOCRED, &bp);
 #else
+#ifdef EXT2_READWRITE
+		if (lblktosize(fs, nextlbn) > ip->i_size)
+#else
 		if (lblktosize(fs, nextlbn) >= ip->i_size)
+#endif
 			error = bread(vp, lbn, size, NOCRED, &bp);
 		else if (doclusterread)
 			error = cluster_read(vp,
@@ -145,8 +173,9 @@ READ(ap)
 				break;
 			xfersize = size;
 		}
-		if (error =
-		    uiomove((char *)bp->b_data + blkoffset, (int)xfersize, uio))
+		error = uiomove((char *)bp->b_data + blkoffset, (int)xfersize,
+				uio);
+		if (error)
 			break;
 		brelse(bp);
 	}
@@ -159,14 +188,16 @@ READ(ap)
 /*
  * Vnode op for writing.
  */
-WRITE(ap)
+int
+WRITE(v)
+	void *v;
+{
 	struct vop_write_args /* {
 		struct vnode *a_vp;
 		struct uio *a_uio;
 		int a_ioflag;
 		struct ucred *a_cred;
-	} */ *ap;
-{
+	} */ *ap = v;
 	register struct vnode *vp;
 	register struct uio *uio;
 	register struct inode *ip;
@@ -176,6 +207,7 @@ WRITE(ap)
 	daddr_t lbn;
 	off_t osize;
 	int blkoffset, error, flags, ioflag, resid, size, xfersize;
+	struct timespec ts;
 
 	ioflag = ap->a_ioflag;
 	uio = ap->a_uio;
@@ -206,7 +238,7 @@ WRITE(ap)
 
 	fs = ip->I_FS;
 	if (uio->uio_offset < 0 ||
-	    (u_int64_t)uio->uio_offset + uio->uio_resid > fs->fs_maxfilesize)
+	    (u_int64_t)uio->uio_offset + uio->uio_resid > MAXFILESIZE)
 		return (EFBIG);
 	/*
 	 * Maybe this should be above the vnode op call, but so long as
@@ -232,14 +264,18 @@ WRITE(ap)
 			xfersize = uio->uio_resid;
 #ifdef LFS_READWRITE
 		(void)lfs_check(vp, lbn);
-		error = lfs_balloc(vp, xfersize, lbn, &bp);
+		error = lfs_balloc(vp, blkoffset, xfersize, lbn, &bp);
 #else
 		if (fs->fs_bsize > xfersize)
 			flags |= B_CLRBUF;
 		else
 			flags &= ~B_CLRBUF;
 
+#ifdef EXT2_READWRITE
+		error = ext2_balloc(ip,
+#else
 		error = ffs_balloc(ip,
+#endif
 		    lbn, blkoffset + xfersize, ap->a_cred, &bp, flags);
 #endif
 		if (error)
@@ -287,8 +323,9 @@ WRITE(ap)
 			uio->uio_offset -= resid - uio->uio_resid;
 			uio->uio_resid = resid;
 		}
-	} else if (resid > uio->uio_resid && (ioflag & IO_SYNC))
-		error = VOP_UPDATE(vp, (struct timeval *)&time,
-		    (struct timeval *)&time, 1);
+	} else if (resid > uio->uio_resid && (ioflag & IO_SYNC)) {
+		TIMEVAL_TO_TIMESPEC(&time, &ts);
+		error = VOP_UPDATE(vp, &ts, &ts, 1);
+	}
 	return (error);
 }

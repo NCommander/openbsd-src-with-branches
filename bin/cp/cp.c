@@ -1,3 +1,4 @@
+/*	$OpenBSD: cp.c,v 1.5 1996/12/14 12:17:38 mickey Exp $	*/
 /*	$NetBSD: cp.c,v 1.14 1995/09/07 06:14:51 jtc Exp $	*/
 
 /*
@@ -46,7 +47,7 @@ static char copyright[] =
 #if 0
 static char sccsid[] = "@(#)cp.c	8.5 (Berkeley) 4/29/95";
 #else
-static char rcsid[] = "$NetBSD: cp.c,v 1.14 1995/09/07 06:14:51 jtc Exp $";
+static char rcsid[] = "$OpenBSD: cp.c,v 1.5 1996/12/14 12:17:38 mickey Exp $";
 #endif
 #endif /* not lint */
 
@@ -83,7 +84,7 @@ static char rcsid[] = "$NetBSD: cp.c,v 1.14 1995/09/07 06:14:51 jtc Exp $";
 #include "extern.h"
 
 #define	STRIP_TRAILING_SLASH(p) {					\
-        while ((p).p_end > (p).p_path && (p).p_end[-1] == '/')		\
+        while ((p).p_end > (p).p_path + 1 && (p).p_end[-1] == '/')	\
                 *--(p).p_end = 0;					\
 }
 
@@ -109,7 +110,7 @@ main(argc, argv)
 	char *target;
 
 	Hflag = Lflag = Pflag = Rflag = 0;
-	while ((ch = getopt(argc, argv, "HLPRfipr")) != EOF) 
+	while ((ch = getopt(argc, argv, "HLPRfipr")) != -1) 
 		switch (ch) {
 		case 'H':
 			Hflag = 1;
@@ -138,7 +139,6 @@ main(argc, argv)
 		case 'r':
 			rflag = 1;
 			break;
-		case '?':
 		default:
 			usage();
 			break;
@@ -257,8 +257,10 @@ copy(argv, type, fts_options)
 	FTS *ftsp;
 	FTSENT *curr;
 	int base, dne, nlen, rval;
-	char *p;
-
+	char *p, *target_mid;
+#ifdef lint
+	base = 0;
+#endif
 	if ((ftsp = fts_open(argv, fts_options, mastercmp)) == NULL)
 		err(1, NULL);
 	for (rval = 0; (curr = fts_read(ftsp)) != NULL;) {
@@ -282,14 +284,6 @@ copy(argv, type, fts_options)
                  * source name to the target name.  
                  */
 		if (type != FILE_TO_FILE) {
-			if ((curr->fts_namelen +
-			    to.target_end - to.p_path + 1) > MAXPATHLEN) {
-				warnx("%s/%s: name too long (not copied)", 
-				    to.p_path, curr->fts_name);
-				rval = 1;
-				continue;
-			}
-
 			/*
 			 * Need to remember the roots of traversals to create
 			 * correct pathnames.  If there's a directory being
@@ -321,15 +315,20 @@ copy(argv, type, fts_options)
 				} else
 					base = curr->fts_pathlen;
 
-			if (to.target_end[-1] != '/') {
-				*to.target_end = '/';
-				*(to.target_end + 1) = 0;
-			}
 			p = &curr->fts_path[base];
 			nlen = curr->fts_pathlen - base;
-
-			(void)strncat(to.target_end + 1, p, nlen);
-			to.p_end = to.target_end + nlen + 1;
+			target_mid = to.target_end;
+			if (*p != '/' && target_mid[-1] != '/')
+				*target_mid++ = '/';
+			*target_mid = 0;
+			if (target_mid - to.p_path + nlen > MAXPATHLEN) {
+				warnx("%s%s: name too long (not copied)", 
+				    to.p_path, p);
+				rval = 1;
+				continue;
+			}
+			(void)strncat(target_mid, p, nlen);
+			to.p_end = target_mid + nlen;
 			*to.p_end = 0;
 			STRIP_TRAILING_SLASH(to);
 		}

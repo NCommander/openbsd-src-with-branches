@@ -1,4 +1,5 @@
-/*	$NetBSD: vm_fault.c,v 1.16 1994/09/07 20:25:07 mycroft Exp $	*/
+/*	$OpenBSD: vm_fault.c,v 1.5 1996/11/23 21:47:14 kstailey Exp $	*/
+/*	$NetBSD: vm_fault.c,v 1.18 1996/05/20 17:40:02 mrg Exp $	*/
 
 /* 
  * Copyright (c) 1991, 1993
@@ -69,7 +70,9 @@
  */
 
 #include <sys/param.h>
+#include <sys/proc.h>
 #include <sys/systm.h>
+#include <sys/user.h>
 
 #include <vm/vm.h>
 #include <vm/vm_page.h>
@@ -142,12 +145,12 @@ vm_fault(map, vaddr, fault_type, change_wiring)
 }
 
 #define	UNLOCK_THINGS	{				\
-	object->paging_in_progress--;			\
+	vm_object_paging_end(object);			\
 	vm_object_unlock(object);			\
 	if (object != first_object) {			\
 		vm_object_lock(first_object);		\
 		FREE_PAGE(first_m);			\
-		first_object->paging_in_progress--;	\
+		vm_object_paging_end(first_object);	\
 		vm_object_unlock(first_object);		\
 	}						\
 	UNLOCK_MAP;					\
@@ -188,7 +191,7 @@ vm_fault(map, vaddr, fault_type, change_wiring)
 	vm_object_lock(first_object);
 
 	first_object->ref_count++;
-	first_object->paging_in_progress++;
+	vm_object_paging_begin(first_object);
 
 	/*
 	 *	INVARIANTS (through entire routine):
@@ -324,6 +327,7 @@ vm_fault(map, vaddr, fault_type, change_wiring)
 			 */
 			UNLOCK_MAP;
 			cnt.v_pageins++;
+			curproc->p_addr->u_stats.p_ru.ru_majflt++;
 			rv = vm_pager_get(object->pager, m, TRUE);
 
 			/*
@@ -399,7 +403,7 @@ vm_fault(map, vaddr, fault_type, change_wiring)
 			 *	in the top object with zeros.
 			 */
 			if (object != first_object) {
-				object->paging_in_progress--;
+				vm_object_paging_end(object);
 				vm_object_unlock(object);
 
 				object = first_object;
@@ -417,10 +421,10 @@ vm_fault(map, vaddr, fault_type, change_wiring)
 		else {
 			vm_object_lock(next_object);
 			if (object != first_object)
-				object->paging_in_progress--;
+				vm_object_paging_end(object);
 			vm_object_unlock(object);
 			object = next_object;
-			object->paging_in_progress++;
+			vm_object_paging_begin(object);
 		}
 	}
 
@@ -496,7 +500,7 @@ vm_fault(map, vaddr, fault_type, change_wiring)
 			 *	We no longer need the old page or object.
 			 */
 			PAGE_WAKEUP(m);
-			object->paging_in_progress--;
+			vm_object_paging_end(object);
 			vm_object_unlock(object);
 
 			/*
@@ -517,11 +521,10 @@ vm_fault(map, vaddr, fault_type, change_wiring)
 			 *	But we have to play ugly games with
 			 *	paging_in_progress to do that...
 			 */
-			object->paging_in_progress--;
+			vm_object_paging_end(object);
 			vm_object_collapse(object);
-			object->paging_in_progress++;
-		}
-		else {
+			vm_object_paging_begin(object);
+		} else {
 		    	prot &= ~VM_PROT_WRITE;
 			m->flags |= PG_COPYONWRITE;
 		}
@@ -571,7 +574,7 @@ vm_fault(map, vaddr, fault_type, change_wiring)
 			copy_offset = first_offset
 				- copy_object->shadow_offset;
 			copy_m = vm_page_lookup(copy_object, copy_offset);
-			if (page_exists = (copy_m != NULL)) {
+			if ((page_exists = (copy_m != NULL)) != 0) {
 				if (copy_m->flags & PG_BUSY) {
 #ifdef DOTHREADS
 					int	wait_result;

@@ -1,7 +1,21 @@
-#	from: @(#)Makefile	5.25.1.1 (Berkeley) 5/7/91
-#	$Id: Makefile,v 1.16 1995/03/12 20:49:52 mycroft Exp $
+#	$OpenBSD: Makefile,v 1.19 1997/02/26 16:46:25 niklas Exp $
+#	$NetBSD: Makefile,v 1.20.4.1 1996/06/14 17:22:38 cgd Exp $
 
-SUBDIR=	csu libarch libc libcompat libcrypt libcurses libedit libkvm libl \
-	libm libpcap libresolv librpcsvc libskey libtelnet libterm libutil liby
+SUBDIR=	csu libarch libc libcom_err libcompat libcurses libedit \
+	libform libl libm libmenu libocurses libpanel libpcap libresolv \
+	librpcsvc libskey libss libtelnet libterm libtermlib libutil libwrap \
+	liby libz
+
+# XXX Temporarely until all ports are able to use libkvm (leo)
+.if	(${MACHINE} == "alpha") || \
+	(${MACHINE} == "amiga") || \
+	(${MACHINE} == "atari") || \
+	(${MACHINE} == "powerpc") || \
+	(${MACHINE} == "mvme88k") || \
+	(${MACHINE} == "sun3")
+SUBDIR+=        libkvm
+.else
+SUBDIR+=        libkvm.old
+.endif
 
 .include <bsd.subdir.mk>

@@ -1,6 +1,35 @@
-/*	$NetBSD: pmap.c,v 1.19 1995/05/12 12:54:53 mycroft Exp $	*/
+/*	$OpenBSD: pmap.c,v 1.5 1996/04/28 10:59:04 deraadt Exp $ */
 
 /* 
+ * Copyright (c) 1995 Theo de Raadt
+ * 
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions
+ * are met:
+ * 1. Redistributions of source code must retain the above copyright
+ *    notice, this list of conditions and the following disclaimer.
+ * 2. Redistributions in binary form must reproduce the above copyright
+ *    notice, this list of conditions and the following disclaimer in the
+ *    documentation and/or other materials provided with the distribution.
+ * 3. All advertising materials mentioning features or use of this software
+ *    must display the following acknowledgement:
+ *	This product includes software developed under OpenBSD by
+ *	Theo de Raadt for Willowglen Singapore.
+ * 4. The name of the author may not be used to endorse or promote products
+ *    derived from this software without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS
+ * OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ * ARE DISCLAIMED.  IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY
+ * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+ * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
+ * OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+ * HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+ * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
+ * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
+ * SUCH DAMAGE.
+ *
  * Copyright (c) 1991, 1993
  *	The Regents of the University of California.  All rights reserved.
  *
@@ -445,7 +474,17 @@ bogons:
 	 * map where we want it.
 	 */
 	addr = M68K_PTBASE;
-	s = min(M68K_PTMAXSIZE, maxproc*M68K_MAX_PTSIZE);
+	if ((M68K_PTMAXSIZE / M68K_MAX_PTSIZE) < maxproc) {
+		s = M68K_PTMAXSIZE;
+		/*
+		 * XXX We don't want to hang when we run out of
+		 * page tables, so we lower maxproc so that fork()
+		 * will fail instead.  Note that root could still raise
+		 * this value via sysctl(2).
+		 */
+		maxproc = (M68K_PTMAXSIZE / M68K_MAX_PTSIZE);
+	} else
+		s = (maxproc * M68K_MAX_PTSIZE);
 	addr2 = addr + s;
 	rv = vm_map_find(kernel_map, NULL, 0, &addr, s, TRUE);
 	if (rv != KERN_SUCCESS)
@@ -1214,6 +1253,13 @@ validate:
 	npte = pa | pte_prot(pmap, prot) | (*pte & (PG_M|PG_U)) | PG_V;
 	if (wired)
 		npte |= PG_W;
+
+	/* Don't cache if process can't take it, like SunOS ones.  */
+	if (mmutype == MMU_68040 && pmap != pmap_kernel() &&
+	    (curproc->p_md.md_flags & MDP_UNCACHE_WX) &&
+	    (prot & VM_PROT_EXECUTE) && (prot & VM_PROT_WRITE))
+		checkpv = cacheable = FALSE;
+
 	if (!checkpv && !cacheable)
 		npte |= PG_CI;
 #if defined(M68040)
@@ -1523,7 +1569,7 @@ pmap_zero_page(phys)
 #endif
 	kva = (vm_offset_t) CADDR1;
 	pmap_enter(pmap_kernel(), kva, phys, VM_PROT_READ|VM_PROT_WRITE, TRUE);
-	bzero((caddr_t)kva, NBPG);
+	zeropage((caddr_t)kva);
 	pmap_remove_mapping(pmap_kernel(), kva, PT_ENTRY_NULL,
 			    PRM_TFLUSH|PRM_CFLUSH);
 }
@@ -1558,7 +1604,7 @@ pmap_copy_page(src, dst)
 	pmap_enter(pmap_kernel(), dkva, dst, VM_PROT_READ|VM_PROT_WRITE, TRUE);
 	copypage((caddr_t)skva, (caddr_t)dkva);
 	/* CADDR1 and CADDR2 are virtually contiguous */
-	pmap_remove(pmap_kernel(), skva, skva+2*NBPG);
+	pmap_remove(pmap_kernel(), skva, skva + (2 * NBPG));
 }
 
 /*

@@ -1,3 +1,4 @@
+/*	$OpenBSD: locore.S,v 1.3 1997/01/21 17:00:09 rahnds Exp $	*/
 /*	$NetBSD: locore.S,v 1.2 1996/10/16 19:33:09 ws Exp $	*/
 
 /*
@@ -805,7 +806,9 @@ _C_LABEL(ipkdbsize) =	.-_C_LABEL(ipkdblow)
 	mtsprg	3,3;							\
 /* Disable translation, machine check and recoverability: */		\
 	mfmsr	2;							\
-	andi.	2,2,~(PSL_DR|PSL_IR|PSL_ME|PSL_RI);			\
+	lis	3,(PSL_DR|PSL_IR|PSL_ME|PSL_RI)@ha;			\
+	addi	3,3,(PSL_DR|PSL_IR|PSL_ME|PSL_RI)@l;			\
+	andc	2,2,3;							\
 	mtmsr	2;							\
 	isync;								\
 /* Decide whether we return to user mode: */				\
@@ -1002,7 +1005,7 @@ s_isitrap:
 	stw	30,32(1);		/* saved XER */			\
 	lmw	28,tempsave(0);		/* restore r28-r31 */		\
 	mfctr	6;							\
-	li	5,_C_LABEL(intr_depth)@ha;				\
+	lis	5,_C_LABEL(intr_depth)@ha;				\
 	lwz	5,_C_LABEL(intr_depth)@l(5);				\
 	mfsrr0	4;							\
 	mfsrr1	3;							\

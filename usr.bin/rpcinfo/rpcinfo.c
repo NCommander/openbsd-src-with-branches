@@ -1,7 +1,9 @@
+/*	$OpenBSD: rpcinfo.c,v 1.3 1996/06/29 01:07:33 deraadt Exp $	*/
+
 #ifndef lint
 /*static char sccsid[] = "from: @(#)rpcinfo.c 1.22 87/08/12 SMI";*/
 /*static char sccsid[] = "from: @(#)rpcinfo.c	2.2 88/08/11 4.0 RPCSRC";*/
-static char rcsid[] = "$Id: rpcinfo.c,v 1.4 1995/05/21 14:46:39 mycroft Exp $";
+static char rcsid[] = "$OpenBSD: rpcinfo.c,v 1.3 1996/06/29 01:07:33 deraadt Exp $";
 #endif
 
 /*
@@ -94,7 +96,7 @@ main(argc, argv)
 	function = NONE;
 	portnum = 0;
 	errflg = 0;
-	while ((c = getopt(argc, argv, "ptubdn:")) != EOF) {
+	while ((c = getopt(argc, argv, "ptubdn:")) != -1) {
 		switch (c) {
 
 		case 'p':
@@ -202,11 +204,13 @@ udpping(portnum, argc, argv)
 	prognum = getprognum(argv[1]);
 	get_inet_address(&addr, argv[0]);
 	/* Open the socket here so it will survive calls to clnt_destroy */
-	sock = socket( AF_INET, SOCK_DGRAM, IPPROTO_UDP);
+	sock = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
 	if (sock < 0) {
 		perror("rpcinfo: socket");
 		exit(1);
 	}
+	if (getuid() == 0)
+		bindresvport(sock, NULL);
 	failure = 0;
 	if (argc == 2) {
 		/*
@@ -588,10 +592,6 @@ deletereg(argc, argv)
 
 	if (argc != 2) {
 		usage() ;
-		exit(1) ;
-	}
-	if (getuid()) { /* This command allowed only to root */
-		fprintf(stderr, "Sorry. You are not root\n") ;
 		exit(1) ;
 	}
 	prog_num = getprognum(argv[0]);

@@ -1,4 +1,5 @@
-/*	$NetBSD: fb.c,v 1.11 1995/10/08 01:39:19 pk Exp $ */
+/*	$OpenBSD$	*/
+/*	$NetBSD: fb.c,v 1.18 1996/04/01 17:29:54 christos Exp $ */
 
 /*
  * Copyright (c) 1992, 1993
@@ -50,18 +51,23 @@
  */
 
 #include <sys/param.h>
-#include <sys/conf.h>
+#include <sys/systm.h>
 #include <sys/device.h>
 #include <sys/proc.h>
+#include <sys/conf.h>
 
 #include <machine/autoconf.h>
 #include <machine/fbio.h>
+#include <machine/kbd.h>
 #include <machine/fbvar.h>
+#include <machine/conf.h>
 #if defined(SUN4)
 #include <machine/eeprom.h>
+#include <sparc/dev/pfourreg.h>
 #endif
 
 static struct fbdevice *devfb;
+
 
 void
 fb_unblank()
@@ -72,12 +78,71 @@ fb_unblank()
 }
 
 void
-fb_attach(fb)
+fb_attach(fb, isconsole)
 	struct fbdevice *fb;
+	int isconsole;
 {
+	static int no_replace, seen_force;
 
-if (devfb) panic("multiple /dev/fb declarers");
+	/*
+	 * We've already had a framebuffer forced into /dev/fb.  Don't
+	 * allow any more, even if this is the console.
+	 */
+	if (seen_force) {
+		if (devfb) {	/* sanity */
+			printf("%s: /dev/fb already full\n",
+				fb->fb_device->dv_xname);
+			return;
+		} else
+			seen_force = 0;
+	}
+
+	/*
+	 * Check to see if we're being forced into /dev/fb.
+	 */
+	if (fb->fb_flags & FB_FORCE) {
+		if (devfb)
+			printf("%s: forcefully replacing %s\n",
+				fb->fb_device->dv_xname,
+				devfb->fb_device->dv_xname);
+		devfb = fb;
+		seen_force = no_replace = 1;
+		goto attached;
+	}
+
+	/*
+	 * Check to see if we're the console.  If we are, then replace
+	 * any currently existing framebuffer.
+	 */
+	if (isconsole) {
+		if (devfb)
+			printf("%s: replacing %s\n", fb->fb_device->dv_xname,
+				devfb->fb_device->dv_xname);
+		devfb = fb;
+		no_replace = 1;
+		goto attached;
+	}
+
+	/*
+	 * For the final case, we check to see if we can replace an
+	 * existing framebuffer, if not, say so and return.
+	 */
+	if (no_replace) {
+		if (devfb) {	/* sanity */
+			printf("%s: /dev/fb already full\n",
+				fb->fb_device->dv_xname);
+			return;
+		} else
+			no_replace = 0;
+	}
+
+	if (devfb)
+		printf("%s: replacing %s\n", fb->fb_device->dv_xname,
+			devfb->fb_device->dv_xname);
 	devfb = fb;
+
+ attached:
+	printf("%s: attached to /dev/fb\n", devfb->fb_device->dv_xname);
 }
 
 int
@@ -140,6 +205,15 @@ fb_setsize(fb, depth, def_width, def_height, node, bustype)
 	case BUS_VME16:
 	case BUS_VME32:
 	case BUS_OBIO:
+		if (CPU_ISSUN4M) {   /* 4m has framebuffer on obio */
+			fb->fb_type.fb_width = getpropint(node, "width",
+							  def_width);
+			fb->fb_type.fb_height = getpropint(node, "height",
+							   def_height);
+			fb->fb_linebytes = getpropint(node, "linebytes",
+			    (fb->fb_type.fb_width * depth) / 8);
+			break;
+		}
 		/* Set up some defaults. */
 		fb->fb_type.fb_width = def_width;
 		fb->fb_type.fb_height = def_height;
@@ -148,31 +222,100 @@ fb_setsize(fb, depth, def_width, def_height, node, bustype)
 		 * This is not particularly useful on Sun 4 VME framebuffers.
 		 * The EEPROM only contains info about the built-in.
 		 */
-		if (cputyp == CPU_SUN4 && (bustype == BUS_VME16 ||
+		if (CPU_ISSUN4 && (bustype == BUS_VME16 ||
 		    bustype == BUS_VME32))
 			goto donesize;
 
 #if defined(SUN4)
-		if (cputyp==CPU_SUN4) {
+		if (CPU_ISSUN4) {
 			struct eeprom *eep = (struct eeprom *)eeprom_va;
-			if (eep != NULL) {
-				switch (eep->eeScreenSize) {
-				case EE_SCR_1152X900:
+
+			if (fb->fb_flags & FB_PFOUR) {
+				volatile u_int32_t pfour;
+
+				/*
+				 * Some pfour framebuffers, e.g. the
+				 * cgsix, don't encode resolution the
+				 * same, so the driver handles that.
+				 * The driver can let us know that it
+				 * needs to do this by not mapping in
+				 * the pfour register by the time this
+				 * routine is called.
+				 */
+				if (fb->fb_pfour == NULL)
+					goto donesize;
+
+				pfour = *fb->fb_pfour;
+
+				/*
+				 * Use the pfour register to determine
+				 * the size.  Note that the cgsix and
+				 * cgeight don't use this size encoding.
+				 * In this case, we have to settle
+				 * for the defaults we were provided
+				 * with.
+				 */
+				if ((PFOUR_ID(pfour) == PFOUR_ID_COLOR24) ||
+				    (PFOUR_ID(pfour) == PFOUR_ID_FASTCOLOR))
+					goto donesize;
+
+				switch (PFOUR_SIZE(pfour)) {
+				case PFOUR_SIZE_1152X900:
 					fb->fb_type.fb_width = 1152;
 					fb->fb_type.fb_height = 900;
 					break;
 
-				case EE_SCR_1024X1024:
+				case PFOUR_SIZE_1024X1024:
 					fb->fb_type.fb_width = 1024;
 					fb->fb_type.fb_height = 1024;
 					break;
 
-				case EE_SCR_1600X1280:
+				case PFOUR_SIZE_1280X1024:
+					fb->fb_type.fb_width = 1280;
+					fb->fb_type.fb_height = 1024;
+					break;
+
+				case PFOUR_SIZE_1600X1280:
 					fb->fb_type.fb_width = 1600;
 					fb->fb_type.fb_height = 1280;
 					break;
 
-				case EE_SCR_1440X1440:
+				case PFOUR_SIZE_1440X1440:
+					fb->fb_type.fb_width = 1440;
+					fb->fb_type.fb_height = 1440;
+					break;
+
+				case PFOUR_SIZE_640X480:
+					fb->fb_type.fb_width = 640;
+					fb->fb_type.fb_height = 480;
+					break;
+
+				default:
+					/*
+					 * XXX: Do nothing, I guess.
+					 * Should we print a warning about
+					 * an unknown value? --thorpej
+					 */
+					break;
+				}
+			} else if (eep != NULL) {
+				switch (eep->ee_diag.eed_scrsize) {
+				case EED_SCR_1152X900:
+					fb->fb_type.fb_width = 1152;
+					fb->fb_type.fb_height = 900;
+					break;
+
+				case EED_SCR_1024X1024:
+					fb->fb_type.fb_width = 1024;
+					fb->fb_type.fb_height = 1024;
+					break;
+
+				case EED_SCR_1600X1280:
+					fb->fb_type.fb_width = 1600;
+					fb->fb_type.fb_height = 1280;
+					break;
+
+				case EED_SCR_1440X1440:
 					fb->fb_type.fb_width = 1440;
 					fb->fb_type.fb_height = 1440;
 					break;
@@ -189,7 +332,7 @@ fb_setsize(fb, depth, def_width, def_height, node, bustype)
 		}
 #endif /* SUN4 */
 #if defined(SUN4M)
-		if (cputyp==CPU_SUN4M) {
+		if (CPU_ISSUN4M) {
 			/* XXX: need code to find 4/600 vme screen size */
 		}
 #endif /* SUN4M */
@@ -199,8 +342,8 @@ fb_setsize(fb, depth, def_width, def_height, node, bustype)
 		break;
 
 	case BUS_SBUS:
-		fb->fb_type.fb_width = getpropint(node, "width", 1152);
-		fb->fb_type.fb_height = getpropint(node, "height", 900);
+		fb->fb_type.fb_width = getpropint(node, "width", def_width);
+		fb->fb_type.fb_height = getpropint(node, "height", def_height);
 		fb->fb_linebytes = getpropint(node, "linebytes",
 		    (fb->fb_type.fb_width * depth) / 8);
 		break;
@@ -214,7 +357,8 @@ fb_setsize(fb, depth, def_width, def_height, node, bustype)
 #ifdef RASTERCONSOLE
 #include <machine/kbd.h>
 
-extern int (*v_putc) __P((int));
+static int a2int __P((char *, int));
+static void fb_bell __P((int));
 
 static int
 a2int(cp, deflt)
@@ -259,34 +403,33 @@ fbrcons_init(fb)
 
 #if defined(RASTERCONS_FULLSCREEN) || defined(RASTERCONS_SMALLFONT)
 	rc->rc_maxcol = rc->rc_width / rc->rc_font->width;
-	rc->rc_maxrow = rc->rc_height / rc->rc_font->height; 
+	rc->rc_maxrow = rc->rc_height / rc->rc_font->height;
 #else
 #if defined(SUN4)
-	if (cputyp == CPU_SUN4) {
+	if (CPU_ISSUN4) {
 		struct eeprom *eep = (struct eeprom *)eeprom_va;
 
 		if (eep == NULL) {
 			rc->rc_maxcol = 80;
 			rc->rc_maxrow = 34;
 		} else {
-			rc->rc_maxcol = eep->eeTtyCols;
-			rc->rc_maxrow = eep->eeTtyRows;
+			rc->rc_maxcol = eep->ee_diag.eed_colsize;
+			rc->rc_maxrow = eep->ee_diag.eed_rowsize;
 		}
 	}
 #endif /* SUN4 */
-#if defined(SUN4C) || defined(SUN4M)
-	if (cputyp != CPU_SUN4) {
+
+	if (!CPU_ISSUN4) {
 		rc->rc_maxcol =
 		    a2int(getpropstring(optionsnode, "screen-#columns"), 80);
 		rc->rc_maxrow =
 		    a2int(getpropstring(optionsnode, "screen-#rows"), 34);
 	}
-#endif /* SUN4C || SUN4M */
 #endif /* RASTERCONS_FULLSCREEN || RASTERCONS_SMALLFONT */
 
 #if !(defined(RASTERCONS_FULLSCREEN) || defined(RASTERCONS_SMALLFONT))
 	/* Determine addresses of prom emulator row and column */
-	if (cputyp == CPU_SUN4 ||
+	if (CPU_ISSUN4 ||
 	    romgetcursoraddr(&rc->rc_row, &rc->rc_col))
 #endif
 		rc->rc_row = rc->rc_col = NULL;
@@ -294,6 +437,69 @@ fbrcons_init(fb)
 	rc->rc_bell = fb_bell;
 	rcons_init(rc);
 	/* Hook up virtual console */
-	v_putc = (int (*) __P((int)))rcons_cnputc;
+	v_putc = rcons_cnputc;
 }
 #endif
+
+#if defined(SUN4)
+/*
+ * Support routines for pfour framebuffers.
+ */
+
+/*
+ * Probe for a pfour framebuffer.  Return values:
+ *
+ *	PFOUR_NOTPFOUR		framebuffer is not a pfour
+ *				framebuffer
+ *
+ *	otherwise returns pfour ID
+ */
+int
+fb_pfour_id(va)
+	void *va;
+{
+	volatile u_int32_t val, save, *pfour = va;
+
+	/* Read the pfour register. */
+	save = *pfour;
+
+	/*
+	 * Try to modify the type code.  If it changes, put the
+	 * original value back, and notify the caller that it's
+	 * not a pfour framebuffer.
+	 */
+	val = save & ~PFOUR_REG_RESET;
+	*pfour = (val ^ PFOUR_FBTYPE_MASK);
+	if ((*pfour ^ val) & PFOUR_FBTYPE_MASK) {
+		*pfour = save;
+		return (PFOUR_NOTPFOUR);
+	}
+
+	return (PFOUR_ID(val));
+}
+
+/*
+ * Return the status of the video enable.
+ */
+int
+fb_pfour_get_video(fb)
+	struct fbdevice *fb;
+{
+
+	return ((*fb->fb_pfour & PFOUR_REG_VIDEO) != 0);
+}
+
+/*
+ * Enable or disable the framebuffer.
+ */
+void
+fb_pfour_set_video(fb, enable)
+	struct fbdevice *fb;
+	int enable;
+{
+	volatile u_int32_t pfour;
+
+	pfour = *fb->fb_pfour & ~(PFOUR_REG_INTCLR|PFOUR_REG_VIDEO);
+	*fb->fb_pfour = pfour | (enable ? PFOUR_REG_VIDEO : 0);
+}
+#endif /* SUN4 */

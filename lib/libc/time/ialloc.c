@@ -1,10 +1,10 @@
-/*	$NetBSD: ialloc.c,v 1.2 1995/03/10 18:12:38 jtc Exp $	*/
-
-#ifndef lint
-#ifndef NOID
+#if defined(LIBC_SCCS) && !defined(lint)
+#if 0
 static char	elsieid[] = "@(#)ialloc.c	8.28";
-#endif /* !defined NOID */
-#endif /* !defined lint */
+#else
+static char rcsid[] = "$OpenBSD: ialloc.c,v 1.2 1996/08/19 08:34:49 tholo Exp $";
+#endif
+#endif /* LIBC_SCCS and not lint */
 
 /*LINTLIBRARY*/
 

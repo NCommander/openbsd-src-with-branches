@@ -1,4 +1,4 @@
-/*	$NetBSD$ */
+/*	$OpenBSD: bugtty.c,v 1.3 1996/04/28 11:05:59 deraadt Exp $ */
 
 /*
  * Copyright (c) 1995 Dale Rahn.
@@ -14,7 +14,7 @@
  *    documentation and/or other materials provided with the distribution.
  * 3. All advertising materials mentioning features or use of this software
  *    must display the following acknowledgement:
- *   This product includes software developed by Dale Rahn.
+ *	This product includes software developed by Dale Rahn.
  * 4. The name of the author may not be used to endorse or promote products
  *    derived from this software without specific prior written permission.
  *
@@ -50,9 +50,12 @@
 int bugttymatch __P((struct device *parent, void *self, void *aux));
 void bugttyattach __P((struct device *parent, struct device *self, void *aux));
 
-struct cfdriver bugttycd = {
-	NULL, "bugtty", bugttymatch, bugttyattach,
-	DV_TTY, sizeof(struct device)
+struct cfattach bugtty_ca = {
+	sizeof(struct device), bugttymatch, bugttyattach
+};
+
+struct cfdriver bugtty_cd = {
+	NULL, "bugtty", DV_TTY, 0
 };
 
 /* prototypes */
@@ -174,6 +177,7 @@ bugttyopen(dev, flag, mode, p)
 		tp = bugtty_tty[unit];
 	} else {
 		tp = bugtty_tty[unit] = ttymalloc();
+		tty_attach(tp);
 	}
 	tp->t_oproc = bugttyoutput;
 	tp->t_param = NULL;

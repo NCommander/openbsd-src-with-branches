@@ -1,3 +1,4 @@
+/*	$OpenBSD: bim.c,v 1.3 1997/01/15 23:41:09 millert Exp $	*/
 /*	$NetBSD: bim.c,v 1.4 1995/09/28 07:08:49 phil Exp $	*/
 
 /* 
@@ -609,7 +610,7 @@ char *argv[];
     char *argcmds[MAXARGCMDS];
     extern int optind, opterr;
     extern char *optarg;
-    char optchar;
+    int optchar;
     int index;
 
     /* Check the parameters.  */
@@ -617,7 +618,7 @@ char *argv[];
     cmdscnt = 0;
     opterr = TRUE;
     fname = DEFAULT_DEVICE;
-    while ((optchar = getopt (argc, argv, "c:")) != EOF)
+    while ((optchar = getopt (argc, argv, "c:")) != -1)
       switch (optchar) {
 	case 'c': if (cmdscnt == MAXARGCMDS) usage();
 		  argcmds[cmdscnt++] = optarg;

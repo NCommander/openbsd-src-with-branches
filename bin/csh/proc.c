@@ -1,3 +1,4 @@
+/*	$OpenBSD: proc.c,v 1.2 1996/06/23 14:19:28 deraadt Exp $	*/
 /*	$NetBSD: proc.c,v 1.9 1995/04/29 23:21:33 mycroft Exp $	*/
 
 /*-
@@ -37,7 +38,7 @@
 #if 0
 static char sccsid[] = "@(#)proc.c	8.1 (Berkeley) 5/31/93";
 #else
-static char rcsid[] = "$NetBSD: proc.c,v 1.9 1995/04/29 23:21:33 mycroft Exp $";
+static char rcsid[] = "$OpenBSD: proc.c,v 1.2 1996/06/23 14:19:28 deraadt Exp $";
 #endif
 #endif /* not lint */
 
@@ -52,6 +53,7 @@ static char rcsid[] = "$NetBSD: proc.c,v 1.9 1995/04/29 23:21:33 mycroft Exp $";
 #else
 # include <varargs.h>
 #endif
+#include <err.h>
 
 #include "csh.h"
 #include "dir.h"
@@ -1189,7 +1191,7 @@ pfind(cp)
 	}
     if (np)
 	return (np);
-    stderror(ERR_NAME | cp[1] == '?' ? ERR_JOBPAT : ERR_NOSUCHJOB);
+    stderror(ERR_NAME | (cp[1] == '?' ? ERR_JOBPAT : ERR_NOSUCHJOB));
     /* NOTREACHED */
     return (0);
 }

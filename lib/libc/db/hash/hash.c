@@ -1,5 +1,3 @@
-/*	$NetBSD: hash.c,v 1.8 1995/02/27 13:21:59 cgd Exp $	*/
-
 /*-
  * Copyright (c) 1990, 1993, 1994
  *	The Regents of the University of California.  All rights reserved.
@@ -37,11 +35,7 @@
  */
 
 #if defined(LIBC_SCCS) && !defined(lint)
-#if 0
-static char sccsid[] = "@(#)hash.c	8.9 (Berkeley) 6/16/94";
-#else
-static char rcsid[] = "$NetBSD: hash.c,v 1.8 1995/02/27 13:21:59 cgd Exp $";
-#endif
+static char rcsid[] = "$OpenBSD: hash.c,v 1.3 1996/08/19 08:20:31 tholo Exp $";
 #endif /* LIBC_SCCS and not lint */
 
 #include <sys/param.h>
@@ -98,6 +92,7 @@ int hash_accesses, hash_collisions, hash_expansions, hash_overflows;
 /************************** INTERFACE ROUTINES ***************************/
 /* OPEN/CLOSE */
 
+/* ARGSUSED */
 extern DB *
 __hash_open(file, flags, mode, info, dflags)
 	const char *file;

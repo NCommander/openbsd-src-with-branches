@@ -54,7 +54,6 @@ static char rcsid[] = "$NetBSD: wizard.c,v 1.3 1995/04/24 12:21:41 cgd Exp $";
 datime(d,t)
 int *d,*t;
 {       int tvec[2],*tptr;
-	int *localtime();
 
 	time(tvec);
 	tptr=localtime(tvec);
@@ -121,7 +120,7 @@ char *cmdfile;
 
 	printf("What would you like to call the saved version?\n");
 	for (c=fname;; c++)
-		if ((*c=getchar())=='\n') break;
+		if ((*c=getchar())=='\n' || *c == EOF) break;
 	*c=0;
 	if (save(fname) != 0) return;           /* Save failed */
 	printf("To resume, say \"adventure %s\".\n", fname);

@@ -1,7 +1,35 @@
-/*	$NetBSD: trap.c,v 1.36 1995/05/12 18:24:53 mycroft Exp $	*/
+/*	$OpenBSD: trap.c,v 1.17 1997/04/08 05:14:52 briggs Exp $ */
 
 /*
  * Copyright (c) 1995 Theo de Raadt
+ * 
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions
+ * are met:
+ * 1. Redistributions of source code must retain the above copyright
+ *    notice, this list of conditions and the following disclaimer.
+ * 2. Redistributions in binary form must reproduce the above copyright
+ *    notice, this list of conditions and the following disclaimer in the
+ *    documentation and/or other materials provided with the distribution.
+ * 3. All advertising materials mentioning features or use of this software
+ *    must display the following acknowledgement:
+ *	This product includes software developed under OpenBSD by
+ *	Theo de Raadt for Willowglen Singapore.
+ * 4. The name of the author may not be used to endorse or promote products
+ *    derived from this software without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS
+ * OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ * ARE DISCLAIMED.  IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY
+ * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+ * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
+ * OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+ * HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+ * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
+ * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
+ * SUCH DAMAGE.
+ *
  * Copyright (c) 1988 University of Utah.
  * Copyright (c) 1982, 1986, 1990, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -135,6 +163,10 @@ void (*sir_routines[NSIR])();
 void *sir_args[NSIR];
 u_char next_sir;
 
+int writeback __P((struct frame *fp, int docachepush));
+static inline void userret __P((struct proc *p, struct frame *fp,
+    u_quad_t oticks, u_int faultaddr, int fromtrap));
+
 /*
  * trap and syscall both need the following work done before returning
  * to user mode.
@@ -205,7 +237,8 @@ again:
 		} else if (sig = writeback(fp, fromtrap)) {
 			beenhere = 1;
 			oticks = p->p_sticks;
-			trapsignal(p, sig, faultaddr);
+			trapsignal(p, sig, VM_PROT_WRITE, SEGV_MAPERR,
+			    (caddr_t)faultaddr);
 			goto again;
 		}
 	}
@@ -226,17 +259,14 @@ trap(type, code, v, frame)
 	struct frame frame;
 {
 	extern char fubail[], subail[];
-#ifdef DDB
-	extern int trap0, trap1, trap2, trap12, trap15, illinst;
-#endif
 	register struct proc *p;
 	register int i;
 	u_int ucode;
 	u_quad_t sticks;
+	int typ = 0, bit;
 #ifdef COMPAT_HPUX
 	extern struct emul emul_hpux;
 #endif
-	int bit;
 #ifdef COMPAT_SUNOS
 	extern struct emul emul_sunos;
 #endif
@@ -280,14 +310,17 @@ copyfault:
 		return;
 
 	case T_BUSERR|T_USER:	/* bus error */
+		typ = BUS_OBJERR;
+		ucode = code & ~T_USER;
+		i = SIGBUS;
+		break;
 	case T_ADDRERR|T_USER:	/* address error */
-		ucode = v;
+		typ = BUS_ADRALN;
+		ucode = code & ~T_USER;
 		i = SIGBUS;
 		break;
 
-#ifdef FPCOPROC
 	case T_COPERR:		/* kernel coprocessor violation */
-#endif
 	case T_FMTERR|T_USER:	/* do all RTE errors come in as T_USER? */
 	case T_FMTERR:		/* ...just in case... */
 	/*
@@ -304,11 +337,13 @@ copyfault:
 		p->p_sigmask &= ~i;
 		i = SIGILL;
 		ucode = frame.f_format;	/* XXX was ILL_RESAD_FAULT */
+		typ = ILL_COPROC;
+		v = frame.f_pc;
 		break;
 
-#ifdef FPCOPROC
 	case T_COPERR|T_USER:	/* user coprocessor violation */
 	/* What is a proper response here? */
+		typ = FPE_FLTINV;
 		ucode = 0;
 		i = SIGFPE;
 		break;
@@ -323,10 +358,11 @@ copyfault:
 	 * 3 bits of the status register are defined as 0 so there is
 	 * no clash.
 	 */
+		typ = FPE_FLTRES;
 		ucode = code;
 		i = SIGFPE;
+		v = frame.f_pc;
 		break;
-#endif
 
 #ifdef M68040
 	case T_FPEMULI|T_USER:	/* unimplemented FP instuction */
@@ -337,19 +373,27 @@ copyfault:
 		       frame.f_format == 2 ? "instruction" : "data type",
 		       frame.f_pc, frame.f_fmt2.f_iaddr);
 		/* XXX need to FRESTORE */
+		typ = FPE_FLTINV;
 		i = SIGFPE;
+		v = frame.f_pc;
 		break;
 #endif
 
 	case T_ILLINST|T_USER:	/* illegal instruction fault */
 #ifdef COMPAT_HPUX
 		if (p->p_emul == &emul_hpux) {
+			typ = 0;
 			ucode = HPUX_ILL_ILLINST_TRAP;
 			i = SIGILL;
 			break;
 		}
-		/* fall through */
 #endif
+		ucode = frame.f_format;	/* XXX was ILL_PRIVIN_FAULT */
+		typ = ILL_ILLOPC;
+		i = SIGILL;
+		v = frame.f_pc;
+		break;
+
 	case T_PRIVINST|T_USER:	/* privileged instruction fault */
 #ifdef COMPAT_HPUX
 		if (p->p_emul == &emul_hpux)
@@ -357,7 +401,9 @@ copyfault:
 		else
 #endif
 		ucode = frame.f_format;	/* XXX was ILL_PRIVIN_FAULT */
+		typ = ILL_PRVOPC;
 		i = SIGILL;
+		v = frame.f_pc;
 		break;
 
 	case T_ZERODIV|T_USER:	/* Divide by zero */
@@ -367,7 +413,9 @@ copyfault:
 		else
 #endif
 		ucode = frame.f_format;	/* XXX was FPE_INTDIV_TRAP */
+		typ = FPE_INTDIV;
 		i = SIGFPE;
+		v = frame.f_pc;
 		break;
 
 	case T_CHKINST|T_USER:	/* CHK instruction trap */
@@ -380,7 +428,9 @@ copyfault:
 		}
 #endif
 		ucode = frame.f_format;	/* XXX was FPE_SUBRNG_TRAP */
+		typ = FPE_FLTSUB;
 		i = SIGFPE;
+		v = frame.f_pc;
 		break;
 
 	case T_TRAPVINST|T_USER:	/* TRAPV instruction trap */
@@ -393,7 +443,9 @@ copyfault:
 		}
 #endif
 		ucode = frame.f_format;	/* XXX was FPE_INTOVF_TRAP */
-		i = SIGFPE;
+		typ = ILL_ILLTRP;
+		i = SIGILL;
+		v = frame.f_pc;
 		break;
 
 	/*
@@ -411,34 +463,32 @@ copyfault:
 	case T_TRACE:		/* kernel trace trap */
 	case T_TRAP15:		/* SUN trace trap */
 #ifdef DDB
-		if (type == T_TRAP15 ||
-		    (frame.f_pc != trap0 && frame.f_pc != trap1 &&
-		     frame.f_pc != trap2 && frame.f_pc != trap12 &&
-		     frame.f_pc != trap15 && frame.f_pc != illinst)) {
-			if (kdb_trap(type, &frame))
-				return;
-		}
+		if (kdb_trap(type, &frame))
+			return;
 #endif
 		frame.f_sr &= ~PSL_T;
 		i = SIGTRAP;
+		typ = TRAP_TRACE;
 		break;
 
 	case T_TRACE|T_USER:	/* user trace trap */
 	case T_TRAP15|T_USER:	/* SUN user trace trap */
 #ifdef COMPAT_SUNOS
 		/*
-		 * XXX This comment/code is not consistent XXX
-		 * SunOS seems to use Trap #2 for some obscure
-		 * fpu operations.  So far, just ignore it, but
-		 * DONT trap on it..
+		 * SunOS uses Trap #2 for a "CPU cache flush"
+		 * Just flush the on-chip caches and return.
+		 * XXX - Too bad m68k BSD uses trap 2...
 		 */
 		if (p->p_emul == &emul_sunos) {
-			userret(p, frame.f_pc, sticks);
+			ICIA();
+			DCIU();
+			/* get out fast */
 			return;
 		}
 #endif
 		frame.f_sr &= ~PSL_T;
 		i = SIGTRAP;
+		typ = TRAP_TRACE;
 		break;
 
 	case T_ASTFLT:		/* system async trap, cannot happen */
@@ -496,7 +546,7 @@ copyfault:
 		register struct vmspace *vm = NULL;
 		register vm_map_t map;
 		int rv;
-		vm_prot_t ftype;
+		vm_prot_t ftype, vftype;
 		extern vm_map_t kernel_map;
 
 		/* vmspace only significant if T_USER */
@@ -521,10 +571,11 @@ copyfault:
 			map = kernel_map;
 		else
 			map = &vm->vm_map;
-		if (WRFAULT(code))
+		if (WRFAULT(code)) {
+			vftype = VM_PROT_WRITE;
 			ftype = VM_PROT_READ | VM_PROT_WRITE;
-		else
-			ftype = VM_PROT_READ;
+		} else
+			vftype = ftype = VM_PROT_READ;
 		va = trunc_page((vm_offset_t)v);
 
 		if (map == kernel_map && va == 0) {
@@ -586,12 +637,14 @@ copyfault:
 			       type, code);
 			goto dopanic;
 		}
-		ucode = v;
-		i = (rv == KERN_PROTECTION_FAILURE) ? SIGBUS : SIGSEGV;
+		frame.f_pad = code & 0xffff;
+		ucode = vftype;
+		typ = SEGV_MAPERR;
+		i = SIGSEGV;
 		break;
 	    }
 	}
-	trapsignal(p, i, ucode);
+	trapsignal(p, i, ucode, typ, (caddr_t)v);
 	if ((type & T_USER) == 0)
 		return;
 out:
@@ -616,6 +669,7 @@ char wberrstr[] =
 	"WARNING: pid %d(%s) writeback [%s] failed, pc=%x fa=%x wba=%x wbd=%x\n";
 #endif
 
+int
 writeback(fp, docachepush)
 	struct frame *fp;
 	int docachepush;
@@ -842,22 +896,10 @@ writeback(fp, docachepush)
 	}
 	p->p_addr->u_pcb.pcb_onfault = oonfault;
 	/*
-	 * Determine the cause of the failure if any translating to
-	 * a signal.  If the corresponding VA is valid and RO it is
-	 * a protection fault (SIGBUS) otherwise consider it an
-	 * illegal reference (SIGSEGV).
+	 * Any problems are SIGSEGV's
 	 */
-	if (err) {
-		if (vm_map_check_protection(&p->p_vmspace->vm_map,
-					    trunc_page(fa), round_page(fa),
-					    VM_PROT_READ) &&
-		    !vm_map_check_protection(&p->p_vmspace->vm_map,
-					     trunc_page(fa), round_page(fa),
-					     VM_PROT_WRITE))
-			err = SIGBUS;
-		else
-			err = SIGSEGV;
-	}
+	if (err)
+		err = SIGSEGV;
 	return(err);
 }
 
@@ -956,7 +998,7 @@ syscall(code, frame)
 		 * on the stack to skip, the argument follows the syscall
 		 * number without a gap.
 		 */
-		if (code != SUNOS_SYS_sunos_sigreturn) {
+		if (code != SUNOS_SYS_sigreturn) {
 			frame.f_regs[SP] += sizeof (int);
 			/*
 			 * remember that we adjusted the SP,
@@ -1121,18 +1163,46 @@ hardintr(pc, evec, frame)
 	int vec = (evec & 0xfff) >> 2;	/* XXX should be m68k macro? */
 	extern u_long intrcnt[];	/* XXX from locore */
 	struct intrhand *ih;
+	int count = 0;
 	int r;
 
 	cnt.v_intr++;
 /*	intrcnt[level]++; */
 	for (ih = intrs[vec]; ih; ih = ih->ih_next) {
-		r = (*ih->ih_fn)(ih->ih_wantframe ? frame : ih->ih_arg);
+#if 0
+		if (vec >= 0x70 && vec <= 0x73) {
+			zscnputc(0, '[');
+			zscnputc(0, '0' + (vec - 0x70));
+		}
+#endif
+		r = (*ih->ih_fn)(ih->ih_wantframe ? frame : ih->ih_arg, vec);
 		if (r > 0)
-			return;
+			count++;
 	}
-	return (straytrap(pc, evec));
+	if (count == 0)
+		return (straytrap(pc, evec));
 }
 #endif /* !INTR_ASM */
+
+/*
+ * find a useable interrupt vector in the range start, end. It starts at
+ * the end of the range, and searches backwards (to increase the chances
+ * of not conflicting with more normal users)
+ */
+int
+intr_findvec(start, end)
+	int start, end;
+{
+	extern u_long *vectab[], hardtrap, badtrap;
+	int vec;
+
+	if (start < 0 || end > 255 || start > end)
+		return (-1);
+	for (vec = end; vec > start; --vec)
+		if (vectab[vec] == &badtrap || vectab[vec] == &hardtrap)
+			return (vec);
+	return (-1);
+}
 
 /*
  * Chain the interrupt handler in. But first check if the vector
@@ -1164,24 +1234,6 @@ intr_establish(vec, ih)
 	} else
 		intrs[vec] = ih;
 	return (0);
-}
-
-/*
- * find a useable vector for devices that don't specify one
- */
-int
-intr_freevec()
-{
-	extern u_long *vectab[], hardtrap, badtrap;
-	int i;
-
-	for (i = 255; i; --i)
-		if (vectab[i] == &badtrap)
-			return (i);
-	for (i = 255; i; --i)
-		if (vectab[i] == &hardtrap)
-			return (i);
-	return (-1);
 }
 
 #ifdef DDB

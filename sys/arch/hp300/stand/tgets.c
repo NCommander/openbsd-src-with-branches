@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /*	$NetBSD: tgets.c,v 1.4 1994/10/26 07:28:05 cgd Exp $	*/
 
 /*-

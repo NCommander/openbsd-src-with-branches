@@ -1,8 +1,9 @@
-/*	$NetBSD: types.h,v 1.7 1995/07/01 18:47:51 briggs Exp $	*/
+/*	$OpenBSD: types.h,v 1.3 1996/05/26 18:36:08 briggs Exp $	*/
+/*	$NetBSD: types.h,v 1.10 1996/12/17 07:00:12 scottr Exp $	*/
 
-#ifndef _MACHINE_TYPES_H_
-#define _MACHINE_TYPES_H_
+#ifndef _TYPES_MACHINE_
+#define _TYPES_MACHINE_
 
 #include <m68k/types.h>
 
-#endif
+#endif /* _TYPES_MACHINE_ */

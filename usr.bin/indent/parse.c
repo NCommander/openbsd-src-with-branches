@@ -1,3 +1,5 @@
+/*	$OpenBSD$	*/
+
 /*
  * Copyright (c) 1985 Sun Microsystems, Inc.
  * Copyright (c) 1980 The Regents of the University of California.
@@ -35,7 +37,7 @@
 
 #ifndef lint
 /*static char sccsid[] = "from: @(#)parse.c	5.12 (Berkeley) 2/26/91";*/
-static char rcsid[] = "$Id: parse.c,v 1.2 1993/08/01 18:14:30 mycroft Exp $";
+static char rcsid[] = "$OpenBSD: parse.c,v 1.1.1.1 1995/10/18 08:45:25 deraadt Exp $";
 #endif /* not lint */
 
 #include <stdio.h>

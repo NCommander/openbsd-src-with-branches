@@ -1,3 +1,4 @@
+/*	$OpenBSD: mknodes.c,v 1.3 1996/09/15 22:58:09 millert Exp $	*/
 /*	$NetBSD: mknodes.c,v 1.11 1995/05/11 21:29:36 christos Exp $	*/
 
 /*-
@@ -46,7 +47,7 @@ static char copyright[] =
 #if 0
 static char sccsid[] = "@(#)mknodes.c	8.2 (Berkeley) 5/4/95";
 #else
-static char rcsid[] = "$NetBSD: mknodes.c,v 1.11 1995/05/11 21:29:36 christos Exp $";
+static char rcsid[] = "$OpenBSD: mknodes.c,v 1.3 1996/09/15 22:58:09 millert Exp $";
 #endif
 #endif /* not lint */
 
@@ -123,7 +124,7 @@ main(argc, argv)
 	char **argv;
 {
 	if (argc != 3)
-		error("usage: mknodes file\n");
+		error("usage: mknodes file");
 	if ((infp = fopen(argv[1], "r")) == NULL)
 		error("Can't open %s", argv[1]);
 	while (readline()) {

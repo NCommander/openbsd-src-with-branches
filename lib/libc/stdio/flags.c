@@ -1,5 +1,3 @@
-/*	$NetBSD: flags.c,v 1.5 1995/02/02 02:09:19 jtc Exp $	*/
-
 /*-
  * Copyright (c) 1990, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -37,10 +35,7 @@
  */
 
 #if defined(LIBC_SCCS) && !defined(lint)
-#if 0
-static char sccsid[] = "@(#)flags.c	8.1 (Berkeley) 6/4/93";
-#endif
-static char rcsid[] = "$NetBSD: flags.c,v 1.5 1995/02/02 02:09:19 jtc Exp $";
+static char rcsid[] = "$OpenBSD: flags.c,v 1.5 1995/02/02 02:09:19 jtc Exp $";
 #endif /* LIBC_SCCS and not lint */
 
 #include <sys/types.h>
@@ -55,7 +50,7 @@ static char rcsid[] = "$NetBSD: flags.c,v 1.5 1995/02/02 02:09:19 jtc Exp $";
  */
 int
 __sflags(mode, optr)
-	register char *mode;
+	register const char *mode;
 	int *optr;
 {
 	register int ret, m, o;

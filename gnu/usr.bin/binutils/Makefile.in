@@ -45,7 +45,7 @@ GDB_NLM_DEPS =
 
 SHELL = /bin/sh
 
-INSTALL = $$s/install.sh -c
+INSTALL = /bin/sh $$s/install.sh -c
 INSTALL_PROGRAM = $(INSTALL)
 INSTALL_DATA = $(INSTALL) -m 644
 INSTALL_XFORM = $(INSTALL) -t='$(program_transform_name)'
@@ -122,7 +122,6 @@ EXPECT = `if [ -f $$r/expect/expect ] ; \
 RUNTEST = `if [ -f $$s/dejagnu/runtest ] ; \
 	then echo $$s/dejagnu/runtest ; \
 	else echo runtest ; fi`
-
 
 # compilers to use to create programs which must be run in the build
 # environment.
@@ -318,6 +317,7 @@ BASE_FLAGS_TO_PASS = \
 	"RUNTEST=$(RUNTEST)" \
 	"RUNTESTFLAGS=$(RUNTESTFLAGS)" \
 	"YACC=$(BISON)" \
+	"INSTALL_MAN=$(INSTALL_MAN)" \
 	"exec_prefix=$(exec_prefix)" \
 	"prefix=$(prefix)" \
 	"tooldir=$(tooldir)" 

@@ -424,6 +424,23 @@ static reloc_howto_type alpha_howto_table[] =
 	 false,			/* partial_inplace */
 	 0,			/* src_mask */
 	 0,			/* dst_mask */
+	 false),			/* pcrel_offset */
+
+  /* Used for an instruction that refers to memory off the GP
+     register.  The offset is 16 bits of the 32 bit instruction.  This
+     reloc always seems to be against the .lita section.  */
+  HOWTO (ALPHA_R_LITERALSLEAZY,	/* type */
+	 2,			/* rightshift */
+	 2,			/* size (0 = byte, 1 = short, 2 = long) */
+	 16,			/* bitsize */
+	 false,			/* pc_relative */
+	 0,			/* bitpos */
+	 complain_overflow_signed, /* complain_on_overflow */
+	 0,			/* special_function */
+	 "LITERALSLEAZY",	/* name */
+	 true,			/* partial_inplace */
+	 0xffff,		/* src_mask */
+	 0xffff,		/* dst_mask */
 	 false)			/* pcrel_offset */
 };
 
@@ -645,6 +662,7 @@ alpha_adjust_reloc_in (abfd, intern, rptr)
 
     case ALPHA_R_GPREL32:
     case ALPHA_R_LITERAL:
+    case ALPHA_R_LITERALSLEAZY:
       /* Copy the gp value for this object file into the addend, to
 	 ensure that we are not confused by the linker.  */
       if (! intern->r_extern)
@@ -880,6 +898,7 @@ alpha_ecoff_get_relocated_section_contents (abfd, link_info, link_order,
 	  break;
 
 	case ALPHA_R_LITERAL:
+	case ALPHA_R_LITERALSLEAZY:
 	  /* This is a reference to a literal value, generally
 	     (always?) in the .lita section.  This is a 16 bit GP
 	     relative relocation.  Sometimes the subsequent reloc is a
@@ -1192,6 +1211,9 @@ alpha_bfd_reloc_type_lookup (abfd, code)
       break;
     case BFD_RELOC_ALPHA_LITERAL:
       alpha_type = ALPHA_R_LITERAL;
+      break;
+    case BFD_RELOC_ALPHA_LITERALSLEAZY:
+      alpha_type = ALPHA_R_LITERALSLEAZY;
       break;
     case BFD_RELOC_ALPHA_LITUSE:
       alpha_type = ALPHA_R_LITUSE;
@@ -1581,6 +1603,7 @@ alpha_relocate_section (output_bfd, info, input_bfd, input_section,
 	  break;
 
 	case ALPHA_R_LITERAL:
+	case ALPHA_R_LITERALSLEAZY:
 	  /* This is a reference to a literal value, generally
 	     (always?) in the .lita section.  This is a 16 bit GP
 	     relative relocation.  Sometimes the subsequent reloc is a
@@ -1597,6 +1620,10 @@ alpha_relocate_section (output_bfd, info, input_bfd, input_section,
 	     use.  This would not be particularly difficult, but it is
 	     not currently implemented.  */
 
+#if 0
+	  /* Apparently the belief mentioned just below is in error on
+	     BSD systems.  */
+
 	  /* I believe that the LITERAL reloc will only apply to a ldq
 	     or ldl instruction, so check my assumption.  */
 	  {
@@ -1607,6 +1634,7 @@ alpha_relocate_section (output_bfd, info, input_bfd, input_section,
 	    BFD_ASSERT (((insn >> 26) & 0x3f) == 0x29
 			|| ((insn >> 26) & 0x3f) == 0x28);
 	  }
+#endif
 
 	  relocatep = true;
 	  addend = ecoff_data (input_bfd)->gp - gp;
@@ -2359,6 +2387,48 @@ static const struct ecoff_backend_data alpha_ecoff_backend_data =
 const bfd_target ecoffalpha_little_vec =
 {
   "ecoff-littlealpha",		/* name */
+  bfd_target_ecoff_flavour,
+  BFD_ENDIAN_LITTLE,		/* data byte order is little */
+  BFD_ENDIAN_LITTLE,		/* header byte order is little */
+
+  (HAS_RELOC | EXEC_P |		/* object flags */
+   HAS_LINENO | HAS_DEBUG |
+   HAS_SYMS | HAS_LOCALS | DYNAMIC | WP_TEXT | D_PAGED),
+
+  (SEC_HAS_CONTENTS | SEC_ALLOC | SEC_LOAD | SEC_RELOC | SEC_CODE | SEC_DATA),
+  0,				/* leading underscore */
+  ' ',				/* ar_pad_char */
+  15,				/* ar_max_namelen */
+  bfd_getl64, bfd_getl_signed_64, bfd_putl64,
+     bfd_getl32, bfd_getl_signed_32, bfd_putl32,
+     bfd_getl16, bfd_getl_signed_16, bfd_putl16, /* data */
+  bfd_getl64, bfd_getl_signed_64, bfd_putl64,
+     bfd_getl32, bfd_getl_signed_32, bfd_putl32,
+     bfd_getl16, bfd_getl_signed_16, bfd_putl16, /* hdrs */
+
+  {_bfd_dummy_target, alpha_ecoff_object_p, /* bfd_check_format */
+     _bfd_ecoff_archive_p, _bfd_dummy_target},
+  {bfd_false, _bfd_ecoff_mkobject,  /* bfd_set_format */
+     _bfd_generic_mkarchive, bfd_false},
+  {bfd_false, _bfd_ecoff_write_object_contents, /* bfd_write_contents */
+     _bfd_write_archive_contents, bfd_false},
+
+     BFD_JUMP_TABLE_GENERIC (_bfd_ecoff),
+     BFD_JUMP_TABLE_COPY (_bfd_ecoff),
+     BFD_JUMP_TABLE_CORE (_bfd_nocore),
+     BFD_JUMP_TABLE_ARCHIVE (alpha_ecoff),
+     BFD_JUMP_TABLE_SYMBOLS (_bfd_ecoff),
+     BFD_JUMP_TABLE_RELOCS (_bfd_ecoff),
+     BFD_JUMP_TABLE_WRITE (_bfd_ecoff),
+     BFD_JUMP_TABLE_LINK (_bfd_ecoff),
+     BFD_JUMP_TABLE_DYNAMIC (_bfd_nodynamic),
+
+  (PTR) &alpha_ecoff_backend_data
+};
+
+const bfd_target bsd_ecoffalpha_little_vec =
+{
+  "bsd-ecoff-littlealpha",		/* name */
   bfd_target_ecoff_flavour,
   BFD_ENDIAN_LITTLE,		/* data byte order is little */
   BFD_ENDIAN_LITTLE,		/* header byte order is little */

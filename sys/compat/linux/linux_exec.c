@@ -1,4 +1,5 @@
-/*	$NetBSD: linux_exec.c,v 1.12 1995/10/07 06:27:00 mycroft Exp $	*/
+/*	$OpenBSD: linux_exec.c,v 1.3 1996/08/31 09:24:02 pefo Exp $	*/
+/*	$NetBSD: linux_exec.c,v 1.13 1996/04/05 00:01:10 christos Exp $	*/
 
 /*
  * Copyright (c) 1995 Frank van der Linden
@@ -37,9 +38,12 @@
 #include <sys/malloc.h>
 #include <sys/namei.h>
 #include <sys/vnode.h>
+#include <sys/mount.h>
 #include <sys/exec_elf.h>
 
 #include <sys/mman.h>
+#include <sys/syscallargs.h>
+
 #include <vm/vm.h>
 #include <vm/vm_param.h>
 #include <vm/vm_map.h>
@@ -69,6 +73,11 @@ extern char linux_sigcode[], linux_esigcode[];
 extern struct sysent linux_sysent[];
 extern char *linux_syscallnames[];
 
+int exec_linux_aout_prep_zmagic __P((struct proc *, struct exec_package *));
+int exec_linux_aout_prep_nmagic __P((struct proc *, struct exec_package *));
+int exec_linux_aout_prep_omagic __P((struct proc *, struct exec_package *));
+int exec_linux_aout_prep_qmagic __P((struct proc *, struct exec_package *));
+
 struct emul emul_linux_aout = {
 	"linux",
 	linux_error,
@@ -80,6 +89,7 @@ struct emul emul_linux_aout = {
 	LINUX_AOUT_AUX_ARGSIZ,
 	linux_aout_copyargs,
 	setregs,
+	NULL,
 	linux_sigcode,
 	linux_esigcode,
 };
@@ -95,6 +105,7 @@ struct emul emul_linux_elf = {
 	LINUX_ELF_AUX_ARGSIZ,
 	elf_copyargs,
 	setregs,
+	exec_elf_fixup,
 	linux_sigcode,
 	linux_esigcode,
 };
@@ -222,7 +233,7 @@ exec_linux_aout_prep_zmagic(p, epp)
 	    epp->ep_daddr + execp->a_data, NULLVP, 0,
 	    VM_PROT_READ|VM_PROT_WRITE|VM_PROT_EXECUTE);
 
-	return exec_aout_setup_stack(p, epp);
+	return exec_setup_stack(p, epp);
 }
 
 /*
@@ -261,7 +272,7 @@ exec_linux_aout_prep_nmagic(p, epp)
 		NEW_VMCMD(&epp->ep_vmcmds, vmcmd_map_zero, bsize, baddr,
 		    NULLVP, 0, VM_PROT_READ|VM_PROT_WRITE|VM_PROT_EXECUTE);
 
-	return exec_aout_setup_stack(p, epp);
+	return exec_setup_stack(p, epp);
 }
 
 /*
@@ -305,7 +316,7 @@ exec_linux_aout_prep_omagic(p, epp)
 	 */
 	dsize = epp->ep_dsize + execp->a_text - roundup(execp->a_text, NBPG);
 	epp->ep_dsize = (dsize > 0) ? dsize : 0;
-	return exec_aout_setup_stack(p, epp);
+	return exec_setup_stack(p, epp);
 }
 
 int
@@ -351,7 +362,7 @@ exec_linux_aout_prep_qmagic(p, epp)
 	    epp->ep_daddr + execp->a_data, NULLVP, 0,
 	    VM_PROT_READ|VM_PROT_WRITE|VM_PROT_EXECUTE);
 
-	return exec_aout_setup_stack(p, epp);
+	return exec_setup_stack(p, epp);
 }
 
 int

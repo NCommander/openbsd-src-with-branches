@@ -1,3 +1,4 @@
+/*	$OpenBSD: systat.h,v 1.2 1995/01/20 08:52:14 jtc Exp $	*/
 /*	$NetBSD: systat.h,v 1.2 1995/01/20 08:52:14 jtc Exp $	*/
 
 /*-

@@ -1,4 +1,5 @@
-/*	$NetBSD: if_sl.c,v 1.37 1995/08/12 23:59:22 mycroft Exp $	*/
+/*	$OpenBSD: if_sl.c,v 1.6 1996/08/09 09:59:19 niklas Exp $	*/
+/*	$NetBSD: if_sl.c,v 1.39.4.1 1996/06/02 16:26:31 thorpej Exp $	*/
 
 /*
  * Copyright (c) 1987, 1989, 1992, 1993
@@ -82,6 +83,9 @@
 #include <sys/tty.h>
 #include <sys/kernel.h>
 #include <sys/conf.h>
+#if defined(__NetBSD__) || defined(__OpenBSD__)
+#include <sys/systm.h>
+#endif
 
 #include <machine/cpu.h>
 
@@ -162,7 +166,7 @@ Huh? Slip without inet?
 Huh?  SLMTU way too small.
 #endif
 #define	SLIP_HIWAT	roundup(50,CBSIZE)
-#ifndef NetBSD						/* XXX - cgd */
+#if !(defined(__NetBSD__) || defined(__OpenBSD__))		/* XXX - cgd */
 #define	CLISTRESERVE	1024	/* Can't let clists get too low */
 #endif	/* !NetBSD */
 
@@ -198,8 +202,9 @@ slattach()
 	register int i = 0;
 
 	for (sc = sl_softc; i < NSL; sc++) {
-		sc->sc_if.if_name = "sl";
-		sc->sc_if.if_unit = i++;
+		sc->sc_unit = i;		/* XXX */
+		sprintf(sc->sc_if.if_xname, "sl%d", i++);
+		sc->sc_if.if_softc = sc;
 		sc->sc_if.if_mtu = SLMTU;
 		sc->sc_if.if_flags =
 		    IFF_POINTOPOINT | SC_AUTOCOMP | IFF_MULTICAST;
@@ -226,7 +231,7 @@ slinit(sc)
 		if (p)
 			sc->sc_ep = (u_char *)p + SLBUFSIZE;
 		else {
-			printf("sl%d: can't allocate buffer\n", sc - sl_softc);
+			printf("sl%d: can't allocate buffer\n", sc->sc_unit);
 			sc->sc_if.if_flags &= ~IFF_UP;
 			return (0);
 		}
@@ -251,11 +256,9 @@ slopen(dev, tp)
 	register struct sl_softc *sc;
 	register int nsl;
 	int error;
-#ifdef NetBSD
 	int s;
-#endif
 
-	if (error = suser(p->p_ucred, &p->p_acflag))
+	if ((error = suser(p->p_ucred, &p->p_acflag)) != 0)
 		return (error);
 
 	if (tp->t_line == SLIPDISC)
@@ -268,8 +271,11 @@ slopen(dev, tp)
 			tp->t_sc = (caddr_t)sc;
 			sc->sc_ttyp = tp;
 			sc->sc_if.if_baudrate = tp->t_ospeed;
+			s = spltty();
+			tp->t_state |= TS_ISOPEN | TS_XCLUDE;
+			splx(s);
 			ttyflush(tp, FREAD | FWRITE);
-#ifdef NetBSD
+#if defined(__NetBSD__) || defined(__OpenBSD__)
 			/*
 			 * make sure tty output queue is large enough
 			 * to hold a full-sized packet (including frame
@@ -322,7 +328,7 @@ slclose(tp)
 		sc->sc_mp = 0;
 		sc->sc_buf = 0;
 	}
-#ifdef NetBSD
+#if defined(__NetBSD__) || defined(__OpenBSD__)
 	/* if necessary, install a new outq buffer of the appropriate size */
 	if (sc->sc_oldbufsize != 0) {
 		clfree(&tp->t_outq);
@@ -348,7 +354,7 @@ sltioctl(tp, cmd, data, flag)
 
 	switch (cmd) {
 	case SLIOCGUNIT:
-		*(int *)data = sc->sc_if.if_unit;
+		*(int *)data = sc->sc_unit;	/* XXX */
 		break;
 
 	default:
@@ -370,7 +376,7 @@ sloutput(ifp, m, dst, rtp)
 	struct sockaddr *dst;
 	struct rtentry *rtp;
 {
-	register struct sl_softc *sc = &sl_softc[ifp->if_unit];
+	register struct sl_softc *sc = ifp->if_softc;
 	register struct ip *ip;
 	register struct ifqueue *ifq;
 	int s;
@@ -380,7 +386,7 @@ sloutput(ifp, m, dst, rtp)
 	 * the line protocol to support other address families.
 	 */
 	if (dst->sa_family != AF_INET) {
-		printf("sl%d: af%d not supported\n", sc->sc_if.if_unit,
+		printf("%s: af%d not supported\n", sc->sc_if.if_xname,
 			dst->sa_family);
 		m_freem(m);
 		sc->sc_if.if_noproto++;
@@ -447,9 +453,9 @@ slstart(tp)
 	struct mbuf *m2;
 #if NBPFILTER > 0
 	u_char bpfbuf[SLMTU + SLIP_HDRLEN];
-	register int len;
+	register int len = 0;
 #endif
-#ifndef NetBSD						/* XXX - cgd */
+#if !(defined(__NetBSD__) || defined(__OpenBSD__))	/* XXX - cgd */
 	extern int cfreecount;
 #endif
 
@@ -470,7 +476,7 @@ slstart(tp)
 		if (sc == NULL)
 			return;
 
-#ifdef NetBSD						/* XXX - cgd */
+#if defined(__NetBSD__) || defined(__OpenBSD__)		/* XXX - cgd */
 		/*
 		 * Do not remove the packet from the IP queue if it
 		 * doesn't look like the packet will fit into the
@@ -520,7 +526,7 @@ slstart(tp)
 				bcopy(mtod(m1, caddr_t), cp, mlen);
 				cp += mlen;
 				len += mlen;
-			} while (m1 = m1->m_next);
+			} while ((m1 = m1->m_next) != NULL);
 		}
 #endif
 		if ((ip = mtod(m, struct ip *))->ip_p == IPPROTO_TCP) {
@@ -542,7 +548,7 @@ slstart(tp)
 #endif
 		sc->sc_if.if_lastchange = time;
 
-#ifndef NetBSD						/* XXX - cgd */
+#if !(defined(__NetBSD__) || defined(__OpenBSD__))		/* XXX - cgd */
 		/*
 		 * If system is getting low on clists, just flush our
 		 * output queue (if the stuff was important, it'll get
@@ -553,7 +559,7 @@ slstart(tp)
 			sc->sc_if.if_collisions++;
 			continue;
 		}
-#endif /* !NetBSD */
+#endif /* !__NetBSD__ */
 		/*
 		 * The extra FRAME_END will start up a new packet, and thus
 		 * will flush any accumulated garbage.  We do this whenever
@@ -589,7 +595,7 @@ slstart(tp)
 					 * Put n characters at once
 					 * into the tty output queue.
 					 */
-#ifdef NetBSD						/* XXX - cgd */
+#if defined(__NetBSD__) || defined(__OpenBSD__)		/* XXX - cgd */
 					if (b_to_q((u_char *)bp, cp - bp,
 #else
 					if (b_to_q((char *)bp, cp - bp,

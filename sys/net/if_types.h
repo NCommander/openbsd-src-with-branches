@@ -1,3 +1,4 @@
+/*	$OpenBSD: if_types.h,v 1.7 1995/02/27 09:10:24 glass Exp $	*/
 /*	$NetBSD: if_types.h,v 1.7 1995/02/27 09:10:24 glass Exp $	*/
 
 /*
@@ -95,3 +96,4 @@
 #define	IFT_SMDSICIP	0x34		/* SMDS InterCarrier Interface */
 #define	IFT_PROPVIRTUAL	0x35		/* Proprietary Virtual/internal */
 #define	IFT_PROPMUX	0x36		/* Proprietary Multiplexing */
+#define IFT_ENC		0x37		/* Encapsulation */

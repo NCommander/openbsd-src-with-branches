@@ -1,4 +1,5 @@
-/*	$NetBSD: proc.h,v 1.41 1995/08/13 09:04:43 mycroft Exp $	*/
+/*	$OpenBSD: proc.h,v 1.12 1997/01/27 22:48:41 deraadt Exp $	*/
+/*	$NetBSD: proc.h,v 1.44 1996/04/22 01:23:21 christos Exp $	*/
 
 /*-
  * Copyright (c) 1986, 1989, 1991, 1993
@@ -74,12 +75,13 @@ struct	pgrp {
  */
 struct exec_package;
 struct ps_strings;
+union sigval;
 
 struct	emul {
 	char	e_name[8];		/* Symbolic name */
 	int	*e_errno;		/* Errno array */
 					/* Signal sending function */
-	void	(*e_sendsig) __P((sig_t, int, int, u_long));
+	void	(*e_sendsig) __P((sig_t, int, int, u_long, int, union sigval));
 	int	e_nosys;		/* Offset of the nosys() syscall */
 	int	e_nsysent;		/* Number of system call entries */
 	struct sysent *e_sysent;	/* System call array */
@@ -91,6 +93,7 @@ struct	emul {
 					/* Set registers before execution */
 	void	(*e_setregs) __P((struct proc *, struct exec_package *,
 				  u_long, register_t *));
+	int	(*e_fixup) __P((struct proc *, struct exec_package *));
 	char	*e_sigcode;		/* Start of sigcode */
 	char	*e_esigcode;		/* End of sigcode */
 };
@@ -138,7 +141,7 @@ struct	proc {
 #define	p_startzero	p_oppid
 
 	pid_t	p_oppid;	 /* Save parent pid during ptrace. XXX */
-	int	p_dupfd;	 /* Sideways return value from fdopen. XXX */
+	int	p_dupfd;	 /* Sideways return value from filedescopen. XXX */
 
 	/* scheduling */
 	u_int	p_estcpu;	 /* Time averaged value of p_cpticks. */
@@ -230,6 +233,7 @@ struct	proc {
 /* XXX Not sure what to do with these, yet. */
 #define	P_FSTRACE	0x10000	/* tracing via file system (elsewhere?) */
 #define	P_SSTEP		0x20000	/* process needs single-step fixup ??? */
+#define	P_SUGIDEXEC	0x40000	/* last execve() was a setuid/setgid execve() */
 
 /*
  * MOVE TO ucred.h?
@@ -303,6 +307,7 @@ int	leavepgrp __P((struct proc *p));
 void	mi_switch __P((void));
 void	pgdelete __P((struct pgrp *pgrp));
 void	procinit __P((void));
+void	remrunqueue __P((struct proc *));
 void	resetpriority __P((struct proc *));
 void	setrunnable __P((struct proc *));
 void	setrunqueue __P((struct proc *));
@@ -311,5 +316,13 @@ void	swapin __P((struct proc *));
 int	tsleep __P((void *chan, int pri, char *wmesg, int timo));
 void	unsleep __P((struct proc *));
 void	wakeup __P((void *chan));
+void	exit1 __P((struct proc *, int));
+int	fork1 __P((struct proc *, int, int, register_t *));
+void	kmeminit __P((void));
+void	rqinit __P((void));
+int	groupmember __P((gid_t, struct ucred *));
+void	cpu_switch __P((struct proc *));
+void	cpu_wait __P((struct proc *));
+void	cpu_exit __P((struct proc *));
 #endif	/* _KERNEL */
 #endif	/* !_SYS_PROC_H_ */

@@ -1,4 +1,5 @@
-/*	$NetBSD: sys_machdep.c,v 1.2 1995/10/10 21:34:50 gwr Exp $	*/
+/*	$OpenBSD$	*/
+/*	$NetBSD: sys_machdep.c,v 1.3 1995/10/27 15:58:23 gwr Exp $	*/
 
 /*
  * Copyright (c) 1982, 1986, 1993
@@ -52,15 +53,19 @@
 
 #include <sys/syscallargs.h>
 
+#include <machine/cpu.h>
+#include <machine/machdep.h>
+
 #ifdef TRACE
 int	nvualarm;
 
-vtrace(p, v, retval)
+int
+sys_vtrace(p, v, retval)
 	struct proc *p;
 	void *v;
 	register_t *retval;
 {
-	register struct vtrace_args /* {
+	register struct sys_vtrace_args /* {
 		syscallarg(int) request;
 		syscallarg(int) value;
 	} */ *uap = v;
@@ -97,6 +102,7 @@ vtrace(p, v, retval)
 	return (0);
 }
 
+void
 vdoualarm(arg)
 	void *arg;
 {
@@ -110,9 +116,6 @@ vdoualarm(arg)
 }
 #endif
 
-#include <machine/cpu.h>
-#include "cache.h"
-
 /* XXX should be in an include file somewhere */
 #define CC_PURGE	1
 #define CC_FLUSH	2
@@ -121,6 +124,7 @@ vdoualarm(arg)
 /* XXX end should be */
 
 /*ARGSUSED1*/
+int
 cachectl(req, addr, len)
 	int req;
 	caddr_t	addr;
@@ -156,10 +160,12 @@ sys_sysarch(p, v, retval)
 	void *v;
 	register_t *retval;
 {
-	struct sysarch_args /* {
-		syscallarg(int) op; 
+#if 0
+	struct sys_sysarch_args /* {
+		syscallarg(int) op;
 		syscallarg(char *) parms;
 	} */ *uap = v;
+#endif
 
-	return ENOSYS;
+	return (ENOSYS);
 }

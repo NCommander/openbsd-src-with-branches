@@ -1,3 +1,4 @@
+/*	$OpenBSD: memlist.h,v 1.4 1994/10/26 02:02:02 cgd Exp $	*/
 /*	$NetBSD: memlist.h,v 1.4 1994/10/26 02:02:02 cgd Exp $	*/
 
 /*

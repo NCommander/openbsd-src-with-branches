@@ -1,4 +1,4 @@
-/*	$NetBSD: fts.c,v 1.12 1995/02/27 03:43:30 cgd Exp $	*/
+/*	$OpenBSD$	*/
 
 /*-
  * Copyright (c) 1990, 1993, 1994
@@ -35,9 +35,9 @@
 
 #if defined(LIBC_SCCS) && !defined(lint)
 #if 0
-static char sccsid[] = "@(#)fts.c	8.4 (Berkeley) 4/16/94";
+static char sccsid[] = "@(#)fts.c	8.6 (Berkeley) 8/14/94";
 #else
-static char rcsid[] = "$NetBSD: fts.c,v 1.12 1995/02/27 03:43:30 cgd Exp $";
+static char rcsid[] = "$OpenBSD: fts.c,v 1.6 1997/01/17 06:12:53 millert Exp $";
 #endif
 #endif /* LIBC_SCCS and not lint */
 
@@ -61,8 +61,9 @@ static void	 fts_padjust __P((FTS *, void *));
 static int	 fts_palloc __P((FTS *, size_t));
 static FTSENT	*fts_sort __P((FTS *, FTSENT *, int));
 static u_short	 fts_stat __P((FTS *, FTSENT *, int));
+static int	 fts_safe_changedir __P((FTS *, FTSENT *, int));
 
-#define	ISDOT(a)	(a[0] == '.' && (!a[1] || a[1] == '.' && !a[2]))
+#define	ISDOT(a)	(a[0] == '.' && (!a[1] || (a[1] == '.' && !a[2])))
 
 #define	CLR(opt)	(sp->fts_options &= ~(opt))
 #define	ISSET(opt)	(sp->fts_options & (opt))
@@ -311,7 +312,7 @@ fts_read(sp)
 	if (p->fts_info == FTS_D) {
 		/* If skipped or crossed mount point, do post-order visit. */
 		if (instr == FTS_SKIP ||
-		    ISSET(FTS_XDEV) && p->fts_dev != sp->fts_dev) {
+		    (ISSET(FTS_XDEV) && p->fts_dev != sp->fts_dev)) {
 			if (p->fts_flags & FTS_SYMFOLLOW)
 				(void)close(p->fts_symfd);
 			if (sp->fts_child) {
@@ -342,7 +343,7 @@ fts_read(sp)
 		 * FTS_STOP or the fts_info field of the node.
 		 */
 		if (sp->fts_child) {
-			if (CHDIR(sp, p->fts_accpath)) {
+			if (fts_safe_changedir(sp, p, -1)) {
 				p->fts_errno = errno;
 				p->fts_flags |= FTS_DONTCHDIR;
 				for (p = sp->fts_child; p; p = p->fts_link)
@@ -361,7 +362,7 @@ fts_read(sp)
 
 	/* Move to the next node on this level. */
 next:	tmp = p;
-	if (p = p->fts_link) {
+	if ((p = p->fts_link)) {
 		free(tmp);
 
 		/*
@@ -369,7 +370,7 @@ next:	tmp = p;
 		 * load the paths for the next root.
 		 */
 		if (p->fts_level == FTS_ROOTLEVEL) {
-			if (!ISSET(FTS_NOCHDIR) && FCHDIR(sp, sp->fts_rfd)) {
+			if (FCHDIR(sp, sp->fts_rfd)) {
 				SET(FTS_STOP);
 				return (NULL);
 			}
@@ -425,7 +426,7 @@ name:		t = sp->fts_path + NAPPEND(p->fts_parent);
 	 * one directory.
 	 */
 	if (p->fts_level == FTS_ROOTLEVEL) {
-		if (!ISSET(FTS_NOCHDIR) && FCHDIR(sp, sp->fts_rfd)) {
+		if (FCHDIR(sp, sp->fts_rfd)) {
 			SET(FTS_STOP);
 			return (NULL);
 		}
@@ -627,12 +628,14 @@ fts_build(sp, type)
 	 */
 	cderrno = 0;
 	if (nlinks || type == BREAD)
-		if (FCHDIR(sp, dirfd(dirp))) {
+		if (fts_safe_changedir(sp, cur, dirfd(dirp))) {
 			if (nlinks && type == BREAD)
 				cur->fts_errno = errno;
 			cur->fts_flags |= FTS_DONTCHDIR;
 			descend = 0;
 			cderrno = errno;
+			(void)closedir(dirp);
+			dirp = NULL;
 		} else
 			descend = 1;
 	else
@@ -659,7 +662,7 @@ fts_build(sp, type)
 
 	/* Read the directory, attaching each entry to the `link' pointer. */
 	adjaddr = NULL;
-	for (head = tail = NULL, nitems = 0; dp = readdir(dirp);) {
+	for (head = tail = NULL, nitems = 0; dirp && (dp = readdir(dirp));) {
 		if (!ISSET(FTS_SEEDOT) && ISDOT(dp->d_name))
 			continue;
 
@@ -704,8 +707,8 @@ mem1:				saved_errno = errno;
 			p->fts_accpath = cur->fts_accpath;
 		} else if (nlinks == 0
 #ifdef DT_DIR
-		    || nostat && 
-		    dp->d_type != DT_DIR && dp->d_type != DT_UNKNOWN
+		    || (nostat && 
+		    dp->d_type != DT_DIR && dp->d_type != DT_UNKNOWN)
 #endif
 		    ) {
 			p->fts_accpath =
@@ -737,7 +740,8 @@ mem1:				saved_errno = errno;
 		}
 		++nitems;
 	}
-	(void)closedir(dirp);
+	if (dirp)
+		(void)closedir(dirp);
 
 	/*
 	 * If had to realloc the path, adjust the addresses for the rest
@@ -944,7 +948,7 @@ fts_lfree(head)
 	register FTSENT *p;
 
 	/* Free a linked list of structures. */
-	while (p = head) {
+	while ((p = head)) {
 		head = head->fts_link;
 		free(p);
 	}
@@ -1003,4 +1007,47 @@ fts_maxarglen(argv)
 		if ((len = strlen(*argv)) > max)
 			max = len;
 	return (max);
+}
+
+/*
+ * Change to dir specified by fd or p->fts_accpath without getting
+ * tricked by someone changing the world out from underneath us.
+ * Assumes p->fts_dev and p->fts_ino are filled in.
+ */
+static int
+fts_safe_changedir(sp, p, fd)
+	FTS *sp;
+	FTSENT *p;
+	int fd;
+{
+	int ret, oerrno, newfd = fd;
+	struct stat sb;
+
+	if (ISSET(FTS_NOCHDIR))
+		return (0);
+
+	if (fd < 0 && (newfd = open(p->fts_accpath, O_RDONLY, 0)) < 0)
+		return (-1);
+
+	if (fstat(newfd, &sb)) {
+		ret = -1;
+		goto bail;
+	}
+
+	if (p->fts_dev != sb.st_dev || p->fts_ino != sb.st_ino) {
+		errno = ENOENT;		/* disinformation */
+		ret = -1;
+		goto bail;
+	}
+
+	ret = fchdir(newfd);
+
+bail:
+	oerrno = errno;
+
+	if (fd < 0)
+		(void) close(newfd);
+
+	errno = oerrno;
+	return(ret);
 }

@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /*	$NetBSD: callout.h,v 1.10 1995/03/26 20:23:56 jtc Exp $	*/
 
 /*-

@@ -1,4 +1,5 @@
-/*	$NetBSD: expr.c,v 1.3 1995/04/28 23:27:15 jtc Exp $	*/
+/*	$OpenBSD: expr.c,v 1.4 1996/09/15 22:27:38 millert Exp $	*/
+/*	$NetBSD: expr.c,v 1.3.6.1 1996/06/04 20:41:47 cgd Exp $	*/
 
 /*
  * Written by J.T. Conklin <jtc@netbsd.org>.
@@ -156,7 +157,7 @@ to_string(vp)
 	if (tmp == NULL) {
 		err(2, NULL);
 	}
-	sprintf(tmp, "%d", vp->u.i);
+	snprintf(tmp, 25, "%d", vp->u.i);
 	vp->type = string;
 	vp->u.s = tmp;
 }
@@ -212,7 +213,7 @@ nexttoken()
 	return;
 }
 
-void
+__dead void
 error()
 {
 	errx(2, "syntax error");
@@ -369,7 +370,7 @@ eval2()
 {
 	struct val     *l, *r;
 	enum token	op;
-	int             v, li, ri;
+	int             v = 0, li, ri;
 
 	l = eval3();
 	while ((op = token) == EQ || op == NE || op == LT || op == GT || op == LE || op == GE) {
@@ -396,6 +397,8 @@ eval2()
 			case NE:
 				v = (li != ri);
 				break;
+			default:
+				break;
 			}
 		} else {
 			to_string(l);
@@ -419,6 +422,8 @@ eval2()
 				break;
 			case NE:
 				v = (strcoll(l->u.s, r->u.s) != 0);
+				break;
+			default:
 				break;
 			}
 		} 
@@ -484,10 +489,7 @@ main(argc, argv)
 {
 	struct val     *vp;
 
-	if (!setlocale(LC_ALL, "")) {
-		fprintf(stderr,
-			"setlocale failed, continuing with \"C\" locale.");
-	}
+	(void) setlocale(LC_ALL, "");
 	av = argv + 1;
 
 	nexttoken();

@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: conf-end.h,v 1.1.1.1 1996/08/14 06:19:12 downsj Exp $	*/
 
 /*
  * End of configuration stuff for PD ksh.
@@ -8,6 +8,13 @@
 # define	EDIT
 #else
 # undef		EDIT
+#endif
+
+/* Super small configuration-- no editing. */
+#if defined(EDIT) && defined(NOEDIT)
+# undef EDIT
+# undef EMACS
+# undef VI
 #endif
 
 /* Editing implies history */

@@ -1,5 +1,5 @@
 /*
-**	$Id: identd.c,v 1.5 1995/06/07 17:14:21 cgd Exp $
+**	$Id: identd.c,v 1.2 1996/07/25 09:50:02 deraadt Exp $
 **
 ** identd.c                       A TCP/IP link identification protocol server
 **
@@ -11,7 +11,8 @@
 ** Please send bug fixes/bug reports to: Peter Eriksson <pen@lysator.liu.se>
 */
 
-#if defined(IRIX) || defined(SVR4) || defined(NeXT) || defined(__NetBSD__)
+#if defined(IRIX) || defined(SVR4) || defined(NeXT) || defined(__NetBSD__) || \
+	defined(__OpenBSD__)
 #  define SIGRETURN_TYPE void
 #  define SIGRETURN_TYPE_IS_VOID
 #else
@@ -449,13 +450,19 @@ int main(argc,argv)
       ERROR("main: listen");
   }
   
-  if (set_gid)
+  if (set_gid) {
+    if (setegid(set_gid) == -1)
+      ERROR("main: setgid");
     if (setgid(set_gid) == -1)
       ERROR("main: setgid");
+  }
   
-  if (set_uid)
+  if (set_uid) {
+    if (seteuid(set_uid) == -1)
+      ERROR("main: setuid");
     if (setuid(set_uid) == -1)
       ERROR("main: setuid");
+  }
 
   /*
   ** Do some special handling if the "-b" or "-w" flags are used

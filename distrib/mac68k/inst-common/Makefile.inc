@@ -1,4 +1,5 @@
 #
+#	$OpenBSD: Makefile.inc,v 1.1 1995/07/18 04:13:14 briggs Exp $
 #	$NetBSD: Makefile.inc,v 1.1 1995/07/18 04:13:14 briggs Exp $
 #
 
@@ -8,9 +9,9 @@ CBIN=		raminst
 COMMONDIR=	${TOP}/inst-common
 
 MOUNT_POINT?=	/mnt
-VND?=		vnd0
-VND_DEV=	/dev/${VND}c
-VND_RDEV=	/dev/r${VND}c
+VND?=		svnd0
+VND_DEV=	/dev/${VND}a
+VND_RDEV=	/dev/r${VND}a
 IMAGE?=		xxx-${REV}.fs
 MDEC=		${DESTDIR}/usr/mdec
 
@@ -20,8 +21,9 @@ MTREE=		${COMMONDIR}/mtree.conf
 
 all: ${CBIN}
 	dd if=/dev/zero of=${IMAGE} bs=1k count=1024
-	vnconfig -v -c ${VND_DEV} ${IMAGE}
-	newfs -m 0 -o space -i 16384 ${VND_RDEV} ram
+	vnconfig -v -c ${VND} ${IMAGE}
+	disklabel -w ${VND} ram
+	newfs -m 0 -o space -i 16384 ${VND_RDEV}
 	mount ${VND_DEV} ${MOUNT_POINT}
 	mtree -def ${MTREE} -p ${MOUNT_POINT}/ -u
 	TOPDIR=${TOP} CURDIR=${.CURDIR} OBJDIR=${.OBJDIR} \
@@ -30,11 +32,11 @@ all: ${CBIN}
 	@df -i ${MOUNT_POINT}
 	@echo ""
 	umount ${MOUNT_POINT}
-	vnconfig -u ${VND_DEV}
+	vnconfig -u ${VND}
 
 unconfig:
 	-umount -f ${MOUNT_POINT}
-	-vnconfig -u ${VND_DEV}
+	-vnconfig -u ${VND}
 	-/bin/rm -f ${IMAGE}
 
 ${CBIN}.mk ${CBIN}.cache ${CBIN}.c: ${CRUNCHCONF}

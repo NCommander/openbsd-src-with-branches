@@ -39,7 +39,7 @@ static char copyright[] =
 
 #ifndef lint
 /*static char sccsid[] = "@(#)rwhod.c	8.1 (Berkeley) 6/6/93";*/
-static char rcsid[] = "$Id: rwhod.c,v 1.8 1994/05/29 02:53:23 jtc Exp $";
+static char rcsid[] = "$OpenBSD: rwhod.c,v 1.8 1997/04/13 01:53:49 deraadt Exp $";
 #endif /* not lint */
 
 #include <sys/param.h>
@@ -141,13 +141,14 @@ main(argc, argv)
 	/*
 	 * Establish host name as returned by system.
 	 */
-	if (gethostname(myname, sizeof(myname) - 1) < 0) {
+	if (gethostname(myname, sizeof(myname)) < 0) {
 		syslog(LOG_ERR, "gethostname: %m");
 		exit(1);
 	}
-	if ((cp = index(myname, '.')) != NULL)
+	if ((cp = strchr(myname, '.')) != NULL)
 		*cp = '\0';
-	strncpy(mywd.wd_hostname, myname, sizeof(myname) - 1);
+	strncpy(mywd.wd_hostname, myname, sizeof(mywd.wd_hostname) - 1);
+	mywd.wd_hostname[sizeof(mywd.wd_hostname) - 1] = '\0';
 	utmpf = open(_PATH_UTMP, O_RDONLY|O_CREAT, 0644);
 	if (utmpf < 0) {
 		syslog(LOG_ERR, "%s: %m", _PATH_UTMP);
@@ -193,12 +194,13 @@ main(argc, argv)
 			continue;
 		if (wd.wd_type != WHODTYPE_STATUS)
 			continue;
+		wd.wd_hostname[sizeof(wd.wd_hostname)-1] = '\0';
 		if (!verify(wd.wd_hostname)) {
 			syslog(LOG_WARNING, "malformed host name from %x",
 				from.sin_addr);
 			continue;
 		}
-		(void) sprintf(path, "whod.%s", wd.wd_hostname);
+		(void) snprintf(path, sizeof path, "whod.%s", wd.wd_hostname);
 		/*
 		 * Rather than truncating and growing the file each time,
 		 * use ftruncate if size is less than previous size.
@@ -241,17 +243,31 @@ main(argc, argv)
  * to be created.  Sorry, but blanks aren't allowed.
  */
 int
-verify(name)
-	register char *name;
+verify(p)
+	register char *p;
 {
-	register int size = 0;
+	char c;
 
-	while (*name) {
-		if (!isascii(*name) || !(isalnum(*name) || ispunct(*name)))
-			return (0);
-		name++, size++;
+	/*
+	 * Many people do not obey RFC 822 and 1035.  The valid
+	 * characters are a-z, A-Z, 0-9, '-' and . But the others
+	 * tested for below can happen, and we must be more permissive
+	 * than the resolver until those idiots clean up their act.
+	 */
+	if (*p == '.' || *p == '-')
+		return 0;
+	while ((c = *p++)) {
+		if (('a' <= c && c <= 'z') ||
+		    ('A' <= c && c <= 'Z') ||
+		    ('0' <= c && c <= '9'))
+			continue;
+		if (c == '.' && *p == '.')
+			return 0;
+		if (c == '.' || c == '-')
+			continue;
+		return 0;
 	}
-	return (size > 0);
+	return 1;
 }
 
 int	utmptime;

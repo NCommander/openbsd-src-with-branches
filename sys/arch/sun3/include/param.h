@@ -1,4 +1,5 @@
-/*	$NetBSD: param.h,v 1.29 1995/06/27 14:37:22 gwr Exp $	*/
+/*	$OpenBSD: param.h,v 1.12 1997/02/14 19:24:05 kstailey Exp $	*/
+/*	$NetBSD: param.h,v 1.34 1996/03/04 05:04:40 cgd Exp $	*/
 
 /*
  * Copyright (c) 1994, 1995 Gordon W. Ross
@@ -48,9 +49,11 @@
 /*
  * Machine dependent constants for the Sun3 series.
  */
-#define	MACHINE     "sun3"
+#define	_MACHINE	sun3
+#define	MACHINE		"sun3"
+#define	_MACHINE_ARCH	m68k
 #define	MACHINE_ARCH	"m68k"
-#define MID_MACHINE MID_M68K
+#define	MID_MACHINE	MID_M68K
 
 /*
  * Round p (pointer or byte index) up to a correctly-aligned value
@@ -70,6 +73,7 @@
 
 #define	KERNBASE	0x0E000000	/* start of kernel virtual */
 #define	BTOPKERNBASE	((u_long)KERNBASE >> PGSHIFT)
+#define	KERNTEXTOFF	0x0E004000	/* start of kernel text */
 
 #define	DEV_BSIZE	512
 #define	DEV_BSHIFT	9		/* log2(DEV_BSIZE) */
@@ -94,8 +98,8 @@
  * of the hardware page size.
  */
 #define	MSIZE		128		/* size of an mbuf */
-#define	MCLBYTES	2048		/* large enough for ether MTU */
 #define	MCLSHIFT	11
+#define	MCLBYTES	(1 << MCLSHIFT)	/* large enough for ether MTU */
 #define	MCLOFSET	(MCLBYTES - 1)
 #ifndef NMBCLUSTERS
 #ifdef GATEWAY
@@ -145,20 +149,72 @@
 #define sun3_btop(x)		((unsigned)(x) >> PGSHIFT)
 #define sun3_ptob(x)		((unsigned)(x) << PGSHIFT)
 
-/* XXX - Does this really belong here? -gwr */
+/*
+ * spl functions; all are done in-line
+ */
+
 #include <machine/psl.h>
 
-#ifdef _KERNEL
-#ifndef LOCORE
-#define	DELAY(n)	delay(n)
-extern int cpuspeed;
-static inline void delay2us()
-{
-	register int n = cpuspeed;
+#define _spl(s) \
+({ \
+	register int _spl_r; \
+\
+	__asm __volatile ("clrl %0; movew sr,%0; movew %1,sr" : \
+		"&=d" (_spl_r) : "di" (s)); \
+	_spl_r; \
+})
 
-	__asm __volatile ("0: subql #4,%0; jgt 0b" : "=d" (n) : "0" (n));
-}
-#endif	/* !LOCORE */
-#endif	/* _KERNEL */
+/*
+ * The rest of this is sun3 specific, because other ports may
+ * need to do special things in spl0() (i.e. simulate SIR).
+ * Suns have a REAL interrupt register, so spl0() and splx(s)
+ * have no need to check for any simulated interrupts, etc.
+ */
+
+#define spl0()  _spl(PSL_S|PSL_IPL0)
+#define spl1()  _spl(PSL_S|PSL_IPL1)
+#define spl2()  _spl(PSL_S|PSL_IPL2)
+#define spl3()  _spl(PSL_S|PSL_IPL3)
+#define spl4()  _spl(PSL_S|PSL_IPL4)
+#define spl5()  _spl(PSL_S|PSL_IPL5)
+#define spl6()  _spl(PSL_S|PSL_IPL6)
+#define spl7()  _spl(PSL_S|PSL_IPL7)
+#define splx(x)  _spl(x)
+
+/* IPL used by soft interrupts: netintr(), softclock() */
+#define splsoftclock()  spl1()
+#define splsoftnet()    spl1()
+
+/* Highest block device (strategy) IPL. */
+#define splbio()        spl2()
+
+/* Highest network interface IPL. */
+#define splnet()        spl3()
+
+/* Highest tty device IPL. */
+#define spltty()        spl4()
+
+/* Requirement: imp >= (highest network, tty, or disk IPL) */
+#define splimp()        spl4()
+
+/* Intersil clock hardware interrupts (hard-wired at 5) */
+#define splclock()      spl5()
+#define splstatclock()  splclock()
+
+/* Zilog Serial hardware interrupts (hard-wired at 6) */
+#define splzs()         spl6()
+
+/* Block out all interrupts (except NMI of course). */
+#define splhigh()       spl7()
+#define splsched()      spl7()
+
+/* Get current sr value (debug, etc.) */
+extern int getsr __P((void));
+
+#if defined(_KERNEL) && !defined(_LOCORE)
+extern void _delay __P((unsigned));
+#define delay(us)	_delay((us)<<8)
+#define	DELAY(n)	delay(n)
+#endif	/* _KERNEL && !_LOCORE */
 
 #endif	/* MACHINE */

@@ -1,7 +1,5 @@
-/*	$NetBSD: print-null.c,v 1.3 1995/03/06 19:11:24 mycroft Exp $	*/
-
 /*
- * Copyright (c) 1991, 1993, 1994
+ * Copyright (c) 1991, 1993, 1994, 1995, 1996
  *	The Regents of the University of California.  All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -22,8 +20,8 @@
  */
 
 #ifndef lint
-static char rcsid[] =
-    "@(#)Header: print-null.c,v 1.14 94/06/10 17:01:35 mccanne Exp (LBL)";
+static const char rcsid[] =
+    "@(#) $Header: print-null.c,v 1.22 96/12/10 23:18:58 leres Exp $ (LBL)";
 #endif
 
 #include <sys/param.h>
@@ -32,6 +30,10 @@ static char rcsid[] =
 #include <sys/file.h>
 #include <sys/ioctl.h>
 
+#if __STDC__
+struct mbuf;
+struct rtentry;
+#endif
 #include <net/if.h>
 
 #include <netinet/in.h>
@@ -44,21 +46,25 @@ static char rcsid[] =
 #include <netinet/tcp.h>
 #include <netinet/tcpip.h>
 
-
+#include <pcap.h>
 #include <stdio.h>
+#include <string.h>
 
-#include "interface.h"
 #include "addrtoname.h"
-#include "pcap.h"
+#include "interface.h"
 
 #define	NULL_HDRLEN 4
 
+#ifndef AF_NS
+#define AF_NS		6		/* XEROX NS protocols */
+#endif
+
 static void
-null_print(const u_char *p, const struct ip *ip, int length)
+null_print(const u_char *p, const struct ip *ip, u_int length)
 {
 	u_int family;
 
-	bcopy(p, &family, sizeof(family));
+	memcpy((char *)&family, (char *)p, sizeof(family));
 
 	if (nflag) {
 		/* XXX just dump the header */
@@ -83,8 +89,8 @@ null_print(const u_char *p, const struct ip *ip, int length)
 void
 null_if_print(u_char *user, const struct pcap_pkthdr *h, const u_char *p)
 {
-	int length = h->len;
-	int caplen = h->caplen;
+	u_int length = h->len;
+	u_int caplen = h->caplen;
 	const struct ip *ip;
 
 	ts_print(&h->ts);

@@ -1,3 +1,4 @@
+/*	$OpenBSD:$	*/
 /*	$NetBSD: copyoutstr.c,v 1.1 1996/09/30 16:34:42 ws Exp $	*/
 
 /*-

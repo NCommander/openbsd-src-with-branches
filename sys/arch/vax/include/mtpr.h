@@ -1,4 +1,4 @@
-/*      $NetBSD: mtpr.h,v 1.5 1995/05/03 19:53:45 ragge Exp $     */
+/*      $NetBSD: mtpr.h,v 1.9 1996/07/20 17:58:18 ragge Exp $     */
 
 /*
  * Copyright (c) 1994 Ludd, University of Lule}, Sweden.
@@ -35,7 +35,7 @@
 #ifndef	_VAX_MTPR_H_
 #define	_VAX_MTPR_H_
 
-#include "machine/macros.h"
+#include <machine/macros.h>
 
 /******************************************************************************
 
@@ -103,11 +103,50 @@
 #define PR_SID    62 /* System ID Register */
 #define PR_TBCHK  63 /* Translation Buffer Check */
 
+#define	PR_PAMACC 64 /* Physical Address Memory Map Access (KA86) */
+#define	PR_PAMLOC 65 /* Physical Address Memory Map Location (KA86) */
+#define PR_CSWP   66 /* Cache Sweep (KA86) */
+#define PR_MDECC  67 /* MBOX Data Ecc Register (KA86) */
+#define PR_MENA   68 /* MBOX Error Enable Register (KA86) */
+#define PR_MDCTL  69 /* MBOX Data Control Register (KA86) */
+#define PR_MCCTL  70 /* MBOX Mcc Control Register (KA86) */
+#define PR_MERG   71 /* MBOX Error Generator Register (KA86) */
+#define PR_CRBT   72 /* Console Reboot (KA86) */
+#define PR_DFI    73 /* Diagnostic Fault Insertion Register (KA86) */
+#define PR_EHSR   74 /* Error Handling Status Register (KA86) */
+#define PR_STXCS  76 /* Console Storage C/S (KA86) */
+#define PR_STXDB  77 /* Console Storage D/B (KA86) */
+#define PR_ESPA   78 /* EBOX Scratchpad Address (KA86) */
+#define PR_ESPD   79 /* EBOX Scratchpad Data (KA86) */
+
+#define	PR_RXCS1  80 /* Serial-Line Unit 1 Receive CSR (KA820) */
+#define	PR_RXDB1  81 /* Serial-Line Unit 1 Receive Data Buffer (KA820) */
+#define	PR_TXCS1  82 /* Serial-Line Unit 1 Transmit CSR (KA820) */
+#define	PR_TXDB1  83 /* Serial-Line Unit 1 Transmit Data Buffer (KA820) */
+#define	PR_RXCS2  84 /* Serial-Line Unit 2 Receive CSR (KA820) */
+#define	PR_RXDB2  85 /* Serial-Line Unit 2 Receive Data Buffer (KA820) */
+#define	PR_TXCS2  86 /* Serial-Line Unit 2 Transmit CSR (KA820) */
+#define	PR_TXDB2  87 /* Serial-Line Unit 2 Transmit Data Buffer (KA820) */
+#define	PR_RXCS3  88 /* Serial-Line Unit 3 Receive CSR (KA820) */
+#define	PR_RXDB3  89 /* Serial-Line Unit 3 Receive Data Buffer (KA820) */
+#define	PR_TXCS3  90 /* Serial-Line Unit 3 Transmit CSR (KA820) */
+#define	PR_TXDB3  91 /* Serial-Line Unit 3 Transmit Data Buffer (KA820) */
+#define	PR_RXCD	  92 /* Receive Console Data from another cpu (KA820) */
+#define	PR_CACHEX 93 /* Cache invalidate Register (KA820) */
+#define	PR_BINID  94 /* VAXBI node ID Register (KA820) */
+#define	PR_BISTOP 95 /* VAXBI Stop Register (KA820) */
+
+#define	PR_VINTSR 123 /* vector i/f error status (KA43/KA46) */
+#define PR_PCTAG  124 /* primary cache tag store (KA43/KA46) */
+#define PR_PCIDX  125 /* primary cache index (KA43/KA46) */
+#define PR_PCERR  126 /* primary cache error address (KA43/KA46) */
+#define PR_PCSTS  127 /* primary cache status (KA43/KA46) */
+
 /* Definitions for AST */
 #define	AST_NO	  4
 #define	AST_OK	  3
 
-#ifndef	ASSEMBLER
+#ifndef	_LOCORE
 
 #define mtpr(val,reg)                                   \
 {                                                       \
@@ -124,6 +163,6 @@
                         : "g" (reg));                   \
         val;                                            \
 })
-#endif	/* ASSEMBLER */
+#endif	/* _LOCORE */
 
 #endif /* _VAX_MTPR_H_ */

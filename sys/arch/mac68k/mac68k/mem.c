@@ -1,4 +1,5 @@
-/*	$NetBSD: mem.c,v 1.10 1995/04/10 13:15:26 mycroft Exp $	*/
+/*	$OpenBSD: mem.c,v 1.3 1996/06/08 16:21:16 briggs Exp $	*/
+/*	$NetBSD: mem.c,v 1.11 1996/05/05 06:18:41 briggs Exp $	*/
 
 /*
  * Copyright (c) 1988 University of Utah.
@@ -47,6 +48,7 @@
 #include <sys/param.h>
 #include <sys/conf.h>
 #include <sys/buf.h>
+#include <sys/proc.h>
 #include <sys/systm.h>
 #include <sys/uio.h>
 #include <sys/malloc.h>
@@ -55,13 +57,18 @@
 
 #include <vm/vm.h>
 
-caddr_t zeropage;
+static caddr_t devzeropage;
+
+#define mmread	mmrw
+#define mmwrite	mmrw
+cdev_decl(mm);
 
 /*ARGSUSED*/
 int
-mmopen(dev, flag, mode)
+mmopen(dev, flag, mode, p)
 	dev_t dev;
 	int flag, mode;
+	struct proc *p;
 {
 
 	return (0);
@@ -69,9 +76,10 @@ mmopen(dev, flag, mode)
 
 /*ARGSUSED*/
 int
-mmclose(dev, flag, mode)
+mmclose(dev, flag, mode, p)
 	dev_t dev;
 	int flag, mode;
+	struct proc *p;
 {
 
 	return (0);
@@ -115,13 +123,6 @@ mmrw(dev, uio, flags)
 /* minor device 0 is physical memory */
 		case 0:
 			v = uio->uio_offset;
-#if !defined(DEBUG) && 0 /* BG -- serial test needs this. */
-			/* allow reads only in RAM (except for DEBUG) */
-			if (v >= 0x008FFFFC || v < 0) {
-				error = EFAULT;
-				goto unlock;
-			}
-#endif
 			pmap_enter(pmap_kernel(), (vm_offset_t)vmmap,
 			    trunc_page(v), uio->uio_rw == UIO_READ ?
 			    VM_PROT_READ : VM_PROT_WRITE, TRUE);
@@ -154,13 +155,13 @@ mmrw(dev, uio, flags)
 				c = iov->iov_len;
 				break;
 			}
-			if (zeropage == NULL) {
-				zeropage = (caddr_t)
+			if (devzeropage == NULL) {
+				devzeropage = (caddr_t)
 				    malloc(CLBYTES, M_TEMP, M_WAITOK);
-				bzero(zeropage, CLBYTES);
+				bzero(devzeropage, CLBYTES);
 			}
 			c = min(iov->iov_len, CLBYTES);
-			error = uiomove(zeropage, c, uio);
+			error = uiomove(devzeropage, c, uio);
 			continue;
 
 		default:
@@ -174,7 +175,6 @@ mmrw(dev, uio, flags)
 		uio->uio_resid -= c;
 	}
 	if (minor(dev) == 0) {
-unlock:
 		if (physlock > 1)
 			wakeup((caddr_t)&physlock);
 		physlock = 0;

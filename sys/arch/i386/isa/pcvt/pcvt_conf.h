@@ -1,3 +1,5 @@
+/*	$OpenBSD: pcvt_conf.h,v 1.7 1996/10/04 07:08:02 downsj Exp $	*/
+
 /*
  * Copyright (c) 1992, 1995 Hellmuth Michaelis and Joerg Wunsch.
  *
@@ -82,11 +84,29 @@
 #define PCVT_NETBSD 100
 #endif
 #endif
-#endif
 
 #ifdef NetBSD1_1
-#define PCVT_NETBSD 110
+#define PCVT_NETBSD (110 + (NetBSD1_1 - 1))
 #endif
+
+#ifdef NetBSD1_2
+#define PCVT_NETBSD (120 + (NetBSD1_2 - 1))
+#endif
+
+#ifdef OpenBSD2_0
+#define PCVT_OPENBSD (200 + (OpenBSD2_0 - 1))
+#endif
+
+#ifdef OpenBSD2_1
+#define PCVT_OPENBSD (210 + (OpenBSD2_1 - 1))
+#endif
+
+#ifndef PCVT_NETBSD
+#define PCVT_NETBSD PCVT_OPENBSD
+#endif
+
+#endif
+
 
 /*---------------------------------------------------------------------------
  * Note that each of the options below should rather be overriden by the
@@ -105,8 +125,6 @@
  *
  *	options "PCVT_NSCREENS=x"
  *	options "PCVT_SCANSET=x"
- *	options "PCVT_UPDATEFAST=x"
- *	options "PCVT_UPDATESLOW=x"
  *	options "PCVT_SYSBEEPF=x"
  *
  * which are always numeric!
@@ -179,7 +197,7 @@
 #endif
 
 #if !defined PCVT_PRETTYSCRNS	/* ---------- DEFAULT: OFF ------------ */
-# define PCVT_PRETTYSCRNS 0	/* for the cost of some microseconds of	*/
+# define PCVT_PRETTYSCRNS 1	/* for the cost of some microseconds of	*/
 #elif PCVT_PRETTYSCRNS != 0	/* cpu time this adds a more "pretty"	*/
 # undef PCVT_PRETTYSCRNS	/* version to the screensaver, an "*"	*/
 # define PCVT_PRETTYSCRNS 1	/* in random locations of the display.	*/
@@ -334,16 +352,6 @@
 # define PCVT_BACKUP_FONTS 1
 #endif
 
-#ifndef PCVT_UPDATEFAST		/* this is the rate at which the cursor */
-# define PCVT_UPDATEFAST (hz/10) /* gets updated with it's new position	*/
-#endif				/* see: async_update() in pcvt_sup.c	*/
-
-#ifndef PCVT_UPDATESLOW		/* this is the rate at which the cursor	*/
-# define PCVT_UPDATESLOW 3	/* position display and the system load	*/
-#endif				/* (or the keyboard scancode display)	*/
-				/* is updated. the relation is:		*/
-				/* PCVT_UPDATEFAST/PCVT_UPDATESLOW	*/
-
 #ifndef PCVT_SYSBEEPF		/* timer chip value to be used for the	*/
 # define PCVT_SYSBEEPF 1193182	/* sysbeep frequency value.		*/
 #endif				/* this should really go somewhere else,*/
@@ -403,7 +411,7 @@
 				/* -- see also PCVT_PALFLICKER above -- */
 
 #if !defined PCVT_INHIBIT_NUMLOCK /* --------- DEFAULT: OFF ----------- */
-# define PCVT_INHIBIT_NUMLOCK 0 /* A notebook hack: since i am getting	*/
+# define PCVT_INHIBIT_NUMLOCK 1 /* A notebook hack: since i am getting	*/
 #elif PCVT_INHIBIT_NUMLOCK != 0	/* tired of the numlock LED always	*/
 # undef PCVT_INHIBIT_NUMLOCK    /* being turned on - which causes the	*/
 # define PCVT_INHIBIT_NUMLOCK 1 /* right half of my keyboard being	*/
@@ -445,13 +453,6 @@
 # define PCVT_MDAFASTSCROLL 1	/* MDA/Hercules which do support more 	*/
 #endif				/* than one page of video memory.	*/
 
-#if !defined PCVT_SLOW_INTERRUPT/* ---------- DEFAULT: OFF ------------ */
-# define PCVT_SLOW_INTERRUPT 0	/* If off, protecting critical regions	*/
-#elif PCVT_SLOW_INTERRUPT != 0	/* in the keyboard fifo code is done by	*/
-# undef PCVT_SLOW_INTERRUPT	/* disabling the processor irq's, if on */
-# define PCVT_SLOW_INTERRUPT 1	/* this is done by spl()/splx() calls.  */
-#endif
-
 /*---------------------------------------------------------------------------*
  *	Kernel messages attribute definitions
  *	These define the foreground and background attributes used to
@@ -462,7 +463,7 @@
 #define COLOR_KERNEL_FG	FG_LIGHTGREY	/* kernel messages, foreground	*/
 #endif
 #if !defined COLOR_KERNEL_BG
-#define COLOR_KERNEL_BG	BG_RED		/* kernel messages, background	*/
+#define COLOR_KERNEL_BG	BG_BLUE		/* kernel messages, background	*/
 #endif
 
 #if !defined MONO_KERNEL_FG		/* monochrome displays		*/

@@ -1,5 +1,4 @@
-#	from: @(#)changelist	8.1 (Berkeley) 6/9/93
-#	$Id: changelist,v 1.1 1994/06/15 04:28:11 cgd Exp $
+#	$OpenBSD: changelist,v 1.3 1997/04/15 23:10:58 dima Exp $
 #
 # List of files which the security script backs up and checks
 # for modifications.
@@ -17,6 +16,7 @@
 /etc/ftpusers
 /etc/group
 /etc/hosts.equiv
+/etc/shosts.equiv
 /etc/mail.rc
 /etc/master.passwd
 /etc/monthly
@@ -29,6 +29,7 @@
 /etc/protocols
 /etc/rc
 /etc/rc.local
+/etc/rc.securelevel
 /etc/remote
 /etc/security
 /etc/sendmail.cf
@@ -46,3 +47,4 @@
 /root/.login
 /root/.profile
 /root/.rhosts
+/root/.shosts

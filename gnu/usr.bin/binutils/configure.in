@@ -402,6 +402,8 @@ case "${target}" in
   alpha*-*-*vms*)
     noconfigdirs="$noconfigdirs gdb ld target-newlib target-libgloss"
     ;;
+  alpha*-*-openbsd*)
+    ;;
   alpha*-*-*)
     # newlib is not 64 bit ready
     noconfigdirs="$noconfigdirs target-newlib target-libgloss"
@@ -497,6 +499,9 @@ case "${target}" in
   powerpcle-*-solaris*)
     noconfigdirs="$noconfigdirs gdb sim make tcl tk expect"
     ;;
+  powerpc*-*-openbsd*)
+    noconfigdirs="$noconfigdirs gdb"
+    ;;
   rs6000-*-lynxos*)
     # The CVS server code doesn't work on the RS/6000
     # Newlib makes problems for libg++ in crosses.
@@ -529,6 +534,8 @@ case "${target}" in
     ;;
   mips*-*-bsd*)
     noconfigdirs="$noconfigdirs gprof target-libgloss"
+    ;;
+  mips*-*-openbsd*)
     ;;
   mips*-*-*)
     noconfigdirs="$noconfigdirs gprof"
@@ -617,6 +624,7 @@ for dir in . $skipdirs $noconfigdirs ; do
       if echo " ${skipdirs} " | grep " ${dir} " >/dev/null 2>&1; then
 	true
       else
+echo notsupp1
 	notsupp="$notsupp $dir"
       fi
     fi
@@ -628,6 +636,7 @@ for dir in . $skipdirs $noconfigdirs ; do
       if echo " ${skipdirs} " | grep " ${dir} " >/dev/null 2>&1; then
 	true
       else
+echo notsupp2
 	notsupp="$notsupp $dir"
       fi
     fi

@@ -1,3 +1,4 @@
+/*	$OpenBSD: alias.h,v 1.4 1995/05/11 21:28:42 christos Exp $	*/
 /*	$NetBSD: alias.h,v 1.4 1995/05/11 21:28:42 christos Exp $	*/
 
 /*-

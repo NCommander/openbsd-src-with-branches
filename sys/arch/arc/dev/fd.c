@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: fd.c,v 1.4 1996/11/23 21:45:30 kstailey Exp $	*/
 /*	$NetBSD: fd.c,v 1.78 1995/07/04 07:23:09 mycroft Exp $	*/
 
 /*-
@@ -63,8 +63,9 @@
 #include <arc/dev/dma.h>
 
 
-#define FDUNIT(dev)	(minor(dev) / 8)
-#define FDTYPE(dev)	(minor(dev) % 8)
+#define FDUNIT(dev)	((dev & 0x080) >> 7)
+#define FDTYPE(dev)	((minor(dev) & 0x70) >> 4)
+#define FDPART(dev)	(minor(dev) & 0x0f)
 
 #define b_cylin b_resid
 
@@ -188,9 +189,17 @@ void fdgetdisklabel __P((struct fd_softc *));
 int fd_get_parms __P((struct fd_softc *));
 void fdstrategy __P((struct buf *));
 void fdstart __P((struct fd_softc *));
+int fdioctl __P((dev_t, u_long, caddr_t, int));
+int fddump __P((dev_t, daddr_t, caddr_t, size_t));
+int fdsize __P((dev_t));
+int fdopen __P((dev_t, int));
+int fdclose __P((dev_t, int));
+int fdwrite __P((dev_t, struct uio *));
+int fdread __P((dev_t, struct uio *));
 
 struct dkdriver fddkdriver = { fdstrategy };
 
+int fdprint __P((void *, const char *));
 struct fd_type *fd_nvtotype __P((char *, int, int));
 void fd_set_motor __P((struct fdc_softc *fdc, int reset));
 void fd_motor_off __P((void *arg));
@@ -248,7 +257,7 @@ struct fdc_attach_args {
 int
 fdprint(aux, fdc)
 	void *aux;
-	char *fdc;
+	const char *fdc;
 {
 	register struct fdc_attach_args *fa = aux;
 
@@ -409,18 +418,6 @@ fd_nvtotype(fdc, nvraminfo, drive)
 #endif
 }
 
-inline struct fd_type *
-fd_dev_to_type(fd, dev)
-	struct fd_softc *fd;
-	dev_t dev;
-{
-	int type = FDTYPE(dev);
-
-	if (type > (sizeof(fd_types) / sizeof(fd_types[0])))
-		return NULL;
-	return type ? &fd_types[type - 1] : fd->sc_deftype;
-}
-
 void
 fdstrategy(bp)
 	register struct buf *bp;	/* IO operation to perform */
@@ -566,7 +563,7 @@ fd_set_motor(fdc, reset)
 	u_char status;
 	int n;
 
-	if (fd = fdc->sc_drives.tqh_first)
+	if ((fd = fdc->sc_drives.tqh_first) != NULL)
 		status = fd->sc_drive;
 	else
 		status = 0;
@@ -664,7 +661,14 @@ fdopen(dev, flags)
 	fd = fd_cd.cd_devs[unit];
 	if (fd == 0)
 		return ENXIO;
-	type = fd_dev_to_type(fd, dev);
+
+	if (FDTYPE(dev) > (sizeof(fd_types) / sizeof(fd_types[0])))
+		type = NULL;
+	else if(FDTYPE(dev))
+		type =  &fd_types[FDTYPE(dev) - 1];
+	else
+		type = fd->sc_deftype;
+
 	if (type == NULL)
 		return ENXIO;
 
@@ -713,7 +717,6 @@ fdcstatus(dv, n, s)
 	char *s;
 {
 	struct fdc_softc *fdc = (void *)dv->dv_parent;
-	int iobase = fdc->sc_iobase;
 
 	if (n == 0) {
 		out_fdc(fdc->sc_iobase, NE7CMD_SENSEI);
@@ -789,7 +792,7 @@ fdcintr(arg)
 	struct fd_softc *fd;
 	struct buf *bp;
 	int iobase = fdc->sc_iobase;
-	int read, head, trac, sec, i, s, nblks;
+	int read, head, sec, i, nblks;
 	struct fd_type *type;
 
 loop:
@@ -877,7 +880,7 @@ loop:
 #endif
 		 }}
 #endif
-		MachFlushDCache(bp->b_data + fd->sc_skip, fd->sc_nbytes);
+		R4K_FlushDCache((vm_offset_t)(bp->b_data + fd->sc_skip), fd->sc_nbytes);
 		read = bp->b_flags & B_READ ? DMA_FROM_DEV : DMA_TO_DEV;
 		DMA_START(fdc->dma, bp->b_data + fd->sc_skip, fd->sc_nbytes, read);
 		outb(iobase + fdctl, type->rate);

@@ -1,4 +1,4 @@
-/*	$Id$	*/
+/*	$Id: krb_dbm.c,v 1.2 1996/08/22 01:18:49 deraadt Exp $	*/
 
 /*-
  * Copyright (C) 1989 by the Massachusetts Institute of Technology
@@ -451,9 +451,9 @@ kerb_db_rename(from, to)
      char *from;
      char *to;
 {
-#if defined(__NetBSD__) || defined(__FreeBSD__)
+#if defined(__NetBSD__) || defined(__OpenBSD__) || defined(__FreeBSD__)
     char *fromdb = gen_dbsuffix (from, ".db");
-    char *todb = gen_dbsuffix (from, ".db");
+    char *todb = gen_dbsuffix (to, ".db");
 #else
     char *fromdir = gen_dbsuffix (from, ".dir");
     char *todir = gen_dbsuffix (to, ".dir");
@@ -464,9 +464,9 @@ kerb_db_rename(from, to)
     long trans = kerb_start_update(to);
     int ok = 0;
     
-#if defined(__NetBSD__) || defined(__FreeBSD__)
+#if defined(__NetBSD__) || defined(__OpenBSD__) || defined(__FreeBSD__)
     if (rename (fromdb, todb) == 0) {
-	(void) unlink (fromdb);
+	(void) unlink (fromok);
 	ok = 1;
     }
     free (fromdb);

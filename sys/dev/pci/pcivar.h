@@ -1,6 +1,8 @@
-/*	$NetBSD: pcivar.h,v 1.8 1995/06/18 01:26:50 cgd Exp $	*/
+/*	$OpenBSD: pcivar.h,v 1.10 1997/01/24 19:34:16 niklas Exp $	*/
+/*	$NetBSD: pcivar.h,v 1.18 1996/12/01 21:02:18 leo Exp $	*/
 
 /*
+ * Copyright (c) 1996 Christopher G. Demetriou.  All rights reserved.
  * Copyright (c) 1994 Charles Hannum.  All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -29,47 +31,119 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#ifndef _DEV_PCI_PCIVAR_H_
+#define	_DEV_PCI_PCIVAR_H_
+
 /*
  * Definitions for PCI autoconfiguration.
  *
  * This file describes types and functions which are used for PCI
  * configuration.  Some of this information is machine-specific, and is
- * separated into pci_machdep.h.
+ * provided by pci_machdep.h.
  */
 
-#if (alpha + i386 != 1)
+#include <machine/bus.h>
+#include <dev/pci/pcireg.h>
+
+/*
+ * Structures and definitions needed by the machine-dependent header.
+ */
+typedef u_int32_t pcireg_t;		/* configuration space register XXX */
+struct pcibus_attach_args;
+
+/*
+ * Machine-dependent definitions.
+ */
+#if (alpha + atari + i386 + arc != 1)
 ERROR: COMPILING FOR UNSUPPORTED MACHINE, OR MORE THAN ONE.
 #endif
-
 #if alpha
 #include <alpha/pci/pci_machdep.h>
 #endif
-
+#if atari
+#include <atari/pci/pci_machdep.h>
+#endif
 #if i386
 #include <i386/pci/pci_machdep.h>
 #endif
+#if arc
+#include <arc/pci/pci_machdep.h>
+#endif
 
-/* PCI interrupt levels; system interrupt levels for PCI bus use */
-typedef enum {
-	PCI_IPL_NONE,		/* block only the interrupt's IRQ*/
-	PCI_IPL_BIO,		/* block I/O interrupts */
-	PCI_IPL_NET,		/* network */
-	PCI_IPL_TTY,		/* terminal */
-	PCI_IPL_CLOCK,		/* clock */
-} pci_intrlevel;
+/*
+ * PCI bus attach arguments.
+ */
+struct pcibus_attach_args {
+	char	*pba_busname;		/* XXX should be common */
+	bus_space_tag_t pba_iot;	/* pci i/o space tag */
+	bus_space_tag_t pba_memt;	/* pci mem space tag */
+	pci_chipset_tag_t pba_pc;
 
-struct pci_attach_args {
-	int pa_bus;
-	int pa_device;
-	pcitag_t pa_tag;
-	pcireg_t pa_id, pa_class;
+	int		pba_bus;	/* PCI bus number */
+
+	/*
+	 * Interrupt swizzling information.  These fields
+	 * are only used by secondary busses.
+	 */
+	u_int		pba_intrswiz;	/* how to swizzle pins */
+	pcitag_t	pba_intrtag;	/* intr. appears to come from here */
 };
 
-pcireg_t pci_conf_read __P((pcitag_t, int));
-void	 pci_conf_write __P((pcitag_t, int, pcireg_t));
-void	 pci_devinfo __P((pcireg_t, pcireg_t, char *, int *));
-pcitag_t pci_make_tag __P((int, int, int));
-void	*pci_map_int __P((pcitag_t, pci_intrlevel, int (*)(void *), void *));
-int	 pci_map_mem __P((pcitag_t, int, vm_offset_t *, vm_offset_t *));
+/*
+ * PCI device attach arguments.
+ */
+struct pci_attach_args {
+	bus_space_tag_t pa_iot;		/* pci i/o space tag */
+	bus_space_tag_t pa_memt;	/* pci mem space tag */
+	pci_chipset_tag_t pa_pc;
 
-int	 pci_attach_subdev __P((struct device *, int, int));
+	u_int		pa_device;
+	u_int		pa_function;
+	pcitag_t	pa_tag;
+	pcireg_t	pa_id, pa_class;
+
+	/*
+	 * Interrupt information.
+	 *
+	 * "Intrline" is used on systems whose firmware puts
+	 * the right routing data into the line register in
+	 * configuration space.  The rest are used on systems
+	 * that do not.
+	 */
+	u_int		pa_intrswiz;	/* how to swizzle pins if ppb */
+	pcitag_t	pa_intrtag;	/* intr. appears to come from here */
+	pci_intr_pin_t	pa_intrpin;	/* intr. appears on this pin */
+	pci_intr_line_t	pa_intrline;	/* intr. routing information */
+};
+
+/*
+ * Locators devices that attach to 'pcibus', as specified to config.
+ */
+#define	pcibuscf_bus		cf_loc[0]
+#define	PCIBUS_UNK_BUS		-1		/* wildcarded 'bus' */
+
+/*
+ * Locators for PCI devices, as specified to config.
+ */
+#define	pcicf_dev		cf_loc[0]
+#define	PCI_UNK_DEV		-1		/* wildcarded 'dev' */
+
+#define	pcicf_function		cf_loc[1]
+#define	PCI_UNK_FUNCTION	-1		/* wildcarded 'function' */
+
+/*
+ * Configuration space access and utility functions.  (Note that most,
+ * e.g. make_tag, conf_read, conf_write are declared by pci_machdep.h.)
+ */
+int	pci_io_find __P((pci_chipset_tag_t, pcitag_t, int, bus_addr_t *,
+	    bus_size_t *));
+int	pci_mem_find __P((pci_chipset_tag_t, pcitag_t, int, bus_addr_t *,
+	    bus_size_t *, int *));
+
+/*
+ * Helper functions for autoconfiguration.
+ */
+void	pci_devinfo __P((pcireg_t, pcireg_t, int, char *));
+void	set_pci_isa_bridge_callback __P((void (*)(void *), void *));
+
+#endif /* _DEV_PCI_PCIVAR_H_ */

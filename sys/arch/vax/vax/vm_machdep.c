@@ -1,6 +1,5 @@
-/*      $NetBSD: vm_machdep.c,v 1.16.2.1 1995/10/15 14:01:06 ragge Exp $       */
+/*      $NetBSD: vm_machdep.c,v 1.30 1997/01/11 11:23:09 ragge Exp $       */
 
-#undef SWDEBUG
 /*
  * Copyright (c) 1994 Ludd, University of Lule}, Sweden.
  * All rights reserved.
@@ -33,24 +32,31 @@
 
  /* All bugs are subject to removal without further notice */
 		
-#include "sys/types.h"
-#include "sys/param.h"
-#include "sys/proc.h"
-#include "sys/user.h"
-#include "sys/exec.h"
-#include "sys/vnode.h"
-#include "sys/core.h"
-#include "sys/mount.h"
-#include "vm/vm.h"
-#include "vm/vm_kern.h"
-#include "vm/vm_page.h"
-#include "machine/vmparam.h"
-#include "machine/mtpr.h"
-#include "machine/pmap.h"
-#include "machine/pte.h"
-#include "machine/macros.h"
-#include "machine/trap.h"
-#include "machine/pcb.h"
+#include <sys/types.h>
+#include <sys/param.h>
+#include <sys/systm.h>
+#include <sys/proc.h>
+#include <sys/user.h>
+#include <sys/exec.h>
+#include <sys/vnode.h>
+#include <sys/core.h>
+#include <sys/mount.h>
+#include <sys/device.h>
+
+#include <vm/vm.h>
+#include <vm/vm_kern.h>
+#include <vm/vm_page.h>
+
+#include <machine/vmparam.h>
+#include <machine/mtpr.h>
+#include <machine/pmap.h>
+#include <machine/pte.h>
+#include <machine/macros.h>
+#include <machine/trap.h>
+#include <machine/pcb.h>
+#include <machine/frame.h>
+#include <machine/cpu.h>
+#include <machine/sid.h>
 
 #include <sys/syscallargs.h>
 
@@ -63,22 +69,23 @@ volatile int whichqs;
 void
 pagemove(from, to, size)
 	caddr_t from, to;
-	int size;
+	size_t size;
 {
-	u_int *fpte, *tpte,stor;
+	pt_entry_t *fpte, *tpte;
+	int	stor;
 
 	fpte = kvtopte(from);
 	tpte = kvtopte(to);
 
-	stor = (size/NBPG) * sizeof(struct pte);
-	bcopy(fpte,tpte,stor);
-	bzero(fpte,stor);
-	mtpr(0,PR_TBIA);
+	stor = (size >> PGSHIFT) * sizeof(struct pte);
+	bcopy(fpte, tpte, stor);
+	bzero(fpte, stor);
+	mtpr(0, PR_TBIA);
 }
 
 #define VIRT2PHYS(x) \
-	(((*(int *)((((((int)x)&0x7fffffff)>>9)*4)+ \
-		(unsigned int)Sysmap))&0x1fffff)<<9)
+	(((*(int *)((((((int)x) & 0x7fffffff) >> 9) * 4) + \
+		(unsigned int)Sysmap)) & 0x1fffff) << 9)
 
 /*
  * cpu_fork() copies parent process trapframe directly into child PCB
@@ -89,15 +96,13 @@ pagemove(from, to, size)
  * No need for either double-map kernel stack or relocate it when
  * forking.
  */
-int
+void
 cpu_fork(p1, p2)
 	struct proc *p1, *p2;
 {
 	struct pcb *nyproc;
 	struct trapframe *tf;
 	struct pmap *pmap, *opmap;
-	u_int *p2pte;
-	extern vm_map_t pte_map;
 
 	nyproc = &p2->p_addr->u_pcb;
 	tf = p1->p_addr->u_pcb.framep;
@@ -120,12 +125,11 @@ cpu_fork(p1, p2)
 	nyproc->P0LR = opmap->pm_pcb->P0LR;
 	nyproc->P1LR = opmap->pm_pcb->P1LR;
 #else
-	nyproc->P0BR = (void *)0;
+	nyproc->P0BR = (void *)0x80000000;
 	nyproc->P1BR = (void *)0x80000000;
 	nyproc->P0LR = AST_PCB;
 	nyproc->P1LR = 0x200000;
 #endif
-	nyproc->USP = mfpr(PR_USP);
 	nyproc->iftrap = NULL;
 	nyproc->KSP = (u_int)p2->p_addr + USPACE;
 
@@ -134,12 +138,13 @@ cpu_fork(p1, p2)
 	bcopy(&tf->r2,&nyproc->R[2],10*sizeof(int));
 	nyproc->AP = tf->ap;
 	nyproc->FP = tf->fp;
+	nyproc->USP = tf->sp;
 	nyproc->PC = tf->pc;
 	nyproc->PSL = tf->psl & ~PSL_C;
 	nyproc->R[0] = p1->p_pid; /* parent pid. (shouldn't be needed) */
 	nyproc->R[1] = 1;
 
-	return 0; /* Child is ready. Parent, return! */
+	return; /* Child is ready. Parent, return! */
 
 }
 
@@ -152,106 +157,129 @@ cpu_fork(p1, p2)
  */
 void
 cpu_set_kpc(p, pc)
-        struct proc *p;
-        u_int pc;
+	struct proc *p;
+	void (*pc) __P((struct proc *));
 {
 	struct pcb *nyproc;
 	struct {
-		u_int	chand;
-		u_int	mask;
-		u_int	ap;
-		u_int	fp;
-		u_int	pc;
-		u_int	nargs;
-		u_int	pp;
-		u_int	rpc;
-		u_int	rpsl;
+		struct	callsframe cf;
+		struct	trapframe tf;
 	} *kc;
-	extern int rei;
-
-	kc = (void *)p->p_addr + USPACE - sizeof(*kc);
-	kc->chand = 0;
-	kc->mask = 0x20000000;
-	kc->pc = (u_int)&rei;
-	kc->nargs = 1;
-	kc->pp = (u_int)p;
-	kc->rpsl = 0x3c00000;
+	extern int sret, boothowto;
 
 	nyproc = &p->p_addr->u_pcb;
-	nyproc->framep = (void *)p->p_addr + USPACE - sizeof(struct trapframe);
-	nyproc->AP = (u_int)&kc->nargs;
-	nyproc->FP = nyproc->KSP = (u_int)kc;
-	nyproc->PC = pc + 2;
+	(unsigned)kc = nyproc->FP = nyproc->KSP =
+	    (unsigned)p->p_addr + USPACE - sizeof(*kc);
+	kc->cf.ca_cond = 0;
+	kc->cf.ca_maskpsw = 0x20000000;
+	kc->cf.ca_pc = (unsigned)&sret;
+	kc->cf.ca_argno = 1;
+	kc->cf.ca_arg1 = (unsigned)p;
+	kc->tf.r11 = boothowto;	/* If we have old init */
+	kc->tf.psl = 0x3c00000;
+
+	nyproc->framep = (void *)&kc->tf;
+	nyproc->AP = (unsigned)&kc->cf.ca_argno;
+	nyproc->FP = nyproc->KSP = (unsigned)kc;
+	nyproc->PC = (unsigned)pc + 2;
 }
 
+/*
+ * Put in a process on the correct run queue based on it's priority
+ * and set the bit corresponding to the run queue.
+ */
 void 
 setrunqueue(p)
 	struct proc *p;
 {
-	struct prochd *q;
-	int knummer;
+	struct	prochd *q;
+	int	knummer;
 
-	if(p->p_back) 
-		panic("sket sig i setrunqueue\n");
-	knummer=(p->p_priority>>2);
-	bitset(knummer,whichqs);
-	q=&qs[knummer];
+	if (p->p_back) 
+		panic("sket sig i setrunqueue");
 
-	_insque(p,q);
+	knummer = (p->p_priority >> 2);
+	bitset(knummer, whichqs);
+	q = &qs[knummer];
+
+	_insque(p, q);
 
 	return;
 }
 
+/*
+ * Remove a process from the run queue. If this is the last process
+ * on that queue, clear the queue bit in whichqs.
+ */
 void
-remrq(p)
+remrunqueue(p)
 	struct proc *p;
 {
-	struct proc *qp;
-	int bitnr;
+	struct	proc *qp;
+	int	bitnr;
 
-	bitnr=(p->p_priority>>2);
-	if(bitisclear(bitnr,whichqs))
-		panic("remrq: Process not in queue\n");
+	bitnr = (p->p_priority >> 2);
+	if (bitisclear(bitnr, whichqs))
+		panic("remrunqueue: Process not in queue");
 
 	_remque(p);
 
-	qp=(struct proc *)&qs[bitnr];
-	if(qp->p_forw==qp)
-		bitclear(bitnr,whichqs);
+	qp = (struct proc *)&qs[bitnr];
+	if (qp->p_forw == qp)
+		bitclear(bitnr, whichqs);
 }
 
-volatile caddr_t curpcb,nypcb;
+volatile caddr_t curpcb, nypcb;
 
-cpu_switch(){
-	int i,j,s;
-	struct proc *p;
-	volatile struct proc *q;
-	extern unsigned int want_resched,scratch;
+/*
+ * Machine dependent part of switch function. Find the next process 
+ * with the highest priority to run. If the process queues are empty,
+ * sleep waiting for something to happen. The idle loop resides here.
+ */
+void
+cpu_switch(pp)
+	struct proc *pp;
+{
+	int	i,s;
+	struct	proc *p, *q;
+	extern	unsigned int scratch;
 
-hej:	
-	/* F|rst: Hitta en k|. */
-	s=splhigh();
-	if((i=ffs(whichqs)-1)<0) goto idle;
+again:	
+	/* First: Search for a queue. */
+	s = splhigh();
+	if ((i = ffs(whichqs) -1 ) < 0)
+		goto idle;
 
-found:
+	/*
+	 * A queue with runnable processes found.
+	 * Get first process from queue. 
+	 */
 	asm(".data;savpsl:	.long	0;.text;movpsl savpsl");
-	q=(struct proc *)&qs[i];
-	if(q->p_forw==q)
+	q = (struct proc *)&qs[i];
+	if (q->p_forw == q)
 		panic("swtch: no process queued");
 
-	bitclear(i,whichqs);
-	p=q->p_forw;
+	/* Remove process from queue */
+	bitclear(i, whichqs);
+	p = q->p_forw;
 	_remque(p);
 
-	if(q->p_forw!=q) bitset(i,whichqs);
-	if(curproc) (u_int)curpcb=VIRT2PHYS(&curproc->p_addr->u_pcb);
-	else (u_int)curpcb=scratch;
-	(u_int)nypcb=VIRT2PHYS(&p->p_addr->u_pcb);
+	if (q->p_forw != q)
+		bitset(i, whichqs);
+	if (curproc)
+		(u_int)curpcb = VIRT2PHYS(&curproc->p_addr->u_pcb);
+	else
+		(u_int)curpcb = scratch & 0x7fffffff;
+	(u_int)nypcb = VIRT2PHYS(&p->p_addr->u_pcb);
 
-	if(!p) panic("switch: null proc pointer\n");
-	want_resched=0;
-	curproc=p;
-	if(curpcb==nypcb) return;
+	if (p == 0)
+		panic("switch: null proc pointer");
+	want_resched = 0;
+	curproc = p;
+
+	/* Don't change process if it's the same that we'r already running */
+	if (curpcb == nypcb)
+		return;
 
 	asm("pushl savpsl");
 	asm("jsb _loswtch");
@@ -260,22 +288,27 @@ found:
 
 idle:	
 	spl0();
-	while(!whichqs);
-	goto hej;
+	while (whichqs == 0)
+		;
+	goto again;
 }
 
 /* Should check that values is in bounds XXX */
+int
 copyinstr(from, to, maxlen, lencopied)
-void *from, *to;
-u_int *lencopied,maxlen;
+	const void *from;
+	void *to;
+	size_t *lencopied;
+	size_t maxlen;
 {
 	u_int i;
 	void *addr=&curproc->p_addr->u_pcb.iftrap;
-	char *gfrom=from, *gto=to;
+	const char *gfrom = from;
+	char *gto = to;
 
 	asm("movl $Lstr,(%0)":: "r"(addr));
 	for(i=0;i<maxlen;i++){
-		*(gto+i)=*(gfrom+i);
+		*(gto +i )=*(gfrom + i);
 		if(!(*(gto+i))) goto ok;
 	}
 
@@ -288,12 +321,16 @@ ok:
 asm("Lstr:	ret");
 
 /* Should check that values is in bounds XXX */
+int
 copyoutstr(from, to, maxlen, lencopied)
-void *from, *to;
-u_int *lencopied,maxlen;
+	const	void *from;
+	void	*to;
+	size_t	*lencopied;
+	size_t	maxlen;
 {
 	u_int i;
-	char *gfrom=from, *gto=to;
+	const char *gfrom=from;
+	char *gto=to;
         void *addr=&curproc->p_addr->u_pcb.iftrap;
 
         asm("movl $Lstr,(%0)":: "r"(addr));
@@ -308,15 +345,19 @@ ok:
 	return 0;
 }
 
+int	reno_zmagic __P((struct proc *, struct exec_package *));
+
+
+int
 cpu_exec_aout_makecmds(p, epp)
 	struct proc *p;
 	struct exec_package *epp;
 {
 	int error;
 	struct exec *ep;
-/*
- * Compatibility with reno programs.
- */
+	/*
+	 * Compatibility with reno programs.
+	 */
 	ep=epp->ep_hdr;
 	switch (ep->a_midmag) {
 	case 0x10b: /* ZMAGIC in 4.3BSD Reno programs */
@@ -403,23 +444,26 @@ reno_zmagic(p, epp)
 
 void
 cpu_exit(p)
-	struct proc *p;
+	struct	proc *p;
 {
-	extern unsigned int scratch;
+	extern	unsigned int scratch;
 
-	if(!p) panic("cpu_exit from null process");
+	if (p == 0)
+		panic("cpu_exit from null process");
 	vmspace_free(p->p_vmspace);
 
 	(void) splimp();
-	mtpr(scratch+NBPG,PR_KSP);/* Must change kernel stack before freeing */
+	/* Must change kernel stack before freeing */
+	mtpr(scratch + NBPG, PR_KSP);
 	kmem_free(kernel_map, (vm_offset_t)p->p_addr, ctob(UPAGES));
-	cpu_switch();
+	cpu_switch(0);
 	/* NOTREACHED */
 }
 
-suword(ptr,val)
+int
+suword(ptr, val)
 	void *ptr;
-	int val;
+	long val;
 {
         void *addr=&curproc->p_addr->u_pcb.iftrap;
 
@@ -452,7 +496,6 @@ cpu_coredump(p, vp, cred, chdr)
 	chdr->c_cpusize = sizeof(struct md_coredump);
 
 	bcopy(tf, &state, sizeof(struct md_coredump));
-	state.md_tf.code = mfpr(PR_USP); /* XXX */
 
 	CORE_SETMAGIC(cseg, CORESEGMAGIC, MID_VAX, CORE_CPU);
 	cseg.c_addr = 0;
@@ -474,18 +517,27 @@ cpu_coredump(p, vp, cred, chdr)
         return error;
 }
 
+int	locopyout __P((const void *, void *, size_t, void *));
+int	locopyin __P((const void *, void *, size_t, void *));
+
+int
 copyout(from, to, len)
-	void *from, *to;
+	const	void *from;
+	void	*to;
+	size_t	len;
 {
 	void *addr=&curproc->p_addr->u_pcb.iftrap;
 
 	return locopyout(from, to, len, addr);
 }
 
+int
 copyin(from, to, len)
-	void *from, *to;
+	const	void *from;
+	void	*to;
+	size_t	len;
 {
-	void *addr=&curproc->p_addr->u_pcb.iftrap;
+	void *addr = &curproc->p_addr->u_pcb.iftrap;
 
 	return locopyin(from, to, len, addr);
 }
@@ -505,7 +557,7 @@ cpu_swapin(p)
 
 	uarea = (u_int)p->p_addr;
 
-	for(i = uarea;i < uarea + USPACE;i += PAGE_SIZE) {
+	for (i = uarea;i < uarea + USPACE;i += PAGE_SIZE) {
 		j = (u_int *)kvtopte(i);
 		if ((*j & PG_V) == 0) {
 			rv = vm_fault(kernel_map, i,
@@ -519,3 +571,60 @@ cpu_swapin(p)
 	*j = 0; /* Set kernel stack red zone */
 #endif
 }
+
+#if VAX410 || VAX43
+/*
+ * vmapbuf()/vunmapbuf() only used on some vaxstations without
+ * any busadapter with MMU.
+ * XXX - This must be reworked to be effective.
+ */
+void
+vmapbuf(bp, len)
+        struct buf *bp;
+        vm_size_t len;
+{
+        vm_offset_t faddr, taddr, off, pa;
+        pmap_t fmap, tmap;
+
+	if ((vax_boardtype != VAX_BTYP_43) && (vax_boardtype != VAX_BTYP_410))
+		return;
+        faddr = trunc_page(bp->b_saveaddr = bp->b_data);
+        off = (vm_offset_t)bp->b_data - faddr;
+        len = round_page(off + len);
+        taddr = kmem_alloc_wait(phys_map, len);
+        bp->b_data = (caddr_t)(taddr + off);
+        fmap = vm_map_pmap(&bp->b_proc->p_vmspace->vm_map);
+        tmap = vm_map_pmap(phys_map);
+        len = len >> PGSHIFT;
+        while (len--) {
+                pa = pmap_extract(fmap, faddr);
+                if (pa == 0)
+                        panic("vmapbuf: null page frame for %x", faddr);
+                pmap_enter(tmap, taddr, pa & ~(NBPG - 1),
+                           VM_PROT_READ|VM_PROT_WRITE, TRUE);
+                faddr += NBPG;
+                taddr += NBPG;
+        }
+}
+
+/*
+ * Free the io map PTEs associated with this IO operation.
+ * We also invalidate the TLB entries and restore the original b_addr.
+ */
+void
+vunmapbuf(bp, len)
+        struct buf *bp;
+        vm_size_t len;
+{
+        vm_offset_t addr, off;
+
+	if ((vax_boardtype != VAX_BTYP_43) && (vax_boardtype != VAX_BTYP_410))
+		return;
+        addr = trunc_page(bp->b_data);
+        off = (vm_offset_t)bp->b_data - addr;
+        len = round_page(off + len);
+        kmem_free_wakeup(phys_map, addr, len);
+        bp->b_data = bp->b_saveaddr;
+        bp->b_saveaddr = 0;
+}
+#endif

@@ -1,4 +1,4 @@
-/*	$NetBSD: machdep.c,v 1.16 1995/10/07 06:25:28 mycroft Exp $	*/
+/*	$NetBSD: machdep.c,v 1.18 1996/01/04 22:21:47 jtc Exp $	*/
 
 /*
  * Copyright (c) 1988 University of Utah.
@@ -117,7 +117,7 @@ extern	u_int lowram;
 /*
  * For the fpu emulation and the fpu driver
  */
-int	fputype;
+int	fputype = 0;
 
 /* the following is used externally (sysctl_hw) */
 char machine[] = "atari";
@@ -350,6 +350,13 @@ again:
 	/*
 	 * Configure the system.
 	 */
+	if (boothowto & RB_CONFIG) {
+#ifdef BOOT_CONFIG
+		user_config();
+#else
+		printf("kernel does not support -c; continuing..\n");
+#endif
+	}
 	configure();
 }
 
@@ -510,7 +517,7 @@ sendsig(catcher, sig, mask, code)
 	 */
 	if ((psp->ps_flags & SAS_ALTSTACK) && oonstack == 0 &&
 	    (psp->ps_sigonstack & sigmask(sig))) {
-		fp = (struct sigframe *)(psp->ps_sigstk.ss_base +
+		fp = (struct sigframe *)(psp->ps_sigstk.ss_sp +
 		    psp->ps_sigstk.ss_size - sizeof(struct sigframe));
 		psp->ps_sigstk.ss_flags |= SS_ONSTACK;
 	} else
@@ -763,15 +770,24 @@ void
 bootsync(void)
 {
 	if (waittime < 0) {
+		extern struct proc proc0;
+		/* defeat against panic in boot */
+		if (curproc == NULL)
+			curproc = &proc0;
 		waittime = 0;
 
 		vfs_shutdown();
 
 		/*
 		 * If we've been adjusting the clock, the todr
-		 * will be out of synch; adjust it now.
+		 * will be out of synch; adjust it now unless
+		 * the system was sitting in ddb.
 		 */
-		resettodr();
+		if ((howto & RB_TIMEBAD) == 0) {
+			resettodr();
+		} else {
+			printf("WARNING: not updating battery clock\n");
+		}
 	}
 }
 
@@ -784,8 +800,15 @@ boot(howto)
 		savectx(curproc->p_addr);
 
 	boothowto = howto;
-	if((howto&RB_NOSYNC) == 0)
+	if((howto & RB_NOSYNC) == 0)
 		bootsync();
+
+	/*
+	 * Call shutdown hooks. Do this _before_ anything might be
+	 * asked to the user in case nobody is there....
+	 */
+	doshutdownhooks();
+
 	splhigh();			/* extreme priority */
 	if(howto & RB_HALT) {
 		printf("halted\n\n");
@@ -794,6 +817,7 @@ boot(howto)
 	else {
 		if(howto & RB_DUMP)
 			dumpsys();
+
 		doboot();
 		/*NOTREACHED*/
 	}

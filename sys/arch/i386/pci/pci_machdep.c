@@ -1,6 +1,8 @@
-/*	$NetBSD: pci_machdep.c,v 1.17 1995/07/27 21:39:59 cgd Exp $	*/
+/*	$OpenBSD: pci_machdep.c,v 1.26 1996/10/24 12:32:29 fvdl Exp $	*/
+/*	$NetBSD: pci_machdep.c,v 1.26 1996/10/24 12:32:29 fvdl Exp $	*/
 
 /*
+ * Copyright (c) 1996 Christopher G. Demetriou.  All rights reserved.
  * Copyright (c) 1994 Charles Hannum.  All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -60,51 +62,6 @@
 
 int pci_mode = -1;
 
-static isa_intrlevel	pcilevel_to_isa __P((pci_intrlevel level));
-
-int pcimatch __P((struct device *, void *, void *));
-void pciattach __P((struct device *, struct device *, void *));
-
-struct cfdriver pcicd = {
-	NULL, "pci", pcimatch, pciattach, DV_DULL, sizeof(struct device)
-};
-
-int
-pcimatch(parent, match, aux)
-	struct device *parent;
-	void *match, *aux;
-{
-
-	if (pci_mode_detect() == 0)
-		return 0;
-	return 1;
-}
-
-void
-pciattach(parent, self, aux)
-	struct device *parent, *self;
-	void *aux;
-{
-	int bus, device;
-
-	printf(": configuration mode %d\n", pci_mode);
-
-#if 0
-	for (bus = 0; bus <= 255; bus++)
-#else
-	/*
-	 * XXX
-	 * Some current chipsets do wacky things with bus numbers > 0.
-	 * This seems like a violation of protocol, but the PCI BIOS does
-	 * allow one to query the maximum bus number, and eventually we
-	 * should do so.
-	 */
-	for (bus = 0; bus <= 0; bus++)
-#endif
-		for (device = 0; device <= (pci_mode == 2 ? 15 : 31); device++)
-			pci_attach_subdev(self, bus, device);
-}
-
 #define	PCI_MODE1_ENABLE	0x80000000UL
 #define	PCI_MODE1_ADDRESS_REG	0x0cf8
 #define	PCI_MODE1_DATA_REG	0x0cfc
@@ -112,8 +69,37 @@ pciattach(parent, self, aux)
 #define	PCI_MODE2_ENABLE_REG	0x0cf8
 #define	PCI_MODE2_FORWARD_REG	0x0cfa
 
+void
+pci_attach_hook(parent, self, pba)
+	struct device *parent, *self;
+	struct pcibus_attach_args *pba;
+{
+
+	if (pba->pba_bus == 0)
+		printf(": configuration mode %d", pci_mode);
+}
+
+int
+pci_bus_maxdevs(pc, busno)
+	pci_chipset_tag_t pc;
+	int busno;
+{
+
+	/*
+	 * Bus number is irrelevant.  If Configuration Mechanism 2 is in
+	 * use, can only have devices 0-15 on any bus.  If Configuration
+	 * Mechanism 1 is in use, can have devices 0-32 (i.e. the `normal'
+	 * range).
+	 */
+	if (pci_mode == 2)
+		return (16);
+	else
+		return (32);
+}
+
 pcitag_t
-pci_make_tag(bus, device, function)
+pci_make_tag(pc, bus, device, function)
+	pci_chipset_tag_t pc;
 	int bus, device, function;
 {
 	pcitag_t tag;
@@ -130,7 +116,9 @@ pci_make_tag(bus, device, function)
 #endif
 
 #if !defined(PCI_CONF_MODE) || (PCI_CONF_MODE == 1)
+#ifndef PCI_CONF_MODE
 mode1:
+#endif
 	if (bus >= 256 || device >= 32 || function >= 8)
 		panic("pci_make_tag: bad request");
 
@@ -140,7 +128,9 @@ mode1:
 #endif
 
 #if !defined(PCI_CONF_MODE) || (PCI_CONF_MODE == 2)
+#ifndef PCI_CONF_MODE
 mode2:
+#endif
 	if (bus >= 256 || device >= 16 || function >= 8)
 		panic("pci_make_tag: bad request");
 
@@ -152,7 +142,8 @@ mode2:
 }
 
 pcireg_t
-pci_conf_read(tag, reg)
+pci_conf_read(pc, tag, reg)
+	pci_chipset_tag_t pc;
 	pcitag_t tag;
 	int reg;
 {
@@ -170,7 +161,9 @@ pci_conf_read(tag, reg)
 #endif
 
 #if !defined(PCI_CONF_MODE) || (PCI_CONF_MODE == 1)
+#ifndef PCI_CONF_MODE
 mode1:
+#endif
 	outl(PCI_MODE1_ADDRESS_REG, tag.mode1 | reg);
 	data = inl(PCI_MODE1_DATA_REG);
 	outl(PCI_MODE1_ADDRESS_REG, 0);
@@ -178,7 +171,9 @@ mode1:
 #endif
 
 #if !defined(PCI_CONF_MODE) || (PCI_CONF_MODE == 2)
+#ifndef PCI_CONF_MODE
 mode2:
+#endif
 	outb(PCI_MODE2_ENABLE_REG, tag.mode2.enable);
 	outb(PCI_MODE2_FORWARD_REG, tag.mode2.forward);
 	data = inl(tag.mode2.port | reg);
@@ -188,7 +183,8 @@ mode2:
 }
 
 void
-pci_conf_write(tag, reg, data)
+pci_conf_write(pc, tag, reg, data)
+	pci_chipset_tag_t pc;
 	pcitag_t tag;
 	int reg;
 	pcireg_t data;
@@ -206,14 +202,18 @@ pci_conf_write(tag, reg, data)
 #endif
 
 #if !defined(PCI_CONF_MODE) || (PCI_CONF_MODE == 1)
+#ifndef PCI_CONF_MODE
 mode1:
+#endif
 	outl(PCI_MODE1_ADDRESS_REG, tag.mode1 | reg);
 	outl(PCI_MODE1_DATA_REG, data);
 	outl(PCI_MODE1_ADDRESS_REG, 0);
 #endif
 
 #if !defined(PCI_CONF_MODE) || (PCI_CONF_MODE == 2)
+#ifndef PCI_CONF_MODE
 mode2:
+#endif
 	outb(PCI_MODE2_ENABLE_REG, tag.mode2.enable);
 	outb(PCI_MODE2_FORWARD_REG, tag.mode2.forward);
 	outl(tag.mode2.port | reg, data);
@@ -266,137 +266,21 @@ not1:
 }
 
 int
-pci_map_io(tag, reg, iobasep)
-	pcitag_t tag;
-	int reg;
-	int *iobasep;
-{
-	pcireg_t address;
-	int iobase;
-
-	if (reg < PCI_MAP_REG_START || reg >= PCI_MAP_REG_END || (reg & 3))
-		panic("pci_map_io: bad request");
-
-	address = pci_conf_read(tag, reg);
-
-	if ((address & PCI_MAP_IO) == 0)
-		panic("pci_map_io: attempt to I/O map a memory region");
-
-	iobase = address & PCI_MAP_IO_ADDRESS_MASK;
-	*iobasep = iobase;
-
-	return 0;
-}
-
-int
-pci_map_mem(tag, reg, vap, pap)
-	pcitag_t tag;
-	int reg;
-	vm_offset_t *vap, *pap;
-{
-	pcireg_t address, mask;
-	int cachable;
-	vm_size_t size;
-	vm_offset_t va, pa;
-
-	if (reg < PCI_MAP_REG_START || reg >= PCI_MAP_REG_END || (reg & 3))
-		panic("pci_map_mem: bad request");
-
-	/*
-	 * Section 6.2.5.1, `Address Maps', tells us that:
-	 *
-	 * 1) The builtin software should have already mapped the device in a
-	 * reasonable way.
-	 *
-	 * 2) A device which wants 2^n bytes of memory will hardwire the bottom
-	 * n bits of the address to 0.  As recommended, we write all 1s and see
-	 * what we get back.
-	 */
-	address = pci_conf_read(tag, reg);
-	pci_conf_write(tag, reg, 0xffffffff);
-	mask = pci_conf_read(tag, reg);
-	pci_conf_write(tag, reg, address);
-
-	if ((address & PCI_MAP_IO) != 0)
-		panic("pci_map_mem: attempt to memory map an I/O region");
-
-	switch (address & PCI_MAP_MEMORY_TYPE_MASK) {
-	case PCI_MAP_MEMORY_TYPE_32BIT:
-	case PCI_MAP_MEMORY_TYPE_32BIT_1M:
-		break;
-	case PCI_MAP_MEMORY_TYPE_64BIT:
-		printf("pci_map_mem: attempt to map 64-bit region\n");
-		return EOPNOTSUPP;
-	default:
-		printf("pci_map_mem: reserved mapping type\n");
-		return EINVAL;
-	}
-
-	pa = address & PCI_MAP_MEMORY_ADDRESS_MASK;
-	size = -(mask & PCI_MAP_MEMORY_ADDRESS_MASK);
-	if (size < NBPG)
-		size = NBPG;
-
-	va = kmem_alloc_pageable(kernel_map, size);
-	if (va == 0) {
-		printf("pci_map_mem: not enough memory\n");
-		return ENOMEM;
-	}
-
-	/*
-	 * Tell the driver where we mapped it.
-	 *
-	 * If the region is smaller than one page, adjust the virtual address
-	 * to the same page offset as the physical address.
-	 */
-	*vap = va + (pa & PGOFSET);
-	*pap = pa;
-
-#if 1
-	printf("pci_map_mem: mapping memory at virtual %08x, physical %08x\n", *vap, *pap);
-#endif
-
-	/* Map the space into the kernel page table. */
-	cachable = !!(address & PCI_MAP_MEMORY_CACHABLE);
-	pa &= ~PGOFSET;
-	while (size) {
-		pmap_enter(pmap_kernel(), va, pa, VM_PROT_READ | VM_PROT_WRITE,
-		    TRUE);
-		if (!cachable)
-			pmap_changebit(pa, PG_N, ~0);
-		else
-			pmap_changebit(pa, 0, ~PG_N);
-		va += NBPG;
-		pa += NBPG;
-		size -= NBPG;
-	}
-
-	return 0;
-}
-
-void *
-pci_map_int(tag, level, func, arg)
-	pcitag_t tag;
-	pci_intrlevel level;
-	int (*func) __P((void *));
-	void *arg;
-{
-	pcireg_t data;
+pci_intr_map(pc, intrtag, pin, line, ihp)
+	pci_chipset_tag_t pc;
+	pcitag_t intrtag;
 	int pin, line;
-
-	data = pci_conf_read(tag, PCI_INTERRUPT_REG);
-
-	pin = PCI_INTERRUPT_PIN(data);
-	line = PCI_INTERRUPT_LINE(data);
+	pci_intr_handle_t *ihp;
+{
 
 	if (pin == 0) {
 		/* No IRQ used. */
-		return 0;
+		goto bad;
 	}
 
 	if (pin > 4) {
-		printf("pci_map_int: bad interrupt pin %d\n", pin);
-		return NULL;
+		printf("pci_intr_map: bad interrupt pin %d\n", pin);
+		goto bad;
 	}
 
 	/*
@@ -414,49 +298,62 @@ pci_map_int(tag, level, func, arg)
 	 * the BIOS has not configured the device.
 	 */
 	if (line == 0 || line == 255) {
-		printf("pci_map_int: no mapping for pin %c\n", '@' + pin);
-		return NULL;
+		printf("pci_intr_map: no mapping for pin %c\n", '@' + pin);
+		goto bad;
 	} else {
 		if (line >= ICU_LEN) {
-			printf("pci_map_int: bad interrupt line %d\n", line);
-			return NULL;
+			printf("pci_intr_map: bad interrupt line %d\n", line);
+			goto bad;
 		}
 		if (line == 2) {
-			printf("pci_map_int: changed line 2 to line 9\n");
+			printf("pci_intr_map: changed line 2 to line 9\n");
 			line = 9;
 		}
 	}
 
-#if 1
-	printf("pci_map_int: pin %c mapped to line %d\n", '@' + pin, line);
-#endif
+	*ihp = line;
+	return 0;
 
-	return isa_intr_establish(line, ISA_IST_LEVEL, pcilevel_to_isa(level),
-	    func, arg);
+bad:
+	*ihp = -1;
+	return 1;
 }
 
-static isa_intrlevel
-pcilevel_to_isa(level)
-	pci_intrlevel level;
+const char *
+pci_intr_string(pc, ih)
+	pci_chipset_tag_t pc;
+	pci_intr_handle_t ih;
+{
+	static char irqstr[8];		/* 4 + 2 + NULL + sanity */
+
+	if (ih == 0 || ih >= ICU_LEN || ih == 2)
+		panic("pci_intr_string: bogus handle 0x%x\n", ih);
+
+	sprintf(irqstr, "irq %d", ih);
+	return (irqstr);
+	
+}
+
+void *
+pci_intr_establish(pc, ih, level, func, arg, what)
+	pci_chipset_tag_t pc;
+	pci_intr_handle_t ih;
+	int level, (*func) __P((void *));
+	void *arg;
+	char *what;
 {
 
-	switch (level) {
-	case PCI_IPL_NONE:
-		return (ISA_IPL_NONE);
+	if (ih == 0 || ih >= ICU_LEN || ih == 2)
+		panic("pci_intr_establish: bogus handle 0x%x\n", ih);
 
-	case PCI_IPL_BIO:
-		return (ISA_IPL_BIO);
+	return isa_intr_establish(NULL, ih, IST_LEVEL, level, func, arg, what);
+}
 
-	case PCI_IPL_NET:
-		return (ISA_IPL_NET);
+void
+pci_intr_disestablish(pc, cookie)
+	pci_chipset_tag_t pc;
+	void *cookie;
+{
 
-	case PCI_IPL_TTY:
-		return (ISA_IPL_TTY);
-
-	case PCI_IPL_CLOCK:
-		return (ISA_IPL_CLOCK);
-
-	default:
-		panic("pcilevel_to_isa: unknown level %d\n", level);
-	}
+	return isa_intr_disestablish(NULL, cookie);
 }

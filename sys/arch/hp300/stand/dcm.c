@@ -1,4 +1,5 @@
-/*	$NetBSD: dcm.c,v 1.8 1995/10/04 06:54:45 thorpej Exp $	*/
+/*	$OpenBSD: dcm.c,v 1.4 1997/02/03 04:48:02 downsj Exp $	*/
+/*	$NetBSD: dcm.c,v 1.2 1997/04/14 05:58:32 scottr Exp $	*/
 
 /*
  * Copyright (c) 1988 University of Utah.
@@ -44,12 +45,15 @@
 #include <sys/param.h>
 #include <dev/cons.h>
 
-#include <hp300/dev/device.h>
 #include <hp300/dev/dcmreg.h>
+
 #include <hp300/stand/consdefs.h>
 #include <hp300/stand/samachdep.h>
+#include <hp300/stand/device.h>
 
 struct dcmdevice *dcmcnaddr = NULL;
+
+#define	DCMCONUNIT	1	/* XXX */
 
 void
 dcmprobe(cp)
@@ -68,6 +72,9 @@ dcmprobe(cp)
 	}
 	dcmcnaddr = (struct dcmdevice *) hw->hw_kva;
 
+#ifdef FORCEDCMCONSOLE
+	cp->cn_pri = CN_REMOTE;
+#else
 	dcm = dcmcnaddr;
 	switch (dcm->dcm_rsid) {
 	case DCMID:
@@ -82,6 +89,7 @@ dcmprobe(cp)
 	}
 
 	curcons_scode = hw->hw_sc;
+#endif
 }
 
 void
@@ -89,7 +97,7 @@ dcminit(cp)
 	struct consdev *cp;
 {
 	register struct dcmdevice *dcm = dcmcnaddr;
-	register int port = CONUNIT;
+	register int port = DCMCONUNIT;
 
 	dcm->dcm_ic = IC_ID;
 	while (dcm->dcm_thead[port].ptr != dcm->dcm_ttail[port].ptr)
@@ -115,7 +123,7 @@ dcmgetchar(dev)
 	register unsigned head;
 	int c, stat, port;
 
-	port = CONUNIT;
+	port = DCMCONUNIT;
 	pp = dcm_preg(dcm, port);
 	head = pp->r_head & RX_MASK;
 	if (head == (pp->r_tail & RX_MASK))
@@ -150,7 +158,7 @@ dcmputchar(dev, c)
 	unsigned tail;
 	int port, stat;
 
-	port = CONUNIT;
+	port = DCMCONUNIT;
 	pp = dcm_preg(dcm, port);
 	tail = pp->t_tail & TX_MASK;
 	timo = 50000;

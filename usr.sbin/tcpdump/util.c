@@ -1,7 +1,5 @@
-/*	$NetBSD: util.c,v 1.3 1995/03/06 19:11:53 mycroft Exp $	*/
-
 /*
- * Copyright (c) 1990, 1991, 1993, 1994
+ * Copyright (c) 1990, 1991, 1993, 1994, 1995, 1996
  *	The Regents of the University of California.  All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -22,30 +20,32 @@
  */
 
 #ifndef lint
-static char rcsid[] =
-    "@(#) Header: util.c,v 1.28 94/06/12 14:30:31 leres Exp (LBL)";
+static const char rcsid[] =
+    "@(#) $Header: util.c,v 1.55 96/09/26 23:36:51 leres Exp $ (LBL)";
 #endif
 
-#include <stdlib.h>
 #include <sys/types.h>
 #include <sys/time.h>
 #include <sys/file.h>
 #include <sys/stat.h>
 
 #include <ctype.h>
-#ifdef SOLARIS
+#include <errno.h>
+#ifdef HAVE_FCNTL_H
 #include <fcntl.h>
 #endif
-#ifdef __STDC__
-#include <stdlib.h>
-#endif
+#include <pcap.h>
 #include <stdio.h>
 #if __STDC__
 #include <stdarg.h>
 #else
 #include <varargs.h>
 #endif
+#include <stdlib.h>
 #include <string.h>
+#ifdef TIME_WITH_SYS_TIME
+#include <time.h>
+#endif
 #include <unistd.h>
 
 #include "interface.h"
@@ -62,7 +62,6 @@ fn_print(register const u_char *s, register const u_char *ep)
 	register u_char c;
 
 	ret = 1;			/* assume truncated */
-	putchar('"');
 	while (ep == NULL || s < ep) {
 		c = *s++;
 		if (c == '\0') {
@@ -80,7 +79,6 @@ fn_print(register const u_char *s, register const u_char *ep)
 		}
 		putchar(c);
 	}
-	putchar('"');
 	return(ret);
 }
 
@@ -97,7 +95,6 @@ fn_printn(register const u_char *s, register u_int n,
 	register u_char c;
 
 	ret = 1;			/* assume truncated */
-	putchar('"');
 	while (ep == NULL || s < ep) {
 		if (n-- <= 0) {
 			ret = 0;
@@ -115,7 +112,6 @@ fn_printn(register const u_char *s, register u_int n,
 		}
 		putchar(c);
 	}
-	putchar('"');
 	return(ret);
 }
 
@@ -126,16 +122,16 @@ void
 ts_print(register const struct timeval *tvp)
 {
 	register int s;
-	extern int32 thiszone;
 
 	if (tflag > 0) {
 		/* Default */
 		s = (tvp->tv_sec + thiszone) % 86400;
-		(void)printf("%02d:%02d:%02d.%06d ",
-		    s / 3600, (s % 3600) / 60, s % 60, tvp->tv_usec);
+		(void)printf("%02d:%02d:%02d.%06u ",
+		    s / 3600, (s % 3600) / 60, s % 60, (u_int32_t)tvp->tv_usec);
 	} else if (tflag < 0) {
 		/* Unix timeval style */
-		(void)printf("%d.%06d ", tvp->tv_sec, tvp->tv_usec);
+		(void)printf("%u.%06u ",
+		    (u_int32_t)tvp->tv_sec, (u_int32_t)tvp->tv_usec);
 	}
 }
 
@@ -143,7 +139,7 @@ ts_print(register const struct timeval *tvp)
  * Convert a token value to a string; use "fmt" if not found.
  */
 const char *
-tok2str(register const struct token *lp, register const char *fmt,
+tok2str(register const struct tok *lp, register const char *fmt,
 	register int v)
 {
 	static char buf[128];
@@ -159,61 +155,14 @@ tok2str(register const struct token *lp, register const char *fmt,
 	return (buf);
 }
 
-/* A replacement for strdup() that cuts down on malloc() overhead */
-char *
-savestr(register const char *str)
-{
-	register u_int size;
-	register char *p;
-	static char *strptr = NULL;
-	static u_int strsize = 0;
-
-	size = strlen(str) + 1;
-	if (size > strsize) {
-		strsize = 1024;
-		if (strsize < size)
-			strsize = size;
-		strptr = malloc(strsize);
-		if (strptr == NULL)
-			error("savestr: malloc");
-	}
-	(void)strcpy(strptr, str);
-	p = strptr;
-	strptr += size;
-	strsize -= size;
-	return (p);
-}
-
-#ifdef NOVFPRINTF
-/*
- * Stock 4.3 doesn't have vfprintf.
- * This routine is due to Chris Torek.
- */
-vfprintf(f, fmt, args)
-	FILE *f;
-	char *fmt;
-	va_list args;
-{
-	int ret;
-
-	if ((f->_flag & _IOWRT) == 0) {
-		if (f->_flag & _IORW)
-			f->_flag |= _IOWRT;
-		else
-			return EOF;
-	}
-	ret = _doprnt(fmt, args, f);
-	return ferror(f) ? EOF : ret;
-}
-#endif
 
 /* VARARGS */
 __dead void
-#if __STDC__ || defined(SOLARIS)
-error(char *fmt, ...)
+#if __STDC__
+error(const char *fmt, ...)
 #else
 error(fmt, va_alist)
-	char *fmt;
+	const char *fmt;
 	va_dcl
 #endif
 {
@@ -238,17 +187,17 @@ error(fmt, va_alist)
 
 /* VARARGS */
 void
-#if __STDC__ || defined(SOLARIS)
-warning(char *fmt, ...)
+#if __STDC__
+warning(const char *fmt, ...)
 #else
 warning(fmt, va_alist)
-	char *fmt;
+	const char *fmt;
 	va_dcl
 #endif
 {
 	va_list ap;
 
-	(void)fprintf(stderr, "%s: warning: ", program_name);
+	(void)fprintf(stderr, "%s: WARNING: ", program_name);
 #if __STDC__
 	va_start(ap, fmt);
 #else
@@ -270,7 +219,7 @@ char *
 copy_argv(register char **argv)
 {
 	register char **p;
-	register int len = 0;
+	register u_int len = 0;
 	char *buf;
 	char *src, *dst;
 
@@ -281,7 +230,9 @@ copy_argv(register char **argv)
 	while (*p)
 		len += strlen(*p++) + 1;
 
-	buf = malloc(len);
+	buf = (char *)malloc(len);
+	if (buf == NULL)
+		error("copy_argv: malloc");
 
 	p = argv;
 	dst = buf;
@@ -295,43 +246,84 @@ copy_argv(register char **argv)
 	return buf;
 }
 
+/* A replacement for strdup() that cuts down on malloc() overhead */
+char *
+savestr(register const char *str)
+{
+	register u_int size;
+	register char *p;
+	static char *strptr = NULL;
+	static u_int strsize = 0;
+
+	size = strlen(str) + 1;
+	if (size > strsize) {
+		strsize = 1024;
+		if (strsize < size)
+			strsize = size;
+		strptr = (char *)malloc(strsize);
+		if (strptr == NULL)
+			error("savestr: malloc");
+	}
+	(void)strcpy(strptr, str);
+	p = strptr;
+	strptr += size;
+	strsize -= size;
+	return (p);
+}
+
 char *
 read_infile(char *fname)
 {
+	register int fd, cc;
+	register char *cp;
 	struct stat buf;
-	int fd;
-	char *p;
 
 	fd = open(fname, O_RDONLY);
 	if (fd < 0)
-		error("can't open '%s'", fname);
+		error("can't open %s: %s", fname, pcap_strerror(errno));
 
 	if (fstat(fd, &buf) < 0)
-		error("can't state '%s'", fname);
+		error("can't stat %s: %s", fname, pcap_strerror(errno));
 
-	p = malloc((u_int)buf.st_size);
-	if (read(fd, p, (int)buf.st_size) != buf.st_size)
-		error("problem reading '%s'", fname);
+	cp = malloc((u_int)buf.st_size + 1);
+	cc = read(fd, cp, (int)buf.st_size);
+	if (cc < 0)
+		error("read %s: %s", fname, pcap_strerror(errno));
+	if (cc != buf.st_size)
+		error("short read %s (%d != %d)", fname, cc, (int)buf.st_size);
+	cp[(int)buf.st_size] = '\0';
 
-	return p;
+	return (cp);
 }
 
-int
-gmt2local()
+/*
+ * Returns the difference between gmt and local time in seconds.
+ * Use gmtime() and localtime() to keep things simple.
+ */
+int32_t
+gmt2local(void)
 {
-#ifndef SOLARIS
-	struct timeval now;
-	struct timezone tz;
-	long t;
+	register int dt, dir;
+	register struct tm *gmt, *loc;
+	time_t t;
+	struct tm sgmt;
 
-	if (gettimeofday(&now, &tz) < 0)
-		error("gettimeofday");
-	t = tz.tz_minuteswest * -60;
-	if (localtime((time_t *)&now.tv_sec)->tm_isdst)
-		t += 3600;
-	return (t);
-#else
-	tzset();
-	return (-altzone);
-#endif
+	t = time(NULL);
+	gmt = &sgmt;
+	*gmt = *gmtime(&t);
+	loc = localtime(&t);
+	dt = (loc->tm_hour - gmt->tm_hour) * 60 * 60 +
+	    (loc->tm_min - gmt->tm_min) * 60;
+
+	/*
+	 * If the year or julian day is different, we span 00:00 GMT
+	 * and must add or subtract a day. Check the year first to
+	 * avoid problems when the julian day wraps.
+	 */
+	dir = loc->tm_year - gmt->tm_year;
+	if (dir == 0)
+		dir = loc->tm_yday - gmt->tm_yday;
+	dt += dir * 24 * 60 * 60;
+
+	return (dt);
 }

@@ -1,3 +1,5 @@
+/*	$OpenBSD: $	*/
+
 /*
  * Copyright (c) 1983, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -38,7 +40,11 @@ static char copyright[] =
 #endif /* not lint */
 
 #ifndef lint
+#if 0
 static char sccsid[] = "@(#)lpf.c	8.1 (Berkeley) 6/6/93";
+#else
+static char rcsid[] = "$OpenBSD: $";
+#endif
 #endif /* not lint */
 
 /*
@@ -66,6 +72,7 @@ int	length = 66;	/* page length */
 int	indent;		/* indentation length */
 int	npages = 1;
 int	literal;	/* print control characters */
+int	onlcr;		/* map nl->cr-nl */
 char	*name;		/* user's login name */
 char	*host;		/* user's machine name */
 char	*acctfile;	/* accounting information file */
@@ -105,6 +112,10 @@ main(argc, argv)
 
 			case 'i':
 				indent = atoi(&cp[2]);
+				break;
+
+			case 'r':	/* map nl->cr-nl */
+				onlcr++;
 				break;
 
 			case 'c':	/* Print control chars */
@@ -195,8 +206,11 @@ main(argc, argv)
 			}
 			if (i < maxrep)
 				putc('\r', o);
-			else
+			else {
+				if (onlcr)
+					putc('\r', o);
 				putc(ch, o);
+			}
 			if (++lineno >= length) {
 				fflush(o);
 				npages++;

@@ -1,3 +1,5 @@
+/*	$OpenBSD$	*/
+
 /*
  * Copyright (c) 1988, 1993, 1994
  *	The Regents of the University of California.  All rights reserved.
@@ -39,7 +41,7 @@ static char copyright[] =
 
 #ifndef lint
 /* from: static char sccsid[] = "@(#)chown.c	8.8 (Berkeley) 4/4/94"; */
-static char *rcsid = "$Id: chown.c,v 1.7 1995/06/03 07:01:19 jtc Exp $";
+static char *rcsid = "$Id: chown.c,v 1.3 1997/01/17 07:13:57 millert Exp $";
 #endif /* not lint */
 
 #include <sys/param.h>
@@ -78,11 +80,11 @@ main(argc, argv)
 	int Hflag, Lflag, Pflag, ch, fts_options, hflag, rval;
 	char *cp;
 	
-	myname = (cp = rindex(*argv, '/')) ? cp + 1 : *argv;
+	myname = (cp = strrchr(*argv, '/')) ? cp + 1 : *argv;
 	ischown = myname[2] == 'o';
 	
 	Hflag = Lflag = Pflag = hflag = 0;
-	while ((ch = getopt(argc, argv, "HLPRfh")) != EOF)
+	while ((ch = getopt(argc, argv, "HLPRfh")) != -1)
 		switch (ch) {
 		case 'H':
 			Hflag = 1;
@@ -103,13 +105,6 @@ main(argc, argv)
 			fflag = 1;
 			break;
 		case 'h':
-			/*
-			 * In System V (and probably POSIX.2) the -h option
-			 * causes chown/chgrp to change the owner/group of
-			 * the symbolic link.  4.4BSD's symbolic links don't
-			 * have owners/groups, so it's an undocumented noop.
-			 * Do syntax checking, though.
-			 */
 			hflag = 1;
 			break;
 		case '?':
@@ -169,19 +164,17 @@ main(argc, argv)
 			warnx("%s: %s", p->fts_path, strerror(p->fts_errno));
 			rval = 1;
 			continue;
-		case FTS_SL:			/* Ignore. */
+		case FTS_SL:
 		case FTS_SLNONE:
-			/*
-			 * The only symlinks that end up here are ones that
-			 * don't point to anything and ones that we found
-			 * doing a physical walk.
-			 */
-			continue;
+			if (!hflag)
+				continue;
+			/*FALLTHROUGH*/
 		default:
 			break;
 		}
 
-		if (chown(p->fts_accpath, uid, gid) && !fflag) {
+		if ((hflag ? lchown(p->fts_accpath, uid, gid) :
+		     chown(p->fts_accpath, uid, gid)) && !fflag) {
 			warn("%s", p->fts_path);
 			rval = 1;
 		}

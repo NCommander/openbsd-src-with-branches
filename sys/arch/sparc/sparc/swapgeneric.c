@@ -1,4 +1,4 @@
-/*	$NetBSD: swapgeneric.c,v 1.7 1995/02/16 21:42:52 pk Exp $ */
+/*	$NetBSD: swapgeneric.c,v 1.8 1996/03/14 21:09:32 christos Exp $ */
 
 /*-
  * Copyright (c) 1994
@@ -41,8 +41,9 @@
 
 #include <sys/param.h>
 #include <sys/conf.h>
+#include <sys/systm.h>
 
-int (*mountroot)() = NULL;	/* tells autoconf.c that we are "generic" */
+int (*mountroot) __P((void)) = NULL;	/* tells autoconf.c that we are "generic" */
 
 dev_t	rootdev = NODEV;
 dev_t	dumpdev = NODEV;

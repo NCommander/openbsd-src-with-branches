@@ -1,4 +1,5 @@
-/*	$NetBSD: signal.h,v 1.19 1995/08/13 22:51:24 mycroft Exp $	*/
+/*	$OpenBSD: signal.h,v 1.5 1996/10/29 01:35:57 tholo Exp $	*/
+/*	$NetBSD: signal.h,v 1.21 1996/02/09 18:25:32 christos Exp $	*/
 
 /*
  * Copyright (c) 1982, 1986, 1989, 1991, 1993
@@ -43,6 +44,7 @@
 #ifndef	_SYS_SIGNAL_H_
 #define	_SYS_SIGNAL_H_
 
+#include <sys/cdefs.h>
 #include <machine/signal.h>	/* sigcontext; codes for SIGILL, SIGFPE */
 
 #define _NSIG	32		/* counting 0; could be 33 (mask is 1-32) */
@@ -96,19 +98,13 @@
 #define SIGUSR1 30	/* user defined signal 1 */
 #define SIGUSR2 31	/* user defined signal 2 */
 
-#if defined(_ANSI_SOURCE) || defined(__cplusplus)
 /*
  * Language spec sez we must list exactly one parameter, even though we
  * actually supply three.  Ugh!
  */
-#define	SIG_DFL		(void (*)(int))0
-#define	SIG_IGN		(void (*)(int))1
-#define	SIG_ERR		(void (*)(int))-1
-#else
-#define	SIG_DFL		(void (*)())0
-#define	SIG_IGN		(void (*)())1
-#define	SIG_ERR		(void (*)())-1
-#endif
+#define	SIG_DFL		(void (*)__P((int)))0
+#define	SIG_IGN		(void (*)__P((int)))1
+#define	SIG_ERR		(void (*)__P((int)))-1
 
 #ifndef _ANSI_SOURCE
 typedef unsigned int sigset_t;
@@ -117,7 +113,7 @@ typedef unsigned int sigset_t;
  * Signal vector "template" used in sigaction call.
  */
 struct	sigaction {
-	void	(*sa_handler)();	/* signal handler */
+	void	(*sa_handler) __P((int)); /* signal handler */
 	sigset_t sa_mask;		/* signal mask to apply */
 	int	sa_flags;		/* see signal options below */
 };
@@ -131,6 +127,7 @@ struct	sigaction {
 #endif
 #endif
 #define SA_NOCLDSTOP	0x0008	/* do not generate SIGCHLD on child stop */
+#define SA_SIGINFO	0x0040	/* generate siginfo_t */
 
 /*
  * Flags for sigprocmask:
@@ -149,7 +146,7 @@ typedef	void (*sig_t) __P((int));	/* type of signal function */
  * Structure used in sigaltstack call.
  */
 struct	sigaltstack {
-	char	*ss_base;		/* signal stack base */
+	char	*ss_sp;			/* signal stack base */
 	int	ss_size;		/* signal stack length */
 	int	ss_flags;		/* SS_DISABLE and/or SS_ONSTACK */
 };
@@ -163,7 +160,7 @@ struct	sigaltstack {
  * Signal vector "template" used in sigvec call.
  */
 struct	sigvec {
-	void	(*sv_handler)();	/* signal handler */
+	void	(*sv_handler) __P((int)); /* signal handler */
 	int	sv_mask;		/* signal mask to apply */
 	int	sv_flags;		/* see signal options below */
 };
@@ -187,6 +184,8 @@ struct	sigstack {
 #define sigmask(m)	(1 << ((m)-1))
 
 #define	BADSIG		SIG_ERR
+
+#include <sys/siginfo.h>
 
 #endif	/* !_POSIX_SOURCE */
 #endif	/* !_ANSI_SOURCE */

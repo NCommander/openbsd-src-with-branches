@@ -1,3 +1,5 @@
+/*	$OpenBSD: upap.c,v 1.3 1996/07/20 12:02:14 joshd Exp $	*/
+
 /*
  * upap.c - User/Password Authentication Protocol.
  *
@@ -18,7 +20,7 @@
  */
 
 #ifndef lint
-static char rcsid[] = "$Id: upap.c,v 1.6 1995/07/04 23:48:10 paulus Exp $";
+static char rcsid[] = "$OpenBSD: upap.c,v 1.3 1996/07/20 12:02:14 joshd Exp $";
 #endif
 
 /*
@@ -34,9 +36,37 @@ static char rcsid[] = "$Id: upap.c,v 1.6 1995/07/04 23:48:10 paulus Exp $";
 #include "pppd.h"
 #include "upap.h"
 
+/*
+ * Protocol entry points.
+ */
+static void upap_init __P((int));
+static void upap_lowerup __P((int));
+static void upap_lowerdown __P((int));
+static void upap_input __P((int, u_char *, int));
+static void upap_protrej __P((int));
+static int  upap_printpkt __P((u_char *, int,
+                               void (*) __P((void *, char *, ...)), void *));
+
+struct protent pap_protent = {
+    PPP_PAP,
+    upap_init,
+    upap_input,
+    upap_protrej,
+    upap_lowerup,
+    upap_lowerdown,
+    NULL,
+    NULL,
+    upap_printpkt,
+    NULL,
+    1,
+    "PAP",
+    NULL,
+    NULL,
+    NULL
+
+};
 
 upap_state upap[NUM_PPP];		/* UPAP state; one for each unit */
-
 
 static void upap_timeout __P((caddr_t));
 static void upap_reqtimeout __P((caddr_t));
@@ -50,7 +80,7 @@ static void upap_sresp __P((upap_state *, int, int, char *, int));
 /*
  * upap_init - Initialize a UPAP unit.
  */
-void
+static void
 upap_init(unit)
     int unit;
 {
@@ -170,7 +200,7 @@ upap_reqtimeout(arg)
  *
  * Start authenticating if pending.
  */
-void
+static void
 upap_lowerup(unit)
     int unit;
 {
@@ -197,7 +227,7 @@ upap_lowerup(unit)
  *
  * Cancel all timeouts.
  */
-void
+static void
 upap_lowerdown(unit)
     int unit;
 {
@@ -218,7 +248,7 @@ upap_lowerdown(unit)
  *
  * This shouldn't happen.  In any case, pretend lower layer went down.
  */
-void
+static void
 upap_protrej(unit)
     int unit;
 {
@@ -239,7 +269,7 @@ upap_protrej(unit)
 /*
  * upap_input - Input UPAP packet.
  */
-void
+static void
 upap_input(unit, inpacket, l)
     int unit;
     u_char *inpacket;
@@ -256,18 +286,18 @@ upap_input(unit, inpacket, l)
      */
     inp = inpacket;
     if (l < UPAP_HEADERLEN) {
-	UPAPDEBUG((LOG_INFO, "upap_input: rcvd short header."));
+	UPAPDEBUG((LOG_INFO, "pap_input: rcvd short header."));
 	return;
     }
     GETCHAR(code, inp);
     GETCHAR(id, inp);
     GETSHORT(len, inp);
     if (len < UPAP_HEADERLEN) {
-	UPAPDEBUG((LOG_INFO, "upap_input: rcvd illegal length."));
+	UPAPDEBUG((LOG_INFO, "pap_input: rcvd illegal length."));
 	return;
     }
     if (len > l) {
-	UPAPDEBUG((LOG_INFO, "upap_input: rcvd short packet."));
+	UPAPDEBUG((LOG_INFO, "pap_input: rcvd short packet."));
 	return;
     }
     len -= UPAP_HEADERLEN;
@@ -310,7 +340,7 @@ upap_rauthreq(u, inp, id, len)
     char *msg;
     int msglen;
 
-    UPAPDEBUG((LOG_INFO, "upap_rauth: Rcvd id %d.", id));
+    UPAPDEBUG((LOG_INFO, "pap_rauth: Rcvd id %d.", id));
 
     if (u->us_serverstate < UPAPSS_LISTEN)
 	return;
@@ -332,20 +362,20 @@ upap_rauthreq(u, inp, id, len)
      * Parse user/passwd.
      */
     if (len < sizeof (u_char)) {
-	UPAPDEBUG((LOG_INFO, "upap_rauth: rcvd short packet."));
+	UPAPDEBUG((LOG_INFO, "pap_rauth: rcvd short packet."));
 	return;
     }
     GETCHAR(ruserlen, inp);
     len -= sizeof (u_char) + ruserlen + sizeof (u_char);
     if (len < 0) {
-	UPAPDEBUG((LOG_INFO, "upap_rauth: rcvd short packet."));
+	UPAPDEBUG((LOG_INFO, "pap_rauth: rcvd short packet."));
 	return;
     }
     ruser = (char *) inp;
     INCPTR(ruserlen, inp);
     GETCHAR(rpasswdlen, inp);
     if (len < rpasswdlen) {
-	UPAPDEBUG((LOG_INFO, "upap_rauth: rcvd short packet."));
+	UPAPDEBUG((LOG_INFO, "pap_rauth: rcvd short packet."));
 	return;
     }
     rpasswd = (char *) inp;
@@ -356,11 +386,12 @@ upap_rauthreq(u, inp, id, len)
     retcode = check_passwd(u->us_unit, ruser, ruserlen, rpasswd,
 			   rpasswdlen, &msg, &msglen);
 
+    BZERO(rpasswd, rpasswdlen);
     upap_sresp(u, retcode, id, msg, msglen);
 
     if (retcode == UPAP_AUTHACK) {
 	u->us_serverstate = UPAPSS_OPEN;
-	auth_peer_success(u->us_unit, PPP_PAP);
+        auth_peer_success(u->us_unit, PPP_PAP, ruser, ruserlen);
     } else {
 	u->us_serverstate = UPAPSS_BADAUTH;
 	auth_peer_fail(u->us_unit, PPP_PAP);
@@ -384,7 +415,7 @@ upap_rauthack(u, inp, id, len)
     u_char msglen;
     char *msg;
 
-    UPAPDEBUG((LOG_INFO, "upap_rauthack: Rcvd id %d.", id));
+    UPAPDEBUG((LOG_INFO, "pap_rauthack: Rcvd id %d.", id));
     if (u->us_clientstate != UPAPCS_AUTHREQ) /* XXX */
 	return;
 
@@ -392,13 +423,13 @@ upap_rauthack(u, inp, id, len)
      * Parse message.
      */
     if (len < sizeof (u_char)) {
-	UPAPDEBUG((LOG_INFO, "upap_rauthack: rcvd short packet."));
+	UPAPDEBUG((LOG_INFO, "pap_rauthack: rcvd short packet."));
 	return;
     }
     GETCHAR(msglen, inp);
     len -= sizeof (u_char);
     if (len < msglen) {
-	UPAPDEBUG((LOG_INFO, "upap_rauthack: rcvd short packet."));
+	UPAPDEBUG((LOG_INFO, "pap_rauthack: rcvd short packet."));
 	return;
     }
     msg = (char *) inp;
@@ -423,7 +454,7 @@ upap_rauthnak(u, inp, id, len)
     u_char msglen;
     char *msg;
 
-    UPAPDEBUG((LOG_INFO, "upap_rauthnak: Rcvd id %d.", id));
+    UPAPDEBUG((LOG_INFO, "pap_rauthnak: Rcvd id %d.", id));
     if (u->us_clientstate != UPAPCS_AUTHREQ) /* XXX */
 	return;
 
@@ -431,13 +462,13 @@ upap_rauthnak(u, inp, id, len)
      * Parse message.
      */
     if (len < sizeof (u_char)) {
-	UPAPDEBUG((LOG_INFO, "upap_rauthnak: rcvd short packet."));
+	UPAPDEBUG((LOG_INFO, "pap_rauthnak: rcvd short packet."));
 	return;
     }
     GETCHAR(msglen, inp);
     len -= sizeof (u_char);
     if (len < msglen) {
-	UPAPDEBUG((LOG_INFO, "upap_rauthnak: rcvd short packet."));
+	UPAPDEBUG((LOG_INFO, "pap_rauthnak: rcvd short packet."));
 	return;
     }
     msg = (char *) inp;
@@ -477,7 +508,7 @@ upap_sauthreq(u)
 
     output(u->us_unit, outpacket_buf, outlen + PPP_HDRLEN);
 
-    UPAPDEBUG((LOG_INFO, "upap_sauth: Sent id %d.", u->us_id));
+    UPAPDEBUG((LOG_INFO, "pap_sauth: Sent id %d.", u->us_id));
 
     TIMEOUT(upap_timeout, (caddr_t) u, u->us_timeouttime);
     ++u->us_transmits;
@@ -509,17 +540,17 @@ upap_sresp(u, code, id, msg, msglen)
     BCOPY(msg, outp, msglen);
     output(u->us_unit, outpacket_buf, outlen + PPP_HDRLEN);
 
-    UPAPDEBUG((LOG_INFO, "upap_sresp: Sent code %d, id %d.", code, id));
+    UPAPDEBUG((LOG_INFO, "pap_sresp: Sent code %d, id %d.", code, id));
 }
 
 /*
  * upap_printpkt - print the contents of a PAP packet.
  */
-char *upap_codenames[] = {
+static char *upap_codenames[] = {
     "AuthReq", "AuthAck", "AuthNak"
 };
 
-int
+static int
 upap_printpkt(p, plen, printer, arg)
     u_char *p;
     int plen;
@@ -575,7 +606,7 @@ upap_printpkt(p, plen, printer, arg)
 	msg = (char *) (p + 1);
 	p += mlen + 1;
 	len -= mlen + 1;
-	printer(arg, "msg=");
+	printer(arg, " ");
 	print_string(msg, mlen, printer, arg);
 	break;
     }

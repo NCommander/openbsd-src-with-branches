@@ -1,4 +1,4 @@
-/*	$NetBSD: sii.c,v 1.8 1995/09/13 19:35:58 jonathan Exp $	*/
+/*	$NetBSD: sii.c,v 1.20 1996/10/22 23:15:10 mhitch Exp $	*/
 
 /*-
  * Copyright (c) 1992, 1993
@@ -60,68 +60,36 @@
 #endif
 
 #include <machine/autoconf.h>
-#include <machine/machConst.h>
+
+/* old 4.4bsd/pmax scsi drivers */
 #include <pmax/dev/device.h>
 #include <pmax/dev/scsi.h>
 #include <pmax/dev/siireg.h>
+#include <pmax/dev/siivar.h>
 
-#include <pmax/pmax/kn01.h>
 
-typedef struct scsi_state {
-	int	statusByte;	/* status byte returned during STATUS_PHASE */
-	int	dmaDataPhase;	/* which data phase to expect */
-	int	dmaCurPhase;	/* SCSI phase if DMA is in progress */
-	int	dmaPrevPhase;	/* SCSI phase of DMA suspended by disconnect */
-	u_short	*dmaAddr[2];	/* DMA buffer memory address */
-	int	dmaBufIndex;	/* which of the above is currently in use */
-	int	dmalen;		/* amount to transfer in this chunk */
-	int	cmdlen;		/* total remaining amount of cmd to transfer */
-	u_char	*cmd;		/* current pointer within scsicmd->cmd */
-	int	buflen;		/* total remaining amount of data to transfer */
-	char	*buf;		/* current pointer within scsicmd->buf */
-	u_short	flags;		/* see below */
-	u_short	prevComm;	/* command reg before disconnect */
-	u_short	dmaCtrl;	/* DMA control register if disconnect */
-	u_short	dmaAddrL;	/* DMA address register if disconnect */
-	u_short	dmaAddrH;	/* DMA address register if disconnect */
-	u_short	dmaCnt;		/* DMA count if disconnect */
-	u_short	dmaByte;	/* DMA byte if disconnect on odd boundary */
-	u_short	dmaReqAck;	/* DMA synchronous xfer offset or 0 if async */
-} State;
-
-/* state flags */
-#define FIRST_DMA	0x01	/* true if no data DMA started yet */
-#define PARITY_ERR	0x02	/* true if parity error seen */
-
-#define SII_NCMD	7
-struct siisoftc {
-	struct device sc_dev;		/* us as a device */
-	SIIRegs	*sc_regs;		/* HW address of SII controller chip */
-	int	sc_flags;
-	int	sc_target;		/* target SCSI ID if connected */
-	ScsiCmd	*sc_cmd[SII_NCMD];	/* active command indexed by ID */
-	State	sc_st[SII_NCMD];	/* state info for each active command */
-#ifdef NEW_SCSI
-	struct scsi_link sc_link;		/* scsi lint struct */
-#endif
-};
+/* Machine-indepedent back-end attach entry point */
+void	siiattach __P((struct siisoftc *sc));
 
 /*
- * Device definition for autoconfiguration.
- * 
+ * Autoconfig definition of driver front-end
  */
-int	siimatch  __P((struct device * parent, void *cfdata, void *aux));
-void	siiattach __P((struct device *parent, struct device *self, void *aux));
-int	siiprint(void*, char*);
+#include <machine/machConst.h>
+int	old_siimatch  __P((struct device * parent, void *cfdata, void *aux));
+void	old_siiattach __P((struct device *parent, struct device *self, void *aux));
 
-int sii_doprobe __P((void *addr, int unit, int flags, int pri,
-		     struct device *self));
-int siiintr __P((void *sc));
-
-extern struct cfdriver siicd;
-struct  cfdriver siicd = {
-	NULL, "sii", siimatch, siiattach, DV_DULL, sizeof(struct siisoftc)
+extern struct cfattach sii_ca;
+struct cfattach sii_ca = {
+	sizeof(struct siisoftc), old_siimatch, old_siiattach
 };
+
+extern struct cfdriver sii_cd;
+struct  cfdriver sii_cd = {
+	NULL, "sii", DV_DULL
+};
+
+int	siiprint(void*, const char*);
+int siiintr __P((void *sc));
 
 #ifdef USE_NEW_SCSI
 /* Glue to the machine-independent scsi */
@@ -144,13 +112,6 @@ struct scsi_device sii_dev = {
 };
 #endif
 
-/*
- * Definition of the controller for the old auto-configuration program.
- */
-void	siistart();
-struct	pmax_driver siidriver = {
-	"sii", NULL, siistart, 0,
-};
 
 /*
  * MACROS for timing out spin loops.
@@ -204,56 +165,98 @@ u_char	sii_buf[256];	/* used for extended messages */
 #define NOWAIT	0
 #define WAIT	1
 
-/* define a safe address in the SCSI buffer for doing status & message DMA */
-#define SII_BUF_ADDR	(MACH_PHYS_TO_UNCACHED(KN01_SYS_SII_B_START) \
-		+ SII_MAX_DMA_XFER_LENGTH * 14)
 
-static void sii_Reset();
-static void sii_StartCmd();
-static void sii_CmdDone();
-static void sii_DoIntr();
-static void sii_StateChg();
-static void sii_DoSync();
-static void sii_StartDMA();
-static int sii_GetByte();
+/*
+ * Define a safe address in the SCSI buffer for doing status & message DMA 
+ * XXX why not add another field to softc?
+ */
+#define SII_BUF_ADDR(sc)	((sc)->sc_buf + SII_MAX_DMA_XFER_LENGTH * 14)
 
+/*
+ * Other forward references
+ */
+
+static void sii_Reset __P((register struct siisoftc *sc, int resetbus));
+static void sii_StartCmd __P((register struct siisoftc *sc, int target));
+static void sii_CmdDone __P((register struct siisoftc *sc, int target,
+			     int error));
+static void sii_DoIntr __P((register struct siisoftc *sc, u_int dstat));
+static void sii_StateChg __P((register struct siisoftc *sc, u_int cstat));
+static int  sii_GetByte __P((register SIIRegs *regs, int phase, int ack));
+static void sii_DoSync __P((register SIIRegs *regs, register State *state));
+static void sii_StartDMA __P((register SIIRegs *regs, int phase,
+			      u_short *dmaAddr, int size));
+
+void siistart __P((register ScsiCmd *scsicmd));
+void sii_DumpLog __P((void));
+
+void  CopyToBuffer __P((u_short *src, 	/* NOTE: must be short aligned */
+			volatile u_short *dst, int length));
+void CopyFromBuffer __P((volatile u_short *src, char *dst, int length));
+
+
+/*
+ * Definition of the controller for the old-style, non-MI
+ * pmax scsi drivers, and for autoconfiguring devices via those
+ * drivers.
+ */
+struct	pmax_driver siidriver = {
+	"sii", NULL, siistart, 0,
+};
 
 /*
  * Match driver based on name
  */
 int
-siimatch(parent, match, aux)
+old_siimatch(parent, match, aux)
 	struct device *parent;
 	void *match;
 	void *aux;
 {
-	struct cfdata *cf = match;
 	struct confargs *ca = aux;
 
-	if (!BUS_MATCHNAME(ca, "sii") && !BUS_MATCHNAME(ca, "PMAZ-AA "))
+	if (strcmp(ca->ca_name, "sii") != 0 &&
+	    strncmp(ca->ca_name, "PMAZ-AA ", 8) != 0) /*XXX*/
 		return (0);
 
 	/* XXX check for bad address */
-	/* XXX kn01s have exactly one SII. Does any other machine use them? */
+	/*
+	 * XXX KN01s (3100/2100) have exactly one SII.
+	 * the Decsystem 5100 apparently uses them also, but as yet we
+	 * don't know at what address.
+	 *
+	 * XXX  PVAXES apparently use the SII also.
+	 */
 	return (1);
 }
 
 void
-siiattach(parent, self, aux)
+old_siiattach(parent, self, aux)
 	struct device *parent;
 	struct device *self;
 	void *aux;
 {
 	register struct confargs *ca = aux;
 	register struct siisoftc *sc = (struct siisoftc *) self;
-	register void *siiaddr;
+
+	sc->sc_regs = (SIIRegs *)MACH_PHYS_TO_UNCACHED(ca->ca_addr);
+	sc->sc_flags = sc->sc_dev.dv_cfdata->cf_flags;
+
+	siiattach(sc);
+
+	/* tie pseudo-slot to device */
+	BUS_INTR_ESTABLISH(ca, siiintr, sc);
+	printf("\n");
+}
+
+void
+siiattach(sc)
+	register struct siisoftc *sc;
+{
 	register int i;
 
-	siiaddr = (void*)MACH_PHYS_TO_UNCACHED(BUS_CVTADDR(ca));
-
-	sc->sc_regs = (SIIRegs *)siiaddr;
-	sc->sc_flags = sc->sc_dev.dv_cfdata->cf_flags;
 	sc->sc_target = -1;	/* no command active */
+
 	/*
 	 * Give each target its own DMA buffer region.
 	 * Make it big enough for 2 max transfers so we can ping pong buffers
@@ -261,8 +264,7 @@ siiattach(parent, self, aux)
 	 */
 	for (i = 0; i < SII_NCMD; i++) {
 		sc->sc_st[i].dmaAddr[0] = (u_short *)
-			MACH_PHYS_TO_UNCACHED(KN01_SYS_SII_B_START) +
-			2 * SII_MAX_DMA_XFER_LENGTH * i;
+			sc->sc_buf + 2 * SII_MAX_DMA_XFER_LENGTH * i;
 		sc->sc_st[i].dmaAddr[1] = sc->sc_st[i].dmaAddr[0] +
 			SII_MAX_DMA_XFER_LENGTH;
 	}
@@ -271,12 +273,12 @@ siiattach(parent, self, aux)
 	(void) pmax_add_scsi(&siidriver, sc->sc_dev.dv_unit);
 
 	sii_Reset(sc, RESET);
-
-	/*priority = ca->ca_slot;*/
-	/* tie pseudo-slot to device */
-	BUS_INTR_ESTABLISH(ca, siiintr, sc);
-	printf("\n");
+#ifdef USE_NEW_SCSI
+	/* XXX probe SCSI bus and attach slave devices */ 
+#endif
 }
+
+
 
 /*
  * Start activity on a SCSI device.
@@ -288,7 +290,7 @@ siistart(scsicmd)
 	register ScsiCmd *scsicmd;	/* command to start */
 {
 	register struct pmax_scsi_device *sdp = scsicmd->sd;
-	register struct siisoftc *sc = siicd.cd_devs[sdp->sd_ctlr];
+	register struct siisoftc *sc = sii_cd.cd_devs[sdp->sd_ctlr];
 	int s;
 
 	s = splbio();
@@ -324,8 +326,12 @@ siiintr(xxxsc)
 	 * Find which controller caused the interrupt.
 	 */
 	dstat = sc->sc_regs->dstat;
-	if (dstat & (SII_CI | SII_DI))
+	if (dstat & (SII_CI | SII_DI)) {
 		sii_DoIntr(sc, dstat);
+		return (0);	/* XXX */
+	}
+
+	return (1);		/* XXX spurious interrupt? */
 }
 
 /*
@@ -371,7 +377,7 @@ sii_Reset(sc, reset)
 		 * Delay 250 ms before doing any commands.
 		 */
 		regs->comm = SII_DO_RST;
-		MachEmptyWriteBuffer();
+		wbflush();
 		DELAY(250000);
 
 		/* rearbitrate synchronous offset */
@@ -389,7 +395,7 @@ sii_Reset(sc, reset)
 	 * Reselect Enable, and Interrupt Enable.
 	 */
 	regs->csr = SII_HPM | SII_RSE | SII_PCE | SII_IE;
-	MachEmptyWriteBuffer();
+	wbflush();
 }
 
 /*
@@ -436,7 +442,7 @@ sii_StartCmd(sc, target)
 
 #ifdef DEBUG
 	if (sii_debug > 1) {
-		printf("sii_StartCmd: %s target %d cmd 0x%x addr %x size %d dma %d\n",
+		printf("sii_StartCmd: %s target %d cmd 0x%x addr %p size %d dma %d\n",
 			scsicmd->sd->sd_driver->d_name, target,
 			scsicmd->cmd[0], scsicmd->buf, scsicmd->buflen,
 			state->dmaDataPhase);
@@ -486,11 +492,11 @@ sii_StartCmd(sc, target)
 		state->dmaCurPhase = SII_MSG_OUT_PHASE,
 		state->dmalen = 6;
 		CopyToBuffer((u_short *)sii_buf,
-			(volatile u_short *)SII_BUF_ADDR, 6);
+			(volatile u_short *)SII_BUF_ADDR(sc), 6);
 		regs->slcsr = target;
 		regs->dmctrl = state->dmaReqAck;
-		regs->dmaddrl = (u_short)(SII_BUF_ADDR >> 1);
-		regs->dmaddrh = (u_short)(SII_BUF_ADDR >> 17) & 03;
+		regs->dmaddrl = (u_short)(SII_BUF_ADDR(sc) >> 1);
+		regs->dmaddrh = (u_short)(SII_BUF_ADDR(sc) >> 17) & 03;
 		regs->dmlotc = 6;
 		regs->comm = SII_DMA | SII_INXFER | SII_SELECT | SII_ATN |
 			SII_CON | SII_MSG_OUT_PHASE;
@@ -504,7 +510,7 @@ sii_StartCmd(sc, target)
 		regs->comm = SII_INXFER | SII_SELECT | SII_ATN | SII_CON |
 			SII_MSG_OUT_PHASE;
 	}
-	MachEmptyWriteBuffer();
+	wbflush();
 
 	/*
 	 * Wait for something to happen
@@ -517,7 +523,7 @@ sii_StartCmd(sc, target)
 	if ((status & (SII_RST | SII_SCH | SII_STATE_MSK)) ==
 	    (SII_SCH | SII_CON)) {
 		regs->cstat = status;
-		MachEmptyWriteBuffer();
+		wbflush();
 
 #ifdef DEBUG
 		sii_logp->target = target;
@@ -586,7 +592,7 @@ sii_StartCmd(sc, target)
 	if (status & SII_SIP) {
 		error = ENXIO;	/* device didn't respond */
 		regs->comm = SII_DISCON;
-		MachEmptyWriteBuffer();
+		wbflush();
 		SII_WAIT_UNTIL(status, regs->cstat,
 			!(status & (SII_CON | SII_SIP)),
 			SII_WAIT_COUNT, retval);
@@ -601,7 +607,7 @@ sii_StartCmd(sc, target)
 	regs->cstat = 0xffff;
 	regs->dstat = 0xffff;
 	regs->comm = 0;
-	MachEmptyWriteBuffer();
+	wbflush();
 	sii_CmdDone(sc, target, error);
 }
 
@@ -643,7 +649,7 @@ again:
 #endif
 
 	regs->dstat = dstat;	/* acknowledge everything */
-	MachEmptyWriteBuffer();
+	wbflush();
 
 	if (dstat & SII_CI) {
 		/* deglitch cstat register */
@@ -651,7 +657,7 @@ again:
 		while (msg != (cstat = regs->cstat))
 			msg = cstat;
 		regs->cstat = cstat;	/* acknowledge everything */
-		MachEmptyWriteBuffer();
+		wbflush();
 #ifdef DEBUG
 		if (sii_logp > sii_log)
 			sii_logp[-1].cstat = cstat;
@@ -760,7 +766,7 @@ again:
 				sii_StartDMA(regs,
 					state->dmaCurPhase = SII_DATA_IN_PHASE,
 					state->dmaAddr[state->dmaBufIndex],
-					state->dmalen = len);
+					state->dmaCnt = state->dmalen = len);
 				dstat &= ~(SII_IBF | SII_TBE);
 			}
 			/* copy in the data */
@@ -782,7 +788,7 @@ again:
 				sii_StartDMA(regs, state->dmaCurPhase =
 					SII_DATA_OUT_PHASE,
 					state->dmaAddr[state->dmaBufIndex],
-					state->dmalen =
+					state->dmaCnt = state->dmalen =
 					SII_MAX_DMA_XFER_LENGTH);
 				/* prepare for next chunk */
 				i -= SII_MAX_DMA_XFER_LENGTH;
@@ -796,7 +802,7 @@ again:
 				sii_StartDMA(regs, state->dmaCurPhase =
 					SII_DATA_OUT_PHASE,
 					state->dmaAddr[state->dmaBufIndex],
-					state->dmalen = i);
+					state->dmaCnt = state->dmalen = i);
 			}
 			dstat &= ~(SII_IBF | SII_TBE);
 		}
@@ -846,7 +852,7 @@ again:
 					regs->dmabyte = state->dmaByte;
 				regs->comm = SII_DMA | SII_INXFER |
 					(comm & SII_STATE_MSK) | SII_CMD_PHASE;
-				MachEmptyWriteBuffer();
+				wbflush();
 #ifdef DEBUG
 				if (sii_debug > 4)
 					printf("Cmd dcnt %d dadr %x ",
@@ -867,7 +873,7 @@ again:
 					i);
 				sii_StartDMA(regs, state->dmaCurPhase =
 					SII_CMD_PHASE, state->dmaAddr[0],
-					state->dmalen = i);
+					state->dmaCnt = state->dmalen = i);
 			}
 			/* wait a short time for XFER complete */
 			SII_WAIT_UNTIL(dstat, regs->dstat,
@@ -914,7 +920,7 @@ again:
 				regs->comm = SII_DMA | SII_INXFER |
 					(comm & SII_STATE_MSK) |
 					state->dmaCurPhase;
-				MachEmptyWriteBuffer();
+				wbflush();
 #ifdef DEBUG
 				if (sii_debug > 4)
 					printf("Data %d dcnt %d dadr %x ",
@@ -950,7 +956,7 @@ again:
 				sii_StartDMA(regs,
 					state->dmaCurPhase = SII_DATA_IN_PHASE,
 					state->dmaAddr[state->dmaBufIndex],
-					state->dmalen = i);
+					state->dmaCnt = state->dmalen = i);
 				break;
 			}
 			/* start first chunk */
@@ -963,7 +969,7 @@ again:
 			sii_StartDMA(regs,
 				state->dmaCurPhase = SII_DATA_OUT_PHASE,
 				state->dmaAddr[state->dmaBufIndex],
-				state->dmalen = i);
+				state->dmaCnt = state->dmalen = i);
 			i = state->buflen - SII_MAX_DMA_XFER_LENGTH;
 			if (i > 0) {
 				/* prepare for next chunk */
@@ -996,9 +1002,9 @@ again:
 				regs->dmlotc = 0;
 				regs->comm = comm &
 					(SII_STATE_MSK | SII_PHASE_MSK);
-				MachEmptyWriteBuffer();
+				wbflush();
 				regs->dstat = SII_DNE;
-				MachEmptyWriteBuffer();
+				wbflush();
 #ifdef DEBUG
 				if (sii_debug > 4)
 					printf("DMA amt %d ", i);
@@ -1052,24 +1058,26 @@ again:
 			 * Note that the SII DMA address is not incremented
 			 * as DMA proceeds.
 			 */
-			if (state->dmaCurPhase > 0) {
+			if (state->dmaCurPhase >= 0) {
 				/* save dma registers */
 				state->dmaPrevPhase = state->dmaCurPhase;
 				state->dmaCurPhase = -1;
-				state->dmaCnt = i = regs->dmlotc;
 				if (dstat & SII_OBB)
 					state->dmaByte = regs->dmabyte;
-				if (i == 0)
-					i = SII_MAX_DMA_XFER_LENGTH;
-				i = state->dmalen - i;
+				i = regs->dmlotc;
+				if (i != 0)
+					i = state->dmaCnt - i;
 				/* note: no carry from dmaddrl to dmaddrh */
 				state->dmaAddrL = regs->dmaddrl + i;
 				state->dmaAddrH = regs->dmaddrh;
+				state->dmaCnt = regs->dmlotc;
+				if (state->dmaCnt == 0)
+					state->dmaCnt = SII_MAX_DMA_XFER_LENGTH;
 				regs->comm = comm &
 					(SII_STATE_MSK | SII_PHASE_MSK);
-				MachEmptyWriteBuffer();
+				wbflush();
 				regs->dstat = SII_DNE;
-				MachEmptyWriteBuffer();
+				wbflush();
 #ifdef DEBUG
 				if (sii_debug > 4) {
 					printf("SavP dcnt %d dadr %x ",
@@ -1114,7 +1122,7 @@ again:
 				SII_WAIT_UNTIL(dstat, regs->dstat,
 					dstat & SII_DNE, SII_WAIT_COUNT, i);
 				regs->dstat = SII_DNE;
-				MachEmptyWriteBuffer();
+				wbflush();
 				msg = sc->sc_target;
 				sc->sc_target = -1;
 				/*
@@ -1129,7 +1137,7 @@ again:
 				    SII_STATE_MSK)) == SII_SCH) {
 					regs->cstat = SII_SCH | SII_BER;
 					regs->comm = 0;
-					MachEmptyWriteBuffer();
+					wbflush();
 					/*
 					 * Double check that we didn't miss a
 					 * state change between seeing it and
@@ -1155,7 +1163,7 @@ again:
 				SII_WAIT_UNTIL(dstat, regs->dstat,
 					dstat & SII_DNE, SII_WAIT_COUNT, i);
 				regs->dstat = SII_DNE;
-				MachEmptyWriteBuffer();
+				wbflush();
 				/* read the message length */
 				msg = sii_GetByte(regs, SII_MSG_IN_PHASE, 1);
 				if (msg < 0) {
@@ -1190,7 +1198,7 @@ again:
 						dstat & SII_DNE,
 						SII_WAIT_COUNT, i);
 					regs->dstat = SII_DNE;
-					MachEmptyWriteBuffer();
+					wbflush();
 					i = (sii_buf[3] << 24) |
 						(sii_buf[4] << 16) |
 						(sii_buf[5] << 8) |
@@ -1213,7 +1221,7 @@ again:
 						dstat & SII_DNE,
 						SII_WAIT_COUNT, i);
 					regs->dstat = SII_DNE;
-					MachEmptyWriteBuffer();
+					wbflush();
 					sii_DoSync(regs, state);
 					break;
 
@@ -1230,7 +1238,7 @@ again:
 						dstat & SII_DNE,
 						SII_WAIT_COUNT, i);
 					regs->dstat = SII_DNE;
-					MachEmptyWriteBuffer();
+					wbflush();
 
 					/* wait for MSG_OUT phase */
 					SII_WAIT_UNTIL(dstat, regs->dstat,
@@ -1246,7 +1254,7 @@ again:
 						dstat & SII_DNE,
 						SII_WAIT_COUNT, i);
 					regs->dstat = SII_DNE;
-					MachEmptyWriteBuffer();
+					wbflush();
 				}
 				break;
 
@@ -1258,7 +1266,7 @@ again:
 				SII_WAIT_UNTIL(dstat, regs->dstat,
 					dstat & SII_DNE, SII_WAIT_COUNT, i);
 				regs->dstat = SII_DNE;
-				MachEmptyWriteBuffer();
+				wbflush();
 				/* wait a short time for another msg */
 				SII_WAIT_UNTIL(dstat, regs->dstat,
 					dstat & (SII_CI | SII_DI),
@@ -1279,7 +1287,7 @@ again:
 				SII_WAIT_UNTIL(dstat, regs->dstat,
 					dstat & SII_DNE, SII_WAIT_COUNT, i);
 				regs->dstat = SII_DNE;
-				MachEmptyWriteBuffer();
+				wbflush();
 				state->prevComm = comm;
 #ifdef DEBUG
 				if (sii_debug > 4)
@@ -1304,7 +1312,7 @@ again:
 				}
 				regs->cstat = SII_SCH | SII_BER;
 				regs->comm = 0;
-				MachEmptyWriteBuffer();
+				wbflush();
 				sc->sc_target = -1;
 				/*
 				 * Double check that we didn't miss a state
@@ -1324,7 +1332,7 @@ again:
 				SII_WAIT_UNTIL(dstat, regs->dstat,
 					dstat & SII_DNE, SII_WAIT_COUNT, i);
 				regs->dstat = SII_DNE;
-				MachEmptyWriteBuffer();
+				wbflush();
 				printf("%s: device %d: message reject.\n",
 					sc->sc_dev.dv_xname, sc->sc_target);
 				break;
@@ -1345,7 +1353,7 @@ again:
 				SII_WAIT_UNTIL(dstat, regs->dstat,
 					dstat & SII_DNE, SII_WAIT_COUNT, i);
 				regs->dstat = SII_DNE;
-				MachEmptyWriteBuffer();
+				wbflush();
 				/* may want to check LUN some day */
 				/* wait a short time for another msg */
 				SII_WAIT_UNTIL(dstat, regs->dstat,
@@ -1380,7 +1388,7 @@ again:
 				regs->data = SCSI_NO_OP;
 			regs->comm = SII_INXFER | (comm & SII_STATE_MSK) |
 				SII_MSG_OUT_PHASE;
-			MachEmptyWriteBuffer();
+			wbflush();
 
 			/* wait a short time for XFER complete */
 			SII_WAIT_UNTIL(dstat, regs->dstat, dstat & SII_DNE,
@@ -1392,7 +1400,7 @@ again:
 			/* just clear the DNE bit and check errors later */
 			if (dstat & SII_DNE) {
 				regs->dstat = SII_DNE;
-				MachEmptyWriteBuffer();
+				wbflush();
 			}
 			break;
 
@@ -1442,7 +1450,7 @@ abort:
 		regs->data = SCSI_ABORT;
 		regs->comm = SII_INXFER | SII_ATN | (cstat & SII_STATE_MSK) |
 			SII_MSG_OUT_PHASE;
-		MachEmptyWriteBuffer();
+		wbflush();
 		SII_WAIT_UNTIL(dstat, regs->dstat,
 			(dstat & (SII_DNE | SII_PHASE_MSK)) ==
 			(SII_DNE | SII_MSG_OUT_PHASE),
@@ -1451,11 +1459,11 @@ abort:
 		if (sii_debug > 0)
 			printf("Abort: cs %x ds %x i %d\n", cstat, dstat, i);
 #endif
-		if (dstat & (SII_DNE | SII_PHASE_MSK) ==
+		if ((dstat & (SII_DNE | SII_PHASE_MSK)) ==
 		    (SII_DNE | SII_MSG_OUT_PHASE)) {
 			/* disconnect if command in progress */
 			regs->comm = SII_DISCON;
-			MachEmptyWriteBuffer();
+			wbflush();
 			SII_WAIT_UNTIL(cstat, regs->cstat,
 				!(cstat & SII_CON), SII_WAIT_COUNT, i);
 		}
@@ -1468,7 +1476,7 @@ abort:
 	regs->cstat = 0xffff;
 	regs->dstat = 0xffff;
 	regs->comm = 0;
-	MachEmptyWriteBuffer();
+	wbflush();
 
 	i = sc->sc_target;
 	sc->sc_target = -1;
@@ -1544,7 +1552,7 @@ sii_StateChg(sc, cstat)
 		state = &sc->sc_st[i];
 		regs->comm = SII_CON | SII_DST | SII_MSG_IN_PHASE;
 		regs->dmctrl = state->dmaReqAck;
-		MachEmptyWriteBuffer();
+		wbflush();
 		if (!state->prevComm) {
 			printf("%s: device %d: spurious reselection\n",
 				sc->sc_dev.dv_xname, i);
@@ -1564,7 +1572,7 @@ sii_StateChg(sc, cstat)
 		printf("%s: Selected by device %d as target!!\n",
 			sc->sc_dev.dv_xname, regs->destat);
 		regs->comm = SII_DISCON;
-		MachEmptyWriteBuffer();
+		wbflush();
 		SII_WAIT_UNTIL(!(regs->cstat & SII_CON),
 			SII_WAIT_COUNT, i);
 		regs->cstat = 0xffff;
@@ -1600,7 +1608,7 @@ sii_GetByte(regs, phase, ack)
 	state = regs->cstat & SII_STATE_MSK;
 	if (!(dstat & SII_IBF) || (dstat & SII_MIS)) {
 		regs->comm = state | phase;
-		MachEmptyWriteBuffer();
+		wbflush();
 		/* wait a short time for IBF */
 		SII_WAIT_UNTIL(dstat, regs->dstat, dstat & SII_IBF,
 			SII_WAIT_COUNT, i);
@@ -1631,7 +1639,7 @@ sii_GetByte(regs, phase, ack)
 
 	if (ack) {
 		regs->comm = SII_INXFER | state | phase;
-		MachEmptyWriteBuffer();
+		wbflush();
 
 		/* wait a short time for XFER complete */
 		SII_WAIT_UNTIL(dstat, regs->dstat, dstat & SII_DNE,
@@ -1640,7 +1648,7 @@ sii_GetByte(regs, phase, ack)
 		/* clear the DNE */
 		if (dstat & SII_DNE) {
 			regs->dstat = SII_DNE;
-			MachEmptyWriteBuffer();
+			wbflush();
 		}
 	}
 
@@ -1698,7 +1706,7 @@ sii_DoSync(regs, state)
 
 		regs->data = sii_buf[j];
 		regs->comm = comm;
-		MachEmptyWriteBuffer();
+		wbflush();
 
 		/* wait a short time for XFER complete */
 		SII_WAIT_UNTIL(dstat, regs->dstat, dstat & SII_DNE,
@@ -1712,21 +1720,22 @@ sii_DoSync(regs, state)
 
 		/* clear the DNE, other errors handled later */
 		regs->dstat = SII_DNE;
-		MachEmptyWriteBuffer();
+		wbflush();
 	}
-#else
-	CopyToBuffer((u_short *)sii_buf, (volatile u_short *)SII_BUF_ADDR, 5);
+#else	/* 0 */
+	CopyToBuffer((u_short *)sii_buf,
+		     (volatile u_short *)SII_BUF_ADDR(sc), 5);
 	printf("sii_DoSync: %x %x %x ds %x\n",
-		((volatile u_short *)SII_BUF_ADDR)[0],
-		((volatile u_short *)SII_BUF_ADDR)[2],
-		((volatile u_short *)SII_BUF_ADDR)[4],
+		((volatile u_short *)SII_BUF_ADDR(sc))[0],
+		((volatile u_short *)SII_BUF_ADDR(sc))[2],
+		((volatile u_short *)SII_BUF_ADDR(sc))[4],
 		regs->dstat); /* XXX */
-	regs->dmaddrl = (u_short)(SII_BUF_ADDR >> 1);
-	regs->dmaddrh = (u_short)(SII_BUF_ADDR >> 17) & 03;
+	regs->dmaddrl = (u_short)(SII_BUF_ADDR(sc) >> 1);
+	regs->dmaddrh = (u_short)(SII_BUF_ADDR(sc) >> 17) & 03;
 	regs->dmlotc = 5;
 	regs->comm = SII_DMA | SII_INXFER | SII_ATN |
 		(regs->cstat & SII_STATE_MSK) | SII_MSG_OUT_PHASE;
-	MachEmptyWriteBuffer();
+	wbflush();
 
 	/* wait a short time for XFER complete */
 	SII_WAIT_UNTIL(dstat, regs->dstat,
@@ -1741,8 +1750,8 @@ sii_DoSync(regs, state)
 	}
 	/* clear the DNE, other errors handled later */
 	regs->dstat = SII_DNE;
-	MachEmptyWriteBuffer();
-#endif
+	wbflush();
+#endif	/* 0 */
 
 #if 0
 	SII_WAIT_UNTIL(dstat, regs->dstat, dstat & (SII_CI | SII_DI),
@@ -1778,7 +1787,7 @@ sii_StartDMA(regs, phase, dmaAddr, size)
 	regs->dmlotc = size;
 	regs->comm = SII_DMA | SII_INXFER | (regs->cstat & SII_STATE_MSK) |
 		phase;
-	MachEmptyWriteBuffer();
+	wbflush();
 
 #ifdef DEBUG
 	if (sii_debug > 5) {
@@ -1831,6 +1840,7 @@ sii_CmdDone(sc, target, error)
 }
 
 #ifdef DEBUG
+void
 sii_DumpLog()
 {
 	register struct sii_log *lp;

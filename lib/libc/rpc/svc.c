@@ -1,5 +1,3 @@
-/*	$NetBSD: svc.c,v 1.7 1995/02/25 03:01:57 cgd Exp $	*/
-
 /*
  * Sun RPC is a product of Sun Microsystems, Inc. and is provided for
  * unrestricted use provided that this legend is included on all tape
@@ -30,10 +28,8 @@
  */
 
 #if defined(LIBC_SCCS) && !defined(lint) 
-/*static char *sccsid = "from: @(#)svc.c 1.44 88/02/08 Copyr 1984 Sun Micro";*/
-/*static char *sccsid = "from: @(#)svc.c	2.4 88/08/11 4.0 RPCSRC";*/
-static char *rcsid = "$NetBSD: svc.c,v 1.7 1995/02/25 03:01:57 cgd Exp $";
-#endif
+static char *rcsid = "$OpenBSD: svc.c,v 1.8 1996/09/15 09:31:38 tholo Exp $";
+#endif /* LIBC_SCCS and not lint */
 
 /*
  * svc.c, Server-side remote procedure call interface.
@@ -46,12 +42,14 @@ static char *rcsid = "$NetBSD: svc.c,v 1.7 1995/02/25 03:01:57 cgd Exp $";
  */
 
 #include <stdlib.h>
+#include <string.h>
 
 #include <sys/errno.h>
 #include <rpc/rpc.h>
 #include <rpc/pmap_clnt.h>
 
 static SVCXPRT **xports;
+static int xportssize;
 
 #define NULL_SVC ((struct svc_callout *)0)
 #define	RQCRED_SIZE	400		/* this size is excessive */
@@ -73,6 +71,9 @@ static struct svc_callout {
 
 static struct svc_callout *svc_find();
 
+int __svc_fdsetsize;
+fd_set *__svc_fdset;
+
 /* ***************  SVCXPRT related stuff **************** */
 
 /*
@@ -84,15 +85,42 @@ xprt_register(xprt)
 {
 	register int sock = xprt->xp_sock;
 
-	if (xports == NULL) {
-		xports = (SVCXPRT **)
-			mem_alloc(FD_SETSIZE * sizeof(SVCXPRT *));
+	if (sock+1 > __svc_fdsetsize) {
+		int bytes = howmany(sock+1, NFDBITS) * sizeof(fd_mask);
+		fd_set *fds;
+
+		fds = (fd_set *)malloc(bytes);
+		memset(fds, 0, bytes);
+		if (__svc_fdset) {
+			memcpy(fds, __svc_fdset, howmany(__svc_fdsetsize,
+			    NFDBITS) * sizeof(fd_mask));
+			free(__svc_fdset);
+		}
+		__svc_fdset = fds;
+		__svc_fdsetsize = howmany(sock+1, NFDBITS);
 	}
-	if (sock < FD_SETSIZE) {
-		xports[sock] = xprt;
+
+	if (sock < FD_SETSIZE)
 		FD_SET(sock, &svc_fdset);
-		svc_maxfd = max(svc_maxfd, sock);
+	FD_SET(sock, __svc_fdset);
+
+	if (xports == NULL || sock+1 > xportssize) {
+		SVCXPRT **xp;
+		int size = FD_SETSIZE;
+
+		if (sock+1 > size)
+			size = sock+1;
+		xp = (SVCXPRT **)mem_alloc(size * sizeof(SVCXPRT *));
+		memset(xp, 0, size * sizeof(SVCXPRT *));
+		if (xports) {
+			memcpy(xp, xports, xportssize * sizeof(SVCXPRT *));
+			free(xports);
+		}
+		xportssize = size;
+		xports = xp;
 	}
+	xports[sock] = xprt;
+	svc_maxfd = max(svc_maxfd, sock);
 }
 
 /*
@@ -104,14 +132,20 @@ xprt_unregister(xprt)
 { 
 	register int sock = xprt->xp_sock;
 
-	if ((sock < FD_SETSIZE) && (xports[sock] == xprt)) {
+	if (xports[sock] == xprt) {
 		xports[sock] = (SVCXPRT *)0;
-		FD_CLR(sock, &svc_fdset);
+		if (sock < FD_SETSIZE)
+			FD_CLR(sock, &svc_fdset);
+		FD_CLR(sock, __svc_fdset);
 		if (sock == svc_maxfd) {
 			for (svc_maxfd--; svc_maxfd>=0; svc_maxfd--)
 				if (xports[svc_maxfd])
 					break;
 		}
+		/*
+		 * XXX could use svc_maxfd as a hint to
+		 * decrease the size of __svc_fdset
+		 */
 	}
 }
 
@@ -216,7 +250,7 @@ svc_sendreply(xprt, xdr_results, xdr_location)
 {
 	struct rpc_msg rply; 
 
-	rply.rm_direction = REPLY;  
+	rply.rm_direction = REPLY;
 	rply.rm_reply.rp_stat = MSG_ACCEPTED; 
 	rply.acpted_rply.ar_verf = xprt->xp_verf; 
 	rply.acpted_rply.ar_stat = SUCCESS;
@@ -308,11 +342,11 @@ void
 svcerr_noprog(xprt)
 	register SVCXPRT *xprt;
 {
-	struct rpc_msg rply;  
+	struct rpc_msg rply;
 
-	rply.rm_direction = REPLY;   
-	rply.rm_reply.rp_stat = MSG_ACCEPTED;  
-	rply.acpted_rply.ar_verf = xprt->xp_verf;  
+	rply.rm_direction = REPLY;
+	rply.rm_reply.rp_stat = MSG_ACCEPTED;
+	rply.acpted_rply.ar_verf = xprt->xp_verf;
 	rply.acpted_rply.ar_stat = PROG_UNAVAIL;
 	SVC_REPLY(xprt, &rply);
 }
@@ -320,7 +354,7 @@ svcerr_noprog(xprt)
 /*
  * Program version mismatch error reply
  */
-void  
+void
 svcerr_progvers(xprt, low_vers, high_vers)
 	register SVCXPRT *xprt; 
 	u_long low_vers;
@@ -366,9 +400,19 @@ svc_getreq(rdfds)
 	svc_getreqset(&readfds);
 }
 
+void	svc_getreqset2 __P((fd_set *, int));
+
 void
 svc_getreqset(readfds)
 	fd_set *readfds;
+{
+	svc_getreqset2(readfds, FD_SETSIZE);
+}
+
+void
+svc_getreqset2(readfds, width)
+	fd_set *readfds;
+	int width;
 {
 	enum xprt_stat stat;
 	struct rpc_msg msg;
@@ -378,16 +422,15 @@ svc_getreqset(readfds)
 	struct svc_req r;
 	register SVCXPRT *xprt;
 	register int bit;
-	register u_int32_t mask, *maskp;
+	register fd_mask mask, *maskp;
 	register int sock;
 	char cred_area[2*MAX_AUTH_BYTES + RQCRED_SIZE];
 	msg.rm_call.cb_cred.oa_base = cred_area;
 	msg.rm_call.cb_verf.oa_base = &(cred_area[MAX_AUTH_BYTES]);
 	r.rq_clntcred = &(cred_area[2*MAX_AUTH_BYTES]);
 
-
 	maskp = readfds->fds_bits;
-	for (sock = 0; sock < FD_SETSIZE; sock += NFDBITS) {
+	for (sock = 0; sock < width; sock += NFDBITS) {
 	    for (mask = *maskp++; bit = ffs(mask); mask ^= (1 << (bit - 1))) {
 		/* sock has input waiting */
 		xprt = xports[sock + bit - 1];
@@ -414,7 +457,7 @@ svc_getreqset(readfds)
 				}
 				/* now match message with a registered service*/
 				prog_found = FALSE;
-				low_vers = 0 - 1;
+				low_vers = (u_long) -1;
 				high_vers = 0;
 				for (s = svc_head; s != NULL_SVC; s = s->sc_next) {
 					if (s->sc_prog == r.rq_prog) {

@@ -1,4 +1,5 @@
-/*	$NetBSD: db_interface.c,v 1.18 1995/10/10 04:45:03 mycroft Exp $	*/
+/*	$OpenBSD: db_interface.c,v 1.5 1996/04/21 22:16:24 deraadt Exp $	*/
+/*	$NetBSD: db_interface.c,v 1.22 1996/05/03 19:42:00 christos Exp $	*/
 
 /* 
  * Mach Operating System
@@ -11,7 +12,7 @@
  * software, derivative works or modified versions, and any portions
  * thereof, and that both notices appear in supporting documentation.
  * 
- * CARNEGIE MELLON ALLOWS FREE USE OF THIS SOFTWARE IN ITS 
+ * CARNEGIE MELLON ALLOWS FREE USE OF THIS SOFTWARE IN ITS "AS IS"
  * CONDITION.  CARNEGIE MELLON DISCLAIMS ANY LIABILITY OF ANY KIND FOR
  * ANY DAMAGES WHATSOEVER RESULTING FROM THE USE OF THIS SOFTWARE.
  * 
@@ -22,8 +23,8 @@
  *  Carnegie Mellon University
  *  Pittsburgh PA 15213-3890
  * 
- * any improvements or extensions that they make and grant Carnegie the
- * rights to redistribute these changes.
+ * any improvements or extensions that they make and grant Carnegie Mellon
+ * the rights to redistribute these changes.
  *
  *	db_interface.c,v 2.4 1991/02/05 17:11:13 mrt (CMU)
  */
@@ -34,23 +35,51 @@
 #include <sys/param.h>
 #include <sys/proc.h>
 #include <sys/reboot.h>
-#include <sys/systm.h> /* just for boothowto --eichin */
-#include <setjmp.h>
+#include <sys/systm.h>
 
 #include <vm/vm.h>
 
+#include <dev/cons.h>
+
 #include <machine/db_machdep.h>
 
-extern jmp_buf	*db_recover;
+#include <ddb/db_sym.h>
+#include <ddb/db_command.h>
+#include <ddb/db_extern.h>
+#include <ddb/db_access.h>
+#include <ddb/db_output.h>
+
+
+extern label_t	*db_recover;
+extern char *trap_type[];
+extern int trap_types;
 
 int	db_active = 0;
+
+void kdbprinttrap __P((int, int));
+
+/*
+ * Print trap reason.
+ */
+void
+kdbprinttrap(type, code)
+	int type, code;
+{
+	db_printf("kernel: ");
+	if (type >= trap_types || type < 0)
+		db_printf("type %d", type);
+	else
+		db_printf("%s", trap_type[type]);
+	db_printf(" trap, code=%x\n", code);
+}
 
 /*
  *  kdb_trap - field a TRACE or BPT trap
  */
+int
 kdb_trap(type, code, regs)
 	int type, code;
-	register db_regs_t *regs;
+	db_regs_t *regs;
 {
 	int s;
 
@@ -112,36 +141,19 @@ kdb_trap(type, code, regs)
 	return (1);
 }
 
-extern char *trap_type[];
-extern int trap_types;
-
-/*
- * Print trap reason.
- */
-kdbprinttrap(type, code)
-	int type, code;
-{
-	db_printf("kernel: ");
-	if (type >= trap_types || type < 0)
-		db_printf("type %d", type);
-	else
-		db_printf("%s", trap_type[type]);
-	db_printf(" trap, code=%x\n", code);
-}
-
 /*
  * Read bytes from kernel address space for debugger.
  */
 void
 db_read_bytes(addr, size, data)
 	vm_offset_t	addr;
-	register int	size;
+	register size_t	size;
 	register char	*data;
 {
 	register char	*src;
 
 	src = (char *)addr;
-	while (--size >= 0)
+	while (size-- > 0)
 		*data++ = *src++;
 }
 
@@ -153,7 +165,7 @@ pt_entry_t *pmap_pte __P((pmap_t, vm_offset_t));
 void
 db_write_bytes(addr, size, data)
 	vm_offset_t	addr;
-	register int	size;
+	register size_t	size;
 	register char	*data;
 {
 	register char	*dst;
@@ -183,7 +195,7 @@ db_write_bytes(addr, size, data)
 
 	dst = (char *)addr;
 
-	while (--size >= 0)
+	while (size-- > 0)
 		*dst++ = *data++;
 
 	if (ptep0) {
@@ -194,7 +206,7 @@ db_write_bytes(addr, size, data)
 	}
 }
 
-int
+void
 Debugger()
 {
 	asm("int $3");

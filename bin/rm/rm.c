@@ -1,3 +1,4 @@
+/*	$OpenBSD: rm.c,v 1.3 1996/08/02 12:41:05 deraadt Exp $	*/
 /*	$NetBSD: rm.c,v 1.19 1995/09/07 06:48:50 jtc Exp $	*/
 
 /*-
@@ -43,7 +44,7 @@ static char copyright[] =
 #if 0
 static char sccsid[] = "@(#)rm.c	8.8 (Berkeley) 4/27/95";
 #else
-static char rcsid[] = "$NetBSD: rm.c,v 1.19 1995/09/07 06:48:50 jtc Exp $";
+static char rcsid[] = "$OpenBSD: rm.c,v 1.3 1996/08/02 12:41:05 deraadt Exp $";
 #endif
 #endif /* not lint */
 
@@ -59,6 +60,8 @@ static char rcsid[] = "$NetBSD: rm.c,v 1.19 1995/09/07 06:48:50 jtc Exp $";
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+#include <pwd.h>
+#include <grp.h>
 
 int dflag, eval, fflag, iflag, Pflag, Wflag, stdin_ok;
 
@@ -109,7 +112,6 @@ main(argc, argv)
 		case 'W':
 			Wflag = 1;
 			break;
-		case '?':
 		default:
 			usage();
 		}
@@ -212,20 +214,22 @@ rm_tree(argv)
 		switch (p->fts_info) {
 		case FTS_DP:
 		case FTS_DNR:
-			if (!rmdir(p->fts_accpath) || fflag && errno == ENOENT)
+			if (!rmdir(p->fts_accpath) || 
+			    (fflag && errno == ENOENT))
 				continue;
 			break;
 
 		case FTS_W:
 			if (!undelete(p->fts_accpath) ||
-			    fflag && errno == ENOENT)
+			    (fflag && errno == ENOENT))
 				continue;
 			break;
 
 		default:
 			if (Pflag)
 				rm_overwrite(p->fts_accpath, NULL);
-			if (!unlink(p->fts_accpath) || fflag && errno == ENOENT)
+			if (!unlink(p->fts_accpath) ||
+			    (fflag && errno == ENOENT))
 				continue;
 		}
 		warn("%s", p->fts_path);
@@ -385,7 +389,7 @@ check(path, name, sp)
  * Since POSIX.2 defines basename as the final portion of a path after
  * trailing slashes have been removed, we'll remove them here.
  */
-#define ISDOT(a)	((a)[0] == '.' && (!(a)[1] || (a)[1] == '.' && !(a)[2]))
+#define ISDOT(a)	((a)[0] == '.' && (!(a)[1] || ((a)[1] == '.' && !(a)[2])))
 void
 checkdot(argv)
 	char **argv;

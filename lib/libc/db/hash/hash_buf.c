@@ -1,5 +1,3 @@
-/*	$NetBSD: hash_buf.c,v 1.5 1995/02/27 13:22:23 cgd Exp $	*/
-
 /*-
  * Copyright (c) 1990, 1993, 1994
  *	The Regents of the University of California.  All rights reserved.
@@ -37,11 +35,7 @@
  */
 
 #if defined(LIBC_SCCS) && !defined(lint)
-#if 0
-static char sccsid[] = "@(#)hash_buf.c	8.4 (Berkeley) 6/4/94";
-#else
-static char rcsid[] = "$NetBSD: hash_buf.c,v 1.5 1995/02/27 13:22:23 cgd Exp $";
-#endif
+static char rcsid[] = "$OpenBSD: hash_buf.c,v 1.3 1996/08/19 08:20:35 tholo Exp $";
 #endif /* LIBC_SCCS and not lint */
 
 /*
@@ -185,10 +179,16 @@ newbuf(hashp, addr, prev_bp)
 		/* Allocate a new one */
 		if ((bp = (BUFHEAD *)malloc(sizeof(BUFHEAD))) == NULL)
 			return (NULL);
+#ifdef PURIFY
+		memset(bp, 0xff, sizeof(BUFHEAD));
+#endif
 		if ((bp->page = (char *)malloc(hashp->BSIZE)) == NULL) {
 			free(bp);
 			return (NULL);
 		}
+#ifdef PURIFY
+		memset(bp->page, 0xff, hashp->BSIZE);
+#endif
 		if (hashp->nbufs)
 			hashp->nbufs--;
 	} else {
@@ -331,8 +331,10 @@ __buf_free(hashp, do_free, to_disk)
 		}
 		/* Check if we are freeing stuff */
 		if (do_free) {
-			if (bp->page)
+			if (bp->page) {
+				(void)memset(bp->page, 0, hashp->BSIZE);
 				free(bp->page);
+			}
 			BUF_REMOVE(bp);
 			free(bp);
 			bp = LRU;

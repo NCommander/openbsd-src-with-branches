@@ -1,4 +1,5 @@
-/*	$NetBSD: tcp_timer.c,v 1.13 1995/08/12 23:59:39 mycroft Exp $	*/
+/*	$OpenBSD: tcp_timer.c,v 1.6 1996/09/12 06:19:57 tholo Exp $	*/
+/*	$NetBSD: tcp_timer.c,v 1.14 1996/02/13 23:44:09 christos Exp $	*/
 
 /*
  * Copyright (c) 1982, 1986, 1988, 1990, 1993
@@ -59,9 +60,11 @@
 #include <netinet/tcp_timer.h>
 #include <netinet/tcp_var.h>
 #include <netinet/tcpip.h>
+#include <dev/rndvar.h>
 
 int	tcp_keepidle = TCPTV_KEEP_IDLE;
 int	tcp_keepintvl = TCPTV_KEEPINTVL;
+int	tcp_maxpersistidle = TCPTV_KEEP_IDLE;	/* max idle time in persist */
 int	tcp_maxidle;
 #endif /* TUBA_INCLUDE */
 /*
@@ -116,7 +119,7 @@ tcp_slowtimo()
 	for (; ip != (struct inpcb *)&tcbtable.inpt_queue; ip = ipnxt) {
 		ipnxt = ip->inp_queue.cqe_next;
 		tp = intotcpcb(ip);
-		if (tp == 0)
+		if (tp == 0 || tp->t_state == TCPS_LISTEN)
 			continue;
 		for (i = 0; i < TCPT_NTIMERS; i++) {
 			if (tp->t_timer[i] && --tp->t_timer[i] == 0) {
@@ -136,11 +139,13 @@ tcp_slowtimo()
 tpgone:
 		;
 	}
-	tcp_iss += TCP_ISSINCR/PR_SLOWHZ;		/* increment iss */
 #ifdef TCP_COMPAT_42
+	tcp_iss += TCP_ISSINCR/PR_SLOWHZ;		/* increment iss */
 	if ((int)tcp_iss < 0)
 		tcp_iss = 0;				/* XXX */
-#endif
+#else /* TCP_COMPAT_42 */
+	tcp_iss += arc4random() % (TCP_ISSINCR / PR_SLOWHZ) + 1; /* increment iss */
+#endif /* !TCP_COMPAT_42 */
 	tcp_now++;					/* for timestamps */
 	splx(s);
 }
@@ -161,6 +166,8 @@ tcp_canceltimers(tp)
 
 int	tcp_backoff[TCP_MAXRXTSHIFT + 1] =
     { 1, 2, 4, 8, 16, 32, 64, 64, 64, 64, 64, 64, 64 };
+
+int tcp_totbackoff = 511;	/* sum of tcp_backoff[] */
 
 /*
  * TCP timer processing.
@@ -203,7 +210,7 @@ tcp_timers(tp, timer)
 		}
 		tcpstat.tcps_rexmttimeo++;
 		rexmt = TCP_REXMTVAL(tp) * tcp_backoff[tp->t_rxtshift];
-		TCPT_RANGESET(tp->t_rxtcur, rexmt,
+		TCPT_RANGESET((long) tp->t_rxtcur, rexmt,
 		    tp->t_rttmin, TCPTV_REXMTMAX);
 		tp->t_timer[TCPT_REXMT] = tp->t_rxtcur;
 		/*
@@ -265,6 +272,20 @@ tcp_timers(tp, timer)
 	 */
 	case TCPT_PERSIST:
 		tcpstat.tcps_persisttimeo++;
+		/*
+		 * Hack: if the peer is dead/unreachable, we do not
+		 * time out if the window is closed.  After a full
+		 * backoff, drop the connection if the idle time
+		 * (no responses to probes) reaches the maximum
+		 * backoff that we would use if retransmitting.
+		 */
+		if (tp->t_rxtshift == TCP_MAXRXTSHIFT &&
+		    (tp->t_idle >= tcp_maxpersistidle ||
+		     tp->t_idle >= TCP_REXMTVAL(tp) * tcp_totbackoff)) {
+			tcpstat.tcps_persistdrop++;
+			tp = tcp_drop(tp, ETIMEDOUT);
+			break;
+		}
 		tcp_setpersist(tp);
 		tp->t_force = 1;
 		(void) tcp_output(tp);

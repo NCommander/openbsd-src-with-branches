@@ -1,3 +1,4 @@
+/*	$OpenBSD: who.c,v 1.3 1997/01/17 07:13:50 millert Exp $	*/
 /*	$NetBSD: who.c,v 1.4 1994/12/07 04:28:49 jtc Exp $	*/
 
 /*
@@ -46,7 +47,7 @@ static char copyright[] =
 #if 0
 static char sccsid[] = "@(#)who.c	8.1 (Berkeley) 6/6/93";
 #endif
-static char rcsid[] = "$NetBSD: who.c,v 1.4 1994/12/07 04:28:49 jtc Exp $";
+static char rcsid[] = "$OpenBSD: who.c,v 1.3 1997/01/17 07:13:50 millert Exp $";
 #endif /* not lint */
 
 #include <sys/types.h>
@@ -147,10 +148,10 @@ who_am_i(ufp)
 	/* search through the utmp and find an entry for this tty */
 	if (p = ttyname(0)) {
 		/* strip any directory component */
-		if (t = rindex(p, '/'))
+		if (t = strrchr(p, '/'))
 			p = t + 1;
 		while (fread((char *)&usr, sizeof(usr), 1, ufp) == 1)
-			if (usr.ut_name && !strcmp(usr.ut_line, p)) {
+			if (*usr.ut_name && !strcmp(usr.ut_line, p)) {
 				output(&usr);
 				return;
 			}

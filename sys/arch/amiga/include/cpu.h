@@ -1,4 +1,5 @@
-/*	$NetBSD: cpu.h,v 1.24 1995/08/18 15:28:23 chopps Exp $	*/
+/*	$OpenBSD: cpu.h,v 1.8 1996/05/29 10:15:50 niklas Exp $	*/
+/*	$NetBSD: cpu.h,v 1.36 1996/09/11 00:11:42 thorpej Exp $	*/
 
 /*
  * Copyright (c) 1988 University of Utah.
@@ -47,6 +48,13 @@
 /*
  * Exported definitions unique to amiga/68k cpu support.
  */
+#include <machine/psl.h>
+
+/*
+ * Get common m68k CPU definitions.
+ */
+#include <m68k/cpu.h>
+#define	M68K_MMU_MOTOROLA
 
 /*
  * definitions of cpu-dependent requirements
@@ -54,7 +62,6 @@
  */
 #define	cpu_swapin(p)			/* nothing */
 #define	cpu_wait(p)			/* nothing */
-#define cpu_setstack(p, ap)		(p)->p_md.md_regs[SP] = ap
 #define	cpu_swapout(p)			/* nothing */
 
 /*
@@ -69,8 +76,7 @@ struct clockframe {
 };
 
 #define	CLKF_USERMODE(framep)	(((framep)->sr & PSL_S) == 0)
-/*#define	CLKF_BASEPRI(framep)	(((framep)->sr & PSL_IPL) == 0)*/
-#define	CLKF_BASEPRI(framep)	(0)
+#define	CLKF_BASEPRI(framep)	(((framep)->sr & PSL_IPL) == 0)
 #define	CLKF_PC(framep)		((framep)->pc)
 #if 0
 /* We would like to do it this way... */
@@ -121,69 +127,11 @@ int	want_resched;		/* resched() was called */
 #define AMIGA_68881	(1L<<4)
 #define AMIGA_68882	(1L<<5)
 #define	AMIGA_FPU40	(1L<<6)
-
-/* values for fputype */
-#define FPU_NONE	0
-#define FPU_68881	1
-#define FPU_68882	2
-#define FPU_68040	3
-
-/* values for mmutype (assigned for quick testing) */
-#define	MMU_68030	-1	/* 68030 on-chip subset of 68851 */
-#define	MMU_68851	1	/* Motorola 68851 */
-#define MMU_68040	-2	/* 68040 on-chip subsubset */
+#define AMIGA_68060	(1L<<7)
 
 #ifdef _KERNEL
-int machineid, mmutype, fputype;
+int machineid;
 #endif
-
-/*
- * 68851 and 68030 MMU
- */
-#define	PMMU_LVLMASK	0x0007
-#define	PMMU_INV	0x0400
-#define	PMMU_WP		0x0800
-#define	PMMU_ALV	0x1000
-#define	PMMU_SO		0x2000
-#define	PMMU_LV		0x4000
-#define	PMMU_BE		0x8000
-#define	PMMU_FAULT	(PMMU_WP|PMMU_INV)
-
-/* 680X0 function codes */
-#define	FC_USERD	1	/* user data space */
-#define	FC_USERP	2	/* user program space */
-#define	FC_SUPERD	5	/* supervisor data space */
-#define	FC_SUPERP	6	/* supervisor program space */
-#define	FC_CPU		7	/* CPU space */
-
-/* fields in the 68020 cache control register */
-#define	IC_ENABLE	0x0001	/* enable instruction cache */
-#define	IC_FREEZE	0x0002	/* freeze instruction cache */
-#define	IC_CE		0x0004	/* clear instruction cache entry */
-#define	IC_CLR		0x0008	/* clear entire instruction cache */
-
-/* additional fields in the 68030 cache control register */
-#define	IC_BE		0x0010	/* instruction burst enable */
-#define	DC_ENABLE	0x0100	/* data cache enable */
-#define	DC_FREEZE	0x0200	/* data cache freeze */
-#define	DC_CE		0x0400	/* clear data cache entry */
-#define	DC_CLR		0x0800	/* clear entire data cache */
-#define	DC_BE		0x1000	/* data burst enable */
-#define	DC_WA		0x2000	/* write allocate */
-
-/* fields in the 68040 cache control register */
-#define	IC40_ENABLE	0x00008000	/* enable instruction cache */
-#define DC40_ENABLE	0x80000000	/* enable data cache */
-
-#define	CACHE_ON	(DC_WA|DC_BE|DC_CLR|DC_ENABLE|IC_BE|IC_CLR|IC_ENABLE)
-#define	CACHE_OFF	(DC_CLR|IC_CLR)
-#define	CACHE_CLR	(CACHE_ON)
-#define	IC_CLEAR	(DC_WA|DC_BE|DC_ENABLE|IC_BE|IC_CLR|IC_ENABLE)
-#define	DC_CLEAR	(DC_WA|DC_BE|DC_CLR|DC_ENABLE|IC_BE|IC_ENABLE)
-
-/* 68040 cache control */
-#define	CACHE40_ON	(IC40_ENABLE|DC40_ENABLE)
-#define	CACHE40_OFF	0x00000000
 
 /*
  * CTL_MACHDEP definitions.
@@ -195,5 +143,119 @@ int machineid, mmutype, fputype;
 	{ 0, 0 }, \
 	{ "console_device", CTLTYPE_STRUCT }, \
 }
+
+#ifdef _KERNEL
+/*
+ * Prototypes from amiga_init.c
+ */
+void	*alloc_z2mem __P((long));
+
+/*
+ * Prototypes from autoconf.c
+ */
+void	configure __P((void));
+int	is_a1200 __P((void));
+int	is_a3000 __P((void));
+int	is_a4000 __P((void));
+#ifdef DRACO
+int	is_draco __P((void));
+#endif
+
+/*
+ * Prototypes from clock.c
+ */
+u_long	clkread __P((void));
+
+#ifdef DRACO
+/*
+ * Prototypes from kbd.c
+ */
+void	drkbdintr __P((void));
+
+/*
+ * Prototypes from drsc.c
+ */
+void	drsc_handler __P((void));
+#endif
+
+/*
+ * Prototypes from locore.s
+ */
+struct fpframe;
+struct user;
+struct pcb;
+
+void	clearseg __P((vm_offset_t));
+void	doboot __P((void)) __attribute__((__noreturn__));
+u_long	getdfc __P((void));
+u_long	getsfc __P((void));
+void	loadustp __P((int));
+#ifdef FPCOPROC
+void	m68881_save __P((struct fpframe *));
+void	m68881_restore __P((struct fpframe *));
+#endif
+void	physcopyseg __P((vm_offset_t, vm_offset_t));
+u_int	probeva __P((u_int, u_int));
+void	proc_trampoline __P((void));
+void	savectx __P((struct pcb *));
+void	switch_exit __P((struct proc *));
+void	DCIAS __P((vm_offset_t));
+void	DCIA __P((void));
+void	DCIS __P((void));
+void	DCIU __P((void));
+void	ICIA __P((void));
+void	ICPA __P((void));
+void	PCIA __P((void));
+void	TBIA __P((void));
+void	TBIS __P((vm_offset_t));
+void	TBIAS __P((void));
+void	TBIAU __P((void));
+#if defined(M68040) || defined(M68060)
+void	DCFA __P((void));
+void	DCFP __P((vm_offset_t));
+void	DCFL __P((vm_offset_t));
+void	DCPL __P((vm_offset_t));
+void	DCPP __P((vm_offset_t));
+void	ICPL __P((vm_offset_t));
+void	ICPP __P((vm_offset_t));
+#endif
+
+/*
+ * Prototypes from machdep.c
+ */
+int	badaddr __P((caddr_t));
+int	badbaddr __P((caddr_t));
+void	bootsync __P((void));
+void	dumpconf __P((void));
+struct frame;
+void	regdump __P((struct frame *, int));
+
+/*
+ * Prototypes from sys_machdep.c:
+ */
+int	cachectl __P((int, caddr_t, int));
+int	dma_cachectl __P((caddr_t, int));
+
+/*
+ * Prototypes from vm_machdep.c
+ */
+int	kvtop __P((caddr_t));
+void	physaccess __P((caddr_t,  caddr_t, int, int));
+void	physunaccess __P((caddr_t, int));
+void	setredzone __P((u_int *, caddr_t));
+
+#ifdef GENERIC
+/*
+ * Prototypes from swapgeneric.c:
+ */
+void	setconf __P((void));
+#endif
+
+/*
+ * Prototypes from pmap.c:
+ */
+void	pmap_bootstrap __P((vm_offset_t, vm_offset_t));
+
+#endif /* _KERNEL */
 
 #endif /* !_MACHINE_CPU_H_ */

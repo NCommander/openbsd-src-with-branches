@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: isabus.c,v 1.10 1997/04/11 21:18:02 maja Exp $	*/
 /*	$NetBSD: isa.c,v 1.33 1995/06/28 04:30:51 cgd Exp $	*/
 
 /*-
@@ -88,12 +88,15 @@ WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 */
 
 #include <sys/param.h>
+#include <sys/proc.h>
+#include <sys/user.h>
 #include <sys/systm.h>
 #include <sys/time.h>
 #include <sys/kernel.h>
 #include <sys/device.h>
 #include <sys/malloc.h>
 
+#include <machine/pte.h>
 #include <machine/cpu.h>
 #include <machine/pio.h>
 #include <machine/autoconf.h>
@@ -108,19 +111,7 @@ WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 #include <arc/isa/spkrreg.h>
 #include <arc/isa/isa_machdep.h>
 
-extern int isa_io_base;		/* Base address for ISA I/O space	*/
-extern int isa_mem_base;	/* Base address for ISA MEM space	*/
-
 static int beeping;
-
-/*
- *	I/O macros to access isa bus ports/memory.
- *	At the first glance theese macros may seem inefficient.
- *      However, the cpu executes an instruction every 7.5ns
- *	so the bus is much slower so it doesn't matter, really.
- */
-#define	isa_outb(x,y)	outb(isa_io_base + (x), y)
-#define	isa_inb(x)	inb(isa_io_base + (x))
 
 #define	IRQ_SLAVE	2
 #define ICU_LEN		16
@@ -128,14 +119,13 @@ static int beeping;
 struct isabr_softc {
 	struct	device sc_dv;
 	struct	arc_isa_bus arc_isa_cs;
-	struct	arc_isa_busmap arc_isa_map;
 	struct	abus sc_bus;
 };
 
 /* Definition of the driver for autoconfig. */
 int	isabrmatch(struct device *, void *, void *);
 void	isabrattach(struct device *, struct device *, void *);
-int	isabrprint(void *, char *);
+int	isabrprint(void *, const char *);
 
 struct cfattach isabr_ca = {
 	sizeof(struct isabr_softc), isabrmatch, isabrattach
@@ -147,8 +137,9 @@ struct cfdriver isabr_cd = {
 void	*isabr_intr_establish __P((isa_chipset_tag_t, int, int, int,
 			int (*)(void *), void *, char *));
 void	isabr_intr_disestablish __P((isa_chipset_tag_t, void*));
-int	isabr_iointr __P((void *));
-void	isabr_initicu();
+int	isabr_iointr __P((unsigned int, struct clockframe *));
+void	isabr_initicu __P((void));
+void	intr_calculatemasks __P((void));
 
 extern int cputype;
 
@@ -159,7 +150,6 @@ isabrmatch(parent, cfdata, aux)
 	void *cfdata;
 	void *aux;
 {
-	struct cfdata *cf = cfdata;
 	struct confargs *ca = aux;
 
         /* Make sure that we're looking for a ISABR. */
@@ -188,6 +178,12 @@ isabrattach(parent, self, aux)
 	case ACER_PICA_61:
 		set_intr(INT_MASK_2, isabr_iointr, 3);
 		break;
+	case DESKSTATION_TYNE:
+		set_intr(INT_MASK_2, isabr_iointr, 2);
+		break;
+	case DESKSTATION_RPC44:
+		set_intr(INT_MASK_2, isabr_iointr, 2);
+		break;
 	default:
 		panic("isabrattach: unkown cputype!");
 	}
@@ -198,11 +194,10 @@ isabrattach(parent, self, aux)
 
 	sc->arc_isa_cs.ic_intr_establish = isabr_intr_establish;
 	sc->arc_isa_cs.ic_intr_disestablish = isabr_intr_disestablish;
-	sc->arc_isa_map.isa_io_base = (void *)isa_io_base;
-	sc->arc_isa_map.isa_mem_base = (void *)isa_mem_base;
 
 	iba.iba_busname = "isa";
-	iba.iba_bc = &sc->arc_isa_map;
+	iba.iba_iot = (bus_space_tag_t)&arc_bus_io;
+	iba.iba_memt = (bus_space_tag_t)&arc_bus_mem;
 	iba.iba_ic = &sc->arc_isa_cs;
 	config_found(self, &iba, isabrprint);
 }
@@ -210,13 +205,14 @@ isabrattach(parent, self, aux)
 int
 isabrprint(aux, pnp)
 	void *aux;
-	char *pnp;
+	const char *pnp;
 {
 	struct confargs *ca = aux;
 
         if (pnp)
                 printf("%s at %s", ca->ca_name, pnp);
-        printf(" I/O base 0x%lx Mem base 0x%lx", isa_io_base, isa_mem_base);
+        printf(" isa_io_base 0x%lx isa_mem_base 0x%lx",
+		arc_bus_io.bus_base, arc_bus_mem.bus_base);
         return (UNCONF);
 }
 
@@ -231,7 +227,7 @@ int	imen;
 int	intrtype[ICU_LEN], intrmask[ICU_LEN], intrlevel[ICU_LEN];
 struct intrhand *intrhand[ICU_LEN];
 
-int fakeintr(void *arg) {return 0;}
+int fakeintr(void *a) {return 0;}
 
 /*
  * Recalculate the interrupt masks from scratch.
@@ -383,17 +379,51 @@ isabr_intr_disestablish(ic, arg)
 }
 
 /*
- *	Process an interrupt from the ISA bus ACER PICA style.
+ *	Process an interrupt from the ISA bus.
  */
 int
-isabr_iointr(ca)
-	void *ca; /* XXX */
+isabr_iointr(mask, cf)
+        unsigned mask;
+        struct clockframe *cf;
 {
 	struct intrhand *ih;
 	int isa_vector;
 	int o_imen;
+	char vector;
 
-	isa_vector = in32(PICA_SYS_ISA_VECTOR) & (ICU_LEN - 1);
+	switch(cputype) {
+	case ACER_PICA_61:
+		isa_vector = in32(R4030_SYS_ISA_VECTOR) & (ICU_LEN - 1);
+		break;
+
+	case DESKSTATION_TYNE:
+		isa_outb(IO_ICU1, 0x0f);	/* Poll */
+		vector = isa_inb(IO_ICU1);
+		if(vector > 0 || (isa_vector = vector & 7) == 2) { 
+			isa_outb(IO_ICU2, 0x0f);
+			vector = isa_inb(IO_ICU2);
+			if(vector > 0) {
+				printf("isa: spurious interrupt.\n");
+				return(~0);
+			}
+			isa_vector = (vector & 7) | 8;
+		}
+		break;
+
+	case DESKSTATION_RPC44:
+		isa_outb(IO_ICU1, 0x0f);	/* Poll */
+		vector = isa_inb(IO_ICU1);
+		if(vector > 0 || (isa_vector = vector & 7) == 2) { 
+			isa_outb(IO_ICU2, 0x0f);
+			vector = isa_inb(IO_ICU2);
+			if(vector > 0) {
+				printf("isa: spurious interrupt.\n");
+				return(~0);
+			}
+			isa_vector = (vector & 7) | 8;
+		}
+		break;
+	}
 
 	o_imen = imen;
 	imen |= 1 << (isa_vector & (ICU_LEN - 1));
@@ -409,6 +439,10 @@ isabr_iointr(ca)
 		isa_outb(IO_ICU1, 0x60 + isa_vector);
 	}
 	ih = intrhand[isa_vector];
+	if(isa_vector == 0) {	/* Clock */	/*XXX*/
+		(*ih->ih_fun)(cf);
+		ih = ih->ih_next;
+	}
 	while(ih) {
 		(*ih->ih_fun)(ih->ih_arg);
 		ih = ih->ih_next;
@@ -426,7 +460,7 @@ isabr_iointr(ca)
 /* 
  * Initialize the Interrupt controller logic.
  */
-void                  
+void
 isabr_initicu()
 {  
 
@@ -473,6 +507,10 @@ sysbeep(pitch, period)
 {
 	static int last_pitch, last_period;
 	int s;
+	extern int cold;
+
+	if (cold)
+		return;		/* Can't beep yet. */
 
 	if (beeping)
 		untimeout(sysbeepstop, 0);

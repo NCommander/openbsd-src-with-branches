@@ -1,5 +1,4 @@
-#	$NetBSD: Makefile.inc,v 1.4 1995/02/27 12:54:33 cgd Exp $
-#	@(#)Makefile.inc	8.1 (Berkeley) 6/4/93
+#	$OpenBSD: Makefile.inc,v 1.4 1995/02/27 12:54:33 cgd Exp $
 
 # gmon sources
 .PATH: ${.CURDIR}/gmon

@@ -1,4 +1,5 @@
-/*	$NetBSD: tcp_subr.c,v 1.19 1995/06/12 06:48:54 mycroft Exp $	*/
+/*	$OpenBSD: tcp_subr.c,v 1.7 1996/07/29 22:01:50 niklas Exp $	*/
+/*	$NetBSD: tcp_subr.c,v 1.22 1996/02/13 23:44:00 christos Exp $	*/
 
 /*
  * Copyright (c) 1982, 1986, 1988, 1990, 1993
@@ -60,13 +61,30 @@
 #include <netinet/tcp_timer.h>
 #include <netinet/tcp_var.h>
 #include <netinet/tcpip.h>
+#include <dev/rndvar.h>
 
 /* patchable/settable parameters for tcp */
 int 	tcp_mssdflt = TCP_MSS;
 int 	tcp_rttdflt = TCPTV_SRTTDFLT / PR_SLOWHZ;
-int	tcp_do_rfc1323 = 1;
 
-extern	struct inpcb *tcp_last_inpcb;
+/*
+ * Configure kernel with options "TCP_DO_RFC1323=0" to disable RFC1323 stuff.
+ * This is a good idea over slow SLIP/PPP links, because the timestamp
+ * pretty well destroys the VJ compression (any packet with a timestamp
+ * different from the previous one can't be compressed), as well as adding
+ * more overhead.
+ * XXX And it should be a settable per route characteristic (with this just
+ * used as the default).
+ */
+#ifndef TCP_DO_RFC1323
+#define TCP_DO_RFC1323 1
+#endif
+int    tcp_do_rfc1323 = TCP_DO_RFC1323;
+
+#ifndef TCBHASHSIZE
+#define	TCBHASHSIZE	128
+#endif
+int	tcbhashsize = TCBHASHSIZE;
 
 /*
  * Tcp initialization
@@ -74,9 +92,12 @@ extern	struct inpcb *tcp_last_inpcb;
 void
 tcp_init()
 {
-
+#ifdef TCP_COMPAT_42
 	tcp_iss = 1;		/* wrong */
-	in_pcbinit(&tcbtable);
+#else /* TCP_COMPAT_42 */
+	tcp_iss = arc4random() + 1;
+#endif /* !TCP_COMPAT_42 */
+	in_pcbinit(&tcbtable, tcbhashsize);
 	if (max_protohdr < sizeof(struct tcpiphdr))
 		max_protohdr = sizeof(struct tcpiphdr);
 	if (max_linkhdr + sizeof(struct tcpiphdr) > MHLEN)
@@ -104,8 +125,7 @@ tcp_template(tp)
 		m->m_len = sizeof (struct tcpiphdr);
 		n = mtod(m, struct tcpiphdr *);
 	}
-	n->ti_next = n->ti_prev = 0;
-	n->ti_x1 = 0;
+	bzero(n->ti_x1, sizeof n->ti_x1);
 	n->ti_pr = IPPROTO_TCP;
 	n->ti_len = htons(sizeof (struct tcpiphdr) - sizeof (struct ip));
 	n->ti_src = inp->inp_laddr;
@@ -176,13 +196,12 @@ tcp_respond(tp, ti, m, ack, seq, flags)
 		xchg(ti->ti_dport, ti->ti_sport, u_int16_t);
 #undef xchg
 	}
-	ti->ti_len = htons((u_short)(sizeof (struct tcphdr) + tlen));
+	ti->ti_len = htons((u_int16_t)(sizeof (struct tcphdr) + tlen));
 	tlen += sizeof (struct tcpiphdr);
 	m->m_len = tlen;
 	m->m_pkthdr.len = tlen;
 	m->m_pkthdr.rcvif = (struct ifnet *) 0;
-	ti->ti_next = ti->ti_prev = 0;
-	ti->ti_x1 = 0;
+	bzero(ti->ti_x1, sizeof ti->ti_x1);
 	ti->ti_seq = htonl(seq);
 	ti->ti_ack = htonl(ack);
 	ti->ti_x2 = 0;
@@ -215,7 +234,7 @@ tcp_newtcpcb(inp)
 	if (tp == NULL)
 		return ((struct tcpcb *)0);
 	bzero((char *) tp, sizeof(struct tcpcb));
-	tp->seg_next = tp->seg_prev = (struct tcpiphdr *)tp;
+	LIST_INIT(&tp->segq);
 	tp->t_maxseg = tcp_mssdflt;
 
 	tp->t_flags = tcp_do_rfc1323 ? (TF_REQ_SCALE|TF_REQ_TSTMP) : 0;
@@ -271,10 +290,9 @@ struct tcpcb *
 tcp_close(tp)
 	register struct tcpcb *tp;
 {
-	register struct tcpiphdr *t;
+	register struct ipqent *qe;
 	struct inpcb *inp = tp->t_inpcb;
 	struct socket *so = inp->inp_socket;
-	register struct mbuf *m;
 #ifdef RTV_RTT
 	register struct rtentry *rt;
 
@@ -293,7 +311,7 @@ tcp_close(tp)
 	if (SEQ_LT(tp->iss + so->so_snd.sb_hiwat * 16, tp->snd_max) &&
 	    (rt = inp->inp_route.ro_rt) &&
 	    satosin(rt_key(rt))->sin_addr.s_addr != INADDR_ANY) {
-		register u_long i;
+		register u_long i = 0;
 
 		if ((rt->rt_rmx.rmx_locks & RTV_RTT) == 0) {
 			i = tp->t_srtt *
@@ -326,8 +344,8 @@ tcp_close(tp)
 		 * before we start updating, then update on both good
 		 * and bad news.
 		 */
-		if ((rt->rt_rmx.rmx_locks & RTV_SSTHRESH) == 0 &&
-		    (i = tp->snd_ssthresh) && rt->rt_rmx.rmx_ssthresh ||
+		if (((rt->rt_rmx.rmx_locks & RTV_SSTHRESH) == 0 &&
+		    (i = tp->snd_ssthresh) && rt->rt_rmx.rmx_ssthresh) ||
 		    i < (rt->rt_rmx.rmx_sendpipe / 2)) {
 			/*
 			 * convert the limit from user data bytes to
@@ -346,21 +364,16 @@ tcp_close(tp)
 	}
 #endif /* RTV_RTT */
 	/* free the reassembly queue, if any */
-	t = tp->seg_next;
-	while (t != (struct tcpiphdr *)tp) {
-		t = (struct tcpiphdr *)t->ti_next;
-		m = REASS_MBUF((struct tcpiphdr *)t->ti_prev);
-		remque(t->ti_prev);
-		m_freem(m);
+	while ((qe = tp->segq.lh_first) != NULL) {
+		LIST_REMOVE(qe, ipqe_q);
+		m_freem(qe->ipqe_m);
+		FREE(qe, M_IPQ);
 	}
 	if (tp->t_template)
 		(void) m_free(dtom(tp->t_template));
 	free(tp, M_PCB);
 	inp->inp_ppcb = 0;
 	soisdisconnected(so);
-	/* clobber input pcb cache if we're closing the cached connection */
-	if (inp == tcp_last_inpcb)
-		tcp_last_inpcb = 0;
 	in_pcbdetach(inp);
 	tcpstat.tcps_closed++;
 	return ((struct tcpcb *)0);
@@ -406,20 +419,20 @@ tcp_notify(inp, error)
 	sowwakeup(so);
 }
 
-void
-tcp_ctlinput(cmd, sa, ip)
+void *
+tcp_ctlinput(cmd, sa, v)
 	int cmd;
 	struct sockaddr *sa;
-	register struct ip *ip;
+	register void *v;
 {
+	register struct ip *ip = v;
 	register struct tcphdr *th;
-	extern struct in_addr zeroin_addr;
 	extern int inetctlerrmap[];
 	void (*notify) __P((struct inpcb *, int)) = tcp_notify;
 	int errno;
 
 	if ((unsigned)cmd >= PRC_NCMDS)
-		return;
+		return NULL;
 	errno = inetctlerrmap[cmd];
 	if (cmd == PRC_QUENCH)
 		notify = tcp_quench;
@@ -428,13 +441,14 @@ tcp_ctlinput(cmd, sa, ip)
 	else if (cmd == PRC_HOSTDEAD)
 		ip = 0;
 	else if (errno == 0)
-		return;
+		return NULL;
 	if (ip) {
 		th = (struct tcphdr *)((caddr_t)ip + (ip->ip_hl << 2));
 		in_pcbnotify(&tcbtable, sa, th->th_dport, ip->ip_src,
 		    th->th_sport, errno, notify);
 	} else
 		in_pcbnotifyall(&tcbtable, sa, errno, notify);
+	return NULL;
 }
 
 /*

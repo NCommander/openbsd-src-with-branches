@@ -1,4 +1,4 @@
-/*	$NetBSD: ansi.h,v 1.3 1994/11/20 20:52:50 deraadt Exp $ */
+/*	$NetBSD: ansi.h,v 1.6 1996/11/15 22:38:59 jtc Exp $ */
 
 /*-
  * Copyright (c) 1990, 1993
@@ -53,6 +53,8 @@
 #define	_BSD_SSIZE_T_	int			/* byte count or error */
 #define	_BSD_TIME_T_	long			/* time() */
 #define	_BSD_VA_LIST_	char *			/* va_list */
+#define _BSD_CLOCKID_T_	int
+#define _BSD_TIMER_T_	int
 
 /*
  * Runes (wchar_t) is declared to be an ``int'' instead of the more natural
@@ -63,12 +65,13 @@
  * chosen over a long is that the is*() and to*() routines take ints (says
  * ANSI C), but they use _RUNE_T_ instead of int.  By changing it here, you
  * lose a bit of ANSI conformance, but your programs will still work.
- *    
+ *
  * Note that _WCHAR_T_ and _RUNE_T_ must be of the same type.  When wchar_t
  * and rune_t are typedef'd, _WCHAR_T_ will be undef'd, but _RUNE_T remains
  * defined for ctype.h.
  */
 #define	_BSD_WCHAR_T_	int			/* wchar_t */
+#define _BSD_WINT_T_	int			/* wint_t */
 #define	_BSD_RUNE_T_	int			/* rune_t */
 
 #endif	/* _ANSI_H_ */

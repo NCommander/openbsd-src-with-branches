@@ -1,3 +1,4 @@
+#	$OpenBSD: Makefile,v 1.7 1995/04/15 02:31:13 cgd Exp $
 #	$NetBSD: Makefile,v 1.7 1995/04/15 02:31:13 cgd Exp $
 
 PROG=	ipcs

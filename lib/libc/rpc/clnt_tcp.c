@@ -1,5 +1,3 @@
-/*	$NetBSD: clnt_tcp.c,v 1.4 1995/02/25 03:01:41 cgd Exp $	*/
-
 /*
  * Sun RPC is a product of Sun Microsystems, Inc. and is provided for
  * unrestricted use provided that this legend is included on all tape
@@ -30,10 +28,8 @@
  */
 
 #if defined(LIBC_SCCS) && !defined(lint)
-/*static char *sccsid = "from: @(#)clnt_tcp.c 1.37 87/10/05 Copyr 1984 Sun Micro";*/
-/*static char *sccsid = "from: @(#)clnt_tcp.c	2.2 88/08/01 4.0 RPCSRC";*/
-static char *rcsid = "$NetBSD: clnt_tcp.c,v 1.4 1995/02/25 03:01:41 cgd Exp $";
-#endif
+static char *rcsid = "$OpenBSD: clnt_tcp.c,v 1.12 1997/01/02 09:21:01 deraadt Exp $";
+#endif /* LIBC_SCCS and not lint */
  
 /*
  * clnt_tcp.c, Implements a TCP/IP based, client side RPC.
@@ -56,6 +52,7 @@ static char *rcsid = "$NetBSD: clnt_tcp.c,v 1.4 1995/02/25 03:01:41 cgd Exp $";
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <unistd.h>
 #include <rpc/rpc.h>
 #include <sys/socket.h>
 #include <netdb.h>
@@ -162,7 +159,8 @@ clnttcp_create(raddr, prog, vers, sockp, sendsz, recvsz)
 		    sizeof(*raddr)) < 0)) {
 			rpc_createerr.cf_stat = RPC_SYSTEMERROR;
 			rpc_createerr.cf_error.re_errno = errno;
-			(void)close(*sockp);
+			if (*sockp != -1)
+				(void)close(*sockp);
 			goto fooy;
 		}
 		ct->ct_closeit = TRUE;
@@ -182,7 +180,7 @@ clnttcp_create(raddr, prog, vers, sockp, sendsz, recvsz)
 	 * Initialize call message
 	 */
 	(void)gettimeofday(&now, (struct timezone *)0);
-	call_msg.rm_xid = getpid() ^ now.tv_sec ^ now.tv_usec;
+	call_msg.rm_xid = arc4random();
 	call_msg.rm_direction = CALL;
 	call_msg.rm_call.cb_rpcvers = RPC_MSG_VERSION;
 	call_msg.rm_call.cb_prog = prog;
@@ -217,8 +215,10 @@ fooy:
 	/*
 	 * Something goofed, free stuff and barf
 	 */
-	mem_free((caddr_t)ct, sizeof(struct ct_data));
-	mem_free((caddr_t)h, sizeof(CLIENT));
+	if (ct)
+		mem_free((caddr_t)ct, sizeof(struct ct_data));
+	if (h)
+		mem_free((caddr_t)h, sizeof(CLIENT));
 	return ((CLIENT *)NULL);
 }
 
@@ -253,7 +253,7 @@ call_again:
 	ct->ct_error.re_status = RPC_SUCCESS;
 	x_id = ntohl(--(*msg_x_id));
 	if ((! XDR_PUTBYTES(xdrs, ct->ct_mcall, ct->ct_mpos)) ||
-	    (! XDR_PUTLONG(xdrs, &proc)) ||
+	    (! XDR_PUTLONG(xdrs, (long *)&proc)) ||
 	    (! AUTH_MARSHALL(h->cl_auth, xdrs)) ||
 	    (! (*xdr_args)(xdrs, args_ptr))) {
 		if (ct->ct_error.re_status == RPC_SUCCESS)
@@ -400,39 +400,66 @@ readtcp(ct, buf, len)
 	caddr_t buf;
 	register int len;
 {
-	fd_set mask;
-	fd_set readfds;
+	fd_set *fds, readfds;
+	struct timeval start, after, duration, delta, tmp;
+	int r, save_errno;
 
 	if (len == 0)
 		return (0);
-	FD_ZERO(&mask);
-	FD_SET(ct->ct_sock, &mask);
+
+	if (ct->ct_sock+1 > FD_SETSIZE) {
+		int bytes = howmany(ct->ct_sock+1, NFDBITS) * sizeof(fd_mask);
+		fds = (fd_set *)malloc(bytes);
+		if (fds == NULL)
+			return (-1);
+		memset(fds, 0, bytes);
+	} else {
+		fds = &readfds;
+		FD_ZERO(fds);
+	}
+
+	gettimeofday(&start, NULL);
+	delta = ct->ct_wait;
 	while (TRUE) {
-		readfds = mask;
-		switch (select(ct->ct_sock+1, &readfds, (int*)NULL, (int*)NULL,
-			       &(ct->ct_wait))) {
+		/* XXX we know the other bits are still clear */
+		FD_SET(ct->ct_sock, fds);
+		r = select(ct->ct_sock+1, fds, NULL, NULL, &delta);
+		save_errno = errno;
+
+		gettimeofday(&after, NULL);
+		timersub(&start, &after, &duration);
+		timersub(&delta, &duration, &tmp);
+		delta = tmp;
+		if (delta.tv_sec < 0 || !timerisset(&delta))
+			r = 0;
+
+		switch (r) {
 		case 0:
 			ct->ct_error.re_status = RPC_TIMEDOUT;
+			if (fds != &readfds)
+				free(fds);
 			return (-1);
-
 		case -1:
 			if (errno == EINTR)
 				continue;
 			ct->ct_error.re_status = RPC_CANTRECV;
-			ct->ct_error.re_errno = errno;
+			ct->ct_error.re_errno = save_errno;
+			if (fds != &readfds)
+				free(fds);
 			return (-1);
 		}
 		break;
 	}
-	switch (len = read(ct->ct_sock, buf, len)) {
+	if (fds != &readfds)
+		free(fds);
 
+	switch (len = read(ct->ct_sock, buf, len)) {
 	case 0:
 		/* premature eof */
 		ct->ct_error.re_errno = ECONNRESET;
 		ct->ct_error.re_status = RPC_CANTRECV;
 		len = -1;  /* it's really an error */
 		break;
-
 	case -1:
 		ct->ct_error.re_errno = errno;
 		ct->ct_error.re_status = RPC_CANTRECV;

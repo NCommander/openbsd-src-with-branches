@@ -39,7 +39,7 @@ static char copyright[] =
 
 #ifndef lint
 /* from: static char sccsid[] = "@(#)rlogind.c	8.1 (Berkeley) 6/4/93"; */
-static char *rcsid = "$Id: rlogind.c,v 1.6 1994/06/05 13:57:52 cgd Exp $";
+static char *rcsid = "$Id: rlogind.c,v 1.18 1997/02/13 22:29:10 deraadt Exp $";
 #endif /* not lint */
 
 /*
@@ -62,6 +62,7 @@ static char *rcsid = "$Id: rlogind.c,v 1.6 1994/06/05 13:57:52 cgd Exp $";
 #include <netinet/in.h>
 #include <netinet/in_systm.h>
 #include <netinet/ip.h>
+#include <netinet/ip_var.h>
 #include <arpa/inet.h>
 #include <netdb.h>
 
@@ -78,7 +79,22 @@ static char *rcsid = "$Id: rlogind.c,v 1.6 1994/06/05 13:57:52 cgd Exp $";
 #define TIOCPKT_WINDOW 0x80
 #endif
 
+#ifdef	KERBEROS
+#include <kerberosIV/des.h>
+#include <kerberosIV/krb.h>
+#define	SECURE_MESSAGE "This rlogin session is using DES encryption for all transmissions.\r\n"
+
+AUTH_DAT	*kdata;
+KTEXT		ticket;
+u_char		auth_buf[sizeof(AUTH_DAT)];
+u_char		tick_buf[sizeof(KTEXT_ST)];
+Key_schedule	schedule;
+int		doencrypt, retval, use_kerberos, vacuous;
+
+#define		ARGSTR			"alnkvx"
+#else
 #define		ARGSTR			"aln"
+#endif	/* KERBEROS */
 
 char	*env[2];
 #define	NMAX 30
@@ -86,7 +102,7 @@ char	lusername[NMAX+1], rusername[NMAX+1];
 static	char term[64] = "TERM=";
 #define	ENVSIZE	(sizeof("TERM=")-1)	/* skip null for concatenation */
 int	keepalive = 1;
-int	check_all = 0;
+int	check_all = 1;
 
 struct	passwd *pwd;
 
@@ -115,10 +131,10 @@ main(argc, argv)
 	openlog("rlogind", LOG_PID | LOG_CONS, LOG_AUTH);
 
 	opterr = 0;
-	while ((ch = getopt(argc, argv, ARGSTR)) != EOF)
+	while ((ch = getopt(argc, argv, ARGSTR)) != -1)
 		switch (ch) {
 		case 'a':
-			check_all = 1;
+			/* check_all = 1; */
 			break;
 		case 'l':
 			__check_rhosts_file = 0;
@@ -126,6 +142,17 @@ main(argc, argv)
 		case 'n':
 			keepalive = 0;
 			break;
+#ifdef KERBEROS
+		case 'k':
+			use_kerberos = 1;
+			break;
+		case 'v':
+			vacuous = 1;
+			break;
+		case 'x':
+			doencrypt = 1;
+			break;
+#endif
 		case '?':
 		default:
 			usage();
@@ -134,6 +161,12 @@ main(argc, argv)
 	argc -= optind;
 	argv += optind;
 
+#ifdef	KERBEROS
+	if (use_kerberos && vacuous) {
+		usage();
+		fatal(STDERR_FILENO, "only one of -k and -v allowed", 0);
+	}
+#endif
 	fromlen = sizeof (from);
 	if (getpeername(0, (struct sockaddr *)&from, &fromlen) < 0) {
 		syslog(LOG_ERR,"Can't get peer name of remote host: %m");
@@ -165,7 +198,8 @@ doit(f, fromp)
 	int master, pid, on = 1;
 	int authenticated = 0;
 	register struct hostent *hp;
-	char hostname[2 * MAXHOSTNAMELEN + 1];
+	char hostname[MAXHOSTNAMELEN];
+	int good = 0;
 	char c;
 
 	alarm(60);
@@ -173,16 +207,48 @@ doit(f, fromp)
 
 	if (c != 0)
 		exit(1);
+#ifdef	KERBEROS
+	if (vacuous)
+		fatal(f, "Remote host requires Kerberos authentication", 0);
+#endif
 
 	alarm(0);
 	fromp->sin_port = ntohs((u_short)fromp->sin_port);
 	hp = gethostbyaddr((char *)&fromp->sin_addr, sizeof(struct in_addr),
 	    fromp->sin_family);
-	if (hp)
-		(void)strcpy(hostname, hp->h_name);
-	else
-		(void)strcpy(hostname, inet_ntoa(fromp->sin_addr));
+	if (hp) {
+		strncpy(hostname, hp->h_name, sizeof(hostname)-1);
+		if (check_all) {
+			hp = gethostbyname(hostname);
+			if (hp) {
+				for (; good == 0 && hp->h_addr_list[0] != NULL;
+				    hp->h_addr_list++)
+					if (!bcmp(hp->h_addr_list[0],
+					    (caddr_t)&fromp->sin_addr,
+					    sizeof(fromp->sin_addr)))
+						good = 1;
+			}
+	
+		} else
+			good = 1;
+	}
+	/* aha, the DNS looks spoofed */
+	if (hp == NULL || good == 0)
+		strncpy(hostname, inet_ntoa(fromp->sin_addr), sizeof(hostname)-1);
+	hostname[sizeof(hostname)-1] = '\0';
 
+
+#ifdef	KERBEROS
+	if (use_kerberos) {
+		retval = do_krb_login(fromp);
+		if (retval == 0)
+			authenticated++;
+		else if (retval > 0)
+			fatal(f, (char *)krb_err_txt[retval], 0);
+		write(f, &c, 1);
+		confirmed = 1;		/* we sent the null! */
+	} else
+#endif
 	{
 		if (fromp->sin_family != AF_INET ||
 		    fromp->sin_port >= IPPORT_RESERVED ||
@@ -193,28 +259,25 @@ doit(f, fromp)
 		}
 #ifdef IP_OPTIONS
 		{
-		u_char optbuf[BUFSIZ/3], *cp;
-		char lbuf[BUFSIZ], *lp;
-		int optsize = sizeof(optbuf), ipproto;
+		struct ipoption opts;
+		int optsize = sizeof(opts), ipproto, i;
 		struct protoent *ip;
 
 		if ((ip = getprotobyname("ip")) != NULL)
 			ipproto = ip->p_proto;
 		else
 			ipproto = IPPROTO_IP;
-		if (getsockopt(0, ipproto, IP_OPTIONS, (char *)optbuf,
+		if (getsockopt(0, ipproto, IP_OPTIONS, (char *)&opts,
 		    &optsize) == 0 && optsize != 0) {
-			lp = lbuf;
-			for (cp = optbuf; optsize > 0; cp++, optsize--, lp += 3)
-				sprintf(lp, " %2.2x", *cp);
-			syslog(LOG_NOTICE,
-			    "Connection received using IP options (ignored):%s",
-			    lbuf);
-			if (setsockopt(0, ipproto, IP_OPTIONS,
-			    (char *)NULL, optsize) != 0) {
-				syslog(LOG_ERR,
-				    "setsockopt IP_OPTIONS NULL: %m");
-				exit(1);
+			for (i = 0; (void *)&opts.ipopt_list[i] - (void *)&opts <
+			    optsize; ) {
+				u_char c = (u_char)opts.ipopt_list[i];
+				if (c == IPOPT_LSRR || c == IPOPT_SSRR)
+					exit(1);
+				if (c == IPOPT_EOL)
+					break;
+				i += (c == IPOPT_NOP) ? 1 :
+				    (u_char)opts.ipopt_list[i+1];
 			}
 		}
 		}
@@ -226,6 +289,10 @@ doit(f, fromp)
 		write(f, "", 1);
 		confirmed = 1;		/* we sent the null! */
 	}
+#ifdef	KERBEROS
+	if (doencrypt)
+		(void) des_write(f, SECURE_MESSAGE, sizeof(SECURE_MESSAGE) - 1);
+#endif
 	netf = f;
 
 	pid = forkpty(&master, line, NULL, &win);
@@ -240,15 +307,30 @@ doit(f, fromp)
 			(void) close(f);
 		setup_term(0);
 		if (authenticated) {
+#ifdef	KERBEROS
+			if (use_kerberos && (pwd->pw_uid == 0))
+				syslog(LOG_INFO|LOG_AUTH,
+				    "ROOT Kerberos login from %s.%s@%s on %s\n",
+				    kdata->pname, kdata->pinst, kdata->prealm,
+				    hostname);
+#endif
 
-			execl(_PATH_LOGIN, "login", "-p",
-			    "-h", hostname, "-f", lusername, (char *)NULL);
+			execl(_PATH_LOGIN, "login", "-p", "-h", hostname, "-u",
+			    rusername, "-f", "--", lusername, (char *)NULL);
 		} else
-			execl(_PATH_LOGIN, "login", "-p",
-			    "-h", hostname, lusername, (char *)NULL);
+			execl(_PATH_LOGIN, "login", "-p", "-h", hostname,
+			    "-u", rusername, "--", lusername, (char *)NULL);
 		fatal(STDERR_FILENO, _PATH_LOGIN, 1);
 		/*NOTREACHED*/
 	}
+#ifdef	KERBEROS
+	/*
+	 * If encrypted, don't turn on NBIO or the des read/write
+	 * routines will croak.
+	 */
+
+	if (!doencrypt)
+#endif
 		ioctl(f, FIONBIO, &on);
 	ioctl(master, FIONBIO, &on);
 	ioctl(master, TIOCPKT, &on);
@@ -355,6 +437,11 @@ protocol(f, p)
 			}
 		}
 		if (FD_ISSET(f, &ibits)) {
+#ifdef	KERBEROS
+			if (doencrypt)
+				fcc = des_read(f, fibuf, sizeof(fibuf));
+			else
+#endif
 				fcc = read(f, fibuf, sizeof(fibuf));
 			if (fcc < 0 && errno == EWOULDBLOCK)
 				fcc = 0;
@@ -401,6 +488,9 @@ protocol(f, p)
 				break;
 			else if (pibuf[0] == 0) {
 				pbp++, pcc--;
+#ifdef	KERBEROS
+				if (!doencrypt)
+#endif
 					FD_SET(f, &obits);	/* try write */
 			} else {
 				if (pkcontrol(pibuf[0])) {
@@ -411,6 +501,11 @@ protocol(f, p)
 			}
 		}
 		if ((FD_ISSET(f, &obits)) && pcc > 0) {
+#ifdef	KERBEROS
+			if (doencrypt)
+				cc = des_write(f, pbp, pcc);
+			else
+#endif
 				cc = write(f, pbp, pcc);
 			if (cc < 0 && errno == EWOULDBLOCK) {
 				/*
@@ -512,7 +607,7 @@ void
 setup_term(fd)
 	int fd;
 {
-	register char *cp = index(term+ENVSIZE, '/');
+	register char *cp = strchr(term+ENVSIZE, '/');
 	char *speed;
 	struct termios tt;
 
@@ -521,7 +616,7 @@ setup_term(fd)
 	if (cp) {
 		*cp++ = '\0';
 		speed = cp;
-		cp = index(speed, '/');
+		cp = strchr(speed, '/');
 		if (cp)
 			*cp++ = '\0';
 		cfsetspeed(&tt, atoi(speed));
@@ -535,7 +630,7 @@ setup_term(fd)
 	if (cp) {
 		*cp++ = '\0';
 		speed = cp;
-		cp = index(speed, '/');
+		cp = strchr(speed, '/');
 		if (cp)
 			*cp++ = '\0';
 		tcgetattr(fd, &tt);
@@ -549,51 +644,77 @@ setup_term(fd)
 	environ = env;
 }
 
+#ifdef	KERBEROS
+#define	VERSION_SIZE	9
+
+/*
+ * Do the remote kerberos login to the named host with the
+ * given inet address
+ *
+ * Return 0 on valid authorization
+ * Return -1 on valid authentication, no authorization
+ * Return >0 for error conditions
+ */
+int
+do_krb_login(dest)
+	struct sockaddr_in *dest;
+{
+	int rc;
+	char instance[INST_SZ], version[VERSION_SIZE];
+	long authopts = 0L;	/* !mutual */
+	struct sockaddr_in faddr;
+
+	kdata = (AUTH_DAT *) auth_buf;
+	ticket = (KTEXT) tick_buf;
+
+	instance[0] = '*';
+	instance[1] = '\0';
+
+	if (doencrypt) {
+		rc = sizeof(faddr);
+		if (getsockname(0, (struct sockaddr *)&faddr, &rc))
+			return (-1);
+		authopts = KOPT_DO_MUTUAL;
+		rc = krb_recvauth(
+			authopts, 0,
+			ticket, "rcmd",
+			instance, dest, &faddr,
+			kdata, "", schedule, version);
+		 desrw_set_key(&kdata->session, schedule);
+
+	} else
+		rc = krb_recvauth(
+			authopts, 0,
+			ticket, "rcmd",
+			instance, dest, (struct sockaddr_in *) 0,
+			kdata, "", (struct des_ks_struct *) 0, version);
+
+	if (rc != KSUCCESS)
+		return (rc);
+
+	getstr(lusername, sizeof(lusername), "locuser");
+	/* get the "cmd" in the rcmd protocol */
+	getstr(term+ENVSIZE, sizeof(term)-ENVSIZE, "Terminal type");
+
+	pwd = getpwnam(lusername);
+	if (pwd == NULL)
+		return (-1);
+
+	/* returns nonzero for no access */
+	if (kuserok(kdata, lusername) != 0)
+		return (-1);
+	
+	return (0);
+
+}
+#endif /* KERBEROS */
 
 void
 usage()
 {
+#ifdef KERBEROS
+	syslog(LOG_ERR, "usage: rlogind [-aln] [-k | -v]");
+#else
 	syslog(LOG_ERR, "usage: rlogind [-aln]");
-}
-
-/*
- * Check whether host h is in our local domain,
- * defined as sharing the last two components of the domain part,
- * or the entire domain part if the local domain has only one component.
- * If either name is unqualified (contains no '.'),
- * assume that the host is local, as it will be
- * interpreted as such.
- */
-int
-local_domain(h)
-	char *h;
-{
-	char localhost[MAXHOSTNAMELEN];
-	char *p1, *p2;
-
-	localhost[0] = 0;
-	(void) gethostname(localhost, sizeof(localhost));
-	p1 = topdomain(localhost);
-	p2 = topdomain(h);
-	if (p1 == NULL || p2 == NULL || !strcasecmp(p1, p2))
-		return (1);
-	return (0);
-}
-
-char *
-topdomain(h)
-	char *h;
-{
-	register char *p;
-	char *maybe = NULL;
-	int dots = 0;
-
-	for (p = h + strlen(h); p >= h; p--) {
-		if (*p == '.') {
-			if (++dots == 2)
-				return (p);
-			maybe = p;
-		}
-	}
-	return (maybe);
+#endif
 }

@@ -1,3 +1,4 @@
+/*	$OpenBSD: error.h,v 1.3 1995/09/02 06:15:25 jtc Exp $	*/
 /*	$NetBSD: error.h,v 1.3 1995/09/02 06:15:25 jtc Exp $	*/
 
 /*

@@ -1,4 +1,5 @@
-/*	$NetBSD: hunt.c,v 1.4 1994/12/24 17:56:27 cgd Exp $	*/
+/*	$OpenBSD: hunt.c,v 1.4 1996/10/15 23:47:21 millert Exp $	*/
+/*	$NetBSD: hunt.c,v 1.6 1997/04/20 00:02:10 mellon Exp $	*/
 
 /*
  * Copyright (c) 1983, 1993
@@ -37,13 +38,12 @@
 #if 0
 static char sccsid[] = "@(#)hunt.c	8.1 (Berkeley) 6/6/93";
 #endif
-static char rcsid[] = "$NetBSD: hunt.c,v 1.4 1994/12/24 17:56:27 cgd Exp $";
+static char rcsid[] = "$OpenBSD: hunt.c,v 1.4 1996/10/15 23:47:21 millert Exp $";
 #endif /* not lint */
 
 #include "tip.h"
 
 extern char *getremote();
-extern char *rindex();
 
 static	jmp_buf deadline;
 static	int deadfl;
@@ -65,7 +65,7 @@ hunt(name)
 	f = signal(SIGALRM, dead);
 	while (cp = getremote(name)) {
 		deadfl = 0;
-		uucplock = rindex(cp, '/')+1;
+		uucplock = strrchr(cp, '/')+1;
 		if (uu_lock(uucplock) < 0)
 			continue;
 		/*
@@ -79,7 +79,8 @@ hunt(name)
 			break;
 		if (setjmp(deadline) == 0) {
 			alarm(10);
-			FD = open(cp, O_RDWR);
+			FD = open(cp, (O_RDWR |
+				       (boolean(value(DC)) ? O_NONBLOCK : 0)));
 		}
 		alarm(0);
 		if (FD < 0) {
@@ -87,8 +88,13 @@ hunt(name)
 			deadfl = 1;
 		}
 		if (!deadfl) {
+			struct termios cntrl;
+
+			tcgetattr(FD, &cntrl);
+			if (!boolean(value(DC)))
+				cntrl.c_cflag |= HUPCL;
+			tcsetattr(FD, TCSAFLUSH, &cntrl);
 			ioctl(FD, TIOCEXCL, 0);
-			ioctl(FD, TIOCHPCL, 0);
 			signal(SIGALRM, SIG_DFL);
 			return ((long)cp);
 		}

@@ -1,3 +1,4 @@
+#	$OpenBSD: Makefile,v 1.4 1996/12/10 08:26:53 deraadt Exp $
 #	$NetBSD: Makefile,v 1.8 1995/03/07 21:12:04 cgd Exp $
 #	@(#)Makefile	8.1 (Berkeley) 6/6/93
 

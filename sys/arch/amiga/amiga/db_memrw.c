@@ -1,8 +1,12 @@
-/*	$NetBSD: db_memrw.c,v 1.1 1995/02/13 00:27:37 chopps Exp $	*/
+/*	$OpenBSD$	*/
+/*	$NetBSD: db_memrw.c,v 1.6 1996/12/09 17:53:07 thorpej Exp $	*/
 
-/*
- * Copyright (c) 1994 Gordon W. Ross
+/*-
+ * Copyright (c) 1996 The NetBSD Foundation, Inc.
  * All rights reserved.
+ *
+ * This code is derived from software contributed to The NetBSD Foundation
+ * by Gordon W. Ross.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -12,19 +16,25 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. The name of the author may not be used to endorse or promote products
- *    derived from this software without specific prior written permission.
+ * 3. All advertising materials mentioning features or use of this software
+ *    must display the following acknowledgement:
+ *        This product includes software developed by the NetBSD
+ *        Foundation, Inc. and its contributors.
+ * 4. Neither the name of The NetBSD Foundation nor the names of its
+ *    contributors may be used to endorse or promote products derived
+ *    from this software without specific prior written permission.
  *
- * THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR
- * IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
- * OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.
- * IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY DIRECT, INDIRECT,
- * INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT
- * NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
- * DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
- * THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
- * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
- * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ * THIS SOFTWARE IS PROVIDED BY THE NETBSD FOUNDATION, INC. AND CONTRIBUTORS
+ * ``AS IS'' AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED
+ * TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+ * PURPOSE ARE DISCLAIMED.  IN NO EVENT SHALL THE REGENTS OR CONTRIBUTORS BE
+ * LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+ * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ * POSSIBILITY OF SUCH DAMAGE.
  */
 
 /*
@@ -40,7 +50,18 @@
 #include <vm/vm.h>
 
 #include <machine/db_machdep.h>
+#include <ddb/db_sym.h>
+#include <ddb/db_output.h>
+
+#include <machine/cpu.h>
 #include <machine/pte.h>
+
+static char db_read_data __P((char *src));
+void db_read_bytes __P((vm_offset_t addr, register int size, register char *data));
+static void db_write_text __P((char *dst, int ch));
+static void db_write_data __P((char *dst, int ch));
+void db_write_bytes __P((vm_offset_t addr, int size, char *data));
+
 
 /*
  * Read one byte somewhere in the kernel.
@@ -52,13 +73,12 @@ db_read_data(src)
 {
 	u_int *pte;
 	vm_offset_t pgva;
-	int ch;
 
 	pgva = amiga_trunc_page((long)src);
 	pte = kvtopte(pgva);
 
 	if ((*pte & PG_V) == 0) {
-		db_printf(" address 0x%x not a valid page\n", src);
+		db_printf(" address %p not a valid page\n", src);
 		return 0;
 	}
 	return (*src);
@@ -100,19 +120,21 @@ db_write_text(dst, ch)
 	pte = kvtopte((vm_offset_t)dst);
 	oldpte = *pte;
 	if ((oldpte & PG_V) == 0) {
-		db_printf(" address 0x%x not a valid page\n", dst);
+		db_printf(" address %p not a valid page\n", dst);
 		return;
 	}
 
-/*printf("db_write_text: %x: %x = %x (%x:%x)\n", dst, *dst, ch, pte, *pte);*/
+#if 0
+printf("db_write_text: %x: %x = %x (%x:%x)\n", dst, *dst, ch, pte, *pte);
+#endif
 	*pte &= ~PG_RO;
-	TBIS(dst);
+	TBIS((vm_offset_t)dst);
 
 	*dst = (char) ch;
 
 	*pte = oldpte;
-	TBIS(dst);
-	cachectl (4, dst, 1);
+	TBIS((vm_offset_t)dst);
+	dma_cachectl (dst, 1);
 }
 
 /*
@@ -129,7 +151,7 @@ db_write_data(dst, ch)
 	pte = kvtopte((vm_offset_t)dst);
 
 	if ((*pte & (PG_V | PG_RO)) != PG_V) {
-		db_printf(" address 0x%x not a valid page\n", dst);
+		db_printf(" address %p not a valid page\n", dst);
 		return;
 	}
 	*dst = (char) ch;

@@ -1,3 +1,5 @@
+/*	$OpenBSD: pcvt_drv.c,v 1.14 1996/06/10 07:35:40 deraadt Exp $	*/
+
 /*
  * Copyright (c) 1992, 1995 Hellmuth Michaelis and Joerg Wunsch.
  *
@@ -98,6 +100,7 @@ static		nrow;
 #endif
 
 static void vgapelinit(void);	/* read initial VGA DAC palette */
+int getchar(void);
 
 #if PCVT_FREEBSD > 205
 static struct kern_devconf kdc_vt[];
@@ -106,6 +109,17 @@ vt_registerdev(struct isa_device *id, const char *name);
 static char vt_description[];
 #define VT_DESCR_LEN 40
 #endif /* PCVT_FREEBSD > 205 */
+
+#if PCVT_NETBSD > 100
+void pccnpollc(Dev_t, int);
+#endif
+#if PCVT_NETBSD > 100
+int pcprobe(struct device *, void *, void *);
+#endif
+#if PCVT_NETBSD > 9
+void pcattach(struct device *, struct device *, void *);
+#endif
+
 
 #if PCVT_NETBSD > 100	/* NetBSD-current Feb 20 1995 */
 int
@@ -158,6 +172,9 @@ pcattach(struct isa_device *dev)
 #endif /* PCVT_NETBSD > 9 */
 
 	int i;
+
+	if(do_initialization)
+		vt_coldinit();
 
 	vt_coldmalloc();		/* allocate memory for screens */
 
@@ -228,6 +245,9 @@ pcattach(struct isa_device *dev)
 
 #if PCVT_NETBSD > 100
 	    vs[i].vs_tty = ttymalloc();
+#if PCVT_NETBSD >= 120
+	    tty_attach(vs[i].vs_tty);
+#endif /* PCVT_NETBSD >= 120 */
 #else /* !PCVT_NETBSD > 100 */
 
 #if PCVT_NETBSD
@@ -320,7 +340,7 @@ pcattach(struct isa_device *dev)
 		vs[i].vs_tty = &pccons[i];
 #endif /* !PCVT_NETBSD && !(PCVT_FREEBSD > 110 && PCVT_FREEBSD < 200) */
 
-	async_update(UPDATE_START);	/* start asynchronous updates */
+	async_update();
 
 #if PCVT_FREEBSD > 205
 	/* mark the device busy now if we are the console */
@@ -332,8 +352,18 @@ pcattach(struct isa_device *dev)
 #if PCVT_NETBSD > 9
 
 #if PCVT_NETBSD > 101
-	sc->sc_ih = isa_intr_establish(ia->ia_irq, ISA_IST_EDGE, ISA_IPL_TTY,
-				       pcintr, (void *)0);
+	sc->sc_ih = isa_intr_establish(ia->ia_ic, ia->ia_irq, IST_EDGE,
+	    IPL_TTY, pcintr, (void *)0, sc->sc_dev.dv_xname);
+
+#if PCVT_NETBSD > 110
+	/*
+ 	 * Look for children of the keyboard controller.
+	 * XXX Really should decouple keyboard controller
+	 * from the console code.
+	 */
+	while (config_found(self, ia->ia_ic, NULL) != NULL)
+		/* will break when no more children */ ;
+#endif /* PCVT_NETBSD > 110 */
 #else /* PCVT_NETBSD > 100 */
 	vthand.ih_fun = pcrint;
 	vthand.ih_arg = 0;
@@ -611,11 +641,11 @@ pcioctl(Dev_t dev, int cmd, caddr_t data, int flag, struct proc *p)
 	}
 #endif /* PCVT_EMU_MOUSE */
 
-#ifdef XSERVER
 
 	if((error = usl_vt_ioctl(dev, cmd, data, flag, p)) >= 0)
-		return error;
+		return (error == PCVT_ERESTART) ? ERESTART : error;
 
+#ifdef XSERVER
 	/*
 	 * just for compatibility:
 	 * XFree86 < 2.0 and SuperProbe still might use it
@@ -787,10 +817,7 @@ static u_char pcvt_timeout_scheduled = 0;
 static	void	pcvt_timeout (void *arg)
 {
 	u_char *cp;
-
-#if PCVT_SLOW_INTERRUPT
 	int	s;
-#endif
 
 	pcvt_timeout_scheduled = 0;
 
@@ -817,12 +844,12 @@ static	void	pcvt_timeout (void *arg)
 				(*linesw[pcconsp->t_line].l_rint)(*cp++ & 0xff, pcconsp);
 		}
 
-		PCVT_DISABLE_INTR ();
+		s = spltty();
 
 		if (!pcvt_kbd_count)
 			pcvt_timeout_scheduled = 0;
 
-		PCVT_ENABLE_INTR ();
+		splx(s);
 	}
 
 	return;
@@ -841,10 +868,7 @@ pcrint(void)
 #if PCVT_KBD_FIFO
 	u_char	dt;
 	u_char	ret = -1;
-
-# if PCVT_SLOW_INTERRUPT
 	int	s;
-# endif
 
 #else /* !PCVT_KBD_FIFO */
 	u_char	*cp;
@@ -879,9 +903,9 @@ pcrint(void)
 		{
 			pcvt_kbd_fifo[pcvt_kbd_wptr++] = dt; /* data -> fifo */
 
-			PCVT_DISABLE_INTR ();	/* XXX necessary ? */
+			s = spltty();	/* XXX necessary ? */
 			pcvt_kbd_count++;		/* update fifo count */
-			PCVT_ENABLE_INTR ();
+			splx(s);
 
 			if (pcvt_kbd_wptr >= PCVT_KBD_FIFO_SZ)
 				pcvt_kbd_wptr = 0;	/* wraparound pointer */
@@ -892,10 +916,10 @@ pcrint(void)
 	{
 		if (!pcvt_timeout_scheduled)	/* if not already active .. */
 		{
-			PCVT_DISABLE_INTR ();
+			s = spltty();
 			pcvt_timeout_scheduled = 1;	/* flag active */
 			timeout((TIMEOUT_FUNC_T)pcvt_timeout, (caddr_t) 0, 1); /* fire off */
-			PCVT_ENABLE_INTR ();
+			splx(s);
 		}
 	}
 	return (ret);
@@ -937,7 +961,6 @@ extern void ttrstrt();
 void
 pcstart(register struct tty *tp)
 {
-	register struct clist *rbp;
 	int s, len;
 	u_char buf[PCVT_PCBURST];
 
@@ -946,41 +969,42 @@ pcstart(register struct tty *tp)
 	if (tp->t_state & (TS_TIMEOUT|TS_BUSY|TS_TTSTOP))
 		goto out;
 
+	if (tp->t_outq.c_cc == 0 &&
+	    tp->t_wsel.si_selpid == 0)
+	{
+		async_update();
+		goto low;
+	}
+
 	tp->t_state |= TS_BUSY;
 
 	splx(s);
-
-	async_update(UPDATE_KERN);
 
 	/*
 	 * We need to do this outside spl since it could be fairly
 	 * expensive and we don't want our serial ports to overflow.
 	 */
 
-	rbp = &tp->t_outq;
-
-	while (len = q_to_b(rbp, buf, PCVT_PCBURST))
+	while ((len = q_to_b(&tp->t_outq, buf, PCVT_PCBURST)) != 0)
 		sput(&buf[0], 0, len, minor(tp->t_dev));
 
 	s = spltty();
 
 	tp->t_state &= ~TS_BUSY;
 
-	if (rbp->c_cc)
-	{
-		tp->t_state |= TS_TIMEOUT;
-		timeout(ttrstrt, tp, 1);
-	}
+	tp->t_state |= TS_TIMEOUT;
+	timeout(ttrstrt, tp, 1);
 
 #if PCVT_FREEBSD >= 210 && !defined(TS_ASLEEP)
 	ttwakeup(tp);
 #else
-	if (rbp->c_cc <= tp->t_lowat)
+	if (tp->t_outq.c_cc <= tp->t_lowat)
 	{
+low:
 		if (tp->t_state&TS_ASLEEP)
 		{
 			tp->t_state &= ~TS_ASLEEP;
-			wakeup((caddr_t)rbp);
+			wakeup((caddr_t)&tp->t_outq);
 		}
 		selwakeup(&tp->t_wsel);
 	}
@@ -1168,7 +1192,7 @@ pccnputc(Dev_t dev, U_char c)
 
 	sput((char *) &c, 1, 1, 0);
 
- 	async_update(UPDATE_KERN);
+ 	async_update();
 
 #if ((PCVT_NETBSD  &&  (PCVT_NETBSD <= 101)) || \
      (PCVT_FREEBSD && (PCVT_FREEBSD <= 205)))
@@ -1190,7 +1214,7 @@ pccngetc(Dev_t dev)
 	s = spltty();		/* block pcrint while we poll */
 	cp = sgetc(0);
 	splx(s);
-	async_update(UPDATE_KERN);
+	async_update();
 
 #if ! (PCVT_FREEBSD >= 201)
 	/* this belongs to cons.c */
@@ -1213,8 +1237,12 @@ pccncheckc(Dev_t dev)
 void
 pccnpollc(Dev_t dev, int on)
 {
+#if PCVT_NETBSD > 110
+	struct vt_softc *sc = NULL;	/* XXX not used */
+#else	
 #if PCVT_NETBSD > 101
 	struct vt_softc *sc = vtcd.cd_devs[0];	/* XXX */
+#endif
 #endif
 
 	kbd_polling = on;
@@ -1276,7 +1304,7 @@ getchar(void)
 
 	sput(">", 1, 1, 0);
 
-	async_update(UPDATE_KERN);
+	async_update();
 
 	thechar = *(sgetc(0));
 

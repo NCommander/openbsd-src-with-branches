@@ -1,4 +1,5 @@
-/*	$NetBSD: udp_usrreq.c,v 1.24 1995/08/12 23:59:42 mycroft Exp $	*/
+/*	$OpenBSD: udp_usrreq.c,v 1.8 1997/01/26 01:23:46 tholo Exp $	*/
+/*	$NetBSD: udp_usrreq.c,v 1.28 1996/03/16 23:54:03 christos Exp $	*/
 
 /*
  * Copyright (c) 1982, 1986, 1988, 1990, 1993
@@ -43,6 +44,11 @@
 #include <sys/socketvar.h>
 #include <sys/errno.h>
 #include <sys/stat.h>
+#include <sys/systm.h>
+#include <sys/proc.h>
+
+#include <vm/vm.h>
+#include <sys/sysctl.h>
 
 #include <net/if.h>
 #include <net/route.h>
@@ -57,34 +63,40 @@
 #include <netinet/udp.h>
 #include <netinet/udp_var.h>
 
+#include <machine/stdarg.h>
+
 /*
  * UDP protocol implementation.
  * Per RFC 768, August, 1980.
  */
-#ifndef	COMPAT_42
 int	udpcksum = 1;
-#else
-int	udpcksum = 0;		/* XXX */
-#endif
 
 struct	sockaddr_in udp_in = { sizeof(udp_in), AF_INET };
-struct	inpcb *udp_last_inpcb = 0;
 
 static	void udp_detach __P((struct inpcb *));
 static	void udp_notify __P((struct inpcb *, int));
 static	struct mbuf *udp_saveopt __P((caddr_t, int, int));
 
+#ifndef UDBHASHSIZE
+#define	UDBHASHSIZE	128
+#endif
+int	udbhashsize = UDBHASHSIZE;
+
 void
 udp_init()
 {
 
-	in_pcbinit(&udbtable);
+	in_pcbinit(&udbtable, udbhashsize);
 }
 
 void
-udp_input(m, iphlen)
-	register struct mbuf *m;
-	int iphlen;
+#if __STDC__
+udp_input(struct mbuf *m, ...)
+#else
+udp_input(m, va_alist)
+	struct mbuf *m;
+	va_dcl
+#endif
 {
 	register struct ip *ip;
 	register struct udphdr *uh;
@@ -92,6 +104,12 @@ udp_input(m, iphlen)
 	struct mbuf *opts = 0;
 	int len;
 	struct ip save_ip;
+	int iphlen;
+	va_list ap;
+
+	va_start(ap, m);
+	iphlen = va_arg(ap, int);
+	va_end(ap);
 
 	udpstat.udps_ipackets++;
 
@@ -125,7 +143,7 @@ udp_input(m, iphlen)
 	 */
 	len = ntohs((u_int16_t)uh->uh_ulen);
 	if (ip->ip_len != len) {
-		if (len > ip->ip_len) {
+		if (len > ip->ip_len || len < sizeof(struct udphdr)) {
 			udpstat.udps_badlen++;
 			goto bad;
 		}
@@ -140,13 +158,14 @@ udp_input(m, iphlen)
 
 	/*
 	 * Checksum extended UDP header and data.
+	 * from W.R.Stevens: check incoming udp cksums even if
+	 *	udpcksum is not set.
 	 */
-	if (udpcksum && uh->uh_sum) {
-		((struct ipovly *)ip)->ih_next = 0;
-		((struct ipovly *)ip)->ih_prev = 0;
-		((struct ipovly *)ip)->ih_x1 = 0;
+	if (uh->uh_sum) {
+		bzero(((struct ipovly *)ip)->ih_x1,
+		    sizeof ((struct ipovly *)ip)->ih_x1);
 		((struct ipovly *)ip)->ih_len = uh->uh_ulen;
-		if (uh->uh_sum = in_cksum(m, len + sizeof (struct ip))) {
+		if ((uh->uh_sum = in_cksum(m, len + sizeof (struct ip))) != 0) {
 			udpstat.udps_badsum++;
 			m_freem(m);
 			return;
@@ -223,7 +242,7 @@ udp_input(m, iphlen)
 			 * port.  It * assumes that an application will never
 			 * clear these options after setting them.
 			 */
-			if ((last->so_options&(SO_REUSEPORT|SO_REUSEADDR) == 0))
+			if ((last->so_options&(SO_REUSEPORT|SO_REUSEADDR)) == 0)
 				break;
 		}
 
@@ -247,13 +266,10 @@ udp_input(m, iphlen)
 	/*
 	 * Locate pcb for datagram.
 	 */
-	inp = udp_last_inpcb;
-	if (inp == 0 ||
-	    inp->inp_lport != uh->uh_dport ||
-	    inp->inp_fport != uh->uh_sport ||
-	    inp->inp_faddr.s_addr != ip->ip_src.s_addr ||
-	    inp->inp_laddr.s_addr != ip->ip_dst.s_addr) {
-		udpstat.udpps_pcbcachemiss++;
+	inp = in_pcbhashlookup(&udbtable, ip->ip_src, uh->uh_sport,
+	    ip->ip_dst, uh->uh_dport);
+	if (inp == 0) {
+		++udpstat.udps_pcbhashmiss;
 		inp = in_pcblookup(&udbtable, ip->ip_src, uh->uh_sport,
 		    ip->ip_dst, uh->uh_dport, INPLOOKUP_WILDCARD);
 		if (inp == 0) {
@@ -267,7 +283,6 @@ udp_input(m, iphlen)
 			icmp_error(m, ICMP_UNREACH, ICMP_UNREACH_PORT, 0, 0);
 			return;
 		}
-		udp_last_inpcb = inp;
 	}
 
 	/*
@@ -358,45 +373,58 @@ udp_notify(inp, errno)
 	sowwakeup(inp->inp_socket);
 }
 
-void
-udp_ctlinput(cmd, sa, ip)
+void *
+udp_ctlinput(cmd, sa, v)
 	int cmd;
 	struct sockaddr *sa;
-	register struct ip *ip;
+	void *v;
 {
+	register struct ip *ip = v;
 	register struct udphdr *uh;
-	extern struct in_addr zeroin_addr;
 	extern int inetctlerrmap[];
 	void (*notify) __P((struct inpcb *, int)) = udp_notify;
 	int errno;
 
 	if ((unsigned)cmd >= PRC_NCMDS)
-		return;
+		return NULL;
 	errno = inetctlerrmap[cmd];
 	if (PRC_IS_REDIRECT(cmd))
 		notify = in_rtchange, ip = 0;
 	else if (cmd == PRC_HOSTDEAD)
 		ip = 0;
 	else if (errno == 0)
-		return;
+		return NULL;
 	if (ip) {
 		uh = (struct udphdr *)((caddr_t)ip + (ip->ip_hl << 2));
 		in_pcbnotify(&udbtable, sa, uh->uh_dport, ip->ip_src,
 		    uh->uh_sport, errno, notify);
 	} else
 		in_pcbnotifyall(&udbtable, sa, errno, notify);
+	return NULL;
 }
 
 int
-udp_output(inp, m, addr, control)
-	register struct inpcb *inp;
-	register struct mbuf *m;
-	struct mbuf *addr, *control;
+#if __STDC__
+udp_output(struct mbuf *m, ...)
+#else
+udp_output(m, va_alist)
+	struct mbuf *m;
+	va_dcl
+#endif
 {
+	register struct inpcb *inp;
+	struct mbuf *addr, *control;
 	register struct udpiphdr *ui;
 	register int len = m->m_pkthdr.len;
 	struct in_addr laddr;
-	int s, error = 0;
+	int s = 0, error = 0;
+	va_list ap;
+
+	va_start(ap, m);
+	inp = va_arg(ap, struct inpcb *);
+	addr = va_arg(ap, struct mbuf *);
+	control = va_arg(ap, struct mbuf *);
+	va_end(ap);
 
 	if (control)
 		m_freem(control);		/* XXX */
@@ -429,6 +457,15 @@ udp_output(inp, m, addr, control)
 	M_PREPEND(m, sizeof(struct udpiphdr), M_DONTWAIT);
 	if (m == 0) {
 		error = ENOBUFS;
+		goto bail;
+	}
+
+	/*
+	 * Compute the packet length of the IP header, and
+	 * punt if the length looks bogus.
+	 */
+	if ((len + sizeof(struct udpiphdr)) > IP_MAXPACKET) {
+		error = EMSGSIZE;
 		goto release;
 	}
 
@@ -437,8 +474,7 @@ udp_output(inp, m, addr, control)
 	 * and addresses and length put into network format.
 	 */
 	ui = mtod(m, struct udpiphdr *);
-	ui->ui_next = ui->ui_prev = 0;
-	ui->ui_x1 = 0;
+	bzero(ui->ui_x1, sizeof ui->ui_x1);
 	ui->ui_pr = IPPROTO_UDP;
 	ui->ui_len = htons((u_int16_t)len + sizeof (struct udphdr));
 	ui->ui_src = inp->inp_laddr;
@@ -463,6 +499,7 @@ udp_output(inp, m, addr, control)
 	    inp->inp_socket->so_options & (SO_DONTROUTE | SO_BROADCAST),
 	    inp->inp_moptions);
 
+bail:
 	if (addr) {
 		in_pcbdisconnect(inp);
 		inp->inp_laddr = laddr;
@@ -570,7 +607,7 @@ udp_usrreq(so, req, m, addr, control)
 		break;
 
 	case PRU_SEND:
-		return (udp_output(inp, m, addr, control));
+		return (udp_output(m, inp, addr, control));
 
 	case PRU_ABORT:
 		soisdisconnected(so);
@@ -623,8 +660,6 @@ udp_detach(inp)
 {
 	int s = splsoftnet();
 
-	if (inp == udp_last_inpcb)
-		udp_last_inpcb = 0;
 	in_pcbdetach(inp);
 	splx(s);
 }
@@ -632,6 +667,7 @@ udp_detach(inp)
 /*
  * Sysctl for udp variables.
  */
+int
 udp_sysctl(name, namelen, oldp, oldlenp, newp, newlen)
 	int *name;
 	u_int namelen;

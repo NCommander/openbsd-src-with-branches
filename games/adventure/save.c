@@ -46,7 +46,9 @@ static char rcsid[] = "$NetBSD: save.c,v 1.2 1995/03/21 12:05:08 cgd Exp $";
 #endif
 #endif /* not lint */
 
+#include <sys/types.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include "hdr.h"
 
 struct savestruct
@@ -112,7 +114,7 @@ struct savestruct save_array[] =
 	dseen,          sizeof(dseen),
 	fixed,          sizeof(fixed),
 	hinted,         sizeof(hinted),
-	link,           sizeof(link),
+	linkx,           sizeof(linkx),
 	odloc,          sizeof(odloc),
 	place,          sizeof(place),
 	prop,           sizeof(prop),
@@ -135,13 +137,17 @@ char *outfile;  /* to output the data using checksum to start random #s */
 		sum = crc(p->address, p->width);
 	srandom((int) sum);
 
+	setegid(egid);
 	if ((out = fopen(outfile, "wb")) == NULL)
 	{
 	    fprintf(stderr,
 		"Hmm.  The name \"%s\" appears to be magically blocked.\n",
 		outfile);
+	    setegid(getgid());
 	    return 1;
 	}
+	setegid(getgid());
+
 	fwrite(&sum, sizeof(sum), 1, out);      /* Here's the random() key */
 	for (p = save_array; p->address != NULL; p++)
 	{
@@ -162,13 +168,17 @@ char *infile;
 	long sum, cksum;
 	int i;
 
+	setegid(egid);
 	if ((in = fopen(infile, "rb")) == NULL)
 	{
 	    fprintf(stderr,
 		"Hmm.  The file \"%s\" appears to be magically blocked.\n",
 		infile);
+	    setegid(getgid());
 	    return 1;
 	}
+	setegid(getgid());
+
 	fread(&sum, sizeof(sum), 1, in);        /* Get the seed */
 	srandom((int) sum);
 	for (p = save_array; p->address != NULL; p++)

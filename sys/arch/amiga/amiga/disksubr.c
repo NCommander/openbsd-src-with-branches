@@ -1,4 +1,5 @@
-/*	$NetBSD: disksubr.c,v 1.20 1995/09/29 13:51:33 chopps Exp $	*/
+/*	$OpenBSD: disksubr.c,v 1.11 1997/02/23 02:33:05 niklas Exp $	*/
+/*	$NetBSD: disksubr.c,v 1.27 1996/10/13 03:06:34 christos Exp $	*/
 
 /*
  * Copyright (c) 1994 Christian E. Hopps
@@ -32,16 +33,12 @@
  * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
- *
- *	@(#)ufs_disksubr.c	7.16 (Berkeley) 5/4/91
  */
 #include <sys/param.h>
 #include <sys/systm.h>
 #include <sys/buf.h>
-#include <sys/device.h>
 #include <sys/disklabel.h>
 #include <sys/disk.h>
-#include <sys/dkstat.h>
 #include <amiga/amiga/adosglue.h>
 
 /*
@@ -74,16 +71,16 @@ struct rdbmap {
 
 u_long rdbchksum __P((void *));
 struct adostype getadostype __P((u_long));
-struct rdbmap *getrdbmap __P((dev_t, void (*)(), struct disklabel *,
-    struct cpu_disklabel *));
+struct rdbmap *getrdbmap __P((dev_t, void (*)(struct buf *),
+    struct disklabel *, struct cpu_disklabel *));
 
 /* XXX unknown function but needed for /sys/scsi to link */
-int
+void
 dk_establish(dk, dev)
-	struct dkdevice *dk;
+	struct disk *dk;
 	struct device *dev;
 {
-	return(-1);
+	return;
 }
 
 /*
@@ -97,23 +94,23 @@ dk_establish(dk, dev)
 char *
 readdisklabel(dev, strat, lp, clp)
 	dev_t dev;
-	void (*strat)();
+	void (*strat)(struct buf *);
 	struct disklabel *lp;
 	struct cpu_disklabel *clp;
 {
+	struct disklabel *dlp;
 	struct adostype adt;
-	struct partition *pp;
+	struct partition *pp = NULL;
 	struct partblock *pbp;
 	struct rdblock *rbp;
 	struct buf *bp;
-	char *msg, *bcpls, *s, bcpli, cindex;
-	int i, trypart, nopname;
-	u_char fstype;
+	char *msg, *bcpls, *s, bcpli;
+	int cindex, i, nopname;
 	u_long nextb;
 
 	clp->rdblock = RDBNULL;
 	/*
-	 * give some guarnteed validity to
+	 * give some guaranteed validity to
 	 * the disklabel
 	 */
 	if (lp->d_secperunit == 0)
@@ -149,7 +146,6 @@ readdisklabel(dev, strat, lp, clp)
 
 	/*
 	 * find the RDB block
-	 * XXX Need to check for a standard label if this fails (fd0 etc..)
 	 */
 	for (nextb = 0; nextb < RDB_MAXBLOCKS; nextb++) {
 		bp->b_blkno = nextb;
@@ -167,12 +163,40 @@ readdisklabel(dev, strat, lp, clp)
 			if (rdbchksum(rbp) == 0)
 				break;
 			else
-				msg = "rdb bad checksum";
+				msg = "bad rdb checksum";
 		}
 	}
 	if (nextb == RDB_MAXBLOCKS) {
-		if (msg == NULL)
-			msg = "no rdb found";
+		/*
+		 * No RDB found, let's look for an OpenBSD label instead.
+		 */
+		bp->b_dev = dev;
+		bp->b_blkno = LABELSECTOR;
+		bp->b_resid = 0;			/* was b_cylin */
+		bp->b_bcount = lp->d_secsize;
+		bp->b_flags = B_BUSY | B_READ;
+		(*strat)(bp);  
+
+		/* if successful, find disk label within block and validate */
+		if (biowait(bp)) {
+			msg = "disklabel read error";
+			goto done;
+		}
+
+		dlp = (struct disklabel *)(bp->b_un.b_addr + LABELOFFSET);
+		if (dlp->d_magic == DISKMAGIC) {
+			if (dkcksum(dlp)) {
+				msg = "OpenBSD disk label corrupted";
+				goto done;
+			}
+			*lp = *dlp;
+			goto done;
+		}
+		msg = "no rdb nor BSD disklabel found";
+#if defined(CD9660)
+		if (iso_disklabelspoof(dev, strat, lp) == 0)
+			msg = NULL;
+#endif
 		goto done;
 	} else if (msg) {
 		/*
@@ -202,12 +226,12 @@ readdisklabel(dev, strat, lp, clp)
 		lp->d_secpercyl = lp->d_nsectors * lp->d_ntracks;
 #ifdef DIAGNOSTIC
 	if (lp->d_ncylinders != rbp->ncylinders)
-		printf("warning found rdb->ncylinders(%d) != "
-		    "rdb->highcyl(%d) + 1\n", rbp->ncylinders,
+		printf("warning found rdb->ncylinders(%ld) != "
+		    "rdb->highcyl(%ld) + 1\n", rbp->ncylinders,
 		    rbp->highcyl);
 	if (lp->d_nsectors * lp->d_ntracks != rbp->secpercyl)
-		printf("warning found rdb->secpercyl(%d) != "
-		    "rdb->nsectors(%d) * rdb->nheads(%d)\n", rbp->secpercyl,
+		printf("warning found rdb->secpercyl(%ld) != "
+		    "rdb->nsectors(%ld) * rdb->nheads(%ld)\n", rbp->secpercyl,
 		    rbp->nsectors, rbp->nheads);
 #endif
 	lp->d_sparespercyl =
@@ -311,13 +335,30 @@ readdisklabel(dev, strat, lp, clp)
 			pp = &lp->d_partitions[lp->d_npartitions];
 			break;
 		}
+		if (lp->d_npartitions <= (pp - lp->d_partitions))
+			lp->d_npartitions = (pp - lp->d_partitions) + 1;
+
+#ifdef DIAGNOSTIC
+		if (lp->d_secpercyl != (pbp->e.secpertrk * pbp->e.numheads)) {
+			if (pbp->partname[0] < sizeof(pbp->partname))
+				pbp->partname[pbp->partname[0] + 1] = 0;
+			else
+				pbp->partname[sizeof(pbp->partname) - 1] = 0;
+			printf("Partition '%s' geometry %ld/%ld differs",
+			    pbp->partname + 1, pbp->e.numheads,
+			    pbp->e.secpertrk);
+			printf(" from RDB %d/%d\n", lp->d_ntracks,
+			    lp->d_nsectors);
+		}
+#endif
 		/*
 		 * insert sort in increasing offset order
 		 */
 		while ((pp - lp->d_partitions) > RAW_PART + 1) {
 			daddr_t boff;
 			
-			boff = pbp->e.lowcyl * lp->d_secpercyl;
+			boff = pbp->e.lowcyl * pbp->e.secpertrk
+			    * pbp->e.numheads;
 			if (boff > (pp - 1)->p_offset)
 				break;
 			*pp = *(pp - 1);	/* struct copy */
@@ -344,35 +385,34 @@ readdisklabel(dev, strat, lp, clp)
 			nopname = 0;
 		}
 
-		if (lp->d_npartitions <= i)
-			lp->d_npartitions = i + 1;
-
 		pp->p_size = (pbp->e.highcyl - pbp->e.lowcyl + 1)
-		    * lp->d_secpercyl;
-		pp->p_offset = pbp->e.lowcyl * lp->d_secpercyl;
+		    * pbp->e.secpertrk * pbp->e.numheads;
+		pp->p_offset = pbp->e.lowcyl * pbp->e.secpertrk
+		    * pbp->e.numheads;
 		pp->p_fstype = adt.fstype;
-		if (pbp->e.tabsize > 22 && ISFSARCH_NETBSD(adt)) {
-			pp->p_fsize = pbp->e.fsize;
-			pp->p_frag = pbp->e.frag;	
-			pp->p_cpg = pbp->e.cpg;
-		} else {
-			pp->p_fsize = 1024;
-			pp->p_frag = 8;	
-			pp->p_cpg = 0;
-		}
 		if (adt.archtype == ADT_AMIGADOS) {
 			/*
 			 * Save reserved blocks at begin in cpg and
 			 *  adjust size by reserved blocks at end
 			 */
+			pp->p_fsize = 512;
+			pp->p_frag = pbp->e.secperblk;
 			pp->p_cpg = pbp->e.resvblocks;
 			pp->p_size -= pbp->e.prefac;
+		} else if (pbp->e.tabsize > 22 && ISFSARCH_NETBSD(adt)) {
+			pp->p_fsize = pbp->e.fsize;
+			pp->p_frag = pbp->e.frag;
+			pp->p_cpg = pbp->e.cpg;
+		} else {
+			pp->p_fsize = 1024;
+			pp->p_frag = 8;
+			pp->p_cpg = 0;
 		}
 
 		/*
 		 * store this partitions block number
 		 */
-		clp->pblist[clp->pbindex[i] = cindex++];
+		clp->pblist[clp->pbindex[i] = cindex++] = nextb;
 	}
 	/*
 	 * calulate new checksum.
@@ -435,15 +475,19 @@ setdisklabel(olp, nlp, openmask, clp)
 /*
  * Write disk label back to device after modification.
  * this means write out the Rigid disk blocks to represent the 
- * label.  Hope the user was carefull.
+ * label.  Hope the user was careful.
  */
+int
 writedisklabel(dev, strat, lp, clp)
 	dev_t dev;
-	void (*strat)();
+	void (*strat)(struct buf *);
 	register struct disklabel *lp;
 	struct cpu_disklabel *clp;
 {
 	struct rdbmap *bmap;
+	struct buf *bp;
+	bp = NULL;	/* XXX */
+
 	return(EINVAL);
 	/*
 	 * get write out partition list iff cpu_label is valid.
@@ -462,46 +506,35 @@ bounds_check_with_label(bp, lp, wlabel)
 	struct disklabel *lp;
 	int wlabel;
 {
-	struct partition *pp;
-	long maxsz, sz;
+#define blockpersec(count, lp) ((count) * (((lp)->d_secsize) / DEV_BSIZE))
+	struct partition *p = lp->d_partitions + DISKPART(bp->b_dev);
+	int sz = howmany(bp->b_bcount, DEV_BSIZE);
 
-	pp = &lp->d_partitions[DISKPART(bp->b_dev)];
-	if (bp->b_flags & B_RAW) {
-		maxsz = pp->p_size * (lp->d_secsize / DEV_BSIZE);
-		sz = (bp->b_bcount + DEV_BSIZE - 1) >> DEV_BSHIFT;
-	} else {
-		maxsz = pp->p_size;
-		sz = (bp->b_bcount + lp->d_secsize - 1) / lp->d_secsize;
-	}
-
-	if (bp->b_blkno < 0 || bp->b_blkno + sz > maxsz) {
-		if (bp->b_blkno == maxsz) {
-			/* 
-			 * trying to get one block beyond return EOF.
-			 */
+	if (bp->b_blkno + sz > blockpersec(p->p_size, lp)) {
+		sz = blockpersec(p->p_size, lp) - bp->b_blkno;
+		if (sz == 0) {
+			/* If exactly at end of disk, return EOF. */
 			bp->b_resid = bp->b_bcount;
-			return(0);
+			goto done;
 		}
-		sz = maxsz - bp->b_blkno;
-		if (sz <= 0 || bp->b_blkno < 0) {
+		if (sz < 0) {
+			/* If past end of disk, return EINVAL. */
 			bp->b_error = EINVAL;
-			bp->b_flags |= B_ERROR;
-			return(-1);
+			goto bad;
 		}
-		/* 
-		 * adjust count down
-		 */
-		if (bp->b_flags & B_RAW)
-			bp->b_bcount = sz << DEV_BSHIFT;
-		else
-			bp->b_bcount = sz * lp->d_secsize;
+		/* Otherwise, truncate request. */
+		bp->b_bcount = sz << DEV_BSHIFT;
 	}
 
-	/*
-	 * calc cylinder for disksort to order transfers with
-	 */
-	bp->b_cylin = (bp->b_blkno + pp->p_offset) / lp->d_secpercyl;
-	return(1);
+	/* Calculate cylinder for disksort to order transfers with.  */
+	bp->b_cylin = (bp->b_blkno + blockpersec(p->p_offset, lp)) /
+	    lp->d_secpercyl;
+	return (1);
+
+bad:
+	bp->b_flags |= B_ERROR;
+done:
+	return (0);
 }
 
 u_long
@@ -543,8 +576,24 @@ getadostype(dostype)
 		return(adt);
 	case DOST_MUFS:
 		/* check for 'muFS'? */
+		adt.archtype = ADT_AMIGADOS;
+		adt.fstype = FS_ADOS;
+		return(adt);
 	case DOST_DOS:
 		adt.archtype = ADT_AMIGADOS;
+                if (b1 > 5)
+#if 0
+			/*
+			 * XXX at least I, <niklas@appli.se>, have a partition 
+			 * that looks like "DOS\023", wherever that came from,
+			 * but ADOS accepts it, so should we.
+			 */
+			goto unknown;
+		else
+#else
+			printf("found dostype: 0x%x, assuming an ADOS FS "
+			    "although it's unknown\n", dostype);
+#endif
 		adt.fstype = FS_ADOS;
 		return(adt);
 	case DOST_AMIX:
@@ -552,7 +601,7 @@ getadostype(dostype)
 		if (b1 == 2)
 			adt.fstype = FS_BSDFFS;
 		else
-			adt.fstype = FS_UNUSED;
+			goto unknown;
 		return(adt);
 	case DOST_XXXBSD:
 #ifdef DIAGNOSTIC
@@ -573,6 +622,7 @@ getadostype(dostype)
 #endif
 		return(getadostype(dostype));
 	default:
+	unknown:
 #ifdef DIAGNOSTIC
 		printf("warning unknown dostype: 0x%x marking unused\n",
 		    dostype);
@@ -590,7 +640,7 @@ getadostype(dostype)
 struct rdbmap *
 getrdbmap(dev, strat, lp, clp)
 	dev_t dev;
-	void (*strat)();
+	void (*strat)(struct buf *);
 	struct disklabel *lp;
 	struct cpu_disklabel *clp;
 {
@@ -603,7 +653,6 @@ getrdbmap(dev, strat, lp, clp)
 
 	bp->b_dev = MAKEDISKDEV(major(dev), DISKUNIT(dev), RAW_PART);
 	/* XXX finish */
-bad:
 	brelse(bp);
 	return(NULL);
 }

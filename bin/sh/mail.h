@@ -1,3 +1,4 @@
+/*	$OpenBSD: mail.h,v 1.8 1995/05/11 21:29:23 christos Exp $	*/
 /*	$NetBSD: mail.h,v 1.8 1995/05/11 21:29:23 christos Exp $	*/
 
 /*-

@@ -1,3 +1,4 @@
+/*	$OpenBSD: verify.c,v 1.3 1996/12/10 08:26:10 deraadt Exp $	*/
 /*	$NetBSD: verify.c,v 1.10 1995/03/07 21:26:28 cgd Exp $	*/
 
 /*-
@@ -37,7 +38,7 @@
 #if 0
 static char sccsid[] = "@(#)verify.c	8.1 (Berkeley) 6/6/93";
 #else
-static char rcsid[] = "$NetBSD: verify.c,v 1.10 1995/03/07 21:26:28 cgd Exp $";
+static char rcsid[] = "$OpenBSD: verify.c,v 1.3 1996/12/10 08:26:10 deraadt Exp $";
 #endif
 #endif /* not lint */
 
@@ -52,7 +53,8 @@ static char rcsid[] = "$NetBSD: verify.c,v 1.10 1995/03/07 21:26:28 cgd Exp $";
 #include "mtree.h"
 #include "extern.h"
 
-extern int crc_total, ftsoptions;
+extern int32_t crc_total;
+extern int ftsoptions;
 extern int dflag, eflag, rflag, sflag, uflag;
 extern char fullpath[MAXPATHLEN];
 
@@ -79,7 +81,7 @@ vwalk()
 	register FTS *t;
 	register FTSENT *p;
 	register NODE *ep, *level;
-	int ftsdepth, specdepth, rval;
+	int specdepth, rval;
 	char *argv[2];
 
 	argv[0] = ".";
@@ -87,15 +89,13 @@ vwalk()
 	if ((t = fts_open(argv, ftsoptions, NULL)) == NULL)
 		err("fts_open: %s", strerror(errno));
 	level = root;
-	ftsdepth = specdepth = rval = 0;
-	while (p = fts_read(t)) {
+	specdepth = rval = 0;
+	while ((p = fts_read(t))) {
 		switch(p->fts_info) {
 		case FTS_D:
-			++ftsdepth; 
 			break;
 		case FTS_DP:
-			--ftsdepth; 
-			if (specdepth > ftsdepth) {
+			if (specdepth > p->fts_level) {
 				for (level = level->parent; level->prev;
 				      level = level->prev);  
 				--specdepth;
@@ -105,16 +105,18 @@ vwalk()
 		case FTS_ERR:
 		case FTS_NS:
 			(void)fprintf(stderr, "mtree: %s: %s\n",
-			    RP(p), strerror(errno));
+			    RP(p), strerror(p->fts_errno));
 			continue;
 		default:
 			if (dflag)
 				continue;
 		}
 
+		if (specdepth != p->fts_level)
+			goto extra;
 		for (ep = level; ep; ep = ep->next)
-			if (ep->flags & F_MAGIC &&
-			    !fnmatch(ep->name, p->fts_name, FNM_PATHNAME) ||
+			if ((ep->flags & F_MAGIC &&
+			    !fnmatch(ep->name, p->fts_name, FNM_PATHNAME)) ||
 			    !strcmp(ep->name, p->fts_name)) {
 				ep->flags |= F_VISIT;
 				if (compare(ep->name, ep, p))
@@ -131,10 +133,12 @@ vwalk()
 
 		if (ep)
 			continue;
+extra:
 		if (!eflag) {
 			(void)printf("extra: %s", RP(p));
 			if (rflag) {
-				if (unlink(p->fts_accpath)) {
+				if ((S_ISDIR(p->fts_statp->st_mode)
+				    ? rmdir : unlink)(p->fts_accpath)) {
 					(void)printf(", not removed: %s",
 					    strerror(errno));
 				} else
@@ -147,7 +151,7 @@ vwalk()
 	(void)fts_close(t);
 	if (sflag)
 		(void)fprintf(stderr,
-		    "mtree: %s checksum: %lu\n", fullpath, crc_total);
+		    "mtree: %s checksum: %u\n", fullpath, crc_total);
 	return (rval);
 }
 
@@ -160,7 +164,7 @@ miss(p, tail)
 	register char *tp;
 
 	for (; p; p = p->next) {
-		if (p->flags & F_OPT && !(p->flags & F_VISIT))
+		if ((p->flags & F_OPT) && !(p->flags & F_VISIT))
 			continue;
 		if (p->type != F_DIR && (dflag || p->flags & F_VISIT))
 			continue;

@@ -1,4 +1,4 @@
-/*	$NetBSD: ad1848var.h,v 1.6 1995/07/07 02:11:56 brezak Exp $	*/
+/*	$NetBSD: ad1848var.h,v 1.8 1996/04/29 20:02:37 christos Exp $	*/
 
 /*
  * Copyright (c) 1994 John Brezak
@@ -59,10 +59,10 @@ struct ad1848_softc {
 	u_int	sc_dma_cnt;
 #endif
 
-	u_short sc_iobase;		/* I/O port base address */
-	u_short sc_irq;			/* interrupt */
-	u_short sc_drq;			/* DMA */
-	u_short sc_recdrq;		/* record/capture DMA */
+	int	sc_iobase;		/* I/O port base address */
+	int	sc_irq;			/* interrupt */
+	int	sc_drq;			/* DMA */
+	int	sc_recdrq;		/* record/capture DMA */
 	
 	u_long	sc_irate;		/* Sample rate for input */
 	u_long	sc_orate;		/* ...and output */
@@ -124,8 +124,8 @@ int	ad1848_get_channels __P((void *));
 
 int	ad1848_round_blocksize __P((void *, int));
 
-int	ad1848_dma_output __P((void *, void *, int, void (*)(), void*));
-int	ad1848_dma_input __P((void *, void *, int, void (*)(), void*));
+int	ad1848_dma_output __P((void *, void *, int, void (*)(void *), void*));
+int	ad1848_dma_input __P((void *, void *, int, void (*)(void *), void*));
 
 int	ad1848_commit_settings __P((void *));
 

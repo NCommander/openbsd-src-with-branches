@@ -1,4 +1,4 @@
-/*	$NetBSD: srt0.S,v 1.4 1995/09/16 23:20:37 pk Exp $	*/
+/*	$NetBSD: srt0.S,v 1.5.4.2 1996/07/17 01:51:46 jtc Exp $	*/
 
 /*
  * Copyright (c) 1994 Paul Kranenburg
@@ -101,6 +101,15 @@ start:
 	set     _end, %o1
 	call    _bzero
 	 sub    %o1, %o0, %o1
+
+	/*
+	 * Enable interrupts, but only above level 11. This enables "L1-A",
+	 * but avoids spurious interrupt bites from most other devices.
+	 */
+	rd	%psr, %o0
+	andn	%o0, PSR_PIL, %o0
+	wr	%o0, 0xb00, %psr	! (11 << 8)
+	nop; nop; nop
 
 	/*
 	 * Set CPU type that we are running on.

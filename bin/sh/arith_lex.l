@@ -1,4 +1,5 @@
 %{
+/*	$OpenBSD: arith_lex.l,v 1.5 1995/05/11 21:28:46 christos Exp $	*/
 /*	$NetBSD: arith_lex.l,v 1.5 1995/05/11 21:28:46 christos Exp $	*/
 
 /*-
@@ -41,7 +42,7 @@
 #if 0
 static char sccsid[] = "@(#)arith_lex.l	8.3 (Berkeley) 5/4/95";
 #else
-static char sccsid[] = "$NetBSD: arith_lex.l,v 1.5 1995/05/11 21:28:46 christos Exp $";
+static char sccsid[] = "$OpenBSD: arith_lex.l,v 1.5 1995/05/11 21:28:46 christos Exp $";
 #endif
 #endif /* not lint */
 

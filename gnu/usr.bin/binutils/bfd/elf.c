@@ -867,6 +867,7 @@ bfd_section_from_shdr (abfd, shindex)
 
 	if (! bfd_section_from_shdr (abfd, hdr->sh_info))
 	  return false;
+
 	target_sect = bfd_section_from_elf_index (abfd, hdr->sh_info);
 	if (target_sect == NULL)
 	  return false;

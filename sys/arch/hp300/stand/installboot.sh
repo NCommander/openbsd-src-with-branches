@@ -1,4 +1,5 @@
 #!/bin/sh
+#	$OpenBSD$
 #	$NetBSD: installboot.sh,v 1.2 1994/10/26 07:27:26 cgd Exp $
 
 # compatibility with old installboot program

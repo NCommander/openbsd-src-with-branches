@@ -1,4 +1,5 @@
-/*	$NetBSD: mount.h,v 1.42 1995/06/29 10:05:16 cgd Exp $	*/
+/*	$OpenBSD: mount.h,v 1.17 1997/04/12 20:20:08 graichen Exp $	*/
+/*	$NetBSD: mount.h,v 1.48 1996/02/18 11:55:47 fvdl Exp $	*/
 
 /*
  * Copyright (c) 1989, 1991, 1993
@@ -34,6 +35,9 @@
  *
  *	@(#)mount.h	8.15 (Berkeley) 7/14/94
  */
+
+#ifndef _SYS_MOUNT_H_
+#define _SYS_MOUNT_H_
 
 #ifndef _KERNEL
 #include <sys/ucred.h>
@@ -82,7 +86,8 @@ struct statfs {
 /*
  * File system types.
  */
-#define	MOUNT_UFS	"ufs"		/* UNIX "Fast" Filesystem */
+#define	MOUNT_FFS	"ffs"		/* UNIX "Fast" Filesystem */
+#define	MOUNT_UFS	MOUNT_FFS	/* for compatibility */
 #define	MOUNT_NFS	"nfs"		/* Network Filesystem */
 #define	MOUNT_MFS	"mfs"		/* Memory Filesystem */
 #define	MOUNT_MSDOS	"msdos"		/* MSDOS Filesystem */
@@ -98,6 +103,8 @@ struct statfs {
 #define	MOUNT_CD9660	"cd9660"	/* ISO9660 (aka CDROM) Filesystem */
 #define	MOUNT_UNION	"union"		/* Union (translucent) Filesystem */
 #define	MOUNT_ADOSFS	"adosfs"	/* AmigaDOS Filesystem */
+#define	MOUNT_EXT2FS	"ext2fs"	/* Second Extended Filesystem */
+#define	MOUNT_NCPFS	"ncpfs"		/* NetWare Network File System */
 
 /*
  * Structure per mounted file system.  Each mounted file system has an
@@ -145,6 +152,11 @@ struct mount {
 #define	MNT_LOCAL	0x00001000	/* filesystem is stored locally */
 #define	MNT_QUOTA	0x00002000	/* quotas are enabled on filesystem */
 #define	MNT_ROOTFS	0x00004000	/* identifies the root filesystem */
+
+/*
+ * Extra post 4.4BSD-lite2 mount flags.
+ */
+#define MNT_NOATIME	0x00008000	/* don't update access times on fs */
 
 /*
  * Mask of flags that are visible to statfs()
@@ -199,7 +211,7 @@ struct vfsops {
 				    struct mbuf *nam, struct vnode **vpp,
 				    int *exflagsp, struct ucred **credanonp));
 	int	(*vfs_vptofh)	__P((struct vnode *vp, struct fid *fhp));
-	int	(*vfs_init)	__P((void));
+	void	(*vfs_init)	__P((void));
 	int	vfs_refcount;
 };
 
@@ -300,26 +312,46 @@ struct iso_args {
 #define	ISOFSMNT_EXTATT	0x00000004	/* enable extended attributes */
 
 /*
- * File Handle (32 bytes for version 2), variable up to 1024 for version 3
- */
-union nfsv2fh {
-	fhandle_t	fh_generic;
-	u_char		fh_bytes[32];
-};
-typedef union nfsv2fh nfsv2fh_t;
-
-/*
  * Arguments to mount NFS
  */
+#define NFS_ARGSVERSION	4		/* change when nfs_args changes */
 struct nfs_args {
+	int		version;	/* args structure version number */
 	struct sockaddr	*addr;		/* file server address */
 	int		addrlen;	/* length of address */
 	int		sotype;		/* Socket type */
 	int		proto;		/* and Protocol */
-	nfsv2fh_t	*fh;		/* File handle to be mounted */
+	u_char		*fh;		/* File handle to be mounted */
+	int		fhsize;		/* Size, in bytes, of fh */
 	int		flags;		/* flags */
 	int		wsize;		/* write size in bytes */
 	int		rsize;		/* read size in bytes */
+	int		readdirsize;	/* readdir size in bytes */
+	int		timeo;		/* initial timeout in .1 secs */
+	int		retrans;	/* times to retry send */
+	int		maxgrouplist;	/* Max. size of group list */
+	int		readahead;	/* # of blocks to readahead */
+	int		leaseterm;	/* Term (sec) of lease */
+	int		deadthresh;	/* Retrans threshold */
+	char		*hostname;	/* server's name */
+	int		acregmin;	/* Attr cache file recently modified */
+	int		acregmax;	/* ac file not recently modified */
+	int		acdirmin;	/* ac for dir recently modified */
+	int		acdirmax;	/* ac for dir not recently modified */
+};
+/* NFS args version 3 (for backwards compatibility) */
+struct nfs_args3 {
+	int		version;	/* args structure version number */
+	struct sockaddr	*addr;		/* file server address */
+	int		addrlen;	/* length of address */
+	int		sotype;		/* Socket type */
+	int		proto;		/* and Protocol */
+	u_char		*fh;		/* File handle to be mounted */
+	int		fhsize;		/* Size, in bytes, of fh */
+	int		flags;		/* flags */
+	int		wsize;		/* write size in bytes */
+	int		rsize;		/* read size in bytes */
+	int		readdirsize;	/* readdir size in bytes */
 	int		timeo;		/* initial timeout in .1 secs */
 	int		retrans;	/* times to retry send */
 	int		maxgrouplist;	/* Max. size of group list */
@@ -332,6 +364,9 @@ struct nfs_args {
 /*
  * NFS mount option flags
  */
+#ifndef _KERNEL
+#define	NFSMNT_RESVPORT		0x00000000  /* always use reserved ports */
+#endif /* ! _KERNEL */
 #define	NFSMNT_SOFT		0x00000001  /* soft mount (hard is default) */
 #define	NFSMNT_WSIZE		0x00000002  /* set write size */
 #define	NFSMNT_RSIZE		0x00000004  /* set read size */
@@ -341,16 +376,29 @@ struct nfs_args {
 #define	NFSMNT_INT		0x00000040  /* allow interrupts on hard mount */
 #define	NFSMNT_NOCONN		0x00000080  /* Don't Connect the socket */
 #define	NFSMNT_NQNFS		0x00000100  /* Use Nqnfs protocol */
-#define	NFSMNT_MYWRITE		0x00000200  /* Assume writes were mine */
+#define	NFSMNT_NFSV3		0x00000200  /* Use NFS Version 3 protocol */
 #define	NFSMNT_KERB		0x00000400  /* Use Kerberos authentication */
 #define	NFSMNT_DUMBTIMR		0x00000800  /* Don't estimate rtt dynamically */
-#define	NFSMNT_RDIRALOOK	0x00001000  /* Do lookup with readdir (nqnfs) */
-#define	NFSMNT_LEASETERM	0x00002000  /* set lease term (nqnfs) */
-#define	NFSMNT_READAHEAD	0x00004000  /* set read ahead */
-#define	NFSMNT_DEADTHRESH	0x00008000  /* set dead server retry thresh */
-#define	NFSMNT_NQLOOKLEASE	0x00010000  /* Get lease for lookup */
-#define	NFSMNT_RESVPORT		0x00020000  /* Allocate a reserved port */
-#define	NFSMNT_INTERNAL		0xffe00000  /* Bits set internally */
+#define	NFSMNT_LEASETERM	0x00001000  /* set lease term (nqnfs) */
+#define	NFSMNT_READAHEAD	0x00002000  /* set read ahead */
+#define	NFSMNT_DEADTHRESH	0x00004000  /* set dead server retry thresh */
+#ifdef _KERNEL /* Coming soon to a system call near you! */
+#define	NFSMNT_NOAC		0x00008000  /* disable attribute cache */
+#endif /* _KERNEL */
+#define	NFSMNT_RDIRPLUS		0x00010000  /* Use Readdirplus for V3 */
+#define	NFSMNT_READDIRSIZE	0x00020000  /* Set readdir size */
+
+/* Flags valid only in mount syscall arguments */
+#define NFSMNT_ACREGMIN		0x00040000  /* acregmin field valid */
+#define NFSMNT_ACREGMAX 	0x00080000  /* acregmax field valid */
+#define NFSMNT_ACDIRMIN		0x00100000  /* acdirmin field valid */
+#define NFSMNT_ACDIRMAX		0x00200000  /* acdirmax field valid */
+
+/* Flags valid only in kernel */
+#define	NFSMNT_INTERNAL		0xfffc0000  /* Bits set internally */
+#define NFSMNT_HASWRITEVERF	0x00040000  /* Has write verifier for V3 */
+#define NFSMNT_GOTPATHCONF	0x00080000  /* Got the V3 pathconf info */
+#define NFSMNT_GOTFSINFO	0x00100000  /* Got the V3 fsinfo */
 #define	NFSMNT_MNTD		0x00200000  /* Mnt server for mnt point */
 #define	NFSMNT_DISMINPROG	0x00400000  /* Dismount in progress */
 #define	NFSMNT_DISMNT		0x00800000  /* Dismounted */
@@ -371,8 +419,17 @@ struct msdosfs_args {
 	struct	export_args export;	/* network export information */
 	uid_t	uid;		/* uid that owns msdosfs files */
 	gid_t	gid;		/* gid that owns msdosfs files */
-	mode_t	mask;		/* mask to be applied for msdosfs perms */
+	mode_t  mask;		/* mask to be applied for msdosfs perms */
+	int	flags;		/* see below */
 };
+
+/*
+ * Msdosfs mount options:
+ */
+#define	MSDOSFSMNT_SHORTNAME	1	/* Force old DOS short names only */
+#define	MSDOSFSMNT_LONGNAME	2	/* Force Win'95 long names */
+#define	MSDOSFSMNT_NOWIN95	4	/* Completely ignore Win95 entries */
+#define	MSDOSFSMNT_GEMDOSFS	8	/* This is a gemdos-flavour */
 
 /*
  * Arguments to mount amigados filesystems.
@@ -399,10 +456,17 @@ int	vfs_mountedon __P((struct vnode *));/* is a vfs mounted on vp */
 void	vfs_shutdown __P((void));	    /* unmount and sync file systems */
 void	vfs_unlock __P((struct mount *));   /* unlock a vfs */
 void	vfs_unmountall __P((void));	    /* unmount file systems */
+int 	vfs_busy __P((struct mount *));
+void	vfs_unbusy __P((struct mount *));
 extern	CIRCLEQ_HEAD(mntlist, mount) mountlist;	/* mounted filesystem list */
 extern	struct vfsops *vfssw[];		    /* filesystem type table */
 extern	int nvfssw;
-
+long	makefstype __P((char *));
+int	dounmount __P((struct mount *, int, struct proc *));
+void	vfsinit __P((void));
+#ifdef DEBUG
+void	vfs_bufstats __P((void));
+#endif
 #else /* _KERNEL */
 
 #include <sys/cdefs.h>
@@ -412,9 +476,10 @@ int	fstatfs __P((int, struct statfs *));
 int	getfh __P((const char *, fhandle_t *));
 int	getfsstat __P((struct statfs *, long, int));
 int	getmntinfo __P((struct statfs **, int));
-int	mount __P((char *, const char *, int, void *));
+int	mount __P((const char *, const char *, int, void *));
 int	statfs __P((const char *, struct statfs *));
 int	unmount __P((const char *, int));
 __END_DECLS
 
 #endif /* _KERNEL */
+#endif /* !_SYS_MOUNT_H_ */

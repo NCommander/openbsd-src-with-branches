@@ -1,4 +1,4 @@
-/*	$NetBSD: lms.c,v 1.20 1995/10/05 22:06:47 mycroft Exp $	*/
+/*	$NetBSD: lms.c,v 1.30 1996/10/21 22:27:41 thorpej Exp $	*/
 
 /*-
  * Copyright (c) 1993, 1994 Charles Hannum.
@@ -37,8 +37,10 @@
 #include <sys/device.h>
 
 #include <machine/cpu.h>
-#include <machine/pio.h>
+#include <machine/bus.h>
+#include <machine/intr.h>
 #include <machine/mouse.h>
+#include <machine/conf.h>
 
 #include <dev/isa/isavar.h>
 
@@ -56,9 +58,11 @@ struct lms_softc {		/* driver status information */
 	struct device sc_dev;
 	void *sc_ih;
 
+	bus_space_tag_t sc_iot;		/* bus i/o space identifier */
+	bus_space_handle_t sc_ioh;	/* bus i/o handle */
+
 	struct clist sc_q;
 	struct selinfo sc_rsel;
-	int sc_iobase;		/* I/O port base */
 	u_char sc_state;	/* mouse driver state */
 #define	LMS_OPEN	0x01	/* device is open */
 #define	LMS_ASLP	0x02	/* waiting for mouse data */
@@ -70,8 +74,12 @@ int lmsprobe __P((struct device *, void *, void *));
 void lmsattach __P((struct device *, struct device *, void *));
 int lmsintr __P((void *));
 
-struct cfdriver lmscd = {
-	NULL, "lms", lmsprobe, lmsattach, DV_TTY, sizeof(struct lms_softc)
+struct cfattach lms_ca = {
+	sizeof(struct lms_softc), lmsprobe, lmsattach
+};
+
+struct cfdriver lms_cd = {
+	NULL, "lms", DV_TTY
 };
 
 #define	LMSUNIT(dev)	(minor(dev))
@@ -82,26 +90,38 @@ lmsprobe(parent, match, aux)
 	void *match, *aux;
 {
 	struct isa_attach_args *ia = aux;
-	int iobase = ia->ia_iobase;
+	bus_space_tag_t iot = ia->ia_iot;
+	bus_space_handle_t ioh;
+	int rv;
+	
+	/* Map the i/o space. */
+	if (bus_space_map(iot, ia->ia_iobase, LMS_NPORTS, 0, &ioh))
+		return 0;
+
+	rv = 0;
 
 	/* Configure and check for port present. */
-	outb(iobase + LMS_CONFIG, 0x91);
+	bus_space_write_1(iot, ioh, LMS_CONFIG, 0x91);
 	delay(10);
-	outb(iobase + LMS_SIGN, 0x0c);
+	bus_space_write_1(iot, ioh, LMS_SIGN, 0x0c);
 	delay(10);
-	if (inb(iobase + LMS_SIGN) != 0x0c)
-		return 0;
-	outb(iobase + LMS_SIGN, 0x50);
+	if (bus_space_read_1(iot, ioh, LMS_SIGN) != 0x0c)
+		goto out;
+	bus_space_write_1(iot, ioh, LMS_SIGN, 0x50);
 	delay(10);
-	if (inb(iobase + LMS_SIGN) != 0x50)
-		return 0;
+	if (bus_space_read_1(iot, ioh, LMS_SIGN) != 0x50)
+		goto out;
 
 	/* Disable interrupts. */
-	outb(iobase + LMS_CNTRL, 0x10);
+	bus_space_write_1(iot, ioh, LMS_CNTRL, 0x10);
 
+	rv = 1;
 	ia->ia_iosize = LMS_NPORTS;
 	ia->ia_msize = 0;
-	return 1;
+
+out:
+	bus_space_unmap(iot, ioh, LMS_NPORTS);
+	return rv;
 }
 
 void
@@ -111,29 +131,32 @@ lmsattach(parent, self, aux)
 {
 	struct lms_softc *sc = (void *)self;
 	struct isa_attach_args *ia = aux;
-	int iobase = ia->ia_iobase;
 
 	printf("\n");
 
 	/* Other initialization was done by lmsprobe. */
-	sc->sc_iobase = iobase;
-	sc->sc_state = 0;
+	sc->sc_iot = ia->ia_iot;
+	if (bus_space_map(sc->sc_iot, ia->ia_iobase, LMS_NPORTS, 0,
+	    &sc->sc_ioh))
+		panic("lmsattach: couldn't map I/O ports");
 
-	sc->sc_ih = isa_intr_establish(ia->ia_irq, ISA_IST_PULSE, ISA_IPL_TTY,
-	    lmsintr, sc);
+	sc->sc_ih = isa_intr_establish(ia->ia_ic, ia->ia_irq, IST_PULSE,
+	    IPL_TTY, lmsintr, sc, sc->sc_dev.dv_xname);
 }
 
 int
-lmsopen(dev, flag)
+lmsopen(dev, flag, mode, p)
 	dev_t dev;
 	int flag;
+	int mode;
+	struct proc *p;
 {
 	int unit = LMSUNIT(dev);
 	struct lms_softc *sc;
 
-	if (unit >= lmscd.cd_ndevs)
+	if (unit >= lms_cd.cd_ndevs)
 		return ENXIO;
-	sc = lmscd.cd_devs[unit];
+	sc = lms_cd.cd_devs[unit];
 	if (!sc)
 		return ENXIO;
 
@@ -148,20 +171,22 @@ lmsopen(dev, flag)
 	sc->sc_x = sc->sc_y = 0;
 
 	/* Enable interrupts. */
-	outb(sc->sc_iobase + LMS_CNTRL, 0);
+	bus_space_write_1(sc->sc_iot, sc->sc_ioh, LMS_CNTRL, 0);
 
 	return 0;
 }
 
 int
-lmsclose(dev, flag)
+lmsclose(dev, flag, mode, p)
 	dev_t dev;
 	int flag;
+	int mode;
+	struct proc *p;
 {
-	struct lms_softc *sc = lmscd.cd_devs[LMSUNIT(dev)];
+	struct lms_softc *sc = lms_cd.cd_devs[LMSUNIT(dev)];
 
 	/* Disable interrupts. */
-	outb(sc->sc_iobase + LMS_CNTRL, 0x10);
+	bus_space_write_1(sc->sc_iot, sc->sc_ioh, LMS_CNTRL, 0x10);
 
 	sc->sc_state &= ~LMS_OPEN;
 
@@ -176,9 +201,9 @@ lmsread(dev, uio, flag)
 	struct uio *uio;
 	int flag;
 {
-	struct lms_softc *sc = lmscd.cd_devs[LMSUNIT(dev)];
+	struct lms_softc *sc = lms_cd.cd_devs[LMSUNIT(dev)];
 	int s;
-	int error;
+	int error = 0;
 	size_t length;
 	u_char buffer[LMS_CHUNK];
 
@@ -191,7 +216,8 @@ lmsread(dev, uio, flag)
 			return EWOULDBLOCK;
 		}
 		sc->sc_state |= LMS_ASLP;
-		if (error = tsleep((caddr_t)sc, PZERO | PCATCH, "lmsrea", 0)) {
+		error = tsleep((caddr_t)sc, PZERO | PCATCH, "lmsrea", 0);
+		if (error) {
 			sc->sc_state &= ~LMS_ASLP;
 			splx(s);
 			return error;
@@ -210,7 +236,7 @@ lmsread(dev, uio, flag)
 		(void) q_to_b(&sc->sc_q, buffer, length);
 
 		/* Copy the data to the user process. */
-		if (error = uiomove(buffer, length, uio))
+		if ((error = uiomove(buffer, length, uio)) != 0)
 			break;
 	}
 
@@ -218,13 +244,14 @@ lmsread(dev, uio, flag)
 }
 
 int
-lmsioctl(dev, cmd, addr, flag)
+lmsioctl(dev, cmd, addr, flag, p)
 	dev_t dev;
 	u_long cmd;
 	caddr_t addr;
 	int flag;
+	struct proc *p;
 {
-	struct lms_softc *sc = lmscd.cd_devs[LMSUNIT(dev)];
+	struct lms_softc *sc = lms_cd.cd_devs[LMSUNIT(dev)];
 	struct mouseinfo info;
 	int s;
 	int error;
@@ -274,7 +301,8 @@ lmsintr(arg)
 	void *arg;
 {
 	struct lms_softc *sc = arg;
-	int iobase = sc->sc_iobase;
+	bus_space_tag_t iot = sc->sc_iot;
+	bus_space_handle_t ioh = sc->sc_ioh;
 	u_char hi, lo, buttons, changed;
 	char dx, dy;
 	u_char buffer[5];
@@ -283,22 +311,22 @@ lmsintr(arg)
 		/* Interrupts are not expected. */
 		return 0;
 
-	outb(iobase + LMS_CNTRL, 0xab);
-	hi = inb(iobase + LMS_DATA);
-	outb(iobase + LMS_CNTRL, 0x90);
-	lo = inb(iobase + LMS_DATA);
+	bus_space_write_1(iot, ioh, LMS_CNTRL, 0xab);
+	hi = bus_space_read_1(iot, ioh, LMS_DATA);
+	bus_space_write_1(iot, ioh, LMS_CNTRL, 0x90);
+	lo = bus_space_read_1(iot, ioh, LMS_DATA);
 	dx = ((hi & 0x0f) << 4) | (lo & 0x0f);
 	/* Bounding at -127 avoids a bug in XFree86. */
 	dx = (dx == -128) ? -127 : dx;
 
-	outb(iobase + LMS_CNTRL, 0xf0);
-	hi = inb(iobase + LMS_DATA);
-	outb(iobase + LMS_CNTRL, 0xd0);
-	lo = inb(iobase + LMS_DATA);
+	bus_space_write_1(iot, ioh, LMS_CNTRL, 0xf0);
+	hi = bus_space_read_1(iot, ioh, LMS_DATA);
+	bus_space_write_1(iot, ioh, LMS_CNTRL, 0xd0);
+	lo = bus_space_read_1(iot, ioh, LMS_DATA);
 	dy = ((hi & 0x0f) << 4) | (lo & 0x0f);
 	dy = (dy == -128) ? 127 : -dy;
 
-	outb(iobase + LMS_CNTRL, 0);
+	bus_space_write_1(iot, ioh, LMS_CNTRL, 0);
 
 	buttons = (~hi >> 5) & 0x07;
 	changed = ((buttons ^ sc->sc_status) & 0x07) << 3;
@@ -332,7 +360,7 @@ lmsselect(dev, rw, p)
 	int rw;
 	struct proc *p;
 {
-	struct lms_softc *sc = lmscd.cd_devs[LMSUNIT(dev)];
+	struct lms_softc *sc = lms_cd.cd_devs[LMSUNIT(dev)];
 	int s;
 	int ret;
 

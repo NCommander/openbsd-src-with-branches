@@ -1,4 +1,4 @@
-/*	$NetBSD: mem.c,v 1.7 1995/04/10 16:49:25 mycroft Exp $	*/
+/*	$NetBSD: mem.c,v 1.9 1996/04/08 18:32:48 ragge Exp $	*/
 
 /*
  * Copyright (c) 1988 University of Utah.
@@ -50,6 +50,7 @@
 #include <sys/systm.h>
 #include <sys/uio.h>
 #include <sys/malloc.h>
+#include <sys/proc.h>
 
 #include <machine/pte.h>
 #include <machine/mtpr.h>
@@ -58,6 +59,12 @@
 
 extern unsigned int vmmap, avail_end;
 caddr_t zeropage;
+
+int	mmopen __P((dev_t, int, int));
+int	mmclose __P((dev_t, int, int));
+int	mmrw __P((dev_t, struct uio *, int));
+int	mmmmap __P((dev_t, int, int));
+
 
 /*ARGSUSED*/
 int
@@ -121,16 +128,16 @@ mmrw(dev, uio, flags)
 				error = EFAULT;
 				goto unlock;
 			}
+
 			pmap_enter(pmap_kernel(), (vm_offset_t)vmmap,
 			    trunc_page(v), uio->uio_rw == UIO_READ ?
 			    VM_PROT_READ : VM_PROT_WRITE, TRUE);
-			o = uio->uio_offset & PGOFSET;
-			c = min(uio->uio_resid, (int)(NBPG - o));
+			o = uio->uio_offset & PAGE_MASK;
+			c = min(uio->uio_resid, (int)(PAGE_SIZE - o));
 			error = uiomove((caddr_t)vmmap + o, c, uio);
 			pmap_remove(pmap_kernel(), (vm_offset_t)vmmap,
-			    (vm_offset_t)vmmap + NBPG);
+			    (vm_offset_t)vmmap + PAGE_SIZE);
 			continue;
-
 /* minor device 1 is kernel memory */
 		case 1:
 			v = uio->uio_offset;

@@ -1,4 +1,4 @@
-/*	$NetBSD: promdev.c,v 1.14.2.1 1995/10/13 19:53:55 pk Exp $ */
+/*	$NetBSD: promdev.c,v 1.16 1995/11/14 15:04:01 pk Exp $ */
 
 /*
  * Copyright (c) 1993 Paul Kranenburg
@@ -45,6 +45,8 @@
 
 #include "promdev.h"
 
+u_long	_randseed = 1;
+
 
 int	obp_close __P((struct open_file *));
 int	obp_strategy __P((void *, int, daddr_t, size_t, void *, size_t *));
@@ -66,6 +68,7 @@ char	*getpropstring __P((int, char *));
 static void	prom0_fake __P((void));
 
 extern struct filesystem file_system_nfs[];
+extern struct filesystem file_system_cd9660[];
 extern struct filesystem file_system_ufs[];
 
 int prom_open __P((struct open_file *f, ...)) { return 0; }
@@ -196,8 +199,11 @@ devopen(f, fname, file)
 				prom_bootdevice);
 			return error;
 		}
-	} else
+	} else {
 		bcopy(file_system_ufs, file_system, sizeof(struct fs_ops));
+		bcopy(&file_system_cd9660, file_system + 1, sizeof file_system[0]);
+		nfsys = 2;
+	}
 #endif /* BOOTXX */
 
 	f->f_dev = &devsw[cputyp == CPU_SUN4 ? 0 : 1];
@@ -413,6 +419,12 @@ getchar()
 }
  
 int
+cngetc()
+{
+	return getchar();
+}
+
+int
 peekchar()
 {
 	char c;
@@ -503,7 +515,7 @@ prom_getether(fd, ea)
 			} while (--len > 0);
 		}
 		bcopy(sun4_idprom.id_ether, ea, 6);
-	} else if (promvec->pv_romvec_vers < 2) {
+	} else if (promvec->pv_romvec_vers <= 2) {
 		(void)(*promvec->pv_enaddr)(fd, (char *)ea);
 	} else {
 		char buf[64];

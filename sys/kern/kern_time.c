@@ -1,4 +1,5 @@
-/*	$NetBSD: kern_time.c,v 1.16 1995/10/07 06:28:28 mycroft Exp $	*/
+/*	$OpenBSD: kern_time.c,v 1.8 1997/04/26 10:38:30 tholo Exp $	*/
+/*	$NetBSD: kern_time.c,v 1.20 1996/02/18 11:57:06 fvdl Exp $	*/
 
 /*
  * Copyright (c) 1982, 1986, 1989, 1993
@@ -32,7 +33,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  *
- *	@(#)kern_time.c	8.1 (Berkeley) 6/10/93
+ *	@(#)kern_time.c	8.4 (Berkeley) 5/26/95
  */
 
 #include <sys/param.h>
@@ -41,11 +42,20 @@
 #include <sys/systm.h>
 #include <sys/proc.h>
 #include <sys/vnode.h>
+#include <sys/signalvar.h>
 
 #include <sys/mount.h>
 #include <sys/syscallargs.h>
 
+#if defined(NFSCLIENT) || defined(NFSSERVER)
+#include <nfs/rpcv2.h>
+#include <nfs/nfsproto.h>
+#include <nfs/nfs_var.h>
+#endif
+
 #include <machine/cpu.h>
+
+static void	settime __P((struct timeval *));
 
 /* 
  * Time of day and interval timer support.
@@ -56,6 +66,176 @@
  * and decrementing interval timers, optionally reloading the interval
  * timers when they expire.
  */
+
+/* This function is used by clock_settime and settimeofday */
+static void
+settime(tv)
+	struct timeval *tv;
+{
+	struct timeval delta;
+	int s;
+
+	/* WHAT DO WE DO ABOUT PENDING REAL-TIME TIMEOUTS??? */
+	s = splclock();
+	timersub(tv, &time, &delta);
+	time = *tv;
+	(void) splsoftclock();
+	timeradd(&boottime, &delta, &boottime);
+	timeradd(&runtime, &delta, &runtime);
+#	if defined(NFS) || defined(NFSSERVER)
+		nqnfs_lease_updatetime(delta.tv_sec);
+#	endif
+	splx(s);
+	resettodr();
+}
+
+/* ARGSUSED */
+int
+sys_clock_gettime(p, v, retval)
+	struct proc *p;
+	void *v;
+	register_t *retval;
+{
+	register struct sys_clock_gettime_args /* {
+		syscallarg(clockid_t) clock_id;
+		syscallarg(struct timespec *) tp;
+	} */ *uap = v;
+	clockid_t clock_id;
+	struct timeval atv;
+	struct timespec ats;
+
+	clock_id = SCARG(uap, clock_id);
+	if (clock_id != CLOCK_REALTIME)
+		return (EINVAL);
+
+	microtime(&atv);
+	TIMEVAL_TO_TIMESPEC(&atv,&ats);
+
+	return copyout(&ats, SCARG(uap, tp), sizeof(ats));
+}
+
+/* ARGSUSED */
+int
+sys_clock_settime(p, v, retval)
+	struct proc *p;
+	void *v;
+	register_t *retval;
+{
+	register struct sys_clock_settime_args /* {
+		syscallarg(clockid_t) clock_id;
+		syscallarg(const struct timespec *) tp;
+	} */ *uap = v;
+	clockid_t clock_id;
+	struct timeval atv;
+	struct timespec ats;
+	int error;
+
+	if ((error = suser(p->p_ucred, &p->p_acflag)) != 0)
+		return (error);
+
+	clock_id = SCARG(uap, clock_id);
+	if (clock_id != CLOCK_REALTIME)
+		return (EINVAL);
+
+	if ((error = copyin(SCARG(uap, tp), &ats, sizeof(ats))) != 0)
+		return (error);
+
+	TIMESPEC_TO_TIMEVAL(&atv,&ats);
+	settime(&atv);
+
+	return 0;
+}
+
+int
+sys_clock_getres(p, v, retval)
+	struct proc *p;
+	void *v;
+	register_t *retval;
+{
+	register struct sys_clock_getres_args /* {
+		syscallarg(clockid_t) clock_id;
+		syscallarg(struct timespec *) tp;
+	} */ *uap = v;
+	clockid_t clock_id;
+	struct timespec ts;
+	int error = 0;
+
+	clock_id = SCARG(uap, clock_id);
+	if (clock_id != CLOCK_REALTIME)
+		return (EINVAL);
+
+	if (SCARG(uap, tp)) {
+		ts.tv_sec = 0;
+		ts.tv_nsec = 1000000000 / hz;
+
+		error = copyout(&ts, SCARG(uap, tp), sizeof (ts));
+	}
+
+	return error;
+}
+
+/* ARGSUSED */
+int
+sys_nanosleep(p, v, retval)
+	struct proc *p;
+	void *v;
+	register_t *retval;
+{
+	static int nanowait;
+	register struct sys_nanosleep_args/* {
+		syscallarg(const struct timespec *) rqtp;
+		syscallarg(struct timespec *) rmtp;
+	} */ *uap = v;
+	struct timespec rqt;
+	struct timespec rmt;
+	struct timeval atv, utv;
+	int error, s, timo;
+
+	error = copyin((const void *)SCARG(uap, rqtp), (void *)&rqt,
+	    sizeof(struct timespec));
+	if (error)
+		return (error);
+
+	TIMESPEC_TO_TIMEVAL(&atv,&rqt)
+	if (itimerfix(&atv))
+		return (EINVAL);
+
+	s = splclock();
+	timeradd(&atv,&time,&atv);
+	timo = hzto(&atv);
+	/* 
+	 * Avoid inadvertantly sleeping forever
+	 */
+	if (timo == 0)
+		timo = 1;
+	splx(s);
+
+	error = tsleep(&nanowait, PWAIT | PCATCH, "nanosleep", timo);
+	if (error == ERESTART)
+		error = EINTR;
+	if (error == EWOULDBLOCK)
+		error = 0;
+
+	if (SCARG(uap, rmtp)) {
+		int error;
+
+		s = splclock();
+		utv = time;
+		splx(s);
+
+		timersub(&atv, &utv, &utv);
+		if (utv.tv_sec < 0)
+			timerclear(&utv);
+
+		TIMEVAL_TO_TIMESPEC(&utv, &rmt);
+		error = copyout((void *)&rmt, (void *)SCARG(uap,rmtp),
+		    sizeof(rmt));		
+		if (error)
+			return (error);
+	}
+
+	return error;
+}
 
 /* ARGSUSED */
 int
@@ -73,12 +253,12 @@ sys_gettimeofday(p, v, retval)
 
 	if (SCARG(uap, tp)) {
 		microtime(&atv);
-		if (error = copyout((caddr_t)&atv, (caddr_t)SCARG(uap, tp),
-		    sizeof (atv)))
+		if ((error = copyout((void *)&atv, (void *)SCARG(uap, tp),
+		    sizeof (atv))))
 			return (error);
 	}
 	if (SCARG(uap, tzp))
-		error = copyout((caddr_t)&tz, (caddr_t)SCARG(uap, tzp),
+		error = copyout((void *)&tz, (void *)SCARG(uap, tzp),
 		    sizeof (tz));
 	return (error);
 }
@@ -94,33 +274,21 @@ sys_settimeofday(p, v, retval)
 		syscallarg(struct timeval *) tv;
 		syscallarg(struct timezone *) tzp;
 	} */ *uap = v;
-	struct timeval atv, delta;
+	struct timeval atv;
 	struct timezone atz;
-	int error, s;
+	int error;
 
-	if (error = suser(p->p_ucred, &p->p_acflag))
+	if ((error = suser(p->p_ucred, &p->p_acflag)))
 		return (error);
 	/* Verify all parameters before changing time. */
-	if (SCARG(uap, tv) && (error = copyin((caddr_t)SCARG(uap, tv),
-	    (caddr_t)&atv, sizeof(atv))))
+	if (SCARG(uap, tv) && (error = copyin((void *)SCARG(uap, tv),
+	    (void *)&atv, sizeof(atv))))
 		return (error);
-	if (SCARG(uap, tzp) && (error = copyin((caddr_t)SCARG(uap, tzp),
-	    (caddr_t)&atz, sizeof(atz))))
+	if (SCARG(uap, tzp) && (error = copyin((void *)SCARG(uap, tzp),
+	    (void *)&atz, sizeof(atz))))
 		return (error);
-	if (SCARG(uap, tv)) {
-		/* WHAT DO WE DO ABOUT PENDING REAL-TIME TIMEOUTS??? */
-		s = splclock();
-		timersub(&atv, &time, &delta);
-		time = atv;
-		(void) splsoftclock();
-		timeradd(&boottime, &delta, &boottime);
-		timeradd(&runtime, &delta, &runtime);
-# 		if defined(NFSCLIENT) || defined(NFSSERVER)
-			lease_updatetime(delta.tv_sec);
-#		endif
-		splx(s);
-		resettodr();
-	}
+	if (SCARG(uap, tv))
+		settime(&atv);
 	if (SCARG(uap, tzp))
 		tz = atz;
 	return (0);
@@ -145,10 +313,10 @@ sys_adjtime(p, v, retval)
 	register long ndelta, ntickdelta, odelta;
 	int s, error;
 
-	if (error = suser(p->p_ucred, &p->p_acflag))
+	if ((error = suser(p->p_ucred, &p->p_acflag)))
 		return (error);
-	if (error = copyin((caddr_t)SCARG(uap, delta), (caddr_t)&atv,
-	    sizeof(struct timeval)))
+	if ((error = copyin((void *)SCARG(uap, delta), (void *)&atv,
+	    sizeof(struct timeval))))
 		return (error);
 
 	/*
@@ -182,7 +350,7 @@ sys_adjtime(p, v, retval)
 	if (SCARG(uap, olddelta)) {
 		atv.tv_sec = odelta / 1000000;
 		atv.tv_usec = odelta % 1000000;
-		(void) copyout((caddr_t)&atv, (caddr_t)SCARG(uap, olddelta),
+		(void)copyout((void *)&atv, (void *)SCARG(uap, olddelta),
 		    sizeof(struct timeval));
 	}
 	return (0);
@@ -242,7 +410,7 @@ sys_getitimer(p, v, retval)
 	} else
 		aitv = p->p_stats->p_timer[SCARG(uap, which)];
 	splx(s);
-	return (copyout((caddr_t)&aitv, (caddr_t)SCARG(uap, itv),
+	return (copyout((void *)&aitv, (void *)SCARG(uap, itv),
 	    sizeof (struct itimerval)));
 }
 
@@ -250,7 +418,7 @@ sys_getitimer(p, v, retval)
 int
 sys_setitimer(p, v, retval)
 	struct proc *p;
-	void *v;
+	register void *v;
 	register_t *retval;
 {
 	register struct sys_setitimer_args /* {
@@ -265,7 +433,7 @@ sys_setitimer(p, v, retval)
 	if (SCARG(uap, which) > ITIMER_PROF)
 		return (EINVAL);
 	itvp = SCARG(uap, itv);
-	if (itvp && (error = copyin((caddr_t)itvp, (caddr_t)&aitv,
+	if (itvp && (error = copyin((void *)itvp, (void *)&aitv,
 	    sizeof(struct itimerval))))
 		return (error);
 	if ((SCARG(uap, itv) = SCARG(uap, oitv)) &&
@@ -277,10 +445,10 @@ sys_setitimer(p, v, retval)
 		return (EINVAL);
 	s = splclock();
 	if (SCARG(uap, which) == ITIMER_REAL) {
-		untimeout(realitexpire, p);
+		untimeout(realitexpire, (void *)p);
 		if (timerisset(&aitv.it_value)) {
 			timeradd(&aitv.it_value, &time, &aitv.it_value);
-			timeout(realitexpire, p, hzto(&aitv.it_value));
+			timeout(realitexpire, (void *)p, hzto(&aitv.it_value));
 		}
 		p->p_realtimer = aitv;
 	} else
@@ -315,7 +483,7 @@ realitexpire(arg)
 		timeradd(&p->p_realtimer.it_value,
 		    &p->p_realtimer.it_interval, &p->p_realtimer.it_value);
 		if (timercmp(&p->p_realtimer.it_value, &time, >)) {
-			timeout(realitexpire, p,
+			timeout(realitexpire, (void *)p,
 			    hzto(&p->p_realtimer.it_value));
 			splx(s);
 			return;

@@ -1,5 +1,3 @@
-/*	$NetBSD: regcomp.c,v 1.6 1995/02/27 13:29:01 cgd Exp $	*/
-
 /*-
  * Copyright (c) 1992, 1993, 1994 Henry Spencer.
  * Copyright (c) 1992, 1993, 1994
@@ -43,7 +41,7 @@
 #if 0
 static char sccsid[] = "@(#)regcomp.c	8.5 (Berkeley) 3/20/94";
 #else
-static char rcsid[] = "$NetBSD: regcomp.c,v 1.6 1995/02/27 13:29:01 cgd Exp $";
+static char rcsid[] = "$OpenBSD: regcomp.c,v 1.4 1997/04/28 20:44:59 millert Exp $";
 #endif
 #endif /* LIBC_SCCS and not lint */
 
@@ -109,9 +107,6 @@ static int freezeset __P((struct parse *p, cset *cs));
 static int firstch __P((struct parse *p, cset *cs));
 static int nch __P((struct parse *p, cset *cs));
 static void mcadd __P((struct parse *p, cset *cs, char *cp));
-static void mcsub __P((cset *cs, char *cp));
-static int mcin __P((cset *cs, char *cp));
-static char *mcfind __P((cset *cs, char *cp));
 static void mcinvert __P((struct parse *p, cset *cs));
 static void mccase __P((struct parse *p, cset *cs));
 static int isinsets __P((struct re_guts *g, int c));
@@ -679,7 +674,6 @@ static void
 p_bracket(p)
 register struct parse *p;
 {
-	register char c;
 	register cset *cs = allocset(p);
 	register int invert = 0;
 
@@ -895,7 +889,6 @@ int endc;			/* name ended by endc,']' */
 	register char *sp = p->next;
 	register struct cname *cp;
 	register int len;
-	register char c;
 
 	while (MORE() && !SEETWO(endc, ']'))
 		NEXT();
@@ -1271,70 +1264,13 @@ register char *cp;
 }
 
 /*
- - mcsub - subtract a collating element from a cset
- == static void mcsub(register cset *cs, register char *cp);
- */
-static void
-mcsub(cs, cp)
-register cset *cs;
-register char *cp;
-{
-	register char *fp = mcfind(cs, cp);
-	register size_t len = strlen(fp);
-
-	assert(fp != NULL);
-	(void) memmove(fp, fp + len + 1,
-				cs->smultis - (fp + len + 1 - cs->multis));
-	cs->smultis -= len;
-
-	if (cs->smultis == 0) {
-		free(cs->multis);
-		cs->multis = NULL;
-		return;
-	}
-
-	cs->multis = realloc(cs->multis, cs->smultis);
-	assert(cs->multis != NULL);
-}
-
-/*
- - mcin - is a collating element in a cset?
- == static int mcin(register cset *cs, register char *cp);
- */
-static int
-mcin(cs, cp)
-register cset *cs;
-register char *cp;
-{
-	return(mcfind(cs, cp) != NULL);
-}
-
-/*
- - mcfind - find a collating element in a cset
- == static char *mcfind(register cset *cs, register char *cp);
- */
-static char *
-mcfind(cs, cp)
-register cset *cs;
-register char *cp;
-{
-	register char *p;
-
-	if (cs->multis == NULL)
-		return(NULL);
-	for (p = cs->multis; *p != '\0'; p += strlen(p) + 1)
-		if (strcmp(cp, p) == 0)
-			return(p);
-	return(NULL);
-}
-
-/*
  - mcinvert - invert the list of collating elements in a cset
  == static void mcinvert(register struct parse *p, register cset *cs);
  *
  * This would have to know the set of possibilities.  Implementation
  * is deferred.
  */
+/* ARGSUSED */
 static void
 mcinvert(p, cs)
 register struct parse *p;
@@ -1350,6 +1286,7 @@ register cset *cs;
  * This would have to know the set of possibilities.  Implementation
  * is deferred.
  */
+/* ARGSUSED */
 static void
 mccase(p, cs)
 register struct parse *p;

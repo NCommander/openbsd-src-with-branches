@@ -1,3 +1,5 @@
+/*	$OpenBSD: pcvt_hdr.h,v 1.13 1996/07/16 10:58:36 deraadt Exp $	*/
+
 /*
  * Copyright (c) 1992, 1995 Hellmuth Michaelis and Joerg Wunsch.
  *
@@ -72,9 +74,8 @@
 #define	PCVT_REL "3.32"		/* driver attach announcement	*/
 				/* see also: pcvt_ioctl.h	*/
 
-#if PCVT_FREEBSD >= 200
-
 #include <sys/param.h>
+#include <sys/systm.h>
 #include <sys/conf.h>
 #include <sys/ioctl.h>
 #include <sys/proc.h>
@@ -82,132 +83,74 @@
 #include <sys/tty.h>
 #include <sys/uio.h>
 #include <sys/callout.h>
-#include <sys/systm.h>
 #include <sys/kernel.h>
 #include <sys/syslog.h>
 #include <sys/malloc.h>
 #include <sys/time.h>
 
-#else /* ! PCVT_FREEBSD >= 200 */
-
-#include "param.h"
-#include "conf.h"
-#include "ioctl.h"
-#include "proc.h"
-#include "user.h"
-#include "tty.h"
-#include "uio.h"
-#include "callout.h"
-#include "systm.h"
-#include "kernel.h"
-#include "syslog.h"
-#include "malloc.h"
-#include "time.h"
-
-#endif /* PCVT_FREEBSD >= 200 */
-
 #include "pcvt_conf.h"
 
 #if PCVT_NETBSD > 9
-#include "device.h"
+#include <sys/device.h>
 #endif
 
 #if PCVT_NETBSD > 9
 #if PCVT_NETBSD > 101
-#include "i386/isa/isa_machdep.h"
-#include "dev/isa/isavar.h"
+#include <i386/isa/isa_machdep.h>
+#include <dev/isa/isavar.h>
 #else
-#include "i386/isa/isavar.h"
+#include <i386/isa/isavar.h>
 #endif
-
-#include "i386/cpufunc.h"
-#elif PCVT_FREEBSD >= 200
+#include <machine/cpufunc.h>
+#include <machine/intr.h>
+#else
 #include <i386/isa/isa_device.h>
-#else
-#include "i386/isa/isa_device.h"
 #endif
 
-#if PCVT_FREEBSD >= 200
 #include <i386/isa/icu.h>
-#else
-#include "i386/isa/icu.h"
-#endif
 
 #if PCVT_NETBSD > 100
 #if PCVT_NETBSD > 101
-#include "dev/isa/isareg.h"
+#include <dev/isa/isareg.h>
 #else
-#include "i386/isa/isareg.h"
+#include <i386/isa/isareg.h>
 #endif
-#elif PCVT_FREEBSD >= 200
-#include <i386/isa/isa.h>
 #else
-#include "i386/isa/isa.h"
+#include <i386/isa/isa.h>
 #endif
 
 #if PCVT_NETBSD > 9
-#include "dev/cons.h"
+#include <dev/cons.h>
 #if PCVT_NETBSD > 100
-#include "dev/ic/mc146818reg.h"
-#include "i386/isa/nvram.h"
+#include <dev/ic/mc146818reg.h>
+#include <i386/isa/nvram.h>
 #endif
-#elif PCVT_FREEBSD >= 200
-#include <i386/i386/cons.h>
 #else
-#include "i386/i386/cons.h"
+#include <i386/i386/cons.h>
 #endif
 
 #if PCVT_NETBSD <= 9
-#if PCVT_FREEBSD >= 200
 #include <machine/psl.h>
 #include <machine/frame.h>
-#else /* ! PCVT_FREEBSD >= 200 */
-#include "machine/psl.h"
-#include "machine/frame.h"
-#endif /* PCVT_FREEBSD >= 200 */
 #endif /* PCVT_NETBSD <= 9 */
 
-#if PCVT_FREEBSD >= 200
 #include <machine/stdarg.h>
-#else
-#include "machine/stdarg.h"
-#endif
 
 #if PCVT_NETBSD > 9
 #include "pcvt_ioctl.h"
-#elif PCVT_FREEBSD >= 200
-#include <machine/pcvt_ioctl.h>
 #else
-#include "machine/pcvt_ioctl.h"
+#include <machine/pcvt_ioctl.h>
 #endif
 
-#if PCVT_FREEBSD >= 200
 #include <machine/pc/display.h>
 #if PCVT_FREEBSD > 200
 #include <machine/clock.h>
 #include <machine/md_var.h>
 #endif
 #include <vm/vm_kern.h>
-#else /* PCVT_FREEBSD >= 200 */
-#include "machine/pc/display.h"
-#include "vm/vm_kern.h"
-#endif /* PCVT_FREEBSD >= 200 */
 
 #if PCVT_FREEBSD > 205
 #include <sys/devconf.h>
-#endif
-
-/* setup irq disable function to use */
-
-#if !(PCVT_SLOW_INTERRUPT) && (PCVT_NETBSD > 9)
-# define PCVT_DISABLE_INTR()	disable_intr()
-# define PCVT_ENABLE_INTR()	enable_intr()
-# undef PCVT_SLOW_INTERRUPT
-#else
-# define PCVT_DISABLE_INTR()	s = spltty()
-# define PCVT_ENABLE_INTR()	splx(s)
-# undef PCVT_SLOW_INTERRUPT
-# define PCVT_SLOW_INTERRUPT 1
 #endif
 
 /* perform option consistency checks */
@@ -252,9 +195,9 @@ in the config file"
 
 #if PCVT_NETBSD
 #if PCVT_NETBSD == 9
-#include "machine/cpufunc.h"	/* NetBSD 0.9 [...and earlier -currents] */
+#include <machine/cpufunc.h>	/* NetBSD 0.9 [...and earlier -currents] */
 #else
-#include "machine/pio.h"	/* recent NetBSD -currents */
+#include <machine/pio.h>	/* recent NetBSD -currents */
 #define NEW_AVERUNNABLE		/* averunnable changes for younger currents */
 #endif /* PCVT_NETBSD == 9 */
 #endif /* PCVT_NETBSD */
@@ -335,6 +278,7 @@ in the config file"
 #define KEYB_R_MF2ID1	0xab	/* MF II Keyboard id-byte #1 */
 #define KEYB_R_MF2ID2	0x41	/* MF II Keyboard id-byte #2 */
 #define KEYB_R_MF2ID2HP	0x83	/* MF II Keyboard id-byte #2 from HP keybd's */
+#define KEYB_R_MF2ID2TP 0x54	/* MF II Keyboard id-byte #2 from IBM ThinkPad */
 
 /* internal Keyboard Type */
 
@@ -740,12 +684,6 @@ in the config file"
 #define SYS_FKL		0	/* in hp mode, sys-fkls are active */
 #define USR_FKL		1	/* in hp mode, user-fkls are active */
 
-/* arguments to async_update() */
-
-#define UPDATE_START	0	/* do cursor update and requeue */
-#define UPDATE_STOP	1	/* suspend cursor updates */
-#define UPDATE_KERN	2	/* do cursor updates for kernel output */
-
 /* variables */
 
 #ifdef EXTERN
@@ -763,9 +701,7 @@ EXTERN	u_short	user_attr;		/* character attributes */
 
 #if !PCVT_EMU_MOUSE
 
-#if PCVT_NETBSD > 100
-/* nothing */
-#elif PCVT_NETBSD
+#if PCVT_NETBSD
 EXTERN struct tty *pc_tty[PCVT_NSCREENS];
 #elif !(PCVT_FREEBSD > 110 && PCVT_FREEBSD < 200)
 EXTERN struct tty pccons[PCVT_NSCREENS];
@@ -775,9 +711,7 @@ EXTERN struct tty *pccons[PCVT_NSCREENS];
 
 #else /* PCVT_EMU_MOUSE */
 
-#if PCVT_NETBSD > 100
-/* nothing */
-#elif PCVT_NETBSD
+#if PCVT_NETBSD
 EXTERN struct tty *pc_tty[PCVT_NSCREENS + 1];
 #elif !(PCVT_FREEBSD > 110 && PCVT_FREEBSD < 200)
 EXTERN struct tty pccons[PCVT_NSCREENS + 1];
@@ -914,6 +848,9 @@ typedef struct video_state {
 
 EXTERN video_state vs[PCVT_NSCREENS];	/* parameters for screens */
 
+/* used to be able to pass ERESTART on properly */
+#define PCVT_ERESTART (ELAST + 1)
+
 /* possible states for video_state.vt_status: */
 
 #define	VT_WAIT_REL 1			/* wait till process released vt */
@@ -956,9 +893,22 @@ struct vt_softc {
 };
 #endif /* PCVT_NETBSD > 101 */
 
-int pcprobe ();
-void pcattach ();
+#if PCVT_NETBSD > 100
+int pcprobe(struct device *, void *, void *);
+#endif
+#if PCVT_NETBSD > 9
+void pcattach(struct device *, struct device *, void *);
+#endif
 
+#if PCVT_NETBSD > 110
+struct cfattach vt_ca = {
+	sizeof(struct vt_softc), pcprobe, pcattach
+};
+
+struct cfdriver vt_cd = {
+	NULL, "vt", DV_TTY
+};
+#else /* !PCVT_NETBSD > 110 */
 #if PCVT_NETBSD > 101
 struct cfdriver vtcd = {
 	NULL, "vt", pcprobe, pcattach, DV_TTY, sizeof(struct vt_softc)
@@ -968,6 +918,7 @@ struct cfdriver vtcd = {
 	NULL, "vt", pcprobe, pcattach, DV_TTY, sizeof(struct device)
 };
 #endif /* PCVT_NETBSD > 101 */
+#endif /* PCVT_NETBSD > 110 */
 
 #else /* !PCVT_NETBSD > 9 */
 
@@ -1232,7 +1183,7 @@ extern u_char		*saved_charsets[NVGAFONTS];
 extern void bcopyb(void *from, void *to, u_int length);
 #endif
 
-#if !PCVT_FREEBSD || (PCVT_FREEBSD < 200)
+#if (PCVT_FREEBSD > 0 && PCVT_FREEBSD < 200) || (PCVT_NETBSD > 0 && PCVT_NETBSD <= 110)
 extern void fillw(U_short value, void *addr, u_int length);
 #endif
 
@@ -1304,11 +1255,7 @@ void 	pcvt_scrnsv_reset ( void );
 void 	pcvt_set_scrnsv_tmo ( int );
 #endif /* PCVT_SCREENSAVER */
 
-#ifdef XSERVER
-void	vga_move_charset ( unsigned n, unsigned char *b, int save_it);
-#endif /* XSERVER */
-
-void	async_update ( int arg );
+void	async_update ( void );
 void	clr_parms ( struct video_state *svsp );
 void	cons_highlight ( void );
 void	cons_normal ( void );
@@ -1352,6 +1299,7 @@ void	vga10_vga16 ( u_char *invga, u_char *outvga );
 void	vga10_vga8 ( u_char *invga, u_char *outvga );
 u_char	vga_chipset ( void );
 int	vga_col ( struct video_state *svsp, int cols );
+void	vga_move_charset ( unsigned n, unsigned char *b, int save_it);
 void	vga_screen_off ( void );
 void	vga_screen_on ( void );
 char   *vga_string ( int number );
@@ -1364,6 +1312,7 @@ void	vt_clreol ( struct video_state *svsp );
 void	vt_clreos ( struct video_state *svsp );
 void	vt_clrtab ( struct video_state *svsp );
 int	vt_col ( struct video_state *svsp, int cols );
+void	vt_coldinit ( void );
 void	vt_coldmalloc ( void );
 void	vt_cub ( struct video_state *svsp );
 void	vt_cud ( struct video_state *svsp );
@@ -1441,21 +1390,26 @@ static __inline void vt_selattr(struct video_state *svsp)
 				/* 0x84 to produce keyboard controller    */
 				/* access delays                          */
 #define PCVT_KBD_DELAY()          \
-	{ u_char x = inb(0x84); } \
-	{ u_char x = inb(0x84); } \
-	{ u_char x = inb(0x84); } \
-	{ u_char x = inb(0x84); } \
-	{ u_char x = inb(0x84); } \
-	{ u_char x = inb(0x84); }
+	{ volatile u_char x = inb(0x84); (void) &x;} \
+	{ volatile u_char x = inb(0x84); (void) &x;} \
+	{ volatile u_char x = inb(0x84); (void) &x;} \
+	{ volatile u_char x = inb(0x84); (void) &x;} \
+	{ volatile u_char x = inb(0x84); (void) &x;} \
+	{ volatile u_char x = inb(0x84); (void) &x;} \
+	{ volatile u_char x = inb(0x84); (void) &x;} \
+	{ volatile u_char x = inb(0x84); (void) &x;} \
+	{ volatile u_char x = inb(0x84); (void) &x;} \
+	{ volatile u_char x = inb(0x84); (void) &x;} \
+	{ volatile u_char x = inb(0x84); (void) &x;}
 
 #else /* PCVT_PORTIO_DELAY */
 				/* use system supplied delay function for */
 				/* producing delays for accesssing the    */
 				/* keyboard controller                    */
 #if PCVT_NETBSD > 9
-#define PCVT_KBD_DELAY()	delay(7)
+#define PCVT_KBD_DELAY()	delay(11)
 #elif PCVT_FREEBSD || (PCVT_NETBSD <= 9)
-#define PCVT_KBD_DELAY()	DELAY(7)
+#define PCVT_KBD_DELAY()	DELAY(11)
 #endif
 #endif /* PCVT_PORTIO_DELAY */
 

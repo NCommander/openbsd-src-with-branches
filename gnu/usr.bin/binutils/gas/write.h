@@ -90,6 +90,11 @@ struct fix
   /* NULL or Symbol whose value we subtract. */
   symbolS *fx_subsy;
 
+#if defined(TE_NetBSD) || defined (TE_OpenBSD)
+  /* NULL or __GLOBAL_OFFSET_TABLE_ . */
+  symbolS *fx_gotsy;
+#endif
+
   /* Absolute number we add in. */
   valueT fx_offset;
 

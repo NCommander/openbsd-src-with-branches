@@ -1,4 +1,5 @@
-/*	$NetBSD: ffs_subr.c,v 1.4 1995/03/28 20:01:44 jtc Exp $	*/
+/*	$OpenBSD: ffs_subr.c,v 1.2 1996/02/27 07:27:39 niklas Exp $	*/
+/*	$NetBSD: ffs_subr.c,v 1.6 1996/03/17 02:16:23 christos Exp $	*/
 
 /*
  * Copyright (c) 1982, 1986, 1989, 1993
@@ -52,14 +53,15 @@
  * remaining space in the directory.
  */
 int
-ffs_blkatoff(ap)
+ffs_blkatoff(v)
+	void *v;
+{
 	struct vop_blkatoff_args /* {
 		struct vnode *a_vp;
 		off_t a_offset;
 		char **a_res;
 		struct buf **a_bpp;
-	} */ *ap;
-{
+	} */ *ap = v;
 	struct inode *ip;
 	register struct fs *fs;
 	struct buf *bp;
@@ -72,7 +74,7 @@ ffs_blkatoff(ap)
 	bsize = blksize(fs, ip, lbn);
 
 	*ap->a_bpp = NULL;
-	if (error = bread(ap->a_vp, lbn, bsize, NOCRED, &bp)) {
+	if ((error = bread(ap->a_vp, lbn, bsize, NOCRED, &bp)) != 0) {
 		brelse(bp);
 		return (error);
 	}
@@ -144,7 +146,7 @@ ffs_checkoverlap(bp, ip)
 		    ep->b_blkno + btodb(ep->b_bcount) <= start)
 			continue;
 		vprint("Disk overlap", vp);
-		(void)printf("\tstart %d, end %d overlap start %d, end %d\n",
+		(void)printf("\tstart %d, end %d overlap start %d, end %ld\n",
 			start, last, ep->b_blkno,
 			ep->b_blkno + btodb(ep->b_bcount) - 1);
 		panic("Disk buffer overlap");

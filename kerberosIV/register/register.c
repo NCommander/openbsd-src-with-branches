@@ -1,4 +1,4 @@
-/*	$Id$	*/
+/*	$Id: register.c,v 1.3 1996/09/04 05:10:23 deraadt Exp $	*/
 
 /*-
  * Copyright (c) 1989, 1993
@@ -76,6 +76,7 @@ static	char	password[_PASSWORD_LEN];
 void	die();
 void	setup_key(), type_info(), cleanup();
 
+int
 main(argc, argv)
 	int	argc;
 	char	**argv;
@@ -87,6 +88,7 @@ main(argc, argv)
 	int		sock, llen;
 	u_char		code;
 	static struct rlimit rl = { 0, 0 };
+	char passbuf[255];
 
 	signal(SIGPIPE, die);
 
@@ -170,11 +172,15 @@ main(argc, argv)
 		exit(1);
 	}
 
+	bzero(passbuf, sizeof passbuf);
+	bcopy(password, passbuf, sizeof password);
 	if (des_write(sock, password, 255) != 255) {
+		bzero(passbuf, sizeof passbuf);
 		perror("write password");
 		cleanup();
 		exit(1);
 	}
+	bzero(passbuf, sizeof passbuf);
 
 	/* get return message */
 
@@ -211,7 +217,7 @@ main(argc, argv)
 void
 cleanup()
 {
-	bzero(password, 255);
+	bzero(password, sizeof password);
 }
 
 extern	char	*crypt();
@@ -273,9 +279,8 @@ setup_key(local)
 	char	namebuf[MAXPATHLEN];
 	extern int errno;
 
-	(void) sprintf(namebuf, "%s%s",
-		CLIENT_KEYFILE,
-		inet_ntoa(local.sin_addr));
+	(void) snprintf(namebuf, sizeof(namebuf), "%s%s", CLIENT_KEYFILE,
+			inet_ntoa(local.sin_addr));
 
 	fd = open(namebuf, O_RDONLY);
 	if (fd < 0) {
@@ -291,7 +296,7 @@ setup_key(local)
 		exit(1);
 	}
 	key_sched(&kdata.kf_key, schedule);
-	des_set_key(&kdata.kf_key, schedule);
+	desrw_set_key(&kdata.kf_key, schedule);
 	return;
 }
 

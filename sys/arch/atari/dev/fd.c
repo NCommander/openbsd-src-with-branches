@@ -1,4 +1,4 @@
-/*	$NetBSD: fd.c,v 1.10.2.1 1995/10/14 20:19:41 leo Exp $	*/
+/*	$NetBSD: fd.c,v 1.13 1996/01/07 22:02:05 thorpej Exp $	*/
 
 /*
  * Copyright (c) 1995 Leo Weppelman.
@@ -125,7 +125,8 @@ static char	*fd_error= NULL;	/* error from fd_xfer_ok()	*/
  * Private per device data
  */
 struct fd_softc {
-	struct dkdevice dkdev;
+	struct device	sc_dv;		/* generic device info		*/
+	struct disk	dkdev;		/* generic disk info		*/
 	struct buf	bufq;		/* queue of buf's		*/
 	int		unit;		/* unit for atari controlling hw*/
 	int		nheads;		/* number of heads in use	*/
@@ -185,6 +186,7 @@ static void	fdtestdrv __P((struct fd_softc *));
 static int	fdgetdisklabel __P((struct fd_softc *, dev_t));
 static int	fdselect __P((int, int, int));
 static void	fddeselect __P((void));
+static void	fdmoff __P((struct fd_softc *));
 
 extern __inline__ u_char read_fdreg(u_short regno)
 {
@@ -208,7 +210,7 @@ extern __inline__ u_char read_dmastat(void)
  * Autoconfig stuff....
  */
 static int	fdcmatch __P((struct device *, struct cfdata *, void *));
-static int	fdcprint __P((void *, char *));
+static int	fdcprint __P((void *, const char *));
 static void	fdcattach __P((struct device *, struct device *, void *));
 
 struct cfdriver fdccd = {
@@ -231,8 +233,10 @@ fdcattach(pdp, dp, auxp)
 struct device	*pdp, *dp;
 void		*auxp;
 {
+	extern struct cfdriver fdcd;
+
 	struct fd_softc	fdsoftc;
-	int		i, nfound = 0;
+	int		i, nfound, first_found = 0;
 
 	printf("\n");
 	fddeselect();
@@ -247,12 +251,24 @@ void		*auxp;
 		st_dmafree(&fdsoftc, &lock_stat);
 
 		if(!(fdsoftc.flags & FLPF_NOTRESP)) {
+			if(!nfound)
+				first_found = i;
 			nfound++;
 			config_found(dp, (void*)i, fdcprint);
 		}
 	}
 
 	if(nfound) {
+
+		/*
+		 * Make sure motor will be turned of when a floppy is
+		 * inserted in the first selected drive.
+		 */
+		fdselect(first_found, 0, FLP_DD);
+		fd_state = FLP_MON;
+		timeout((FPV)fdmotoroff, (void*)getsoftc(fdcd, first_found),
+					 			FLP_MONDELAY);
+
 		/*
 		 * enable disk related interrupts
 		 */
@@ -265,7 +281,7 @@ void		*auxp;
 static int
 fdcprint(auxp, pnp)
 void	*auxp;
-char	*pnp;
+const char *pnp;
 {
 	return(UNCONF);
 }
@@ -300,7 +316,12 @@ void		*auxp;
 
 	printf("\n");
 
+	/*
+	 * Initialize and attach the disk structure.
+	 */
+	sc->dkdev.dk_name = sc->sc_dv.dv_xname;
 	sc->dkdev.dk_driver = &fddkdriver;
+	disk_attach(&sc->dkdev);
 }
 
 fdioctl(dev, cmd, addr, flag, p)
@@ -322,13 +343,13 @@ struct proc	*p;
 		case DIOCSBAD:
 			return(EINVAL);
 		case DIOCGDINFO:
-			*(struct disklabel *)addr = sc->dkdev.dk_label;
+			*(struct disklabel *)addr = *(sc->dkdev.dk_label);
 			return(0);
 		case DIOCGPART:
 			((struct partinfo *)addr)->disklab =
-				&sc->dkdev.dk_label;
+				sc->dkdev.dk_label;
 			((struct partinfo *)addr)->part =
-				&sc->dkdev.dk_label.d_partitions[DISKPART(dev)];
+			      &sc->dkdev.dk_label->d_partitions[DISKPART(dev)];
 			return(0);
 #ifdef notyet /* XXX LWP */
 		case DIOCSRETRIES:
@@ -482,7 +503,7 @@ struct buf	*bp;
 	/*
 	 * check for valid partition and bounds
 	 */
-	lp = &sc->dkdev.dk_label;
+	lp = sc->dkdev.dk_label;
 	if ((sc->flags & FLPF_HAVELAB) == 0) {
 		bp->b_error = EIO;
 		goto bad;
@@ -584,6 +605,9 @@ struct fd_softc	*sc;
 	sc->errcnt   = 0;		/* No errors yet		*/
 	fd_state     = FLP_XFER;	/* Yes, we're going to transfer	*/
 
+	/* Instrumentation. */
+	disk_busy(&sc->dkdev);
+
 	fd_xfer(sc);
 }
 
@@ -623,6 +647,9 @@ register struct fd_softc	*sc;
 								sc->io_bytes);
 #endif
 		bp->b_resid = sc->io_bytes;
+
+		disk_unbusy(&sc->dkdev, (bp->b_bcount - bp->b_resid));
+
 		biodone(bp);
 	}
 	fd_state = FLP_MON;
@@ -1076,9 +1103,12 @@ struct fd_softc	*sc;
 			/*
 			 * Turn motor off.
 			 */
-			if(selected)
-				fddeselect();
-			fd_state = FLP_IDLE;
+			if(selected) {
+				int tmp;
+
+				st_dmagrab(fdcint, fdmoff, sc, &tmp, 0);
+			}
+			else  fd_state = FLP_IDLE;
 			break;
 	}
 	splx(sps);
@@ -1112,6 +1142,35 @@ struct buf	*bp;
 #endif
 
 	minphys(bp);
+}
+
+/*
+ * Called from fdmotoroff to turn the motor actually off....
+ * This can't be done in fdmotoroff itself, because exclusive access to the
+ * DMA controller is needed to read the FDC-status register. The function
+ * 'fdmoff()' always runs as the result of a 'dmagrab()'.
+ * We need to test the status-register because we want to be sure that the
+ * drive motor is really off before deselecting the drive. The FDC only
+ * turns off the drive motor after having seen 10 index-pulses. You only
+ * get index-pulses when a drive is selected....This means that if the
+ * drive is deselected when the motor is still spinning, it will continue
+ * to spin _even_ when you insert a floppy later on...
+ */
+static void
+fdmoff(fdsoftc)
+struct fd_softc	*fdsoftc;
+{
+	int tmp;
+
+	if ((fd_state == FLP_MON) && selected) {
+		tmp = read_fdreg(FDC_CS);
+		if (!(tmp & MOTORON)) {
+			fddeselect();
+			fd_state = FLP_IDLE;
+		}
+		else timeout((FPV)fdmotoroff, (void*)fdsoftc, 10*FLP_MONDELAY);
+	}
+	st_dmafree(fdsoftc, &tmp);
 }
 
 /*
@@ -1172,7 +1231,7 @@ dev_t			dev;
 #endif
 
 	part = DISKPART(dev);
-	lp   = &sc->dkdev.dk_label;
+	lp   = sc->dkdev.dk_label;
 	bzero(lp, sizeof(struct disklabel));
 
 	lp->d_secsize     = SECTOR_SIZE;

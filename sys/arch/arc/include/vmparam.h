@@ -1,4 +1,4 @@
-/*	$OpenBSD: vmparam.h,v 1.3 1996/06/06 23:07:23 deraadt Exp $	*/
+/*	$OpenBSD: vmparam.h,v 1.2 1996/07/30 20:24:30 pefo Exp $	*/
 /*	$NetBSD: vmparam.h,v 1.5 1994/10/26 21:10:10 cgd Exp $	*/
 
 /*
@@ -43,20 +43,14 @@
  */
 
 /*
- * Machine dependent constants for DEC Station 3100.
+ * Machine dependent constants.
  */
 /*
  * USRTEXT is the start of the user text/data space, while USRSTACK
- * is the top (end) of the user stack.  LOWPAGES and HIGHPAGES are
- * the number of pages from the beginning of the P0 region to the
- * beginning of the text and from the beginning of the P1 region to the
- * beginning of the stack respectively.
+ * is the top (end) of the user stack.
  */
-#define	USRTEXT		0x00001000
+#define	USRTEXT		0x00400000
 #define	USRSTACK	0x80000000	/* Start of user stack */
-#define	BTOPUSRSTACK	0x80000		/* btop(USRSTACK) */
-#define	LOWPAGES	0x00001
-#define	HIGHPAGES	0
 
 /*
  * Virtual memory related constants, all in bytes
@@ -218,9 +212,6 @@
  */
 #define	LOTSOFMEM	2
 
-#define	mapin(pte, v, pfnum, prot) \
-	(*(int *)(pte) = ((pfnum) << PG_SHIFT) | (prot), MachTLBFlushAddr(v))
-
 /*
  * Mach derived constants
  */
@@ -236,3 +227,7 @@
 #define VM_MBUF_SIZE		(NMBCLUSTERS*MCLBYTES)
 #define VM_KMEM_SIZE		(NKMEMCLUSTERS*CLBYTES)
 #define VM_PHYS_SIZE		(USRIOSIZE*CLBYTES)
+
+struct vm_map;
+
+vm_offset_t  kmem_alloc_upage __P((struct vm_map *, vm_size_t));

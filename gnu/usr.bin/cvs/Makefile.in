@@ -95,8 +95,10 @@ DISTFILES = \
 ### Subdirectories to run make in for the primary targets.
 # Unix source subdirs, where we'll want to run lint and etags:
 USOURCE_SUBDIRS = lib zlib src
+# Documentation directories; special handling
+INSTALL_MAN=man
 # All other subdirs:
-SUBDIRS = ${USOURCE_SUBDIRS} man doc contrib tools \
+SUBDIRS = ${USOURCE_SUBDIRS} ${INSTALL_MAN} doc contrib tools \
 	windows-NT os2 macintosh vms
 # Only make TAGS/tags files in these directories.
 TSUBDIRS= src lib

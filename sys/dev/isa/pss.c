@@ -1,4 +1,5 @@
-/*	$NetBSD: pss.c,v 1.9 1995/08/12 22:37:58 mycroft Exp $	*/
+/*	$OpenBSD: pss.c,v 1.9 1996/05/07 07:37:33 deraadt Exp $ */
+/*	$NetBSD: pss.c,v 1.15 1996/05/12 23:53:23 mycroft Exp $	*/
 
 /*
  * Copyright (c) 1994 John Brezak
@@ -60,6 +61,7 @@
 #include <sys/buf.h>
 
 #include <machine/cpu.h>
+#include <machine/intr.h>
 #include <machine/pio.h>
 
 #include <sys/audioio.h>
@@ -107,8 +109,8 @@ struct pss_softc {
 	struct	isadev sc_id;		/* ISA device */
 	void	*sc_ih;			/* interrupt vectoring */
 
-	u_short	sc_iobase;		/* I/O port base address */
-	u_short	sc_drq;			/* dma channel */
+	int	sc_iobase;		/* I/O port base address */
+	int	sc_drq;			/* dma channel */
 
 	struct	ad1848_softc *ad1848_sc;
 	
@@ -128,8 +130,8 @@ struct mpu_softc {
 	struct	isadev sc_id;		/* ISA device */
 	void	*sc_ih;			/* interrupt vectoring */
     
-	u_short	sc_iobase;		/* MIDI I/O port base address */
-	u_short	sc_irq;			/* MIDI interrupt */
+	int	sc_iobase;		/* MIDI I/O port base address */
+	int	sc_irq;			/* MIDI interrupt */
 };
 
 struct cd_softc {
@@ -137,8 +139,8 @@ struct cd_softc {
 	struct	isadev sc_id;		/* ISA device */
 	void	*sc_ih;			/* interrupt vectoring */
 
-	u_short	sc_iobase;		/* CD I/O port base address */
-	u_short	sc_irq;			/* CD interrupt */
+	int	sc_iobase;		/* CD I/O port base address */
+	int	sc_irq;			/* CD interrupt */
 };
 
 #ifdef AUDIO_DEBUG
@@ -149,16 +151,16 @@ int	pssdebug = 0;
 #define DPRINTF(x)
 #endif
 
-int	pssprobe();
+int	pssprobe __P((struct device *, void *, void *));
 void	pssattach __P((struct device *, struct device *, void *));
 
-int	spprobe();
+int	spprobe __P((struct device *, void *, void *));
 void	spattach __P((struct device *, struct device *, void *));
 
-int	mpuprobe();
+int	mpuprobe __P((struct device *, void *, void *));
 void	mpuattach __P((struct device *, struct device *, void *));
 
-int	pcdprobe();
+int	pcdprobe __P((struct device *, void *, void *));
 void	pcdattach __P((struct device *, struct device *, void *));
 
 int	spopen __P((dev_t, int));
@@ -178,6 +180,28 @@ int	pss_get_in_port __P((void *));
 int	pss_mixer_set_port __P((void *, mixer_ctrl_t *));
 int	pss_mixer_get_port __P((void *, mixer_ctrl_t *));
 int	pss_query_devinfo __P((void *, mixer_devinfo_t *));
+
+void	pss_dspwrite __P((struct pss_softc *, int));
+void	pss_setaddr __P((int, int));
+int	pss_setint __P((int, int));
+int	pss_setdma __P((int, int));
+int	pss_testdma __P((struct pss_softc *, int));
+int	pss_reset_dsp __P((struct pss_softc *));
+int	pss_download_dsp __P((struct pss_softc *, u_char *, int));
+void	pss_dump_regs __P((struct pss_softc *));
+int	pss_set_master_gain __P((struct pss_softc *, struct ad1848_volume *));
+int	pss_set_master_mode __P((struct pss_softc *, int));
+int	pss_set_treble __P((struct pss_softc *, u_int));
+int	pss_set_bass __P((struct pss_softc *, u_int));
+int	pss_get_master_gain __P((struct pss_softc *, struct ad1848_volume *));
+int	pss_get_master_mode __P((struct pss_softc *, u_int *));
+int	pss_get_treble __P((struct pss_softc *, u_char *));
+int	pss_get_bass __P((struct pss_softc *, u_char *));
+
+static int pss_to_vol __P((mixer_ctrl_t *, struct ad1848_volume *));
+static int pss_from_vol __P((mixer_ctrl_t *, struct ad1848_volume *));
+
+void	wss_dump_regs __P((struct ad1848_softc *));
 
 /*
  * Define our interface to the higher level audio driver.
@@ -237,20 +261,36 @@ static u_char wss_dma_bits[4] = {1, 2, 0, 3};
 #define at_dma(flags, ptr, cc, chan)	isa_dmastart(flags, ptr, cc, chan)
 #endif
 
-struct cfdriver psscd = {
-	NULL, "pss", pssprobe, pssattach, DV_DULL, sizeof(struct pss_softc), 1
+struct cfattach pss_ca = {
+	sizeof(struct pss_softc), pssprobe, pssattach
 };
 
-struct cfdriver spcd = {
-	NULL, "sp", spprobe, spattach, DV_DULL, sizeof(struct ad1848_softc)
+struct cfdriver pss_cd = {
+	NULL, "pss", DV_DULL, 1
 };
 
-struct cfdriver mpucd = {
-	NULL, "mpu", mpuprobe, mpuattach, DV_DULL, sizeof(struct mpu_softc)
+struct cfattach sp_ca = {
+	sizeof(struct ad1848_softc), spprobe, spattach
 };
 
-struct cfdriver pcdcd = {
-	NULL, "pcd", pcdprobe, pcdattach, DV_DULL, sizeof(struct cd_softc)
+struct cfdriver sp_cd = {
+	NULL, "sp", DV_DULL
+};
+
+struct cfattach mpu_ca = {
+	sizeof(struct mpu_softc), mpuprobe, mpuattach
+};
+
+struct cfdriver mpu_cd = {
+	NULL, "mpu", DV_DULL
+};
+
+struct cfattach pcd_ca = {
+	sizeof(struct cd_softc), pcdprobe, pcdattach
+};
+
+struct cfdriver pcd_cd = {
+	NULL, "pcd", DV_DULL
 };
 
 struct audio_device pss_device = {
@@ -260,10 +300,12 @@ struct audio_device pss_device = {
 };
 
 void
-pss_dspwrite(struct pss_softc *sc, int data)
+pss_dspwrite(sc, data)
+	struct pss_softc *sc;
+	int data;
 {
     int i;
-    u_short pss_base = sc->sc_iobase;
+    int pss_base = sc->sc_iobase;
 
     /*
      * Note! the i<5000000 is an emergency exit. The dsp_command() is sometimes
@@ -282,7 +324,9 @@ pss_dspwrite(struct pss_softc *sc, int data)
 }
 
 void
-pss_setaddr(int addr, int configAddr)
+pss_setaddr(addr, configAddr)
+	int addr;
+	int configAddr;
 {
     int val;
     
@@ -298,7 +342,9 @@ pss_setaddr(int addr, int configAddr)
  * enable the chosen interrupt.
  */
 int
-pss_setint(int intNum, int configAddress)
+pss_setint(intNum, configAddress)
+	int intNum;
+	int configAddress;
 {
     int val;
     switch(intNum) {
@@ -357,7 +403,9 @@ pss_setint(int intNum, int configAddress)
 }
 
 int
-pss_setdma(int dmaNum, int configAddress)
+pss_setdma(dmaNum, configAddress)
+	int dmaNum;
+	int configAddress;
 {
     int val;
     
@@ -414,7 +462,7 @@ pss_setdma(int dmaNum, int configAddress)
 static int
 pss_testirq(struct pss_softc *sc, int intNum)
 {
-    u_short iobase = sc->sc_iobase;
+    int iobase = sc->sc_iobase;
     int val;
     int ret;
     int i;
@@ -498,9 +546,11 @@ pss_testirq(struct pss_softc *sc, int intNum)
  * is ok.
  */
 int
-pss_testdma(struct pss_softc *sc, int dmaNum)
+pss_testdma(sc, dmaNum)
+	struct pss_softc *sc;
+	int dmaNum;
 {
-    u_short iobase = sc->sc_iobase;
+    int iobase = sc->sc_iobase;
     int val;
     int i,ret;
 
@@ -571,10 +621,11 @@ pss_testdma(struct pss_softc *sc, int dmaNum)
 }
 
 int
-pss_reset_dsp(struct pss_softc *sc)
+pss_reset_dsp(sc)
+	struct pss_softc *sc;
 {
     u_long i;
-    u_short pss_base = sc->sc_iobase;
+    int pss_base = sc->sc_iobase;
 
     outw(pss_base+PSS_CONTROL, PSS_RESET);
 
@@ -598,10 +649,13 @@ pss_reset_dsp(struct pss_softc *sc)
  * byte which removes BR.
  */
 int
-pss_download_dsp(struct pss_softc *sc, u_char *block, int size)
+pss_download_dsp(sc, block, size)
+	struct pss_softc *sc;
+	u_char *block;
+	int size;
 {
     int i, val, count;
-    u_short pss_base = sc->sc_iobase;
+    int pss_base = sc->sc_iobase;
     
     DPRINTF(("pss: downloading boot code..."));
 
@@ -668,7 +722,8 @@ pss_download_dsp(struct pss_softc *sc, u_char *block, int size)
 }
 
 void
-wss_dump_regs(struct ad1848_softc *sc)
+wss_dump_regs(sc)
+	struct ad1848_softc *sc;
 {
     printf("WSS regs: config=%x version=%x\n",
 	   (u_char)inb(sc->sc_iobase+WSS_CONFIG),
@@ -676,7 +731,8 @@ wss_dump_regs(struct ad1848_softc *sc)
 }
 
 void
-pss_dump_regs(struct pss_softc *sc)
+pss_dump_regs(sc)
+	struct pss_softc *sc;
 {
     printf("PSS regs: status=%x vers=%x ",
 	   (u_short)inw(sc->sc_iobase+PSS_STATUS),
@@ -692,13 +748,13 @@ pss_dump_regs(struct pss_softc *sc)
  */
 int
 pssprobe(parent, self, aux)
-    struct device *parent, *self;
+    struct device *parent;
+    void *self;
     void *aux;
 {
-    struct pss_softc *sc = (void *)self;
+    struct pss_softc *sc = self;
     struct isa_attach_args *ia = aux;
-    u_short iobase = ia->ia_iobase;
-    int i;
+    int iobase = ia->ia_iobase;
     
     if (!PSS_BASE_VALID(iobase)) {
 	printf("pss: configured iobase %x invalid\n", iobase);
@@ -706,7 +762,7 @@ pssprobe(parent, self, aux)
     }
 
     /* Need to probe for iobase when IOBASEUNK {0x220 0x240} */
-    if (iobase == (u_short)IOBASEUNK) {
+    if (iobase == IOBASEUNK) {
 
 	iobase = 0x220;
 	if ((inw(iobase+PSS_ID_VERS) & 0xff00) == 0x4500)
@@ -795,8 +851,8 @@ spprobe(parent, match, aux)
     struct device *parent;
     void *match, *aux;
 {
-    struct ad1848_softc *sc = (void *)match;
-    struct pss_softc *pc = (void *)parent;
+    struct ad1848_softc *sc = match;
+    struct pss_softc *pc = (void *) parent;
     struct cfdata *cf = (void *)sc->sc_dev.dv_cfdata;
     u_char bits;
     int i;
@@ -889,8 +945,8 @@ mpuprobe(parent, match, aux)
     struct device *parent;
     void *match, *aux;
 {
-    struct mpu_softc *sc = (void *)match;
-    struct pss_softc *pc = (void *)parent;
+    struct mpu_softc *sc = match;
+    struct pss_softc *pc = (void *) parent;
     struct cfdata *cf = (void *)sc->sc_dev.dv_cfdata;
 
     /* Check if midi is enabled; if it is check the interrupt */
@@ -934,8 +990,8 @@ pcdprobe(parent, match, aux)
     struct device *parent;
     void *match, *aux;
 {
-    struct cd_softc *sc = (void *)match;
-    struct pss_softc *pc = (void *)parent;
+    struct cd_softc *sc = match;
+    struct pss_softc *pc = (void *) parent;
     struct cfdata *cf = (void *)sc->sc_dev.dv_cfdata;
     u_short val;
     
@@ -947,7 +1003,7 @@ pcdprobe(parent, match, aux)
     val = inw(pc->sc_iobase+CD_CONFIG);
     outw(pc->sc_iobase+CD_CONFIG, 0);
     val &= CD_POL_MASK;
-    val | CD_POL_BIT;	/* XXX if (pol) */
+    val |= CD_POL_BIT;	/* XXX if (pol) */
     outw(pc->sc_iobase+CD_CONFIG, val);
     
     if (cf->cf_irq == IRQUNK) {
@@ -991,7 +1047,7 @@ pssattach(parent, self, aux)
 {
     struct pss_softc *sc = (struct pss_softc *)self;
     struct isa_attach_args *ia = (struct isa_attach_args *)aux;
-    u_short iobase = ia->ia_iobase;
+    int iobase = ia->ia_iobase;
     u_char vers;
     struct ad1848_volume vol = {150, 150};
     int err;
@@ -1004,13 +1060,13 @@ pssattach(parent, self, aux)
 #endif
 
     /* Setup interrupt handler for PSS */
-    sc->sc_ih = isa_intr_establish(ia->ia_irq, ISA_IST_EDGE, ISA_IPL_AUDIO,
-				   pssintr, sc);
+    sc->sc_ih = isa_intr_establish(ia->ia_ic, ia->ia_irq, IST_EDGE, IPL_AUDIO,
+	pssintr, sc, sc->sc_dev.dv_xname);
 
     vers = (inw(sc->sc_iobase+PSS_ID_VERS)&0xff) - 1;
     printf(": ESC614%c\n", (vers > 0)?'A'+vers:' ');
     
-    (void)config_found(self, NULL, NULL);
+    (void)config_found(self, ia->ia_ic, NULL);		/* XXX */
 
     sc->out_port = PSS_MASTER_VOL;
 
@@ -1030,7 +1086,8 @@ spattach(parent, self, aux)
 {
     struct ad1848_softc *sc = (struct ad1848_softc *)self;
     struct cfdata *cf = (void *)sc->sc_dev.dv_cfdata;
-    u_short iobase = cf->cf_iobase;
+    isa_chipset_tag_t ic = aux;				/* XXX */
+    int iobase = cf->cf_iobase;
 
     sc->sc_iobase = iobase;
     sc->sc_drq = cf->cf_drq;
@@ -1039,8 +1096,8 @@ spattach(parent, self, aux)
     isa_establish(&sc->sc_id, &sc->sc_dev);
 #endif
 
-    sc->sc_ih = isa_intr_establish(cf->cf_irq, ISA_IST_EDGE, ISA_IPL_AUDIO,
-	ad1848_intr, sc);
+    sc->sc_ih = isa_intr_establish(ic, cf->cf_irq, IST_EDGE, IPL_AUDIO,
+	ad1848_intr, sc, sc->sc_dev.dv_xname);
 
     /* XXX might use pssprint func ?? */
     printf(" port 0x%x-0x%x irq %d drq %d",
@@ -1059,7 +1116,8 @@ mpuattach(parent, self, aux)
 {
     struct mpu_softc *sc = (struct mpu_softc *)self;
     struct cfdata *cf = (void *)sc->sc_dev.dv_cfdata;
-    u_short iobase = cf->cf_iobase;
+    isa_chipset_tag_t ic = aux;				/* XXX */
+    int iobase = cf->cf_iobase;
 
     sc->sc_iobase = iobase;
 
@@ -1067,8 +1125,8 @@ mpuattach(parent, self, aux)
     isa_establish(&sc->sc_id, &sc->sc_dev);
 #endif
 
-    sc->sc_ih = isa_intr_establish(cf->cf_irq, ISA_IST_EDGE, ISA_IPL_AUDIO,
-	mpuintr, sc);
+    sc->sc_ih = isa_intr_establish(ic, cf->cf_irq, IST_EDGE, IPL_AUDIO,
+        mpuintr, sc, sc->sc_dev.dv_xname);
 
     /* XXX might use pssprint func ?? */
     printf(" port 0x%x-0x%x irq %d\n",
@@ -1083,7 +1141,7 @@ pcdattach(parent, self, aux)
 {
     struct cd_softc *sc = (struct cd_softc *)self;
     struct cfdata *cf = (void *)sc->sc_dev.dv_cfdata;
-    u_short iobase = cf->cf_iobase;
+    int iobase = cf->cf_iobase;
     
     /*
      * The pss driver simply enables the cd interface. The CD
@@ -1144,10 +1202,10 @@ spopen(dev, flags)
     struct ad1848_softc *sc;
     int unit = AUDIOUNIT(dev);
     
-    if (unit >= spcd.cd_ndevs)
+    if (unit >= sp_cd.cd_ndevs)
 	return ENODEV;
     
-    sc = spcd.cd_devs[unit];
+    sc = sp_cd.cd_devs[unit];
     if (!sc)
 	return ENXIO;
     
@@ -1214,7 +1272,7 @@ pss_set_master_mode(sc, mode)
 int
 pss_set_treble(sc, treb)
     register struct pss_softc *sc;
-    u_char treb;
+    u_int treb;
 {
     DPRINTF(("pss_set_treble: %d\n", treb));
 
@@ -1329,7 +1387,7 @@ mpuintr(arg)
     
     sr = inb(sc->sc_iobase+MIDI_STATUS_REG);
 
-    printf("mpuintr: sc=%x sr=%x\n", sc, sr);
+    printf("mpuintr: sc=%p sr=%x\n", sc, sr);
 
     /* XXX Need to clear intr */
     return 1;
@@ -1391,7 +1449,6 @@ pss_set_in_port(addr, port)
     int port;
 {
     register struct ad1848_softc *ac = addr;
-    register struct pss_softc *sc = ac->parent;
 	
     DPRINTF(("pss_set_in_port: %d\n", port));
 
@@ -1418,7 +1475,6 @@ pss_get_in_port(addr)
     void *addr;
 {
     register struct ad1848_softc *ac = addr;
-    register struct pss_softc *sc = ac->parent;
     int port = PSS_MIC_IN_LVL;
     
     switch(ad1848_get_rec_port(ac)) {
@@ -1446,7 +1502,6 @@ pss_mixer_set_port(addr, cp)
     register struct ad1848_softc *ac = addr;
     register struct pss_softc *sc = ac->parent;
     struct ad1848_volume vol;
-    u_char eq;
     int error = EINVAL;
     
     DPRINTF(("pss_mixer_set_port: dev=%d type=%d\n", cp->dev, cp->type));
@@ -1673,9 +1728,6 @@ pss_query_devinfo(addr, dip)
     void *addr;
     register mixer_devinfo_t *dip;
 {
-    register struct ad1848_softc *ac = addr;
-    register struct pss_softc *sc = ac->parent;
-
     DPRINTF(("pss_query_devinfo: index=%d\n", dip->index));
 
     switch(dip->index) {

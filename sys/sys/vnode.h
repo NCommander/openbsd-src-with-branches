@@ -1,4 +1,5 @@
-/*	$NetBSD: vnode.h,v 1.32 1995/03/26 20:25:05 jtc Exp $	*/
+/*	$OpenBSD: vnode.h,v 1.7 1996/07/05 06:52:31 mickey Exp $	*/
+/*	$NetBSD: vnode.h,v 1.38 1996/02/29 20:59:05 cgd Exp $	*/
 
 /*
  * Copyright (c) 1989, 1993
@@ -52,11 +53,14 @@ enum vtype	{ VNON, VREG, VDIR, VBLK, VCHR, VLNK, VSOCK, VFIFO, VBAD };
  * Vnode tag types.
  * These are for the benefit of external programs only (e.g., pstat)
  * and should NEVER be inspected by the kernel.
+ *
+ * Note that v_tag is actually used to tell MFS from FFS, and EXT2FS from
+ * the rest, so don't believe the above comment!
  */
 enum vtagtype	{
 	VT_NON, VT_UFS, VT_NFS, VT_MFS, VT_MSDOSFS, VT_LFS, VT_LOFS, VT_FDESC,
 	VT_PORTAL, VT_NULL, VT_UMAP, VT_KERNFS, VT_PROCFS, VT_AFS, VT_ISOFS,
-	VT_UNION, VT_ADOSFS
+	VT_UNION, VT_ADOSFS, VT_EXT2FS, VT_NCPFS
 };
 
 /*
@@ -73,7 +77,7 @@ struct vnode {
 	daddr_t	v_lastr;			/* last read (read-ahead) */
 	u_long	v_id;				/* capability identifier */
 	struct	mount *v_mount;			/* ptr to vfs we are in */
-	int 	(**v_op)();			/* vnode operations vector */
+	int 	(**v_op) __P((void *));		/* vnode operations vector */
 	TAILQ_ENTRY(vnode) v_freelist;		/* vnode freelist */
 	LIST_ENTRY(vnode) v_mntvnodes;		/* vnodes for mount point */
 	struct	buflists v_cleanblkhd;		/* clean blocklist head */
@@ -304,18 +308,18 @@ extern struct vnodeop_desc *vnodeop_descs[];
  */
 struct vnodeopv_entry_desc {
 	struct vnodeop_desc *opve_op;   /* which operation this is */
-	int (*opve_impl)();		/* code implementing this operation */
+	int (*opve_impl) __P((void *));	/* code implementing this operation */
 };
 struct vnodeopv_desc {
 			/* ptr to the ptr to the vector where op should go */
-	int (***opv_desc_vector_p)();
+	int (***opv_desc_vector_p) __P((void *));
 	struct vnodeopv_entry_desc *opv_desc_ops;   /* null terminated list */
 };
 
 /*
  * A default routine which just returns an error.
  */
-int vn_default_error __P((void));
+int vn_default_error __P((void *));
 
 /*
  * A generic structure.
@@ -343,12 +347,13 @@ struct vop_generic_args {
 /*
  * Finally, include the default set of vnode operations.
  */
-#include <vnode_if.h>
+#include <sys/vnode_if.h>
 
 /*
  * Public vnode manipulation functions.
  */
 struct file;
+struct filedesc;
 struct mount;
 struct nameidata;
 struct proc;
@@ -357,22 +362,29 @@ struct ucred;
 struct uio;
 struct vattr;
 struct vnode;
-struct vop_bwrite_args;
 
 int 	bdevvp __P((dev_t dev, struct vnode **vpp));
 int 	cdevvp __P((dev_t dev, struct vnode **vpp));
-int 	getnewvnode __P((enum vtagtype tag,
-	    struct mount *mp, int (**vops)(), struct vnode **vpp));
+int 	getnewvnode __P((enum vtagtype tag, struct mount *mp,
+			 int (**vops) __P((void *)), struct vnode **vpp));
+int	getvnode __P((struct filedesc *fdp, int fd, struct file **fpp));
+void	getnewfsid __P((struct mount *, int));
 void 	vattr_null __P((struct vattr *vap));
 int 	vcount __P((struct vnode *vp));
+void	vclean __P((struct vnode *, int));
+int	vfinddev __P((dev_t, enum vtype, struct vnode **));
 void	vflushbuf __P((struct vnode *vp, int sync));
+int	vflush __P((struct mount *mp, struct vnode *vp, int flags));
+void	vntblinit __P((void));
+void	vwakeup __P((struct buf *));
 int 	vget __P((struct vnode *vp, int lockflag));
 void 	vgone __P((struct vnode *vp));
 void 	vgoneall __P((struct vnode *vp));
 int	vinvalbuf __P((struct vnode *vp, int save, struct ucred *cred,
 	    struct proc *p, int slpflag, int slptimeo));
 void	vprint __P((char *label, struct vnode *vp));
-int	vn_bwrite __P((struct vop_bwrite_args *ap));
+int	vn_bwrite __P((void *ap));
+void	vn_update __P((void));
 int 	vn_close __P((struct vnode *vp,
 	    int flags, struct ucred *cred, struct proc *p));
 int 	vn_closefile __P((struct file *fp, struct proc *p));
@@ -386,11 +398,12 @@ int	vn_read __P((struct file *fp, struct uio *uio, struct ucred *cred));
 int	vn_select __P((struct file *fp, int which, struct proc *p));
 int	vn_stat __P((struct vnode *vp, struct stat *sb, struct proc *p));
 int	vn_write __P((struct file *fp, struct uio *uio, struct ucred *cred));
+int	vn_writechk __P((struct vnode *vp));
 struct vnode *
 	checkalias __P((struct vnode *vp, dev_t nvp_rdev, struct mount *mp));
 void 	vput __P((struct vnode *vp));
 void 	vref __P((struct vnode *vp));
 void 	vrele __P((struct vnode *vp));
 int	vaccess __P((mode_t file_mode, uid_t uid, gid_t gid,
-	    mode_t acc_mode, struct ucred *cred));
+		     mode_t acc_mode, struct ucred *cred));
 #endif /* _KERNEL */

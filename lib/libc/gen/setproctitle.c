@@ -1,5 +1,3 @@
-/*	$NetBSD: setproctitle.c,v 1.4 1995/05/16 14:23:06 mycroft Exp $	*/
-
 /*
  * Copyright (c) 1994, 1995 Christopher G. Demetriou
  * All rights reserved.
@@ -32,12 +30,13 @@
  */
 
 #if defined(LIBC_SCCS) && !defined(lint)
-static char rcsid[] = "$NetBSD: setproctitle.c,v 1.4 1995/05/16 14:23:06 mycroft Exp $";
+static char rcsid[] = "$OpenBSD: setproctitle.c,v 1.3 1996/10/23 16:43:03 deraadt Exp $";
 #endif /* LIBC_SCCS and not lint */
 
 #include <sys/param.h>
 #include <sys/types.h>
 #include <sys/exec.h>
+#include <sys/sysctl.h>
 #include <vm/vm.h>
 
 #include <stdio.h>
@@ -63,7 +62,9 @@ setproctitle(fmt, va_alist)
 	va_dcl
 #endif
 {
+	static struct ps_strings *ps;
 	va_list ap;
+	
 	static char buf[MAX_PROCTITLE], *bufp = buf;
 	int used;
 
@@ -79,6 +80,17 @@ setproctitle(fmt, va_alist)
 		(void)snprintf(buf, MAX_PROCTITLE, "%s", __progname);
 	va_end(ap);
 
-	PS_STRINGS->ps_nargvstr = 1;
-	PS_STRINGS->ps_argvstr = &bufp;
+	if (ps == NULL) {
+		struct _ps_strings _ps;
+		int mib[2];
+		size_t len;
+
+		mib[0] = CTL_VM;
+		mib[1] = VM_PSSTRINGS;
+		len = sizeof(_ps);
+		sysctl(mib, 2, &_ps, &len, NULL, 0);
+		ps = (struct ps_strings *)_ps.val;
+	}
+	ps->ps_nargvstr = 1;
+	ps->ps_argvstr = &bufp;
 }

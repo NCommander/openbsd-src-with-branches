@@ -1,3 +1,5 @@
+#	$OpenBSD$
+
 WRTVID_BASE_DIR=${S}/arch/${MACHINE}/stand/wrtvid
 
 WRTVID_DIR!= cd ${WRTVID_BASE_DIR}; \

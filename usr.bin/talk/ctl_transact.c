@@ -1,3 +1,4 @@
+/*	$OpenBSD: ctl_transact.c,v 1.3 1994/12/09 02:14:12 jtc Exp $	*/
 /*	$NetBSD: ctl_transact.c,v 1.3 1994/12/09 02:14:12 jtc Exp $	*/
 
 /*
@@ -37,7 +38,7 @@
 #if 0
 static char sccsid[] = "@(#)ctl_transact.c	8.1 (Berkeley) 6/6/93";
 #endif
-static char rcsid[] = "$NetBSD: ctl_transact.c,v 1.3 1994/12/09 02:14:12 jtc Exp $";
+static char rcsid[] = "$OpenBSD: ctl_transact.c,v 1.3 1994/12/09 02:14:12 jtc Exp $";
 #endif /* not lint */
 
 #include <sys/types.h>
@@ -114,5 +115,4 @@ ctl_transact(target, msg, type, rp)
 		    rp->type != type));
 	} while (rp->vers != TALK_VERSION || rp->type != type);
 	rp->id_num = ntohl(rp->id_num);
-	rp->addr.sa_family = ntohs(rp->addr.sa_family);
 }

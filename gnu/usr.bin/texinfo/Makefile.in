@@ -1,5 +1,5 @@
 # Makefile for Texinfo distribution.
-# $Id: Makefile.in,v 1.11 1996/10/04 18:40:33 karl Exp $
+# $Id: Makefile.in,v 1.1.1.3 1996/12/15 21:37:49 downsj Exp $
 # 
 # Copyright (C) 1993, 96 Free Software Foundation, Inc.
 
@@ -75,7 +75,7 @@ MDEFINES = bindir='$(bindir)' mandir='$(mandir)' manext='$(manext)' \
 	prefix='$(prefix)' binprefix='$(binprefix)' \
 	manprefix='$(manprefix)' infodir='$(infodir)' CFLAGS='$(CFLAGS)' \
 	CC='$(CC)' ALLOCA='$(ALLOCA)' LDFLAGS='$(LDFLAGS)' \
-	DEFAULT_INFOPATH='$(DEFAULT_INFOPATH)'
+	DEFAULT_INFOPATH='$(DEFAULT_INFOPATH)' INSTALL_MAN='$(INSTALL_MAN)'
 
 all: sub-all texinfo
 
@@ -137,11 +137,11 @@ texclean:
 
 realclean: distclean
 
-# Let's hope we weren't cross-compiling.
-# If we depend on sub-all, this always gets remade.  Annoying.
-info texinfo: texinfo.texi
+info texinfo: makeinfo/makeinfo texinfo.texi
 	./makeinfo/makeinfo -I$(srcdir) texinfo.texi
 .PHONY: info
+
+makeinfo/makeinfo: sub-all
 
 dvi texinfo.dvi:
 	PATH="$(srcdir)/util:$${PATH}" TEXINPUTS="$(srcdir):$(common):$${TEXINPUTS}" texi2dvi $(srcdir)/texinfo.texi

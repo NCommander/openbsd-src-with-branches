@@ -1,4 +1,5 @@
-/*	$NetBSD: kern_sig.c,v 1.50 1995/10/07 06:28:25 mycroft Exp $	*/
+/*	$OpenBSD: kern_sig.c,v 1.15 1997/01/27 22:48:36 deraadt Exp $	*/
+/*	$NetBSD: kern_sig.c,v 1.54 1996/04/22 01:38:32 christos Exp $	*/
 
 /*
  * Copyright (c) 1982, 1986, 1989, 1991, 1993
@@ -59,6 +60,7 @@
 #include <sys/syslog.h>
 #include <sys/stat.h>
 #include <sys/core.h>
+#include <sys/ptrace.h>
 
 #include <sys/mount.h>
 #include <sys/syscallargs.h>
@@ -69,6 +71,7 @@
 #include <sys/user.h>		/* for coredump */
 
 void stop __P((struct proc *p));
+void killproc __P((struct proc *, char *));
 
 /*
  * Can process p, with pcred pc, send the signal signum to process q?
@@ -76,12 +79,15 @@ void stop __P((struct proc *p));
 #define CANSIGNAL(p, pc, q, signum) \
 	((pc)->pc_ucred->cr_uid == 0 || \
 	    (pc)->p_ruid == (q)->p_cred->p_ruid || \
+	    (pc)->p_ruid == (q)->p_cred->p_svuid || \
 	    (pc)->pc_ucred->cr_uid == (q)->p_cred->p_ruid || \
+	    (pc)->pc_ucred->cr_uid == (q)->p_cred->p_svuid || \
 	    (pc)->p_ruid == (q)->p_ucred->cr_uid || \
 	    (pc)->pc_ucred->cr_uid == (q)->p_ucred->cr_uid || \
 	    ((signum) == SIGCONT && (q)->p_session == (p)->p_session))
 
 /* ARGSUSED */
+int
 sys_sigaction(p, v, retval)
 	struct proc *p;
 	void *v;
@@ -100,7 +106,7 @@ sys_sigaction(p, v, retval)
 
 	signum = SCARG(uap, signum);
 	if (signum <= 0 || signum >= NSIG ||
-	    signum == SIGKILL || signum == SIGSTOP)
+	    (SCARG(uap, nsa) && (signum == SIGKILL || signum == SIGSTOP)))
 		return (EINVAL);
 	sa = &vec;
 	if (SCARG(uap, osa)) {
@@ -114,6 +120,8 @@ sys_sigaction(p, v, retval)
 			sa->sa_flags |= SA_RESTART;
 		if ((ps->ps_sigreset & bit) != 0)
 			sa->sa_flags |= SA_RESETHAND;
+		if ((ps->ps_siginfo & bit) != 0)
+			sa->sa_flags |= SA_SIGINFO;
 		if (signum == SIGCHLD) {
 			if ((p->p_flag & P_NOCLDSTOP) != 0)
 				sa->sa_flags |= SA_NOCLDSTOP;
@@ -121,19 +129,22 @@ sys_sigaction(p, v, retval)
 		if ((sa->sa_mask & bit) == 0)
 			sa->sa_flags |= SA_NODEFER;
 		sa->sa_mask &= ~bit;
-		if (error = copyout((caddr_t)sa, (caddr_t)SCARG(uap, osa),
-		    sizeof (vec)))
+		error = copyout((caddr_t)sa, (caddr_t)SCARG(uap, osa),
+				sizeof (vec));
+		if (error)
 			return (error);
 	}
 	if (SCARG(uap, nsa)) {
-		if (error = copyin((caddr_t)SCARG(uap, nsa), (caddr_t)sa,
-		    sizeof (vec)))
+		error = copyin((caddr_t)SCARG(uap, nsa), (caddr_t)sa,
+			       sizeof (vec));
+		if (error)
 			return (error);
 		setsigvec(p, signum, sa);
 	}
 	return (0);
 }
 
+void
 setsigvec(p, signum, sa)
 	register struct proc *p;
 	int signum;
@@ -161,6 +172,10 @@ setsigvec(p, signum, sa)
 		ps->ps_sigreset |= bit;
 	else
 		ps->ps_sigreset &= ~bit;
+	if ((sa->sa_flags & SA_SIGINFO) != 0)
+		ps->ps_siginfo |= bit;
+	else
+		ps->ps_siginfo &= ~bit;
 	if ((sa->sa_flags & SA_RESTART) == 0)
 		ps->ps_sigintr |= bit;
 	else
@@ -247,7 +262,7 @@ execsigs(p)
 	 */
 	ps->ps_sigstk.ss_flags = SS_DISABLE;
 	ps->ps_sigstk.ss_size = 0;
-	ps->ps_sigstk.ss_base = 0;
+	ps->ps_sigstk.ss_sp = 0;
 	ps->ps_flags = 0;
 }
 
@@ -257,6 +272,7 @@ execsigs(p)
  * and return old mask as return value;
  * the library stub does the rest.
  */
+int
 sys_sigprocmask(p, v, retval)
 	register struct proc *p;
 	void *v;
@@ -293,6 +309,7 @@ sys_sigprocmask(p, v, retval)
 }
 
 /* ARGSUSED */
+int
 sys_sigpending(p, v, retval)
 	struct proc *p;
 	void *v;
@@ -337,6 +354,7 @@ sys_sigsuspend(p, v, retval)
 }
 
 /* ARGSUSED */
+int
 sys_sigaltstack(p, v, retval)
 	struct proc *p;
 	void *v;
@@ -358,8 +376,8 @@ sys_sigaltstack(p, v, retval)
 		return (error);
 	if (SCARG(uap, nss) == 0)
 		return (0);
-	if (error = copyin((caddr_t)SCARG(uap, nss), (caddr_t)&ss,
-	    sizeof (ss)))
+	error = copyin((caddr_t)SCARG(uap, nss), (caddr_t)&ss, sizeof (ss));
+	if (error)
 		return (error);
 	if (ss.ss_flags & SS_DISABLE) {
 		if (psp->ps_sigstk.ss_flags & SS_ONSTACK)
@@ -420,6 +438,7 @@ sys_kill(cp, v, retval)
  * Common code for kill process group/broadcast kill.
  * cp is calling process.
  */
+int
 killpg1(cp, signum, pgid, all)
 	register struct proc *cp;
 	int signum, pgid, all;
@@ -454,7 +473,6 @@ killpg1(cp, signum, pgid, all)
 		}
 		for (p = pgrp->pg_members.lh_first; p != 0; p = p->p_pglist.le_next) {
 			if (p->p_pid <= 1 || p->p_flag & P_SYSTEM ||
-			    p->p_stat == SZOMB ||
 			    !CANSIGNAL(cp, pc, p, signum))
 				continue;
 			nfound++;
@@ -501,10 +519,12 @@ pgsignal(pgrp, signum, checkctty)
  * Otherwise, post it normally.
  */
 void
-trapsignal(p, signum, code)
+trapsignal(p, signum, code, type, sigval)
 	struct proc *p;
 	register int signum;
 	u_long code;
+	int type;
+	union sigval sigval;
 {
 	register struct sigacts *ps = p->p_sigacts;
 	int mask;
@@ -519,7 +539,7 @@ trapsignal(p, signum, code)
 				p->p_sigmask, code);
 #endif
 		(*p->p_emul->e_sendsig)(ps->ps_sigact[signum], signum,
-		    p->p_sigmask, code);
+		    p->p_sigmask, code, type, sigval);
 		p->p_sigmask |= ps->ps_catchmask[signum];
 		if ((ps->ps_sigreset & mask) != 0) {
 			p->p_sigcatch &= ~mask;
@@ -984,13 +1004,15 @@ postsig(signum)
 			code = ps->ps_code;
 			ps->ps_code = 0;
 		}
-		(*p->p_emul->e_sendsig)(action, signum, returnmask, code);
+		(*p->p_emul->e_sendsig)(action, signum, returnmask, code,
+		    SI_USER, (union sigval *)0);
 	}
 }
 
 /*
  * Kill the current process for stated reason.
  */
+void
 killproc(p, why)
 	struct proc *p;
 	char *why;
@@ -1009,7 +1031,7 @@ killproc(p, why)
  * If dumping core, save the signal number for the debugger.  Calls exit and
  * does not return.
  */
-int
+void
 sigexit(p, signum)
 	register struct proc *p;
 	int signum;
@@ -1034,8 +1056,7 @@ coredump(p)
 	register struct proc *p;
 {
 	register struct vnode *vp;
-	register struct pcred *pcred = p->p_cred;
-	register struct ucred *cred = pcred->pc_ucred;
+	register struct ucred *cred = p->p_ucred;
 	register struct vmspace *vm = p->p_vmspace;
 	struct nameidata nd;
 	struct vattr vattr;
@@ -1043,21 +1064,44 @@ coredump(p)
 	char name[MAXCOMLEN+6];		/* progname.core */
 	struct core core;
 
-	if (pcred->p_svuid != pcred->p_ruid || pcred->p_svgid != pcred->p_rgid)
-		return (EFAULT);
+	/*
+	 * Don't dump if not root and the process has used set user or
+	 * group privileges.
+	 */
+	if ((p->p_flag & P_SUGID) &&
+	    (error = suser(p->p_ucred, &p->p_acflag)) != 0)
+		return (error);
+
+	/* Don't dump if will exceed file size limit. */
 	if (USPACE + ctob(vm->vm_dsize + vm->vm_ssize) >=
 	    p->p_rlimit[RLIMIT_CORE].rlim_cur)
-		return (EFAULT);
-	sprintf(name, "%s.core", p->p_comm);
-	NDINIT(&nd, LOOKUP, FOLLOW, UIO_SYSSPACE, name, p);
-	if (error = vn_open(&nd, O_CREAT | FWRITE, S_IRUSR | S_IWUSR))
-		return (error);
-	vp = nd.ni_vp;
+		return (EFBIG);
 
+	/*
+	 * ... but actually write it as UID
+	 */
+	cred = crdup(cred);
+	cred->cr_uid = p->p_cred->p_ruid;
+	cred->cr_gid = p->p_cred->p_rgid;
+
+	sprintf(name, "%s.core", p->p_comm);
+	NDINIT(&nd, LOOKUP, NOFOLLOW, UIO_SYSSPACE, name, p);
+	if ((error = vn_open(&nd, O_CREAT | FWRITE, S_IRUSR | S_IWUSR)) != 0) {
+		crfree(cred);
+		return (error);
+	}
+
+	/*
+	 * Don't dump to non-regular files, files with links, or files
+	 * owned by someone else.
+	 */
+	vp = nd.ni_vp;
+	if ((error = VOP_GETATTR(vp, &vattr, cred, p)) != 0)
+		goto out;
 	/* Don't dump to non-regular files or files with links. */
-	if (vp->v_type != VREG ||
-	    VOP_GETATTR(vp, &vattr, cred, p) || vattr.va_nlink != 1) {
-		error = EFAULT;
+	if (vp->v_type != VREG || vattr.va_nlink != 1 ||
+	    vattr.va_mode & ((VREAD | VWRITE) >> 3 | (VREAD | VWRITE) >> 6)) {
+		error = EACCES;
 		goto out;
 	}
 	VATTR_NULL(&vattr);
@@ -1092,14 +1136,14 @@ coredump(p)
 		error = vn_rdwr(UIO_WRITE, vp, vm->vm_daddr,
 		    (int)core.c_dsize,
 		    (off_t)core.c_cpusize, UIO_USERSPACE,
-		    IO_NODELOCKED|IO_UNIT, cred, (int *) NULL, p);
+		    IO_NODELOCKED|IO_UNIT, cred, NULL, p);
 		if (error)
 			goto out;
 		error = vn_rdwr(UIO_WRITE, vp,
 		    (caddr_t) trunc_page(USRSTACK - ctob(vm->vm_ssize)),
 		    core.c_ssize,
 		    (off_t)(core.c_cpusize + core.c_dsize), UIO_USERSPACE,
-		    IO_NODELOCKED|IO_UNIT, cred, (int *) NULL, p);
+		    IO_NODELOCKED|IO_UNIT, cred, NULL, p);
 	} else {
 		/*
 		 * vm_coredump() spits out all appropriate segments.
@@ -1110,11 +1154,12 @@ coredump(p)
 			goto out;
 		error = vn_rdwr(UIO_WRITE, vp, (caddr_t)&core,
 		    (int)core.c_hdrsize, (off_t)0,
-		    UIO_SYSSPACE, IO_NODELOCKED|IO_UNIT, cred, (int *) NULL, p);
+		    UIO_SYSSPACE, IO_NODELOCKED|IO_UNIT, cred, NULL, p);
 	}
 out:
 	VOP_UNLOCK(vp);
 	error1 = vn_close(vp, FWRITE, cred, p);
+	crfree(cred);
 	if (error == 0)
 		error = error1;
 	return (error);
@@ -1134,4 +1179,33 @@ sys_nosys(p, v, retval)
 
 	psignal(p, SIGSYS);
 	return (ENOSYS);
+}
+
+void
+initsiginfo(si, sig, code, type, val)
+	siginfo_t *si;
+	int sig;
+	u_long code;
+	int type;
+	union sigval val;
+{
+	bzero(si, sizeof *si);
+
+	si->si_signo = sig;
+	si->si_code = type;
+	if (type == SI_USER) {
+		si->si_value = val;
+	} else {
+		switch (sig) {
+		case SIGSEGV:
+		case SIGILL:
+		case SIGBUS:
+		case SIGFPE:
+			si->si_addr = val.sival_ptr;
+			si->si_trapno = code;
+			break;
+		case SIGXFSZ:
+			break;
+		}
+	}
 }

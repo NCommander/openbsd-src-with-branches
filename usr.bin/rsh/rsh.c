@@ -1,3 +1,5 @@
+/*	$OpenBSD: rsh.c,v 1.11 1997/01/15 23:43:09 millert Exp $	*/
+
 /*-
  * Copyright (c) 1983, 1990 The Regents of the University of California.
  * All rights reserved.
@@ -39,13 +41,8 @@ char copyright[] =
 
 #ifndef lint
 /*static char sccsid[] = "from: @(#)rsh.c	5.24 (Berkeley) 7/1/91";*/
-static char rcsid[] = "$Id: rsh.c,v 1.3 1995/06/27 00:31:00 jtc Exp $";
+static char rcsid[] = "$OpenBSD: rsh.c,v 1.11 1997/01/15 23:43:09 millert Exp $";
 #endif /* not lint */
-
-/*
- * $Source: /a/cvsroot/src/usr.bin/rsh/rsh.c,v $
- * $Header: /a/cvsroot/src/usr.bin/rsh/rsh.c,v 1.3 1995/06/27 00:31:00 jtc Exp $
- */
 
 #include <sys/types.h>
 #include <sys/socket.h>
@@ -60,7 +57,11 @@ static char rcsid[] = "$Id: rsh.c,v 1.3 1995/06/27 00:31:00 jtc Exp $";
 #include <stdio.h>
 #include <errno.h>
 #include <string.h>
+#if __STDC__
+#include <stdarg.h>
+#else
 #include <varargs.h>
+#endif
 #include "pathnames.h"
 
 #ifdef KERBEROS
@@ -71,7 +72,8 @@ CREDENTIALS cred;
 Key_schedule schedule;
 int use_kerberos = 1, doencrypt;
 char dst_realm_buf[REALM_SZ], *dest_realm;
-extern char *krb_realmofhost();
+
+void warning __P((const char *, ...));
 #endif
 
 /*
@@ -99,7 +101,7 @@ main(argc, argv)
 	host = user = NULL;
 
 	/* if called as something other than "rsh", use it as the host name */
-	if (p = rindex(argv[0], '/'))
+	if (p = strrchr(argv[0], '/'))
 		++p;
 	else
 		p = argv[0];
@@ -115,15 +117,11 @@ main(argc, argv)
 	}
 
 #ifdef KERBEROS
-#ifdef CRYPT
 #define	OPTIONS	"8KLdek:l:nwx"
-#else
-#define	OPTIONS	"8KLdek:l:nw"
-#endif
 #else
 #define	OPTIONS	"8KLdel:nw"
 #endif
-	while ((ch = getopt(argc - argoff, argv + argoff, OPTIONS)) != EOF)
+	while ((ch = getopt(argc - argoff, argv + argoff, OPTIONS)) != -1)
 		switch(ch) {
 		case 'K':
 #ifdef KERBEROS
@@ -151,12 +149,10 @@ main(argc, argv)
 			nflag = 1;
 			break;
 #ifdef KERBEROS
-#ifdef CRYPT
 		case 'x':
 			doencrypt = 1;
-			des_set_key(cred.session, schedule);
+			desrw_set_key(&cred.session, schedule);
 			break;
-#endif
 #endif
 		case '?':
 		default:
@@ -172,6 +168,8 @@ main(argc, argv)
 	if (!argv[optind]) {
 		if (asrsh)
 			*argv = "rlogin";
+		seteuid(getuid());
+		setuid(getuid());
 		execv(_PATH_RLOGIN, argv);
 		(void)fprintf(stderr, "rsh: can't exec %s.\n", _PATH_RLOGIN);
 		exit(1);
@@ -180,6 +178,10 @@ main(argc, argv)
 	argc -= optind;
 	argv += optind;
 
+	if (geteuid()) {
+		(void)fprintf(stderr, "rsh: must be setuid root.\n");
+		exit(1);
+	}
 	if (!(pw = getpwuid(uid = getuid()))) {
 		(void)fprintf(stderr, "rsh: unknown user id.\n");
 		exit(1);
@@ -188,11 +190,9 @@ main(argc, argv)
 		user = pw->pw_name;
 
 #ifdef KERBEROS
-#ifdef CRYPT
 	/* -x turns off -n */
 	if (doencrypt)
 		nflag = 0;
-#endif
 #endif
 
 	args = copyargs(argv);
@@ -215,6 +215,8 @@ main(argc, argv)
 		exit(1);
 	}
 
+	(void) unsetenv("RSH");		/* no tricks with rcmd(3) */
+
 #ifdef KERBEROS
 try_connect:
 	if (use_kerberos) {
@@ -223,12 +225,10 @@ try_connect:
 		if (dest_realm == NULL)
 			dest_realm = krb_realmofhost(host);
 
-#ifdef CRYPT
 		if (doencrypt)
 			rem = krcmd_mutual(&host, sp->s_port, user, args,
 			    &rfd2, dest_realm, &cred, schedule);
 		else
-#endif
 			rem = krcmd(&host, sp->s_port, user, args, &rfd2,
 			    dest_realm);
 		if (rem < 0) {
@@ -275,6 +275,7 @@ try_connect:
 			    strerror(errno));
 	}
 
+	(void)seteuid(uid);
 	(void)setuid(uid);
 	omask = sigblock(sigmask(SIGINT)|sigmask(SIGQUIT)|sigmask(SIGTERM));
 	if (signal(SIGINT, SIG_IGN) != SIG_IGN)
@@ -294,9 +295,7 @@ try_connect:
 	}
 
 #ifdef KERBEROS
-#ifdef CRYPT
 	if (!doencrypt)
-#endif
 #endif
 	{
 		(void)ioctl(rfd2, FIONBIO, &one);
@@ -329,7 +328,7 @@ reread:		errno = 0;
 		bp = buf;
 
 rewrite:	rembits = 1 << rem;
-		if (select(16, 0, &rembits, 0, 0) < 0) {
+		if (select(rem + 1, 0, &rembits, 0, 0) < 0) {
 			if (errno != EINTR) {
 				(void)fprintf(stderr,
 				    "rsh: select: %s.\n", strerror(errno));
@@ -340,11 +339,9 @@ rewrite:	rembits = 1 << rem;
 		if ((rembits & (1 << rem)) == 0)
 			goto rewrite;
 #ifdef KERBEROS
-#ifdef CRYPT
 		if (doencrypt)
 			wc = des_write(rem, bp, cc);
 		else
-#endif
 #endif
 			wc = write(rem, bp, cc);
 		if (wc < 0) {
@@ -366,7 +363,7 @@ done:
 	readfrom = (1 << rfd2) | (1 << rem);
 	do {
 		ready = readfrom;
-		if (select(16, &ready, 0, 0, 0) < 0) {
+		if (select(MAX(rfd2, rem) + 1, &ready, 0, 0, 0) < 0) {
 			if (errno != EINTR) {
 				(void)fprintf(stderr,
 				    "rsh: select: %s.\n", strerror(errno));
@@ -377,11 +374,9 @@ done:
 		if (ready & (1 << rfd2)) {
 			errno = 0;
 #ifdef KERBEROS
-#ifdef CRYPT
 			if (doencrypt)
 				cc = des_read(rfd2, buf, sizeof buf);
 			else
-#endif
 #endif
 				cc = read(rfd2, buf, sizeof buf);
 			if (cc <= 0) {
@@ -393,11 +388,9 @@ done:
 		if (ready & (1 << rem)) {
 			errno = 0;
 #ifdef KERBEROS
-#ifdef CRYPT
 			if (doencrypt)
 				cc = des_read(rem, buf, sizeof buf);
 			else
-#endif
 #endif
 				cc = read(rem, buf, sizeof buf);
 			if (cc <= 0) {
@@ -414,26 +407,38 @@ sendsig(signo)
 	char signo;
 {
 #ifdef KERBEROS
-#ifdef CRYPT
 	if (doencrypt)
 		(void)des_write(rfd2, &signo, 1);
 	else
-#endif
 #endif
 		(void)write(rfd2, &signo, 1);
 }
 
 #ifdef KERBEROS
 /* VARARGS */
+void
+#if __STDC__
+warning(const char *fmt, ...)
+#else
 warning(va_alist)
 va_dcl
+#endif
 {
 	va_list ap;
+#if !__STDC__
 	char *fmt;
+#endif
+	char myrealm[REALM_SZ];
 
+	if (krb_get_lrealm(myrealm, 0) != KSUCCESS)
+		return;
 	(void)fprintf(stderr, "rsh: warning, using standard rsh: ");
+#if __STDC__
+	va_start(ap, fmt);
+#else
 	va_start(ap);
 	fmt = va_arg(ap, char *);
+#endif
 	vfprintf(stderr, fmt, ap);
 	va_end(ap);
 	(void)fprintf(stderr, ".\n");
@@ -469,11 +474,7 @@ usage()
 	(void)fprintf(stderr,
 	    "usage: rsh [-nd%s]%s[-l login] host [command]\n",
 #ifdef KERBEROS
-#ifdef CRYPT
 	    "x", " [-k realm] ");
-#else
-	    "", " [-k realm] ");
-#endif
 #else
 	    "", " ");
 #endif

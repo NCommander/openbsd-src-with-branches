@@ -1,4 +1,9 @@
 #!./perl
+#	$OpenBSD: installperl,v 1.3 1996/08/26 14:06:20 downsj Exp $
+#
+# This is hacked up, in order to support DESTDIR.
+#
+
 BEGIN { @INC=('./lib', '../lib') }
 use File::Find;
 use File::Path qw(mkpath);
@@ -24,7 +29,7 @@ umask 022;
 
 # pod documentation now handled by separate installman script.
 # These two are archaic leftovers.
-@manpages = qw(x2p/a2p.man x2p/s2p.man);
+#@manpages = qw(x2p/a2p.man x2p/s2p.man);
 
 @pods = (<pod/*.pod>);
 
@@ -35,14 +40,28 @@ die "Patchlevel of perl ($patchlevel)",
     "and patchlevel of config.sh ($Config{'PATCHLEVEL'}) don't match\n"
 	if $patchlevel != $Config{'PATCHLEVEL'};
 
-# Fetch some frequently-used items from %Config
-$installbin = $Config{installbin};
-$installscript = $Config{installscript};
-$installprivlib = $Config{installprivlib};
-$installarchlib = $Config{installarchlib};
-$installsitelib = $Config{installsitelib};
-$installsitearch = $Config{installsitearch};
-$installman1dir = $Config{installman1dir};
+$installdest = $ENV{"DESTDIR"};
+if ($installdest ne '') {
+    # Fetch some frequently-used items from %Config, prefixing them with
+    # DESTDIR.
+    $installbin = "$installdest/$Config{installbin}";
+    $installscript = "$installdest/$Config{installscript}";
+    $installprivlib = "$installdest/$Config{installprivlib}";
+    $installarchlib = "$installdest/$Config{installarchlib}";
+    $installsitelib = "$installdest/$Config{installsitelib}";
+    $installsitearch = "$installdest/$Config{installsitearch}";
+    $installman1dir = "$installdest/$Config{installman1dir}";
+    # Also whack $mainperldir.
+    $mainperldir = "$installdest/$mainperldir";
+} else {
+    # Fetch some frequently-used items from %Config.
+    $installbin = $Config{installbin};
+    $installscript = $Config{installscript};
+    $installprivlib = $Config{installprivlib};
+    $installarchlib = $Config{installarchlib};
+    $installsitelib = $Config{installsitelib};
+    $installsitearch = $Config{installsitearch};
+}
 $man1ext = $Config{man1ext};
 # Did we build libperl as a shared library?
 $d_shrplib = $Config{d_shrplib};
@@ -129,27 +148,27 @@ foreach $file (@pods) {
 
 # Install old man pages.
 
-if ($installman1dir ne '') {
-    mkpath($installman1dir, 1, 0777);
-
-    if (! &samepath($installman1dir, '.')) {
-	for (@manpages) {
-	    ($new = $_) =~ s/man$/$man1ext/;
-	    $new =~ s#.*/##;
-	    print STDERR "  Installing $installman1dir/$new\n";
-	    next if $nonono;
-	    open(MI,$_) || warn "Can't open $_: $!\n";
-	    open(MO,">$installman1dir/$new") || 
-		    warn "Can't install $installman1dir/$new: $!\n";
-	    print MO ".ds RP Release $release Patchlevel $patchlevel\n";
-	    while (<MI>) {
-		print MO;
-	    }
-	    close MI;
-	    close MO;
-	}
-    }
-}
+#if ($installman1dir ne '') {
+#    mkpath($installman1dir, 1, 0777);
+#
+#    if (! &samepath($installman1dir, '.')) {
+#	for (@manpages) {
+#	    ($new = $_) =~ s/man$/$man1ext/;
+#	    $new =~ s#.*/##;
+#	    print STDERR "  Installing $installman1dir/$new\n";
+#	    next if $nonono;
+#	    open(MI,$_) || warn "Can't open $_: $!\n";
+#	    open(MO,">$installman1dir/$new") || 
+#		    warn "Can't install $installman1dir/$new: $!\n";
+#	    print MO ".ds RP Release $release Patchlevel $patchlevel\n";
+#	    while (<MI>) {
+#		print MO;
+#	    }
+#	    close MI;
+#	    close MO;
+#	}
+#    }
+#}
 
 # Install library files.
 

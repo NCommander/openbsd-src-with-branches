@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /*	$NetBSD: ttf100.c,v 1.3 1995/09/28 10:34:44 tls Exp $	*/
 
 /*
@@ -40,7 +41,7 @@
 #if 0
 static char sccsid[] = "@(#)ttf100.c	8.1 (Berkeley) 6/6/93";
 #else
-static char rcsid[] = "$NetBSD: ttf100.c,v 1.3 1995/09/28 10:34:44 tls Exp $";
+static char rcsid[] = "$OpenBSD$";
 #endif
 #endif /* not lint */
 

@@ -1,4 +1,5 @@
-.\"	$NetBSD: df.1,v 1.11 1995/07/25 19:36:53 jtc Exp $
+.\"	$OpenBSD: df.1,v 1.4 1996/12/07 09:09:04 deraadt Exp $
+.\"	$NetBSD: df.1,v 1.12 1995/12/05 02:42:45 jtc Exp $
 .\"
 .\" Copyright (c) 1989, 1990, 1993
 .\"	The Regents of the University of California.  All rights reserved.
@@ -41,7 +42,7 @@
 .Nd display free disk space
 .Sh SYNOPSIS
 .Nm df
-.Op Fl ikln
+.Op Fl hikln
 .Op Fl t Ar type
 .Op Ar file | Ar file_system ...
 .Sh DESCRIPTION
@@ -64,6 +65,10 @@ options below).
 .Pp
 The following options are available:
 .Bl -tag -width Ds
+.It Fl h
+"Human-readable" output.  Use unit suffixes: Byte, Kilobyte, Megabyte,
+Gigabyte, Terabyte, Petabyte, Exabyte in order to reduce the number of
+digits to three or less.
 .It Fl i
 Include statistics on the number of free inodes.
 .It Fl k
@@ -73,7 +78,8 @@ The
 option causes the numbers to be reported in kilobyte counts.
 .It Fl l
 Display statistics only about mounted file systems with the MNT_LOCAL
-flag set.
+flag set. If a non-local file system is given as an argument, a
+warning is issued and no information is given on that file system. 
 .It Fl n
 Print out the previously obtained statistics from the file systems.
 This option should be used if it is possible that one or more
@@ -91,12 +97,14 @@ The list of filesystem types can be prefixed with
 .Dq no
 to specify the filesystem types for which action should
 .Em not
-be taken.
+be taken. If a file system is given on the command line that is not of
+the specified type, a warning is issued and no information is given on
+that file system.
 .El
-.Sh ENVIRONMENTAL VARIABLES
+.Sh ENVIRONMENT VARIABLES
 .Bl -tag -width BLOCKSIZE
 .It Ev BLOCKSIZE
-If the environmental variable
+If the environment variable
 .Ev BLOCKSIZE
 is set, and the
 .Fl k

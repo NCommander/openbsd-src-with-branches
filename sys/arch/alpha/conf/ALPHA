@@ -1,28 +1,26 @@
-#	$NetBSD: ALPHA,v 1.6 1995/08/03 00:09:17 cgd Exp $
+#	$OpenBSD: ALPHA,v 1.8 1996/10/30 22:38:37 niklas Exp $
+#	$NetBSD: ALPHA,v 1.30 1996/12/03 17:25:27 cgd Exp $
 #
 # Alpha kernel with all the options you'd want, and more.
 
-machine		alpha
-
-makeoptions	DEBUG="-g"
+include	"arch/alpha/conf/std.alpha"
 
 maxusers 8
 
-# does not really do anything anymore, but this replaces "ident GENERIC"
-options		GENERIC
-
 # CPU Support
 options		DEC_3000_500	# Flamingo etc:	3000/[4-9]00*
-options		DEC_2000_300	# "Jensen":	2000/300 (DECpc AXP 150)
 options		DEC_3000_300	# Pelican etc:	3000/300*
-options		DEC_2100_A50	# "Avanti":	AlphaStation 400 4/233
+options		DEC_2100_A50	# Avanti etc:	AlphaStation 400, 200, etc.
+options		DEC_KN20AA	# KN20AA:	AlphaStation 600
+options		DEC_AXPPCI_33	# NoName:	AXPpci33, etc.
+options		DEC_EB164	# EB164:	AlphaPC 164
+#options	DEC_2000_300	# "Jensen":	2000/300 (DECpc AXP 150)
 
 # needs to be set per system
 options		TIMEZONE="5*60"		# Minutes west of GMT (for param.c)
 options		DST=1			# Daylight savings rules (for param.c)
 
 # Standard system options
-options		SWAPPAGER, VNODEPAGER, DEVPAGER # Paging (mandatory)
 options		DEBUG, DIAGNOSTIC	# Extra kernel debugging
 options		KTRACE			# System call tracing support
 
@@ -41,8 +39,9 @@ options		NULLFS		# Null file system layer
 options		KERNFS		# Kernel variable file system (/kern)
 options		FDESC		# File descriptor file system (/dev/fd)
 options		PORTAL		# Portal file system
-options		UMAP		# User-mapping file system layer
+options		UMAPFS		# User-mapping file system layer
 options		PROCFS		# Process file system (/proc)
+options		UNION		# union file system
 
 # Networking options
 options		INET		# Internet protocol suite
@@ -57,9 +56,11 @@ options		GATEWAY		# packet forwarding and more mbuf space
 # 4.3BSD compatibility.  Should be optional, but necessary for now.
 options		COMPAT_43
 
-# NetBSD compatibility.  Mostly meaningless on the Alpha.
+# Binary compatibility with previous versions of NetBSD.
 #options	COMPAT_09
-#options	COMPAT_10
+options		COMPAT_10
+options		COMPAT_11
+options		COMPAT_12
 
 # OSF/1 binary compatibility -- CURRENTLY DOES NOT WORK
 #options	COMPAT_OSF1
@@ -81,54 +82,108 @@ options		LKM
 #options	INSECURE
 
 # Misc. options
+options		EISAVERBOSE		# recognize "unknown" EISA devices
+#options	EXTENT_DEBUG		# extent alloc/dealloc code debugging
+options		FIX_UNALIGNED_VAX_FP	# fix unaligned VAX FP loads & stores
 options		PCIVERBOSE		# recognize "unknown" PCI devices
+options		TCVERBOSE		# recognize "unknown" TC devices
+options		UCONSOLE		# users can use TIOCCONS (for xconsole)
 
-config		netbsd	swap generic
-#config		netbsd	root on sd0 swap on sd0
-#config		netbsd	root nfs swap nfs
+config		bsd	swap generic
+#config		bsd	root on sd0 swap on sd0
+#config		bsd	root nfs swap nfs
 
 mainbus0 at	root
-
 cpu*	at	mainbus0
 
-tc*	at	mainbus0
-asic0	at	tc? slot ? offset ?
-clock0	at	asic? offset ?
-le0	at	asic? offset ?
-scc0	at	asic? offset ?
-scc1	at	asic? offset ?
+# TurboChannel host bus adapter support
+tcasic*	at	mainbus0
+
+# TurboChannel bus support
+tc*	at	tcasic?
+
+# TurboChannel devices
+ioasic*	at	tc? slot ? offset ?
+mcclock* at	ioasic? offset ?
+le*	at	ioasic? offset ?
+scc0	at	ioasic? offset ?
+scc1	at	ioasic? offset ?
 tcds0	at	tc? slot ? offset ?
 esp0	at	tcds? slot ?
 esp1	at	tcds? slot ?
-#sfb*	at	tc? slot ? offset ?
+cfb*	at	tc? slot ? offset ?
+sfb*	at	tc? slot ? offset ?
+le*	at	tc? slot ? offset ?
+fta*	at	tc? slot ? offset ?		# DEC DEFTA FDDI cards
 
+# PCI host bus adapter support
 apecs*	at	mainbus?
-#lca*	at	cpu?
+cia*	at	mainbus?
+lca*	at	mainbus?
 
+# PCI bus support
 pci*	at	apecs?
-#pci*	at	lca?
+pci*	at	cia?
+pci*	at	lca?
+pci*	at	ppb?
 
-de*	at	pci?
-sio*	at	pci?
-#ncr*	at	pci?
+# PCI devices
+#ahc*	at	pci? dev ? function ?		# AHA-28xx SCSI (NOT 64-BIT)
+de*	at	pci? dev ? function ?		# 21x4[012]-based Ethernet
+en*	at	pci? dev ? function ?		# ENI PCI ATM (untested)
+ep*	at	pci? dev ? function ?		# 3COM 3c59x (untested)
+fpa*	at	pci? dev ? function ?		# DEC DEFPA FDDI cards
+le*	at	pci? dev ? function ?		# PCI LANCE Ethernet (untested)
+ncr*	at	pci? dev ? function ?		# NCR 53c8xx SCSI
+pceb*	at	pci? dev ? function ?		# Intel PCI-EISA brige
+vga*	at	pci? dev ? function ?		# PCI VGA graphics
+ppb*	at	pci? dev ? function ?		# PCI-PCI bridges
+sio*	at	pci? dev ? function ?		# Intel PCI-ISA bridge
+tga*	at	pci? dev ? function ?		# DEC ZLXp-E[123] graphics
 
-isa0	at	sio?
-clock0	at	isa? port 0x70
-#com0	at	isa? port 0x3f8 irq 4		# standard serial ports
-com1	at	isa? port 0x2f8 irq 3
-lpt0	at	isa? port 0x3bc irq 7		# standard parallel port
+# ISA/EISA bus support
+isa*	at	pceb?
+eisa*	at	pceb?
+isa*	at	sio?
 
+# ISA devices
+mcclock* at	isa? port 0x70
+pcppi*	at	isa?				# PC prog. periph. interface
+pckbd*	at	pcppi?				# PC keyboard (kbd port)
+pms*	at	pcppi?				# PS/2-style mouse (aux port)
+com*	at	isa? port 0x3f8 irq 4		# standard serial ports
+com*	at	isa? port 0x2f8 irq 3
+lpt*	at	isa? port 0x3bc irq 7		# standard parallel port
+vga*	at	isa?				# ISA (EISA: XXX) VGA
+#wss*	at	isa? port 0x530 irq 9 drq 0	# Windows Sound System
+
+# EISA devices
+fea*	at	eisa? slot ?			# DEC DEFEA FDDI cards
+
+# SCSI bus support
 scsibus* at	esp?
-#scsibus* at	ncr?
+scsibus* at	ncr?
 
-sd*	at	scsibus? target ? lun ?
-st*	at	scsibus? target ? lun ?
-cd*	at	scsibus? target ? lun ?
+# SCSI devices
+cd*	at	scsibus? target ? lun ?		# SCSI CD-ROM drives
+ch*	at	scsibus? target ? lun ?		# SCSI autochangers
+sd*	at	scsibus? target ? lun ?		# SCSI disk drives
+ss*	at	scsibus? target ? lun ?		# SCSI scanners
+st*	at	scsibus? target ? lun ?		# SCSI tape drives
+uk*	at	scsibus? target ? lun ?		# SCSI unknown
 
-pseudo-device	bpfilter
+# Workstation Console attachments
+wscons*	at	cfb?
+wscons*	at	vga?
+wscons*	at	sfb?
+wscons*	at	tga?
+
+pseudo-device	bpfilter	16
 pseudo-device	loop
-pseudo-device	ppp
-pseudo-device	pty
-pseudo-device	sl
-pseudo-device	tun
-pseudo-device	vnd
+pseudo-device	ppp		4
+pseudo-device	pty		64
+pseudo-device	rd		1
+pseudo-device	sl		4
+pseudo-device	strip		4
+pseudo-device	tun		4
+pseudo-device	vnd		4

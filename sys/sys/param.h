@@ -1,4 +1,5 @@
-/*	$NetBSD: param.h,v 1.18.2.1 1995/10/12 05:42:01 jtc Exp $	*/
+/*	$OpenBSD: param.h,v 1.12 1997/03/27 05:35:25 millert Exp $	*/
+/*	$NetBSD: param.h,v 1.23 1996/03/17 01:02:29 thorpej Exp $	*/
 
 /*-
  * Copyright (c) 1982, 1986, 1989, 1993
@@ -44,14 +45,14 @@
 #define BSD4_3	1
 #define BSD4_4	1
 
-#define NetBSD	199511		/* NetBSD version (year & month). */
-#define NetBSD1_1 1		/* NetBSD 1.1 */
+#define OpenBSD	199706		/* OpenBSD version (year & month). */
+#define OpenBSD2_1 1		/* OpenBSD 2.1 */
 
 #ifndef NULL
 #define	NULL	0
 #endif
 
-#ifndef LOCORE
+#ifndef _LOCORE
 #include <sys/types.h>
 #endif
 
@@ -70,7 +71,8 @@
 #define	MAXUPRC		CHILD_MAX	/* max simultaneous processes */
 #define	NCARGS		ARG_MAX		/* max bytes for an exec function */
 #define	NGROUPS		NGROUPS_MAX	/* max number groups */
-#define	NOFILE		OPEN_MAX	/* max open files per process */
+#define	NOFILE		OPEN_MAX	/* max open files per process (soft) */
+#define	NOFILE_MAX	1024		/* max open files per process (hard) */
 #define	NOGROUP		65535		/* marker for empty group set member */
 #define MAXHOSTNAMELEN	256		/* max hostname size */
 
@@ -152,9 +154,9 @@
  * smaller units (fragments) only in the last direct block.  MAXBSIZE
  * primarily determines the size of buffers in the buffer pool.  It may be
  * made larger without any effect on existing file systems; however making
- * it smaller make make some file systems unmountable.
+ * it smaller makes some file systems unmountable.
  */
-#define	MAXBSIZE	16384 /* XXX MAXPHYS */
+#define	MAXBSIZE	MAXPHYS
 #define MAXFRAG 	8
 
 /*
@@ -219,3 +221,19 @@
  */
 #define	FSHIFT	11		/* bits to right of fixed binary point */
 #define FSCALE	(1<<FSHIFT)
+
+/*
+ * rfork() options.
+ *
+ * XXX currently, operations without RFPROC set are not supported.
+ */
+#define RFNAMEG		(1<<0)	/* UNIMPL new plan9 `name space' */
+#define RFENVG		(1<<1)	/* UNIMPL copy plan9 `env space' */
+#define RFFDG		(1<<2)	/* copy fd table */
+#define RFNOTEG		(1<<3)	/* UNIMPL create new plan9 `note group' */
+#define RFPROC		(1<<4)	/* change child (else changes curproc) */
+#define RFMEM		(1<<5)	/* share `address space' */
+#define RFNOWAIT	(1<<6)	/* UNIMPL parent need not wait() on child */ 
+#define RFCNAMEG	(1<<10) /* UNIMPL zero plan9 `name space' */
+#define RFCENVG		(1<<11) /* UNIMPL zero plan9 `env space' */
+#define RFCFDG		(1<<12)	/* zero fd table */

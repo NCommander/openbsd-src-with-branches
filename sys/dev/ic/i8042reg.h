@@ -1,3 +1,4 @@
+/*	$OpenBSD: i8042reg.h,v 1.6 1995/04/21 09:16:16 mycroft Exp $	*/
 /*	$NetBSD: i8042reg.h,v 1.6 1995/04/21 09:16:16 mycroft Exp $	*/
 
 #define	KBSTATP		0x64	/* kbd controller status port (I) */

@@ -34,19 +34,20 @@
  * SUCH DAMAGE.
  */
 
-#include <machine/machAsmDefs.h>
+#include <machine/asm.h>
 
-#if defined(LIBC_SCCS) && !defined(lint)
-	ASMSTR("from: @(#)htons.s	8.1 (Berkeley) 6/4/93")
-	ASMSTR("$Id: htons.S,v 1.3 1994/12/15 17:24:55 mycroft Exp $")
-#endif /* LIBC_SCCS and not lint */
+#if defined(LIBC_SCCS) 
+	.text
+	.asciz "$OpenBSD$"
+#endif /* LIBC_SCCS */
 
 /*
  * netorder = htons(hostorder)
  * hostorder = ntohs(netorder)
  */
-NLEAF(htons)
 ALEAF(ntohs)
+NLEAF(htons)
+	.set	reorder
 #ifdef MIPSEL
 	srl	v0, a0, 8
 	and	v0, v0, 0xff

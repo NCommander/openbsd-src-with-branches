@@ -1,6 +1,8 @@
-/*	$NetBSD: sys_generic.c,v 1.21 1995/10/07 06:28:34 mycroft Exp $	*/
+/*	$OpenBSD: sys_generic.c,v 1.6 1996/10/12 01:15:44 deraadt Exp $	*/
+/*	$NetBSD: sys_generic.c,v 1.24 1996/03/29 00:25:32 cgd Exp $	*/
 
 /*
+ * Copyright (c) 1996 Theo de Raadt
  * Copyright (c) 1982, 1986, 1989, 1993
  *	The Regents of the University of California.  All rights reserved.
  * (c) UNIX System Laboratories, Inc.
@@ -47,10 +49,12 @@
 #include <sys/file.h>
 #include <sys/proc.h>
 #include <sys/socketvar.h>
+#include <sys/signalvar.h>
 #include <sys/uio.h>
 #include <sys/kernel.h>
 #include <sys/stat.h>
 #include <sys/malloc.h>
+#include <sys/poll.h>
 #ifdef KTRACE
 #include <sys/ktrace.h>
 #endif
@@ -58,10 +62,15 @@
 #include <sys/mount.h>
 #include <sys/syscallargs.h>
 
+int selscan __P((struct proc *, fd_set *, fd_set *, int, register_t *));
+int seltrue __P((dev_t, int, struct proc *));
+void pollscan __P((struct proc *, struct pollfd *, int, register_t *));
+
 /*
  * Read system call.
  */
 /* ARGSUSED */
+int
 sys_read(p, v, retval)
 	struct proc *p;
 	void *v;
@@ -103,7 +112,8 @@ sys_read(p, v, retval)
 		ktriov = aiov;
 #endif
 	cnt = SCARG(uap, nbyte);
-	if (error = (*fp->f_ops->fo_read)(fp, &auio, fp->f_cred))
+	error = (*fp->f_ops->fo_read)(fp, &auio, fp->f_cred);
+	if (error)
 		if (auio.uio_resid != cnt && (error == ERESTART ||
 		    error == EINTR || error == EWOULDBLOCK))
 			error = 0;
@@ -120,6 +130,7 @@ sys_read(p, v, retval)
 /*
  * Scatter read system call.
  */
+int
 sys_readv(p, v, retval)
 	struct proc *p;
 	void *v;
@@ -162,14 +173,18 @@ sys_readv(p, v, retval)
 	auio.uio_rw = UIO_READ;
 	auio.uio_segflg = UIO_USERSPACE;
 	auio.uio_procp = p;
-	if (error = copyin((caddr_t)SCARG(uap, iovp), (caddr_t)iov, iovlen))
+	error = copyin((caddr_t)SCARG(uap, iovp), (caddr_t)iov, iovlen);
+	if (error)
 		goto done;
 	auio.uio_resid = 0;
 	for (i = 0; i < SCARG(uap, iovcnt); i++) {
+#if 0
+		/* Cannot happen iov_len is unsigned */
 		if (iov->iov_len < 0) {
 			error = EINVAL;
 			goto done;
 		}
+#endif
 		auio.uio_resid += iov->iov_len;
 		if (auio.uio_resid < 0) {
 			error = EINVAL;
@@ -187,7 +202,8 @@ sys_readv(p, v, retval)
 	}
 #endif
 	cnt = auio.uio_resid;
-	if (error = (*fp->f_ops->fo_read)(fp, &auio, fp->f_cred))
+	error = (*fp->f_ops->fo_read)(fp, &auio, fp->f_cred);
+	if (error)
 		if (auio.uio_resid != cnt && (error == ERESTART ||
 		    error == EINTR || error == EWOULDBLOCK))
 			error = 0;
@@ -210,6 +226,7 @@ done:
 /*
  * Write system call
  */
+int
 sys_write(p, v, retval)
 	struct proc *p;
 	void *v;
@@ -251,7 +268,8 @@ sys_write(p, v, retval)
 		ktriov = aiov;
 #endif
 	cnt = SCARG(uap, nbyte);
-	if (error = (*fp->f_ops->fo_write)(fp, &auio, fp->f_cred)) {
+	error = (*fp->f_ops->fo_write)(fp, &auio, fp->f_cred);
+	if (error) {
 		if (auio.uio_resid != cnt && (error == ERESTART ||
 		    error == EINTR || error == EWOULDBLOCK))
 			error = 0;
@@ -271,6 +289,7 @@ sys_write(p, v, retval)
 /*
  * Gather write system call
  */
+int
 sys_writev(p, v, retval)
 	struct proc *p;
 	void *v;
@@ -313,14 +332,18 @@ sys_writev(p, v, retval)
 	auio.uio_rw = UIO_WRITE;
 	auio.uio_segflg = UIO_USERSPACE;
 	auio.uio_procp = p;
-	if (error = copyin((caddr_t)SCARG(uap, iovp), (caddr_t)iov, iovlen))
+	error = copyin((caddr_t)SCARG(uap, iovp), (caddr_t)iov, iovlen);
+	if (error)
 		goto done;
 	auio.uio_resid = 0;
 	for (i = 0; i < SCARG(uap, iovcnt); i++) {
+#if 0
+		/* Cannot happen iov_len is unsigned */
 		if (iov->iov_len < 0) {
 			error = EINVAL;
 			goto done;
 		}
+#endif
 		auio.uio_resid += iov->iov_len;
 		if (auio.uio_resid < 0) {
 			error = EINVAL;
@@ -338,7 +361,8 @@ sys_writev(p, v, retval)
 	}
 #endif
 	cnt = auio.uio_resid;
-	if (error = (*fp->f_ops->fo_write)(fp, &auio, fp->f_cred)) {
+	error = (*fp->f_ops->fo_write)(fp, &auio, fp->f_cred);
+	if (error) {
 		if (auio.uio_resid != cnt && (error == ERESTART ||
 		    error == EINTR || error == EWOULDBLOCK))
 			error = 0;
@@ -365,6 +389,7 @@ done:
  * Ioctl system call
  */
 /* ARGSUSED */
+int
 sys_ioctl(p, v, retval)
 	struct proc *p;
 	void *v;
@@ -437,7 +462,7 @@ sys_ioctl(p, v, retval)
 	switch (com) {
 
 	case FIONBIO:
-		if (tmp = *(int *)data)
+		if ((tmp = *(int *)data) != 0)
 			fp->f_flag |= FNONBLOCK;
 		else
 			fp->f_flag &= ~FNONBLOCK;
@@ -445,7 +470,7 @@ sys_ioctl(p, v, retval)
 		break;
 
 	case FIOASYNC:
-		if (tmp = *(int *)data)
+		if ((tmp = *(int *)data) != 0)
 			fp->f_flag |= FASYNC;
 		else
 			fp->f_flag &= ~FASYNC;
@@ -470,7 +495,7 @@ sys_ioctl(p, v, retval)
 			tmp = p1->p_pgrp->pg_id;
 		}
 		error = (*fp->f_ops->fo_ioctl)
-			(fp, (int)TIOCSPGRP, (caddr_t)&tmp, p);
+			(fp, TIOCSPGRP, (caddr_t)&tmp, p);
 		break;
 
 	case FIOGETOWN:
@@ -503,6 +528,7 @@ int	selwait, nselcoll;
 /*
  * Select system call.
  */
+int
 sys_select(p, v, retval)
 	register struct proc *p;
 	void *v;
@@ -515,24 +541,43 @@ sys_select(p, v, retval)
 		syscallarg(fd_set *) ex;
 		syscallarg(struct timeval *) tv;
 	} */ *uap = v;
-	fd_set ibits[3], obits[3];
+	fd_set bits[6], *pibits[3], *pobits[3];
 	struct timeval atv;
 	int s, ncoll, error = 0, timo;
 	u_int ni;
 
-	bzero((caddr_t)ibits, sizeof(ibits));
-	bzero((caddr_t)obits, sizeof(obits));
-	if (SCARG(uap, nd) > FD_SETSIZE)
-		return (EINVAL);
 	if (SCARG(uap, nd) > p->p_fd->fd_nfiles) {
 		/* forgiving; slightly wrong */
 		SCARG(uap, nd) = p->p_fd->fd_nfiles;
 	}
 	ni = howmany(SCARG(uap, nd), NFDBITS) * sizeof(fd_mask);
+	if (SCARG(uap, nd) > FD_SETSIZE) {
+		caddr_t mbits;
+
+		if ((mbits = malloc(ni * 6, M_TEMP, M_WAITOK)) == NULL) {
+			error = EINVAL;
+			goto cleanup;
+		}
+		bzero(mbits, ni * 6);
+		pibits[0] = (fd_set *)&mbits[ni * 0];
+		pibits[1] = (fd_set *)&mbits[ni * 1];
+		pibits[2] = (fd_set *)&mbits[ni * 2];
+		pobits[0] = (fd_set *)&mbits[ni * 3];
+		pobits[1] = (fd_set *)&mbits[ni * 4];
+		pobits[2] = (fd_set *)&mbits[ni * 5];
+	} else {
+		bzero((caddr_t)bits, sizeof(bits));
+		pibits[0] = &bits[0];
+		pibits[1] = &bits[1];
+		pibits[2] = &bits[2];
+		pobits[0] = &bits[3];
+		pobits[1] = &bits[4];
+		pobits[2] = &bits[5];
+	}
 
 #define	getbits(name, x) \
 	if (SCARG(uap, name) && (error = copyin((caddr_t)SCARG(uap, name), \
-	    (caddr_t)&ibits[x], ni))) \
+	    (caddr_t)pibits[x], ni))) \
 		goto done;
 	getbits(in, 0);
 	getbits(ou, 1);
@@ -562,13 +607,13 @@ sys_select(p, v, retval)
 retry:
 	ncoll = nselcoll;
 	p->p_flag |= P_SELECT;
-	error = selscan(p, ibits, obits, SCARG(uap, nd), retval);
+	error = selscan(p, pibits[0], pobits[0], SCARG(uap, nd), retval);
 	if (error || *retval)
 		goto done;
 	s = splhigh();
 	/* this should be timercmp(&time, &atv, >=) */
 	if (SCARG(uap, tv) && (time.tv_sec > atv.tv_sec ||
-	    time.tv_sec == atv.tv_sec && time.tv_usec >= atv.tv_usec)) {
+	    (time.tv_sec == atv.tv_sec && time.tv_usec >= atv.tv_usec))) {
 		splx(s);
 		goto done;
 	}
@@ -589,7 +634,7 @@ done:
 	if (error == EWOULDBLOCK)
 		error = 0;
 #define	putbits(name, x) \
-	if (SCARG(uap, name) && (error2 = copyout((caddr_t)&obits[x], \
+	if (SCARG(uap, name) && (error2 = copyout((caddr_t)pobits[x], \
 	    (caddr_t)SCARG(uap, name), ni))) \
 		error = error2;
 	if (error == 0) {
@@ -600,32 +645,49 @@ done:
 		putbits(ex, 2);
 #undef putbits
 	}
+	
+cleanup:
+	if (pibits[0] != &bits[0])
+		free(pibits[0], M_TEMP);
 	return (error);
 }
 
+int
 selscan(p, ibits, obits, nfd, retval)
 	struct proc *p;
 	fd_set *ibits, *obits;
 	int nfd;
 	register_t *retval;
 {
+	caddr_t cibits = (caddr_t)ibits, cobits = (caddr_t)obits;
 	register struct filedesc *fdp = p->p_fd;
 	register int msk, i, j, fd;
 	register fd_mask bits;
 	struct file *fp;
-	int n = 0;
+	int ni, n = 0;
 	static int flag[3] = { FREAD, FWRITE, 0 };
 
+	/*
+	 * if nfd > FD_SETSIZE then the fd_set's contain nfd bits (rounded
+	 * up to the next byte) otherwise the fd_set's are normal sized.
+	 */
+	ni = sizeof(fd_set);
+	if (nfd > FD_SETSIZE)
+		ni = howmany(nfd, NFDBITS) * sizeof(fd_mask);
+
 	for (msk = 0; msk < 3; msk++) {
+		fd_set *pibits = (fd_set *)&cibits[msk*ni];
+		fd_set *pobits = (fd_set *)&cobits[msk*ni];
+
 		for (i = 0; i < nfd; i += NFDBITS) {
-			bits = ibits[msk].fds_bits[i/NFDBITS];
+			bits = pibits->fds_bits[i/NFDBITS];
 			while ((j = ffs(bits)) && (fd = i + --j) < nfd) {
 				bits &= ~(1 << j);
 				fp = fdp->fd_ofiles[fd];
 				if (fp == NULL)
 					return (EBADF);
 				if ((*fp->f_ops->fo_select)(fp, flag[msk], p)) {
-					FD_SET(fd, &obits[msk]);
+					FD_SET(fd, pobits);
 					n++;
 				}
 			}
@@ -636,6 +698,7 @@ selscan(p, ibits, obits, nfd, retval)
 }
 
 /*ARGSUSED*/
+int
 seltrue(dev, flag, p)
 	dev_t dev;
 	int flag;
@@ -657,13 +720,13 @@ selrecord(selector, sip)
 	pid_t mypid;
 
 	mypid = selector->p_pid;
-	if (sip->si_pid == mypid)
+	if (sip->si_selpid == mypid)
 		return;
-	if (sip->si_pid && (p = pfind(sip->si_pid)) &&
+	if (sip->si_selpid && (p = pfind(sip->si_selpid)) &&
 	    p->p_wchan == (caddr_t)&selwait)
 		sip->si_flags |= SI_COLL;
 	else
-		sip->si_pid = mypid;
+		sip->si_selpid = mypid;
 }
 
 /*
@@ -676,15 +739,15 @@ selwakeup(sip)
 	register struct proc *p;
 	int s;
 
-	if (sip->si_pid == 0)
+	if (sip->si_selpid == 0)
 		return;
 	if (sip->si_flags & SI_COLL) {
 		nselcoll++;
 		sip->si_flags &= ~SI_COLL;
 		wakeup((caddr_t)&selwait);
 	}
-	p = pfind(sip->si_pid);
-	sip->si_pid = 0;
+	p = pfind(sip->si_selpid);
+	sip->si_selpid = 0;
 	if (p != NULL) {
 		s = splhigh();
 		if (p->p_wchan == (caddr_t)&selwait) {
@@ -696,4 +759,124 @@ selwakeup(sip)
 			p->p_flag &= ~P_SELECT;
 		splx(s);
 	}
+}
+
+void
+pollscan(p, pl, nfd, retval)
+	struct proc *p;
+	struct pollfd *pl;
+	int nfd;
+	register_t *retval;
+{
+	register struct filedesc *fdp = p->p_fd;
+	register int msk, i;
+	struct file *fp;
+	int n = 0;
+	static int flag[3] = { FREAD, FWRITE, 0 };
+	static int pflag[3] = { POLLIN|POLLRDNORM, POLLOUT, POLLERR };
+
+	/* 
+	 * XXX: We need to implement the rest of the flags.
+	 */
+	for (i = 0; i < nfd; i++) {
+		fp = fdp->fd_ofiles[pl[i].fd];
+		if (fp == NULL) {
+			if (pl[i].events & POLLNVAL) {
+				pl[i].revents |= POLLNVAL;
+				n++;
+			}
+			continue;
+		}
+		for (msk = 0; msk < 3; msk++) {
+			if (pl[i].events & pflag[msk]) {
+				if ((*fp->f_ops->fo_select)(fp, flag[msk], p)) {
+					pl[i].revents |= pflag[msk] &
+					    pl[i].events;
+					n++;
+				}
+			}
+		}
+	}
+	*retval = n;
+}
+
+/*
+ * We are using the same mechanism as select only we encode/decode args
+ * differently.
+ */
+int
+sys_poll(p, v, retval)
+	register struct proc *p;
+	void *v;
+	register_t *retval;
+{
+	struct sys_poll_args *uap = v;
+	size_t sz = sizeof(struct pollfd) * SCARG(uap, nfds);
+	struct pollfd *pl;
+	int msec = SCARG(uap, timeout);
+	struct timeval atv;
+	int timo, ncoll, i, s, error, error2;
+	extern int nselcoll, selwait;
+
+	pl = (struct pollfd *) malloc(sz, M_TEMP, M_WAITOK);
+
+	if ((error = copyin(SCARG(uap, fds), pl, sz)) != 0)
+		goto bad;
+
+	for (i = 0; i < SCARG(uap, nfds); i++)
+		pl[i].revents = 0;
+
+	if (msec != -1) {
+		atv.tv_sec = msec / 1000;
+		atv.tv_usec = (msec - (atv.tv_sec * 1000)) * 1000;
+
+		if (itimerfix(&atv)) {
+			error = EINVAL;
+			goto done;
+		}
+		s = splclock();
+		timeradd(&atv, &time, &atv);
+		timo = hzto(&atv);
+		/*
+		 * Avoid inadvertently sleeping forever.
+		 */
+		if (timo == 0)
+			timo = 1;
+		splx(s);
+	} else
+		timo = 0;
+
+retry:
+	ncoll = nselcoll;
+	p->p_flag |= P_SELECT;
+	pollscan(p, pl, SCARG(uap, nfds), retval);
+	if (*retval)
+		goto done;
+	s = splhigh();
+	if (timo && timercmp(&time, &atv, >=)) {
+		splx(s);
+		goto done;
+	}
+	if ((p->p_flag & P_SELECT) == 0 || nselcoll != ncoll) {
+		splx(s);
+		goto retry;
+	}
+	p->p_flag &= ~P_SELECT;
+	error = tsleep((caddr_t)&selwait, PSOCK | PCATCH, "poll", timo);
+	splx(s);
+	if (error == 0)
+		goto retry;
+
+done:
+	p->p_flag &= ~P_SELECT;
+	/* poll is not restarted after signals... */
+	if (error == ERESTART)
+		error = EINTR;
+	if (error == EWOULDBLOCK)
+		error = 0;
+	if ((error2 = copyout(pl, SCARG(uap, fds), sz)) != 0)
+		error = error2;
+bad:
+	free((char *) pl, M_TEMP);
+	return (error);
 }

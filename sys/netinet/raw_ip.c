@@ -1,4 +1,5 @@
-/*	$NetBSD: raw_ip.c,v 1.21 1995/06/18 20:01:15 cgd Exp $	*/
+/*	$OpenBSD: raw_ip.c,v 1.8 1997/01/26 01:23:44 tholo Exp $	*/
+/*	$NetBSD: raw_ip.c,v 1.25 1996/02/18 18:58:33 christos Exp $	*/
 
 /*
  * Copyright (c) 1982, 1986, 1988, 1993
@@ -53,6 +54,9 @@
 #include <netinet/ip_var.h>
 #include <netinet/ip_mroute.h>
 #include <netinet/in_pcb.h>
+#include <netinet/in_var.h>
+
+#include <machine/stdarg.h>
 
 struct inpcbtable rawcbtable;
 
@@ -73,7 +77,7 @@ void
 rip_init()
 {
 
-	in_pcbinit(&rawcbtable);
+	in_pcbinit(&rawcbtable, 1);
 }
 
 struct	sockaddr_in ripsrc = { sizeof(ripsrc), AF_INET };
@@ -83,8 +87,13 @@ struct	sockaddr_in ripsrc = { sizeof(ripsrc), AF_INET };
  * mbuf chain.
  */
 void
-rip_input(m)
+#if __STDC__
+rip_input(struct mbuf *m, ...)
+#else
+rip_input(m, va_alist)
 	struct mbuf *m;
+	va_dcl
+#endif
 {
 	register struct ip *ip = mtod(m, struct ip *);
 	register struct inpcb *inp;
@@ -104,7 +113,7 @@ rip_input(m)
 			continue;
 		if (last) {
 			struct mbuf *n;
-			if (n = m_copy(m, 0, (int)M_COPYALL)) {
+			if ((n = m_copy(m, 0, (int)M_COPYALL)) != NULL) {
 				if (sbappendaddr(&last->so_rcv,
 				    sintosa(&ripsrc), n,
 				    (struct mbuf *)0) == 0)
@@ -134,21 +143,38 @@ rip_input(m)
  * Tack on options user may have setup with control call.
  */
 int
-rip_output(m, so, dst)
-	register struct mbuf *m;
+#if __STDC__
+rip_output(struct mbuf *m, ...)
+#else
+rip_output(m, va_alist)
+	struct mbuf *m;
+	va_dcl
+#endif
+{
 	struct socket *so;
 	u_long dst;
-{
 	register struct ip *ip;
-	register struct inpcb *inp = sotoinpcb(so);
-	struct mbuf *opts;
-	int flags = (so->so_options & SO_DONTROUTE) | IP_ALLOWBROADCAST;
+	register struct inpcb *inp;
+	int flags;
+	va_list ap;
+
+	va_start(ap, m);
+	so = va_arg(ap, struct socket *);
+	dst = va_arg(ap, u_long);
+	va_end(ap);
+
+	inp = sotoinpcb(so);
+	flags = (so->so_options & SO_DONTROUTE) | IP_ALLOWBROADCAST;
 
 	/*
 	 * If the user handed us a complete IP packet, use it.
 	 * Otherwise, allocate an mbuf for a header and fill it in.
 	 */
 	if ((inp->inp_flags & INP_HDRINCL) == 0) {
+		if ((m->m_pkthdr.len + sizeof(struct ip)) > IP_MAXPACKET) {
+			m_freem(m);
+			return (EMSGSIZE);
+		}
 		M_PREPEND(m, sizeof(struct ip), M_WAIT);
 		ip = mtod(m, struct ip *);
 		ip->ip_tos = 0;
@@ -158,17 +184,31 @@ rip_output(m, so, dst)
 		ip->ip_src = inp->inp_laddr;
 		ip->ip_dst.s_addr = dst;
 		ip->ip_ttl = MAXTTL;
-		opts = inp->inp_options;
 	} else {
+		if (m->m_pkthdr.len > IP_MAXPACKET) {
+			m_freem(m);
+			return (EMSGSIZE);
+		}
 		ip = mtod(m, struct ip *);
+		NTOHS(ip->ip_len);
+		NTOHS(ip->ip_off);
+		/*
+		 * don't allow both user specified and setsockopt options,
+		 * and don't allow packet length sizes that will crash
+		 */
+		if ((ip->ip_hl != (sizeof (*ip) >> 2) && inp->inp_options) ||
+		    ip->ip_len > m->m_pkthdr.len) {
+			m_freem(m);
+			return (EINVAL);
+		}
 		if (ip->ip_id == 0)
 			ip->ip_id = htons(ip_id++);
-		opts = NULL;
 		/* XXX prevent ip_output from overwriting header fields */
 		flags |= IP_RAWOUTPUT;
 		ipstat.ips_rawout++;
 	}
-	return (ip_output(m, opts, &inp->inp_route, flags, inp->inp_moptions));
+	return (ip_output(m, inp->inp_options, &inp->inp_route, flags,
+	    inp->inp_moptions));
 }
 
 /*
@@ -185,30 +225,30 @@ rip_ctloutput(op, so, level, optname, m)
 	register int error;
 
 	if (level != IPPROTO_IP) {
-		if (m != 0 && *m != 0)
-			(void)m_free(*m);
+		if (op == PRCO_SETOPT && *m)
+			(void) m_free(*m);
 		return (EINVAL);
 	}
 
 	switch (optname) {
 
 	case IP_HDRINCL:
-		if (op == PRCO_SETOPT || op == PRCO_GETOPT) {
-			if (m == 0 || *m == 0 || (*m)->m_len < sizeof (int))
-				return (EINVAL);
-			if (op == PRCO_SETOPT) {
-				if (*mtod(*m, int *))
-					inp->inp_flags |= INP_HDRINCL;
-				else
-					inp->inp_flags &= ~INP_HDRINCL;
+		error = 0;
+		if (op == PRCO_SETOPT) {
+			if (*m == 0 || (*m)->m_len < sizeof (int))
+				error = EINVAL;
+			else if (*mtod(*m, int *))
+				inp->inp_flags |= INP_HDRINCL;
+			else
+				inp->inp_flags &= ~INP_HDRINCL;
+			if (*m)
 				(void)m_free(*m);
-			} else {
-				(*m)->m_len = sizeof (int);
-				*mtod(*m, int *) = inp->inp_flags & INP_HDRINCL;
-			}
-			return (0);
+		} else {
+			*m = m_get(M_WAIT, M_SOOPTS);
+			(*m)->m_len = sizeof(int);
+			*mtod(*m, int *) = inp->inp_flags & INP_HDRINCL;
 		}
-		break;
+		return (error);
 
 	case MRT_INIT:
 	case MRT_DONE:
@@ -255,6 +295,15 @@ rip_usrreq(so, req, m, nam, control)
 #ifdef MROUTING
 	extern struct socket *ip_mrouter;
 #endif
+	if (req == PRU_CONTROL)
+		return (in_control(so, (long)m, (caddr_t)nam,
+			(struct ifnet *)control));
+
+	if (inp == NULL && req != PRU_ATTACH) {
+		error = EINVAL;
+		goto release;
+	}
+
 	switch (req) {
 
 	case PRU_ATTACH:
@@ -396,6 +445,7 @@ rip_usrreq(so, req, m, nam, control)
 	default:
 		panic("rip_usrreq");
 	}
+release:
 	if (m != NULL)
 		m_freem(m);
 	return (error);

@@ -1,3 +1,4 @@
+/*	$OpenBSD: crunchgen.c,v 1.9 1997/01/31 19:40:42 rahnds Exp $	*/
 /*
  * Copyright (c) 1994 University of Maryland
  * All Rights Reserved.
@@ -45,6 +46,20 @@
 #define MAXLINELEN	16384
 #define MAXFIELDS 	 2048
 
+/* XXX - This should be runtime configurable */
+/*
+ * We might have more than one makefile
+ * name on any given platform. Make sure
+ * default name is last though.
+ */
+char  *mf_name[] = {
+#if defined(MF_NAMES)
+     MF_NAMES,
+#else
+    "Makefile",
+#endif
+    NULL
+};
 
 /* internal representation of conf file: */
 
@@ -59,7 +74,7 @@ typedef struct strlst {
 
 typedef struct prog {
     struct prog *next;
-    char *name, *ident;
+    char *name, *ident, *mf_name;
     char *srcdir, *objdir;
     strlst_t *objs, *objpaths;
     strlst_t *links;
@@ -85,7 +100,7 @@ int goterror = 0;
 
 char *pname = "crunchgen";
 
-int verbose, readcache;	/* options */
+int verbose, readcache, elf_names;	/* options */
 int reading_cache;
 
 /* general library routines */
@@ -116,7 +131,7 @@ int main(int argc, char **argv)
     
     if(argc > 0) pname = argv[0];
 
-    while((optc = getopt(argc, argv, "m:c:e:fqD:L:")) != -1) {
+    while((optc = getopt(argc, argv, "m:c:e:fqD:EL:")) != -1) {
 	switch(optc) {
 	case 'f':	readcache = 0; break;
 	case 'q':	verbose = 0; break;
@@ -126,6 +141,7 @@ int main(int argc, char **argv)
 	case 'e':	strcpy(execfname, optarg); break;
 
 	case 'D':	strcpy(topdir, optarg); break;
+	case 'E' :	elf_names = 1; break;
 	case 'L':	strcpy(libdir, optarg); break;
 
 	case '?':
@@ -324,7 +340,7 @@ void add_prog(char *progname)
     for(p1 = NULL, p2 = progs; p2 != NULL; p1 = p2, p2 = p2->next)
 	if(!strcmp(p2->name, progname)) return;
 
-    p2 = malloc(sizeof(prog_t));
+    p2 = calloc(1, sizeof(prog_t));
     if(p2) p2->name = strdup(progname);
     if(!p2 || !p2->name) 
 	out_of_memory();
@@ -387,6 +403,11 @@ void add_special(int argc, char **argv)
     else if(!strcmp(argv[2], "srcdir")) {
 	if(argc != 4) goto argcount;
 	if((p->srcdir = strdup(argv[3])) == NULL)
+	    out_of_memory();
+    }
+    else if(!strcmp(argv[2], "mf_name")) {
+	if(argc != 4) goto argcount;
+	if((p->mf_name = strdup(argv[3])) == NULL)
 	    out_of_memory();
     }
     else if(!strcmp(argv[2], "objdir")) {
@@ -476,6 +497,7 @@ void fillin_program(prog_t *p)
     char path[MAXPATHLEN];
     char *srcparent;
     strlst_t *s;
+    int i;
 
     sprintf(line, "filling in parms for %s", p->name);
     status(line);
@@ -502,9 +524,21 @@ void fillin_program(prog_t *p)
         }
     }
 
-    if(p->srcdir) sprintf(path, "%s/Makefile", p->srcdir);
-    if(!p->objs && p->srcdir && is_nonempty_file(path))
-	fillin_program_objs(p, path);
+    /* We have a sourcedir and no explict objs, try */
+    /* to find makefile and get objs from it. */
+    if (p->srcdir && !p->objs) {
+        for (i = 0; mf_name[i] != NULL; i++) {
+            sprintf(path, "%s/%s", p->srcdir, mf_name[i]);
+            if (is_nonempty_file(path)) {
+		p->mf_name = mf_name[i];
+                fillin_program_objs(p, path);
+                break;
+            }
+        }
+    }
+
+
+
 
     if(!p->objpaths && p->objdir && p->objs)
 	for(s = p->objs; s != NULL; s = s->next) {
@@ -621,6 +655,8 @@ void gen_specials_cache(void)
 	fprintf(cachef, "\n");
 	if(p->srcdir)
 	    fprintf(cachef, "special %s srcdir %s\n", p->name, p->srcdir);
+	if(p->mf_name)
+	    fprintf(cachef, "special %s mf_name %s\n", p->name, p->mf_name);
 	if(p->objdir)
 	    fprintf(cachef, "special %s objdir %s\n", p->name, p->objdir);
 	if(p->objs) {
@@ -778,8 +814,8 @@ void prog_makefile_rules(FILE *outmk, prog_t *p)
 	fprintf(outmk, "%s_OBJS=", p->ident);
 	output_strlst(outmk, p->objs);
 	fprintf(outmk, "%s_make:\n", p->ident);
-	fprintf(outmk, "\t(cd $(%s_SRCDIR); make $(%s_OBJS))\n\n", 
-		p->ident, p->ident);
+	fprintf(outmk, "\t(cd $(%s_SRCDIR); make -f %s $(%s_OBJS))\n\n", 
+		p->ident, p->mf_name, p->ident);
     }
     else
 	fprintf(outmk, "%s_make:\n\t@echo \"** cannot make objs for %s\"\n\n", 
@@ -795,10 +831,10 @@ void prog_makefile_rules(FILE *outmk, prog_t *p)
 	    p->ident, p->name);
     fprintf(outmk, "%s.lo: %s_stub.o $(%s_OBJPATHS)\n",
 	    p->name, p->name, p->ident);
-    fprintf(outmk, "\tld -dc -r -o %s.lo %s_stub.o $(%s_OBJPATHS)\n", 
+    fprintf(outmk, "\t${LD} -dc -r -o %s.lo %s_stub.o $(%s_OBJPATHS)\n", 
 	    p->name, p->name, p->ident);
-    fprintf(outmk, "\tcrunchide -k __crunched_%s_stub %s.lo\n", 
-	    p->ident, p->name);
+    fprintf(outmk, "\tcrunchide -k %s_crunched_%s_stub %s.lo\n", 
+	    elf_names ? "" : "_", p->ident, p->name);
 }
 
 void output_strlst(FILE *outf, strlst_t *lst)
@@ -848,7 +884,7 @@ void add_string(strlst_t **listp, char *str)
     for(p1 = NULL, p2 = *listp; p2 != NULL; p1 = p2, p2 = p2->next)
 	if(!strcmp(p2->str, str)) return;
 
-    p2 = malloc(sizeof(strlst_t));
+    p2 = calloc(1,sizeof(strlst_t));
     if(p2) p2->str = strdup(str);
     if(!p2 || !p2->str)
 	out_of_memory();

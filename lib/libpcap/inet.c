@@ -1,7 +1,7 @@
-/*	$NetBSD: inet.c,v 1.2 1995/03/06 11:38:29 mycroft Exp $	*/
+/*	$OpenBSD: inet.c,v 1.5 1996/07/19 07:52:16 deraadt Exp $	*/
 
 /*
- * Copyright (c) 1994
+ * Copyright (c) 1994, 1995, 1996
  *	The Regents of the University of California.  All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -35,15 +35,20 @@
 
 #ifndef lint
 static char rcsid[] =
-    "@(#) Header: inet.c,v 1.4 94/06/07 01:16:50 leres Exp (LBL)";
+    "@(#) Header: inet.c,v 1.16 96/06/23 14:28:22 leres Exp (LBL)";
 #endif
 
 #include <sys/param.h>
 #include <sys/file.h>
 #include <sys/ioctl.h>
 #include <sys/socket.h>
-#ifdef SOLARIS
+#ifdef HAVE_SYS_SOCKIO_H
 #include <sys/sockio.h>
+#endif
+
+#if __STDC__
+struct mbuf;
+struct rtentry;
 #endif
 
 #include <net/if.h>
@@ -51,11 +56,18 @@ static char rcsid[] =
 
 #include <ctype.h>
 #include <errno.h>
+#include <memory.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
 #include <pcap.h>
+
+#ifdef HAVE_OS_PROTO_H
+#include "os-proto.h"
+#endif
+
+#include "pcap-int.h"
 
 /* Not all systems have IFF_LOOPBACK */
 #ifdef IFF_LOOPBACK
@@ -74,27 +86,36 @@ pcap_lookupdev(errbuf)
 	register char *errbuf;
 {
 	register int fd, minunit, n;
-	register char *cp;
+	register char *cp, *ibuf = NULL;
 	register struct ifreq *ifrp, *ifend, *ifnext, *mp;
 	struct ifconf ifc;
-	struct ifreq ibuf[16], ifr;
+	struct ifreq ifr;
 	static char device[sizeof(ifrp->ifr_name) + 1];
+	int len = 8192;
 
 	fd = socket(AF_INET, SOCK_DGRAM, 0);
 	if (fd < 0) {
 		(void)sprintf(errbuf, "socket: %s", pcap_strerror(errno));
 		return (NULL);
 	}
-	ifc.ifc_len = sizeof ibuf;
-	ifc.ifc_buf = (caddr_t)ibuf;
-
-	if (ioctl(fd, SIOCGIFCONF, (char *)&ifc) < 0 ||
-	    ifc.ifc_len < sizeof(struct ifreq)) {
-		(void)sprintf(errbuf, "SIOCGIFCONF: %s", pcap_strerror(errno));
-		(void)close(fd);
-		return (NULL);
+	while (1) {
+		ifc.ifc_len = len;
+		ifc.ifc_buf = ibuf = realloc(ibuf, len);
+		if (ibuf == NULL) {
+			close(fd);
+			return (NULL);
+		}
+		if (ioctl(fd, SIOCGIFCONF, (char *)&ifc) < 0) {
+			(void)close(fd);
+			free(ibuf);
+			return (NULL);
+		}
+		if (ifc.ifc_len + sizeof(ifr) < len)
+			break;
+		len *= 2;
 	}
-	ifrp = ibuf;
+
+	ifrp = (struct ifreq *)ibuf;
 	ifend = (struct ifreq *)((char *)ibuf + ifc.ifc_len);
 
 	mp = NULL;
@@ -122,6 +143,7 @@ pcap_lookupdev(errbuf)
 			(void)sprintf(errbuf, "SIOCGIFFLAGS: %s",
 			    pcap_strerror(errno));
 			(void)close(fd);
+			free(ibuf);
 			return (NULL);
 		}
 
@@ -137,6 +159,7 @@ pcap_lookupdev(errbuf)
 			mp = ifrp;
 		}
 	}
+	free(ibuf);
 	(void)close(fd);
 	if (mp == NULL) {
 		(void)strcpy(errbuf, "no suitable device found");
@@ -151,7 +174,7 @@ pcap_lookupdev(errbuf)
 int
 pcap_lookupnet(device, netp, maskp, errbuf)
 	register char *device;
-	register u_long *netp, *maskp;
+	register bpf_u_int32 *netp, *maskp;
 	register char *errbuf;
 {
 	register int fd;
@@ -163,6 +186,11 @@ pcap_lookupnet(device, netp, maskp, errbuf)
 		(void)sprintf(errbuf, "socket: %s", pcap_strerror(errno));
 		return (-1);
 	}
+	memset(&ifr, 0, sizeof(ifr));
+#ifdef linux
+	/* XXX Work around Linux kernel bug */
+	ifr.ifr_addr.sa_family = AF_INET;
+#endif
 	(void)strncpy(ifr.ifr_name, device, sizeof(ifr.ifr_name));
 	if (ioctl(fd, SIOCGIFADDR, (char *)&ifr) < 0) {
 		(void)sprintf(errbuf, "SIOCGIFADDR: %s: %s",

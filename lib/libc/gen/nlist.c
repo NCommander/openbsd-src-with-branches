@@ -1,5 +1,3 @@
-/*	$NetBSD: nlist.c,v 1.6 1995/09/29 04:19:59 cgd Exp $	*/
-
 /*
  * Copyright (c) 1989, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -34,57 +32,35 @@
  */
 
 #if defined(LIBC_SCCS) && !defined(lint)
-#if 0
-static char sccsid[] = "@(#)nlist.c	8.1 (Berkeley) 6/4/93";
-#else
-static char rcsid[] = "$NetBSD: nlist.c,v 1.6 1995/09/29 04:19:59 cgd Exp $";
-#endif
+static char rcsid[] = "$OpenBSD: nlist.c,v 1.18 1997/01/09 03:49:38 rahnds Exp $";
 #endif /* LIBC_SCCS and not lint */
 
-#ifdef __alpha__
-#define		DO_ECOFF
-#else
-#define		DO_AOUT
-#endif
-
-#if defined(DO_AOUT) + defined(DO_ECOFF) != 1
-	ERROR: NOT PROPERLY CONFIGURED
-#endif
-
+#include <sys/types.h>
 #include <sys/param.h>
 #include <sys/mman.h>
 #include <sys/stat.h>
 #include <sys/file.h>
 
 #include <errno.h>
-#include <a.out.h>
-#ifdef DO_ECOFF
-#include <sys/exec_ecoff.h>
-#endif
 #include <stdio.h>
 #include <string.h>
 #include <unistd.h>
+#include <a.out.h>		/* pulls in nlist.h */
 
-int
-nlist(name, list)
-	const char *name;
-	struct nlist *list;
-{
-	int fd, n;
+#ifdef _NLIST_DO_ELF
+#include <elf_abi.h>
+#include <olf_abi.h>
+#endif
 
-	fd = open(name, O_RDONLY, 0);
-	if (fd < 0)
-		return (-1);
-	n = __fdnlist(fd, list);
-	(void)close(fd);
-	return (n);
-}
+#ifdef _NLIST_DO_ECOFF
+#include <sys/exec_ecoff.h>
+#endif
 
 #define	ISLAST(p)	(p->n_un.n_name == 0 || p->n_un.n_name[0] == 0)
 
-#ifdef DO_AOUT
+#ifdef _NLIST_DO_AOUT
 int
-__fdnlist(fd, list)
+__aout_fdnlist(fd, list)
 	register int fd;
 	register struct nlist *list;
 {
@@ -167,20 +143,20 @@ __fdnlist(fd, list)
 	munmap(strtab, strsize);
 	return (nent);
 }
-#endif /* DO_AOUT */
+#endif /* _NLIST_DO_AOUT */
 
-#ifdef DO_ECOFF
+#ifdef _NLIST_DO_ECOFF
 #define check(off, size)	((off < 0) || (off + size > mappedsize))
 #define	BAD			do { rv = -1; goto out; } while (0)
 #define	BADUNMAP		do { rv = -1; goto unmap; } while (0)
 
 int
-__fdnlist(fd, list)
+__ecoff_fdnlist(fd, list)
 	register int fd;
 	register struct nlist *list;
 {
 	struct nlist *p;
-	struct ecoff_filehdr *filehdrp;
+	struct ecoff_exechdr *exechdrp;
 	struct ecoff_symhdr *symhdrp;
 	struct ecoff_extsym *esyms;
 	struct stat st;
@@ -204,26 +180,26 @@ __fdnlist(fd, list)
 	if (mappedfile == (char *)-1)
 		BAD;
 
-	if (check(0, sizeof *filehdrp))
+	if (check(0, sizeof *exechdrp))
 		BADUNMAP;
-	filehdrp = (struct ecoff_filehdr *)&mappedfile[0];
+	exechdrp = (struct ecoff_exechdr *)&mappedfile[0];
 
-	if (ECOFF_BADMAG(filehdrp))
+	if (ECOFF_BADMAG(exechdrp))
 		BADUNMAP;
 
-	symhdroff = filehdrp->ef_symptr;
-	symhdrsize = filehdrp->ef_syms;
+	symhdroff = exechdrp->f.f_symptr;
+	symhdrsize = exechdrp->f.f_nsyms;
 
 	if (check(symhdroff, sizeof *symhdrp) ||
 	    sizeof *symhdrp != symhdrsize)
 		BADUNMAP;
 	symhdrp = (struct ecoff_symhdr *)&mappedfile[symhdroff];
 
-	nesyms = symhdrp->sh_esymmax;
-	if (check(symhdrp->sh_esymoff, nesyms * sizeof *esyms))
+	nesyms = symhdrp->esymMax;
+	if (check(symhdrp->cbExtOffset, nesyms * sizeof *esyms))
 		BADUNMAP;
-	esyms = (struct ecoff_extsym *)&mappedfile[symhdrp->sh_esymoff];
-	extstroff = symhdrp->sh_estroff;
+	esyms = (struct ecoff_extsym *)&mappedfile[symhdrp->cbExtOffset];
+	extstroff = symhdrp->cbSsExtOffset;
 
 	/*
 	 * clean out any left-over information for all valid entries.
@@ -270,4 +246,240 @@ unmap:
 out:
 	return (rv);
 }
-#endif /* DO_ECOFF */
+#endif /* _NLIST_DO_ECOFF */
+
+#ifdef _NLIST_DO_ELF
+/*
+ * __elf_is_okay__ - Determine if ehdr really
+ * is ELF and valid for the target platform.
+ *
+ * WARNING:  This is NOT a ELF ABI function and
+ * as such it's use should be restricted.
+ */
+int
+__elf_is_okay__(ehdr)
+	register Elf32_Ehdr *ehdr;
+{
+	register int retval = 0;
+	/*
+	 * We need to check magic, class size, endianess,
+	 * and version before we look at the rest of the
+	 * Elf32_Ehdr structure.  These few elements are
+	 * represented in a machine independant fashion.
+	 */
+	if ((IS_ELF(*ehdr) || IS_OLF(*ehdr)) &&
+	    ehdr->e_ident[EI_CLASS] == ELF_TARG_CLASS &&
+	    ehdr->e_ident[EI_DATA] == ELF_TARG_DATA &&
+	    ehdr->e_ident[EI_VERSION] == ELF_TARG_VER) {
+
+		/* Now check the machine dependant header */
+		if (ehdr->e_machine == ELF_TARG_MACH &&
+		    ehdr->e_version == ELF_TARG_VER)
+			retval = 1;
+	}
+	return retval;
+}
+
+int
+__elf_fdnlist(fd, list)
+	register int fd;
+	register struct nlist *list;
+{
+	register struct nlist *p;
+	register caddr_t strtab;
+	register Elf32_Off symoff = 0, symstroff;
+	register Elf32_Word symsize, symstrsize;
+	register Elf32_Sword nent, cc, i;
+	Elf32_Sym sbuf[1024];
+	Elf32_Sym *s;
+	Elf32_Ehdr ehdr;
+	Elf32_Shdr *shdr = NULL;
+        Elf32_Word shdr_size;
+	struct stat st;
+
+        /* Make sure obj is OK */
+	if (lseek(fd, (off_t)0, SEEK_SET) == -1 ||
+	    read(fd, &ehdr, sizeof(Elf32_Ehdr)) != sizeof(Elf32_Ehdr) ||
+	    !__elf_is_okay__(&ehdr) ||
+	    fstat(fd, &st) < 0)
+		return (-1);
+
+        /* calculate section header table size */
+        shdr_size = ehdr.e_shentsize * ehdr.e_shnum;
+
+        /* Make sure it's not too big to mmap */
+	if (shdr_size > SIZE_T_MAX) {
+		errno = EFBIG;
+		return (-1);
+	}
+
+        /* mmap section header table */
+	shdr = (Elf32_Shdr *)mmap(NULL, (size_t)shdr_size,
+                                  PROT_READ, 0, fd, (off_t) ehdr.e_shoff);
+	if (shdr == (Elf32_Shdr *)-1)
+		return (-1);
+
+        /*
+         * Find the symbol table entry and it's corresponding
+         * string table entry.  Version 1.1 of the ABI states
+         * that there is only one symbol table but that this
+         * could change in the future.
+         */
+        for (i = 0; i < ehdr.e_shnum; i++) {
+                if (shdr[i].sh_type == SHT_SYMTAB) {
+                        symoff = shdr[i].sh_offset;
+                        symsize = shdr[i].sh_size;
+                        symstroff = shdr[shdr[i].sh_link].sh_offset;
+                        symstrsize = shdr[shdr[i].sh_link].sh_size;
+                        break;
+                }
+        }
+
+        /* Flush the section header table */
+        munmap((caddr_t)shdr, shdr_size);
+
+	/* Check for files too large to mmap. */
+	/* XXX is this really possible? */
+	if (symstrsize > SIZE_T_MAX) {
+		errno = EFBIG;
+		return (-1);
+	}
+	/*
+	 * Map string table into our address space.  This gives us
+	 * an easy way to randomly access all the strings, without
+	 * making the memory allocation permanent as with malloc/free
+	 * (i.e., munmap will return it to the system).
+	 */
+	strtab = mmap(NULL, (size_t)symstrsize, PROT_READ, 0, fd, (off_t) symstroff);
+	if (strtab == (char *)-1)
+		return (-1);
+	/*
+	 * clean out any left-over information for all valid entries.
+	 * Type and value defined to be 0 if not found; historical
+	 * versions cleared other and desc as well.  Also figure out
+	 * the largest string length so don't read any more of the
+	 * string table than we have to.
+	 *
+	 * XXX clearing anything other than n_type and n_value violates
+	 * the semantics given in the man page.
+	 */
+	nent = 0;
+	for (p = list; !ISLAST(p); ++p) {
+		p->n_type = 0;
+		p->n_other = 0;
+		p->n_desc = 0;
+		p->n_value = 0;
+		++nent;
+	}
+
+        /* Don't process any further if object is stripped. */
+        /* ELFism - dunno if stripped by looking at header */
+        if (symoff == 0)
+                goto done;
+                
+	if (lseek(fd, (off_t) symoff, SEEK_SET) == -1) {
+                nent = -1;
+                goto done;
+        }
+        
+	while (symsize > 0) {
+		cc = MIN(symsize, sizeof(sbuf));
+		if (read(fd, sbuf, cc) != cc)
+			break;
+		symsize -= cc;
+		for (s = sbuf; cc > 0; ++s, cc -= sizeof(*s)) {
+			register int soff = s->st_name;
+
+			if (soff == 0)
+				continue;
+			for (p = list; !ISLAST(p); p++) {
+                                /*
+                                 * XXX - ABI crap, they
+                                 * really fucked this up
+                                 * for MIPS and PowerPC
+                                 */
+				if (!strcmp(&strtab[soff],
+				    ((ehdr.e_machine == EM_MIPS) ||
+				     (ehdr.e_machine == EM_PPC)) ? 
+				    p->n_un.n_name+1 :
+				    p->n_un.n_name)) {
+					p->n_value = s->st_value;
+
+                                        /* XXX - type conversion */
+                                        /*       is pretty rude. */
+					switch(ELF32_ST_TYPE(s->st_info)) {
+                                                case STT_NOTYPE:
+                                                        p->n_type = N_UNDF;
+                                                        break;
+                                                case STT_OBJECT:
+                                                        p->n_type = N_DATA;
+                                                        break;
+                                                case STT_FUNC:
+                                                        p->n_type = N_TEXT;
+                                                        break;
+                                                case STT_FILE:
+                                                        p->n_type = N_FN;
+                                                        break;
+					}
+					if (ELF32_ST_BIND(s->st_info) ==
+                                            STB_LOCAL)
+						p->n_type = N_EXT;
+					p->n_desc = 0;
+					p->n_other = 0;
+					if (--nent <= 0)
+						break;
+				}
+			}
+		}
+	}
+  done:
+	munmap(strtab, symstrsize);
+
+	return (nent);
+}
+#endif /* _NLIST_DO_ELF */
+
+
+static struct nlist_handlers {
+	int	(*fn) __P((int fd, struct nlist *list));
+} nlist_fn[] = {
+#ifdef _NLIST_DO_AOUT
+	{ __aout_fdnlist },
+#endif
+#ifdef _NLIST_DO_ELF
+	{ __elf_fdnlist },
+#endif
+#ifdef _NLIST_DO_ECOFF
+	{ __ecoff_fdnlist },
+#endif
+};
+
+__fdnlist(fd, list)
+	register int fd;
+	register struct nlist *list;
+{
+	int n = -1, i;
+
+	for (i = 0; i < sizeof(nlist_fn)/sizeof(nlist_fn[0]); i++) {
+		n = (nlist_fn[i].fn)(fd, list);
+		if (n != -1)
+			break;
+	}
+	return (n);
+}
+
+
+int
+nlist(name, list)
+	const char *name;
+	struct nlist *list;
+{
+	int fd, n;
+
+	fd = open(name, O_RDONLY, 0);
+	if (fd < 0)
+		return (-1);
+	n = __fdnlist(fd, list);
+	(void)close(fd);
+	return (n);
+}

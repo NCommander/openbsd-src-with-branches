@@ -1,5 +1,3 @@
-/*	$NetBSD: getnetbyname.c,v 1.4 1995/02/25 06:20:31 cgd Exp $	*/
-
 /*
  * Copyright (c) 1983, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -34,11 +32,7 @@
  */
 
 #if defined(LIBC_SCCS) && !defined(lint)
-#if 0
-static char sccsid[] = "@(#)getnetbyname.c	8.1 (Berkeley) 6/4/93";
-#else
-static char rcsid[] = "$NetBSD: getnetbyname.c,v 1.4 1995/02/25 06:20:31 cgd Exp $";
-#endif
+static char rcsid[] = "$OpenBSD: getnetbyname.c,v 1.3 1996/08/19 08:28:44 tholo Exp $";
 #endif /* LIBC_SCCS and not lint */
 
 #include <netdb.h>
@@ -47,7 +41,7 @@ static char rcsid[] = "$NetBSD: getnetbyname.c,v 1.4 1995/02/25 06:20:31 cgd Exp
 extern int _net_stayopen;
 
 struct netent *
-getnetbyname(name)
+_getnetbyname(name)
 	register const char *name;
 {
 	register struct netent *p;
@@ -55,10 +49,10 @@ getnetbyname(name)
 
 	setnetent(_net_stayopen);
 	while (p = getnetent()) {
-		if (strcmp(p->n_name, name) == 0)
+		if (strcasecmp(p->n_name, name) == 0)
 			break;
 		for (cp = p->n_aliases; *cp != 0; cp++)
-			if (strcmp(*cp, name) == 0)
+			if (strcasecmp(*cp, name) == 0)
 				goto found;
 	}
 found:

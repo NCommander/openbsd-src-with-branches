@@ -1,4 +1,4 @@
-/*	$NetBSD: main.c,v 1.2 1995/03/21 12:05:07 cgd Exp $	*/
+/*	$NetBSD: main.c,v 1.5 1996/05/21 21:53:09 mrg Exp $	*/
 
 /*-
  * Copyright (c) 1991, 1993
@@ -48,29 +48,31 @@ static char copyright[] =
 #if 0
 static char sccsid[] = "@(#)main.c	8.1 (Berkeley) 6/2/93";
 #else
-static char rcsid[] = "$NetBSD: main.c,v 1.2 1995/03/21 12:05:07 cgd Exp $";
+static char rcsid[] = "$NetBSD: main.c,v 1.5 1996/05/21 21:53:09 mrg Exp $";
 #endif
 #endif /* not lint */
 
 /*      Re-coding of advent in C: main program                          */
 
 #include <sys/file.h>
+#include <signal.h>
 #include <stdio.h>
 #include "hdr.h"
-
 
 main(argc,argv)
 int argc;
 char **argv;
 {
-	extern int errno;
 	register int i;
 	int rval,ll;
 	struct text *kk;
 	extern trapdel();
 
+	egid = getegid();
+	setegid(getgid());
+
 	init();         /* Initialize everything */
-	signal(2,trapdel);
+	signal(SIGINT,trapdel);
 
 	if (argc > 1)   /* Restore file specified */
 	{               /* Restart is label 8305 (Fortran) */
@@ -122,7 +124,7 @@ char **argv;
 		if (loc==33 && pct(25)&&!closng) rspeak(8);
 		if (!dark(0))
 		{       abb[loc]++;
-			for (i=atloc[loc]; i!=0; i=link[i])     /*2004  */
+			for (i=atloc[loc]; i!=0; i=linkx[i])     /*2004  */
 			{       obj=i;
 				if (obj>100) obj -= 100;
 				if (obj==steps && toting(nugget)) continue;
@@ -266,7 +268,7 @@ char **argv;
 	l4080:
 		switch(verb)
 		{   case 1:                     /* take = 8010          */
-			if (atloc[loc]==0||link[atloc[loc]]!=0) goto l8000;
+			if (atloc[loc]==0||linkx[atloc[loc]]!=0) goto l8000;
 			for (i=1; i<=5; i++)
 				if (dloc[i]==loc&&dflag>=2) goto l8000;
 			obj=atloc[loc];

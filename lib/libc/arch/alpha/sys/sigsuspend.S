@@ -1,4 +1,5 @@
-/*	$NetBSD: sigsuspend.S,v 1.1 1995/02/10 17:50:43 cgd Exp $	*/
+/*	$OpenBSD: sigsuspend.S,v 1.2 1996/10/17 03:08:22 cgd Exp $	*/
+/*	$NetBSD: sigsuspend.S,v 1.2 1996/10/17 03:08:22 cgd Exp $	*/
 
 /*
  * Copyright (c) 1994, 1995 Carnegie-Mellon University.
@@ -29,9 +30,14 @@
 
 #include "SYS.h"
 
+#if defined(SYSLIBC_SCCS)
+	.text
+	.asciz "$OpenBSD: sigsuspend.S,v 1.2 1996/08/19 08:11:20 tholo Exp $"
+#endif /* SYSLIBC_SCCS */
+
 LEAF(sigsuspend, 1)
 	ldl	a0, 0(a0)		/* pass *mask instead of mask */
-	SYSCALL_NOLABEL(sigsuspend)
+	CALLSYS_ERROR(sigsuspend)
 	mov	zero, v0		/* shouldn't need; just in case... */
 	RET
 END(sigsuspend)

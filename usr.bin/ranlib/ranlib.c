@@ -1,3 +1,5 @@
+/*	$OpenBSD: ranlib.c,v 1.2 1996/06/26 05:38:06 deraadt Exp $	*/
+
 /*-
  * Copyright (c) 1990 The Regents of the University of California.
  * All rights reserved.
@@ -42,7 +44,7 @@ char copyright[] =
 
 #ifndef lint
 /*static char sccsid[] = "from: @(#)ranlib.c	5.6 (Berkeley) 2/26/91";*/
-static char rcsid[] = "$Id: ranlib.c,v 1.3 1994/03/03 10:20:10 pk Exp $";
+static char rcsid[] = "$OpenBSD: ranlib.c,v 1.2 1996/06/26 05:38:06 deraadt Exp $";
 #endif /* not lint */
 
 #include <sys/types.h>
@@ -62,7 +64,7 @@ main(argc, argv)
 	int ch, eval, tflag;
 
 	tflag = 0;
-	while ((ch = getopt(argc, argv, "t")) != EOF)
+	while ((ch = getopt(argc, argv, "t")) != -1)
 		switch(ch) {
 		case 't':
 			tflag = 1;

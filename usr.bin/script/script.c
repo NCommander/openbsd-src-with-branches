@@ -1,3 +1,4 @@
+/*	$OpenBSD: script.c,v 1.3 1997/01/15 23:43:11 millert Exp $	*/
 /*	$NetBSD: script.c,v 1.3 1994/12/21 08:55:43 jtc Exp $	*/
 
 /*
@@ -43,7 +44,7 @@ static char copyright[] =
 #if 0
 static char sccsid[] = "@(#)script.c	8.1 (Berkeley) 6/6/93";
 #endif
-static char rcsid[] = "$NetBSD: script.c,v 1.3 1994/12/21 08:55:43 jtc Exp $";
+static char rcsid[] = "$OpenBSD: script.c,v 1.3 1997/01/15 23:43:11 millert Exp $";
 #endif /* not lint */
 
 #include <sys/types.h>
@@ -91,7 +92,7 @@ main(argc, argv)
 	char ibuf[BUFSIZ];
 
 	aflg = 0;
-	while ((ch = getopt(argc, argv, "a")) != EOF)
+	while ((ch = getopt(argc, argv, "a")) != -1)
 		switch(ch) {
 		case 'a':
 			aflg = 1;
@@ -213,7 +214,7 @@ doshell()
 	(void)close(master);
 	(void)fclose(fscript);
 	login_tty(slave);
-	execl(shell, "sh", "-i", NULL);
+	execl(shell, shell, "-i", NULL);
 	perror(shell);
 	fail();
 }

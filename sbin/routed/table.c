@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: $	*/
 
 /*
  * Copyright (c) 1983, 1988, 1993
@@ -1660,12 +1660,8 @@ rtswitch(struct rt_entry *rt,
 
 
 	/* Do not change permanent routes */
-	if (0 != (rt->rt_state & RS_PERMANENT))
-		return;
-
-	/* Do not discard synthetic routes until they go bad */
-	if ((rt->rt_state & RS_NET_SYN)
-	    && rt->rt_metric < HOPCNT_INFINITY)
+	if (0 != (rt->rt_state & (RS_MHOME | RS_STATIC | RS_RDISC
+				  | RS_NET_SYN | RS_IF)))
 		return;
 
 	/* find the best alternative among the spares */

@@ -1,3 +1,5 @@
+/*	$OpenBSD: finger.c,v 1.5 1997/01/15 23:42:28 millert Exp $	*/
+
 /*
  * Copyright (c) 1989 The Regents of the University of California.
  * All rights reserved.
@@ -46,7 +48,7 @@ char copyright[] =
 
 #ifndef lint
 /*static char sccsid[] = "from: @(#)finger.c	5.22 (Berkeley) 6/29/90";*/
-static char rcsid[] = "$Id: finger.c,v 1.4 1994/12/24 16:33:46 cgd Exp $";
+static char rcsid[] = "$OpenBSD: finger.c,v 1.5 1997/01/15 23:42:28 millert Exp $";
 #endif /* not lint */
 
 /*
@@ -69,24 +71,32 @@ static char rcsid[] = "$Id: finger.c,v 1.4 1994/12/24 16:33:46 cgd Exp $";
 #include "finger.h"
 
 time_t now;
-int lflag, sflag, mflag, pplan;
+int lflag, sflag, mflag, pplan, Mflag;
 char tbuf[1024];
 
+int	loginlist __P((void));
+void	userlist __P((int, char **));
+
+int
 main(argc, argv)
 	int argc;
 	char **argv;
 {
 	extern int optind;
 	int ch;
+	char domain[256];
 	time_t time();
 
-	while ((ch = getopt(argc, argv, "lmps")) != EOF)
+	while ((ch = getopt(argc, argv, "lmMps")) != -1)
 		switch(ch) {
 		case 'l':
 			lflag = 1;		/* long format */
 			break;
 		case 'm':
 			mflag = 1;		/* force exact match of names */
+			break;
+		case 'M':
+			Mflag = 1;		/* allow name matching */
 			break;
 		case 'p':
 			pplan = 1;		/* don't show .plan/.project */
@@ -97,11 +107,15 @@ main(argc, argv)
 		case '?':
 		default:
 			(void)fprintf(stderr,
-			    "usage: finger [-lmps] [login ...]\n");
+			    "usage: finger [-lmMps] [login ...]\n");
 			exit(1);
 		}
 	argc -= optind;
 	argv += optind;
+
+	/* if a domainname is set, increment mflag. */
+	if ((getdomainname(&domain, sizeof(domain)) == 0) && domain[0])
+		mflag++;
 
 	(void)time(&now);
 	setpassent(1);
@@ -135,6 +149,7 @@ main(argc, argv)
 	exit(0);
 }
 
+int
 loginlist()
 {
 	register PERSON *pn;
@@ -162,6 +177,7 @@ loginlist()
 		enter_lastlog(pn);
 }
 
+void
 userlist(argc, argv)
 	register argc;
 	register char **argv;
@@ -172,7 +188,6 @@ userlist(argc, argv)
 	struct utmp user;
 	struct passwd *pw;
 	int dolocal, *used;
-	char *index();
 
 	if (!(used = (int *)calloc((u_int)argc, (u_int)sizeof(int)))) {
 		(void)fprintf(stderr, "finger: out of space.\n");
@@ -181,7 +196,7 @@ userlist(argc, argv)
 
 	/* pull out all network requests */
 	for (i = 0, dolocal = 0, nettail = &nethead; i < argc; i++) {
-		if (!index(argv[i], '@')) {
+		if (!strchr(argv[i], '@')) {
 			dolocal = 1;
 			continue;
 		}
@@ -200,7 +215,7 @@ userlist(argc, argv)
 	 * traverse the list of possible login names and check the login name
 	 * and real name against the name specified by the user.
 	 */
-	if (mflag) {
+	if ((mflag - Mflag) > 0) {
 		for (i = 0; i < argc; i++)
 			if (used[i] >= 0 && (pw = getpwnam(argv[i]))) {
 				enter_person(pw);

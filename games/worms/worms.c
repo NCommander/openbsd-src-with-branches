@@ -211,11 +211,15 @@ main(argc, argv)
 	struct winsize ws;
 #endif
 
+	/* revoke */
+	setegid(getgid());
+	setgid(getgid());
+
 	length = 16;
 	number = 3;
 	trail = ' ';
 	field = NULL;
-	while ((ch = getopt(argc, argv, "fl:n:t")) != EOF)
+	while ((ch = getopt(argc, argv, "fl:n:t")) != -1)
 		switch(ch) {
 		case 'f':
 			field = "WORM";

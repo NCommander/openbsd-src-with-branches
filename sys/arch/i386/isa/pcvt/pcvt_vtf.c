@@ -1,3 +1,5 @@
+/*	$OpenBSD$	*/
+
 /*
  * Copyright (c) 1992, 1995 Hellmuth Michaelis and Joerg Wunsch.
  *
@@ -320,20 +322,21 @@ vt_clreos(struct video_state *svsp)
 	switch(svsp->parms[0])
 	{
 		case 0:
-			fillw(user_attr | ' ', svsp->Crtat + svsp->cur_offset,
+			fillw(user_attr | ' ',
+				(caddr_t)(svsp->Crtat + svsp->cur_offset),
 				svsp->Crtat +
 				(svsp->maxcol * svsp->screen_rows) -
 				(svsp->Crtat + svsp->cur_offset));
 			break;
 
 		case 1:
-			fillw(user_attr | ' ', svsp->Crtat,
+			fillw(user_attr | ' ', (caddr_t)(svsp->Crtat),
 				svsp->Crtat + svsp->cur_offset -
 				svsp->Crtat + 1 );
 			break;
 
 		case 2:
-			fillw(user_attr | ' ', svsp->Crtat,
+			fillw(user_attr | ' ', (caddr_t)(svsp->Crtat),
 				svsp->maxcol * svsp->screen_rows);
 			break;
 	}
@@ -349,19 +352,19 @@ vt_clreol(struct video_state *svsp)
 	{
 		case 0:
 			fillw(user_attr | ' ',
-				svsp->Crtat + svsp->cur_offset,
+				(caddr_t)(svsp->Crtat + svsp->cur_offset),
 				svsp->maxcol-svsp->col);
 			break;
 
 		case 1:
-			fillw(user_attr | ' ',
-				svsp->Crtat + svsp->cur_offset - svsp->col,
+			fillw(user_attr | ' ',(caddr_t)
+				(svsp->Crtat + svsp->cur_offset - svsp->col),
 				svsp->col + 1);
 			break;
 
 		case 2:
-			fillw(user_attr | ' ',
-				svsp->Crtat + svsp->cur_offset - svsp->col,
+			fillw(user_attr | ' ',(caddr_t)
+				(svsp->Crtat + svsp->cur_offset - svsp->col),
 				svsp->maxcol);
 			break;
 	}
@@ -438,7 +441,8 @@ vt_curadr(struct video_state *svsp)
 void
 vt_ris(struct video_state *svsp)
 {
-	fillw(user_attr | ' ', svsp->Crtat, svsp->maxcol * svsp->screen_rows);
+	fillw(user_attr | ' ',
+		(caddr_t)(svsp->Crtat), svsp->maxcol * svsp->screen_rows);
 	svsp->cur_offset = 0;		/* cursor upper left corner */
 	svsp->col = 0;
 	svsp->row = 0;
@@ -1295,7 +1299,7 @@ vt_il(struct video_state *svsp)
 			  svsp->maxcol * (svsp->scrr_end-svsp->row+1-p) * CHR );
 
 		    fillw(user_attr | ' ',
-			  svsp->Crtat + svsp->cur_offset,
+			  (caddr_t)(svsp->Crtat + svsp->cur_offset),
 			  p * svsp->maxcol);
 		}
 	}
@@ -1351,8 +1355,8 @@ vt_dl(struct video_state *svsp)
 			  svsp->Crtat + svsp->cur_offset,
 			  svsp->maxcol * (svsp->scrr_end-svsp->row+1-p) * CHR );
 
-		    fillw(user_attr | ' ',
-			  svsp->Crtat + ((svsp->scrr_end-p+1) * svsp->maxcol),
+		    fillw(user_attr | ' ',(caddr_t)
+			  (svsp->Crtat + ((svsp->scrr_end-p+1) * svsp->maxcol)),
 			  p * svsp->maxcol);
 		}
 	}
@@ -1427,7 +1431,7 @@ vt_ech(struct video_state *svsp)
 	else if(p > svsp->maxcol-svsp->col)
 		p = svsp->maxcol-svsp->col;
 
-	fillw(user_attr | ' ', (svsp->Crtat + svsp->cur_offset), p);
+	fillw(user_attr | ' ', (caddr_t)(svsp->Crtat + svsp->cur_offset), p);
 }
 
 /*---------------------------------------------------------------------------*
@@ -2009,14 +2013,6 @@ roll_up(struct video_state *svsp, int n)
 		{
 			svsp->Crtat += n * svsp->maxcol;
 		}
-
-		if(vsp == svsp && !(vsp->vt_status & VT_GRAFX))
-		{
-			outb(addr_6845, CRTC_STARTADRH);
-			outb(addr_6845+1, (svsp->Crtat - Crtat) >> 8);
-			outb(addr_6845, CRTC_STARTADRL);
-			outb(addr_6845+1, (svsp->Crtat - Crtat));
-		}
 	}
 	else
 #endif
@@ -2026,8 +2022,8 @@ roll_up(struct video_state *svsp, int n)
 			svsp->maxcol * (svsp->scrr_len - n) * CHR );
 	}
 
-	fillw(	user_attr | ' ',
-		svsp->Crtat + ((svsp->scrr_end - n + 1) * svsp->maxcol),
+	fillw(	user_attr | ' ',(caddr_t)
+		(svsp->Crtat + ((svsp->scrr_end - n + 1) * svsp->maxcol)),
 		n * svsp->maxcol);
 
 /*XXX*/	if(svsp->scroll_lock && svsp->openf && curproc)
@@ -2071,14 +2067,6 @@ roll_down(struct video_state *svsp, int n)
 		{
 			svsp->Crtat -= n * svsp->maxcol;
 		}
-
-		if(vsp == svsp && !(vsp->vt_status & VT_GRAFX))
-		{
-			outb(addr_6845, CRTC_STARTADRH);
-			outb(addr_6845+1, (svsp->Crtat - Crtat) >> 8);
-			outb(addr_6845, CRTC_STARTADRL);
-			outb(addr_6845+1, (svsp->Crtat - Crtat));
-		}
 	}
 	else
 #endif
@@ -2088,8 +2076,8 @@ roll_down(struct video_state *svsp, int n)
 			svsp->maxcol * (svsp->scrr_len - n) * CHR );
 	}
 
-	fillw(	user_attr | ' ',
-		svsp->Crtat + (svsp->scrr_beg * svsp->maxcol),
+	fillw(	user_attr | ' ',(caddr_t)
+		(svsp->Crtat + (svsp->scrr_beg * svsp->maxcol)),
 		n * svsp->maxcol);
 
 /*XXX*/	if(svsp->scroll_lock && svsp->openf && curproc)

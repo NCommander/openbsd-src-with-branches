@@ -1,4 +1,4 @@
-/*	$NetBSD: disksubr.c,v 1.6 1995/08/04 02:34:24 jonathan Exp $	*/
+/*	$NetBSD: disksubr.c,v 1.13 1996/10/13 03:39:49 christos Exp $	*/
 
 /*
  * Copyright (c) 1982, 1986, 1988 Regents of the University of California.
@@ -35,11 +35,13 @@
  *	@(#)ufs_disksubr.c	7.16 (Berkeley) 5/4/91
  */
 
-#include "param.h"
-#include "systm.h"
-#include "buf.h"
-#include "disklabel.h"
-#include "syslog.h"
+#include <sys/param.h>
+#include <sys/systm.h>
+#include <sys/buf.h>
+#include <sys/device.h>
+#include <sys/disk.h>
+#include <sys/disklabel.h>
+#include <sys/syslog.h>
 
 #define	b_cylin	b_resid
 
@@ -47,11 +49,14 @@
 #include "../../stand/dec_boot.h"
 
 extern char *
-compat_label __P((dev_t dev, void (*strat)(),
+compat_label __P((dev_t dev, void (*strat) __P((struct buf *bp)),
 		  struct disklabel *lp, struct cpu_disklabel *osdep));
 
 #endif
 
+char*	readdisklabel __P((dev_t dev, void (*strat) __P((struct buf *bp)),
+		       register struct disklabel *lp,
+		       struct cpu_disklabel *osdep));
 
 /*
  * Attempt to read a disk label from a device
@@ -64,7 +69,7 @@ compat_label __P((dev_t dev, void (*strat)(),
 char *
 readdisklabel(dev, strat, lp, osdep)
 	dev_t dev;
-	void (*strat)();
+	void (*strat) __P((struct buf *bp));
 	register struct disklabel *lp;
 	struct cpu_disklabel *osdep;
 {
@@ -116,7 +121,7 @@ readdisklabel(dev, strat, lp, osdep)
 char *
 compat_label(dev, strat, lp, osdep)
 	dev_t dev;
-	void (*strat)();
+	void (*strat) __P((struct buf *bp));
 	register struct disklabel *lp;
 	struct cpu_disklabel *osdep;
 {
@@ -188,6 +193,7 @@ done:
  * Check new disk label for sensibility
  * before setting it.
  */
+int
 setdisklabel(olp, nlp, openmask, osdep)
 	register struct disklabel *olp, *nlp;
 	u_long openmask;
@@ -233,9 +239,10 @@ setdisklabel(olp, nlp, openmask, osdep)
 /*
  * Write disk label back to device after modification.
  */
+int
 writedisklabel(dev, strat, lp, osdep)
 	dev_t dev;
-	void (*strat)();
+	void (*strat) __P((struct buf *bp));
 	register struct disklabel *lp;
 	struct cpu_disklabel *osdep;
 {
@@ -256,7 +263,7 @@ writedisklabel(dev, strat, lp, osdep)
 	bp->b_bcount = lp->d_secsize;
 	bp->b_flags = B_READ;
 	(*strat)(bp);
-	if (error = biowait(bp))
+	if ((error = biowait(bp)) != 0)
 		goto done;
 	for (dlp = (struct disklabel *)bp->b_un.b_addr;
 	    dlp <= (struct disklabel *)
@@ -281,14 +288,14 @@ done:
 /*
  * was this the boot device ?
  */
-int
+void
 dk_establish(dk, dev)
-	struct dkdevice *dk;
+	struct disk *dk;
 	struct device *dev;
 {
 	/* see also arch/alpha/alpha/disksubr.c */
 	printf("Warning: boot path unknown\n");
-	return 1;
+	return;
 }
 
 /* 
@@ -304,38 +311,39 @@ bounds_check_with_label(bp, lp, wlabel)
 	struct disklabel *lp;
 	int wlabel;
 {
-
-	struct partition *p = lp->d_partitions + dkpart(bp->b_dev);
-	int labelsect = lp->d_partitions[0].p_offset;
-	int maxsz = p->p_size;
-	int sz = (bp->b_bcount + DEV_BSIZE - 1) >> DEV_BSHIFT;
+#define blockpersec(count, lp) ((count) * (((lp)->d_secsize) / DEV_BSIZE))
+	struct partition *p = lp->d_partitions + DISKPART(bp->b_dev);
+	int labelsect = blockpersec(lp->d_partitions[0].p_offset, lp) +
+	    LABELSECTOR;
+	int sz = howmany(bp->b_bcount, DEV_BSIZE);
 
 	/* overwriting disk label ? */
 	/* XXX should also protect bootstrap in first 8K */ 
-	if (bp->b_blkno + p->p_offset <= LABELSECTOR + labelsect &&
+	if (bp->b_blkno + blockpersec(p->p_offset, lp) <= labelsect &&
 	    (bp->b_flags & B_READ) == 0 && wlabel == 0) {
 		bp->b_error = EROFS;
 		goto bad;
 	}
 
 	/* beyond partition? */ 
-	if (bp->b_blkno < 0 || bp->b_blkno + sz > maxsz) {
-		/* if exactly at end of disk, return an EOF */
-		if (bp->b_blkno == maxsz) {
+	if (bp->b_blkno + sz > blockpersec(p->p_size, lp)) {
+		sz = blockpersec(p->p_size, lp) - bp->b_blkno;
+		if (sz == 0) {
+			/* if exactly at end of disk, return an EOF */
 			bp->b_resid = bp->b_bcount;
 			return(0);
 		}
-		/* or truncate if part of it fits */
-		sz = maxsz - bp->b_blkno;
-		if (sz <= 0) {
+		if (sz < 0) {
 			bp->b_error = EINVAL;
 			goto bad;
 		}
+		/* or truncate if part of it fits */
 		bp->b_bcount = sz << DEV_BSHIFT;
 	}               
 
 	/* calculate cylinder for disksort to order transfers with */
-	bp->b_resid = (bp->b_blkno + p->p_offset) / lp->d_secpercyl;
+	bp->b_resid = (bp->b_blkno + blockpersec(p->p_offset, lp)) /
+	    lp->d_secpercyl;
 	return(1);
 bad:
 	bp->b_flags |= B_ERROR;

@@ -1,4 +1,5 @@
-/*	$NetBSD: main.c,v 1.6 1995/03/18 14:55:02 cgd Exp $	*/
+/*	$OpenBSD: main.c,v 1.15 1997/02/25 17:37:20 millert Exp $	*/
+/*	$NetBSD: main.c,v 1.8 1996/03/15 22:39:32 scottr Exp $	*/
 
 /*-
  * Copyright (c) 1980, 1991, 1993, 1994
@@ -43,7 +44,7 @@ static char copyright[] =
 #if 0
 static char sccsid[] = "@(#)main.c	8.4 (Berkeley) 4/15/94";
 #else
-static char rcsid[] = "$NetBSD: main.c,v 1.6 1995/03/18 14:55:02 cgd Exp $";
+static char rcsid[] = "$NetBSD: main.c,v 1.8 1996/03/15 22:39:32 scottr Exp $";
 #endif
 #endif /* not lint */
 
@@ -66,6 +67,7 @@ static char rcsid[] = "$NetBSD: main.c,v 1.6 1995/03/18 14:55:02 cgd Exp $";
 #include <errno.h>
 #include <fcntl.h>
 #include <fstab.h>
+#include <paths.h>
 #include <signal.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -88,10 +90,12 @@ int	cartridge = 0;	/* Assume non-cartridge tape */
 long	dev_bsize = 1;	/* recalculated below */
 long	blocksperfile;	/* output blocks per file */
 char	*host = NULL;	/* remote host (if any) */
+int	maxbsize = 64*1024;	/* XXX MAXBSIZE from sys/param.h */
 
 static long numarg __P((char *, long, long));
 static void obsolete __P((int *, char **[]));
 static void usage __P((void));
+
 
 int
 main(argc, argv)
@@ -111,7 +115,8 @@ main(argc, argv)
 	(void)time((time_t *)&spcl.c_date);
 
 	tsize = 0;	/* Default later, based on 'c' option for cart tapes */
-	tape = _PATH_DEFTAPE;
+	if ((tape = getenv("TAPE")) == NULL)
+		tape = _PATH_DEFTAPE;
 	dumpdates = _PATH_DUMPDATES;
 	temp = _PATH_DTMP;
 	if (TP_BSIZE / DEV_BSIZE == 0 || TP_BSIZE % DEV_BSIZE != 0)
@@ -122,7 +127,7 @@ main(argc, argv)
 		usage();
 
 	obsolete(&argc, &argv);
-	while ((ch = getopt(argc, argv, "0123456789B:b:cd:f:h:ns:T:uWw")) != -1)
+	while ((ch = getopt(argc, argv, "0123456789aB:b:cd:f:h:ns:T:uWw")) != -1)
 		switch (ch) {
 		/* dump level */
 		case '0': case '1': case '2': case '3': case '4':
@@ -136,6 +141,12 @@ main(argc, argv)
 
 		case 'b':		/* blocks per tape write */
 			ntrec = numarg("blocks per write", 1L, 1000L);
+			if (ntrec > maxbsize/1024) {
+				msg("Please choose a blocksize <= %dKB\n",
+				    maxbsize/1024);
+				exit(X_ABORT);
+			}
+			bflag = 1;
 			break;
 
 		case 'c':		/* Tape is cart. not 9-track */
@@ -184,6 +195,10 @@ main(argc, argv)
 			lastdump(ch);
 			exit(0);	/* do nothing else */
 
+		case 'a':		/* `auto-size', Write to EOM. */
+			unlimited = 1;
+			break;
+
 		default:
 			usage();
 		}
@@ -215,7 +230,7 @@ main(argc, argv)
 
 	if (blocksperfile)
 		blocksperfile = blocksperfile / ntrec * ntrec; /* round down */
-	else {
+	else if (!unlimited) {
 		/*
 		 * Determine how to default tape size and density
 		 *
@@ -243,7 +258,6 @@ main(argc, argv)
 		exit(X_ABORT);
 #endif
 	}
-	(void)setuid(getuid()); /* rmthost() is the only reason to be setuid */
 
 	if (signal(SIGHUP, SIG_IGN) != SIG_IGN)
 		signal(SIGHUP, sig);
@@ -260,7 +274,6 @@ main(argc, argv)
 	if (signal(SIGINT, interrupt) == SIG_IGN)
 		signal(SIGINT, SIG_IGN);
 
-	set_operators();	/* /etc/group snarfed */
 	getfstab();		/* /etc/fstab snarfed */
 	/*
 	 *	disk can be either the full special file name,
@@ -334,7 +347,7 @@ main(argc, argv)
 		anydirskipped = mapdirs(maxino, &tapesize);
 	}
 
-	if (pipeout) {
+	if (pipeout || unlimited) {
 		tapesize += 10;	/* 10 trailer blocks */
 		msg("estimated %ld tape blocks.\n", tapesize);
 	} else {
@@ -432,10 +445,11 @@ main(argc, argv)
 	for (i = 0; i < ntrec; i++)
 		writeheader(maxino - 1);
 	if (pipeout)
-		msg("DUMP: %ld tape blocks\n",spcl.c_tapea);
+		msg("%ld tape blocks\n", spcl.c_tapea);
 	else
-		msg("DUMP: %ld tape blocks on %d volumes(s)\n",
-		    spcl.c_tapea, spcl.c_volume);
+		msg("%ld tape blocks on %d volume%s\n",
+		    spcl.c_tapea, spcl.c_volume,
+		    spcl.c_volume > 1 ? "s" : "");
 	putdumptime();
 	trewind();
 	broadcast("DUMP IS DONE!\7\7\n");
@@ -510,10 +524,11 @@ rawname(cp)
 	if (dp == NULL)
 		return (NULL);
 	*dp = '\0';
-	(void)strcpy(rawbuf, cp);
+	(void)strncpy(rawbuf, cp, MAXPATHLEN-1);
+	rawbuf[MAXPATHLEN-1] = '\0';
 	*dp = '/';
-	(void)strcat(rawbuf, "/r");
-	(void)strcat(rawbuf, dp + 1);
+	(void)strncat(rawbuf, "/r", MAXPATHLEN - strlen(rawbuf));
+	(void)strncat(rawbuf, dp + 1, MAXPATHLEN - strlen(rawbuf));
 	return (rawbuf);
 }
 
@@ -585,7 +600,8 @@ obsolete(argcp, argvp)
 	}
 
 	/* Copy remaining arguments. */
-	while (*nargv++ = *argv++);
+	while ((*nargv++ = *argv++))
+		;
 
 	/* Update argument count. */
 	*argcp = nargv - *argvp - 1;

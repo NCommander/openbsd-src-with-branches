@@ -30,7 +30,7 @@
 .\" SUCH DAMAGE.
 .\"
 .\"	from: @(#)mail.local.8	6.8 (Berkeley) 4/27/91
-.\"	$Id: mail.local.8,v 1.3 1993/08/01 07:40:11 mycroft Exp $
+.\"	$Id: mail.local.8,v 1.7 1996/12/05 15:00:40 deraadt Exp $
 .\"
 .Dd April 27, 1991
 .Dt MAIL.LOCAL 8
@@ -40,8 +40,10 @@
 .Nd store mail in a mailbox
 .Sh SYNOPSIS
 .Nm mail.local
+.Op Fl L
 .Op Fl l
 .Op Fl f Ar from
+.Op Fl H
 .Ar user ...
 .Sh DESCRIPTION
 .Nm Mail.local
@@ -58,9 +60,25 @@ The options are as follows:
 .It Fl f Ar from
 Specify the sender's name.
 .It Fl l
-Request that
+For compatibility, request that
 .Nm username.lock
-files be used for locking.
+files be used for locking.  (This done by default anyway.)
+.It Fl L
+Request that
+.Fn flock
+be used for locking the mail spool rather than
+.Nm username.lock .
+.It Fl H
+This mode is useful for a client mail program to attain proper locking.
+In this mode
+.Nm mail.local
+(ignoring all other arguments) attains a
+.Nm username.lock
+for the calling user and retains it until stdin is closed or a signal
+like SIGINT, SIGTERM, or SIGHUP is received.  If
+.Nm mail.local
+is able to create the lock file, ``1'' is written to stdout, otherwise
+``0'' is written and an error message is written to stderr.
 .El
 .Pp
 Individual mail messages in the mailbox are delimited by an empty
@@ -71,11 +89,22 @@ A blank line is appended to each message.
 A greater-than character (``>'') is prepended to any line in the message
 which could be mistaken for a ``From '' delimiter line.
 .Pp
-If the
-.Op Fl l
-flag is specified mailbox locking is done with
+Efforts have been made so that
+.Nm mail.local
+act as securely as possible if the spool directory modes are 1777 or 755.
+The default of 755 is more secure, but prevents mail clients from using all
+styles of locking.  The use of 1777 is more flexible in an NFS shared-spool
+environment, thus many sites use it.  However it does carry some risks, such
+as attackers filling it up.  Some of these problems may be alleviated by
+making the spool a seperate filesystem, and placing quotas on it.
+The use of any mode besides 1777 and 755 for the spool directory is
+recommended against, but may work properly.
+.Pp
+By default, mailbox locking is done with
 .Nm username.lock
-files. Otherwise, the mailbox is exclusively locked with
+files. However, if the
+.Fl L
+flag is specified, the mailbox is exclusively locked with
 .Xr flock 2
 while mail is appended.
 .Pp

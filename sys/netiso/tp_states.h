@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /*	$NetBSD: tp_states.h,v 1.4 1994/06/29 06:40:31 cgd Exp $	*/
 
 #define ST_ERROR 0x0

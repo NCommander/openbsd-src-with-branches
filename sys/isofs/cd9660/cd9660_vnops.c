@@ -1,4 +1,5 @@
-/*	$NetBSD: cd9660_vnops.c,v 1.24 1995/07/24 21:19:27 cgd Exp $	*/
+/*	$OpenBSD: cd9660_vnops.c,v 1.4 1996/04/19 16:08:43 niklas Exp $	*/
+/*	$NetBSD: cd9660_vnops.c,v 1.32 1996/03/16 20:25:40 ws Exp $	*/
 
 /*-
  * Copyright (c) 1994
@@ -55,17 +56,38 @@
 #include <miscfs/specfs/specdev.h>
 #include <miscfs/fifofs/fifo.h>
 #include <sys/malloc.h>
-#include <sys/dir.h>
+#include <sys/dirent.h>
 
 #include <isofs/cd9660/iso.h>
 #include <isofs/cd9660/cd9660_node.h>
 #include <isofs/cd9660/iso_rrip.h>
+
+/*
+ * Structure for reading directories
+ */
+struct isoreaddir {
+	struct dirent saveent;
+	struct dirent assocent;
+	struct dirent current;
+	off_t saveoff;
+	off_t assocoff;
+	off_t curroff;
+	struct uio *uio;
+	off_t uio_off;
+	int eofflag;
+	u_long *cookies;
+	int ncookies;
+};
+
+int	iso_uiodir __P((struct isoreaddir *, struct dirent *, off_t));
+int	iso_shipdir __P((struct isoreaddir *));
 
 #if 0
 /*
  * Mknod vnode call
  *  Actually remap the device number
  */
+int
 cd9660_mknod(ndp, vap, cred, p)
 	struct nameidata *ndp;
 	struct ucred *cred;
@@ -125,13 +147,8 @@ cd9660_mknod(ndp, vap, cred, p)
  */
 /* ARGSUSED */
 int
-cd9660_open(ap)
-	struct vop_open_args /* {
-		struct vnode *a_vp;
-		int  a_mode;
-		struct ucred *a_cred;
-		struct proc *a_p;
-	} */ *ap;
+cd9660_open(v)
+	void *v;
 {
 	return (0);
 }
@@ -143,13 +160,8 @@ cd9660_open(ap)
  */
 /* ARGSUSED */
 int
-cd9660_close(ap)
-	struct vop_close_args /* {
-		struct vnode *a_vp;
-		int  a_fflag;
-		struct ucred *a_cred;
-		struct proc *a_p;
-	} */ *ap;
+cd9660_close(v)
+	void *v;
 {
 	return (0);
 }
@@ -159,16 +171,16 @@ cd9660_close(ap)
  * The mode is shifted to select the owner/group/other fields. The
  * super user is granted all permissions.
  */
-/* ARGSUSED */
 int
-cd9660_access(ap)
+cd9660_access(v)
+	void *v;
+{
 	struct vop_access_args /* {
 		struct vnode *a_vp;
 		int  a_mode;
 		struct ucred *a_cred;
 		struct proc *a_p;
-	} */ *ap;
-{
+	} */ *ap = v;
 	struct iso_node *ip = VTOI(ap->a_vp);
 
 	return (vaccess(ip->inode.iso_mode, ip->inode.iso_uid,
@@ -176,15 +188,15 @@ cd9660_access(ap)
 }
 
 int
-cd9660_getattr(ap)
+cd9660_getattr(v)
+	void *v;
+{
 	struct vop_getattr_args /* {
 		struct vnode *a_vp;
 		struct vattr *a_vap;
 		struct ucred *a_cred;
 		struct proc *a_p;
-	} */ *ap;
-
-{
+	} */ *ap = v;
 	struct vnode *vp = ap->a_vp;
 	register struct vattr *vap = ap->a_vap;
 	register struct iso_node *ip = VTOI(vp);
@@ -233,29 +245,29 @@ cd9660_getattr(ap)
 	return (0);
 }
 
-#if ISO_DEFAULT_BLOCK_SIZE >= NBPG
 #ifdef DEBUG
 extern int doclusterread;
 #else
 #define doclusterread 1
 #endif
-#else
+
 /* XXX until cluster routines can handle block sizes less than one page */
-#define doclusterread 0
-#endif
+#define cd9660_doclusterread \
+	(doclusterread && (ISO_DEFAULT_BLOCK_SIZE >= NBPG))
 
 /*
  * Vnode op for reading.
  */
 int
-cd9660_read(ap)
+cd9660_read(v)
+	void *v;
+{
 	struct vop_read_args /* {
 		struct vnode *a_vp;
 		struct uio *a_uio;
 		int a_ioflag;
 		struct ucred *a_cred;
-	} */ *ap;
-{
+	} */ *ap = v;
 	struct vnode *vp = ap->a_vp;
 	register struct uio *uio = ap->a_uio;
 	register struct iso_node *ip = VTOI(vp);
@@ -284,7 +296,7 @@ cd9660_read(ap)
 			n = diff;
 		size = blksize(imp, ip, lbn);
 		rablock = lbn + 1;
-		if (doclusterread) {
+		if (cd9660_doclusterread) {
 			if (lblktosize(imp, rablock) <= ip->i_size)
 				error = cluster_read(vp, (off_t)ip->i_size,
 						     lbn, size, NOCRED, &bp);
@@ -314,15 +326,8 @@ cd9660_read(ap)
 
 /* ARGSUSED */
 int
-cd9660_ioctl(ap)
-	struct vop_ioctl_args /* {
-		struct vnode *a_vp;
-		u_long a_command;
-		caddr_t  a_data;
-		int  a_fflag;
-		struct ucred *a_cred;
-		struct proc *a_p;
-	} */ *ap;
+cd9660_ioctl(v)
+	void *v;
 {
 	printf("You did ioctl for isofs !!\n");
 	return (ENOTTY);
@@ -330,16 +335,9 @@ cd9660_ioctl(ap)
 
 /* ARGSUSED */
 int
-cd9660_select(ap)
-	struct vop_select_args /* {
-		struct vnode *a_vp;
-		int  a_which;
-		int  a_fflags;
-		struct ucred *a_cred;
-		struct proc *a_p;
-	} */ *ap;
+cd9660_select(v)
+	void *v;
 {
-
 	/*
 	 * We should really check to see if I/O is possible.
 	 */
@@ -353,13 +351,8 @@ cd9660_select(ap)
  */
 /* ARGSUSED */
 int
-cd9660_mmap(ap)
-	struct vop_mmap_args /* {
-		struct vnode *a_vp;
-		int  a_fflags;
-		struct ucred *a_cred;
-		struct proc *a_p;
-	} */ *ap;
+cd9660_mmap(v)
+	void *v;
 {
 
 	return (EINVAL);
@@ -372,34 +365,12 @@ cd9660_mmap(ap)
  */
 /* ARGSUSED */
 int
-cd9660_seek(ap)
-	struct vop_seek_args /* {
-		struct vnode *a_vp;
-		off_t  a_oldoff;
-		off_t  a_newoff;
-		struct ucred *a_cred;
-	} */ *ap;
+cd9660_seek(v)
+	void *v;
 {
-
 	return (0);
 }
 
-/*
- * Structure for reading directories
- */
-struct isoreaddir {
-	struct dirent saveent;
-	struct dirent assocent;
-	struct dirent current;
-	off_t saveoff;
-	off_t assocoff;
-	off_t curroff;
-	struct uio *uio;
-	off_t uio_off;
-	int eofflag;
-	u_long *cookies;
-	int ncookies;
-};
 
 int
 iso_uiodir(idp,dp,off)
@@ -410,7 +381,7 @@ iso_uiodir(idp,dp,off)
 	int error;
 
 	dp->d_name[dp->d_namlen] = 0;
-	dp->d_reclen = DIRSIZ(dp);
+	dp->d_reclen = DIRENT_SIZE(dp);
 
 	if (idp->uio->uio_resid < dp->d_reclen) {
 		idp->eofflag = 0;
@@ -427,7 +398,7 @@ iso_uiodir(idp,dp,off)
 		--idp->ncookies;
 	}
 
-	if (error = uiomove(dp,dp->d_reclen,idp->uio))
+	if ((error = uiomove((caddr_t)dp, dp->d_reclen, idp->uio)) != 0)
 		return (error);
 	idp->uio_off = off;
 	return (0);
@@ -444,7 +415,8 @@ iso_shipdir(idp)
 
 	cl = idp->current.d_namlen;
 	cname = idp->current.d_name;
-	if (assoc = cl > 1 && *cname == ASSOCCHAR) {
+
+	if ((assoc = cl > 1 && *cname == ASSOCCHAR)) {
 		cl--;
 		cname++;
 	}
@@ -460,18 +432,22 @@ iso_shipdir(idp)
 		if (sl != cl
 		    || bcmp(sname,cname,sl)) {
 			if (idp->assocent.d_namlen) {
-				if (error = iso_uiodir(idp,&idp->assocent,idp->assocoff))
+				error = iso_uiodir(idp, &idp->assocent,
+						   idp->assocoff);
+				if (error)
 					return (error);
 				idp->assocent.d_namlen = 0;
 			}
 			if (idp->saveent.d_namlen) {
-				if (error = iso_uiodir(idp,&idp->saveent,idp->saveoff))
+				error = iso_uiodir(idp, &idp->saveent,
+						   idp->saveoff);
+				if (error)
 					return (error);
 				idp->saveent.d_namlen = 0;
 			}
 		}
 	}
-	idp->current.d_reclen = DIRSIZ(&idp->current);
+	idp->current.d_reclen = DIRENT_SIZE(&idp->current);
 	if (assoc) {
 		idp->assocoff = idp->curroff;
 		bcopy(&idp->current,&idp->assocent,idp->current.d_reclen);
@@ -486,7 +462,9 @@ iso_shipdir(idp)
  * Vnode op for readdir
  */
 int
-cd9660_readdir(ap)
+cd9660_readdir(v)
+	void *v;
+{
 	struct vop_readdir_args /* {
 		struct vnode *a_vp;
 		struct uio *a_uio;
@@ -494,8 +472,7 @@ cd9660_readdir(ap)
 		int *a_eofflag;
 		u_long *a_cookies;
 		int a_ncookies;
-	} */ *ap;
-{
+	} */ *ap = v;
 	register struct uio *uio = ap->a_uio;
 	struct isoreaddir *idp;
 	struct vnode *vdp = ap->a_vp;
@@ -544,8 +521,9 @@ cd9660_readdir(ap)
 		if ((idp->curroff & bmask) == 0) {
 			if (bp != NULL)
 				brelse(bp);
-			if (error =
-			    VOP_BLKATOFF(vdp, (off_t)idp->curroff, NULL, &bp))
+			error = VOP_BLKATOFF(vdp, (off_t)idp->curroff,
+					     NULL, &bp);
+			if (error)
 				break;
 			entryoffsetinblock = 0;
 		}
@@ -657,13 +635,14 @@ typedef struct iso_directory_record ISODIR;
 typedef struct iso_node             ISONODE;
 typedef struct iso_mnt              ISOMNT;
 int
-cd9660_readlink(ap)
+cd9660_readlink(v)
+	void *v;
+{
 	struct vop_readlink_args /* {
 		struct vnode *a_vp;
 		struct uio *a_uio;
 		struct ucred *a_cred;
-	} */ *ap;
-{
+	} */ *ap = v;
 	ISONODE	*ip;
 	ISODIR	*dirp;
 	ISOMNT	*imp;
@@ -744,17 +723,50 @@ cd9660_readlink(ap)
 	return (0);
 }
 
+int
+cd9660_link(v)
+	void *v;
+{
+	struct vop_link_args /* {
+		struct vnode *a_dvp;
+		struct vnode *a_vp;
+		struct componentname *a_cnp;
+	} */ *ap = v;
+
+	VOP_ABORTOP(ap->a_dvp, ap->a_cnp);
+	vput(ap->a_dvp);
+	return (EROFS);
+}
+
+int
+cd9660_symlink(v)
+	void *v;
+{
+	struct vop_symlink_args /* {
+		struct vnode *a_dvp;
+		struct vnode **a_vpp;
+		struct componentname *a_cnp;
+		struct vattr *a_vap;
+		char *a_target;
+	} */ *ap = v;
+
+	VOP_ABORTOP(ap->a_dvp, ap->a_cnp);
+	vput(ap->a_dvp);
+	return (EROFS);
+}
+
 /*
- * Ufs abort op, called after namei() when a CREATE/DELETE isn't actually
+ * cd9660 abort op, called after namei() when a CREATE/DELETE isn't actually
  * done. If a buffer has been saved in anticipation of a CREATE, delete it.
  */
 int
-cd9660_abortop(ap)
+cd9660_abortop(v)
+	void *v;
+{
 	struct vop_abortop_args /* {
 		struct vnode *a_dvp;
 		struct componentname *a_cnp;
-	} */ *ap;
-{
+	} */ *ap = v;
 	if ((ap->a_cnp->cn_flags & (HASBUF | SAVESTART)) == HASBUF)
 		FREE(ap->a_cnp->cn_pnbuf, M_NAMEI);
 	return (0);
@@ -764,14 +776,17 @@ cd9660_abortop(ap)
  * Lock an inode.
  */
 int
-cd9660_lock(ap)
+cd9660_lock(v)
+	void *v;
+{
 	struct vop_lock_args /* {
 		struct vnode *a_vp;
-	} */ *ap;
-{
+	} */ *ap = v;
 	register struct vnode *vp = ap->a_vp;
 	register struct iso_node *ip;
+#ifdef DIAGNOSTIC
 	struct proc *p = curproc;	/* XXX */
+#endif
 
 start:
 	while (vp->v_flag & VXLOCK) {
@@ -792,6 +807,7 @@ start:
 			ip->i_lockwaiter = -1;
 #endif
 		(void) sleep((caddr_t)ip, PINOD);
+		goto start;
 	}
 #ifdef DIAGNOSTIC
 	ip->i_lockwaiter = 0;
@@ -812,18 +828,20 @@ start:
  * Unlock an inode.
  */
 int
-cd9660_unlock(ap)
+cd9660_unlock(v)
+	void *v;
+{
 	struct vop_unlock_args /* {
 		struct vnode *a_vp;
-	} */ *ap;
-{
+	} */ *ap = v;
 	register struct iso_node *ip = VTOI(ap->a_vp);
-	struct proc *p = curproc;	/* XXX */
 
 #ifdef DIAGNOSTIC
+	struct proc *p = curproc;	/* XXX */
+
 	if ((ip->i_flag & IN_LOCKED) == 0) {
-		vprint("ufs_unlock: unlocked inode", ap->a_vp);
-		panic("ufs_unlock NOT LOCKED");
+		vprint("cd9660_unlock: unlocked inode", ap->a_vp);
+		panic("cd9660_unlock NOT LOCKED");
 	}
 	if (p && p->p_pid != ip->i_lockholder && p->p_pid > -1 &&
 	    ip->i_lockholder > -1/* && lockcount++ < 100*/)
@@ -844,11 +862,12 @@ cd9660_unlock(ap)
  * then call the device strategy routine.
  */
 int
-cd9660_strategy(ap)
+cd9660_strategy(v)
+	void *v;
+{
 	struct vop_strategy_args /* {
 		struct buf *a_bp;
-	} */ *ap;
-{
+	} */ *ap = v;
 	register struct buf *bp = ap->a_bp;
 	register struct vnode *vp = bp->b_vp;
 	register struct iso_node *ip;
@@ -858,8 +877,8 @@ cd9660_strategy(ap)
 	if (vp->v_type == VBLK || vp->v_type == VCHR)
 		panic("cd9660_strategy: spec");
 	if (bp->b_blkno == bp->b_lblkno) {
-		if (error =
-		    VOP_BMAP(vp, bp->b_lblkno, NULL, &bp->b_blkno, NULL)) {
+		error = VOP_BMAP(vp, bp->b_lblkno, NULL, &bp->b_blkno, NULL);
+		if (error) {
 			bp->b_error = error;
 			bp->b_flags |= B_ERROR;
 			biodone(bp);
@@ -881,13 +900,11 @@ cd9660_strategy(ap)
 /*
  * Print out the contents of an inode.
  */
+/*ARGSUSED*/
 int
-cd9660_print(ap)
-	struct vop_print_args /* {
-		struct vnode *a_vp;
-	} */ *ap;
+cd9660_print(v)
+	void *v;
 {
-
 	printf("tag VT_ISOFS, isofs vnode\n");
 	return (0);
 }
@@ -896,11 +913,12 @@ cd9660_print(ap)
  * Check for a locked inode.
  */
 int
-cd9660_islocked(ap)
+cd9660_islocked(v)
+	void *v;
+{
 	struct vop_islocked_args /* {
 		struct vnode *a_vp;
-	} */ *ap;
-{
+	} */ *ap = v;
 
 	if (VTOI(ap->a_vp)->i_flag & IN_LOCKED)
 		return (1);
@@ -911,14 +929,14 @@ cd9660_islocked(ap)
  * Return POSIX pathconf information applicable to cd9660 filesystems.
  */
 int
-cd9660_pathconf(ap)
+cd9660_pathconf(v)
+	void *v;
+{
 	struct vop_pathconf_args /* {
 		struct vnode *a_vp;
 		int a_name;
 		register_t *a_retval;
-	} */ *ap;
-{
-
+	} */ *ap = v;
 	switch (ap->a_name) {
 	case _PC_LINK_MAX:
 		*ap->a_retval = 1;
@@ -950,8 +968,10 @@ cd9660_pathconf(ap)
 /*
  * Unsupported operation
  */
+/*ARGSUSED*/
 int
-cd9660_enotsupp()
+cd9660_enotsupp(v)
+	void *v;
 {
 
 	return (EOPNOTSUPP);
@@ -960,47 +980,32 @@ cd9660_enotsupp()
 /*
  * Global vfs data structures for isofs
  */
-#define cd9660_create \
-	((int (*) __P((struct  vop_create_args *)))cd9660_enotsupp)
-#define cd9660_mknod ((int (*) __P((struct  vop_mknod_args *)))cd9660_enotsupp)
-#define cd9660_setattr \
-	((int (*) __P((struct  vop_setattr_args *)))cd9660_enotsupp)
-#define cd9660_write ((int (*) __P((struct  vop_write_args *)))cd9660_enotsupp)
-#ifdef NFSSERVER
-int	lease_check __P((struct vop_lease_args *));
-#define	cd9660_lease_check lease_check
+#define	cd9660_create	cd9660_enotsupp
+#define	cd9660_mknod	cd9660_enotsupp
+#define	cd9660_setattr	cd9660_enotsupp
+#define	cd9660_write	cd9660_enotsupp
+#ifdef	NFSSERVER
+int	lease_check	__P((void *));
+#define	cd9660_lease_check	lease_check
 #else
-#define	cd9660_lease_check ((int (*) __P((struct vop_lease_args *)))nullop)
+#define	cd9660_lease_check	nullop
 #endif
-#define cd9660_fsync ((int (*) __P((struct  vop_fsync_args *)))nullop)
-#define cd9660_remove \
-	((int (*) __P((struct  vop_remove_args *)))cd9660_enotsupp)
-#define cd9660_link ((int (*) __P((struct  vop_link_args *)))cd9660_enotsupp)
-#define cd9660_rename \
-	((int (*) __P((struct  vop_rename_args *)))cd9660_enotsupp)
-#define cd9660_mkdir ((int (*) __P((struct  vop_mkdir_args *)))cd9660_enotsupp)
-#define cd9660_rmdir ((int (*) __P((struct  vop_rmdir_args *)))cd9660_enotsupp)
-#define cd9660_symlink \
-	((int (*) __P((struct vop_symlink_args *)))cd9660_enotsupp)
-#define cd9660_advlock \
-	((int (*) __P((struct vop_advlock_args *)))cd9660_enotsupp)
-#define cd9660_valloc ((int(*) __P(( \
-		struct vnode *pvp, \
-		int mode, \
-		struct ucred *cred, \
-		struct vnode **vpp))) cd9660_enotsupp)
-#define cd9660_vfree ((int (*) __P((struct  vop_vfree_args *)))cd9660_enotsupp)
-#define cd9660_truncate \
-	((int (*) __P((struct  vop_truncate_args *)))cd9660_enotsupp)
-#define cd9660_update \
-	((int (*) __P((struct  vop_update_args *)))cd9660_enotsupp)
-#define cd9660_bwrite \
-	((int (*) __P((struct  vop_bwrite_args *)))cd9660_enotsupp)
+#define	cd9660_fsync	nullop
+#define	cd9660_remove	cd9660_enotsupp
+#define	cd9660_rename	cd9660_enotsupp
+#define	cd9660_mkdir	cd9660_enotsupp
+#define	cd9660_rmdir	cd9660_enotsupp
+#define	cd9660_advlock	cd9660_enotsupp
+#define	cd9660_valloc	cd9660_enotsupp
+#define	cd9660_vfree	cd9660_enotsupp
+#define	cd9660_truncate	cd9660_enotsupp
+#define	cd9660_update	cd9660_enotsupp
+#define	cd9660_bwrite	cd9660_enotsupp
 
 /*
  * Global vfs data structures for cd9660
  */
-int (**cd9660_vnodeop_p)();
+int (**cd9660_vnodeop_p) __P((void *));
 struct vnodeopv_entry_desc cd9660_vnodeop_entries[] = {
 	{ &vop_default_desc, vn_default_error },
 	{ &vop_lookup_desc, cd9660_lookup },	/* lookup */
@@ -1044,7 +1049,7 @@ struct vnodeopv_entry_desc cd9660_vnodeop_entries[] = {
 	{ &vop_truncate_desc, cd9660_truncate },/* truncate */
 	{ &vop_update_desc, cd9660_update },	/* update */
 	{ &vop_bwrite_desc, vn_bwrite },
-	{ (struct vnodeop_desc*)NULL, (int(*)())NULL }
+	{ (struct vnodeop_desc*)NULL, (int(*) __P((void *)))NULL }
 };
 struct vnodeopv_desc cd9660_vnodeop_opv_desc =
 	{ &cd9660_vnodeop_p, cd9660_vnodeop_entries };
@@ -1052,7 +1057,7 @@ struct vnodeopv_desc cd9660_vnodeop_opv_desc =
 /*
  * Special device vnode ops
  */
-int (**cd9660_specop_p)();
+int (**cd9660_specop_p) __P((void *));
 struct vnodeopv_entry_desc cd9660_specop_entries[] = {
 	{ &vop_default_desc, vn_default_error },
 	{ &vop_lookup_desc, spec_lookup },	/* lookup */
@@ -1096,13 +1101,13 @@ struct vnodeopv_entry_desc cd9660_specop_entries[] = {
 	{ &vop_truncate_desc, spec_truncate },	/* truncate */
 	{ &vop_update_desc, cd9660_update },	/* update */
 	{ &vop_bwrite_desc, vn_bwrite },
-	{ (struct vnodeop_desc*)NULL, (int(*)())NULL }
+	{ (struct vnodeop_desc*)NULL, (int(*) __P((void *)))NULL }
 };
 struct vnodeopv_desc cd9660_specop_opv_desc =
 	{ &cd9660_specop_p, cd9660_specop_entries };
 
 #ifdef FIFO
-int (**cd9660_fifoop_p)();
+int (**cd9660_fifoop_p) __P((void *));
 struct vnodeopv_entry_desc cd9660_fifoop_entries[] = {
 	{ &vop_default_desc, vn_default_error },
 	{ &vop_lookup_desc, fifo_lookup },	/* lookup */
@@ -1146,7 +1151,7 @@ struct vnodeopv_entry_desc cd9660_fifoop_entries[] = {
 	{ &vop_truncate_desc, fifo_truncate },	/* truncate */
 	{ &vop_update_desc, cd9660_update },	/* update */
 	{ &vop_bwrite_desc, vn_bwrite },
-	{ (struct vnodeop_desc*)NULL, (int(*)())NULL }
+	{ (struct vnodeop_desc*)NULL, (int(*) __P((void *)))NULL }
 };
 struct vnodeopv_desc cd9660_fifoop_opv_desc =
 	{ &cd9660_fifoop_p, cd9660_fifoop_entries };

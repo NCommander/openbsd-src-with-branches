@@ -1,3 +1,6 @@
+/*	$OpenBSD: aux.c,v 1.2 1996/06/11 12:53:32 deraadt Exp $	*/
+/*	$NetBSD: aux.c,v 1.4 1996/06/08 19:48:10 christos Exp $	*/
+
 /*
  * Copyright (c) 1980, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -32,8 +35,11 @@
  */
 
 #ifndef lint
-static char sccsid[] = "from: @(#)aux.c	8.1 (Berkeley) 6/6/93";
-static char rcsid[] = "$Id: aux.c,v 1.3 1994/06/29 05:09:05 deraadt Exp $";
+#if 0
+static char sccsid[] = "@(#)aux.c	8.1 (Berkeley) 6/6/93";
+#else
+static char rcsid[] = "$OpenBSD: aux.c,v 1.2 1996/06/11 12:53:32 deraadt Exp $";
+#endif
 #endif /* not lint */
 
 #include "rcv.h"
@@ -44,6 +50,7 @@ static char rcsid[] = "$Id: aux.c,v 1.3 1994/06/29 05:09:05 deraadt Exp $";
  *
  * Auxiliary functions.
  */
+static char *save2str __P((char *, char *));
 
 /*
  * Return a pointer to a dynamic copy of the argument.
@@ -63,7 +70,7 @@ savestr(str)
 /*
  * Make a copy of new argument incorporating old one.
  */
-char *
+static char *
 save2str(str, old)
 	char *str, *old;
 {
@@ -180,7 +187,7 @@ hfield(field, mp)
 	while (lc > 0) {
 		if ((lc = gethfield(ibuf, linebuf, lc, &colon)) < 0)
 			return oldhfield;
-		if (hfield = ishfield(linebuf, colon, field))
+		if ((hfield = ishfield(linebuf, colon, field)) != NULL)
 			oldhfield = save2str(hfield, oldhfield);
 	}
 	return oldhfield;
@@ -304,9 +311,10 @@ struct sstack {
  * that they are no longer reading from a tty (in all probability).
  */
 int
-source(arglist)
-	char **arglist;
+source(v)
+	void *v;
 {
+	char **arglist = v;
 	FILE *fi;
 	char *cp;
 
@@ -366,7 +374,6 @@ alter(name)
 {
 	struct stat sb;
 	struct timeval tv[2];
-	time_t time();
 
 	if (stat(name, &sb))
 		return;
@@ -407,7 +414,7 @@ nameof(mp, reptype)
 	cp = skin(name1(mp, reptype));
 	if (reptype != 0 || charcount(cp, '!') < 2)
 		return(cp);
-	cp2 = rindex(cp, '!');
+	cp2 = strrchr(cp, '!');
 	cp2--;
 	while (cp2 > cp && *cp2 != '!')
 		cp2--;
@@ -459,13 +466,13 @@ skin(name)
 
 	if (name == NOSTR)
 		return(NOSTR);
-	if (index(name, '(') == NOSTR && index(name, '<') == NOSTR
-	    && index(name, ' ') == NOSTR)
+	if (strchr(name, '(') == NOSTR && strchr(name, '<') == NOSTR
+	    && strchr(name, ' ') == NOSTR)
 		return(name);
 	gotlt = 0;
 	lastsp = 0;
 	bufend = nbuf;
-	for (cp = name, cp2 = bufend; c = *cp++; ) {
+	for (cp = name, cp2 = bufend; (c = *cp++) != '\0'; ) {
 		switch (c) {
 		case '(':
 			cp = skip_comment(cp);
@@ -477,13 +484,13 @@ skin(name)
 			 * Start of a "quoted-string".
 			 * Copy it in its entirety.
 			 */
-			while (c = *cp) {
+			while ((c = *cp) != '\0') {
 				cp++;
 				if (c == '"')
 					break;
 				if (c != '\\')
 					*cp2++ = c;
-				else if (c = *cp) {
+				else if ((c = *cp) != '\0') {
 					*cp2++ = c;
 					cp++;
 				}
@@ -515,7 +522,7 @@ skin(name)
 					if (c == '(')
 						cp = skip_comment(cp);
 					else if (c == '"')
-						while (c = *cp) {
+						while ((c = *cp) != '\0') {
 							cp++;
 							if (c == '"')
 								break;
@@ -585,24 +592,24 @@ newname:
 	*cp2 = '\0';
 	if (readline(ibuf, linebuf, LINESIZE) < 0)
 		return(savestr(namebuf));
-	if ((cp = index(linebuf, 'F')) == NULL)
+	if ((cp = strchr(linebuf, 'F')) == NULL)
 		return(savestr(namebuf));
 	if (strncmp(cp, "From", 4) != 0)
 		return(savestr(namebuf));
-	while ((cp = index(cp, 'r')) != NULL) {
+	while ((cp = strchr(cp, 'r')) != NULL) {
 		if (strncmp(cp, "remote", 6) == 0) {
-			if ((cp = index(cp, 'f')) == NULL)
+			if ((cp = strchr(cp, 'f')) == NULL)
 				break;
 			if (strncmp(cp, "from", 4) != 0)
 				break;
-			if ((cp = index(cp, ' ')) == NULL)
+			if ((cp = strchr(cp, ' ')) == NULL)
 				break;
 			cp++;
 			if (first) {
 				strcpy(namebuf, cp);
 				first = 0;
 			} else
-				strcpy(rindex(namebuf, '!')+1, cp);
+				strcpy(strrchr(namebuf, '!')+1, cp);
 			strcat(namebuf, "!");
 			goto newname;
 		}
@@ -637,7 +644,7 @@ anyof(s1, s2)
 {
 
 	while (*s1)
-		if (index(s2, *s1++))
+		if (strchr(s2, *s1++))
 			return 1;
 	return 0;
 }
@@ -663,7 +670,7 @@ copy(s1, s2)
 	register char *s1, *s2;
 {
 
-	while (*s2++ = *s1++)
+	while ((*s2++ = *s1++) != '\0')
 		;
 	return s2 - 1;
 }

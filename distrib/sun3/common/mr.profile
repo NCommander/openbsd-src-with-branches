@@ -1,6 +1,7 @@
 #
-#	$NetBSD: mr.profile,v 1.1.1.1 1995/10/08 23:07:47 gwr Exp $
+#	$NetBSD: mr.profile,v 1.2.6.1 1996/08/29 03:21:13 gwr Exp $
 #
+# Copyright (c) 1995 Jason R. Thorpe
 # Copyright (c) 1994 Christopher G. Demetriou
 # All rights reserved.
 # 
@@ -35,18 +36,20 @@ export PATH
 TERM=ansi
 export TERM
 
-# set up some sane defaults
-echo 'erase ^?, werase ^H, kill ^U, intr ^C'
-stty newcrt werase '^H' intr '^C' kill '^U' erase '^?'
-echo ''
+umask 022
 
-# start running update, so that installed software is written as it goes.
+# set up some sane defaults
+echo intr '^C' kill '^U' erase '^?' werase '^W' newcrt
+stty intr '^C' kill '^U' erase '^?' werase '^W' newcrt
+
+# run update, so that installed software is written as it goes.
 update
 
-# pull in the function definitions that people will use from the shell prompt.
-. /.cmnutils
-. /.instutils
+# get the terminal type?
+# (nah, ansi is good enough)
 
 # run the installation script.
-umask 022
-install
+echo 'To install NetBSD, enter the command:  install'
+echo 'Otherwise, enter the command:  halt'
+# /install  XXX - Not yet...
+

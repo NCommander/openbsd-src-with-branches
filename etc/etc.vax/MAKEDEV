@@ -1,11 +1,14 @@
 #!/bin/sh -
-#	$NetBSD: MAKEDEV,v 1.2 1995/09/05 19:53:01 ragge Exp $
+#
+#	$OpenBSD: MAKEDEV,v 1.10 1997/05/13 05:35:00 millert Exp $
+#	$NetBSD: MAKEDEV,v 1.3 1996/01/07 16:53:15 ragge Exp $
 #
 #	@(#)MAKEDEV	8.1 (Berkeley) 6/9/93
 #
 # Device "make" file.  Valid arguments:
 #	std	standard devices
 #	local	configuration specific devices
+#	all	create a reasonable amount of all files
 # Tapes:
 #	ht*	massbus tm03 & tu??
 #	tm*	unibus tm11 & te10 emulations (e.g. Emulex tc-11)
@@ -48,15 +51,23 @@
 #	qv*	qvss (microvax) display
 #	ttyv0	qvss (microvax) display reserved pty
 #	lkm	loadable kernel modules
-PATH=/sbin:/bin:/usr/bin
+#	*random	random data source
+#
+PATH=/sbin:/usr/sbin:/bin:/usr/bin
 umask 77
 for i
 do
 case $i in
 
+all)
+	sh MAKEDEV std vnd0 ccd0 pty0 lkm ipl
+	sh MAKEDEV tms0 ts0
+	sh MAKEDEV ra0 ra1 ra2 ra3 ra4 ra5 ra6 ra7 hp0 hp1 random
+	;;
+
 std)
 	mknod console		c 0 0
-	mknod drum		c 7 0	; chmod 640 drum ; chgrp kmem drum
+	mknod drum		c 7 0	; chmod 640 drum ; chown root.kmem drum
 	mknod floppy		c 8 0
 	mknod crl		c 35 0
 	mknod csa1		c 51 0
@@ -64,8 +75,8 @@ std)
 	mknod tu0		b 8 0
 	mknod tu1		b 8 1
 	mknod kUmem		c 3 3	; chmod 600 kUmem
-	mknod kmem		c 3 1	; chmod 640 kmem ; chgrp kmem kmem
-	mknod mem		c 3 0	; chmod 640 mem ; chgrp kmem mem
+	mknod kmem		c 3 1	; chmod 640 kmem ; chown root.kmem kmem
+	mknod mem		c 3 0	; chmod 640 mem ; chown root.kmem mem
 	mknod null		c 3 2	; chmod 666 null
 	mknod zero              c 3 12  ; chmod 666 zero
 	mknod tty		c 2 0	; chmod 666 tty
@@ -77,7 +88,7 @@ std)
 	(cd fd && eval `echo "" | awk ' BEGIN { \
 		for (i = 0; i < 64; i++) \
 			printf("mknod %d c 53 %d;", i, i)}'`)
-	chown -R bin.bin fd
+	chown -R root.wheel fd
 	chmod 555 fd
 	chmod 666 fd/*
 	;;
@@ -85,32 +96,47 @@ std)
 ht*|tm*|tms*|ts*|ut*)
 	umask 0 ; unit=`expr $i : '[^0-9]*\(.*\)'`
 	case $i in
-	ht*) blk=1; chr=5 ;;
-	tms*) blk=15; chr=38;;
-	tm*) blk=5; chr=14;;
-	ts*) blk=6; chr=16;;
-	ut*) blk=10; chr=17;;
+	ht*) name=ht; blk=1; chr=5 ;;
+	tms*) name=tms; blk=15; chr=38;;
+	tm*) name=tm; blk=5; chr=14;;
+	ts*) name=ts; blk=6; chr=16;;
+	ut*) name=ut; blk=10; chr=17;;
 	esac
 	case $unit in
 	0|1|2|3|4|5|6|7)
 		four=`expr $unit + 4` ; eight=`expr $unit + 8`
 		twelve=`expr $unit + 12`; twenty=`expr $unit + 20`
-		mknod mt$unit		b $blk $unit
-		mknod mt$four		b $blk $four
-		mknod mt$eight		b $blk $eight
-		mknod mt$twelve		b $blk $twelve
-		mknod nmt$unit		b $blk $four ;: sanity w/pdp11 v7
-		mknod nmt$eight		b $blk $twelve ;: ditto
-		mknod nrmt$unit		c $chr $four ;: sanity w/pdp11 v7
-		mknod nrmt$eight	c $chr $twelve ;: ditto
-		mknod rmt$unit		c $chr $unit
-		mknod rmt$four		c $chr $four
-		mknod rmt$eight		c $chr $eight
-		mknod rmt$twelve	c $chr $twelve
+		mknod $name$unit	b $blk $unit
+		mknod $name$four	b $blk $four
+		mknod $name$eight	b $blk $eight
+		mknod $name$twelve	b $blk $twelve
+		mknod n$name$unit	b $blk $four ;: sanity w/pdp11 v7
+		mknod n$name$eight	b $blk $twelve ;: ditto
+		mknod nr$name$unit	c $chr $four ;: sanity w/pdp11 v7
+		mknod nr$name$eight	c $chr $twelve ;: ditto
+		mknod r$name$unit	c $chr $unit
+		mknod r$name$four	c $chr $four
+		mknod r$name$eight	c $chr $eight
+		mknod r$name$twelve	c $chr $twelve
 		if [ $i = ut ] 
 		then
-			mknod mt$twenty		b $blk $twenty
-			mknod rmt$twenty	c $chr $twenty
+			mknod $name$twenty	b $blk $twenty
+			mknod r$name$twenty	c $chr $twenty
+		fi
+		if [ ! -e rmt$eight ]	# compatibility stuff
+		then
+			ln -s $name$unit mt$unit
+			ln -s $name$four mt$four
+			ln -s $name$eight mt$eight
+			ln -s $name$twelve mt$twelve
+			ln -s n$name$unit nmt$unit
+			ln -s n$name$eight nmt$eight
+			ln -s nr$name$unit nrmt$unit
+			ln -s nr$name$eight nrmt$eight
+			ln -s r$name$unit rmt$unit
+			ln -s r$name$four rmt$four
+			ln -s r$name$eight rmt$eight
+			ln -s r$name$twelve rmt$twelve
 		fi
 		;;
 	*)
@@ -151,7 +177,7 @@ mt*)
 	umask 77
 	;;
 
-hp*|hk*|up*|ra*|kra*|rl*|rb*|ccd*|vnd*)
+hp*|hk*|up*|ra*|kra*|rl*|rb*|ccd*)
 	umask 2 ; unit=`expr $i : '.*[^0-9]\([0-9]*\)'`
 	case $i in
 	hp*) name=hp; blk=0; chr=4;;
@@ -162,7 +188,6 @@ hp*|hk*|up*|ra*|kra*|rl*|rb*|ccd*|vnd*)
 	rb*) name=rb; blk=11; chr=23;;
 	rl*) name=rl; blk=14; chr=32;;
 	ccd*) name=ccd; blk=17; chr=54;;
-	vnd*) name=vnd; blk=18; chr=55;;
 	esac
 	case $unit in
 	0|1|2|3|4|5|6|7|8|9|10|11|12|13|14|15|16|\
@@ -186,13 +211,44 @@ hp*|hk*|up*|ra*|kra*|rl*|rb*|ccd*|vnd*)
 		mknod r${name}${unit}f	c $chr `expr $unit '*' 8 + 5`
 		mknod r${name}${unit}h	c $chr `expr $unit '*' 8 + 7`
 		fi
-		chgrp operator ${name}${unit}[a-h] r${name}${unit}[a-h]
+		chown root.operator ${name}${unit}[a-h] r${name}${unit}[a-h]
 		chmod 640 ${name}${unit}[a-h] r${name}${unit}[a-h]
 		;;
 	*)
 		echo bad unit for disk in: $i
 		;;
 	esac
+	umask 77
+	;;
+
+vnd*)
+	umask 2 ; unit=`expr $i : 'vnd\(.*\)'`
+	for name in vnd svnd; do
+		blk=18; chr=55;
+		case $name in
+		vnd)	off=0;;
+		svnd)	off=128;;
+		esac
+		rm -f $name$unit? r$name$unit?
+		mknod ${name}${unit}a	b $blk `expr $unit '*' 8 + $off + 0`
+		mknod ${name}${unit}b	b $blk `expr $unit '*' 8 + $off + 1`
+		mknod ${name}${unit}c	b $blk `expr $unit '*' 8 + $off + 2`
+		mknod ${name}${unit}d	b $blk `expr $unit '*' 8 + $off + 3`
+		mknod ${name}${unit}e	b $blk `expr $unit '*' 8 + $off + 4`
+		mknod ${name}${unit}f	b $blk `expr $unit '*' 8 + $off + 5`
+		mknod ${name}${unit}g	b $blk `expr $unit '*' 8 + $off + 6`
+		mknod ${name}${unit}h	b $blk `expr $unit '*' 8 + $off + 7`
+		mknod r${name}${unit}a	c $chr `expr $unit '*' 8 + $off + 0`
+		mknod r${name}${unit}b	c $chr `expr $unit '*' 8 + $off + 1`
+		mknod r${name}${unit}c	c $chr `expr $unit '*' 8 + $off + 2`
+		mknod r${name}${unit}d	c $chr `expr $unit '*' 8 + $off + 3`
+		mknod r${name}${unit}e	c $chr `expr $unit '*' 8 + $off + 4`
+		mknod r${name}${unit}f	c $chr `expr $unit '*' 8 + $off + 5`
+		mknod r${name}${unit}g	c $chr `expr $unit '*' 8 + $off + 6`
+		mknod r${name}${unit}h	c $chr `expr $unit '*' 8 + $off + 7`
+		chown root.operator ${name}${unit}[a-h] r${name}${unit}[a-h]
+		chmod 640 ${name}${unit}[a-h] r${name}${unit}[a-h]
+	done
 	umask 77
 	;;
 
@@ -315,12 +371,17 @@ pty*)
 		umask 0
 		eval `echo $offset $name | awk ' { b=$1; n=$2 } END {
 			for (i = 0; i < 16; i++)
-				printf("mknod tty%s%x c 20 %d; \
-					mknod pty%s%x c 21 %d; ", \
+				printf("mknod tty%s%x c 20 %d;" \
+					"mknod pty%s%x c 21 %d; ", \
 					n, i, b+i, n, i, b+i); }'`
 		umask 77
 		;;
 	esac
+	;;
+
+ipl)
+	mknod ipl c 50 0
+	chown root.wheel ipl
 	;;
 
 np*)
@@ -380,8 +441,19 @@ ttyv0)
 	mv ptyqf ptyv0
 	;;
 
+random|srandom|urandom|prandom|arandom)
+	rm -f random urandom srandom prandom arandom
+	mknod  random c 58 0
+	mknod srandom c 58 1
+	mknod urandom c 58 2
+	mknod prandom c 58 3
+	mknod arandom c 58 4
+	chown root.wheel random srandom urandom prandom arandom
+	chmod 644 random srandom urandom prandom arandom
+	;;
+
 local)
-	sh MAKEDEV.local
+	test -s MAKEDEV.local && sh MAKEDEV.local
 	;;
 esac
 done

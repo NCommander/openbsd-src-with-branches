@@ -1,8 +1,9 @@
-/*	$NetBSD: db_watch.h,v 1.8 1994/10/09 08:41:20 mycroft Exp $	*/
+/*	$OpenBSD: db_watch.h,v 1.3 1996/03/11 11:16:32 mickey Exp $	*/
+/*	$NetBSD: db_watch.h,v 1.9 1996/02/05 01:57:24 christos Exp $	*/
 
 /* 
  * Mach Operating System
- * Copyright (c) 1991,1990 Carnegie Mellon University
+ * Copyright (c) 1993,1992,1991,1990 Carnegie Mellon University
  * All Rights Reserved.
  * 
  * Permission to use, copy, modify and distribute this software and its
@@ -11,7 +12,7 @@
  * software, derivative works or modified versions, and any portions
  * thereof, and that both notices appear in supporting documentation.
  * 
- * CARNEGIE MELLON ALLOWS FREE USE OF THIS SOFTWARE IN ITS 
+ * CARNEGIE MELLON ALLOWS FREE USE OF THIS SOFTWARE IN ITS "AS IS"
  * CONDITION.  CARNEGIE MELLON DISCLAIMS ANY LIABILITY OF ANY KIND FOR
  * ANY DAMAGES WHATSOEVER RESULTING FROM THE USE OF THIS SOFTWARE.
  * 
@@ -22,8 +23,8 @@
  *  Carnegie Mellon University
  *  Pittsburgh PA 15213-3890
  * 
- * any improvements or extensions that they make and grant Carnegie the
- * rights to redistribute these changes.
+ * any improvements or extensions that they make and grant Carnegie Mellon
+ * the rights to redistribute these changes.
  *
  * 	Author: David B. Golub, Carnegie Mellon University
  *	Date:	10/90
@@ -42,12 +43,16 @@ typedef struct db_watchpoint {
 	struct db_watchpoint *link;	/* link in in-use or free chain */
 } *db_watchpoint_t;
 
-boolean_t db_find_watchpoint __P((vm_map_t, db_addr_t, db_regs_t *));
-void db_set_watchpoints __P((void));
-void db_clear_watchpoints __P((void));
-
+db_watchpoint_t db_watchpoint_alloc __P((void));
+void db_watchpoint_free __P((db_watchpoint_t));
 void db_set_watchpoint __P((vm_map_t, db_addr_t, vm_size_t));
 void db_delete_watchpoint __P((vm_map_t, db_addr_t));
 void db_list_watchpoints __P((void));
+void db_deletewatch_cmd __P((db_expr_t, int, db_expr_t, char *));
+void db_watchpoint_cmd __P((db_expr_t, int, db_expr_t, char *));
+void db_listwatch_cmd __P((db_expr_t, int, db_expr_t, char *));
+void db_set_watchpoints __P((void));
+void db_clear_watchpoints __P((void));
+boolean_t db_find_watchpoint __P((vm_map_t, db_addr_t, db_regs_t *));
 
 #endif	_DDB_DB_WATCH_

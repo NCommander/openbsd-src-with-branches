@@ -118,6 +118,10 @@ USER_H = $(srcdir)/ginclude/stdarg.h $(srcdir)/ginclude/stddef.h \
 # want to set this empty.
 INSTALL_ASSERT_H = install-assert-h
 
+# Target to use for installing unformatted man-pages.  Some systems may not
+# want them installed.
+INSTALL_MAN = install-man
+
 # The GCC to use for compiling libgcc2.a, enquire, and libgcc1-test.
 # Usually the one we just built.
 # Don't use this as a dependency--use $(GCC_PASSES) or $(GCC_PARTS).
@@ -204,6 +208,8 @@ includedir = $(local_prefix)/include
 assertdir = $(tooldir)/include
 # where the info files go
 infodir = $(prefix)/info
+# where the info-files get built
+build_infodir = $(srcdir)
 # Extension (if any) to put in installed man-page filename.
 manext = .1
 objext = .o
@@ -900,9 +906,14 @@ libgcc2.a: libgcc2.c libgcc2.ready $(CONFIG_H) $(LIB2FUNCS_EXTRA) \
 	  else true; \
 	  fi; \
 	done
+	-if [ x${HPUX_GAS} = x ] ; then \
+	  if $(RANLIB_TEST) ; then $(RANLIB) tmplibgcc2.a; else true; fi; \
+	else true; fi; \
 	mv tmplibgcc2.a libgcc2.a
 # These lines were deleted from above the mv command
-# because ranlibing libgcc.a itself should suffice.
+# because it was thought ranlibing libgcc.a itself should suffice.
+# However that was not true, as some make variants treats unranlibed
+# archives as always out-of-date.
 #	-if [ x${HPUX_GAS} = x ] ; then \
 #	  if $(RANLIB_TEST) ; then $(RANLIB) tmplibgcc2.a; else true; fi; \
 #	else true; fi
@@ -1049,27 +1060,28 @@ stamp-crtS:	crtstuff.c $(GCC_PASSES) $(CONFIG_H) gbl-ctors.h
 
 # C language specific files.
 
-c-parse.o : $(srcdir)/c-parse.c $(CONFIG_H) $(TREE_H) c-lex.h \
-    $(srcdir)/c-parse.h c-tree.h input.h flags.h
-	$(CC) $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) -c $(srcdir)/c-parse.c
-$(srcdir)/c-parse.h: $(srcdir)/c-parse.c
-$(srcdir)/c-parse.c: $(srcdir)/c-parse.y
-	cd $(srcdir); $(BISON) $(BISONFLAGS) -d c-parse.y -o c-parse.c
-$(srcdir)/c-parse.y: c-parse.in
+c-parse.o : c-parse.c $(CONFIG_H) $(TREE_H) c-lex.h \
+    c-parse.h c-tree.h input.h flags.h
+	$(CC) $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) -c c-parse.c
+c-parse.h: c-parse.c
+c-parse.c: c-parse.y
+	$(BISON) $(BISONFLAGS) -d -o c-parse.c c-parse.y
+c-parse.y: c-parse.in
 	sed -e "/^ifobjc$$/,/^end ifobjc$$/d" \
 	  -e "/^ifc$$/d" -e "/^end ifc$$/d" \
 	  $(srcdir)/c-parse.in >tmp-c-parse.y
-	$(srcdir)/move-if-change tmp-c-parse.y $(srcdir)/c-parse.y
+	sh $(srcdir)/move-if-change tmp-c-parse.y c-parse.y
 
-$(srcdir)/c-gperf.h: c-parse.gperf
-	gperf -p -j1 -i 1 -g -o -t -G -N is_reserved_word -k1,3,$$ \
-	   $(srcdir)/c-parse.gperf >tmp-gperf.h
-	 $(srcdir)/move-if-change tmp-gperf.h $(srcdir)/c-gperf.h
+# XXX OpenBSD
+#$(srcdir)/c-gperf.h: c-parse.gperf
+#	gperf -p -j1 -i 1 -g -o -t -G -N is_reserved_word -k1,3,$$ \
+#	   $(srcdir)/c-parse.gperf >tmp-gperf.h
+#	 sh $(srcdir)/move-if-change tmp-gperf.h $(srcdir)/c-gperf.h
 
 c-decl.o : c-decl.c $(CONFIG_H) $(TREE_H) c-tree.h c-lex.h flags.h output.h
 c-typeck.o : c-typeck.c $(CONFIG_H) $(TREE_H) c-tree.h flags.h output.h
 c-lang.o : c-lang.c $(CONFIG_H) $(TREE_H)
-c-lex.o : c-lex.c $(CONFIG_H) $(TREE_H) c-lex.h c-tree.h $(srcdir)/c-parse.h \
+c-lex.o : c-lex.c $(CONFIG_H) $(TREE_H) c-lex.h c-tree.h c-parse.h \
     input.h flags.h $(srcdir)/c-gperf.h c-pragma.h
 c-aux-info.o : c-aux-info.c  $(CONFIG_H) $(TREE_H) c-tree.h flags.h
 c-convert.o : c-convert.c $(CONFIG_H) $(TREE_H) flags.h
@@ -1106,25 +1118,25 @@ stamp-under: $(GCC_PASSES)
 	else \
 	  echo "int prepends_underscore = 0;" >>tmp-under.c; \
 	fi
-	$(srcdir)/move-if-change tmp-under.c underscore.c
+	sh $(srcdir)/move-if-change tmp-under.c underscore.c
 	-rm -f tmp-dum.c tmp-dum.s
 	touch stamp-under
 
 # Objective C language specific files.
 
-objc-parse.o : $(srcdir)/objc-parse.c $(CONFIG_H) $(TREE_H) c-lex.h \
+objc-parse.o : objc-parse.c $(CONFIG_H) $(TREE_H) c-lex.h \
    c-tree.h input.h flags.h objc-act.h
-	$(CC) $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) -c $(srcdir)/objc-parse.c
-$(srcdir)/objc-parse.c : $(srcdir)/objc-parse.y
-	cd $(srcdir); $(BISON) $(BISONFLAGS) objc-parse.y -o objc-parse.c
-$(srcdir)/objc-parse.y: $(srcdir)/c-parse.in
+	$(CC) $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) -c objc-parse.c
+objc-parse.c : objc-parse.y
+	$(BISON) $(BISONFLAGS) -o objc-parse.c objc-parse.y
+objc-parse.y: c-parse.in
 	sed -e "/^ifc$$/,/^end ifc$$/d" \
 	  -e "/^ifobjc$$/d" -e "/^end ifobjc$$/d" \
 	  $(srcdir)/c-parse.in >tmp-objc-prs.y
-	$(srcdir)/move-if-change tmp-objc-prs.y $(srcdir)/objc-parse.y
+	sh $(srcdir)/move-if-change tmp-objc-prs.y objc-parse.y
 
 objc-act.o : objc-act.c $(CONFIG_H) $(TREE_H) $(RTL_H) c-tree.h c-lex.h \
-   flags.h objc-act.h input.h function.h $(srcdir)/c-parse.h
+   flags.h objc-act.h input.h function.h c-parse.h
 
 # A file used by all variants of C.
 
@@ -1304,19 +1316,19 @@ alloca.o:	alloca.c
 insn-config.h: stamp-config ; @true
 stamp-config : $(md_file) genconfig $(srcdir)/move-if-change
 	./genconfig $(md_file) > tmp-config.h
-	$(srcdir)/move-if-change tmp-config.h insn-config.h
+	sh $(srcdir)/move-if-change tmp-config.h insn-config.h
 	touch stamp-config
 
 insn-flags.h: stamp-flags ; @true
 stamp-flags : $(md_file) genflags $(srcdir)/move-if-change
 	./genflags $(md_file) > tmp-flags.h
-	$(srcdir)/move-if-change tmp-flags.h insn-flags.h
+	sh $(srcdir)/move-if-change tmp-flags.h insn-flags.h
 	touch stamp-flags
 
 insn-codes.h: stamp-codes ; @true
 stamp-codes : $(md_file) gencodes $(srcdir)/move-if-change
 	./gencodes $(md_file) > tmp-codes.h
-	$(srcdir)/move-if-change tmp-codes.h insn-codes.h
+	sh $(srcdir)/move-if-change tmp-codes.h insn-codes.h
 	touch stamp-codes
 
 insn-emit.o : insn-emit.c $(CONFIG_H) $(RTL_H) expr.h real.h output.h \
@@ -1326,7 +1338,7 @@ insn-emit.o : insn-emit.c $(CONFIG_H) $(RTL_H) expr.h real.h output.h \
 insn-emit.c: stamp-emit ; @true
 stamp-emit : $(md_file) genemit $(srcdir)/move-if-change
 	./genemit $(md_file) > tmp-emit.c
-	$(srcdir)/move-if-change tmp-emit.c insn-emit.c
+	sh $(srcdir)/move-if-change tmp-emit.c insn-emit.c
 	touch stamp-emit
 
 insn-recog.o : insn-recog.c $(CONFIG_H) $(RTL_H) insn-config.h recog.h \
@@ -1336,7 +1348,7 @@ insn-recog.o : insn-recog.c $(CONFIG_H) $(RTL_H) insn-config.h recog.h \
 insn-recog.c: stamp-recog ; @true
 stamp-recog : $(md_file) genrecog $(srcdir)/move-if-change
 	./genrecog $(md_file) > tmp-recog.c
-	$(srcdir)/move-if-change tmp-recog.c insn-recog.c
+	sh $(srcdir)/move-if-change tmp-recog.c insn-recog.c
 	touch stamp-recog
 
 insn-opinit.o : insn-opinit.c $(CONFIG_H) $(RTL_H) insn-codes.h insn-flags.h \
@@ -1346,7 +1358,7 @@ insn-opinit.o : insn-opinit.c $(CONFIG_H) $(RTL_H) insn-codes.h insn-flags.h \
 insn-opinit.c: stamp-opinit ; @true
 stamp-opinit : $(md_file) genopinit $(srcdir)/move-if-change
 	./genopinit $(md_file) > tmp-opinit.c
-	$(srcdir)/move-if-change tmp-opinit.c insn-opinit.c
+	sh $(srcdir)/move-if-change tmp-opinit.c insn-opinit.c
 	touch stamp-opinit
 
 insn-extract.o : insn-extract.c $(CONFIG_H) $(RTL_H)
@@ -1355,7 +1367,7 @@ insn-extract.o : insn-extract.c $(CONFIG_H) $(RTL_H)
 insn-extract.c: stamp-extract ; @true
 stamp-extract : $(md_file) genextract $(srcdir)/move-if-change
 	./genextract $(md_file) > tmp-extract.c
-	$(srcdir)/move-if-change tmp-extract.c insn-extract.c
+	sh $(srcdir)/move-if-change tmp-extract.c insn-extract.c
 	touch stamp-extract
 
 insn-peep.o : insn-peep.c $(CONFIG_H) $(RTL_H) regs.h output.h real.h
@@ -1364,7 +1376,7 @@ insn-peep.o : insn-peep.c $(CONFIG_H) $(RTL_H) regs.h output.h real.h
 insn-peep.c: stamp-peep ; @true
 stamp-peep : $(md_file) genpeep $(srcdir)/move-if-change
 	./genpeep $(md_file) > tmp-peep.c
-	$(srcdir)/move-if-change tmp-peep.c insn-peep.c
+	sh $(srcdir)/move-if-change tmp-peep.c insn-peep.c
 	touch stamp-peep
 
 insn-attrtab.o : insn-attrtab.c $(CONFIG_H) $(RTL_H) regs.h real.h output.h \
@@ -1374,7 +1386,7 @@ insn-attrtab.o : insn-attrtab.c $(CONFIG_H) $(RTL_H) regs.h real.h output.h \
 insn-attr.h: stamp-attr ; @true
 stamp-attr : $(md_file) genattr $(srcdir)/move-if-change
 	./genattr $(md_file) > tmp-attr.h
-	$(srcdir)/move-if-change tmp-attr.h insn-attr.h
+	sh $(srcdir)/move-if-change tmp-attr.h insn-attr.h
 	touch stamp-attr
 
 insn-attrtab.c: stamp-attrtab ; @true
@@ -1386,7 +1398,7 @@ stamp-attrtab : $(md_file) genattrtab $(srcdir)/move-if-change
 	else					\
 	  ./genattrtab $(md_file) > tmp-attrtab.c;	\
 	fi
-	$(srcdir)/move-if-change tmp-attrtab.c insn-attrtab.c
+	sh $(srcdir)/move-if-change tmp-attrtab.c insn-attrtab.c
 	touch stamp-attrtab
 
 insn-output.o : insn-output.c $(CONFIG_H) $(RTL_H) regs.h real.h conditions.h \
@@ -1397,7 +1409,7 @@ insn-output.o : insn-output.c $(CONFIG_H) $(RTL_H) regs.h real.h conditions.h \
 insn-output.c: stamp-output ; @true
 stamp-output : $(md_file) genoutput $(srcdir)/move-if-change
 	./genoutput $(md_file) > tmp-output.c
-	$(srcdir)/move-if-change tmp-output.c insn-output.c
+	sh $(srcdir)/move-if-change tmp-output.c insn-output.c
 	touch stamp-output
 
 # Compile the programs that generate insn-* from the machine description.
@@ -1550,14 +1562,14 @@ bi-opname: bi-opname.o $(BI_OBJ) $(HOST_LIBDEPS)
 	$(HOST_CC) $(HOST_CFLAGS) $(HOST_LDFLAGS) -o $@ \
 	 bi-opname.o $(BI_OBJ) $(HOST_LIBS)
 
-$(srcdir)/bi-parser.h: $(srcdir)/bi-parser.c
-$(srcdir)/bi-parser.c: $(srcdir)/bi-parser.y
-	cd $(srcdir); $(BISON) $(BISONFLAGS) -d bi-parser.y -o bi-parser.c
+bi-parser.h: bi-parser.c
+bi-parser.c: $(srcdir)/bi-parser.y
+	$(BISON) $(BISONFLAGS) -d -o bi-parser.c $(srcdir)/bi-parser.y
 
-bi-parser.o: $(srcdir)/bi-parser.c bi-defs.h $(build_xm_file)
+bi-parser.o: bi-parser.c bi-defs.h $(build_xm_file)
 	$(HOST_CC) -c $(HOST_CFLAGS) $(HOST_CPPFLAGS) $(INCLUDES) \
-	   $(srcdir)/bi-parser.c
-bi-lexer.o: bi-lexer.c $(srcdir)/bi-parser.h $(build_xm_file)
+	   bi-parser.c
+bi-lexer.o: bi-lexer.c bi-parser.h $(build_xm_file)
 	$(HOST_CC) -c $(HOST_CFLAGS) $(HOST_CPPFLAGS) $(INCLUDES) \
 	   $(srcdir)/bi-lexer.c
 bi-arity.o: bi-arity.c bi-defs.h $(build_xm_file)
@@ -1576,19 +1588,19 @@ bi-reverse.o: bi-reverse.c bi-defs.h
 bc-arity.h: stamp-bcarity ; @true
 stamp-bcarity : $(srcdir)/bytecode.def bi-arity $(srcdir)/move-if-change
 	./bi-arity < $(srcdir)/bytecode.def >tmp-bc-arity.h
-	$(srcdir)/move-if-change tmp-bc-arity.h bc-arity.h
+	sh $(srcdir)/move-if-change tmp-bc-arity.h bc-arity.h
 	touch stamp-bcarity
 
 bc-opcode.h: stamp-bcopcode ; @true
 stamp-bcopcode : $(srcdir)/bytecode.def bi-opcode $(srcdir)/move-if-change
 	./bi-opcode < $(srcdir)/bytecode.def >tmp-bcopcd.h
-	$(srcdir)/move-if-change tmp-bcopcd.h bc-opcode.h
+	sh $(srcdir)/move-if-change tmp-bcopcd.h bc-opcode.h
 	touch stamp-bcopcode
 
 bc-opname.h: stamp-bcopname ; @true
 stamp-bcopname : $(srcdir)/bytecode.def bi-opname $(srcdir)/move-if-change
 	./bi-opname < $(srcdir)/bytecode.def >tmp-bcopnm.h
-	$(srcdir)/move-if-change tmp-bcopnm.h bc-opname.h
+	sh $(srcdir)/move-if-change tmp-bcopnm.h bc-opname.h
 	touch stamp-bcopname
 
 bytecode.mostlyclean:
@@ -1611,10 +1623,10 @@ cpp: $(CCCP)
 cccp: cccp.o cexp.o version.o $(LIBDEPS)
 	$(CC) $(ALL_CFLAGS) $(LDFLAGS) -o $@ cccp.o cexp.o \
 	  version.o $(LIBS)
-cexp.o: $(srcdir)/cexp.c $(CONFIG_H)
-	$(CC) $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) -c $(srcdir)/cexp.c
-$(srcdir)/cexp.c: $(srcdir)/cexp.y
-	cd $(srcdir); $(BISON) -o cexp.c cexp.y
+cexp.o: cexp.c $(CONFIG_H)
+	$(CC) $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) -c cexp.c
+cexp.c: $(srcdir)/cexp.y
+	$(BISON) -o cexp.c $(srcdir)/cexp.y
 
 cccp.o: cccp.c $(CONFIG_H) pcp.h version.c config.status
 # The reason we use $(libdir)/g++-include rather than using libsubdir
@@ -1865,29 +1877,32 @@ stmp-fixproto: fixhdr.ready fixproto stmp-headers
 # Remake the info files.
 
 doc: info
-info: $(srcdir)/cpp.info $(srcdir)/gcc.info lang.info
+info: $(build_infodir)/cpp.info $(build_infodir)/gcc.info lang.info
 
-$(srcdir)/cpp.info: cpp.texi
-	cd $(srcdir); $(MAKEINFO) cpp.texi
+$(build_infodir)/cpp.info: cpp.texi
+	$(MAKEINFO) $(srcdir)/cpp.texi -o $(build_infodir)/cpp.info
 
-$(srcdir)/gcc.info: gcc.texi extend.texi install.texi invoke.texi \
+$(build_infodir)/gcc.info: gcc.texi extend.texi install.texi invoke.texi \
 		md.texi rtl.texi tm.texi 
-	cd $(srcdir); $(MAKEINFO) gcc.texi
+	$(MAKEINFO) -I$(srcdir) $(srcdir)/gcc.texi -o $(build_infodir)/gcc.info
 
-dvi: $(srcdir)/gcc.dvi $(srcdir)/cpp.dvi lang.dvi
+dvi: gcc.dvi cpp.dvi lang.dvi
 
-# This works with GNU Make's default rule.
-$(srcdir)/gcc.dvi: gcc.texi extend.texi install.texi invoke.texi \
-		md.texi rtl.texi tm.texi 
-	$(TEXI2DVI) $<
+# XXX OpenBSD
+## This works with GNU Make's default rule.
+#$(srcdir)/gcc.dvi: gcc.texi extend.texi install.texi invoke.texi \
+#		md.texi rtl.texi tm.texi 
+#	$(TEXI2DVI) $<
 
-# This works with GNU Make's default rule.
-$(srcdir)/cpp.dvi: cpp.texi
-	$(TEXI2DVI) $<
+# XXX OpenBSD
+## This works with GNU Make's default rule.
+#$(srcdir)/cpp.dvi: cpp.texi
+#	$(TEXI2DVI) $<
 
-$(srcdir)/INSTALL: install1.texi install.texi
-	$(MAKEINFO) -D INSTALLONLY --no-header --no-split \
-	  `echo $(srcdir)/install1.texi | sed 's,^\./,,'`
+# XXX OpenBSD
+#$(srcdir)/INSTALL: install1.texi install.texi
+#	$(MAKEINFO) -D INSTALLONLY --no-header --no-split \
+#	  `echo $(srcdir)/install1.texi | sed 's,^\./,,'`
 
 # Deletion of files made during compilation.
 # There are four levels of this:
@@ -2022,7 +2037,7 @@ install: $(INSTALL_TARGET) ; @true
 # Install the driver last so that the window when things are
 # broken is small.
 install-normal: install-common $(INSTALL_HEADERS) $(INSTALL_LIBGCC) \
-    install-libobjc install-man install-info lang.install-normal install-driver
+    install-libobjc $(INSTALL_MAN) install-info lang.install-normal install-driver
 
 # Do nothing while making gcc with a cross-compiler. The person who
 # makes gcc for the target machine has to know how to put a complete
@@ -2059,6 +2074,8 @@ install-dir:
 	-if [ -d $(tooldir) ] ; then true ; else mkdir $(tooldir) ; chmod a+rx $(tooldir) ; fi
 	-if [ -d $(assertdir) ] ; then true ; else mkdir $(assertdir) ; chmod a+rx $(assertdir) ; fi
 	-if [ -d $(infodir) ] ; then true ; else mkdir $(infodir) ; chmod a+rx $(infodir) ; fi
+
+install-mandir:
 # We don't use mkdir -p to create the parents of mandir,
 # because some systems don't support it.
 # Instead, we use this technique to create the immediate parent of mandir.
@@ -2119,22 +2136,24 @@ install-driver: xgcc
 	else \
 	  rm -f $(bindir)/$(GCC_INSTALL_NAME)$(exeext); \
 	  $(INSTALL_PROGRAM) xgcc$(exeext) $(bindir)/$(GCC_INSTALL_NAME)$(exeext); \
-	  rm -f $(bindir)/$(target)-gcc-1$(exeext); \
-	  ln $(bindir)/$(GCC_INSTALL_NAME)$(exeext) $(bindir)/$(target)-gcc-1$(exeext) \
-	    > /dev/null 2>&1 \
-	    || cp $(bindir)/$(GCC_INSTALL_NAME)$(exeext) $(bindir)/$(target)-gcc-1$(exeext); \
-	  mv $(bindir)/$(target)-gcc-1$(exeext) $(bindir)/$(target)-gcc$(exeext); \
+	  if [ X$(NO_TARGET_GCC) = X ]; then \
+	    rm -f $(bindir)/$(target)-gcc-1$(exeext); \
+	    ln $(bindir)/$(GCC_INSTALL_NAME)$(exeext) $(bindir)/$(target)-gcc-1$(exeext) \
+	      > /dev/null 2>&1 \
+	      || cp $(bindir)/$(GCC_INSTALL_NAME)$(exeext) $(bindir)/$(target)-gcc-1$(exeext); \
+	    mv $(bindir)/$(target)-gcc-1$(exeext) $(bindir)/$(target)-gcc$(exeext); \
+	  fi; \
 	fi
 
 # Install the info files.
 install-info: doc install-dir lang.install-info
 	-rm -f $(infodir)/cpp.info* $(infodir)/gcc.info*
-	cd $(srcdir); for f in cpp.info* gcc.info*; \
+	cd $(build_infodir); for f in cpp.info* gcc.info*; \
 	do $(INSTALL_DATA) $$f $(infodir)/$$f; done
 	-chmod a-x $(infodir)/cpp.info* $(infodir)/gcc.info*
 
 # Install the man pages.
-install-man: install-dir $(srcdir)/gcc.1 $(srcdir)/cccp.1 lang.install-man
+install-man: install-dir install-mandir $(srcdir)/gcc.1 $(srcdir)/cccp.1 lang.install-man
 	-if [ -f gcc-cross ] ; then \
 	  rm -f $(mandir)/$(GCC_CROSS_NAME)$(manext); \
 	  $(INSTALL_DATA) $(srcdir)/gcc.1 $(mandir)/$(GCC_CROSS_NAME)$(manext); \
@@ -2186,7 +2205,7 @@ install-headers: install-include-dir $(INSTALL_HEADERS_DIR) $(INSTALL_ASSERT_H)
 # point to the installed directory, not the build directory.
 	-files=`cd $(libsubdir)/include; find . -type l -print 2>/dev/null`; \
 	if [ $$? -eq 0 ]; then \
-	  dir=`cd include; pwd`; \
+	  dir=`cd ./include; pwd`; \
 	  for i in $$files; do \
 	    dest=`ls -ld $(libsubdir)/include/$$i | sed -n 's/.*-> //p'`; \
 	    if expr "$$dest" : "$$dir.*" > /dev/null; then \
@@ -2204,7 +2223,7 @@ install-include-dir: install-dir
 
 # Install the include directory using tar.
 install-headers-tar: stmp-headers $(STMP_FIXPROTO) install-include-dir
-	(cd include; \
+	(cd ./include; \
 	 tar -cf - .; exit 0) | (cd $(libsubdir)/include; tar $(TAROUTOPTS) - )
 # /bin/sh on some systems returns the status of the first tar,
 # and that can lose with GNU tar which always writes a full block.
@@ -2212,7 +2231,8 @@ install-headers-tar: stmp-headers $(STMP_FIXPROTO) install-include-dir
 
 # Install the include directory using cpio.
 install-headers-cpio: stmp-headers $(STMP_FIXPROTO) install-include-dir
-	(cd include; find . -print) | (cd include; cpio -pdum $(libsubdir)/include)
+	(cd ./include; \
+	 find . -print) | (cd ./include; cpio -pdum $(libsubdir)/include)
 
 # Put assert.h where it won't override GNU libc's assert.h.
 # It goes in a dir that is searched after GNU libc's headers;

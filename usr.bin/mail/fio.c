@@ -1,3 +1,6 @@
+/*	$OpenBSD: fio.c,v 1.3 1997/01/17 07:12:46 millert Exp $	*/
+/*	$NetBSD: fio.c,v 1.5 1996/06/08 19:48:22 christos Exp $	*/
+
 /*
  * Copyright (c) 1980, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -32,8 +35,11 @@
  */
 
 #ifndef lint
-static char sccsid[] = "from: @(#)fio.c	8.1 (Berkeley) 6/6/93";
-static char rcsid[] = "$Id: fio.c,v 1.4 1994/06/29 05:09:22 deraadt Exp $";
+#if 0
+static char sccsid[] = "@(#)fio.c	8.1 (Berkeley) 6/6/93";
+#else
+static char rcsid[] = "$OpenBSD: fio.c,v 1.3 1997/01/17 07:12:46 millert Exp $";
+#endif
 #endif /* not lint */
 
 #include "rcv.h"
@@ -68,7 +74,7 @@ setptr(ibuf)
 	char linebuf[LINESIZE];
 
 	/* Get temporary file. */
-	(void)sprintf(linebuf, "%s/mail.XXXXXX", tmpdir);
+	(void)sprintf(linebuf, "%s/mail.XXXXXXXXXX", tmpdir);
 	if ((c = mkstemp(linebuf)) == -1 ||
 	    (mestmp = Fdopen(c, "r+")) == NULL) {
 		(void)fprintf(stderr, "mail: can't open %s\n", linebuf);
@@ -122,7 +128,7 @@ setptr(ibuf)
 						;
 					if (cp[-1] != ':')
 						break;
-					while (c = *cp++)
+					while ((c = *cp++) != '\0')
 						if (c == 'R')
 							this.m_flag |= MREAD;
 						else if (c == 'O')
@@ -256,7 +262,7 @@ rm(name)
 }
 
 static int sigdepth;		/* depth of holdsigs() */
-static int omask;
+static sigset_t nset, oset;
 /*
  * Hold signals SIGHUP, SIGINT, and SIGQUIT.
  */
@@ -264,8 +270,13 @@ void
 holdsigs()
 {
 
-	if (sigdepth++ == 0)
-		omask = sigblock(sigmask(SIGHUP)|sigmask(SIGINT)|sigmask(SIGQUIT));
+	if (sigdepth++ == 0) {
+		sigemptyset(&nset);
+		sigaddset(&nset, SIGHUP);
+		sigaddset(&nset, SIGINT);
+		sigaddset(&nset, SIGQUIT);
+		sigprocmask(SIG_BLOCK, &nset, &oset);
+	}
 }
 
 /*
@@ -276,7 +287,7 @@ relsesigs()
 {
 
 	if (--sigdepth == 0)
-		sigsetmask(omask);
+		sigprocmask(SIG_SETMASK, &oset, NULL);
 }
 
 /*
@@ -387,7 +398,7 @@ expand(name)
 	for (cp = &xname[l-1]; *cp == '\n' && cp > xname; cp--)
 		;
 	cp[1] = '\0';
-	if (index(xname, ' ') && stat(xname, &sbuf) < 0) {
+	if (strchr(xname, ' ') && stat(xname, &sbuf) < 0) {
 		fprintf(stderr, "\"%s\": Ambiguous.\n", name);
 		return NOSTR;
 	}

@@ -1,7 +1,7 @@
-/*	$NetBSD: optimize.c,v 1.3 1995/04/29 05:42:28 cgd Exp $	*/
+/*	$OpenBSD: optimize.c,v 1.4 1996/07/12 13:19:10 mickey Exp $	*/
 
 /*
- * Copyright (c) 1988, 1989, 1990, 1991, 1993, 1994
+ * Copyright (c) 1988, 1989, 1990, 1991, 1993, 1994, 1995, 1996
  *	The Regents of the University of California.  All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -24,7 +24,7 @@
  */
 #ifndef lint
 static char rcsid[] =
-    "@(#) Header: optimize.c,v 1.45 94/06/20 19:07:55 leres Exp (LBL)";
+    "@(#) Header: optimize.c,v 1.58 96/06/16 22:36:59 leres Exp (LBL)";
 #endif
 
 #include <sys/types.h>
@@ -33,19 +33,18 @@ static char rcsid[] =
 #include <net/bpf.h>
 
 #include <stdio.h>
-#ifdef __osf__
 #include <stdlib.h>
-#include <malloc.h>
-#endif
-#ifdef __NetBSD__
-#include <stdlib.h>
-#endif
 #include <memory.h>
 
+#ifdef HAVE_OS_PROTO_H
+#include "os-proto.h"
+#endif
+
+#include "pcap-int.h"
 #include "gencode.h"
 
-#ifndef __GNUC__
-#define inline
+#ifdef BDEBUG
+extern int dflag;
 #endif
 
 #define A_ATOM BPF_MEMWORDS
@@ -99,35 +98,38 @@ static int atomdef(struct stmt *);
 static void compute_local_ud(struct block *);
 static void find_ud(struct block *);
 static void init_val(void);
-static long F(int, long, long);
-static inline void vstore(struct stmt *, long *, long, int);
+static int F(int, int, int);
+static __inline void vstore(struct stmt *, int *, int, int);
 static void opt_blk(struct block *, int);
 static int use_conflict(struct block *, struct block *);
 static void opt_j(struct edge *);
 static void or_pullup(struct block *);
 static void and_pullup(struct block *);
 static void opt_blks(struct block *, int);
-static inline void link_inedge(struct edge *, struct block *);
+static __inline void link_inedge(struct edge *, struct block *);
 static void find_inedges(struct block *);
 static void opt_root(struct block **);
 static void opt_loop(struct block *, int);
-static void fold_op(struct stmt *, long, long);
-static inline struct slist *this_op(struct slist *);
+static void fold_op(struct stmt *, int, int);
+static __inline struct slist *this_op(struct slist *);
 static void opt_not(struct block *);
 static void opt_peep(struct block *);
-static void opt_stmt(struct stmt *, long[], int);
+static void opt_stmt(struct stmt *, int[], int);
 static void deadstmt(struct stmt *, struct stmt *[]);
 static void opt_deadstores(struct block *);
 static void opt_blk(struct block *, int);
 static int use_conflict(struct block *, struct block *);
 static void opt_j(struct edge *);
 static struct block *fold_edge(struct block *, struct edge *);
-static inline int eq_blk(struct block *, struct block *);
+static __inline int eq_blk(struct block *, struct block *);
 static int slength(struct slist *);
 static int count_blocks(struct block *);
 static void number_blks_r(struct block *);
 static int count_stmts(struct block *);
-static void convert_code_r(struct block *);
+static int convert_code_r(struct block *);
+#ifdef BDEBUG
+static void opt_dump(struct block *);
+#endif
 
 static int n_blocks;
 struct block **blocks;
@@ -141,8 +143,8 @@ struct edge **edges;
 static int nodewords;
 static int edgewords;
 struct block **levels;
-u_long *space;
-#define BITS_PER_WORD (8*sizeof(u_long))
+bpf_u_int32 *space;
+#define BITS_PER_WORD (8*sizeof(bpf_u_int32))
 /*
  * True if a is in uset {p}
  */
@@ -166,7 +168,7 @@ u_long *space;
  */
 #define SET_INTERSECT(a, b, n)\
 {\
-	register u_long *_x = a, *_y = b;\
+	register bpf_u_int32 *_x = a, *_y = b;\
 	register int _n = n;\
 	while (--_n >= 0) *_x++ &= *_y++;\
 }
@@ -176,7 +178,7 @@ u_long *space;
  */
 #define SET_SUBTRACT(a, b, n)\
 {\
-	register u_long *_x = a, *_y = b;\
+	register bpf_u_int32 *_x = a, *_y = b;\
 	register int _n = n;\
 	while (--_n >= 0) *_x++ &=~ *_y++;\
 }
@@ -186,7 +188,7 @@ u_long *space;
  */
 #define SET_UNION(a, b, n)\
 {\
-	register u_long *_x = a, *_y = b;\
+	register bpf_u_int32 *_x = a, *_y = b;\
 	register int _n = n;\
 	while (--_n >= 0) *_x++ |= *_y++;\
 }
@@ -247,7 +249,7 @@ find_dom(root)
 {
 	int i;
 	struct block *b;
-	u_long *x;
+	bpf_u_int32 *x;
 
 	/*
 	 * Initialize sets to contain all nodes.
@@ -498,8 +500,8 @@ find_ud(root)
  */
 struct valnode {
 	int code;
-	long v0, v1;
-	long val;
+	int v0, v1;
+	int val;
 	struct valnode *next;
 };
 
@@ -513,7 +515,7 @@ static int maxval;
 
 struct vmapinfo {
 	int is_const;
-	long const_val;
+	bpf_int32 const_val;
 };
 
 struct vmapinfo *vmap;
@@ -530,10 +532,10 @@ init_val()
 }
 
 /* Because we really don't have an IR, this stuff is a little messy. */
-static long
+static int
 F(code, v0, v1)
 	int code;
-	long v0, v1;
+	int v0, v1;
 {
 	u_int hash;
 	int val;
@@ -563,11 +565,11 @@ F(code, v0, v1)
 	return val;
 }
 
-static inline void
+static __inline void
 vstore(s, valp, newval, alter)
 	struct stmt *s;
-	long *valp;
-	long newval;
+	int *valp;
+	int newval;
 	int alter;
 {
 	if (alter && *valp == newval)
@@ -579,9 +581,9 @@ vstore(s, valp, newval, alter)
 static void
 fold_op(s, v0, v1)
 	struct stmt *s;
-	long v0, v1;
+	int v0, v1;
 {
-	long a, b;
+	bpf_int32 a, b;
 
 	a = vmap[v0].const_val;
 	b = vmap[v1].const_val;
@@ -633,7 +635,7 @@ fold_op(s, v0, v1)
 	done = 0;
 }
 
-static inline struct slist *
+static __inline struct slist *
 this_op(s)
 	struct slist *s;
 {
@@ -659,7 +661,6 @@ opt_peep(b)
 	struct slist *s;
 	struct slist *next, *last;
 	int val;
-	long v;
 
 	s = b->stmts;
 	if (s == 0)
@@ -766,7 +767,16 @@ opt_peep(b)
 	    !ATOMELEM(b->out_use, A_ATOM)) {
 		val = b->val[X_ATOM];
 		if (vmap[val].is_const) {
+			int op;
+
 			b->s.k += vmap[val].const_val;
+			op = BPF_OP(b->s.code);
+			if (op == BPF_JGT || op == BPF_JGE) {
+				struct block *t = JT(b);
+				JT(b) = JF(b);
+				JF(b) = t;
+				b->s.k += 0x80000000;
+			}
 			last->s.code = NOP;
 			done = 0;
 		} else if (b->s.k == 0) {
@@ -785,8 +795,17 @@ opt_peep(b)
 	 */
 	else if (last->s.code == (BPF_ALU|BPF_SUB|BPF_K) &&
 		 !ATOMELEM(b->out_use, A_ATOM)) {
+		int op;
+
 		b->s.k += last->s.k;
 		last->s.code = NOP;
+		op = BPF_OP(b->s.code);
+		if (op == BPF_JGT || op == BPF_JGE) {
+			struct block *t = JT(b);
+			JT(b) = JF(b);
+			JF(b) = t;
+			b->s.k += 0x80000000;
+		}
 		done = 0;
 	}
 	/*
@@ -807,7 +826,7 @@ opt_peep(b)
 	 */
 	val = b->val[A_ATOM];
 	if (vmap[val].is_const && BPF_SRC(b->s.code) == BPF_K) {
-		v = vmap[val].const_val;
+		bpf_int32 v = vmap[val].const_val;
 		switch (BPF_OP(b->s.code)) {
 
 		case BPF_JEQ:
@@ -815,11 +834,11 @@ opt_peep(b)
 			break;
 
 		case BPF_JGT:
-			v = v > b->s.k;
+			v = (unsigned)v > b->s.k;
 			break;
 
 		case BPF_JGE:
-			v = v >= b->s.k;
+			v = (unsigned)v >= b->s.k;
 			break;
 
 		case BPF_JSET:
@@ -847,11 +866,11 @@ opt_peep(b)
 static void
 opt_stmt(s, val, alter)
 	struct stmt *s;
-	long val[];
+	int val[];
 	int alter;
 {
 	int op;
-	long v;
+	int v;
 
 	switch (s->code) {
 
@@ -1085,7 +1104,7 @@ opt_blk(b, do_stmts)
 	struct slist *s;
 	struct edge *p;
 	int i;
-	long aval;
+	bpf_int32 aval;
 
 	/*
 	 * Initialize the atom values.
@@ -1112,12 +1131,17 @@ opt_blk(b, do_stmts)
 	/*
 	 * This is a special case: if we don't use anything from this
 	 * block, and we load the accumulator with value that is
-	 * already there, eliminate all the statements.
+	 * already there, or if this block is a return,
+	 * eliminate all the statements.
 	 */
-	if (do_stmts && b->out_use == 0 && aval != 0 &&
-	    b->val[A_ATOM] == aval)
-		b->stmts = 0;
-	else {
+	if (do_stmts && 
+	    ((b->out_use == 0 && aval != 0 &&b->val[A_ATOM] == aval) ||
+	     BPF_CLASS(b->s.code) == BPF_RET)) {
+		if (b->stmts != 0) {
+			b->stmts = 0;
+			done = 0;
+		}
+	} else {
 		opt_peep(b);
 		opt_deadstores(b);
 	}
@@ -1229,7 +1253,7 @@ opt_j(ep)
 	 */
  top:
 	for (i = 0; i < edgewords; ++i) {
-		register u_long x = ep->edom[i];
+		register bpf_u_int32 x = ep->edom[i];
 
 		while (x != 0) {
 			k = ffs(x) - 1;
@@ -1476,7 +1500,7 @@ opt_blks(root, do_stmts)
 	}
 }
 
-static inline void
+static __inline void
 link_inedge(parent, child)
 	struct edge *parent;
 	struct block *child;
@@ -1522,6 +1546,14 @@ opt_root(b)
 	if (tmp != 0)
 		sappend(s, tmp);
 	(*b)->stmts = s;
+
+	/*
+	 * If the root node is a return, then there is no
+	 * point executing any statements (since the bpf machine
+	 * has no side effects).
+	 */
+	if (BPF_CLASS((*b)->s.code) == BPF_RET)
+		(*b)->stmts = 0;
 }
 
 static void
@@ -1618,7 +1650,7 @@ eq_slist(x, y)
 	}
 }
 
-static inline int
+static __inline int
 eq_blk(b0, b1)
 	struct block *b0, *b1;
 {
@@ -1762,7 +1794,7 @@ static void
 opt_init(root)
 	struct block *root;
 {
-	u_long *p;
+	bpf_u_int32 *p;
 	int i, n, max_stmts;
 
 	/*
@@ -1784,11 +1816,11 @@ opt_init(root)
 	 */
 	levels = (struct block **)malloc(n_blocks * sizeof(*levels));
 
-	edgewords = n_edges / (8 * sizeof(u_long)) + 1;
-	nodewords = n_blocks / (8 * sizeof(u_long)) + 1;
+	edgewords = n_edges / (8 * sizeof(bpf_u_int32)) + 1;
+	nodewords = n_blocks / (8 * sizeof(bpf_u_int32)) + 1;
 
 	/* XXX */
-	space = (u_long *)malloc(2 * n_blocks * nodewords * sizeof(*space)
+	space = (bpf_u_int32 *)malloc(2 * n_blocks * nodewords * sizeof(*space)
 				 + n_edges * edgewords * sizeof(*space));
 	p = space;
 	all_dom_sets = p;
@@ -1841,7 +1873,13 @@ static struct bpf_insn *ftail;
 int bids[1000];
 #endif
 
-static void
+/*
+ * Returns true if successful.  Returns false if a branch has
+ * an offset that is too large.  If so, we have marked that
+ * branch so that on a subsequent iteration, it will be treated
+ * properly.
+ */
+static int
 convert_code_r(p)
 	struct block *p;
 {
@@ -1849,16 +1887,20 @@ convert_code_r(p)
 	struct slist *src;
 	int slen;
 	u_int off;
+	int extrajmps;		/* number of extra jumps inserted */
 
 	if (p == 0 || isMarked(p))
-		return;
+		return (1);
 	Mark(p);
 
-	convert_code_r(JF(p));
-	convert_code_r(JT(p));
+	if (convert_code_r(JF(p)) == 0)
+		return (0);
+	if (convert_code_r(JT(p)) == 0)
+		return (0);
 
 	slen = slength(p->stmts);
-	dst = ftail -= slen + 1;
+	dst = ftail -= (slen + 1 + p->longjt + p->longjf);
+		/* inflate length by any extra jumps */
 
 	p->offset = dst - fstart;
 
@@ -1875,15 +1917,42 @@ convert_code_r(p)
 	dst->code = (u_short)p->s.code;
 	dst->k = p->s.k;
 	if (JT(p)) {
+		extrajmps = 0;
 		off = JT(p)->offset - (p->offset + slen) - 1;
-		if (off >= 256)
-			bpf_error("long jumps not supported");
-		dst->jt = off;
+		if (off >= 256) {
+		    /* offset too large for branch, must add a jump */
+		    if (p->longjt == 0) {
+		    	/* mark this instruction and retry */
+			p->longjt++;
+			return(0);
+		    }
+		    /* branch if T to following jump */
+		    dst->jt = extrajmps;
+		    extrajmps++;
+		    dst[extrajmps].code = BPF_JMP|BPF_JA;
+		    dst[extrajmps].k = off - extrajmps;
+		}
+		else
+		    dst->jt = off;
 		off = JF(p)->offset - (p->offset + slen) - 1;
-		if (off >= 256)
-			bpf_error("long jumps not supported");
-		dst->jf = off;
+		if (off >= 256) {
+		    /* offset too large for branch, must add a jump */
+		    if (p->longjf == 0) {
+		    	/* mark this instruction and retry */
+			p->longjf++;
+			return(0);
+		    }
+		    /* branch if F to following jump */
+		    /* if two jumps are inserted, F goes to second one */
+		    dst->jf = extrajmps;
+		    extrajmps++;
+		    dst[extrajmps].code = BPF_JMP|BPF_JA;
+		    dst[extrajmps].k = off - extrajmps;
+		}
+		else
+		    dst->jf = off;
 	}
+	return (1);
 }
 
 
@@ -1899,21 +1968,30 @@ icode_to_fcode(root, lenp)
 	int n;
 	struct bpf_insn *fp;
 
-	unMarkAll();
-	n = *lenp = count_stmts(root);
-
-	fp = (struct bpf_insn *)malloc(sizeof(*fp) * n);
-	memset((char *)fp, 0, sizeof(*fp) * n);
-	fstart = fp;
-	ftail = fp + n;
-
-	unMarkAll();
-	convert_code_r(root);
+	/*
+	 * Loop doing convert_codr_r() until no branches remain
+	 * with too-large offsets.
+	 */
+	while (1) {
+	    unMarkAll();
+	    n = *lenp = count_stmts(root);
+    
+	    fp = (struct bpf_insn *)malloc(sizeof(*fp) * n);
+	    memset((char *)fp, 0, sizeof(*fp) * n);
+	    fstart = fp;
+	    ftail = fp + n;
+    
+	    unMarkAll();
+	    if (convert_code_r(root))
+		break;
+	    free(fp);
+	}
 
 	return fp;
 }
 
 #ifdef BDEBUG
+static void
 opt_dump(root)
 	struct block *root;
 {

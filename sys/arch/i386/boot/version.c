@@ -1,7 +1,25 @@
-/*	$NetBSD: version.c,v 1.27 1995/03/12 00:13:47 mycroft Exp $	*/
+/*	$OpenBSD: version.c,v 1.4 1996/09/28 08:13:50 deraadt Exp $	*/
+/*	$NetBSD: version.c,v 1.28 1995/12/23 17:21:23 perry Exp $	*/
 
 /*
  *	NOTE ANY CHANGES YOU MAKE TO THE BOOTBLOCKS HERE.
+ *
+ *	1.30 -> 1.31
+ *		Allow booting from 2.88mb floppies (in 1.44mb mode) and
+ *		move the filesystem insert stuff to the kernel.
+ *
+ *      1.29 -> 1.30
+ *		Prefer a type 166 partition if found. 166 is the OpenBSD
+ *		partition type.
+ *
+ *	1.28 -> 1.29
+ *		adding program for booting from DOS file.
+ *		implement 'list files' (Luke Mewburn <lukem@telstra.com.au>)
+ *
+ *	1.27 -> 1.28
+ *		fix gets to use real timeout instead of loop and do
+ *		a little cleanup, and add some prototypes. A lot more
+ *		needs to be done here. (perry)
  *
  *	1.26 -> 1.27
  *		size reduction and code cleanup. (mycroft)
@@ -49,4 +67,4 @@
  *		look in boot.c revision logs
  */
 
-char *version = "1.27";
+char version[] = "1.31";

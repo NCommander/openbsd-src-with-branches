@@ -1,10 +1,11 @@
-#	$NetBSD: JURA,v 1.3 1995/08/03 00:09:21 cgd Exp $
+#	$OpenBSD: JURA,v 1.7 1996/10/30 22:38:40 niklas Exp $
+#	$NetBSD: JURA,v 1.11 1996/11/25 04:16:18 cgd Exp $
 #
 # Kernel for jura.pdl.cs.cmu.edu.
+#
+# THIS KERNEL DOES NOT CURRENTLY WORK, OR EVEN CONFIGURE!
 
-include "std.alpha"
-
-makeoptions	DEBUG="-g"
+include	"arch/alpha/conf/std.alpha"
 
 maxusers 8
 
@@ -18,7 +19,6 @@ options		TIMEZONE="5*60"		# Minutes west of GMT (for param.c)
 options		DST=1			# Daylight savings rules (for param.c)
 
 # Standard system options
-options		SWAPPAGER, VNODEPAGER, DEVPAGER # Paging (mandatory)
 options		DEBUG, DIAGNOSTIC	# Extra kernel debugging
 options		KTRACE			# System call tracing support
 
@@ -34,41 +34,44 @@ options		INET		# Internet protocol suite
 # 4.3BSD compatibility.  Should be optional, but necessary for now.
 options		COMPAT_43
 
+# Binary compatibility with previous versions of NetBSD.
+#options	COMPAT_09
+options		COMPAT_10
+options		COMPAT_11
+options		COMPAT_12
+
 # Loadable Kernel Modules
 options		LKM
 
-config		netbsd	root on nfs swap on nfs
+config		bsd	root on nfs swap on nfs
 
-# XXX Unfortunately, configuration isn't as simple as the following,
-# because DEC engineers really biffed the DECpc AXP (in my opinion)
-# See further below for information about how to really configure
-# these systems.
+mainbus0 at	root
 
-#isa*	at	mainbus0
-#
-#com0	at	isa? port 0x3f8 irq 4
-#com1	at	isa? port 0x2f8 irq 3
-#
-#ahb0	at	isa?
-#
+ibus*	at	mainbus0			# "internal bus"
+
+jcombo* at	ibus?				# the VLSI combo chip
+isa*	at	jcombo?
+
+mcclock0 at      isa? port 0x70
+pcppi*	at	isa?				# PC prog. periph. interface
+pckbd*	at	pcppi?				# PC keyboard (kbd port)
+pms*	at	pcppi?				# PS/2-style mouse (aux port)
+com0    at      isa? port 0x3f8 irq 4           # standard serial ports
+com1    at      isa? port 0x2f8 irq 3
+lpt0    at      isa? port 0x3bc irq 7           # standard parallel port
+#wss0   at      isa? port 0x530 irq 9 drq 0     # Windows Sound System
+
+jeisa*	at	ibus?
+eisa*	at	jeisa?
+# ahb*	at	eisa0				EISA devices
+
+isa*	at	jeisa?
+
 #scsibus* at	scsi?
 #
 #sd*	at	scsibus? target ? lun ?
 #st*	at	scsibus? target ? lun ?
 #cd*	at	scsibus? target ? lun ?
-
-# They should really look like:
-
-# ibus0	at	mainbus0			"internal bus"
-# combo0 at	ibus0				the VLSI combo chip
-# clock0 at	combo0 ...			periphs on combo chip
-# com0	at	combo0 ...			.
-# com1	at	combo0 ...			.
-# lpt0	at	combo0 ...			.
-# etc.
-# eisa0	at	ibus0				EISA attached to ibus
-# ahb*	at	eisa0				EISA devices
-# etc.
 
 pseudo-device	bpfilter
 pseudo-device	loop

@@ -1,3 +1,5 @@
+/*	$OpenBSD$	*/
+
 /*
  * Copyright (c) 1994 Winning Strategies, Inc.
  * All rights reserved.
@@ -30,7 +32,7 @@
  */
 
 #ifndef lint
-static char rcsid[] = "$Id: uname.c,v 1.7 1994/12/20 01:28:57 jtc Exp $";
+static char rcsid[] = "$OpenBSD: uname.c,v 1.1.1.1 1995/10/18 08:46:28 deraadt Exp $";
 #endif /* not lint */
 
 #include <stdio.h>

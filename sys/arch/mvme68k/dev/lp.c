@@ -1,4 +1,4 @@
-/*	$NetBSD$ */
+/*	$OpenBSD$ */
 
 /*
  * Copyright (c) 1995 Theo de Raadt
@@ -14,7 +14,8 @@
  *    documentation and/or other materials provided with the distribution.
  * 3. All advertising materials mentioning features or use of this software
  *    must display the following acknowledgement:
- *      This product includes software developed by Theo de Raadt
+ *      This product includes software developed under OpenBSD by
+ *	Theo de Raadt for Willowglen Singapore.
  * 4. The name of the author may not be used to endorse or promote products
  *    derived from this software without specific prior written permission.
  *
@@ -56,9 +57,12 @@ struct lpsoftc {
 void lpattach __P((struct device *, struct device *, void *));
 int  lpmatch __P((struct device *, void *, void *));
 
-struct cfdriver lpcd = {
-	NULL, "lp", lpmatch, lpattach,
-	DV_DULL, sizeof(struct lpsoftc), 0
+struct cfattach lp_ca = {
+	sizeof(struct lpsoftc), lpmatch, lpattach
+};
+
+struct cfdriver lp_cd = {
+	NULL, "lp", DV_DULL, 0
 };
 
 int lpintr __P((void *));

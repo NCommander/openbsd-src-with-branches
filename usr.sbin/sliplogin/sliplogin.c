@@ -39,7 +39,7 @@ char copyright[] =
 
 #ifndef lint
 /*static char sccsid[] = "from: @(#)sliplogin.c	5.6 (Berkeley) 3/2/91";*/
-static char rcsid[] = "$Id: sliplogin.c,v 1.11 1995/06/19 22:52:25 jtc Exp $";
+static char rcsid[] = "$Id: sliplogin.c,v 1.5 1996/08/08 15:38:52 millert Exp $";
 #endif /* not lint */
 
 /*
@@ -95,6 +95,13 @@ static char rcsid[] = "$Id: sliplogin.c,v 1.11 1995/06/19 22:52:25 jtc Exp $";
 #include <unistd.h>
 #include "pathnames.h"
 
+extern char **environ;
+
+static char *restricted_environ[] = {
+	"PATH=" _PATH_STDPATH,
+	NULL
+};
+
 int	unit;
 int	speed;
 int	uid;
@@ -111,10 +118,11 @@ findid(name)
 	static char laddr[16];
 	static char raddr[16];
 	static char mask[16];
-	char user[16];
+	char user[16], *p;
 	int i, j, n;
 
-	(void)strcpy(loginname, name);
+	(void)strncpy(loginname, name, sizeof loginname-1);
+	loginname[sizeof loginname -1] = '\0';
 	if ((fp = fopen(_PATH_ACCESS, "r")) == NULL) {
 		syslog(LOG_ERR, "%s: %m\n", _PATH_ACCESS);
 		err(1, "%s", _PATH_ACCESS);
@@ -122,11 +130,13 @@ findid(name)
 	while (fgets(loginargs, sizeof(loginargs) - 1, fp)) {
 		if (ferror(fp))
 			break;
+		if ((p = strchr(loginargs, '#')))
+			*p = '\0';
+		if ((p = strchr(loginargs, '\n')))
+			*p = '\0';
 		n = sscanf(loginargs, "%15s%*[ \t]%15s%*[ \t]%15s%*[ \t]%15s%*[ \t]%15s%*[ \t]%15s%*[ \t]%15s%*[ \t]%15s%*[ \t]%15s\n",
-                        user, laddr, raddr, mask, slopt[0], slopt[1], 
-			slopt[2], slopt[3], slopt[4]);
-		if (user[0] == '#' || isspace(user[0]))
-			continue;
+		    user, laddr, raddr, mask, slopt[0], slopt[1], 
+		    slopt[2], slopt[3], slopt[4]);
 		if (strcmp(user, name) != 0)
 			continue;
 
@@ -136,7 +146,8 @@ findid(name)
 		 * one specific to this host.  If none found, try for
 		 * a generic one.
 		 */
-		(void)sprintf(loginfile, "%s.%s", _PATH_LOGIN, name);
+		(void)snprintf(loginfile, sizeof loginfile, "%s.%s",
+		    _PATH_LOGIN, name);
 		if (access(loginfile, R_OK|X_OK) != 0) {
 			(void)strcpy(loginfile, _PATH_LOGIN);
 			if (access(loginfile, R_OK|X_OK)) {
@@ -176,14 +187,16 @@ hup_handler(s)
 {
 	char logoutfile[MAXPATHLEN];
 
-	(void)sprintf(logoutfile, "%s.%s", _PATH_LOGOUT, loginname);
+	seteuid(0);
+	(void)snprintf(logoutfile, sizeof logoutfile, "%s.%s",
+	    _PATH_LOGOUT, loginname);
 	if (access(logoutfile, R_OK|X_OK) != 0)
 		(void)strcpy(logoutfile, _PATH_LOGOUT);
 	if (access(logoutfile, R_OK|X_OK) == 0) {
 		char logincmd[2*MAXPATHLEN+32];
 
-		(void) sprintf(logincmd, "%s %d %d %s", logoutfile, unit, speed,
-			      loginargs);
+		(void) snprintf(logincmd, sizeof logincmd, "%s %d %d %s",
+		    logoutfile, unit, speed, loginargs);
 		(void) system(logincmd);
 	}
 	(void) close(0);
@@ -207,6 +220,8 @@ main(argc, argv)
 	char logincmd[2*BUFSIZ+32];
 	extern uid_t getuid();
 
+	environ = restricted_environ; /* minimal protection for system() */
+
 	if ((name = strrchr(argv[0], '/')) == NULL)
 		name = argv[0];
 	s = getdtablesize();
@@ -224,7 +239,7 @@ main(argc, argv)
 #ifdef POSIX
 		if (fork() > 0)
 			exit(0);
-		if (setsid() < 0)
+		if (setsid() == -1)
 			perror("setsid");
 #else
 		if ((fd = open("/dev/tty", O_RDONLY, 0)) >= 0) {
@@ -315,8 +330,9 @@ main(argc, argv)
 	(void) signal(SIGTERM, hup_handler);
 
 	syslog(LOG_INFO, "attaching slip unit %d for %s\n", unit, loginname);
-	(void)sprintf(logincmd, "%s %d %d %s", loginfile, unit, speed,
-		      loginargs);
+	(void)snprintf(logincmd, sizeof(loginargs), "%s %d %d %s", loginfile,
+	    unit, speed, loginargs);
+
 	/*
 	 * aim stdout and errout at /dev/null so logincmd output won't
 	 * babble into the slip tty line.
@@ -350,7 +366,8 @@ main(argc, argv)
 		exit(6);
 	}
 
-	/* twiddle thumbs until we get a signal */
+	/* twiddle thumbs until we get a signal; allow user to kill */
+	seteuid(uid);
 	while (1)
 		sigpause(0);
 

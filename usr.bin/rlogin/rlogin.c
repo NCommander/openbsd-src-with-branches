@@ -1,3 +1,4 @@
+/*	$OpenBSD: rlogin.c,v 1.11 1997/01/15 23:43:06 millert Exp $	*/
 /*	$NetBSD: rlogin.c,v 1.8 1995/10/05 09:07:22 mycroft Exp $	*/
 
 /*
@@ -43,7 +44,7 @@ static char copyright[] =
 #if 0
 static char sccsid[] = "@(#)rlogin.c	8.1 (Berkeley) 6/6/93";
 #else
-static char rcsid[] = "$NetBSD: rlogin.c,v 1.8 1995/10/05 09:07:22 mycroft Exp $";
+static char rcsid[] = "$OpenBSD: rlogin.c,v 1.11 1997/01/15 23:43:06 millert Exp $";
 #endif
 #endif /* not lint */
 
@@ -83,10 +84,8 @@ static char rcsid[] = "$NetBSD: rlogin.c,v 1.8 1995/10/05 09:07:22 mycroft Exp $
 #include <kerberosIV/des.h>
 #include <kerberosIV/krb.h>
 
-#include "krb.h"
-
 CREDENTIALS cred;
-Key_schedule schedule;
+des_key_schedule schedule;
 int use_kerberos = 1, doencrypt;
 char dst_realm_buf[REALM_SZ], *dest_realm = NULL;
 #endif
@@ -141,6 +140,7 @@ void		writeroob __P((int));
 
 #ifdef	KERBEROS
 void		warning __P((const char *, ...));
+void		desrw_set_key __P((des_cblock *, des_key_schedule *));
 #endif
 #ifdef OLDSUN
 int		get_window_size __P((int, struct winsize *));
@@ -158,13 +158,13 @@ main(argc, argv)
 	struct termios tty;
 	long omask;
 	int argoff, ch, dflag, one, uid;
-	char *host, *p, *user, term[1024];
+	char *host, *p, *user, term[64];
 
 	argoff = dflag = 0;
 	one = 1;
 	host = user = NULL;
 
-	if (p = rindex(argv[0], '/'))
+	if (p = strrchr(argv[0], '/'))
 		++p;
 	else
 		p = argv[0];
@@ -183,7 +183,7 @@ main(argc, argv)
 #else
 #define	OPTIONS	"8EKLde:l:"
 #endif
-	while ((ch = getopt(argc - argoff, argv + argoff, OPTIONS)) != EOF)
+	while ((ch = getopt(argc - argoff, argv + argoff, OPTIONS)) != -1)
 		switch(ch) {
 		case '8':
 			eight = 1;
@@ -212,13 +212,11 @@ main(argc, argv)
 		case 'l':
 			user = optarg;
 			break;
-#ifdef CRYPT
 #ifdef KERBEROS
 		case 'x':
 			doencrypt = 1;
-			des_set_key(cred.session, schedule);
+			desrw_set_key(&cred.session, &schedule);
 			break;
-#endif
 #endif
 		case '?':
 		default:
@@ -260,10 +258,20 @@ main(argc, argv)
 		exit(1);
 	}
 
-	(void)strcpy(term, (p = getenv("TERM")) ? p : "network");
+	(void)strncpy(term, (p = getenv("TERM")) ? p : "network",
+	    sizeof(term) - 1);
+	term[sizeof(term) - 1] = '\0';
+
+	/*
+	 * Add "/baud" only if there is room left; ie. do not send "/19"
+	 * for 19200 baud with a particularily long $TERM
+	 */
 	if (tcgetattr(0, &tty) == 0) {
-		(void)strcat(term, "/");
-		(void)sprintf(term + strlen(term), "%d", cfgetospeed(&tty));
+		char baud[20];		/* more than enough.. */
+
+		(void)sprintf(baud, "/%d", cfgetospeed(&tty));
+		if (strlen(term) + strlen(baud) < sizeof(term) - 1)
+			(void)strcat(term, baud);
 	}
 
 	(void)get_window_size(0, &winsize);
@@ -298,12 +306,10 @@ try_connect:
 		if (dest_realm == NULL)
 			dest_realm = krb_realmofhost(host);
 
-#ifdef CRYPT
 		if (doencrypt)
 			rem = krcmd_mutual(&host, sp->s_port, user, term, 0,
 			    dest_realm, &cred, schedule);
 		else
-#endif /* CRYPT */
 			rem = krcmd(&host, sp->s_port, user, term, 0,
 			    dest_realm);
 		if (rem < 0) {
@@ -321,13 +327,11 @@ try_connect:
 			goto try_connect;
 		}
 	} else {
-#ifdef CRYPT
 		if (doencrypt) {
 			(void)fprintf(stderr,
 			    "rlogin: the -x flag requires Kerberos authentication.\n");
 			exit(1);
 		}
-#endif /* CRYPT */
 		rem = rcmd(&host, sp->s_port, pw->pw_name, user, term, 0);
 	}
 #else
@@ -345,6 +349,7 @@ try_connect:
 	if (setsockopt(rem, IPPROTO_IP, IP_TOS, (char *)&one, sizeof(int)) < 0)
 		perror("rlogin: setsockopt TOS (ignored)");
 
+	(void)seteuid(uid);
 	(void)setuid(uid);
 	doit(omask);
 	/*NOTREACHED*/
@@ -506,18 +511,15 @@ writer()
 				continue;
 			}
 			if (c != escapechar)
-#ifdef CRYPT
 #ifdef KERBEROS
 				if (doencrypt)
 					(void)des_write(rem,
 					    (char *)&escapechar, 1);
 				else
 #endif
-#endif
 					(void)write(rem, &escapechar, 1);
 		}
 
-#ifdef CRYPT
 #ifdef KERBEROS
 		if (doencrypt) {
 			if (des_write(rem, &c, 1) == 0) {
@@ -525,7 +527,6 @@ writer()
 				break;
 			}
 		} else
-#endif
 #endif
 			if (write(rem, &c, 1) == 0) {
 				msg("line gone");
@@ -610,12 +611,10 @@ sendwindow()
 	wp->ws_xpixel = htons(winsize.ws_xpixel);
 	wp->ws_ypixel = htons(winsize.ws_ypixel);
 
-#ifdef CRYPT
 #ifdef KERBEROS
 	if(doencrypt)
 		(void)des_write(rem, obuf, sizeof(obuf));
 	else
-#endif
 #endif
 		(void)write(rem, obuf, sizeof(obuf));
 }
@@ -747,12 +746,10 @@ reader(omask)
 		rcvcnt = 0;
 		rcvstate = READING;
 
-#ifdef CRYPT
 #ifdef KERBEROS
 		if (doencrypt)
 			rcvcnt = des_read(rem, rcvbuf, sizeof(rcvbuf));
 		else
-#endif
 #endif
 			rcvcnt = read(rem, rcvbuf, sizeof (rcvbuf));
 		if (rcvcnt == 0)
@@ -784,6 +781,8 @@ mode(f)
 		tty.c_lflag &= ~(ECHO|ICANON|ISIG|IEXTEN);
 		tty.c_iflag &= ~ICRNL;
 		tty.c_oflag &= ~OPOST;
+		tty.c_cc[VMIN] = 1;
+		tty.c_cc[VTIME] = 0;
 		if (eight) {
 			tty.c_iflag &= IXOFF;
 			tty.c_cflag &= ~(CSIZE|PARENB);
@@ -831,8 +830,11 @@ warning(fmt, va_alist)
 	va_dcl
 #endif
 {
+	char myrealm[REALM_SZ];
 	va_list ap;
 
+	if (krb_get_lrealm(myrealm, 0) != KSUCCESS)
+		return;
 	(void)fprintf(stderr, "rlogin: warning, using standard rlogin: ");
 #ifdef __STDC__
 	va_start(ap, fmt);
@@ -851,11 +853,7 @@ usage()
 	(void)fprintf(stderr,
 	    "usage: rlogin [ -%s]%s[-e char] [ -l username ] host\n",
 #ifdef KERBEROS
-#ifdef CRYPT
 	    "8EKLx", " [-k realm] ");
-#else
-	    "8EKL", " [-k realm] ");
-#endif
 #else
 	    "8EL", " ");
 #endif

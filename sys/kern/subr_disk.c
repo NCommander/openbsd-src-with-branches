@@ -1,6 +1,8 @@
-/*	$NetBSD: subr_disk.c,v 1.13 1995/03/29 20:57:35 mycroft Exp $	*/
+/*	$OpenBSD: subr_disk.c,v 1.13 1997/05/12 22:43:55 deraadt Exp $	*/
+/*	$NetBSD: subr_disk.c,v 1.17 1996/03/16 23:17:08 christos Exp $	*/
 
 /*
+ * Copyright (c) 1995 Jason R. Thorpe.  All rights reserved.
  * Copyright (c) 1982, 1986, 1988, 1993
  *	The Regents of the University of California.  All rights reserved.
  * (c) UNIX System Laboratories, Inc.
@@ -42,9 +44,40 @@
 
 #include <sys/param.h>
 #include <sys/systm.h>
+#include <sys/kernel.h>
+#include <sys/malloc.h>
+#include <sys/fcntl.h>
 #include <sys/buf.h>
-#include <sys/disklabel.h>
+#include <sys/stat.h>
 #include <sys/syslog.h>
+#include <sys/time.h>
+#include <sys/disklabel.h>
+#include <sys/conf.h>
+#include <sys/disk.h>
+#include <sys/dkio.h>
+#include <sys/dkstat.h>		/* XXX */
+
+#include <dev/rndvar.h>
+
+/*
+ * A global list of all disks attached to the system.  May grow or
+ * shrink over time.
+ */
+struct	disklist_head disklist;	/* TAILQ_HEAD */
+int	disk_count;		/* number of drives in global disklist */
+
+/*
+ * Old-style disk instrumentation structures.  These will go away
+ * someday.
+ */
+long	dk_seek[DK_NDRIVE];
+long	dk_time[DK_NDRIVE];
+long	dk_wds[DK_NDRIVE];
+long	dk_wpms[DK_NDRIVE];
+long	dk_xfer[DK_NDRIVE];
+int	dk_busy;
+int	dk_ndrive;
+int	dkn;			/* number of slots filled so far */
 
 /*
  * Seek sort for disks.  We depend on the driver which calls us using b_resid
@@ -140,11 +173,6 @@ insert:	bp->b_actf = bq->b_actf;
 	bq->b_actf = bp;
 }
 
-/* encoding of disk minor numbers, should be elsewhere... */
-#define dkunit(dev)		(minor(dev) >> 3)
-#define dkpart(dev)		(minor(dev) & 07)
-#define dkminor(unit, part)	(((unit) << 3) | (part))
-
 /*
  * Compute checksum for disk label.
  */
@@ -183,13 +211,14 @@ diskerr(bp, dname, what, pri, blkdone, lp)
 	int pri, blkdone;
 	register struct disklabel *lp;
 {
-	int unit = dkunit(bp->b_dev), part = dkpart(bp->b_dev);
-	register void (*pr) __P((const char *, ...));
+	int unit = DISKUNIT(bp->b_dev), part = DISKPART(bp->b_dev);
+	register int (*pr) __P((const char *, ...));
 	char partname = 'a' + part;
 	int sn;
 
 	if (pri != LOG_PRINTF) {
-		log(pri, "");
+		static const char fmt[] = "";
+		log(pri, fmt);
 		pr = addlog;
 	} else
 		pr = printf;
@@ -216,4 +245,253 @@ diskerr(bp, dname, what, pri, blkdone, lp)
 		sn %= lp->d_secpercyl;
 		(*pr)(" tn %d sn %d)", sn / lp->d_nsectors, sn % lp->d_nsectors);
 	}
+}
+
+/*
+ * Initialize the disklist.  Called by main() before autoconfiguration.
+ */
+void
+disk_init()
+{
+
+	TAILQ_INIT(&disklist);
+	disk_count = 0;
+	dk_ndrive = DK_NDRIVE;		/* XXX */
+}
+
+/*
+ * Searches the disklist for the disk corresponding to the
+ * name provided.
+ */
+struct disk *
+disk_find(name)
+	char *name;
+{
+	struct disk *diskp;
+
+	if ((name == NULL) || (disk_count <= 0))
+		return (NULL);
+
+	for (diskp = disklist.tqh_first; diskp != NULL;
+	    diskp = diskp->dk_link.tqe_next)
+		if (strcmp(diskp->dk_name, name) == 0)
+			return (diskp);
+
+	return (NULL);
+}
+
+/*
+ * Attach a disk.
+ */
+void
+disk_attach(diskp)
+	struct disk *diskp;
+{
+	int s;
+
+	/*
+	 * Allocate and initialize the disklabel structures.  Note that
+	 * it's not safe to sleep here, since we're probably going to be
+	 * called during autoconfiguration.
+	 */
+	diskp->dk_label = malloc(sizeof(struct disklabel), M_DEVBUF, M_NOWAIT);
+	diskp->dk_cpulabel = malloc(sizeof(struct cpu_disklabel), M_DEVBUF,
+	    M_NOWAIT);
+	if ((diskp->dk_label == NULL) || (diskp->dk_cpulabel == NULL))
+		panic("disk_attach: can't allocate storage for disklabel");
+
+	bzero(diskp->dk_label, sizeof(struct disklabel));
+	bzero(diskp->dk_cpulabel, sizeof(struct cpu_disklabel));
+
+	/*
+	 * Set the attached timestamp.
+	 */
+	s = splclock();
+	diskp->dk_attachtime = mono_time;
+	splx(s);
+
+	/*
+	 * Link into the disklist.
+	 */
+	TAILQ_INSERT_TAIL(&disklist, diskp, dk_link);
+	++disk_count;
+}
+
+/*
+ * Detach a disk.
+ */
+void
+disk_detach(diskp)
+	struct disk *diskp;
+{
+
+	/*
+	 * Free the space used by the disklabel structures.
+	 */
+	free(diskp->dk_label, M_DEVBUF);
+	free(diskp->dk_cpulabel, M_DEVBUF);
+
+	/*
+	 * Remove from the disklist.
+	 */
+	TAILQ_REMOVE(&disklist, diskp, dk_link);
+	if (--disk_count < 0)
+		panic("disk_detach: disk_count < 0");
+}
+
+/*
+ * Increment a disk's busy counter.  If the counter is going from
+ * 0 to 1, set the timestamp.
+ */
+void
+disk_busy(diskp)
+	struct disk *diskp;
+{
+	int s;
+
+	/*
+	 * XXX We'd like to use something as accurate as microtime(),
+	 * but that doesn't depend on the system TOD clock.
+	 */
+	if (diskp->dk_busy++ == 0) {
+		s = splclock();
+		diskp->dk_timestamp = mono_time;
+		splx(s);
+	}
+}
+
+/*
+ * Decrement a disk's busy counter, increment the byte count, total busy
+ * time, and reset the timestamp.
+ */
+void
+disk_unbusy(diskp, bcount)
+	struct disk *diskp;
+	long bcount;
+{
+	int s;
+	struct timeval dv_time, diff_time;
+
+	if (diskp->dk_busy-- == 0)
+		printf("disk_unbusy: %s: dk_busy < 0\n", diskp->dk_name);
+
+	s = splclock();
+	dv_time = mono_time;
+	splx(s);
+
+	timersub(&dv_time, &diskp->dk_timestamp, &diff_time);
+	timeradd(&diskp->dk_time, &diff_time, &diskp->dk_time);
+
+	diskp->dk_timestamp = dv_time;
+	if (bcount > 0) {
+		diskp->dk_bytes += bcount;
+		diskp->dk_xfer++;
+	}
+	diskp->dk_seek++;
+
+	add_disk_randomness(bcount ^ diff_time.tv_usec);
+}
+
+/*
+ * Reset the metrics counters on the given disk.  Note that we cannot
+ * reset the busy counter, as it may case a panic in disk_unbusy().
+ * We also must avoid playing with the timestamp information, as it
+ * may skew any pending transfer results.
+ */
+void
+disk_resetstat(diskp)
+	struct disk *diskp;
+{
+	int s = splbio(), t;
+
+	diskp->dk_xfer = 0;
+	diskp->dk_bytes = 0;
+	diskp->dk_seek = 0;
+
+	t = splclock();
+	diskp->dk_attachtime = mono_time;
+	splx(t);
+
+	timerclear(&diskp->dk_time);
+
+	splx(s);
+}
+
+
+int
+dk_mountroot()
+{
+	dev_t rawdev, rrootdev;
+	int part = DISKPART(rootdev);
+	int (*mountrootfn) __P((void));
+	extern struct proc *curproc;
+	struct disklabel dl;
+	int error;
+
+	rrootdev = blktochr(rootdev);
+	rawdev = MAKEDISKDEV(major(rrootdev), DISKUNIT(rootdev), RAW_PART);
+	printf("rootdev=0x%x rrootdev=0x%x rawdev=0x%x\n", rootdev,
+	    rrootdev, rawdev);
+
+	/*
+	 * open device, ioctl for the disklabel, and close it.
+	 */
+	error = (cdevsw[major(rrootdev)].d_open)(rawdev, FREAD,
+	    S_IFCHR, curproc);
+	if (error)
+		panic("cannot open disk, 0x%x/0x%x, error %d",
+		    rootdev, rrootdev, error);
+	error = (cdevsw[major(rrootdev)].d_ioctl)(rawdev, DIOCGDINFO,
+	    (caddr_t)&dl, FREAD, curproc);
+	if (error)
+		panic("cannot read disk label, 0x%x/0x%x, error %d",
+		    rootdev, rrootdev, error);
+	(void) (cdevsw[major(rrootdev)].d_close)(rawdev, FREAD,
+	    S_IFCHR, curproc);
+
+	if (dl.d_partitions[part].p_size == 0)
+		panic("root filesystem has size 0");
+	switch (dl.d_partitions[part].p_fstype) {
+#ifdef EXT2FS
+	case FS_EXT2FS:
+		{
+		extern int ext2fs_mountroot __P((void));
+		mountrootfn = ext2fs_mountroot;
+		}
+		break;
+#endif
+#ifdef FFS
+	case FS_BSDFFS:
+		{
+		extern int ffs_mountroot __P((void));
+		mountrootfn = ffs_mountroot;
+		}
+		break;
+#endif
+#ifdef LFS
+	case FS_BSDLFS:
+		{
+		extern int lfs_mountroot __P((void));
+		mountrootfn = lfs_mountroot;
+		}
+		break;
+#endif
+#ifdef CD9660
+	case FS_ISO9660:
+		{
+		extern int cd9660_mountroot __P((void));
+		mountrootfn = cd9660_mountroot;
+		}
+		break;
+#endif
+	default:
+		{ 
+		extern int ffs_mountroot __P((void));
+
+		printf("filesystem type %d not known.. assuming ffs\n",
+		    dl.d_partitions[part].p_fstype);
+		mountrootfn = ffs_mountroot;
+		}
+	}
+	return (*mountrootfn)();
 }

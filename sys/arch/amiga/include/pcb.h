@@ -1,3 +1,4 @@
+/*	$OpenBSD: pcb.h,v 1.9 1995/05/11 23:05:57 chopps Exp $	*/
 /*	$NetBSD: pcb.h,v 1.9 1995/05/11 23:05:57 chopps Exp $	*/
 
 /*

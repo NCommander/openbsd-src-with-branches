@@ -1,3 +1,4 @@
+/*	$OpenBSD: dirs.c,v 1.12 1996/12/24 08:37:50 deraadt Exp $	*/
 /*	$NetBSD: dirs.c,v 1.16 1995/06/19 00:20:11 cgd Exp $	*/
 
 /*
@@ -42,7 +43,7 @@
 #if 0
 static char sccsid[] = "@(#)dirs.c	8.5 (Berkeley) 8/31/94";
 #else
-static char rcsid[] = "$NetBSD: dirs.c,v 1.16 1995/06/19 00:20:11 cgd Exp $";
+static char rcsid[] = "$OpenBSD: dirs.c,v 1.12 1996/12/24 08:37:50 deraadt Exp $";
 #endif
 #endif /* not lint */
 
@@ -57,6 +58,7 @@ static char rcsid[] = "$NetBSD: dirs.c,v 1.16 1995/06/19 00:20:11 cgd Exp $";
 #include <protocols/dumprestore.h>
 
 #include <errno.h>
+#include <paths.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -64,7 +66,6 @@ static char rcsid[] = "$NetBSD: dirs.c,v 1.16 1995/06/19 00:20:11 cgd Exp $";
 
 #include <machine/endian.h>
 
-#include "pathnames.h"
 #include "restore.h"
 #include "extern.h"
 
@@ -76,8 +77,8 @@ static char rcsid[] = "$NetBSD: dirs.c,v 1.16 1995/06/19 00:20:11 cgd Exp $";
 struct inotab {
 	struct	inotab *t_next;
 	ino_t	t_ino;
-	long	t_seekpt;
-	long	t_size;
+	int32_t	t_seekpt;
+	int32_t	t_size;
 };
 static struct inotab *inotab[HASHSIZE];
 
@@ -100,8 +101,8 @@ struct modeinfo {
 #define DIRBLKSIZ 1024
 struct rstdirdesc {
 	int	dd_fd;
-	long	dd_loc;
-	long	dd_size;
+	int32_t	dd_loc;
+	int32_t	dd_size;
 	char	dd_buf[DIRBLKSIZ];
 };
 
@@ -111,9 +112,9 @@ struct rstdirdesc {
 static long	seekpt;
 static FILE	*df, *mf;
 static RST_DIR	*dirp;
-static char	dirfile[32] = "#";	/* No file */
-static char	modefile[32] = "#";	/* No file */
-static char	dot[2] = ".";		/* So it can be modified */
+static char	dirfile[MAXPATHLEN] = "#";	/* No file */
+static char	modefile[MAXPATHLEN] = "#";	/* No file */
+static char	dot[2] = ".";			/* So it can be modified */
 
 /*
  * Format of old style directories.
@@ -149,11 +150,18 @@ extractdirs(genmode)
 	register struct dinode *ip;
 	struct inotab *itp;
 	struct direct nulldir;
+	int fd;
 
 	vprintf(stdout, "Extract directories from tape\n");
-	(void) sprintf(dirfile, "%s/rstdir%d", _PATH_TMP, dumpdate);
-	df = fopen(dirfile, "w");
-	if (df == NULL) {
+	(void) sprintf(dirfile, "%srstdir%d", _PATH_TMP, dumpdate);
+	if (command != 'r' && command != 'R') {
+		(void *) strcat(dirfile, "-XXXXXX");
+		fd = mkstemp(dirfile);
+	} else
+		fd = open(dirfile, O_RDWR|O_CREAT|O_EXCL, 0666);
+	if (fd == -1 || (df = fdopen(fd, "w")) == NULL) {
+		if (fd != -1)
+			close(fd);
 		fprintf(stderr,
 		    "restore: %s - cannot create directory temporary\n",
 		    dirfile);
@@ -161,9 +169,15 @@ extractdirs(genmode)
 		exit(1);
 	}
 	if (genmode != 0) {
-		(void) sprintf(modefile, "%s/rstmode%d", _PATH_TMP, dumpdate);
-		mf = fopen(modefile, "w");
-		if (mf == NULL) {
+		(void) sprintf(modefile, "%srstmode%d", _PATH_TMP, dumpdate);
+		if (command != 'r' && command != 'R') {
+			(void *) strcat(modefile, "-XXXXXX");
+			fd = mkstemp(modefile);
+		} else
+			fd = open(modefile, O_RDWR|O_CREAT|O_EXCL, 0666);
+		if (fd == -1 || (mf = fdopen(fd, "w")) == NULL) {
+			if (fd != -1)
+				close(fd);
 			fprintf(stderr,
 			    "restore: %s - cannot create modefile \n",
 			    modefile);
@@ -208,7 +222,7 @@ void
 skipdirs()
 {
 
-	while ((curfile.dip->di_mode & IFMT) == IFDIR) {
+	while (curfile.dip && (curfile.dip->di_mode & IFMT) == IFDIR) {
 		skipfile();
 	}
 }
@@ -246,8 +260,9 @@ treescan(pname, ino, todo)
 	 * begin search through the directory
 	 * skipping over "." and ".."
 	 */
-	(void) strncpy(locname, pname, MAXPATHLEN);
-	(void) strncat(locname, "/", MAXPATHLEN);
+	(void) strncpy(locname, pname, sizeof(locname) - 1);
+	locname[sizeof(locname) - 1] = '\0';
+	(void) strncat(locname, "/", sizeof(locname) - strlen(locname));
 	namelen = strlen(locname);
 	rst_seekdir(dirp, itp->t_seekpt, itp->t_seekpt);
 	dp = rst_readdir(dirp); /* "." */
@@ -267,9 +282,9 @@ treescan(pname, ino, todo)
 	 */
 	while (dp != NULL) {
 		locname[namelen] = '\0';
-		if (namelen + dp->d_namlen >= MAXPATHLEN) {
+		if (namelen + dp->d_namlen >= sizeof(locname)) {
 			fprintf(stderr, "%s%s: name exceeds %d char\n",
-				locname, dp->d_name, MAXPATHLEN);
+				locname, dp->d_name, sizeof(locname) - 1);
 		} else {
 			(void) strncat(locname, dp->d_name, (int)dp->d_namlen);
 			treescan(locname, dp->d_ino, todo);
@@ -440,7 +455,7 @@ dcvt(odp, ndp)
 	register struct direct *ndp;
 {
 
-	memset(ndp, 0, (long)(sizeof *ndp));
+	memset(ndp, 0, (size_t)(sizeof *ndp));
 	ndp->d_ino =  odp->d_ino;
 	ndp->d_type = DT_UNKNOWN;
 	(void) strncpy(ndp->d_name, odp->d_name, ODIRSIZ);
@@ -591,7 +606,13 @@ setdirmodes(flags)
 	char *cp;
 	
 	vprintf(stdout, "Set directory mode, owner, and times.\n");
-	(void) sprintf(modefile, "%s/rstmode%d", _PATH_TMP, dumpdate);
+	if (command == 'r' || command == 'R')
+		(void) sprintf(modefile, "%srstmode%d", _PATH_TMP, dumpdate);
+	if (modefile[0] == '#') {
+		panic("modefile not defined\n");
+		fprintf(stderr, "directory mode, owner, and times not set\n");
+		return;
+	}
 	mf = fopen(modefile, "r");
 	if (mf == NULL) {
 		fprintf(stderr, "fopen: %s\n", strerror(errno));

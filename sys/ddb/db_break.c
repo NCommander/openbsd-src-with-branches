@@ -1,8 +1,9 @@
-/*	$NetBSD: db_break.c,v 1.5 1994/10/09 08:19:32 mycroft Exp $	*/
+/*	$OpenBSD: db_break.c,v 1.3 1996/03/11 11:15:58 mickey Exp $	*/
+/*	$NetBSD: db_break.c,v 1.7 1996/03/30 22:30:03 christos Exp $	*/
 
 /* 
  * Mach Operating System
- * Copyright (c) 1991,1990 Carnegie Mellon University
+ * Copyright (c) 1993,1992,1991,1990 Carnegie Mellon University
  * All Rights Reserved.
  * 
  * Permission to use, copy, modify and distribute this software and its
@@ -11,7 +12,7 @@
  * software, derivative works or modified versions, and any portions
  * thereof, and that both notices appear in supporting documentation.
  * 
- * CARNEGIE MELLON ALLOWS FREE USE OF THIS SOFTWARE IN ITS 
+ * CARNEGIE MELLON ALLOWS FREE USE OF THIS SOFTWARE IN ITS "AS IS"
  * CONDITION.  CARNEGIE MELLON DISCLAIMS ANY LIABILITY OF ANY KIND FOR
  * ANY DAMAGES WHATSOEVER RESULTING FROM THE USE OF THIS SOFTWARE.
  * 
@@ -22,8 +23,8 @@
  *  Carnegie Mellon University
  *  Pittsburgh PA 15213-3890
  * 
- * any improvements or extensions that they make and grant Carnegie the
- * rights to redistribute these changes.
+ * any improvements or extensions that they make and grant Carnegie Mellon
+ * the rights to redistribute these changes.
  *
  *	Author: David B. Golub, Carnegie Mellon University
  *	Date:	7/90
@@ -38,10 +39,10 @@
 #include <machine/db_machdep.h>		/* type definitions */
 
 #include <ddb/db_lex.h>
-#include <ddb/db_break.h>
 #include <ddb/db_access.h>
 #include <ddb/db_sym.h>
 #include <ddb/db_break.h>
+#include <ddb/db_output.h>
 
 #define	NBREAKPOINTS	100
 struct db_breakpoint	db_break_table[NBREAKPOINTS];
@@ -250,7 +251,7 @@ db_list_breakpoints()
 	     bkpt != 0;
 	     bkpt = bkpt->link)
 	{
-	    db_printf("%s%8x %5d    ",
+	    db_printf("%s%p %5d    ",
 		      db_map_current(bkpt->map) ? "*" : " ",
 		      bkpt->map, bkpt->init_count);
 	    db_printsym(bkpt->address, DB_STGY_PROC);
@@ -286,8 +287,13 @@ db_breakpoint_cmd(addr, have_addr, count, modif)
 }
 
 /* list breakpoints */
+/*ARGSUSED*/
 void
-db_listbreak_cmd()
+db_listbreak_cmd(addr, have_addr, count, modif)
+	db_expr_t	addr;
+	int		have_addr;
+	db_expr_t	count;
+	char *		modif;
 {
 	db_list_breakpoints();
 }
@@ -319,7 +325,7 @@ db_map_current(map)
 	return ((map == NULL) ||
 		(map == kernel_map) ||
 		(((thread = current_thread()) != NULL) &&
-		 (map == thread->task->map)));
+		 (map == thread->proc->map)));
 #else
 	return (1);
 #endif
@@ -341,7 +347,7 @@ db_map_addr(addr)
 	if ((VM_MIN_ADDRESS <= addr) &&
 	    (addr < VM_MAX_ADDRESS) &&
 	    ((thread = current_thread()) != NULL))
-	    return thread->task->map;
+	    return thread->proc->map;
 	else
 #endif
 	    return kernel_map;

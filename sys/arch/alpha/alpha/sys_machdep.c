@@ -1,7 +1,8 @@
-/*	$NetBSD: sys_machdep.c,v 1.2 1995/09/19 23:00:53 thorpej Exp $	*/
+/*	$OpenBSD: sys_machdep.c,v 1.4 1996/10/30 22:38:28 niklas Exp $	*/
+/*	$NetBSD: sys_machdep.c,v 1.5 1996/11/13 22:20:57 cgd Exp $	*/
 
 /*
- * Copyright (c) 1994, 1995 Carnegie-Mellon University.
+ * Copyright (c) 1994, 1995, 1996 Carnegie-Mellon University.
  * All rights reserved.
  *
  * Author: Chris G. Demetriou
@@ -34,15 +35,17 @@
 #include <sys/syscallargs.h>
 
 int
-sysarch(p, v, retval)
+sys_sysarch(p, v, retval)
 	struct proc *p;
 	void *v;
 	register_t *retval;
 {
-	struct sysarch_args /* {
+#if 0
+	struct sys_sysarch_args /* {
 		syscallarg(int) op;
 		syscallarg(char *) parms;
 	} */ *uap = v;
+#endif
 
 	return (ENOSYS);
 }

@@ -1,5 +1,3 @@
-/*	$NetBSD: rec_delete.c,v 1.7 1995/02/27 13:24:48 cgd Exp $	*/
-
 /*-
  * Copyright (c) 1990, 1993, 1994
  *	The Regents of the University of California.  All rights reserved.
@@ -37,11 +35,7 @@
  */
 
 #if defined(LIBC_SCCS) && !defined(lint)
-#if 0
-static char sccsid[] = "@(#)rec_delete.c	8.6 (Berkeley) 6/4/94";
-#else
-static char rcsid[] = "$NetBSD: rec_delete.c,v 1.7 1995/02/27 13:24:48 cgd Exp $";
-#endif
+static char rcsid[] = "$OpenBSD: rec_delete.c,v 1.8 1996/05/03 21:38:46 cgd Exp $";
 #endif /* LIBC_SCCS and not lint */
 
 #include <sys/types.h>
@@ -94,13 +88,13 @@ __rec_delete(dbp, key, flags)
 		status = rec_rdelete(t, nrec);
 		break;
 	case R_CURSOR:
-		if (!ISSET(t, B_SEQINIT))
+		if (!F_ISSET(&t->bt_cursor, CURS_INIT))
 			goto einval;
 		if (t->bt_nrecs == 0)
 			return (RET_SPECIAL);
-		status = rec_rdelete(t, t->bt_rcursor - 1);
+		status = rec_rdelete(t, t->bt_cursor.rcursor - 1);
 		if (status == RET_SUCCESS)
-			--t->bt_rcursor;
+			--t->bt_cursor.rcursor;
 		break;
 	default:
 einval:		errno = EINVAL;
@@ -108,7 +102,7 @@ einval:		errno = EINVAL;
 	}
 
 	if (status == RET_SUCCESS)
-		SET(t, B_MODIFIED | R_MODIFIED);
+		F_SET(t, B_MODIFIED | R_MODIFIED);
 	return (status);
 }
 

@@ -1,3 +1,5 @@
+/*	$OpenBSD: pcvt_ext.c,v 1.8 1996/11/07 11:19:48 niklas Exp $	*/
+
 /*
  * Copyright (c) 1992, 1995 Hellmuth Michaelis and Joerg Wunsch.
  *
@@ -429,7 +431,7 @@ vga_chipset(void)
 					}
 					break;
 
-				case 0xA0:
+				case 0xa0:
 					outb(addr_6845, 0x38);
 					outb(addr_6845+1, old1byte);
 					return VGA_S3_80x;
@@ -440,6 +442,50 @@ vga_chipset(void)
 					outb(addr_6845+1, old1byte);
 					can_do_132col = 1;
 					return VGA_S3_928;
+
+				case 0xc0:
+					outb(addr_6845, 0x38);
+					outb(addr_6845+1, old1byte);
+					return VGA_S3_864;
+
+				case 0xd0:
+					outb(addr_6845, 0x38);
+					outb(addr_6845+1, old1byte);
+					return VGA_S3_964;
+
+				case 0xe0:
+					outb(addr_6845, 0x2e);
+					byte = inb(addr_6845+1);
+
+					switch (byte) {
+					case 0x10:
+						outb(addr_6845, 0x38);
+						outb(addr_6845+1, old1byte);
+						return VGA_S3_732;
+					case 0x11:
+						outb(addr_6845, 0x2f);
+						byte = inb(addr_6845+1);
+
+						outb(addr_6845, 0x38);
+						outb(addr_6845+1, old1byte);
+
+						if ((byte & 0x40) == 0x40)
+							return VGA_S3_765;
+						else
+							return VGA_S3_764;
+					case 0x80:
+						outb(addr_6845, 0x38);
+						outb(addr_6845+1, old1byte);
+						return VGA_S3_866;
+					case 0x90:
+						outb(addr_6845, 0x38);
+						outb(addr_6845+1, old1byte);
+						return VGA_S3_868;
+					case 0xf0:
+						outb(addr_6845, 0x38);
+						outb(addr_6845+1, old1byte);
+						return VGA_S3_968;
+					}
 
 				default:
 					outb(addr_6845, 0x38);
@@ -515,6 +561,7 @@ vga_chipset(void)
 				return VGA_CL_GD5428;
 
 			case 0x28:
+			case 0x2a:	/* GD5434 */
 				can_do_132col = 1;
 				return VGA_CL_GD5430;
 
@@ -585,6 +632,14 @@ vga_string(int number)
 		"s3 924",
 		"s3 801/805",
 		"s3 928",
+		"s3 864",
+		"s3 964",
+		"s3 732 (Trio32)",
+		"s3 764 (Trio64)",
+		"s3 866",
+		"s3 868",
+		"s3 968",
+		"s3 765 (Trio64 V+)",
 		"unknown s3",
 		"cl-gd5402",
 		"cl-gd5402r1",
@@ -2196,8 +2251,6 @@ switch_screen(int n, int oldgrafx, int newgrafx)
 		if((saved_scrnsv_tmo = scrnsv_timeout))
 			pcvt_set_scrnsv_tmo(0);	/* screensaver off */
 #endif /* PCVT_SCREENSAVER */
-
-		async_update(UPDATE_STOP);	/* status display off */
 	}
 
 	if(!oldgrafx)
@@ -2265,9 +2318,6 @@ switch_screen(int n, int oldgrafx, int newgrafx)
 		    outb(addr_6845, CRTC_CUREND); /* select low register */
 		    outb(addr_6845+1, vsp->cursor_end);
 		}
-
-		/* make status display happy */
-		async_update(UPDATE_START);
 	}
 
 	if(!newgrafx)
@@ -2333,7 +2383,8 @@ switch_screen(int n, int oldgrafx, int newgrafx)
 		if(vsp->force24 && (vsp->vt_pure_mode == M_PUREVT) &&
 			(vgacs[vsp->vga_charset].screen_size == SIZ_25ROWS))
 		{
-			fillw(' ', vsp->Crtat + vsp->screen_rows * vsp->maxcol,
+			fillw(' ', (caddr_t)
+				(vsp->Crtat + vsp->screen_rows * vsp->maxcol),
 				vsp->maxcol);
 		}
 	}
@@ -2722,8 +2773,7 @@ usl_vt_ioctl(Dev_t dev, int cmd, caddr_t data, int flag, struct proc *p)
 			int x = spltty();
 			i = current_video_screen;
 			error = 0;
-			while (current_video_screen == i &&
-			       (error == 0 || error == ERESTART))
+			while (current_video_screen == i && error == 0)
 			{
 				vs[i].vt_status |= VT_WAIT_ACT;
 				error = tsleep((caddr_t)&vs[i].smode,
@@ -2735,8 +2785,7 @@ usl_vt_ioctl(Dev_t dev, int cmd, caddr_t data, int flag, struct proc *p)
 		{
 			int x = spltty();
 			error = 0;
-			while (current_video_screen != i &&
-			       (error == 0 || error == ERESTART))
+			while (current_video_screen != i && error == 0)
 			{
 				vs[i].vt_status |= VT_WAIT_ACT;
 				error = tsleep((caddr_t)&vs[i].smode,
@@ -2744,12 +2793,13 @@ usl_vt_ioctl(Dev_t dev, int cmd, caddr_t data, int flag, struct proc *p)
 			}
 			splx(x);
 		}
-		return error;
+		return (error == ERESTART) ? PCVT_ERESTART : error;
 
 	case KDENABIO:
 		/* grant the process IO access; only allowed if euid == 0 */
 	{
 
+#if (PCVT_NETBSD <= 100) || defined(COMPAT_10) || defined(COMPAT_11)
 #if PCVT_NETBSD > 9 || PCVT_FREEBSD >= 200
 		struct trapframe *fp = (struct trapframe *)p->p_md.md_regs;
 #elif PCVT_NETBSD || (PCVT_FREEBSD && PCVT_FREEBSD > 102)
@@ -2757,14 +2807,18 @@ usl_vt_ioctl(Dev_t dev, int cmd, caddr_t data, int flag, struct proc *p)
 #else
 		struct syscframe *fp = (struct syscframe *)p->p_regs;
 #endif
+#endif
 
 		if(suser(p->p_ucred, &p->p_acflag) != 0)
 			return (EPERM);
 
+#if (PCVT_NETBSD <= 100) || defined(COMPAT_10) || defined(COMPAT_11)
+		/* This is done by i386_iopl(3) now. */
 #if PCVT_NETBSD || (PCVT_FREEBSD && PCVT_FREEBSD > 102)
 		fp->tf_eflags |= PSL_IOPL;
 #else
 		fp->sf_eflags |= PSL_IOPL;
+#endif
 #endif
 
 		return 0;
@@ -2774,6 +2828,8 @@ usl_vt_ioctl(Dev_t dev, int cmd, caddr_t data, int flag, struct proc *p)
 		/* abandon IO access permission */
 	{
 
+#if (PCVT_NETBSD <= 100) || defined(COMPAT_10) || defined(COMPAT_11)
+		/* This is done by i386_iopl(3) now. */
 #if PCVT_NETBSD > 9 || PCVT_FREEBSD >= 200
 		struct trapframe *fp = (struct trapframe *)p->p_md.md_regs;
 		fp->tf_eflags &= ~PSL_IOPL;
@@ -2784,7 +2840,7 @@ usl_vt_ioctl(Dev_t dev, int cmd, caddr_t data, int flag, struct proc *p)
 		struct syscframe *fp = (struct syscframe *)p->p_regs;
 		fp->sf_eflags &= ~PSL_IOPL;
 #endif
-
+#endif
 		return 0;
 	}
 

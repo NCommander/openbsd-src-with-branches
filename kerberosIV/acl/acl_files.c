@@ -1,4 +1,4 @@
-/*	$Id$	*/
+/*	$Id: acl_files.c,v 1.2 1995/12/14 08:43:39 tholo Exp $	*/
 
 /*-
  * Copyright (C) 1989 by the Massachusetts Institute of Technology
@@ -66,7 +66,7 @@
 /* If realm is missing, it becomes the local realm */
 /* Canonicalized form is put in canon, which must be big enough to hold
    MAX_PRINCIPAL_SIZE characters */
-void
+int
 acl_canonicalize_principal(principal, canon)
 	char *principal;
 	char *canon;
@@ -84,7 +84,7 @@ acl_canonicalize_principal(principal, canon)
 	    /* Copy into canon */
 	    strncpy(canon, principal, MAX_PRINCIPAL_SIZE);
 	    canon[MAX_PRINCIPAL_SIZE-1] = '\0';
-	    return;
+	    return(0);
 	} else {
 	    /* Nope, it's part of the realm */
 	    dot = NULL;
@@ -122,8 +122,9 @@ acl_canonicalize_principal(principal, canon)
 	canon += len;
 	*canon++ = '\0';
     } else if(krb_get_lrealm(canon, 1) != KSUCCESS) {
-	strcpy(canon, KRB_REALM);
+	return(-1);
     }
+    return(0);
 }
 	    
 /* Get a lock to modify acl_file */
@@ -142,7 +143,7 @@ acl_lock_file(acl_file)
 
     if(stat(acl_file, &s) < 0) return(NULL);
     mode = s.st_mode;
-    sprintf(new, NEW_FILE, acl_file);
+    snprintf(new, sizeof(new), NEW_FILE, acl_file);
     for(;;) {
 	/* Open the new file */
 	if((nfd = open(new, O_WRONLY|O_CREAT|O_EXCL, mode)) < 0) {
@@ -192,7 +193,7 @@ acl_abort(acl_file, f)
 	   fclose(f);
 	   return(-1);
        } else {
-	   sprintf(new, NEW_FILE, acl_file);
+	   snprintf(new, sizeof(new), NEW_FILE, acl_file);
 	   ret = unlink(new);
 	   fclose(f);
 	   return(ret);
@@ -213,7 +214,7 @@ acl_commit(acl_file, f)
     int ret;
     struct stat s;
 
-    sprintf(new, NEW_FILE, acl_file);
+    snprintf(new, sizeof(new), NEW_FILE, acl_file);
     if(fflush(f) < 0
        || fstat(fileno(f), &s) < 0
        || s.st_nlink == 0) {
@@ -438,7 +439,8 @@ acl_load(name)
 	   acl_cache[i].acl = make_hash(ACL_LEN);
 	   while(fgets(buf, sizeof(buf), f) != NULL) {
 	       nuke_whitespace(buf);
-	       acl_canonicalize_principal(buf, canon);
+	       if (acl_canonicalize_principal(buf, canon) < 0)
+		   return(-1);
 	       add_hash(acl_cache[i].acl, canon);
 	   }
 	   fclose(f);
@@ -472,7 +474,8 @@ acl_check(acl, principal)
     char canon[MAX_PRINCIPAL_SIZE];
     char *realm;
 
-    acl_canonicalize_principal(principal, canon);
+    if (acl_canonicalize_principal(principal, canon) < 0)
+	return(0);
 
     /* Is it there? */
     if(acl_exact_match(acl, canon)) return(1);
@@ -481,10 +484,10 @@ acl_check(acl, principal)
     realm = strchr(canon, REALM_SEP);
     *strchr(canon, INST_SEP) = '\0';	/* Chuck the instance */
 
-    sprintf(buf, "%s.*%s", canon, realm);
+    snprintf(buf, sizeof(buf), "%s.*%s", canon, realm);
     if(acl_exact_match(acl, buf)) return(1);
 
-    sprintf(buf, "*.*%s", realm);
+    snprintf(buf, sizeof(buf), "*.*%s", realm);
     if(acl_exact_match(acl, buf) || acl_exact_match(acl, "*.*@*")) return(1);
        
     return(0);
@@ -502,7 +505,8 @@ acl_add(acl, principal)
     FILE *new;
     char canon[MAX_PRINCIPAL_SIZE];
 
-    acl_canonicalize_principal(principal, canon);
+    if (acl_canonicalize_principal(principal, canon) < 0)
+	return(-1);
 
     if((new = acl_lock_file(acl)) == NULL) return(-1);
     if((acl_exact_match(acl, canon))
@@ -537,7 +541,8 @@ acl_delete(acl, principal)
     FILE *new;
     char canon[MAX_PRINCIPAL_SIZE];
 
-    acl_canonicalize_principal(principal, canon);
+    if (acl_canonicalize_principal(principal, canon) < 0)
+	return(-1);
 
     if((new = acl_lock_file(acl)) == NULL) return(-1);
     if((!acl_exact_match(acl, canon))

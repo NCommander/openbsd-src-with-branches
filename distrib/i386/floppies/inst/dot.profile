@@ -1,3 +1,4 @@
+#       $OpenBSD: dot.profile,v 1.4 1996/06/16 10:25:15 deraadt Exp $
 #
 # Copyright (c) 1994 Christopher G. Demetriou
 # All rights reserved.
@@ -27,7 +28,6 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
 # THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
-#       $Id: dot.profile,v 1.1.1.1 1994/08/29 15:30:21 cgd Exp $
 
 PATH=/sbin:/bin:/usr/bin:/usr/sbin:/
 export PATH
@@ -44,8 +44,8 @@ if [ "X${DONEPROFILE}" = "X" ]; then
 	stty newcrt werase ^W intr ^C kill ^U erase ^? 9600
 	echo ''
 
-	# run update, so that installed software is written as it goes.
-	update
+	# mount the kern_fs so that we can examine the dmesg state
+	mount -t kernfs /kern /kern
 
 	# pull in the functions that people will use from the shell prompt.
 	. /.commonutils

@@ -1,3 +1,4 @@
+/*	$OpenBSD: unistd.h,v 1.4 1996/10/26 03:13:52 tholo Exp $	*/
 /*	$NetBSD: unistd.h,v 1.10 1994/06/29 06:46:06 cgd Exp $	*/
 
 /*
@@ -41,17 +42,9 @@
 /* compile-time symbolic constants */
 #define	_POSIX_JOB_CONTROL	/* implementation supports job control */
 
-/*
- * Although we have saved user/group IDs, we do not use them in setuid
- * as described in POSIX 1003.1, because the feature does not work for
- * root.  We use the saved IDs in seteuid/setegid, which are not currently
- * part of the POSIX 1003.1 specification.
- */
-#ifdef	_NOT_AVAILABLE
 #define	_POSIX_SAVED_IDS	/* saved set-user-ID and set-group-ID */
-#endif
 
-#define	_POSIX_VERSION		198808L
+#define	_POSIX_VERSION		199009L
 #define	_POSIX2_VERSION		199212L
 
 /* execution-time symbolic constants */
@@ -60,7 +53,7 @@
 				/* too-long path components generate errors */
 #define	_POSIX_NO_TRUNC		1
 				/* may disable terminal special characters */
-#define	_POSIX_VDISABLE		((unsigned char)'\377')
+#define	_POSIX_VDISABLE		(0377)
 
 /* access function */
 #define	F_OK		0	/* test for existence of file */

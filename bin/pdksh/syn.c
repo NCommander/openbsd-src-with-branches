@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: syn.c,v 1.4 1996/10/13 21:32:20 downsj Exp $	*/
 
 /*
  * shell parser (C version)
@@ -36,6 +36,7 @@ static void	syntaxerr	ARGS((const char *what))
 static void	multiline_push ARGS((struct multiline_state *save, int tok));
 static void	multiline_pop ARGS((struct multiline_state *saved));
 static int	assign_command ARGS((char *s));
+static int	inalias ARGS((struct source *s));
 #ifdef KSH
 static int	dbtestp_isa ARGS((Test_env *te, Test_meta meta));
 static const char *dbtestp_getopnd ARGS((Test_env *te, Test_op op,
@@ -122,8 +123,11 @@ c_list()
 
 	t = andor();
 	if (t != NULL) {
+		/* Token has always been read/rejected at this point, so
+		 * we don't worray about what flags to pass token()
+		 */
 		while ((c = token(0)) == ';' || c == '&' || c == COPROC ||
-		       (c == '\n' && (multiline.on || source->type == SALIAS)))
+		       (c == '\n' && (multiline.on || inalias(source))))
 		{
 			if (c == '&' || c == COPROC) {
 				int type = c == '&' ? TASYNC : TCOPROC;
@@ -207,7 +211,10 @@ get_command(cf)
 	XPinit(args, 16);
 	XPinit(vars, 16);
 
-	if (multiline.on)
+	/* Don't want to pass CONTIN if reading interactively as just hitting
+	 * return would print PS2 instead of PS1.
+	 */
+	if (multiline.on || inalias(source))
 		cf = CONTIN;
 	syniocf = KEYWORD|ALIAS;
 	switch (c = token(cf|KEYWORD|ALIAS|VARASN)) {
@@ -224,7 +231,7 @@ get_command(cf)
 		syniocf &= ~(KEYWORD|ALIAS);
 		t = newtp(TCOM);
 		while (1) {
-			cf = (t->evalflags ? ARRAYVAR : 0)
+			cf = (t->u.evalflags ? ARRAYVAR : 0)
 			     | (XPsize(args) == 0 ? ALIAS|VARASN : CMDWORD);
 			switch (tpeek(cf)) {
 			  case REDIR:
@@ -241,7 +248,7 @@ get_command(cf)
 				if (iopn == 0 && XPsize(vars) == 0
 				    && XPsize(args) == 0
 				    && assign_command(ident))
-					t->evalflags = DOVACHECK;
+					t->u.evalflags = DOVACHECK;
 				if ((XPsize(args) == 0 || Flag(FKEYWORD))
 				    && is_wdvarassign(yylval.cp))
 					XPput(vars, yylval.cp);
@@ -254,7 +261,7 @@ get_command(cf)
 				 * allows (not POSIX, but not disallowed)
 				 */
 				afree(t, ATEMP);
-				if (XPsize(args) == 0 && XPsize(vars) != 0) {
+				if (XPsize(args) == 0 && XPsize(vars) == 0) {
 					ACCEPT;
 					goto Subshell;
 				}
@@ -284,6 +291,7 @@ get_command(cf)
 		t = nested(TBRACE, '{', '}');
 		break;
 
+#ifdef KSH
 	  case MDPAREN:
 	  {
 		static const char let_cmd[] = { CHAR, 'l', CHAR, 'e',
@@ -296,6 +304,7 @@ get_command(cf)
 		XPput(args, yylval.cp);
 		break;
 	  }
+#endif /* KSH */
 
 #ifdef KSH
 	  case DBRACKET: /* [[ .. ]] */
@@ -334,7 +343,7 @@ get_command(cf)
 	  case WHILE:
 	  case UNTIL:
 		multiline_push(&old_multiline, c);
-		t = newtp((c == WHILE) ? TWHILE: TUNTIL);
+		t = newtp((c == WHILE) ? TWHILE : TUNTIL);
 		t->left = c_list();
 		t->right = dogroup();
 		multiline_pop(&old_multiline);
@@ -552,6 +561,7 @@ function_body(name, ksh_func)
 	}
 	t = newtp(TFUNCT);
 	t->str = Xclose(xs, xp);
+	t->u.ksh_func = ksh_func;
 
 	/* Note that POSIX allows only compound statements after foo(), sh and
 	 * at&t ksh allow any command, go with the later since it shouldn't
@@ -657,8 +667,8 @@ const	struct tokeninfo {
 	{ "&&",		LOGAND,	FALSE },
 	{ "||",		LOGOR,	FALSE },
 	{ ";;",		BREAK,	FALSE },
-	{ "((",		MDPAREN, FALSE },
 #ifdef KSH
+	{ "((",		MDPAREN, FALSE },
 	{ "|&",		COPROC,	FALSE },
 #endif /* KSH */
 	/* and some special cases... */
@@ -763,7 +773,7 @@ newtp(type)
 
 	t = (struct op *) alloc(sizeof(*t), ATEMP);
 	t->type = type;
-	t->evalflags = 0;
+	t->u.evalflags = 0;
 	t->args = t->vars = NULL;
 	t->ioact = NULL;
 	t->left = t->right = NULL;
@@ -807,6 +817,17 @@ assign_command(s)
 		|| (c == 'e' && strcmp(s, "export") == 0)
 		|| (c == 'r' && strcmp(s, "readonly") == 0)
 		|| (c == 't' && strcmp(s, "typeset") == 0);
+}
+
+/* Check if we are in the middle of reading an alias */
+static int
+inalias(s)
+	struct source *s;
+{
+	for (; s && s->type == SALIAS; s = s->next)
+		if (!(s->flags & SF_ALIASEND))
+			return 1;
+	return 0;
 }
 
 

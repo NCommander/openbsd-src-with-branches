@@ -1,4 +1,5 @@
-/*	$NetBSD: zbus.c,v 1.12 1995/10/09 02:08:50 chopps Exp $	*/
+/*	$OpenBSD: zbus.c,v 1.7 1996/11/23 21:45:24 kstailey Exp $	*/
+/*	$NetBSD: zbus.c,v 1.31 1997/01/06 18:05:15 is Exp $	*/
 
 /*
  * Copyright (c) 1994 Christian E. Hopps
@@ -31,6 +32,7 @@
  */
 #include <sys/param.h>
 #include <sys/device.h>
+#include <sys/systm.h>
 #include <machine/cpu.h>
 #include <machine/pte.h>
 #include <amiga/amiga/cfdev.h>
@@ -55,20 +57,26 @@ struct preconfdata {
  */
 static struct aconfdata aconftab[] = {
 	/* Commodore Amiga */
-	{ "atfsc",	514,	84 },
 	{ "atzee",	513,	1 },
+	{ "atzsc",	514,	2 },
 	{ "atzsc",	514,	3 },
-	{ "le",		514,	112 },
+	{ "bah",	514,	9 },	/* A2060 */
 	{ "ql",		514,	69 },
 	{ "ql",		514,	70 },
+	{ "atfsc",	514,	84 },
+	{ "le",		514,	112 },
 	/* Ameristar */
 	{ "le",		1053,	1 },
+	{ "bah",	1053,	9 },	/* A2060 */
 	{ "es",		1053,	10 },
-	/* Univeristy of lowell */
+	/* University of Lowell */
 	{ "grful",	1030,	0 },
+	/* DMI */
+	{ "grfrs",	2129,	1 },	/* Resolver graphics board */
 	/* Macrosystems */
 	{ "grfrt",	18260,	6 },
 	{ "grfrh",	18260,	16},	/* Retina BLT Z3 */
+	{ "grfrh",	18260,	19},	/* Altais */
 	/* Greater valley products */
 	{ "gvpbus",	2017,	2 },
 	{ "gvpbus",	2017,	11 },
@@ -96,10 +104,11 @@ static struct aconfdata aconftab[] = {
 	/* Hydra */
 	{ "ed",		2121,	1 },
 	/* ASDG */
-	{ "ed",		9999,	9 },		/* XXXX */
+	{ "ed",		1023,	254 },
 	/* Village Tronic Ariadne */
 	{ "ae",		2167,	201},
 	/* bsc/Alf Data */
+	{ "Tandem",	2092,    6 },	/* Tandem AT disk controler */
 	{ "mfc",	2092,	16 },
 	{ "mfc",	2092,	17 },
 	{ "mfc",	2092,	18 },
@@ -110,18 +119,37 @@ static struct aconfdata aconftab[] = {
 	{ "grfcl",	2193,	1},	/* Spectrum regs */
 	{ "grfcl",	2195,	5},	/* Piccolo mem */
 	{ "grfcl",	2195,	6},	/* Piccolo regs */
+	{ "grfcl",	2195,	10},	/* Piccolo SD64 mem */
+	{ "grfcl",	2195,	11},	/* Piccolo SD64 regs */
 	/* MacroSystemsUS */
 	{ "wesc",	2203,	19},	/* Warp engine */
 	/* phase 5 digital products */
 	{ "flmem",	8512,	10},	/* FastlaneZ3 memory */
 	{ "flsc",	8512,	11},	/* FastlaneZ3 */
+	{ "cbsc",	8512,	12},	/* Cyberstorm Mk I SCSI */
+	{ "bzivsc",	8512,	17},	/* Blizzard IV SCSI */
+	{ "bztzsc", 	8512,	24},	/* Blizzard 2060 SCSI */
+	{ "cbiisc", 	8512,	25},	/* Cyberstorm Mk II SCSI */
 	{ "grfcv",	8512,	34},	/* CyberVison 64 */
-	/* Commodore Amiga */
-	{ "afsc",	514,	84},	/* A4091 SCSI HD Controller */
 	/* Hacker Inc. */
 	{ "mlhsc",	2011,	1 },
 	/* Resource Management Force */
-	{ "qn",		2011,	2 }	/* QuickNet Ethernet */
+	{ "qn",		2011,	2 },	/* QuickNet Ethernet */
+	/* ??? */
+	{ "empsc",	2171,	21 },	/* Emplant SCSI */
+	{ "empsc",	2171,	32 },	/* Emplant SCSI */
+	/* Tseng ET4000 boards */
+	{ "grfet",	2181,	0 },	/* oMniBus */
+	{ "grfet",	2167,	1 },	/* Domnio mem */
+	{ "grfet",	2167,	2 },	/* Domino regs */
+	{ "grfet",	2117,	3 },	/* Merlin mem */
+	{ "grfet",	2117,	4 },	/* Merlin regs */
+	/* Advanced Systems */
+	{ "nxsc",	2102,	1 },	/* Nexus SCSI board */
+	/* Masoboshi */
+	{ "mcsc",	8535,	4 },	/* Masoboshi Mastercard 702 */
+	/* Apollo */
+	{ "apssc",	8738,	35 }	/* Apollo '060 scsi */
 };
 static int naconfent = sizeof(aconftab) / sizeof(struct aconfdata);
 
@@ -131,23 +159,32 @@ static int naconfent = sizeof(aconftab) / sizeof(struct aconfdata);
  * the Zorro III device.
  */
 static struct preconfdata preconftab[] = {
-	{ 18260, 6, 0 },
-	/* Retina BLT Z3 */
-	{ 18260, 16, 0},
+	{18260, 6, 0 },	/* Retina Z2 */
+	{18260, 16, 0}, /* Retina BLT Z3 */
+	{18260, 19, 0}, /* Altais */
 	{2167,	11, 0},	/* Picasso-II mem*/
-	{2167,	12, 0},	/* regs */
+	{2167,	12, 0},	/* Picasso-II regs */
 	{2193,	2, 0},	/* Spectrum mem */
 	{2193,	1, 0},	/* Spectrum regs */
 	{2195,	5, 0},	/* Piccolo mem */
 	{2195,	6, 0},	/* Piccolo regs */
-	{1030,	0, 0}	/* Ulwl board */
+	{2195,	10, 0},	/* Piccolo SD64 mem */
+	{2195,	11, 0},	/* Piccolo SD64 regs */
+	{1030,	0, 0},	/* Ulwl board */
+	{8512,	34, 0},	/* Cybervison 64 */
+	{8512,  34, 0}, /* Cybervison 64 */
+	{2181,	0, 0},	/* oMniBus mem or regs */
+	{2167,	1, 0},	/* Domino mem */
+	{2167,	2, 0},	/* Domino regs */
+	{2117,	3, 0},	/* Merlin mem */
+	{2117,	4, 0}	/* Merlin regs */
 };
 static int npreconfent = sizeof(preconftab) / sizeof(struct preconfdata);
 
 
 void zbusattach __P((struct device *, struct device *, void *));
-int zbusprint __P((void *, char *));
-int zbusmatch __P((struct device *, struct cfdata *,void *));
+int zbusprint __P((void *, const char *));
+int zbusmatch __P((struct device *, void *, void *));
 caddr_t zbusmap __P((caddr_t, u_int));
 static char *aconflookup __P((int, int));
 
@@ -171,20 +208,25 @@ aconflookup(mid, pid)
 /* 
  * mainbus driver 
  */
-struct cfdriver zbuscd = {
-	NULL, "zbus", (cfmatch_t)zbusmatch, zbusattach, 
-	DV_DULL, sizeof(struct device), NULL, 0
+
+struct cfattach zbus_ca = {
+	sizeof(struct device), zbusmatch, zbusattach
+};
+
+struct cfdriver zbus_cd = {
+	NULL, "zbus", DV_DULL, NULL, 0
 };
 
 static struct cfdata *early_cfdata;
 
 /*ARGSUSED*/
 int
-zbusmatch(pdp, cfp, auxp)
+zbusmatch(pdp, match, auxp)
 	struct device *pdp;
-	struct cfdata *cfp;
-	void *auxp;
+	void *match, *auxp;
 {
+	struct cfdata *cfp = match;
+
 	if (matchname(auxp, "zbus") == 0)
 		return(0);
 	if (amiga_realconfig == 0)
@@ -210,7 +252,7 @@ zbusattach(pdp, dp, auxp)
 	ecdp = &cfdev[ncfdev];
 	if (amiga_realconfig) {
 		if (ZTWOMEMADDR)
-			printf(": mem 0x%08x-0x%08x",
+			printf(": mem 0x%08lx-0x%08lx",
 			    ZTWOMEMADDR, ZTWOMEMADDR + NBPG * NZTWOMEMPG - 1);
 		if (ZBUSAVAIL)
 			printf (": i/o size 0x%08x", ZBUSAVAIL);
@@ -238,9 +280,9 @@ zbusattach(pdp, dp, auxp)
 		if (amiga_realconfig && pcp < epcp && pcp->vaddr)
 			za.va = pcp->vaddr;
 		else {
-			za.va = (void *) (isztwopa(za.pa) ? ztwomap(za.pa) :
-			    zbusmap(za.pa, za.size));
-/*                          ??????? */
+			za.va = (void *) (isztwopa(za.pa) ? ztwomap(za.pa) 
+			    : zbusmap(za.pa, za.size));
+/*                     		??????? */
 			/*
 			 * save value if early console init 
 			 */
@@ -261,7 +303,7 @@ zbusattach(pdp, dp, auxp)
 int
 zbusprint(auxp, pnp)
 	void *auxp;
-	char *pnp;
+	const char *pnp;
 {
 	struct zbus_args *zap;
 	int rv;
@@ -275,16 +317,16 @@ zbusprint(auxp, pnp)
 		if (zap->manid == -1)
 			rv = UNSUPP;
 	}
-	printf(" rom 0x%x man/pro %d/%d", zap->pa, zap->manid, zap->prodid);
+	printf(" rom %p man/pro %d/%d", zap->pa, zap->manid, zap->prodid);
 	return(rv);
 }
 
 /*
- * this function is used to map Zorro physical I/O addresses into kernel virtual
- * addresses. We don't keep track which address we map where, we don't NEED
- * to know this. We made sure in amiga_init.c (by scanning all available Zorro
- * devices) to have enough kva-space available, so there is no extra range
- * check done here.
+ * this function is used to map Zorro physical I/O addresses into kernel
+ * virtual addresses. We don't keep track which address we map where, we don't
+ * NEED to know this. We made sure in amiga_init.c (by scanning all available
+ * Zorro devices) to have enough kva-space available, so there is no extra
+ * range check done here.
  */
 caddr_t
 zbusmap (pa, size)

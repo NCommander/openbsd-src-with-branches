@@ -39,7 +39,7 @@ char copyright[] =
 
 #ifndef lint
 /*static char sccsid[] = "from: @(#)trpt.c	5.14 (Berkeley) 7/1/91";*/
-static char rcsid[] = "$Id: trpt.c,v 1.3 1994/12/23 16:35:50 cgd Exp $";
+static char rcsid[] = "$Id: trpt.c,v 1.4 1996/12/22 03:29:10 deraadt Exp $";
 #endif /* not lint */
 
 #include <sys/param.h>
@@ -115,7 +115,7 @@ main(argc, argv)
 	off_t lseek();
 
 	jflag = npcbs = 0;
-	while ((ch = getopt(argc, argv, "afjp:st")) != EOF)
+	while ((ch = getopt(argc, argv, "afjp:st")) != -1)
 		switch (ch) {
 		case 'a':
 			++aflag;
@@ -162,6 +162,15 @@ main(argc, argv)
 	}
 	else
 		system = _PATH_UNIX;
+
+	/*
+	 * Discard setgid priviledges if not the running kernel so that bad
+	 * guys can't print interesting stuff from kernel memory.
+	 */
+	if (!strcmp(core, _PATH_KMEM) || !strcmp(system, _PATH_UNIX)) {
+		setegid(getgid());
+		setgid(getgid());
+	}
 
 	if (nlist(system, nl) < 0 || !nl[0].n_value) {
 		fprintf(stderr, "trpt: %s: no namelist\n", system);

@@ -13,7 +13,7 @@ alias tset	'set noglob histchars=""; eval `\tset -s \!*`; unset noglob histchars
 alias x		exit
 alias z		suspend
 
-set path = (~/bin /bin /usr/{bin,new,games,local,old} .)
+set path = (~/bin /bin /usr/{bin,host,local/bin,games} .)
 
 if ($?prompt) then
 	# An interactive shell -- set some stuff up
@@ -22,6 +22,10 @@ if ($?prompt) then
 	set ignoreeof
 	set mail = (/var/mail/$USER)
 	set mch = `hostname -s`
-	set prompt = "$mch:q:$cwd:t {\!} "
-	umask 2
+	alias prompt 'set prompt = "$mch:q"":$cwd:t {\!} "'
+	alias cd 'cd \!*; prompt'
+	alias popd 'popd \!*; prompt'
+	alias pushd 'pushd \!*; prompt'
+	cd .
+	umask 22
 endif

@@ -1,3 +1,6 @@
+/*	$OpenBSD: temp.c,v 1.4 1996/10/28 00:42:21 millert Exp $	*/
+/*	$NetBSD: temp.c,v 1.5 1996/06/08 19:48:42 christos Exp $	*/
+
 /*
  * Copyright (c) 1980, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -32,8 +35,11 @@
  */
 
 #ifndef lint
-static char sccsid[] = "from: @(#)temp.c	8.1 (Berkeley) 6/6/93";
-static char rcsid[] = "$Id: temp.c,v 1.4 1994/11/28 20:03:40 jtc Exp $";
+#if 0
+static char sccsid[] = "@(#)temp.c	8.1 (Berkeley) 6/6/93";
+#else
+static char rcsid[] = "$OpenBSD: temp.c,v 1.4 1996/10/28 00:42:21 millert Exp $";
+#endif
 #endif /* not lint */
 
 #include "rcv.h"
@@ -57,17 +63,24 @@ void
 tinit()
 {
 	register char *cp;
-	int len;
 
-	if ((tmpdir = getenv("TMPDIR")) == NULL) {
+	if ((tmpdir = getenv("TMPDIR")) == NULL || *tmpdir == '\0')
 		tmpdir = _PATH_TMP;
+	if ((tmpdir = strdup(tmpdir)) == NULL)
+		panic("Out of memory");
+
+	/* Strip trailing '/' if necesary */
+	cp = tmpdir + strlen(tmpdir) - 1;
+	while (cp > tmpdir && *cp == '/') {
+		*cp = '\0';
+		cp--;
 	}
 
-	tempMail  = tempnam (tmpdir, "Rs");
-	tempResid = tempnam (tmpdir, "Rq");
-	tempQuit  = tempnam (tmpdir, "Rm");
-	tempEdit  = tempnam (tmpdir, "Re");
-	tempMesg  = tempnam (tmpdir, "Rx");
+	tempMail  = tempnam(tmpdir, "Rs");
+	tempResid = tempnam(tmpdir, "Rq");
+	tempQuit  = tempnam(tmpdir, "Rm");
+	tempEdit  = tempnam(tmpdir, "Re");
+	tempMesg  = tempnam(tmpdir, "Rx");
 
 	/*
 	 * It's okay to call savestr in here because main will
@@ -81,15 +94,13 @@ tinit()
 		}
 	} else {
 		if ((cp = username()) == NOSTR) {
-			myname = "ubluit";
-			if (rcvmode) {
-				printf("Who are you!?\n");
+			myname = "nobody";
+			if (rcvmode)
 				exit(1);
-			}
 		} else
 			myname = savestr(cp);
 	}
-	if ((cp = getenv("HOME")) == NOSTR)
+	if ((cp = getenv("HOME")) == NOSTR || strlen(getenv("HOME")) >= PATHSIZE)
 		cp = ".";
 	homedir = savestr(cp);
 	if (debug)

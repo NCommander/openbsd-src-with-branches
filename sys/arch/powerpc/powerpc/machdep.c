@@ -1,3 +1,4 @@
+/*	$OpenBSD: machdep.c,v 1.6 1997/02/24 12:50:28 deraadt Exp $	*/
 /*	$NetBSD: machdep.c,v 1.4 1996/10/16 19:33:11 ws Exp $	*/
 
 /*
@@ -464,16 +465,29 @@ allocsys(v)
 	valloc(msqids, struct msqid_ds, msginfo.msgmni);
 #endif
 
+#ifndef BUFCACHEPERCENT
+#define BUFCACHEPERCENT 5
+#endif
 	/*
 	 * Decide on buffer space to use.
 	 */
 	if (bufpages == 0)
-		bufpages = (physmem / 20) / CLSIZE;
+		bufpages = (physmem / ((100/BUFCACHEPERCENT) / CLSIZE));
 	if (nbuf == 0) {
 		nbuf = bufpages;
 		if (nbuf < 16)
 			nbuf = 16;
 	}
+	/* Restrict to at most 70% filled kvm */
+	if (nbuf * MAXBSIZE >
+	    (VM_MAX_KERNEL_ADDRESS-VM_MIN_KERNEL_ADDRESS) * 7 / 10)
+		nbuf = (VM_MAX_KERNEL_ADDRESS-VM_MIN_KERNEL_ADDRESS) /
+		    MAXBSIZE * 7 / 10;
+
+	/* More buffer pages than fits into the buffers is senseless.  */
+	if (bufpages > nbuf * MAXBSIZE / CLBYTES)
+		bufpages = nbuf * MAXBSIZE / CLBYTES;
+
 	if (nswbuf == 0) {
 		nswbuf = (nbuf / 2) & ~1;
 		if (nswbuf > 256)
@@ -535,10 +549,12 @@ setregs(p, pack, stack, retval)
  * Send a signal to process.
  */
 void
-sendsig(catcher, sig, mask, code)
+sendsig(catcher, sig, mask, code, type, val)
 	sig_t catcher;
 	int sig, mask;
 	u_long code;
+	int type;
+	union sigval val;
 {
 	struct proc *p = curproc;
 	struct trapframe *tf;
@@ -564,21 +580,25 @@ sendsig(catcher, sig, mask, code)
 		fp = (struct sigframe *)tf->fixreg[1];
 	fp = (struct sigframe *)((int)(fp - 1) & ~0xf);
 	
-	frame.sf_code = code;
-	
 	/*
 	 * Generate signal context for SYS_sigreturn.
 	 */
 	frame.sf_sc.sc_onstack = oldonstack;
 	frame.sf_sc.sc_mask = mask;
+	frame.sf_sip = NULL;
 	bcopy(tf, &frame.sf_sc.sc_frame, sizeof *tf);
+	if (psp->ps_siginfo & sigmask(sig)) {
+		frame.sf_sip = &fp->sf_si;
+		initsiginfo(&frame.sf_si, sig, code, type, val);
+	}
 	if (copyout(&frame, fp, sizeof frame) != 0)
 		sigexit(p, SIGILL);
 	
+
 	tf->fixreg[1] = (int)fp;
 	tf->lr = (int)catcher;
 	tf->fixreg[3] = (int)sig;
-	tf->fixreg[4] = (int)code;
+	tf->fixreg[4] = (psp->ps_siginfo & sigmask(sig)) ? (int)&fp->sf_si : NULL;
 	tf->fixreg[5] = (int)&frame.sf_sc;
 	tf->srr0 = (int)(((char *)PS_STRINGS)
 			 - (p->p_emul->e_esigcode - p->p_emul->e_sigcode));
@@ -864,7 +884,21 @@ boot(howto)
 	if (!cold && !(howto & RB_NOSYNC) && !syncing) {
 		syncing = 1;
 		vfs_shutdown();		/* sync */
-		resettodr();		/* set wall clock */
+#if 0
+		/* resettodr does not currently do anything, address
+		 * this later
+		 */
+		/*
+		 * If we've been adjusting the clock, the todr
+		 * will be out of synch; adjust it now unless
+		 * the system was sitting in ddb.
+		 */
+		if ((howto & RB_TIMEBAD) == 0) {
+			resettodr();
+		} else {
+			printf("WARNING: not updating battery clock\n");
+		}
+#endif
 	}
 	splhigh();
 	if (howto & RB_HALT) {

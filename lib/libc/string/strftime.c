@@ -32,8 +32,7 @@
  */
 
 #if defined(LIBC_SCCS) && !defined(lint)
-/*static char *sccsid = "from: @(#)strftime.c	5.11 (Berkeley) 2/24/91";*/
-static char *rcsid = "$Id: strftime.c,v 1.8 1994/09/29 04:57:04 jtc Exp $";
+static char *rcsid = "$OpenBSD: strftime.c,v 1.6 1996/08/19 08:34:18 tholo Exp $";
 #endif /* LIBC_SCCS and not lint */
 
 #include <sys/localedef.h>
@@ -44,8 +43,10 @@ static char *rcsid = "$Id: strftime.c,v 1.8 1994/09/29 04:57:04 jtc Exp $";
 
 static size_t gsize;
 static char *pt;
-static int _add(), _conv(), _secs();
-static size_t _fmt();
+static int _add __P((const char *));
+static int _secs __P((const struct tm *));
+static int _conv __P((int, int, char));
+static size_t _fmt __P((const char *, const struct tm *));
 
 size_t
 strftime(s, maxsize, format, t)
@@ -72,8 +73,8 @@ strftime(s, maxsize, format, t)
 				((t)->tm_wday ? (t)->tm_wday - 1 : 6)) / 7)
 static size_t
 _fmt(format, t)
-	register char *format;
-	struct tm *t;
+	register const char *format;
+	const struct tm *t;
 {
 	for (; *format; ++format) {
 		if (*format == '%') {
@@ -202,7 +203,7 @@ _fmt(format, t)
 					return(0);
 				continue;
 			case 'u':
-				if (!_conv(t->tm_wday ? t->tm_wday : 7, 2, '0'))
+				if (!_conv(t->tm_wday ? t->tm_wday : 7, 1, '0'))
 					return(0);
 				continue;
 			case 'V':
@@ -216,7 +217,11 @@ _fmt(format, t)
 				 
 				int week = MON_WEEK(t);
 
-				if (((t->tm_yday + 7 - (t->tm_wday + 1)) % 7) >= 4) {
+				int days = (((t)->tm_yday + 7 - \
+                                ((t)->tm_wday ? (t)->tm_wday - 1 : 6)) % 7);
+
+
+				if (days >= 4) {
 					week++;
 				} else if (week == 0) {
 					week = 53;
@@ -252,7 +257,8 @@ _fmt(format, t)
 					return(0);
 				continue;
 			case 'Z':
-				if (t->tm_zone && !_add(t->tm_zone))
+				if (tzname[t->tm_isdst ? 1 : 0] &&
+				    !_add(tzname[t->tm_isdst ? 1 : 0]))
 					return(0);
 				continue;
 			case '%':
@@ -272,9 +278,9 @@ _fmt(format, t)
 	return(gsize);
 }
 
-static
+static int
 _secs(t)
-	struct tm *t;
+	const struct tm *t;
 {
 	static char buf[15];
 	register time_t s;
@@ -289,10 +295,14 @@ _secs(t)
 	return(_add(++p));
 }
 
-static
+static int
+#if __STDC__
+_conv(int n, int digits, char pad)
+#else
 _conv(n, digits, pad)
 	int n, digits;
 	char pad;
+#endif
 {
 	static char buf[10];
 	register char *p;
@@ -304,9 +314,9 @@ _conv(n, digits, pad)
 	return(_add(++p));
 }
 
-static
+static int
 _add(str)
-	register char *str;
+	register const char *str;
 {
 	for (;; ++pt, --gsize) {
 		if (!gsize)

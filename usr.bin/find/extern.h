@@ -1,3 +1,4 @@
+/* *      $OpenBSD: extern.h,v 1.6 1996/10/24 03:46:03 tholo Exp $*/
 /*-
  * Copyright (c) 1991, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -31,7 +32,6 @@
  * SUCH DAMAGE.
  *
  *	from: @(#)extern.h	8.1 (Berkeley) 6/6/93
- *      $Id: extern.h,v 1.4 1993/12/30 21:15:18 jtc Exp $
  */
 
 #include <sys/cdefs.h>
@@ -48,17 +48,22 @@ PLAN	*paren_squish __P((PLAN *));
 struct stat;
 void	 printlong __P((char *, char *, struct stat *));
 int	 queryuser __P((char **));
+void	 show_path __P((int));
 
 PLAN	*c_atime __P((char *));
 PLAN	*c_ctime __P((char *));
 PLAN	*c_depth __P((void));
+PLAN	*c_empty __P((void));
 PLAN	*c_exec __P((char ***, int));
+PLAN	*c_execdir __P((char ***));
 PLAN	*c_follow __P((void));
 PLAN	*c_fstype __P((char *));
 PLAN	*c_group __P((char *));
 PLAN	*c_inum __P((char *));
 PLAN	*c_links __P((char *));
 PLAN	*c_ls __P((void));
+PLAN	*c_maxdepth __P((char *));
+PLAN	*c_mindepth __P((char *));
 PLAN	*c_name __P((char *));
 PLAN	*c_newer __P((char *));
 PLAN	*c_nogroup __P((void));

@@ -1,4 +1,4 @@
-/*	$NetBSD: gencons.c,v 1.6 1995/08/21 03:24:46 ragge Exp $	*/
+/*	$NetBSD: gencons.c,v 1.11 1996/09/02 06:44:32 mycroft Exp $	*/
 
 /*
  * Copyright (c) 1994 Gordon W. Ross
@@ -35,27 +35,41 @@
 
  /* All bugs are subject to removal without further notice */
 
-#include "sys/param.h"
-#include "sys/proc.h"
-#include "sys/systm.h"
-#include "sys/ioctl.h"
-#include "sys/tty.h"
-#include "sys/file.h"
-#include "sys/conf.h"
-#include "sys/device.h"
-#include "sys/reboot.h"
+#include <sys/param.h>
+#include <sys/proc.h>
+#include <sys/systm.h>
+#include <sys/ioctl.h>
+#include <sys/tty.h>
+#include <sys/file.h>
+#include <sys/conf.h>
+#include <sys/device.h>
+#include <sys/reboot.h>
 
-#include "dev/cons.h"
+#include <dev/cons.h>
 
-#include "machine/mtpr.h"
-#include "machine/../vax/gencons.h"
+#include <machine/mtpr.h>
+#include <machine/cpu.h>
+#include <machine/../vax/gencons.h>
 
 struct	tty *gencn_tty[1];
 
-int consinied = 0;
+int	consinied = 0;
 
-int	gencnparam();
-void	gencnstart();
+int	gencnparam __P((struct tty *, struct termios *));
+void	gencnstart __P((struct tty *));
+int	gencnopen __P((dev_t, int, int, struct proc *));
+int	gencnclose __P((dev_t, int, int, struct proc *));
+int	gencnread __P((dev_t, struct uio *, int));
+int	gencnwrite __P((dev_t, struct uio *, int));
+int	gencnioctl __P((dev_t, u_long, caddr_t, int, struct proc *));
+int	gencngetc __P((dev_t));
+void	gencnprobe __P((struct consdev *));
+void	gencninit __P((struct consdev *));
+struct tty *gencntty __P((dev_t));
+void	gencnrint __P((void));
+void	gencntint __P((void));
+void	gencnstop __P((struct tty *, int));
+void	gencnslask __P((void));
 
 int
 gencnopen(dev, flag, mode, p)
@@ -99,7 +113,6 @@ gencnclose(dev, flag, mode, p)
         int flag, mode;
         struct proc *p;
 {
-        int unit = minor(dev);
         struct tty *tp = gencn_tty[0];
 
         (*linesw[tp->t_line].l_close)(tp, flag);
@@ -120,7 +133,6 @@ gencnread(dev, uio, flag)
         struct uio *uio;
         int flag;
 {
-        int unit = minor(dev);
         struct tty *tp = gencn_tty[0];
 
         return ((*linesw[tp->t_line].l_read)(tp, uio, flag));
@@ -132,7 +144,6 @@ gencnwrite(dev, uio, flag)
         struct uio *uio;
         int flag;
 {
-        int unit = minor(dev);
         struct tty *tp = gencn_tty[0];
         return ((*linesw[tp->t_line].l_write)(tp, uio, flag));
 }
@@ -140,13 +151,12 @@ gencnwrite(dev, uio, flag)
 int
 gencnioctl(dev, cmd, data, flag, p)
         dev_t dev;
-        int cmd;
+        u_long cmd;
         caddr_t data;
         int flag;
         struct proc *p;
 {
         int error;
-        int unit = minor(dev);
         struct tty *tp = gencn_tty[0];
 
         error = (*linesw[tp->t_line].l_ioctl)(tp, cmd, data, flag, p);
@@ -185,13 +195,14 @@ gencnstart(tp)
 out:	splx(s);
 }
 
+void
 gencnrint()
 {
 	struct tty *tp;
 	int i, j;
 
 	tp = gencn_tty[0];
-	i = mfpr(PR_RXDB);
+	i = mfpr(PR_RXDB) & 0377; /* Mask status flags etc... */
 
 #ifdef DDB
 	j = kdbrint(i);
@@ -207,13 +218,15 @@ gencnrint()
 	return;
 }
 
-int
+void
 gencnstop(tp, flag)
         struct tty *tp;
         int flag;
 {
+
 }
 
+void
 gencntint()
 {
 	struct tty *tp;
@@ -236,7 +249,7 @@ gencnparam(tp, t)
 	return 0;
 }
 
-int
+void
 gencnprobe(cndev)
 	struct	consdev *cndev;
 {
@@ -248,21 +261,21 @@ gencnprobe(cndev)
 			cndev->cn_pri = CN_NORMAL;
 			break;
 		}
-	return 0;
 }
 
-int
+void
 gencninit(cndev)
 	struct	consdev *cndev;
 {
 }
 
+void
 gencnslask()
 {
 	gencn_tty[0] = ttymalloc();
 }
 
-int
+void
 gencnputc(dev,ch)
 	dev_t	dev;
 	int	ch;
@@ -279,14 +292,12 @@ int
 gencngetc(dev)
 	dev_t	dev;
 {
+	int i;
+
 	while ((mfpr(PR_RXCS) & GC_DON) == 0) /* Receive chr */
 		;
-	return mfpr(PR_RXDB) & 0x7f;
-}
-
-conout(str)
-	char *str;
-{
-	while (*str)
-		gencnputc(0, *str++);
+	i = mfpr(PR_RXDB) & 0x7f;
+	if (i == 13)
+		i = 10;
+	return i;
 }

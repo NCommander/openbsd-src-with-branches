@@ -48,7 +48,8 @@ static char rcsid[] = "$NetBSD: vocab.c,v 1.2 1995/03/21 12:05:13 cgd Exp $";
 
 /*      Re-coding of advent in C: data structure routines               */
 
-# include "hdr.h"
+#include <stdlib.h>
+#include "hdr.h"
 
 dstroy(object)
 int object;
@@ -95,11 +96,11 @@ int object,where;
 		holdng++;
 	}
 	if (atloc[where]==object)
-	{       atloc[where]=link[object];
+	{       atloc[where]=linkx[object];
 		return;
 	}
-	for (temp=atloc[where]; link[temp]!=object; temp=link[temp]);
-	link[temp]=link[object];
+	for (temp=atloc[where]; linkx[temp]!=object; temp=linkx[temp]);
+	linkx[temp]=linkx[object];
 }
 
 
@@ -111,7 +112,7 @@ int object,where;
 		place[object]=where;
 	}
 	if (where<=0) return;
-	link[object]=atloc[where];
+	linkx[object]=atloc[where];
 	atloc[where]=object;
 }
 

@@ -1,3 +1,4 @@
+.\"	$OpenBSD: ipcs.1,v 1.2 1996/06/26 05:34:36 deraadt Exp $
 .\"	$NetBSD: ipcs.1,v 1.4 1995/04/15 02:31:16 cgd Exp $
 .\"
 .\" Copyright (c) 1994 SigmaSoft, Th. Lockert
@@ -30,7 +31,7 @@
 .\"
 .Dd June 18, 1994
 .Dt "IPCS" 1
-.Os NetBSD 0.9c
+.Os
 .Sh NAME
 .Nm ipcs
 .Nd report System V interprocess communication facilities status
@@ -99,7 +100,7 @@ or the last operation on a semaphore.
 .It Fl C Ar system
 Extract the name list from the specified system instead of the
 default
-.Dq Pa /netbsd .
+.Dq Pa /bsd .
 .It Fl M
 Display system information about shared memory.
 .It Fl N Ar core
@@ -139,7 +140,7 @@ at all attempt to explain the information printed by
 .Bl -tag -width /etc/passwd -compact
 .It Pa /dev/kmem
 default kernel memory
-.It Pa /netbsd
+.It Pa /bsd
 default system name list
 .El
 .Sh SEE ALSO

@@ -1,3 +1,4 @@
+/*	$OpenBSD: memalloc.h,v 1.10 1995/05/11 21:29:31 christos Exp $	*/
 /*	$NetBSD: memalloc.h,v 1.10 1995/05/11 21:29:31 christos Exp $	*/
 
 /*-

@@ -1,7 +1,5 @@
-/*	$NetBSD: print-ppp.c,v 1.3 1995/03/06 19:11:27 mycroft Exp $	*/
-
 /*
- * Copyright (c) 1990, 1991, 1993, 1994
+ * Copyright (c) 1990, 1991, 1993, 1994, 1995, 1996
  *	The Regents of the University of California.  All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -22,8 +20,8 @@
  */
 
 #ifndef lint
-static  char rcsid[] =
-	"@(#)Header: print-ppp.c,v 1.18 94/06/10 17:01:37 mccanne Exp (LBL)";
+static const char rcsid[] =
+    "@(#) $Header: print-ppp.c,v 1.24 96/12/10 23:23:12 leres Exp $ (LBL)";
 #endif
 
 #ifdef PPP
@@ -33,6 +31,10 @@ static  char rcsid[] =
 #include <sys/file.h>
 #include <sys/ioctl.h>
 
+#if __STDC__
+struct mbuf;
+struct rtentry;
+#endif
 #include <net/if.h>
 
 #include <netinet/in.h>
@@ -40,7 +42,6 @@ static  char rcsid[] =
 #include <netinet/ip.h>
 
 #include <ctype.h>
-#include <errno.h>
 #include <netdb.h>
 #include <pcap.h>
 #include <signal.h>
@@ -56,8 +57,8 @@ void
 ppp_if_print(u_char *user, const struct pcap_pkthdr *h,
 	     register const u_char *p)
 {
-	register int length = h->len;
-	register int caplen = h->caplen;
+	register u_int length = h->len;
+	register u_int caplen = h->caplen;
 	const struct ip *ip;
 
 	ts_print(&h->ts);

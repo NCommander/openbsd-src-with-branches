@@ -30,7 +30,7 @@
 .\" SUCH DAMAGE.
 .\"
 .\"     from: @(#)gettytab.5	8.4 (Berkeley) 4/19/94
-.\"	$Id: gettytab.5,v 1.12 1994/09/24 00:56:05 mycroft Exp $
+.\"	$Id: gettytab.5,v 1.2 1996/08/11 05:41:42 deraadt Exp $
 .\"
 .Dd April 19, 1994
 .Dt GETTYTAB 5
@@ -83,7 +83,7 @@ table.
 .It "c2	num	unused	tty control flags to leave terminal as"
 .It "ce	bool	false	use crt erase algorithm"
 .It "ck	bool	false	use crt kill algorithm"
-.It "cl	str" Ta Dv NULL	Ta
+.It "cl	str" Ta Dv NULL Ta
 .No "screen clear sequence"
 .It "co	bool	false	console - add"
 .Ql \en
@@ -101,7 +101,7 @@ after login prompt
 .No "end of text"
 .Pq Dv EOF
 character
-.It "ev	str" Ta Dv NULL	Ta
+.It "ev	str" Ta Dv NULL Ta
 .No "initial environment"
 .It "f0	num	unused	tty mode flags to write messages"
 .It "f1	num	unused	tty mode flags to read login name"
@@ -111,7 +111,7 @@ character
 .It "hc	bool	false	do"
 .Tn NOT
 hangup line on last close
-.It "he	str" Ta Dv NULL	Ta
+.It "he	str" Ta Dv NULL Ta
 .No "hostname editing string"
 .It "hn	str	hostname	hostname"
 .It "ht	bool	false	terminal has real tabs"
@@ -149,6 +149,7 @@ hangup line on last close
 .It "pe	bool	false	use printer (hard copy) erase algorithm"
 .It "pf	num	0	delay"
 between first prompt and following flush (seconds)
+.It "pp	str	unused	PPP authentication program"
 .It "ps	bool	false	line connected to a"
 .Tn MICOM
 port selector
@@ -351,6 +352,12 @@ implementation.
 does not check parity of input characters in
 .Dv RAW
 mode.
+.Pp
+If
+.Em \&pp
+string is specified and a PPP link bringup sequence is recognized,
+getty will invoke the program referenced by the pp option.  This
+can be used to handle incoming PPP calls.
 .Sh SEE ALSO
 .Xr login 1 ,
 .Xr gethostname 2 ,

@@ -1,3 +1,6 @@
+/*	$OpenBSD: quit.c,v 1.2 1996/06/11 12:53:48 deraadt Exp $	*/
+/*	$NetBSD: quit.c,v 1.5 1996/06/08 19:48:37 christos Exp $	*/
+
 /*
  * Copyright (c) 1980, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -32,8 +35,11 @@
  */
 
 #ifndef lint
-static char sccsid[] = "from: @(#)quit.c	8.1 (Berkeley) 6/6/93";
-static char rcsid[] = "$Id: quit.c,v 1.4 1994/11/28 20:03:37 jtc Exp $";
+#if 0
+static char sccsid[] = "@(#)quit.c	8.1 (Berkeley) 6/6/93";
+#else
+static char rcsid[] = "$OpenBSD: quit.c,v 1.2 1996/06/11 12:53:48 deraadt Exp $";
+#endif
 #endif /* not lint */
 
 #include "rcv.h"
@@ -50,7 +56,8 @@ static char rcsid[] = "$Id: quit.c,v 1.4 1994/11/28 20:03:37 jtc Exp $";
  * The "quit" command.
  */
 int
-quitcmd()
+quitcmd(v)
+	void *v;
 {
 	/*
 	 * If we are sourcing, then return 1 so execute() can handle it.
@@ -70,7 +77,7 @@ void
 quit()
 {
 	int mcount, p, modify, autohold, anystat, holdbit, nohold;
-	FILE *ibuf, *obuf, *fbuf, *rbuf, *readstat, *abuf;
+	FILE *ibuf = NULL, *obuf, *fbuf, *rbuf, *readstat = NULL, *abuf;
 	register struct message *mp;
 	register int c;
 	extern char *tempQuit, *tempResid;
@@ -105,7 +112,15 @@ quit()
 	fbuf = Fopen(mailname, "r");
 	if (fbuf == NULL)
 		goto newmail;
-	flock(fileno(fbuf), LOCK_EX);
+	if (flock(fileno(fbuf), LOCK_EX) == -1) {
+		perror("Unable to lock mailbox");
+		Fclose(fbuf);
+		return;
+	}
+	if (!spool_lock()) {
+		Fclose(fbuf);
+		return;			/* mail.local printed error for us */
+	}
 	rbuf = NULL;
 	if (fstat(fileno(fbuf), &minfo) >= 0 && minfo.st_size > mailsize) {
 		printf("New mail has arrived.\n");
@@ -178,12 +193,14 @@ quit()
 		printf("Held %d message%s in %s\n",
 			p, p == 1 ? "" : "s", mailname);
 		Fclose(fbuf);
+		spool_unlock();
 		return;
 	}
 	if (c == 0) {
 		if (p != 0) {
 			writeback(rbuf);
 			Fclose(fbuf);
+			spool_unlock();
 			return;
 		}
 		goto cream;
@@ -202,6 +219,7 @@ quit()
 		if ((obuf = Fopen(tempQuit, "w")) == NULL) {
 			perror(tempQuit);
 			Fclose(fbuf);
+			spool_unlock();
 			return;
 		}
 		if ((ibuf = Fopen(tempQuit, "r")) == NULL) {
@@ -209,6 +227,7 @@ quit()
 			rm(tempQuit);
 			Fclose(obuf);
 			Fclose(fbuf);
+			spool_unlock();
 			return;
 		}
 		rm(tempQuit);
@@ -222,6 +241,7 @@ quit()
 			Fclose(ibuf);
 			Fclose(obuf);
 			Fclose(fbuf);
+			spool_unlock();
 			return;
 		}
 		Fclose(obuf);
@@ -230,13 +250,15 @@ quit()
 			perror(mbox);
 			Fclose(ibuf);
 			Fclose(fbuf);
+			spool_unlock();
 			return;
 		}
 	}
-	if (value("append") != NOSTR) {
+	else {
 		if ((obuf = Fopen(mbox, "a")) == NULL) {
 			perror(mbox);
 			Fclose(fbuf);
+			spool_unlock();
 			return;
 		}
 		fchmod(fileno(obuf), 0600);
@@ -248,6 +270,7 @@ quit()
 				Fclose(ibuf);
 				Fclose(obuf);
 				Fclose(fbuf);
+				spool_unlock();
 				return;
 			}
 
@@ -274,6 +297,7 @@ quit()
 		perror(mbox);
 		Fclose(obuf);
 		Fclose(fbuf);
+		spool_unlock();
 		return;
 	}
 	Fclose(obuf);
@@ -290,6 +314,7 @@ quit()
 	if (p != 0) {
 		writeback(rbuf);
 		Fclose(fbuf);
+		spool_unlock();
 		return;
 	}
 
@@ -310,16 +335,20 @@ cream:
 		Fclose(abuf);
 		alter(mailname);
 		Fclose(fbuf);
+		spool_unlock();
 		return;
 	}
 	demail();
 	Fclose(fbuf);
+	spool_unlock();
 	return;
 
 newmail:
 	printf("Thou hast new mail.\n");
-	if (fbuf != NULL)
+	if (fbuf != NULL) {
 		Fclose(fbuf);
+		spool_unlock();
+	}
 }
 
 /*
@@ -388,9 +417,9 @@ edstop()
 	extern char *tmpdir;
 	register int gotcha, c;
 	register struct message *mp;
-	FILE *obuf, *ibuf, *readstat;
+	FILE *obuf, *ibuf, *readstat = NULL;
 	struct stat statb;
-	char *tempname;
+	char tempname[MAXPATHLEN];
 
 	if (readonly)
 		return;
@@ -419,9 +448,12 @@ edstop()
 		goto done;
 	ibuf = NULL;
 	if (stat(mailname, &statb) >= 0 && statb.st_size > mailsize) {
-		tempname = tempnam(tmpdir, "mbox");
+		int fd;
 
-		if ((obuf = Fopen(tempname, "w")) == NULL) {
+		snprintf(tempname, sizeof(tempname), "%s/%s", tmpdir,
+		    "mboxXXXXXXXXXX");
+		if ((fd = mkstemp(tempname)) == -1 ||
+		    (obuf = Fdopen(fd, "w")) == NULL) {
 			perror(tempname);
 			relsesigs();
 			reset(0);
@@ -445,7 +477,6 @@ edstop()
 			reset(0);
 		}
 		rm(tempname);
-		free(tempname);
 	}
 	printf("\"%s\" ", mailname);
 	fflush(stdout);

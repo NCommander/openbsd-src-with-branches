@@ -1,7 +1,35 @@
-/*	$NetBSD: machdep.c,v 1.48 1995/05/16 14:34:19 mycroft Exp $	*/
+/*	$OpenBSD: machdep.c,v 1.20 1997/02/14 05:10:17 rahnds Exp $ */
 
 /*
  * Copyright (c) 1995 Theo de Raadt
+ * 
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions
+ * are met:
+ * 1. Redistributions of source code must retain the above copyright
+ *    notice, this list of conditions and the following disclaimer.
+ * 2. Redistributions in binary form must reproduce the above copyright
+ *    notice, this list of conditions and the following disclaimer in the
+ *    documentation and/or other materials provided with the distribution.
+ * 3. All advertising materials mentioning features or use of this software
+ *    must display the following acknowledgement:
+ *	This product includes software developed under OpenBSD by
+ *	Theo de Raadt for Willowglen Singapore.
+ * 4. The name of the author may not be used to endorse or promote products
+ *    derived from this software without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS
+ * OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ * ARE DISCLAIMED.  IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY
+ * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+ * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
+ * OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+ * HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+ * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
+ * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
+ * SUCH DAMAGE.
+ *
  * Copyright (c) 1988 University of Utah.
  * Copyright (c) 1982, 1986, 1990, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -132,6 +160,7 @@ extern struct emul emul_sunos;
  * before vm init or startup.  Do enough configuration
  * to choose and initialize a console.
  */
+void
 consinit()
 {
 
@@ -363,6 +392,13 @@ again:
 	/*
 	 * Configure the system.
 	 */
+	if (boothowto & RB_CONFIG) {
+#ifdef BOOT_CONFIG
+		user_config();
+#else
+		printf("kernel does not support -c; continuing..\n");
+#endif
+	}
 	configure();
 }
 
@@ -383,57 +419,22 @@ setregs(p, pack, stack, retval)
 	frame->f_pc = pack->ep_entry & ~1;
 	frame->f_regs[SP] = stack;
 	frame->f_regs[A2] = (int)PS_STRINGS;
-#ifdef FPCOPROC
+
 	/* restore a null state frame */
 	p->p_addr->u_pcb.pcb_fpregs.fpf_null = 0;
-	m68881_restore(&p->p_addr->u_pcb.pcb_fpregs);
-#endif
-#ifdef COMPAT_HPUX
-	p->p_md.md_flags &= ~MDP_HPUXMMAP;
-	if (p->p_emul == &emul_hpux) {
-		frame->f_regs[A0] = 0; /* not 68010 (bit 31), no FPA (30) */
-		retval[0] = 0;		/* no float card */
-#ifdef FPCOPROC
-		retval[1] = 1;		/* yes 68881 */
-#else
-		retval[1] = 0;		/* no 68881 */
-#endif
-	}
-	/*
-	 * XXX This doesn't have much to do with setting registers but
-	 * I didn't want to muck up kern_exec.c with this code, so I
-	 * stuck it here.
-	 *
-	 * Ensure we perform the right action on traps type 1 and 2:
-	 * If our parent is an HPUX process and we are being traced, turn
-	 * on HPUX style interpretation.  Else if we were using the HPUX
-	 * style interpretation, revert to the BSD interpretation.
-	 *
-	 * Note that we do this by changing the trap instruction in the
-	 * global "sigcode" array which then gets copied out to the user's
-	 * sigcode in the stack.  Since we are changing it in the global
-	 * array we must always reset it, even for non-HPUX processes.
-	 *
-	 * Note also that implementing it in this way creates a potential
-	 * race where we could have tweaked it for process A which then
-	 * blocks in the copyout to the stack and process B comes along
-	 * and untweaks it causing A to wind up with the wrong setting
-	 * when the copyout continues.  However, since we have already
-	 * copied something out to this user stack page (thereby faulting
-	 * it in), this scenerio is extremely unlikely.
-	 */
-	{
-		extern short sigcodetrap[];
+	if (fputype)
+		m68881_restore(&p->p_addr->u_pcb.pcb_fpregs);
 
-		if ((p->p_pptr->p_emul == &emul_hpux) &&
-		    (p->p_flag & P_TRACED)) {
-			p->p_md.md_flags |= MDP_HPUXTRACE;
-			*sigcodetrap = 0x4E42;
-		} else {
-			p->p_md.md_flags &= ~MDP_HPUXTRACE;
-			*sigcodetrap = 0x4E41;
-		}
-	}
+#ifdef COMPAT_SUNOS
+	/*
+	 * SunOS' ld.so does self-modifying code without knowing
+	 * about the 040's cache purging needs.  So we need to uncache
+	 * writeable executable pages.
+	 */
+	if (p->p_emul == &emul_sunos)
+		p->p_md.md_flags |= MDP_UNCACHE_WX;
+	else
+		p->p_md.md_flags &= ~MDP_UNCACHE_WX;
 #endif
 }
 
@@ -453,6 +454,7 @@ identifycpu()
 	char *t, *mc;
 	char speed[6];
 	char suffix[30];
+	extern u_long fpvect_tab, fpvect_end, fpsp_tab;
 	int len;
 
 	bzero(suffix, sizeof suffix);
@@ -496,6 +498,13 @@ identifycpu()
 	    suffix, speed, mc);
 	switch (mmutype) {
 	case MMU_68040:
+#ifdef FPSP
+		bcopy(&fpsp_tab, &fpvect_tab,
+			(&fpvect_end - &fpvect_tab) * sizeof (fpvect_tab));
+
+#endif
+		strcat(cpu_model, "+MMU");
+		break;
 	case MMU_68030:
 		strcat(cpu_model, "+MMU");
 		break;
@@ -562,425 +571,6 @@ cpu_sysctl(name, namelen, oldp, oldlenp, newp, newlen, p)
 	/* NOTREACHED */
 }
 
-#define SS_RTEFRAME	1
-#define SS_FPSTATE	2
-#define SS_USERREGS	4
-
-struct sigstate {
-	int	ss_flags;		/* which of the following are valid */
-	struct	frame ss_frame;		/* original exception frame */
-	struct	fpframe ss_fpstate;	/* 68881/68882 state info */
-};
-
-/*
- * WARNING: code in locore.s assumes the layout shown for sf_signum
- * thru sf_handler so... don't screw with them!
- */
-struct sigframe {
-	int	sf_signum;		/* signo for handler */
-	int	sf_code;		/* additional info for handler */
-	struct	sigcontext *sf_scp;	/* context ptr for handler */
-	sig_t	sf_handler;		/* handler addr for u_sigc */
-	struct	sigstate sf_state;	/* state of the hardware */
-	struct	sigcontext sf_sc;	/* actual context */
-};
-
-#ifdef COMPAT_HPUX
-struct	hpuxsigcontext {
-	int	hsc_syscall;
-	char	hsc_action;
-	char	hsc_pad1;
-	char	hsc_pad2;
-	char	hsc_onstack;
-	int	hsc_mask;
-	int	hsc_sp;
-	short	hsc_ps;
-	int	hsc_pc;
-/* the rest aren't part of the context but are included for our convenience */
-	short	hsc_pad;
-	u_int	hsc_magic;		/* XXX sigreturn: cookie */
-	struct	sigcontext *hsc_realsc;	/* XXX sigreturn: ptr to BSD context */
-};
-
-/*
- * For an HP-UX process, a partial hpuxsigframe follows the normal sigframe.
- * Tremendous waste of space, but some HP-UX applications (e.g. LCL) need it.
- */
-struct hpuxsigframe {
-	int	hsf_signum;
-	int	hsf_code;
-	struct	sigcontext *hsf_scp;
-	struct	hpuxsigcontext hsf_sc;
-	int	hsf_regs[15];
-};
-#endif
-
-#ifdef DEBUG
-int sigdebug = 0;
-int sigpid = 0;
-#define SDB_FOLLOW	0x01
-#define SDB_KSTACK	0x02
-#define SDB_FPSTATE	0x04
-#endif
-
-/*
- * Send an interrupt to process.
- */
-void
-sendsig(catcher, sig, mask, code)
-	sig_t catcher;
-	int sig, mask;
-	u_long code;
-{
-	register struct proc *p = curproc;
-	register struct sigframe *fp, *kfp;
-	register struct frame *frame;
-	register struct sigacts *psp = p->p_sigacts;
-	register short ft;
-	int oonstack, fsize;
-	extern char sigcode[], esigcode[];
-
-	frame = (struct frame *)p->p_md.md_regs;
-	ft = frame->f_format;
-	oonstack = psp->ps_sigstk.ss_flags & SA_ONSTACK;
-	/*
-	 * Allocate and validate space for the signal handler
-	 * context. Note that if the stack is in P0 space, the
-	 * call to grow() is a nop, and the useracc() check
-	 * will fail if the process has not already allocated
-	 * the space with a `brk'.
-	 */
-#ifdef COMPAT_HPUX
-	if (p->p_emul == &emul_hpux)
-		fsize = sizeof(struct sigframe) + sizeof(struct hpuxsigframe);
-	else
-#endif
-	fsize = sizeof(struct sigframe);
-	if ((psp->ps_flags & SAS_ALTSTACK) && !oonstack &&
-	    (psp->ps_sigonstack & sigmask(sig))) {
-		fp = (struct sigframe *)(psp->ps_sigstk.ss_base +
-					 psp->ps_sigstk.ss_size - fsize);
-		psp->ps_sigstk.ss_flags |= SA_ONSTACK;
-	} else
-		fp = (struct sigframe *)(frame->f_regs[SP] - fsize);
-	if ((unsigned)fp <= USRSTACK - ctob(p->p_vmspace->vm_ssize)) 
-		(void)grow(p, (unsigned)fp);
-#ifdef DEBUG
-	if ((sigdebug & SDB_KSTACK) && p->p_pid == sigpid)
-		printf("sendsig(%d): sig %d ssp %x usp %x scp %x ft %d\n",
-		       p->p_pid, sig, &oonstack, fp, &fp->sf_sc, ft);
-#endif
-	if (useracc((caddr_t)fp, fsize, B_WRITE) == 0) {
-#ifdef DEBUG
-		if ((sigdebug & SDB_KSTACK) && p->p_pid == sigpid)
-			printf("sendsig(%d): useracc failed on sig %d\n",
-			       p->p_pid, sig);
-#endif
-		/*
-		 * Process has trashed its stack; give it an illegal
-		 * instruction to halt it in its tracks.
-		 */
-		SIGACTION(p, SIGILL) = SIG_DFL;
-		sig = sigmask(SIGILL);
-		p->p_sigignore &= ~sig;
-		p->p_sigcatch &= ~sig;
-		p->p_sigmask &= ~sig;
-		psignal(p, SIGILL);
-		return;
-	}
-	kfp = (struct sigframe *)malloc((u_long)fsize, M_TEMP, M_WAITOK);
-	/* 
-	 * Build the argument list for the signal handler.
-	 */
-	kfp->sf_signum = sig;
-	kfp->sf_code = code;
-	kfp->sf_scp = &fp->sf_sc;
-	kfp->sf_handler = catcher;
-	/*
-	 * Save necessary hardware state.  Currently this includes:
-	 *	- general registers
-	 *	- original exception frame (if not a "normal" frame)
-	 *	- FP coprocessor state
-	 */
-	kfp->sf_state.ss_flags = SS_USERREGS;
-	bcopy((caddr_t)frame->f_regs,
-	      (caddr_t)kfp->sf_state.ss_frame.f_regs, sizeof frame->f_regs);
-	if (ft >= FMT7) {
-#ifdef DEBUG
-		if (ft > 15 || exframesize[ft] < 0)
-			panic("sendsig: bogus frame type");
-#endif
-		kfp->sf_state.ss_flags |= SS_RTEFRAME;
-		kfp->sf_state.ss_frame.f_format = frame->f_format;
-		kfp->sf_state.ss_frame.f_vector = frame->f_vector;
-		bcopy((caddr_t)&frame->F_u,
-		      (caddr_t)&kfp->sf_state.ss_frame.F_u, exframesize[ft]);
-		/*
-		 * Leave an indicator that we need to clean up the kernel
-		 * stack.  We do this by setting the "pad word" above the
-		 * hardware stack frame to the amount the stack must be
-		 * adjusted by.
-		 *
-		 * N.B. we increment rather than just set f_stackadj in
-		 * case we are called from syscall when processing a
-		 * sigreturn.  In that case, f_stackadj may be non-zero.
-		 */
-		frame->f_stackadj += exframesize[ft];
-		frame->f_format = frame->f_vector = 0;
-#ifdef DEBUG
-		if (sigdebug & SDB_FOLLOW)
-			printf("sendsig(%d): copy out %d of frame %d\n",
-			       p->p_pid, exframesize[ft], ft);
-#endif
-	}
-#ifdef FPCOPROC
-	kfp->sf_state.ss_flags |= SS_FPSTATE;
-	m68881_save(&kfp->sf_state.ss_fpstate);
-#ifdef DEBUG
-	if ((sigdebug & SDB_FPSTATE) && *(char *)&kfp->sf_state.ss_fpstate)
-		printf("sendsig(%d): copy out FP state (%x) to %x\n",
-		       p->p_pid, *(u_int *)&kfp->sf_state.ss_fpstate,
-		       &kfp->sf_state.ss_fpstate);
-#endif
-#endif
-	/*
-	 * Build the signal context to be used by sigreturn.
-	 */
-	kfp->sf_sc.sc_onstack = oonstack;
-	kfp->sf_sc.sc_mask = mask;
-	kfp->sf_sc.sc_sp = frame->f_regs[SP];
-	kfp->sf_sc.sc_fp = frame->f_regs[A6];
-	kfp->sf_sc.sc_ap = (int)&fp->sf_state;
-	kfp->sf_sc.sc_pc = frame->f_pc;
-	kfp->sf_sc.sc_ps = frame->f_sr;
-#ifdef COMPAT_HPUX
-	/*
-	 * Create an HP-UX style sigcontext structure and associated goo
-	 */
-	if (p->p_emul == &emul_hpux) {
-		register struct hpuxsigframe *hkfp;
-
-		hkfp = (struct hpuxsigframe *)&kfp[1];
-		hkfp->hsf_signum = bsdtohpuxsig(kfp->sf_signum);
-		hkfp->hsf_code = kfp->sf_code;
-		hkfp->hsf_scp = (struct sigcontext *)
-			&((struct hpuxsigframe *)(&fp[1]))->hsf_sc;
-		hkfp->hsf_sc.hsc_syscall = 0;		/* XXX */
-		hkfp->hsf_sc.hsc_action = 0;		/* XXX */
-		hkfp->hsf_sc.hsc_pad1 = hkfp->hsf_sc.hsc_pad2 = 0;
-		hkfp->hsf_sc.hsc_onstack = kfp->sf_sc.sc_onstack;
-		hkfp->hsf_sc.hsc_mask = kfp->sf_sc.sc_mask;
-		hkfp->hsf_sc.hsc_sp = kfp->sf_sc.sc_sp;
-		hkfp->hsf_sc.hsc_ps = kfp->sf_sc.sc_ps;
-		hkfp->hsf_sc.hsc_pc = kfp->sf_sc.sc_pc;
-		hkfp->hsf_sc.hsc_pad = 0;
-		hkfp->hsf_sc.hsc_magic = 0xdeadbeef;
-		hkfp->hsf_sc.hsc_realsc = kfp->sf_scp;
-		bcopy((caddr_t)frame->f_regs, (caddr_t)hkfp->hsf_regs,
-		      sizeof (hkfp->hsf_regs));
-
-		kfp->sf_signum = hkfp->hsf_signum;
-		kfp->sf_scp = hkfp->hsf_scp;
-	}
-#endif
-	(void) copyout((caddr_t)kfp, (caddr_t)fp, fsize);
-	frame->f_regs[SP] = (int)fp;
-#ifdef DEBUG
-	if (sigdebug & SDB_FOLLOW)
-		printf("sendsig(%d): sig %d scp %x fp %x sc_sp %x sc_ap %x\n",
-		       p->p_pid, sig, kfp->sf_scp, fp,
-		       kfp->sf_sc.sc_sp, kfp->sf_sc.sc_ap);
-#endif
-	/*
-	 * Signal trampoline code is at base of user stack.
-	 */
-	frame->f_pc = (int)PS_STRINGS - (esigcode - sigcode);
-#ifdef DEBUG
-	if ((sigdebug & SDB_KSTACK) && p->p_pid == sigpid)
-		printf("sendsig(%d): sig %d returns\n",
-		       p->p_pid, sig);
-#endif
-	free((caddr_t)kfp, M_TEMP);
-}
-
-/*
- * System call to cleanup state after a signal
- * has been taken.  Reset signal mask and
- * stack state from context left by sendsig (above).
- * Return to previous pc and psl as specified by
- * context left by sendsig. Check carefully to
- * make sure that the user has not modified the
- * psl to gain improper priviledges or to cause
- * a machine fault.
- */
-/* ARGSUSED */
-sigreturn(p, uap, retval)
-	struct proc *p;
-	struct sigreturn_args /* {
-		syscallarg(struct sigcontext *) sigcntxp;
-	} */ *uap;
-	register_t *retval;
-{
-	register struct sigcontext *scp;
-	register struct frame *frame;
-	register int rf;
-	struct sigcontext tsigc;
-	struct sigstate tstate;
-	int flags;
-
-	scp = SCARG(uap, sigcntxp);
-#ifdef DEBUG
-	if (sigdebug & SDB_FOLLOW)
-		printf("sigreturn: pid %d, scp %x\n", p->p_pid, scp);
-#endif
-	if ((int)scp & 1)
-		return (EINVAL);
-#ifdef COMPAT_HPUX
-	/*
-	 * Grab context as an HP-UX style context and determine if it
-	 * was one that we contructed in sendsig.
-	 */
-	if (p->p_emul == &emul_hpux) {
-		struct hpuxsigcontext *hscp = (struct hpuxsigcontext *)scp;
-		struct hpuxsigcontext htsigc;
-
-		if (useracc((caddr_t)hscp, sizeof (*hscp), B_WRITE) == 0 ||
-		    copyin((caddr_t)hscp, (caddr_t)&htsigc, sizeof htsigc))
-			return (EINVAL);
-		/*
-		 * If not generated by sendsig or we cannot restore the
-		 * BSD-style sigcontext, just restore what we can -- state
-		 * will be lost, but them's the breaks.
-		 */
-		hscp = &htsigc;
-		if (hscp->hsc_magic != 0xdeadbeef ||
-		    (scp = hscp->hsc_realsc) == 0 ||
-		    useracc((caddr_t)scp, sizeof (*scp), B_WRITE) == 0 ||
-		    copyin((caddr_t)scp, (caddr_t)&tsigc, sizeof tsigc)) {
-			if (hscp->hsc_onstack & 01)
-				p->p_sigacts->ps_sigstk.ss_flags |= SA_ONSTACK;
-			else
-				p->p_sigacts->ps_sigstk.ss_flags &= ~SA_ONSTACK;
-			p->p_sigmask = hscp->hsc_mask &~ sigcantmask;
-			frame = (struct frame *) p->p_md.md_regs;
-			frame->f_regs[SP] = hscp->hsc_sp;
-			frame->f_pc = hscp->hsc_pc;
-			frame->f_sr = hscp->hsc_ps &~ PSL_USERCLR;
-			return (EJUSTRETURN);
-		}
-		/*
-		 * Otherwise, overlay BSD context with possibly modified
-		 * HP-UX values.
-		 */
-		tsigc.sc_onstack = hscp->hsc_onstack;
-		tsigc.sc_mask = hscp->hsc_mask;
-		tsigc.sc_sp = hscp->hsc_sp;
-		tsigc.sc_ps = hscp->hsc_ps;
-		tsigc.sc_pc = hscp->hsc_pc;
-	} else
-#endif
-	/*
-	 * Test and fetch the context structure.
-	 * We grab it all at once for speed.
-	 */
-	if (useracc((caddr_t)scp, sizeof (*scp), B_WRITE) == 0 ||
-	    copyin((caddr_t)scp, (caddr_t)&tsigc, sizeof tsigc))
-		return (EINVAL);
-	scp = &tsigc;
-	if ((scp->sc_ps & (PSL_MBZ|PSL_IPL|PSL_S)) != 0)
-		return (EINVAL);
-	/*
-	 * Restore the user supplied information
-	 */
-	if (scp->sc_onstack & 01)
-		p->p_sigacts->ps_sigstk.ss_flags |= SA_ONSTACK;
-	else
-		p->p_sigacts->ps_sigstk.ss_flags &= ~SA_ONSTACK;
-	p->p_sigmask = scp->sc_mask &~ sigcantmask;
-	frame = (struct frame *) p->p_md.md_regs;
-	frame->f_regs[SP] = scp->sc_sp;
-	frame->f_regs[A6] = scp->sc_fp;
-	frame->f_pc = scp->sc_pc;
-	frame->f_sr = scp->sc_ps;
-	/*
-	 * Grab pointer to hardware state information.
-	 * If zero, the user is probably doing a longjmp.
-	 */
-	if ((rf = scp->sc_ap) == 0)
-		return (EJUSTRETURN);
-	/*
-	 * See if there is anything to do before we go to the
-	 * expense of copying in close to 1/2K of data
-	 */
-	flags = fuword((caddr_t)rf);
-#ifdef DEBUG
-	if (sigdebug & SDB_FOLLOW)
-		printf("sigreturn(%d): sc_ap %x flags %x\n",
-		    p->p_pid, rf, flags);
-#endif
-	/*
-	 * fuword failed (bogus sc_ap value).
-	 */
-	if (flags == -1)
-		return (EINVAL);
-	if (flags == 0 || copyin((caddr_t)rf, (caddr_t)&tstate, sizeof tstate))
-		return (EJUSTRETURN);
-#ifdef DEBUG
-	if ((sigdebug & SDB_KSTACK) && p->p_pid == sigpid)
-		printf("sigreturn(%d): ssp %x usp %x scp %x ft %d\n",
-		    p->p_pid, &flags, scp->sc_sp, SCARG(uap, sigcntxp),
-		    (flags&SS_RTEFRAME) ? tstate.ss_frame.f_format : -1);
-#endif
-	/*
-	 * Restore most of the users registers except for A6 and SP
-	 * which were handled above.
-	 */
-	if (flags & SS_USERREGS)
-		bcopy((caddr_t)tstate.ss_frame.f_regs,
-		    (caddr_t)frame->f_regs, sizeof(frame->f_regs)-2*NBPW);
-	/*
-	 * Restore long stack frames.  Note that we do not copy
-	 * back the saved SR or PC, they were picked up above from
-	 * the sigcontext structure.
-	 */
-	if (flags & SS_RTEFRAME) {
-		register int sz;
-		
-		/* grab frame type and validate */
-		sz = tstate.ss_frame.f_format;
-		if (sz > 15 || (sz = exframesize[sz]) < 0)
-			return (EINVAL);
-		frame->f_stackadj -= sz;
-		frame->f_format = tstate.ss_frame.f_format;
-		frame->f_vector = tstate.ss_frame.f_vector;
-		bcopy((caddr_t)&tstate.ss_frame.F_u, (caddr_t)&frame->F_u, sz);
-#ifdef DEBUG
-		if (sigdebug & SDB_FOLLOW)
-			printf("sigreturn(%d): copy in %d of frame type %d\n",
-			    p->p_pid, sz, tstate.ss_frame.f_format);
-#endif
-	}
-#ifdef FPCOPROC
-	/*
-	 * Finally we restore the original FP context
-	 */
-	if (flags & SS_FPSTATE)
-		m68881_restore(&tstate.ss_fpstate);
-#ifdef DEBUG
-	if ((sigdebug & SDB_FPSTATE) && *(char *)&tstate.ss_fpstate)
-		printf("sigreturn(%d): copied in FP state (%x) at %x\n",
-		    p->p_pid, *(u_int *)&tstate.ss_fpstate,
-		    &tstate.ss_fpstate);
-#endif
-#endif
-#ifdef DEBUG
-	if ((sigdebug & SDB_FOLLOW) ||
-	    ((sigdebug & SDB_KSTACK) && p->p_pid == sigpid))
-		printf("sigreturn(%d): returns\n", p->p_pid);
-#endif
-	return (EJUSTRETURN);
-}
-
 int	waittime = -1;
 
 static struct haltvec *halts;
@@ -1042,19 +632,26 @@ boot(howto)
 
 	boothowto = howto;
 	if ((howto&RB_NOSYNC) == 0 && waittime < 0) {
+		extern struct proc proc0;
+		/* do that another panic fly away */
+		if (curproc == NULL)
+			curproc = &proc0;
 		waittime = 0;
 		vfs_shutdown();
 		/*
 		 * If we've been adjusting the clock, the todr
-		 * will be out of synch; adjust it now.
+		 * will be out of synch; adjust it now unless
+		 * the system was sitting in ddb.
 		 */
-		resettodr();
+		if ((howto & RB_TIMEBAD) == 0) {
+			resettodr();
+		} else {
+			printf("WARNING: not updating battery clock\n");
+		}
 	}
 	splhigh();			/* extreme priority */
 	if (howto&RB_HALT) {
 		printf("halted\n\n");
-		while (1)
-			;
 	} else {
 		struct haltvec *hv;
 
@@ -1064,6 +661,8 @@ boot(howto)
 			(*hv->hv_fn)();
 		doboot();
 	}
+	while (1)
+		;
 	/*NOTREACHED*/
 }
 
@@ -1163,18 +762,6 @@ dumpsys()
 
 initcpu()
 {
-#ifdef MAPPEDCOPY
-	extern u_int mappedcopysize;
-
-	/*
-	 * Initialize lower bound for doing copyin/copyout using
-	 * page mapping (if not already set).  We don't do this on
-	 * VAC machines as it loses big time.
-	 */
-	if (mappedcopysize == 0) {
-		mappedcopysize = NBPG;
-	}
-#endif
 }
 
 straytrap(pc, evec)
@@ -1189,11 +776,11 @@ int	*nofault;
 
 int
 badpaddr(addr, size)
-	register caddr_t addr;
+	register void *addr;
 	int size;
 {
 	int off = (int)addr & PGOFSET;
-	caddr_t v, p = (caddr_t)((int)addr & ~PGOFSET);
+	caddr_t v, p = (void *)((int)addr & ~PGOFSET);
 	int x;
 
 	v = mapiodev(p, NBPG);

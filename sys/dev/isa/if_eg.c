@@ -1,4 +1,4 @@
-/*	$NetBSD: if_eg.c,v 1.20 1995/07/24 04:12:45 mycroft Exp $	*/
+/*	$NetBSD: if_eg.c,v 1.26 1996/05/12 23:52:27 mycroft Exp $	*/
 
 /*
  * Copyright (c) 1993 Dean Huxley <dean@fsa.ca>
@@ -29,6 +29,9 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+/*
+ * Support for 3Com 3c505 Etherlink+ card.
+ */
 
 /* To do:
  * - multicast
@@ -43,6 +46,7 @@
 #include <sys/ioctl.h>
 #include <sys/errno.h>
 #include <sys/syslog.h>
+#include <sys/systm.h>
 #include <sys/select.h>
 #include <sys/device.h>
 
@@ -60,17 +64,13 @@
 #include <netinet/if_ether.h>
 #endif
 
-#ifdef NS
-#include <netns/ns.h>
-#include <netns/ns_if.h>
-#endif
-
 #if NBPFILTER > 0
 #include <net/bpf.h>
 #include <net/bpfdesc.h>
 #endif
 
 #include <machine/cpu.h>
+#include <machine/intr.h>
 #include <machine/pio.h>
 
 #include <dev/isa/isavar.h>
@@ -114,8 +114,12 @@ struct eg_softc {
 int egprobe __P((struct device *, void *, void *));
 void egattach __P((struct device *, struct device *, void *));
 
-struct cfdriver egcd = {
-	NULL, "eg", egprobe, egattach, DV_IFNET, sizeof(struct eg_softc)
+struct cfattach eg_ca = {
+	sizeof(struct eg_softc), egprobe, egattach
+};
+
+struct cfdriver eg_cd = {
+	NULL, "eg", DV_IFNET
 };
 
 int egintr __P((void *));
@@ -123,11 +127,19 @@ void eginit __P((struct eg_softc *));
 int egioctl __P((struct ifnet *, u_long, caddr_t));
 void egrecv __P((struct eg_softc *));
 void egstart __P((struct ifnet *));
-void egwatchdog __P((int));
+void egwatchdog __P((struct ifnet *));
 void egreset __P((struct eg_softc *));
 void egread __P((struct eg_softc *, caddr_t, int));
 struct mbuf *egget __P((struct eg_softc *, caddr_t, int));
 void egstop __P((struct eg_softc *));
+
+static inline void egprintpcb __P((struct eg_softc *));
+static inline void egprintstat __P((u_char));
+static int egoutPCB __P((struct eg_softc *, u_char));
+static int egreadPCBstat __P((struct eg_softc *, u_char));
+static int egreadPCBready __P((struct eg_softc *));
+static int egwritePCB __P((struct eg_softc *));
+static int egreadPCB __P((struct eg_softc *));
 
 /*
  * Support stuff
@@ -294,7 +306,7 @@ egprobe(parent, match, aux)
 	struct isa_attach_args *ia = aux;
 	int i;
 
-	if (ia->ia_iobase & ~0x07f0 != 0) {
+	if ((ia->ia_iobase & ~0x07f0) != 0) {
 		dprintf(("Weird iobase %x\n", ia->ia_iobase));
 		return 0;
 	}
@@ -348,7 +360,6 @@ egattach(parent, self, aux)
 	struct eg_softc *sc = (void *)self;
 	struct isa_attach_args *ia = aux;
 	struct ifnet *ifp = &sc->sc_arpcom.ac_if;
-	int i;
 	
 	egstop(sc);
 
@@ -394,8 +405,8 @@ egattach(parent, self, aux)
 	}
 
 	/* Initialize ifnet structure. */
-	ifp->if_unit = sc->sc_dev.dv_unit;
-	ifp->if_name = egcd.cd_name;
+	bcopy(sc->sc_dev.dv_xname, ifp->if_xname, IFNAMSIZ);
+	ifp->if_softc = sc;
 	ifp->if_start = egstart;
 	ifp->if_ioctl = egioctl;
 	ifp->if_watchdog = egwatchdog;
@@ -409,8 +420,8 @@ egattach(parent, self, aux)
 	bpfattach(&ifp->if_bpf, ifp, DLT_EN10MB, sizeof(struct ether_header));
 #endif
 
-	sc->sc_ih = isa_intr_establish(ia->ia_irq, ISA_IST_EDGE, ISA_IPL_NET,
-	    egintr, sc);
+	sc->sc_ih = isa_intr_establish(ia->ia_ic, ia->ia_irq, IST_EDGE,
+	    IPL_NET, egintr, sc, sc->sc_dev.dv_xname);
 }
 
 void
@@ -473,8 +484,8 @@ egrecv(sc)
 		sc->eg_pcb[3] = 0;
 		sc->eg_pcb[4] = 0;
 		sc->eg_pcb[5] = 0;
-		sc->eg_pcb[6] = EG_BUFLEN; /* our buffer size */
-		sc->eg_pcb[7] = EG_BUFLEN >> 8;
+		sc->eg_pcb[6] = EG_BUFLEN & 0xff; /* our buffer size */
+		sc->eg_pcb[7] = (EG_BUFLEN >> 8) & 0xff;
 		sc->eg_pcb[8] = 0; /* timeout, 0 == none */
 		sc->eg_pcb[9] = 0;
 		if (egwritePCB(sc) != 0)
@@ -487,7 +498,7 @@ void
 egstart(ifp)
 	struct ifnet *ifp;
 {
-	register struct eg_softc *sc = egcd.cd_devs[ifp->if_unit];
+	register struct eg_softc *sc = ifp->if_softc;
 	struct mbuf *m0, *m;
 	caddr_t buffer;
 	int len;
@@ -527,6 +538,7 @@ loop:
 		dprintf(("egwritePCB in egstart failed\n"));
 		ifp->if_oerrors++;
 		ifp->if_flags &= ~IFF_OACTIVE;
+		m_freem(m0);
 		goto loop;
 	}
 
@@ -553,10 +565,12 @@ egintr(arg)
 	void *arg;
 {
 	register struct eg_softc *sc = arg;
+	int ret = 0;
 	int i, len;
 	u_short *ptr;
 
 	while (inb(sc->eg_stat) & EG_STAT_ACRF) {
+		ret = 1;
 		egreadPCB(sc);
 		switch (sc->eg_pcb[0]) {
 		case EG_RSP_RECVPACKET:
@@ -609,7 +623,7 @@ egintr(arg)
 		}
 	}
 
-	return 0;
+	return ret;
 }
 
 /*
@@ -726,12 +740,16 @@ egioctl(ifp, cmd, data)
 	u_long cmd;
 	caddr_t data;
 {
-	struct eg_softc *sc = egcd.cd_devs[ifp->if_unit];
+	struct eg_softc *sc = ifp->if_softc;
 	struct ifaddr *ifa = (struct ifaddr *)data;
-	struct ifreq *ifr = (struct ifreq *)data;
 	int s, error = 0;
 
-	s = splimp();
+	s = splnet();
+
+	if ((error = ether_ioctl(ifp, &sc->sc_arpcom, cmd, data)) > 0) {
+		splx(s);
+		return error;
+	}
 
 	switch (cmd) {
 
@@ -744,23 +762,6 @@ egioctl(ifp, cmd, data)
 			eginit(sc);
 			arp_ifinit(&sc->sc_arpcom, ifa);
 			break;
-#endif
-#ifdef NS
-		case AF_NS:
-		    {
-			register struct ns_addr *ina = &IA_SNS(ifa)->sns_addr;
-				
-			if (ns_nullhost(*ina))
-				ina->x_host =
-				    *(union ns_host *)(sc->sc_arpcom.ac_enaddr);
-			else
-				bcopy(ina->x_host.c_host,
-				    sc->sc_arpcom.ac_enaddr,
-				    sizeof(sc->sc_arpcom.ac_enaddr));
-			/* Set new address. */
-			eginit(sc);
-			break;
-		    }
 #endif
 		default:
 			eginit(sc);
@@ -813,17 +814,17 @@ egreset(sc)
 	int s;
 
 	dprintf(("egreset()\n"));
-	s = splimp();
+	s = splnet();
 	egstop(sc);
 	eginit(sc);
 	splx(s);
 }
 
 void
-egwatchdog(unit)
-	int     unit;
+egwatchdog(ifp)
+	struct ifnet *ifp;
 {
-	struct eg_softc *sc = egcd.cd_devs[unit];
+	struct eg_softc *sc = ifp->if_softc;
 
 	log(LOG_ERR, "%s: device timeout\n", sc->sc_dev.dv_xname);
 	sc->sc_arpcom.ac_if.if_oerrors++;

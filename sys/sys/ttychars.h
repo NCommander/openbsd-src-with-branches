@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /*	$NetBSD: ttychars.h,v 1.6 1994/06/29 06:45:54 cgd Exp $	*/
 
 /*-

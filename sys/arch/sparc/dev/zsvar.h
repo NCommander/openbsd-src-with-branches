@@ -1,4 +1,5 @@
-/*	$NetBSD: zsvar.h,v 1.4 1995/04/11 02:38:21 mycroft Exp $ */
+/*	$OpenBSD: zsvar.h,v 1.8 1996/08/12 00:28:17 downsj Exp $	*/
+/*	$NetBSD: zsvar.h,v 1.8 1996/03/31 22:39:08 pk Exp $ */
 
 /*
  * Copyright (c) 1992, 1993
@@ -45,6 +46,21 @@
  */
 
 /*
+ * Register layout is machine-dependent...
+ */
+
+struct zschan {
+	volatile u_char	zc_csr;		/* ctrl,status, and indirect access */
+	u_char		zc_xxx0;
+	volatile u_char	zc_data;	/* data */
+	u_char		zc_xxx1;
+};
+
+struct zsdevice {
+	struct	zschan zs_chan[2];
+};
+
+/*
  * Software state, per zs channel.
  *
  * The zs chip has insufficient buffering, so we provide a software
@@ -65,8 +81,6 @@
  * When the value is a character + RR1 status, the character is in the
  * upper 8 bits of the RR1 status.
  */
-#define ZLRB_RING_SIZE 256		/* ZS line ring buffer size */
-#define	ZLRB_RING_MASK 255		/* mask for same */
 
 /* 0 is reserved (means "no interrupt") */
 #define	ZRING_RINT	1		/* receive data interrupt */
@@ -78,7 +92,8 @@
 #define	ZRING_MAKE(t, v)	((t) | (v) << 8)
 
 struct zs_chanstate {
-	struct	zs_chanstate *cs_next;	/* linked list for zshard() */
+	struct zs_chanstate *cs_next;	/* linked list for zshard() */
+	struct zs_softc *cs_sc;		/* points to my softc */
 	volatile struct zschan *cs_zc;	/* points to hardware regs */
 	int	cs_unit;		/* unit number */
 	struct	tty *cs_ttyp;		/* ### */
@@ -132,7 +147,8 @@ struct zs_chanstate {
 	 */
 	u_int	cs_rbget;		/* ring buffer `get' index */
 	volatile u_int cs_rbput;	/* ring buffer `put' index */
-	int	cs_rbuf[ZLRB_RING_SIZE];/* type, value pairs */
+	u_int	cs_ringmask;		/* mask, reflecting size of `rbuf' */
+	int	*cs_rbuf;		/* type, value pairs */
 };
 
 /*
@@ -148,17 +164,22 @@ struct zs_chanstate {
  * On the SparcStation the 1.6 microsecond recovery time is
  * handled in hardware. On the older Sun4 machine it isn't, and
  * software must deal with the problem.
+ *
+ * However, it *is* a problem on some Sun4m's (i.e. the SS20) (XXX: why?).
+ * Thus we leave in the delay.
+ *
+ * XXX: (ABB) Think about this more.
  */
-#ifdef SUN4
+#if defined(SUN4)
+
 #define	ZS_READ(c, r)		zs_read(c, r)
 #define	ZS_WRITE(c, r, v)	zs_write(c, r, v)
-#if defined(SUN4C) || defined(SUN4M)
-#define	ZS_DELAY()		(cputyp == CPU_SUN4 ? delay(1) : 0)
-#else
-#define	ZS_DELAY()		delay(1)
-#endif
-#else
+#define	ZS_DELAY()		(CPU_ISSUN4C ? (0) : delay(1))
+
+#else /* SUN4 */
+
 #define	ZS_READ(c, r)		((c)->zc_csr = (r), (c)->zc_csr)
 #define	ZS_WRITE(c, r, v)	((c)->zc_csr = (r), (c)->zc_csr = (v))
-#define	ZS_DELAY()
-#endif
+#define	ZS_DELAY()		(CPU_ISSUN4M ? delay(1) : 0)
+
+#endif /* SUN4 */

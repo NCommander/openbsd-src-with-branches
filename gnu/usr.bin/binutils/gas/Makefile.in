@@ -210,6 +210,10 @@ GASPOBJS = \
 	sb.o \
 	hash.o
 
+# Target to use for installing unformatted man-pages.  Some systems may not
+# want them installed.
+INSTALL_MAN = install-man
+
 all: .gdbinit as.new gasp.new
 	@srcroot=`cd $(srcroot); pwd`; export srcroot; \
 	(cd doc ; $(MAKE) $(FLAGS_TO_PASS) all)
@@ -221,7 +225,7 @@ dvi info install-info clean-info:
 make-gas.com: stamp-mk.com
 stamp-mk.com: vmsconf.sh Makefile
 	sh $(srcdir)/vmsconf.sh $(OBJS) > new-make.com
-	$(srcdir)/../move-if-change new-make.com $(srcdir)/make-gas.com
+	/bin/sh $(srcdir)/../move-if-change new-make.com $(srcdir)/make-gas.com
 	touch stamp-mk.com
 
 # Now figure out from those variables how to compile and link.
@@ -324,7 +328,7 @@ config-stamp: Makefile conf
 	echo ''						>> config.new
 	cat conf					>> config.new
 	echo '#endif /* GAS_VERSION */'			>> config.new
-	$(srcdir)/../move-if-change config.new config.h
+	/bin/sh $(srcdir)/../move-if-change config.new config.h
 	touch config-stamp
 
 # Compiling object files from source files.
@@ -441,10 +445,9 @@ maintainer-clean realclean: clean-here
 # Entry points `install', `includes' and `uninstall'.
 
 # Copy the files into directories where they will be run.
-install:
+install: $(INSTALL_MAN)
 	srcroot=`cd $(srcroot); pwd`; export srcroot; \
 	$(INSTALL_XFORM) as.new $(bindir)/as; \
-	$(INSTALL_XFORM1) $(srcdir)/doc/as.1 $(man1dir)/as.1; \
 	test -d $(tooldir) || mkdir $(tooldir); \
 	test -d $(tooldir)/bin || mkdir $(tooldir)/bin; \
 	n=`echo as | sed '$(program_transform_name)'`; \
@@ -461,6 +464,10 @@ uninstall:
 	rm -f $(mandir)/$$n.1
 	-n=`t='$(program_transform_name)'; echo gasp | sed $$t`; \
 	rm -f $(bindir)/$$n; \
+
+install-man:
+	srcroot=`cd $(srcroot); pwd`; export srcroot; \
+	$(INSTALL_XFORM1) $(srcdir)/doc/as.1 $(man1dir)/as.1
 
 # These exist for maintenance purposes.
 

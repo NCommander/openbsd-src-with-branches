@@ -1,4 +1,4 @@
-/*	$Id: common.h,v 1.4 1994/12/24 17:30:18 cgd Exp $ */
+/*	$OpenBSD: common.h,v 1.5 1996/09/24 04:19:25 millert Exp $ */
 
 #define DEBUGGING
 
@@ -16,8 +16,7 @@
 #define Close (void)close
 #define Fclose (void)fclose
 #define Fflush (void)fflush
-#define Sprintf (void)sprintf
-#define Mktemp (void)mktemp
+#define Snprintf (void)snprintf
 #define Strcpy (void)strcpy
 #define Strcat (void)strcat
 
@@ -29,6 +28,7 @@
 #include <string.h>
 #include <assert.h>
 #include <sys/types.h>
+#include <sys/file.h>
 #include <sys/stat.h>
 #include <ctype.h>
 #include <signal.h>
@@ -166,13 +166,13 @@ long atol();
 char *getenv();
 char *strcpy();
 char *strcat();
-char *rindex();
-char *mktemp();
+char *strrchr();
+int  mkstemp();
 #if 0				/* This can cause a prototype conflict.  */
 #ifdef CHARSPRINTF
-char *sprintf();
+char *snprintf();
 #else
-int sprintf();
+int snprintf();
 #endif
 #endif
 

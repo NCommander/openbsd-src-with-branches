@@ -1,3 +1,4 @@
+/*	$OpenBSD: talk.h,v 1.3 1994/12/09 02:14:27 jtc Exp $	*/
 /*	$NetBSD: talk.h,v 1.3 1994/12/09 02:14:27 jtc Exp $	*/
 
 /*

@@ -1,4 +1,5 @@
-/*	$NetBSD: uio.h,v 1.11 1995/06/14 05:24:46 jtc Exp $	*/
+/*	$OpenBSD$	*/
+/*	$NetBSD: uio.h,v 1.12 1996/02/09 18:25:45 christos Exp $	*/
 
 /*
  * Copyright (c) 1982, 1986, 1993, 1994
@@ -69,9 +70,10 @@ struct uio {
 /*
  * Limits
  */
-#define UIO_MAXIOV	1024		/* max 1K of iov's */
 #define UIO_SMALLIOV	8		/* 8 on stack, else malloc */
 #endif /* _KERNEL */
+
+#define UIO_MAXIOV	1024		/* max 1K of iov's */
 
 #ifndef	_KERNEL
 #include <sys/cdefs.h>
@@ -80,5 +82,8 @@ __BEGIN_DECLS
 ssize_t	readv __P((int, const struct iovec *, int));
 ssize_t	writev __P((int, const struct iovec *, int));
 __END_DECLS
+#else
+int ureadc __P((int c, struct uio *));
 #endif /* !_KERNEL */
+
 #endif /* !_SYS_UIO_H_ */

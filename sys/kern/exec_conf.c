@@ -1,4 +1,5 @@
-/*	$NetBSD: exec_conf.c,v 1.14 1995/10/10 01:26:50 mycroft Exp $	*/
+/*	$OpenBSD: exec_conf.c,v 1.7 1996/12/23 02:42:42 deraadt Exp $	*/
+/*	$NetBSD: exec_conf.c,v 1.16 1995/12/09 05:34:47 cgd Exp $	*/
 
 /*
  * Copyright (c) 1993, 1994 Christopher G. Demetriou
@@ -30,33 +31,15 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#define	EXEC_SCRIPT			/* XXX */
-#define EXEC_AOUT			/* XXX */
-
-#if defined(COMPAT_ULTRIX) || defined(COMPAT_OSF1)
-#define EXEC_ECOFF
-#endif
-
-#if defined(COMPAT_SVR4) || defined(COMPAT_LINUX)
-#define EXEC_ELF
-#endif
-
 #include <sys/param.h>
 #include <sys/exec.h>
-
-#ifdef EXEC_SCRIPT
 #include <sys/exec_script.h>
-#endif
 
-#ifdef EXEC_AOUT
-/*#include <sys/exec_aout.h> -- automatically pulled in */
-#endif
-
-#ifdef EXEC_ECOFF
+#if defined(_KERN_DO_ECOFF)
 #include <sys/exec_ecoff.h>
 #endif
 
-#ifdef EXEC_ELF
+#if defined(_KERN_DO_ELF)
 #include <sys/exec_elf.h>
 #endif
 
@@ -76,6 +59,14 @@
 #include <compat/freebsd/freebsd_exec.h>
 #endif
 
+#ifdef COMPAT_HPUX
+#include <compat/hpux/hpux_exec.h>
+#endif
+
+#ifdef COMPAT_M68K4K
+#include <compat/m68k4k/m68k4k_exec.h>
+#endif
+
 struct execsw execsw[] = {
 #ifdef LKM
 	{ 0, NULL, },					/* entries for LKMs */
@@ -84,17 +75,15 @@ struct execsw execsw[] = {
 	{ 0, NULL, },
 	{ 0, NULL, },
 #endif
-#ifdef EXEC_SCRIPT
 	{ MAXINTERP, exec_script_makecmds, },		/* shell scripts */
-#endif
-#ifdef EXEC_AOUT
+#ifdef _KERN_DO_AOUT
 	{ sizeof(struct exec), exec_aout_makecmds, },	/* a.out binaries */
 #endif
-#ifdef EXEC_ECOFF
+#ifdef _KERN_DO_ECOFF
 	{ ECOFF_HDR_SIZE, exec_ecoff_makecmds, },	/* ecoff binaries */
 #endif
-#ifdef EXEC_ELF
-	{ ELF_HDR_SIZE, exec_elf_makecmds, },	/* elf binaries */
+#ifdef _KERN_DO_ELF
+	{ sizeof(Elf32_Ehdr), exec_elf_makecmds, },	/* elf binaries */
 #endif
 #ifdef COMPAT_LINUX
 	{ LINUX_AOUT_HDR_SIZE, exec_linux_aout_makecmds, }, /* linux a.out */
@@ -104,7 +93,13 @@ struct execsw execsw[] = {
 	{ XOUT_HDR_SIZE, exec_ibcs2_xout_makecmds, },	/* x.out binaries */
 #endif
 #ifdef COMPAT_FREEBSD
-	{ FREEBSD_AOUT_HDR_SIZE, exec_freebsd_aout_makecmds, },	/* a.out */
+	{ FREEBSD_AOUT_HDR_SIZE, exec_freebsd_aout_makecmds, },	/* freebsd */
+#endif
+#ifdef COMPAT_HPUX
+	{ HPUX_EXEC_HDR_SIZE, exec_hpux_makecmds, },	/* HP-UX a.out */
+#endif
+#ifdef COMPAT_M68K4K
+	{ sizeof(struct exec), exec_m68k4k_makecmds, },	/* m68k4k a.out */
 #endif
 };
 int nexecs = (sizeof execsw / sizeof(*execsw));

@@ -1,3 +1,4 @@
+/*	$OpenBSD: sysctl.c,v 1.6 1997/01/16 03:57:31 millert Exp $	*/
 /*	$NetBSD: sysctl.c,v 1.9 1995/09/30 07:12:50 thorpej Exp $	*/
 
 /*
@@ -43,7 +44,7 @@ static char copyright[] =
 #if 0
 static char sccsid[] = "@(#)sysctl.c	8.1 (Berkeley) 6/6/93";
 #else
-static char *rcsid = "$NetBSD: sysctl.c,v 1.9 1995/09/30 07:12:50 thorpej Exp $";
+static char *rcsid = "$OpenBSD: sysctl.c,v 1.6 1997/01/16 03:57:31 millert Exp $";
 #endif
 #endif /* not lint */
 
@@ -67,14 +68,21 @@ static char *rcsid = "$NetBSD: sysctl.c,v 1.9 1995/09/30 07:12:50 thorpej Exp $"
 #include <netinet/tcp_timer.h>
 #include <netinet/tcp_var.h>
 
+#include <netipx/ipx.h>
+#include <netipx/ipx_var.h>
+#include <netipx/spx_var.h>
+#include <ddb/db_var.h>
+
 #include <errno.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <ctype.h>
 
 struct ctlname topname[] = CTL_NAMES;
 struct ctlname kernname[] = CTL_KERN_NAMES;
 struct ctlname vmname[] = CTL_VM_NAMES;
+struct ctlname fsname[] = CTL_FS_NAMES;
 struct ctlname netname[] = CTL_NET_NAMES;
 struct ctlname hwname[] = CTL_HW_NAMES;
 struct ctlname username[] = CTL_USER_NAMES;
@@ -82,6 +90,7 @@ struct ctlname debugname[CTL_DEBUG_MAXID];
 #ifdef CTL_MACHDEP_NAMES
 struct ctlname machdepname[] = CTL_MACHDEP_NAMES;
 #endif
+struct ctlname ddbname[] = CTL_DDB_NAMES;
 char names[BUFSIZ];
 
 struct list {
@@ -93,7 +102,7 @@ struct list secondlevel[] = {
 	{ 0, 0 },			/* CTL_UNSPEC */
 	{ kernname, KERN_MAXID },	/* CTL_KERN */
 	{ vmname, VM_MAXID },		/* CTL_VM */
-	{ 0, 0 },			/* CTL_FS */
+	{ fsname, FS_MAXID },		/* CTL_FS */
 	{ netname, NET_MAXID },		/* CTL_NET */
 	{ 0, CTL_DEBUG_MAXID },		/* CTL_DEBUG */
 	{ hwname, HW_MAXID },		/* CTL_HW */
@@ -103,6 +112,7 @@ struct list secondlevel[] = {
 	{ 0, 0 },			/* CTL_MACHDEP */
 #endif
 	{ username, USER_MAXID },	/* CTL_USER_NAMES */
+	{ ddbname, DBCTL_MAXID },	/* CTL_DDB_NAMES */
 };
 
 int	Aflag, aflag, nflag, wflag;
@@ -114,6 +124,16 @@ int	Aflag, aflag, nflag, wflag;
 #define	BOOTTIME	0x00000002
 #define	CONSDEV		0x00000004
 
+/* prototypes */
+void usage();
+void debuginit();
+void parse __P((	char *string, int flags));
+void listall __P((char *prefix, 	struct list *lp));
+int findname __P((char *string, 	char *level, char **bufp, struct list *namelist));
+int sysctl_inet __P((char *string, char **bufpp, 	int mib[], int flags, int *typep));
+int sysctl_ipx __P((char *string, char **bufpp, 	int mib[], int flags, int *typep));
+int sysctl_fs __P((char *string, char **bufpp, 	int mib[], int flags, int *typep));
+
 int
 main(argc, argv)
 	int argc;
@@ -123,7 +143,7 @@ main(argc, argv)
 	extern int optind;
 	int ch, lvl1;
 
-	while ((ch = getopt(argc, argv, "Aanw")) != EOF) {
+	while ((ch = getopt(argc, argv, "Aanw")) != -1) {
 		switch (ch) {
 
 		case 'A':
@@ -165,6 +185,7 @@ main(argc, argv)
 /*
  * List all variables known to the system.
  */
+void
 listall(prefix, lp)
 	char *prefix;
 	struct list *lp;
@@ -174,7 +195,7 @@ listall(prefix, lp)
 
 	if (lp->list == 0)
 		return;
-	strcpy(name, prefix);
+	strncpy(name, prefix, BUFSIZ-1);
 	cp = &name[strlen(name)];
 	*cp++ = '.';
 	for (lvl2 = 0; lvl2 < lp->size; lvl2++) {
@@ -190,19 +211,20 @@ listall(prefix, lp)
  * Lookup and print out the MIB entry if it exists.
  * Set a new value if requested.
  */
+void
 parse(string, flags)
 	char *string;
 	int flags;
 {
-	int indx, type, state, len;
+	int indx, type, state;
 	int special = 0;
 	void *newval = 0;
 	int intval, newsize = 0;
 	quad_t quadval;
-	size_t size;
+	size_t size, len;
 	struct list *lp;
 	int mib[CTL_MAXNAME];
-	char *cp, *bufp, buf[BUFSIZ], strval[BUFSIZ];
+	char *cp, *bufp, buf[BUFSIZ];
 
 	bufp = buf;
 	snprintf(buf, BUFSIZ, "%s", string);
@@ -226,7 +248,7 @@ parse(string, flags)
 	lp = &secondlevel[indx];
 	if (lp->list == 0) {
 		fprintf(stderr, "%s: class is not implemented\n",
-		    topname[indx]);
+		    topname[indx].ctl_name);
 		return;
 	}
 	if (bufp == NULL) {
@@ -271,6 +293,12 @@ parse(string, flags)
 			fprintf(stderr,
 			    "Use ps to view %s information\n", string);
 			return;
+		case KERN_NTPTIME:
+			if (flags == 0)
+				return;
+			fprintf(stderr,
+			    "Use xntpd to view %s information\n", string);
+			return;
 		case KERN_CLOCKRATE:
 			special |= CLOCK;
 			break;
@@ -293,6 +321,15 @@ parse(string, flags)
 			fprintf(stdout, "%.2f %.2f %.2f\n", 
 			    loads[0], loads[1], loads[2]);
 			return;
+		} else if (mib[1] == VM_PSSTRINGS) {
+			struct _ps_strings _ps;
+
+			len = sizeof(_ps);
+			sysctl(mib, 2, &_ps, &len, NULL, 0);
+			if (!nflag)
+				fprintf(stdout, "%s: ", string);
+			fprintf(stdout, "%ld\n", _ps.val);
+			return;
 		}
 		if (flags == 0)
 			return;
@@ -303,6 +340,12 @@ parse(string, flags)
 	case CTL_NET:
 		if (mib[1] == PF_INET) {
 			len = sysctl_inet(string, &bufp, mib, flags, &type);
+			if (len >= 0)
+				break;
+			return;
+		}
+		if (mib[1] == PF_IPX) {
+			len = sysctl_ipx(string, &bufp, mib, flags, &type);
 			if (len >= 0)
 				break;
 			return;
@@ -325,7 +368,13 @@ parse(string, flags)
 		break;
 
 	case CTL_FS:
+		len = sysctl_fs(string, &bufp, mib, flags, &type);
+		if (len >= 0)
+			break;
+		return;
+
 	case CTL_USER:
+	case CTL_DDB:
 		break;
 
 	default:
@@ -391,7 +440,7 @@ parse(string, flags)
 			boottime = btp->tv_sec;
 			fprintf(stdout, "%s = %s\n", string, ctime(&boottime));
 		} else
-			fprintf(stdout, "%d\n", btp->tv_sec);
+			fprintf(stdout, "%ld\n", btp->tv_sec);
 		return;
 	}
 	if (special & CONSDEV) {
@@ -426,7 +475,7 @@ parse(string, flags)
 		} else {
 			if (!nflag)
 				fprintf(stdout, "%s: %s -> ", string, buf);
-			fprintf(stdout, "%s\n", newval);
+			fprintf(stdout, "%s\n", (char *)newval);
 		}
 		return;
 
@@ -459,6 +508,7 @@ parse(string, flags)
 /*
  * Initialize the set of debugging names
  */
+void
 debuginit()
 {
 	int mib[3], loc, i;
@@ -478,6 +528,33 @@ debuginit()
 		debugname[i].ctl_type = CTLTYPE_INT;
 		loc += size;
 	}
+}
+
+struct ctlname posixname[] = CTL_FS_POSIX_NAMES;
+struct list fslist = { posixname, FS_POSIX_MAXID };
+
+/*
+ * handle file system requests
+ */
+int
+sysctl_fs(string, bufpp, mib, flags, typep)
+	char *string;
+	char **bufpp;
+	int mib[];
+	int flags;
+	int *typep;
+{
+	int indx;
+
+	if (*bufpp == NULL) {
+		listall(string, &fslist);
+		return (-1);
+	}
+	if ((indx = findname(string, "third", bufpp, &fslist)) == -1)
+		return (-1);
+	mib[2] = indx;
+	*typep = fslist.list[indx].ctl_type;
+	return (3);
 }
 
 struct ctlname inetname[] = CTL_IPPROTO_NAMES;
@@ -510,6 +587,7 @@ struct list inetvars[] = {
 /*
  * handle internet requests
  */
+int
 sysctl_inet(string, bufpp, mib, flags, typep)
 	char *string;
 	char **bufpp;
@@ -547,9 +625,64 @@ sysctl_inet(string, bufpp, mib, flags, typep)
 	return (4);
 }
 
+struct ctlname ipxname[] = CTL_IPXPROTO_NAMES;
+struct ctlname ipxpname[] = IPXCTL_NAMES;
+struct ctlname spxpname[] = SPXCTL_NAMES;
+struct list ipxlist = { ipxname, IPXCTL_MAXID };
+struct list ipxvars[] = {
+	{ ipxpname, IPXCTL_MAXID },	/* ipx */
+	{ 0, 0 },
+	{ 0, 0 },
+	{ 0, 0 },
+	{ 0, 0 },
+	{ spxpname, SPXCTL_MAXID },
+};
+
+/*
+ * handle internet requests
+ */
+int
+sysctl_ipx(string, bufpp, mib, flags, typep)
+	char *string;
+	char **bufpp;
+	int mib[];
+	int flags;
+	int *typep;
+{
+	struct list *lp;
+	int indx;
+
+	if (*bufpp == NULL) {
+		listall(string, &ipxlist);
+		return (-1);
+	}
+	if ((indx = findname(string, "third", bufpp, &ipxlist)) == -1)
+		return (-1);
+	mib[2] = indx;
+	if (indx <= IPXPROTO_SPX && ipxvars[indx].list != NULL)
+		lp = &ipxvars[indx];
+	else if (!flags)
+		return (-1);
+	else {
+		fprintf(stderr, "%s: no variables defined for this protocol\n",
+		    string);
+		return (-1);
+	}
+	if (*bufpp == NULL) {
+		listall(string, lp);
+		return (-1);
+	}
+	if ((indx = findname(string, "fourth", bufpp, lp)) == -1)
+		return (-1);
+	mib[3] = indx;
+	*typep = lp->list[indx].ctl_type;
+	return (4);
+}
+
 /*
  * Scan a list of names searching for a particular name.
  */
+int
 findname(string, level, bufp, namelist)
 	char *string;
 	char *level;
@@ -575,6 +708,7 @@ findname(string, level, bufp, namelist)
 	return (i);
 }
 
+void
 usage()
 {
 

@@ -134,6 +134,10 @@ main(argc, argv)
 	 * but this seems kind of silly.  So this one doesn't.
 	 */
 
+	/* revoke privs */
+	setegid(getgid());
+	setgid(getgid());
+
 	if (argc > 1) {
 		while (--argc)
 			printcard(*++argv);
@@ -151,10 +155,9 @@ printcard(str)
 	static char rowchars[] = "   123456789";
 	register int i, row;
 	register char *p;
-	char *index();
 
 	/* ruthlessly remove newlines and truncate at 48 characters. */
-	if ((p = index(str, '\n')))
+	if ((p = strchr(str, '\n')))
 		*p = '\0';
 
 	if (strlen(str) > COLUMNS)

@@ -1,5 +1,3 @@
-/*	$NetBSD: svc_tcp.c,v 1.6 1995/06/03 22:37:27 mycroft Exp $	*/
-
 /*
  * Sun RPC is a product of Sun Microsystems, Inc. and is provided for
  * unrestricted use provided that this legend is included on all tape
@@ -30,10 +28,8 @@
  */
 
 #if defined(LIBC_SCCS) && !defined(lint)
-/*static char *sccsid = "from: @(#)svc_tcp.c 1.21 87/08/11 Copyr 1984 Sun Micro";*/
-/*static char *sccsid = "from: @(#)svc_tcp.c	2.2 88/08/01 4.0 RPCSRC";*/
-static char *rcsid = "$NetBSD: svc_tcp.c,v 1.6 1995/06/03 22:37:27 mycroft Exp $";
-#endif
+static char *rcsid = "$OpenBSD: svc_tcp.c,v 1.13 1997/03/29 06:09:58 deraadt Exp $";
+#endif /* LIBC_SCCS and not lint */
 
 /*
  * svc_tcp.c, Server side for TCP/IP based RPC. 
@@ -48,9 +44,15 @@ static char *rcsid = "$NetBSD: svc_tcp.c,v 1.6 1995/06/03 22:37:27 mycroft Exp $
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <unistd.h>
 #include <rpc/rpc.h>
 #include <sys/socket.h>
 #include <errno.h>
+
+#include <netinet/in_systm.h>
+#include <netinet/in.h>
+#include <netinet/ip.h>
+#include <netinet/ip_var.h>
 
 /*
  * Ops vector for TCP/IP based rpc service handle
@@ -151,19 +153,24 @@ svctcp_create(sock, sendsize, recvsize)
 	    (listen(sock, 2) != 0)) {
 		perror("svctcp_.c - cannot getsockname or listen");
 		if (madesock)
-		       (void)close(sock);
+			(void)close(sock);
 		return ((SVCXPRT *)NULL);
 	}
 	r = (struct tcp_rendezvous *)mem_alloc(sizeof(*r));
 	if (r == NULL) {
-		(void) fprintf(stderr, "svctcp_create: out of memory\n");
+		(void)fprintf(stderr, "svctcp_create: out of memory\n");
+		if (madesock)
+			(void)close(sock);
 		return (NULL);
 	}
 	r->sendsize = sendsize;
 	r->recvsize = recvsize;
 	xprt = (SVCXPRT *)mem_alloc(sizeof(SVCXPRT));
 	if (xprt == NULL) {
-		(void) fprintf(stderr, "svctcp_create: out of memory\n");
+		(void)fprintf(stderr, "svctcp_create: out of memory\n");
+		if (madesock)
+			(void)close(sock);
+		free(r);
 		return (NULL);
 	}
 	xprt->xp_p2 = NULL;
@@ -244,6 +251,39 @@ rendezvous_request(xprt)
 			goto again;
 	       return (FALSE);
 	}
+
+#ifdef IP_OPTIONS
+	{
+		struct ipoption opts;
+		int optsize = sizeof(opts), i;
+
+		if (!getsockopt(sock, IPPROTO_IP, IP_OPTIONS, (char *)&opts,
+		    &optsize) && optsize != 0) {
+			for (i = 0; (char *)&opts.ipopt_list[i] - (char *)&opts <
+			    optsize; ) {	
+				u_char c = (u_char)opts.ipopt_list[i];
+				if (c == IPOPT_LSRR || c == IPOPT_SSRR) {
+					close(sock);
+					return (FALSE);
+				}
+				if (c == IPOPT_EOL)
+					break;
+				i += (c == IPOPT_NOP) ? 1 :
+				    (u_char)opts.ipopt_list[i+1];
+			}
+		}
+	}
+#endif
+
+	/*
+	 * XXX careful for ftp bounce attacks. If discovered, close the
+	 * socket and look for another connection.
+	 */
+	if (addr.sin_port == htons(20)) {
+		close(sock);
+		return (FALSE);
+	}
+
 	/*
 	 * make a new transporter (re-uses xprt)
 	 */
@@ -297,26 +337,50 @@ readtcp(xprt, buf, len)
 	register int len;
 {
 	register int sock = xprt->xp_sock;
-	fd_set mask;
-	fd_set readfds;
+	struct timeval start, delta;
+	struct timeval tmp1, tmp2;
+	fd_set *fds, readfds;
 
-	FD_ZERO(&mask);
-	FD_SET(sock, &mask);
+	if (sock+1 > FD_SETSIZE) {
+		int bytes = howmany(sock+1, NFDBITS) * sizeof(fd_mask);
+		fds = (fd_set *)malloc(bytes);
+		if (fds == NULL)
+			goto fatal_err;
+		memset(fds, 0, bytes);
+	} else {
+		fds = &readfds;
+		FD_ZERO(fds);
+	}
+
+	delta = wait_per_try;
+	gettimeofday(&start, NULL);
 	do {
-		readfds = mask;
-		if (select(sock+1, &readfds, (int*)NULL, (int*)NULL, 
-			   &wait_per_try) <= 0) {
-			if (errno == EINTR) {
-				continue;
-			}
+		/* XXX we know the other bits are still clear */
+		FD_SET(sock, fds);
+		switch (select(sock+1, fds, NULL, NULL, &delta)) {
+		case -1:
+			if (errno != EINTR)
+				goto fatal_err;
+			gettimeofday(&tmp1, NULL);
+			timersub(&tmp1, &start, &tmp2);
+			timersub(&delta, &tmp2, &tmp1);
+			if (tmp1.tv_sec < 0 || !timerisset(&tmp1))
+				goto fatal_err;
+			delta = tmp1;
+			continue;
+		case 0:
 			goto fatal_err;
 		}
-	} while (!FD_ISSET(sock, &readfds));
+	} while (!FD_ISSET(sock, fds));
 	if ((len = read(sock, buf, len)) > 0) {
+		if (fds != &readfds)
+			free(fds);
 		return (len);
 	}
 fatal_err:
 	((struct tcp_conn *)(xprt->xp_p1))->strm_stat = XPRT_DIED;
+	if (fds != &readfds)
+		free(fds);
 	return (-1);
 }
 

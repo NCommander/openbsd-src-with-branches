@@ -1,4 +1,4 @@
-/*	$NetBSD$ */
+/*	$OpenBSD$ */
 
 /*
  * Copyright (c) 1995 Theo de Raadt
@@ -14,7 +14,8 @@
  *    documentation and/or other materials provided with the distribution.
  * 3. All advertising materials mentioning features or use of this software
  *    must display the following acknowledgement:
- *      This product includes software developed by Theo de Raadt
+ *      This product includes software developed under OpenBSD by
+ *	Theo de Raadt for Willowglen Singapore.
  * 4. The name of the author may not be used to endorse or promote products
  *    derived from this software without specific prior written permission.
  *
@@ -54,8 +55,8 @@
 
 struct mcsoftc {
 	struct device	sc_dev;
-	caddr_t		sc_vaddr;
-	caddr_t		sc_paddr;
+	void		*sc_vaddr;
+	void		*sc_paddr;
 	struct mcreg	*sc_mc;
 	struct intrhand	sc_nmiih;
 };
@@ -64,9 +65,12 @@ void mcattach __P((struct device *, struct device *, void *));
 int  mcmatch __P((struct device *, void *, void *));
 int  mcabort __P((struct frame *));
 
-struct cfdriver mccd = {
-	NULL, "mc", mcmatch, mcattach,
-	DV_DULL, sizeof(struct mcsoftc), 0
+struct cfattach mc_ca = {
+	sizeof(struct mcsoftc), mcmatch, mcattach
+};
+
+struct cfdriver mc_cd = {
+	NULL, "mc", DV_DULL, 0
 };
 
 struct mcreg *sys_mc = NULL;
@@ -89,7 +93,7 @@ mcmatch(parent, vcf, args)
 int
 mc_print(args, bus)
 	void *args;
-	char *bus;
+	const char *bus;
 {
 	struct confargs *ca = args;
 
@@ -122,13 +126,13 @@ mc_scan(parent, child, args)
 		oca.ca_paddr = sc->sc_paddr + oca.ca_offset;
 		oca.ca_vaddr = sc->sc_vaddr + oca.ca_offset;
 	} else {
-		oca.ca_paddr = (caddr_t)-1;
-		oca.ca_vaddr = (caddr_t)-1;
+		oca.ca_paddr = (void *)-1;
+		oca.ca_vaddr = (void *)-1;
 	}
 	oca.ca_bustype = BUS_MC;
 	oca.ca_master = (void *)sc->sc_mc;
 	oca.ca_name = cf->cf_driver->cd_name;
-	if ((*cf->cf_driver->cd_match)(parent, cf, &oca) == 0)
+	if ((*cf->cf_attach->ca_match)(parent, cf, &oca) == 0)
 		return (0);
 	config_attach(parent, cf, &oca, mc_print);
 	return (1);
@@ -151,7 +155,7 @@ mcattach(parent, self, args)
 	 * we must adjust our address
 	 */
 	sc->sc_paddr = ca->ca_paddr;
-	sc->sc_vaddr = (caddr_t)IIOV(sc->sc_paddr);
+	sc->sc_vaddr = (void *)IIOV(sc->sc_paddr);
 	sc->sc_mc = (struct mcreg *)(sc->sc_vaddr + MC_MCCHIP_OFF);
 	sys_mc = sc->sc_mc;
 
@@ -207,10 +211,10 @@ void
 mc_enableflashwrite(on)
 	int on;
 {
-	struct mcsoftc *sc = (struct mcsoftc *) mccd.cd_devs[0];
-	volatile char *ena, x;
+	struct mcsoftc *sc = (struct mcsoftc *) mc_cd.cd_devs[0];
+	volatile u_char *ena, x;
 
-	ena = sc->sc_vaddr +
+	ena = (u_char *)sc->sc_vaddr +
 	    (on ? MC_ENAFLASHWRITE_OFFSET : MC_DISFLASHWRITE_OFFSET);
 	x = *ena;
 }

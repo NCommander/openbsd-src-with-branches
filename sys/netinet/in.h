@@ -1,4 +1,5 @@
-/*	$NetBSD: in.h,v 1.17 1995/06/04 05:06:55 mycroft Exp $	*/
+/*	$OpenBSD: in.h,v 1.7 1997/02/20 01:07:45 deraadt Exp $	*/
+/*	$NetBSD: in.h,v 1.20 1996/02/13 23:41:47 christos Exp $	*/
 
 /*
  * Copyright (c) 1982, 1986, 1990, 1993
@@ -57,6 +58,8 @@
 #define	IPPROTO_UDP		17		/* user datagram protocol */
 #define	IPPROTO_IDP		22		/* xns idp */
 #define	IPPROTO_TP		29 		/* tp-4 w/ class negotiation */
+#define	IPPROTO_ESP		50		/* Encap. Security Payload */
+#define	IPPROTO_AH		51		/* Authentication header */
 #define	IPPROTO_EON		80		/* ISO cnlp */
 #define	IPPROTO_ENCAP		98		/* encapsulation header */
 
@@ -65,7 +68,42 @@
 
 
 /*
+ * From FreeBSD:
+ *
  * Local port number conventions:
+ *
+ * When a user does a bind(2) or connect(2) with a port number of zero,
+ * a non-conflicting local port address is chosen.
+ * The default range is IPPORT_RESERVED through
+ * IPPORT_USERRESERVED, although that is settable by sysctl.
+ *
+ * A user may set the IPPROTO_IP option IP_PORTRANGE to change this
+ * default assignment range.
+ *
+ * The value IP_PORTRANGE_DEFAULT causes the default behavior.
+ *
+ * The value IP_PORTRANGE_HIGH changes the range of candidate port numbers
+ * into the "high" range.  These are reserved for client outbound connections
+ * which do not want to be filtered by any firewalls.
+ *
+ * The value IP_PORTRANGE_LOW changes the range to the "low" are
+ * that is (by convention) restricted to privileged processes.  This
+ * convention is based on "vouchsafe" principles only.  It is only secure
+ * if you trust the remote host to restrict these ports.
+ *
+ * The default range of ports and the high range can be changed by
+ * sysctl(3).  (net.inet.ip.port{hi}{first,last})
+ *
+ * Changing those values has bad security implications if you are
+ * using a a stateless firewall that is allowing packets outside of that
+ * range in order to allow transparent outgoing connections.
+ *
+ * Such a firewall configuration will generally depend on the use of these
+ * default values.  If you change them, you may find your Security
+ * Administrator looking for you with a heavy object.
+ */
+
+/*
  * Ports < IPPORT_RESERVED are reserved for
  * privileged processes (e.g. root).
  * Ports > IPPORT_USERRESERVED are reserved
@@ -73,6 +111,12 @@
  */
 #define	IPPORT_RESERVED		1024
 #define	IPPORT_USERRESERVED	5000
+
+/*
+ * Default local port range to use by setting IP_PORTRANGE_HIGH
+ */
+#define IPPORT_HIFIRSTAUTO	40000
+#define IPPORT_HILASTAUTO	44999
 
 /*
  * Internet address (a structure for historical reasons)
@@ -91,7 +135,7 @@ struct in_addr {
  * on these macros not doing byte-swapping.
  */
 #ifdef _KERNEL
-#define	__IPADDR(x)	htonl((u_int32_t)(x))
+#define	__IPADDR(x)	((u_int32_t) htonl((u_int32_t)(x)))
 #else
 #define	__IPADDR(x)	((u_int32_t)(x))
 #endif
@@ -141,6 +185,7 @@ struct in_addr {
 
 #define	INADDR_UNSPEC_GROUP	__IPADDR(0xe0000000)	/* 224.0.0.0 */
 #define	INADDR_ALLHOSTS_GROUP	__IPADDR(0xe0000001)	/* 224.0.0.1 */
+#define INADDR_MAX_LOCAL_GROUP	__IPADDR(0xe00000ff)	/* 224.0.0.255 */
 
 #define	IN_LOOPBACKNET		127			/* official! */
 
@@ -184,6 +229,29 @@ struct ip_opts {
 #define	IP_MULTICAST_LOOP	11   /* u_char; set/get IP multicast loopback */
 #define	IP_ADD_MEMBERSHIP	12   /* ip_mreq; add an IP group membership */
 #define	IP_DROP_MEMBERSHIP	13   /* ip_mreq; drop an IP group membership */
+	/* 14-17 left empty for future compatibility with FreeBSD */
+#define IP_PORTRANGE		19   /* int; range to choose for unspec port */
+#define IP_AUTH_LEVEL		20   /* u_char; authentication used */
+#define IP_ESP_TRANS_LEVEL      21   /* u_char; transport encryption */
+#define IP_ESP_NETWORK_LEVEL    22   /* u_char; full-packet encryption */
+
+
+/*
+ * Security levels - IPsec, not IPSO
+ */
+
+#define IPSEC_LEVEL_BYPASS      0x00    /* Bypass policy altogether */
+#define IPSEC_LEVEL_NONE        0x00    /* Send clear, accept any */
+#define IPSEC_LEVEL_AVAIL       0x01    /* Send secure if SA available */
+#define IPSEC_LEVEL_USE         0x02    /* Send secure, accept any */
+#define IPSEC_LEVEL_REQUIRE     0x03    /* Require secure inbound, also use */
+#define IPSEC_LEVEL_UNIQUE      0x04    /* Use outbound SA that is unique */
+#define IPSEC_LEVEL_DEFAULT     IPSEC_LEVEL_NONE
+
+#define IPSEC_AUTH_LEVEL_DEFAULT IPSEC_LEVEL_DEFAULT
+#define IPSEC_ESP_TRANS_LEVEL_DEFAULT IPSEC_LEVEL_DEFAULT
+#define IPSEC_ESP_NETWORK_LEVEL_DEFAULT IPSEC_LEVEL_DEFAULT
+
 
 /*
  * Defaults and limits for options
@@ -199,6 +267,14 @@ struct ip_mreq {
 	struct	in_addr imr_multiaddr;	/* IP multicast address of group */
 	struct	in_addr imr_interface;	/* local IP address of interface */
 };
+
+/*
+ * Argument for IP_PORTRANGE:
+ * - which range to search when port is unspecified at bind() or connect()
+ */
+#define IP_PORTRANGE_DEFAULT	0	/* default range */
+#define IP_PORTRANGE_HIGH	1	/* "high" - request firewall bypass */
+#define IP_PORTRANGE_LOW	2	/* "low" - vouchsafe security */
 
 /*
  * Definitions for inet sysctl operations.
@@ -243,7 +319,13 @@ struct ip_mreq {
 #ifdef notyet
 #define	IPCTL_DEFMTU		4	/* default MTU */
 #endif
-#define	IPCTL_MAXID		5
+#define	IPCTL_SOURCEROUTE	5	/* may perform source routes */
+#define	IPCTL_DIRECTEDBCAST	6	/* default broadcast behavior */
+#define IPCTL_IPPORT_FIRSTAUTO	7
+#define IPCTL_IPPORT_LASTAUTO	8
+#define IPCTL_IPPORT_HIFIRSTAUTO 9
+#define IPCTL_IPPORT_HILASTAUTO	10
+#define	IPCTL_MAXID		11
 
 #define	IPCTL_NAMES { \
 	{ 0, 0 }, \
@@ -251,6 +333,12 @@ struct ip_mreq {
 	{ "redirect", CTLTYPE_INT }, \
 	{ "ttl", CTLTYPE_INT }, \
 	{ "mtu", CTLTYPE_INT }, \
+	{ "sourceroute", CTLTYPE_INT }, \
+	{ "directed-broadcast", CTLTYPE_INT }, \
+	{ "portfirst", CTLTYPE_INT }, \
+	{ "portlast", CTLTYPE_INT }, \
+	{ "porthifirst", CTLTYPE_INT }, \
+	{ "porthilast", CTLTYPE_INT }, \
 }
 
 
@@ -260,6 +348,7 @@ int	   in_canforward __P((struct in_addr));
 int	   in_cksum __P((struct mbuf *, int));
 int	   in_localaddr __P((struct in_addr));
 void	   in_socktrim __P((struct sockaddr_in *));
+char	  *inet_ntoa __P((struct in_addr));
 
 #define	satosin(sa)	((struct sockaddr_in *)(sa))
 #define	sintosa(sin)	((struct sockaddr *)(sin))

@@ -1,34 +1,38 @@
-#	from: @(#)Makefile	5.6.1.2 (Berkeley) 5/8/91
-#	$Id: Makefile,v 1.56 1995/10/09 03:43:55 chopps Exp $
+#	$OpenBSD: Makefile,v 1.25 1997/03/03 11:59:10 downsj Exp $
 
 # not yet done: catman
 
-SUBDIR=	ac accton arp bootpd bootpgw bootpef bootptest \
-	chown chroot config cron dev_mkdb \
-	diskpart edquota gettable gspa htable inetd iostat kgmon \
-	kvm_mkdb lpr map-mbone mrinfo mrouted mtrace mtree named \
-	netgroup_mkdb portmap pppd pstat pwd_mkdb quot quotaon \
+.include <bsd.own.mk>
+
+SUBDIR=	ac accton adduser amd arp bootpd bootpgw bootpef bootptest \
+	chown chroot config cron ctm dev_mkdb \
+	edquota gspa inetd iostat \
+	ipftest ipmon ipsend kgmon \
+	kvm_mkdb lpr map-mbone mrinfo mopd mrouted mtrace mtree named \
+	netgroup_mkdb pkg_install portmap pppd pstat pwd_mkdb quot quotaon \
 	rarpd rbootd rdconfig rdate repquota rmt \
 	rpc.bootparamd rpc.pcnfsd rwhod \
 	sa sendmail sliplogin slstats spray sysctl \
-	syslogd tcpdump timed traceroute trpt trsp update \
-	vipw vnconfig ypbind yppoll ypset zdump zic
+	syslogd tcpdump timed traceroute trpt trsp \
+	vipw vnconfig zdump zic
 
-# should be listed above, but doesn't work on the Alpha.
-.if   (${MACHINE_ARCH} != "alpha") || make(clean) || make(cleandir)
-SUBDIR+=amd
+.if (${YP} == "yes")
+SUBDIR+=ypbind yppoll ypset ypserv
 .endif
 
-.if   make(clean) || make(cleandir)
-SUBDIR+=bad144 config.old dbsym eeprom grfinfo hilinfo iteconfig screenblank
-.elif ${MACHINE} == "amiga" || ${MACHINE} == "atari"
-SUBDIR+=grfconfig iteconfig videomode
+.if   make(clean) || make(cleandir) || make(obj)
+SUBDIR+=apm apmd bad144 dbsym eeprom fdformat grfconfig grfinfo \
+	hilinfo iteconfig pccon pcmciad screenblank videomode
+.elif ${MACHINE} == "amiga" 
+SUBDIR+=grfconfig iteconfig screenblank videomode
+.elif ${MACHINE} == "atari"
+SUBDIR+=iteconfig
 .elif ${MACHINE} == "hp300"
-SUBDIR+=config.old grfinfo hilinfo
+SUBDIR+=grfinfo hilinfo
 .elif ${MACHINE} == "i386"
-SUBDIR+=bad144 
+SUBDIR+=bad144 apm apmd fdformat pccon pcmciad
 .elif ${MACHINE} == "pmax"
-SUBDIR+=config.old
+SUBDIR+=
 .elif ${MACHINE} == "sun3"
 SUBDIR+=dbsym eeprom screenblank
 .elif ${MACHINE} == "sparc"

@@ -45,6 +45,7 @@
 .Nm tputs
 .Nd terminal independent operation routines
 .Sh SYNOPSIS
+.Fd #include <term.h>
 .Vt char PC;
 .Vt char *BC;
 .Vt char *UP;
@@ -85,6 +86,18 @@ should be a character buffer of size
 .Fn tgetflag ,
 and
 .Fn tgetstr .
+As an extension
+.Fn tgetent
+can be passed NULL
+for the
+.Fa bp
+argument, in which case an internal buffer will be used.
+If repeated calls to
+.Fn tgetent
+is made with a NULL
+.Fa bp
+argument, some memory will be leaked on each call subsequent
+to the first.
 The
 .Fn tgetent
 function

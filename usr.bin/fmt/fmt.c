@@ -1,3 +1,4 @@
+/*	$OpenBSD: fmt.c,v 1.5 1997/01/27 04:06:49 millert Exp $	*/
 /*	$NetBSD: fmt.c,v 1.4 1995/09/01 01:29:41 jtc Exp $	*/
 
 /*
@@ -42,14 +43,23 @@ static char copyright[] =
 #ifndef lint
 #if 0
 static char sccsid[] = "@(#)fmt.c	8.1 (Berkeley) 7/20/93";
+#else
+static char rcsid[] = "$OpenBSD: fmt.c,v 1.5 1997/01/27 04:06:49 millert Exp $";
 #endif
-static char rcsid[] = "$NetBSD: fmt.c,v 1.4 1995/09/01 01:29:41 jtc Exp $";
 #endif /* not lint */
 
+#include <ctype.h>
+#include <err.h>
+#include <locale.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <ctype.h>
+
+#ifdef	__GNUC__
+#define inline	__inline
+#else	/* !__GNUC__ */
+#define inline
+#endif	/* !__GNUC__ */
 
 /*
  * fmt -- format the concatenation of input files or standard input
@@ -73,8 +83,22 @@ int	max_length;		/* Max line length in output */
 int	pfx;			/* Current leading blank count */
 int	lineno;			/* Current input line */
 int	mark;			/* Last place we saw a head line */
+int	center;			/* Did they ask to center lines? */
 
 char	*headnames[] = {"To", "Subject", "Cc", 0};
+
+void fmt __P((FILE *));
+void setout __P((void));
+void prefix __P((char *));
+void split __P((char *));
+void pack __P((char *, int));
+void oflush __P((void));
+void tabulate __P((char *));
+void leadin __P((void));
+char *savestr __P((char *));
+inline char *extstr __P((char *, int *, int));
+int  ispref __P((char *, char *));
+int  ishead __P((char *));
 
 /*
  * Drive the whole formatter by managing input files.  Also,
@@ -82,6 +106,7 @@ char	*headnames[] = {"To", "Subject", "Cc", 0};
  * at the end.
  */
 
+int
 main(argc, argv)
 	int argc;
 	char **argv;
@@ -90,14 +115,21 @@ main(argc, argv)
 	register int errs = 0;
 	int number;		/* LIZ@UOM 6/18/85 */
 
+	(void) setlocale(LC_CTYPE, "");
+
 	goal_length = GOAL_LENGTH;
 	max_length = MAX_LENGTH;
 	setout();
 	lineno = 1;
 	mark = -10;
 	/*
-	 * LIZ@UOM 6/18/85 -- Check for goal and max length arguments 
+	 * LIZ@UOM 6/18/85 -- Check for goal and max length arguments
 	 */
+	if (argc > 1 && !strcmp(argv[1], "-c")) {
+		center++;
+		argc--;
+		argv++;
+	}
 	if (argc > 1 && (1 == (sscanf(argv[1], "%d", &number)))) {
 		argv++;
 		argc--;
@@ -108,11 +140,9 @@ main(argc, argv)
 			max_length = number;
 		}
 	}
-	if (max_length <= goal_length) {
-		fprintf(stderr, "Max length must be greater than %s\n",
-			"goal length");
-		exit(1);
-	}
+	if (max_length <= goal_length)
+		errx(1, "Max length (%d) must be greater than goal length: %d",
+		     max_length, goal_length);
 	if (argc < 2) {
 		fmt(stdin);
 		oflush();
@@ -136,13 +166,48 @@ main(argc, argv)
  * doing ^H processing, expanding tabs, stripping trailing blanks,
  * and sending each line down for analysis.
  */
+void
 fmt(fi)
 	FILE *fi;
 {
-	char linebuf[BUFSIZ], canonb[BUFSIZ];
-	register char *cp, *cp2;
+	static char *linebuf, *canonb;
+	static int lbufsize, cbufsize;
+	register char *cp, *cp2, cc;
 	register int c, col;
+#define CHUNKSIZE 1024
 
+	if (center) {
+		register int len;
+
+		linebuf = extstr(linebuf, &lbufsize, NULL);
+		for (;;) {
+			len = 0;
+			for (;;) {
+				if (!fgets(linebuf + len, lbufsize - len, fi))
+					break;
+				len = strlen(linebuf);
+				if (linebuf[len-1] == '\n' || feof(fi))
+					break;
+				linebuf = extstr(linebuf, &lbufsize, NULL);
+			}
+			if (len == 0)
+				return;
+			cp = linebuf;
+			while (*cp && isspace(*cp))
+				cp++;
+			cp2 = cp + strlen(cp) - 1;
+			while (cp2 > cp && isspace(*cp2))
+				cp2--;
+			if (cp == cp2)
+				putchar('\n');
+			col = cp2 - cp;
+			for (c = 0; c < (goal_length-col)/2; c++)
+				putchar(' ');
+			while (cp <= cp2)
+				putchar(*cp++);
+			putchar('\n');
+		}
+	}
 	c = getc(fi);
 	while (c != EOF) {
 		/*
@@ -150,44 +215,64 @@ fmt(fi)
 		 * Leave tabs for now.
 		 */
 		cp = linebuf;
-		while (c != '\n' && c != EOF && cp-linebuf < BUFSIZ-1) {
+		while (c != '\n' && c != EOF) {
+			if (cp - linebuf >= lbufsize) {
+				int offset = cp - linebuf;
+				linebuf = extstr(linebuf, &lbufsize, NULL);
+				cp = linebuf + offset;
+			}
 			if (c == '\b') {
 				if (cp > linebuf)
 					cp--;
 				c = getc(fi);
 				continue;
 			}
-			if ((c < ' ' || c >= 0177) && c != '\t') {
+			if (!isprint(c) && c != '\t') {
 				c = getc(fi);
 				continue;
 			}
 			*cp++ = c;
 			c = getc(fi);
 		}
-		*cp = '\0';
 
 		/*
 		 * Toss anything remaining on the input line.
 		 */
 		while (c != '\n' && c != EOF)
 			c = getc(fi);
-		
+
+		if (cp != NULL) {
+			*cp = '\0';
+		} else {
+			putchar('\n');
+			c = getc(fi);
+			continue;
+		}
+
 		/*
 		 * Expand tabs on the way to canonb.
 		 */
 		col = 0;
 		cp = linebuf;
 		cp2 = canonb;
-		while (c = *cp++) {
-			if (c != '\t') {
+		while ((cc = *cp++)) {
+			if (cc != '\t') {
 				col++;
-				if (cp2-canonb < BUFSIZ-1)
-					*cp2++ = c;
+				if (cp2 - canonb >= cbufsize) {
+					int offset = cp2 - canonb;
+					canonb = extstr(canonb, &cbufsize, NULL);
+					cp2 = canonb + offset;
+				}
+				*cp2++ = cc;
 				continue;
 			}
 			do {
-				if (cp2-canonb < BUFSIZ-1)
-					*cp2++ = ' ';
+				if (cp2 - canonb >= cbufsize) {
+					int offset = cp2 - canonb;
+					canonb = extstr(canonb, &cbufsize, NULL);
+					cp2 = canonb + offset;
+				}
+				*cp2++ = ' ';
 				col++;
 			} while ((col & 07) != 0);
 		}
@@ -211,13 +296,14 @@ fmt(fi)
  * Finally, if the line minus the prefix is a mail header, try to keep
  * it on a line by itself.
  */
+void
 prefix(line)
 	char line[];
 {
 	register char *cp, **hp;
 	register int np, h;
 
-	if (strlen(line) == 0) {
+	if (*line == '\0') {
 		oflush();
 		putchar('\n');
 		return;
@@ -232,10 +318,10 @@ prefix(line)
 	 */
 	if (np != pfx && (np > pfx || abs(pfx-np) > 8))
 		oflush();
-	if (h = ishead(cp))
+	if ((h = ishead(cp)))
 		oflush(), mark = lineno;
 	if (lineno - mark < 3 && lineno - mark > 0)
-		for (hp = &headnames[0]; *hp != (char *) 0; hp++)
+		for (hp = &headnames[0]; *hp != NULL; hp++)
 			if (ispref(*hp, cp)) {
 				h = 1;
 				oflush();
@@ -246,7 +332,8 @@ prefix(line)
 	pfx = np;
 	if (h)
 		pack(cp, strlen(cp));
-	else	split(cp);
+	else
+		split(cp);
 	if (h)
 		oflush();
 	lineno++;
@@ -258,12 +345,17 @@ prefix(line)
  * attached at the end.  Pass these words along to the output
  * line packer.
  */
+void
 split(line)
 	char line[];
 {
 	register char *cp, *cp2;
-	char word[BUFSIZ];
+	static char *word;
+	static int wordsize;
 	int wordl;		/* LIZ@UOM 6/18/85 */
+
+	if (strlen(line) >= wordsize)
+		word = extstr(word, &wordsize, strlen(line) + 1);
 
 	cp = line;
 	while (*cp) {
@@ -272,7 +364,7 @@ split(line)
 
 		/*
 		 * Collect a 'word,' allowing it to contain escaped white
-		 * space. 
+		 * space.
 		 */
 		while (*cp && *cp != ' ') {
 			if (*cp == '\\' && isspace(cp[1]))
@@ -283,18 +375,18 @@ split(line)
 
 		/*
 		 * Guarantee a space at end of line. Two spaces after end of
-		 * sentence punctuation. 
+		 * sentence punctuation.
 		 */
 		if (*cp == '\0') {
 			*cp2++ = ' ';
-			if (index(".:!", cp[-1]))
+			if (strchr(".:!", cp[-1]))
 				*cp2++ = ' ';
 		}
 		while (*cp == ' ')
 			*cp2++ = *cp++;
 		*cp2 = '\0';
 		/*
-		 * LIZ@UOM 6/18/85 pack(word); 
+		 * LIZ@UOM 6/18/85 pack(word);
 		 */
 		pack(word, wordl);
 	}
@@ -309,12 +401,14 @@ split(line)
  * there ain't nothing in there yet.  At the bottom of this whole mess,
  * leading tabs are reinserted.
  */
-char	outbuf[BUFSIZ];			/* Sandbagged output line image */
-char	*outp;				/* Pointer in above */
+static char *outbuf;			/* Sandbagged output line image */
+static int   obufsize;			/* Size of outbuf */
+static char *outp;			/* Pointer in above */
 
 /*
  * Initialize the output section.
  */
+void
 setout()
 {
 	outp = NOSTR;
@@ -340,7 +434,8 @@ setout()
  * pack(word)
  *	char word[];
  */
-pack(word,wl)
+void
+pack(word, wl)
 	char word[];
 	int wl;
 {
@@ -354,23 +449,29 @@ pack(word,wl)
 	 * length of the line before the word is added; t is now the length
 	 * of the line after the word is added
 	 *	t = strlen(word);
-	 *	if (t+s <= LENGTH) 
+	 *	if (t+s <= LENGTH)
 	 */
 	s = outp - outbuf;
 	t = wl + s;
+	if (t + 1 > obufsize) {
+		outbuf = extstr(outbuf, &obufsize, t + 1);
+		outp = outbuf + s;
+	}
 	if ((t <= goal_length) ||
 	    ((t <= max_length) && (t - goal_length <= goal_length - s))) {
 		/*
-		 * In like flint! 
+		 * In like flint!
 		 */
-		for (cp = word; *cp; *outp++ = *cp++);
+		for (cp = word; *cp; *outp++ = *cp++)
+			;
 		return;
 	}
 	if (s > pfx) {
 		oflush();
 		leadin();
 	}
-	for (cp = word; *cp; *outp++ = *cp++);
+	for (cp = word; *cp; *outp++ = *cp++)
+		;
 }
 
 /*
@@ -378,6 +479,7 @@ pack(word,wl)
  * its way.  Set outp to NOSTR to indicate the absence of the current
  * line prefix.
  */
+void
 oflush()
 {
 	if (outp == NOSTR)
@@ -391,6 +493,7 @@ oflush()
  * Take the passed line buffer, insert leading tabs where possible, and
  * output on standard output (finally).
  */
+void
 tabulate(line)
 	char line[];
 {
@@ -404,7 +507,7 @@ tabulate(line)
 	while (cp >= line && *cp == ' ')
 		cp--;
 	*++cp = '\0';
-	
+
 	/*
 	 * Count the leading blank space and tabulate.
 	 */
@@ -430,11 +533,14 @@ tabulate(line)
  * Initialize the output line with the appropriate number of
  * leading blanks.
  */
+void
 leadin()
 {
 	register int b;
 	register char *cp;
 
+	if (obufsize == 0 || (outp != NULL && outp - outbuf <= pfx))
+		outbuf = extstr(outbuf, &obufsize, pfx);
 	for (b = 0, cp = outbuf; b < pfx; b++)
 		*cp++ = ' ';
 	outp = cp;
@@ -449,20 +555,18 @@ char *
 savestr(str)
 	char str[];
 {
-	register char *top;
+	char *top;
 
-	top = malloc(strlen(str) + 1);
-	if (top == NOSTR) {
-		fprintf(stderr, "fmt:  Ran out of memory\n");
-		exit(1);
-	}
-	strcpy(top, str);
+	top = strdup(str);
+	if (top == NOSTR)
+		errx(1, "Ran out of memory");
 	return (top);
 }
 
 /*
  * Is s1 a prefix of s2??
  */
+int
 ispref(s1, s2)
 	register char *s1, *s2;
 {
@@ -470,4 +574,20 @@ ispref(s1, s2)
 	while (*s1++ == *s2)
 		;
 	return (*s1 == '\0');
+}
+
+inline char *
+extstr(str, size, gsize)
+	char *str;
+	int *size;
+	int gsize;
+{
+	do {
+		*size += CHUNKSIZE;
+	} while (gsize && *size < gsize);
+
+	if ((str = realloc(str, *size)) == NULL)
+		errx(1, "Ran out of memory");
+	
+	return(str);
 }

@@ -1,3 +1,4 @@
+/*	$OpenBSD: ps.c,v 1.6 1996/12/14 12:18:10 mickey Exp $	*/
 /*	$NetBSD: ps.c,v 1.15 1995/05/18 20:33:25 mycroft Exp $	*/
 
 /*-
@@ -43,7 +44,7 @@ static char copyright[] =
 #if 0
 static char sccsid[] = "@(#)ps.c	8.4 (Berkeley) 4/2/94";
 #else
-static char rcsid[] = "$NetBSD: ps.c,v 1.15 1995/05/18 20:33:25 mycroft Exp $";
+static char rcsid[] = "$OpenBSD: ps.c,v 1.6 1996/12/14 12:18:10 mickey Exp $";
 #endif
 #endif /* not lint */
 
@@ -67,6 +68,7 @@ static char rcsid[] = "$NetBSD: ps.c,v 1.15 1995/05/18 20:33:25 mycroft Exp $";
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+#include <limits.h>
 
 #include "ps.h"
 
@@ -116,7 +118,7 @@ main(argc, argv)
 	uid_t uid;
 	int all, ch, flag, i, fmt, lineno, nentries;
 	int prtheader, wflag, what, xflg;
-	char *nlistf, *memf, *swapf, errbuf[256];
+	char *nlistf, *memf, *swapf, errbuf[_POSIX2_LINE_MAX];
 
 	if ((ioctl(STDOUT_FILENO, TIOCGWINSZ, (char *)&ws) == -1 &&
 	     ioctl(STDERR_FILENO, TIOCGWINSZ, (char *)&ws) == -1 &&
@@ -244,7 +246,6 @@ main(argc, argv)
 		case 'x':
 			xflg = 1;
 			break;
-		case '?':
 		default:
 			usage();
 		}
@@ -266,8 +267,10 @@ main(argc, argv)
 	 * Discard setgid privileges if not the running kernel so that bad
 	 * guys can't print interesting stuff from kernel memory.
 	 */
-	if (nlistf != NULL || memf != NULL || swapf != NULL)
+	if (nlistf != NULL || memf != NULL || swapf != NULL) {
+		setegid(getgid());
 		setgid(getgid());
+	}
 
 	kd = kvm_openfiles(nlistf, memf, swapf, O_RDONLY, errbuf);
 	if (kd == 0)
@@ -432,7 +435,7 @@ kludge_oldps_options(s)
 	char *newopts, *ns, *cp;
 
 	len = strlen(s);
-	if ((newopts = ns = malloc(len + 2)) == NULL)
+	if ((newopts = ns = malloc(len + 3)) == NULL)
 		err(1, NULL);
 	/*
 	 * options begin with '-'
@@ -465,8 +468,8 @@ kludge_oldps_options(s)
 	 * if there's a trailing number, and not a preceding 'p' (pid) or
 	 * 't' (tty) flag, then assume it's a pid and insert a 'p' flag.
 	 */
-	if (isdigit(*cp) && (cp == s || cp[-1] != 't' && cp[-1] != 'p' &&
-	    (cp - 1 == s || cp[-2] != 't')))
+	if (isdigit(*cp) && (cp == s || (cp[-1] != 't' && cp[-1] != 'p' &&
+	    (cp - 1 == s || cp[-2] != 't'))))
 		*ns++ = 'p';
 	(void)strcpy(ns, cp);		/* and append the number */
 

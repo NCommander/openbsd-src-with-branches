@@ -39,7 +39,7 @@ static char copyright[] =
 
 #ifndef lint
 /*static char sccsid[] = "from: @(#)main.c	8.1 (Berkeley) 6/20/93";*/
-static char rcsid[] = "$Id: main.c,v 1.15 1995/08/13 04:08:27 cgd Exp $";
+static char rcsid[] = "$Id: main.c,v 1.6 1996/12/17 19:33:53 tholo Exp $";
 #endif /* not lint */
 
 #include <sys/param.h>
@@ -61,6 +61,7 @@ static char rcsid[] = "$Id: main.c,v 1.15 1995/08/13 04:08:27 cgd Exp $";
 #include <syslog.h>
 #include <time.h>
 #include <unistd.h>
+#include <util.h>
 
 #include "gettytab.h"
 #include "pathnames.h"
@@ -71,6 +72,16 @@ static char rcsid[] = "$Id: main.c,v 1.15 1995/08/13 04:08:27 cgd Exp $";
  * before deciding that something is wrong and exit.
  */
 #define GETTY_TIMEOUT	60 /* seconds */
+
+/* defines for auto detection of incoming PPP calls (->PAP/CHAP) */
+
+#define PPP_FRAME           0x7e  /* PPP Framing character */
+#define PPP_STATION         0xff  /* "All Station" character */
+#define PPP_ESCAPE          0x7d  /* Escape Character */
+#define PPP_CONTROL         0x03  /* PPP Control Field */
+#define PPP_CONTROL_ESCAPED 0x23  /* PPP Control Field, escaped */
+#define PPP_LCP_HI          0xc0  /* LCP protocol - high byte */
+#define PPP_LCP_LOW         0x21  /* LCP protocol - low byte */
 
 struct termios tmode, omode;
 
@@ -163,9 +174,9 @@ main(argc, argv)
 {
 	extern char **environ;
 	char *tname;
-	long allflags;
 	int repcnt = 0, failopenlogged = 0;
 	struct rlimit limit;
+	int rval;
 
 	signal(SIGINT, SIG_IGN);
 /*
@@ -193,32 +204,32 @@ main(argc, argv)
 	 * J. Gettys - MIT Project Athena.
 	 */
 	if (argc <= 2 || strcmp(argv[2], "-") == 0)
-	    strcpy(ttyn, ttyname(0));
+		strcpy(ttyn, ttyname(0));
 	else {
-	    int i;
+		int i;
 
-	    strcpy(ttyn, dev);
-	    strncat(ttyn, argv[2], sizeof(ttyn)-sizeof(dev));
-	    if (strcmp(argv[0], "+") != 0) {
-		chown(ttyn, 0, 0);
-		chmod(ttyn, 0600);
-		revoke(ttyn);
-		/*
-		 * Delay the open so DTR stays down long enough to be detected.
-		 */
-		sleep(2);
-		while ((i = open(ttyn, O_RDWR)) == -1) {
-			if ((repcnt % 10 == 0) &&
-			    (errno != ENXIO || !failopenlogged)) {
-				syslog(LOG_ERR, "%s: %m", ttyn);
-				closelog();
-				failopenlogged = 1;
+		strcpy(ttyn, dev);
+		strncat(ttyn, argv[2], sizeof(ttyn)-sizeof(dev));
+		if (strcmp(argv[0], "+") != 0) {
+			chown(ttyn, 0, 0);
+			chmod(ttyn, 0600);
+			revoke(ttyn);
+			/*
+			 * Delay the open so DTR stays down long enough to be detected.
+			 */
+			sleep(2);
+			while ((i = open(ttyn, O_RDWR)) == -1) {
+				if ((repcnt % 10 == 0) &&
+				    (errno != ENXIO || !failopenlogged)) {
+					syslog(LOG_ERR, "%s: %m", ttyn);
+					closelog();
+					failopenlogged = 1;
+				}
+				repcnt++;
+				sleep(60);
 			}
-			repcnt++;
-			sleep(60);
+			login_tty(i);
 		}
-		login_tty(i);
-	    }
 	}
 
 	/* Start with default tty settings */
@@ -283,7 +294,11 @@ main(argc, argv)
 			signal(SIGALRM, dingdong);
 			alarm(TO);
 		}
-		if (getname()) {
+		if ((rval = getname()) == 2) {
+			execle(PP, "ppplogin", ttyn, (char *) 0, env);
+			syslog(LOG_ERR, "%s: %m", PP);
+			exit(1);
+		} else if (rval) {
 			register int i;
 
 			oflush();
@@ -300,12 +315,16 @@ main(argc, argv)
 				tmode.c_iflag |= ICRNL;
 				tmode.c_oflag |= ONLCR;
 			}
-#if XXX
-			if (upper || UC)
-				tmode.sg_flags |= LCASE;
-			if (lower || LC)
-				tmode.sg_flags &= ~LCASE;
-#endif
+			if (upper || UC) {
+				tmode.c_iflag |= IUCLC;
+				tmode.c_oflag |= OLCUC;
+				tmode.c_lflag |= XCASE;
+			}
+			if (lower || LC) {
+				tmode.c_iflag &= ~IUCLC;
+				tmode.c_oflag &= ~OLCUC;
+				tmode.c_lflag &= ~XCASE;
+			}
 			if (tcsetattr(0, TCSANOW, &tmode) < 0) {
 				syslog(LOG_ERR, "%s: %m", ttyn);
 				exit(1);
@@ -318,7 +337,7 @@ main(argc, argv)
 			limit.rlim_max = RLIM_INFINITY;
 			limit.rlim_cur = RLIM_INFINITY;
 			(void)setrlimit(RLIMIT_CPU, &limit);
-			execle(LO, "login", "-p", name, (char *) 0, env);
+			execle(LO, "login", "-p", "--", name, (char *)0, env);
 			syslog(LOG_ERR, "%s: %m", LO);
 			exit(1);
 		}
@@ -335,7 +354,9 @@ getname()
 {
 	register int c;
 	register char *np;
-	char cs;
+	unsigned char cs;
+	int ppp_state = 0;
+	int ppp_connection = 0;
 
 	/*
 	 * Interrupt may happen if we use CBREAK mode
@@ -364,6 +385,34 @@ getname()
 			exit(0);
 		if ((c = cs&0177) == 0)
 			return (0);
+
+		/*
+		 * PPP detection state machine..
+		 * Look for sequences:
+		 * PPP_FRAME, PPP_STATION, PPP_ESCAPE, PPP_CONTROL_ESCAPED or
+		 * PPP_FRAME, PPP_STATION, PPP_CONTROL (deviant from RFC)
+		 * See RFC1662.
+		 * Derived from code from Michael Hancock <michaelh@cet.co.jp>
+		 * and Erik 'PPP' Olson <eriko@wrq.com>
+		 */
+		if (PP && cs == PPP_FRAME) {
+			ppp_state = 1;
+		} else if (ppp_state == 1 && cs == PPP_STATION) {
+			ppp_state = 2;
+		} else if (ppp_state == 2 && cs == PPP_ESCAPE) {
+			ppp_state = 3;
+		} else if ((ppp_state == 2 && cs == PPP_CONTROL) ||
+		    (ppp_state == 3 && cs == PPP_CONTROL_ESCAPED)) {
+			ppp_state = 4;
+		} else if (ppp_state == 4 && cs == PPP_LCP_HI) {
+			ppp_state = 5;
+		} else if (ppp_state == 5 && cs == PPP_LCP_LOW) {
+			ppp_connection = 1;
+			break;
+		} else {
+			ppp_state = 0;
+		}
+
 		if (c == EOT)
 			exit(1);
 		if (c == '\r' || c == '\n' || np >= &name[sizeof name]) {
@@ -409,7 +458,7 @@ getname()
 		for (np = name; *np; np++)
 			if (isupper(*np))
 				*np = tolower(*np);
-	return (1);
+	return (1 + ppp_connection);
 }
 
 static void

@@ -1,4 +1,5 @@
-/*	$NetBSD: dca.c,v 1.8 1995/10/04 06:54:44 thorpej Exp $	*/
+/*	$OpenBSD$	*/
+/*	$NetBSD: dca.c,v 1.10 1996/10/06 01:42:48 mycroft Exp $	*/
 
 /*
  * Copyright (c) 1988 University of Utah.
@@ -56,13 +57,15 @@
 
 struct dcadevice *dcacnaddr = 0;
 
+#define DCACONSCODE	9	/* XXX */
+
 void
 dcaprobe(cp)
 	struct consdev *cp;
 {
 	register struct dcadevice *dca;
 
-	dcacnaddr = (struct dcadevice *) sctoaddr(CONSCODE);
+	dcacnaddr = (struct dcadevice *) sctoaddr(DCACONSCODE);
 	if (badaddr((char *)dcacnaddr)) {
 		cp->cn_pri = CN_DEAD;
 		return;
@@ -86,7 +89,7 @@ dcaprobe(cp)
 	}
 
 #endif
-	curcons_scode = CONSCODE;
+	curcons_scode = DCACONSCODE;
 }
 
 void
@@ -102,6 +105,9 @@ dcainit(cp)
 	dca->dca_data = DCABRD(9600) & 0xFF;
 	dca->dca_ier = DCABRD(9600) >> 8;
 	dca->dca_cfcr = CFCR_8BITS;
+	dca->dca_fifo =
+	    FIFO_ENABLE | FIFO_RCV_RST | FIFO_XMT_RST | FIFO_TRIGGER_1;
+	dca->dca_mcr = MCR_DTR | MCR_RTS;
 }
 
 /* ARGSUSED */

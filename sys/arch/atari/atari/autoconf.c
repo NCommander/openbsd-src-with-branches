@@ -1,4 +1,4 @@
-/*	$NetBSD: autoconf.c,v 1.2 1995/07/11 18:24:57 leo Exp $	*/
+/*	$NetBSD: autoconf.c,v 1.3 1996/01/06 20:10:41 leo Exp $	*/
 
 /*
  * Copyright (c) 1995 Leo Weppelman
@@ -43,7 +43,7 @@ void configure __P((void));
 static void setroot __P((void));
 void swapconf __P((void));
 void mbattach __P((struct device *, struct device *, void *));
-int mbprint __P((void *, char *));
+int mbprint __P((void *, const char *));
 int mbmatch __P((struct device *, struct cfdata *, void *));
 
 extern int cold;	/* 1 if still booting (locore.s) */
@@ -78,7 +78,7 @@ configure()
 int
 simple_devprint(auxp, pnp)
 	void *auxp;
-	char *pnp;
+	const char *pnp;
 {
 	return(QUIET);
 }
@@ -254,6 +254,7 @@ mbattach(pdp, dp, auxp)
 	void *auxp;
 {
 	printf ("\n");
+	config_found(dp, "nvr"    , simple_devprint);
 	config_found(dp, "clock"  , simple_devprint);
 	config_found(dp, "grfbus" , simple_devprint);
 	config_found(dp, "kbd"    , simple_devprint);
@@ -265,7 +266,7 @@ mbattach(pdp, dp, auxp)
 int
 mbprint(auxp, pnp)
 	void *auxp;
-	char *pnp;
+	const char *pnp;
 {
 	if (pnp)
 		printf("%s at %s", (char *)auxp, pnp);

@@ -1,4 +1,4 @@
-/*	$NetBSD: bios.S,v 1.11 1995/03/12 00:10:56 mycroft Exp $	*/
+/*	$NetBSD: bios.S,v 1.13 1996/01/06 22:15:29 mycroft Exp $	*/
 
 /*
  * Ported to boot 386BSD by Julian Elischer (julian@tfs.com) Sept 1992
@@ -71,6 +71,8 @@ ENTRY(biosread)
 	pushl	%ebp
 	movl	%esp, %ebp
 	pushl	%ebx
+	pushl	%esi
+	pushl	%edi
 
 	movb	16(%ebp), %dh
 	movw	12(%ebp), %cx
@@ -97,30 +99,135 @@ ENTRY(biosread)
 	xorl	%eax, %eax
 	movb	%bl, %al	# return value in %ax
 
+	popl	%edi
+	popl	%esi
 	popl	%ebx
 	popl	%ebp
 	ret
 
 
+#ifdef DOSREAD
 /*
+# MSDOS call "INT 0x21 Function 0x3d" to open a file.
+# Call with   %ah = 0x3d
+#             %al = 0x0  (access and sharing modes)
+#             %ds:%dx = ASCIZ filename
+#             %cl = attribute mask of files to look for
+*/
+ENTRY(dosexit)
+      pushl %ebp
+      movl  %esp, %ebp
+      pushl   %ebx
+      pushl   %esi
+      pushl   %edi
+      movl    0x8(%ebp), %ebx # exit code
+      call    _C_LABEL(prot_to_real)  # enter real mode
+      movb    %bl, %al        # exit code
+      movb    $0x4c , %ah     # Exit
+      int     $0x21
+      cli
+      hlt
+
+ENTRY(dosopen)
+      pushl %ebp
+      movl  %esp, %ebp
+      pushl   %ebx
+      pushl   %esi
+      pushl   %edi
+      movl    0x8(%ebp), %edx # File name.
+      movb    $0x0 , %cl      # Attribute mask.
+      call    _C_LABEL(prot_to_real)  # enter real mode
+      movb    $0x3d, %ah      # Open existing file.
+      movb    $0x0 , %al      # Compatibility mode
+      int     $0x21
+      jnc     ok1
+      addr32
+      movl    %eax, _C_LABEL(doserrno)
+      data32
+      movl    $-1, %eax
+ok1:
+      pushl   %eax
+      data32
+      call    _C_LABEL(real_to_prot) # back to protected mode
+      xorl    %eax, %eax
+      popw    %ax             # return value in %eax
+      popl    %edi
+      popl    %esi
+      popl    %ebx
+      popl    %ebp
+      ret
+ENTRY(dosread)
+      pushl %ebp
+      movl  %esp, %ebp
+      pushl   %ebx
+      pushl   %esi
+      pushl   %edi
+      movl    0x8(%ebp), %ebx # File handle
+      movl    0xc(%ebp), %edx # Buffer.
+      movl    0x10(%ebp) , %ecx       # Bytes to read
+      call    _C_LABEL(prot_to_real)  # enter real mode
+      movb    $0x3f, %ah      # Read from file or device
+      movb    $0x0 , %al      # Compatibility mode
+      int     $0x21
+      jnc     ok2
+      addr32
+      movl    %eax, _C_LABEL(doserrno)
+      data32
+      movl    $-1, %eax
+ok2:
+      pushl   %eax
+      data32
+      call    _C_LABEL(real_to_prot) # back to protected mode
+      xorl    %eax, %eax
+      popw    %ax             # return value in %eax
+      popl    %edi
+      popl    %esi
+      popl    %ebx
+      popl    %ebp
+      ret
+ENTRY(dosclose)
+      pushl %ebp
+      movl  %esp, %ebp
+      pushl   %ebx
+      pushl   %esi
+      pushl   %edi
+      movl    0x8(%ebp), %ebx # File handle
+      call    _C_LABEL(prot_to_real)  # enter real mode
+      movb    $0x3e, %ah      # Close file.
+      movb    $0x0 , %al      # Compatibility mode
+      int     $0x21
+      jnc     ok3
+      addr32
+      movl    %eax, _C_LABEL(doserrno)
+      data32
+      movl    $-1, %eax
+ok3:
+      pushl   %eax
+      data32
+      call    _C_LABEL(real_to_prot) # back to protected mode
+      xorl    %eax, %eax
+      popw    %ax             # return value in %eax
+      popl    %edi
+      popl    %esi
+      popl    %ebx
+      popl    %ebp
+      ret
+#endif
+
 #ifndef SERIAL
+/*
 # BIOS call "INT 10H Function 0Eh" to write character to console
 #	Call with	%ah = 0x0e
 #			%al = character
 #			%bh = page
 #			%bl = foreground color
-#else
-# BIOS call "INT 14H Function 01h" to write character to console
-#	Call with	%ah = 0x01
-#			%al = character
-#			%dx = port number
-#endif
 */
 ENTRY(putc)
 	pushl	%ebp
 	movl	%esp, %ebp
 	pushl	%ebx
-	pushl	%ecx
+	pushl	%esi
+	pushl	%edi
 
 	movb	8(%ebp), %cl
 
@@ -128,55 +235,38 @@ ENTRY(putc)
 
 	movb	%cl, %al
 
-#ifndef SERIAL
 	movb	$0x0e, %ah
 	data32
 	movl	$0x0001, %ebx
 	int	$0x10		# display a byte
-#else
-	movb	$0x01, %ah
-	xorl	%edx, %edx
-	int	$0x14		# display a byte
-#endif
 
 	data32
 	call	_C_LABEL(real_to_prot)
 
-	popl	%ecx
+	popl	%edi
+	popl	%esi
 	popl	%ebx
 	popl	%ebp
 	ret
 
 
 /*
-#ifndef SERIAL
 # BIOS call "INT 16H Function 00H" to read character from the keyboard
 #	Call with	%ah = 0x00
 #	Return:		%ah = keyboard scan code
 #			%al = ASCII character
-#else
-# BIOS call "INT 14H Function 02H" to read character from the serial port
-#	Call with	%ah = 0x02
-#			%dx = port number
-#	Return:		%ah = line status
-#			%al = ASCII character
-#endif
 */
 ENTRY(getc)
 	pushl	%ebp
 	movl	%esp, %ebp
 	pushl	%ebx
+	pushl	%esi
+	pushl	%edi
 
 	call	_C_LABEL(prot_to_real)
 
-#ifndef SERIAL
 	movb	$0x00, %ah
 	int	$0x16
-#else
-	movb	$0x02, %ah
-	xorl	%edx, %edx
-	int	$0x14
-#endif
 
 	movb	%al, %bl	# real_to_prot uses %eax
 
@@ -186,13 +276,14 @@ ENTRY(getc)
 	xorl	%eax, %eax
 	movb	%bl, %al
 
+	popl	%edi
+	popl	%esi
 	popl	%ebx
 	popl	%ebp
 	ret
 
 
 /*
-#ifndef SERIAL
 # BIOS call "INT 16H Function 01H" to check whether a character is pending
 #	Call with	%ah = 0x01
 #	Return:	
@@ -202,31 +293,19 @@ ENTRY(getc)
 #			ZF  = clear
 #		else
 #			ZF  = set
-#else
-# BIOS call "INT 14H Function 03H" to check whether a character is pending
-#	Call with	%ah = 0x03
-#			%dx = port number
-#	Return:		%ah = line status
-#			%al = modem status
-#endif
 */
 ENTRY(ischar)
 	pushl	%ebp
 	movl	%esp, %ebp
 	pushl	%ebx
+	pushl	%esi
+	pushl	%edi
 
 	call	_C_LABEL(prot_to_real)
 
-#ifndef SERIAL
 	movb	$0x01, %ah
 	int	$0x16
 	setnz	%ah
-#else
-	movb	$0x03, %ah
-	xorl	%edx, %edx
-	int	$0x14
-	andb	$0x1f, %ah
-#endif
 
 	movb	%ah, %bl	# real_to_prot uses %eax
 
@@ -236,9 +315,13 @@ ENTRY(ischar)
 	xorl	%eax, %eax
 	movb	%bl, %al
 
+	popl	%edi
+	popl	%esi
 	popl	%ebx
 	popl	%ebp
 	ret
+
+#endif /* #ifndef SERIAL */
 
 /*
 #
@@ -251,6 +334,8 @@ ENTRY(get_diskinfo)
 	pushl	%ebp
 	movl	%esp, %ebp
 	pushl	%ebx
+	pushl	%esi
+	pushl	%edi
 
 	movb	8(%ebp), %dl		# diskinfo(drive #)
 
@@ -286,6 +371,8 @@ ok:
 	andb	$0x3f, %cl		# mask of cylinder gunk
 	movb	%cl, %al		# max sector (and # sectors)
 
+	popl	%edi
+	popl	%esi
 	popl	%ebx
 	popl	%ebp
 	ret
@@ -304,6 +391,8 @@ ENTRY(memsize)
 	pushl	%ebp
 	movl	%esp, %ebp
 	pushl	%ebx
+	pushl	%esi
+	pushl	%edi
 
 	movl	8(%ebp), %ebx
 
@@ -328,6 +417,45 @@ xdone:
 	call	_C_LABEL(real_to_prot)
 
 	movl	%ebx, %eax
+	popl	%edi
+	popl	%esi
+	popl	%ebx
+	popl	%ebp
+	ret
+
+/*
+# BIOS call "INT 15H Function 86H" to sleep for a set number of microseconds
+#	Call with	%ah = 0x86
+#			%cx = time interval (high)
+#			%dx = time interval (low)
+#	Return:	
+#		If error
+#			CF  = set
+#		else
+#			CF  = clear
+*/
+ENTRY(usleep)
+	pushl	%ebp
+	movl	%esp, %ebp
+	pushl	%ebx
+
+	movw	8(%ebp), %dx
+	movw	10(%ebp), %cx
+
+	call	_C_LABEL(prot_to_real)
+
+	movb	$0x86, %ah
+	int	$0x15
+	setnc	%ah
+
+	movb	%ah, %bl	# real_to_prot uses %eax
+
+	data32
+	call	_C_LABEL(real_to_prot)
+
+	xorl	%eax, %eax
+	movb	%bl, %al
+
 	popl	%ebx
 	popl	%ebp
 	ret

@@ -1,4 +1,5 @@
-/*	$NetBSD: copy.s,v 1.21 1995/02/11 21:59:29 mycroft Exp $	*/
+/*	$OpenBSD: copy.s,v 1.5 1997/02/10 11:11:50 downsj Exp $	*/
+/*	$NetBSD: copy.s,v 1.26 1997/03/17 19:46:36 gwr Exp $	*/
 
 /*-
  * Copyright (c) 1994, 1995 Charles Hannum.
@@ -38,10 +39,15 @@
  * SUCH DAMAGE.
  */
 
+/*
+ * This file contains the functions for user-space access:
+ * copyin/copyout, fuword/suword, etc.
+ */
+
 #include <sys/errno.h>
 #include <machine/asm.h>
 
-#include "assym.s"
+#include "assym.h"
 
 	.file	"copy.s"
 	.text
@@ -454,4 +460,3 @@ Lserr:
 Lsdone:
 	clrl	a1@(PCB_ONFAULT) 	| clear fault handler
 	rts
-

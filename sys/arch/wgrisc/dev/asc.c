@@ -1,4 +1,4 @@
-/*	$OpenBSD: asc.c,v 1.3 1996/09/28 10:08:03 pefo Exp $	*/
+/*	$OpenBSD: asc.c,v 1.1.1.1 1997/02/06 16:02:42 pefo Exp $	*/
 /*	$NetBSD: asc.c,v 1.10 1994/12/05 19:11:12 dean Exp $	*/
 
 /*-
@@ -1075,6 +1075,7 @@ printf("asc_intr: fifo flush %d len %d fifo %x\n", fifo, len, regs->asc_fifo);
 					len = state->dmalen - len;
 					goto do_in;
 				}
+				DMA_END(&asc->dma);
 				state->script =
 					&asc_scripts[SCRIPT_RESUME_DMA_IN];
 			} else if (state->flags & DMA_OUT)

@@ -1,4 +1,5 @@
-/*	$NetBSD: pas.c,v 1.9 1995/07/19 19:58:51 brezak Exp $	*/
+/*	$OpenBSD: pas.c,v 1.12 1996/08/24 05:03:18 deraadt Exp $	*/
+/*	$NetBSD: pas.c,v 1.17 1996/05/12 23:53:18 mycroft Exp $	*/
 
 /*
  * Copyright (c) 1991-1993 Regents of the University of California.
@@ -48,6 +49,7 @@
 #include <sys/proc.h>
 
 #include <machine/cpu.h>
+#include <machine/intr.h>
 #include <machine/pio.h>
 
 #include <sys/audioio.h>
@@ -85,26 +87,17 @@ int	pasdebug = 0;
  * most basic communications with the sb card.
  */
 struct pas_softc {
-	struct	device sc_dev;		/* base device */
-	struct	isadev sc_id;		/* ISA device */
-	void	*sc_ih;			/* interrupt vectoring */
-
-	u_short sc_iobase;		/* PAS iobase */
-	u_short sc_irq;			/* PAS irq */
-	u_short sc_drq;			/* PAS drq */
-
-	int model;
+	struct sbdsp_softc sc_sbdsp;	/* use sc_dev, sc_id, sc_ih,
+					 *     sc_iobase, sc_irq, sc_drq
+					 * from here */
+	int model;	/* unique to PAS */
 	int rev;
 
-	struct sbdsp_softc sc_sbdsp;
 };
 
 int	pasopen __P((dev_t, int));
-
-int	pasprobe();
-void	pasattach();
-
 int	pas_getdev __P((void *, struct audio_device *));
+void	pasconf __P((int, int, int, int));
 
 
 /*
@@ -173,10 +166,12 @@ static struct audio_device pas_device = {
 #define paswrite(d, p) outb(p, d)
 
 void
-pasconf(int model, int sbbase, int sbirq, int sbdrq)
+pasconf(model, sbbase, sbirq, sbdrq)
+	int model;
+	int sbbase;
+	int sbirq;
+	int sbdrq;
 {
-	int i;
-
 	paswrite(0x00, INTERRUPT_MASK);
 	/* Local timer control register */
 	paswrite(0x36, SAMPLE_COUNTER_CONTROL);
@@ -250,8 +245,15 @@ pasconf(int model, int sbbase, int sbirq, int sbdrq)
 	paswrite(P_M_MV508_INPUTMIX | 30, PARALLEL_MIXER);
 }
 
-struct cfdriver pascd = {
-	NULL, "pas", pasprobe, pasattach, DV_DULL, sizeof(struct pas_softc)
+int	pasprobe __P((struct device *, void *, void *));
+void	pasattach __P((struct device *, struct device *, void *));
+
+struct cfattach pas_ca = {
+	sizeof(struct pas_softc), pasprobe, pasattach
+};
+
+struct cfdriver pas_cd = {
+	NULL, "pas", DV_DULL
 };
 
 /*
@@ -262,13 +264,13 @@ struct cfdriver pascd = {
  * Probe for the soundblaster hardware.
  */
 int
-pasprobe(parent, self, aux)
-	struct device *parent, *self;
-	void *aux;
+pasprobe(parent, match, aux)
+	struct device *parent;
+	void *match, *aux;
 {
-	register struct pas_softc *sc = (void *)self;
+	register struct pas_softc *sc = match;
 	register struct isa_attach_args *ia = aux;
-	register u_short iobase;
+	register int iobase;
 	u_char id, t;
 
 	/*
@@ -332,20 +334,18 @@ pasprobe(parent, self, aux)
 	}
 
         if (sc->model >= 0) {
-                int irq = ia->ia_irq;
-                if (irq == IRQUNK) {
+                if (ia->ia_irq == IRQUNK) {
                         printf("pas: sb emulation requires known irq\n");
                         return (0);
                 } 
-                irq = ia->ia_irq;
-                pasconf(sc->model, ia->ia_iobase, irq, 1);
+                pasconf(sc->model, ia->ia_iobase, ia->ia_irq, 1);
         } else {
                 DPRINTF(("pas: could not probe pas\n"));
                 return (0);
         }
 
 	/* Now a SoundBlaster */
-	sc->sc_iobase = ia->ia_iobase;
+/*	sc->sc_iobase = ia->ia_iobase; */
 	/* and set the SB iobase into the DSP as well ... */
 	sc->sc_sbdsp.sc_iobase = ia->ia_iobase;
 	if (sbdsp_reset(&sc->sc_sbdsp) < 0) {
@@ -374,8 +374,7 @@ pasprobe(parent, self, aux)
 	} else
 #endif
 	if (!SB_IRQ_VALID(ia->ia_irq)) {
-		int irq = ia->ia_irq;
-		printf("pas: configured irq %d invalid\n", irq);
+		printf("pas: configured irq chan %d invalid\n", ia->ia_irq);
 		return 0;
 	}
 
@@ -398,7 +397,7 @@ pasforceintr(aux)
 {
 	static char dmabuf;
 	struct isa_attach_args *ia = aux;
-	u_short iobase = ia->ia_iobase;
+	int iobase = ia->ia_iobase;
 
 	/*
 	 * Set up a DMA read of one byte.
@@ -411,7 +410,7 @@ pasforceintr(aux)
 	 * it is needed (and you pay the latency).  Also, you might
 	 * never need the buffer anyway.)
 	 */
-	at_dma(1, &dmabuf, 1, ia->ia_drq);
+	at_dma(DMAMODE_READ, &dmabuf, 1, ia->ia_drq);
 	if (pas_wdsp(iobase, SB_DSP_RDMA) == 0) {
 		(void)pas_wdsp(iobase, 0);
 		(void)pas_wdsp(iobase, 0);
@@ -430,12 +429,12 @@ pasattach(parent, self, aux)
 {
 	register struct pas_softc *sc = (struct pas_softc *)self;
 	struct isa_attach_args *ia = (struct isa_attach_args *)aux;
-	register u_short iobase = ia->ia_iobase;
+	register int iobase = ia->ia_iobase;
 	int err;
 	
-	sc->sc_iobase = iobase;
-	sc->sc_ih = isa_intr_establish(ia->ia_irq, ISA_IST_EDGE, ISA_IPL_AUDIO,
-				       sbdsp_intr, &sc->sc_sbdsp);
+	sc->sc_sbdsp.sc_iobase = iobase;
+	sc->sc_sbdsp.sc_ih = isa_intr_establish(ia->ia_ic, ia->ia_irq, IST_EDGE,
+	    IPL_AUDIO, sbdsp_intr, &sc->sc_sbdsp, sc->sc_sbdsp.sc_dev.dv_xname);
 
 	printf(" ProAudio Spectrum %s [rev %d] ", pasnames[sc->model], sc->rev);
 	
@@ -456,10 +455,10 @@ pasopen(dev, flags)
     struct pas_softc *sc;
     int unit = AUDIOUNIT(dev);
     
-    if (unit >= pascd.cd_ndevs)
+    if (unit >= pas_cd.cd_ndevs)
 	return ENODEV;
     
-    sc = pascd.cd_devs[unit];
+    sc = pas_cd.cd_devs[unit];
     if (!sc)
 	return ENXIO;
     

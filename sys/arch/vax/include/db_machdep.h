@@ -1,4 +1,4 @@
-/*	$NetBSD: db_machdep.h,v 1.1 1995/06/16 15:17:27 ragge Exp $	*/
+/*	$NetBSD: db_machdep.h,v 1.2 1996/04/08 18:35:47 ragge Exp $	*/
 
 /* 
  * Mach Operating System
@@ -51,7 +51,7 @@ db_regs_t	ddb_regs;	/* register state */
 #define	BKPT_SIZE	(1)		/* size of breakpoint inst */
 #define	BKPT_SET(inst)	(BKPT_INST)
 
-#define	FIXUP_PC_AFTER_BREAK		ddb_regs.pc -= BKPT_SIZE;
+#define	FIXUP_PC_AFTER_BREAK(regs)	((regs)->pc -= BKPT_SIZE)
 
 #define	db_clear_single_step(regs)	((regs)->psl &= ~PSL_T)
 #define	db_set_single_step(regs)	((regs)->psl |=  PSL_T)
@@ -70,4 +70,6 @@ db_regs_t	ddb_regs;	/* register state */
 #define inst_load(ins)		0
 #define inst_store(ins)		0
 
+/* Prototypes */
+void	kdb_trap __P((struct trapframe *));
 #endif	/* _VAX_DB_MACHDEP_H_ */

@@ -54,6 +54,8 @@
  */
 
 /* hdr.h: included by c advent files */
+#include <sys/types.h>
+#include <stdio.h>
 
 int datfd;                              /* message file descriptor      */
 int delhit;
@@ -62,7 +64,7 @@ extern char data_file[];                /* Virtual data file            */
 
 #define TAB     011
 #define LF      012
-#define FLUSHLINE while (getchar()!='\n')
+#define FLUSHLINE do { int c; while ((c = getchar()) != EOF && c != '\n'); } while (0)
 #define FLUSHLF   while (next()!=LF)
 
 int loc,newloc,oldloc,oldlc2,wzdark,gaveup,kq,k,k2;
@@ -130,7 +132,7 @@ int hntmax;
 int hints[20][5];                       /* info on hints                */
 int hinted[20],hintlc[20];
 
-int place[101], prop[101],link[201];
+int place[101], prop[101],linkx[201];
 int abb[LOCSIZ];
 
 int maxtrs,tally,tally2;                /* treasure values              */
@@ -158,9 +160,10 @@ int turns,lmwarn,iwest,knfloc,detail,   /* various flags & counters     */
 
 int demo,newloc,limit;
 
-char *malloc();
 char *decr();
 unsigned long crc();
 
 /* We need to get a little tricky to avoid strings */
 #define DECR(a,b,c,d,e) decr('a'+'+','b'+'-','c'+'#','d'+'&','e'+'%')
+
+gid_t	egid;

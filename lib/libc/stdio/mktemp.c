@@ -1,5 +1,3 @@
-/*	$NetBSD: mktemp.c,v 1.5 1995/02/02 02:10:09 jtc Exp $	*/
-
 /*
  * Copyright (c) 1987, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -34,10 +32,7 @@
  */
 
 #if defined(LIBC_SCCS) && !defined(lint)
-#if 0
-static char sccsid[] = "@(#)mktemp.c	8.1 (Berkeley) 6/4/93";
-#endif
-static char rcsid[] = "$NetBSD: mktemp.c,v 1.5 1995/02/02 02:10:09 jtc Exp $";
+static char rcsid[] = "$OpenBSD: mktemp.c,v 1.7 1997/02/10 00:52:28 millert Exp $";
 #endif /* LIBC_SCCS and not lint */
 
 #include <sys/types.h>
@@ -45,6 +40,7 @@ static char rcsid[] = "$NetBSD: mktemp.c,v 1.5 1995/02/02 02:10:09 jtc Exp $";
 #include <fcntl.h>
 #include <errno.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <ctype.h>
 #include <unistd.h>
 
@@ -59,12 +55,25 @@ mkstemp(path)
 	return (_gettemp(path, &fd) ? fd : -1);
 }
 
+char *_mktemp __P((char *));
+
 char *
-mktemp(path)
+_mktemp(path)
 	char *path;
 {
 	return(_gettemp(path, (int *)NULL) ? path : (char *)NULL);
 }
+
+__warn_references(mktemp,
+    "warning: mktemp() possibly used unsafely; consider using mkstemp()");
+
+char *
+mktemp(path)
+	char *path;
+{
+	return(_mktemp(path));
+}
+
 
 static int
 _gettemp(path, doopen)
@@ -74,13 +83,25 @@ _gettemp(path, doopen)
 	extern int errno;
 	register char *start, *trv;
 	struct stat sbuf;
-	u_int pid;
+	int pid;
 
 	pid = getpid();
-	for (trv = path; *trv; ++trv);		/* extra X's get set to 0's */
-	while (*--trv == 'X') {
-		*trv = (pid % 10) + '0';
+	for (trv = path; *trv; ++trv)
+		;
+	--trv;
+	while (*trv == 'X' && pid != 0) {
+		*trv-- = (pid % 10) + '0';
 		pid /= 10;
+	}
+	while (*trv == 'X') {
+		char c;
+
+		pid = (arc4random() & 0xffff) % (26+26);
+		if (pid < 26)
+			c = pid + 'A';
+		else
+			c = (pid - 26) + 'a';
+		*trv-- = c;
 	}
 
 	/*
@@ -111,7 +132,7 @@ _gettemp(path, doopen)
 			if (errno != EEXIST)
 				return(0);
 		}
-		else if (stat(path, &sbuf))
+		else if (lstat(path, &sbuf))
 			return(errno == ENOENT ? 1 : 0);
 
 		/* tricky little algorithm for backward compatibility */

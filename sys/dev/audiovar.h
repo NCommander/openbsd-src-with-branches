@@ -1,4 +1,5 @@
-/*	$NetBSD: audiovar.h,v 1.3 1995/05/08 22:01:44 brezak Exp $	*/
+/*	$OpenBSD$	*/
+/*	$NetBSD: audiovar.h,v 1.7 1996/02/20 10:00:33 mycroft Exp $	*/
 
 /*
  * Copyright (c) 1991-1993 Regents of the University of California.
@@ -93,6 +94,7 @@ struct audio_softc {
 
 	struct	selinfo sc_wsel; /* write selector */
 	struct	selinfo sc_rsel; /* read selector */
+	struct	proc *sc_async;	/* process who wants SIGIO */
 
 	/* Sleep channels for reading and writing. */
 	int	sc_rchan;
@@ -116,6 +118,7 @@ struct audio_softc {
 	int	sc_hiwat;	/* xmit high water mark (for wakeup) */
 
 	int	sc_rblks;	/* number of phantom record blocks */
+	int	sc_wblks;	/* number of output silence blocks */
 	int	sc_pencoding;	/* current encoding; play */
 	int	sc_rencoding;	/* current encoding; record */
 };

@@ -1,3 +1,5 @@
+/*	$OpenBSD: bcmp.c,v 1.2 1996/04/19 16:09:19 niklas Exp $	*/
+
 /*
  * Copyright (c) 1987 Regents of the University of California.
  * All rights reserved.
@@ -33,24 +35,29 @@
 
 #if defined(LIBC_SCCS) && !defined(lint)
 /*static char *sccsid = "from: @(#)bcmp.c	5.6 (Berkeley) 2/24/91";*/
-static char *rcsid = "$Id: bcmp.c,v 1.5 1995/10/07 09:26:19 mycroft Exp $";
+static char *rcsid = "$OpenBSD: bcmp.c,v 1.2 1996/04/19 16:09:19 niklas Exp $";
 #endif /* LIBC_SCCS and not lint */
 
+#ifndef _KERNEL
 #include <string.h>
+#else
+#include <lib/libkern/libkern.h>
+#endif
 
 /*
  * bcmp -- vax cmpc3 instruction
  */
+int
 bcmp(b1, b2, length)
 	const void *b1, *b2;
 	register size_t length;
 {
-	register char *p1, *p2;
+	register const char *p1, *p2;
 
 	if (length == 0)
 		return(0);
-	p1 = (char *)b1;
-	p2 = (char *)b2;
+	p1 = (const char *)b1;
+	p2 = (const char *)b2;
 	do
 		if (*p1++ != *p2++)
 			break;

@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /*	$NetBSD: linux_socket.h,v 1.3 1995/05/28 10:16:34 mycroft Exp $	*/
 
 /*

@@ -1,5 +1,7 @@
+/*	$OpenBSD: util.c,v 1.2 1996/06/10 11:21:34 niklas Exp $	*/
+
 #ifndef lint
-static char rcsid[] = "$Id: util.c,v 1.3 1993/12/07 10:36:16 mycroft Exp $";
+static char rcsid[] = "$OpenBSD: util.c,v 1.2 1996/06/10 11:21:34 niklas Exp $";
 #endif /* not lint */
 
 #include "EXTERN.h"
@@ -242,7 +244,7 @@ long arg1,arg2,arg3;
     int r;
     bool tty2 = isatty(2);
 
-    Sprintf(buf, pat, arg1, arg2, arg3);
+    Snprintf(buf, sizeof buf, pat, arg1, arg2, arg3);
     Fflush(stderr);
     write(2, buf, strlen(buf));
     if (tty2) {				/* might be redirected to a file */
@@ -426,7 +428,7 @@ int assume_exists;
 	/* Put any leading path into `tmpbuf'.  */
 	strncpy(tmpbuf, name, pathlen);
 
-#define try(f, a1, a2) (Sprintf(tmpbuf + pathlen, f, a1, a2), stat(tmpbuf, &filestat) == 0)
+#define try(f, a1, a2) (Snprintf(tmpbuf + pathlen, sizeof tmpbuf - pathlen, f, a1, a2), stat(tmpbuf, &filestat) == 0)
 	if (   try("RCS/%s%s", filebase, RCSSUFFIX)
 	    || try("RCS/%s"  , filebase,         0)
 	    || try(    "%s%s", filebase, RCSSUFFIX)

@@ -1,3 +1,4 @@
+/*	$OpenBSD: rpc_hout.c,v 1.2 1996/06/26 05:38:36 deraadt Exp $	*/
 /*	$NetBSD: rpc_hout.c,v 1.4 1995/06/11 21:49:55 pk Exp $	*/
 /*
  * Sun RPC is a product of Sun Microsystems, Inc. and is provided for
@@ -382,7 +383,10 @@ penumdef(def)
 				f_print(fout, " = %s + %d", last, count++);
 			}
 		}
-		f_print(fout, ",\n");
+		if (l->next)
+			f_print(fout, ",\n");
+		else
+			f_print(fout, "\n");
 	}
 	f_print(fout, "};\n");
 	f_print(fout, "typedef enum %s %s;\n", name, name);

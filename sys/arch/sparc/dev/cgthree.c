@@ -1,4 +1,4 @@
-/*	$NetBSD: cgthree.c,v 1.16 1995/10/08 01:39:18 pk Exp $ */
+/*	$NetBSD: cgthree.c,v 1.27 1996/04/01 17:30:03 christos Exp $ */
 
 /*
  * Copyright (c) 1992, 1993
@@ -53,12 +53,14 @@
  */
 
 #include <sys/param.h>
+#include <sys/systm.h>
 #include <sys/buf.h>
 #include <sys/device.h>
 #include <sys/ioctl.h>
 #include <sys/malloc.h>
 #include <sys/mman.h>
 #include <sys/tty.h>
+#include <sys/conf.h>
 
 #include <vm/vm.h>
 
@@ -66,6 +68,8 @@
 #include <machine/autoconf.h>
 #include <machine/pmap.h>
 #include <machine/fbvar.h>
+#include <machine/cpu.h>
+#include <machine/conf.h>
 
 #include <sparc/dev/btreg.h>
 #include <sparc/dev/btvar.h>
@@ -77,9 +81,9 @@ struct cgthree_softc {
 	struct	device sc_dev;		/* base device */
 	struct	sbusdev sc_sd;		/* sbus device */
 	struct	fbdevice sc_fb;		/* frame buffer device */
-	volatile struct bt_regs *sc_bt;	/* Brooktree registers */
-	caddr_t	sc_phys;		/* display RAM (phys addr) */
-	int	sc_blanked;		/* true if blanked */
+	struct rom_reg	sc_phys;	/* phys address description */
+	volatile struct fbcontrol *sc_fbc;	/* Brooktree registers */
+	int	sc_bustype;		/* type of bus we live on */
 	union	bt_cmap sc_cmap;	/* Brooktree color map */
 };
 
@@ -92,9 +96,12 @@ int		cgthreeioctl __P((dev_t, u_long, caddr_t, int, struct proc *));
 int		cgthreemmap __P((dev_t, int, int));
 static void	cgthreeunblank(struct device *);
 
-struct cfdriver cgthreecd = {
-	NULL, "cgthree", cgthreematch, cgthreeattach,
-	DV_DULL, sizeof(struct cgthree_softc)
+struct cfattach cgthree_ca = {
+	sizeof(struct cgthree_softc), cgthreematch, cgthreeattach
+};
+
+struct cfdriver cgthree_cd = {
+	NULL, "cgthree", DV_DULL
 };
 
 /* frame buffer generic driver */
@@ -104,11 +111,10 @@ static struct fbdriver cgthreefbdriver = {
 
 extern int fbnode;
 extern struct tty *fbconstty;
-extern int (*v_putc)();
-extern int nullop();
-static int cgthree_cnputc();
 
 static void cgthreeloadcmap __P((struct cgthree_softc *, int, int));
+static void cgthree_set_video __P((struct cgthree_softc *, int));
+static int cgthree_get_video __P((struct cgthree_softc *));
 
 /*
  * Match a cgthree.
@@ -121,6 +127,11 @@ cgthreematch(parent, vcf, aux)
 	struct cfdata *cf = vcf;
 	struct confargs *ca = aux;
 	struct romaux *ra = &ca->ca_ra;
+
+	/*
+	 * Mask out invalid flags from the user.
+	 */
+	cf->cf_flags &= FB_USERMASK;
 
 	if (strcmp(cf->cf_driver->cd_name, ra->ra_name))
 		return (0);
@@ -140,15 +151,15 @@ cgthreeattach(parent, self, args)
 {
 	register struct cgthree_softc *sc = (struct cgthree_softc *)self;
 	register struct confargs *ca = args;
-	register int node, ramsize, i;
+	register int node = 0, ramsize, i;
 	register volatile struct bt_regs *bt;
-	register struct cgthree_all *p;
 	int isconsole;
 	int sbus = 1;
-	char *nam;
+	char *nam = NULL;
 
 	sc->sc_fb.fb_driver = &cgthreefbdriver;
 	sc->sc_fb.fb_device = &sc->sc_dev;
+	sc->sc_fb.fb_flags = sc->sc_dev.dv_cfdata->cf_flags;
 	/*
 	 * The defaults below match my screen, but are not guaranteed
 	 * to be correct as defaults go...
@@ -156,6 +167,12 @@ cgthreeattach(parent, self, args)
 	sc->sc_fb.fb_type.fb_type = FBTYPE_SUN3COLOR;
 	switch (ca->ca_bustype) {
 	case BUS_OBIO:
+		if (CPU_ISSUN4M) {	/* 4m has framebuffer on obio */
+			sbus = 0;
+			node = ca->ca_ra.ra_node;
+			nam = getpropstring(node, "model");
+			break;
+		}
 	case BUS_VME32:
 	case BUS_VME16:
 		sbus = node = 0;
@@ -186,24 +203,27 @@ cgthreeattach(parent, self, args)
 	 * going to print characters via rconsole.
 	 */
 	isconsole = node == fbnode && fbconstty != NULL;
-	p = (struct cgthree_all *)ca->ca_ra.ra_paddr;
 	if ((sc->sc_fb.fb_pixels = ca->ca_ra.ra_vaddr) == NULL && isconsole) {
 		/* this probably cannot happen, but what the heck */
-		sc->sc_fb.fb_pixels = mapiodev(p->ba_ram, ramsize, ca->ca_bustype);
+		sc->sc_fb.fb_pixels = mapiodev(ca->ca_ra.ra_reg, CG3REG_MEM,
+						ramsize, ca->ca_bustype);
 	}
-	sc->sc_bt = bt = (volatile struct bt_regs *)
-	    mapiodev((caddr_t)&p->ba_btreg, sizeof(p->ba_btreg), ca->ca_bustype);
-	sc->sc_phys = p->ba_ram;
+	sc->sc_fbc = (volatile struct fbcontrol *)
+	    mapiodev(ca->ca_ra.ra_reg, CG3REG_REG,
+		     sizeof(struct fbcontrol), ca->ca_bustype);
+
+	sc->sc_phys = ca->ca_ra.ra_reg[0];
+	sc->sc_bustype = ca->ca_bustype;
 
 	/* grab initial (current) color map */
+	bt = &sc->sc_fbc->fbc_dac;
 	bt->bt_addr = 0;
 	for (i = 0; i < 256 * 3 / 4; i++)
 		sc->sc_cmap.cm_chip[i] = bt->bt_cmap;
-	/* make sure we are not blanked (see cgthreeunblank) */
-	bt->bt_addr = 0x06;		/* command reg */
-	bt->bt_ctrl = 0x73;		/* overlay plane */
-	bt->bt_addr = 0x04;		/* read mask */
-	bt->bt_ctrl = 0xff;		/* color planes */
+
+	/* make sure we are not blanked */
+	cgthree_set_video(sc, 1);
+	BT_INIT(bt, 0);
 
 	if (isconsole) {
 		printf(" (console)\n");
@@ -215,7 +235,7 @@ cgthreeattach(parent, self, args)
 	if (sbus)
 		sbus_establish(&sc->sc_sd, &sc->sc_dev);
 	if (node == fbnode)
-		fb_attach(&sc->sc_fb);
+		fb_attach(&sc->sc_fb, isconsole);
 }
 
 int
@@ -226,7 +246,7 @@ cgthreeopen(dev, flags, mode, p)
 {
 	int unit = minor(dev);
 
-	if (unit >= cgthreecd.cd_ndevs || cgthreecd.cd_devs[unit] == NULL)
+	if (unit >= cgthree_cd.cd_ndevs || cgthree_cd.cd_devs[unit] == NULL)
 		return (ENXIO);
 	return (0);
 }
@@ -249,7 +269,7 @@ cgthreeioctl(dev, cmd, data, flags, p)
 	int flags;
 	struct proc *p;
 {
-	register struct cgthree_softc *sc = cgthreecd.cd_devs[minor(dev)];
+	register struct cgthree_softc *sc = cgthree_cd.cd_devs[minor(dev)];
 	register struct fbgattr *fba;
 	int error;
 
@@ -287,29 +307,11 @@ cgthreeioctl(dev, cmd, data, flags, p)
 		break;
 
 	case FBIOGVIDEO:
-		*(int *)data = sc->sc_blanked;
+		*(int *)data = cgthree_get_video(sc);
 		break;
 
 	case FBIOSVIDEO:
-		if (*(int *)data)
-			cgthreeunblank(&sc->sc_dev);
-		else if (!sc->sc_blanked) {
-			register volatile struct bt_regs *bt;
-
-			bt = sc->sc_bt;
-			bt->bt_addr = 0x06;	/* command reg */
-			bt->bt_ctrl = 0x70;	/* overlay plane */
-			bt->bt_addr = 0x04;	/* read mask */
-			bt->bt_ctrl = 0x00;	/* color planes */
-			/*
-			 * Set color 0 to black -- note that this overwrites
-			 * R of color 1.
-			 */
-			bt->bt_addr = 0;
-			bt->bt_cmap = 0;
-
-			sc->sc_blanked = 1;
-		}
+		cgthree_set_video(sc, *(int *)data);
 		break;
 
 	default:
@@ -325,22 +327,28 @@ static void
 cgthreeunblank(dev)
 	struct device *dev;
 {
-	struct cgthree_softc *sc = (struct cgthree_softc *)dev;
-	register volatile struct bt_regs *bt;
 
-	if (sc->sc_blanked) {
-		sc->sc_blanked = 0;
-		bt = sc->sc_bt;
-		/* restore color 0 (and R of color 1) */
-		bt->bt_addr = 0;
-		bt->bt_cmap = sc->sc_cmap.cm_chip[0];
+	cgthree_set_video((struct cgthree_softc *)dev, 1);
+}
 
-		/* restore read mask */
-		bt->bt_addr = 0x06;	/* command reg */
-		bt->bt_ctrl = 0x73;	/* overlay plane */
-		bt->bt_addr = 0x04;	/* read mask */
-		bt->bt_ctrl = 0xff;	/* color planes */
-	}
+static void
+cgthree_set_video(sc, enable)
+	struct cgthree_softc *sc;
+	int enable;
+{
+
+	if (enable)
+		sc->sc_fbc->fbc_ctrl |= FBC_VENAB;
+	else
+		sc->sc_fbc->fbc_ctrl &= ~FBC_VENAB;
+}
+
+static int
+cgthree_get_video(sc)
+	struct cgthree_softc *sc;
+{
+
+	return ((sc->sc_fbc->fbc_ctrl & FBC_VENAB) != 0);
 }
 
 /*
@@ -357,7 +365,7 @@ cgthreeloadcmap(sc, start, ncolors)
 
 	ip = &sc->sc_cmap.cm_chip[BT_D4M3(start)];	/* start/4 * 3 */
 	count = BT_D4M3(start + ncolors - 1) - BT_D4M3(start) + 3;
-	bt = sc->sc_bt;
+	bt = &sc->sc_fbc->fbc_dac;
 	bt->bt_addr = BT_D4M4(start);
 	while (--count >= 0)
 		bt->bt_cmap = *ip++;
@@ -373,7 +381,7 @@ cgthreeloadcmap(sc, start, ncolors)
  * map the whole thing, so we repeatedly map the first 256K to the
  * first page of the color screen.  If someone tries to use the overlay
  * and enable regions, they will get a surprise....
- * 
+ *
  * As well, mapping at an offset of 0x04000000 causes the cg3 to be
  * mapped in flat mode without the cg4 emulation.
  */
@@ -382,7 +390,7 @@ cgthreemmap(dev, off, prot)
 	dev_t dev;
 	int off, prot;
 {
-	register struct cgthree_softc *sc = cgthreecd.cd_devs[minor(dev)];
+	register struct cgthree_softc *sc = cgthree_cd.cd_devs[minor(dev)];
 #define START		(128*1024 + 128*1024)
 #define NOOVERLAY	(0x04000000)
 
@@ -400,5 +408,5 @@ cgthreemmap(dev, off, prot)
 	 * I turned on PMAP_NC here to disable the cache as I was
 	 * getting horribly broken behaviour with it on.
 	 */
-	return ((int)sc->sc_phys + off + PMAP_OBIO + PMAP_NC);
+	return (REG2PHYS(&sc->sc_phys, CG3REG_MEM+off, sc->sc_bustype) | PMAP_NC);
 }

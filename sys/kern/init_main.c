@@ -1,4 +1,5 @@
-/*	$NetBSD: init_main.c,v 1.78 1995/10/07 06:28:05 mycroft Exp $	*/
+/*	$OpenBSD: init_main.c,v 1.21 1997/03/27 05:35:28 millert Exp $	*/
+/*	$NetBSD: init_main.c,v 1.84.4.1 1996/06/02 09:08:06 mrg Exp $	*/
 
 /*
  * Copyright (c) 1995 Christopher G. Demetriou.  All rights reserved.
@@ -43,6 +44,7 @@
 
 #include <sys/param.h>
 #include <sys/filedesc.h>
+#include <sys/file.h>
 #include <sys/errno.h>
 #include <sys/exec.h>
 #include <sys/kernel.h>
@@ -52,7 +54,9 @@
 #include <sys/resourcevar.h>
 #include <sys/signalvar.h>
 #include <sys/systm.h>
+#include <sys/namei.h>
 #include <sys/vnode.h>
+#include <sys/tty.h>
 #include <sys/conf.h>
 #include <sys/buf.h>
 #ifdef REAL_CLISTS
@@ -62,6 +66,17 @@
 #include <sys/protosw.h>
 #include <sys/reboot.h>
 #include <sys/user.h>
+#ifdef SYSVSHM
+#include <sys/shm.h>
+#endif
+#ifdef SYSVSEM
+#include <sys/sem.h>
+#endif
+#ifdef SYSVMSG
+#include <sys/msg.h>
+#endif
+#include <sys/domain.h>
+#include <sys/mbuf.h>
 
 #include <sys/syscall.h>
 #include <sys/syscallargs.h>
@@ -71,6 +86,18 @@
 #include <machine/cpu.h>
 
 #include <vm/vm.h>
+#include <vm/vm_pageout.h>
+
+#include <net/if.h>
+#include <net/raw_cb.h>
+
+#if defined(NFSSERVER) || defined(NFSCLIENT)
+extern void nfs_init __P((void));
+#endif
+
+#ifndef MIN
+#define MIN(a,b)	(((a)<(b))?(a):(b))
+#endif
 
 char	copyright[] =
 "Copyright (c) 1982, 1986, 1989, 1991, 1993\n\tThe Regents of the University of California.  All rights reserved.\n\n";
@@ -94,8 +121,12 @@ int	boothowto;
 struct	timeval boottime;
 struct	timeval runtime;
 
-static void start_init __P((struct proc *));
-static void start_pagedaemon __P((struct proc *));
+/* XXX return int so gcc -Werror won't complain */
+int	main __P((void *));
+void	check_console __P((struct proc *));
+void	start_init __P((struct proc *));
+void	start_pagedaemon __P((struct proc *));
+void	start_update __P((struct proc *));
 
 #ifdef cpu_set_init_frame
 void *initframep;				/* XXX should go away */
@@ -106,8 +137,8 @@ extern char sigcode[], esigcode[];
 extern char *syscallnames[];
 #endif
 
-struct emul emul_netbsd = {
-	"netbsd",
+struct emul emul_native = {
+	"native",
 	NULL,
 	sendsig,
 	SYS_syscall,
@@ -121,6 +152,7 @@ struct emul emul_netbsd = {
 	0,
 	copyargs,
 	setregs,
+	NULL,
 	sigcode,
 	esigcode,
 };
@@ -131,20 +163,21 @@ struct emul emul_netbsd = {
  * hard work is done in the lower-level initialization routines including
  * startup(), which does memory initialization and autoconfiguration.
  */
+/* XXX return int, so gcc -Werror won't complain */
 int
 main(framep)
 	void *framep;				/* XXX should go away */
 {
 	register struct proc *p;
-	register struct filedesc0 *fdp;
 	register struct pdevinit *pdev;
+	struct timeval rtv;
 	register int i;
 	int s;
 	register_t rval[2];
-	extern int (*mountroot) __P((void));
 	extern struct pdevinit pdevinit[];
 	extern void roundrobin __P((void *));
 	extern void schedcpu __P((void *));
+	extern void disk_init __P((void));
 
 	/*
 	 * Initialize the current process pointer (curproc) before
@@ -152,15 +185,19 @@ main(framep)
 	 */
 	p = &proc0;
 	curproc = p;
+
 	/*
 	 * Attempt to find console and initialize
 	 * in case of early panic or other messages.
 	 */
+	config_init();		/* init autoconfiguration data structures */
 	consinit();
 	printf(copyright);
 
 	vm_mem_init();
 	kmeminit();
+	disk_init();		/* must come before autoconfiguration */
+	tty_init();		/* initialise tty's */
 	cpu_startup();
 
 	/*
@@ -184,7 +221,7 @@ main(framep)
 	p->p_flag = P_INMEM | P_SYSTEM;
 	p->p_stat = SRUN;
 	p->p_nice = NZERO;
-	p->p_emul = &emul_netbsd;
+	p->p_emul = &emul_native;
 	bcopy("swapper", p->p_comm, sizeof ("swapper"));
 
 	/* Create credentials. */
@@ -194,13 +231,12 @@ main(framep)
 	p->p_ucred->cr_ngroups = 1;	/* group 0 */
 
 	/* Create the file descriptor table. */
-	fdp = &filedesc0;
-	p->p_fd = &fdp->fd_fd;
-	fdp->fd_fd.fd_refcnt = 1;
-	fdp->fd_fd.fd_cmask = cmask;
-	fdp->fd_fd.fd_ofiles = fdp->fd_dfiles;
-	fdp->fd_fd.fd_ofileflags = fdp->fd_dfileflags;
-	fdp->fd_fd.fd_nfiles = NDFILE;
+	p->p_fd = &filedesc0.fd_fd;
+	filedesc0.fd_fd.fd_refcnt = 1;
+	filedesc0.fd_fd.fd_cmask = cmask;
+	filedesc0.fd_fd.fd_ofiles = filedesc0.fd_dfiles;
+	filedesc0.fd_fd.fd_ofileflags = filedesc0.fd_dfileflags;
+	filedesc0.fd_fd.fd_nfiles = NDFILE;
 
 	/* Create the limits structures. */
 	p->p_limit = &limit0;
@@ -208,6 +244,8 @@ main(framep)
 		limit0.pl_rlimit[i].rlim_cur =
 		    limit0.pl_rlimit[i].rlim_max = RLIM_INFINITY;
 	limit0.pl_rlimit[RLIMIT_NOFILE].rlim_cur = NOFILE;
+	limit0.pl_rlimit[RLIMIT_NOFILE].rlim_max = MIN(NOFILE_MAX,
+	    (maxfiles - NOFILE > NOFILE) ?  maxfiles - NOFILE : NOFILE);
 	limit0.pl_rlimit[RLIMIT_NPROC].rlim_cur = MAXUPRC;
 	i = ptoa(cnt.v_free_count);
 	limit0.pl_rlimit[RLIMIT_RSS].rlim_max = i;
@@ -242,6 +280,9 @@ main(framep)
 	vm_init_limits(p);
 
 	/* Initialize the file systems. */
+#if defined(NFSSERVER) || defined(NFSCLIENT)
+	nfs_init();			/* initialize server/shared data */
+#endif
 	vfsinit();
 
 	/* Start real time and statistics clocks. */
@@ -271,6 +312,7 @@ main(framep)
 #endif
 
 	/* Attach pseudo-devices. */
+	randomattach();
 	for (pdev = pdevinit; pdev->pdev_attach != NULL; pdev++)
 		(*pdev->pdev_attach)(pdev->pdev_count);
 
@@ -298,13 +340,13 @@ main(framep)
 	mountlist.cqh_first->mnt_flag |= MNT_ROOTFS;
 	mountlist.cqh_first->mnt_op->vfs_refcount++;
 
-	/* Get the vnode for '/'.  Set fdp->fd_fd.fd_cdir to reference it. */
+	/* Get the vnode for '/'.  Set filedesc0.fd_fd.fd_cdir to reference it. */
 	if (VFS_ROOT(mountlist.cqh_first, &rootvnode))
 		panic("cannot find root vnode");
-	fdp->fd_fd.fd_cdir = rootvnode;
-	VREF(fdp->fd_fd.fd_cdir);
+	filedesc0.fd_fd.fd_cdir = rootvnode;
+	VREF(filedesc0.fd_fd.fd_cdir);
 	VOP_UNLOCK(rootvnode);
-	fdp->fd_fd.fd_rdir = NULL;
+	filedesc0.fd_fd.fd_rdir = NULL;
 	swapinit();
 
 	/*
@@ -328,7 +370,7 @@ main(framep)
 		 */
 		initframep = framep;
 		start_init(curproc);
-		return;
+		return 0;
 	}
 #else
 	cpu_set_kpc(pfind(1), start_init);
@@ -348,6 +390,23 @@ main(framep)
 	cpu_set_kpc(pfind(2), start_pagedaemon);
 #endif
 
+	/* Create process 3 (the update daemon). */
+	if (sys_fork(p, NULL, rval))
+		panic("fork update");
+#ifdef cpu_set_init_frame			/* XXX should go away */
+	if (rval[1]) {
+		/*
+		 * Now in process 3.
+		 */
+		start_update(curproc);
+	}
+#else
+	cpu_set_kpc(pfind(3), start_update);
+#endif
+
+	microtime(&rtv);
+	srandom((u_long)(rtv.tv_sec ^ rtv.tv_usec));
+
 	/* The scheduler is an infinite loop. */
 	scheduler();
 	/* NOTREACHED */
@@ -363,11 +422,29 @@ static char *initpaths[] = {
 	NULL,
 };
 
+void
+check_console(p)
+	struct proc *p;
+{
+	struct nameidata nd;
+	int error;
+
+	NDINIT(&nd, LOOKUP, FOLLOW, UIO_SYSSPACE, "/dev/console", p);
+	error = namei(&nd);
+	if (error) {
+		if (error == ENOENT)
+			printf("warning: /dev/console does not exist\n");
+		else
+			printf("warning: /dev/console error %d\n", error);
+	} else
+		vrele(nd.ni_vp);
+}
+
 /*
  * Start the initial user process; try exec'ing each pathname in "initpaths".
  * The program is invoked with one argument containing the boot flags.
  */
-static void
+void
 start_init(p)
 	struct proc *p;
 {
@@ -380,7 +457,7 @@ start_init(p)
 	int options, i, error;
 	register_t retval[2];
 	char flags[4], *flagsp;
-	char **pathp, *path, *ucp, **uap, *arg0, *arg1;
+	char **pathp, *path, *ucp, **uap, *arg0, *arg1 = NULL;
 
 	/*
 	 * Now in process 1.
@@ -397,6 +474,8 @@ start_init(p)
 	 */
 	cpu_set_init_frame(p, initframep);
 #endif
+
+	check_console(p);
 
 	/*
 	 * Need just enough stack to hold the faked-up "execve()" arguments.
@@ -480,7 +559,7 @@ start_init(p)
 	panic("no init");
 }
 
-static void
+void
 start_pagedaemon(p)
 	struct proc *p;
 {
@@ -492,5 +571,20 @@ start_pagedaemon(p)
 	p->p_flag |= P_INMEM | P_SYSTEM;	/* XXX */
 	bcopy("pagedaemon", curproc->p_comm, sizeof ("pagedaemon"));
 	vm_pageout();
+	/* NOTREACHED */
+}
+
+void
+start_update(p)
+	struct proc *p;
+{
+
+	/*
+	 * Now in process 3.
+	 */
+	pageproc = p;
+	p->p_flag |= P_INMEM | P_SYSTEM;	/* XXX */
+	bcopy("update", curproc->p_comm, sizeof ("update"));
+	vn_update();
 	/* NOTREACHED */
 }

@@ -1,4 +1,5 @@
-/*	$NetBSD: isavar.h,v 1.16 1995/06/07 06:45:44 cgd Exp $	*/
+/*	$OpenBSD: isavar.h,v 1.20 1996/11/29 22:55:04 niklas Exp $	*/
+/*	$NetBSD: isavar.h,v 1.24 1996/10/21 22:41:11 thorpej Exp $	*/
 
 /*
  * Copyright (c) 1995 Chris G. Demetriou
@@ -36,16 +37,59 @@
  *	BSDI Id: isavar.h,v 1.5 1992/12/01 18:06:00 karels Exp 
  */
 
+#ifndef _DEV_ISA_ISAVAR_H_
+#define	_DEV_ISA_ISAVAR_H_
+
 /*
  * Definitions for ISA autoconfiguration.
  */
 
 #include <sys/queue.h>
+#include <machine/bus.h>
+
+/* 
+ * Structures and definitions needed by the machine-dependent header.
+ */
+struct isabus_attach_args;
+
+#if (alpha + amiga + i386 + arc + wgrisc != 1)
+ERROR: COMPILING FOR UNSUPPORTED MACHINE, OR MORE THAN ONE.
+#endif
+#if alpha
+#include <alpha/isa/isa_machdep.h>
+#endif
+#if amiga
+#include <amiga/isa/isa_machdep.h>
+#endif
+#if i386
+#include <i386/isa/isa_machdep.h>
+#endif
+#if arc
+#include <arc/isa/isa_machdep.h>
+#endif
+#if wgrisc
+#include <wgrisc/isa/isa_machdep.h>
+#endif
+
+/*
+ * ISA bus attach arguments
+ */
+struct isabus_attach_args {
+	char	*iba_busname;		/* XXX should be common */
+	bus_space_tag_t iba_iot;	/* isa i/o space tag */
+	bus_space_tag_t iba_memt;	/* isa mem space tag */
+	isa_chipset_tag_t iba_ic;
+};
 
 /*
  * ISA driver attach arguments
  */
 struct isa_attach_args {
+	bus_space_tag_t ia_iot;		/* isa i/o space tag */
+	bus_space_tag_t ia_memt;	/* isa mem space tag */
+
+	isa_chipset_tag_t ia_ic;
+
 	int	ia_iobase;		/* base i/o address */
 	int	ia_iosize;		/* span of ports used */
 	int	ia_irq;			/* interrupt request */
@@ -53,6 +97,27 @@ struct isa_attach_args {
 	int	ia_maddr;		/* physical i/o mem addr */
 	u_int	ia_msize;		/* size of i/o memory */
 	void	*ia_aux;		/* driver specific */
+
+	bus_space_handle_t ia_delaybah;	/* i/o handle for `delay port' */
+
+	/* XXX need fixes, some are duplicated */
+	/* begin isapnp section */
+	int id;				/* logical device ID */
+	int comp_id;			/* compatible device ID */
+	int csn;			/* card selection number */
+	int ldn;			/* logical device number */
+	struct {
+		int num;
+		int type;
+	} irq[2];
+	int drq[2];
+	int port[8];
+	struct {
+		int base;
+		int control;
+		int range;
+	} mem[4];
+	/* end isapnp stuff */
 };
 
 #define	IOBASEUNK	-1		/* i/o address is unknown */
@@ -76,6 +141,25 @@ struct isa_softc {
 	struct	device sc_dev;		/* base device */
 	TAILQ_HEAD(, isadev)
 		sc_subdevs;		/* list of all children */
+
+	bus_space_tag_t sc_iot;		/* isa io space tag */
+	bus_space_tag_t sc_memt;	/* isa mem space tag */
+
+	isa_chipset_tag_t sc_ic;
+
+	/*
+	 * This i/o handle is used to map port 0x84, which is
+	 * read to provide a 1.25us delay.  This access handle
+	 * is mapped in isaattach(), and exported to drivers
+	 * via isa_attach_args.
+	 */
+	bus_space_handle_t   sc_delaybah;
+
+	/*
+	 * This points to the isapnp_softc structure that holds
+	 * information of PnP devices on the ISA bus.
+	 */
+	void *pnpsc;
 };
 
 #define		cf_iobase		cf_loc[0]
@@ -84,6 +168,7 @@ struct isa_softc {
 #define		cf_msize		cf_loc[3]
 #define		cf_irq			cf_loc[4]
 #define		cf_drq			cf_loc[5]
+#define		cf_pnpid		cf_loc[6]
 
 /*
  * ISA interrupt handler manipulation.
@@ -102,27 +187,10 @@ struct isa_softc {
  */
 
 /* ISA interrupt sharing types */
-typedef enum {
-	ISA_IST_NONE = 0,	/* not yet assigned */
-	ISA_IST_PULSE,		/* pulsed */
-	ISA_IST_EDGE,		/* edge-triggered */
-	ISA_IST_LEVEL		/* level-triggered */
-} isa_intrtype;
-
-/* ISA interrupt levels; system interrupt levels for ISA bus use */
-typedef enum {
-	ISA_IPL_NONE,		/* block only the interrupt's IRQ*/
-	ISA_IPL_BIO,		/* block I/O interrupts */
-	ISA_IPL_NET,		/* network */
-	ISA_IPL_TTY,		/* terminal */
-	ISA_IPL_CLOCK,		/* clock */
-} isa_intrlevel;
+char	*isa_intr_typename __P((int type));
 
 void	isascan __P((struct device *parent, void *match));
-void	*isa_intr_establish __P((int intr, isa_intrtype type,
-	    isa_intrlevel level, int (*ih_fun)(void *), void *ih_arg));
-void	isa_intr_disestablish __P((void *handler));
-char	*isa_intr_typename __P((isa_intrtype type));
+int	isaprint __P((void *, const char *));
 
 #ifdef NEWCONFIG
 /*
@@ -131,9 +199,4 @@ char	*isa_intr_typename __P((isa_intrtype type));
 void isa_establish __P((struct isadev *, struct device *));
 #endif
 
-/*
- * software conventions
- */
-typedef enum { BUS_ISA, BUS_EISA } isa_type;
-
-extern isa_type isa_bustype;	/* type of bus; XXX should be in softc */
+#endif /* _DEV_ISA_ISAVAR_H_ */

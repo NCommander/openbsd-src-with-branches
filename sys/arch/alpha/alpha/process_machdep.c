@@ -1,4 +1,5 @@
-/*	$NetBSD: process_machdep.c,v 1.2 1995/03/24 15:07:17 cgd Exp $	*/
+/*	$OpenBSD: process_machdep.c,v 1.7 1996/07/11 20:14:21 cgd Exp $	*/
+/*	$NetBSD: process_machdep.c,v 1.7 1996/07/11 20:14:21 cgd Exp $	*/
 
 /*
  * Copyright (c) 1994 Christopher G. Demetriou
@@ -59,24 +60,22 @@
 #include <sys/user.h>
 #include <sys/vnode.h>
 #include <sys/ptrace.h>
-#include <machine/psl.h>
 #include <machine/reg.h>
 #include <machine/frame.h>
+
+#define	process_frame(p)	((p)->p_md.md_tf)
+#define	process_pcb(p)		(&(p)->p_addr->u_pcb)
+#define	process_fpframe(p)	(&(process_pcb(p)->pcb_fp))
 
 int
 process_read_regs(p, regs)
 	struct proc *p;
 	struct reg *regs;
 {
-	struct trapframe *frame;
 
-	if ((p->p_flag & P_INMEM) == 0)
-		return (EIO);
-
-	frame = p->p_md.md_tf;
-
-	frametoreg(frame, regs);
-
+	frametoreg(process_frame(p), regs);
+	regs->r_regs[R_ZERO] = process_frame(p)->tf_regs[FRAME_PC];
+	regs->r_regs[R_SP] = process_pcb(p)->pcb_hw.apcb_usp;
 	return (0);
 }
 
@@ -85,15 +84,10 @@ process_write_regs(p, regs)
 	struct proc *p;
 	struct reg *regs;
 {
-	struct trapframe *frame;
 
-	if ((p->p_flag & P_INMEM) == 0)
-		return (EIO);
-
-	frame = p->p_md.md_tf;
-
-	regtoframe(regs, frame);
-
+	regtoframe(regs, process_frame(p));
+	process_frame(p)->tf_regs[FRAME_PC] = regs->r_regs[R_ZERO];
+	process_pcb(p)->pcb_hw.apcb_usp = regs->r_regs[R_SP];
 	return (0);
 }
 
@@ -114,15 +108,9 @@ process_set_pc(p, addr)
 	struct proc *p;
 	caddr_t addr;
 {
-	struct trapframe *frame;
+	struct trapframe *frame = process_frame(p);
 
-	if ((p->p_flag & P_INMEM) == 0)
-		return (EIO);
-
-	frame = p->p_md.md_tf;
-
-	frame->tf_pc = (u_int64_t)addr;
-
+	frame->tf_regs[FRAME_PC] = (u_int64_t)addr;
 	return (0);
 }
 
@@ -133,17 +121,13 @@ process_read_fpregs(p, regs)
 {
 	extern struct proc *fpcurproc;
 
-	if ((p->p_flag & P_INMEM) == 0)
-		return (EIO);
-
 	if (p == fpcurproc) {
-		pal_wrfen(1);
-		savefpstate(&p->p_addr->u_pcb.pcb_fp);
-		pal_wrfen(0);
+		alpha_pal_wrfen(1);
+		savefpstate(process_fpframe(p));
+		alpha_pal_wrfen(0);
 	}
 
-	bcopy(&p->p_addr->u_pcb.pcb_fp, regs, sizeof(struct fpreg));
-
+	bcopy(process_fpframe(p), regs, sizeof(struct fpreg));
 	return (0);
 }
 
@@ -154,13 +138,9 @@ process_write_fpregs(p, regs)
 {
 	extern struct proc *fpcurproc;
 
-	if ((p->p_flag & P_INMEM) == 0)
-		return (EIO);
-
 	if (p == fpcurproc)
 		fpcurproc = NULL;
 
-	bcopy(regs, &p->p_addr->u_pcb.pcb_fp, sizeof(struct fpreg));
-
+	bcopy(regs, process_fpframe(p), sizeof(struct fpreg));
 	return (0);
 }

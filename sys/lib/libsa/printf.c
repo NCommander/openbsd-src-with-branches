@@ -1,4 +1,5 @@
-/*	$NetBSD: printf.c,v 1.6 1995/09/03 20:51:21 pk Exp $	*/
+/*	$OpenBSD: printf.c,v 1.8 1997/02/06 14:26:08 mickey Exp $	*/
+/*	$NetBSD: printf.c,v 1.10 1996/11/30 04:19:21 gwr Exp $	*/
 
 /*-
  * Copyright (c) 1993
@@ -69,9 +70,10 @@
 #include "stand.h"
 
 static void kprintn __P((void (*)(int), u_long, int));
-static void sputchar __P((int));
-static void kprintf __P((void (*)(int), const char *, va_list));
+static void kdoprnt __P((void (*)(int), const char *, va_list));
 
+#ifndef	STRIPPED
+static void sputchar __P((int));
 static char *sbuf;
 
 static void
@@ -97,10 +99,11 @@ sprintf(buf, fmt, va_alist)
 #else
 	va_start(ap);
 #endif
-	kprintf(sputchar, fmt, ap);
+	kdoprnt(sputchar, fmt, ap);
 	va_end(ap);
 	*sbuf = '\0';
 }
+#endif	/* NO_SPRINTF */
 
 void
 #ifdef __STDC__
@@ -117,20 +120,26 @@ printf(fmt, va_alist)
 #else
 	va_start(ap);
 #endif
-	kprintf(putchar, fmt, ap);
+	kdoprnt(putchar, fmt, ap);
 	va_end(ap);
 }
 
 void
-kprintf(put, fmt, ap)
+vprintf(const char *fmt, va_list ap)
+{
+	kdoprnt(putchar, fmt, ap);
+}
+
+static void
+kdoprnt(put, fmt, ap)
 	void (*put)__P((int));
 	const char *fmt;
 	va_list ap;
 {
 	register char *p;
-	register int ch, n;
+	register int ch;
 	unsigned long ul;
-	int lflag, set;
+	int lflag;
 
 	for (;;) {
 		while ((ch = *fmt++) != '%') {
@@ -143,7 +152,10 @@ reswitch:	switch (ch = *fmt++) {
 		case 'l':
 			lflag = 1;
 			goto reswitch;
+#ifndef	STRIPPED
 		case 'b':
+		{
+			register int set, n;
 			ul = va_arg(ap, int);
 			p = va_arg(ap, char *);
 			kprintn(put, ul, *p++);
@@ -162,7 +174,9 @@ reswitch:	switch (ch = *fmt++) {
 			}
 			if (set)
 				put('>');
+		}
 			break;
+#endif
 		case 'c':
 			ch = va_arg(ap, int);
 				put(ch & 0x7f);
@@ -191,6 +205,10 @@ reswitch:	switch (ch = *fmt++) {
 			    va_arg(ap, u_long) : va_arg(ap, u_int);
 			kprintn(put, ul, 10);
 			break;
+		case 'p':
+			putchar('0');
+			putchar('x');
+			lflag += sizeof(void *)==sizeof(u_long)? 1 : 0;
 		case 'x':
 			ul = lflag ?
 			    va_arg(ap, u_long) : va_arg(ap, u_int);

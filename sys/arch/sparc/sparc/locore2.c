@@ -1,4 +1,4 @@
-/*	$NetBSD: locore2.c,v 1.5 1994/11/20 20:54:28 deraadt Exp $ */
+/*	$NetBSD: locore2.c,v 1.6 1996/03/14 21:09:15 christos Exp $ */
 
 /*
  * Copyright (c) 1992, 1993
@@ -50,8 +50,11 @@
  */
 
 #include <sys/param.h>
+#include <sys/systm.h>
 #include <sys/proc.h>
 #include <sys/resourcevar.h>
+
+#include <machine/cpu.h>
 
 int	whichqs;
 
@@ -81,14 +84,15 @@ setrunqueue(p)
  * Remove process p from its run queue, which should be the one
  * indicated by its priority.  Calls should be made at splstatclock().
  */
-remrq(p)
+void
+remrunqueue(p)
 	register struct proc *p;
 {
 	register int which = p->p_priority >> 2;
 	register struct prochd *q;
 
 	if ((whichqs & (1 << which)) == 0)
-		panic("remrq");
+		panic("remrunqueue");
 	p->p_forw->p_back = p->p_back;
 	p->p_back->p_forw = p->p_forw;
 	p->p_back = NULL;

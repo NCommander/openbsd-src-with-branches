@@ -1,4 +1,5 @@
-/*	$NetBSD: bpf.h,v 1.12 1995/09/27 18:30:40 thorpej Exp $	*/
+/*	$OpenBSD: bpf.h,v 1.4 1996/07/12 07:57:41 mickey Exp $	*/
+/*	$NetBSD: bpf.h,v 1.15 1996/12/13 07:57:33 mikel Exp $	*/
 
 /*
  * Copyright (c) 1990, 1991, 1993
@@ -43,12 +44,17 @@
 #ifndef _NET_BPF_H_
 #define _NET_BPF_H_
 
+/* BSD style release date */ 
+#define BPF_RELEASE 199606
+
+typedef	int32_t	bpf_int32;
+typedef u_int32_t	bpf_u_int32;
 /*
- * Alignment macros.  BPF_WORDALIGN rounds up to the next 
- * even multiple of BPF_ALIGNMENT. 
+ * Alignment macros.  BPF_WORDALIGN rounds up to the next even multiple of
+ * BPF_ALIGNMENT (which is at least as much as what a timeval needs).
  */
 #define BPF_ALIGNMENT sizeof(long)
-#define BPF_WORDALIGN(x) (((x)+(BPF_ALIGNMENT-1))&~(BPF_ALIGNMENT-1))
+#define BPF_WORDALIGN(x) (((x) + (BPF_ALIGNMENT - 1)) & ~(BPF_ALIGNMENT - 1))
 
 #define BPF_MAXINSNS 512
 #define BPF_MAXBUFSIZE 0x8000
@@ -144,9 +150,18 @@ struct bpf_hdr {
  * Because the structure above is not a multiple of 4 bytes, some compilers
  * will insist on inserting padding; hence, sizeof(struct bpf_hdr) won't work.
  * Only the kernel needs to know about it; applications use bh_hdrlen.
+ * XXX To save a few bytes on 32-bit machines, we avoid end-of-struct
+ * XXX padding by using the size of the header data elements.  This is
+ * XXX fail-safe: on new machines, we just use the 'safe' sizeof.
  */
 #ifdef _KERNEL
+#if defined(__arm32__) || defined(__i386__) || defined(__m68k__) || \
+    defined(__mips__) || defined(__ns32k__) || defined(__sparc__) || \
+    defined(__vax__)
 #define SIZEOF_BPF_HDR 18
+#else
+#define SIZEOF_BPF_HDR sizeof(struct bpf_hdr)
+#endif
 #endif
 
 /*
@@ -163,6 +178,7 @@ struct bpf_hdr {
 #define DLT_SLIP	8	/* Serial Line IP */
 #define DLT_PPP		9	/* Point-to-point Protocol */
 #define DLT_FDDI	10	/* FDDI */
+#define DLT_ATM_RFC1483	11	/* LLC/SNAP encapsulated atm */
 
 /*
  * The instruction encondings.
@@ -238,12 +254,6 @@ struct bpf_insn {
 
 #ifdef _KERNEL
 int	 bpf_validate __P((struct bpf_insn *, int));
-int	 bpfopen __P((dev_t, int));
-int	 bpfclose __P((dev_t, int));
-int	 bpfread __P((dev_t, struct uio *));
-int	 bpfwrite __P((dev_t, struct uio *));
-int	 bpfioctl __P((dev_t, u_long, caddr_t, int));
-int	 bpf_select __P((dev_t, int, struct proc *));
 void	 bpf_tap __P((caddr_t, u_char *, u_int));
 void	 bpf_mtap __P((caddr_t, struct mbuf *));
 void	 bpfattach __P((caddr_t *, struct ifnet *, u_int, u_int));

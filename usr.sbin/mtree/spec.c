@@ -1,4 +1,5 @@
 /*	$NetBSD: spec.c,v 1.6 1995/03/07 21:12:12 cgd Exp $	*/
+/*	$OpenBSD: spec.c,v 1.5 1997/01/03 21:40:51 millert Exp $	*/
 
 /*-
  * Copyright (c) 1989, 1993
@@ -37,7 +38,7 @@
 #if 0
 static char sccsid[] = "@(#)spec.c	8.1 (Berkeley) 6/6/93";
 #else
-static char rcsid[] = "$NetBSD: spec.c,v 1.6 1995/03/07 21:12:12 cgd Exp $";
+static char rcsid[] = "$OpenBSD: spec.c,v 1.5 1997/01/03 21:40:51 millert Exp $";
 #endif
 #endif /* not lint */
 
@@ -67,7 +68,7 @@ spec()
 	int c_cur, c_next;
 	char buf[2048];
 
-	root = NULL;
+	centry = last = root = NULL;
 	bzero(&ginfo, sizeof(ginfo));
 	c_cur = c_next = 0;
 	for (lineno = 1; fgets(buf, sizeof(buf), stdin);
@@ -77,7 +78,7 @@ spec()
 			continue;
 
 		/* Find end of line. */
-		if ((p = index(buf, '\n')) == NULL)
+		if ((p = strchr(buf, '\n')) == NULL)
 			err("line %d too long", lineno);
 
 		/* See if next line is continuation line. */
@@ -122,7 +123,7 @@ spec()
 				continue;
 			}
 
-		if (index(p, '/'))
+		if (strchr(p, '/'))
 			err("slash character in file name");
 
 		if (!strcmp(p, "..")) {
@@ -170,14 +171,14 @@ set(t, ip)
 	register NODE *ip;
 {
 	register int type;
-	register char *kw, *val;
+	register char *kw, *val = NULL;
 	struct group *gr;
 	struct passwd *pw;
 	mode_t *m;
 	int value;
 	char *ep;
 
-	for (; kw = strtok(t, "= \t\n"); t = NULL) {
+	for (; (kw = strtok(t, "= \t\n")); t = NULL) {
 		ip->flags |= type = parsekey(kw, &value);
 		if (value && (val = strtok(NULL, " \t\n")) == NULL)
 			err("missing value");
@@ -186,6 +187,12 @@ set(t, ip)
 			ip->cksum = strtoul(val, &ep, 10);
 			if (*ep)
 				err("invalid checksum %s", val);
+			break;
+		case F_MD5:
+			ip->md5digest = strdup(val);
+			if (!ip->md5digest) {
+				err("%s", strerror(errno));
+			}
 			break;
 		case F_GID:
 			ip->st_gid = strtoul(val, &ep, 10);
@@ -220,11 +227,11 @@ set(t, ip)
 				err("%s", strerror(errno));
 			break;
 		case F_TIME:
-			ip->st_mtimespec.ts_sec = strtoul(val, &ep, 10);
+			ip->st_mtimespec.tv_sec = strtoul(val, &ep, 10);
 			if (*ep != '.')
 				err("invalid time %s", val);
 			val = ep + 1;
-			ip->st_mtimespec.ts_nsec = strtoul(val, &ep, 10);
+			ip->st_mtimespec.tv_nsec = strtoul(val, &ep, 10);
 			if (*ep)
 				err("invalid time %s", val);
 			break;
@@ -281,6 +288,6 @@ unset(t, ip)
 {
 	register char *p;
 
-	while (p = strtok(t, "\n\t "))
+	while ((p = strtok(t, "\n\t ")))
 		ip->flags &= ~parsekey(p, NULL);
 }

@@ -1,6 +1,8 @@
-/*	$NetBSD: header.h,v 1.7 1995/04/24 12:23:54 cgd Exp $	*/
+/*	$NetBSD: header.h,v 1.7.6.1 1996/05/27 15:54:20 mrg Exp $	*/
 
 /*	header.h		Larn is copyrighted 1986 by Noah Morgan. */
+
+#include <sys/types.h>
 
 #define MAXLEVEL 11
 	/*	max # levels in the dungeon			*/
@@ -69,7 +71,7 @@ struct sphere
 	struct sphere *p;	/* pointer to next structure */
 	char x,y,lev;		/* location of the sphere */
 	char dir;			/* direction sphere is going in */
-	char lifetime;		/* duration of the sphere */
+	short lifetime;		/* duration of the sphere */
 	};
 
 /*	defines for the character attribute array	c[]	*/
@@ -332,20 +334,21 @@ extern char aborted[],alpha[],beenhere[],boldon,cheat,ckpfile[],ckpflag;
 extern char *class[],course[],diagfile[],helpfile[];
 extern char *inbuffer,is_alpha[],is_digit[];
 extern char item[MAXX][MAXY],iven[],know[MAXX][MAXY],larnlevels[],lastmonst[];
-extern char level,*levelname[],logfile[],loginname[],logname[],*lpbuf,*lpend;
+extern char *levelname[],logfile[],loginname[],logname[],*lpbuf,*lpend;
 extern char *lpnt,moved[MAXX][MAXY],mitem[MAXX][MAXY],monstlevel[];
 extern char monstnamelist[],nch[],ndgg[],nlpts[],nomove,nosignal,nowelcome;
-extern char nplt[],nsw[],*objectname[],objnamelist[],optsfile[];
+extern char nplt[],nsw[],*objectname[],objnamelist[],optsfile[1024];
 extern char *potionhide[],*potionname[],playerids[],potprob[];
-extern char predostuff,psname[],restorflag,savefilename[],scorefile[],scprob[];
-extern char screen[MAXX][MAXY],*scrollhide[],*scrollname[],sex,*spelcode[];
-extern char *speldescript[];
+extern char predostuff,psname[],restorflag,savefilename[1024],scorefile[];
+extern char scprob[],screen[MAXX][MAXY],*scrollhide[],*scrollname[],sex;
+extern char *spelcode[],*speldescript[];
 extern char spelknow[],*spelname[],*spelmes[],spelweird[MAXMONST+8][SPNUM];
 extern char splev[],stealth[MAXX][MAXY],to_lower[],to_upper[],wizard;
 extern short diroffx[],diroffy[],hitflag,hit2flag,hit3flag,hitp[MAXX][MAXY];
 extern short iarg[MAXX][MAXY],ivenarg[],lasthx,lasthy,lastnum,lastpx,lastpy;
-extern short nobeep,oldx,oldy,playerx,playery;
+extern short nobeep,oldx,oldy,playerx,playery,level;
 extern int dayplay,enable_scroll,srcount,yrepcount,userid,wisid,lfd,fd;
+extern uid_t uid, euid;
 extern long initialtime,outstanding_taxes,skill[],gtime,c[],cbak[];
 extern unsigned long randx;
 extern struct cel *cell;

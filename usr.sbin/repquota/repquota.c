@@ -42,7 +42,7 @@ static char copyright[] =
 
 #ifndef lint
 /*static char sccsid[] = "from: @(#)repquota.c	8.1 (Berkeley) 6/6/93";*/
-static char *rcsid = "$Id: repquota.c,v 1.7 1995/01/03 02:06:31 cgd Exp $";
+static char *rcsid = "$Id: repquota.c,v 1.8 1996/12/12 20:32:17 deraadt Exp $";
 #endif /* not lint */
 
 /*
@@ -55,6 +55,7 @@ static char *rcsid = "$Id: repquota.c,v 1.7 1995/01/03 02:06:31 cgd Exp $";
 #include <pwd.h>
 #include <grp.h>
 #include <stdio.h>
+#include <unistd.h>
 #include <string.h>
 #include <errno.h>
 
@@ -64,7 +65,7 @@ char *qfextension[] = INITQFNAMES;
 struct fileusage {
 	struct	fileusage *fu_next;
 	struct	dqblk fu_dqblk;
-	u_long	fu_id;
+	uid_t	fu_id;
 	char	fu_name[1];
 	/* actually bigger */
 };
@@ -72,11 +73,17 @@ struct fileusage {
 struct fileusage *fuhead[MAXQUOTAS][FUHASH];
 struct fileusage *lookup();
 struct fileusage *addid();
-u_long highid[MAXQUOTAS];	/* highest addid()'ed identifier per type */
+uid_t highid[MAXQUOTAS];	/* highest addid()'ed identifier per type */
 
 int	vflag;			/* verbose */
 int	aflag;			/* all file systems */
 
+void	usage __P((void));
+int	repquota __P((struct fstab *, int, char *));
+int	hasquota __P((struct fstab *, int, char **));
+int	oneof __P((char *, char *[], int));
+
+int
 main(argc, argv)
 	int argc;
 	char **argv;
@@ -88,9 +95,10 @@ main(argc, argv)
 	long i, argnum, done = 0;
 	extern char *optarg;
 	extern int optind;
-	char ch, *qfnp;
+	char *qfnp;
+	int ch;
 
-	while ((ch = getopt(argc, argv, "aguv")) != EOF) {
+	while ((ch = getopt(argc, argv, "aguv")) != -1) {
 		switch(ch) {
 		case 'a':
 			aflag++;
@@ -120,18 +128,20 @@ main(argc, argv)
 	if (gflag) {
 		setgrent();
 		while ((gr = getgrent()) != 0)
-			(void) addid((u_long)gr->gr_gid, GRPQUOTA, gr->gr_name);
+			(void) addid((uid_t)gr->gr_gid, GRPQUOTA, gr->gr_name);
 		endgrent();
 	}
 	if (uflag) {
 		setpwent();
 		while ((pw = getpwent()) != 0)
-			(void) addid((u_long)pw->pw_uid, USRQUOTA, pw->pw_name);
+			(void) addid(pw->pw_uid, USRQUOTA, pw->pw_name);
 		endpwent();
 	}
 	setfsent();
 	while ((fs = getfsent()) != NULL) {
-		if (strcmp(fs->fs_vfstype, "ufs"))
+		if (strcmp(fs->fs_vfstype, "ffs") &&
+		    strcmp(fs->fs_vfstype, "ufs") &&
+		    strcmp(fs->fs_vfstype, "mfs"))
 			continue;
 		if (aflag) {
 			if (gflag && hasquota(fs, GRPQUOTA, &qfnp))
@@ -145,7 +155,7 @@ main(argc, argv)
 			done |= 1 << argnum;
 			if (gflag && hasquota(fs, GRPQUOTA, &qfnp))
 				errs += repquota(fs, GRPQUOTA, qfnp);
-			if (uflag && hasquota(fs, USRQUOTA, &qfnp))
+			if (uflag && hasquota(fs, GRPQUOTA, &qfnp))
 				errs += repquota(fs, USRQUOTA, qfnp);
 		}
 	}
@@ -156,6 +166,7 @@ main(argc, argv)
 	exit(errs);
 }
 
+void
 usage()
 {
 	fprintf(stderr, "Usage:\n\t%s\n\t%s\n",
@@ -164,6 +175,7 @@ usage()
 	exit(1);
 }
 
+int
 repquota(fs, type, qfpathname)
 	register struct fstab *fs;
 	int type;
@@ -171,7 +183,7 @@ repquota(fs, type, qfpathname)
 {
 	register struct fileusage *fup;
 	FILE *qf;
-	u_long id;
+	uid_t id;
 	struct dqblk dqbuf;
 	char *timeprt();
 	static struct dqblk zerodqblk;
@@ -245,6 +257,7 @@ repquota(fs, type, qfpathname)
 /*
  * Check to see if target appears in list of size cnt.
  */
+int
 oneof(target, list, cnt)
 	register char *target, *list[];
 	int cnt;
@@ -260,13 +273,14 @@ oneof(target, list, cnt)
 /*
  * Check to see if a particular quota is to be enabled.
  */
+int
 hasquota(fs, type, qfnamep)
 	register struct fstab *fs;
 	int type;
 	char **qfnamep;
 {
 	register char *opt;
-	char *cp, *index(), *strtok();
+	char *cp;
 	static char initname, usrname[100], grpname[100];
 	static char buf[BUFSIZ];
 
@@ -277,7 +291,7 @@ hasquota(fs, type, qfnamep)
 	}
 	strcpy(buf, fs->fs_mntops);
 	for (opt = strtok(buf, ","); opt; opt = strtok(NULL, ",")) {
-		if (cp = index(opt, '='))
+		if ((cp = strchr(opt, '=')))
 			*cp++ = '\0';
 		if (type == USRQUOTA && strcmp(opt, usrname) == 0)
 			break;
@@ -302,7 +316,7 @@ hasquota(fs, type, qfnamep)
  */
 struct fileusage *
 lookup(id, type)
-	u_long id;
+	uid_t id;
 	int type;
 {
 	register struct fileusage *fup;
@@ -318,7 +332,7 @@ lookup(id, type)
  */
 struct fileusage *
 addid(id, type, name)
-	u_long id;
+	uid_t id;
 	int type;
 	char *name;
 {
@@ -326,7 +340,7 @@ addid(id, type, name)
 	int len;
 	extern char *calloc();
 
-	if (fup = lookup(id, type))
+	if ((fup = lookup(id, type)))
 		return (fup);
 	if (name)
 		len = strlen(name);
@@ -357,7 +371,7 @@ char *
 timeprt(seconds)
 	time_t seconds;
 {
-	time_t hours, minutes;
+	int hours, minutes;
 	static char buf[20];
 	static time_t now;
 

@@ -1,3 +1,5 @@
+/*	$OpenBSD: sboot.h,v 1.4 1996/10/16 13:50:02 mickey Exp $ */
+
 /*
  * Copyright (c) 1995 Charles D. Cranor and Seth Widoff
  * All rights reserved.
@@ -33,29 +35,16 @@
  * sboot.h: stuff for MVME147's serial line boot
  */
 
-typedef unsigned short u_short;
-typedef unsigned long u_long;
-typedef unsigned char u_char;
-typedef unsigned int u_int;
-typedef u_long size_t;
-typedef char *caddr_t;
 extern caddr_t end;
-
-#define NULL ((char *)0)
-
-void bcopy __P((const void *, void *, size_t));		/* libc_sa */
-void *memset __P((void *, int, size_t));		/* libc_sa */
-int printf __P((const char *, ...));			/* libc_sa */
 
 /* console */
 void puts __P((char *));
-void putchar __P((char));
 char cngetc __P((void));
-void ngets __P((char *, int));
+char *ngets __P((char *, int));
 
 /* sboot */
 void callrom __P((void));
-void do_cmd __P((char *));
+void do_cmd __P((char *, char*));
 
 /* le */
 #define LANCE_ADDR 0xfffe0778
@@ -77,7 +66,7 @@ int do_get_file __P((void));
 void tftp_file __P((char *, u_long));
 
 /* clock */
-u_long time __P((void));
+u_long ttime __P((void));
 
 /* checksum */
 u_long oc_cksum __P((void *, u_long, u_long));

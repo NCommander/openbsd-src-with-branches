@@ -42,7 +42,7 @@
  *	@(#)proc.h	8.1 (Berkeley) 6/11/93
  *
  * from: Header: proc.h,v 1.6 92/11/26 02:04:41 torek Exp  (LBL)
- * $Id: proc.h,v 1.3 1995/06/30 03:10:32 build Exp build $
+ * $Id: proc.h,v 1.1.1.1 1995/10/18 10:54:21 deraadt Exp $
  */
 
 #include <machine/pcb.h>

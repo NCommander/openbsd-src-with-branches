@@ -1,7 +1,7 @@
-/*	$NetBSD: isa_machdep.c,v 1.2 1995/08/03 01:23:08 cgd Exp $	*/
+/*	$NetBSD: isa_machdep.c,v 1.5 1996/11/23 06:38:49 cgd Exp $	*/
 
 /*
- * Copyright (c) 1995 Carnegie-Mellon University.
+ * Copyright (c) 1995, 1996 Carnegie-Mellon University.
  * All rights reserved.
  *
  * Author: Chris G. Demetriou
@@ -27,143 +27,44 @@
  * rights to redistribute these changes.
  */
 
+/*
+ * Machine-specific functions for PCI autoconfiguration.
+ */
+
+#include <sys/types.h>
 #include <sys/param.h>
+#include <sys/time.h>
 #include <sys/systm.h>
-#include <sys/kernel.h>
-#include <sys/conf.h>
-#include <sys/malloc.h>
+#include <sys/errno.h>
 #include <sys/device.h>
+#include <vm/vm.h>
 
-#include <machine/autoconf.h>
-#include <machine/pio.h>
-#include <machine/rpb.h>
-#include <machine/vmparam.h>
-#include <machine/pte.h>
-
-#include <dev/isa/isareg.h>
 #include <dev/isa/isavar.h>
-#include <dev/isa/isadmavar.h>
 
-#include <alpha/isa/isa_intr.h>
-#include <alpha/isa/isa_dma.h>
+#include "vga_isa.h"
+#if NVGA_ISA
+#include <alpha/isa/vga_isavar.h>
+#endif
 
-int isamatch __P((struct device *, void *, void *));
-void isaattach __P((struct device *, struct device *, void *));
-
-struct cfdriver isacd = {
-	NULL, "isa", isamatch, isaattach, DV_DULL, sizeof(struct isa_softc), 1
+struct {
+	int	(*probe) __P((bus_space_tag_t, bus_space_tag_t));
+	void	(*console) __P((bus_space_tag_t, bus_space_tag_t));
+} isa_display_console_devices[] = {
+#if NVGA_ISA
+	{ vga_isa_console_match, vga_isa_console_attach },
+#endif
+	{ },
 };
 
-int
-isamatch(parent, cfdata, aux)
-	struct device *parent;
-	void *cfdata, *aux;
-{
-	struct cfdata *cf = cfdata;
-	struct confargs *ca = aux;
-
-#if 0 /* XXX -- Assume that it's valid if unit number OK */
-	/* It can only occur on the mainbus. */
-	if (ca->ca_bus->ab_type != BUS_MAIN)
-		return (0);
-
-	/* Make sure that we're looking for this type of device. */
-	if (!BUS_MATCHNAME(ca, "isa"))
-		return (0);
-#endif /* XXX */
-
-	/* See if the unit number is valid. */
-	switch (hwrpb->rpb_type) {
-#if defined(DEC_2100_A50)
-	case ST_DEC_2100_A50:
-		if (cf->cf_unit > 0)
-			return (0);
-		break;
-#endif
-	default:
-		return (0);
-	}
-
-	return (1);
-}
-
 void
-isaattach(parent, self, aux)
-	struct device *parent, *self;
-	void *aux;
+isa_display_console(iot, memt)
+	bus_space_tag_t iot, memt;
 {
-	struct isa_softc *sc = (struct isa_softc *)self;
+	int i = 0;
 
-	printf("\n");
-
-	TAILQ_INIT(&sc->sc_subdevs);
-
-	/* XXX set up ISA DMA controllers? */
-
-	config_scan(isascan, self);
-}
-
-void *
-isa_intr_establish(irq, type, level, ih_fun, ih_arg)
-	int irq;
-	isa_intrtype type;
-	isa_intrlevel level;
-	int (*ih_fun)(void *);
-	void *ih_arg;
-{
-
-	return (*isa_intr_fcns->isa_intr_establish)(irq, type, level,
-	    ih_fun, ih_arg);
-}
-
-void
-isa_intr_disestablish(handler)
-	void *handler;
-{
-
-	(*isa_intr_fcns->isa_intr_disestablish)(handler);
-}
-
-int
-isadma_map(addr, size, mappings, flags)
-	caddr_t addr;
-	vm_size_t size;
-	vm_offset_t *mappings;
-	int flags;
-{
-
-	(*isadma_fcns->isadma_map)(addr, size, mappings, flags);
-}
-
-void
-isadma_unmap(addr, size, nmappings, mappings)
-	caddr_t addr;
-	vm_size_t size;
-	int nmappings;
-	vm_offset_t *mappings;
-{
-
-	(*isadma_fcns->isadma_unmap)(addr, size, nmappings, mappings);
-}
-
-void
-isadma_copytobuf(addr, size, nmappings, mappings)
-	caddr_t addr;
-	vm_size_t size;
-	int nmappings;
-	vm_offset_t *mappings;
-{
-
-	(*isadma_fcns->isadma_copytobuf)(addr, size, nmappings, mappings);
-}
-
-void
-isadma_copyfrombuf(addr, size, nmappings, mappings)
-	caddr_t addr;
-	vm_size_t size;
-	int nmappings;
-	vm_offset_t *mappings;
-{
-
-	(*isadma_fcns->isadma_copyfrombuf)(addr, size, nmappings, mappings);
+	while (isa_display_console_devices[i].probe != NULL)
+		if ((*isa_display_console_devices[i].probe)(iot, memt)) {
+			(*isa_display_console_devices[i].console)(iot, memt);
+			break;
+		}
 }

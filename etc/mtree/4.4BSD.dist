@@ -1,5 +1,4 @@
-#	from: @(#)4.4BSD.dist	8.1 (Berkeley) 6/13/93
-#	$Id: 4.4BSD.dist,v 1.10 1995/08/19 18:09:52 chopps Exp $
+#	$OpenBSD: 4.4BSD.dist,v 1.35 1997/04/14 11:20:24 graichen Exp $
 
 /set type=dir uname=root gname=wheel mode=0755
 # .
@@ -19,7 +18,7 @@ bin
 dev
 
 # ./dev/fd
-fd
+fd		mode=0555
 # ./dev/fd
 ..
 
@@ -28,6 +27,11 @@ fd
 
 # ./etc
 etc
+
+# ./etc/amd
+amd
+# ./etc/amd
+..
 
 # ./etc/disklabels
 disklabels
@@ -47,6 +51,11 @@ mtree
 # ./etc/namedb
 namedb
 # ./etc/namedb
+..
+
+# ./etc/ppp
+ppp
+# ./etc/ppp
 ..
 
 # ./etc/sliphome
@@ -104,7 +113,7 @@ bin
 games
 
 # ./usr/games/hide
-hide            gname=games uname=games mode=0700
+hide            gname=games uname=root mode=0550
 # ./usr/games/hide
 ..
 
@@ -112,42 +121,52 @@ hide            gname=games uname=games mode=0700
 ..
 
 # ./usr/include
-include
+include		gname=bin uname=root mode=0755
 
 # ./usr/include/arpa
-arpa
+arpa		gname=bin uname=root mode=0755
 # ./usr/include/arpa
 ..
 
 # ./usr/include/g++
-g++
+g++		gname=bin uname=root mode=0755
 
 # ./usr/include/g++/gen
-gen
+gen		gname=bin uname=root mode=0755
 # ./usr/include/g++/gen
+..
+
+# ./usr/include/g++/std
+std             gname=bin uname=root mode=0555
+# ./usr/include/g++/std
 ..
 
 # ./usr/include/g++
 ..
 
 # ./usr/include/kerberosIV
-kerberosIV
+kerberosIV		gname=bin uname=root mode=0755
 # ./usr/include/kerberosIV
 ..
 
 # ./usr/include/protocols
-protocols
+protocols		gname=bin uname=root mode=0755
 # ./usr/include/protocols
 ..
 
 # ./usr/include/rpc
-rpc
+rpc		gname=bin uname=root mode=0755
 # ./usr/include/rpc
 ..
 
 # ./usr/include/rpcsvc
-rpcsvc
+rpcsvc		gname=bin uname=root mode=0755
 # ./usr/include/rpcsvc
+..
+
+# ./usr/include/ss
+ss		gname=bin uname=root mode=0555
+# ./usr/include/ss
 ..
 
 # ./usr/include
@@ -183,6 +202,11 @@ uucp
 ..
 
 # ./usr/libexec
+..
+
+# ./usr/lkm
+lkm
+# ./usr/lkm
 ..
 
 # ./usr/local
@@ -228,6 +252,7 @@ cat3
 
 # ./usr/local/man/cat4
 cat4
+
 # ./usr/local/man/cat4
 ..
 
@@ -249,6 +274,11 @@ cat7
 # ./usr/local/man/cat8
 cat8
 # ./usr/local/man/cat8
+..
+
+# ./usr/local/man/cat9
+cat9
+# ./usr/local/man/cat9
 ..
 
 # ./usr/local/man/man1
@@ -291,12 +321,22 @@ man8
 # ./usr/local/man/man8
 ..
 
+# ./usr/local/man/man9
+man9
+# ./usr/local/man/man9
+..
+
 # ./usr/local/man
 ..
 
 # ./usr/local/sbin
 sbin
 # ./usr/local/sbin
+..
+
+# ./usr/local/info
+info
+# ./usr/local/info
 ..
 
 # ./usr/local
@@ -460,17 +500,6 @@ smm
 
 # ./usr/share/doc/smm/01.setup
 01.setup
-
-# ./usr/share/doc/smm/01.setup/tahoe
-tahoe
-# ./usr/share/doc/smm/01.setup/tahoe
-..
-
-# ./usr/share/doc/smm/01.setup/vax
-vax
-# ./usr/share/doc/smm/01.setup/vax
-..
-
 # ./usr/share/doc/smm/01.setup
 ..
 
@@ -479,9 +508,9 @@ vax
 # ./usr/share/doc/smm/02.config
 ..
 
-# ./usr/share/doc/smm/03.fsck
-03.fsck
-# ./usr/share/doc/smm/03.fsck
+# ./usr/share/doc/smm/03.fsck_ffs
+03.fsck_ffs
+# ./usr/share/doc/smm/03.fsck_ffs
 ..
 
 # ./usr/share/doc/smm/04.quotas
@@ -767,11 +796,6 @@ quiz.db
 # ./usr/share/games
 ..
 
-# ./usr/share/gnats
-gnats
-# ./usr/share/gnats
-..
-
 # ./usr/share/groff_font
 groff_font
 
@@ -830,21 +854,26 @@ generate
 # ./usr/share/groff_font
 ..
 
+# ./usr/share/info
+info
+# ./usr/share/info
+..
+
 # ./usr/share/lkm
-lkm
+lkm		gname=bin uname=root
 
 # ./usr/share/lkm/misc
-misc
+misc		gname=bin uname=root
 # ./usr/share/lkm/misc
 ..
 
 # ./usr/share/lkm/syscall
-syscall
+syscall		gname=bin uname=root
 # ./usr/share/lkm/syscall
 ..
 
 # ./usr/share/lkm/vfs
-vfs
+vfs		gname=bin uname=root
 # ./usr/share/lkm/vfs
 ..
 
@@ -874,17 +903,22 @@ cat3
 # ./usr/share/man/cat3
 ..
 
-# ./usr/share/man/cat3f
-cat3f
-# ./usr/share/man/cat3f
-..
-
 # ./usr/share/man/cat4
 cat4
 
 # ./usr/share/man/cat4/amiga
 amiga
 # ./usr/share/man/cat4/amiga
+..
+
+# ./usr/share/man/cat4/arm32
+arm32
+# ./usr/share/man/cat4/arm32
+..
+
+# ./usr/share/man/cat4/atari
+atari
+# ./usr/share/man/cat4/atari
 ..
 
 # ./usr/share/man/cat4/hp300
@@ -902,6 +936,16 @@ mac68k
 # ./usr/share/man/cat4/mac68k
 ..
 
+# ./usr/share/man/cat4/mvme68k
+mvme68k
+# ./usr/share/man/cat4/mvme68k
+..
+
+# ./usr/share/man/cat4/mvme88k
+mvme88k
+# ./usr/share/man/cat4/mvme88k
+..
+
 # ./usr/share/man/cat4/pc532
 pc532
 # ./usr/share/man/cat4/pc532
@@ -917,14 +961,14 @@ sun3
 # ./usr/share/man/cat4/sun3
 ..
 
-# ./usr/share/man/cat4/tahoe
-tahoe
-# ./usr/share/man/cat4/tahoe
-..
-
 # ./usr/share/man/cat4/vax
 vax
 # ./usr/share/man/cat4/vax
+..
+
+# ./usr/share/man/cat4/x68k
+x68k
+# ./usr/share/man/cat4/x68k
 ..
 
 # ./usr/share/man/cat4
@@ -948,9 +992,29 @@ cat7
 # ./usr/share/man/cat8
 cat8
 
+# ./usr/share/man/cat8/alpha
+alpha
+# ./usr/share/man/cat8/alpha
+..
+
 # ./usr/share/man/cat8/amiga
 amiga
 # ./usr/share/man/cat8/amiga
+..
+
+# ./usr/share/man/cat8/arm32
+arm32
+# ./usr/share/man/cat8/arm32
+..
+
+# ./usr/share/man/cat8/arc
+arc
+# ./usr/share/man/cat8/arc
+..
+
+# ./usr/share/man/cat8/atari
+atari
+# ./usr/share/man/cat8/atari
 ..
 
 # ./usr/share/man/cat8/hp300
@@ -968,9 +1032,29 @@ mac68k
 # ./usr/share/man/cat8/mac68k
 ..
 
+# ./usr/share/man/cat8/mvme68k
+mvme68k
+# ./usr/share/man/cat8/mvme68k
+..
+
+# ./usr/share/man/cat8/mvme88k
+mvme88k
+# ./usr/share/man/cat8/mvme88k
+..
+
 # ./usr/share/man/cat8/pc532
 pc532
 # ./usr/share/man/cat8/pc532
+..
+
+# ./usr/share/man/cat8/pmax
+pmax
+# ./usr/share/man/cat8/pmax
+..
+
+# ./usr/share/man/cat8/powerpc
+powerpc
+# ./usr/share/man/cat8/powerpc
 ..
 
 # ./usr/share/man/cat8/sparc
@@ -983,17 +1067,22 @@ sun3
 # ./usr/share/man/cat8/sun3
 ..
 
-# ./usr/share/man/cat8/tahoe
-tahoe
-# ./usr/share/man/cat8/tahoe
-..
-
 # ./usr/share/man/cat8/vax
 vax
 # ./usr/share/man/cat8/vax
 ..
 
+# ./usr/share/man/cat8/wgrisc
+wgrisc
+# ./usr/share/man/cat8/wgrisc
+..
+
 # ./usr/share/man/cat8
+..
+
+# ./usr/share/man/cat9
+cat9
+# ./usr/share/man/cat9
 ..
 
 # ./usr/share/man/man1
@@ -1011,17 +1100,22 @@ man3
 # ./usr/share/man/man3
 ..
 
-# ./usr/share/man/man3f
-man3f
-# ./usr/share/man/man3f
-..
-
 # ./usr/share/man/man4
 man4
 
 # ./usr/share/man/man4/amiga
 amiga
 # ./usr/share/man/man4/amiga
+..
+
+# ./usr/share/man/man4/arm32
+arm32
+# ./usr/share/man/man4/arm32
+..
+
+# ./usr/share/man/man4/atari
+atari
+# ./usr/share/man/man4/atari
 ..
 
 # ./usr/share/man/man4/hp300
@@ -1039,6 +1133,16 @@ mac68k
 # ./usr/share/man/man4/mac68k
 ..
 
+# ./usr/share/man/man4/mvme68k
+mvme68k
+# ./usr/share/man/man4/mvme68k
+..
+
+# ./usr/share/man/man4/mvme88k
+mvme88k
+# ./usr/share/man/man4/mvme88k
+..
+
 # ./usr/share/man/man4/pc532
 pc532
 # ./usr/share/man/man4/pc532
@@ -1054,14 +1158,14 @@ sun3
 # ./usr/share/man/man4/sun3
 ..
 
-# ./usr/share/man/man4/tahoe
-tahoe
-# ./usr/share/man/man4/tahoe
-..
-
 # ./usr/share/man/man4/vax
 vax
 # ./usr/share/man/man4/vax
+..
+
+# ./usr/share/man/man4/x68k
+x68k
+# ./usr/share/man/man4/x68k
 ..
 
 # ./usr/share/man/man4
@@ -1086,8 +1190,28 @@ man7
 man8
 
 # ./usr/share/man/man8/amiga
+alpha
+# ./usr/share/man/man8/amiga
+..
+
+# ./usr/share/man/man8/amiga
 amiga
 # ./usr/share/man/man8/amiga
+..
+
+# ./usr/share/man/man8/arc
+arc
+# ./usr/share/man/man8/arc
+..
+
+# ./usr/share/man/man8/arm32
+arm32
+# ./usr/share/man/man8/arm32
+..
+
+# ./usr/share/man/man8/atari
+atari
+# ./usr/share/man/man8/atari
 ..
 
 # ./usr/share/man/man8/hp300
@@ -1105,9 +1229,29 @@ mac68k
 # ./usr/share/man/man8/mac68k
 ..
 
+# ./usr/share/man/man8/mvme68k
+mvme68k
+# ./usr/share/man/man8/mvme68k
+..
+
+# ./usr/share/man/man8/mvme88k
+mvme88k
+# ./usr/share/man/man8/mvme88k
+..
+
 # ./usr/share/man/man8/pc532
 pc532
 # ./usr/share/man/man8/pc532
+..
+
+# ./usr/share/man/man8/pmax
+pmax
+# ./usr/share/man/man8/pmax
+..
+
+# ./usr/share/man/man8/powerpc
+powerpc
+# ./usr/share/man/man8/powerpc
 ..
 
 # ./usr/share/man/man8/sparc
@@ -1120,25 +1264,25 @@ sun3
 # ./usr/share/man/man8/sun3
 ..
 
-# ./usr/share/man/man8/tahoe
-tahoe
-# ./usr/share/man/man8/tahoe
-..
-
 # ./usr/share/man/man8/vax
 vax
 # ./usr/share/man/man8/vax
 ..
 
+# ./usr/share/man/man8/wgrisc
+wgrisc
+# ./usr/share/man/man8/wgrisc
+..
+
 # ./usr/share/man/man8
 ..
 
-# ./usr/share/man
+# ./usr/share/man/man9
+man9
+# ./usr/share/man/man9
 ..
 
-# ./usr/share/me
-me
-# ./usr/share/me
+# ./usr/share/man
 ..
 
 # ./usr/share/misc
@@ -1149,11 +1293,6 @@ misc
 # ./usr/share/mk
 mk
 # ./usr/share/mk
-..
-
-# ./usr/share/ms
-ms
-# ./usr/share/ms
 ..
 
 # ./usr/share/nls
@@ -1174,6 +1313,11 @@ tabset
 # ./usr/share/tmac
 tmac
 
+# ./usr/share/tmac/mdoc
+mdoc
+# ./usr/share/tmac/mdoc
+..
+
 # ./usr/share/tmac/mm
 mm
 # ./usr/share/tmac/mm
@@ -1182,41 +1326,52 @@ mm
 # ./usr/share/tmac
 ..
 
+# ./usr/share/vi
+vi
+
+# ./usr/share/vi/catalog
+catalog
+# ./usr/share/vi/catalog
+..
+
+# ./usr/share/vi
+..
+
 # ./usr/share/zoneinfo
-zoneinfo         mode=0555
+zoneinfo         gname=bin uname=root mode=0555
 
 # ./usr/share/zoneinfo/Australia
-Australia        mode=0555
+Australia        gname=bin uname=root mode=0555
 # ./usr/share/zoneinfo/Australia
 ..
 
 # ./usr/share/zoneinfo/Brazil
-Brazil           mode=0555
+Brazil           gname=bin uname=root mode=0555
 # ./usr/share/zoneinfo/Brazil
 ..
 
 # ./usr/share/zoneinfo/Canada
-Canada           mode=0555
+Canada           gname=bin uname=root mode=0555
 # ./usr/share/zoneinfo/Canada
 ..
 
 # ./usr/share/zoneinfo/Chile
-Chile            mode=0555
+Chile            gname=bin uname=root mode=0555
 # ./usr/share/zoneinfo/Chile
 ..
 
 # ./usr/share/zoneinfo/Mexico
-Mexico           mode=0555
+Mexico           gname=bin uname=root mode=0555
 # ./usr/share/zoneinfo/Mexico
 ..
 
 # ./usr/share/zoneinfo/SystemV
-SystemV          mode=0555
+SystemV          gname=bin uname=root mode=0555
 # ./usr/share/zoneinfo/SystemV
 ..
 
 # ./usr/share/zoneinfo/US
-US               mode=0555
+US               gname=bin uname=root mode=0555
 # ./usr/share/zoneinfo/US
 ..
 
@@ -1227,9 +1382,9 @@ US               mode=0555
 ..
 
 # ./usr/src
-src
+#src
 # ./usr/src
-..
+#..
 
 # ./usr
 ..
@@ -1243,7 +1398,7 @@ account
 ..
 
 # ./var/at
-at
+at		gname=daemon
 
 # ./var/at/jobs
 jobs		mode=0700
@@ -1263,13 +1418,18 @@ backups
 # ./var/backups
 ..
 
+# ./var/yp
+yp		mode=755
+# ./var/yp
+..
+
 # ./var/crash
-crash		mode=775
+crash		mode=770
 # ./var/crash
 ..
 
 # ./var/cron
-cron
+cron		mode=0555
 
 # ./var/cron/tabs
 tabs		mode=0700
@@ -1291,13 +1451,13 @@ ns
 ..
 
 # ./var/games
-games            uname=games gname=games mode=0775
+games            uname=root gname=games mode=0775
 
 # ./var/games/hackdir
-hackdir          uname=games gname=games mode=0775
+hackdir          uname=root gname=games mode=0775
 
 # ./var/games/hackdir/save
-save		 uname=games gname=games mode=0770
+save		 uname=root gname=games mode=0770
 # ./var/games/hackdir/save
 ..
 
@@ -1305,17 +1465,17 @@ save		 uname=games gname=games mode=0770
 ..
 
 # ./var/games/hackdir/save		XXX
-save		uname=games gname=games mode=0775
+save		uname=root gname=games mode=0775
 # ./var/games/hackdir/save		XXX
 ..
 
 # ./var/games/larn
-larn             uname=games gname=games mode=0775
+larn             uname=root gname=games mode=0775
 # ./var/games/larn
 ..
 
 # ./var/games/phantasia
-phantasia        uname=games gname=games mode=0775
+phantasia        uname=root gname=games mode=0775
 # ./var/games/phantasia
 ..
 
@@ -1423,9 +1583,9 @@ secretmail
 ..
 
 # ./var/spool/sockets
-sockets	mode=777
+#sockets	mode=777
 # ./var/spool/sockets
-..
+#..
 
 /set uname=uucp gname=daemon
 # ./var/spool/uucp
@@ -1434,7 +1594,7 @@ uucp
 ..
 
 # ./var/spool/uucppublic
-uucppublic       mode=01777
+uucppublic       mode=01775
 # ./var/spool/uucppublic
 ..
 

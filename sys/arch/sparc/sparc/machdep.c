@@ -1,4 +1,5 @@
-/*	$NetBSD: machdep.c,v 1.50 1995/10/07 06:26:06 mycroft Exp $ */
+/*	$OpenBSD: machdep.c,v 1.64 1996/05/19 04:12:56 mrg Exp $ */
+/*	$NetBSD: machdep.c,v 1.64 1996/05/19 04:12:56 mrg Exp $ */
 
 /*
  * Copyright (c) 1992, 1993
@@ -75,12 +76,16 @@
 #include <sys/exec.h>
 #include <sys/sysctl.h>
 
+#include <vm/vm.h>
+#include <vm/vm_kern.h>
+#include <vm/vm_page.h>
+
 #include <machine/autoconf.h>
 #include <machine/frame.h>
 #include <machine/cpu.h>
-
-#include <vm/vm_kern.h>
-#include <vm/vm_page.h>
+#include <machine/pmap.h>
+#include <machine/oldmon.h>
+#include <machine/bsd_openprom.h>
 
 #include <sparc/sparc/asm.h>
 #include <sparc/sparc/cache.h>
@@ -108,7 +113,7 @@ int	physmem;
 
 extern struct msgbuf msgbuf;
 struct	msgbuf *msgbufp = &msgbuf;
-int	msgbufmapped = 1;	/* message buffer is always mapped */
+int	msgbufmapped = 0;	/* not mapped until pmap_bootstrap */
 
 /*
  * safepri is a safe priority for sleep to set for a spin-wait
@@ -120,11 +125,13 @@ int   safepri = 0;
  * dvmamap is used to manage DVMA memory. Note: this coincides with
  * the memory range in `phys_map' (which is mostly a place-holder).
  */
+vm_offset_t dvma_base, dvma_end;
 struct map *dvmamap;
-vm_offset_t dvmabase;
 static int ndvmamap;	/* # of entries in dvmamap */
 
-caddr_t allocsys();
+caddr_t allocsys __P((caddr_t));
+void	dumpsys __P((void));
+void	stackdump __P((void));
 
 /*
  * Machine-dependent startup code
@@ -165,8 +172,10 @@ cpu_startup()
 	 * and then give everything true virtual addresses.
 	 */
 	sz = (int)allocsys((caddr_t)0);
+
 	if ((v = (caddr_t)kmem_alloc(kernel_map, round_page(sz))) == 0)
 		panic("startup: no room for tables");
+
 	if (allocsys(v) - v != sz)
 		panic("startup: table size inconsistency");
 
@@ -175,19 +184,18 @@ cpu_startup()
 	 * in that they usually occupy more virtual memory than physical.
 	 */
 	size = MAXBSIZE * nbuf;
+
 	buffer_map = kmem_suballoc(kernel_map, (vm_offset_t *)&buffers,
 	    &maxaddr, size, TRUE);
+
 	minaddr = (vm_offset_t)buffers;
 	if (vm_map_find(buffer_map, vm_object_allocate(size), (vm_offset_t)0,
 			&minaddr, size, FALSE) != KERN_SUCCESS)
 		panic("startup: cannot allocate buffers");
+
 	base = bufpages / nbuf;
 	residual = bufpages % nbuf;
-	if (base >= MAXBSIZE) {
-		/* don't want to alloc more physical mem than needed */
-		base = MAXBSIZE;
-		residual = 0;
-	}
+
 	for (i = 0; i < nbuf; i++) {
 		vm_size_t curbufsize;
 		vm_offset_t curbuf;
@@ -210,23 +218,27 @@ cpu_startup()
 	 * limits the number of processes exec'ing at any time.
 	 */
 	exec_map = kmem_suballoc(kernel_map, &minaddr, &maxaddr,
-	    16*NCARGS, TRUE);
+				 16*NCARGS, TRUE);
 
 	/*
 	 * Allocate a map for physio.  Others use a submap of the kernel
 	 * map, but we want one completely separate, even though it uses
 	 * the same pmap.
 	 */
-	phys_map = vm_map_create(pmap_kernel(), DVMA_BASE, DVMA_END, 1);
+	dvma_base = CPU_ISSUN4M ? DVMA4M_BASE : DVMA_BASE;
+	dvma_end = CPU_ISSUN4M ? DVMA4M_END : DVMA_END;
+	phys_map = vm_map_create(pmap_kernel(), dvma_base, dvma_end, 1);
 	if (phys_map == NULL)
 		panic("unable to create DVMA map");
 	/*
-	 * For now, allocate half of DVMA space for a (privately managed)
-	 * pool of addresses for double mappings.
+	 * Allocate DVMA space and dump into a privately managed
+	 * resource map for double mappings which is usable from
+	 * interrupt contexts.
 	 */
-	dvmabase = kmem_alloc_wait(phys_map, (DVMA_END-DVMA_BASE)/2);
-	rminit(dvmamap, btoc((DVMA_END-DVMA_BASE)/2),
-		vtorc(dvmabase), "dvmamap", ndvmamap);
+	if (kmem_alloc_wait(phys_map, (dvma_end-dvma_base)) != dvma_base)
+		panic("unable to allocate from DVMA map");
+	rminit(dvmamap, btoc((dvma_end-dvma_base)),
+		vtorc(dvma_base), "dvmamap", ndvmamap);
 
 	/*
 	 * Finally, allocate mbuf pool.  Since mclrefcnt is an off-size
@@ -248,7 +260,7 @@ cpu_startup()
 #ifdef DEBUG
 	pmapdebug = opmapdebug;
 #endif
-	printf("avail mem = %d\n", ptoa(cnt.v_free_count));
+	printf("avail mem = %ld\n", ptoa(cnt.v_free_count));
 	printf("using %d buffers containing %d bytes of memory\n",
 		nbuf, bufpages * CLBYTES);
 
@@ -267,7 +279,7 @@ cpu_startup()
 	 */
 
 	pmap_enter(pmap_kernel(), MSGBUF_VA, 0x0, VM_PROT_READ|VM_PROT_WRITE, 1);
-	if (cputyp == CPU_SUN4)
+	if (CPU_ISSUN4)
 		msgbufp = (struct msgbuf *)(MSGBUF_VA + 4096);
 	else
 		msgbufp = (struct msgbuf *)MSGBUF_VA;
@@ -307,19 +319,34 @@ allocsys(v)
 	valloc(msghdrs, struct msg, msginfo.msgtql);
 	valloc(msqids, struct msqid_ds, msginfo.msgmni);
 #endif
-	
+
+#ifndef BUFCACHEPERCENT
+#define BUFCACHEPERCENT 5
+#endif
 	/*
 	 * Determine how many buffers to allocate (enough to
 	 * hold 5% of total physical memory, but at least 16).
 	 * Allocate 1/2 as many swap buffer headers as file i/o buffers.
 	 */
 	if (bufpages == 0)
-		bufpages = (physmem / 20) / CLSIZE;
+		bufpages = (physmem / ((100/BUFCACHEPERCENT) / CLSIZE));
 	if (nbuf == 0) {
 		nbuf = bufpages;
 		if (nbuf < 16)
 			nbuf = 16;
 	}
+	if (nbuf > 200)
+		nbuf = 200;	/* or we run out of PMEGS */
+	/* Restrict to at most 70% filled kvm */
+	if (nbuf * MAXBSIZE >
+	    (VM_MAX_KERNEL_ADDRESS-VM_MIN_KERNEL_ADDRESS) * 7 / 10)
+		nbuf = (VM_MAX_KERNEL_ADDRESS-VM_MIN_KERNEL_ADDRESS) /
+		    MAXBSIZE * 7 / 10;
+
+	/* More buffer pages than fits into the buffers is senseless.  */
+	if (bufpages > nbuf * MAXBSIZE / CLBYTES)
+		bufpages = nbuf * MAXBSIZE / CLBYTES;
+
 	if (nswbuf == 0) {
 		nswbuf = (nbuf / 2) &~ 1;	/* force even */
 		if (nswbuf > 256)
@@ -373,8 +400,7 @@ setregs(p, pack, stack, retval)
 	}
 	bzero((caddr_t)tf, sizeof *tf);
 	tf->tf_psr = psr;
-	tf->tf_pc = pack->ep_entry & ~3;
-	tf->tf_npc = tf->tf_pc + 4;
+	tf->tf_npc = pack->ep_entry & ~3;
 	tf->tf_global[1] = (int)PS_STRINGS;
 	tf->tf_global[2] = tf->tf_global[7] = tf->tf_npc;
 	stack -= sizeof(struct rwindow);
@@ -392,19 +418,21 @@ int sigpid = 0;
 
 struct sigframe {
 	int	sf_signo;		/* signal number */
-	int	sf_code;		/* code */
+	siginfo_t *sf_sip;		/* points to siginfo_t */
 #ifdef COMPAT_SUNOS
 	struct	sigcontext *sf_scp;	/* points to user addr of sigcontext */
 #else
 	int	sf_xxx;			/* placeholder */
 #endif
-	int	sf_addr;		/* SunOS compat, always 0 for now */
+	caddr_t	sf_addr;		/* SunOS compat */
 	struct	sigcontext sf_sc;	/* actual sigcontext */
+	siginfo_t sf_si;
 };
 
 /*
  * machine dependent system variables.
  */
+int
 cpu_sysctl(name, namelen, oldp, oldlenp, newp, newlen, p)
 	int *name;
 	u_int namelen;
@@ -430,19 +458,24 @@ cpu_sysctl(name, namelen, oldp, oldlenp, newp, newlen, p)
  * Send an interrupt to process.
  */
 void
-sendsig(catcher, sig, mask, code)
+sendsig(catcher, sig, mask, code, type, val)
 	sig_t catcher;
 	int sig, mask;
 	u_long code;
+	int type;
+	union sigval val;
 {
 	register struct proc *p = curproc;
 	register struct sigacts *psp = p->p_sigacts;
 	register struct sigframe *fp;
 	register struct trapframe *tf;
-	register int addr, oonstack, oldsp, newsp;
+	register int caddr, oonstack, oldsp, newsp;
 	struct sigframe sf;
 	extern char sigcode[], esigcode[];
 #define	szsigcode	(esigcode - sigcode)
+#ifdef COMPAT_SUNOS
+	extern struct emul emul_sunos;
+#endif
 
 	tf = p->p_md.md_tf;
 	oldsp = tf->tf_out[6];
@@ -453,7 +486,7 @@ sendsig(catcher, sig, mask, code)
 	 */
 	if ((psp->ps_flags & SAS_ALTSTACK) && !oonstack &&
 	    (psp->ps_sigonstack & sigmask(sig))) {
-		fp = (struct sigframe *)(psp->ps_sigstk.ss_base +
+		fp = (struct sigframe *)(psp->ps_sigstk.ss_sp +
 					 psp->ps_sigstk.ss_size);
 		psp->ps_sigstk.ss_flags |= SS_ONSTACK;
 	} else
@@ -462,20 +495,23 @@ sendsig(catcher, sig, mask, code)
 
 #ifdef DEBUG
 	if ((sigdebug & SDB_KSTACK) && p->p_pid == sigpid)
-		printf("sendsig: %s[%d] sig %d newusp %x scp %x\n",
+		printf("sendsig: %s[%d] sig %d newusp %p scp %p\n",
 		    p->p_comm, p->p_pid, sig, fp, &fp->sf_sc);
 #endif
-	/* 
+	/*
 	 * Now set up the signal frame.  We build it in kernel space
 	 * and then copy it out.  We probably ought to just build it
 	 * directly in user space....
 	 */
 	sf.sf_signo = sig;
-	sf.sf_code = code;
+	sf.sf_sip = NULL;
 #ifdef COMPAT_SUNOS
-	sf.sf_scp = &fp->sf_sc;
+	if (p->p_emul == &emul_sunos) {
+		sf.sf_sip = (void *)code;	/* SunOS has "int code" */
+		sf.sf_scp = &fp->sf_sc;
+		sf.sf_addr = val.sival_ptr;
+	}
 #endif
-	sf.sf_addr = 0;			/* XXX */
 
 	/*
 	 * Build the signal context to be used by sigreturn.
@@ -489,6 +525,11 @@ sendsig(catcher, sig, mask, code)
 	sf.sf_sc.sc_g1 = tf->tf_global[1];
 	sf.sf_sc.sc_o0 = tf->tf_out[0];
 
+	if (psp->ps_siginfo & sigmask(sig)) {
+		sf.sf_sip = &fp->sf_si;
+		initsiginfo(&sf.sf_si, sig, code, type, val);
+	}
+
 	/*
 	 * Put the stack in a consistent state before we whack away
 	 * at it.  Note that write_user_windows may just dump the
@@ -500,6 +541,7 @@ sendsig(catcher, sig, mask, code)
 	 */
 	newsp = (int)fp - sizeof(struct rwindow);
 	write_user_windows();
+	/* XXX do not copyout siginfo if not needed */
 	if (rwindow_save(p) || copyout((caddr_t)&sf, (caddr_t)fp, sizeof sf) ||
 	    suword(&((struct rwindow *)newsp)->rw_in[6], oldsp)) {
 		/*
@@ -515,7 +557,7 @@ sendsig(catcher, sig, mask, code)
 	}
 #ifdef DEBUG
 	if (sigdebug & SDB_FOLLOW)
-		printf("sendsig: %s[%d] sig %d scp %x\n",
+		printf("sendsig: %s[%d] sig %d scp %p\n",
 		       p->p_comm, p->p_pid, sig, &fp->sf_sc);
 #endif
 	/*
@@ -524,15 +566,15 @@ sendsig(catcher, sig, mask, code)
 	 */
 #ifdef COMPAT_SUNOS
 	if (psp->ps_usertramp & sigmask(sig)) {
-		addr = (int)catcher;	/* user does his own trampolining */
+		caddr = (int)catcher;	/* user does his own trampolining */
 	} else
 #endif
 	{
-		addr = (int)PS_STRINGS - szsigcode;
+		caddr = (int)PS_STRINGS - szsigcode;
 		tf->tf_global[1] = (int)catcher;
 	}
-	tf->tf_pc = addr;
-	tf->tf_npc = addr + 4;
+	tf->tf_pc = caddr;
+	tf->tf_npc = caddr + 4;
 	tf->tf_out[6] = newsp;
 #ifdef DEBUG
 	if ((sigdebug & SDB_KSTACK) && p->p_pid == sigpid)
@@ -568,7 +610,7 @@ sys_sigreturn(p, v, retval)
 		sigexit(p, SIGILL);
 #ifdef DEBUG
 	if (sigdebug & SDB_FOLLOW)
-		printf("sigreturn: %s[%d], sigcntxp %x\n",
+		printf("sigreturn: %s[%d], sigcntxp %p\n",
 		    p->p_comm, p->p_pid, SCARG(uap, sigcntxp));
 #endif
 	scp = SCARG(uap, sigcntxp);
@@ -605,8 +647,12 @@ boot(howto)
 {
 	int i;
 	static char str[4];	/* room for "-sd\0" */
-	extern volatile void romhalt(void);
-	extern volatile void romboot(char *);
+	extern int cold;
+
+	if (cold) {
+		printf("halted\n\n");
+		romhalt();
+	}
 
 	fb_unblank();
 	boothowto = howto;
@@ -623,17 +669,25 @@ boot(howto)
 
 		/*
 		 * If we've been adjusting the clock, the todr
-		 * will be out of synch; adjust it now.
+		 * will be out of synch; adjust it now unless
+		 * the system was sitting in ddb.
 		 */
-		resettodr();
+		if ((howto & RB_TIMEBAD) == 0) {
+			resettodr();
+		} else {
+			printf("WARNING: not updating battery clock\n");
+		}
 	}
 	(void) splhigh();		/* ??? */
 	if (howto & RB_HALT) {
+		doshutdownhooks();
 		printf("halted\n\n");
 		romhalt();
 	}
 	if (howto & RB_DUMP)
 		dumpsys();
+
+	doshutdownhooks();
 	printf("rebooting\n\n");
 	i = 1;
 	if (howto & RB_SINGLE)
@@ -653,6 +707,7 @@ u_long	dumpmag = 0x8fca0101;	/* magic number for savecore */
 int	dumpsize = 0;		/* also for savecore */
 long	dumplo = 0;
 
+void
 dumpconf()
 {
 	register int nblks, nmem;
@@ -707,6 +762,7 @@ reserve_dumppages(p)
 /*
  * Write a crash dump.
  */
+void
 dumpsys()
 {
 	register int psize;
@@ -733,7 +789,7 @@ dumpsys()
 		dumpconf();
 	if (dumplo < 0)
 		return;
-	printf("\ndumping to dev %x, offset %d\n", dumpdev, dumplo);
+	printf("\ndumping to dev %x, offset %ld\n", dumpdev, dumplo);
 
 	psize = (*bdevsw[major(dumpdev)].d_psize)(dumpdev);
 	printf("dump ");
@@ -745,10 +801,17 @@ dumpsys()
 	dump = bdevsw[major(dumpdev)].d_dump;
 
 	for (mp = pmemarr, nmem = npmemarr; --nmem >= 0; mp++) {
-		register unsigned i, n;
+		register unsigned i = 0, n;
 		register maddr = mp->addr;
 
-		for (i = 0; i < mp->len; i += n) {
+		if (maddr == 0) {
+			/* Skip first page at physical address 0 */
+			maddr += NBPG;
+			i += NBPG;
+			blkno += btodb(NBPG);
+		}
+
+		for (; i < mp->len; i += n) {
 			n = mp->len - i;
 			if (n > BYTES_PER_DUMP)
 				 n = BYTES_PER_DUMP;
@@ -803,15 +866,16 @@ dumpsys()
  * get the fp and dump the stack as best we can.  don't leave the
  * current stack page
  */
+void
 stackdump()
 {
-	struct frame *fp = (struct frame *)getfp(), *sfp;
+	struct frame *fp = getfp(), *sfp;
 
 	sfp = fp;
-	printf("Frame pointer is at 0x%x\n", fp);
+	printf("Frame pointer is at %p\n", fp);
 	printf("Call traceback:\n");
 	while (fp && ((u_long)fp >> PGSHIFT) == ((u_long)sfp >> PGSHIFT)) {
-		printf("  pc = %x  args = (%x, %x, %x, %x, %x, %x) fp = %x\n",
+		printf("  pc = %x  args = (%x, %x, %x, %x, %x, %x, %x) fp = %p\n",
 		    fp->fr_pc, fp->fr_arg[0], fp->fr_arg[1], fp->fr_arg[2],
 		    fp->fr_arg[3], fp->fr_arg[4], fp->fr_arg[5], fp->fr_arg[6],
 		    fp->fr_fp);
@@ -830,25 +894,29 @@ int bt2pmt[] = {
 /*
  * Map an I/O device given physical address and size in bytes, e.g.,
  *
- *	mydev = (struct mydev *)mapdev(myioaddr, 0, sizeof(struct mydev), pmtype);
+ *	mydev = (struct mydev *)mapdev(myioaddr, 0,
+ *				       0, sizeof(struct mydev), pmtype);
  *
  * See also machine/autoconf.h.
  */
 void *
-mapdev(phys, virt, size, bustype)
-	register void *phys;
-	register int virt, size;
+mapdev(phys, virt, offset, size, bustype)
+	register struct rom_reg *phys;
+	register int offset, virt, size;
 	register int bustype;
 {
 	register vm_offset_t v;
+	register vm_offset_t pa;
 	register void *ret;
 	static vm_offset_t iobase;
-	int pmtype = bt2pmt[bustype];
+	unsigned int pmtype;
 
 	if (iobase == NULL)
 		iobase = IODEV_BASE;
 
 	size = round_page(size);
+	if (size == 0) panic("mapdev: zero size");
+
 	if (virt)
 		v = trunc_page(virt);
 	else {
@@ -857,14 +925,19 @@ mapdev(phys, virt, size, bustype)
 		if (iobase > IODEV_END)	/* unlikely */
 			panic("mapiodev");
 	}
-	ret = (void *)v;
-	phys = (void *)trunc_page(phys);
+	ret = (void *)(v | (((u_long)phys->rr_paddr + offset) & PGOFSET));
+			/* note: preserve page offset */
+
+	pa = trunc_page(phys->rr_paddr + offset);
+	pmtype = (CPU_ISSUN4M)
+			? (phys->rr_iospace << PMAP_SHFT4M)
+			: bt2pmt[bustype];
+
 	do {
-		pmap_enter(pmap_kernel(), v,
-		    (vm_offset_t)phys | pmtype | PMAP_NC,
-		    VM_PROT_READ | VM_PROT_WRITE, 1);
+		pmap_enter(pmap_kernel(), v, pa | pmtype | PMAP_NC,
+			   VM_PROT_READ | VM_PROT_WRITE, 1);
 		v += PAGE_SIZE;
-		phys += PAGE_SIZE;
+		pa += PAGE_SIZE;
 	} while ((size -= PAGE_SIZE) > 0);
 	return (ret);
 }
@@ -890,12 +963,10 @@ oldmon_w_trace(va)
 	u_long va;
 {
 	u_long stop;
-	extern u_long *par_err_reg;
-	volatile u_long *memreg = (u_long *) par_err_reg;
 	struct frame *fp;
 
 	if (curproc)
-		printf("curproc = %x, pid %d\n", curproc, curproc->p_pid);
+		printf("curproc = %p, pid %d\n", curproc, curproc->p_pid);
 	else
 		printf("no curproc\n");
 
@@ -906,19 +977,19 @@ oldmon_w_trace(va)
 
 #define round_up(x) (( (x) + (NBPG-1) ) & (~(NBPG-1)) )
 
-	printf("\nstack trace with sp = %x\n", va);
+	printf("\nstack trace with sp = %lx\n", va);
 	stop = round_up(va);
-	printf("stop at %x\n", stop);
+	printf("stop at %lx\n", stop);
 	fp = (struct frame *) va;
 	while (round_up((u_long) fp) == stop) {
-		printf("  %x(%x, %x, %x, %x, %x, %x) fp %x\n", fp->fr_pc, 
-		    fp->fr_arg[0], fp->fr_arg[1], fp->fr_arg[2], fp->fr_arg[3], 
+		printf("  %x(%x, %x, %x, %x, %x, %x, %x) fp %p\n", fp->fr_pc,
+		    fp->fr_arg[0], fp->fr_arg[1], fp->fr_arg[2], fp->fr_arg[3],
 		    fp->fr_arg[4], fp->fr_arg[5], fp->fr_arg[6], fp->fr_fp);
 		fp = fp->fr_fp;
 		if (fp == NULL)
 			break;
 	}
-	printf("end of stack trace\n"); 
+	printf("end of stack trace\n");
 }
 
 void
@@ -935,7 +1006,7 @@ oldmon_w_cmd(va, ar)
 			printf("w: case 4\n");
 			break;
 		default:
-			printf("w: unknown case %d\n", va);
+			printf("w: unknown case %ld\n", va);
 			break;
 		}
 		break;
@@ -948,14 +1019,20 @@ oldmon_w_cmd(va, ar)
 }
 #endif /* SUN4 */
 
-u_int
+int
 ldcontrolb(addr)
 caddr_t addr;
 {
 	struct pcb *xpcb;
 	extern struct user *proc0paddr;
-	u_long saveonfault, res;
+	u_long saveonfault;
+	int res;
 	int s;
+
+	if (CPU_ISSUN4M) {
+		printf("warning: ldcontrolb called in sun4m\n");
+		return 0;
+	}
 
 	s = splhigh();
 	if (curproc == NULL)
@@ -964,7 +1041,7 @@ caddr_t addr;
 		xpcb = &curproc->p_addr->u_pcb;
 
 	saveonfault = (u_long)xpcb->pcb_onfault;
-	res = xldcontrolb(addr, xpcb);
+        res = xldcontrolb(addr, xpcb);
 	xpcb->pcb_onfault = (caddr_t)saveonfault;
 
 	splx(s);

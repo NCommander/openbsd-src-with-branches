@@ -1,3 +1,5 @@
+/*	$OpenBSD: announce.c,v 1.5 1996/07/18 00:05:33 deraadt Exp $	*/
+
 /*
  * Copyright (c) 1983 Regents of the University of California.
  * All rights reserved.
@@ -33,9 +35,10 @@
 
 #ifndef lint
 /*static char sccsid[] = "from: @(#)announce.c	5.9 (Berkeley) 2/26/91";*/
-static char rcsid[] = "$Id: announce.c,v 1.5 1995/06/07 17:14:41 cgd Exp $";
+static char rcsid[] = "$Id: announce.c,v 1.5 1996/07/18 00:05:33 deraadt Exp $";
 #endif /* not lint */
 
+#include <sys/param.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <sys/time.h>
@@ -51,8 +54,9 @@ static char rcsid[] = "$Id: announce.c,v 1.5 1995/06/07 17:14:41 cgd Exp $";
 #include <string.h>
 #include <vis.h>
 #include <paths.h>
+#include "talkd.h"
 
-extern char hostname[];
+static void	print_mesg __P((FILE *,CTL_MSG *,char *));
 
 /*
  * Announce an invitation to talk.
@@ -61,6 +65,7 @@ extern char hostname[];
  * process to any terminal that it writes on, we must fork a child
  * to protect ourselves
  */
+int
 announce(request, remote_machine)
 	CTL_MSG *request;
 	char *remote_machine;
@@ -94,16 +99,18 @@ announce(request, remote_machine)
  * See if the user is accepting messages. If so, announce that 
  * a talk is requested.
  */
+int
 announce_proc(request, remote_machine)
 	CTL_MSG *request;
 	char *remote_machine;
 {
 	int pid, status;
-	char full_tty[32];
+	char full_tty[MAXPATHLEN];
 	FILE *tf;
 	struct stat stbuf;
 
-	(void)sprintf(full_tty, "%s/%s", _PATH_DEV, request->r_tty);
+	(void)snprintf(full_tty, sizeof full_tty, "%s/%s", _PATH_DEV,
+	    request->r_tty);
 	if (access(full_tty, 0) != 0)
 		return (FAILED);
 	if ((tf = fopen(full_tty, "w")) == NULL)
@@ -133,6 +140,7 @@ announce_proc(request, remote_machine)
  * try to keep the message in one piece if the recipient
  * in in vi at the time
  */
+static void
 print_mesg(tf, request, remote_machine)
 	FILE *tf;
 	CTL_MSG *request;
@@ -153,33 +161,35 @@ print_mesg(tf, request, remote_machine)
 	gettimeofday(&clock, &zone);
 	clocktime = clock.tv_sec;
 	localclock = localtime(&clocktime);
-	(void)sprintf(line_buf[i], " ");
+	(void)snprintf(line_buf[i], N_CHARS, " ");
 	sizes[i] = strlen(line_buf[i]);
 	max_size = max(max_size, sizes[i]);
 	i++;
-	(void)sprintf(line_buf[i], "Message from Talk_Daemon@%s at %d:%02d ...",
-	hostname, localclock->tm_hour , localclock->tm_min );
+	(void)snprintf(line_buf[i], N_CHARS, 
+		"Message from Talk_Daemon@%s at %d:%02d ...",
+		hostname, localclock->tm_hour , localclock->tm_min );
 	sizes[i] = strlen(line_buf[i]);
 	max_size = max(max_size, sizes[i]);
 	i++;
 	vis_user = (char *) malloc(strlen(request->l_name) * 4 + 1);
 	strvis(vis_user, request->l_name, VIS_CSTYLE);
-	(void)sprintf(line_buf[i], "talk: connection requested by %s@%s.",
+	(void)snprintf(line_buf[i], N_CHARS,
+		"talk: connection requested by %s@%s.",
 		vis_user, remote_machine);
 	sizes[i] = strlen(line_buf[i]);
 	max_size = max(max_size, sizes[i]);
 	i++;
-	(void)sprintf(line_buf[i], "talk: respond with:  talk %s@%s",
+	(void)snprintf(line_buf[i], N_CHARS, "talk: respond with:  talk %s@%s",
 		vis_user, remote_machine);
 	sizes[i] = strlen(line_buf[i]);
 	max_size = max(max_size, sizes[i]);
 	i++;
-	(void)sprintf(line_buf[i], " ");
+	(void)snprintf(line_buf[i], N_CHARS, " ");
 	sizes[i] = strlen(line_buf[i]);
 	max_size = max(max_size, sizes[i]);
 	i++;
 	bptr = big_buf;
-	*bptr++ = ''; /* send something to wake them up */
+	*bptr++ = '\007'; /* send something to wake them up */
 	*bptr++ = '\r';	/* add a \r in case of raw mode */
 	*bptr++ = '\n';
 	for (i = 0; i < N_LINES; i++) {

@@ -1,4 +1,5 @@
-/*	$NetBSD: disklabel.h,v 1.35 1995/10/09 12:00:18 pk Exp $	*/
+/*	$OpenBSD: disklabel.h,v 1.10 1996/12/03 01:06:50 downsj Exp $	*/
+/*	$NetBSD: disklabel.h,v 1.41 1996/05/10 23:07:37 mark Exp $	*/
 
 /*
  * Copyright (c) 1987, 1988, 1993
@@ -70,14 +71,14 @@
 
 #define DISKMAGIC	((u_int32_t)0x82564557)	/* The disk magic number */
 
-#ifndef LOCORE
+#ifndef _LOCORE
 struct disklabel {
 	u_int32_t d_magic;		/* the magic number */
 	u_int16_t d_type;		/* drive type */
 	u_int16_t d_subtype;		/* controller/d_type specific */
 	char	  d_typename[16];	/* type name, e.g. "eagle" */
 
-	/* 
+	/*
 	 * d_packname contains the pack identifier and is returned when
 	 * the disklabel is read off the disk or in-core copy.
 	 * d_boot0 and d_boot1 are the (optional) names of the
@@ -86,12 +87,12 @@ struct disklabel {
 	 * getdiskbyname(3) to retrieve the values from /etc/disktab.
 	 */
 	union {
-		char	un_d_packname[16];	/* pack identifier */ 
+		char	un_d_packname[16];	/* pack identifier */
 		struct {
 			char *un_d_boot0;	/* primary bootstrap name */
 			char *un_d_boot1;	/* secondary bootstrap name */
-		} un_b; 
-	} d_un; 
+		} un_b;
+	} d_un;
 #define d_packname	d_un.un_d_packname
 #define d_boot0		d_un.un_b.un_d_boot0
 #define d_boot1		d_un.un_b.un_d_boot1
@@ -167,7 +168,7 @@ struct disklabel {
 #define	p_sgs	__partition_u1.sgs
 	} d_partitions[MAXPARTITIONS];	/* actually may be more */
 };
-#else /* LOCORE */
+#else /* _LOCORE */
 	/*
 	 * offsets for asm boot files.
 	 */
@@ -178,7 +179,7 @@ struct disklabel {
 	.set	d_secpercyl,56
 	.set	d_secperunit,60
 	.set	d_end_,276		/* size of disk label */
-#endif /* LOCORE */
+#endif /* _LOCORE */
 
 /* d_type values: */
 #define	DTYPE_SMD		1		/* SMD, XSMD; VAX hp/up */
@@ -234,8 +235,10 @@ static char *dktypenames[] = {
 #define	FS_BOOT		13		/* partition contains bootstrap */
 #define	FS_ADOS		14		/* AmigaDOS fast file system */
 #define	FS_HFS		15		/* Macintosh HFS */
+#define	FS_ADFS		16		/* Acorn Disk Filing System */
+#define FS_EXT2FS	17		/* ext2fs */
 
-#ifdef	DKTYPENAMES
+#ifdef DKTYPENAMES
 static char *fstypenames[] = {
 	"unused",
 	"swap",
@@ -253,8 +256,34 @@ static char *fstypenames[] = {
 	"boot",
 	"ADOS",
 	"HFS",
+	"ADFS",
+	"ext2fs",
 	NULL
 };
+
+/* Similar to the above, but used for things like the mount command. */
+static char *fstypesnames[] = {
+	"",		/* 0 */
+	"",		/* 1 */
+	"",		/* 2 */
+	"",		/* 3 */
+	"",		/* 4 */
+	"",		/* 5 */
+	"",		/* 6 */
+	"ffs",		/* 7 */
+	"msdos",	/* 8 */
+	"lfs",		/* 9 */
+	"",		/* 10 */
+	"",		/* 11 */
+	"cd9660",	/* 12 */
+	"",		/* 13 */
+	"ados",		/* 14 */
+	"",		/* 15 */
+	"",		/* 16 */
+	"ext2fs",	/* 17 */
+	NULL
+};
+
 #define FSMAXTYPES	(sizeof(fstypenames) / sizeof(fstypenames[0]) - 1)
 #endif
 
@@ -287,7 +316,7 @@ static char *fstypenames[] = {
  */
 #define	d_blind		d_drivedata[0]
 
-#ifndef LOCORE
+#ifndef _LOCORE
 /*
  * Structure used to perform a format or other raw operation, returning
  * data and/or register values.  Register identification and format
@@ -309,26 +338,6 @@ struct partinfo {
 	struct partition *part;
 };
 
-/*
- * Disk-specific ioctls.
- */
-		/* get and set disklabel; DIOCGPART used internally */
-#define DIOCGDINFO	_IOR('d', 101, struct disklabel)/* get */
-#define DIOCSDINFO	_IOW('d', 102, struct disklabel)/* set */
-#define DIOCWDINFO	_IOW('d', 103, struct disklabel)/* set, update disk */
-#define DIOCGPART	_IOW('d', 104, struct partinfo)	/* get partition */
-
-/* do format operation, read or write */
-#define DIOCRFORMAT	_IOWR('d', 105, struct format_op)
-#define DIOCWFORMAT	_IOWR('d', 106, struct format_op)
-
-#define DIOCSSTEP	_IOW('d', 107, int)	/* set step rate */
-#define DIOCSRETRIES	_IOW('d', 108, int)	/* set # of retries */
-#define DIOCWLABEL	_IOW('d', 109, int)	/* write en/disable label */
-
-#define DIOCSBAD	_IOW('d', 110, struct dkbad)	/* set kernel dkbad */
-#define DIOCEJECT	_IO('d', 112)		/* Eject removable disk */
-
 #ifdef _KERNEL
 void	 diskerr
 	    __P((struct buf *, char *, char *, int, int, struct disklabel *));
@@ -336,14 +345,19 @@ void	 disksort __P((struct buf *, struct buf *));
 u_int	 dkcksum __P((struct disklabel *));
 int	 setdisklabel __P((struct disklabel *, struct disklabel *, u_long,
 	    struct cpu_disklabel *));
-char	*readdisklabel __P((dev_t, void (*)(), struct disklabel *,
+char	*readdisklabel __P((dev_t, void (*)(struct buf *), struct disklabel *,
 	    struct cpu_disklabel *));
-int	 writedisklabel __P((dev_t, void (*)(), struct disklabel *,
+int	 writedisklabel __P((dev_t, void (*)(struct buf *), struct disklabel *,
 	    struct cpu_disklabel *));
+int	 bounds_check_with_label __P((struct buf *, struct disklabel *, int));
+#ifdef CD9660
+int iso_disklabelspoof __P((dev_t dev, void (*strat) __P((struct buf *)),
+	struct disklabel *lp));
 #endif
-#endif /* LOCORE */
+#endif
+#endif /* _LOCORE */
 
-#if !defined(_KERNEL) && !defined(LOCORE)
+#if !defined(_KERNEL) && !defined(_LOCORE)
 
 #include <sys/cdefs.h>
 

@@ -1,19 +1,8 @@
-/*	$NetBSD$ */
+/*	$OpenBSD$ */
 
 /*
  * Copyright (c) 1995 Theo de Raadt
- * Copyright (c) 1992, 1993
- *      The Regents of the University of California.  All rights reserved.
- *
- * This software was developed by the Computer Systems Engineering group
- * at Lawrence Berkeley Laboratory under DARPA contract BG 91-66 and
- * contributed to Berkeley.
- *
- * All advertising materials mentioning features or use of this software
- * must display the following acknowledgement:
- *      This product includes software developed by the University of
- *      California, Lawrence Berkeley Laboratory.
- *
+ * 
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
  * are met:
@@ -24,17 +13,16 @@
  *    documentation and/or other materials provided with the distribution.
  * 3. All advertising materials mentioning features or use of this software
  *    must display the following acknowledgement:
- *      This product includes software developed by the University of
- *      California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
- *    may be used to endorse or promote products derived from this software
- *    without specific prior written permission.
+ *	This product includes software developed under OpenBSD by
+ *	Theo de Raadt for Willowglen Singapore.
+ * 4. The name of the author may not be used to endorse or promote products
+ *    derived from this software without specific prior written permission.
  *
- * THIS SOFTWARE IS PROVIDED BY THE REGENTS AND CONTRIBUTORS ``AS IS'' AND
- * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
- * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
- * ARE DISCLAIMED.  IN NO EVENT SHALL THE REGENTS OR CONTRIBUTORS BE LIABLE
- * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+ * THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS
+ * OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ * ARE DISCLAIMED.  IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY
+ * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
  * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
  * OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
  * HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
@@ -59,8 +47,8 @@
 
 struct nvramsoftc {
 	struct device	sc_dev;
-	caddr_t		sc_paddr;
-	caddr_t		sc_vaddr;
+	void *		sc_paddr;
+	void *		sc_vaddr;
 	int		sc_len;
 	struct clockreg *sc_regs;
 };
@@ -68,9 +56,12 @@ struct nvramsoftc {
 void	nvramattach __P((struct device *, struct device *, void *));
 int	nvrammatch __P((struct device *, void *, void *));
 
-struct cfdriver nvramcd = {
-	NULL, "nvram", nvrammatch, nvramattach,
-	DV_DULL, sizeof(struct nvramsoftc), 0
+struct cfattach nvram_ca = {
+	sizeof(struct nvramsoftc), nvrammatch, nvramattach
+};
+
+struct cfdriver nvram_cd = {
+	NULL, "nvram", DV_DULL, 0
 };
 
 int
@@ -81,7 +72,7 @@ nvrammatch(parent, vcf, args)
 	struct cfdata *cf = vcf;
 	struct confargs *ca = args;
 
-/*X*/	if (ca->ca_vaddr == (caddr_t)-1)
+/*X*/	if (ca->ca_vaddr == (void *)-1)
 /*X*/		return (1);
 	return (!badvaddr(ca->ca_vaddr, 1));
 }
@@ -101,8 +92,8 @@ nvramattach(parent, self, args)
 	if (cputyp == CPU_147)
 		sc->sc_len = MK48T02_SIZE;
 
-/*X*/	if (sc->sc_vaddr == (caddr_t)-1)
-/*X*/		sc->sc_vaddr = mapiodev((caddr_t)sc->sc_paddr,
+/*X*/	if (sc->sc_vaddr == (void *)-1)
+/*X*/		sc->sc_vaddr = mapiodev((void *)sc->sc_paddr,
 /*X*/		    max(sc->sc_len, NBPG));
 /*X*/	if (sc->sc_vaddr == NULL)
 /*X*/		panic("failed to map!\n");
@@ -250,7 +241,7 @@ timetochip(c)
 inittodr(base)
 	time_t base;
 {
-	struct nvramsoftc *sc = (struct nvramsoftc *) nvramcd.cd_devs[0];
+	struct nvramsoftc *sc = (struct nvramsoftc *) nvram_cd.cd_devs[0];
 	register struct clockreg *cl = sc->sc_regs;
 	int sec, min, hour, day, mon, year;
 	int badbase = 0, waszero = base == 0;
@@ -304,7 +295,7 @@ inittodr(base)
  */
 resettodr()
 {
-	struct nvramsoftc *sc = (struct nvramsoftc *) nvramcd.cd_devs[0];
+	struct nvramsoftc *sc = (struct nvramsoftc *) nvram_cd.cd_devs[0];
 	register struct clockreg *cl = sc->sc_regs;
 	struct chiptime c;
 
@@ -328,8 +319,8 @@ nvramopen(dev, flag, mode)
 	dev_t dev;
 	int flag, mode;
 {
-	if (minor(dev) >= nvramcd.cd_ndevs ||
-	    nvramcd.cd_devs[minor(dev)] == NULL)
+	if (minor(dev) >= nvram_cd.cd_ndevs ||
+	    nvram_cd.cd_devs[minor(dev)] == NULL)
 		return (ENODEV);
 	return (0);
 }
@@ -353,7 +344,7 @@ nvramioctl(dev, cmd, data, flag, p)
 	struct proc *p;
 {
 	int unit = minor(dev);
-	struct nvramsoftc *sc = (struct nvramsoftc *) nvramcd.cd_devs[unit];
+	struct nvramsoftc *sc = (struct nvramsoftc *) nvram_cd.cd_devs[unit];
 	int error = 0;
 	
 	switch (cmd) {
@@ -375,7 +366,7 @@ nvramread(dev, uio, flags)
 	int flags;
 {
 	int unit = minor(dev);
-	struct nvramsoftc *sc = (struct nvramsoftc *) nvramcd.cd_devs[unit];
+	struct nvramsoftc *sc = (struct nvramsoftc *) nvram_cd.cd_devs[unit];
 
 	return (memdevrw(sc->sc_vaddr, sc->sc_len, uio, flags));
 }
@@ -388,7 +379,7 @@ nvramwrite(dev, uio, flags)
 	int flags;
 {
 	int unit = minor(dev);
-	struct nvramsoftc *sc = (struct nvramsoftc *) nvramcd.cd_devs[unit];
+	struct nvramsoftc *sc = (struct nvramsoftc *) nvram_cd.cd_devs[unit];
 
 	return (memdevrw(sc->sc_vaddr, sc->sc_len, uio, flags));
 }
@@ -404,7 +395,7 @@ nvrammmap(dev, off, prot)
 	int off, prot;
 {
 	int unit = minor(dev);
-	struct nvramsoftc *sc = (struct nvramsoftc *) nvramcd.cd_devs[unit];
+	struct nvramsoftc *sc = (struct nvramsoftc *) nvram_cd.cd_devs[unit];
 
 	if (minor(dev) != 0)
 		return (-1);

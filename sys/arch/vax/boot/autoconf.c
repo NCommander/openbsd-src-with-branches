@@ -1,4 +1,4 @@
-/*	$NetBSD: autoconf.c,v 1.3 1995/09/16 13:34:20 ragge Exp $ */
+/*	$NetBSD: autoconf.c,v 1.6 1996/08/02 11:21:46 ragge Exp $ */
 /*
  * Copyright (c) 1994 Ludd, University of Lule}, Sweden.
  * All rights reserved.
@@ -39,13 +39,25 @@
 #include "vaxstand.h"
 
 int	nmba=0, nuba=0, nbi=0,nsbi=0,nuda=0;
-int	*mbaaddr, *ubaaddr;
-int	*udaaddr, *uioaddr, tmsaddr;
+int	*mbaaddr, *ubaaddr, *biaddr;
+int	*udaaddr, *uioaddr, tmsaddr, *bioaddr;
 
 static int mba750[]={0xf28000,0xf2a000,0xf2c000};
 static int uba750[]={0xf30000,0xf32000};
 static int uio750[]={0xfc0000,0xf80000};
 static int uda750[]={0772150};
+
+/* 11/780's only have 4, 8600 have 8 of these. */
+static int mba780[]={0x20010000,0x20012000,0x20014000,0x20016000,
+	0x22010000,0x22012000,0x22014000,0x22016000};
+static int uba780[]={0x20006000,0x20008000,0x2000a000,0x2000c000,
+	0x22006000,0x22008000,0x2200a000,0x2200c000};
+static int uio780[]={0x20100000,0x20140000,0x20180000,0x201c0000,
+	0x22100000,0x22140000,0x22180000,0x221c0000};
+
+static int bi8200[]={0x20000000, 0x22000000, 0x24000000, 0x26000000,
+	0x28000000, 0x2a000000};
+static int bio8200[]={0x20400000};
 
 static int uba630[]={0x20087800};
 static int uio630[]={0x30000000};
@@ -59,13 +71,34 @@ static int uda630[]={qbdev(0772150),qbdev(0760334)};
 
 autoconf()
 {
-	int i = MACHID(mfpr(PR_SID));
 
-	switch (i) {
+	switch (vax_cputype) {
 
 	default:
-		printf("CPU type %d not supported by boot\n",i);
+		printf("CPU type %d not supported by boot\n",vax_cputype);
 		asm("halt");
+
+	case VAX_8600:
+		nmba = 8;
+		nuba = 8;
+		nuda = 1;
+		mbaaddr = mba780;
+		ubaaddr = uba780;
+		udaaddr = uda750;
+		uioaddr = uio780;
+		tmsaddr = 0774500;
+		break;
+
+	case VAX_780:
+		nmba = 4;
+		nuba = 4;
+		nuda = 1;
+		mbaaddr = mba780;
+		ubaaddr = uba780;
+		udaaddr = uda750;
+		uioaddr = uio780;
+		tmsaddr = 0774500;
+		break;
 
 	case VAX_750:
 		nmba = 3;
@@ -87,6 +120,11 @@ autoconf()
 		uioaddr = uio630;
 		tmsaddr = qbdev(0774500);
 		break;
+
+	case VAX_8200:
+		nbi = 1;
+		biaddr = bi8200;
+		bioaddr = bio8200;
 	}
 }
 

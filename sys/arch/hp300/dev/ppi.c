@@ -1,6 +1,8 @@
-/*	$NetBSD: ppi.c,v 1.6 1994/10/26 07:24:46 cgd Exp $	*/
+/*	$OpenBSD: ppi.c,v 1.5 1997/02/03 04:47:41 downsj Exp $	*/
+/*	$NetBSD: ppi.c,v 1.13 1997/04/02 22:37:33 scottr Exp $	*/
 
 /*
+ * Copyright (c) 1996, 1997 Jason R. Thorpe.  All rights reserved.
  * Copyright (c) 1982, 1990, 1993
  *	The Regents of the University of California.  All rights reserved.
  *
@@ -39,34 +41,30 @@
  * Printer/Plotter HPIB interface
  */
 
-#include "ppi.h"
-#if NPPI > 0
-
 #include <sys/param.h>
 #include <sys/systm.h>
+#include <sys/conf.h>
+#include <sys/device.h>
 #include <sys/errno.h>
-#include <sys/uio.h>
 #include <sys/malloc.h>
+#include <sys/proc.h>
+#include <sys/uio.h>
 
-#include <hp300/dev/device.h>
+#include <hp300/dev/hpibvar.h>
+
 #include <hp300/dev/ppiioctl.h>
 
-int	ppiattach(), ppistart();
-void	ppitimo();
-struct	driver ppidriver = {
-	ppiattach, "ppi", ppistart,
-};
-
 struct	ppi_softc {
+	struct device sc_dev;
 	int	sc_flags;
-	struct	devqueue sc_dq;
-	struct	hp_device *sc_hd;
+	struct	hpibqueue sc_hq;	/* HP-IB job queue entry */
 	struct	ppiparam sc_param;
 #define sc_burst sc_param.burst
 #define sc_timo  sc_param.timo
 #define sc_delay sc_param.delay
 	int	sc_sec;
-} ppi_softc[NPPI];
+	int	sc_slave;		/* HP-IB slave address */
+};
 
 /* sc_flags values */
 #define	PPIF_ALIVE	0x01	
@@ -74,6 +72,28 @@ struct	ppi_softc {
 #define PPIF_UIO	0x04
 #define PPIF_TIMO	0x08
 #define PPIF_DELAY	0x10
+
+int	ppimatch __P((struct device *, void *, void *));
+void	ppiattach __P((struct device *, struct device *, void *));
+
+struct cfattach ppi_ca = {
+	sizeof(struct ppi_softc), ppimatch, ppiattach
+};
+
+struct cfdriver ppi_cd = {
+	NULL, "ppi", DV_DULL
+};
+
+void	ppistart __P((void *));
+void	ppinoop __P((void *));
+
+void	ppitimo __P((void *));
+int	ppirw __P((dev_t, struct uio *));
+int	ppihztoms __P((int));
+int	ppimstohz __P((int));
+
+bdev_decl(ppi);
+cdev_decl(ppi);
 
 #define UNIT(x)		minor(x)
 
@@ -84,45 +104,83 @@ int	ppidebug = 0x80;
 #define PDB_NOCHECK	0x80
 #endif
 
-ppiattach(hd)
-	register struct hp_device *hd;
+int
+ppimatch(parent, match, aux)
+	struct device *parent;
+	void *match, *aux;
 {
-	register struct ppi_softc *sc = &ppi_softc[hd->hp_unit];
+	struct cfdata *cf = match;
+	struct hpibbus_attach_args *ha = aux;
 
-#ifdef DEBUG
-	if ((ppidebug & PDB_NOCHECK) == 0)
-#endif
 	/*
-	 * XXX: the printer/plotter doesn't seem to really return
-	 * an ID but this will at least prevent us from mistaking
-	 * a cs80 disk or tape for a ppi device.
+	 * The printer/plotter doesn't return an ID tag.
+	 * The check below prevents us from matching a CS80
+	 * device by mistake.
 	 */
-	if (hpibid(hd->hp_ctlr, hd->hp_slave) & 0x200)
-		return(0);
-	sc->sc_flags = PPIF_ALIVE;
-	sc->sc_dq.dq_ctlr = hd->hp_ctlr;
-	sc->sc_dq.dq_unit = hd->hp_unit;
-	sc->sc_dq.dq_slave = hd->hp_slave;
-	sc->sc_dq.dq_driver = &ppidriver;
-	sc->sc_hd = hd;
-	return(1);
+	if (ha->ha_id & 0x200)
+		return (0);
+
+	/*
+	 * To prevent matching all unused slots on the bus, we
+	 * don't allow wildcarded locators.
+	 */
+	if (cf->hpibbuscf_slave == HPIBBUS_SLAVE_UNK ||
+	    cf->hpibbuscf_punit == HPIBBUS_PUNIT_UNK)
+		return (0);
+
+	return (1);
 }
 
-ppiopen(dev, flags)
-	dev_t dev;
+void
+ppiattach(parent, self, aux)
+	struct device *parent, *self;
+	void *aux;
 {
-	register int unit = UNIT(dev);
-	register struct ppi_softc *sc = &ppi_softc[unit];
+	struct ppi_softc *sc = (struct ppi_softc *)self;
+	struct hpibbus_attach_args *ha = aux;
 
-	if (unit >= NPPI || (sc->sc_flags & PPIF_ALIVE) == 0)
-		return(ENXIO);
+	printf("\n");
+
+	sc->sc_slave = ha->ha_slave;
+
+	/* Initialize the hpib queue entry. */
+	sc->sc_hq.hq_softc = sc;
+	sc->sc_hq.hq_slave = sc->sc_slave;
+	sc->sc_hq.hq_start = ppistart;
+	sc->sc_hq.hq_go = ppinoop;
+	sc->sc_hq.hq_intr = ppinoop;
+
+	sc->sc_flags = PPIF_ALIVE;
+}
+
+void
+ppinoop(arg)
+	void *arg;
+{
+	/* Noop! */
+}
+
+int
+ppiopen(dev, flags, fmt, p)
+	dev_t dev;
+	int flags, fmt;
+	struct proc *p;
+{
+	int unit = UNIT(dev);
+	struct ppi_softc *sc;
+
+	if (unit >= ppi_cd.cd_ndevs ||
+	    (sc = ppi_cd.cd_devs[unit]) == NULL ||
+	    (sc->sc_flags & PPIF_ALIVE) == 0)
+		return (ENXIO);
+
 #ifdef DEBUG
 	if (ppidebug & PDB_FOLLOW)
 		printf("ppiopen(%x, %x): flags %x\n",
 		       dev, flags, sc->sc_flags);
 #endif
 	if (sc->sc_flags & PPIF_OPEN)
-		return(EBUSY);
+		return (EBUSY);
 	sc->sc_flags |= PPIF_OPEN;
 	sc->sc_burst = PPI_BURST;
 	sc->sc_timo = ppimstohz(PPI_TIMO);
@@ -131,11 +189,14 @@ ppiopen(dev, flags)
 	return(0);
 }
 
-ppiclose(dev, flags)
+int
+ppiclose(dev, flags, fmt, p)
 	dev_t dev;
+	int flags, fmt;
+	struct proc *p;
 {
-	register int unit = UNIT(dev);
-	register struct ppi_softc *sc = &ppi_softc[unit];
+	int unit = UNIT(dev);
+	struct ppi_softc *sc = ppi_cd.cd_devs[unit];
 
 #ifdef DEBUG
 	if (ppidebug & PDB_FOLLOW)
@@ -146,72 +207,84 @@ ppiclose(dev, flags)
 	return(0);
 }
 
-ppistart(unit)
-	int unit;
+void
+ppistart(arg)
+	void *arg;
 {
+	struct ppi_softc *sc = arg;
+
 #ifdef DEBUG
 	if (ppidebug & PDB_FOLLOW)
-		printf("ppistart(%x)\n", unit);
+		printf("ppistart(%x)\n", sc->sc_dev.dv_unit);
 #endif
-	ppi_softc[unit].sc_flags &= ~PPIF_DELAY;
-	wakeup(&ppi_softc[unit]);
-	return (0);
+	sc->sc_flags &= ~PPIF_DELAY;
+	wakeup(sc);
 }
 
 void
-ppitimo(unit)
-	int unit;
+ppitimo(arg)
+	void *arg;
 {
+	struct ppi_softc *sc = arg;
+
 #ifdef DEBUG
 	if (ppidebug & PDB_FOLLOW)
-		printf("ppitimo(%x)\n", unit);
+		printf("ppitimo(%x)\n", sc->sc_dev.dv_unit);
 #endif
-	ppi_softc[unit].sc_flags &= ~(PPIF_UIO|PPIF_TIMO);
-	wakeup(&ppi_softc[unit]);
+	sc->sc_flags &= ~(PPIF_UIO|PPIF_TIMO);
+	wakeup(sc);
 }
 
-ppiread(dev, uio)
+int
+ppiread(dev, uio, flags)
 	dev_t dev;
 	struct uio *uio;
+	int flags;
 {
 
 #ifdef DEBUG
 	if (ppidebug & PDB_FOLLOW)
-		printf("ppiread(%x, %x)\n", dev, uio);
+		printf("ppiread(%x, %p)\n", dev, uio);
 #endif
 	return (ppirw(dev, uio));
 }
 
-ppiwrite(dev, uio)
+int
+ppiwrite(dev, uio, flags)
 	dev_t dev;
 	struct uio *uio;
+	int flags;
 {
 
 #ifdef DEBUG
 	if (ppidebug & PDB_FOLLOW)
-		printf("ppiwrite(%x, %x)\n", dev, uio);
+		printf("ppiwrite(%x, %p)\n", dev, uio);
 #endif
 	return (ppirw(dev, uio));
 }
 
+int
 ppirw(dev, uio)
 	dev_t dev;
-	register struct uio *uio;
+	struct uio *uio;
 {
 	int unit = UNIT(dev);
-	register struct ppi_softc *sc = &ppi_softc[unit];
-	register int s, len, cnt;
-	register char *cp;
+	struct ppi_softc *sc = ppi_cd.cd_devs[unit];
+	int s, len, cnt;
+	char *cp;
 	int error = 0, gotdata = 0;
-	int buflen;
+	int buflen, ctlr, slave;
 	char *buf;
 
 	if (uio->uio_resid == 0)
 		return(0);
 
+	ctlr = sc->sc_dev.dv_parent->dv_unit;
+	slave = sc->sc_slave;
+
 #ifdef DEBUG
 	if (ppidebug & (PDB_FOLLOW|PDB_IO))
-		printf("ppirw(%x, %x, %c): burst %d, timo %d, resid %x\n",
+		printf("ppirw(%x, %p, %c): burst %d, timo %d, resid %x\n",
 		       dev, uio, uio->uio_rw == UIO_READ ? 'R' : 'W',
 		       sc->sc_burst, sc->sc_timo, uio->uio_resid);
 #endif
@@ -220,8 +293,9 @@ ppirw(dev, uio)
 	sc->sc_flags |= PPIF_UIO;
 	if (sc->sc_timo > 0) {
 		sc->sc_flags |= PPIF_TIMO;
-		timeout(ppitimo, (void *)unit, sc->sc_timo);
+		timeout(ppitimo, sc, sc->sc_timo);
 	}
+	len = cnt = 0;
 	while (uio->uio_resid > 0) {
 		len = min(buflen, uio->uio_resid);
 		cp = buf;
@@ -232,7 +306,8 @@ ppirw(dev, uio)
 		}
 again:
 		s = splbio();
-		if ((sc->sc_flags & PPIF_UIO) && hpibreq(&sc->sc_dq) == 0)
+		if ((sc->sc_flags & PPIF_UIO) &&
+		    hpibreq(sc->sc_dev.dv_parent, &sc->sc_hq) == 0)
 			sleep(sc, PRIBIO+1);
 		/*
 		 * Check if we timed out during sleep or uiomove
@@ -245,7 +320,7 @@ again:
 				       sc->sc_flags);
 #endif
 			if (sc->sc_flags & PPIF_TIMO) {
-				untimeout(ppitimo, (void *)unit);
+				untimeout(ppitimo, sc);
 				sc->sc_flags &= ~PPIF_TIMO;
 			}
 			splx(s);
@@ -256,19 +331,16 @@ again:
 		 * Perform the operation
 		 */
 		if (uio->uio_rw == UIO_WRITE)
-			cnt = hpibsend(sc->sc_hd->hp_ctlr, sc->sc_hd->hp_slave,
-				       sc->sc_sec, cp, len);
+			cnt = hpibsend(ctlr, slave, sc->sc_sec, cp, len);
 		else
-			cnt = hpibrecv(sc->sc_hd->hp_ctlr, sc->sc_hd->hp_slave,
-				       sc->sc_sec, cp, len);
+			cnt = hpibrecv(ctlr, slave, sc->sc_sec, cp, len);
 		s = splbio();
-		hpibfree(&sc->sc_dq);
+		hpibfree(sc->sc_dev.dv_parent, &sc->sc_hq);
 #ifdef DEBUG
 		if (ppidebug & PDB_IO)
-			printf("ppirw: %s(%d, %d, %x, %x, %d) -> %d\n",
+			printf("ppirw: %s(%d, %d, %x, %p, %d) -> %d\n",
 			       uio->uio_rw == UIO_READ ? "recv" : "send",
-			       sc->sc_hd->hp_ctlr, sc->sc_hd->hp_slave,
-			       sc->sc_sec, cp, len, cnt);
+			       ctlr, slave, sc->sc_sec, cp, len, cnt);
 #endif
 		splx(s);
 		if (uio->uio_rw == UIO_READ) {
@@ -302,9 +374,8 @@ again:
 		 */
 		if (sc->sc_delay > 0) {
 			sc->sc_flags |= PPIF_DELAY;
-			timeout((void (*)__P((void *)))ppistart, (void *)unit,
-			    sc->sc_delay);
-			error = tsleep(sc, PCATCH|PZERO+1, "hpib", 0);
+			timeout(ppistart, sc, sc->sc_delay);
+			error = tsleep(sc, (PCATCH|PZERO) + 1, "hpib", 0);
 			if (error) {
 				splx(s);
 				break;
@@ -324,11 +395,11 @@ again:
 	}
 	s = splsoftclock();
 	if (sc->sc_flags & PPIF_TIMO) {
-		untimeout(ppitimo, (void *)unit);
+		untimeout(ppitimo, sc);
 		sc->sc_flags &= ~PPIF_TIMO;
 	}
 	if (sc->sc_flags & PPIF_DELAY) {
-		untimeout((void (*)__P((void *)))ppistart, (void *)unit);
+		untimeout(ppistart, sc);
 		sc->sc_flags &= ~PPIF_DELAY;
 	}
 	splx(s);
@@ -351,14 +422,15 @@ again:
 	return (error);
 }
 
+int
 ppiioctl(dev, cmd, data, flag, p)
 	dev_t dev;
-	int cmd;
+	u_long cmd;
 	caddr_t data;
 	int flag;
 	struct proc *p;
 {
-	struct ppi_softc *sc = &ppi_softc[UNIT(dev)];
+	struct ppi_softc *sc = ppi_cd.cd_devs[UNIT(dev)];
 	struct ppiparam *pp, *upp;
 	int error = 0;
 
@@ -389,22 +461,24 @@ ppiioctl(dev, cmd, data, flag, p)
 	return (error);
 }
 
+int
 ppihztoms(h)
 	int h;
 {
 	extern int hz;
-	register int m = h;
+	int m = h;
 
 	if (m > 0)
 		m = m * 1000 / hz;
 	return(m);
 }
 
+int
 ppimstohz(m)
 	int m;
 {
 	extern int hz;
-	register int h = m;
+	int h = m;
 
 	if (h > 0) {
 		h = h * hz / 1000;
@@ -413,4 +487,3 @@ ppimstohz(m)
 	}
 	return(h);
 }
-#endif

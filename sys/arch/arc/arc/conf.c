@@ -1,4 +1,4 @@
-/*	$OpenBSD$ */
+/*	$OpenBSD: conf.c,v 1.16 1997/05/18 13:45:21 pefo Exp $ */
 
 /*
  * Copyright (c) 1992, 1993
@@ -36,7 +36,7 @@
  * SUCH DAMAGE.
  *
  *	from: @(#)conf.c	8.2 (Berkeley) 11/14/93
- *      $Id: conf.c,v 1.6 1996/05/15 07:09:10 pefo Exp $
+ *      $Id: conf.c,v 1.16 1997/05/18 13:45:21 pefo Exp $
  */
 
 #include <sys/param.h>
@@ -63,6 +63,13 @@ bdev_decl(sd);
 bdev_decl(cd);
 #include "fdc.h"
 bdev_decl(fd);
+#include "wdc.h"
+bdev_decl(wd);
+#include "acd.h"
+bdev_decl(acd);
+#include "ccd.h"
+#include "rd.h"
+bdev_decl(rd);
 
 struct bdevsw	bdevsw[] =
 {
@@ -70,11 +77,11 @@ struct bdevsw	bdevsw[] =
 	bdev_swap_init(1,sw),		/* 1: should be here swap pseudo-dev */
 	bdev_disk_init(NVND,vnd),	/* 2: vnode disk driver */
 	bdev_disk_init(NCD,cd),		/* 3: SCSI CD-ROM */
-	bdev_notdef(),			/* 4:  */
-	bdev_notdef(),			/* 5:  */
-	bdev_notdef(),			/* 6:  */
+	bdev_disk_init(NWDC,wd),	/* 4: ST506/ESDI/IDE disk */
+	bdev_disk_init(NACD,acd),	/* 5: ATAPI CD-ROM */
+	bdev_disk_init(NCCD,ccd),	/* 6: concatenated disk driver */
 	bdev_disk_init(NFDC,fd),	/* 7: Floppy disk driver */
-	bdev_notdef(),			/* 8:  */
+	bdev_disk_init(NRD,rd),		/* 8: RAM disk (for install) */
 	bdev_notdef(),			/* 9:  */
 	bdev_notdef(),			/* 10:  */
 	bdev_notdef(),			/* 11:  */
@@ -111,6 +118,7 @@ int	nblkdev = sizeof (bdevsw) / sizeof (bdevsw[0]);
 cdev_decl(cn);
 cdev_decl(sw);
 cdev_decl(ctty);
+cdev_decl(random);
 #define mmread mmrw
 #define mmwrite mmrw
 dev_type_read(mmrw);
@@ -129,10 +137,11 @@ cdev_decl(st);
 #include "fdc.h"
 bdev_decl(fd);
 cdev_decl(vnd);
+cdev_decl(rd);
 #include "bpfilter.h"
 cdev_decl(bpf);
-#include "ace.h"
-cdev_decl(ace);
+#include "com.h"
+cdev_decl(com);
 #include "lpt.h"
 cdev_decl(lpt);
 cdev_decl(sd);
@@ -140,6 +149,11 @@ cdev_decl(sd);
 cdev_decl(pc);
 cdev_decl(pms);
 cdev_decl(cd);
+#include "ss.h"
+#include "uk.h"
+cdev_decl(uk);
+cdev_decl(wd);
+cdev_decl(acd);
 
 /* open, close, read, ioctl */
 cdev_decl(ipl);
@@ -166,15 +180,15 @@ struct cdevsw	cdevsw[] =
 	cdev_bpftun_init(NBPFILTER,bpf),/* 12: berkeley packet filter */
 	cdev_disk_init(NFDC,fd),	/* 13: Floppy disk */
 	cdev_pc_init(NPC,pc),		/* 14: builtin pc style console dev */
-	cdev_mouse_init(1,pms),		/* 15: builtin PS2 style mouse */
-	cdev_lpt_init(NLPT,lpt),	/* 16: lpt paralell printer interface */
-	cdev_tty_init(NCOM,ace),	/* 17: ace 16C450 serial interface */
-	cdev_notdef(),			/* 18: */
-	cdev_notdef(),			/* 19: */
+	cdev_mouse_init(NPC,pms),	/* 15: builtin PS2 style mouse */
+	cdev_lpt_init(NLPT,lpt),	/* 16: Parallel printer interface */
+	cdev_tty_init(NCOM,com),	/* 17: 16C450 serial interface */
+	cdev_disk_init(NWDC,wd),	/* 18: ST506/ESDI/IDE disk */
+	cdev_disk_init(NACD,acd),	/* 19: ATAPI CD-ROM */
 	cdev_tty_init(NPTY,pts),	/* 20: pseudo-tty slave */
 	cdev_ptc_init(NPTY,ptc),	/* 21: pseudo-tty master */
-	cdev_notdef(),			/* 22: */
-	cdev_notdef(),			/* 23: */
+	cdev_disk_init(NRD,rd),		/* 22: ramdisk device */
+	cdev_disk_init(NCCD,ccd),       /* 23: concatenated disk driver */
 	cdev_notdef(),			/* 24: */
 	cdev_notdef(),			/* 25: */
 	cdev_notdef(),			/* 26: */
@@ -183,6 +197,9 @@ struct cdevsw	cdevsw[] =
 	cdev_notdef(),			/* 29: */
 	cdev_notdef(),			/* 30: */
 	cdev_gen_ipf(NIPF,ipl),         /* 31: IP filter log */
+	cdev_uk_init(NUK,uk),		/* 32: unknown SCSI */
+	cdev_random_init(1,random),	/* 33: random data source */
+	cdev_ss_init(NSS,ss),           /* 34: SCSI scanner */
 };
 
 int	nchrdev = sizeof (cdevsw) / sizeof (cdevsw[0]);
@@ -205,6 +222,7 @@ dev_t	swapdev = makedev(1, 0);
  *
  * A minimal stub routine can always return 0.
  */
+int
 iskmemdev(dev)
 	dev_t dev;
 {
@@ -221,6 +239,7 @@ iskmemdev(dev)
 /*
  * Returns true if def is /dev/zero
  */
+int
 iszerodev(dev)
 	dev_t dev;
 {
@@ -253,11 +272,11 @@ static int chrtoblktbl[MAXDEV] =  {
 	/* 15 */	NODEV,
 	/* 16 */	NODEV,
 	/* 17 */	NODEV,
-	/* 18 */	NODEV,
-	/* 19 */	NODEV,
+	/* 18 */	4,
+	/* 19 */	5,
 	/* 20 */	NODEV,
 	/* 21 */	NODEV,
-	/* 22 */	NODEV,
+	/* 22 */	8,
 	/* 23 */	NODEV,
 	/* 24 */	NODEV,
 	/* 25 */	NODEV,
@@ -298,6 +317,7 @@ static int chrtoblktbl[MAXDEV] =  {
  *
  * A minimal stub routine can always return NODEV.
  */
+dev_t
 chrtoblk(dev)
 	dev_t dev;
 {
@@ -309,6 +329,24 @@ chrtoblk(dev)
 }
 
 /*
+ * Convert a character device number to a block device number.
+ */
+dev_t
+blktochr(dev)
+	dev_t dev;
+{
+	int blkmaj = major(dev);
+	int i;
+
+	if (blkmaj >= nblkdev)
+		return (NODEV);
+	for (i = 0; i < sizeof(chrtoblktbl)/sizeof(chrtoblktbl[0]); i++)
+		if (blkmaj == chrtoblktbl[i])
+			return (makedev(i, minor(dev)));
+	return (NODEV);
+}
+
+/*
  * This entire table could be autoconfig()ed but that would mean that
  * the kernel's idea of the console would be out of sync with that of
  * the standalone boot.  I think it best that they both use the same
@@ -317,14 +355,14 @@ chrtoblk(dev)
 #include <dev/cons.h>
 
 cons_decl(pc);
-cons_decl(ace);
+cons_decl(com);
 
 struct	consdev constab[] = {
 #if NPC + NVT > 0
 	cons_init(pc),
 #endif
 #if NCOM > 0
-	cons_init(ace),
+	cons_init(com),
 #endif
 	{ 0 },
 };

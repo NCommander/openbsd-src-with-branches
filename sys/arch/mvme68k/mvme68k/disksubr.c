@@ -1,3 +1,5 @@
+/*	$OpenBSD: disksubr.c,v 1.12 1997/04/06 06:13:03 deraadt Exp $ */
+
 /*
  * Copyright (c) 1995 Dale Rahn.
  * All rights reserved.
@@ -30,8 +32,15 @@
 
 #include <sys/param.h>
 #include <sys/buf.h>
+#include <sys/device.h>
 #define DKTYPENAMES
 #include <sys/disklabel.h>
+#include <sys/disk.h>
+
+#include <scsi/scsi_all.h>
+#include <scsi/scsiconf.h>
+
+#include <machine/autoconf.h>
 
 #define b_cylin b_resid
 
@@ -49,10 +58,43 @@ static void printlp __P((struct disklabel *lp, char *str));
 static void printclp __P((struct cpu_disklabel *clp, char *str));
 #endif
 
-int
-dk_establish()
+void
+dk_establish(dk, dev)
+	struct disk *dk;
+	struct device *dev;
 {
-	return(-1);
+	struct scsibus_softc *sbsc;
+	int target, lun;
+
+	if (bootpart == -1) /* ignore flag from controller driver? */
+		return;
+
+	/*
+	 * scsi: sd,cd
+	 */
+
+	if (strncmp("sd", dev->dv_xname, 2) == 0 ||
+	    strncmp("cd", dev->dv_xname, 2) == 0) {
+
+		sbsc = (struct scsibus_softc *)dev->dv_parent;
+		if (cputyp == CPU_147) {
+			target = bootctrllun % 8; /* XXX: 147 only */
+			lun = bootdevlun; /* XXX: 147, untested */
+		} else {
+			/* 
+			 * XXX: on the 167: 
+			 * ignore bootctrllun
+			 */
+			target = bootdevlun / 10;
+			lun = bootdevlun % 10;
+		}
+
+		if (sbsc->sc_link[target][lun] != NULL &&
+		    sbsc->sc_link[target][lun]->device_softc == (void *)dev) {
+			bootdv = dev;
+			return;
+		}
+	}
 }
 
 /*
@@ -86,17 +128,20 @@ readdisklabel(dev, strat, lp, clp)
 
 	if (biowait(bp)) {
 		msg = "cpu_disklabel read error\n";
-	}else {
+	} else {
 		bcopy(bp->b_data, clp, sizeof (struct cpu_disklabel));
 	}
 
 	bp->b_flags = B_INVAL | B_AGE | B_READ;
 	brelse(bp);
 
-	if (msg || clp->magic1 != DISKMAGIC || clp->magic2 != DISKMAGIC) {
+	if (msg) {
+#if defined(CD9660)
+		if (iso_disklabelspoof(dev, strat, lp) == 0)
+			msg = NULL;
+#endif
 		return (msg); 
 	}
-
 	cputobsdlabel(lp, clp);
 #ifdef DEBUG
 	if(disksubr_debug > 0) {
@@ -256,40 +301,42 @@ bounds_check_with_label(bp, lp, wlabel)
 	struct disklabel *lp;
 	int wlabel;
 {
+#define blockpersec(count, lp) ((count) * (((lp)->d_secsize) / DEV_BSIZE))
 	struct partition *p = lp->d_partitions + DISKPART(bp->b_dev);
-	int labelsect = lp->d_partitions[0].p_offset;
-	int maxsz = p->p_size;
-	int sz = (bp->b_bcount + DEV_BSIZE - 1) >> DEV_BSHIFT;
+	int labelsect = blockpersec(lp->d_partitions[0].p_offset, lp) +
+	    LABELSECTOR;
+	int sz = howmany(bp->b_bcount, DEV_BSIZE);
 
 	/* overwriting disk label ? */
 	/* XXX should also protect bootstrap in first 8K */
-        if (bp->b_blkno + p->p_offset <= LABELSECTOR + labelsect &&
+	if (bp->b_blkno + blockpersec(p->p_offset, lp) <= labelsect &&
 #if LABELSECTOR != 0
-            bp->b_blkno + p->p_offset + sz > LABELSECTOR + labelsect &&
+	    bp->b_blkno + blockpersec(p->p_offset, lp) + sz > labelsect &&
 #endif
-            (bp->b_flags & B_READ) == 0 && wlabel == 0) {
-                bp->b_error = EROFS;
-                goto bad;
-        }
+	    (bp->b_flags & B_READ) == 0 && wlabel == 0) {
+		bp->b_error = EROFS;
+		goto bad;
+	}
 
 	/* beyond partition? */
-        if (bp->b_blkno < 0 || bp->b_blkno + sz > maxsz) {
-                /* if exactly at end of disk, return an EOF */
-                if (bp->b_blkno == maxsz) {
-                        bp->b_resid = bp->b_bcount;
-                        return(0);
-                }
-                /* or truncate if part of it fits */
-                sz = maxsz - bp->b_blkno;
-                if (sz <= 0) {
-			bp->b_error = EINVAL;
-                        goto bad;
+	if (bp->b_blkno + sz > blockpersec(p->p_size, lp)) {
+		sz = blockpersec(p->p_size, lp) - bp->b_blkno;
+		if (sz == 0) {
+			/* if exactly at end of disk, return an EOF */
+			bp->b_resid = bp->b_bcount;
+			return(0);
 		}
-                bp->b_bcount = sz << DEV_BSHIFT;
-        }
+		if (sz < 0) {
+			bp->b_error = EINVAL;
+			goto bad;
+		}
+		/* or truncate if part of it fits */
+		bp->b_bcount = sz << DEV_BSHIFT;
+	}
 
 	/* calculate cylinder for disksort to order transfers with */
-        bp->b_cylin = (bp->b_blkno + p->p_offset) / lp->d_secpercyl;
+	bp->b_cylin = (bp->b_blkno + blockpersec(p->p_offset, lp)) /
+	    lp->d_secpercyl;
 	return(1);
 
 bad:
@@ -354,7 +401,84 @@ bsdtocpulabel(lp, clp)
 	clp->checksum = lp->d_checksum;
 	bcopy(&lp->d_partitions[0], clp->vid_4, sizeof(struct partition) * 4);
 	bcopy(&lp->d_partitions[4], clp->cfg_4, sizeof(struct partition) * 12);
+	clp->version = 1;
 }
+
+struct cpu_disklabel_old {
+	/* VID */
+	u_char		vid_id[4];
+	u_char		vid_0[16];
+	u_int		vid_oss;
+	u_short		vid_osl;
+	u_char		vid_1[4];
+	u_short		vid_osa_u;
+	u_short		vid_osa_l;
+	u_char		vid_2[2];
+	u_short		partitions;
+	u_char		vid_vd[16];
+	u_long		bbsize;
+	u_long		magic1;		/* 4 */
+	u_short		type;		/* 2 */
+	u_short		subtype;	/* 2 */
+	u_char		packname[16];	/* 16 */
+	u_long		flags;		/* 4 */
+	u_long		drivedata[5];	/* 4 */
+	u_long		spare[5];	/* 4 */
+	u_short		checksum;	/* 2 */
+
+	u_long		secpercyl;	/* 4 */
+	u_long		secperunit;	/* 4 */
+	u_long		headswitch;	/* 4 */
+
+	u_char		vid_3[4];
+	u_int		vid_cas;
+	u_char		vid_cal;
+	u_char		vid_4_0[3];
+	u_char		vid_4[64];
+	u_char		vid_4_1[28];
+	u_long		sbsize;
+	u_char		vid_mot[8];
+
+	/* CFG */
+	u_char		cfg_0[4];
+	u_short		cfg_atm;
+	u_short		cfg_prm;
+	u_short		cfg_atw;
+	u_short		cfg_rec;
+
+	u_short		sparespertrack;
+	u_short		sparespercyl;
+	u_long		acylinders;
+	u_short		rpm;
+	u_short		cylskew;
+
+	u_char		cfg_spt;
+	u_char		cfg_hds;
+	u_short		cfg_trk;
+	u_char		cfg_ilv;
+	u_char		cfg_sof;
+	u_short		cfg_psm;
+	u_short		cfg_shd;
+	u_char		cfg_2[2];
+	u_short		cfg_pcom;
+	u_char		cfg_3;
+	u_char		cfg_ssr;
+	u_short		cfg_rwcc;
+	u_short		cfg_ecc;
+	u_short		cfg_eatm;
+	u_short		cfg_eprm;
+	u_short		cfg_eatw;
+	u_char		cfg_gpb1;
+	u_char		cfg_gpb2;
+	u_char		cfg_gpb3;
+	u_char		cfg_gpb4;
+	u_char		cfg_ssc;
+	u_char		cfg_runit;
+	u_short		cfg_rsvc1;
+	u_short		cfg_rsvc2;
+	u_long		magic2;
+	u_char		cfg_4[192];
+};
 
 static void
 cputobsdlabel(lp, clp)
@@ -362,66 +486,149 @@ cputobsdlabel(lp, clp)
 	struct cpu_disklabel *clp;
 {
 	int i;
+	struct disklabel llp;
+	struct disklabel *nlp = &llp;
 
-	lp->d_magic = clp->magic1;
-	lp->d_type = clp->type;
-	lp->d_subtype = clp->subtype;
-	strncpy(lp->d_typename, clp->vid_vd, 16);
-	strncpy(lp->d_packname, clp->packname, 16);
-	lp->d_secsize = clp->cfg_psm;
-	lp->d_nsectors = clp->cfg_spt;
-	lp->d_ncylinders = clp->cfg_trk; /* trk is really num of cyl! */
-	lp->d_ntracks = clp->cfg_hds;
+	bzero (&llp, sizeof (llp));
+	if (clp->version == 0) {
+		struct cpu_disklabel_old *clpo = (void *) clp;
+		nlp->d_magic = clpo->magic1;
+		nlp->d_type = clpo->type;
+		nlp->d_subtype = clpo->subtype;
+		strncpy(nlp->d_typename, clpo->vid_vd, 16);
+		strncpy(nlp->d_packname, clpo->packname, 16);
+		nlp->d_secsize = clpo->cfg_psm;
+		nlp->d_nsectors = clpo->cfg_spt;
+		nlp->d_ncylinders = clpo->cfg_trk; /* trk is really num of cyl! */
+		nlp->d_ntracks = clpo->cfg_hds;
+		nlp->d_secpercyl = clpo->secpercyl;
+		nlp->d_secperunit = clpo->secperunit;
+		nlp->d_secpercyl = clpo->secpercyl;
+		nlp->d_secperunit = clpo->secperunit;
+		nlp->d_sparespertrack = clpo->sparespertrack;
+		nlp->d_sparespercyl = clpo->sparespercyl;
+		nlp->d_acylinders = clpo->acylinders;
+		nlp->d_rpm = clpo->rpm;
+		nlp->d_interleave = clpo->cfg_ilv;
+		nlp->d_trackskew = clpo->cfg_sof;
+		nlp->d_cylskew = clpo->cylskew;
+		nlp->d_headswitch = clpo->headswitch;
+		/* this silly table is for winchester drives */
+		switch (clpo->cfg_ssr) {
+		case 0:
+			nlp->d_trkseek = 0;
+			break;
+		case 1:
+			nlp->d_trkseek = 6;
+			break;
+		case 2:
+			nlp->d_trkseek = 10;
+			break;
+		case 3:
+			nlp->d_trkseek = 15;
+			break;
+		case 4:
+			nlp->d_trkseek = 20;
+			break;
+		default:
+			nlp->d_trkseek = 0;
+		}
+		nlp->d_flags = clpo->flags;
+		for (i = 0; i < NDDATA; i++)
+			nlp->d_drivedata[i] = clpo->drivedata[i];
+		for (i = 0; i < NSPARE; i++)
+			nlp->d_spare[i] = clpo->spare[i];
 
-	lp->d_secpercyl = clp->secpercyl;
-	lp->d_secperunit = clp->secperunit;
-	lp->d_secpercyl = clp->secpercyl;
-	lp->d_secperunit = clp->secperunit;
-	lp->d_sparespertrack = clp->sparespertrack;
-	lp->d_sparespercyl = clp->sparespercyl;
-	lp->d_acylinders = clp->acylinders;
-	lp->d_rpm = clp->rpm;
-	lp->d_interleave = clp->cfg_ilv;
-	lp->d_trackskew = clp->cfg_sof;
-	lp->d_cylskew = clp->cylskew;
-	lp->d_headswitch = clp->headswitch;
+		nlp->d_magic2 = clpo->magic2;
+		nlp->d_checksum = clpo->checksum;
+		nlp->d_npartitions = clpo->partitions;
+		nlp->d_bbsize = clpo->bbsize;
+		nlp->d_sbsize = clpo->sbsize;
+		bcopy(clpo->vid_4, &nlp->d_partitions[0], sizeof(struct partition) * 4);
+		bcopy(clpo->cfg_4, &nlp->d_partitions[4], sizeof(struct partition) * 12);
+#if 0
+		nlp->d_checksum = 0;
+		nlp->d_checksum = dkcksum(nlp);
+#endif
+	} else {
+		nlp->d_magic = clp->magic1;
+		nlp->d_type = clp->type;
+		nlp->d_subtype = clp->subtype;
+		strncpy(nlp->d_typename, clp->vid_vd, 16);
+		strncpy(nlp->d_packname, clp->packname, 16);
+		nlp->d_secsize = clp->cfg_psm;
+		nlp->d_nsectors = clp->cfg_spt;
+		nlp->d_ncylinders = clp->cfg_trk; /* trk is really num of cyl! */
+		nlp->d_ntracks = clp->cfg_hds;
 
-	/* this silly table is for winchester drives */
-	switch (clp->cfg_ssr) {
-	case 0:
-		lp->d_trkseek = 0;
-		break;
-	case 1:
-		lp->d_trkseek = 6;
-		break;
-	case 2:
-		lp->d_trkseek = 10;
-		break;
-	case 3:
-		lp->d_trkseek = 15;
-		break;
-	case 4:
-		lp->d_trkseek = 20;
-		break;
-	default:
-		lp->d_trkseek = 0;
+		nlp->d_secpercyl = clp->secpercyl;
+		nlp->d_secperunit = clp->secperunit;
+		nlp->d_secpercyl = clp->secpercyl;
+		nlp->d_secperunit = clp->secperunit;
+		nlp->d_sparespertrack = clp->sparespertrack;
+		nlp->d_sparespercyl = clp->sparespercyl;
+		nlp->d_acylinders = clp->acylinders;
+		nlp->d_rpm = clp->rpm;
+		nlp->d_interleave = clp->cfg_ilv;
+		nlp->d_trackskew = clp->cfg_sof;
+		nlp->d_cylskew = clp->cylskew;
+		nlp->d_headswitch = clp->headswitch;
+
+		/* this silly table is for winchester drives */
+		switch (clp->cfg_ssr) {
+		case 0:
+			nlp->d_trkseek = 0;
+			break;
+		case 1:
+			nlp->d_trkseek = 6;
+			break;
+		case 2:
+			nlp->d_trkseek = 10;
+			break;
+		case 3:
+			nlp->d_trkseek = 15;
+			break;
+		case 4:
+			nlp->d_trkseek = 20;
+			break;
+		default:
+			nlp->d_trkseek = 0;
+		}
+		nlp->d_flags = clp->flags;
+		for (i = 0; i < NDDATA; i++)
+			nlp->d_drivedata[i] = clp->drivedata[i];
+		for (i = 0; i < NSPARE; i++)
+			nlp->d_spare[i] = clp->spare[i];
+
+		nlp->d_magic2 = clp->magic2;
+		nlp->d_checksum = clp->checksum;
+		nlp->d_npartitions = clp->partitions;
+		nlp->d_bbsize = clp->bbsize;
+		nlp->d_sbsize = clp->sbsize;
+		bcopy(clp->vid_4, &nlp->d_partitions[0], sizeof(struct partition) * 4);
+		bcopy(clp->cfg_4, &nlp->d_partitions[4], sizeof(struct partition) * 12);
+#if 0
+		nlp->d_checksum = 0;
+		nlp->d_checksum = dkcksum(nlp);
+#endif
 	}
-	lp->d_flags = clp->flags;
-	for (i = 0; i < NDDATA; i++)
-		lp->d_drivedata[i] = clp->drivedata[i];
-	for (i = 0; i < NSPARE; i++)
-		lp->d_spare[i] = clp->spare[i];
+	{
+		int oldcksum;
 
-	lp->d_magic2 = clp->magic2;
-	lp->d_checksum = clp->checksum;
-	lp->d_npartitions = clp->partitions;
-	lp->d_bbsize = clp->bbsize;
-	lp->d_sbsize = clp->sbsize;
-	bcopy(clp->vid_4, &lp->d_partitions[0], sizeof(struct partition) * 4);
-	bcopy(clp->cfg_4, &lp->d_partitions[4], sizeof(struct partition) * 12);
-	lp->d_checksum = 0;
-	lp->d_checksum = dkcksum(lp);
-#if DEBUG
+		oldcksum = nlp->d_checksum;
+		nlp->d_checksum = 0;
+#ifdef DEBUG
+printf("old chksum = %x new %x\n", oldcksum, dkcksum(nlp));
+	printlp(nlp, "lp disklabel");
+	printclp(clp, "clp disklabel");
+#endif
+		if ((nlp->d_magic == DISKMAGIC) && (oldcksum == dkcksum(nlp))) {
+			nlp->d_checksum = oldcksum;
+			bcopy (nlp, lp, sizeof (*lp));
+		}
+	}
+	
+#ifdef DEBUG
 	if (disksubr_debug > 0) {
 		printlp(lp, "translated label read from disk\n");
 	}
@@ -460,6 +667,10 @@ printclp(clp, str)
 {
 	int max, i;
 
+	if (clp->version == 0) {
+		printf("cannot print old version cpudisklabel\n");
+		return;
+	}
 	printf("%s\n", str);
 	printf("magic1 %x\n", clp->magic1);
 	printf("magic2 %x\n", clp->magic2);

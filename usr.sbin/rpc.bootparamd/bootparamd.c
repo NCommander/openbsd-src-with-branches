@@ -6,7 +6,7 @@
  * Various small changes by Theo de Raadt <deraadt@fsa.ca>
  * Parser rewritten (adding YP support) by Roland McGrath <roland@frob.com>
  *
- * $Id: bootparamd.c,v 1.5 1995/06/24 15:03:53 pk Exp $
+ * $Id: bootparamd.c,v 1.5 1996/12/10 15:13:31 deraadt Exp $
  */
 
 #include <sys/types.h>
@@ -39,7 +39,7 @@ int     debug = 0;
 int     dolog = 0;
 unsigned long route_addr, inet_addr();
 struct sockaddr_in my_addr;
-char   *progname;
+extern char *__progname;
 char   *bootpfile = _PATH_BOOTPARAMS;
 
 extern char *optarg;
@@ -50,6 +50,7 @@ usage()
 {
 	fprintf(stderr,
 	    "usage: rpc.bootparamd [-d] [-s] [-r router] [-f bootparmsfile]\n");
+	exit(1);
 }
 
 
@@ -63,19 +64,12 @@ main(argc, argv)
 {
 	SVCXPRT *transp;
 	int     i, s, pid;
-	char   *rindex();
 	struct hostent *he;
 	struct stat buf;
 	char   *optstring;
-	char    c;
+	int    c;
 
-	progname = rindex(argv[0], '/');
-	if (progname)
-		progname++;
-	else
-		progname = argv[0];
-
-	while ((c = getopt(argc, argv, "dsr:f:")) != EOF)
+	while ((c = getopt(argc, argv, "dsr:f:")) != -1)
 		switch (c) {
 		case 'd':
 			debug = 1;
@@ -87,10 +81,8 @@ main(argc, argv)
 			}
 			he = gethostbyname(optarg);
 			if (!he) {
-				fprintf(stderr, "%s: No such host %s\n",
-				    progname, optarg);
+				warnx("no such host: %s", optarg);
 				usage();
-				exit(1);
 			}
 			bcopy(he->h_addr, (char *) &route_addr, sizeof(route_addr));
 			break;
@@ -100,46 +92,41 @@ main(argc, argv)
 		case 's':
 			dolog = 1;
 #ifndef LOG_DAEMON
-			openlog(progname, 0, 0);
+			openlog(__progname, 0, 0);
 #else
-			openlog(progname, 0, LOG_DAEMON);
+			openlog(__progname, 0, LOG_DAEMON);
 			setlogmask(LOG_UPTO(LOG_NOTICE));
 #endif
 			break;
 		default:
 			usage();
-			exit(1);
 		}
 
-	if (stat(bootpfile, &buf)) {
-		fprintf(stderr, "%s: ", progname);
-		perror(bootpfile);
-		exit(1);
-	}
+	if (stat(bootpfile, &buf))
+		err(1, "%s", bootpfile);
+
 	if (!route_addr) {
 		get_myaddress(&my_addr);
 		bcopy(&my_addr.sin_addr.s_addr, &route_addr, sizeof(route_addr));
 	}
-	if (!debug)
-		daemon();
+	if (!debug) {
+		if (daemon(0, 0))
+			err(1, "can't detach from terminal");
+	}
 
 	(void) pmap_unset(BOOTPARAMPROG, BOOTPARAMVERS);
 
 	transp = svcudp_create(RPC_ANYSOCK);
-	if (transp == NULL) {
-		fprintf(stderr, "cannot create udp service.\n");
-		exit(1);
-	}
-	if (!svc_register(transp, BOOTPARAMPROG, BOOTPARAMVERS,
-		bootparamprog_1, IPPROTO_UDP)) {
-		fprintf(stderr,
-		    "bootparamd: unable to register BOOTPARAMPROG version %d, udp)\n",
+	if (transp == NULL)
+		errx(1, "can't create udp service");
+
+	if (!svc_register(transp, BOOTPARAMPROG, BOOTPARAMVERS, bootparamprog_1,
+	    IPPROTO_UDP))
+		errx(1, "unable to register BOOTPARAMPROG version %d, udp",
 		    BOOTPARAMVERS);
-		exit(1);
-	}
+
 	svc_run();
-	fprintf(stderr, "svc_run returned\n");
-	exit(1);
+	errx(1, "svc_run returned");
 }
 
 bp_whoami_res *
@@ -151,7 +138,7 @@ bootparamproc_whoami_1_svc(whoami, rqstp)
 	static bp_whoami_res res;
 
 	if (debug)
-		fprintf(stderr, "whoami got question for %d.%d.%d.%d\n",
+		warnx("whoami got question for %d.%d.%d.%d",
 		    255 & whoami->client_address.bp_address_u.ip_addr.net,
 		    255 & whoami->client_address.bp_address_u.ip_addr.host,
 		    255 & whoami->client_address.bp_address_u.ip_addr.lh,
@@ -170,11 +157,12 @@ bootparamproc_whoami_1_svc(whoami, rqstp)
 		goto failed;
 
 	if (debug)
-		fprintf(stderr, "This is host %s\n", he->h_name);
+		warnx("This is host %s", he->h_name);
 	if (dolog)
-		syslog(LOG_NOTICE, "This is host %s\n", he->h_name);
+		syslog(LOG_NOTICE, "This is host %s", he->h_name);
 
-	strcpy(askname, he->h_name);
+	strncpy(askname, he->h_name, sizeof askname-1);
+	askname[sizeof askname-1] = '\0';
 	if (!lookup_bootparam(askname, hostname, NULL, NULL, NULL)) {
 		res.client_name = hostname;
 		getdomainname(domain_name, MAX_MACHINE_NAME);
@@ -185,7 +173,7 @@ bootparamproc_whoami_1_svc(whoami, rqstp)
 			bcopy(&route_addr, &res.router_address.bp_address_u.ip_addr, 4);
 		}
 		if (debug)
-			fprintf(stderr, "Returning %s   %s    %d.%d.%d.%d\n",
+			warnx("Returning %s   %s    %d.%d.%d.%d",
 			    res.client_name, res.domain_name,
 			    255 & res.router_address.bp_address_u.ip_addr.net,
 			    255 & res.router_address.bp_address_u.ip_addr.host,
@@ -203,7 +191,7 @@ bootparamproc_whoami_1_svc(whoami, rqstp)
 	}
 failed:
 	if (debug)
-		fprintf(stderr, "whoami failed\n");
+		warnx("whoami failed");
 	if (dolog)
 		syslog(LOG_NOTICE, "whoami failed\n");
 	return (NULL);
@@ -215,12 +203,12 @@ bootparamproc_getfile_1_svc(getfile, rqstp)
 	bp_getfile_arg *getfile;
 	struct svc_req *rqstp;
 {
-	char   *where, *index();
+	char   *where;
 	static bp_getfile_res res;
 	int     err;
 
 	if (debug)
-		fprintf(stderr, "getfile got question for \"%s\" and file \"%s\"\n",
+		warnx("getfile got question for \"%s\" and file \"%s\"",
 		    getfile->client_name, getfile->file_id);
 
 	if (dolog)
@@ -232,7 +220,8 @@ bootparamproc_getfile_1_svc(getfile, rqstp)
 	if (!he)
 		goto failed;
 
-	strcpy(askname, he->h_name);
+	strncpy(askname, he->h_name, sizeof askname-1);
+	askname[sizeof askname-1] = '\0';
 	err = lookup_bootparam(askname, NULL, getfile->file_id,
 	    &res.server_name, &res.server_path);
 	if (err == 0) {
@@ -249,17 +238,15 @@ bootparamproc_getfile_1_svc(getfile, rqstp)
 	} else {
 failed:
 		if (debug)
-			fprintf(stderr, "getfile failed for %s\n",
-			    getfile->client_name);
+			warnx("getfile failed for %s", getfile->client_name);
 		if (dolog)
 			syslog(LOG_NOTICE,
-			    "getfile failed for %s\n", getfile->client_name);
+			    "getfile failed for %s", getfile->client_name);
 		return (NULL);
 	}
 
 	if (debug)
-		fprintf(stderr,
-		    "returning server:%s path:%s address: %d.%d.%d.%d\n",
+		warnx("returning server:%s path:%s address: %d.%d.%d.%d",
 		    res.server_name, res.server_path,
 		    255 & res.server_address.bp_address_u.ip_addr.net,
 		    255 & res.server_address.bp_address_u.ip_addr.host,
@@ -333,7 +320,7 @@ lookup_bootparam(client, client_canonical, id, server, path)
 #endif
 			/* See if this line's client is the one we are
 			 * looking for */
-			if (strcmp(word, client) != 0) {
+			if (strcasecmp(word, client) != 0) {
 				/*
 				 * If it didn't match, try getting the
 				 * canonical host name of the client
@@ -341,7 +328,7 @@ lookup_bootparam(client, client_canonical, id, server, path)
 				 * the client we are looking for
 				 */
 				struct hostent *hp = gethostbyname(word);
-				if (hp == NULL || strcmp(hp->h_name, client))
+				if (hp == NULL || strcasecmp(hp->h_name, client))
 					continue;
 			}
 			contin *= -1;

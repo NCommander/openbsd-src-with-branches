@@ -1,11 +1,13 @@
 #ifndef lint
-static char rcsid[] = "$NetBSD: main.c,v 1.7 1995/04/24 12:24:01 cgd Exp $";
+static char rcsid[] = "$NetBSD: main.c,v 1.7.6.1 1996/05/27 15:54:26 mrg Exp $";
 #endif /* not lint */
 
 /*	main.c		*/
 #include <sys/types.h>
 #include "header.h"
+#include <errno.h>
 #include <pwd.h>
+#include <stdio.h>
 #include <string.h>
 
 static char copyright[]="\nLarn is copyrighted 1986 by Noah Morgan.\n";
@@ -13,6 +15,7 @@ int srcount=0;	/* line counter for showstr()	*/
 int dropflag=0; /* if 1 then don't lookforobject() next round */
 int rmst=80;	/*	random monster creation counter		*/
 int userid;		/* the players login user id number */
+uid_t uid, euid;	/* used for security */
 char nowelcome=0,nomove=0; /* if (nomove) then don't count next iteration as a move */
 static char viewflag=0;
 	/*	if viewflag then we have done a 99 stay here and don't showcell in the main loop */
@@ -48,6 +51,9 @@ main(argc,argv)
 	char *ptr=0,*ttype;
 	struct passwd *pwe;
 
+	euid = geteuid();
+	uid = getuid();
+	seteuid(uid);	/* give up "games" if we have it */
 /*
  *	first task is to identify the player
  */
@@ -58,8 +64,8 @@ main(argc,argv)
 	  if (pwe=getpwuid(getuid())) /* can we get it from /etc/passwd? */
 		ptr = pwe->pw_name;
 	  else
-	  if ((ptr = getenv("USER")) == 0)
-		if ((ptr = getenv("LOGNAME")) == 0)
+	  if ((ptr = getenv("LOGNAME")) == 0)
+		if ((ptr = getenv("USER")) == 0)
 		  {
 		  noone: write(2, "Can't find your logname.  Who Are You?\n",39);
 		 		 exit();
@@ -72,9 +78,20 @@ main(argc,argv)
 	strcpy(loginname,ptr); /* save loginname of the user for logging purposes */
 	strcpy(logname,ptr);	/* this will be overwritten with the players name */
 	if ((ptr = getenv("HOME")) == 0) ptr = ".";
-	strcpy(savefilename, ptr);
-	strcat(savefilename, "/Larn.sav");	/* save file name in home directory */
-	sprintf(optsfile, "%s/.larnopts",ptr);	/* the .larnopts filename */
+	if (strlen(ptr) + 9 < sizeof(savefilename)) {
+		strcpy(savefilename, ptr);
+		strcat(savefilename, "/Larn.sav");	/* save file name in home directory */
+	} else {
+		fprintf(stderr, "%s/Larn.sav: %s\n", ptr, strerror(ENAMETOOLONG));
+		exit();
+	}
+	if (strlen(ptr) + 10 < sizeof(savefilename)) {
+		strcpy(optsfile, ptr);
+		strcat(optsfile, "/.larnopts");		/* the .larnopts filename */
+	} else {
+		fprintf(stderr, "%s/.larnopts: %s\n", ptr, strerror(ENAMETOOLONG));
+		exit();
+	}
 
 /*
  *	now malloc the memory for the dungeon 
@@ -141,7 +158,9 @@ main(argc,argv)
 						write(1,cmdhelp,sizeof(cmdhelp));  exit();
 
 			case 'o':	/* specify a .larnopts filename */
-						strncpy(optsfile,argv[i]+2,127);  break;
+						strncpy(optsfile,argv[i]+2,127);
+						optsfile[127] = '\0';
+						break;
 
 			default:	printf("Unknown option <%s>\n",argv[i]);  exit();
 			};
@@ -208,7 +227,7 @@ main(argc,argv)
 	drawscreen();	/*	show the initial dungeon					*/
 	predostuff = 2;	/* tell the trap functions that they must do a showplayer()
 						from here on */
-	/* nice(1);	/* games should be run niced */
+	/* nice(1); */	/* games should be run niced */
 	yrepcount = hit2flag = 0;
 	while (1)
 		{

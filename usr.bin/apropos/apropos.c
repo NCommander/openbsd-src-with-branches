@@ -1,3 +1,4 @@
+/*      $OpenBSD: apropos.c,v 1.3 1996/10/25 06:27:42 downsj Exp $      */
 /*      $NetBSD: apropos.c,v 1.5 1995/09/04 20:46:20 tls Exp $      */
 
 /*
@@ -43,7 +44,7 @@ static char copyright[] =
 #if 0
 static char sccsid[] = "@(#)apropos.c	8.8 (Berkeley) 5/4/95";
 #else
-static char rcsid[] = "$NetBSD: apropos.c,v 1.5 1995/09/04 20:46:20 tls Exp $";
+static char rcsid[] = "$OpenBSD: apropos.c,v 1.3 1996/10/25 06:27:42 downsj Exp $";
 #endif
 #endif /* not lint */
 
@@ -80,7 +81,7 @@ main(argc, argv)
 
 	conffile = NULL;
 	p_augment = p_path = NULL;
-	while ((ch = getopt(argc, argv, "C:M:m:P:")) != EOF)
+	while ((ch = getopt(argc, argv, "C:M:m:P:")) != -1)
 		switch (ch) {
 		case 'C':
 			conffile = optarg;
@@ -148,7 +149,8 @@ apropos(argv, path, buildpath)
 		if (buildpath) {
 			char hold[MAXPATHLEN + 1];
 
-			(void)sprintf(hold, "%s/%s", name, _PATH_WHATIS);
+			(void)snprintf(hold, sizeof(hold), "%s/%s", name,
+			    _PATH_WHATIS);
 			name = hold;
 		}
 

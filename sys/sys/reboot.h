@@ -1,4 +1,5 @@
-/*	$NetBSD: reboot.h,v 1.7 1994/12/13 15:01:22 mycroft Exp $	*/
+/*	$OpenBSD: reboot.h,v 1.6 1996/10/14 13:22:15 mickey Exp $	*/
+/*	$NetBSD: reboot.h,v 1.9 1996/04/22 01:23:25 christos Exp $	*/
 
 /*
  * Copyright (c) 1982, 1986, 1988, 1993, 1994
@@ -36,8 +37,8 @@
  */
 
 /*
- * Arguments to reboot system call.  These are passed to boot program
- * in r11, and on to init.
+ * Arguments to reboot system call.  These are passed to the boot program,
+ * and then on to init.
  */
 #define	RB_AUTOBOOT	0	/* flags for system auto-booting itself */
 
@@ -51,6 +52,8 @@
 #define	RB_RDONLY	0x080	/* mount root fs read-only */
 #define	RB_DUMP		0x100	/* dump kernel memory before reboot */
 #define	RB_MINIROOT	0x200	/* mini-root present in memory at boot time */
+#define	RB_CONFIG	0x400	/* change configured devices */
+#define	RB_TIMEBAD	0x800	/* don't call resettodr() in boot() */
 
 /*
  * Constants for converting boot-style device number to type,
@@ -87,3 +90,15 @@
 	(((type) << B_TYPESHIFT) | ((adaptor) << B_ADAPTORSHIFT) | \
 	((controller) << B_CONTROLLERSHIFT) | ((unit) << B_UNITSHIFT) | \
 	((partition) << B_PARTITIONSHIFT) | B_DEVMAGIC)
+
+#if	defined(_KERNEL) && !defined(_STANDALONE)
+
+__BEGIN_DECLS
+
+void	boot __P((int))
+    __attribute__((__noreturn__));
+
+__END_DECLS
+
+#endif /* _KERNEL */
+

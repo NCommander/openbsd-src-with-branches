@@ -1,4 +1,4 @@
-/*	$Id$	*/
+/*	$Id: ksrvutil.c,v 1.3 1996/09/16 18:49:03 millert Exp $	*/
 
 /*-
  * Copyright (C) 1989 by the Massachusetts Institute of Technology
@@ -232,11 +232,17 @@ print_name(char *name, char *inst, char *realm)
 static int
 get_svc_new_key(unsigned char *new_key, char *sname, char *sinst, char *srealm, char *keyfile)
 {
-    int status = KADM_SUCCESS;
+    char *dot, admin[MAXHOSTNAMELEN];
+    int status;
 
+    if ((status = krb_get_admhst(admin, srealm, 1)) != KSUCCESS)
+	return(status);
+    if ((dot = strchr(admin, '.')) != NULL)
+	*dot = '\0';
+    status = KADM_SUCCESS;
     if (((status = krb_get_svc_in_tkt(sname, sinst, srealm, PWSERV_NAME,
 				      KADM_SINST, 1, keyfile)) == KSUCCESS) &&
-	((status = kadm_init_link("changepw", KRB_MASTER, srealm)) == 
+	((status = kadm_init_link("changepw", admin, srealm)) == 
 	 KADM_SUCCESS)) {
 #ifdef NOENCRYPTION
 	(void) bzero((char *) new_key, sizeof(des_cblock));
@@ -251,9 +257,10 @@ get_svc_new_key(unsigned char *new_key, char *sname, char *sinst, char *srealm, 
 }
 
 static void
-get_key_from_password(des_cblock (*key))
+get_key_from_password(des_cblock (*key), int afskey, char *srealm)
 {
     char password[MAX_KPW_LEN];	/* storage for the password */
+    char cell[REALM_SZ], *p;
 
     if (read_long_pw_string(password, sizeof(password)-1, "Password: ", 1))
 	leave("Error reading password.", 1);
@@ -262,7 +269,14 @@ get_key_from_password(des_cblock (*key))
     (void) bzero((char *) key, sizeof(des_cblock));
     key[0] = (unsigned char) 1;
 #else /* NOENCRYPTION */
-    (void) des_string_to_key(password, key);
+    if (afskey) {
+	strcpy(cell, srealm);
+	for (p = cell; *p; p++)
+	    if (isupper(*p))
+		*p = tolower(*p);
+	afs_string_to_key(password, cell, key);
+    } else
+	(void) des_string_to_key(password, key);
 #endif /* NOENCRYPTION */
     (void) bzero((char *)password, sizeof(password));
 }    
@@ -270,12 +284,13 @@ get_key_from_password(des_cblock (*key))
 static void
 usage(void)
 {
-    (void) fprintf(stderr, "Usage: ksrvutil [-f keyfile] [-i] [-k] ");
+    (void) fprintf(stderr, "Usage: ksrvutil [-f keyfile] [-i] [-k] [-a] ");
     (void) fprintf(stderr, "{list | change | add | get}\n");
     (void) fprintf(stderr, "   -i causes the program to ask for ");
     (void) fprintf(stderr, "confirmation before changing keys.\n");
     (void) fprintf(stderr, "   -k causes the key to printed for list or ");
     (void) fprintf(stderr, "change.\n");
+    (void) fprintf(stderr, "   -a uses the AFS string-to-key.\n");
     exit(1);
 }
 
@@ -304,6 +319,7 @@ main(int argc, char **argv)
     int add = FALSE;
     int get = FALSE;
     int key = FALSE;		/* do we show keys? */
+    int afskey = FALSE;		/* do we use AFS string-to-key? */
     int arg_entered = FALSE;
     int change_this_key = FALSE;
     char databuf[BUFSIZ];
@@ -319,12 +335,15 @@ main(int argc, char **argv)
     (void) bzero((char *)backup_keyfile, sizeof(backup_keyfile));
     (void) bzero((char *)local_realm, sizeof(local_realm));
     
-    (void) sprintf(change_tkt, "/tmp/tkt_ksrvutil.%d", (int)getpid());
+    (void) snprintf(change_tkt, sizeof(change_tkt), "/tmp/tkt_ksrvutil.%d",
+		    (int)getpid());
     krb_set_tkt_string(change_tkt);
 
     /* This is used only as a default for adding keys */
-    if (krb_get_lrealm(local_realm, 1) != KSUCCESS)
-	(void) strcpy(local_realm, KRB_REALM);
+    if (krb_get_lrealm(local_realm, 1) != KSUCCESS) {
+	(void) fprintf(stderr, "%s: Unable to find local realm name\n", argv[0]);
+	exit(1);
+    }
     
     for (i = 1; i < argc; i++) {
 	if (strcmp(argv[i], "-i") == 0) 
@@ -369,6 +388,8 @@ main(int argc, char **argv)
 	    else
 		(void) strcpy(keyfile, argv[i]);
 	}
+	else if (strcmp(argv[i], "-a") == 0) 
+	    afskey++;
 	else
 	    usage();
     }
@@ -541,7 +562,7 @@ main(int argc, char **argv)
 		print_name(sname, sinst, srealm);
 		(void) printf("; version %d\n", key_vno);
 	    } while (!yn("Is this correct?"));
-	    get_key_from_password(&new_key);
+	    get_key_from_password(&new_key, afskey, srealm);
 	    if (key) {
 		(void) printf("Key: ");
 		print_key(new_key);
@@ -593,7 +614,7 @@ ksrvutil_get()
   char local_hostname[100];
 
   if (krb_get_lrealm(local_realm, 1) != KSUCCESS)
-    strcpy(local_realm, KRB_REALM);
+    strcpy(local_realm, "");
   gethostname(local_hostname, sizeof(local_hostname));
   strcpy(local_hostname, krb_get_phost(local_hostname));
   do {

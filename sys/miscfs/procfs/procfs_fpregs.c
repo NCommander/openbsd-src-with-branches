@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /*	$NetBSD: procfs_fpregs.c,v 1.4 1995/08/13 09:06:05 mycroft Exp $	*/
 
 /*

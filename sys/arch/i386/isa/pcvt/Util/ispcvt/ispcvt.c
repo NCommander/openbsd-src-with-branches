@@ -54,12 +54,19 @@ static char *id =
  *
  *---------------------------------------------------------------------------*/
 
-#include <stdio.h>
 #include <fcntl.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <unistd.h>
 #include <machine/pcvt_ioctl.h>
 
 #define DEFAULTFD 0
 
+void next __P((void));
+void usage __P((void));
+
+int
 main(argc,argv)
 int argc;
 char *argv[];
@@ -76,9 +83,9 @@ char *argv[];
 	int config = 0;	
 	int dflag = 0;
 	int fd;
-	char *device;
+	char *device = NULL;
 
-	while( (c = getopt(argc, argv, "vcd:")) != EOF)
+	while( (c = getopt(argc, argv, "vcd:")) != -1)
 	{
 		switch(c)
 		{
@@ -189,8 +196,6 @@ char *argv[];
 		fprintf(stderr,"Operating System     = %s\t", p);
 		fprintf(stderr,"OS Release Id        = %u\n", pcvtinfo.opsysrel);
 		fprintf(stderr,"PCVT_NSCREENS        = %u\t\t", pcvtinfo.nscreens);
-		fprintf(stderr,"PCVT_UPDATEFAST      = %u\n", pcvtinfo.updatefast);
-		fprintf(stderr,"PCVT_UPDATESLOW      = %u\t\t", pcvtinfo.updateslow);
 		fprintf(stderr,"PCVT_SYSBEEPF        = %u\n", pcvtinfo.sysbeepf);
 		fprintf(stderr,"PCVT_PCBURST         = %u\t\t", pcvtinfo.pcburst);
 		fprintf(stderr,"PCVT_KBD_FIFO_SZ     = %u\n\n", pcvtinfo.kbd_fifo_sz);
@@ -257,9 +262,6 @@ char *argv[];
 		fprintf(stderr,"PCVT_SIGWINCH        = %s",
 			(pcvtinfo.compile_opts & CONF_SIGWINCH) ? "ON" : "OFF");
 		next();
-		fprintf(stderr,"PCVT_SLOW_INTERRUPT  = %s",
-			(pcvtinfo.compile_opts & CONF_SLOW_INTERRUPT) ? "ON" : "OFF");
-		next();
 		fprintf(stderr,"PCVT_SW0CNOUTP       = %s",
 			(pcvtinfo.compile_opts & CONF_SW0CNOUTP) ? "ON" : "OFF");
 		next();
@@ -281,13 +283,13 @@ char *argv[];
 	{
 		fprintf(stderr,"BSD Version      = %u\n", pcvtinfo.opsys);
 		fprintf(stderr,"PCVT_NSCREENS    = %u\n", pcvtinfo.nscreens);
-		fprintf(stderr,"PCVT_UPDATEFAST  = %u\n", pcvtinfo.updatefast);
-		fprintf(stderr,"PCVT_UPDATESLOW  = %u\n", pcvtinfo.updateslow);
 		fprintf(stderr,"PCVT_SYSBEEPF    = %u\n", pcvtinfo.sysbeepf);
-		fprintf(stderr,"Compile options  = 0x%08X\n", pcvtinfo.compile_opts);
+		fprintf(stderr,"Compile options  = 0x%08X\n", (unsigned int)pcvtinfo.compile_opts);
 	}
+	exit(0);
 }
 
+void
 usage()
 {
 	fprintf(stderr,"\nispcvt - verify current video driver is the pcvt-driver\n");
@@ -298,6 +300,7 @@ usage()
 	exit(5);
 }
 
+void
 next()
 {
 	static int i = 0;

@@ -1,4 +1,4 @@
-/*	$NetBSD$ */
+/*	$OpenBSD$ */
 
 /*
  * Copyright (c) 1995 Theo de Raadt
@@ -14,7 +14,8 @@
  *    documentation and/or other materials provided with the distribution.
  * 3. All advertising materials mentioning features or use of this software
  *    must display the following acknowledgement:
- *      This product includes software developed by Theo de Raadt
+ *      This product includes software developed under OpenBSD by
+ *	Theo de Raadt for Willowglen Singapore.
  * 4. The name of the author may not be used to endorse or promote products
  *    derived from this software without specific prior written permission.
  *
@@ -51,9 +52,12 @@
 void ipicattach __P((struct device *, struct device *, void *));
 int  ipicmatch __P((struct device *, void *, void *));
 
-struct cfdriver ipiccd = {
-	NULL, "ipic", ipicmatch, ipicattach,
-	DV_DULL, sizeof(struct ipicsoftc), 0
+struct cfattach ipic_ca = {
+	sizeof(struct ipicsoftc), ipicmatch, ipicattach
+};
+
+struct cfdriver ipic_cd = {
+	NULL, "ipic", DV_DULL, 0
 };
 
 int
@@ -73,7 +77,7 @@ ipicmatch(parent, cf, args)
 int
 ipicprint(args, bus)
 	void *args;
-	char *bus;
+	const char *bus;
 {
 	struct confargs *ca = args;
 
@@ -134,12 +138,12 @@ ipicscan(parent, child, args)
 		oca.ca_ipl = cf->cf_loc[2];
 		oca.ca_vec = cf->cf_loc[3];
 		if (oca.ca_ipl > 0 && oca.ca_vec == -1)
-			oca.ca_vec = intr_freevec();
+			oca.ca_vec = intr_findvec(255, 0);
 
 		oca.ca_master = (void *)sc;
 		oca.ca_name = cf->cf_driver->cd_name;
 
-		if ((*cf->cf_driver->cd_match)(parent, cf, &oca) == 0) {
+		if ((*cf->cf_attach->ca_match)(parent, cf, &oca) == 0) {
 			unmapiodev(ipv, NBPG);
 			continue;
 		}

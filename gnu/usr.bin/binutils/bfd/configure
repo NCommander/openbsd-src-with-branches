@@ -619,7 +619,7 @@ esac
 
 
 # Make sure we can run config.sub.
-if $ac_config_sub sun4 >/dev/null 2>&1; then :
+if /bin/sh $ac_config_sub sun4 >/dev/null 2>&1; then :
 else { echo "configure: error: can not run $ac_config_sub" 1>&2; exit 1; }
 fi
 
@@ -637,7 +637,7 @@ NONE)
   esac ;;
 esac
 
-host=`$ac_config_sub $host_alias`
+host=`/bin/sh $ac_config_sub $host_alias`
 host_cpu=`echo $host | sed 's/^\(.*\)-\(.*\)-\(.*\)$/\1/'`
 host_vendor=`echo $host | sed 's/^\(.*\)-\(.*\)-\(.*\)$/\2/'`
 host_os=`echo $host | sed 's/^\(.*\)-\(.*\)-\(.*\)$/\3/'`
@@ -654,7 +654,7 @@ NONE)
   esac ;;
 esac
 
-target=`$ac_config_sub $target_alias`
+target=`/bin/sh $ac_config_sub $target_alias`
 target_cpu=`echo $target | sed 's/^\(.*\)-\(.*\)-\(.*\)$/\1/'`
 target_vendor=`echo $target | sed 's/^\(.*\)-\(.*\)-\(.*\)$/\2/'`
 target_os=`echo $target | sed 's/^\(.*\)-\(.*\)-\(.*\)$/\3/'`
@@ -671,7 +671,7 @@ NONE)
   esac ;;
 esac
 
-build=`$ac_config_sub $build_alias`
+build=`/bin/sh $ac_config_sub $build_alias`
 build_cpu=`echo $build | sed 's/^\(.*\)-\(.*\)-\(.*\)$/\1/'`
 build_vendor=`echo $build | sed 's/^\(.*\)-\(.*\)-\(.*\)$/\2/'`
 build_os=`echo $build | sed 's/^\(.*\)-\(.*\)-\(.*\)$/\3/'`
@@ -1590,6 +1590,9 @@ if test "${target}" = "${host}"; then
 EOF
 
 	;;
+  alpha*-*-openbsd*)
+	COREFILE=netbsd-core.o
+	;;
   alpha*-*-*)		COREFILE=osf-core.o ;;
   arm-*-riscix)		COREFILE=trad-core.o ;;
   hppa*-*-hpux*)	COREFILE=hpux-core.o ;;
@@ -1619,6 +1622,9 @@ EOF
 
 	;;
   i[3456]86-*-netbsd*)
+	COREFILE=netbsd-core.o
+	;;
+  i[3456]86-*-openbsd*)
 	COREFILE=netbsd-core.o
 	;;
   i[3456]86-esix-sysv3*)
@@ -1658,6 +1664,9 @@ EOF
 EOF
 
 	;;
+  mips*-*-openbsd*)
+	COREFILE=netbsd-core.o
+	;;
   mips-dec-bsd*)
 	COREFILE=trad-core.o
 	cat >> confdefs.h <<\EOF
@@ -1672,7 +1681,7 @@ EOF
 EOF
 
 	;;
-  mips-*-netbsd*)
+  mips-*-openbsd*)
 	COREFILE=netbsd-core.o
 	;;
   mips-dec-*)
@@ -1745,6 +1754,9 @@ EOF
   m68*-*-netbsd*)
 	COREFILE=netbsd-core.o
 	;;
+  m68*-*-openbsd*)
+	COREFILE=netbsd-core.o
+	;;
   m68*-apple-aux*)
 	COREFILE=trad-core.o
 	cat >> confdefs.h <<\EOF
@@ -1771,12 +1783,19 @@ EOF
   ns32k-*-netbsd*)
 	COREFILE=netbsd-core.o
 	;;
+  ns32k-*-openbsd*)
+	COREFILE=netbsd-core.o
+	;;
   rs6000-*-lynx*)	COREFILE=lynx-core.o ;;
   rs6000-*-aix4*)	COREFILE=rs6000-core.o ;;
   rs6000-*-*)		COREFILE=rs6000-core.o ;;
+  powerpc-*-*bsd*)	COREFILE=netbsd-core.o ;;
   powerpc-*-aix4*)	COREFILE=rs6000-core.o ;;
   powerpc-*-aix*)	COREFILE=rs6000-core.o ;;
   sparc-*-netbsd*)
+	COREFILE=netbsd-core.o
+	;;
+  sparc-*-openbsd*)
 	COREFILE=netbsd-core.o
 	;;
   tahoe-*-*)
@@ -1866,7 +1885,7 @@ fi
 if test -n "$enable_targets" ; then
     for targ in `echo $enable_targets | sed 's/,/ /g'`
     do
-	result=`$ac_config_sub $targ 2>/dev/null`
+	result=`/bin/sh $ac_config_sub $targ 2>/dev/null`
 	if test -n "$result" ; then
 	    canon_targets="$canon_targets $result"
 	else
@@ -1977,6 +1996,8 @@ do
     bfd_elf64_little_generic_vec) tb="$tb elf64-gen.o elf64.o $elf"
 				target64=true ;;
     bfd_elf64_sparc_vec)	tb="$tb elf64-sparc.o elf64.o $elf"
+				target64=true ;;
+    bsd_ecoffalpha_little_vec)	tb="$tb coff-alpha.o ecoff.o ecofflink.o"
 				target64=true ;;
     cisco_core_vec)		tb="$tb cisco-core.o" ;;
     demo_64_vec)		tb="$tb demo64.o aout64.o"

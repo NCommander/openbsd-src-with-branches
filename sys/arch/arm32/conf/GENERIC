@@ -13,7 +13,6 @@ maxusers	32
 options		TIMEZONE=0	# time zone to adjust RTC time by
 options		DST=0		# daylight savings time used by RTC
 options		SWAPPAGER	# paging; REQUIRED
-options		VNODEPAGER	# mmap() of files
 options		DEVPAGER	# mmap() of devices
 
 # CPU options
@@ -39,7 +38,7 @@ options		FDESC		# /dev/fd
 options		FIFO		# FIFOs; RECOMMENDED
 options		KERNFS		# /kern
 options		NULLFS		# loopback file system
-options		PORTAL		# ?
+options		PORTAL		# create sockets with open(2)
 options		PROCFS		# /proc
 options		UMAPFS		# NULLFS + uid and gid remapping
 options		UNION		# union file system
@@ -60,7 +59,7 @@ options		CCITT,LLC,HDLC	# X.25
 options		COMPAT_43
 options		COMPAT_10
 options		COMPAT_09
-options         TCP_COMPAT_42   # TCP bug compatibility with 4.2BSD
+#options         TCP_COMPAT_42   # TCP bug compatibility with 4.2BSD
 
 # Shared memory options
 
@@ -170,8 +169,8 @@ sd*	at scsibus? target ? lun ?	# SCSI disk drives
 st*	at scsibus? target ? lun ?	# SCSI tape drives
 cd*	at scsibus? target ? lun ?	# SCSI CD-ROM drives
 ch*	at scsibus? target ? lun ?	# SCSI auto-changers
-uk*	at scsibus? target ? lun ?	# SCSI unknown device
 ss*	at scsibus? target ? lun ?	# SCSI scanner
+uk*	at scsibus? target ? lun ?	# SCSI unknown device
 
 #kie*	at podulebus? slot ? offset ?
 

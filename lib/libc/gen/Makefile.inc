@@ -1,23 +1,23 @@
-#	$NetBSD: Makefile.inc,v 1.70 1995/04/25 00:06:17 jtc Exp $
-#	@(#)Makefile.inc	8.3 (Berkeley) 4/16/94
+#	$OpenBSD: Makefile.inc,v 1.7 1996/09/15 23:16:13 tholo Exp $
 
 # gen sources
 .PATH: ${.CURDIR}/arch/${MACHINE_ARCH}/gen ${.CURDIR}/gen
 
 SRCS+=	alarm.c assert.c clock.c closedir.c confstr.c ctermid.c \
-	ctype_.c daemon.c devname.c disklabel.c err.c errlist.c \
-	errno.c exec.c fnmatch.c fstab.c ftok.c fts.c getbsize.c getcap.c \
-	getcwd.c getdomainname.c getgrent.c getgrouplist.c gethostname.c \
-	getloadavg.c getlogin.c getmntinfo.c getnetgrent.c getpagesize.c \
-	getpass.c getpwent.c getsubopt.c getttyent.c getusershell.c glob.c \
-	initgroups.c isatty.c isctype.c nice.c nlist.c opendir.c pause.c \
-	popen.c psignal.c pwcache.c raise.c readdir.c rewinddir.c scandir.c \
-	seekdir.c setdomainname.c sethostname.c setjmperr.c setmode.c \
-	setproctitle.c siginterrupt.c siglist.c signal.c signame.c \
-	sigsetops.c sleep.c sysconf.c sysctl.c syslog.c telldir.c \
-	time.c times.c timezone.c tolower_.c ttyname.c ttyslot.c toupper_.c \
-	ualarm.c uname.c unvis.c usleep.c utime.c valloc.c vis.c wait.c \
-	wait3.c waitpid.c
+	ctype_.c daemon.c devname.c disklabel.c elf_hash.c err.c \
+	errx.c errlist.c errno.c exec.c fnmatch.c fstab.c ftok.c fts.c \
+	getbsize.c getcap.c getcwd.c getdomainname.c getgrent.c \
+	getgrouplist.c gethostname.c getloadavg.c getlogin.c getmntinfo.c \
+	getnetgrent.c getpagesize.c getpass.c getpwent.c getsubopt.c \
+	getttyent.c getusershell.c glob.c initgroups.c isatty.c isctype.c \
+	nice.c nlist.c opendir.c pause.c popen.c psignal.c pwcache.c raise.c \
+	readdir.c rewinddir.c scandir.c seekdir.c setdomainname.c \
+	sethostname.c setjmperr.c setmode.c setproctitle.c siginterrupt.c \
+	siglist.c signal.c signame.c sigsetops.c sleep.c sysconf.c sysctl.c \
+	syslog.c telldir.c time.c times.c timezone.c tolower_.c ttyname.c \
+	ttyslot.c toupper_.c ualarm.c uname.c unvis.c usleep.c utime.c \
+	valloc.c vis.c wait.c wait3.c waitpid.c warn.c warnx.c vwarn.c \
+	vwarnx.c verr.c verrx.c
 
 # indirect reference stubs, to be removed soon.
 SRCS+=	_err.c _errx.c _sys_errlist.c _sys_nerr.c _sys_siglist.c \
@@ -62,8 +62,8 @@ MLINKS+=directory.3 closedir.3 directory.3 dirfd.3 directory.3 opendir.3 \
 	directory.3 telldir.3
 MLINKS+=err.3 verr.3 err.3 errx.3 err.3 verrx.3 err.3 warn.3 err.3 vwarn.3 \
         err.3 warnx.3 err.3 vwarnx.3
-MLINKS+=exec.3 execl.3 exec.3 execle.3 exec.3 execlp.3 exec.3 execv.3 \
-	exec.3 execvp.3
+MLINKS+=exec.3 execl.3 exec.3 execle.3 exec.3 execlp.3 exec.3 exect.3 \
+	exec.3 execv.3 exec.3 execvp.3
 MLINKS+=fts.3 fts_open.3 fts.3 fts_read.3 fts.3 fts_children.3 \
 	fts.3 fts_set.3 fts.3 fts_close.3 
 MLINKS+=isinf.3 isnan.3

@@ -1,4 +1,5 @@
-/*	$NetBSD: udp_var.h,v 1.9 1995/06/12 00:48:09 mycroft Exp $	*/
+/*	$OpenBSD$	*/
+/*	$NetBSD: udp_var.h,v 1.12 1996/02/13 23:44:41 christos Exp $	*/
 
 /*
  * Copyright (c) 1982, 1986, 1989, 1993
@@ -42,8 +43,6 @@ struct	udpiphdr {
 	struct 	ipovly ui_i;		/* overlaid ip structure */
 	struct	udphdr ui_u;		/* udp header */
 };
-#define	ui_next		ui_i.ih_next
-#define	ui_prev		ui_i.ih_prev
 #define	ui_x1		ui_i.ih_x1
 #define	ui_pr		ui_i.ih_pr
 #define	ui_len		ui_i.ih_len
@@ -63,7 +62,7 @@ struct	udpstat {
 	u_long	udps_noport;		/* no socket on port */
 	u_long	udps_noportbcast;	/* of above, arrived as broadcast */
 	u_long	udps_fullsock;		/* not delivered, input socket full */
-	u_long	udpps_pcbcachemiss;	/* input packets missing pcb cache */
+	u_long	udps_pcbhashmiss;	/* input packets missing pcb hash */
 				/* output statistics: */
 	u_long	udps_opackets;		/* total output packets */
 };
@@ -83,11 +82,10 @@ struct	udpstat {
 struct	inpcbtable udbtable;
 struct	udpstat udpstat;
 
-void	 udp_ctlinput __P((int, struct sockaddr *, struct ip *));
+void	 *udp_ctlinput __P((int, struct sockaddr *, void *));
 void	 udp_init __P((void));
-void	 udp_input __P((struct mbuf *, int));
-int	 udp_output __P((struct inpcb *,
-	    struct mbuf *, struct mbuf *, struct mbuf *));
+void	 udp_input __P((struct mbuf *, ...));
+int	 udp_output __P((struct mbuf *, ...));
 int	 udp_sysctl __P((int *, u_int, void *, size_t *, void *, size_t));
 int	 udp_usrreq __P((struct socket *,
 	    int, struct mbuf *, struct mbuf *, struct mbuf *));

@@ -1,4 +1,4 @@
-/*	$NetBSD$ */
+/*	$OpenBSD: nvram.h,v 1.3 1996/04/28 10:56:23 deraadt Exp $ */
 
 /*
  * Copyright (c) 1995 Theo de Raadt
@@ -14,7 +14,8 @@
  *    documentation and/or other materials provided with the distribution.
  * 3. All advertising materials mentioning features or use of this software
  *    must display the following acknowledgement:
- *      This product includes software developed by Theo de Raadt
+ *	This product includes software developed under OpenBSD by
+ *	Theo de Raadt for Willowglen Singapore.
  * 4. The name of the author may not be used to endorse or promote products
  *    derived from this software without specific prior written permission.
  *
@@ -29,6 +30,9 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+
+#ifndef	_MVME68K_NVRAM_H_
+#define	_MVME68K_NVRAM_H_
 
 struct nvram_147 {
 	u_char	user[0x400];
@@ -76,3 +80,5 @@ struct nvram_16x {
 	} conf;
 	/*struct clockreg cl; */
 };
+
+#endif

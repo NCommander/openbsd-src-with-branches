@@ -1,3 +1,4 @@
+/*	$OpenBSD: if_aereg.h,v 1.2 1995/08/18 15:53:32 chopps Exp $	*/
 /*	$NetBSD: if_aereg.h,v 1.2 1995/08/18 15:53:32 chopps Exp $	*/
 
 /*

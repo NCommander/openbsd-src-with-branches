@@ -1,3 +1,4 @@
+/*	$OpenBSD: ffs_tables.c,v 1.2 1994/06/29 06:46:35 cgd Exp $	*/
 /*	$NetBSD: ffs_tables.c,v 1.2 1994/06/29 06:46:35 cgd Exp $	*/
 
 /*

@@ -1260,6 +1260,7 @@ patch_file (finfo, vers_ts, docheckout, file_info, checksum)
     int retval = 0;
     int retcode = 0;
     int fail;
+    long file_size;
     FILE *e;
     struct patch_file_data data;
 
@@ -1404,6 +1405,16 @@ patch_file (finfo, vers_ts, docheckout, file_info, checksum)
 		   patch can't handle that.  */
 		fail = 1;
 	    }
+	    else {
+		/*
+		 * Don't send a diff if just sending the entire file
+		 * would be smaller
+		 */
+		fseek(e, 0L, SEEK_END);
+		if (file_size < ftell(e))
+		    fail = 1;
+	    }
+
 	    fclose (e);
 	}
     }

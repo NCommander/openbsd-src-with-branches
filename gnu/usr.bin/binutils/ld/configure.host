@@ -23,12 +23,30 @@ alpha-*-linux*)
   HOSTING_CRT0=/usr/lib/crt0.o
   ;;
 
+alpha-*-netbsd*)
+  # The new BSD `make' has a bug: it doesn't pass empty arguments in
+  # shell commands.  So we need to make this value non-empty in order
+  # for the genscripts.sh call to work.  There's nothing magic about
+  # the value `/lib'; it's just a dummy.
+  NATIVE_LIB_DIRS=/lib
+  HOSTING_CRT0=/usr/lib/crt0.o
+  ;;
+
+alpha-*-openbsd*)
+  # The new BSD `make' has a bug: it doesn't pass empty arguments in
+  # shell commands.  So we need to make this value non-empty in order
+  # for the genscripts.sh call to work.  There's nothing magic about
+  # the value `/lib'; it's just a dummy.
+  NATIVE_LIB_DIRS=/lib
+  HOSTING_CRT0=/usr/lib/crt0.o
+  ;;
+
 alpha-*-*)
   HOSTING_CRT0=/usr/ccs/lib/crt0.o
   NATIVE_LIB_DIRS=/usr/ccs/lib
   ;;
 
-i[3456]86-*-bsd* | i[3456]86-*-freebsd* | i[3456]86-*-netbsd*)
+i[3456]86-*-bsd* | i[3456]86-*-freebsd* | i[3456]86-*-netbsd* | i[3456]86-*-openbsd*)
   # The new BSD `make' has a bug: it doesn't pass empty arguments in
   # shell commands.  So we need to make this value non-empty in order
   # for the genscripts.sh call to work.  There's nothing magic about
@@ -134,6 +152,15 @@ m88*-*-dgux*)
 m88*-motorola-sysv3)
   HOSTING_CRT0='/lib/crt0.o `if [ -f ../gcc/crtbegin.o ]; then echo ../gcc/crtbegin.o; else gcc -print-file-name=crtbegin.o; fi`'
   HOSTING_LIBS='`if [ -f ../gcc/libgcc.a ] ; then echo ../gcc/libgcc.a ; else gcc -print-libgcc-file-name; fi` -lc `if [ -f ../gcc/crtend.o ]; then echo ../gcc/crtend.o; else gcc -print-file-name=crtend.o; fi` `if [ -f ../gcc/libgcc.a ] ; then echo ../gcc/libgcc.a ; else gcc -print-libgcc-file-name; fi`'
+  ;;
+
+powerpc-*-*bsd*)
+  # The new BSD `make' has a bug: it doesn't pass empty arguments in
+  # shell commands.  So we need to make this value non-empty in order
+  # for the genscripts.sh call to work.  There's nothing magic about
+  # the value `/lib'; it's just a dummy.
+  NATIVE_LIB_DIRS=/lib
+  HOSTING_CRT0=/usr/lib/crt0.o
   ;;
 
 romp-*-*)

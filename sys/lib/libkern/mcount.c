@@ -1,4 +1,4 @@
-/*	$NetBSD: mcount.c,v 1.3 1995/03/28 20:01:02 jtc Exp $	*/
+/*	$NetBSD: mcount.c,v 1.3.6.1 1996/06/12 04:23:01 cgd Exp $	*/
 
 /*-
  * Copyright (c) 1983, 1992, 1993
@@ -34,7 +34,11 @@
  */
 
 #if !defined(lint) && !defined(_KERNEL) && defined(LIBC_SCCS)
+#if 0
 static char sccsid[] = "@(#)mcount.c	8.1 (Berkeley) 6/4/93";
+#else
+static char rcsid[] = "$NetBSD: mcount.c,v 1.3.6.1 1996/06/12 04:23:01 cgd Exp $";
+#endif
 #endif
 
 #include <sys/param.h>
@@ -55,6 +59,7 @@ static char sccsid[] = "@(#)mcount.c	8.1 (Berkeley) 6/4/93";
  * both frompcindex and frompc.  Any reasonable, modern compiler will
  * perform this optimization.
  */
+_MCOUNT_DECL(u_long frompc, u_long selfpc);
 _MCOUNT_DECL(frompc, selfpc)	/* _mcount; may be static, inline, etc */
 	register u_long frompc, selfpc;
 {
@@ -87,7 +92,14 @@ _MCOUNT_DECL(frompc, selfpc)	/* _mcount; may be static, inline, etc */
 	if (frompc > p->textsize)
 		goto done;
 
-	frompcindex = &p->froms[frompc / (p->hashfraction * sizeof(*p->froms))];
+#if (HASHFRACTION & (HASHFRACTION - 1)) == 0
+	if (p->hashfraction == HASHFRACTION)
+		frompcindex =
+		    &p->froms[frompc / (HASHFRACTION * sizeof(*p->froms))];
+	else
+#endif
+		frompcindex =
+		    &p->froms[frompc / (p->hashfraction * sizeof(*p->froms))];
 	toindex = *frompcindex;
 	if (toindex == 0) {
 		/*

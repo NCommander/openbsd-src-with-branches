@@ -1,4 +1,5 @@
-/*	$NetBSD: subr_prf.c,v 1.19 1995/06/16 10:52:17 cgd Exp $	*/
+/*	$OpenBSD: subr_prf.c,v 1.14 1996/11/29 04:53:39 kstailey Exp $	*/
+/*	$NetBSD: subr_prf.c,v 1.25 1996/04/22 01:38:46 christos Exp $	*/
 
 /*-
  * Copyright (c) 1986, 1988, 1991, 1993
@@ -55,6 +56,8 @@
 #include <sys/syslog.h>
 #include <sys/malloc.h>
 
+#include <dev/cons.h>
+
 /*
  * Note that stdarg.h and the ANSI style va_start macro is used for both
  * ANSI and traditional C compilers.
@@ -64,6 +67,9 @@
 #ifdef KADB
 #include <machine/kdbparam.h>
 #endif
+#ifdef KGDB
+#include <machine/cpu.h>
+#endif
 
 #define TOCONS	0x01
 #define TOTTY	0x02
@@ -71,12 +77,11 @@
 
 struct	tty *constty;			/* pointer to console "window" tty */
 
-extern	cnputc();			/* standard console putc */
-int	(*v_putc)() = cnputc;		/* routine to putc on virtual console */
+void	(*v_putc) __P((int)) = cnputc;	/* routine to putc on virtual console */
 
-static void  putchar __P((int ch, int flags, struct tty *tp));
-static char *ksprintn __P((u_long num, int base, int *len));
-void kprintf __P((const char *fmt, int flags, struct tty *tp, va_list ap));
+static void putchar __P((int, int, struct tty *));
+static char *ksprintn __P((u_long, int, int *));
+void kprintf __P((const char *, int, struct tty *, va_list));
 
 int consintr = 1;			/* Ok to handle console interrupts? */
 
@@ -91,29 +96,29 @@ const char *panicstr;
  * and then reboots.  If we are called twice, then we avoid trying to sync
  * the disks as this often leads to recursive panics.
  */
-#ifdef __GNUC__
-volatile void boot(int flags);	/* boot() does not return */
-volatile			/* panic() does not return */
-#endif
 void
 #ifdef __STDC__
 panic(const char *fmt, ...)
 #else
 panic(fmt, va_alist)
 	char *fmt;
+	va_dcl
 #endif
 {
+	static char panicbuf[1024];
 	int bootopt;
 	va_list ap;
 
 	bootopt = RB_AUTOBOOT | RB_DUMP;
+	va_start(ap, fmt);
 	if (panicstr)
 		bootopt |= RB_NOSYNC;
-	else
-		panicstr = fmt;
+	else {
+		vsprintf(panicbuf, fmt, ap);
+		panicstr = panicbuf;
+	}
 
-	va_start(ap, fmt);
-	printf("panic: %r\n", fmt, ap);
+	printf("panic: %:\n", fmt, ap);
 	va_end(ap);
 
 #ifdef KGDB
@@ -127,6 +132,20 @@ panic(fmt, va_alist)
 	Debugger();
 #endif
 	boot(bootopt);
+}
+
+/*
+ *	Partial support (the failure case) of the assertion facility
+ *	commonly found in userland.
+ */
+void
+__assert(t, f, l, e)
+	const char *t, *f, *e;
+	int l;
+{
+
+	panic("kernel %sassertion \"%s\" failed: file \"%s\", line %d\n",
+	    t, e, f, l);
 }
 
 /*
@@ -151,6 +170,7 @@ uprintf(const char *fmt, ...)
 #else
 uprintf(fmt, va_alist)
 	char *fmt;
+	va_dcl
 #endif
 {
 	register struct proc *p = curproc;
@@ -195,6 +215,7 @@ tprintf(tpr_t tpr, const char *fmt, ...)
 tprintf(tpr, fmt, va_alist)
 	tpr_t tpr;
 	char *fmt;
+	va_dcl
 #endif
 {
 	register struct session *sess = (struct session *)tpr;
@@ -225,6 +246,7 @@ ttyprintf(struct tty *tp, const char *fmt, ...)
 ttyprintf(tp, fmt, va_alist)
 	struct tty *tp;
 	char *fmt;
+	va_dcl
 #endif
 {
 	va_list ap;
@@ -248,6 +270,7 @@ log(int level, const char *fmt, ...)
 log(level, fmt, va_alist)
 	int level;
 	char *fmt;
+	va_dcl
 #endif
 {
 	register int s;
@@ -275,17 +298,18 @@ logpri(level)
 	register char *p;
 
 	putchar('<', TOLOG, NULL);
-	for (p = ksprintn((u_long)level, 10, NULL); ch = *p--;)
+	for (p = ksprintn((u_long)level, 10, NULL); (ch = *p--) != 0;)
 		putchar(ch, TOLOG, NULL);
 	putchar('>', TOLOG, NULL);
 }
 
-void
+int
 #ifdef __STDC__
 addlog(const char *fmt, ...)
 #else
 addlog(fmt, va_alist)
 	char *fmt;
+	va_dcl
 #endif
 {
 	register int s;
@@ -302,14 +326,16 @@ addlog(fmt, va_alist)
 		va_end(ap);
 	}
 	logwakeup();
+	return (0);
 }
 
-void
+int
 #ifdef __STDC__
 printf(const char *fmt, ...)
 #else
 printf(fmt, va_alist)
 	char *fmt;
+	va_dcl
 #endif
 {
 	va_list ap;
@@ -323,6 +349,7 @@ printf(fmt, va_alist)
 	if (!panicstr)
 		logwakeup();
 	consintr = savintr;		/* reenable interrupts */
+	return (0);
 }
 
 /*
@@ -347,14 +374,14 @@ printf(fmt, va_alist)
  *
  *	reg=3<BITTWO,BITONE>
  *
- * The format %r passes an additional format string and argument list
+ * The format %: passes an additional format string and argument list
  * recursively.  Its usage is:
  *
  * fn(char *fmt, ...)
  * {
  *	va_list ap;
  *	va_start(ap, fmt);
- *	printf("prefix: %r: suffix\n", fmt, ap);
+ *	printf("prefix: %: suffix\n", fmt, ap);
  *	va_end(ap);
  * }
  *
@@ -377,13 +404,19 @@ kprintf(fmt, flags, tp, ap)
 	for (;;) {
 		padc = ' ';
 		width = 0;
-		while ((ch = *(u_char *)fmt++) != '%') {
+		while ((ch = *(const u_char *)fmt++) != '%') {
 			if (ch == '\0')
 				return;
 			putchar(ch, flags, tp);
 		}
 		lflag = 0;
-reswitch:	switch (ch = *(u_char *)fmt++) {
+reswitch:	switch (ch = *(const u_char *)fmt++) {
+		case '\0':
+			while(*--fmt != '%')
+				;
+			fmt++;
+			putchar('%', flags, tp);
+			continue;
 		case '0':
 			padc = '0';
 			goto reswitch;
@@ -402,13 +435,13 @@ reswitch:	switch (ch = *(u_char *)fmt++) {
 		case 'b':
 			ul = va_arg(ap, int);
 			p = va_arg(ap, char *);
-			for (q = ksprintn(ul, *p++, NULL); ch = *q--;)
+			for (q = ksprintn(ul, *p++, NULL); (ch = *q--) != 0;)
 				putchar(ch, flags, tp);
 
 			if (!ul)
 				break;
 
-			for (tmp = 0; n = *p++;) {
+			for (tmp = 0; (n = *p++) != 0;) {
 				if (ul & (1 << (n - 1))) {
 					putchar(tmp ? ',' : '<', flags, tp);
 					for (; (n = *p) > ' '; ++p)
@@ -424,14 +457,14 @@ reswitch:	switch (ch = *(u_char *)fmt++) {
 		case 'c':
 			putchar(va_arg(ap, int), flags, tp);
 			break;
-		case 'r':
+		case ':':
 			p = va_arg(ap, char *);
 			kprintf(p, flags, tp, va_arg(ap, va_list));
 			break;
 		case 's':
 			if ((p = va_arg(ap, char *)) == NULL)
 				p = "(null)";
-			while (ch = *p++)
+			while ((ch = *p++) != 0)
 				putchar(ch, flags, tp);
 			break;
 		case 'd':
@@ -463,7 +496,7 @@ number:			p = ksprintn(ul, base, &tmp);
 			if (width && (width -= tmp) > 0)
 				while (width--)
 					putchar(padc, flags, tp);
-			while (ch = *p--)
+			while ((ch = *p--) != 0)
 				putchar(ch, flags, tp);
 			break;
 		default:
@@ -518,11 +551,13 @@ putchar(c, flags, tp)
 /*
  * Scaled down version of sprintf(3).
  */
+int
 #ifdef __STDC__
-sprintf(char *buf, const char *cfmt, ...)
+vsprintf(char *buf, const char *cfmt, va_list ap)
 #else
-sprintf(buf, cfmt, va_alist)
+vsprintf(buf, cfmt, ap)
 	char *buf, *cfmt;
+	va_list ap;
 #endif
 {
 	register const char *fmt = cfmt;
@@ -530,19 +565,23 @@ sprintf(buf, cfmt, va_alist)
 	register int ch, base;
 	u_long ul;
 	int lflag, tmp, width;
-	va_list ap;
 	char padc;
 
-	va_start(ap, cfmt);
 	for (bp = buf; ; ) {
 		padc = ' ';
 		width = 0;
-		while ((ch = *(u_char *)fmt++) != '%')
+		while ((ch = *(const u_char *)fmt++) != '%')
 			if ((*bp++ = ch) == '\0')
 				return ((bp - buf) - 1);
 
 		lflag = 0;
-reswitch:	switch (ch = *(u_char *)fmt++) {
+reswitch:	switch (ch = *(const u_char *)fmt++) {
+		case '\0':
+			while(*--fmt != '%')
+				;
+			while((*bp++ = *fmt++))
+				;
+			return ((bp - buf) - 1);
 		case '0':
 			padc = '0';
 			goto reswitch;
@@ -565,7 +604,7 @@ reswitch:	switch (ch = *(u_char *)fmt++) {
 		/* case 'r': ... break; XXX */
 		case 's':
 			p = va_arg(ap, char *);
-			while (*bp++ = *p++)
+			while ((*bp++ = *p++) != 0)
 				continue;
 			--bp;
 			break;
@@ -601,7 +640,7 @@ number:			p = ksprintn(ul, base, &tmp);
 			if (width && (width -= tmp) > 0)
 				while (width--)
 					*bp++ = padc;
-			while (ch = *p--)
+			while ((ch = *p--) != 0)
 				*bp++ = ch;
 			break;
 		default:
@@ -613,7 +652,24 @@ number:			p = ksprintn(ul, base, &tmp);
 			*bp++ = ch;
 		}
 	}
+}
+
+int
+#ifdef __STDC__
+sprintf(char *buf, const char *cfmt, ...)
+#else
+sprintf(buf, cfmt, va_alist)
+	char *buf, *cfmt;
+	va_dcl
+#endif
+{
+	va_list ap;
+	int ret;
+
+	va_start(ap, cfmt);
+	ret = vsprintf(buf, cfmt, ap);
 	va_end(ap);
+	return(ret);
 }
 
 /*

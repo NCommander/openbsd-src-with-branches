@@ -1,4 +1,5 @@
-/*	$NetBSD: malloc.h,v 1.20 1995/03/26 20:24:20 jtc Exp $	*/
+/*	$OpenBSD: malloc.h,v 1.9 1997/02/20 01:07:34 deraadt Exp $	*/
+/*	$NetBSD: malloc.h,v 1.23 1996/04/05 04:52:52 mhitch Exp $	*/
 
 /*
  * Copyright (c) 1987, 1993
@@ -38,7 +39,9 @@
 #ifndef _SYS_MALLOC_H_
 #define	_SYS_MALLOC_H_
 
+#ifndef NO_KMEMSTATS
 #define	KMEMSTATS
+#endif
 
 /*
  * flags to malloc
@@ -118,6 +121,13 @@
 #define	M_ADOSFSMNT	66	/* adosfs mount structures */
 #define	M_ADOSFSNODE	67	/* adosfs vnode private part */
 #define	M_ANODE		68	/* adosfs anode structures and tables. */
+#define	M_IPQ		69	/* IP packet queue entry */
+#define	M_AFS		70	/* Andrew File System */
+#define	M_ADOSFSBITMAP	71	/* adosfs bitmap */
+#define	M_EXT2FSNODE	72	/* EXT2FS vnode private part */
+#define	M_PFIL		73	/* packer filter */
+#define	M_TDB		75	/* Transforms database */
+#define	M_XDATA		76	/* IPsec data */
 #define	M_TEMP		84	/* misc temporary data buffers */
 #define	M_LAST		85	/* Must be last type + 1 */
 
@@ -191,8 +201,15 @@
 	"adosfs mount",	/* 66 M_ADOSFSMNT */ \
 	"adosfs node",	/* 67 M_ADOSFSNODE */ \
 	"adosfs anode",	/* 68 M_ANODE */ \
-	NULL, NULL, NULL, NULL, NULL, \
-	NULL, NULL, NULL, NULL, NULL, \
+	"IP queue ent", /* 69 M_IPQ */ \
+	"afs",		/* 70 M_AFS */ \
+	"adosfs bitmap", /* 71 M_ADOSFSBITMAP */ \
+	"EXT2FS node",	/* 72 M_EXT2FSNODE */ \
+	"pfil",		/* 73 M_PFIL */ \
+	NULL, \
+	"tdb",		/* 75 M_TDB */ \
+	"xform_data",	/* 76 M_XDATA */ \
+	NULL, NULL, \
 	NULL, NULL, NULL, NULL, NULL, \
 	"temp",		/* 84 M_TEMP */ \
 }

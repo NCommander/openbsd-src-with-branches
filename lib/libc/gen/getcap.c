@@ -1,5 +1,3 @@
-/*	$NetBSD: getcap.c,v 1.10 1995/08/24 05:26:35 mycroft Exp $	*/
-
 /*-
  * Copyright (c) 1992, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -37,11 +35,7 @@
  */
 
 #if defined(LIBC_SCCS) && !defined(lint)
-#if 0
-static char sccsid[] = "@(#)getcap.c	8.3 (Berkeley) 3/25/94";
-#else
-static char rcsid[] = "$NetBSD: getcap.c,v 1.10 1995/08/24 05:26:35 mycroft Exp $";
-#endif
+static char rcsid[] = "$OpenBSD: getcap.c,v 1.3 1996/09/15 09:31:00 tholo Exp $";
 #endif /* LIBC_SCCS and not lint */
 
 #include <sys/types.h>
@@ -198,7 +192,6 @@ getent(cap, len, db_array, fd, name, depth, nfield)
 	int fd, depth;
 {
 	DB *capdbp;
-	DBT key, data;
 	register char *r_end, *rp, **db_p;
 	int myfd, eof, foundit, retval, clen;
 	char *record, *cbuf;
@@ -248,7 +241,7 @@ getent(cap, len, db_array, fd, name, depth, nfield)
 		 */
 
 		if (fd >= 0) {
-			(void)lseek(fd, (off_t)0, L_SET);
+			(void)lseek(fd, (off_t)0, SEEK_SET);
 			myfd = 0;
 		} else {
 			(void)snprintf(pbuf, sizeof(pbuf), "%s.db", *db_p);
@@ -389,8 +382,10 @@ getent(cap, len, db_array, fd, name, depth, nfield)
 			break;
 	}
 
-	if (!foundit)
+	if (!foundit) {
+		free(record);
 		return (-1);
+	}
 
 	/*
 	 * Got the capability record, but now we have to expand all tc=name
@@ -545,8 +540,6 @@ cdbget(capdbp, bp, name)
 	char **bp, *name;
 {
 	DBT key, data;
-	char *buf;
-	int st;
 
 	key.data = name;
 	key.size = strlen(name);
@@ -654,7 +647,7 @@ cgetnext(bp, db_array)
 	char **db_array;
 {
 	size_t len;
-	int status, i, done;
+	int status, done;
 	char *cp, *line, *rp, *np, buf[BSIZE], nbuf[BSIZE];
 	u_int dummy;
 
@@ -711,7 +704,6 @@ cgetnext(bp, db_array)
 		/* 
 		 * Line points to a name line.
 		 */
-		i = 0;
 		done = 0;
 		np = nbuf;
 		for (;;) {

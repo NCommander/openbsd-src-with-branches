@@ -1,4 +1,5 @@
-#	$NetBSD: Makefile,v 1.4 1994/12/08 09:30:36 jtc Exp $
+#	$OpenBSD: Makefile,v 1.3 1996/07/26 20:35:31 dm Exp $
+#	$NetBSD: Makefile,v 1.5 1996/12/29 10:36:37 cgd Exp $
 #	@(#)Makefile	8.1 (Berkeley) 6/6/93
 #
 # Files are:
@@ -32,7 +33,7 @@
 #	CONNECT			enable ~C command (connect pgm to remote)
 
 PROG=	tip
-CFLAGS+=-I${.CURDIR} \
+CFLAGS+=-I${.CURDIR} -ansi -pedantic \
 	-DDEFBR=1200 -DDEFFS=BUFSIZ -DACULOG -DPRISTINE -DCONNECT \
 	-DV831 -DVENTEL -DHAYES -DCOURIER -DT3000
 .PATH:	${.CURDIR}/aculib

@@ -1,6 +1,9 @@
+/*	$OpenBSD: main.c,v 1.3 1996/07/03 14:01:56 niklas Exp $	*/
+/*	$NetBSD: main.c,v 1.5 1996/02/28 21:04:05 thorpej Exp $	*/
+
 /*
- * Copyright (c) 1988, 1990 Regents of the University of California.
- * All rights reserved.
+ * Copyright (c) 1988, 1990, 1993
+ *	The Regents of the University of California.  All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -32,14 +35,18 @@
  */
 
 #ifndef lint
-char copyright[] =
-"@(#) Copyright (c) 1988, 1990 Regents of the University of California.\n\
- All rights reserved.\n";
+static char copyright[] =
+"@(#) Copyright (c) 1988, 1990, 1993\n\
+	The Regents of the University of California.  All rights reserved.\n";
 #endif /* not lint */
 
 #ifndef lint
-/* from: static char sccsid[] = "@(#)main.c	5.5 (Berkeley) 12/18/92"; */
-static char *rcsid = "$Id: main.c,v 1.3 1994/02/25 03:00:29 cgd Exp $";
+#if 0
+static char sccsid[] = "@(#)main.c	8.3 (Berkeley) 5/30/95";
+static char rcsid[] = "$NetBSD: main.c,v 1.5 1996/02/28 21:04:05 thorpej Exp $";
+#else
+static char rcsid[] = "$OpenBSD: main.c,v 1.3 1996/07/03 14:01:56 niklas Exp $";
+#endif
 #endif /* not lint */
 
 #include <sys/types.h>
@@ -50,8 +57,8 @@ static char *rcsid = "$Id: main.c,v 1.3 1994/02/25 03:00:29 cgd Exp $";
 
 /* These values need to be the same as defined in libtelnet/kerberos5.c */
 /* Either define them in both places, or put in some common header file. */
-#define OPTS_FORWARD_CREDS           0x00000002
-#define OPTS_FORWARDABLE_CREDS       0x00000001
+#define OPTS_FORWARD_CREDS	0x00000002
+#define OPTS_FORWARDABLE_CREDS	0x00000001
 
 #if 0
 #define FORWARD
@@ -66,7 +73,7 @@ tninit()
     init_terminal();
 
     init_network();
-    
+
     init_telnet();
 
     init_sys();
@@ -82,17 +89,17 @@ usage()
 	fprintf(stderr, "Usage: %s %s%s%s%s\n",
 	    prompt,
 #ifdef	AUTHENTICATION
-	    " [-8] [-E] [-K] [-L] [-X atype] [-a] [-d] [-e char] [-k realm]",
-	    "\n\t[-l user] [-f/-F] [-n tracefile] ",
+	    "[-8] [-E] [-K] [-L] [-S tos] [-X atype] [-a] [-c] [-d] [-e char]",
+	    "\n\t[-k realm] [-l user] [-f/-F] [-n tracefile] [-b hostalias ]",
 #else
-	    " [-8] [-E] [-L] [-a] [-d] [-e char] [-l user] [-n tracefile]",
-	    "\n\t",
+	    "[-8] [-E] [-L] [-S tos] [-a] [-c] [-d] [-e char] [-l user]",
+	    "\n\t[-n tracefile] [-b hostalias ]",
 #endif
 #if defined(TN3270) && defined(unix)
 # ifdef AUTHENTICATION
-	    "[-noasynch] [-noasynctty] [-noasyncnet]\n\t[-r] [-t transcom] ",
+	    "[-noasynch] [-noasynctty]\n\t[-noasyncnet] [-r] [-t transcom] ",
 # else
-	    "[-noasynch] [-noasynctty] [-noasyncnet] [-r] [-t transcom]\n\t",
+	    "[-noasynch] [-noasynctty] [-noasyncnet] [-r]\n\t[-t transcom]",
 # endif
 #else
 	    "[-r] ",
@@ -114,7 +121,7 @@ main(argc, argv)
 	extern char *optarg;
 	extern int optind;
 	int ch;
-	char *user, *strrchr();
+	char *user, *alias, *strrchr();
 #ifdef	FORWARD
 	extern int forward_flags;
 #endif	/* FORWARD */
@@ -131,12 +138,12 @@ main(argc, argv)
 	else
 		prompt = argv[0];
 
-	user = NULL;
+	user = alias = NULL;
 
 	rlogin = (strncmp(prompt, "rlog", 4) == 0) ? '~' : _POSIX_VDISABLE;
 	autologin = -1;
 
-	while ((ch = getopt(argc, argv, "8EKLS:X:acde:fFk:l:n:rt:x")) != EOF) {
+	while ((ch = getopt(argc, argv, "8EKLS:X:ab:cde:fFk:l:n:rt:x")) != -1) {
 		switch(ch) {
 		case '8':
 			eight = 3;	/* binary output and input */
@@ -189,7 +196,7 @@ main(argc, argv)
 		case 'f':
 #if defined(AUTHENTICATION) && defined(KRB5) && defined(FORWARD)
 			if (forward_flags & OPTS_FORWARD_CREDS) {
-			    fprintf(stderr, 
+			    fprintf(stderr,
 				    "%s: Only one of -f and -F allowed.\n",
 				    prompt);
 			    usage();
@@ -197,14 +204,14 @@ main(argc, argv)
 			forward_flags |= OPTS_FORWARD_CREDS;
 #else
 			fprintf(stderr,
-			 "%s: Warning: -f ignored, no Kerberos V5 support.\n", 
+			 "%s: Warning: -f ignored, no Kerberos V5 support.\n",
 				prompt);
 #endif
 			break;
 		case 'F':
 #if defined(AUTHENTICATION) && defined(KRB5) && defined(FORWARD)
 			if (forward_flags & OPTS_FORWARD_CREDS) {
-			    fprintf(stderr, 
+			    fprintf(stderr,
 				    "%s: Only one of -f and -F allowed.\n",
 				    prompt);
 			    usage();
@@ -213,7 +220,7 @@ main(argc, argv)
 			forward_flags |= OPTS_FORWARDABLE_CREDS;
 #else
 			fprintf(stderr,
-			 "%s: Warning: -F ignored, no Kerberos V5 support.\n", 
+			 "%s: Warning: -F ignored, no Kerberos V5 support.\n",
 				prompt);
 #endif
 			break;
@@ -233,6 +240,9 @@ main(argc, argv)
 		case 'l':
 			autologin = 1;
 			user = optarg;
+			break;
+		case 'b':
+			alias = optarg;
 			break;
 		case 'n':
 #if defined(TN3270) && defined(unix)
@@ -289,6 +299,10 @@ main(argc, argv)
 		if (user) {
 			*argp++ = "-l";
 			*argp++ = user;
+		}
+		if (alias) {
+			*argp++ = "-b";
+			*argp++ = alias;
 		}
 		*argp++ = argv[0];		/* host */
 		if (argc > 1)

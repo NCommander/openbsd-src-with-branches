@@ -1,4 +1,5 @@
 #!/bin/sh -
+#	$OpenBSD: lorder.sh,v 1.6 1997/01/23 02:19:58 niklas Exp $
 #	$NetBSD: lorder.sh,v 1.3 1995/04/24 07:38:52 cgd Exp $
 #
 # Copyright (c) 1990, 1993
@@ -35,9 +36,6 @@
 #	@(#)lorder.sh	8.1 (Berkeley) 6/6/93
 #
 
-PATH=/bin:/usr/bin
-export PATH
-
 # only one argument is a special case, just output the name twice
 case $# in
 	0)
@@ -49,11 +47,20 @@ case $# in
 esac
 
 # temporary files
-R=/tmp/_reference_$$
-S=/tmp/_symbol_$$
+TDIR=/tmp/_lorder$$
+R=$TDIR/reference
+S=$TDIR/symbol
+
+um=`umask`
+umask 022
+if ! mkdir $TDIR ; then
+	echo temporary directory exists $TDIR
+	exit 1
+fi
+umask $um
 
 # remove temporary files on HUP, INT, QUIT, PIPE, TERM
-trap "rm -f $R $S; exit 1" 1 2 3 13 15
+trap "rm -rf $TDIR; exit 1" 1 2 3 13 15
 
 # if the line ends in a colon, assume it's the first occurrence of a new
 # object file.  Echo it twice, just to make sure it gets into the output.
@@ -63,7 +70,7 @@ trap "rm -f $R $S; exit 1" 1 2 3 13 15
 #
 # if the line has " U " it's a globally undefined symbol, put it into
 # the reference file.
-nm -go $* | sed "
+${NM:-nm} -go $* | sed "
 	/:$/ {
 		s/://
 		s/.*/& &/
@@ -87,4 +94,4 @@ nm -go $* | sed "
 sort +1 $R -o $R
 sort +1 $S -o $S
 join -j 2 -o 1.1 2.1 $R $S
-rm -f $R $S
+rm -rf $TDIR

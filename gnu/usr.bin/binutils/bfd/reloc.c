@@ -1904,6 +1904,8 @@ ENUMDOC
 ENUM
   BFD_RELOC_ALPHA_LITERAL
 ENUMX
+  BFD_RELOC_ALPHA_LITERALSLEAZY
+ENUMX
   BFD_RELOC_ALPHA_ELF_LITERAL
 ENUMX
   BFD_RELOC_ALPHA_LITUSE
@@ -1916,6 +1918,9 @@ ENUMDOC
      section symbol.  The addend is ignored when writing, but is filled
      in with the file's GP value on reading, for convenience, as with the
      GPDISP_LO16 reloc.
+
+     The LITERALSLEAZY reloc is a hack to allow larger offsets (4x) than
+     LITERAL.
 
      The ELF_LITERAL reloc is somewhere between 16_GOTOFF and GPDISP_LO16.
      It should refer to the symbol to be referenced, as with 16_GOTOFF,

@@ -1,4 +1,5 @@
-/*	$NetBSD: route.c,v 1.14 1995/10/03 21:42:47 thorpej Exp $	*/
+/*	$OpenBSD: route.c,v 1.7 1997/01/17 07:13:00 millert Exp $	*/
+/*	$NetBSD: route.c,v 1.15 1996/05/07 02:55:06 thorpej Exp $	*/
 
 /*
  * Copyright (c) 1983, 1988, 1993
@@ -37,7 +38,7 @@
 #if 0
 static char sccsid[] = "from: @(#)route.c	8.3 (Berkeley) 3/9/94";
 #else
-static char *rcsid = "$NetBSD: route.c,v 1.14 1995/10/03 21:42:47 thorpej Exp $";
+static char *rcsid = "$OpenBSD: route.c,v 1.7 1997/01/17 07:13:00 millert Exp $";
 #endif
 #endif /* not lint */
 
@@ -55,6 +56,8 @@ static char *rcsid = "$NetBSD: route.c,v 1.14 1995/10/03 21:42:47 thorpej Exp $"
 #include <netinet/in.h>
 
 #include <netns/ns.h>
+
+#include <netipx/ipx.h>
 
 #include <sys/sysctl.h>
 
@@ -92,8 +95,8 @@ struct bits {
 };
 
 static union {
-	struct	sockaddr u_sa;
-	u_short	u_data[128];
+	struct		sockaddr u_sa;
+	u_int32_t	u_data[64];
 } pt_u;
 
 int	do_rtent = 0;
@@ -167,6 +170,9 @@ pr_family(af)
 		break;
 	case AF_NS:
 		afname = "XNS";
+		break;
+	case AF_IPX:
+		afname = "IPX";
 		break;
 	case AF_ISO:
 		afname = "ISO";
@@ -375,6 +381,10 @@ p_sockaddr(sa, flags, width)
 		cp = ns_print(sa);
 		break;
 
+	case AF_IPX:
+		cp = ipx_print(sa);
+		break;
+
 	case AF_LINK:
 	    {
 		register struct sockaddr_dl *sdl = (struct sockaddr_dl *)sa;
@@ -391,7 +401,9 @@ p_sockaddr(sa, flags, width)
 
 			cplim = "";
 			for (i = 0; i < sdl->sdl_alen; i++, lla++) {
-				cp += sprintf(cp, "%s%x", cplim, *lla);
+				cp += snprintf(cp,
+				    workbuf + sizeof (workbuf) - cp,
+				    "%s%x", cplim, *lla);
 				cplim = ":";
 			}
 			cp = workbuf;
@@ -412,9 +424,12 @@ p_sockaddr(sa, flags, width)
 		cplim = cp + sizeof(workbuf) - 6;
 		cp += sprintf(cp, "(%d)", sa->sa_family);
 		while (s < slim && cp < cplim) {
-			cp += sprintf(cp, " %02x", *s++);
+			cp += snprintf(cp, workbuf + sizeof (workbuf) - cp,
+			    " %02x", *s++);
 			if (s < slim)
-			    cp += sprintf(cp, "%02x", *s++);
+				cp += snprintf(cp,
+				    workbuf + sizeof (workbuf) - cp,
+				    "%02x", *s++);
 		}
 		cp = workbuf;
 	    }
@@ -449,7 +464,6 @@ p_rtentry(rt)
 	register struct rtentry *rt;
 {
 	static struct ifnet ifnet, *lastif;
-	static char name[16];
 
 	p_sockaddr(kgetsa(rt_key(rt)), rt->rt_flags, WID_DST);
 	p_sockaddr(kgetsa(rt->rt_gateway), RTF_HOST, WID_GW);
@@ -462,10 +476,9 @@ p_rtentry(rt)
 	if (rt->rt_ifp) {
 		if (rt->rt_ifp != lastif) {
 			kget(rt->rt_ifp, ifnet);
-			kread((u_long)ifnet.if_name, name, 16);
 			lastif = rt->rt_ifp;
 		}
-		printf(" %.15s%d%s", name, ifnet.if_unit,
+		printf(" %.16s%s", ifnet.if_xname,
 			rt->rt_nodes[0].rn_dupedkey ? " =>" : "");
 	}
 	putchar('\n');
@@ -484,7 +497,7 @@ routename(in)
 	if (first) {
 		first = 0;
 		if (gethostname(domain, MAXHOSTNAMELEN) == 0 &&
-		    (cp = index(domain, '.')))
+		    (cp = strchr(domain, '.')))
 			(void) strcpy(domain, cp + 1);
 		else
 			domain[0] = 0;
@@ -494,7 +507,7 @@ routename(in)
 		hp = gethostbyaddr((char *)&in, sizeof (struct in_addr),
 			AF_INET);
 		if (hp) {
-			if ((cp = index(hp->h_name, '.')) &&
+			if ((cp = strchr(hp->h_name, '.')) &&
 			    !strcmp(cp + 1, domain))
 				*cp = 0;
 			cp = hp->h_name;
@@ -528,30 +541,33 @@ netname(in, mask)
 	in = ntohl(in);
 	mask = ntohl(mask);
 	if (!nflag && in != INADDR_ANY) {
-		if (mask == INADDR_ANY) {
-			if (IN_CLASSA(in)) {
-				mask = IN_CLASSA_NET;
-				subnetshift = 8;
-			} else if (IN_CLASSB(in)) {
-				mask = IN_CLASSB_NET;
-				subnetshift = 8;
-			} else {
-				mask = IN_CLASSC_NET;
-				subnetshift = 4;
+		np = getnetbyaddr(in, AF_INET);
+		if (np == NULL) {
+			if (mask == INADDR_ANY) {
+				if (IN_CLASSA(in)) {
+					mask = IN_CLASSA_NET;
+					subnetshift = 8;
+				} else if (IN_CLASSB(in)) {
+					mask = IN_CLASSB_NET;
+					subnetshift = 8;
+				} else {
+					mask = IN_CLASSC_NET;
+					subnetshift = 4;
+				}
+				/*
+			 	* If there are more bits than the standard mask
+			 	* would suggest, subnets must be in use.
+			 	* Guess at the subnet mask, assuming reasonable
+			 	* width subnet fields.
+			 	*/
+				while (in &~ mask)
+					mask = (long)mask >> subnetshift;
 			}
-			/*
-			 * If there are more bits than the standard mask
-			 * would suggest, subnets must be in use.
-			 * Guess at the subnet mask, assuming reasonable
-			 * width subnet fields.
-			 */
-			while (in &~ mask)
-				mask = (long)mask >> subnetshift;
+			net = in & mask;
+			while ((mask & 1) == 0)
+				mask >>= 1, net >>= 1;
+			np = getnetbyaddr(net, AF_INET);
 		}
-		net = in & mask;
-		while ((mask & 1) == 0)
-			mask >>= 1, net >>= 1;
-		np = getnetbyaddr(net, AF_INET);
 		if (np)
 			cp = np->n_name;
 	}
@@ -595,6 +611,7 @@ rt_stats(off)
 	printf("\t%u use%s of a wildcard route\n",
 		rtstat.rts_wildcard, plural(rtstat.rts_wildcard));
 }
+
 short ns_nullh[] = {0,0,0};
 short ns_bh[] = {-1,-1,-1};
 
@@ -659,6 +676,72 @@ ns_phost(sa)
 	work.sns_addr.x_net = ns_zeronet;
 
 	p = ns_print((struct sockaddr *)&work);
+	if (strncmp("0H.", p, 3) == 0) p += 3;
+	return(p);
+}
+
+u_short ipx_nullh[] = {0,0,0};
+u_short ipx_bh[] = {0xffff,0xffff,0xffff};
+
+char *
+ipx_print(sa)
+	register struct sockaddr *sa;
+{
+	register struct sockaddr_ipx *sipx = (struct sockaddr_ipx*)sa;
+	struct ipx_addr work;
+	union { union ipx_net net_e; u_long long_e; } net;
+	u_short port;
+	static char mybuf[50], cport[10], chost[25];
+	char *host = "";
+	register char *p; register u_char *q;
+
+	work = sipx->sipx_addr;
+	port = ntohs(work.ipx_port);
+	work.ipx_port = 0;
+	net.net_e  = work.ipx_net;
+	if (ipx_nullhost(work) && net.long_e == 0) {
+		if (port != 0) {
+			sprintf(mybuf, "*.%xH", port);
+			upHex(mybuf);
+		} else
+			sprintf(mybuf, "*.*");
+		return (mybuf);
+	}
+
+	if (bcmp(ipx_bh, work.ipx_host.c_host, 6) == 0) {
+		host = "any";
+	} else if (bcmp(ipx_nullh, work.ipx_host.c_host, 6) == 0) {
+		host = "*";
+	} else {
+		q = work.ipx_host.c_host;
+		sprintf(chost, "%02x:%02x:%02x:%02x:%02x:%02x",
+			q[0], q[1], q[2], q[3], q[4], q[5]);
+		host = chost;
+	}
+	if (port)
+		sprintf(cport, ".%xH", htons(port));
+	else
+		*cport = 0;
+
+	sprintf(mybuf,"%xH.%s%s", ntohl(net.long_e), host, cport);
+	upHex(mybuf);
+	return(mybuf);
+}
+
+char *
+ipx_phost(sa)
+	struct sockaddr *sa;
+{
+	register struct sockaddr_ipx *sipx = (struct sockaddr_ipx *)sa;
+	struct sockaddr_ipx work;
+	static union ipx_net ipx_zeronet;
+	char *p;
+
+	work = *sipx;
+	work.sipx_addr.ipx_port = 0;
+	work.sipx_addr.ipx_net = ipx_zeronet;
+
+	p = ipx_print((struct sockaddr *)&work);
 	if (strncmp("0H.", p, 3) == 0) p += 3;
 	return(p);
 }

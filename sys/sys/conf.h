@@ -1,4 +1,5 @@
-/*	$NetBSD: conf.h,v 1.28 1995/08/14 05:05:55 cgd Exp $	*/
+/*	$OpenBSD: conf.h,v 1.20 1996/12/03 05:16:36 kstailey Exp $	*/
+/*	$NetBSD: conf.h,v 1.33 1996/05/03 20:03:32 christos Exp $	*/
 
 /*-
  * Copyright (c) 1990, 1993
@@ -187,6 +188,12 @@ extern struct cdevsw cdevsw[];
 	dev_init(c,n,write), dev_init(c,n,ioctl), (dev_type_stop((*))) enodev, \
 	0, seltrue, (dev_type_mmap((*))) enodev, D_TAPE }
 
+#define cdev_scanner_init(c,n) { \
+	dev_init(c,n,open), dev_init(c,n,close), dev_init(c,n,read), \
+	(dev_type_write((*))) enodev, dev_init(c,n,ioctl), \
+	(dev_type_stop((*))) nullop, \
+	0, seltrue, (dev_type_mmap((*))) enodev, 0 }
+
 /* open, close, read, write, ioctl, stop, tty */
 #define	cdev_tty_init(c,n) { \
 	dev_init(c,n,open), dev_init(c,n,close), dev_init(c,n,read), \
@@ -278,6 +285,20 @@ extern struct cdevsw cdevsw[];
 	(dev_type_stop((*))) enodev, 0, (dev_type_select((*))) enodev, \
 	(dev_type_mmap((*))) enodev }
 
+/* open, close, ioctl */
+#define       cdev_uk_init(c,n) { \
+	dev_init(c,n,open), dev_init(c,n,close), (dev_type_read((*))) enodev, \
+	(dev_type_write((*))) enodev, dev_init(c,n,ioctl), \
+	(dev_type_stop((*))) enodev, 0, (dev_type_select((*))) enodev, \
+	(dev_type_mmap((*))) enodev }
+
+/* open, close, read, ioctl */
+#define cdev_ss_init(c,n) { \
+	dev_init(c,n,open), dev_init(c,n,close), dev_init(c,n,read), \
+	(dev_type_write((*))) enodev, dev_init(c,n,ioctl), \
+	(dev_type_stop((*))) enodev, 0, seltrue, \
+	(dev_type_mmap((*))) enodev }
+
 /* open, close, ioctl, mmap */
 #define	cdev_fb_init(c,n) { \
 	dev_init(c,n,open), dev_init(c,n,close), (dev_type_read((*))) enodev, \
@@ -296,6 +317,20 @@ extern struct cdevsw cdevsw[];
 	(dev_type_read((*))) enodev, (dev_type_write((*))) enodev, \
 	(dev_type_ioctl((*))) enodev, (dev_type_stop((*))) nullop, \
 	0, (dev_type_select((*))) enodev, (dev_type_mmap((*))) enodev }
+
+/* open, close, read, ioctl */
+#define	cdev_gen_ipf(c,n) { \
+	dev_init(c,n,open), dev_init(c,n,close), dev_init(c,n,read), \
+	(dev_type_write((*))) enodev, dev_init(c,n,ioctl), \
+	(dev_type_stop((*))) enodev, 0, (dev_type_select((*))) enodev, \
+	(dev_type_mmap((*))) enodev }
+
+/* open, close, read, write, ioctl, select */
+#define	cdev_random_init(c,n) { \
+	dev_init(c,n,open), dev_init(c,n,close), dev_init(c,n,read), \
+	dev_init(c,n,write), dev_init(c,n,ioctl), (dev_type_stop((*))) enodev, \
+	0, dev_init(c,n,select), (dev_type_mmap((*))) enodev }
+void	randomattach __P((void));
 
 /* symbolic sleep message strings */
 extern char devopn[], devio[], devwait[], devin[], devout[];
@@ -339,4 +374,74 @@ struct swdevt {
 
 #ifdef _KERNEL
 extern struct swdevt swdevt[];
+
+int	chrtoblk __P((dev_t));
+int	blktochr __P((dev_t));
+int	iskmemdev __P((dev_t));
+int	iszerodev __P((dev_t));
+
+cdev_decl(filedesc);
+
+cdev_decl(log);
+
+#ifndef LKM
+# define	NLKM	0
+# define	lkmenodev	enodev
+#else
+# define	NLKM	1
+#endif
+cdev_decl(lkm);
+
+#define	ptstty		ptytty
+#define	ptsioctl	ptyioctl
+cdev_decl(pts);
+
+#define	ptctty		ptytty
+#define	ptcioctl	ptyioctl
+cdev_decl(ptc);
+
+cdev_decl(ctty);
+
+cdev_decl(audio);
+
+cdev_decl(cn);
+
+bdev_decl(vnd);
+cdev_decl(vnd);
+
+bdev_decl(ccd);
+cdev_decl(ccd);
+
+cdev_decl(ch);
+
+cdev_decl(ss);
+
+bdev_decl(sd);
+cdev_decl(sd);
+
+bdev_decl(st);
+cdev_decl(st);
+
+bdev_decl(cd);
+cdev_decl(cd);
+
+bdev_decl(rd);
+cdev_decl(rd);
+
+bdev_decl(uk);
+cdev_decl(uk);
+
+cdev_decl(bpf);
+
+cdev_decl(tun);
+
+cdev_decl(random);
+
+#ifdef COMPAT_SVR4
+# define NSVR4_NET	1
+#else
+# define NSVR4_NET	0
+#endif
+cdev_decl(svr4_net);
+
 #endif

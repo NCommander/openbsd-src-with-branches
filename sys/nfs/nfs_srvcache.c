@@ -1,4 +1,5 @@
-/*	$NetBSD: nfs_srvcache.c,v 1.10 1994/12/13 17:17:03 mycroft Exp $	*/
+/*	$OpenBSD: nfs_srvcache.c,v 1.4 1996/04/17 04:50:30 mickey Exp $	*/
+/*	$NetBSD: nfs_srvcache.c,v 1.12 1996/02/18 11:53:49 fvdl Exp $	*/
 
 /*
  * Copyright (c) 1989, 1993
@@ -35,7 +36,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  *
- *	@(#)nfs_srvcache.c	8.2 (Berkeley) 8/18/94
+ *	@(#)nfs_srvcache.c	8.3 (Berkeley) 3/30/95
  */
 
 /*
@@ -60,11 +61,14 @@
 #endif
 #include <nfs/nfsm_subs.h>
 #include <nfs/rpcv2.h>
-#include <nfs/nfsv2.h>
+#include <nfs/nfsproto.h>
 #include <nfs/nfs.h>
 #include <nfs/nfsrvcache.h>
 #include <nfs/nqnfs.h>
+#include <nfs/nfs_var.h>
 
+extern struct nfsstats nfsstats;
+extern int nfsv2_procid[NFS_NPROCS];
 long numnfsrvcache, desirednfsrvcache = NFSRVCACHESIZ;
 
 #define	NFSRCHASH(xid) \
@@ -90,15 +94,18 @@ int nonidempotent[NFS_NPROCS] = {
 	FALSE,
 	FALSE,
 	FALSE,
+	TRUE,
+	TRUE,
+	TRUE,
+	TRUE,
+	TRUE,
+	TRUE,
+	TRUE,
+	TRUE,
+	TRUE,
 	FALSE,
-	TRUE,
-	TRUE,
-	TRUE,
-	TRUE,
-	TRUE,
-	TRUE,
-	TRUE,
-	TRUE,
+	FALSE,
+	FALSE,
 	FALSE,
 	FALSE,
 	FALSE,
@@ -109,7 +116,7 @@ int nonidempotent[NFS_NPROCS] = {
 };
 
 /* True iff the rpc reply is an nfs status ONLY! */
-static int repliesstatus[NFS_NPROCS] = {
+static int nfsv2_repstat[NFS_NPROCS] = {
 	FALSE,
 	FALSE,
 	FALSE,
@@ -128,16 +135,12 @@ static int repliesstatus[NFS_NPROCS] = {
 	TRUE,
 	FALSE,
 	FALSE,
-	FALSE,
-	FALSE,
-	FALSE,
-	FALSE,
-	TRUE,
 };
 
 /*
  * Initialize the server request cache list
  */
+void
 nfsrv_initcache()
 {
 
@@ -159,9 +162,10 @@ nfsrv_initcache()
  *   return DOIT
  * Update/add new request at end of lru list
  */
-nfsrv_getcache(nam, nd, repp)
-	struct mbuf *nam;
-	register struct nfsd *nd;
+int
+nfsrv_getcache(nd, slp, repp)
+	register struct nfsrv_descript *nd;
+	struct nfssvc_sock *slp;
 	struct mbuf **repp;
 {
 	register struct nfsrvcache *rp;
@@ -170,13 +174,17 @@ nfsrv_getcache(nam, nd, repp)
 	caddr_t bpos;
 	int ret;
 
-	if (nd->nd_nqlflag != NQL_NOVAL)
+	/*
+	 * Don't cache recent requests for reliable transport protocols.
+	 * (Maybe we should for the case of a reconnect, but..)
+	 */
+	if (!nd->nd_nam2)
 		return (RC_DOIT);
 loop:
 	for (rp = NFSRCHASH(nd->nd_retxid)->lh_first; rp != 0;
 	    rp = rp->rc_hash.le_next) {
 	    if (nd->nd_retxid == rp->rc_xid && nd->nd_procnum == rp->rc_proc &&
-		netaddr_match(NETFAMILY(rp), &rp->rc_haddr, nam)) {
+		netaddr_match(NETFAMILY(rp), &rp->rc_haddr, nd->nd_nam)) {
 			if ((rp->rc_flag & RC_LOCKED) != 0) {
 				rp->rc_flag |= RC_WANTED;
 				(void) tsleep((caddr_t)rp, PZERO-1, "nfsrc", 0);
@@ -195,7 +203,7 @@ loop:
 				ret = RC_DROPIT;
 			} else if (rp->rc_flag & RC_REPSTATUS) {
 				nfsstats.srvcache_nonidemdonehits++;
-				nfs_rephead(0, nd, rp->rc_status,
+				nfs_rephead(0, nd, slp, rp->rc_status,
 				   0, (u_quad_t *)0, repp, &mb, &bpos);
 				ret = RC_REPLY;
 			} else if (rp->rc_flag & RC_REPMBUF) {
@@ -242,7 +250,7 @@ loop:
 	TAILQ_INSERT_TAIL(&nfsrvlruhead, rp, rc_lru);
 	rp->rc_state = RC_INPROG;
 	rp->rc_xid = nd->nd_retxid;
-	saddr = mtod(nam, struct sockaddr_in *);
+	saddr = mtod(nd->nd_nam, struct sockaddr_in *);
 	switch (saddr->sin_family) {
 	case AF_INET:
 		rp->rc_flag |= RC_INETADDR;
@@ -251,7 +259,7 @@ loop:
 	case AF_ISO:
 	default:
 		rp->rc_flag |= RC_NAM;
-		rp->rc_nam = m_copym(nam, 0, M_COPYALL, M_WAIT);
+		rp->rc_nam = m_copym(nd->nd_nam, 0, M_COPYALL, M_WAIT);
 		break;
 	};
 	rp->rc_proc = nd->nd_procnum;
@@ -268,21 +276,20 @@ loop:
  * Update a request cache entry after the rpc has been done
  */
 void
-nfsrv_updatecache(nam, nd, repvalid, repmbuf)
-	struct mbuf *nam;
-	register struct nfsd *nd;
+nfsrv_updatecache(nd, repvalid, repmbuf)
+	register struct nfsrv_descript *nd;
 	int repvalid;
 	struct mbuf *repmbuf;
 {
 	register struct nfsrvcache *rp;
 
-	if (nd->nd_nqlflag != NQL_NOVAL)
+	if (!nd->nd_nam2)
 		return;
 loop:
 	for (rp = NFSRCHASH(nd->nd_retxid)->lh_first; rp != 0;
 	    rp = rp->rc_hash.le_next) {
 	    if (nd->nd_retxid == rp->rc_xid && nd->nd_procnum == rp->rc_proc &&
-		netaddr_match(NETFAMILY(rp), &rp->rc_haddr, nam)) {
+		netaddr_match(NETFAMILY(rp), &rp->rc_haddr, nd->nd_nam)) {
 			if ((rp->rc_flag & RC_LOCKED) != 0) {
 				rp->rc_flag |= RC_WANTED;
 				(void) tsleep((caddr_t)rp, PZERO-1, "nfsrc", 0);
@@ -295,7 +302,8 @@ loop:
 			 * the reply for non-idempotent rpc's.
 			 */
 			if (repvalid && nonidempotent[nd->nd_procnum]) {
-				if (repliesstatus[nd->nd_procnum]) {
+				if ((nd->nd_flag & ND_NFSV3) == 0 &&
+				  nfsv2_repstat[nfsv2_procid[nd->nd_procnum]]) {
 					rp->rc_status = nd->nd_repstat;
 					rp->rc_flag |= RC_REPSTATUS;
 				} else {

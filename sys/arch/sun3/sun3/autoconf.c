@@ -1,9 +1,12 @@
-/*	$NetBSD: autoconf.c,v 1.27 1995/09/26 04:02:14 gwr Exp $	*/
+/*	$OpenBSD$	*/
+/*	$NetBSD: autoconf.c,v 1.37 1996/11/20 18:57:22 gwr Exp $	*/
 
-/*
- * Copyright (c) 1994 Gordon W. Ross
- * Copyright (c) 1993 Adam Glass
+/*-
+ * Copyright (c) 1996 The NetBSD Foundation, Inc.
  * All rights reserved.
+ *
+ * This code is derived from software contributed to The NetBSD Foundation
+ * by Adam Glass and Gordon W. Ross.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -15,20 +18,23 @@
  *    documentation and/or other materials provided with the distribution.
  * 3. All advertising materials mentioning features or use of this software
  *    must display the following acknowledgement:
- *	This product includes software developed by Adam Glass.
- * 4. The name of the authors may not be used to endorse or promote products
- *    derived from this software without specific prior written permission.
+ *        This product includes software developed by the NetBSD
+ *        Foundation, Inc. and its contributors.
+ * 4. Neither the name of The NetBSD Foundation nor the names of its
+ *    contributors may be used to endorse or promote products derived
+ *    from this software without specific prior written permission.
  *
- * THIS SOFTWARE IS PROVIDED BY THE AUTHORS ``AS IS'' AND ANY EXPRESS OR
- * IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
- * OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.
- * IN NO EVENT SHALL THE AUTHORS BE LIABLE FOR ANY DIRECT, INDIRECT,
- * INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT
- * NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
- * DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
- * THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
- * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
- * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ * THIS SOFTWARE IS PROVIDED BY THE NETBSD FOUNDATION, INC. AND CONTRIBUTORS
+ * ``AS IS'' AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED
+ * TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+ * PURPOSE ARE DISCLAIMED.  IN NO EVENT SHALL THE REGENTS OR CONTRIBUTORS BE
+ * LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+ * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ * POSSIBILITY OF SUCH DAMAGE.
  */
 
 /*
@@ -54,58 +60,26 @@
 #include <vm/vm_map.h>
 
 #include <machine/autoconf.h>
+#include <machine/control.h>
 #include <machine/cpu.h>
-#include <machine/isr.h>
+#include <machine/machdep.h>
 #include <machine/pte.h>
 #include <machine/pmap.h>
 
-extern int soft1intr();
-
-void mainbusattach __P((struct device *, struct device *, void *));
-void swapgeneric();
-void swapconf(), dumpconf();
-
 int cold;
 
-struct mainbus_softc {
-	struct device mainbus_dev;
-};
-	
-struct cfdriver mainbuscd = 
-{ NULL, "mainbus", always_match, mainbusattach, DV_DULL,
-	sizeof(struct mainbus_softc), 0};
-
-void mainbusattach(parent, self, args)
-	struct device *parent;
-	struct device *self;
-	void *args;
+void
+configure()
 {
-	struct cfdata *new_match;
-	
-	printf("\n");
-	while (1) {
-		new_match = config_search(NULL, self, NULL);
-		if (!new_match) break;
-		config_attach(self, new_match, NULL, NULL);
-	}
-}
-
-void configure()
-{
-	int root_found;
-
-	/* Install non-device interrupt handlers. */
-	isr_config();
+	struct device *mainbus;
 
 	/* General device autoconfiguration. */
-	root_found = config_rootfound("mainbus", NULL);
-	if (!root_found)
+	mainbus = config_rootfound("mainbus", NULL);
+	if (mainbus == NULL)
 		panic("configure: mainbus not found");
 
-#ifdef	GENERIC
 	/* Choose root and swap devices. */
 	swapgeneric();
-#endif
 	swapconf();
 	dumpconf();
 	cold = 0;
@@ -120,13 +94,13 @@ swapconf()
 	struct swdevt *swp;
 	u_int maj;
 	int nblks;
-	
+
 	for (swp = swdevt; swp->sw_dev != NODEV; swp++) {
 
 		maj = major(swp->sw_dev);
 		if (maj > nblkdev) /* paranoid? */
 			break;
-		
+
 		if (bdevsw[maj].d_psize) {
 			nblks = (*bdevsw[maj].d_psize)(swp->sw_dev);
 			if (nblks > 0 &&
@@ -137,25 +111,31 @@ swapconf()
 	}
 }
 
-int always_match(parent, cf, args)
-	struct device *parent;
-	void *cf;
-	void *args;
-{
-	return 1;
-}
-
 /*
  * Generic "bus" support functions.
+ *
+ * bus_scan:
+ * This function is passed to config_search() by the attach function
+ * for each of the "bus" drivers (obctl, obio, obmem, vmes, vmel).
+ * The purpose of this function is to copy the "locators" into our
+ * confargs structure, so child drivers may use the confargs both
+ * as match parameters and as temporary storage for the defaulted
+ * locator values determined in the child_match and preserved for
+ * the child_attach function.  If the bus attach functions just
+ * used config_found, then we would not have an opportunity to
+ * setup the confargs for each child match and attach call.
+ *
+ * bus_print:
+ * Just prints out the final (non-default) locators.
  */
-void bus_scan(parent, child, bustype)
+int
+bus_scan(parent, child, aux)
 	struct device *parent;
-	void *child;
-	int bustype;
+	void *child, *aux;
 {
 	struct cfdata *cf = child;
-	struct confargs ca;
-	cfmatch_t match;
+	struct confargs *ca = aux;
+	cfmatch_t mf;
 
 #ifdef	DIAGNOSTIC
 	if (parent->dv_cfdata->cf_driver->cd_indirect)
@@ -164,28 +144,41 @@ void bus_scan(parent, child, bustype)
 		panic("bus_scan: FSTATE_STAR");
 #endif
 
-	ca.ca_bustype = bustype;
-	ca.ca_paddr  = cf->cf_loc[0];
-	ca.ca_intpri = cf->cf_loc[1];
+	/* ca->ca_bustype set by parent */
+	ca->ca_paddr  = cf->cf_loc[0];
+	ca->ca_intpri = cf->cf_loc[1];
+	ca->ca_intvec = -1;
 
-	if ((bustype == BUS_VME16) || (bustype == BUS_VME32)) {
-		ca.ca_intvec = cf->cf_loc[2];
-	} else {
-		ca.ca_intvec = -1;
+	if ((ca->ca_bustype == BUS_VME16) ||
+	    (ca->ca_bustype == BUS_VME32)) {
+		ca->ca_intvec = cf->cf_loc[2];
 	}
 
-	match = cf->cf_driver->cd_match;
-	if ((*match)(parent, cf, &ca) > 0) {
-		config_attach(parent, cf, &ca, bus_print);
+	/*
+	 * Note that this allows the match function to save
+	 * defaulted locators in the confargs that will be
+	 * preserved for the related attach call.
+	 */
+	mf = cf->cf_attach->ca_match;
+	if ((*mf)(parent, cf, ca) > 0) {
+		config_attach(parent, cf, ca, bus_print);
 	}
+	return (0);
 }
 
+/*
+ * Print out the confargs.  The parent name is non-NULL
+ * when there was no match found by config_found().
+ */
 int
 bus_print(args, name)
 	void *args;
-	char *name;
+	const char *name;
 {
 	struct confargs *ca = args;
+
+	if (name)
+		printf("%s:", name);
 
 	if (ca->ca_paddr != -1)
 		printf(" addr 0x%x", ca->ca_paddr);
@@ -193,8 +186,8 @@ bus_print(args, name)
 		printf(" level %d", ca->ca_intpri);
 	if (ca->ca_intvec != -1)
 		printf(" vector 0x%x", ca->ca_intvec);
-	/* XXXX print flags? */
-	return(QUIET);
+
+	return(UNCONF);
 }
 
 extern vm_offset_t tmp_vpages[];
@@ -268,8 +261,8 @@ char *
 bus_mapin(bustype, paddr, sz)
 	int bustype, paddr, sz;
 {
-	int off, pa, pgs, pmt;
-	vm_offset_t va;
+	int off, pa, pmt;
+	vm_offset_t va, retval;
 
 	if (bustype & ~3)
 		return (NULL);
@@ -286,9 +279,55 @@ bus_mapin(bustype, paddr, sz)
 	va = kmem_alloc_wait(kernel_map, sz);
 	if (va == 0)
 		panic("bus_mapin");
+	retval = va + off;
 
 	/* Map it to the specified bus. */
+#if 0	/* XXX */
+	/* This has a problem with wrap-around... */
 	pmap_map((int)va, pa | pmt, pa + sz, VM_PROT_ALL);
+#else
+	do {
+		pmap_enter(pmap_kernel(), va, pa | pmt, VM_PROT_ALL, FALSE);
+		va += NBPG;
+		pa += NBPG;
+	} while ((sz -= NBPG) > 0);
+#endif
 
-	return ((char*)(va + off));
-}	
+	return ((char*)retval);
+}
+
+/* from hp300: badaddr() */
+int
+peek_word(addr)
+	register caddr_t addr;
+{
+	label_t		faultbuf;
+	register int	x;
+
+	nofault = &faultbuf;
+	if (setjmp(&faultbuf)) {
+		nofault = NULL;
+		return(-1);
+	}
+	x = *(volatile u_short *)addr;
+	nofault = NULL;
+	return(x);
+}
+
+/* from hp300: badbaddr() */
+int
+peek_byte(addr)
+	register caddr_t addr;
+{
+	label_t		faultbuf;
+	register int	x;
+
+	nofault = &faultbuf;
+	if (setjmp(&faultbuf)) {
+		nofault = NULL;
+		return(-1);
+	}
+	x = *(volatile u_char *)addr;
+	nofault = NULL;
+	return(x);
+}

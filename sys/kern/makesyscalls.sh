@@ -1,5 +1,6 @@
 #! /bin/sh -
-#	$NetBSD: makesyscalls.sh,v 1.17 1995/10/07 06:28:31 mycroft Exp $
+#	$OpenBSD: makesyscalls.sh,v 1.18 1996/03/15 01:25:12 cgd Exp $
+#	$NetBSD: makesyscalls.sh,v 1.18 1996/03/15 01:25:12 cgd Exp $
 #
 # Copyright (c) 1994 Christopher G. Demetriou
 # All rights reserved.
@@ -42,7 +43,12 @@ case $# in
 esac
 
 # source the config file.
-. $1
+case $1 in
+    /*)	. $1
+	;;
+    *)	. ./$1
+	;;
+esac
 
 # the config file sets the following variables:
 #	sysnames	the syscall names file
@@ -108,6 +114,9 @@ s/\$//g
 ' < $2 | $awk "
 $toupper
 BEGIN {
+	# to allow nested #if/#else/#endif sets
+	savedepth = 0
+
 	sysnames = \"$sysnames\"
 	sysprotos = \"$sysprotos\"
 	sysnumhdr = \"$sysnumhdr\"
@@ -177,17 +186,30 @@ $1 ~ /^#[ 	]*if/ {
 	print > sysent
 	print > sysprotos
 	print > sysnames
-	savesyscall = syscall
+	savesyscall[++savedepth] = syscall
 	next
 }
 $1 ~ /^#[ 	]*else/ {
 	print > sysent
 	print > sysprotos
 	print > sysnames
-	syscall = savesyscall
+	if (savedepth <= 0) {
+		printf "%s: line %d: unbalenced #else\n", \
+		    infile, NR
+		exit 1
+	}
+	syscall = savesyscall[savedepth]
 	next
 }
 $1 ~ /^#/ {
+	if ($1 ~ /^#[       ]*endif/) {
+		if (savedepth <= 0) {
+			printf "%s: line %d: unbalenced #endif\n", \
+			    infile, NR
+			exit 1
+		}
+		savedepth--;
+	}
 	print > sysent
 	print > sysprotos
 	print > sysnames

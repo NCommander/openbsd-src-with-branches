@@ -1,7 +1,8 @@
-/*	$NetBSD: if_fpa.c,v 1.2 1995/08/19 04:35:25 cgd Exp $	*/
+/*	$OpenBSD: if_fpa.c,v 1.15 1996/10/21 22:56:40 thorpej Exp $	*/
+/*	$NetBSD: if_fpa.c,v 1.15 1996/10/21 22:56:40 thorpej Exp $	*/
 
 /*-
- * Copyright (c) 1995 Matt Thomas (thomas@lkg.dec.com)
+ * Copyright (c) 1995, 1996 Matt Thomas <matt@3am-software.com>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -22,19 +23,19 @@
  * THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ *
+ * Id: if_fpa.c,v 1.8 1996/05/17 01:15:18 thomas Exp
+ *
  */
 
 /*
  * DEC PDQ FDDI Controller; code for BSD derived operating systems
- *
- * Written by Matt Thomas
  *
  *   This module supports the DEC DEFPA PCI FDDI Controller
  */
 
 
 #include <sys/param.h>
-#include <sys/systm.h>
 #include <sys/kernel.h>
 #include <sys/mbuf.h>
 #include <sys/protosw.h>
@@ -44,7 +45,7 @@
 #include <sys/malloc.h>
 #if defined(__FreeBSD__)
 #include <sys/devconf.h>
-#elif defined(__bsdi__) || defined(__NetBSD__)
+#elif defined(__bsdi__) || defined(__NetBSD__) || defined(__OpenBSD__)
 #include <sys/device.h>
 #endif
 
@@ -77,16 +78,23 @@
 #include "fpa.h"
 #include <pci/pcivar.h>
 #include <i386/isa/icu.h>
+#include <pci/pdqvar.h>
 #include <pci/pdqreg.h>
-#include <pci/pdq_os.h>
 #elif defined(__bsdi__)
+#if BSDI_VERSION < 199401
+#include <i386/isa/isavar.h>
+#include <i386/isa/icu.h>
+#define	DRQNONE		0
+#define IRQSHARE	0
+#endif
 #include <i386/pci/pci.h>
+#include <i386/pci/pdqvar.h>
 #include <i386/pci/pdqreg.h>
-#include <i386/pci/pdq_os.h>
-#elif defined(__NetBSD__)
+#elif defined(__NetBSD__) || defined(__OpenBSD__)
+#include <dev/pci/pcidevs.h>
 #include <dev/pci/pcivar.h>
-#include <dev/ic/pdqreg.h>
 #include <dev/ic/pdqvar.h>
+#include <dev/ic/pdqreg.h>
 #endif /* __NetBSD__ */
 
 
@@ -99,51 +107,34 @@
 
 #define	PCI_CFLT	0x0C	/* Configuration Latency */
 #define	PCI_CBMA	0x10	/* Configuration Base Memory Address */
+#define	PCI_CBIO	0x14	/* Configuration Base I/O Address */
 
 #if defined(__FreeBSD__)
-/*
- * This is the PCI configuration support.  Since the PDQ is available
- * on both EISA and PCI boards, one must be careful in how defines the
- * PDQ in the config file.
- */
-static char *pdq_pci_probe (pcici_t config_id, pcidi_t device_id);
-static void pdq_pci_attach(pcici_t config_id, int unit);
-static int pdq_pci_shutdown(struct kern_devconf *, int);
-static u_long pdq_pci_count;
-
-struct pci_device fpadevice = {
-    "fpa",
-    pdq_pci_probe,
-    pdq_pci_attach,
-    &pdq_pci_count,
-    pdq_pci_shutdown,
-};
-
-#ifdef DATA_SET
-DATA_SET (pcidevice_set, fpadevice);
-#endif
 static pdq_softc_t *pdqs_pci[NFPA];
 #define	PDQ_PCI_UNIT_TO_SOFTC(unit)	(pdqs_pci[unit])
-#endif /* __FreeBSD__ */
-
-#if defined(__bsdi__) || defined(__NetBSD__)
-extern struct cfdriver fpacd;
-#define	PDQ_PCI_UNIT_TO_SOFTC(unit)	((pdq_softc_t *)fpacd.cd_devs[unit])
+#if BSD >= 199506
+#define	pdq_pci_ifwatchdog		NULL
 #endif
 
-static ifnet_ret_t
-pdq_pci_ifinit(
-    int unit)
-{
-    pdq_ifinit(PDQ_PCI_UNIT_TO_SOFTC(unit));
-}
+#elif defined(__bsdi__)
+extern struct cfdriver fpacd;
+#define	PDQ_PCI_UNIT_TO_SOFTC(unit)	((pdq_softc_t *)fpacd.cd_devs[unit])
 
+#elif defined(__NetBSD__) || defined(__OpenBSD__)
+extern struct cfattach fpa_ca;
+extern struct cfdriver fpa_cd;
+#define	PDQ_PCI_UNIT_TO_SOFTC(unit)	((pdq_softc_t *)fpa_cd.cd_devs[unit])
+#define	pdq_pci_ifwatchdog		NULL
+#endif
+
+#ifndef pdq_pci_ifwatchdog
 static ifnet_ret_t
 pdq_pci_ifwatchdog(
     int unit)
 {
-    pdq_ifwatchdog(PDQ_PCI_UNIT_TO_SOFTC(unit));
+    pdq_ifwatchdog(&PDQ_PCI_UNIT_TO_SOFTC(unit)->sc_if);
 }
+#endif
 
 static int
 pdq_pci_ifintr(
@@ -152,13 +143,18 @@ pdq_pci_ifintr(
     pdq_softc_t * const sc = (pdq_softc_t *) arg;
 #ifdef __FreeBSD__
     return pdq_interrupt(sc->sc_pdq);
-#elif defined(__bsdi__) || defined(__NetBSD__)
+#elif defined(__bsdi__) || defined(__NetBSD__) || defined(__OpenBSD__)
     (void) pdq_interrupt(sc->sc_pdq);
     return 1;
 #endif
 }
 
 #if defined(__FreeBSD__)
+/*
+ * This is the PCI configuration support.  Since the PDQ is available
+ * on both EISA and PCI boards, one must be careful in how defines the
+ * PDQ in the config file.
+ */
 static char *
 pdq_pci_probe(
     pcici_t config_id,
@@ -186,7 +182,7 @@ pdq_pci_attach(
     }
 
     data = pci_conf_read(config_id, PCI_CFLT);
-    if ((data & 0xFF00) == 0) {
+    if ((data & 0xFF00) < (DEFPA_LATENCY << 8)) {
 	data &= ~0xFF00;
 	data |= DEFPA_LATENCY << 8;
 	pci_conf_write(config_id, PCI_CFLT, data);
@@ -204,7 +200,9 @@ pdq_pci_attach(
 
     sc->sc_if.if_name = "fpa";
     sc->sc_if.if_unit = unit;
-    sc->sc_pdq = pdq_initialize((void *) va_csrs, "fpa", unit,
+    sc->sc_membase = (pdq_bus_memaddr_t) va_csrs;
+    sc->sc_pdq = pdq_initialize(PDQ_BUS_PCI, sc->sc_membase,
+				sc->sc_if.if_name, sc->sc_if.if_unit,
 				(void *) sc, PDQ_DEFPA);
     if (sc->sc_pdq == NULL) {
 	free((void *) sc, M_DEVBUF);
@@ -212,7 +210,7 @@ pdq_pci_attach(
     }
     bcopy((caddr_t) sc->sc_pdq->pdq_hwaddr.lanaddr_bytes, sc->sc_ac.ac_enaddr, 6);
     pdqs_pci[unit] = sc;
-    pdq_ifattach(sc, pdq_pci_ifinit, pdq_pci_ifwatchdog);
+    pdq_ifattach(sc, pdq_pci_ifwatchdog);
     pci_map_int(config_id, pdq_pci_ifintr, (void*) sc, &net_imask);
 }
 
@@ -226,6 +224,20 @@ pdq_pci_shutdown(
     (void) dev_detach(kdc);
     return 0;
 }
+
+static u_long pdq_pci_count;
+
+struct pci_device fpadevice = {
+    "fpa",
+    pdq_pci_probe,
+    pdq_pci_attach,
+    &pdq_pci_count,
+    pdq_pci_shutdown,
+};
+
+#ifdef DATA_SET
+DATA_SET (pcidevice_set, fpadevice);
+#endif
 #elif defined(__bsdi__)
 
 static int
@@ -268,10 +280,9 @@ pdq_pci_probe(
 	       ffs(ia->ia_irq) - 1, ffs(irq) - 1);
 	return 0;
     }
-    if (ia->ia_irq == IRQUNK && (ia->ia_irq = isa_irqalloc(irq)) == 0) {
-	printf("fpa%d: error: IRQ %d is already in use\n", cf->cf_unit,
-	       ffs(irq) - 1);
-	return 0;
+    if (ia->ia_irq == IRQUNK) {
+	(void) isa_irqalloc(irq);
+	ia->ia_irq = irq;
     }
 
     /* PCI bus masters don't use host DMA channels */
@@ -290,11 +301,12 @@ pdq_pci_probe(
 
     /* Make sure the latency timer is what the DEFPA likes */
     data = pci_inl(pa, PCI_CFLT);
-    if ((data & 0xFF00) == 0) {
+    if ((data & 0xFF00) < (DEFPA_LATENCY << 8)) {
 	data &= ~0xFF00;
 	data |= DEFPA_LATENCY << 8;
 	pci_outl(pa, PCI_CFLT, data);
     }
+    ia->ia_irq |= IRQSHARE;
 
     return 1;
 }
@@ -313,9 +325,11 @@ pdq_pci_attach(
     sc->sc_if.if_unit = sc->sc_dev.dv_unit;
     sc->sc_if.if_name = "fpa";
     sc->sc_if.if_flags = 0;
+    sc->sc_membase = (pdq_bus_memaddr_t) mapphys((vm_offset_t)ia->ia_maddr, ia->ia_msize);
 
-    sc->sc_pdq = pdq_initialize((void *) mapphys((vm_offset_t)ia->ia_maddr, ia->ia_msize), "fpa",
-				sc->sc_if.if_unit, (void *) sc, PDQ_DEFPA);
+    sc->sc_pdq = pdq_initialize(PDQ_BUS_PCI, sc->sc_membase,
+				sc->sc_if.if_nme, sc->sc_if.if_unit,
+				(void *) sc, PDQ_DEFPA);
     if (sc->sc_pdq == NULL) {
 	printf("fpa%d: initialization failed\n", sc->sc_if.if_unit);
 	return;
@@ -323,7 +337,7 @@ pdq_pci_attach(
 
     bcopy((caddr_t) sc->sc_pdq->pdq_hwaddr.lanaddr_bytes, sc->sc_ac.ac_enaddr, 6);
 
-    pdq_ifattach(sc, pdq_pci_ifinit, pdq_pci_ifwatchdog);
+    pdq_ifattach(sc, pdq_pci_ifwatchdog);
 
     isa_establish(&sc->sc_id, &sc->sc_dev);
 
@@ -337,25 +351,29 @@ pdq_pci_attach(
 }
 
 struct cfdriver fpacd = {
-    0, "fpa", pdq_pci_probe, pdq_pci_attach, DV_IFNET, sizeof(pdq_softc_t)
+    0, "fpa", pdq_pci_probe, pdq_pci_attach,
+#if _BSDI_VERSION >= 199401
+    DV_IFNET,
+#endif
+    sizeof(pdq_softc_t)
 };
 
-#elif defined(__NetBSD__)
+#elif defined(__NetBSD__) || defined(__OpenBSD__)
 
 static int
-pdq_pci_probe(
+pdq_pci_match(
     struct device *parent,
     void *match,
     void *aux)
 {
     struct pci_attach_args *pa = (struct pci_attach_args *) aux;
 
-    if (PCI_VENDORID(pa->pa_id) != DEC_VENDORID)
+    if (PCI_VENDOR(pa->pa_id) != PCI_VENDOR_DEC)
 	return 0;
-    if (PCI_CHIPID(pa->pa_id) == DEFPA_CHIPID)
-	return 1;
+    if (PCI_PRODUCT(pa->pa_id) != PCI_PRODUCT_DEC_DEFPA)
+	return 0;
 
-    return 0;
+    return 1;
 }
 
 static void
@@ -364,45 +382,91 @@ pdq_pci_attach(
     struct device * const self,
     void * const aux)
 {
-    vm_offset_t va_csrs, pa_csrs;
-    pdq_uint32_t data;
     pdq_softc_t * const sc = (pdq_softc_t *) self;
     struct pci_attach_args * const pa = (struct pci_attach_args *) aux;
+    pdq_uint32_t data;
+    pci_intr_handle_t intrhandle;
+    const char *intrstr;
+    bus_addr_t csrbase;
+    bus_size_t csrsize;
+    int cacheable = 0;
 
-    data = pci_conf_read(pa->pa_tag, PCI_CFLT);
-    if ((data & 0xFF00) == 0) {
+    data = pci_conf_read(pa->pa_pc, pa->pa_tag, PCI_CFLT);
+    if ((data & 0xFF00) < (DEFPA_LATENCY << 8)) {
 	data &= ~0xFF00;
 	data |= DEFPA_LATENCY << 8;
-	pci_conf_write(pa->pa_tag, PCI_CFLT, data);
+	pci_conf_write(pa->pa_pc, pa->pa_tag, PCI_CFLT, data);
     }
 
-    if (pci_map_mem(pa->pa_tag, PCI_CBMA, &va_csrs, &pa_csrs))
-	return;
-
-    sc->sc_if.if_name = "fpa";
-    sc->sc_if.if_unit = sc->sc_dev.dv_unit;
+    bcopy(sc->sc_dev.dv_xname, sc->sc_if.if_xname, IFNAMSIZ);
     sc->sc_if.if_flags = 0;
-    sc->sc_pdq = pdq_initialize((void *) va_csrs, sc->sc_if.if_name,
-				sc->sc_if.if_unit, (void *) sc, PDQ_DEFPA);
-    if (sc->sc_pdq == NULL)
-	return;
-    bcopy((caddr_t) sc->sc_pdq->pdq_hwaddr.lanaddr_bytes, sc->sc_ac.ac_enaddr, 6);
-    pdq_ifattach(sc, pdq_pci_ifinit, pdq_pci_ifwatchdog);
+    sc->sc_if.if_softc = sc;
 
-    sc->sc_ih = pci_map_int(pa->pa_tag, PCI_IPL_NET, pdq_pci_ifintr, sc);
-    if (sc->sc_ih == NULL) {
-	printf("fpa%d: error: couldn't map interrupt\n",  sc->sc_if.if_unit);
+    /*
+     * NOTE: sc_bc is an alias for sc_csrtag and sc_membase is an
+     * alias for sc_csrhandle.  sc_iobase is not used in this front-end.
+     */
+#ifdef PDQ_IOMAPPED
+    sc->sc_csrtag = pa->pa_iot;
+    if (pci_io_find(pa->pa_pc, pa->pa_tag, PCI_CBIO, &csrbase, &csrsize)) {
+	printf("\n%s: can't find I/O space!\n", sc->sc_dev.dv_xname);
 	return;
     }
-#if 0
-    sc->sc_ats = shutdownhook_establish(pdq_hwreset, sc);
-    if (sc->sc_ats == NULL)
-	printf("fpa%d: warning: couldn't establish shutdown hook\n",
-	       sc->sc_if.if_unit);
+#else
+    sc->sc_csrtag = pa->pa_memt;
+    if (pci_mem_find(pa->pa_pc, pa->pa_tag, PCI_CBMA, &csrbase, &csrsize,
+      &cacheable)) {
+	printf("\n%s: can't find memory space!\n", sc->sc_dev.dv_xname);
+	return;
+    }
 #endif
+
+    if (bus_space_map(sc->sc_csrtag, csrbase, csrsize, cacheable,
+      &sc->sc_csrhandle)) {
+	printf("\n%s: can't map CSRs!\n", sc->sc_dev.dv_xname);
+	return;
+    }
+
+    sc->sc_pdq = pdq_initialize(sc->sc_csrtag, sc->sc_csrhandle,
+				sc->sc_if.if_xname, 0,
+				(void *) sc, PDQ_DEFPA);
+    if (sc->sc_pdq == NULL) {
+	printf("%s: initialization failed\n", sc->sc_dev.dv_xname);
+	return;
+    }
+
+    bcopy((caddr_t) sc->sc_pdq->pdq_hwaddr.lanaddr_bytes, sc->sc_ac.ac_enaddr, 6);
+    pdq_ifattach(sc, pdq_pci_ifwatchdog);
+
+    if (pci_intr_map(pa->pa_pc, pa->pa_intrtag, pa->pa_intrpin,
+		     pa->pa_intrline, &intrhandle)) {
+	printf("%s: couldn't map interrupt\n", self->dv_xname);
+	return;
+    }
+    intrstr = pci_intr_string(pa->pa_pc, intrhandle);
+    sc->sc_ih = pci_intr_establish(pa->pa_pc, intrhandle, IPL_NET, pdq_pci_ifintr,
+	sc, self->dv_xname);
+    if (sc->sc_ih == NULL) {
+	printf("%s: couldn't establish interrupt", self->dv_xname);
+	if (intrstr != NULL)
+	    printf(" at %s", intrstr);
+	printf("\n");
+	return;
+    }
+
+    sc->sc_ats = shutdownhook_establish((void (*)(void *)) pdq_hwreset, sc->sc_pdq);
+    if (sc->sc_ats == NULL)
+	printf("%s: warning: couldn't establish shutdown hook\n", self->dv_xname);
+    if (intrstr != NULL)
+	printf("%s: interrupting at %s\n", self->dv_xname, intrstr);
 }
 
-struct cfdriver fpacd = {
-    0, "fpa", pdq_pci_probe, pdq_pci_attach, DV_IFNET, sizeof(pdq_softc_t)
+struct cfattach fpa_ca = {
+    sizeof(pdq_softc_t), pdq_pci_match, pdq_pci_attach
 };
+
+struct cfdriver fpa_cd = {
+    0, "fpa", DV_IFNET
+};
+
 #endif /* __NetBSD__ */

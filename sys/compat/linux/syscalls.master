@@ -1,8 +1,9 @@
-	$NetBSD: syscalls.master,v 1.13 1995/10/07 06:27:15 mycroft Exp $
+	$OpenBSD: syscalls.master,v 1.7 1996/05/22 12:01:51 deraadt Exp $
+;	$NetBSD: syscalls.master,v 1.15 1995/12/18 14:35:10 fvdl Exp $
 
 ;	@(#)syscalls.master	8.1 (Berkeley) 7/19/93
 
-; NetBSD COMPAT_LINUX system call name/number "master" file.
+; OpenBSD COMPAT_LINUX system call name/number "master" file.
 ; (See syscalls.conf to see what it is processed into.)
 ;
 ; Fields: number type [type-dependent ...]
@@ -45,7 +46,7 @@
 
 0	NOARGS		{ int sys_nosys(void); } syscall
 1	NOARGS		{ int sys_exit(int rval); }
-2	STD		{ int linux_sys_fork(void); }
+2	NOARGS		{ int sys_fork(void); }
 3	NOARGS		{ int sys_read(int fd, char *buf, u_int nbyte); }
 4	NOARGS		{ int sys_write(int fd, char *buf, u_int nbyte); }
 5	STD		{ int linux_sys_open(char *path, int flags, int mode); }
@@ -67,8 +68,9 @@
 19	NOARGS		{ long compat_43_sys_lseek(int fd, long offset, \
 			    int whence); }
 20	NOARGS		{ pid_t sys_getpid(void); }
-21	UNIMPL		mount
-22	UNIMPL		umount
+21	STD		{ int linux_sys_mount(char *specialfile, char *dir, \
+			    char *filesystemtype, long rwflag, void *data); }
+22	STD		{ int linux_sys_umount(char *specialfile); }
 23	NOARGS		{ int sys_setuid(uid_t uid); }
 24	NOARGS		{ uid_t sys_getuid(void); }
 25	UNIMPL		stime
@@ -81,7 +83,7 @@
 31	UNIMPL		stty
 32	UNIMPL		gtty
 33	STD		{ int linux_sys_access(char *path, int flags); }
-34	UNIMPL		nice
+34	STD		{ int linux_sys_nice(int incr); }
 35	UNIMPL		ftime
 36	NOARGS		{ int sys_sync(void); }
 37	STD		{ int linux_sys_kill(int pid, int signum); }
@@ -233,3 +235,25 @@
 			    fd_set *writefds, fd_set *exceptfds, \
 			    struct timeval *timeout); }
 143	NOARGS		{ int sys_flock(int fd, int how); }
+144	STD		{ int linux_sys_msync(caddr_t addr, int len, int fl); }
+145	NOARGS		{ int sys_readv(int fd, struct iovec *iovp, \
+				u_int iovcnt); }
+146	NOARGS		{ int sys_writev(int fd, struct iovec *iovp, \
+				u_int iovcnt); }
+147	STD		{ int linux_sys_getsid(int pid); }
+148	STD		{ int linux_sys_fdatasync(int fd); }
+149	STD		{ int linux_sys___sysctl(struct linux___sysctl *lsp); }
+150	NOARGS		{ int sys_mlock(caddr_t addr, size_t len); }
+151	NOARGS		{ int sys_munlock(caddr_t addr, size_t len); }
+152	UNIMPL		mlockall
+153	UNIMPL		munlockall
+154	UNIMPL		sched_setparam
+155	UNIMPL		sched_getparam
+156	UNIMPL		sched_setscheduler
+157	UNIMPL		sched_getscheduler
+158	UNIMPL		sched_yield
+159	UNIMPL		sched_get_priority_max
+160	UNIMPL		sched_get_priority_min
+161	UNIMPL		sched_rr_get_interval
+162	UNIMPL		nanosleep
+163	UNIMPL		mremap

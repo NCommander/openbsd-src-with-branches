@@ -1,4 +1,5 @@
-/*	$NetBSD: vm_pageout.c,v 1.22 1995/06/28 02:58:51 cgd Exp $	*/
+/*	$OpenBSD: vm_pageout.c,v 1.4 1996/09/18 11:57:38 deraadt Exp $	*/
+/*	$NetBSD: vm_pageout.c,v 1.23 1996/02/05 01:54:07 christos Exp $	*/
 
 /* 
  * Copyright (c) 1991, 1993
@@ -69,6 +70,9 @@
  */
 
 #include <sys/param.h>
+#include <sys/proc.h>
+#include <sys/systm.h>
+#include <sys/kernel.h>
 
 #include <vm/vm.h>
 #include <vm/vm_page.h>
@@ -271,10 +275,22 @@ vm_pageout_page(m, object)
 	 * We must unlock the page queues first.
 	 */
 	vm_page_unlock_queues();
+
+#if 0
+	/*
+	 * vm_object_collapse might want to sleep waiting for pages which
+	 * is not allowed to do in this thread.  Anyway, we now aggressively
+	 * collapse object-chains as early as possible so this call ought
+	 * to not be very useful anyhow.  This is just an educated guess.
+	 * Not doing a collapse operation is never fatal though, so we skip
+	 * it for the time being.  Later we might add some NOWAIT option for
+	 * the collapse code to look at, if it's deemed necessary.
+	 */
 	if (object->pager == NULL)
 		vm_object_collapse(object);
+#endif
 
-	object->paging_in_progress++;
+	vm_object_paging_begin(object);
 	vm_object_unlock(object);
 
 	/*
@@ -290,7 +306,7 @@ vm_pageout_page(m, object)
 	 */
 	if ((pager = object->pager) == NULL) {
 		pager = vm_pager_allocate(PG_DFLT, (caddr_t)0, object->size,
-					  VM_PROT_ALL, (vm_offset_t)0);
+		    VM_PROT_ALL, (vm_offset_t)0);
 		if (pager != NULL)
 			vm_object_setpager(object, pager, 0, FALSE);
 	}
@@ -318,14 +334,13 @@ vm_pageout_page(m, object)
 		break;
 	case VM_PAGER_AGAIN:
 	{
-		extern int lbolt;
-
 		/*
 		 * FAIL on a write is interpreted to mean a resource
 		 * shortage, so we put pause for awhile and try again.
 		 * XXX could get stuck here.
 		 */
-		(void) tsleep((caddr_t)&lbolt, PZERO|PCATCH, "pageout", 0);
+		(void)tsleep((caddr_t)&vm_pages_needed, PZERO|PCATCH,
+		    "pageout", hz);
 		break;
 	}
 	case VM_PAGER_FAIL:
@@ -351,7 +366,7 @@ vm_pageout_page(m, object)
 	if (pageout_status != VM_PAGER_PEND) {
 		m->flags &= ~PG_BUSY;
 		PAGE_WAKEUP(m);
-		object->paging_in_progress--;
+		vm_object_paging_end(object);
 	}
 }
 
@@ -441,7 +456,7 @@ vm_pageout_cluster(m, object)
 	 * in case it blocks.
 	 */
 	vm_page_unlock_queues();
-	object->paging_in_progress++;
+	vm_object_paging_begin(object);
 	vm_object_unlock(object);
 again:
 	thread_wakeup(&cnt.v_free_count);
@@ -450,9 +465,8 @@ again:
 	 * XXX rethink this
 	 */
 	if (postatus == VM_PAGER_AGAIN) {
-		extern int lbolt;
-
-		(void) tsleep((caddr_t)&lbolt, PZERO|PCATCH, "pageout", 0);
+		(void)tsleep((caddr_t)&vm_pages_needed, PZERO|PCATCH,
+		    "pageout", 0);
 		goto again;
 	} else if (postatus == VM_PAGER_BAD)
 		panic("vm_pageout_cluster: VM_PAGER_BAD");
@@ -492,7 +506,6 @@ again:
 		if (postatus != VM_PAGER_PEND) {
 			p->flags &= ~PG_BUSY;
 			PAGE_WAKEUP(p);
-
 		}
 	}
 	/*
@@ -500,8 +513,7 @@ again:
 	 * indicator set so that we don't attempt an object collapse.
 	 */
 	if (postatus != VM_PAGER_PEND)
-		object->paging_in_progress--;
-
+		vm_object_paging_end(object);
 }
 #endif
 
@@ -512,7 +524,7 @@ again:
 void
 vm_pageout()
 {
-	(void) spl0();
+	(void)spl0();
 
 	/*
 	 *	Initialize some paging parameters.

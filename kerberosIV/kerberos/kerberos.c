@@ -1,4 +1,4 @@
-/*	$Id$	*/
+/*	$Id: kerberos.c,v 1.3 1996/09/17 23:29:37 deraadt Exp $	*/
 
 /*-
  * Copyright 1987, 1988 by the Student Information Processing Board
@@ -124,6 +124,7 @@ kerb_err_reply(struct sockaddr_in *client, KTEXT pkt, long int err, char *string
     KTEXT   e_pkt = &e_pkt_st;
     static char e_msg[128];
 
+    bzero(e_msg, sizeof e_msg);
     strcpy(e_msg, "\nKerberos error -- ");
     strcat(e_msg, string);
     cr_err_reply(e_pkt, req_name_ptr, req_inst_ptr, req_realm_ptr,
@@ -140,7 +141,9 @@ hang(void)
 	    pause();
     } else {
 	char buf[256];
-	sprintf(buf,  "Kerberos will wait %d seconds before dying so as not to loop init", pause_int);
+	(void) snprintf(buf, sizeof(buf),
+	    "Kerberos will wait %d seconds before dying so as not to loop init",
+	    pause_int);
 	klog(L_KRB_PERR, buf);
 	sleep(pause_int);
 	klog(L_KRB_PERR, "Do svedania....\n");
@@ -165,9 +168,9 @@ strtime(time_t *t)
     char *month_sname(int n);
 
     tm = localtime(t);
-    (void) sprintf(st,"%2d-%s-%02d %02d:%02d:%02d",tm->tm_mday,
-                   month_sname(tm->tm_mon + 1),tm->tm_year,
-                   tm->tm_hour, tm->tm_min, tm->tm_sec);
+    (void) snprintf(st, sizeof(st_data), "%2d-%s-%02d %02d:%02d:%02d",
+		    tm->tm_mday, month_sname(tm->tm_mon + 1), tm->tm_year,
+                    tm->tm_hour, tm->tm_min, tm->tm_sec);
     return st;
 }
 
@@ -624,7 +627,7 @@ main(int argc, char **argv)
 
     progname = argv[0];
 
-    while ((c = getopt(argc, argv, "snmp:a:l:r:")) != EOF) {
+    while ((c = getopt(argc, argv, "snmp:a:l:r:")) != -1) {
 	switch(c) {
 	case 's':
 	    /*

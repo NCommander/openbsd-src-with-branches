@@ -1,4 +1,5 @@
-/*	$NetBSD: subr_log.c,v 1.8 1994/10/30 21:47:47 cgd Exp $	*/
+/*	$OpenBSD: subr_log.c,v 1.2 1996/03/03 17:20:00 niklas Exp $	*/
+/*	$NetBSD: subr_log.c,v 1.11 1996/03/30 22:24:44 christos Exp $	*/
 
 /*
  * Copyright (c) 1982, 1986, 1993
@@ -46,6 +47,9 @@
 #include <sys/ioctl.h>
 #include <sys/msgbuf.h>
 #include <sys/file.h>
+#include <sys/signalvar.h>
+#include <sys/syslog.h>
+#include <sys/conf.h>
 
 #define LOG_RDPRI	(PZERO + 1)
 
@@ -93,7 +97,8 @@ logopen(dev, flags, mode, p)
 int
 logclose(dev, flag, mode, p)
 	dev_t dev;
-	int flag;
+	int flag, mode;
+	struct proc *p;
 {
 
 	log_open = 0;
@@ -120,8 +125,9 @@ logread(dev, uio, flag)
 			return (EWOULDBLOCK);
 		}
 		logsoftc.sc_state |= LOG_RDWAIT;
-		if (error = tsleep((caddr_t)mbp, LOG_RDPRI | PCATCH,
-		    "klog", 0)) {
+		error = tsleep((caddr_t)mbp, LOG_RDPRI | PCATCH,
+			       "klog", 0);
+		if (error) {
 			splx(s);
 			return (error);
 		}
@@ -181,7 +187,7 @@ logwakeup()
 	if (logsoftc.sc_state & LOG_ASYNC) {
 		if (logsoftc.sc_pgid < 0)
 			gsignal(-logsoftc.sc_pgid, SIGIO); 
-		else if (p = pfind(logsoftc.sc_pgid))
+		else if ((p = pfind(logsoftc.sc_pgid)) != NULL)
 			psignal(p, SIGIO);
 	}
 	if (logsoftc.sc_state & LOG_RDWAIT) {
@@ -192,11 +198,12 @@ logwakeup()
 
 /*ARGSUSED*/
 int
-logioctl(dev, com, data, flag)
+logioctl(dev, com, data, flag, p)
 	dev_t dev;
 	u_long com;
 	caddr_t data;
 	int flag;
+	struct proc *p;
 {
 	long l;
 	int s;

@@ -1,5 +1,3 @@
-/*	$NetBSD: rpc_callmsg.c,v 1.4 1995/04/29 05:26:31 cgd Exp $	*/
-
 /*
  * Sun RPC is a product of Sun Microsystems, Inc. and is provided for
  * unrestricted use provided that this legend is included on all tape
@@ -30,10 +28,8 @@
  */
 
 #if defined(LIBC_SCCS) && !defined(lint)
-/*static char *sccsid = "from: @(#)rpc_callmsg.c 1.4 87/08/11 Copyr 1984 Sun Micro";*/
-/*static char *sccsid = "from: @(#)rpc_callmsg.c	2.1 88/07/29 4.0 RPCSRC";*/
-static char *rcsid = "$NetBSD: rpc_callmsg.c,v 1.4 1995/04/29 05:26:31 cgd Exp $";
-#endif
+static char *rcsid = "$OpenBSD: rpc_callmsg.c,v 1.3 1996/08/19 08:31:45 tholo Exp $";
+#endif /* LIBC_SCCS and not lint */
 
 /*
  * rpc_callmsg.c
@@ -43,6 +39,7 @@ static char *rcsid = "$NetBSD: rpc_callmsg.c,v 1.4 1995/04/29 05:26:31 cgd Exp $
  */
 
 #include <stdlib.h>
+#include <string.h>
 #include <sys/param.h>
 
 #include <rpc/rpc.h>
@@ -86,14 +83,14 @@ xdr_callmsg(xdrs, cmsg)
 			IXDR_PUT_ENUM(buf, oa->oa_flavor);
 			IXDR_PUT_LONG(buf, oa->oa_length);
 			if (oa->oa_length) {
-				bcopy(oa->oa_base, (caddr_t)buf, oa->oa_length);
+				memcpy((caddr_t)buf, oa->oa_base, oa->oa_length);
 				buf += RNDUP(oa->oa_length) / sizeof (int32_t);
 			}
 			oa = &cmsg->rm_call.cb_verf;
 			IXDR_PUT_ENUM(buf, oa->oa_flavor);
 			IXDR_PUT_LONG(buf, oa->oa_length);
 			if (oa->oa_length) {
-				bcopy(oa->oa_base, (caddr_t)buf, oa->oa_length);
+				memcpy((caddr_t)buf, oa->oa_base, oa->oa_length);
 				/* no real need....
 				buf += RNDUP(oa->oa_length) / sizeof (int32_t);
 				*/
@@ -134,7 +131,7 @@ xdr_callmsg(xdrs, cmsg)
 						return (FALSE);
 					}
 				} else {
-					bcopy((caddr_t)buf, oa->oa_base,
+					memcpy(oa->oa_base, (caddr_t)buf,
 					    oa->oa_length);
 					/* no real need....
 					buf += RNDUP(oa->oa_length) /
@@ -168,7 +165,7 @@ xdr_callmsg(xdrs, cmsg)
 						return (FALSE);
 					}
 				} else {
-					bcopy((caddr_t)buf, oa->oa_base,
+					memcpy(oa->oa_base, (caddr_t)buf,
 					    oa->oa_length);
 					/* no real need...
 					buf += RNDUP(oa->oa_length) /

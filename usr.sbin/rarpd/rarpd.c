@@ -1,3 +1,6 @@
+/*	$OpenBSD: rarpd.c,v 1.8 1997/02/05 13:41:04 deraadt Exp $ */
+/*	$NetBSD: rarpd.c,v 1.12 1996/03/21 18:28:23 jtc Exp $	*/
+
 /*
  * Copyright (c) 1990 The Regents of the University of California.
  * All rights reserved.
@@ -25,8 +28,7 @@ char    copyright[] =
 #endif				/* not lint */
 
 #ifndef lint
-static char rcsid[] =
-"@(#) $Id: rarpd.c,v 1.8 1995/09/01 21:55:47 thorpej Exp $";
+static char rcsid[] = "$OpenBSD: rarpd.c,v 1.8 1997/02/05 13:41:04 deraadt Exp $";
 #endif
 
 
@@ -66,10 +68,11 @@ static char rcsid[] =
  * The structure for each interface.
  */
 struct if_info {
-	int     ii_fd;		/* BPF file descriptor */
-	u_char  ii_eaddr[6];	/* Ethernet address of this interface */
-	u_long  ii_ipaddr;	/* IP address of this interface */
-	u_long  ii_netmask;	/* subnet or net mask */
+	int     ii_fd;			/* BPF file descriptor */
+	char	ii_name[IFNAMSIZ];	/* if name, e.g. "en0" */
+	u_char  ii_eaddr[6];		/* Ethernet address of this interface */
+	u_int32_t ii_ipaddr;		/* IP address of this interface */
+	u_int32_t ii_netmask;		/* subnet or net mask */
 	struct if_info *ii_next;
 };
 /*
@@ -83,24 +86,24 @@ void   init_one      __P((char *));
 void   init_all      __P((void));
 void   rarp_loop     __P((void));
 void   lookup_eaddr  __P((char *, u_char *));
-void   lookup_ipaddr __P((char *, u_long *, u_long *));
+void   lookup_ipaddr __P((char *, u_int32_t *, u_int32_t *));
 void   usage         __P((void));
 void   rarp_process  __P((struct if_info *, u_char *));
-void   rarp_reply    __P((struct if_info *, struct ether_header *, u_long));
-void   update_arptab __P((u_char *, u_long));
+void   rarp_reply    __P((struct if_info *, struct ether_header *, u_int32_t));
+void   update_arptab __P((u_char *, u_int32_t));
 void   err           __P((int, const char *,...));
 void   debug         __P((const char *,...));
-u_long ipaddrtonetmask __P((u_long));
+u_int32_t ipaddrtonetmask __P((u_int32_t));
 
 #ifdef REQUIRE_TFTPBOOT
-int    rarp_bootable __P((u_long));
+int    rarp_bootable __P((u_int32_t));
 #endif
 
 int     aflag = 0;		/* listen on "all" interfaces  */
 int     dflag = 0;		/* print debugging messages */
 int     fflag = 0;		/* don't fork */
 
-void
+int
 main(argc, argv)
 	int     argc;
 	char  **argv;
@@ -111,7 +114,7 @@ main(argc, argv)
 	extern char *optarg;
 	extern int optind, opterr;
 
-	if (name = strrchr(argv[0], '/'))
+	if ((name = strrchr(argv[0], '/')))
 		++name;
 	else
 		name = argv[0];
@@ -122,7 +125,7 @@ main(argc, argv)
 	openlog(name, LOG_PID | LOG_CONS, LOG_DAEMON);
 
 	opterr = 0;
-	while ((op = getopt(argc, argv, "adf")) != EOF) {
+	while ((op = getopt(argc, argv, "adf")) != -1) {
 		switch (op) {
 		case 'a':
 			++aflag;
@@ -182,7 +185,9 @@ main(argc, argv)
 		}
 	}
 	rarp_loop();
+	exit(0);
 }
+
 /*
  * Add 'ifname' to the interface list.  Lookup its IP address and network
  * mask and Ethernet address, and open a BPF file for it.
@@ -192,16 +197,28 @@ init_one(ifname)
 	char   *ifname;
 {
 	struct if_info *p;
+	int fd;
+
+	/* first check to see if this "if" was already opened? */
+	for(p = iflist; p; p = p->ii_next)
+		if (!strncmp(p->ii_name, ifname, IFNAMSIZ))
+			return;
+
+	fd = rarp_open(ifname);
+	if (fd < 0)
+		return;
 
 	p = (struct if_info *)malloc(sizeof(*p));
 	if (p == 0) {
 		err(FATAL, "malloc: %s", strerror(errno));
 		/* NOTREACHED */
 	}
+
 	p->ii_next = iflist;
 	iflist = p;
 
-	p->ii_fd = rarp_open(ifname);
+	p->ii_fd = fd;
+	strncpy(p->ii_name, ifname, IFNAMSIZ);
 	lookup_eaddr(ifname, p->ii_eaddr);
 	lookup_ipaddr(ifname, &p->ii_ipaddr, &p->ii_netmask);
 }
@@ -213,10 +230,10 @@ init_one(ifname)
 void
 init_all()
 {
-	char inbuf[8192];
+	char *inbuf = NULL;
 	struct ifconf ifc;
 	struct ifreq *ifr;
-	int fd;
+	int fd, inlen = 8192;
 	int i, len;
 
 	if ((fd = socket(AF_INET, SOCK_DGRAM, 0)) < 0) {
@@ -224,18 +241,30 @@ init_all()
 		/* NOTREACHED */
 	}
 
-	ifc.ifc_len = sizeof(inbuf);
-	ifc.ifc_buf = inbuf;
-	if (ioctl(fd, SIOCGIFCONF, (caddr_t)&ifc) < 0 ||
-	    ifc.ifc_len < sizeof(struct ifreq)) {
-		err(FATAL, "init_all: SIOCGIFCONF: %s", strerror(errno));
-		/* NOTREACHED */
+	while (1) {
+		ifc.ifc_len = inlen;
+		ifc.ifc_buf = inbuf = realloc(inbuf, inlen);
+		if (inbuf == NULL) {
+			close(fd);
+			err(FATAL, "init_all: malloc: %s", strerror(errno));
+		}
+		if (ioctl(fd, SIOCGIFCONF, (char *)&ifc) < 0) {
+			(void) close(fd);
+			free(inbuf);
+			err(FATAL, "init_all: SIOCGIFCONF: %s", strerror(errno));
+			/* NOTREACHED */
+		}
+		if (ifc.ifc_len + sizeof(*ifr) < inlen)
+			break;
+		inlen *= 2;
 	}
+
 	ifr = ifc.ifc_req;
 	for (i = 0; i < ifc.ifc_len;
 	     i += len, ifr = (struct ifreq *)((caddr_t)ifr + len)) {
 		len = sizeof(ifr->ifr_name) + ifr->ifr_addr.sa_len;
 		if (ioctl(fd, SIOCGIFFLAGS, (caddr_t)ifr) < 0) {
+			free(inbuf);
 			err(FATAL, "init_all: SIOCGIFFLAGS: %s",
 			    strerror(errno));
 			/* NOTREACHED */
@@ -245,6 +274,7 @@ init_all()
 			continue;
 		init_one(ifr->ifr_name);
 	}
+	free(inbuf);
 	(void) close(fd);
 }
 
@@ -312,6 +342,10 @@ rarp_open(device)
 	}
 	(void) strncpy(ifr.ifr_name, device, sizeof ifr.ifr_name);
 	if (ioctl(fd, BIOCSETIF, (caddr_t) & ifr) < 0) {
+		if (aflag) {	/* for -a skip not ethernet interfaces */
+			close(fd);
+			return -1;
+		}
 		err(FATAL, "BIOCSETIF: %s", strerror(errno));
 		/* NOTREACHED */
 	}
@@ -322,6 +356,10 @@ rarp_open(device)
 		/* NOTREACHED */
 	}
 	if (dlt != DLT_EN10MB) {
+		if (aflag) {	/* for -a skip not ethernet interfaces */
+			close(fd);
+			return -1;
+		}
 		err(FATAL, "%s is not an ethernet", device);
 		/* NOTREACHED */
 	}
@@ -464,7 +502,7 @@ rarp_loop()
  */
 int
 rarp_bootable(addr)
-	u_long  addr;
+	u_int32_t  addr;
 {
 	register struct dirent *dent;
 	register DIR *d;
@@ -499,11 +537,11 @@ rarp_bootable(addr)
  * is on network 'net'; 'netmask' is a mask indicating the network portion
  * of the address.
  */
-u_long
+u_int32_t
 choose_ipaddr(alist, net, netmask)
-	u_long **alist;
-	u_long  net;
-	u_long  netmask;
+	u_int32_t **alist;
+	u_int32_t  net;
+	u_int32_t  netmask;
 {
 	for (; *alist; ++alist) {
 		if ((**alist & netmask) == net)
@@ -522,13 +560,13 @@ rarp_process(ii, pkt)
 {
 	struct ether_header *ep;
 	struct hostent *hp;
-	u_long  target_ipaddr;
+	u_int32_t  target_ipaddr;
 	char    ename[256];
 	struct	in_addr in;
 
 	ep = (struct ether_header *) pkt;
 
-	if (ether_ntohost(ename, &ep->ether_shost) != 0 ||
+	if (ether_ntohost(ename, (struct ether_addr *)&ep->ether_shost) != 0 ||
 	    (hp = gethostbyname(ename)) == 0)
 		return;
 
@@ -537,7 +575,7 @@ rarp_process(ii, pkt)
 		err(FATAL, "cannot handle non IP addresses");
 		/* NOTREACHED */
 	}
-	target_ipaddr = choose_ipaddr((u_long **) hp->h_addr_list,
+	target_ipaddr = choose_ipaddr((u_int32_t **) hp->h_addr_list,
 	    ii->ii_ipaddr & ii->ii_netmask, ii->ii_netmask);
 
 	if (target_ipaddr == 0) {
@@ -610,8 +648,8 @@ lookup_eaddr(ifname, eaddr)
 void
 lookup_ipaddr(ifname, addrp, netmaskp)
 	char   *ifname;
-	u_long *addrp;
-	u_long *netmaskp;
+	u_int32_t *addrp;
+	u_int32_t *netmaskp;
 {
 	int     fd;
 	struct ifreq ifr;
@@ -639,6 +677,9 @@ lookup_ipaddr(ifname, addrp, netmaskp)
 
 	(void) close(fd);
 }
+
+int arptab_set __P((u_char *eaddr, u_int32_t host));
+
 /*
  * Poke the kernel arp tables with the ethernet/ip address combinataion
  * given.  When processing a reply, we must do this so that the booting
@@ -648,11 +689,15 @@ lookup_ipaddr(ifname, addrp, netmaskp)
 void
 update_arptab(ep, ipaddr)
 	u_char *ep;
-	u_long  ipaddr;
+	u_int32_t  ipaddr;
 {
+#ifdef SIOCSARP
 	int     s;
 	struct arpreq request;
 	struct sockaddr_in *sin;
+
+	u_char *eaddr;
+	u_int32_t host;
 
 	request.arp_flags = 0;
 	sin = (struct sockaddr_in *) & request.arp_pa;
@@ -665,12 +710,14 @@ update_arptab(ep, ipaddr)
 	request.arp_ha.sa_len = 16; /* XXX */
 	bcopy((char *) ep, (char *) request.arp_ha.sa_data, 6);
 
-#if 0
 	s = socket(AF_INET, SOCK_DGRAM, 0);
 	if (ioctl(s, SIOCSARP, (caddr_t) & request) < 0) {
 		err(NONFATAL, "SIOCSARP: %s", strerror(errno));
 	}
 	(void) close(s);
+#else
+	if (arptab_set(ep, ipaddr) > 0)
+		syslog(LOG_ERR, "couldn't update arp table");
 #endif
 }
 /*
@@ -710,7 +757,7 @@ void
 rarp_reply(ii, ep, ipaddr)
 	struct if_info *ii;
 	struct ether_header *ep;
-	u_long  ipaddr;
+	u_int32_t  ipaddr;
 {
 	int     n;
 	struct ether_arp *ap = (struct ether_arp *) (ep + 1);
@@ -742,9 +789,9 @@ rarp_reply(ii, ep, ipaddr)
  * Get the netmask of an IP address.  This routine is used if
  * SIOCGIFNETMASK doesn't work.
  */
-u_long
+u_int32_t
 ipaddrtonetmask(addr)
-	u_long  addr;
+	u_int32_t  addr;
 {
 	if (IN_CLASSA(addr))
 		return IN_CLASSA_NET;

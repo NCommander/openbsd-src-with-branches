@@ -1,3 +1,4 @@
+/*	$OpenBSD: file_subs.c,v 1.7 1997/03/05 05:53:22 tholo Exp $	*/
 /*	$NetBSD: file_subs.c,v 1.4 1995/03/21 09:07:18 cgd Exp $	*/
 
 /*-
@@ -41,7 +42,7 @@
 #if 0
 static char sccsid[] = "@(#)file_subs.c	8.1 (Berkeley) 5/31/93";
 #else
-static char rcsid[] = "$NetBSD: file_subs.c,v 1.4 1995/03/21 09:07:18 cgd Exp $";
+static char rcsid[] = "$OpenBSD: file_subs.c,v 1.7 1997/03/05 05:53:22 tholo Exp $";
 #endif
 #endif /* not lint */
 
@@ -53,11 +54,11 @@ static char rcsid[] = "$NetBSD: file_subs.c,v 1.4 1995/03/21 09:07:18 cgd Exp $"
 #include <fcntl.h>
 #include <string.h>
 #include <stdio.h>
-#include <ctype.h>
 #include <errno.h>
 #include <sys/uio.h>
 #include <stdlib.h>
 #include "pax.h"
+#include "options.h"
 #include "extern.h"
 
 static int
@@ -126,7 +127,7 @@ file_creat(arcn)
 		    file_mode)) >= 0)
 			break;
 		oerrno = errno;
-		if (chk_path(arcn->name,arcn->sb.st_uid,arcn->sb.st_gid) < 0) {
+		if (nodirs || chk_path(arcn->name,arcn->sb.st_uid,arcn->sb.st_gid) < 0) {
 			syswarn(1, oerrno, "Unable to create %s", arcn->name);
 			return(-1);
 		}
@@ -211,7 +212,7 @@ lnk_creat(arcn)
 	}
 
 	if (S_ISDIR(sb.st_mode)) {
-		warn(1, "A hard link to the directory %s is not allowed",
+		paxwarn(1, "A hard link to the directory %s is not allowed",
 		    arcn->ln_name);
 		return(-1);
 	}
@@ -283,7 +284,7 @@ chk_same(arcn)
 	 * better make sure the user does not have src == dest by mistake
 	 */
 	if ((arcn->sb.st_dev == sb.st_dev) && (arcn->sb.st_ino == sb.st_ino)) {
-		warn(1, "Unable to copy %s, file would overwrite itself",
+		paxwarn(1, "Unable to copy %s, file would overwrite itself",
 		    arcn->name);
 		return(0);
 	}
@@ -330,7 +331,7 @@ mk_link(to, to_sb, from, ign)
 		 * make sure it is not the same file, protect the user
 		 */
 		if ((to_sb->st_dev==sb.st_dev)&&(to_sb->st_ino == sb.st_ino)) {
-			warn(1, "Unable to link file %s to itself", to);
+			paxwarn(1, "Unable to link file %s to itself", to);
 			return(-1);;
 		}
 
@@ -360,7 +361,7 @@ mk_link(to, to_sb, from, ign)
 		if (link(to, from) == 0)
 			break;
 		oerrno = errno;
-		if (chk_path(from, to_sb->st_uid, to_sb->st_gid) == 0)
+		if (!nodirs && chk_path(from, to_sb->st_uid, to_sb->st_gid) == 0)
 			continue;
 		if (!ign) {
 			syswarn(1, oerrno, "Could not link to %s from %s", to,
@@ -430,13 +431,12 @@ node_creat(arcn)
 			/*
 			 * Skip sockets, operation has no meaning under BSD
 			 */
-			warn(0,
+			paxwarn(0,
 			    "%s skipped. Sockets cannot be copied or extracted",
 			    arcn->name);
 			return(-1);
 		case PAX_SLK:
-			if ((res = symlink(arcn->ln_name, arcn->name)) == 0)
-				return(0);
+			res = symlink(arcn->ln_name, arcn->name);
 			break;
 		case PAX_CTG:
 		case PAX_HLK:
@@ -446,7 +446,7 @@ node_creat(arcn)
 			/*
 			 * we should never get here
 			 */
-			warn(0, "%s has an unknown file type, skipping",
+			paxwarn(0, "%s has an unknown file type, skipping",
 				arcn->name);
 			return(-1);
 		}
@@ -469,7 +469,7 @@ node_creat(arcn)
 		if (++pass <= 1)
 			continue;
 
-		if (chk_path(arcn->name,arcn->sb.st_uid,arcn->sb.st_gid) < 0) {
+		if (nodirs || chk_path(arcn->name,arcn->sb.st_uid,arcn->sb.st_gid) < 0) {
 			syswarn(1, oerrno, "Could not create: %s", arcn->name);
 			return(-1);
 		}
@@ -479,9 +479,17 @@ node_creat(arcn)
 	 * we were able to create the node. set uid/gid, modes and times
 	 */
 	if (pids)
-		res = set_ids(arcn->name, arcn->sb.st_uid, arcn->sb.st_gid);
+		res = ((arcn->type == PAX_SLK) ?
+		    set_lids(arcn->name, arcn->sb.st_uid, arcn->sb.st_gid) :
+		    set_ids(arcn->name, arcn->sb.st_uid, arcn->sb.st_gid));
 	else
 		res = 0;
+
+	/*
+	 * symlinks are done now.
+	 */
+	if (arcn->type == PAX_SLK)
+		return(0);
 
 	/*
 	 * IMPORTANT SECURITY NOTE:
@@ -493,7 +501,7 @@ node_creat(arcn)
 	if (pmode)
 		set_pmode(arcn->name, arcn->sb.st_mode);
 
-	if (arcn->type == PAX_DIR) {
+	if (arcn->type == PAX_DIR && strcmp(NM_CPIO, argv0) != 0) {
 		/*
 		 * Dirs must be processed again at end of extract to set times
 		 * and modes to agree with those stored in the archive. However
@@ -688,7 +696,7 @@ chk_path(name, st_uid, st_gid)
 /*
  * set_ftime()
  *	Set the access time and modification time for a named file. If frc is
- *	non-zero we force these times to be set even if the the user did not
+ *	non-zero we force these times to be set even if the user did not
  *	request access and/or modification time preservation (this is also
  *	used by -t to reset access times).
  *	When ign is zero, only those times the user has asked for are set, the
@@ -756,6 +764,31 @@ set_ids(fnm, uid, gid)
 #endif
 {
 	if (chown(fnm, uid, gid) < 0) {
+		syswarn(1, errno, "Unable to set file uid/gid of %s", fnm);
+		return(-1);
+	}
+	return(0);
+}
+
+/*
+ * set_lids()
+ *	set the uid and gid of a file system node
+ * Return:
+ *	0 when set, -1 on failure
+ */
+
+#if __STDC__
+int
+set_lids(char *fnm, uid_t uid, gid_t gid)
+#else
+int
+set_lids(fnm, uid, gid)
+	char *fnm;
+	uid_t uid;
+	gid_t gid;
+#endif
+{
+	if (lchown(fnm, uid, gid) < 0) {
 		syswarn(1, errno, "Unable to set file uid/gid of %s", fnm);
 		return(-1);
 	}
@@ -1046,11 +1079,11 @@ set_crc(arcn, fd)
 	 * they can create inconsistant archive copies.
 	 */
 	if (cpcnt != arcn->sb.st_size)
-		warn(1, "File changed size %s", arcn->org_name);
+		paxwarn(1, "File changed size %s", arcn->org_name);
 	else if (fstat(fd, &sb) < 0)
 		syswarn(1, errno, "Failed stat on %s", arcn->org_name);
 	else if (arcn->sb.st_mtime != sb.st_mtime)
-		warn(1, "File %s was modified during read", arcn->org_name);
+		paxwarn(1, "File %s was modified during read", arcn->org_name);
 	else if (lseek(fd, (off_t)0L, SEEK_SET) < 0)
 		syswarn(1, errno, "File rewind failed on: %s", arcn->org_name);
 	else {

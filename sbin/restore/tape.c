@@ -1,4 +1,5 @@
-/*	$NetBSD: tape.c,v 1.19 1995/06/19 00:20:32 cgd Exp $	*/
+/*	$OpenBSD: tape.c,v 1.7 1997/01/27 09:33:08 downsj Exp $	*/
+/*	$NetBSD: tape.c,v 1.22 1996/11/30 18:31:29 cgd Exp $	*/
 
 /*
  * Copyright (c) 1983, 1993
@@ -42,7 +43,7 @@
 #if 0
 static char sccsid[] = "@(#)tape.c	8.6 (Berkeley) 9/13/94";
 #else
-static char rcsid[] = "$NetBSD: tape.c,v 1.19 1995/06/19 00:20:32 cgd Exp $";
+static char rcsid[] = "$NetBSD: tape.c,v 1.22 1996/11/30 18:31:29 cgd Exp $";
 #endif
 #endif /* not lint */
 
@@ -56,6 +57,7 @@ static char rcsid[] = "$NetBSD: tape.c,v 1.19 1995/06/19 00:20:32 cgd Exp $";
 #include <protocols/dumprestore.h>
 
 #include <errno.h>
+#include <paths.h>
 #include <setjmp.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -64,7 +66,6 @@ static char rcsid[] = "$NetBSD: tape.c,v 1.19 1995/06/19 00:20:32 cgd Exp $";
 
 #include "restore.h"
 #include "extern.h"
-#include "pathnames.h"
 
 static long	fssize = MAXBSIZE;
 static int	mt = -1;
@@ -151,7 +152,6 @@ setinput(source)
 		}
 		pipein++;
 	}
-	setuid(getuid());	/* no longer need or want root privileges */
 	(void) strcpy(magtape, source);
 }
 
@@ -233,7 +233,7 @@ setup()
 		fprintf(stderr, "cannot stat .: %s\n", strerror(errno));
 		exit(1);
 	}
-	if (stbuf.st_blksize > 0 && stbuf.st_blksize <= MAXBSIZE)
+	if (stbuf.st_blksize >= TP_BSIZE && stbuf.st_blksize <= MAXBSIZE)
 		fssize = stbuf.st_blksize;
 	if (((fssize - 1) & fssize) != 0) {
 		fprintf(stderr, "bad block size %d\n", fssize);
@@ -324,7 +324,7 @@ again:
 			    "Unless you know which volume your",
 			    " file(s) are on you should start\n",
 			    "with the last volume and work",
-			    " towards towards the first.\n");
+			    " towards the first.\n");
 		} else {
 			fprintf(stderr, "You have read volumes");
 			strcpy(buf, ": ");
@@ -549,16 +549,25 @@ extractfile(name)
 		vprintf(stdout, "extract file %s\n", name);
 		return (genliteraldir(name, curfile.ino));
 
-	case IFLNK:
-		lnkbuf[0] = '\0';
-		pathlen = 0;
-		getfile(xtrlnkfile, xtrlnkskip);
-		if (pathlen == 0) {
-			vprintf(stdout,
-			    "%s: zero length symbolic link (ignored)\n", name);
+	case IFLNK: {
+			/* Gotta save these, linkit() changes curfile. */
+			uid_t luid = curfile.dip->di_uid;
+			gid_t lgid = curfile.dip->di_gid;
+
+			lnkbuf[0] = '\0';
+			pathlen = 0;
+			getfile(xtrlnkfile, xtrlnkskip);
+			if (pathlen == 0) {
+				vprintf(stdout,
+				    "%s: zero length symbolic link (ignored)\n",
+				     name);
+				return (GOOD);
+			}
+			if (linkit(lnkbuf, name, SYMLINK) == FAIL)
+				return (FAIL);
+			(void) lchown(name, luid, lgid);
 			return (GOOD);
 		}
-		return (linkit(lnkbuf, name, SYMLINK));
 
 	case IFCHR:
 	case IFBLK:
@@ -999,32 +1008,32 @@ gethead(buf)
 	long i;
 	union {
 		quad_t	qval;
-		long	val[2];
+		int32_t	val[2];
 	} qcvt;
 	union u_ospcl {
 		char dummy[TP_BSIZE];
 		struct	s_ospcl {
-			long	c_type;
-			long	c_date;
-			long	c_ddate;
-			long	c_volume;
-			long	c_tapea;
-			u_short	c_inumber;
-			long	c_magic;
-			long	c_checksum;
+			int32_t   c_type;
+			int32_t   c_date;
+			int32_t   c_ddate;
+			int32_t   c_volume;
+			int32_t   c_tapea;
+			u_int16_t c_inumber;
+			int32_t   c_magic;
+			int32_t   c_checksum;
 			struct odinode {
 				unsigned short odi_mode;
-				u_short	odi_nlink;
-				u_short	odi_uid;
-				u_short	odi_gid;
-				long	odi_size;
-				long	odi_rdev;
+				u_int16_t odi_nlink;
+				u_int16_t odi_uid;
+				u_int16_t odi_gid;
+				int32_t   odi_size;
+				int32_t   odi_rdev;
 				char	odi_addr[36];
-				long	odi_atime;
-				long	odi_mtime;
-				long	odi_ctime;
+				int32_t   odi_atime;
+				int32_t   odi_mtime;
+				int32_t   odi_ctime;
 			} c_dinode;
-			long	c_count;
+			int32_t c_count;
 			char	c_addr[256];
 		} s_ospcl;
 	} u_ospcl;
@@ -1042,7 +1051,7 @@ gethead(buf)
 		if (checksum((int *)buf) == FAIL)
 			return (FAIL);
 		if (Bcvt)
-			swabst((u_char *)"8l4s31l", (u_char *)buf);
+			swabst((u_char *)"8l4s31l528b1l192b2l", (u_char *)buf);
 		goto good;
 	}
 	readtape((char *)(&u_ospcl.s_ospcl));

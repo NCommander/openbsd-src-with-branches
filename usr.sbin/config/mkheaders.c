@@ -1,4 +1,7 @@
-/* 
+/*	$OpenBSD: mkheaders.c,v 1.3 1996/04/21 23:40:15 deraadt Exp $	*/
+/*	$NetBSD: mkheaders.c,v 1.11 1996/08/31 20:58:22 mycroft Exp $	*/
+
+/*
  * Copyright (c) 1992, 1993
  *	The Regents of the University of California.  All rights reserved.
  *
@@ -40,7 +43,6 @@
  * SUCH DAMAGE.
  *
  *	from: @(#)mkheaders.c	8.1 (Berkeley) 6/6/93
- *	$Id: mkheaders.c,v 1.7 1995/04/28 06:55:12 cgd Exp $
  */
 
 #include <sys/param.h>
@@ -67,7 +69,7 @@ mkheaders()
 		if (fi->fi_flags & FI_HIDDEN)
 			continue;
 		if (fi->fi_flags & (FI_NEEDSCOUNT | FI_NEEDSFLAG) &&
-		    emitcnt(fi->fi_opt))
+		    emitcnt(fi->fi_optf))
 			return (1);
 	}
 	return (0);
@@ -79,13 +81,12 @@ emitcnt(head)
 {
 	register struct nvlist *nv;
 	register FILE *fp;
-	register char *fname;
 	int cnt;
 	char nam[100];
 	char buf[BUFSIZ];
+	char fname[BUFSIZ];
 
-	(void)sprintf(buf, "%s.h", head->nv_name);
-	fname = path(buf);
+	(void)sprintf(fname, "%s.h", head->nv_name);
 	if ((fp = fopen(fname, "r")) == NULL)
 		goto writeit;
 	nv = head;

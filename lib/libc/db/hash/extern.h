@@ -1,5 +1,3 @@
-/*	$NetBSD: extern.h,v 1.4 1995/02/27 13:21:55 cgd Exp $	*/
-
 /*-
  * Copyright (c) 1991, 1993, 1994
  *	The Regents of the University of California.  All rights reserved.
@@ -32,7 +30,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  *
- *	@(#)extern.h	8.4 (Berkeley) 6/16/94
+ *	$OpenBSD$
  */
 
 BUFHEAD	*__add_ovflpage __P((HTAB *, BUFHEAD *));

@@ -1,5 +1,6 @@
 #!/bin/sh -
 #
+#	$OpenBSD: mkdep.gcc.sh,v 1.5 1997/01/25 08:47:56 deraadt Exp $
 #	$NetBSD: mkdep.gcc.sh,v 1.9 1994/12/23 07:34:59 jtc Exp $
 #
 # Copyright (c) 1991, 1993
@@ -36,9 +37,6 @@
 #	@(#)mkdep.gcc.sh	8.1 (Berkeley) 6/6/93
 #
 
-PATH=/bin:/usr/bin:/usr/ucb
-export PATH
-
 D=.depend			# default dependency file is .depend
 append=0
 pflag=
@@ -70,26 +68,38 @@ if [ $# = 0 ] ; then
 	exit 1
 fi
 
-TMP=/tmp/mkdep$$
+DTMP=/tmp/mkdep$$
+TMP=$DTMP/mkdep
 
-trap 'rm -f $TMP ; exit 1' 1 2 3 13 15
+um=`umask`
+umask 022
+if ! mkdir $DTMP ; then
+	echo failed to create tmp dir $DTMP
+	exit 1
+fi
+umask $um
+trap 'rm -rf $DTMP ; exit 1' 1 2 3 13 15
 
 if [ x$pflag = x ]; then
-	gcc -M "$@" | sed -e 's; \./; ;g' > $TMP
+	${CC:-cc} -M "$@" | sed -e 's; \./; ;g' > $TMP
 else
-	gcc -M "$@" | sed -e 's;\.o :; :;' -e 's; \./; ;g' > $TMP
+	${CC:-cc} -M "$@" | sed -e 's;\.o :; :;' -e 's; \./; ;g' > $TMP
 fi
 
 if [ $? != 0 ]; then
 	echo 'mkdep: compile failed.'
-	rm -f $TMP
+	rm -rf $DTMP
 	exit 1
 fi
 
 if [ $append = 1 ]; then
 	cat $TMP >> $D
-	rm -f $TMP
+	rm -rf $DTMP
 else
 	mv $TMP $D
+	rm -rf $DTMP
 fi
 exit 0
+
+
+

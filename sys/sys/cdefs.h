@@ -1,4 +1,5 @@
-/*	$NetBSD: cdefs.h,v 1.15 1995/01/19 01:54:52 jtc Exp $	*/
+/*	$OpenBSD: cdefs.h,v 1.4 1996/04/21 22:31:30 deraadt Exp $	*/
+/*	$NetBSD: cdefs.h,v 1.16 1996/04/03 20:46:39 christos Exp $	*/
 
 /*
  * Copyright (c) 1991, 1993
@@ -41,6 +42,14 @@
 #ifndef	_CDEFS_H_
 #define	_CDEFS_H_
 
+/*
+ * Gratuitous NetBSD gcc extensions we can do without.
+ */
+
+#ifdef __KPRINTF_ATTRIBUTE__
+#undef __KPRINTF_ATTRIBUTE__
+#endif
+
 #include <machine/cdefs.h>
 
 #if defined(__cplusplus)
@@ -69,9 +78,9 @@
 #if defined(__cplusplus)
 #define	__inline	inline		/* convert to C++ keyword */
 #else
-#ifndef __GNUC__
+#if !defined(__GNUC__) && !defined(lint)
 #define	__inline			/* delete GCC keyword */
-#endif /* !__GNUC__ */
+#endif /* !__GNUC__ && !lint */
 #endif /* !__cplusplus */
 
 #else	/* !(__STDC__ || __cplusplus) */
@@ -79,12 +88,12 @@
 #define	__CONCAT(x,y)	x/**/y
 #define	__STRING(x)	"x"
 
-#ifndef __GNUC__
+#if !defined(__GNUC__) && !defined(lint)
 #define	__const				/* delete pseudo-ANSI C keywords */
 #define	__inline
 #define	__signed
 #define	__volatile
-#endif	/* !__GNUC__ */
+#endif	/* !__GNUC__ && !lint */
 
 /*
  * In non-ANSI C environments, new programs will want ANSI-only C keywords
@@ -115,6 +124,12 @@
 #define	__dead		__volatile
 #define	__pure		__const
 #endif
+#endif
+
+#ifdef __KPRINTF_ATTRIBUTE__
+#define __kprintf_attribute__(a) __attribute__(a)
+#else
+#define __kprintf_attribute__(a)
 #endif
 
 /* Delete pseudo-keywords wherever they are not available or needed. */

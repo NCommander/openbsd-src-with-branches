@@ -33,7 +33,7 @@
 
 #ifndef lint
 /*static char sccsid[] = "from: @(#)init.c	8.1 (Berkeley) 6/4/93";*/
-static char rcsid[] = "$Id: init.c,v 1.6 1994/08/17 20:10:35 pk Exp $";
+static char rcsid[] = "$Id: init.c,v 1.2 1996/05/17 22:41:16 deraadt Exp $";
 #endif /* not lint */
 
 /*
@@ -73,6 +73,7 @@ struct	gettystrs gettystrs[] = {
 	{ "fl", &tmode.c_cc[VDISCARD] },/* flush output */
 	{ "we", &tmode.c_cc[VWERASE] },	/* word erase */
 	{ "ln", &tmode.c_cc[VLNEXT] },	/* literal next */
+	{ "pp" },			/* ppp login program */
 	{ 0 }
 };
 
@@ -114,8 +115,8 @@ struct	gettyflags gettyflags[] = {
 	{ "ec",	1 },			/* no echo */
 	{ "co",	0 },			/* console special */
 	{ "cb",	0 },			/* crt backspace */
-	{ "ck",	0 },			/* crt kill */
-	{ "ce",	0 },			/* crt erase */
+	{ "ck",	1 },			/* crt kill */
+	{ "ce",	1 },			/* crt erase */
 	{ "pe",	0 },			/* printer erase */
 	{ "rw",	1 },			/* don't use raw */
 	{ "xc",	1 },			/* don't ^X ctl chars */

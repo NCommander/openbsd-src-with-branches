@@ -1,4 +1,5 @@
-/*	$NetBSD: setmode.c,v 1.12 1995/03/23 19:51:13 jtc Exp $	*/
+/*	$OpenBSD$	*/
+/*	$NetBSD: setmode.c,v 1.15 1997/02/07 22:21:06 christos Exp $	*/
 
 /*
  * Copyright (c) 1989, 1993, 1994
@@ -40,7 +41,7 @@
 #if 0
 static char sccsid[] = "@(#)setmode.c	8.2 (Berkeley) 3/25/94";
 #else
-static char rcsid[] = "$NetBSD: setmode.c,v 1.12 1995/03/23 19:51:13 jtc Exp $";
+static char rcsid[] = "$OpenBSD: setmode.c,v 1.4 1996/08/19 08:25:55 tholo Exp $";
 #endif
 #endif /* LIBC_SCCS and not lint */
 
@@ -51,6 +52,7 @@ static char rcsid[] = "$NetBSD: setmode.c,v 1.12 1995/03/23 19:51:13 jtc Exp $";
 #include <errno.h>
 #include <signal.h>
 #include <stdlib.h>
+#include <unistd.h>
 
 #ifdef SETMODE_DEBUG
 #include <stdio.h>
@@ -72,7 +74,7 @@ typedef struct bitcmd {
 #define	CMD2_UBITS	0x10
 
 static BITCMD	*addcmd __P((BITCMD *, int, int, int, u_int));
-static int	 compress_mode __P((BITCMD *));
+static void	 compress_mode __P((BITCMD *));
 #ifdef SETMODE_DEBUG
 static void	 dumpmode __P((BITCMD *));
 #endif
@@ -84,14 +86,18 @@ static void	 dumpmode __P((BITCMD *));
  * bits) followed by a '+' (set bits).
  */
 mode_t
+#if __STDC__
+getmode(const void *bbox, mode_t omode)
+#else
 getmode(bbox, omode)
-	void *bbox;
+	const void *bbox;
 	mode_t omode;
+#endif
 {
-	register BITCMD *set;
+	register const BITCMD *set;
 	register mode_t clrval, newmode, value;
 
-	set = (BITCMD *)bbox;
+	set = (const BITCMD *)bbox;
 	newmode = omode;
 	for (value = 0;; set++)
 		switch(set->cmd) {
@@ -170,7 +176,7 @@ common:			if (set->cmd2 & CMD2_CLR) {
 
 void *
 setmode(p)
-	register char *p;
+	register const char *p;
 {
 	register int perm, who;
 	register char op;
@@ -259,13 +265,19 @@ getop:		if ((op = *p++) != '+' && op != '-' && op != '=') {
 				perm |= S_IRUSR|S_IRGRP|S_IROTH;
 				break;
 			case 's':
-				/* If only "other" bits ignore set-id. */
-				if (who & ~S_IRWXO)
+				/*
+				 * If specific bits where requested and
+				 * only "other" bits ignore set-id.
+				 */
+				if (who == 0 || (who & ~S_IRWXO))
 					perm |= S_ISUID|S_ISGID;
 				break;
 			case 't':
-				/* If only "other" bits ignore sticky. */
-				if (who & ~S_IRWXO) {
+				/*
+				 * If specific bits where requested and
+				 * only "other" bits ignore sticky.
+				 */
+				if (who == 0 || (who & ~S_IRWXO)) {
 					who |= S_ISTXT;
 					perm |= S_ISTXT;
 				}
@@ -368,7 +380,7 @@ addcmd(set, op, who, oparg, mask)
 			set->cmd2 = ((who & S_IRUSR) ? CMD2_UBITS : 0) |
 				    ((who & S_IRGRP) ? CMD2_GBITS : 0) |
 				    ((who & S_IROTH) ? CMD2_OBITS : 0);
-			set->bits = ~0;
+			set->bits = (mode_t)~0;
 		} else {
 			set->cmd2 = CMD2_UBITS | CMD2_GBITS | CMD2_OBITS;
 			set->bits = mask;
@@ -404,10 +416,10 @@ dumpmode(set)
 /*
  * Given an array of bitcmd structures, compress by compacting consecutive
  * '+', '-' and 'X' commands into at most 3 commands, one of each.  The 'u',
- * 'g' and 'o' commands continue to be separate.  They could probably be 
+ * 'g' and 'o' commands continue to be separate.  They could probably be
  * compacted, but it's not worth the effort.
  */
-static int
+static void
 compress_mode(set)
 	register BITCMD *set;
 {

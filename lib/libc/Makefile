@@ -1,5 +1,4 @@
-#	$NetBSD: Makefile,v 1.46 1995/10/09 03:58:02 jtc Exp $
-#	@(#)Makefile	8.2 (Berkeley) 2/3/94
+#	$OpenBSD: Makefile,v 1.12 1997/04/19 21:26:17 millert Exp $
 #
 # All library objects contain sccsid strings by default; they may be
 # excluded as a space-saving measure.  To produce a library that does
@@ -14,8 +13,15 @@
 # The YP functions are always in libc. To choose that getpwent() and friends
 # actually call the YP functions, put -DYP on the CFLAGS line below.
 
+.include <bsd.own.mk>
+
 LIB=c
-CFLAGS+=-DNLS -DYP -DLIBC_SCCS -DSYSLIBC_SCCS -I${.CURDIR}/include
+CFLAGS+=-DNLS -DLIBC_SCCS -DSYSLIBC_SCCS -I${.CURDIR}/include
+.if (${YP} == "yes")
+CFLAGS+=-DYP -I${.CURDIR}/yp
+.endif
+LINTFLAGS=-z
+LLIBS=
 AINC=	-I${.CURDIR}/arch/${MACHINE_ARCH}
 .if defined(DESTDIR)
 AINC+=	-nostdinc -idirafter ${DESTDIR}/usr/include
@@ -30,8 +36,11 @@ CLEANFILES+=tags
 .include "${.CURDIR}/db/Makefile.inc"
 .include "${.CURDIR}/compat-43/Makefile.inc"
 .include "${.CURDIR}/gen/Makefile.inc"
+.include "${.CURDIR}/crypt/Makefile.inc"
 .include "${.CURDIR}/gmon/Makefile.inc"
+.include "${.CURDIR}/hash/Makefile.inc"
 .include "${.CURDIR}/locale/Makefile.inc"
+.include "${.CURDIR}/md/Makefile.inc"
 .include "${.CURDIR}/net/Makefile.inc"
 .include "${.CURDIR}/nls/Makefile.inc"
 .if (${MACHINE_ARCH} != "alpha")
@@ -45,9 +54,11 @@ CLEANFILES+=tags
 .include "${.CURDIR}/termios/Makefile.inc"
 .include "${.CURDIR}/time/Makefile.inc"
 .include "${.CURDIR}/sys/Makefile.inc"
+.if (${YP} == "yes")
 .include "${.CURDIR}/yp/Makefile.inc"
+.endif
 
-NLS=	C.msg Pig.msg de.msg fr.msg
+NLS=	C.msg Pig.msg de.msg es.msg fr.msg
 
 LIBKERN=	${.CURDIR}/../../sys/lib/libkern
 
@@ -90,7 +101,7 @@ tags: ${SRCS}
 	    >> tags; sort -o tags tags
 
 beforeinstall:
-	install -c -o ${BINOWN} -g ${BINGRP} -m 444 tags \
+	${INSTALL} ${INSTALL_COPY} -o ${BINOWN} -g ${BINGRP} -m 444 tags \
 		${DESTDIR}/var/db/libc.tags
 
 .include <bsd.lib.mk>

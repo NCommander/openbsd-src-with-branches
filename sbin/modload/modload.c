@@ -1,3 +1,4 @@
+/*	$OpenBSD: modload.c,v 1.11 1997/01/18 15:12:44 mickey Exp $	*/
 /*	$NetBSD: modload.c,v 1.13 1995/05/28 05:21:58 jtc Exp $	*/
 
 /*
@@ -37,7 +38,9 @@
 #include <sys/conf.h>
 #include <sys/mount.h>
 #include <sys/lkm.h>
+#include <sys/stat.h>
 #include <sys/file.h>
+#include <sys/wait.h>
 #include <errno.h>
 #include <a.out.h>
 #include <stdio.h>
@@ -45,11 +48,8 @@
 #include <string.h>
 #include <err.h>
 #include <unistd.h>
+#include <limits.h>
 #include "pathnames.h"
-
-#ifndef DFLT_ENTRY
-#define	DFLT_ENTRY	"xxxinit"
-#endif	/* !DFLT_ENTRY */
 
 #define	min(a, b)	((a) < (b) ? (a) : (b))
 
@@ -62,56 +62,64 @@
  * -T		address to link to in hex (assumes it's a page boundry)
  * <target>	object file
  */
-#define	LINKCMD		"ld -A %s -e _%s -o %s -T %x %s"
 
 int debug = 0;
 int verbose = 0;
+int symtab = 1;
+int quiet = 0;
+int dounlink = 0;
 
-int
+void
 linkcmd(kernel, entry, outfile, address, object)
 	char *kernel, *entry, *outfile;
 	u_int address;	/* XXX */
 	char *object;
 {
-	char cmdbuf[1024];
-	int error = 0;
+	char addrbuf[32], entrybuf[_POSIX2_LINE_MAX];
+	pid_t pid;
+	int status;
 
-	sprintf(cmdbuf, LINKCMD, kernel, entry, outfile, address, object);
+	snprintf(entrybuf, sizeof entrybuf, "_%s", entry);
+	snprintf(addrbuf, sizeof addrbuf, "%x", address);
 
 	if (debug)
-		printf("%s\n", cmdbuf);
+		printf("%s -A %s -e %s -o %s -T %s %s\n",
+			_PATH_LD, kernel, entrybuf, outfile,
+			addrbuf, object);
 
-	switch (system(cmdbuf)) {
-	case 0:				/* SUCCESS! */
-		break;
-	case 1:				/* uninformitive error */
-		/*
-		 * Someone needs to fix the return values from the NetBSD
-		 * ld program -- it's totally uninformative.
-		 *
-		 * No such file		(4 on SunOS)
-		 * Can't write output	(2 on SunOS)
-		 * Undefined symbol	(1 on SunOS)
-		 * etc.
-		 */
-	case 127:			/* can't load shell */
-	case 32512:
-	default:
-		error = 1;
-		break;
+	
+	if ((pid = fork()) < 0)
+		err(18, "fork");
+
+	if(pid == 0) {
+		execl(_PATH_LD, "ld", "-A", kernel, "-e", entrybuf, "-o",
+		outfile, "-T", addrbuf, object, (char *)0);
+		exit(128 + errno);
 	}
 
-	return error;
+	waitpid(pid, &status, 0);
+
+	if(WIFSIGNALED(status)) {
+		errx(1, "%s got signal: %s", _PATH_LD,
+		sys_siglist[WTERMSIG(status)]);
+	}
+
+	if(WEXITSTATUS(status) > 128) {
+		errno = WEXITSTATUS(status) - 128;
+		err(1, "exec(%s)", _PATH_LD);
+	}
+
+	if(WEXITSTATUS(status) != 0)
+		errx(1, "%s: return code %d", _PATH_LD, WEXITSTATUS(status));
 }
 
 void
 usage()
 {
 
-	fprintf(stderr, "usage:\n");
-	fprintf(stderr, "modload [-d] [-v] [-A <kernel>] [-e <entry]\n");
+	fprintf(stderr, "usage: modload [-dvqu] [-A <kernel>] [-e <entry]\n");
 	fprintf(stderr,
-	    "[-p <postinstall>] [-o <output file>] <input file>\n");
+	    "\t[-p <postinstall>] [-o <output file>] <input file>\n");
 	exit(1);
 }
 
@@ -121,7 +129,12 @@ int fileopen = 0;
 #define	PART_RESRV	0x04
 int devfd, modfd;
 struct lmc_resrv resrv;
+char modout[MAXPATHLEN];
 
+/*
+ * Must be safe for two calls. One in case of the -p option, and one from
+ * the atexit() call...
+ */
 void
 cleanup()
 {
@@ -131,13 +144,23 @@ cleanup()
 		 */
 		if (ioctl(devfd, LMUNRESRV, 0) == -1)
 			warn("can't release slot 0x%08x memory", resrv.slot);
+		fileopen &= ~PART_RESRV;
 	}
 
-	if (fileopen & DEV_OPEN)
+	if (fileopen & DEV_OPEN) {
 		close(devfd);
+		fileopen &= ~DEV_OPEN;
+	}
 
-	if (fileopen & MOD_OPEN)
+	if (fileopen & MOD_OPEN) {
 		close(modfd);
+		fileopen &= ~MOD_OPEN;
+	}
+
+	if(dounlink && unlink(modout) != 0) {
+		err(17, "unlink(%s)", modout);
+		dounlink = 0;
+	}
 }
 
 int
@@ -147,20 +170,24 @@ main(argc, argv)
 {
 	int c;
 	char *kname = _PATH_UNIX;
-	char *entry = DFLT_ENTRY;
+	char *entry = NULL;
 	char *post = NULL;
 	char *out = NULL;
 	char *modobj;
-	char modout[80], *p;
+	char *p;
 	struct exec info_buf;
+	struct stat stb;
 	u_int modsize;	/* XXX */
 	u_int modentry;	/* XXX */
+	struct nlist nl, *nlp;
+	int strtablen, numsyms;
 
 	struct lmc_loadbuf ldbuf;
-	int sz, bytesleft;
+	int sz, bytesleft, old = 0;
 	char buf[MODIOBUF];
+	char *symbuf;
 
-	while ((c = getopt(argc, argv, "dvA:e:p:o:")) != EOF) {
+	while ((c = getopt(argc, argv, "dvsuqA:e:p:o:")) != -1) {
 		switch (c) {
 		case 'd':
 			debug = 1;
@@ -168,6 +195,12 @@ main(argc, argv)
 		case 'v':
 			verbose = 1;
 			break;	/* verbose */
+		case 'u':
+			dounlink = 1;
+			break; /* unlink tmp file */
+		case 'q':
+			quiet = 1;
+			break; /* be quiet */
 		case 'A':
 			kname = optarg;
 			break;	/* kernel */
@@ -180,6 +213,9 @@ main(argc, argv)
 		case 'o':
 			out = optarg;
 			break;	/* output file */
+		case 's':
+			symtab = 0;
+			break;
 		case '?':
 			usage();
 		default:
@@ -206,21 +242,44 @@ main(argc, argv)
 		err(3, _PATH_LKM);
 	fileopen |= DEV_OPEN;
 
-	strcpy(modout, modobj);
-
-	p = strchr(modout, '.');
-	if (!p || strcmp(p, ".o"))
+	p = strrchr(modobj, '.');
+	if (!p || p[1] != 'o' || p[2] != '\0')
 		errx(2, "module object must end in .o");
 	if (out == NULL) {
+		p = strrchr(modobj, '/');
+		if (p)
+			p++;                    /* skip over '/' */
+		else
+			p = modobj;
+		snprintf(modout, sizeof modout, "%s%sut", _PATH_TMP, p);
 		out = modout;
-		*p = '\0';
+		/*
+		 * reverse meaning of -u - if we've generated a /tmp
+		 * file, remove it automatically...
+		 */
+		dounlink = !dounlink;
 	}
+
+	if (!entry) {   /* calculate default entry point */
+		entry = strrchr(modobj, '/');
+		if (entry)
+			entry++;                /* skip over '/' */
+		else
+			entry = modobj;
+		entry = strdup(entry);          /* so we can modify it */
+		if (!entry)
+			errx(1, "Could not allocate memory");
+		entry[strlen(entry) - 2] = '\0'; /* chop off .o */
+	}
+
+	if((modfd = open(out, O_RDWR | O_EXCL | O_CREAT, 0666)) < 0)
+		err(1, "creating %s", out);
+	close(modfd);
 
 	/*
 	 * Prelink to get file size
 	 */
-	if (linkcmd(kname, entry, out, 0, modobj))
-		errx(1, "can't prelink `%s' creating `%s'", modobj, out);
+	linkcmd(kname, entry, out, 0, modobj);
 
 	/*
 	 * Pre-open the 0-linked module to get the size information
@@ -235,6 +294,12 @@ main(argc, argv)
 	 */
 	if (read(modfd, &info_buf, sizeof(struct exec)) == -1)
 		err(3, "read `%s'", out);
+
+	/*
+	 * stat for filesize to figure out string table size
+	 */
+	if (fstat(modfd, &stb) == -1)
+	    err(3, "fstat `%s'", out);
 
 	/*
 	 * Close the dummy module -- we have our sizing information.
@@ -261,16 +326,31 @@ main(argc, argv)
 	resrv.name = modout;	/* objname w/o ".o" */
 	resrv.slot = -1;	/* returned */
 	resrv.addr = 0;		/* returned */
-	if (ioctl(devfd, LMRESERV, &resrv) == -1)
+	strtablen = stb.st_size - N_STROFF(info_buf);
+	if (symtab) {
+	    /* XXX TODO:  grovel through symbol table looking
+	       for just the symbol table stuff from the new module,
+	       and skip the stuff from the kernel. */
+	    resrv.sym_size = info_buf.a_syms + strtablen;
+	    resrv.sym_symsize = info_buf.a_syms;
+	} else
+	    resrv.sym_size = resrv.sym_symsize = 0;
+
+	if (ioctl(devfd, LMRESERV, &resrv) == -1) {
+	    if (symtab)
+		warn("not loading symbols: kernel does not support symbol table loading");
+	doold:
+	    symtab = 0;
+	    if (ioctl(devfd, LMRESERV_O, &resrv) == -1)
 		err(9, "can't reserve memory");
+	    old = 1;
+	}
 	fileopen |= PART_RESRV;
 
 	/*
 	 * Relink at kernel load address
 	 */
-	if (linkcmd(kname, entry, out, resrv.addr, modobj))
-		errx(1, "can't link `%s' creating `%s' bound to 0x%08x",
-		    modobj, out, resrv.addr);
+	linkcmd(kname, entry, out, resrv.addr, modobj);
 
 	/*
 	 * Open the relinked module to load it...
@@ -312,6 +392,69 @@ main(argc, argv)
 			err(11, "error transferring buffer");
 	}
 
+	if (symtab) {
+	    /*
+	     * Seek to the symbol table to start loading it...
+	     */
+	    if (lseek(modfd, N_SYMOFF(info_buf), SEEK_SET) == -1)
+		err(12, "lseek");
+
+	    /*
+	     * Transfer the symbol table entries.  First, read them all in,
+	     * then adjust their string table pointers, then
+	     * copy in bulk.  Then copy the string table itself.
+	     */
+
+	    symbuf = malloc(info_buf.a_syms);
+	    if (symbuf == 0)
+		err(13, "malloc");
+
+	    if (read(modfd, symbuf, info_buf.a_syms) != info_buf.a_syms)
+		err(14, "read");
+	    numsyms = info_buf.a_syms / sizeof(struct nlist);
+	    for (nlp = (struct nlist *)symbuf; 
+		 (char *)nlp < symbuf + info_buf.a_syms;
+		 nlp++) {
+		register int strx;
+		strx = nlp->n_un.n_strx;
+		if (strx != 0) {
+		    /* If a valid name, set the name ptr to point at the
+		     * loaded address for the string in the string table.
+		     */
+		    if (strx > strtablen)
+			nlp->n_un.n_name = 0;
+		    else
+			nlp->n_un.n_name =
+			    (char *)(strx + resrv.sym_addr + info_buf.a_syms);
+		}
+	    }
+	    /*
+	     * we've fixed the symbol table entries, now load them
+	     */
+	    for (bytesleft = info_buf.a_syms;
+		 bytesleft > 0;
+		 bytesleft -= sz) {
+		sz = min(bytesleft, MODIOBUF);
+		ldbuf.cnt = sz;
+		ldbuf.data = symbuf;
+		if (ioctl(devfd, LMLOADSYMS, &ldbuf) == -1)
+		    err(11, "error transferring sym buffer");
+		symbuf += sz;
+	    }
+	    free(symbuf - info_buf.a_syms);
+	    /* and now read the string table and load it. */
+	    for (bytesleft = strtablen;
+		 bytesleft > 0;
+		 bytesleft -= sz) {
+		sz = min(bytesleft, MODIOBUF);
+		read(modfd, buf, sz);
+		ldbuf.cnt = sz;
+		ldbuf.data = buf;
+		if (ioctl(devfd, LMLOADSYMS, &ldbuf) == -1)
+		    err(11, "error transferring stringtable buffer");
+	    }
+	}
+
 	/*
 	 * Save ourselves before disaster (potentitally) strikes...
 	 */
@@ -323,23 +466,37 @@ main(argc, argv)
 	 * is maintained on success, or blow everything back to ground
 	 * zero on failure.
 	 */
-	if (ioctl(devfd, LMREADY, &modentry) == -1)
+	if (ioctl(devfd, LMREADY, &modentry) == -1) {
+	    if (errno == EINVAL && !old) {
+		if (fileopen & MOD_OPEN)
+		    close(modfd);
+		/* PART_RESRV is not true since the kernel cleans up
+		   after a failed LMREADY */
+		fileopen &= ~(MOD_OPEN|PART_RESRV);
+		/* try using oldstyle */
+		warn("module failed to load using new version; trying old version");
+		goto doold;
+	    } else
 		err(14, "error initializing module");
+	}
 
 	/*
 	 * Success!
 	 */
 	fileopen &= ~PART_RESRV;	/* loaded */
-	printf("Module loaded as ID %d\n", resrv.slot);
+	if (!quiet)
+		printf("Module loaded as ID %d\n", resrv.slot);
 
 	/*
 	 * Execute the post-install program, if specified.
 	 */
 	if (post) {
 		struct lmc_stat sbuf;
+		char name[MAXLKMNAME] = "";
 		char id[16], type[16], offset[16];
 
 		sbuf.id = resrv.slot;
+		sbuf.name = name;
 		if (ioctl(devfd, LMSTAT, &sbuf) == -1)
 			err(15, "error fetching module stats for post-install");
 		sprintf(id, "%d", sbuf.id);
@@ -350,6 +507,9 @@ main(argc, argv)
 		 * The modload docs say that drivers can install bdevsw &
 		 * cdevsw, but the interface only supports one at a time.
 		 */
+
+		cleanup();
+
 		execl(post, post, id, type, offset, 0);
 		err(16, "can't exec `%s'", post);
 	}

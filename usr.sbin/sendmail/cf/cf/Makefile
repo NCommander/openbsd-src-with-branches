@@ -1,4 +1,15 @@
-#	@(#)Makefile	8.5 (Berkeley) 12/1/93
+#	$OpenBSD: Makefile,v 1.9 1997/04/20 07:28:59 tholo Exp $
+#	@(#)Makefile	8.19 (Berkeley) 1/14/97
+
+#
+#  This Makefile uses the new Berkeley "make" program.  See Makefile.dist
+#  for a more vanilla version.
+#
+#  Create configuration files using "m4 ../m4/cf.m4 file.mc > file.cf";
+#  this may be easier than tweaking the Makefile.  You do need to
+#  have a fairly modern M4 available (GNU m4 works).  On SunOS, use
+#  /usr/5bin/m4.
+#
 
 M4=	m4
 CHMOD=	chmod
@@ -12,10 +23,9 @@ RM=	rm -f
 	(cd ${.CURDIR} && $(M4) ${@:R}.mc > ${.OBJDIR}/$@)
 	$(CHMOD) $(ROMODE) $@
 
-ALL=	ucbarpa.cf ucbvax.cf vangogh.cf \
-	chez.cf python.cf \
-	boat-anchor.cf chimera.cf pain.cf sun-lamp.cf trinity.cf \
-	clientproto.cf netbsd-proto.cf tcpproto.cf uucpproto.cf
+ALL=	boat-anchor.cf trinity.cf \
+	clientproto.cf openbsd-proto.cf tcpproto.cf uucpproto.cf \
+	gandalf.cf saruman.cf alatar.cf nettan.cf waldorf.cf
 
 all: $(ALL)
 
@@ -25,20 +35,21 @@ clean cleandir:
 depend install: 
 
 distribution:
-	install -c -o root -g wheel -m 444 netbsd-proto.cf \
+	${INSTALL} ${INSTALL_COPY} -o root -g wheel -m 444 openbsd-proto.cf \
 	    ${DESTDIR}/etc/sendmail.cf
 
 # this is overkill, but....
 M4FILES=\
-	../domain/Berkeley.m4 \
-	../domain/cs.exposed.m4 \
-	../domain/cs.hidden.m4 \
-	../domain/eecs.hidden.m4 \
-	../domain/s2k.m4 \
+	../domain/Berkeley.EDU.m4 \
+	../domain/CS.Berkeley.EDU.m4 \
+	../domain/EECS.Berkeley.EDU.m4 \
+	../domain/S2K.Berkeley.EDU.m4 \
 	../feature/allmasquerade.m4 \
 	../feature/always_add_domain.m4 \
+	../feature/bestmx_is_local.m4 \
 	../feature/bitdomain.m4 \
 	../feature/domaintable.m4 \
+	../feature/local_procmail.m4 \
 	../feature/mailertable.m4 \
 	../feature/nocanonify.m4 \
 	../feature/nodns.m4 \
@@ -46,15 +57,22 @@ M4FILES=\
 	../feature/nouucp.m4 \
 	../feature/nullclient.m4 \
 	../feature/redirect.m4 \
+	../feature/smrsh.m4 \
+	../feature/stickyhost.m4 \
 	../feature/use_cw_file.m4 \
 	../feature/uucpdomain.m4 \
 	../hack/cssubdomain.m4 \
 	../m4/cf.m4 \
+	../m4/cfhead.m4 \
 	../m4/nullrelay.m4 \
 	../m4/proto.m4 \
 	../m4/version.m4 \
+	../mailer/cyrus.m4 \
 	../mailer/fax.m4 \
 	../mailer/local.m4 \
+	../mailer/mail11.m4 \
+	../mailer/pop.m4 \
+	../mailer/procmail.m4 \
 	../mailer/smtp.m4 \
 	../mailer/usenet.m4 \
 	../mailer/uucp.m4 \

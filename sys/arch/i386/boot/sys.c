@@ -60,6 +60,11 @@ _read(buffer, count, copy)
 	int logno, off, size;
 	int cnt2;
 
+#ifdef DOSREAD
+      extern short doshandle;
+      if (doshandle>=0)
+        return __dosread(buffer,count,copy);
+#endif
 	while (count) {
 		off = blkoff(fs, poff);
 		logno = lblkno(fs, poff);
@@ -85,6 +90,10 @@ find(path)
 	int block, off, loc, ino = ROOTINO, parent;
 	struct dirent *dp;
 	int nlinks = 0;
+	int list_only = 0;
+
+	if (strcmp(path, "?") == 0)
+		list_only = 1;
 	
 loop:
 	iodest = iobuf;
@@ -127,7 +136,11 @@ loop:
 	loc = 0;
 	do {
 		if (loc >= inode.i_size)
-			return 0;
+			if (list_only) {
+				putchar('\n');
+				return -1;
+			} else
+				return 0;
 		if (!(off = blkoff(fs, loc))) {
 			int cnt2;
 			block = lblkno(fs, loc);
@@ -139,10 +152,15 @@ loop:
 		}
 		dp = (struct dirent *)(iodest + off);
 		if (dp->d_reclen < 8) {
-			printf("directory corrupted (possible geometry mismatch)\n");
+			printf("dir corrupt (geom. mismatch?)\n");
 			return 0;
 		}
 		loc += dp->d_reclen;
+		if (dp->d_fileno && list_only &&
+		    dp->d_type == DT_REG && dp->d_name[0] != '.') {
+			printf("%s", dp->d_name);
+			putchar(' ');
+		}
 	} while (!dp->d_fileno || strcmp(path, dp->d_name));
 	ino = dp->d_fileno;
 	*(path = rest) = ch;
@@ -189,10 +207,11 @@ openrd()
 		* Look inside brackets for unit number, and partition	*
 		\*******************************************************/
 		if (*cp >= '0' && *cp <= '9')
-			if ((unit = *cp++ - '0') > 1) {
-				printf("Bad unit\n");
-				return 1;
-			}
+			unit = *cp++ - '0';	/* enough for both wd and sd */
+		else {
+			printf("Bad unit\n");
+			return 1;
+		}
 		if (!*cp || (*cp == ',' && !*++cp))
 			return 1;
 		if (*cp >= 'a' && *cp <= 'p')
@@ -212,6 +231,11 @@ openrd()
 		printf("Wangtek unsupported\n");
 		return 1;
 	}
+#ifdef DOSREAD
+      else if (maj == 5) {
+        return dosopenrd(cp);
+      }
+#endif
 	inode.i_dev = dosdev;
 	/***********************************************\
 	* Now we know the disk unit and part,		*
@@ -240,8 +264,12 @@ openrd()
 	/***********************************************\
 	* Find the actual FILE on the mounted device	*
 	\***********************************************/
-	if (!find(cp))
+	switch(find(cp)) {
+	case -1:
+		return -1;
+	case 0:
 		return 1;
+	}
 
 	poff = 0;
 	name = cp;

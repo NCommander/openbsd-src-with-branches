@@ -1,10 +1,15 @@
-/*	$NetBSD: asctime.c,v 1.2 1995/03/09 23:41:11 jtc Exp $	*/
+/*
+** This file is in the public domain, so clarified as of
+** 1996-06-05 by Arthur David Olson (arthur_david_olson@nih.gov).
+*/
 
-#ifndef lint
-#ifndef NOID
-static char	elsieid[] = "@(#)asctime.c	7.6";
-#endif /* !defined NOID */
-#endif /* !defined lint */
+#if defined(LIBC_SCCS) && !defined(lint)
+#if 0
+static char	elsieid[] = "@(#)asctime.c	7.8";
+#else
+static char rcsid[] = "$OpenBSD: asctime.c,v 1.2 1996/08/19 08:34:47 tholo Exp $";
+#endif
+#endif /* LIBC_SCCS and not lint */
 
 /*LINTLIBRARY*/
 

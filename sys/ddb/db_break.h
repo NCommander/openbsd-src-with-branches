@@ -1,8 +1,9 @@
-/*	$NetBSD: db_break.h,v 1.7 1994/10/09 08:29:58 mycroft Exp $	*/
+/*	$OpenBSD: db_break.h,v 1.3 1996/03/11 11:16:00 mickey Exp $	*/
+/*	$NetBSD: db_break.h,v 1.8 1996/02/05 01:56:52 christos Exp $	*/
 
 /* 
  * Mach Operating System
- * Copyright (c) 1991,1990 Carnegie Mellon University
+ * Copyright (c) 1993,1992,1991,1990 Carnegie Mellon University
  * All Rights Reserved.
  * 
  * Permission to use, copy, modify and distribute this software and its
@@ -11,7 +12,7 @@
  * software, derivative works or modified versions, and any portions
  * thereof, and that both notices appear in supporting documentation.
  * 
- * CARNEGIE MELLON ALLOWS FREE USE OF THIS SOFTWARE IN ITS 
+ * CARNEGIE MELLON ALLOWS FREE USE OF THIS SOFTWARE IN ITS "AS IS"
  * CONDITION.  CARNEGIE MELLON DISCLAIMS ANY LIABILITY OF ANY KIND FOR
  * ANY DAMAGES WHATSOEVER RESULTING FROM THE USE OF THIS SOFTWARE.
  * 
@@ -22,8 +23,8 @@
  *  Carnegie Mellon University
  *  Pittsburgh PA 15213-3890
  * 
- * any improvements or extensions that they make and grant Carnegie the
- * rights to redistribute these changes.
+ * any improvements or extensions that they make and grant Carnegie Mellon
+ * the rights to redistribute these changes.
  *
  *	Author: David B. Golub, Carnegie Mellon University
  *	Date:	7/90
@@ -49,16 +50,22 @@ typedef struct db_breakpoint {
 	struct db_breakpoint *link;	/* link in in-use or free chain */
 } *db_breakpoint_t;
 
-db_breakpoint_t	db_find_breakpoint __P((vm_map_t, db_addr_t));
-db_breakpoint_t	db_find_breakpoint_here __P((db_addr_t));
+db_breakpoint_t db_breakpoint_alloc __P((void));
+void db_breakpoint_free __P((db_breakpoint_t));
+void db_set_breakpoint __P((vm_map_t, db_addr_t, int));
+void db_delete_breakpoint __P((vm_map_t, db_addr_t));
+db_breakpoint_t db_find_breakpoint __P((vm_map_t, db_addr_t));
+db_breakpoint_t db_find_breakpoint_here __P((db_addr_t));
 void db_set_breakpoints __P((void));
 void db_clear_breakpoints __P((void));
-
-db_breakpoint_t	db_set_temp_breakpoint __P((db_addr_t));
+db_breakpoint_t db_set_temp_breakpoint __P((db_addr_t));
 void db_delete_temp_breakpoint __P((db_breakpoint_t));
-
+void db_list_breakpoints __P((void));
+void db_delete_cmd __P((db_expr_t, int, db_expr_t, char *));
+void db_breakpoint_cmd __P((db_expr_t, int, db_expr_t, char *));
+void db_listbreak_cmd __P((db_expr_t, int, db_expr_t, char *));
 boolean_t db_map_equal __P((vm_map_t, vm_map_t));
 boolean_t db_map_current __P((vm_map_t));
 vm_map_t db_map_addr __P((vm_offset_t));
 
-#endif	_DDB_DB_BREAK_H_
+#endif	/* _DDB_DB_BREAK_H_ */

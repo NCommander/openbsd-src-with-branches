@@ -1,3 +1,4 @@
+/*	$OpenBSD: vm_object.h,v 1.4 1996/12/24 20:14:32 niklas Exp $	*/
 /*	$NetBSD: vm_object.h,v 1.16 1995/03/29 22:10:28 briggs Exp $	*/
 
 /* 
@@ -98,13 +99,19 @@ struct vm_object {
 	struct vm_object	*shadow;	/* My shadow */
 	vm_offset_t		shadow_offset;	/* Offset in shadow */
 	TAILQ_ENTRY(vm_object)	cached_list;	/* for persistence */
+	LIST_HEAD(, vm_object)	shadowers;	/* set of shadowers */
+	LIST_ENTRY(vm_object)	shadowers_list;	/* link to next shadower of
+						   this object's shadow */
 };
+
 /*
  * Flags
  */
 #define OBJ_CANPERSIST	0x0001	/* allow to persist */
 #define OBJ_INTERNAL	0x0002	/* internally created object */
 #define OBJ_ACTIVE	0x0004	/* used to mark active objects */
+#define OBJ_FADING	0x0008	/* tell others that the object is going away */
+#define OBJ_WAITING	0x8000	/* someone is waiting for paging to finish */
 
 TAILQ_HEAD(vm_object_hash_head, vm_object_hash_entry);
 
@@ -138,8 +145,53 @@ vm_object_t	kmem_object;
 #define	vm_object_lock(object)		simple_lock(&(object)->Lock)
 #define	vm_object_unlock(object)	simple_unlock(&(object)->Lock)
 #define	vm_object_lock_try(object)	simple_lock_try(&(object)->Lock)
-#define	vm_object_sleep(event, object, interruptible) \
-			thread_sleep((event), &(object)->Lock, (interruptible))
+
+#define	vm_object_sleep(event, object, interruptible, where) \
+	do {								\
+		(object)->flags |= OBJ_WAITING;				\
+		thread_sleep_msg((event), &(object)->Lock,		\
+		    (interruptible), (where));				\
+	} while (0)
+
+#define	vm_object_wakeup(object) \
+	do {								\
+		if ((object)->flags & OBJ_WAITING) {			\
+			(object)->flags &= ~OBJ_WAITING;		\
+			thread_wakeup((object));			\
+		}							\
+	} while (0)
+
+#define	vm_object_paging(object) \
+	((object)->paging_in_progress != 0)
+
+#ifndef DIAGNOSTIC
+#define	vm_object_paging_begin(object) \
+	do {								\
+		(object)->paging_in_progress++;				\
+	} while (0)
+#else
+#define	vm_object_paging_begin(object) \
+	do {								\
+		if ((object)->paging_in_progress == 0xdead)		\
+			panic("vm_object_paging_begin");		\
+		(object)->paging_in_progress++;				\
+	} while (0)
+#endif
+
+#define	vm_object_paging_end(object) \
+	do {								\
+		if (--((object)->paging_in_progress) == 0)		\
+			vm_object_wakeup((object));			\
+	} while (0)
+
+#define	vm_object_paging_wait(object) \
+	do {								\
+		while (vm_object_paging((object))) {			\
+			vm_object_sleep((object), (object), FALSE,	\
+			    "vospgw");					\
+			vm_object_lock((object));			\
+		}							\
+	} while (0)
 
 #ifdef _KERNEL
 vm_object_t	 vm_object_allocate __P((vm_size_t));
@@ -167,7 +219,7 @@ void		 vm_object_prefer __P((vm_object_t,
 		    vm_offset_t, vm_offset_t *));
 void		 vm_object_print __P((vm_object_t, boolean_t));
 void		 _vm_object_print __P((vm_object_t, boolean_t,
-		    void (*)(const char *, ...)));
+		    int (*)(const char *, ...)));
 void		 vm_object_reference __P((vm_object_t));
 void		 vm_object_remove __P((vm_pager_t));
 void		 vm_object_setpager __P((vm_object_t,

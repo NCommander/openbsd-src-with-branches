@@ -1,5 +1,5 @@
 # Makefile for texinfo/info.	-*- Indented-Text -*-
-# $Id: Makefile.in,v 1.9 1996/10/01 21:44:44 karl Exp $
+# $Id: Makefile.in,v 1.1.1.2 1996/12/15 21:38:26 downsj Exp $
 # 
 # Copyright (C) 1993,96 Free Software Foundation, Inc.
 
@@ -61,6 +61,10 @@ manext = 1
 infodir = $(prefix)/info
 DEFAULT_INFOPATH= $(infodir):.
 
+# Some systems don't want unformatted pages installed, set this var to
+# nothing and you'll get that behaviour
+INSTALL_MAN = install-man
+
 #### End of system configuration section. ####
 
 SRCS =	dir.c		display.c	echo_area.c	filesys.c \
@@ -100,10 +104,12 @@ infofiles = info.info info-stnd.info
 all: info $(infofiles)
 sub-all: all
 
-install: all
+install: all $(INSTALL_MAN)
 	$(INSTALL_PROGRAM) info $(bindir)/$(binprefix)info
 	-d=$(srcdir); test -f ./info.info && d=.; $(INSTALL_DATA) $$d/info.info $(infodir)/info.info
 	-d=$(srcdir); test -f ./info-stnd.info && d=.; $(INSTALL_DATA) $$d/info-stnd.info $(infodir)/info-stnd.info
+
+install-man:
 	-$(INSTALL_DATA) $(srcdir)/info.1 $(mandir)/$(manprefix)info.$(manext)
 	$(POST_INSTALL)
 	../util/install-info --info-dir=$(infodir) $(infodir)/info.info
@@ -217,7 +223,7 @@ session.o: 	info.h
 signals.o: 	info.h signals.h
 terminal.o: 	terminal.h termdep.h
 tilde.o: 	tilde.h
-variables.c: 	variables.h
+variables.o: 	variables.h
 window.o: 	nodes.h window.h display.h
 window.o: 	info-utils.h search.h infomap.h
 

@@ -1,3 +1,5 @@
+/*	$OpenBSD: compile.c,v 1.2 1996/06/26 05:39:05 deraadt Exp $	*/
+
 /*-
  * Copyright (c) 1992 Diomidis Spinellis.
  * Copyright (c) 1992, 1993
@@ -37,7 +39,7 @@
 
 #ifndef lint
 /* from: static char sccsid[] = "@(#)compile.c	8.1 (Berkeley) 6/6/93"; */
-static char *rcsid = "$Id: compile.c,v 1.14 1995/03/09 11:19:24 mycroft Exp $";
+static char *rcsid = "$OpenBSD: compile.c,v 1.2 1996/06/26 05:39:05 deraadt Exp $";
 #endif /* not lint */
 
 #include <sys/types.h>
@@ -674,7 +676,7 @@ compile_addr(p, a)
 	case '0': case '1': case '2': case '3': case '4': 
 	case '5': case '6': case '7': case '8': case '9':
 		a->type = AT_LINE;
-		a->u.l = strtol(p, &end, 10);
+		a->u.l = strtoul(p, &end, 10);
 		return (end);
 	default:
 		err(COMPILE, "expected context address");

@@ -1,5 +1,3 @@
-/*	$NetBSD: popen.c,v 1.11 1995/06/16 07:05:33 jtc Exp $	*/
-
 /*
  * Copyright (c) 1988, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -37,11 +35,7 @@
  */
 
 #if defined(LIBC_SCCS) && !defined(lint)
-#if 0
-static char sccsid[] = "@(#)popen.c	8.1 (Berkeley) 6/4/93";
-#else
-static char rcsid[] = "$NetBSD: popen.c,v 1.11 1995/06/16 07:05:33 jtc Exp $";
-#endif
+static char rcsid[] = "$OpenBSD: popen.c,v 1.3 1996/08/19 08:25:20 tholo Exp $";
 #endif /* LIBC_SCCS and not lint */
 
 #include <sys/param.h>
@@ -92,9 +86,15 @@ popen(program, type)
 		/* NOTREACHED */
 	case 0:				/* Child. */
 		if (*type == 'r') {
-			if (pdes[1] != STDOUT_FILENO) {
-				(void)dup2(pdes[1], STDOUT_FILENO);
-				(void)close(pdes[1]);
+			/*
+			 * We must NOT modify pdes, due to the
+			 * semantics of vfork.
+			 */
+			int tpdes1 = pdes[1];
+			if (tpdes1 != STDOUT_FILENO) {
+				(void)dup2(tpdes1, STDOUT_FILENO);
+				(void)close(tpdes1);
+				tpdes1 = STDOUT_FILENO;
 			}
 			(void) close(pdes[0]);
 		} else {
@@ -104,6 +104,12 @@ popen(program, type)
 			}
 			(void)close(pdes[1]);
 		}
+		/*
+		 * because vfork() instead of fork(), must leak FILE *,
+		 * but luckily we are terminally headed for an execl()
+		 */
+		for (cur = pidlist; cur; cur = cur->next)
+			close(fileno(cur->fp));
 		execl(_PATH_BSHELL, "sh", "-c", program, NULL);
 		_exit(127);
 		/* NOTREACHED */

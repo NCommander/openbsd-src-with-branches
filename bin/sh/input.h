@@ -1,3 +1,4 @@
+/*	$OpenBSD: input.h,v 1.8 1995/05/11 21:29:16 christos Exp $	*/
 /*	$NetBSD: input.h,v 1.8 1995/05/11 21:29:16 christos Exp $	*/
 
 /*-

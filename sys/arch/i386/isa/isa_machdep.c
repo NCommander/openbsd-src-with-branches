@@ -1,4 +1,5 @@
-/*	$NetBSD: isa_machdep.c,v 1.8 1995/10/09 06:34:47 mycroft Exp $	*/
+/*	$OpenBSD: isa_machdep.c,v 1.19 1997/01/04 14:05:50 niklas Exp $	*/
+/*	$NetBSD: isa_machdep.c,v 1.14 1996/05/12 23:06:18 mycroft Exp $	*/
 
 /*-
  * Copyright (c) 1993, 1994 Charles Hannum.
@@ -40,52 +41,36 @@
  */
 
 #include <sys/param.h>
+#include <sys/systm.h>
 #include <sys/syslog.h>
 #include <sys/device.h>
 #include <sys/malloc.h>
+#include <sys/proc.h>
+
+#include <vm/vm.h>
 
 #include <machine/pio.h>
 #include <machine/cpufunc.h>
 
 #include <dev/isa/isareg.h>
 #include <dev/isa/isavar.h>
+#include <dev/isa/isadmavar.h>
 #include <i386/isa/isa_machdep.h>
 #include <i386/isa/icu.h>
 
 #define	IDTVEC(name)	__CONCAT(X,name)
 /* default interrupt vector table entries */
-typedef (*vector)();
+typedef (*vector) __P((void));
 extern vector IDTVEC(intr)[], IDTVEC(fast)[];
 extern struct gate_descriptor idt[];
+void isa_strayintr __P((int));
+void intr_calculatemasks __P((void));
+int fakeintr __P((void *));
 
-int isamatch __P((struct device *, void *, void *));
-void isaattach __P((struct device *, struct device *, void *));
-
-struct cfdriver isacd = {
-	NULL, "isa", isamatch, isaattach, DV_DULL, sizeof(struct isa_softc), 1
-};
-
-int
-isamatch(parent, match, aux)
-	struct device *parent;
-	void *match, *aux;
-{
-
-	return (1);
-}
-
-void
-isaattach(parent, self, aux)
-	struct device *parent, *self;
-	void *aux;
-{
-	struct isa_softc *sc = (struct isa_softc *)self;
-
-	printf("\n");
-
-	TAILQ_INIT(&sc->sc_subdevs);
-	config_scan(isascan, self);
-}
+vm_offset_t bounce_alloc __P((vm_size_t, vm_offset_t, int));
+caddr_t bounce_vaddr __P((vm_offset_t));
+void bounce_free __P((vm_offset_t, vm_size_t));
+void isadma_copyfrombuf __P((caddr_t, vm_size_t, int, struct isadma_seg *));
 
 /*
  * Fill in default interrupt table (in case of spuruious interrupt
@@ -99,7 +84,7 @@ isa_defaultirq()
 	/* icu vectors */
 	for (i = 0; i < ICU_LEN; i++)
 		setgate(&idt[ICU_OFFSET + i], IDTVEC(intr)[i], 0, SDT_SYS386IGT,
-		    SEL_KPL);
+		    SEL_KPL, GICODE_SEL);
   
 	/* initialize 8259's */
 	outb(IO_ICU1, 0x11);		/* reset; program device, four bytes */
@@ -138,10 +123,12 @@ int
 isa_nmi()
 {
 
-	log(LOG_CRIT, "NMI port 61 %x, port 70 %x\n", inb(0x61), inb(0x70));
+	/* This is historic garbage; these ports are not readable */
+	log(LOG_CRIT, "No-maskable interrupt, may be parity error\n");
 	return(0);
 }
 
+u_long	intrstray[ICU_LEN] = {0};
 /*
  * Caught a stray interrupt, notify
  */
@@ -149,17 +136,15 @@ void
 isa_strayintr(irq)
 	int irq;
 {
-	static u_long strays;
-
         /*
          * Stray interrupts on irq 7 occur when an interrupt line is raised
          * and then lowered before the CPU acknowledges it.  This generally
          * means either the device is screwed or something is cli'ing too
          * long and it's timing out.
          */
-	if (++strays <= 5)
+	if (++intrstray[irq] <= 5)
 		log(LOG_ERR, "stray interrupt %d%s\n", irq,
-		    strays >= 5 ? "; stopped logging" : "");
+		    intrstray[irq] >= 5 ? "; stopped logging" : "");
 }
 
 int fastvec;
@@ -182,8 +167,7 @@ intr_calculatemasks()
 	for (irq = 0; irq < ICU_LEN; irq++) {
 		register int levels = 0;
 		for (q = intrhand[irq]; q; q = q->ih_next)
-			if (q->ih_level != IPL_NONE)
-				levels |= 1 << q->ih_level;
+			levels |= 1 << q->ih_level;
 		intrlevel[irq] = levels;
 	}
 
@@ -196,25 +180,30 @@ intr_calculatemasks()
 		imask[level] = irqs | SIR_ALLMASK;
 	}
 
-#include "sl.h"
-#include "ppp.h"
-#if NSL > 0 || NPPP > 0
-	/* In the presence of SLIP or PPP, imp > tty. */
-	imask[IPL_IMP] |= imask[IPL_TTY];
-#endif
+	/*
+	 * There are tty, network and disk drivers that use free() at interrupt
+	 * time, so imp > (tty | net | bio).
+	 */
+	imask[IPL_IMP] |= imask[IPL_TTY] | imask[IPL_NET] | imask[IPL_BIO];
 
 	/*
-	 * There are network and disk drivers that use free() at interrupt
-	 * time, so imp > (net | bio).
+	 * Enforce a hierarchy that gives slow devices a better chance at not
+	 * dropping data.
 	 */
-	imask[IPL_IMP] |= imask[IPL_NET] | imask[IPL_BIO];
+	imask[IPL_TTY] |= imask[IPL_NET] | imask[IPL_BIO];
+	imask[IPL_NET] |= imask[IPL_BIO];
+
+	/*
+	 * These are pseudo-levels.
+	 */
+	imask[IPL_NONE] = 0x00000000;
+	imask[IPL_HIGH] = 0xffffffff;
 
 	/* And eventually calculate the complete masks. */
 	for (irq = 0; irq < ICU_LEN; irq++) {
 		register int irqs = 1 << irq;
 		for (q = intrhand[irq]; q; q = q->ih_next)
-			if (q->ih_level != IPL_NONE)
-				irqs |= imask[q->ih_level];
+			irqs |= imask[q->ih_level];
 		intrmask[irq] = irqs | SIR_ALLMASK;
 	}
 
@@ -239,19 +228,22 @@ fakeintr(arg)
 	return 0;
 }
 
+#define	LEGAL_IRQ(x)	((x) >= 0 && (x) < ICU_LEN && (x) != 2)
+
 /*
  * Set up an interrupt handler to start being called.
  * XXX PRONE TO RACE CONDITIONS, UGLY, 'INTERESTING' INSERTION ALGORITHM.
  */
 void *
-isa_intr_establish(irq, type, level, ih_fun, ih_arg)
+isa_intr_establish(ic, irq, type, level, ih_fun, ih_arg, ih_what)
+	isa_chipset_tag_t ic;
 	int irq;
-	isa_intrtype type;
-	isa_intrlevel level;
+	int type;
+	int level;
 	int (*ih_fun) __P((void *));
 	void *ih_arg;
+	char *ih_what;
 {
-	int mask;
 	struct intrhand **p, *q, *ih;
 	static struct intrhand fakehand = {fakeintr};
 	extern int cold;
@@ -261,20 +253,16 @@ isa_intr_establish(irq, type, level, ih_fun, ih_arg)
 	if (ih == NULL)
 		panic("isa_intr_establish: can't malloc handler info");
 
-	mask = 1 << irq;
-
-	if (irq < 0 || irq > ICU_LEN || type == ISA_IST_NONE)
+	if (!LEGAL_IRQ(irq) || type == IST_NONE)
 		panic("intr_establish: bogus irq or type");
-	if (fastvec & mask)
-		panic("intr_establish: irq is already fast vector");
 
 	switch (intrtype[irq]) {
-	case ISA_IST_EDGE:
-	case ISA_IST_LEVEL:
+	case IST_EDGE:
+	case IST_LEVEL:
 		if (type == intrtype[irq])
 			break;
-	case ISA_IST_PULSE:
-		if (type != ISA_IST_NONE)
+	case IST_PULSE:
+		if (type != IST_NONE)
 			panic("intr_establish: can't share %s with %s",
 			    isa_intr_typename(intrtype[irq]),
 			    isa_intr_typename(type));
@@ -294,30 +282,7 @@ isa_intr_establish(irq, type, level, ih_fun, ih_arg)
 	 * this with interrupts enabled and don't want the real routine called
 	 * until masking is set up.
 	 */
-	switch (level) {
-	case ISA_IPL_NONE:
-		fakehand.ih_level = IPL_NONE;
-		break;
-
-	case ISA_IPL_BIO:
-		fakehand.ih_level = IPL_BIO;
-		break;
-
-	case ISA_IPL_NET:
-		fakehand.ih_level = IPL_NET;
-		break;
-
-	case ISA_IPL_TTY:
-		fakehand.ih_level = IPL_TTY;
-		break;
-
-	case ISA_IPL_CLOCK:
-		fakehand.ih_level = IPL_CLOCK;
-		break;
-
-	default:
-		panic("isa_intr_establish: bad interrupt level %d", level);
-	}
+	fakehand.ih_level = level;
 	*p = &fakehand;
 
 	intr_calculatemasks();
@@ -329,8 +294,9 @@ isa_intr_establish(irq, type, level, ih_fun, ih_arg)
 	ih->ih_arg = ih_arg;
 	ih->ih_count = 0;
 	ih->ih_next = NULL;
-	ih->ih_level = fakehand.ih_level;
+	ih->ih_level = level;
 	ih->ih_irq = irq;
+	ih->ih_what = ih_what;
 	*p = ih;
 
 	return (ih);
@@ -340,20 +306,16 @@ isa_intr_establish(irq, type, level, ih_fun, ih_arg)
  * Deregister an interrupt handler.
  */
 void
-isa_intr_disestablish(arg)
+isa_intr_disestablish(ic, arg)
+	isa_chipset_tag_t ic;
 	void *arg;
 {
 	struct intrhand *ih = arg;
-	int irq, mask;
+	int irq = ih->ih_irq;
 	struct intrhand **p, *q;
 
-	irq = ih->ih_irq;
-	mask = 1 << irq;
-
-	if (irq < 0 || irq > ICU_LEN)
+	if (!LEGAL_IRQ(irq))
 		panic("intr_disestablish: bogus irq");
-	if (fastvec & mask)
-		fastvec &= ~mask;
 
 	/*
 	 * Remove the handler from the chain.
@@ -370,5 +332,323 @@ isa_intr_disestablish(arg)
 	intr_calculatemasks();
 
 	if (intrhand[irq] == NULL)
-		intrtype[irq] = ISA_IST_NONE;
+		intrtype[irq] = IST_NONE;
+}
+
+void
+isa_attach_hook(parent, self, iba)
+	struct device *parent, *self;
+	struct isabus_attach_args *iba;
+{
+	/* Nothing to do. */
+}
+
+/*
+ * ISA DMA and bounce buffer management
+ */
+
+#define MAX_CHUNK 256		/* number of low memory segments */
+
+static u_int32_t bitmap[MAX_CHUNK / 32 + 1];
+
+#define set(i) (bitmap[(i) >> 5] |= (1 << (i)))
+#define clr(i) (bitmap[(i) >> 5] &= ~(1 << (i)))
+#define bit(i) ((bitmap[(i) >> 5] & (1 << (i))) != 0)
+
+static int bit_ptr = -1;	/* last segment visited */
+static int chunk_size = 0;	/* size (bytes) of one low mem segment */
+static int chunk_num = 0;	/* actual number of low mem segments */
+#ifdef DIAGNOSTIC
+int bounce_alloc_cur = 0;
+int bounce_alloc_max = 0;
+#endif
+
+vm_offset_t isaphysmem;		/* base address of low mem arena */
+int isaphysmempgs;		/* number of pages of low mem arena */
+
+/*
+ * if addr is the physical address of an allocated bounce buffer return the
+ * corresponding virtual address, 0 otherwise
+ */
+
+
+caddr_t
+bounce_vaddr(addr)
+	vm_offset_t addr;
+{
+	int i;
+
+	if (addr < vtophys(isaphysmem) ||
+	    addr >= vtophys(isaphysmem + chunk_num*chunk_size) ||
+	    ((i = (int)(addr-vtophys(isaphysmem))) % chunk_size) != 0 ||
+	    bit(i/chunk_size))
+		return(0);
+
+	return((caddr_t) (isaphysmem + (addr - vtophys(isaphysmem))));
+}
+
+/*
+ * alloc a low mem segment of size nbytes. Alignment constraint is:
+ *   (addr & pmask) == ((addr+size-1) & pmask)
+ * if waitok, call may wait for memory to become available.
+ * returns 0 on failure
+ */
+
+vm_offset_t
+bounce_alloc(nbytes, pmask, waitok)
+	vm_size_t nbytes;
+	vm_offset_t pmask;
+	int waitok;
+{
+	int i, l;
+	vm_offset_t a, b, c, r;
+	vm_size_t n;
+	int nunits, opri;
+
+	opri = splbio();
+
+	if (bit_ptr < 0) {	/* initialize low mem arena */
+		if ((chunk_size = isaphysmempgs*NBPG/MAX_CHUNK) & 1)
+			chunk_size--;
+		chunk_num =  (isaphysmempgs*NBPG) / chunk_size;
+		for(i = 0; i < chunk_num; i++)
+			set(i);
+		bit_ptr = 0;
+	}
+
+	nunits = (nbytes+chunk_size-1)/chunk_size;
+
+	/*
+	 * set a=start, b=start with address constraints, c=end
+	 * check if this request may ever succeed.
+	 */
+
+	a = isaphysmem;
+	b = (isaphysmem + ~pmask) & pmask;
+	c = isaphysmem + chunk_num*chunk_size;
+	n = nunits*chunk_size;
+	if (a + n >= c || (pmask != 0 && a + n >= b && b + n >= c)) {
+		splx(opri);
+		return(0);
+	}
+
+	for (;;) {
+		i = bit_ptr;
+		l = -1;
+		do{
+			if (bit(i) && l >= 0 && (i - l + 1) >= nunits){
+				r = vtophys(isaphysmem + (i - nunits + 1)*chunk_size);
+				if (((r ^ (r + nbytes - 1)) & pmask) == 0) {
+					for (l = i - nunits + 1; l <= i; l++)
+						clr(l);
+					bit_ptr = i;
+#ifdef DIAGNOSTIC
+					bounce_alloc_cur += nunits*chunk_size;
+					bounce_alloc_max = max(bounce_alloc_max,
+							       bounce_alloc_cur);
+#endif
+					splx(opri);
+					return(r);
+				}
+			} else if (bit(i) && l < 0)
+				l = i;
+			else if (!bit(i))
+				l = -1;
+			if (++i == chunk_num) {
+				i = 0;
+				l = -1;
+			}
+		} while(i != bit_ptr);
+
+		if (waitok)
+			tsleep((caddr_t) &bit_ptr, PRIBIO, "physmem", 0);
+		else {
+			splx(opri);
+			return(0);
+		}
+	}
+}
+
+/* 
+ * return a segent of the low mem arena to the free pool
+ */
+
+void
+bounce_free(addr, nbytes)
+	vm_offset_t addr;
+	vm_size_t nbytes;
+{
+	int i, j, opri;
+	vm_offset_t vaddr;
+
+	opri = splbio();
+
+	if ((vaddr = (vm_offset_t) bounce_vaddr(addr)) == 0)
+		panic("bounce_free: bad address");
+
+	i = (int) (vaddr - isaphysmem)/chunk_size;
+	j = i + (nbytes + chunk_size - 1)/chunk_size;
+
+#ifdef DIAGNOSTIC
+	bounce_alloc_cur -= (j - i)*chunk_size;
+#endif
+
+	while (i < j) {
+		if (bit(i))
+			panic("bounce_free: already free");
+		set(i);
+		i++;
+	}
+
+	wakeup((caddr_t) &bit_ptr);
+	splx(opri);
+}
+
+/*
+ * setup (addr, nbytes) for an ISA dma transfer.
+ * flags&ISADMA_MAP_WAITOK	may wait
+ * flags&ISADMA_MAP_BOUNCE	may use a bounce buffer if necessary
+ * flags&ISADMA_MAP_CONTIG	result must be physically contiguous
+ * flags&ISADMA_MAP_8BIT	must not cross 64k boundary
+ * flags&ISADMA_MAP_16BIT	must not cross 128k boundary
+ *
+ * returns the number of used phys entries, 0 on failure.
+ * if flags&ISADMA_MAP_CONTIG result is 1 on sucess!
+ */
+
+int
+isadma_map(addr, nbytes, phys, flags)
+	caddr_t addr;
+	vm_size_t nbytes;
+	struct isadma_seg *phys;
+	int flags;
+{
+	vm_offset_t pmask, thiskv, thisphys, nextphys;
+	vm_size_t datalen;
+	int seg, waitok, i;
+
+	if (flags & ISADMA_MAP_8BIT)
+		pmask = ~((64*1024) - 1);
+	else if (flags & ISADMA_MAP_16BIT)
+		pmask = ~((128*1024) - 1);
+	else
+		pmask = 0;
+
+	waitok = (flags & ISADMA_MAP_WAITOK) != 0;
+
+	thiskv = (vm_offset_t) addr;
+	datalen = nbytes;
+	thisphys = vtophys(thiskv);
+	seg = 0;
+
+	while (datalen > 0 && (seg == 0 || (flags & ISADMA_MAP_CONTIG) == 0)) {
+		phys[seg].length = 0;
+		phys[seg].addr = thisphys;
+
+		nextphys = thisphys;
+		while (datalen > 0 && thisphys == nextphys) {
+			nextphys = trunc_page(thisphys) + NBPG;
+			phys[seg].length += min(nextphys - thisphys, datalen);
+			datalen -= min(nextphys - thisphys, datalen);
+			thiskv = trunc_page(thiskv) + NBPG;
+			if (datalen)
+				thisphys = vtophys(thiskv);
+		}
+
+		if (phys[seg].addr + phys[seg].length > 0xffffff) {
+			if (flags & ISADMA_MAP_CONTIG) {
+				phys[seg].length = nbytes;
+				datalen = 0;
+			}
+			if ((flags & ISADMA_MAP_BOUNCE) == 0)
+				phys[seg].addr = 0;
+			else
+				phys[seg].addr = bounce_alloc(phys[seg].length,
+							      pmask, waitok);
+			if (phys[seg].addr == 0) {
+				for (i = 0; i < seg; i++)
+					if (bounce_vaddr(phys[i].addr))
+						bounce_free(phys[i].addr,
+							    phys[i].length);
+				return 0;
+			}
+		}
+
+		seg++;
+	}
+
+	/* check all constraints */
+	if (datalen ||
+	    ((phys[0].addr ^ (phys[0].addr + phys[0].length - 1)) & pmask) != 0 ||
+	    ((phys[0].addr & 1) && (flags & ISADMA_MAP_16BIT))) {
+		if ((flags & ISADMA_MAP_BOUNCE) == 0)
+			return 0;
+		if ((phys[0].addr = bounce_alloc(nbytes, pmask, waitok)) == 0)
+			return 0;
+		phys[0].length = nbytes;
+	}
+
+	return seg;
+}
+
+/*
+ * undo a ISA dma mapping. Simply return the bounced segments to the pool.
+ */
+
+void
+isadma_unmap(addr, nbytes, nphys, phys)
+	caddr_t addr;
+	vm_size_t nbytes;
+	int nphys;
+	struct isadma_seg *phys;
+{
+	int i;
+
+	for (i = 0; i < nphys; i++)
+		if (bounce_vaddr(phys[i].addr))
+			bounce_free(phys[i].addr, phys[i].length);
+}
+
+/*
+ * copy bounce buffer to buffer where needed
+ */
+
+void
+isadma_copyfrombuf(addr, nbytes, nphys, phys)
+	caddr_t addr;
+	vm_size_t nbytes;
+	int nphys;
+	struct isadma_seg *phys;
+{
+	int i;
+	caddr_t vaddr;
+
+	for (i = 0; i < nphys; i++) {
+		vaddr = bounce_vaddr(phys[i].addr);
+		if (vaddr)
+			bcopy(vaddr, addr, phys[i].length);
+		addr += phys[i].length;
+	}
+}
+
+/*
+ * copy buffer to bounce buffer where needed
+ */
+
+void
+isadma_copytobuf(addr, nbytes, nphys, phys)
+	caddr_t addr;
+	vm_size_t nbytes;
+	int nphys;
+	struct isadma_seg *phys;
+{
+	int i;
+	caddr_t vaddr;
+
+	for (i = 0; i < nphys; i++) {
+		vaddr = bounce_vaddr(phys[i].addr);
+		if (vaddr)
+			bcopy(addr, vaddr, phys[i].length);
+		addr += phys[i].length;
+	}
 }

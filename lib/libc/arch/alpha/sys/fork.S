@@ -1,3 +1,4 @@
+/*	$OpenBSD: fork.S,v 1.1 1995/02/10 17:50:34 cgd Exp $	*/
 /*	$NetBSD: fork.S,v 1.1 1995/02/10 17:50:34 cgd Exp $	*/
 
 /*
@@ -28,6 +29,11 @@
  */
 
 #include "SYS.h"
+
+#if defined(SYSLIBC_SCCS)
+	.text
+	.asciz "$OpenBSD: fork.S,v 1.2 1996/08/19 08:11:08 tholo Exp $"
+#endif /* SYSLIBC_SCCS */
 
 SYSCALL(fork)
 	cmovne	a4, zero, v0		/* a4 (rv[1]) != 0, child */

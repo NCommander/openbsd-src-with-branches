@@ -1,3 +1,4 @@
+/*	$OpenBSD: tset.c,v 1.2 1996/06/26 05:41:58 deraadt Exp $	*/
 /*	$NetBSD: tset.c,v 1.4 1994/12/07 05:08:15 jtc Exp $	*/
 
 /*-
@@ -43,7 +44,7 @@ static char copyright[] =
 #if 0
 static char sccsid[] = "@(#)tset.c	8.1 (Berkeley) 6/9/93";
 #endif
-static char rcsid[] = "$NetBSD: tset.c,v 1.4 1994/12/07 05:08:15 jtc Exp $";
+static char rcsid[] = "$OpenBSD: tset.c,v 1.2 1996/06/26 05:41:58 deraadt Exp $";
 #endif /* not lint */
 
 #include <sys/types.h>
@@ -98,7 +99,7 @@ main(argc, argv)
 
 	obsolete(argv);
 	noinit = noset = quiet = Sflag = sflag = showterm = 0;
-	while ((ch = getopt(argc, argv, "-a:d:e:Ii:k:m:np:QSrs")) != EOF) {
+	while ((ch = getopt(argc, argv, "-a:d:e:Ii:k:m:np:QSrs")) != -1) {
 		switch (ch) {
 		case '-':		/* display term only */
 			noset = 1;

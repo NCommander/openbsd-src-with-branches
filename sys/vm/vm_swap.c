@@ -1,4 +1,5 @@
-/*	$NetBSD: vm_swap.c,v 1.31 1995/10/07 06:29:02 mycroft Exp $	*/
+/*	$OpenBSD: vm_swap.c,v 1.4 1997/04/10 13:48:51 deraadt Exp $	*/
+/*	$NetBSD: vm_swap.c,v 1.32 1996/02/05 01:54:09 christos Exp $	*/
 
 /*
  * Copyright (c) 1982, 1986, 1989, 1993
@@ -38,7 +39,6 @@
 #include <sys/param.h>
 #include <sys/systm.h>
 #include <sys/buf.h>
-#include <sys/conf.h>
 #include <sys/proc.h>
 #include <sys/namei.h>
 #include <sys/dmap.h>		/* XXX */
@@ -48,6 +48,9 @@
 
 #include <sys/mount.h>
 #include <sys/syscallargs.h>
+
+#include <vm/vm.h>
+#include <vm/vm_conf.h>
 
 #include <miscfs/specfs/specdev.h>
 
@@ -60,6 +63,8 @@ int	nswap, nswdev;
 int	niswdev;		/* number of interleaved swap devices */
 int	niswap;			/* size of interleaved swap area */
 #endif
+
+int swfree __P((struct proc *, int));
 
 /*
  * Set up swap devices.
@@ -239,7 +244,7 @@ swstrategy(bp)
 		panic("swstrategy");
 	VHOLD(sp->sw_vp);
 	if ((bp->b_flags & B_READ) == 0) {
-		if (vp = bp->b_vp) {
+		if ((vp = bp->b_vp) != NULL) {
 			vp->v_numoutput--;
 			if ((vp->v_flag & VBWAIT) && vp->v_numoutput <= 0) {
 				vp->v_flag &= ~VBWAIT;
@@ -254,19 +259,23 @@ swstrategy(bp)
 	VOP_STRATEGY(bp);
 }
 
+/*ARGSUSED*/
 int
-swread(dev, uio)
+swread(dev, uio, ioflag)
 	dev_t dev;
 	struct uio *uio;
+	int ioflag;
 {
 
 	return (physio(swstrategy, NULL, dev, B_READ, minphys, uio));
 }
 
+/*ARGSUSED*/
 int
-swwrite(dev, uio)
+swwrite(dev, uio, ioflag)
 	dev_t dev;
 	struct uio *uio;
+	int ioflag;
 {
 
 	return (physio(swstrategy, NULL, dev, B_WRITE, minphys, uio));
@@ -293,10 +302,10 @@ sys_swapon(p, v, retval)
 	int error;
 	struct nameidata nd;
 
-	if (error = suser(p->p_ucred, &p->p_acflag))
+	if ((error = suser(p->p_ucred, &p->p_acflag)) != 0)
 		return (error);
 	NDINIT(&nd, LOOKUP, FOLLOW, UIO_USERSPACE, SCARG(uap, name), p);
-	if (error = namei(&nd))
+	if ((error = namei(&nd)) != 0)
 		return (error);
 	vp = nd.ni_vp;
 	if (vp->v_type != VBLK) {
@@ -315,7 +324,7 @@ sys_swapon(p, v, retval)
 				return (EBUSY);
 			}
 			sp->sw_vp = vp;
-			if (error = swfree(p, sp - swdevt)) {
+			if ((error = swfree(p, sp - swdevt)) != 0) {
 				vrele(vp);
 				return (error);
 			}
@@ -359,7 +368,7 @@ swfree(p, index)
 	vp = sp->sw_vp;
 	/* If root on swap, then the skip open/close operations. */
 	if (vp != rootvp) {
-		if (error = VOP_OPEN(vp, FREAD|FWRITE, p->p_ucred, p))
+		if ((error = VOP_OPEN(vp, FREAD|FWRITE, p->p_ucred, p)) != 0)
 			return (error);
 	}
 	sp->sw_flags |= SW_FREED;
@@ -430,15 +439,15 @@ swfree(p, index)
 			 * Don't use the first cluster of the device
 			 * in case it starts with a label or boot block.
 			 */
-			rminit(swapmap, blk - ctod(CLSIZE),
-			    vsbase + ctod(CLSIZE), "swap", nswapmap);
+			rminit(swapmap, blk - ctod(btoc(SWAPSKIPBYTES)),
+			    vsbase + ctod(btoc(SWAPSKIPBYTES)), "swap", nswapmap);
 		} else if (dvbase == 0) {
 			/*
 			 * Don't use the first cluster of the device
 			 * in case it starts with a label or boot block.
 			 */
-			rmfree(swapmap, blk - ctod(CLSIZE),
-			    vsbase + ctod(CLSIZE));
+			rmfree(swapmap, blk - ctod(btoc(SWAPSKIPBYTES)),
+			    vsbase + ctod(btoc(SWAPSKIPBYTES)));
 		} else
 			rmfree(swapmap, blk, vsbase);
 	}
@@ -453,8 +462,10 @@ swfree(p, index)
 	 * root (sure beats rewriting standalone restor).
 	 */
 	if (vp == rootvp) {
+#ifndef MINIROOTSIZE
 		struct mount *mp;
 		struct statfs *sp;
+#endif
 		long firstblk;
 		int rootblks;
 
@@ -468,9 +479,9 @@ swfree(p, index)
 #endif
 		if (rootblks > nblks)
 			panic("swfree miniroot size");
-		/* First ctod(CLSIZE) blocks are not in the map. */
-		firstblk = rmalloc(swapmap, rootblks - ctod(CLSIZE));
-		if (firstblk != ctod(CLSIZE))
+		/* First ctod(btoc(SWAPSKIPBYTES)) blocks are not in the map. */
+		firstblk = rmalloc(swapmap, rootblks - ctod(btoc(SWAPSKIPBYTES)));
+		if (firstblk != ctod(btoc(SWAPSKIPBYTES)))
 			panic("swfree miniroot save");
 		printf("Preserved %d blocks of miniroot leaving %d pages of swap\n",
 		       rootblks, dtoc(nblks - rootblks));

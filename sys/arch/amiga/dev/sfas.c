@@ -1,3 +1,6 @@
+/*    $OpenBSD: sfas.c,v 1.4 1996/02/26 21:08:02 niklas Exp $  */
+/*	$NetBSD: sfas.c,v 1.12 1996/10/13 03:07:33 christos Exp $	*/
+
 /*
  * Copyright (c) 1995 Daniel Widenfalk
  * Copyright (c) 1994 Christian E. Hopps
@@ -65,16 +68,37 @@
 void sfasinitialize __P((struct sfas_softc *));
 void sfas_minphys   __P((struct buf *bp));
 int  sfas_scsicmd   __P((struct scsi_xfer *xs));
-int  sfas_donextcmd __P((struct sfas_softc *dev, struct sfas_pending *pendp));
+void sfas_donextcmd __P((struct sfas_softc *dev, struct sfas_pending *pendp));
 void sfas_scsidone  __P((struct sfas_softc *dev, struct scsi_xfer *xs,
 			 int stat));
-void sfasintr	    __P((struct sfas_softc *dev));
-void sfasiwait	    __P((struct sfas_softc *dev));
-void sfasreset	    __P((struct sfas_softc *dev, int how));
-int  sfasselect	    __P((struct sfas_softc *dev, struct sfas_pending *pendp,
+void sfasiwait __P((struct sfas_softc *dev));
+void sfasreset __P((struct sfas_softc *dev, int how));
+int  sfasselect __P((struct sfas_softc *dev, struct sfas_pending *pendp,
 			 unsigned char *cbuf, int clen,
 			 unsigned char *buf, int len, int mode));
-void sfasicmd	    __P((struct sfas_softc *dev, struct sfas_pending *pendp));
+void sfasicmd __P((struct sfas_softc *dev, struct sfas_pending *pendp));
+int  sfas_postaction __P((struct sfas_softc *dev, sfas_regmap_p rp,
+			struct nexus *nexus));
+int  sfas_midaction __P((struct sfas_softc *dev, sfas_regmap_p rp,
+			struct nexus *nexus));
+void sfas_init_nexus __P((struct sfas_softc *dev, struct nexus *nexus));
+int  sfasgo __P((struct sfas_softc *dev, struct sfas_pending *pendp));
+void sfas_save_pointers __P((struct sfas_softc *dev));
+void sfas_restore_pointers __P((struct sfas_softc *dev));
+void sfas_ixfer __P((struct sfas_softc *dev));
+void sfas_build_sdtrm __P((struct sfas_softc *dev, int period, int offset));
+int  sfas_select_unit __P((struct sfas_softc *dev, short target));
+struct nexus *sfas_arbitate_target __P((struct sfas_softc *dev, int target));
+void sfas_setup_nexus __P((struct sfas_softc *dev, struct nexus *nexus,
+			struct sfas_pending *pendp, unsigned char *cbuf,
+			int clen, unsigned char *buf, int len, int mode));
+void sfas_request_sense __P((struct sfas_softc *dev, struct nexus *nexus));
+int sfas_pretests __P((struct sfas_softc *dev, sfas_regmap_p rp));
+#ifdef SFAS_NEED_VM_PATCH
+void sfas_unlink_vm_link __P((struct sfas_softc *dev));
+void sfas_link_vm_link __P((struct sfas_softc *dev,
+				struct vm_link_data *vm_link_data));
+#endif
 
 /*
  * Initialize these to make 'em patchable. Defaults to enable sync and discon.
@@ -86,7 +110,7 @@ u_char	sfas_inhibit_disc[8] = { 0, 0, 0, 0, 0, 0, 0, 0 };
 #define QPRINTF(a) if (sfas_debug > 1) printf a
 int	sfas_debug = 0;
 #else
-#define QPRINTF
+#define QPRINTF(a)
 #endif
 
 /*
@@ -125,9 +149,11 @@ void
 sfasinitialize(dev)
 	struct sfas_softc *dev;
 {
-	sfas_regmap_p	 rp;
 	u_int		*pte, page;
 	int		 i;
+	u_int		inhibit_sync;
+	extern u_long	scsi_nosync;
+	extern int	shift_nosync;
 
 	dev->sc_led_status = 0;
 
@@ -162,9 +188,15 @@ sfasinitialize(dev)
 	dev->sc_config2 = SFAS_CFG2_FEATURES_ENABLE;
 	dev->sc_config3 = (dev->sc_clock_freq > 25 ? SFAS_CFG3_FASTCLK : 0);
 
-/* Precalculate timeout value and clock period. */
+#if 0	/* don't use floating point */
 	dev->sc_timeout_val  = 1+dev->sc_timeout*dev->sc_clock_freq/
 				 (7.682*dev->sc_clock_conv_fact);
+#endif
+	/* Precalculate timeout value and clock period. */
+	dev->sc_timeout_val  = 1 +
+	    (dev->sc_timeout * dev->sc_clock_freq * 1000)
+	    / (7682 * dev->sc_clock_conv_fact);
+
 	dev->sc_clock_period = 1000/dev->sc_clock_freq;
 
 	sfasreset(dev, 1 | 2);	/* Reset Chip and Bus */
@@ -174,6 +206,14 @@ sfasinitialize(dev)
 	dev->sc_msg_out_len = 0;
 
 	dev->sc_flags = 0;
+
+	if (scsi_nosync) {
+		inhibit_sync = (scsi_nosync >> shift_nosync) & 0xff;
+		shift_nosync += 8;
+		for (i = 0; i < 8; ++i)
+			if (inhibit_sync & (1 << i))
+				sfas_inhibit_sync[i] = 1;
+	}
 
 	for(i=0; i<8; i++)
 		sfas_init_nexus(dev, &dev->sc_nexus[i]);
@@ -207,7 +247,7 @@ sfasinitialize(dev)
 	*pte = PG_V | PG_RW | PG_CI | page;
 	TBIAS();
 
-	printf(": dmabuf 0x%x", dev->sc_bump_pa);
+	printf(": dmabuf 0x%lx", dev->sc_bump_pa);
 
 /*
  * FIX
@@ -232,7 +272,7 @@ sfasinitialize(dev)
  * to us during interrupt time.
  */
 		offset = (vm_offset_t)dev->sc_vm_link - VM_MIN_KERNEL_ADDRESS;
-		printf(" vmlnk %x", dev->sc_vm_link);
+		printf(" vmlnk %p", dev->sc_vm_link);
 		vm_object_reference(kernel_object);
 		vm_map_insert(kernel_map, kernel_object, offset,
 			      (vm_offset_t)dev->sc_vm_link,
@@ -277,7 +317,7 @@ sfas_link_vm_link(dev, vm_link_data)
 
 	if (vm_link_data->pages) {
 		for(i=0; i<vm_link_data->pages; i++)
-			physaccess(dev->sc_vm_link+i*NBPG, vm_link_data->pa[i],
+			physaccess(dev->sc_vm_link+i*NBPG, (caddr_t)vm_link_data->pa[i],
 				   NBPG, PG_CI);
 
 		dev->sc_flags |= SFAS_HAS_VM_LINK;
@@ -295,9 +335,6 @@ sfas_scsicmd(struct scsi_xfer *xs)
 	struct scsi_link	*slp;
 	struct sfas_pending	*pendp;
 	int			 flags, s, target;
-#ifdef SFAS_NEED_VM_PATCH
-	struct vm_link_data	 vm_link_data;
-#endif
 
 	slp = xs->sc_link;
 	dev = slp->adapter_softc;
@@ -331,7 +368,7 @@ sfas_scsicmd(struct scsi_xfer *xs)
  *  2) Out data source/destination is not in the u-stack area.
  */
 	if (!(flags & SCSI_POLL) && (
-#ifdef M68040
+#if defined(M68040) || defined(M68060)
 	    ((mmutype == MMU_68040) && ((vm_offset_t)xs->data >= 0xFFFC0000)) &&
 #endif
 		       ((vm_offset_t)xs->data >= 0xFF000000))) {
@@ -346,7 +383,7 @@ sfas_scsicmd(struct scsi_xfer *xs)
 							sva)/NBPG;
 
 		for(n=0; n<pendp->vm_link_data.pages; n++)
-			pendp->vm_link_data.pa[n] = kvtop(sva + n*NBPG);
+			pendp->vm_link_data.pa[n] = kvtop((caddr_t)(sva + n*NBPG));
 	}
 #endif
 
@@ -365,7 +402,7 @@ sfas_scsicmd(struct scsi_xfer *xs)
 /*
  * Actually select the unit, whereby the whole scsi-process is started.
  */
-int
+void
 sfas_donextcmd(dev, pendp)
 	struct sfas_softc	*dev;
 	struct sfas_pending	*pendp;
@@ -791,7 +828,7 @@ sfas_setup_nexus(dev, nexus, pendp, cbuf, clen, buf, len, mode)
 	int			 len;
 	int			 mode;
 {
-	char	sync, target, lun;
+	int	sync, target, lun;
 
 	target = pendp->xs->sc_link->target;
 	lun    = pendp->xs->sc_link->lun;
@@ -938,7 +975,7 @@ sfas_request_sense(dev, nexus)
 	struct scsi_xfer	*xs;
 	struct sfas_pending	 pend;
 	struct scsi_sense	 rqs;
-	int			 stat, mode;
+	int			 mode;
 
 	xs = nexus->xs;
 
@@ -1374,7 +1411,7 @@ sfas_postaction(dev, rp, nexus)
 	sfas_regmap_p	  rp;
 	struct nexus	 *nexus;
 {
-	int	i, left, len;
+	int	i, len;
 	u_char	cmd;
 	short	offset, period;
 
@@ -1393,54 +1430,57 @@ sfas_postaction(dev, rp, nexus)
 		 * from the DMA block. */
 		dev->sc_setup_dma(dev, 0, 0, SFAS_DMA_CLEAR);
 		if (dev->sc_cur_link < dev->sc_max_link) {
-		  if (!dev->sc_dma_blk_len) {
-		    dev->sc_dma_blk_ptr = dev->sc_chain[dev->sc_cur_link].ptr;
-		    dev->sc_dma_blk_len = dev->sc_chain[dev->sc_cur_link].len;
-		    dev->sc_dma_blk_flg = dev->sc_chain[dev->sc_cur_link].flg;
-		  }
+			if (!dev->sc_dma_blk_len) {
+				dev->sc_dma_blk_ptr =
+				    dev->sc_chain[dev->sc_cur_link].ptr;
+				dev->sc_dma_blk_len =
+				    dev->sc_chain[dev->sc_cur_link].len;
+				dev->sc_dma_blk_flg =
+				    dev->sc_chain[dev->sc_cur_link].flg;
+			}
 
-		  /* We should use polled IO here. */
-		  if (dev->sc_dma_blk_flg == SFAS_CHAIN_PRG) {
-			sfas_ixfer(dev);
-			dev->sc_cur_link++;
-			dev->sc_dma_len = 0;
-			break;
-		  }
-		  else if (dev->sc_dma_blk_flg == SFAS_CHAIN_BUMP)
-			len = dev->sc_dma_blk_len;
-		  else
-			len = dev->sc_need_bump(dev, dev->sc_dma_blk_ptr,
-						dev->sc_dma_blk_len);
+			/* We should use polled IO here. */
+			if (dev->sc_dma_blk_flg == SFAS_CHAIN_PRG) {
+				sfas_ixfer(dev);
+				dev->sc_cur_link++;
+				dev->sc_dma_len = 0;
+				break;
+			} else if (dev->sc_dma_blk_flg == SFAS_CHAIN_BUMP)
+				len = dev->sc_dma_blk_len;
+			else
+				len = dev->sc_need_bump(dev,
+				    dev->sc_dma_blk_ptr, dev->sc_dma_blk_len);
 
-		  /*
-		   * If len != 0 we must bump the data, else we just DMA it
-		   * straight into memory.
-		   */
-		  if (len) {
-			dev->sc_dma_buf = dev->sc_bump_pa;
-			dev->sc_dma_len = len;
+			/*
+			 * If len != 0 we must bump the data, else we just
+			 * DMA it straight into memory.
+			 */
+			if (len) {
+				dev->sc_dma_buf = dev->sc_bump_pa;
+				dev->sc_dma_len = len;
 
-			if (nexus->state == SFAS_NS_DATA_OUT)
-			  bcopy(dev->sc_buf, dev->sc_bump_va, dev->sc_dma_len);
-		  } else {
-			dev->sc_dma_buf = dev->sc_dma_blk_ptr;
-			dev->sc_dma_len = dev->sc_dma_blk_len;
-		  }
+				if (nexus->state == SFAS_NS_DATA_OUT)
+					bcopy(dev->sc_buf, dev->sc_bump_va,
+					    dev->sc_dma_len);
+			} else {
+				dev->sc_dma_buf = dev->sc_dma_blk_ptr;
+				dev->sc_dma_len = dev->sc_dma_blk_len;
+			}
 
-		  /* Load DMA with adress and length of transfer. */
-		  dev->sc_setup_dma(dev, dev->sc_dma_buf, dev->sc_dma_len,
-				    ((nexus->state == SFAS_NS_DATA_OUT) ?
-				     SFAS_DMA_WRITE : SFAS_DMA_READ));
+			/* Load DMA with adress and length of transfer. */
+			dev->sc_setup_dma(dev, dev->sc_dma_buf, dev->sc_dma_len,
+			    ((nexus->state == SFAS_NS_DATA_OUT)
+			    ?  SFAS_DMA_WRITE : SFAS_DMA_READ));
 
-		  cmd = SFAS_CMD_TRANSFER_INFO | SFAS_CMD_DMA;
+			cmd = SFAS_CMD_TRANSFER_INFO | SFAS_CMD_DMA;
 		} else {
 			/*
 			 * Hmmm, the unit wants more info than we have or has
 			 * more than we want. Let the chip handle that.
 			 */
 
-			*rp->sfas_tc_low = 256;
-			*rp->sfas_tc_mid = 0;
+			*rp->sfas_tc_low = 0;
+			*rp->sfas_tc_mid = 1;
 			*rp->sfas_tc_high = 0;
 			cmd = SFAS_CMD_TRANSFER_PAD;
 		}
@@ -1702,7 +1742,6 @@ sfasintr(dev)
 {
 	sfas_regmap_p	 rp;
 	struct nexus	*nexus;
-	int		 s;
 
 	rp = dev->sc_fas;
 

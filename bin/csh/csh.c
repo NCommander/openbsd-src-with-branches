@@ -1,3 +1,4 @@
+/*	$OpenBSD: csh.c,v 1.4 1996/10/27 23:45:32 millert Exp $	*/
 /*	$NetBSD: csh.c,v 1.14 1995/04/29 23:21:28 mycroft Exp $	*/
 
 /*-
@@ -43,13 +44,14 @@ static char copyright[] =
 #if 0
 static char sccsid[] = "@(#)csh.c	8.2 (Berkeley) 10/12/93";
 #else
-static char rcsid[] = "$NetBSD: csh.c,v 1.14 1995/04/29 23:21:28 mycroft Exp $";
+static char rcsid[] = "$OpenBSD: csh.c,v 1.4 1996/10/27 23:45:32 millert Exp $";
 #endif
 #endif /* not lint */
 
 #include <sys/types.h>
 #include <sys/ioctl.h>
 #include <sys/stat.h>
+#include <sys/param.h>
 #include <fcntl.h>
 #include <errno.h>
 #include <pwd.h>
@@ -232,7 +234,7 @@ main(argc, argv)
      */
     set(STRstatus, Strsave(STR0));
 
-    if ((tcp = getenv("HOME")) != NULL)
+    if ((tcp = getenv("HOME")) != NULL && strlen(tcp) < MAXPATHLEN)
 	cp = SAVE(tcp);
     else
 	cp = NULL;
@@ -249,15 +251,15 @@ main(argc, argv)
      */
     if ((tcp = getenv("LOGNAME")) != NULL ||
 	(tcp = getenv("USER")) != NULL)
-	set(STRuser, SAVE(tcp));
+	set(STRuser, quote(SAVE(tcp)));
     if ((tcp = getenv("TERM")) != NULL)
-	set(STRterm, SAVE(tcp));
+	set(STRterm, quote(SAVE(tcp)));
 
     /*
      * Re-initialize path if set in environment
      */
     if ((tcp = getenv("PATH")) == NULL)
-	set1(STRpath, defaultpath(), &shvhed);
+	setq(STRpath, defaultpath(), &shvhed);
     else
 	importpath(SAVE(tcp));
 

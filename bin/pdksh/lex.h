@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: lex.h,v 1.2 1996/10/01 02:05:43 downsj Exp $	*/
 
 /*
  * Source input, lexer and parser
@@ -14,12 +14,13 @@ struct source {
 	int	type;		/* input type */
 	char const *start;	/* start of current buffer */
 	union {
-		char ugbuf[2];	/* buffer for ungetsc() (SREREAD) */
 		char **strv;	/* string [] */
 		struct shf *shf; /* shell file */
-		struct tbl *tblp; /* alias */
+		struct tbl *tblp; /* alias (SALIAS) */
 		char *freeme;	/* also for SREREAD */
 	} u;
+	char	ugbuf[2];	/* buffer for ungetsc() (SREREAD) and
+				 * alias (SALIAS) */
 	int	line;		/* line number */
 	int	errline;	/* line the error occured on (0 if not set) */
 	const char *file;	/* input file name */
@@ -51,7 +52,9 @@ struct source {
  */
 #define	SBASE	0		/* outside any lexical constructs */
 #define	SWORD	1		/* implicit quoting for substitute() */
+#ifdef KSH
 #define	SDPAREN	2		/* inside (( )), implicit quoting */
+#endif /* KSH */
 #define	SSQUOTE	3		/* inside '' */
 #define	SDQUOTE	4		/* inside "" */
 #define	SBRACE	5		/* inside ${} */
@@ -93,7 +96,9 @@ typedef union {
 #define	FUNCTION 274
 #define	TIME	275
 #define	REDIR	276
+#ifdef KSH
 #define MDPAREN	277		/* (( )) */
+#endif /* KSH */
 #define BANG	278		/* ! */
 #define DBRACKET 279		/* [[ .. ]] */
 #define COPROC	280		/* |& */

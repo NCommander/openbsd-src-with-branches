@@ -1,5 +1,3 @@
-/*	$NetBSD: mcount.c,v 1.3 1995/02/27 12:54:42 cgd Exp $	*/
-
 /*-
  * Copyright (c) 1983, 1992, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -33,12 +31,8 @@
  * SUCH DAMAGE.
  */
 
-#if !defined(lint) && !defined(KERNEL) && defined(LIBC_SCCS)
-#if 0
-static char sccsid[] = "@(#)mcount.c	8.1 (Berkeley) 6/4/93";
-#else
-static char rcsid[] = "$NetBSD: mcount.c,v 1.3 1995/02/27 12:54:42 cgd Exp $";
-#endif
+#if !defined(lint) && !defined(_KERNEL) && defined(LIBC_SCCS)
+static char rcsid[] = "$OpenBSD: mcount.c,v 1.4 1996/08/19 08:28:04 tholo Exp $";
 #endif
 
 #include <sys/param.h>
@@ -59,6 +53,7 @@ static char rcsid[] = "$NetBSD: mcount.c,v 1.3 1995/02/27 12:54:42 cgd Exp $";
  * both frompcindex and frompc.  Any reasonable, modern compiler will
  * perform this optimization.
  */
+_MCOUNT_DECL __P((u_long frompc, u_long selfpc));
 _MCOUNT_DECL(frompc, selfpc)	/* _mcount; may be static, inline, etc */
 	register u_long frompc, selfpc;
 {
@@ -66,7 +61,7 @@ _MCOUNT_DECL(frompc, selfpc)	/* _mcount; may be static, inline, etc */
 	register struct tostruct *top, *prevtop;
 	register struct gmonparam *p;
 	register long toindex;
-#ifdef KERNEL
+#ifdef _KERNEL
 	register int s;
 #endif
 
@@ -77,7 +72,7 @@ _MCOUNT_DECL(frompc, selfpc)	/* _mcount; may be static, inline, etc */
 	 */
 	if (p->state != GMON_PROF_ON)
 		return;
-#ifdef KERNEL
+#ifdef _KERNEL
 	MCOUNT_ENTER;
 #else
 	p->state = GMON_PROF_BUSY;
@@ -91,7 +86,14 @@ _MCOUNT_DECL(frompc, selfpc)	/* _mcount; may be static, inline, etc */
 	if (frompc > p->textsize)
 		goto done;
 
-	frompcindex = &p->froms[frompc / (p->hashfraction * sizeof(*p->froms))];
+#if (HASHFRACTION & (HASHFRACTION - 1)) == 0
+	if (p->hashfraction == HASHFRACTION)
+		frompcindex =
+		    &p->froms[frompc / (HASHFRACTION * sizeof(*p->froms))];
+	else
+#endif
+		frompcindex =
+		    &p->froms[frompc / (p->hashfraction * sizeof(*p->froms))];
 	toindex = *frompcindex;
 	if (toindex == 0) {
 		/*
@@ -163,7 +165,7 @@ _MCOUNT_DECL(frompc, selfpc)	/* _mcount; may be static, inline, etc */
 		
 	}
 done:
-#ifdef KERNEL
+#ifdef _KERNEL
 	MCOUNT_EXIT;
 #else
 	p->state = GMON_PROF_ON;
@@ -171,14 +173,16 @@ done:
 	return;
 overflow:
 	p->state = GMON_PROF_ERROR;
-#ifdef KERNEL
+#ifdef _KERNEL
 	MCOUNT_EXIT;
 #endif
 	return;
 }
 
+#ifndef lint
 /*
  * Actual definition of mcount function.  Defined in <machine/profile.h>,
  * which is included by <sys/gmon.h>.
  */
 MCOUNT
+#endif

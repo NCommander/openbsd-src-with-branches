@@ -1,4 +1,5 @@
-/*	$NetBSD: spkr.c,v 1.17 1994/10/30 21:44:18 cgd Exp $	*/
+/*	$OpenBSD: spkr.c,v 1.10 1996/07/27 11:16:10 deraadt Exp $ */
+/*	$NetBSD: spkr.c,v 1.23.4.1 1996/07/15 22:15:11 fvdl Exp $	*/
 
 /*
  * spkr.c -- device driver for console speaker on 80386
@@ -9,22 +10,45 @@
  *      use hz value from param.c
  */
 
-#include "speaker.h"
-#if NSPEAKER > 0
+#include "spkr.h"
+#if NSPKR > 0
+#if NSPKR > 1
+#error only one speaker device per system
+#endif
 
 #include <sys/param.h>
+#include <sys/systm.h>
 #include <sys/kernel.h>
 #include <sys/errno.h>
+#include <sys/device.h>
 #include <sys/buf.h>
 #include <sys/uio.h>
+#include <sys/proc.h>
 
 #include <machine/cpu.h>
 #include <machine/pio.h>
 #include <machine/spkr.h>
+#include <machine/conf.h>
 
-#include <i386/isa/isareg.h>
+#include <dev/isa/isareg.h>
+#include <dev/isa/isavar.h>
 #include <i386/isa/timerreg.h>
 #include <i386/isa/spkrreg.h>
+
+int spkrprobe __P((struct device *, void *, void *));
+void spkrattach __P((struct device *, struct device *, void *));
+
+struct spkr_softc {
+	struct device sc_dev;
+};
+
+struct cfattach spkr_ca = {
+	sizeof(struct spkr_softc), spkrprobe, spkrattach
+};
+
+struct cfdriver spkr_cd = {
+	NULL, "spkr", DV_TTY
+};
 
 /**************** MACHINE DEPENDENT PART STARTS HERE *************************
  *
@@ -44,23 +68,28 @@
  */
 #define PIT_MODE	(TIMER_SEL2|TIMER_16BIT|TIMER_SQWAVE)
 
-void
-speakerattach()
-{
-}
+static void endtone __P((void *));
+static void tone __P((u_int, u_int));
+static void endrest __P((void *));
+static void rest __P((int));
+static void playinit __P((void));
+static void playtone __P((int, int, int));
+static void playstring __P((char *, int));
 
-static int endtone()
-/* turn off the speaker, ending current tone */
+static void
+endtone(v)
+    void *v;
 {
-    wakeup((caddr_t)endtone);
+    wakeup(endtone);
     outb(PITAUX_PORT, inb(PITAUX_PORT) & ~PIT_SPKR);
 }
 
-static void tone(hz, ticks)
+static
+void tone(hz, ticks)
 /* emit tone of frequency hz for given number of ticks */
-unsigned int hz, ticks;
+    u_int hz, ticks;
 {
-    unsigned int divisor = TIMER_DIV(hz);
+    u_int divisor = TIMER_DIV(hz);
     int sps;
 
 #ifdef DEBUG
@@ -82,19 +111,22 @@ unsigned int hz, ticks;
      * This is so other processes can execute while the tone is being
      * emitted.
      */
-    timeout((caddr_t)endtone, (caddr_t)NULL, ticks);
-    sleep((caddr_t)endtone, PZERO - 1);
+    timeout(endtone, NULL, ticks);
+    sleep(endtone, PZERO - 1);
 }
 
-static int endrest()
+static void
+endrest(v)
 /* end a rest */
+	void *v;
 {
-    wakeup((caddr_t)endrest);
+    wakeup(endrest);
 }
 
-static void rest(ticks)
+static void
+rest(ticks)
 /* rest for given number of ticks */
-int	ticks;
+    int	ticks;
 {
     /*
      * Set timeout to endrest function, then give up the timeslice.
@@ -104,8 +136,8 @@ int	ticks;
 #ifdef DEBUG
     printf("rest: %d\n", ticks);
 #endif /* DEBUG */
-    timeout((caddr_t)endrest, (caddr_t)NULL, ticks);
-    sleep((caddr_t)endrest, PZERO - 1);
+    timeout(endrest, NULL, ticks);
+    sleep(endrest, PZERO - 1);
 }
 
 /**************** PLAY STRING INTERPRETER BEGINS HERE **********************
@@ -169,8 +201,10 @@ static int pitchtab[] =
 /* 5 */ 2093, 2217, 2349, 2489, 2637, 2794, 2960, 3136, 3322, 3520, 3729, 3951,
 /* 6 */ 4186, 4435, 4698, 4978, 5274, 5588, 5920, 6272, 6644, 7040, 7459, 7902,
 };
+#define NOCTAVES (sizeof(pitchtab) / sizeof(pitchtab[0]) / OCTAVE_NOTES)
 
-static void playinit()
+static void
+playinit()
 {
     octave = DFLT_OCTAVE;
     whole = (hz * SECS_PER_MIN * WHOLE_NOTE) / DFLT_TEMPO;
@@ -180,9 +214,10 @@ static void playinit()
     octprefix = TRUE;	/* act as though there was an initial O(n) */
 }
 
-static void playtone(pitch, value, sustain)
+static void
+playtone(pitch, value, sustain)
 /* play tone of proper duration for current rhythm signature */
-int	pitch, value, sustain;
+    int	pitch, value, sustain;
 {
     register int	sound, silence, snum = 1, sdenom = 1;
 
@@ -212,19 +247,11 @@ int	pitch, value, sustain;
     }
 }
 
-static int abs(n)
-int n;
-{
-    if (n < 0)
-	return(-n);
-    else
-	return(n);
-}
-
-static void playstring(cp, slen)
+static void
+playstring(cp, slen)
 /* interpret and play an item from a notation string */
-char	*cp;
-size_t	slen;
+    char	*cp;
+    int		slen;
 {
     int		pitch, lastpitch = OCTAVE_NOTES * DFLT_OCTAVE;
 
@@ -247,13 +274,13 @@ size_t	slen;
 	    pitch = notetab[c - 'A'] + octave * OCTAVE_NOTES;
 
 	    /* this may be followed by an accidental sign */
-	    if (cp[1] == '#' || cp[1] == '+')
+	    if (slen > 0 && (cp[1] == '#' || cp[1] == '+'))
 	    {
 		++pitch;
 		++cp;
 		slen--;
 	    }
-	    else if (cp[1] == '-')
+	    else if (slen > 0 && cp[1] == '-')
 	    {
 		--pitch;
 		++cp;
@@ -288,7 +315,7 @@ size_t	slen;
 		timeval = value;
 
 	    /* ...and/or sustain dots */
-	    for (sustain = 0; cp[1] == '.'; cp++)
+	    for (sustain = 0; slen > 0 && cp[1] == '.'; cp++)
 	    {
 		slen--;
 		sustain++;
@@ -299,13 +326,13 @@ size_t	slen;
 	    break;
 
 	case 'O':
-	    if (cp[1] == 'N' || cp[1] == 'n')
+	    if (slen > 0 && (cp[1] == 'N' || cp[1] == 'n'))
 	    {
 		octprefix = octtrack = FALSE;
 		++cp;
 		slen--;
 	    }
-	    else if (cp[1] == 'L' || cp[1] == 'l')
+	    else if (slen > 0 && (cp[1] == 'L' || cp[1] == 'l'))
 	    {
 		octtrack = TRUE;
 		++cp;
@@ -314,14 +341,14 @@ size_t	slen;
 	    else
 	    {
 		GETNUM(cp, octave);
-		if (octave >= sizeof(pitchtab) / OCTAVE_NOTES)
+		if (octave >= NOCTAVES)
 		    octave = DFLT_OCTAVE;
 		octprefix = TRUE;
 	    }
 	    break;
 
 	case '>':
-	    if (octave < sizeof(pitchtab) / OCTAVE_NOTES - 1)
+	    if (octave < NOCTAVES - 1)
 		octave++;
 	    octprefix = TRUE;
 	    break;
@@ -334,7 +361,7 @@ size_t	slen;
 
 	case 'N':
 	    GETNUM(cp, pitch);
-	    for (sustain = 0; cp[1] == '.'; cp++)
+	    for (sustain = 0; slen > 0 && cp[1] == '.'; cp++)
 	    {
 		slen--;
 		sustain++;
@@ -354,7 +381,7 @@ size_t	slen;
 	    GETNUM(cp, timeval);
 	    if (timeval <= 0 || timeval > MIN_VALUE)
 		timeval = value;
-	    for (sustain = 0; cp[1] == '.'; cp++)
+	    for (sustain = 0; slen > 0 && cp[1] == '.'; cp++)
 	    {
 		slen--;
 		sustain++;
@@ -370,19 +397,19 @@ size_t	slen;
 	    break;
 
 	case 'M':
-	    if (cp[1] == 'N' || cp[1] == 'n')
+	    if (slen > 0 && (cp[1] == 'N' || cp[1] == 'n'))
 	    {
 		fill = NORMAL;
 		++cp;
 		slen--;
 	    }
-	    else if (cp[1] == 'L' || cp[1] == 'l')
+	    else if (slen > 0 && (cp[1] == 'L' || cp[1] == 'l'))
 	    {
 		fill = LEGATO;
 		++cp;
 		slen--;
 	    }
-	    else if (cp[1] == 'S' || cp[1] == 's')
+	    else if (slen > 0 && (cp[1] == 'S' || cp[1] == 's'))
 	    {
 		fill = STACCATO;
 		++cp;
@@ -402,14 +429,71 @@ size_t	slen;
 static int spkr_active;	/* exclusion flag */
 static struct buf *spkr_inbuf; /* incoming buf */
 
-int spkropen(dev)
-dev_t	dev;
+int
+spkrprobe (parent, match, aux)
+	struct device *parent;
+	void *match;
+	void *aux;
+{
+	struct cfdata *cf = match;
+#include "vt.h"
+#include "pc.h"
+#if NPC > 0
+	extern struct cfattach pc_ca;
+#endif
+#if NVT > 0
+	extern struct cfattach vt_ca;
+#endif
+	/*
+	 * We only attach to the keyboard controller via
+	 * the console drivers. (We really wish we could be the
+	 * child of a real keyboard controller driver.)
+	 */
+	if ((parent == NULL) || (parent->dv_cfdata == NULL) ||
+	   (
+#if NPC > 0
+	    (parent->dv_cfdata->cf_attach != &pc_ca)
+#endif
+#if NPC > 0 && NVT > 0	/* XXX could we have both of them ??? */
+	    &&
+#endif
+#if NVT > 0
+	    (parent->dv_cfdata->cf_attach != &vt_ca)
+#endif
+#if NPC == 0 && NVT == 0
+	    1
+#endif
+	   ))
+		return (0);
+	if (cf->cf_loc[1] != PITAUX_PORT)
+		return (0);
+	return (1);
+}
+
+static int spkr_attached = 0;
+
+void
+spkrattach(parent, self, aux)
+	struct device *parent;
+	struct device *self;
+	void *aux;
+{
+	printf(" port 0x%x\n", self->dv_cfdata->cf_loc[1]);
+	spkr_attached = 1;
+}
+
+int
+spkropen(dev, flags, mode, p)
+    dev_t dev;
+    int	flags;
+    int mode;
+    struct proc *p;
 {
 #ifdef DEBUG
     printf("spkropen: entering with dev = %x\n", dev);
 #endif /* DEBUG */
 
-    if (minor(dev) != 0)
+    if (minor(dev) != 0 || !spkr_attached)
 	return(ENXIO);
     else if (spkr_active)
 	return(EBUSY);
@@ -422,11 +506,13 @@ dev_t	dev;
     return(0);
 }
 
-int spkrwrite(dev, uio)
-dev_t	dev;
-struct uio *uio;
+int
+spkrwrite(dev, uio, flags)
+    dev_t dev;
+    struct uio *uio;
+    int flags;
 {
-    register unsigned n;
+    register int n;
     char *cp;
     int error;
 #ifdef DEBUG
@@ -434,7 +520,7 @@ struct uio *uio;
 		dev, uio->uio_resid);
 #endif /* DEBUG */
 
-    if (minor(dev) != 0)
+    if (minor(dev) != 0 || !spkr_attached)
 	return(ENXIO);
     else
     {
@@ -447,8 +533,11 @@ struct uio *uio;
     }
 }
 
-int spkrclose(dev)
-dev_t	dev;
+int spkrclose(dev, flags, mode, p)
+    dev_t	dev;
+    int flags;
+    int mode;
+    struct proc *p;
 {
 #ifdef DEBUG
     printf("spkrclose: entering with dev = %x\n", dev);
@@ -458,7 +547,7 @@ dev_t	dev;
 	return(ENXIO);
     else
     {
-	endtone();
+	endtone(NULL);
 	brelse(spkr_inbuf);
 	spkr_active = 0;
     }
@@ -466,11 +555,11 @@ dev_t	dev;
 }
 
 int spkrioctl(dev, cmd, data, flag, p)
-dev_t	dev;
-u_long	cmd;
-caddr_t data;
-int	flag;
-struct	proc *p;
+    dev_t dev;
+    u_long cmd;
+    caddr_t data;
+    int	flag;
+    struct proc *p;
 {
 #ifdef DEBUG
     printf("spkrioctl: entering with dev = %x, cmd = %lx\n", dev, cmd);

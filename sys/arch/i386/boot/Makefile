@@ -26,15 +26,6 @@
 
 S=	${.CURDIR}/../../..
 
-### find out what to use for libkern
-KERNREL=
-.include "$S/lib/libkern/Makefile.inc"
-.ifndef PROF
-LIBKERN=	${KERNLIB}
-.else
-LIBKERN=	${KERNLIB_PROF}
-.endif
-
 machine-links:
 	-rm -f machine && \
 	    ln -s ${.CURDIR}/../include machine
@@ -50,14 +41,20 @@ CFLAGS=	-O6 -D_KERNEL -DI386_CPU -DI486_CPU -DI586_CPU
 CFLAGS+=-DDO_BAD144 -I. -I${.CURDIR} -I$S -I${.CURDIR}/../..
 
 # Uncomment this to make the boot block talk to a serial port.
-#CPPFLAGS+=-DSERIAL
+#CPPFLAGS+=-DSERIAL -DCOMCONSOLE=0x3F8 -DCONSPEED=9600
 
 # start.o should be first
-OBJS=	start.o table.o boot.o asm.o bios.o io.o disk.o sys.o version.o
+OBJS=	start.o table.o boot.o asm.o bios.o io.o disk.o sys.o version.o \
+	serial.o
 
-boot:	${OBJS} ${LIBKERN}
-	${LD} -Bstatic -e start -N -T 0 -o boot ${OBJS} ${LIBKERN}
+boot:	${OBJS}
+	${LD} -Bstatic -e start -N -T 0 -o boot ${OBJS}
 	cp boot boot.sym
+	@if [ `size boot | awk 'BEGIN {getline} {print $$1+$$2}'` -gt 7680 ];\
+	then \
+		echo BOOT BLOCKS ARE TOO BIG;\
+		fail;\
+	fi
 	@strip boot
 	@sh ${.CURDIR}/rmaouthdr boot boot.tmp
 	@mv -f boot.tmp boot

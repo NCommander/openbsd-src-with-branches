@@ -43,7 +43,6 @@
 struct mdproc {
 	int	*md_regs;		/* registers on current frame */
 	int	md_flags;		/* machine-dependent flags */
-	int	md_upte[UPAGES];	/* ptes for mapping u page */
 };
 
 /* md_flags */

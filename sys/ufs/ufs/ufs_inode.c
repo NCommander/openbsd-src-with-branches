@@ -1,4 +1,5 @@
-/*	$NetBSD: ufs_inode.c,v 1.5 1994/12/14 13:03:59 mycroft Exp $	*/
+/*	$OpenBSD$	*/
+/*	$NetBSD: ufs_inode.c,v 1.7 1996/05/11 18:27:52 mycroft Exp $	*/
 
 /*
  * Copyright (c) 1991, 1993
@@ -47,6 +48,7 @@
 #include <sys/mount.h>
 #include <sys/kernel.h>
 #include <sys/malloc.h>
+#include <sys/namei.h>
 
 #include <ufs/ufs/quota.h>
 #include <ufs/ufs/inode.h>
@@ -55,33 +57,34 @@
 
 u_long	nextgennumber;		/* Next generation number to assign. */
 
-int
+void
 ufs_init()
 {
-	static int done;
+	static int done = 0;
 
 	if (done)
-		return (0);
+		return;
 	done = 1;
 	ufs_ihashinit();
 #ifdef QUOTA
 	dqinit();
 #endif
-	return (0);
+	return;
 }
 
 /*
  * Last reference to an inode.  If necessary, write or delete it.
  */
 int
-ufs_inactive(ap)
+ufs_inactive(v)
+	void *v;
+{
 	struct vop_inactive_args /* {
 		struct vnode *a_vp;
-	} */ *ap;
-{
+	} */ *ap = v;
 	register struct vnode *vp = ap->a_vp;
 	register struct inode *ip = VTOI(vp);
-	struct timeval tv;
+	struct timespec ts;
 	int mode, error;
 	extern int prtactive;
 
@@ -118,8 +121,8 @@ ufs_inactive(ap)
 		VOP_VFREE(vp, ip->i_number, mode);
 	}
 	if (ip->i_flag & (IN_ACCESS | IN_CHANGE | IN_MODIFIED | IN_UPDATE)) {
-		tv = time;
-		VOP_UPDATE(vp, &tv, &tv, 0);
+		TIMEVAL_TO_TIMESPEC(&time, &ts);
+		VOP_UPDATE(vp, &ts, &ts, 0);
 	}
 	VOP_UNLOCK(vp);
 	/*
@@ -139,7 +142,6 @@ ufs_reclaim(vp)
 	register struct vnode *vp;
 {
 	register struct inode *ip;
-	int i;
 	extern int prtactive;
 
 	if (prtactive && vp->v_usecount != 0)
@@ -158,10 +160,13 @@ ufs_reclaim(vp)
 		ip->i_devvp = 0;
 	}
 #ifdef QUOTA
-	for (i = 0; i < MAXQUOTAS; i++) {
-		if (ip->i_dquot[i] != NODQUOT) {
-			dqrele(vp, ip->i_dquot[i]);
-			ip->i_dquot[i] = NODQUOT;
+	{
+		int i;
+		for (i = 0; i < MAXQUOTAS; i++) {
+			if (ip->i_dquot[i] != NODQUOT) {
+				dqrele(vp, ip->i_dquot[i]);
+				ip->i_dquot[i] = NODQUOT;
+			}
 		}
 	}
 #endif

@@ -1,3 +1,4 @@
+/* *	$OpenBSD: pathnames.h,v 1.1.1.1 1995/10/18 08:45:58 deraadt Exp $*/
 /*-
  * Copyright (c) 1990 The Regents of the University of California.
  * All rights reserved.
@@ -31,7 +32,6 @@
  * SUCH DAMAGE.
  *
  *	from: @(#)pathnames.h	5.2 (Berkeley) 4/16/91
- *	$Id: pathnames.h,v 1.3 1994/01/03 19:14:20 jtc Exp $
  */
 
 #define _NAME_RANTMP	"ranlib.XXXXXX"

@@ -1,4 +1,5 @@
-/*	$NetBSD: main.c,v 1.18 1995/07/12 03:39:53 cgd Exp $	*/
+/*	$OpenBSD: main.c,v 1.6 1996/10/20 08:36:35 tholo Exp $	*/
+/*	$NetBSD: main.c,v 1.22 1996/10/11 20:15:48 thorpej Exp $	*/
 
 /*
  * Copyright (c) 1980, 1986, 1993
@@ -43,7 +44,7 @@ static char copyright[] =
 #if 0
 static char sccsid[] = "@(#)main.c	8.2 (Berkeley) 1/23/94";
 #else
-static char rcsid[] = "$NetBSD: main.c,v 1.18 1995/07/12 03:39:53 cgd Exp $";
+static char rcsid[] = "$OpenBSD: main.c,v 1.6 1996/10/20 08:36:35 tholo Exp $";
 #endif
 #endif /* not lint */
 
@@ -61,12 +62,13 @@ static char rcsid[] = "$NetBSD: main.c,v 1.18 1995/07/12 03:39:53 cgd Exp $";
 
 #include "fsck.h"
 #include "extern.h"
+#include "fsutil.h"
 
-void	catch(), catchquit(), voidquit();
 int	returntosingle;
-int argtoi __P((int, char *, char *, int));
-int checkfilesys __P((char *, char *, long, int));
-int docheck __P((struct fstab *));
+int	argtoi __P((int, char *, char *, int));
+int	checkfilesys __P((char *, char *, long, int));
+int	docheck __P((struct fstab *));
+int	main __P((int, char *[]));
 
 int
 main(argc, argv)
@@ -74,13 +76,13 @@ main(argc, argv)
 	char	*argv[];
 {
 	int ch;
-	int ret, maxrun = 0;
-	extern char *optarg, *blockcheck();
+	int ret = 0;
+	extern char *optarg;
 	extern int optind;
 
 	sync();
 	skipclean = 1;
-	while ((ch = getopt(argc, argv, "dfpnNyYb:c:l:m:")) != EOF) {
+	while ((ch = getopt(argc, argv, "dfpnNyYb:c:l:m:")) != -1) {
 		switch (ch) {
 		case 'p':
 			preen++;
@@ -103,10 +105,6 @@ main(argc, argv)
 
 		case 'f':
 			skipclean = 0;
-			break;
-
-		case 'l':
-			maxrun = argtoi('l', "number", optarg, 10);
 			break;
 
 		case 'm':
@@ -138,14 +136,14 @@ main(argc, argv)
 		(void)signal(SIGINT, catch);
 	if (preen)
 		(void)signal(SIGQUIT, catchquit);
-	if (argc) {
+
+	if (argc)
 		while (argc-- > 0)
 			(void)checkfilesys(blockcheck(*argv++), 0, 0L, 0);
-		exit(0);
-	}
-	ret = checkfstab(preen, maxrun, docheck, checkfilesys);
+
 	if (returntosingle)
-		exit(2);
+		ret = 2;
+
 	exit(ret);
 }
 
@@ -198,7 +196,7 @@ checkfilesys(filesys, mntpt, auxdata, child)
 
 	if (preen && child)
 		(void)signal(SIGQUIT, voidquit);
-	cdevname = filesys;
+	setcdevname(filesys, preen);
 	if (debug && preen)
 		pwarn("starting\n");
 	switch (setup(filesys)) {
@@ -213,7 +211,7 @@ checkfilesys(filesys, mntpt, auxdata, child)
 	 */
 	if (preen == 0) {
 		printf("** Last Mounted on %s\n", sblock.fs_fsmnt);
-		if (hotroot)
+		if (hotroot())
 			printf("** Root file system\n");
 		printf("** Phase 1 - Check Blocks and Sizes\n");
 	}
@@ -262,31 +260,31 @@ checkfilesys(filesys, mntpt, auxdata, child)
 	 */
 	n_ffree = sblock.fs_cstotal.cs_nffree;
 	n_bfree = sblock.fs_cstotal.cs_nbfree;
-	pwarn("%ld files, %ld used, %ld free ",
+	pwarn("%d files, %d used, %d free ",
 	    n_files, n_blks, n_ffree + sblock.fs_frag * n_bfree);
-	printf("(%ld frags, %ld blocks, %d.%d%% fragmentation)\n",
+	printf("(%d frags, %d blocks, %d.%d%% fragmentation)\n",
 	    n_ffree, n_bfree, (n_ffree * 100) / sblock.fs_dsize,
 	    ((n_ffree * 1000 + sblock.fs_dsize / 2) / sblock.fs_dsize) % 10);
 	if (debug &&
 	    (n_files -= maxino - ROOTINO - sblock.fs_cstotal.cs_nifree))
-		printf("%ld files missing\n", n_files);
+		printf("%d files missing\n", n_files);
 	if (debug) {
 		n_blks += sblock.fs_ncg *
 			(cgdmin(&sblock, 0) - cgsblock(&sblock, 0));
 		n_blks += cgsblock(&sblock, 0) - cgbase(&sblock, 0);
 		n_blks += howmany(sblock.fs_cssize, sblock.fs_fsize);
 		if (n_blks -= maxfsblock - (n_ffree + sblock.fs_frag * n_bfree))
-			printf("%ld blocks missing\n", n_blks);
+			printf("%d blocks missing\n", n_blks);
 		if (duplist != NULL) {
 			printf("The following duplicate blocks remain:");
 			for (dp = duplist; dp; dp = dp->next)
-				printf(" %ld,", dp->dup);
+				printf(" %d,", dp->dup);
 			printf("\n");
 		}
 		if (zlnhead != NULL) {
 			printf("The following zero link count inodes remain:");
 			for (zlnp = zlnhead; zlnp; zlnp = zlnp->next)
-				printf(" %lu,", zlnp->zlncnt);
+				printf(" %u,", zlnp->zlncnt);
 			printf("\n");
 		}
 	}
@@ -314,7 +312,9 @@ checkfilesys(filesys, mntpt, auxdata, child)
 		return (0);
 	if (!preen)
 		printf("\n***** FILE SYSTEM WAS MODIFIED *****\n");
-	if (hotroot) {
+	if (rerun)
+		printf("\n***** PLEASE RERUN FSCK *****\n");
+	if (hotroot()) {
 		struct statfs stfs_buf;
 		/*
 		 * We modified the root.  Do a mount update on
@@ -330,7 +330,7 @@ checkfilesys(filesys, mntpt, auxdata, child)
 				args.export.ex_flags = 0;
 				args.export.ex_root = 0;
 				flags |= MNT_UPDATE | MNT_RELOAD;
-				ret = mount(MOUNT_UFS, "/", flags, &args);
+				ret = mount(MOUNT_FFS, "/", flags, &args);
 				if (ret == 0)
 					return(0);
 			}

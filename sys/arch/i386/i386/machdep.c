@@ -1,7 +1,8 @@
-/*	$NetBSD: machdep.c,v 1.180.2.1 1995/10/15 22:11:38 mycroft Exp $	*/
+/*	$OpenBSD: machdep.c,v 1.44 1997/04/04 16:14:09 mickey Exp $	*/
+/*	$NetBSD: machdep.c,v 1.202 1996/05/18 15:54:59 christos Exp $	*/
 
 /*-
- * Copyright (c) 1993, 1994, 1995 Charles M. Hannum.  All rights reserved.
+ * Copyright (c) 1993, 1994, 1995, 1996 Charles M. Hannum.  All rights reserved.
  * Copyright (c) 1992 Terrence R. Lambert.
  * Copyright (c) 1982, 1987, 1990 The Regents of the University of California.
  * All rights reserved.
@@ -59,6 +60,7 @@
 #include <sys/mount.h>
 #include <sys/vnode.h>
 #include <sys/device.h>
+#include <sys/extent.h>
 #include <sys/sysctl.h>
 #include <sys/syscallargs.h>
 #ifdef SYSVMSG
@@ -77,10 +79,13 @@
 #include <vm/vm_kern.h>
 #include <vm/vm_page.h>
 
+#include <sys/sysctl.h>
+
 #include <machine/cpu.h>
 #include <machine/cpufunc.h>
 #include <machine/gdt.h>
 #include <machine/pio.h>
+#include <machine/bus.h>
 #include <machine/psl.h>
 #include <machine/reg.h>
 #include <machine/specialreg.h>
@@ -91,6 +96,23 @@
 #include <dev/ic/mc146818reg.h>
 #include <i386/isa/isa_machdep.h>
 #include <i386/isa/nvram.h>
+
+#include "apm.h"
+
+#if NAPM > 0
+#include <machine/apmvar.h>
+#endif
+
+#ifdef DDB
+#include <machine/db_machdep.h>
+#include <ddb/db_access.h>
+#include <ddb/db_sym.h>
+#include <ddb/db_extern.h>
+#endif
+
+#ifdef VM86
+#include <machine/vm86.h>
+#endif
 
 #include "isa.h"
 #include "npx.h"
@@ -131,9 +153,38 @@ extern	vm_offset_t avail_start, avail_end;
 static	vm_offset_t hole_start, hole_end;
 static	vm_offset_t avail_next;
 
-caddr_t allocsys __P((caddr_t));
-void dumpsys __P((void));
-void cpu_reset __P((void));
+/*
+ * Extent maps to manage I/O and ISA memory hole space.  Allocate
+ * storage for 8 regions in each, initially.  Later, ioport_malloc_safe
+ * will indicate that it's safe to use malloc() to dynamically allocate
+ * region descriptors.
+ *
+ * N.B. At least two regions are _always_ allocated from the iomem
+ * extent map; (0 -> ISA hole) and (end of ISA hole -> end of RAM).
+ *
+ * The extent maps are not static!  Machine-dependent ISA and EISA
+ * routines need access to them for bus address space allocation.
+ */
+static	long ioport_ex_storage[EXTENT_FIXED_STORAGE_SIZE(8) / sizeof(long)];
+static	long iomem_ex_storage[EXTENT_FIXED_STORAGE_SIZE(8) / sizeof(long)];
+struct	extent *ioport_ex;
+struct	extent *iomem_ex;
+static	ioport_malloc_safe;
+
+caddr_t	allocsys __P((caddr_t));
+void	dumpsys __P((void));
+void	identifycpu __P((void));
+void	init386 __P((vm_offset_t));
+void	consinit __P((void));
+#ifdef COMPAT_NOMID
+static int exec_nomid	__P((struct proc *, struct exec_package *));
+#endif
+
+int	bus_mem_add_mapping __P((bus_addr_t, bus_size_t,
+	    int, bus_space_handle_t *));
+
+extern long cnvmem;	/* BIOS's conventional memory size */
+extern long extmem;	/* BIOS's extended memory size */
 
 /*
  * Machine-dependent startup code
@@ -161,7 +212,11 @@ cpu_startup()
 	msgbufmapped = 1;
 
 	printf(version);
+	startrtclock();
+	
 	identifycpu();
+	printf("BIOS mem  = %ld conventional, %ld extended\n",
+		1024 * cnvmem, 1024 * extmem);
 	printf("real mem  = %d\n", ctob(physmem));
 
 	/*
@@ -185,12 +240,15 @@ cpu_startup()
 	if (vm_map_find(buffer_map, vm_object_allocate(size), (vm_offset_t)0,
 			&minaddr, size, FALSE) != KERN_SUCCESS)
 		panic("startup: cannot allocate buffers");
-	if ((bufpages / nbuf) >= btoc(MAXBSIZE)) {
-		/* don't want to alloc more physical mem than needed */
-		bufpages = btoc(MAXBSIZE) * nbuf;
-	}
+
 	base = bufpages / nbuf;
 	residual = bufpages % nbuf;
+	if (base >= MAXBSIZE / CLBYTES) {
+		/* don't want to alloc more physical mem than needed */
+		base = MAXBSIZE / CLBYTES;
+		residual = 0;
+	}
+
 	for (i = 0; i < nbuf; i++) {
 		vm_size_t curbufsize;
 		vm_offset_t curbuf;
@@ -238,7 +296,7 @@ cpu_startup()
 	for (i = 1; i < ncallout; i++)
 		callout[i-1].c_next = &callout[i];
 
-	printf("avail mem = %d\n", ptoa(cnt.v_free_count));
+	printf("avail mem = %ld\n", ptoa(cnt.v_free_count));
 	printf("using %d buffers containing %d bytes of memory\n",
 		nbuf, bufpages * CLBYTES);
 
@@ -250,6 +308,14 @@ cpu_startup()
 	/*
 	 * Configure the system.
 	 */
+	if (boothowto & RB_CONFIG) {
+#ifdef BOOT_CONFIG
+		user_config();
+#else
+		printf("kernel does not support -c; continuing..\n");
+#endif
+	}
+	ioport_malloc_safe = 1;
 	configure();
 
 	/*
@@ -312,6 +378,9 @@ allocsys(v)
 	valloc(msqids, struct msqid_ds, msginfo.msgmni);
 #endif
 
+#ifndef BUFCACHEPERCENT
+#define BUFCACHEPERCENT 5
+#endif
 	/*
 	 * Determine how many buffers to allocate.  We use 10% of the
 	 * first 2MB of memory, and 5% of the rest, with a minimum of 16
@@ -323,12 +392,23 @@ allocsys(v)
 			bufpages = physmem / (10 * CLSIZE);
 		else
 			bufpages = (btoc(2 * 1024 * 1024) + physmem) /
-			    (20 * CLSIZE);
+			    ((100/BUFCACHEPERCENT) * CLSIZE);
 	if (nbuf == 0) {
 		nbuf = bufpages;
 		if (nbuf < 16)
 			nbuf = 16;
 	}
+
+	/* Restrict to at most 70% filled kvm */
+	if (nbuf * MAXBSIZE >
+	    (VM_MAX_KERNEL_ADDRESS-VM_MIN_KERNEL_ADDRESS) * 7 / 10)
+		nbuf = (VM_MAX_KERNEL_ADDRESS-VM_MIN_KERNEL_ADDRESS) /
+		    MAXBSIZE * 7 / 10;
+
+	/* More buffer pages than fits into the buffers is senseless.  */
+	if (bufpages > nbuf * MAXBSIZE / CLBYTES)
+		bufpages = nbuf * MAXBSIZE / CLBYTES;
+
 	if (nswbuf == 0) {
 		nswbuf = (nbuf / 2) &~ 1;	/* force even */
 		if (nswbuf > 256)
@@ -352,11 +432,12 @@ struct cpu_nameclass i386_cpus[] = {
 	{ "i486DX",	CPUCLASS_486 },	/* CPU_486   */
 	{ "Pentium",	CPUCLASS_586 },	/* CPU_586   */
 	{ "Cx486DLC",	CPUCLASS_486 },	/* CPU_486DLC (Cyrix) */
+	{ "Pentium Pro",CPUCLASS_686 },	/* CPU_686   */
 };
 
+void
 identifycpu()
 {
-	int len;
 	extern char cpu_vendor[];
 
 	printf("CPU: ");
@@ -381,12 +462,22 @@ identifycpu()
 	case CPUCLASS_586:
 		strcat(cpu_model, "586");
 		break;
+	case CPUCLASS_686:
+		strcat(cpu_model, "686");
+		break;
 	default:
 		strcat(cpu_model, "unknown");	/* will panic below... */
 		break;
 	}
 	strcat(cpu_model, "-class CPU)");
-	printf("%s\n", cpu_model);	/* cpu speed would be nice, but how? */
+	printf("%s", cpu_model);
+#if defined(I586_CPU)
+	if (cpu_class >= CPUCLASS_586) {
+		calibrate_cyclecounter();
+		printf(" %d MHz", pentium_mhz);
+	}
+#endif
+	printf("\n");
 
 	/*
 	 * Now that we have told the user what they have,
@@ -397,7 +488,9 @@ identifycpu()
 #error No CPU classes configured.
 #endif
 #ifndef I586_CPU
+	case CPUCLASS_686:
 	case CPUCLASS_586:
+		printf("NOTICE: this kernel does not support Pentium CPU class\n");
 #ifdef I486_CPU
 		printf("NOTICE: lowering CPU class to i486\n");
 		cpu_class = CPUCLASS_486;
@@ -406,6 +499,7 @@ identifycpu()
 #endif
 #ifndef I486_CPU
 	case CPUCLASS_486:
+		printf("NOTICE: this kernel does not support i486 CPU class\n");
 #ifdef I386_CPU
 		printf("NOTICE: lowering CPU class to i386\n");
 		cpu_class = CPUCLASS_386;
@@ -414,7 +508,8 @@ identifycpu()
 #endif
 #ifndef I386_CPU
 	case CPUCLASS_386:
-		panic("CPU class not configured");
+		printf("NOTICE: this kernel does not support i386 CPU class\n");
+		panic("no appropriate CPU class available");
 #endif
 	default:
 		break;
@@ -434,17 +529,17 @@ identifycpu()
 
 #if defined(I486_CPU) || defined(I586_CPU)
 	/*
-	 * On a 486 or above, enable ring 0 write protection and outer ring
-	 * alignment checking.
+	 * On a 486 or above, enable ring 0 write protection.
 	 */
 	if (cpu_class >= CPUCLASS_486)
-		lcr0(rcr0() | CR0_WP | CR0_AM);
+		lcr0(rcr0() | CR0_WP);
 #endif
 }
 
 /*  
  * machine dependent system variables.
  */ 
+int
 cpu_sysctl(name, namelen, oldp, oldlenp, newp, newlen, p)
 	int *name;
 	u_int namelen;
@@ -475,15 +570,19 @@ cpu_sysctl(name, namelen, oldp, oldlenp, newp, newlen, p)
 }
 
 #ifdef COMPAT_IBCS2
+void ibcs2_sendsig __P((sig_t, int, int, u_long, int, union sigval));
+
 void
-ibcs2_sendsig(catcher, sig, mask, code)
+ibcs2_sendsig(catcher, sig, mask, code, type, val)
 	sig_t catcher;
 	int sig, mask;
 	u_long code;
+	int type;
+	union sigval val;
 {
 	extern int bsd_to_ibcs2_sig[];
 
-	sendsig(catcher, bsd_to_ibcs2_sig[sig], mask, code);
+	sendsig(catcher, bsd_to_ibcs2_sig[sig], mask, code, type, val);
 }
 #endif
 
@@ -498,10 +597,12 @@ ibcs2_sendsig(catcher, sig, mask, code)
  * specified pc, psl.
  */
 void
-sendsig(catcher, sig, mask, code)
+sendsig(catcher, sig, mask, code, type, val)
 	sig_t catcher;
 	int sig, mask;
 	u_long code;
+	int type;
+	union sigval val;
 {
 	register struct proc *p = curproc;
 	register struct trapframe *tf;
@@ -523,20 +624,22 @@ sendsig(catcher, sig, mask, code)
 	 */
 	if ((psp->ps_flags & SAS_ALTSTACK) && !oonstack &&
 	    (psp->ps_sigonstack & sigmask(sig))) {
-		fp = (struct sigframe *)(psp->ps_sigstk.ss_base +
+		fp = (struct sigframe *)(psp->ps_sigstk.ss_sp +
 		    psp->ps_sigstk.ss_size - sizeof(struct sigframe));
 		psp->ps_sigstk.ss_flags |= SS_ONSTACK;
 	} else {
 		fp = (struct sigframe *)tf->tf_esp - 1;
 	}
 
-	frame.sf_code = code;
 	frame.sf_scp = &fp->sf_sc;
+	frame.sf_sip = NULL;
 	frame.sf_handler = catcher;
 
 	/*
 	 * Build the signal context to be used by sigreturn.
 	 */
+	frame.sf_sc.sc_err = tf->tf_err;
+	frame.sf_sc.sc_trapno = tf->tf_trapno;
 	frame.sf_sc.sc_onstack = oonstack;
 	frame.sf_sc.sc_mask = mask;
 #ifdef VM86
@@ -545,6 +648,7 @@ sendsig(catcher, sig, mask, code)
 		frame.sf_sc.sc_fs = tf->tf_vm86_fs;
 		frame.sf_sc.sc_es = tf->tf_vm86_es;
 		frame.sf_sc.sc_ds = tf->tf_vm86_ds;
+		frame.sf_sc.sc_eflags = get_vflags(p);
 	} else
 #endif
 	{
@@ -552,20 +656,26 @@ sendsig(catcher, sig, mask, code)
 		__asm("movl %%fs,%w0" : "=r" (frame.sf_sc.sc_fs));
 		frame.sf_sc.sc_es = tf->tf_es;
 		frame.sf_sc.sc_ds = tf->tf_ds;
+		frame.sf_sc.sc_eflags = tf->tf_eflags;
 	}
-	frame.sf_sc.sc_edi    = tf->tf_edi;
-	frame.sf_sc.sc_esi    = tf->tf_esi;
-	frame.sf_sc.sc_ebp    = tf->tf_ebp;
-	frame.sf_sc.sc_ebx    = tf->tf_ebx;
-	frame.sf_sc.sc_edx    = tf->tf_edx;
-	frame.sf_sc.sc_ecx    = tf->tf_ecx;
-	frame.sf_sc.sc_eax    = tf->tf_eax;
-	frame.sf_sc.sc_eip    = tf->tf_eip;
-	frame.sf_sc.sc_cs     = tf->tf_cs;
-	frame.sf_sc.sc_eflags = tf->tf_eflags;
-	frame.sf_sc.sc_esp    = tf->tf_esp;
-	frame.sf_sc.sc_ss     = tf->tf_ss;
+	frame.sf_sc.sc_edi = tf->tf_edi;
+	frame.sf_sc.sc_esi = tf->tf_esi;
+	frame.sf_sc.sc_ebp = tf->tf_ebp;
+	frame.sf_sc.sc_ebx = tf->tf_ebx;
+	frame.sf_sc.sc_edx = tf->tf_edx;
+	frame.sf_sc.sc_ecx = tf->tf_ecx;
+	frame.sf_sc.sc_eax = tf->tf_eax;
+	frame.sf_sc.sc_eip = tf->tf_eip;
+	frame.sf_sc.sc_cs = tf->tf_cs;
+	frame.sf_sc.sc_esp = tf->tf_esp;
+	frame.sf_sc.sc_ss = tf->tf_ss;
 
+	if (psp->ps_siginfo & sigmask(sig)) {
+		frame.sf_sip = &fp->sf_si;
+		initsiginfo(&frame.sf_si, sig, code, type, val);
+	}
+
+	/* XXX don't copyout siginfo if not needed? */
 	if (copyout(&frame, fp, sizeof(frame)) != 0) {
 		/*
 		 * Process has trashed its stack; give it an illegal
@@ -578,14 +688,14 @@ sendsig(catcher, sig, mask, code)
 	/*
 	 * Build context to run handler in.
 	 */
-	tf->tf_esp = (int)fp;
-	tf->tf_eip = (int)(((char *)PS_STRINGS) - (esigcode - sigcode));
-#ifdef VM86
-	tf->tf_eflags &= ~PSL_VM;
-#endif
-	tf->tf_cs = GSEL(GUCODE_SEL, SEL_UPL);
-	tf->tf_ds = GSEL(GUDATA_SEL, SEL_UPL);
+	__asm("movl %w0,%%gs" : : "r" (GSEL(GUDATA_SEL, SEL_UPL)));
+	__asm("movl %w0,%%fs" : : "r" (GSEL(GUDATA_SEL, SEL_UPL)));
 	tf->tf_es = GSEL(GUDATA_SEL, SEL_UPL);
+	tf->tf_ds = GSEL(GUDATA_SEL, SEL_UPL);
+	tf->tf_eip = (int)(((char *)PS_STRINGS) - (esigcode - sigcode));
+	tf->tf_cs = GSEL(GUCODE_SEL, SEL_UPL);
+	tf->tf_eflags &= ~(PSL_T|PSL_VM|PSL_AC);
+	tf->tf_esp = (int)fp;
 	tf->tf_ss = GSEL(GUDATA_SEL, SEL_UPL);
 }
 
@@ -599,6 +709,7 @@ sendsig(catcher, sig, mask, code)
  * psl to gain improper privileges or to cause
  * a machine fault.
  */
+int
 sys_sigreturn(p, v, retval)
 	struct proc *p;
 	void *v;
@@ -622,22 +733,6 @@ sys_sigreturn(p, v, retval)
 		return (EFAULT);
 
 	/*
-	 * Check for security violations.  If we're returning to protected
-	 * mode, the CPU will validate the segment registers automatically
-	 * and generate a trap on violations.  We handle the trap, rather
-	 * than doing all of the checking here.
-	 */
-	if (((context.sc_eflags ^ tf->tf_eflags) & PSL_USERSTATIC) != 0 ||
-	    !USERMODE(context.sc_cs, context.sc_eflags))
-		return (EINVAL);
-
-	if (context.sc_onstack & 01)
-		p->p_sigacts->ps_sigstk.ss_flags |= SS_ONSTACK;
-	else
-		p->p_sigacts->ps_sigstk.ss_flags &= ~SS_ONSTACK;
-	p->p_sigmask = context.sc_mask & ~sigcantmask;
-
-	/*
 	 * Restore signal context.
 	 */
 #ifdef VM86
@@ -646,25 +741,42 @@ sys_sigreturn(p, v, retval)
 		tf->tf_vm86_fs = context.sc_fs;
 		tf->tf_vm86_es = context.sc_es;
 		tf->tf_vm86_ds = context.sc_ds;
+		set_vflags(p, context.sc_eflags);
 	} else
 #endif
 	{
+		/*
+		 * Check for security violations.  If we're returning to
+		 * protected mode, the CPU will validate the segment registers
+		 * automatically and generate a trap on violations.  We handle
+		 * the trap, rather than doing all of the checking here.
+		 */
+		if (((context.sc_eflags ^ tf->tf_eflags) & PSL_USERSTATIC) != 0 ||
+		    !USERMODE(context.sc_cs, context.sc_eflags))
+			return (EINVAL);
+
 		/* %fs and %gs were restored by the trampoline. */
 		tf->tf_es = context.sc_es;
 		tf->tf_ds = context.sc_ds;
+		tf->tf_eflags = context.sc_eflags;
 	}
-	tf->tf_edi    = context.sc_edi;
-	tf->tf_esi    = context.sc_esi;
-	tf->tf_ebp    = context.sc_ebp;
-	tf->tf_ebx    = context.sc_ebx;
-	tf->tf_edx    = context.sc_edx;
-	tf->tf_ecx    = context.sc_ecx;
-	tf->tf_eax    = context.sc_eax;
-	tf->tf_eip    = context.sc_eip;
-	tf->tf_cs     = context.sc_cs;
-	tf->tf_eflags = context.sc_eflags;
-	tf->tf_esp    = context.sc_esp;
-	tf->tf_ss     = context.sc_ss;
+	tf->tf_edi = context.sc_edi;
+	tf->tf_esi = context.sc_esi;
+	tf->tf_ebp = context.sc_ebp;
+	tf->tf_ebx = context.sc_ebx;
+	tf->tf_edx = context.sc_edx;
+	tf->tf_ecx = context.sc_ecx;
+	tf->tf_eax = context.sc_eax;
+	tf->tf_eip = context.sc_eip;
+	tf->tf_cs = context.sc_cs;
+	tf->tf_esp = context.sc_esp;
+	tf->tf_ss = context.sc_ss;
+
+	if (context.sc_onstack & 01)
+		p->p_sigacts->ps_sigstk.ss_flags |= SS_ONSTACK;
+	else
+		p->p_sigacts->ps_sigstk.ss_flags &= ~SS_ONSTACK;
+	p->p_sigmask = context.sc_mask & ~sigcantmask;
 
 	return (EJUSTRETURN);
 }
@@ -674,38 +786,63 @@ struct pcb dumppcb;
 
 void
 boot(howto)
-	register int howto;
+	int howto;
 {
 	extern int cold;
 
 	if (cold) {
-		printf("hit reset please");
-		for(;;);
+		howto |= RB_HALT;
+		goto haltsys;
 	}
+
 	boothowto = howto;
-	if ((howto&RB_NOSYNC) == 0 && waittime < 0) {
+	if ((howto & RB_NOSYNC) == 0 && waittime < 0) {
+		extern struct proc proc0;
+
+		/* protect against curproc->p_stats.foo refs in sync()   XXX */
+		if (curproc == NULL)
+			curproc = &proc0;
+
 		waittime = 0;
 		vfs_shutdown();
 		/*
 		 * If we've been adjusting the clock, the todr
 		 * will be out of synch; adjust it now.
 		 */
-		resettodr();
+		if ((howto & RB_TIMEBAD) == 0) {
+			resettodr();
+		} else {
+			printf("WARNING: not updating battery clock\n");
+		}
 	}
+
+	/* Disable interrupts. */
 	splhigh();
+
+	/* Do a dump if requested. */
+	if ((howto & (RB_DUMP | RB_HALT)) == RB_DUMP)
+		dumpsys();
+
+haltsys:
+	doshutdownhooks();
+
 	if (howto & RB_HALT) {
+#if NAPM > 0 && !defined(APM_NO_POWEROFF)
+		/* turn off, if we can.  But try to turn disk off and
+		 * wait a bit first--some disk drives are slow to clean up
+		 * and users have reported disk corruption.
+		 */
+		delay(500000);
+		apm_set_powstate(APM_DEV_DISK(0xff), APM_SYS_OFF);
+		delay(500000);
+		apm_set_powstate(APM_DEV_ALLDEVS, APM_SYS_OFF);
+#endif
 		printf("\n");
 		printf("The operating system has halted.\n");
 		printf("Please press any key to reboot.\n\n");
 		cngetc();
-	} else {
-		if (howto & RB_DUMP) {
-			savectx(&dumppcb, 0);
-			dumppcb.pcb_cr3 = rcr3();
-			dumpsys();
-		}
 	}
-	doshutdownhooks();
+
 	printf("rebooting...\n");
 	cpu_reset();
 	for(;;) ;
@@ -780,8 +917,10 @@ dumpsys()
 	int maddr, psize;
 	daddr_t blkno;
 	int (*dump) __P((dev_t, daddr_t, caddr_t, size_t));
-	int error = 0;
-	int c;
+	int error;
+
+	/* Save registers. */
+	savectx(&dumppcb);
 
 	msgbufmapped = 0;	/* don't record dump msgs in msgbuf */
 	if (dumpdev == NODEV)
@@ -795,7 +934,7 @@ dumpsys()
 		dumpconf();
 	if (dumplo < 0)
 		return;
-	printf("\ndumping to dev %x, offset %d\n", dumpdev, dumplo);
+	printf("\ndumping to dev %x, offset %ld\n", dumpdev, dumplo);
 
 	psize = (*bdevsw[major(dumpdev)].d_psize)(dumpdev);
 	printf("dump ");
@@ -805,7 +944,7 @@ dumpsys()
 	}
 
 #if 0	/* XXX this doesn't work.  grr. */
-        /* toss any characters present prior to dump */
+	/* toss any characters present prior to dump */
 	while (sget() != NULL); /*syscons and pccons differ */
 #endif
 
@@ -813,6 +952,7 @@ dumpsys()
 	maddr = 0;
 	blkno = dumplo;
 	dump = bdevsw[major(dumpdev)].d_dump;
+	error = 0;
 	for (i = 0; i < bytes; i += n) {
 		/*
 		 * Avoid dumping the ISA memory hole, and areas that
@@ -890,6 +1030,7 @@ dumpsys()
  * /sys/i386/i386/microtime.s is used.  The other code only works
  * for HZ=100.
  */
+void
 microtime(tvp)
 	register struct timeval *tvp;
 {
@@ -959,14 +1100,14 @@ struct gate_descriptor idt[NIDT];
 extern  struct user *proc0paddr;
 
 void
-setgate(gd, func, args, type, dpl)
+setgate(gd, func, args, type, dpl, seg)
 	struct gate_descriptor *gd;
 	void *func;
-	int args, type, dpl;
+	int args, type, dpl, seg;
 {
 
 	gd->gd_looffset = (int)func;
-	gd->gd_selector = GSEL(GCODE_SEL, SEL_KPL);
+	gd->gd_selector = GSEL(seg, SEL_KPL);
 	gd->gd_stkcpy = args;
 	gd->gd_xx = 0;
 	gd->gd_type = type;
@@ -1021,16 +1162,33 @@ init386(first_avail)
 	int x;
 	unsigned biosbasemem, biosextmem;
 	struct region_descriptor region;
-	extern char etext[], sigcode[], esigcode[];
 	extern void consinit __P((void));
-	extern void lgdt();
 
 	proc0.p_addr = proc0paddr;
+
+	/*
+	 * Initialize the I/O port and I/O mem extent maps.
+	 * Note: we don't have to check the return value since
+	 * creation of a fixed extent map will never fail (since
+	 * descriptor storage has already been allocated).
+	 *
+	 * N.B. The iomem extent manages _all_ physical addresses
+	 * on the machine.  When the amount of RAM is found, the two
+	 * extents of RAM are allocated from the map (0 -> ISA hole
+	 * and end of ISA hole -> end of RAM).
+	 */
+	ioport_ex = extent_create("ioport", 0x0, 0xffff, M_DEVBUF,
+	    (caddr_t)ioport_ex_storage, sizeof(ioport_ex_storage),
+	    EX_NOCOALESCE|EX_NOWAIT);
+	iomem_ex = extent_create("iomem", 0x0, 0xffffffff, M_DEVBUF,
+	    (caddr_t)iomem_ex_storage, sizeof(iomem_ex_storage),
+	    EX_NOCOALESCE|EX_NOWAIT);
 
 	consinit();	/* XXX SHOULD NOT BE DONE HERE */
 
 	/* make gdt gates and memory segments */
 	setsegment(&gdt[GCODE_SEL].sd, 0, 0xfffff, SDT_MEMERA, SEL_KPL, 1, 1);
+	setsegment(&gdt[GICODE_SEL].sd, 0, 0xfffff, SDT_MEMERA, SEL_KPL, 1, 1);
 	setsegment(&gdt[GDATA_SEL].sd, 0, 0xfffff, SDT_MEMRWA, SEL_KPL, 1, 1);
 	setsegment(&gdt[GLDT_SEL].sd, ldt, sizeof(ldt) - 1, SDT_SYSLDT, SEL_KPL,
 	    0, 0);
@@ -1041,32 +1199,33 @@ init386(first_avail)
 
 	/* make ldt gates and memory segments */
 	setgate(&ldt[LSYS5CALLS_SEL].gd, &IDTVEC(osyscall), 1, SDT_SYS386CGT,
-	    SEL_UPL);
+	    SEL_UPL, GCODE_SEL);
 	ldt[LUCODE_SEL] = gdt[GUCODE_SEL];
 	ldt[LUDATA_SEL] = gdt[GUDATA_SEL];
 	ldt[LBSDICALLS_SEL] = ldt[LSYS5CALLS_SEL];
 
 	/* exceptions */
 	for (x = 0; x < NIDT; x++)
-		setgate(&idt[x], &IDTVEC(rsvd), 0, SDT_SYS386TGT, SEL_KPL);
-	setgate(&idt[  0], &IDTVEC(div),     0, SDT_SYS386TGT, SEL_KPL);
-	setgate(&idt[  1], &IDTVEC(dbg),     0, SDT_SYS386TGT, SEL_KPL);
-	setgate(&idt[  2], &IDTVEC(nmi),     0, SDT_SYS386TGT, SEL_KPL);
-	setgate(&idt[  3], &IDTVEC(bpt),     0, SDT_SYS386TGT, SEL_UPL);
-	setgate(&idt[  4], &IDTVEC(ofl),     0, SDT_SYS386TGT, SEL_KPL);
-	setgate(&idt[  5], &IDTVEC(bnd),     0, SDT_SYS386TGT, SEL_KPL);
-	setgate(&idt[  6], &IDTVEC(ill),     0, SDT_SYS386TGT, SEL_KPL);
-	setgate(&idt[  7], &IDTVEC(dna),     0, SDT_SYS386TGT, SEL_KPL);
-	setgate(&idt[  8], &IDTVEC(dble),    0, SDT_SYS386TGT, SEL_KPL);
-	setgate(&idt[  9], &IDTVEC(fpusegm), 0, SDT_SYS386TGT, SEL_KPL);
-	setgate(&idt[ 10], &IDTVEC(tss),     0, SDT_SYS386TGT, SEL_KPL);
-	setgate(&idt[ 11], &IDTVEC(missing), 0, SDT_SYS386TGT, SEL_KPL);
-	setgate(&idt[ 12], &IDTVEC(stk),     0, SDT_SYS386TGT, SEL_KPL);
-	setgate(&idt[ 13], &IDTVEC(prot),    0, SDT_SYS386TGT, SEL_KPL);
-	setgate(&idt[ 14], &IDTVEC(page),    0, SDT_SYS386TGT, SEL_KPL);
-	setgate(&idt[ 16], &IDTVEC(fpu),     0, SDT_SYS386TGT, SEL_KPL);
-	setgate(&idt[ 17], &IDTVEC(align),   0, SDT_SYS386TGT, SEL_KPL);
-	setgate(&idt[128], &IDTVEC(syscall), 0, SDT_SYS386TGT, SEL_UPL);
+		setgate(&idt[x], &IDTVEC(rsvd), 0, SDT_SYS386TGT, SEL_KPL, GCODE_SEL);
+	setgate(&idt[  0], &IDTVEC(div),     0, SDT_SYS386TGT, SEL_KPL, GCODE_SEL);
+	setgate(&idt[  1], &IDTVEC(dbg),     0, SDT_SYS386TGT, SEL_KPL, GCODE_SEL);
+	setgate(&idt[  2], &IDTVEC(nmi),     0, SDT_SYS386TGT, SEL_KPL, GCODE_SEL);
+	setgate(&idt[  3], &IDTVEC(bpt),     0, SDT_SYS386TGT, SEL_UPL, GCODE_SEL);
+	setgate(&idt[  4], &IDTVEC(ofl),     0, SDT_SYS386TGT, SEL_UPL, GCODE_SEL);
+	setgate(&idt[  5], &IDTVEC(bnd),     0, SDT_SYS386TGT, SEL_KPL, GCODE_SEL);
+	setgate(&idt[  6], &IDTVEC(ill),     0, SDT_SYS386TGT, SEL_KPL, GCODE_SEL);
+	setgate(&idt[  7], &IDTVEC(dna),     0, SDT_SYS386TGT, SEL_KPL, GCODE_SEL);
+	setgate(&idt[  8], &IDTVEC(dble),    0, SDT_SYS386TGT, SEL_KPL, GCODE_SEL);
+	setgate(&idt[  9], &IDTVEC(fpusegm), 0, SDT_SYS386TGT, SEL_KPL, GCODE_SEL);
+	setgate(&idt[ 10], &IDTVEC(tss),     0, SDT_SYS386TGT, SEL_KPL, GCODE_SEL);
+	setgate(&idt[ 11], &IDTVEC(missing), 0, SDT_SYS386TGT, SEL_KPL, GCODE_SEL);
+	setgate(&idt[ 12], &IDTVEC(stk),     0, SDT_SYS386TGT, SEL_KPL, GCODE_SEL);
+	setgate(&idt[ 13], &IDTVEC(prot),    0, SDT_SYS386TGT, SEL_KPL, GCODE_SEL);
+	setgate(&idt[ 14], &IDTVEC(page),    0, SDT_SYS386TGT, SEL_KPL, GCODE_SEL);
+	setgate(&idt[ 16], &IDTVEC(fpu),     0, SDT_SYS386TGT, SEL_KPL, GCODE_SEL);
+	setgate(&idt[ 17], &IDTVEC(align),   0, SDT_SYS386TGT, SEL_KPL, GCODE_SEL);
+	setgate(&idt[ 18], &IDTVEC(rsvd),    0, SDT_SYS386TGT, SEL_KPL, GCODE_SEL);
+	setgate(&idt[128], &IDTVEC(syscall), 0, SDT_SYS386TGT, SEL_UPL, GCODE_SEL);
 
 	setregion(&region, gdt, sizeof(gdt) - 1);
 	lgdt(&region);
@@ -1077,27 +1236,49 @@ init386(first_avail)
 	isa_defaultirq();
 #endif
 
+#ifdef MEM_COMPUTE /* Default config  - get sizes from bootblocks */
 	splhigh();
 	enable_intr();
-
-#ifdef DDB
-	ddb_init();
-	if (boothowto & RB_KDB)
-		Debugger();
-#endif
-#ifdef KGDB
-	if (boothowto & RB_KDB)
-		kgdb_connect(0);
-#endif
 
 	/*
 	 * Use BIOS values stored in RTC CMOS RAM, since probing
 	 * breaks certain 386 AT relics.
+	 *
+	 * XXX Not only does probing break certain 386 AT relics, but
+	 * not all BIOSes (Dell, Compaq, others) report the correct
+	 * amount of extended memory.
 	 */
 	biosbasemem = (mc146818_read(NULL, NVRAM_BASEHI) << 8) |
 	    mc146818_read(NULL, NVRAM_BASELO);
 	biosextmem = (mc146818_read(NULL, NVRAM_EXTHI) << 8) |
 	    mc146818_read(NULL, NVRAM_EXTLO);
+#else
+	biosbasemem = cnvmem;	/* Base memory as reported by BIOS call */
+	biosextmem = extmem;	/* Extended memory as reported by BIOS call */
+#endif
+
+#ifdef EXTMEM_SIZE
+	/* Override memory size */
+	biosextmem = EXTMEM_SIZE;
+#endif
+
+	/*
+	 * Allocate the physical addresses used by RAM from the iomem
+	 * extent map.  This is done before the addresses are
+	 * page rounded just to make sure we get them all.
+	 */
+	if (extent_alloc_region(iomem_ex, 0, IOM_BEGIN, EX_NOWAIT)) {
+		/* XXX What should we do? */
+		printf("WARNING: CAN'T ALLOCATE BASE RAM FROM IOMEM EXTENT MAP!\n");
+	}
+	avail_end = biosextmem ? IOM_END + biosextmem * 1024
+	    : biosbasemem * 1024;	/* just temporary use */
+
+	if (avail_end > IOM_END && extent_alloc_region(iomem_ex, IOM_END,
+	    (avail_end - IOM_END), EX_NOWAIT)) {
+		/* XXX What should we do? */
+		printf("WARNING: CAN'T ALLOCATE EXTENDED MEMORY FROM IOMEM EXTENT MAP!\n");
+	}
 
 	/* Round down to whole pages. */
 	biosbasemem &= -(NBPG / 1024);
@@ -1130,6 +1311,16 @@ init386(first_avail)
 
 	/* call pmap initialization to make new kernel address space */
 	pmap_bootstrap((vm_offset_t)atdevbase + IOM_SIZE);
+
+#ifdef DDB
+	ddb_init();
+	if (boothowto & RB_KDB)
+		Debugger();
+#endif
+#ifdef KGDB
+	if (boothowto & RB_KDB)
+		kgdb_connect(0);
+#endif
 }
 
 struct queue {
@@ -1140,9 +1331,11 @@ struct queue {
  * insert an element into a queue
  */
 void
-_insque(elem, head)
-	register struct queue *elem, *head;
+_insque(v1, v2)
+	void *v1;
+	void *v2;
 {
+	register struct queue *elem = v1, *head = v2;
 	register struct queue *next;
 
 	next = head->q_next;
@@ -1156,9 +1349,10 @@ _insque(elem, head)
  * remove an element from a queue
  */
 void
-_remque(elem)
-	register struct queue *elem;
+_remque(v)
+	void *v;
 {
+	register struct queue *elem = v;
 	register struct queue *next, *prev;
 
 	next = elem->q_next;
@@ -1167,7 +1361,6 @@ _remque(elem)
 	prev->q_next = next;
 	elem->q_prev = 0;
 }
-
 
 #ifdef COMPAT_NOMID
 static int
@@ -1198,7 +1391,7 @@ exec_nomid(p, epp)
 		/*
 		 * 386BSD's ZMAGIC format:
 		 */
-		error = cpu_exec_aout_prep_oldzmagic(p, epp);
+		error = exec_aout_prep_oldzmagic(p, epp);
 		break;
 
 	case (MID_ZERO << 16) | QMAGIC:
@@ -1207,6 +1400,24 @@ exec_nomid(p, epp)
 		 * same as new ZMAGIC format, but with different magic number
 		 */
 		error = exec_aout_prep_zmagic(p, epp);
+		break;
+
+	case (MID_ZERO << 16) | NMAGIC:
+		/*
+		 * BSDI's NMAGIC format:
+		 * same as NMAGIC format, but with different magic number
+		 * and with text starting at 0.
+		 */
+		error = exec_aout_prep_oldnmagic(p, epp);
+		break;
+
+	case (MID_ZERO << 16) | OMAGIC:
+		/*
+		 * BSDI's OMAGIC format:
+		 * same as OMAGIC format, but with different magic number
+		 * and with text starting at 0.
+		 */
+		error = exec_aout_prep_oldomagic(p, epp);
 		break;
 
 	default:
@@ -1242,64 +1453,6 @@ cpu_exec_aout_makecmds(p, epp)
 	return error;
 }
 
-#if defined(COMPAT_NOMID) || defined(COMPAT_FREEBSD)
-/*
- * cpu_exec_aout_prep_oldzmagic():
- *	Prepare the vmcmds to build a vmspace for an old (386BSD) ZMAGIC
- *	binary.
- *
- * Cloned from exec_aout_prep_zmagic() in kern/exec_aout.c; a more verbose
- * description of operation is there.
- */
-int
-cpu_exec_aout_prep_oldzmagic(p, epp)
-	struct proc *p;
-	struct exec_package *epp;
-{
-	struct exec *execp = epp->ep_hdr;
-	struct exec_vmcmd *ccmdp;
-
-	epp->ep_taddr = 0;
-	epp->ep_tsize = execp->a_text;
-	epp->ep_daddr = epp->ep_taddr + execp->a_text;
-	epp->ep_dsize = execp->a_data + execp->a_bss;
-	epp->ep_entry = execp->a_entry;
-
-	/*
-	 * check if vnode is in open for writing, because we want to
-	 * demand-page out of it.  if it is, don't do it, for various
-	 * reasons
-	 */
-	if ((execp->a_text != 0 || execp->a_data != 0) &&
-	    epp->ep_vp->v_writecount != 0) {
-#ifdef DIAGNOSTIC
-		if (epp->ep_vp->v_flag & VTEXT)
-			panic("exec: a VTEXT vnode has writecount != 0\n");
-#endif
-		return ETXTBSY;
-	}
-	epp->ep_vp->v_flag |= VTEXT;
-
-	/* set up command for text segment */
-	NEW_VMCMD(&epp->ep_vmcmds, vmcmd_map_pagedvn, execp->a_text,
-	    epp->ep_taddr, epp->ep_vp, NBPG, /* XXX should NBPG be CLBYTES? */
-	    VM_PROT_READ|VM_PROT_EXECUTE);
-
-	/* set up command for data segment */
-	NEW_VMCMD(&epp->ep_vmcmds, vmcmd_map_pagedvn, execp->a_data,
-	    epp->ep_daddr, epp->ep_vp,
-	    execp->a_text + NBPG, /* XXX should NBPG be CLBYTES? */
-	    VM_PROT_READ|VM_PROT_WRITE|VM_PROT_EXECUTE);
-
-	/* set up command for bss segment */
-	NEW_VMCMD(&epp->ep_vmcmds, vmcmd_map_zero, execp->a_bss,
-	    epp->ep_daddr + execp->a_data, NULLVP, 0,
-	    VM_PROT_READ|VM_PROT_WRITE|VM_PROT_EXECUTE);
-
-	return exec_aout_setup_stack(p, epp);
-}
-#endif /* COMPAT_NOMID || COMPAT_FREEBSD */
-
 u_int
 pmap_free_pages()
 {
@@ -1327,7 +1480,7 @@ pmap_next_page(addrp)
 	return TRUE;
 }
 
-u_int
+int
 pmap_page_index(pa)
 	vm_offset_t pa;
 {
@@ -1382,4 +1535,246 @@ cpu_reset()
 	pmap_update(); 
 
 	for (;;);
+}
+
+int
+bus_space_map(t, bpa, size, cacheable, bshp)
+	bus_space_tag_t t;
+	bus_addr_t bpa;
+	bus_size_t size;
+	int cacheable;
+	bus_space_handle_t *bshp;
+{
+	int error;
+	struct extent *ex;
+
+	/*
+	 * Pick the appropriate extent map.
+	 */
+	switch (t) {
+	case I386_BUS_SPACE_IO:
+		ex = ioport_ex;
+		break;
+
+	case I386_BUS_SPACE_MEM:
+		ex = iomem_ex;
+		break;
+
+	default:
+		panic("bus_space_map: bad bus space tag");
+	}
+
+	/*
+	 * Before we go any further, let's make sure that this
+	 * region is available.
+	 */
+	error = extent_alloc_region(ex, bpa, size,
+	    EX_NOWAIT | (ioport_malloc_safe ? EX_MALLOCOK : 0));
+	if (error)
+		return (error);
+
+	/*
+	 * For I/O space, that's all she wrote.
+	 */
+	if (t == I386_BUS_SPACE_IO) {
+		*bshp = bpa;
+		return (0);
+	}
+
+	/*
+	 * For memory space, map the bus physical address to
+	 * a kernel virtual address.
+	 */
+	error = bus_mem_add_mapping(bpa, size, cacheable, bshp);
+	if (error) {
+		if (extent_free(ex, bpa, size, EX_NOWAIT |
+		    (ioport_malloc_safe ? EX_MALLOCOK : 0))) {
+			printf("bus_space_map: pa 0x%lx, size 0x%lx\n",
+			    bpa, size);
+			printf("bus_space_map: can't free region\n");
+		}
+	}
+
+	return (error);
+}
+
+int
+bus_space_alloc(t, rstart, rend, size, alignment, boundary, cacheable,
+    bpap, bshp)
+	bus_space_tag_t t;
+	bus_addr_t rstart, rend;
+	bus_size_t size, alignment;
+	bus_addr_t boundary;
+	int cacheable;
+	bus_addr_t *bpap;
+	bus_space_handle_t *bshp;
+{
+	struct extent *ex;
+	u_long bpa;
+	int error;
+
+	/*
+	 * Pick the appropriate extent map.
+	 */
+	switch (t) {
+	case I386_BUS_SPACE_IO:
+		ex = ioport_ex;
+		break;
+
+	case I386_BUS_SPACE_MEM:
+		ex = iomem_ex;
+		break;
+
+	default:
+		panic("bus_space_alloc: bad bus space tag");
+	}
+
+	/*
+	 * Sanity check the allocation against the extent's boundaries.
+	 */
+	if (rstart < ex->ex_start || rend > ex->ex_end)
+		panic("bus_space_alloc: bad region start/end");
+
+	/*
+	 * Do the requested allocation.
+	 */
+	error = extent_alloc_subregion(ex, rstart, rend, size, alignment,
+	    boundary, EX_NOWAIT | (ioport_malloc_safe ?  EX_MALLOCOK : 0),
+	    &bpa);
+
+	if (error)
+		return (error);
+
+	/*
+	 * For I/O space, that's all she wrote.
+	 */
+	if (t == I386_BUS_SPACE_IO) {
+		*bshp = *bpap = bpa;
+		return (0);
+	}
+
+	/*
+	 * For memory space, map the bus physical address to
+	 * a kernel virtual address.
+	 */
+	error = bus_mem_add_mapping(bpa, size, cacheable, bshp);
+	if (error) {
+		if (extent_free(iomem_ex, bpa, size, EX_NOWAIT |
+		    (ioport_malloc_safe ? EX_MALLOCOK : 0))) {
+			printf("bus_space_alloc: pa 0x%lx, size 0x%lx\n",
+			    bpa, size);
+			printf("bus_space_alloc: can't free region\n");
+		}
+	}
+
+	*bpap = bpa;
+
+	return (error);
+}
+
+int
+bus_mem_add_mapping(bpa, size, cacheable, bshp)
+	bus_addr_t bpa;
+	bus_size_t size;
+	int cacheable;
+	bus_space_handle_t *bshp;
+{
+	u_long pa, endpa;
+	vm_offset_t va;
+
+	pa = i386_trunc_page(bpa);
+	endpa = i386_round_page(bpa + size);
+
+#ifdef DIAGNOSTIC
+	if (endpa <= pa)
+		panic("bus_mem_add_mapping: overflow");
+#endif
+
+	va = kmem_alloc_pageable(kernel_map, endpa - pa);
+	if (va == 0)
+		return (ENOMEM);
+
+	*bshp = (bus_space_handle_t)(va + (bpa & PGOFSET));
+
+	for (; pa < endpa; pa += NBPG, va += NBPG) {
+		pmap_enter(pmap_kernel(), va, pa,
+		    VM_PROT_READ | VM_PROT_WRITE, TRUE);
+		if (!cacheable)
+			pmap_changebit(pa, PG_N, ~0);
+		else
+			pmap_changebit(pa, 0, ~PG_N);
+	}
+ 
+	return 0;
+}
+
+void
+bus_space_unmap(t, bsh, size)
+	bus_space_tag_t t;
+	bus_space_handle_t bsh;
+	bus_size_t size;
+{
+	struct extent *ex;
+	u_long va, endva;
+	bus_addr_t bpa;
+
+	/*
+	 * Find the correct extent and bus physical address.
+	 */
+	switch (t) {
+	case I386_BUS_SPACE_IO:
+		ex = ioport_ex;
+		bpa = bsh;
+		break;
+
+	case I386_BUS_SPACE_MEM:
+		ex = iomem_ex;
+		va = i386_trunc_page(bsh);
+		endva = i386_round_page(bsh + size);
+
+#ifdef DIAGNOSTIC
+		if (endva <= va)
+			panic("bus_space_unmap: overflow");
+#endif
+
+		bpa = pmap_extract(pmap_kernel(), va) + (bsh & PGOFSET);
+
+		/*
+		 * Free the kernel virtual mapping.
+		 */
+		kmem_free(kernel_map, va, endva - va);
+		break;
+
+	default:
+		panic("bus_space_unmap: bad bus space tag");
+	}
+
+	if (extent_free(ex, bpa, size,
+	    EX_NOWAIT | (ioport_malloc_safe ? EX_MALLOCOK : 0))) {
+		printf("bus_space_unmap: %s 0x%lx, size 0x%lx\n",
+		    (t == I386_BUS_SPACE_IO) ? "port" : "pa", bpa, size);
+		printf("bus_space_unmap: can't free region\n");
+	}
+}
+
+void    
+bus_space_free(t, bsh, size)
+	bus_space_tag_t t;
+	bus_space_handle_t bsh;
+	bus_size_t size;
+{
+
+	/* bus_space_unmap() does all that we need to do. */
+	bus_space_unmap(t, bsh, size);
+}
+
+int
+bus_space_subregion(t, bsh, offset, size, nbshp)
+	bus_space_tag_t t;
+	bus_space_handle_t bsh;
+	bus_size_t offset, size;
+	bus_space_handle_t *nbshp;
+{
+	*nbshp = bsh + offset;
+	return (0);
 }

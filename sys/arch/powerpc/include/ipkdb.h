@@ -1,3 +1,4 @@
+/*	$OpenBSD:$	*/
 /*	$NetBSD: ipkdb.h,v 1.1 1996/10/16 19:33:04 ws Exp $	*/
 
 /*

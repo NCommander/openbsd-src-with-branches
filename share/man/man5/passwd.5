@@ -101,6 +101,11 @@ machine.  This is almost invariably a mistake.
 Because these files contain the encrypted user passwords, they should
 not be readable by anyone without appropriate privileges.
 .Pp
+Which type of cipher is used to encrypt the password information
+depends on the configuration in
+.Xr passwd.conf 5 .
+It can be different for local and YP passwords.
+.Pp
 The group field is the group that the user will be placed in upon login.
 Since this system supports multiple groups (see
 .Xr groups 1 )
@@ -194,11 +199,26 @@ or
 entries contain text, it will override the information included via YP.
 On some systems, the
 .Ar passwd
-field may also be overriden.
+field may also be overriden, hence it is recommended that the standard
+way to enable YP passwd support in
+.Pa /etc/master.passwd
+is:
+.Pp
++:*::::::::
+.Pp
+which after
+.Xr pwd_mkdb 8
+will result in
+.Pa /etc/passwd
+containing:
+.Pp
++:*:0:0:::
+.Pp
 .Sh SEE ALSO
 .Xr chpass 1 ,
 .Xr login 1 ,
 .Xr passwd 1 ,
+.Xr passwd.conf 5 ,
 .Xr getpwent 3 ,
 .Xr netgroup 5 ,
 .Xr adduser 8 ,

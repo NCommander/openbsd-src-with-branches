@@ -1,60 +1,86 @@
-$NetBSD: STATUS,v 1.1 1995/04/25 18:59:14 cgd Exp $
+$OpenBSD: STATUS,v 1.5 1996/10/30 22:37:54 niklas Exp $
+$NetBSD: STATUS,v 1.6 1996/11/26 15:58:04 cgd Exp $
 
-NetBSD/Alpha's Status
+OpenBSD/Alpha's Status
+
+If you find an inaccuracy in this file, can clarify it in any place,
+etc., please send mail to me (niklas@appli.se).
 
 
 Supported hardware:
 
-	DEC 3000/[456789]00 (I've only tested it on the 400 and
-	600, but the rest should "just work) using the following
-	peripherals:
+	DEC 3000/[456789]00 (I've not tested them, but they should
+	"just work") using the following peripherals:
 
-		Serial ports
-		LANCE ethernet -- only the on-board interface.  (see below.)
-		SCSI system -- it recognizes and can use both on-board SCSI
-		    controller chips.  However, it has trouble working with
-		    both at the same time.
+		Supported hardware:
+			Built-in serial ports
+			Built-in LANCE ethernet.
+			Built-in SCSI chips (53c[f]94), though both
+			    may not work at the same time.
+
+		Things that may work but haven't been tested:
+			TurboChannel option slot LANCE (PMAD-A)
 
 		Things are aren't supported:
 			No frame buffers of any type.
-			Devices in TurboChannel option slots (see the
+			Other TurboChannel option boards (see the
 			    TODO.users file.)
 			The ISDN/Audio chip.
 
 	DEC 3000/300 family, with same hardware above.
 
-NetBSD/Alpha has actually been run on the following types of machines:
-	DEC 3000/400
-	DEC 3000/600
-	[ XXX THERE ARE MORE; if you're running it on a machine not
-	    listed, mail me about it.]
+	AlphaStation {200,250,255,400} systems using the following
+	peripherals:
 
+		Supported hardware:
+			NCR 53c810 SCSI (built-in or PCI board).
+			Built-in ns16550 serial ports.
+			DC21040-based ethernet (built-in or PCI board).
+			DC21140-based PCI ethernet boards.
+			DC21050-based PCI-PCI bridges (though other
+			    types of PCI-PCI bridges should work).
+			PCI VGA video boards.
+			DEC ZLXp-E1 (DC21030-based, "TGA") video boards.
+			Keyboard.
+			PS/2-style mice.
+
+		Things that may work but haven't been tested:
+			Built-in parallel ports.
+			ISA ns16x50-family serial port boards.
+			ISA ns16x50 multi-port serial boards.
+			Other NCR 53c8xx SCSI boards.
+
+		Things that ARE NOT supported at this time:
+			ISA VGA boards.
+			Sound hardware (including Windows Sound System
+			    built-in on some machines).
+			DEC ZLXp-E2 and ZLXp-E3 PCI video boards.
+			Other PCI boards.
+
+	AlphaStation 500 and 600 systems, with the same supported
+	hardware list as the AlphaStation {200,250,255,400} systems.
+	(NOTE THAT THAT MEANS THE AlphaStation 600's BUILT-IN SCSI
+	CONTROLLERS DO NOT WORK.  You'll need to get a 53c810 board,
+	or run diskless.)
+
+	AXPpci systems (including Multia), with the same supported
+	hardware list as the AlphaStation {200,250,255,400} systems.
+
+	EB164 (AlphaPC 164) systems, with the same supported hardware
+	as systems mentioned above.
 
 At this time none of the following systems are supported:
-	DECpc AXP systems -- the Alpha systems with EISA busses
-	AlphaStations -- the Alpha systems with PCI busses (i.e.
-	    PCI/ISA or PCI/EISA)
-	The Futurebus-based Alpha server systems
-	The multiprocessor Alpha systems
+	DECpc AXP 150 systems (EISA-bus PC-like systems)
+	Alpha "server" systems (other than perhaps the
+	    AlphaServer 400, which might be an AlphaStation 400
+	    in disguise).
+	Multiprocessor Alpha systems
 
-I am in the process of porting NetBSD/Alpha to the PCI-based systems,
-in particular, to the AlphaStation 400 4/233.  I was hoping to get a
-DECpc AXP port working "for free" based on the PCI work, but the
-DECpc AXP is a very different (and, in my opinion, very alien) piece
-of hardware.  If somebody wants to make NetBSD/Alpha run on the
-DECpc AXP system, get in touch and I'll do what I can to help you
-get started.  (Right now, it can detect devices on the EISA bus, etc.,
-but the I/O layout is distinctly _not_ what I'd expected and/or hoped
-for.  It's significantly more difficult to deal with than I'd expected.)
-
-It's unclear how much support for other PCI-based systems (i.e. the
-AlphaStation 200 and AlphaStation 250 machines) will be won by getting
-the AlphaStation 400 supported.  It should at least make porting to
-those machines easier.
-
-
-Because no frame buffers are supported, NetBSD/Alpha _must_ be used with
-a serial console.  To do that on:
+Console frame buffers & keyboard are supported only with the frame
+buffers and keyboards mentioned as supported above.  On other systems
+(including all TurboChannel-based machines), OpenBSD/Alpha _must_ be used
+with a serial console.  To configure various Alpha systems to use a serial
+console, do the following depending on the model:
 
 	DEC 3000/[4-9]00's:
 		Flip the appropriate switch on the back of the machine.
@@ -63,54 +89,26 @@ a serial console.  To do that on:
 		Boot the machine with the keyboard/mouse connector
 		unplugged.
 
-	DECpc AXP's and AlphaStations:
-		Boot the machine with the keyboard unplugged.  (Note:
-		I've never actually booted one of these machines with
-		a serial console, so I can't verify that this is
-		correct.  Also, people who've booted test kernels for
-		me have reported trouble using these boxes with a
-		serial console, but I'm not sure why; the kernel for
-		these systems is not advanced enough to have its own
-		serial driver yet, and so is using the PROM routines.)
+	DECpc AXPs, AlphaStations, AXPpci, and EB164 systems:
+		Get to the console prompt.  Set the variable
+		"console" to be "serial", and "init" or power cycle
+		the system.
 
-There actually is hope of getting somebody to come up with working
-graphics board drivers and even an X server.  More on that as things
-develop.
+See your owner's manual for more details on how to set your machine
+to use a serial console.
 
 
-Getting people running with my latest sources still isn't as easy as
-it should be; not all of my sources are integrated into the NetBSD
-master source tree yet.  Most of the diffs are in, however, and I
-suggest the following tactic for people who are trying to get running
-with an "up to date" system:
-
-	Get the latest NetBSD sources from:
-	ftp://ftp.netbsd.org/pub/NetBSD/NetBSD-current/src/tar_files
-
-	Replace that 'sys' tree with the latest snapshot I've put up
-	for ftp under the directory:
-	ftp://ftp.netbsd.org/pub/NetBSD/arch/alpha
-
-	If you'd like to compile the compiler and tool chain, add to
-	that the GNU tools tree (src/devo) from my original source
-	distribution tar file, which can also be found under:
-	ftp://ftp.netbsd.org/pub/NetBSD/arch/alpha
-	(Unfortunately, there's not a way to get just that part of the
-	source distribution; I'll fix that in a day or two.)
-
-That won't be perfect, but it'll get you most of the way there.
-
-I'm planning to put up a new 'sys' snapshot, as well as new kernel
-image, in a couple of days.  Hopefully by that time, all of the
-user-land changes will have been merged into the master NetBSD source
-tree.
-
+See the file src/sys/arch/alpha/README to find out how to get the
+latest sources and binaries.
 
 Please see the file src/sys/arch/alpha/TODO.users for a list of things
-that users can do to help NetBSD/Alpha improve.  If you're interested
+that users can do to help OpenBSD/Alpha improve.  If you're interested
 in doing any of them, or porting to new hardware, get in touch and
 I'll do what I can to help.
 
 
-Chris Demetriou
-cgd@netbsd.org
+This document was derived from the NetBSD version originally written by
+Chris Demetriou <cgd@cs.cmu.edu>.
+
+Niklas Hallqvist
+niklas@openbsd.org

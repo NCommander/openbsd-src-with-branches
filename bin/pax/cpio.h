@@ -1,3 +1,4 @@
+/*	$OpenBSD: cpio.h,v 1.3 1995/03/21 09:07:15 cgd Exp $	*/
 /*	$NetBSD: cpio.h,v 1.3 1995/03/21 09:07:15 cgd Exp $	*/
 
 /*-

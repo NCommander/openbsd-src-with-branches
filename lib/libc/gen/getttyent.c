@@ -1,5 +1,3 @@
-/*	$NetBSD: getttyent.c,v 1.9 1995/06/16 07:05:31 jtc Exp $	*/
-
 /*
  * Copyright (c) 1989, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -34,11 +32,7 @@
  */
 
 #if defined(LIBC_SCCS) && !defined(lint)
-#if 0
-static char sccsid[] = "@(#)getttyent.c	8.1 (Berkeley) 6/4/93";
-#else
-static char rcsid[] = "$NetBSD: getttyent.c,v 1.9 1995/06/16 07:05:31 jtc Exp $";
-#endif
+static char rcsid[] = "$OpenBSD: getttyent.c,v 1.2 1996/08/19 08:24:10 tholo Exp $";
 #endif /* LIBC_SCCS and not lint */
 
 #include <ttyent.h>
@@ -48,6 +42,9 @@ static char rcsid[] = "$NetBSD: getttyent.c,v 1.9 1995/06/16 07:05:31 jtc Exp $"
 
 static char zapchar;
 static FILE *tf;
+
+static char *skip __P((char *));
+static char *value __P((char *));
 
 struct ttyent *
 getttynam(tty)
@@ -71,7 +68,6 @@ getttyent()
 	register char *p;
 #define	MAXLINELENGTH	200
 	static char line[MAXLINELENGTH];
-	static char *skip(), *value();
 
 	if (!tf && !setttyent())
 		return (NULL);

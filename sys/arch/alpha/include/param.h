@@ -1,4 +1,5 @@
-/*	$NetBSD: param.h,v 1.8 1995/08/13 00:03:11 mycroft Exp $	*/
+/*	$OpenBSD: param.h,v 1.8 1996/12/11 11:12:51 deraadt Exp $	*/
+/*	$NetBSD: param.h,v 1.15 1996/11/13 21:13:19 cgd Exp $	*/
 
 /*
  * Copyright (c) 1988 University of Utah.
@@ -45,13 +46,14 @@
 /*
  * Machine dependent constants for the Alpha.
  */
+#define	_MACHINE	alpha
 #define	MACHINE		"alpha"
+#define	_MACHINE_ARCH	alpha
 #define	MACHINE_ARCH	"alpha"
 #define	MID_MACHINE	MID_ALPHA
 
-#ifdef _KERNEL				/* XXX */
-#include <machine/cpu.h>		/* XXX */
-#endif					/* XXX */
+#include <machine/alpha_cpu.h>
+#include <machine/cpu.h>
 
 /*
  * Round p (pointer or byte index) up to a correctly-aligned value for all
@@ -61,16 +63,16 @@
 #define	ALIGNBYTES	7
 #define	ALIGN(p)	(((u_long)(p) + ALIGNBYTES) &~ ALIGNBYTES)
 
-#define	NBPG		8192				/* bytes/page */
+#define	NBPG		(1 << ALPHA_PGSHIFT)		/* bytes/page */
 #define	PGOFSET		(NBPG-1)			/* byte off. into pg */
-#define	PGSHIFT		13				/* LOG2(NBPG) */
+#define	PGSHIFT		ALPHA_PGSHIFT			/* LOG2(NBPG) */
 #define	NPTEPG		(1 << (PGSHIFT-PTESHIFT))	/* pte's/page */
 
 #define	SEGSHIFT	(PGSHIFT + (PGSHIFT-PTESHIFT))	/* LOG2(NBSEG) */
 #define	NBSEG		(1 << SEGSHIFT)			/* bytes/segment (8M) */
 #define	SEGOFSET	(NBSEG-1)			/* byte off. into seg */
 
-#define	KERNBASE	0xfffffe0000000000	/* start of kernel virtual */
+#define	KERNBASE	0xfffffc0000230000	/* start of kernel virtual */
 #define	BTOPKERNBASE	((u_long)KERNBASE >> PGSHIFT)
 
 #define	DEV_BSIZE	512
@@ -96,8 +98,8 @@
  * of the hardware page size.
  */
 #define	MSIZE		256		/* size of an mbuf */
-#define	MCLBYTES	2048		/* large enough for ether MTU */
 #define	MCLSHIFT	11
+#define	MCLBYTES	(1 << MCLSHIFT)	/* large enough for ether MTU */
 #define	MCLOFSET	(MCLBYTES - 1)
 #ifndef NMBCLUSTERS
 #ifdef GATEWAY
@@ -142,36 +144,21 @@
 #define	alpha_btop(x)		((unsigned long)(x) >> PGSHIFT)
 #define	alpha_ptob(x)		((unsigned long)(x) << PGSHIFT)
 
-#include <machine/psl.h>
-
-#define	splx(s)                 (s == PSL_IPL_0 ? spl0() : pal_swpipl(s))
-#define	splsoft()		pal_swpipl(PSL_IPL_SOFT)
-#define	splsoftclock()		splsoft()
-#define	splsoftnet()		splsoft()
-#define	splnet()                pal_swpipl(PSL_IPL_IO)
-#define	splbio()                pal_swpipl(PSL_IPL_IO)
-#define	splimp()                pal_swpipl(PSL_IPL_IO)
-#define	spltty()                pal_swpipl(PSL_IPL_IO)
-#define	splclock()              pal_swpipl(PSL_IPL_CLOCK)
-#define	splstatclock()		pal_swpipl(PSL_IPL_CLOCK)
-#define	splhigh()               pal_swpipl(PSL_IPL_HIGH)
+#include <machine/intr.h>
 
 #ifdef _KERNEL
-#ifndef LOCORE
+#ifndef _LOCORE
 
-/* This was calibrated empirically */
-extern	u_int64_t cycles_per_usec;
-#define	DELAY(n)	{ 						\
-	register long long N = cycles_per_usec * (n);			\
-	do N -= 3; while (N > 0);					\
-}
+void	delay __P((unsigned long));
+#define	DELAY(n)	delay(n)
 
+/* XXX THE FOLLOWING PROTOTYPE BELONGS IN INTR.H */
 int spl0 __P((void));					/* drop ipl to zero */
+/* XXX END INTR.H */
+
+/* XXX THE FOLLOWING PROTOTYPE SHOULD BE A BUS.H INTERFACE */
+vm_offset_t alpha_XXX_dmamap __P((vm_offset_t));
+/* XXX END BUS.H */
 
 #endif
 #endif /* !_KERNEL */
-
-int prtloc;
-extern int ticks;
-#define	LOC()	do { if (prtloc) printf("(%ld:%ld) %s: %d\n", curproc ? curproc->p_pid : -1, (long)ticks, __FILE__, __LINE__); } while (0)
-#define	PLOC(str) panic("XXX: (%ld:%ld) %s at %s: %d\n", curproc ? curproc->p_pid : -1, (long)ticks, str, __FILE__, __LINE__);

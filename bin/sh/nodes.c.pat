@@ -1,3 +1,4 @@
+/*	$OpenBSD: nodes.c.pat,v 1.7 1995/05/11 21:29:43 christos Exp $	*/
 /*	$NetBSD: nodes.c.pat,v 1.7 1995/05/11 21:29:43 christos Exp $	*/
 
 /*-

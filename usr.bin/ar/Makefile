@@ -1,5 +1,5 @@
+#	$OpenBSD: Makefile,v 1.7 1995/03/25 06:39:33 glass Exp $
 #	$NetBSD: Makefile,v 1.7 1995/03/25 06:39:33 glass Exp $
-#	@(#)Makefile	8.1 (Berkeley) 6/6/93
 
 PROG=	ar
 CFLAGS+=-I${.CURDIR}

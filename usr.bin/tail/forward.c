@@ -1,4 +1,5 @@
-/*	$NetBSD: forward.c,v 1.6 1994/11/23 07:42:02 jtc Exp $	*/
+/*	$OpenBSD: forward.c,v 1.3 1996/06/26 05:40:15 deraadt Exp $	*/
+/*	$NetBSD: forward.c,v 1.7 1996/02/13 16:49:10 ghudson Exp $	*/
 
 /*-
  * Copyright (c) 1991, 1993
@@ -40,7 +41,7 @@
 #if 0
 static char sccsid[] = "@(#)forward.c	8.1 (Berkeley) 6/6/93";
 #endif
-static char rcsid[] = "$NetBSD: forward.c,v 1.6 1994/11/23 07:42:02 jtc Exp $";
+static char rcsid[] = "$OpenBSD: forward.c,v 1.3 1996/06/26 05:40:15 deraadt Exp $";
 #endif /* not lint */
 
 #include <sys/types.h>
@@ -48,13 +49,15 @@ static char rcsid[] = "$NetBSD: forward.c,v 1.6 1994/11/23 07:42:02 jtc Exp $";
 #include <sys/time.h>
 #include <sys/mman.h>
 
-#include <limits.h>
-#include <fcntl.h>
+#include <err.h>
 #include <errno.h>
-#include <unistd.h>
+#include <fcntl.h>
+#include <limits.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <unistd.h>
+
 #include "extern.h"
 
 static void rlines __P((FILE *, long, struct stat *));
@@ -90,7 +93,6 @@ forward(fp, style, off, sbp)
 {
 	register int ch;
 	struct timeval second;
-	fd_set zero;
 
 	switch(style) {
 	case FBYTES:
@@ -163,16 +165,6 @@ forward(fp, style, off, sbp)
 		break;
 	}
 
-	/*
-	 * We pause for one second after displaying any data that has
-	 * accumulated since we read the file.
-	 */
-	if (fflag) {
-		FD_ZERO(&zero);
-		second.tv_sec = 1;
-		second.tv_usec = 0;
-	}
-
 	for (;;) {
 		while ((ch = getc(fp)) != EOF)
 			if (putchar(ch) == EOF)
@@ -184,9 +176,15 @@ forward(fp, style, off, sbp)
 		(void)fflush(stdout);
 		if (!fflag)
 			break;
-		/* Sleep(3) is eight system calls.  Do it fast. */
-		if (select(0, &zero, &zero, &zero, &second) == -1)
-			err(1, "select: %s", strerror(errno));
+		/*
+		 * We pause for one second after displaying any data that has
+		 * accumulated since we read the file.  Since sleep(3) takes
+		 * eight system calls, use select() instead.
+		 */
+		second.tv_sec = 1;
+		second.tv_usec = 0;
+		if (select(0, NULL, NULL, NULL, &second) == -1)
+			err(1, "select");
 		clearerr(fp);
 	}
 }
@@ -208,13 +206,13 @@ rlines(fp, off, sbp)
 		return;
 
 	if (size > SIZE_T_MAX) {
-		err(0, "%s: %s", fname, strerror(EFBIG));
+		errx(0, "%s: %s", fname, strerror(EFBIG));
 		return;
 	}
 
 	if ((start = mmap(NULL, (size_t)size,
 	    PROT_READ, 0, fileno(fp), (off_t)0)) == (caddr_t)-1) {
-		err(0, "%s: %s", fname, strerror(EFBIG));
+		errx(0, "%s: %s", fname, strerror(EFBIG));
 		return;
 	}
 
@@ -233,7 +231,7 @@ rlines(fp, off, sbp)
 		return;
 	}
 	if (munmap(start, (size_t)sbp->st_size)) {
-		err(0, "%s: %s", fname, strerror(errno));
+		err(0, fname);
 		return;
 	}
 }

@@ -1,4 +1,4 @@
-/*	$NetBSD: macros.h,v 1.4 1995/07/05 08:22:21 ragge Exp $	*/
+/*	$NetBSD: macros.h,v 1.10 1997/01/11 11:07:52 ragge Exp $	*/
 
 /*
  * Copyright (c) 1994 Ludd, University of Lule}, Sweden.
@@ -32,7 +32,8 @@
 
  /* All bugs are subject to removal without further notice */
 
-#if !defined(_VAX_MACROS_H_)&&!defined(ASSEMBLER)&&defined(_VAX_INLINE_)
+#if !defined(_VAX_MACROS_H_) && (defined(STANDALONE) || \
+	(!defined(_LOCORE) && defined(_VAX_INLINE_)))
 #define	_VAX_MACROS_H_
 
 /* Here general macros are supposed to be stored */
@@ -116,6 +117,7 @@ static __inline__ int bcmp(const void *b1, const void *b2, size_t len){
 	return ret;
 }
 
+#if 0 /* unused, but no point in deleting it since it _is_ an instruction */
 static __inline__ int locc(int mask, char *cp,u_int size){
 	register ret;
 
@@ -125,8 +127,10 @@ static __inline__ int locc(int mask, char *cp,u_int size){
 			: "r0","r1" );
 	return	ret;
 }
+#endif
 
-static __inline__ int scanc(u_int size, u_char *cp,u_char *table, int mask){
+static __inline__ int
+scanc(u_int size, const u_char *cp, const u_char *table, int mask){
 	register ret;
 
 	asm __volatile("scanc	%1,(%2),(%3),%4;movl r0,%0"
@@ -136,7 +140,7 @@ static __inline__ int scanc(u_int size, u_char *cp,u_char *table, int mask){
 	return ret;
 }
 
-static __inline__ int skpc(int mask, int size, char *cp){
+static __inline__ int skpc(int mask, size_t size, u_char *cp){
 	register ret;
 
 	asm __volatile("skpc %1,%2,(%3);movl r0,%0"
@@ -174,15 +178,6 @@ static __inline__ int max(int a, int b){
         return a;
 }
 #endif
-
-#define	waitabit(tid)	\
-({	\
-	asm __volatile ("mfpr $27,r0;addl2 %0,r0;1:;mfpr $27,r1; \
-			cmpl r0,r1;bneq 1b;"	\
-			:		\
-			: "g"(tid)	\
-			: "r0","r1");	\
-})
 
 static __inline__ void blkcpy(const void*from, void*to, u_int len) {
 	asm __volatile("

@@ -1,4 +1,5 @@
-/*	$NetBSD: tcp_input.c,v 1.19 1995/08/04 01:12:23 mycroft Exp $	*/
+/*	$OpenBSD: tcp_input.c,v 1.9 1997/02/05 15:48:24 deraadt Exp $	*/
+/*	$NetBSD: tcp_input.c,v 1.23 1996/02/13 23:43:44 christos Exp $	*/
 
 /*
  * Copyright (c) 1982, 1986, 1988, 1990, 1993, 1994
@@ -60,10 +61,13 @@
 #include <netinet/tcp_var.h>
 #include <netinet/tcpip.h>
 #include <netinet/tcp_debug.h>
+#include <dev/rndvar.h>
+
+#include <machine/stdarg.h>
 
 int	tcprexmtthresh = 3;
 struct	tcpiphdr tcp_saveti;
-struct	inpcb *tcp_last_inpcb = 0;
+int	tcptv_keep_init = TCPTV_KEEP_INIT;
 
 extern u_long sb_max;
 
@@ -87,7 +91,7 @@ extern u_long sb_max;
  */
 #define	TCP_REASS(tp, ti, m, so, flags) { \
 	if ((ti)->ti_seq == (tp)->rcv_nxt && \
-	    (tp)->seg_next == (struct tcpiphdr *)(tp) && \
+	    (tp)->segq.lh_first == NULL && \
 	    (tp)->t_state == TCPS_ESTABLISHED) { \
 		if ((ti)->ti_flags & TH_PUSH) \
 			tp->t_flags |= TF_ACKNOW; \
@@ -112,7 +116,7 @@ tcp_reass(tp, ti, m)
 	register struct tcpiphdr *ti;
 	struct mbuf *m;
 {
-	register struct tcpiphdr *q;
+	register struct ipqent *p, *q, *nq, *tiqe;
 	struct socket *so = tp->t_inpcb->inp_socket;
 	int flags;
 
@@ -124,11 +128,22 @@ tcp_reass(tp, ti, m)
 		goto present;
 
 	/*
+	 * Allocate a new queue entry, before we throw away any data.
+	 * If we can't, just drop the packet.  XXX
+	 */
+	MALLOC(tiqe, struct ipqent *, sizeof (struct ipqent), M_IPQ, M_NOWAIT);
+	if (tiqe == NULL) {
+		tcpstat.tcps_rcvmemdrop++;
+		m_freem(m);
+		return (0);
+	}
+
+	/*
 	 * Find a segment which begins after this one does.
 	 */
-	for (q = tp->seg_next; q != (struct tcpiphdr *)tp;
-	    q = (struct tcpiphdr *)q->ti_next)
-		if (SEQ_GT(q->ti_seq, ti->ti_seq))
+	for (p = NULL, q = tp->segq.lh_first; q != NULL;
+	    p = q, q = q->ipqe_q.le_next)
+		if (SEQ_GT(q->ipqe_tcp->ti_seq, ti->ti_seq))
 			break;
 
 	/*
@@ -136,52 +151,58 @@ tcp_reass(tp, ti, m)
 	 * our data already.  If so, drop the data from the incoming
 	 * segment.  If it provides all of our data, drop us.
 	 */
-	if ((struct tcpiphdr *)q->ti_prev != (struct tcpiphdr *)tp) {
+	if (p != NULL) {
+		register struct tcpiphdr *phdr = p->ipqe_tcp;
 		register int i;
-		q = (struct tcpiphdr *)q->ti_prev;
+
 		/* conversion to int (in i) handles seq wraparound */
-		i = q->ti_seq + q->ti_len - ti->ti_seq;
+		i = phdr->ti_seq + phdr->ti_len - ti->ti_seq;
 		if (i > 0) {
 			if (i >= ti->ti_len) {
 				tcpstat.tcps_rcvduppack++;
 				tcpstat.tcps_rcvdupbyte += ti->ti_len;
 				m_freem(m);
+				FREE(tiqe, M_IPQ);
 				return (0);
 			}
 			m_adj(m, i);
 			ti->ti_len -= i;
 			ti->ti_seq += i;
 		}
-		q = (struct tcpiphdr *)(q->ti_next);
 	}
 	tcpstat.tcps_rcvoopack++;
 	tcpstat.tcps_rcvoobyte += ti->ti_len;
-	REASS_MBUF(ti) = m;		/* XXX */
 
 	/*
 	 * While we overlap succeeding segments trim them or,
 	 * if they are completely covered, dequeue them.
 	 */
-	while (q != (struct tcpiphdr *)tp) {
-		register int i = (ti->ti_seq + ti->ti_len) - q->ti_seq;
+	for (; q != NULL; q = nq) {
+		register struct tcpiphdr *qhdr = q->ipqe_tcp;
+		register int i = (ti->ti_seq + ti->ti_len) - qhdr->ti_seq;
+
 		if (i <= 0)
 			break;
-		if (i < q->ti_len) {
-			q->ti_seq += i;
-			q->ti_len -= i;
-			m_adj(REASS_MBUF(q), i);
+		if (i < qhdr->ti_len) {
+			qhdr->ti_seq += i;
+			qhdr->ti_len -= i;
+			m_adj(q->ipqe_m, i);
 			break;
 		}
-		q = (struct tcpiphdr *)q->ti_next;
-		m = REASS_MBUF((struct tcpiphdr *)q->ti_prev);
-		remque(q->ti_prev);
-		m_freem(m);
+		nq = q->ipqe_q.le_next;
+		m_freem(q->ipqe_m);
+		LIST_REMOVE(q, ipqe_q);
+		FREE(q, M_IPQ);
 	}
 
-	/*
-	 * Stick new segment in its place.
-	 */
-	insque(ti, q->ti_prev);
+	/* Insert the new fragment queue entry into place. */
+	tiqe->ipqe_m = m;
+	tiqe->ipqe_tcp = ti;
+	if (p == NULL) {
+		LIST_INSERT_HEAD(&tp->segq, tiqe, ipqe_q);
+	} else {
+		LIST_INSERT_AFTER(p, tiqe, ipqe_q);
+	}
 
 present:
 	/*
@@ -190,24 +211,73 @@ present:
 	 */
 	if (TCPS_HAVEESTABLISHED(tp->t_state) == 0)
 		return (0);
-	ti = tp->seg_next;
-	if (ti == (struct tcpiphdr *)tp || ti->ti_seq != tp->rcv_nxt)
+	q = tp->segq.lh_first;
+	if (q == NULL || q->ipqe_tcp->ti_seq != tp->rcv_nxt)
 		return (0);
-	if (tp->t_state == TCPS_SYN_RECEIVED && ti->ti_len)
+	if (tp->t_state == TCPS_SYN_RECEIVED && q->ipqe_tcp->ti_len)
 		return (0);
 	do {
-		tp->rcv_nxt += ti->ti_len;
-		flags = ti->ti_flags & TH_FIN;
-		remque(ti);
-		m = REASS_MBUF(ti);
-		ti = (struct tcpiphdr *)ti->ti_next;
+		tp->rcv_nxt += q->ipqe_tcp->ti_len;
+		flags = q->ipqe_tcp->ti_flags & TH_FIN;
+
+		nq = q->ipqe_q.le_next;
+		LIST_REMOVE(q, ipqe_q);
 		if (so->so_state & SS_CANTRCVMORE)
-			m_freem(m);
+			m_freem(q->ipqe_m);
 		else
-			sbappend(&so->so_rcv, m);
-	} while (ti != (struct tcpiphdr *)tp && ti->ti_seq == tp->rcv_nxt);
+			sbappend(&so->so_rcv, q->ipqe_m);
+		FREE(q, M_IPQ);
+		q = nq;
+	} while (q != NULL && q->ipqe_tcp->ti_seq == tp->rcv_nxt);
 	sorwakeup(so);
 	return (flags);
+}
+
+/*
+ * First check for a port-specific bomb. We do not want to drop half-opens
+ * for other ports if this is the only port being bombed.  We only check
+ * the bottom 40 half open connections, to avoid wasting too much time.
+ *
+ * Or, otherwise it is more likely a generic syn bomb, so delete the oldest
+ * half-open connection.
+ */
+void
+tcpdropoldhalfopen(avoidtp, port)
+	struct tcpcb *avoidtp;
+	u_int16_t port;
+{
+	register struct inpcb *inp;
+	register struct tcpcb *tp;
+	int ncheck = 40;
+	int s;
+
+	s = splnet();
+	inp = tcbtable.inpt_queue.cqh_first;
+	if (inp)                                                /* XXX */
+	for (; inp != (struct inpcb *)&tcbtable.inpt_queue && --ncheck;
+	    inp = inp->inp_queue.cqe_prev) {
+		if ((tp = (struct tcpcb *)inp->inp_ppcb) &&
+		    tp != avoidtp &&
+		    tp->t_state == TCPS_SYN_RECEIVED &&
+		    port == inp->inp_lport) {
+			tcp_close(tp);
+			goto done;
+		}
+	}
+
+	inp = tcbtable.inpt_queue.cqh_first;
+	if (inp)                                                /* XXX */
+	for (; inp != (struct inpcb *)&tcbtable.inpt_queue;
+	    inp = inp->inp_queue.cqe_prev) {
+		if ((tp = (struct tcpcb *)inp->inp_ppcb) &&
+		    tp != avoidtp &&
+		    tp->t_state == TCPS_SYN_RECEIVED) {
+			tcp_close(tp);
+			goto done;
+		}
+	}
+done:
+	splx(s);
 }
 
 /*
@@ -215,26 +285,35 @@ present:
  * protocol specification dated September, 1981 very closely.
  */
 void
-tcp_input(m, iphlen)
+#if __STDC__
+tcp_input(struct mbuf *m, ...)
+#else
+tcp_input(m, va_alist)
 	register struct mbuf *m;
-	int iphlen;
+#endif
 {
 	register struct tcpiphdr *ti;
 	register struct inpcb *inp;
 	caddr_t optp = NULL;
-	int optlen;
+	int optlen = 0;
 	int len, tlen, off;
 	register struct tcpcb *tp = 0;
 	register int tiflags;
-	struct socket *so;
+	struct socket *so = NULL;
 	int todrop, acked, ourfinisacked, needoutput = 0;
-	short ostate;
+	short ostate = 0;
 	struct in_addr laddr;
 	int dropsocket = 0;
 	int iss = 0;
 	u_long tiwin;
 	u_int32_t ts_val, ts_ecr;
 	int ts_present = 0;
+	int iphlen;
+	va_list ap;
+
+	va_start(ap, m);
+	iphlen = va_arg(ap, int);
+	va_end(ap);
 
 	tcpstat.tcps_rcvtotal++;
 	/*
@@ -257,11 +336,10 @@ tcp_input(m, iphlen)
 	 */
 	tlen = ((struct ip *)ti)->ip_len;
 	len = sizeof (struct ip) + tlen;
-	ti->ti_next = ti->ti_prev = 0;
-	ti->ti_x1 = 0;
+	bzero(ti->ti_x1, sizeof ti->ti_x1);
 	ti->ti_len = (u_int16_t)tlen;
 	HTONS(ti->ti_len);
-	if (ti->ti_sum = in_cksum(m, len)) {
+	if ((ti->ti_sum = in_cksum(m, len)) != 0) {
 		tcpstat.tcps_rcvbadsum++;
 		goto drop;
 	}
@@ -320,13 +398,10 @@ tcp_input(m, iphlen)
 	 * Locate pcb for segment.
 	 */
 findpcb:
-	inp = tcp_last_inpcb;
-	if (inp == 0 ||
-	    inp->inp_lport != ti->ti_dport ||
-	    inp->inp_fport != ti->ti_sport ||
-	    inp->inp_faddr.s_addr != ti->ti_src.s_addr ||
-	    inp->inp_laddr.s_addr != ti->ti_dst.s_addr) {
-		++tcpstat.tcps_pcbcachemiss;
+	inp = in_pcbhashlookup(&tcbtable, ti->ti_src, ti->ti_sport,
+	    ti->ti_dst, ti->ti_dport);
+	if (inp == 0) {
+		++tcpstat.tcps_pcbhashmiss;
 		inp = in_pcblookup(&tcbtable, ti->ti_src, ti->ti_sport,
 		    ti->ti_dst, ti->ti_dport, INPLOOKUP_WILDCARD);
 		/*
@@ -335,9 +410,10 @@ findpcb:
 		 * If the TCB exists but is in CLOSED state, it is embryonic,
 		 * but should either do a listen or a connect soon.
 		 */
-		if (inp == 0)
+		if (inp == 0) {
+			++tcpstat.tcps_noport;
 			goto dropwithreset;
-		tcp_last_inpcb = inp;
+		}
 	}
 
 	tp = intotcpcb(inp);
@@ -359,9 +435,16 @@ findpcb:
 			tcp_saveti = *ti;
 		}
 		if (so->so_options & SO_ACCEPTCONN) {
-			so = sonewconn(so, 0);
-			if (so == 0)
-				goto drop;
+			struct socket *so1;
+
+			so1 = sonewconn(so, 0);
+			if (so1 == NULL) {
+				tcpdropoldhalfopen(tp, ti->ti_dport);
+				so1 = sonewconn(so, 0);
+				if (so1 == NULL)
+					goto drop;
+			}
+			so = so1;
 			/*
 			 * This is ugly, but ....
 			 *
@@ -377,6 +460,7 @@ findpcb:
 			inp = (struct inpcb *)so->so_pcb;
 			inp->inp_laddr = ti->ti_dst;
 			inp->inp_lport = ti->ti_dport;
+			in_pcbrehash(inp);
 #if BSD>=43
 			inp->inp_options = ip_srcroute();
 #endif
@@ -396,7 +480,8 @@ findpcb:
 	 * Reset idle time and keep-alive timer.
 	 */
 	tp->t_idle = 0;
-	tp->t_timer[TCPT_KEEP] = tcp_keepidle;
+	if (tp->t_state != TCPS_SYN_RECEIVED)
+		tp->t_timer[TCPT_KEEP] = tcp_keepidle;
 
 	/*
 	 * Process options if not in LISTEN state,
@@ -479,7 +564,7 @@ findpcb:
 				return;
 			}
 		} else if (ti->ti_ack == tp->snd_una &&
-		    tp->seg_next == (struct tcpiphdr *)tp &&
+		    tp->segq.lh_first == NULL &&
 		    ti->ti_len <= sbspace(&so->so_rcv)) {
 			/*
 			 * this is a pure, in-sequence data packet
@@ -591,13 +676,17 @@ findpcb:
 			tp->iss = iss;
 		else
 			tp->iss = tcp_iss;
+#ifdef TCP_COMPAT_42
 		tcp_iss += TCP_ISSINCR/2;
+#else /* TCP_COMPAT_42 */
+		tcp_iss += arc4random() % (TCP_ISSINCR / 2) + 1;
+#endif /* !TCP_COMPAT_42 */
 		tp->irs = ti->ti_seq;
 		tcp_sendseqinit(tp);
 		tcp_rcvseqinit(tp);
 		tp->t_flags |= TF_ACKNOW;
 		tp->t_state = TCPS_SYN_RECEIVED;
-		tp->t_timer[TCPT_KEEP] = TCPTV_KEEP_INIT;
+		tp->t_timer[TCPT_KEEP] = tcptv_keep_init;
 		dropsocket = 0;		/* committed to socket */
 		tcpstat.tcps_accepts++;
 		goto trimthenstep6;
@@ -1106,10 +1195,9 @@ step6:
 	 * Update window information.
 	 * Don't look at window if no ACK: TAC's send garbage on first SYN.
 	 */
-	if ((tiflags & TH_ACK) &&
-	    (SEQ_LT(tp->snd_wl1, ti->ti_seq) || tp->snd_wl1 == ti->ti_seq &&
-	    (SEQ_LT(tp->snd_wl2, ti->ti_ack) ||
-	     tp->snd_wl2 == ti->ti_ack && tiwin > tp->snd_wnd))) {
+	if (((tiflags & TH_ACK) && SEQ_LT(tp->snd_wl1, ti->ti_seq)) ||
+	    (tp->snd_wl1 == ti->ti_seq && SEQ_LT(tp->snd_wl2, ti->ti_ack)) ||
+	    (tp->snd_wl2 == ti->ti_ack && tiwin > tp->snd_wnd)) {
 		/* keep track of pure window updates */
 		if (ti->ti_len == 0 &&
 		    tp->snd_wl2 == ti->ti_ack && tiwin > tp->snd_wnd)
@@ -1167,7 +1255,7 @@ step6:
 		 * but if two URG's are pending at once, some out-of-band
 		 * data may creep in... ick.
 		 */
-		if (ti->ti_urp <= ti->ti_len
+		if (ti->ti_urp <= (u_int16_t) ti->ti_len
 #ifdef SO_OOBINLINE
 		     && (so->so_options & SO_OOBINLINE) == 0
 #endif
@@ -1191,7 +1279,7 @@ dodata:							/* XXX */
 	 * case PRU_RCVD).  If a FIN has already been received on this
 	 * connection then we just ignore the text.
 	 */
-	if ((ti->ti_len || (tiflags&TH_FIN)) &&
+	if ((ti->ti_len || (tiflags & TH_FIN)) &&
 	    TCPS_HAVERCVDFIN(tp->t_state) == 0) {
 		TCP_REASS(tp, ti, m, so, tiflags);
 		/*
@@ -1207,9 +1295,10 @@ dodata:							/* XXX */
 
 	/*
 	 * If FIN is received ACK the FIN and let the user know
-	 * that the connection is closing.
+	 * that the connection is closing.  Ignore a FIN received before
+	 * the connection is fully established.
 	 */
-	if (tiflags & TH_FIN) {
+	if ((tiflags & TH_FIN) && TCPS_HAVEESTABLISHED(tp->t_state)) {
 		if (TCPS_HAVERCVDFIN(tp->t_state) == 0) {
 			socantrcvmore(so);
 			tp->t_flags |= TF_ACKNOW;
@@ -1218,10 +1307,8 @@ dodata:							/* XXX */
 		switch (tp->t_state) {
 
 	 	/*
-		 * In SYN_RECEIVED and ESTABLISHED STATES
-		 * enter the CLOSE_WAIT state.
+		 * In ESTABLISHED STATE enter the CLOSE_WAIT state.
 		 */
-		case TCPS_SYN_RECEIVED:
 		case TCPS_ESTABLISHED:
 			tp->t_state = TCPS_CLOSE_WAIT;
 			break;
@@ -1557,7 +1644,7 @@ tcp_mss(tp, offer)
 			/* default variation is +- 1 rtt */
 			tp->t_rttvar =
 			    tp->t_srtt * TCP_RTTVAR_SCALE / TCP_RTT_SCALE;
-		TCPT_RANGESET(tp->t_rxtcur,
+		TCPT_RANGESET((long) tp->t_rxtcur,
 		    ((tp->t_srtt >> 2) + tp->t_rttvar) >> 1,
 		    tp->t_rttmin, TCPTV_REXMTMAX);
 	}

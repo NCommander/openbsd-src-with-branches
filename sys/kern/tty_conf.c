@@ -1,4 +1,5 @@
-/*	$NetBSD: tty_conf.c,v 1.16 1995/10/10 01:27:01 mycroft Exp $	*/
+/*	$OpenBSD: tty_conf.c,v 1.3 1996/05/22 11:51:25 deraadt Exp $	*/
+/*	$NetBSD: tty_conf.c,v 1.18 1996/05/19 17:17:55 jonathan Exp $	*/
 
 /*-
  * Copyright (c) 1982, 1986, 1991, 1993
@@ -54,8 +55,7 @@
 #define	ttyerrinput ((int (*) __P((int c, struct tty *)))enodev)
 #define	ttyerrstart ((int (*) __P((struct tty *)))enodev)
 
-int	nullioctl __P((struct tty *tp, u_long cmd, caddr_t data,
-			int flag, struct proc *p));
+int	nullioctl __P((struct tty *, u_long, caddr_t, int, struct proc *));
 
 #include "tb.h"
 #if NTB > 0
@@ -87,6 +87,16 @@ int	pppinput __P((int c, struct tty *tp));
 int	pppstart __P((struct tty *tp));
 int	pppread __P((struct tty *tp, struct uio *uio, int flag));
 int	pppwrite __P((struct tty *tp, struct uio *uio, int flag));
+#endif
+
+#include "strip.h"
+#if NSTRIP > 0
+int	stripopen __P((dev_t dev, struct tty *tp));
+int	stripclose __P((struct tty *tp, int flags));
+int	striptioctl __P((struct tty *tp, u_long cmd, caddr_t data,
+			int flag, struct proc *p));
+int	stripinput __P((int c, struct tty *tp));
+int	stripstart __P((struct tty *tp));
 #endif
 
 struct	linesw linesw[] =
@@ -128,6 +138,14 @@ struct	linesw linesw[] =
 	{ ttynodisc, ttyerrclose, ttyerrio, ttyerrio, nullioctl,
 	  ttyerrinput, ttyerrstart, nullmodem },
 #endif
+
+#if NSTRIP > 0
+	{ stripopen, stripclose, ttyerrio, ttyerrio, striptioctl,
+	  stripinput, stripstart, nullmodem },		/* 6- STRIPDISC */
+#else
+	{ ttynodisc, ttyerrclose, ttyerrio, ttyerrio, nullioctl,
+	  ttyerrinput, ttyerrstart, nullmodem },
+#endif
 };
 
 int	nlinesw = sizeof (linesw) / sizeof (linesw[0]);
@@ -137,6 +155,7 @@ int	nlinesw = sizeof (linesw) / sizeof (linesw[0]);
  * discipline specific ioctl command.
  */
 /*ARGSUSED*/
+int
 nullioctl(tp, cmd, data, flags, p)
 	struct tty *tp;
 	u_long cmd;

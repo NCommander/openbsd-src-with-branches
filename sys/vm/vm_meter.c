@@ -1,4 +1,5 @@
-/*	$NetBSD: vm_meter.c,v 1.17 1995/07/08 03:12:22 cgd Exp $	*/
+/*	$OpenBSD: vm_meter.c,v 1.3 1996/10/23 15:38:36 deraadt Exp $	*/
+/*	$NetBSD: vm_meter.c,v 1.18 1996/02/05 01:53:59 christos Exp $	*/
 
 /*
  * Copyright (c) 1982, 1986, 1989, 1993
@@ -41,6 +42,7 @@
 #include <sys/kernel.h>
 #include <vm/vm.h>
 #include <sys/sysctl.h>
+#include <sys/exec.h>
 
 struct	loadavg averunnable;		/* load average, of runnable procs */
 
@@ -99,6 +101,7 @@ loadav(avg)
 /*
  * Attributes associated with virtual memory.
  */
+int
 vm_sysctl(name, namelen, oldp, oldlenp, newp, newlen, p)
 	int *name;
 	u_int namelen;
@@ -109,6 +112,7 @@ vm_sysctl(name, namelen, oldp, oldlenp, newp, newlen, p)
 	struct proc *p;
 {
 	struct vmtotal vmtotals;
+	struct _ps_strings _ps = { PS_STRINGS };
 
 	/* all sysctl names at this level are terminal */
 	if (namelen != 1)
@@ -123,6 +127,9 @@ vm_sysctl(name, namelen, oldp, oldlenp, newp, newlen, p)
 		vmtotal(&vmtotals);
 		return (sysctl_rdstruct(oldp, oldlenp, newp, &vmtotals,
 		    sizeof(vmtotals)));
+	case VM_PSSTRINGS:
+		return (sysctl_rdstruct(oldp, oldlenp, newp, &_ps,
+		    sizeof _ps));
 	default:
 		return (EOPNOTSUPP);
 	}
@@ -196,7 +203,7 @@ vmtotal(totalp)
 			    entry->object.vm_object == NULL)
 				continue;
 			entry->object.vm_object->flags |= OBJ_ACTIVE;
-			paging |= entry->object.vm_object->paging_in_progress;
+			paging |= vm_object_paging(entry->object.vm_object);
 		}
 		if (paging)
 			totalp->t_pw++;

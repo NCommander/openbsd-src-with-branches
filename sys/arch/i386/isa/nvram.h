@@ -68,11 +68,16 @@
 /* NVRAM byte 6: equipment type */
 #define	NVRAM_EQUIPMENT	(MC_NVRAM_START + 6)
 
+#define	NVRAM_EQUIPMENT_FLOPPY	0x01		/* floppy installed */
+#define	NVRAM_EQUIPMENT_FPU	0x02		/* FPU installed */
+#define	NVRAM_EQUIPMENT_KBD	0x04		/* keyboard installed */
+#define	NVRAM_EQUIPMENT_DISPLAY	0x08		/* display installed */
 #define	NVRAM_EQUIPMENT_EGAVGA	0x00		/* EGA or VGA */
 #define	NVRAM_EQUIPMENT_COLOR40	0x10		/* 40 column color */
 #define	NVRAM_EQUIPMENT_COLOR80	0x20		/* 80 column color */
 #define	NVRAM_EQUIPMENT_MONO80	0x30		/* 80 column mono */
 #define	NVRAM_EQUIPMENT_MONITOR	0x30		/* mask for monitor type */
+#define	MVRAM_EQUIPMENT_NFDS	0xC0		/* mask for # of floppies */
 
 /* NVRAM bytes 7 & 8: base memory size */
 #define NVRAM_BASELO	(MC_NVRAM_START + 7)	/* low byte; RTC off. 0x15 */
@@ -81,6 +86,10 @@
 /* NVRAM bytes 9 & 10: extended memory size */
 #define NVRAM_EXTLO	(MC_NVRAM_START + 9)	/* low byte; RTC off. 0x17 */
 #define NVRAM_EXTHI	(MC_NVRAM_START + 10)	/* high byte; RTC off. 0x18 */
+
+/* NVRAM bytes 34 and 35: extended memory POSTed size */
+#define NVRAM_PEXTLO	(MC_NVRAM_START + 34)	/* low byte; RTC off. 0x30 */
+#define NVRAM_PEXTHI	(MC_NVRAM_START + 35)	/* high byte; RTC off. 0x31 */
 
 /* NVRAM byte 36: current century.  (please increment in Dec99!) */
 #define NVRAM_CENTURY	(MC_NVRAM_START + 36)	/* RTC offset 0x32 */

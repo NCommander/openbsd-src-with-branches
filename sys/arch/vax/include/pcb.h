@@ -1,4 +1,4 @@
-/*	$NetBSD: pcb.h,v 1.8 1995/05/07 16:43:34 ragge Exp $	*/
+/*	$NetBSD: pcb.h,v 1.10 1996/02/02 18:08:26 mycroft Exp $	*/
 
 /*
  * Copyright (c) 1994 Ludd, University of Lule}, Sweden.
@@ -35,7 +35,7 @@
 #ifndef _VAX_PCB_H_
 #define _VAX_PCB_H_
 
-#include "machine/trap.h"
+#include <machine/trap.h>
 
 struct pcb {
 
@@ -50,9 +50,9 @@ struct pcb {
 	long	FP;		/*  Frame Pointer             */
 	long	PC;		/*  Program Counter           */
 	long	PSL;		/*  Program Status Longword   */
-	void   *P0BR;		/*  Page 0 Base Register      */
+	struct	pte *P0BR;	/*  Page 0 Base Register      */
 	long	P0LR;		/*  Page 0 Length Register    */
-	void   *P1BR;		/*  Page 1 Base Register      */
+	struct	pte *P1BR;	/*  Page 1 Base Register      */
 	long	P1LR;		/*  Page 1 Length Register    */
 
 	/* Software registers, only used by kernel software */

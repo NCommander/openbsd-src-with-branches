@@ -1772,12 +1772,13 @@ md_assemble (str)
 		break;
 
 	      case BFD_RELOC_LO16:
-		if (ex.X_unsigned)
-		  ex.X_add_number &= 0xffff;
-		else
+		if (operand->flags & PPC_OPERAND_SIGNED) {
 		  ex.X_add_number = (((ex.X_add_number & 0xffff)
 				      ^ 0x8000)
 				     - 0x8000);
+		} else {
+		  ex.X_add_number &= 0xffff;
+		}
 		break;
 
 	      case BFD_RELOC_HI16:

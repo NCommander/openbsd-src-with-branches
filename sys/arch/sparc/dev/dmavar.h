@@ -1,4 +1,4 @@
-/*	$NetBSD: dmavar.h,v 1.4 1994/11/27 00:08:34 deraadt Exp $ */
+/*	$NetBSD: dmavar.h,v 1.8 1996/04/22 02:35:00 abrown Exp $ */
 
 /*
  * Copyright (c) 1994 Peter Galbavy.  All rights reserved.
@@ -32,19 +32,27 @@ struct dma_softc {
 	struct device sc_dev;			/* us as a device */
 	struct sbusdev sc_sd;			/* sbus device */
 	struct esp_softc *sc_esp;		/* my scsi */
+	struct le_softc *sc_le;			/* my ethernet */
 	struct dma_regs *sc_regs;		/* the registers */
 	int	sc_active;			/* DMA active ? */
 	int	sc_rev;				/* revision */
 	int	sc_node;			/* PROM node ID */
+	int	sc_burst;			/* DVMA burst size in effect */
+	caddr_t	sc_dvmakaddr;			/* DVMA cookies */
+	caddr_t	sc_dvmaaddr;			/*		*/
 	size_t	sc_dmasize;
 	caddr_t	*sc_dmaaddr;
 	size_t  *sc_dmalen;
 	void (*reset)(struct dma_softc *);	/* reset routine */
 	void (*enintr)(struct dma_softc *);	/* enable interrupts */
-	void (*start)(struct dma_softc *, caddr_t *, size_t *, int);
-	int (*isintr)(struct dma_softc *);	/* intrerrupt ? */
-	int (*intr)(struct dma_softc *);	/* intrerrupt ! */
+	int (*isintr)(struct dma_softc *);	/* interrupt ? */
+	int (*intr)(struct dma_softc *);	/* interrupt ! */
+	int (*setup)(struct dma_softc *, caddr_t *, size_t *, int, size_t *);
+	void (*go)(struct dma_softc *);
 };
+
+#define DMACSR(sc)	(sc->sc_regs->csr)
+#define DMADDR(sc)	(sc->sc_regs->addr)
 
 /*
  * We are not allowed to touch the DMA "flush" and "drain" bits
@@ -58,7 +66,8 @@ struct dma_softc {
 #define TIME_WAIT(COND, MSG, SC) { int count = 500000; \
 				while (--count > 0 && (COND)) DELAY(1); \
 				if (count == 0) { \
-					printf("CSR = %x\n", SC->sc_regs->csr);\
+					printf("CSR = %lx\n",\
+					    SC->sc_regs->csr);\
 					panic(MSG); } \
 			     }
 
@@ -66,5 +75,16 @@ struct dma_softc {
 #define DMAWAIT1(sc) TIME_WAIT((sc->sc_regs->csr & D_DRAINING), "DMAWAIT1", sc)
 #define DMAREADY(sc) TIME_WAIT((!(sc->sc_regs->csr & D_DMA_ON)), "DMAREADY", sc)
 
-#define DMACSR(sc)	(sc->sc_regs->csr)
-#define DMADDR(sc)	(sc->sc_regs->addr)
+#define DMA_DRAIN(sc)	if (sc->sc_rev < DMAREV_2) { \
+				DMACSR(sc) |= D_DRAIN; \
+				DMAWAIT1(sc); \
+			}
+
+/* DMA engine functions */
+#define DMA_ENINTR(r)		(((r)->enintr)(r))
+#define DMA_ISINTR(r)		(((r)->isintr)(r))
+#define DMA_RESET(r)		(((r)->reset)(r))
+#define DMA_INTR(r)		(((r)->intr)(r))
+#define DMA_ISACTIVE(r)		((r)->sc_active)
+#define DMA_SETUP(a, b, c, d, e)	(((a)->setup)(a, b, c, d, e))
+#define DMA_GO(r)		(((r)->go)(r))

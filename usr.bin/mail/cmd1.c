@@ -1,3 +1,6 @@
+/*	$OpenBSD: cmd1.c,v 1.3 1996/06/11 12:53:32 deraadt Exp $	*/
+/*	$NetBSD: cmd1.c,v 1.5 1996/06/08 19:48:11 christos Exp $	*/
+
 /*-
  * Copyright (c) 1980, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -32,8 +35,11 @@
  */
 
 #ifndef lint
-static char sccsid[] = "from: @(#)cmd1.c	8.1 (Berkeley) 6/6/93";
-static char rcsid[] = "$Id: cmd1.c,v 1.3 1994/06/29 05:09:07 deraadt Exp $";
+#if 0
+static char sccsid[] = "@(#)cmd1.c	8.1 (Berkeley) 6/6/93";
+#else
+static char rcsid[] = "$OpenBSD: cmd1.c,v 1.3 1996/06/11 12:53:32 deraadt Exp $";
+#endif
 #endif /* not lint */
 
 #include "rcv.h"
@@ -53,9 +59,10 @@ static char rcsid[] = "$Id: cmd1.c,v 1.3 1994/06/29 05:09:07 deraadt Exp $";
 static int screen;
 
 int
-headers(msgvec)
-	int *msgvec;
+headers(v)
+	void *v;
 {
+	int *msgvec = v;
 	register int n, mesg, flag;
 	register struct message *mp;
 	int size;
@@ -94,9 +101,10 @@ headers(msgvec)
  * Scroll to the next/previous screen
  */
 int
-scroll(arg)
-	char arg[];
+scroll(v)
+	void *v;
 {
+	char *arg = v;
 	register int s, size;
 	int cur[1];
 
@@ -148,9 +156,10 @@ screensize()
  * in the passed message list.
  */
 int
-from(msgvec)
-	int *msgvec;
+from(v)
+	void *v;
 {
+	int *msgvec = v;
 	register int *ip;
 
 	for (ip = msgvec; *ip != NULL; ip++)
@@ -195,7 +204,7 @@ printhead(mesg)
 	if (mp->m_flag & MBOX)
 		dispc = 'M';
 	parse(headline, &hl, pbuf);
-	sprintf(wcount, "%3d/%-5ld", mp->m_lines, mp->m_size);
+	sprintf(wcount, "%3d/%-5d", mp->m_lines, mp->m_size);
 	subjlen = screenwidth - 50 - strlen(wcount);
 	name = value("show-rcpt") != NOSTR ?
 		skin(hfield("to", mp)) : nameof(mp, 0);
@@ -212,7 +221,8 @@ printhead(mesg)
  * Print out the value of dot.
  */
 int
-pdot()
+pdot(v)
+	void *v;
 {
 	printf("%d\n", dot - &message[0] + 1);
 	return(0);
@@ -222,11 +232,12 @@ pdot()
  * Print out all the possible commands.
  */
 int
-pcmdlist()
+pcmdlist(v)
+	void *v;
 {
-	register struct cmd *cp;
+	extern const struct cmd cmdtab[];
+	register const struct cmd *cp;
 	register int cc;
-	extern struct cmd cmdtab[];
 
 	printf("Commands are:\n");
 	for (cc = 0, cp = cmdtab; cp->c_name != NULL; cp++) {
@@ -247,9 +258,10 @@ pcmdlist()
  * Paginate messages, honor ignored fields.
  */
 int
-more(msgvec)
-	int *msgvec;
+more(v)
+	void *v;
 {
+	int *msgvec = v;
 	return (type1(msgvec, 1, 1));
 }
 
@@ -257,9 +269,10 @@ more(msgvec)
  * Paginate messages, even printing ignored fields.
  */
 int
-More(msgvec)
-	int *msgvec;
+More(v)
+	void *v;
 {
+	int *msgvec = v;
 
 	return (type1(msgvec, 0, 1));
 }
@@ -268,9 +281,10 @@ More(msgvec)
  * Type out messages, honor ignored fields.
  */
 int
-type(msgvec)
-	int *msgvec;
+type(v)
+	void *v;
 {
+	int *msgvec = v;
 
 	return(type1(msgvec, 1, 0));
 }
@@ -279,9 +293,10 @@ type(msgvec)
  * Type out messages, even printing ignored fields.
  */
 int
-Type(msgvec)
-	int *msgvec;
+Type(v)
+	void *v;
 {
+	int *msgvec = v;
 
 	return(type1(msgvec, 0, 0));
 }
@@ -296,10 +311,15 @@ type1(msgvec, doign, page)
 	int doign, page;
 {
 	register *ip;
-	register struct message *mp;
-	register char *cp;
+	struct message *mp;
+	char *cp;
 	int nlines;
 	FILE *obuf;
+#if __GNUC__
+	/* Avoid longjmp clobbering */
+	(void) &cp;
+	(void) &obuf;
+#endif
 
 	obuf = stdout;
 	if (setjmp(pipestop))
@@ -360,9 +380,10 @@ brokpipe(signo)
  * and defaults to 5.
  */
 int
-top(msgvec)
-	int *msgvec;
+top(v)
+	void *v;
 {
+	int *msgvec = v;
 	register int *ip;
 	register struct message *mp;
 	int c, topl, lines, lineb;
@@ -402,9 +423,10 @@ top(msgvec)
  * get mboxed.
  */
 int
-stouch(msgvec)
-	int msgvec[];
+stouch(v)
+	void *v;
 {
+	int *msgvec = v;
 	register int *ip;
 
 	for (ip = msgvec; *ip != 0; ip++) {
@@ -419,9 +441,10 @@ stouch(msgvec)
  * Make sure all passed messages get mboxed.
  */
 int
-mboxit(msgvec)
-	int msgvec[];
+mboxit(v)
+	void *v;
 {
+	int *msgvec = v;
 	register int *ip;
 
 	for (ip = msgvec; *ip != 0; ip++) {
@@ -436,7 +459,8 @@ mboxit(msgvec)
  * List the folders the user currently has.
  */
 int
-folders()
+folders(v)
+	void *v;
 {
 	char dirname[BUFSIZ];
 	char *cmd;

@@ -1,4 +1,5 @@
-/*	$NetBSD$ */
+
+/*	$OpenBSD$ */
 
 /*
  * Copyright (c) 1995 Theo de Raadt
@@ -14,7 +15,8 @@
  *    documentation and/or other materials provided with the distribution.
  * 3. All advertising materials mentioning features or use of this software
  *    must display the following acknowledgement:
- *      This product includes software developed by Theo de Raadt
+ *      This product includes software developed under OpenBSD by
+ *	Theo de Raadt for Willowglen Singapore.
  * 4. The name of the author may not be used to endorse or promote products
  *    derived from this software without specific prior written permission.
  *
@@ -54,17 +56,20 @@
 
 struct pcctwosoftc {
 	struct device	sc_dev;
-	caddr_t		sc_vaddr;	/* PCC2 space */
-	caddr_t		sc_paddr;
+	void		*sc_vaddr;	/* PCC2 space */
+	void		*sc_paddr;
 	struct pcctworeg *sc_pcc2;	/* the actual registers */
 };
 
 void pcctwoattach __P((struct device *, struct device *, void *));
 int  pcctwomatch __P((struct device *, void *, void *));
 
-struct cfdriver pcctwocd = {
-	NULL, "pcctwo", pcctwomatch, pcctwoattach,
-	DV_DULL, sizeof(struct pcctwosoftc), 0
+struct cfattach pcctwo_ca = {
+	sizeof(struct pcctwosoftc), pcctwomatch, pcctwoattach
+};
+
+struct cfdriver pcctwo_cd = {
+	NULL, "pcctwo", DV_DULL, 0
 };
 
 struct pcctworeg *sys_pcc2 = NULL;
@@ -90,7 +95,7 @@ pcctwomatch(parent, vcf, args)
 int
 pcctwo_print(args, bus)
 	void *args;
-	char *bus;
+	const char *bus;
 {
 	struct confargs *ca = args;
 
@@ -123,13 +128,13 @@ pcctwo_scan(parent, child, args)
 		oca.ca_vaddr = sc->sc_vaddr + oca.ca_offset;
 		oca.ca_paddr = sc->sc_paddr + oca.ca_offset;
 	} else {
-		oca.ca_vaddr = (caddr_t)-1;
-		oca.ca_paddr = (caddr_t)-1;
+		oca.ca_vaddr = (void *)-1;
+		oca.ca_paddr = (void *)-1;
 	}
 	oca.ca_bustype = BUS_PCCTWO;
 	oca.ca_master = (void *)sc->sc_pcc2;
 	oca.ca_name = cf->cf_driver->cd_name;
-	if ((*cf->cf_driver->cd_match)(parent, cf, &oca) == 0)
+	if ((*cf->cf_attach->ca_match)(parent, cf, &oca) == 0)
 		return (0);
 	config_attach(parent, cf, &oca, pcctwo_print);
 	return (1);
@@ -152,7 +157,7 @@ pcctwoattach(parent, self, args)
 	 * we must adjust our address
 	 */
 	sc->sc_paddr = ca->ca_paddr;
-	sc->sc_vaddr = (caddr_t)IIOV(sc->sc_paddr);
+	sc->sc_vaddr = (void *)IIOV(sc->sc_paddr);
 	sc->sc_pcc2 = (struct pcctworeg *)(sc->sc_vaddr + PCC2_PCC2CHIP_OFF);
 	sys_pcc2 = sc->sc_pcc2;
 

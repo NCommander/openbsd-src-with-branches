@@ -1,7 +1,8 @@
-/*	$NetBSD: cd.c,v 1.76 1995/10/10 02:52:56 mycroft Exp $	*/
+/*	$OpenBSD: cd.c,v 1.22 1997/03/29 23:54:20 briggs Exp $	*/
+/*	$NetBSD: cd.c,v 1.100 1997/04/02 02:29:30 mycroft Exp $	*/
 
 /*
- * Copyright (c) 1994, 1995 Charles M. Hannum.  All rights reserved.
+ * Copyright (c) 1994, 1995, 1997 Charles M. Hannum.  All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -50,10 +51,10 @@
 #include <sys/param.h>
 #include <sys/systm.h>
 #include <sys/kernel.h>
-#include <sys/conf.h>
 #include <sys/file.h>
 #include <sys/stat.h>
 #include <sys/ioctl.h>
+#include <sys/mtio.h>
 #include <sys/buf.h>
 #include <sys/uio.h>
 #include <sys/malloc.h>
@@ -62,47 +63,77 @@
 #include <sys/disklabel.h>
 #include <sys/disk.h>
 #include <sys/cdio.h>
+#include <sys/proc.h>
+#include <sys/conf.h>
 
 #include <scsi/scsi_all.h>
 #include <scsi/scsi_cd.h>
 #include <scsi/scsi_disk.h>	/* rw_big and start_stop come from there */
 #include <scsi/scsiconf.h>
 
-#define	CDOUTSTANDING	2
+#define	CDOUTSTANDING	4
 #define	CDRETRIES	1
 
 #define	CDUNIT(z)			DISKUNIT(z)
 #define	CDPART(z)			DISKPART(z)
 #define	MAKECDDEV(maj, unit, part)	MAKEDISKDEV(maj, unit, part)
 
+#define	CDLABELDEV(dev)	(MAKECDDEV(major(dev), CDUNIT(dev), RAW_PART))
+
 struct cd_softc {
 	struct device sc_dev;
-	struct dkdevice sc_dk;
+	struct disk sc_dk;
 
 	int flags;
 #define	CDF_LOCKED	0x01
 #define	CDF_WANTED	0x02
 #define	CDF_WLABEL	0x04		/* label is writable */
 #define	CDF_LABELLING	0x08		/* writing label */
+#define	CDF_ANCIENT	0x10		/* disk is ancient; for minphys */
+#ifdef CDDA
+#define CDF_CDDAMODE	0x08
+#endif
 	struct scsi_link *sc_link;	/* contains our targ, lun, etc. */
 	struct cd_parms {
 		int blksize;
 		u_long disksize;	/* total number sectors */
 	} params;
+#ifdef CDDA
+	struct cd_parms orig_params;    /* filled in when CD-DA mode starts */
+#endif
 	struct buf buf_queue;
 };
 
-int cdmatch __P((struct device *, void *, void *));
-void cdattach __P((struct device *, struct device *, void *));
+int	cdmatch __P((struct device *, void *, void *));
+void	cdattach __P((struct device *, struct device *, void *));
+int	cdlock __P((struct cd_softc *));
+void	cdunlock __P((struct cd_softc *));
+void	cdstart __P((void *));
+void	cdminphys __P((struct buf *));
+void	cdgetdisklabel __P((dev_t, struct cd_softc *));
+void	cddone __P((struct scsi_xfer *));
+u_long	cd_size __P((struct cd_softc *, int));
+int	cd_get_mode __P((struct cd_softc *, struct cd_mode_data *, int));
+int	cd_set_mode __P((struct cd_softc *, struct cd_mode_data *));
+int	cd_play __P((struct cd_softc *, int, int ));
+int	cd_play_big __P((struct cd_softc *, int, int ));
+int	cd_play_tracks __P((struct cd_softc *, int, int, int, int ));
+int	cd_play_msf __P((struct cd_softc *, int, int, int, int, int, int ));
+int	cd_pause __P((struct cd_softc *, int));
+int	cd_reset __P((struct cd_softc *));
+int	cd_read_subchannel __P((struct cd_softc *, int, int, int,
+			        struct cd_sub_channel_info *, int ));
+int	cd_read_toc __P((struct cd_softc *, int, int, struct cd_toc_entry *,
+			 int ));
+int	cd_get_parms __P((struct cd_softc *, int));
 
-struct cfdriver cdcd = {
-	NULL, "cd", cdmatch, cdattach, DV_DISK, sizeof(struct cd_softc)
+struct cfattach cd_ca = {
+	sizeof(struct cd_softc), cdmatch, cdattach
 };
 
-void cdgetdisklabel __P((struct cd_softc *));
-int cd_get_parms __P((struct cd_softc *, int));
-void cdstrategy __P((struct buf *));
-void cdstart __P((struct cd_softc *));
+struct cfdriver cd_cd = {
+	NULL, "cd", DV_DISK
+};
 
 struct dkdriver cddkdriver = { cdstrategy };
 
@@ -110,7 +141,7 @@ struct scsi_device cd_switch = {
 	NULL,			/* use default error handler */
 	cdstart,		/* we have a queue, which is started by this */
 	NULL,			/* we do not have an async handler */
-	NULL,			/* use default 'done' routine */
+	cddone,			/* deal with stats at interrupt time */
 };
 
 struct scsi_inquiry_pattern cd_patterns[] = {
@@ -127,7 +158,6 @@ cdmatch(parent, match, aux)
 	struct device *parent;
 	void *match, *aux;
 {
-	struct cfdata *cf = match;
 	struct scsibus_attach_args *sa = aux;
 	int priority;
 
@@ -147,7 +177,6 @@ cdattach(parent, self, aux)
 	void *aux;
 {
 	struct cd_softc *cd = (void *)self;
-	struct cd_parms *dp = &cd->params;
 	struct scsibus_attach_args *sa = aux;
 	struct scsi_link *sc_link = sa->sa_sc_link;
 
@@ -162,23 +191,22 @@ cdattach(parent, self, aux)
 	if (sc_link->openings > CDOUTSTANDING)
 		sc_link->openings = CDOUTSTANDING;
 
-	cd->sc_dk.dk_driver = &cddkdriver;
-#if !defined(i386) || defined(NEWCONFIG)
-	dk_establish(&cd->sc_dk, &cd->sc_dev);
-#endif
-
 	/*
-	 * Use the subdriver to request information regarding
-	 * the drive. We cannot use interrupts yet, so the
-	 * request must specify this.
+	 * Initialize and attach the disk structure.
 	 */
-	if (scsi_start(cd->sc_link, SSS_START,
-	    SCSI_AUTOCONF | SCSI_IGNORE_ILLEGAL_REQUEST | SCSI_IGNORE_MEDIA_CHANGE | SCSI_SILENT) ||
-	    cd_get_parms(cd, SCSI_AUTOCONF) != 0)
-		printf(": drive empty\n");
-	else
-		printf(": cd present, %d x %d byte records\n",
-		    cd->params.disksize, cd->params.blksize);
+  	cd->sc_dk.dk_driver = &cddkdriver;
+	cd->sc_dk.dk_name = cd->sc_dev.dv_xname;
+	disk_attach(&cd->sc_dk);
+
+	dk_establish(&cd->sc_dk, &cd->sc_dev);
+  
+	/*
+	 * Note if this device is ancient.  This is used in cdminphys().
+	 */
+	if ((sa->sa_inqbuf->version & SID_ANSII) == 0)
+		cd->flags |= CDF_ANCIENT;
+
+	printf("\n");
 }
 
 /*
@@ -220,10 +248,11 @@ cdunlock(cd)
 /*
  * open the device. Make sure the partition info is a up-to-date as can be.
  */
-int
-cdopen(dev, flag, fmt)
+int 
+cdopen(dev, flag, fmt, p)
 	dev_t dev;
 	int flag, fmt;
+	struct proc *p;
 {
 	struct cd_softc *cd;
 	struct scsi_link *sc_link;
@@ -231,9 +260,9 @@ cdopen(dev, flag, fmt)
 	int error;
 
 	unit = CDUNIT(dev);
-	if (unit >= cdcd.cd_ndevs)
+	if (unit >= cd_cd.cd_ndevs)
 		return ENXIO;
-	cd = cdcd.cd_devs[unit];
+	cd = cd_cd.cd_devs[unit];
 	if (!cd)
 		return ENXIO;
 
@@ -241,10 +270,22 @@ cdopen(dev, flag, fmt)
 
 	SC_DEBUG(sc_link, SDEV_DB1,
 	    ("cdopen: dev=0x%x (unit %d (of %d), partition %d)\n", dev, unit,
-	    cdcd.cd_ndevs, part));
+	    cd_cd.cd_ndevs, CDPART(dev)));
 
-	if (error = cdlock(cd))
+	if ((error = cdlock(cd)) != 0)
 		return error;
+
+#ifdef CDDA
+	/*
+	 * We can't open the block device if the drive is in CDDA
+	 * mode.  If we allow such opens, either the drive will get
+	 * quite unhappy about undersized I/O or the BSD I/O subsystem
+	 * will start trashing memory with disk transfers overrunning
+	 * the end of their buffers.  Either way, it's Bad.
+	 */
+	if (cd->flags & CDF_CDDAMODE && fmt == S_IFBLK)
+		return EBUSY;
+#endif
 
 	if (cd->sc_dk.dk_openmask != 0) {
 		/*
@@ -255,22 +296,39 @@ cdopen(dev, flag, fmt)
 			error = EIO;
 			goto bad3;
 		}
+#ifdef CDDA
+		/*
+		 * If it's in CDDA mode, process may only open the
+		 * raw partition
+		 */
+		if (cd->flags & CDF_CDDAMODE && part != RAW_PART) {
+			error = EBUSY;
+			goto bad3;
+		}
+#endif
 	} else {
 		/* Check that it is still responding and ok. */
-		if (error = scsi_test_unit_ready(sc_link,
-		    SCSI_IGNORE_ILLEGAL_REQUEST | SCSI_IGNORE_MEDIA_CHANGE | SCSI_IGNORE_NOT_READY))
+		error = scsi_test_unit_ready(sc_link,
+					     SCSI_IGNORE_ILLEGAL_REQUEST |
+					     SCSI_IGNORE_MEDIA_CHANGE |
+					     SCSI_IGNORE_NOT_READY);
+		if (error)
 			goto bad3;
 
 		/* Start the pack spinning if necessary. */
-		if (error = scsi_start(sc_link, SSS_START,
-		    SCSI_IGNORE_ILLEGAL_REQUEST | SCSI_IGNORE_MEDIA_CHANGE | SCSI_SILENT))
+		error = scsi_start(sc_link, SSS_START,
+				   SCSI_IGNORE_ILLEGAL_REQUEST |
+				   SCSI_IGNORE_MEDIA_CHANGE | SCSI_SILENT);
+		if (error)
 			goto bad3;
 
 		sc_link->flags |= SDEV_OPEN;
 
 		/* Lock the pack in. */
-		if (error = scsi_prevent(sc_link, PR_PREVENT,
-		    SCSI_IGNORE_ILLEGAL_REQUEST | SCSI_IGNORE_MEDIA_CHANGE))
+		error = scsi_prevent(sc_link, PR_PREVENT,
+				     SCSI_IGNORE_ILLEGAL_REQUEST |
+				     SCSI_IGNORE_MEDIA_CHANGE);
+		if (error)
 			goto bad;
 
 		if ((sc_link->flags & SDEV_MEDIA_LOADED) == 0) {
@@ -284,7 +342,7 @@ cdopen(dev, flag, fmt)
 			SC_DEBUG(sc_link, SDEV_DB3, ("Params loaded "));
 
 			/* Fabricate a disk label. */
-			cdgetdisklabel(cd);
+			cdgetdisklabel(dev, cd);
 			SC_DEBUG(sc_link, SDEV_DB3, ("Disklabel fabricated "));
 		}
 	}
@@ -293,8 +351,8 @@ cdopen(dev, flag, fmt)
 
 	/* Check that the partition exists. */
 	if (part != RAW_PART &&
-	    (part >= cd->sc_dk.dk_label.d_npartitions ||
-	     cd->sc_dk.dk_label.d_partitions[part].p_fstype == FS_UNUSED)) {
+	    (part >= cd->sc_dk.dk_label->d_npartitions ||
+	     cd->sc_dk.dk_label->d_partitions[part].p_fstype == FS_UNUSED)) {
 		error = ENXIO;
 		goto bad;
 	}
@@ -333,16 +391,17 @@ bad3:
  * close the device.. only called if we are the LAST
  * occurence of an open device
  */
-int
-cdclose(dev, flag, fmt)
+int 
+cdclose(dev, flag, fmt, p)
 	dev_t dev;
 	int flag, fmt;
+	struct proc *p;
 {
-	struct cd_softc *cd = cdcd.cd_devs[CDUNIT(dev)];
+	struct cd_softc *cd = cd_cd.cd_devs[CDUNIT(dev)];
 	int part = CDPART(dev);
 	int error;
 
-	if (error = cdlock(cd))
+	if ((error = cdlock(cd)) != 0)
 		return error;
 
 	switch (fmt) {
@@ -361,6 +420,12 @@ cdclose(dev, flag, fmt)
 		scsi_prevent(cd->sc_link, PR_ALLOW,
 		    SCSI_IGNORE_ILLEGAL_REQUEST | SCSI_IGNORE_NOT_READY);
 		cd->sc_link->flags &= ~SDEV_OPEN;
+
+		if (cd->sc_link->flags & SDEV_EJECTING) {
+			scsi_start(cd->sc_link, SSS_STOP|SSS_LOEJ, 0);
+
+			cd->sc_link->flags &= ~SDEV_EJECTING;
+		}
 	}
 
 	cdunlock(cd);
@@ -376,16 +441,16 @@ void
 cdstrategy(bp)
 	struct buf *bp;
 {
-	struct cd_softc *cd = cdcd.cd_devs[CDUNIT(bp->b_dev)];
+	struct cd_softc *cd = cd_cd.cd_devs[CDUNIT(bp->b_dev)];
 	int opri;
 
 	SC_DEBUG(cd->sc_link, SDEV_DB2, ("cdstrategy "));
 	SC_DEBUG(cd->sc_link, SDEV_DB1,
-	    ("%d bytes @ blk %d\n", bp->b_bcount, bp->b_blkno));
+	    ("%ld bytes @ blk %d\n", bp->b_bcount, bp->b_blkno));
 	/*
 	 * The transfer must be a whole number of blocks.
 	 */
-	if ((bp->b_bcount % cd->sc_dk.dk_label.d_secsize) != 0) {
+	if ((bp->b_bcount % cd->sc_dk.dk_label->d_secsize) != 0) {
 		bp->b_error = EINVAL;
 		goto bad;
 	}
@@ -403,12 +468,24 @@ cdstrategy(bp)
 	if (bp->b_bcount == 0)
 		goto done;
 
+#ifdef CDDA
+	/*
+	 * If in CDDA mode, return immediately (the user must issue
+	 * SCSI read commands directly using SCIOCCOMMAND).  The BSD
+	 * I/O subsystem just can't deal with bizzare block sizes like
+	 * those used for CD-DA frames.
+	 */
+	if (cd->flags & CDF_CDDAMODE) {
+		bp->b_error = EIO;
+		goto bad;
+	}
+#endif
 	/*
 	 * Do bounds checking, adjust transfer. if error, process.
 	 * If end of partition, just return.
 	 */
 	if (CDPART(bp->b_dev) != RAW_PART &&
-	    bounds_check_with_label(bp, &cd->sc_dk.dk_label,
+	    bounds_check_with_label(bp, cd->sc_dk.dk_label,
 	    (cd->flags & (CDF_WLABEL|CDF_LABELLING)) != 0) <= 0)
 		goto done;
 
@@ -454,15 +531,18 @@ done:
  * must be called at the correct (highish) spl level
  * cdstart() is called at splbio from cdstrategy and scsi_done
  */
-void
-cdstart(cd)
-	register struct cd_softc *cd;
+void 
+cdstart(v)
+	register void *v;
 {
+	register struct cd_softc *cd = v;
 	register struct scsi_link *sc_link = cd->sc_link;
 	struct buf *bp = 0;
 	struct buf *dp;
-	struct scsi_rw_big cmd;
-	int blkno, nblks;
+	struct scsi_rw_big cmd_big;
+	struct scsi_rw cmd_small;
+	struct scsi_generic *cmdp;
+	int blkno, nblks, cmdlen;
 	struct partition *p;
 
 	SC_DEBUG(sc_link, SDEV_DB2, ("cdstart "));
@@ -497,6 +577,7 @@ cdstart(cd)
 		if ((sc_link->flags & SDEV_MEDIA_LOADED) == 0) {
 			bp->b_error = EIO;
 			bp->b_flags |= B_ERROR;
+			bp->b_resid = bp->b_bcount;
 			biodone(bp);
 			continue;
 		}
@@ -508,57 +589,115 @@ cdstart(cd)
 		 * of the logical blocksize of the device.
 		 */
 		blkno =
-		    bp->b_blkno / (cd->sc_dk.dk_label.d_secsize / DEV_BSIZE);
+		    bp->b_blkno / (cd->sc_dk.dk_label->d_secsize / DEV_BSIZE);
 		if (CDPART(bp->b_dev) != RAW_PART) {
-			p = &cd->sc_dk.dk_label.d_partitions[CDPART(bp->b_dev)];
-			blkno += p->p_offset;
+		      p = &cd->sc_dk.dk_label->d_partitions[CDPART(bp->b_dev)];
+		      blkno += p->p_offset;
 		}
-		nblks = howmany(bp->b_bcount, cd->sc_dk.dk_label.d_secsize);
+		nblks = howmany(bp->b_bcount, cd->sc_dk.dk_label->d_secsize);
 
 		/*
-		 *  Fill out the scsi command
+		 *  Fill out the scsi command.  If the transfer will
+		 *  fit in a "small" cdb, use it.
 		 */
-		bzero(&cmd, sizeof(cmd));
-		cmd.opcode = (bp->b_flags & B_READ) ? READ_BIG : WRITE_BIG;
-		cmd.addr_3 = (blkno >> 24) & 0xff;
-		cmd.addr_2 = (blkno >> 16) & 0xff;
-		cmd.addr_1 = (blkno >> 8) & 0xff;
-		cmd.addr_0 = blkno & 0xff;
-		cmd.length2 = (nblks >> 8) & 0xff;
-		cmd.length1 = nblks & 0xff;
+		if (((blkno & 0x1fffff) == blkno) &&
+		    ((nblks & 0xff) == nblks)) {
+			/*
+			 * We can fit in a small cdb.
+			 */
+			bzero(&cmd_small, sizeof(cmd_small));
+			cmd_small.opcode = (bp->b_flags & B_READ) ?
+			    READ_COMMAND : WRITE_COMMAND;
+			_lto3b(blkno, cmd_small.addr);
+			cmd_small.length = nblks & 0xff;
+			cmdlen = sizeof(cmd_small);
+			cmdp = (struct scsi_generic *)&cmd_small;
+		} else {
+			/*
+			 * Need a large cdb.
+			 */
+			bzero(&cmd_big, sizeof(cmd_big));
+			cmd_big.opcode = (bp->b_flags & B_READ) ?
+			    READ_BIG : WRITE_BIG;
+			_lto4b(blkno, cmd_big.addr);
+			_lto2b(nblks, cmd_big.length);
+			cmdlen = sizeof(cmd_big);
+			cmdp = (struct scsi_generic *)&cmd_big;
+		}
+
+		/* Instrumentation. */
+		disk_busy(&cd->sc_dk);
 
 		/*
 		 * Call the routine that chats with the adapter.
 		 * Note: we cannot sleep as we may be an interrupt
 		 */
-		if (scsi_scsi_cmd(sc_link, (struct scsi_generic *)&cmd,
-		    sizeof(cmd), (u_char *) bp->b_data, bp->b_bcount,
+		if (scsi_scsi_cmd(sc_link, cmdp, cmdlen,
+		    (u_char *) bp->b_data, bp->b_bcount,
 		    CDRETRIES, 30000, bp, SCSI_NOSLEEP |
-		    ((bp->b_flags & B_READ) ? SCSI_DATA_IN : SCSI_DATA_OUT)))
+		    ((bp->b_flags & B_READ) ? SCSI_DATA_IN : SCSI_DATA_OUT))) {
+			disk_unbusy(&cd->sc_dk, 0);
 			printf("%s: not queued", cd->sc_dev.dv_xname);
+		}
 	}
 }
 
-int
-cdread(dev, uio)
-	dev_t dev;
-	struct uio *uio;
+void
+cddone(xs)
+	struct scsi_xfer *xs;
 {
-	struct cd_softc *cd = cdcd.cd_devs[CDUNIT(dev)];
+	struct cd_softc *cd = xs->sc_link->device_softc;
 
-	return (physio(cdstrategy, NULL, dev, B_READ,
-		       cd->sc_link->adapter->scsi_minphys, uio));
+	if (xs->bp != NULL)
+		disk_unbusy(&cd->sc_dk, xs->bp->b_bcount - xs->bp->b_resid);
+}
+
+void
+cdminphys(bp)
+	struct buf *bp;
+{
+	struct cd_softc *cd = cd_cd.cd_devs[CDUNIT(bp->b_dev)];
+	long max;
+
+	/*
+	 * If the device is ancient, we want to make sure that
+	 * the transfer fits into a 6-byte cdb.
+	 *
+	 * XXX Note that the SCSI-I spec says that 256-block transfers
+	 * are allowed in a 6-byte read/write, and are specified
+	 * by settng the "length" to 0.  However, we're conservative
+	 * here, allowing only 255-block transfers in case an
+	 * ancient device gets confused by length == 0.  A length of 0
+	 * in a 10-byte read/write actually means 0 blocks.
+	 */
+	if (cd->flags & CDF_ANCIENT) {
+		max = cd->sc_dk.dk_label->d_secsize * 0xff;
+
+		if (bp->b_bcount > max)
+			bp->b_bcount = max;
+	}
+
+	(*cd->sc_link->adapter->scsi_minphys)(bp);
 }
 
 int
-cdwrite(dev, uio)
+cdread(dev, uio, ioflag)
 	dev_t dev;
 	struct uio *uio;
+	int ioflag;
 {
-	struct cd_softc *cd = cdcd.cd_devs[CDUNIT(dev)];
 
-	return (physio(cdstrategy, NULL, dev, B_WRITE,
-		       cd->sc_link->adapter->scsi_minphys, uio));
+	return (physio(cdstrategy, NULL, dev, B_READ, cdminphys, uio));
+}
+
+int
+cdwrite(dev, uio, ioflag)
+	dev_t dev;
+	struct uio *uio;
+	int ioflag;
+{
+
+	return (physio(cdstrategy, NULL, dev, B_WRITE, cdminphys, uio));
 }
 
 /*
@@ -573,7 +712,7 @@ cdioctl(dev, cmd, addr, flag, p)
 	int flag;
 	struct proc *p;
 {
-	struct cd_softc *cd = cdcd.cd_devs[CDUNIT(dev)];
+	struct cd_softc *cd = cd_cd.cd_devs[CDUNIT(dev)];
 	int error;
 
 	SC_DEBUG(cd->sc_link, SDEV_DB2, ("cdioctl 0x%lx ", cmd));
@@ -586,13 +725,13 @@ cdioctl(dev, cmd, addr, flag, p)
 
 	switch (cmd) {
 	case DIOCGDINFO:
-		*(struct disklabel *)addr = cd->sc_dk.dk_label;
+		*(struct disklabel *)addr = *(cd->sc_dk.dk_label);
 		return 0;
 
 	case DIOCGPART:
-		((struct partinfo *)addr)->disklab = &cd->sc_dk.dk_label;
+		((struct partinfo *)addr)->disklab = cd->sc_dk.dk_label;
 		((struct partinfo *)addr)->part =
-		    &cd->sc_dk.dk_label.d_partitions[CDPART(dev)];
+		    &cd->sc_dk.dk_label->d_partitions[CDPART(dev)];
 		return 0;
 
 	case DIOCWDINFO:
@@ -600,13 +739,13 @@ cdioctl(dev, cmd, addr, flag, p)
 		if ((flag & FWRITE) == 0)
 			return EBADF;
 
-		if (error = cdlock(cd))
+		if ((error = cdlock(cd)) != 0)
 			return error;
 		cd->flags |= CDF_LABELLING;
 
-		error = setdisklabel(&cd->sc_dk.dk_label,
+		error = setdisklabel(cd->sc_dk.dk_label,
 		    (struct disklabel *)addr, /*cd->sc_dk.dk_openmask : */0,
-		    &cd->sc_dk.dk_cpulabel);
+		    cd->sc_dk.dk_cpulabel);
 		if (error == 0) {
 		}
 
@@ -620,39 +759,39 @@ cdioctl(dev, cmd, addr, flag, p)
 	case CDIOCPLAYTRACKS: {
 		struct ioc_play_track *args = (struct ioc_play_track *)addr;
 		struct cd_mode_data data;
-		if (error = cd_get_mode(cd, &data, AUDIO_PAGE))
+		if ((error = cd_get_mode(cd, &data, AUDIO_PAGE)) != 0)
 			return error;
 		data.page.audio.flags &= ~CD_PA_SOTC;
 		data.page.audio.flags |= CD_PA_IMMED;
-		if (error = cd_set_mode(cd, &data))
+		if ((error = cd_set_mode(cd, &data)) != 0)
 			return error;
-		return cd_play_tracks(cd, args->start_track, args->start_index,
-		    args->end_track, args->end_index);
+		return cd_play_tracks(cd, args->start_track,
+				      args->start_index, args->end_track,
+				      args->end_index);
 	}
 	case CDIOCPLAYMSF: {
-		struct ioc_play_msf *args
-		= (struct ioc_play_msf *)addr;
+		struct ioc_play_msf *args = (struct ioc_play_msf *)addr;
 		struct cd_mode_data data;
-		if (error = cd_get_mode(cd, &data, AUDIO_PAGE))
+		if ((error = cd_get_mode(cd, &data, AUDIO_PAGE)) != 0)
 			return error;
 		data.page.audio.flags &= ~CD_PA_SOTC;
 		data.page.audio.flags |= CD_PA_IMMED;
-		if (error = cd_set_mode(cd, &data))
+		if ((error = cd_set_mode(cd, &data)) != 0)
 			return error;
 		return cd_play_msf(cd, args->start_m, args->start_s,
-		    args->start_f, args->end_m, args->end_s, args->end_f);
+				   args->start_f, args->end_m, args->end_s,
+				   args->end_f);
 	}
 	case CDIOCPLAYBLOCKS: {
-		struct ioc_play_blocks *args
-		= (struct ioc_play_blocks *)addr;
+		struct ioc_play_blocks *args = (struct ioc_play_blocks *)addr;
 		struct cd_mode_data data;
-		if (error = cd_get_mode(cd, &data, AUDIO_PAGE))
+		if ((error = cd_get_mode(cd, &data, AUDIO_PAGE)) != 0)
 			return error;
 		data.page.audio.flags &= ~CD_PA_SOTC;
 		data.page.audio.flags |= CD_PA_IMMED;
-		if (error = cd_set_mode(cd, &data))
+		if ((error = cd_set_mode(cd, &data)) != 0)
 			return error;
-		return cd_play(cd, args->blk, args->len);
+		return cd_play_big(cd, args->blk, args->len);
 	}
 	case CDIOCREADSUBCHANNEL: {
 		struct ioc_read_subchannel *args
@@ -662,17 +801,20 @@ cdioctl(dev, cmd, addr, flag, p)
 		if (len > sizeof(data) ||
 		    len < sizeof(struct cd_sub_channel_header))
 			return EINVAL;
-		if (error = cd_read_subchannel(cd, args->address_format,
-		    args->data_format, args->track, &data, len))
+		error = cd_read_subchannel(cd, args->address_format,
+					   args->data_format, args->track,
+					   &data, len);
+		if (error)
 			return error;
-		len = min(len, ((data.header.data_len[0] << 8) +
-		    data.header.data_len[1] +
-		    sizeof(struct cd_sub_channel_header)));
+		len = min(len, _2btol(data.header.data_len) +
+		    sizeof(struct cd_sub_channel_header));
 		return copyout(&data, args->data, len);
 	}
 	case CDIOREADTOCHEADER: {
 		struct ioc_toc_header th;
-		if (error = cd_read_toc(cd, 0, 0, &th, sizeof(th)))
+		if ((error = cd_read_toc(cd, 0, 0, 
+					 (struct cd_toc_entry *) &th,
+					 sizeof(th))) != 0)
 			return error;
 		th.len = ntohs(th.len);
 		bcopy(&th, addr, sizeof(th));
@@ -692,18 +834,20 @@ cdioctl(dev, cmd, addr, flag, p)
 		if (len > sizeof(data.entries) ||
 		    len < sizeof(struct cd_toc_entry))
 			return EINVAL;
-		if (error = cd_read_toc(cd, te->address_format,
-		    te->starting_track, (struct cd_toc_entry *)&data,
-		    len + sizeof(struct ioc_toc_header)))
+		error = cd_read_toc(cd, te->address_format,
+				    te->starting_track,
+				    (struct cd_toc_entry *)&data,
+				    len + sizeof(struct ioc_toc_header));
+		if (error)
 			return error;
 		len = min(len, ntohs(th->len) - (sizeof(th->starting_track) +
-		    sizeof(th->ending_track)));
+			       sizeof(th->ending_track)));
 		return copyout(data.entries, te->data, len);
 	}
 	case CDIOCSETPATCH: {
 		struct ioc_patch *arg = (struct ioc_patch *)addr;
 		struct cd_mode_data data;
-		if (error = cd_get_mode(cd, &data, AUDIO_PAGE))
+		if ((error = cd_get_mode(cd, &data, AUDIO_PAGE)) != 0)
 			return error;
 		data.page.audio.port[LEFT_PORT].channels = arg->patch[0];
 		data.page.audio.port[RIGHT_PORT].channels = arg->patch[1];
@@ -714,7 +858,7 @@ cdioctl(dev, cmd, addr, flag, p)
 	case CDIOCGETVOL: {
 		struct ioc_vol *arg = (struct ioc_vol *)addr;
 		struct cd_mode_data data;
-		if (error = cd_get_mode(cd, &data, AUDIO_PAGE))
+		if ((error = cd_get_mode(cd, &data, AUDIO_PAGE)) != 0)
 			return error;
 		arg->vol[LEFT_PORT] = data.page.audio.port[LEFT_PORT].volume;
 		arg->vol[RIGHT_PORT] = data.page.audio.port[RIGHT_PORT].volume;
@@ -725,7 +869,7 @@ cdioctl(dev, cmd, addr, flag, p)
 	case CDIOCSETVOL: {
 		struct ioc_vol *arg = (struct ioc_vol *)addr;
 		struct cd_mode_data data;
-		if (error = cd_get_mode(cd, &data, AUDIO_PAGE))
+		if ((error = cd_get_mode(cd, &data, AUDIO_PAGE)) != 0)
 			return error;
 		data.page.audio.port[LEFT_PORT].channels = CHANNEL_0;
 		data.page.audio.port[LEFT_PORT].volume = arg->vol[LEFT_PORT];
@@ -736,9 +880,8 @@ cdioctl(dev, cmd, addr, flag, p)
 		return cd_set_mode(cd, &data);
 	}
 	case CDIOCSETMONO: {
-		struct ioc_vol *arg = (struct ioc_vol *)addr;
 		struct cd_mode_data data;
-		if (error = cd_get_mode(cd, &data, AUDIO_PAGE))
+		if ((error = cd_get_mode(cd, &data, AUDIO_PAGE)) != 0)
 			return error;
 		data.page.audio.port[LEFT_PORT].channels =
 		    LEFT_CHANNEL | RIGHT_CHANNEL | 4 | 8;
@@ -749,9 +892,8 @@ cdioctl(dev, cmd, addr, flag, p)
 		return cd_set_mode(cd, &data);
 	}
 	case CDIOCSETSTEREO: {
-		struct ioc_vol *arg = (struct ioc_vol *)addr;
 		struct cd_mode_data data;
-		if (error = cd_get_mode(cd, &data, AUDIO_PAGE))
+		if ((error = cd_get_mode(cd, &data, AUDIO_PAGE)) != 0)
 			return error;
 		data.page.audio.port[LEFT_PORT].channels = LEFT_CHANNEL;
 		data.page.audio.port[RIGHT_PORT].channels = RIGHT_CHANNEL;
@@ -760,9 +902,8 @@ cdioctl(dev, cmd, addr, flag, p)
 		return cd_set_mode(cd, &data);
 	}
 	case CDIOCSETMUTE: {
-		struct ioc_vol *arg = (struct ioc_vol *)addr;
 		struct cd_mode_data data;
-		if (error = cd_get_mode(cd, &data, AUDIO_PAGE))
+		if ((error = cd_get_mode(cd, &data, AUDIO_PAGE)) != 0)
 			return error;
 		data.page.audio.port[LEFT_PORT].channels = 0;
 		data.page.audio.port[RIGHT_PORT].channels = 0;
@@ -771,9 +912,8 @@ cdioctl(dev, cmd, addr, flag, p)
 		return cd_set_mode(cd, &data);
 	}
 	case CDIOCSETLEFT: {
-		struct ioc_vol *arg = (struct ioc_vol *)addr;
 		struct cd_mode_data data;
-		if (error = cd_get_mode(cd, &data, AUDIO_PAGE))
+		if ((error = cd_get_mode(cd, &data, AUDIO_PAGE)) != 0)
 			return error;
 		data.page.audio.port[LEFT_PORT].channels = LEFT_CHANNEL;
 		data.page.audio.port[RIGHT_PORT].channels = LEFT_CHANNEL;
@@ -782,9 +922,8 @@ cdioctl(dev, cmd, addr, flag, p)
 		return cd_set_mode(cd, &data);
 	}
 	case CDIOCSETRIGHT: {
-		struct ioc_vol *arg = (struct ioc_vol *)addr;
 		struct cd_mode_data data;
-		if (error = cd_get_mode(cd, &data, AUDIO_PAGE))
+		if ((error = cd_get_mode(cd, &data, AUDIO_PAGE)) != 0)
 			return error;
 		data.page.audio.port[LEFT_PORT].channels = RIGHT_CHANNEL;
 		data.page.audio.port[RIGHT_PORT].channels = RIGHT_CHANNEL;
@@ -800,12 +939,21 @@ cdioctl(dev, cmd, addr, flag, p)
 		return scsi_start(cd->sc_link, SSS_START, 0);
 	case CDIOCSTOP:
 		return scsi_start(cd->sc_link, SSS_STOP, 0);
-	case CDIOCEJECT:
-		return scsi_start(cd->sc_link, SSS_STOP|SSS_LOEJ, 0);
+	case MTIOCTOP:
+		if (((struct mtop *)addr)->mt_op != MTOFFL)
+			return EIO;
+		/* FALLTHROUGH */
+	case CDIOCEJECT: /* FALLTHROUGH */
+	case DIOCEJECT:
+		cd->sc_link->flags |= SDEV_EJECTING;
+		return 0;
 	case CDIOCALLOW:
 		return scsi_prevent(cd->sc_link, PR_ALLOW, 0);
 	case CDIOCPREVENT:
 		return scsi_prevent(cd->sc_link, PR_PREVENT, 0);
+	case DIOCLOCK:
+		return scsi_prevent(cd->sc_link,
+		    (*(int *)addr) ? PR_PREVENT : PR_ALLOW, 0);
 	case CDIOCSETDEBUG:
 		cd->sc_link->flags |= (SDEV_DB1 | SDEV_DB2);
 		return 0;
@@ -814,11 +962,71 @@ cdioctl(dev, cmd, addr, flag, p)
 		return 0;
 	case CDIOCRESET:
 		return cd_reset(cd);
+#ifdef CDDA
+	case CDIOCSETCDDA: {
+		int onoff = *(int *)addr;
+		/* select CD-DA mode */
+		struct cd_mode_data data;
+
+		if (CDPART(dev) != RAW_PART)
+			return ENOTTY;
+		if (error = cd_get_mode(cd, &data, AUDIO_PAGE))
+			return error;
+		if (onoff) {
+			/* turn it on */
+			if (cd->flags & CDF_CDDAMODE)
+				return EALREADY;
+			/*
+			 * do not permit changing of block size if the block
+			 * device is open, or if some other partition (not
+			 * a raw partition) is open.
+			 */
+			if (cd->sc_dk.dk_bopenmask ||
+			    (cd->sc_dk.dk_copenmask & ~(1 << RAW_PART)))
+				return EBUSY;
+
+			data.blk_desc.density = CD_DA_DENSITY_CODE;
+			data.blk_desc.blklen[0] = (CD_DA_BLKSIZ >> 16) & 0xff;
+			data.blk_desc.blklen[1] = (CD_DA_BLKSIZ >> 8) & 0xff;
+			data.blk_desc.blklen[2] = CD_DA_BLKSIZ & 0xff;
+
+			if (cd_set_mode(cd, &data) != 0) 
+				return EIO;
+
+			cd->orig_params = cd->params;
+			cd->flags |= CDF_CDDAMODE;
+		} else {
+			if (!(cd->flags & CDF_CDDAMODE))
+				return EALREADY;
+			/* turn it off */
+			data.blk_desc.density = CD_NORMAL_DENSITY_CODE;
+			data.blk_desc.blklen[0] = (cd->orig_params.blksize >> 16) & 0xff;
+			data.blk_desc.blklen[1] = (cd->orig_params.blksize >> 8) & 0xff;
+			data.blk_desc.blklen[2] = (cd->orig_params.blksize) & 0xff;
+
+			if (cd_set_mode(cd, &data) != 0)
+				return EIO;
+
+			cd->flags &= ~CDF_CDDAMODE;
+			cd->params = cd->orig_params;
+		}
+		if (cd_get_parms(cd, 0) != 0) {
+			data.blk_desc.density = CD_NORMAL_DENSITY_CODE;
+			data.blk_desc.blklen[0] = (cd->orig_params.blksize >> 16) & 0xff;
+			data.blk_desc.blklen[1] = (cd->orig_params.blksize >> 8) & 0xff;
+			data.blk_desc.blklen[2] = (cd->orig_params.blksize) & 0xff;
+			(void) cd_set_mode(cd, &data); /* it better work...! */
+			cd->params = cd->orig_params;
+			return EIO;
+		}
+		return 0;
+	}
+#endif
 
 	default:
 		if (CDPART(dev) != RAW_PART)
 			return ENOTTY;
-		return scsi_do_ioctl(cd->sc_link, dev, cmd, addr, flag, p);
+		return scsi_do_safeioctl(cd->sc_link, dev, cmd, addr, flag, p);
 	}
 
 #ifdef DIAGNOSTIC
@@ -834,21 +1042,27 @@ cdioctl(dev, cmd, addr, flag, p)
  * data tracks from the TOC and put it in the disklabel
  */
 void
-cdgetdisklabel(cd)
+cdgetdisklabel(dev, cd)
+	dev_t dev;
 	struct cd_softc *cd;
 {
-	struct disklabel *lp = &cd->sc_dk.dk_label;
+	struct disklabel *lp = cd->sc_dk.dk_label;
+	char *errstring;
 
 	bzero(lp, sizeof(struct disklabel));
-	bzero(&cd->sc_dk.dk_cpulabel, sizeof(struct cpu_disklabel));
+	bzero(cd->sc_dk.dk_cpulabel, sizeof(struct cpu_disklabel));
 
 	lp->d_secsize = cd->params.blksize;
 	lp->d_ntracks = 1;
 	lp->d_nsectors = 100;
 	lp->d_ncylinders = (cd->params.disksize / 100) + 1;
 	lp->d_secpercyl = lp->d_ntracks * lp->d_nsectors;
+	if (lp->d_secpercyl == 0) {
+		lp->d_secpercyl = 100;
+		/* as long as it's not 0 - readdisklabel divides by it (?) */
+	}
 
-	strncpy(lp->d_typename, "SCSI CD-ROM", 16);
+	strncpy(lp->d_typename, "SCSI disk", 16);
 	lp->d_type = DTYPE_SCSI;
 	strncpy(lp->d_packname, "fictitious", 16);
 	lp->d_secperunit = cd->params.disksize;
@@ -856,19 +1070,25 @@ cdgetdisklabel(cd)
 	lp->d_interleave = 1;
 	lp->d_flags = D_REMOVABLE;
 
-	lp->d_partitions[0].p_offset = 0;
-	lp->d_partitions[0].p_size =
-	    lp->d_secperunit * (lp->d_secsize / DEV_BSIZE);
-	lp->d_partitions[0].p_fstype = FS_ISO9660;
 	lp->d_partitions[RAW_PART].p_offset = 0;
 	lp->d_partitions[RAW_PART].p_size =
 	    lp->d_secperunit * (lp->d_secsize / DEV_BSIZE);
-	lp->d_partitions[RAW_PART].p_fstype = FS_ISO9660;
+	lp->d_partitions[RAW_PART].p_fstype = FS_UNUSED;
 	lp->d_npartitions = RAW_PART + 1;
 
 	lp->d_magic = DISKMAGIC;
 	lp->d_magic2 = DISKMAGIC;
 	lp->d_checksum = dkcksum(lp);
+
+	/*
+	 * Call the generic disklabel extraction routine
+	 */
+	errstring = readdisklabel(CDLABELDEV(dev), cdstrategy, lp,
+	    cd->sc_dk.dk_cpulabel);
+	if (errstring) {
+		printf("%s: %s\n", cd->sc_dev.dv_xname, errstring);
+		return;
+	}
 }
 
 /*
@@ -897,17 +1117,15 @@ cd_size(cd, flags)
 	 */
 	if (scsi_scsi_cmd(cd->sc_link, (struct scsi_generic *)&scsi_cmd,
 	    sizeof(scsi_cmd), (u_char *)&rdcap, sizeof(rdcap), CDRETRIES,
-	    2000, NULL, flags | SCSI_DATA_IN) != 0)
+	    20000, NULL, flags | SCSI_DATA_IN) != 0)
 		return 0;
 
-	blksize = (rdcap.length_3 << 24) + (rdcap.length_2 << 16) +
-	    (rdcap.length_1 << 8) + rdcap.length_0;
-	if (blksize < 512)
+	blksize = _4btol(rdcap.length);
+	if (blksize < 512 || blksize > 2048)
 		blksize = 2048;	/* some drives lie ! */
 	cd->params.blksize = blksize;
 
-	size = (rdcap.addr_3 << 24) + (rdcap.addr_2 << 16) +
-	    (rdcap.addr_1 << 8) + rdcap.addr_0 + 1;
+	size = _4btol(rdcap.addr) + 1;
 	if (size < 100)
 		size = 400000;	/* ditto */
 	cd->params.disksize = size;
@@ -925,7 +1143,6 @@ cd_get_mode(cd, data, page)
 	int page;
 {
 	struct scsi_mode_sense scsi_cmd;
-	int error;
 
 	bzero(&scsi_cmd, sizeof(scsi_cmd));
 	bzero(data, sizeof(*data));
@@ -969,12 +1186,8 @@ cd_play(cd, blkno, nblks)
 
 	bzero(&scsi_cmd, sizeof(scsi_cmd));
 	scsi_cmd.opcode = PLAY;
-	scsi_cmd.blk_addr[0] = (blkno >> 24) & 0xff;
-	scsi_cmd.blk_addr[1] = (blkno >> 16) & 0xff;
-	scsi_cmd.blk_addr[2] = (blkno >> 8) & 0xff;
-	scsi_cmd.blk_addr[3] = blkno & 0xff;
-	scsi_cmd.xfer_len[0] = (nblks >> 8) & 0xff;
-	scsi_cmd.xfer_len[1] = nblks & 0xff;
+	_lto4b(blkno, scsi_cmd.blk_addr);
+	_lto2b(nblks, scsi_cmd.xfer_len);
 	return scsi_scsi_cmd(cd->sc_link, (struct scsi_generic *)&scsi_cmd,
 	    sizeof(scsi_cmd), 0, 0, CDRETRIES, 200000, NULL, 0);
 }
@@ -991,14 +1204,8 @@ cd_play_big(cd, blkno, nblks)
 
 	bzero(&scsi_cmd, sizeof(scsi_cmd));
 	scsi_cmd.opcode = PLAY_BIG;
-	scsi_cmd.blk_addr[0] = (blkno >> 24) & 0xff;
-	scsi_cmd.blk_addr[1] = (blkno >> 16) & 0xff;
-	scsi_cmd.blk_addr[2] = (blkno >> 8) & 0xff;
-	scsi_cmd.blk_addr[3] = blkno & 0xff;
-	scsi_cmd.xfer_len[0] = (nblks >> 24) & 0xff;
-	scsi_cmd.xfer_len[1] = (nblks >> 16) & 0xff;
-	scsi_cmd.xfer_len[2] = (nblks >> 8) & 0xff;
-	scsi_cmd.xfer_len[3] = nblks & 0xff;
+	_lto4b(blkno, scsi_cmd.blk_addr);
+	_lto4b(nblks, scsi_cmd.xfer_len);
 	return scsi_scsi_cmd(cd->sc_link, (struct scsi_generic *)&scsi_cmd,
 	    sizeof(scsi_cmd), 0, 0, CDRETRIES, 20000, NULL, 0);
 }
@@ -1080,7 +1287,7 @@ cd_reset(cd)
 int
 cd_read_subchannel(cd, mode, format, track, data, len)
 	struct cd_softc *cd;
-	int mode, format, len;
+	int mode, format, track, len;
 	struct cd_sub_channel_info *data;
 {
 	struct scsi_read_subchannel scsi_cmd;
@@ -1092,11 +1299,10 @@ cd_read_subchannel(cd, mode, format, track, data, len)
 	scsi_cmd.byte3 = SRS_SUBQ;
 	scsi_cmd.subchan_format = format;
 	scsi_cmd.track = track;
-	scsi_cmd.data_len[0] = (len >> 8) & 0xff;
-	scsi_cmd.data_len[1] = len & 0xff;
+	_lto2b(len, scsi_cmd.data_len);
 	return scsi_scsi_cmd(cd->sc_link, (struct scsi_generic *)&scsi_cmd,
 	    sizeof(struct scsi_read_subchannel), (u_char *)data, len,
-	    CDRETRIES, 5000, NULL, SCSI_DATA_IN);
+	    CDRETRIES, 5000, NULL, SCSI_DATA_IN||SCSI_SILENT);
 }
 
 /*
@@ -1120,8 +1326,7 @@ cd_read_toc(cd, mode, start, data, len)
 	if (mode == CD_MSF_FORMAT)
 		scsi_cmd.byte2 |= CD_MSF;
 	scsi_cmd.from_track = start;
-	scsi_cmd.data_len[0] = (ntoc >> 8) & 0xff;
-	scsi_cmd.data_len[1] = ntoc & 0xff;
+	_lto2b(ntoc, scsi_cmd.data_len);
 	return scsi_scsi_cmd(cd->sc_link, (struct scsi_generic *)&scsi_cmd,
 	    sizeof(struct scsi_read_toc), (u_char *)data, len, CDRETRIES,
 	    5000, NULL, SCSI_DATA_IN);

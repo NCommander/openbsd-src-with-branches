@@ -1,16 +1,17 @@
-/*	$NetBSD: util.c,v 1.4 1995/06/14 15:20:11 christos Exp $	*/
+/*	$OpenBSD: util.c,v 1.5 1996/11/30 21:09:06 millert Exp $	*/
+/*	$NetBSD: util.c,v 1.10 1996/12/31 17:56:04 christos Exp $	*/
 
 /*
  * Missing stuff from OS's
- *
  */
 
 #ifndef lint
-static char rcsid[] = "$Id: util.c,v 1.4 1995/06/14 15:20:11 christos Exp $";
+static char rcsid[] = "$OpenBSD: util.c,v 1.5 1996/11/30 21:09:06 millert Exp $";
 #endif
 
 #include <stdio.h>
 #include "make.h"
+#include <sys/param.h>
 
 #if !__STDC__
 # ifndef const
@@ -26,8 +27,8 @@ extern int errno, sys_nerr;
 extern char *sys_errlist[];
 
 char *
-strerror(e) 
-    int e; 
+strerror(e)
+    int e;
 {
     static char buf[100];
     if (e < 0 || e >= sys_nerr) {
@@ -39,11 +40,37 @@ strerror(e)
 }
 #endif
 
-#if defined(sun) || defined(__hpux)
+#ifdef ultrix
+#include <string.h>
+
+/* strdup
+ *
+ * Make a duplicate of a string.
+ * For systems which lack this function.
+ */
+char *
+strdup(str)
+    const char *str;
+{
+    size_t len;
+    char *p;
+
+    if (str == NULL)
+	return NULL;
+    len = strlen(str) + 1;
+    if ((p = malloc(len)) == NULL)
+	return NULL;
+
+    return memcpy(p, str, len);
+}
+
+#endif
+
+#if defined(sun) || defined(__hpux) || defined(__sgi)
 
 int
 setenv(name, value, dum)
-    const char *name; 
+    const char *name;
     const char *value;
     int dum;
 {
@@ -55,15 +82,15 @@ setenv(name, value, dum)
 
     if (ptr == NULL)
 	return -1;
-    
+
     p = ptr;
 
-    while (*name) 
+    while (*name)
 	*p++ = *name++;
 
     *p++ = '=';
 
-    while (*value) 
+    while (*value)
 	*p++ = *value++;
 
     *p = '\0';
@@ -212,14 +239,14 @@ getwd(pathname)
 	/* look in the parent for the entry with the same inode */
 	if (DEV_DEV_COMPARE(st_dotdot.st_dev, st_cur.st_dev)) {
 	    /* Parent has same device. No need to stat every member */
-	    for (d = readdir(dp); d != NULL; d = readdir(dp)) 
+	    for (d = readdir(dp); d != NULL; d = readdir(dp))
 		if (d->d_fileno == st_cur.st_ino)
 		    break;
 	}
 	else {
-	    /* 
-	     * Parent has a different device. This is a mount point so we 
-	     * need to stat every member 
+	    /*
+	     * Parent has a different device. This is a mount point so we
+	     * need to stat every member
 	     */
 	    for (d = readdir(dp); d != NULL; d = readdir(dp)) {
 		if (ISDOT(d->d_name) || ISDOTDOT(d->d_name))
@@ -233,7 +260,7 @@ getwd(pathname)
 		}
 		/* check if we found it yet */
 		if (st_next.st_ino == st_cur.st_ino &&
-		    DEV_DEV_COMPARE(st_next.st_dev, st_cur.st_dev)) 
+		    DEV_DEV_COMPARE(st_next.st_dev, st_cur.st_dev))
 		    break;
 	    }
 	}
@@ -302,3 +329,93 @@ utimes(file, tvp)
 
 
 #endif /* __hpux */
+
+#if defined(sun) && defined(__svr4__)
+#include <signal.h>
+
+/* turn into bsd signals */
+void (*
+signal(s, a)) ()
+    int     s;
+    void (*a)();
+{
+    struct sigaction sa, osa;
+
+    sa.sa_handler = a;
+    sigemptyset(&sa.sa_mask);
+    sa.sa_flags = SA_RESTART;
+
+    if (sigaction(s, &sa, &osa) == -1)
+	return SIG_ERR;
+    else
+	return osa.sa_handler;
+}
+
+#endif
+
+#ifndef BSD4_4
+#ifdef __STDC__
+#include <stdarg.h>
+#else
+#include <varargs.h>
+#endif
+
+#ifdef _IOSTRG
+#define STRFLAG	(_IOSTRG|_IOWRT)	/* no _IOWRT: avoid stdio bug */
+#else
+#define STRFLAG	(_IOREAD)		/* XXX: Assume svr4 stdio */
+#endif
+
+int
+vsnprintf(s, n, fmt, args)
+	char *s;
+	size_t n;
+	const char *fmt;
+	va_list args;
+{
+	FILE fakebuf;
+
+	fakebuf._flag = STRFLAG;
+	/*
+	 * Some os's are char * _ptr, others are unsigned char *_ptr...
+	 * We cast to void * to make everyone happy.
+	 */
+	fakebuf._ptr = (void *) s;
+	fakebuf._cnt = n-1;
+	fakebuf._file = -1;
+	_doprnt(fmt, args, &fakebuf);
+	fakebuf._cnt++;
+	putc('\0', &fakebuf);
+	if (fakebuf._cnt<0)
+	    fakebuf._cnt = 0;
+	return (n-fakebuf._cnt-1);
+}
+
+int
+#ifdef __STDC__
+snprintf(char *s, size_t n, const char *fmt, ...)
+#else
+snprintf(va_alist)
+	va_dcl
+#endif
+{
+	va_list ap;
+	int rv;
+#ifdef __STDC__
+	va_start(ap, fmt);
+#else
+	char *s;
+	size_t n;
+	const char *fmt;
+
+	va_start(ap);
+
+	s = va_arg(ap, char *);
+	n = va_arg(ap, size_t);
+	fmt = va_arg(ap, const char *);
+#endif
+	rv = vsnprintf(s, n, fmt, ap);
+	va_end(ap);
+	return rv;
+}
+#endif

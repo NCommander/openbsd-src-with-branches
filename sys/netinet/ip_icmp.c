@@ -1,4 +1,5 @@
-/*	$NetBSD: ip_icmp.c,v 1.18 1995/06/12 00:47:39 mycroft Exp $	*/
+/*	$OpenBSD$	*/
+/*	$NetBSD: ip_icmp.c,v 1.19 1996/02/13 23:42:22 christos Exp $	*/
 
 /*
  * Copyright (c) 1982, 1986, 1988, 1993
@@ -43,6 +44,10 @@
 #include <sys/socket.h>
 #include <sys/time.h>
 #include <sys/kernel.h>
+#include <sys/proc.h>
+
+#include <vm/vm.h>
+#include <sys/sysctl.h>
 
 #include <net/if.h>
 #include <net/route.h>
@@ -52,7 +57,10 @@
 #include <netinet/in_var.h>
 #include <netinet/ip.h>
 #include <netinet/ip_icmp.h>
+#include <netinet/ip_var.h>
 #include <netinet/icmp_var.h>
+
+#include <machine/stdarg.h>
 
 /*
  * ICMP routines: error generation, receive packet processing, and
@@ -112,7 +120,7 @@ icmp_error(n, type, code, dest, destifp)
 	m = m_gethdr(M_DONTWAIT, MT_HEADER);
 	if (m == NULL)
 		goto freeit;
-	icmplen = oiplen + min(8, oip->ip_len);
+	icmplen = oiplen + min(8,oip->ip_len);
 	m->m_len = icmplen + ICMP_MINLEN;
 	MH_ALIGN(m, m->m_len);
 	icp = mtod(m, struct icmp *);
@@ -172,28 +180,41 @@ struct sockaddr_in icmpmask = { 8, 0 };
  * Process a received ICMP message.
  */
 void
-icmp_input(m, hlen)
-	register struct mbuf *m;
-	int hlen;
+#if __STDC__
+icmp_input(struct mbuf *m, ...)
+#else
+icmp_input(m, va_alist)
+	struct mbuf *m;
+	va_dcl
+#endif
 {
 	register struct icmp *icp;
 	register struct ip *ip = mtod(m, struct ip *);
 	int icmplen = ip->ip_len;
 	register int i;
 	struct in_ifaddr *ia;
-	void (*ctlfunc) __P((int, struct sockaddr *, struct ip *));
+	void *(*ctlfunc) __P((int, struct sockaddr *, void *));
 	int code;
 	extern u_char ip_protox[];
+	int hlen;
+	va_list ap;
+
+	va_start(ap, m);
+	hlen = va_arg(ap, int);
+	va_end(ap);
 
 	/*
 	 * Locate icmp structure in mbuf, and check
 	 * that not corrupted and of at least minimum length.
 	 */
 #ifdef ICMPPRINTFS
-	if (icmpprintfs)
-		printf("icmp_input from %x to %x, len %d\n",
-			ntohl(ip->ip_src.s_addr), ntohl(ip->ip_dst.s_addr),
-			icmplen);
+	if (icmpprintfs) {
+		char buf[4*sizeof "123"];
+
+		strcpy(buf, inet_ntoa(ip->ip_dst));
+		printf("icmp_input from %s to %s, len %d\n",
+			inet_ntoa(ip->ip_src), buf, icmplen);
+	}
 #endif
 	if (icmplen < ICMP_MINLEN) {
 		icmpstat.icps_tooshort++;
@@ -253,6 +274,9 @@ icmp_input(m, hlen)
 			case ICMP_UNREACH_ISOLATED:
 			case ICMP_UNREACH_HOST_PROHIB:
 			case ICMP_UNREACH_TOSHOST:
+			case ICMP_UNREACH_FILTER_PROHIB:
+			case ICMP_UNREACH_HOST_PRECEDENCE:
+			case ICMP_UNREACH_PRECEDENCE_CUTOFF:
 				code = PRC_UNREACH_HOST;
 				break;
 
@@ -294,7 +318,8 @@ icmp_input(m, hlen)
 			printf("deliver to protocol %d\n", icp->icmp_ip.ip_p);
 #endif
 		icmpsrc.sin_addr = icp->icmp_ip.ip_dst;
-		if (ctlfunc = inetsw[ip_protox[icp->icmp_ip.ip_p]].pr_ctlinput)
+		ctlfunc = inetsw[ip_protox[icp->icmp_ip.ip_p]].pr_ctlinput;
+		if (ctlfunc)
 			(*ctlfunc)(code, sintosa(&icmpsrc), &icp->icmp_ip);
 		break;
 
@@ -367,9 +392,13 @@ reflect:
 		icmpgw.sin_addr = ip->ip_src;
 		icmpdst.sin_addr = icp->icmp_gwaddr;
 #ifdef	ICMPPRINTFS
-		if (icmpprintfs)
-			printf("redirect dst %x to %x\n", icp->icmp_ip.ip_dst,
-				icp->icmp_gwaddr);
+		if (icmpprintfs) {
+			char buf[4 * sizeof "123"];
+			strcpy(buf, inet_ntoa(icp->icmp_ip.ip_dst));
+
+			printf("redirect dst %s to %s\n",
+			    buf, inet_ntoa(icp->icmp_gwaddr));
+		}
 #endif
 		icmpsrc.sin_addr = icp->icmp_ip.ip_dst;
 		rtredirect(sintosa(&icmpsrc), sintosa(&icmpdst),
@@ -410,7 +439,7 @@ icmp_reflect(m)
 	register struct ip *ip = mtod(m, struct ip *);
 	register struct in_ifaddr *ia;
 	struct in_addr t;
-	struct mbuf *opts = 0, *ip_srcroute();
+	struct mbuf *opts = 0;
 	int optlen = (ip->ip_hl << 2) - sizeof(struct ip);
 
 	if (!in_canforward(ip->ip_src) &&
@@ -491,7 +520,7 @@ icmp_reflect(m)
 			    }
 		    }
 		    /* Terminate & pad, if necessary */
-		    if (cnt = opts->m_len % 4) {
+		    if ((cnt = opts->m_len % 4) != 0) {
 			    for (; cnt < 4; cnt++) {
 				    *(mtod(opts, caddr_t) + opts->m_len) =
 					IPOPT_EOL;
@@ -545,8 +574,13 @@ icmp_send(m, opts)
 	m->m_data -= hlen;
 	m->m_len += hlen;
 #ifdef ICMPPRINTFS
-	if (icmpprintfs)
-		printf("icmp_send dst %x src %x\n", ip->ip_dst, ip->ip_src);
+	if (icmpprintfs) {
+		char buf[4 * sizeof "123"];
+
+		strcpy(buf, inet_ntoa(ip->ip_dst));
+		printf("icmp_send dst %s src %s\n",
+		    buf, inet_ntoa(ip->ip_src));
+	}
 #endif
 	(void) ip_output(m, opts, NULL, 0, NULL);
 }

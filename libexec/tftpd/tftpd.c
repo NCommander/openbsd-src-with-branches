@@ -39,7 +39,7 @@ char copyright[] =
 
 #ifndef lint
 /*static char sccsid[] = "from: @(#)tftpd.c	5.13 (Berkeley) 2/26/91";*/
-static char rcsid[] = "$Id: tftpd.c,v 1.7 1995/06/04 20:48:22 jtc Exp $";
+static char rcsid[] = "$Id: tftpd.c,v 1.5 1996/12/22 03:41:22 tholo Exp $";
 #endif /* not lint */
 
 /*
@@ -66,10 +66,7 @@ static char rcsid[] = "$Id: tftpd.c,v 1.7 1995/06/04 20:48:22 jtc Exp $";
 #include <ctype.h>
 #include <string.h>
 #include <stdlib.h>
-
-/* XXX svr4 defines UID_NOBODY and GID_NOBODY constants in <sys/param.h> */
-#define UID_NOBODY	32767
-#define GID_NOBODY	32766
+#include <pwd.h>
 
 #define	TIMEOUT		5
 
@@ -98,14 +95,18 @@ usage()
 	exit(1);
 }
 
+int
 main(argc, argv)
 	int    argc;
 	char **argv;
 {
 	register struct tftphdr *tp;
+	struct passwd *pw;
 	register int n = 0;
 	int on = 1;
 	int fd = 0;
+	int pid;
+	int i, j;
 	int c;
 
 	openlog("tftpd", LOG_PID, LOG_DAEMON);
@@ -135,20 +136,21 @@ main(argc, argv)
 		}
 	}
 
+	pw = getpwnam("nobody");
+	if (!pw) {
+		syslog(LOG_ERR, "no nobody: %m\n");
+		exit(1);
+	}
+
 	if (secure && chroot(".")) {
 		syslog(LOG_ERR, "chroot: %m\n");
 		exit(1);
 	}
 
-	if (setgid(GID_NOBODY)) {
-		syslog(LOG_ERR, "setgid: %m");
-		exit(1);
-	}
-
-	if (setuid(UID_NOBODY)) {
-		syslog(LOG_ERR, "setuid: %m");
-		exit(1);
-	}
+	(void) setegid(pw->pw_gid);
+	(void) setgid(pw->pw_gid);
+	(void) seteuid(pw->pw_uid);
+	(void) setuid(pw->pw_uid);
 
 	if (ioctl(fd, FIONBIO, &on) < 0) {
 		syslog(LOG_ERR, "ioctl(FIONBIO): %m\n");
@@ -175,42 +177,36 @@ main(argc, argv)
 	 * break before doing the above "recvfrom", inetd would
 	 * spawn endless instances, clogging the system.
 	 */
-	{
-		int pid;
-		int i, j;
-
-		for (i = 1; i < 20; i++) {
-		    pid = fork();
-		    if (pid < 0) {
-				sleep(i);
-				/*
-				 * flush out to most recently sent request.
-				 *
-				 * This may drop some request, but those
-				 * will be resent by the clients when
-				 * they timeout.  The positive effect of
-				 * this flush is to (try to) prevent more
-				 * than one tftpd being started up to service
-				 * a single request from a single client.
-				 */
-				j = sizeof from;
-				i = recvfrom(fd, buf, sizeof (buf), 0,
-				    (struct sockaddr *)&from, &j);
-				if (i > 0) {
-					n = i;
-					fromlen = j;
-				}
-		    } else {
-				break;
-		    }
-		}
+	for (i = 1; i < 20; i++) {
+		pid = fork();
 		if (pid < 0) {
-			syslog(LOG_ERR, "fork: %m\n");
-			exit(1);
-		} else if (pid != 0) {
-			exit(0);
-		}
+			sleep(i);
+			/*
+			 * flush out to most recently sent request.
+			 *
+			 * This may drop some request, but those
+			 * will be resent by the clients when
+			 * they timeout.  The positive effect of
+			 * this flush is to (try to) prevent more
+			 * than one tftpd being started up to service
+			 * a single request from a single client.
+			 */
+			j = sizeof from;
+			i = recvfrom(fd, buf, sizeof (buf), 0,
+			    (struct sockaddr *)&from, &j);
+			if (i > 0) {
+				n = i;
+				fromlen = j;
+			}
+		} else
+			break;
 	}
+	if (pid < 0) {
+		syslog(LOG_ERR, "fork: %m\n");
+		exit(1);
+	} else if (pid != 0)
+		exit(0);
+
 	from.sin_len = sizeof(struct sockaddr_in);
 	from.sin_family = AF_INET;
 	alarm(0);
@@ -351,7 +347,7 @@ validate_access(filename, mode)
 		if ((stbuf.st_mode&(S_IWRITE >> 6)) == 0)
 			return (EACCESS);
 	}
-	fd = open(filename, mode == RRQ ? 0 : 1);
+	fd = open(filename, mode == RRQ ? O_RDONLY : (O_WRONLY|O_TRUNC));
 	if (fd < 0)
 		return (errno + 100);
 	file = fdopen(fd, (mode == RRQ)? "r":"w");

@@ -1,4 +1,5 @@
-/*	$NetBSD: exec_script.c,v 1.12 1995/04/10 18:27:59 mycroft Exp $	*/
+/*	$OpenBSD: exec_script.c,v 1.3 1996/06/12 07:35:06 deraadt Exp $	*/
+/*	$NetBSD: exec_script.c,v 1.13 1996/02/04 02:15:06 christos Exp $	*/
 
 /*
  * Copyright (c) 1993, 1994 Christopher G. Demetriou
@@ -71,8 +72,8 @@ exec_script_makecmds(p, epp)
 	char **shellargp, **tmpsap;
 	struct vnode *scriptvp;
 #ifdef SETUIDSCRIPTS
-	uid_t script_uid;
-	gid_t script_gid;
+	uid_t script_uid = -1;
+	gid_t script_gid = -1;
 	u_short script_sbits;
 #endif
 
@@ -105,6 +106,7 @@ exec_script_makecmds(p, epp)
 
 	shellname = NULL;
 	shellarg = NULL;
+	shellarglen = 0;
 
 	/* strip spaces before the shell name */
 	for (cp = hdrstr + EXEC_SCRIPT_MAGICLEN; *cp == ' ' || *cp == '\t';
@@ -134,7 +136,6 @@ exec_script_makecmds(p, epp)
 	 * behaviour.
 	 */
 	shellarg = cp;
-	shellarglen = 0;
 	for ( /* cp = cp */ ; *cp != '\0'; cp++)
 		shellarglen++;
 	*cp++ = '\0';
@@ -172,7 +173,7 @@ check_shell:
 			panic("exec_script_makecmds: epp already has a fd");
 #endif
 
-		if (error = falloc(p, &fp, &epp->ep_fd))
+		if ((error = falloc(p, &fp, &epp->ep_fd)))
 			goto fail;
 
 		epp->ep_flags |= EXEC_HASFD;
@@ -263,7 +264,9 @@ check_shell:
 
 	/* XXX oldpnbuf not set for "goto fail" path */
 	epp->ep_ndp->ni_cnd.cn_pnbuf = oldpnbuf;
+#ifdef FDSCRIPTS
 fail:
+#endif
 	/* note that we've clobbered the header */
 	epp->ep_flags |= EXEC_DESTR;
 

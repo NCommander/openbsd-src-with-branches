@@ -1,3 +1,4 @@
+/*	$OpenBSD: pathnames.h,v 1.6 1995/03/21 09:06:55 cgd Exp $	*/
 /*	$NetBSD: pathnames.h,v 1.6 1995/03/21 09:06:55 cgd Exp $	*/
 
 /*

@@ -1,4 +1,5 @@
-/*	$NetBSD: mount_kernfs.c,v 1.6 1995/03/18 14:57:27 cgd Exp $	*/
+/*	$OpenBSD: mount_kernfs.c,v 1.3 1996/06/23 14:31:22 deraadt Exp $	*/
+/*	$NetBSD: mount_kernfs.c,v 1.8 1996/04/13 05:35:39 cgd Exp $	*/
 
 /*
  * Copyright (c) 1990, 1992 Jan-Simon Pendry
@@ -47,7 +48,7 @@ char copyright[] =
 #if 0
 static char sccsid[] = "@(#)mount_kernfs.c	8.2 (Berkeley) 3/27/94";
 #else
-static char rcsid[] = "$NetBSD: mount_kernfs.c,v 1.6 1995/03/18 14:57:27 cgd Exp $";
+static char rcsid[] = "$OpenBSD: mount_kernfs.c,v 1.3 1996/06/23 14:31:22 deraadt Exp $";
 #endif
 #endif /* not lint */
 
@@ -62,7 +63,7 @@ static char rcsid[] = "$NetBSD: mount_kernfs.c,v 1.6 1995/03/18 14:57:27 cgd Exp
 
 #include "mntopts.h"
 
-struct mntopt mopts[] = {
+const struct mntopt mopts[] = {
 	MOPT_STDOPTS,
 	{ NULL }
 };
@@ -77,7 +78,7 @@ main(argc, argv)
 	int ch, mntflags;
 
 	mntflags = 0;
-	while ((ch = getopt(argc, argv, "o:")) != EOF)
+	while ((ch = getopt(argc, argv, "o:")) != -1)
 		switch (ch) {
 		case 'o':
 			getmntopts(optarg, mopts, &mntflags);

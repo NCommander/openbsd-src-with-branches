@@ -1,3 +1,4 @@
+/*	$OpenBSD: ftree.c,v 1.3 1996/06/23 14:20:34 deraadt Exp $	*/
 /*	$NetBSD: ftree.c,v 1.4 1995/03/21 09:07:21 cgd Exp $	*/
 
 /*-
@@ -41,7 +42,7 @@
 #if 0
 static char sccsid[] = "@(#)ftree.c	8.2 (Berkeley) 4/18/94";
 #else
-static char rcsid[] = "$NetBSD: ftree.c,v 1.4 1995/03/21 09:07:21 cgd Exp $";
+static char rcsid[] = "$OpenBSD: ftree.c,v 1.3 1996/06/23 14:20:34 deraadt Exp $";
 #endif
 #endif /* not lint */
 
@@ -52,7 +53,6 @@ static char rcsid[] = "$NetBSD: ftree.c,v 1.4 1995/03/21 09:07:21 cgd Exp $";
 #include <unistd.h>
 #include <string.h>
 #include <stdio.h>
-#include <ctype.h>
 #include <errno.h>
 #include <stdlib.h>
 #include <fts.h>
@@ -127,7 +127,7 @@ ftree_start()
 		ftsopts |= FTS_PHYSICAL;
 	if (Hflag)
 #	ifdef NET2_FTS
-		warn(0, "The -H flag is not supported on this version");
+		paxwarn(0, "The -H flag is not supported on this version");
 #	else
 		ftsopts |= FTS_COMFOLLOW;
 #	endif
@@ -135,7 +135,7 @@ ftree_start()
 		ftsopts |= FTS_XDEV;
 
 	if ((fthead == NULL) && ((farray[0] = malloc(PAXPATHLEN+2)) == NULL)) {
-		warn(1, "Unable to allocate memory for file name buffer");
+		paxwarn(1, "Unable to allocate memory for file name buffer");
 		return(-1);
 	}
 
@@ -156,11 +156,12 @@ ftree_start()
 
 #if __STDC__
 int
-ftree_add(register char *str)
+ftree_add(register char *str, int chflg)
 #else
 int
-ftree_add(str)
+ftree_add(str, chflg)
 	register char *str;
+	int chflg;
 #endif
 {
 	register FTREE *ft;
@@ -170,7 +171,7 @@ ftree_add(str)
 	 * simple check for bad args
 	 */
 	if ((str == NULL) || (*str == '\0')) {
-		warn(0, "Invalid file name arguement");
+		paxwarn(0, "Invalid file name arguement");
 		return(-1);
 	}
 
@@ -180,7 +181,7 @@ ftree_add(str)
 	 * trailing / the user may pass us. (watch out for / by itself).
 	 */
 	if ((ft = (FTREE *)malloc(sizeof(FTREE))) == NULL) {
-		warn(0, "Unable to allocate memory for filename");
+		paxwarn(0, "Unable to allocate memory for filename");
 		return(-1);
 	}
 
@@ -188,6 +189,7 @@ ftree_add(str)
 		str[len] = '\0';
 	ft->fname = str;
 	ft->refcnt = 0;
+	ft->chflg = chflg;
 	ft->fow = NULL;
 	if (fthead == NULL) {
 		fttail = fthead = ft;
@@ -265,10 +267,10 @@ ftree_chk()
 	 * that never had a match
 	 */
 	for (ft = fthead; ft != NULL; ft = ft->fow) {
-		if (ft->refcnt > 0)
+		if ((ft->refcnt > 0) || ft->chflg)
 			continue;
 		if (wban == 0) {
-			warn(1,"WARNING! These file names were not selected:");
+			paxwarn(1,"WARNING! These file names were not selected:");
 			++wban;
 		}
 		(void)fprintf(stderr, "%s\n", ft->fname);
@@ -325,7 +327,21 @@ ftree_arg()
 				ftcur = fthead;
 			else if ((ftcur = ftcur->fow) == NULL)
 				return(-1);
-			farray[0] = ftcur->fname;
+			if (ftcur->chflg) {
+				/* First chdir() back... */
+				if (chdir(cwdpt) < 0) {
+					syswarn(1, errno, "Can't chdir to %s",
+					    cwdpt);
+					return(-1);
+				}
+				if (chdir(ftcur->fname) < 0) {
+					syswarn(1, errno, "Can't chdir to %s",
+					    ftcur->fname);
+					return(-1);
+				}
+				continue;
+			} else
+				farray[0] = ftcur->fname;
 		}
 
 		/*
@@ -428,7 +444,7 @@ next_file(arcn)
 			/*
 			 * fts claims a file system cycle
 			 */
-			warn(1,"File system cycle found at %s",ftent->fts_path);
+			paxwarn(1,"File system cycle found at %s",ftent->fts_path);
 			continue;
 		case FTS_DNR:
 #			ifdef NET2_FTS

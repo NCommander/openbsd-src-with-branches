@@ -1,8 +1,9 @@
-/*	$NetBSD: db_examine.c,v 1.9 1994/11/17 04:51:50 gwr Exp $	*/
+/*	$OpenBSD: db_examine.c,v 1.4 1996/04/21 22:18:59 deraadt Exp $	*/
+/*	$NetBSD: db_examine.c,v 1.11 1996/03/30 22:30:07 christos Exp $	*/
 
 /*
  * Mach Operating System
- * Copyright (c) 1991,1990 Carnegie Mellon University
+ * Copyright (c) 1993,1992,1991,1990 Carnegie Mellon University
  * All Rights Reserved.
  *
  * Permission to use, copy, modify and distribute this software and its
@@ -11,7 +12,7 @@
  * software, derivative works or modified versions, and any portions
  * thereof, and that both notices appear in supporting documentation.
  *
- * CARNEGIE MELLON ALLOWS FREE USE OF THIS SOFTWARE IN ITS
+ * CARNEGIE MELLON ALLOWS FREE USE OF THIS SOFTWARE IN ITS "AS IS"
  * CONDITION.  CARNEGIE MELLON DISCLAIMS ANY LIABILITY OF ANY KIND FOR
  * ANY DAMAGES WHATSOEVER RESULTING FROM THE USE OF THIS SOFTWARE.
  *
@@ -22,8 +23,8 @@
  *  Carnegie Mellon University
  *  Pittsburgh PA 15213-3890
  *
- * any improvements or extensions that they make and grant Carnegie the
- * rights to redistribute these changes.
+ * any improvements or extensions that they make and grant Carnegie Mellon
+ * the rights to redistribute these changes.
  *
  *	Author: David B. Golub, Carnegie Mellon University
  *	Date:	7/90
@@ -38,11 +39,11 @@
 #include <ddb/db_output.h>
 #include <ddb/db_command.h>
 #include <ddb/db_sym.h>
+#include <ddb/db_access.h>
+#include <ddb/db_extern.h>
+#include <ddb/db_interface.h>
 
 char	db_examine_format[TOK_STRING_SIZE] = "x";
-
-extern	db_addr_t db_disasm(/* db_addr_t, boolean_t */);
-			/* instruction disassembler */
 
 /*
  * Examine (print) data.  Syntax is:
@@ -69,9 +70,10 @@ db_examine_cmd(addr, have_addr, count, modif)
 	db_examine((db_addr_t) addr, db_examine_format, count);
 }
 
+void
 db_examine(addr, fmt, count)
 	register
-		db_addr_t	addr;
+	    db_addr_t	addr;
 	char *		fmt;	/* format string */
 	int		count;	/* repeat count */
 {
@@ -106,7 +108,7 @@ db_examine(addr, fmt, count)
 				width = 12;
 				break;
 			case 'a':	/* address */
-				db_printf("= 0x%x\n", addr);
+				db_printf("= 0x%lx\n", addr);
 				break;
 			case 'r':	/* signed, current radix */
 				value = db_get_value(addr, size, TRUE);
@@ -225,6 +227,7 @@ db_print_cmd(addr, have_addr, count, modif)
 	db_printf("\n");
 }
 
+void
 db_print_loc_and_inst(loc)
 	db_addr_t	loc;
 {
@@ -233,11 +236,12 @@ db_print_loc_and_inst(loc)
 	(void) db_disasm(loc, FALSE);
 }
 
+void
 db_strcpy(dst, src)
 	register char *dst;
 	register char *src;
 {
-	while (*dst++ = *src++)
+	while ((*dst++ = *src++) != '\0')
 		;
 }
 
@@ -245,15 +249,20 @@ db_strcpy(dst, src)
  * Search for a value in memory.
  * Syntax: search [/bhl] addr value [mask] [,count]
  */
+/*ARGSUSED*/
 void
-db_search_cmd()
+db_search_cmd(daddr, have_addr, dcount, modif)
+	db_expr_t	daddr;
+	int		have_addr;
+	db_expr_t	dcount;
+	char *		modif;
 {
 	int		t;
 	db_addr_t	addr;
 	int		size;
 	db_expr_t	value;
 	db_expr_t	mask;
-	unsigned int	count;
+	db_expr_t	count;
 
 	t = db_read_token();
 	if (t == tSLASH) {
@@ -278,11 +287,12 @@ db_search_cmd()
 		size = 4;
 	}
 
-	if (!db_expression(&addr)) {
+	if (!db_expression(&value)) {
 		db_printf("Address missing\n");
 		db_flush_lex();
 		return;
 	}
+	addr = (db_addr_t) value;
 
 	if (!db_expression(&value)) {
 		db_printf("Value missing\n");
@@ -291,7 +301,7 @@ db_search_cmd()
 	}
 
 	if (!db_expression(&mask))
-		mask = 0xffffffff;
+		mask = (int) ~0;
 
 	t = db_read_token();
 	if (t == tCOMMA) {
@@ -302,22 +312,24 @@ db_search_cmd()
 		}
 	} else {
 		db_unread_token(t);
-		count = -1;		/* effectively forever */
+		count = -1;		/* forever */
 	}
 	db_skip_to_eol();
 
 	db_search(addr, size, value, mask, count);
 }
 
+void
 db_search(addr, size, value, mask, count)
 	register
 	db_addr_t	addr;
 	int		size;
 	db_expr_t	value;
 	db_expr_t	mask;
-	unsigned int	count;
+	db_expr_t	count;
 {
-	while (count-- != 0) {
+	/* Negative counts means forever.  */
+	while (count < 0 || count-- != 0) {
 		db_prev = addr;
 		if ((db_get_value(addr, size, FALSE) & mask) == value)
 			break;

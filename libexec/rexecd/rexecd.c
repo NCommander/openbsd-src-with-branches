@@ -39,14 +39,13 @@ char copyright[] =
 
 #ifndef lint
 /*static char sccsid[] = "from: @(#)rexecd.c	5.12 (Berkeley) 2/25/91";*/
-static char rcsid[] = "$Id: rexecd.c,v 1.2 1993/08/01 18:30:01 mycroft Exp $";
+static char rcsid[] = "$Id: rexecd.c,v 1.7 1997/02/06 12:49:56 deraadt Exp $";
 #endif /* not lint */
 
 #include <sys/param.h>
 #include <sys/ioctl.h>
 #include <sys/socket.h>
 #include <sys/time.h>
-#include <netinet/in.h>
 #include <signal.h>
 #include <netdb.h>
 #include <pwd.h>
@@ -55,10 +54,28 @@ static char rcsid[] = "$Id: rexecd.c,v 1.2 1993/08/01 18:30:01 mycroft Exp $";
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <syslog.h>
 #include <paths.h>
 
+#include <netinet/in.h>
+#include <arpa/inet.h>
+
 /*VARARGS1*/
-int error();
+void error __P(());
+
+char	username[20] = "USER=";
+char	homedir[MAXPATHLEN] = "HOME=";
+char	shell[64] = "SHELL=";
+char	path[sizeof(_PATH_DEFPATH) + sizeof("PATH=")] = "PATH=";
+char	*envinit[] =
+	    {homedir, shell, path, username, 0};
+char	**environ;
+char	*remote;
+
+struct	sockaddr_in asin = { AF_INET };
+
+void doit __P((int, struct sockaddr_in *));
+void getstr __P((char *buf, int cnt, char *err));
 
 /*
  * remote execute server:
@@ -68,32 +85,32 @@ int error();
  *	data
  */
 /*ARGSUSED*/
+int
 main(argc, argv)
 	int argc;
 	char **argv;
 {
 	struct sockaddr_in from;
+	struct hostent *hp;
 	int fromlen;
 
+	openlog(argv[0], LOG_PID, LOG_AUTH);
 	fromlen = sizeof (from);
 	if (getpeername(0, (struct sockaddr *)&from, &fromlen) < 0) {
 		(void)fprintf(stderr,
 		    "rexecd: getpeername: %s\n", strerror(errno));
 		exit(1);
 	}
+
+	hp = gethostbyaddr((char *) &from.sin_addr, sizeof(from.sin_addr),
+	    from.sin_family);
+	remote = strdup(hp ? hp->h_name : inet_ntoa(from.sin_addr));
+
 	doit(0, &from);
+	exit(0);
 }
 
-char	username[20] = "USER=";
-char	homedir[64] = "HOME=";
-char	shell[64] = "SHELL=";
-char	path[sizeof(_PATH_DEFPATH) + sizeof("PATH=")] = "PATH=";
-char	*envinit[] =
-	    {homedir, shell, path, username, 0};
-char	**environ;
-
-struct	sockaddr_in asin = { AF_INET };
-
+void
 doit(f, fromp)
 	int f;
 	struct sockaddr_in *fromp;
@@ -112,10 +129,10 @@ doit(f, fromp)
 	(void) signal(SIGTERM, SIG_DFL);
 #ifdef DEBUG
 	{ int t = open(_PATH_TTY, 2);
-	  if (t >= 0) {
-		ioctl(t, TIOCNOTTY, (char *)0);
-		(void) close(t);
-	  }
+		if (t >= 0) {
+			ioctl(t, TIOCNOTTY, (char *)0);
+			(void) close(t);
+		}
 	}
 #endif
 	dup2(f, 0);
@@ -161,10 +178,18 @@ doit(f, fromp)
 			exit(1);
 		}
 	}
+
+	syslog(LOG_INFO, "login from %s as %s", remote, user);
+
+	setegid(pwd->pw_gid);
+	seteuid(pwd->pw_uid);
 	if (chdir(pwd->pw_dir) < 0) {
 		error("No remote directory.\n");
 		exit(1);
 	}
+	seteuid(0);
+	setegid(0);	/* XXX use a saved gid instead? */
+
 	(void) write(2, "\0", 1);
 	if (port) {
 		(void) pipe(pv);
@@ -209,25 +234,30 @@ doit(f, fromp)
 		pwd->pw_shell = _PATH_BSHELL;
 	if (f > 2)
 		(void) close(f);
+	setlogin(pwd->pw_name);
+	(void) setegid((gid_t)pwd->pw_gid);
 	(void) setgid((gid_t)pwd->pw_gid);
 	initgroups(pwd->pw_name, pwd->pw_gid);
+	(void) seteuid((uid_t)pwd->pw_uid);
 	(void) setuid((uid_t)pwd->pw_uid);
 	(void)strcat(path, _PATH_DEFPATH);
 	environ = envinit;
 	strncat(homedir, pwd->pw_dir, sizeof(homedir)-6);
 	strncat(shell, pwd->pw_shell, sizeof(shell)-7);
 	strncat(username, pwd->pw_name, sizeof(username)-6);
-	cp = rindex(pwd->pw_shell, '/');
+	cp = strrchr(pwd->pw_shell, '/');
 	if (cp)
 		cp++;
 	else
 		cp = pwd->pw_shell;
+	closelog();
 	execl(pwd->pw_shell, cp, "-c", cmdbuf, 0);
 	perror(pwd->pw_shell);
 	exit(1);
 }
 
 /*VARARGS1*/
+void
 error(fmt, a1, a2, a3)
 	char *fmt;
 	int a1, a2, a3;
@@ -235,10 +265,11 @@ error(fmt, a1, a2, a3)
 	char buf[BUFSIZ];
 
 	buf[0] = 1;
-	(void) sprintf(buf+1, fmt, a1, a2, a3);
+	(void) snprintf(buf+1, sizeof buf-1, fmt, a1, a2, a3);
 	(void) write(2, buf, strlen(buf));
 }
 
+void
 getstr(buf, cnt, err)
 	char *buf;
 	int cnt;

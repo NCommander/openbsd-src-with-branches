@@ -497,6 +497,9 @@ COMMON unsigned char flag_always_generate_output; /* -Z */
 
 COMMON unsigned char flag_print_statistics;
 
+/* True if we are doing {Net,Open}BSD PIC.  */
+COMMON int flag_pic;
+
 /* name of emitted object file */
 COMMON char *out_file_name;
 

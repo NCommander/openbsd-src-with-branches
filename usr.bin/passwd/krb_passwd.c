@@ -1,3 +1,5 @@
+/*	$OpenBSD: krb_passwd.c,v 1.4 1996/06/26 05:37:46 deraadt Exp $	*/
+
 /*-
  * Copyright (c) 1990 The Regents of the University of California.
  * All rights reserved.
@@ -33,7 +35,7 @@
 
 #ifndef lint
 /*static char sccsid[] = "from: @(#)krb_passwd.c	5.4 (Berkeley) 3/1/91";*/
-static char rcsid[] = "$Id: krb_passwd.c,v 1.1 1994/07/27 03:28:19 brezak Exp $";
+static char rcsid[] = "$OpenBSD: krb_passwd.c,v 1.4 1996/06/26 05:37:46 deraadt Exp $";
 #endif /* not lint */
 
 #ifdef KERBEROS
@@ -48,11 +50,13 @@ static char rcsid[] = "$Id: krb_passwd.c,v 1.1 1994/07/27 03:28:19 brezak Exp $"
 #include <netdb.h>
 #include <signal.h>
 #include <pwd.h>
+#include <err.h>
 #include <errno.h>
 #include <stdio.h>
 #include "kpasswd_proto.h"
 #include <string.h>
 #include <stdlib.h>
+#include <unistd.h>
 
 #define	PROTO	"tcp"
 
@@ -84,36 +88,27 @@ krb_passwd()
 	(void)signal(SIGTSTP, SIG_IGN);
 
 	if (setrlimit(RLIMIT_CORE, &rl) < 0) {
-		(void)fprintf(stderr,
-		    "passwd: setrlimit: %s\n", strerror(errno));
+		warn("setrlimit");
 		return(1);
 	}
 
 	if ((se = getservbyname(SERVICE, PROTO)) == NULL) {
-		(void)fprintf(stderr,
-		    "passwd: couldn't find entry for service %s/%s\n",
-		    SERVICE, PROTO);
+		warnx("couldn't find entry for service %s/%s", SERVICE, PROTO);
 		return(1);
 	}
 
 	if ((rval = krb_get_lrealm(realm,1)) != KSUCCESS) {
-		(void)fprintf(stderr,
-		    "passwd: couldn't get local Kerberos realm: %s\n",
-		    krb_err_txt[rval]);
+		warnx("couldn't get local Kerberos realm: %s", krb_err_txt[rval]);
 		return(1);
 	}
 
 	if ((rval = krb_get_krbhst(krbhst, realm, 1)) != KSUCCESS) {
-		(void)fprintf(stderr,
-		    "passwd: couldn't get Kerberos host: %s\n",
-		    krb_err_txt[rval]);
+		warnx("couldn't get Kerberos host: %s", krb_err_txt[rval]);
 		return(1);
 	}
 
 	if ((host = gethostbyname(krbhst)) == NULL) {
-		(void)fprintf(stderr,
-		    "passwd: couldn't get host entry for krb host %s\n",
-		    krbhst);
+		warnx("couldn't get host entry for krb host %s", krbhst);
 		return(1);
 	}
 
@@ -122,12 +117,12 @@ krb_passwd()
 	sin.sin_port = se->s_port;
 
 	if ((sock = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP)) < 0) {
-		(void)fprintf(stderr, "passwd: socket: %s\n", strerror(errno));
+		warn("socket");
 		return(1);
 	}
 
 	if (connect(sock, (struct sockaddr *) &sin, sizeof(sin)) < 0) {
-		(void)fprintf(stderr, "passwd: connect: %s\n", strerror(errno));
+		warn("connect");
 		(void)close(sock);
 		return(1);
 	}
@@ -149,8 +144,7 @@ krb_passwd()
 	);
 
 	if (rval != KSUCCESS) {
-		(void)fprintf(stderr, "passwd: Kerberos sendauth error: %s\n",
-		    krb_err_txt[rval]);
+		warnx("Kerberos sendauth error: %s", krb_err_txt[rval]);
 		return(1);
 	}
 
@@ -161,14 +155,13 @@ krb_passwd()
 
 	if (des_read_pw_string(pass,
 	    sizeof(pass)-1, "Old Kerberos password:", 0)) {
-		(void)fprintf(stderr,
-		    "passwd: error reading old Kerberos password\n");
+		warnx("error reading old Kerberos password");
 		return(1);
 	}
 
-	(void)des_string_to_key(pass, okey);
-	(void)des_key_sched(okey, osched);
-	(void)des_set_key(okey, osched);
+	(void)des_string_to_key(pass, &okey);
+	(void)des_key_sched(&okey, osched);
+	(void)desrw_set_key(&okey, osched);
 
 	/* wait on the verification string */
 
@@ -180,11 +173,11 @@ krb_passwd()
 
 	if ((rval < 1) || !FD_ISSET(sock, &readfds)) {
 		if(rval == 0) {
-			(void)fprintf(stderr, "passwd: timed out (aborted)\n");
+			warnx("timed out (aborted)");
 			cleanup();
 			return(1);
 		}
-		(void)fprintf(stderr, "passwd: select failed (aborted)\n");
+		warnx("select failed (aborted)");
 		cleanup();
 		return(1);
 	}
@@ -193,8 +186,7 @@ krb_passwd()
 
 	if (des_read(sock, &proto_data, sizeof(proto_data)) !=
 	    sizeof(proto_data)) {
-		(void)fprintf(stderr,
-		    "passwd: couldn't read verification string (aborted)\n");
+		warnx("couldn't read verification string (aborted)");
 		cleanup();
 		return(1);
 	}
@@ -207,33 +199,30 @@ krb_passwd()
 		/* don't complain loud if user just hit return */
 		if (pass == NULL || (!*pass))
 			return(0);
-		(void)fprintf(stderr, "Sorry\n");
+		warnx("Sorry");
 		return(1);
 	}
 
-	(void)des_key_sched(proto_data.random_key, random_schedule);
-	(void)des_set_key(proto_data.random_key, random_schedule);
+	(void)des_key_sched(&proto_data.random_key, random_schedule);
+	(void)desrw_set_key(&proto_data.random_key, random_schedule);
 	(void)bzero(pass, sizeof(pass));
 
 	if (des_read_pw_string(pass,
 	    sizeof(pass)-1, "New Kerberos password:", 0)) {
-		(void)fprintf(stderr,
-		    "passwd: error reading new Kerberos password (aborted)\n");
+		warnx("error reading new Kerberos password (aborted)");
 		cleanup();
 		return(1);
 	}
 
 	if (des_read_pw_string(password,
 	    sizeof(password)-1, "Retype new Kerberos password:", 0)) {
-		(void)fprintf(stderr,
-		    "passwd: error reading new Kerberos password (aborted)\n");
+		warnx("error reading new Kerberos password (aborted)");
 		cleanup();
 		return(1);
 	}
 
 	if (strcmp(password, pass) != 0) {
-		(void)fprintf(stderr,
-		    "passwd: password mismatch (aborted)\n");
+		warnx("password mismatch (aborted)");
 		cleanup();
 		return(1);
 	}
@@ -252,12 +241,11 @@ krb_passwd()
 	    select(sock + 1, &readfds, (fd_set *) 0, (fd_set *) 0, &timeout);
 	if ((rval < 1) || !FD_ISSET(sock, &readfds)) {
 		if(rval == 0) {
-			(void)fprintf(stderr,
-			    "passwd: timed out reading ACK (aborted)\n");
+			warnx("timed out reading ACK (aborted)");
 			cleanup();
 			exit(1);
 		}
-		(void)fprintf(stderr, "passwd: select failed (aborted)\n");
+		warnx("select failed (aborted)");
 		cleanup();
 		exit(1);
 	}
@@ -275,8 +263,7 @@ send_update(dest, pwd, str)
 	(void)strncpy(ud.secure_msg, str, _PASSWORD_LEN);
 	(void)strncpy(ud.pw, pwd, sizeof(ud.pw));
 	if (des_write(dest, &ud, sizeof(ud)) != sizeof(ud)) {
-		(void)fprintf(stderr,
-		    "passwd: couldn't write pw update (abort)\n");
+		warnx("couldn't write pw update (abort)");
 		bzero((char *)&ud, sizeof(ud));
 		cleanup();
 		exit(1);
@@ -291,8 +278,7 @@ recv_ack(remote)
 
 	cc = des_read(remote, buf, sizeof(buf));
 	if (cc <= 0) {
-		(void)fprintf(stderr,
-		    "passwd: error reading acknowledgement (aborted)\n");
+		warnx("error reading acknowledgement (aborted)");
 		cleanup();
 		exit(1);
 	}

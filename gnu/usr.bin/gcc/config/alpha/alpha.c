@@ -1238,7 +1238,7 @@ direct_return ()
 /* Write a version stamp.  Don't write anything if we are running as a
    cross-compiler.  Otherwise, use the versions in /usr/include/stamp.h.  */
 
-#if !defined(CROSS_COMPILE) && !defined(_WIN32)
+#if !defined(CROSS_COMPILE) && !defined(_WIN32) && !defined(__OpenBSD__) && !defined(__NetBSD__)
 #include <stamp.h>
 #endif
 
@@ -1247,12 +1247,7 @@ alpha_write_verstamp (file)
      FILE *file;
 {
 #ifdef MS_STAMP
-  char *p;
-
-  fprintf (file, "\t.verstamp %d %d ", MS_STAMP, LS_STAMP);
-  for (p = version_string; *p != ' ' && *p != 0; p++)
-    fprintf (file, "%c", *p == '.' ? ' ' : *p);
-  fprintf (file, "\n");
+  fprintf (file, "\t.verstamp %d %d\n", MS_STAMP, LS_STAMP);
 #endif
 }
 

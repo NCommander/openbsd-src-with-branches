@@ -1,3 +1,4 @@
+/*	$OpenBSD: kern_exit_43.c,v 1.3 1995/10/07 06:26:20 mycroft Exp $	*/
 /*	$NetBSD: kern_exit_43.c,v 1.3 1995/10/07 06:26:20 mycroft Exp $	*/
 
 /*

@@ -1,3 +1,5 @@
+/*	$OpenBSD: misc.c,v 1.2 1996/06/26 05:33:12 deraadt Exp $	*/
+
 /*-
  * Copyright (c) 1990, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -36,7 +38,7 @@
 
 #ifndef lint
 /*static char sccsid[] = "from: @(#)misc.c	8.1 (Berkeley) 6/6/93";*/
-static char rcsid[] = "$Id: misc.c,v 1.3 1993/12/30 21:15:28 jtc Exp $";
+static char rcsid[] = "$OpenBSD: misc.c,v 1.2 1996/06/26 05:33:12 deraadt Exp $";
 #endif /* not lint */
 
 #include <sys/types.h>
@@ -48,6 +50,7 @@ static char rcsid[] = "$Id: misc.c,v 1.3 1993/12/30 21:15:28 jtc Exp $";
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <unistd.h>
 
 #include "find.h"
  
@@ -125,4 +128,20 @@ emalloc(len)
 	if (p = malloc(len))
 		return (p);
 	err(1, NULL);
+}
+
+/*
+ * show_path --
+ *	called on SIGINFO
+ */
+/* ARGSUSED */
+void
+show_path(sig)
+	int sig;
+{
+	extern FTSENT *entry;
+
+	write(STDERR_FILENO, "find path: ", 11);
+	write(STDERR_FILENO, entry->fts_path, entry->fts_pathlen);
+	write(STDERR_FILENO, "\n", 1);
 }

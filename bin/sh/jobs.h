@@ -1,3 +1,4 @@
+/*	$OpenBSD: jobs.h,v 1.8 1995/05/11 21:29:19 christos Exp $	*/
 /*	$NetBSD: jobs.h,v 1.8 1995/05/11 21:29:19 christos Exp $	*/
 
 /*-

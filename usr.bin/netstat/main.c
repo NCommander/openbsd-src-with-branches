@@ -1,4 +1,5 @@
-/*	$NetBSD: main.c,v 1.8 1995/10/03 21:42:40 thorpej Exp $	*/
+/*	$OpenBSD: main.c,v 1.8 1997/02/21 09:09:52 angelos Exp $	*/
+/*	$NetBSD: main.c,v 1.9 1996/05/07 02:55:02 thorpej Exp $	*/
 
 /*
  * Copyright (c) 1983, 1988, 1993
@@ -43,7 +44,7 @@ char copyright[] =
 #if 0
 static char sccsid[] = "from: @(#)main.c	8.4 (Berkeley) 3/1/94";
 #else
-static char *rcsid = "$NetBSD: main.c,v 1.8 1995/10/03 21:42:40 thorpej Exp $";
+static char *rcsid = "$OpenBSD: main.c,v 1.8 1997/02/21 09:09:52 angelos Exp $";
 #endif
 #endif /* not lint */
 
@@ -132,6 +133,20 @@ struct nlist nl[] = {
 	{ "_mfchash" },
 #define N_VIFTABLE	31
 	{ "_viftable" },
+#define N_IPX		32
+	{ "_ipxcbtable"},
+#define N_IPXSTAT	33
+	{ "_ipxstat"},
+#define N_SPXSTAT	34
+	{ "_spx_istat"},
+#define N_IPXERR	35
+	{ "_ipx_errstat"},
+#define N_AHSTAT	36
+	{ "_ahstat"},
+#define N_ESPSTAT	37
+	{ "_espstat"},
+#define N_IP4STAT	38
+	{ "_ip4stat"},
 	"",
 };
 
@@ -153,6 +168,23 @@ struct protox {
 	  icmp_stats,	"icmp" },
 	{ -1,		N_IGMPSTAT,	1,	0,
 	  igmp_stats,	"igmp" },
+	{ -1,		N_AHSTAT,	1,	0,
+	  ah_stats,	"sipp-ah" },
+	{ -1,		N_ESPSTAT,	1,	0,
+	  esp_stats,	"sipp-esp" },
+	{ -1,		N_IP4STAT,	1,	0,
+	  ip4_stats,	"ipencap" },
+	{ -1,		-1,		0,	0,
+	  0,		0 }
+};
+
+struct protox ipxprotox[] = {
+	{ N_IPX,	N_IPXSTAT,	1,	ipxprotopr,
+	  ipx_stats,	"ipx" },
+	{ N_IPX,	N_SPXSTAT,	1,	ipxprotopr,
+	  spx_stats,	"spx" },
+	{ -1,		N_IPXERR,	1,	0,
+	  ipxerr_stats,	"ipx_err" },
 	{ -1,		-1,		0,	0,
 	  0,		0 }
 };
@@ -181,7 +213,7 @@ struct protox isoprotox[] = {
 	  0,		0 }
 };
 
-struct protox *protoprotox[] = { protox, nsprotox, isoprotox, NULL };
+struct protox *protoprotox[] = { protox, ipxprotox, nsprotox, isoprotox, NULL };
 
 static void printproto __P((struct protox *, char *));
 static void usage __P((void));
@@ -204,13 +236,9 @@ main(argc, argv)
 	char *nlistf = NULL, *memf = NULL;
 	char buf[_POSIX2_LINE_MAX];
 
-	if (cp = rindex(argv[0], '/'))
-		prog = cp + 1;
-	else
-		prog = argv[0];
 	af = AF_UNSPEC;
 
-	while ((ch = getopt(argc, argv, "Aadf:ghI:iM:mN:np:rstuw:")) != EOF)
+	while ((ch = getopt(argc, argv, "Aadf:ghI:iM:mN:np:rstuw:")) != -1)
 		switch(ch) {
 		case 'A':
 			Aflag = 1;
@@ -222,34 +250,32 @@ main(argc, argv)
 			dflag = 1;
 			break;
 		case 'f':
-			if (strcmp(optarg, "ns") == 0)
-				af = AF_NS;
-			else if (strcmp(optarg, "inet") == 0)
+			if (strcmp(optarg, "inet") == 0)
 				af = AF_INET;
+			else if (strcmp(optarg, "local") == 0)
+				af = AF_LOCAL;
 			else if (strcmp(optarg, "unix") == 0)
 				af = AF_UNIX;
+			else if (strcmp(optarg, "ipx") == 0)
+				af = AF_IPX;
+			else if (strcmp(optarg, "ns") == 0)
+				af = AF_NS;
 			else if (strcmp(optarg, "iso") == 0)
 				af = AF_ISO;
 			else {
 				(void)fprintf(stderr,
 				    "%s: %s: unknown address family\n",
-				    prog, optarg);
+				    __progname, optarg);
 				exit(1);
 			}
 			break;
 		case 'g':
 			gflag = 1;
 			break;
-		case 'I': {
-			char *cp;
-
+		case 'I':
 			iflag = 1;
-			for (cp = interface = optarg; isalpha(*cp); cp++)
-				continue;
-			unit = atoi(cp);
-			*cp = '\0';
+			interface = optarg;
 			break;
-		}
 		case 'i':
 			iflag = 1;
 			break;
@@ -269,7 +295,7 @@ main(argc, argv)
 			if ((tp = name2protox(optarg)) == NULL) {
 				(void)fprintf(stderr,
 				    "%s: %s: unknown or uninstrumented protocol\n",
-				    prog, optarg);
+				    __progname, optarg);
 				exit(1);
 			}
 			pflag = 1;
@@ -319,18 +345,22 @@ main(argc, argv)
 	 * Discard setgid privileges if not the running kernel so that bad
 	 * guys can't print interesting stuff from kernel memory.
 	 */
-	if (nlistf != NULL || memf != NULL)
+	if (nlistf != NULL || memf != NULL) {
+		setegid(getgid());
 		setgid(getgid());
+	}
 
-	if ((kvmd = kvm_open(nlistf, memf, NULL, O_RDONLY, prog)) == NULL) {
-		fprintf(stderr, "%s: kvm_open: %s\n", prog, buf);
+	if ((kvmd = kvm_openfiles(nlistf, memf, NULL, O_RDONLY,
+	    buf)) == NULL) {
+		fprintf(stderr, "%s: kvm_open: %s\n", __progname, buf);
 		exit(1);
 	}
 	if (kvm_nlist(kvmd, nl) < 0 || nl[0].n_type == 0) {
 		if (nlistf)
-			fprintf(stderr, "%s: %s: no namelist\n", prog, nlistf);
+			fprintf(stderr, "%s: %s: no namelist\n", __progname,
+			    nlistf);
 		else
-			fprintf(stderr, "%s: no namelist\n", prog);
+			fprintf(stderr, "%s: no namelist\n", __progname);
 		exit(1);
 	}
 	if (mflag) {
@@ -387,6 +417,9 @@ main(argc, argv)
 		}
 		endprotoent();
 	}
+	if (af == AF_IPX || af == AF_UNSPEC)
+		for (tp = ipxprotox; tp->pr_name; tp++)
+			printproto(tp, tp->pr_name);
 	if (af == AF_NS || af == AF_UNSPEC)
 		for (tp = nsprotox; tp->pr_name; tp++)
 			printproto(tp, tp->pr_name);
@@ -433,8 +466,7 @@ kread(addr, buf, size)
 {
 
 	if (kvm_read(kvmd, addr, buf, size) != size) {
-		/* XXX this duplicates kvm_read's error printout */
-		(void)fprintf(stderr, "%s: kvm_read %s\n", prog,
+		(void)fprintf(stderr, "%s: %s\n", __progname,
 		    kvm_geterr(kvmd));
 		return (-1);
 	}
@@ -506,12 +538,12 @@ static void
 usage()
 {
 	(void)fprintf(stderr,
-"usage: %s [-Aan] [-f address_family] [-M core] [-N system]\n", prog);
+"usage: %s [-Aan] [-f address_family] [-M core] [-N system]\n", __progname);
 	(void)fprintf(stderr,
-"       %s [-ghimnrs] [-f address_family] [-M core] [-N system]\n", prog);
+"       %s [-ghimnrs] [-f address_family] [-M core] [-N system]\n", __progname);
 	(void)fprintf(stderr,
-"       %s [-n] [-I interface] [-M core] [-N system] [-w wait]\n", prog);
+"       %s [-n] [-I interface] [-M core] [-N system] [-w wait]\n", __progname);
 	(void)fprintf(stderr,
-"       %s [-M core] [-N system] [-p protocol]\n", prog);
+"       %s [-M core] [-N system] [-p protocol]\n", __progname);
 	exit(1);
 }

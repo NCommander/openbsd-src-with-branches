@@ -1,3 +1,6 @@
+/*	$OpenBSD: hash.c,v 1.3 1996/04/21 23:40:12 deraadt Exp $	*/
+/*	$NetBSD: hash.c,v 1.4 1996/11/07 22:59:43 gwr Exp $	*/
+
 /*
  * Copyright (c) 1992, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -40,13 +43,23 @@
  * SUCH DAMAGE.
  *
  *	from: @(#)hash.c	8.1 (Berkeley) 6/6/93
- *	$Id: hash.c,v 1.1 1995/04/28 06:55:07 cgd Exp $
  */
 
 #include <sys/param.h>
 #include <stdlib.h>
 #include <string.h>
 #include "config.h"
+
+/*
+ * These are really for MAKE_BOOTSTRAP but harmless.
+ * XXX - Why not just use malloc in here, anyway?
+ */
+#ifndef	ALIGNBYTES
+#define	ALIGNBYTES 3
+#endif
+#ifndef ALIGN
+#define	ALIGN(p)	(((long)(p) + ALIGNBYTES) &~ ALIGNBYTES)
+#endif
 
 /*
  * Interned strings are kept in a hash table.  By making each string
@@ -260,6 +273,8 @@ ht_insrep(ht, nam, val, replace)
 	}
 	*hpp = hp = newhashent(nam, h);
 	hp->h_value = val;
+	if (++ht->ht_used > ht->ht_lim)
+		ht_expand(ht);
 	return (0);
 }
 

@@ -39,7 +39,7 @@ static char copyright[] =
 
 #ifndef lint
 /*static char sccsid[] = "from: @(#)comsat.c	8.1 (Berkeley) 6/4/93";*/
-static char rcsid[] = "$Id: comsat.c,v 1.8 1995/05/02 02:05:47 mycroft Exp $";
+static char rcsid[] = "$Id: comsat.c,v 1.3 1996/08/27 11:43:52 deraadt Exp $";
 #endif /* not lint */
 
 #include <sys/param.h>
@@ -63,6 +63,7 @@ static char rcsid[] = "$Id: comsat.c,v 1.8 1995/05/02 02:05:47 mycroft Exp $";
 #include <termios.h>
 #include <unistd.h>
 #include <utmp.h>
+#include <vis.h>
 
 int	debug = 0;
 #define	dsyslog	if (debug) syslog
@@ -221,7 +222,7 @@ notify(utp, offset)
 	(void)tcgetattr(fileno(tp), &ttybuf);
 	cr = (ttybuf.c_oflag & ONLCR) && (ttybuf.c_oflag & OPOST) ?
 	    "\n" : "\n\r";
-	(void)strncpy(name, utp->ut_name, sizeof(utp->ut_name));
+	(void)strncpy(name, utp->ut_name, sizeof(name) - 1);
 	name[sizeof(name) - 1] = '\0';
 	(void)fprintf(tp, "%s\007New mail for %s@%.*s\007 has arrived:%s----%s",
 	    cr, name, (int)sizeof(hostname), hostname, cr, cr);
@@ -237,14 +238,17 @@ jkfprintf(tp, name, offset)
 	off_t offset;
 {
 	register char *cp, ch;
+	char visout[4], *s2;
 	register FILE *fi;
 	register int linecnt, charcnt, inheader;
 	register struct passwd *p;
 	char line[BUFSIZ];
 
 	/* Set effective uid to user in case mail drop is on nfs */
-	if ((p = getpwnam(name)) != NULL)
+	if ((p = getpwnam(name)) != NULL) {
+		(void) seteuid(p->pw_uid);
 		(void) setuid(p->pw_uid);
+	}
 
 	if ((fi = fopen(name, "r")) == NULL)
 		return;
@@ -277,9 +281,9 @@ jkfprintf(tp, name, offset)
 		/* strip weird stuff so can't trojan horse stupid terminals */
 		for (cp = line; (ch = *cp) && ch != '\n'; ++cp, --charcnt) {
 			ch = toascii(ch);
-			if (!isprint(ch) && !isspace(ch))
-				ch |= 0x40;
-			(void)fputc(ch, tp);
+			vis(visout, ch, VIS_SAFE|VIS_NOSLASH, cp[1]);
+			for (s2 = visout; *s2; s2++)
+				(void)fputc(*s2, tp);
 		}
 		(void)fputs(cr, tp);
 		--linecnt;

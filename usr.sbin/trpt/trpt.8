@@ -30,7 +30,7 @@
 .\" SUCH DAMAGE.
 .\"
 .\"     from: @(#)trpt.8	6.5 (Berkeley) 3/16/91
-.\"	$Id: trpt.8,v 1.4 1993/08/01 07:23:13 mycroft Exp $
+.\"	$Id: trpt.8,v 1.3 1996/07/08 22:09:51 ccappuc Exp $
 .\"
 .Dd March 16, 1991
 .Dt TRPT 8
@@ -119,7 +119,6 @@ many sockets using the debugging option, the
 option may be useful in checking to see if
 any trace records are present for the socket in
 question.
-The
 .Pp
 If debugging is being performed on a system or
 core file other than the default, the last two
@@ -128,7 +127,7 @@ arguments may be used to supplant the defaults.
 .Bl -tag -width /dev/kmem -compact
 .It Pa /dev/kmem
 default kernel memory
-.It Pa /netbsd
+.It Pa /bsd
 default system namelist
 .El
 .Sh SEE ALSO
@@ -144,7 +143,7 @@ others which should be self explanatory.
 .El
 .Sh BUGS
 Should also print the data for each input or output,
-but this is not saved in the race record.
+but this is not saved in the trace record.
 .Pp
 The output format is inscrutable and should be described
 here.

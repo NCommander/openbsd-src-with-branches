@@ -1,3 +1,4 @@
+/*	$OpenBSD: fdisk.c,v 1.17 1997/04/15 09:02:54 deraadt Exp $	*/
 /*	$NetBSD: fdisk.c,v 1.11 1995/10/04 23:11:19 ghudson Exp $	*/
 
 /*
@@ -27,9 +28,10 @@
  */
 
 #ifndef lint
-static char rcsid[] = "$NetBSD: fdisk.c,v 1.11 1995/10/04 23:11:19 ghudson Exp $";
+static char rcsid[] = "$OpenBSD: fdisk.c,v 1.17 1997/04/15 09:02:54 deraadt Exp $";
 #endif /* not lint */
 
+#include <sys/param.h>
 #include <sys/types.h>
 #include <sys/disklabel.h>
 #include <sys/ioctl.h>
@@ -42,9 +44,9 @@ static char rcsid[] = "$NetBSD: fdisk.c,v 1.11 1995/10/04 23:11:19 ghudson Exp $
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+#include <util.h>
 
-#define LBUF 100
-static char lbuf[LBUF];
+#define _PATH_MBR	"/usr/mdec/sdboot"
 
 /*
  * 14-Dec-89  Robert Baron (rvb) at Carnegie-Mellon University
@@ -52,113 +54,89 @@ static char lbuf[LBUF];
  *	Created.
  */
 
-char *disk = "/dev/rwd0d";
+char *disk;
+char *mbrname = _PATH_MBR;
 
-struct disklabel disklabel;		/* disk parameters */
-
-int cylinders, sectors, heads, cylindersectors, disksectors;
+struct	disklabel disklabel;		/* disk parameters */
+int	cylinders;
+int	sectors;
+int	heads;
+int	cylindersectors;
+int	disksectors;
 
 struct mboot {
-	unsigned char padding[2]; /* force the longs to be long alligned */
-	unsigned char bootinst[DOSPARTOFF];
-	struct	dos_partition parts[4];
-	unsigned short int	signature;
-};
-struct mboot mboot;
+	u_int8_t	padding[2];	/* force the int's to be int aligned */
+	u_int8_t	bootinst[DOSPARTOFF];
+	struct		dos_partition parts[4];
+	u_int16_t	signature;
+} mboot;
 
-#define ACTIVE 0x80
-#define BOOT_MAGIC 0xAA55
+#define ACTIVE		0x80
+#define BOOT_MAGIC	0xAA55
 
-int dos_cylinders;
-int dos_heads;
-int dos_sectors;
-int dos_cylindersectors;
+int	dos_cylinders;
+int	dos_heads;
+int	dos_sectors;
+int	dos_cylindersectors;
 
-#define DOSSECT(s,c)	(((s) & 0x3f) | (((c) >> 2) & 0xc0))
-#define DOSCYL(c)	((c) & 0xff)
-int partition = -1;
+#define	DOSSECT(s,c)	(((s) & 0x3f) | (((c) >> 2) & 0xc0))
+#define	DOSCYL(c)	((c) & 0xff)
+int	partition = -1;
 
-int a_flag;		/* set active partition */
-int i_flag;		/* replace partition data */
-int u_flag;		/* update partition data */
+int	a_flag;		/* set active partition */
+int	i_flag;		/* replace partition data */
+int	u_flag;		/* update partition data */
+int	m_flag;		/* give me a brand new mbr */
 
-unsigned char bootcode[] = {
-0x33, 0xc0, 0xfa, 0x8e, 0xd0, 0xbc, 0x00, 0x7c, 0x8e, 0xc0, 0x8e, 0xd8, 0xfb, 0x8b, 0xf4, 0xbf,
-0x00, 0x06, 0xb9, 0x00, 0x02, 0xfc, 0xf3, 0xa4, 0xea, 0x1d, 0x06, 0x00, 0x00, 0xb0, 0x04, 0xbe,
-0xbe, 0x07, 0x80, 0x3c, 0x80, 0x74, 0x0c, 0x83, 0xc6, 0x10, 0xfe, 0xc8, 0x75, 0xf4, 0xbe, 0xbd,
-0x06, 0xeb, 0x43, 0x8b, 0xfe, 0x8b, 0x14, 0x8b, 0x4c, 0x02, 0x83, 0xc6, 0x10, 0xfe, 0xc8, 0x74,
-0x0a, 0x80, 0x3c, 0x80, 0x75, 0xf4, 0xbe, 0xbd, 0x06, 0xeb, 0x2b, 0xbd, 0x05, 0x00, 0xbb, 0x00,
-0x7c, 0xb8, 0x01, 0x02, 0xcd, 0x13, 0x73, 0x0c, 0x33, 0xc0, 0xcd, 0x13, 0x4d, 0x75, 0xef, 0xbe,
-0x9e, 0x06, 0xeb, 0x12, 0x81, 0x3e, 0xfe, 0x7d, 0x55, 0xaa, 0x75, 0x07, 0x8b, 0xf7, 0xea, 0x00,
-0x7c, 0x00, 0x00, 0xbe, 0x85, 0x06, 0x2e, 0xac, 0x0a, 0xc0, 0x74, 0x06, 0xb4, 0x0e, 0xcd, 0x10,
-0xeb, 0xf4, 0xfb, 0xeb, 0xfe,
-'M', 'i', 's', 's', 'i', 'n', 'g', ' ',
-	'o', 'p', 'e', 'r', 'a', 't', 'i', 'n', 'g', ' ', 's', 'y', 's', 't', 'e', 'm', 0,
-'E', 'r', 'r', 'o', 'r', ' ', 'l', 'o', 'a', 'd', 'i', 'n', 'g', ' ',
-	'o', 'p', 'e', 'r', 'a', 't', 'i', 'n', 'g', ' ', 's', 'y', 's', 't', 'e', 'm', 0,
-'I', 'n', 'v', 'a', 'l', 'i', 'd', ' ',
-	'p', 'a', 'r', 't', 'i', 't', 'i', 'o', 'n', ' ', 't', 'a', 'b', 'l', 'e', 0,
-'A', 'u', 't', 'h', 'o', 'r', ' ', '-', ' ',
-	'S', 'i', 'e', 'g', 'm', 'a', 'r', ' ', 'S', 'c', 'h', 'm', 'i', 'd', 't', 0,0,0,
-
-  0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
-  0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
-  0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
-  0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
-  0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
-  0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
-  0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
-  0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
-  0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
-  0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
-  0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
-  0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
-  0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0
-};
-
 struct part_type {
-	int type;
-	char *name;
+	int	type;
+	char	*name;
 } part_types[] = {
-	{0x00, "unused"},
-	{0x01, "Primary DOS with 12 bit FAT"},
-	{0x02, "XENIX / filesystem"},
-	{0x03, "XENIX /usr filesystem"},
-	{0x04, "Primary DOS with 16 bit FAT"},
-	{0x05, "Extended DOS"},
-	{0x06, "Primary 'big' DOS (> 32MB)"},
-	{0x07, "OS/2 HPFS, QNX or Advanced UNIX"},
-	{0x08, "AIX filesystem"},
-	{0x09, "AIX boot partition or Coherent"},
-	{0x0A, "OS/2 Boot Manager or OPUS"},
-	{0x10, "OPUS"},
-	{0x40, "VENIX 286"},
-	{0x50, "DM"},
-	{0x51, "DM"},
-	{0x52, "CP/M or Microport SysV/AT"},
-	{0x56, "GB"},
-	{0x61, "Speed"},
-	{0x63, "ISC UNIX, other System V/386, GNU HURD or Mach"},
-	{0x64, "Novell Netware 2.xx"},
-	{0x65, "Novell Netware 3.xx"},
-	{0x75, "PCIX"},
-	{0x80, "Minix 1.1 ... 1.4a"},
-	{0x81, "Minix 1.4b ... 1.5.10"},
-	{0x82, "Linux swap"},
-	{0x83, "Linux filesystem"},
-	{0x93, "Amoeba filesystem"},
-	{0x94, "Amoeba bad block table"},
-	{0xA5, "NetBSD or 386BSD"},
-	{0xB7, "BSDI BSD/386 filesystem"},
-	{0xB8, "BSDI BSD/386 swap"},
-	{0xDB, "Concurrent CPM or C.DOS or CTOS"},
-	{0xE1, "Speed"},
-	{0xE3, "Speed"},
-	{0xE4, "Speed"},
-	{0xF1, "Speed"},
-	{0xF2, "DOS 3.3+ Secondary"},
-	{0xF4, "Speed"},
-	{0xFF, "BBT (Bad Blocks Table)"},
+	{ 0x00, "unused"},
+	{ 0x01, "Primary DOS with 12 bit FAT"},
+	{ 0x02, "XENIX / filesystem"},
+	{ 0x03, "XENIX /usr filesystem"},
+	{ 0x04, "Primary DOS with 16 bit FAT"},
+	{ 0x05, "Extended DOS"},
+	{ 0x06, "Primary 'big' DOS (> 32MB)"},
+	{ 0x07, "OS/2 HPFS, QNX or Advanced UNIX"},
+	{ 0x08, "AIX filesystem"},
+	{ 0x09, "AIX boot partition or Coherent"},
+	{ 0x0A, "OS/2 Boot Manager or OPUS"},
+	{ 0x0B, "Primary Windows 95 with 32 bit FAT"},
+	{ 0x0E, "Primary DOS with 16-bit FAT, CHS-mapped"},
+	{ 0x10, "OPUS"},
+	{ 0x12, "Compaq Diagnostics"},
+	{ 0x40, "VENIX 286"},
+	{ 0x50, "DM"},
+	{ 0x51, "DM"},
+	{ 0x52, "CP/M or Microport SysV/AT"},
+	{ 0x54, "Ontrack"},
+	{ 0x56, "GB"},
+	{ 0x61, "Speed"},
+	{ 0x63, "ISC, System V/386, GNU HURD or Mach"},
+	{ 0x64, "Novell Netware 2.xx"},
+	{ 0x65, "Novell Netware 3.xx"},
+	{ 0x75, "PCIX"},
+	{ 0x80, "Minix 1.1 ... 1.4a"},
+	{ 0x81, "Minix 1.4b ... 1.5.10"},
+	{ 0x82, "Linux swap"},
+	{ 0x83, "Linux filesystem"},
+	{ 0x93, "Amoeba filesystem"},
+	{ 0x94, "Amoeba bad block table"},
+	{ 0xA5, "386BSD/FreeBSD/NetBSD"},
+	{ 0xA6, "OpenBSD"},
+	{ 0xA7, "NEXTSTEP"},
+	{ 0xB7, "BSDI BSD/386 filesystem"},
+	{ 0xB8, "BSDI BSD/386 swap"},
+	{ 0xDB, "Concurrent CPM or C.DOS or CTOS"},
+	{ 0xE1, "Speed"},
+	{ 0xE3, "Speed"},
+	{ 0xE4, "Speed"},
+	{ 0xF1, "Speed"},
+	{ 0xF2, "DOS 3.3+ Secondary"},
+	{ 0xF4, "Speed"},
+	{ 0xFF, "BBT (Bad Blocks Table)"},
 };
 
 void	usage __P((void));
@@ -175,7 +153,7 @@ void	change_active __P((int));
 void	get_params_to_use __P((void));
 void	dos __P((int, unsigned char *, unsigned char *, unsigned char *));
 int	open_disk __P((int));
-int	read_disk __P((int, void *));
+int	read_disk __P((u_int32_t, void *));
 int	write_disk __P((int, void *));
 int	get_params __P((void));
 int	read_s0 __P((void));
@@ -184,17 +162,16 @@ int	yesno __P((char *));
 void	decimal __P((char *, int *));
 int	type_match __P((const void *, const void *));
 char	*get_type __P((int));
+int	get_mapping __P((int, int *, int *, int *, int *));
 
 int
 main(argc, argv)
 	int argc;
 	char *argv[];
 {
-	int ch;
-	int part;
+	int ch, part;
 
-	a_flag = i_flag = u_flag = 0;
-	while ((ch = getopt(argc, argv, "0123aiu")) != -1)
+	while ((ch = getopt(argc, argv, "0123aiumf:")) != -1)
 		switch (ch) {
 		case '0':
 			partition = 0;
@@ -216,31 +193,37 @@ main(argc, argv)
 		case 'u':
 			u_flag = 1;
 			break;
+		case 'm':
+			m_flag = 1;
+			i_flag = 1;
+			u_flag = 1;
+			break;
 		default:
 			usage();
 		}
 	argc -= optind;
 	argv += optind;
 
-	if (argc > 0)
-		disk = argv[0];
+	if (argc == 0)
+		usage();
+
+	disk = argv[0];
 
 	if (open_disk(a_flag || i_flag || u_flag) < 0)
 		exit(1);
 
-	if (read_s0())
-		init_sector0(1);
+	printf("Using device %s:\n", disk);
+	if (m_flag || read_s0())
+		init_sector0(0);
 
 	intuit_translated_geometry();
 
-	printf("******* Working on device %s *******\n", disk);
 	if (u_flag)
 		get_params_to_use();
 	else
 		print_params();
 
-	printf("Warning: BIOS sector numbering starts with sector 1\n");
-	printf("Information from DOS bootblock is:\n");
+	printf("WARNING: BIOS sector numbers start at 1 (not 0)\n");
 	if (partition == -1) {
 		for (part = 0; part < NDOSPART; part++)
 			change_part(part);
@@ -264,8 +247,10 @@ main(argc, argv)
 void
 usage()
 {
-
-	(void)fprintf(stderr, "usage: fdisk [-aiu] [-0|-1|-2|-3] [device]\n");
+	fprintf(stderr, "usage: fdisk [-aium] [-0123] [-f mbrboot] disk\n");
+	fprintf(stderr, "-a: change active, -i: initialize, -u: update\n");
+	fprintf(stderr, "-m: replace MBR bootblock, -0123: select partition\n");
+	fprintf(stderr, "`disk' may be of the forms: sd0 or /dev/rsd0c.\n");
 	exit(1);
 }
 
@@ -279,58 +264,173 @@ print_s0(which)
 	printf("Information from DOS bootblock is:\n");
 	if (which == -1) {
 		for (part = 0; part < NDOSPART; part++)
-			printf("%d: ", part), print_part(part);
+			print_part(part);
 	} else
 		print_part(which);
 }
 
 static struct dos_partition mtpart = { 0 };
 
+static inline unsigned short
+getshort(p)
+	void *p;
+{
+	unsigned char *cp = p;
+
+	return cp[0] | (cp[1] << 8);
+}
+
+static inline void
+putshort(p, l)
+	void *p;
+	unsigned short l;
+{
+	unsigned char *cp = p;
+
+	*cp++ = l;
+	*cp++ = l >> 8;
+}
+
+static inline u_int32_t
+getlong(p)
+	void *p;
+{
+	unsigned char *cp = p;
+
+	return cp[0] | (cp[1] << 8) | (cp[2] << 16) | (cp[3] << 24);
+}
+
+static inline void
+putlong(p, l)
+	void *p;
+	unsigned long l;
+{
+	unsigned char *cp = p;
+
+	*cp++ = l;
+	*cp++ = l >> 8;
+	*cp++ = l >> 16;
+	*cp++ = l >> 24;
+}
+
+void
+leader(lead)
+	int lead;
+{
+	while (lead--)
+		printf(" ");
+}
+
+void
+print_partinfo(pp, lead, off)
+	struct dos_partition *pp;
+	int lead;
+	u_int32_t off;
+{
+	static int extcnt;
+	static int extoff;
+
+	printf("sysid %d=0x%02x (%s)\n", pp->dp_typ, pp->dp_typ,
+	    get_type(pp->dp_typ));
+	if (DPCYL(pp->dp_scyl, pp->dp_esect) > 1023) {
+		leader(lead);
+		printf("Starts beyond 1023/0/1: BIOS cannot boot from here\n");
+	}
+	leader(lead);
+	printf("    start %d, size %d (%d MB), flag 0x%02x\n",
+	    getlong(&pp->dp_start) + 
+	    (pp->dp_typ != DOSPTYP_EXTEND ? off : extoff),
+	    getlong(&pp->dp_size),
+	    getlong(&pp->dp_size) * 512 / (1024 * 1024), pp->dp_flag);
+	leader(lead);
+	printf("    beg: cylinder %4d, head %3d, sector %2d\n",
+	    DPCYL(pp->dp_scyl, pp->dp_ssect),
+	    pp->dp_shd, DPSECT(pp->dp_ssect));
+	leader(lead);
+	printf("    end: cylinder %4d, head %3d, sector %2d\n",
+	    DPCYL(pp->dp_ecyl, pp->dp_esect),
+	    pp->dp_ehd, DPSECT(pp->dp_esect));
+
+	if (pp->dp_typ == DOSPTYP_EXTEND) {
+		struct mboot data;
+		u_int32_t off2;
+		int i;
+
+		off2 = extoff+getlong(&pp->dp_start);
+
+		if (read_disk(off2, data.bootinst) == -1) {
+			leader(lead+4);
+			printf("uhm, disk read error...\n");
+			return;
+		}
+
+		if (!extoff)
+		  extoff = off2;
+
+		if (getshort(&data.signature) != BOOT_MAGIC) {
+			fprintf(stderr,
+			    "warning: invalid fdisk partition table found!\n");
+			return;
+		}
+
+		for (i = 0; i < 4; i++) {
+			pp = &data.parts[i];
+			if (memcmp(pp, &mtpart, sizeof(*pp))) {
+				leader(lead+2);
+				printf("Extended Partition %d: ", extcnt);
+				extcnt++;
+				print_partinfo(pp, lead+2, off2);
+				extcnt--;
+			}
+		}
+	}
+}
+
 void
 print_part(part)
 	int part;
 {
-	struct dos_partition *partp;
+	struct dos_partition *pp = &mboot.parts[part];
 
-	partp = &mboot.parts[part];
-	if (!memcmp(partp, &mtpart, sizeof(struct dos_partition))) {
+	printf("MBR Partition %d: ", part);
+	if (!memcmp(pp, &mtpart, sizeof(*pp)))
 		printf("<UNUSED>\n");
-		return;
-	}
-	printf("sysid %d (%s)\n", partp->dp_typ, get_type(partp->dp_typ));
-	printf("    start %d, size %d (%d MB), flag %x\n",
-	    partp->dp_start, partp->dp_size,
-	    partp->dp_size * 512 / (1024 * 1024), partp->dp_flag);
-	printf("\tbeg: cylinder %4d, head %3d, sector %2d\n",
-	    DPCYL(partp->dp_scyl, partp->dp_ssect),
-	    partp->dp_shd, DPSECT(partp->dp_ssect));
-	printf("\tend: cylinder %4d, head %3d, sector %2d\n",
-	    DPCYL(partp->dp_ecyl, partp->dp_esect),
-	    partp->dp_ehd, DPSECT(partp->dp_esect));
+	else
+		print_partinfo(pp, 0, 0);
 }
+
 
 void
 init_sector0(start)
 	int start;
 {
 	struct dos_partition *partp;
+	FILE *f;
 
-	memcpy(mboot.bootinst, bootcode, sizeof(bootcode));
-	mboot.signature = BOOT_MAGIC;
+	f = fopen(mbrname, "r");
+	if (!f)
+		err(1, "cannot open %s", mbrname);
+
+	if (fread(mboot.bootinst, sizeof mboot.bootinst, 1, f) != 1)
+		err(1, "reading %s", mbrname);
+	fclose(f);
+
+	putshort(&mboot.signature, BOOT_MAGIC);
 
 	partp = &mboot.parts[3];
-	partp->dp_typ = DOSPTYP_386BSD;
+	partp->dp_typ = DOSPTYP_OPENBSD;
 	partp->dp_flag = ACTIVE;
-	partp->dp_start = start;
-	partp->dp_size = disksectors - start;
+	putlong(&partp->dp_start, start);
+	putlong(&partp->dp_size,disksectors - start);
 
-	dos(partp->dp_start,
+	dos(getlong(&partp->dp_start),
 	    &partp->dp_scyl, &partp->dp_shd, &partp->dp_ssect);
-	dos(partp->dp_start + partp->dp_size - 1,
+	dos(getlong(&partp->dp_start) + getlong(&partp->dp_size) - 1,
 	    &partp->dp_ecyl, &partp->dp_ehd, &partp->dp_esect);
 }
 
-/* Prerequisite: the disklabel parameters and master boot record must
+/*
+ * Prerequisite: the disklabel parameters and master boot record must
  *		 have been read (i.e. dos_* and mboot are meaningful).
  * Specification: modifies dos_cylinders, dos_heads, dos_sectors, and
  *		  dos_cylindersectors to be consistent with what the
@@ -342,13 +442,14 @@ init_sector0(start)
  *		  the translated geometry of.
  * This whole routine should be replaced with a kernel interface to get
  * the BIOS geometry (which in turn requires modifications to the i386
- * boot loader to pass in the BIOS geometry for each disk). */
+ * boot loader to pass in the BIOS geometry for each disk).
+ */
 void
 intuit_translated_geometry()
 {
 	int cylinders = -1, heads = -1, sectors = -1, i, j;
 	int c1, h1, s1, c2, h2, s2;
-	long a1, a2;
+	int a1, a2;
 	quad_t num, denom;
 
 	/* Try to deduce the number of heads from two different mappings. */
@@ -365,11 +466,11 @@ intuit_translated_geometry()
 				break;
 			}
 		}
-		if (heads != -1)	
+		if (heads > 0)	
 			break;
 	}
 
-	if (heads == -1)
+	if (heads <= 0)
 		return;
 
 	/* Now figure out the number of sectors from a single mapping. */
@@ -410,15 +511,17 @@ intuit_translated_geometry()
 	dos_cylindersectors = heads * sectors;
 }
 
-/* For the purposes of intuit_translated_geometry(), treat the partition
+/*
+ * For the purposes of intuit_translated_geometry(), treat the partition
  * table as a list of eight mapping between (cylinder, head, sector)
  * triplets and absolute sectors.  Get the relevant geometry triplet and
  * absolute sectors for a given entry, or return -1 if it isn't present.
- * Note: for simplicity, the returned sector is 0-based. */
+ * Note: for simplicity, the returned sector is 0-based.
+ */
 int
 get_mapping(i, cylinder, head, sector, absolute)
 	int i, *cylinder, *head, *sector;
-	long *absolute;
+	int *absolute;
 {
 	struct dos_partition *part = &mboot.parts[i / 2];
 
@@ -428,12 +531,13 @@ get_mapping(i, cylinder, head, sector, absolute)
 		*cylinder = DPCYL(part->dp_scyl, part->dp_ssect);
 		*head = part->dp_shd;
 		*sector = DPSECT(part->dp_ssect) - 1;
-		*absolute = part->dp_start;
+		*absolute = getlong(&part->dp_start);
 	} else {
 		*cylinder = DPCYL(part->dp_ecyl, part->dp_esect);
 		*head = part->dp_ehd;
 		*sector = DPSECT(part->dp_esect) - 1;
-		*absolute = part->dp_start + part->dp_size - 1;
+		*absolute = getlong(&part->dp_start)
+			+ getlong(&part->dp_size) - 1;
 	}
 	return 0;
 }
@@ -442,39 +546,32 @@ void
 change_part(part)
 	int part;
 {
-	struct dos_partition *partp;
+	struct dos_partition *partp = &mboot.parts[part];
+	int sysid, start, size;
 
-	partp = &mboot.parts[part];
-
-	printf("The data for partition %d is:\n", part);
 	print_part(part);
-
 	if (!u_flag || !yesno("Do you want to change it?"))
 		return;
 
 	if (i_flag) {
 		memset(partp, 0, sizeof(*partp));
 		if (part == 3) {
-			init_sector0(1);
+			init_sector0(0);
 			printf("\nThe static data for the DOS partition 3 has been reinitialized to:\n");
 			print_part(part);
 		}
 	}
 
 	do {
-		{
-			int sysid, start, size;
-
-			sysid = partp->dp_typ,
-			start = partp->dp_start,
-			size = partp->dp_size;
-			decimal("sysid", &sysid);
-			decimal("start", &start);
-			decimal("size", &size);
-			partp->dp_typ = sysid;
-			partp->dp_start = start;
-			partp->dp_size = size;
-		}
+		sysid = partp->dp_typ,
+		start = getlong(&partp->dp_start),
+		size = getlong(&partp->dp_size);
+		decimal("sysid", &sysid);
+		decimal("start", &start);
+		decimal("size", &size);
+		partp->dp_typ = sysid;
+		putlong(&partp->dp_start, start);
+		putlong(&partp->dp_size, size);
 
 		if (yesno("Explicitly specify beg/end address?")) {
 			int tsector, tcylinder, thead;
@@ -499,9 +596,10 @@ change_part(part)
 			partp->dp_ehd = thead;
 			partp->dp_esect = DOSSECT(tsector, tcylinder);
 		} else {
-			dos(partp->dp_start,
+			dos(getlong(&partp->dp_start),
 			    &partp->dp_scyl, &partp->dp_shd, &partp->dp_ssect);
-			dos(partp->dp_start + partp->dp_size - 1,
+			dos(getlong(&partp->dp_start)
+			    + getlong(&partp->dp_size) - 1,
 			    &partp->dp_ecyl, &partp->dp_ehd, &partp->dp_esect);
 		}
 
@@ -513,25 +611,26 @@ void
 print_params()
 {
 
-	printf("parameters extracted from in-core disklabel are:\n");
-	printf("cylinders=%d heads=%d sectors/track=%d (%d sectors/cylinder)\n\n",
-	    cylinders, heads, sectors, cylindersectors);
+	printf("Parameters extracted from in-core disklabel are:\n");
+	printf("    cylinders=%d heads=%d sectors/track=%d\n",
+	    cylinders, heads, sectors);
+	printf("    sectors/cylinder=%d total=%d\n",
+	    cylindersectors, disksectors);
 	if (dos_sectors > 63 || dos_cylinders > 1023 || dos_heads > 255)
 		printf("Figures below won't work with BIOS for partitions not in cylinder 1\n");
-	printf("parameters to be used for BIOS calculations are:\n");
-	printf("cylinders=%d heads=%d sectors/track=%d (%d sectors/cylinder)\n\n",
-	    dos_cylinders, dos_heads, dos_sectors, dos_cylindersectors);
+	printf("Parameters to be used for BIOS calculations are:\n");
+	printf("    cylinders=%d heads=%d sectors/track=%d\n",
+	    dos_cylinders, dos_heads, dos_sectors);
+	printf("    sectors/cylinder=%d\n",
+	    dos_cylindersectors);
 }
 
 void
 change_active(which)
 	int which;
 {
-	struct dos_partition *partp;
-	int part;
-	int active = 3;
-
-	partp = &mboot.parts[0];
+	struct dos_partition *partp = &mboot.parts[0];
+	int part, active = 3;
 
 	if (a_flag && which != -1)
 		active = which;
@@ -553,7 +652,6 @@ change_active(which)
 void
 get_params_to_use()
 {
-
 	print_params();
 	if (yesno("Do you want to change our idea of what BIOS thinks?")) {
 		do {
@@ -566,9 +664,9 @@ get_params_to_use()
 	}
 }
 
-/***********************************************\
-* Change real numbers into strange dos numbers	*
-\***********************************************/
+/*
+ * Change real numbers into strange dos numbers
+ */
 void
 dos(sector, cylinderp, headp, sectorp)
 	int sector;
@@ -576,10 +674,16 @@ dos(sector, cylinderp, headp, sectorp)
 {
 	int cylinder, head;
 
-	cylinder = sector / dos_cylindersectors;
+	if (dos_cylindersectors)
+		cylinder = sector / dos_cylindersectors;
+	else
+		cylinder = 0;
 	sector -= cylinder * dos_cylindersectors;
 
-	head = sector / dos_sectors;
+	if (dos_sectors)
+		head = sector / dos_sectors;
+	else
+		head = 0;
 	sector -= head * dos_sectors;
 
 	*cylinderp = DOSCYL(cylinder);
@@ -595,7 +699,8 @@ open_disk(u_flag)
 {
 	struct stat st;
 
-	if ((fd = open(disk, u_flag ? O_RDWR : O_RDONLY)) == -1) {
+	fd = opendev(disk, (u_flag ? O_RDWR : O_RDONLY), OPENDEV_PART, &disk);
+	if (fd == -1) {
 		warn("%s", disk);
 		return (-1);
 	}
@@ -618,10 +723,9 @@ open_disk(u_flag)
 
 int
 read_disk(sector, buf)
-	int sector;
+	u_int32_t sector;
 	void *buf;
 {
-
 	if (lseek(fd, (off_t)(sector * 512), 0) == -1)
 		return (-1);
 	return (read(fd, buf, 512));
@@ -632,7 +736,6 @@ write_disk(sector, buf)
 	int sector;
 	void *buf;
 {
-
 	if (lseek(fd, (off_t)(sector * 512), 0) == -1)
 		return (-1);
 	return (write(fd, buf, 512));
@@ -641,7 +744,6 @@ write_disk(sector, buf)
 int
 get_params()
 {
-
 	if (ioctl(fd, DIOCGDINFO, &disklabel) == -1) {
 		warn("DIOCGDINFO");
 		return (-1);
@@ -652,7 +754,6 @@ get_params()
 	dos_sectors = sectors = disklabel.d_nsectors;
 	dos_cylindersectors = cylindersectors = heads * sectors;
 	disksectors = cylinders * heads * sectors;
-
 	return (0);
 }
 
@@ -664,8 +765,9 @@ read_s0()
 		warn("can't read fdisk partition table");
 		return (-1);
 	}
-	if (mboot.signature != BOOT_MAGIC) {
-		warn("invalid fdisk partition table found");
+	if (getshort(&mboot.signature) != BOOT_MAGIC) {
+		fprintf(stderr,
+		    "warning: invalid fdisk partition table found!\n");
 		/* So should we initialize things? */
 		return (-1);
 	}
@@ -693,6 +795,7 @@ write_s0()
 	flag = 0;
 	if (ioctl(fd, DIOCWLABEL, &flag) < 0)
 		warn("DIOCWLABEL");
+	return 0;
 }
 
 int
@@ -714,32 +817,32 @@ decimal(str, num)
 	char *str;
 	int *num;
 {
+	char lbuf[100], *cp;
 	int acc = 0;
-	char *cp;
 
-	for (;; printf("%s is not a valid decimal number.\n", lbuf)) {
+	while (1) {
 		printf("Supply a decimal value for \"%s\" [%d] ", str, *num);
 
-		fgets(lbuf, LBUF, stdin);
+		if (fgets(lbuf, sizeof lbuf, stdin) == NULL)
+			errx(1, "eof");
 		lbuf[strlen(lbuf)-1] = '\0';
-		cp = lbuf;
 
+		cp = lbuf;
 		cp += strspn(cp, " \t");
 		if (*cp == '\0')
 			return;
-
 		if (!isdigit(*cp))
-			continue;
+			goto bad;
 		acc = strtol(lbuf, &cp, 10);
 
 		cp += strspn(cp, " \t");
 		if (*cp != '\0')
-			continue;
-
+			goto bad;
 		*num = acc;
 		return;
+bad:
+		printf("%s is not a valid decimal number.\n", lbuf);
 	}
-
 }
 
 int
@@ -767,6 +870,5 @@ get_type(type)
 	    sizeof(struct part_type), type_match);
 	if (ptr == 0)
 		return ("unknown");
-	else
-		return (ptr->name);
+	return (ptr->name);
 }

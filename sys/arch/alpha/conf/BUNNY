@@ -1,17 +1,12 @@
-#	$NetBSD: BUNNY,v 1.2 1995/08/03 00:09:18 cgd Exp $
+#	$OpenBSD: BUNNY,v 1.7 1996/10/30 22:38:38 niklas Exp $
+#	$NetBSD: BUNNY,v 1.12 1996/11/25 04:16:15 cgd Exp $
 #
 # Kernel for bunnahabhain.pdl.cs.cmu.edu.
 #
-# This kernel contains support for NO frame buffer devices; bunny
-# is rack-mounted, and has no video boards.  THIS KERNEL CANNOT BE
-# USED ON MACHINES WITH FRAME BUFFERS.
-#
-# It also has no support for devices which aren't actually used
-# (sound, parallel port, keyboard, mouse, SCSI tape or CD-ROM, etc.).
+# Trimmed down kernel for AlphaStation [24]xx systems, with lots
+# of buffer cache.
 
-machine		alpha
-
-makeoptions	DEBUG="-g"
+include	"arch/alpha/conf/std.alpha"
 
 maxusers 8
 
@@ -26,7 +21,6 @@ options		TIMEZONE="5*60"		# Minutes west of GMT (for param.c)
 options		DST=1			# Daylight savings rules (for param.c)
 
 # Standard system options
-options		SWAPPAGER, VNODEPAGER, DEVPAGER # Paging (mandatory)
 options		DEBUG, DIAGNOSTIC	# Extra kernel debugging
 options		KTRACE			# System call tracing support
 
@@ -34,6 +28,7 @@ options		KTRACE			# System call tracing support
 options		FIFO		# POSIX fifo support (in all file systems)
 options		FFS		# Fast file system
 options		MFS		# Memory-based file system
+options		NFSSERVER	# Sun NFS-compatible file system server
 options		NFSCLIENT	# Sun NFS-compatible file system client
 
 # Networking options
@@ -41,6 +36,12 @@ options		INET		# Internet protocol suite
 
 # 4.3BSD compatibility.  Should be optional, but necessary for now.
 options		COMPAT_43
+
+# Binary compatibility with previous versions of NetBSD.
+#options	COMPAT_09
+options		COMPAT_10
+options		COMPAT_11
+options		COMPAT_12
 
 # Loadable Kernel Modules
 options		LKM
@@ -50,8 +51,9 @@ options		LKM
 
 # Misc. options
 options		PCIVERBOSE		# recognize "unknown" PCI devices
+options		UCONSOLE		# users can use TIOCCONS (for xconsole)
 
-config		netbsd		root on sd0 swap on sd0
+config		bsd	swap generic
 
 mainbus0 at	root
 cpu*	at	mainbus0
@@ -64,23 +66,37 @@ pci*	at	apecs?
 
 # PCI devices
 de*	at	pci?
-sio*	at	pci?
 ncr*	at	pci?
+vga*	at	pci?
+sio*	at	pci?
+tga*	at	pci?
 
-# ISA bus support
-isa0	at	sio?
+# ISA/EISA bus support
+isa*	at	sio?
 
 # ISA devices
-clock0	at	isa? port 0x70
-com0	at	isa? port 0x3f8 irq 4		# standard serial ports
-com1	at	isa? port 0x2f8 irq 3
+mcclock* at	isa? port 0x70
+pcppi*	at	isa?				# PC prog. periph. interface
+pckbd*	at	pcppi?				# PC keyboard (kbd port)
+pms*	at	pcppi?				# PS/2-style mouse (aux port)
+com*	at	isa? port 0x3f8 irq 4		# standard serial ports
+com*	at	isa? port 0x2f8 irq 3
+lpt*	at	isa? port 0x3bc irq 7		# standard parallel port
+#wss*	at	isa? port 0x530 irq 9 drq 0	# Windows Sound System
 
 # SCSI bus support
 scsibus* at	ncr?
 
 # SCSI devices
 sd*	at	scsibus? target ? lun ?
+st*	at	scsibus? target ? lun ?
+cd*	at	scsibus? target ? lun ?
 
-pseudo-device	bpfilter
+# Workstation Console attachments
+wscons*	at	vga?
+wscons*	at	tga?
+
+pseudo-device	bpfilter	16
 pseudo-device	loop
-pseudo-device	pty
+pseudo-device	pty		64
+pseudo-device	vnd		4

@@ -1,4 +1,5 @@
-/*	$NetBSD: vnd.c,v 1.21 1995/10/05 06:20:57 mycroft Exp $	*/
+/*	$OpenBSD: vnd.c,v 1.12 1997/05/17 20:09:46 millert Exp $	*/
+/*	$NetBSD: vnd.c,v 1.26 1996/03/30 23:06:11 christos Exp $	*/
 
 /*
  * Copyright (c) 1988 University of Utah.
@@ -48,9 +49,11 @@
  * Block/character interface to a vnode.  Allows one to treat a file
  * as a disk (e.g. build a filesystem in it, mount it, etc.).
  *
- * NOTE 1: This uses the VOP_BMAP/VOP_STRATEGY interface to the vnode
- * instead of a simple VOP_RDWR.  We do this to avoid distorting the
- * local buffer cache.
+ * NOTE 1: This uses either the VOP_BMAP/VOP_STRATEGY interface to the
+ * vnode or simple VOP_READ/VOP_WRITE.  The former is suitable for swapping
+ * as it doesn't distort the local buffer cache.  The latter is good for
+ * building disk images as it keeps the cache consistent after the block
+ * device is closed.
  *
  * NOTE 2: There is a security issue involved with this driver.
  * Once mounted all access to the contents of the "mapped" file via
@@ -60,23 +63,24 @@
  *
  * NOTE 3: Doesn't interact with leases, should it?
  */
-#include "vnd.h"
-#if NVND > 0
 
 #include <sys/param.h>
 #include <sys/systm.h>
 #include <sys/namei.h>
 #include <sys/proc.h>
 #include <sys/errno.h>
-#include <sys/dkstat.h>
 #include <sys/buf.h>
 #include <sys/malloc.h>
 #include <sys/ioctl.h>
 #include <sys/disklabel.h>
+#include <sys/device.h>
+#include <sys/disk.h>
+#include <sys/stat.h>
 #include <sys/mount.h>
 #include <sys/vnode.h>
 #include <sys/file.h>
 #include <sys/uio.h>
+#include <sys/conf.h>
 
 #include <miscfs/specfs/specdev.h>
 
@@ -92,7 +96,11 @@ int vnddebug = 0x00;
 
 #define b_cylin	b_resid
 
-#define	vndunit(x)	DISKUNIT(x)
+#define	vndunit(x)	DISKUNIT((x) & 0x7f)
+#define vndsimple(x)	((x) & 0x80)
+#define	MAKEVNDDEV(maj, unit, part)	MAKEDISKDEV(maj, unit, part)
+
+#define	VNDLABELDEV(dev) (MAKEVNDDEV(major(dev), vndunit(dev), RAW_PART))
 
 struct vndbuf {
 	struct buf	vb_buf;
@@ -105,6 +113,9 @@ struct vndbuf {
 	free((caddr_t)(vbp), M_DEVBUF)
 
 struct vnd_softc {
+	struct device	 sc_dev;
+	struct disk	 sc_dk;
+
 	int		 sc_flags;	/* flags */
 	size_t		 sc_size;	/* size of vnd */
 	struct vnode	*sc_vp;		/* vnode */
@@ -114,21 +125,34 @@ struct vnd_softc {
 };
 
 /* sc_flags */
-#define	VNF_ALIVE	0x01
-#define VNF_INITED	0x02
+#define	VNF_ALIVE	0x0001
+#define VNF_INITED	0x0002
+#define VNF_WANTED	0x0040
+#define VNF_LOCKED	0x0080
+#define	VNF_LABELLING	0x0100
+#define	VNF_WLABEL	0x0200
+#define	VNF_HAVELABEL	0x0400
+#define VNF_BUSY	0x0800
+#define VNF_SIMPLE	0x1000
 
-#if 0	/* if you need static allocation */
-struct vnd_softc vn_softc[NVND];
-int numvnd = NVND;
-#else
 struct vnd_softc *vnd_softc;
-int numvnd;
-#endif
+int numvnd = 0;
+
+struct dkdriver vnddkdriver = { vndstrategy };
+
+/* called by main() at boot time */
+void	vndattach __P((int));
 
 void	vndclear __P((struct vnd_softc *));
 void	vndstart __P((struct vnd_softc *));
 int	vndsetcred __P((struct vnd_softc *, struct ucred *));
 void	vndthrottle __P((struct vnd_softc *, struct vnode *));
+void	vndiodone __P((struct buf *));
+void	vndshutdown __P((void));
+void	vndgetdisklabel __P((dev_t, struct vnd_softc *));
+
+static	int vndlock __P((struct vnd_softc *));
+static	void vndunlock __P((struct vnd_softc *));
 
 void
 vndattach(num)
@@ -157,14 +181,124 @@ vndopen(dev, flags, mode, p)
 	struct proc *p;
 {
 	int unit = vndunit(dev);
+	struct vnd_softc *sc;
+	int error = 0, part, pmask;
 
 #ifdef DEBUG
 	if (vnddebug & VDB_FOLLOW)
-		printf("vndopen(%x, %x, %x, %x)\n", dev, flags, mode, p);
+		printf("vndopen(%x, %x, %x, %p)\n", dev, flags, mode, p);
 #endif
 	if (unit >= numvnd)
-		return(ENXIO);
-	return(0);
+		return (ENXIO);
+	sc = &vnd_softc[unit];
+
+	if ((error = vndlock(sc)) != 0)
+		return (error);
+
+	if ((sc->sc_flags & VNF_INITED) &&
+	    (sc->sc_flags & VNF_HAVELABEL) == 0) {
+		sc->sc_flags |= VNF_HAVELABEL;
+		vndgetdisklabel(dev, sc);
+	}
+
+	part = DISKPART(dev);
+	pmask = 1 << part;
+
+	/*
+	 * If any partition is open, all succeeding openings must be of the
+	 * same type.
+	 */
+	if (sc->sc_dk.dk_openmask) {
+		if (((sc->sc_flags & VNF_SIMPLE) != 0) !=
+		    (vndsimple(dev) != 0)) {
+			error = EBUSY;
+			goto bad;
+		}
+	} else if (vndsimple(dev))
+		sc->sc_flags |= VNF_SIMPLE;
+	else
+		sc->sc_flags &= ~VNF_SIMPLE;
+
+	/* Check that the partition exists. */
+	if (part != RAW_PART &&
+	    ((sc->sc_flags & VNF_HAVELABEL) == 0 ||
+	    part >= sc->sc_dk.dk_label->d_npartitions ||
+	    sc->sc_dk.dk_label->d_partitions[part].p_fstype == FS_UNUSED)) {
+		error = ENXIO;
+		goto bad;
+	}
+
+	/* Prevent our unit from being unconfigured while open. */
+	switch (mode) {
+	case S_IFCHR:
+		sc->sc_dk.dk_copenmask |= pmask;
+		break;
+
+	case S_IFBLK:
+		sc->sc_dk.dk_bopenmask |= pmask;
+		break;
+	}
+	sc->sc_dk.dk_openmask =
+	    sc->sc_dk.dk_copenmask | sc->sc_dk.dk_bopenmask;
+
+	vndunlock(sc);
+	return (0);
+bad:
+	vndunlock(sc);
+	return (error);
+}
+
+/*
+ * Load the label information on the named device
+ */
+void
+vndgetdisklabel(dev, sc)
+	dev_t dev;
+	struct vnd_softc *sc;
+{
+	struct disklabel *lp = sc->sc_dk.dk_label;
+	char *errstring;
+
+	bzero(lp, sizeof(struct disklabel));
+	bzero(sc->sc_dk.dk_cpulabel, sizeof(struct cpu_disklabel));
+
+	lp->d_secsize = 512;
+	lp->d_ntracks = 1;
+	lp->d_nsectors = 100;
+	lp->d_ncylinders = 100;
+	lp->d_secpercyl = lp->d_ntracks * lp->d_nsectors;
+	if (lp->d_secpercyl == 0) {
+		lp->d_secpercyl = 100;
+		/* as long as it's not 0 - readdisklabel divides by it (?) */
+	}
+
+	strncpy(lp->d_typename, "vnd device", 16);
+	lp->d_type = DTYPE_SCSI;
+	strncpy(lp->d_packname, "fictitious", 16);
+	lp->d_secperunit = 100 * 100;
+	lp->d_rpm = 3600;
+	lp->d_interleave = 1;
+	lp->d_flags = 0;
+
+	lp->d_partitions[RAW_PART].p_offset = 0;
+	lp->d_partitions[RAW_PART].p_size =
+	    lp->d_secperunit * (lp->d_secsize / DEV_BSIZE);
+	lp->d_partitions[RAW_PART].p_fstype = FS_UNUSED;
+	lp->d_npartitions = RAW_PART + 1;
+
+	lp->d_magic = DISKMAGIC;
+	lp->d_magic2 = DISKMAGIC;
+	lp->d_checksum = dkcksum(lp);
+
+	/*
+	 * Call the generic disklabel extraction routine
+	 */
+	errstring = readdisklabel(VNDLABELDEV(dev), vndstrategy, lp,
+	    sc->sc_dk.dk_cpulabel);
+	if (errstring) {
+		printf("%s: %s\n", sc->sc_dev.dv_xname, errstring);
+		return;
+	}
 }
 
 int
@@ -173,17 +307,55 @@ vndclose(dev, flags, mode, p)
 	int flags, mode;
 	struct proc *p;
 {
+	int unit = vndunit(dev);
+	struct vnd_softc *sc;
+	int error = 0, part;
+
 #ifdef DEBUG
 	if (vnddebug & VDB_FOLLOW)
-		printf("vndclose(%x, %x, %x, %x)\n", dev, flags, mode, p);
+		printf("vndclose(%x, %x, %x, %p)\n", dev, flags, mode, p);
 #endif
-	return 0;
+
+	if (unit >= numvnd)
+		return (ENXIO);
+	sc = &vnd_softc[unit];
+
+	if ((error = vndlock(sc)) != 0)
+		return (error);
+
+	part = DISKPART(dev);
+
+	/* ...that much closer to allowing unconfiguration... */
+	switch (mode) {
+	case S_IFCHR:
+		sc->sc_dk.dk_copenmask &= ~(1 << part);
+		break;
+
+	case S_IFBLK:
+		sc->sc_dk.dk_bopenmask &= ~(1 << part);
+		break;
+	}
+	sc->sc_dk.dk_openmask =
+	    sc->sc_dk.dk_copenmask | sc->sc_dk.dk_bopenmask;
+
+	vndunlock(sc);
+	return (0);
 }
 
 /*
+ * Two methods are used, the traditional buffercache bypassing and the
+ * newer, cache-coherent on unmount, one.
+ *
+ * Former method:
  * Break the request into bsize pieces and submit using VOP_BMAP/VOP_STRATEGY.
  * Note that this driver can only be used for swapping over NFS on the hp
  * since nfs_strategy on the vax cannot handle u-areas and page tables.
+ *
+ * Latter method:
+ * Repack the buffer into an uio structure and use VOP_READ/VOP_WRITE to
+ * access the underlying file.  Things are complicated by the fact that we
+ * might get recursively called due to buffer flushes.  In those cases we
+ * queue one write.
  */
 void
 vndstrategy(bp)
@@ -194,12 +366,13 @@ vndstrategy(bp)
 	register struct vndbuf *nbp;
 	register int bn, bsize, resid;
 	register caddr_t addr;
-	int sz, flags, error;
-	extern void vndiodone();
+	int sz, flags, error, s;
+	struct iovec aiov;
+	struct uio auio;
 
 #ifdef DEBUG
 	if (vnddebug & VDB_FOLLOW)
-		printf("vndstrategy(%x): unit %d\n", bp, unit);
+		printf("vndstrategy(%p): unit %d\n", bp, unit);
 #endif
 	if ((vnd->sc_flags & VNF_INITED) == 0) {
 		bp->b_error = ENXIO;
@@ -207,6 +380,7 @@ vndstrategy(bp)
 		biodone(bp);
 		return;
 	}
+
 	bn = bp->b_blkno;
 	sz = howmany(bp->b_bcount, DEV_BSIZE);
 	bp->b_resid = bp->b_bcount;
@@ -218,6 +392,73 @@ vndstrategy(bp)
 		biodone(bp);
 		return;
 	}
+
+	/* No bypassing of buffer cache?  */
+	if (vndsimple(bp->b_dev)) {
+		/*
+		 * In order to avoid "locking against myself" panics, we
+		 * must be prepared to queue operations during another I/O
+		 * operation.  This situation comes up where a dirty cache
+		 * buffer needs to be flushed in order to provide the current
+		 * operation with a fresh buffer.
+		 *
+		 * XXX do we really need to protect stuff relating to this with
+		 * splbio?
+		 */
+		if (vnd->sc_flags & VNF_BUSY) {
+			s = splbio();
+			bp->b_actf = vnd->sc_tab.b_actf;
+			vnd->sc_tab.b_actf = bp;
+			vnd->sc_tab.b_active++;
+			splx(s);
+			return;
+		}
+
+		/* Loop until all queued requests are handled.  */
+		for (;;) {
+			aiov.iov_base = bp->b_data;
+			auio.uio_resid = aiov.iov_len = bp->b_bcount;
+			auio.uio_iov = &aiov;
+			auio.uio_iovcnt = 1;
+			auio.uio_offset = dbtob(bp->b_blkno);
+			auio.uio_segflg = UIO_SYSSPACE;
+			auio.uio_procp = NULL;
+
+			VOP_LOCK(vnd->sc_vp);
+			vnd->sc_flags |= VNF_BUSY;
+			if (bp->b_flags & B_READ) {
+				auio.uio_rw = UIO_READ;
+				bp->b_error = VOP_READ(vnd->sc_vp, &auio, 0,
+				    vnd->sc_cred);
+			} else {
+				auio.uio_rw = UIO_WRITE;
+				bp->b_error = VOP_WRITE(vnd->sc_vp, &auio, 0,
+				    vnd->sc_cred);
+			}
+			vnd->sc_flags &= ~VNF_BUSY;
+			VOP_UNLOCK(vnd->sc_vp);
+			if (bp->b_error)
+				bp->b_flags |= B_ERROR;
+			bp->b_resid = auio.uio_resid;
+			biodone(bp);
+
+			/* If nothing more is queued, we are done.  */
+			if (!vnd->sc_tab.b_active)
+				return;
+
+			/*
+			 * Dequeue now since lower level strategy
+			 * routine might queue using same links.
+			 */
+			s = splbio();
+			bp = vnd->sc_tab.b_actf;
+			vnd->sc_tab.b_actf = bp->b_actf;
+			vnd->sc_tab.b_active--;
+			splx(s);
+		}
+	}
+
+	/* The old-style buffercache bypassing method.  */
 	bn = dbtob(bn);
  	bsize = vnd->sc_vp->v_mount->mnt_stat.f_iosize;
 	addr = bp->b_data;
@@ -238,7 +479,7 @@ vndstrategy(bp)
 			nra = 0;
 #endif
 
-		if (off = bn % bsize)
+		if ((off = bn % bsize) != 0)
 			sz = bsize - off;
 		else
 			sz = (1 + nra) * bsize;
@@ -246,7 +487,7 @@ vndstrategy(bp)
 			sz = resid;
 #ifdef DEBUG
 		if (vnddebug & VDB_IO)
-			printf("vndstrategy: vp %x/%x bn %x/%x sz %x\n",
+			printf("vndstrategy: vp %p/%p bn %x/%x sz %x\n",
 			       vnd->sc_vp, vp, bn, nbn, sz);
 #endif
 
@@ -326,19 +567,24 @@ vndstart(vnd)
 	vnd->sc_tab.b_actf = bp->b_actf;
 #ifdef DEBUG
 	if (vnddebug & VDB_IO)
-		printf("vndstart(%d): bp %x vp %x blkno %x addr %x cnt %x\n",
+		printf("vndstart(%d): bp %p vp %p blkno %x addr %p cnt %lx\n",
 		    vnd-vnd_softc, bp, bp->b_vp, bp->b_blkno, bp->b_data,
 		    bp->b_bcount);
 #endif
+
+	/* Instrumentation. */
+	disk_busy(&vnd->sc_dk);
+
 	if ((bp->b_flags & B_READ) == 0)
 		bp->b_vp->v_numoutput++;
 	VOP_STRATEGY(bp);
 }
 
 void
-vndiodone(vbp)
-	register struct vndbuf *vbp;
+vndiodone(bp)
+	struct buf *bp;
 {
+	register struct vndbuf *vbp = (struct vndbuf *) bp;
 	register struct buf *pbp = vbp->vb_obp;
 	register struct vnd_softc *vnd = &vnd_softc[vndunit(pbp->b_dev)];
 	int s;
@@ -346,14 +592,15 @@ vndiodone(vbp)
 	s = splbio();
 #ifdef DEBUG
 	if (vnddebug & VDB_IO)
-		printf("vndiodone(%d): vbp %x vp %x blkno %x addr %x cnt %x\n",
+		printf("vndiodone(%d): vbp %p vp %p blkno %x addr %p cnt %lx\n",
 		    vnd-vnd_softc, vbp, vbp->vb_buf.b_vp, vbp->vb_buf.b_blkno,
 		    vbp->vb_buf.b_data, vbp->vb_buf.b_bcount);
 #endif
+
 	if (vbp->vb_buf.b_error) {
 #ifdef DEBUG
 		if (vnddebug & VDB_IO)
-			printf("vndiodone: vbp %x error %d\n", vbp,
+			printf("vndiodone: vbp %p error %d\n", vbp,
 			    vbp->vb_buf.b_error);
 #endif
 		pbp->b_flags |= B_ERROR;
@@ -361,10 +608,11 @@ vndiodone(vbp)
 	}
 	pbp->b_resid -= vbp->vb_buf.b_bcount;
 	putvndbuf(vbp);
+	disk_unbusy(&vnd->sc_dk, (pbp->b_bcount - pbp->b_resid));
 	if (pbp->b_resid == 0) {
 #ifdef DEBUG
 		if (vnddebug & VDB_IO)
-			printf("vndiodone: pbp %x iodone\n", pbp);
+			printf("vndiodone: pbp %p iodone\n", pbp);
 #endif
 		biodone(pbp);
 	}
@@ -375,38 +623,62 @@ vndiodone(vbp)
 	splx(s);
 }
 
+/* ARGSUSED */
 int
-vndread(dev, uio)
+vndread(dev, uio, flags)
 	dev_t dev;
 	struct uio *uio;
+	int flags;
 {
+	int unit = vndunit(dev);
+	struct vnd_softc *sc;
 
 #ifdef DEBUG
 	if (vnddebug & VDB_FOLLOW)
-		printf("vndread(%x, %x)\n", dev, uio);
+		printf("vndread(%x, %p)\n", dev, uio);
 #endif
+
+	if (unit >= numvnd)
+		return (ENXIO);
+	sc = &vnd_softc[unit];
+
+	if ((sc->sc_flags & VNF_INITED) == 0)
+		return (ENXIO);
+
 	return (physio(vndstrategy, NULL, dev, B_READ, minphys, uio));
 }
 
+/* ARGSUSED */
 int
-vndwrite(dev, uio)
+vndwrite(dev, uio, flags)
 	dev_t dev;
 	struct uio *uio;
+	int flags;
 {
+	int unit = vndunit(dev);
+	struct vnd_softc *sc;
 
 #ifdef DEBUG
 	if (vnddebug & VDB_FOLLOW)
-		printf("vndwrite(%x, %x)\n", dev, uio);
+		printf("vndwrite(%x, %p)\n", dev, uio);
 #endif
+
+	if (unit >= numvnd)
+		return (ENXIO);
+	sc = &vnd_softc[unit];
+
+	if ((sc->sc_flags & VNF_INITED) == 0)
+		return (ENXIO);
+
 	return (physio(vndstrategy, NULL, dev, B_WRITE, minphys, uio));
 }
 
 /* ARGSUSED */
 int
-vndioctl(dev, cmd, data, flag, p)
+vndioctl(dev, cmd, addr, flag, p)
 	dev_t dev;
 	u_long cmd;
-	caddr_t data;
+	caddr_t addr;
 	int flag;
 	struct proc *p;
 {
@@ -415,12 +687,12 @@ vndioctl(dev, cmd, data, flag, p)
 	struct vnd_ioctl *vio;
 	struct vattr vattr;
 	struct nameidata nd;
-	int error;
+	int error, part, pmask, s;
 
 #ifdef DEBUG
 	if (vnddebug & VDB_FOLLOW)
-		printf("vndioctl(%x, %lx, %x, %x, %x): unit %d\n",
-		    dev, cmd, data, flag, p, unit);
+		printf("vndioctl(%x, %lx, %p, %x, %p): unit %d\n",
+		    dev, cmd, addr, flag, p, unit);
 #endif
 	error = suser(p->p_ucred, &p->p_acflag);
 	if (error)
@@ -429,12 +701,16 @@ vndioctl(dev, cmd, data, flag, p)
 		return (ENXIO);
 
 	vnd = &vnd_softc[unit];
-	vio = (struct vnd_ioctl *)data;
+	vio = (struct vnd_ioctl *)addr;
 	switch (cmd) {
 
 	case VNDIOCSET:
 		if (vnd->sc_flags & VNF_INITED)
-			return(EBUSY);
+			return (EBUSY);
+
+		if ((error = vndlock(vnd)) != 0)
+			return (error);
+
 		/*
 		 * Always open for read and write.
 		 * This is probably bogus, but it lets vn_open()
@@ -442,18 +718,23 @@ vndioctl(dev, cmd, data, flag, p)
 		 * have to worry about them.
 		 */
 		NDINIT(&nd, LOOKUP, FOLLOW, UIO_USERSPACE, vio->vnd_file, p);
-		if (error = vn_open(&nd, FREAD|FWRITE, 0))
+		if ((error = vn_open(&nd, FREAD|FWRITE, 0)) != 0) {
+			vndunlock(vnd);
 			return(error);
-		if (error = VOP_GETATTR(nd.ni_vp, &vattr, p->p_ucred, p)) {
+		}
+		error = VOP_GETATTR(nd.ni_vp, &vattr, p->p_ucred, p);
+		if (error) {
 			VOP_UNLOCK(nd.ni_vp);
 			(void) vn_close(nd.ni_vp, FREAD|FWRITE, p->p_ucred, p);
+			vndunlock(vnd);
 			return(error);
 		}
 		VOP_UNLOCK(nd.ni_vp);
 		vnd->sc_vp = nd.ni_vp;
 		vnd->sc_size = btodb(vattr.va_size);	/* note truncation */
-		if (error = vndsetcred(vnd, p->p_ucred)) {
+		if ((error = vndsetcred(vnd, p->p_ucred)) != 0) {
 			(void) vn_close(nd.ni_vp, FREAD|FWRITE, p->p_ucred, p);
+			vndunlock(vnd);
 			return(error);
 		}
 		vndthrottle(vnd, vnd->sc_vp);
@@ -461,25 +742,113 @@ vndioctl(dev, cmd, data, flag, p)
 		vnd->sc_flags |= VNF_INITED;
 #ifdef DEBUG
 		if (vnddebug & VDB_INIT)
-			printf("vndioctl: SET vp %x size %x\n",
+			printf("vndioctl: SET vp %p size %x\n",
 			    vnd->sc_vp, vnd->sc_size);
 #endif
+
+		/* Attach the disk. */
+		bzero(vnd->sc_dev.dv_xname, sizeof(vnd->sc_dev.dv_xname));
+		sprintf(vnd->sc_dev.dv_xname, "vnd%d", unit);
+		vnd->sc_dk.dk_driver = &vnddkdriver;
+		vnd->sc_dk.dk_name = vnd->sc_dev.dv_xname;
+		disk_attach(&vnd->sc_dk);
+		dk_establish(&vnd->sc_dk, &vnd->sc_dev);
+
+		vndunlock(vnd);
+
 		break;
 
 	case VNDIOCCLR:
 		if ((vnd->sc_flags & VNF_INITED) == 0)
-			return(ENXIO);
+			return (ENXIO);
+
+		if ((error = vndlock(vnd)) != 0)
+			return (error);
+
+		/*
+		 * Don't unconfigure if any other partitions are open
+		 * or if both the character and block flavors of this
+		 * partition are open.
+		 */
+		part = DISKPART(dev);
+		pmask = (1 << part);
+		if ((vnd->sc_dk.dk_openmask & ~pmask) ||
+		    ((vnd->sc_dk.dk_bopenmask & pmask) &&
+		    (vnd->sc_dk.dk_copenmask & pmask))) {
+			vndunlock(vnd);
+			return (EBUSY);
+		}
+
 		vndclear(vnd);
 #ifdef DEBUG
 		if (vnddebug & VDB_INIT)
 			printf("vndioctl: CLRed\n");
 #endif
+
+		/* Detatch the disk. */
+		disk_detach(&vnd->sc_dk);
+
+		/* This must be atomic. */
+		s = splhigh();
+		vndunlock(vnd);
+		bzero(vnd, sizeof(struct vnd_softc));
+		splx(s);
 		break;
+
+	case DIOCGDINFO:
+		if ((vnd->sc_flags & VNF_HAVELABEL) == 0)
+			return (ENOTTY);
+		*(struct disklabel *)addr = *(vnd->sc_dk.dk_label);
+		return 0;
+
+	case DIOCGPART:
+		if ((vnd->sc_flags & VNF_HAVELABEL) == 0)
+			return (ENOTTY);
+		((struct partinfo *)addr)->disklab = vnd->sc_dk.dk_label;
+		((struct partinfo *)addr)->part =
+		    &vnd->sc_dk.dk_label->d_partitions[DISKPART(dev)];
+		return 0;
+
+	case DIOCWDINFO:
+	case DIOCSDINFO:
+		if ((vnd->sc_flags & VNF_HAVELABEL) == 0)
+			return (ENOTTY);
+		if ((flag & FWRITE) == 0)
+			return EBADF;
+
+		if ((error = vndlock(vnd)) != 0)
+			return error;
+		vnd->sc_flags |= VNF_LABELLING;
+
+		error = setdisklabel(vnd->sc_dk.dk_label,
+		    (struct disklabel *)addr, /*vnd->sc_dk.dk_openmask : */0,
+		    vnd->sc_dk.dk_cpulabel);
+		if (error == 0) {
+			if (cmd == DIOCWDINFO)
+				error = writedisklabel(MAKEDISKDEV(major(dev),
+				    DISKUNIT(dev), RAW_PART),
+				    vndstrategy, vnd->sc_dk.dk_label,
+				    vnd->sc_dk.dk_cpulabel);
+		}
+
+		vnd->sc_flags &= ~VNF_LABELLING;
+		vndunlock(vnd);
+		return error;
+
+	case DIOCWLABEL:
+		if ((flag & FWRITE) == 0)
+			return EBADF;
+		if (*(int *)addr)
+			vnd->sc_flags |= VNF_WLABEL;
+		else
+			vnd->sc_flags &= ~VNF_WLABEL;
+		return 0;
 
 	default:
 		return(ENOTTY);
 	}
-	return(0);
+
+	return (0);
 }
 
 /*
@@ -527,7 +896,7 @@ vndthrottle(vnd, vp)
 	struct vnode *vp;
 {
 #ifdef NFSCLIENT
-	extern int (**nfsv2_vnodeop_p)();
+	extern int (**nfsv2_vnodeop_p) __P((void *));
 
 	if (vp->v_op == nfsv2_vnodeop_p)
 		vnd->sc_maxactive = 2;
@@ -558,7 +927,7 @@ vndclear(vnd)
 
 #ifdef DEBUG
 	if (vnddebug & VDB_FOLLOW)
-		printf("vndclear(%x): vp %x\n", vp);
+		printf("vndclear(%p): vp %p\n", vnd, vp);
 #endif
 	vnd->sc_flags &= ~VNF_INITED;
 	if (vp == (struct vnode *)0)
@@ -593,4 +962,39 @@ vnddump(dev, blkno, va, size)
 	/* Not implemented. */
 	return ENXIO;
 }
-#endif
+
+/*
+ * Wait interruptibly for an exclusive lock.
+ *
+ * XXX
+ * Several drivers do this; it should be abstracted and made MP-safe.
+ */
+static int
+vndlock(sc)
+	struct vnd_softc *sc;
+{
+	int error;
+
+	while ((sc->sc_flags & VNF_LOCKED) != 0) {
+		sc->sc_flags |= VNF_WANTED;
+		if ((error = tsleep(sc, PRIBIO | PCATCH, "vndlck", 0)) != 0)
+			return (error);
+	}
+	sc->sc_flags |= VNF_LOCKED;
+	return (0);
+}
+
+/*
+ * Unlock and wake up any waiters.
+ */
+static void
+vndunlock(sc)
+	struct vnd_softc *sc;
+{
+
+	sc->sc_flags &= ~VNF_LOCKED;
+	if ((sc->sc_flags & VNF_WANTED) != 0) {
+		sc->sc_flags &= ~VNF_WANTED;
+		wakeup(sc);
+	}
+}

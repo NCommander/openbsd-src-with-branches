@@ -1,4 +1,4 @@
-/*	$NetBSD: ka750.h,v 1.2 1994/10/26 08:02:10 cgd Exp $	*/
+/*	$NetBSD: ka750.h,v 1.7 1996/07/20 17:58:17 ragge Exp $	*/
 
 /*
  * Copyright (c) 1994 Ludd, University of Lule}, Sweden.
@@ -30,12 +30,21 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
- /* All bugs are subject to removal without further notice */
-		
-
-
-/* ka750.h - definitioner enbart f|r VAX 750 940328/ragge */
+#include <machine/nexus.h>
 
 #define V750UCODE(x)    ((x>>8)&255)
 #define V750HARDW(x)    (x&255)
 
+#define NNEX750 NNEXSBI
+#define NEX750		(0xf20000)
+#define	NEX750SZ	(NNEX750 * sizeof(struct nexus))
+
+/* 11/750 specific pages needed to be stolen when bootstrapping */
+#define	V750PGS	4
+
+/* 11/750 specific prototypes */
+void	ka750_conf __P((struct device *, struct device *, void *));
+void	ka750_memenable __P((struct sbi_attach_args *, struct device *));
+void	ka750_memerr __P((void));
+int	ka750_mchk __P((caddr_t));
+void	ka750_steal_pages __P((void));

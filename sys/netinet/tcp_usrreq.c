@@ -1,4 +1,5 @@
-/*	$NetBSD: tcp_usrreq.c,v 1.17 1995/09/30 07:02:05 thorpej Exp $	*/
+/*	$OpenBSD: tcp_usrreq.c,v 1.7 1996/09/20 22:53:12 deraadt Exp $	*/
+/*	$NetBSD: tcp_usrreq.c,v 1.20 1996/02/13 23:44:16 christos Exp $	*/
 
 /*
  * Copyright (c) 1982, 1986, 1988, 1993
@@ -45,6 +46,10 @@
 #include <sys/protosw.h>
 #include <sys/errno.h>
 #include <sys/stat.h>
+#include <sys/proc.h>
+#include <sys/ucred.h>
+#include <vm/vm.h>
+#include <sys/sysctl.h>
 
 #include <net/if.h>
 #include <net/route.h>
@@ -62,11 +67,13 @@
 #include <netinet/tcp_var.h>
 #include <netinet/tcpip.h>
 #include <netinet/tcp_debug.h>
+#include <dev/rndvar.h>
 
 /*
  * TCP protocol interface to socket abstraction.
  */
 extern	char *tcpstates[];
+extern	int tcptv_keep_init;
 
 /*
  * Process a TCP user request for TCP tb.  If this is a send request
@@ -81,7 +88,7 @@ tcp_usrreq(so, req, m, nam, control)
 	struct mbuf *m, *nam, *control;
 {
 	register struct inpcb *inp;
-	register struct tcpcb *tp;
+	register struct tcpcb *tp = NULL;
 	int s;
 	int error = 0;
 	int ostate;
@@ -105,6 +112,12 @@ tcp_usrreq(so, req, m, nam, control)
 	 */
 	if (inp == 0 && req != PRU_ATTACH) {
 		splx(s);
+		/*
+		 * The following corrects an mbuf leak under rare
+		 * circumstances
+		 */
+		if (m && (req == PRU_SEND || req == PRU_SENDOOB))
+			m_freem(m);
 		return (EINVAL);		/* XXX */
 	}
 	if (inp) {
@@ -190,6 +203,7 @@ tcp_usrreq(so, req, m, nam, control)
 			error = ENOBUFS;
 			break;
 		}
+		so->so_state |= SS_CONNECTOUT;
 		/* Compute window scaling to request.  */
 		while (tp->request_r_scale < TCP_MAX_WINSHIFT &&
 		    (TCP_MAXWIN << tp->request_r_scale) < so->so_rcv.sb_hiwat)
@@ -197,8 +211,13 @@ tcp_usrreq(so, req, m, nam, control)
 		soisconnecting(so);
 		tcpstat.tcps_connattempt++;
 		tp->t_state = TCPS_SYN_SENT;
-		tp->t_timer[TCPT_KEEP] = TCPTV_KEEP_INIT;
-		tp->iss = tcp_iss; tcp_iss += TCP_ISSINCR/2;
+		tp->t_timer[TCPT_KEEP] = tcptv_keep_init;
+		tp->iss = tcp_iss;
+#ifdef TCP_COMPAT_42
+		tcp_iss += TCP_ISSINCR/2;
+#else /* TCP_COMPAT_42 */
+		tcp_iss += arc4random() % (TCP_ISSINCR / 2) + 1;
+#endif /* !TCP_COMPAT_42 */
 		tcp_sendseqinit(tp);
 		error = tcp_output(tp);
 		break;
@@ -521,8 +540,18 @@ tcp_usrclosed(tp)
 		tp->t_state = TCPS_LAST_ACK;
 		break;
 	}
-	if (tp && tp->t_state >= TCPS_FIN_WAIT_2)
+	if (tp && tp->t_state >= TCPS_FIN_WAIT_2) {
 		soisdisconnected(tp->t_inpcb->inp_socket);
+		/*
+		 * If we are in FIN_WAIT_2, we arrived here because the
+		 * application did a shutdown of the send side.  Like the
+		 * case of a transition from FIN_WAIT_1 to FIN_WAIT_2 after
+		 * a full close, we start a timer to make sure sockets are
+		 * not left in FIN_WAIT_2 forever.
+		 */
+		if (tp->t_state == TCPS_FIN_WAIT_2)
+			tp->t_timer[TCPT_2MSL] = tcp_maxidle;
+	}
 	return (tp);
 }
 
@@ -547,6 +576,9 @@ tcp_sysctl(name, namelen, oldp, oldlenp, newp, newlen)
 	case TCPCTL_RFC1323:
 		return (sysctl_int(oldp, oldlenp, newp, newlen,
 		    &tcp_do_rfc1323));
+	case TCPCTL_KEEPINITTIME:
+		return (sysctl_int(oldp, oldlenp, newp, newlen,
+		    &tcptv_keep_init));
 
 	default:
 		return (ENOPROTOOPT);

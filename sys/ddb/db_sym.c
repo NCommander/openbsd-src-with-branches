@@ -1,8 +1,9 @@
-/*	$NetBSD: db_sym.c,v 1.9 1995/05/24 20:21:00 gwr Exp $	*/
+/*	$OpenBSD: db_sym.c,v 1.17 1997/02/07 06:18:48 mickey Exp $	*/
+/*	$NetBSD: db_sym.c,v 1.12 1996/02/05 01:57:15 christos Exp $	*/
 
 /* 
  * Mach Operating System
- * Copyright (c) 1991,1990 Carnegie Mellon University
+ * Copyright (c) 1993,1992,1991,1990 Carnegie Mellon University
  * All Rights Reserved.
  * 
  * Permission to use, copy, modify and distribute this software and its
@@ -11,7 +12,7 @@
  * software, derivative works or modified versions, and any portions
  * thereof, and that both notices appear in supporting documentation.
  * 
- * CARNEGIE MELLON ALLOWS FREE USE OF THIS SOFTWARE IN ITS 
+ * CARNEGIE MELLON ALLOWS FREE USE OF THIS SOFTWARE IN ITS "AS IS"
  * CONDITION.  CARNEGIE MELLON DISCLAIMS ANY LIABILITY OF ANY KIND FOR
  * ANY DAMAGES WHATSOEVER RESULTING FROM THE USE OF THIS SOFTWARE.
  * 
@@ -22,69 +23,66 @@
  *  Carnegie Mellon University
  *  Pittsburgh PA 15213-3890
  * 
- * any improvements or extensions that they make and grant Carnegie the
- * rights to redistribute these changes.
+ * any improvements or extensions that they make and grant Carnegie Mellon
+ * the rights to redistribute these changes.
  */
 
 #include <sys/param.h>
 #include <sys/proc.h>
+#include <sys/malloc.h>
+#include <sys/systm.h>
 
 #include <machine/db_machdep.h>
 
 #include <ddb/db_sym.h>
-
-/*
- * We import from the symbol-table dependent routines:
- */
-extern db_sym_t	X_db_lookup();
-extern db_sym_t	X_db_search_symbol();
-extern boolean_t X_db_line_at_pc();
-extern void	X_db_symbol_values();
+#include <ddb/db_output.h>
+#include <ddb/db_extern.h>
+#include <ddb/db_command.h>
 
 /*
  * Multiple symbol tables
  */
-#ifndef MAXLKMS
-#define MAXLKMS 20
-#endif
+static TAILQ_HEAD(, db_symtab)	db_symtabs;
+static struct db_symtab	db_sym_kernel;
+size_t			db_nsymtabs = 0;
 
-#ifndef MAXNOSYMTABS
-#define	MAXNOSYMTABS	MAXLKMS+1	/* Room for kernel + LKM's */
-#endif
+db_symtab_t	db_last_symtab;
 
-db_symtab_t	db_symtabs[MAXNOSYMTABS] = {{0,},};
-
-db_symtab_t	*db_last_symtab;
-
-db_sym_t	db_lookup();	/* forward */
+/*
+ * Init sym module
+ */
+void
+db_sym_init(void)
+{
+	TAILQ_INIT(&db_symtabs);
+}
 
 /*
  * Add symbol table, with given name, to list of symbol tables.
  */
 int
-db_add_symbol_table(start, end, name, ref)
+db_add_symbol_table(start, end, name, ref, rend)
 	char *start;
 	char *end;
 	char *name;
 	char *ref;
+	char *rend;
 {
-	int slot;
+	db_symtab_t	new = db_nsymtabs? NULL : &db_sym_kernel;
 
-	for (slot = 0; slot < MAXNOSYMTABS; slot++) {
-		if (db_symtabs[slot].name == NULL)
-			break;
-	}
-	if (slot >= MAXNOSYMTABS) {
-		printf ("No slots left for %s symbol table", name);
-		return(-1);
-	}
+	if (new == NULL &&
+	    (new = malloc(sizeof(*new), M_DEVBUF, M_WAITOK)) == NULL)
+		return -1;
 
-	db_symtabs[slot].start = start;
-	db_symtabs[slot].end = end;
-	db_symtabs[slot].name = name;
-	db_symtabs[slot].private = ref;
+	new->start = start;
+	new->end = end;
+	new->name = name;
+	new->private = ref;
+	new->rend = rend;
+	new->id = db_nsymtabs;
+	TAILQ_INSERT_TAIL(&db_symtabs, new, list);
 
-	return(slot);
+	return ++db_nsymtabs;
 }
 
 /*
@@ -94,31 +92,52 @@ void
 db_del_symbol_table(name)
 	char *name;
 {
-	int slot;
+	register db_symtab_t	p;
 
-	for (slot = 0; slot < MAXNOSYMTABS; slot++) {
-		if (db_symtabs[slot].name &&
-		    ! strcmp(db_symtabs[slot].name, name))
+	for (p = db_symiter(NULL); p != NULL; p = db_symiter(p))
+		if (!strcmp(name, p->name))
 			break;
-	}
-	if (slot >= MAXNOSYMTABS) {
-		printf ("Unable to find symbol table slot for %s.", name);
-		return;
-	}
 
-	db_symtabs[slot].start = 0;
-	db_symtabs[slot].end = 0;
-	db_symtabs[slot].name = 0;
-	db_symtabs[slot].private = 0;
+	if (p == NULL)
+		db_printf("ddb: %s symbol table was not allocated", name);
+
+	if (--db_nsymtabs == 0)
+		panic("ddb: kernel symtab delete");
+
+	TAILQ_REMOVE(&db_symtabs, p, list);
+	free(p, M_DEVBUF);
+}
+
+db_symtab_t
+db_istab(i)
+	size_t	i;
+{
+	register db_symtab_t	p;
+
+	for (p = db_symiter(NULL); i && p != NULL ; p = db_symiter(p))
+		i--;
+
+	return i? NULL : p;
+}
+
+db_symtab_t
+db_symiter(st)
+	db_symtab_t	st;
+{
+	if (st == NULL)
+		st = db_symtabs.tqh_first;
+	else
+		st = st->list.tqe_next;
+	return st;
 }
 
 /*
- *  db_qualify("vm_map", "netbsd") returns "netbsd:vm_map".
+ *  db_qualify("vm_map", "bsd") returns "bsd:vm_map".
  *
  *  Note: return value points to static data whose content is
  *  overwritten by each call... but in practice this seems okay.
  */
-static char *
+char *
 db_qualify(sym, symtabname)
 	db_sym_t	sym;
 	register char	*symtabname;
@@ -129,11 +148,11 @@ db_qualify(sym, symtabname)
 
 	db_symbol_values(sym, &symname, 0);
 	s = tmp;
-	while (*s++ = *symtabname++) {
-	}
+	while ((*s++ = *symtabname++) != '\0')
+		;
 	s[-1] = ':';
-	while (*s++ = *symname++) {
-	}
+	while ((*s++ = *symname++) != '\0')
+		;
 	return tmp;
 }
 
@@ -142,7 +161,7 @@ boolean_t
 db_eqname(src, dst, c)
 	char *src;
 	char *dst;
-	char c;
+	int c;
 {
 	if (!strcmp(src, dst))
 	    return (TRUE);
@@ -176,47 +195,44 @@ db_sym_t
 db_lookup(symstr)
 	char *symstr;
 {
-	db_sym_t sp;
-	register int i;
-	int symtab_start = 0;
-	int symtab_end = MAXNOSYMTABS;
-	register char *cp;
+	db_symtab_t	st = NULL;
+	db_sym_t	sp = NULL;
+	register char	*cp;
 
 	/*
 	 * Look for, remove, and remember any symbol table specifier.
 	 */
-	for (cp = symstr; *cp; cp++) {
+	for (cp = symstr; *cp; cp++)
 		if (*cp == ':') {
 			*cp = '\0';
-			for (i = 0; i < MAXNOSYMTABS; i++) {
-				if (db_symtabs[i].name &&
-				    ! strcmp(symstr, db_symtabs[i].name)) {
-					symtab_start = i;
-					symtab_end = i + 1;
+			for (st = db_symiter(NULL);
+			     st != NULL;
+			     st = db_symiter(st))
+				if (!strcmp(symstr, st->name))
 					break;
-				}
-			}
 			*cp = ':';
-			if (i == MAXNOSYMTABS) {
+			if (st == NULL) {
 				db_error("invalid symbol table name");
-				/*NOTREACHED*/
+				/* NOTREACHED */
 			}
 			symstr = cp+1;
 		}
-	}
 
 	/*
 	 * Look in the specified set of symbol tables.
 	 * Return on first match.
 	 */
-	for (i = symtab_start; i < symtab_end; i++) {
-		if (db_symtabs[i].name && 
-		    (sp = X_db_lookup(&db_symtabs[i], symstr))) {
-			db_last_symtab = &db_symtabs[i];
-			return sp;
-		}
-	}
-	return 0;
+	if (st != NULL)
+		sp = X_db_lookup(st, symstr);
+	else
+		for (st = db_symiter(NULL); st != NULL; st = db_symiter(st))
+			if ((sp = X_db_lookup(st, symstr)) != NULL)
+				break;
+
+	if (sp != NULL && st != NULL)
+		db_last_symtab = st;
+
+	return sp;
 }
 
 /*
@@ -230,7 +246,7 @@ db_symbol_is_ambiguous(sym)
 	db_sym_t	sym;
 {
 	char		*sym_name;
-	register int	i;
+	register db_symtab_t	st;
 	register
 	boolean_t	found_once = FALSE;
 
@@ -238,9 +254,8 @@ db_symbol_is_ambiguous(sym)
 		return FALSE;
 
 	db_symbol_values(sym, &sym_name, 0);
-	for (i = 0; i < MAXNOSYMTABS; i++) {
-		if (db_symtabs[i].name &&
-		    X_db_lookup(&db_symtabs[i], sym_name)) {
+	for (st = db_symiter(NULL); st != NULL; st = db_symiter(st)) {
+		if (X_db_lookup(st, sym_name) != NULL) {
 			if (found_once)
 				return TRUE;
 			found_once = TRUE;
@@ -260,19 +275,17 @@ db_search_symbol( val, strategy, offp)
 	db_expr_t		*offp;
 {
 	register
-	unsigned int	diff;
-	unsigned int	newdiff;
-	register int	i;
+	db_expr_t	diff;
+	db_expr_t	newdiff;
+	db_symtab_t	st;
 	db_sym_t	ret = DB_SYM_NULL, sym;
 
-	newdiff = diff = ~0;
+	newdiff = diff = -1;
 	db_last_symtab = 0;
-	for (i = 0; i < MAXNOSYMTABS; i++) {
-	    if (!db_symtabs[i].name)
-	        continue;
-	    sym = X_db_search_symbol(&db_symtabs[i], val, strategy, &newdiff);
-	    if (newdiff < diff) {
-		db_last_symtab = &db_symtabs[i];
+	for (st = db_symiter(NULL); st != NULL; st = db_symiter(st)) {
+	    sym = X_db_search_symbol(st, val, strategy, &newdiff);
+	    if (newdiff < diff || diff < 0) {
+		db_last_symtab = st;
 		diff = newdiff;
 		ret = sym;
 	    }
@@ -324,10 +337,9 @@ db_symbol_values(sym, namep, valuep)
  * The variable db_lastsym is used instead of "end" in case we
  * add support for symbols in loadable driver modules.
  */
-
 extern char end[];
-unsigned int	db_lastsym = (int)end;
-unsigned int	db_maxoff = 0x10000000;
+u_long	db_lastsym = (u_long)end;
+db_expr_t db_maxoff = 0x10000000;
 
 
 void
@@ -342,7 +354,7 @@ db_printsym(off, strategy)
 	int 		linenum;
 	db_sym_t	cursym;
 
-	if (off <= db_lastsym) {
+	if ((u_long)off <= db_lastsym) {
 		cursym = db_search_symbol(off, strategy, &d);
 		db_symbol_values(cursym, &name, &value);
 		if (name && (d < db_maxoff) && value) {
@@ -378,4 +390,12 @@ db_sym_numargs(sym, nargp, argnames)
 	char		**argnames;
 {
 	return X_db_sym_numargs(db_last_symtab, sym, nargp, argnames);
+}
+
+void
+db_stub_xh(sym, xh)
+	db_symtab_t	sym;
+	struct exec	*xh;
+{
+	X_db_stub_xh(sym, xh);
 }

@@ -1,4 +1,5 @@
-/*	$NetBSD: unistd.h,v 1.25 1995/03/19 22:51:38 mycroft Exp $	*/
+/*	$OpenBSD: unistd.h,v 1.11 1996/12/13 17:06:23 deraadt Exp $ */
+/*	$NetBSD: unistd.h,v 1.26.4.1 1996/05/28 02:31:51 mrg Exp $	*/
 
 /*-
  * Copyright (c) 1991 The Regents of the University of California.
@@ -68,7 +69,7 @@ int	 execv __P((const char *, char * const *));
 int	 execve __P((const char *, char * const *, char * const *));
 int	 execvp __P((const char *, char * const *));
 pid_t	 fork __P((void));
-long	 fpathconf __P((int, int));		/* not yet */
+long	 fpathconf __P((int, int));
 char	*getcwd __P((char *, size_t));
 gid_t	 getegid __P((void));
 uid_t	 geteuid __P((void));
@@ -82,7 +83,7 @@ uid_t	 getuid __P((void));
 int	 isatty __P((int));
 int	 link __P((const char *, const char *));
 off_t	 lseek __P((int, off_t, int));
-long	 pathconf __P((const char *, int));	/* not yet */
+long	 pathconf __P((const char *, int));
 int	 pause __P((void));
 int	 pipe __P((int *));
 ssize_t	 read __P((int, void *, size_t));
@@ -92,7 +93,7 @@ int	 setpgid __P((pid_t, pid_t));
 pid_t	 setsid __P((void));
 int	 setuid __P((uid_t));
 unsigned sleep __P((unsigned));
-long	 sysconf __P((int));			/* not yet */
+long	 sysconf __P((int));
 pid_t	 tcgetpgrp __P((int));
 int	 tcsetpgrp __P((int, pid_t));
 char	*ttyname __P((int));
@@ -119,6 +120,7 @@ int	 fsync __P((int));
 int	 ftruncate __P((int, off_t));
 int	 getdomainname __P((char *, int));
 int	 getdtablesize __P((void));
+int	 getgrouplist __P((const char *, gid_t, gid_t *, int *));
 long	 gethostid __P((void));
 int	 gethostname __P((char *, int));
 mode_t	 getmode __P((const void *, mode_t));
@@ -126,8 +128,9 @@ int	 getpagesize __P((void));
 char	*getpass __P((const char *));
 char	*getusershell __P((void));
 char	*getwd __P((char *));			/* obsoleted by getcwd() */
-int	 initgroups __P((const char *, int));
-int	 iruserok __P((u_long, int, const char *, const char *));
+int	 initgroups __P((const char *, gid_t));
+int	 iruserok __P((u_int32_t, int, const char *, const char *));
+int	 lchown __P((const char *, uid_t, gid_t));
 int	 mknod __P((const char *, mode_t, dev_t));
 int	 mkstemp __P((char *));
 char	*mktemp __P((char *));
@@ -135,23 +138,27 @@ int	 nfssvc __P((int, void *));
 int	 nice __P((int));
 void	 psignal __P((unsigned int, const char *));
 extern __const char *__const sys_siglist[];
-int	 profil __P((char *, int, int, int));
+int	 profil __P((char *, size_t, u_long, u_int));
 int	 rcmd __P((char **, int, const char *,
 		const char *, const char *, int *));
+int	 rcmdsh __P((char **, int, const char *,
+		const char *, const char *, char *));
 char	*re_comp __P((const char *));
 int	 re_exec __P((const char *));
 int	 readlink __P((const char *, char *, int));
 int	 reboot __P((int));
 int	 revoke __P((const char *));
+int	 rfork __P((int opts));
 int	 rresvport __P((int *));
 int	 ruserok __P((const char *, int, const char *, const char *));
+int	 quotactl __P((const char *, int, int, char *));
 char	*sbrk __P((int));
 int	 select __P((int, fd_set *, fd_set *, fd_set *, struct timeval *));
 int	 setdomainname __P((const char *, int));
 int	 setegid __P((gid_t));
 int	 seteuid __P((uid_t));
 int	 setgroups __P((int, const gid_t *));
-void	 sethostid __P((long));
+int	 sethostid __P((long));
 int	 sethostname __P((const char *, int));
 int	 setkey __P((const char *));
 int	 setlogin __P((const char *));
@@ -173,6 +180,7 @@ int	 undelete __P((const char *));
 void	 usleep __P((u_int));
 void	*valloc __P((size_t));			/* obsoleted by malloc() */
 pid_t	 vfork __P((void));
+int	 issetugid __P((void));
 
 int	 getopt __P((int, char * const *, const char *));
 extern	 char *optarg;			/* getopt(3) external variables */

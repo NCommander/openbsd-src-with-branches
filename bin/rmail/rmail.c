@@ -1,3 +1,4 @@
+/*	$OpenBSD: rmail.c,v 1.6 1997/04/07 10:12:07 deraadt Exp $	*/
 /*	$NetBSD: rmail.c,v 1.8 1995/09/07 06:51:50 jtc Exp $	*/
 
 /*
@@ -43,7 +44,7 @@ static char copyright[] =
 #if 0
 static char sccsid[] = "@(#)rmail.c	8.3 (Berkeley) 5/15/95";
 #else
-static char rcsid[] = "$NetBSD: rmail.c,v 1.8 1995/09/07 06:51:50 jtc Exp $";
+static char rcsid[] = "$OpenBSD: rmail.c,v 1.6 1997/04/07 10:12:07 deraadt Exp $";
 #endif
 #endif /* not lint */
 
@@ -67,9 +68,6 @@ static char rcsid[] = "$NetBSD: rmail.c,v 1.8 1995/09/07 06:51:50 jtc Exp $";
  *
  * The output of rmail(8) compresses the <forward> lines into a single
  * from path.
- *
- * The err(3) routine is included here deliberately to make this code
- * a bit more portable.
  */
 #include <sys/param.h>
 #include <sys/stat.h>
@@ -91,6 +89,8 @@ static char rcsid[] = "$NetBSD: rmail.c,v 1.8 1995/09/07 06:51:50 jtc Exp $";
 void err __P((int, const char *, ...));
 void usage __P((void));
 
+#define TAYLOR_ENV /* use UU_MACHINE if present */
+
 int
 main(argc, argv)
 	int argc;
@@ -107,9 +107,14 @@ main(argc, argv)
 	char *from_path, *from_sys, *from_user;
 	char *args[100], buf[2048], lbuf[2048];
 
+#ifdef lint
+	fplen = fptlen = 0;
+	addrp = NULL;
+#endif
+
 	debug = 0;
 	domain = "UUCP";		/* Default "domain". */
-	while ((ch = getopt(argc, argv, "D:T")) != EOF)
+	while ((ch = getopt(argc, argv, "D:T")) != -1)
 		switch (ch) {
 		case 'T':
 			debug = 1;
@@ -117,7 +122,6 @@ main(argc, argv)
 		case 'D':
 			domain = optarg;
 			break;
-		case '?':
 		default:
 			usage();
 		}
@@ -242,6 +246,15 @@ main(argc, argv)
 	args[i++] = "-oi";		/* Ignore '.' on a line by itself. */
 
 	/* set from system and protocol used */
+#ifdef TAYLOR_ENV
+	{
+		char *uu_machine;
+		uu_machine = getenv("UU_MACHINE");
+		/* set by Taylor UUCP's uuxqt */
+		if (uu_machine)
+			from_sys = uu_machine;
+	}
+#endif
 	if (from_sys == NULL)
 		(void)snprintf(buf, sizeof(buf), "-p%s", domain);
 	else if (strchr(from_sys, '.') == NULL)
@@ -347,33 +360,4 @@ usage()
 {
 	(void)fprintf(stderr, "usage: rmail [-T] [-D domain] user ...\n");
 	exit(EX_USAGE);
-}
-
-#ifdef __STDC__
-#include <stdarg.h>
-#else
-#include <varargs.h>
-#endif
-
-void
-#ifdef __STDC__
-err(int eval, const char *fmt, ...)
-#else
-err(eval, fmt, va_alist)
-	int eval;
-	const char *fmt;
-	va_dcl
-#endif
-{
-	va_list ap;
-#if __STDC__
-	va_start(ap, fmt);
-#else
-	va_start(ap);
-#endif
-	(void)fprintf(stderr, "rmail: ");
-	(void)vfprintf(stderr, fmt, ap);
-	va_end(ap);
-	(void)fprintf(stderr, "\n");
-	exit(eval);
 }

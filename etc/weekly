@@ -1,6 +1,6 @@
 #!/bin/sh -
 #
-#	@(#)weekly	5.14 (Berkeley) 6/23/91
+#	$OpenBSD: weekly,v 1.5 1997/01/03 23:33:50 millert Exp $
 #
 
 PATH=/bin:/sbin:/usr/sbin:/usr/bin:/usr/libexec
@@ -8,6 +8,13 @@ export PATH
 
 host=`hostname -s`
 echo "Subject: $host weekly run output"
+
+if [ -f /etc/weekly.local ];then
+	echo ""
+	echo "Running weekly.local:"
+	. /etc/weekly.local
+fi
+
 
 #echo ""
 #echo "Removing old .o files:"
@@ -22,18 +29,22 @@ echo "Subject: $host weekly run output"
 #	echo "looking for checked out files:"
 #	TDIR=/tmp/_checkout$$
 #
-#	mkdir $TDIR
-#	for file in `find -f /usr/src ! -fstype local -prune -or \
-#	    -name 'p.*' -print | egrep 'SCCS/p\.'`; do
-#		owner=`awk '{ print $3 }' $file`
-#		echo "$owner	$file"
-#		echo $file >> $TDIR/$owner
-#	done | sed -e 's,SCCS/p.,,'
-#	for file in $TDIR/*; do
-#		sed -e 's,SCCS/p.,,' $file | \
-#		    Mail -s 'checked out files' `basename $file`
-#	done
-#	rm -rf $TDIR
+#	if ! mkdir $TDIR ; then
+#		echo "temp dir $TDIR already exists!  Probable spoof attempt."
+#		ls -alF $TDIR
+#	else
+#		for file in `find -f /usr/src ! -fstype local -prune -or \
+#		    -name 'p.*' -print | egrep 'SCCS/p\.'`; do
+#			owner=`awk '{ print $3 }' $file`
+#			echo "$owner	$file"
+#			echo $file >> $TDIR/$owner
+#		done | sed -e 's,SCCS/p.,,'
+#		for file in $TDIR/*; do
+#			sed -e 's,SCCS/p.,,' $file | \
+#			    Mail -s 'checked out files' `basename $file`
+#		done
+#		rm -rf $TDIR
+#	fi
 #fi
 
 if [ -f /usr/lib/uucp/clean.weekly ]; then
@@ -47,11 +58,21 @@ echo ""
 
 echo ""
 if [ -f /var/db/locate.database ]; then
-	echo "Rebuilding locate database:"
-	chmod 644 /var/db/locate.database
-	chown nobody.nobody /var/db/locate.database
-	echo /usr/libexec/locate.updatedb | nice -5 su -m nobody 2>/dev/null
-	chown root.wheel /var/db/locate.database
+	TMP=`mktemp /var/db/locate.database.XXXXXX`
+	if [ $? -eq 0 ]; then
+		trap 'rm -f $TMP' 0 1 15
+		echo "Rebuilding locate database:"
+		echo "/usr/libexec/locate.updatedb --fcodes=-" | nice -5 su -m nobody 2>/dev/null 1>$TMP
+		if [ -s "$TMP" ]; then
+			chmod 444 $TMP
+			chown root.wheel $TMP
+			mv -f $TMP /var/db/locate.database
+		else
+			echo "Not installing locate database; zero size"
+		fi
+	else
+		echo "Not rebuilding locate database; can't create temp file"
+	fi
 else
 	echo "Not rebuilding locate database; no /var/db/locate.database"
 fi

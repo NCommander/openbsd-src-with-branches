@@ -36,10 +36,10 @@
 
 #include "SYS.h"
 
-#if defined(LIBC_SCCS) && !defined(lint)
-	ASMSTR("from: @(#)sbrk.s	8.1 (Berkeley) 6/4/93")
-	ASMSTR("$Id: sbrk.S,v 1.6 1995/09/25 19:21:42 jonathan Exp $")
-#endif /* LIBC_SCCS and not lint */
+#if defined(SYSLIBC_SCCS)
+	.text
+	.asciz "$OpenBSD$"
+#endif /* SYSLIBC_SCCS */
 
 	.globl	curbrk
 
@@ -48,14 +48,17 @@ curbrk:	.word	_C_LABEL(end)
 	.text
 
 LEAF(sbrk)
+	.set	reorder
 	lw	v1, curbrk
 	li	v0, SYS_break
 	addu	a0, a0, v1	# compute current break
 	syscall
+
 	bne	a3, zero, 1f
 	move	v0, v1		# return old val of curbrk from above
 	sw	a0, curbrk	# save current val of curbrk from above
 	j	ra
 1:
-	j	_C_LABEL(cerror)
+	la	t9, _C_LABEL(cerror)
+	jr	t9
 END(sbrk)

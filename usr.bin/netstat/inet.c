@@ -1,3 +1,4 @@
+/*	$OpenBSD: inet.c,v 1.11 1997/02/26 03:08:43 angelos Exp $	*/
 /*	$NetBSD: inet.c,v 1.14 1995/10/03 21:42:37 thorpej Exp $	*/
 
 /*
@@ -37,7 +38,7 @@
 #if 0
 static char sccsid[] = "from: @(#)inet.c	8.4 (Berkeley) 4/20/94";
 #else
-static char *rcsid = "$NetBSD: inet.c,v 1.14 1995/10/03 21:42:37 thorpej Exp $";
+static char *rcsid = "$OpenBSD: inet.c,v 1.11 1997/02/26 03:08:43 angelos Exp $";
 #endif
 #endif /* not lint */
 
@@ -67,6 +68,9 @@ static char *rcsid = "$NetBSD: inet.c,v 1.14 1995/10/03 21:42:37 thorpej Exp $";
 #include <netinet/tcp_debug.h>
 #include <netinet/udp.h>
 #include <netinet/udp_var.h>
+#include <netinet/ip_ah.h>
+#include <netinet/ip_esp.h>
+#include <netinet/ip_ip4.h>
 
 #include <arpa/inet.h>
 #include <netdb.h>
@@ -75,12 +79,16 @@ static char *rcsid = "$NetBSD: inet.c,v 1.14 1995/10/03 21:42:37 thorpej Exp $";
 #include <unistd.h>
 #include "netstat.h"
 
+#include <rpc/rpc.h>
+#include <rpc/pmap_prot.h>
+#include <rpc/pmap_clnt.h>
+
 struct	inpcb inpcb;
 struct	tcpcb tcpcb;
 struct	socket sockb;
 
 char	*inetname __P((struct in_addr *));
-void	inetprint __P((struct in_addr *, int, char *));
+void	inetprint __P((struct in_addr *, int, char *, int));
 
 /*
  * Print a summary of connections related to an Internet
@@ -145,8 +153,8 @@ protopr(off, name)
 				printf("%8x ", prev);
 		printf("%-5.5s %6d %6d ", name, sockb.so_rcv.sb_cc,
 			sockb.so_snd.sb_cc);
-		inetprint(&inpcb.inp_laddr, (int)inpcb.inp_lport, name);
-		inetprint(&inpcb.inp_faddr, (int)inpcb.inp_fport, name);
+		inetprint(&inpcb.inp_laddr, (int)inpcb.inp_lport, name, 1);
+		inetprint(&inpcb.inp_faddr, (int)inpcb.inp_fport, name, 0);
 		if (istcp) {
 			if (tcpcb.t_state < 0 || tcpcb.t_state >= TCP_NSTATES)
 				printf(" %d", tcpcb.t_state);
@@ -227,7 +235,7 @@ tcp_stats(off, name)
 	p(tcps_keepdrops, "\t\t%d connection%s dropped by keepalive\n");
 	p(tcps_predack, "\t%d correct ACK header prediction%s\n");
 	p(tcps_preddat, "\t%d correct data packet header prediction%s\n");
-	p3(tcps_pcbcachemiss, "\t%d PCB cache miss%s\n");
+	p3(tcps_pcbhashmiss, "\t%d PCB cache miss%s\n");
 #undef p
 #undef p2
 #undef p3
@@ -326,8 +334,8 @@ static	char *icmpnames[] = {
 	"#6",
 	"#7",
 	"echo",
-	"#9",
-	"#10",
+	"router advertisement",
+	"router solicitation",
 	"time exceeded",
 	"parameter problem",
 	"time stamp",
@@ -418,26 +426,97 @@ igmp_stats(off, name)
 #undef py
 }
 
+struct rpcnams {
+	struct rpcnams *next;
+	int	port;
+	char	*rpcname;
+};
+
+char *
+getrpcportnam(port)
+	int port;
+{
+	struct sockaddr_in server_addr;
+	register struct hostent *hp;
+	static struct pmaplist *head;
+	int socket = RPC_ANYSOCK;
+	struct timeval minutetimeout;
+	register CLIENT *client;
+	struct rpcent *rpc;
+	static int first;
+	static struct rpcnams *rpcn;
+	struct rpcnams *n;
+	char num[10];
+	
+	if (first == 0) {
+		first = 1;
+		memset((char *)&server_addr, 0, sizeof server_addr);
+		server_addr.sin_family = AF_INET;
+		if ((hp = gethostbyname("localhost")) != NULL)
+			memmove((caddr_t)&server_addr.sin_addr, hp->h_addr,
+			    hp->h_length);
+		else
+			(void) inet_aton("0.0.0.0", &server_addr.sin_addr);
+
+		minutetimeout.tv_sec = 60;
+		minutetimeout.tv_usec = 0;
+		server_addr.sin_port = htons(PMAPPORT);
+		if ((client = clnttcp_create(&server_addr, PMAPPROG,
+		    PMAPVERS, &socket, 50, 500)) == NULL)
+			return (NULL);
+		if (clnt_call(client, PMAPPROC_DUMP, xdr_void, NULL,
+		    xdr_pmaplist, &head, minutetimeout) != RPC_SUCCESS) {
+			clnt_destroy(client);
+			return (NULL);
+		}
+		for (; head != NULL; head = head->pml_next) {
+			n = (struct rpcnams *)malloc(sizeof(struct rpcnams));
+			if (n == NULL)
+				continue;
+			n->next = rpcn;
+			rpcn = n;
+			n->port = head->pml_map.pm_port;
+
+			rpc = getrpcbynumber(head->pml_map.pm_prog);
+			if (rpc)
+				n->rpcname = strdup(rpc->r_name);
+			else {
+				sprintf(num, "%d", head->pml_map.pm_prog);
+				n->rpcname = strdup(num);
+			}
+		}
+		clnt_destroy(client);
+	}
+
+	for (n = rpcn; n; n = n->next)
+		if (n->port == port)
+			return (n->rpcname);
+	return (NULL);
+}
+
 /*
  * Pretty print an Internet address (net address + port).
  * If the nflag was specified, use numbers instead of names.
  */
 void
-inetprint(in, port, proto)
+inetprint(in, port, proto, local)
 	register struct in_addr *in;
 	int port;
 	char *proto;
+	int local;
 {
 	struct servent *sp = 0;
-	char line[80], *cp;
+	char line[80], *cp, *nam;
 	int width;
 
 	sprintf(line, "%.*s.", (Aflag && !nflag) ? 12 : 16, inetname(in));
-	cp = index(line, '\0');
+	cp = strchr(line, '\0');
 	if (!nflag && port)
 		sp = getservbyport((int)port, proto);
 	if (sp || port == 0)
 		sprintf(cp, "%.8s", sp ? sp->s_name : "*");
+	else if (local && !nflag && (nam = getrpcportnam(ntohs((u_short)port))))
+		sprintf(cp, "%d[%.8s]", ntohs((u_short)port), nam);
 	else
 		sprintf(cp, "%d", ntohs((u_short)port));
 	width = Aflag ? 18 : 22;
@@ -463,7 +542,7 @@ inetname(inp)
 	if (first && !nflag) {
 		first = 0;
 		if (gethostname(domain, MAXHOSTNAMELEN) == 0 &&
-		    (cp = index(domain, '.')))
+		    (cp = strchr(domain, '.')))
 			(void) strcpy(domain, cp + 1);
 		else
 			domain[0] = 0;
@@ -481,7 +560,7 @@ inetname(inp)
 		if (cp == 0) {
 			hp = gethostbyaddr((char *)inp, sizeof (*inp), AF_INET);
 			if (hp) {
-				if ((cp = index(hp->h_name, '.')) &&
+				if ((cp = strchr(hp->h_name, '.')) &&
 				    !strcmp(cp + 1, domain))
 					*cp = 0;
 				cp = hp->h_name;
@@ -499,4 +578,96 @@ inetname(inp)
 		    C(inp->s_addr >> 16), C(inp->s_addr >> 8), C(inp->s_addr));
 	}
 	return (line);
+}
+
+/*
+ * Dump AH statistics structure.
+ */
+void
+ah_stats(off, name)
+        u_long off;
+        char *name;
+{
+        struct ahstat ahstat;
+
+        if (off == 0)
+                return;
+        kread(off, (char *)&ahstat, sizeof (ahstat));
+        printf("%s:\n", name);
+
+#define p(f, m) if (ahstat.f || sflag <= 1) \
+    printf(m, ahstat.f, plural(ahstat.f))
+
+	p(ahs_input, "\t%u input AH packets\n");
+	p(ahs_output, "\t%u output AH packets\n");
+        p(ahs_hdrops, "\t%u packet%s shorter than header shows\n");
+        p(ahs_notdb, "\t%u packet%s for which no TDB was found\n");
+        p(ahs_badkcr, "\t%u input packet%s that failed to be processed\n");
+        p(ahs_badauth, "\t%u packet%s that failed verification received\n");
+        p(ahs_noxform, "\t%u packet%s for which no XFORM was set in TDB received\n");
+        p(ahs_qfull, "\t%u packet%s were dropeed due to full output queue\n");
+        p(ahs_wrap, "\t%u packet%s where counter wrapping was detected\n");
+        p(ahs_replay, "\t%u possibly replayed packet%s received\n");
+        p(ahs_badauthl, "\t%u packet%s with bad authenticator length received\n");
+#undef p
+}
+
+/*
+ * Dump ESP statistics structure.
+ */
+void
+esp_stats(off, name)
+        u_long off;
+        char *name;
+{
+        struct espstat espstat;
+
+        if (off == 0)
+                return;
+        kread(off, (char *)&espstat, sizeof (espstat));
+        printf("%s:\n", name);
+
+#define p(f, m) if (espstat.f || sflag <= 1) \
+    printf(m, espstat.f, plural(espstat.f))
+
+	p(esps_input, "\t%u input ESP packets\n");
+	p(esps_output, "\t%u output ESP packets\n");
+        p(esps_hdrops, "\t%u packet%s shorter than header shows\n");
+        p(esps_notdb, "\t%u packet%s for which no TDB was found\n");
+        p(esps_badkcr, "\t%u input packet%s that failed to be processed\n");
+        p(esps_badauth, "\t%u packet%s that failed verification received\n");
+        p(esps_noxform, "\t%u packet%s for which no XFORM was set in TDB received\n");   
+        p(esps_qfull, "\t%u packet%s were dropeed due to full output queue\n");
+        p(esps_wrap, "\t%u packet%s where counter wrapping was detected\n");
+        p(esps_replay, "\t%u possibly replayed packet%s received\n"); 
+        p(esps_badilen, "\t%u packet%s with payload not a multiple of 8 received\n");
+
+#undef p
+}
+
+/*
+ * Dump ESP statistics structure.
+ */
+void
+ip4_stats(off, name)
+        u_long off;
+        char *name;
+{
+        struct ip4stat ip4stat;
+
+        if (off == 0)
+                return;
+        kread(off, (char *)&ip4stat, sizeof (ip4stat));
+        printf("%s:\n", name);
+
+#define p(f, m) if (ip4stat.f || sflag <= 1) \
+    printf(m, ip4stat.f, plural(ip4stat.f))
+
+        p(ip4s_ipackets, "\t%u total input packet%s\n");
+        p(ip4s_opackets, "\t%u total output packet%s\n");
+        p(ip4s_hdrops, "\t%u packet%s shorter than header shows\n");
+        p(ip4s_notip4, "\t%u packet%s with internal header not IPv4 received\n");
+        p(ip4s_qfull, "\t%u packet%s were dropeed due to full output queue\n");
+
+#undef p
 }

@@ -1,17 +1,15 @@
-#	$NetBSD: Makefile.pmax,v 1.16.2.2 1995/10/13 03:15:59 jonathan Exp $
+#	$NetBSD: Makefile.pmax,v 1.37 1996/09/30 02:35:34 jonathan Exp $
 
-#	@(#)Makefile.pmax	8.2 (Berkeley) 2/16/94
-#
-# Makefile for 4.4 BSD
+# Makefile for NetBSD
 #
 # This makefile is constructed from a machine description:
 #	config machineid
 # Most changes should be made in the machine description
-#	/sys/arch/MACHINE/conf/``machineid''
+#	/sys/arch/pmax/conf/``machineid''
 # after which you should do
-#	 config machineid
+#	config machineid
 # Machine generic makefile changes should be made in
-#	/sys/arch/MACHINE/conf/Makefile.``machinetype''
+#	/sys/arch/pmax/conf/Makefile.pmax
 # after which config should be rerun for all machines of that type.
 #
 # N.B.: NO DEPENDENCIES ON FOLLOWING FLAGS ARE VISIBLE TO MAKEFILE
@@ -20,23 +18,43 @@
 # -DTRACE	compile in kernel tracing hooks
 # -DQUOTA	compile in file system quotas
 
+# DEBUG is set to -g if debugging.
+# PROF is set to -pg if profiling.
 
-# DEBUG is set to -g by config if debugging is requested (config -g).
-# PROF is set to -pg by config if profiling is requested (config -p).
-TOUCH=	touch -f -c
+AS?=	as
+CC?=	cc
+MKDEP?=	mkdep
+CPP?=	cpp
+LD?=	ld
+STRIP?=	strip
+TOUCH?=	touch	
 
 # source tree is located via $S relative to the compilation directory
-S=	../../../..
-PMAX=	../..
-
-INCLUDES= -I. -I$S/arch -I$S -I$S/sys
-COPTS=	${INCLUDES} ${IDENT} -D_KERNEL -Dpmax -D__NetBSD__ ${GP}
-CPPOPTS=${INCLUDES} ${IDENT} -D_KERNEL -Dpmax -D__NetBSD__
-.ifdef DEBUG 
-CFLAGS=	${DEBUG} -Werror -fno-builtin ${COPTS}
-.else
-CFLAGS= -O2 -Werror -fno-builtin ${COPTS}
+.ifndef S
+S!=	cd ../../../..; pwd
 .endif
+PMAX=	$S/arch/pmax
+
+INCLUDES=	-nostdinc -I. -I$S/arch -I$S
+CPPFLAGS=	${INCLUDES} ${IDENT} -D_KERNEL -Dpmax
+
+# that is our goal to be up to date with i386 for instance ...
+#CDIAGFLAGS=	-Werror -Wall -Wstrict-prototypes -Wno-uninitialized \
+#		-Wno-format
+# ... and this we will use for now to get the kernel compiled
+CDIAGFLAGS=	-Werror
+
+CMACHFLAGS=	-mno-abicalls -mcpu=r3000
+
+CFLAGS=		${DEBUG} -O2 ${CDIAGFLAGS} ${CMACHFLAGS} ${COPTS}
+AFLAGS=		-x assembler-with-cpp -traditional-cpp -D_LOCORE
+LINKFLAGS=	-N -Ttext 80030000 -e start
+STRIPFLAGS=	-d
+TOUCHFLAGS=	-f -c
+
+HOSTCC=	${CC}
+HOSTED_CPPFLAGS=${CPPFLAGS:S/^-nostdinc$//}
+HOSTED_CFLAGS=	${CFLAGS}
 
 ### find out what to use for libkern
 .include "$S/lib/libkern/Makefile.inc"
@@ -55,131 +73,137 @@ LIBCOMPAT=	${COMPATLIB_PROF}
 .endif
 
 # compile rules: rules are named ${TYPE}_${SUFFIX}${CONFIG_DEP}
-# where TYPE is NORMAL, DRIVER, or PROFILE}; SUFFIX is the file suffix,
+# where TYPE is NORMAL, DRIVER, or PROFILE; SUFFIX is the file suffix,
 # capitalized (e.g. C for a .c file), and CONFIG_DEP is _C if the file
 # is marked as config-dependent.
 
-NORMAL_C=	${CC} -c ${CFLAGS} ${PROF} $<
-NORMAL_C_C=	${CC} -c ${CFLAGS} ${PROF} ${PARAM} $<
+NORMAL_C=	${CC} ${CFLAGS} ${CPPFLAGS} ${PROF} -c $<
+NORMAL_C_C=	${CC} ${CFLAGS} ${CPPFLAGS} ${PROF} ${PARAM} -c $<
 
-DRIVER_C=	${CC} -c ${CFLAGS} ${PROF} $<
-DRIVER_C_C=	${CC} -c ${CFLAGS} ${PROF} ${PARAM} $<
+DRIVER_C=	${CC} ${CFLAGS} ${CPPFLAGS} ${PROF} -c $<
+DRIVER_C_C=	${CC} ${CFLAGS} ${CPPFLAGS} ${PROF} ${PARAM} -c $<
 
-PROFILE_C=	${CC} -p -c ${COPTS} $<
+NORMAL_S=	${CC} ${AFLAGS} ${CPPFLAGS} -c $<
+NORMAL_S_C=	${CC} ${AFLAGS} ${CPPFLAGS} ${PARAM} -c $<
 
-NORMAL_S=	${AS} ${COPTS} $< -o $@
-NORMAL_S_C=	${AS}  ${COPTS} ${PARAM} $< -o $@
+HOSTED_C=	${HOSTCC} ${HOSTED_CFLAGS} ${HOSTED_CPPFLAGS} -c $<
 
 %OBJS
 
 %CFILES
+
+%SFILES
 
 # load lines for config "xxx" will be emitted as:
 # xxx: ${SYSTEM_DEP} swapxxx.o
 #	${SYSTEM_LD_HEAD}
 #	${SYSTEM_LD} swapxxx.o
 #	${SYSTEM_LD_TAIL}
-SYSTEM_OBJ=	locore.o fp.o vnode_if.o ${OBJS} param.o ioconf.o ${LIBKERN} \
-		${LIBCOMPAT}
-#SYSTEM_DEP=	Makefile symbols.sort ${SYSTEM_OBJ} ${LIBKERN}
+SYSTEM_OBJ=	locore.o fp.o locore_machdep.o \
+		param.o ioconf.o ${OBJS} ${LIBKERN} ${LIBCOMPAT}
 SYSTEM_DEP=	Makefile ${SYSTEM_OBJ}
-SYSTEM_LD_HEAD=	rm -f $@
+SYSTEM_LD_HEAD=	@rm -f $@
 SYSTEM_LD=	-@if [ X${DEBUG} = X-g ]; \
 		then strip=-X; \
 		else strip=-x; \
 		fi; \
-		echo ${LD} $$strip -N -o $@ -e start -Ttext 80030000 \
-			'$${SYSTEM_OBJ}' vers.o ; \
-		${LD} $$strip -N -o $@ -e start -Ttext 80030000 \
+		echo ${LD} ${LINKFLAGS} -o $@ -e start \
+			-T ../../conf/ld.script '$${SYSTEM_OBJ}' vers.o; \
+		${LD} ${LINKFLAGS} -o $@ -e start -T ../../conf/ld.script \
 			${SYSTEM_OBJ} vers.o
-#SYSTEM_LD_TAIL= @echo rearranging symbols;\
-#		symorder symbols.sort $@;\
-#SYSTEM_LD_TAIL=	@size $@; chmod 755 $@; \
-#		[ X${DEBUG} = X-g ] && { \
-#		echo cp $@ $@.gdb; rm -f $@.gdb; cp $@ $@.gdb; \
-#		echo strip -d $@; strip -d $@; } || true
-SYSTEM_LD_TAIL=	mv $@ ${@}.elf; \
-		elf2aout ${@}.elf $@; \
+SYSTEM_LD_TAIL=	@size $@; chmod 755 $@
+
+DEBUG?=
+.if ${DEBUG} == "-g"
+LINKFLAGS+=	-X
+SYSTEM_LD_TAIL+=; \
+		echo cp $@ $@.gdb; rm -f $@.gdb; cp $@ $@.gdb; \
+		echo ${STRIP} ${STRIPFLAGS} $@; ${STRIP} ${STRIPFLAGS} $@
+.else
+LINKFLAGS+=	-x
+.endif
+
+SYSTEM_LD_TAIL+=;\
+		mv $@ $@.elf; \
+		elf2aout $@.elf $@; \
 		chmod 755 $@
 
 %LOAD
 
-newvers:
-	sh $S/conf/newvers.sh
-	${CC} $(CFLAGS) -c vers.c
-
-clean::
-	rm -f eddep *vmunix vmunix.gdb tags *.o locore.i [a-z]*.s \
-		Errs errs linterrs makelinks genassym
-
-lint: /tmp param.c
-	@lint -hbxn -DGENERIC -Dvolatile= ${COPTS} ${PARAM} -UKGDB \
-	    ${PMAX}/pmax/Locore.c ${CFILES} ${PMAX}/pmax/swapgeneric.c \
-	    ioconf.c param.c
-
-symbols.sort: ${PMAX}/pmax/symbols.raw
-	grep -v '^#' ${PMAX}/pmax/symbols.raw \
-	    | sed 's/^	//' | sort -u > symbols.sort
-
-locore.o: ${PMAX}/pmax/locore.S ${PMAX}/include/machAsmDefs.h \
-	${PMAX}/include/machConst.h ${PMAX}/include/reg.h assym.h
-	${CC} -c ${COPTS} ${PARAM} -DLOCORE ${PMAX}/pmax/locore.S
-
-fp.o: ${PMAX}/pmax/fp.S ${PMAX}/include/machAsmDefs.h \
-	${PMAX}/include/machConst.h ${PMAX}/include/reg.h assym.h
-	${CC} -c ${COPTS} ${PARAM} -DLOCORE ${PMAX}/pmax/fp.S
-
-# the following is necessary because autoconf.o depends on #if GENERIC
-autoconf.o: Makefile
-
-# the following are necessary because the files depend on the types of
-# cpu's included in the system configuration
-clock.o machdep.o autoconf.o conf.o: Makefile
-
-# depend on network configuration
-uipc_proto.o vfs_conf.o: Makefile
-
-assym.h: genassym
-	./genassym >assym.h
-
-genassym: ${PMAX}/pmax/genassym.c
-	${CC} ${INCLUDES} ${IDENT} ${PARAM} -o genassym ${PMAX}/pmax/genassym.c
-
-depend: assym.h param.c vnode_if.h
-	mkdep ${COPTS} ${CFILES} ioconf.c param.c
-	mkdep -a -p ${INCLUDES} ${IDENT} ${PARAM} ${PMAX}/pmax/genassym.c
-
-links:
-	egrep '#if' ${CFILES} | sed -f $S/conf/defines | \
-	  sed -e 's/:.*//' -e 's/\.c/.o/' | sort -u > dontlink
-	echo ${CFILES} | tr -s ' ' '\12' | sed 's/\.c/.o/' | \
-	  sort -u | comm -23 - dontlink | \
-	  sed 's,../.*/\(.*.o\),rm -f \1;ln -s ../GENERIC/\1 \1,' > makelinks
-	sh makelinks && rm -f dontlink
-
-tags:
-	@echo "see $S/kern/Makefile for tags"
-
-ioconf.o: ioconf.c
-	${CC} -c ${CFLAGS} ioconf.c
+assym.h: $S/kern/genassym.sh ${PMAX}/pmax/genassym.cf
+	sh $S/kern/genassym.sh ${CC} ${CFLAGS} ${CPPFLAGS} \
+	    ${PARAM} < ${PMAX}/pmax/genassym.cf > assym.h.tmp && \
+	    mv -f assym.h.tmp assym.h
 
 param.c: $S/conf/param.c
 	rm -f param.c
 	cp $S/conf/param.c .
 
 param.o: param.c Makefile
-	${CC} -c ${CFLAGS} ${PARAM} param.c
+	${NORMAL_C_C}
 
-vers.o: ${SYSTEM_DEP} ${SYSTEM_SWAP_DEP}
+ioconf.o: ioconf.c
+	${NORMAL_C}
+
+newvers: ${SYSTEM_DEP} ${SYSTEM_SWAP_DEP}
 	sh $S/conf/newvers.sh
-	${CC} ${CFLAGS} -c vers.c
+	${CC} ${CFLAGS} ${CPPFLAGS} ${PROF} -c vers.c
 
-vnode_if.c: $S/kern/vnode_if.sh $S/kern/vnode_if.src
-	sh $S/kern/vnode_if.sh $S/kern/vnode_if.src
-vnode_if.h: $S/kern/vnode_if.sh $S/kern/vnode_if.src
-	sh $S/kern/vnode_if.sh $S/kern/vnode_if.src
+
+clean::
+	rm -f eddep *bsd bsd.elf bsd.gdb tags *.[io] [a-z]*.s \
+	    [Ee]rrs linterrs makelinks assym.h
+
+lint:
+	@lint -hbxncez -Dvolatile= ${CPPFLAGS} ${PARAM} -UKGDB \
+	    ${CFILES} ${PMAX}/pmax/swapgeneric.c \
+	    ioconf.c param.c | \
+	    grep -v 'static function .* unused'
+
+tags:
+	@echo "see $S/kern/Makefile for tags"
+
+links:
+	egrep '#if' ${CFILES} | sed -f $S/conf/defines | \
+	  sed -e 's/:.*//' -e 's/\.c/.o/' | sort -u > dontlink
+	echo ${CFILES} | tr -s ' ' '\12' | sed 's/\.c/.o/' | \
+	  sort -u | comm -23 - dontlink | \
+	  sed 's,../.*/\(.*.o\),rm -f \1; ln -s ../GENERIC/\1 \1,' > makelinks
+	sh makelinks && rm -f dontlink makelinks
+
+SRCS=	${PMAX}/pmax/locore.S ${PMAX}/pmax/fp.S \
+	${PMAX}/pmax/locore_machdep.S \
+	param.c ioconf.c ${CFILES} ${SFILES}
+depend:: .depend
+.depend: ${SRCS} assym.h param.c
+	${MKDEP} ${AFLAGS} ${CPPFLAGS} ${PMAX}/pmax/locore.S ${PMAX}/pmax/fp.S
+	${MKDEP} ${AFLAGS} ${CPPFLAGS} ${PMAX}/pmax/locore_machdep.S 
+	${MKDEP} -a ${CFLAGS} ${CPPFLAGS} param.c ioconf.c ${CFILES}
+	${MKDEP} -a ${AFLAGS} ${CPPFLAGS} ${SFILES}
+
+# depend on root or device configuration
+autoconf.o conf.o: Makefile
+ 
+# depend on network or filesystem configuration 
+uipc_domain.o uipc_proto.o vfs_conf.o: Makefile 
+if.o if_tun.o if_loop.o if_ethersubr.o: Makefile
+if_arp.o if_ether.o: Makefile
+ip_input.o ip_output.o in_pcb.o in_proto.o: Makefile
+tcp_subr.o tcp_timer.o tcp_output.o: Makefile
+
+# depend on maxusers
+machdep.o: Makefile
+
+# depend on CPU configuration 
+machdep.o mainbus.o trap.o: Makefile
+
+locore.o: ${PMAX}/pmax/locore.S assym.h
+	${NORMAL_S}
+
+fp.o: ${PMAX}/pmax/fp.S assym.h
+	${NORMAL_S}
+
+locore_machdep.o: ${PMAX}/pmax/locore_machdep.S assym.h
+	${NORMAL_S}
 
 %RULES
-
-
-

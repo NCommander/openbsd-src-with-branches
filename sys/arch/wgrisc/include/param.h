@@ -1,4 +1,4 @@
-/*      $OpenBSD: param.h,v 1.5 1996/09/20 18:18:46 pefo Exp $ */
+/*      $OpenBSD: param.h,v 1.3 1997/02/28 22:57:41 niklas Exp $ */
 
 /*
  * Copyright (c) 1988 University of Utah.
@@ -44,9 +44,11 @@
 /*
  * Machine dependent constants for Willowglen Mips RISC machines:
  */
-#define	MACHINE	     "wgrisc"
-#define MACHINE_ARCH "mips"
-#define MID_MACHINE  MID_PMAX	/* XXX Bogus, but we need it for now... */
+#define	MACHINE		"wgrisc"
+#define	_MACHINE	wgrisc
+#define MACHINE_ARCH	"mips"
+#define _MACHINE_ARCH	mips
+#define MID_MACHINE	MID_PMAX	/* XXX Bogus, but needed for now... */
 
 /*
  * Round p (pointer or byte index) up to a correctly-aligned value for all
@@ -95,8 +97,8 @@
  * of the hardware page size.
  */
 #define	MSIZE		128		/* size of an mbuf */
-#define	MCLBYTES	2048		/* enough for whole Ethernet packet */
-#define	MCLSHIFT	10
+#define	MCLSHIFT	11		/* log2(MCLBYTES) */
+#define	MCLBYTES	(1 << MCLSHIFT)	/* enough for whole Ethernet packet */
 #define	MCLOFSET	(MCLBYTES - 1)
 #ifndef NMBCLUSTERS
 #ifdef GATEWAY

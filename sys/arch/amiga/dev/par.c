@@ -1,4 +1,5 @@
-/*	$NetBSD: par.c,v 1.11 1994/12/01 17:25:33 chopps Exp $	*/
+/*	$OpenBSD: par.c,v 1.2 1996/04/21 22:15:41 deraadt Exp $	*/
+/*	$NetBSD: par.c,v 1.16 1996/12/23 09:10:28 veego Exp $	*/
 
 /*
  * Copyright (c) 1982, 1990 The Regents of the University of California.
@@ -49,11 +50,14 @@
 #include <sys/malloc.h>
 #include <sys/file.h>
 #include <sys/systm.h>
+#include <sys/proc.h>
 
 #include <amiga/amiga/device.h>
 #include <amiga/amiga/cia.h>
 #include <amiga/dev/parioctl.h>
 
+#include <sys/conf.h>
+#include <machine/conf.h>
 
 struct	par_softc {
 	int	sc_flags;
@@ -84,24 +88,36 @@ int	pardebug = 0;
 #define PDB_NOCHECK	0x80
 #endif
 
+int parrw __P((dev_t, struct uio *));
+int parhztoms __P((int));
+int parmstohz __P((int));
+int parsend __P((u_char *, int));
+int parreceive __P((u_char *, int));
+int parsendch __P((u_char));
+
 void partimo __P((void *));
 void parstart __P((void *));
 void parintr __P((void *));
 
 void parattach __P((struct device *, struct device *, void *));
-int parmatch __P((struct device *, struct cfdata *, void *));
+int parmatch __P((struct device *, void *, void *));
 
-struct cfdriver parcd = {
-	NULL, "par", (cfmatch_t)parmatch, parattach, DV_DULL,
-	sizeof(struct device), NULL, 0 };
+struct cfattach par_ca = {
+	sizeof(struct device), parmatch, parattach
+};
+
+struct cfdriver par_cd = {
+	NULL, "par", DV_DULL, NULL, 0
+};
 
 /*ARGSUSED*/
 int
-parmatch(pdp, cfp, auxp)
+parmatch(pdp, match, auxp)
 	struct device *pdp;
-	struct cfdata *cfp;
-	void *auxp;
+	void *match, *auxp;
 {
+	struct cfdata *cfp = match;
+
 	if (matchname((char *)auxp, "par") && cfp->cf_unit == 0)
 		return(1);
 	return(0);
@@ -121,8 +137,12 @@ parattach(pdp, dp, auxp)
 	printf("\n");
 }
 
-paropen(dev, flags)
+int
+paropen(dev, flags, mode, p)
 	dev_t dev;
+	int flags;
+	int mode;
+	struct proc *p;
 {
 	int unit = UNIT(dev);
 	struct par_softc *sc = getparsp(unit);
@@ -158,8 +178,12 @@ paropen(dev, flags)
 	return(0);
 }
 
-parclose(dev, flags)
-     dev_t dev;
+int
+parclose(dev, flags, mode, p)
+	dev_t dev;
+	int flags;
+	int mode;
+	struct proc *p;
 {
   int unit = UNIT(dev);
   struct par_softc *sc = getparsp(unit);
@@ -209,30 +233,37 @@ partimo(arg)
 	wakeup(sc);
 }
 
-parread(dev, uio)
-     dev_t dev;
-     struct uio *uio;
+int
+parread(dev, uio, flags)
+	dev_t dev;
+	struct uio *uio;
+	int flags;
 {
 
 #ifdef DEBUG
-  if (pardebug & PDB_FOLLOW)
-    printf("parread(%x, %x)\n", dev, uio);
+	if (pardebug & PDB_FOLLOW)
+		printf("parread(%x, %p)\n", dev, uio);
 #endif
-  return (parrw(dev, uio));
+	return (parrw(dev, uio));
 }
 
-parwrite(dev, uio)
-     dev_t dev;
-     struct uio *uio;
+
+int
+parwrite(dev, uio, flags)
+	dev_t dev;
+	struct uio *uio;
+	int flags;
 {
 
 #ifdef DEBUG
-  if (pardebug & PDB_FOLLOW)
-    printf("parwrite(%x, %x)\n", dev, uio);
+	if (pardebug & PDB_FOLLOW)
+		printf("parwrite(%x, %p)\n", dev, uio);
 #endif
-  return (parrw(dev, uio));
+	return (parrw(dev, uio));
 }
 
+
+int
 parrw(dev, uio)
      dev_t dev;
      register struct uio *uio;
@@ -245,6 +276,8 @@ parrw(dev, uio)
   int buflen;
   char *buf;
 
+  len = 0;
+  cnt = 0;
   if (!!(sc->sc_flags & PARF_OREAD) ^ (uio->uio_rw == UIO_READ))
     return EINVAL;
 
@@ -253,7 +286,7 @@ parrw(dev, uio)
 
 #ifdef DEBUG
   if (pardebug & (PDB_FOLLOW|PDB_IO))
-    printf("parrw(%x, %x, %c): burst %d, timo %d, resid %x\n",
+    printf("parrw(%x, %p, %c): burst %d, timo %d, resid %x\n",
 	   dev, uio, uio->uio_rw == UIO_READ ? 'R' : 'W',
 	   sc->sc_burst, sc->sc_timo, uio->uio_resid);
 #endif
@@ -321,7 +354,7 @@ again:
 #endif
 #ifdef DEBUG
       if (pardebug & PDB_IO)
-	printf("parrw: %s(%x, %d) -> %d\n",
+	printf("parrw: %s(%p, %d) -> %d\n",
 	       uio->uio_rw == UIO_READ ? "recv" : "send", cp, len, cnt);
 #endif
       splx(s);
@@ -361,7 +394,7 @@ again:
 	{
 	  sc->sc_flags |= PARF_DELAY;
 	  timeout(parstart, (void *)unit, sc->sc_delay);
-	  error = tsleep(sc, PCATCH|PZERO-1, "par-cdelay", 0);
+	  error = tsleep(sc, PCATCH | (PZERO - 1), "par-cdelay", 0);
 	  if (error) 
 	    {
 	      splx(s);
@@ -550,7 +583,7 @@ parsendch (ch)
       /* it's quite important that a parallel putc can be
 	 interrupted, given the possibility to lock a printer
 	 in an offline condition.. */
-      if (error = tsleep(parintr, PCATCH|PZERO-1, "parsendch", 0))
+      if ((error = tsleep(parintr, PCATCH | (PZERO - 1), "parsendch", 0)) > 0)
 	{
 #ifdef DEBUG
 	  if (pardebug & PDB_INTERRUPT)
@@ -594,7 +627,7 @@ parsend (buf, len)
   ciaa.ddrb = 0xff;
   
   for (; len; len--, buf++)
-    if (err = parsendch (*buf))
+    if ((err = parsendch (*buf)) != 0)
       return err < 0 ? -EINTR : -err;
 
   /* either all or nothing.. */

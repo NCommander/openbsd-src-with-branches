@@ -1,4 +1,4 @@
-/*	$NetBSD: trap.c,v 1.9.2.1 1995/10/13 21:04:18 leo Exp $	*/
+/*	$NetBSD: trap.c,v 1.10 1995/11/30 00:57:42 jtc Exp $	*/
 
 /*
  * Copyright (c) 1988 University of Utah.
@@ -440,7 +440,7 @@ nogo:
 		       type, code);
 		panictrap(type, code, v, fp);
 	}
-	trapsignal(p, (rv == KERN_PROTECTION_FAILURE) ? SIGBUS : SIGSEGV, v);
+	trapsignal(p, SIGSEGV, v);
 	if ((type & T_USER) == 0)
 		return;
 	userret(p, fp->f_pc, sticks); 
@@ -559,6 +559,10 @@ trap(type, code, v, frame)
 #ifdef FPU_EMULATE
 		i = fpu_emulate(&frame, &p->p_addr->u_pcb.pcb_fpregs);
 		/* XXX -- deal with tracing? (frame.f_sr & PSL_T) */
+		if (i == 0) {
+			userret(p, frame.f_pc, sticks); 
+			return;
+		}
 #else
 		uprintf("pid %d killed: no floating point support.\n",
 			p->p_pid);
@@ -611,15 +615,15 @@ trap(type, code, v, frame)
 	case T_TRAP15|T_USER:
 #ifdef COMPAT_SUNOS
 		/*
-		 * XXX This comment/code is not consistent XXX
-		 * SunOS seems to use Trap #2 for some obscure 
-		 * fpu operations.  So far, just ignore it, but
-		 * DONT trap on it.. 
+		 * SunOS uses Trap #2 for a "CPU cache flush"
+		 * Just flush the on-chip caches and return.
+		 * XXX - Too bad m68k BSD uses trap 2...
 		 */
 		if (p->p_emul == &emul_sunos) {
-			userret(p, frame.f_pc, sticks); 
+			ICIA();
+			DCIU();
+			/* get out fast */
 			return;
-		}
 #endif
 		frame.f_sr &= ~PSL_T;
 		i = SIGTRAP;

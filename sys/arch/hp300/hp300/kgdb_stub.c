@@ -1,4 +1,5 @@
-/*	$NetBSD: kgdb_stub.c,v 1.3 1995/04/12 08:30:40 mycroft Exp $	*/
+/*	$OpenBSD: kgdb_stub.c,v 1.2 1997/01/12 15:13:20 downsj Exp $	*/
+/*	$NetBSD: kgdb_stub.c,v 1.7 1997/04/01 03:12:20 scottr Exp $	*/
 
 /*
  * Copyright (c) 1990, 1993
@@ -49,7 +50,7 @@
  */
 #ifdef KGDB
 #ifndef lint
-static char rcsid[] = "$NetBSD: kgdb_stub.c,v 1.3 1995/04/12 08:30:40 mycroft Exp $";
+static char rcsid[] = "$NetBSD: kgdb_stub.c,v 1.7 1997/04/01 03:12:20 scottr Exp $";
 #endif
 
 #include <sys/param.h>
@@ -107,12 +108,12 @@ static int (*kgdb_putc)();
  */
 static void
 kgdb_send(type, bp, len)
-	register u_char type;
-	register u_char *bp;
-	register int len;
+	u_char type;
+	u_char *bp;
+	int len;
 {
-	register u_char csum;
-	register u_char *ep = bp + len;
+	u_char csum;
+	u_char *ep = bp + len;
 
 	PUTC(FRAME_START);
 	PUTESC(type);
@@ -133,9 +134,9 @@ kgdb_recv(bp, lenp)
 	u_char *bp;
 	int *lenp;
 {
-	register u_char c, csum;
-	register int escape, len;
-	register int type;
+	u_char c, csum;
+	int escape, len;
+	int type;
 
 restart:
 	csum = len = escape = 0;
@@ -206,25 +207,17 @@ computeSignal(type)
 
 	switch (type) {
 	case T_BUSERR:
-		sigval = SIGBUS;
-		break;
 	case T_ADDRERR:
 		sigval = SIGBUS;
 		break;
 	case T_ILLINST:
+	case T_PRIVINST:
 		sigval = SIGILL;
 		break;
 	case T_ZERODIV:
-		sigval = SIGFPE;
-		break;
 	case T_CHKINST:
-		sigval = SIGFPE;
-		break;
 	case T_TRAPVINST:
 		sigval = SIGFPE;
-		break;
-	case T_PRIVINST:
-		sigval = SIGILL;
 		break;
 	case T_TRACE:
 		sigval = SIGTRAP;
@@ -239,8 +232,6 @@ computeSignal(type)
 		sigval = SIGILL;
 		break;
 	case T_FPERR:
-		sigval = SIGFPE;
-		break;
 	case T_COPERR:
 		sigval = SIGFPE;
 		break;
@@ -295,10 +286,10 @@ kgdb_panic()
 
 static inline void
 kgdb_copy(src, dst, nbytes)
-	register u_char *src, *dst;
-	register u_int nbytes;
+	u_char *src, *dst;
+	u_int nbytes;
 {
-	register u_char *ep = src + nbytes;
+	u_char *ep = src + nbytes;
 
 	while (src < ep)
 		*dst++ = *src++;
@@ -341,11 +332,11 @@ kgdb_trap(type, frame)
 	int type;
 	struct frame *frame;
 {
-	register u_long len;
+	u_long len;
 	u_char *addr;
-	register u_char *cp;
-	register u_char out, in;
-	register int outlen;
+	u_char *cp;
+	u_char out, in;
+	int outlen;
 	int inlen;
 	u_long gdb_regs[NUM_REGS];
 
@@ -469,7 +460,7 @@ kgdb_trap(type, frame)
 		case KGDB_REG_W | KGDB_DELTA:
 			cp = inbuffer;
 			for (len = 0; len < inlen; len += 5) {
-				register int j = cp[len];
+				int j = cp[len];
 
 				kgdb_copy(&cp[len + 1],
 					  (u_char *)&gdb_regs[j], 4);

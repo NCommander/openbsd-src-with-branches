@@ -1,4 +1,5 @@
-/*	$NetBSD: wwmove.c,v 1.3 1995/09/28 10:35:41 tls Exp $	*/
+/*	$OpenBSD$	*/
+/*	$NetBSD: wwmove.c,v 1.4 1996/02/08 21:49:14 mycroft Exp $	*/
 
 /*
  * Copyright (c) 1983, 1993
@@ -40,7 +41,7 @@
 #if 0
 static char sccsid[] = "@(#)wwmove.c	8.1 (Berkeley) 6/6/93";
 #else
-static char rcsid[] = "$NetBSD: wwmove.c,v 1.3 1995/09/28 10:35:41 tls Exp $";
+static char rcsid[] = "$OpenBSD$";
 #endif
 #endif /* not lint */
 
@@ -90,7 +91,7 @@ register struct ww *w;
 	for (i = w->ww_i.t; i < w->ww_i.b; i++) {
 		register j = w->ww_i.l;
 		register char *win = &w->ww_win[i][j];
-		register char *smap = &wwsmap[i][j];
+		register unsigned char *smap = &wwsmap[i][j];
 		int nvis = 0;
 
 		for (; j < w->ww_i.r; j++, win++, smap++)

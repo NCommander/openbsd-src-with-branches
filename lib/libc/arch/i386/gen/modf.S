@@ -32,17 +32,14 @@
  * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
- *
- *	from: @(#)modf.s	5.5 (Berkeley) 3/18/91
- *	$Id: modf.S,v 1.3 1994/01/27 06:34:05 mycroft Exp $
  */
+
+#include <machine/asm.h>
 
 #if defined(LIBC_SCCS)
 	.text
-	.asciz "$Id: modf.S,v 1.3 1994/01/27 06:34:05 mycroft Exp $"
+	.asciz "$OpenBSD: modf.S,v 1.2 1995/12/30 08:15:42 deraadt Exp $"
 #endif
-
-#include "DEFS.h"
 
 /*
  * modf(value, iptr): return fractional part of value, and stores the

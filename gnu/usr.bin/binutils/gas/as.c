@@ -518,6 +518,13 @@ the GNU General Public License.  This program has absolutely no warranty.\n");
 	case 'X':
 	  /* -X means treat warnings as errors */
 	  break;
+
+#if defined (TE_NetBSD) || defined (TE_OpenBSD)
+	case 'k':
+	  flag_pic = 1;
+	  break;
+#endif
+
 	}
     }
 

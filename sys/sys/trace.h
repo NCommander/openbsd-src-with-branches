@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /*	$NetBSD: trace.h,v 1.7 1995/03/26 20:24:56 jtc Exp $	*/
 
 /*-

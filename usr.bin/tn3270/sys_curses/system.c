@@ -1,3 +1,5 @@
+/*	$OpenBSD: system.c,v 1.4 1997/04/04 18:41:33 deraadt Exp $	*/
+
 /*-
  * Copyright (c) 1988 The Regents of the University of California.
  * All rights reserved.
@@ -33,7 +35,7 @@
 
 #ifndef lint
 /*static char sccsid[] = "from: @(#)system.c	4.5 (Berkeley) 4/26/91";*/
-static char rcsid[] = "$Id: system.c,v 1.3 1994/04/10 07:20:35 cgd Exp $";
+static char rcsid[] = "$OpenBSD: system.c,v 1.4 1997/04/04 18:41:33 deraadt Exp $";
 #endif /* not lint */
 
 #include <sys/types.h>
@@ -61,6 +63,7 @@ extern int errno;
 #include <netdb.h>
 #include <signal.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 #include <pwd.h>
 
@@ -635,20 +638,14 @@ char	*argv[];
     int fd;
     struct timeval tv;
     long ikey;
-    extern long random();
-    extern char *mktemp();
-    extern char *strcpy();
 
-    /* First, create verification file. */
-    do {
-	keyname = mktemp(strdup("/tmp/apiXXXXXX"));
-	fd = open(keyname, O_RDWR|O_CREAT|O_EXCL, IREAD|IWRITE);
-    } while ((fd == -1) && (errno == EEXIST));
-
-    if (fd == -1) {
+    keyname = strdup("/tmp/apiXXXXXXXXXX");
+    if ((fd = mkstemp(keyname)) == -1) {
 	perror("open");
+	free(keyname);
 	return 0;
     }
+    keyname = strdup(sockNAME);
 
     /* Now, get seed for random */
 
@@ -742,11 +739,11 @@ char	*argv[];
 	    cmdname = getenv("SHELL");
 	    execlp(cmdname, cmdname, 0);
 	    perror("Exec'ing new shell...\n");
-	    exit(1);
+	    _exit(1);
 	} else {
 	    execvp(argv[1], &argv[1]);
 	    perror("Exec'ing command.\n");
-	    exit(1);
+	    _exit(1);
 	}
 	/*NOTREACHED*/
     }

@@ -1,3 +1,4 @@
+.\"	$OpenBSD: newfs.8,v 1.4 1996/12/04 08:38:58 deraadt Exp $
 .\"	$NetBSD: newfs.8,v 1.12 1995/03/18 14:58:41 cgd Exp $
 .\"
 .\" Copyright (c) 1983, 1987, 1991, 1993, 1994
@@ -59,9 +60,10 @@
 .Op Fl p Ar sectors
 .Op Fl r Ar revolutions
 .Op Fl s Ar size
-.Op Fl t Ar tracks
+.Op Fl t Ar fstype
 .Op Fl u Ar sectors
 .Op Fl x Ar sectors
+.Op Fl z Ar tracks
 .Ar special
 .Nm mount_mfs
 .Op Fl N
@@ -121,6 +123,17 @@ will be used.  (This option is useful when trying to use
 .Nm mount_mfs
 on a machine without any disks.)
 .Pp
+Both
+.Nm
+and
+.Nm mount_mfs
+now have the functionality of
+.Xr fsirand 8
+built-in so it is not necesary to run
+.Xr fsirand 8
+manually unless you wish to re-randomize the
+filesystem (or list the inode generation numbers).
+.Pp
 The following options define the general layout policies.
 .Bl -tag -width Fl
 .It Fl N
@@ -163,13 +176,13 @@ for more details on how to set this option.
 The fragment size of the file system in bytes.
 .It Fl i Ar number of bytes per inode
 This specifies the density of inodes in the file system.
-The default is to create an inode for each 2048 bytes of data space.
+The default is to create an inode for each 4096 bytes of data space.
 If fewer inodes are desired, a larger number should be used;
 to create more inodes a smaller number should be given.
 .It Fl m Ar free space \&%
 The percentage of space reserved from normal users; the minimum free
 space threshold.
-The default value used is 10%.
+The default value used is 5%.
 See
 .Xr tunefs 8
 for more details on how to set this option.
@@ -179,9 +192,9 @@ The number of distinct rotational positions.  The default is 1.
 .Pq ``space'' or ``time''
 The file system can either be instructed to try to minimize the time spent
 allocating blocks, or to try to minimize the space fragmentation on the disk.
-If the value of minfree (see above) is less than 10%,
+If the value of minfree (see above) is less than 5%,
 the default is to optimize for space;
-if the value of minfree is greater than or equal to 10%,
+if the value of minfree is greater than or equal to 5%,
 the default is to optimize for time.
 See
 .Xr tunefs 8
@@ -225,9 +238,13 @@ They are not counted as part of the sectors/track
 since they are not available to the file system for data allocation.
 .It Fl r Ar revolutions/minute
 The speed of the disk in revolutions per minute.
-.It Fl t Ar #tracks/cylinder
+.It Fl z Ar #tracks/cylinder
 The number of tracks/cylinder available for data allocation by the file
 system.
+.It Fl t Ar fstype
+Set the filesystem type of which filesystem you wish to create.
+.Nm newfs
+will be smart enough to run the alternate newfs_XXX program instead.
 .It Fl u Ar sectors/track
 The number of sectors per track available for data allocation by the file
 system.
@@ -271,7 +288,8 @@ man page for possible options and their meanings.
 .Xr fsck 8 ,
 .Xr format 8 ,
 .Xr mount 8 ,
-.Xr tunefs 8
+.Xr tunefs 8 ,
+.Xr fsirand 8
 .Rs
 .%A M. McKusick
 .%A W. Joy

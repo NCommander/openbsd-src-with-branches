@@ -1,7 +1,8 @@
-/*	$NetBSD: tga.c,v 1.2 1995/08/03 01:17:28 cgd Exp $	*/
+/*	$OpenBSD: tga.c,v 1.8 1996/12/08 00:20:51 niklas Exp $	*/
+/*	$NetBSD: tga.c,v 1.13 1996/12/05 01:39:37 cgd Exp $	*/
 
 /*
- * Copyright (c) 1995 Carnegie-Mellon University.
+ * Copyright (c) 1995, 1996 Carnegie-Mellon University.
  * All rights reserved.
  *
  * Author: Chris G. Demetriou
@@ -32,37 +33,53 @@
 #include <sys/kernel.h>
 #include <sys/device.h>
 #include <sys/malloc.h>
+#include <sys/buf.h>
+#include <sys/conf.h>
+#include <sys/ioctl.h>
 
-#include <dev/pseudo/raster.h>
-#include <dev/pseudo/rcons.h>
-#include <dev/pseudo/ansicons.h>
+#include <machine/bus.h>
+#include <machine/intr.h>
 
 #include <dev/pci/pcireg.h>
 #include <dev/pci/pcivar.h>
 #include <dev/pci/pcidevs.h>
-#include <alpha/pci/tgareg.h>
+#include <machine/tgareg.h>
 #include <alpha/pci/tgavar.h>
 #include <alpha/pci/bt485reg.h>
+
+#include <dev/rcons/raster.h>
+#include <alpha/wscons/wscons_raster.h>
+#include <alpha/wscons/wsconsvar.h>
+#include <machine/fbio.h>
 
 #include <machine/autoconf.h>
 #include <machine/pte.h>
 
+#ifdef __BROKEN_INDIRECT_CONFIG
 int	tgamatch __P((struct device *, void *, void *));
+#else
+int	tgamatch __P((struct device *, struct cfdata *, void *));
+#endif
 void	tgaattach __P((struct device *, struct device *, void *));
+int	tgaprint __P((void *, const char *));
 
-struct cfdriver tgacd = {
-	NULL, "tga", tgamatch, tgaattach, DV_DULL, sizeof(struct tga_softc)
+struct cfattach tga_ca = {
+	sizeof(struct tga_softc), tgamatch, tgaattach,
 };
+
+struct cfdriver tga_cd = {
+	NULL, "tga", DV_DULL,
+};
+
+int	tga_identify __P((tga_reg_t *));
+const struct tga_conf *tga_getconf __P((int));
+void	tga_getdevconfig __P((bus_space_tag_t memt, pci_chipset_tag_t pc,
+	    pcitag_t tag, struct tga_devconfig *dc));
 
 struct tga_devconfig tga_console_dc;
 
-int	tga_identify __P((tga_reg_t *));
-struct	tga_conf *tga_getconf __P((int));
-void	tga_bell __P((void *));
-
-struct ansicons_functions tga_acf = {
-	tga_bell,
-	rcons_cursor,		/* could use hardware cursor; who cares? */
+struct wscons_emulfuncs tga_emulfuncs = {
+	rcons_cursor,			/* could use hardware cursor; punt */
 	rcons_putstr,
 	rcons_copycols,
 	rcons_erasecols,
@@ -70,214 +87,73 @@ struct ansicons_functions tga_acf = {
 	rcons_eraserows,
 };
 
-#define	TGAUNIT(dev)	minor(dev)
+int	tgaioctl __P((void *, u_long, caddr_t, int, struct proc *));
+int	tgammap __P((void *, off_t, int));
 
-struct tga_ramdac_conf tga_ramdac_bt463 = {
-	"Bt463",
-#if 0
-	XXX,
-	YYY,
-#endif
-	/* XXX */
-};
-
-void	tga_bt485_set_cpos __P((struct tga_devconfig *, int, int));
-void	tga_bt485_get_cpos __P((struct tga_devconfig *, int *, int *));
-
-struct tga_ramdac_conf tga_ramdac_bt485 = {
-	"Bt485",
-	tga_bt485_set_cpos,
-	tga_bt485_get_cpos,
-	/* XXX */
-};
-
-#undef KB
-#define KB		* 1024
-#undef MB
-#define	MB		* 1024 * 1024
-
-struct tga_conf tga_configs[TGA_TYPE_UNKNOWN] = {
-	/* TGA_TYPE_T8_01 */
-	{
-		"T8-01",
-		&tga_ramdac_bt485,
-		8,
-		4 MB,
-		2 KB,
-		1,	{  2 MB,     0 },	{ 1 MB,    0 },
-		0,	{     0,     0 },	{    0,    0 },
-	},
-	/* TGA_TYPE_T8_02 */
-	{
-		"T8-02",
-		&tga_ramdac_bt485,
-		8,
-		4 MB,
-		4 KB,
-		1,	{  2 MB,     0 },	{ 2 MB,    0 },
-		0,	{     0,     0 },	{    0,    0 },
-	},
-	/* TGA_TYPE_T8_22 */
-	{
-		"T8-22",
-		&tga_ramdac_bt485,
-		8,
-		8 MB,
-		4 KB,
-		1,	{  4 MB,     0 },	{ 2 MB,    0 },
-		1,	{  6 MB,     0 },	{ 2 MB,    0 },
-	},
-	/* TGA_TYPE_T8_44 */
-	{
-		"T8-44",
-		&tga_ramdac_bt485,
-		8,
-		16 MB,
-		4 KB,
-		2,	{  8 MB, 12 MB },	{ 2 MB, 2 MB },
-		2,	{ 10 MB, 14 MB },	{ 2 MB, 2 MB },
-	},
-	/* TGA_TYPE_T32_04 */
-	{
-		"T32-04",
-		&tga_ramdac_bt463,
-		32,
-		16 MB,
-		8 KB,
-		1,	{  8 MB,     0 },	{ 4 MB,    0 },
-		0,	{     0,     0 },	{    0,    0 },
-	},
-	/* TGA_TYPE_T32_08 */
-	{
-		"T32-08",
-		&tga_ramdac_bt463,
-		32,
-		16 MB,
-		16 KB,
-		1,	{  8 MB,    0 },	{ 8 MB,    0 },
-		0,	{     0,    0 },	{    0,    0 },
-	},
-	/* TGA_TYPE_T32_88 */
-	{
-		"T32-88",
-		&tga_ramdac_bt463,
-		32,
-		32 MB,
-		16 KB,
-		1,	{ 16 MB,    0 },	{ 8 MB,    0 },
-		1,	{ 24 MB,    0 },	{ 8 MB,    0 },
-	},
-};
-#undef KB
-#undef MB
+void	tga_blank __P((struct tga_devconfig *));
+void	tga_unblank __P((struct tga_devconfig *));
 
 int
 tgamatch(parent, match, aux)
 	struct device *parent;
-	void *match, *aux;
+#ifdef __BROKEN_INDIRECT_CONFIG
+	void *match;
+#else
+	struct cfdata *match;
+#endif
+	void *aux;
 {
-	struct cfdata *cf = match;
 	struct pci_attach_args *pa = aux;
 
 	if (PCI_VENDOR(pa->pa_id) != PCI_VENDOR_DEC ||
 	    PCI_PRODUCT(pa->pa_id) != PCI_PRODUCT_DEC_21030)
 		return (0);
 
-	return (1);
-}
-
-int
-tga_identify(regs)
-	tga_reg_t *regs;
-{
-	int type;
-	int deep, addrmask, wide;
-
-	deep = (regs[TGA_REG_GDER] & 0x1) != 0;		/* XXX */
-	addrmask = ((regs[TGA_REG_GDER] >> 2) & 0x7);	/* XXX */
-	wide = (regs[TGA_REG_GDER] & 0x200) == 0;	/* XXX */
-
-	type = TGA_TYPE_UNKNOWN;
-
-	if (!deep) {
-		/* 8bpp frame buffer */
-
-		if (addrmask == 0x0) {
-			/* 4MB core map; T8-01 or T8-02 */
-
-			if (!wide)
-				type = TGA_TYPE_T8_01;
-			else
-				type = TGA_TYPE_T8_02;
-		} else if (addrmask == 0x1) {
-			/* 8MB core map; T8-22 */
-
-			if (wide)			/* sanity */
-				type = TGA_TYPE_T8_22;
-		} else if (addrmask == 0x3) {
-			/* 16MB core map; T8-44 */
-
-			if (wide)			/* sanity */
-				type = TGA_TYPE_T8_44;
-		}
-	} else {
-		/* 32bpp frame buffer */
-
-		if (addrmask == 0x3) {
-			/* 16MB core map; T32-04 or T32-08 */
-
-			if (!wide)
-				type = TGA_TYPE_T32_04;
-			else
-				type = TGA_TYPE_T32_08;
-		} else if (addrmask == 0x7) {
-			/* 32MB core map; T32-88 */
-
-			if (wide)			/* sanity */
-				type = TGA_TYPE_T32_88;
-		}
-	}
-
-	return (type);
-}
-
-struct tga_conf *
-tga_getconf(type)
-	int type;
-{
-
-	if (type >= 0 && type < TGA_TYPE_UNKNOWN)
-		return &tga_configs[type];
-
-	return (NULL);
+	return (10);
 }
 
 void
-tga_getdevconfig(tag, dc)
+tga_getdevconfig(memt, pc, tag, dc)
+	bus_space_tag_t memt;
+	pci_chipset_tag_t pc;
 	pcitag_t tag;
 	struct tga_devconfig *dc;
 {
-	struct tga_conf *tgac;
-	struct tga_ramdac_conf *tgar;
+	const struct tga_conf *tgac;
+	const struct tga_ramdac_conf *tgar;
 	struct raster *rap;
 	struct rcons *rcp;
-	vm_offset_t pcipa;
-	int i;
+	bus_size_t pcisize;
+	int i, cacheable;
+
+	dc->dc_memt = memt;
+	dc->dc_pc = pc;
 
 	dc->dc_pcitag = tag;
 
-	dc->dc_vaddr = 0;
-	if (pci_map_mem(tag, 0x10, &dc->dc_vaddr, &pcipa))
-		return;
+	/* XXX MAGIC NUMBER */
+	pci_mem_find(pc, tag, 0x10, &dc->dc_pcipaddr, &pcisize,
+	    &cacheable);
+	if (!cacheable)						/* sanity */
+		panic("tga_getdevconfig: memory not cacheable?");
 
-	/* PA filled in by pci_map_mem is the PCI-bus PA, i.e. not shifted */
-	dc->dc_paddr = k0segtophys(dc->dc_vaddr);
+	/* XXX XXX XXX */
+	if (bus_space_map(memt, dc->dc_pcipaddr, pcisize, 1, &dc->dc_vaddr))
+		return;
+	dc->dc_paddr = ALPHA_K0SEG_TO_PHYS(dc->dc_vaddr);	/* XXX */
 
 	dc->dc_regs = (tga_reg_t *)(dc->dc_vaddr + TGA_MEM_CREGS);
 	dc->dc_tga_type = tga_identify(dc->dc_regs);
 	tgac = dc->dc_tgaconf = tga_getconf(dc->dc_tga_type);
 	if (tgac == NULL)
 		return;
+
+#if 0
+	/* XXX on the Alpha, pcisize = 4 * cspace_size. */
+	if (tgac->tgac_cspace_size != pcisize)			/* sanity */
+		panic("tga_getdevconfig: memory size mismatch?");
+#endif
+
 	tgar = tgac->tgac_ramdac;
 
 	switch (dc->dc_regs[TGA_REG_VHCR] & 0x1ff) {		/* XXX */
@@ -297,24 +173,33 @@ tga_getdevconfig(tag, dc)
 	dc->dc_rowbytes = dc->dc_wid * (dc->dc_tgaconf->tgac_phys_depth / 8);
 
 	if ((dc->dc_regs[TGA_REG_VHCR] & 0x00000001) != 0 &&	/* XXX */
-	    (dc->dc_regs[TGA_REG_VHCR] & 0x80000000) != 0)	/* XXX */
+	    (dc->dc_regs[TGA_REG_VHCR] & 0x80000000) != 0) {	/* XXX */
 		dc->dc_wid -= 4;
+		/*
+		 * XXX XXX turning off 'odd' shouldn't be necesssary,
+		 * XXX XXX but i can't make X work with the weird size.
+		 */
+		dc->dc_regs[TGA_REG_VHCR] &= ~0x80000001;
+		dc->dc_rowbytes =
+		    dc->dc_wid * (dc->dc_tgaconf->tgac_phys_depth / 8);
+	}
 
 	dc->dc_ht = (dc->dc_regs[TGA_REG_VVCR] & 0x7ff);	/* XXX */
 
 	/* XXX this seems to be what DEC does */
+	dc->dc_regs[TGA_REG_CCBR] = 0;
 	dc->dc_regs[TGA_REG_VVBR] = 1;
 	dc->dc_videobase = dc->dc_vaddr + tgac->tgac_dbuf[0] +
 	    1 * tgac->tgac_vvbr_units;
-
-	/* disable the cursor */
-	(*tgar->tgar_set_cpos)(dc, TGA_CURSOR_OFF, 0);
-
-	/* init black and white color map entries to 'sane' values. */
-#if 0
-	(*tgar->tga_set_cmap)(dc, 0, 0, 0, 0);
-	(*tgar->tga_set_cmap)(dc, 255, 0xff, 0xff, 0xff);
-#endif
+	dc->dc_blanked = 1;
+	tga_unblank(dc);
+	
+	/*
+	 * Set all bits in the pixel mask, to enable writes to all pixels.
+	 * It seems that the console firmware clears some of them
+	 * under some circumstances, which causes cute vertical stripes.
+	 */
+	dc->dc_regs[TGA_REG_GPXR_P] = 0xffffffff;
 
 	/* clear the screen */
 	for (i = 0; i < dc->dc_ht * dc->dc_rowbytes; i += sizeof(u_int32_t))
@@ -344,8 +229,11 @@ tgaattach(parent, self, aux)
 {
 	struct pci_attach_args *pa = aux;
 	struct tga_softc *sc = (struct tga_softc *)self;
-	pci_revision_t rev;
-	pcireg_t pci_intrdata;
+	struct wscons_attach_args waa;
+	struct wscons_odev_spec *wo;
+	pci_intr_handle_t intrh;
+	const char *intrstr;
+	u_int8_t rev;
 	int console;
 
 	console = (pa->pa_tag == tga_console_dc.dc_pcitag);
@@ -354,12 +242,40 @@ tgaattach(parent, self, aux)
 	else {
 		sc->sc_dc = (struct tga_devconfig *)
 		    malloc(sizeof(struct tga_devconfig), M_DEVBUF, M_WAITOK);
-		tga_getdevconfig(pa->pa_tag, sc->sc_dc);
+		tga_getdevconfig(pa->pa_memt, pa->pa_pc, pa->pa_tag, sc->sc_dc);
 	}
 	if (sc->sc_dc->dc_vaddr == NULL) {
 		printf(": couldn't map memory space; punt!\n");
 		return;
 	}
+
+	/* XXX say what's going on. */
+	intrstr = NULL;
+	if (sc->sc_dc->dc_tgaconf->tgac_ramdac->tgar_intr != NULL) {
+		if (pci_intr_map(pa->pa_pc, pa->pa_intrtag, pa->pa_intrpin,
+		    pa->pa_intrline, &intrh)) {
+			printf(": couldn't map interrupt");
+			return;
+		}
+		intrstr = pci_intr_string(pa->pa_pc, intrh);
+		sc->sc_intr = pci_intr_establish(pa->pa_pc, intrh, IPL_TTY,
+		    sc->sc_dc->dc_tgaconf->tgac_ramdac->tgar_intr, sc->sc_dc,
+		    sc->sc_dev.dv_xname);
+		if (sc->sc_intr == NULL) {
+			printf(": couldn't establish interrupt");
+			if (intrstr != NULL)
+				printf("at %s", intrstr);
+			printf("\n");
+			return;
+		}
+	}
+
+	/*
+	 * Initialize the RAMDAC and allocate any private storage it needs.
+	 * Initialization includes disabling cursor, setting a sane
+	 * colormap, etc.
+	 */
+	(*sc->sc_dc->dc_tgaconf->tgac_ramdac->tgar_init)(sc->sc_dc, 1);
 
 	printf(": DC21030 ");
 	rev = PCI_REVISION(pa->pa_class);
@@ -381,82 +297,112 @@ tgaattach(parent, self, aux)
 	printf("board type %s\n", sc->sc_dc->dc_tgaconf->tgac_name);
 	printf("%s: %d x %d, %dbpp, %s RAMDAC\n", sc->sc_dev.dv_xname,
 	    sc->sc_dc->dc_wid, sc->sc_dc->dc_ht,
-	    sc->sc_dc->dc_tgaconf->tgac_phys_depth, 
+	    sc->sc_dc->dc_tgaconf->tgac_phys_depth,
 	    sc->sc_dc->dc_tgaconf->tgac_ramdac->tgar_name);
-#if 0
-	/* not done here; printed by wscons attach. */
-	if (console)
-		printf("%s: console\n", sc->sc_dev.dv_xname);
-#endif
 
-#if 0
-	pci_intrdata = pci_conf_read(sc->sc_pcitag, PCI_INTERRUPT_REG);
-	if (PCI_INTERRUPT_PIN(pci_intrdata) != PCI_INTERRUPT_PIN_NONE) {
-		sc->sc_intr = pci_map_int(sc->sc_pcitag, PCI_IPL_TTY,
-		    tgaintr, sc);
-		if (sc->sc_intr == NULL)
-			printf("%s: WARNING: couldn't map interrupt\n",
-			    sc->sc_dev.dv_xname);
-	}
-#endif
+	if (intrstr != NULL)
+		printf("%s: interrupting at %s\n", sc->sc_dev.dv_xname,
+		    intrstr);
 
-	if (!wscattach_output(self, console, &sc->sc_dc->dc_ansicons, &tga_acf,
-	    &sc->sc_dc->dc_rcons, sc->sc_dc->dc_rcons.rc_maxrow,
-	    sc->sc_dc->dc_rcons.rc_maxcol, 0, 0)) {
-		panic("tgaattach: wscattach failed");
-		/* NOTREACHED */
-	}
+	waa.waa_isconsole = console;
+
+	wo = &waa.waa_odev_spec;
+
+	wo->wo_emulfuncs = &tga_emulfuncs;
+	wo->wo_emulfuncs_cookie = &sc->sc_dc->dc_rcons;
+
+	wo->wo_ioctl = tgaioctl;
+	wo->wo_mmap = tgammap;
+	wo->wo_miscfuncs_cookie = sc;
+
+	wo->wo_nrows = sc->sc_dc->dc_rcons.rc_maxrow;
+	wo->wo_ncols = sc->sc_dc->dc_rcons.rc_maxcol;
+	wo->wo_crow = 0;
+	wo->wo_ccol = 0;
+
+	config_found(self, &waa, tgaprint);
 }
 
 int
-tgaopen(dev, flag, mode, p)
-	dev_t dev;
-	int flag, mode;
-	struct proc *p;
+tgaprint(aux, pnp)
+	void *aux;
+	const char *pnp;
 {
-	struct tga_softc *sc;
-	int unit = TGAUNIT(dev);
 
-	if (unit >= tgacd.cd_ndevs)
-		return ENXIO;
-	sc = tgacd.cd_devs[unit];
-	if ((sc = tgacd.cd_devs[unit]) == NULL || sc->sc_dc->dc_tgaconf == NULL)
-		return ENXIO;
-
-	return (0);
+	if (pnp)
+		printf("wscons at %s", pnp);
+	return (UNCONF);
 }
 
 int
-tgaclose(dev, flag, mode, p)
-	dev_t dev;
-	int flag, mode;
-	struct proc *p;
-{
-	struct tga_softc *sc = tgacd.cd_devs[TGAUNIT(dev)];
-
-	return (0);
-}
-
-int
-tgaioctl(dev, cmd, data, flag, p)
-	dev_t dev;
+tgaioctl(v, cmd, data, flag, p)
+	void *v;
 	u_long cmd;
 	caddr_t data;
 	int flag;
 	struct proc *p;
 {
-	struct tga_softc *sc = tgacd.cd_devs[TGAUNIT(dev)];
+	struct tga_softc *sc = v;
+	struct tga_devconfig *dc = sc->sc_dc;
+	const struct tga_ramdac_conf *tgar = dc->dc_tgaconf->tgac_ramdac;
 
-	return (ENOTTY);
+	switch (cmd) {
+	case FBIOGTYPE:
+#define fbt ((struct fbtype *)data)
+		fbt->fb_type = FBTYPE_TGA;
+		fbt->fb_height = sc->sc_dc->dc_ht;
+		fbt->fb_width = sc->sc_dc->dc_wid;
+		fbt->fb_depth = sc->sc_dc->dc_tgaconf->tgac_phys_depth;
+		fbt->fb_cmsize = 256;		/* XXX ??? */
+		fbt->fb_size = sc->sc_dc->dc_tgaconf->tgac_cspace_size;
+#undef fbt
+		return (0);
+
+	case FBIOPUTCMAP:
+		return (*tgar->tgar_set_cmap)(dc, (struct fbcmap *)data);
+
+	case FBIOGETCMAP:
+		return (*tgar->tgar_get_cmap)(dc, (struct fbcmap *)data);
+
+	case FBIOGATTR:
+		return (ENOTTY);			/* XXX ? */
+
+	case FBIOSVIDEO:
+		if (*(int *)data == FBVIDEO_OFF)
+			tga_blank(sc->sc_dc);
+		else
+			tga_unblank(sc->sc_dc);
+		return (0);
+
+	case FBIOGVIDEO:
+		*(int *)data = dc->dc_blanked ? FBVIDEO_OFF : FBVIDEO_ON;
+		return (0);
+
+	case FBIOSCURSOR:
+		return (*tgar->tgar_set_cursor)(dc, (struct fbcursor *)data);
+
+	case FBIOGCURSOR:
+		return (*tgar->tgar_get_cursor)(dc, (struct fbcursor *)data);
+
+	case FBIOSCURPOS:
+		return (*tgar->tgar_set_curpos)(dc, (struct fbcurpos *)data);
+
+	case FBIOGCURPOS:
+		return (*tgar->tgar_get_curpos)(dc, (struct fbcurpos *)data);
+
+	case FBIOGCURMAX:
+		return (*tgar->tgar_get_curmax)(dc, (struct fbcurpos *)data);
+	}
+	return (-1);
 }
 
 int
-tgammap(dev, offset, nprot)
-	dev_t dev;
-	int offset;
-	int nprot;
+tgammap(v, offset, prot)
+	void *v;
+	off_t offset;
+	int prot;
 {
-	struct tga_softc *sc = tgacd.cd_devs[TGAUNIT(dev)];
+	struct tga_softc *sc = v;
 
 	if (offset > sc->sc_dc->dc_tgaconf->tgac_cspace_size)
 		return -1;
@@ -464,130 +410,179 @@ tgammap(dev, offset, nprot)
 }
 
 void
-tga_bell(id)
-	void *id;
-{
-
-	/* XXX */
-	printf("tga_bell: not implemented\n");
-}
-
-
-/*
- * Bt485-specific functions.
- */
-
-void
-tga_bt485_wr_reg(tgaregs, btreg, val)
-	volatile tga_reg_t *tgaregs;
-	u_int btreg;
-	u_int8_t val;
-{
-
-	if (btreg > BT485_REG_MAX)
-		panic("tga_bt485_wr_reg: reg %d out of range\n", btreg);
-
-	tgaregs[TGA_REG_EPDR] = (btreg << 9) | (0 << 8 ) | val; /* XXX */
-	wbflush();
-}
-
-u_int8_t
-tga_bt485_rd_reg(tgaregs, btreg)
-	volatile tga_reg_t *tgaregs;
-	u_int btreg;
-{
-	tga_reg_t rdval;
-
-	if (btreg > BT485_REG_MAX)
-		panic("tga_bt485_rd_reg: reg %d out of range\n", btreg);
-
-	tgaregs[TGA_REG_EPSR] = (btreg << 1) | 0x1;		/* XXX */
-	wbflush();
-
-	rdval = tgaregs[TGA_REG_EPDR];
-	return (rdval >> 16) & 0xff;				/* XXX */
-}
-
-void
-tga_bt485_set_cpos(dc, x, y)
-	struct tga_devconfig *dc;
-	int x, y;
-{
-
-	if (x == TGA_CURSOR_OFF || y == TGA_CURSOR_OFF) {
-		u_int8_t regval;
-
-		regval = tga_bt485_rd_reg(dc->dc_regs, BT485_REG_COMMAND_2);
-		regval &= ~0x03;				/* XXX */
-		regval |= 0x00;					/* XXX */
-		tga_bt485_wr_reg(dc->dc_regs, BT485_REG_COMMAND_2, regval);
-	}
-
-	/*
-	 * RAMDAC cursors are 1-based, and position is bottom-right
-	 * of displayed cursor!
-	 */
-	x += 64;
-	y += 64;
-
-	/* XXX CONSTANTS */
-	tga_bt485_rd_reg(dc->dc_regs, BT485_REG_CURSOR_X_LOW,
-	    x & 0xff);
-	tga_bt485_rd_reg(dc->dc_regs, BT485_REG_CURSOR_X_HIGH,
-	    (x >> 8) & 0x0f);
-	tga_bt485_rd_reg(dc->dc_regs, BT485_REG_CURSOR_Y_LOW,
-	    y & 0xff);
-	tga_bt485_rd_reg(dc->dc_regs, BT485_REG_CURSOR_Y_HIGH,
-	    (y >> 8) & 0x0f);
-}
-
-void
-tga_bt485_get_cpos(dc, xp, yp)
-	struct tga_devconfig *dc;
-	int *xp, *yp;
-{
-	u_int8_t regval;
-
-	regval = tga_bt485_rd_reg(dc->dc_regs, BT485_REG_COMMAND_2);
-	if ((regval & 0x03) == 0x00) {			/* XXX */
-		*xp = *yp = TGA_CURSOR_OFF;
-		return;
-	}
-
-	regval = tga_bt485_rd_reg(dc->dc_regs, BT485_REG_CURSOR_X_LOW);
-	*xp = regval;
-	regval = tga_bt485_rd_reg(dc->dc_regs, BT485_REG_CURSOR_X_HIGH);
-	*xp |= regval << 8;				/* XXX */
-
-	regval = tga_bt485_rd_reg(dc->dc_regs, BT485_REG_CURSOR_Y_LOW);
-	*yp = regval;
-	regval = tga_bt485_rd_reg(dc->dc_regs, BT485_REG_CURSOR_Y_HIGH);
-	*yp |= regval << 8;				/* XXX */
-
-	/*
-	 * RAMDAC cursors are 1-based, and position is bottom-right
-	 * of displayed cursor!
-	 */
-	(*xp) -= 64;
-	(*yp) -= 64;
-}
-
-void
-tga_console(bus, device, function)
+tga_console(iot, memt, pc, bus, device, function)
+	bus_space_tag_t iot, memt;
+	pci_chipset_tag_t pc;
 	int bus, device, function;
 {
 	struct tga_devconfig *dcp = &tga_console_dc;
+	struct wscons_odev_spec wo;
 
-	tga_getdevconfig(pci_make_tag(bus, device, function), dcp);
+	tga_getdevconfig(memt, pc, pci_make_tag(pc, bus, device, function), dcp);
 
 	/* sanity checks */
 	if (dcp->dc_vaddr == NULL)
-		panic("tga_console(%d, %d, %d): couldn't map memory space",
-		    bus, device, function);
+		panic("tga_console(%d, %d): couldn't map memory space",
+		    device, function);
 	if (dcp->dc_tgaconf == NULL)
-		panic("tga_console(%d, %d, %d): unknown board configuration",
-		    bus, device, function);
+		panic("tga_console(%d, %d): unknown board configuration",
+		    device, function);
 
-	wsc_console(&dcp->dc_ansicons, &tga_acf, &dcp->dc_rcons,
-	    dcp->dc_rcons.rc_maxrow, dcp->dc_rcons.rc_maxcol, 0, 0);
+	/*
+	 * Initialize the RAMDAC but DO NOT allocate any private storage.
+	 * Initialization includes disabling cursor, setting a sane
+	 * colormap, etc.  It will be reinitialized in tgaattach().
+	 */
+	(*dcp->dc_tgaconf->tgac_ramdac->tgar_init)(dcp, 0);
+
+	wo.wo_emulfuncs = &tga_emulfuncs;
+	wo.wo_emulfuncs_cookie = &dcp->dc_rcons;
+
+	/* ioctl and mmap are unused until real attachment. */
+
+	wo.wo_nrows = dcp->dc_rcons.rc_maxrow;
+	wo.wo_ncols = dcp->dc_rcons.rc_maxcol;
+	wo.wo_crow = 0;
+	wo.wo_ccol = 0;
+
+	wscons_attach_console(&wo);
+}
+
+/*
+ * Functions to blank and unblank the display.
+ */
+void
+tga_blank(dc)
+	struct tga_devconfig *dc;
+{
+
+	if (!dc->dc_blanked) {
+		dc->dc_blanked = 1;
+		dc->dc_regs[TGA_REG_VVVR] |= 0x02;		/* XXX */
+	}
+}
+
+void
+tga_unblank(dc)
+	struct tga_devconfig *dc;
+{
+
+	if (dc->dc_blanked) {
+		dc->dc_blanked = 0;
+		dc->dc_regs[TGA_REG_VVVR] &= ~0x02;		/* XXX */
+	}
+}
+
+/*
+ * Functions to manipulate the built-in cursor handing hardware.
+ */
+int
+tga_builtin_set_cursor(dc, fbc)
+	struct tga_devconfig *dc;
+	struct fbcursor *fbc;
+{
+	int v;
+#if 0
+	int count;
+#endif
+
+	v = fbc->set;
+#if 0
+	if (v & FB_CUR_SETCMAP)			/* XXX should be supported */
+		return EINVAL;
+	if (v & FB_CUR_SETSHAPE) {
+		if ((u_int)fbc->size.x != 64 || (u_int)fbc->size.y > 64)
+			return (EINVAL);
+		/* The cursor is 2 bits deep, and there is no mask */
+		count = (fbc->size.y * 64 * 2) / NBBY;
+		if (!useracc(fbc->image, count, B_READ))
+			return (EFAULT);
+	}
+	if (v & FB_CUR_SETHOT)			/* not supported */
+		return EINVAL;
+#endif
+
+	/* parameters are OK; do it */
+	if (v & FB_CUR_SETCUR) {
+		if (fbc->enable)
+			dc->dc_regs[TGA_REG_VVVR] |= 0x04;	/* XXX */
+		else
+			dc->dc_regs[TGA_REG_VVVR] &= ~0x04;	/* XXX */
+	}
+#if 0
+	if (v & FB_CUR_SETPOS) {
+		dc->dc_regs[TGA_REG_CXYR] =
+		    ((fbc->pos.y & 0xfff) << 12) | (fbc->pos.x & 0xfff);
+	}
+	if (v & FB_CUR_SETCMAP) {
+		/* XXX */
+	}
+	if (v & FB_CUR_SETSHAPE) {
+		dc->dc_regs[TGA_REG_CCBR] =
+		    (dc->dc_regs[TGA_REG_CCBR] & ~0xfc00) | (fbc->size.y << 10);
+		copyin(fbc->image, (char *)(dc->dc_vaddr +
+		    (dc->dc_regs[TGA_REG_CCBR] & 0x3ff)),
+		    count);				/* can't fail. */
+	}
+#endif
+	return (0);
+}
+
+int
+tga_builtin_get_cursor(dc, fbc)
+	struct tga_devconfig *dc;
+	struct fbcursor *fbc;
+{
+	int count, error;
+
+	fbc->set = FB_CUR_SETALL & ~(FB_CUR_SETHOT | FB_CUR_SETCMAP);
+	fbc->enable = (dc->dc_regs[TGA_REG_VVVR] & 0x04) != 0;
+	fbc->pos.x = dc->dc_regs[TGA_REG_CXYR] & 0xfff;
+	fbc->pos.y = (dc->dc_regs[TGA_REG_CXYR] >> 12) & 0xfff;
+	fbc->size.x = 64;
+	fbc->size.y = (dc->dc_regs[TGA_REG_CCBR] >> 10) & 0x3f;
+
+	if (fbc->image != NULL) {
+		count = (fbc->size.y * 64 * 2) / NBBY;
+		error = copyout((char *)(dc->dc_vaddr +
+		      (dc->dc_regs[TGA_REG_CCBR] & 0x3ff)),
+		    fbc->image, count);
+		if (error)
+			return (error);
+		/* No mask */
+	}
+	/* XXX No color map */
+	return (0);
+}
+
+int
+tga_builtin_set_curpos(dc, fbp)
+	struct tga_devconfig *dc;
+	struct fbcurpos *fbp;
+{
+
+	dc->dc_regs[TGA_REG_CXYR] =
+	    ((fbp->y & 0xfff) << 12) | (fbp->x & 0xfff);
+	return (0);
+}
+
+int
+tga_builtin_get_curpos(dc, fbp)
+	struct tga_devconfig *dc;
+	struct fbcurpos *fbp;
+{
+
+	fbp->x = dc->dc_regs[TGA_REG_CXYR] & 0xfff;
+	fbp->y = (dc->dc_regs[TGA_REG_CXYR] >> 12) & 0xfff;
+	return (0);
+}
+
+int
+tga_builtin_get_curmax(dc, fbp)
+	struct tga_devconfig *dc;
+	struct fbcurpos *fbp;
+{
+
+	fbp->x = fbp->y = 64;
+	return (0);
 }

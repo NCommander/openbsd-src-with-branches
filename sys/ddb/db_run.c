@@ -1,8 +1,9 @@
-/*	$NetBSD: db_run.c,v 1.7 1994/10/09 08:30:08 mycroft Exp $	*/
+/*	$OpenBSD: db_run.c,v 1.5 1997/03/21 00:48:41 niklas Exp $	*/
+/*	$NetBSD: db_run.c,v 1.8 1996/02/05 01:57:12 christos Exp $	*/
 
 /* 
  * Mach Operating System
- * Copyright (c) 1991,1990 Carnegie Mellon University
+ * Copyright (c) 1993,1992,1991,1990 Carnegie Mellon University
  * All Rights Reserved.
  * 
  * Permission to use, copy, modify and distribute this software and its
@@ -11,7 +12,7 @@
  * software, derivative works or modified versions, and any portions
  * thereof, and that both notices appear in supporting documentation.
  * 
- * CARNEGIE MELLON ALLOWS FREE USE OF THIS SOFTWARE IN ITS 
+ * CARNEGIE MELLON ALLOWS FREE USE OF THIS SOFTWARE IN ITS "AS IS"
  * CONDITION.  CARNEGIE MELLON DISCLAIMS ANY LIABILITY OF ANY KIND FOR
  * ANY DAMAGES WHATSOEVER RESULTING FROM THE USE OF THIS SOFTWARE.
  * 
@@ -22,8 +23,8 @@
  *  Carnegie Mellon University
  *  Pittsburgh PA 15213-3890
  * 
- * any improvements or extensions that they make and grant Carnegie the
- * rights to redistribute these changes.
+ * any improvements or extensions that they make and grant Carnegie Mellon
+ * the rights to redistribute these changes.
  *
  * 	Author: David B. Golub, Carnegie Mellon University
  *	Date:	7/90
@@ -41,6 +42,10 @@
 #include <ddb/db_lex.h>
 #include <ddb/db_break.h>
 #include <ddb/db_access.h>
+#include <ddb/db_watch.h>
+#include <ddb/db_output.h>
+#include <ddb/db_sym.h>
+#include <ddb/db_extern.h>
 
 int	db_run_mode;
 #define	STEP_NONE	0
@@ -74,7 +79,7 @@ db_stop_at_pc(regs, is_breakpoint)
 	     * Breakpoint trap.  Fix up the PC if the
 	     * machine requires it.
 	     */
-	    FIXUP_PC_AFTER_BREAK
+	    FIXUP_PC_AFTER_BREAK(regs);
 	    pc = PC_REGS(regs);
 	}
 #endif
@@ -90,7 +95,9 @@ db_stop_at_pc(regs, is_breakpoint)
 		return (TRUE);	/* stop here */
 	    }
 	} else if (*is_breakpoint) {
+#ifndef m88k
 		PC_REGS(regs) += BKPT_SIZE;
+#endif
 	}
 		
 	*is_breakpoint = FALSE;

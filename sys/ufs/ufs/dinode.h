@@ -1,3 +1,4 @@
+/*	$OpenBSD: dinode.h,v 1.7 1995/06/15 23:22:48 cgd Exp $	*/
 /*	$NetBSD: dinode.h,v 1.7 1995/06/15 23:22:48 cgd Exp $	*/
 
 /*
@@ -39,6 +40,9 @@
  *
  *	@(#)dinode.h	8.6 (Berkeley) 9/13/94
  */
+
+#ifndef _UFS_DINODE_H_
+#define _UFS_DINODE_H_
 
 /*
  * The root inode is the root of the file system.  Inode 0 can't be used for
@@ -123,3 +127,5 @@ struct dinode {
 #define	IFLNK		0120000		/* Symbolic link. */
 #define	IFSOCK		0140000		/* UNIX domain socket. */
 #define	IFWHT		0160000		/* Whiteout. */
+
+#endif /* _UFS_DINODE_H_ */

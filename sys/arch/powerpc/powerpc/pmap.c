@@ -1,3 +1,4 @@
+/*	$OpenBSD: pmap.c,v 1.4 1997/01/09 21:19:02 rahnds Exp $	*/
 /*	$NetBSD: pmap.c,v 1.1 1996/09/30 16:34:52 ws Exp $	*/
 
 /*
@@ -272,8 +273,8 @@ pte_spill(addr)
 	return 0;
 }
 
-int avail_start __asm__ ("_avail_start");
-int avail_end __asm__ ("_avail_end");
+int avail_start;
+int avail_end;
 /*
  * This is called during initppc, before the system is really initialized.
  */
@@ -430,7 +431,7 @@ avail_end = npgs * NBPG;
 	for (i = 0; i < 16; i++) {
 		pmap_kernel()->pm_sr[i] = EMPTY_SEGMENT;
 		asm volatile ("mtsrin %0,%1"
-			      :: "r"(i << ADDR_SR_SHFT), "r"(EMPTY_SEGMENT));
+			      :: "r"(EMPTY_SEGMENT), "r"(i << ADDR_SR_SHFT) );
 	}
 	pmap_kernel()->pm_sr[KERNEL_SR] = KERNEL_SEGMENT;
 	asm volatile ("mtsr %0,%1"
@@ -872,7 +873,8 @@ pmap_enter_pv(pteidx, va, pind)
 }
 
 static void
-pmap_remove_pv(pteidx, va, pind, pte)
+pmap_remove_pv(pm, pteidx, va, pind, pte)
+	struct pmap *pm;                                            
 	int pteidx;
 	vm_offset_t va;
 	int pind;
@@ -904,8 +906,16 @@ pmap_remove_pv(pteidx, va, pind, pte)
 		if (npv) {
 			*pv = *npv;
 			pmap_free_pv(npv);
-		} else
+		} else {
 			pv->pv_idx = -1;
+		}
+		if (pm != NULL) {
+			/* if called from pmap_page_protect,
+			 * we don't know what pmap it was removed from.
+			 * BAD DESIGN.
+			 */
+			pm->pm_stats.resident_count--;
+		}
 	} else {
 		for (; npv = pv->pv_next; pv = npv)
 			if (pteidx == npv->pv_idx && va == npv->pv_va)
@@ -913,6 +923,9 @@ pmap_remove_pv(pteidx, va, pind, pte)
 		if (npv) {
 			pv->pv_next = npv->pv_next;
 			pmap_free_pv(npv);
+			if (pm != NULL) {
+				pm->pm_stats.resident_count--;
+			}
 		}
 #ifdef	DIAGNOSTIC
 		else
@@ -941,6 +954,8 @@ pmap_enter(pm, va, pa, prot, wired)
 	 * Have to remove any existing mapping first.
 	 */
 	pmap_remove(pm, va, va + NBPG - 1);
+
+	pm->pm_stats.resident_count++;
 	
 	/*
 	 * Compute the HTAB index.
@@ -1014,7 +1029,8 @@ pmap_remove(pm, va, endva)
 		idx = pteidx(sr = ptesr(pm->pm_sr, va), va);
 		for (ptp = ptable + idx * 8, i = 8; --i >= 0; ptp++)
 			if (ptematch(ptp, sr, va, PTE_VALID)) {
-				pmap_remove_pv(idx, va, pmap_page_index(ptp->pte_lo), ptp);
+				pmap_remove_pv(pm, idx, va,
+					pmap_page_index(ptp->pte_lo), ptp);
 				ptp->pte_hi &= ~PTE_VALID;
 				asm volatile ("sync");
 				tlbie(va);
@@ -1022,7 +1038,8 @@ pmap_remove(pm, va, endva)
 			}
 		for (ptp = ptable + (idx ^ ptab_mask) * 8, i = 8; --i >= 0; ptp++)
 			if (ptematch(ptp, sr, va, PTE_VALID | PTE_HID)) {
-				pmap_remove_pv(idx, va, pmap_page_index(ptp->pte_lo), ptp);
+				pmap_remove_pv(pm, idx, va,
+					pmap_page_index(ptp->pte_lo), ptp);
 				ptp->pte_hi &= ~PTE_VALID;
 				asm volatile ("sync");
 				tlbie(va);
@@ -1031,7 +1048,8 @@ pmap_remove(pm, va, endva)
 		for (po = potable[idx].lh_first; po; po = npo) {
 			npo = po->po_list.le_next;
 			if (ptematch(&po->po_pte, sr, va, 0)) {
-				pmap_remove_pv(idx, va, pmap_page_index(po->po_pte.pte_lo),
+				pmap_remove_pv(pm, idx, va,
+					pmap_page_index(po->po_pte.pte_lo),
 					       &po->po_pte);
 				LIST_REMOVE(po, po_list);
 				pofree(po, 1);
@@ -1274,7 +1292,7 @@ pmap_page_protect(pa, prot)
 		for (ptp = ptable + idx * 8, i = 8; --i >= 0; ptp++)
 			if ((ptp->pte_hi & PTE_VALID)
 			    && (ptp->pte_lo & PTE_RPGN) == pa) {
-				pmap_remove_pv(idx, va, pind, ptp);
+				pmap_remove_pv(NULL, idx, va, pind, ptp);
 				ptp->pte_hi &= ~PTE_VALID;
 				asm volatile ("sync");
 				tlbie(va);
@@ -1283,7 +1301,7 @@ pmap_page_protect(pa, prot)
 		for (ptp = ptable + (idx ^ ptab_mask) * 8, i = 8; --i >= 0; ptp++)
 			if ((ptp->pte_hi & PTE_VALID)
 			    && (ptp->pte_lo & PTE_RPGN) == pa) {
-				pmap_remove_pv(idx, va, pind, ptp);
+				pmap_remove_pv(NULL, idx, va, pind, ptp);
 				ptp->pte_hi &= ~PTE_VALID;
 				asm volatile ("sync");
 				tlbie(va);
@@ -1292,7 +1310,7 @@ pmap_page_protect(pa, prot)
 		for (po = potable[idx].lh_first; po; po = npo) {
 			npo = po->po_list.le_next;
 			if ((po->po_pte.pte_lo & PTE_RPGN) == pa) {
-				pmap_remove_pv(idx, va, pind, &po->po_pte);
+				pmap_remove_pv(NULL,idx, va, pind, &po->po_pte);
 				LIST_REMOVE(po, po_list);
 				pofree(po, 1);
 			}

@@ -1,5 +1,4 @@
-.\"	@(#)bindresvport.3n	2.2 88/08/02 4.0 RPCSRC; from 1.7 88/03/14 SMI
-.\"	$NetBSD: bindresvport.3,v 1.2 1995/02/25 03:01:37 cgd Exp $
+.\"	$OpenBSD: bindresvport.3,v 1.3 1996/08/19 08:31:23 tholo Exp $
 .\"
 .Dd November 22, 1987
 .Dt BINDRESVPORT 3
@@ -25,3 +24,8 @@ set to reflect the cause of the error.
 .Pp
 Only root can bind to a privileged port; this call will fail for any
 other users.
+.Pp
+If the value of sin->sin_port is non-zero
+.Fn bindresvport
+otherwise it attempts to use the specified port.  If that fails, it
+chooses another privileged port number automatically.

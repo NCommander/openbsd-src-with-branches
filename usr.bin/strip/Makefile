@@ -1,13 +1,22 @@
-#	from: @(#)Makefile	5.4 (Berkeley) 5/11/90
-#	$Id: Makefile,v 1.10 1995/06/10 20:56:34 mycroft Exp $
+#	$OpenBSD: Makefile,v 1.5 1997/02/13 00:12:07 deraadt Exp $
 
 PROG=	strip
+.if ${HOSTCC} != ${CC}
+STRIP=./hoststrip
+
+realinstall: hoststrip
+
+hoststrip: strip.c
+	${HOSTCC} ${.CURDIR}/strip.c -o hoststrip
+.else
+STRIP=./strip
+.endif
 
 realinstall:
-	install -c -o ${BINOWN} -g ${BINGRP} -m 600 strip \
+	${INSTALL} ${INSTALL_COPY} -o ${BINOWN} -g ${BINGRP} -m 600 strip \
 	    ${DESTDIR}${BINDIR}
-	./strip ${DESTDIR}${BINDIR}/strip
+	${STRIP} ${DESTDIR}${BINDIR}/strip
 	chmod ${BINMODE} ${DESTDIR}${BINDIR}/strip
-	-if [ "${COPY}" = "" ]; then rm -f ./strip; fi
+	-if [ "${INSTALL_COPY}" = "" ]; then rm -f ${STRIP}; fi
 
 .include <bsd.prog.mk>

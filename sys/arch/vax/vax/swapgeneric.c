@@ -1,4 +1,4 @@
-/*	$NetBSD: swapgeneric.c,v 1.5 1995/03/30 21:25:41 ragge Exp $	*/
+/*	$NetBSD: swapgeneric.c,v 1.13 1996/10/13 03:36:01 christos Exp $	*/
 
 /*-
  * Copyright (c) 1982, 1986 The Regents of the University of California.
@@ -35,24 +35,28 @@
  *	@(#)swapgeneric.c	7.11 (Berkeley) 5/9/91
  */
 
-#include "mba.h"
-#include "uda.h"
+#include <sys/param.h>
+#include <sys/conf.h>
+#include <sys/buf.h>
+#include <sys/systm.h>
+#include <sys/reboot.h>
+#include <sys/device.h>
 
+#include <dev/cons.h>
 
-#include "sys/param.h"
-#include "sys/conf.h"
-#include "sys/buf.h"
-#include "sys/systm.h"
-#include "sys/reboot.h"
+#include <ufs/ffs/ffs_extern.h>
 
-#include "machine/pte.h"
-#include "machine/mtpr.h"
-#if NMBA > 0
-#include "../mba/mbareg.h"
-#include "../mba/mbavar.h"
-#endif
-#include "../uba/ubareg.h"
-#include "../uba/ubavar.h"
+#include <machine/pte.h>
+#include <machine/mtpr.h>
+#include <machine/cpu.h>
+
+#include "hp.h"
+#include "ra.h"
+#include "hdc.h"
+#include "sd.h"
+#include "st.h"
+
+void	gets __P((char *));
 
 /*
  * Generic configuration;  all in one
@@ -70,115 +74,99 @@ struct	swdevt swdevt[] = {
 long	dumplo;
 int	dmmin, dmmax, dmtext;
 
-extern int ffs_mountroot();
-int (*mountroot)() = ffs_mountroot;
+int (*mountroot) __P((void)) = ffs_mountroot;
 
-extern	struct mba_driver hpdriver;
-extern	struct uba_driver scdriver;
-extern	struct uba_driver hkdriver;
-extern	struct uba_driver idcdriver;
-extern	struct uba_driver hldriver;
-extern	struct uba_driver udadriver;
-extern	struct uba_driver kdbdriver;
+extern	struct cfdriver hp_cd;
+extern	struct cfdriver ra_cd;
+extern	struct cfdriver rd_cd;
+extern	struct cfdriver sd_cd;
+extern	struct cfdriver st_cd;
 
-struct	genericconf {
-	caddr_t	gc_driver;
-	char	*gc_name;
-	dev_t	gc_root;
-} genericconf[] = {
-/*	{ (caddr_t)&hpdriver,	"hp",	makedev(0, 0),	},
-	{ (caddr_t)&scdriver,	"up",	makedev(2, 0),	}, */
-#if NUDA > 0
-	{ (caddr_t)&udadriver,	"ra",	makedev(9, 0),	},
+struct	ngcconf {
+	struct	cfdriver *ng_cf;
+	dev_t	ng_root;
+} ngcconf[] = {
+#if NHP > 0
+	{ &hp_cd,	makedev(0, 0), },
 #endif
-/*	{ (caddr_t)&idcdriver,	"rb",	makedev(11, 0),	},
-	{ (caddr_t)&hldriver,	"rl",	makedev(14, 0),	},
-	{ (caddr_t)&hkdriver,	"hk",	makedev(3, 0),	},
-	{ (caddr_t)&hkdriver,	"rk",	makedev(3, 0),	},
-	{ (caddr_t)&kdbdriver,	"kra",	makedev(16, 0), }, */
+#if NRA > 0
+	{ &ra_cd,	makedev(9, 0), },
+#endif
+#if NHDC > 0
+	{ &rd_cd,	makedev(19, 0), },
+#endif
+#if NSD > 0
+	{ &sd_cd,	makedev(20, 0), },
+#endif
+#if NST > 0
+	{ &st_cd,	makedev(21, 0), },
+#endif
 	{ 0 },
 };
 
+void
 setconf()
 {
-#if NMBA > 0
-	register struct mba_device *mi;
-#endif
-#if NUDA > 0
-	register struct uba_device *ui;
-#endif
-	register struct genericconf *gc;
+	struct	ngcconf *nc;
 	register char *cp, *gp;
-	int unit, swaponroot = 0;
+	int unit, swaponroot = 0, i;
+	char name[128];
 
 	if (rootdev != NODEV)
 		goto doswap;
 	unit = 0;
+	/*
+	 * First try new config devices.
+	 */
 	if (boothowto & RB_ASKNAME) {
-		char name[128];
-retry:
+nretry:
+		swaponroot = 0;
 		printf("root device? ");
 		gets(name);
-		for (gc = genericconf; gc->gc_driver; gc++)
-		    for (cp = name, gp = gc->gc_name; *cp == *gp; cp++)
-			if (*++gp == 0)
-				goto gotit;
-		printf(
-		  "use hp%%d, up%%d, ra%%d, rb%%d, rl%%d, hk%%d or kra%%d\n");
-		goto retry;
-gotit:
-		if (*++cp < '0' || *cp > '9') {
-			printf("bad/missing unit number\n");
-			goto retry;
-		}
-		while (*cp >= '0' && *cp <= '9')
-			unit = 10 * unit + *cp++ - '0';
-		if (*cp == '*')
-			swaponroot++;
-		goto found;
-	}
-	for (gc = genericconf; gc->gc_driver; gc++) {
-#if NMBA > 0
-		for (mi = mbdinit; mi->mi_driver; mi++) {
-			if (mi->mi_alive == 0)
-				continue;
-			if (mi->mi_unit == unit && mi->mi_driver ==
-			    (struct mba_driver *)gc->gc_driver) {
-				printf("root on %s%d\n",
-				    mi->mi_driver->md_dname, unit);
-				goto found;
-			}
-		}
-#endif
-#if NUDA > 0
-		for (ui = ubdinit; ui->ui_driver; ui++) {
-			if (ui->ui_alive == 0)
-				continue;
-			if (ui->ui_unit == unit && ui->ui_driver ==
-			    (struct uba_driver *)gc->gc_driver) {
-				printf("root on %s%d\n",
-				    ui->ui_driver->ud_dname, unit);
-				goto found;
-			}
-		}
-#endif
+		if (name[strlen(name) - 1] == '*')
+			name[strlen(name) - 1] = swaponroot++;
+		for (nc = ngcconf; nc->ng_cf; nc++)
+			for (i = 0; i < nc->ng_cf->cd_ndevs; i++)
+				if (nc->ng_cf->cd_devs[i] &&
+				    strcmp(name, ((struct device *)
+				    (nc->ng_cf->cd_devs[i]))->dv_xname) == 0)
+					goto ngotit;
+
+		printf("Use one of ");
+		for (nc = ngcconf; nc->ng_cf; nc++)
+			printf("%s%%d ", nc->ng_cf->cd_name);
+		printf("\n");
+
+		goto nretry;
+ngotit:
+		rootdev = makedev(major(nc->ng_root), i * 8);
+		goto doswap;
+
+	} else {
+		for (nc = ngcconf; nc->ng_cf; nc++)
+			for (i = 0; i < nc->ng_cf->cd_ndevs; i++)
+				if (nc->ng_cf->cd_devs[i]) {
+					printf("root on %s%d\n",
+					    nc->ng_cf->cd_name, i);
+					rootdev = makedev(major(nc->ng_root),
+					    i * 8);
+					goto doswap;
+				}
+
 	}
 
 	printf("no suitable root\n");
 	asm("halt");
 
-found:
-	gc->gc_root = makedev(major(gc->gc_root), unit*8);
-	rootdev = gc->gc_root;
 doswap:
 	swdevt[0].sw_dev = argdev = dumpdev =
 	    makedev(major(rootdev), minor(rootdev)+1);
 	/* swap size and dumplo set during autoconfigure */
 	if (swaponroot)
 		rootdev = dumpdev;
-
 }
 
+void
 gets(cp)
 	char *cp;
 {

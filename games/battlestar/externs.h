@@ -35,6 +35,15 @@
  *	@(#)externs.h	8.1 (Berkeley) 5/31/93
  */
 
+/* 
+ * sigh -- this program thinks "time" is an int.  It's easier to not load
+ * <time.h> than try and fix it.
+ */   
+#define _KERNEL
+#include <sys/time.h>
+#undef _KERNEL
+
+#include <errno.h>
 #include <signal.h>
 #include <stdio.h>
 #include <string.h>
@@ -298,3 +307,5 @@ struct objs {
 };
 struct objs dayobjs[];
 struct objs nightobjs[];
+
+gid_t	egid;

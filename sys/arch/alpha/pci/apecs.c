@@ -1,7 +1,8 @@
-/*	$NetBSD: apecs.c,v 1.3 1995/08/03 01:16:47 cgd Exp $	*/
+/*	$OpenBSD: apecs.c,v 1.7 1996/12/08 00:20:30 niklas Exp $	*/
+/*	$NetBSD: apecs.c,v 1.16 1996/12/05 01:39:34 cgd Exp $	*/
 
 /*
- * Copyright (c) 1995 Carnegie-Mellon University.
+ * Copyright (c) 1995, 1996 Carnegie-Mellon University.
  * All rights reserved.
  *
  * Author: Chris G. Demetriou
@@ -35,47 +36,58 @@
 #include <vm/vm.h>
 
 #include <machine/autoconf.h>
-#include <machine/pio.h>
 #include <machine/rpb.h>
 
 #include <dev/isa/isareg.h>
 #include <dev/isa/isavar.h>
-#include <alpha/isa/isa_dma.h>
 
 #include <dev/pci/pcireg.h>
 #include <dev/pci/pcivar.h>
-#include <alpha/pci/pci_chipset.h>
 #include <alpha/pci/apecsreg.h>
-
-int	apecsmatch __P((struct device *, void *, void *));
-void	apecsattach __P((struct device *, struct device *, void *));
-
-struct cfdriver apecscd = {
-	NULL, "apecs", apecsmatch, apecsattach, DV_DULL, sizeof(struct device)
-};
-
-static int	apecsprint __P((void *, char *pnp));
-
-#ifdef DEC_2100_A50
-extern void	pci_2100_a50_pickintr __P((void));
+#include <alpha/pci/apecsvar.h>
+#if defined(DEC_2100_A50)
+#include <alpha/pci/pci_2100_a50.h>
 #endif
 
-#define	REGVAL(r)	(*(int32_t *)phystok0seg(r))
+#ifdef __BROKEN_INDIRECT_CONFIG
+int	apecsmatch __P((struct device *, void *, void *));
+#else
+int	apecsmatch __P((struct device *, struct cfdata *, void *));
+#endif
+void	apecsattach __P((struct device *, struct device *, void *));
 
-static int		nsgmapent = 1024;
-static vm_offset_t	sgmap_pci_base = 0x800000;
-/*static */struct sgmapent	*sgmap;
-static char		/* * */ sgbitmap[1024 / NBBY];
+struct cfattach apecs_ca = {
+	sizeof(struct apecs_softc), apecsmatch, apecsattach,
+};
+
+struct cfdriver apecs_cd = {
+	NULL, "apecs", DV_DULL,
+};
+
+int	apecsprint __P((void *, const char *pnp));
+
+/* There can be only one. */
+int apecsfound;
+struct apecs_config apecs_configuration;
 
 int
 apecsmatch(parent, match, aux)
 	struct device *parent;
-	void *match, *aux;
+#ifdef __BROKEN_INDIRECT_CONFIG
+	void *match;
+#else
+	struct cfdata *match;
+#endif
+	void *aux;
 {
-	struct cfdata *cf = match;
-	struct confargs *pa = aux;
+	struct confargs *ca = aux;
 
-	/* XXX */
+	/* Make sure that we're looking for an APECS. */
+	if (strcmp(ca->ca_name, apecs_cd.cd_name) != 0)
+		return (0);
+
+	if (apecsfound)
+		return (0);
 
 	return (1);
 }
@@ -84,18 +96,48 @@ apecsmatch(parent, match, aux)
  * Set up the chipset's function pointers.
  */
 void
-apecs_init()
+apecs_init(acp, mallocsafe)
+	struct apecs_config *acp;
+	int mallocsafe;
 {
-	int pass2_epic;
+	acp->ac_comanche_pass2 =
+	    (REGVAL(COMANCHE_ED) & COMANCHE_ED_PASS2) != 0;
+	acp->ac_memwidth =
+	    (REGVAL(COMANCHE_GCR) & COMANCHE_GCR_WIDEMEM) != 0 ? 128 : 64;
+	acp->ac_epic_pass2 =
+	    (REGVAL(EPIC_DCSR) & EPIC_DCSR_PASS2) != 0;
 
-	pass2_epic = (REGVAL(EPIC_DCSR) & EPIC_DCSR_PASS2) != 0;
+	acp->ac_haxr1 = REGVAL(EPIC_HAXR1);
+	acp->ac_haxr2 = REGVAL(EPIC_HAXR2);
 
-	isadma_fcns = &apecs_isadma_fcns;
-	isa_pio_fcns = &apecs_pio_fcns;
-	if (!pass2_epic)
-		pci_cs_fcns = &apecs_p1e_cs_fcns;
-	else
-		pci_cs_fcns = &apecs_p2e_cs_fcns;
+	/*
+	 * Can't set up SGMAP data here; can be called before malloc().
+	 * XXX THIS COMMENT NO LONGER MAKES SENSE.
+	 */
+
+	if (!acp->ac_initted) {
+		/* don't do these twice since they set up extents */
+		acp->ac_iot = apecs_bus_io_init(acp);
+		acp->ac_memt = apecs_bus_mem_init(acp);
+	}
+	acp->ac_mallocsafe = mallocsafe;
+
+	apecs_pci_init(&acp->ac_pc, acp);
+
+	/* Turn off DMA window enables in PCI Base Reg 1. */
+	REGVAL(EPIC_PCI_BASE_1) = 0;
+	alpha_mb();
+
+	/* XXX SGMAP? */
+
+	/* XXX XXX BEGIN XXX XXX */
+	{							/* XXX */
+		extern vm_offset_t alpha_XXX_dmamap_or;		/* XXX */
+		alpha_XXX_dmamap_or = 0x40000000;		/* XXX */
+	}							/* XXX */
+	/* XXX XXX END XXX XXX */
+
+	acp->ac_initted = 1;
 }
 
 void
@@ -103,169 +145,62 @@ apecsattach(parent, self, aux)
 	struct device *parent, *self;
 	void *aux;
 {
-	struct confargs *ca = aux;
-	struct confargs nca;
-	int pass2_comanche, widemem, pass2_epic;
+	struct apecs_softc *sc = (struct apecs_softc *)self;
+	struct apecs_config *acp;
+	struct pcibus_attach_args pba;
 
-	pass2_comanche = (REGVAL(COMANCHE_ED) & COMANCHE_ED_PASS2) != 0;
-	widemem = (REGVAL(COMANCHE_GCR) & COMANCHE_GCR_WIDEMEM) != 0;
-	pass2_epic = (REGVAL(EPIC_DCSR) & EPIC_DCSR_PASS2) != 0;
+	/* note that we've attached the chipset; can't have 2 APECSes. */
+	apecsfound = 1;
 
-	sgmap = (struct sgmapent *)malloc(1024 * sizeof(struct sgmapent),
-	    M_DEVBUF, M_WAITOK);
+	/*
+	 * set up the chipset's info; done once at console init time
+	 * (maybe), but doesn't hurt to do twice.
+	 */
+	acp = sc->sc_acp = &apecs_configuration;
+	apecs_init(acp, 1);
+
+	/* XXX SGMAP FOO */
 
 	printf(": DECchip %s Core Logic chipset\n",
-	    widemem ? "21072" : "21071");
+	    acp->ac_memwidth == 128 ? "21072" : "21071");
 	printf("%s: DC21071-CA pass %d, %d-bit memory bus\n",
-	    self->dv_xname, pass2_comanche ? 2 : 1, widemem ? 128 : 64);
-	printf("%s: DC21071-DA pass %d\n", self->dv_xname, pass2_epic ? 2 : 1);
+	    self->dv_xname, acp->ac_comanche_pass2 ? 2 : 1, acp->ac_memwidth);
+	printf("%s: DC21071-DA pass %d\n", self->dv_xname,
+	    acp->ac_epic_pass2 ? 2 : 1);
 	/* XXX print bcache size */
 
-	if (!pass2_epic)
+	if (!acp->ac_epic_pass2)
 		printf("WARNING: 21071-DA NOT PASS2... NO BETS...\n");
-
-	/* set up the chipset's functions */
-	apecs_init();
 
 	switch (hwrpb->rpb_type) {
 #if defined(DEC_2100_A50)
 	case ST_DEC_2100_A50:
-		pci_2100_a50_pickintr();
+		pci_2100_a50_pickintr(acp);
 		break;
 #endif
+
 	default:
 		panic("apecsattach: shouldn't be here, really...");
 	}
 
-	/* attach the PCI bus that hangs off of it... */
-	nca.ca_name = "pci";
-	nca.ca_slot = 0;
-	nca.ca_offset = 0;
-	nca.ca_bus = NULL;
-	if (!config_found(self, &nca, apecsprint))
-		panic("apecsattach: couldn't attach PCI bus");
+	pba.pba_busname = "pci";
+	pba.pba_iot = acp->ac_iot;
+	pba.pba_memt = acp->ac_memt;
+	pba.pba_pc = &acp->ac_pc;
+	pba.pba_bus = 0;
+	config_found(self, &pba, apecsprint);
 }
 
-static int
+int
 apecsprint(aux, pnp)
 	void *aux;
-	char *pnp;
+	const char *pnp;
 {
-        register struct confargs *ca = aux;
+	register struct pcibus_attach_args *pba = aux;
 
-        if (pnp)
-                printf("%s at %s", ca->ca_name, pnp);
-        return (UNCONF);
-}
-
-vm_offset_t						/* XXX? */
-apecs_sgmap_alloc(va, npg, nocross, waitok)
-	caddr_t	va;
-	int npg;
-	vm_size_t nocross;
-	int waitok;
-{
-	int s;
-	int base, i, stride;
-
-#ifdef DIAGNOSTIC
-	/* Quick sanity checks. */
-	if ((vm_offset_t)va & PGOFSET)
-		panic("apecs_sgmap_alloc: va not page aligned");
-	if ((nocross & (nocross - 1)) != 0 || nocross == 0)
-		panic("apecs_sgmap_alloc: bogus alignment 0x%lx", nocross);
-	if (npg <= 0)
-		panic("apecs_sgmap_alloc: not allocating anything");
-	if (npg > nsgmapent)
-		panic("apecs_sgmap_alloc: insane allocation");
-	if (ptoa(npg) > nocross)
-		panic("apecs_sgmap_alloc: must cross boundary");
-#endif
-
-	stride = atop(nocross);
-#ifdef DIAGNOSTIC
-	if (stride > nsgmapent)
-		panic("apecs_sgmap_alloc: cheesy implementation loses");
-#endif
-
-top:
-	s = splhigh();
-	for (base = 0; base < nsgmapent; base += stride) {
-		for (i = base; i < base + npg; i++)
-			if (isset(sgbitmap, i))
-				goto nextstride;
-		break;
-nextstride:
-	}
-	if (base < nsgmapent)		/* found a free chunk, claim it */
-		for (i = base; i < base + npg; i++)
-			setbit(sgbitmap, i);
-	splx(s);
-
-	if (base >= nsgmapent) {	/* didn't find a free chunk */
-		if (!waitok)
-			return 0;
-		tsleep(&sgmap, PRIBIO+1, "sgmap", 0);
-		goto top;
-	}
-
-	for (i = base; i < base + npg; i++) {
-#ifdef DIAGNOSTIC
-		if ((sgmap[i].val & SGMAPENT_EVAL) != 0)
-			panic("apecs_sgmap_alloc: unallocated entry valid");
-#endif
-		sgmap[i].val = SGMAP_MAKEENTRY(atop(vtophys(va)));
-		va += PAGE_SIZE;
-	}
-
-	/* Invalidate old cached entries. */
-	REGVAL(EPIC_TBIA) = 1;
-
-	/* Return the PCI address. */
-	return (ptoa(base) + sgmap_pci_base);
-}
-
-void
-apecs_sgmap_dealloc(pa, npg)
-	vm_offset_t pa;
-	int npg;
-{
-	int i, pfn;
-
-#ifdef DIAGNOSTIC
-	/* Quick sanity checks. */
-	if (pa & PGOFSET)
-		panic("apecs_sgmap_dealloc: pa not page aligned");
-	if (npg <= 0)
-		panic("apecs_sgmap_dealloc: not deallocating anything");
-	if (npg > nsgmapent)
-		panic("apecs_sgmap_dealloc: insane deallocation");
-#endif
-
-	pfn = atop(pa - sgmap_pci_base);
-#ifdef DIAGNOSTIC
-	/* Bounds check the deallocation range.  Paranoid about wraparound. */
-	if (pfn < 0 || pfn >= nsgmapent || (pfn + npg) >= nsgmapent)
-		panic("apecs_sgmap_dealloc: pa out of range (%s)",
-			pfn < 0 ? "too low" : "too high");
-#endif
-
-	for (i = 0; i < npg; i++) {
-#ifdef DIAGNOSTIC
-		/* Make sure it's actually allocated. */
-		if (isclr(sgbitmap, i + pfn))
-			panic("apecs_sgmap_dealloc: multiple frees: entry %d",
-			    i + pfn);
-#endif
-
-		/* Clear the entries and the allocation map bits. */
-		clrbit(sgbitmap, i + pfn);
-		sgmap[i + pfn].val &= ~SGMAPENT_EVAL;
-	}
-
-	/* Invalidate old cached entries. */
-	REGVAL(EPIC_TBIA) = 1;
-
-	/* Wake up anybody waiting for map entries. */
-	wakeup(&sgmap);
+	/* only PCIs can attach to APECSes; easy. */
+	if (pnp)
+		printf("%s at %s", pba->pba_busname, pnp);
+	printf(" bus %d", pba->pba_bus);
+	return (UNCONF);
 }

@@ -1,3 +1,5 @@
+/*	$OpenBSD: $	*/
+
 /*
  * Copyright (c) 1983, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -39,7 +41,11 @@ static char copyright[] =
 #endif /* not lint */
 
 #ifndef lint
-static char sccsid[] = "@(#)recvjob.c	8.1 (Berkeley) 6/6/93";
+#if 0
+static char sccsid[] = "@(#)recvjob.c	8.2 (Berkeley) 4/27/95";
+#else
+static char rcsid[] = "$OpenBSD: $";
+#endif
 #endif /* not lint */
 
 /*
@@ -146,10 +152,13 @@ readjob()
 		do {
 			if ((size = read(1, cp, 1)) != 1) {
 				if (size < 0)
-					frecverr("%s: Lost connection",printer);
+					frecverr("%s: Lost connection",
+					    printer);
 				return(nfiles);
 			}
-		} while (*cp++ != '\n');
+		} while (*cp++ != '\n' && (cp - line + 1) < sizeof line);
+		if (cp - line + 1 >= sizeof line)
+			frecverr("readjob overflow");
 		*--cp = '\0';
 		cp = line;
 		switch (*cp++) {
@@ -170,7 +179,8 @@ readjob()
 			 * returns
 			 */
 			strcpy(cp + 6, from);
-			strcpy(tfname, cp);
+			strncpy(tfname, cp, sizeof tfname-1);
+			tfname[sizeof tfname-1] = '\0';
 			tfname[0] = 't';
 			if (!chksize(size)) {
 				(void) write(1, "\2", 1);
@@ -197,8 +207,9 @@ readjob()
 				(void) write(1, "\2", 1);
 				continue;
 			}
-			(void) strcpy(dfname, cp);
-			if (index(dfname, '/'))
+			(void) strncpy(dfname, cp, sizeof dfname-1);
+			dfname[sizeof dfname-1] = '\0';
+			if (strchr(dfname, '/'))
 				frecverr("readjob: %s: illegal path name",
 					dfname);
 			(void) readfile(dfname, size);

@@ -1,5 +1,3 @@
-/*	$NetBSD: getnetent.c,v 1.4 1995/02/25 06:20:33 cgd Exp $	*/
-
 /*
  * Copyright (c) 1983, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -34,11 +32,7 @@
  */
 
 #if defined(LIBC_SCCS) && !defined(lint)
-#if 0
-static char sccsid[] = "@(#)getnetent.c	8.1 (Berkeley) 6/4/93";
-#else
-static char rcsid[] = "$NetBSD: getnetent.c,v 1.4 1995/02/25 06:20:33 cgd Exp $";
-#endif
+static char rcsid[] = "$OpenBSD: getnetent.c,v 1.5 1996/09/03 07:27:45 deraadt Exp $";
 #endif /* LIBC_SCCS and not lint */
 
 #include <sys/types.h>
@@ -97,6 +91,8 @@ again:
 		goto again;
 	*cp = '\0';
 	net.n_name = p;
+	if (strlen(net.n_name) >= MAXHOSTNAMELEN-1)
+		net.n_name[MAXHOSTNAMELEN-1] = '\0';
 	cp = strpbrk(p, " \t");
 	if (cp == NULL)
 		goto again;
@@ -116,8 +112,11 @@ again:
 			cp++;
 			continue;
 		}
-		if (q < &net_aliases[MAXALIASES - 1])
+		if (q < &net_aliases[MAXALIASES - 1]) {
 			*q++ = cp;
+			if (strlen(cp) >= MAXHOSTNAMELEN-1)
+				cp[MAXHOSTNAMELEN-1] = '\0';
+		}
 		cp = strpbrk(cp, " \t");
 		if (cp != NULL)
 			*cp++ = '\0';

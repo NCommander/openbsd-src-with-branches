@@ -1,4 +1,4 @@
-.\"	$NetBSD: setproctitle.3,v 1.2 1995/02/27 05:50:46 cgd Exp $
+.\"	$OpenBSD: setproctitle.3,v 1.2 1996/08/19 08:25:57 tholo Exp $
 .\"
 .\" Copyright (c) 1994, 1995 Christopher G. Demetriou
 .\" All rights reserved.
@@ -31,7 +31,7 @@
 .\"
 .Dd "April 13, 1994"
 .Dt SETPROCTITLE 3
-.Os NetBSD 0.9a
+.Os
 .Sh NAME
 .Nm setproctitle
 .Nd set process title
@@ -60,7 +60,7 @@ setproctitle(NULL);
 Set the process title to the program name, an informational string,
 and the process id:
 .Bd -literal -offset indent
-setproctitle("foo! (%s)", getpid());
+setproctitle("foo! (%d)", getpid());
 .Ed
 .Sh SEE ALSO
 .Xr ps 1 ,

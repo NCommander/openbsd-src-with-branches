@@ -1,3 +1,5 @@
+/*	$OpenBSD: rusers.c,v 1.4 1996/08/16 22:24:18 deraadt Exp $	*/
+
 /*-
  *  Copyright (c) 1993 John Brezak
  *  All rights reserved.
@@ -27,7 +29,7 @@
  */
 
 #ifndef lint
-static char rcsid[] = "$Id: rusers.c,v 1.10 1993/12/10 19:33:58 jtc Exp $";
+static char rcsid[] = "$OpenBSD: rusers.c,v 1.4 1996/08/16 22:24:18 deraadt Exp $";
 #endif /* not lint */
 
 #include <sys/types.h>
@@ -97,7 +99,7 @@ rusers_reply(char *replyp, struct sockaddr_in *raddrp)
 	int x, idle;
 	char date[32], idle_time[64], remote[64], local[64];
 	struct hostent *hp;
-	struct utmpidlearr *up = (struct utmpidlearr *)replyp;
+	utmpidlearr *up = (utmpidlearr *)replyp;
 	char *host;
 	int days, hours, minutes, seconds;
 	
@@ -119,8 +121,8 @@ rusers_reply(char *replyp, struct sockaddr_in *raddrp)
 	
 	for (x = 0; x < up->uia_cnt; x++) {
 		strncpy(date,
-			&(ctime((time_t *)&(up->uia_arr[x]->ui_utmp.ut_time))[4]),
-			sizeof(date)-1);
+		    &(ctime((time_t *)&(up->uia_arr[x]->ui_utmp.ut_time))[4]),
+		    sizeof(date)-1);
 
 		idle = up->uia_arr[x]->ui_idle;
 		sprintf(idle_time, "   :%02d", idle);
@@ -138,13 +140,13 @@ rusers_reply(char *replyp, struct sockaddr_in *raddrp)
 			seconds %= 60;
 			if (idle > 60)
 				sprintf(idle_time, "%2d:%02d",
-					minutes, seconds);
+				    minutes, seconds);
 			if (idle >= (60*60))
 				sprintf(idle_time, "%2d:%02d:%02d",
-					hours, minutes, seconds);
+				    hours, minutes, seconds);
 			if (idle >= (24*60*60))
 				sprintf(idle_time, "%d days, %d:%02d:%02d",
-					days, hours, minutes, seconds);
+				    days, hours, minutes, seconds);
 		}
 
 		strncpy(remote, up->uia_arr[x]->ui_utmp.ut_host,
@@ -162,10 +164,8 @@ rusers_reply(char *replyp, struct sockaddr_in *raddrp)
 
 			printf("%-8.8s %-*.*s %-12.12s %8s %.18s\n",
 			    up->uia_arr[x]->ui_utmp.ut_name,
-			    HOST_WIDTH+LINE_WIDTH+1, HOST_WIDTH+LINE_WIDTH+1, local,
-			    date,
-			    idle_time,
-			    remote);
+			    HOST_WIDTH+LINE_WIDTH+1, HOST_WIDTH+LINE_WIDTH+1,
+			    local, date, idle_time, remote);
 		} else
 			printf("%0.8s ",
 			    up->uia_arr[x]->ui_utmp.ut_name);
@@ -180,7 +180,7 @@ rusers_reply(char *replyp, struct sockaddr_in *raddrp)
 void
 onehost(char *host)
 {
-	struct utmpidlearr up;
+	utmpidlearr up;
 	CLIENT *rusers_clnt;
 	struct sockaddr_in addr;
 	struct hostent *hp;
@@ -211,7 +211,7 @@ onehost(char *host)
 void
 allhosts(void)
 {
-	struct utmpidlearr up;
+	utmpidlearr up;
 	enum clnt_stat clnt_stat;
 
 	bzero((char *)&up, sizeof(up));
@@ -224,22 +224,23 @@ allhosts(void)
 	}
 }
 
-void usage(void)
+void
+usage(void)
 {
 	fprintf(stderr, "Usage: %s [-la] [hosts ...]\n", argv0);
 	exit(1);
 }
 
-void main(int argc, char *argv[])
+int
+main(int argc, char *argv[])
 {
 	int ch;
 	extern int optind;
 	
-	if (!(argv0 = rindex(argv[0], '/')))
+	if (!(argv0 = strrchr(argv[0], '/')))
 		argv0 = argv[0];
 	else
 		argv0++;
-
 
 	while ((ch = getopt(argc, argv, "al")) != -1)
 		switch (ch) {

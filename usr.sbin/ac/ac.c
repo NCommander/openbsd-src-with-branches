@@ -14,7 +14,7 @@
  */
 
 #ifndef lint
-static char rcsid[] = "$Id: ac.c,v 1.3 1994/05/01 04:39:35 cgd Exp $";
+static char rcsid[] = "$Id: ac.c,v 1.2 1996/08/29 03:32:19 deraadt Exp $";
 #endif
 
 #include <sys/types.h>
@@ -226,7 +226,7 @@ main(argc, argv)
 	int c;
 
 	fp = NULL;
-	while ((c = getopt(argc, argv, "Dc:dpt:w:")) != EOF) {
+	while ((c = getopt(argc, argv, "Dc:dpt:w:")) != -1) {
 		switch (c) {
 #ifdef DEBUG
 		case 'D':
@@ -460,7 +460,7 @@ ac(fp)
 	struct utmp_list *lp, *head = NULL;
 	struct utmp usr;
 	struct tm *ltm;
-	time_t secs;
+	time_t secs = 0;
 	int day = -1;
 	
 	while (fread((char *)&usr, sizeof(usr), 1, fp) == 1) {

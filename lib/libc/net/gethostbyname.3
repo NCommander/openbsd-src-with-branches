@@ -1,4 +1,4 @@
-.\"	$NetBSD: gethostbyname.3,v 1.6 1995/02/25 06:20:28 cgd Exp $
+.\"	$OpenBSD: gethostbyname.3,v 1.5 1997/04/26 22:06:38 michaels Exp $
 .\"
 .\" Copyright (c) 1983, 1987, 1991, 1993
 .\"	The Regents of the University of California.  All rights reserved.
@@ -31,13 +31,12 @@
 .\" OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 .\" SUCH DAMAGE.
 .\"
-.\"     @(#)gethostbyname.3	8.2 (Berkeley) 4/19/94
-.\"
-.Dd April 19, 1994
+.Dd March 13, 1997
 .Dt GETHOSTBYNAME 3
-.Os BSD 4.2
+.Os
 .Sh NAME
 .Nm gethostbyname ,
+.Nm gethostbyname2 ,
 .Nm gethostbyaddr ,
 .Nm gethostent ,
 .Nm sethostent ,
@@ -50,12 +49,17 @@
 .Ft struct hostent *
 .Fn gethostbyname "const char *name"
 .Ft struct hostent *
+.Fn gethostbyname2 "const char *name" "int af"
+.Ft struct hostent *
 .Fn gethostbyaddr "const char *addr" "int len" "int type"
 .Ft struct hostent *
 .Fn gethostent void
+.Ft void
 .Fn sethostent "int stayopen"
+.Ft void
 .Fn endhostent void
-.Fn herror "char *string"
+.Ft void
+.Fn herror "const char *string"
 .Sh DESCRIPTION
 The
 .Fn gethostbyname
@@ -92,8 +96,7 @@ Official name of the host.
 .It Fa h_aliases
 A zero terminated array of alternate names for the host.
 .It Fa h_addrtype
-The type of address being returned; currently always
-.Dv AF_INET .
+The type of address being returned.
 .It Fa h_length
 The length, in bytes, of the address.
 .It Fa h_addr_list
@@ -103,6 +106,7 @@ Host addresses are returned in network byte order.
 The first address in
 .Fa h_addr_list ;
 this is for backward compatibility.
+.El
 .Pp
 When using the nameserver,
 .Fn gethostbyname
@@ -115,6 +119,14 @@ for an alias matching the input name.
 See
 .Xr hostname 7
 for the domain search procedure and the alias file format.
+.Pp
+.Fn Gethostbyname2
+is an advanced form of
+.Fn gethostbyname
+which allows lookups in address families other than
+.Dv AF_INET ,
+for example
+.Dv AF_INET6 .
 .Pp
 The
 .Fn sethostent
@@ -141,13 +153,27 @@ function
 closes the
 .Tn TCP
 connection.
+.Pp
+The
+.Fn herror
+function prints an error message describing the failure.  If it's argument
+.Fa string
+is
+.Pf non Dv -NULL ,
+it is prepended to the message string and seperated from it by a colon
+and a space.  The error message is printed with a trailing newline.
+The contents of the error message is the same as that returned by 
+.Fn hstrerror
+with argument
+.Fa h_errno .
 .Sh FILES
 .Bl -tag -width /etc/hosts -compact
 .It Pa /etc/hosts
 .El
 .Sh DIAGNOSTICS
 Error return status from 
-.Fn gethostbyname
+.Fn gethostbyname ,
+.Fn gethostbyname2 ,
 and
 .Fn gethostbyaddr
 is indicated by return of a null pointer.
@@ -155,15 +181,6 @@ The external integer
 .Va h_errno
 may then be checked to see whether this is a temporary failure
 or an invalid or unknown host.
-The routine
-.Fn herror
-can be used to print an error message describing the failure.
-If its argument
-.Fa string
-is
-.Pf non Dv -NULL ,
-it is printed, followed by a colon and a space.
-The error message is printed with a trailing newline.
 .Pp
 The variable
 .Va h_errno
@@ -197,20 +214,6 @@ for example, a mail-forwarder may be registered for this domain.
 The
 .Fn gethostent
 function
-is defined, and
-.Fn sethostent
-and
-.Fn endhostent
-are redefined,
-when
-.Xr libc 3
-is built to use only the routines to lookup in
-.Pa /etc/hosts
-and not the name server.
-.Pp
-The
-.Fn gethostent
-function
 reads the next line of
 .Pa /etc/hosts ,
 opening the file if necessary.
@@ -224,7 +227,8 @@ If the
 .Fa stayopen
 argument is non-zero,
 the file will not be closed after each call to
-.Fn gethostbyname
+.Fn gethostbyname ,
+.Fn gethostbyname2 ,
 or
 .Fn gethostbyaddr .
 .Pp
@@ -251,4 +255,9 @@ These functions use static data storage;
 if the data is needed for future use, it should be
 copied before any subsequent calls overwrite it.
 Only the Internet
-address format is currently understood.
+address formats are currently understood.
+.Pp
+YP does not support any address families other than 
+.Dv AF_INET
+and uses
+the traditional database format.

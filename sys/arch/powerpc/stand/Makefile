@@ -1,19 +1,23 @@
+#	$OpenBSD: Makefile,v 1.5 1997/02/18 22:36:40 rahnds Exp $
 #	$NetBSD: Makefile,v 1.1 1996/09/30 16:34:59 ws Exp $
 
-SUBDIR=	boot
+SUBDIR=	boot boot.mac ofwboot
 
 SAREL=
 KERNREL=
 KERN_AS=library
+Z_AS=library
+SA_ZLIB=smth
 
 .include "Makefile.inc"
+.include "$S/lib/libz/Makefile.inc"
 .include "$S/lib/libsa/Makefile.inc"
 .include "$S/lib/libkern/Makefile.inc"
 
-all:	$(SALIB) ${KERNLIB} _SUBDIRUSE
+all:	${ZLIB} ${SALIB} ${KERNLIB} _SUBDIRUSE
 
 libdep:
-	@echo $(SALIB) $(KERNLIB)
+	@echo ${.OBJDIR}/${SALIB} $(KERNLIB) ${ZLIB}
 
 
 ${PROG}:	

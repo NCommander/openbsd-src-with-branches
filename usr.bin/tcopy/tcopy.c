@@ -1,4 +1,5 @@
-/*	$NetBSD: tcopy.c,v 1.4 1995/08/31 22:17:24 jtc Exp $	*/
+/*	$OpenBSD: tcopy.c,v 1.3 1997/01/15 23:43:19 millert Exp $	*/
+/*	$NetBSD: tcopy.c,v 1.5 1997/04/15 07:23:08 lukem Exp $	*/
 
 /*
  * Copyright (c) 1985, 1987, 1993, 1995
@@ -43,7 +44,7 @@ static char copyright[] =
 #if 0
 static char sccsid[] = "@(#)tcopy.c	8.3 (Berkeley) 1/23/95";
 #endif
-static char rcsid[] = "$NetBSD: tcopy.c,v 1.4 1995/08/31 22:17:24 jtc Exp $";
+static char rcsid[] = "$OpenBSD: tcopy.c,v 1.3 1997/01/15 23:43:19 millert Exp $";
 #endif /* not lint */
 
 #include <sys/types.h>
@@ -54,13 +55,12 @@ static char rcsid[] = "$NetBSD: tcopy.c,v 1.4 1995/08/31 22:17:24 jtc Exp $";
 #include <err.h>
 #include <errno.h>
 #include <fcntl.h>
+#include <paths.h>
 #include <signal.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
-
-#include "pathnames.h"
 
 #define	MAXREC	(64 * 1024)
 #define	NOCOUNT	(-2)
@@ -88,7 +88,7 @@ main(argc, argv)
 	char *buff, *inf;
 
 	guesslen = 1;
-	while ((ch = getopt(argc, argv, "cs:vx")) != EOF)
+	while ((ch = getopt(argc, argv, "cs:vx")) != -1)
 		switch((char)ch) {
 		case 'c':
 			op = COPYVERIFY;

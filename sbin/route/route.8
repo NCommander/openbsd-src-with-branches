@@ -1,3 +1,4 @@
+.\"	$OpenBSD: route.8,v 1.4 1996/12/14 17:23:53 deraadt Exp $
 .\"	$NetBSD: route.8,v 1.6 1995/03/18 15:00:13 cgd Exp $
 .\"
 .\" Copyright (c) 1983, 1991, 1993
@@ -78,7 +79,7 @@ Suppress all output.
 .Pp
 The
 .Nm route :
-utility provides six commands:
+utility provides several commands:
 .Pp
 .Bl -tag -width Fl -compact
 .It Cm add
@@ -91,6 +92,9 @@ Delete a specific route.
 Change aspects of a route (such as its gateway).
 .It Cm get
 Lookup and display the route for a destination.
+.It Cm show
+Print out the route table similar to "netstat \-r" (see
+.Xr netstat 8 ).
 .It Cm monitor
 Continuously report any changes to the routing information base,
 routing lookup misses, or suspected network partitionings.
@@ -170,6 +174,10 @@ and
 .Fl net Li 128.32.130
 is interpreted as
 .Li 128.32.130.0 .
+A more detailed syntax is also available, for example
+.Li net 192.168.64.0/20
+is interpreted to specify that the high 20 bits of the address
+192.168.64.0 are the requested network.
 .Pp
 If the destination is directly reachable
 via an interface requiring
@@ -315,6 +323,7 @@ to create the new entry.
 .Xr esis 4 ,
 .Xr routed 8 ,
 .Xr XNSrouted 8
+.Xr IPXrouted 8
 .Sh HISTORY
 The
 .Nm

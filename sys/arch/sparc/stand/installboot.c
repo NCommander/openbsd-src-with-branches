@@ -1,4 +1,4 @@
-/*	$NetBSD: installboot.c,v 1.9 1995/09/27 09:03:15 pk Exp $ */
+/*	$NetBSD: installboot.c,v 1.11 1995/11/08 09:09:20 pk Exp $ */
 
 /*
  * Copyright (c) 1994 Paul Kranenburg
@@ -64,8 +64,11 @@ int32_t	*block_count_p;		/* size of this array */
 int32_t	*block_size_p;		/* filesystem block size */
 int32_t	max_block_count;
 
+char	*karch;
 char	cpumodel[100];
 
+int	isofsblk = 0;
+int	isofseblk = 0;
 
 char		*loadprotoblocks __P((char *, long *));
 int		loadblocknums __P((char *, int));
@@ -78,7 +81,8 @@ static void
 usage()
 {
 	fprintf(stderr,
-		"usage: installboot [-n] [-v] [-h] <boot> <proto> <device>\n");
+		"usage: installboot [-n] [-v] [-h] [-s isofsblk -e isofseblk]"
+		"[-a <karch>] <boot> <proto> <device>\n");
 	exit(1);
 }
 
@@ -94,9 +98,12 @@ main(argc, argv)
 	int	mib[2];
 	size_t	size;
 
-	while ((c = getopt(argc, argv, "vnh")) != EOF) {
+	while ((c = getopt(argc, argv, "a:vnhs:e:")) != -1) {
 		switch (c) {
-		case 'h':
+		case 'a':
+			karch = optarg;
+			break;
+		case 'h':	/* Note: for backwards compatibility */
 			/* Don't strip a.out header */
 			hflag = 1;
 			break;
@@ -107,6 +114,12 @@ main(argc, argv)
 		case 'v':
 			/* Chat */
 			verbose = 1;
+			break;
+		case 's':
+			isofsblk = atoi(optarg);
+			break;
+		case 'e':
+			isofseblk = atoi(optarg);
 			break;
 		default:
 			usage();
@@ -121,21 +134,35 @@ main(argc, argv)
 	proto = argv[optind + 1];
 	dev = argv[optind + 2];
 
+	if (karch == NULL) {
+		mib[0] = CTL_HW;
+		mib[1] = HW_MODEL;
+		size = sizeof(cpumodel);
+		if (sysctl(mib, 2, cpumodel, &size, NULL, 0) == -1)
+			err(1, "sysctl");
+
+		if (size < 5 || strncmp(cpumodel, "SUN-4", 5) != 0) /*XXX*/ 
+			/* Assume a sun4c/sun4m */
+			karch = "sun4c";
+		else
+			karch = "sun4";
+	}
+
 	if (verbose) {
 		printf("boot: %s\n", boot);
 		printf("proto: %s\n", proto);
 		printf("device: %s\n", dev);
+		printf("architecture: %s\n", karch);
 	}
 
-	mib[0] = CTL_HW;
-	mib[1] = HW_MODEL;
-	size = sizeof(cpumodel);
-	if (sysctl(mib, 2, cpumodel, &size, NULL, 0) == -1)
-		err(1, "sysctl");
-
-	if (size < 5 || strncmp(cpumodel, "SUN/4", 5) != 0) /*XXX*/ 
-		/* Assume a sun4c/sun4m */
+	if (strcmp(karch, "sun4") == 0) {
 		hflag = 1;
+	} else if (strcmp(karch, "sun4c") == 0) {
+		hflag = 1;
+	} else if (strcmp(karch, "sun4m") == 0) {
+		hflag = 1;
+	} else
+		errx(1, "Unsupported architecture");
 
 	/* Load proto blocks into core */
 	if ((protostore = loadprotoblocks(proto, &protosize)) == NULL)
@@ -265,6 +292,24 @@ loadprotoblocks(fname, size)
 			max_block_count, nl[X_BLOCKTABLE].n_value);
 	}
 
+	/*
+	 * We convert the a.out header in-vitro into something that
+	 * Sun PROMs understand.
+	 * Old-style (sun4) ROMs do not expect a header at all, so
+	 * we turn the first two words into code that gets us past
+	 * the 32-byte header where the actual code begins. In assembly
+	 * speak:
+	 *	.word	MAGIC		! a NOP
+	 *	ba,a	start		!
+	 *	.skip	24		! pad
+	 * start:
+	 */
+
+#define SUN_MAGIC	0x01030107
+#define SUN4_BASTART	0x30800007	/* i.e.: ba,a `start' */
+	*((int *)bp) = SUN_MAGIC;
+	*((int *)bp + 1) = SUN4_BASTART;
+
 	*size = sz;
 	return (hflag ? bp : (bp + sizeof(struct exec)));
 }
@@ -310,8 +355,30 @@ int	devfd;
 	if (fstatfs(fd, &statfsbuf) != 0)
 		err(1, "statfs: %s", boot);
 
-	if (strncmp(statfsbuf.f_fstypename, "ufs", MFSNAMELEN))
-		errx(1, "%s: must be on a UFS filesystem", boot);
+	if (isofsblk) {
+		int i;
+
+		*block_size_p = 512;
+		*block_count_p = (isofseblk - isofsblk + 1) * (2048/512);
+		if (*block_count_p > max_block_count)
+			errx(1, "%s: Too many blocks", boot);
+		if (verbose)
+			printf("%s: %d block numbers: ", boot, *block_count_p);
+		for (i = 0; i < *block_count_p; i++) {
+			blk = (isofsblk * (2048/512)) + i;
+			block_table[i] = blk;
+			if (verbose)
+				printf("%d ", blk);
+		}
+		if (verbose)
+			printf("\n");
+		return 0;
+	}
+
+	if (strncmp(statfsbuf.f_fstypename, "ffs", MFSNAMELEN) &&
+	    strncmp(statfsbuf.f_fstypename, "ufs", MFSNAMELEN)) {
+		errx(1, "%s: must be on an FFS filesystem", boot);
+	}
 
 	if (fsync(fd) != 0)
 		err(1, "fsync: %s", boot);

@@ -1,3 +1,4 @@
+/*	$OpenBSD: pw_yp.c,v 1.6 1997/02/13 17:28:40 deraadt Exp $	*/
 /*	$NetBSD: pw_yp.c,v 1.5 1995/03/26 04:55:33 glass Exp $	*/
 
 /*
@@ -36,7 +37,7 @@
 #if 0
 static char sccsid[] = "@(#)pw_yp.c	1.0 2/2/93";
 #else
-static char rcsid[] = "$NetBSD: pw_yp.c,v 1.5 1995/03/26 04:55:33 glass Exp $";
+static char rcsid[] = "$OpenBSD: pw_yp.c,v 1.6 1997/02/13 17:28:40 deraadt Exp $";
 #endif
 #endif /* not lint */
 
@@ -48,6 +49,7 @@ static char rcsid[] = "$NetBSD: pw_yp.c,v 1.5 1995/03/26 04:55:33 glass Exp $";
 #include <time.h>
 #include <pwd.h>
 #include <errno.h>
+#include <stdlib.h>
 #include <rpc/rpc.h>
 #include <rpcsvc/yp_prot.h>
 #include <rpcsvc/ypclnt.h>
@@ -64,8 +66,9 @@ pw_yp(pw, uid)
 	uid_t uid;
 {
 	char *master;
-	char *pp;
-	int r, rpcport, status;
+	char *pp, *p;
+	char buf[10];
+	int r, rpcport, status, alen;
 	struct yppasswd yppasswd;
 	struct timeval tv;
 	CLIENT *client;
@@ -122,6 +125,18 @@ pw_yp(pw, uid)
 		return(0);
 	}
 	
+	for (alen = 0, p = pw->pw_gecos; *p; p++)
+		if (*p == '&')
+			alen = alen + strlen(pw->pw_name) - 1;
+	if (strlen(pw->pw_name) + 1 + strlen(pw->pw_passwd) + 1 +
+	    strlen((sprintf(buf, "%d", pw->pw_uid), buf)) + 1 +
+	    strlen((sprintf(buf, "%d", pw->pw_gid), buf)) + 1 +
+	    strlen(pw->pw_gecos) + alen + 1 + strlen(pw->pw_dir) + 1 +
+	    strlen(pw->pw_shell) >= 1023) {
+		warnx("entries too long");
+		return (0);
+	}
+
 	/* tell rpc.yppasswdd */
 	yppasswd.newpw.pw_name	= pw->pw_name;
 	yppasswd.newpw.pw_passwd= pw->pw_passwd;
@@ -130,12 +145,12 @@ pw_yp(pw, uid)
 	yppasswd.newpw.pw_gecos = pw->pw_gecos;
 	yppasswd.newpw.pw_dir	= pw->pw_dir;
 	yppasswd.newpw.pw_shell	= pw->pw_shell;
-	
+
 	client = clnt_create(master, YPPASSWDPROG, YPPASSWDVERS, "udp");
 	if (client==NULL) {
 		fprintf(stderr, "can't contact yppasswdd on %s: Reason: %s\n",
 		    master, yperr_string(YPERR_YPBIND));
-		return(0);
+		return(1);
 	}
 	client->cl_auth = authunix_create_default();
 	tv.tv_sec = 5;
@@ -144,14 +159,17 @@ pw_yp(pw, uid)
 	    xdr_yppasswd, &yppasswd, xdr_int, &status, tv);
 	if (r) {
 		fprintf(stderr, "%s: rpc to yppasswdd failed. %d\n", progname, r);
-		return(0);
+		clnt_destroy(client);
+		return(1);
 	} else if (status) {
 		printf("Couldn't change YP password information.\n");
-		return(0);
+		clnt_destroy(client);
+		return(1);
 	}
 	printf("The YP password information has been changed on %s, the master YP passwd server.\n", master);
 
-	return(1);
+	clnt_destroy(client);
+	return(0);
 }
 
 static char *
@@ -206,12 +224,13 @@ interpret(pwent, line)
 	return (pwent);
 }
 
+static char *__yplin;
+
 struct passwd *
 ypgetpwnam(nam)
 	char *nam;
 {
 	static struct passwd pwent;
-	static char line[1024];
 	char *val;
 	int reason, vallen;
 	
@@ -234,10 +253,13 @@ ypgetpwnam(nam)
 		break;
 	}
 	val[vallen] = '\0';
-	strcpy(line, val);
+	if (__yplin)
+		free(__yplin);
+	__yplin = (char *)malloc(vallen + 1);
+	strcpy(__yplin, val);
 	free(val);
 
-	return(interpret(&pwent, line));
+	return(interpret(&pwent, __yplin));
 }
 
 struct passwd *
@@ -245,7 +267,6 @@ ypgetpwuid(uid)
 	uid_t uid;
 {
 	static struct passwd pwent;
-	static char line[1024];
 	char *val;
 	int reason, vallen;
 	char namebuf[16];
@@ -267,10 +288,13 @@ ypgetpwuid(uid)
 		break;
 	}
 	val[vallen] = '\0';
-	strcpy(line, val);
+	if (__yplin)
+		free(__yplin);
+	__yplin = (char *)malloc(vallen + 1);
+	strcpy(__yplin, val);
 	free(val);
 
-	return(interpret(&pwent, line));
+	return(interpret(&pwent, __yplin));
 }
 
 #endif	/* YP */

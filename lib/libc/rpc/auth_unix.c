@@ -1,5 +1,3 @@
-/*	$NetBSD: auth_unix.c,v 1.2 1995/02/25 03:01:35 cgd Exp $	*/
-
 /*
  * Sun RPC is a product of Sun Microsystems, Inc. and is provided for
  * unrestricted use provided that this legend is included on all tape
@@ -30,10 +28,8 @@
  */
 
 #if defined(LIBC_SCCS) && !defined(lint)
-/*static char *sccsid = "from: @(#)auth_unix.c 1.19 87/08/11 Copyr 1984 Sun Micro";*/
-/*static char *sccsid = "from: @(#)auth_unix.c	2.2 88/08/01 4.0 RPCSRC";*/
-static char *rcsid = "$NetBSD: auth_unix.c,v 1.2 1995/02/25 03:01:35 cgd Exp $";
-#endif
+static char *rcsid = "$OpenBSD: auth_unix.c,v 1.6 1996/11/14 05:45:16 etheisen Exp $";
+#endif /* LIBC_SCCS and not lint */
 
 /*
  * auth_unix.c, Implements UNIX style authentication parameters. 
@@ -49,6 +45,8 @@ static char *rcsid = "$NetBSD: auth_unix.c,v 1.2 1995/02/25 03:01:35 cgd Exp $";
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <unistd.h>
+#include <string.h>
 
 #include <rpc/types.h>
 #include <rpc/xdr.h>
@@ -84,7 +82,7 @@ struct audata {
 };
 #define	AUTH_PRIVATE(auth)	((struct audata *)auth->ah_private)
 
-static bool_t marshal_new_auth();
+static void marshal_new_auth();
 
 
 /*
@@ -155,7 +153,7 @@ authunix_create(machname, uid, gid, len, aup_gids)
 		return (NULL);
 	}
 #endif
-	bcopy(mymem, au->au_origcred.oa_base, (u_int)len);
+	memcpy(au->au_origcred.oa_base, mymem, (u_int)len);
 
 	/*
 	 * set auth handle to reflect new cred.
@@ -172,11 +170,12 @@ authunix_create(machname, uid, gid, len, aup_gids)
 AUTH *
 authunix_create_default()
 {
-	register int len;
+	register int len, i;
 	char machname[MAX_MACHINE_NAME + 1];
-	register int uid;
-	register int gid;
-	int gids[NGRPS];
+	register uid_t uid;
+	register gid_t gid;
+	gid_t gids[NGRPS];
+	int gids2[NGRPS];
 
 	if (gethostname(machname, MAX_MACHINE_NAME) == -1)
 		abort();
@@ -185,13 +184,15 @@ authunix_create_default()
 	gid = getegid();
 	if ((len = getgroups(NGRPS, gids)) < 0)
 		abort();
-	return (authunix_create(machname, uid, gid, len, gids));
+	for (i = 0; i < len; i++)
+		gids2[i] = gids[i];
+	return (authunix_create(machname, uid, gid, len, gids2));
 }
 
 /*
  * authunix operations
  */
-
+/* ARGSUSED */
 static void
 authunix_nextverf(auth)
 	AUTH *auth;
@@ -305,7 +306,7 @@ authunix_destroy(auth)
  * Marshals (pre-serializes) an auth struct.
  * sets private data, au_marshed and au_mpos
  */
-static bool_t
+static void
 marshal_new_auth(auth)
 	register AUTH *auth;
 {

@@ -1,3 +1,6 @@
+/*	$OpenBSD: strings.c,v 1.5 1996/06/08 19:48:40 christos Exp $	*/
+/*	$NetBSD: strings.c,v 1.5 1996/06/08 19:48:40 christos Exp $	*/
+
 /*
  * Copyright (c) 1980, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -32,8 +35,11 @@
  */
 
 #ifndef lint
-static char sccsid[] = "from: @(#)strings.c	8.1 (Berkeley) 6/6/93";
-static char rcsid[] = "$Id: strings.c,v 1.4 1995/04/24 07:39:42 cgd Exp $";
+#if 0
+static char sccsid[] = "@(#)strings.c	8.1 (Berkeley) 6/6/93";
+#else
+static char rcsid[] = "$OpenBSD: strings.c,v 1.5 1996/06/08 19:48:40 christos Exp $";
+#endif
 #endif /* not lint */
 
 /*

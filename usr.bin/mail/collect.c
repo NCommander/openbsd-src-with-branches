@@ -1,3 +1,6 @@
+/*	$OpenBSD: collect.c,v 1.4 1997/04/13 20:22:39 deraadt Exp $	*/
+/*	$NetBSD: collect.c,v 1.6 1996/06/08 19:48:16 christos Exp $	*/
+
 /*
  * Copyright (c) 1980, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -32,8 +35,11 @@
  */
 
 #ifndef lint
-static char sccsid[] = "from: @(#)collect.c	8.2 (Berkeley) 4/19/94";
-static char rcsid[] = "$Id: collect.c,v 1.5 1995/02/08 16:15:52 jtc Exp $";
+#if 0
+static char sccsid[] = "@(#)collect.c	8.2 (Berkeley) 4/19/94";
+#else
+static char rcsid[] = "$OpenBSD: collect.c,v 1.4 1997/04/13 20:22:39 deraadt Exp $";
+#endif
 #endif /* not lint */
 
 /*
@@ -81,7 +87,12 @@ collect(hp, printheaders)
 	extern char *tempMail;
 	char getsub;
 	int omask;
-	void collint(), collhup(), collstop();
+#if __GNUC__
+	/* Avoid longjmp clobbering */
+	(void) &escape;
+	(void) &eofcount;
+	(void) &getsub;
+#endif
 
 	collf = NULL;
 	/*
@@ -143,10 +154,12 @@ cont:
 		if (hadintr) {
 			fflush(stdout);
 			fprintf(stderr,
-			"\n(Interrupt -- one more to kill letter)\n");
+			    "\n(Interrupt -- one more to kill letter)\n");
 		} else {
-			printf("(continue)\n");
-			fflush(stdout);
+			if (isatty(0)) {
+				printf("(continue)\n");
+				fflush(stdout);
+			}
 		}
 	}
 	for (;;) {
@@ -191,7 +204,7 @@ cont:
 			/*
 			 * Dump core.
 			 */
-			core();
+			core(NULL);
 			break;
 		case '!':
 			/*
@@ -561,10 +574,13 @@ collstop(s)
 	int s;
 {
 	sig_t old_action = signal(s, SIG_DFL);
+	sigset_t nset;
 
-	sigsetmask(sigblock(0) & ~sigmask(s));
+	sigemptyset(&nset);
+	sigaddset(&nset, s);
+	sigprocmask(SIG_UNBLOCK, &nset, NULL);
 	kill(0, s);
-	sigblock(sigmask(s));
+	sigprocmask(SIG_BLOCK, &nset, NULL);
 	signal(s, old_action);
 	if (colljmp_p) {
 		colljmp_p = 0;
@@ -585,7 +601,7 @@ collint(s)
 	/*
 	 * the control flow is subtle, because we can be called from ~q.
 	 */
-	if (!hadintr) {
+	if (hadintr == 0 && isatty(0)) {
 		if (value("ignore") != NOSTR) {
 			puts("@");
 			fflush(stdout);

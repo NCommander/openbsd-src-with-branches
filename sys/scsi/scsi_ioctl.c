@@ -1,4 +1,5 @@
-/*	$NetBSD: scsi_ioctl.c,v 1.19 1995/09/26 19:26:58 thorpej Exp $	*/
+/*	$OpenBSD: scsi_ioctl.c,v 1.6 1996/08/13 00:06:24 niklas Exp $	*/
+/*	$NetBSD: scsi_ioctl.c,v 1.23 1996/10/12 23:23:17 christos Exp $	*/
 
 /*
  * Copyright (c) 1994 Charles Hannum.  All rights reserved.
@@ -40,10 +41,12 @@
 #include <sys/errno.h>
 #include <sys/param.h>
 #include <sys/systm.h>
+#include <sys/file.h>
 #include <sys/malloc.h>
 #include <sys/buf.h>
 #include <sys/proc.h>
 #include <sys/device.h>
+#include <sys/fcntl.h>
 
 #include <scsi/scsi_all.h>
 #include <scsi/scsiconf.h>
@@ -59,6 +62,11 @@ struct scsi_ioctl {
 };
 
 LIST_HEAD(, scsi_ioctl) si_head;
+
+struct scsi_ioctl *si_get __P((void));
+void si_free __P((struct scsi_ioctl *));
+struct scsi_ioctl *si_find __P((struct buf *));
+void scsistrategy __P((struct buf *));
 
 struct scsi_ioctl *
 si_get()
@@ -282,11 +290,24 @@ scsi_do_ioctl(sc_link, dev, cmd, addr, flag, p)
 
 	SC_DEBUG(sc_link, SDEV_DB2, ("scsi_do_ioctl(0x%lx)\n", cmd));
 
+	/* Check for the safe-ness of this request. */
+	switch (cmd) {
+	case SCIOCIDENTIFY:
+		break;
+
+	default:
+		if ((flag & FWRITE) == 0)
+			return EBADF;
+	}
+
 	switch(cmd) {
 	case SCIOCCOMMAND: {
 		scsireq_t *screq = (scsireq_t *)addr;
 		struct scsi_ioctl *si;
 		int len;
+
+		if ((flag & FWRITE) == 0)
+			return EBADF;
 
 		si = si_get();
 		si->si_screq = *screq;
@@ -323,6 +344,8 @@ scsi_do_ioctl(sc_link, dev, cmd, addr, flag, p)
 	case SCIOCDEBUG: {
 		int level = *((int *)addr);
 
+		if ((flag & FWRITE) == 0)
+			return EBADF;
 		SC_DEBUG(sc_link, SDEV_DB3, ("debug set to %d\n", level));
 		sc_link->flags &= ~SDEV_DBX; /* clear debug bits */
 		if (level & 1)
@@ -338,11 +361,41 @@ scsi_do_ioctl(sc_link, dev, cmd, addr, flag, p)
 	case SCIOCREPROBE: {
 		struct scsi_addr *sca = (struct scsi_addr *)addr;
 
+		if ((flag & FWRITE) == 0)
+			return EBADF;
 		return scsi_probe_busses(sca->scbus, sca->target, sca->lun);
 	}
 	case SCIOCRECONFIG:
 	case SCIOCDECONFIG:
 		return EINVAL;
+	case SCIOCRESET: {
+		if ((flag & FWRITE) == 0)
+			return EBADF;
+		scsi_scsi_cmd(sc_link, 0, 0, 0, 0, GENRETRY, 2000, NULL,
+		      SCSI_RESET);
+		return 0;
+	}
+	default:
+		return scsi_do_safeioctl(sc_link, dev, cmd, addr, flag, p);
+	}
+
+#ifdef DIAGNOSTIC
+	panic("scsi_do_ioctl: impossible");
+#endif
+}
+
+int
+scsi_do_safeioctl(sc_link, dev, cmd, addr, flag, p)
+	struct scsi_link *sc_link;
+	dev_t dev;
+	u_long cmd;
+	caddr_t addr;
+	int flag;
+	struct proc *p;
+{
+	SC_DEBUG(sc_link, SDEV_DB2, ("scsi_do_ioctl(0x%lx)\n", cmd));
+
+	switch(cmd) {
 	case SCIOCIDENTIFY: {
 		struct scsi_addr *sca = (struct scsi_addr *)addr;
 
@@ -354,8 +407,4 @@ scsi_do_ioctl(sc_link, dev, cmd, addr, flag, p)
 	default:
 		return ENOTTY;
 	}
-
-#ifdef DIAGNOSTIC
-	panic("scsi_do_ioctl: impossible");
-#endif
 }

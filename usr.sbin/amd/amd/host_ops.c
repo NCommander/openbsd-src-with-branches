@@ -1,3 +1,5 @@
+/*	$OpenBSD: host_ops.c,v 1.2 1996/03/25 15:54:46 niklas Exp $	*/
+
 /*
  * Copyright (c) 1990 Jan-Simon Pendry
  * Copyright (c) 1990 Imperial College of Science, Technology & Medicine
@@ -36,7 +38,6 @@
  * SUCH DAMAGE.
  *
  *	from: @(#)host_ops.c	8.1 (Berkeley) 6/6/93
- *	$Id: host_ops.c,v 1.3 1994/06/13 20:47:12 mycroft Exp $
  */
 
 #include "am.h"
@@ -153,10 +154,11 @@ mntfs *mf;
 	return mount_nfs_fh(fhp, dir, fs_name, opts, mf);
 }
 
-static int sortfun P((exports *a, exports *b));
-static int sortfun(a, b)
-exports *a,*b;
+static int sortfun P((const void *arg1, const void *arg2));
+static int sortfun(arg1, arg2)
+const void *arg1, *arg2;
 {
+	const exports *a = arg1, *b = arg2;
 	return strcmp((*a)->ex_dir, (*b)->ex_dir);
 }
 
@@ -185,6 +187,9 @@ fhstatus *fhp;
 	 * Call the mount daemon on the remote host to
 	 * get the filehandle.
 	 */
+#if NFS_PROTOCOL_VERSION >= 3
+	fhp->fhs_vers = MOUNTVERS;
+#endif
 	clnt_stat = clnt_call(client, MOUNTPROC_MNT, xdr_dirpath, &dir, xdr_fhstatus, fhp, tv);
 	if (clnt_stat != RPC_SUCCESS) {
 		extern char *clnt_sperrno();
@@ -195,12 +200,12 @@ fhstatus *fhp;
 	/*
 	 * Check status of filehandle
 	 */
-	if (fhp->fhs_status) {
+	if (fhp->fhs_stat) {
 #ifdef DEBUG
-		errno = fhp->fhs_status;
+		errno = fhp->fhs_stat;
 		dlog("fhandle fetch failed: %m");
 #endif /* DEBUG */
-		return fhp->fhs_status;
+		return fhp->fhs_stat;
 	}
 	return 0;
 }

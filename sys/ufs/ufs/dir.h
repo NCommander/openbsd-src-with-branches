@@ -1,4 +1,5 @@
-/*	$NetBSD: dir.h,v 1.6 1995/06/15 23:22:49 cgd Exp $	*/
+/*	$OpenBSD: dir.h,v 1.4 1996/06/24 23:16:01 tholo Exp $	*/
+/*	$NetBSD: dir.h,v 1.8 1996/03/09 19:42:41 scottr Exp $	*/
 
 /*
  * Copyright (c) 1982, 1986, 1989, 1993
@@ -154,4 +155,44 @@ struct odirtemplate {
 	u_int16_t	dotdot_namlen;
 	char		dotdot_name[4];	/* ditto */
 };
+
+#ifdef _KERNEL
+/*
+ * For lack of a better place...
+ *
+ * This structure defines a set of function pointers, for managing rouge
+ * ufs-like filesystems in vnop code.  Most have to do with directories.
+ */
+
+struct componentname;
+struct vnode;
+struct inode;
+struct ucred;
+struct ufs_dirops {
+	int (*dirremove) __P((struct vnode *, struct componentname *));
+	int (*direnter) __P((struct inode *, struct vnode *,
+				struct componentname *));
+	int (*dirempty) __P((struct inode *, ino_t, struct ucred *));
+	int (*dirrewrite) __P((struct inode *, struct inode *,
+				struct componentname *));
+	int (*checkpath) __P((struct inode *, struct inode *,
+				struct ucred *));
+};
+
+/*
+ * Macros for accessing the above.
+ */
+#define VN_DIRREMOVE(vn, cm) \
+	VFSTOUFS(vn->v_mount)->um_dirops->dirremove(vn, cm)
+#define VN_DIRENTER(in, vn, cm) \
+	VFSTOUFS(vn->v_mount)->um_dirops->direnter(in, vn, cm)
+#define VN_DIREMPTY(vn, in, it, uc) \
+	VFSTOUFS(vn->v_mount)->um_dirops->dirempty(in, it, uc)
+#define VN_DIRREWRITE(vn, in1, in2, cm) \
+	VFSTOUFS(vn->v_mount)->um_dirops->dirrewrite(in1, in2, cm)
+#define VN_CHECKPATH(vn, in1, in2, uc) \
+	VFSTOUFS(vn->v_mount)->um_dirops->checkpath(in1, in2, uc)
+
+#endif /* _KERNEL */
+
 #endif /* !_DIR_H_ */

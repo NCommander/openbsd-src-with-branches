@@ -1,3 +1,4 @@
+#	$OpenBSD: Makefile,v 1.4 1996/12/08 15:22:25 downsj Exp $
 #	$NetBSD: Makefile,v 1.15 1995/09/07 07:17:53 jtc Exp $
 
 LIB=	compat
@@ -27,7 +28,7 @@ MLINKS+=stty.3 gtty.3
 
 # compat 4.3 sources
 # missing: ecvt.c gcvt.c sibuf.c sobuf.c strout.c
-SRCS+=	cfree.c lsearch.c regex.c rexec.c
+SRCS+=	lsearch.c regex.c rexec.c
 SRCS+=	insque.c remque.c
 
 # missing: ecvt.0
@@ -46,6 +47,16 @@ MAN+=	cuserid.3
 
 # regexp sources
 SRCS+=	regerror.c regexp.c regsub.c
+HDRS+=	regexp/regexp.h
 MAN+=	regexp.3
+
+includes:
+	@cd ${.CURDIR}; for i in $(HDRS); do \
+	    j="cmp -s $$i ${DESTDIR}/usr/include/`basename $$i` || \
+		${INSTALL} ${INSTALL_COPY} -o ${BINOWN} -g ${BINGRP} -m 444 $$i \
+		${DESTDIR}/usr/include"; \
+	    echo $$j; \
+	    eval "$$j"; \
+	done
 
 .include <bsd.lib.mk>

@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: jobs.c,v 1.3 1996/08/25 12:38:03 downsj Exp $	*/
 
 /*
  * Process and job control
@@ -140,6 +140,9 @@ struct job {
 	clock_t	usrtime;	/* user time used by job */
 	Proc	*proc_list;	/* process list */
 	Proc	*last_proc;	/* last process in list */
+#ifdef KSH
+	Coproc_id coproc_id;	/* 0 or id of coprocess output pipe */
+#endif /* KSH */
 #ifdef TTY_PGRP
 	TTY_state ttystate;	/* saved tty state for stopped jobs */
 #endif /* TTY_PGRP */
@@ -177,7 +180,6 @@ static int		child_max;	/* CHILD_MAX */
 
 
 #ifdef JOB_SIGS
-static sigset_t		sm_default, sm_sigchld;
 /* held_sigchld is set if sigchld occurs before a job is completely started */
 static int		held_sigchld;
 #endif /* JOB_SIGS */
@@ -234,7 +236,8 @@ j_init(mflagset)
 	sigemptyset(&sm_sigchld);
 	sigaddset(&sm_sigchld, SIGCHLD);
 
-	setsig(&sigtraps[SIGCHLD], j_sigchld, SS_RESTORE_ORIG|SS_FORCE);
+	setsig(&sigtraps[SIGCHLD], j_sigchld,
+		SS_RESTORE_ORIG|SS_FORCE|SS_SHTRAP);
 #else /* JOB_SIGS */
 	/* Make sure SIGCHLD isn't ignored - can do odd things under SYSV */
 	setsig(&sigtraps[SIGCHLD], SIG_DFL, SS_RESTORE_ORIG|SS_FORCE);
@@ -253,9 +256,12 @@ j_init(mflagset)
 	if (Flag(FMONITOR) || Flag(FTALKING)) {
 		int i;
 
-		/* j_change() sets these to SS_RESTORE_DFL if FMONITOR */
+		/* the TF_SHELL_USES test is a kludge that lets us know if
+		 * if the signals have been changed by the shell.
+		 */
 		for (i = NELEM(tt_sigs); --i >= 0; ) {
 			sigtraps[tt_sigs[i]].flags |= TF_SHELL_USES;
+			/* j_change() sets this to SS_RESTORE_DFL if FMONITOR */
 			setsig(&sigtraps[tt_sigs[i]], SIG_IGN,
 				SS_RESTORE_IGN|SS_FORCE);
 		}
@@ -397,9 +403,6 @@ j_change()
 	} else {
 # ifdef TTY_PGRP
 		ttypgrp_ok = 0;
-		/* the TF_SHELL_USES test is a kludge that lets us know if
-		 * if the signals have been changed by the shell.
-		 */
 		if (Flag(FTALKING))
 			for (i = NELEM(tt_sigs); --i >= 0; )
 				setsig(&sigtraps[tt_sigs[i]], SIG_IGN,
@@ -410,7 +413,7 @@ j_change()
 							          |TF_ORIG_DFL))
 					setsig(&sigtraps[tt_sigs[i]],
 						(sigtraps[tt_sigs[i]].flags & TF_ORIG_IGN) ? SIG_IGN : SIG_DFL,
-						SS_RESTORE_CURR|SS_FORCE);
+						SS_RESTORE_ORIG|SS_FORCE);
 			}
 # endif /* TTY_PGRP */
 		if (!Flag(FTALKING))
@@ -461,9 +464,9 @@ exchild(t, flags, close_fd)
 		last_proc = p;
 	} else {
 #ifdef NEED_PGRP_SYNC
-		if (j_sync_open) {
-			closepipe(j_sync_pipe);
+		if (j_sync_open) {	/* should never happen */
 			j_sync_open = 0;
+			closepipe(j_sync_pipe);
 		}
 		/* don't do the sync pipe business if there is no pipeline */
 		if (flags & XPIPEO) {
@@ -483,12 +486,11 @@ exchild(t, flags, close_fd)
 		j->ppid = procpid;
 		j->age = ++njobs;
 		j->proc_list = p;
+#ifdef KSH
+		j->coproc_id = 0;
+#endif /* KSH */
 		last_job = j;
 		last_proc = p;
-		if (flags & XXCOM)
-			j->flags |= JF_XXCOM;
-		else if (!(flags & XBGND))
-			j->flags |= JF_FG;
 		put_job(j, PJ_PAST_STOPPED);
 	}
 
@@ -527,19 +529,31 @@ exchild(t, flags, close_fd)
 	if (Flag(FMONITOR) && !(flags&XXCOM)) {
 		int	dotty = 0;
 # ifdef NEED_PGRP_SYNC
-		int	dosync = 0;
+		int	first_child_sync = 0;
 # endif /* NEED_PGRP_SYNC */
 
+# ifdef NEED_PGRP_SYNC
+		if (j_sync_open) {
+			/*
+			 * The Parent closes 0, keeps 1 open 'til the whole
+			 * pipeline is started.  The First child closes 1,
+			 * keeps 0 open (reads from it).  The remaining
+			 * children just have to close 1 (parent has already
+			 * closeed 0).
+			 */
+			if (j->pgrp == 0) { /* First process */
+				close(j_sync_pipe[ischild]);
+				j_sync_pipe[ischild] = -1;
+				first_child_sync = ischild;
+			} else if (ischild) {
+				j_sync_open = 0;
+				closepipe(j_sync_pipe);
+			}
+		}
+# endif /* NEED_PGRP_SYNC */
 		if (j->pgrp == 0) {	/* First process */
 			j->pgrp = p->pid;
 			dotty = 1;
-# ifdef NEED_PGRP_SYNC
-			if (j_sync_open) {
-				close(j_sync_pipe[ischild ? 1 : 0]);
-				j_sync_pipe[ischild ? 1 : 0] = -1;
-				dosync = ischild;
-			}
-# endif /* NEED_PGRP_SYNC */
 		}
 
 		/* set pgrp in both parent and child to deal with race
@@ -556,13 +570,11 @@ exchild(t, flags, close_fd)
 			tcsetpgrp(tty_fd, j->pgrp);
 # endif /* TTY_PGRP */
 # ifdef NEED_PGRP_SYNC
-		if (ischild && j_sync_open) {
-			if (dosync) {
-				char c;
-				while (read(j_sync_pipe[0], &c, 1) == -1
-				       && errno == EINTR)
-					;
-			}
+		if (first_child_sync) {
+			char c;
+			while (read(j_sync_pipe[0], &c, 1) == -1
+			       && errno == EINTR)
+				;
 			close(j_sync_pipe[0]);
 			j_sync_open = 0;
 		}
@@ -571,18 +583,19 @@ exchild(t, flags, close_fd)
 #endif /* JOBS */
 
 	/* used to close pipe input fd */
-	if (close_fd >= 0 && (((orig_flags & XPCLOSE) && i != 0)
-			      || ((orig_flags & XCCLOSE) && i == 0)))
+	if (close_fd >= 0 && (((orig_flags & XPCLOSE) && !ischild)
+			      || ((orig_flags & XCCLOSE) && ischild)))
 		close(close_fd);
-	if (i == 0) {		/* child */
+	if (ischild) {		/* child */
+#ifdef KSH
+		/* Do this before restoring signal */
+		if (orig_flags & XCOPROC)
+			coproc_cleanup(FALSE);
+#endif /* KSH */
 #ifdef JOB_SIGS
 		sigprocmask(SIG_SETMASK, &omask, (sigset_t *) 0);
 #endif /* JOB_SIGS */
 		cleanup_parents_env();
-#ifdef KSH
-		if (orig_flags & XCOPROC)
-			cleanup_coproc(FALSE);
-#endif /* KSH */
 #ifdef TTY_PGRP
 		/* If FMONITOR or FTALKING is set, these signals are ignored,
 		 * if neither FMONITOR nor FTALKING are set, the signals have
@@ -604,9 +617,9 @@ exchild(t, flags, close_fd)
 			setsig(&sigtraps[SIGQUIT], SIG_IGN,
 				SS_RESTORE_IGN|SS_FORCE);
 			if (!(orig_flags & (XPIPEI | XCOPROC))) {
-				i = open("/dev/null", 0);
-				(void) ksh_dup2(i, 0, TRUE);
-				close(i);
+				int fd = open("/dev/null", 0);
+				(void) ksh_dup2(fd, 0, TRUE);
+				close(fd);
 			}
 		}
 		remove_job(j, "child");	/* in case of `jobs` command */
@@ -634,8 +647,11 @@ exchild(t, flags, close_fd)
 #endif /* TTY_PGRP */
 		j_startjob(j);
 #ifdef KSH
-		if (flags & XCOPROC)
-			coproc.job = (void *) j;
+		if (orig_flags & XCOPROC) {
+			j->coproc_id = coproc.id;
+			coproc.njobs++; /* n jobs using co-process output */
+			coproc.job = (void *) j; /* j using co-process input */
+		}
 #endif /* KSH */
 		if (flags & XBGND) {
 			j_set_async(j);
@@ -1115,14 +1131,14 @@ j_startjob(j)
 
 #ifdef NEED_PGRP_SYNC
 	if (j_sync_open) {
-		closepipe(j_sync_pipe);
 		j_sync_open = 0;
+		closepipe(j_sync_pipe);
 	}
 #endif /* NEED_PGRP_SYNC */
 #ifdef JOB_SIGS
 	if (held_sigchld) {
 		held_sigchld = 0;
-		/* Don't call j_sigchild() as it may remove job... */
+		/* Don't call j_sigchld() as it may remove job... */
 		kill(procpid, SIGCHLD);
 	}
 #endif /* JOB_SIGS */
@@ -1268,8 +1284,6 @@ j_sigchld(sig)
 	WAIT_T		status;
 	struct tms	t0, t1;
 
-	trapsig(sig);
-
 #ifdef JOB_SIGS
 	/* Don't wait for any processes if a job is partially started.
 	 * This is so we don't do away with the process group leader
@@ -1340,7 +1354,7 @@ found:
 
 /*
  * Called only when a process in j has exited/stopped (ie, called only
- * from j_sigchild()).  If no processes are running, the job status
+ * from j_sigchld()).  If no processes are running, the job status
  * and state are updated, asynchronous job notification is done and,
  * if unneeded, the job is removed.
  *
@@ -1386,9 +1400,24 @@ check_job(j)
 	 * remove_job() since neither may be called for non-interactive 
 	 * shells.
 	 */
-	if ((j->state == PEXITED || j->state == PSIGNALLED)
-	    && coproc.job == (void *) j)
-		coproc.job = (void *) 0;
+	if (j->state == PEXITED || j->state == PSIGNALLED) {
+		/* No need to keep co-process input any more
+		 * (at leasst, this is what ksh93d thinks)
+		 */
+		if (coproc.job == j) {
+			coproc.job = (void *) 0;
+			/* XXX would be nice to get the closes out of here
+			 * so they aren't done in the signal handler.
+			 * Would mean a check in coproc_getfd() to
+			 * do "if job == 0 && write >= 0, close write".
+			 */
+			coproc_write_close(coproc.write);
+		}
+		/* Do we need to keep the output? */
+		if (j->coproc_id && j->coproc_id == coproc.id
+		    && --coproc.njobs == 0)
+			coproc_readw_close(coproc.read);
+	}
 #endif /* KSH */
 
 	j->flags |= JF_CHANGED;

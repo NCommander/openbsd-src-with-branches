@@ -1,8 +1,12 @@
-/*	$NetBSD: ccdconfig.c,v 1.2 1995/08/23 01:06:59 thorpej Exp $	*/
+/*	$OpenBSD: ccdconfig.c,v 1.6 1996/12/22 03:00:47 deraadt Exp $	*/
+/*	$NetBSD: ccdconfig.c,v 1.6 1996/05/16 07:11:18 thorpej Exp $	*/
 
-/*
- * Copyright (c) 1995 Jason R. Thorpe.
+/*-
+ * Copyright (c) 1996 The NetBSD Foundation, Inc.
  * All rights reserved.
+ *
+ * This code is derived from software contributed to The NetBSD Foundation
+ * by Jason R. Thorpe.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -14,22 +18,23 @@
  *    documentation and/or other materials provided with the distribution.
  * 3. All advertising materials mentioning features or use of this software
  *    must display the following acknowledgement:
- *	This product includes software developed for the NetBSD Project
- *	by Jason R. Thorpe.
- * 4. The name of the author may not be used to endorse or promote products
- *    derived from this software without specific prior written permission.
+ *        This product includes software developed by the NetBSD
+ *        Foundation, Inc. and its contributors.
+ * 4. Neither the name of The NetBSD Foundation nor the names of its
+ *    contributors may be used to endorse or promote products derived
+ *    from this software without specific prior written permission.
  *
- * THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR
- * IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
- * OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.
- * IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY DIRECT, INDIRECT,
- * INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,
- * BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
- * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED
- * AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
- * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
- * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
- * SUCH DAMAGE.
+ * THIS SOFTWARE IS PROVIDED BY THE NETBSD FOUNDATION, INC. AND CONTRIBUTORS
+ * ``AS IS'' AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED
+ * TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+ * PURPOSE ARE DISCLAIMED.  IN NO EVENT SHALL THE REGENTS OR CONTRIBUTORS BE
+ * LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+ * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ * POSSIBILITY OF SUCH DAMAGE.
  */
 
 #include <sys/param.h>
@@ -50,6 +55,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+#include <util.h>
 
 #include <dev/ccdvar.h>
 
@@ -70,6 +76,7 @@ struct	flagval {
 } flagvaltab[] = {
 	{ "CCDF_SWAP",		CCDF_SWAP },
 	{ "CCDF_UNIFORM",	CCDF_UNIFORM },
+	{ "CCDF_MIRROR",	CCDF_MIRROR },
 	{ NULL,			0 },
 };
 
@@ -92,8 +99,6 @@ static	int do_io __P((char *, u_long, struct ccd_ioctl *));
 static	int do_single __P((int, char **, int));
 static	int do_all __P((int));
 static	int dump_ccd __P((int, char **));
-static	int getmaxpartitions __P((void));
-static	int getrawpartition __P((void));
 static	int flags_to_val __P((char *));
 static	int pathtodevt __P((char *, dev_t *));
 static	void print_ccd_info __P((struct ccd_softc *, kvm_t *));
@@ -107,7 +112,7 @@ main(argc, argv)
 {
 	int ch, options = 0, action = CCD_CONFIG;
 
-	while ((ch = getopt(argc, argv, "cCf:guUv")) != -1) {
+	while ((ch = getopt(argc, argv, "cCf:gM:N:uUv")) != -1) {
 		switch (ch) {
 		case 'c':
 			action = CCD_CONFIG;
@@ -132,7 +137,7 @@ main(argc, argv)
 			break;
 
 		case 'N':
-			core = optarg;
+			kernel = optarg;
 			break;
 
 		case 'u':
@@ -158,6 +163,15 @@ main(argc, argv)
 
 	if (options > 1)
 		usage();
+
+	/*
+	 * Discard setgid privileges if not the running kernel so that bad
+	 * guys can't print interesting stuff from kernel memory.
+	 */
+	if (core != NULL || kernel != NULL) {
+		setegid(getgid());
+		setgid(getgid());
+	}
 
 	switch (action) {
 		case CCD_CONFIG:
@@ -305,11 +319,16 @@ do_all(action)
 	char line[_POSIX2_LINE_MAX];
 	char *cp, **argv;
 	int argc, rval;
+	gid_t egid;
 
+	egid = getegid();
+	setegid(getgid());
 	if ((f = fopen(ccdconf, "r")) == NULL) {
+		setegid(egid);
 		warn("fopen: %s", ccdconf);
 		return (1);
 	}
+	setegid(egid);
 
 	while (fgets(line, sizeof(line), f) != NULL) {
 		argc = 0;
@@ -617,36 +636,6 @@ print_ccd_info(cs, kd)
 
  done:
 	free(cip);
-}
-
-static int
-getmaxpartitions()
-{
-	int maxpart, mib[2];
-	size_t varlen;
-
-	mib[0] = CTL_KERN;
-	mib[1] = KERN_MAXPARTITIONS;
-	varlen = sizeof(maxpart);
-	if (sysctl(mib, 2, &maxpart, &varlen, NULL, 0) < 0)
-		return (-1);
-
-	return (maxpart);
-}
-
-static int
-getrawpartition()
-{
-	int rawpart, mib[2];
-	size_t varlen;
-
-	mib[0] = CTL_KERN;
-	mib[1] = KERN_RAWPARTITION;
-	varlen = sizeof(rawpart);
-	if (sysctl(mib, 2, &rawpart, &varlen, NULL, 0) < 0)
-		return (-1);
-
-	return (rawpart);
 }
 
 static int

@@ -1,5 +1,3 @@
-/*	$NetBSD: pmap_clnt.c,v 1.2 1995/02/25 03:01:47 cgd Exp $	*/
-
 /*
  * Sun RPC is a product of Sun Microsystems, Inc. and is provided for
  * unrestricted use provided that this legend is included on all tape
@@ -30,10 +28,8 @@
  */
 
 #if defined(LIBC_SCCS) && !defined(lint)
-/*static char *sccsid = "from: @(#)pmap_clnt.c 1.37 87/08/11 Copyr 1984 Sun Micro";*/
-/*static char *sccsid = "from: @(#)pmap_clnt.c	2.2 88/08/01 4.0 RPCSRC";*/
-static char *rcsid = "$NetBSD: pmap_clnt.c,v 1.2 1995/02/25 03:01:47 cgd Exp $";
-#endif
+static char *rcsid = "$OpenBSD: pmap_clnt.c,v 1.5 1996/08/19 08:31:36 tholo Exp $";
+#endif /* LIBC_SCCS and not lint */
 
 /*
  * pmap_clnt.c
@@ -69,7 +65,9 @@ pmap_set(program, version, protocol, port)
 	struct pmap parms;
 	bool_t rslt;
 
-	get_myaddress(&myaddress);
+	if (get_myaddress(&myaddress) != 0)
+		return (FALSE);
+	myaddress.sin_addr.s_addr = htonl(INADDR_LOOPBACK);
 	client = clntudp_bufcreate(&myaddress, PMAPPROG, PMAPVERS,
 	    timeout, &socket, RPCSMALLMSGSIZE, RPCSMALLMSGSIZE);
 	if (client == (CLIENT *)NULL)
@@ -84,7 +82,8 @@ pmap_set(program, version, protocol, port)
 		return (FALSE);
 	}
 	CLNT_DESTROY(client);
-	(void)close(socket);
+	if (socket != -1)
+		(void)close(socket);
 	return (rslt);
 }
 
@@ -103,7 +102,9 @@ pmap_unset(program, version)
 	struct pmap parms;
 	bool_t rslt;
 
-	get_myaddress(&myaddress);
+	if (get_myaddress(&myaddress) != 0)
+		return (FALSE);
+	myaddress.sin_addr.s_addr = htonl(INADDR_LOOPBACK);
 	client = clntudp_bufcreate(&myaddress, PMAPPROG, PMAPVERS,
 	    timeout, &socket, RPCSMALLMSGSIZE, RPCSMALLMSGSIZE);
 	if (client == (CLIENT *)NULL)
@@ -114,6 +115,7 @@ pmap_unset(program, version)
 	CLNT_CALL(client, PMAPPROC_UNSET, xdr_pmap, &parms, xdr_bool, &rslt,
 	    tottimeout);
 	CLNT_DESTROY(client);
-	(void)close(socket);
+	if (socket != -1)
+		(void)close(socket);
 	return (rslt);
 }

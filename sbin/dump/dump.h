@@ -1,3 +1,4 @@
+/*	$OpenBSD: dump.h,v 1.3 1996/09/01 13:12:35 deraadt Exp $	*/
 /*	$NetBSD: dump.h,v 1.9 1995/03/18 14:54:57 cgd Exp $	*/
 
 /*-
@@ -73,6 +74,7 @@ int	newtape;	/* new tape flag */
 int	density;	/* density in 0.1" units */
 long	tapesize;	/* estimated tape size, blocks */
 long	tsize;		/* tape size in 0.1" units */
+int	unlimited;	/* if set, write to end of medium */
 long	asize;		/* number of 0.1" units written on current tape */
 int	etapes;		/* estimated number of tapes */
 int	nonodump;	/* if set, do not honor UF_NODUMP user flags */
@@ -148,7 +150,6 @@ void	interrupt __P((int signo));	/* in case operator bangs on console */
 #define	X_ABORT		3	/* abort dump; don't attempt checkpointing */
 
 #define	OPGRENT	"operator"		/* group entry to notify */
-#define DIALUP	"ttyd"			/* prefix for dialups */
 
 struct	fstab *fstabsearch __P((char *key));	/* search fs_file and fs_spec */
 

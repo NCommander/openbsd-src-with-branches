@@ -35,6 +35,8 @@ PUSHDIVERT(-1)
 # SUCH DAMAGE.
 #
 
+ifdef(`FAX_MAILER_ARGS',,
+	`define(`FAX_MAILER_ARGS', mailfax $u $h $f)')
 ifdef(`FAX_MAILER_PATH',,
 	`define(`FAX_MAILER_PATH', /usr/local/lib/fax/mailfax)')
 ifdef(`FAX_MAILER_MAX',,
@@ -44,7 +46,10 @@ POPDIVERT
 ###   FAX Mailer specification   ###
 ####################################
 
-VERSIONID(`@(#)fax.m4	8.2 (Berkeley) 1/24/94')
+VERSIONID(`@(#)fax.m4	8.5 (Berkeley) 5/10/96')
 
-Mfax,		P=FAX_MAILER_PATH, F=DFMhu, S=14, R=24, M=FAX_MAILER_MAX,
-		A=mailfax $u $h $f
+Mfax,		P=FAX_MAILER_PATH, F=DFMhu, S=14, R=24, M=FAX_MAILER_MAX, T=X-Phone/X-FAX/X-Unix,
+		A=FAX_MAILER_ARGS
+
+LOCAL_CONFIG
+CPFAX

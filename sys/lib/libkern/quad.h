@@ -1,4 +1,5 @@
-/*	$NetBSD: quad.h,v 1.4.2.1 1995/10/12 15:17:26 jtc Exp $	*/
+/*	$OpenBSD: quad.h,v 1.3 1996/04/19 16:09:31 niklas Exp $	*/
+/*	$NetBSD: quad.h,v 1.7 1996/04/18 02:20:04 cgd Exp $	*/
 
 /*-
  * Copyright (c) 1992, 1993
@@ -56,7 +57,11 @@
  */
 
 #include <sys/types.h>
+#ifndef _KERNEL
 #include <limits.h>
+#else
+#include <machine/limits.h>
+#endif
 
 /*
  * Depending on the desired operation, we view a `long long' (aka quad_t) in
@@ -110,3 +115,24 @@ typedef unsigned int	qshift_t;
 #else
 typedef u_quad_t	qshift_t;
 #endif
+
+__BEGIN_DECLS
+quad_t	__adddi3	__P((quad_t, quad_t));
+quad_t	__anddi3	__P((quad_t, quad_t));
+quad_t	__ashldi3	__P((quad_t, qshift_t));
+quad_t	__ashrdi3	__P((quad_t, qshift_t));
+int	__cmpdi2	__P((quad_t, quad_t));
+quad_t	__divdi3	__P((quad_t, quad_t));
+quad_t	__iordi3	__P((quad_t, quad_t));
+quad_t	__lshldi3	__P((quad_t, qshift_t));
+quad_t	__lshrdi3	__P((quad_t, qshift_t));
+quad_t	__moddi3	__P((quad_t, quad_t));
+quad_t	__muldi3	__P((quad_t, quad_t));
+quad_t	__negdi2	__P((quad_t));
+quad_t	__one_cmpldi2	__P((quad_t));
+quad_t	__subdi3	__P((quad_t, quad_t));
+int	__ucmpdi2	__P((u_quad_t, u_quad_t));
+u_quad_t __udivdi3	__P((u_quad_t, u_quad_t));
+u_quad_t __umoddi3	__P((u_quad_t, u_quad_t));
+quad_t	__xordi3	__P((quad_t, quad_t));
+__END_DECLS

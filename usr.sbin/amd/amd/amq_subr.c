@@ -36,7 +36,7 @@
  * SUCH DAMAGE.
  *
  *	from: @(#)amq_subr.c	8.1 (Berkeley) 6/6/93
- *	$Id: amq_subr.c,v 1.3 1994/06/13 20:47:03 mycroft Exp $
+ *	$Id: amq_subr.c,v 1.2 1997/01/31 14:41:57 graichen Exp $
  */
 
 /*
@@ -201,6 +201,7 @@ struct svc_req *rqstp;
 	char *cp;
 
 	plog(XLOG_INFO, "amq requested mount of %s", s);
+#if 0
 	/*
 	 * Minimalist security check.
 	 */
@@ -208,6 +209,16 @@ struct svc_req *rqstp;
 		rc = EACCES;
 		return &rc;
 	}
+#else
+	/*
+	 * Better security check. amd does not allocate a seperate
+	 * socket to distinguish local connects; so the above security
+	 * check is useless
+	 */
+	rc = EACCES;
+	return &rc;
+#endif
+
 
 	/*
 	 * Find end of key
@@ -295,7 +306,8 @@ xdr_amq_mount_tree_node(xdrs, objp)
 	if (!xdr_amq_string(xdrs, &mp->am_mnt->mf_ops->fs_type)) {
 		return (FALSE);
 	}
-	if (!xdr_long(xdrs, &mp->am_stats.s_mtime)) {
+	/* XXX really a time_t, but need to transmit a 32-bit integer */
+	if (!xdr_int(xdrs, (int *)&mp->am_stats.s_mtime)) {
 		return (FALSE);
 	}
 	if (!xdr_u_short(xdrs, &mp->am_stats.s_uid)) {

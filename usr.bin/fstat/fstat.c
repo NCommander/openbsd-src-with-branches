@@ -1,3 +1,5 @@
+/*	$OpenBSD: fstat.c,v 1.7 1996/12/22 03:25:52 tholo Exp $	*/
+
 /*-
  * Copyright (c) 1988, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -39,7 +41,7 @@ static char copyright[] =
 
 #ifndef lint
 /*static char sccsid[] = "from: @(#)fstat.c	8.1 (Berkeley) 6/6/93";*/
-static char *rcsid = "$Id: fstat.c,v 1.14 1995/03/28 17:24:12 jtc Exp $";
+static char *rcsid = "$OpenBSD: fstat.c,v 1.7 1996/12/22 03:25:52 tholo Exp $";
 #endif /* not lint */
 
 #include <sys/param.h>
@@ -62,7 +64,7 @@ static char *rcsid = "$Id: fstat.c,v 1.14 1995/03/28 17:24:12 jtc Exp $";
 #undef _KERNEL
 #define NFS
 #include <sys/mount.h>
-#include <nfs/nfsv2.h>
+#include <nfs/nfsproto.h>
 #include <nfs/rpcv2.h>
 #include <nfs/nfs.h>
 #include <nfs/nfsnode.h>
@@ -74,9 +76,12 @@ static char *rcsid = "$Id: fstat.c,v 1.14 1995/03/28 17:24:12 jtc Exp $";
 #include <netinet/ip.h>
 #include <netinet/in_pcb.h>
 
+#include <arpa/inet.h>
+
 #include <ctype.h>
 #include <errno.h>
 #include <kvm.h>
+#include <limits.h>
 #include <nlist.h>
 #include <paths.h>
 #include <pwd.h>
@@ -155,12 +160,13 @@ main(argc, argv)
 	struct kinfo_proc *p, *plast;
 	int arg, ch, what;
 	char *memf, *nlistf;
+	char buf[_POSIX2_LINE_MAX];
 	int cnt;
 
 	arg = 0;
 	what = KERN_PROC_ALL;
 	nlistf = memf = NULL;
-	while ((ch = getopt(argc, argv, "fnp:u:vNM")) != EOF)
+	while ((ch = getopt(argc, argv, "fnp:u:vN:M:")) != -1)
 		switch((char)ch) {
 		case 'f':
 			fsflg = 1;
@@ -226,11 +232,13 @@ main(argc, argv)
 	 * Discard setgid privileges if not the running kernel so that bad
 	 * guys can't print interesting stuff from kernel memory.
 	 */
-	if (nlistf != NULL || memf != NULL)
+	if (nlistf != NULL || memf != NULL) {
+		setegid(getgid());
 		setgid(getgid());
+	}
 
-	if ((kd = kvm_open(nlistf, memf, NULL, O_RDONLY, NULL)) == NULL) {
-		fprintf(stderr, "fstat: %s\n", kvm_geterr(kd));
+	if ((kd = kvm_openfiles(nlistf, memf, NULL, O_RDONLY, buf)) == NULL) {
+		fprintf(stderr, "fstat: %s\n", buf);
 		exit(1);
 	}
 #ifdef notdef
@@ -404,7 +412,7 @@ vtrans(vp, i, flag)
 				badtype = "error";
 			break;
 		default: {
-			static char unknown[10];
+			static char unknown[20];
 			sprintf(badtype = unknown, "?(%x)", vn.v_tag);
 			break;;
 		}
@@ -584,7 +592,7 @@ socktrans(sock, i)
 	struct inpcb	inpcb;
 	struct unpcb	unpcb;
 	int len;
-	char dname[32], *strcpy();
+	char dname[32];
 
 	PREFIX(i);
 
@@ -634,20 +642,44 @@ socktrans(sock, i)
 	switch(dom.dom_family) {
 	case AF_INET:
 		getinetproto(proto.pr_protocol);
-		if (proto.pr_protocol == IPPROTO_TCP ) {
-			if (so.so_pcb) {
-				if (kvm_read(kd, (u_long)so.so_pcb,
-				    (char *)&inpcb, sizeof(struct inpcb))
-				    != sizeof(struct inpcb)) {
-					dprintf(stderr, 
-					    "can't read inpcb at %x\n",
-					    so.so_pcb);
-					goto bad;
-				}
-				printf(" %lx", (long)inpcb.inp_ppcb);
+		if (proto.pr_protocol == IPPROTO_TCP) {
+			if (so.so_pcb == NULL)
+				break;
+			if (kvm_read(kd, (u_long)so.so_pcb, (char *)&inpcb,
+			    sizeof(struct inpcb)) != sizeof(struct inpcb)) {
+				dprintf(stderr, "can't read inpcb at %x\n",
+				    so.so_pcb);
+				goto bad;
 			}
-		}
-		else if (so.so_pcb)
+			printf(" %lx", (long)inpcb.inp_ppcb);
+			printf(" %s:%d",
+			    inpcb.inp_laddr.s_addr == INADDR_ANY ? "*" :
+			    inet_ntoa(inpcb.inp_laddr),
+			    ntohs(inpcb.inp_lport));
+			if (inpcb.inp_fport)
+				printf(" <-> %s:%d",
+				    inpcb.inp_faddr.s_addr == INADDR_ANY ? "*" :
+				    inet_ntoa(inpcb.inp_faddr),
+				    ntohs(inpcb.inp_fport));
+		} else if (proto.pr_protocol == IPPROTO_UDP) {
+			if (so.so_pcb == NULL)
+				break;
+			if (kvm_read(kd, (u_long)so.so_pcb, (char *)&inpcb,
+			    sizeof(struct inpcb)) != sizeof(struct inpcb)) {
+				dprintf(stderr, "can't read inpcb at %x\n",
+				    so.so_pcb);
+				goto bad;
+			}
+			printf(" %s:%d",
+			    inpcb.inp_laddr.s_addr == INADDR_ANY ? "*" :
+			    inet_ntoa(inpcb.inp_laddr),
+			    ntohs(inpcb.inp_lport));
+			if (inpcb.inp_fport)
+				printf(" <-> %s:%d",
+				    inpcb.inp_faddr.s_addr == INADDR_ANY ? "*" :
+				    inet_ntoa(inpcb.inp_faddr),
+				    ntohs(inpcb.inp_fport));
+		} else if (so.so_pcb)
 			printf(" %lx", (long)so.so_pcb);
 		break;
 	case AF_UNIX:

@@ -1,4 +1,5 @@
-/*	$NetBSD: errno.h,v 1.9 1995/03/26 20:24:04 jtc Exp $	*/
+/*	$OpenBSD: errno.h,v 1.6 1997/02/27 01:00:54 millert Exp $	*/
+/*	$NetBSD: errno.h,v 1.10 1996/01/20 01:33:53 jtc Exp $	*/
 
 /*
  * Copyright (c) 1982, 1986, 1989, 1993
@@ -42,6 +43,13 @@
 
 #ifndef _KERNEL
 extern int errno;			/* global error number */
+
+#if !defined(_ANSI_SOURCE) && !defined(_POSIX_SOURCE) && !defined(__SYS_ERRLIST)
+#define __SYS_ERRLIST
+
+extern int sys_nerr;
+extern char *sys_errlist[];
+#endif
 #endif
 
 #define	EPERM		1		/* Operation not permitted */

@@ -1,3 +1,4 @@
+/*	$OpenBSD: io.c,v 1.4 1994/12/09 02:14:20 jtc Exp $	*/
 /*	$NetBSD: io.c,v 1.4 1994/12/09 02:14:20 jtc Exp $	*/
 
 /*
@@ -37,7 +38,7 @@
 #if 0
 static char sccsid[] = "@(#)io.c	8.1 (Berkeley) 6/6/93";
 #endif
-static char rcsid[] = "$NetBSD: io.c,v 1.4 1994/12/09 02:14:20 jtc Exp $";
+static char rcsid[] = "$OpenBSD: io.c,v 1.4 1994/12/09 02:14:20 jtc Exp $";
 #endif /* not lint */
 
 /*
@@ -67,7 +68,14 @@ talk()
 	char buf[BUFSIZ];
 	struct timeval wait;
 
+#ifdef NCURSES_VERSION
+	message("Connection established");
+	beep();
+	beep();
+	beep();
+#else
 	message("Connection established\007\007\007");
+#endif
 	current_line = 0;
 	sockt_mask = (1<<sockt);
 

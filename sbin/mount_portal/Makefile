@@ -1,5 +1,5 @@
+#	$OpenBSD: Makefile,v 1.5 1997/03/23 04:43:22 millert Exp $
 #	$NetBSD: Makefile,v 1.10 1995/03/18 14:57:50 cgd Exp $
-#	@(#)Makefile	8.3 (Berkeley) 3/27/94
 
 PROG=	mount_portal
 SRCS=	mount_portal.c activate.c conf.c getmntopts.c pt_conf.c \
@@ -10,7 +10,10 @@ MOUNT=	${.CURDIR}/../mount
 CFLAGS+= -I${.CURDIR}/../../sys -I${MOUNT}
 .PATH:	${MOUNT}
 
-DPADD=	$(LIBCOMPAT)
-LDADD=	-lcompat
-
 .include <bsd.prog.mk>
+
+afterinstall:
+	if [ ! -f ${DESTDIR}/etc/portal.conf ]; then \
+		${INSTALL} ${INSTALL_COPY} -o root -g wheel -m 644 \
+		    ${.CURDIR}/portal.conf ${DESTDIR}/etc; \
+	fi

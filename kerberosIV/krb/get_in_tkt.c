@@ -1,7 +1,7 @@
 /*
  * This software may now be redistributed outside the US.
  *
- * $Source: /usr/src/kerberosIV/lib/krb/RCS/get_in_tkt.c,v $
+ * $Source: /cvs/src/kerberosIV/krb/get_in_tkt.c,v $
  *
  * $Locker:  $
  */
@@ -62,12 +62,12 @@ passwd_to_key(user, instance, realm, passwd, key)
 {
 #ifdef NOENCRYPTION
     if (!passwd)
-	placebo_read_password(key, "Password: ", 0);
+	placebo_read_password(key, "Kerberos Password: ", 0);
 #else
     if (passwd)
 	des_string_to_key(passwd,key);
     else
-	des_read_password(key,"Password: ",0);
+	des_read_password(key,"Kerberos Password: ",0);
 #endif
     return (0);
 }
@@ -83,12 +83,12 @@ afs_passwd_to_key(user, instance, realm, passwd, key)
 {
 #ifdef NOENCRYPTION
     if (!passwd)
-        placebo_read_password(key, "Password: ", 0);
+        placebo_read_password(key, "Kerberos Password: ", 0);
 #else /* Do encyryption */
     if (passwd)
         afs_string_to_key(passwd, realm, key);
     else {
-        des_read_password(key, "Password: ", 0);
+        des_read_password(key, "Kerberos Password: ", 0);
     }
 #endif /* NOENCRYPTION */
     return (0);
@@ -126,7 +126,7 @@ krb_get_pw_in_tkt(user, instance, realm, service, sinstance, life, password)
 
     /* Only request password once! */
     if (!password) {
-        if (des_read_pw_string(pword, sizeof(pword)-1, "Password: ", 0))
+        if (des_read_pw_string(pword, sizeof(pword)-1, "Kerberos Password: ", 0))
             pword[0] = '\0'; /* something wrong */
         password = pword;
     }
@@ -149,8 +149,8 @@ krb_get_pw_in_tkt(user, instance, realm, service, sinstance, life, password)
 
 #ifdef NOENCRYPTION
 /*
- * $Source: /usr/src/kerberosIV/lib/krb/RCS/get_in_tkt.c,v $
- * $Author: he $
+ * $Source: /cvs/src/kerberosIV/krb/get_in_tkt.c,v $
+ * $Author: tholo $
  *
  * Copyright 1985, 1986, 1987, 1988 by the Massachusetts Institute
  * of Technology.
@@ -165,7 +165,7 @@ krb_get_pw_in_tkt(user, instance, realm, service, sinstance, life, password)
 
 #ifndef	lint
 static char rcsid_read_password_c[] =
-"Bones$Header: /usr/src/kerberosIV/lib/krb/RCS/get_in_tkt.c,v 1.3 1995/08/10 16:26:57 he Exp $";
+"Bones$Header: /cvs/src/kerberosIV/krb/get_in_tkt.c,v 1.2 1996/02/05 10:06:40 tholo Exp $";
 #endif /* lint */
 
 #include <des.h>
@@ -251,7 +251,7 @@ placebo_read_pw_string(s,max,prompt,verify)
 	    clearerr(stdin);
 	    continue;
 	}
-	if ((ptr = index(s, '\n')))
+	if ((ptr = strchr(s, '\n')))
 	    *ptr = '\0';
 	if (verify) {
 	    printf("\nVerifying, please re-enter %s",prompt);
@@ -260,7 +260,7 @@ placebo_read_pw_string(s,max,prompt,verify)
 		clearerr(stdin);
 		continue;
 	    }
-            if ((ptr = index(key_string, '\n')))
+            if ((ptr = strchr(key_string, '\n')))
 	    *ptr = '\0';
 	    if (strcmp(s,key_string)) {
 		printf("\n\07\07Mismatch - try again\n");

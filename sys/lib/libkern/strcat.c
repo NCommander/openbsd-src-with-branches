@@ -1,3 +1,5 @@
+/*	$OpenBSD: strcat.c,v 1.2 1996/04/19 16:09:37 niklas Exp $	*/
+
 /*
  * Copyright (c) 1988 Regents of the University of California.
  * All rights reserved.
@@ -33,10 +35,14 @@
 
 #if defined(LIBC_SCCS) && !defined(lint)
 /*static char *sccsid = "from: @(#)strcat.c	5.6 (Berkeley) 2/24/91";*/
-static char *rcsid = "$Id: strcat.c,v 1.5 1995/10/07 09:26:43 mycroft Exp $";
+static char *rcsid = "$OpenBSD: strcat.c,v 1.2 1996/04/19 16:09:37 niklas Exp $";
 #endif /* LIBC_SCCS and not lint */
 
+#ifndef _KERNEL
 #include <string.h>
+#else
+#include <lib/libkern/libkern.h>
+#endif
 
 char *
 strcat(s, append)
@@ -46,6 +52,6 @@ strcat(s, append)
 	char *save = s;
 
 	for (; *s; ++s);
-	while (*s++ = *append++);
+	while ((*s++ = *append++) != '\0');
 	return(save);
 }

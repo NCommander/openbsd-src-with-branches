@@ -1,4 +1,5 @@
-/*	$NetBSD: filedesc.h,v 1.11 1995/03/26 20:24:14 jtc Exp $	*/
+/*	$OpenBSD: filedesc.h,v 1.4 1996/04/18 21:40:55 niklas Exp $	*/
+/*	$NetBSD: filedesc.h,v 1.14 1996/04/09 20:55:28 cgd Exp $	*/
 
 /*
  * Copyright (c) 1990, 1993
@@ -50,7 +51,7 @@
  * that will fit in a power-of-two sized piece of memory.
  */
 #define NDFILE		20
-#define NDEXTENT	50		/* 250 bytes in 256-byte alloc. */ 
+#define NDEXTENT	50		/* 250 bytes in 256-byte alloc. */
 
 struct filedesc {
 	struct	file **fd_ofiles;	/* file structures for open files */
@@ -98,6 +99,14 @@ int	dupfdopen __P((struct filedesc *fdp, int indx, int dfd, int mode,
 int	fdalloc __P((struct proc *p, int want, int *result));
 int	fdavail __P((struct proc *p, int n));
 int	falloc __P((struct proc *p, struct file **resultfp, int *resultfd));
+void	ffree __P((struct file *));
+struct	filedesc *fdinit __P((struct proc *p));
+struct	filedesc *fdshare __P((struct proc *p));
 struct	filedesc *fdcopy __P((struct proc *p));
 void	fdfree __P((struct proc *p));
+int	fdrelease __P((struct proc *p, int));
+void	fdcloseexec __P((struct proc *));
+
+int	closef __P((struct file *, struct proc *));
+int	getsock __P((struct filedesc *, int, struct file **));
 #endif

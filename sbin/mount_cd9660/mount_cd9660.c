@@ -1,4 +1,5 @@
-/*	$NetBSD: mount_cd9660.c,v 1.2 1995/03/18 14:57:15 cgd Exp $	*/
+/*	$OpenBSD: mount_cd9660.c,v 1.5 1997/04/19 20:07:24 flipk Exp $	*/
+/*	$NetBSD: mount_cd9660.c,v 1.3 1996/04/13 01:31:08 jtc Exp $	*/
 
 /*
  * Copyright (c) 1992, 1993, 1994
@@ -48,7 +49,7 @@ static char copyright[] =
 #if 0
 static char sccsid[] = "@(#)mount_cd9660.c	8.4 (Berkeley) 3/27/94";
 #else
-static char rcsid[] = "$NetBSD: mount_cd9660.c,v 1.2 1995/03/18 14:57:15 cgd Exp $";
+static char rcsid[] = "$OpenBSD: mount_cd9660.c,v 1.5 1997/04/19 20:07:24 flipk Exp $";
 #endif
 #endif /* not lint */
 
@@ -64,7 +65,7 @@ static char rcsid[] = "$NetBSD: mount_cd9660.c,v 1.2 1995/03/18 14:57:15 cgd Exp
 
 #include "mntopts.h"
 
-struct mntopt mopts[] = {
+const struct mntopt mopts[] = {
 	MOPT_STDOPTS,
 	MOPT_UPDATE,
 	{ NULL }
@@ -82,7 +83,7 @@ main(argc, argv)
 	char *dev, *dir;
 
 	mntflags = opts = 0;
-	while ((ch = getopt(argc, argv, "ego:r")) != EOF)
+	while ((ch = getopt(argc, argv, "ego:R")) != -1)
 		switch (ch) {
 		case 'e':
 			opts |= ISOFSMNT_EXTATT;
@@ -93,7 +94,7 @@ main(argc, argv)
 		case 'o':
 			getmntopts(optarg, mopts, &mntflags);
 			break;
-		case 'r':
+		case 'R':
 			opts |= ISOFSMNT_NORRIP;
 			break;
 		case '?':
@@ -113,6 +114,9 @@ main(argc, argv)
 	args.fspec = dev;
 	args.export.ex_root = DEFAULT_ROOTUID;
 
+#if 1
+	mntflags |= MNT_RDONLY;
+#endif
 	if (mntflags & MNT_RDONLY)
 		args.export.ex_flags = MNT_EXRDONLY;
 	else

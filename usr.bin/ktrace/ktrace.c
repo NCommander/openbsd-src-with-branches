@@ -1,3 +1,4 @@
+/*	$OpenBSD: ktrace.c,v 1.3 1996/09/21 08:11:03 deraadt Exp $	*/
 /*	$NetBSD: ktrace.c,v 1.4 1995/08/31 23:01:44 jtc Exp $	*/
 
 /*-
@@ -43,7 +44,7 @@ static char copyright[] =
 #if 0
 static char sccsid[] = "@(#)ktrace.c	8.2 (Berkeley) 4/28/95";
 #endif
-static char *rcsid = "$NetBSD: ktrace.c,v 1.4 1995/08/31 23:01:44 jtc Exp $";
+static char *rcsid = "$OpenBSD: ktrace.c,v 1.3 1996/09/21 08:11:03 deraadt Exp $";
 #endif /* not lint */
 
 #include <sys/param.h>
@@ -70,12 +71,13 @@ main(argc, argv)
 	enum { NOTSET, CLEAR, CLEARALL } clear;
 	int append, ch, fd, inherit, ops, pid, pidset, trpoints;
 	char *tracefile;
+	mode_t omask;
 
 	clear = NOTSET;
 	append = ops = pidset = inherit = 0;
 	trpoints = DEF_POINTS;
 	tracefile = DEF_TRACEFILE;
-	while ((ch = getopt(argc,argv,"aCcdf:g:ip:t:")) != EOF)
+	while ((ch = getopt(argc,argv,"aCcdf:g:ip:t:")) != -1)
 		switch((char)ch) {
 		case 'a':
 			append = 1;
@@ -137,9 +139,11 @@ main(argc, argv)
 		exit(0);
 	}
 
+	omask = umask(S_IRWXG|S_IRWXO);
 	if ((fd = open(tracefile, O_CREAT | O_WRONLY | (append ? 0 : O_TRUNC),
 	    DEFFILEMODE)) < 0)
 		err(1, tracefile);
+	(void)umask(omask);
 	(void)close(fd);
 
 	if (*argv) { 
