@@ -1,4 +1,4 @@
-/*	$OpenBSD: tcp_usrreq.c,v 1.46 2000/07/11 16:53:22 provos Exp $	*/
+/*	$OpenBSD: tcp_usrreq.c,v 1.47 2000/09/19 03:20:59 angelos Exp $	*/
 /*	$NetBSD: tcp_usrreq.c,v 1.20 1996/02/13 23:44:16 christos Exp $	*/
 
 /*
@@ -87,6 +87,8 @@ didn't get a copy, you may request one from <license@ipv6.nrl.navy.mil>.
  */
 extern	char *tcpstates[];
 extern	int tcptv_keep_init;
+
+extern int tcp_rst_ppslim;
 
 /* from in_pcb.c */
 extern	struct baddynamicports baddynamicports;
@@ -909,6 +911,9 @@ tcp_sysctl(name, namelen, oldp, oldlenp, newp, newlen)
 		return (sysctl_int(oldp, oldlenp, newp, newlen,&tcp_sendspace));
 	case TCPCTL_IDENT:
 		return (tcp_ident(oldp, oldlenp, newp, newlen));
+	case TCPCTL_RSTPPSLIMIT:
+		return (sysctl_int(oldp, oldlenp, newp, newlen,
+		    &tcp_rst_ppslim));
 	default:
 		return (ENOPROTOOPT);
 	}
