@@ -1,4 +1,4 @@
-/*	$OpenBSD: diff.c,v 1.16 2003/06/26 21:03:08 millert Exp $	*/
+/*	$OpenBSD: diff.c,v 1.17 2003/06/26 22:04:45 millert Exp $	*/
 
 /*
  * Copyright (C) Caldera International Inc.  2001-2002.
@@ -37,6 +37,7 @@
 #include <errno.h>
 #include <stdlib.h>
 #include <stdarg.h>
+#include <string.h>
 #include <unistd.h>
 
 #include "diff.h"
