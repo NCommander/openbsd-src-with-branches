@@ -294,7 +294,9 @@ authenticates users according to five rules.
 .Pp
 .Bl -enum -offset indent
 .It
-The login name must be in the password database.
+The login name must be in the password database and not have a null password.
+In this case a password must be provided by the client before any
+file operations may be performed.
 .It
 The login name must not appear in the file
 .Pa /etc/ftpusers .
