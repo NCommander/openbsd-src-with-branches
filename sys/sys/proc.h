@@ -1,4 +1,4 @@
-/*	$OpenBSD: proc.h,v 1.14 1997/06/05 10:15:22 deraadt Exp $	*/
+/*	$OpenBSD: proc.h,v 1.15 1997/07/28 09:13:15 deraadt Exp $	*/
 /*	$NetBSD: proc.h,v 1.44 1996/04/22 01:23:21 christos Exp $	*/
 
 /*-
@@ -234,6 +234,8 @@ struct	proc {
 #define	P_FSTRACE	0x10000	/* tracing via file system (elsewhere?) */
 #define	P_SSTEP		0x20000	/* process needs single-step fixup ??? */
 #define	P_SUGIDEXEC	0x40000	/* last execve() was a setuid/setgid execve() */
+
+#define	P_NOCLDWAIT	0x80000	/* No zombies if child dies (assign to pid 1) */
 
 /*
  * MOVE TO ucred.h?
