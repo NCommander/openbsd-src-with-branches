@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_pfsync.c,v 1.23 2004/02/20 19:22:03 mcbride Exp $	*/
+/*	$OpenBSD: if_pfsync.c,v 1.24 2004/03/22 04:54:17 mcbride Exp $	*/
 
 /*
  * Copyright (c) 2002 Michael Shalayeff
@@ -503,7 +503,7 @@ pfsync_input(struct mbuf *m, ...)
 					printf("pfsync: received "
 					    "bulk update request\n");
 				pfsync_send_bus(sc, PFSYNC_BUS_START);
-				pfsync_bulk_update(sc);
+				timeout_add(&sc->sc_bulk_tmo, 1 * hz);
 			} else {
 				st = pf_find_state_byid(&key);
 				if (st == NULL) {
