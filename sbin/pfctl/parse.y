@@ -1,4 +1,4 @@
-/*	$OpenBSD: parse.y,v 1.393 2003/06/19 22:08:35 deraadt Exp $	*/
+/*	$OpenBSD: parse.y,v 1.394 2003/07/03 09:13:05 cedric Exp $	*/
 
 /*
  * Copyright (c) 2001 Markus Friedl.  All rights reserved.
@@ -858,11 +858,12 @@ tabledef	: TABLE '<' STRING '>' table_opts {
 			if (pfctl_define_table($3, $5.flags, $5.init_addr,
 			    (pf->opts & PF_OPT_NOACTION) || !(pf->loadopt &
 				(PFCTL_FLAG_TABLE | PFCTL_FLAG_ALL)),
-				pf->anchor, pf->ruleset, pf->ab)) {
+			    pf->anchor, pf->ruleset, pf->ab, pf->tticket)) {
 				yyerror("cannot define table %s: %s", $3,
 				    pfr_strerror(errno));
 				YYERROR;				
 			}
+			pf->tdirty = 1;
 		}
 		;
 
