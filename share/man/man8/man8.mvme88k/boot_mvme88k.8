@@ -1,4 +1,4 @@
-.\"	$OpenBSD: boot_mvme88k.8,v 1.1 2003/09/02 21:33:16 miod Exp $
+.\"	$OpenBSD: boot_mvme88k.8,v 1.2 2004/02/24 10:09:23 miod Exp $
 .\"
 .\" Copyright (c) 2003, Miodrag Vallat.
 .\" All rights reserved.
@@ -101,6 +101,8 @@ It is also possible to force other behaviours from ddb.
 .Bl -tag -width /usr/mdec/installboot -compact
 .It Pa /bsd
 default system kernel
+.It Pa /bsd.rd
+standalone installation kernel, suitable for disaster recovery
 .It Pa /usr/mdec/bootxx
 primary bootstrap code for
 .Dq ffs
