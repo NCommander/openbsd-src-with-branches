@@ -32,7 +32,7 @@
  */
 
 #if defined(LIBC_SCCS) && !defined(lint)
-static char rcsid[] = "$OpenBSD: timezone.c,v 1.2 1996/08/19 08:26:48 tholo Exp $";
+static char rcsid[] = "$OpenBSD: timezone.c,v 1.3 1997/07/09 00:28:25 millert Exp $";
 #endif /* LIBC_SCCS and not lint */
 
 #include <sys/types.h>
@@ -129,6 +129,7 @@ _tztab(zone,dst)
 	}
 	else
 		sign = '-';
-	(void)sprintf(czone,"GMT%c%d:%02d",sign,zone / 60,zone % 60);
+	(void)snprintf(czone, sizeof czone, "GMT%c%d:%02d",
+	    sign,zone / 60,zone % 60);
 	return(czone);
 }
