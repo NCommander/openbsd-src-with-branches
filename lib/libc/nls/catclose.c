@@ -35,7 +35,7 @@
  */
 
 #if defined(LIBC_SCCS) && !defined(lint)
-static char rcsid[] = "$OpenBSD$";
+static char rcsid[] = "$OpenBSD: catclose.c,v 1.3 1996/08/19 08:30:05 tholo Exp $";
 #endif /* LIBC_SCCS and not lint */
 
 #define _NLS_PRIVATE
@@ -44,6 +44,7 @@ static char rcsid[] = "$OpenBSD$";
 #include <sys/mman.h>
 #include <errno.h>
 #include <nl_types.h>
+#include <stdlib.h>
 
 int
 _catclose(catd)
