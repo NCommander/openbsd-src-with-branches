@@ -32,11 +32,12 @@
  */
 
 #if defined(LIBC_SCCS) && !defined(lint)
-static char rcsid[] = "$OpenBSD: readdir.c,v 1.2 1996/08/19 08:25:35 tholo Exp $";
+static char rcsid[] = "$OpenBSD: readdir.c,v 1.3 1998/11/20 11:18:39 d Exp $";
 #endif /* LIBC_SCCS and not lint */
 
 #include <sys/param.h>
 #include <dirent.h>
+#include <string.h>
 #include <errno.h>
 #include "thread_private.h"
 
