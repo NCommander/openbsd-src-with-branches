@@ -1,4 +1,4 @@
-/*	$OpenBSD: cl.c,v 1.17 1999/10/04 04:23:41 smurph Exp $ */
+/*	$OpenBSD: cl.c,v 1.18 2000/01/06 03:21:42 smurph Exp $ */
 
 /*
  * Copyright (c) 1995 Dale Rahn. All rights reserved.
@@ -269,7 +269,7 @@ clattach(parent, self, aux)
 		/* if this device is configured as console,
 		 * line cl_cons.channel is the console */
 		sc->sc_cl[0].cl_consio = 1;
-		printf(" console");
+		printf(": console");
 	} else {
 		/* reset chip only if we are not console device */
 		/* wait for GFRCR */
