@@ -1,3 +1,4 @@
+/*	$OpenBSD$ */
 /*	$NetBSD: umass.c,v 1.31 2000/04/03 12:31:34 augustss Exp $	*/
 /*-
  * Copyright (c) 1999 MAEKAWA Masahide <bishop@rr.iij4u.or.jp>,
