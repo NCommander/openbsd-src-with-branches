@@ -1,4 +1,4 @@
-/* $OpenBSD: if_wi_pcmcia.c,v 1.41 2003/07/06 21:17:50 millert Exp $ */
+/* $OpenBSD: if_wi_pcmcia.c,v 1.42 2003/07/14 22:06:48 millert Exp $ */
 /* $NetBSD: if_wi_pcmcia.c,v 1.14 2001/11/26 04:34:56 ichiro Exp $ */
 
 /*
@@ -417,8 +417,7 @@ wi_pcmcia_detach(dev, flags)
 		return (0);
 	}
 
-	if (ifp->if_flags & IFF_RUNNING)
-		wi_stop(sc);
+	wi_detach(sc);
 
 	sc->wi_flags = 0;
 
