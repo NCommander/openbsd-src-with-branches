@@ -1,4 +1,4 @@
-/*	$OpenBSD: subr_extent.c,v 1.23 2002/06/28 20:45:44 jason Exp $	*/
+/*	$OpenBSD: subr_extent.c,v 1.24 2002/12/08 04:22:33 art Exp $	*/
 /*	$NetBSD: subr_extent.c,v 1.7 1996/11/21 18:46:34 cgd Exp $	*/
 
 /*-
@@ -92,7 +92,9 @@ static LIST_HEAD(listhead, extent) ext_list;
 static void
 extent_register(struct extent *ex)
 {
+#ifdef DIAGNOSTIC
 	struct extent *ep;
+#endif
 	static int initialized;
 
 	if (!initialized){
