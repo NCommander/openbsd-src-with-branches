@@ -1,4 +1,4 @@
-/*	$OpenBSD: uvm_stat.c,v 1.9 2001/11/12 01:26:10 art Exp $	 */
+/*	$OpenBSD: uvm_stat.c,v 1.11 2001/12/19 08:58:07 art Exp $	 */
 /*	$NetBSD: uvm_stat.c,v 1.18 2001/03/09 01:02:13 chs Exp $	 */
 
 /*
@@ -206,7 +206,7 @@ uvmcnt_dump()
  * uvmexp_print: ddb hook to print interesting uvm counters
  */
 void
-uvmexp_print(void (*pr)(const char *, ...))
+uvmexp_print(int (*pr) __P((const char *, ...)))
 {
 
 	(*pr)("Current UVM status:\n");
