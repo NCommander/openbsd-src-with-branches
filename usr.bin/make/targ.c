@@ -1,5 +1,5 @@
 /*	$OpenPackages$ */
-/*	$OpenBSD: targ.c,v 1.34 2001/05/29 12:53:43 espie Exp $ */
+/*	$OpenBSD: targ.c,v 1.35 2002/02/19 19:39:38 millert Exp $ */
 /*	$NetBSD: targ.c,v 1.11 1997/02/20 16:51:50 christos Exp $	*/
 
 /*
@@ -180,8 +180,6 @@ Targ_End()
  *	An initialized graph node with the name field filled with a copy
  *	of the passed name
  *
- * Side Effects:
- *	The gnode is added to the list of all gnodes.
  *-----------------------------------------------------------------------
  */
 GNode *
