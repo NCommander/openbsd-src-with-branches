@@ -1,4 +1,4 @@
-/*	$OpenBSD: in_pcb.c,v 1.47 2000/10/10 15:16:01 provos Exp $	*/
+/*	$OpenBSD: in_pcb.c,v 1.48 2000/10/11 09:14:10 itojun Exp $	*/
 /*	$NetBSD: in_pcb.c,v 1.25 1996/02/13 23:41:53 christos Exp $	*/
 
 /*
@@ -179,7 +179,7 @@ in_pcballoc(so, v)
 	 */
 	if (sotopf(so) == PF_INET6)
 		inp->inp_flags = INP_IPV6;
-	inp->inp_csumoffset = -1;
+	inp->in6p_cksum = -1;
 #endif /* INET6 */
 	return (0);
 }
