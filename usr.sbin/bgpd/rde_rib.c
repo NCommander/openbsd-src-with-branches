@@ -1,4 +1,4 @@
-/*	$OpenBSD: rde_rib.c,v 1.33 2004/02/09 01:56:18 henning Exp $ */
+/*	$OpenBSD: rde_rib.c,v 1.34 2004/02/19 13:54:58 claudio Exp $ */
 
 /*
  * Copyright (c) 2003, 2004 Claudio Jeker <claudio@openbsd.org>
@@ -250,10 +250,7 @@ path_unlink(struct rde_aspath *asp)
 	asp->peer = NULL;
 	asp->nexthop = NULL;
 
-	/* free the aspath and all other path attributes */
-	aspath_destroy(asp->flags.aspath);
-	asp->flags.aspath = NULL;
-	attr_optfree(&asp->flags);
+	attr_free(&asp->flags);
 }
 
 /* alloc and initialize new entry. May not fail. */
