@@ -1,4 +1,4 @@
-/*	$OpenBSD: pdq.c,v 1.8 1998/03/01 12:45:18 niklas Exp $	*/
+/*	$OpenBSD: pdq.c,v 1.9 1999/11/23 04:49:29 jason Exp $	*/
 /*	$NetBSD: pdq.c,v 1.9 1996/10/13 01:37:26 christos Exp $	*/
 
 /*-
@@ -531,6 +531,7 @@ pdq_queue_commands(
 	    break;
 	}
 	default:
+	    break;
     }
     /*
      * At this point the command is done.  All that needs to be done is to
@@ -1238,6 +1239,7 @@ pdq_run(
 	case PDQS_RING_MEMBER: {
 	}
 	default:
+	    break;
     }
 }
 
