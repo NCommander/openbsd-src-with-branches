@@ -838,7 +838,7 @@ static int update(rname, opts, statp)
 	/*
 	 * Parse size
 	 */
-	size = strtol(cp, &cp, 10);
+	size = strtol(cp, (char **) &cp, 10);
 	if (*cp++ != ' ') {
 		error("update: size not delimited");
 		return(US_NOTHING);
@@ -847,7 +847,7 @@ static int update(rname, opts, statp)
 	/*
 	 * Parse mtime
 	 */
-	mtime = strtol(cp, &cp, 10);
+	mtime = strtol(cp, (char **) &cp, 10);
 	if (*cp++ != ' ') {
 		error("update: mtime not delimited");
 		return(US_NOTHING);
@@ -856,7 +856,7 @@ static int update(rname, opts, statp)
 	/*
 	 * Parse remote file mode
 	 */
-	rmode = strtol(cp, &cp, 8);
+	rmode = strtol(cp, (char **) &cp, 8);
 	if (cp && *cp)
 		++cp;
 
