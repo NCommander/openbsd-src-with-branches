@@ -1,4 +1,4 @@
-#	$OpenBSD: special,v 1.23 2000/01/05 19:57:37 angelos Exp $
+#	$OpenBSD: special,v 1.24 2000/04/06 18:26:05 millert Exp $
 #	$NetBSD: special,v 1.4 1996/05/08 21:30:18 pk Exp $
 #	@(#)special	8.2 (Berkeley) 1/23/94
 #
@@ -61,6 +61,7 @@ rc.securelevel	type=file mode=0644 uname=root gname=wheel
 rc.shutdown	type=file mode=0644 uname=root gname=wheel
 security	type=file mode=0644 uname=root gname=wheel
 resolv.conf	type=file mode=0644 uname=root gname=wheel optional
+resolv.conf.tail type=file mode=0644 uname=root gname=wheel optional
 shells		type=file mode=0644 uname=root gname=wheel
 skeykeys	type=file mode=0600 uname=root gname=wheel optional
 spwd.db		type=file mode=0600 uname=root gname=wheel
