@@ -1,4 +1,4 @@
-/*	$OpenBSD: xlreg.h,v 1.12 2002/06/09 03:14:18 todd Exp $	*/
+/*	$OpenBSD: xlreg.h,v 1.13 2002/06/15 05:14:41 aaron Exp $	*/
 
 /*
  * Copyright (c) 1997, 1998
@@ -637,7 +637,7 @@ struct xl_stats {
 
 #define XL_SEL_WIN(x)	\
 	CSR_WRITE_2(sc, XL_COMMAND, XL_CMD_WINSEL | x)
-#define XL_TIMEOUT		1000
+#define XL_TIMEOUT		2000
 
 /*
  * General constants that are fun to know.
