@@ -108,7 +108,7 @@ main(int argc, char *argv[], char *envp[])
 		    _PATH_MAILERCONF, _PATH_DEFAULTMTA);
 		closelog();
 		execve(_PATH_DEFAULTMTA, al.argv, envp);
-		err(1, "executing %s", _PATH_DEFAULTMTA);
+		err(1, "cannot exec %s", _PATH_DEFAULTMTA);
 		/*NOTREACHED*/
 	}
 
@@ -153,7 +153,7 @@ main(int argc, char *argv[], char *envp[])
 	addarg(&al, NULL, 0);
 
 	execve(to, al.argv, envp);
-	err(1, "executing %s", to);
+	err(1, "cannot exec %s", to);
 	/*NOTREACHED*/
 parse_error:
 	errx(1, "parse error in %s at line %lu",
