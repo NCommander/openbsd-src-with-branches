@@ -1,4 +1,4 @@
-/*	$OpenBSD: session.h,v 1.63 2004/09/22 08:46:28 henning Exp $ */
+/*	$OpenBSD: session.h,v 1.64 2004/10/19 12:02:50 henning Exp $ */
 
 /*
  * Copyright (c) 2003, 2004 Henning Brauer <henning@openbsd.org>
@@ -168,6 +168,7 @@ struct peer {
 	u_int32_t		 remote_bgpid;
 	u_int16_t		 holdtime;
 	enum session_state	 state;
+	enum session_state	 prev_state;
 	time_t			 ConnectRetryTimer;
 	time_t			 KeepaliveTimer;
 	time_t			 HoldTimer;
