@@ -1,7 +1,7 @@
-#	$OpenBSD$
+#	$OpenBSD: Makefile,v 1.4 1999/01/13 07:26:02 niklas Exp $
 
 SUBDIR= 	keycap cursor fontedit fonts kcon loadfont scon \
-		userkeys vttest ispcvt mcon pcvtdoc fed
+		userkeys vttest ispcvt pcvtdoc fed
 
 .if make(clean) || make(cleandir) || make(obj)
 SUBDIR+=	vgaio kbdio set2061
