@@ -122,8 +122,8 @@ _dmamap_destroy(t, map)
 	free(map, M_DEVBUF);
 }
 
-int _dmamap_load_buffer __P((bus_dma_tag_t, bus_dmamap_t, void *, bus_size_t,
-    struct proc *, int, paddr_t *, int *, int));
+int _dmamap_load_buffer(bus_dma_tag_t, bus_dmamap_t, void *, bus_size_t,
+    struct proc *, int, paddr_t *, int *, int);
 
 int
 _dmamap_load_buffer(t, map, buf, buflen, p, flags, lastaddrp, segp, first)

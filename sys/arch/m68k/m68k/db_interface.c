@@ -53,7 +53,7 @@ extern label_t	*db_recover;
 int	db_active = 0;
 db_regs_t	ddb_regs;
 
-static void kdbprinttrap __P((int, int));
+static void kdbprinttrap(int, int);
 
 /*
  * Received keyboard interrupt sequence.

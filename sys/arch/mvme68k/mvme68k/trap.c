@@ -166,7 +166,7 @@ void (*sir_routines[NSIR])();
 void *sir_args[NSIR];
 u_char next_sir;
 
-int  writeback __P((struct frame *fp, int docachepush));
+int  writeback(struct frame *fp, int docachepush);
 
 /*
  * trap and syscall both need the following work done before returning

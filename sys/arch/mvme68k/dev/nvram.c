@@ -58,8 +58,8 @@ struct nvramsoftc {
 	struct clockreg *sc_regs;
 };
 
-void    nvramattach __P((struct device *, struct device *, void *));
-int     nvrammatch __P((struct device *, void *, void *));
+void    nvramattach(struct device *, struct device *, void *);
+int     nvrammatch(struct device *, void *, void *);
 
 struct cfattach nvram_ca = {
 	sizeof(struct nvramsoftc), nvrammatch, nvramattach

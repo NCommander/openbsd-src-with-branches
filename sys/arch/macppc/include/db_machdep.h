@@ -92,11 +92,11 @@ db_regs_t	ddb_regs;		/* register state */
 
 #ifdef _KERNEL
 
-void	kdb_kintr __P((void *));
-int	kdb_trap __P((int, void *));
+void	kdb_kintr(void *);
+int	kdb_trap(int, void *);
 void	db_save_regs(struct trapframe *frame);
-void	ddb_trap __P((void));
-db_expr_t db_dumpframe __P((u_int32_t pframe));
+void	ddb_trap(void);
+db_expr_t db_dumpframe(u_int32_t pframe);
 
 #endif /* _KERNEL */
 

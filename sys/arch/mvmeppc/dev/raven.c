@@ -49,8 +49,8 @@
 #include <mvmeppc/dev/ravenreg.h>
 #include <mvmeppc/dev/ravenvar.h>
 
-int	 raven_match __P((struct device *, void *, void *));
-void	 raven_attach __P((struct device *, struct device *, void *));
+int	 raven_match(struct device *, void *, void *);
+void	 raven_attach(struct device *, struct device *, void *);
 
 struct cfattach raven_ca = {
         sizeof(struct raven_softc), raven_match, raven_attach,

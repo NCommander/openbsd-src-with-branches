@@ -185,7 +185,7 @@ static struct sfpn {
     { 0x3FFE - 0x3fff, 0xB07197A2U, 0x3C46C654U },
 };
 
-static struct fpn *__fpu_logn __P((struct fpemu *fe));
+static struct fpn *__fpu_logn(struct fpemu *fe);
 
 /*
  * natural log - algorithm taken from Motorola FPSP,

@@ -83,7 +83,7 @@
  *                R := 0. Return signQ, last 7 bits of Q, and R.
  */                
 
-static struct fpn * __fpu_modrem __P((struct fpemu *fe, int modrem));
+static struct fpn * __fpu_modrem(struct fpemu *fe, int modrem);
 
 static struct fpn *
 __fpu_modrem(fe, modrem)

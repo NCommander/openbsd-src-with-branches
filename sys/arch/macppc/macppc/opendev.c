@@ -39,8 +39,8 @@
 #include <dev/ofw/openfirm.h>
 #include <lib/libkern/libkern.h>
 
-extern void ofw_stack __P((void));
-extern void ofbcopy __P((const void *, void *, size_t));
+extern void ofw_stack(void);
+extern void ofbcopy(const void *, void *, size_t);
 
 int
 OF_instance_to_package(ihandle)
@@ -100,16 +100,7 @@ OF_package_to_path(phandle, buf, buflen)
 
 
 int
-#ifdef	__STDC__
 OF_call_method(char *method, int ihandle, int nargs, int nreturns, ...)
-#else
-OF_call_method(method, ihandle, nargs, nreturns, va_alist)
-	char *method;
-	int ihandle;
-	int nargs;
-	int nreturns;
-	va_dcl
-#endif
 {
 	va_list ap;
 	static struct {
@@ -150,15 +141,7 @@ OF_call_method(method, ihandle, nargs, nreturns, va_alist)
 	return 0;
 }
 int
-#ifdef	__STDC__
 OF_call_method_1(char *method, int ihandle, int nargs, ...)
-#else
-OF_call_method_1(method, ihandle, nargs, va_alist)
-	char *method;
-	int ihandle;
-	int nargs;
-	va_dcl
-#endif
 {
 	va_list ap;
 	static struct {

@@ -48,8 +48,8 @@
 #include <dev/pci/pcireg.h>
 #include <dev/pci/pcidevs.h>
 
-int	pchbmatch __P((struct device *, void *, void *));
-void	pchbattach __P((struct device *, struct device *, void *));
+int	pchbmatch(struct device *, void *, void *);
+void	pchbattach(struct device *, struct device *, void *);
 
 struct cfattach pchb_ca = {
 	sizeof(struct device), pchbmatch, pchbattach

@@ -1,4 +1,4 @@
-/*	$OpenBSD: fpu_fscale.c,v 1.3 1996/05/29 11:29:32 niklas Exp $	*/
+/*	$OpenBSD$	*/
 /*	$NetBSD: fpu_fscale.c,v 1.6 1996/10/13 03:19:14 christos Exp $	*/
 
 /*
@@ -145,7 +145,7 @@ fpu_emul_fscale(fe, insn)
 		printf("%c%d@\n", regname, insn->is_ea0.ea_regnum & 7);
 	    }
 	}
-	fpu_load_ea(frame, insn, &insn->is_ea0, (char*)buf);
+	fpu_load_ea(frame, insn, &insn->is_ea0, (char *)buf);
 
 	if (fpu_debug_level & DL_FSCALE) {
 	    printf(" fpu_emul_fscale: src = %08x%08x%08x, siz = %d\n",

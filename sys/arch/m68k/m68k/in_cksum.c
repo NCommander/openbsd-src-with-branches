@@ -47,7 +47,7 @@
 #include <netinet/in.h>
 #include <netinet/in_systm.h>
 
-extern int oc_cksum __P((char *buffer, int length, int startingval));
+extern int oc_cksum(char *buffer, int length, int startingval);
 
 /*
  * Checksum routine for the Internet Protocol family.

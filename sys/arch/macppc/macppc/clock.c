@@ -144,6 +144,10 @@ inittodr(base)
 			return;
 		printf("WARNING: clock %s %d days",
 		    time.tv_sec < base ? "lost" : "gained", deltat / SECDAY);
+		if (time.tv_sec < base && deltat > 1000 * SECDAY) {
+			printf(", using FS time");
+			time.tv_sec = base;
+		}
 	}
 	printf(" -- CHECK AND RESET THE DATE!\n");
 }

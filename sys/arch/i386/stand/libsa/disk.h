@@ -51,7 +51,7 @@ TAILQ_HEAD(disklist_lh, diskinfo);
 /* Head of this list */
 extern struct diskinfo *bootdev_dip;
 
-void dump_diskinfo __P((void));
+void dump_diskinfo(void);
 
 #endif /* _DISKPROBE_H */
 

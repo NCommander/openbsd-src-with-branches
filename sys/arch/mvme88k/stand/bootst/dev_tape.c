@@ -1,4 +1,4 @@
-/*	$OpenBSD: dev_tape.c,v 1.2 1997/04/22 16:02:20 gvf Exp $ */
+/*	$OpenBSD$ */
 
 /*
  * Copyright (c) 1993 Paul Kranenburg
@@ -61,7 +61,7 @@ devopen(f, fname, file)
 	struct devsw *dp;
 	int errorno;
 
-	*file = (char*)fname;
+	*file = (char *)fname;
 	dp = &devsw[0];
 	f->f_dev = dp;
 

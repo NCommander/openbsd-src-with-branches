@@ -79,7 +79,7 @@ dk_establish(dk, dev)
 char *
 readdisklabel(dev, strat, lp, osdep, spoofonly)
 	dev_t dev;
-	void (*strat) __P((struct buf *));
+	void (*strat)(struct buf *);
 	register struct disklabel *lp;
 	struct cpu_disklabel *osdep;
 	int spoofonly;
@@ -486,7 +486,7 @@ setdisklabel(olp, nlp, openmask, osdep)
 int
 writedisklabel(dev, strat, lp, osdep)
 	dev_t dev;
-	void (*strat) __P((struct buf *));
+	void (*strat)(struct buf *);
 	register struct disklabel *lp;
 	struct cpu_disklabel *osdep;
 {

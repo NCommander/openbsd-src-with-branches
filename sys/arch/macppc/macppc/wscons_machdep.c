@@ -48,11 +48,11 @@
 #endif
 #include <dev/wscons/wskbdvar.h>
 
-void wscnprobe __P((struct consdev *));
-void wscninit __P((struct consdev *));
-void wscnputc __P((dev_t, char));
-int wscngetc __P((dev_t));
-void wscnpollc __P((dev_t, int));
+void wscnprobe(struct consdev *);
+void wscninit(struct consdev *);
+void wscnputc(dev_t, char);
+int wscngetc(dev_t);
+void wscnpollc(dev_t, int);
 
 void
 wscnprobe(cp)

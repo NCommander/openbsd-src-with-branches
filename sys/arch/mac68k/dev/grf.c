@@ -81,8 +81,8 @@
 #define	iteoff(u,f)
 #endif
 
-int	grfmatch __P((struct device *, void *, void *));
-void	grfattach __P((struct device *, struct device *, void *));
+int	grfmatch(struct device *, void *, void *);
+void	grfattach(struct device *, struct device *, void *);
 
 struct cfdriver grf_cd = {
 	NULL, "grf", DV_DULL

@@ -93,8 +93,8 @@
 
 extern int fputype;
 extern short exframesize[];
-void	m68881_save __P((struct fpframe *));
-void	m68881_restore __P((struct fpframe *));
+void	m68881_save(struct fpframe *);
+void	m68881_restore(struct fpframe *);
 
 #define SS_RTEFRAME	1
 #define SS_FPSTATE	2

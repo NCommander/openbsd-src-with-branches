@@ -169,7 +169,7 @@
 #include <machine/intr.h>
 
 #ifdef   _KERNEL
-extern int delay __P((int));
+extern int delay(int);
 #define  DELAY(x)             delay(x)
 
 extern int cputyp;

@@ -231,14 +231,14 @@ write_via_reg(int ign, int reg, int val)
 
 #define vDirA_ADBState	0x30
 
-void	via_init __P((void));
-int	rbv_vidstatus __P((void));
-void	via_shutdown __P((void));
-void	via_set_modem __P((int));
-int	add_nubus_intr   __P((int, void (*) __P((void *, int)), void *));
-void	enable_nubus_intr __P((void));
-void	via1_register_irq __P((int, void (*)(void *), void *));
-void	via2_register_irq __P((int, void (*)(void *), void *));
+void	via_init(void);
+int	rbv_vidstatus(void);
+void	via_shutdown(void);
+void	via_set_modem(int);
+int	add_nubus_intr(int, void (*)(void *, int), void *);
+void	enable_nubus_intr(void);
+void	via1_register_irq(int, void (*)(void *), void *);
+void	via2_register_irq(int, void (*)(void *), void *);
 
-extern void	(*via1itab[7]) __P((void *));
-extern void	(*via2itab[7]) __P((void *));
+extern void	(*via1itab[7])(void *);
+extern void	(*via2itab[7])(void *);

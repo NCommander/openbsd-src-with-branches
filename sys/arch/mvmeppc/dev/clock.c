@@ -61,7 +61,7 @@ static volatile u_long lasttb;
 #define YEAR0		1900
 
 static u_long
-chiptotime __P((int sec, int min, int hour, int day, int mon, int year));
+chiptotime(int sec, int min, int hour, int day, int mon, int year);
 
 struct chiptime {
 	int     sec;
@@ -73,7 +73,7 @@ struct chiptime {
 	int     year;
 };
 
-static void timetochip __P((struct chiptime *c));
+static void timetochip(struct chiptime *c);
 
 /*
  * For now we let the machine run with boot time, not changing the clock

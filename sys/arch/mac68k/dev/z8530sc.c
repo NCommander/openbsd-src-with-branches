@@ -1,4 +1,4 @@
-/*	$OpenBSD: z8530sc.c,v 1.1 1996/05/26 19:02:10 briggs Exp $	*/
+/*	$OpenBSD$	*/
 /*	$NetBSD: z8530sc.c,v 1.1 1996/05/18 18:54:28 briggs Exp $	*/
 
 /*
@@ -393,8 +393,8 @@ zsc_intr_soft(arg)
 	return (rval);
 }
 
-static void	zsnull_intr __P((struct zs_chanstate *));
-static void	zsnull_softint __P((struct zs_chanstate *));
+static void	zsnull_intr(struct zs_chanstate *);
+static void	zsnull_softint(struct zs_chanstate *);
 
 static void
 zsnull_intr(cs)

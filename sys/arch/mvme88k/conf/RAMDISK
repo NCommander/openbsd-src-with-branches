@@ -3,6 +3,7 @@
 machine		mvme88k 
 
 include "../../../conf/GENERIC"
+rmoption	PTRACE
 
 option		MVME187		# support for 187
 option		MVME188		# support for 188

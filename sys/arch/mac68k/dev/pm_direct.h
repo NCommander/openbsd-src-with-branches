@@ -47,9 +47,9 @@ typedef	struct	{
 
 int		pmgrop(PMData *);
 
-extern void pm_setup_adb __P((void));
-extern void pm_check_adb_devices __P((int));
-extern void pm_intr __P((void));
-extern int pm_adb_op __P((u_char *, void *, void *, int));
-extern void pm_init_adb_device __P((void));
+extern void pm_setup_adb(void);
+extern void pm_check_adb_devices(int);
+extern void pm_intr(void);
+extern int pm_adb_op(u_char *, void *, void *, int);
+extern void pm_init_adb_device(void);
 

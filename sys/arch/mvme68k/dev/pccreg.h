@@ -153,6 +153,6 @@ extern struct pccreg *sys_pcc;
 #define ZS1_PHYS_147	(INTIOBASE_147 + 0x3800)
 
 /* XXX */
-int	pccintr_establish __P((int vec, struct intrhand *ih));
+int	pccintr_establish(int vec, struct intrhand *ih);
 
 #define PCC_GENCTL_IEN	0x10

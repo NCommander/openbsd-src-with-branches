@@ -67,6 +67,7 @@ member	pcb_spl
 member	PCB_FAULT	pcb_onfault
 
 struct	pmap
+member	PM_SR		pm_sr[0]
 member	PM_USRSR	pm_sr[USER_SR]
 member	PM_KERNELSR	pm_sr[KERNEL_SR]
 

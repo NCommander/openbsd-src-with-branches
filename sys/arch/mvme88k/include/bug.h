@@ -8,7 +8,7 @@ struct bugenv {
 	int	dlun;
 	int	ipl;
 	int	ctlr;
-	int	(*entry) __P((void));
+	int	(*entry)(void);
 	int	cfgblk;
 	char	*argstart;
 	char	*argend;

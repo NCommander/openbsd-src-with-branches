@@ -60,10 +60,10 @@
 #include "fpu_arith.h"
 
 /* Conversion from internal format -- note asymmetry. */
-static u_int	fpu_ftoi __P((struct fpemu *fe, struct fpn *fp));
-static u_int	fpu_ftos __P((struct fpemu *fe, struct fpn *fp));
-static u_int	fpu_ftod __P((struct fpemu *fe, struct fpn *fp, u_int *));
-static u_int	fpu_ftox __P((struct fpemu *fe, struct fpn *fp, u_int *));
+static u_int	fpu_ftoi(struct fpemu *fe, struct fpn *fp);
+static u_int	fpu_ftos(struct fpemu *fe, struct fpn *fp);
+static u_int	fpu_ftod(struct fpemu *fe, struct fpn *fp, u_int *);
+static u_int	fpu_ftox(struct fpemu *fe, struct fpn *fp, u_int *);
 
 /*
  * Round a number (algorithm from Motorola MC68882 manual, modified for

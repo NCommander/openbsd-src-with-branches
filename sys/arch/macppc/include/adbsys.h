@@ -171,14 +171,14 @@ typedef struct adb_listencmd_s{
 } adb_listencmd_t;
 #define ADBIOCLISTENCMD		_IOW('A', 133, adb_listencmd_t)
 
-void	adb_init __P((void));
+void	adb_init(void);
 
 #ifdef _KERNEL
-int	adb_poweroff __P((void));
-void	adb_restart __P((void));
-int	CountADBs __P((void));
-void	ADBReInit __P((void));
-int	adb_read_date_time __P((unsigned long *));
+int	adb_poweroff(void);
+void	adb_restart(void);
+int	CountADBs(void);
+void	ADBReInit(void);
+int	adb_read_date_time(unsigned long *);
 #endif
 
 #endif /* _ADBSYS_MACHINE_ */

@@ -50,8 +50,8 @@
 
 #include <uvm/uvm_extern.h>
 
-int	bus_mem_add_mapping __P((bus_addr_t, bus_size_t,
-	    int, bus_space_handle_t *));
+int	bus_mem_add_mapping(bus_addr_t, bus_size_t,
+	    int, bus_space_handle_t *);
 
 extern struct extent *iomem_ex;
 extern int iomem_malloc_safe;

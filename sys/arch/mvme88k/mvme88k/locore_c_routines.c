@@ -102,9 +102,9 @@ static char *bytes[] =
 #define DAE_DEBUG(stuff)
 #endif
 
-void setlevel __P((int));
+void setlevel(int);
 #ifdef DDB
-void db_setlevel __P((int));
+void db_setlevel(int);
 #endif
 
 #ifdef M88100

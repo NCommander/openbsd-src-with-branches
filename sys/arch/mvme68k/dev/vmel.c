@@ -48,8 +48,8 @@
  * functions will decide how many address bits are relevant.
  */
 
-void vmelattach __P((struct device *, struct device *, void *));
-int  vmelmatch __P((struct device *, void *, void *));
+void vmelattach(struct device *, struct device *, void *);
+int  vmelmatch(struct device *, void *, void *);
 
 struct cfattach vmel_ca = {
 	sizeof(struct vmelsoftc), vmelmatch, vmelattach

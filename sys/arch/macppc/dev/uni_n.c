@@ -39,8 +39,8 @@
 
 #include <dev/ofw/openfirm.h>
 
-static int	memcmatch __P((struct device *, void *, void *));
-static void	memcattach __P((struct device *, struct device *, void *));
+static int	memcmatch(struct device *, void *, void *);
+static void	memcattach(struct device *, struct device *, void *);
 
 struct memc_softc {
 	struct device sc_dev;
@@ -108,7 +108,7 @@ uni_n_config(int handle)
 			if (OF_getprop(handle, "reg", &address,
 			    sizeof address) > 0) {
 				baseaddr = mapiodev(address, NBPG);
-				ctladdr = (void*)(baseaddr + 0x20);
+				ctladdr = (void *)(baseaddr + 0x20);
 				*ctladdr |= 0x02;
 				return baseaddr;
 			}

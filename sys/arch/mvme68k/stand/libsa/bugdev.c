@@ -37,7 +37,7 @@
 #include "stand.h"
 #include "libsa.h"
 
-void cputobsdlabel __P((struct disklabel *lp, struct cpu_disklabel *clp));
+void cputobsdlabel(struct disklabel *lp, struct cpu_disklabel *clp);
 
 int errno;
 

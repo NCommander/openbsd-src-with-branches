@@ -80,8 +80,8 @@ extern	caddr_t		vmmap;
 #define PMAP_ACTIVATE(proc)	pmap_activate(proc)
 #define PMAP_DEACTIVATE(proc)	pmap_deactivate(proc)
 
-void pmap_bootstrap __P((vaddr_t, paddr_t *, paddr_t *, vaddr_t *, vaddr_t *));
-void pmap_cache_ctrl __P((pmap_t, vaddr_t, vaddr_t, unsigned));
+void pmap_bootstrap(vaddr_t, paddr_t *, paddr_t *, vaddr_t *, vaddr_t *);
+void pmap_cache_ctrl(pmap_t, vaddr_t, vaddr_t, unsigned);
 
 #endif	/* _KERNEL */
 

@@ -52,9 +52,9 @@
 /*
  * Function declarations.
  */
-static int	adbmatch __P((struct device *, void *, void *));
-static void	adbattach __P((struct device *, struct device *, void *));
-static int	adbprint __P((void *, const char *));
+static int	adbmatch(struct device *, void *, void *);
+static void	adbattach(struct device *, struct device *, void *);
+static int	adbprint(void *, const char *);
 
 /*
  * Global variables.

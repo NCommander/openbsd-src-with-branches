@@ -3,5 +3,5 @@
 #include <powerpc/pmap.h>
 
 #ifndef	_LOCORE
-paddr_t vtophys __P((vaddr_t));
+paddr_t vtophys(vaddr_t);
 #endif	/* _LOCORE */

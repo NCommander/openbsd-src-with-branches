@@ -149,11 +149,11 @@ extern pt_entry_t	*Sysmap;
 extern char		*vmmap;		/* map for mem, dumps, etc. */
 
 #ifdef M68K_MMU_HP
-void	pmap_prefer __P((vaddr_t, vaddr_t *));
+void	pmap_prefer(vaddr_t, vaddr_t *);
 #define	PMAP_PREFER(foff, vap)	pmap_prefer((foff), (vap))
 #endif
 
-vaddr_t	pmap_map __P((vaddr_t, paddr_t, paddr_t, int));
+vaddr_t	pmap_map(vaddr_t, paddr_t, paddr_t, int);
 
 #endif	/* _KERNEL */
 

@@ -53,14 +53,14 @@
  * the machine.
  */
 
-struct	device *parsedisk __P((char *, int, int, dev_t *));
-void	setroot __P((void));
-void	swapconf __P((void));
-char	buginchr __P((void));
-int	getsb __P((char *, int));
-void	dumpconf __P((void));
-int	findblkmajor __P((struct device *));
-struct device	*getdisk __P((char *, int, int, dev_t *));
+struct	device *parsedisk(char *, int, int, dev_t *);
+void	setroot(void);
+void	swapconf(void);
+char	buginchr(void);
+int	getsb(char *, int);
+void	dumpconf(void);
+int	findblkmajor(struct device *);
+struct device	*getdisk(char *, int, int, dev_t *);
 
 int cold = 1;   /* 1 if still booting */
 

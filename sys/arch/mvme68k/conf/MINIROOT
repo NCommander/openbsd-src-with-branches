@@ -1,8 +1,9 @@
-#	$OpenBSD: MINIROOT,v 1.6.2.1 2001/04/18 16:10:18 niklas Exp $
+#	$OpenBSD$
 
 machine		mvme68k m68k
 
 include "../../../conf/GENERIC"
+rmoption	PTRACE
 
 option		M68060		# support for 060
 option		M68040		# support for 040

@@ -34,7 +34,7 @@
 #include <machine/param.h>
 extern unsigned number_cpus;
 
-static unsigned cpu_number __P((void));
+static unsigned cpu_number(void);
 
 static __inline__ unsigned cpu_number(void)
 {

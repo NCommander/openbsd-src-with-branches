@@ -8,7 +8,7 @@
 #include <machine/db_machdep.h>
 #include <ddb/db_extern.h>
 
-int ddb_trap_glue __P((struct trapframe *frame)); /* called from locore */
+int ddb_trap_glue(struct trapframe *frame); /* called from locore */
 
 void
 Debugger()

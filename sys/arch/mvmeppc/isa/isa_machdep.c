@@ -136,7 +136,7 @@
 #include <mvmeppc/isa/isa_machdep.h>
 
 void	*i8259_intr_establish( void * lcv, int irq, int type, int level,
-		int (*ih_fun) __P((void *)), void *ih_arg, char *name);
+		int (*ih_fun)(void *), void *ih_arg, char *name);
 
 int isa_has_been_seen = 0;
 
@@ -150,7 +150,7 @@ isa_intr_establish(ic, irq, type, level, ih_fun, ih_arg, ih_what)
 	int irq;
 	int type;
 	int level;
-	int (*ih_fun) __P((void *));
+	int (*ih_fun)(void *);
 	void *ih_arg;
 	char *ih_what;
 {

@@ -96,9 +96,9 @@ typedef long kgdb_reg_t;
 
 #ifdef _KERNEL
 
-void	Debugger __P((void));	/* XXX */
-void	kdb_kintr __P((db_regs_t *));
-int 	kdb_trap __P((int, db_regs_t *));
+void	Debugger(void);	/* XXX */
+void	kdb_kintr(db_regs_t *);
+int 	kdb_trap(int, db_regs_t *);
 
 #endif /* _KERNEL */
 

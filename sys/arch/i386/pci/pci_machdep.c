@@ -531,7 +531,7 @@ void *
 pci_intr_establish(pc, ih, level, func, arg, what)
 	pci_chipset_tag_t pc;
 	pci_intr_handle_t ih;
-	int level, (*func) __P((void *));
+	int level, (*func)(void *);
 	void *arg;
 	char *what;
 {

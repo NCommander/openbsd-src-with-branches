@@ -63,7 +63,7 @@ devopen(f, fname, file)
 	struct devsw *dp;
 	int error;
 
-	*file = (char*)fname;
+	*file = (char *)fname;
 	dp = &devsw[0];
 	f->f_dev = dp;
 

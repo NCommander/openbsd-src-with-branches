@@ -118,9 +118,9 @@ caddr_t ResHndls[] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
 caddr_t ResHndls[]={0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 #endif
 
-void	setup_egret __P((void));
-void	mrg_execute_deferred __P((void));
-void	mrg_DTInstall __P((void));
+void	setup_egret(void);
+void	mrg_execute_deferred(void);
+void	mrg_DTInstall(void);
 
 /*
  * Last straw functions; we didn't set them up, so freak out!
@@ -1096,7 +1096,7 @@ setup_egret(void)
 }
 
 #ifdef MRG_ADB
-static void     setup_pm __P((void));
+static void     setup_pm(void);
 
 static void
 setup_pm(void)

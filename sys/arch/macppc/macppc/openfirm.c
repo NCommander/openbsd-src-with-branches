@@ -39,8 +39,8 @@
 
 #include <dev/ofw/openfirm.h>
 
-extern void ofw_stack __P((void));
-extern void ofbcopy __P((const void *, void *, size_t));
+extern void ofw_stack(void);
+extern void ofbcopy(const void *, void *, size_t);
 
 int
 OF_peer(phandle)

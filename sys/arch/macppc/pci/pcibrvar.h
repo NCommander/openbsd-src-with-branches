@@ -68,10 +68,10 @@ struct pci_reserve_mem {
 	char *name;
 };
 
-void pci_addr_fixup __P((struct pcibr_softc *, pci_chipset_tag_t, int,
-	struct pci_reserve_mem *));
+void pci_addr_fixup(struct pcibr_softc *, pci_chipset_tag_t, int,
+	struct pci_reserve_mem *);
 
 #define PCIADDR_SEARCH_IO  0
 #define PCIADDR_SEARCH_MEM 1
-struct extent *pciaddr_search __P((struct device *, int, bus_addr_t *, bus_size_t));
+struct extent *pciaddr_search(struct device *, int, bus_addr_t *, bus_size_t);
 

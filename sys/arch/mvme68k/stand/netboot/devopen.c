@@ -23,7 +23,7 @@ devopen(f, fname, file)
 	char *cp, *path, *devname;
 	int error;
 
-	*file = (char*)fname;
+	*file = (char *)fname;
 	dp = &devsw[0];
 	f->f_dev = dp;
 	error = (*dp->dv_open)(f, NULL);

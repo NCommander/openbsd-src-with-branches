@@ -61,10 +61,10 @@
 
 
 /* Conversion to internal format -- note asymmetry. */
-static int	fpu_itof __P((struct fpn *fp, u_int i));
-static int	fpu_stof __P((struct fpn *fp, u_int i));
-static int	fpu_dtof __P((struct fpn *fp, u_int i, u_int j));
-static int	fpu_xtof __P((struct fpn *fp, u_int i, u_int j, u_int k));
+static int	fpu_itof(struct fpn *fp, u_int i);
+static int	fpu_stof(struct fpn *fp, u_int i);
+static int	fpu_dtof(struct fpn *fp, u_int i, u_int j);
+static int	fpu_xtof(struct fpn *fp, u_int i, u_int j, u_int k);
 
 /*
  * N.B.: in all of the following, we assume the FP format is

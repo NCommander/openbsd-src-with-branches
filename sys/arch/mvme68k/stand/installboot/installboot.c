@@ -69,12 +69,12 @@ daddr_t	*block_table;	/* block number array in prototype image */
 int	maxblocknum;		/* size of this array */
 
 
-char		*loadprotoblocks __P((char *, long *));
-int		loadblocknums __P((char *, int));
-static void	devread __P((int, void *, daddr_t, size_t, char *));
-static void	usage __P((void));
-int 		main __P((int, char *[]));
-static void     vid_to_disklabel __P((char *, char*));
+char		*loadprotoblocks(char *, long *);
+int		loadblocknums(char *, int);
+static void	devread(int, void *, daddr_t, size_t, char *);
+static void	usage(void);
+int 		main(int, char *[]);
+static void     vid_to_disklabel(char *, char *);
 
 
 static void

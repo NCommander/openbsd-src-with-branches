@@ -48,9 +48,9 @@ struct abtn_softc {
 	int volume;		/* speaker volume (not yet) */
 };
 
-static int abtn_match __P((struct device *, void *, void *));
-static void abtn_attach __P((struct device *, struct device *, void *));
-static void abtn_adbcomplete __P((caddr_t, caddr_t, int));
+static int abtn_match(struct device *, void *, void *);
+static void abtn_attach(struct device *, struct device *, void *);
+static void abtn_adbcomplete(caddr_t, caddr_t, int);
 
 struct cfattach abtn_ca = {
 	sizeof(struct abtn_softc), abtn_match, abtn_attach

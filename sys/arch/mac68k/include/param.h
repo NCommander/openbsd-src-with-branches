@@ -114,7 +114,7 @@
 #define MSGBUFSIZE	4096
 
 #if defined(_KERNEL) && !defined(_LOCORE)
-void	delay		__P((unsigned));
+void	delay(unsigned);
 #define DELAY(ms)	delay(ms)
 #endif	/* _KERNEL && !_LOCORE */
 
