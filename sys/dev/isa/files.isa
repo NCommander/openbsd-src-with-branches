@@ -147,10 +147,10 @@ file	dev/isa/elink.c			elink
 # National Semiconductor DS8390/WD83C690-based boards
 # (WD/SMC 80x3 family, SMC Ultra [8216], 3Com 3C503, NE[12]000, and clones)
 # XXX conflicts with amiga if_ed.c
-device	ed: ether, ifnet
-attach	ed at isa with ed_isa
-attach	ed at pcmcia with ed_pcmcia
-file	dev/isa/if_ed.c			ed & (ed_isa | ed_pcmcia) needs-flag
+#device	ed: ether, ifnet
+#attach	ed at isa with ed_isa
+#attach	ed at pcmcia with ed_pcmcia
+#file	dev/isa/if_ed.c			ed & (ed_isa | ed_pcmcia) needs-flag
 
 # 3Com 3C505
 device	eg: ether, ifnet
