@@ -1,4 +1,4 @@
-/*	$OpenBSD: privsep.c,v 1.6 2004/01/18 14:21:52 canacar Exp $	*/
+/*	$OpenBSD: privsep.c,v 1.7 2004/02/13 19:01:57 otto Exp $	*/
 
 /*
  * Copyright (c) 2003 Can Erkin Acar
@@ -92,7 +92,8 @@ priv_init(void)
 		/* Child - drop privileges and return */
 		if (chroot(pw->pw_dir) != 0)
 			err(1, "unable to chroot");
-		chdir("/");
+		if (chdir("/") != 0)
+			err(1, "unable to chdir");
 
 		gidset[0] = pw->pw_gid;
 		if (setgroups(1, gidset) == -1)
