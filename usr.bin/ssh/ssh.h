@@ -10,13 +10,10 @@
  * called by a name other than "ssh" or "Secure Shell".
  */
 
-/* RCSID("$OpenBSD: ssh.h,v 1.60 2001/01/19 15:55:11 markus Exp $"); */
+/* RCSID("$OpenBSD: ssh.h,v 1.61 2001/01/21 19:05:59 markus Exp $"); */
 
 #ifndef SSH_H
 #define SSH_H
-
-//#include "rsa.h"
-//#include "cipher.h"
 
 /* Cipher used for encrypting authentication files. */
 #define SSH_AUTHFILE_CIPHER	SSH_CIPHER_3DES
