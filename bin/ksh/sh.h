@@ -1,4 +1,4 @@
-/*	$OpenBSD: sh.h,v 1.10 1999/07/15 20:39:40 millert Exp $	*/
+/*	$OpenBSD: sh.h,v 1.11 2002/03/01 13:13:54 espie Exp $	*/
 
 /*
  * Public Domain Bourne/Korn shell
@@ -373,7 +373,7 @@ typedef INT32 Tflag;
 EXTERN	const char *kshname;	/* $0 */
 EXTERN	pid_t	kshpid;		/* $$, shell pid */
 EXTERN	pid_t	procpid;	/* pid of executing process */
-EXTERN	int	ksheuid;	/* effective uid of shell */
+EXTERN	uid_t	ksheuid;	/* effective uid of shell */
 EXTERN	int	exstat;		/* exit status */
 EXTERN	int	subst_exstat;	/* exit status of last $(..)/`..` */
 EXTERN	const char *safe_prompt; /* safe prompt if PS1 substitution fails */
