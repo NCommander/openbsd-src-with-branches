@@ -1,4 +1,4 @@
-/*	$OpenBSD: trap.c,v 1.50 2003/06/02 23:27:51 millert Exp $ */
+/*	$OpenBSD: trap.c,v 1.51 2003/12/20 00:34:32 miod Exp $ */
 
 /*
  * Copyright (c) 1995 Theo de Raadt
@@ -360,7 +360,7 @@ copyfault:
 		break;
 
 #if defined(M68040) || defined(M68060)
-	case T_FPEMULI|T_USER:	/* unimplemented FP instuction */
+	case T_FPEMULI|T_USER:	/* unimplemented FP instruction */
 	case T_FPEMULD|T_USER:	/* unimplemented FP data type */
 		/* XXX need to FSAVE */
 		printf("pid %d(%s): unimplemented FP %s at %x (EA %x)\n",

@@ -1,4 +1,4 @@
-/*	$OpenBSD: db_disasm.c,v 1.4 2002/05/16 13:01:41 art Exp $	*/
+/*	$OpenBSD: db_disasm.c,v 1.5 2003/05/17 20:18:54 mdw Exp $	*/
 /*	$NetBSD: db_disasm.c,v 1.9 2000/08/16 11:29:42 pk Exp $ */
 
 /*
@@ -60,7 +60,7 @@
  *
  * There are 5 different fields that can be used to identify which
  * operation is encoded into a particular 32-bit insn. There are 3
- * formats for instuctions, which one being used is determined by
+ * formats for instructions, which one being used is determined by
  * bits 30-31 of the insn. Here are the bit fields and their names:
  *
  * 1100 0000 0000 0000 0000 0000 0000 0000 op field, determines format
