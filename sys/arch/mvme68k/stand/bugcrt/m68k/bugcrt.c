@@ -6,7 +6,7 @@
 struct mvmeprom_args bugargs = { 1 };	/* not in BSS */
 
 	asm (".text");
-	asm (".long 0x003ffff8");
+	asm (".long _start-0x10");
 	asm (".long _start");
 start()
 {
