@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.9 1998/12/31 23:43:04 millert Exp $
+#	$OpenBSD: Makefile,v 1.10 1999/01/01 17:47:17 millert Exp $
 
 # EXTRA
 #	Incorporates code to gather additional performance statistics
@@ -69,5 +69,9 @@ beforeinstall:
 	(cd ${.CURDIR}/datfiles; ${INSTALL} ${INSTALL_COPY} -o ${BINOWN} -g ${BINGRP} \
 	    -m 444 larnmaze larnopts larn.help \
 	    ${DESTDIR}/usr/share/games/larn)
+	${INSTALL} -c -o ${BINOWN} -g ${BINGRP} -m 660 /dev/null \
+	    ${DESTDIR}/var/games/larn/lscore12.0
+	${INSTALL} -c -o ${BINOWN} -g ${BINGRP} -m 660 /dev/null \
+	    ${DESTDIR}/var/games/larn/llog12.0
 
 .include <bsd.prog.mk>
