@@ -1,4 +1,4 @@
-/*	$OpenBSD: at_control.c,v 1.5 2003/09/02 16:57:29 tedu Exp $	*/
+/*	$OpenBSD: at_control.c,v 1.6 2003/11/07 10:16:46 jmc Exp $	*/
 
 /*
  * Copyright (c) 1990,1991 Regents of The University of Michigan.
@@ -435,7 +435,7 @@ at_ifinit( ifp, aa, sat )
 		break;
 	    }
 	    /* reset node for next network */
-	    AA_SAT( aa )->sat_addr.s_node = time.tv_sec;
+	    AA_SAT( aa )->sat_addr.s_node = arc4random();
 	}
 
 	if ( aa->aa_flags & AFA_PROBING ) {
