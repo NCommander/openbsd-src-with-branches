@@ -1,4 +1,4 @@
-/*	$OpenBSD: spp_usrreq.c,v 1.7 1998/03/10 08:29:14 deraadt Exp $	*/
+/*	$OpenBSD: spp_usrreq.c,v 1.8 1999/01/11 05:12:35 millert Exp $	*/
 /*	$NetBSD: spp_usrreq.c,v 1.9 1996/02/13 22:14:13 christos Exp $	*/
 
 /*
@@ -848,6 +848,9 @@ spp_output(m0, va_alist)
 		 * Fill in mbuf with extended SP header
 		 * and addresses and length put into network format.
 		 */
+		M_COPY_HDR(m, m0);
+		m0->m_flags &= ~M_PKTHDR;
+		m_tag_init(m0);
 		MH_ALIGN(m, sizeof (struct spidp));
 		m->m_len = sizeof (struct spidp);
 		m->m_next = m0;
