@@ -1,4 +1,4 @@
-/*	$OpenBSD: commands.c,v 1.18 1998/07/09 06:32:10 deraadt Exp $	*/
+/*	$OpenBSD: commands.c,v 1.19 1998/07/16 18:55:59 deraadt Exp $	*/
 /*	$NetBSD: commands.c,v 1.14 1996/03/24 22:03:48 jtk Exp $	*/
 
 /*
@@ -1975,7 +1975,7 @@ struct encryptlist EncryptList[] = {
                                                EncryptEnable, 1, 1, 2 },
     { "disable", "Disable encryption. ('encrypt enable ?' for more)",
                                                EncryptDisable, 0, 1, 2 },
-    { "type", "Set encryptiong type. ('encrypt type ?' for more)",
+    { "type", "Set encryption type. ('encrypt type ?' for more)",
                                                EncryptType, 0, 1, 1 },
     { "start", "Start encryption. ('encrypt start ?' for more)",
                                                EncryptStart, 1, 0, 1 },
