@@ -1,4 +1,4 @@
-/*	$OpenBSD: psl.h,v 1.12 2002/04/30 01:03:04 art Exp $	*/
+/*	$OpenBSD: psl.h,v 1.13 2002/05/15 23:17:54 art Exp $	*/
 /*	$NetBSD: psl.h,v 1.12 1997/03/10 21:49:11 pk Exp $ */
 
 /*
@@ -79,6 +79,7 @@
 /*
  * Various interrupt levels.
  */
+#define IPL_NONE	0
 #define IPL_SOFTINT	1
 #define IPL_SOFTCLOCK	IPL_SOFTINT	/* softclock() interrupts */
 #define IPL_SOFTNET	IPL_SOFTINT	/* soft network interrupts */
