@@ -330,8 +330,8 @@ struct tcpcb *
 	 tcp_disconnect __P((struct tcpcb *));
 struct tcpcb *
 	 tcp_drop __P((struct tcpcb *, int));
-void	 tcp_dooptions __P((struct tcpcb *, u_char *, int, struct tcphdr *,
-		int *, u_int32_t *, u_int32_t *)); 
+int	 tcp_dooptions __P((struct tcpcb *, u_char *, int, struct tcphdr *, 
+		struct mbuf *, int, int *, u_int32_t *, u_int32_t *));
 void	 tcp_drain __P((void));
 void	 tcp_fasttimo __P((void));
 void	 tcp_init __P((void));
