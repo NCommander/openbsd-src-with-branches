@@ -1,4 +1,4 @@
-/*	$OpenBSD: tcp_fsm.h,v 1.4 1997/11/08 19:54:12 deraadt Exp $	*/
+/*	$OpenBSD: tcp_fsm.h,v 1.4.10.1 2001/07/04 10:55:05 niklas Exp $	*/
 /*	$NetBSD: tcp_fsm.h,v 1.6 1994/10/14 16:01:48 mycroft Exp $	*/
 
 /*
@@ -84,7 +84,7 @@ int	tcp_acounts[TCP_NSTATES][PRU_NREQ];
 #endif /* KPROF */
 
 #ifdef	TCPSTATES
-char *tcpstates[] = {
+const char *tcpstates[] = {
 	"CLOSED",	"LISTEN",	"SYN_SENT",	"SYN_RCVD",
 	"ESTABLISHED",	"CLOSE_WAIT",	"FIN_WAIT_1",	"CLOSING",
 	"LAST_ACK",	"FIN_WAIT_2",	"TIME_WAIT",

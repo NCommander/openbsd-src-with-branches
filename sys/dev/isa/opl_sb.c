@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: opl_sb.c,v 1.1.6.1 2002/03/28 12:11:35 niklas Exp $	*/
 /*	$NetBSD: opl_sb.c,v 1.4 1998/12/08 14:26:57 augustss Exp $	*/
 
 /*
@@ -107,7 +107,7 @@ opl_sb_attach(parent, self, aux)
 	sc->offs = 0;
 	sc->spkrctl = sbdsp_speaker_ctl;
 	sc->spkrarg = ssc;
-	strcpy(sc->syn.name, "SB ");
+	strlcpy(sc->syn.name, "SB ", sizeof sc->syn.name);
 
 	opl_attach(sc);
 }

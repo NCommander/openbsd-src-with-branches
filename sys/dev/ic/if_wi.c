@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: if_wi.c,v 1.15.2.4 2003/03/28 00:38:13 niklas Exp $	*/
 
 /*
  * Copyright (c) 1997, 1998, 1999
@@ -124,7 +124,7 @@ u_int32_t	widebug = WIDEBUG;
 
 #if !defined(lint) && !defined(__OpenBSD__)
 static const char rcsid[] =
-	"$OpenBSD$";
+	"$OpenBSD: if_wi.c,v 1.15.2.4 2003/03/28 00:38:13 niklas Exp $";
 #endif	/* lint */
 
 #ifdef foo
@@ -1831,7 +1831,7 @@ wi_init(sc)
 	/* Power Management Enabled */
 	WI_SETVAL(WI_RID_PM_ENABLED, sc->wi_pm_enabled);
 
-	/* Power Managment Max Sleep */
+	/* Power Management Max Sleep */
 	WI_SETVAL(WI_RID_MAX_SLEEP, sc->wi_max_sleep);
 
 	/* Set Roaming Mode unless this is a Symbol card. */

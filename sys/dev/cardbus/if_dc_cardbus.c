@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: if_dc_cardbus.c,v 1.5.4.5 2003/03/28 00:38:10 niklas Exp $	*/
 
 #include <sys/param.h>
 #include <sys/systm.h>
@@ -104,7 +104,6 @@ dc_cardbus_attach(parent, self, aux)
 	bus_addr_t addr;
 
 	sc->sc_dmat = ca->ca_dmat;
-	sc->dc_unit = sc->sc_dev.dv_unit;
 	csc->sc_ct = ct;
 	csc->sc_tag = ca->ca_tag;
 

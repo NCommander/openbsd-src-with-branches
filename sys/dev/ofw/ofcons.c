@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: ofcons.c,v 1.3.2.3 2002/03/28 15:38:28 niklas Exp $	*/
 /*	$NetBSD: ofcons.c,v 1.3 1996/10/13 01:38:11 christos Exp $	*/
 
 /*
@@ -393,7 +393,7 @@ ofprintf(char *fmt, ...)
 
 	va_start(ap, fmt);
 
-	vsprintf(buf, fmt, ap);
+	vsnprintf(buf, sizeof buf, fmt, ap);
 
 	c = buf;
 	while (*c != '\0') {
