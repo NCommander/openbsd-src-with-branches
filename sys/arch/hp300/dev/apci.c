@@ -977,6 +977,12 @@ apcicninit(cp)
 	struct consdev *cp;
 {
 
+	/*
+	 * We are not interested by the second console pass.
+	 */
+	if (consolepass != 0)
+		return;
+
 	apci_cn = (struct apciregs *)IIOV(FRODO_BASE + FRODO_APCI_OFFSET(1));
 	apciinit(apci_cn, apcidefaultrate);
 	apciconsinit = 1;
