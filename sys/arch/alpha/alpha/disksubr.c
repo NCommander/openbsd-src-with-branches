@@ -39,7 +39,7 @@
  */
 
 /*
- * This disksubr.c module started to take it's present form on OpenBSD/alpha
+ * This disksubr.c module started to take its present form on OpenBSD/alpha
  * but it was always thought it should be made completely MI and not need to
  * be in that alpha-specific tree at all.
  *

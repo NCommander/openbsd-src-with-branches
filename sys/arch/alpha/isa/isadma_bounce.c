@@ -508,8 +508,8 @@ isadma_bounce_dmamap_sync(bus_dma_tag_t t, bus_dmamap_t map, bus_addr_t offset,
 		break;
 
 	default:
-		printf("unknown buffer type %d\n", cookie->id_buftype);
-		panic("isadma_bounce_dmamap_sync");
+		panic("isadma_bounce_dmamap_sync: unknown buffer type %d",
+		    cookie->id_buftype);
 	}
 
 	/* Drain the write buffer. */

@@ -439,7 +439,7 @@ sio_intr_string(v, irq)
 	static char irqstr[12];		/* 8 + 2 + NULL + sanity */
 
 	if (irq == 0 || irq >= ICU_LEN || irq == 2)
-		panic("sio_intr_string: bogus isa irq 0x%x\n", irq);
+		panic("sio_intr_string: bogus isa irq 0x%x", irq);
 
 	sprintf(irqstr, "isa irq %d", irq);
 	return (irqstr);
@@ -461,7 +461,7 @@ sio_intr_evcnt(v, irq)
 {
 
 	if (irq == 0 || irq >= ICU_LEN || irq == 2)
-		panic("sio_intr_evcnt: bogus isa irq 0x%x\n", irq);
+		panic("sio_intr_evcnt: bogus isa irq 0x%x", irq);
 
 	return (alpha_shared_intr_evcnt(sio_intr, irq));
 }

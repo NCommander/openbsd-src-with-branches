@@ -91,10 +91,10 @@ struct clkreg {
 #define CLK_INT3	0x04	/* interrupt flag for timer 3 (SR only) */
 #define	CLK_INTR	0x80	/* composite interrupt flag (SR only) */
 
-#define CLK_RESOLUTION	4	/* 4 usec resolution (250Khz) */
+#define CLK_RESOLUTION	4	/* 4 usec resolution (250KHz) */
 #define	CLK_INTERVAL	2500	/* 10msec interval at 250KHz */
 #ifdef NOTDEF
-#define CLK_INTERVAL	5000	/* 20msec interval at 250Khz */
+#define CLK_INTERVAL	5000	/* 20msec interval at 250KHz */
 #endif
 
 /*

@@ -44,7 +44,7 @@
 #include <machine/cpuconf.h>
 
 #include <dev/tc/tcvar.h>
-#include <alpha/tc/tcdsvar.h>
+#include <dev/tc/tcdsvar.h>
 #include <alpha/tc/tc_3000_300.h>
 #ifndef NEW_SCC_DRIVER
 #include <alpha/tc/sccvar.h>
@@ -159,7 +159,7 @@ badconsole:
 	printf("ctb->ctb_term_type = 0x%lx\n", ctb->ctb_term_type);
 	printf("ctb->ctb_turboslot = 0x%lx\n", ctb->ctb_turboslot);
 
-	panic("consinit: unknown console type %lu\n",
+	panic("consinit: unknown console type %lu",
 	    ctb->ctb_term_type);
 }
 
@@ -213,7 +213,7 @@ dec_3000_300_device_register(dev, aux)
 		if (parent != (struct device *)tcdsdev)
 			return;
 
-		if (ta->tcdsda_slot != b->channel)
+		if (ta->tcdsda_chip != b->channel)
 			return;
 
 		scsidev = dev;

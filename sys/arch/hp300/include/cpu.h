@@ -80,7 +80,6 @@ struct clockframe {
 };
 
 #define	CLKF_USERMODE(framep)	(((framep)->sr & PSL_S) == 0)
-#define	CLKF_BASEPRI(framep)	(((framep)->sr & PSL_IPL) == 0)
 #define	CLKF_PC(framep)		((framep)->pc)
 #if 0
 /* We would like to do it this way... */
@@ -118,7 +117,7 @@ extern int astpending;		/* need to trap before returning to user mode */
  * CTL_MACHDEP definitions.
  */
 #define	CPU_CONSDEV		1	/* dev_t: console terminal device */
-#define	CPU_CPUSPEED		2	/* CPU speed in Mhz */
+#define	CPU_CPUSPEED		2	/* CPU speed in MHz */
 #define	CPU_MACHINEID		3	/* machine id (HP_XXX) */
 #define	CPU_MMUID		4	/* mmu id (MMUID_*) */
 #define	CPU_MAXID		5	/* number of valid machdep ids */

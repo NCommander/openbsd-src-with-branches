@@ -315,7 +315,7 @@ again:
 		s = splbio();
 		if ((sc->sc_flags & PPIF_UIO) &&
 		    hpibreq(sc->sc_dev.dv_parent, &sc->sc_hq) == 0)
-			sleep(sc, PRIBIO+1);
+			tsleep(sc, PRIBIO+1, "ppirw", 0);
 		/*
 		 * Check if we timed out during sleep or uiomove
 		 */

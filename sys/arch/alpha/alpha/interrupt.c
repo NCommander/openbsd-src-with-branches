@@ -342,7 +342,7 @@ badaddr_read(void *addr, size_t size, void *rptr)
 		break;
 
 	default:
-		panic("badaddr: invalid size (%ld)\n", size);
+		panic("badaddr: invalid size (%ld)", size);
 	}
 	alpha_mb();
 	alpha_mb();	/* MAGIC ON SOME SYSTEMS */

@@ -1,5 +1,5 @@
-/*	$OpenBSD$	*/
-/*	$NetBSD: pci_eb164_intr.s,v 1.1 1996/11/25 03:47:07 cgd Exp $	*/
+/* $OpenBSD$ */
+/* $NetBSD: pci_eb64plus_intr.s,v 1.2 1997/09/02 13:19:43 thorpej Exp $ */
 
 /*
  * Copyright (c) 1996 Carnegie-Mellon University.
@@ -29,13 +29,12 @@
  */
 
 /*
- * The description of how to enable and disable interrupts in the
- * AlphaPC 164 motherboard technical reference manual is incorrect,
- * at least for the OSF/1 PALcode.
+ * This file hacked from pci_eb164_intr.s
  *
  * These functions were written by disassembling a Digital UNIX kernel's
- * eb164_intrdsabl and eb164_intrenabl functions (because they had
- * interesting names), and then playing with them to see how to call
+ * eb64p_intrdsabl and eb64p_intrenabl functions (because they had
+ * interesting names, and looked like the eb164 versions which were
+ * known to already work), and then playing with them to see how to call
  * them correctly.
  *
  * It looks like the right thing to do is to call them with the interrupt
@@ -47,17 +46,17 @@
 #include <machine/asm.h>
 
 	.text
-LEAF(eb164_intr_enable,1)
+LEAF(eb64plus_intr_enable,1)
 	mov	a0, a1
 	ldiq	a0, 0x34
 	call_pal PAL_cserve
 	RET
-	END(eb164_intr_enable)
+	END(eb64plus_intr_enable)
 
 	.text
-LEAF(eb164_intr_disable,1)
+LEAF(eb64plus_intr_disable,1)
 	mov	a0, a1
 	ldiq	a0, 0x35
 	call_pal PAL_cserve
 	RET
-	END(eb164_intr_disable)
+	END(eb64plus_intr_disable)

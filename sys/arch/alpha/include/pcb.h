@@ -28,6 +28,9 @@
  * rights to redistribute these changes.
  */
 
+#ifndef _ALPHA_PCB_H_
+#define _ALPHA_PCB_H_
+
 #include <machine/frame.h>
 #include <machine/reg.h>
 
@@ -52,6 +55,7 @@ struct pcb {
 	struct fpreg	pcb_fp;			/* FP registers		[SW] */
 	unsigned long	pcb_onfault;		/* for copy faults	[SW] */
 	unsigned long	pcb_accessaddr;		/* for [fs]uswintr	[SW] */
+	struct cpu_info *__volatile pcb_fpcpu;	/* CPU with our FP state[SW] */
 };
 
 /*
@@ -67,3 +71,5 @@ struct md_coredump {
 #ifdef _KERNEL
 void savectx(struct pcb *);
 #endif
+
+#endif /* _ALPHA_PCB_H_ */

@@ -40,9 +40,6 @@
  *	@(#)scsi.c	8.2 (Berkeley) 1/12/94
  */
 
-#ifndef DEBUG
-#define DEBUG
-#endif
 /*
  * HP9000/3xx 98658 SCSI host adaptor driver.
  */
@@ -736,7 +733,7 @@ mxfer_in(hd, len, buf, phase)
 	hd->scsi_tmod = 0;
 	for (i = 0; i < len; ++i) {
 		/*
-		 * manual sez: reset ATN before ACK is sent.
+		 * manual says: reset ATN before ACK is sent.
 		 */
 		if (hd->scsi_psns & PSNS_ATN)
 			hd->scsi_scmd = SCMD_RST_ATN;

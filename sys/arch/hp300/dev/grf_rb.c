@@ -135,7 +135,7 @@ rbox_intio_match(parent, match, aux)
 		return (0);
 
 	if (grf->gr_id == DIO_DEVICE_ID_FRAMEBUFFER &&
-	    grf->gr_id2 == DIO_DEVICE_SECID_RENASSIANCE) {
+	    grf->gr_id2 == DIO_DEVICE_SECID_RENAISSANCE) {
 		ia->ia_addr = (caddr_t)GRFIADDR;
 		return (1);
 	}
@@ -169,7 +169,7 @@ rbox_dio_match(parent, match, aux)
 	struct dio_attach_args *da = aux;
 
 	if (da->da_id == DIO_DEVICE_ID_FRAMEBUFFER &&
-	    da->da_secid == DIO_DEVICE_SECID_RENASSIANCE)
+	    da->da_secid == DIO_DEVICE_SECID_RENAISSANCE)
 		return (1);
 
 	return (0);

@@ -45,7 +45,7 @@
 
 /*
  * HPs use the MC6840 PTM with the following arrangement:
- *	Timers 1 and 3 are externally driver from a 25Mhz source.
+ *	Timers 1 and 3 are externally driver from a 25MHz source.
  *	Output from timer 3 is tied to the input of timer 2.
  * The latter makes it possible to use timers 3 and 2 together to get
  * a 32-bit countdown timer.

@@ -295,6 +295,23 @@ struct alpha_bus_space {
 
 
 /*
+ *	void bus_space_read_raw_region_N(bus_space_tag_t tag,
+ *	    bus_space_handle_t bsh, bus_size_t offset,
+ *	    u_int8_t *addr, size_t count);
+ *
+ * Read `count' bytes in 2, 4 or 8 byte wide quantities from bus space
+ * described by tag/handle and starting at `offset' from the
+ * buffer provided.  The buffer must have proper alignment for the N byte
+ * wide entities.  Furthermore possible byte-swapping should be done by
+ * these functions.
+ */
+
+#define bus_space_read_raw_region_2(t, h, o, a, c)			\
+    bus_space_read_region_2((t), (h), (o), (u_int16_t *)(a), (c) >> 1)
+#define bus_space_read_raw_region_4(t, h, o, a, c)			\
+    bus_space_read_region_4((t), (h), (o), (u_int32_t *)(a), (c) >> 2)
+
+/*
  * Bus write (single) operations.
  */
 #define	bus_space_write_1(t, h, o, v)	__abs_ws(1,(t),(h),(o),(v))

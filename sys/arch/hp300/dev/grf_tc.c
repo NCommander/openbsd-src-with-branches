@@ -260,7 +260,7 @@ topcat_common_attach(sc, grf, secid)
 		break;
 #endif
 	default:
-		printf("%s: unkown device 0x%x\n",
+		printf("%s: unknown device 0x%x\n",
 		    sc->sc_dev.dv_xname, secid);
 		panic("topcat_common_attach");
 	}

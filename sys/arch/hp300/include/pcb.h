@@ -43,6 +43,9 @@
  *	@(#)pcb.h	8.1 (Berkeley) 6/10/93
  */
 
+#ifndef _HP300_PCB_H_
+#define _HP300_PCB_H_
+
 #include <machine/frame.h>
 
 /*
@@ -66,3 +69,5 @@ struct pcb {
 struct md_coredump {
 	int	md_exec[16];	/* exec structure for HP-UX core dumps */
 };
+
+#endif /* _HP300_PCB_H_ */

@@ -88,7 +88,7 @@ jensen_inw(ioaddr)
 	rval = ((val) >> (8 * offset)) & 0xffff;
 	rval = val & 0xffff;
 
-panic("inw(0x%x) => 0x%x @ %p => 0x%x", ioaddr, val, port, rval);
+printf("inw(0x%x) => 0x%x @ %p => 0x%x", ioaddr, val, port, rval);
 
 	return rval;
 }

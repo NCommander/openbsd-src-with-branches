@@ -448,7 +448,7 @@ ctcommand(dev, cmd, cnt)
 #endif
 		}
 		ctstrategy(bp);
-		iowait(bp);
+		biowait(bp);
 	}
 	bp->b_flags = 0;
 	sc->sc_flags &= ~CTF_CMD;

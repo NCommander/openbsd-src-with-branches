@@ -107,6 +107,9 @@
 
 #ifdef	_KERNEL
 
+/* SPL asserts */
+#define	splassert(wantipl)	/* nothing */
+
 /* IPL-lowering/restoring macros */
 #define splx(s)								\
     ((s) == ALPHA_PSL_IPL_0 ? spl0() : alpha_pal_swpipl(s))

@@ -35,8 +35,6 @@
 /* XXX - Need to include vm.h for boolean_t */
 #include <uvm/uvm_extern.h>
 
-#define DB_MACHINE_COMMANDS
-
 /*
  * We use Elf64 symbols in DDB.
  */
