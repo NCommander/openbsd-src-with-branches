@@ -1097,9 +1097,13 @@ then the equivalent of
 .Ic "mget file"
 is performed.
 .Pp
-If the directory component of
+If no
+.Fl o
+option is specified, and
+the directory component of
 .Ic file
 contains no globbing characters,
+then
 it is stored in the current directory as the
 .Xr basename 1
 of
