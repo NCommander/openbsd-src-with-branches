@@ -1,3 +1,5 @@
+/*	$OpenBSD$	*/
+
 /*
  * Mach Operating System
  * Copyright (c) 1993-1991 Carnegie Mellon University

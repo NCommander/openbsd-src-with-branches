@@ -1,3 +1,4 @@
+/*	$OpenBSD: bootxx.c,v 1.5 1995/10/13 21:44:57 gwr Exp $ */
 /*	$NetBSD: bootxx.c,v 1.5 1995/10/13 21:44:57 gwr Exp $ */
 
 /*

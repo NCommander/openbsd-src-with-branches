@@ -1,3 +1,5 @@
+/*	$OpenBSD$	*/
+
 /*
  * Something to put append a 'U' to a long constant if it's C so that
  * it'll be unsigned in both ANSI and traditional.

@@ -1,3 +1,4 @@
+|	$OpenBSD: SRT0.S,v 1.2 1995/08/12 18:38:55 gwr Exp $
 |	$NetBSD: SRT0.S,v 1.2 1995/08/12 18:38:55 gwr Exp $
 
 | Copyright (c) 1995 Gordon W. Ross

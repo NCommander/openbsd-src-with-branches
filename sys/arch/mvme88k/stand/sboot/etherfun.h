@@ -1,3 +1,5 @@
+/*	$OpenBSD$	*/
+
 /*
  *
  * Copyright (c) 1995 Charles D. Cranor and Seth Widoff

@@ -1,3 +1,5 @@
+/*	$OpenBSD$	*/
+
 #ifndef __MACHINE_VID_H__
 #define __MACHINE_VID_H__
 
