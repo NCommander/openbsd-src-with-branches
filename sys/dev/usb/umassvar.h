@@ -1,4 +1,4 @@
-/*	$OpenBSD: umassvar.h,v 1.6 2004/07/17 06:04:00 dlg Exp $ */
+/*	$OpenBSD: umassvar.h,v 1.7 2004/07/21 07:43:41 dlg Exp $ */
 /*	$NetBSD: umassvar.h,v 1.20 2003/09/08 19:31:01 mycroft Exp $	*/
 /*-
  * Copyright (c) 1999 MAEKAWA Masahide <bishop@rr.iij4u.or.jp>,
@@ -264,6 +264,11 @@ struct umass_softc {
 	int			sc_sense;
 
 	struct umassbus_softc	*bus;		 /* bus dependent data */
+
+	/* For polled transfers */
+	int			polling_depth;
+	usbd_status		polled_xfer_status;
+	usbd_xfer_handle	next_polled_xfer;
 };
 
 #define UMASS_MAX_TRANSFER_SIZE	MAXBSIZE
