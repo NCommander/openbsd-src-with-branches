@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_enc.c,v 1.39 2002/06/30 13:04:36 itojun Exp $	*/
+/*	$OpenBSD: if_enc.c,v 1.40 2003/05/03 21:15:11 deraadt Exp $	*/
 /*
  * The authors of this code are John Ioannidis (ji@tla.org),
  * Angelos D. Keromytis (kermit@csd.uch.gr) and 
@@ -61,10 +61,6 @@
 #endif
 #include <netinet6/nd6.h>
 #endif /* INET6 */
-
-#ifdef ISO
-extern struct ifqueue clnlintrq;
-#endif
 
 #ifdef NS
 extern struct ifqueue nsintrq;
