@@ -1,4 +1,4 @@
-/*	$OpenBSD: subr_disk.c,v 1.25 2004/02/15 02:45:46 tedu Exp $	*/
+/*	$OpenBSD: subr_disk.c,v 1.26 2004/06/24 19:35:24 tholo Exp $	*/
 /*	$NetBSD: subr_disk.c,v 1.17 1996/03/16 23:17:08 christos Exp $	*/
 
 /*
@@ -225,9 +225,6 @@ diskerr(bp, dname, what, pri, blkdone, lp)
 		    bp->b_blkno + (bp->b_bcount - 1) / DEV_BSIZE);
 	}
 	if (lp && (blkdone >= 0 || bp->b_bcount <= lp->d_secsize)) {
-#ifdef tahoe
-		sn *= DEV_BSIZE / lp->d_secsize;		/* XXX */
-#endif
 		sn += lp->d_partitions[part].p_offset;
 		(*pr)(" (%s%d bn %d; cn %d", dname, unit, sn,
 		    sn / lp->d_secpercyl);
