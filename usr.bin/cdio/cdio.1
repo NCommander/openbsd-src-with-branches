@@ -1,4 +1,4 @@
-.\" $OpenBSD: cdio.1,v 1.5 1996/10/01 03:07:44 etheisen Exp $
+.\" $OpenBSD: cdio.1,v 1.6 1996/12/10 09:06:28 deraadt Exp $
 .Dd July 3, 1995
 .Dt CDIO 1
 .Os OpenBSD 2.0
@@ -73,6 +73,10 @@ using
 logical blocks.
 .It Cm pause
 Stop playing. Do not stop the disc.
+.It Cm next
+Play the next track. If we're at the last track, stop.
+.It Cm previous
+Play the previous track. If we're at the first track, restart.
 .It Cm resume
 Resume playing. Used after the
 .Nm pause
