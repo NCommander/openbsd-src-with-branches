@@ -23,7 +23,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  *
- *	$OpenBSD: log.h,v 1.6 2000/02/27 01:38:27 brian Exp $
+ *	$OpenBSD: log.h,v 1.7 2000/08/28 23:25:28 brian Exp $
  */
 
 #define LogMIN		(1)
@@ -52,7 +52,7 @@
 #define LogALERT	(23)	/* syslog(LOG_ALERT, ....)	 */
 
 #define LogMAXCONF	(20)  
-#define LogMAX		(24)
+#define LogMAX		(23)
 
 struct mbuf;
 struct cmdargs;
