@@ -1,4 +1,4 @@
-/*	$OpenBSD: com.c,v 1.85 2002/06/11 04:54:10 miod Exp $	*/
+/*	$OpenBSD: com.c,v 1.86 2002/07/06 19:14:20 nordin Exp $	*/
 /*	$NetBSD: com.c,v 1.82.4.1 1996/06/02 09:08:00 mrg Exp $	*/
 
 /*
@@ -1226,6 +1226,8 @@ compoll(arg)
 out:
 #ifndef __HAVE_GENERIC_SOFT_INTERRUPTS
 	timeout_add(&sc->sc_poll_tmo, 1);
+#else
+	;
 #endif
 }
 
