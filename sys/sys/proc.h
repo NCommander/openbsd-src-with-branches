@@ -1,4 +1,4 @@
-/*	$OpenBSD: proc.h,v 1.23 1999/01/11 21:20:00 millert Exp $	*/
+/*	$OpenBSD: proc.h,v 1.24 1999/02/26 02:30:33 art Exp $	*/
 /*	$NetBSD: proc.h,v 1.44 1996/04/22 01:23:21 christos Exp $	*/
 
 /*-
@@ -333,7 +333,7 @@ int	tsleep __P((void *chan, int pri, char *wmesg, int timo));
 void	unsleep __P((struct proc *));
 void	wakeup __P((void *chan));
 void	exit1 __P((struct proc *, int));
-int	fork1 __P((struct proc *, int, int, register_t *));
+int	fork1 __P((struct proc *, int, int, void *, size_t, register_t *));
 #define	ISFORK	0
 #define	ISVFORK	1
 #define	ISRFORK	2
