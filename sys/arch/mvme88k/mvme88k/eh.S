@@ -1,4 +1,4 @@
-/*   $OpenBSD: eh.S,v 1.9 2000/12/28 21:21:24 smurph Exp $   */
+/*   $OpenBSD: eh.S,v 1.10 2001/02/01 03:38:19 smurph Exp $   */
 /*
  * Mach Operating System
  * Copyright (c) 1993-1991 Carnegie Mellon University
@@ -212,10 +212,6 @@
  * restored and control returns to where the exception occurred.
  *
  */
-
-#ifndef ASSEMBLER
-#define ASSEMBLER
-#endif
 
 #include "assym.s"
 #include <machine/trap.h>           /* for T_ defines */

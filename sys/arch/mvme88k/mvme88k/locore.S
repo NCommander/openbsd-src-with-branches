@@ -1,4 +1,4 @@
-/*	$OpenBSD: locore.S,v 1.10 2001/02/01 03:38:20 smurph Exp $	*/
+/*	$OpenBSD: locore.S,v 1.11 2001/02/12 08:16:24 smurph Exp $	*/
 /*
  * Copyright (c) 1998 Steve Murphree, Jr.
  * Copyright (c) 1996 Nivas Madhur
@@ -56,10 +56,6 @@
  * any improvements or extensions that they make and grant Carnegie the
  * rights to redistribute these changes.
  */
-
-#ifndef ASSEMBLER
-#define ASSEMBLER
-#endif
 
 #include "assym.s"
 #include "machine/asm.h"

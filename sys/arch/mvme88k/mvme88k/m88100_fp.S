@@ -1,4 +1,4 @@
-/* $OpenBSD: m88100_fp.S,v 1.5 1999/02/09 06:36:29 smurph Exp $	*/
+/* $OpenBSD: m88100_fp.S,v 1.6 1999/09/27 19:13:22 smurph Exp $	*/
 /*
  * Mach Operating System
  * Copyright (c) 1991 Carnegie Mellon University
@@ -27,10 +27,6 @@
  */
 
 /* Floating point trouble routines */
-
-#define LOCORE
-
-#define ASSEMBLER
 
 #include "assym.s"
 #include <machine/trap.h>
