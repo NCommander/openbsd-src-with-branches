@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile.sparc,v 1.21 2001/12/25 21:43:47 miod Exp $
+#	$OpenBSD: Makefile.sparc,v 1.22 2002/06/22 14:05:51 millert Exp $
 # 	$NetBSD: Makefile.sparc,v 1.32.4.1 1996/06/12 20:26:32 pk Exp $
 
 # Makefile for OpenBSD
@@ -124,7 +124,7 @@ LINKFLAGS+=	-x
 
 %LOAD
 
-assym.h: $S/kern/genassym.sh ${SPARC}/sparc/genassym.cf
+assym.h: $S/kern/genassym.sh ${SPARC}/sparc/genassym.cf Makefile
 	sh $S/kern/genassym.sh ${CC} ${CFLAGS} ${CPPFLAGS} \
 	    ${PARAM} < ${SPARC}/sparc/genassym.cf > assym.h.tmp && \
 	    mv -f assym.h.tmp assym.h
