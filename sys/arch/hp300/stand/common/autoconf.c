@@ -1,4 +1,4 @@
-/*	$OpenBSD: autoconf.c,v 1.3 1997/02/03 04:48:01 downsj Exp $	*/
+/*	$OpenBSD: autoconf.c,v 1.1 1997/07/14 08:14:07 downsj Exp $	*/
 /*	$NetBSD: autoconf.c,v 1.12 1997/01/30 10:32:51 thorpej Exp $	*/
 
 /*
@@ -107,6 +107,7 @@ configure()
 	case HP_380:
 		cpuspeed = MHZ_25 * 2;	/* XXX */
 		break;
+	case HP_385:
 	case HP_433:
 		cpuspeed = MHZ_33 * 2;	/* XXX */
 		break;
