@@ -1,4 +1,4 @@
-/*	$OpenBSD: biosboot.S,v 1.1.2.1 1996/12/03 13:16:54 mickey Exp $	*/
+/*	$OpenBSD: biosboot.S,v 1.1.2.2 1996/12/15 15:49:34 mickey Exp $	*/
 
 	.file	"bootbios.S"
 
@@ -16,6 +16,7 @@
 #define BIOSSEG		0x07c0	/* boot loaded here */
 #define BOOTSEG		0x1000	/* /boot placement */
 #define BOOTSTACK	0xfffc	/* /boot stack */
+#define OMAGIC		0x0701	/* OMAGIC */
 
 #ifdef DEBUG
 #define DBGMSG(msg)		\
@@ -46,8 +47,6 @@ start:
 	sti			/* we have stack, do ints */
 
 	/* set up %es, (where we will load /boot to) */
-	# decl	%ax
-	# decl	%ax		/* strip off a.out hdr (2par == 32 byte) */
 	movl	%ax, %es
 
 	/* set up %ds */
@@ -102,30 +101,45 @@ start:
 	lodsb			/* # of sectors to load */
 	movb	$0x2, %ah
 	int	$0x13
-	jnc	4f
+	jnc	3f
 
 	/* read error */
        	data32
 	movl    $2f, %esi
-	data32
-	call	message
-	cli
-	hlt
-2:	.ascii	"Read error"
-3:	.asciz	"\r\n"
+	jmp	halt
+2:	.asciz	"Read error\r\n"
 
-4:	/* read next block */
-	shll	$1, %ax
-	addb	%al, %bh
+3:	/* read next block */
+	shll	$9, %ax		/* 512 bytes sectors */
+	addl	%ax, %bx
 	popl	%ecx
 	loop	1b
 
-       	data32
-	movl    $3b, %esi	/* new line */
+	data32
+	xorl	%esi, %esi
+	data32
+	xorl	%eax, %eax
+
+	/* check /boot integrity */
+	es
+	lodsl
+	es
+	lodsl
+	# cmpw	$OMAGIC, %ax
+	.byte	0x3d
+	.word	OMAGIC
+	je	3f
+
+	data32
+	movl	$1f, %esi
+	jmp	halt
+1:	.ascii	"Bad magic"
+2:	.asciz	"\r\n"
+
+3:	data32
+	movl    $2b, %esi	/* new line */
 	data32
 	call	message
-
-	/* TODO: check /boot integrity */
 
 	/* change to protected mode */
 	/* guarantee that interrupts are disabled when in prot mode */
@@ -161,13 +175,13 @@ start:
 	movb	%dl, %al	/* discard head (%dh) and random high bits */
 	pushl	%eax
 
-	hlt
 	/* jump to the /boot */
-	/* jmp _entry_point */
-	.byte	0xe9
-	.globl	_entry_point
-_entry_point:
-	.long	0	/* /boot entry point */
+	call	%es:20(%ebx)
+halt:
+	data32
+	call	message
+	cli
+	hlt
 
 #
 #	chr: write the character in %al to console
