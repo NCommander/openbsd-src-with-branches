@@ -315,7 +315,7 @@ joy*	at isapnp?
 #aeon*	at pci? dev ? function ?		# Aeon crypto card
 
 pseudo-device	pctr		1
-#pseudo-device	mtrr		1	# Memory range attributes control
+pseudo-device	mtrr		1	# Memory range attributes control
 pseudo-device	sequencer	1
 #pseudo-device	raid		4	# RAIDframe disk driver
 
