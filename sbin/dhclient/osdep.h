@@ -1,4 +1,4 @@
-/*	$OpenBSD: osdep.h,v 1.4 2004/02/04 12:16:56 henning Exp $	*/
+/*	$OpenBSD: osdep.h,v 1.5 2004/02/07 13:59:45 henning Exp $	*/
 
 /* Operating system dependencies... */
 
@@ -44,7 +44,7 @@
     !defined (USE_SOCKET_RECEIVE) && \
     !defined (USE_BPF) && \
     !defined (USE_BPF_SEND) && \
-    !defined (USE_BPF_RECEIVE) && \
+    !defined (USE_BPF_RECEIVE)
 #  define USE_DEFAULT_NETWORK
 #endif
 
