@@ -5738,21 +5738,7 @@ pmap_kenter_pa4m(va, pa, prot)
 	paddr_t pa;
 	vm_prot_t prot;
 {
-#if 1
-	struct pvlist *pv;
-	int pteproto, ctx;
-
-	pteproto = ((pa & PMAP_NC) == 0 ? SRMMU_PG_C : 0) |
-		PMAP_T2PTE_SRMMU(pa) | SRMMU_TEPTE | PPROT_RX_RX | PPROT_S |
-		(atop(pa) << SRMMU_PPNSHIFT) |
-		((prot & VM_PROT_WRITE) ? PPROT_WRITE : 0);
-	pv = pvhead(atop(pa));
-
-	ctx = getcontext4m();
-	pmap_enk4m(pmap_kernel(), va, prot, TRUE, pv, pteproto);
-#else
 	pmap_enter4m(pmap_kernel(), va, pa, prot, TRUE, 0);
-#endif
 }
 
 void
@@ -5763,9 +5749,10 @@ pmap_kenter_pgs4m(va, pgs, npgs)
 {
 	int i;
 
-	for (i = 0; i < npgs; i++, va += PAGE_SIZE)
-		pmap_kenter_pa4m(va, VM_PAGE_TO_PHYS(pgs[i]),
-				 VM_PROT_READ|VM_PROT_WRITE);
+	for (i = 0; i < npgs; i++, va += PAGE_SIZE) {
+		pmap_enter4m(pmap_kernel(), va, VM_PAGE_TO_PHYS(pgs[i]),
+			     VM_PROT_READ|VM_PROT_WRITE, TRUE, 0);
+	}
 }
 
 void
