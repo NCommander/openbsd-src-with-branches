@@ -164,10 +164,10 @@ voidp idv;
 int done;
 {
 	fh_cache *fp = find_nfs_fhandle_cache(idv, done);
-#if NFS_PROTOCOL_VERSION >= 3
-	fp->fh_handle.fhs_vers = MOUNTVERS;
-#endif
 	if (fp) {
+#if NFS_PROTOCOL_VERSION >= 3
+		fp->fh_handle.fhs_vers = MOUNTVERS;
+#endif
 		fp->fh_error = pickup_rpc_reply(pkt, len, (voidp) &fp->fh_handle, xdr_fhstatus);
 		if (!fp->fh_error) {
 #ifdef DEBUG
