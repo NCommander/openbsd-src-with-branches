@@ -1,4 +1,4 @@
-/*	$OpenBSD: stack.c,v 1.3 2003/09/28 19:29:33 otto Exp $	*/
+/*	$OpenBSD: stack.c,v 1.4 2003/10/18 20:34:26 otto Exp $	*/
 
 /*
  * Copyright (c) 2003, Otto Moerbeek <otto@drijf.net>
@@ -17,7 +17,7 @@
  */
 
 #ifndef lint
-static const char rcsid[] = "$OpenBSD: stack.c,v 1.3 2003/09/28 19:29:33 otto Exp $";
+static const char rcsid[] = "$OpenBSD: stack.c,v 1.4 2003/10/18 20:34:26 otto Exp $";
 #endif /* not lint */
 
 #include <err.h>
@@ -114,6 +114,20 @@ stack_dup(struct stack *stack)
 		return;
 	}
 	stack_push(stack, stack_dup_value(value, &copy));
+}
+
+void
+stack_swap(struct stack *stack)
+{
+	struct value	copy;
+
+	if (stack->sp < 1) {
+		warnx("stack empty");
+		return;
+	}
+	copy = stack->stack[stack->sp];
+	stack->stack[stack->sp] = stack->stack[stack->sp-1];
+	stack->stack[stack->sp-1] = copy;
 }
 
 static void
