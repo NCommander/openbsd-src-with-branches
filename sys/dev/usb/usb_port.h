@@ -262,10 +262,6 @@ typedef int usb_malloc_type;
 #define	uriopoll		urioselect
 #define uscannerpoll		uscannerselect
 
-#define powerhook_establish(fn, sc) (fn)
-#define powerhook_disestablish(hdl)
-#define PWR_RESUME 0
-
 #define logprintf printf
 
 #define swap_bytes_change_sign16_le swap_bytes_change_sign16
