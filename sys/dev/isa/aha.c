@@ -1,7 +1,7 @@
-/*	$OpenBSD: aha.c,v 1.22 1996/05/31 10:57:04 deraadt Exp $	*/
+/*	$OpenBSD: aha.c,v 1.24 1996/06/01 12:20:40 deraadt Exp $	*/
 /*	$NetBSD: aha.c,v 1.11 1996/05/12 23:51:23 mycroft Exp $	*/
 
-#define AHADIAG
+#undef AHADIAG
 #define integrate
 
 /*
