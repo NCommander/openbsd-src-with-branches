@@ -1,4 +1,4 @@
-/*	$OpenBSD: gbox.c,v 1.7 2005/01/21 16:24:12 miod Exp $	*/
+/*	$OpenBSD: gbox.c,v 1.8 2005/01/24 21:36:39 miod Exp $	*/
 
 /*
  * Copyright (c) 2005, Miodrag Vallat
@@ -418,6 +418,7 @@ gbox_windowmove(struct diofb *fb, u_int16_t sx, u_int16_t sy,
 	dest = (dy * 1024) + dx;
 
 	tile_mover_waitbusy(gb);
+
 	gb->width = -(cx / 4);
 	gb->height = -(cy / 4);
 	if (src < dest)
@@ -431,6 +432,8 @@ gbox_windowmove(struct diofb *fb, u_int16_t sx, u_int16_t sy,
 		dest= dest + ((cy - 4) * 1024) + (cx - 4);
 	}
 	FBBASE(fb)[dest] = FBBASE(fb)[src];
+
+	tile_mover_waitbusy(gb);
 }
 
 /*
