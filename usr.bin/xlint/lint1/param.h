@@ -1,4 +1,4 @@
-/*	$OpenBSD: param.h,v 1.9 2002/03/23 23:28:30 miod Exp $	*/
+/*	$OpenBSD: param.h,v 1.11 2004/01/21 16:44:41 drahn Exp $	*/
 /*	$NetBSD: param.h,v 1.6 1996/04/01 21:47:57 mark Exp $	*/
 
 /*
@@ -85,7 +85,7 @@
 #elif __vax__
 #define PTRDIFF_IS_LONG         0
 #define SIZEOF_IS_ULONG         0
-#elif __arm32__
+#elif __arm__
 #define PTRDIFF_IS_LONG		0
 #define SIZEOF_IS_ULONG		0
 #elif __powerpc__

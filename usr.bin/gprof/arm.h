@@ -1,4 +1,4 @@
-/*	$OpenBSD: arm32.h,v 1.2 1996/06/26 05:33:49 deraadt Exp $	*/
+/*	$OpenBSD: arm.h,v 1.1 2004/01/21 16:43:40 drahn Exp $	*/
 /*	$NetBSD: arm32.h,v 1.1 1996/04/01 21:51:26 mark Exp $	*/
 
 /*-
