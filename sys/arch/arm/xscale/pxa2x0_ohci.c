@@ -1,4 +1,4 @@
-/*	$OpenBSD: pxa2x0_ohci.c,v 1.2 2005/01/04 03:48:02 drahn Exp $ */
+/*	$OpenBSD: pxa2x0_ohci.c,v 1.3 2005/01/05 00:46:28 dlg Exp $ */
 
 /*
  * Copyright (c) 2005 David Gwynne <dlg@openbsd.org>
@@ -81,7 +81,6 @@ pxaohci_attach(struct device *parent, struct device *self, void *aux)
 	sc->sc.sc_bus.dmatag = pxa->pxa_dmat;
 	sc->sc_intr = pxa->pxa_intr;
 	sc->sc_ih = NULL;
-	sc->sc_ih1 = NULL;
 	sc->sc.sc_size = 0;
 
 	/* Map I/O space */
