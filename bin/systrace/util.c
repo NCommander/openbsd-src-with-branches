@@ -1,4 +1,4 @@
-/*	$OpenBSD: util.c,v 1.6 2002/06/18 01:54:31 deraadt Exp $	*/
+/*	$OpenBSD: util.c,v 1.7 2002/06/22 09:03:57 deraadt Exp $	*/
 /*
  * Copyright 2002 Niels Provos <provos@citi.umich.edu>
  * All rights reserved.
@@ -34,6 +34,8 @@
 #include <ctype.h>
 #include <stdio.h>
 #include <pwd.h>
+
+#include "util.h"
 
 char *
 strrpl(char *str, size_t size, char *match, char *value)
