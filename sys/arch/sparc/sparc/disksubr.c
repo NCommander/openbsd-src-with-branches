@@ -156,10 +156,6 @@ readdisklabel(dev, strat, lp, clp)
 	lp->d_bbsize = 8192;
 	lp->d_sbsize = 64*1024;		/* XXX ? */
 
-#if defined(CD9660)
-	if (iso_disklabelspoof(dev, strat, lp) == 0)
-		return (NULL);
-#endif
 	/* obtain buffer to probe drive with */
 	bp = geteblk((int)lp->d_secsize);
 
@@ -196,6 +192,10 @@ readdisklabel(dev, strat, lp, clp)
 		return (NULL);
 	}
 
+#if defined(CD9660)
+	if (iso_disklabelspoof(dev, strat, lp) == 0)
+		return (NULL);
+#endif
 	bzero(clp->cd_block, sizeof(clp->cd_block));
 	return ("no disk label");
 }
