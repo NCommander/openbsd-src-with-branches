@@ -1,4 +1,4 @@
-/*	$OpenBSD: ike_auth.c,v 1.67 2003/01/22 15:13:11 ho Exp $	*/
+/*	$OpenBSD: ike_auth.c,v 1.68 2003/03/13 13:24:48 ho Exp $	*/
 /*	$EOM: ike_auth.c,v 1.59 2000/11/21 00:21:31 angelos Exp $	*/
 
 /*
@@ -91,7 +91,6 @@ static int rsa_sig_encode_hash (struct message *);
 #endif
 
 #if defined (USE_RAWKEY)
-#define PUBKEY_DIR_DEFAULT "/etc/isakmpd/pubkeys"
 static int get_raw_key_from_file (int, u_int8_t *, size_t, RSA **);
 #endif
 
@@ -1217,7 +1216,7 @@ get_raw_key_from_file (int type, u_int8_t *id, size_t id_len, RSA **rsa)
 
   fstr = conf_get_str ("General", "Pubkey-directory");
   if (!fstr)
-    fstr = PUBKEY_DIR_DEFAULT;
+    fstr = CONF_DFLT_PUBKEY_DIR;
 
   if (snprintf (filename, sizeof filename, "%s/", fstr) > sizeof filename - 1)
     return -1;
