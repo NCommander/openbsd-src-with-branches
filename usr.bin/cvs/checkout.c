@@ -72,7 +72,7 @@ cvs_checkout(int argc, char **argv)
 
 	cvs_root = cvsroot_get(".");
 	if (cvs_root->cr_method != CVS_METHOD_LOCAL) {
-		cvs_client_connect();
+		cvs_client_connect(cvs_root);
 	}
 
 	cvs_client_sendarg(argv[0], 0);
