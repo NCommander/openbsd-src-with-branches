@@ -1,4 +1,4 @@
-/*	$OpenBSD: bus.h,v 1.17 2001/07/30 14:16:00 art Exp $	*/
+/*	$OpenBSD: bus.h,v 1.18 2001/08/01 23:53:09 pvalchev Exp $	*/
 
 /*
  * Copyright (c) 1997 Per Fogelstrom.  All rights reserved.
