@@ -1,4 +1,4 @@
-/* $OpenBSD: sample-app.c,v 1.1 1999/11/05 00:27:18 angelos Exp $ */
+/* $OpenBSD: sample-app.c,v 1.2 2001/03/08 21:50:12 angelos Exp $ */
 /*
  * The author of this code is Angelos D. Keromytis (angelos@dsl.cis.upenn.edu)
  *
@@ -466,7 +466,7 @@ main(int argc, char **argv)
     j = kn_do_query(sessionid, returnvalues, NUM_RETURN_VALUES);
     if (j == -1)
     {
-	switch (j)
+	switch (keynote_errno)
 	{
 	    case ERROR_MEMORY:
 		fprintf(stderr, "Out of memory while performing authorization "
