@@ -1,4 +1,4 @@
-/*	$OpenBSD: optr.c,v 1.15 1997/07/25 19:13:03 mickey Exp $	*/
+/*	$OpenBSD: optr.c,v 1.16 1997/08/05 23:17:11 angelos Exp $	*/
 /*	$NetBSD: optr.c,v 1.11 1997/05/27 08:34:36 mrg Exp $	*/
 
 /*-
@@ -38,7 +38,7 @@
 #if 0
 static char sccsid[] = "@(#)optr.c	8.2 (Berkeley) 1/6/94";
 #else
-static char rcsid[] = "$OpenBSD: optr.c,v 1.15 1997/07/25 19:13:03 mickey Exp $";
+static char rcsid[] = "$OpenBSD: optr.c,v 1.16 1997/08/05 23:17:11 angelos Exp $";
 #endif
 #endif /* not lint */
 
@@ -142,6 +142,7 @@ char lastmsg[BUFSIZ];
 /*
  *	Alert the console operator, and enable the alarm clock to
  *	sleep for 2 minutes in case nobody comes to satisfy dump
+ * XXX not safe
  */
 void
 alarmcatch()

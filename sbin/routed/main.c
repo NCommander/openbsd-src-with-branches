@@ -1,4 +1,4 @@
-/*	$OpenBSD: main.c,v 1.8 1998/07/09 06:12:45 deraadt Exp $	*/
+/*	$OpenBSD: main.c,v 1.9 2001/01/16 03:06:08 deraadt Exp $	*/
 
 /*
  * Copyright (c) 1983, 1988, 1993
@@ -39,7 +39,7 @@ char copyright[] =
 #if !defined(lint)
 static char sccsid[] = "@(#)main.c	8.1 (Berkeley) 6/5/93";
 #else
-static char rcsid[] = "$OpenBSD: main.c,v 1.8 1998/07/09 06:12:45 deraadt Exp $";
+static char rcsid[] = "$OpenBSD: main.c,v 1.9 2001/01/16 03:06:08 deraadt Exp $";
 #endif
 
 #include "defs.h"
@@ -503,7 +503,7 @@ sigalrm(int sig)
 	 * new and broken interfaces.
 	 */
 	ifinit_timer.tv_sec = now.tv_sec;
-	trace_act("SIGALRM\n");
+	trace_act("SIGALRM\n");		/* XXX signal race */
 }
 
 
