@@ -35,7 +35,7 @@ start()
 	bugargs.arg_end = arg_end;
 	bugargs.nbarg_start = nbarg_start;
 	bugargs.nbarg_end = nbarg_end;
-	*arg_end = 0;
+	*bugargs.arg_end = 0;
 
 	bzero(&edata, (int)&end-(int)&edata);
 	id = mvmeprom_getbrdid();
