@@ -1,4 +1,4 @@
-/*	$OpenBSD: com_pcmcia.c,v 1.17 1999/08/09 22:16:05 fgsch Exp $	*/
+/*	$OpenBSD: com_pcmcia.c,v 1.18 1999/08/12 09:02:58 niklas Exp $	*/
 /*	$NetBSD: com_pcmcia.c,v 1.15 1998/08/22 17:47:58 msaitoh Exp $	*/
 
 /*-
@@ -365,7 +365,8 @@ com_pcmcia_enable1(sc)
 	    return(ret);
 
 	if ((psc->sc_pf->sc->card.product == PCMCIA_PRODUCT_3COM_3C562) ||
-	    (psc->sc_pf->sc->card.product == PCMCIA_PRODUCT_3COM_3CXEM556)) {
+	    (psc->sc_pf->sc->card.product == PCMCIA_PRODUCT_3COM_3CXEM556) ||
+	    (psc->sc_pf->sc->card.product == PCMCIA_PRODUCT_3COM_3CXEM556B)) {
 		int reg;
 
 		/* turn off the ethernet-disable bit */
