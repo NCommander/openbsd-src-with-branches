@@ -1,4 +1,4 @@
-/*	$OpenBSD: openpic.c,v 1.26 2004/05/08 22:10:12 miod Exp $	*/
+/*	$OpenBSD: openpic.c,v 1.27 2004/06/28 02:49:10 aaron Exp $	*/
 
 /*-
  * Copyright (c) 1995 Per Fogelstrom
@@ -462,7 +462,8 @@ openpic_do_pending_int()
 		hwpend &= ~(1L << irq);
 		ih = o_intrhand[irq];
 		while(ih) {
-			(*ih->ih_fun)(ih->ih_arg);
+			if ((*ih->ih_fun)(ih->ih_arg))
+				ih->ih_count.ec_count++;
 			ih = ih->ih_next;
 		}
 	}
