@@ -1,5 +1,5 @@
 #  $NetBSD: Makefile,v 1.28 1995/11/20 22:06:19 jtc Exp $
-#  $OpenBSD: Makefile,v 1.32 2004/02/27 17:36:13 deraadt Exp $
+#  $OpenBSD: Makefile,v 1.33 2004/02/28 18:46:27 deraadt Exp $
 #
 #  @(#)Makefile 5.1beta 93/09/24 
 # 
@@ -47,7 +47,7 @@
 
 CFLAGS+= -D__LIBM_PRIVATE -D_USE_WRITE
 
-.if (${MACHINE_ARCH} == "sparc") || (${MACHINE_ARCH} == "sparc64")
+.if (${MACHINE_ARCH} == "sparc")
 CFLAGS+= -O0
 .endif
 
