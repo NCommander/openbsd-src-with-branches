@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_fddisubr.c,v 1.35 2003/10/25 19:31:05 mcbride Exp $	*/
+/*	$OpenBSD: if_fddisubr.c,v 1.36 2003/12/10 07:22:42 itojun Exp $	*/
 /*	$NetBSD: if_fddisubr.c,v 1.5 1996/05/07 23:20:21 christos Exp $	*/
 
 /*
@@ -653,11 +653,7 @@ fddi_input(ifp, fh, m)
 	}
 
 	s = splimp();
-	if (IF_QFULL(inq)) {
-		IF_DROP(inq);
-		m_freem(m);
-	} else
-		IF_ENQUEUE(inq, m);
+	IF_INPUT_ENQUEUE(inq, m);
 	splx(s);
 }
 /*

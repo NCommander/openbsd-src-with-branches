@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_ethersubr.c,v 1.74 2004/01/09 10:44:32 markus Exp $	*/
+/*	$OpenBSD: if_ethersubr.c,v 1.75 2004/02/15 02:52:41 avsm Exp $	*/
 /*	$NetBSD: if_ethersubr.c,v 1.19 1996/05/07 02:40:30 thorpej Exp $	*/
 
 /*
@@ -914,11 +914,7 @@ decapsulate:
 	}
 
 	s = splimp();
-	if (IF_QFULL(inq)) {
-		IF_DROP(inq);
-		m_freem(m);
-	} else
-		IF_ENQUEUE(inq, m);
+	IF_INPUT_ENQUEUE(inq, m);
 	splx(s);
 }
 

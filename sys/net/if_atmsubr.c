@@ -1,4 +1,4 @@
-/*      $OpenBSD: if_atmsubr.c,v 1.21 2003/01/07 09:00:33 kjc Exp $       */
+/*      $OpenBSD: if_atmsubr.c,v 1.22 2003/12/10 07:22:42 itojun Exp $       */
 
 /*
  *
@@ -354,11 +354,7 @@ atm_input(ifp, ah, m, rxhand)
 	}
 
 	s = splimp();
-	if (IF_QFULL(inq)) {
-		IF_DROP(inq);
-		m_freem(m);
-	} else
-		IF_ENQUEUE(inq, m);
+	IF_INPUT_ENQUEUE(inq);
 	splx(s);
 }
 
