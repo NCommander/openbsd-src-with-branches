@@ -1,4 +1,4 @@
-/*	$OpenBSD: pmap.h,v 1.3 2004/08/04 15:54:37 miod Exp $	*/
+/*	$OpenBSD: pmap.h,v 1.4 2004/08/06 22:39:13 deraadt Exp $	*/
 /*
  * Mach Operating System
  * Copyright (c) 1991 Carnegie Mellon University
@@ -16,7 +16,6 @@
 #define _M88K_PMAP_H_
 
 #include <machine/mmu.h>
-#include <machine/pcb.h>
 
 /*
  * PMAP structure
