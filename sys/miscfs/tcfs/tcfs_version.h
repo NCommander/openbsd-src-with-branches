@@ -1,4 +1,4 @@
-/*	$OpenBSD: mbuf.h,v 1.17 2000/06/12 17:24:26 itojun Exp $	*/
+/*	$OpenBSD: tcfs_version.h,v 1.2 2000/06/17 17:32:29 provos Exp $	*/
 /*
  * Copyright 2000 The TCFS Project at http://tcfs.dia.unisa.it/
  * All rights reserved.
@@ -25,6 +25,10 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+
+#ifndef _TCFS_VERSION_H_
 #define _TCFS_VERSION_H_
+
 #define TCFS_VERSION_NUM	0
 
+#endif /* _TCFS_VERSION_H_ */
