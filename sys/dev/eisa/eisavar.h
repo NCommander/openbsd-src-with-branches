@@ -1,4 +1,4 @@
-/*	$OpenBSD: eisavar.h,v 1.9 1998/10/29 22:45:30 mickey Exp $	*/
+/*	$OpenBSD$	*/
 /*	$NetBSD: eisavar.h,v 1.11 1997/06/06 23:30:07 thorpej Exp $	*/
 
 /*
@@ -67,7 +67,7 @@ ERROR: COMPILING FOR UNSUPPORTED MACHINE, OR MORE THAN ONE.
 #include <arc/eisa/eisa_machdep.h>
 #endif
 #if __hppa__
-#include <hppa/eisa/eisa_machdep.h>
+#include <hppa/include/eisa_machdep.h>
 #endif
 
 typedef int	eisa_slot_t;		/* really only needs to be 4 bits */

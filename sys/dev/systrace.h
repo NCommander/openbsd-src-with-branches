@@ -34,8 +34,6 @@
 
 #include <sys/ioccom.h>
 
-#define	SYSTR_CLONE	_IOR('s', 1, int)
-
 #define SYSTR_EMULEN	8	/* sync with sys proc */
 
 struct str_msg_emul {
@@ -140,6 +138,8 @@ struct systrace_replace {
 	size_t strr_offlen[SYSTR_MAXARGS];
 };
 
+#define STRIOCCLONE	_IOR('s', 100, int)
+#define SYSTR_CLONE	STRIOCCLONE
 #define STRIOCATTACH	_IOW('s', 101, pid_t)
 #define STRIOCDETACH	_IOW('s', 102, pid_t)
 #define STRIOCANSWER	_IOW('s', 103, struct systrace_answer)

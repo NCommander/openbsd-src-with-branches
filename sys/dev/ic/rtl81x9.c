@@ -1,4 +1,4 @@
-/*	$OpenBSD: rtl81x9.c,v 1.11.2.2 2002/06/11 03:42:20 art Exp $ */
+/*	$OpenBSD$ */
 
 /*
  * Copyright (c) 1997, 1998
@@ -68,7 +68,7 @@
  * levels.
  *
  * It's impossible given this rotten design to really achieve decent
- * performance at 100Mbps, unless you happen to have a 400Mhz PII or
+ * performance at 100Mbps, unless you happen to have a 400MHz PII or
  * some equally overmuscled CPU to drive it.
  *
  * On the bright side, the 8139 does have a built-in PHY, although

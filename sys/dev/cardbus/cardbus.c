@@ -1,4 +1,4 @@
-/*	$OpenBSD: cardbus.c,v 1.3.4.1 2002/01/31 22:55:30 niklas Exp $ */
+/*	$OpenBSD$ */
 /*	$NetBSD: cardbus.c,v 1.24 2000/04/02 19:11:37 mycroft Exp $	*/
 
 /*
@@ -574,7 +574,7 @@ cardbusprint(aux, pnp)
     char devinfo[256];
     int i;
     if (pnp) {
-	pci_devinfo(ca->ca_id, ca->ca_class, 1, devinfo);
+	pci_devinfo(ca->ca_id, ca->ca_class, 1, devinfo, sizeof devinfo);
 	for (i = 0; i < 4; i++) {
 	    if (ca->ca_cis.cis1_info[i] == NULL)
 		break;
