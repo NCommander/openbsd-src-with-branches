@@ -1,4 +1,4 @@
-/*	$OpenBSD: udf_vnops.c,v 1.3 2005/03/30 00:37:13 pedro Exp $	*/
+/*	$OpenBSD: udf_vnops.c,v 1.4 2005/03/30 01:10:00 pedro Exp $	*/
 
 /*
  * Copyright (c) 2001, 2002 Scott Long <scottl@freebsd.org>
@@ -1039,6 +1039,7 @@ udf_lookup(void *v)
 	namelen = ap->a_cnp->cn_namelen;
 	fsize = letoh64(node->fentry->inf_len);
 	p = ap->a_cnp->cn_proc;
+	*vpp = NULL;
 
 	/*
 	 * Make sure the process can scan the requested directory.
