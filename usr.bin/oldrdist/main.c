@@ -1,4 +1,4 @@
-/*	$OpenBSD: main.c,v 1.2 1996/06/26 05:37:39 deraadt Exp $	*/
+/*	$OpenBSD: main.c,v 1.3 1996/07/19 21:57:33 millert Exp $	*/
 
 /*
  * Copyright (c) 1983, 1993
@@ -41,7 +41,7 @@ static char copyright[] =
 
 #ifndef lint
 /* from: static char sccsid[] = "@(#)main.c	8.1 (Berkeley) 6/9/93"; */
-static char *rcsid = "$OpenBSD: main.c,v 1.2 1996/06/26 05:37:39 deraadt Exp $";
+static char *rcsid = "$OpenBSD: main.c,v 1.3 1996/07/19 21:57:33 millert Exp $";
 #endif /* not lint */
 
 #include "defs.h"
@@ -197,7 +197,6 @@ main(argc, argv)
 		exit(1);
 	}
 #endif	/* DIRECT_RCMD */
-	mktemp(tempfile);
 
 	if (iamremote) {
 		server();
