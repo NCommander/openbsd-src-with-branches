@@ -1,4 +1,4 @@
-# $OpenBSD: Makefile,v 1.169 2003/12/30 16:48:47 henning Exp $
+# $OpenBSD: Makefile,v 1.170 2004/01/06 12:34:05 cedric Exp $
 
 # TARGETS
 # pf: feed pfNN.in through pfctl and check wether the output matches pfNN.ok
@@ -30,7 +30,7 @@ PFTABLE=1 2 3 4 5 6 7 8 9 10 11 12 13
 PFOPT=1 2 3 4 5
 PFIF2IP=1 2 3
 
-.ifmake !obj && !clean && !cleandir
+.ifmake !obj && !clean && !cleandir && !depend && !regress
 .BEGIN:
 	-${SUDO} ifconfig lo1000000 create
 	-${SUDO} ifconfig tun1000000 create
