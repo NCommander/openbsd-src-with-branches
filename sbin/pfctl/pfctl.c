@@ -1,4 +1,4 @@
-/*	$OpenBSD: pfctl.c,v 1.56 2002/03/25 22:05:49 frantzen Exp $ */
+/*	$OpenBSD: pfctl.c,v 1.57 2002/03/26 17:37:11 frantzen Exp $ */
 
 /*
  * Copyright (c) 2001 Daniel Hartmeier
@@ -58,6 +58,7 @@ int	 pfctl_clear_stats(int, int);
 int	 pfctl_clear_rules(int, int);
 int	 pfctl_clear_nat(int, int);
 int	 pfctl_clear_states(int, int);
+int	 pfctl_kill_states(int, int);
 int	 pfctl_hint(int, const char *, int);
 int	 pfctl_show_rules(int, int, int);
 int	 pfctl_show_nat(int);
