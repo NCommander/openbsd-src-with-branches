@@ -1,4 +1,4 @@
-/*	$OpenBSD: partab.c,v 1.2 1996/06/26 05:40:44 deraadt Exp $	*/
+/*	$OpenBSD: partab.c,v 1.3 1997/04/02 01:47:02 millert Exp $	*/
 /*	$NetBSD: partab.c,v 1.4 1996/12/29 10:38:21 cgd Exp $	*/
 
 /*
@@ -38,7 +38,7 @@
 #if 0
 static char sccsid[] = "@(#)partab.c	8.1 (Berkeley) 6/6/93";
 #endif
-static char rcsid[] = "$OpenBSD: partab.c,v 1.2 1996/06/26 05:40:44 deraadt Exp $";
+static const char rcsid[] = "$OpenBSD: partab.c,v 1.3 1997/04/02 01:47:02 millert Exp $";
 #endif /* not lint */
 
 /*

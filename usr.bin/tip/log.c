@@ -1,4 +1,4 @@
-/*	$OpenBSD: log.c,v 1.4 2001/07/12 05:17:24 deraadt Exp $	*/
+/*	$OpenBSD: log.c,v 1.5 2001/09/09 19:30:49 millert Exp $	*/
 /*	$NetBSD: log.c,v 1.4 1994/12/24 17:56:28 cgd Exp $	*/
 
 /*
@@ -38,7 +38,7 @@
 #if 0
 static char sccsid[] = "@(#)log.c	8.1 (Berkeley) 6/6/93";
 #endif
-static char rcsid[] = "$OpenBSD: log.c,v 1.4 2001/07/12 05:17:24 deraadt Exp $";
+static const char rcsid[] = "$OpenBSD: log.c,v 1.5 2001/09/09 19:30:49 millert Exp $";
 #endif /* not lint */
 
 #include "tip.h"

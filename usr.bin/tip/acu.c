@@ -1,4 +1,4 @@
-/*	$OpenBSD: acu.c,v 1.6 2001/08/11 00:05:53 krw Exp $	*/
+/*	$OpenBSD: acu.c,v 1.7 2001/10/24 18:38:58 millert Exp $	*/
 /*	$NetBSD: acu.c,v 1.4 1996/12/29 10:34:03 cgd Exp $	*/
 
 /*
@@ -38,7 +38,7 @@
 #if 0
 static char sccsid[] = "@(#)acu.c	8.1 (Berkeley) 6/6/93";
 #endif
-static char rcsid[] = "$OpenBSD: acu.c,v 1.6 2001/08/11 00:05:53 krw Exp $";
+static const char rcsid[] = "$OpenBSD: acu.c,v 1.7 2001/10/24 18:38:58 millert Exp $";
 #endif /* not lint */
 
 #include "tip.h"
