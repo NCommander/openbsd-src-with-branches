@@ -1,4 +1,4 @@
-/*	$OpenBSD: identd.c,v 1.24 2002/01/07 17:08:28 mpech Exp $	*/
+/*	$OpenBSD: identd.c,v 1.25 2002/03/12 18:45:17 millert Exp $	*/
 
 /*
  * This program is in the public domain and may be used freely by anyone
@@ -207,7 +207,7 @@ main(argc, argv)
 				    optarg);
 			else {
 				set_uid = pwd->pw_uid;
-				if (setgid == 0)
+				if (set_gid == 0)
 					set_gid = pwd->pw_gid;
 			}
 			break;
