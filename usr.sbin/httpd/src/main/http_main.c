@@ -1,4 +1,4 @@
-/* $OpenBSD: http_main.c,v 1.26 2002/10/07 20:23:06 henning Exp $ */
+/* $OpenBSD: http_main.c,v 1.27 2002/12/05 23:45:01 henning Exp $ */
 
 /* ====================================================================
  * The Apache Software License, Version 1.1
@@ -5198,6 +5198,7 @@ static void standalone_main(int argc, char **argv)
 	}
 	ap_set_version();	/* create our server_version string */
 	ap_init_modules(pconf, server_conf);
+	ap_init_etag(pconf);
 	version_locked++;	/* no more changes to server_version */
 
 	if(!is_graceful && !is_chrooted)
