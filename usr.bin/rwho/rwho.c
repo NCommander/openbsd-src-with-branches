@@ -1,4 +1,4 @@
-/*	$OpenBSD: rwho.c,v 1.5 1997/01/15 23:43:10 millert Exp $	*/
+/*	$OpenBSD: rwho.c,v 1.6 1997/03/26 18:02:37 deraadt Exp $	*/
 
 /*
  * Copyright (c) 1983 The Regents of the University of California.
@@ -41,7 +41,7 @@ char copyright[] =
 
 #ifndef lint
 /*static char sccsid[] = "from: @(#)rwho.c	5.5 (Berkeley) 6/1/90";*/
-static char rcsid[] = "$OpenBSD: rwho.c,v 1.5 1997/01/15 23:43:10 millert Exp $";
+static char rcsid[] = "$OpenBSD: rwho.c,v 1.6 1997/03/26 18:02:37 deraadt Exp $";
 #endif /* not lint */
 
 #include <sys/param.h>
@@ -159,7 +159,8 @@ main(argc, argv)
 	mp = myutmp;
 	for (i = 0; i < nusers; i++) {
 		char buf[BUFSIZ];
-		(void)sprintf(buf, "%s:%s", mp->myhost, mp->myutmp.out_line);
+		(void)snprintf(buf, sizeof buf, "%s:%s", mp->myhost,
+		    mp->myutmp.out_line);
 		printf("%-8.8s %-*s %.12s",
 		   mp->myutmp.out_name,
 		   width,
