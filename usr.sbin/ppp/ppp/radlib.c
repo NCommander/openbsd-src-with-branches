@@ -23,7 +23,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  *
- *	$OpenBSD: src/lib/libradius/radlib.c,v 1.2 1999/01/29 22:44:47 brian Exp $
+ *	$OpenBSD: radlib.c,v 1.1 1999/02/06 03:22:45 brian Exp $
  */
 
 #include <sys/types.h>
@@ -40,6 +40,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <termios.h>
 #include <unistd.h>
 
 #include "defs.h"
