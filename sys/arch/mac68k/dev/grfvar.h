@@ -1,4 +1,4 @@
-/*	$OpenBSD: grfvar.h,v 1.3 1996/05/26 18:35:22 briggs Exp $	*/
+/*	$OpenBSD: grfvar.h,v 1.5 1996/11/23 21:45:52 kstailey Exp $	*/
 /*	$NetBSD: grfvar.h,v 1.11 1996/08/04 06:03:58 scottr Exp $	*/
 
 /*
@@ -51,6 +51,10 @@
 struct grfbus_softc {
 	struct	device	sc_dev;
 	nubus_slot	sc_slot;
+
+	bus_space_tag_t		sc_tag;
+	bus_space_handle_t	sc_regh;
+	bus_space_handle_t	sc_fbh;
 
 	struct	grfmode curr_mode;	/* hardware desc(for ioctl)	*/
 	u_int16_t	card_id;	/* DrHW value for nubus cards	*/
