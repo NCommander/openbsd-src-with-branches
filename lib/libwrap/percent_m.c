@@ -1,4 +1,4 @@
-/*	$OpenBSD: percent_m.c,v 1.1 1997/02/26 03:06:54 downsj Exp $	*/
+/*	$OpenBSD: percent_m.c,v 1.2 2001/11/07 18:48:48 deraadt Exp $	*/
 
  /*
   * Replace %m by system error message.
@@ -10,7 +10,7 @@
 #if 0
 static char sccsid[] = "@(#) percent_m.c 1.1 94/12/28 17:42:37";
 #else
-static char rcsid[] = "$OpenBSD: percent_m.c,v 1.1 1997/02/26 03:06:54 downsj Exp $";
+static char rcsid[] = "$OpenBSD: percent_m.c,v 1.2 2001/11/07 18:48:48 deraadt Exp $";
 #endif
 #endif
 
@@ -19,7 +19,6 @@ static char rcsid[] = "$OpenBSD: percent_m.c,v 1.1 1997/02/26 03:06:54 downsj Ex
 #include <errno.h>
 #include <string.h>
 
-extern int errno;
 #ifndef SYS_ERRLIST_DEFINED
 extern char *sys_errlist[];
 extern int sys_nerr;

@@ -1,4 +1,4 @@
-/*	$OpenBSD: sh.h,v 1.16 2004/02/08 19:18:15 deraadt Exp $	*/
+/*	$OpenBSD: sh.h,v 1.17 2004/05/10 16:28:47 pvalchev Exp $	*/
 
 /*
  * Public Domain Bourne/Korn shell
@@ -117,7 +117,6 @@ void *memmove ARGS((void *d, const void *s, size_t n));
 #endif /* HAVE_PROTOTYPES */
 
 #include <errno.h>
-extern int errno;
 
 #ifdef HAVE_FCNTL_H
 # include <fcntl.h>
