@@ -1,4 +1,4 @@
-/*	$OpenBSD: esp.c,v 1.14 2001/07/04 08:52:44 niklas Exp $	*/
+/*	$OpenBSD: esp.c,v 1.15 2002/03/14 01:26:35 millert Exp $	*/
 /*	$NetBSD: esp.c,v 1.59 1996/10/13 02:59:48 christos Exp $	*/
 
 /*
@@ -212,7 +212,7 @@ espattach(parent, self, aux)
 
 	sc->sc_id = 7;
 
-	/* gimme Mhz */
+	/* gimme MHz */
 	sc->sc_freq /= 1000000;
 
 	/*
