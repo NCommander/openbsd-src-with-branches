@@ -1,4 +1,4 @@
-/* $OpenBSD: cddb.c,v 1.5 2002/12/14 21:28:08 espie Exp $ */
+/* $OpenBSD: cddb.c,v 1.6 2003/03/13 09:09:29 deraadt Exp $ */
 /*
  * Copyright (c) 2002 Marc Espie.
  *
@@ -106,7 +106,7 @@ safe_copy(char **p, const char *title)
 	if (*p == NULL)
 		*p = strdup(copy_buffer);
 	else {
-		int len = strlen(*p) + strlen(copy_buffer) + 1;
+		size_t len = strlen(*p) + strlen(copy_buffer) + 1;
 		char *n = malloc(len);
 		if (n == NULL)
 			return;
