@@ -1,4 +1,4 @@
-/*	$OpenBSD: whois.c,v 1.27 2003/06/10 22:20:54 deraadt Exp $	*/
+/*	$OpenBSD: whois.c,v 1.28 2003/09/18 22:16:15 fgsch Exp $	*/
 
 /*
  * Copyright (c) 1980, 1993
@@ -39,7 +39,7 @@ static const char copyright[] =
 #if 0
 static const char sccsid[] = "@(#)whois.c	8.1 (Berkeley) 6/6/93";
 #else
-static const char rcsid[] = "$OpenBSD: whois.c,v 1.27 2003/06/10 22:20:54 deraadt Exp $";
+static const char rcsid[] = "$OpenBSD: whois.c,v 1.28 2003/09/18 22:16:15 fgsch Exp $";
 #endif
 #endif /* not lint */
 
@@ -176,7 +176,10 @@ whois(const char *query, const char *server, const char *port, int flags)
 	hints.ai_socktype = SOCK_STREAM;
 	error = getaddrinfo(server, port, &hints, &res);
 	if (error) {
-		warnx("%s: %s", server, gai_strerror(error));
+		if (error == EAI_SERVICE)
+			warnx("%s: bad port", port);
+		else
+			warnx("%s: %s", server, gai_strerror(error));
 		return (1);
 	}
 
