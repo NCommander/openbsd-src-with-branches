@@ -1,4 +1,4 @@
-/*	$OpenBSD: mfc.c,v 1.11 2002/02/15 20:45:30 nordin Exp $ */
+/*	$OpenBSD: mfc.c,v 1.12 2002/03/14 01:26:29 millert Exp $ */
 /*	$NetBSD: mfc.c,v 1.18 1996/12/23 09:10:23 veego Exp $ */
 
 /*
@@ -59,7 +59,6 @@
 
 #include <dev/cons.h>
 
-#include <sys/conf.h>
 #include <machine/conf.h>
 
 #include "mfcs.h"

@@ -1,4 +1,4 @@
-/*	$OpenBSD: conf.h,v 1.13 2001/06/27 06:18:29 angelos Exp $	*/
+/*	$OpenBSD: conf.h,v 1.14 2001/12/11 23:19:02 miod Exp $	*/
 /*	$NetBSD: conf.h,v 1.4 1996/11/30 01:13:07 is Exp $	*/
 
 /*
@@ -29,6 +29,8 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+
+#include <sys/conf.h>
 
 cdev_decl(com);
 

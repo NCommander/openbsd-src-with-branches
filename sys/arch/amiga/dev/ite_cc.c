@@ -1,4 +1,4 @@
-/*	$OpenBSD: ite_cc.c,v 1.2 1996/05/02 06:44:10 niklas Exp $	*/
+/*	$OpenBSD: ite_cc.c,v 1.3 2002/03/14 01:26:29 millert Exp $	*/
 /*	$NetBSD: ite_cc.c,v 1.25 1996/04/21 21:11:54 veego Exp $	*/
 
 /*
@@ -34,7 +34,6 @@
 #if NGRFCC > 0
 
 #include <sys/param.h>
-#include <sys/conf.h>
 #include <sys/proc.h>
 #include <sys/device.h>
 #include <sys/ioctl.h>
@@ -43,6 +42,7 @@
 #include <sys/queue.h>
 #include <sys/termios.h>
 #include <dev/cons.h>
+#include <machine/conf.h>
 #include <machine/cpu.h>
 #include <amiga/dev/itevar.h>
 #include <amiga/dev/iteioctl.h>

@@ -1,4 +1,4 @@
-/*	$OpenBSD: ite_rt.c,v 1.2 1996/05/02 06:44:14 niklas Exp $	*/
+/*	$OpenBSD: ite_rt.c,v 1.3 2002/03/14 01:26:29 millert Exp $	*/
 /*	$NetBSD: ite_rt.c,v 1.16 1996/04/23 22:53:12 veego Exp $	*/
 
 /*
@@ -35,13 +35,13 @@
 #if NGRFRT > 0
 
 #include <sys/param.h>
-#include <sys/conf.h>
 #include <sys/proc.h>
 #include <sys/device.h>
 #include <sys/ioctl.h>
 #include <sys/tty.h>
 #include <sys/systm.h>
 #include <dev/cons.h>
+#include <machine/conf.h>
 #include <machine/cpu.h>
 #include <amiga/amiga/device.h>
 #include <amiga/dev/itevar.h>
