@@ -1,7 +1,7 @@
-/*	$OpenBSD: hifn7751.c,v 1.81 2001/06/24 19:31:49 jason Exp $	*/
+/*	$OpenBSD: hifn7751.c,v 1.82 2001/06/25 19:49:14 jason Exp $	*/
 
 /*
- * Invertex AEON / Hi/fn 7751 driver
+ * Invertex AEON / Hifn 7751 driver
  * Copyright (c) 1999 Invertex Inc. All rights reserved.
  * Copyright (c) 1999 Theo de Raadt
  * Copyright (c) 2000-2001 Network Security Technologies, Inc.
@@ -36,7 +36,7 @@
  */
 
 /*
- * Driver for the Hi/Fn 7751 encryption processor.
+ * Driver for the Hifn 7751 encryption processor.
  */
 
 #include <sys/param.h>
