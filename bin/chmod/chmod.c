@@ -1,4 +1,4 @@
-/*	$OpenBSD: chmod.c,v 1.6 1997/06/28 14:45:43 grr Exp $	*/
+/*	$OpenBSD: chmod.c,v 1.7 1997/11/08 23:26:39 todd Exp $	*/
 /*	$NetBSD: chmod.c,v 1.12 1995/03/21 09:02:09 cgd Exp $	*/
 
 /*
@@ -44,7 +44,7 @@ static char copyright[] =
 #if 0
 static char sccsid[] = "@(#)chmod.c	8.8 (Berkeley) 4/1/94";
 #else
-static char rcsid[] = "$OpenBSD: chmod.c,v 1.6 1997/06/28 14:45:43 grr Exp $";
+static char rcsid[] = "$OpenBSD: chmod.c,v 1.7 1997/11/08 23:26:39 todd Exp $";
 #endif
 #endif /* not lint */
 
@@ -198,7 +198,7 @@ done:	argv += optind;
 		}
 		if (chmod(p->fts_accpath, oct ? omode :
 		    getmode(set, p->fts_statp->st_mode)) && !fflag) {
-			warn(p->fts_path);
+			warn("%s", p->fts_path);
 			rval = 1;
 		}
 	}
