@@ -1,4 +1,4 @@
-/*	$OpenBSD: wizard.c,v 1.9 2002/02/18 06:38:43 deraadt Exp $	*/
+/*	$OpenBSD: wizard.c,v 1.10 2003/04/06 18:50:33 deraadt Exp $	*/
 /*	$NetBSD: wizard.c,v 1.3 1995/04/24 12:21:41 cgd Exp $	*/
 
 /*-
@@ -43,7 +43,7 @@
 #if 0
 static char sccsid[] = "@(#)wizard.c	8.1 (Berkeley) 6/2/93";
 #else
-static char rcsid[] = "$OpenBSD: wizard.c,v 1.9 2002/02/18 06:38:43 deraadt Exp $";
+static char rcsid[] = "$OpenBSD: wizard.c,v 1.10 2003/04/06 18:50:33 deraadt Exp $";
 #endif
 #endif /* not lint */
 
@@ -113,13 +113,11 @@ Start()
 int
 wizard()		/* not as complex as advent/10 (for now)	*/
 {
-	char   *word, *x;
-
 	if (!yesm(16, 0, 7))
 		return (FALSE);
 	mspeak(17);
-	getin(&word, &x);
-	if (!weq(word, magic)) {
+	getin(wd1, sizeof(wd1), wd2, sizeof(wd2));
+	if (!weq(wd1, magic)) {
 		mspeak(20);
 		return (FALSE);
 	}
@@ -136,9 +134,9 @@ ciao()
 
 	printf("What would you like to call the saved version?\n");
 	for (c = fname; c - fname < MAXPATHLEN; c++) {
-		*c = ch = getchar();
-		if ((*c = getchar()) == '\n' || ch == EOF)
+		if ((ch = getchar()) == '\n' || ch == EOF)
 			break;
+		*c = ch;
 	}
 	if (c - fname == MAXPATHLEN) {
 		c--;
