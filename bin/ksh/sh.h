@@ -1,4 +1,4 @@
-/*	$OpenBSD: sh.h,v 1.3 1996/10/01 02:05:47 downsj Exp $	*/
+/*	$OpenBSD: sh.h,v 1.4 1996/12/18 18:28:37 niklas Exp $	*/
 
 /*
  * Public Domain Bourne/Korn shell
@@ -472,6 +472,7 @@ enum sh_flag {
 	FPOSIX,		/* -o posix: be posixly correct */
 	FPRIVILEGED,	/* -p: use suid_profile */
 	FRESTRICTED,	/* -r: restricted shell */
+	FSH,		/* -o sh: favor sh behavour */
 	FSTDIN,		/* -s: (invocation) parse stdin */
 	FTRACKALL,	/* -h: create tracked aliases for all commands */
 	FVERBOSE,	/* -v: echo input */

@@ -1,4 +1,4 @@
-/*	$OpenBSD: main.c,v 1.3 1996/10/01 02:05:45 downsj Exp $	*/
+/*	$OpenBSD: main.c,v 1.4 1996/11/21 07:59:33 downsj Exp $	*/
 
 /*
  * startup, main loop, enviroments and error handling
@@ -196,6 +196,11 @@ main(argc, argv)
 #ifdef POSIXLY_CORRECT
 	change_flag(FPOSIX, OF_SPECIAL, 1);
 #endif /* POSIXLY_CORRECT */
+
+	/* Check to see if we're /bin/sh. */
+	if (!strcmp(&kshname[strlen(kshname) - 3], "/sh")
+	    || !strcmp(kshname, "sh") || !strcmp(kshname, "-sh"))
+		Flag(FSH) = 1;
 
 	/* import enviroment */
 	if (environ != NULL)
