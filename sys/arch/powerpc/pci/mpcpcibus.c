@@ -1,4 +1,4 @@
-/*	$OpenBSD: mpcpcibus.c,v 1.14 2000/03/24 06:56:41 rahnds Exp $ */
+/*	$OpenBSD: mpcpcibus.c,v 1.15 2000/03/31 04:25:41 rahnds Exp $ */
 
 /*
  * Copyright (c) 1997 Per Fogelstrom
@@ -847,7 +847,6 @@ mpc_intr_establish(lcv, ih, level, func, arg, name)
 	void *arg;
 	char *name;
 {
-	printf("mpc_pintr_establish called for [%s]\n", name);
 	return (*intr_establish_func)(lcv, ih, IST_LEVEL, level, func, arg,
 		name);
 #if 0
