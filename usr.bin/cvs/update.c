@@ -39,10 +39,6 @@
 #include "rcs.h"
 #include "log.h"
 
-extern char *__progname;
-
-extern struct cvsroot *cvs_root;
-
 
 int  cvs_update_file  (CVSFILE *, void *);
 int  cvs_update_prune (CVSFILE *, void *);

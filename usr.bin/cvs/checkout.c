@@ -38,10 +38,6 @@
 
 
 
-extern struct cvsroot *cvs_root;
-
-
-
 /*
  * cvs_checkout()
  *
