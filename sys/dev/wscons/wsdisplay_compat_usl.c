@@ -1,4 +1,4 @@
-/* $OpenBSD: wsdisplay_compat_usl.c,v 1.4 2001/02/10 19:42:06 mickey Exp $ */
+/* $OpenBSD: wsdisplay_compat_usl.c,v 1.5 2001/04/14 04:48:00 aaron Exp $ */
 /* $NetBSD: wsdisplay_compat_usl.c,v 1.12 2000/03/23 07:01:47 thorpej Exp $ */
 
 /*
@@ -426,8 +426,7 @@ wsdisplay_usl_ioctl2(sc, scr, cmd, data, flag, p)
 			return (EPERM);
 		/* FALLTHRU */
 	    case KDDISABIO:
-#if defined(__i386__)
-#if defined(COMPAT_10) || defined(COMPAT_11) || defined(COMPAT_FREEBSD)
+#if defined(__i386__) && defined(COMPAT_FREEBSD)
 		{
 		struct trapframe *fp = (struct trapframe *)p->p_md.md_regs;
 		if (cmd == KDENABIO)
@@ -435,7 +434,6 @@ wsdisplay_usl_ioctl2(sc, scr, cmd, data, flag, p)
 		else
 			fp->tf_eflags &= ~PSL_IOPL;
 		}
-#endif
 #endif
 		return (0);
 	    case KDSETRAD:

@@ -1,4 +1,4 @@
-/*	$OpenBSD: kern_sig_43.c,v 1.3 1996/04/18 21:21:34 niklas Exp $	*/
+/*	$OpenBSD: kern_sig_43.c,v 1.4 2001/02/19 16:54:27 art Exp $	*/
 /*	$NetBSD: kern_sig_43.c,v 1.7 1996/03/14 19:31:47 christos Exp $	*/
 
 /*
@@ -208,10 +208,6 @@ compat_43_sys_killpg(p, v, retval)
 		syscallarg(int) pgid;
 		syscallarg(int) signum;
 	} */ *uap = v;
-
-#ifdef COMPAT_09
-	SCARG(uap, pgid) = (short) SCARG(uap, pgid);
-#endif
 
 	if ((u_int)SCARG(uap, signum) >= NSIG)
 		return (EINVAL);

@@ -1,4 +1,4 @@
-/*	$OpenBSD: kern_exit.c,v 1.29 2001/03/23 18:42:06 art Exp $	*/
+/*	$OpenBSD: kern_exit.c,v 1.30 2001/04/02 21:43:11 niklas Exp $	*/
 /*	$NetBSD: kern_exit.c,v 1.39 1996/04/22 01:38:25 christos Exp $	*/
 
 /*
@@ -424,10 +424,6 @@ sys_wait4(q, v, retval)
 	register int nfound;
 	register struct proc *p, *t;
 	int status, error;
-
-#ifdef COMPAT_09
-	SCARG(uap, pid) = (short)SCARG(uap, pid);
-#endif
 
 	if (SCARG(uap, pid) == 0)
 		SCARG(uap, pid) = -q->p_pgid;
