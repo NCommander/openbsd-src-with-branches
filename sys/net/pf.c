@@ -1,4 +1,4 @@
-/*	$OpenBSD: pf.c,v 1.480 2005/02/27 15:08:39 dhartmei Exp $ */
+/*	$OpenBSD: pf.c,v 1.481 2005/03/03 07:13:39 dhartmei Exp $ */
 
 /*
  * Copyright (c) 2001 Daniel Hartmeier
@@ -6220,6 +6220,9 @@ pf_test6(int dir, struct ifnet *ifp, struct mbuf **m0,
 
 done:
 	/* XXX handle IPv6 options, if not allowed. not implemented. */
+
+	if (s && s->tag)
+		pf_tag_packet(m, pf_get_tag(m), s->tag);
 
 #ifdef ALTQ
 	if (action == PF_PASS && r->qid) {
