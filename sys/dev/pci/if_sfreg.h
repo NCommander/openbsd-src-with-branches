@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_sfreg.h,v 1.6 2003/06/29 17:19:17 avsm Exp $	*/
+/*	$OpenBSD: if_sfreg.h,v 1.7 2004/05/19 11:37:00 brad Exp $	*/
 /*
  * Copyright (c) 1997, 1998, 1999
  *	Bill Paul <wpaul@ctr.columbia.edu>.  All rights reserved.
@@ -346,7 +346,8 @@
 	(SF_IMR_RXDQ2_NOBUFS|SF_IMR_RXDQ1_DMADONE|SF_IMR_RXDQ2_DMADONE|	\
 	 SF_IMR_TX_TXDONE|SF_IMR_RXDQ1_NOBUFS|SF_IMR_RXDQ2_DMADONE|	\
 	 SF_IMR_NORMALINTR|SF_IMR_ABNORMALINTR|SF_IMR_TXCQ_NOBUFS|	\
-	 SF_IMR_RXCQ1_NOBUFS|SF_IMR_RXCQ2_NOBUFS|SF_IMR_STATSOFLOW)
+	 SF_IMR_RXCQ1_NOBUFS|SF_IMR_RXCQ2_NOBUFS|SF_IMR_STATSOFLOW|	\
+	 SF_IMR_TX_LOFIFO)
 
 /* TX descriptor queue control registers */
 #define SF_TXDQCTL_DESCTYPE	0x00000007
