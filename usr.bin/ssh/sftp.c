@@ -43,6 +43,8 @@ FILE* infile;
 size_t copy_buffer_len = 32768;
 size_t num_requests = 16;
 
+extern int showprogress;
+
 static void
 connect_to_server(char *path, char **args, int *in, int *out, pid_t *sshpid)
 {
@@ -155,6 +157,7 @@ main(int argc, char **argv)
 					fatal("%s (%s).", strerror(errno), optarg);
 			} else
 				fatal("Filename already specified.");
+			showprogress = 0;
 			break;
 		case 'P':
 			sftp_direct = optarg;
