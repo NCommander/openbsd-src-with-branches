@@ -23,7 +23,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  *
- *	$Id: iface.h,v 1.3 1999/05/27 08:44:48 brian Exp $
+ *	$OpenBSD: iface.h,v 1.4 2000/02/27 00:21:08 brian Exp $
  */
 
 struct ifa_msghdr;

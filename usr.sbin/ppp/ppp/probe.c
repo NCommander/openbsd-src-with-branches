@@ -23,7 +23,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  *
- *	$Id: probe.c,v 1.2 1998/06/27 14:18:10 brian Exp $
+ *	$OpenBSD: probe.c,v 1.2 1999/02/06 03:22:43 brian Exp $
  */
 
 #include <sys/time.h>

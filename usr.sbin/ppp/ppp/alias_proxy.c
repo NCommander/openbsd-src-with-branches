@@ -22,7 +22,7 @@
 
     Initial development: April, 1998 (cjm)
 
-    $Id$
+    $OpenBSD: alias_proxy.c,v 1.4 2000/01/07 03:26:52 brian Exp $
 */
 
 

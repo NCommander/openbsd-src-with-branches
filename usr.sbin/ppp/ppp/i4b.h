@@ -23,7 +23,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  *
- *	$Id$
+ *	$OpenBSD: i4b.h,v 1.1 2000/01/07 03:26:54 brian Exp $
  */
 
 struct physical;

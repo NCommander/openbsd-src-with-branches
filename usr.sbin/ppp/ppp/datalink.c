@@ -23,7 +23,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  *
- *	$Id: datalink.c,v 1.26 2000/02/27 00:21:07 brian Exp $
+ *	$OpenBSD: datalink.c,v 1.27 2000/02/27 01:34:04 brian Exp $
  */
 
 #include <sys/param.h>

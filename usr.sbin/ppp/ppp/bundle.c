@@ -23,7 +23,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  *
- *	$Id: bundle.c,v 1.28 2000/02/27 00:21:05 brian Exp $
+ *	$OpenBSD: bundle.c,v 1.29 2000/02/27 01:34:04 brian Exp $
  */
 
 #include <sys/param.h>

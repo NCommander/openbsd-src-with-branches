@@ -23,7 +23,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  *
- *	$Id: tty.c,v 1.12 1999/08/10 10:50:44 brian Exp $
+ *	$OpenBSD: tty.c,v 1.13 2000/01/07 03:26:56 brian Exp $
  */
 
 #include <sys/param.h>

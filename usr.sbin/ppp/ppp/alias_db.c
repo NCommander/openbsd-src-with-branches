@@ -105,7 +105,7 @@
 
     See HISTORY file for additional revisions.
 
-    $Id$
+    $OpenBSD: alias_db.c,v 1.5 2000/01/07 03:26:52 brian Exp $
 */
 
 

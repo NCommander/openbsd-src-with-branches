@@ -23,7 +23,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  *
- *	$Id$
+ *	$OpenBSD: ether.h,v 1.1 2000/01/07 03:26:53 brian Exp $
  */
 
 struct physical;

@@ -23,7 +23,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  *
- *	$Id: vjcomp.h,v 1.2 1999/02/06 03:22:49 brian Exp $
+ *	$OpenBSD: vjcomp.h,v 1.3 1999/05/08 11:06:40 brian Exp $
  */
 
 struct mbuf;

@@ -23,7 +23,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  *
- *	$Id: iplist.c,v 1.2 1999/02/06 03:22:39 brian Exp $
+ *	$OpenBSD: iplist.c,v 1.3 1999/05/08 11:06:36 brian Exp $
  */
 
 #include <sys/types.h>

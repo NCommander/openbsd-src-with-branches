@@ -17,7 +17,7 @@
  * IMPLIED WARRANTIES, INCLUDING, WITHOUT LIMITATION, THE IMPLIED
  * WARRANTIES OF MERCHANTIBILITY AND FITNESS FOR A PARTICULAR PURPOSE.
  *
- * $Id: auth.c,v 1.12 1999/06/08 20:12:23 brian Exp $
+ * $OpenBSD: auth.c,v 1.13 2000/01/07 03:26:52 brian Exp $
  *
  *	TODO:
  *		o Implement check against with registered IP addresses.

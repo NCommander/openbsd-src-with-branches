@@ -23,7 +23,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  *
- *	$Id: id.h,v 1.2 1999/02/06 03:22:37 brian Exp $
+ *	$OpenBSD: id.h,v 1.3 2000/01/07 03:26:54 brian Exp $
  */
 
 struct utmp;

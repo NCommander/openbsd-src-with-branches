@@ -12,7 +12,7 @@
     Version 1.7:  January 9, 1997
          Added differential checksum update function.
 
-    $Id$
+    $OpenBSD: alias_util.c,v 1.2 2000/01/07 03:26:52 brian Exp $
 */
 
 /*
