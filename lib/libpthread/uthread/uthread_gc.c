@@ -1,4 +1,4 @@
-/*	$OpenBSD: uthread_gc.c,v 1.7 1999/11/30 04:53:24 d Exp $	*/
+/*	$OpenBSD: uthread_gc.c,v 1.8 1999/11/30 04:59:42 d Exp $	*/
 /*
  * Copyright (c) 1998 John Birrell <jb@cimlogic.com.au>
  * All rights reserved.
@@ -36,6 +36,7 @@
  *
  */
 #include <errno.h>
+#include <stdlib.h>
 #include <time.h>
 #include <unistd.h>
 #include <sys/types.h>
@@ -53,8 +54,6 @@ _thread_gc(pthread_addr_t arg)
 	sigset_t	mask;
 	pthread_t	pthread;
 	pthread_t	pthread_cln;
-	pthread_t	pthread_nxt;
-	pthread_t	pthread_prv;
 	struct timespec	abstime;
 	void		*p_stack;
 
