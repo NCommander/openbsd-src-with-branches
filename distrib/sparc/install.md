@@ -1,4 +1,4 @@
-#	$OpenBSD: install.md,v 1.17 1998/03/12 08:48:54 deraadt Exp $
+#	$OpenBSD: install.md,v 1.18 1998/03/27 23:28:17 deraadt Exp $
 #	$NetBSD: install.md,v 1.3.2.5 1996/08/26 15:45:28 gwr Exp $
 #
 #
@@ -112,7 +112,7 @@ md_get_cddevs() {
 
 md_get_ifdevs() {
 	# return available network devices
-	# dmesg | egrep "(^le[0-9] |^ie[0-9] )" | cut -d" " -f1 | sort -u
+	# dmesg | egrep "(^le[0-9] |^ie[0-9] |^hme[0-9] |^be[0-9])" | cut -d" " -f1 | sort -u
 	sed -n -e '1,/^OpenBSD /d' -e '/^le[0-9] /{s/ .*//;p;}'< $MSGBUF
 }
 
