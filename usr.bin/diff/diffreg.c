@@ -1,4 +1,4 @@
-/*	$OpenBSD: diffreg.c,v 1.57 2004/06/20 18:47:45 otto Exp $	*/
+/*	$OpenBSD: diffreg.c,v 1.58 2004/09/14 23:04:27 deraadt Exp $	*/
 
 /*
  * Copyright (C) Caldera International Inc.  2001-2002.
@@ -65,7 +65,7 @@
  */
 
 #ifndef lint
-static const char rcsid[] = "$OpenBSD: diffreg.c,v 1.57 2004/06/20 18:47:45 otto Exp $";
+static const char rcsid[] = "$OpenBSD: diffreg.c,v 1.58 2004/09/14 23:04:27 deraadt Exp $";
 #endif /* not lint */
 
 #include <sys/param.h>
@@ -1052,10 +1052,10 @@ proceed:
 				printf("%s %s\n",
 				    format == D_CONTEXT ? "***" : "---", label);
 			else
-				printf("%s %s	%s",
+				printf("%s %s\t%s",
 				    format == D_CONTEXT ? "***" : "---", file1,
 				    ctime(&stb1.st_mtime));
-			printf("%s %s	%s",
+			printf("%s %s\t%s",
 			    format == D_CONTEXT ? "---" : "+++", file2,
 			    ctime(&stb2.st_mtime));
 			anychange = 1;
