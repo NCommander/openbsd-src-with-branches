@@ -1,4 +1,4 @@
-/*	$OpenBSD: pr_time.c,v 1.6 1996/06/26 05:42:43 deraadt Exp $	*/
+/*	$OpenBSD: pr_time.c,v 1.7 1996/07/13 17:24:50 deraadt Exp $	*/
 
 /*-
  * Copyright (c) 1990, 1993, 1994
@@ -81,7 +81,8 @@ pr_attime(started, now)
 		(void)strcpy(fmt, __CONCAT("%l:%", "M%p"));
 	}
 
-	(void)strftime(buf, sizeof(buf), fmt, tp);
+	(void)strftime(buf, sizeof(buf) -1, fmt, tp);
+	buf[sizeof buf - 1] = '\0';
 	(void)printf("%s", buf);
 }
 
