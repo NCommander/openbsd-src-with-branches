@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.7 2002/06/05 18:02:27 fgsch Exp $
+#	$OpenBSD: Makefile,v 1.8 2003/07/22 17:15:13 brad Exp $
 
 .include <bsd.own.mk>
 
@@ -45,7 +45,7 @@ CPPFLAGS+=-I${.CURDIR}/arch/${MACHINE}
 CPPFLAGS+=-I${.CURDIR}/arch/${MACHINE_ARCH}
 .endif
 
-COPTS=-Wall -Wno-uninitialized
+COPTS+=-Wall -Wno-uninitialized
 
 .endif
 
