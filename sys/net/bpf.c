@@ -1,4 +1,4 @@
-/*	$OpenBSD: bpf.c,v 1.10 1997/08/31 20:42:29 deraadt Exp $	*/
+/*	$OpenBSD: bpf.c,v 1.11 1997/09/05 20:17:30 deraadt Exp $	*/
 /*	$NetBSD: bpf.c,v 1.33 1997/02/21 23:59:35 thorpej Exp $	*/
 
 /*
@@ -1117,6 +1117,9 @@ bpf_mtap(arg, m)
 	struct bpf_d *d;
 	size_t pktlen, slen;
 	struct mbuf *m0;
+
+	if (m == NULL)
+		return;
 
 	pktlen = 0;
 	for (m0 = m; m0 != 0; m0 = m0->m_next)
