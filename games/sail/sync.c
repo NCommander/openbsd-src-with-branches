@@ -1,4 +1,4 @@
-/*	$OpenBSD: sync.c,v 1.3 2002/02/19 19:39:36 millert Exp $	*/
+/*	$OpenBSD: sync.c,v 1.4 2003/04/06 18:50:38 deraadt Exp $	*/
 /*	$NetBSD: sync.c,v 1.9 1998/08/30 09:19:40 veego Exp $	*/
 
 /*
@@ -39,7 +39,7 @@
 #if 0
 static char sccsid[] = "@(#)sync.c	8.2 (Berkeley) 4/28/95";
 #else
-static char rcsid[] = "$OpenBSD: sync.c,v 1.3 2002/02/19 19:39:36 millert Exp $";
+static char rcsid[] = "$OpenBSD: sync.c,v 1.4 2003/04/06 18:50:38 deraadt Exp $";
 #endif
 #endif /* not lint */
 
@@ -499,7 +499,8 @@ sync_update(type, ship, astr, a, b, c, d)
 		windspeed = b;
 		break;
 	case W_BEGIN:
-		(void) strcpy(ship->file->captain, "begin");
+		(void) strlcpy(ship->file->captain, "begin",
+		    sizeof ship->file->captain);
 		people++;
 		break;
 	case W_END:
