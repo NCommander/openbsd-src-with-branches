@@ -1,4 +1,4 @@
-/*	$OpenBSD: vgafb.c,v 1.13 2002/03/30 00:08:14 jason Exp $	*/
+/*	$OpenBSD: vgafb.c,v 1.14 2002/03/31 17:34:15 jason Exp $	*/
 
 /*
  * Copyright (c) 2001 Jason L. Wright (jason@thought.net)
@@ -52,8 +52,6 @@
 #include <dev/wscons/wsdisplayvar.h>
 #include <dev/wscons/wscons_raster.h>
 #include <dev/rcons/raster.h>
-
-#undef VGAFB_ALLOW_NATIVE
 
 struct vgafb_softc {
 	struct device sc_dev;
