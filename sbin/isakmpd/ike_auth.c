@@ -1,4 +1,4 @@
-/*	$OpenBSD: ike_auth.c,v 1.71 2003/05/15 02:08:54 ho Exp $	*/
+/*	$OpenBSD: ike_auth.c,v 1.72 2003/05/15 02:28:56 ho Exp $	*/
 /*	$EOM: ike_auth.c,v 1.59 2000/11/21 00:21:31 angelos Exp $	*/
 
 /*
@@ -1108,7 +1108,7 @@ rsa_sig_encode_hash (struct message *msg)
     }
 
   /* Again, we may have these from the kernel */
-  buf = (u_int8_t *)conf_get_str (exchange->name, "OKAuthentication");
+  buf = (u_int8_t *)conf_get_str (exchange->name, "PKAuthentication");
   if (buf)
     {
       key_from_printable (ISAKMP_KEY_RSA, ISAKMP_KEYTYPE_PRIVATE, (char *)buf,
