@@ -1,4 +1,4 @@
-/*	$OpenBSD: pfctl.c,v 1.6 2001/06/25 00:02:55 dhartmei Exp $ */
+/*	$OpenBSD: pfctl.c,v 1.7 2001/06/25 09:44:32 deraadt Exp $ */
 
 /*
  * Copyright (c) 2001, Daniel Hartmeier
@@ -49,7 +49,7 @@
 void	 printerror(char *);
 void	 usage(char *);
 char	*load_file(char *, size_t *);
-int		 main(int, char *[]);
+int	 main(int, char *[]);
 
 void
 printerror(char *s)
