@@ -1,4 +1,4 @@
-/*	$OpenBSD: df.c,v 1.21 1998/08/17 21:33:05 deraadt Exp $	*/
+/*	$OpenBSD: df.c,v 1.22 1998/08/18 23:03:32 deraadt Exp $	*/
 /*	$NetBSD: df.c,v 1.21.2.1 1995/11/01 00:06:11 jtc Exp $	*/
 
 /*
@@ -49,7 +49,7 @@ static char copyright[] =
 #if 0
 static char sccsid[] = "@(#)df.c	8.7 (Berkeley) 4/2/94";
 #else
-static char rcsid[] = "$OpenBSD: df.c,v 1.21 1998/08/17 21:33:05 deraadt Exp $";
+static char rcsid[] = "$OpenBSD: df.c,v 1.22 1998/08/18 23:03:32 deraadt Exp $";
 #endif
 #endif /* not lint */
 
@@ -60,6 +60,7 @@ static char rcsid[] = "$OpenBSD: df.c,v 1.21 1998/08/17 21:33:05 deraadt Exp $";
 #include <err.h>
 #include <errno.h>
 #include <fcntl.h>
+#include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -301,23 +302,25 @@ unit_t
 unit_adjust(val)
 	double *val;
 {
+	double abval;
 	unit_t unit;
 
-	if (*val < 1024)
+	abval = fabs(*val);
+	if (abval < 1024)
 		unit = NONE;
-	else if (*val < 1048576ULL) {
+	else if (abval < 1048576ULL) {
 		unit = KILO;
 		*val /= 1024;
-	} else if (*val < 1073741824ULL) {
+	} else if (abval < 1073741824ULL) {
 		unit = MEGA;
 		*val /= 1048576;
-	} else if (*val < 1099511627776ULL) {
+	} else if (abval < 1099511627776ULL) {
 		unit = GIGA;
 		*val /= 1073741824ULL;
-	} else if (*val < 1125899906842624ULL) {
+	} else if (abval < 1125899906842624ULL) {
 		unit = TERA;
 		*val /= 1099511627776ULL;
-	} else if (*val < 1152921504606846976ULL) {
+	} else if (abval < 1152921504606846976ULL) {
 		unit = PETA;
 		*val /= 1125899906842624ULL;
 	}
