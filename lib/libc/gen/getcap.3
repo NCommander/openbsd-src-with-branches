@@ -1,4 +1,4 @@
-.\"	$OpenBSD: getcap.3,v 1.26 2003/06/02 20:18:34 millert Exp $
+.\"	$OpenBSD: getcap.3,v 1.27 2004/04/16 10:48:39 jmc Exp $
 .\"
 .\" Copyright (c) 1992, 1993
 .\"	The Regents of the University of California.  All rights reserved.
@@ -197,7 +197,7 @@ retrieves the value of the string capability
 .Fa cap
 from the capability record pointed to by
 .Fa buf .
-A pointer to a decoded, null-terminated,
+A pointer to a decoded, NUL-terminated,
 .Xr malloc Ns \&'d
 copy of the string is returned in the
 .Ft char *
