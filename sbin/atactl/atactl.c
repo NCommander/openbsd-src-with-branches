@@ -1,4 +1,4 @@
-/*	$OpenBSD: atactl.c,v 1.12 2002/03/27 17:42:37 gluk Exp $	*/
+/*	$OpenBSD: atactl.c,v 1.13 2002/06/04 23:08:44 csapuntz Exp $	*/
 /*	$NetBSD: atactl.c,v 1.4 1999/02/24 18:49:14 jwise Exp $	*/
 
 /*-
@@ -382,9 +382,9 @@ device_identify(argc, argv)
 		swap16_multi((u_int16_t *)(inqbuf->atap_model),
 		    sizeof(inqbuf->atap_model) / 2);
 		swap16_multi((u_int16_t *)(inqbuf->atap_serial),
-		    sizeof(inqbuf->atap_model) / 2);
-		swap16_multi((u_int16_t *)(inqbuf->atap_model),
-		    sizeof(inqbuf->atap_model) / 2);
+		    sizeof(inqbuf->atap_serial) / 2);
+		swap16_multi((u_int16_t *)(inqbuf->atap_revision),
+		    sizeof(inqbuf->atap_revision) / 2);
 	}
 
 	/*
