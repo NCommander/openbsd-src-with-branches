@@ -640,8 +640,8 @@ swcr_process(struct cryptop *crp)
     u_int64_t nid;
     int type;
 
-    /* Some simple sanity checks */
-    if ((crp == NULL) || (crp->crp_callback == NULL))
+    /* Sanity check */
+    if (crp == NULL)
       return EINVAL;
 
     if ((crp->crp_desc == NULL) || (crp->crp_buf == NULL))
@@ -728,7 +728,8 @@ swcr_process(struct cryptop *crp)
 	  crp->crp_sid = nid;
     }
 
-    return crp->crp_callback(crp);
+    crypto_done(crp);
+    return 0;
 }
 
 /*
