@@ -1,4 +1,5 @@
-/*	$NetBSD: ite_et.c,v 1.1.4.1 1996/05/27 01:12:10 is Exp $	*/
+/*	$OpenBSD: ite_et.c,v 1.2 1996/10/08 23:18:54 thorpej Exp $	*/
+/*	$NetBSD: ite_et.c,v 1.2 1996/10/08 23:18:54 thorpej Exp $	*/
 
 /*
  * Copyright (c) 1995 Ezra Story

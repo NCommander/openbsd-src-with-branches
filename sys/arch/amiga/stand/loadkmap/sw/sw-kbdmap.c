@@ -1,5 +1,5 @@
-/*	$OpenBSD$	*/
-/*	$NetBSD: sw-kbdmap.c,v 1.2.4.1 1996/06/08 16:04:02 is Exp $	*/
+/*	$OpenBSD: sw-kbdmap.c,v 1.2 1996/10/04 22:35:40 niklas Exp $	*/
+/*	$NetBSD: sw-kbdmap.c,v 1.3 1996/06/08 15:28:58 is Exp $	*/
 
 /*
  * Copyright (c) 1993 Markus Wild

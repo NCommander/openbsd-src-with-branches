@@ -1,5 +1,5 @@
-/*	$OpenBSD$	*/
-/*	$NetBSD: ms.c,v 1.10 1996/05/09 20:31:41 is Exp $	*/
+/*	$OpenBSD: ms.c,v 1.3 1996/05/29 10:15:35 niklas Exp $	*/
+/*	$NetBSD: ms.c,v 1.14 1996/12/23 09:10:25 veego Exp $	*/
 
 /*
  * based on:

@@ -1,5 +1,5 @@
-/*	$OpenBSD: grf_clreg.h,v 1.4 1996/05/29 10:14:59 niklas Exp $	*/
-/*	$NetBSD: grf_clreg.h,v 1.4.4.1 1996/05/27 10:50:42 is Exp $	*/
+/*	$OpenBSD: grf_clreg.h,v 1.5 1996/08/23 18:52:38 niklas Exp $	*/
+/*	$NetBSD: grf_clreg.h,v 1.5 1996/10/08 23:18:51 thorpej Exp $	*/
 
 /*
  * Copyright (c) 1995 Ezra Story
