@@ -1,4 +1,4 @@
-/*	$OpenBSD: mrt.h,v 1.7 2004/01/05 22:57:58 claudio Exp $ */
+/*	$OpenBSD: mrt.h,v 1.8 2004/01/06 10:51:14 claudio Exp $ */
 
 /*
  * Copyright (c) 2003, 2004 Claudio Jeker <claudio@openbsd.org>
@@ -80,7 +80,7 @@ enum MRT_BGP4MP_TYPES {
 /* If the type is PROTOCOL_BGP4MP and the subtype is either BGP4MP_STATE_CHANGE
  * or BGP4MP_MESSAGE the message consists of a common header plus the payload.
  * Header format:
- * 
+ *
  * +--------+--------+--------+--------+
  * |    source_as    |     dest_as     |
  * +--------+--------+--------+--------+

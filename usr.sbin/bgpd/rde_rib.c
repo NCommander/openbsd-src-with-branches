@@ -1,4 +1,4 @@
-/*	$OpenBSD: rde_rib.c,v 1.24 2004/01/13 16:08:04 claudio Exp $ */
+/*	$OpenBSD: rde_rib.c,v 1.25 2004/01/17 19:35:36 claudio Exp $ */
 
 /*
  * Copyright (c) 2003, 2004 Claudio Jeker <claudio@openbsd.org>
@@ -909,7 +909,7 @@ prefix_destroy(struct prefix *p)
 
 /*
  * helper function to clean up the connected networks after a reload
- */ 
+ */
 void
 prefix_network_clean(struct rde_peer *peer, time_t reloadtime)
 {
