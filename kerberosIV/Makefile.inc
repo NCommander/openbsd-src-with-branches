@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile.inc,v 1.4 1996/11/11 04:42:26 downsj Exp $
+#	$OpenBSD: Makefile.inc,v 1.5 1996/11/11 05:35:13 downsj Exp $
 
 CFLAGS+=-I${.CURDIR}/../include
 BINDIR?=/usr/sbin
@@ -20,5 +20,3 @@ COM_ERR=	-lcom_err_pic
 .else
 COM_ERR=	-lcom_err
 .endif
-
-COMPILE_ET?=	/usr/libexec/compile_et
