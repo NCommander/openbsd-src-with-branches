@@ -1,4 +1,4 @@
-/*	$OpenBSD: misc.c,v 1.6 2003/06/03 03:01:40 millert Exp $	*/
+/*	$OpenBSD: misc.c,v 1.7 2003/11/21 13:11:15 otto Exp $	*/
 /*	$NetBSD: misc.c,v 1.4 1995/03/23 08:34:47 cgd Exp $	*/
 
 /*
@@ -34,7 +34,7 @@
 #if 0
 static char sccsid[] = "@(#)misc.c	8.1 (Berkeley) 5/31/93";
 #else
-static const char rcsid[] = "$OpenBSD: misc.c,v 1.6 2003/06/03 03:01:40 millert Exp $";
+static const char rcsid[] = "$OpenBSD: misc.c,v 1.7 2003/11/21 13:11:15 otto Exp $";
 #endif
 #endif /* not lint */
 
@@ -202,7 +202,7 @@ set_ownlist(pl)
 #endif
 			}
 #ifdef DEBUG
-			printf("num = %d\n");
+			printf("num = %d\n", num);
 #endif
 			if (orig == 0) {
 				printf("panic:  bad monopoly descriptor: orig = %p\n", orig);
