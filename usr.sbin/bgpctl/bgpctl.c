@@ -1,4 +1,4 @@
-/*	$OpenBSD: bgpctl.c,v 1.42 2004/02/26 16:19:58 claudio Exp $ */
+/*	$OpenBSD: bgpctl.c,v 1.43 2004/03/02 19:32:43 claudio Exp $ */
 
 /*
  * Copyright (c) 2003 Henning Brauer <henning@openbsd.org>
@@ -243,8 +243,8 @@ main(int argc, char *argv[])
 void
 show_summary_head(void)
 {
-	printf("%-15s %-5s %-10s %-10s %-5s %-8s %s\n", "Neighbor", "AS", "MsgRcvd",
-	    "MsgSent", "OutQ", "Up/Down", "State");
+	printf("%-15s %-5s %-10s %-10s %-5s %-8s %s\n", "Neighbor", "AS",
+	    "MsgRcvd", "MsgSent", "OutQ", "Up/Down", "State");
 }
 
 int
