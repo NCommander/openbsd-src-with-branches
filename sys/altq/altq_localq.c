@@ -1,4 +1,4 @@
-/*	$OpenBSD: altq_localq.c,v 1.2 2001/08/09 14:32:59 deraadt Exp $	*/
+/*	$OpenBSD: altq_localq.c,v 1.3 2001/08/16 13:05:24 kjc Exp $	*/
 /*	$KAME: altq_localq.c,v 1.4 2001/08/16 11:28:25 kjc Exp $	*/
 /*
  * a skeleton file for implementing a new queueing discipline.
@@ -51,7 +51,7 @@ localqioctl(dev, cmd, addr, flag, p)
 	struct proc *p;
 {
 	int error = 0;
-	
+
 	return error;
 }
 
