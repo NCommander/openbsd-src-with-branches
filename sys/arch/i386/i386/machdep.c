@@ -1,4 +1,4 @@
-/*	$OpenBSD: machdep.c,v 1.294 2004/05/23 20:28:46 tedu Exp $	*/
+/*	$OpenBSD: machdep.c,v 1.295 2004/06/06 17:34:37 grange Exp $	*/
 /*	$NetBSD: machdep.c,v 1.214 1996/11/10 03:16:17 thorpej Exp $	*/
 
 /*-
@@ -1392,7 +1392,6 @@ intel686_cpu_setup(const char *cpu_device, int model, int step)
 #if !defined(SMALL_KERNEL) && defined(I686_CPU)
 	p3_step = step;
 	update_cpuspeed = p3_update_cpuspeed;
-	update_cpuspeed();
 #endif
 }
 
@@ -1404,7 +1403,6 @@ intel686_p4_cpu_setup(const char *cpu_device, int model, int step)
 #if !defined(SMALL_KERNEL) && defined(I686_CPU)
 	p4_model = model;
 	update_cpuspeed = p4_update_cpuspeed;
-	update_cpuspeed();
 #endif
 }
 
