@@ -1,14 +1,10 @@
-#     $OpenBSD: BSD.x11.dist,v 1.1 1997/09/21 10:38:52 niklas Exp $
+#     $OpenBSD: BSD.x11.dist,v 1.2 1997/09/25 00:32:10 deraadt Exp $
 #     $FreeBSD: BSD.x11.dist,v 1.2 1997/06/10 07:55:10 asami Exp $
 #
 
 /set type=dir uname=root gname=wheel mode=0755
 .
     bin
-    ..
-    etc
-        rc.d
-        ..
     ..
     include
         X11
