@@ -11,7 +11,7 @@
  * called by a name other than "ssh" or "Secure Shell".
  *
  * SSH2 implementation,
- * Copyright (c) 2000 Markus Friedl. All rights reserved.
+ * Copyright (c) 2000 Markus Friedl.  All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -35,7 +35,7 @@
  */
 
 #include "includes.h"
-RCSID("$OpenBSD: ssh-add.c,v 1.27 2001/01/21 19:05:56 markus Exp $");
+RCSID("$OpenBSD: ssh-add.c,v 1.28 2001/02/04 15:32:25 stevesk Exp $");
 
 #include <openssl/evp.h>
 

@@ -14,8 +14,8 @@
  * called by a name other than "ssh" or "Secure Shell".
  */
 /*
- * Copyright (c) 1999 Theo de Raadt. All rights reserved.
- * Copyright (c) 1999 Aaron Campbell. All rights reserved.
+ * Copyright (c) 1999 Theo de Raadt.  All rights reserved.
+ * Copyright (c) 1999 Aaron Campbell.  All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -75,7 +75,7 @@
  */
 
 #include "includes.h"
-RCSID("$OpenBSD: scp.c,v 1.58 2001/02/10 15:14:11 danh Exp $");
+RCSID("$OpenBSD: scp.c,v 1.59 2001/02/19 10:36:25 deraadt Exp $");
 
 #include "xmalloc.h"
 #include "atomicio.h"

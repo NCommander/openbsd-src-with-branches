@@ -9,7 +9,7 @@
  * called by a name other than "ssh" or "Secure Shell".
  *
  * SSH2 support by Markus Friedl.
- * Copyright (c) 2000 Markus Friedl. All rights reserved.
+ * Copyright (c) 2000 Markus Friedl.  All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -33,7 +33,7 @@
  */
 
 #include "includes.h"
-RCSID("$OpenBSD: session.c,v 1.56 2001/02/16 14:03:43 markus Exp $");
+RCSID("$OpenBSD: session.c,v 1.57 2001/02/23 15:37:45 markus Exp $");
 
 #include "ssh.h"
 #include "ssh1.h"

@@ -1,4 +1,4 @@
-/*	$OpenBSD: ssh-agent.c,v 1.49 2001/01/29 19:47:31 markus Exp $	*/
+/*	$OpenBSD: ssh-agent.c,v 1.50 2001/02/08 19:30:52 itojun Exp $	*/
 
 /*
  * Author: Tatu Ylonen <ylo@cs.hut.fi>
@@ -13,7 +13,7 @@
  * called by a name other than "ssh" or "Secure Shell".
  *
  * SSH2 implementation,
- * Copyright (c) 2000 Markus Friedl. All rights reserved.
+ * Copyright (c) 2000 Markus Friedl.  All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -37,7 +37,7 @@
  */
 
 #include "includes.h"
-RCSID("$OpenBSD: ssh-agent.c,v 1.49 2001/01/29 19:47:31 markus Exp $");
+RCSID("$OpenBSD: ssh-agent.c,v 1.50 2001/02/08 19:30:52 itojun Exp $");
 
 #include <openssl/evp.h>
 #include <openssl/md5.h>
