@@ -1,4 +1,6 @@
-#csh login file
+# $OpenBSD$
+#
+# csh login file
 
 if ( ! $?TERMCAP ) then
 	tset -Q  '-mdialup:?vt100' $TERM
