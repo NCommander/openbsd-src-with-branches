@@ -1,7 +1,5 @@
-.\"	$OpenBSD: cgthree.4,v 1.12 2004/06/20 20:53:28 miod Exp $
-.\"
-.\" Copyright (c) 2001 Jason L. Wright (jason@thought.net)
-.\" All rights reserved.
+.\"	$OpenBSD: mgx.4,v 1.4 2004/02/29 21:44:07 miod Exp $
+.\" Copyright (c) 2003 Miodrag Vallat.  All rights reserved.
 .\"
 .\" Redistribution and use in source and binary forms, with or without
 .\" modification, are permitted provided that the following conditions
@@ -24,19 +22,21 @@
 .\" ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 .\" POSSIBILITY OF SUCH DAMAGE.
 .\"
-.Dd January 5, 2003
-.Dt CGTHREE 4 sparc64
+.Dd June 20, 2004
+.Dt MGX 4 sparc64
 .Os
 .Sh NAME
-.Nm cgthree
-.Nd 8-bit color frame buffer
+.Nm mgx
+.Nd SMS MGX and MGXPlus accelerated 24-bit color frame buffers
 .Sh SYNOPSIS
-.Cd "cgthree* at sbus? slot ? offset ?"
-.Cd "wsdisplay* at cgthree?"
+.Cd "mgx* at sbus? slot ? offset ?"
+.Cd "wsdisplay* at mgx?"
 .Sh DESCRIPTION
 The
-.Nm
-is an SBus color frame buffer.
+.Tn Southland Media Systems
+.Pq now Tn "Quantum 3D"
+MGX and MGXPlus are SBus color frame buffers, with graphics acceleration
+capabilities.
 .Pp
 The
 .Nm
@@ -47,61 +47,18 @@ It does not provide direct device driver entry points
 but makes its functions available via the internal
 .Xr wsdisplay 4
 interface.
-.Sh DISPLAY RESOLUTION
-If the
-.Nm
-frame buffer is used as the console display, it is possible, for some models,
-to select a different resolution than the default 1152x900 or 1024x768
-by changing the OpenPROM environment.
-To change the default resolution, type the following:
-.Pp
-.Em \   ok
-setenv
-.Em output-device
-screen:r1152x1024x66
-.Pp
-to change to a 66Hz 1280x1024 resolution.
-.Pp
-If the
-.Nm
-frame buffer is a secondary display, or a serial console is used, the
-display resolution can not be changed without using an
-.Em nvramrc
-OpenPROM script.
-Refer to the
-.Em Sun Frame Buffer FAQ
-for details.
-.Pp
-The
-.Nm
-frame buffer accepts the following resolutions:
-.Pp
-.Bl -tag -width screen:r1280x1024x76 -compact
-.It screen:r1024x768x77
-Super VGA 1024x768, with a refresh rate of 77Hz.
-This is the default setting on model 501-2691.
-.It screen:r1152x900x66
-Standard 1152x900, with a refresh rate of 66Hz.
-This is the default setting on older models (501-1415 and 501-8044).
-.It screen:r1152x900x76
-Standard 1152x900, with a refresh rate of 76Hz.
-This is the default setting on more recent models (501-1718 and 501-1909).
-.El
-.Pp
-Note that not all models support settings other than their default setting.
 .Sh SEE ALSO
 .Xr bwtwo 4 ,
 .Xr cgsix 4 ,
+.Xr cgthree 4 ,
 .Xr creator 4 ,
 .Xr intro 4 ,
-.Xr mgx 4 ,
 .Xr rfx 4 ,
 .Xr sbus 4 ,
 .Xr vgafb 4 ,
 .Xr wscons 4 ,
 .Xr wsdisplay 4 ,
 .Xr zx 4
-.Rs
-.%T Sun Frame Buffer FAQ
-.%O http://www.sunhelp.org/faq/FrameBuffer.html
-.Re
+.Sh CAVEATS
+This driver does not support any acceleration features at the moment, and
+drives the card in PROM-compatible, 8 bit, mode only.
