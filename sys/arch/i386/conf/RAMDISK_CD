@@ -1,4 +1,4 @@
-#	$OpenBSD: RAMDISK_CD,v 1.88 2005/02/19 02:37:32 brad Exp $
+#	$OpenBSD: RAMDISK_CD,v 1.89 2005/03/16 19:41:49 deraadt Exp $
 
 machine		i386		# architecture, used by config; REQUIRED
 
@@ -131,7 +131,7 @@ wi*	at uhub?		# WaveLAN IEEE 802.11DS
 #scsibus* at usscanner?
 #uyap*	at uhub?		# Y@P firmware loader
 #ugen*	at uhub?		# USB Generic driver
-#ral*	at uhub?		# Ralink
+ural*	at uhub?		# Ralink
 
 npx0	at isa? port 0xf0 irq 13	# math coprocessor
 isadma0	at isa?
