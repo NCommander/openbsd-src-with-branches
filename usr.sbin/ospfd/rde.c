@@ -1,4 +1,4 @@
-/*	$OpenBSD: rde.c,v 1.2 2005/01/28 17:53:33 norby Exp $ */
+/*	$OpenBSD: rde.c,v 1.3 2005/02/02 19:15:07 henning Exp $ */
 
 /*
  * Copyright (c) 2004, 2005 Claudio Jeker <claudio@openbsd.org>
@@ -350,6 +350,11 @@ rde_dispatch_imsg(int fd, short event, void *bula)
 				db_hdr = NULL;
 			else
 				db_hdr = &v->lsa->hdr;
+
+			if (nbr->self) {
+				lsa_merge(nbr, lsa, v);
+				break;
+			}
 
 			r = lsa_newer(&lsa->hdr, db_hdr);
 			if (r > 0) {
