@@ -1,6 +1,6 @@
-#	$OpenBSD: Makefile,v 1.1.1.2 2000/06/13 03:39:53 rahnds Exp $
+#	$OpenBSD: Makefile,v 1.2 2000/09/08 04:23:45 rahnds Exp $
 
-SUBDIR=libdl ldconfig
+SUBDIR=libdl ldconfig ldd
 #CFLAGS =
 .if (${MACHINE_ARCH} == "powerpc")
 CFLAGS += -fpic -msoft-float
