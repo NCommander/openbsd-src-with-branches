@@ -11,7 +11,7 @@
  * called by a name other than "ssh" or "Secure Shell".
  */
 
-/* RCSID("$OpenBSD: servconf.h,v 1.49 2001/08/17 18:59:47 stevesk Exp $"); */
+/* RCSID("$OpenBSD: servconf.h,v 1.50 2001/12/06 13:30:05 markus Exp $"); */
 
 #ifndef SERVCONF_H
 #define SERVCONF_H
@@ -117,13 +117,13 @@ typedef struct {
 	char   *banner;			/* SSH-2 banner message */
 	int	reverse_mapping_check;	/* cross-check ip and dns */
 	int	client_alive_interval;	/*
-					 * poke the client this often to 
-					 * see if it's still there 
+					 * poke the client this often to
+					 * see if it's still there
 					 */
 	int	client_alive_count_max;	/*
 					 * If the client is unresponsive
 					 * for this many intervals above,
-					 * disconnect the session 
+					 * disconnect the session
 					 */
 
 	char   *authorized_keys_file;	/* File containing public keys */

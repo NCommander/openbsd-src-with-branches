@@ -21,7 +21,7 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
- * $OpenBSD: auth.h,v 1.23 2001/12/09 18:45:56 markus Exp $
+ * $OpenBSD: auth.h,v 1.24 2001/12/18 10:04:21 jakob Exp $
  */
 #ifndef AUTH_H
 #define AUTH_H
@@ -71,8 +71,8 @@ struct Authctxt {
 
 /*
  * Keyboard interactive device:
- * init_ctx	returns: non NULL upon success 
- * query	returns: 0 - success, otherwise failure 
+ * init_ctx	returns: non NULL upon success
+ * query	returns: 0 - success, otherwise failure
  * respond	returns: 0 - success, 1 - need further interaction,
  *		otherwise - failure
  */

@@ -24,7 +24,7 @@
 
 #include "includes.h"
 
-RCSID("$OpenBSD: sftp.c,v 1.20 2001/09/17 20:38:09 stevesk Exp $");
+RCSID("$OpenBSD: sftp.c,v 1.21 2001/09/19 19:24:19 stevesk Exp $");
 
 /* XXX: commandline mode */
 /* XXX: short-form remote directory listings (like 'ls -C') */
@@ -107,7 +107,7 @@ main(int argc, char **argv)
 	extern char *optarg;
 
 	args.list = NULL;
-	addargs(&args, "ssh");         /* overwritten with ssh_program */
+	addargs(&args, "ssh");		/* overwritten with ssh_program */
 	addargs(&args, "-oFallBackToRsh no");
 	addargs(&args, "-oForwardX11 no");
 	addargs(&args, "-oForwardAgent no");
@@ -188,7 +188,7 @@ main(int argc, char **argv)
 	addargs(&args, "-oProtocol %d", sshver);
 
 	/* no subsystem if the server-spec contains a '/' */
-	if (sftp_server == NULL || strchr(sftp_server, '/') == NULL) 
+	if (sftp_server == NULL || strchr(sftp_server, '/') == NULL)
 		addargs(&args, "-s");
 
 	addargs(&args, "%s", host);
