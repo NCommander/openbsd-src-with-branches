@@ -1,4 +1,4 @@
-/*	$OpenBSD: telnetd.c,v 1.13 1998/07/23 17:55:54 deraadt Exp $	*/
+/*	$OpenBSD: telnetd.c,v 1.14 1998/07/27 18:28:20 millert Exp $	*/
 /*	$NetBSD: telnetd.c,v 1.6 1996/03/20 04:25:57 tls Exp $	*/
 
 /*
@@ -45,7 +45,7 @@ static char copyright[] =
 static char sccsid[] = "@(#)telnetd.c	8.4 (Berkeley) 5/30/95";
 static char rcsid[] = "$NetBSD: telnetd.c,v 1.5 1996/02/28 20:38:23 thorpej Exp $";
 #else
-static char rcsid[] = "$OpenBSD: telnetd.c,v 1.13 1998/07/23 17:55:54 deraadt Exp $";
+static char rcsid[] = "$OpenBSD: telnetd.c,v 1.14 1998/07/27 18:28:20 millert Exp $";
 #endif
 #endif /* not lint */
 
@@ -1135,13 +1135,12 @@ telnet(f, p, host)
 		hostinfo = 0;
 #endif
 
-	if (getent(defent, gettyname) == 1) {
-		char *getstr();
+	if (gtgetent(defent, gettyname) == 1) {
 		char *cp=defstrs;
 
-		HE = getstr("he", &cp);
-		HN = getstr("hn", &cp);
-		IM = getstr("im", &cp);
+		HE = gtgetstr("he", &cp);
+		HN = gtgetstr("hn", &cp);
+		IM = gtgetstr("im", &cp);
 		if (HN && *HN) {
 			strncpy(host_name, HN, sizeof host_name - 1);
 			host_name[sizeof host_name -1] = '\0';

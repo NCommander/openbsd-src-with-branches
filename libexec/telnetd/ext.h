@@ -1,4 +1,4 @@
-/*	$OpenBSD: ext.h,v 1.6 1998/05/08 19:37:45 deraadt Exp $	*/
+/*	$OpenBSD: ext.h,v 1.7 1998/07/23 17:55:50 deraadt Exp $	*/
 /*	$NetBSD: ext.h,v 1.6 1996/02/28 20:38:13 thorpej Exp $	*/
 
 /*
@@ -148,9 +148,12 @@ extern void
 	tty_binaryin P((int)),
 	tty_binaryout P((int));
 
+extern char*
+	gtgetstr P((char  *, char **));
+
 extern int
 	end_slc P((unsigned char **)),
-	getent P((char *, char *)),
+	gtgetent P((char *, char *)),
 	getnpty P((void)),
 #ifndef convex
 	getpty P((int *)),
