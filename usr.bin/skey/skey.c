@@ -1,4 +1,4 @@
-/*	$OpenBSD: skey.c,v 1.16 2001/12/28 17:32:04 millert Exp $	*/
+/*	$OpenBSD: skey.c,v 1.17 2002/02/16 21:27:52 millert Exp $	*/
 /*
  * OpenBSD S/Key (skey.c)
  *
@@ -118,7 +118,7 @@ main(argc, argv)
 
 	/* Get user's secret password */
 	if (!pass) {
-		(void)fputs("Reminder - Do not use this program while logged in via telnet or rlogin.\n", stderr);
+		(void)fputs("Reminder - Do not use this program while logged in via telnet.\n", stderr);
 		(void)fputs("Enter secret password: ", stderr);
 		readpass(passwd, sizeof(passwd));
 		if (passwd[0] == '\0') 
