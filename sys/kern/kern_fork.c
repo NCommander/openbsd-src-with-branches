@@ -1,4 +1,4 @@
-/*	$OpenBSD: kern_fork.c,v 1.14 1999/02/19 19:21:42 art Exp $	*/
+/*	$OpenBSD: kern_fork.c,v 1.15 1999/02/23 18:17:19 art Exp $	*/
 /*	$NetBSD: kern_fork.c,v 1.29 1996/02/09 18:59:34 christos Exp $	*/
 
 /*
@@ -134,7 +134,7 @@ fork1(p1, forktype, rforkflags, retval)
 	 * processes, maxproc is the limit.
 	 */
 	uid = p1->p_cred->p_ruid;
-	if ((nprocs >= maxproc - 1 && uid != 0) || nprocs >= maxproc) {
+	if ((nprocs >= maxproc - 5 && uid != 0) || nprocs >= maxproc) {
 		tablefull("proc");
 		return (EAGAIN);
 	}
