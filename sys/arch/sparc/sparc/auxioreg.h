@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /*	$NetBSD: auxreg.h,v 1.7 1997/05/17 17:52:52 pk Exp $ */
 
 /*
