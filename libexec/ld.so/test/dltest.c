@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: dltest.c,v 1.2 2001/01/28 19:34:29 niklas Exp $	*/
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -8,8 +8,8 @@
 #include <elf_abi.h>
 #include <machine/reloc.h>
 #include <nlist.h>
-#include "../powerpc/archdep.h"
-#include "../resolve.h"
+#include "archdep.h"
+#include "resolve.h"
 
 typedef void (*func_t)(const char *);
 
