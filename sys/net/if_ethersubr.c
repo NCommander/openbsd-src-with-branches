@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_ethersubr.c,v 1.59 2001/11/30 07:59:17 itojun Exp $	*/
+/*	$OpenBSD: if_ethersubr.c,v 1.60 2001/12/09 13:09:13 jason Exp $	*/
 /*	$NetBSD: if_ethersubr.c,v 1.19 1996/05/07 02:40:30 thorpej Exp $	*/
 
 /*
@@ -652,8 +652,10 @@ altq_etherclassify(struct ifaltq *ifq, struct mbuf *m,
 		 * now (but it shouldn't ever happen, really, anyhow).
 		 * XXX Should use m_pulldown().
 		 */
+#ifdef DEBUG
 		printf("altq_etherclassify: headers span multiple mbufs: "
 		    "%d < %d\n", m->m_len, (hlen + hdrsize));
+#endif
 		goto bad;
 	}
 
