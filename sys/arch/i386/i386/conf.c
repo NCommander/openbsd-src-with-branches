@@ -1,4 +1,4 @@
-/*	$OpenBSD: conf.c,v 1.83 2001/12/05 23:58:41 tdeval Exp $	*/
+/*	$OpenBSD: conf.c,v 1.84 2001/12/11 23:19:02 miod Exp $	*/
 /*	$NetBSD: conf.c,v 1.75 1996/05/03 19:40:20 christos Exp $	*/
 
 /*
@@ -509,6 +509,7 @@ dev_rawpart(dv)
 		return (MAKEDISKDEV(majdev, dv->dv_unit, RAW_PART));
 		break;
 	default:
+		;
 	}
 
 	return (NODEV);

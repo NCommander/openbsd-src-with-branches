@@ -1,4 +1,4 @@
-/*	$OpenBSD: ubsec.c,v 1.75 2001/11/20 20:19:26 jason Exp $	*/
+/*	$OpenBSD: ubsec.c,v 1.76 2001/12/07 18:08:20 jason Exp $	*/
 
 /*
  * Copyright (c) 2000 Jason L. Wright (jason@thought.net)
@@ -240,6 +240,7 @@ ubsec_attach(parent, self, aux)
 		timeout_add(&sc->sc_rngto, sc->sc_rnghz);
 		printf(", rng");
 skip_rng:
+	;
 	}
 
 	WRITE_REG(sc, BS_CTRL,
