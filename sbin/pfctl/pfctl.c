@@ -1,4 +1,4 @@
-/*	$OpenBSD: pfctl.c,v 1.12 2001/06/26 00:18:30 jasoni Exp $ */
+/*	$OpenBSD: pfctl.c,v 1.13 2001/06/26 17:46:02 deraadt Exp $ */
 
 /*
  * Copyright (c) 2001, Daniel Hartmeier
@@ -199,7 +199,6 @@ pfctl_show_rules(int dev)
 			errx(1, "DIOCGETRULE");
 			return (1);
 		}
-		printf("@%u ", nr + 1);
 		print_rule(&pr.rule);
 	}
 	return (0);
