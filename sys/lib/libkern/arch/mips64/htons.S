@@ -1,4 +1,4 @@
-/*	$OpenBSD: htons.S,v 1.1 2004/08/11 10:29:59 pefo Exp $	*/
+/*	$OpenBSD: htons.S,v 1.2 2004/08/13 13:07:24 pefo Exp $	*/
 /*-
  * Copyright (c) 1991, 1993
  *      The Regents of the University of California.  All rights reserved.
@@ -38,7 +38,7 @@
  * netorder = htons(hostorder)
  * hostorder = ntohs(netorder)
  */
-LEAF(htons)
+LEAF(htons, 0)
 ALEAF(ntohs)
 	.set	noreorder
 	srl	v0, a0, 8

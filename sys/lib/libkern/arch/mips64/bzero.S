@@ -1,4 +1,4 @@
-/*	$OpenBSD: bzero.S,v 1.1 2004/08/11 10:29:59 pefo Exp $	*/
+/*	$OpenBSD: bzero.S,v 1.2 2004/08/13 13:07:24 pefo Exp $	*/
 /*-
  * Copyright (c) 1991, 1993
  *      The Regents of the University of California.  All rights reserved.
@@ -38,7 +38,7 @@
 /*
  * bzero(s1, n)
  */
-LEAF(bzero)
+LEAF(bzero, 0)
 ALEAF(blkclr)
 	.set	noreorder
 	blt	a1, 12, smallclr	# small amount to clear?

@@ -1,4 +1,4 @@
-/*	$OpenBSD: bcopy.S,v 1.1 2004/08/11 10:29:59 pefo Exp $	*/
+/*	$OpenBSD: bcopy.S,v 1.2 2004/08/13 13:07:24 pefo Exp $	*/
 /*-
  * Copyright (c) 1991, 1993
  *      The Regents of the University of California.  All rights reserved.
@@ -38,7 +38,7 @@
  * memcpy(to, from, len)
  * {ov}bcopy(from, to, len)
  */
-LEAF(memcpy)
+LEAF(memcpy, 0)
 	.set	noreorder
 	move	v0, a0			# swap from and to
 	move	a0, a1
