@@ -1,4 +1,4 @@
-/*	$OpenBSD: ndbm.c,v 1.12 2000/08/01 21:26:10 millert Exp $	*/
+/*	$OpenBSD: ndbm.c,v 1.13 2002/02/16 21:27:22 millert Exp $	*/
 
 /*-
  * Copyright (c) 1990, 1993
@@ -40,7 +40,7 @@
 #if 0
 static char sccsid[] = "@(#)dbm.c	8.6 (Berkeley) 11/7/95";
 #else
-static char rcsid[] = "$OpenBSD: ndbm.c,v 1.12 2000/08/01 21:26:10 millert Exp $";
+static char rcsid[] = "$OpenBSD: ndbm.c,v 1.13 2002/02/16 21:27:22 millert Exp $";
 #endif
 #endif /* LIBC_SCCS and not lint */
 
@@ -215,8 +215,7 @@ _dbm_open(file, suff, flags, mode)
 	info.cachesize = 0;
 	info.hash = NULL;
 	info.lorder = 0;
-	(void)strcpy(path, file);
-	(void)strcat(path, suff);
+	snprintf(path, sizeof path, "%s%s", file, suff);
 	return ((DBM *)__hash_open(path, flags, mode, &info, 0));
 }
 
