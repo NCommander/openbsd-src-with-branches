@@ -1,4 +1,4 @@
-/*	$OpenBSD: tcp_output.c,v 1.66 2004/04/26 18:12:25 frantzen Exp $	*/
+/*	$OpenBSD: tcp_output.c,v 1.67 2004/05/07 14:42:27 millert Exp $	*/
 /*	$NetBSD: tcp_output.c,v 1.16 1997/06/03 16:17:09 kml Exp $	*/
 
 /*
@@ -868,8 +868,8 @@ send:
 		win = 0;
 	if (win > (long)TCP_MAXWIN << tp->rcv_scale)
 		win = (long)TCP_MAXWIN << tp->rcv_scale;
-	if (win < (long)(tp->rcv_adv - tp->rcv_nxt))
-		win = (long)(tp->rcv_adv - tp->rcv_nxt);
+	if (win < (long)(int32_t)(tp->rcv_adv - tp->rcv_nxt))
+		win = (long)(int32_t)(tp->rcv_adv - tp->rcv_nxt);
 	if (flags & TH_RST)
 		win = 0;
 	th->th_win = htons((u_int16_t) (win>>tp->rcv_scale));
