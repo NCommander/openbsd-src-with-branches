@@ -1,4 +1,4 @@
-/*	$OpenBSD: test_cancel.c,v 1.2 1999/03/10 09:23:55 d Exp $	*/
+/*	$OpenBSD: test_cancel.c,v 1.3 1999/05/26 00:08:02 d Exp $	*/
 /* David Leonard <d@openbsd.org>, 1999. Public Domain. */
 
 #include <pthread.h>
@@ -159,7 +159,7 @@ main()
 	CHECKr(pthread_cancel(child1));
 	p();
 
-	/* Give thread 2 a change to go through its deferred loop once */
+	/* Give thread 2 a chance to go through its deferred loop once */
 	sleep(2);
 	CHECKr(pthread_cancel(child2));
 	p();
