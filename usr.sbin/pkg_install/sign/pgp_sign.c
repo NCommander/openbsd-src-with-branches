@@ -1,4 +1,4 @@
-/* $OpenBSD: pgp_sign.c,v 1.3 2003/04/14 22:24:00 pvalchev Exp $ */
+/* $OpenBSD: pgp_sign.c,v 1.4 2003/06/04 04:29:03 deraadt Exp $ */
 /*-
  * Copyright (c) 1999 Marc Espie.
  *
@@ -104,7 +104,7 @@ retrieve_pgp_signature(filename, sign, userid, envp)
 	if (orig == NULL)
 		return 0;
 	if (gzip_read_header(orig, &h, &old) == GZIP_NOT_GZIP) {
-		pwarnx("File %s is not a gzip file\n", filename);
+		pwarnx("File %s is not a gzip file", filename);
 		fclose(orig);
 		return 0;
 	}
