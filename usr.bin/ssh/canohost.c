@@ -12,7 +12,7 @@
  */
 
 #include "includes.h"
-RCSID("$OpenBSD: canohost.c,v 1.39 2004/03/31 21:58:47 djm Exp $");
+RCSID("$OpenBSD: canohost.c,v 1.40 2004/06/21 17:36:31 avsm Exp $");
 
 #include "packet.h"
 #include "xmalloc.h"
@@ -339,7 +339,13 @@ get_peer_port(int sock)
 int
 get_remote_port(void)
 {
-	return get_port(0);
+	static int port = -1;
+
+	/* Cache to avoid getpeername() on a dead connection */
+	if (port == -1)
+		port = get_port(0);
+
+	return port;
 }
 
 int
