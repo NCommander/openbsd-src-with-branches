@@ -56,4 +56,4 @@ struct	swdevt swdevt[] = {
         { NODEV, 0, 0 }
 };
 
-int (*mountroot) __P((void)) = nfs_mountroot;
+int (*mountroot)(void) = nfs_mountroot;

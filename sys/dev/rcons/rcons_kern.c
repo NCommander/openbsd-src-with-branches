@@ -1,4 +1,4 @@
-/*	$OpenBSD: rcons_kern.c,v 1.3.16.1 2001/05/14 22:26:16 niklas Exp $ */
+/*	$OpenBSD$ */
 /*	$NetBSD: rcons_kern.c,v 1.4 1996/03/14 19:02:33 christos Exp $ */
 
 /*
@@ -62,7 +62,7 @@ static void rcons_belltmr(void *);
 #include "rcons_subr.h"
 
 static struct rconsole *mydevicep;
-static void rcons_output __P((struct tty *));
+static void rcons_output(struct tty *);
 
 void
 rcons_cnputc(c)

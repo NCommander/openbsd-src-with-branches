@@ -1,4 +1,4 @@
-/*	$OpenBSD: qdivrem.c,v 1.2 1997/11/07 15:56:48 niklas Exp $	*/
+/*	$OpenBSD$	*/
 /*	$NetBSD: qdivrem.c,v 1.5 1995/10/07 09:26:40 mycroft Exp $	*/
 
 /*-
@@ -42,7 +42,7 @@
 #ifdef notdef
 static char sccsid[] = "@(#)qdivrem.c	8.1 (Berkeley) 6/4/93";
 #endif
-static char rcsid[] = "$OpenBSD: qdivrem.c,v 1.2 1997/11/07 15:56:48 niklas Exp $";
+static char rcsid[] = "$OpenBSD$";
 #endif /* LIBC_SCCS and not lint */
 
 /*
@@ -64,7 +64,7 @@ typedef unsigned short digit;
 typedef u_long digit;
 #endif
 
-static void shl __P((digit *p, int len, int sh));
+static void shl(digit *p, int len, int sh);
 
 /*
  * __qdivrem(u, v, rem) returns u/v and, optionally, sets *rem to u%v.

@@ -1,4 +1,4 @@
-/*	$OpenBSD: ufs.c,v 1.11 1997/04/02 05:28:30 mickey Exp $	*/
+/*	$OpenBSD$	*/
 /*	$NetBSD: ufs.c,v 1.16 1996/09/30 16:01:22 ws Exp $	*/
 
 /*-
@@ -97,12 +97,12 @@ struct file {
 	daddr_t		f_buf_blkno;	/* block number of data block */
 };
 
-static int	read_inode __P((ino_t, struct open_file *));
-static int	block_map __P((struct open_file *, daddr_t, daddr_t *));
-static int	buf_read_file __P((struct open_file *, char **, size_t *));
-static int	search_directory __P((char *, struct open_file *, ino_t *));
+static int	read_inode(ino_t, struct open_file *);
+static int	block_map(struct open_file *, daddr_t, daddr_t *);
+static int	buf_read_file(struct open_file *, char **, size_t *);
+static int	search_directory(char *, struct open_file *, ino_t *);
 #ifdef COMPAT_UFS
-static void	ffs_oldfscompat __P((struct fs *));
+static void	ffs_oldfscompat(struct fs *);
 #endif
 
 /*

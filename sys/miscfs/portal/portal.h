@@ -70,6 +70,6 @@ struct portalnode {
 
 #define PORTAL_ROOTFILEID	2
 
-extern int (**portal_vnodeop_p) __P((void *));
+extern int (**portal_vnodeop_p)(void *);
 extern struct vfsops portal_vfsops;
 #endif /* _KERNEL */

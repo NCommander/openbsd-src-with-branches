@@ -118,7 +118,7 @@ nfs_nget(mntp, fhp, fhsize, npp)
 	struct nfsnode *np;
 	struct nfsnodehashhead *nhpp;
 	struct vnode *vp;
-	extern int (**nfsv2_vnodeop_p)__P((void *));
+	extern int (**nfsv2_vnodeop_p)(void *);
 	struct vnode *nvp;
 	int error;
 

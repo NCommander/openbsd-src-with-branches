@@ -1,4 +1,4 @@
-/*	$OpenBSD: cread.c,v 1.7 1999/01/25 19:28:38 mickey Exp $	*/
+/*	$OpenBSD$	*/
 /*	$NetBSD: cread.c,v 1.2 1997/02/04 18:38:20 thorpej Exp $	*/
 
 /*
@@ -210,7 +210,7 @@ open(fname, mode)
 #endif
 	      goto errout;
 
-	  s->stream.next_in  = s->inbuf = (unsigned char*)alloc(Z_BUFSIZE);
+	  s->stream.next_in  = s->inbuf = (unsigned char *)alloc(Z_BUFSIZE);
 	  if(!s->inbuf) {
 	      inflateEnd(&(s->stream));
 	      goto errout;

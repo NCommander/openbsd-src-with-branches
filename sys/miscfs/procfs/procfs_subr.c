@@ -223,11 +223,13 @@ procfs_rw(v)
 	case Pnotepg:
 		return (procfs_donote(curp, p, pfs, uio));
 
+#ifdef PTRACE
 	case Pregs:
 		return (procfs_doregs(curp, p, pfs, uio));
 
 	case Pfpregs:
 		return (procfs_dofpregs(curp, p, pfs, uio));
+#endif
 
 	case Pctl:
 		return (procfs_doctl(curp, p, pfs, uio));

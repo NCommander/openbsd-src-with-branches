@@ -79,12 +79,12 @@
 #include <nfs/nfsrtt.h>
 #include <nfs/nfs_var.h>
 
-void	nfsrv_zapsock	__P((struct nfssvc_sock *));
+void	nfsrv_zapsock(struct nfssvc_sock *);
 
 /* Global defs. */
-extern int32_t (*nfsrv3_procs[NFS_NPROCS]) __P((struct nfsrv_descript *,
+extern int32_t (*nfsrv3_procs[NFS_NPROCS])(struct nfsrv_descript *,
 						struct nfssvc_sock *,
-						struct proc *, struct mbuf **));
+						struct proc *, struct mbuf **);
 extern struct proc *nfs_iodwant[NFS_MAXASYNCDAEMON];
 extern int nfs_numasync;
 extern int nfsrtton;
@@ -107,7 +107,7 @@ int nfs_niothreads = -1;
 #endif
 
 #ifdef NFSSERVER
-static void nfsd_rt __P((int, struct nfsrv_descript *, int));
+static void nfsd_rt(int, struct nfsrv_descript *, int);
 #endif
 
 int nfs_clientd(struct nfsmount *nmp, struct ucred *cred, 

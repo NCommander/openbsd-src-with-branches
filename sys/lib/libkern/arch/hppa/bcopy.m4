@@ -210,12 +210,10 @@ ALTENTRY(memmove)
 	copy	arg0, t1
 	copy	arg1, arg0
 	copy	t1, arg1
+	copy	arg0, ret0
 ALTENTRY(ovbcopy)
 ALTENTRY(bcopy)
-ALTENTRY(mycopy)
-	add	arg0, arg2, t1
-	sub,>>=	arg0, arg1, r0
-	comb,>,n t1, arg1, L(bcopy, reverse)
+	comb,>,n arg1, arg0, L(bcopy, reverse)
 	hppa_copy(bcopy_f, sr0, arg0, sr0, arg1, arg2, `+')
 	b,n	L(bcopy, ret)
 L(bcopy, reverse)

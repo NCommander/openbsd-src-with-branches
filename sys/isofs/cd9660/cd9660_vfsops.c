@@ -86,10 +86,10 @@ struct vfsops cd9660_vfsops = {
  * Called by vfs_mountroot when iso is going to be mounted as root.
  */
 
-static	int iso_mountfs __P((struct vnode *devvp, struct mount *mp,
-    struct proc *p, struct iso_args *argp));
-int	iso_disklabelspoof __P((dev_t dev, void (*strat) __P((struct buf *)),
-    struct disklabel *lp));
+static	int iso_mountfs(struct vnode *devvp, struct mount *mp,
+	    struct proc *p, struct iso_args *argp);
+int	iso_disklabelspoof(dev_t dev, void (*strat)(struct buf *),
+	    struct disklabel *lp);
 
 int
 cd9660_mountroot()
@@ -123,6 +123,7 @@ cd9660_mountroot()
 	simple_unlock(&mountlist_slock);
         (void)cd9660_statfs(mp, &mp->mnt_stat, p);
 	vfs_unbusy(mp, p);
+	inittodr(0);
         return (0);
 }
 
@@ -450,7 +451,7 @@ out:
 int
 iso_disklabelspoof(dev, strat, lp)
 	dev_t dev;
-	void (*strat) __P((struct buf *));
+	void (*strat)(struct buf *);
 	register struct disklabel *lp;
 {
 	struct buf *bp = NULL;

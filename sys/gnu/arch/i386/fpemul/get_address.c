@@ -81,7 +81,7 @@
 
 static int reg_offset[] = {
 tEAX, tECX, tEDX, tEBX, tESP, tEBP, tESI, tEDI};
-#define REG_(x) (*(((int*)FPU_info) + reg_offset[(x)]))
+#define REG_(x) (*(((int *)FPU_info) + reg_offset[(x)]))
 
 void   *FPU_data_address;
 

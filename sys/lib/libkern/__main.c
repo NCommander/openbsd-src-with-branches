@@ -33,7 +33,7 @@
 
 #include <sys/types.h>
 
-void __main __P((void));
+void __main(void);
 
 void
 __main()

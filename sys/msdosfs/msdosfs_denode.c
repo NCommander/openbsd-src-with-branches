@@ -72,9 +72,9 @@ u_long dehash;			/* size of hash table - 1 */
 #define	DEHASH(dev, dcl, doff)	(((dev) + (dcl) + (doff) / sizeof(struct direntry)) \
 				 & dehash)
 
-static struct denode *msdosfs_hashget __P((dev_t, u_long, u_long));
-static int msdosfs_hashins __P((struct denode *));
-static void msdosfs_hashrem __P((struct denode *));
+static struct denode *msdosfs_hashget(dev_t, u_long, u_long);
+static int msdosfs_hashins(struct denode *);
+static void msdosfs_hashrem(struct denode *);
 
 /*ARGSUSED*/
 int
@@ -178,7 +178,7 @@ deget(pmp, dirclust, diroffset, depp)
 	struct denode **depp;		/* returns the addr of the gotten denode */
 {
 	int error;
-	extern int (**msdosfs_vnodeop_p) __P((void *));
+	extern int (**msdosfs_vnodeop_p)(void *);
 	struct direntry *direntptr;
 	struct denode *ldep;
 	struct vnode *nvp;

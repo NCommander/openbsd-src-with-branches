@@ -32,12 +32,12 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-int	cd9660_open __P((char *path, struct open_file *f));
-int	cd9660_close __P((struct open_file *f));
-int	cd9660_read __P((struct open_file *f, void *buf,
-			 size_t size, size_t *resid));
-int	cd9660_write __P((struct open_file *f, void *buf,
-			  size_t size, size_t *resid));
-off_t	cd9660_seek __P((struct open_file *f, off_t offset, int where));
-int	cd9660_stat __P((struct open_file *f, struct stat *sb));
-int	cd9660_readdir __P((struct open_file *f, char *name));
+int	cd9660_open(char *path, struct open_file *f);
+int	cd9660_close(struct open_file *f);
+int	cd9660_read(struct open_file *f, void *buf,
+			 size_t size, size_t *resid);
+int	cd9660_write(struct open_file *f, void *buf,
+			  size_t size, size_t *resid);
+off_t	cd9660_seek(struct open_file *f, off_t offset, int where);
+int	cd9660_stat(struct open_file *f, struct stat *sb);
+int	cd9660_readdir(struct open_file *f, char *name);
