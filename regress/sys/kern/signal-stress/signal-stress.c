@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: signal-stress.c,v 1.1 2004/08/05 02:58:35 art Exp $	*/
 /*
  *	Written by Artur Grabowski <art@openbsd.org> 2004 Public Domain.
  */
@@ -100,7 +100,7 @@ main()
 	int i;
 	pid_t pid;
 
-	nprocs = 100;
+	nprocs = 35;
 
 	nsigs = 1000;
 
