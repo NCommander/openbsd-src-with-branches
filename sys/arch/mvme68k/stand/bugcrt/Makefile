@@ -1,12 +1,14 @@
-#	$OpenBSD: Makefile,v 1.4 1996/05/10 18:39:12 deraadt Exp $
-
-CFLAGS+=-I${.OBJDIR} -O2 -fomit-frame-pointer
+#	$OpenBSD$
+#
+# DO NOT OPTMIZE bugcrt (i.e. no "-O2")
+#
+CFLAGS=-I${.CURDIR}/../../include -I${.CURDIR}/../libbug -fomit-frame-pointer
 
 OBJS=bugcrt.o
 
-CLEANFILES+=a.out machine
+CLEANFILES+=a.out
 
-all:	machine ${OBJS}
+all:	${OBJS}
 
 bugcrt.o: bugcrt.c
 	${CC} ${CFLAGS} -c ${.ALLSRC}
@@ -16,8 +18,5 @@ bugcrt.o: bugcrt.c
 install:
 
 lint tags:
-
-machine:
-	rm -f machine; ln -s ${.CURDIR}/../../include machine
 
 .include <bsd.prog.mk>
