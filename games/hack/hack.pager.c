@@ -1,9 +1,11 @@
+/*	$OpenBSD$	*/
+
 /*
  * Copyright (c) Stichting Mathematisch Centrum, Amsterdam, 1985.
  */
 
 #ifndef lint
-static char rcsid[] = "$NetBSD: hack.pager.c,v 1.4 1995/03/23 08:31:16 cgd Exp $";
+static char rcsid[] = "$OpenBSD: hack.pager.c,v 1.4 1995/03/23 08:31:16 cgd Exp $";
 #endif /* not lint */
 
 /* This file contains the command routine dowhatis() and a pager. */

@@ -1,9 +1,11 @@
+/*	$OpenBSD$	*/
+
 /*
  * Copyright (c) Stichting Mathematisch Centrum, Amsterdam, 1985.
  */
 
 #ifndef lint
-static char rcsid[] = "$NetBSD: hack.track.c,v 1.3 1995/03/23 08:31:42 cgd Exp $";
+static char rcsid[] = "$OpenBSD: hack.track.c,v 1.3 1995/03/23 08:31:42 cgd Exp $";
 #endif /* not lint */
 
 #include "hack.h"

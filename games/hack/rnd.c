@@ -1,5 +1,7 @@
+/*	$OpenBSD$	*/
+
 #ifndef lint
-static char rcsid[] = "$NetBSD: rnd.c,v 1.3 1995/03/23 08:32:28 cgd Exp $";
+static char rcsid[] = "$OpenBSD: rnd.c,v 1.3 1995/03/23 08:32:28 cgd Exp $";
 #endif /* not lint */
 
 #define RND(x)	((random()>>3) % x)
