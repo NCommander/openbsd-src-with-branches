@@ -496,6 +496,8 @@ cvs_file_getdir(CVSFILE *cf, int flags)
 		ep = fbuf + (size_t)ret;
 		while (dp < ep) {
 			ent = (struct dirent *)dp;
+			if (ent->d_fileno == 0)
+				continue;
 			dp += ent->d_reclen;
 
 			if ((flags & CF_IGNORE) && cvs_file_chkign(ent->d_name))
