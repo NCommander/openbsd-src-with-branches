@@ -1,5 +1,5 @@
 # ex:ts=8 sw=4:
-# $OpenBSD: PackingElement.pm,v 1.60 2004/10/31 11:33:51 espie Exp $
+# $OpenBSD: PackingElement.pm,v 1.61 2004/11/06 12:19:17 espie Exp $
 #
 # Copyright (c) 2003-2004 Marc Espie <espie@openbsd.org>
 #
@@ -264,7 +264,7 @@ sub write
 		print $fh "\@link ", $self->{link}, "\n";
 	}
 	if (defined $self->{tempname}) {
-		print $fh "\@temp ", basename($self->{tempname}), "\n";
+		print $fh "\@temp ", $self->{tempname}, "\n";
 	}
 }
 
