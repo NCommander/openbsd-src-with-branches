@@ -1,4 +1,4 @@
-/*	$OpenBSD: tcfsflag.c,v 1.5 2000/06/19 22:42:28 aaron Exp $	*/
+/*	$OpenBSD: tcfsflag.c,v 1.6 2000/06/19 23:06:25 aaron Exp $	*/
 
 /*
  *	Transparent Cryptographic File System (TCFS) for NetBSD 
@@ -22,7 +22,6 @@
 #include <sys/param.h>
 #include <sys/mount.h>
 #include <sys/wait.h>
-#include <des.h>
 
 #include <miscfs/tcfs/tcfs.h>
 #include <miscfs/tcfs/tcfs_fileinfo.h>
