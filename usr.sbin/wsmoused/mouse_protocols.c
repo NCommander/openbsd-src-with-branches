@@ -1,4 +1,4 @@
-/* $OpenBSD: mouse_protocols.c,v 1.5 2002/02/15 02:18:39 deraadt Exp $ */
+/* $OpenBSD: mouse_protocols.c,v 1.6 2002/02/15 02:33:49 deraadt Exp $ */
 
 /*
  * Copyright (c) 2001 Jean-Baptiste Marchand, Julien Montagne and Jerome Verdon
@@ -665,7 +665,9 @@ mouse_init(void)
 		SetMouseSpeed(9600, mouse.baudrate, mousecflags[mouse.proto]);
 		SetMouseSpeed(4800, mouse.baudrate, mousecflags[mouse.proto]);
 		SetMouseSpeed(2400, mouse.baudrate, mousecflags[mouse.proto]);
-		//SetMouseSpeed(1200, mouse.baudrate, mousecflags[mouse.proto]);
+#if 0
+		SetMouseSpeed(1200, mouse.baudrate, mousecflags[mouse.proto]);
+#endif
 		/* select MM series data format */
 		write(mouse.mfd, "S", 1);
 		SetMouseSpeed(mouse.baudrate, mouse.baudrate,
