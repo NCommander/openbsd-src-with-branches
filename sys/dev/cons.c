@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: cons.c,v 1.4 1996/03/02 00:29:23 niklas Exp $	*/
 /*	$NetBSD: cons.c,v 1.29 1996/02/04 02:04:08 christos Exp $	*/
 
 /*
@@ -207,7 +207,7 @@ cnselect(dev, rw, p)
 {
 
 	/*
-	 * Redirect the ioctl, if that's appropriate.
+	 * Redirect the select, if that's appropriate.
 	 * I don't want to think of the possible side effects
 	 * of console redirection here.
 	 */
