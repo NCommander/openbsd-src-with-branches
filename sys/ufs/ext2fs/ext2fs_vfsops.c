@@ -1,4 +1,4 @@
-/*	$OpenBSD: ext2fs_vfsops.c,v 1.11 2000/02/07 04:57:18 assar Exp $	*/
+/*	$OpenBSD: ext2fs_vfsops.c,v 1.12 2000/04/26 23:24:41 jasoni Exp $	*/
 /*	$NetBSD: ext2fs_vfsops.c,v 1.1 1997/06/11 09:34:07 bouyer Exp $	*/
 
 /*
@@ -167,7 +167,7 @@ int
 ext2fs_mount(mp, path, data, ndp, p)
 	register struct mount *mp;
 	const char *path;
-	caddr_t data;
+	void *data;
 	struct nameidata *ndp;
 	struct proc *p;
 {

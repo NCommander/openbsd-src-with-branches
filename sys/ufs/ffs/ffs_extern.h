@@ -1,4 +1,4 @@
-/*	$OpenBSD: ffs_extern.h,v 1.8 1999/12/05 08:30:38 art Exp $	*/
+/*	$OpenBSD: ffs_extern.h,v 1.9 2000/02/07 04:57:18 assar Exp $	*/
 /*	$NetBSD: ffs_extern.h,v 1.4 1996/02/09 22:22:22 christos Exp $	*/
 
 /*-
@@ -105,7 +105,7 @@ void ffs_setblock __P((struct fs *, unsigned char *, daddr_t));
 
 /* ffs_vfsops.c */
 int ffs_mountroot __P((void));
-int ffs_mount __P((struct mount *, const char *, caddr_t, struct nameidata *,
+int ffs_mount __P((struct mount *, const char *, void *, struct nameidata *,
 		   struct proc *));
 int ffs_reload __P((struct mount *, struct ucred *, struct proc *));
 int ffs_mountfs __P((struct vnode *, struct mount *, struct proc *));
