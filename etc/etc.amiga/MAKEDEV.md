@@ -73,7 +73,6 @@ _DEV(xfs, 51)
 _DEV(ch, 40)
 _DEV(altq, 52)
 _DEV(fdesc, 21)
-_DEV(view, 16)
 dnl
 divert(7)dnl
 dnl

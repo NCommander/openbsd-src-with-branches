@@ -89,7 +89,7 @@ dnl
 divert(7)dnl
 dnl
 ramdisk)
-	_recurse std fd0 wd0 sd0 sd1 sd2
+	_recurse std fd0 wd0 wd1 sd0 sd1
 	_recurse st0 cd0 ttyC0 random rd0
 	;;
 
