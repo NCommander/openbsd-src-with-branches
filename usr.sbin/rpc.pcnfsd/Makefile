@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.7 2000/09/03 18:41:22 espie Exp $
+#	$OpenBSD: Makefile,v 1.8 2001/08/19 19:16:12 ericj Exp $
 
 .include <bsd.own.mk>
 
@@ -18,13 +18,13 @@ DPADD=	${LIBRPCSVC}
 LDADD=	-lrpcsvc
 
 pcnfsd_svc.c: pcnfsd.x
-	rpcgen -s udp -s tcp -I ${.CURDIR}/pcnfsd.x -o $@
+	rpcgen -C -s udp -s tcp -I ${.CURDIR}/pcnfsd.x -o $@
 
 pcnfsd_xdr.c: pcnfsd.x
-	rpcgen -c ${.CURDIR}/pcnfsd.x -o $@
+	rpcgen -C -c ${.CURDIR}/pcnfsd.x -o $@
 
 pcnfsd.h: pcnfsd.x
-	rpcgen -h ${.CURDIR}/pcnfsd.x -o $@
+	rpcgen -C -h ${.CURDIR}/pcnfsd.x -o $@
 
 CLEANFILES += pcnfsd_svc.c pcnfsd_xdr.c pcnfsd.h
 CLEANFILES += clnt.pcnfsd pcnfsd_test.o pcnfsd_test.ln pcnfsd_clnt.*
