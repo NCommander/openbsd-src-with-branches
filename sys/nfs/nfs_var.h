@@ -1,4 +1,4 @@
-/*	$OpenBSD: nfs_var.h,v 1.20 2002/07/02 04:23:25 ericj Exp $	*/
+/*	$OpenBSD: nfs_var.h,v 1.21 2002/07/03 20:57:00 nate Exp $	*/
 /*	$NetBSD: nfs_var.h,v 1.3 1996/02/18 11:53:54 fvdl Exp $	*/
 
 /*
@@ -277,3 +277,11 @@ int nfs_getnickauth(struct nfsmount *, struct ucred *, char **, int *,
 			 char *, int);
 int nfs_savenickauth(struct nfsmount *, struct ucred *, int, NFSKERBKEY_T,
 			  struct mbuf **, char **, struct mbuf *);
+
+/* nfs_kq.c */
+
+int  nfs_kqfilter(void *);
+void nfs_kqinit(void);
+
+#define VN_KNOTE(vp, b) \
+        KNOTE(&vp->v_selectinfo.vsi_selinfo.si_note, (b))
