@@ -1,4 +1,4 @@
-/*	$OpenBSD: authpf.c,v 1.83 2004/05/21 23:10:49 dhartmei Exp $	*/
+/*	$OpenBSD: authpf.c,v 1.84 2004/06/14 20:38:19 cedric Exp $	*/
 
 /*
  * Copyright (C) 1998 - 2002 Bob Beck (beck@openbsd.org).
@@ -146,7 +146,7 @@ main(int argc, char *argv[])
 		shell = pw->pw_shell;
 
 	login_close(lc);
-	
+
 	if (strcmp(shell, PATH_AUTHPF_SHELL)) {
 		syslog(LOG_ERR, "wrong shell for user %s, uid %u",
 		    pw->pw_name, pw->pw_uid);
