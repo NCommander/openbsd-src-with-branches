@@ -1,4 +1,4 @@
-/*	$OpenBSD: pfctl_parser.h,v 1.26 2002/10/25 10:40:45 camield Exp $ */
+/*	$OpenBSD: pfctl_parser.h,v 1.27 2002/11/18 22:49:15 henning Exp $ */
 
 /*
  * Copyright (c) 2001 Daniel Hartmeier
@@ -57,6 +57,7 @@ struct pfctl {
 	int dev;
 	int opts;
 	u_int16_t rule_nr;
+	struct pfioc_pooladdr paddr;
 	struct pfioc_rule *prule;
 	struct pfioc_nat *pnat;
 	struct pfioc_binat *pbinat;
