@@ -1,4 +1,4 @@
-/*	$OpenBSD: divu.S,v 1.4 2001/03/28 23:55:59 mickey Exp $	*/
+/*	$OpenBSD: divu.S,v 1.5 2001/03/29 03:58:18 mickey Exp $	*/
 
 /*
  * Copyright 1996 1995 by Open Software Foundation, Inc.
@@ -58,7 +58,7 @@ tp	.reg		%r6	/* temp. reg. */
 	.text
 
 /*****************************************************************************/
-ENTRY(divu)
+LEAF_ENTRY(divu)
 	stws,ma		rem,4(sp)		; save registers on stack
 	stws,ma		quo,4(sp)		; save registers on stack
 	stws,ma		dvr,4(sp)		; save registers on stack
