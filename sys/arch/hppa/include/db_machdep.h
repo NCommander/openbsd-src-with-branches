@@ -1,4 +1,4 @@
-/*	$OpenBSD: db_machdep.h,v 1.2 1999/04/20 19:29:12 mickey Exp $	*/
+/*	$OpenBSD: db_machdep.h,v 1.3 1999/08/14 03:31:50 mickey Exp $	*/
 
 /*
  * Copyright (c) 1998 Michael Shalayeff
@@ -32,6 +32,8 @@
 
 #ifndef	_MACHINE_DB_MACHDEP_H_
 #define	_MACHINE_DB_MACHDEP_H_
+
+#include <vm/vm.h>
 
 /* types the generic ddb module needs */
 typedef	vaddr_t db_addr_t;
