@@ -35,7 +35,7 @@
  */
 
 #include "includes.h"
-RCSID("$OpenBSD: serverloop.c,v 1.108 2003/05/11 20:30:24 markus Exp $");
+RCSID("$OpenBSD: serverloop.c,v 1.109 2003/06/04 12:03:59 djm Exp $");
 
 #include "xmalloc.h"
 #include "packet.h"
@@ -156,7 +156,7 @@ sigchld_handler(int sig)
 static void
 make_packets_from_stderr_data(void)
 {
-	int len;
+	u_int len;
 
 	/* Send buffered stderr data to the client. */
 	while (buffer_len(&stderr_buffer) > 0 &&
@@ -185,7 +185,7 @@ make_packets_from_stderr_data(void)
 static void
 make_packets_from_stdout_data(void)
 {
-	int len;
+	u_int len;
 
 	/* Send buffered stdout data to the client. */
 	while (buffer_len(&stdout_buffer) > 0 &&
