@@ -1,4 +1,4 @@
-/*	$OpenBSD: env.c,v 1.16 2004/06/17 22:11:55 millert Exp $	*/
+/*	$OpenBSD: env.c,v 1.17 2004/06/22 03:15:33 avsm Exp $	*/
 
 /* Copyright 1988,1990,1993,1994 by Paul Vixie
  * All rights reserved
@@ -22,7 +22,7 @@
  */
 
 #if !defined(lint) && !defined(LINT)
-static char const rcsid[] = "$OpenBSD: env.c,v 1.16 2004/06/17 22:11:55 millert Exp $";
+static char const rcsid[] = "$OpenBSD: env.c,v 1.17 2004/06/22 03:15:33 avsm Exp $";
 #endif
 
 #include "cron.h"
@@ -187,7 +187,6 @@ load_env(char *envstr, FILE *f) {
 			}
 			*str++ = *c++;
 			break;
-
 		case EQ1:
 			if (*c == '=') {
 				state++;
