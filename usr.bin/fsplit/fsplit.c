@@ -1,4 +1,4 @@
-/*	$OpenBSD: fsplit.c,v 1.13 2003/06/10 22:20:46 deraadt Exp $	*/
+/*	$OpenBSD: fsplit.c,v 1.14 2003/06/25 21:19:19 deraadt Exp $	*/
 
 /*
  * Copyright (c) 1983, 1993
@@ -40,7 +40,7 @@ static char copyright[] =
 
 #ifndef lint
 /*static char sccsid[] = "from: @(#)fsplit.c	8.1 (Berkeley) 6/6/93";*/
-static char rcsid[] = "$OpenBSD: fsplit.c,v 1.13 2003/06/10 22:20:46 deraadt Exp $";
+static char rcsid[] = "$OpenBSD: fsplit.c,v 1.14 2003/06/25 21:19:19 deraadt Exp $";
 #endif				/* not lint */
 
 #include <ctype.h>
@@ -53,7 +53,7 @@ static char rcsid[] = "$OpenBSD: fsplit.c,v 1.13 2003/06/10 22:20:46 deraadt Exp
 #include <sys/fcntl.h>
 #include <err.h>
 
-void badparms();
+void badparms(void);
 void get_name(char *, int);
 int lname(char *, size_t);
 int getline(void);
