@@ -497,13 +497,11 @@ cvs_resp_modtime(struct cvsroot *root, int type, char *line)
 static int
 cvs_resp_updated(struct cvsroot *root, int type, char *line)
 {
-	size_t len;
 	mode_t fmode;
 	char path[MAXPATHLEN], cksum_buf[CVS_CKSUM_LEN];
 	BUF *fbuf;
 	CVSFILE *cf;
 	struct cvs_ent *ep;
-	struct tm tm;
 	struct timeval tv[2];
 
 	STRIP_SLASH(line);

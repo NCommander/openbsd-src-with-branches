@@ -56,7 +56,7 @@ int  cvs_add_file (CVSFILE *, void *);
 int
 cvs_add(int argc, char **argv)
 {
-	int i, ch, ret;
+	int i, ch;
 	char *kflag, *msg;
 	struct cvsroot *root;
 
