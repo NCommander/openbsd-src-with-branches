@@ -79,7 +79,7 @@ struct fxp_softc {
 	bus_space_tag_t sc_st;		/* bus space tag */
 	bus_space_handle_t sc_sh;	/* bus space handle */
 	bus_dma_tag_t sc_dmat;		/* bus dma tag */
-	struct arpcom arpcom;		/* per-interface network data */
+	struct arpcom sc_arpcom;	/* per-interface network data */
 	struct mii_data sc_mii;		/* MII media information */
 	struct mbuf *rfa_headm;		/* first mbuf in receive frame area */
 	struct mbuf *rfa_tailm;		/* last mbuf in receive frame area */

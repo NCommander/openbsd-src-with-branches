@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_dc_cardbus.c,v 1.9 2002/03/14 01:26:53 millert Exp $	*/
+/*	$OpenBSD: if_dc_cardbus.c,v 1.10 2002/04/16 21:29:54 jason Exp $	*/
 
 #include <sys/param.h>
 #include <sys/systm.h>
@@ -149,8 +149,8 @@ dc_cardbus_attach(parent, self, aux)
 			sc->dc_pmode = DC_PMODE_MII;
 
 			bcopy(ca->ca_cis.funce.network.netid,
-			    &sc->arpcom.ac_enaddr,
-			    sizeof sc->arpcom.ac_enaddr);
+			    &sc->sc_arpcom.ac_enaddr,
+			    sizeof sc->sc_arpcom.ac_enaddr);
 		}
 		break;
 	case PCI_VENDOR_ADMTEK:

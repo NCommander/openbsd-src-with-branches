@@ -1,4 +1,4 @@
-/*	$OpenBSD: pdqvar.h,v 1.14 2001/11/06 19:53:18 miod Exp $	*/
+/*	$OpenBSD: pdqvar.h,v 1.15 2002/06/02 22:50:00 deraadt Exp $	*/
 /*	$NetBSD: pdqvar.h,v 1.11 1996/10/25 21:33:37 cgd Exp $	*/
 
 /*-
@@ -204,8 +204,8 @@ typedef struct {
 #elif defined(__FreeBSD__)
     struct kern_devconf *sc_kdc;	/* freebsd cruft */
 #endif
-    struct arpcom sc_ac;
-#define	sc_if		sc_ac.ac_if
+    struct arpcom sc_arpcom;
+#define	sc_if		sc_arpcom.ac_if
     pdq_t *sc_pdq;
 #if !defined(__NetBSD__) && !defined(__OpenBSD__)
     pdq_bus_ioport_t sc_iobase;

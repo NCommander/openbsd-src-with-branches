@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_fpa.c,v 1.18 2002/03/14 01:26:58 millert Exp $	*/
+/*	$OpenBSD: if_fpa.c,v 1.19 2002/06/02 22:50:00 deraadt Exp $	*/
 /*	$NetBSD: if_fpa.c,v 1.15 1996/10/21 22:56:40 thorpej Exp $	*/
 
 /*-
@@ -178,7 +178,7 @@ pdq_pci_attach(parent, self, aux)
 	}
 
 	bcopy((caddr_t) sc->sc_pdq->pdq_hwaddr.lanaddr_bytes,
-	    sc->sc_ac.ac_enaddr, 6);
+	    sc->sc_arpcom.ac_enaddr, 6);
 	pdq_ifattach(sc, NULL);
 
 	sc->sc_ats = shutdownhook_establish((void (*)(void *)) pdq_hwreset,

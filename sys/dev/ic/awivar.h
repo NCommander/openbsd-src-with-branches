@@ -105,7 +105,7 @@ struct awi_softc
 #endif
 #ifdef __OpenBSD__
 	struct device 		sc_dev;
-	struct arpcom		sc_ec;
+	struct arpcom		sc_arpcom;
 	void			*sc_ih; /* interrupt handler */
 #endif
 	struct am79c930_softc 	sc_chip;
