@@ -12,7 +12,7 @@
  */
 
 #include "includes.h"
-RCSID("$OpenBSD: ssh-keygen.c,v 1.52 2001/03/26 08:07:09 markus Exp $");
+RCSID("$OpenBSD: ssh-keygen.c,v 1.53 2001/03/26 23:23:24 markus Exp $");
 
 #include <openssl/evp.h>
 #include <openssl/pem.h>
@@ -252,7 +252,7 @@ do_convert_private_ssh2_from_blob(char *blob, int blen)
 
 		key_sign(key, &sig, &slen, data, sizeof data);
 		key_verify(key, sig, slen, data, sizeof data);
-		free(sig);
+		xfree(sig);
 	}
 #endif
 	return key;
