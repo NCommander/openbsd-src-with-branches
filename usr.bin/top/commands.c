@@ -1,4 +1,4 @@
-/* $OpenBSD: commands.c,v 1.10 2003/06/15 16:24:44 millert Exp $	 */
+/* $OpenBSD: commands.c,v 1.11 2003/06/17 00:51:29 jfb Exp $	 */
 
 /*
  *  Top users/processes display for Unix
@@ -197,7 +197,7 @@ err_string(void)
 		return (NULL);
 
 	/* sort the errors */
-	qsort((char *) errs, errcnt, sizeof(struct errs), err_compar);
+	qsort(errs, errcnt, sizeof(struct errs), err_compar);
 
 	/* need a space at the front of the error string */
 	string[0] = ' ';
