@@ -1,4 +1,5 @@
-/*	$OpenBSD: rtsold.h,v 1.2 1999/12/09 15:10:49 itojun Exp $	*/
+/*	$OpenBSD: rtsold.h,v 1.3 2000/02/25 10:32:21 itojun Exp $	*/
+/*	$KAME: rtsold.h,v 1.9 2000/08/13 06:15:00 itojun Exp $	*/
 
 /*
  * Copyright (C) 1995, 1996, 1997, and 1998 WIDE Project.
