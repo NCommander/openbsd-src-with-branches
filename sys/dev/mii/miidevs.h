@@ -4,7 +4,7 @@
  * THIS FILE AUTOMATICALLY GENERATED.  DO NOT EDIT.
  *
  * generated from:
- *	OpenBSD
+ *	OpenBSD: miidevs,v 1.1 1998/09/10 17:17:33 jason Exp 
  */
 /* $NetBSD: miidevs,v 1.1 1998/08/10 23:55:17 thorpej Exp $ */
 
