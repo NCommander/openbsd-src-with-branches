@@ -1,4 +1,4 @@
-/*	$OpenBSD: ttyio.c,v 1.19 2002/03/27 17:42:37 millert Exp $	*/
+/*	$OpenBSD: ttyio.c,v 1.20 2002/03/27 20:47:14 millert Exp $	*/
 
 /*
  * POSIX terminal I/O.
@@ -148,6 +148,7 @@ ttflush()
 		buf += written;
 		nobuf -= written;
 	}
+	nobuf = 0;
 }
 
 /*
