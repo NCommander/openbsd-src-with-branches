@@ -1,4 +1,4 @@
-/*	$OpenBSD: lex.c,v 1.29 2003/10/13 00:46:08 tedu Exp $	*/
+/*	$OpenBSD: lex.c,v 1.30 2003/10/24 20:32:06 avsm Exp $	*/
 /*	$NetBSD: lex.c,v 1.10 1997/05/17 19:55:13 pk Exp $	*/
 
 /*
@@ -34,7 +34,7 @@
 #if 0
 static const char sccsid[] = "@(#)lex.c	8.2 (Berkeley) 4/20/95";
 #else
-static const char rcsid[] = "$OpenBSD: lex.c,v 1.29 2003/10/13 00:46:08 tedu Exp $";
+static const char rcsid[] = "$OpenBSD: lex.c,v 1.30 2003/10/24 20:32:06 avsm Exp $";
 #endif
 #endif /* not lint */
 
@@ -426,7 +426,7 @@ execute(char *linebuf, int contxt)
 		 * A message list defaulting to nearest forward
 		 * legal message.
 		 */
-		if (msgvec == 0) {
+		if (msgvec == NULL) {
 			puts("Illegal use of \"message list\"");
 			break;
 		}
