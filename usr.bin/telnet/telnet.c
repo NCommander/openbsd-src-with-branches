@@ -1,4 +1,4 @@
-/*	$OpenBSD: telnet.c,v 1.12 2001/11/03 00:07:53 hin Exp $	*/
+/*	$OpenBSD: telnet.c,v 1.13 2001/11/19 19:02:16 mpech Exp $	*/
 /*	$NetBSD: telnet.c,v 1.7 1996/02/28 21:04:15 thorpej Exp $	*/
 
 /*
@@ -538,7 +538,7 @@ dontoption(option)
  * bad, duplicate, or verbose names (names with spaces).
  */
 
-int is_unique P((char *, char **, char **));
+int is_unique(char *, char **, char **);
 
 static char *name_unknown = "UNKNOWN";
 static char *unknown[] = { 0, 0 };

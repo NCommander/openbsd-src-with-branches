@@ -1,4 +1,4 @@
-/*	$OpenBSD: externs.h,v 1.6 2001/05/25 10:24:25 hin Exp $	*/
+/*	$OpenBSD: externs.h,v 1.7 2001/07/04 15:21:02 pvalchev Exp $	*/
 /* $KTH: externs.h,v 1.16 1997/11/29 02:28:35 joda Exp $ */
 
 /*
@@ -451,8 +451,8 @@ extern char
     *transcom;         /* Transparent command */
 
 extern int
-    settranscom P((int, char**));
+    settranscom(int, char**);
 
 extern void
-    inputAvailable P((int));
+    inputAvailable(int);
 #endif /* defined(TN3270) */
