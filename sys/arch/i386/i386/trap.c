@@ -1,4 +1,4 @@
-/*	$OpenBSD: trap.c,v 1.25 1997/09/08 22:51:36 downsj Exp $	*/
+/*	$OpenBSD: trap.c,v 1.26 1998/02/22 21:35:28 niklas Exp $	*/
 /*	$NetBSD: trap.c,v 1.95 1996/05/05 06:50:02 mycroft Exp $	*/
 
 #undef DEBUG
@@ -390,6 +390,8 @@ trap(frame)
 		extern vm_map_t kernel_map;
 		unsigned nss, v;
 
+		if (vm == NULL)
+			goto we_re_toast;
 		va = trunc_page((vm_offset_t)rcr2());
 		/*
 		 * It is only a kernel address space fault iff:
