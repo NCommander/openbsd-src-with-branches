@@ -1,4 +1,4 @@
-/*	$OpenBSD: vsdma.c,v 1.3 2001/02/01 03:38:16 smurph Exp $ */
+/*	$OpenBSD: vsdma.c,v 1.4 2001/03/07 23:45:52 miod Exp $ */
 /*
  * Copyright (c) 1999 Steve Murphree, Jr.
  * All rights reserved.
@@ -89,11 +89,11 @@ struct cfdriver vs_cd = {
 
 int
 vsmatch(pdp, vcf, args)
-struct device *pdp;
-void *vcf, *args;
+	struct device *pdp;
+	void *vcf, *args;
 {
 	struct confargs *ca = args;
-	if (!badvaddr(ca->ca_vaddr, 1)) {
+	if (!badvaddr((unsigned)ca->ca_vaddr, 1)) {
 		return (1);
 	} else {
 		return (0);
@@ -102,8 +102,8 @@ void *vcf, *args;
 
 void
 vsattach(parent, self, auxp)
-struct device *parent, *self;
-void *auxp;
+	struct device *parent, *self;
+	void *auxp;
 {
 	struct vs_softc *sc = (struct vs_softc *)self;
 	struct confargs *ca = auxp;
@@ -156,8 +156,8 @@ void *auxp;
  */
 int
 vsprint(auxp, pnp)
-void *auxp;
-char *pnp;
+	void *auxp;
+	char *pnp;
 {
 	if (pnp == NULL)
 		return (UNCONF);

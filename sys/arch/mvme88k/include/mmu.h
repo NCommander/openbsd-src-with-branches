@@ -1,4 +1,4 @@
-/*	$OpenBSD: mmu.h,v 1.5 2001/01/13 05:18:59 smurph Exp $ */
+/*	$OpenBSD: mmu.h,v 1.6 2001/01/14 20:25:24 smurph Exp $ */
 /*
  * Ashura Project
  */
@@ -307,7 +307,7 @@ extern vm_offset_t kmapva;
 	sdt = (sdt_entry_t *)kmapva + SDTIDX(va) + SDT_ENTRIES;		\
 	(pte_template_t *)(sdt->table_addr << PDT_SHIFT) + PDTIDX(va);	\
 })
-
+u_int kvtop( );
 
 #define DMA_CACHE_SYNC		0x1
 #define DMA_CACHE_SYNC_INVAL	0x2

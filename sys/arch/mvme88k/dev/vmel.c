@@ -1,4 +1,4 @@
-/*	$OpenBSD: vmel.c,v 1.9 1998/01/19 00:13:04 etheisen Exp $ */
+/*	$OpenBSD: vmel.c,v 1.2 1998/12/15 05:52:31 smurph Exp $ */
 
 /*
  * Copyright (c) 1995 Theo de Raadt
@@ -118,8 +118,6 @@ vmelioctl(dev, cmd, data, flag, p)
 	int     cmd, flag;
 	struct proc *p;
 {
-	int unit = minor(dev);
-	struct vmelsoftc *sc = (struct vmelsoftc *) vmel_cd.cd_devs[unit];
 	int error = 0;
 
 	switch (cmd) {
