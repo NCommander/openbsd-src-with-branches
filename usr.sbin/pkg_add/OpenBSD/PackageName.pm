@@ -1,4 +1,4 @@
-# $OpenBSD: PackageName.pm,v 1.1.1.1 2003/10/16 17:43:34 espie Exp $
+# $OpenBSD: PackageName.pm,v 1.2 2003/10/19 18:41:32 espie Exp $
 #
 # Copyright (c) 2003 Marc Espie.
 # 
@@ -27,16 +27,24 @@ use strict;
 use warnings;
 package OpenBSD::PackageName;
 
+sub url2pkgname($)
+{
+	my $name = $_[0];
+	$name =~ s|.*/||;
+	$name =~ s|\.tgz$||;
+
+	return $name;
+}
+
 sub new
 {
 	my ($class, $name) = @_;
 	my $self = { name => $name };
 # remove irrelevant filesystem info
-	$name =~ s|.*/||;
-	$name =~ s|\.tgz||;
-	$self->{pkgname} = $name;
+	my $pkgname = url2pkgname($name);
+	$self->{pkgname} = $pkgname;
 # cut pkgname into pieces
-	my @list = splitname($name);
+	my @list = splitname($pkgname);
 	$self->{stem} = $list[0];
 	$self->{version} = $list[1];
 	$self->{flavors} = [];
