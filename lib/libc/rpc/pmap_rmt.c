@@ -28,7 +28,7 @@
  */
 
 #if defined(LIBC_SCCS) && !defined(lint)
-static char *rcsid = "$OpenBSD: pmap_rmt.c,v 1.16 1998/08/14 21:39:37 deraadt Exp $";
+static char *rcsid = "$OpenBSD: pmap_rmt.c,v 1.17 2000/05/19 17:33:42 itojun Exp $";
 #endif /* LIBC_SCCS and not lint */
 
 /*
@@ -232,7 +232,7 @@ clnt_broadcast(prog, vers, proc, xargs, argsp, xresults, resultsp, eachresult)
 	int outlen, inlen, fromlen, nets;
 	register int sock = -1;
 	int on = 1;
-	fd_set *fds, readfds;
+	fd_set *fds = NULL, readfds;
 	register int i;
 	bool_t done = FALSE;
 	register u_long xid;
