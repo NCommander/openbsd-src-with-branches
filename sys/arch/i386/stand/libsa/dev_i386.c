@@ -1,4 +1,4 @@
-/*	$OpenBSD: dev_i386.c,v 1.11 1997/05/29 04:35:29 mickey Exp $	*/
+/*	$OpenBSD: dev_i386.c,v 1.12 1997/06/06 16:26:57 kstailey Exp $	*/
 
 /*
  * Copyright (c) 1996 Michael Shalayeff
@@ -32,7 +32,7 @@
  *
  */
 
-#include <libsa.h>
+#include "libsa.h"
 #include "biosdev.h"
 
 extern int debug;

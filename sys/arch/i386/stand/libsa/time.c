@@ -1,4 +1,4 @@
-/*	$OpenBSD: time.c,v 1.3 1997/05/31 15:36:41 mickey Exp $	*/
+/*	$OpenBSD: time.c,v 1.4 1997/07/08 03:41:00 mickey Exp $	*/
 
 /*
  * Copyright (c) 1997 Tobias Weingartner
@@ -32,8 +32,8 @@
  *
  */
 
-#include <libsa.h>
 #include <sys/time.h>
+#include "libsa.h"
 #include "biosdev.h"
 
 #define isleap(y) ((((y) % 4) == 0 && ((y) % 100) != 0) || ((y) % 400) == 0)
