@@ -1,4 +1,4 @@
-/*	$OpenBSD: machdep.c,v 1.19 1998/09/27 03:56:00 rahnds Exp $	*/
+/*	$OpenBSD: machdep.c,v 1.20 1998/10/09 02:13:56 rahnds Exp $	*/
 /*	$NetBSD: machdep.c,v 1.4 1996/10/16 19:33:11 ws Exp $	*/
 
 /*
@@ -686,6 +686,10 @@ softnet(isr)
 #endif
 	if (isr & (1 << NETISR_IP))
 		ipintr();
+#endif
+#ifdef INET6
+	if (isr & (1 << NETISR_IPV6))
+		ipv6intr();
 #endif
 #ifdef NETATALK
 	if (isr & (1 << NETISR_ATALK))
