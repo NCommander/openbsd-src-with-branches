@@ -1,4 +1,4 @@
-/*	$OpenBSD: audioctl.c,v 1.8 2002/12/13 16:36:52 naddy Exp $	*/
+/*	$OpenBSD: audioctl.c,v 1.9 2003/04/16 01:36:39 deraadt Exp $	*/
 /*	$NetBSD: audioctl.c,v 1.14 1998/04/27 16:55:23 augustss Exp $	*/
 
 /*
@@ -395,7 +395,7 @@ main(int argc, char **argv)
 			while(argc--) {
 				char *q;
 		
-				if (q = strchr(*argv, '=')) {
+				if ((q = strchr(*argv, '='))) {
 					*q++ = 0;
 					p = findfield(*argv);
 					if (p == 0)
