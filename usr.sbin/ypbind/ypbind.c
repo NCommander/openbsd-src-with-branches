@@ -1,4 +1,4 @@
-/*	$OpenBSD: ypbind.c,v 1.37 1999/02/16 05:54:08 deraadt Exp $ */
+/*	$OpenBSD: ypbind.c,v 1.38 2000/04/11 11:52:55 itojun Exp $ */
 
 /*
  * Copyright (c) 1997,1998 Theo de Raadt <deraadt@OpenBSD.org>
@@ -35,7 +35,7 @@
  */
 
 #ifndef LINT
-static char rcsid[] = "$OpenBSD: ypbind.c,v 1.37 1999/02/16 05:54:08 deraadt Exp $";
+static char rcsid[] = "$OpenBSD: ypbind.c,v 1.38 2000/04/11 11:52:55 itojun Exp $";
 #endif
 
 #include <sys/param.h>
@@ -751,7 +751,6 @@ broadcast(ypdb, buf, outlen)
 	int outlen;
 {
 	struct ifaddrs *ifap, *ifa;
-	int i, sock, len, inlen = 8192;
 	struct sockaddr_in bindsin;
 	struct in_addr in;
 

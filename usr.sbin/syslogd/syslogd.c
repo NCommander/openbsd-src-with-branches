@@ -1,4 +1,4 @@
-/*	$OpenBSD: syslogd.c,v 1.39 2001/01/19 17:53:19 deraadt Exp $	*/
+/*	$OpenBSD: syslogd.c,v 1.40 2001/02/07 06:15:46 fgsch Exp $	*/
 
 /*
  * Copyright (c) 1983, 1988, 1993, 1994
@@ -43,7 +43,7 @@ static char copyright[] =
 #if 0
 static char sccsid[] = "@(#)syslogd.c	8.3 (Berkeley) 4/4/94";
 #else
-static char rcsid[] = "$OpenBSD: syslogd.c,v 1.39 2001/01/19 17:53:19 deraadt Exp $";
+static char rcsid[] = "$OpenBSD: syslogd.c,v 1.40 2001/02/07 06:15:46 fgsch Exp $";
 #endif
 #endif /* not lint */
 
@@ -94,6 +94,7 @@ static char rcsid[] = "$OpenBSD: syslogd.c,v 1.39 2001/01/19 17:53:19 deraadt Ex
 
 #include <ctype.h>
 #include <errno.h>
+#include <err.h>
 #include <fcntl.h>
 #include <paths.h>
 #include <setjmp.h>
@@ -722,7 +723,7 @@ fprintlog(f, flags, msg)
 	case F_FORW:
 		dprintf(" %s\n", f->f_un.f_forw.f_hname);
 		l = snprintf(line, sizeof(line) - 1, "<%d>%.15s %s", f->f_prevpri,
-		    iov[0].iov_base, iov[4].iov_base);
+		    (char *)iov[0].iov_base, (char *)iov[4].iov_base);
 		if (l > MAXLINE)
 			l = MAXLINE;
 		if (sendto(finet, line, l, 0,
