@@ -1,4 +1,4 @@
-/*	$OpenBSD: xfs_vnodeops.c,v 1.1 1998/08/30 16:47:22 art Exp $	*/
+/*	$OpenBSD: xfs_vnodeops.c,v 1.2 1998/08/31 05:13:20 art Exp $	*/
 /*
  * Copyright (c) 1995, 1996, 1997, 1998 Kungliga Tekniska Högskolan
  * (Royal Institute of Technology, Stockholm, Sweden).
@@ -49,6 +49,7 @@
 #include <sys/systm.h>
 #include <sys/mount.h>
 #include <sys/fcntl.h>
+#include <sys/vnode.h>
 
 #include <xfs/xfs_message.h>
 #include <xfs/xfs_dev.h>
