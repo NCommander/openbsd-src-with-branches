@@ -1,4 +1,4 @@
-/*	$OpenBSD: pas.c,v 1.11 1996/05/26 00:27:26 deraadt Exp $	*/
+/*	$OpenBSD: pas.c,v 1.12 1996/08/24 05:03:18 deraadt Exp $	*/
 /*	$NetBSD: pas.c,v 1.17 1996/05/12 23:53:18 mycroft Exp $	*/
 
 /*
@@ -345,7 +345,7 @@ pasprobe(parent, match, aux)
         }
 
 	/* Now a SoundBlaster */
-/*	sc->sc_iobase = ia->ia_iobase;
+/*	sc->sc_iobase = ia->ia_iobase; */
 	/* and set the SB iobase into the DSP as well ... */
 	sc->sc_sbdsp.sc_iobase = ia->ia_iobase;
 	if (sbdsp_reset(&sc->sc_sbdsp) < 0) {
