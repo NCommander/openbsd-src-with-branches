@@ -1,9 +1,9 @@
-# $OpenBSD$
+# $OpenBSD: Makefile,v 1.1 2003/05/14 09:05:59 hin Exp $
 
 KRB5DIR=	${.CURDIR}/../../kerberosV
 .include "Makefile.common.inc"
 
-LIB	= newkrb5
+LIB	= krb5
 
 .include "Makefile.asn1.inc"
 .include "Makefile.hdb.inc"
