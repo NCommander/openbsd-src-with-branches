@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.25 1996/09/05 08:55:23 deraadt Exp $
+#	$OpenBSD: Makefile,v 1.26 1996/09/07 23:18:33 downsj Exp $
 #	$NetBSD: Makefile,v 1.62 1996/03/10 05:45:43 thorpej Exp $
 #	from: @(#)Makefile	5.8.1.1 (Berkeley) 5/8/91
 
@@ -34,9 +34,11 @@ SUBDIR+= ar gprof nm ranlib size strip strings
 .endif
 
 .if   make(clean) || make(cleandir) || make(obj)
-SUBDIR+= pctr
+SUBDIR+= pctr elf2ecoff
 .elif ${MACHINE_ARCH} == "i386"
 SUBDIR+= pctr
+.elif ${MACHINE_ARCH} == "mips"
+SUBDIR+= elf2ecoff
 .endif
 
 .include <bsd.subdir.mk>
