@@ -1,4 +1,4 @@
-/*	$OpenBSD: kern_descrip.c,v 1.64 2003/08/06 20:37:38 millert Exp $	*/
+/*	$OpenBSD: kern_descrip.c,v 1.65 2003/08/15 20:32:18 tedu Exp $	*/
 /*	$NetBSD: kern_descrip.c,v 1.42 1996/03/30 22:24:38 christos Exp $	*/
 
 /*
@@ -129,7 +129,7 @@ find_last_set(struct filedesc *fd, int last)
 
 	off = (last - 1) >> NDENTRYSHIFT;
 
-	while (!bitmap[off] && off >= 0)
+	while (off >= 0 && !bitmap[off])
 		off--;
 	if (off < 0)
 		return 0;
