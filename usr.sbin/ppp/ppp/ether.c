@@ -23,7 +23,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  *
- *	$OpenBSD: ether.c,v 1.16 2002/05/16 01:13:39 brian Exp $
+ *	$OpenBSD: ether.c,v 1.17 2002/07/01 11:14:38 brian Exp $
  */
 
 #include <sys/param.h>
@@ -517,7 +517,7 @@ ether_Create(struct physical *p)
      * magically exist as a way of hooking stuff onto an ethernet device
      */
     path = (char *)alloca(ifacelen + 2);
-    sprintf(path, "%.*s:", ifacelen, iface);
+    snprintf(path, ifacelen + 2, "%.*s:", ifacelen, iface);
     if (NgSendMsg(dev->cs, path, NGM_GENERIC_COOKIE, NGM_LISTHOOKS,
                   NULL, 0) < 0) {
       log_Printf(LogWARN, "%s Cannot send a netgraph message: %s\n",

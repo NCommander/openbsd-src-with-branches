@@ -62,7 +62,7 @@
  *          Junichi SATOH <junichi@astec.co.jp>
  *                        <junichi@junichi.org>
  *
- * $OpenBSD: alias_smedia.c,v 1.5 2002/06/14 21:35:01 todd Exp $
+ * $OpenBSD: alias_smedia.c,v 1.6 2002/06/15 08:02:00 brian Exp $
  */
 
 /*
@@ -259,7 +259,7 @@ alias_rtsp_out(struct ip *pip,
 		  pkt_updated = 1;
 
 	          /* Copy into IP packet */
-		  sprintf(stemp, "%d", ntohs(salias));
+		  snprintf(stemp, sizeof stemp, "%d", ntohs(salias));
 		  memcpy(port_newdata, stemp, strlen(stemp));
 		  port_newdata += strlen(stemp);
 
@@ -268,7 +268,7 @@ alias_rtsp_out(struct ip *pip,
 		    port_newdata++;
 
 		    /* Copy into IP packet */
-		    sprintf(stemp, "%d", ntohs(ealias));
+		    snprintf(stemp, sizeof stemp, "%d", ntohs(ealias));
 		    memcpy(port_newdata, stemp, strlen(stemp));
 		    port_newdata += strlen(stemp);
 		  }
