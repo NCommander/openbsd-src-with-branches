@@ -1,4 +1,4 @@
-/*	$OpenBSD: kern_time.c,v 1.28 2002/02/17 06:11:05 art Exp $	*/
+/*	$OpenBSD: kern_time.c,v 1.29 2002/03/14 01:27:04 millert Exp $	*/
 /*	$NetBSD: kern_time.c,v 1.20 1996/02/18 11:57:06 fvdl Exp $	*/
 
 /*
@@ -80,7 +80,6 @@ settime(tv)
 	s = splclock();
 	timersub(tv, &time, &delta);
 	time = *tv;
-	(void) spllowersoftclock();
 	timeradd(&boottime, &delta, &boottime);
 	timeradd(&runtime, &delta, &runtime);
 	splx(s);
