@@ -1,4 +1,4 @@
-/*	$OpenBSD: dc.c,v 1.52 2002/10/20 16:46:27 henning Exp $	*/
+/*	$OpenBSD: dc.c,v 1.53 2002/10/21 20:30:32 henning Exp $	*/
 
 /*
  * Copyright (c) 1997, 1998, 1999
@@ -2506,7 +2506,9 @@ int dc_intr(arg)
 #endif
 				DC_SETBIT(sc, DC_NETCFG, DC_NETCFG_STORENFWD);
 			} else if (sc->dc_flags & DC_TX_STORENFWD) {
+#if 0
 				printf("resetting\n");
+#endif
 			} else {
 				sc->dc_txthresh += 0x4000;
 #if 0
