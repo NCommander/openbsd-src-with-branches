@@ -1,4 +1,4 @@
-/*	$OpenBSD: fight.c,v 1.7 2002/01/16 01:28:54 millert Exp $	*/
+/*	$OpenBSD: fight.c,v 1.8 2003/04/06 18:50:38 deraadt Exp $	*/
 /*	$NetBSD: fight.c,v 1.2 1995/03/24 03:58:39 cgd Exp $	*/
 
 /*
@@ -1017,7 +1017,7 @@ throwspell()
 / RETURN VALUE: none
 /
 / MODULES CALLED: truncstring(), fread(), fseek(), floor(), drandom(), 
-/	strcpy()
+/	strlcpy()
 /
 / GLOBAL INPUTS: Curmonster, Circle, Player, *Monstfp
 /
