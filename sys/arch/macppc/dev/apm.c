@@ -1,3 +1,5 @@
+/*	$OpenBSD: apm.c,v 1.49 2001/08/18 06:08:08 mickey Exp $	*/
+
 /*-
  * Copyright (c) 2001 Alexander Guy.  All rights reserved.
  * Copyright (c) 1998-2001 Michael Shalayeff. All rights reserved.
