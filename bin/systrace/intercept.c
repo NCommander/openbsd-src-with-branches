@@ -1,4 +1,4 @@
-/*	$OpenBSD: intercept.c,v 1.28 2002/08/08 00:47:33 provos Exp $	*/
+/*	$OpenBSD: intercept.c,v 1.29 2002/08/28 03:30:27 itojun Exp $	*/
 /*
  * Copyright 2002 Niels Provos <provos@citi.umich.edu>
  * All rights reserved.
@@ -102,11 +102,11 @@ pidcompare(struct intercept_pid *a, struct intercept_pid *b)
 	return (-1);
 }
 
-SPLAY_PROTOTYPE(sctree, intercept_syscall, node, sccompare);
-SPLAY_GENERATE(sctree, intercept_syscall, node, sccompare);
+SPLAY_PROTOTYPE(sctree, intercept_syscall, node, sccompare)
+SPLAY_GENERATE(sctree, intercept_syscall, node, sccompare)
 
-SPLAY_PROTOTYPE(pidtree, intercept_pid, next, pidcompare);
-SPLAY_GENERATE(pidtree, intercept_pid, next, pidcompare);
+SPLAY_PROTOTYPE(pidtree, intercept_pid, next, pidcompare)
+SPLAY_GENERATE(pidtree, intercept_pid, next, pidcompare)
 
 extern struct intercept_system intercept;
 int ic_abort;
@@ -493,7 +493,7 @@ intercept_get_string(int fd, pid_t pid, void *addr)
 	stride = 32;
 	do {
 		if (intercept.io(fd, pid, INTERCEPT_READ, (char *)addr + off,
-			&name[off], stride) == -1) {
+		    &name[off], stride) == -1) {
 			/* Did the current system call get interrupted? */
 			if (errno == EBUSY)
 				return (NULL);
