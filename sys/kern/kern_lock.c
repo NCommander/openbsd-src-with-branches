@@ -1,4 +1,4 @@
-/*	$OpenBSD: kern_lock.c,v 1.9.4.6 2003/05/15 16:45:54 niklas Exp $	*/
+/*	$OpenBSD: kern_lock.c,v 1.9.4.7 2003/05/18 17:41:16 niklas Exp $	*/
 
 /* 
  * Copyright (c) 1995
@@ -1259,6 +1259,11 @@ _kernel_proc_unlock(struct proc *p)
 	__mp_unlock(&kernel_lock);
 }
 
+#endif
+
+#ifdef MP_LOCKDEBUG
+/* CPU-dependent timing, needs this to be settable from ddb. */
+int __mp_lock_spinout = 200000000;
 #endif
 
 #endif /* MULTIPROCESSOR */
