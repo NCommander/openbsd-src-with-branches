@@ -1,4 +1,4 @@
-/*	$OpenBSD: wsconsctl.c,v 1.2 2001/01/30 06:50:12 aaron Exp $	*/
+/*	$OpenBSD: wsconsctl.c,v 1.3 2001/02/05 22:47:13 matthieu Exp $	*/
 /*	$NetBSD: wsconsctl.c,v 1.2 1998/12/29 22:40:20 hannken Exp $ */
 
 /*-
@@ -223,5 +223,5 @@ main(argc, argv)
 	} else
 		usage(NULL);
 
-	exit(0);
+	return (0);
 }
