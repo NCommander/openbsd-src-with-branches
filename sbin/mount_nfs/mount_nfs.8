@@ -106,12 +106,9 @@ Used with NQNFS to set the lease term to the specified number of seconds.
 Only use this argument for mounts with a large round trip delay.
 Values are normally in the 10-30 second range.
 .It Fl P
-Use a reserved socket port number.
-This is useful for mounting servers that require clients to use a
-reserved port number on the mistaken belief that this makes NFS
-more secure. (For the rare case where the client has a trusted root account
-but untrusworthy users and the network cables are in secure areas this does
-help, but for normal desktop clients this does not apply.)
+The kernel always uses a reserved port number to communicate with
+clients. This option is ignored, and exists solely for compatibility
+with older systems.
 .It Fl R
 Set the retry count for doing the mount to the specified value.
 .It Fl T
