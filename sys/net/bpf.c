@@ -1,4 +1,4 @@
-/*	$OpenBSD: bpf.c,v 1.2 1996/03/03 21:07:00 niklas Exp $	*/
+/*	$OpenBSD: bpf.c,v 1.4 1996/05/10 12:31:05 deraadt Exp $	*/
 /*	$NetBSD: bpf.c,v 1.27 1996/05/07 05:26:02 thorpej Exp $	*/
 
 /*
@@ -751,6 +751,8 @@ bpfioctl(dev, cmd, addr, flag, p)
 
 			/* Compute number of ticks. */
 			d->bd_rtout = tv->tv_sec * hz + tv->tv_usec / tick;
+			if (d->bd_rtout == 0 && tv->tv_usec != 0)
+				d->bd_rtout = 1;
 			break;
 		}
 
