@@ -1,4 +1,4 @@
-/*	$OpenBSD: fwnode.c,v 1.1 2002/06/25 17:11:49 itojun Exp $	*/
+/*	$OpenBSD: fwnode.c,v 1.2 2002/06/26 14:04:02 tdeval Exp $	*/
 /*	$NetBSD: fwnode.c,v 1.13 2002/04/03 04:15:59 jmc Exp $	*/
 
 /*
@@ -198,7 +198,7 @@ fwnode_configrom_input(struct ieee1394_abuf *ab, int rcode)
 	if (ab->ab_cbarg != NULL) {
 		cc = (struct cfgrom_cbarg *) ab->ab_cbarg;
 		if (cc->cc_type != 0x31333934)
-			panic("Got an invalid abuf on callback\n");
+			panic("Got an invalid abuf on callback");
 		DPRINTF(("(cc_num:%d/0x%02x) ", cc->cc_num, cc->cc_num));
 	}
 
@@ -286,7 +286,7 @@ fwnode_configrom_input(struct ieee1394_abuf *ab, int rcode)
 
 #ifdef DIAGNOSTIC
 	if (ab->ab_retlen < (ab->ab_length / 4))
-		panic("Configrom shrank during iscomplete check?\n");
+		panic("Configrom shrank during iscomplete check?");
 #endif
 	
 	if (ab->ab_retlen > (ab->ab_length / 4)) {

@@ -1,4 +1,4 @@
-/* $OpenBSD: wsdisplay.c,v 1.47 2002/07/01 18:53:00 mickey Exp $ */
+/* $OpenBSD: wsdisplay.c,v 1.48 2002/08/21 16:51:27 miod Exp $ */
 /* $NetBSD: wsdisplay.c,v 1.37.4.1 2000/06/30 16:27:53 simonb Exp $ */
 
 /*
@@ -680,7 +680,7 @@ wsdisplay_common_attach(sc, console, scrdata, accessops, accesscookie)
 
 	sc->sc_muxdv = wsmux_create("dmux", sc->sc_dv.dv_unit);
 	if (!sc->sc_muxdv)
-		panic("wsdisplay_common_attach: no memory\n");
+		panic("wsdisplay_common_attach: no memory");
 	sc->sc_muxdv->sc_displaydv = &sc->sc_dv;
 #endif
 

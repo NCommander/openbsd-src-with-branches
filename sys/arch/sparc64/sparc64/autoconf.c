@@ -1,4 +1,4 @@
-/*	$OpenBSD: autoconf.c,v 1.25 2002/06/15 17:23:31 art Exp $	*/
+/*	$OpenBSD: autoconf.c,v 1.26 2002/09/04 18:25:31 jason Exp $	*/
 /*	$NetBSD: autoconf.c,v 1.51 2001/07/24 19:32:11 eeh Exp $ */
 
 /*
@@ -1067,7 +1067,7 @@ extern struct sparc_bus_space_tag mainbus_space_tag;
 			}
 		}
 		if (node == 0)
-			panic("None of the CPUs found\n");
+			panic("None of the CPUs found");
 	}
 
 

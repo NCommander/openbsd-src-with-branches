@@ -1,4 +1,4 @@
-/*	$OpenBSD: uipc_socket2.c,v 1.31 2002/08/26 16:39:25 dhartmei Exp $	*/
+/*	$OpenBSD: uipc_socket2.c,v 1.32 2002/10/10 22:27:30 art Exp $	*/
 /*	$NetBSD: uipc_socket2.c,v 1.11 1996/02/04 02:17:55 christos Exp $	*/
 
 /*
@@ -450,7 +450,7 @@ sblastrecordchk(struct sockbuf *sb, const char *where)
 		printf("packet chain:\n");
 		for (m = sb->sb_mb; m != NULL; m = m->m_nextpkt)
 			printf("\t%p\n", m);
-		panic("sblastrecordchk from %s\n", where);
+		panic("sblastrecordchk from %s", where);
 	}
 }
 

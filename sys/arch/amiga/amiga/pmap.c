@@ -1,4 +1,4 @@
-/*	$OpenBSD: pmap.c,v 1.49 2002/05/28 14:29:05 deraadt Exp $	*/
+/*	$OpenBSD: pmap.c,v 1.50 2002/09/10 18:29:43 art Exp $	*/
 /*	$NetBSD: pmap.c,v 1.68 1999/06/19 19:44:09 is Exp $	*/
 
 /*-
@@ -518,7 +518,7 @@ pmap_init()
 		 * and we overran the page table map.
 		 */
 bogons:
-		panic("pmap_init: bogons in the VM system!\n");
+		panic("pmap_init: bogons in the VM system!");
 	}
 #ifdef DEBUG
 	if (pmapdebug & PDB_INIT) {

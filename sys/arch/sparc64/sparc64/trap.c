@@ -1,4 +1,4 @@
-/*	$OpenBSD: trap.c,v 1.21 2002/06/23 03:03:15 deraadt Exp $	*/
+/*	$OpenBSD: trap.c,v 1.22 2002/07/24 00:48:25 art Exp $	*/
 /*	$NetBSD: trap.c,v 1.73 2001/08/09 01:03:01 eeh Exp $ */
 
 /*
@@ -1006,7 +1006,7 @@ text_access_fault(tf, type, pc, sfsr)
 
 	uvmexp.traps++;
 	if ((p = curproc) == NULL)	/* safety check */
-		panic("text_access_fault: no curproc\n");
+		panic("text_access_fault: no curproc");
 	sticks = p->p_sticks;
 
 	tstate = tf->tf_tstate;

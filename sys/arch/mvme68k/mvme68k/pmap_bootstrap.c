@@ -1,4 +1,4 @@
-/*	$OpenBSD: pmap_bootstrap.c,v 1.14 2002/02/22 22:45:34 miod Exp $ */
+/*	$OpenBSD: pmap_bootstrap.c,v 1.15 2002/02/23 04:58:28 miod Exp $ */
 
 /* 
  * Copyright (c) 1995 Theo de Raadt
@@ -156,5 +156,5 @@ pmap_init_md()
 	    NULL, UVM_UNKNOWN_OFFSET, 0,
 	    UVM_MAPFLAG(UVM_PROT_NONE, UVM_PROT_NONE,
 	      UVM_INH_NONE, UVM_ADV_RANDOM, UVM_FLAG_FIXED)))
-		panic("pmap_init: bogons in the VM system!\n");
+		panic("pmap_init: bogons in the VM system!");
 }
