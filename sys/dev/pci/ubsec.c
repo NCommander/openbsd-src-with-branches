@@ -1,4 +1,4 @@
-/*	$OpenBSD: ubsec.c,v 1.69 2001/08/26 03:29:54 jason Exp $	*/
+/*	$OpenBSD: ubsec.c,v 1.70 2001/08/27 22:02:37 jason Exp $	*/
 
 /*
  * Copyright (c) 2000 Jason L. Wright (jason@thought.net)
@@ -191,7 +191,7 @@ ubsec_attach(parent, self, aux)
 		return;
 	}
 
-	sc->sc_cid = crypto_get_driverid();
+	sc->sc_cid = crypto_get_driverid(0);
 	if (sc->sc_cid < 0) {
 		pci_intr_disestablish(pc, sc->sc_ih);
 		bus_space_unmap(sc->sc_st, sc->sc_sh, iosize);
