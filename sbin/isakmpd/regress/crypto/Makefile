@@ -1,4 +1,5 @@
-#	$OpenBSD$
+#	$OpenBSD: Makefile,v 1.2 1998/11/15 00:44:07 niklas Exp $
+#	$EOM: Makefile,v 1.3 1998/12/21 00:41:50 niklas Exp $
 
 # Test Crypto:
 

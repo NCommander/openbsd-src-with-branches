@@ -1,6 +1,7 @@
-#	$OpenBSD$
+#	$OpenBSD: Makefile,v 1.2 1998/11/15 00:44:10 niklas Exp $
+#	$EOM: Makefile,v 1.2 1998/12/21 00:41:57 niklas Exp $
 
-# Test HMAC:
+# Test PRF:
 
 PROG=		prftest
 SRCS=		log.c prf.c hash.c prftest.c

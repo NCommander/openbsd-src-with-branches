@@ -1,5 +1,5 @@
-#	$OpenBSD$
-
+#	$OpenBSD: Makefile,v 1.2 1998/11/15 00:44:06 niklas Exp $
+#	$EOM: Makefile,v 1.5 1998/12/21 00:32:58 niklas Exp $
 
 # Test HMAC:
 

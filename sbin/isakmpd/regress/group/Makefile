@@ -1,4 +1,5 @@
-#	$OpenBSD$
+#	$OpenBSD: Makefile,v 1.2 1998/11/15 00:44:09 niklas Exp $
+#	$EOM: Makefile,v 1.6 1998/12/21 00:41:53 niklas Exp $
 
 # Test Group:
 
