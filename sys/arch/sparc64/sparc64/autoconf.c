@@ -1,4 +1,4 @@
-/*	$OpenBSD: autoconf.c,v 1.33 2003/07/31 17:23:24 jason Exp $	*/
+/*	$OpenBSD: autoconf.c,v 1.34 2003/12/12 12:33:45 jmc Exp $	*/
 /*	$NetBSD: autoconf.c,v 1.51 2001/07/24 19:32:11 eeh Exp $ */
 
 /*
@@ -1379,6 +1379,7 @@ static struct {
 	{ "sbus",	BUSCLASS_SBUS },
 	{ "xbox",	BUSCLASS_SBUS },
 	{ "esp",	BUSCLASS_SBUS },
+	{ "isp",	BUSCLASS_SBUS },
 	{ "dma",	BUSCLASS_SBUS },
 	{ "espdma",	BUSCLASS_SBUS },
 	{ "ledma",	BUSCLASS_SBUS },
