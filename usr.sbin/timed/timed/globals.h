@@ -1,4 +1,4 @@
-/*	$OpenBSD: globals.h,v 1.2 2001/04/07 20:00:16 ho Exp $	*/
+/*	$OpenBSD: globals.h,v 1.3 2001/05/05 05:10:04 mickey Exp $	*/
 
 /*-
  * Copyright (c) 1985 The Regents of the University of California.
@@ -36,7 +36,7 @@
  */
 
 #ifdef sgi
-#ident "$Revision: 1.2 $"
+#ident "$Revision: 1.3 $"
 #endif
 
 #include <sys/param.h>
@@ -139,6 +139,7 @@ extern struct hosttbl hosttbl[NHOSTS+1];
 #define self hosttbl[0]
 #define hostname (self.name)
 
+volatile sig_atomic_t gotintr;
 
 struct netinfo {
 	struct	netinfo *next;
