@@ -1,4 +1,4 @@
-/*	$OpenBSD: hifn7751.c,v 1.96 2001/08/22 16:11:31 jason Exp $	*/
+/*	$OpenBSD: hifn7751.c,v 1.97 2001/08/22 16:34:47 jason Exp $	*/
 
 /*
  * Invertex AEON / Hifn 7751 driver
@@ -249,8 +249,7 @@ hifn_attach(parent, self, aux)
 	hifn_init_dma(sc);
 	hifn_init_pci_registers(sc);
 
-	if (pci_intr_map(pc, pa->pa_intrtag, pa->pa_intrpin,
-	    pa->pa_intrline, &ih)) {
+	if (pci_intr_map(pa, &ih)) {
 		printf(": couldn't map interrupt\n");
 		goto fail_mem;
 	}

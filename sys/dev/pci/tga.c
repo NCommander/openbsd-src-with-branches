@@ -1,4 +1,4 @@
-/* $OpenBSD: tga.c,v 1.6 2001/03/19 00:18:05 aaron Exp $ */
+/* $OpenBSD: tga.c,v 1.7 2001/05/16 19:33:33 mickey Exp $ */
 /* $NetBSD: tga.c,v 1.31 2001/02/11 19:34:58 nathanw Exp $ */
 
 /*
@@ -440,8 +440,7 @@ tgaattach(parent, self, aux)
 
 	/* XXX say what's going on. */
 	intrstr = NULL;
-	if (pci_intr_map(pa->pa_pc, pa->pa_intrtag, pa->pa_intrpin,
-			 pa->pa_intrline, &intrh)) {
+	if (pci_intr_map(pa, &intrh)) {
 		printf(": couldn't map interrupt");
 		return;
 	}

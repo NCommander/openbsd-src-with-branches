@@ -1,4 +1,4 @@
-/*      $OpenBSD: eap.c,v 1.10 2000/08/16 14:13:13 kevlo Exp $ */
+/*      $OpenBSD: eap.c,v 1.11 2001/06/12 15:40:30 niklas Exp $ */
 /*	$NetBSD: eap.c,v 1.25 1999/02/18 07:59:30 mycroft Exp $	*/
 
 /*
@@ -792,8 +792,7 @@ eap_attach(parent, self, aux)
 		       csr | PCI_COMMAND_MASTER_ENABLE);
 
 	/* Map and establish the interrupt. */
-	if (pci_intr_map(pc, pa->pa_intrtag, pa->pa_intrpin,
-			 pa->pa_intrline, &ih)) {
+	if (pci_intr_map(pa, &ih)) {
 		printf("\n%s: couldn't map interrupt\n", sc->sc_dev.dv_xname);
 		return;
 	}

@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_vr.c,v 1.18 2001/06/27 06:34:50 kjc Exp $	*/
+/*	$OpenBSD: if_vr.c,v 1.19 2001/08/12 20:03:49 mickey Exp $	*/
 
 /*
  * Copyright (c) 1997, 1998
@@ -681,8 +681,7 @@ vr_attach(parent, self, aux)
 #endif
 
 	/* Allocate interrupt */
-	if (pci_intr_map(pc, pa->pa_intrtag, pa->pa_intrpin,
-			 pa->pa_intrline, &ih)) {
+	if (pci_intr_map(pa, &ih)) {
 		printf(": couldn't map interrupt\n");
 		goto fail;
 	}

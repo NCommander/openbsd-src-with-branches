@@ -1,4 +1,4 @@
-/*	$OpenBSD: gdt_pci.c,v 1.11 2001/06/12 15:40:30 niklas Exp $	*/
+/*	$OpenBSD: gdt_pci.c,v 1.12 2001/07/30 01:28:56 deraadt Exp $	*/
 
 /*
  * Copyright (c) 1999, 2000 Niklas Hallqvist.  All rights reserved.
@@ -535,8 +535,7 @@ gdt_pci_attach(parent, self, aux)
 		gdt->sc_test_busy = gdt_mpr_test_busy;
 	}
 
-	if (pci_intr_map(pa->pa_pc, pa->pa_intrtag, pa->pa_intrpin,
-	    pa->pa_intrline, &ih)) {
+	if (pci_intr_map(pa, &ih)) {
 		printf("couldn't map interrupt\n");
 		goto bail_out;
 	}

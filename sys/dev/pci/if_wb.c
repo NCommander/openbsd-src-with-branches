@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_wb.c,v 1.11 2001/06/27 06:34:50 kjc Exp $	*/
+/*	$OpenBSD: if_wb.c,v 1.12 2001/08/12 20:03:49 mickey Exp $	*/
 
 /*
  * Copyright (c) 1997, 1998
@@ -833,8 +833,7 @@ wb_attach(parent, self, aux)
 #endif
 
 	/* Allocate interrupt */
-	if (pci_intr_map(pc, pa->pa_intrtag, pa->pa_intrpin,
-	    pa->pa_intrline, &ih)) {
+	if (pci_intr_map(pa, &ih)) {
 		printf(": couldn't map interrupt\n");
 		goto fail;
 	}

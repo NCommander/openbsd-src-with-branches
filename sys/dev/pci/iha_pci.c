@@ -1,4 +1,4 @@
-/*	$OpenBSD: iha_pci.c,v 1.3 2001/06/12 15:40:32 niklas Exp $ */
+/*	$OpenBSD: iha_pci.c,v 1.4 2001/07/13 03:24:19 krw Exp $ */
 /*
  * Initio INI-9xxxU/UW SCSI Device Driver
  *
@@ -114,8 +114,7 @@ iha_pci_attach(parent, self, aux)
 	sc->sc_ioh  = ioh;
 	sc->sc_dmat = pa->pa_dmat;
 	
-	if (pci_intr_map(pa->pa_pc, pa->pa_intrtag, pa->pa_intrpin,
-			 pa->pa_intrline, &ih)) {
+	if (pci_intr_map(pa, &ih)) {
 		printf("%s: couldn't map interrupt\n", sc->sc_dev.dv_xname);
 		return;
 	}

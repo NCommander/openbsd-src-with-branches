@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_ste.c,v 1.12 2001/06/27 06:34:49 kjc Exp $ */
+/*	$OpenBSD: if_ste.c,v 1.13 2001/08/12 20:03:49 mickey Exp $ */
 /*
  * Copyright (c) 1997, 1998, 1999
  *	Bill Paul <wpaul@ctr.columbia.edu>.  All rights reserved.
@@ -939,8 +939,7 @@ void ste_attach(parent, self, aux)
 #endif
 
 	/* Allocate interrupt */
-	if (pci_intr_map(pc, pa->pa_intrtag, pa->pa_intrpin, pa->pa_intrline,
-	    &ih)) {
+	if (pci_intr_map(pa, &ih)) {
 		printf(": couldn't map interrupt\n");
 		goto fail;
 	}

@@ -1,4 +1,4 @@
-/*	$OpenBSD: lofn.c,v 1.8 2001/07/08 18:05:43 brad Exp $	*/
+/*	$OpenBSD: lofn.c,v 1.9 2001/08/12 20:03:49 mickey Exp $	*/
 
 /*
  * Copyright (c) 2001 Jason L. Wright (jason@thought.net)
@@ -122,8 +122,7 @@ lofn_attach(parent, self, aux)
 
 	sc->sc_dmat = pa->pa_dmat;
 
-	if (pci_intr_map(pc, pa->pa_intrtag, pa->pa_intrpin,
-	    pa->pa_intrline, &ih)) {
+	if (pci_intr_map(pa, &ih)) {
 		printf(": couldn't map interrupt\n");
 		goto fail;
 	}
