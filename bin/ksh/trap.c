@@ -1,4 +1,4 @@
-/*	$OpenBSD: trap.c,v 1.4 1997/06/19 13:58:48 kstailey Exp $	*/
+/*	$OpenBSD: trap.c,v 1.5 1997/08/05 22:22:58 deraadt Exp $	*/
 
 /*
  * signal handling
@@ -251,7 +251,7 @@ runtrap(p)
 		p->flags |= old_changed;
 	}
 }
- 
+
 /* clear pending traps and reset user's trap handlers; used after fork(2) */
 void
 cleartraps()

@@ -1,4 +1,4 @@
-/*	$OpenBSD: expr.c,v 1.6 1997/07/23 14:44:21 kstailey Exp $	*/
+/*	$OpenBSD: expr.c,v 1.7 1997/08/19 06:35:13 denny Exp $	*/
 /*	$NetBSD: expr.c,v 1.3.6.1 1996/06/04 20:41:47 cgd Exp $	*/
 
 /*
@@ -426,7 +426,7 @@ eval2()
 			default:
 				break;
 			}
-		} 
+		}
 
 		free_value(l);
 		free_value(r);

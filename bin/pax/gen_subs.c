@@ -1,4 +1,4 @@
-/*	$OpenBSD: gen_subs.c,v 1.6 1997/06/18 18:48:25 kstailey Exp $	*/
+/*	$OpenBSD: gen_subs.c,v 1.7 1997/07/25 18:58:31 mickey Exp $	*/
 /*	$NetBSD: gen_subs.c,v 1.5 1995/03/21 09:07:26 cgd Exp $	*/
 
 /*-
@@ -42,7 +42,7 @@
 #if 0
 static char sccsid[] = "@(#)gen_subs.c	8.1 (Berkeley) 5/31/93";
 #else
-static char rcsid[] = "$OpenBSD: gen_subs.c,v 1.6 1997/06/18 18:48:25 kstailey Exp $";
+static char rcsid[] = "$OpenBSD: gen_subs.c,v 1.7 1997/07/25 18:58:31 mickey Exp $";
 #endif
 #endif /* not lint */
 
@@ -313,7 +313,7 @@ ul_asc(val, str, len, base)
 {
 	register char *pt;
 	u_long digit;
-	
+
 	/*
 	 * WARNING str is not '\0' terminated by this routine
 	 */
@@ -328,7 +328,7 @@ ul_asc(val, str, len, base)
 		while (pt >= str) {
 			if ((digit = (val & 0xf)) < 10)
 				*pt-- = '0' + (char)digit;
-			else 
+			else
 				*pt-- = 'a' + (char)(digit - 10);
 			if ((val = (val >> 4)) == (u_long)0)
 				break;
@@ -427,7 +427,7 @@ uqd_asc(val, str, len, base)
 {
 	register char *pt;
 	u_quad_t digit;
-	
+
 	/*
 	 * WARNING str is not '\0' terminated by this routine
 	 */
@@ -442,7 +442,7 @@ uqd_asc(val, str, len, base)
 		while (pt >= str) {
 			if ((digit = (val & 0xf)) < 10)
 				*pt-- = '0' + (char)digit;
-			else 
+			else
 				*pt-- = 'a' + (char)(digit - 10);
 			if ((val = (val >> 4)) == (u_quad_t)0)
 				break;

@@ -1,4 +1,4 @@
-/*	$OpenBSD: echo.c,v 1.6 1995/03/21 09:04:27 cgd Exp $	*/
+/*	$OpenBSD: echo.c,v 1.3 1996/09/24 16:52:02 michaels Exp $	*/
 /*	$NetBSD: echo.c,v 1.6 1995/03/21 09:04:27 cgd Exp $	*/
 
 /*
@@ -44,7 +44,7 @@ static char copyright[] =
 #if 0
 static char sccsid[] = "@(#)echo.c	8.1 (Berkeley) 5/31/93";
 #else
-static char rcsid[] = "$OpenBSD: echo.c,v 1.6 1995/03/21 09:04:27 cgd Exp $";
+static char rcsid[] = "$OpenBSD: echo.c,v 1.3 1996/09/24 16:52:02 michaels Exp $";
 #endif
 #endif /* not lint */
 
@@ -69,7 +69,7 @@ main(argc, argv)
 		nflag = 0;
 
 	while (*argv) {
-		(void)fputs(*argv, stdout); 
+		(void)fputs(*argv, stdout);
 		if (*++argv)
 			putchar(' ');
 	}

@@ -1,4 +1,4 @@
-/*	$OpenBSD: print.c,v 1.4 1996/08/02 12:10:39 deraadt Exp $	*/
+/*	$OpenBSD: print.c,v 1.5 1996/09/15 23:13:03 millert Exp $	*/
 /*	$NetBSD: print.c,v 1.11 1996/05/07 18:20:10 jtc Exp $	*/
 
 /*-
@@ -38,7 +38,7 @@
 #if 0
 static char sccsid[] = "@(#)print.c	8.6 (Berkeley) 4/16/94";
 #else
-static char rcsid[] = "$OpenBSD: print.c,v 1.4 1996/08/02 12:10:39 deraadt Exp $";
+static char rcsid[] = "$OpenBSD: print.c,v 1.5 1996/09/15 23:13:03 millert Exp $";
 #endif
 #endif /* not lint */
 
@@ -73,16 +73,16 @@ print(tp, wp, ldisc, fmt)
 	/* Line discipline. */
 	if (ldisc != TTYDISC) {
 		switch(ldisc) {
-		case TABLDISC:	
+		case TABLDISC:
 			cnt += printf("tablet disc; ");
 			break;
-		case SLIPDISC:	
+		case SLIPDISC:
 			cnt += printf("slip disc; ");
 			break;
-		case PPPDISC:	
+		case PPPDISC:
 			cnt += printf("ppp disc; ");
 			break;
-		default:	
+		default:
 			cnt += printf("#%d disc; ", ldisc);
 			break;
 		}

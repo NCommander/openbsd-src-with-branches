@@ -1,4 +1,4 @@
-/*	$OpenBSD: netdate.c,v 1.8 1997/06/18 19:21:39 kstailey Exp $	*/
+/*	$OpenBSD: netdate.c,v 1.9 1997/06/30 07:08:44 deraadt Exp $	*/
 /*	$NetBSD: netdate.c,v 1.10 1995/09/07 06:21:06 jtc Exp $	*/
 
 /*-
@@ -38,7 +38,7 @@
 #if 0
 static char sccsid[] = "@(#)netdate.c	8.2 (Berkeley) 4/28/95";
 #else
-static char rcsid[] = "$OpenBSD: netdate.c,v 1.8 1997/06/18 19:21:39 kstailey Exp $";
+static char rcsid[] = "$OpenBSD: netdate.c,v 1.9 1997/06/30 07:08:44 deraadt Exp $";
 #endif
 #endif /* not lint */
 
@@ -176,7 +176,7 @@ loop:
 			free(fdsp);
 			return (0);
 		default:
-			warnx("wrong ack received from timed: %s", 
+			warnx("wrong ack received from timed: %s",
 			    tsptype[msg.tsp_type]);
 			timed_ack = -1;
 			break;

@@ -1,4 +1,4 @@
-/*	$OpenBSD: print.c,v 1.5 1996/12/17 18:52:52 tholo Exp $	*/
+/*	$OpenBSD: print.c,v 1.6 1997/01/03 22:36:08 millert Exp $	*/
 /*	$NetBSD: print.c,v 1.15 1996/12/11 03:25:39 thorpej Exp $	*/
 
 /*
@@ -41,7 +41,7 @@
 #if 0
 static char sccsid[] = "@(#)print.c	8.5 (Berkeley) 7/28/94";
 #else
-static char rcsid[] = "$OpenBSD: print.c,v 1.15 1996/12/11 03:25:39 thorpej Exp $";
+static char rcsid[] = "$OpenBSD: print.c,v 1.6 1997/01/03 22:36:08 millert Exp $";
 #endif
 #endif /* not lint */
 
@@ -286,7 +286,7 @@ printlink(p)
 
 	if (p->fts_level == FTS_ROOTLEVEL)
 		(void)snprintf(name, sizeof(name), "%s", p->fts_name);
-	else 
+	else
 		(void)snprintf(name, sizeof(name),
 		    "%s/%s", p->fts_parent->fts_accpath, p->fts_name);
 	if ((lnklen = readlink(name, path, sizeof(path) - 1)) == -1) {
