@@ -1,4 +1,4 @@
-/* $OpenBSD: machdep.c,v 1.74 2002/06/08 05:19:12 art Exp $ */
+/* $OpenBSD: machdep.c,v 1.75 2002/07/20 19:24:55 art Exp $ */
 /* $NetBSD: machdep.c,v 1.210 2000/06/01 17:12:38 thorpej Exp $ */
 
 /*-
@@ -1533,7 +1533,6 @@ sendsig(catcher, sig, mask, code, type, val)
 	struct trapframe *frame;
 	struct sigacts *psp = p->p_sigacts;
 	int oonstack, fsize, rndfsize, kscsize;
-	extern char sigcode[], esigcode[];
 	siginfo_t *sip, ksi;
 
 	frame = p->p_md.md_tf;
