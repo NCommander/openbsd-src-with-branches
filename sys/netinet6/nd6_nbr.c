@@ -1,4 +1,4 @@
-/*	$OpenBSD: nd6_nbr.c,v 1.19 2001/12/07 09:16:07 itojun Exp $	*/
+/*	$OpenBSD: nd6_nbr.c,v 1.20 2002/03/14 01:27:12 millert Exp $	*/
 /*	$KAME: nd6_nbr.c,v 1.61 2001/02/10 16:06:14 jinmei Exp $	*/
 
 /*
@@ -774,7 +774,7 @@ nd6_na_input(m, off, icmp6len)
 		 */
 		nd6_output(ifp, ifp, ln->ln_hold,
 			   (struct sockaddr_in6 *)rt_key(rt), rt);
-		ln->ln_hold = 0;
+		ln->ln_hold = NULL;
 	}
 
  freeit:
