@@ -1,4 +1,4 @@
-/* $OpenBSD: sign.c,v 1.2 1999/09/28 21:31:23 espie Exp $ */
+/* $OpenBSD: sign.c,v 1.3 1999/10/04 21:46:29 espie Exp $ */
 /*-
  * Copyright (c) 1999 Marc Espie.
  *
@@ -114,13 +114,11 @@ sign(filename, type, userid, envp)
 		free_signature(sign);
 		return 0;
 	}
-	copy = malloc(strlen(filename)+sizeof(COPY_TEMPLATE));
-	if (copy == NULL) {
+	if (asprintf(&copy, COPY_TEMPLATE, filename) == -1) {
 		fprintf(stderr, "Can't allocate memory\n");
 		free_signature(sign);
 		return 0;
 	}
-	sprintf(copy, COPY_TEMPLATE, filename);
 	result = embed_signature(filename, copy, sign);
 	if (result == 0) {
 		fprintf(stderr, "Can't embed signature in %s\n", filename);
