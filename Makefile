@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.7 1996/05/06 20:31:44 deraadt Exp $
+#	$OpenBSD: Makefile,v 1.9 1996/05/14 19:10:34 deraadt Exp $
 #	$NetBSD: Makefile,v 1.25 1995/10/09 02:11:28 thorpej Exp $
 
 .include <bsd.own.mk>	# for NOMAN, if it's there.
@@ -23,6 +23,9 @@ regression-tests:
 	@echo Running regression tests...
 	@(cd ${.CURDIR}/regress && ${MAKE} regress)
 .endif
+
+includes:
+	(cd ${.CURDIR}/include; ${MAKE} includes)	
 
 beforeinstall:
 .ifndef DESTDIR
