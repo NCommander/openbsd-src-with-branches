@@ -1,4 +1,4 @@
-/*	$OpenBSD: conf.c,v 1.26 1999/07/30 19:41:29 deraadt Exp $	*/
+/*	$OpenBSD: conf.c,v 1.27 2000/09/02 13:45:38 espie Exp $	*/
 /*	$NetBSD: conf.c,v 1.42 1997/01/07 11:35:03 mrg Exp $	*/
 
 /*-
@@ -232,6 +232,12 @@ iszerodev(dev)
 {
 
 	return (major(dev) == mem_no && minor(dev) == 12);
+}
+
+dev_t
+getnulldev()
+{
+	return makedev(mem_no, 2);
 }
 
 static int chrtoblktab[] = {
