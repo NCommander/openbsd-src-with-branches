@@ -1,4 +1,4 @@
-/*	$OpenBSD: subr_autoconf.c,v 1.25 1999/08/08 00:37:09 niklas Exp $	*/
+/*	$OpenBSD: subr_autoconf.c,v 1.26 2000/04/09 19:23:18 csapuntz Exp $	*/
 /*	$NetBSD: subr_autoconf.c,v 1.21 1996/04/04 06:06:18 cgd Exp $	*/
 
 /*
@@ -809,7 +809,7 @@ device_lookup(cd, unit)
 {
 	struct device *dv = NULL;
 
-	if (unit >= 0 && unit <= cd->cd_ndevs)
+	if (unit >= 0 && unit < cd->cd_ndevs)
 		dv = (struct device *)(cd->cd_devs[unit]);
 	
 	if (!dv)
