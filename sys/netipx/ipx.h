@@ -1,4 +1,4 @@
-/*	$OpenBSD: ipx.h,v 1.12 2000/01/17 00:34:00 fgsch Exp $	*/
+/*	$OpenBSD: ipx.h,v 1.13 2000/09/22 14:56:22 millert Exp $	*/
 
 /*-
  *
@@ -111,7 +111,7 @@
  */
 #define IPX_HOSTADDRLEN	6
 #define IPX_NETADDRLEN	4
-#define XXX	__attribute__((packed))
+#define XXX	__attribute__((__packed__))
 
 typedef
 union ipx_host {

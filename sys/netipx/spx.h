@@ -1,4 +1,4 @@
-/*	$OpenBSD: spx.h,v 1.2 1996/10/26 09:34:55 mickey Exp $	*/
+/*	$OpenBSD: spx.h,v 1.3 1996/11/25 08:20:02 mickey Exp $	*/
 
 /*-
  *
@@ -45,7 +45,7 @@
 
 #include <sys/queue.h>
 
-#define	XXX	__attribute__((packed));
+#define	XXX	__attribute__((__packed__));
 
 /*
  * Definitions for IPX style Sequenced Packet Protocol
