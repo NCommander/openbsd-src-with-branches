@@ -926,14 +926,6 @@ abortit:
 		return (error);
 	}
 
-	/*
-	 * Convert the filename in tcnp into a dos filename. We copy this
-	 * into the denode and directory entry for the destination
-	 * file/directory.
-	 */
-	if ((error = uniqdosname(VTODE(tdvp), tcnp, toname)) != 0)
-		goto abortit;
-
 	/* */
 	if ((error = VOP_LOCK(fvp)) != 0)
 		goto abortit;
@@ -1032,6 +1024,14 @@ abortit:
 		vput(tvp);
 		xp = NULL;
 	}
+
+	/*
+	 * Convert the filename in tcnp into a dos filename. We copy this
+	 * into the denode and directory entry for the destination
+	 * file/directory.
+	 */
+	if ((error = uniqdosname(VTODE(tdvp), tcnp, toname)) != 0)
+		goto abortit;
 
 	/*
 	 * Since from wasn't locked at various places above,
