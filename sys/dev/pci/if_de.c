@@ -5025,7 +5025,7 @@ tulip_pci_shutdown(
 }
 #endif
 
-static char*
+static char *
 tulip_pci_probe(
     pcici_t config_id,
     pcidi_t device_id)
@@ -5561,7 +5561,7 @@ tulip_pci_attach(
 #endif
 #if defined(__FreeBSD__)
 	if ((sc->tulip_features & TULIP_HAVE_SLAVEDINTR) == 0) {
-	    if (!pci_map_int (config_id, intr_rtn, (void*) sc, &net_imask)) {
+	    if (!pci_map_int (config_id, intr_rtn, (void *) sc, &net_imask)) {
 		printf(TULIP_PRINTF_FMT ": couldn't map interrupt\n",
 		       TULIP_PRINTF_ARGS);
 		return;

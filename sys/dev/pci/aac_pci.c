@@ -1,4 +1,4 @@
-/*	$OpenBSD: aac_pci.c,v 1.1.4.2 2001/07/04 10:41:49 niklas Exp $	*/
+/*	$OpenBSD$	*/
 
 /*-
  * Copyright (c) 2000 Michael Smith
@@ -59,8 +59,8 @@
 #include <dev/ic/aacreg.h>
 #include <dev/ic/aacvar.h>
 
-int	aac_pci_probe __P((struct device *, void *, void *));
-void	aac_pci_attach __P((struct device *, struct device *, void *));
+int	aac_pci_probe(struct device *, void *, void *);
+void	aac_pci_attach(struct device *, struct device *, void *);
 
 struct aac_ident {
 	u_int16_t vendor;

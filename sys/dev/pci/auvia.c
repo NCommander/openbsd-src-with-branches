@@ -112,7 +112,7 @@ int	auvia_trigger_output(void *, void *, void *, int, void (*)(void *),
 int	auvia_trigger_input(void *, void *, void *, int, void (*)(void *),
 	void *, struct audio_params *);
 
-int	auvia_intr __P((void *));
+int	auvia_intr(void *);
 
 struct  cfdriver auvia_cd = {
 	NULL, "auvia", DV_DULL

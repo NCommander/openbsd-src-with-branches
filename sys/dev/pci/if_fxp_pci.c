@@ -79,8 +79,8 @@
 #include <dev/pci/pcireg.h>
 #include <dev/pci/pcidevs.h>
 
-int fxp_pci_match __P((struct device *, void *, void *));
-void fxp_pci_attach __P((struct device *, struct device *, void *));
+int fxp_pci_match(struct device *, void *, void *);
+void fxp_pci_attach(struct device *, struct device *, void *);
 
 struct cfattach fxp_pci_ca = {
 	sizeof(struct fxp_softc), fxp_pci_match, fxp_pci_attach

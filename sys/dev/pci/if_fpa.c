@@ -73,9 +73,9 @@
 #define	DEFPA_CBMA	(PCI_MAPREG_START + 0)	/* Config Base Memory Address */
 #define	DEFPA_CBIO	(PCI_MAPREG_START + 4)	/* Config Base I/O Address */
 
-int  pdq_pci_ifintr	__P((void *));
-int  pdq_pci_match	__P((struct device *, void *, void *));
-void pdq_pci_attach	__P((struct device *, struct device *, void *aux));
+int  pdq_pci_ifintr(void *);
+int  pdq_pci_match(struct device *, void *, void *);
+void pdq_pci_attach(struct device *, struct device *, void *aux);
 
 int
 pdq_pci_ifintr(arg)

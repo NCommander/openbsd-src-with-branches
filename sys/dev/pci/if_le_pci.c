@@ -78,15 +78,15 @@
 #define	vtophys(va)	alpha_XXX_dmamap((vm_offset_t)(va))
 #endif
 
-int le_pci_match __P((struct device *, void *, void *));
-void le_pci_attach __P((struct device *, struct device *, void *));
+int le_pci_match(struct device *, void *, void *);
+void le_pci_attach(struct device *, struct device *, void *);
 
 struct cfattach le_pci_ca = {
 	sizeof(struct le_softc), le_pci_match, le_pci_attach
 };
 
-hide void le_pci_wrcsr __P((struct am7990_softc *, u_int16_t, u_int16_t));
-hide u_int16_t le_pci_rdcsr __P((struct am7990_softc *, u_int16_t));
+hide void le_pci_wrcsr(struct am7990_softc *, u_int16_t, u_int16_t);
+hide u_int16_t le_pci_rdcsr(struct am7990_softc *, u_int16_t);
 
 /*
  * PCI constants.

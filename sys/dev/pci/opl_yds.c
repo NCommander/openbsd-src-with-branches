@@ -63,8 +63,8 @@
 #include <dev/pci/ydsreg.h>
 #include <dev/pci/ydsvar.h>
 
-int	opl_yds_match __P((struct device *, void *, void *));
-void	opl_yds_attach __P((struct device *, struct device *, void *));
+int	opl_yds_match(struct device *, void *, void *);
+void	opl_yds_attach(struct device *, struct device *, void *);
 
 struct cfdriver opl_yds_cd = {
 	NULL, "opl_yds", DV_DULL

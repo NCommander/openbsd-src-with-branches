@@ -83,8 +83,8 @@
 
 #include <dev/ic/rtl81x9reg.h>
 
-int rl_pci_match	__P((struct device *, void *, void *));
-void rl_pci_attach	__P((struct device *, struct device *, void *));
+int rl_pci_match(struct device *, void *, void *);
+void rl_pci_attach(struct device *, struct device *, void *);
 
 struct cfattach rl_pci_ca = {
 	sizeof(struct rl_softc), rl_pci_match, rl_pci_attach,
