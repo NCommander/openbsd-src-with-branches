@@ -1,4 +1,4 @@
-/*	$OpenBSD: log.c,v 1.25 2004/01/27 21:23:39 henning Exp $ */
+/*	$OpenBSD: log.c,v 1.26 2004/01/27 22:18:29 henning Exp $ */
 
 /*
  * Copyright (c) 2003, 2004 Henning Brauer <henning@openbsd.org>
@@ -378,7 +378,7 @@ log_addr(const struct bgpd_addr *addr)
 {
 	static char	buf[48];
 
-	if(inet_ntop(addr->af, &addr->ba, buf, sizeof(buf)) == NULL)
+	if (inet_ntop(addr->af, &addr->ba, buf, sizeof(buf)) == NULL)
 		return ("?");
 	else
 		return (buf);
