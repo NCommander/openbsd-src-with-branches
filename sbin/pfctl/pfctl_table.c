@@ -1,4 +1,4 @@
-/*	$OpenBSD: pfctl_table.c,v 1.32 2003/02/04 12:10:02 cedric Exp $ */
+/*	$OpenBSD: pfctl_table.c,v 1.33 2003/02/04 17:29:06 cedric Exp $ */
 
 /*
  * Copyright (c) 2002 Cedric Berger
@@ -327,7 +327,7 @@ grow_buffer(size_t bs, int minsize)
 		else
 			msize = minsize;
 		if (msize < 0 || msize >= SIZE_T_MAX / bs)
-			err(1, "buffer overflow");
+			errx(1, "msize overflow");
 		buffer.caddr = realloc(buffer.caddr, msize * bs);
 		if (buffer.caddr == NULL)
 			err(1, "realloc");
