@@ -1,4 +1,4 @@
-/*	$OpenBSD: mfsnode.h,v 1.8.2.1 2002/10/29 01:11:09 art Exp $	*/
+/*	$OpenBSD$	*/
 /*	$NetBSD: mfsnode.h,v 1.3 1996/02/09 22:31:31 christos Exp $	*/
 
 /*
@@ -78,9 +78,9 @@ struct mfsnode {
 #define	mfs_readdir	mfs_badop
 #define	mfs_readlink	mfs_badop
 #define	mfs_abortop	mfs_badop
-#define	mfs_lock	vop_generic_lock
-#define	mfs_unlock	vop_generic_unlock
-#define	mfs_islocked	vop_generic_islocked
+#define	mfs_lock	genfs_nolock
+#define	mfs_unlock	genfs_nounlock
+#define	mfs_islocked	genfs_noislocked
 #define	mfs_pathconf	mfs_badop
 #define	mfs_advlock	mfs_badop
 #define	mfs_blkatoff	mfs_badop

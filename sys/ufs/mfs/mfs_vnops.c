@@ -1,4 +1,4 @@
-/*	$OpenBSD: mfs_vnops.c,v 1.17.2.2 2002/06/11 03:32:50 art Exp $	*/
+/*	$OpenBSD$	*/
 /*	$NetBSD: mfs_vnops.c,v 1.8 1996/03/17 02:16:32 christos Exp $	*/
 
 /*
@@ -46,6 +46,7 @@
 #include <sys/malloc.h>
 
 #include <miscfs/specfs/specdev.h>
+#include <miscfs/genfs/genfs.h>
 
 #include <machine/vmparam.h>
 

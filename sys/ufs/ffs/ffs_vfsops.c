@@ -1,4 +1,4 @@
-/*	$OpenBSD: ffs_vfsops.c,v 1.47.2.4 2002/10/29 00:36:50 art Exp $	*/
+/*	$OpenBSD: ffs_vfsops.c,v 1.47.2.5 2002/11/04 18:02:32 art Exp $	*/
 /*	$NetBSD: ffs_vfsops.c,v 1.19 1996/02/09 22:22:26 christos Exp $	*/
 
 /*
@@ -1165,7 +1165,7 @@ retry:
 	/* XXX - we use the same pool for ffs and mfs */
 	ip = pool_get(&ffs_ino_pool, PR_WAITOK);
 	bzero((caddr_t)ip, sizeof(struct inode));
-	lockinit(&ip->i_lock, PINOD, "inode", 0, 0);
+	vp->v_vnlock = &vp->v_lock;
 	vp->v_data = ip;
 	ip->i_vnode = vp;
 	ip->i_fs = fs = ump->um_fs;
