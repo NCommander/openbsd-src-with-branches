@@ -1,7 +1,9 @@
-#	$OpenBSD: Makefile,v 1.3 1996/06/23 14:30:52 deraadt Exp $
+#	$OpenBSD: Makefile,v 1.1 2002/04/01 17:43:42 beck Exp $
 
 PROG=	authpf
 MAN=	authpf.8
+BINOWN= root
+BINMODE= 4555
 SRCS=	authpf.c parse.y pfctl_parser.c
 CFLAGS+= -I${.CURDIR}/../../sbin/pfctl -Wall -Werror
 .PATH:  ${.CURDIR}/../../sbin/pfctl
