@@ -1,4 +1,4 @@
-/*	$OpenBSD: vm_param.h,v 1.18 1999/12/30 18:21:56 provos Exp $	*/
+/*	$OpenBSD: vm_param.h,v 1.19 2000/03/15 14:17:48 art Exp $	*/
 /*	$NetBSD: vm_param.h,v 1.12 1995/03/26 20:39:16 jtc Exp $	*/
 
 /* 
@@ -150,11 +150,9 @@ extern int		page_shift;
 	{ "loadavg", CTLTYPE_STRUCT }, \
 	{ "psstrings", CTLTYPE_STRUCT }, \
 	{ "uvmexp", CTLTYPE_STRUCT }, \
-	{ "swapencrypt", CTLTYPE_INT }, \
+	{ "swapencrypt", CTLTYPE_NODE }, \
 }
-
 #endif
-
 
 struct _ps_strings {
 	void	*val;
