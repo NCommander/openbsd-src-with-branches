@@ -395,9 +395,6 @@ htonq(u_int64_t q)
 #endif                                          
 
 #ifdef _KERNEL
-#ifndef CRYPTO
-#error "Must define CRYPTO in kernel config"
-#endif
 
 /*
  * Protects all tdb lists.
