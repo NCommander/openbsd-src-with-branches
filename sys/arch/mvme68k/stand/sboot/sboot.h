@@ -1,4 +1,4 @@
-/*	$OpenBSD: sboot.h,v 1.4 1996/10/16 13:50:02 mickey Exp $ */
+/*	$OpenBSD: sboot.h,v 1.5 1997/01/29 07:58:39 deraadt Exp $ */
 
 /*
  * Copyright (c) 1995 Charles D. Cranor and Seth Widoff
@@ -39,7 +39,6 @@ extern caddr_t end;
 
 /* console */
 void puts __P((char *));
-char cngetc __P((void));
 char *ngets __P((char *, int));
 
 /* sboot */
