@@ -28,7 +28,7 @@
  */
 
 #if defined(LIBC_SCCS) && !defined(lint)
-static char *rcsid = "$OpenBSD: bindresvport.c,v 1.9 1996/09/15 09:31:30 tholo Exp $";
+static char *rcsid = "$OpenBSD: bindresvport.c,v 1.10 1999/12/16 21:30:35 deraadt Exp $";
 #endif /* LIBC_SCCS and not lint */
 
 /*
@@ -95,6 +95,7 @@ bindresvport_af(sd, sa, af)
 		return (-1);
 	}
 	sa->sa_family = af;
+	sa->sa_len = salen;
 
 	if (*portp == 0) {
 		int oldlen = sizeof(old);
