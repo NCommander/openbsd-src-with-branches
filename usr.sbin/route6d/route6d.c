@@ -1,4 +1,4 @@
-/*	$OpenBSD: route6d.c,v 1.25 2002/02/19 19:39:40 millert Exp $	*/
+/*	$OpenBSD: route6d.c,v 1.26 2002/02/25 02:33:06 itojun Exp $	*/
 /*	$KAME: route6d.c,v 1.81 2002/02/25 02:27:22 itojun Exp $	*/
 
 /*
@@ -31,7 +31,7 @@
  */
 
 #if 0
-static char _rcsid[] = "$OpenBSD: route6d.c,v 1.25 2002/02/19 19:39:40 millert Exp $";
+static char _rcsid[] = "$OpenBSD: route6d.c,v 1.26 2002/02/25 02:33:06 itojun Exp $";
 #endif
 
 #include <stdio.h>
@@ -3256,14 +3256,15 @@ char *
 allocopy(p)
 	char *p;
 {
-	char *q = (char *)malloc(strlen(p) + 1);
+	int len = strlen(p) + 1;
+	char *q = (char *)malloc(len);
 
 	if (!q) {
 		fatal("malloc");
 		/*NOTREACHED*/
 	}
 
-	strcpy(q, p);
+	strlcpy(q, p, len);
 	return q;
 }
 
