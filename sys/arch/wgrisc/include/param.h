@@ -1,4 +1,4 @@
-/*      $OpenBSD: param.h,v 1.5 1996/09/20 18:18:46 pefo Exp $ */
+/*      $OpenBSD: param.h,v 1.1.1.1 1997/02/06 16:02:43 pefo Exp $ */
 
 /*
  * Copyright (c) 1988 University of Utah.
@@ -95,8 +95,8 @@
  * of the hardware page size.
  */
 #define	MSIZE		128		/* size of an mbuf */
-#define	MCLBYTES	2048		/* enough for whole Ethernet packet */
-#define	MCLSHIFT	10
+#define	MCLSHIFT	11		/* log2(MCLBYTES) */
+#define	MCLBYTES	(1 << MCLSHIFT)	/* enough for whole Ethernet packet */
 #define	MCLOFSET	(MCLBYTES - 1)
 #ifndef NMBCLUSTERS
 #ifdef GATEWAY
