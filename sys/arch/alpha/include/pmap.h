@@ -1,4 +1,4 @@
-/* $OpenBSD: pmap.h,v 1.11 2001/12/05 00:11:51 millert Exp $ */
+/* $OpenBSD: pmap.h,v 1.12 2002/07/24 00:33:50 art Exp $ */
 /* $NetBSD: pmap.h,v 1.37 2000/11/19 03:16:35 thorpej Exp $ */
 
 /*-
@@ -203,8 +203,8 @@ extern	pt_entry_t *VPT;		/* Virtual Page Table */
 /*
  * Alternate mapping hooks for pool pages.  Avoids thrashing the TLB.
  */
-#define	PMAP_MAP_POOLPAGE(pa)		ALPHA_PHYS_TO_K0SEG((pa))
-#define	PMAP_UNMAP_POOLPAGE(va)		ALPHA_K0SEG_TO_PHYS((va))
+#define	PMAP_MAP_POOLPAGE(pg)	ALPHA_PHYS_TO_K0SEG(VM_PAGE_TO_PHYS(pg))
+#define	PMAP_UNMAP_POOLPAGE(va)	PHYS_TO_VM_PAGE(ALPHA_K0SEG_TO_PHYS((va)))
 
 paddr_t vtophys(vaddr_t);
 
