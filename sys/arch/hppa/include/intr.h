@@ -1,4 +1,4 @@
-/*	$OpenBSD: intr.h,v 1.7 1999/02/25 17:27:57 mickey Exp $	*/
+/*	$OpenBSD: intr.h,v 1.8 1999/08/14 03:36:11 mickey Exp $	*/
 
 /* 
  * Copyright (c) 1990,1991,1992,1994 The University of Utah and
@@ -73,17 +73,18 @@
 	_ctl_r;								\
 })
 
-#define	spl0()		__spllow(IPL_NONE)
-#define	splsoft()	__spllow(IPL_CLOCK)
-#define	splsoftnet()	splsoft()
-#define	splsoftclock()	splsoft()
-#define	splbio()	__spllow(IPL_BIO)
-#define	splnet()	__spllow(IPL_NET)
-#define	spltty()	__spllow(IPL_TTY)
-#define	splimp()	__spllow(IPL_CLOCK)
-#define	splclock()	__spllow(IPL_CLOCK)
-#define	splstatclock()	__spllow(IPL_CLOCK)
-#define	splhigh()	__splhigh(IPL_HIGH)
+#define	spl0()			__spllow(IPL_NONE)
+#define	splsoft()		__spllow(IPL_CLOCK)
+#define	splsoftnet()		splsoft()
+#define	spllowersoftclock()	splsoft()
+#define	splsoftclock()		splsoft()
+#define	splbio()		__spllow(IPL_BIO)
+#define	splnet()		__spllow(IPL_NET)
+#define	spltty()		__spllow(IPL_TTY)
+#define	splimp()		__spllow(IPL_CLOCK)
+#define	splclock()		__spllow(IPL_CLOCK)
+#define	splstatclock()		__spllow(IPL_CLOCK)
+#define	splhigh()		__splhigh(IPL_HIGH)
 
 /* software interrupt register */
 extern u_int32_t sir;

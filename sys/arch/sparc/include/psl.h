@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: psl.h,v 1.3 1997/08/08 08:26:41 downsj Exp $	*/
 /*	$NetBSD: psl.h,v 1.12 1997/03/10 21:49:11 pk Exp $ */
 
 /*
@@ -172,8 +172,9 @@ static __inline int name() \
 }
 
 SPL(splsoftint, 1)
-#define	splsoftclock	splsoftint
-#define	splsoftnet	splsoftint
+#define	spllowersoftclock	splsoftint
+#define	splsoftclock		splsoftint
+#define	splsoftnet		splsoftint
 
 /* audio software interrupts are at software level 4 */
 #define	PIL_AUSOFT	4
