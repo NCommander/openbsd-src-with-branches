@@ -1,6 +1,6 @@
-/* tree.h
+/*	$OpenBSD$	*/
 
-   Definitions for address trees... */
+/*   Definitions for address trees... */
 
 /*
  * Copyright (c) 1995 The Internet Software Consortium.  All rights reserved.

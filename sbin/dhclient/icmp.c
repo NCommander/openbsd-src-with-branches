@@ -1,6 +1,6 @@
-/* icmp.c
+/*	$OpenBSD$	*/
 
-   ICMP Protocol engine - for sending out pings and receiving
+/* ICMP Protocol engine - for sending out pings and receiving
    responses. */
 
 /*

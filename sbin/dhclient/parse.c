@@ -1,6 +1,6 @@
-/* parse.c
+/*	$OpenBSD$	*/
 
-   Common parser code for dhcpd and dhclient. */
+/* Common parser code for dhcpd and dhclient. */
 
 /*
  * Copyright (c) 1995, 1996, 1997, 1998 The Internet Software Consortium.

@@ -1,6 +1,6 @@
-/* dhclient.c
+/*	$OpenBSD$	*/
 
-   DHCP Client. */
+/* DHCP Client. */
 
 /*
  * Copyright (c) 1995, 1996, 1997, 1998, 1999

@@ -1,6 +1,6 @@
-/* inet.h
+/*	$OpenBSD$	*/
 
-   Portable definitions for internet addresses */
+/* Portable definitions for internet addresses */
 
 /*
  * Copyright (c) 1996 The Internet Software Consortium.  All rights reserved.

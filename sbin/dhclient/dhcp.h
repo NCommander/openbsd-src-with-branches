@@ -1,6 +1,6 @@
-/* dhcp.h
+/*	$OpenBSD$	*/
 
-   Protocol structures... */
+/* Protocol structures... */
 
 /*
  * Copyright (c) 1995, 1996 The Internet Software Consortium.

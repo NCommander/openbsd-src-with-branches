@@ -1,6 +1,6 @@
-/* systat.h
+/*	$OpenBSD$	*/
 
-   Definitions for systat protocol... */
+/* Definitions for systat protocol... */
 
 /*
  * Copyright (c) 1997 The Internet Software Consortium.

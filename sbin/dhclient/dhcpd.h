@@ -1,6 +1,6 @@
-/* dhcpd.h
+/*	$OpenBSD$	*/
 
-   Definitions for dhcpd... */
+/* Definitions for dhcpd... */
 
 /*
  * Copyright (c) 1995, 1996, 1997, 1998, 1999

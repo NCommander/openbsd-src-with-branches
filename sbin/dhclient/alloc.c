@@ -1,6 +1,6 @@
-/* alloc.c
+/*	$OpenBSD$	*/
 
-   Memory allocation... */
+/* Memory allocation... */
 
 /*
  * Copyright (c) 1995, 1996, 1998 The Internet Software Consortium.

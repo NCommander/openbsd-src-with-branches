@@ -1,6 +1,6 @@
-/* packet.c
+/*	$OpenBSD$	*/
 
-   Packet assembly code, originally contributed by Archie Cobbs. */
+/* Packet assembly code, originally contributed by Archie Cobbs. */
 
 /*
  * Copyright (c) 1995, 1996 The Internet Software Consortium.

@@ -1,6 +1,6 @@
-/* inet.c
+/*	$OpenBSD$	*/
 
-   Subroutines to manipulate internet addresses in a safely portable
+/* Subroutines to manipulate internet addresses in a safely portable
    way... */
 
 /*

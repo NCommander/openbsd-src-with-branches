@@ -1,6 +1,6 @@
-/* socket.c
+/*	$OpenBSD$	*/
 
-   BSD socket interface code... */
+/* BSD socket interface code... */
 
 /*
  * Copyright (c) 1995, 1996, 1997, 1998, 1999

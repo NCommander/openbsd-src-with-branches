@@ -1,6 +1,6 @@
-/* tree.c
+/*	$OpenBSD$	*/
 
-   Routines for manipulating parse trees... */
+/*   Routines for manipulating parse trees... */
 
 /*
  * Copyright (c) 1995, 1996, 1997 The Internet Software Consortium.

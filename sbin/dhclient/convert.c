@@ -1,6 +1,6 @@
-/* convert.c
+/*	$OpenBSD$	*/
 
-   Safe copying of option values into and out of the option buffer, which
+/* Safe copying of option values into and out of the option buffer, which
    can't be assumed to be aligned. */
 
 /*

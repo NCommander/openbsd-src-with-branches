@@ -1,6 +1,6 @@
-/* hash.h
+/*	$OpenBSD$	*/
 
-   Definitions for hashing... */
+/* Definitions for hashing... */
 
 /*
  * Copyright (c) 1995, 1996 The Internet Software Consortium.

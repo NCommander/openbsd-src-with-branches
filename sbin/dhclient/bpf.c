@@ -1,6 +1,6 @@
-/* bpf.c
+/*	$OpenBSD$	*/
 
-   BPF socket interface code, originally contributed by Archie Cobbs. */
+/* BPF socket interface code, originally contributed by Archie Cobbs. */
 
 /*
  * Copyright (c) 1995, 1996, 1998, 1999

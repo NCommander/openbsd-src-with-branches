@@ -1,6 +1,6 @@
-/* tables.c
+/*	$OpenBSD$	*/
 
-   Tables of information... */
+/* Tables of information... */
 
 /*
  * Copyright (c) 1995, 1996 The Internet Software Consortium.

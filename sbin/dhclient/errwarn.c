@@ -1,6 +1,6 @@
-/* errwarn.c
+/*	$OpenBSD$	*/
 
-   Errors and warnings... */
+/* Errors and warnings... */
 
 /*
  * Copyright (c) 1996 The Internet Software Consortium.

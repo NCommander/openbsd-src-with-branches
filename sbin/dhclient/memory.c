@@ -1,6 +1,6 @@
-/* memory.c
+/*	$OpenBSD$	*/
 
-   Memory-resident database... */
+/* Memory-resident database... */
 
 /*
  * Copyright (c) 1995, 1996, 1997, 1998 The Internet Software Consortium.

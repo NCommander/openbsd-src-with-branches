@@ -1,4 +1,4 @@
-# Makefile
+# $OpenBSD$
 #
 # Copyright (c) 1996, 1997 The Internet Software Consortium.
 # All rights reserved.

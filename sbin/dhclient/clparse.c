@@ -1,6 +1,6 @@
-/* clparse.c
+/*	$OpenBSD$	*/
 
-   Parser for dhclient config and lease files... */
+/* Parser for dhclient config and lease files... */
 
 /*
  * Copyright (c) 1997 The Internet Software Consortium.

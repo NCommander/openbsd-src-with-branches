@@ -1,6 +1,6 @@
-/* options.c
+/*	$OpenBSD$	*/
 
-   DHCP options parsing and reassembly. */
+/* DHCP options parsing and reassembly. */
 
 /*
  * Copyright (c) 1995, 1996, 1997, 1998 The Internet Software Consortium.
