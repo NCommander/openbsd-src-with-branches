@@ -1,4 +1,4 @@
-/*	$OpenBSD: file.c,v 1.22 2002/07/25 16:37:54 vincent Exp $	*/
+/*	$OpenBSD: file.c,v 1.23 2002/09/15 22:18:40 vincent Exp $	*/
 
 /*
  *	File commands.
@@ -166,6 +166,9 @@ readin(char *fname)
 		curbp->b_flag |= BFREADONLY;
 	else
 		curbp->b_flag &=~ BFREADONLY;
+	
+	if (startrow)
+		gotoline(FFARG, startrow);
 
 	return status;
 }

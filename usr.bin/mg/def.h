@@ -1,4 +1,4 @@
-/*	$OpenBSD: def.h,v 1.43 2002/07/01 14:33:44 vincent Exp $	*/
+/*	$OpenBSD: def.h,v 1.44 2002/07/24 14:08:33 vincent Exp $	*/
 
 #include <sys/queue.h>
 
@@ -603,6 +603,7 @@ extern MGWIN	*wheadp;
 extern int	 thisflag;
 extern int	 lastflag;
 extern int	 curgoal;
+extern int	 startrow;
 extern int	 epresf;
 extern int	 sgarbf;
 extern int	 mode;
