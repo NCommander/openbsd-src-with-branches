@@ -1,4 +1,4 @@
-/*	$OpenBSD: hosts_access.c,v 1.8 2002/06/07 03:32:04 itojun Exp $	*/
+/*	$OpenBSD: hosts_access.c,v 1.9 2002/06/22 02:13:12 deraadt Exp $	*/
 
  /*
   * This module implements a simple access control language that is based on
@@ -23,7 +23,7 @@
 #if 0
 static char sccsid[] = "@(#) hosts_access.c 1.21 97/02/12 02:13:22";
 #else
-static char rcsid[] = "$OpenBSD: hosts_access.c,v 1.8 2002/06/07 03:32:04 itojun Exp $";
+static char rcsid[] = "$OpenBSD: hosts_access.c,v 1.9 2002/06/22 02:13:12 deraadt Exp $";
 #endif
 #endif
 
@@ -199,7 +199,8 @@ char   *list;
 struct request_info *request;
 int   (*match_fn)(char *, struct request_info *);
 {
-    char   *tok, *last;
+    char   *tok;
+    static char *last;
     int l;
 
     /*
