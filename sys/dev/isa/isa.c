@@ -1,4 +1,4 @@
-/*	$OpenBSD: isa.c,v 1.5 1996/04/18 23:47:41 niklas Exp $	*/
+/*	$OpenBSD: isa.c,v 1.6 1996/04/21 22:24:12 deraadt Exp $	*/
 /*	$NetBSD: isa.c,v 1.80 1996/04/11 22:25:44 cgd Exp $	*/
 
 /*-
