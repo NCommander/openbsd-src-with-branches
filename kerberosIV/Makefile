@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.13 1997/12/16 20:59:43 deraadt Exp $
+#	$OpenBSD: Makefile,v 1.14 1997/12/17 11:38:53 art Exp $
 #	from @(#)Makefile	5.1 (Berkeley) 6/25/90
 
 SUBDIR=
@@ -9,7 +9,7 @@ SUBDIR+=include
 
 SUBDIR+=acl krb kadm kafs kdb
 
-SUBDIR+=ext_srvtab kadmin kadmind kdb_destroy kdb_edit kdb_init kdb_util \
+SUBDIR+=ext_srvtab kadmin kadmind kdb_destroy kdb_init kdb_util \
 	kdestroy kerberos kinit klist kprop kpropd ksrvtgt ksrvutil \
 	kstash make_keypair
 
