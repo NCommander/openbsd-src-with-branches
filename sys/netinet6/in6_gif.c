@@ -1,4 +1,4 @@
-/*	$OpenBSD: in6_gif.c,v 1.11 2001/02/16 08:48:05 itojun Exp $	*/
+/*	$OpenBSD: in6_gif.c,v 1.12 2001/04/14 00:30:59 angelos Exp $	*/
 /*	$KAME: in6_gif.c,v 1.43 2001/01/22 07:27:17 itojun Exp $	*/
 
 /*
@@ -122,7 +122,7 @@ in6_gif_output(ifp, family, m, rt)
 	    {
 		if (m->m_len < sizeof(struct ip)) {
 			m = m_pullup(m, sizeof(struct ip));
-			if (!m)
+			if (m == NULL)
 				return ENOBUFS;
 		}
 		hlen = (mtod(m, struct ip *)->ip_hl) << 2;

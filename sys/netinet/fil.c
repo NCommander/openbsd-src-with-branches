@@ -1,4 +1,4 @@
-/*	$OpenBSD: fil.c,v 1.28 2001/01/30 04:23:55 kjell Exp $	*/
+/*	$OpenBSD: fil.c,v 1.29 2001/05/08 19:58:01 fgsch Exp $	*/
 
 /*
  * Copyright (C) 1993-2000 by Darren Reed.
@@ -870,7 +870,7 @@ int out;
 			ip = (ip_t *)hbuf;
 #  else /* __ sgi */
 #   ifndef linux
-			if ((*mp = m_pullup(m, up)) == 0) {
+			if ((*mp = m_pullup(m, up)) == NULL) {
 				ATOMIC_INCL(frstats[out].fr_pull[1]);
 				return -1;
 			} else {

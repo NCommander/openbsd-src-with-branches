@@ -1,4 +1,4 @@
-/*	$OpenBSD: ip_ipip.c,v 1.12 2001/04/06 04:42:08 csapuntz Exp $ */
+/*	$OpenBSD: ip_ipip.c,v 1.13 2001/04/14 00:30:59 angelos Exp $ */
 
 /*
  * The authors of this code are John Ioannidis (ji@tla.org),
@@ -190,7 +190,7 @@ ipip_input(struct mbuf *m, int iphlen)
     /* Bring the IP header in the first mbuf, if not there already */
     if (m->m_len < hlen)
     {
-	if ((m = m_pullup(m, hlen)) == 0)
+	if ((m = m_pullup(m, hlen)) == NULL)
 	{
 	    DPRINTF(("ipip_input(): m_pullup() failed\n"));
 	    ipipstat.ipips_hdrops++;
@@ -250,7 +250,7 @@ ipip_input(struct mbuf *m, int iphlen)
     /* Bring the inner IP header in the first mbuf, if not there already */
     if (m->m_len < hlen)
     {
-	if ((m = m_pullup(m, hlen)) == 0)
+	if ((m = m_pullup(m, hlen)) == NULL)
 	{
 	    DPRINTF(("ipip_input(): m_pullup() failed\n"));
 	    ipipstat.ipips_hdrops++;
