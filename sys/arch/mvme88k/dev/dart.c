@@ -1,4 +1,4 @@
-/*	$OpenBSD: dart.c,v 1.21 2003/08/21 21:48:23 miod Exp $	*/
+/*	$OpenBSD: dart.c,v 1.22 2003/09/22 21:39:39 miod Exp $	*/
 
 /*
  * Mach Operating System
@@ -833,6 +833,7 @@ dartopen (dev, flag, mode, p)
 		tp = dart->tty;
 	} else {
 		tp = dart->tty = ttymalloc();
+		tty_attach(tp);
 		simple_lock_init(&dart->t_lock);
 	}
 
