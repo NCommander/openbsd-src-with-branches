@@ -1,4 +1,4 @@
-/*	$OpenBSD: ite.c,v 1.22 2003/06/02 23:27:48 millert Exp $	*/
+/*	$OpenBSD: ite.c,v 1.23 2003/10/03 16:44:49 miod Exp $	*/
 /*	$NetBSD: ite.c,v 1.32 1997/02/20 00:23:25 scottr Exp $	*/
 
 /*
@@ -894,11 +894,11 @@ ite_pollforchar()
 		intbits = via_reg(VIA1, vIFR);
 
 		if (intbits & V1IF_ADBRDY) {
-			mrg_adbintr();
+			(void)mrg_adbintr();
 			via_reg(VIA1, vIFR) = V1IF_ADBRDY;
 		}
 		if (intbits & 0x10) {
-			mrg_pmintr();
+			(void)mrg_pmintr();
 			via_reg(VIA1, vIFR) = 0x10;
 		}
 	}
