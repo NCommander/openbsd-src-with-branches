@@ -101,13 +101,13 @@ static struct cvs_cmd {
 		"Show last revision where each line was modified",
 	},
 	{
-		"checkout", { "co",  "get" }, NULL,
+		"checkout", { "co",  "get" }, cvs_checkout,
 		"",
 		"Checkout sources for editing",
 	},
 	{
 		"commit",   { "ci",  "com" }, cvs_commit,
-		"",
+		"[-flR] [-F logfile | -m msg] [-r rev] ...",
 		"Check files into the repository",
 	},
 	{
