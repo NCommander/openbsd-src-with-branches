@@ -1,4 +1,4 @@
-/*	$OpenBSD: util.c,v 1.15 2003/06/09 16:10:03 deraadt Exp $	*/
+/*	$OpenBSD: util.c,v 1.16 2003/07/06 20:03:58 deraadt Exp $	*/
 
 /*
  * Copyright (c) 1998 Per Fogelstrom, Opsycon AB
@@ -90,7 +90,7 @@ _dl_malloc(size_t size)
 		}
 		if (t) {
 			*n = *t;
-			_dl_memset(t, 0, t[-1] - 4);
+			_dl_memset(t, 0, t[-1] - sizeof(long));
 			return((void *)t);
 		}
 	}
