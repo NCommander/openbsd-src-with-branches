@@ -32,27 +32,28 @@
  */
 
 /*
- * $Id: version.h,v 6.28 1996/02/15 20:35:46 mcooper Exp $
+ * $Id: paths.h,v 6.5 1994/03/31 00:55:11 mcooper Exp $
+ * @(#)paths.h
  */
 
 /*
- * The rdist protocol version number.  This should be changed
- * whenever the protocol changes.
+ * This file should be used for those systems without their own
+ * <paths.h> system include file.
  */
-#define VERSION			6
 
-/*
- * Distribution version.  The major distribution number should match
- * the protocol version number (VERSION) defined above.
- */
-#define DISTVERSION		"6.1"
+#ifndef _PATH_SENDMAIL
+#define _PATH_SENDMAIL		"/usr/lib/sendmail"
+#endif
+#ifndef _PATH_TMP
+#define _PATH_TMP		"/tmp"
+#endif
+#ifndef _PATH_DEVNULL
+#define _PATH_DEVNULL		"/dev/null"
+#endif
+#ifndef _PATH_BSHELL
+#define _PATH_BSHELL		"/bin/sh"
+#endif
 
-/*
- * Patch level
- */
-#define PATCHLEVEL 		2
-
-/*
- * Distribution status
- */
-#define DISTSTATUS		"RELEASE"
+#ifndef _PATH_REMSH
+#define _PATH_REMSH		"/usr/ucb/rsh"		/* Remote shell */
+#endif
