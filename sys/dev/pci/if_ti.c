@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_ti.c,v 1.14 2000/11/21 03:50:48 jason Exp $	*/
+/*	$OpenBSD: if_ti.c,v 1.15 2001/02/20 19:39:43 mickey Exp $	*/
 
 /*
  * Copyright (c) 1997, 1998, 1999
@@ -2404,8 +2404,13 @@ int ti_ioctl(ifp, command, data)
 		break;
 	case SIOCADDMULTI:
 	case SIOCDELMULTI:
-		if (ifp->if_flags & IFF_RUNNING) {
-			ti_setmulti(sc);
+		error = (command == SIOCADDMULTI) ?
+		    ether_addmulti(ifr, &sc->arpcom) :
+		    ether_delmulti(ifr, &sc->arpcom);
+
+		if (error == ENETRESET) {
+			if (ifp->if_flags & IFF_RUNNING)
+				ti_setmulti(sc);
 			error = 0;
 		}
 		break;
