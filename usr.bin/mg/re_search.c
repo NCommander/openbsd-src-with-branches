@@ -1,4 +1,4 @@
-/*	$OpenBSD: re_search.c,v 1.8 2001/05/23 22:20:36 art Exp $	*/
+/*	$OpenBSD: re_search.c,v 1.9 2001/05/24 03:05:25 mickey Exp $	*/
 
 /*
  *	regular expression search commands for Mg
@@ -430,7 +430,7 @@ re_readpattern(prompt)
 
 	if (s == TRUE) {
 		/* New pattern given */
-		(void)strcpy(re_pat, tpat);
+		(void)strlcpy(re_pat, tpat, sizeof re_pat);
 		if (casefoldsearch)
 			flags = REG_EXTENDED | REG_ICASE;
 		else
