@@ -1,4 +1,4 @@
-/*	$OpenBSD: ypdef.h,v 1.3 1996/05/30 09:53:02 deraadt Exp $ */
+/*	$OpenBSD: ypdef.h,v 1.4 1996/06/26 21:26:34 maja Exp $ */
 
 /*
  * Copyright (c) 1994 Mats O Jansson <moj@stacken.kth.se>
@@ -64,5 +64,7 @@
 #endif
 
 #define YPXFR_PROC "/usr/sbin/ypxfr"
+#define YPSERV_PID_PATH "/var/run/ypserv.pid"
+#define YP_SECURENET_FILE "/var/yp/securenet"
 
 #endif /* !_YPDEF_H_ */
