@@ -1,4 +1,4 @@
-/*	$OpenBSD: am7990.c,v 1.5 1996/04/21 22:21:15 deraadt Exp $	*/
+/*	$OpenBSD: am7990.c,v 1.9 1996/11/28 23:27:46 niklas Exp $	*/
 /*	$NetBSD: am7990.c,v 1.22 1996/10/13 01:37:19 christos Exp $	*/
 
 /*-
@@ -303,6 +303,10 @@ am7990_init(sc)
 
 	(*sc->sc_wrcsr)(sc, LE_CSR0, LE_C0_STOP);
 	DELAY(100);
+
+	/* Newer LANCE chips have a reset register */
+	if (sc->sc_hwreset)
+		(*sc->sc_hwreset)(sc);
 
 	/* Set the correct byte swapping mode, etc. */
 	(*sc->sc_wrcsr)(sc, LE_CSR3, sc->sc_conf3);
