@@ -1,4 +1,4 @@
-/*	$OpenBSD: ftpd.c,v 1.59 1999/11/29 20:17:09 millert Exp $	*/
+/*	$OpenBSD: ftpd.c,v 1.60 1999/12/01 06:33:24 millert Exp $	*/
 /*	$NetBSD: ftpd.c,v 1.15 1995/06/03 22:46:47 mycroft Exp $	*/
 
 /*
@@ -1022,7 +1022,7 @@ store(name, mode, unique)
 	struct stat st;
 	int fd;
 
-	if (restart_point && type != TYPE_A)
+	if (restart_point && *mode != 'a')
 		mode = "r+";
 
 	if (unique && stat(name, &st) == 0) {
