@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_ed.c,v 1.53 2004/06/06 17:56:36 mcbride Exp $	*/
+/*	$OpenBSD: if_ed.c,v 1.54 2005/01/15 05:24:11 brad Exp $	*/
 /*	$NetBSD: if_ed.c,v 1.105 1996/10/21 22:40:45 thorpej Exp $	*/
 
 /*
@@ -2518,7 +2518,7 @@ edioctl(ifp, cmd, data)
 
 /*
  * Retreive packet from shared memory and send to the next level up via
- * ether_input().  If there is a BPF listener, give a copy to BPF, too.
+ * ether_input_mbuf().  If there is a BPF listener, give a copy to BPF, too.
  */
 void
 edread(sc, buf, len)
