@@ -1,4 +1,4 @@
-/*	$OpenBSD: exec_elf.h,v 1.10 1996/12/11 05:55:33 imp Exp $	*/
+/*	$OpenBSD: exec_elf.h,v 1.11 1997/06/29 07:43:19 deraadt Exp $	*/
 /*
  * Copyright (c) 1995, 1996 Erik Theisen.  All rights reserved.
  *
@@ -381,6 +381,7 @@ struct elf_args {
         u_long  arg_phaddr;		/* program header address */
         u_long  arg_phentsize;		/* Size of program header */
         u_long  arg_phnum;		/* Number of program headers */
+        u_long  arg_os;			/* OS tag */
 };
 
 int exec_elf_makecmds __P((struct proc *, struct exec_package *));
