@@ -1,4 +1,4 @@
-/*	$OpenBSD: vfs_syscalls.c,v 1.111 2004/05/14 04:00:33 tedu Exp $	*/
+/*	$OpenBSD: vfs_syscalls.c,v 1.112 2004/06/21 23:50:36 tholo Exp $	*/
 /*	$NetBSD: vfs_syscalls.c,v 1.71 1996/04/23 10:29:02 mycroft Exp $	*/
 
 /*
@@ -197,8 +197,10 @@ sys_mount(p, v, retval)
 		if (vp->v_mount->mnt_flag & MNT_NOEXEC)
 			SCARG(uap, flags) |= MNT_NOEXEC;
 	}
-	if ((error = vinvalbuf(vp, V_SAVE, p->p_ucred, p, 0, 0)) != 0)
+	if ((error = vinvalbuf(vp, V_SAVE, p->p_ucred, p, 0, 0)) != 0) {
+		vput(vp);
 		return (error);
+	}
 	if (vp->v_type != VDIR) {
 		vput(vp);
 		return (ENOTDIR);
