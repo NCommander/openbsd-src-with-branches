@@ -1,4 +1,4 @@
-/*	$OpenBSD: parse.y,v 1.150 2005/03/11 12:54:19 claudio Exp $ */
+/*	$OpenBSD: parse.y,v 1.151 2005/03/13 15:27:30 henning Exp $ */
 
 /*
  * Copyright (c) 2002, 2003, 2004 Henning Brauer <henning@openbsd.org>
@@ -1134,17 +1134,77 @@ filter_set_opt	: LOCALPREF number		{
 			$$->type = ACTION_SET_LOCALPREF;
 			$$->action.metric = $2;
 		}
+		| LOCALPREF '+' number		{
+			if ($3 > INT_MAX) {
+				yyerror("metric to small: max %u", INT_MAX);
+				YYERROR;
+			}
+			if (($$ = calloc(1, sizeof(struct filter_set))) == NULL)
+				fatal(NULL);
+			$$->type = ACTION_SET_RELATIVE_LOCALPREF;
+			$$->action.relative = $3;
+		}
+		| LOCALPREF '-' number		{
+			if ($3 > INT_MAX) {
+				yyerror("metric to small: min -%u", INT_MAX);
+				YYERROR;
+			}
+			if (($$ = calloc(1, sizeof(struct filter_set))) == NULL)
+				fatal(NULL);
+			$$->type = ACTION_SET_RELATIVE_LOCALPREF;
+			$$->action.relative = -$3;
+		}
 		| MED number			{
 			if (($$ = calloc(1, sizeof(struct filter_set))) == NULL)
 				fatal(NULL);
 			$$->type = ACTION_SET_MED;
 			$$->action.metric = $2;
 		}
+		| MED '+' number			{
+			if ($3 > INT_MAX) {
+				yyerror("metric to small: max %u", INT_MAX);
+				YYERROR;
+			}
+			if (($$ = calloc(1, sizeof(struct filter_set))) == NULL)
+				fatal(NULL);
+			$$->type = ACTION_SET_RELATIVE_MED;
+			$$->action.metric = $3;
+		}
+		| MED '-' number			{
+			if ($3 > INT_MAX) {
+				yyerror("metric to small: min -%u", INT_MAX);
+				YYERROR;
+			}
+			if (($$ = calloc(1, sizeof(struct filter_set))) == NULL)
+				fatal(NULL);
+			$$->type = ACTION_SET_RELATIVE_MED;
+			$$->action.relative = -$3;
+		}
 		| METRIC number			{	/* alias for MED */
 			if (($$ = calloc(1, sizeof(struct filter_set))) == NULL)
 				fatal(NULL);
 			$$->type = ACTION_SET_MED;
 			$$->action.metric = $2;
+		}
+		| METRIC '+' number			{
+			if ($3 > INT_MAX) {
+				yyerror("metric to small: max %u", INT_MAX);
+				YYERROR;
+			}
+			if (($$ = calloc(1, sizeof(struct filter_set))) == NULL)
+				fatal(NULL);
+			$$->type = ACTION_SET_RELATIVE_MED;
+			$$->action.metric = $3;
+		}
+		| METRIC '-' number			{
+			if ($3 > INT_MAX) {
+				yyerror("metric to small: min -%u", INT_MAX);
+				YYERROR;
+			}
+			if (($$ = calloc(1, sizeof(struct filter_set))) == NULL)
+				fatal(NULL);
+			$$->type = ACTION_SET_RELATIVE_MED;
+			$$->action.relative = -$3;
 		}
 		| NEXTHOP address		{
 			if (($$ = calloc(1, sizeof(struct filter_set))) == NULL)
