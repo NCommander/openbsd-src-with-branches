@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /* $NetBSD: irongatereg.h,v 1.2 2000/06/26 02:42:10 thorpej Exp $ */
 
 /*-

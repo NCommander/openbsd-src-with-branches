@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /* $NetBSD: irongate_bus_io.c,v 1.4 2000/06/29 08:58:47 mrg Exp $ */
 
 /*-

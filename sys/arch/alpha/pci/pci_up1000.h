@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /* $NetBSD: pci_up1000.h,v 1.1 2000/06/01 20:30:31 thorpej Exp $ */
 
 /*-

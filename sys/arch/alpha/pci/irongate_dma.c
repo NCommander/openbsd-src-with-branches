@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /* $NetBSD: irongate_dma.c,v 1.3 2000/06/29 08:58:47 mrg Exp $ */
 
 /*-
