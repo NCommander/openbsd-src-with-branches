@@ -1,5 +1,0 @@
-#       $OpenBSD: list_floppy,v 1.2 1997/04/16 21:37:43 deraadt Exp $
-
-COPY	${DESTDIR}/usr/mdec/boot	boot
-SPECIAL	strip boot
-COPY	${OBJDIR}/bsd.gz		bsd
