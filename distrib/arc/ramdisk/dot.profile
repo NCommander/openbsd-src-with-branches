@@ -1,4 +1,4 @@
-#       $OpenBSD: dot.profile,v 1.3 1997/10/20 22:24:21 millert Exp $
+#       $OpenBSD: dot.profile,v 1.4 2000/01/30 01:21:19 deraadt Exp $
 #
 # Copyright (c) 1994 Christopher G. Demetriou
 # All rights reserved.
@@ -42,8 +42,8 @@ if [ "X${DONEPROFILE}" = "X" ]; then
 	DONEPROFILE=YES
 
 	# set up some sane defaults
-	echo 'erase ^?, werase ^W, kill ^U, intr ^C'
-	stty newcrt werase ^W intr ^C kill ^U erase ^? 9600
+	echo 'erase ^?, werase ^W, kill ^U, intr ^C, status ^T'
+	stty newcrt werase ^W intr ^C kill ^U erase ^? status ^T 9600
 	echo ''
 
 	mount /dev/rd0a /
