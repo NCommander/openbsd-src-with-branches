@@ -1,4 +1,4 @@
-/*	$OpenBSD: newsyslog.c,v 1.43 2002/02/16 21:27:50 millert Exp $	*/
+/*	$OpenBSD: newsyslog.c,v 1.44 2002/06/12 06:07:16 mpech Exp $	*/
 
 /*
  * Copyright (c) 1999 Todd C. Miller <Todd.Miller@courtesan.com>
@@ -88,7 +88,7 @@ provided "as is" without express or implied warranty.
  */
 
 #ifndef lint
-static char rcsid[] = "$OpenBSD: newsyslog.c,v 1.43 2002/02/16 21:27:50 millert Exp $";
+static char rcsid[] = "$OpenBSD: newsyslog.c,v 1.44 2002/06/12 06:07:16 mpech Exp $";
 #endif /* not lint */
 
 #ifndef CONF
@@ -132,6 +132,7 @@ static char rcsid[] = "$OpenBSD: newsyslog.c,v 1.43 2002/02/16 21:27:50 millert 
 #define CE_BINARY	0x04		/* Logfile is in binary, don't add */
 					/* status messages */
 #define CE_MONITOR	0x08		/* Monitory for changes */
+#define CE_FOLLOW	0x10		/* Follow symbolic links */
 #define NONE -1
 
 struct conf_entry {
@@ -267,6 +268,19 @@ do_entry(ent)
 	
 {
 	int	modtime, size;
+	struct	stat sta;
+
+	if (!(ent->flags & CE_FOLLOW)) {
+		if (lstat(ent->log, &sta) != 0)
+			return;
+		if ((sta.st_mode & S_IFLNK) != S_IFREG) {
+			if (verbose) {
+				printf("--> %s is not a regular file, skip\n",
+				    ent->log);
+				return;
+			}
+		}
+	}
 
 	if (verbose)
 		printf("%s <%d%s>: ", ent->log, ent->numlogs,
@@ -532,6 +546,10 @@ parse_file(nentries)
 				case 'M':
 				case 'm':
 					working->flags |= CE_MONITOR;
+					break;
+				case 'F':
+				case 'f':
+					working->flags |= CE_FOLLOW;
 					break;
 				default:
 					errx(1, "Illegal flag in config file: %c", *q);
