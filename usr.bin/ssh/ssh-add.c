@@ -35,7 +35,7 @@
  */
 
 #include "includes.h"
-RCSID("$OpenBSD: ssh-add.c,v 1.66 2003/03/05 22:33:43 markus Exp $");
+RCSID("$OpenBSD: ssh-add.c,v 1.67 2003/06/11 11:18:38 djm Exp $");
 
 #include <openssl/evp.h>
 
@@ -158,7 +158,8 @@ add_file(AuthenticationConnection *ac, const char *filename)
 			if (private != NULL)
 				break;
 			clear_pass();
-			strlcpy(msg, "Bad passphrase, try again: ", sizeof msg);
+			snprintf(msg, sizeof msg,
+			    "Bad passphrase, try again for %.200s: ", comment);
 		}
 	}
 
