@@ -1,4 +1,4 @@
-#	$Id: Makefile,v 1.3 1998/08/03 21:05:56 niklas Exp $
+#	$OpenBSD: Makefile,v 1.1.1.1 1998/11/15 00:03:50 niklas Exp $
 
 #
 # Copyright (c) 1998 Niklas Hallqvist.  All rights reserved.

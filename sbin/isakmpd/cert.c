@@ -1,4 +1,4 @@
-/*	$Id: cert.c,v 1.6 1998/10/07 16:40:43 niklas Exp $	*/
+/*	$OpenBSD: cert.c,v 1.1.1.1 1998/11/15 00:03:48 niklas Exp $	*/
 
 /*
  * Copyright (c) 1998 Niels Provos.  All rights reserved.

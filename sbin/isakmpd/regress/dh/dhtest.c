@@ -1,4 +1,4 @@
-/*	$Id: dhtest.c,v 1.1 1998/07/18 21:14:20 provos Exp $	*/
+/*	$OpenBSD: dhtest.c,v 1.1.1.1 1998/11/15 00:03:50 niklas Exp $	*/
 
 /*
  * Copyright (c) 1998 Niels Provos.  All rights reserved.

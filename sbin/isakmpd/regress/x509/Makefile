@@ -1,3 +1,5 @@
+#	$OpenBSD$
+
 # Test X509
 
 PROG=		x509test

@@ -1,3 +1,5 @@
+#	$OpenBSD$
+
 # Test Group:
 
 PROG=		grouptest

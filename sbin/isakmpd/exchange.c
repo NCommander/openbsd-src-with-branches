@@ -1,4 +1,4 @@
-/*	$Id: exchange.c,v 1.50 1998/11/14 23:42:23 niklas Exp $	*/
+/*	$OpenBSD: exchange.c,v 1.1.1.1 1998/11/15 00:03:48 niklas Exp $	*/
 
 /*
  * Copyright (c) 1998 Niklas Hallqvist.  All rights reserved.

@@ -1,3 +1,5 @@
+#	$OpenBSD$
+
 # Test PKCS#1
 
 PROG=		pkcstest

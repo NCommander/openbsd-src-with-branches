@@ -1,4 +1,4 @@
-/*	$Id: ipsec.c,v 1.71 1998/11/14 23:42:25 niklas Exp $	*/
+/*	$OpenBSD: ipsec.c,v 1.1.1.1 1998/11/15 00:03:48 niklas Exp $	*/
 
 /*
  * Copyright (c) 1998 Niklas Hallqvist.  All rights reserved.

@@ -1,4 +1,4 @@
-/*	$Id: asn_useful.h,v 1.6 1998/08/21 13:47:57 provos Exp $	*/
+/*	$OpenBSD: asn_useful.h,v 1.1.1.1 1998/11/15 00:03:48 niklas Exp $	*/
 
 /*
  * Copyright (c) 1998 Niels Provos.  All rights reserved.

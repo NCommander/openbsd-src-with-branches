@@ -1,4 +1,4 @@
-/*	$Id: transport.h,v 1.10 1998/10/11 20:25:10 niklas Exp $	*/
+/*	$OpenBSD: transport.h,v 1.1.1.1 1998/11/15 00:03:49 niklas Exp $	*/
 
 /*
  * Copyright (c) 1998 Niklas Hallqvist.  All rights reserved.

@@ -1,4 +1,4 @@
-/*	$Id: constants.h,v 1.4 1998/08/28 23:04:28 niklas Exp $	*/
+/*	$OpenBSD: constants.h,v 1.1.1.1 1998/11/15 00:03:48 niklas Exp $	*/
 
 /*
  * Copyright (c) 1998 Niklas Hallqvist.  All rights reserved.

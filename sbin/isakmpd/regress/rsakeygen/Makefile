@@ -1,3 +1,5 @@
+#	$OpenBSD$
+
 # RSA Key Generation
 
 PROG=		rsakeygen

@@ -1,4 +1,4 @@
-/*	$Id: prf.c,v 1.3 1998/07/23 09:00:47 niklas Exp $	*/
+/*	$OpenBSD: prf.c,v 1.1.1.1 1998/11/15 00:03:49 niklas Exp $	*/
 
 /*
  * Copyright (c) 1998 Niels Provos.  All rights reserved.

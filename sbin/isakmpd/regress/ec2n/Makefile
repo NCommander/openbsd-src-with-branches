@@ -1,3 +1,5 @@
+#	$OpenBSD$
+
 
 # Test EC2N:
 

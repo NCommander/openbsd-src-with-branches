@@ -1,3 +1,5 @@
+#	$OpenBSD$
+
 # Test DH:
 
 PROG=		dhtest

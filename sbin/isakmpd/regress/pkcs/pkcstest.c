@@ -1,4 +1,4 @@
-/*	$Id: pkcstest.c,v 1.5 1998/08/20 14:09:04 provos Exp $	*/
+/*	$OpenBSD: pkcstest.c,v 1.1.1.1 1998/11/15 00:03:50 niklas Exp $	*/
 
 /*
  * Copyright (c) 1998 Niels Provos.  All rights reserved.

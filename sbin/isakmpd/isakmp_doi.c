@@ -1,4 +1,4 @@
-/*	$Id: isakmp_doi.c,v 1.32 1998/10/11 12:01:08 niklas Exp $	*/
+/*	$OpenBSD: isakmp_doi.c,v 1.1.1.1 1998/11/15 00:03:48 niklas Exp $	*/
 
 /*
  * Copyright (c) 1998 Niklas Hallqvist.  All rights reserved.

@@ -1,4 +1,4 @@
-/*	$Id: crypto.h,v 1.10 1998/08/05 13:14:03 niklas Exp $	*/
+/*	$OpenBSD: crypto.h,v 1.1.1.1 1998/11/15 00:03:48 niklas Exp $	*/
 
 /*
  * Copyright (c) 1998 Niels Provos.  All rights reserved.

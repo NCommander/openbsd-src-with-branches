@@ -1,4 +1,4 @@
-/*	$Id: message.c,v 1.100 1998/11/12 13:02:29 niklas Exp $	*/
+/*	$OpenBSD: message.c,v 1.1.1.1 1998/11/15 00:03:49 niklas Exp $	*/
 
 /*
  * Copyright (c) 1998 Niklas Hallqvist.  All rights reserved.
