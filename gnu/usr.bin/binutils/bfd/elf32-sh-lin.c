@@ -1,6 +1,5 @@
-/* BFD back-end for NetBSD/386 a.out-ish binaries.
-   Copyright 1990, 1991, 1992, 1994, 1995, 1996, 1998
-   Free Software Foundation, Inc.
+/* Hitachi SH specific support for 32-bit Linux
+   Copyright 2000 Free Software Foundation, Inc.
 
 This file is part of BFD, the Binary File Descriptor library.
 
@@ -16,19 +15,15 @@ GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
-Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA. */
+Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
 
-#define	BYTES_IN_WORD	4
-#undef TARGET_IS_BIG_ENDIAN_P
+#define TARGET_BIG_SYM bfd_elf32_shblin_vec
+#define TARGET_BIG_NAME "elf32-shbig-linux"
+#define TARGET_LITTLE_SYM bfd_elf32_shlin_vec
+#define TARGET_LITTLE_NAME "elf32-sh-linux"
+#define ELF_ARCH bfd_arch_sh
+#define ELF_MACHINE_CODE EM_SH
+#define ELF_MAXPAGESIZE 0x10000
+#define elf_symbol_leading_char 0
 
-#define	TARGET_PAGE_SIZE	4096
-#define	SEGMENT_SIZE	TARGET_PAGE_SIZE
-
-#define	DEFAULT_ARCH	bfd_arch_i386
-#define	DEFAULT_MID 	M_386_NETBSD
-
-#define MY(OP) CAT(i386netbsd_,OP)
-/* This needs to start with a.out so GDB knows it is an a.out variant.  */
-#define TARGETNAME "a.out-i386-netbsd"
-
-#include "netbsd.h"
+#include "elf32-sh.c"
