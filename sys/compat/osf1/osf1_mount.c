@@ -83,6 +83,7 @@
 #include <nfs/nfsmount.h>
 
 #include <ufs/ufs/quota.h>
+#include <ufs/ufs/extattr.h>
 #include <ufs/ufs/ufsmount.h>
 
 #include <machine/vmparam.h>

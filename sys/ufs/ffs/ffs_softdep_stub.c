@@ -1,4 +1,4 @@
-/*	$OpenBSD: ffs_softdep_stub.c,v 1.2 1999/12/05 08:30:38 art Exp $	*/
+/*	$OpenBSD: ffs_softdep_stub.c,v 1.3 2001/02/21 23:24:31 csapuntz Exp $	*/
 
 /*
  * Copyright 1998 Marshall Kirk McKusick. All Rights Reserved.
@@ -41,6 +41,7 @@
 #include <sys/param.h>
 #include <sys/vnode.h>
 #include <sys/systm.h>
+#include <ufs/ufs/extattr.h>
 #include <ufs/ufs/quota.h>
 #include <ufs/ufs/inode.h>
 #include <ufs/ffs/ffs_extern.h>
