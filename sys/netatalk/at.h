@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: at.h,v 1.1 1997/07/23 03:39:51 denny Exp $	*/
 
 /*
  * Copyright (c) 1990,1991 Regents of The University of Michigan.
@@ -144,4 +144,4 @@ extern struct domain	atalkdomain;
 extern struct protosw	atalksw[];
 #endif
 
-#endif __AT_HEADER__
+#endif	/* __AT_HEADER__ */

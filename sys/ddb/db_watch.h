@@ -55,4 +55,4 @@ void db_set_watchpoints __P((void));
 void db_clear_watchpoints __P((void));
 boolean_t db_find_watchpoint __P((vm_map_t, db_addr_t, db_regs_t *));
 
-#endif	_DDB_DB_WATCH_
+#endif	/* _DDB_DB_WATCH_ */
