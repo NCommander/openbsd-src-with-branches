@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/**//*	$OpenBSD: print-null.c,v 1.3 1995/03/06 19:11:24 mycroft Exp $	*/
 /*	$NetBSD: print-null.c,v 1.3 1995/03/06 19:11:24 mycroft Exp $	*/
 
 /*

@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/**//*	$OpenBSD: print-ether.c,v 1.3 1995/03/06 19:11:10 mycroft Exp $	*/
 /*	$NetBSD: print-ether.c,v 1.3 1995/03/06 19:11:10 mycroft Exp $	*/
 
 /*

@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/**//*	$OpenBSD: extract.h,v 1.2 1995/03/06 19:10:08 mycroft Exp $	*/
 /*	$NetBSD: extract.h,v 1.2 1995/03/06 19:10:08 mycroft Exp $	*/
 
 /*

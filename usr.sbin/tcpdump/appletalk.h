@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/**//*	$OpenBSD: appletalk.h,v 1.2 1995/03/06 19:09:51 mycroft Exp $	*/
 /*	$NetBSD: appletalk.h,v 1.2 1995/03/06 19:09:51 mycroft Exp $	*/
 
 /*

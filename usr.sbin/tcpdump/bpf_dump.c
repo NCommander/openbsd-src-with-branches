@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/**//*	$OpenBSD: bpf_dump.c,v 1.2 1995/03/06 19:09:55 mycroft Exp $	*/
 /*	$NetBSD: bpf_dump.c,v 1.2 1995/03/06 19:09:55 mycroft Exp $	*/
 
 /*

@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/**//*	$OpenBSD: ipx.h,v 1.2 1995/03/06 19:10:19 mycroft Exp $	*/
 /*	$NetBSD: ipx.h,v 1.2 1995/03/06 19:10:19 mycroft Exp $	*/
 
 /*

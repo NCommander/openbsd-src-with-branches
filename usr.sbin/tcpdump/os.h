@@ -1,5 +1,5 @@
-/*	$OpenBSD$	*/
-/*	$NetBSD: os.h,v 1.2 1995/03/06 19:10:56 mycroft Exp $	*/
+/**//*	$OpenBSD: os.h,v 1.3 1996/05/20 00:41:06 fvdl Exp $	*/
+/*	$NetBSD: os.h,v 1.3 1996/05/20 00:41:06 fvdl Exp $	*/
 
 /*
  * Copyright (c) 1990, 1991, 1993, 1994
@@ -61,3 +61,10 @@
 #ifndef	RIPCMD_POLLENTRY
 #define	RIPCMD_POLLENTRY 6
 #endif
+
+typedef int64_t         int64;
+typedef u_int64_t       u_int64;
+
+#define   INT64_FORMAT   "%qd"
+#define U_INT64_FORMAT   "%qu"
+#define HEX_INT64_FORMAT "%qx"

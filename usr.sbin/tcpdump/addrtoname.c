@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/**//*	$OpenBSD: addrtoname.c,v 1.4 1995/04/24 13:27:39 cgd Exp $	*/
 /*	$NetBSD: addrtoname.c,v 1.4 1995/04/24 13:27:39 cgd Exp $	*/
 
 /*

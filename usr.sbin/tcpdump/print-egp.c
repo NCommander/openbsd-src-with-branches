@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/**//*	$OpenBSD: print-egp.c,v 1.2 1995/03/06 19:11:09 mycroft Exp $	*/
 /*	$NetBSD: print-egp.c,v 1.2 1995/03/06 19:11:09 mycroft Exp $	*/
 
 /*

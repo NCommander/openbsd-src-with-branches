@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/**//*	$OpenBSD: bootp.h,v 1.2 1995/03/06 19:09:54 mycroft Exp $	*/
 /*	$NetBSD: bootp.h,v 1.2 1995/03/06 19:09:54 mycroft Exp $	*/
 
 /* @(#) Header: bootp.h,v 1.6 94/01/13 19:06:29 leres Exp (LBL) */

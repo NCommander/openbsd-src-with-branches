@@ -1,4 +1,4 @@
-#	$OpenBSD$
+#	$OpenBSD: send-ack.awk,v 1.2 1995/03/06 19:11:42 mycroft Exp $
 #	$NetBSD: send-ack.awk,v 1.2 1995/03/06 19:11:42 mycroft Exp $
 
 BEGIN	{

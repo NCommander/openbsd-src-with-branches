@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/**//*	$OpenBSD: print-rip.c,v 1.4 1995/06/20 23:38:49 christos Exp $	*/
 /*	$NetBSD: print-rip.c,v 1.4 1995/06/20 23:38:49 christos Exp $	*/
 
 /*

@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/**//*	$OpenBSD: print-icmp.c,v 1.3 1995/03/06 19:11:13 mycroft Exp $	*/
 /*	$NetBSD: print-icmp.c,v 1.3 1995/03/06 19:11:13 mycroft Exp $	*/
 
 /*

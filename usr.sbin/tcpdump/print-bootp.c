@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/**//*	$OpenBSD: print-bootp.c,v 1.2 1995/03/06 19:11:05 mycroft Exp $	*/
 /*	$NetBSD: print-bootp.c,v 1.2 1995/03/06 19:11:05 mycroft Exp $	*/
 
 /*
