@@ -1,4 +1,4 @@
-/*	$OpenBSD: p9100.c,v 1.7 2002/03/14 01:26:43 millert Exp $	*/
+/*	$OpenBSD: p9100.c,v 1.8 2002/08/12 10:44:04 miod Exp $	*/
 
 /*
  * Copyright (c) 1999 Jason L. Wright (jason@thought.net)
@@ -87,6 +87,7 @@ struct wsscreen_descr p9100_stdscreen = {
 	0, 0,   /* will be filled in */
 	0,
 	0, 0,
+	WSSCREEN_UNDERLINE | WSSCREEN_HILIT |
 	WSSCREEN_REVERSE | WSSCREEN_WSCOLORS
 };
 

@@ -1,4 +1,4 @@
-/*	$OpenBSD: cgfour.c,v 1.13 2002/03/14 01:26:42 millert Exp $	*/
+/*	$OpenBSD: cgfour.c,v 1.14 2002/08/12 10:44:03 miod Exp $	*/
 /*	$NetBSD: cgfour.c,v 1.13 1997/05/24 20:16:06 pk Exp $	*/
 
 /*
@@ -101,6 +101,7 @@ struct wsscreen_descr cgfour_stdscreen = {
 	0, 0,	/* will be filled in */
 	0,
 	0, 0,
+	WSSCREEN_UNDERLINE | WSSCREEN_HILIT |
 	WSSCREEN_REVERSE | WSSCREEN_WSCOLORS
 };
 

@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: vigra.c,v 1.1 2002/08/31 10:47:20 miod Exp $	*/
 
 /*
  * Copyright (c) 2002 Miodrag Vallat.  All rights reserved.
@@ -109,6 +109,7 @@ struct wsscreen_descr vigra_stdscreen = {
 	0, 0,	/* will be filled in */
 	0,
 	0, 0,
+	WSSCREEN_UNDERLINE | WSSCREEN_HILIT |
 	WSSCREEN_REVERSE | WSSCREEN_WSCOLORS
 };
 
