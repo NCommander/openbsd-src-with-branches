@@ -1,4 +1,4 @@
-/*	$OpenBSD: ip_ahhmacmd5.c,v 1.4 1997/02/24 14:06:37 niklas Exp $	*/
+/*	$OpenBSD: ip_ahhmacmd5.c,v 1.5 1997/02/26 03:01:03 angelos Exp $	*/
 
 /*
  * The author of this code is John Ioannidis, ji@tla.org,
@@ -24,7 +24,7 @@
  */
 
 /*
- * Based on draft-ietf-ipsec-ah-hmac-md5-04.txt.
+ * Based on RFC 2085.
  */
 
 #include <sys/param.h>
