@@ -1,4 +1,4 @@
-/* $OpenBSD: if_bgereg.h,v 1.9 2004/05/19 11:36:59 brad Exp $ */
+/* $OpenBSD: if_bgereg.h,v 1.10 2004/08/05 19:57:17 brad Exp $ */
 /*
  * Copyright (c) 2001 Wind River Systems
  * Copyright (c) 1997, 1998, 1999, 2001
@@ -2036,7 +2036,6 @@ struct bge_gib {
  * boundary.
  */
 
-#define BGE_MAX_FRAMELEN	1536
 #define BGE_PAGE_SIZE		PAGE_SIZE
 #define BGE_MIN_FRAMELEN		60
 
