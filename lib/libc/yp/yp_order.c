@@ -80,12 +80,10 @@ again:
 		      xdr_ypreq_nokey, &yprnk, xdr_ypresp_order, &ypro, tv);
 	/*
 	 * XXX
-	 * NIS+ YP emulation package does not impliment YPPROC_ORDER, so
-	 * we always return 0. Or should we return an error?
+	 * NIS+ YP emulation package does not impliment YPPROC_ORDER
 	 */
 	if (r == RPC_PROCUNAVAIL) {
-		*outorder = 0;
-		r = 0;
+		r = YPERR_YPERR;
 		goto bail;
 	}
 	if (r != RPC_SUCCESS) {
