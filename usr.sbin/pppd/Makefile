@@ -18,4 +18,6 @@ DPADD=	${LIBUTIL}
 CFLAGS+= -I. -I${.CURDIR} -DHAVE_PATHS_H
 CLEANFILES=y.tab.h grammar.c scanner.c
 
+MLINKS=	pppd.8 ppp.8
+
 .include <bsd.prog.mk>
