@@ -23,7 +23,7 @@
  */
 
 #include "includes.h"
-RCSID("$OpenBSD: kex.c,v 1.40 2001/12/28 14:50:54 markus Exp $");
+RCSID("$OpenBSD: kex.c,v 1.41 2001/12/28 15:06:00 markus Exp $");
 
 #include <openssl/crypto.h>
 
@@ -115,11 +115,8 @@ kex_protocol_error(int type, u_int32_t seq, void *ctxt)
 static void
 kex_clear_dispatch(void)
 {
-	int i;
-
-	/* Numbers 30-49 are used for kex packets */
-	for (i = 30; i <= 49; i++)
-		dispatch_set(i, &kex_protocol_error);
+	dispatch_range(SSH2_MSG_TRANSPORT_MIN,
+	    SSH2_MSG_TRANSPORT_MAX, &kex_protocol_error);
 }
 
 void
