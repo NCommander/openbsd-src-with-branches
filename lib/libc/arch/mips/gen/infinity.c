@@ -1,11 +1,11 @@
 /* infinity.c */
 
 #if defined(LIBC_SCCS) && !defined(lint)
-static char rcsid[] = "$OpenBSD$";
+static char rcsid[] = "$OpenBSD: infinity.c,v 1.2 1996/08/19 08:16:01 tholo Exp $";
 #endif /* LIBC_SCCS and not lint */
 
 #include <math.h>
-#include <machine/endian.h>
+#include <sys/types.h>
 
 /* bytes for +Infinity on a MIPS */
 #if BYTE_ORDER == BIG_ENDIAN
