@@ -1,4 +1,4 @@
-/*	$OpenBSD: mainbus.c,v 1.13 1998/01/20 18:40:15 niklas Exp $	*/
+/*	$OpenBSD: mainbus.c,v 1.14 1999/02/19 17:32:39 art Exp $	*/
 /*	$NetBSD: mainbus.c,v 1.21 1997/06/06 23:14:20 thorpej Exp $	*/
 
 /*
@@ -52,6 +52,9 @@
 
 #if NBIOS > 0
 #include <machine/biosvar.h>
+#endif
+#ifdef SMP
+#include <machine/mp.h>
 #endif
 
 int	mainbus_match __P((struct device *, void *, void *));
@@ -113,6 +116,15 @@ mainbus_attach(parent, self, aux)
 		mba.mba_bios.bios_iot = I386_BUS_SPACE_IO;
 		mba.mba_bios.bios_memt = I386_BUS_SPACE_MEM;
 		config_found(self, &mba.mba_bios, mainbus_print);
+	}
+#endif
+
+#ifdef SMP
+	if (bios_smpinfo != NULL) {
+		struct mp_float *mp = bios_smpinfo;
+
+		printf("%s: MP 1.%d configuration %d\n", mba.mba_busname,
+		    mp->revision, mp->feature1);
 	}
 #endif
 
