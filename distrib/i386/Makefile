@@ -1,6 +1,6 @@
-#	$OpenBSD: Makefile,v 1.9 2000/07/11 19:23:58 deraadt Exp $
+#	$OpenBSD: Makefile,v 1.5 2002/04/22 02:40:02 deraadt Exp $
 
-SUBDIR= ramdisk_cd ramdiskA ramdiskB ramdiskC
+SUBDIR= ramdisk_cd ramdiskA ramdiskB ramdiskC cdfs
 
 unconfig:
 	cd ramdisk_cd; ${MAKE} unconfig
