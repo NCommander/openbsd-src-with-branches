@@ -178,6 +178,7 @@ main(argc, argv)
 		s = open("/dev/null", O_WRONLY, 0);
 	else
 		s = socket(PF_ROUTE, SOCK_RAW, 0);
+	setuid(uid);
 	if (s < 0)
 		quit("socket");
 	if (*argv)
@@ -911,7 +912,8 @@ getaddr(which, s, hpp)
 		}
 	}
 	if ((val = inet_network(s)) != INADDR_NONE ||
-	    ((np = getnetbyname(s)) != NULL && (val = np->n_net) != 0)) {
+	    (forcehost == 0 && (np = getnetbyname(s)) != NULL &&
+	    (val = np->n_net) != 0)) {
 netdone:
 		if (which == RTA_DST)
 			inet_makenetandmask(val, &su->sin);
