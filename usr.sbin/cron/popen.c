@@ -1,4 +1,4 @@
-/*	$OpenBSD: popen.c,v 1.11 2001/10/01 19:19:09 millert Exp $	*/
+/*	$OpenBSD: popen.c,v 1.12 2001/10/24 17:28:16 millert Exp $	*/
 
 /*
  * Copyright (c) 1988, 1993, 1994
@@ -38,7 +38,7 @@
 #if 0
 static char sccsid[] = "@(#)popen.c	8.3 (Berkeley) 4/6/94";
 #else
-static char rcsid[] = "$OpenBSD: popen.c,v 1.11 2001/10/01 19:19:09 millert Exp $";
+static char rcsid[] = "$OpenBSD: popen.c,v 1.12 2001/10/24 17:28:16 millert Exp $";
 #endif
 #endif /* not lint */
 
@@ -63,7 +63,7 @@ cron_popen(program, type, e)
 	entry *e;
 {
 	char *cp;
-	FILE * volatile iop;
+	FILE *iop;
 	int argc, pdes[2];
 	PID_T pid;
 	char *argv[MAX_ARGV];
