@@ -1,4 +1,4 @@
-/*	$OpenBSD: dired.c,v 1.11 2003/06/26 23:04:10 vincent Exp $	*/
+/*	$OpenBSD: dired.c,v 1.12 2003/08/15 23:23:18 vincent Exp $	*/
 
 /* dired module for mg 2a	 */
 /* by Robert A. Larson		 */
@@ -96,7 +96,7 @@ static PF dired_pf[] = {
 	rescan,		/* ^N */
 	d_findfile,	/* ^O */
 };
-  
+
 static struct KEYMAPE (4 + IMAPEXT) diredmap = {
 	4,
 	4 + IMAPEXT,
