@@ -1,5 +1,5 @@
-/*	$OpenBSD: locore.s,v 1.9 1996/06/09 00:47:25 briggs Exp $	*/
-/*	$NetBSD: locore.s,v 1.64 1996/06/09 01:53:42 briggs Exp $	*/
+/*	$OpenBSD: locore.s,v 1.10 1996/06/15 21:27:17 briggs Exp $	*/
+/*	$NetBSD: locore.s,v 1.65 1996/06/15 21:25:21 briggs Exp $	*/
 
 /*
  * Copyright (c) 1988 University of Utah.
