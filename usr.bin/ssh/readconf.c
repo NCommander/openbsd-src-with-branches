@@ -12,7 +12,7 @@
  */
 
 #include "includes.h"
-RCSID("$OpenBSD: readconf.c,v 1.67 2001/03/10 17:51:04 markus Exp $");
+RCSID("$OpenBSD: readconf.c,v 1.69 2001/03/20 19:10:16 markus Exp $");
 
 #include "ssh.h"
 #include "xmalloc.h"
@@ -217,8 +217,7 @@ add_remote_forward(Options *options, u_short port, const char *host,
 }
 
 /*
- * Returns the number of the token pointed to by cp of length len. Never
- * returns if the token is not known.
+ * Returns the number of the token pointed to by cp or oBadOption.
  */
 
 static OpCodes
