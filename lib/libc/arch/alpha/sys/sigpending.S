@@ -1,3 +1,6 @@
+/*	$OpenBSD: sigpending.S,v 1.1 1995/02/10 17:50:40 cgd Exp $	*/
+/*	$NetBSD: sigpending.S,v 1.1 1995/02/10 17:50:40 cgd Exp $	*/
+
 /*
  * Copyright (c) 1994, 1995 Carnegie-Mellon University.
  * All rights reserved.
@@ -29,7 +32,7 @@
 
 #if defined(SYSLIBC_SCCS)
 	.text
-	.asciz "$OpenBSD$"
+	.asciz "$OpenBSD: sigpending.S,v 1.2 1996/08/19 08:11:16 tholo Exp $"
 #endif /* SYSLIBC_SCCS */
 
 SYSCALL(sigpending)
