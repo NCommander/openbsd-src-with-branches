@@ -48,6 +48,8 @@ struct keytab keywords[] = {
 	{"sa", K_SA},
 	{"sendpipe", K_SENDPIPE},
 	{"show", K_SHOW},
+	{"src", K_SRC},
+	{"srcmask", K_SRCMASK},
 	{"ssthresh", K_SSTHRESH},
 	{"static", K_STATIC},
 	{"x25", K_X25},

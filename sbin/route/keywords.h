@@ -50,8 +50,10 @@ extern struct keytab {
 #define	K_SA	40
 #define	K_SENDPIPE	41
 #define	K_SHOW	42
-#define	K_SSTHRESH	43
-#define	K_STATIC	44
-#define	K_X25	45
-#define	K_XNS	46
-#define	K_XRESOLVE	47
+#define	K_SRC	43
+#define	K_SRCMASK	44
+#define	K_SSTHRESH	45
+#define	K_STATIC	46
+#define	K_X25	47
+#define	K_XNS	48
+#define	K_XRESOLVE	49
