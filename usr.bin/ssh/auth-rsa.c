@@ -14,7 +14,7 @@
  */
 
 #include "includes.h"
-RCSID("$OpenBSD: auth-rsa.c,v 1.57 2003/04/08 20:21:28 itojun Exp $");
+RCSID("$OpenBSD: auth-rsa.c,v 1.58 2003/11/04 08:54:09 djm Exp $");
 
 #include <openssl/rsa.h>
 #include <openssl/md5.h>
@@ -23,7 +23,6 @@ RCSID("$OpenBSD: auth-rsa.c,v 1.57 2003/04/08 20:21:28 itojun Exp $");
 #include "packet.h"
 #include "xmalloc.h"
 #include "ssh1.h"
-#include "mpaux.h"
 #include "uidswap.h"
 #include "match.h"
 #include "auth-options.h"
