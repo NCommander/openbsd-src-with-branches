@@ -40,7 +40,7 @@
  */
 
 #include "includes.h"
-RCSID("$OpenBSD: ssh.c,v 1.185 2002/09/11 18:27:26 stevesk Exp $");
+RCSID("$OpenBSD: ssh.c,v 1.186 2002/09/19 01:58:18 djm Exp $");
 
 #include <openssl/evp.h>
 #include <openssl/err.h>
@@ -1002,7 +1002,7 @@ ssh_session2_setup(int id, void *arg)
 	int interactive = 0;
 	struct termios tio;
 
-	debug("ssh_session2_setup: id %d", id);
+	debug2("ssh_session2_setup: id %d", id);
 
 	if (tty_flag) {
 		struct winsize ws;
