@@ -1,4 +1,4 @@
-/*	$OpenBSD: intr.c,v 1.12 2003/02/17 01:29:20 henric Exp $	*/
+/*	$OpenBSD: intr.c,v 1.13 2003/03/20 23:05:30 henric Exp $	*/
 /*	$NetBSD: intr.c,v 1.39 2001/07/19 23:38:11 eeh Exp $ */
 
 /*
@@ -331,6 +331,9 @@ intr_establish(level, ih)
 			"**********************\n");
 #endif
 	}
+
+	if (ih->ih_clr != NULL)			/* Set interrupt to idle */
+		ih->ih_clr = INTCLR_IDLE;
 
 	splx(s);
 }
