@@ -1,4 +1,4 @@
-/* $OpenBSD: interrupt.c,v 1.16 2004/06/28 02:28:42 aaron Exp $ */
+/* $OpenBSD: interrupt.c,v 1.17 2004/07/06 21:53:59 deraadt Exp $ */
 /* $NetBSD: interrupt.c,v 1.46 2000/06/03 20:47:36 thorpej Exp $ */
 
 /*-
@@ -526,4 +526,11 @@ softintr_disestablish(void *arg)
 	splx(s);
 
 	free(sih, M_DEVBUF);
+}
+
+int
+_splraise(int s)
+{
+	int cur = alpha_pal_rdps() & ALPHA_PSL_IPL_MASK;
+	return (s > cur ? alpha_pal_swpipl(s) : cur);
 }
