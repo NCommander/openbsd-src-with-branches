@@ -73,10 +73,10 @@ major	{wt = 3}
 #file	dev/isa/pcmcia_pcic.c		pcic
 
 include "../../../dev/isa/files.isa"
-file	arch/i386/isa/isa_machdep.c	isa
+file	arch/i386/isa/isa_machdep.c	isabus
 
 # PC clock
-file	arch/i386/isa/clock.c		isa
+file	arch/i386/isa/clock.c		isabus
 
 # Numeric Processing Extension; Math Co-processor
 device	npx at isa
