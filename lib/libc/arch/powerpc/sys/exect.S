@@ -3,7 +3,7 @@
  */
 #if defined(SYSLIBC_SCCS)
 	.text
-	.asciz "$OpenBSD: exect.S,v 1.2 1998/08/07 01:44:01 rahnds Exp $"
+	.asciz "$OpenBSD: exect.S,v 1.3 1999/01/28 05:09:12 rahnds Exp $"
 #endif /* SYSLIBC_SCCS */
 
 #include "SYS.h"
@@ -15,7 +15,7 @@ PREFIX2(exect,execve)
 	/* check for error */
 	cmpwi	0, 0
 	beq+	_ASM_LABEL(exect_ok) 
-	b	PIC_PLT(_ASM_LABEL(cerror))
+	b	PIC_PLT(_ASM_LABEL(__cerror))
 
 	/* update, curbrk and return */
 exect_ok:
