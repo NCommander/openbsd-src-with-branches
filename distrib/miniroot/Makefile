@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.2.4.3 1996/07/04 07:05:32 leo Exp $
+#	$OpenBSD: Makefile,v 1.6 1997/04/29 20:37:09 niklas Exp $
 #	$NetBSD: Makefile,v 1.2.4.3 1996/07/04 07:05:32 leo Exp $
 
 # Revision is 2.1
@@ -58,7 +58,7 @@ all: ${CBIN} bsd
 
 unconfig:
 	-umount -f ${MOUNT_POINT}
-	-vnconfig -u ${VND_DEV}
+	-vnconfig -u ${VND}
 	-/bin/rm -f ${IMAGE}
 
 ${CBIN}.conf: ${LISTS}
