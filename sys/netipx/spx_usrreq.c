@@ -1,4 +1,4 @@
-/*	$OpenBSD: spx_usrreq.c,v 1.3 1996/10/26 09:34:57 mickey Exp $	*/
+/*	$OpenBSD: spx_usrreq.c,v 1.4 1996/11/25 08:20:03 mickey Exp $	*/
 
 /*-
  *
@@ -633,7 +633,7 @@ spx_ctlinput(cmd, arg_as_sa, dummy)
 	case PRC_HOSTDEAD:
 	case PRC_HOSTUNREACH:
 		sipx = (struct sockaddr_ipx *)arg;
-		if (sipx->sipx_family != AF_IPX)
+		if (sipx == NULL || sipx->sipx_family != AF_IPX)
 			return NULL;
 		na = &sipx->sipx_addr;
 		break;
