@@ -1,9 +1,9 @@
-# $OpenBSD: Makefile,v 1.4 2000/04/01 22:45:27 deraadt Exp $
+# $OpenBSD: Makefile,v 1.5 2000/04/02 03:59:00 deraadt Exp $
 
 LIB	= kafs
 
 KRBDEPTH=../..
-.include <../../Makefile.inc>
+.include "../../Makefile.inc"
 
 INCLUDE_FILES	= ${KRBSRC}/lib/kafs/kafs.h
 

@@ -1,9 +1,9 @@
-# $OpenBSD: Makefile,v 1.2 2000/03/01 08:55:01 deraadt Exp $
+# $OpenBSD: Makefile,v 1.3 2000/03/29 06:51:18 deraadt Exp $
 
 PROG	= kerberos
 
 KRBDEPTH=../..
-.include <../../Makefile.inc>
+.include "../../Makefile.inc"
 
 .PATH:	${KRBSRC}/server
 

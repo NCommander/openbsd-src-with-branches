@@ -1,9 +1,9 @@
-# $OpenBSD: Makefile,v 1.1 2000/02/25 16:35:24 hin Exp $
+# $OpenBSD: Makefile,v 1.2 2000/03/29 07:06:06 deraadt Exp $
 
 LIB	= acl
 
 KRBDEPTH=../..
-.include <../../Makefile.inc>
+.include "../../Makefile.inc"
 
 INCLUDE_FILES	= ${KRBSRC}/lib/acl/acl.h
 

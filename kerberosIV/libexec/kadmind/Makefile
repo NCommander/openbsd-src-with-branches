@@ -1,9 +1,9 @@
-# $OpenBSD: Makefile,v 1.1 2000/02/25 16:35:27 hin Exp $
+# $OpenBSD: Makefile,v 1.2 2000/03/01 08:54:59 deraadt Exp $
 
 PROG	= kadmind
 
 KRBDEPTH=../..
-.include <../../Makefile.inc>
+.include "../../Makefile.inc"
 
 .PATH:	${KRBSRC}/kadmin
 

@@ -1,9 +1,9 @@
-# $OpenBSD: Makefile,v 1.1 2000/02/25 16:35:30 hin Exp $
+# $OpenBSD: Makefile,v 1.2 2000/03/27 11:31:58 maja Exp $
 
 PROG	= klist
 
 KRBDEPTH=../..
-.include <../../Makefile.inc>
+.include "../../Makefile.inc"
 
 .PATH:	${KRBSRC}/kuser
 
