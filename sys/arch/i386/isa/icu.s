@@ -1,4 +1,4 @@
-/*	$OpenBSD: icu.s,v 1.4 1996/06/30 21:43:42 chuck Exp $	*/
+/*	$OpenBSD: icu.s,v 1.5 1996/07/07 00:05:48 downsj Exp $	*/
 /*	$NetBSD: icu.s,v 1.45 1996/01/07 03:59:34 mycroft Exp $	*/
 
 /*-
@@ -132,7 +132,7 @@ IDTVEC(softtty)
 #if NPCCOM > 0
 	leal	SIR_TTYMASK(%ebx),%eax
 	movl	%eax,_cpl
-	call	_pccomsoft
+	call	_comsoft
 	movl	%ebx,_cpl
 #endif
 	jmp	%esi
