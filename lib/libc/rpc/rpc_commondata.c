@@ -28,7 +28,7 @@
  */
 
 #if defined(LIBC_SCCS) && !defined(lint)
-static char *rcsid = "$OpenBSD: rpc_commondata.c,v 1.2 1996/07/20 06:12:37 deraadt Exp $";
+static char *rcsid = "$OpenBSD: rpc_commondata.c,v 1.3 1996/08/19 08:31:47 tholo Exp $";
 #endif /* LIBC_SCCS and not lint */
 
 #include <rpc/rpc.h>
@@ -39,4 +39,6 @@ static char *rcsid = "$OpenBSD: rpc_commondata.c,v 1.2 1996/07/20 06:12:37 deraa
 struct opaque_auth _null_auth;
 fd_set svc_fdset;
 int svc_maxfd = -1;
+int svc_max_pollfd;
+struct pollfd *svc_pollfd;
 struct rpc_createerr rpc_createerr;
