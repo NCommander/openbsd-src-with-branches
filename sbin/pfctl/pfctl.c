@@ -1,4 +1,4 @@
-/*	$OpenBSD: pfctl.c,v 1.130 2003/01/10 14:21:21 cedric Exp $ */
+/*	$OpenBSD: pfctl.c,v 1.131 2003/01/11 21:10:56 henning Exp $ */
 
 /*
  * Copyright (c) 2001 Daniel Hartmeier
@@ -170,7 +170,7 @@ static char *showopt_list[] = {
 };
 
 static char *tblcmdopt_list[] = {
-	"create", "kill", "flush", "add", "delete", "replace", "show",
+	"create", "kill", "flush", "add", "delete", "load", "replace", "show",
 	"test", "zero", NULL
 };
 
