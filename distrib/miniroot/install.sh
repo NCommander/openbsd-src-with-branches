@@ -1,5 +1,5 @@
 #!/bin/sh
-#	$OpenBSD: install.sh,v 1.68 1999/10/15 16:55:00 millert Exp $
+#	$OpenBSD: install.sh,v 1.69 1999/10/16 19:01:21 deraadt Exp $
 #	$NetBSD: install.sh,v 1.5.2.8 1996/08/27 18:15:05 gwr Exp $
 #
 # Copyright (c) 1997,1998 Todd Miller, Theo de Raadt
@@ -529,6 +529,7 @@ q" | ed /mnt/etc/master.passwd 2> /dev/null
 
 dd if=/mnt/dev/urandom of=/mnt/var/db/host.random bs=1024 count=64 >/dev/null 2>&1
 chmod 600 /mnt/var/db/host.random >/dev/null 2>&1
+populateusrlocal
 
 unmount_fs /tmp/fstab.shadow
 
