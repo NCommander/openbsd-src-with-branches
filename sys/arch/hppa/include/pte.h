@@ -1,4 +1,4 @@
-/*	$OpenBSD: pte.h,v 1.6 1999/09/02 06:16:58 mickey Exp $	*/
+/*	$OpenBSD: pte.h,v 1.8 2001/01/12 23:37:49 mickey Exp $	*/
 
 /* 
  * Copyright (c) 1990,1993,1994 The University of Utah and
@@ -50,7 +50,7 @@
 #define TLB_PID_MASK	0x0000fffe
 #define TLB_WIRED	0x00000001	/* software only */
 
-#define	TLB_BITS	"\020\024C\025U\031W\032X\033N\034B\035D\036T\037A\040R"
+#define	TLB_BITS	"\020\024U\031W\032X\033N\034B\035D\036T\037A\040R"
 
 #define TLB_REF_POS	0
 #define TLB_ALIGNED_POS	1

@@ -1,4 +1,4 @@
-/*	$OpenBSD: vmparam.h,v 1.13 1999/09/20 17:05:47 deraadt Exp $	*/
+/*	$OpenBSD: vmparam.h,v 1.16 2001/03/22 23:36:52 niklas Exp $	*/
 /*	$NetBSD: vmparam.h,v 1.15 1994/10/27 04:16:34 cgd Exp $	*/
 
 /*-
@@ -130,6 +130,12 @@
  * Mach derived constants
  */
 
+/* XXX Compatibility */
+#ifdef PMAP_NEW
+#define APTDPTDI	PDSLOT_APTE
+#define PTDPTDI		PDSLOT_PTE
+#endif
+
 /* user/kernel map constants */
 #define VM_MIN_ADDRESS		((vm_offset_t)0)
 #define VM_MAXUSER_ADDRESS	((vm_offset_t)((PTDPTDI<<PDSHIFT) - USPACE))
@@ -145,7 +151,7 @@
 #define	MACHINE_NEW_NONCONTIG	/* VM <=> pmap interface modifier */
 
 #define	VM_PHYSSEG_MAX	4	/* actually we could have this many segments */
-#define	VM_PHYSSEG_STRAT	VM_PSTRAT_BIGFIRST
+#define	VM_PHYSSEG_STRAT	VM_PSTRAT_BSEARCH
 #define	VM_PHYSSEG_NOADD	/* can't add RAM after vm_mem_init */
 
 #define VM_NFREELIST		2

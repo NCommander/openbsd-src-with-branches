@@ -1,4 +1,4 @@
-/*	$OpenBSD: grf_tc.c,v 1.6 1997/04/16 11:56:05 downsj Exp $	*/
+/*	$OpenBSD: grf_tc.c,v 1.8 2000/11/10 15:33:05 provos Exp $	*/
 /*	$NetBSD: grf_tc.c,v 1.11 1997/03/31 07:34:18 scottr Exp $	*/
 
 /*
@@ -317,7 +317,7 @@ tc_init(gp, scode, addr)
 			gp->g_fbkva = addr + gi->gd_regsize;
 		} else {
 			/*
-			 * For DIO space we need to map the seperate
+			 * For DIO space we need to map the separate
 			 * framebuffer.
 			 */
 			gp->g_regkva = addr;
