@@ -1,0 +1,4 @@
+#	$OpenBSD$
+
+NEWFSOPTS=		-i 2048
+NEWFS_WILL_FAIL=	true
