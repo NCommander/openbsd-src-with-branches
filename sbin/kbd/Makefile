@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.13 2002/02/19 01:49:57 maja Exp $
+#	$OpenBSD: Makefile,v 1.14 2002/04/19 00:05:20 miod Exp $
 
 .if (${MACHINE} == "alpha") || (${MACHINE} == "hppa") || \
     (${MACHINE} == "i386") || (${MACHINE} == "macppc") || \
@@ -6,16 +6,10 @@
     (${MACHINE} == "vax")
 PROG=	kbd
 
-SRCS=	main.c
+SRCS=	main.c kbd_wscons.c
 CFLAGS+=-I${.CURDIR}
-
-.if (${MACHINE} == "sparc")
-SRCS+=	kbd_sparc.c
-.else
-SRCS+=	kbd_wscons.c
 LDADD=	-lkvm
 DPADD=	${LIBKVM}
-.endif
 
 .else
 NOPROG=	Yes
