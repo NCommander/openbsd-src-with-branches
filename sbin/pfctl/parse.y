@@ -1,4 +1,4 @@
-/*	$OpenBSD: parse.y,v 1.211 2002/11/24 17:33:57 pb Exp $	*/
+/*	$OpenBSD: parse.y,v 1.212 2002/11/25 15:50:58 henning Exp $	*/
 
 /*
  * Copyright (c) 2001 Markus Friedl.  All rights reserved.
@@ -638,11 +638,11 @@ bandwidth	: /* empty */		{
 				if (!strcmp(cp, "b"))
 					;
 				else if (!strcmp(cp, "Kb"))
-					bps *= 1024;
+					bps *= 1000;
 				else if (!strcmp(cp, "Mb"))
-					bps *= 1024 * 1024;
+					bps *= 1000 * 1000;
 				else if (!strcmp(cp, "Gb"))
-					bps *= 1024 * 1024 * 1024;
+					bps *= 1000 * 1000 * 1000;
 				else if (!strcmp(cp, "%")) {
 					if (bps < 0 || bps > 100) {
 						yyerror("bandwidth spec "
