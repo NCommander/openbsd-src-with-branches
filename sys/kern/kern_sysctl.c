@@ -1,4 +1,4 @@
-/*	$OpenBSD: kern_sysctl.c,v 1.33 2000/03/16 22:11:03 art Exp $	*/
+/*	$OpenBSD: kern_sysctl.c,v 1.34 2000/05/06 17:08:14 deraadt Exp $	*/
 /*	$NetBSD: kern_sysctl.c,v 1.17 1996/05/20 17:49:05 mrg Exp $	*/
 
 /*-
@@ -806,7 +806,7 @@ fill_eproc(p, ep)
 	ep->e_sess = p->p_pgrp->pg_session;
 	ep->e_pcred = *p->p_cred;
 	ep->e_ucred = *p->p_ucred;
-	if (p->p_stat == SIDL || p->p_stat == SZOMB) {
+	if (p->p_stat == SIDL || P_ZOMBIE(p)) {
 		ep->e_vm.vm_rssize = 0;
 		ep->e_vm.vm_tsize = 0;
 		ep->e_vm.vm_dsize = 0;

@@ -1,4 +1,4 @@
-/*	$OpenBSD: kern_sig.c,v 1.36 2000/03/03 11:31:43 art Exp $	*/
+/*	$OpenBSD: kern_sig.c,v 1.37 2000/04/21 15:47:27 millert Exp $	*/
 /*	$NetBSD: kern_sig.c,v 1.54 1996/04/22 01:38:32 christos Exp $	*/
 
 /*
@@ -542,7 +542,7 @@ killpg1(cp, signum, pgid, all)
 			    !cansignal(cp, pc, p, signum))
 				continue;
 			nfound++;
-			if (signum)
+			if (signum && P_ZOMBIE(p) == 0)
 				psignal(p, signum);
 		}
 	}

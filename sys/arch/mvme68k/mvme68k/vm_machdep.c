@@ -1,4 +1,4 @@
-/*	$OpenBSD: vm_machdep.c,v 1.10 1999/01/10 13:34:18 niklas Exp $ */
+/*	$OpenBSD: vm_machdep.c,v 1.14 1999/09/27 20:30:32 smurph Exp $ */
 
 /*
  * Copyright (c) 1988 University of Utah.
@@ -129,8 +129,6 @@ void
 cpu_exit(p)
 	struct proc *p;
 {
-
-	vmspace_free(p->p_vmspace);
 
 	(void) splimp();
 	cnt.v_swtch++;
