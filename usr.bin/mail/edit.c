@@ -1,4 +1,4 @@
-/*	$OpenBSD: edit.c,v 1.11 2001/11/21 15:26:39 millert Exp $	*/
+/*	$OpenBSD: edit.c,v 1.12 2003/06/03 02:56:11 millert Exp $	*/
 /*	$NetBSD: edit.c,v 1.5 1996/06/08 19:48:20 christos Exp $	*/
 
 /*
@@ -34,7 +34,7 @@
 #if 0
 static const char sccsid[] = "@(#)edit.c	8.1 (Berkeley) 6/6/93";
 #else
-static const char rcsid[] = "$OpenBSD: edit.c,v 1.11 2001/11/21 15:26:39 millert Exp $";
+static const char rcsid[] = "$OpenBSD: edit.c,v 1.12 2003/06/03 02:56:11 millert Exp $";
 #endif
 #endif /* not lint */
 
@@ -106,7 +106,7 @@ edit1(int *msgvec, int type)
 		dot = mp = &message[msgvec[i] - 1];
 		touch(mp);
 		(void)ignoresig(SIGINT, &oact, &oset);
-		fp = run_editor(setinput(mp), mp->m_size, type, readonly);
+		fp = run_editor(setinput(mp), (off_t)mp->m_size, type, readonly);
 		if (fp != NULL) {
 			(void)fseek(otf, 0L, 2);
 			size = ftell(otf);
