@@ -1,4 +1,4 @@
-/*	$OpenBSD: dev_i386.c,v 1.14 1997/07/21 15:32:14 mickey Exp $	*/
+/*	$OpenBSD: dev_i386.c,v 1.15 1997/08/12 21:44:29 mickey Exp $	*/
 
 /*
  * Copyright (c) 1996 Michael Shalayeff
@@ -151,7 +151,7 @@ getchar()
 	if (c == '\r')
 		c = '\n';
 
-	cnputc(c);
+	putchar(c);
 
 	return(c);
 }
