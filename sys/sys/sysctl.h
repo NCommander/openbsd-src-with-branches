@@ -1,4 +1,4 @@
-/*	$OpenBSD: sysctl.h,v 1.12 1997/06/14 21:37:10 mickey Exp $	*/
+/*	$OpenBSD: sysctl.h,v 1.14 1997/06/22 04:58:04 flipk Exp $	*/
 /*	$NetBSD: sysctl.h,v 1.16 1996/04/09 20:55:36 cgd Exp $	*/
 
 /*
@@ -217,7 +217,9 @@ struct kinfo_proc {
 #define	EPROC_CTTY	0x01	/* controlling tty vnode active */
 #define	EPROC_SLEADER	0x02	/* session leader */
 		char	e_login[MAXLOGNAME];	/* setlogin() name */
-		long	e_spare[4];
+#define EMULNAMELEN	7
+		char	e_emul[EMULNAMELEN+1];	/* syscall emulation name */
+		int32_t	e_spare[2];
 	} kp_eproc;
 };
 

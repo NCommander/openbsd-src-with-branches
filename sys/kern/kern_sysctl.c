@@ -1,4 +1,4 @@
-/*	$OpenBSD: kern_sysctl.c,v 1.16 1997/06/14 21:37:10 mickey Exp $	*/
+/*	$OpenBSD: kern_sysctl.c,v 1.18 1997/06/22 04:58:03 flipk Exp $	*/
 /*	$NetBSD: kern_sysctl.c,v 1.17 1996/05/20 17:49:05 mrg Exp $	*/
 
 /*-
@@ -749,4 +749,6 @@ fill_eproc(p, ep)
 	ep->e_xccount = ep->e_xswrss = 0;
 	strncpy(ep->e_login, ep->e_sess->s_login, MAXLOGNAME-1);
 	ep->e_login[MAXLOGNAME-1] = '\0';
+	strncpy(ep->e_emul, p->p_emul->e_name, EMULNAMELEN);
+	ep->e_emul[EMULNAMELEN] = '\0';
 }
