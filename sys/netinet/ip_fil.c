@@ -1,4 +1,4 @@
-/*	$OpenBSD: ip_fil.c,v 1.42 2001/03/07 05:43:17 aaron Exp $	*/
+/*	$OpenBSD: ip_fil.c,v 1.43 2001/04/22 19:44:34 gluk Exp $	*/
 
 /*
  * Copyright (C) 1993-2000 by Darren Reed.
@@ -1378,7 +1378,7 @@ frdest_t *fdp;
 			goto bad;
 		}
 		if (ro->ro_rt->rt_flags & RTF_GATEWAY)
-			dst = (struct sockaddr_in *)&ro->ro_rt->rt_gateway;
+			dst = satosin(ro->ro_rt->rt_gateway);
 	}
 	if (ro->ro_rt)
 		ro->ro_rt->rt_use++;
@@ -1413,7 +1413,7 @@ frdest_t *fdp;
 #  else
 		if (m->m_flags & M_EXT)
 #  endif
-			i = 1;
+			i = 0;
 # endif
 		ip->ip_id = htons(ip->ip_id);
 		ip->ip_len = htons(ip->ip_len);
