@@ -1,4 +1,4 @@
-/*	$OpenBSD: disksubr.c,v 1.16 2001/08/26 14:31:12 miod Exp $	*/
+/*	$OpenBSD: disksubr.c,v 1.17 2002/03/14 01:26:40 millert Exp $	*/
 /*
  * Copyright (c) 1998 Steve Murphree, Jr.
  * Copyright (c) 1995 Dale Rahn.
@@ -740,7 +740,7 @@ printlp(lp, str)
 	printf("%s\n", str);
 	printf("magic1 %x\n", lp->d_magic);
 	printf("magic2 %x\n", lp->d_magic2);
-	printf("typename %s\n", lp->d_typename);
+	printf("typename %.*s\n", (int)sizeof(lp->d_typename), lp->d_typename);
 	printf("secsize %x nsect %x ntrack %x ncylinders %x\n",
 	    lp->d_secsize, lp->d_nsectors, lp->d_ntracks, lp->d_ncylinders);
 	printf("Num partitions %x\n", lp->d_npartitions);
