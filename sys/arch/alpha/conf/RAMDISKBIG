@@ -26,8 +26,6 @@ option		NO_IEEE		# Disable IEEE math
 # Standard system options
 maxusers	8			# estimated number of users
 
-option		DDB
-
 # File system options
 option		FFS		# Fast file system
 option		CD9660		# ISO 9660 + Rock Ridge file system
