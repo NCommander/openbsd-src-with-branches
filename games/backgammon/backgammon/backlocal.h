@@ -1,4 +1,4 @@
-/*	$OpenBSD: backlocal.h,v 1.2 2001/06/23 23:49:53 pjanzen Exp $	*/
+/*	$OpenBSD: backlocal.h,v 1.3 2002/02/16 21:27:08 millert Exp $	*/
 
 /*-
  * Copyright (c) 1997 The NetBSD Foundation, Inc.
@@ -40,9 +40,8 @@ void		dble(void);
 int		dblgood(void);
 int		eval(void);
 int		freemen(int);
-void		movcmp(void);
 void		domove(int);
-int		movegood(void);
-void		pickmove(void);
 int		trapped(int, int);
 void		trymove(int, int);
+float		pubeval(int);
+void		setx(void);
