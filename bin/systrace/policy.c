@@ -1,4 +1,4 @@
-/*	$OpenBSD: policy.c,v 1.10 2002/06/19 16:31:07 provos Exp $	*/
+/*	$OpenBSD: policy.c,v 1.11 2002/06/22 18:23:02 deraadt Exp $	*/
 /*
  * Copyright 2002 Niels Provos <provos@citi.umich.edu>
  * All rights reserved.
@@ -460,6 +460,9 @@ systrace_readpolicy(char *filename)
 			err(1, "%s:%d: calloc", __func__, __LINE__);
 
 		filter->rule = strdup(rule);
+		if (filter->rule == NULL)
+			err(1, "%s:%d: strdup", __func__, __LINE__);
+
 		strlcpy(filter->name, name, sizeof(filter->name));
 		strlcpy(filter->emulation,emulation,sizeof(filter->emulation));
 
