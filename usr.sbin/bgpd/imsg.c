@@ -1,4 +1,4 @@
-/*	$OpenBSD: imsg.c,v 1.14 2003/12/30 22:42:31 henning Exp $ */
+/*	$OpenBSD: imsg.c,v 1.15 2004/01/01 23:09:09 henning Exp $ */
 
 /*
  * Copyright (c) 2003 Henning Brauer <henning@openbsd.org>
@@ -48,7 +48,7 @@ imsg_read(struct imsgbuf *ibuf)
 		return (0);
 	}
 	if (n == 0) {	/* connection closed */
-		logit(LOG_CRIT, "imsg_get: pipe close");
+		logit(LOG_CRIT, "imsg_get: pipe closed");
 		return (-1);
 	}
 
