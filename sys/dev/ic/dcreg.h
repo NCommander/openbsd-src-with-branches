@@ -1,4 +1,4 @@
-/*	$OpenBSD: dcreg.h,v 1.3 2000/04/26 13:58:28 mickey Exp $ */
+/*	$OpenBSD: dcreg.h,v 1.4 2000/06/12 15:17:13 aaron Exp $ */
 
 /*
  * Copyright (c) 1997, 1998, 1999
@@ -648,6 +648,7 @@ struct dc_softc {
 	u_int8_t		dc_pmode;
 	u_int8_t		dc_link;
 	u_int8_t		dc_cachesize;
+	int			dc_romwidth;
 	int			dc_pnic_rx_bug_save;
 	unsigned char		*dc_pnic_rx_buf;
 	int			dc_if_flags;
