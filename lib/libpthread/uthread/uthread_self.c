@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: uthread_self.c,v 1.3 1999/11/25 07:01:43 d Exp $	*/
 /*
  * Copyright (c) 1995 John Birrell <jb@cimlogic.com.au>.
  * All rights reserved.
@@ -40,6 +40,6 @@ pthread_t
 pthread_self(void)
 {
 	/* Return the running thread pointer: */
-	return (_thread_run);
+	return (_get_curthread());
 }
 #endif

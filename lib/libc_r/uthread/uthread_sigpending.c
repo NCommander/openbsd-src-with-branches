@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: uthread_sigpending.c,v 1.2 1999/11/25 07:01:45 d Exp $	*/
 /*
  * Copyright (c) 1999 Daniel Eischen <eischen@vigrid.com>.
  * All rights reserved.
@@ -41,6 +41,7 @@
 int
 sigpending(sigset_t * set)
 {
+	struct pthread	*curthread = _get_curthread();
 	int ret = 0;
 
 	/* Check for a null signal set pointer: */
@@ -49,7 +50,7 @@ sigpending(sigset_t * set)
 		ret = EINVAL;
 	}
 	else {
-		*set = _thread_run->sigpend;
+		*set = curthread->sigpend;
 	}
 	/* Return the completion status: */
 	return (ret);

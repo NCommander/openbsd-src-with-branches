@@ -1,4 +1,4 @@
-/*	$OpenBSD: uthread_yield.c,v 1.3 1999/11/25 07:01:47 d Exp $	*/
+/*	$OpenBSD: uthread_yield.c,v 1.4 2001/08/04 14:43:53 fgsch Exp $	*/
 /*
  * Copyright (c) 1995 John Birrell <jb@cimlogic.com.au>.
  * All rights reserved.
@@ -39,8 +39,10 @@
 int
 sched_yield(void)
 {
+	struct pthread	*curthread = _get_curthread();
+
 	/* Reset the accumulated time slice value for the current thread: */
-	_thread_run->slice_usec = -1;
+	curthread->slice_usec = -1;
 
 	/* Schedule the next thread: */
 	_thread_kern_sched(NULL);
@@ -53,8 +55,10 @@ sched_yield(void)
 void
 pthread_yield(void)
 {
+	struct pthread	*curthread = _get_curthread();
+
 	/* Reset the accumulated time slice value for the current thread: */
-	_thread_run->slice_usec = -1;
+	curthread->slice_usec = -1;
 
 	/* Schedule the next thread: */
 	_thread_kern_sched(NULL);
