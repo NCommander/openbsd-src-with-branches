@@ -1,11 +1,11 @@
-/*	$OpenBSD: ns_init.c,v 1.8 2002/02/17 19:42:37 millert Exp $	*/
+/*	$OpenBSD: ns_init.c,v 1.9 2002/06/09 01:58:54 kjell Exp $	*/
 
 #if !defined(lint) && !defined(SABER)
 #if 0
 static char sccsid[] = "@(#)ns_init.c	4.38 (Berkeley) 3/21/91";
 static char rcsid[] = "$From: ns_init.c,v 8.26 1998/05/11 04:19:45 vixie Exp $";
 #else
-static char rcsid[] = "$OpenBSD: ns_init.c,v 1.8 2002/02/17 19:42:37 millert Exp $";
+static char rcsid[] = "$OpenBSD: ns_init.c,v 1.9 2002/06/09 01:58:54 kjell Exp $";
 #endif
 #endif /* not lint */
 
@@ -272,7 +272,7 @@ boot_read(filename, includefile)
 		if (strcasecmp(buf, "directory") == 0) {
 			(void) getword(buf, sizeof(buf), fp, 0);
 			if (chdir(buf) < 0) {
-				syslog(LOG_CRIT, "directory %s: %m\n",
+				syslog(LOG_CRIT, "directory %s: %m",
 					buf);
 				exit(1);
 			}
