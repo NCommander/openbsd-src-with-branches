@@ -1,5 +1,5 @@
-/*	$OpenBSD$ */
-/*	$NetBSD:  $	*/
+/*	$OpenBSD: ugraphire_rdesc.h,v 1.1 2001/01/28 09:43:41 aaron Exp $ */
+/*	$NetBSD: ugraphire_rdesc.h,v 1.1 2000/12/29 01:47:49 augustss Exp $	*/
 /*
  * Copyright (c) 2000 Nick Hibma <n_hibma@freebsd.org>
  * All rights reserved.
