@@ -1,4 +1,4 @@
-/*	$OpenBSD: auvia.c,v 1.26 2003/10/19 20:33:28 grange Exp $ */
+/*	$OpenBSD: auvia.c,v 1.27 2004/01/09 21:32:24 brad Exp $ */
 /*	$NetBSD: auvia.c,v 1.7 2000/11/15 21:06:33 jdolecek Exp $	*/
 
 /*-
@@ -819,13 +819,12 @@ auvia_build_dma_ops(struct auvia_softc *sc, struct auvia_softc_chan *ch,
 {
 	struct auvia_dma_op *op;
 	struct auvia_dma *dp;
-	bus_addr_t s, e;
+	bus_addr_t s;
 	size_t l;
 	int segs;
 
 	s = p->map->dm_segs[0].ds_addr;
 	l = ((char *)end - (char *)start);
-	e = s + l;
 	segs = (l + blksize - 1) / blksize;
 
 	if (segs > (ch->sc_dma_op_count)) {
