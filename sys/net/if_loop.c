@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /*	$NetBSD: if_loop.c,v 1.14 1995/07/23 16:33:08 mycroft Exp $	*/
 
 /*
