@@ -1,4 +1,4 @@
-/*	$OpenBSD: trpt.c,v 1.18 2003/06/02 23:36:55 millert Exp $	*/
+/*	$OpenBSD: trpt.c,v 1.19 2003/09/19 08:15:56 deraadt Exp $	*/
 
 /*-
  * Copyright (c) 1997 The NetBSD Foundation, Inc.
@@ -360,11 +360,8 @@ tcp_trace(short act, short ostate, struct tcpcb *atp,
 		if (act == TA_OUTPUT) {
 			NTOHL(seq);
 			NTOHL(ack);
-			NTOHS(len);
 			NTOHS(win);
 		}
-		if (act == TA_OUTPUT)
-			len -= sizeof(struct tcphdr);
 		if (len)
 			printf("[%x..%x)", seq, seq + len);
 		else
