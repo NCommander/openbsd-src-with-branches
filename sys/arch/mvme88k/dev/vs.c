@@ -1,4 +1,4 @@
-/*	$OpenBSD: vs.c,v 1.8 2001/06/25 00:43:14 mickey Exp $ */
+/*	$OpenBSD: vs.c,v 1.9 2001/08/26 02:37:07 miod Exp $ */
 
 /*
  * Copyright (c) 1999 Steve Murphree, Jr.
@@ -893,7 +893,9 @@ vs_eintr(sc)
 		break;
 	default:
 		printf("%s: Uh oh!... Error 0x%x\n", vs_name(sc), ecode);
+#ifdef DDB
 		Debugger();
+#endif
 	}
 #ifdef SDEBUG
 	printf("%s: crsw = 0x%x iopb_type = %d iopb_len = %d wq = %d error = 0x%x\n", 
