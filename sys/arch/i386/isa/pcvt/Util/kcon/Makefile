@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.4 2000/05/19 14:49:44 espie Exp $
+#	$OpenBSD: Makefile,v 1.5 2000/05/25 21:54:50 deraadt Exp $
 
 .if ${MACHINE} == "i386"
 PROG=		kcon
@@ -13,7 +13,7 @@ LDADD =       -L${.CURDIR}/../keycap -L${.CURDIR}/../keycap/obj -lkeycap
 NOPROG=yes
 .endif
 
-MAN=	kcon.1
+MAN1=	kcon.1
 MANSUBDIR=/i386
 
 .include <bsd.prog.mk>
