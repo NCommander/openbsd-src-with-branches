@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: one.c,v 1.2 1998/03/19 11:13:23 pjanzen Exp $	*/
 
 /*
  * Copyright (c) 1980, 1993
@@ -37,7 +37,7 @@
 #if 0
 static char sccsid[] = "@(#)one.c	8.1 (Berkeley) 5/31/93";
 #else
-static char rcsid[] = "$OpenBSD$";
+static char rcsid[] = "$OpenBSD: one.c,v 1.2 1998/03/19 11:13:23 pjanzen Exp $";
 #endif
 #endif /* not lint */
 
@@ -103,19 +103,13 @@ moverr(i)
 {
 	int     j;
 
-	if (tflag)
-		curmove(20, 0);
-	else
-		writec('\n');
-	writel("Error:  ");
+	mvprintw(20, 0, "Error:  ");
 	for (j = 0; j <= i; j++) {
-		wrint(p[j]);
-		writec('-');
-		wrint(g[j]);
+		printw("%d-%d", p[j], g[j]);
 		if (j < i)
-			writec(',');
+			addch(',');
 	}
-	writel("... ");
+	addstr("... ");
 	movback(i);
 }
 
