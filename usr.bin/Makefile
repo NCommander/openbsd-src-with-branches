@@ -26,7 +26,7 @@ SUBDIR= apply apropos arch asa at aucat awk banner basename bdes biff cal \
 	xargs xinstall xlint xstr yacc yes \
 	gprof
 
-.if defined(YP)
+.if (${YP} == "yes")
 SUBDIR+=ypcat ypmatch ypwhich
 .endif
 
