@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.5 1996/10/15 08:35:25 downsj Exp $
+#	$OpenBSD: Makefile,v 1.6 1996/12/08 14:32:38 downsj Exp $
 
 .PATH:	${.CURDIR}/doc
 
@@ -36,7 +36,7 @@ DOCS=	vim_40.txt vim_ami.txt vim_arch.txt vim_diff.txt vim_digr.txt \
 #LDADD+=	-L/some/where/X11/lib -lXaw -lXt -lXmu -lX11 -lutil
 #CFLAGS+=	-I/some/where/X11/include -DHAVE_X11 -DUSE_GUI_ATHENA
 
-CLEANFILES+=	mkcmdtab cmdtab.h
+CLEANFILES+=	mkcmdtab mkcmdtab.o cmdtab.h
 
 .depend cmdline.o: cmdtab.h
 
