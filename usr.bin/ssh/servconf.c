@@ -12,7 +12,7 @@
  */
 
 #include "includes.h"
-RCSID("$OpenBSD: servconf.c,v 1.47 2000/07/10 16:30:25 ho Exp $");
+RCSID("$OpenBSD: servconf.c,v 1.48 2000/07/13 22:53:21 provos Exp $");
 
 #include "ssh.h"
 #include "servconf.h"
@@ -320,7 +320,7 @@ read_server_config(ServerOptions *options, const char *filename)
 		arg = strdelim(&cp);
 		/* Ignore leading whitespace */
 		if (*arg == '\0')
-			arg = cp;
+			arg = strdelim(&cp);
 		if (!*arg || *arg == '#')
 			continue;
 		opcode = parse_token(arg, filename, linenum);
