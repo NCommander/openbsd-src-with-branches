@@ -2913,7 +2913,7 @@ tcp_mss(tp, offer)
 	 * If we compute a larger value, return it for use in sending
 	 * a max seg size option, but don't store it for use
 	 * unless we received an offer at least that large from peer.
-	 * However, do not accept offers under 32 bytes.
+	 * However, do not accept offers under 64 bytes.
 	 */
 	if (offer > 0)
 		tp->t_peermss = offer;
