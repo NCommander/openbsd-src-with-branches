@@ -1,4 +1,4 @@
-/*	$OpenBSD: udp_usrreq.c,v 1.50 2000/10/11 09:14:13 itojun Exp $	*/
+/*	$OpenBSD: udp_usrreq.c,v 1.51 2000/10/13 17:58:37 itojun Exp $	*/
 /*	$NetBSD: udp_usrreq.c,v 1.28 1996/03/16 23:54:03 christos Exp $	*/
 
 /*
@@ -783,6 +783,15 @@ udp_output(m, va_alist)
 	}
 #endif
 
+	/*
+	 * Compute the packet length of the IP header, and
+	 * punt if the length looks bogus.
+	 */
+	if ((len + sizeof(struct udpiphdr)) > IP_MAXPACKET) {
+		error = EMSGSIZE;
+		goto release;
+	}
+
 	if (addr) {
 #ifdef INET6
 		sin6 = mtod(addr, struct sockaddr_in6 *);
@@ -850,15 +859,6 @@ udp_output(m, va_alist)
 	if (m == 0) {
 		error = ENOBUFS;
 		goto bail;
-	}
-
-	/*
-	 * Compute the packet length of the IP header, and
-	 * punt if the length looks bogus.
-	 */
-	if ((len + sizeof(struct udpiphdr)) > IP_MAXPACKET) {
-		error = EMSGSIZE;
-		goto release;
 	}
 
 	/*
