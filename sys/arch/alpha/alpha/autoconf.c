@@ -1,4 +1,4 @@
-/*	$OpenBSD: autoconf.c,v 1.5 1996/11/06 02:01:19 deraadt Exp $	*/
+/*	$OpenBSD: autoconf.c,v 1.6 1997/01/24 19:56:18 niklas Exp $	*/
 /*	$NetBSD: autoconf.c,v 1.16 1996/11/13 21:13:04 cgd Exp $	*/
 
 /*
@@ -131,8 +131,10 @@ struct nam2blk {
 	char *name;
 	int maj;
 } nam2blk[] = {
+	{ "wd",		0 },
 	{ "st",		2 },
 	{ "cd",		3 },
+	{ "acd",	4 },
 	{ "rd",		6 },
 	{ "sd",		8 },
 #if 0
