@@ -1,4 +1,4 @@
-#	$OpenBSD: install.md,v 1.3 2004/02/06 14:21:12 drahn Exp $
+#	$OpenBSD: install.md,v 1.4 2004/02/11 23:32:30 drahn Exp $
 #
 #
 # Copyright (c) 1996 The NetBSD Foundation, Inc.
@@ -110,7 +110,7 @@ __EOT
 
 		return
 	fi
- 
+
 	# Manual MBR setup. The user is basically on their own. Give a few
 	# hints and let the user rip.
 	cat << __EOT
@@ -156,7 +156,7 @@ disklabel -c ${_disk}
 
 
 __EOT
-	
+
 }
 
 md_prep_disklabel() {
