@@ -1,4 +1,4 @@
-/*	$OpenBSD: nfs_bio.c,v 1.28 2001/11/29 12:24:28 art Exp $	*/
+/*	$OpenBSD: nfs_bio.c,v 1.29 2001/11/30 05:45:33 csapuntz Exp $	*/
 /*	$NetBSD: nfs_bio.c,v 1.25.4.2 1996/07/08 20:47:04 jtc Exp $	*/
 
 /*
@@ -860,8 +860,8 @@ loopdone:
 		splx(s);
 	}
 	if (async) {
-		UVMHIST_LOG(ubchist, "returning PEND",0,0,0,0);
-		return EINPROGRESS;
+		UVMHIST_LOG(ubchist, "returning 0 (async)",0,0,0,0);
+		return 0;
 	}
 	if (bp != NULL) {
 		error = biowait(mbp);
@@ -1107,7 +1107,7 @@ nfs_putpages(v)
 		splx(s);
 	}
 	if (async) {
-		return EINPROGRESS;
+		return 0;
 	}
 	if (bp != NULL) {
 		error = biowait(mbp);
