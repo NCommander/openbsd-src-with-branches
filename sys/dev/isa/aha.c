@@ -1291,7 +1291,6 @@ aha_scsi_cmd(xs)
 		while ((ccb->xs->flags & ITSDONE) == 0) {
 			tsleep(ccb, PRIBIO, "ahawait", 0);
 		}
-		splx(s);
 		if (ccb->data_nseg) {
 			if (flags & SCSI_DATA_IN)
 				isadma_copyfrombuf(xs->data, xs->datalen,
@@ -1301,6 +1300,7 @@ aha_scsi_cmd(xs)
 		}
 		aha_free_ccb(sc, ccb);
 		scsi_done(xs);
+		splx(s);
 		return COMPLETE;
 	}
 	splx(s);
