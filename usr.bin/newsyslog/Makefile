@@ -1,4 +1,4 @@
-#	$Id: Makefile,v 1.6 1994/12/22 12:30:26 cgd Exp $
+#	$OpenBSD: Makefile,v 1.1.1.1 1995/10/18 08:45:51 deraadt Exp $
 
 PROG=	newsyslog
 

@@ -1,3 +1,4 @@
+/* * $OpenBSD: filesys.h,v 1.2 1996/03/05 03:16:18 dm Exp $*/
 /*
  * Copyright (c) 1983 Regents of the University of California.
  * All rights reserved.
@@ -32,7 +33,6 @@
  */
 
 /*
- * $Id: filesys.h,v 6.19 1995/12/12 00:46:46 mcooper Exp $
  * @(#)filesys.h
  */
 

@@ -1,3 +1,5 @@
+/*	$OpenBSD$	*/
+
 /*
  * Copyright (c) 1983 Regents of the University of California.
  * All rights reserved.
@@ -33,7 +35,7 @@
 
 #ifndef lint
 static char RCSid[] = 
-"$Id: setargs.c,v 6.4 1994/02/10 01:04:50 mcooper Exp mcooper $";
+"$OpenBSD: setargs.c,v 1.2 1996/03/05 03:16:13 dm Exp $";
 
 static char sccsid[] = "@(#)setargs.c";
 

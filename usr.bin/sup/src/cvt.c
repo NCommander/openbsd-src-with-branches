@@ -1,3 +1,5 @@
+/*	$OpenBSD$	*/
+
 /*
  * Quick hack to convert old binary sup when.collection files into 
  * the new ascii format.

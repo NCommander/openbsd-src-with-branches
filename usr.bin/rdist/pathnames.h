@@ -1,3 +1,4 @@
+/* * $OpenBSD: pathnames.h,v 1.3 1996/03/05 03:16:09 dm Exp $*/
 /*
  * Copyright (c) 1989 The Regents of the University of California.
  * All rights reserved.
@@ -32,7 +33,6 @@
  */
 
 /*
- * $Id: pathnames.h,v 6.8 1993/01/05 21:27:59 mcooper Exp mcooper $
  * @(#)pathnames.h	5.4 (Berkeley) 8/27/90
  */
 

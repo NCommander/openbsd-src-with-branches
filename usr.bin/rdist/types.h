@@ -1,8 +1,8 @@
+/* * $OpenBSD: types.h,v 1.2 1996/03/05 03:16:15 dm Exp $*/
 #ifndef __myTYPES_H__
 #define __myTYPES_H__
 
 /*
- * $Id: types.h,v 1.2 1996/01/30 01:52:24 mcooper Exp $
  */
 
 /*

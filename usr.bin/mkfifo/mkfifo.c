@@ -1,3 +1,4 @@
+/*	$OpenBSD: mkfifo.c,v 1.7 1994/12/23 07:16:56 jtc Exp $	*/
 /*	$NetBSD: mkfifo.c,v 1.7 1994/12/23 07:16:56 jtc Exp $	*/
 
 /*
@@ -43,7 +44,7 @@ static char copyright[] =
 #if 0
 static char sccsid[] = "@(#)mkfifo.c	8.2 (Berkeley) 1/5/94";
 #endif
-static char rcsid[] = "$NetBSD: mkfifo.c,v 1.7 1994/12/23 07:16:56 jtc Exp $";
+static char rcsid[] = "$OpenBSD: mkfifo.c,v 1.7 1994/12/23 07:16:56 jtc Exp $";
 #endif /* not lint */
 
 #include <stdio.h>

@@ -1,3 +1,4 @@
+/*	$OpenBSD: mroute.c,v 1.10 1996/05/11 13:51:27 mycroft Exp $	*/
 /*	$NetBSD: mroute.c,v 1.10 1996/05/11 13:51:27 mycroft Exp $	*/
 
 /*

@@ -1,3 +1,4 @@
+/*	$OpenBSD: route.c,v 1.15 1996/05/07 02:55:06 thorpej Exp $	*/
 /*	$NetBSD: route.c,v 1.15 1996/05/07 02:55:06 thorpej Exp $	*/
 
 /*
@@ -37,7 +38,7 @@
 #if 0
 static char sccsid[] = "from: @(#)route.c	8.3 (Berkeley) 3/9/94";
 #else
-static char *rcsid = "$NetBSD: route.c,v 1.15 1996/05/07 02:55:06 thorpej Exp $";
+static char *rcsid = "$OpenBSD: route.c,v 1.15 1996/05/07 02:55:06 thorpej Exp $";
 #endif
 #endif /* not lint */
 

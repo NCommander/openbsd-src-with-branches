@@ -1,3 +1,5 @@
+/*	$OpenBSD$	*/
+
 
 /*
  * This is an rcmd() replacement originally by 
@@ -6,7 +8,7 @@
 
 #ifndef lint
 static char RCSid[] = 
-"$Id: rshrcmd.c,v 1.7 1995/12/12 00:20:55 mcooper Exp $";
+"$OpenBSD: rshrcmd.c,v 1.2 1996/03/05 03:16:12 dm Exp $";
 #endif
 
 #include	"defs.h"

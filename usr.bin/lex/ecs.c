@@ -1,3 +1,5 @@
+/*	$OpenBSD$	*/
+
 /* ecs - equivalence class routines */
 
 /*-
@@ -26,7 +28,7 @@
  * MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-/* $Header: /a/cvsroot/src/usr.bin/lex/ecs.c,v 1.7 1995/05/05 05:35:15 jtc Exp $ */
+/* $Header: /cvs/src/usr.bin/lex/ecs.c,v 1.1.1.1 1995/10/18 08:45:29 deraadt Exp $ */
 
 #include "flexdef.h"
 

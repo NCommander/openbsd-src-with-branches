@@ -1,3 +1,5 @@
+/*	$OpenBSD$	*/
+
 /*-
  * Copyright (c) 1990 The Regents of the University of California.
  * All rights reserved.
@@ -33,7 +35,7 @@
 
 #ifndef lint
 /*static char sccsid[] = "from: @(#)local_passwd.c	5.5 (Berkeley) 5/6/91";*/
-static char rcsid[] = "$Id: local_passwd.c,v 1.1.1.1 1995/10/18 08:45:54 deraadt Exp $";
+static char rcsid[] = "$OpenBSD: local_passwd.c,v 1.2 1996/05/22 11:35:27 deraadt Exp $";
 #endif /* not lint */
 
 #include <sys/types.h>

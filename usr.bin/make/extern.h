@@ -1,3 +1,4 @@
+/*	$OpenBSD: nonints.h,v 1.9 1996/03/31 21:30:07 christos Exp $	*/
 /*	$NetBSD: nonints.h,v 1.9 1996/03/31 21:30:07 christos Exp $	*/
 
 /*-

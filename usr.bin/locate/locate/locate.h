@@ -1,3 +1,4 @@
+/*	$OpenBSD: locate.h,v 1.3 1994/12/22 06:17:48 jtc Exp $	*/
 /*	$NetBSD: locate.h,v 1.3 1994/12/22 06:17:48 jtc Exp $	*/
 
 /*

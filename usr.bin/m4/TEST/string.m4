@@ -1,3 +1,4 @@
+#	$OpenBSD: string.m4,v 1.4 1995/09/28 05:38:03 tls Exp $
 #	$NetBSD: string.m4,v 1.4 1995/09/28 05:38:03 tls Exp $
 #
 # Copyright (c) 1989, 1993

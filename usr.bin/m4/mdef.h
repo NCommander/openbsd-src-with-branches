@@ -1,3 +1,4 @@
+/*	$OpenBSD: mdef.h,v 1.7 1996/01/13 23:25:27 pk Exp $	*/
 /*	$NetBSD: mdef.h,v 1.7 1996/01/13 23:25:27 pk Exp $	*/
 
 /*

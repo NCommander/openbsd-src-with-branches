@@ -1,4 +1,4 @@
-# $Id: Makefile,v 1.1.1.1 1995/10/18 08:46:08 deraadt Exp $
+# $OpenBSD: Makefile,v 1.2 1996/02/15 05:02:27 etheisen Exp $
 
 PROG= skeyinit
 BINOWN=root

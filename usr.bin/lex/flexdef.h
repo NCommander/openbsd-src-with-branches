@@ -1,3 +1,5 @@
+/*	$OpenBSD$	*/
+
 /* flexdef - definitions file for flex */
 
 /*-
@@ -26,7 +28,7 @@
  * MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-/* @(#) $Header: /a/cvsroot/src/usr.bin/lex/flexdef.h,v 1.9 1995/05/05 05:35:21 jtc Exp $ (LBL) */
+/* @(#) $Header: /cvs/src/usr.bin/lex/flexdef.h,v 1.1.1.1 1995/10/18 08:45:30 deraadt Exp $ (LBL) */
 
 #include <stdio.h>
 #include <ctype.h>

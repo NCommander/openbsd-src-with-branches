@@ -1,3 +1,4 @@
+/*	$OpenBSD: buf.h,v 1.5 1995/06/14 15:18:53 christos Exp $	*/
 /*	$NetBSD: buf.h,v 1.5 1995/06/14 15:18:53 christos Exp $	*/
 
 /*

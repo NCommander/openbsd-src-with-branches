@@ -1,3 +1,4 @@
+/*	$OpenBSD: bit.h,v 1.5 1995/11/08 02:30:53 christos Exp $	*/
 /*	$NetBSD: bit.h,v 1.5 1995/11/08 02:30:53 christos Exp $	*/
 
 /*

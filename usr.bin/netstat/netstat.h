@@ -1,3 +1,4 @@
+/*	$OpenBSD: netstat.h,v 1.6 1996/05/07 02:55:05 thorpej Exp $	*/
 /*	$NetBSD: netstat.h,v 1.6 1996/05/07 02:55:05 thorpej Exp $	*/
 
 /*
