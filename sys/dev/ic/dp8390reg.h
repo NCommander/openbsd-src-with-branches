@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /*	$NetBSD: dp8390reg.h,v 1.2 1995/04/12 16:12:42 mycroft Exp $	*/
 
 /*
@@ -530,7 +531,7 @@
  * was received.
  */
 struct ed_ring	{
-#if BYTE_ORDER == BIG_ENDIAN
+#if ED_BYTE_ORDER == BIG_ENDIAN
 	u_char	next_packet;		/* pointer to next packet */
 	u_char	rsr;			/* receiver status */
 #else
