@@ -28,7 +28,7 @@
  */
 
 #if defined(LIBC_SCCS) && !defined(lint)
-static char *rcsid = "$OpenBSD: clnt_generic.c,v 1.2 1996/07/20 06:12:21 deraadt Exp $";
+static char *rcsid = "$OpenBSD: clnt_generic.c,v 1.3 1996/08/19 08:31:25 tholo Exp $";
 #endif /* LIBC_SCCS and not lint */
 
 /*
@@ -46,11 +46,7 @@ static char *rcsid = "$OpenBSD: clnt_generic.c,v 1.2 1996/07/20 06:12:21 deraadt
  * change using the rpc equivalent of ioctl()'s.
  */
 CLIENT *
-clnt_create(hostname, prog, vers, proto)
-	char *hostname;
-	u_long prog;
-	u_long vers;
-	char *proto;
+clnt_create(char *hostname, u_long prog, u_long vers, char *proto)
 {
 	struct hostent *h;
 	struct protoent *p;

@@ -28,7 +28,7 @@
  */
 
 #if defined(LIBC_SCCS) && !defined(lint)
-static char *rcsid = "$OpenBSD: pmap_prot2.c,v 1.3 1996/08/19 08:31:41 tholo Exp $";
+static char *rcsid = "$OpenBSD: pmap_prot2.c,v 1.4 2001/09/15 13:51:01 deraadt Exp $";
 #endif /* LIBC_SCCS and not lint */
 
 /*
@@ -82,9 +82,7 @@ static char *rcsid = "$OpenBSD: pmap_prot2.c,v 1.3 1996/08/19 08:31:41 tholo Exp
  * this sounds like a job for xdr_reference!
  */
 bool_t
-xdr_pmaplist(xdrs, rp)
-	XDR *xdrs;
-	struct pmaplist **rp;
+xdr_pmaplist(XDR *xdrs, struct pmaplist **rp)
 {
 	/*
 	 * more_elements is pre-computed in case the direction is

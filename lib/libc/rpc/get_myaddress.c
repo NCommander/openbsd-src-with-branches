@@ -28,7 +28,7 @@
  */
 
 #if defined(LIBC_SCCS) && !defined(lint)
-static char *rcsid = "$OpenBSD: get_myaddress.c,v 1.9 1998/08/14 21:39:36 deraadt Exp $";
+static char *rcsid = "$OpenBSD: get_myaddress.c,v 1.10 2000/02/25 05:06:27 itojun Exp $";
 #endif /* LIBC_SCCS and not lint */
 
 /*
@@ -56,8 +56,7 @@ static char *rcsid = "$OpenBSD: get_myaddress.c,v 1.9 1998/08/14 21:39:36 deraad
  * interface only if there are no other possible interfaces.
  */
 int
-get_myaddress(addr)
-	struct sockaddr_in *addr;
+get_myaddress(struct sockaddr_in *addr)
 {
 	struct ifaddrs *ifap, *ifa;
 	int loopback = 0, gotit = 0;
