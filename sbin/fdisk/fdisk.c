@@ -1,4 +1,4 @@
-/*	$OpenBSD: fdisk.c,v 1.11 1997/01/27 21:57:36 rahnds Exp $	*/
+/*	$OpenBSD: fdisk.c,v 1.12 1997/01/31 11:59:05 deraadt Exp $	*/
 /*	$NetBSD: fdisk.c,v 1.11 1995/10/04 23:11:19 ghudson Exp $	*/
 
 /*
@@ -28,7 +28,7 @@
  */
 
 #ifndef lint
-static char rcsid[] = "$OpenBSD: fdisk.c,v 1.11 1997/01/27 21:57:36 rahnds Exp $";
+static char rcsid[] = "$OpenBSD: fdisk.c,v 1.12 1997/01/31 11:59:05 deraadt Exp $";
 #endif /* not lint */
 
 #include <sys/param.h>
@@ -400,11 +400,11 @@ intuit_translated_geometry()
 				break;
 			}
 		}
-		if (heads != -1)	
+		if (heads > 0)	
 			break;
 	}
 
-	if (heads == -1)
+	if (heads <= 0)
 		return;
 
 	/* Now figure out the number of sectors from a single mapping. */
