@@ -10,7 +10,7 @@
  *
  * S/Key verification check, lookups, and authentication.
  * 
- * $OpenBSD: skeylogin.c,v 1.37 2001/01/04 21:51:52 todd Exp $
+ * $OpenBSD: skeylogin.c,v 1.38 2001/06/20 22:15:45 millert Exp $
  */
 
 #include <sys/param.h>
@@ -678,10 +678,10 @@ skey_authenticate(username)
  * The database file is always closed by this call.
  */
 int
-skeyzero(mp, response)
+skeyzero(mp)
 	struct skey *mp;
-	char *response;
 {
+
 	/*
 	 * Seek to the right place and write comment character
 	 * which effectively zero's out the entry.
