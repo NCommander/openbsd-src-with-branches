@@ -1,5 +1,7 @@
-#	$OpenBSD: Makefile.inc,v 1.13 1998/04/08 00:30:55 niklas Exp $
+#	$OpenBSD: Makefile.inc,v 1.14 1999/09/27 08:39:40 espie Exp $
 #	etc.amiga/Makefile.inc -- amiga-specific etc Makefile targets
+
+MACHINE_HAS_TOOLS=Yes
 
 .ifdef DESTDIR
 snap_md: distrib bsd tools
