@@ -1,4 +1,4 @@
-/*	$OpenBSD: auich.c,v 1.18 2001/12/18 22:55:25 provos Exp $	*/
+/*	$OpenBSD: auich.c,v 1.19 2001/12/18 23:02:39 mickey Exp $	*/
 
 /*
  * Copyright (c) 2000,2001 Michael Shalayeff
@@ -1059,7 +1059,8 @@ auich_powerhook(why, self)
 		}
 		sc->suspend = why;
 		auich_reset_codec(sc);
-		auich_write_codec(sc, AC97_REG_EXT_AUDIO_CTRL, sc->ext_ctrl);
+		DELAY(1000);
 		(sc->codec_if->vtbl->restore_ports)(sc->codec_if);
+		auich_write_codec(sc, AC97_REG_EXT_AUDIO_CTRL, sc->ext_ctrl);
 	}
 }
