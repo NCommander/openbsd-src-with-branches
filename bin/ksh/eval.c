@@ -766,7 +766,6 @@ varsub(Expand *xp, char *sp, char *word,
 		  case '=':	/* can't assign to a vector */
 		  case '%':	/* can't trim a vector (yet) */
 		  case '#':
-		  case '?':
 			return -1;
 		}
 		if (e->loc->argc == 0) {
@@ -787,6 +786,7 @@ varsub(Expand *xp, char *sp, char *word,
 			  case '=':	/* can't assign to a vector */
 			  case '%':	/* can't trim a vector (yet) */
 			  case '#':
+			  case '?':
 				return -1;
 			}
 			XPinit(wv, 32);
