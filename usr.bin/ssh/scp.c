@@ -75,7 +75,7 @@
  */
 
 #include "includes.h"
-RCSID("$OpenBSD: scp.c,v 1.51 2001/01/21 19:05:55 markus Exp $");
+RCSID("$OpenBSD: scp.c,v 1.52 2001/02/04 15:32:24 stevesk Exp $");
 
 #include "xmalloc.h"
 #include "atomicio.h"
@@ -1132,7 +1132,8 @@ progressmeter(int flag)
 		abbrevsize >>= 10;
 	}
 	snprintf(buf + strlen(buf), sizeof(buf) - strlen(buf), " %5qd %c%c ",
-	    (quad_t) abbrevsize, prefixes[i], prefixes[i] == ' ' ? ' ' : 'B');
+	    (unsigned long long) abbrevsize, prefixes[i],
+	    prefixes[i] == ' ' ? ' ' : 'B');
 
 	timersub(&now, &lastupdate, &wait);
 	if (cursize > lastsize) {
