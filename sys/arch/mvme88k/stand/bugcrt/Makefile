@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.6 1999/09/27 19:30:00 smurph Exp $
+#	$OpenBSD: Makefile,v 1.7 2001/01/13 05:19:01 smurph Exp $
 #
 # DO NOT OPTMIZE bugcrt (i.e. no "-O2")
 #
@@ -22,7 +22,7 @@ stage1crt.o: crt.c
 	mv a.out ${.TARGET}
 
 stage2crt.o: crt.c
-	${CC} ${CFLAGS} ${STAGE1_CFLAGS} -c ${.CURDIR}/crt.c -o ${.TARGET}
+	${CC} ${CFLAGS} ${STAGE2_CFLAGS} -c ${.CURDIR}/crt.c -o ${.TARGET}
 	${LD} -x -r ${.TARGET}
 	mv a.out ${.TARGET}
 
