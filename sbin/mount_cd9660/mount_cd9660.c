@@ -1,4 +1,4 @@
-/*	$OpenBSD: mount_cd9660.c,v 1.9 1998/01/30 17:31:52 weingart Exp $	*/
+/*	$OpenBSD: mount_cd9660.c,v 1.10 1999/07/01 02:20:22 d Exp $	*/
 /*	$NetBSD: mount_cd9660.c,v 1.3 1996/04/13 01:31:08 jtc Exp $	*/
 
 /*
@@ -49,7 +49,7 @@ static char copyright[] =
 #if 0
 static char sccsid[] = "@(#)mount_cd9660.c	8.4 (Berkeley) 3/27/94";
 #else
-static char rcsid[] = "$OpenBSD: mount_cd9660.c,v 1.9 1998/01/30 17:31:52 weingart Exp $";
+static char rcsid[] = "$OpenBSD: mount_cd9660.c,v 1.10 1999/07/01 02:20:22 d Exp $";
 #endif
 #endif /* not lint */
 
@@ -140,6 +140,6 @@ void
 usage()
 {
 	(void)fprintf(stderr,
-		"usage: mount_cd9660 [-egjrt] [-o options] special node\n");
+		"usage: mount_cd9660 [-egjR] [-o options] special node\n");
 	exit(1);
 }
