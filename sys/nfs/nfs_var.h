@@ -1,4 +1,4 @@
-/*	$OpenBSD: nfs_var.h,v 1.8 1998/02/22 01:21:32 niklas Exp $	*/
+/*	$OpenBSD: nfs_var.h,v 1.9 1998/08/06 19:34:59 csapuntz Exp $	*/
 /*	$NetBSD: nfs_var.h,v 1.3 1996/02/18 11:53:54 fvdl Exp $	*/
 
 /*
@@ -298,7 +298,6 @@ void nfsrvw_sort __P((gid_t *, int));
 void nfsrv_setcred __P((struct ucred *, struct ucred *));
 
 /* nfs_syscalls.c */
-int sys_getfh __P((struct proc *, void *, register_t *));
 int sys_nfssvc __P((struct proc *, void *, register_t *));
 int nfssvc_addsock __P((struct file *, struct mbuf *));
 int nfssvc_nfsd __P((struct nfsd_srvargs *, caddr_t, struct proc *));
