@@ -1,4 +1,4 @@
-/*	$OpenBSD: pfctl_radix.c,v 1.23 2003/12/31 11:18:24 cedric Exp $ */
+/*	$OpenBSD: pfctl_radix.c,v 1.24 2004/02/10 18:29:30 henning Exp $ */
 
 /*
  * Copyright (c) 2002 Cedric Berger
@@ -605,7 +605,7 @@ pfr_buf_load(struct pfr_buffer *b, char *file, int nonetwork,
 	if (!strcmp(file, "-"))
 		fp = stdin;
 	else {
-		fp = fopen(file, "r");
+		fp = pfctl_fopen(file, "r");
 		if (fp == NULL)
 			return (-1);
 	}
