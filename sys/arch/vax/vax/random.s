@@ -1,3 +1,4 @@
+/*	$OpenBSD$ */
 /*	$NetBSD: random.s,v 1.2 1994/10/26 08:03:24 cgd Exp $	*/
 
 /*
