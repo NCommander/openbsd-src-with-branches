@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.9 2003/12/03 22:28:01 grange Exp $
+#	$OpenBSD$
 
 .include <bsd.own.mk>
 
