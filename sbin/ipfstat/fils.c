@@ -1,3 +1,5 @@
+/*	$OpenBSD$	*/
+
 /*
  * (C)opyright 1993-1996 by Darren Reed.
  *

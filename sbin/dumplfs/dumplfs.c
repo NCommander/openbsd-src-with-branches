@@ -1,3 +1,4 @@
+/*	$OpenBSD: dumplfs.c,v 1.7 1995/12/14 22:36:34 thorpej Exp $	*/
 /*	$NetBSD: dumplfs.c,v 1.7 1995/12/14 22:36:34 thorpej Exp $	*/
 
 /*-
@@ -43,7 +44,7 @@ static char copyright[] =
 #if 0
 static char sccsid[] = "@(#)dumplfs.c	8.1 (Berkeley) 6/5/93";
 #else
-static char rcsid[] = "$NetBSD: dumplfs.c,v 1.7 1995/12/14 22:36:34 thorpej Exp $";
+static char rcsid[] = "$OpenBSD: dumplfs.c,v 1.7 1995/12/14 22:36:34 thorpej Exp $";
 #endif
 #endif /* not lint */
 

@@ -1,3 +1,5 @@
+#	$OpenBSD$
+
 PROG=	ipfstat
 MAN=	ipfstat.8
 SRCS=	fils.c parse.c opt.c kmem.c 

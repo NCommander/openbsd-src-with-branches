@@ -1,3 +1,4 @@
+/*	$OpenBSD: mount_ados.c,v 1.5 1996/04/13 01:30:59 jtc Exp $	*/
 /*	$NetBSD: mount_ados.c,v 1.5 1996/04/13 01:30:59 jtc Exp $	*/
 
 /*
@@ -31,7 +32,7 @@
  */
 
 #ifndef lint
-static char rcsid[] = "$NetBSD: mount_ados.c,v 1.5 1996/04/13 01:30:59 jtc Exp $";
+static char rcsid[] = "$OpenBSD: mount_ados.c,v 1.5 1996/04/13 01:30:59 jtc Exp $";
 #endif /* not lint */
 
 #include <sys/cdefs.h>

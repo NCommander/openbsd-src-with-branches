@@ -1,3 +1,4 @@
+#	$OpenBSD: Makefile,v 1.9 1995/03/18 14:57:35 cgd Exp $
 #	$NetBSD: Makefile,v 1.9 1995/03/18 14:57:35 cgd Exp $
 
 PROG=	mount_msdos

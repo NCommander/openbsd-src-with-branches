@@ -1,3 +1,4 @@
+/*	$OpenBSD: af.h,v 1.8 1995/06/20 22:26:45 christos Exp $	*/
 /*	$NetBSD: af.h,v 1.8 1995/06/20 22:26:45 christos Exp $	*/
 
 /*

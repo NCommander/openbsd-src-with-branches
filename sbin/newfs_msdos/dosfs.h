@@ -1,3 +1,4 @@
+/* * $OpenBSD: dosfs.h,v 1.1 1996/06/10 06:37:14 deraadt Exp $*/
 /*
  * Copyright (c) 1995 Joerg Wunsch
  *
@@ -29,7 +30,6 @@
 /*
  * MS-DOS (FAT) file system structure definitions.
  *
- * $Id: dosfs.h,v 1.1.1.1 1995/11/05 16:02:04 joerg Exp $
  */
 
 #ifndef DOSFS_H

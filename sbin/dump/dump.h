@@ -1,3 +1,4 @@
+/*	$OpenBSD: dump.h,v 1.9 1995/03/18 14:54:57 cgd Exp $	*/
 /*	$NetBSD: dump.h,v 1.9 1995/03/18 14:54:57 cgd Exp $	*/
 
 /*-

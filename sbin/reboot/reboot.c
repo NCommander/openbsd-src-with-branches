@@ -1,3 +1,4 @@
+/*	$OpenBSD: reboot.c,v 1.8 1995/10/05 05:36:22 mycroft Exp $	*/
 /*	$NetBSD: reboot.c,v 1.8 1995/10/05 05:36:22 mycroft Exp $	*/
 
 /*
@@ -43,7 +44,7 @@ static char copyright[] =
 #if 0
 static char sccsid[] = "@(#)reboot.c	8.1 (Berkeley) 6/5/93";
 #else
-static char rcsid[] = "$NetBSD: reboot.c,v 1.8 1995/10/05 05:36:22 mycroft Exp $";
+static char rcsid[] = "$OpenBSD: reboot.c,v 1.8 1995/10/05 05:36:22 mycroft Exp $";
 #endif
 #endif /* not lint */
 

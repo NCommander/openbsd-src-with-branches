@@ -1,3 +1,4 @@
+/*	$OpenBSD: ifconfig.c,v 1.22 1996/01/04 20:11:20 pk Exp $	*/
 /*	$NetBSD: ifconfig.c,v 1.22 1996/01/04 20:11:20 pk Exp $	*/
 
 /*
@@ -43,7 +44,7 @@ static char copyright[] =
 #if 0
 static char sccsid[] = "@(#)ifconfig.c	8.2 (Berkeley) 2/16/94";
 #else
-static char rcsid[] = "$NetBSD: ifconfig.c,v 1.22 1996/01/04 20:11:20 pk Exp $";
+static char rcsid[] = "$OpenBSD: ifconfig.c,v 1.22 1996/01/04 20:11:20 pk Exp $";
 #endif
 #endif /* not lint */
 

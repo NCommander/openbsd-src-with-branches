@@ -1,3 +1,4 @@
+/*	$OpenBSD: table.h,v 1.7 1995/06/20 22:27:58 christos Exp $	*/
 /*	$NetBSD: table.h,v 1.7 1995/06/20 22:27:58 christos Exp $	*/
 
 /*

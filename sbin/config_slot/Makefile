@@ -1,4 +1,4 @@
-# $Id: Makefile,v 1.4 1996/03/24 01:59:04 jtk Exp $
+# $OpenBSD: Makefile,v 1.1 1996/04/29 13:07:01 hvozda Exp $
 
 SRCS	= config_slot.c pcmcia_conf.c
 VPATH	= ${.CURDIR}/../../sys/dev/pcmcia

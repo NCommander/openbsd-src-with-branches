@@ -1,5 +1,5 @@
+#	$OpenBSD: Makefile,v 1.11 1996/05/12 04:36:29 mhitch Exp $
 #	$NetBSD: Makefile,v 1.11 1996/05/12 04:36:29 mhitch Exp $
-#	@(#)Makefile	8.2 (Berkeley) 4/17/94
 
 PROG=	savecore
 

@@ -1,3 +1,4 @@
+/*	$OpenBSD: pt_exec.c,v 1.4 1995/04/23 10:33:25 cgd Exp $	*/
 /*	$NetBSD: pt_exec.c,v 1.4 1995/04/23 10:33:25 cgd Exp $	*/
 
 /*

@@ -1,3 +1,4 @@
+/*	$OpenBSD: pt_tcp.c,v 1.9 1995/05/21 15:33:22 mycroft Exp $	*/
 /*	$NetBSD: pt_tcp.c,v 1.9 1995/05/21 15:33:22 mycroft Exp $	*/
 
 /*

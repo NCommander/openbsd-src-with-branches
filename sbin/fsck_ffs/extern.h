@@ -1,3 +1,4 @@
+/*	$OpenBSD: extern.h,v 1.4 1995/04/12 21:24:07 mycroft Exp $	*/
 /*	$NetBSD: extern.h,v 1.4 1995/04/12 21:24:07 mycroft Exp $	*/
 
 /*

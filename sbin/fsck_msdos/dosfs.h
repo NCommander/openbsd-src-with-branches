@@ -1,3 +1,4 @@
+/*	$OpenBSD: dosfs.h,v 1.1.4.1 1996/05/31 18:41:42 jtc Exp $	*/
 /*	$NetBSD: dosfs.h,v 1.1.4.1 1996/05/31 18:41:42 jtc Exp $	*/
 
 /*

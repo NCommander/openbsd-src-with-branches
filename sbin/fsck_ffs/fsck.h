@@ -1,3 +1,4 @@
+/*	$OpenBSD: fsck.h,v 1.10 1995/04/12 21:24:09 mycroft Exp $	*/
 /*	$NetBSD: fsck.h,v 1.10 1995/04/12 21:24:09 mycroft Exp $	*/
 
 /*

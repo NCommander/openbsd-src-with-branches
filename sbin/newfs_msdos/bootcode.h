@@ -1,3 +1,5 @@
+/*	$OpenBSD$	*/
+
 #ifndef BOOTCODE_H
 #define BOOTCODE_H 1
 

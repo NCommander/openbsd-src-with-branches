@@ -1,3 +1,4 @@
+/*	$OpenBSD: trace.h,v 1.8 1995/06/20 22:28:04 christos Exp $	*/
 /*	$NetBSD: trace.h,v 1.8 1995/06/20 22:28:04 christos Exp $	*/
 
 /*

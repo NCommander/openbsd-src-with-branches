@@ -1,3 +1,4 @@
+/*	$OpenBSD: mkfs.c,v 1.25 1995/06/18 21:35:38 cgd Exp $	*/
 /*	$NetBSD: mkfs.c,v 1.25 1995/06/18 21:35:38 cgd Exp $	*/
 
 /*
@@ -37,7 +38,7 @@
 #if 0
 static char sccsid[] = "@(#)mkfs.c	8.3 (Berkeley) 2/3/94";
 #else
-static char rcsid[] = "$NetBSD: mkfs.c,v 1.25 1995/06/18 21:35:38 cgd Exp $";
+static char rcsid[] = "$OpenBSD: mkfs.c,v 1.25 1995/06/18 21:35:38 cgd Exp $";
 #endif
 #endif /* not lint */
 

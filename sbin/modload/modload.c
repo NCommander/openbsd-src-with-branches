@@ -1,3 +1,4 @@
+/*	$OpenBSD: modload.c,v 1.13 1995/05/28 05:21:58 jtc Exp $	*/
 /*	$NetBSD: modload.c,v 1.13 1995/05/28 05:21:58 jtc Exp $	*/
 
 /*
