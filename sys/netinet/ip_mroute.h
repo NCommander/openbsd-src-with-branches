@@ -1,4 +1,4 @@
-/*	$OpenBSD: ip_mroute.h,v 1.4 1999/08/08 00:43:00 niklas Exp $	*/
+/*	$OpenBSD: ip_mroute.h,v 1.5 1999/12/08 06:50:20 itojun Exp $	*/
 /*	$NetBSD: ip_mroute.h,v 1.10 1996/02/13 23:42:55 christos Exp $	*/
 
 /*
@@ -230,6 +230,6 @@ void rsvp_input __P((struct mbuf *, int, int));
 #else
 int	ip_mforward __P((struct mbuf *, struct ifnet *));
 #endif
-void	ipip_input __P((struct mbuf *, ...));
+void	ipip_mroute_input __P((struct mbuf *, ...));
 
 #endif /* _KERNEL */
