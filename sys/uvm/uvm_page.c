@@ -1,4 +1,4 @@
-/*	$OpenBSD: uvm_page.c,v 1.14 2001/03/22 03:05:56 smart Exp $	*/
+/*	$OpenBSD: uvm_page.c,v 1.15 2001/03/22 18:05:33 niklas Exp $	*/
 /*	$NetBSD: uvm_page.c,v 1.24 1999/07/22 22:58:38 thorpej Exp $	*/
 
 /* 
@@ -338,6 +338,7 @@ uvm_page_init(kvm_startp, kvm_endp)
 	 * done!
 	 */
 
+	uvm.page_init_done = TRUE;
 }
 
 /*
@@ -481,7 +482,7 @@ uvm_page_physget(paddrp)
 #endif
 	{
 
-		if (vm_physmem[lcv].pgs)
+		if (uvm.page_init_done == TRUE)
 			panic("vm_page_physget: called _after_ bootstrap");
 
 		/* try from front */
