@@ -1,4 +1,4 @@
-/*	$OpenBSD: ac97.c,v 1.47 2004/11/18 16:24:30 mickey Exp $	*/
+/*	$OpenBSD: ac97.c,v 1.48 2004/11/22 23:06:50 mickey Exp $	*/
 
 /*
  * Copyright (c) 1999, 2000 Constantine Sapuntzakis
@@ -273,7 +273,7 @@ const struct ac97_source_info {
 #define SOURCE_INFO_SIZE (sizeof(source_info)/sizeof(source_info[0]))
 
 /*
- * Check out http://www.intel.com/labs/media/audio/index.htm
+ * Check out http://www.intel.com/technology/computing/audio/index.htm
  * for information on AC-97
  */
 
