@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: thread_storage.c,v 1.1 2000/01/06 07:27:33 d Exp $	*/
 /*
  * 
  */
