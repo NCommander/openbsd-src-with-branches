@@ -1,4 +1,4 @@
-/*	$OpenBSD: ad1848reg.h,v 1.4 1996/10/31 01:01:22 niklas Exp $	*/
+/*	$OpenBSD: ad1848reg.h,v 1.5 1998/04/26 21:03:12 provos Exp $	*/
 /*	$NetBSD: ad1848reg.h,v 1.4 1997/05/07 20:23:53 augustss Exp $	*/
 
 /*
@@ -37,6 +37,12 @@
  */
 /*
  * Copyright (c) 1993 Analog Devices Inc. All rights reserved
+ */
+
+/*
+ * Further documentation can be found at:
+ *	http://www.cirrus.com/products/overviews/cs4231.html
+ *	(the CS4231A is an augmented ad1848, additional registers, etc).
  */
 
 /* parent driver is primarily responsible for checking this */
