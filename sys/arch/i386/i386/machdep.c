@@ -563,7 +563,7 @@ sendsig(catcher, sig, mask, code)
 		frame.sf_sc.sc_fs = tf->tf_vm86_fs;
 		frame.sf_sc.sc_es = tf->tf_vm86_es;
 		frame.sf_sc.sc_ds = tf->tf_vm86_ds;
-		frame.sf_sc.sc_eflags = get_vflag(p);
+		frame.sf_sc.sc_eflags = get_vflags(p);
 		tf->tf_eflags &= ~PSL_VM;
 	} else
 #endif
