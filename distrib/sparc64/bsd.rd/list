@@ -1,6 +1,8 @@
-#	$OpenBSD: list,v 1.3 2002/04/10 06:04:49 deraadt Exp $
+#	$OpenBSD: list,v 1.4 2002/04/13 08:13:33 deraadt Exp $
 
 # we strip comments from files since we need the space...
+
+SPECIAL /bin/rm instbin
 
 # the disktab explanation file
 #SPECIAL sed -e '/^#[ 	].*$/d' < ${CURDIR}/../common/disktab.preinstall > etc/disktab.preinstall
