@@ -1,5 +1,5 @@
-.\"	$OpenBSD: doshutdownhooks.9,v 1.7 2003/08/29 19:46:29 tedu Exp $
-.\"	$NetBSD: doshutdownhooks.9,v 1.1 1995/11/25 21:24:49 perry Exp $
+.\"	$OpenBSD: mountroothook_establish.9,v 1.14 2003/08/29 19:46:29 tedu Exp $
+.\"	$NetBSD: mountroothook_establish.9,v 1.1 1995/11/25 21:24:52 perry Exp $
 .\"
 .\" Copyright (c) 1994 Christopher G. Demetriou
 .\" All rights reserved.
@@ -31,38 +31,70 @@
 .\" THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 .\"
 .Dd November 13, 1995
-.Dt DOSHUTDOWNHOOKS 9
+.Dt MOUNTROOTHOOK_ESTABLISH 9
 .Os
 .Sh NAME
-.Nm doshutdownhooks
-.Nd run all shutdown hooks
+.Nm mountroothook_establish ,
+.Nm mountroothook_disestablish
+.Nd add or remove a mountroot hook
 .Sh SYNOPSIS
 .Fd #include <sys/types.h>
 .Fd #include <sys/systm.h>
+.Ft void *
+.Fn mountroothook_establish "void (*fn)(void *)" "void *arg"
 .Ft void
-.Fn doshutdownhooks "void"
+.Fn mountroothook_disestablish "void *cookie"
 .Sh DESCRIPTION
 The
-.Fn doshutdownhooks
-function invokes all shutdown hooks established using the
-.Xr shutdownhook_establish 9
-function.
-Shutdown hooks are called in reverse order, i.e.,
-the shutdown hook established last will be called first.
+.Fn mountroothook_establish
+function adds
+.Fa fn
+to the list of hooks invoked by
+.Xr domountroothooks 9
+at mountroot.
+When invoked, the hook function
+.Fa fn
+will be passed
+.Fa arg
+as its only argument.
 .Pp
-This function is called from
-.Xr boot 9
-with interrupts turned off.
-It is called immediately before the system is halted or rebooted,
-after file systems have been unmounted, after the clock has been updated,
-and after a system dump has been done (if necessary).
+The
+.Fn mountroothook_disestablish
+function removes the hook described by the opaque pointer
+.Fa cookie
+from the list of hooks to be invoked at mountroot.
+If
+.Fa cookie
+is invalid, the result of
+.Fn mountroothook_disestablish
+is undefined.
 .Pp
-Shutdown hooks are, like startup hooks, implemented via the more general
+Mountroot hooks should be used to perform one-time activities
+that must happen immediately after the root filesystem has been
+mounted by the kernel, but before
+.Xr init 8
+has been started.
+.Pp
+Mountroot hooks are, like startup hooks, implemented via the more general
 .Xr dohooks 9
 API.
+.Sh RETURN VALUES
+If successful,
+.Fn mountroothook_establish
+returns an opaque pointer describing the newly established
+mountroot hook.
+Otherwise, it returns
+.Dv NULL .
+.Sh EXAMPLES
+It may be appropriate to use a mountroot hook to
+split the attach function of a device driver.
+Once the root filesystem is mounted, the hook will be called
+and it is safe to use
+.Xr loadfirmware 9
+to get the firmware out of the filesystem.
 .Sh SEE ALSO
-.Xr boot 9 ,
 .Xr dohooks 9 ,
-.Xr dostartuphooks 9 ,
 .Xr domountroothooks 9 ,
-.Xr shutdownhook_establish 9
+.Xr dostartuphooks 9
+.Sh BUGS
+The names are clumsy, at best.
