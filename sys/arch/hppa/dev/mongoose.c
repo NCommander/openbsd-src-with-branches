@@ -1,4 +1,4 @@
-/*	$OpenBSD: mongoose.c,v 1.10 2003/04/08 20:37:39 miod Exp $	*/
+/*	$OpenBSD: mongoose.c,v 1.11 2003/04/08 20:48:39 mickey Exp $	*/
 
 /*
  * Copyright (c) 1998,1999 Michael Shalayeff
@@ -238,7 +238,7 @@ mg_intr_string(void *v, int irq)
 {
 	static char buf[16];
 
-	sprintf (buf, "isa irq %d", irq);
+	snprintf(buf, sizeof buf, "isa irq %d", irq);
 	return buf;
 }
 

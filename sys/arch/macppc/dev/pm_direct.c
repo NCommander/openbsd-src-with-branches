@@ -1,4 +1,4 @@
-/*	$OpenBSD: pm_direct.c,v 1.8 2002/06/18 04:31:40 itojun Exp $	*/
+/*	$OpenBSD: pm_direct.c,v 1.9 2002/10/18 03:49:16 drahn Exp $	*/
 /*	$NetBSD: pm_direct.c,v 1.9 2000/06/08 22:10:46 tsubai Exp $	*/
 
 /*
@@ -737,11 +737,12 @@ pm_adb_poweroff()
 {
 	PMData p;
 
+	bzero(&p, sizeof p);
 	p.command = PMU_POWER_OFF;
 	p.num_data = 4;
 	p.s_buf = p.data;
 	p.r_buf = p.data;
-	strcpy(p.data, "MATT");
+	strlcpy(p.data, "MATT", sizeof p.data);
 	pmgrop(&p);
 }
 

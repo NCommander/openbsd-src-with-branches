@@ -1,4 +1,4 @@
-/* $OpenBSD: machdep.c,v 1.79 2002/12/17 23:11:31 millert Exp $ */
+/* $OpenBSD: machdep.c,v 1.80 2003/05/10 21:11:11 deraadt Exp $ */
 /* $NetBSD: machdep.c,v 1.210 2000/06/01 17:12:38 thorpej Exp $ */
 
 /*-
@@ -385,7 +385,7 @@ nobootinfo:
 		/* NOTREACHED */
 	}
 	(*c->init)();
-	strcpy(cpu_model, platform.model);
+	strlcpy(cpu_model, platform.model, sizeof cpu_model);
 
 	/*
 	 * Initialize the real console, so that the bootstrap console is
