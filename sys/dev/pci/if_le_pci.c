@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_le_pci.c,v 1.8 1998/01/05 13:35:20 deraadt Exp $	*/
+/*	$OpenBSD: if_le_pci.c,v 1.9 1998/01/07 11:03:30 deraadt Exp $	*/
 /*	$NetBSD: if_le_pci.c,v 1.13 1996/10/25 21:33:32 cgd Exp $	*/
 
 /*-
@@ -54,6 +54,7 @@
 #include <vm/vm_param.h>
 
 #include <net/if.h>
+#include <net/if_media.h>
 
 #ifdef INET
 #include <netinet/in.h>

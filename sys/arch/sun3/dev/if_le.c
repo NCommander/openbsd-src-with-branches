@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_le.c,v 1.9 1997/01/16 04:03:49 kstailey Exp $	*/
+/*	$OpenBSD: if_le.c,v 1.10 1997/08/08 08:27:39 downsj Exp $	*/
 /*	$NetBSD: if_le.c,v 1.33 1996/11/20 18:56:52 gwr Exp $	*/
 
 /*-
@@ -52,6 +52,8 @@
 #include <netinet/in.h>
 #include <netinet/if_ether.h>
 #endif
+
+#include <net/if_media.h>
 
 #include <machine/autoconf.h>
 #include <machine/cpu.h>
