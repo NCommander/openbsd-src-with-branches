@@ -1,4 +1,4 @@
-/*	$OpenBSD: openfirm.h,v 1.6 2002/03/14 01:26:58 millert Exp $	*/
+/*	$OpenBSD: openfirm.h,v 1.7.10.1 2003/10/10 17:04:17 drahn Exp $	*/
 /*	$NetBSD: openfirm.h,v 1.1 1996/09/30 16:35:10 ws Exp $	*/
 
 /*
@@ -59,7 +59,7 @@ void OF_close(int handle);
 int OF_read(int handle, void *addr, int len);
 int OF_write(int handle, void *addr, int len);
 int OF_seek(int handle, u_quad_t pos);
-void OF_boot(char *bootspec) __attribute__((__noreturn__));
+void OF_boot(char *bootspec);
 void OF_enter(void);
 void OF_exit(void) __attribute__((__noreturn__));
 int OF_interpret(char *cmd, int nreturns, ...);
