@@ -1,4 +1,4 @@
-/*	$OpenBSD: extern.h,v 1.4 1997/06/23 22:21:46 millert Exp $	*/
+/*	$OpenBSD: extern.h,v 1.5 1997/07/15 13:42:05 kstailey Exp $	*/
 /*	$NetBSD: extern.h,v 1.3 1996/05/10 23:16:34 thorpej Exp $	*/
 
 /*-
@@ -111,6 +111,7 @@ WINDOW	*opennetstat __P((void));
 WINDOW	*openpigs __P((void));
 WINDOW	*openswap __P((void));
 int	 prefix __P((char *, char *));
+void	 resize __P((int));
 void	 showiostat __P((void));
 void	 showkre __P((void));
 void	 showmbufs __P((void));
