@@ -1,4 +1,4 @@
-/*	$OpenBSD: exec_elf.h,v 1.4 1996/05/22 07:44:29 etheisen Exp $	*/
+/*	$OpenBSD: exec_elf.h,v 1.5 1996/05/29 03:04:51 deraadt Exp $	*/
 /*
  * Copyright (c) 1995, 1996 Erik Theisen
  * All rights reserved.
@@ -331,7 +331,7 @@ extern Elf32_Dyn	_DYNAMIC[];
 #define DT_FINI		13		/* address of termination function */
 #define DT_SONAME	14		/* string table offset of shared obj */
 #define DT_RPATH	15		/* string table offset of library
-					/*  search path */
+					   search path */
 #define DT_SYMBOLIC	16		/* start sym search in shared obj. */
 #define DT_REL		17		/* address of rel. tbl. w addends */
 #define DT_RELSZ	18		/* size of DT_REL relocation table */
