@@ -1,4 +1,4 @@
-/*	$OpenBSD: trap.c,v 1.30 2003/07/14 02:03:16 jason Exp $	*/
+/*	$OpenBSD: trap.c,v 1.31 2004/01/10 09:10:07 deraadt Exp $	*/
 /*	$NetBSD: trap.c,v 1.73 2001/08/09 01:03:01 eeh Exp $ */
 
 /*
@@ -789,7 +789,7 @@ rwindow_save(p)
  * the registers into the new process after the exec.
  */
 void
-kill_user_windows(p)
+pmap_unuse_final(p)
 	struct proc *p;
 {
 
