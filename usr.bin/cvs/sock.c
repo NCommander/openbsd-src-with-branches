@@ -93,7 +93,15 @@ cvsd_sock_open(void)
 		return (-1);
 	}
 
-	listen(cvsd_sock, 10);
+	(void)listen(cvsd_sock, 10);
+
+	if (chown(cvsd_sock_path, getuid(), cvsd_gid) == -1) {
+		cvs_log(LP_ERRNO, "failed to change owner of `%s'",
+		    cvsd_sock_path);
+		(void)close(cvsd_sock);
+		(void)unlink(cvsd_sock_path);
+		return (-1);
+	}
 
 	if (chmod(cvsd_sock_path, CVSD_SOCK_PERMS) == -1) {
 		cvs_log(LP_ERRNO, "failed to change mode of `%s'",

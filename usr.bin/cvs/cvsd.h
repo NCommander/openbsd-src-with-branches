@@ -35,6 +35,7 @@
 #include <netinet/in.h>
 
 #include <pwd.h>
+#include <grp.h>
 #include <signal.h>
 
 #include "cvs.h"
@@ -115,6 +116,8 @@ struct cvsd_addr {
 extern volatile sig_atomic_t running;
 extern volatile sig_atomic_t restart;
 
+extern uid_t    cvsd_uid;
+extern gid_t    cvsd_gid;
 
 
 
