@@ -1,4 +1,4 @@
-#	$OpenBSD: files.macppc,v 1.4 2001/10/03 14:45:37 drahn Exp $
+#	$OpenBSD: files.macppc,v 1.5 2001/12/14 14:27:15 drahn Exp $
 
 #
 # macppc-specific configuration info
@@ -26,7 +26,7 @@ file	arch/macppc/macppc/db_trace.c			ddb
 file	arch/macppc/macppc/ofwreal.S
 
 #
-# Media Indepedent Interface (mii)
+# Media Independent Interface (mii)
 #
 include "../../../dev/mii/files.mii"
 
