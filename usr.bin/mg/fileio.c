@@ -1,4 +1,4 @@
-/*	$OpenBSD: fileio.c,v 1.24 2002/02/22 00:18:37 deraadt Exp $	*/
+/*	$OpenBSD: fileio.c,v 1.25 2002/03/11 13:02:56 vincent Exp $	*/
 
 /*
  *	POSIX fileio.c
@@ -414,6 +414,9 @@ copy(frname, toname)
 	}
 }
 
+/*
+ * dirname needs to have enough place to store an additional '/'.
+ */
 BUFFER *
 dired_(dirname)
 	char	*dirname;
@@ -439,6 +442,7 @@ dired_(dirname)
 	}
 	if (bclear(bp) != TRUE)
 		return FALSE;
+	bp->b_flag |= BFREADONLY;
 	if (snprintf(line, sizeof(line), "ls -al %s", dirname) >= sizeof(line)){
 		ewprintf("Path too long");
 		return NULL;
