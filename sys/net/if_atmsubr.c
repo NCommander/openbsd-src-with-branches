@@ -258,7 +258,7 @@ atm_input(ifp, ah, m, rxhand)
 	      m_freem(m);
               return;
 	    }
-	    etype = ATM_LLC_TYPE(alc);
+	    etype = ntohs(ATM_LLC_TYPE(alc));
 	    m_adj(m, sizeof(*alc));
 	  }
 
