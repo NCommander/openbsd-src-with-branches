@@ -1,4 +1,4 @@
-/*	$OpenBSD: diag.c,v 1.2 2002/02/19 19:39:37 millert Exp $	*/
+/*	$OpenBSD: diag.c,v 1.3 2002/06/07 00:05:09 itojun Exp $	*/
 
  /*
   * Routines to report various classes of problems. Each report is decorated
@@ -15,7 +15,7 @@
 #if 0
 static char sccsid[] = "@(#) diag.c 1.1 94/12/28 17:42:20";
 #else
-static char rcsid[] = "$OpenBSD: diag.c,v 1.2 2002/02/19 19:39:37 millert Exp $";
+static char rcsid[] = "$OpenBSD: diag.c,v 1.3 2002/06/07 00:05:09 itojun Exp $";
 #endif
 #endif
 
@@ -47,10 +47,10 @@ va_list ap;
     char    fmt[BUFSIZ];
 
     if (tcpd_context.file)
-	sprintf(fmt, "%s: %s, line %d: %s",
+	snprintf(fmt, sizeof fmt, "%s: %s, line %d: %s",
 		tag, tcpd_context.file, tcpd_context.line, format);
     else
-	sprintf(fmt, "%s: %s", tag, format);
+	snprintf(fmt, sizeof fmt, "%s: %s", tag, format);
     vsyslog(severity, fmt, ap);
 }
 
