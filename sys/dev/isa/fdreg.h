@@ -66,5 +66,6 @@
 #define	FDC_NPORT	8
 #define	FDC_MAXIOSIZE	NBPG	/* XXX should be MAXBSIZE */
 
-#define FDUNIT(dev)	(minor(dev) / 16)
-#define FDTYPE(dev)	(minor(dev) % 16)
+#define FDUNIT(dev)	((dev & 0x180) >> 7)
+#define FDTYPE(dev)	((minor(dev) & 0x70) >> 4)
+#define FDPART(dev)	(minor(dev) & 0x0f)
