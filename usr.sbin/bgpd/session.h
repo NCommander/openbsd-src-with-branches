@@ -1,4 +1,4 @@
-/*	$OpenBSD: session.h,v 1.61 2004/08/06 11:51:19 claudio Exp $ */
+/*	$OpenBSD: session.h,v 1.62 2004/09/16 17:44:36 henning Exp $ */
 
 /*
  * Copyright (c) 2003, 2004 Henning Brauer <henning@openbsd.org>
@@ -33,9 +33,7 @@
 #define	MSGSIZE_OPEN_MIN		29
 #define	MSGSIZE_UPDATE_MIN		23
 #define	MSGSIZE_KEEPALIVE		MSGSIZE_HEADER
-#define MSGSIZE_RREFRESH		MSGSIZE_HEADER + 4
-#define	PFD_RESERVE			5
-#define	PEER_L_RESERVE			2
+#define	MSGSIZE_RREFRESH		MSGSIZE_HEADER + 4
 
 enum session_state {
 	STATE_NONE,
