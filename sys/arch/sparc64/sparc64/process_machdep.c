@@ -1,4 +1,4 @@
-/*	$OpenBSD: process_machdep.c,v 1.2 2001/08/20 20:23:53 jason Exp $	*/
+/*	$OpenBSD: process_machdep.c,v 1.3 2002/03/14 00:42:24 miod Exp $	*/
 /*	$NetBSD: process_machdep.c,v 1.10 2000/09/26 22:05:50 eeh Exp $ */
 
 /*
@@ -97,6 +97,8 @@ process_read_regs(p, regs)
 		for (i = 0; i < 8; i++) {
 			regs->r_global[i] = tf->tf_global[i];
 			regs->r_out[i] = tf->tf_out[i];
+			regs->r_local[i] = tf->tf_local[i];
+			regs->r_in[i] = tf->tf_in[i];
 		}
 		return (0);
 	}
