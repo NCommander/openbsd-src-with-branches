@@ -19,17 +19,16 @@
  * IMPLIED WARRANTIES, INCLUDING, WITHOUT LIMITATION, THE IMPLIED
  * WARRANTIES OF MERCHANTIBILITY AND FITNESS FOR A PARTICULAR PURPOSE.
  *
- * $OpenBSD: chap_ms.c,v 1.6 2000/11/02 00:54:33 brian Exp $
+ * $OpenBSD: chap_ms.c,v 1.7 2000/11/28 22:50:39 brian Exp $
  *
  */
-
-#include <sys/types.h>
 
 #include <ctype.h>
 #ifdef __FreeBSD__
 #include <openssl/des.h>
 #include <sha.h>
 #else
+#include <sys/types.h>
 #include <stdlib.h>
 #include <des.h>
 #include <openssl/sha.h>
