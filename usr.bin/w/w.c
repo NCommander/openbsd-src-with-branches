@@ -1,4 +1,4 @@
-/*	$OpenBSD: w.c,v 1.34 2001/07/12 05:17:31 deraadt Exp $	*/
+/*	$OpenBSD: w.c,v 1.35 2002/02/16 21:27:58 millert Exp $	*/
 
 /*-
  * Copyright (c) 1980, 1991, 1993, 1994
@@ -43,7 +43,7 @@ static char copyright[] =
 #if 0
 static char sccsid[] = "@(#)w.c	8.4 (Berkeley) 4/16/94";
 #else
-static char *rcsid = "$OpenBSD: w.c,v 1.34 2001/07/12 05:17:31 deraadt Exp $";
+static char *rcsid = "$OpenBSD: w.c,v 1.35 2002/02/16 21:27:58 millert Exp $";
 #endif
 #endif /* not lint */
 
@@ -306,7 +306,7 @@ main(argc, argv)
 	}
 			
 	if (!nflag) {
-		if (gethostname(domain, sizeof(domain) - 1) < 0 ||
+		if (gethostname(domain, sizeof(domain)) < 0 ||
 		    (p = strchr(domain, '.')) == 0)
 			domain[0] = '\0';
 		else {
