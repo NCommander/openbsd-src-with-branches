@@ -1,4 +1,4 @@
-/*	$OpenBSD: print.c,v 1.3 1996/08/02 11:45:01 deraadt Exp $	*/
+/*	$OpenBSD: print.c,v 1.4 1996/12/14 12:18:04 mickey Exp $	*/
 /*	$NetBSD: print.c,v 1.14 1995/09/07 06:43:00 jtc Exp $	*/
 
 /*
@@ -41,7 +41,7 @@
 #if 0
 static char sccsid[] = "@(#)print.c	8.5 (Berkeley) 7/28/94";
 #else
-static char rcsid[] = "$OpenBSD: print.c,v 1.3 1996/08/02 11:45:01 deraadt Exp $";
+static char rcsid[] = "$OpenBSD: print.c,v 1.4 1996/12/14 12:18:04 mickey Exp $";
 #endif
 #endif /* not lint */
 
@@ -192,7 +192,7 @@ printcol(dp)
 			    dp->s_block);
 			if ((base += numrows) >= num)
 				break;
-			while ((cnt = (chcnt + (TAB & ~(TAB - 1)))) <= endcol) {
+			while ((cnt = ((chcnt + TAB) & ~(TAB - 1))) <= endcol) {
 				(void)putchar('\t');
 				chcnt = cnt;
 			}
