@@ -1,4 +1,4 @@
-/*	$OpenBSD: courier.c,v 1.7 2001/09/04 23:35:59 millert Exp $	*/
+/*	$OpenBSD: courier.c,v 1.8 2001/09/26 06:07:28 pvalchev Exp $	*/
 /*	$NetBSD: courier.c,v 1.7 1997/02/11 09:24:16 mrg Exp $	*/
 
 /*
@@ -38,7 +38,7 @@
 #if 0
 static char sccsid[] = "@(#)courier.c	8.1 (Berkeley) 6/6/93";
 #endif
-static char rcsid[] = "$OpenBSD: courier.c,v 1.7 2001/09/04 23:35:59 millert Exp $";
+static char rcsid[] = "$OpenBSD: courier.c,v 1.8 2001/09/26 06:07:28 pvalchev Exp $";
 #endif /* not lint */
 
 /*
@@ -62,10 +62,10 @@ void cour_disconnect __P((void));
 
 int
 cour_dialer(num, acu)
-	register char *num;
+	char *num;
 	char *acu;
 {
-	register char *cp;
+	char *cp;
 #ifdef ACULOG
 	char line[80];
 #endif
@@ -146,7 +146,7 @@ sigALRM()
 
 static int
 cour_swallow(match)
-	register char *match;
+	char *match;
 {
 	sig_t f;
 	char c;
