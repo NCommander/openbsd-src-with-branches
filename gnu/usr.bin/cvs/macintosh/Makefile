@@ -9,7 +9,7 @@ cvs_srcdir = ../src
 
 SHELL = /bin/sh
 
-prefix = 
+prefix = /usr/local
 exec_prefix = ${prefix}
 
 

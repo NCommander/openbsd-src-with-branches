@@ -51,7 +51,9 @@ static void
 fileattr_delproc (node)
     Node *node;
 {
+    assert (node->data != NULL);
     free (node->data);
+    node->data = NULL;
 }
 
 /* Read all the attributes for the current directory into memory.  */
@@ -82,7 +84,7 @@ fileattr_read ()
     strcat (fname, CVSREP_FILEATTR);
 
     attr_read_attempted = 1;
-    fp = fopen (fname, "r");
+    fp = fopen (fname, FOPEN_BINARY_READ);
     if (fp == NULL)
     {
 	if (!existence_error (errno))
@@ -149,12 +151,18 @@ fileattr_get (filename, attrname)
 	   an error message.  */
 	return NULL;
 
-    node = findnode (attrlist, filename);
-    if (node == NULL)
-	/* A file not mentioned has no attributes.  */
-	return NULL;
-    p = node->data;
-    while (1) {
+    if (filename == NULL)
+	p = fileattr_default_attrs;
+    else
+    {
+	node = findnode (attrlist, filename);
+	if (node == NULL)
+	    /* A file not mentioned has no attributes.  */
+	    return NULL;
+	p = node->data;
+    }
+    while (p)
+    {
 	if (strncmp (attrname, p, attrname_len) == 0
 	    && p[attrname_len] == '=')
 	{
@@ -339,6 +347,7 @@ fileattr_set (filename, attrname, attrval)
 
     p = fileattr_modify (node->data, attrname, attrval, '=', ';');
     free (node->data);
+    node->data = NULL;
     if (p == NULL)
 	delnode (node);
     else
@@ -384,7 +393,7 @@ writeattr_proc (node, data)
     fputs (node->key, fp);
     fputs ("\t", fp);
     fputs (node->data, fp);
-    fputs ("\n", fp);
+    fputs ("\012", fp);
     return 0;
 }
 
@@ -447,7 +456,7 @@ fileattr_write ()
     }
 
     omask = umask (cvsumask);
-    fp = fopen (fname, "w");
+    fp = fopen (fname, FOPEN_BINARY_WRITE);
     if (fp == NULL)
     {
 	if (existence_error (errno))
@@ -472,7 +481,7 @@ fileattr_write ()
 	    }
 	    free (repname);
 
-	    fp = fopen (fname, "w");
+	    fp = fopen (fname, FOPEN_BINARY_WRITE);
 	}
 	if (fp == NULL)
 	{
@@ -487,7 +496,7 @@ fileattr_write ()
     {
 	fputs ("D\t", fp);
 	fputs (fileattr_default_attrs, fp);
-	fputs ("\n", fp);
+	fputs ("\012", fp);
     }
     if (fclose (fp) < 0)
 	error (0, errno, "cannot close %s", fname);

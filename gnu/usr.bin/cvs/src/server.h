@@ -72,6 +72,8 @@ extern void server_clear_entstat PROTO((char *update_dir, char *repository));
 extern void server_set_sticky PROTO((char *update_dir, char *repository,
 				       char *tag,
 				       char *date));
+/* Send Template response.  */
+extern void server_template PROTO ((char *, char *));
 
 extern void server_update_entries
     PROTO((char *file, char *update_dir, char *repository,
@@ -79,6 +81,12 @@ extern void server_update_entries
 
 enum progs {PROG_CHECKIN, PROG_UPDATE};
 extern void server_prog PROTO((char *, char *, enum progs));
+extern void server_cleanup PROTO((int sig));
+
+#ifdef SERVER_FLOWCONTROL
+/* Pause if it's convenient to avoid memory blowout */
+extern void server_pause_check PROTO((void));
+#endif /* SERVER_FLOWCONTROL */
 
 #endif /* SERVER_SUPPORT */
 
