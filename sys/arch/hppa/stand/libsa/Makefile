@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.10 2002/10/24 19:27:16 mickey Exp $
+#	$OpenBSD: Makefile,v 1.11 2002/12/20 02:44:26 mickey Exp $
 
 .include "${.CURDIR}/../Makefile.inc"
 
@@ -11,7 +11,7 @@ DIR_SA=	$S/lib/libsa
 NOPROFILE=noprofile
 NOPIC=nopic
 
-#AS=cat ; 
+#AS=cat ;
 #AS+=	-R
 #AS+=	-a
 
