@@ -1,4 +1,4 @@
-/*	$OpenBSD: icmp6.c,v 1.75 2003/10/01 21:41:05 itojun Exp $	*/
+/*	$OpenBSD: icmp6.c,v 1.76 2003/12/21 14:57:19 markus Exp $	*/
 /*	$KAME: icmp6.c,v 1.217 2001/06/20 15:03:29 jinmei Exp $	*/
 
 /*
@@ -885,7 +885,7 @@ icmp6_input(mp, offp, proto)
 static int
 icmp6_notify_error(m, off, icmp6len, code)
 	struct mbuf *m;
-	int off, icmp6len;
+	int off, icmp6len, code;
 {
 	struct icmp6_hdr *icmp6;
 	struct ip6_hdr *eip6;
