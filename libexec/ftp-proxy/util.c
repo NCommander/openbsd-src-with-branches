@@ -1,4 +1,4 @@
-/*	$OpenBSD: util.c,v 1.7 2002/02/15 12:40:59 mpech Exp $ */
+/*	$OpenBSD: util.c,v 1.8 2002/05/23 10:22:14 deraadt Exp $ */
 
 /*
  * Copyright (c) 1996-2001
@@ -183,7 +183,7 @@ snarf:
 		return(-1);
 	} else {
 		offset = 0;
-		debuglog(3, "xfer got %d bytes from socket\n", rlen);
+		debuglog(3, "xfer got %d bytes from socket", rlen);
 
 		while (offset < rlen) {
 			int wlen;
@@ -201,7 +201,7 @@ snarf:
 				errno = xerrno;
 				return(-1);
 			} else {
-				debuglog(3, "wrote %d bytes to socket\n",wlen);
+				debuglog(3, "wrote %d bytes to socket",wlen);
 				offset += wlen;
 			}
 		}
