@@ -1,6 +1,6 @@
 #-*- mode: Fundamental; tab-width: 4; -*-
 # ex:ts=4
-#	$OpenBSD: bsd.port.mk,v 1.15 1997/12/02 11:11:57 niklas Exp $
+#	$OpenBSD: bsd.port.mk,v 1.18 1997/12/04 08:26:23 niklas Exp $
 #	$NetBSD: $
 #
 #	bsd.port.mk - 940820 Jordan K. Hubbard.
@@ -582,7 +582,7 @@ READLINK?=	/usr/bin/readlink
 RM?=		/bin/rm
 RMDIR?=		/bin/rmdir
 SED?=		/usr/bin/sed
-SETENV?=	/usr/bin/env
+SETENV?=	/usr/bin/env PATH=${PATH}:${X11BASE}/bin:${LOCALBASE}/bin
 SH?=		/bin/sh
 TR?=		/usr/bin/tr
 
