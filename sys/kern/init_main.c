@@ -1,4 +1,4 @@
-/*	$OpenBSD: init_main.c,v 1.82 2001/11/06 19:53:20 miod Exp $	*/
+/*	$OpenBSD: init_main.c,v 1.83 2001/11/07 01:18:01 art Exp $	*/
 /*	$NetBSD: init_main.c,v 1.84.4.1 1996/06/02 09:08:06 mrg Exp $	*/
 
 /*
@@ -417,8 +417,12 @@ main(framep)
 	if (kthread_create(start_update, NULL, NULL, "update"))
 		panic("fork update");
 
+	/* Create process 6, the aiodone daemon kernel thread. */ 
+	if (kthread_create(uvm_aiodone_daemon, NULL, NULL, "aiodoned"))
+		panic("fork aiodoned");
+
 #ifdef CRYPTO
-	/* Create process 6, the crypto kernel thread. */
+	/* Create process 7, the crypto kernel thread. */
 	if (kthread_create(start_crypto, NULL, NULL, "crypto"))
 		panic("crypto thread");
 #endif /* CRYPTO */
