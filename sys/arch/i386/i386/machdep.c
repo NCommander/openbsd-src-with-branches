@@ -1,4 +1,4 @@
-/*	$OpenBSD: machdep.c,v 1.124.2.19 2003/05/17 16:07:37 andreas Exp $	*/
+/*	$OpenBSD: machdep.c,v 1.124.2.20 2003/05/18 17:41:15 niklas Exp $	*/
 /*	$NetBSD: machdep.c,v 1.214 1996/11/10 03:16:17 thorpej Exp $	*/
 
 /*-
@@ -3883,9 +3883,8 @@ _bus_dmamem_alloc_range(t, size, alignment, boundary, segs, nsegs, rsegs,
 void
 splassert_check(int wantipl, const char *func)
 {
-	if (cpl < wantipl) {
-		splassert_fail(wantipl, cpl, func);
-	}
+	if (lapic_tpr < wantipl)
+		splassert_fail(wantipl, lapic_tpr, func);
 }
 #endif
 
