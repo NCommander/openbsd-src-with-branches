@@ -1,4 +1,4 @@
-/*	$OpenBSD: pcib.c,v 1.12 2004/02/19 21:38:44 grange Exp $	*/
+/*	$OpenBSD: pcib.c,v 1.13 2004/02/27 21:15:45 grange Exp $	*/
 /*	$NetBSD: pcib.c,v 1.6 1997/06/06 23:29:16 thorpej Exp $	*/
 
 /*-
@@ -83,6 +83,8 @@ struct cfattach pcib_ca = {
 struct cfdriver pcib_cd = {
 	NULL, "pcib", DV_DULL
 };
+
+extern int setperf_prio;
 
 int
 pcibmatch(parent, match, aux)

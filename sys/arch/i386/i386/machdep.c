@@ -1,4 +1,4 @@
-/*	$OpenBSD: machdep.c,v 1.282 2004/02/19 23:31:58 deraadt Exp $	*/
+/*	$OpenBSD: machdep.c,v 1.283 2004/02/27 21:07:48 grange Exp $	*/
 /*	$NetBSD: machdep.c,v 1.214 1996/11/10 03:16:17 thorpej Exp $	*/
 
 /*-
@@ -252,6 +252,7 @@ struct vm_map *phys_map = NULL;
 
 int kbd_reset;
 int p4_model;
+int setperf_prio = 0;		/* for concurrent handlers */
 
 /*
  * Extent maps to manage I/O and ISA memory hole space.  Allocate
