@@ -1,4 +1,4 @@
-/*	$OpenBSD: file.h,v 1.20 2003/07/18 23:02:58 tedu Exp $	*/
+/*	$OpenBSD: file.h,v 1.21 2003/08/01 22:54:06 tedu Exp $	*/
 /*	$NetBSD: file.h,v 1.11 1995/03/26 20:24:13 jtc Exp $	*/
 
 /*
@@ -42,6 +42,7 @@ struct proc;
 struct uio;
 struct knote;
 struct stat;
+struct file;
 
 struct	fileops {
 	int	(*fo_read)(struct file *, off_t *, struct uio *,
