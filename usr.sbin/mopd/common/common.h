@@ -1,4 +1,4 @@
-/*	$OpenBSD: common.h,v 1.4 2003/06/02 21:38:39 maja Exp $ */
+/*	$OpenBSD: common.h,v 1.5 2004/04/14 20:37:28 henning Exp $ */
 
 /*
  * Copyright (c) 1993-95 Mats O Jansson.  All rights reserved.
@@ -23,7 +23,7 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
- *	$OpenBSD: common.h,v 1.4 2003/06/02 21:38:39 maja Exp $
+ *	$OpenBSD: common.h,v 1.5 2004/04/14 20:37:28 henning Exp $
  *
  */
 
@@ -67,7 +67,7 @@ struct if_info {
 struct dllist {
 	u_char	status;			/* Status byte			*/
 	struct if_info *ii;		/* interface pointer		*/
-	u_char	eaddr[6];		/* targets ethernet addres	*/
+	u_char	eaddr[6];		/* targets ethernet address	*/
 	int	ldfd;			/* filedescriptor for loadfile	*/
 	u_short	dl_bsz;			/* Data Link Buffer Size	*/
 	int	timeout;		/* Timeout counter		*/

@@ -1,4 +1,4 @@
-/*	$OpenBSD: yukonreg.h,v 1.1 2003/08/01 04:46:13 nate Exp $ */
+/*	$OpenBSD: yukonreg.h,v 1.2 2003/08/12 05:23:06 nate Exp $ */
 /*
  * Copyright (c) 2003 Nathan L. Binkert <binkertn@umich.edu>
  *
@@ -162,7 +162,7 @@
 /* SMI Data Register (SMIDR) */
 #define YUKON_SMIDR		0x0084
 
-/* PHY Addres Register (PAR) */
+/* PHY Address Register (PAR) */
 #define YUKON_PAR		0x0088
 
 #define YU_PAR_MIB_CLR		0x0020	/* MIB Counters Clear Mode */

@@ -1,4 +1,4 @@
-/*	$OpenBSD: pppoe.c,v 1.13 2004/05/06 20:29:04 deraadt Exp $	*/
+/*	$OpenBSD: pppoe.c,v 1.14 2004/05/14 17:53:51 canacar Exp $	*/
 
 /*
  * Copyright (c) 2000 Network Security Technologies, Inc. http://www.netsec.net
@@ -221,7 +221,7 @@ setup_rfilter(struct bpf_insn *insns, struct ether_addr *ea, int server_mode)
 		idx++;
 	}
 
-	/* make sure packet is destined to our addres */
+	/* make sure packet is destined to our address */
 	insns[idx].code = BPF_LD | BPF_W | BPF_ABS;
 	insns[idx].k = insns[idx].jt = insns[idx].jf = 0;
 	idx++;
