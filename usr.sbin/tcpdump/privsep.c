@@ -1,4 +1,4 @@
-/*	$OpenBSD: privsep.c,v 1.5 2004/03/14 19:17:05 otto Exp $	*/
+/*	$OpenBSD: privsep.c,v 1.6 2004/04/03 10:20:51 avsm Exp $	*/
 
 /*
  * Copyright (c) 2003 Can Erkin Acar
@@ -334,7 +334,7 @@ parent_open_output(int fd, const char *WFileName)
 	must_write(fd, &err, sizeof(int));
 	if (file < 0)
 		logmsg(LOG_DEBUG, "[priv]: failed to open %s: %s",
-		    WFileName, strerror(errno));
+		    WFileName, strerror(err));
 	else
 		close(file);
 }
