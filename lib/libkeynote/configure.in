@@ -35,7 +35,7 @@ AC_CHECK_LIB(pgp, pgpCipherByName, LIBS="$LIBS -lpgp")
 dnl Checks for header files.
 CPPFLAGS="-I/usr/include -I/usr/local/include -I/usr/ssl/include\
  -I/usr/local/ssl/include -I/usr/openssl/include -I/usr/pkg/include\
- -I/usr/local/openssl/include -I/pkg/include"
+ -I/usr/local/openssl/include -I/pkg/include -I/usr/include/openssl"
 
 AC_HEADER_STDC
 AC_HEADER_TIME
