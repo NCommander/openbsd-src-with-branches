@@ -1,4 +1,4 @@
-/* $OpenBSD: if_wi_pcmcia.c,v 1.46 2004/04/06 21:08:57 millert Exp $ */
+/* $OpenBSD: if_wi_pcmcia.c,v 1.47 2004/05/03 16:58:11 drahn Exp $ */
 /* $NetBSD: if_wi_pcmcia.c,v 1.14 2001/11/26 04:34:56 ichiro Exp $ */
 
 /*
@@ -248,6 +248,10 @@ static const struct wi_pcmcia_product {
 	{ PCMCIA_VENDOR_MICROSOFT,
 	  PCMCIA_PRODUCT_MICROSOFT_MN520,
 	  PCMCIA_CIS_MICROSOFT_MN520
+	},
+	{ PCMCIA_VENDOR_ADAPTEC2,
+	  PCMCIA_PRODUCT_ADAPTEC2_AWN8030,
+	  PCMCIA_CIS_ADAPTEC2_AWN8030
 	}
 };
 
