@@ -33,14 +33,14 @@
 
 #if defined(LIBC_SCCS)
 	.text
-	.asciz "$OpenBSD$"
+	.asciz "$OpenBSD: bzero.S,v 1.2 1996/08/19 08:18:47 tholo Exp $"
 #endif /* LIBC_SCCS */
 
 /* bzero(base, length) */
 
 #include "DEFS.h"
 
-ENTRY(bzero, 0)
+ENTRY(bzero, R2|R3|R4|R5)
 	movl	4(ap),r3
 	jbr	2f
 1:

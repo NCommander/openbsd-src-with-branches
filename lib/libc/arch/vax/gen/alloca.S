@@ -33,12 +33,12 @@
 
 #if defined(LIBC_SCCS)
 	.text
-	.asciz "$OpenBSD: alloca.S,v 1.1 1995/04/17 12:23:38 ragge Exp $"
+	.asciz "$OpenBSD: alloca.S,v 1.2 1996/08/19 08:18:22 tholo Exp $"
 #endif /* LIBC_SCCS */
 
 #include "DEFS.h"
 
-ENTRY(alloca, 0)
+ENTRY(alloca, R2)
 	movl	4(ap),r0	# get allocation size
 	movl	16(fp),r2	# save return address before we smash it
 	movab	here,16(fp)
