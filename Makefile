@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.26 1998/03/18 15:51:04 mickey Exp $
+#	$OpenBSD: Makefile,v 1.27 1998/04/25 06:42:44 niklas Exp $
 
 #
 # For more information on building in tricky environments, please see
@@ -104,7 +104,7 @@ cross-includes:
 	    DESTDIR=${CROSSDIR} includes
 
 .if ${TARGET} == "powerpc" || ${TARGET} == "alpha" || ${TARGET} == "arc" || \
-    ${TARGET} == "pmax" || ${TARGET} == "wgrisc"
+    ${TARGET} == "pmax" || ${TARGET} == "wgrisc" || ${TARGET} == "hppa"
 cross-binutils: cross-binutils-new
 .else
 cross-binutils: cross-binutils-old
