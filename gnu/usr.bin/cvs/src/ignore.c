@@ -4,11 +4,6 @@
 
 #include "cvs.h"
 
-#ifndef lint
-static const char rcsid[] = "$CVSid: @(#)ignore.c 1.16 94/09/24 $";
-USE(rcsid);
-#endif
-
 /*
  * Ignore file section.
  * 
@@ -24,8 +19,8 @@ static int ign_count;			/* Number of active entries */
 static int s_ign_count = 0;
 static int ign_size;			/* This many slots available (plus
 					 * one for a NULL) */
-static int ign_hold = -1;		/* Index where first "temporary" item
-					 * is held, -1 if none.  */
+static int ign_hold;			/* Index where first "temporary" item
+					 * is held */
 
 const char *ign_default = ". .. core RCSLOG tags TAGS RCS SCCS .make.state .nse_depinfo #* .#* cvslog.* ,* CVS CVS.adm .del-* *.a *.o *.obj *.so *.Z *~ *.old *.elc *.ln *.bak *.BAK *.orig *.rej";
 
@@ -115,7 +110,7 @@ ign_add_file (file, hold)
     if (hold)
     {
 	/* re-set if we had already done a temporary file */
-	if (ign_hold >= 0)
+	if (ign_hold)
 	{
 	    int i;
 
@@ -191,11 +186,11 @@ ign_add (ign, hold)
 		/* temporarily reset the ignore list */
 		int i;
 
-		if (ign_hold >= 0)
+		if (ign_hold)
 		{
 		    for (i = ign_hold; i < ign_count; i++)
 			free (ign_list[i]);
-		    ign_hold = -1;
+		    ign_hold = 0;
 		}
 		s_ign_list = (char **) xmalloc (ign_count * sizeof (char *));
 		for (i = 0; i < ign_count; i++)

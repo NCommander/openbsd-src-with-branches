@@ -7,11 +7,7 @@
  */
 
 #include "cvs.h"
-
-#ifndef lint
-static const char rcsid[] = "$CVSid: @(#)logmsg.c 1.48 94/09/29 $";
-USE(rcsid);
-#endif
+#include "getline.h"
 
 static int find_type PROTO((Node * p, void *closure));
 static int fmt_proc PROTO((Node * p, void *closure));
@@ -129,9 +125,13 @@ do_editor (dir, messagep, repository, changes)
     List *changes;
 {
     static int reuse_log_message = 0;
-    char line[MAXLINELEN], fname[L_tmpnam+1];
+    char *line;
+    int line_length;
+    size_t line_chars_allocated;
+    char fname[L_tmpnam+1];
     struct stat pre_stbuf, post_stbuf;
     int retcode = 0;
+    char *p;
 
     if (noexec || reuse_log_message)
 	return;
@@ -172,7 +172,8 @@ do_editor (dir, messagep, repository, changes)
 		    CVSEDITPREFIX);
 
     /* finish off the temp file */
-    (void) fclose (fp);
+    if (fclose (fp) == EOF)
+        error (1, errno, "%s", fname);
     if (stat (fname, &pre_stbuf) == -1)
 	pre_stbuf.st_mtime = 0;
 
@@ -209,19 +210,30 @@ do_editor (dir, messagep, repository, changes)
  	*messagep[0] = '\0';
     }
 
-/* !!! XXX FIXME: fgets is broken.  This should not have any line
-   length limits. */
+    line = NULL;
+    line_chars_allocated = 0;
 
     if (*messagep)
     {
-	while (fgets (line, sizeof (line), fp) != NULL)
+	p = *messagep;
+	while (1)
 	{
+	    line_length = getline (&line, &line_chars_allocated, fp);
+	    if (line_length == -1)
+	    {
+		if (ferror (fp))
+		    error (0, errno, "warning: cannot read %s", fname);
+		break;
+	    }
 	    if (strncmp (line, CVSEDITPREFIX, sizeof (CVSEDITPREFIX) - 1) == 0)
 		continue;
-	    (void) strcat (*messagep, line);
+	    (void) strcpy (p, line);
+	    p += line_length;
 	}
     }
-    (void) fclose (fp);
+    if (fclose (fp) < 0)
+	error (0, errno, "warning: cannot close %s", fname);
+
     if (pre_stbuf.st_mtime == post_stbuf.st_mtime ||
 	*messagep == NULL ||
 	strcmp (*messagep, "\n") == 0)
@@ -232,9 +244,9 @@ do_editor (dir, messagep, repository, changes)
 	    (void) printf ("a)bort, c)ontinue, e)dit, !)reuse this message unchanged for remaining dirs\n");
 	    (void) printf ("Action: (continue) ");
 	    (void) fflush (stdout);
-	    *line = '\0';
-	    (void) fgets (line, sizeof (line), stdin);
-	    if (*line == '\0' || *line == '\n' || *line == 'c' || *line == 'C')
+	    line_length = getline (&line, &line_chars_allocated, stdin);
+	    if (line_length <= 0
+		    || *line == '\n' || *line == 'c' || *line == 'C')
 		break;
 	    if (*line == 'a' || *line == 'A')
 		error (1, 0, "aborted by user");
@@ -248,7 +260,10 @@ do_editor (dir, messagep, repository, changes)
 	    (void) printf ("Unknown input\n");
 	}
     }
-    (void) unlink_file (fname);
+    if (line)
+	free (line);
+    if (unlink_file (fname) < 0)
+	error (0, errno, "warning: cannot remove temp file %s", fname);
 }
 
 /*
@@ -264,7 +279,6 @@ rcsinfo_proc (repository, template)
 {
     static char *last_template;
     FILE *tfp;
-    char line[MAXLINELEN];
 
     /* nothing to do if the last one included is the same as this one */
     if (last_template && strcmp (last_template, template) == 0)
@@ -275,14 +289,22 @@ rcsinfo_proc (repository, template)
 
     if ((tfp = fopen (template, "r")) != NULL)
     {
-	while (fgets (line, sizeof (line), tfp) != NULL)
+	char *line = NULL;
+	size_t line_chars_allocated = 0;
+
+	while (getline (&line, &line_chars_allocated, tfp) >= 0)
 	    (void) fputs (line, fp);
-	(void) fclose (tfp);
+	if (ferror (tfp))
+	    error (0, errno, "warning: cannot read %s", template);
+	if (fclose (tfp) < 0)
+	    error (0, errno, "warning: cannot close %s", template);
+	if (line)
+	    free (line);
 	return (0);
     }
     else
     {
-	error (0, 0, "Couldn't open rcsinfo template file %s", template);
+	error (0, errno, "Couldn't open rcsinfo template file %s", template);
 	return (1);
     }
 }
@@ -399,7 +421,7 @@ logfile_write (repository, filter, title, message, revision, logfp, changes)
     List *changes;
 {
     char cwd[PATH_MAX];
-    FILE *pipefp, *Popen ();
+    FILE *pipefp, *run_popen ();
     char *prog = xmalloc (MAXPROGLEN);
     char *cp;
     int c;
@@ -409,7 +431,7 @@ logfile_write (repository, filter, title, message, revision, logfp, changes)
      * A maximum of 6 %s arguments are supported in the filter
      */
     (void) sprintf (prog, filter, title, title, title, title, title, title);
-    if ((pipefp = Popen (prog, "w")) == NULL)
+    if ((pipefp = run_popen (prog, "w")) == NULL)
     {
 	if (!noexec)
 	    error (0, 0, "cannot write entry to log filter: %s", prog);

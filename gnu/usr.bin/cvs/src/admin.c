@@ -12,16 +12,12 @@
  */
 
 #include "cvs.h"
-
-#ifndef lint
-static const char rcsid[] = "$CVSid: @(#)admin.c 1.20 94/09/30 $";
-USE(rcsid);
+#ifdef CVS_ADMIN_GROUP
+#include <grp.h>
 #endif
 
 static Dtype admin_dirproc PROTO((char *dir, char *repos, char *update_dir));
-static int admin_fileproc PROTO((char *file, char *update_dir,
-			   char *repository, List *entries,
-			   List *srcfiles));
+static int admin_fileproc PROTO((struct file_info *finfo));
 
 static const char *const admin_usage[] =
 {
@@ -38,9 +34,36 @@ admin (argc, argv)
     char **argv;
 {
     int err;
-
+#ifdef CVS_ADMIN_GROUP
+    struct group *grp;
+#endif
     if (argc <= 1)
 	usage (admin_usage);
+
+#ifdef CVS_ADMIN_GROUP
+    grp = getgrnam(CVS_ADMIN_GROUP);
+     /* skip usage right check if group CVS_ADMIN_GROUP does not exist */
+    if (grp != NULL)
+    {
+	char *me = getcaller();
+	char **grnam = grp->gr_mem;
+	int denied = 1;
+	
+	while (*grnam)
+	{
+	    if (strcmp(*grnam, me) == 0) 
+	    {
+		denied = 0;
+		break;
+	    }
+	    grnam++;
+	}
+
+	if (denied)
+	    error (1, 0, "usage is restricted to members of the group %s",
+		   CVS_ADMIN_GROUP);
+    }
+#endif
 
     wrap_setup ();
 
@@ -65,26 +88,22 @@ admin (argc, argv)
 	
 	ign_setup ();
 
-	for (i = 1; i <= ac; ++i)
+	for (i = 0; i <= ac; ++i)	/* XXX send -ko too with i = 0 */
 	    send_arg (av[i]);
 
-#if 0
+	send_file_names (argc, argv);
 	/* FIXME:  We shouldn't have to send current files, but I'm not sure
 	   whether it works.  So send the files --
 	   it's slower but it works.  */
-	send_file_names (argc, argv);
-#else
 	send_files (argc, argv, 0, 0);
-#endif
-	if (fprintf (to_server, "admin\n") < 0)
-	    error (1, errno, "writing to server");
+	send_to_server ("admin\012", 0);
         return get_responses_and_close ();
     }
 #endif /* CLIENT_SUPPORT */
 
     /* start the recursion processor */
-    err = start_recursion (admin_fileproc, (int (*) ()) NULL, admin_dirproc,
-			   (int (*) ()) NULL, argc, argv, 0,
+    err = start_recursion (admin_fileproc, (FILESDONEPROC) NULL, admin_dirproc,
+			   (DIRLEAVEPROC) NULL, argc, argv, 0,
 			   W_LOCAL, 0, 1, (char *) NULL, 1, 0);
     return (err);
 }
@@ -94,32 +113,29 @@ admin (argc, argv)
  */
 /* ARGSUSED */
 static int
-admin_fileproc (file, update_dir, repository, entries, srcfiles)
-    char *file;
-    char *update_dir;
-    char *repository;
-    List *entries;
-    List *srcfiles;
+admin_fileproc (finfo)
+    struct file_info *finfo;
 {
     Vers_TS *vers;
     char *version;
     char **argv;
     int argc;
     int retcode = 0;
+    int status = 0;
 
-    vers = Version_TS (repository, (char *) NULL, (char *) NULL, (char *) NULL,
-		       file, 0, 0, entries, srcfiles);
+    vers = Version_TS (finfo->repository, (char *) NULL, (char *) NULL, (char *) NULL,
+		       finfo->file, 0, 0, finfo->entries, finfo->srcfiles);
 
     version = vers->vn_user;
     if (version == NULL)
-	return (0);
+	goto exitfunc;
     else if (strcmp (version, "0") == 0)
     {
-	error (0, 0, "cannot admin newly added file `%s'", file);
-	return (0);
+	error (0, 0, "cannot admin newly added file `%s'", finfo->file);
+	goto exitfunc;
     }
 
-    run_setup ("%s%s", Rcsbin, RCS);
+    run_setup ("%s%s -x,v/", Rcsbin, RCS);
     for (argc = ac, argv = av; argc; argc--, argv++)
 	run_arg (*argv);
     run_arg (vers->srcfile->path);
@@ -127,10 +143,13 @@ admin_fileproc (file, update_dir, repository, entries, srcfiles)
     {
 	if (!quiet)
 	    error (0, retcode == -1 ? errno : 0,
-		   "%s failed for `%s'", RCS, file);
-	return (1);
+		   "%s failed for `%s'", RCS, finfo->file);
+	status = 1;
+	goto exitfunc;
     }
-    return (0);
+  exitfunc:
+    freevers_ts (&vers);
+    return status;
 }
 
 /*

@@ -6,14 +6,13 @@
    and use ../cvsnt.mak for your project.  Thus, this is the right place to
    put configuration information for Windows NT.  */
 
-/* All code which #includes this file is part of CVS, so it should provide
-   any CVS-specific features it can.  */
-#define CVS_SUPPORT
+/* Define if on AIX 3.
+   System headers sometimes define this.
+   We just want to avoid a redefinition error message.  */
+#undef _ALL_SOURCE
 
-/* We just want the client stuff.  No server support yet.  
-   Note that you don't have to define CLIENT_SUPPORT or SERVER_SUPPORT
-   to enable the non-remote code; that's always there.  */
-#define CLIENT_SUPPORT
+/* Define if using alloca.c.  */
+#undef C_ALLOCA
 
 /* Define if type char is unsigned and you are not using gcc.  */
 /* We wrote a little test program whose output suggests that char is
@@ -21,20 +20,29 @@
    is configured on floss...  */
 #undef __CHAR_UNSIGNED__
 
-/* Windows NT has alloca, but calls it _alloca and says it returns
-   void *.  We provide our own header file.  */
-#define HAVE_ALLOCA 1
-#define HAVE_ALLOCA_H 1
-#undef C_ALLOCA
-/* These shouldn't matter, but pro forma:  */
+/* Define to empty if the keyword does not work.  */
+/* Const is working.  */
+#undef const
+
+/* Define to one of _getb67, GETB67, getb67 for Cray-2 and Cray-YMP systems.
+   This function is required for alloca.c support on those systems.  */
+/* This shouldn't matter, but pro forma:  */
 #undef CRAY_STACKSEG_END
-#undef STACK_DIRECTION
 
 /* Define to `int' if <sys/types.h> doesn't define.  */
 /* Windows NT doesn't have gid_t.  It doesn't even really have group
    numbers, I think.  This will take more thought to get right, but
    let's get it running first.  */
 #define gid_t int
+
+/* Define if you have alloca, as a function or macro.  */
+/* Windows NT has alloca...  */
+#define HAVE_ALLOCA 1
+
+/* Define if you have <alloca.h> and it should be used (not on Ultrix).  */
+/* but calls it _alloca and says it returns void *.  We provide our
+   own header file.  */
+#define HAVE_ALLOCA_H 1
 
 /* Define if you support file names longer than 14 characters.  */
 /* Yes.  Woo.  */
@@ -87,6 +95,16 @@
    #includes, so things should be okay.  */
 /* #undef size_t */
 
+/* If using the C implementation of alloca, define if you know the
+   direction of stack growth for your system; otherwise it will be
+   automatically deduced at run-time.
+	STACK_DIRECTION > 0 => grows toward higher addresses
+	STACK_DIRECTION < 0 => grows toward lower addresses
+	STACK_DIRECTION = 0 => direction of growth unknown
+ */
+/* This shouldn't matter, but pro forma:  */
+#undef STACK_DIRECTION
+
 /* Define if the `S_IS*' macros in <sys/stat.h> do not work properly.  */
 /* We don't seem to have them at all; let ../lib/system.h define them.  */
 #define STAT_MACROS_BROKEN 1
@@ -99,7 +117,6 @@
 /* We don't have <sys/time.h> at all.  Why isn't there a definition
    for HAVE_SYS_TIME_H anywhere in config.h.in?  */
 #undef TIME_WITH_SYS_TIME
-#undef HAVE_SYS_TIME_H
 
 /* Define to `int' if <sys/types.h> doesn't define.  */
 #define uid_t int
@@ -110,11 +127,34 @@
    well.  */
 #undef HAVE_KERBEROS
 
+/* Define if you want CVS to be able to be a remote repository client.  */
+/* We just want the client stuff.  */
+#define CLIENT_SUPPORT
+
+/* Define if you want CVS to be able to serve repositories to remote
+   clients.  */
+/* No server support yet.  Note that you don't have to define
+   CLIENT_SUPPORT or SERVER_SUPPORT to enable the non-remote code;
+   that's always there.  */
+#undef SERVER_SUPPORT
+
+/* the path to the gnu diff program on your system  */
+/* We don't need this for CLIENT side.  */
+#undef DIFF
+
+/* the path to the gnu grep program on your system  */
+/* We don't need this for CLIENT side.  */
+#undef GREP
+
 /* The number of bytes in a int.  */
 #define SIZEOF_INT 4
 
 /* The number of bytes in a long.  */
 #define SIZEOF_LONG 4
+
+/* Define if you have the connect function.  */
+/* Not used?  */
+#define HAVE_CONNECT
 
 /* Define if you have the fchdir function.  */
 #undef HAVE_FCHDIR
@@ -146,6 +186,21 @@
 /* Define if you have the setvbuf function.  */
 #define HAVE_SETVBUF 1
 
+/* Define if you have the sigaction function.  */
+#undef HAVE_SIGACTION
+
+/* Define if you have the sigblock function.  */
+#undef HAVE_SIGBLOCK
+
+/* Define if you have the sigprocmask function.  */
+#undef HAVE_SIGPROCMASK
+
+/* Define if you have the sigsetmask function.  */
+#undef HAVE_SIGSETMASK
+
+/* Define if you have the sigvec function.  */
+#undef HAVE_SIGVEC
+
 /* Define if you have the timezone function.  */
 /* Hmm, I actually rather think it's an extern long
    variable; that message was mechanically generated
@@ -159,6 +214,10 @@
 /* Define if you have the vprintf function.  */
 #define HAVE_VPRINTF 1
 
+/* Define if you have the <direct.h> header file.  */
+/* Windows NT wants this for mkdir and friends.  */
+#define HAVE_DIRECT_H 1
+
 /* Define if you have the <dirent.h> header file.  */
 /* No, but we have the <direct.h> header file...  */
 #undef HAVE_DIRENT_H
@@ -168,6 +227,11 @@
 
 /* Define if you have the <fcntl.h> header file.  */
 #define HAVE_FCNTL_H 1
+
+/* Define if you have the <io.h> header file.  */
+/* Apparently this is where Windows NT declares all the low-level
+   Unix I/O routines like open and creat and stuff.  */
+#define HAVE_IO_H 1
 
 /* Define if you have the <memory.h> header file.  */
 #define HAVE_MEMORY_H 1
@@ -181,6 +245,9 @@
 /* Define if you have the <string.h> header file.  */
 #define HAVE_STRING_H 1
 
+/* Define if you have the <sys/bsdtypes.h> header file.  */
+#undef HAVE_SYS_BSDTYPES_H
+
 /* Define if you have the <sys/dir.h> header file.  */
 #undef HAVE_SYS_DIR_H
 
@@ -193,6 +260,9 @@
 /* Define if you have the <sys/select.h> header file.  */
 #undef HAVE_SYS_SELECT_H
 
+/* Define if you have the <sys/time.h> header file.  */
+#undef HAVE_SYS_TIME_H
+
 /* Define if you have the <sys/timeb.h> header file.  */
 #define HAVE_SYS_TIMEB_H 1
 
@@ -202,18 +272,15 @@
 /* Define if you have the <utime.h> header file.  */
 #undef HAVE_UTIME_H
 
-/* Define if you have the <io.h> header file.  */
-/* Apparently this is where Windows NT declares all the low-level
-   Unix I/O routines like open and creat and stuff.  */
-#define HAVE_IO_H 1
-
-/* Define if you have the <direct.h> header file.  */
-/* Windows NT wants this for mkdir and friends.  */
-#define HAVE_DIRECT_H 1
+/* Define if you have the inet library (-linet).  */
+#undef HAVE_LIBINET
 
 /* Define if you have the nsl library (-lnsl).  */
 /* This is not used anywhere in the source code.  */
 #undef HAVE_LIBNSL
+
+/* Define if you have the nsl_s library (-lnsl_s).  */
+#undef HAVE_LIBNSL_S
 
 /* Define if you have the socket library (-lsocket).  */
 /* This isn't ever used either.  */
@@ -278,14 +345,6 @@ extern void convert_file (char *INFILE,  int INFLAGS,
 /* This is where old bits go to die under Windows NT.  */
 #define DEVNULL "nul"
 
-/* Comment markers for some Windows NT-specific file types.  */
-#define SYSTEM_COMMENT_TABLE \
-    "mak", "# ",    			/* makefile */                    \
-    "rc",  " * ",   			/* MS Windows resource file */    \
-    "dlg", " * ",   			/* MS Windows dialog file */      \
-    "frm", "' ",    			/* Visual Basic form */           \
-    "bas", "' ",    			/* Visual Basic code */
-
 /* Make sure that we don't try to perform operations on RCS files on the
    local machine.  I think I neglected to apply some changes from
    MHI's port in that area of code, or found some issues I didn't want
@@ -303,3 +362,8 @@ extern void wnt_start_server (int *tofd, int *fromfd,
 extern void wnt_shutdown_server (int fd);
 #define START_SERVER wnt_start_server
 #define SHUTDOWN_SERVER wnt_shutdown_server
+
+#define INITIALIZE_SOCKET_SUBSYSTEM init_winsock
+extern void init_winsock();
+
+#define HAVE_WINSOCK_H

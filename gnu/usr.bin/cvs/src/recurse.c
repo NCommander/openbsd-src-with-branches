@@ -9,12 +9,9 @@
  */
 
 #include "cvs.h"
-#include "save-cwd.h"
-
-#ifndef lint
-static const char rcsid[] = "$CVSid: @(#)recurse.c 1.31 94/09/30 $";
-USE(rcsid);
-#endif
+#include "savecwd.h"
+#include "fileattr.h"
+#include "edit.h"
 
 static int do_dir_proc PROTO((Node * p, void *closure));
 static int do_file_proc PROTO((Node * p, void *closure));
@@ -26,10 +23,10 @@ static void addfile PROTO((List **listp, char *dir, char *file));
 /*
  * Local static versions eliminates the need for globals
  */
-static int (*fileproc) ();
-static int (*filesdoneproc) ();
-static Dtype (*direntproc) ();
-static int (*dirleaveproc) ();
+static FILEPROC fileproc;
+static FILESDONEPROC filesdoneproc;
+static DIRENTPROC direntproc;
+static DIRLEAVEPROC dirleaveproc;
 static int which;
 static Dtype flags;
 static int aflag;
@@ -37,17 +34,14 @@ static int readlock;
 static int dosrcs;
 static char update_dir[PATH_MAX];
 static char *repository = NULL;
-static List *entries = NULL;
-static List *srcfiles = NULL;
-
 static List *filelist = NULL; /* holds list of files on which to operate */
 static List *dirlist = NULL; /* holds list of directories on which to operate */
 
 struct recursion_frame {
-  int (*fileproc)();
-  int (*filesdoneproc) ();
-  Dtype (*direntproc) ();
-  int (*dirleaveproc) ();
+  FILEPROC fileproc;
+  FILESDONEPROC filesdoneproc;
+  DIRENTPROC direntproc;
+  DIRLEAVEPROC dirleaveproc;
   Dtype flags;
   int which;
   int aflag;
@@ -68,10 +62,10 @@ int
 start_recursion (fileproc, filesdoneproc, direntproc, dirleaveproc,
 		 argc, argv, local, which, aflag, readlock,
 		 update_preload, dosrcs, wd_is_repos)
-    int (*fileproc) ();
-    int (*filesdoneproc) ();
-    Dtype (*direntproc) ();
-    int (*dirleaveproc) ();
+    FILEPROC fileproc;
+    FILESDONEPROC filesdoneproc;
+    DIRENTPROC 	direntproc;
+    DIRLEAVEPROC dirleaveproc;
     int argc;
     char **argv;
     int local;
@@ -103,13 +97,6 @@ start_recursion (fileproc, filesdoneproc, direntproc, dirleaveproc,
 	free (repository);
 	repository = (char *) NULL;
     }
-    if (entries)
-    {
-	Entries_Close (entries);
-	entries = NULL;
-    }
-    if (srcfiles)
-	dellist (&srcfiles);
     if (filelist)
 	dellist (&filelist); /* FIXME-krp: no longer correct. */
 /* FIXME-krp: clean up files_by_dir */
@@ -165,18 +152,20 @@ start_recursion (fileproc, filesdoneproc, direntproc, dirleaveproc,
 	    char tmp[PATH_MAX];
 	    char *file_to_try;
 
+	    /* Now break out argv[i] into directory part (DIR) and file part (COMP).
+		   DIR and COMP will each point to a newly malloc'd string.  */
 	    dir = xstrdup (argv[i]);
-	    if ((comp = strrchr (dir, '/')) == NULL)
+	    comp = last_component (dir);
+	    if (comp == dir)
 	    {
 		/* no dir component.  What we have is an implied "./" */
-		comp = dir;
 		dir = xstrdup(".");
 	    }
 	    else
 	    {
 		char *p = comp;
 
-		*p++ = '\0';
+		p[-1] = '\0';
 		comp = xstrdup (p);
 	    }
 
@@ -213,6 +202,7 @@ start_recursion (fileproc, filesdoneproc, direntproc, dirleaveproc,
 		    /* look for it in the repository. */
 		    repos = Name_Repository (dir, update_dir);
 		    (void) sprintf (tmp, "%s/%s", repos, comp);
+		    free (repos);
 
 		    if (!wrap_name_has (comp, WRAP_TOCVS) && isdir(tmp))
 			addlist (&dirlist, argv[i]);
@@ -266,10 +256,10 @@ start_recursion (fileproc, filesdoneproc, direntproc, dirleaveproc,
 int
 do_recursion (xfileproc, xfilesdoneproc, xdirentproc, xdirleaveproc,
 	      xflags, xwhich, xaflag, xreadlock, xdosrcs)
-    int (*xfileproc) ();
-    int (*xfilesdoneproc) ();
-    Dtype (*xdirentproc) ();
-    int (*xdirleaveproc) ();
+    FILEPROC xfileproc;
+    FILESDONEPROC xfilesdoneproc;
+    DIRENTPROC xdirentproc;
+    DIRLEAVEPROC xdirleaveproc;
     Dtype xflags;
     int xwhich;
     int xaflag;
@@ -279,6 +269,7 @@ do_recursion (xfileproc, xfilesdoneproc, xdirentproc, xdirleaveproc,
     int err = 0;
     int dodoneproc = 1;
     char *srepository;
+    List *entries = NULL;
 
     /* do nothing if told */
     if (xflags == R_SKIP_ALL)
@@ -294,6 +285,50 @@ do_recursion (xfileproc, xfilesdoneproc, xdirentproc, xdirleaveproc,
     aflag = xaflag;
     readlock = noexec ? 0 : xreadlock;
     dosrcs = xdosrcs;
+
+    /* The fact that locks are not active here is what makes us fail to have
+       the
+
+           If someone commits some changes in one cvs command,
+	   then an update by someone else will either get all the
+	   changes, or none of them.
+
+       property (see node Concurrency in cvs.texinfo).
+
+       The most straightforward fix would just to readlock the whole
+       tree before starting an update, but that means that if a commit
+       gets blocked on a big update, it might need to wait a *long*
+       time.
+
+       A more adequate fix would be a two-pass design for update,
+       checkout, etc.  The first pass would go through the repository,
+       with the whole tree readlocked, noting what versions of each
+       file we want to get.  The second pass would release all locks
+       (except perhaps short-term locks on one file at a
+       time--although I think RCS already deals with this) and
+       actually get the files, specifying the particular versions it wants.
+
+       This could be sped up by separating out the data needed for the
+       first pass into a separate file(s)--for example a file
+       attribute for each file whose value contains the head revision
+       for each branch.  The structure should be designed so that
+       commit can relatively quickly update the information for a
+       single file or a handful of files (file attributes, as
+       implemented in Jan 96, are probably acceptable; improvements
+       would be possible such as branch attributes which are in
+       separate files for each branch).  */
+
+#if defined(SERVER_SUPPORT) && defined(SERVER_FLOWCONTROL)
+    /*
+     * Now would be a good time to check to see if we need to stop
+     * generating data, to give the buffers a chance to drain to the
+     * remote client.  We should not have locks active at this point.
+     */
+    if (server_active
+	/* If there are writelocks around, we cannot pause here.  */
+	&& (readlock || noexec))
+	server_pause_check();
+#endif
 
     /*
      * Fill in repository with the current repository
@@ -311,6 +346,8 @@ do_recursion (xfileproc, xfilesdoneproc, xdirentproc, xdirleaveproc,
 	(void) getwd (repository);
     }
     srepository = repository;		/* remember what to free */
+
+    fileattr_startdir (repository);
 
     /*
      * The filesdoneproc needs to be called for each directory where files
@@ -361,18 +398,34 @@ do_recursion (xfileproc, xfilesdoneproc, xdirentproc, xdirleaveproc,
     /* process the files (if any) */
     if (filelist != NULL)
     {
+	struct file_info finfo_struct;
+
 	/* read lock it if necessary */
 	if (readlock && repository && Reader_Lock (repository) != 0)
 	    error (1, 0, "read lock failed - giving up");
 
+#ifdef CLIENT_SUPPORT
+	/* For the server, we handle notifications in a completely different
+	   place (server_notify).  For local, we can't do them here--we don't
+	   have writelocks in place, and there is no way to get writelocks
+	   here.  */
+	if (client_active)
+	    notify_check (repository, update_dir);
+#endif /* CLIENT_SUPPORT */
+
 	/* pre-parse the source files */
 	if (dosrcs && repository)
-	    srcfiles = RCS_parsefiles (filelist, repository);
+	    finfo_struct.srcfiles = RCS_parsefiles (filelist, repository);
 	else
-	    srcfiles = (List *) NULL;
+	    finfo_struct.srcfiles = (List *) NULL;
+
+	finfo_struct.repository = repository;
+	finfo_struct.update_dir = update_dir;
+	finfo_struct.entries = entries;
+	/* do_file_proc will fill in finfo_struct.file.  */
 
 	/* process the files */
-	err += walklist (filelist, do_file_proc, NULL);
+	err += walklist (filelist, do_file_proc, &finfo_struct);
 
 	/* unlock it */
 	if (readlock)
@@ -380,7 +433,11 @@ do_recursion (xfileproc, xfilesdoneproc, xdirentproc, xdirleaveproc,
 
 	/* clean up */
 	dellist (&filelist);
-	dellist (&srcfiles);
+	dellist (&finfo_struct.srcfiles);
+    }
+
+    if (entries) 
+    {
 	Entries_Close (entries);
 	entries = NULL;
     }
@@ -388,6 +445,9 @@ do_recursion (xfileproc, xfilesdoneproc, xdirentproc, xdirleaveproc,
     /* call-back files done proc (if any) */
     if (dodoneproc && filesdoneproc != NULL)
 	err = filesdoneproc (err, repository, update_dir[0] ? update_dir : ".");
+
+    fileattr_write ();
+    fileattr_free ();
 
     /* process the directories (if necessary) */
     if (dirlist != NULL)
@@ -416,8 +476,10 @@ do_file_proc (p, closure)
     Node *p;
     void *closure;
 {
+    struct file_info *finfo = (struct file_info *)closure;
+    finfo->file = p->key;
     if (fileproc != NULL)
-	return (fileproc (p->key, update_dir, repository, entries, srcfiles));
+	return fileproc (finfo);
     else
 	return (0);
 }
@@ -524,8 +586,9 @@ do_dir_proc (p, closure)
     }
 
     /* put back update_dir */
-    if ((cp = strrchr (update_dir, '/')) != NULL)
-	*cp = '\0';
+    cp = last_component (update_dir);
+    if (cp > update_dir)
+	cp[-1] = '\0';
     else
 	update_dir[0] = '\0';
 

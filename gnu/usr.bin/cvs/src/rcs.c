@@ -11,11 +11,6 @@
 #include <assert.h>
 #include "cvs.h"
 
-#ifndef lint
-static const char rcsid[] = "$CVSid: @(#)rcs.c 1.40 94/10/07 $";
-USE(rcsid);
-#endif
-
 static RCSNode *RCS_parsercsfile_i PROTO((FILE * fp, const char *rcsfile));
 static char *RCS_getdatebranch PROTO((RCSNode * rcs, char *date, char *branch));
 static int getrcskey PROTO((FILE * fp, char **keyp, char **valp));
@@ -23,7 +18,6 @@ static int parse_rcs_proc PROTO((Node * file, void *closure));
 static int checkmagic_proc PROTO((Node *p, void *closure));
 static void do_branches PROTO((List * list, char *val));
 static void do_symbols PROTO((List * list, char *val));
-static void null_delproc PROTO((Node * p));
 static void rcsnode_delproc PROTO((Node * p));
 static void rcsvers_delproc PROTO((Node * p));
 
@@ -136,14 +130,8 @@ RCS_parse (file, repos)
     FILE *fp;
     char rcsfile[PATH_MAX];
 
-#ifdef LINES_CRLF_TERMINATED
-    /* Some ports of RCS to Windows NT write RCS files with newline-
-       delimited lines.  We would need to pass fopen a "binary" flag.  */
-    abort ();
-#endif
-
     (void) sprintf (rcsfile, "%s/%s%s", repos, file, RCSEXT);
-    if ((fp = fopen (rcsfile, "r")) != NULL) 
+    if ((fp = fopen (rcsfile, FOPEN_BINARY_READ)) != NULL) 
     {
         rcs = RCS_parsercsfile_i(fp, rcsfile);
 	if (rcs != NULL) 
@@ -152,20 +140,14 @@ RCS_parse (file, repos)
 	fclose (fp);
 	return (rcs);
     }
-    else if (errno != ENOENT)
+    else if (! existence_error (errno))
     {
 	error (0, errno, "cannot open %s", rcsfile);
 	return NULL;
     }
 
-#ifdef LINES_CRLF_TERMINATED
-    /* Some ports of RCS to Windows NT write RCS files with newline-
-       delimited lines.  We would need to pass fopen a "binary" flag.  */
-    abort ();
-#endif
-
     (void) sprintf (rcsfile, "%s/%s/%s%s", repos, CVSATTIC, file, RCSEXT);
-    if ((fp = fopen (rcsfile, "r")) != NULL) 
+    if ((fp = fopen (rcsfile, FOPEN_BINARY_READ)) != NULL) 
     {
         rcs = RCS_parsercsfile_i(fp, rcsfile);
 	if (rcs != NULL)
@@ -177,7 +159,7 @@ RCS_parse (file, repos)
 	fclose (fp);
 	return (rcs);
     }
-    else if (errno != ENOENT)
+    else if (! existence_error (errno))
     {
 	error (0, errno, "cannot open %s", rcsfile);
 	return NULL;
@@ -196,14 +178,8 @@ RCS_parsercsfile (rcsfile)
     FILE *fp;
     RCSNode *rcs;
 
-#ifdef LINES_CRLF_TERMINATED
-    /* Some ports of RCS to Windows NT write RCS files with newline-
-       delimited lines.  We would need to pass fopen a "binary" flag.  */
-    abort ();
-#endif
-
     /* open the rcsfile */
-    if ((fp = fopen (rcsfile, "r")) == NULL)
+    if ((fp = fopen (rcsfile, FOPEN_BINARY_READ)) == NULL)
     {
 	error (0, errno, "Couldn't open rcs file `%s'", rcsfile);
 	return (NULL);
@@ -293,7 +269,7 @@ RCS_reparsercsfile (rdata)
     FILE *fp;
     char *rcsfile;
 
-    Node *q, *r;
+    Node *q;
     RCSVers *vnode;
     int n;
     char *cp;
@@ -301,19 +277,12 @@ RCS_reparsercsfile (rdata)
 
     rcsfile = rdata->path;
 
-#ifdef LINES_CRLF_TERMINATED
-    /* Some ports of RCS to Windows NT write RCS files with newline-
-       delimited lines.  We would need to pass fopen a "binary" flag.  */
-    abort ();
-#endif
-
-    fp = fopen(rcsfile, "r");
+    fp = fopen(rcsfile, FOPEN_BINARY_READ);
     if (fp == NULL)
 	error (1, 0, "unable to reopen `%s'", rcsfile);
 
     /* make a node */
     rdata->versions = getlist ();
-    rdata->dates = getlist ();
 
     /*
      * process all the special header information, break out when we get to
@@ -347,6 +316,12 @@ RCS_reparsercsfile (rdata)
 	    }
 	}
 
+	if (strcmp (RCSEXPAND, key) == 0)
+	{
+	    rdata->expand = xstrdup (value);
+	    continue;
+	}
+
 	/*
 	 * check key for '.''s and digits (probably a rev) if it is a
 	 * revision, we are done with the headers and are down to the
@@ -368,36 +343,25 @@ RCS_reparsercsfile (rdata)
     for (;;)
     {
 	char *valp;
-	char date[MAXDATELEN];
+
+        vnode = (RCSVers *) xmalloc (sizeof (RCSVers));
+	memset (vnode, 0, sizeof (RCSVers));
+
+	/* fill in the version before we forget it */
+	vnode->version = xstrdup (key);
 
 	/* grab the value of the date from value */
 	valp = value + strlen (RCSDATE);/* skip the "date" keyword */
 	while (whitespace (*valp))		/* take space off front of value */
 	    valp++;
-	(void) strcpy (date, valp);
 
-	/* get the nodes (q is by version, r is by date) */
-	q = getnode ();
-	r = getnode ();
-	q->type = RCSVERS;
-	r->type = RCSVERS;
-	q->delproc = rcsvers_delproc;
-	r->delproc = null_delproc;
-	q->data = r->data = xmalloc (sizeof (RCSVers));
-	memset (q->data, 0, sizeof (RCSVers));
-	vnode = (RCSVers *) q->data;
-
-	/* fill in the version before we forget it */
-	q->key = vnode->version = xstrdup (key);
+	vnode->date = xstrdup (valp);
 
 	/* throw away the author field */
 	(void) getrcskey (fp, &key, &value);
 
 	/* throw away the state field */
 	(void) getrcskey (fp, &key, &value);
-#ifdef DEATH_SUPPORT
-	/* Accept this regardless of DEATH_STATE, so that we can read
-	   repositories created with different versions of CVS.  */
 	if (strcmp (key, "state") != 0)
 	    error (1, 0, "\
 unable to parse rcs file; `state' not in the expected place");
@@ -405,10 +369,6 @@ unable to parse rcs file; `state' not in the expected place");
 	{
 	    vnode->dead = 1;
 	}
-#endif
-
-	/* fill in the date field */
-	r->key = vnode->date = xstrdup (date);
 
 	/* fill in the branch list (if any branches exist) */
 	(void) getrcskey (fp, &key, &value);
@@ -429,15 +389,15 @@ unable to parse rcs file; `state' not in the expected place");
 	 */
 	while ((n = getrcskey (fp, &key, &value)) >= 0)
 	{
-#ifdef DEATH_SUPPORT
-	    /* Enable use of repositories created with a CVS which defines
-	       DEATH_SUPPORT and not DEATH_STATE.  */
+	    /* Enable use of repositories created by certain obsolete
+	       versions of CVS.  This code should remain indefinately;
+	       there is no procedure for converting old repositories, and
+	       checking for it is harmless.  */
 	    if (strcmp(key, RCSDEAD) == 0)
 	    {
 		vnode->dead = 1;
 		continue;
 	    }
-#endif
 	    /* if we have a revision, break and do it */
 	    for (cp = key; (isdigit (*cp) || *cp == '.') && *cp != '\0'; cp++)
 		 /* do nothing */ ;
@@ -445,9 +405,22 @@ unable to parse rcs file; `state' not in the expected place");
 		break;
 	}
 
-	/* add the nodes to the lists */
-	(void) addnode (rdata->versions, q);
-	(void) addnode (rdata->dates, r);
+	/* get the node */
+	q = getnode ();
+	q->type = RCSVERS;
+	q->delproc = rcsvers_delproc;
+	q->data = (char *) vnode;
+	q->key = vnode->version;
+
+	/* add the nodes to the list */
+	if (addnode (rdata->versions, q) != 0)
+	{
+#if 0
+		purify_printf("WARNING: Adding duplicate version: %s (%s)\n",
+			 q->key, rcsfile);
+		freenode (q);
+#endif
+	}
 
 	/*
 	 * if we left the loop because there were no more keys, we break out
@@ -489,11 +462,12 @@ freercsnode (rnodep)
     }
     free ((*rnodep)->path);
     dellist (&(*rnodep)->versions);
-    dellist (&(*rnodep)->dates);
     if ((*rnodep)->symbols != (List *) NULL)
 	dellist (&(*rnodep)->symbols);
     if ((*rnodep)->symbols_data != (char *) NULL)
 	free ((*rnodep)->symbols_data);
+    if ((*rnodep)->expand != NULL)
+	free ((*rnodep)->expand);
     if ((*rnodep)->head != (char *) NULL)
 	free ((*rnodep)->head);
     if ((*rnodep)->branch != (char *) NULL)
@@ -515,20 +489,11 @@ rcsvers_delproc (p)
 
     if (rnode->branches != (List *) NULL)
 	dellist (&rnode->branches);
+    if (rnode->date != (char *) NULL)
+	free (rnode->date);
     if (rnode->next != (char *) NULL)
 	free (rnode->next);
     free ((char *) rnode);
-}
-
-/*
- * null_delproc - don't free anything since it will be free'd by someone else
- */
-/* ARGSUSED */
-static void
-null_delproc (p)
-    Node *p;
-{
-    /* don't do anything */
 }
 
 /*
@@ -827,15 +792,15 @@ do_branches (list, val)
  * The result is returned; null-string if error.
  */
 char *
-RCS_getversion (rcs, tag, date, force_tag_match)
+RCS_getversion (rcs, tag, date, force_tag_match, return_both)
     RCSNode *rcs;
     char *tag;
     char *date;
     int force_tag_match;
+    int return_both;
 {
     /* make sure we have something to look at... */
-    if (rcs == NULL)
-	return ((char *) NULL);
+    assert (rcs != NULL);
 
     if (tag && date)
     {
@@ -845,7 +810,7 @@ RCS_getversion (rcs, tag, date, force_tag_match)
 	 * first lookup the tag; if that works, turn the revision into
 	 * a branch and lookup the date.
 	 */
-	tagrev = RCS_gettag (rcs, tag, force_tag_match);
+	tagrev = RCS_gettag (rcs, tag, force_tag_match, 0);
 	if (tagrev == NULL)
 	    return ((char *) NULL);
 
@@ -856,7 +821,7 @@ RCS_getversion (rcs, tag, date, force_tag_match)
 	return (rev);
     }
     else if (tag)
-	return (RCS_gettag (rcs, tag, force_tag_match));
+	return (RCS_gettag (rcs, tag, force_tag_match, return_both));
     else if (date)
 	return (RCS_getdate (rcs, date, force_tag_match));
     else
@@ -873,16 +838,17 @@ RCS_getversion (rcs, tag, date, force_tag_match)
  * If the matched tag is a branch tag, find the head of the branch.
  */
 char *
-RCS_gettag (rcs, tag, force_tag_match)
+RCS_gettag (rcs, symtag, force_tag_match, return_both)
     RCSNode *rcs;
-    char *tag;
+    char *symtag;
     int force_tag_match;
+    int return_both;
 {
     Node *p;
+    char *tag = symtag;
 
     /* make sure we have something to look at... */
-    if (rcs == NULL)
-	return ((char *) NULL);
+    assert (rcs != NULL);
 
     /* XXX this is probably not necessary, --jtc */
     if (rcs->flags & PARTIAL) 
@@ -982,7 +948,25 @@ RCS_gettag (rcs, tag, force_tag_match)
 	else
 	    p = findnode (rcs->versions, tag);
 	if (p != NULL)
-	    return (xstrdup (tag));
+	{
+	    /*
+	     * we have found a numeric revision for the revision tag.
+	     * To support expanding the RCS keyword Name, return both
+	     * the numeric tag and the supplied tag (which might be
+	     * symbolic).  They are separated with a ':' which is not
+	     * a valid tag char.  The variable return_both is only set
+	     * if this function is called through Version_TS ->
+	     * RCS_getversion.
+	     */
+	    if (return_both)
+	    {
+		char *both = xmalloc(strlen(tag) + 2 + strlen(symtag));
+		sprintf(both, "%s:%s", tag, symtag);
+		return both;
+	    }
+	    else
+		return (xstrdup (tag));
+	}
 	else
 	{
 	    /* The revision wasn't there, so return the head or NULL */
@@ -1211,8 +1195,7 @@ RCS_getbranch (rcs, tag, force_tag_match)
     char *cp;
 
     /* make sure we have something to look at... */
-    if (rcs == NULL)
-	return ((char *) NULL);
+    assert (rcs != NULL);
 
     if (rcs->flags & PARTIAL)
 	RCS_reparsercsfile (rcs);
@@ -1323,16 +1306,14 @@ RCS_head (rcs)
     RCSNode *rcs;
 {
     /* make sure we have something to look at... */
-    if (rcs == NULL)
-	return ((char *) NULL);
-
-    if (rcs->branch)
-	return (RCS_getbranch (rcs, rcs->branch, 1));
+    assert (rcs != NULL);
 
     /*
      * NOTE: we call getbranch with force_tag_match set to avoid any
      * possibility of recursion
      */
+    if (rcs->branch)
+	return (RCS_getbranch (rcs, rcs->branch, 1));
     else
 	return (xstrdup (rcs->head));
 }
@@ -1353,8 +1334,7 @@ RCS_getdate (rcs, date, force_tag_match)
     RCSVers *vers = NULL;
 
     /* make sure we have something to look at... */
-    if (rcs == NULL)
-	return ((char *) NULL);
+    assert (rcs != NULL);
 
     if (rcs->flags & PARTIAL)
 	RCS_reparsercsfile (rcs);
@@ -1526,8 +1506,7 @@ RCS_getrevtime (rcs, rev, date, fudge)
     RCSVers *vers;
 
     /* make sure we have something to look at... */
-    if (rcs == NULL)
-	return (revdate);
+    assert (rcs != NULL);
 
     if (rcs->flags & PARTIAL)
 	RCS_reparsercsfile (rcs);
@@ -1679,7 +1658,6 @@ RCS_check_tag (tag)
 	error (1, 0, "tag `%s' must start with a letter", tag);
 }
 
-#ifdef DEATH_SUPPORT
 /*
  * Return true if RCS revision with TAG is a dead revision.
  */
@@ -1701,4 +1679,3 @@ RCS_isdead (rcs, tag)
     version = (RCSVers *) p->data;
     return (version->dead);
 }
-#endif /* DEATH_SUPPORT */
