@@ -1273,6 +1273,7 @@ void s_weak() {
 		* input_line_pointer = c;
 		SKIP_WHITESPACE();
 		symbolP->sy_bind = BIND_WEAK;
+		S_SET_EXTERNAL(symbolP);
 		if (c == ',') {
 			input_line_pointer++;
 			SKIP_WHITESPACE();
