@@ -1,3 +1,4 @@
+#	$OpenBSD$
 #	@(#)Makefile	8.17 (Berkeley) 9/12/95
 
 #
@@ -34,7 +35,7 @@ clean cleandir:
 depend install: 
 
 distribution:
-	install -c -o root -g wheel -m 444 netbsd-proto.cf \
+	${INSTALL} ${COPY} -o root -g wheel -m 444 netbsd-proto.cf \
 	    ${DESTDIR}/etc/sendmail.cf
 
 # this is overkill, but....
