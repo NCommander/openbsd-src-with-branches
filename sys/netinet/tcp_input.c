@@ -1,4 +1,4 @@
-/*	$OpenBSD: tcp_input.c,v 1.78 2000/10/11 09:14:11 itojun Exp $	*/
+/*	$OpenBSD: tcp_input.c,v 1.79 2000/10/14 01:04:10 itojun Exp $	*/
 /*	$NetBSD: tcp_input.c,v 1.23 1996/02/13 23:43:44 christos Exp $	*/
 
 /*
@@ -319,7 +319,7 @@ done:
 	splx(s);
 }
 
-#if defined(INET6) && !defined(TCP6)
+#ifdef INET6
 int
 tcp6_input(mp, offp, proto)
 	struct mbuf **mp;
