@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: slc.c,v 1.2 1996/03/28 23:21:58 niklas Exp $	*/
 /*	$NetBSD: slc.c,v 1.5 1996/02/28 20:38:16 thorpej Exp $	*/
 
 /*
@@ -39,7 +39,7 @@
 static char sccsid[] = "@(#)slc.c	8.1 (Berkeley) 6/4/93";
 static char rcsid[] = "$NetBSD: slc.c,v 1.5 1996/02/28 20:38:16 thorpej Exp $";
 #else
-static char rcsid[] = "$OpenBSD$";
+static char rcsid[] = "$OpenBSD: slc.c,v 1.2 1996/03/28 23:21:58 niklas Exp $";
 #endif
 #endif /* not lint */
 
@@ -290,7 +290,7 @@ process_slc(func, flag, val)
  */
 	void
 change_slc(func, flag, val)
-	register char func, flag;
+	register int func, flag;
 	register cc_t val;
 {
 	register int hislevel, mylevel;
