@@ -1,4 +1,4 @@
-/*	$OpenBSD: if.c,v 1.39 2001/01/17 04:47:18 fgsch Exp $	*/
+/*	$OpenBSD: if.c,v 1.40 2001/01/19 06:37:36 itojun Exp $	*/
 /*	$NetBSD: if.c,v 1.35 1996/05/07 05:26:04 thorpej Exp $	*/
 
 /*
@@ -104,7 +104,7 @@
 #endif
 
 #ifdef IPFILTER
-#include <netinet/ip_compat.h>
+#include <netinet/ip_fil_compat.h>
 #include <netinet/ip_fil.h>
 #include <netinet/ip_nat.h>
 #endif
