@@ -1,4 +1,4 @@
-/*	$OpenBSD: ccd.c,v 1.21 1997/11/26 22:30:20 niklas Exp $	*/
+/*	$OpenBSD: ccd.c,v 1.22 1997/12/12 20:22:35 niklas Exp $	*/
 /*	$NetBSD: ccd.c,v 1.33 1996/05/05 04:21:14 thorpej Exp $	*/
 
 /*-
@@ -977,7 +977,7 @@ ccdbuffer(cs, bp, bn, addr, bcount, cbpp, old_io)
 #ifdef DEBUG
 		if (ccddebug & CCDB_IO)
 			printf("ccdbuffer: sg %d (%p/%x) off %x\n",
-			    cbp->cb_sg->cs_sgcnt, addr, bcount, old_bcount);
+			    cbp->cb_sgcnt, addr, bcount, old_bcount);
 #endif
 		pagemove(addr, nbp->b_data + old_bcount,
 		    roundup(bcount, CLBYTES));
