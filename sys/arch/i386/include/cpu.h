@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: cpu.h,v 1.29.2.27 2004/06/07 20:41:10 niklas Exp $	*/
 /*	$NetBSD: cpu.h,v 1.35 1996/05/05 19:29:26 christos Exp $	*/
 
 /*-
@@ -44,6 +44,7 @@
 #include <machine/frame.h>
 #include <machine/psl.h>
 #include <machine/segments.h>
+#include <machine/intrdefs.h>
 
 #ifdef MULTIPROCESSOR
 #include <machine/i82489reg.h>
@@ -71,11 +72,7 @@
 
 #include <sys/device.h>
 #include <sys/lock.h>                  /* will also get LOCKDEBUG */
-#ifdef _KERNEL
-#include <sys/systm.h>
-#endif
 #include <sys/proc.h>
-#include <sys/sched.h>
 
 struct intrsource;
 
