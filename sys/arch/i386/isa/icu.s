@@ -164,6 +164,9 @@ IDTVEC(softnet)
 #ifdef CCITT
 	DONET(NETISR_CCITT, _ccittintr)
 #endif
+#ifdef NATM
+	DONET(NETISR_NATM, _natmintr)
+#endif
 #include "ppp.h"
 #if NPPP > 0
 	DONET(NETISR_PPP, _pppintr)
