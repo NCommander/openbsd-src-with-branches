@@ -1,4 +1,4 @@
-/*	$OpenBSD: ip_icmp.h,v 1.7 1997/02/04 16:58:48 kstailey Exp $	*/
+/*	$OpenBSD: ip_icmp.h,v 1.8 1997/08/26 20:02:31 deraadt Exp $	*/
 /*	$NetBSD: ip_icmp.h,v 1.10 1996/02/13 23:42:28 christos Exp $	*/
 
 /*
@@ -107,6 +107,12 @@ struct icmp {
 #define	icmp_mask	  icmp_dun.id_mask
 #define	icmp_data	  icmp_dun.id_data
 };
+
+/*
+ * For IPv6 transition related ICMP errors.
+ */
+#define	ICMP_V6ADVLENMIN	(8 + sizeof(struct ip) + 40)
+#define	ICMP_V6ADVLEN(p)	(8 + ((p)->icmp_ip.ip_hl << 2) + 40)
 
 /*
  * Lower bounds on packet lengths for various types.
