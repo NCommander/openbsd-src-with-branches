@@ -1,4 +1,4 @@
-/*	$OpenBSD: rtfps.c,v 1.9 1996/05/10 12:35:41 deraadt Exp $       */
+/*	$OpenBSD: rtfps.c,v 1.10 1996/05/26 00:27:27 deraadt Exp $       */
 /*	$NetBSD: rtfps.c,v 1.23 1996/05/12 23:53:29 mycroft Exp $	*/
 
 /*
@@ -148,7 +148,6 @@ rtfpsattach(parent, self, aux)
 	struct rtfps_softc *sc = (void *)self;
 	struct isa_attach_args *ia = aux;
 	struct commulti_attach_args ca;
-	struct isa_attach_args isa;
 	static int irqport[] = {
 		IOBASEUNK, IOBASEUNK, IOBASEUNK, IOBASEUNK,
 		IOBASEUNK, IOBASEUNK, IOBASEUNK, IOBASEUNK,
