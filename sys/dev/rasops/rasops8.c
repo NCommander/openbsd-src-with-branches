@@ -1,4 +1,4 @@
-/*	$OpenBSD: rasops8.c,v 1.2 2002/03/14 01:27:02 millert Exp $	*/
+/*	$OpenBSD: rasops8.c,v 1.3 2002/05/28 22:10:03 fgsch Exp $	*/
 /*	$NetBSD: rasops8.c,v 1.8 2000/04/12 14:22:29 pk Exp $	*/
 
 /*-
@@ -37,7 +37,6 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <sys/types.h>
 #include <sys/param.h>
 #include <sys/systm.h>
 #include <sys/time.h>
