@@ -1,4 +1,4 @@
-/*	$OpenBSD: scsiconf.c,v 1.54 2000/11/23 08:55:35 deraadt Exp $	*/
+/*	$OpenBSD: scsiconf.c,v 1.55 2001/01/22 19:11:48 csapuntz Exp $	*/
 /*	$NetBSD: scsiconf.c,v 1.57 1996/05/02 01:09:01 neil Exp $	*/
 
 /*
@@ -740,6 +740,8 @@ scsi_probedev(scsi, target, lun)
 		return;
 
 	sc_link = malloc(sizeof(*sc_link), M_DEVBUF, M_NOWAIT);
+	if (sc_link == NULL)
+		return;
 	*sc_link = *scsi->adapter_link;
 	sc_link->target = target;
 	sc_link->lun = lun;
