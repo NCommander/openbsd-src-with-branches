@@ -1,4 +1,4 @@
-/*	$OpenBSD: calendar.h,v 1.5 2001/09/03 15:53:00 pjanzen Exp $	*/
+/*	$OpenBSD: calendar.h,v 1.6 2001/09/26 20:38:55 mickey Exp $	*/
 
 /*
  * Copyright (c) 1989, 1993, 1994
@@ -60,7 +60,7 @@ struct event {
 struct match {
 	time_t	when;
 	char	print_date[30];
-	char	prefix[30];
+	int	bodun;
 	int	var;
 	struct match	*next;
 };
