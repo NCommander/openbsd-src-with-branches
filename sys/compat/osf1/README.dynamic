@@ -1,3 +1,4 @@
+$OpenBSD$
 $NetBSD: README.dynamic,v 1.2 1999/04/27 06:39:49 cgd Exp $
 
 Dynamically linked programs are supported by NetBSD's Digital UNIX
