@@ -39,7 +39,7 @@
  */
 struct intrhand {
 	struct	intrhand *ih_next;
-	int	(*ih_fun)();
+	int	(*ih_fun) __P ((void *));
 	void	*ih_arg;
 	u_long	ih_count;
 	int	ih_irq;

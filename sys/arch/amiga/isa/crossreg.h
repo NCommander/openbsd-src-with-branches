@@ -108,7 +108,7 @@
 #define CROSS_XLP_INTABLE 0
 #define CROSS_XLP_LATCH 2
 #define CROSS_HANDLE_TO_XLP_LATCH(va) \
-    ((volatile u_int16_t *)((va) & 0xffff | CROSS_XLP_LATCH))
+    ((volatile u_int16_t *)(((va) & 0xffff) | CROSS_XLP_LATCH))
 
 #define CROSS_MEMORY_OFFSET (CROSS_XL_MEM - 2 * 0x90000)
 #define CROSS_SBHE 0x40
