@@ -1,4 +1,4 @@
-/*	$OpenBSD: hd.c,v 1.14 2001/09/20 17:02:30 mpech Exp $	*/
+/*	$OpenBSD: hd.c,v 1.15 2002/03/14 01:26:30 millert Exp $	*/
 /*	$NetBSD: rd.c,v 1.33 1997/07/10 18:14:08 kleink Exp $	*/
 
 /*
@@ -705,7 +705,9 @@ hdstrategy(bp)
 bad:
 	bp->b_flags |= B_ERROR;
 done:
+	s = splbio();
 	biodone(bp);
+	splx(s);
 }
 
 /*

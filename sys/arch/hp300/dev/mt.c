@@ -1,4 +1,4 @@
-/*	$OpenBSD: mt.c,v 1.9 2002/03/14 01:26:30 millert Exp $	*/
+/*	$OpenBSD: mt.c,v 1.10 2002/05/23 15:31:57 art Exp $	*/
 /*	$NetBSD: mt.c,v 1.8 1997/03/31 07:37:29 scottr Exp $	*/
 
 /* 
@@ -473,7 +473,9 @@ mtstrategy(bp)
 #endif
 			bp->b_flags |= B_ERROR;
 			bp->b_error = EIO;
+			s = splbio();
 			biodone(bp);
+			splx(s);
 			return;
 		}
 	}
