@@ -1,4 +1,4 @@
-/*	$OpenBSD: installboot.c,v 1.40 2003/08/15 21:17:27 deraadt Exp $	*/
+/*	$OpenBSD: installboot.c,v 1.41 2003/08/25 23:27:43 tedu Exp $	*/
 /*	$NetBSD: installboot.c,v 1.5 1995/11/17 23:23:50 gwr Exp $ */
 
 /*
@@ -114,10 +114,14 @@ main(int argc, char *argv[])
 		switch (c) {
 		case 'h':
 			nheads = atoi(optarg);
+			if (nheads < 1 || nheads > 256)
+				errx(1, "invalid value for -h");
 			userspec = 1;
 			break;
 		case 's':
 			nsectors = atoi(optarg);
+			if (nsectors < 1 || nsectors > 63)
+				errx(1, "invalid value for -s");
 			userspec = 1;
 			break;
 		case 'n':
