@@ -1,4 +1,4 @@
-/*	$OpenBSD: pctrctl.c,v 1.2 1996/08/14 03:02:52 dm Exp $	*/
+/*	$OpenBSD: pctrctl.c,v 1.3 1996/08/14 22:03:17 dm Exp $	*/
 
 /*
  * Pentium performance counter control program for OpenBSD.

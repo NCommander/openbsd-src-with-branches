@@ -1,7 +1,7 @@
-#	$OpenBSD: Makefile,v 1.2 1996/06/26 05:32:36 deraadt Exp $
+#	$OpenBSD: Makefile,v 1.1 1996/08/08 18:47:01 dm Exp $
 #	$NetBSD: Makefile,v 1.7 1995/09/28 06:24:35 perry Exp $
 
-PROG=	pctrctl
+PROG=	pctr
 NOMAN=	yes
 
 .include <bsd.prog.mk>
