@@ -1,4 +1,4 @@
-/*	$OpenBSD: tcp_usrreq.c,v 1.20 1998/02/28 03:39:58 angelos Exp $	*/
+/*	$OpenBSD: tcp_usrreq.c,v 1.22 1998/06/10 03:40:07 beck Exp $	*/
 /*	$NetBSD: tcp_usrreq.c,v 1.20 1996/02/13 23:44:16 christos Exp $	*/
 
 /*
@@ -591,7 +591,7 @@ tcp_ident(oldp, oldlenp, newp, newlen)
 	size_t newlen;
 {
 	int error = 0, s;
-	tcp_ident_mapping tir;
+	struct tcp_ident_mapping tir;
 	struct inpcb *inp;
 	struct sockaddr_in *fin, *lin;
 	
