@@ -1,4 +1,4 @@
-/*	$OpenBSD: memprobe.c,v 1.39 2003/08/11 06:23:09 deraadt Exp $	*/
+/*	$OpenBSD: memprobe.c,v 1.40 2003/11/03 06:35:34 david Exp $	*/
 
 /*
  * Copyright (c) 1997-1999 Michael Shalayeff
@@ -62,7 +62,7 @@ checkA20(void)
 
 /* BIOS int 15, AX=E820
  *
- * This is the "prefered" method.
+ * This is the "preferred" method.
  */
 static __inline bios_memmap_t *
 bios_E820(bios_memmap_t *mp)
