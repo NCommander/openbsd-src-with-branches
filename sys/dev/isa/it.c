@@ -1,4 +1,4 @@
-/*	$OpenBSD: it.c,v 1.7 2004/02/02 20:14:26 grange Exp $	*/
+/*	$OpenBSD: it.c,v 1.8 2004/02/10 20:01:40 grange Exp $	*/
 
 /*
  * Copyright (c) 2003 Julien Bordet <zejames@greyhats.org>
@@ -96,6 +96,8 @@ it_match(struct device *parent, void *match, void *aux)
 	/* The monitoring may have been enabled by BIOS */
 	if (cr == 0x11 || cr == 0x13 || cr == 0x18 || cr == 0x19)
 		rv = 1;
+	else
+		rv = 0;
 
 	DPRINTF(("it: rv = %d, cr = %x\n", rv, cr));
 
