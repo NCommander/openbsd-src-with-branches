@@ -1,4 +1,4 @@
-/*	$OpenBSD: expand.c,v 1.7 2000/08/02 04:10:49 millert Exp $	*/
+/*	$OpenBSD: expand.c,v 1.8 2001/04/29 18:16:19 millert Exp $	*/
 
 /*
  * Copyright (c) 1991 Carnegie Mellon University
@@ -345,8 +345,8 @@ slash:
 					addone(path, "");
 				else
 					glob(p);
-pathovfl:
 			}
+pathovfl:
 			pathp = spathp;
 			*pathp = 0;
 			return (0);
