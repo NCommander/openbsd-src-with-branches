@@ -1,4 +1,4 @@
-/*	$OpenBSD: ftpcmd.y,v 1.30 2002/01/08 01:55:27 millert Exp $	*/
+/*	$OpenBSD: ftpcmd.y,v 1.31 2002/01/17 05:27:35 itojun Exp $	*/
 /*	$NetBSD: ftpcmd.y,v 1.7 1996/04/08 19:03:11 jtc Exp $	*/
 
 /*
@@ -47,7 +47,7 @@
 #if 0
 static char sccsid[] = "@(#)ftpcmd.y	8.3 (Berkeley) 4/6/94";
 #else
-static char rcsid[] = "$OpenBSD: ftpcmd.y,v 1.30 2002/01/08 01:55:27 millert Exp $";
+static char rcsid[] = "$OpenBSD: ftpcmd.y,v 1.31 2002/01/17 05:27:35 itojun Exp $";
 #endif
 #endif /* not lint */
 
@@ -419,7 +419,8 @@ cmd
 					  "Bad sequence of commands.");
 				}
 			}
-			free($4);
+			if ($4 != NULL)
+				free($4);
 		}
 	| ABOR check_login CRLF
 		{
