@@ -1,4 +1,4 @@
-/*	$OpenBSD: rde_filter.c,v 1.21 2004/10/08 16:36:42 claudio Exp $ */
+/*	$OpenBSD: rde_filter.c,v 1.22 2004/11/23 13:07:01 claudio Exp $ */
 
 /*
  * Copyright (c) 2004 Claudio Jeker <claudio@openbsd.org>
@@ -99,7 +99,7 @@ rde_apply_set(struct rde_aspath *asp, struct filter_set_head *sh,
 			asp->med = set->action.metric;
 		case ACTION_SET_PREPEND_SELF:
 			/* don't apply if this is a incoming default override */
-			if (dir == DIR_DEFAULT_IN) 
+			if (dir == DIR_DEFAULT_IN)
 				break;
 			as = rde_local_as();
 			prepend = set->action.prepend;

@@ -1,4 +1,4 @@
-/*	$OpenBSD: parse.y,v 1.147 2004/11/19 14:43:57 claudio Exp $ */
+/*	$OpenBSD: parse.y,v 1.148 2004/11/23 13:07:01 claudio Exp $ */
 
 /*
  * Copyright (c) 2002, 2003, 2004 Henning Brauer <henning@openbsd.org>
@@ -2045,7 +2045,7 @@ merge_filterset(struct filter_set_head *sh, struct filter_set *s)
 	SIMPLEQ_FOREACH(t, sh, entry) {
 		if (s->type != t->type)
 			continue;
-		
+
 		switch (s->type) {
 		case ACTION_SET_COMMUNITY:
 			if (s->action.community.as == t->action.community.as &&
