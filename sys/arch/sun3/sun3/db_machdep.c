@@ -1,4 +1,4 @@
-/*	$OpenBSD: db_machdep.c,v 1.9 1997/01/16 08:08:39 kstailey Exp $	*/
+/*	$OpenBSD: db_machdep.c,v 1.10 2001/04/29 19:02:45 miod Exp $	*/
 /*	$NetBSD: db_machdep.c,v 1.8 1996/11/20 18:57:27 gwr Exp $	*/
 
 /*-
@@ -57,7 +57,6 @@
 
 static void db_mach_pagemap __P((db_expr_t, int, db_expr_t, char *));
 static void db_mach_abort   __P((db_expr_t, int, db_expr_t, char *));
-static void db_mach_reboot  __P((db_expr_t, int, db_expr_t, char *));
 
 static void pte_print __P((int));
 
