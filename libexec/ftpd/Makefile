@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.18 2000/09/03 18:41:14 espie Exp $
+#	$OpenBSD: Makefile,v 1.19 2001/05/29 21:35:16 millert Exp $
 #	$NetBSD: Makefile,v 1.13 1996/02/16 02:07:41 cgd Exp $
 #	@(#)Makefile	8.2 (Berkeley) 4/4/94
 
@@ -19,6 +19,9 @@ CFLAGS	+= -I${LSDIR}
 
 # not really used
 CPPFLAGS+=-DINET6
+
+LDADD+=	-lutil
+DPADD+=	${LIBUTIL}
 
 .if (${TCP_WRAPPERS:L} == "yes")
 CFLAGS+=-DTCPWRAPPERS

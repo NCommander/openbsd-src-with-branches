@@ -1,4 +1,4 @@
-/*	$OpenBSD: route6d.h,v 1.4 2000/02/25 10:28:25 itojun Exp $	*/
+/*	$OpenBSD: route6d.h,v 1.5 2001/02/07 13:52:24 itojun Exp $	*/
 /*	$KAME: route6d.h,v 1.4 2001/01/15 03:50:54 inoue Exp $	*/
 
 /*
@@ -35,7 +35,6 @@
 */
 
 #define	ROUTE6D_DUMP	"/var/run/route6d_dump"
-#define	ROUTE6D_PID	"/var/run/route6d.pid"
 
 #define	RIP6_VERSION	1
 

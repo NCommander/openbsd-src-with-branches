@@ -1,7 +1,8 @@
-#	$OpenBSD$
+#	$OpenBSD: Makefile,v 1.1 2001/08/21 22:29:14 deraadt Exp $
 
 CFLAGS+=-Wall -Werror
-LDADD+= -lpcap
+LDADD+= -lpcap -lutil
+DPAPP+=	${LIBUTIL}
 
 PROG=	pflogd
 SRCS=	pflogd.c

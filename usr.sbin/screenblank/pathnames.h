@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: pathnames.h,v 1.2 1996/03/25 15:56:12 niklas Exp $	*/
 /*	$NetBSD: pathnames.h,v 1.2 1996/02/28 01:18:30 thorpej Exp $	*/
 
 /*-
@@ -37,7 +37,6 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#define _PATH_SCREENBLANKPID	"/var/run/screenblank.pid"
 #define	_PATH_KEYBOARD		"/dev/kbd"
 #define _PATH_MOUSE		"/dev/mouse"
 #define _PATH_FB		"/dev/fb"
