@@ -104,7 +104,6 @@ definition *findval();
 #define FINDVAL(list,item,finder) \
 	findval(list, item, finder)
 
-void crash __P((void));
 char *fixtype __P((char *));
 char *stringfix __P((char *));
 char *locase __P((char *));

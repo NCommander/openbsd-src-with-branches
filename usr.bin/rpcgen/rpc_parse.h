@@ -115,7 +115,7 @@ struct arg_list {
 	char *argname; /* name of struct for arg*/
 	decl_list *decls;
 };
-
+	
 typedef struct arg_list arg_list;
 
 struct proc_list {
