@@ -1,4 +1,4 @@
-/*	$OpenBSD: parser.c,v 1.3 2005/02/02 19:08:42 henning Exp $ */
+/*	$OpenBSD: parser.c,v 1.4 2005/03/12 11:03:05 norby Exp $ */
 
 /*
  * Copyright (c) 2004 Esben Norby <norby@openbsd.org>
@@ -66,8 +66,8 @@ static const struct token t_show[] = {
 	{KEYWORD,	"interfaces",	SHOW_IFACE,	t_show_iface},
 	{KEYWORD,	"database",	SHOW_DB,	t_show_db},
 	{KEYWORD,	"neighbor",	SHOW_NBR,	t_show_nbr},
-/*	{KEYWORD,	"summary",	SHOW_SUMMARY,	NULL}, */
 	{KEYWORD,	"rib",		SHOW_RIB,	t_show_rib},
+	{KEYWORD,	"summary",	SHOW_SUM,	NULL},
 	{ENDTOKEN,	"",		NONE,		NULL}
 };
 
