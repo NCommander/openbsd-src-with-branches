@@ -1,4 +1,4 @@
-/*	$OpenBSD: com.c,v 1.21 1996/08/29 12:58:30 deraadt Exp $	*/
+/*	$OpenBSD: com.c,v 1.22 1996/10/16 12:31:58 deraadt Exp $	*/
 /*	$NetBSD: com.c,v 1.82.4.1 1996/06/02 09:08:00 mrg Exp $	*/
 
 /*-
@@ -1579,7 +1579,9 @@ comintr(arg)
 						    sc->sc_mcr);
 					}
 				}
+#ifdef DDB
 			next:
+#endif
 #ifdef COM_DEBUG
 				if (++n >= 32)
 					goto ohfudge;
