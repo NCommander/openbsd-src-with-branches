@@ -58,7 +58,7 @@ options		COMPAT_43
 options		COMPAT_09
 options		COMPAT_10
 options		COMPAT_RENO
-options		TCP_COMPAT_42	# Bug compat with 4.2BSD systems (like NDIX)
+#options		TCP_COMPAT_42	# Bug compat with 4.2BSD systems (like NDIX)
 
 # loadable kernel modules.
 options		LKM
