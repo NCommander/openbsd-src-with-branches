@@ -1,5 +1,4 @@
-/**//*	$OpenBSD: llc.h,v 1.2 1995/03/06 19:10:20 mycroft Exp $	*/
-/*	$NetBSD: llc.h,v 1.2 1995/03/06 19:10:20 mycroft Exp $	*/
+/*	$OpenBSD$	*/
 
 /*
  * Copyright (c) 1993, 1994

@@ -1,4 +1,5 @@
 /*	$OpenBSD$	*/
+
 /*
  * Copyright (c) 1995 Sun Microsystems, Inc.
  * All rights reserved.
