@@ -1,4 +1,4 @@
-/*	$OpenBSD: conf.c,v 1.31 2002/12/05 02:49:55 kjc Exp $	*/
+/*	$OpenBSD: conf.c,v 1.32 2003/05/14 00:20:37 tedu Exp $	*/
 /*	$NetBSD: conf.c,v 1.41 1997/02/11 07:35:49 scottr Exp $	*/
 
 /*
@@ -214,7 +214,7 @@ getnulldev()
 	return makedev(mem_no, 2);
 }
 
-int chrtoblktab[] = {
+int chrtoblktbl[] = {
 	/* XXXX This needs to be dynamic for LKMs. */
 	/*VCHR*/	/*VBLK*/
 	/*  0 */	NODEV,
