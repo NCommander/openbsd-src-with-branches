@@ -1,5 +1,5 @@
 #
-#	$OpenBSD: Makefile,v 1.20 2002/06/26 18:34:26 wcobb Exp $
+#	$OpenBSD: Makefile,v 1.21.4.1 2003/10/10 17:04:13 drahn Exp $
 #
 # Copyright (c) 1997 Tobias Weingartner
 # All rights reserved.
@@ -25,7 +25,8 @@
 # THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
 
-.if ${MACHINE} == "i386" || ${MACHINE} == "macppc" || ${MACHINE} == "alpha"
+.if ${MACHINE} == "i386" || ${MACHINE} == "macppc" || ${MACHINE} == "alpha" \
+|| ${MACHINE} == "pegasos"
 PROG=	fdisk
 SRCS=	fdisk.c user.c misc.c disk.c mbr.c part.c cmd.c manual.c
 DPADD=	${LIBUTIL}

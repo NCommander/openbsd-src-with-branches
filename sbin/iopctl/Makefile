@@ -1,7 +1,7 @@
-#	$OpenBSD: Makefile,v 1.2 2001/07/05 02:14:38 mickey Exp $
+#	$OpenBSD: Makefile,v 1.3.12.1 2003/10/10 17:04:13 drahn Exp $
 
 .if (${MACHINE} == "i386") || (${MACHINE} == "macppc") || \
-    (${MACHINE} == "alpha")
+    (${MACHINE} == "alpha") || (${MACHINE} == "pegasos")
 PROG=   iopctl
 .else
 NOPROG=

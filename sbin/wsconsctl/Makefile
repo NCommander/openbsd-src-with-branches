@@ -1,7 +1,8 @@
-#	$OpenBSD: Makefile,v 1.10 2002/02/06 15:35:26 jason Exp $
+#	$OpenBSD: Makefile,v 1.11.8.1 2003/10/10 17:04:14 drahn Exp $
 
 .if ${MACHINE} == "i386" || ${MACHINE} == "alpha" || ${MACHINE} == "hppa" || \
-    ${MACHINE} == "macppc" || ${MACHINE} == "sparc" || ${MACHINE} == "sparc64"
+    ${MACHINE} == "macppc" || ${MACHINE} == "sparc" || \
+    ${MACHINE} == "sparc64" || ${MACHINE} == "pegasos"
 
 PROG=	wsconsctl
 SRCS=	display.c keyboard.c keysym.c map_parse.y map_scan.l \
@@ -22,6 +23,6 @@ NOPROG=yes
 .endif
 
 MAN=	wsconsctl.8
-MANSUBDIR=	alpha hppa i386 macppc sparc sparc64
+MANSUBDIR=	alpha hppa i386 macppc sparc sparc64 pegasos
 
 .include <bsd.prog.mk>
