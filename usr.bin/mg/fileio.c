@@ -1,4 +1,4 @@
-/*	$OpenBSD: fileio.c,v 1.20 2001/09/21 15:08:16 wilfried Exp $	*/
+/*	$OpenBSD: fileio.c,v 1.21 2002/02/13 03:03:49 vincent Exp $	*/
 
 /*
  *	POSIX fileio.c
@@ -202,7 +202,7 @@ fbackupfile(fn)
 	}
 	free(nname);
 	errno = serrno;
-	
+
 	return (nread == -1 ? FALSE : TRUE);
 }
 #endif
