@@ -3,8 +3,6 @@
 PROG=	lock
 BINOWN= root
 BINMODE=4555
-DPADD=	${LIBUTIL}
-LDADD=	-lutil
 
 .include <bsd.own.mk>
 
