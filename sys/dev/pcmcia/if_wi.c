@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_wi.c,v 1.15 2000/06/30 01:04:28 art Exp $	*/
+/*	$OpenBSD: if_wi.c,v 1.16 2000/09/17 19:10:55 provos Exp $	*/
 
 /*
  * Copyright (c) 1997, 1998, 1999
@@ -133,7 +133,7 @@ u_int32_t	widebug = WIDEBUG;
 
 #if !defined(lint) && !defined(__OpenBSD__)
 static const char rcsid[] =
-	"$OpenBSD: if_wi.c,v 1.15 2000/06/30 01:04:28 art Exp $";
+	"$OpenBSD: if_wi.c,v 1.16 2000/09/17 19:10:55 provos Exp $";
 #endif	/* lint */
 
 #ifdef foo
@@ -307,6 +307,7 @@ wi_pcmcia_attach(parent, self, aux)
 	gen.wi_len = 2;
 	wi_read_record(sc, &gen);
 	sc->wi_has_wep = gen.wi_val;
+	timeout_set(&sc->sc_timo, wi_inquire, sc);
 
 	bzero((char *)&sc->wi_stats, sizeof(sc->wi_stats));
 
@@ -1283,7 +1284,6 @@ wi_init(xsc)
 	ifp->if_flags |= IFF_RUNNING;
 	ifp->if_flags &= ~IFF_OACTIVE;
 
-	timeout_set(&sc->sc_timo, wi_inquire, sc);
 	timeout_add(&sc->sc_timo, hz * 60);
 
 	return;
