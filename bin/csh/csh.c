@@ -1,4 +1,4 @@
-/*	$OpenBSD: csh.c,v 1.11 2000/08/30 01:46:34 mickey Exp $	*/
+/*	$OpenBSD: csh.c,v 1.12 2000/09/04 19:33:58 mickey Exp $	*/
 /*	$NetBSD: csh.c,v 1.14 1995/04/29 23:21:28 mycroft Exp $	*/
 
 /*-
@@ -44,7 +44,7 @@ static char copyright[] =
 #if 0
 static char sccsid[] = "@(#)csh.c	8.2 (Berkeley) 10/12/93";
 #else
-static char rcsid[] = "$OpenBSD: csh.c,v 1.11 2000/08/30 01:46:34 mickey Exp $";
+static char rcsid[] = "$OpenBSD: csh.c,v 1.12 2000/09/04 19:33:58 mickey Exp $";
 #endif
 #endif /* not lint */
 
@@ -266,7 +266,6 @@ main(argc, argv)
     set(STRshell, Strsave(STR_SHELLPATH));
 
     doldol = putn((int) getpid());	/* For $$ */
-    shtemp = Strspl(STRtmpsh, doldol);	/* For << */
 
     /*
      * Record the interrupt states from the parent process. If the parent is
