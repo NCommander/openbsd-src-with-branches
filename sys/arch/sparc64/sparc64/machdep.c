@@ -1,4 +1,4 @@
-/*	$OpenBSD: machdep.c,v 1.69 2004/06/28 01:47:41 aaron Exp $	*/
+/*	$OpenBSD: machdep.c,v 1.70 2004/08/02 21:40:46 brad Exp $	*/
 /*	$NetBSD: machdep.c,v 1.108 2001/07/24 19:30:14 eeh Exp $ */
 
 /*-
@@ -79,6 +79,7 @@
  */
 
 #include "auxio.h"
+#include "fhc.h"
 
 #include <sys/param.h>
 #include <sys/extent.h>
@@ -194,9 +195,16 @@ int	physmem;
 u_long	_randseed;
 extern	caddr_t msgbufaddr;
 
+#if (NAUXIO > 0) || (NFHC > 0)
+int sparc_led_blink;
+#endif
+
 #if NAUXIO > 0
 #include <sparc64/dev/auxiovar.h>
-int sparc_led_blink;
+#endif
+
+#if NFHC > 0
+#include <sparc64/dev/fhcvar.h>
 #endif
 
 #ifdef APERTURE
