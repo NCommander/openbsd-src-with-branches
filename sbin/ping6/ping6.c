@@ -1,4 +1,4 @@
-/*	$OpenBSD: ping6.c,v 1.30 2001/06/22 13:20:21 itojun Exp $	*/
+/*	$OpenBSD: ping6.c,v 1.31 2001/06/27 03:31:48 angelos Exp $	*/
 /*	$KAME: ping6.c,v 1.129 2001/06/22 13:16:02 itojun Exp $	*/
 
 /*
@@ -1309,7 +1309,7 @@ dnsdecode(sp, ep, base, buf, bufsiz)
 	u_char *buf;
 	size_t bufsiz;
 {
-	int i;
+	int i = 0;
 	const u_char *cp;
 	char cresult[MAXDNAME + 1];
 	const u_char *comp;
@@ -1939,7 +1939,7 @@ pr_nodeaddr(ni, nilen)
 	if (nilen % (sizeof(u_int32_t) + sizeof(struct in6_addr)) == 0)
 		withttl = 1;
 	while (nilen > 0) {
-		u_int32_t ttl;
+		u_int32_t ttl = 0;
 
 		if (withttl) {
 			/* XXX: alignment? */

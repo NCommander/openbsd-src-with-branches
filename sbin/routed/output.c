@@ -1,4 +1,4 @@
-/*	$OpenBSD: output.c,v 1.5 1997/07/30 23:28:43 deraadt Exp $	*/
+/*	$OpenBSD: output.c,v 1.6 2001/01/05 05:23:46 angelos Exp $	*/
 
 /*
  * Copyright (c) 1983, 1988, 1993
@@ -36,7 +36,7 @@
 #if !defined(lint)
 static char sccsid[] = "@(#)output.c	8.1 (Berkeley) 6/5/93";
 #else
-static char rcsid[] = "$OpenBSD: output.c,v 1.5 1997/07/30 23:28:43 deraadt Exp $";
+static char rcsid[] = "$OpenBSD: output.c,v 1.6 2001/01/05 05:23:46 angelos Exp $";
 #endif
 
 #include "defs.h"
@@ -96,7 +96,7 @@ output(enum output_type type,
 {
 	struct sockaddr_in sin;
 	int flags;
-	char *msg;
+	char *msg = NULL;
 	int res;
 	naddr tgt_mcast;
 	int soc;

@@ -1,4 +1,4 @@
-/*	$OpenBSD: dir.c,v 1.11 1999/09/06 12:40:52 espie Exp $	*/
+/*	$OpenBSD: dir.c,v 1.12 2001/07/03 13:03:45 ian Exp $	*/
 /*	$NetBSD: dir.c,v 1.11 1997/10/17 11:19:35 ws Exp $	*/
 
 /*
@@ -37,7 +37,7 @@
 
 
 #ifndef lint
-static char rcsid[] = "$OpenBSD: dir.c,v 1.11 1999/09/06 12:40:52 espie Exp $";
+static char rcsid[] = "$OpenBSD: dir.c,v 1.12 2001/07/03 13:03:45 ian Exp $";
 #endif /* not lint */
 
 #include <stdio.h>
@@ -804,7 +804,7 @@ readDosDirSection(f, boot, fat, dir)
 					continue;
 				}
 				if (strcmp(dirent.name, "..") == 0) {
-					if (dir->parent)		/* XXX */
+					if (dir->parent) {		/* XXX */
 						if (!dir->parent->parent) {
 							if (dirent.head) {
 								pwarn("`..' entry in %s has non-zero start cluster\n",
@@ -833,6 +833,7 @@ readDosDirSection(f, boot, fat, dir)
 							} else
 								mod |= FSERROR;
 						}
+					}
 					continue;
 				}
 

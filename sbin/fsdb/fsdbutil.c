@@ -1,4 +1,4 @@
-/*	$OpenBSD: fsdbutil.c,v 1.4 1996/03/21 00:15:50 niklas Exp $	*/
+/*	$OpenBSD: fsdbutil.c,v 1.5 1997/01/16 04:04:21 millert Exp $	*/
 /*	$NetBSD: fsdbutil.c,v 1.5 1996/09/28 19:30:37 christos Exp $	*/
 
 /*-
@@ -38,7 +38,7 @@
  */
 
 #ifndef lint
-static char rcsid[] = "$OpenBSD: fsdbutil.c,v 1.4 1996/02/27 22:28:16 jtc Exp $";
+static char rcsid[] = "$OpenBSD: fsdbutil.c,v 1.5 1997/01/16 04:04:21 millert Exp $";
 #endif /* not lint */
 
 #include <sys/types.h>
@@ -140,7 +140,7 @@ printstat(cp, inum, dp)
 	puts("fifo");
 	break;
     }
-    printf("I=%u MODE=%o SIZE=%qu", inum, dp->di_mode, dp->di_size);
+    printf("I=%u MODE=%o SIZE=%llu", inum, dp->di_mode, dp->di_size);
     t = dp->di_mtime;
     p = ctime(&t);
     printf("\n\tMTIME=%15.15s %4.4s [%d nsec]", &p[4], &p[20],

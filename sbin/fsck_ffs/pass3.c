@@ -1,4 +1,4 @@
-/*	$OpenBSD: pass3.c,v 1.3 1999/03/01 07:45:18 d Exp $	*/
+/*	$OpenBSD: pass3.c,v 1.4 2001/05/28 21:22:47 gluk Exp $	*/
 /*	$NetBSD: pass3.c,v 1.8 1995/03/18 14:55:54 cgd Exp $	*/
 
 /*
@@ -38,7 +38,7 @@
 #if 0
 static char sccsid[] = "@(#)pass3.c	8.1 (Berkeley) 6/5/93";
 #else
-static char rcsid[] = "$OpenBSD: pass3.c,v 1.3 1999/03/01 07:45:18 d Exp $";
+static char rcsid[] = "$OpenBSD: pass3.c,v 1.4 2001/05/28 21:22:47 gluk Exp $";
 #endif
 #endif /* not lint */
 
@@ -57,7 +57,7 @@ pass3_info(buf, buflen)
 	char *buf;
 	int buflen;
 {
-	return snprintf(buf, buflen, "phase 3, directory %d/%d",
+	return snprintf(buf, buflen, "phase 3, directory %d/%ld",
 		info_pos, inplast);
 }
 
