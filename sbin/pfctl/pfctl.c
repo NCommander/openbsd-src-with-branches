@@ -1,4 +1,4 @@
-/*	$OpenBSD: pfctl.c,v 1.85 2002/10/07 14:34:40 dhartmei Exp $ */
+/*	$OpenBSD: pfctl.c,v 1.86 2002/11/18 22:49:15 henning Exp $ */
 
 /*
  * Copyright (c) 2001 Daniel Hartmeier
@@ -656,10 +656,6 @@ pfctl_add_altq(struct pfctl *pf, struct pf_altq *a)
 				err(1, "DIOCADDALTQ");
 		}
 		pfaltq_store(&pf->paltq->altq);
-		if (pf->opts & PF_OPT_VERBOSE) {
-			print_altq(&pf->paltq->altq, 0);
-			printf("\n");
-		}
 	}
 	return (0);
 }
