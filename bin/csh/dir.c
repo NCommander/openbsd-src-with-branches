@@ -1,4 +1,4 @@
-/*	$OpenBSD: dir.c,v 1.11 2003/06/02 23:32:07 millert Exp $	*/
+/*	$OpenBSD: dir.c,v 1.12 2003/06/11 21:09:50 deraadt Exp $	*/
 /*	$NetBSD: dir.c,v 1.9 1995/03/21 09:02:42 cgd Exp $	*/
 
 /*-
@@ -34,7 +34,7 @@
 #if 0
 static char sccsid[] = "@(#)dir.c	8.1 (Berkeley) 5/31/93";
 #else
-static char rcsid[] = "$OpenBSD: dir.c,v 1.11 2003/06/02 23:32:07 millert Exp $";
+static char rcsid[] = "$OpenBSD: dir.c,v 1.12 2003/06/11 21:09:50 deraadt Exp $";
 #endif
 #endif /* not lint */
 
@@ -651,8 +651,8 @@ dcanon(Char *cp, Char *p)
 		continue;
 	p = sp;			/* save start of component */
 	slash = 0;
-	while (*++p)		/* find next slash or end of path */
-	    if (*p == '/') {
+	while (*p)		/* find next slash or end of path */
+	    if (*++p == '/') {
 		slash = 1;
 		*p = 0;
 		break;
