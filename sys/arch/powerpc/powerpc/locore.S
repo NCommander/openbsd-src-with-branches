@@ -1,4 +1,4 @@
-/*	$OpenBSD: locore.S,v 1.4 1997/01/26 09:06:38 rahnds Exp $	*/
+/*	$OpenBSD: locore.S,v 1.5 1997/10/13 13:42:58 pefo Exp $	*/
 /*	$NetBSD: locore.S,v 1.2 1996/10/16 19:33:09 ws Exp $	*/
 
 /*
@@ -1255,3 +1255,13 @@ _C_LABEL(sigcode):
 	li	0,SYS_exit
 	sc				/* exit(errno) */
 _C_LABEL(esigcode):
+
+
+
+_C_LABEL(intrnames):
+	.string "none"
+_C_LABEL(eintrnames):
+	.align 4
+_C_LABEL(intrcnt):
+	.long 0
+_C_LABEL(eintrcnt):
