@@ -1,4 +1,4 @@
-/*	$OpenBSD: config.h,v 1.10 2004/02/08 19:18:15 deraadt Exp $	*/
+/*	$OpenBSD: config.h,v 1.11 2004/12/18 20:55:52 millert Exp $	*/
 
 /* config.h.  NOT generated automatically. */
 
@@ -17,9 +17,6 @@
 /* Define if C compiler groks __attribute__((...)) (const, noreturn, format) */
 #define HAVE_GCC_FUNC_ATTR 1
 
-
-/* Include ksh features? */
-/* #define KSH 1 */
 
 /* Include emacs editing? */
 #define EMACS 1

@@ -1,4 +1,4 @@
-/*	$OpenBSD: lex.h,v 1.7 2003/02/28 09:45:09 jmc Exp $	*/
+/*	$OpenBSD: lex.h,v 1.8 2004/11/02 22:09:24 deraadt Exp $	*/
 
 /*
  * Source input, lexer and parser
@@ -52,9 +52,7 @@ struct source {
  */
 #define	SBASE	0		/* outside any lexical constructs */
 #define	SWORD	1		/* implicit quoting for substitute() */
-#ifdef KSH
 #define	SLETPAREN 2		/* inside (( )), implicit quoting */
-#endif /* KSH */
 #define	SSQUOTE	3		/* inside '' */
 #define	SDQUOTE	4		/* inside "" */
 #define	SBRACE	5		/* inside ${} */
@@ -96,9 +94,7 @@ typedef union {
 #define	FUNCTION 274
 #define	TIME	275
 #define	REDIR	276
-#ifdef KSH
 #define MDPAREN	277		/* (( )) */
-#endif /* KSH */
 #define BANG	278		/* ! */
 #define DBRACKET 279		/* [[ .. ]] */
 #define COPROC	280		/* |& */
