@@ -1,4 +1,4 @@
-/*	$OpenBSD: aic79xx_openbsd.h,v 1.11 2004/12/16 01:33:26 krw Exp $	*/
+/*	$OpenBSD: aic79xx_openbsd.h,v 1.12 2004/12/18 18:29:56 krw Exp $	*/
 
 /*
  * Copyright (c) 2004 Milos Urbanek, Kenneth R. Westerback & Marco Peereboom
@@ -210,6 +210,7 @@ void ahd_flush_device_writes(struct ahd_softc *);
 #define ahd_list_unlock(flags) splx(*(flags))
 
 /****************************** OS Primitives *********************************/
+#define scsi_4btoul(b)	(_4btol(b))
 
 /************************** Transaction Operations ****************************/
 #define aic_set_transaction_status(scb, status) (scb)->xs->error = (status)
