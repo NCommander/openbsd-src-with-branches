@@ -1,4 +1,4 @@
-/*	$OpenBSD: libsa.h,v 1.15 1997/08/22 20:13:43 mickey Exp $	*/
+/*	$OpenBSD: libsa.h,v 1.16 1997/09/02 20:58:16 mickey Exp $	*/
 
 /*
  * Copyright (c) 1996 Michael Shalayeff
@@ -44,5 +44,6 @@ void time_print __P((void));
 extern const char bdevs[][4];
 extern const int nbdevs;
 extern int bootdev; /* XXX pass through the global to exec_i386 */
+extern u_int cnvmem, extmem; /* XXX global pass memprobe()->machdep_start() */
 
 #define MACHINE_CMD	cmd_machine /* we have i386 specific sommands */
