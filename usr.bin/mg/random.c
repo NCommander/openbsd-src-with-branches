@@ -1,4 +1,4 @@
-/*	$OpenBSD: random.c,v 1.6 2001/05/24 03:05:25 mickey Exp $	*/
+/*	$OpenBSD: random.c,v 1.7 2002/02/14 14:24:21 deraadt Exp $	*/
 
 /*
  *		Assorted commands.
@@ -246,8 +246,8 @@ delwhite(f, n)
 
 	col = curwp->w_doto;
 
-	while (((c = lgetc(curwp->w_dotp, col)) == ' ' || c == '\t') &&
-	    col < llength(curwp->w_dotp))
+	while (col < llength(curwp->w_dotp) &&
+	    ((c = lgetc(curwp->w_dotp, col)) == ' ' || c == '\t'))
 		++col;
 	do {
 		if (curwp->w_doto == 0) {
