@@ -1,5 +1,5 @@
 vers(__file__,
-	{-$OpenBSD: MAKEDEV.md,v 1.3 2005/01/19 02:02:34 uwe Exp $-},
+	{-$OpenBSD: MAKEDEV.md,v 1.4 2005/03/04 15:57:00 todd Exp $-},
 etc.MACHINE)dnl
 dnl
 dnl Copyright (c) 2001-2004 Todd T. Fries <todd@OpenBSD.org>
@@ -25,6 +25,7 @@ dnl OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
 dnl ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 dnl
 dnl
+__devitem(apm, apm, Power management device)dnl
 _TITLE(make)
 _DEV(all)
 _DEV(ramd)

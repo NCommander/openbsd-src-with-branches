@@ -1,5 +1,5 @@
 vers(__file__,
-	{-$OpenBSD: MAKEDEV.md,v 1.25 2005/03/01 18:22:32 miod Exp $-},
+	{-$OpenBSD: MAKEDEV.md,v 1.26 2005/03/29 16:26:40 miod Exp $-},
 etc.MACHINE)dnl
 dnl
 dnl Copyright (c) 2001-2004 Todd T. Fries <todd@OpenBSD.org>
@@ -46,6 +46,7 @@ _mkdev(s64_czs, cua[a-z], {-u=${i#cua*}
 	M cua$u c major_s64_czs_c Add($n, 128) 660 dialer uucp-})dnl
 __devitem(presto, presto*, Prestoserve NVRAM memory)dnl
 disk_q(presto)dnl
+__devitem(apm, apm, Power management device, tctrl)dnl
 dnl
 dnl *** MAKEDEV itself
 dnl
