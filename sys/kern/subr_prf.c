@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: subr_prf.c,v 1.26.2.18 2004/02/19 10:56:38 niklas Exp $	*/
 /*	$NetBSD: subr_prf.c,v 1.45 1997/10/24 18:14:25 chuck Exp $	*/
 
 /*-
@@ -136,6 +136,7 @@ do {									\
 
 #else
 
+struct simplelock kprintf_slock;
 #define KPRINTF_MUTEX_ENTER(s) (s) = splhigh()
 #define KPRINTF_MUTEX_EXIT(s) splx((s))
 

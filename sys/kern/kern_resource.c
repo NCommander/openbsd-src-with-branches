@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: kern_resource.c,v 1.10.2.9 2004/02/19 10:56:37 niklas Exp $	*/
 /*	$NetBSD: kern_resource.c,v 1.38 1996/10/23 07:19:38 matthias Exp $	*/
 
 /*-
@@ -44,6 +44,7 @@
 #include <sys/resourcevar.h>
 #include <sys/pool.h>
 #include <sys/proc.h>
+#include <sys/sched.h>
 
 #include <sys/mount.h>
 #include <sys/syscallargs.h>
