@@ -1,8 +1,8 @@
-# $OpenBSD$
+# $OpenBSD: dot.profile,v 1.3 2003/03/20 01:43:31 david Exp $
 #
 # sh/ksh initialization
 
-PATH=/sbin:/usr/sbin:/bin:/usr/bin
+PATH=/sbin:/usr/sbin:/bin:/usr/bin:/usr/X11R6/bin:/usr/local/sbin:/usr/local/bin
 export PATH
 HOME=/root
 export HOME
