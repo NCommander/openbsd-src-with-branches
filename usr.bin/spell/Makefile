@@ -1,9 +1,8 @@
-#	$OpenBSD$
+#	$OpenBSD: Makefile,v 1.1 2002/03/01 22:01:11 millert Exp $
 
 PROG=	spellprog
 MAN=	spell.1
 SRCS=	spellprog.c look.c
-CFLAGS+=-fwritable-strings
 BINDIR=	/usr/libexec
 
 afterinstall:
