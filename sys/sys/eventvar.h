@@ -1,3 +1,5 @@
+/*	$OpenBSD$	*/
+
 /*-
  * Copyright (c) 1999,2000 Jonathan Lemon <jlemon@FreeBSD.org>
  * All rights reserved.
@@ -35,7 +37,7 @@
 struct kqueue {
 	TAILQ_HEAD(kqlist, knote) kq_head;	/* list of pending event */
 	int		kq_count;		/* number of pending events */
-	struct		selinfo kq_sel;	
+	struct		selinfo kq_sel;
 	struct		filedesc *kq_fdp;
 	int		kq_state;
 #define KQ_SEL		0x01
