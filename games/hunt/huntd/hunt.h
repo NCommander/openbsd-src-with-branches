@@ -1,4 +1,4 @@
-/*	$OpenBSD: hunt.h,v 1.2 1999/01/21 05:47:41 d Exp $	*/
+/*	$OpenBSD: hunt.h,v 1.3 1999/01/29 07:30:36 d Exp $	*/
 /*	$NetBSD: hunt.h,v 1.5 1998/09/13 15:27:28 hubertf Exp $	*/
 
 /*
@@ -81,7 +81,7 @@ typedef int			FLAG;
 # define	RIGHT	'}'
 # define	LEFTS	'{'
 # define	FLYER	'&'
-# define	isplayer(c)	(c == LEFTS || c == RIGHT ||\
+# define	is_player(c)	(c == LEFTS || c == RIGHT ||\
 				c == ABOVE || c == BELOW || c == FLYER)
 
 # ifndef TRUE
