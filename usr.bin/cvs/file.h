@@ -88,6 +88,7 @@ struct cvs_dir {
 	char            *cd_repo;
 	CVSENTRIES      *cd_ent;
 	struct cvs_flist cd_files;
+	u_int            cd_nfiles;
 };
 
 
