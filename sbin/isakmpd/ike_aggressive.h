@@ -1,4 +1,4 @@
-/* $OpenBSD: ike_aggressive.h,v 1.3 2003/06/03 14:28:16 ho Exp $	 */
+/* $OpenBSD: ike_aggressive.h,v 1.4 2004/04/15 18:39:25 deraadt Exp $	 */
 /* $EOM: ike_aggressive.h,v 1.1 1999/04/16 21:24:43 niklas Exp $	 */
 
 /*
@@ -34,7 +34,7 @@
 
 struct message;
 
-extern int      (*ike_aggressive_initiator[]) (struct message * msg);
-extern int      (*ike_aggressive_responder[]) (struct message * msg);
+extern int      (*ike_aggressive_initiator[])(struct message *msg);
+extern int      (*ike_aggressive_responder[])(struct message *msg);
 
 #endif				/* _IKE_AGGRESSIVE_H_ */

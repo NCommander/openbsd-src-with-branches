@@ -1,4 +1,4 @@
-/* $OpenBSD: isakmp_cfg.h,v 1.3 2003/06/03 14:28:16 ho Exp $	 */
+/* $OpenBSD: isakmp_cfg.h,v 1.4 2004/04/15 18:39:26 deraadt Exp $	 */
 
 /*
  * Copyright (c) 2001 Niklas Hallqvist.  All rights reserved.
@@ -46,8 +46,8 @@ struct isakmp_cfg_attr {
 
 struct message;
 
-extern int      (*isakmp_cfg_initiator[]) (struct message *);
-extern int      (*isakmp_cfg_responder[]) (struct message *);
+extern int      (*isakmp_cfg_initiator[])(struct message *);
+extern int      (*isakmp_cfg_responder[])(struct message *);
 extern int16_t  script_transaction[];
 
 #endif				/* _ISAKMP_CFG_H_ */
