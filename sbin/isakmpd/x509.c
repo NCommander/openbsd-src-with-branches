@@ -1,4 +1,4 @@
-/*	$OpenBSD: x509.c,v 1.62 2001/07/05 12:37:00 ho Exp $	*/
+/*	$OpenBSD: x509.c,v 1.63 2001/07/13 14:16:39 ho Exp $	*/
 /*	$EOM: x509.c,v 1.54 2001/01/16 18:42:16 ho Exp $	*/
 
 /*
@@ -864,7 +864,7 @@ x509_cert_validate (void *scert)
   else if (!conf_get_str ("X509-certificates", "Accept-self-signed"))
     {
       if (err)
-	log_print ("x509_cert_validate: %100s",
+	log_print ("x509_cert_validate: %.100s",
 		   LC (X509_verify_cert_error_string, (err)));
       return res;
     }
