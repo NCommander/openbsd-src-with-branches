@@ -1,4 +1,4 @@
-/*	$OpenBSD: systm.h,v 1.44 2001/11/06 18:41:10 art Exp $	*/
+/*	$OpenBSD: systm.h,v 1.45 2002/02/04 19:38:20 miod Exp $	*/
 /*	$NetBSD: systm.h,v 1.50 1996/06/09 04:55:09 briggs Exp $	*/
 
 /*-
@@ -212,6 +212,7 @@ int	suswintr __P((caddr_t, u_int));
 
 struct timeval;
 int	hzto __P((struct timeval *));
+int	tvtohz __P((struct timeval *));
 void	realitexpire __P((void *));
 
 struct clockframe;
