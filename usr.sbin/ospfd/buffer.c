@@ -1,4 +1,4 @@
-/*	$OpenBSD: buffer.c,v 1.3 2005/02/09 14:39:56 claudio Exp $ */
+/*	$OpenBSD: buffer.c,v 1.4 2005/03/23 11:36:34 henning Exp $ */
 
 /*
  * Copyright (c) 2003, 2004 Henning Brauer <henning@openbsd.org>
@@ -73,8 +73,10 @@ buf_realloc(struct buf *buf, size_t len)
 	u_char	*b;
 
 	/* on static buffers max is eq size and so the following fails */
-	if (buf->wpos + len > buf->max)
+	if (buf->wpos + len > buf->max) {
+		errno = ENOMEM;
 		return (-1);
+	}
 
 	b = realloc(buf->buf, buf->wpos + len);
 	if (b == NULL)
