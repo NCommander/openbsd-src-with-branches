@@ -1,4 +1,4 @@
-/*	$OpenBSD: atactl.c,v 1.26 2003/01/14 23:53:25 avsm Exp $	*/
+/*	$OpenBSD: atactl.c,v 1.27 2003/02/20 21:47:27 millert Exp $	*/
 /*	$NetBSD: atactl.c,v 1.4 1999/02/24 18:49:14 jwise Exp $	*/
 
 /*-
@@ -379,7 +379,7 @@ main(int argc, char *argv[])
 }
 
 __dead void
-usage()
+usage(void)
 {
 
 	fprintf(stderr, "usage: %s <device> <command> [arg [...]]\n",

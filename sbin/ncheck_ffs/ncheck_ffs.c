@@ -1,4 +1,4 @@
-/*	$OpenBSD: ncheck_ffs.c,v 1.16 2003/01/17 18:27:58 millert Exp $	*/
+/*	$OpenBSD: ncheck_ffs.c,v 1.17 2003/06/04 16:24:44 deraadt Exp $	*/
 
 /*-
  * Copyright (c) 1995, 1996 SigmaSoft, Th. Lockert <tholo@sigmasoft.com>
@@ -26,7 +26,7 @@
  */
 
 #ifndef lint
-static const char rcsid[] = "$OpenBSD: ncheck_ffs.c,v 1.16 2003/01/17 18:27:58 millert Exp $";
+static const char rcsid[] = "$OpenBSD: ncheck_ffs.c,v 1.17 2003/06/04 16:24:44 deraadt Exp $";
 #endif /* not lint */
 
 #include <sys/param.h>
@@ -103,7 +103,8 @@ matchino(const void *key, const void *val)
 /*
  * Check if the indicated inode match the entry in the cache
  */
-int matchcache(const void *key, const void *val)
+int
+matchcache(const void *key, const void *val)
 {
 	ino_t		ino = *(ino_t *)key;
 	struct icache_s	*ic = (struct icache_s *)val;

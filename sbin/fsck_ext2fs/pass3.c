@@ -1,4 +1,4 @@
-/*	$OpenBSD: pass3.c,v 1.4 2001/09/18 17:43:15 art Exp $	*/
+/*	$OpenBSD: pass3.c,v 1.5 2003/06/02 20:06:15 millert Exp $	*/
 /*	$NetBSD: pass3.c,v 1.2 1997/09/14 14:27:28 lukem Exp $	*/
 
 /*
@@ -39,7 +39,7 @@
 #include "extern.h"
 
 void
-pass3()
+pass3(void)
 {
 	struct inoinfo **inpp, *inp;
 	ino_t orphan;

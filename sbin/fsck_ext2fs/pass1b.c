@@ -1,4 +1,4 @@
-/*	$OpenBSD: pass1b.c,v 1.5 2002/02/16 21:27:34 millert Exp $	*/
+/*	$OpenBSD: pass1b.c,v 1.6 2003/06/02 20:06:15 millert Exp $	*/
 /*	$NetBSD: pass1b.c,v 1.2 1997/09/14 14:27:26 lukem Exp $	*/
 
 /*
@@ -44,7 +44,7 @@ static int	pass1bcheck(struct inodesc *);
 static  struct dups *duphead;
 
 void
-pass1b()
+pass1b(void)
 {
 	int c, i;
 	struct ext2fs_dinode *dp;
@@ -72,8 +72,7 @@ pass1b()
 }
 
 static int
-pass1bcheck(idesc)
-	struct inodesc *idesc;
+pass1bcheck(struct inodesc *idesc)
 {
 	struct dups *dlp;
 	int nfrags, res = KEEPON;
