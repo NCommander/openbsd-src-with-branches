@@ -1,4 +1,4 @@
-/*	$OpenBSD: pcireg.h,v 1.10 1999/01/30 23:24:22 niklas Exp $	*/
+/*	$OpenBSD: pcireg.h,v 1.11 1999/07/18 03:20:18 csapuntz Exp $	*/
 /*	$NetBSD: pcireg.h,v 1.11 1996/08/10 15:42:33 mycroft Exp $	*/
 
 /*
@@ -232,6 +232,8 @@ typedef u_int8_t pci_revision_t;
 #define	PCI_HDRTYPE(bhlcr) \
 	    (((bhlcr) >> PCI_HDRTYPE_SHIFT) & PCI_HDRTYPE_MASK)
 
+#define PCI_HDRTYPE_TYPE(bhlcr) \
+	    (PCI_HDRTYPE(bhlcr) & 0x7f)
 #define	PCI_HDRTYPE_MULTIFN(bhlcr) \
 	    ((PCI_HDRTYPE(bhlcr) & 0x80) != 0)
 
