@@ -1,4 +1,4 @@
-/*	$OpenBSD: ext2_lookup.c,v 1.3 1996/10/18 15:23:38 mickey Exp $	*/
+/*	$OpenBSD: ext2_lookup.c,v 1.4 1996/11/01 08:31:57 downsj Exp $	*/
 
 /*
  *  modified for Lites 1.1
@@ -855,7 +855,7 @@ ext2_direnter(ip, dvp, cnp)
 			/* overwrite; nothing there; header is ours */
 			spacefree += dsize;
 		}
-		dsize = EXT2_DIR_REC_LEN(ep->name_len);
+		dsize = EXT2_DIR_REC_LEN(nep->name_len);
 		spacefree += nep->rec_len - dsize;
 		loc += nep->rec_len;
 		bcopy((caddr_t)nep, (caddr_t)ep, dsize);
