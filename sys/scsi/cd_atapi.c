@@ -1,4 +1,4 @@
-/*	$OpenBSD: cd_atapi.c,v 1.1 1999/07/20 06:21:59 csapuntz Exp $	*/
+/*	$OpenBSD: cd_atapi.c,v 1.2 2002/03/14 01:27:13 millert Exp $	*/
 /*	$NetBSD: cd_atapi.c,v 1.10 1998/08/31 22:28:06 cgd Exp $	*/
 
 /*
@@ -46,9 +46,6 @@
  *
  * Ported to run under 386BSD by Julian Elischer (julian@tfs.com) Sept 1992
  */
-#ifndef __OpenBSD__
-#include "rnd.h"
-#endif
 
 #include <sys/types.h>
 #include <sys/param.h>
