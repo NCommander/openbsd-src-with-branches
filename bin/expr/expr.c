@@ -1,4 +1,4 @@
-/*	$OpenBSD: expr.c,v 1.13 2003/04/15 08:34:04 deraadt Exp $	*/
+/*	$OpenBSD: expr.c,v 1.14 2003/05/14 01:15:01 jsyn Exp $	*/
 /*	$NetBSD: expr.c,v 1.3.6.1 1996/06/04 20:41:47 cgd Exp $	*/
 
 /*
@@ -224,7 +224,7 @@ nexttoken(int pat)
 }
 
 __dead void
-error()
+error(void)
 {
 	errx(2, "syntax error");
 	/* NOTREACHED */

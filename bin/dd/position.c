@@ -1,4 +1,4 @@
-/*	$OpenBSD: position.c,v 1.5 2002/10/28 18:06:39 millert Exp $	*/
+/*	$OpenBSD: position.c,v 1.6 2003/06/02 23:32:07 millert Exp $	*/
 /*	$NetBSD: position.c,v 1.4 1995/03/21 09:04:12 cgd Exp $	*/
 
 /*-
@@ -38,7 +38,7 @@
 #if 0
 static char sccsid[] = "@(#)position.c	8.3 (Berkeley) 4/2/94";
 #else
-static char rcsid[] = "$OpenBSD: position.c,v 1.5 2002/10/28 18:06:39 millert Exp $";
+static char rcsid[] = "$OpenBSD: position.c,v 1.6 2003/06/02 23:32:07 millert Exp $";
 #endif
 #endif /* not lint */
 
@@ -63,7 +63,7 @@ static char rcsid[] = "$OpenBSD: position.c,v 1.5 2002/10/28 18:06:39 millert Ex
  * output.
  */
 void
-pos_in()
+pos_in(void)
 {
 	size_t bcnt;
 	ssize_t nr;
@@ -120,7 +120,7 @@ pos_in()
 }
 
 void
-pos_out()
+pos_out(void)
 {
 	struct mtop t_op;
 	off_t cnt;

@@ -1,4 +1,4 @@
-/*	$OpenBSD: util.c,v 1.7 2001/09/06 13:29:08 mpech Exp $	*/
+/*	$OpenBSD: util.c,v 1.8 2003/06/02 23:32:08 millert Exp $	*/
 /*	$NetBSD: util.c,v 1.12 1995/09/07 06:43:02 jtc Exp $	*/
 
 /*
@@ -37,7 +37,7 @@
 #if 0
 static char sccsid[] = "@(#)util.c	8.5 (Berkeley) 4/28/95";
 #else
-static char rcsid[] = "$OpenBSD: util.c,v 1.7 2001/09/06 13:29:08 mpech Exp $";
+static char rcsid[] = "$OpenBSD: util.c,v 1.8 2003/06/02 23:32:08 millert Exp $";
 #endif
 #endif /* not lint */
 
@@ -54,8 +54,7 @@ static char rcsid[] = "$OpenBSD: util.c,v 1.7 2001/09/06 13:29:08 mpech Exp $";
 #include "extern.h"
 
 int
-putname(name)
-	char *name;
+putname(char *name)
 {
 	int len;
 
@@ -65,7 +64,7 @@ putname(name)
 }
 
 void
-usage()
+usage(void)
 {
 	(void)fprintf(stderr,
 	    "usage: %s [-1ACFLRSTWacdfiklmnopqrstux] [file ...]\n",
