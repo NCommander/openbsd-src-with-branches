@@ -283,6 +283,9 @@ static struct movable *the_movables;
 
 FILE *loop_dump_stream;
 
+/* For communicating return values from note_set_pseudo_multiple_uses.  */
+static int note_set_pseudo_multiple_uses_retval;
+
 /* Forward declarations.  */
 
 static void verify_dominator PROTO((int));
@@ -297,6 +300,7 @@ static void count_one_set PROTO((rtx, rtx, varray_type, rtx *));
 static void count_loop_regs_set PROTO((rtx, rtx, varray_type, varray_type,
 				       int *, int)); 
 static void note_addr_stored PROTO((rtx, rtx));
+static void note_set_pseudo_multiple_uses PROTO((rtx, rtx));
 static int loop_reg_used_before_p PROTO((rtx, rtx, rtx, rtx, rtx));
 static void scan_loop PROTO((rtx, rtx, rtx, int, int));
 #if 0
@@ -2557,14 +2561,21 @@ verify_dominator (loop_number)
 	  && GET_CODE (PATTERN (insn)) != RETURN)
 	{
 	  rtx label = JUMP_LABEL (insn);
-	  int label_luid = INSN_LUID (label);
+	  int label_luid;
 
-	  if (! condjump_p (insn)
-	      && ! condjump_in_parallel_p (insn))
+	  /* If it is not a jump we can easily understand or for
+	     which we do not have jump target information in the JUMP_LABEL
+	     field (consider ADDR_VEC and ADDR_DIFF_VEC insns), then clear
+	     LOOP_NUMBER_CONT_DOMINATOR.  */
+	  if ((! condjump_p (insn)
+	       && ! condjump_in_parallel_p (insn))
+	      || label == NULL_RTX)
 	    {
 	      loop_number_cont_dominator[loop_number] = NULL_RTX;
 	      return;
 	    }
+
+	  label_luid = INSN_LUID (label);
 	  if (label_luid < INSN_LUID (loop_number_loop_cont[loop_number])
 	      && (label_luid
 		  > INSN_LUID (loop_number_cont_dominator[loop_number])))
@@ -3133,6 +3144,36 @@ note_addr_stored (x, y)
 
   loop_store_mems = gen_rtx_EXPR_LIST (VOIDmode, x, loop_store_mems);
 }
+
+/* X is a value modified by an INSN that references a biv inside a loop
+   exit test (ie, X is somehow related to the value of the biv).  If X
+   is a pseudo that is used more than once, then the biv is (effectively)
+   used more than once.  */
+
+static void
+note_set_pseudo_multiple_uses (x, y)
+     rtx x;
+     rtx y ATTRIBUTE_UNUSED;
+{
+  if (x == 0)
+    return;
+
+  while (GET_CODE (x) == STRICT_LOW_PART
+	 || GET_CODE (x) == SIGN_EXTRACT
+	 || GET_CODE (x) == ZERO_EXTRACT
+	 || GET_CODE (x) == SUBREG)
+    x = XEXP (x, 0);
+
+  if (GET_CODE (x) != REG || REGNO (x) < FIRST_PSEUDO_REGISTER)
+    return;
+
+  /* If we do not have usage information, or if we know the register
+     is used more than once, note that fact for check_dbra_loop.  */
+  if (REGNO (x) >= max_reg_before_loop
+      || ! VARRAY_RTX (reg_single_usage, REGNO (x))
+      || VARRAY_RTX (reg_single_usage, REGNO (x)) == const0_rtx)
+    note_set_pseudo_multiple_uses_retval = 1;
+}
 
 /* Return nonzero if the rtx X is invariant over the current loop.
 
@@ -3669,6 +3710,9 @@ strength_reduce (scan_start, end, loop_top, insn_count,
   /* This is 1 if current insn may be executed more than once for every
      loop iteration.  */
   int maybe_multiple = 0;
+  /* This is 1 if we have past a branch back to the top of the loop
+     (aka a loop latch).  */
+  int past_loop_latch = 0;
   /* Temporary list pointers for traversing loop_iv_list.  */
   struct iv_class *bl, **backbl;
   /* Ratio of extra register life span we can justify
@@ -3836,16 +3880,30 @@ strength_reduce (scan_start, end, loop_top, insn_count,
 	    loop_depth--;
 	}
 
+      /* Note if we pass a loop latch.  If we do, then we can not clear
+	 NOT_EVERY_ITERATION below when we pass the last CODE_LABEL in
+	 a loop since a jump before the last CODE_LABEL may have started
+	 a new loop iteration.
+
+	 Note that LOOP_TOP is only set for rotated loops and we need
+	 this check for all loops, so compare against the CODE_LABEL
+	 which immediately follows LOOP_START.  */
+      if (GET_CODE (p) == JUMP_INSN && JUMP_LABEL (p) == NEXT_INSN (loop_start))
+	past_loop_latch = 1;
+
       /* Unlike in the code motion pass where MAYBE_NEVER indicates that
 	 an insn may never be executed, NOT_EVERY_ITERATION indicates whether
 	 or not an insn is known to be executed each iteration of the
 	 loop, whether or not any iterations are known to occur.
 
 	 Therefore, if we have just passed a label and have no more labels
-	 between here and the test insn of the loop, we know these insns
-	 will be executed each iteration.  */
+	 between here and the test insn of the loop, and we have not passed
+	 a jump to the top of the loop, then we know these insns will be
+	 executed each iteration.  */
 
-      if (not_every_iteration && GET_CODE (p) == CODE_LABEL
+      if (not_every_iteration 
+	  && ! past_loop_latch
+	  && GET_CODE (p) == CODE_LABEL
 	  && no_labels_between_p (p, loop_end)
 	  && loop_insn_first_p (p, loop_cont))
 	not_every_iteration = 0;
@@ -4117,8 +4175,15 @@ strength_reduce (scan_start, end, loop_top, insn_count,
     n_extra_increment += bl->biv_count - 1;
 
   /* If the loop contains volatile memory references do not allow any
-     replacements to take place, since this could loose the volatile markers.  */
-  if (n_extra_increment  && ! loop_has_volatile)
+     replacements to take place, since this could loose the volatile
+     markers.
+
+     Disabled for the gcc-2.95 release.  There are still some problems with
+     giv recombination.  We have a patch from Joern which should fix those
+     problems.  But the patch is fairly complex and not really suitable for
+     the gcc-2.95 branch at this stage.  */
+  if (0 && n_extra_increment  && ! loop_has_volatile)
+
     {
       int nregs = first_increment_giv + n_extra_increment;
 
@@ -4176,6 +4241,8 @@ strength_reduce (scan_start, end, loop_top, insn_count,
 		  || ! next->always_executed
 		  || next->maybe_multiple
 		  || ! CONSTANT_P (next->add_val)
+		  || v->mult_val != const1_rtx
+		  || next->mult_val != const1_rtx
 		  || ! (biv_dead_after_loop
 			|| no_jumps_between_p (v->insn, next->insn)))
 		{
@@ -4198,6 +4265,7 @@ strength_reduce (scan_start, end, loop_top, insn_count,
 		  VARRAY_GROW (set_in_loop, nregs);
 		  VARRAY_GROW (n_times_set, nregs);
 		  VARRAY_GROW (may_not_optimize, nregs);
+		  VARRAY_GROW (reg_single_usage, nregs);
 		}
     
 	      if (! validate_change (next->insn, next->location, add_val, 0))
@@ -4720,7 +4788,13 @@ strength_reduce (scan_start, end, loop_top, insn_count,
 	  VARRAY_GROW (reg_iv_type, nregs);
 	  VARRAY_GROW (reg_iv_info, nregs);
 	}
+#if 0
+      /* Disabled for the gcc-2.95 release.  There are still some problems with
+	 giv recombination.  We have a patch from Joern which should fix those
+	 problems.  But the patch is fairly complex and not really suitable for
+	 the gcc-2.95 branch at this stage.  */
       recombine_givs (bl, loop_start, loop_end, unroll_p);
+#endif
 
       /* Reduce each giv that we decided to reduce.  */
 
@@ -7725,10 +7799,22 @@ check_dbra_loop (loop_end, insn_count, loop_start, loop_info)
 		    && REGNO (SET_DEST (set)) == bl->regno)
 		  /* An insn that sets the biv is okay.  */
 		  ;
-		else if (p == prev_nonnote_insn (prev_nonnote_insn (loop_end))
-			 || p == prev_nonnote_insn (loop_end))
-		  /* Don't bother about the end test.  */
-		  ;
+		else if ((p == prev_nonnote_insn (prev_nonnote_insn (loop_end))
+			  || p == prev_nonnote_insn (loop_end))
+			 && reg_mentioned_p (bivreg, PATTERN (p)))
+		  {
+		    /* If either of these insns uses the biv and sets a pseudo
+		       that has more than one usage, then the biv has uses
+		       other than counting since it's used to derive a value
+		       that is used more than one time.  */
+		    note_set_pseudo_multiple_uses_retval = 0;
+		    note_stores (PATTERN (p), note_set_pseudo_multiple_uses);
+		    if (note_set_pseudo_multiple_uses_retval)
+		      {
+			no_use_except_counting = 0;
+			break;
+		      }
+		  }
 		else if (reg_mentioned_p (bivreg, PATTERN (p)))
 		  {
 		    no_use_except_counting = 0;
@@ -7757,7 +7843,7 @@ check_dbra_loop (loop_end, insn_count, loop_start, loop_info)
 
 	      reversible_mem_store
 		= (! unknown_address_altered
-		   && ! invariant_p (XEXP (loop_store_mems, 0)));
+		   && ! invariant_p (XEXP (XEXP (loop_store_mems, 0), 0)));
 
 	      /* If the store depends on a register that is set after the
 		 store, it depends on the initial value, and is thus not
@@ -8179,11 +8265,16 @@ loop_insn_first_p (insn, reference)
       if (p == reference || ! q)
         return 1;
 
+      /* Either of P or Q might be a NOTE.  Notes have the same LUID as the
+         previous insn, hence the <= comparison below does not work if
+	 P is a note.  */
       if (INSN_UID (p) < max_uid_for_loop
-	  && INSN_UID (q) < max_uid_for_loop)
-	return INSN_LUID (p) < INSN_LUID (q);
+	  && INSN_UID (q) < max_uid_for_loop
+	  && GET_CODE (p) != NOTE)
+	return INSN_LUID (p) <= INSN_LUID (q);
 
-      if (INSN_UID (p) >= max_uid_for_loop)
+      if (INSN_UID (p) >= max_uid_for_loop
+	  || GET_CODE (p) == NOTE)
 	p = NEXT_INSN (p);
       if (INSN_UID (q) >= max_uid_for_loop)
 	q = NEXT_INSN (q);

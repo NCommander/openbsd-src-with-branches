@@ -1,3 +1,70 @@
+Sun Oct 24 23:54:10 PDT 1999 Jeff Law  (law@cygnus.com)
+
+	* gcc-2.95.2 Released.
+
+Mon Aug 16 01:29:24 PDT 1999 Jeff Law  (law@cygnus.com)
+
+	* gcc-2.95.1 Released.
+
+Fri Aug  6 23:32:29 1999  Daniel Jacobowitz <drow@drow.them.org>
+
+	* Makefile.in (FLAGS_TO_PASS): Include prefix, exec_prefix,
+	libdir, libsubdir and tooldir.
+
+Wed Jul 28 21:39:31 PDT 1999 Jeff Law  (law@cygnus.com)
+
+	* gcc-2.95 Released.
+
+Sun Jul 25 23:40:51 PDT 1999 Jeff Law  (law@cygnus.com)
+
+	* gcc-2.95 Released.
+
+1999-07-12  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* Makefile.in (NEEDED): Add bcmp, bcopy, bzero.
+
+1999-07-07  Jason Merrill  <jason@yorick.cygnus.com>
+
+        * Makefile.in (needed-list): Only include stuff we actually need
+        for libstdc++.
+
+Thu Jun 24 22:30:22 1999  "Philippe De Muyter" <phdm@macqel.be>
+
+	* setenv.c (sys/types.h, stdio.h): Files included.
+	* xstrdup.c (sys/types.h): File included.
+
+1999-06-21  Andreas Schwab  <schwab@issan.cs.uni-dortmund.de>
+
+	* configure.in (checkfuncs): Add gettimeofday.
+	* config.in, configure: Regenerated.
+
+Mon Jun 21 05:56:01 1999  Mumit Khan  <khan@xraylith.wisc.edu>
+
+	* configure.in (*-*-uwin*): UWIN has sys_{errlist,nerr} even if
+	the test fails.
+	* configure: Regenerate.
+
+1999-06-10  Mike Stump  <mrs@wrs.com>
+
+	* Makefile.in (setenv.o): Add config.h dep for setenv.o to fix
+	parallel builds.
+
+1999-05-28  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* putenv.c: Include ansidecl.h to define `const'.
+	* setenv.c: Likewise.
+
+Wed May 26 03:58:20 1999  "Melissa O'Neill" <oneill@cs.sfu.ca>
+
+	* Makefile.in (CFILES): Add putenv.c and setenv.c.
+	* configure.in (funcs): Add putenv and setenv.
+	(AC_CHECK_FUNCS): Check for putenv and setenv.
+	* configure: Rebuilt.
+	* putenv.c setenv.c: New files.
+
+	* getcwd.c (getcwd): If pathname is NULL, then obtain SIZE
+	bytes of space using malloc.
+
 Mon May 17 01:42:34 1999  Stu Grossman  <grossman@babylon-5.cygnus.com>
 
 	* cplus-dem.c (demangle_fund_type (near 'I' case)): Don't advance

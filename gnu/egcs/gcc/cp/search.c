@@ -2057,17 +2057,29 @@ static tree
 convert_pointer_to_single_level (to_type, expr)
      tree to_type, expr;
 {
+  tree derived;
   tree binfo_of_derived;
-  tree last;
+  int i;
 
-  binfo_of_derived = TYPE_BINFO (TREE_TYPE (TREE_TYPE (expr)));
-  last = get_binfo (to_type, TREE_TYPE (TREE_TYPE (expr)), 0);
-  my_friendly_assert (BINFO_INHERITANCE_CHAIN (last) == binfo_of_derived,
-		      980827);
+  derived = TREE_TYPE (TREE_TYPE (expr));
+  binfo_of_derived = TYPE_BINFO (derived);
   my_friendly_assert (BINFO_INHERITANCE_CHAIN (binfo_of_derived) == NULL_TREE,
 		      980827);
-  return build_vbase_path (PLUS_EXPR, build_pointer_type (to_type), expr,
-			   last, 1);
+  for (i = CLASSTYPE_N_BASECLASSES (derived) - 1; i >= 0; --i)
+    {
+      tree binfo = BINFO_BASETYPE (binfo_of_derived, i);
+      my_friendly_assert (BINFO_INHERITANCE_CHAIN (binfo) == binfo_of_derived,
+			  980827);
+      if (same_type_p (BINFO_TYPE (binfo), to_type))
+	return build_vbase_path (PLUS_EXPR, 
+				 build_pointer_type (to_type), 
+				 expr, binfo, 1);
+    }
+
+  my_friendly_abort (19990607);
+
+  /* NOTREACHED */
+  return NULL_TREE;
 }
 
 tree markedp (binfo, data) 
@@ -2122,7 +2134,8 @@ marked_pushdecls_p (binfo, data)
      tree binfo;
      void *data ATTRIBUTE_UNUSED;
 {
-  return BINFO_PUSHDECLS_MARKED (binfo) ? binfo : NULL_TREE; 
+  return (CLASS_TYPE_P (BINFO_TYPE (binfo))
+	  && BINFO_PUSHDECLS_MARKED (binfo)) ? binfo : NULL_TREE; 
 }
 
 static tree
@@ -2130,7 +2143,8 @@ unmarked_pushdecls_p (binfo, data)
      tree binfo;
      void *data ATTRIBUTE_UNUSED;
 { 
-  return !BINFO_PUSHDECLS_MARKED (binfo) ? binfo : NULL_TREE;
+  return (CLASS_TYPE_P (BINFO_TYPE (binfo))
+	  && !BINFO_PUSHDECLS_MARKED (binfo)) ? binfo : NULL_TREE;
 }
 
 #if 0
@@ -2968,7 +2982,7 @@ push_class_decls (type)
   /* Build up all the relevant bindings and such on the cache
      obstack.  That way no memory is wasted when we throw away the
      cache later.  */
-  maybe_push_cache_obstack ();
+  push_cache_obstack ();
 
   /* Enter type declarations and mark.  */
   dfs_walk (TYPE_BINFO (type), dfs_push_type_decls, unmarked_pushdecls_p, 0);
@@ -2976,7 +2990,7 @@ push_class_decls (type)
   /* Enter non-type declarations and unmark.  */
   dfs_walk (TYPE_BINFO (type), dfs_push_decls, marked_pushdecls_p, 0);
 
-  /* Undo the call to maybe_push_cache_obstack above.  */
+  /* Undo the call to push_cache_obstack above.  */
   pop_obstacks ();
 
   current_obstack = ambient_obstack;

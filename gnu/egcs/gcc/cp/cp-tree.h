@@ -543,6 +543,10 @@ extern int flag_guiding_decls;
    and class qualifiers.       */
 extern int flag_do_squangling;
 
+/* Nonzero means generate separate instantiation control files and juggle
+   them at link time.  */
+extern int flag_use_repository;
+
 /* Nonzero if we want to issue diagnostics that the standard says are not
    required.  */
 extern int flag_optional_diags;
@@ -1326,6 +1330,10 @@ struct lang_decl
 #define CP_DECL_CONTEXT(NODE) \
   (DECL_CONTEXT (NODE) ? DECL_CONTEXT (NODE) : global_namespace)
 #define FROB_CONTEXT(NODE)   ((NODE) == global_namespace ? NULL_TREE : (NODE))
+
+/* For a virtual function, the base where we find its vtable entry.
+   For a non-virtual function, the base where it is defined.  */
+#define DECL_VIRTUAL_CONTEXT(NODE) DECL_CONTEXT (NODE)
 
 /* 1 iff NODE has namespace scope, including the global namespace.  */
 #define DECL_NAMESPACE_SCOPE_P(NODE) \
@@ -2242,6 +2250,9 @@ extern int current_class_depth;
 extern tree current_lang_name;
 extern tree lang_name_cplusplus, lang_name_c, lang_name_java;
 
+/* The low-water mark on the class-cache obstack.  */
+extern char *class_cache_firstobj;
+
 /* Points to the name of that function. May not be the DECL_NAME
    of CURRENT_FUNCTION_DECL due to overloading */
 extern tree original_function_name;
@@ -2733,7 +2744,7 @@ extern void push_lang_context			PROTO((tree));
 extern void pop_lang_context			PROTO((void));
 extern tree instantiate_type			PROTO((tree, tree, int));
 extern void print_class_statistics		PROTO((void));
-extern void maybe_push_cache_obstack		PROTO((void));
+extern void push_cache_obstack		        PROTO((void));
 extern unsigned HOST_WIDE_INT skip_rtti_stuff	PROTO((tree *, tree));
 extern void build_self_reference		PROTO((void));
 extern void warn_hidden				PROTO((tree));
@@ -3388,6 +3399,7 @@ extern tree maybe_dummy_object			PROTO((tree, tree *));
 extern int is_dummy_object			PROTO((tree));
 extern tree search_tree                         PROTO((tree, tree (*)(tree)));
 extern int cp_valid_lang_attribute		PROTO((tree, tree, tree, tree));
+extern tree make_ptrmem_cst                     PROTO((tree, tree));
 
 #define scratchalloc expralloc
 #define scratch_tree_cons expr_tree_cons

@@ -1,6 +1,7 @@
-/* evax-misc.c -- Miscellaneous functions for ALPHA EVAX (openVMS/AXP) files.
-   Copyright 1996 Free Software Foundation, Inc.
-   Written by Klaus Kämpf (kkaempf@progis.de)
+/* evax-misc.c -- Miscellaneous functions for ALPHA EVAX (openVMS/Alpha) files.
+   Copyright 1996, 1997 Free Software Foundation, Inc.
+
+   Written by Klaus K"ampf (kkaempf@progis.de)
    of proGIS Softwareentwicklung, Aachen, Germany
 
 This program is free software; you can redistribute it and/or modify
@@ -565,7 +566,7 @@ add_new_contents (abfd, section)
   newptr = (evax_section *) bfd_malloc (sizeof (evax_section));
   if (newptr == (evax_section *) NULL)
     return NULL;
-  newptr->contents = (unsigned char *) bfd_alloc (abfd, section->_raw_size);
+  newptr->contents = (unsigned char *) bfd_alloc (abfd, (int)section->_raw_size);
   if (newptr->contents == (unsigned char *)NULL)
     return NULL;
   newptr->offset = 0;
@@ -952,98 +953,82 @@ _bfd_evax_output_fill (abfd, value, count)
   return;
 }
 
-/*-----------------------------------------------------------------------------*/
+/* this hash routine borrowed from GNU-EMACS, and strengthened slightly  ERY*/
 
-/* Return basename (stripped of directory information) of filename  */
+static int
+hash_string (ptr)
+     const char *ptr;
+{
+  register const unsigned char *p = (unsigned char *) ptr;
+  register const unsigned char *end = p + strlen (ptr);
+  register unsigned char c;
+  register int hash = 0;
+
+  while (p != end)
+    {
+      c = *p++;
+      hash = ((hash << 3) + (hash << 15) + (hash >> 28) + c);
+    }
+  return hash;
+}
+
+/* Generate a length-hashed VMS symbol name (limited to 64 chars).  */
 
 char *
-_bfd_evax_basename (name)
-     char *name;
+_bfd_evax_length_hash_symbol (abfd, in)
+     bfd *abfd;
+     const char *in;
 {
-  char *ptr;
+  long int init;
+  long int result;
+  int in_len;
+  char *pnt = 0;
+  char *new_name;
+  const char *old_name;
+  int i;
+  static char outbuf[65];
+  char *out = outbuf;
 
 #if EVAX_DEBUG
-  evax_debug (6, "_bfd_evax_basename %s -> ", name);
+  evax_debug(4, "_bfd_evax_length_hash_symbol \"%s\"\n", in);
 #endif
 
-#ifndef VMS
-  /* assume unix host */
-  ptr = strrchr (name, '.');
-  if (ptr)
-    *ptr = 0;
-  ptr = strrchr (name, '/');
-  if (ptr)
-    *ptr++ = 0;
-  else
-    ptr = name;
-#else
-  /* assume vms host */
-  ptr = strrchr (name, '.');
-  if (ptr)
-    {
-      *ptr = 0;
-      ptr = name;
-    }
-  else
-    {
-      ptr = strrchr (name, ']');
-      if (ptr)
-	*ptr++ = 0;
+  new_name = out;		/* save this for later.  */
+
+  /* We may need to truncate the symbol, save the hash for later.  */
+
+  in_len = strlen (in);
+
+  result = (in_len > 64) ? hash_string (in) : 0;
+
+  old_name = in;
+
+  /* Do the length checking.  */
+
+  if (in_len <= 64)
+    i = in_len;
       else
-	{
-	  ptr = strrchr (name, ':');
-	  if (ptr)
-	    *ptr++ = 0;
-	  else
-	    ptr = name;
-	}
-    }
-#endif
+    i = 55;
+
+  strncpy (out, in, i);
+  in += i;
+  out += i;
+
+  if ((in_len > 64)
+      && PRIV(flag_hash_long_names))
+    sprintf (out, "_%08x", result);
+  else
+  *out = 0;
 
 #if EVAX_DEBUG
-  evax_debug (6, "%s\n", ptr);
+  evax_debug(4, "--> [%d]\"%s\"\n", strlen (outbuf), outbuf);
 #endif
 
-  return ptr;
+  if (in_len > 64
+	&& PRIV(flag_hash_long_names)
+	&& PRIV(flag_show_after_trunc))
+    printf ("Symbol %s replaced by %s\n", old_name, new_name);
+
+  return outbuf;
 }
 
-
-/* Manufacure a VMS like time on a unix based system.
-   stolen from obj-vms.c  */
-
-char *
-_bfd_get_vms_time_string ()
-{
-  static char tbuf[18];
-#ifndef VMS
-#include <sys/types.h>
-#include <time.h>
-
-  char *pnt;
-  time_t timeb;
-  time (&timeb);
-  pnt = ctime (&timeb);
-  pnt[3] = 0;
-  pnt[7] = 0;
-  pnt[10] = 0;
-  pnt[16] = 0;
-  pnt[24] = 0;
-  sprintf (tbuf, "%2s-%3s-%s %s", pnt + 8, pnt + 4, pnt + 20, pnt + 11);
-#else
-#include <starlet.h>
-  struct
-  {
-    int Size;
-    char *Ptr;
-  } Descriptor;
-  Descriptor.Size = 17;
-  Descriptor.Ptr = tbuf;
-  sys$asctim (0, &Descriptor, 0, 0);
-#endif /* not VMS */
-
-#if EVAX_DEBUG
-  evax_debug (6, "vmstimestring:'%s'\n", tbuf);
-#endif
-
-  return tbuf;
-}

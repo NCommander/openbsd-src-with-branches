@@ -633,6 +633,12 @@ lang_decode_option (argc, argv)
           found = 1;
           cp_deprecated ("-fexternal-templates");
         }
+      else if (!strcmp (p, "handle-signatures"))
+        {
+          flag_handle_signatures = 1;
+          found = 1;
+          cp_deprecated ("-fhandle-signatures");
+        }
       else if (!strcmp (p, "new-abi"))
 	{
 	  flag_new_abi = 1;
@@ -2409,12 +2415,13 @@ mark_vtable_entries (decl)
       tree fnaddr;
       tree fn;
 
-      if (TREE_CODE (TREE_VALUE (entries)) == NOP_EXPR)
+      fnaddr = (flag_vtable_thunks ? TREE_VALUE (entries) 
+		: FNADDR_FROM_VTABLE_ENTRY (TREE_VALUE (entries)));
+
+      if (TREE_CODE (fnaddr) == NOP_EXPR)
 	/* RTTI offset.  */
 	continue;
 
-      fnaddr = (flag_vtable_thunks ? TREE_VALUE (entries) 
-		: FNADDR_FROM_VTABLE_ENTRY (TREE_VALUE (entries)));
       fn = TREE_OPERAND (fnaddr, 0);
       TREE_ADDRESSABLE (fn) = 1;
       if (DECL_LANG_SPECIFIC (fn) && DECL_ABSTRACT_VIRTUAL_P (fn))
@@ -2803,7 +2810,7 @@ import_export_decl (decl)
 	     since it will not be emitted when the vtable for the type
 	     is output (which is when the unqualified version is
 	     generated).  */
-	  && ctype == TYPE_MAIN_VARIANT (ctype))
+	  && same_type_p (ctype, TYPE_MAIN_VARIANT (ctype)))
 	{
 	  DECL_NOT_REALLY_EXTERN (decl)
 	    = ! (CLASSTYPE_INTERFACE_ONLY (ctype)
@@ -2814,7 +2821,8 @@ import_export_decl (decl)
 	  if (flag_weak)
 	    comdat_linkage (decl);
 	}
-      else if (TYPE_BUILT_IN (ctype) && ctype == TYPE_MAIN_VARIANT (ctype))
+      else if (TYPE_BUILT_IN (ctype) 
+	       && same_type_p (ctype, TYPE_MAIN_VARIANT (ctype)))
 	DECL_NOT_REALLY_EXTERN (decl) = 0;
       else
 	comdat_linkage (decl);
@@ -3087,7 +3095,7 @@ start_static_storage_duration_function ()
   /* Start the function itself.  This is equivalent to declarating the
      function as:
 
-       static inline void __ssdf (int __initialize_p, init __priority_p);
+       static void __ssdf (int __initialize_p, init __priority_p);
        
      It is static because we only need to call this function from the
      various constructor and destructor functions for this module.  */
@@ -3572,15 +3580,9 @@ finish_file ()
 
   do 
     {
-      /* We need to start a new initialization function each time
-	 through the loop.  That's because we need to know which
-	 vtables have been referenced, and TREE_SYMBOL_REFERENCED
-	 isn't computed until a function is finished, and written out.
-	 That's a deficiency in the back-end.  When this is fixed,
-	 these initialization functions could all become inline, with
-	 resulting performance improvements.  */
-      start_static_storage_duration_function ();
-      push_to_top_level ();
+      /* Non-zero if we need a static storage duration function on
+	 this iteration through the loop.  */
+      int need_ssdf_p = 0;
 
       reconsider = 0;
 
@@ -3601,10 +3603,6 @@ finish_file ()
 			/*data=*/0))
 	reconsider = 1;
       
-      /* Come back to the static storage duration function; we're
-	 about to emit instructions there for static initializations
-	 and such.  */
-      pop_from_top_level ();
       /* The list of objects with static storage duration is built up
 	 in reverse order, so we reverse it here.  We also clear
 	 STATIC_AGGREGATES so that any new aggregates added during the
@@ -3616,6 +3614,20 @@ finish_file ()
 	{
 	  if (! TREE_ASM_WRITTEN (TREE_VALUE (vars)))
 	    rest_of_decl_compilation (TREE_VALUE (vars), 0, 1, 1);
+	  if (!need_ssdf_p)
+	    {
+	      /* We need to start a new initialization function each
+		 time through the loop.  That's because we need to
+		 know which vtables have been referenced, and
+		 TREE_SYMBOL_REFERENCED isn't computed until a
+		 function is finished, and written out.  That's a
+		 deficiency in the back-end.  When this is fixed,
+		 these initialization functions could all become
+		 inline, with resulting performance improvements.  */
+	      start_static_storage_duration_function ();
+	      need_ssdf_p = 1;
+	    }
+
 	  do_static_initialization_and_destruction (TREE_VALUE (vars), 
 						    TREE_PURPOSE (vars));
 	  reconsider = 1;
@@ -3624,7 +3636,8 @@ finish_file ()
       
       /* Finish up the static storage duration function for this
          round.  */
-      finish_static_storage_duration_function ();
+      if (need_ssdf_p)
+	finish_static_storage_duration_function ();
 
       /* Go through the various inline functions, and see if any need
 	 synthesizing.  */
@@ -3807,7 +3820,8 @@ reparse_absdcl_as_casts (decl, expr)
       expr = build_c_cast (type, expr);
     }
 
-  if (warn_old_style_cast)
+  if (warn_old_style_cast && ! in_system_header
+      && current_lang_name != lang_name_c)
     warning ("use of old-style cast");
 
   return expr;
@@ -3981,7 +3995,7 @@ build_expr_from_tree (t)
       else 
 	{
 	  tree fn = TREE_OPERAND (t, 0);
-	  
+
 	  /* We can get a TEMPLATE_ID_EXPR here on code like:
 
 	       x->f<2>();
@@ -3992,7 +4006,9 @@ build_expr_from_tree (t)
 	     build_expr_from_tree.  So, just use build_expr_from_tree
 	     when we really need it.  */
 	  if (TREE_CODE (fn) == TEMPLATE_ID_EXPR)
-	    fn = build_expr_from_tree (fn);
+	    fn = lookup_template_function
+	      (TREE_OPERAND (fn, 0),
+	       build_expr_from_tree (TREE_OPERAND (fn, 1)));
 
 	  return build_method_call
 	    (build_expr_from_tree (TREE_OPERAND (t, 1)),
@@ -4481,6 +4497,12 @@ set_decl_namespace (decl, scope, friendp)
       /* Since decl is a function, old should contain a function decl. */
       if (!is_overloaded_fn (old))
 	goto complain;
+      if (processing_template_decl || processing_specialization)
+	/* We have not yet called push_template_decl to turn the
+	   FUNCTION_DECL into a TEMPLATE_DECL, so the declarations
+	   won't match.  But, we'll check later, when we construct the
+	   template.  */
+	return;
       for (; old; old = OVL_NEXT (old))
 	if (decls_match (decl, OVL_CURRENT (old)))
 	  return;
@@ -4870,11 +4892,19 @@ lookup_arg_dependent (name, fns, args)
      tree args;
 {
   struct arg_lookup k;
+
   k.name = name;
   k.functions = fns;
-  k.namespaces = NULL_TREE;
   k.classes = NULL_TREE;
-  
+
+  /* Note that we've already looked at the current namespace during normal
+     unqualified lookup, unless we found a decl in function scope.  */
+  if (fns && ! TREE_PERMANENT (OVL_CURRENT (fns)))
+    k.namespaces = NULL_TREE;
+  else
+    k.namespaces = scratch_tree_cons (current_decl_namespace (),
+				      NULL_TREE, NULL_TREE);
+
   push_scratch_obstack ();
   arg_assoc_args (&k, args);
   pop_obstacks ();

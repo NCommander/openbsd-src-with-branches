@@ -36,8 +36,6 @@ Boston, MA 02111-1307, USA.  */
 #define obstack_chunk_alloc xmalloc
 #define obstack_chunk_free free
 
-extern struct obstack permanent_obstack;
-
 /* This is how we tell when two virtual member functions are really the
    same.  */
 #define SAME_FN(FN1DECL, FN2DECL) (DECL_ASSEMBLER_NAME (FN1DECL) == DECL_ASSEMBLER_NAME (FN2DECL))
@@ -90,7 +88,7 @@ tree previous_class_values;	/* TREE_LIST: copy of the class_shadowed list
 static struct obstack class_cache_obstack;
 /* The first object allocated on that obstack.  We can use
    obstack_free with tis value to free the entire obstack.  */
-static char *class_cache_firstobj;
+char *class_cache_firstobj;
 
 struct base_info;
 
@@ -1136,7 +1134,8 @@ void
 add_method (type, fields, method)
      tree type, *fields, method;
 {
-  push_obstacks (&permanent_obstack, &permanent_obstack);
+  push_obstacks_nochange ();
+  end_temporary_allocation ();
 
   /* Setting the DECL_CONTEXT and DECL_CLASS_CONTEXT here is probably
      redundant.  */
@@ -2786,18 +2785,18 @@ get_basefndecls (fndecl, t)
 
 /* Mark the functions that have been hidden with their overriders.
    Since we start out with all functions already marked with a hider,
-   no need to mark functions that are just hidden.  */
+   no need to mark functions that are just hidden.
+
+   Subroutine of warn_hidden.  */
 
 static void
 mark_overriders (fndecl, base_fndecls)
      tree fndecl, base_fndecls;
 {
-  while (base_fndecls)
+  for (; base_fndecls; base_fndecls = TREE_CHAIN (base_fndecls))
     {
-      if (overrides (TREE_VALUE (base_fndecls), fndecl))
+      if (overrides (fndecl, TREE_VALUE (base_fndecls)))
 	TREE_PURPOSE (base_fndecls) = fndecl;
-
-      base_fndecls = TREE_CHAIN (base_fndecls);
     }
 }
 
@@ -2885,8 +2884,15 @@ warn_hidden (t)
       tree binfos = BINFO_BASETYPES (TYPE_BINFO (t));
       int i, n_baseclasses = binfos ? TREE_VEC_LENGTH (binfos) : 0;
 
-      fndecl = OVL_CURRENT (fns);
-      if (DECL_VINDEX (fndecl) == NULL_TREE)
+      /* First see if we have any virtual functions in this batch.  */
+      for (; fns; fns = OVL_NEXT (fns))
+	{
+	  fndecl = OVL_CURRENT (fns);
+	  if (DECL_VINDEX (fndecl))
+	    break;
+	}
+
+      if (fns == NULL_TREE)
 	continue;
 
       /* First we get a list of all possible functions that might be
@@ -2901,38 +2907,28 @@ warn_hidden (t)
 	}
 
       fns = OVL_NEXT (fns);
-      if (fns)
-	fndecl = OVL_CURRENT (fns);
-      else
-	fndecl = NULL_TREE;
 
       /* ...then mark up all the base functions with overriders, preferring
 	 overriders to hiders.  */
       if (base_fndecls)
-	while (fndecl)
+	for (; fns; fns = OVL_NEXT (fns))
 	  {
-	    mark_overriders (fndecl, base_fndecls);
-	    
-	    fns = OVL_NEXT (fns);
-	    if (fns)
-	      fndecl = OVL_CURRENT (fns);
-	    else
-	      fndecl = NULL_TREE;
+	    fndecl = OVL_CURRENT (fns);
+	    if (DECL_VINDEX (fndecl))
+	      mark_overriders (fndecl, base_fndecls);
 	  }
 
       /* Now give a warning for all base functions without overriders,
 	 as they are hidden.  */
-      while (base_fndecls)
+      for (; base_fndecls; base_fndecls = TREE_CHAIN (base_fndecls))
 	{
-	  if (! overrides (TREE_VALUE (base_fndecls),
-			   TREE_PURPOSE (base_fndecls)))
+	  if (! overrides (TREE_PURPOSE (base_fndecls),
+			   TREE_VALUE (base_fndecls)))
 	    {
 	      /* Here we know it is a hider, and no overrider exists.  */
 	      cp_warning_at ("`%D' was hidden", TREE_VALUE (base_fndecls));
 	      cp_warning_at ("  by `%D'", TREE_PURPOSE (base_fndecls));
 	    }
-
-	  base_fndecls = TREE_CHAIN (base_fndecls);
 	}
     }
 }
@@ -3133,6 +3129,7 @@ finish_struct_1 (t, warn_anon)
   int aggregate = 1;
   int empty = 1;
   int has_pointers = 0;
+  tree inline_friends;
 
   if (warn_anon && code != UNION_TYPE && ANON_AGGRNAME_P (TYPE_IDENTIFIER (t)))
     pedwarn ("anonymous class type not used to declare any objects");
@@ -3740,6 +3737,13 @@ finish_struct_1 (t, warn_anon)
 	if (DECL_SIZE (x) != integer_zero_node)
 	  empty = 0;
     }
+
+  /* CLASSTYPE_INLINE_FRIENDS is really TYPE_NONCOPIED_PARTS.  Thus,
+     we have to save this before we start modifying
+     TYPE_NONCOPIED_PARTS.  */
+  inline_friends = CLASSTYPE_INLINE_FRIENDS (t);
+  CLASSTYPE_INLINE_FRIENDS (t) = NULL_TREE;
+
   if (empty)
     {
       /* C++: do not let empty structures exist.  */
@@ -3747,7 +3751,11 @@ finish_struct_1 (t, warn_anon)
 	(FIELD_DECL, NULL_TREE, char_type_node);
       TREE_CHAIN (decl) = fields;
       TYPE_FIELDS (t) = decl;
+      TYPE_NONCOPIED_PARTS (t) 
+	= tree_cons (NULL_TREE, decl, TYPE_NONCOPIED_PARTS (t));
+      TREE_STATIC (TYPE_NONCOPIED_PARTS (t)) = 1;
     }
+
   if (n_baseclasses)
     TYPE_FIELDS (t) = chainon (last_x, TYPE_FIELDS (t));
 
@@ -4021,8 +4029,7 @@ finish_struct_1 (t, warn_anon)
     }
 
   /* Write out inline function definitions.  */
-  do_inline_function_hair (t, CLASSTYPE_INLINE_FRIENDS (t));
-  CLASSTYPE_INLINE_FRIENDS (t) = 0;
+  do_inline_function_hair (t, inline_friends);
 
   if (CLASSTYPE_VSIZE (t) != 0)
     {
@@ -4049,7 +4056,9 @@ finish_struct_1 (t, warn_anon)
       /* In addition to this one, all the other vfields should be listed.  */
       /* Before that can be done, we have to have FIELD_DECLs for them, and
 	 a place to find them.  */
-      TYPE_NONCOPIED_PARTS (t) = build_tree_list (default_conversion (TYPE_BINFO_VTABLE (t)), vfield);
+      TYPE_NONCOPIED_PARTS (t) 
+	= tree_cons (default_conversion (TYPE_BINFO_VTABLE (t)),
+		     vfield, TYPE_NONCOPIED_PARTS (t));
 
       if (warn_nonvdtor && TYPE_HAS_DESTRUCTOR (t)
 	  && DECL_VINDEX (TREE_VEC_ELT (method_vec, 1)) == NULL_TREE)
@@ -4461,7 +4470,8 @@ pushclass (type, modify)
       invalidate_class_lookup_cache ();
 
       /* Now, free the obstack on which we cached all the values.  */
-      obstack_free (&class_cache_obstack, class_cache_firstobj);
+      if (class_cache_firstobj)
+	obstack_free (&class_cache_obstack, class_cache_firstobj);
       class_cache_firstobj 
 	= (char*) obstack_finish (&class_cache_obstack);
     }
@@ -5006,15 +5016,15 @@ instantiate_type (lhstype, rhs, flags)
 	          field = OVL_FUNCTION (field);
 	        if (TREE_CODE (field) == FUNCTION_DECL)
 	          {
-		    cp_error ("object-dependent reference `%E' can only be used in a call",
+		    cp_pedwarn ("object-dependent reference `%E' can only be used in a call",
 		    	      DECL_NAME (field));
-  	    	    cp_error ("  to form a pointer to member function, say `&%T::%E'",
+  	    	    cp_pedwarn ("  to form a pointer to member function, say `&%T::%E'",
 		    	      t, DECL_NAME (field));
     	          }
 	        else
-	          cp_error ("object-dependent reference can only be used in a call");
+	          cp_pedwarn ("object-dependent reference can only be used in a call");
 	      }
-	    return error_mark_node;
+	    return r;
 	  }
 	
 	return r;
@@ -5218,7 +5228,7 @@ print_class_statistics ()
    effect is undone by pop_obstacks.  */
 
 void
-maybe_push_cache_obstack ()
+push_cache_obstack ()
 {
   static int cache_obstack_initialized;
 

@@ -2210,12 +2210,17 @@ check_default_tmpl_args (decl, parms, is_primary, is_partial)
 
   if (current_class_type
       && !TYPE_BEING_DEFINED (current_class_type)
-      && DECL_REAL_CONTEXT (decl) == current_class_type
       && DECL_LANG_SPECIFIC (decl)
-      && DECL_DEFINED_IN_CLASS_P (decl)) 
+      /* If this is either a friend defined in the scope of the class
+	 or a member function.  */
+      && DECL_CLASS_CONTEXT (decl) == current_class_type
+      /* And, if it was a member function, it really was defined in
+	 the scope of the class.  */
+      && (!DECL_FUNCTION_MEMBER_P (decl) || DECL_DEFINED_IN_CLASS_P (decl)))
     /* We already checked these parameters when the template was
-       declared, so there's no need to do it again now.  This is an
-       inline member function definition.  */
+       declared, so there's no need to do it again now.  This function
+       was defined in class scope, but we're processing it's body now
+       that the class is complete.  */
     return;
 
   if (TREE_CODE (decl) != TYPE_DECL || is_partial || !is_primary)
@@ -2781,18 +2786,14 @@ convert_nontype_argument (type, expr)
 	       applied.  */
 	    e = perform_qualification_conversions (type, expr);
 	    if (TREE_CODE (e) == NOP_EXPR)
-	      {
-		/* The call to perform_qualification_conversions will
-		   insert a NOP_EXPR over EXPR to do express
-		   conversion, if necessary.  But, that will confuse
-		   us if we use this (converted) template parameter to
-		   instantiate another template; then the thing will
-		   not look like a valid template argument.  So, just
-		   make a new constant, of the appropriate type.  */
-		e = make_node (PTRMEM_CST);
-		TREE_TYPE (e) = type;
-		PTRMEM_CST_MEMBER (e) = PTRMEM_CST_MEMBER (expr);
-	      }
+	      /* The call to perform_qualification_conversions will
+		 insert a NOP_EXPR over EXPR to do express conversion,
+		 if necessary.  But, that will confuse us if we use
+		 this (converted) template parameter to instantiate
+		 another template; then the thing will not look like a
+		 valid template argument.  So, just make a new
+		 constant, of the appropriate type.  */
+	      e = make_ptrmem_cst (type, PTRMEM_CST_MEMBER (expr));
 	    return e;
 	  }
 	else if (TREE_CODE (type_pointed_to) == FUNCTION_TYPE)
@@ -3573,6 +3574,7 @@ maybe_get_template_decl_from_type_decl (decl)
   return (decl != NULL_TREE
 	  && TREE_CODE (decl) == TYPE_DECL 
 	  && DECL_ARTIFICIAL (decl)
+	  && CLASS_TYPE_P (TREE_TYPE (decl))
 	  && CLASSTYPE_TEMPLATE_INFO (TREE_TYPE (decl))) 
     ? CLASSTYPE_TI_TEMPLATE (TREE_TYPE (decl)) : decl;
 }
@@ -6128,7 +6130,17 @@ tsubst (t, args, complain, in_decl)
 	if (max == error_mark_node)
 	  return error_mark_node;
 
-	if (processing_template_decl)
+	/* See if we can reduce this expression to something simpler.  */
+	max = maybe_fold_nontype_arg (max);
+	if (!processing_template_decl && TREE_READONLY_DECL_P (max))
+	  max = decl_constant_value (max);
+
+	if (processing_template_decl 
+	    /* When providing explicit arguments to a template
+	       function, but leaving some arguments for subsequent
+	       deduction, MAX may be template-dependent even if we're
+	       not PROCESSING_TEMPLATE_DECL.  */
+	    || TREE_CODE (max) != INTEGER_CST)
 	  {
 	    tree itype = make_node (INTEGER_TYPE);
 	    TYPE_MIN_VALUE (itype) = size_zero_node;
@@ -6535,6 +6547,8 @@ tsubst (t, args, complain, in_decl)
 	  }
 
 	f = make_typename_type (ctx, f);
+	if (f == error_mark_node)
+	  return f;
 	return cp_build_qualified_type (f, 
 					CP_TYPE_QUALS (f) 
 					| CP_TYPE_QUALS (t));
@@ -6908,9 +6922,20 @@ tsubst_copy (t, args, complain, in_decl)
         /* Substituted template arguments */
 	tree targs = tsubst_copy (TREE_OPERAND (t, 1), args, complain,
 				  in_decl);
-	tree chain;
-	for (chain = targs; chain; chain = TREE_CHAIN (chain))
-	  TREE_VALUE (chain) = maybe_fold_nontype_arg (TREE_VALUE (chain));
+
+	if (targs && TREE_CODE (targs) == TREE_LIST)
+	  {
+	    tree chain;
+	    for (chain = targs; chain; chain = TREE_CHAIN (chain))
+	      TREE_VALUE (chain) = maybe_fold_nontype_arg (TREE_VALUE (chain));
+	  }
+	else if (targs)
+	  {
+	    int i;
+	    for (i = 0; i < TREE_VEC_LENGTH (targs); ++i)
+	      TREE_VEC_ELT (targs, i) 
+		= maybe_fold_nontype_arg (TREE_VEC_ELT (targs, i));
+	  }
 
 	return lookup_template_function
 	  (tsubst_copy (TREE_OPERAND (t, 0), args, complain, in_decl), targs);
@@ -8893,8 +8918,8 @@ do_decl_instantiation (declspecs, declarator, storage)
 
 	 No program shall both explicitly instantiate and explicitly
 	 specialize a template.  */
-      cp_error ("explicit instantiation of `%#D' after", result);
-      cp_error_at ("explicit specialization here", result);
+      cp_pedwarn ("explicit instantiation of `%#D' after", result);
+      cp_pedwarn_at ("explicit specialization here", result);
       return;
     }
   else if (DECL_EXPLICIT_INSTANTIATION (result))
@@ -8907,8 +8932,8 @@ do_decl_instantiation (declspecs, declarator, storage)
 	 We check DECL_INTERFACE_KNOWN so as not to complain when the
 	 first instantiation was `extern' and the second is not, and
 	 EXTERN_P for the opposite case.  */
-      if (DECL_INTERFACE_KNOWN (result) && !extern_p)
-	cp_error ("duplicate explicit instantiation of `%#D'", result);
+      if (DECL_INTERFACE_KNOWN (result) && !extern_p && !flag_use_repository)
+	cp_pedwarn ("duplicate explicit instantiation of `%#D'", result);
 
       /* If we've already instantiated the template, just return now.  */
       if (DECL_INTERFACE_KNOWN (result))
@@ -9035,8 +9060,8 @@ do_type_instantiation (t, storage)
          If CLASSTYPE_INTERFACE_ONLY, then the first explicit
 	 instantiation was `extern', and if EXTERN_P then the second
 	 is.  Both cases are OK.  */
-      if (!CLASSTYPE_INTERFACE_ONLY (t) && !extern_p)
-	cp_error ("duplicate explicit instantiation of `%#T'", t);
+      if (!CLASSTYPE_INTERFACE_ONLY (t) && !extern_p && !flag_use_repository)
+	cp_pedwarn ("duplicate explicit instantiation of `%#T'", t);
       
       /* If we've already instantiated the template, just return now.  */
       if (!CLASSTYPE_INTERFACE_ONLY (t))
