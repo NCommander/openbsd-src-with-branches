@@ -1,4 +1,4 @@
-/*	$OpenBSD: parse.c,v 1.11 1997/04/06 19:52:11 millert Exp $	*/
+/*	$OpenBSD: parse.c,v 1.12 1997/04/19 19:08:29 kstailey Exp $	*/
 /*
  * (C)opyright 1993-1996 by Darren Reed.
  *
@@ -567,7 +567,7 @@ int	*resolved;
 		}
 		return np->n_net;
 	}
-	return *(u_long *)hp->h_addr;
+	return *(u_int32_t *)hp->h_addr;
 }
 
 /*
