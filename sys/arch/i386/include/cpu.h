@@ -1,4 +1,4 @@
-/*	$OpenBSD: cpu.h,v 1.30 2000/06/05 12:43:30 art Exp $	*/
+/*	$OpenBSD: cpu.h,v 1.31 2000/08/02 14:09:59 deraadt Exp $	*/
 /*	$NetBSD: cpu.h,v 1.35 1996/05/05 19:29:26 christos Exp $	*/
 
 /*-
@@ -159,6 +159,7 @@ extern int cpu;
 extern int cpu_class;
 extern int cpu_feature;
 extern int cpu_apmwarn;
+extern int cpu_apmhalt;
 extern int cpuid_level;
 extern struct cpu_nocpuid_nameclass i386_nocpuid_cpus[];
 extern struct cpu_cpuid_nameclass i386_cpuid_cpus[];
@@ -255,7 +256,8 @@ void	setconf __P((void));
 #define CPU_CPUFEATURE		8	/* cpuid features */
 #define CPU_APMWARN		9	/* APM battery warning percentage */
 #define CPU_KBDRESET		10	/* keyboard reset under pcvt */
-#define	CPU_MAXID		11	/* number of valid machdep ids */
+#define CPU_APMHALT		11	/* halt -p hack */
+#define	CPU_MAXID		12	/* number of valid machdep ids */
 
 #define	CTL_MACHDEP_NAMES { \
 	{ 0, 0 }, \
@@ -269,6 +271,7 @@ void	setconf __P((void));
 	{ "cpufeature", CTLTYPE_INT }, \
 	{ "apmwarn", CTLTYPE_INT }, \
 	{ "kbdreset", CTLTYPE_INT }, \
+	{ "apmhalt", CTLTYPE_INT }, \
 }
 
 #endif /* !_I386_CPU_H_ */
