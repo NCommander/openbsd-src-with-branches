@@ -1,4 +1,4 @@
-/*	$OpenBSD: login_lchpass.c,v 1.2 2001/06/25 22:10:28 millert Exp $	*/
+/*	$OpenBSD: login_lchpass.c,v 1.3 2001/10/24 13:06:35 mpech Exp $	*/
 
 /*-
  * Copyright (c) 1995,1996 Berkeley Software Design, Inc. All rights reserved.
@@ -72,8 +72,6 @@ main(argc, argv)
 	rl.rlim_max = 0;
 	(void)setrlimit(RLIMIT_CORE, &rl);
 
-	(void)signal(SIGQUIT, SIG_IGN);
-	(void)signal(SIGINT, SIG_IGN);
 	(void)setpriority(PRIO_PROCESS, 0, 0);
 
 	openlog("login", LOG_ODELAY, LOG_AUTH);

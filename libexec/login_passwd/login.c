@@ -1,4 +1,4 @@
-/*	$OpenBSD: login.c,v 1.1 2001/06/26 05:03:28 hin Exp $	*/
+/*	$OpenBSD: login.c,v 1.2 2001/08/09 15:18:45 millert Exp $	*/
 
 /*-
  * Copyright (c) 1995 Berkeley Software Design, Inc. All rights reserved.
@@ -50,8 +50,6 @@ main(int argc, char **argv)
 
 	invokinguser[0] = '\0';
 
-	signal(SIGQUIT, SIG_IGN);
-	signal(SIGINT, SIG_IGN);
 	setpriority(PRIO_PROCESS, 0, 0);
 
 	openlog(NULL, LOG_ODELAY, LOG_AUTH);
