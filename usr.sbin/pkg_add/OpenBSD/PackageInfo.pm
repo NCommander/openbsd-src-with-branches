@@ -28,7 +28,7 @@ use warnings;
 package OpenBSD::PackageInfo;
 our @ISA=qw(Exporter);
 our @EXPORT=qw(installed_packages installed_info installed_name info_names is_info_name 
-    add_installed is_installed CONTENTS COMMENT DESC INSTALL DEINSTALL REQUIRE 
+    add_installed is_installed borked_package CONTENTS COMMENT DESC INSTALL DEINSTALL REQUIRE 
     REQUIRED_BY DISPLAY MTREE_DIRS);
 
 use OpenBSD::PackageName;
@@ -95,6 +95,16 @@ sub installed_info($)
 	} else {
 		return "$pkg_db/$name/";
 	}
+}
+
+sub borked_package()
+{
+	my $i = 1;
+
+	while (-e "$pkg_db/borked.$i") {
+		$i++;
+	}
+	return "borked.$i";
 }
 
 sub is_installed($)
