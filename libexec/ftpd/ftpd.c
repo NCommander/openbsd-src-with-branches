@@ -1555,7 +1555,7 @@ yyerror(s)
 
 	if (cp = strchr(cbuf,'\n'))
 		*cp = '\0';
-	reply(500, "'%s': command not understood: %s.", cbuf, s);
+	reply(500, "'%s': command not understood.", cbuf);
 }
 
 void
