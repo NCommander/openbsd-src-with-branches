@@ -62,6 +62,8 @@ ddb_sysctl(name, namelen, oldp, oldlenp, newp, newlen, p)
 		return sysctl_int(oldp, oldlenp, newp, newlen, &db_tab_stop_width);
 	case DBCTL_MAXLINE:
 		return sysctl_int(oldp, oldlenp, newp, newlen, &db_max_line);
+	case DBCTL_PANICDDB:
+		return sysctl_int(oldp, oldlenp, newp, newlen, &db_panic_ddb);
 	default:
 		return (EOPNOTSUPP);
 	}

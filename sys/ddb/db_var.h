@@ -44,7 +44,8 @@
 #define DBCTL_MAXWIDTH	2
 #define DBCTL_MAXLINE	3
 #define DBCTL_TABSTOP	4
-#define DBCTL_MAXID	5
+#define DBCTL_PANICDDB	5
+#define DBCTL_MAXID	6
 
 #define	CTL_DDB_NAMES { \
 	{ NULL, 0 }, \
@@ -52,6 +53,7 @@
 	{ "max_width", CTLTYPE_INT }, \
 	{ "max_line", CTLTYPE_INT }, \
 	{ "tab_stop_width", CTLTYPE_INT },\
+	{ "panic_ddb", CTLTYPE_INT }, \
 }
 
 #ifdef	_KERNEL
@@ -60,6 +62,7 @@ extern int	db_radix;
 extern int	db_max_width;
 extern int	db_tab_stop_width;
 extern int	db_max_line;
+extern int	db_panic_ddb;
 
 int	ddb_sysctl __P((int *, u_int, void *, size_t *, void *, size_t,
 		       struct proc *));
