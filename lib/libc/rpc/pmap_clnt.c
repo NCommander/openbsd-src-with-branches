@@ -28,7 +28,7 @@
  */
 
 #if defined(LIBC_SCCS) && !defined(lint)
-static char *rcsid = "$OpenBSD: pmap_clnt.c,v 1.10 2001/09/15 13:51:00 deraadt Exp $";
+static char *rcsid = "$OpenBSD: pmap_clnt.c,v 1.11 2002/08/22 23:03:11 deraadt Exp $";
 #endif /* LIBC_SCCS and not lint */
 
 /*
@@ -42,7 +42,6 @@ static char *rcsid = "$OpenBSD: pmap_clnt.c,v 1.10 2001/09/15 13:51:00 deraadt E
 #include <errno.h>
 #include <rpc/rpc.h>
 #include <rpc/pmap_prot.h>
-#include <rpc/pmap_clnt.h>
 #include <rpc/pmap_clnt.h>
 
 static struct timeval timeout = { 5, 0 };
