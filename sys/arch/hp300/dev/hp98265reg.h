@@ -1,14 +1,12 @@
-/*	$OpenBSD: acioctl.h,v 1.3 2003/06/02 23:27:44 millert Exp $	*/
-/*	$NetBSD: acioctl.h,v 1.2 1994/10/26 07:23:25 cgd Exp $	*/
+/*	$OpenBSD$	*/
+/*	$NetBSD: hp98265reg.h,v 1.1 2003/08/01 01:18:45 tsutsui Exp $	*/
 
 /*
- * Copyright (c) 1991 University of Utah.
  * Copyright (c) 1990, 1993
  *	The Regents of the University of California.  All rights reserved.
  *
  * This code is derived from software contributed to Berkeley by
- * the Systems Programming Group of the University of Utah Computer
- * Science Department.
+ * Van Jacobson of Lawrence Berkeley Laboratory.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -34,52 +32,40 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  *
- * from: Utah $Hdr: acioctl.h 1.1 91/06/19$
- *
- *	@(#)acioctl.h	8.1 (Berkeley) 6/10/93
+ *	@(#)scsireg.h	8.1 (Berkeley) 6/10/93
  */
 
-struct acinfo {
-	short	fmte;		/* 1st medium transport elt (picker) */
-	short	nmte;		/* # medium transport elts */
-	short	fse;		/* 1st storage elt (slot) */
-	short	nse;		/* # storage elts */
-	short	fiee;		/* 1st import/export elt (mailslot) */
-	short	niee;		/* # import/export elts */
-	short	fdte;		/* 1st data transport elt (drive) */
-	short	ndte;		/* # data transport elts */
-};
+/*
+ * HP 98265A SCSI Interface Hardware Description.
+ */
 
-struct aceltstat {
-	short	eaddr;		/* element address */
-	char	type;		/* type of element */
-	char	flags;		/* flags */
-};
+#define SPC_OFFSET	32
+#define SPC_SIZE	(32 * 2)	/* XXX */
 
-/* types */
-#define AC_MTE		0x01	/* picker */
-#define AC_SE		0x02	/* slot */
-#define AC_IEE		0x03	/* mailslot */
-#define AC_DTE		0x04	/* drive */
-/* flags */
-#define AC_FULL		0x01	/* media present */
-#define	AC_ERROR	0x04	/* error accessing element */
-#define AC_ACCESS	0x08	/* element accessible */
-#define AC_INVERT	0x80	/* media inverted prior to insertion */
+#define HPSCSI_ID	0x00
+#define  ID_MASK	0x1f
+#define  SCSI_ID	0x07
+#define  ID_WORD_DMA	0x20
 
-struct acmove {
-	short	srcelem;
-	short	dstelem;
-	short	flags;
-};
+#define HPSCSI_CSR	0x01
+#define  CSR_IE		0x80
+#define  CSR_IR		0x40
+#define  SCSI_IPL(csr)	((((csr) >> 4) & 3) + 3)
+#define  CSR_DMA32	0x08
+#define  CSR_DMAIN	0x04
+#define  CSR_DE1	0x02
+#define  CSR_DE0	0x01
 
-struct acbuffer {
-	char	*bufptr;
-	int	buflen;
-};
+#define HPSCSI_WRAP	0x02
+#define  WRAP_REQ	0x80
+#define  WRAP_ACK	0x40
+#define  WRAP_BSY	0x08
+#define  WRAP_MSG	0x04
+#define  WRAP_CD	0x02
+#define  WRAP_IO	0x01
 
-#define ACIOCINIT	_IO('A', 0x1)			/* init elt status */
-#define ACIOCGINFO	_IOR('A', 0x2, struct acinfo)	/* mode sense */
-#define ACIOCGSTAT	_IOW('A', 0x3, struct acbuffer)	/* read elem status */
-#define ACIOCMOVE	_IOW('A', 0x4, struct acmove)	/* move elem */
-#define ACIOCRAWES	_IOW('A', 0x5, struct acbuffer)	/* raw element stat */
+#define HPSCSI_HCONF	0x03
+#define  HCONF_TP	0x80
+#define  SCSI_SYNC_XFER(hconf) (((hconf) >> 5) & 3)
+#define  HCONF_SD	0x10
+#define  HCONF_PARITY	0x08
