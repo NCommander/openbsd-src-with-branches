@@ -5,4 +5,5 @@
 #else
 #define BYTE_ORDER LITTLE_ENDIAN
 #endif
+#define	__STRICT_ALIGNMENT
 #include <sys/endian.h>
