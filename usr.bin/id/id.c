@@ -1,4 +1,4 @@
-/*	$OpenBSD: id.c,v 1.13 2003/06/10 22:20:47 deraadt Exp $	*/
+/*	$OpenBSD: id.c,v 1.14 2004/01/07 22:18:14 tdeval Exp $	*/
 
 /*-
  * Copyright (c) 1991, 1993
@@ -37,7 +37,7 @@ static char copyright[] =
 
 #ifndef lint
 /*static char sccsid[] = "@(#)id.c	8.3 (Berkeley) 4/28/95";*/
-static char rcsid[] = "$OpenBSD: id.c,v 1.13 2003/06/10 22:20:47 deraadt Exp $";
+static char rcsid[] = "$OpenBSD: id.c,v 1.14 2004/01/07 22:18:14 tdeval Exp $";
 #endif /* not lint */
 
 #include <sys/param.h>
@@ -260,7 +260,6 @@ group(struct passwd *pw, int nflag)
 {
 	int cnt, ngroups;
 	gid_t gid, groups[NGROUPS + 1];
-	uid_t uid;
 	struct group *gr;
 	char *fmt;
 

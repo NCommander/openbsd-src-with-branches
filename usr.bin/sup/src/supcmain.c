@@ -1,4 +1,4 @@
-/*	$OpenBSD: supcmain.c,v 1.17 2002/12/09 00:45:38 millert Exp $	*/
+/*	$OpenBSD: supcmain.c,v 1.18 2004/01/23 03:48:43 deraadt Exp $	*/
 
 /*
  * Copyright (c) 1992 Carnegie Mellon University
@@ -412,8 +412,6 @@ main(argc, argv)
 		endpwent();		/* close /etc/passwd */
 		endgrent();		/* close /etc/group */
 		if (restart == 1) {
-			int fd;
-
 			if (!silent)
 				loginfo("SUP Restarting %s with new supfile %s",
 					progname, supfname);
