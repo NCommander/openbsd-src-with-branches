@@ -1,4 +1,4 @@
-/*	$OpenBSD: tcp_var.h,v 1.67 2004/10/28 19:22:52 mcbride Exp $	*/
+/*	$OpenBSD: tcp_var.h,v 1.68 2004/11/25 15:32:08 markus Exp $	*/
 /*	$NetBSD: tcp_var.h,v 1.17 1996/02/13 23:44:24 christos Exp $	*/
 
 /*
@@ -331,6 +331,7 @@ tcp_reass_unlock(struct tcpcb *tp)
 #define	TCP_RTT_SHIFT		3	/* shift for srtt; 3 bits frac. */
 #define	TCP_RTTVAR_SCALE	4	/* multiplier for rttvar; 2 bits */
 #define	TCP_RTTVAR_SHIFT	2	/* multiplier for rttvar; 2 bits */
+#define TCP_RTT_MAX		(1<<9)	/* maximum rtt */
 
 /*
  * The initial retransmission should happen at rtt + 4 * rttvar.
