@@ -1,4 +1,4 @@
-/*	$OpenBSD: diff.c,v 1.14 2003/06/26 07:20:12 deraadt Exp $	*/
+/*	$OpenBSD: diff.c,v 1.15 2003/06/26 18:19:29 millert Exp $	*/
 
 /*
  * Copyright (C) Caldera International Inc.  2001-2002.
@@ -146,7 +146,7 @@ main(int argc, char **argv)
 			opt = D_NREVERSE;
 			break;
 		case 'r':
-			opt = D_REVERSE;
+			rflag++;
 			break;
 		case 'S':
 			start = optarg;
