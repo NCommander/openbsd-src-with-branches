@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: kqueue-fork.c,v 1.1 2002/02/27 17:11:51 art Exp $	*/
 /*
  *	Written by Artur Grabowski <art@openbsd.org> 2002 Public Domain
  */
@@ -11,6 +11,8 @@
 #include <sys/types.h>
 #include <sys/event.h>
 #include <sys/wait.h>
+
+int check_inheritance(void);
 
 int
 check_inheritance(void)

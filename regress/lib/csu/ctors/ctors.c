@@ -1,4 +1,4 @@
-/*	$OpenBSD: ctors.c,v 1.1 2002/01/31 15:33:36 art Exp $	*/
+/*	$OpenBSD: ctors.c,v 1.2 2002/02/18 11:03:58 art Exp $	*/
 /*
  *	Written by Artur Grabowski <art@openbsd.org>, 2002 Public Domain.
  */
@@ -13,7 +13,7 @@ foo(void)
 }
 
 int
-main()
+main(int argc, char *argv[])
 {
 	return !constructed;
 }

@@ -1,4 +1,4 @@
-/*	$OpenBSD: exit.c,v 1.1 2002/02/08 20:15:14 art Exp $	*/
+/*	$OpenBSD: syscall.c,v 1.1 2002/02/08 21:33:32 art Exp $	*/
 /*
  *	Written by Artur Grabowski <art@openbsd.org> 2002 Public Domain.
  */
@@ -10,7 +10,7 @@
 #include <err.h>
 
 int
-main()
+main(int argc, char *argv[])
 {
 	int status;
 

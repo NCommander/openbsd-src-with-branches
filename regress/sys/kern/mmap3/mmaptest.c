@@ -1,4 +1,4 @@
-/* $OpenBSD: mmaptest.c,v 1.1.1.1 2002/08/21 12:53:35 espie Exp $ */
+/* $OpenBSD: mmaptest.c,v 1.2 2002/08/21 14:45:17 espie Exp $ */
 /*
  * Copyright (c) 2002 Marc Espie.
  *
@@ -36,7 +36,7 @@
  * a short file may lose modifications made through an mmapped area.  
  */
 int 
-main()
+main(int argc, char *argv[])
 {
 	int i;
 	int fd;

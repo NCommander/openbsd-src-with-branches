@@ -1,4 +1,4 @@
-/*	$OpenBSD: kqueue-pipe.c,v 1.2 2002/01/07 00:11:07 provos Exp $	*/
+/*	$OpenBSD: kqueue-pipe.c,v 1.3 2002/02/27 17:11:51 art Exp $	*/
 /*
  * Copyright 2001 Niels Provos <provos@citi.umich.edu>
  * All rights reserved.
@@ -34,6 +34,8 @@
 #include <stdio.h>
 #include <unistd.h>
 #include <fcntl.h>
+
+int do_pipe(void);
 
 int
 do_pipe(void)

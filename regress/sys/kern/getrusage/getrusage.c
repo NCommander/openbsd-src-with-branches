@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: getrusage.c,v 1.2 2002/02/16 01:03:35 nordin Exp $	*/
 /*
  *	Written by Thomas Nordin <nordin@openbsd.org> 2002 Public Domain.
  */
@@ -13,7 +13,7 @@
 #include <sys/types.h>
 
 int
-main()
+main(int argc, char *argv[])
 {
 	struct timeval utime;
 	struct timeval stime;

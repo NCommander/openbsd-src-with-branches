@@ -1,4 +1,4 @@
-/*	$OpenBSD: dup2_self.c,v 1.1 2002/02/08 18:47:46 art Exp $	*/
+/*	$OpenBSD: dup2_self.c,v 1.2 2002/02/18 13:32:08 art Exp $	*/
 /*
  *	Written by Artur Grabowski <art@openbsd.org> 2002 Public Domain.
  */
@@ -29,7 +29,7 @@
  */
 
 int
-main()
+main(int argc, char *argv[])
 {
 	int orgfd, fd1, fd2;
 	char temp[] = "/tmp/dup2XXXXXXXXX";

@@ -1,4 +1,4 @@
-/* $OpenBSD: siginfo.c,v 1.8 2002/10/27 21:49:45 marc Exp $ */
+/* $OpenBSD: siginfo.c,v 1.9 2003/06/19 00:59:54 pvalchev Exp $ */
 /* PUBLIC DOMAIN Oct 2002 <marc@snafu.org> */
 
 /*
@@ -9,12 +9,13 @@
 #include <signal.h>
 #include <stdio.h>
 #include <unistd.h>
+#include <stdlib.h>
 
 #include "test.h"
 
 #define BOGUS	(char *)0x987230
 
-void
+static void
 act_handler(int signal, siginfo_t *siginfo, void *context)
 {
 	struct sigaction sa;

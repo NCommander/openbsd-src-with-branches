@@ -1,4 +1,4 @@
-/*	$OpenBSD: kqueue-process.c,v 1.2 2002/06/11 06:16:36 jsyn Exp $	*/
+/*	$OpenBSD: kqueue-process.c,v 1.3 2003/06/12 04:52:40 mickey Exp $	*/
 /*
  *	Written by Artur Grabowski <art@openbsd.org> 2002 Public Domain
  */
@@ -19,11 +19,13 @@ static int process_child(void);
 
 #define ASSX(cond) ASS(cond, warnx("assertion " #cond " failed on line %d", __LINE__))
 
-void
+static void
 usr1handler(int signum)
 {
 	/* nada */
 }
+
+int do_process(void);
 
 int
 do_process(void)

@@ -1,4 +1,4 @@
-/*	$OpenBSD: rfsharefd.c,v 1.1 2002/02/17 05:44:07 art Exp $	*/
+/*	$OpenBSD: rfsharefd.c,v 1.2 2002/02/17 18:32:09 deraadt Exp $	*/
 /*
  * Written by Artur Grabowski <art@openbsd.org>, 2002 Public Domain.
  */
@@ -11,7 +11,7 @@
 #include <fcntl.h>
 
 int
-main()
+main(int argc, char *argv[])
 {
 	int status;
 	int fd;

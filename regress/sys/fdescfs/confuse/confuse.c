@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: confuse.c,v 1.1 2002/02/08 17:33:32 art Exp $	*/
 /*
  *	Written by Artur Grabowski <art@openbsd.org> 2002 Public Domain.
  */
@@ -10,7 +10,7 @@
 #include <errno.h>
 
 int
-main()
+main(int argc, char *argv[])
 {
 	char fname[64];
 	int fd, newfd;

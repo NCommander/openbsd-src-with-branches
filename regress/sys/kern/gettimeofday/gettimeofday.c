@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: gettimeofday.c,v 1.1 2002/02/21 09:21:30 nordin Exp $	*/
 /*
  *	Written by Thomas Nordin <nordin@openbsd.org> 2002 Public Domain.
  */
@@ -8,7 +8,7 @@
 #include <sys/time.h>
 
 int
-main()
+main(int argc, char *argv[])
 {
 	struct timeval s;
 	struct timeval t1;

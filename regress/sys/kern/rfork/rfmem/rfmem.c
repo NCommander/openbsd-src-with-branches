@@ -1,4 +1,4 @@
-/*	$OpenBSD: rfmem.c,v 1.1 2002/02/17 05:10:40 art Exp $	*/
+/*	$OpenBSD: rfmem.c,v 1.2 2002/02/21 23:29:05 deraadt Exp $	*/
 /*
  * Written by Artur Grabowski <art@openbsd.org>, 2002 Public Domain.
  */
@@ -14,7 +14,7 @@
 #define MAGIC "inherited"
 
 int
-main()
+main(int argc, char *argv[])
 {
 	void *map;
 	int page_size;

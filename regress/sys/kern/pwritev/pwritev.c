@@ -1,4 +1,4 @@
-/*	$OpenBSD: pwrite.c,v 1.1 2002/02/08 20:58:02 art Exp $	*/
+/*	$OpenBSD: pwritev.c,v 1.1 2002/02/08 21:06:05 art Exp $	*/
 /*
  *	Written by Artur Grabowski <art@openbsd.org> 2002 Public Domain.
  */
@@ -11,7 +11,7 @@
 #include <fcntl.h>
 
 int
-main()
+main(int argc, char *argv[])
 {	
 	char temp[] = "/tmp/pwritevXXXXXXXXX";
 	char magic[10] = "0123456789";

@@ -1,4 +1,4 @@
-/*	$OpenBSD: socket2a.c,v 1.2 2001/09/20 16:43:16 todd Exp $	*/
+/*	$OpenBSD: socket2a.c,v 1.3 2002/01/02 16:15:32 fgsch Exp $	*/
 /*
  * Copyright (c) 1993, 1994, 1995, 1996 by Chris Provenzano and contributors, 
  * proven@mit.edu All rights reserved.
@@ -57,9 +57,8 @@ struct sockaddr_in a_sout;
 #define MESSAGE5 "This should be message #5"
 #define MESSAGE6 "This should be message #6"
 
-void * 
-sock_connect(arg)
-	void *arg;
+static void * 
+sock_connect(void *arg)
 {
 	char buf[1024];
 	int fd;
@@ -95,9 +94,7 @@ sock_connect(arg)
 }
 
 int
-main(argc, argv)
-	int argc;
-	char **argv;
+main(int argc, char *argv[])
 {
 	pthread_t thread;
 

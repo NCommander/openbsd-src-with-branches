@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: minherit.c,v 1.1 2002/01/31 15:53:12 art Exp $	*/
 /*
  * Written by Artur Grabowski <art@openbsd.org> Public Domain.
  */
@@ -14,7 +14,7 @@
 #define MAGIC "inherited"
 
 int
-main()
+main(int argc, char *argv[])
 {
 	void *map1, *map2;
 	int page_size;

@@ -1,4 +1,4 @@
-/*	$OpenBSD: pthread_specific.c,v 1.1 2002/05/03 10:08:55 wcobb Exp $	*/
+/*	$OpenBSD: pthread_specific.c,v 1.2 2002/06/16 23:05:14 marc Exp $	*/
 
 /*
  * Copyright (c) 2002 CubeSoft Communications, Inc.
@@ -37,7 +37,7 @@
 pthread_key_t key;
 int destroy_run = 0;
 
-void *
+static void *
 run_thread(void *arg)
 {
 	int i;
@@ -58,14 +58,14 @@ run_thread(void *arg)
 	return (NULL);
 }
 
-void
+static void
 destroy_key(void *keyp)
 {
 	destroy_run++;
 }
 
 int
-main()
+main(int argc, char *argv[])
 {
 	pthread_t threads[NTHREADS];
 	int i;

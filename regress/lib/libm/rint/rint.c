@@ -1,4 +1,4 @@
-/*	$OpenBSD: rint.c,v 1.1 2003/02/12 07:05:34 mickey Exp $	*/
+/*	$OpenBSD: rint.c,v 1.2 2003/07/31 03:23:41 mickey Exp $	*/
 
 /*	Written by Michael Shalayeff, 2003,  Public domain.	*/
 
@@ -7,7 +7,7 @@
 #include <unistd.h>
 #include <math.h>
 
-void
+static void
 sigfpe(int sig, siginfo_t *si, void *v)
 {
 	char buf[132];
@@ -21,7 +21,7 @@ sigfpe(int sig, siginfo_t *si, void *v)
 }
 
 int
-main()
+main(int argc, char *argv[])
 {
 	struct sigaction sa;
 
