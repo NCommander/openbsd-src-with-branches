@@ -1,4 +1,4 @@
-/*	$OpenBSD: adb_direct.c,v 1.1 1997/02/23 06:04:52 briggs Exp $	*/
+/*	$OpenBSD: adb_direct.c,v 1.2 1997/03/29 17:26:59 briggs Exp $	*/
 /*  adb_direct.c 1.91 1/20/97 jpw */
 
 /*
@@ -1959,7 +1959,7 @@ adb_read_date_time(unsigned long *time)
 {
         u_char output[MAX_ADB_MSG_LENGTH];
         int     result;
-        int     flag = 0;
+        volatile int     flag = 0;
 
         switch (adbHardware) {
         case ADB_HW_II:
