@@ -1,4 +1,4 @@
-/*	$OpenBSD: com_ebus.c,v 1.8 2003/02/17 01:29:20 henric Exp $	*/
+/*	$OpenBSD: com_ebus.c,v 1.9 2003/06/24 21:54:39 henric Exp $	*/
 /*	$NetBSD: com_ebus.c,v 1.6 2001/07/24 19:27:10 eeh Exp $	*/
 
 /*
@@ -120,7 +120,7 @@ com_ebus_attach(parent, self, aux)
 	 */
 	if (ea->ea_nvaddrs) {
 		if (bus_space_map(ea->ea_memtag, ea->ea_vaddrs[0], 0,
-		    BUS_SPACE_MAP_PROMADDRESS, &sc->sc_ioh) == 0) {
+		    BUS_SPACE_MAP_PROMADDRESS, &sc->sc_ioh) != 0) {
 			printf(": can't map register space\n");
 			return;
 		}
