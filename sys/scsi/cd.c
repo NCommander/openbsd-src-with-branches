@@ -1,4 +1,4 @@
-/*	$OpenBSD: cd.c,v 1.71 2003/05/18 16:06:35 mickey Exp $	*/
+/*	$OpenBSD: cd.c,v 1.72 2003/07/30 16:57:54 tedu Exp $	*/
 /*	$NetBSD: cd.c,v 1.100 1997/04/02 02:29:30 mycroft Exp $	*/
 
 /*
@@ -774,8 +774,8 @@ cdwrite(dev, uio, ioflag)
 }
 
 /*
- * conversion between minute-seconde-frame and logical block adress
- * adresses format
+ * conversion between minute-seconde-frame and logical block address
+ * addresses format
  */
 void
 lba2msf (lba, m, s, f)

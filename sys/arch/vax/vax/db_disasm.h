@@ -1,4 +1,4 @@
-/*	$OpenBSD: db_disasm.h,v 1.2 1997/05/29 00:05:15 niklas Exp $ */
+/*	$OpenBSD: db_disasm.h,v 1.3 2002/05/16 07:37:44 miod Exp $ */
 /*	$NetBSD: db_disasm.h,v 1.1 1996/01/28 11:31:27 ragge Exp $ */
 /*
  * Copyright (c) 2002, Miodrag Vallat.
@@ -63,7 +63,7 @@
  *	w: operand is written only
  *	m: operand is modified (both R and W)
  *	b: no operand reference. Branch displacement is specified. 
- *	a: calculate the adress of the specified operand
+ *	a: calculate the address of the specified operand
  *	v: if not "Rn", same as a. If "RN," R[n+1]R[n]
  * Arguments (Data-Types):
  *	b: Byte

@@ -1,4 +1,4 @@
-/*      $OpenBSD: if_gre.h,v 1.5 2002/03/14 01:27:09 millert Exp $ */
+/*      $OpenBSD: if_gre.h,v 1.6 2002/04/03 20:35:58 angelos Exp $ */
 /*	$NetBSD: if_gre.h,v 1.5 1999/11/19 20:41:19 thorpej Exp $ */
 
 /*
@@ -101,7 +101,7 @@ struct greip {
  */
 
 struct gre_sre {
-	u_int16_t sre_family;	/* adress family */
+	u_int16_t sre_family;	/* address family */
 	u_char  sre_offset;	/* offset to first octet of active entry */
 	u_char  sre_length;	/* number of octets in the SRE. 
                                sre_lengthl==0 -> last entry. */

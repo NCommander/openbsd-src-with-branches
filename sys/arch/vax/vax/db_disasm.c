@@ -1,4 +1,4 @@
-/*	$OpenBSD: db_disasm.c,v 1.11 2002/05/16 07:37:44 miod Exp $ */
+/*	$OpenBSD: db_disasm.c,v 1.12 2003/05/10 21:11:14 deraadt Exp $ */
 /*	$NetBSD: db_disasm.c,v 1.10 1998/04/13 12:10:27 ragge Exp $ */
 /*
  * Copyright (c) 2002, Miodrag Vallat.
@@ -237,7 +237,7 @@ get_operands(ib)
 			add_off(ib, ib->addr);
 			break;
 
-		case 'a':	/* absolute adressing mode */
+		case 'a':	/* absolute addressing mode */
 			aa = 1;
 			/* FALLTHROUGH */
 

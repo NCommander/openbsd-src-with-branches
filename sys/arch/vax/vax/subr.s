@@ -1,4 +1,4 @@
-/*	$OpenBSD: subr.s,v 1.17 2002/06/11 09:36:24 hugh Exp $     */
+/*	$OpenBSD: subr.s,v 1.18 2003/01/09 22:27:11 miod Exp $     */
 /*	$NetBSD: subr.s,v 1.32 1999/03/25 00:41:48 mrg Exp $	   */
 
 /*
@@ -315,7 +315,7 @@ xxd:
 	addl3	r0,$IFTRAP,pcbtrap	# Save for copy* functions.
 
 #
-# Nice routine to get physical from virtual adresses.
+# Nice routine to get physical from virtual addresses.
 #
 	extzv	$9,$21,r0,r1		# extract offset
 	movl	*_Sysmap[r1],r2		# get pte
