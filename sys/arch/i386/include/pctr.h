@@ -1,4 +1,4 @@
-/*	$OpenBSD: pctr.h,v 1.10 2001/01/26 23:32:14 mickey Exp $	*/
+/*	$OpenBSD: pctr.h,v 1.11 2001/06/05 05:05:38 pvalchev Exp $	*/
 
 /*
  * Pentium performance counter driver for OpenBSD.
@@ -56,7 +56,7 @@ struct pctrst {
 #define rdtsc()						\
 ({							\
   pctrval v;						\
-  __asm __volatile (".byte 0xf, 0x31" : "=A" (v));	\
+  __asm __volatile ("rdtsc" : "=A" (v));		\
   v;							\
 })
 
@@ -64,7 +64,7 @@ struct pctrst {
 #define rdpmc(ctr)				\
 ({						\
   pctrval v;					\
-  __asm __volatile (".byte 0xf, 0x33\n"		\
+  __asm __volatile ("rdpmc\n"			\
 		    "\tandl $0xff, %%edx"	\
 		    : "=A" (v) : "c" (ctr));	\
   v;						\
@@ -75,12 +75,12 @@ struct pctrst {
 #define rdmsr(msr)						\
 ({								\
   pctrval v;							\
-  __asm __volatile (".byte 0xf, 0x32" : "=A" (v) : "c" (msr));	\
+  __asm __volatile ("rdmsr" : "=A" (v) : "c" (msr));		\
   v;								\
 })
 
 #define wrmsr(msr, v) \
-     __asm __volatile (".byte 0xf, 0x30" :: "A" ((u_quad_t) (v)), "c" (msr));
+     __asm __volatile ("wrmsr" :: "A" ((u_quad_t) (v)), "c" (msr));
 
 #endif /* _KERNEL */
 #endif /* ! _I386_PCTR_H_ */
