@@ -200,7 +200,7 @@ load_config(void)
 void
 rt_msg_handler(int fd, short event, void *arg)
 {       
-	struct if_msghdr *ifm;
+	struct if_msghdr ifm;
 	char msg[2048];
 	struct rt_msghdr *rtm = (struct rt_msghdr *)&msg;
 	int len;
@@ -217,13 +217,13 @@ rt_msg_handler(int fd, short event, void *arg)
 	if (rtm->rtm_type != RTM_IFINFO)
 		return;
 
-	ifm = (struct if_msghdr *)rtm;
+	memcpy(&ifm, rtm, sizeof(ifm));
 
-	if (scan_ifstate(ifm->ifm_index, ifm->ifm_data.ifi_link_state,
+	if (scan_ifstate(ifm.ifm_index, ifm.ifm_data.ifi_link_state,
 	    &conf.always))
 		eval_state(&conf.always);
-	if ((conf.curstate != NULL) && scan_ifstate(ifm->ifm_index,
-	    ifm->ifm_data.ifi_link_state, conf.curstate))
+	if ((conf.curstate != NULL) && scan_ifstate(ifm.ifm_index,
+	    ifm.ifm_data.ifi_link_state, conf.curstate))
 		eval_state(conf.curstate);
 }
 
