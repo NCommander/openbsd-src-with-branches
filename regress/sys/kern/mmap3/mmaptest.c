@@ -1,4 +1,4 @@
-/* $OpenBSD: mmaptest.c,v 1.2 2002/08/21 14:45:17 espie Exp $ */
+/* $OpenBSD: mmaptest.c,v 1.3 2003/07/31 21:48:08 deraadt Exp $ */
 /*
  * Copyright (c) 2002 Marc Espie.
  *
@@ -30,6 +30,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <err.h>
+#include <unistd.h>
 
 /* 
  * Check for mmap/ftruncate interaction.  Specifically, ftruncate on

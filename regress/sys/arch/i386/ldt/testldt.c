@@ -1,8 +1,9 @@
-/*	$OpenBSD: testldt.c,v 1.5 2001/11/11 23:26:35 deraadt Exp $	*/
+/*	$OpenBSD: testldt.c,v 1.6 2003/07/31 21:48:07 deraadt Exp $	*/
 /*	$NetBSD: testldt.c,v 1.4 1995/04/20 22:42:38 cgd Exp $	*/
 
 #include <stdio.h>
 #include <signal.h>
+#include <unistd.h>
 #include <sys/types.h>
 #include <sys/mman.h>
 #include <machine/segments.h>

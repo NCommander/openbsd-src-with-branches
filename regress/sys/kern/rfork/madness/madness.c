@@ -1,10 +1,11 @@
-/*	$OpenBSD: madness.c,v 1.1 2002/02/17 05:58:51 art Exp $	*/
+/*	$OpenBSD: madness.c,v 1.2 2003/07/31 21:48:09 deraadt Exp $	*/
 /*
  *	Written by Artur Grabowski <art@openbsd.org>, 2002 Public Domain.
  */
 #include <sys/param.h>
 #include <stdio.h>
 #include <unistd.h>
+#include <signal.h>
 #include <stdlib.h>
 #include <err.h>
 

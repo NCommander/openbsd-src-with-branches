@@ -1,9 +1,10 @@
-/*	$OpenBSD: nanosleep.c,v 1.3 2002/02/17 05:37:20 art Exp $	*/
+/*	$OpenBSD: nanosleep.c,v 1.4 2002/02/17 05:39:49 art Exp $	*/
 /*
  *	Written by Artur Grabowski <art@openbsd.org> 2002 Public Domain.
  */
 #include <sys/types.h>
 #include <sys/time.h>
+#include <sys/wait.h>
 
 #include <stdlib.h>
 #include <stdio.h>
