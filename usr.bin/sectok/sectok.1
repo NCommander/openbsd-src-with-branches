@@ -1,4 +1,4 @@
-.\"	$OpenBSD: sectok.1,v 1.6 2001/08/02 18:37:35 mpech Exp $
+.\"	$OpenBSD: sectok.1,v 1.7 2001/08/06 15:15:39 rees Exp $
 .\"
 .\" Copyright (C) 2001, Jakob Schlyter. All rights reserved.
 .\"
@@ -149,6 +149,11 @@ Read selected fid and write to stdout.
 Read from
 .Ar input-filename
 and write to selected fid.
+.It Xo
+.Cm challenge
+.Op Ar length
+.Xc
+Get a random challenge from the card.
 .El
 .Ss Cyberflex commands
 .Pp
