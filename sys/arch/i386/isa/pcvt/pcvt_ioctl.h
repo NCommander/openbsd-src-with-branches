@@ -1,4 +1,4 @@
-/*	$OpenBSD: pcvt_ioctl.h,v 1.14 2000/01/18 19:34:41 aaron Exp $	*/
+/*	$OpenBSD: pcvt_ioctl.h,v 1.15 2000/09/01 05:46:02 aaron Exp $	*/
 
 /*
  * Copyright (c) 1992, 1995 Hellmuth Michaelis and Joerg Wunsch.
@@ -592,5 +592,6 @@ typedef struct keymap keymap_t;
 /* Ioctl for mouse console support */
 
 #define PCVT_MOUSECTL _IOW('M',1,mouse_info_t)
+#define PCVT_MOUSED _IOW('M',2,char)
 
 #endif	/* ! _MACHINE_PCVT_IOCTL_H_ */
