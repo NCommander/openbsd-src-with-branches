@@ -1,4 +1,4 @@
-/* $OpenBSD: machdep.c,v 1.36 2000/11/16 04:33:46 ericj Exp $ */
+/* $OpenBSD: machdep.c,v 1.37 2000/11/18 05:26:12 ericj Exp $ */
 /* $NetBSD: machdep.c,v 1.206 2000/05/23 05:12:54 thorpej Exp $ */
 
 /*-
@@ -432,13 +432,9 @@ nobootinfo:
 	/*
 	 * find out this system's page size
 	 */
-	PAGE_SIZE = hwrpb->rpb_page_size;
-	if (PAGE_SIZE != 8192)
-		panic("page size %d != 8192?!", PAGE_SIZE);
+	if ((uvmexp.pagesize = hwrpb->rpb_page_size) != 8192)
+		panic("page size %d != 8192?!", uvmexp.pagesize);
 
-	/*
-	 * Initialize PAGE_SIZE-dependent variables.
-	 */
 	uvm_setpagesize();
 
 	/*
