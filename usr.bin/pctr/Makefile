@@ -1,6 +1,12 @@
-#	$OpenBSD: Makefile,v 1.3 1998/08/30 22:58:01 downsj Exp $
+#	$OpenBSD: Makefile,v 1.4 2000/05/25 19:09:08 deraadt Exp $
 
+MAN=pctr.1
+MANSUBDIR=/i386
+
+.if ${MACHINE} == "i386"
 PROG=	pctr
-MANSUBDIR=i386
+.else
+NOPROG=
+.endif
 
 .include <bsd.prog.mk>
