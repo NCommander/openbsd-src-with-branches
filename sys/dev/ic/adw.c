@@ -1,4 +1,4 @@
-/*	$OpenBSD: adw.c,v 1.12 2000/12/08 00:03:30 krw Exp $ */
+/*	$OpenBSD: adw.c,v 1.13 2001/01/15 16:27:53 krw Exp $ */
 /* $NetBSD: adw.c,v 1.23 2000/05/27 18:24:50 dante Exp $	 */
 
 /*
@@ -462,10 +462,10 @@ adw_queue_ccb(sc, ccb, retry)
 		TAILQ_REMOVE(&sc->sc_waiting_ccb, ccb, chain);
 		TAILQ_INSERT_TAIL(&sc->sc_pending_ccb, ccb, chain);
 
-		if ((ccb->xs->flags & SCSI_POLL) == 0) {
-			timeout_set(&ccb->xs->stimeout, adw_timeout, ccb);
+		/* ALWAYS initialize stimeout, lest it contain garbage! */
+		timeout_set(&ccb->xs->stimeout, adw_timeout, ccb);
+		if ((ccb->xs->flags & SCSI_POLL) == 0)
 			timeout_add(&ccb->xs->stimeout, (ccb->timeout * hz) / 1000);
-		}
 	}
 
 	return(errcode);
