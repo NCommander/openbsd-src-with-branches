@@ -1,4 +1,4 @@
-/*	$OpenBSD: process.S,v 1.15 2001/12/22 09:49:39 smurph Exp $	*/
+/*	$OpenBSD: process.S,v 1.16 2003/08/03 23:34:09 miod Exp $	*/
 /*
  * Copyright (c) 1996 Nivas Madhur
  * All rights reserved.
@@ -71,7 +71,7 @@ ENTRY(switch_exit)
 	 */
 	or.u	r30, r0, hi16(_idle_u)
 	or	r30, r30,lo16(_idle_u)
-	addu	r31, r30, UPAGES * NBPG	/* now on idle_u stack */
+	addu	r31, r30, USIZE		/* now on idle_u stack */
 	or.u	r10, r0, hi16(_curpcb)
 	st	r30, r10,lo16(_curpcb)	/* curpcb = &idle_u */
 	or.u	r10, r0, hi16(_curproc)
