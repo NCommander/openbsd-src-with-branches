@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile.arc,v 1.12 1998/03/04 07:00:59 niklas Exp $
+#	$OpenBSD: Makefile.arc,v 1.13 1999/08/15 20:43:57 niklas Exp $
 
 #	@(#)Makefile.arc	8.2 (Berkeley) 2/16/94
 #
@@ -177,9 +177,9 @@ newvers: ${SYSTEM_DEP} ${SYSTEM_SWAP_DEP}
 
 depend:: .depend
 .depend: ${SRCS} assym.h param.c
-	mkdep ${AFLAGS} ${CPPFLAGS} ${ARC}/arc/locore.s
+	mkdep ${AFLAGS} ${CPPFLAGS} ${ARC}/arc/locore.S
 	mkdep -a ${CFLAGS} ${CPPFLAGS} param.c ioconf.c ${CFILES}
-	mkdep -a ${AFLAGS} ${CPPFLAGS} ${SFILES}
+#	mkdep -a ${AFLAGS} ${CPPFLAGS} ${SFILES}
 
 %RULES
 
