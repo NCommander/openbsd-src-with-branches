@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.14 1999/07/28 20:41:34 jakob Exp $
+#	$OpenBSD: Makefile,v 1.15 1999/08/11 16:44:59 deraadt Exp $
 #
 #  Copyright (c) 1988, 1989, 1990, 1991, 1992, 1993, 1994
 # 	The Regents of the University of California.  All rights reserved.
@@ -41,7 +41,7 @@ SRCS=	tcpdump.c addrtoname.c \
 	print-atm.c print-dvmrp.c print-krb.c print-pim.c print-netbios.c \
 	util.c bpf_dump.c parsenfsfh.c version.c machdep.c print-igrp.c \
 	print-gre.c print-radius.c print-enc.c print-cnfp.c \
-	print-ipsec.c print-ike.c \
+	print-ipsec.c print-ike.c print-raw.c \
 	gmt2local.c savestr.c setsignal.c
 
 AWKS =	atime.awk packetdat.awk send-ack.awk stime.awk
