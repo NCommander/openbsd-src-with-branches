@@ -1,4 +1,4 @@
-/*	$OpenBSD: commands.c,v 1.23 1999/12/11 09:08:08 itojun Exp $	*/
+/*	$OpenBSD: commands.c,v 1.24 1999/12/11 22:12:00 angelos Exp $	*/
 /*	$NetBSD: commands.c,v 1.14 1996/03/24 22:03:48 jtk Exp $	*/
 
 /*
@@ -2481,8 +2481,8 @@ tn(argc, argv)
 
 	    getnameinfo(res->ai_addr, res->ai_addrlen, hbuf, sizeof(hbuf),
 		NULL, 0, NI_NUMERICHOST);
-	    fprintf(stderr, "telnet: connect to address %s: ", hbuf);
-	    perror("");
+	    fprintf(stderr, "telnet: connect to address %s: %s\n", hbuf,
+		strerror(errno));
 
 	    close(net);
 	    net = -1;
