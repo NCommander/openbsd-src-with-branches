@@ -1,4 +1,4 @@
-/*	$OpenBSD: pccbb.c,v 1.5 2000/07/06 19:49:10 aaron Exp $ */
+/*	$OpenBSD: pccbb.c,v 1.6 2000/07/25 00:04:59 mickey Exp $ */
 /*	$NetBSD: pccbb.c,v 1.42 2000/06/16 23:41:35 cgd Exp $	*/
 
 /*
@@ -370,6 +370,10 @@ pccbb_shutdown(void *arg)
 	    PCI_COMMAND_MASTER_ENABLE);
 	pci_conf_write(sc->sc_pc, sc->sc_tag, PCI_COMMAND_STATUS_REG, command);
 
+	if (sc->sc_chipset == CB_TOPIC95B) {
+		pci_conf_write(sc->sc_pc, sc->sc_tag, TOPIC_SOCKET_CTRL, 0);
+		pci_conf_write(sc->sc_pc, sc->sc_tag, TOPIC_SLOT_CTRL, 0);
+	}
 }
 
 void
