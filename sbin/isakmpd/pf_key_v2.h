@@ -1,4 +1,4 @@
-/*	$OpenBSD: pf_key_v2.h,v 1.3 1999/05/01 20:43:44 niklas Exp $	*/
+/*	$OpenBSD: pf_key_v2.h,v 1.4 2000/12/12 01:46:17 niklas Exp $	*/
 /*	$EOM: pf_key_v2.h,v 1.4 2000/12/04 04:46:35 angelos Exp $	*/
 
 /*
@@ -50,7 +50,7 @@ extern int pf_key_v2_enable_sa (struct sa *, struct sa *);
 extern int pf_key_v2_enable_spi (in_addr_t, in_addr_t, in_addr_t, in_addr_t,
 				 u_int8_t *, u_int8_t, in_addr_t);
 extern u_int8_t *pf_key_v2_get_spi (size_t *, u_int8_t, struct sockaddr *, int,
-				    struct sockaddr *, int);
+				    struct sockaddr *, int, u_int32_t);
 extern int pf_key_v2_group_spis (struct sa *, struct proto *, struct proto *,
 				 int);
 extern void pf_key_v2_handler (int);
