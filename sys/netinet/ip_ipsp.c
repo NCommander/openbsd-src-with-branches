@@ -1,4 +1,4 @@
-/*	$OpenBSD: ip_ipsp.c,v 1.131 2001/06/23 04:01:57 angelos Exp $	*/
+/*	$OpenBSD: ip_ipsp.c,v 1.132 2001/06/23 04:39:34 angelos Exp $	*/
 
 /*
  * The authors of this code are John Ioannidis (ji@tla.org),
@@ -881,6 +881,7 @@ ipsp_kern(int off, char **bufp, int len)
 				   { "noreplay", TDBF_NOREPLAY }, \
 				   { "random padding", TDBF_RANDOMPADDING }, \
 				   { "skipcrypto", TDBF_SKIPCRYPTO }, \
+				   { "usedtunnel", TDBF_USEDTUNNEL }, \
 				};
 
     if (bufp == NULL)
