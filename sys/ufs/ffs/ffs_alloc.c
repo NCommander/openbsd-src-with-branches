@@ -1,4 +1,4 @@
-/*	$OpenBSD: ffs_alloc.c,v 1.43 2003/05/26 18:33:16 tedu Exp $	*/
+/*	$OpenBSD: ffs_alloc.c,v 1.44 2003/06/02 23:28:22 millert Exp $	*/
 /*	$NetBSD: ffs_alloc.c,v 1.11 1996/05/11 18:27:09 mycroft Exp $	*/
 
 /*
@@ -624,7 +624,7 @@ ffs_inode_alloc(struct inode *pip, int mode, struct ucred *cred,
 	 *       Need a way to preserve randomization.
 	 */
 	if (ip->i_ffs_gen == 0 || ++(ip->i_ffs_gen) == 0)
-		ip->i_ffs_gen = arc4random();
+		ip->i_ffs_gen = arc4random() & INT_MAX;
 	if (ip->i_ffs_gen == 0 || ip->i_ffs_gen == -1)
 		ip->i_ffs_gen = 1;			/* shouldn't happen */
 	return (0);
@@ -669,7 +669,7 @@ ffs_dirpref(pip)
 	 * Force allocation in another cg if creating a first level dir.
 	 */
 	if (ITOV(pip)->v_flag & VROOT) {
-		prefcg = arc4random() % fs->fs_ncg;
+		prefcg = (arc4random() & INT_MAX) % fs->fs_ncg;
 		mincg = prefcg;
 		minndir = fs->fs_ipg;
 		for (cg = prefcg; cg < fs->fs_ncg; cg++)
