@@ -1,3 +1,4 @@
+/*	$OpenBSD: db_interface.c,v 1.28 1995/04/19 22:37:27 smurph Exp $	*/
 /*
  * Mach Operating System
  * Copyright (c) 1993-1991 Carnegie Mellon University

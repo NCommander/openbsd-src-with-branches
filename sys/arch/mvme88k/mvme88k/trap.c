@@ -1,3 +1,4 @@
+/*	$OpenBSD: trap.c,v 1.28 1995/04/19 22:37:27 smurph Exp $	*/
 /*
  * Copyright (c) 1998 Steve Murphree, Jr.
  * Copyright (c) 1996 Nivas Madhur
@@ -511,7 +512,6 @@ trap(unsigned type, struct m88100_saved_state *frame)
 	 * breakpoint debugging.  When we get this trap, we just
 	 * return a signal which gets caught by the debugger.
 	 */
-
 	frame->sfip = frame->snip;    /* set up the next FIP */
 	frame->snip = frame->sxip;    /* set up the next NIP */
 	sig = SIGTRAP;

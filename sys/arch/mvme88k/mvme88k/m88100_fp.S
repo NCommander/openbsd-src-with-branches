@@ -1,3 +1,4 @@
+/* $OpenBSD: m88100_fp.S,v 1.28 1995/04/19 22:37:27 smurph Exp $	*/
 /*
  * Mach Operating System
  * Copyright (c) 1991 Carnegie Mellon University

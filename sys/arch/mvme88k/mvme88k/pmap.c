@@ -1,3 +1,4 @@
+/*	$OpenBSD: pmap.c,v 1.28 1995/04/19 22:37:27 smurph Exp $	*/
 /*
  * Copyright (c) 1996 Nivas Madhur
  * All rights reserved.

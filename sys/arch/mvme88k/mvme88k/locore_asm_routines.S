@@ -1,3 +1,4 @@
+/* $OpenBSD: locore_asm_routines.S,v 1.28 1995/04/19 22:37:27 smurph Exp $	*/
 /*
  * Mach Operating System
  * Copyright (c) 1993-1992 Carnegie Mellon University

@@ -1,4 +1,4 @@
-/*	$NetBSD: mem.c,v 1.11 1995/05/29 23:57:16 pk Exp $ */
+/*	$OpenBSD: mem.c,v 1.11 1995/05/29 23:57:16 pk Exp $ */
 
 /*
  * Copyright (c) 1988 University of Utah.

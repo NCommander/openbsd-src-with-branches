@@ -1,3 +1,4 @@
+/*	$OpenBSD: exec.h,v 1.1 1998/12/15 04:45:50 smurph Exp $ */
 #ifndef _MACHINE_EXEC_H_
 #define _MACHINE_EXEC_H_ 
 

@@ -1,3 +1,4 @@
+/*	$OpenBSD: pmap.h,v 1.1 1998/12/15 06:02:55 smurph Exp $ */
 /*
  * Mach Operating System
  * Copyright (c) 1991 Carnegie Mellon University

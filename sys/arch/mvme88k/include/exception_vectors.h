@@ -1,3 +1,4 @@
+/*	$OpenBSD: exception_vectors.h,v 1.1 1998/12/15 04:45:50 smurph Exp $ */
 /*
  * Mach Operating System
  * Copyright (c) 1991, 1992 Carnegie Mellon University

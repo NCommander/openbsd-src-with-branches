@@ -1,3 +1,4 @@
+/*	$OpenBSD: pcctworeg.h,v 1.1 1998/12/15 06:02:55 smurph Exp $ */
 /*
  * Memory map for PCC2 chip found in mvme1x7 boards.
  *

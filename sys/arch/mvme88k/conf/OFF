@@ -1,6 +1,4 @@
-#
-# This configuration file contains all possible options
-#
+#	$OpenBSD: GENERIC,v 1.7 1998/12/15 06:02:54 smurph Exp $
 
 machine mvme88k
 
