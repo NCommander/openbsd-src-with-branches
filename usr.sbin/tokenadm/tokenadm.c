@@ -1,4 +1,4 @@
-/*	$OpenBSD: tokenadm.c,v 1.4 2002/05/30 19:09:05 deraadt Exp $	*/
+/*	$OpenBSD: tokenadm.c,v 1.5 2002/06/02 06:42:29 deraadt Exp $	*/
 
 /*-
  * Copyright (c) 1995 Migration Associates Corp. All Rights Reserved
@@ -57,8 +57,8 @@ typedef enum {
 	ENONLY = 0x04,
 	DISONLY = 0x08,
 	ONECOL = 0x10,
-	REVERSE = 0x20,
-	} how_t;
+	REVERSE = 0x20
+} how_t;
 
 static	int	force_unlock(char *);
 static	int	process_record(char *, unsigned, unsigned);
