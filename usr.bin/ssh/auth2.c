@@ -23,7 +23,7 @@
  */
 
 #include "includes.h"
-RCSID("$OpenBSD: auth2.c,v 1.39 2001/02/08 18:20:01 markus Exp $");
+RCSID("$OpenBSD: auth2.c,v 1.40 2001/02/10 12:52:02 markus Exp $");
 
 #include <openssl/evp.h>
 
@@ -220,7 +220,8 @@ input_userauth_request(int type, int plen, void *ctxt)
 		    authctxt->user);
 
 	/* Special handling for root */
-	if (authenticated && authctxt->pw->pw_uid == 0 && !auth_root_allowed())
+	if (authenticated && authctxt->pw->pw_uid == 0 &&
+	    !auth_root_allowed(method))
 		authenticated = 0;
 
 	/* Log before sending the reply */
