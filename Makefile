@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.80 2001/09/25 09:43:22 espie Exp $
+#	$OpenBSD: Makefile,v 1.81 2001/09/25 10:26:39 espie Exp $
 
 #
 # For more information on building in tricky environments, please see
@@ -47,14 +47,10 @@ SUBDIR+= kerberosV
 .endif
 
 .if   make(clean) || make(cleandir) || make(obj)
-SUBDIR+= distrib
+SUBDIR+= distrib regress
 .endif
 
 .if exists(regress)
-.ifmake !(install)
-SUBDIR+= regress
-.endif
-
 regression-tests:
 	@echo Running regression tests...
 	@cd ${.CURDIR}/regress && exec ${MAKE} regress
