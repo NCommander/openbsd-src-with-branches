@@ -75,7 +75,7 @@
  */
 
 #include "includes.h"
-RCSID("$OpenBSD: scp.c,v 1.43 2000/10/18 18:23:02 markus Exp $");
+RCSID("$OpenBSD: scp.c,v 1.44 2000/12/11 17:27:33 deraadt Exp $");
 
 #include "ssh.h"
 #include "xmalloc.h"
@@ -109,9 +109,6 @@ char *curfile;
 
 /* This is set to non-zero to enable verbose mode. */
 int verbose_mode = 0;
-
-/* This is set to non-zero if compression is desired. */
-int compress = 0;
 
 /* This is set to zero if the progressmeter is not desired. */
 int showprogress = 1;
