@@ -1,4 +1,4 @@
-/*	$OpenBSD: ffs_balloc.c,v 1.12 2001/03/20 19:33:06 art Exp $	*/
+/*	$OpenBSD: ffs_balloc.c,v 1.13 2001/06/23 02:07:53 csapuntz Exp $	*/
 /*	$NetBSD: ffs_balloc.c,v 1.3 1996/02/09 22:22:21 christos Exp $	*/
 
 /*
@@ -46,9 +46,7 @@
 
 #include <vm/vm.h>
 
-#if defined(UVM)
 #include <uvm/uvm_extern.h>
-#endif
 
 #include <ufs/ufs/quota.h>
 #include <ufs/ufs/inode.h>
@@ -107,11 +105,7 @@ ffs_balloc(struct inode *ip, off_t startoffset, int size, struct ucred *cred,
 				    fs->fs_bsize, osize, bp);
 
 			ip->i_ffs_size = lblktosize(fs, nb + 1);
-#if defined(UVM)
 			uvm_vnp_setsize(vp, ip->i_ffs_size);
-#else
-			vnode_pager_setsize(vp, (u_long)ip->i_ffs_size);
-#endif
 			ip->i_ffs_db[nb] = dbtofsb(fs, bp->b_blkno);
 			ip->i_flag |= IN_CHANGE | IN_UPDATE;
 			if (flags & B_SYNC)
