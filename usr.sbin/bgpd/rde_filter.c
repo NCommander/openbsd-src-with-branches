@@ -1,4 +1,4 @@
-/*	$OpenBSD: rde_filter.c,v 1.4 2004/02/27 20:53:56 claudio Exp $ */
+/*	$OpenBSD: rde_filter.c,v 1.5 2004/03/01 23:07:09 deraadt Exp $ */
 
 /*
  * Copyright (c) 2004 Claudio Jeker <claudio@openbsd.org>
@@ -91,8 +91,7 @@ rde_filter_match(struct filter_rule *f, struct attr_flags *attrs,
 	    f->match.prefix.addr.af == prefix->af) {
 		switch (f->match.prefix.addr.af) {
 		case AF_INET:
-			mask = 0xffffffff << (32 - f->match.prefix.len);
-			mask = htonl(mask);
+			mask = htonl(0xffffffff << (32 - f->match.prefix.len));
 			if ((prefix->v4.s_addr & mask) !=
 			    (f->match.prefix.addr.v4.s_addr & mask))
 				return (0);
