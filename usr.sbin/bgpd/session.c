@@ -1,4 +1,4 @@
-/*	$OpenBSD: session.c,v 1.139 2004/03/20 23:17:35 david Exp $ */
+/*	$OpenBSD: session.c,v 1.140 2004/04/13 22:53:29 henning Exp $ */
 
 /*
  * Copyright (c) 2003, 2004 Henning Brauer <henning@openbsd.org>
@@ -800,7 +800,7 @@ session_accept(int listenfd)
 		session_socket_blockmode(connfd, BM_NONBLOCK);
 		bgp_fsm(p, EVNT_CON_OPEN);
 	} else {
-		log_conn_attempt(p, cliaddr.sin_addr);
+		log_conn_attempt(p, (struct sockaddr *)&cliaddr);
 		shutdown(connfd, SHUT_RDWR);
 		close(connfd);
 	}
