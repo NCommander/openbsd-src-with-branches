@@ -1,4 +1,4 @@
-/*	$OpenBSD: fio.c,v 1.7 1997/07/13 23:53:59 millert Exp $	*/
+/*	$OpenBSD: fio.c,v 1.8 1997/07/14 00:24:26 millert Exp $	*/
 /*	$NetBSD: fio.c,v 1.8 1997/07/07 22:57:55 phil Exp $	*/
 
 /*
@@ -38,7 +38,7 @@
 #if 0
 static char sccsid[] = "@(#)fio.c	8.2 (Berkeley) 4/20/95";
 #else
-static char rcsid[] = "$OpenBSD: fio.c,v 1.7 1997/07/13 23:53:59 millert Exp $";
+static char rcsid[] = "$OpenBSD: fio.c,v 1.8 1997/07/14 00:24:26 millert Exp $";
 #endif
 #endif /* not lint */
 
@@ -65,7 +65,6 @@ setptr(ibuf, offset)
 	register FILE *ibuf;
 	off_t offset;
 {
-	extern char *tmpdir;
 	register int c, count;
 	register char *cp, *cp2;
 	struct message this;
