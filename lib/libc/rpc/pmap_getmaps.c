@@ -28,7 +28,7 @@
  */
 
 #if defined(LIBC_SCCS) && !defined(lint)
-static char *rcsid = "$OpenBSD: pmap_getmaps.c,v 1.2 1996/07/20 06:12:31 deraadt Exp $";
+static char *rcsid = "$OpenBSD: pmap_getmaps.c,v 1.3 1996/08/19 08:31:37 tholo Exp $";
 #endif /* LIBC_SCCS and not lint */
 
 /*
@@ -76,7 +76,8 @@ pmap_getmaps(address)
 		}
 		CLNT_DESTROY(client);
 	}
-	(void)close(socket);
+	if (socket != -1)
+		(void)close(socket);
 	address->sin_port = 0;
 	return (head);
 }
