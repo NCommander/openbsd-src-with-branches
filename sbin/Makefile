@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.47 1999/12/09 15:18:14 itojun Exp $
+#	$OpenBSD: Makefile,v 1.48 1999/12/11 08:43:19 itojun Exp $
 
 # Not ported: XNSrouted enpload scsiformat startslip
 # Missing: icheck
@@ -7,7 +7,7 @@ SUBDIR= atactl badsect brconfig ccdconfig disklabel dmesg fsck ifconfig init \
 	ipf ipfstat ipnat ipsecadm isakmpd kbd mknod modload modunload \
 	mount mountd ncheck_ffs nfsd nfsiod nologin photurisd ping \
 	quotacheck raidctl reboot route routed savecore scan_ffs scsi \
-	shutdown slattach startkey swapctl ttyflags umount
+	shutdown slattach startkey swapctl sysctl ttyflags umount
 
 # support for various file systems
 SUBDIR+= mount_ados
