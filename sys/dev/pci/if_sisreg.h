@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_sisreg.h,v 1.13 2003/07/09 02:09:08 krw Exp $ */
+/*	$OpenBSD: if_sisreg.h,v 1.14 2003/12/11 07:41:19 chris Exp $ */
 /*
  * Copyright (c) 1997, 1998, 1999
  *	Bill Paul <wpaul@ee.columbia.edu>.  All rights reserved.
@@ -433,6 +433,7 @@ struct sis_softc {
 	caddr_t			sc_listkva;
 	bus_dmamap_t		sc_rx_sparemap;
 	bus_dmamap_t		sc_tx_sparemap;
+	int			sis_stopped;
 };
 
 /*
