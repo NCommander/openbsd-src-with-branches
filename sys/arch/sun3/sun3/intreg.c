@@ -1,4 +1,4 @@
-/*	$OpenBSD: intreg.c,v 1.6 2001/01/03 01:47:30 miod Exp $	*/
+/*	$OpenBSD: intreg.c,v 1.7 2001/05/30 20:40:03 miod Exp $	*/
 /*	$NetBSD: intreg.c,v 1.5 1996/11/20 18:57:32 gwr Exp $	*/
 
 /*-
@@ -57,9 +57,7 @@
 
 #include <vm/vm.h>
 
-#ifdef UVM
 #include <uvm/uvm_extern.h>
-#endif
 
 #include "interreg.h"
 
@@ -152,11 +150,7 @@ soft1intr(arg)
 	splx(s);
 
 	if (sir.sir_any) {
-#ifdef UVM
 		uvmexp.softs++;
-#else
-		cnt.v_soft++;
-#endif
 		if (sir.sir_which[SIR_NET]) {
 			s = splhigh();
 			n = netisr;
