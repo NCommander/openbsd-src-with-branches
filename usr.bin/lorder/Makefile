@@ -1,14 +1,8 @@
-#	$OpenBSD: Makefile,v 1.6 1997/04/27 20:56:48 millert Exp $
+#	$OpenBSD: Makefile,v 1.7 1997/09/21 11:49:46 deraadt Exp $
 
 MAN=	lorder.1
 
-.if (${MACHINE_ARCH} == "alpha" || ${MACHINE_ARCH} == "mips" \
-	|| ${MACHINE_ARCH} == "powerpc" )
-# alpha, mips use special version which works with GNU (or BSD) nm.
-SCRIPT=	lorder.sh.gnm
-.else
 SCRIPT=	lorder.sh
-.endif
 
 realinstall:
 	${INSTALL} ${INSTALL_COPY} -o ${BINOWN} -g ${BINGRP} -m ${BINMODE} \
