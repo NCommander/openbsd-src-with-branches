@@ -1,4 +1,4 @@
-/*	$OpenBSD: supmsg.c,v 1.10 2002/02/19 19:39:39 millert Exp $	*/
+/*	$OpenBSD: supmsg.c,v 1.11 2002/06/12 06:07:16 mpech Exp $	*/
 
 /*
  * Copyright (c) 1992 Carnegie Mellon University
@@ -745,7 +745,7 @@ msgxpatch()
 		if (x != SCMOK)
 			return (x);
 		xargc += 2;
-		xargv = (char **)calloc(sizeof (char *), xargc+1);
+		xargv = (char **)calloc(xargc+1, sizeof (char *));
 		if (xargv == NULL)
 			return (SCMERR);
 		for (i = 2; i < xargc; i++) {
