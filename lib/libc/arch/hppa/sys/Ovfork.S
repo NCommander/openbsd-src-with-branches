@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: Ovfork.S,v 1.2 1999/12/31 04:05:42 mickey Exp $	*/
 
 /*
  * Copyright (c) 1999 Michael Shalayeff
@@ -32,6 +32,12 @@
  */
 
 #include "SYS.h"
+
+#ifdef SYSLIBC_SCCS
+	.space .text
+	.subspa $code$
+	.asciz "$OpenBSD$"
+#endif
 
 ENTRY(vfork)
 	SYSCALL(vfork)
