@@ -1,4 +1,4 @@
-/*	$OpenBSD: hash_buf.c,v 1.11 2003/05/01 20:23:40 avsm Exp $	*/
+/*	$OpenBSD: hash_buf.c,v 1.12 2003/06/02 20:18:33 millert Exp $	*/
 
 /*-
  * Copyright (c) 1990, 1993, 1994
@@ -36,7 +36,7 @@
 #if 0
 static char sccsid[] = "@(#)hash_buf.c	8.5 (Berkeley) 7/15/94";
 #else
-static const char rcsid[] = "$OpenBSD: hash_buf.c,v 1.11 2003/05/01 20:23:40 avsm Exp $";
+static const char rcsid[] = "$OpenBSD: hash_buf.c,v 1.12 2003/06/02 20:18:33 millert Exp $";
 #endif
 #endif /* LIBC_SCCS and not lint */
 
@@ -174,11 +174,19 @@ newbuf(hashp, addr, prev_bp)
 
 	oaddr = 0;
 	bp = LRU;
+
+        /* It is bad to overwrite the page under the cursor. */
+        if (bp == hashp->cpage) {
+                BUF_REMOVE(bp);
+                MRU_INSERT(bp);
+                bp = LRU;
+        }
+
 	/*
 	 * If LRU buffer is pinned, the buffer pool is too small. We need to
 	 * allocate more buffers.
 	 */
-	if (hashp->nbufs || (bp->flags & BUF_PIN)) {
+	if (hashp->nbufs || (bp->flags & BUF_PIN) || bp == hashp->cpage) {
 		/* Allocate a new one */
 		if ((bp = (BUFHEAD *)malloc(sizeof(BUFHEAD))) == NULL)
 			return (NULL);
