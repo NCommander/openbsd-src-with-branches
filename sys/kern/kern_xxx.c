@@ -1,4 +1,4 @@
-/*	$OpenBSD: kern_xxx.c,v 1.4 1996/08/26 09:16:01 deraadt Exp $	*/
+/*	$OpenBSD: kern_xxx.c,v 1.5 2001/11/06 19:53:20 miod Exp $	*/
 /*	$NetBSD: kern_xxx.c,v 1.32 1996/04/22 01:38:41 christos Exp $	*/
 
 /*
@@ -63,6 +63,15 @@ sys_reboot(p, v, retval)
 	boot(SCARG(uap, opt));
 	return (0);
 }
+
+void __stack_smash_handler(char [], int __attribute__((unused)));
+
+void
+__stack_smash_handler(char func[], int damaged)
+{
+	panic("smashed stack in %s", func);
+}
+
 
 #ifdef SYSCALL_DEBUG
 #define	SCDEBUG_CALLS		0x0001	/* show calls */
