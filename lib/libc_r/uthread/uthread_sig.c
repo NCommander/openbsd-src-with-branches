@@ -1,4 +1,4 @@
-/*	$OpenBSD: uthread_sig.c,v 1.11 2001/12/18 03:47:52 marc Exp $	*/
+/*	$OpenBSD: uthread_sig.c,v 1.12 2001/12/31 18:23:15 fgsch Exp $	*/
 /*
  * Copyright (c) 1995-1998 John Birrell <jb@cimlogic.com.au>
  * All rights reserved.
@@ -378,6 +378,7 @@ void
 _dispatch_signals()
 {
 	struct pthread	*curthread = _get_curthread();
+	void (*action)(int, siginfo_t *, void *);
 	int i;
 
 	/*
@@ -395,14 +396,21 @@ _dispatch_signals()
 			    _thread_sigact[i - 1].sa_handler != SIG_IGN &&
 			    sigismember(&curthread->sigpend,i) &&
 			    !sigismember(&curthread->sigmask,i)) {
+				action = _thread_sigact[i - 1].sa_sigaction;
+
 				/* Clear the pending signal: */
 				sigdelset(&curthread->sigpend,i);
 
+				/* clear custom handler if SA_RESETHAND set. */
+				if (_thread_sigact[i - 1].sa_flags &
+				    SA_RESETHAND)
+					_thread_sigact[i - 1].sa_handler =
+						SIG_DFL;
 				/*
 				 * Dispatch the signal via the custom signal
 				 * handler:
 				 */
-				(*(_thread_sigact[i - 1].sa_handler))(i);
+				(*action)(i, 0, 0);
 			}
 }
 #endif
