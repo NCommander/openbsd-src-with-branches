@@ -1,4 +1,4 @@
-/*	$OpenBSD: cpu.h,v 1.4 2002/02/23 16:59:36 matthieu Exp $	*/
+/*	$OpenBSD: cpu.h,v 1.5 2002/06/08 15:45:29 miod Exp $	*/
 /*	$NetBSD: cpu.h,v 1.1 1996/09/30 16:34:21 ws Exp $	*/
 
 /*
@@ -36,7 +36,7 @@
 
 #include <powerpc/cpu.h>
 
-/* 
+/*
  * CTL_MACHDEP definitions.
  */
 #define CPU_ALLOWAPERTURE	1	/* allow mmap of /dev/xf86 */

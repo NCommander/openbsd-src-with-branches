@@ -1,4 +1,4 @@
-/*	$OpenBSD: copystr.c,v 1.3 1997/10/13 13:42:56 pefo Exp $	*/
+/*	$OpenBSD: copystr.c,v 1.4 2001/06/24 05:05:22 drahn Exp $	*/
 
 /*-
  * Copyright (C) 1995 Wolfgang Solfrank.
@@ -47,7 +47,7 @@ copystr(kfaddr, kdaddr, len, done)
 	u_char *kfp = (u_char *)kfaddr;
 	u_char *kdp = kdaddr;
 	size_t l;
-	
+
 	for (l = 0; len-- > 0; l++) {
 		if (!(*kdp++ = *kfp++)) {
 			*done = l + 1;
