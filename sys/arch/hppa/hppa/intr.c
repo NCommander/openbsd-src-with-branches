@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: intr.c,v 1.1 2002/03/16 01:13:42 mickey Exp $	*/
 
 /*
  * Copyright (c) 2002 Michael Shalayeff
@@ -39,6 +39,7 @@
 #include <sys/device.h>
 
 #include <machine/autoconf.h>
+#include <machine/reg.h>
 
 #ifdef DDB
 #include <machine/db_machdep.h>
