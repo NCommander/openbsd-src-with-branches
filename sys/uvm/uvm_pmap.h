@@ -1,4 +1,4 @@
-/*	$OpenBSD: uvm_pmap.h,v 1.15 2002/09/10 18:29:44 art Exp $	*/
+/*	$OpenBSD: uvm_pmap.h,v 1.16 2003/06/02 23:28:24 millert Exp $	*/
 /*	$NetBSD: uvm_pmap.h,v 1.1 2000/06/27 09:00:14 mrg Exp $	*/
 
 /* 
@@ -157,7 +157,7 @@ void		 pmap_reference(pmap_t);
 void		 pmap_remove(pmap_t, vaddr_t, vaddr_t);
 #endif
 #if !defined(pmap_update)
-void		 pmap_update(void);
+void		 pmap_update(pmap_t);
 #endif
 #if !defined(pmap_zero_page)
 void		 pmap_zero_page(struct vm_page *);
