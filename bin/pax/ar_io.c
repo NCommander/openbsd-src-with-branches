@@ -1,4 +1,4 @@
-/*	$OpenBSD: ar_io.c,v 1.4 1996/06/23 14:20:28 deraadt Exp $	*/
+/*	$OpenBSD: ar_io.c,v 1.5 1996/09/22 20:09:53 tholo Exp $	*/
 /*	$NetBSD: ar_io.c,v 1.5 1996/03/26 23:54:13 mrg Exp $	*/
 
 /*-
@@ -42,7 +42,7 @@
 #if 0
 static char sccsid[] = "@(#)ar_io.c	8.2 (Berkeley) 4/18/94";
 #else
-static char rcsid[] = "$OpenBSD: ar_io.c,v 1.4 1996/06/23 14:20:28 deraadt Exp $";
+static char rcsid[] = "$OpenBSD: ar_io.c,v 1.5 1996/09/22 20:09:53 tholo Exp $";
 #endif
 #endif /* not lint */
 
@@ -137,9 +137,14 @@ ar_open(name)
 			arcname = STDN;
 		} else if ((arfd = open(name, EXT_MODE, DMOD)) < 0)
 			syswarn(0, errno, "Failed open to read on %s", name);
-		if (zflag == GZIP_CMP)
+		if (zflag == GZIP_CMP) {
 			gzf = gzdopen(arfd, "r");
-		else if (zflag == COMPRESS_CMP)
+			if (!gz_iszipped(gzf)) {
+				(void)lseek(arfd, 0, SEEK_SET);
+				zflag = COMPRESS_CMP;
+			}
+		}
+		if (zflag == COMPRESS_CMP)
 			cfp = zdopen(arfd, "r");
 		break;
 	case ARCHIVE:
