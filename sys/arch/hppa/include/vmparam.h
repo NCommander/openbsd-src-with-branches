@@ -1,4 +1,4 @@
-/*	$OpenBSD: vmparam.h,v 1.23 2002/09/05 18:41:19 mickey Exp $	*/
+/*	$OpenBSD: vmparam.h,v 1.24 2002/10/17 02:21:08 mickey Exp $	*/
 
 /* 
  * Copyright (c) 1988-1994, The University of Utah and
@@ -58,7 +58,7 @@
 #define	DFLSSIZ		(512*1024)		/* initial stack size limit */
 #endif
 #ifndef	MAXSSIZ
-#define	MAXSSIZ		(UADDR-USRSTACK)	/* max stack size */
+#define	MAXSSIZ		(32*1024*1024)		/* max stack size */
 #endif
 
 #ifndef USRIOSIZE
