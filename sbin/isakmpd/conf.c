@@ -1,4 +1,4 @@
-/* $OpenBSD: conf.c,v 1.72 2004/07/29 20:02:02 ho Exp $	 */
+/* $OpenBSD: conf.c,v 1.73 2004/08/08 19:11:06 deraadt Exp $	 */
 /* $EOM: conf.c,v 1.48 2000/12/04 02:04:29 angelos Exp $	 */
 
 /*
@@ -648,7 +648,7 @@ conf_get_address(char *section, char *tag)
 
 	if (!value)
 		return 0;
-	if (text2sockaddr(value, 0, &sa) == -1)
+	if (text2sockaddr(value, 0, &sa, 0, 0) == -1)
 		return 0;
 	return sa;
 }

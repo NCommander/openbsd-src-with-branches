@@ -1,4 +1,4 @@
-/*	$OpenBSD: utiltest.c,v 1.2 2001/07/01 20:51:58 niklas Exp $	*/
+/*	$OpenBSD: utiltest.c,v 1.3 2003/06/03 14:39:51 ho Exp $	*/
 
 /*
  * Copyright (c) 2001 Niklas Hallqvist.  All rights reserved.
@@ -60,7 +60,7 @@ int test_1 (char *address, char *port, int ok)
   int rv;
 
   printf ("test_1 (\"%s\", \"%s\") ", address, port);
-  rv = text2sockaddr (address, port, &sa) == ok;
+  rv = text2sockaddr (address, port, &sa, 0, 0) == ok;
   printf (rv ? "OK" : "FAIL");
   printf ("\n");
 
