@@ -1,4 +1,4 @@
-/*	$OpenBSD: main.c,v 1.24 2003/04/04 23:12:02 deraadt Exp $	*/
+/*	$OpenBSD: main.c,v 1.25 2003/06/26 00:09:45 deraadt Exp $	*/
 
 /*
  * startup, main loop, environments and error handling
@@ -177,7 +177,7 @@ main(int argc, char *argv[])
 	}
 
 
-	/* Turn on nohup by default for how - will change to off
+	/* Turn on nohup by default for now - will change to off
 	 * by default once people are aware of its existence
 	 * (at&t ksh does not have a nohup option - it always sends
 	 * the hup).
