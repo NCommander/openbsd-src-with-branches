@@ -1,4 +1,4 @@
-/*	$OpenBSD: ssh.c,v 1.15 2003/09/22 21:39:39 miod Exp $	*/
+/*	$OpenBSD: ssh.c,v 1.16 2003/10/05 20:27:48 miod Exp $	*/
 
 /*
  * Copyright (c) 1994 Michael L. Hitch
@@ -1125,7 +1125,8 @@ ssh_checkintr(sc, istat, dstat, sstat0, status)
 		}
 #endif
 		*status = -1;
-		acb->xs->error = XS_SELTIMEOUT;
+		if (acb != NULL)
+			acb->xs->error = XS_SELTIMEOUT;
 		if (sc->nexus_list.tqh_first)
 			rp->ssh_dsp = sc->sc_scriptspa + Ent_wait_reselect;
 		return 1;
