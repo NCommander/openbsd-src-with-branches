@@ -1,4 +1,4 @@
-/*	$OpenBSD: rquotad.c,v 1.8 2001/01/17 19:23:26 deraadt Exp $	*/
+/*	$OpenBSD: rquotad.c,v 1.9 2001/02/12 07:15:46 deraadt Exp $	*/
 /*
  * by Manuel Bouyer (bouyer@ensta.fr)
  * 
@@ -323,8 +323,7 @@ hasquota(fs, qfnamep)
 		    qfextension[USRQUOTA], QUOTAFILENAME);
 		initname = 1;
 	}
-	strncpy(buf, fs->fs_mntops, sizeof buf);
-	buf[sizeof(buf) - 1] = '\0';
+	strlcpy(buf, fs->fs_mntops, sizeof buf);
 	for (opt = strtok(buf, ","); opt; opt = strtok(NULL, ",")) {
 		if ((cp = strchr(opt, '=')))
 			*cp++ = '\0';

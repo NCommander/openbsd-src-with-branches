@@ -1,4 +1,4 @@
-/*	$OpenBSD: utility.c,v 1.14 1998/05/08 19:43:44 deraadt Exp $	*/
+/*	$OpenBSD: utility.c,v 1.15 1998/07/10 08:06:24 deraadt Exp $	*/
 /*	$NetBSD: utility.c,v 1.9 1996/02/28 20:38:29 thorpej Exp $	*/
 
 /*
@@ -39,7 +39,7 @@
 static char sccsid[] = "@(#)utility.c	8.4 (Berkeley) 5/30/95";
 static char rcsid[] = "$NetBSD: utility.c,v 1.9 1996/02/28 20:38:29 thorpej Exp $";
 #else
-static char rcsid[] = "$OpenBSD: utility.c,v 1.14 1998/05/08 19:43:44 deraadt Exp $";
+static char rcsid[] = "$OpenBSD: utility.c,v 1.15 1998/07/10 08:06:24 deraadt Exp $";
 #endif
 #endif /* not lint */
 
@@ -396,7 +396,6 @@ edithost(pat, host)
 	register char *host;
 {
 	register char *res = editedhost;
-	char *strncpy();
 
 	if (!pat)
 		pat = "";
@@ -424,11 +423,9 @@ edithost(pat, host)
 		pat++;
 	}
 	if (*host)
-		(void) strncpy(res, host,
-				sizeof editedhost - (res - editedhost) -1);
+		strlcpy(res, host, sizeof editedhost - (res - editedhost));
 	else
 		*res = '\0';
-	editedhost[sizeof editedhost - 1] = '\0';
 }
 
 static char *putlocation;
