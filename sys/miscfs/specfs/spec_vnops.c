@@ -1,4 +1,4 @@
-/*	$OpenBSD: spec_vnops.c,v 1.15 1998/02/23 17:40:58 niklas Exp $	*/
+/*	$OpenBSD: spec_vnops.c,v 1.16 2001/02/23 14:42:39 csapuntz Exp $	*/
 /*	$NetBSD: spec_vnops.c,v 1.29 1996/04/22 01:42:38 christos Exp $	*/
 
 /*
@@ -511,10 +511,8 @@ loop:
 		goto loop;
 	}
 	if (ap->a_waitfor == MNT_WAIT) {
-		while (vp->v_numoutput) {
-			vp->v_flag |= VBWAIT;
-			sleep((caddr_t)&vp->v_numoutput, PRIBIO + 1);
-		}
+		vwaitforio (vp, 0, "spec_fsync", 0);
+
 #ifdef DIAGNOSTIC
 		if (vp->v_dirtyblkhd.lh_first) {
 			splx(s);
