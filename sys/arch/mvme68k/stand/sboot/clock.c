@@ -1,4 +1,4 @@
-/*	$OpenBSD$ */
+/*	$OpenBSD: clock.c,v 1.3 1996/04/28 10:49:34 deraadt Exp $ */
 
 /*
  * Copyright (c) 1992, 1993
@@ -51,6 +51,7 @@
  */
 
 #include <sys/cdefs.h>
+#include <sys/types.h>
 #include "sboot.h"
 #include "clockreg.h"
 
