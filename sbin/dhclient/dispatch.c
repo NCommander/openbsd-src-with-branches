@@ -1,4 +1,4 @@
-/*	$OpenBSD: dispatch.c,v 1.26 2004/05/04 21:48:16 deraadt Exp $	*/
+/*	$OpenBSD: dispatch.c,v 1.27 2004/05/04 22:23:01 mickey Exp $	*/
 
 /*
  * Copyright 2004 Henning Brauer <henning@openbsd.org>
@@ -66,8 +66,8 @@ static int interface_status(struct interface_info *ifinfo);
 void
 discover_interfaces(struct interface_info *iface)
 {
-	struct sockaddr_in foo;
 	struct ifaddrs *ifap, *ifa;
+	struct sockaddr_in foo;
 	struct ifreq *tif;
 
 	if (getifaddrs(&ifap) != 0)
