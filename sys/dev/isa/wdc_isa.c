@@ -1,4 +1,4 @@
-/*      $OpenBSD: wdc_isa.c,v 1.2 1999/07/22 04:32:38 csapuntz Exp $     */
+/*      $OpenBSD: wdc_isa.c,v 1.3 1999/08/05 00:12:09 niklas Exp $     */
 /*	$NetBSD: wdc_isa.c,v 1.15 1999/05/19 14:41:25 bouyer Exp $ */
 
 /*-
@@ -197,7 +197,6 @@ wdc_isa_attach(parent, self, aux)
 		return;
 	}
 	wdcattach(&sc->wdc_channel);
-	wdc_final_attach(&sc->wdc_channel);
 }
 
 #if NISADMA > 0

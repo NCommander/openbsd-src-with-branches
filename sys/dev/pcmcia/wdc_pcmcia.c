@@ -1,4 +1,4 @@
-/*	$OpenBSD: wdc_pcmcia.c,v 1.4 1999/07/26 05:43:16 deraadt Exp $	*/
+/*	$OpenBSD: wdc_pcmcia.c,v 1.5 1999/08/16 16:51:20 deraadt Exp $	*/
 /*	$NetBSD: wdc_pcmcia.c,v 1.19 1999/02/19 21:49:43 abs Exp $ */
 
 /*-
@@ -371,7 +371,6 @@ wdc_pcmcia_attach(parent, self, aux)
 	printf("\n");
 
 	wdcattach(&sc->wdc_channel);
-	wdc_final_attach(&sc->wdc_channel);
 }
 
 int
