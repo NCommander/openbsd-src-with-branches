@@ -40,7 +40,7 @@
  */
 
 #include "includes.h"
-RCSID("$OpenBSD: ssh.c,v 1.202 2003/10/11 08:24:08 markus Exp $");
+RCSID("$OpenBSD: ssh.c,v 1.203 2003/11/21 11:57:03 djm Exp $");
 
 #include <openssl/evp.h>
 #include <openssl/err.h>
@@ -300,7 +300,7 @@ again:
 			options.forward_agent = 1;
 			break;
 		case 'k':
-			/* ignored for backward compatibility */
+			options.gss_deleg_creds = 0;
 			break;
 		case 'i':
 			if (stat(optarg, &st) < 0) {
