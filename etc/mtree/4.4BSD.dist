@@ -1,4 +1,4 @@
-#	$OpenBSD: 4.4BSD.dist,v 1.117 2001/09/25 10:26:39 espie Exp $
+#	$OpenBSD: 4.4BSD.dist,v 1.118 2002/02/07 23:12:33 art Exp $
 
 /set type=dir uname=root gname=wheel mode=0755
 # .
@@ -102,6 +102,11 @@ skel
 # ./etc/sliphome
 sliphome
 # ./etc/sliphome
+..
+
+# ./etc/ssh
+ssh
+# ./etc/ssh
 ..
 
 # ./etc/ssl
