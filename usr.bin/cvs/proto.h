@@ -28,8 +28,9 @@
 #define PROTO_H
 
 #include <sys/param.h>
-#include <stdio.h>
-#include <dirent.h>
+
+#include "buf.h"
+#include "file.h"
 
 #define CVS_REQ_TIMEOUT    300
 
@@ -145,7 +146,7 @@
 
 
 int         cvs_sendfile       (struct cvsroot *, const char *);
-int         cvs_recvfile       (struct cvsroot *, const char *);
+BUF*        cvs_recvfile       (struct cvsroot *, mode_t *);
 int         cvs_connect        (struct cvsroot *);
 void        cvs_disconnect     (struct cvsroot *);
 
