@@ -1,4 +1,4 @@
-/*	$OpenBSD: miivar.h,v 1.10 2001/06/08 02:16:41 nate Exp $	*/
+/*	$OpenBSD: miivar.h,v 1.11 2001/06/25 20:24:13 nate Exp $	*/
 /*	$NetBSD: miivar.h,v 1.17 2000/03/06 20:56:57 thorpej Exp $	*/
 
 /*-
@@ -144,12 +144,12 @@ struct mii_softc {
 
 #if defined(__NetBSD__)
 	struct callout mii_nway_ch;	/* NWAY callout */
+#elif defined(__OpenBSD__)
+	struct timeout mii_phy_timo;	/* timeout handle */
 #endif
 
 	int mii_media_active;		/* last active media */
 	int mii_media_status;		/* last active status */
-
-	struct timeout mii_phy_timo;	/* timeout handle */
 };
 typedef struct mii_softc mii_softc_t;
 

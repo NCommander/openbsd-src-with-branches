@@ -1,4 +1,4 @@
-/*	$OpenBSD: brgphy.c,v 1.3 2001/04/11 05:47:51 deraadt Exp $	*/
+/*	$OpenBSD: brgphy.c,v 1.4 2001/04/12 04:51:27 deraadt Exp $	*/
 
 /*
  * Copyright (c) 2000
@@ -385,7 +385,8 @@ brgphy_mii_phy_auto(mii, waitfor)
 	 */
 	if ((mii->mii_flags & MIIF_DOINGAUTO) == 0) {
 		mii->mii_flags |= MIIF_DOINGAUTO;
-		timeout(mii_phy_auto_timeout, mii, hz >> 1);
+		timeout_set(&mii->mii_phy_timo, mii_phy_auto_timeout, mii);
+		timeout_add(&mii->mii_phy_timo, hz >> 1);
 	}
 	return (EJUSTRETURN);
 }

@@ -1,4 +1,4 @@
-/*	$OpenBSD: scsi_base.c,v 1.28 2001/02/18 22:38:44 fgsch Exp $	*/
+/*	$OpenBSD: scsi_base.c,v 1.29 2001/06/22 14:35:42 deraadt Exp $	*/
 /*	$NetBSD: scsi_base.c,v 1.43 1997/04/02 02:29:36 mycroft Exp $	*/
 
 /*
@@ -555,11 +555,7 @@ sc_err1(xs, async)
 			else if ((xs->flags & SCSI_NOSLEEP) == 0) {
 				tsleep(&lbolt, PRIBIO, "scbusy", 0);
 			} else
-#if 0
-				timeout(scsi_requeue, xs, hz);
-#else
 				goto lose;
-#endif
 		}
 	case XS_TIMEOUT:
 	retry:
