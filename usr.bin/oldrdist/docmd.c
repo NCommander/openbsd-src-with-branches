@@ -1,4 +1,4 @@
-/*	$OpenBSD: docmd.c,v 1.7 1996/08/22 20:33:17 millert Exp $	*/
+/*	$OpenBSD: docmd.c,v 1.8 1997/02/09 19:24:56 deraadt Exp $	*/
 
 /*
  * Copyright (c) 1983, 1993
@@ -35,7 +35,7 @@
 
 #ifndef lint
 /* from: static char sccsid[] = "@(#)docmd.c	8.1 (Berkeley) 6/9/93"; */
-static char *rcsid = "$OpenBSD: docmd.c,v 1.7 1996/08/22 20:33:17 millert Exp $";
+static char *rcsid = "$OpenBSD: docmd.c,v 1.8 1997/02/09 19:24:56 deraadt Exp $";
 #endif /* not lint */
 
 #include "defs.h"
@@ -376,7 +376,6 @@ dodcolon(filev, files, stamp, cmds)
 	register struct namelist *f;
 	register char **cpp;
 	struct timeval tv[2];
-	struct timezone tz;
 	struct stat stb;
 
 	if (debug)
@@ -407,7 +406,7 @@ dodcolon(filev, files, stamp, cmds)
 				(void) close(fd);
 			return;
 		}
-		(void) gettimeofday(&tv[0], &tz);
+		(void) gettimeofday(&tv[0], NULL);
 		tv[1] = tv[0];
 		(void) utimes(stamp, tv);
 	}
