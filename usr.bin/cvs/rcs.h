@@ -1,4 +1,4 @@
-/*	$OpenBSD: rcs.h,v 1.6 2005/01/12 19:23:27 jfb Exp $	*/
+/*	$OpenBSD: rcs.h,v 1.7 2005/01/13 20:50:57 jfb Exp $	*/
 /*
  * Copyright (c) 2004 Jean-Francois Brousseau <jfb@openbsd.org>
  * All rights reserved.
@@ -158,6 +158,7 @@ BUF*      rcs_patch     (const char *, const char *);
 size_t    rcs_stresc    (int, const char *, char *, size_t *);
 
 RCSNUM*   rcsnum_alloc  (void);
+RCSNUM*   rcsnum_parse  (const char *);
 void      rcsnum_free   (RCSNUM *);
 int       rcsnum_aton   (const char *, char **, RCSNUM *);
 char*     rcsnum_tostr  (const RCSNUM *, char *, size_t);

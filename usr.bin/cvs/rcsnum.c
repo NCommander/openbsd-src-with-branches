@@ -1,4 +1,4 @@
-/*	$OpenBSD: rcsnum.c,v 1.5 2004/12/10 19:19:11 jfb Exp $	*/
+/*	$OpenBSD: rcsnum.c,v 1.6 2005/01/03 22:10:12 jfb Exp $	*/
 /*
  * Copyright (c) 2004 Jean-Francois Brousseau <jfb@openbsd.org>
  * All rights reserved.
@@ -59,11 +59,33 @@ rcsnum_alloc(void)
 
 
 /*
+ * rcsnum_parse()
+ *
+ * Parse a string specifying an RCS number and return the corresponding RCSNUM.
+ */
+RCSNUM*
+rcsnum_parse(const char *str)
+{
+	char *ep;
+	RCSNUM *num;
+
+	if ((num = rcsnum_alloc()) == NULL)
+		return (NULL);
+
+	if (rcsnum_aton(str, &ep, num) < 0) {
+		rcsnum_free(num);
+		return (NULL);
+	}
+
+	return (num);
+}
+
+
+/*
  * rcsnum_free()
  *
  * Free an RCSNUM structure previously allocated with rcsnum_alloc().
  */
-
 void
 rcsnum_free(RCSNUM *rn)
 {
