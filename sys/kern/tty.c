@@ -1,4 +1,4 @@
-/*	$OpenBSD: tty.c,v 1.3 1996/03/03 17:20:09 niklas Exp $	*/
+/*	$OpenBSD: tty.c,v 1.4 1996/04/21 22:27:28 deraadt Exp $	*/
 /*	$NetBSD: tty.c,v 1.68 1996/03/29 01:55:12 christos Exp $	*/
 
 /*-
@@ -60,6 +60,11 @@
 #include <sys/resourcevar.h>
 
 #include <vm/vm.h>
+
+#include "rnd.h"
+#if NRND
+#include <dev/rndvar.h>
+#endif
 
 static int ttnread __P((struct tty *));
 static void ttyblock __P((struct tty *));
@@ -225,6 +230,9 @@ ttyinput(c, tp)
 	register u_char *cc;
 	int i, error;
 
+#if NRND
+	add_tty_randomness(tp->t_dev, c);
+#endif
 	/*
 	 * If input is pending take it first.
 	 */
