@@ -1,4 +1,4 @@
-# $OpenBSD: Makefile,v 1.13 2003/07/15 19:29:29 deraadt Exp $
+# $OpenBSD: Makefile,v 1.14 2003/07/18 06:35:50 matthieu Exp $
 
 .include <bsd.own.mk>
 
@@ -95,8 +95,10 @@ afterinstall:
 		    $(DESTDIR)$(LIBDIR)/lib$$f.so.$(SHLIB_MAJOR).$(SHLIB_MINOR) ;\
 	done
 	for f in $(SHLIB_LINKS); do \
-		ln -f $(DESTDIR)$(LIBDIR)/lib$(LIB)_pic.a \
-		    $(DESTDIR)$(LIBDIR)/lib$${f}_pic.a ;\
+		if [ -f $(DESTDIR)$(LIBDIR)/lib$(LIB)_pic.a ]; then \
+			ln -f $(DESTDIR)$(LIBDIR)/lib$(LIB)_pic.a \
+			    $(DESTDIR)$(LIBDIR)/lib$${f}_pic.a ;\
+		fi \
 	done
 .endif
 	for f in $(ALIB_LINKS); do \
