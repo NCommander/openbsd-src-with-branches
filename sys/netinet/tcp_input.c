@@ -1,4 +1,4 @@
-/*	$OpenBSD: tcp_input.c,v 1.167 2004/05/07 14:42:27 millert Exp $	*/
+/*	$OpenBSD: tcp_input.c,v 1.168 2004/05/21 11:36:23 markus Exp $	*/
 /*	$NetBSD: tcp_input.c,v 1.23 1996/02/13 23:43:44 christos Exp $	*/
 
 /*
@@ -3680,7 +3680,7 @@ syn_cache_get(src, dst, th, hlen, tlen, so, m)
 	/*
 	 * Give the new socket our cached route reference.
 	 */
-	if (inp)
+	if (src->sa_family == AF_INET)
 		inp->inp_route = sc->sc_route4;         /* struct assignment */
 #ifdef INET6
 	else
