@@ -7,7 +7,7 @@ CFLAGS+=-DLINEMODE -DKLUDGELINEMODE -DUSE_TERMIO -DDIAGNOSTICS
 CFLAGS+=-DOLD_ENVIRON -DENV_HACK -I${.CURDIR}
 SRCS=	authenc.c global.c slc.c state.c sys_term.c telnetd.c \
 	termstat.c utility.c
-DPADD=	${LIBUTIL} ${LIBTERM}
+DPADD=	${LIBUTIL} ${LIBTERM} ${LIBTELNET}
 LDADD+=	-lutil -ltermcap -ltelnet
 MAN=	telnetd.8
 

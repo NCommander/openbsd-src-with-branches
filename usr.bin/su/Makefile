@@ -1,10 +1,8 @@
-#	$OpenBSD: Makefile,v 1.3 1996/02/15 05:02:28 etheisen Exp $
+#	$OpenBSD: Makefile,v 1.4 1996/06/26 05:39:33 deraadt Exp $
 
 PROG=	su
 BINOWN=	root
 BINMODE=4555
-#LDADD+= -lcrypt
-#DPADD+= ${LIBCRYPT}
 
 .include <bsd.own.mk>
 
