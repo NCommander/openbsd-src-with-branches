@@ -1,4 +1,4 @@
-/*	$OpenBSD: misc.c,v 1.2 2002/07/14 02:59:41 deraadt Exp $	*/
+/*	$OpenBSD: misc.c,v 1.3 2003/06/03 00:52:35 weingart Exp $	*/
 
 /*
  * Copyright (c) 1997 Tobias Weingartner
@@ -26,7 +26,7 @@
  */
 
 #ifndef LINT
-static char rcsid[] = "$OpenBSD: misc.c,v 1.2 2002/07/14 02:59:41 deraadt Exp $";
+static char rcsid[] = "$OpenBSD: misc.c,v 1.3 2003/06/03 00:52:35 weingart Exp $";
 #endif
 
 #include <sys/types.h>
@@ -39,8 +39,7 @@ static char rcsid[] = "$OpenBSD: misc.c,v 1.2 2002/07/14 02:59:41 deraadt Exp $"
 #include "misc.h"
 
 int
-ask_cmd(cmd)
-	cmd_t *cmd;
+ask_cmd(cmd_t *cmd)
 {
 	char lbuf[100], *cp, *buf;
 
@@ -62,8 +61,7 @@ ask_cmd(cmd)
 }
 
 int
-ask_yn(str)
-	const char *str;
+ask_yn(const char *str)
 {
 	int ch, first;
 
