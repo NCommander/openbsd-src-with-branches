@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.5 1997/02/19 04:02:20 tholo Exp $
+#	$OpenBSD: Makefile,v 1.6 1997/12/15 17:56:20 art Exp $
 
 .include <bsd.obj.mk>
 
@@ -18,6 +18,6 @@ CFLAGS+=-I${.CURDIR}/../../lib/libss
 LDADD+=	-lkadm -lkdb -lkrb -ldes -lacl -lcom_err
 DPADD=	${LIBKADM} ${LIBKDB} ${LIBKRB} ${LIBDES} ${LIBACL} ${LIBCOM_ERR}
 MAN=	kadmind.8
-BINDIR=/usr/sbin
+BINDIR=/usr/libexec
 
 .include <bsd.prog.mk>
