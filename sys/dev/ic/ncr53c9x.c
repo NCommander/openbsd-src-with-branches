@@ -1,4 +1,4 @@
-/*	$OpenBSD: ncr53c9x.c,v 1.5 1998/04/30 01:43:46 jason Exp $	*/
+/*	$OpenBSD: ncr53c9x.c,v 1.6 1998/05/28 22:07:52 jason Exp $	*/
 /*	$NetBSD: ncr53c9x.c,v 1.26 1998/05/26 23:17:34 thorpej Exp $	*/
 
 /*
@@ -122,6 +122,10 @@ struct ncr53c9x_ecb *ncr53c9x_get_ecb	__P((struct ncr53c9x_softc *, int));
 static inline int ncr53c9x_stp2cpb	__P((struct ncr53c9x_softc *, int));
 static inline void ncr53c9x_setsync	__P((struct ncr53c9x_softc *,
 					    struct ncr53c9x_tinfo *));
+
+struct cfdriver esp_cd = {
+	NULL, "esp", DV_DULL
+};
 
 /*
  * Names for the NCR53c9x variants, correspnding to the variant tags
