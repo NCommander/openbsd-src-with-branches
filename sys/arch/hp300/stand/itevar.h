@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /*	$NetBSD: itevar.h,v 1.1 1996/03/03 04:23:42 thorpej Exp $	*/
 
 /*

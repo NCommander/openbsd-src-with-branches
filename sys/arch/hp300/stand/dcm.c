@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /*	$NetBSD: dcm.c,v 1.9 1996/02/27 22:11:44 scottr Exp $	*/
 
 /*

@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /*	$NetBSD: ite_hy.c,v 1.3 1996/03/03 04:23:37 thorpej Exp $	*/
 
 /*

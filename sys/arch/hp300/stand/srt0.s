@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /*	$NetBSD: srt0.s,v 1.3 1995/09/02 05:04:23 thorpej Exp $	*/
 
 /*

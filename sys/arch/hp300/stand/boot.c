@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /*	$NetBSD: boot.c,v 1.6 1995/02/21 09:06:13 mycroft Exp $	*/
 
 /*-

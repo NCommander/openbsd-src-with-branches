@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /*	$NetBSD: rominfo.h,v 1.5 1994/10/26 07:27:53 cgd Exp $	*/
 
 /*

@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /*	$NetBSD: consdefs.h,v 1.3 1995/10/04 06:54:43 thorpej Exp $	*/
 
 /*

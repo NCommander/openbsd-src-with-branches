@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /*	$NetBSD: if_lereg.h,v 1.1 1996/01/01 18:10:56 thorpej Exp $	*/
 
 /*

@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /*	$NetBSD: if_le.c,v 1.8 1996/01/01 18:10:54 thorpej Exp $	*/
 
 /*
@@ -37,6 +38,7 @@
 #include <netinet/in.h>
 #include <netinet/in_systm.h>
 
+#include <lib/libsa/stand.h>
 #include <lib/libsa/netif.h>
 
 #include <hp300/dev/device.h>

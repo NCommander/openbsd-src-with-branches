@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /*	$NetBSD: scsivar.h,v 1.4 1994/10/26 07:27:58 cgd Exp $	*/
 
 /*
