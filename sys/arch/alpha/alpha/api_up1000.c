@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /* $NetBSD: api_up1000.c,v 1.4 2000/06/20 03:48:53 matt Exp $ */
 
 /*
