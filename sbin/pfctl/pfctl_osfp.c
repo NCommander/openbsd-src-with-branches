@@ -1,4 +1,4 @@
-/*	$OpenBSD: pfctl_osfp.c,v 1.10 2004/12/19 13:27:50 deraadt Exp $ */
+/*	$OpenBSD: pfctl_osfp.c,v 1.11 2004/12/29 16:24:42 mcbride Exp $ */
 
 /*
  * Copyright (c) 2003 Mike Frantzen <frantzen@openbsd.org>
@@ -702,9 +702,8 @@ fingerprint_name_entry(struct name_list *list, char *name)
 		nm_entry = calloc(1, sizeof(*nm_entry));
 		if (nm_entry == NULL)
 			err(1, "calloc");
-			LIST_INIT(&nm_entry->nm_sublist);
-			strlcpy(nm_entry->nm_name, name,
-			    sizeof(nm_entry->nm_name));
+		LIST_INIT(&nm_entry->nm_sublist);
+		strlcpy(nm_entry->nm_name, name, sizeof(nm_entry->nm_name));
 	}
 	LIST_INSERT_HEAD(list, nm_entry, nm_entry);
 	return (nm_entry);
