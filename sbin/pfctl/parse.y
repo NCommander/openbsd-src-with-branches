@@ -1,4 +1,4 @@
-/*	$OpenBSD: parse.y,v 1.38 2001/10/01 17:58:16 markus Exp $	*/
+/*	$OpenBSD: parse.y,v 1.39 2001/10/07 11:56:57 dhartmei Exp $	*/
 
 /*
  * Copyright (c) 2001 Markus Friedl.  All rights reserved.
@@ -1541,7 +1541,8 @@ ipmask(struct pf_addr *m, u_int8_t b, int af)
 	}
 	for (i = 31; i > 31-b; --i)
 		m->addr32[j] |= (1 << i);
-	m->addr32[j] = htonl(m->addr32[j]);
+	if (b)
+		m->addr32[j] = htonl(m->addr32[j]);
 }
 
 struct pf_rule_addr *
