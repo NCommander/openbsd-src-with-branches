@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.6 1997/01/03 03:04:00 etheisen Exp $
+#	$OpenBSD: Makefile,v 1.7 1997/02/28 10:18:41 downsj Exp $
 #	$NetBSD: Makefile,v 1.4 1995/03/24 03:58:22 cgd Exp $
 #	@(#)Makefile	8.1 (Berkeley) 5/31/93
 
@@ -18,7 +18,7 @@ setup.o: setup.c
 phantglobs.o.bld: phantglobs.c
 	${HOSTCC} -c ${CFLAGS} -o ${.TARGET} ${.CURDIR}/phantglobs.c
 
-setup: phantglobs.o.bld setup.o monsters.asc ${LIBM} 
+setup: phantglobs.o.bld setup.o monsters.asc ${DPADD} 
 	${HOSTCC} ${CFLAGS} ${LDFLAGS} ${LDSTATIC} -o ${.TARGET} \
 		  phantglobs.o.bld setup.o ${LDADD}
 
