@@ -427,6 +427,8 @@ writelabel(f, boot, lp)
 			}
 			sectoffset = 0;
 		}
+
+#if NUMBOOT > 0
 		/*
 		 * If we are not installing a boot program
 		 * we must read the current bootarea so we don't
@@ -446,6 +448,7 @@ writelabel(f, boot, lp)
 			}
 			*lp =tlab;
 		}
+#endif
 #endif
 
 		/*
