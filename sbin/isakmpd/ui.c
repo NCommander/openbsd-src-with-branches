@@ -1,5 +1,5 @@
-/*	$OpenBSD: ui.c,v 1.4 1998/12/21 01:02:27 niklas Exp $	*/
-/*	$EOM: ui.c,v 1.27 1999/02/25 11:39:26 niklas Exp $	*/
+/*	$OpenBSD: ui.c,v 1.5 1999/02/26 03:52:22 niklas Exp $	*/
+/*	$EOM: ui.c,v 1.28 1999/03/08 00:39:28 niklas Exp $	*/
 
 /*
  * Copyright (c) 1998 Niklas Hallqvist.  All rights reserved.
@@ -85,7 +85,7 @@ ui_connect (char *cmd)
 {
   char name[81];
 
-  if (sscanf (cmd, "C %80s", name) != 1)
+  if (sscanf (cmd, "c %80s", name) != 1)
     {
       log_print ("ui_connect: command \"%s\" malformed", cmd);
       return;
