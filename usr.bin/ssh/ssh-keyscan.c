@@ -7,7 +7,7 @@
  */
 
 #include "includes.h"
-RCSID("$OpenBSD: ssh-keyscan.c,v 1.40 2002/07/06 17:47:58 stevesk Exp $");
+RCSID("$OpenBSD: ssh-keyscan.c,v 1.41 2003/02/16 17:09:57 markus Exp $");
 
 #include <sys/queue.h>
 #include <errno.h>
@@ -378,7 +378,7 @@ tcpconnect(char *host)
 	if ((gaierr = getaddrinfo(host, strport, &hints, &aitop)) != 0)
 		fatal("getaddrinfo %s: %s", host, gai_strerror(gaierr));
 	for (ai = aitop; ai; ai = ai->ai_next) {
-		s = socket(ai->ai_family, SOCK_STREAM, 0);
+		s = socket(ai->ai_family, ai->ai_socktype, ai->ai_protocol);
 		if (s < 0) {
 			error("socket: %s", strerror(errno));
 			continue;
