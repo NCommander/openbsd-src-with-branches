@@ -1,4 +1,4 @@
-/*	$OpenBSD: kern_exec.c,v 1.76 2003/03/09 01:27:50 millert Exp $	*/
+/*	$OpenBSD: kern_exec.c,v 1.77 2003/04/14 04:53:50 art Exp $	*/
 /*	$NetBSD: kern_exec.c,v 1.75 1996/02/09 18:59:28 christos Exp $	*/
 
 /*-
@@ -710,7 +710,7 @@ exec_sigcode_map(struct proc *p, struct emul *e)
 	 * in all processes that need this sigcode. The creation is simple,
 	 * we create an object, add a permanent reference to it, map it in
 	 * kernel space, copy out the sigcode to it and unmap it.
-	 * The we map it with PROT_READ|PROT_EXEC into the process just
+	 * Then we map it with PROT_READ|PROT_EXEC into the process just
 	 * the way sys_mmap would map it.
 	 */
 	if (e->e_sigobject == NULL) {
