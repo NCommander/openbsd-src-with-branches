@@ -1,4 +1,4 @@
-/* $OpenBSD */
+/*	$OpenBSD$	*/
 /*	$NetBSD: lms.c,v 1.38 2000/01/08 02:57:25 takemura Exp $	*/
 
 /*-
