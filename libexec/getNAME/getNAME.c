@@ -1,4 +1,4 @@
-/*	$OpenBSD: getNAME.c,v 1.7 2001/12/07 18:45:32 mpech Exp $	*/
+/*	$OpenBSD: getNAME.c,v 1.8 2002/02/16 21:27:29 millert Exp $	*/
 /*	$NetBSD: getNAME.c,v 1.7.2.1 1997/11/10 19:54:46 thorpej Exp $	*/
 
 /*-
@@ -44,7 +44,7 @@ static char copyright[] =
 #if 0
 static char sccsid[] = "@(#)getNAME.c	8.1 (Berkeley) 6/30/93";
 #else
-static char rcsid[] = "$OpenBSD: getNAME.c,v 1.7 2001/12/07 18:45:32 mpech Exp $";
+static char rcsid[] = "$OpenBSD: getNAME.c,v 1.8 2002/02/16 21:27:29 millert Exp $";
 #endif
 #endif /* not lint */
 
@@ -169,7 +169,7 @@ getfrom(pathname)
 		strncat(linbuf, headbuf, sizeof(linbuf) - strlen(linbuf) - 1);
 		/* change the \- into (N) - */
 		if ((s = strstr(linbuf, "\\-")) != NULL) {
-			strcpy(savebuf, s+1);
+			strlcpy(savebuf, s+1, sizeof savebuf);
 			if ((t = strchr(name, '.')) != NULL) {
 				t++;
 				*s++ = '(';
