@@ -1,4 +1,4 @@
-#       $OpenBSD: install.md,v 1.10 2002/05/08 23:01:46 krw Exp $
+#       $OpenBSD: install.md,v 1.11 2002/05/09 21:54:46 krw Exp $
 #
 # Copyright (c) 2002, Miodrag Vallat.
 # All rights reserved.
@@ -86,14 +86,6 @@ md_questions() {
 
 md_installboot() {
 	# no standalone boot block
-	:
-}
-
-md_native_fstype() {
-	:
-}
-
-md_native_fsopts() {
 	:
 }
 
