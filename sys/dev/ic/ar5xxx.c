@@ -1,4 +1,4 @@
-/*	$OpenBSD: ar5xxx.c,v 1.5 2004/11/11 20:11:28 reyk Exp $	*/
+/*	$OpenBSD: ar5xxx.c,v 1.6 2004/12/31 01:00:23 reyk Exp $	*/
 
 /*
  * Copyright (c) 2004 Reyk Floeter <reyk@vantronix.net>.
@@ -600,7 +600,7 @@ ar5k_eeprom_bin2freq(hal, bin, mode)
 
 #define EEPROM_READ_HDR(_o, _v)	{					\
 	if ((ret = hal->ah_eeprom_read(hal, (_o),			\
-		 &hal->ah_capabilities.cap_eeprom.##_v)) != 0)		\
+		 &hal->ah_capabilities.cap_eeprom._v)) != 0)		\
 		return (ret);						\
 }
 
