@@ -1,4 +1,4 @@
-/*	$OpenBSD: pmap.c,v 1.44 2001/11/20 19:54:28 miod Exp $	*/
+/*	$OpenBSD: pmap.c,v 1.45 2001/11/27 05:39:02 miod Exp $	*/
 /*
  * Copyright (c) 1996 Nivas Madhur
  * All rights reserved.
@@ -2769,7 +2769,7 @@ Retry:
 	if (pv_e != PV_ENTRY_NULL)
 		pool_put(&pvpool, pv_e);
 
-	return (KERN_SUCCESS);
+	return (0);
 } /* pmap_enter */
 
 /*
