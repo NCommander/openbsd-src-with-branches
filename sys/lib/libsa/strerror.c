@@ -1,4 +1,4 @@
-/*	$OpenBSD: strerror.c,v 1.3 1996/09/23 14:19:05 mickey Exp $	*/
+/*	$OpenBSD: strerror.c,v 1.4 1996/12/08 15:15:58 niklas Exp $	*/
 /*	$NetBSD: strerror.c,v 1.11 1996/10/13 02:29:08 christos Exp $	*/
 
 /*-
@@ -71,6 +71,8 @@ static	char ebuf[64];
 		return "Exec format error";
 	case EIO:
 		return "Input/output error";
+	case EINVAL:
+		return "Invalid argument";
 
 	default:
 		sprintf(ebuf, "Unknown error: code %d", err);
