@@ -1,4 +1,4 @@
-/*	$OpenBSD: kern_synch.c,v 1.31 2001/02/27 09:07:53 csapuntz Exp $	*/
+/*	$OpenBSD: kern_synch.c,v 1.32 2001/03/15 21:18:30 art Exp $	*/
 /*	$NetBSD: kern_synch.c,v 1.37 1996/04/22 01:38:37 christos Exp $	*/
 
 /*-
@@ -618,6 +618,13 @@ restart:
 			q = &p->p_forw;
 	}
 	splx(s);
+}
+
+void
+wakeup(chan)
+	void *chan;
+{
+	wakeup_n(chan, -1);
 }
 
 /*
