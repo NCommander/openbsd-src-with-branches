@@ -1,4 +1,4 @@
-/*	$OpenBSD: main.c,v 1.14 1997/11/04 12:20:19 kstailey Exp $	*/
+/*	$OpenBSD: main.c,v 1.15 2001/05/04 16:48:34 ericj Exp $	*/
 /*	$NetBSD: main.c,v 1.8 1996/05/10 23:16:36 thorpej Exp $	*/
 
 /*-
@@ -44,7 +44,7 @@ static char copyright[] =
 #if 0
 static char sccsid[] = "@(#)main.c	8.1 (Berkeley) 6/6/93";
 #endif
-static char rcsid[] = "$OpenBSD: main.c,v 1.14 1997/11/04 12:20:19 kstailey Exp $";
+static char rcsid[] = "$OpenBSD: main.c,v 1.15 2001/05/04 16:48:34 ericj Exp $";
 #endif /* not lint */
 
 #include <sys/param.h>
@@ -289,14 +289,14 @@ void
 resize(signo)
 	int signo;
 {
-	int oldmask;
+	sigset_t mask, oldmask;
 
-#define mask(s) (1 << ((s) - 1))
-	oldmask = sigblock(mask(SIGALRM));
+	sigemptyset(&mask);
+	sigaddset(&mask, SIGALRM);
+	sigprocmask(SIG_BLOCK, &mask, &oldmask);
 	clearok(curscr, TRUE);
 	wrefresh(curscr);
-	sigsetmask(oldmask);
-#undef mask
+	sigprocmask(SIG_SETMASK, &oldmask, NULL);
 }
 
 

@@ -1,4 +1,4 @@
-/*	$OpenBSD: msgs.c,v 1.16 2000/07/06 06:24:39 deraadt Exp $	*/
+/*	$OpenBSD: msgs.c,v 1.17 2000/08/02 04:10:48 millert Exp $	*/
 /*	$NetBSD: msgs.c,v 1.7 1995/09/28 06:57:40 tls Exp $	*/
 
 /*-
@@ -44,7 +44,7 @@ static char copyright[] =
 #if 0
 static char sccsid[] = "@(#)msgs.c	8.2 (Berkeley) 4/28/95";
 #else
-static char rcsid[] = "$OpenBSD: msgs.c,v 1.16 2000/07/06 06:24:39 deraadt Exp $";
+static char rcsid[] = "$OpenBSD: msgs.c,v 1.17 2000/08/02 04:10:48 millert Exp $";
 #endif
 #endif /* not lint */
 
@@ -715,8 +715,11 @@ void
 onsusp(unused)
 	int unused;
 {
+	sigset_t emptyset;
+
 	signal(SIGTSTP, SIG_DFL);
-	sigsetmask(0);
+	sigemptyset(&emptyset);
+	sigprocmask(SIG_SETMASK, &emptyset, NULL);
 	kill(0, SIGTSTP);
 	signal(SIGTSTP, onsusp);
 	if (!mailing)
