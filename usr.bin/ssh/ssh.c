@@ -40,7 +40,7 @@
  */
 
 #include "includes.h"
-RCSID("$OpenBSD: ssh.c,v 1.199 2003/08/13 08:46:30 markus Exp $");
+RCSID("$OpenBSD: ssh.c,v 1.200 2003/08/13 09:07:10 markus Exp $");
 
 #include <openssl/evp.h>
 #include <openssl/err.h>
@@ -150,7 +150,6 @@ usage(void)
 	     _PATH_SSH_USER_CONFFILE);
 	fprintf(stderr, "  -A          Enable authentication agent forwarding.\n");
 	fprintf(stderr, "  -a          Disable authentication agent forwarding (default).\n");
-	fprintf(stderr, "  -k          Disable Kerberos ticket forwarding.\n");
 	fprintf(stderr, "  -X          Enable X11 connection forwarding.\n");
 	fprintf(stderr, "  -x          Disable X11 connection forwarding (default).\n");
 	fprintf(stderr, "  -i file     Identity for public key authentication "
@@ -296,7 +295,7 @@ again:
 			options.forward_agent = 1;
 			break;
 		case 'k':
-			options.kerberos_tgt_passing = 0;
+			/* ignored for backward compatibility */
 			break;
 		case 'i':
 			if (stat(optarg, &st) < 0) {
