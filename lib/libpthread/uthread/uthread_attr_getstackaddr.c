@@ -1,4 +1,4 @@
-/*	$OpenBSD: uthread_attr_getstackaddr.c,v 1.3 1999/11/25 07:01:31 d Exp $	*/
+/*	$OpenBSD: uthread_attr_getstackaddr.c,v 1.4 2002/11/07 02:56:20 marc Exp $	*/
 /*
  * Copyright (c) 1997 John Birrell <jb@cimlogic.com.au>.
  * All rights reserved.
@@ -38,7 +38,7 @@
 #include "pthread_private.h"
 
 int
-pthread_attr_getstackaddr(pthread_attr_t *attr, void **stackaddr)
+pthread_attr_getstackaddr(const pthread_attr_t *attr, void **stackaddr)
 {
 	int	ret;
 
