@@ -1,3 +1,4 @@
+/*	$OpenBSD$ */
 /*	$NetBSD: pcdisplay.h,v 1.1 1998/05/14 23:11:03 drochner Exp $	*/
 
 /*

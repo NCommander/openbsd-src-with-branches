@@ -1,3 +1,4 @@
+/* $OpenBSD$ */
 /* $NetBSD: pcdisplay.c,v 1.9.4.1 2000/06/30 16:27:48 simonb Exp $ */
 
 /*

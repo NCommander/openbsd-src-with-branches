@@ -1,3 +1,4 @@
+/* $OpenBSD$ */
 /* $NetBSD: egavar.h,v 1.1 1999/12/13 16:28:57 drochner Exp $ */
 
 /*

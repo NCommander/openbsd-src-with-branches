@@ -1,3 +1,4 @@
+/* $OpenBSD$ */
 /* $NetBSD: psm_intelli.c,v 1.8 2000/06/05 22:20:57 sommerfeld Exp $ */
 
 /*-
