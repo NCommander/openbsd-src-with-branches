@@ -1882,7 +1882,6 @@ digest_pass1()
 	FOR_EACH_SYMBOL(i, sp) {
 		symbol *spsave;
 		struct localsymbol *lsp;
-		struct nlist	*q;
 		int             defs = 0;
 
 		if (!(sp->flags & GS_REFERENCED)) {
@@ -2030,11 +2029,6 @@ digest_pass1()
 					common_defined_global_count--;
 					undefined_global_sym_count++;
 				}
-		/* Let WEAK symbols take precedence over second class */
-				if (q != 0 && N_ISWEAK(q) && 
-					(lsp->entry->flags & E_SECONDCLASS))
-					continue;
-				q = p;
 
 				sp->def_lsp = lsp;
 				sp->so_defined = type;
