@@ -84,8 +84,6 @@ float *dk_mspw;
 int dk_ndrive, *dk_select;
 char **dr_name;
 
-#include "names.c"					/* XXX */
-
 int
 dkinit()
 {
@@ -128,12 +126,14 @@ dkinit()
 		if (dk_mspw[i] != 0.0)
 			dk_select[i] = 1;
 	}
+#if 0
 	if (!read_names()) {
 		free(dr_name);
 		free(dk_select);
 		free(dk_mspw);
 		return(0);
 	}
+#endif
 	once = 1;
 	return(1);
 }
