@@ -1,4 +1,4 @@
-/*	$OpenBSD: ufs_lookup.c,v 1.22 2003/06/02 23:28:23 millert Exp $	*/
+/*	$OpenBSD: ufs_lookup.c,v 1.23 2003/12/28 17:20:16 tedu Exp $	*/
 /*	$NetBSD: ufs_lookup.c,v 1.7 1996/02/09 22:36:06 christos Exp $	*/
 
 /*
@@ -624,6 +624,10 @@ found:
 			VOP_UNLOCK(pdp, 0, p);
 			cnp->cn_flags |= PDIRUNLOCK;
 		}
+		vref(vdp);
+		if (tdp->v_parent)
+			vrele(tdp->v_parent);
+		tdp->v_parent = vdp;
 		*vpp = tdp;
 	}
 

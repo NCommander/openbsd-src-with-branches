@@ -1,4 +1,4 @@
-/*	$OpenBSD: vfs_subr.c,v 1.94 2003/06/02 23:28:07 millert Exp $	*/
+/*	$OpenBSD: vfs_subr.c,v 1.95 2003/07/21 22:44:50 tedu Exp $	*/
 /*	$NetBSD: vfs_subr.c,v 1.53 1996/04/22 01:39:13 christos Exp $	*/
 
 /*
@@ -1052,6 +1052,10 @@ vclean(vp, flags, p)
 	/*
 	 * Reclaim the vnode.
 	 */
+	if (vp->v_parent) {
+		vrele(vp->v_parent);
+		vp->v_parent = NULL;
+	}
 	if (VOP_RECLAIM(vp, p))
 		panic("vclean: cannot reclaim");
 	if (active) {
