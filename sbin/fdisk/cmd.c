@@ -1,4 +1,4 @@
-/*	$OpenBSD: cmd.c,v 1.33 2003/06/11 06:22:12 deraadt Exp $	*/
+/*	$OpenBSD: cmd.c,v 1.34 2004/06/22 23:01:55 tom Exp $	*/
 
 /*
  * Copyright (c) 1997 Tobias Weingartner
@@ -150,7 +150,7 @@ Xedit(cmd_t *cmd, disk_t *disk, mbr_t *mbr, mbr_t *tt, int offset)
 		/* Fix up off/size values */
 		PRT_fix_BN(disk, pp, pn);
 		/* Fix up CHS values for LBA */
-		PRT_fix_CHS(disk, pp, pn);
+		PRT_fix_CHS(disk, pp);
 	} else {
 		u_int m;
 
@@ -171,7 +171,7 @@ Xedit(cmd_t *cmd, disk_t *disk, mbr_t *mbr, mbr_t *tt, int offset)
 		    DO_ROUNDING : 0));
 
 		/* Fix up CHS values */
-		PRT_fix_CHS(disk, pp, pn);
+		PRT_fix_CHS(disk, pp);
 	}
 #undef EDIT
 	return (ret);

@@ -1,4 +1,4 @@
-/*	$OpenBSD: part.h,v 1.10 2002/02/16 21:27:34 millert Exp $	*/
+/*	$OpenBSD: part.h,v 1.11 2003/06/03 01:13:19 weingart Exp $	*/
 
 /*
  * Copyright (c) 1997 Tobias Weingartner
@@ -41,7 +41,7 @@ typedef struct _prt_t {
 /* Prototypes */
 void	PRT_printall(void);
 const char *PRT_ascii_id(int);
-void PRT_parse(disk_t *, void *, off_t, off_t, prt_t *, int);
+void PRT_parse(disk_t *, void *, off_t, off_t, prt_t *);
 void PRT_make(prt_t *, off_t, off_t, void *);
 void PRT_print(int, prt_t *, char *);
 
@@ -49,7 +49,7 @@ void PRT_print(int, prt_t *, char *);
 void PRT_fix_BN(disk_t *, prt_t *, int);
 
 /* This does bs/ns -> CHS */
-void PRT_fix_CHS(disk_t *, prt_t *, int);
+void PRT_fix_CHS(disk_t *, prt_t *);
 
 #endif /* _PART_H */
 
