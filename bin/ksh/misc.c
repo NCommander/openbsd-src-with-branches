@@ -1,4 +1,4 @@
-/*	$OpenBSD: misc.c,v 1.14 2003/03/13 09:03:07 deraadt Exp $	*/
+/*	$OpenBSD: misc.c,v 1.15 2003/04/04 23:12:02 deraadt Exp $	*/
 
 /*
  * Miscellaneous functions
@@ -542,7 +542,7 @@ gmatch(s, p, isfile)
 		char tbuf[64];
 		char *t = len <= sizeof(tbuf) ? tbuf
 				: (char *) alloc(len, ATEMP);
-		debunk(t, p);
+		debunk(t, p, len);
 		return !strcmp(t, s);
 	}
 	return do_gmatch((const unsigned char *) s, (const unsigned char *) se,
