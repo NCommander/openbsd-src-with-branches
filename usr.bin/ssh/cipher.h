@@ -41,9 +41,7 @@
 #include <openssl/blowfish.h>
 #include <openssl/rc4.h>
 #include <openssl/cast.h>
-
 #include "rijndael.h"
-
 /*
  * Cipher types for SSH-1.  New types can be added, but old types should not
  * be removed for compatibility.  The maximum allowed value is 31.
@@ -86,9 +84,9 @@ struct CipherContext {
 			u_char iv[8];
 		} cast;
 		struct {
-			u_char iv[16];
-			rijndael_key enc;
-			rijndael_key dec;
+			u4byte iv[4];
+			rijndael_ctx enc;
+			rijndael_ctx dec;
 		} rijndael;
 		RC4_KEY rc4;
 	}       u;
