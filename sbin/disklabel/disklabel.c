@@ -1,4 +1,4 @@
-/*	$OpenBSD: disklabel.c,v 1.85 2003/07/29 18:38:35 deraadt Exp $	*/
+/*	$OpenBSD: disklabel.c,v 1.86 2003/12/20 09:29:27 jmc Exp $	*/
 
 /*
  * Copyright (c) 1987, 1993
@@ -39,7 +39,7 @@ static const char copyright[] =
 #endif /* not lint */
 
 #ifndef lint
-static const char rcsid[] = "$OpenBSD: disklabel.c,v 1.85 2003/07/29 18:38:35 deraadt Exp $";
+static const char rcsid[] = "$OpenBSD: disklabel.c,v 1.86 2003/12/20 09:29:27 jmc Exp $";
 #endif /* not lint */
 
 #include <sys/param.h>
@@ -146,7 +146,7 @@ main(int argc, char *argv[])
 	char print_unit = 0;
 	FILE *t;
 
-	while ((ch = getopt(argc, argv, "BEFf:NRWb:cdenp:rs:tvw")) != -1)
+	while ((ch = getopt(argc, argv, "BEf:NRWb:cdenp:rs:tvw")) != -1)
 		switch (ch) {
 #if NUMBOOT > 0
 		case 'B':

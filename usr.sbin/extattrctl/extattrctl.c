@@ -1,4 +1,4 @@
-/*	$OpenBSD: extattrctl.c,v 1.3 2002/12/08 05:10:10 millert Exp $	*/
+/*	$OpenBSD: extattrctl.c,v 1.4 2003/04/13 22:42:57 avsm Exp $	*/
 /*-
  * Copyright (c) 1999, 2000, 2001 Robert N. M. Watson
  * All rights reserved.
@@ -84,7 +84,7 @@ initattr(int argc, char *argv[])
 	long	loop, num_inodes;
 	int	ch, i, error, chunksize, overwrite = 0, flags;
 
-	while ((ch = getopt(argc, argv, "fp:r:w:")) != -1)
+	while ((ch = getopt(argc, argv, "fp:")) != -1)
 		switch (ch) {
 		case 'f':
 			overwrite = 1;
