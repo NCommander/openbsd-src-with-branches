@@ -1,4 +1,4 @@
-/*	$OpenBSD: tcds_dma.c,v 1.5 1997/01/24 19:58:23 niklas Exp $	*/
+/*	$OpenBSD: tcds_dma.c,v 1.6 2000/07/05 21:50:39 ericj Exp $	*/
 /*	$NetBSD: tcds_dma.c,v 1.15 1996/12/04 22:35:08 mycroft Exp $	*/
 
 /*
@@ -236,7 +236,7 @@ tcds_dma_setup(sc, addr, len, datain, dmasize)
 	/* Load address, set/clear unaligned transfer and read/write bits. */
 	/* XXX PICK AN ADDRESS TYPE, AND STICK TO IT! */
 	if ((u_long)*addr > VM_MIN_KERNEL_ADDRESS) {
-		*sc->sc_sda = vatopa((u_long)*addr) >> 2;
+		*sc->sc_sda = vtophys((u_long)*addr) >> 2;
 	} else {
 		*sc->sc_sda = ALPHA_K0SEG_TO_PHYS((u_long)*addr) >> 2;
 	}
