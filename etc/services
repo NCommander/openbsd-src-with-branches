@@ -1,4 +1,4 @@
-#	$OpenBSD: services,v 1.12 1997/08/26 19:36:14 millert Exp $
+#	$OpenBSD: services,v 1.13 1997/09/16 09:33:46 provos Exp $
 #
 # Network services, Internet style
 #
@@ -187,6 +187,7 @@ eklogin		2105/tcp		# Kerberos encrypted `rlogin'
 # Unofficial services
 #
 supfilesrv	871/tcp			# SUP server
+cddb		888/tcp			# Audio CD Database
 supfiledbg	1127/tcp		# SUP debugging
 radius		1645/udp		# radius authentication
 radacct		1646/udp		# radius accounting
