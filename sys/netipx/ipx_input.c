@@ -1,4 +1,4 @@
-/*	$OpenBSD: ipx_input.c,v 1.9 2000/01/11 21:10:34 fgsch Exp $	*/
+/*	$OpenBSD: ipx_input.c,v 1.10 2000/01/13 04:41:03 fgsch Exp $	*/
 
 /*-
  *
@@ -189,7 +189,7 @@ next:
 	 * Propagated (Netbios) packets (type 20) has to be handled  
 	 * different. :-(
 	 */
-	if (ipx->ipx_pt == IPXPROTO_PPROP) {
+	if (ipx->ipx_pt == IPXPROTO_NETBIOS) {
 		if (ipxnetbios) {
 			ipx_output_type20(m);
 			goto next;
