@@ -67,9 +67,10 @@ static char rcsid[] = "$OpenBSD: chpass.c,v 1.11 1998/05/29 16:37:51 millert Exp
 #include "chpass.h"
 #include "pathnames.h"
 
-char *progname = "chpass";
 char *tempname;
 uid_t uid;
+
+extern char *__progname;
 
 #ifdef	YP
 int use_yp;
@@ -236,9 +237,11 @@ usage()
 {
 
 #ifdef	YP
-	(void)fprintf(stderr, "usage: chpass [-a list] [-s shell] [-l]%s [user]\n", use_yp?" [-y]":"");
+	(void)fprintf(stderr, "usage: %s [-a list] [-s shell] [-l]%s [user]\n",
+	    __progname, use_yp?" [-y]":"");
 #else
-	(void)fprintf(stderr, "usage: chpass [-a list] [-s shell] [user]\n");
+	(void)fprintf(stderr, "usage: %s [-a list] [-s shell] [user]\n",
+	    __progname);
 #endif
 	exit(1);
 }
