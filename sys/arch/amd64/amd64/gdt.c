@@ -1,4 +1,4 @@
-/*	$OpenBSD: gdt.c,v 1.3 2004/05/20 21:06:46 nordin Exp $	*/
+/*	$OpenBSD: gdt.c,v 1.4 2004/06/25 11:03:27 art Exp $	*/
 /*	$NetBSD: gdt.c,v 1.1 2003/04/26 18:39:28 fvdl Exp $	*/
 
 /*-
@@ -172,6 +172,7 @@ gdt_init()
 	gdt_init_cpu(ci);
 }
 
+#ifdef MULTIPROCESSOR
 /*
  * Allocate shadow GDT for a slave cpu.
  */
@@ -185,6 +186,7 @@ gdt_alloc_cpu(struct cpu_info *ci)
         memcpy(ci->ci_gdt, gdtstore,
 	   DYNSEL_START + gdt_dyncount * sizeof(struct sys_segment_descriptor));
 }
+#endif	/* MULTIPROCESSOR */
 
 
 /*
