@@ -1,4 +1,4 @@
-/*	$OpenBSD: atalk.c,v 1.12 2004/03/13 22:02:13 deraadt Exp $	*/
+/*	$OpenBSD: atalk.c,v 1.13 2005/03/25 17:01:03 jaredy Exp $	*/
 /*	$NetBSD: atalk.c,v 1.2 1997/05/22 17:21:26 christos Exp $	*/
 
 /*
@@ -34,7 +34,7 @@
 #if 0
 static char sccsid[] = "from @(#)atalk.c	1.1 (Whistle) 6/6/96";
 #else
-static char rcsid[] = "$OpenBSD: atalk.c,v 1.12 2004/03/13 22:02:13 deraadt Exp $";
+static char rcsid[] = "$OpenBSD: atalk.c,v 1.13 2005/03/25 17:01:03 jaredy Exp $";
 #endif
 #endif /* not lint */
 
@@ -54,7 +54,6 @@ static char rcsid[] = "$OpenBSD: atalk.c,v 1.12 2004/03/13 22:02:13 deraadt Exp 
 #include <netatalk/at.h>
 #include <netatalk/ddp_var.h>
 
-#include <nlist.h>
 #include <errno.h>
 #include <stdio.h>
 #include <string.h>
