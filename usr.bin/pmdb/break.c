@@ -1,4 +1,4 @@
-/*	$OpenBSD: break.c,v 1.5 2002/07/31 02:34:30 art Exp $	*/
+/*	$OpenBSD: break.c,v 1.6 2002/10/07 23:02:34 vincent Exp $	*/
 /*
  * Copyright (c) 2002 Artur Grabowski <art@openbsd.org>
  * All rights reserved. 
@@ -217,7 +217,7 @@ bkpt_check(struct pstate *ps)
 			sstep_set(ps, sstep_bkpt_readd, (void *)bkpt->bkpt_pc);
 			break;
 		default:
-			errx(1, "unkonwn bkpt_fun return, internal error");
+			errx(1, "unknown bkpt_fun return, internal error");
 		}
 	}
 
