@@ -1,3 +1,5 @@
+/*	$OpenBSD$	*/
+
 
 /***************************************************************************
 *                            COPYRIGHT NOTICE                              *
@@ -19,29 +21,25 @@
 *                                                                          *
 ***************************************************************************/
 
+/*
+ *	lib_slkatron.c
+ *	Soft key routines.
+ *      Switch on labels attributes
+ */
+#include <curses.priv.h>
 
+MODULE_ID("Id: lib_slkatron.c,v 1.2 1997/10/18 18:06:17 tom Exp $")
 
-#include <unctrl.h>
-
-char *unctrl(register chtype uch)
+int
+slk_attron(const attr_t attr)
 {
-    static char buffer[3] = "^x";
+  T((T_CALLED("slk_attron(%s)"), _traceattr(attr)));
 
-    if ((uch & 0x60) != 0 && uch != 0x7F) {
-	/*
-	 * Printable character. Simply return the character as a one-character
-	 * string.
-	 */
-	buffer[1] = uch;
-	return &buffer[1];
+  if (SP!=0 && SP->_slk!=0)
+    {
+      toggle_attr_on(SP->_slk->attr,attr);
+      returnCode(OK);
     }
-    /*
-     * It is a control character. DEL is handled specially (^?). All others
-     * use ^x notation, where x is the character code for the control character
-     * with 0x40 ORed in. (Control-A becomes ^A etc.).
-     */
-    buffer[1] = (uch == 0x7F ? '?' : (uch | 0x40));
-
-    return buffer;
-
+  else
+    returnCode(ERR);
 }

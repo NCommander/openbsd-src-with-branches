@@ -1,3 +1,5 @@
+/*	$OpenBSD$	*/
+
 /******************************************************************************
  * Copyright 1996,1997 by Thomas E. Dickey <dickey@clark.net>                 *
  * All Rights Reserved.                                                       *

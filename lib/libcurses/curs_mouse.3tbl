@@ -1,3 +1,4 @@
+.\" $OpenBSD$
 '\" t
 .TH curs_mouse 3X ""
 .SH NAME
@@ -142,7 +143,7 @@ report sequence will appear in the string read.
 Mouse events under xterm will not be detected correctly in a window with
 its keypad bit off.
 .SH SEE ALSO
-\fBcurses\fR(3X).
+\fBcurses\fR(3).
 .\"#
 .\"# The following sets edit modes for GNU EMACS
 .\"# Local Variables:
