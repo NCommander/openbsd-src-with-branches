@@ -1,4 +1,4 @@
-/*	$OpenBSD: hpux_sig.h,v 1.3 2003/06/02 23:28:00 millert Exp $	*/
+/*	$OpenBSD: hpux_sig.h,v 1.4 2004/07/11 00:29:30 mickey Exp $	*/
 /*	$NetBSD: hpux_sig.h,v 1.1 1997/04/01 19:59:03 scottr Exp $	*/
 
 /*
@@ -44,11 +44,12 @@
  * Signal-related HPUX compatibility routines and data types
  */
 
+typedef
 struct hpux_sigaltstack {
 	void	*ss_sp;
 	int	ss_flags;
 	size_t	ss_size;
-};
+} hpux_stack_t;
 #define	HPUX_SS_DISABLE	0x0002
 
 #ifdef _KERNEL
