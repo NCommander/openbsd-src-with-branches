@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_ie.c,v 1.9 1999/03/03 22:10:29 jason Exp $ */
+/*	$OpenBSD: if_ie.c,v 1.10 1999/09/27 02:49:00 smurph Exp $ */
 
 /*-
  * Copyright (c) 1999 Steve Murphree, Jr. 
@@ -344,8 +344,7 @@ iematch(parent, vcf, args)
 {
 	struct cfdata *cf = vcf;
 	struct confargs *ca = args;
-
-	return (!badvaddr(ca->ca_vaddr, 4));
+   return (!badvaddr(ca->ca_vaddr, 4));
 }
 
 /*
@@ -493,8 +492,23 @@ ieattach(parent, self, aux)
 	case BUS_PCCTWO:
 		pcctwointr_establish(PCC2V_IE, &sc->sc_ih);
 		sc->sc_pcc2 = (struct pcctworeg *)ca->ca_master;
-		sc->sc_pcc2->pcc2_ieirq = pri | PCC2_SC_SNOOP |
-		    PCC2_IRQ_IEN | PCC2_IRQ_ICLR;
+      switch (cputyp) {
+#ifdef MVME172
+      case CPU_172:
+#endif 
+#ifdef MVME177
+      case CPU_177:
+#endif 
+#if defined(MVME172) || defined(MVME177)
+         /* no snooping on 68060 */
+         sc->sc_pcc2->pcc2_ieirq = pri | PCC2_SC_SNOOP |
+             PCC2_IRQ_IEN | PCC2_IRQ_ICLR;
+         break;
+#endif 
+      default:
+         sc->sc_pcc2->pcc2_ieirq = pri | PCC2_SC_SNOOP |
+             PCC2_IRQ_IEN | PCC2_IRQ_ICLR;
+      }
 		pcctwointr_establish(PCC2V_IEFAIL, &sc->sc_failih);
 		sc->sc_pcc2->pcc2_iefailirq = pri | PCC2_IRQ_IEN |
 		    PCC2_IRQ_ICLR;
