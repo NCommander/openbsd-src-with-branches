@@ -1,4 +1,4 @@
-/*	$OpenBSD: kue_fw.h,v 1.4 2001/01/28 09:43:41 aaron Exp $ */
+/*	$OpenBSD: kue_fw.h,v 1.5 2001/10/31 04:24:44 nate Exp $ */
 /*	$NetBSD: kue_fw.h,v 1.3 2001/01/19 08:54:21 jdolecek Exp $	*/
 /*
  * Copyright (c) 1997, 1998, 1999, 2000
