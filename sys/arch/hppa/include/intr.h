@@ -1,4 +1,4 @@
-/*	$OpenBSD: intr.h,v 1.16 2003/12/24 01:24:15 mickey Exp $	*/
+/*	$OpenBSD: intr.h,v 1.17 2004/04/07 18:24:19 mickey Exp $	*/
 
 /*
  * Copyright (c) 2002-2004 Michael Shalayeff
@@ -92,7 +92,7 @@ splraise(int ncpl)
 
 	if (ocpl < ncpl)
 		cpl = ncpl;
-	__asm __volatile ("nop" : "+r" (cpl));
+	__asm __volatile ("sync" : "+r" (cpl));
 
 	return (ocpl);
 }
