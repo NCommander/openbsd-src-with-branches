@@ -195,8 +195,7 @@ userauth_finish(Authctxt *authctxt, int authenticated, char *method)
 		    authctxt->user);
 
 	/* Special handling for root */
-	if (!use_privsep &&
-	    authenticated && authctxt->pw->pw_uid == 0 &&
+	if (authenticated && authctxt->pw->pw_uid == 0 &&
 	    !auth_root_allowed(method))
 		authenticated = 0;
 
