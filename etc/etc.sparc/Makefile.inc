@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile.inc,v 1.10 2002/04/26 18:57:11 deraadt Exp $
+#	$OpenBSD: Makefile.inc,v 1.11 2002/05/13 07:22:43 espie Exp $
 #	etc.sparc/Makefile.inc -- sparc-specific etc Makefile targets
 
 .ifdef DESTDIR
@@ -6,7 +6,7 @@ snap_md: bsd bootblocks distrib
 	cp ${.CURDIR}/../sys/arch/sparc/compile/GENERIC/bsd \
 	    ${DESTDIR}/snapshot/bsd
 	s=`printf "find sd\nexit" | config -e ${DESTDIR}/snapshot/bsd | \
-	    grep "ukc>  " | awk '{print $$2}'`; \
+	    awk '/ukc/ {print $$2}'`; \
 	    printf "add sd0\n%s\n%s\nchange %s\ny\n3\n\n\nquit\n" $$s $$s $$s | \
 	    config -e -o ${DESTDIR}/snapshot/bsd.scsi3 ${DESTDIR}/snapshot/bsd
 
