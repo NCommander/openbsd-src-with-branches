@@ -1,4 +1,4 @@
-/*	$OpenBSD: xl.c,v 1.46 2002/11/25 16:07:08 brad Exp $	*/
+/*	$OpenBSD: xl.c,v 1.47 2002/12/02 22:04:38 jason Exp $	*/
 
 /*
  * Copyright (c) 1997, 1998, 1999
@@ -1062,7 +1062,7 @@ int xl_list_tx_init(sc)
 }
 
 /*
- * Initialize the transmit desriptors.
+ * Initialize the transmit descriptors.
  */
 int
 xl_list_tx_init_90xB(sc)
