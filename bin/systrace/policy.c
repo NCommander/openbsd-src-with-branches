@@ -1,4 +1,4 @@
-/*	$OpenBSD: policy.c,v 1.13 2002/07/19 14:38:58 itojun Exp $	*/
+/*	$OpenBSD: policy.c,v 1.14 2002/08/05 23:27:53 provos Exp $	*/
 /*
  * Copyright 2002 Niels Provos <provos@citi.umich.edu>
  * All rights reserved.
@@ -487,7 +487,7 @@ systrace_readpolicy(char *filename)
 	return (res);
 
  error:
-	fprintf(stderr, "%s:%d: systax error.\n",
+	fprintf(stderr, "%s:%d: syntax error.\n",
 	    filename, linenumber);
 	goto out;
 }
