@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.16 2001/04/13 01:29:24 krw Exp $
+#	$OpenBSD: Makefile,v 1.17 2001/06/17 22:40:44 drahn Exp $
 
 TOP=		${.CURDIR}/..
 
@@ -55,7 +55,7 @@ ${IMAGE}: rd_setup do_files rd_teardown
 bsd:
 	cd ${TOP}/../../sys/arch/powerpc/conf && config RAMDISK
 	cd ${TOP}/../../sys/arch/powerpc/compile/RAMDISK && \
-	    make clean && make
+	    make clean && make depend && make
 	cp ${TOP}/../../sys/arch/powerpc/compile/RAMDISK/bsd bsd
 
 rd_setup: 
