@@ -1,4 +1,4 @@
-/*	$OpenBSD: rf_psstatus.c,v 1.3 2000/01/07 14:50:22 peter Exp $	*/
+/*	$OpenBSD: rf_psstatus.c,v 1.4 2000/01/11 18:02:22 peter Exp $	*/
 /*	$NetBSD: rf_psstatus.c,v 1.5 2000/01/08 22:57:31 oster Exp $	*/
 /*
  * Copyright (c) 1995 Carnegie-Mellon University.
@@ -197,6 +197,7 @@ rf_LookupRUStatus(
 		p->flags = flags;
 		p->rbuf = NULL;
 		p->writeRbuf = NULL;
+		p->xorBufCount = 0;
 		p->blockCount = 0;
 		p->procWaitList = NULL;
 		p->blockWaitList = NULL;
