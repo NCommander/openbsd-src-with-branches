@@ -49,7 +49,6 @@ cleandir: _SUBDIRUSE clean
 .if !target(install)
 .if !target(beforeinstall)
 beforeinstall:
-	@-[ -d ${DESTDIR}${LKMDIR} ] || mkdir ${DESTDIR}${LKMDIR}
 .endif
 .if !target(afterinstall)
 afterinstall:
