@@ -1,4 +1,4 @@
-/*	$OpenBSD: tcp_input.c,v 1.59 2000/04/27 20:53:08 provos Exp $	*/
+/*	$OpenBSD: tcp_input.c,v 1.60 2000/04/28 00:31:48 itojun Exp $	*/
 /*	$NetBSD: tcp_input.c,v 1.23 1996/02/13 23:43:44 christos Exp $	*/
 
 /*
@@ -2789,6 +2789,13 @@ tcp_mss(tp, offer)
 	/*
 	 * if there's an mtu associated with the route and we support
 	 * path MTU discovery for the underlying protocol family, use it.
+	 */
+	/*
+	 * XXX It's wrong to use PMTU values to determine the MSS we
+	 * are going to advertise; we should only use the input interface's
+	 * MTU instead (see draft-ietf-tcpimpl-pmtud-03.txt). tcp_mss()
+	 * should be changed to be aware whether it's called for input or
+	 * output MSS calculation, and act accordingly.
 	 */
 	if (rt->rt_rmx.rmx_mtu) {
 		/*
