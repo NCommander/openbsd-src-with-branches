@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: if_ppp.c,v 1.4 1996/03/03 21:07:07 niklas Exp $	*/
 /*	$NetBSD: if_ppp.c,v 1.28 1996/02/13 22:00:18 christos Exp $	*/
 
 /*
@@ -158,7 +158,7 @@ static void	pppdumpm __P((struct mbuf *m0));
 extern struct compressor ppp_bsd_compress;
 
 struct compressor *ppp_compressors[8] = {
-#if DO_BSD_COMPRESS
+#ifdef PPP_BSDCOMP
     &ppp_bsd_compress,
 #endif
     NULL
