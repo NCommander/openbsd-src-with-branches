@@ -1,4 +1,4 @@
-/*	$OpenBSD: linux_dummy.c,v 1.14 2003/09/04 02:57:22 tedu Exp $ */
+/*	$OpenBSD: linux_dummy.c,v 1.15 2004/04/05 00:01:12 tedu Exp $ */
 
 /*-
  * Copyright (c) 1994-1995 Søren Schmidt
@@ -108,8 +108,6 @@ DUMMY(sendfile);		/* #187 */
 DUMMY(getpmsg);			/* #188 */
 DUMMY(putpmsg);			/* #189 */
 DUMMY(lchown);			/* #198 */
-DUMMY(setreuid);		/* #203 */
-DUMMY(setregid);		/* #204 */
 DUMMY(fchown);			/* #207 */
 DUMMY(chown);			/* #212 */
 DUMMY(setfsgid);		/* #216 */
