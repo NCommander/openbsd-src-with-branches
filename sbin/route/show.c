@@ -1,4 +1,4 @@
-/*	$OpenBSD: show.c,v 1.22 2003/03/13 09:09:27 deraadt Exp $	*/
+/*	$OpenBSD: show.c,v 1.23 2003/06/02 20:06:16 millert Exp $	*/
 /*	$NetBSD: show.c,v 1.1 1996/11/15 18:01:41 gwr Exp $	*/
 
 /*
@@ -34,7 +34,7 @@
 #if 0
 static char sccsid[] = "from: @(#)route.c	8.3 (Berkeley) 3/9/94";
 #else
-static char *rcsid = "$OpenBSD: show.c,v 1.22 2003/03/13 09:09:27 deraadt Exp $";
+static char *rcsid = "$OpenBSD: show.c,v 1.23 2003/06/02 20:06:16 millert Exp $";
 #endif
 #endif /* not lint */
 
@@ -111,9 +111,7 @@ void	usage(char *);
  * Print routing tables.
  */
 void
-show(argc, argv)
-	int argc;
-	char **argv;
+show(int argc, char *argv[])
 {
 	struct rt_msghdr *rtm;
 	char *buf = NULL, *next, *lim = NULL;

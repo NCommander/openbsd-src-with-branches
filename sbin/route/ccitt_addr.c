@@ -1,4 +1,4 @@
-/*	$OpenBSD: ccitt_addr.c,v 1.6 2002/02/16 21:27:37 millert Exp $	*/
+/*	$OpenBSD: ccitt_addr.c,v 1.7 2003/06/02 20:06:16 millert Exp $	*/
 /*	$NetBSD: ccitt_addr.c,v 1.8 1995/04/23 10:33:41 cgd Exp $	*/
 
 /*
@@ -57,8 +57,10 @@
 
 static char *copychar(char *, char *);
 
+int	ccitt_addr(char *addr, struct sockaddr_x25 *xp);
+
 int
-ccitt_addr (addr, xp)
+ccitt_addr(addr, xp)
 char *addr;
 struct sockaddr_x25 *xp;
 {
