@@ -1,4 +1,4 @@
-/*	$OpenBSD: rusersd.c,v 1.8 2002/06/28 22:59:20 deraadt Exp $	*/
+/*	$OpenBSD: rusersd.c,v 1.9 2002/06/28 23:22:21 deraadt Exp $	*/
 
 /*-
  *  Copyright (c) 1993 John Brezak
@@ -29,7 +29,7 @@
  */
 
 #ifndef lint
-static char rcsid[] = "$OpenBSD: rusersd.c,v 1.8 2002/06/28 22:59:20 deraadt Exp $";
+static char rcsid[] = "$OpenBSD: rusersd.c,v 1.9 2002/06/28 23:22:21 deraadt Exp $";
 #endif /* not lint */
 
 #include <sys/types.h>
@@ -74,7 +74,9 @@ main(int argc, char *argv[])
 		exit(1);
 	}
 
-	pw = getpwnam("nobody");
+	pw = getpwnam("_rusersd");
+	if (!pw)
+		pw = getpwnam("nobody");
 	if (chroot("/var/empty") == -1) {
 		syslog(LOG_ERR, "cannot chdir to /var/empty.");
 		exit(1);
