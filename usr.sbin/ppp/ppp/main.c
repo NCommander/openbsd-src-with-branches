@@ -25,7 +25,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  *
- * $OpenBSD: main.c,v 1.32 2002/05/16 01:13:39 brian Exp $
+ * $OpenBSD: main.c,v 1.33 2002/06/15 01:33:23 brian Exp $
  */
 
 #include <sys/param.h>
@@ -117,10 +117,13 @@ Cleanup(int excode)
 void
 AbortProgram(int excode)
 {
-  server_Close(SignalBundle);
+  if (SignalBundle)
+    server_Close(SignalBundle);
   log_Printf(LogPHASE, "PPP Terminated (%s).\n", ex_desc(excode));
-  bundle_Close(SignalBundle, NULL, CLOSE_STAYDOWN);
-  bundle_Destroy(SignalBundle);
+  if (SignalBundle) {
+    bundle_Close(SignalBundle, NULL, CLOSE_STAYDOWN);
+    bundle_Destroy(SignalBundle);
+  }
   log_Close();
   exit(excode);
 }
