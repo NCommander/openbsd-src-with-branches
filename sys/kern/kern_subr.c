@@ -1,4 +1,4 @@
-/*	$OpenBSD: kern_subr.c,v 1.12 2000/04/19 09:58:20 art Exp $	*/
+/*	$OpenBSD: kern_subr.c,v 1.13 2000/09/05 21:47:14 aaron Exp $	*/
 /*	$NetBSD: kern_subr.c,v 1.15 1996/04/09 17:21:56 ragge Exp $	*/
 
 /*
@@ -317,7 +317,7 @@ dopowerhooks(why)
 	struct powerhook_desc *dp;
 	int s;
 
-	s = splimp();
+	s = splhigh();
 	for (dp = LIST_FIRST(&powerhook_list); 
 	     dp != NULL; 
 	     dp = LIST_NEXT(dp, sfd_list)) {
