@@ -1,4 +1,4 @@
-/*	$OpenBSD: swapgeneric.c,v 1.7 1996/11/06 01:30:04 deraadt Exp $	*/
+/*	$OpenBSD: swapgeneric.c,v 1.8 1996/12/06 15:51:09 deraadt Exp $	*/
 /*	$NetBSD: swapgeneric.c,v 1.12 1996/05/03 19:42:28 christos Exp $	*/
 
 /*-
@@ -67,6 +67,7 @@ struct	swdevt swdevt[] = {
 	{ makedev(4, 1),	0,	0 },	/* sd0 */
 	{ makedev(4, 17),	0,	0 },	/* sd1 */
 	{ makedev(4, 33),	0,	0 },	/* sd2 */
+	{ makedev(4, 49),	0,	0 },	/* sd3 */
 	{ NODEV,		0,	0 },
 	{ NODEV,		0,	0 },
 };
