@@ -61,7 +61,7 @@ struct ubsec_q {
 	int				q_dst_packl[MAX_SCATTER];
 	int				q_dst_npa, q_dst_l;
 	u_int32_t			q_macbuf[5];
-	struct ubsec_session *		q_ses;
+	int				q_sesn;
 };
 
 struct ubsec_session {
@@ -74,5 +74,5 @@ struct ubsec_session {
 
 /* Maximum queue length */
 #ifndef UBS_MAX_NQUEUE
-#define UBS_MAX_NQUEUE		24
+#define UBS_MAX_NQUEUE		60
 #endif

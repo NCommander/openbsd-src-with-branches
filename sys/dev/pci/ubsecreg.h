@@ -71,7 +71,7 @@
 
 #define	UBSEC_CARD(sid)		(((sid) & 0xf0000000) >> 28)
 #define	UBSEC_SESSION(sid)	( (sid) & 0x0fffffff)
-#define	UBSEC_SID(crd,ses)	(((crd) << 28) | ((ses) & 0x0fffffff))
+#define	UBSEC_SID(crd, sesn)	(((crd) << 28) | ((sesn) & 0x0fffffff))
 #define	MAX_SCATTER		64
 
 struct ubsec_pktctx {
