@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /*	$NetBSD: adlookup.c,v 1.12 1996/02/13 17:05:47 christos Exp $	*/
 
 /*
