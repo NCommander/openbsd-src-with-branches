@@ -1,4 +1,4 @@
-/*	$OpenBSD: svr4_machdep.c,v 1.11 1997/02/05 15:50:18 deraadt Exp $	*/
+/*	$OpenBSD: svr4_machdep.c,v 1.12 1997/04/01 20:13:27 deraadt Exp $	*/
 /*	$NetBSD: svr4_machdep.c,v 1.24 1996/05/03 19:42:26 christos Exp $	 */
 
 /*
@@ -472,6 +472,19 @@ svr4_sys_sysarch(p, v, retval)
 			return sys_sysarch(p, &ua, retval);
 		}
 #endif
+	case SVR4_SYSARCH_GOSF:
+		{
+				/* just as SCO Openserver 5.0 says */
+			char features[] = {1,1,1,1,1,1,1,1,2,1,1,1};
+
+			if ((error = copyout(features, SCARG(uap, a1),
+					     sizeof(features))) != 0) {
+				printf("Cannot copyout vector\n");
+				return error;
+			}
+
+			return 0;
+		}
 
 	default:
 		printf("svr4_sysarch(%d), a1 %p\n", SCARG(uap, op),
