@@ -1,4 +1,4 @@
-/*	$OpenBSD: cpu.h,v 1.15 2003/07/02 21:30:12 drahn Exp $	*/
+/*	$OpenBSD: cpu.h,v 1.16 2003/07/08 21:46:19 drahn Exp $	*/
 /*	$NetBSD: cpu.h,v 1.1 1996/09/30 16:34:21 ws Exp $	*/
 
 /*
@@ -219,4 +219,7 @@ ppc_intr_disable(void)
 	ppc_mtmsr(dmsr);
 	return (emsr & PSL_EE);
 }
+
+int ppc_cpuspeed(void *oldp, size_t *oldlenp, void *newp, size_t newlen);
+
 #endif	/* _POWERPC_CPU_H_ */
