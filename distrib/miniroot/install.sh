@@ -534,6 +534,8 @@ while [ "X${resp}" = X"" ]; do
 	fi
 done
 
+md_questions
+
 install_sets $THESETS
 
 # Copy in configuration information and make devices in target root.
