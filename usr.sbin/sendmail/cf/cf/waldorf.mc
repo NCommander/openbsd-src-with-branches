@@ -1,5 +1,5 @@
 divert(-1)
-#	$OpenBSD$
+#	$OpenBSD: waldorf.mc,v 1.2 1996/08/05 10:34:29 niklas Exp $
 #
 # Copyright (c) 1996 Niklas Hallqvist
 # All rights reserved.
@@ -33,10 +33,11 @@ divert(-1)
 #
 
 include(`../m4/cf.m4')
-VERSIONID(`$OpenBSD$')
+VERSIONID(`$OpenBSD: waldorf.mc,v 1.2 1996/08/05 10:34:29 niklas Exp $')
 OSTYPE(bsd4.4)dnl
 MASQUERADE_AS(appli.se)
 MASQUERADE_DOMAIN(appli.se)
+FEATURE(local_procmail)dnl
 MAILER(local)dnl
 MAILER(smtp)dnl
 FEATURE(always_add_domain)dnl
