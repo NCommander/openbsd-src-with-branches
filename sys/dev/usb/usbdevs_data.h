@@ -1111,6 +1111,10 @@ const struct usb_known_product usb_known_products[] = {
 	    "Fusion Digital Gamepad",
 	},
 	{
+	    USB_VENDOR_TODOS, USB_PRODUCT_TODOS_ARGOS_MINI,
+	    "Argos Mini Smartcard Reader",
+	},
+	{
 	    USB_VENDOR_TREK, USB_PRODUCT_TREK_THUMBDRIVE,
 	    "ThumbDrive",
 	},
@@ -2109,6 +2113,10 @@ const struct usb_known_vendor usb_known_vendors[] = {
 	{
 	    USB_VENDOR_GEOCAST,
 	    "Geocast Network Systems",
+	},
+	{
+	    USB_VENDOR_TODOS,
+	    "Todos Data System",
 	},
 	{
 	    USB_VENDOR_MOTOROLA,
