@@ -1,4 +1,4 @@
-/*	$OpenBSD: colrm.c,v 1.2 1996/06/26 05:32:14 deraadt Exp $	*/
+/*	$OpenBSD: colrm.c,v 1.3 1997/01/15 23:42:21 millert Exp $	*/
 /*	$NetBSD: colrm.c,v 1.4 1995/09/02 05:51:37 jtc Exp $	*/
 
 /*-
@@ -44,7 +44,7 @@ static char copyright[] =
 #if 0
 static char sccsid[] = "@(#)colrm.c	8.2 (Berkeley) 5/4/95";
 #endif
-static char rcsid[] = "$OpenBSD: colrm.c,v 1.2 1996/06/26 05:32:14 deraadt Exp $";
+static char rcsid[] = "$OpenBSD: colrm.c,v 1.3 1997/01/15 23:42:21 millert Exp $";
 #endif /* not lint */
 
 #include <sys/types.h>
@@ -121,7 +121,7 @@ main(argc, argv)
 			break;
 		}
 
-		if ((!start || column < start || stop && column > stop) &&
+		if ((!start || column < start || (stop && column > stop)) &&
 		    putchar(ch) == EOF)
 			check(stdout);
 	}

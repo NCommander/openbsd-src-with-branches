@@ -1,4 +1,4 @@
-/*	$OpenBSD: time.c,v 1.7 2001/06/13 13:46:54 art Exp $	*/
+/*	$OpenBSD: time.c,v 1.8 2001/06/13 17:43:38 art Exp $	*/
 /*	$NetBSD: time.c,v 1.7 1995/06/27 00:34:00 jtc Exp $	*/
 
 /*
@@ -44,7 +44,7 @@ static char copyright[] =
 #if 0
 static char sccsid[] = "@(#)time.c	8.1 (Berkeley) 6/6/93";
 #endif
-static char rcsid[] = "$OpenBSD: time.c,v 1.7 2001/06/13 13:46:54 art Exp $";
+static char rcsid[] = "$OpenBSD: time.c,v 1.8 2001/06/13 17:43:38 art Exp $";
 #endif /* not lint */
 
 #include <sys/param.h>
@@ -55,6 +55,7 @@ static char rcsid[] = "$OpenBSD: time.c,v 1.7 2001/06/13 13:46:54 art Exp $";
 #include <signal.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <err.h>
 #include <unistd.h>
 #include <errno.h>
 

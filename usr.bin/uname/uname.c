@@ -1,4 +1,4 @@
-/*	$OpenBSD: uname.c,v 1.3 1998/02/24 00:06:00 deraadt Exp $	*/
+/*	$OpenBSD: uname.c,v 1.4 1998/06/15 15:58:57 deraadt Exp $	*/
 
 /*
  * Copyright (c) 1994 Winning Strategies, Inc.
@@ -32,7 +32,7 @@
  */
 
 #ifndef lint
-static char rcsid[] = "$OpenBSD: uname.c,v 1.3 1998/02/24 00:06:00 deraadt Exp $";
+static char rcsid[] = "$OpenBSD: uname.c,v 1.4 1998/06/15 15:58:57 deraadt Exp $";
 #endif /* not lint */
 
 #include <sys/param.h>
@@ -139,7 +139,7 @@ main(argc, argv)
 		len = sizeof(buf);
 		if (sysctl(mib, 2, &buf, &len, NULL, 0) == -1)
 			err(1, "sysctl");
-		printf("%.*s", len, buf);
+		printf("%.*s", (int)len, buf);
 	}		
 	putchar('\n');
 

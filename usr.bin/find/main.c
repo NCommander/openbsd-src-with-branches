@@ -1,4 +1,4 @@
-/*	$OpenBSD: main.c,v 1.7 1997/06/17 05:53:44 millert Exp $	*/
+/*	$OpenBSD: main.c,v 1.8 1999/03/17 17:36:30 espie Exp $	*/
 
 /*-
  * Copyright (c) 1990, 1993
@@ -35,7 +35,7 @@
 
 #ifndef lint
 /*static char sccsid[] = "@(#)main.c	8.1 (Berkeley) 6/6/93";*/
-static char rcsid[] = "$OpenBSD: main.c,v 1.7 1997/06/17 05:53:44 millert Exp $";
+static char rcsid[] = "$OpenBSD: main.c,v 1.8 1999/03/17 17:36:30 espie Exp $";
 #endif /* not lint */
 
 #include <sys/types.h>
@@ -48,6 +48,7 @@ static char rcsid[] = "$OpenBSD: main.c,v 1.7 1997/06/17 05:53:44 millert Exp $"
 #include <signal.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <time.h>
 
 #include "find.h"
@@ -67,9 +68,13 @@ main(argc, argv)
 	int argc;
 	char *argv[];
 {
-	struct sigaction sa = {	show_path, SA_RESTART, NULL };
+	struct sigaction sa;
 	char **p, **paths;
 	int ch;
+
+	memset(&sa, 0, sizeof sa);
+	sa.sa_handler = show_path;
+	sa.sa_flags = SA_RESTART; 
 
 	(void)time(&now);	/* initialize the time-of-day */
 

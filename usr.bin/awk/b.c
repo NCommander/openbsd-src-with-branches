@@ -1,4 +1,4 @@
-/*	$OpenBSD: b.c,v 1.7 1999/04/20 17:31:29 millert Exp $	*/
+/*	$OpenBSD: b.c,v 1.8 1999/12/08 23:09:45 millert Exp $	*/
 /****************************************************************
 Copyright (C) Lucent Technologies 1997
 All Rights Reserved
@@ -492,13 +492,14 @@ int pmatch(fa *f, char *p0)	/* longest match, for sub */
 				s = ns;
 			else
 				s = cgoto(f, s, *q);
-			if (s == 1)	/* no transition */
+			if (s == 1) {	/* no transition */
 				if (patlen >= 0) {
 					patbeg = (char *) p;
 					return(1);
 				}
 				else
 					goto nextin;	/* no match */
+			}
 		} while (*q++ != 0);
 		if (f->out[s])
 			patlen = q-p-1;	/* don't count $ */
@@ -543,12 +544,13 @@ int nematch(fa *f, char *p0)	/* non-empty match, for sub */
 				s = ns;
 			else
 				s = cgoto(f, s, *q);
-			if (s == 1)	/* no transition */
+			if (s == 1) {	/* no transition */
 				if (patlen > 0) {
 					patbeg = (char *) p;
 					return(1);
 				} else
 					goto nnextin;	/* no nonempty match */
+			}
 		} while (*q++ != 0);
 		if (f->out[s])
 			patlen = q-p-1;	/* don't count $ */

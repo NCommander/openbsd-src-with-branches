@@ -1,11 +1,13 @@
-/*	$OpenBSD: getopt.c,v 1.2 1996/06/26 05:33:45 deraadt Exp $	*/
+/*	$OpenBSD: getopt.c,v 1.3 1997/01/15 23:42:32 millert Exp $	*/
 
 #ifndef lint
-static char rcsid[] = "$OpenBSD: getopt.c,v 1.2 1996/06/26 05:33:45 deraadt Exp $";
+static char rcsid[] = "$OpenBSD: getopt.c,v 1.3 1997/01/15 23:42:32 millert Exp $";
 #endif /* not lint */
 
 #include <stdio.h>
+#include <unistd.h>
 
+int
 main(argc, argv)
 int argc;
 char *argv[];
