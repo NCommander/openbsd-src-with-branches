@@ -1,4 +1,4 @@
-/*	$OpenBSD: umodem.c,v 1.14 2003/05/07 04:33:33 deraadt Exp $ */
+/*	$OpenBSD: umodem.c,v 1.15 2003/11/07 11:10:47 jmc Exp $ */
 /*	$NetBSD: umodem.c,v 1.45 2002/09/23 05:51:23 simonb Exp $	*/
 
 /*
@@ -76,7 +76,7 @@
 #include <dev/usb/ucomvar.h>
 
 #ifdef UMODEM_DEBUG
-#define DPRINTFN(n, x)	if (umodemdebug > (n)) logprintf x
+#define DPRINTFN(n, x)	do { if (umodemdebug > (n)) logprintf x; } while (0)
 int	umodemdebug = 0;
 #else
 #define DPRINTFN(n, x)

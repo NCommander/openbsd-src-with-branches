@@ -1,4 +1,4 @@
-/*	$OpenBSD: uplcom.c,v 1.11 2003/11/07 20:22:35 jmc Exp $	*/
+/*	$OpenBSD: uplcom.c,v 1.12 2004/05/26 22:25:54 markus Exp $	*/
 /*	$NetBSD: uplcom.c,v 1.29 2002/09/23 05:51:23 simonb Exp $	*/
 /*
  * Copyright (c) 2001 The NetBSD Foundation, Inc.
@@ -70,7 +70,7 @@
 #include <dev/usb/ucomvar.h>
 
 #ifdef UPLCOM_DEBUG
-#define DPRINTFN(n, x)  if (uplcomdebug > (n)) logprintf x
+#define DPRINTFN(n, x)  do { if (uplcomdebug > (n)) logprintf x; } while (0)
 int	uplcomdebug = 0;
 #else
 #define DPRINTFN(n, x)
