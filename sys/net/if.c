@@ -1,4 +1,4 @@
-/*	$OpenBSD: if.c,v 1.14 1997/07/11 23:43:00 provos Exp $	*/
+/*	$OpenBSD: if.c,v 1.15 1997/12/31 04:09:32 mickey Exp $	*/
 /*	$NetBSD: if.c,v 1.35 1996/05/07 05:26:04 thorpej Exp $	*/
 
 /*
@@ -466,6 +466,11 @@ ifioctl(so, cmd, data, p)
 
 	case SIOCGIFMETRIC:
 		ifr->ifr_metric = ifp->if_metric;
+		break;
+
+	case SIOCGIFDATA:
+		error = copyout((caddr_t)&ifp->if_data, ifr->ifr_data,
+		    sizeof(ifp->if_data));
 		break;
 
 	case SIOCSIFFLAGS:
