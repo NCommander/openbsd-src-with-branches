@@ -1,4 +1,4 @@
-/*	$OpenBSD: preen.c,v 1.4 2001/09/18 17:43:15 art Exp $	*/
+/*	$OpenBSD: preen.c,v 1.5 2002/02/16 21:27:34 millert Exp $	*/
 /*	$NetBSD: preen.c,v 1.2 1997/09/14 14:27:30 lukem Exp $	*/
 
 /*
@@ -64,7 +64,7 @@ char	hotroot;
 
 char	*rawname(), *unrawname(), *blockcheck();
 void addpart(char *, char *, long);
-int startdisk __P((struct disk *, int (*)() ));
+int startdisk(struct disk *, int (*)());
 
 int
 checkfstab(preen, maxrun, docheck, chkit)

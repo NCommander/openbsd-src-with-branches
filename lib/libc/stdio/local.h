@@ -1,4 +1,4 @@
-/*	$OpenBSD: local.h,v 1.2 1996/08/19 08:32:54 tholo Exp $	*/
+/*	$OpenBSD: local.h,v 1.3 2002/02/16 21:27:24 millert Exp $	*/
 
 /*-
  * Copyright (c) 1990, 1993
@@ -53,7 +53,7 @@ void	_cleanup(void);
 void	(*__cleanup)(void);
 void	__smakebuf(FILE *);
 int	__swhatbuf(FILE *, size_t *, int *);
-int	_fwalk __P((int (*)(FILE *)));
+int	_fwalk(int (*)(FILE *));
 int	__swsetup(FILE *);
 int	__sflags(const char *, int *);
 

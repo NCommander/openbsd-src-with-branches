@@ -1,4 +1,4 @@
-/*	$OpenBSD: library.c,v 1.4 2001/07/27 20:34:36 pvalchev Exp $	*/
+/*	$OpenBSD: library.c,v 1.5 2002/02/16 21:27:30 millert Exp $	*/
 
 /*-
  * Copyright (c) 1992, 1993
@@ -35,7 +35,7 @@
 
 #ifndef lint
 /*static char sccsid[] = "@(#)library.c	8.3 (Berkeley) 5/24/95";*/
-static char rcsid[] = "$OpenBSD: library.c,v 1.4 2001/07/27 20:34:36 pvalchev Exp $";
+static char rcsid[] = "$OpenBSD: library.c,v 1.5 2002/02/16 21:27:30 millert Exp $";
 #endif /* not lint */
 
 #include <sys/param.h>
@@ -56,10 +56,9 @@ static char rcsid[] = "$OpenBSD: library.c,v 1.4 2001/07/27 20:34:36 pvalchev Ex
 
 #include "clean.h"
 
-void	 add_blocks __P((FS_INFO *, BLOCK_INFO *, int *, SEGSUM *, caddr_t,
-	     daddr_t, daddr_t));
-void	 add_inodes __P((FS_INFO *, BLOCK_INFO *, int *, SEGSUM *, caddr_t,
-	     daddr_t));
+void	 add_blocks(FS_INFO *, BLOCK_INFO *, int *, SEGSUM *, caddr_t,
+	     daddr_t, daddr_t);
+void	 add_inodes(FS_INFO *, BLOCK_INFO *, int *, SEGSUM *, caddr_t, daddr_t);
 int	 bi_compare(const void *, const void *);
 int	 bi_toss(const void *, const void *, const void *);
 void	 get_ifile(FS_INFO *, int);

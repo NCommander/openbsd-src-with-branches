@@ -1,4 +1,4 @@
-/*	$OpenBSD: dl_printf.c,v 1.2 2001/06/06 12:38:44 art Exp $	*/
+/*	$OpenBSD: dl_printf.c,v 1.3 2002/02/16 21:27:30 millert Exp $	*/
 
 /*-
  * Copyright (c) 1993
@@ -67,8 +67,8 @@
 #endif
 #include "syscall.h"
 
-static void kprintn __P((void (*)(int), u_long, int));
-static void kdoprnt __P((void (*)(int), const char *, va_list));
+static void kprintn(void (*)(int), u_long, int);
+static void kdoprnt(void (*)(int), const char *, va_list);
 
 static void putchar(int);
 static void sputchar(int);

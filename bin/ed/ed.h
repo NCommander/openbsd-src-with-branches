@@ -1,4 +1,4 @@
-/*	$OpenBSD: ed.h,v 1.7 2001/07/05 22:30:15 espie Exp $	*/
+/*	$OpenBSD: ed.h,v 1.8 2002/02/16 21:27:06 millert Exp $	*/
 /*	$NetBSD: ed.h,v 1.23 1995/03/21 09:04:40 cgd Exp $	*/
 
 /* ed.h: type and constant definitions for the ed editor. */
@@ -188,14 +188,6 @@ if ((i) > (n)) { \
 
 #ifdef sun
 # define strerror(n) sys_errlist[n]
-#endif
-
-#ifndef __P
-# ifndef __STDC__
-#  define __P(proto) ()
-# else
-#  define __P(proto) proto
-# endif
 #endif
 
 /* Local Function Declarations */

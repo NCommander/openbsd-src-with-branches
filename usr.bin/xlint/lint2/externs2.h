@@ -1,4 +1,4 @@
-/*	$OpenBSD: externs2.h,v 1.2 1996/06/26 05:44:23 deraadt Exp $	*/
+/*	$OpenBSD: externs2.h,v 1.3 2002/02/16 21:27:59 millert Exp $	*/
 /*	$NetBSD: externs2.h,v 1.2 1995/07/03 21:24:46 cgd Exp $	*/
 
 /*
@@ -52,7 +52,7 @@ extern	int	Fflag;
  */
 extern	void	inithash(void);
 extern	hte_t	*hsearch(const char *, int);
-extern	void	forall __P((void (*)(hte_t *)));
+extern	void	forall(void (*)(hte_t *));
 
 /*
  * read.c

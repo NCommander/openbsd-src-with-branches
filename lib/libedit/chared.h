@@ -1,4 +1,4 @@
-/*	$OpenBSD: chared.h,v 1.3 1997/03/14 05:12:42 millert Exp $	*/
+/*	$OpenBSD: chared.h,v 1.4 2002/02/16 21:27:26 millert Exp $	*/
 /*	$NetBSD: chared.h,v 1.2 1997/01/11 06:47:49 lukem Exp $	*/
 
 /*-
@@ -142,12 +142,10 @@ protected void  cv_delfini(EditLine *);
 protected char *cv__endword(char *, char *, int);
 protected int   ce__isword(int);
 protected void  cv_undo(EditLine *, int, int, char *);
-protected char *cv_next_word	__P((EditLine*, char *, char *, int, 
-				     int (*)(int)));
-protected char *cv_prev_word	__P((EditLine*, char *, char *, int,
-				     int (*)(int)));
-protected char *c__next_word	__P((char *, char *, int, int (*)(int)));
-protected char *c__prev_word	__P((char *, char *, int, int (*)(int)));
+protected char *cv_next_word(EditLine*, char *, char *, int, int (*)(int));
+protected char *cv_prev_word(EditLine*, char *, char *, int, int (*)(int));
+protected char *c__next_word(char *, char *, int, int (*)(int));
+protected char *c__prev_word(char *, char *, int, int (*)(int));
 protected void  c_insert(EditLine *, int);
 protected void  c_delbefore(EditLine *, int);
 protected void  c_delafter(EditLine *, int);

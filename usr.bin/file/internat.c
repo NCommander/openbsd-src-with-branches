@@ -1,5 +1,6 @@
-/*	$OpenBSD: file.c,v 1.4 1997/01/15 23:42:26 millert Exp $	*/
+/*	$OpenBSD: internat.c,v 1.1 1997/02/09 23:58:26 millert Exp $	*/
 
+#include <stdio.h>
 #include <string.h>
 #include <sys/types.h>
 

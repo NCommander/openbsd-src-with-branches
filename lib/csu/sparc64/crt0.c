@@ -1,4 +1,4 @@
-/*	$OpenBSD: crt0.c,v 1.2 2001/09/02 14:00:39 art Exp $	*/
+/*	$OpenBSD: crt0.c,v 1.3 2002/02/16 21:27:20 millert Exp $	*/
 
 /*
  * Copyright (c) 1995 Christopher G. Demetriou
@@ -59,7 +59,7 @@ __start:
 ");
 
 
-void ___start __P((char **, void (*)(void), const void *));
+void ___start(char **, void (*)(void), const void *);
 
 void
 ___start(char **sp, void (*cleanup)(void), const void *obj)
