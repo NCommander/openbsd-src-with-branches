@@ -585,13 +585,13 @@ nfs_mount(mp, path, data, ndp, p)
 		return (error);
 	if (args.version != NFS_ARGSVERSION)
 		return (EPROGMISMATCH);
+	args.flags |= NFSMNT_RESVPORT;		/* ALWAYS allocate one */
 	if (mp->mnt_flag & MNT_UPDATE) {
 		register struct nfsmount *nmp = VFSTONFS(mp);
 
 		if (nmp == NULL)
 			return (EIO);
 		nfs_decode_args(nmp, &args);
-		args.flags |= NFSMNT_RESVPORT;	/* ALWAYS allocate one */
 		return (0);
 	}
 	error = copyin((caddr_t)args.fh, (caddr_t)nfh, args.fhsize);
