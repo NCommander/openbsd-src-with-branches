@@ -1,4 +1,4 @@
-#	$OpenBSD: test-exec.sh,v 1.6 2002/02/18 10:09:20 markus Exp $
+#	$OpenBSD: test-exec.sh,v 1.7 2002/02/18 11:40:42 markus Exp $
 #	Placed in the Public Domain.
 
 PORT=4242
@@ -59,7 +59,7 @@ trace ()
 verbose ()
 {
 	if [ "X$TEST_SSH_QUIET" != "Xyes" ]; then
-		printf "$@"
+		echo "$@"
 	fi
 }
 
