@@ -1,4 +1,4 @@
-/*	$OpenBSD: snake.c,v 1.4 2001/11/18 23:53:29 deraadt Exp $	*/
+/*	$OpenBSD: snake.c,v 1.5 2002/02/16 21:27:11 millert Exp $	*/
 /*	$NetBSD: snake.c,v 1.8 1995/04/29 00:06:41 mycroft Exp $	*/
 
 /*
@@ -44,7 +44,7 @@ static char copyright[] =
 #if 0
 static char sccsid[] = "@(#)snake.c	8.2 (Berkeley) 1/7/94";
 #else
-static char rcsid[] = "$OpenBSD: snake.c,v 1.4 2001/11/18 23:53:29 deraadt Exp $";
+static char rcsid[] = "$OpenBSD: snake.c,v 1.5 2002/02/16 21:27:11 millert Exp $";
 #endif
 #endif /* not lint */
 
@@ -549,7 +549,7 @@ post(iscore, flag)
 	 */
 	if ((uid = getuid()) < 0) {
 		if (flag)
-			printf("\nNo saved scores for uid %d.\n", uid);
+			printf("\nNo saved scores for uid %u.\n", uid);
 		return(1);
 	}
 	if (rawscores == -1) {

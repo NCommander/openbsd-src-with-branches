@@ -1,4 +1,4 @@
-/*	$OpenBSD: cfscores.c,v 1.7 2001/02/18 18:13:38 pjanzen Exp $	*/
+/*	$OpenBSD: cfscores.c,v 1.8 2002/02/16 21:27:09 millert Exp $	*/
 /*	$NetBSD: cfscores.c,v 1.3 1995/03/21 15:08:37 cgd Exp $	*/
 
 /*
@@ -44,7 +44,7 @@ static char copyright[] =
 #if 0
 static char sccsid[] = "@(#)cfscores.c	8.1 (Berkeley) 5/31/93";
 #else
-static char rcsid[] = "$OpenBSD: cfscores.c,v 1.7 2001/02/18 18:13:38 pjanzen Exp $";
+static char rcsid[] = "$OpenBSD: cfscores.c,v 1.8 2002/02/16 21:27:09 millert Exp $";
 #endif
 #endif /* not lint */
 
@@ -129,7 +129,7 @@ printuser(pw, printfail)
 	int i;
 
 	if (pw->pw_uid < 0) {
-		printf("Bad uid %d\n", pw->pw_uid);
+		printf("Bad uid %u\n", pw->pw_uid);
 		return;
 	}
 	i = lseek(dbfd, pw->pw_uid * sizeof(struct betinfo), SEEK_SET);
