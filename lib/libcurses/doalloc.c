@@ -1,3 +1,5 @@
+/*	$OpenBSD$	*/
+
 /****************************************************************************
  * Copyright (c) 1998 Free Software Foundation, Inc.                        *
  *                                                                          *
@@ -31,25 +33,28 @@
  ****************************************************************************/
 
 
+/*
+ * Wrapper for malloc/realloc.  Standard implementations allow realloc with
+ * a null pointer, but older libraries may not (e.g., SunOS).
+ *
+ * Also if realloc fails, we discard the old memory to avoid leaks.
+ */
+
 #include <curses.priv.h>
 
-MODULE_ID("$From: access.c,v 1.1 1998/07/25 20:17:09 tom Exp $")
+MODULE_ID("$From: doalloc.c,v 1.2 1998/08/18 22:52:39 Hans-Joachim.Widmaier Exp $")
 
-int _nc_access(const char *path, int mode)
+void *_nc_doalloc(void *oldp, size_t amount)
 {
-	if (access(path, mode) < 0) {
-		if ((mode & W_OK) != 0
-		 && errno == ENOENT) {
-			char head[PATH_MAX];
-			char *leaf = strrchr(strcpy(head, path), '/');
-			if (leaf == 0)
-				leaf = head;
-			*leaf = '\0';
-			if (head == leaf)
-				(void)strcpy(head, ".");
-			return access(head, R_OK|W_OK|X_OK);
+	void *newp;
+
+	if (oldp != 0) {
+		if ((newp = realloc(oldp, amount)) == 0) {
+			free(oldp);
+			errno = ENOMEM;		/* just in case 'free' reset */
 		}
-		return -1;
+	} else {
+		newp = malloc(amount);
 	}
-	return 0;
+	return newp;
 }

@@ -1,3 +1,6 @@
+'\" t 
+.\" $OpenBSD$
+.\"
 .\"***************************************************************************
 .\" Copyright (c) 1998 Free Software Foundation, Inc.                        *
 .\"                                                                          *
@@ -26,9 +29,7 @@
 .\" authorization.                                                           *
 .\"***************************************************************************
 .\"
-'\" t
-.\" $From: curs_inch.3x,v 1.9 1998/03/11 21:12:53 juergen Exp $
-.\" $OpenBSD$
+.\" $From: curs_inch.3x,v 1.10 1998/08/27 21:21:04 Rick.Ohnemus Exp $
 .TH curs_inch 3 ""
 .SH NAME
 \fBinch\fR, \fBwinch\fR, \fBmvinch\fR, \fBmvwinch\fR

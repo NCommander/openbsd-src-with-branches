@@ -1,3 +1,6 @@
+'\" t 
+.\" $OpenBSD$
+.\"
 .\"***************************************************************************
 .\" Copyright (c) 1998 Free Software Foundation, Inc.                        *
 .\"                                                                          *
@@ -26,9 +29,7 @@
 .\" authorization.                                                           *
 .\"***************************************************************************
 .\"
-'\" t
-.\" $From: curs_attr.3x,v 1.16 1998/06/13 22:59:17 tom Exp $
-.\" $OpenBSD$
+.\" $From: curs_attr.3x,v 1.17 1998/08/27 21:21:04 Rick.Ohnemus Exp $
 .TH curs_attr 3 ""
 .SH NAME
 \fBattroff\fR, \fBwattroff\fR, \fBattron\fR, \fBwattron\fR,
