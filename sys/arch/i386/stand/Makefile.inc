@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile.inc,v 1.26 1999/08/25 00:54:18 mickey Exp $
+#	$OpenBSD: Makefile.inc,v 1.27 2000/02/08 17:48:53 mickey Exp $
 
 CFLAGS=${DEBUG} -Os -Wall -Werror
 CPPFLAGS+=-I${S} -I${SADIR}/libsa -I. -I${.CURDIR}
@@ -49,3 +49,5 @@ LIBZ=${SADIR}/libz/${__objdir}/libz.a
 
 # NO_NET=no_net
 BINDIR=	/usr/mdec
+
+MANSUBDIR=/i386
