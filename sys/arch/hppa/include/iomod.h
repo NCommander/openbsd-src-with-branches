@@ -1,4 +1,4 @@
-/*	$OpenBSD: iomod.h,v 1.11 2002/03/15 01:20:04 millert Exp $	*/
+/*	$OpenBSD: iomod.h,v 1.12 2003/01/22 23:36:03 mickey Exp $	*/
 
 /*
  * Copyright (c) 2000-2003 Michael Shalayeff
@@ -54,6 +54,7 @@
  * improvements that they make and grant CSL redistribution rights.
  *
  *	Utah $Hdr: iomod.h 1.6 94/12/14$
+ *	Author: Jeff Forys (CSS), Dave Slattengren (mtXinu)
  */
 
 #ifndef	_MACHINE_IOMOD_H_
