@@ -1,4 +1,4 @@
-/*	$OpenBSD: isavar.h,v 1.29 1998/07/28 13:26:51 csapuntz Exp $	*/
+/*	$OpenBSD: isavar.h,v 1.30 1998/08/22 17:58:04 rahnds Exp $	*/
 /*	$NetBSD: isavar.h,v 1.26 1997/06/06 23:43:57 thorpej Exp $	*/
 
 /*-
@@ -293,6 +293,7 @@ struct isa_attach_args {
 #define ia_maddr	ipa_mem[0].base
 #define ia_msize	ipa_mem[0].length
 #define ia_ioh		ipa_io[0].h
+#define ia_memh		ipa_mem[0].h
 
 	void	*ia_aux;		/* driver specific */
 };
