@@ -1,4 +1,4 @@
-/*	$OpenBSD: misc.c,v 1.14 2002/04/04 07:33:23 millert Exp $	*/
+/*	$OpenBSD: misc.c,v 1.15 2003/06/02 23:36:54 millert Exp $	*/
 /*	$NetBSD: misc.c,v 1.4 1995/03/07 21:26:23 cgd Exp $	*/
 
 /*-
@@ -92,8 +92,7 @@ parsekey(name, needvaluep)
 }
 
 int
-keycompare(a, b)
-	const void *a, *b;
+keycompare(const void *a, const void *b)
 {
 	return (strcmp(((KEY *)a)->name, ((KEY *)b)->name));
 }
