@@ -1,4 +1,4 @@
-/*	$OpenBSD: stand.h,v 1.25 1997/05/30 23:09:10 mickey Exp $	*/
+/*	$OpenBSD: stand.h,v 1.26 1997/07/17 23:07:22 mickey Exp $	*/
 /*	$NetBSD: stand.h,v 1.18 1996/11/30 04:35:51 gwr Exp $	*/
 
 /*-
@@ -107,6 +107,7 @@ struct consw {
 
 extern const struct consw consw[];
 extern const int ncons;
+extern int consdev;
 
 struct open_file {
 	int		f_flags;	/* see F_* below */
