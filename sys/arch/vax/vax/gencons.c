@@ -1,4 +1,4 @@
-/*	$OpenBSD: gencons.c,v 1.9 2001/02/24 10:31:58 hugh Exp $	*/
+/*	$OpenBSD: gencons.c,v 1.10 2001/03/12 11:45:38 hugh Exp $	*/
 /*	$NetBSD: gencons.c,v 1.22 2000/01/24 02:40:33 matt Exp $	*/
 
 /*
@@ -240,6 +240,7 @@ gencnstop(tp, flag)
         struct tty *tp;
         int flag;
 {
+	return 0;
 }
 
 void

@@ -1,4 +1,4 @@
-/*	$OpenBSD: dz.c,v 1.2 2001/01/28 01:19:59 hugh Exp $	*/
+/*	$OpenBSD: dz.c,v 1.3 2001/05/16 22:15:18 hugh Exp $	*/
 /*	$NetBSD: dz.c,v 1.19 2000/01/24 02:40:29 matt Exp $	*/
 /*
  * Copyright (c) 1996  Ken C. Wellsch.  All rights reserved.
@@ -477,9 +477,15 @@ int
 dzstop(tp, flag)
 	register struct tty *tp;
 {
+	int s;
+
+	s = spltty();
 	if (tp->t_state & TS_BUSY)
 		if (!(tp->t_state & TS_TTSTOP))
 			tp->t_state |= TS_FLUSH;
+	splx(s);
+
+	return 0;
 }
 
 void
