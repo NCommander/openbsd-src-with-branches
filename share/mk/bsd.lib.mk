@@ -1,4 +1,4 @@
-#	$OpenBSD: bsd.lib.mk,v 1.41 2004/07/08 02:35:51 deraadt Exp $
+#	$OpenBSD: bsd.lib.mk,v 1.42 2004/08/11 09:43:12 deraadt Exp $
 #	$NetBSD: bsd.lib.mk,v 1.67 1996/01/17 20:39:26 mycroft Exp $
 #	@(#)bsd.lib.mk	5.26 (Berkeley) 5/2/91
 
@@ -47,7 +47,7 @@ SHLIB_MINOR=${minor}
 	@rm -f ${.TARGET}.o
 
 .c.ln:
-	${LINT} ${LINTFLAGS} ${CFLAGS:M-[IDU]*} -i ${.IMPSRC}
+	${LINT} ${LINTFLAGS} ${CFLAGS:M-[IDU]*} ${CPPFLAGS:M-[IDU]*} -i ${.IMPSRC}
 
 .cc.o .C.o .cxx.o:
 	@echo "${COMPILE.cc} ${.IMPSRC} -o ${.TARGET}"
