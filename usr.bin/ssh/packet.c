@@ -37,7 +37,7 @@
  */
 
 #include "includes.h"
-RCSID("$OpenBSD: packet.c,v 1.64 2001/05/31 10:30:16 markus Exp $");
+RCSID("$OpenBSD: packet.c,v 1.65 2001/06/07 20:23:04 markus Exp $");
 
 #include "xmalloc.h"
 #include "buffer.h"
@@ -1226,7 +1226,7 @@ packet_set_maxsize(int s)
 		log("packet_set_maxsize: bad size %d", s);
 		return -1;
 	}
-	log("packet_set_maxsize: setting to %d", s);
+	debug("packet_set_maxsize: setting to %d", s);
 	max_packet_size = s;
 	return s;
 }
