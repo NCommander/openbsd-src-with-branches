@@ -1,4 +1,4 @@
-/*	$OpenBSD: com_pcmcia.c,v 1.11 1999/01/21 08:55:08 niklas Exp $	*/
+/*	$OpenBSD: com_pcmcia.c,v 1.12 1999/01/28 04:58:29 fgsch Exp $	*/
 /*	$NetBSD: com_pcmcia.c,v 1.15 1998/08/22 17:47:58 msaitoh Exp $	*/
 
 /*-
@@ -290,6 +290,8 @@ found:
 		printf(": can't map i/o space\n");
 		return;
 	}
+
+	printf(" port 0x%lx/%d", psc->sc_pcioh.addr, psc->sc_pcioh.size);
 
 	sc->sc_iobase = -1;
 #ifdef notyet
