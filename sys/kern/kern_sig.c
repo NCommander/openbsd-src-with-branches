@@ -1,4 +1,4 @@
-/*	$OpenBSD: kern_sig.c,v 1.28 1998/05/18 21:41:45 deraadt Exp $	*/
+/*	$OpenBSD: kern_sig.c,v 1.29 1998/05/30 20:54:42 deraadt Exp $	*/
 /*	$NetBSD: kern_sig.c,v 1.54 1996/04/22 01:38:32 christos Exp $	*/
 
 /*
@@ -106,6 +106,8 @@ cansignal(p, pc, q, signum)
 		case SIGTTOU:
 		case SIGTSTP:
 		case SIGHUP:
+		case SIGUSR1:
+		case SIGUSR2:
 			if (pc->p_ruid == q->p_cred->p_ruid ||
 			    pc->pc_ucred->cr_uid == q->p_cred->p_ruid ||
 			    pc->p_ruid == q->p_ucred->cr_uid ||
