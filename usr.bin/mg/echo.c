@@ -1,4 +1,4 @@
-/*	$OpenBSD: echo.c,v 1.14 2001/05/24 01:55:49 mickey Exp $	*/
+/*	$OpenBSD: echo.c,v 1.15 2001/05/24 09:34:05 mickey Exp $	*/
 
 /*
  *	Echo line reading and writing.
@@ -12,6 +12,8 @@
 #ifndef NO_MACRO
 #include "macro.h"
 #endif /* !NO_MACRO */
+
+#include "funmap.h"
 
 #include <stdarg.h>
 
@@ -175,6 +177,10 @@ veread(const char *fp, char *buf, int nbuf, int flag, va_list ap)
 	} else
 		eputc(' ');
 	eformat(fp, ap);
+	if ((flag & EFDEF) != 0) {
+		eputs(buf);
+		cpos += strlen(buf);
+	}
 	tteeol();
 	ttflush();
 	for (;;) {

@@ -1,4 +1,4 @@
-/*	$OpenBSD: extend.c,v 1.14 2001/05/23 23:29:47 mickey Exp $	*/
+/*	$OpenBSD: extend.c,v 1.15 2001/05/24 03:05:22 mickey Exp $	*/
 
 /*
  *	Extended (M-X) commands, rebinding, and	startup file processing.
@@ -6,6 +6,7 @@
 
 #include "def.h"
 #include "kbd.h"
+#include "funmap.h"
 
 #ifndef NO_MACRO
 #include "macro.h"
