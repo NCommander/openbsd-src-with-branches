@@ -75,6 +75,9 @@
  * Exported definitions unique to mvme68k/68k cpu support.
  */
 
+#define M68K_MMU_MOTOROLA
+#include <m68k/cpu.h>
+
 /*
  * definitions of cpu-dependent requirements
  * referenced in generic code

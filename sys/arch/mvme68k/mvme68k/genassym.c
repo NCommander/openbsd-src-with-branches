@@ -273,6 +273,11 @@ main()
 	def("MMU_68030", MMU_68030);
 	def("MMU_68040", MMU_68040);
 
+	def("CPU_68020", CPU_68020);
+	def("CPU_68030", CPU_68030);
+	def("CPU_68040", CPU_68040);
+	def("CPU_68060", CPU_68060);
+
 	off("NETCTRL_DEV", struct prom_netctrl, dev);
 	off("NETCTRL_CTRL", struct prom_netctrl, ctrl);
 	off("NETCTRL_CMD", struct prom_netctrl, cmd);
