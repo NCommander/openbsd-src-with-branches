@@ -1,3 +1,4 @@
+#	$OpenBSD$
 #	$NetBSD: Makefile,v 1.9 1996/03/16 11:03:12 ragge Exp $
 #
 
