@@ -1,4 +1,4 @@
-/*	$OpenBSD: session.h,v 1.7 2004/01/03 22:44:29 henning Exp $ */
+/*	$OpenBSD: session.h,v 1.8 2004/01/04 18:51:23 henning Exp $ */
 
 /*
  * Copyright (c) 2003 Henning Brauer <henning@openbsd.org>
@@ -148,7 +148,7 @@ void		  session_socket_blockmode(int, enum blockmodes);
 int		  session_main(struct bgpd_config *, struct peer *, int[2],
 		    int[2]);
 struct peer	*getpeerbyip(in_addr_t);
-
+int		 imsg_compose_parent(int, u_int32_t, void *, u_int16_t);
 
 /* log.c */
 void		 log_peer_err(const struct peer *, const char *, ...);
