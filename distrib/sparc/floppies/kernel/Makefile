@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.11 1997/09/05 21:17:01 deraadt Exp $
+#	$OpenBSD: Makefile,v 1.12 1997/09/26 01:51:30 millert Exp $
 
 .include "../Makefile.inc"
 
@@ -16,7 +16,7 @@ LISTS=		${.CURDIR}/list
 bsd:
 	cd ${.CURDIR}/../../../../sys/arch/sparc/conf && config FLOPPY
 	cd ${.CURDIR}/../../../../sys/arch/sparc/compile/FLOPPY && \
-	    make clean && make
+	    make clean && make depend && make
 	cp ${.CURDIR}/../../../../sys/arch/sparc/compile/FLOPPY/bsd bsd
 
 all:	bsd
