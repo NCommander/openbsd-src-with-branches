@@ -1,3 +1,4 @@
+#	$OpenBSD$
 #	@(#)Makefile	5.11 (Berkeley) 6/25/90
 
 PROG=	more

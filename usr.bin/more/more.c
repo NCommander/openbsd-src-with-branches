@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /*-
  * Copyright (c) 1980 The Regents of the University of California.
  * All rights reserved.
@@ -407,7 +408,7 @@ magic(f, fs)
 	struct exec ex;
 
 	if (fread(&ex, sizeof(ex), 1, f) == 1)
-		switch(ex.a_magic) {
+		switch(N_GETMAGIC(ex)) {
 		case OMAGIC:
 		case NMAGIC:
 		case ZMAGIC:
