@@ -1,4 +1,4 @@
-/*	$OpenBSD: fsck.c,v 1.16 2003/09/25 04:16:41 deraadt Exp $	*/
+/*	$OpenBSD: fsck.c,v 1.17 2004/01/13 15:59:13 otto Exp $	*/
 /*	$NetBSD: fsck.c,v 1.7 1996/10/03 20:06:30 christos Exp $	*/
 
 /*
@@ -35,7 +35,7 @@
  *
  */
 
-static const char rcsid[] = "$OpenBSD: fsck.c,v 1.16 2003/09/25 04:16:41 deraadt Exp $";
+static const char rcsid[] = "$OpenBSD: fsck.c,v 1.17 2004/01/13 15:59:13 otto Exp $";
 
 #include <sys/param.h>
 #include <sys/mount.h>
@@ -465,7 +465,7 @@ usage(void)
 {
 	extern char *__progname;
 	static const char common[] =
-	    "[-dvpfny] [-l maxparallel] [-t fstype] [-T fstype:fsoptions]";
+	    "[-dfnpvy] [-l maxparallel] [-T fstype:fsoptions] [-t fstype]";
 
 	(void)fprintf(stderr, "Usage: %s %s special | node ...\n",
 	    __progname, common);
