@@ -14,7 +14,7 @@
  */
 
 #include "includes.h"
-RCSID("$OpenBSD: auth-rsa.c,v 1.56 2002/06/10 16:53:06 stevesk Exp $");
+RCSID("$OpenBSD: auth-rsa.c,v 1.57 2003/04/08 20:21:28 itojun Exp $");
 
 #include <openssl/rsa.h>
 #include <openssl/md5.h>
@@ -284,13 +284,14 @@ auth_rsa_key_allowed(struct passwd *pw, BIGNUM *client_n, Key **rkey)
  * successful.  This may exit if there is a serious protocol violation.
  */
 int
-auth_rsa(struct passwd *pw, BIGNUM *client_n)
+auth_rsa(Authctxt *authctxt, BIGNUM *client_n)
 {
 	Key *key;
 	char *fp;
+	struct passwd *pw = authctxt->pw;
 
 	/* no user given */
-	if (pw == NULL)
+	if (!authctxt->valid)
 		return 0;
 
 	if (!PRIVSEP(auth_rsa_key_allowed(pw, client_n, &key))) {

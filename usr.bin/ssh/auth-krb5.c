@@ -28,7 +28,7 @@
  */
 
 #include "includes.h"
-RCSID("$OpenBSD: auth-krb5.c,v 1.12 2003/08/28 12:54:34 markus Exp $");
+RCSID("$OpenBSD: auth-krb5.c,v 1.13 2003/09/23 20:17:11 markus Exp $");
 
 #include "ssh.h"
 #include "ssh1.h"
@@ -65,7 +65,7 @@ auth_krb5_password(Authctxt *authctxt, const char *password)
 	krb5_error_code problem;
 	krb5_ccache ccache = NULL;
 
-	if (authctxt->pw == NULL)
+	if (!authctxt->valid)
 		return (0);
 
 	temporarily_use_uid(authctxt->pw);

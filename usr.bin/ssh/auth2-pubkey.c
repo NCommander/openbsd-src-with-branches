@@ -23,7 +23,7 @@
  */
 
 #include "includes.h"
-RCSID("$OpenBSD: auth2-pubkey.c,v 1.3 2003/04/08 20:21:28 itojun Exp $");
+RCSID("$OpenBSD: auth2-pubkey.c,v 1.4 2003/06/24 08:23:46 markus Exp $");
 
 #include "ssh2.h"
 #include "xmalloc.h"
@@ -170,9 +170,6 @@ user_key_allowed2(struct passwd *pw, Key *key, char *file)
 	struct stat st;
 	Key *found;
 	char *fp;
-
-	if (pw == NULL)
-		return 0;
 
 	/* Temporarily use the user's uid. */
 	temporarily_use_uid(pw);

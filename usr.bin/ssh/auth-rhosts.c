@@ -14,7 +14,7 @@
  */
 
 #include "includes.h"
-RCSID("$OpenBSD: auth-rhosts.c,v 1.30 2003/05/17 03:25:58 itojun Exp $");
+RCSID("$OpenBSD: auth-rhosts.c,v 1.31 2003/06/02 09:17:34 markus Exp $");
 
 #include "packet.h"
 #include "uidswap.h"
@@ -172,10 +172,6 @@ auth_rhosts2_raw(struct passwd *pw, const char *client_user, const char *hostnam
 
 	debug2("auth_rhosts2: clientuser %s hostname %s ipaddr %s",
 	    client_user, hostname, ipaddr);
-
-	/* no user given */
-	if (pw == NULL)
-		return 0;
 
 	/* Switch to the user's uid. */
 	temporarily_use_uid(pw);
