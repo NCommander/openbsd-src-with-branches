@@ -1,4 +1,4 @@
-/*	$OpenBSD: ip_icmp.c,v 1.28 2000/10/10 14:24:33 itojun Exp $	*/
+/*	$OpenBSD: ip_icmp.c,v 1.29 2000/10/10 15:16:02 provos Exp $	*/
 /*	$NetBSD: ip_icmp.c,v 1.19 1996/02/13 23:42:22 christos Exp $	*/
 
 /*
@@ -85,7 +85,7 @@ int	icmpbmcastecho = 0;
 #ifdef ICMPPRINTFS
 int	icmpprintfs = 0;
 #endif
-int	icmperrppslim;
+int	icmperrppslim = 100;
 int	icmperrpps_count = 0;
 struct timeval icmperrppslim_last;
 
