@@ -1,4 +1,4 @@
-/*	$OpenBSD: disksubr.c,v 1.18 1997/10/01 22:54:20 deraadt Exp $	*/
+/*	$OpenBSD: disksubr.c,v 1.19 1998/03/01 10:17:54 johns Exp $	*/
 /*	$NetBSD: disksubr.c,v 1.16 1996/04/28 20:25:59 thorpej Exp $ */
 
 /*
@@ -143,7 +143,7 @@ readdisklabel(dev, strat, lp, clp)
 	struct sun_disklabel *slp;
 	int error, i;
 
-	/* minimal requirements for archtypal disk label */
+	/* minimal requirements for archetypal disk label */
 	if (lp->d_secperunit == 0)
 		lp->d_secperunit = 0x1fffffff;
 	lp->d_npartitions = RAW_PART+1;
