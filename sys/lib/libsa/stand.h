@@ -1,4 +1,4 @@
-/*	$OpenBSD: stand.h,v 1.32 1998/05/29 20:44:47 mickey Exp $	*/
+/*	$OpenBSD: stand.h,v 1.33 1998/05/31 23:39:14 mickey Exp $	*/
 /*	$NetBSD: stand.h,v 1.18 1996/11/30 04:35:51 gwr Exp $	*/
 
 /*-
@@ -135,8 +135,9 @@ extern struct open_file files[];
 	h = ((b) % ((nh) * (ns))) / (ns);	\
 	s = ((b) % ((nh) * (ns))) % (ns);
 
-void	*alloc __P((unsigned int));
-void	free __P((void *, unsigned int));
+void	*alloc __P((u_int));
+void	*alloca __P((size_t));
+void	free __P((void *, u_int));
 struct	disklabel;
 char	*getdisklabel __P((const char *, struct disklabel *));
 u_int	dkcksum __P((struct disklabel *));
