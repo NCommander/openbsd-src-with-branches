@@ -1,4 +1,4 @@
-/*	$OpenBSD: procfs_vnops.c,v 1.24 2002/03/14 00:42:25 miod Exp $	*/
+/*	$OpenBSD: procfs_vnops.c,v 1.25 2002/03/14 01:27:08 millert Exp $	*/
 /*	$NetBSD: procfs_vnops.c,v 1.40 1996/03/16 23:52:55 christos Exp $	*/
 
 /*
@@ -650,13 +650,13 @@ procfs_getattr(v)
 #endif
 		break;
 
-#if defined(PT_GETFPREGS) || defined(PT_SETFPREGS)
 	case Pfpregs:
+#if defined(PT_GETFPREGS) || defined(PT_SETFPREGS)
 #ifdef PTRACE
 		vap->va_bytes = vap->va_size = sizeof(struct fpreg);
 #endif
-		break;
 #endif
+		break;
 
 	case Pctl:
 	case Pstatus:
