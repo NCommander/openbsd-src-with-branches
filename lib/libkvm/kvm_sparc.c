@@ -1,4 +1,4 @@
-/*	$OpenBSD: kvm_sparc.c,v 1.3 1997/02/26 16:46:34 niklas Exp $ */
+/*	$OpenBSD: kvm_sparc.c,v 1.4 1997/06/11 10:32:16 grr Exp $ */
 /*	$NetBSD: kvm_sparc.c,v 1.9 1996/04/01 19:23:03 cgd Exp $	*/
 
 /*-
@@ -42,7 +42,7 @@
 #if 0
 static char sccsid[] = "@(#)kvm_sparc.c	8.1 (Berkeley) 6/4/93";
 #else
-static char *rcsid = "$OpenBSD: kvm_sparc.c,v 1.3 1997/02/26 16:46:34 niklas Exp $";
+static char *rcsid = "$OpenBSD: kvm_sparc.c,v 1.4 1997/06/11 10:32:16 grr Exp $";
 #endif
 #endif /* LIBC_SCCS and not lint */
 
@@ -226,8 +226,7 @@ _kvm_kvatop4m(kd, va, pa)
 	if (foff == (off_t)-1)
 		return (0);
 
-	if (lseek(kd->pmfd, foff, 0) == -1 || 
-	    read(kd->pmfd, (void *)&pte, sizeof(pte)) < 0) {
+	if (_kvm_pread(kd, kd->pmfd, (void *)&pte, sizeof(pte), foff) < 0) {
 		_kvm_err(kd, kd->program, "cannot read pte for %x", va);
 		return (0);
 	}
