@@ -1,4 +1,4 @@
-/*	$OpenBSD: exec_elf.c,v 1.37 2001/11/15 06:22:30 art Exp $	*/
+/*	$OpenBSD: exec_elf.c,v 1.38 2002/03/14 01:27:03 millert Exp $	*/
 
 /*
  * Copyright (c) 1996 Per Fogelstrom
@@ -312,7 +312,7 @@ ELFNAME(read_from)(struct proc *p, struct vnode *vp, u_long off, caddr_t buf,
 	size_t resid;
 
 	if ((error = vn_rdwr(UIO_READ, vp, buf, size, off, UIO_SYSSPACE,
-	    IO_NODELOCKED, p->p_ucred, &resid, p)) != 0)
+	    0, p->p_ucred, &resid, p)) != 0)
 		return error;
 	/*
 	 * See if we got all of it
