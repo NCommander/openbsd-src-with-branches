@@ -1,4 +1,4 @@
-/*	$OpenBSD: ccd.c,v 1.46 2001/11/28 16:13:29 art Exp $	*/
+/*	$OpenBSD: ccd.c,v 1.47 2002/03/14 01:26:52 millert Exp $	*/
 /*	$NetBSD: ccd.c,v 1.33 1996/05/05 04:21:14 thorpej Exp $	*/
 
 /*-
@@ -733,7 +733,9 @@ ccdstrategy(bp)
 	splx(s);
 	return;
 done:
+	s = splbio();
 	biodone(bp);
+	splx(s);
 }
 
 void
@@ -1001,6 +1003,8 @@ ccdintr(cs, bp)
 	struct ccd_softc *cs;
 	struct buf *bp;
 {
+
+	splassert(IPL_BIO);
 
 #ifdef DEBUG
 	if (ccddebug & CCDB_FOLLOW)
