@@ -45,7 +45,7 @@
 
 #if !defined(lint)
 static const char sccsid[] = "@(#)ipf.c	1.23 6/5/96 (C) 1993-1995 Darren Reed";
-static const char rcsid[] = "@(#)$IPFilter: ipf.c,v 2.2 1999/08/06 15:26:08 darrenr Exp $";
+static const char rcsid[] = "@(#)$IPFilter: ipf.c,v 2.2.2.1 2000/02/16 14:40:39 darrenr Exp $";
 #endif
 
 #if	SOLARIS
@@ -365,8 +365,8 @@ char	*opt;
 {
 	int	flag, err;
 
-	err = get_flags();
-	if (err != 0) {
+	flag = get_flags();
+	if (flag != 0) {
 		if ((opts & (OPT_DONOTHING|OPT_VERBOSE)) == OPT_VERBOSE)
 			printf("log flag is currently %#x\n", flag);
 	}

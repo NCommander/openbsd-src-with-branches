@@ -9,7 +9,7 @@
  */
 #if !defined(lint)
 static const char sccsid[] = "@(#)ipmon.c	1.21 6/5/96 (C)1993-1998 Darren Reed";
-static const char rcsid[] = "@(#)$IPFilter: ipmon.c,v 2.3.2.4 2000/01/24 12:45:25 darrenr Exp $";
+static const char rcsid[] = "@(#)$IPFilter: ipmon.c,v 2.3.2.5 2000/02/16 14:40:39 darrenr Exp $";
 #endif
 
 #ifndef SOLARIS
@@ -178,7 +178,7 @@ static void init_tabs()
 	struct	protoent	*p;
 	struct	servent	*s;
 	char	*name, **tab;
-	u_int	port;
+	int	port;
 
 	if (protocols != NULL) {
 		free(protocols);
@@ -217,11 +217,11 @@ static void init_tabs()
 		if (s->s_proto == NULL)
 			continue;
 		else if (!strcmp(s->s_proto, "tcp")) {
-			port = (u_int)s->s_port;
+			port = s->s_port;
 			name = s->s_name;
 			tab = tcp_ports;
 		} else if (!strcmp(s->s_proto, "udp")) {
-			port = (u_int)s->s_port;
+			port = s->s_port;
 			name = s->s_name;
 			tab = udp_ports;
 		} else
