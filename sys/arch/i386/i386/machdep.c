@@ -1,4 +1,4 @@
-/*	$OpenBSD: machdep.c,v 1.290 2004/04/19 22:26:22 tom Exp $	*/
+/*	$OpenBSD: machdep.c,v 1.291 2004/05/04 17:06:33 grange Exp $	*/
 /*	$NetBSD: machdep.c,v 1.214 1996/11/10 03:16:17 thorpej Exp $	*/
 
 /*-
@@ -1354,7 +1354,6 @@ intel686_common_cpu_setup(const char *cpu_device, int model, int step)
 		pagezero = sse2_pagezero;
 	else
 		pagezero = i686_pagezero;
-	pagezero = bzero;
 	}
 #endif
 }
