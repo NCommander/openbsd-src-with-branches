@@ -1,4 +1,4 @@
-/*	$OpenBSD: svr4_sockio.c,v 1.4 1996/04/21 22:18:26 deraadt Exp $	 */
+/*	$OpenBSD: svr4_sockio.c,v 1.6 1996/05/07 08:49:20 deraadt Exp $	 */
 /*	$NetBSD: svr4_sockio.c,v 1.10 1996/05/03 17:09:15 christos Exp $	 */
 
 /*
@@ -37,7 +37,6 @@
 #include <sys/termios.h>
 #include <sys/tty.h>
 #include <sys/socket.h>
-#include <sys/ioctl.h>
 #include <sys/mount.h>
 #include <net/if.h>
 #include <sys/malloc.h>

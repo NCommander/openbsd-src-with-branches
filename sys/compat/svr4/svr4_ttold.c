@@ -1,4 +1,4 @@
-/*	$OpenBSD: svr4_ttold.c,v 1.4 1996/04/21 22:18:40 deraadt Exp $	 */
+/*	$OpenBSD: svr4_ttold.c,v 1.5 1996/08/01 00:50:56 niklas Exp $	 */
 /*	$NetBSD: svr4_ttold.c,v 1.9 1996/04/11 12:54:45 christos Exp $	 */
 
 /*
@@ -37,7 +37,6 @@
 #include <sys/termios.h>
 #include <sys/tty.h>
 #include <sys/socket.h>
-#include <sys/ioctl.h>
 #include <sys/mount.h>
 #include <net/if.h>
 #include <sys/malloc.h>
