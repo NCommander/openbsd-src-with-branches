@@ -1,7 +1,7 @@
-/*	$OpenBSD: show.c,v 1.6 1998/11/22 23:22:41 espie Exp $	*/
+/*	$OpenBSD: show.c,v 1.7 1999/03/08 02:01:02 marc Exp $	*/
 
 #ifndef lint
-static const char *rcsid = "$OpenBSD: show.c,v 1.6 1998/11/22 23:22:41 espie Exp $";
+static const char *rcsid = "$OpenBSD: show.c,v 1.7 1999/03/08 02:01:02 marc Exp $";
 #endif
 
 /*
@@ -90,7 +90,7 @@ show_index(char *title, char *fname)
 	strcpy(line, "???\n");
 
 	if (!Quiet) {
-		printf("%s%-19s", InfoPrefix, title);
+		printf("%s%-18s ", InfoPrefix, title);
 	}
 	if ((fp = fopen(fname, "r")) == (FILE *) NULL) {
 		warnx("show_file (%s): can't open '%s' for reading", title, fname);
