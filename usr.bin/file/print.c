@@ -1,4 +1,4 @@
-/*	$OpenBSD: print.c,v 1.3 1997/02/09 23:58:32 millert Exp $	*/
+/*	$OpenBSD: print.c,v 1.4 1997/07/25 21:05:26 mickey Exp $	*/
 
 /*
  * print.c - debugging printout routines
@@ -41,7 +41,7 @@
 #include "file.h"
 
 #ifndef lint
-static char *moduleid = "$OpenBSD: print.c,v 1.3 1997/02/09 23:58:32 millert Exp $";
+static char *moduleid = "$OpenBSD: print.c,v 1.4 1997/07/25 21:05:26 mickey Exp $";
 #endif  /* lint */
 
 #define SZOF(a)	(sizeof(a) / sizeof(a[0]))
@@ -69,7 +69,7 @@ struct magic *m;
 		       (m->type >= 0 && m->type < SZOF(typ)) ? 
 				typ[(unsigned char) m->type] : 
 				"*bad*");
-	if (m->mask != ~0L)
+	if (m->mask != ~0)
 		(void) fprintf(stderr, " & %.8x", m->mask);
 
 	(void) fprintf(stderr, ",%c", m->reln);
