@@ -1,4 +1,4 @@
-/*	$OpenBSD: parse.y,v 1.456 2004/06/25 05:45:48 deraadt Exp $	*/
+/*	$OpenBSD: parse.y,v 1.457 2004/06/26 07:25:16 david Exp $	*/
 
 /*
  * Copyright (c) 2001 Markus Friedl.  All rights reserved.
@@ -4181,11 +4181,12 @@ expand_rule(struct pf_rule *r,
 			r->af = dst_host->af;
 
 		if (*interface->ifname)
-			memcpy(r->ifname, interface->ifname, sizeof(r->ifname));
+			strlcpy(r->ifname, interface->ifname,
+			    sizeof(r->ifname));
 		else if (if_indextoname(src_host->ifindex, ifname))
-			memcpy(r->ifname, ifname, sizeof(r->ifname));
+			strlcpy(r->ifname, ifname, sizeof(r->ifname));
 		else if (if_indextoname(dst_host->ifindex, ifname))
-			memcpy(r->ifname, ifname, sizeof(r->ifname));
+			strlcpy(r->ifname, ifname, sizeof(r->ifname));
 		else
 			memset(r->ifname, '\0', sizeof(r->ifname));
 
