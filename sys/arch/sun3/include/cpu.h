@@ -1,4 +1,4 @@
-/*	$OpenBSD: cpu.h,v 1.10.10.1 2000/03/24 09:08:52 niklas Exp $	*/
+/*	$OpenBSD: cpu.h,v 1.10.10.2 2001/07/04 10:24:00 niklas Exp $	*/
 /*	$NetBSD: cpu.h,v 1.20 1995/12/21 05:02:10 mycroft Exp $	*/
 
 /*
@@ -131,18 +131,6 @@ union sun3sir {
 #define	setsoftint()	isr_soft_request(1)
 #define setsoftnet()	(sun3sir.sir_which[SIR_NET] = 1, setsoftint())
 #define setsoftclock()	(sun3sir.sir_which[SIR_CLOCK] = 1, setsoftint())
-
-
-/*
- * CTL_MACHDEP definitions.
- */
-#define	CPU_CONSDEV		1	/* dev_t: console terminal device */
-#define	CPU_MAXID		2	/* number of valid machdep ids */
-
-#define	CTL_MACHDEP_NAMES { \
-	{ 0, 0 }, \
-	{ "console_device", CTLTYPE_STRUCT }, \
-}
 
 /* values for cpu_machine_id */
 

@@ -1,4 +1,4 @@
-#	$OpenBSD: SUN4,v 1.22 1999/10/29 14:14:28 art Exp $
+#	$OpenBSD: SUN4,v 1.22.2.1 2001/07/04 10:23:15 niklas Exp $
 # 	$NetBSD: GENERIC,v 1.28.2.1 1996/07/02 23:55:22 jtc Exp $
 
 # Machine architecture; required by config(8)
@@ -169,5 +169,4 @@ uk*	at scsibus? target ? lun ?		# unknown SCSI devices
 
 pseudo-device	kbd		# Sun keyboard
 #pseudo-device	strip	1	# radio clock
-pseudo-device	rd 2
 

@@ -1,4 +1,4 @@
-/*	$OpenBSD: machdep.h,v 1.8.10.2 2001/05/14 21:37:30 niklas Exp $	*/
+/*	$OpenBSD: machdep.h,v 1.8.10.3 2001/07/04 10:24:01 niklas Exp $	*/
 
 /*
  * Copyright (c) 1994 Gordon W. Ross
@@ -95,9 +95,6 @@ void	fb_unblank __P((void));
 
 int 	fpu_emulate __P((struct frame *, struct fpframe *));
 
-int 	getdfc __P((void));
-int 	getsfc __P((void));
-
 /* Backward compatibility... */
 #define getsr	_getsr
 
@@ -125,8 +122,6 @@ void	pmap_get_ksegmap __P((u_char *));
 void	pmap_get_pagemap __P((int *pt, int off));
 
 int	reboot2 __P((int, char *));
-
-void	regdump __P((struct frame *, int));
 
 void	savectx __P((struct pcb *));
 

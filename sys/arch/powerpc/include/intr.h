@@ -1,4 +1,4 @@
-/*	$OpenBSD: intr.h,v 1.4.2.1 2001/04/18 16:13:02 niklas Exp $ */
+/*	$OpenBSD: intr.h,v 1.4.2.2 2001/07/04 10:22:24 niklas Exp $ */
 
 /*
  * Copyright (c) 1997 Per Fogelstrom, Opsycon AB and RTMX Inc, USA.
@@ -32,8 +32,8 @@
  *
  */
 
-#ifndef _MACHINE_INTR_H_
-#define _MACHINE_INTR_H_
+#ifndef _POWERPC_INTR_H_
+#define _POWERPC_INTR_H_
 
 #define	IPL_BIO		0
 #define	IPL_NET		1
@@ -167,4 +167,4 @@ void softnet(int isr);
 #endif /* _LOCORE */
 
 
-#endif /* _MACHINE_INTR_H_ */
+#endif /* _POWERPC_INTR_H_ */

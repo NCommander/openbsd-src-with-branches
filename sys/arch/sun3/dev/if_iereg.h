@@ -1,3 +1,4 @@
+/*	$OpenBSD$ */
 /*	$NetBSD: if_iereg.h,v 1.1 1994/12/12 18:59:09 gwr Exp $ */
 
 /*

@@ -1,4 +1,4 @@
-/*	$OpenBSD: conf.c,v 1.23.4.2 2001/05/14 21:37:15 niklas Exp $	*/
+/*	$OpenBSD: conf.c,v 1.23.4.3 2001/07/04 10:23:39 niklas Exp $	*/
 /*	$NetBSD: conf.c,v 1.40 1996/04/11 19:20:03 thorpej Exp $ */
 
 /*
@@ -129,7 +129,6 @@ struct bdevsw	bdevsw[] =
 int	nblkdev = sizeof(bdevsw) / sizeof(bdevsw[0]);
 
 #include "pf.h"
-cdev_decl(pf);
 
 #include <altq/altqconf.h>
 

@@ -1,3 +1,5 @@
+/*	$OpenBSD$	*/
+
 
 #include <sys/param.h>
 #include <machine/mon.h>

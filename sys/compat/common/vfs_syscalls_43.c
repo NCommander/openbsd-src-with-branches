@@ -1,4 +1,4 @@
-/*	$OpenBSD: vfs_syscalls_43.c,v 1.9.10.1 2001/05/14 22:04:19 niklas Exp $	*/
+/*	$OpenBSD: vfs_syscalls_43.c,v 1.9.10.2 2001/07/04 10:39:16 niklas Exp $	*/
 /*	$NetBSD: vfs_syscalls_43.c,v 1.4 1996/03/14 19:31:52 christos Exp $	*/
 
 /*
@@ -196,8 +196,7 @@ compat_43_sys_fstat(p, v, retval)
 	struct ostat oub;
 	int error;
 
-	if ((u_int)fd >= fdp->fd_nfiles ||
-	    (fp = fdp->fd_ofiles[fd]) == NULL)
+	if ((fp = fd_getfile(fdp, fd)) == NULL)
 		return (EBADF);
 	error = (*fp->f_ops->fo_stat)(fp, &ub, p);
 	cvtstat(&ub, &oub);

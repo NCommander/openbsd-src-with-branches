@@ -1,4 +1,4 @@
-/*	$OpenBSD: osf1_sysent.c,v 1.8 2000/08/04 15:49:06 ericj Exp $	*/
+/*	$OpenBSD: osf1_sysent.c,v 1.6.4.1 2001/05/14 22:05:13 niklas Exp $	*/
 
 /*
  * System call switch table.

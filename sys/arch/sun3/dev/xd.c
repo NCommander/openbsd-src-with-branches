@@ -1,4 +1,4 @@
-/*	$OpenBSD: xd.c,v 1.13 2000/11/10 15:33:08 provos Exp $	*/
+/*	$OpenBSD: xd.c,v 1.12.8.1 2001/05/14 21:37:29 niklas Exp $	*/
 /*	$NetBSD: xd.c,v 1.10 1996/10/13 03:47:39 christos Exp $	*/
 
 /*
@@ -75,7 +75,6 @@
 #include <sys/syslog.h>
 #include <sys/dkbad.h>
 #include <vm/vm.h>
-#include <vm/vm_kern.h>
 
 #include <machine/autoconf.h>
 #include <machine/sun_disklabel.h>

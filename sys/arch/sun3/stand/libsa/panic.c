@@ -1,3 +1,5 @@
+/*	$OpenBSD$	*/
+
 
 #include <stdarg.h>
 #include "stand.h"

@@ -1,4 +1,4 @@
-/*	$OpenBSD: svr4_net.c,v 1.9.4.1 2001/05/14 22:05:27 niklas Exp $	 */
+/*	$OpenBSD: svr4_net.c,v 1.9.4.2 2001/07/04 10:39:46 niklas Exp $	 */
 /*	$NetBSD: svr4_net.c,v 1.12 1996/09/07 12:40:51 mycroft Exp $	 */
 
 /*
@@ -187,6 +187,7 @@ svr4_netopen(dev, flag, mode, p)
 	DPRINTF(("ok);\n"));
 
 	p->p_dupfd = fd;
+	FILE_SET_MATURE(fp);
 	return ENXIO;
 }
 

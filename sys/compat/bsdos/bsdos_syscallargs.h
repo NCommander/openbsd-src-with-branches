@@ -1,4 +1,4 @@
-/*	$OpenBSD: bsdos_syscallargs.h,v 1.6.2.1 2001/05/14 22:04:15 niklas Exp $	*/
+/*	$OpenBSD: bsdos_syscallargs.h,v 1.6.2.2 2001/07/04 10:39:10 niklas Exp $	*/
 
 /*
  * System call argument lists.
@@ -7,7 +7,21 @@
  * created from	OpenBSD: syscalls.master,v 1.8 2001/05/16 17:14:37 millert Exp 
  */
 
-#define	syscallarg(x)	union { x datum; register_t pad; }
+#ifdef	syscallarg
+#undef	syscallarg
+#endif
+
+#define	syscallarg(x)							\
+	union {								\
+		register_t pad;						\
+		struct { x datum; } le;					\
+		struct {						\
+			int8_t pad[ (sizeof (register_t) < sizeof (x))	\
+				? 0					\
+				: sizeof (register_t) - sizeof (x)];	\
+			x datum;					\
+		} be;							\
+	}
 
 struct bsdos_sys_ioctl_args {
 	syscallarg(int) fd;

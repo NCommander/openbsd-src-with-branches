@@ -1,3 +1,5 @@
+/*	$OpenBSD$	*/
+
 
 #include <sys/param.h>
 #include <sys/reboot.h>

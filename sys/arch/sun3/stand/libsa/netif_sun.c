@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /*	$NetBSD: netif_sun.c,v 1.4 1996/01/29 23:41:07 gwr Exp $	*/
 
 /*

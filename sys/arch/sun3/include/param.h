@@ -1,4 +1,4 @@
-/*	$OpenBSD: param.h,v 1.17.12.2 2001/05/14 21:37:30 niklas Exp $	*/
+/*	$OpenBSD: param.h,v 1.17.12.3 2001/07/04 10:24:01 niklas Exp $	*/
 /*	$NetBSD: param.h,v 1.34 1996/03/04 05:04:40 cgd Exp $	*/
 
 /*
@@ -82,7 +82,7 @@
  * clusters (MAPPED_MBUFS), MCLBYTES must also be an integral multiple
  * of the hardware page size.
  */
-#define	MSIZE		128		/* size of an mbuf */
+#define	MSIZE		256		/* size of an mbuf */
 #define	MCLSHIFT	11
 #define	MCLBYTES	(1 << MCLSHIFT)	/* large enough for ether MTU */
 #define	MCLOFSET	(MCLBYTES - 1)

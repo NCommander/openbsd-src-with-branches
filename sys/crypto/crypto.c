@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: crypto.c,v 1.2.2.3 2001/07/04 10:39:58 niklas Exp $	*/
 /*
  * The author of this code is Angelos D. Keromytis (angelos@cis.upenn.edu)
  *
@@ -487,6 +487,7 @@ crypto_check_alg(struct cryptoini *cri)
 	case CRYPTO_CAST_CBC:
 	case CRYPTO_SKIPJACK_CBC:
 	case CRYPTO_RIJNDAEL128_CBC:
+	case CRYPTO_ARC4:
 		return SYMMETRIC;
 	case CRYPTO_DH_SEND:
 	case CRYPTO_DH_RECEIVE:

@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /*	$NetBSD: SRT1.c,v 1.4 1996/01/29 23:41:03 gwr Exp $	*/
 
 /*

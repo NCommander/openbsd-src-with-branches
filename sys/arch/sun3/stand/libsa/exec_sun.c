@@ -1,3 +1,4 @@
+/*	$OpenBSD$ */
 /*	$NetBSD: exec_sun.c,v 1.6 1996/06/20 03:59:41 gwr Exp $ */
 
 /*-

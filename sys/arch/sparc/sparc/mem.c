@@ -1,4 +1,4 @@
-/*	$OpenBSD: mem.c,v 1.11.2.2 2001/05/14 21:37:17 niklas Exp $	*/
+/*	$OpenBSD: mem.c,v 1.11.2.3 2001/07/04 10:23:45 niklas Exp $	*/
 /*	$NetBSD: mem.c,v 1.13 1996/03/30 21:12:16 christos Exp $ */
 
 /*
@@ -58,7 +58,7 @@
 #include <machine/conf.h>
 
 #include <vm/vm.h>
-#include <vm/vm_kern.h>
+#include <uvm/uvm_extern.h>
 
 extern vaddr_t prom_vstart;
 extern vaddr_t prom_vend;
@@ -146,7 +146,7 @@ mmrw(dev, uio, flags)
 			}
 			pmap_enter(pmap_kernel(), mem_page,
 			    trunc_page(pa), uio->uio_rw == UIO_READ ?
-			    VM_PROT_READ : VM_PROT_WRITE, TRUE, 0);
+			    VM_PROT_READ : VM_PROT_WRITE, PMAP_WIRED);
 			o = uio->uio_offset & PGOFSET;
 			c = min(uio->uio_resid, (int)(NBPG - o));
 			error = uiomove((caddr_t)mem_page + o, c, uio);
