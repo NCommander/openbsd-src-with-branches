@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.3 2000/07/20 00:34:29 espie Exp $
+#	$OpenBSD: Makefile,v 1.4 2001/01/30 00:33:04 aaron Exp $
 
 .if ${MACHINE} == "i386" || ${MACHINE} == "alpha" || ${MACHINE} == "hppa"
 
@@ -12,6 +12,6 @@ NOPROG=yes
 .endif
 
 MAN=	wsfontload.8
-MANSUBDIR=	alpha hppa
+MANSUBDIR=	alpha hppa i386
 
 .include <bsd.prog.mk>
