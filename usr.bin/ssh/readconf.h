@@ -1,4 +1,4 @@
-/*	$OpenBSD: readconf.h,v 1.56 2003/10/11 08:24:08 markus Exp $	*/
+/*	$OpenBSD: readconf.h,v 1.57 2003/11/21 11:57:03 djm Exp $	*/
 
 /*
  * Author: Tatu Ylonen <ylo@cs.hut.fi>
@@ -53,7 +53,7 @@ typedef struct {
 	int     compression;	/* Compress packets in both directions. */
 	int     compression_level;	/* Compression level 1 (fast) to 9
 					 * (best). */
-	int     keepalives;	/* Set SO_KEEPALIVE. */
+	int     tcp_keep_alive;	/* Set SO_KEEPALIVE. */
 	LogLevel log_level;	/* Level for logging. */
 
 	int     port;		/* Port to connect. */

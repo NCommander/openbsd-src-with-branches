@@ -13,7 +13,7 @@
  */
 
 #include "includes.h"
-RCSID("$OpenBSD: sshconnect.c,v 1.153 2003/11/12 16:39:58 jakob Exp $");
+RCSID("$OpenBSD: sshconnect.c,v 1.154 2003/11/21 11:57:03 djm Exp $");
 
 #include <openssl/bn.h>
 
@@ -411,8 +411,8 @@ ssh_connect(const char *host, struct sockaddr_storage * hostaddr,
 
 	debug("Connection established.");
 
-	/* Set keepalives if requested. */
-	if (options.keepalives &&
+	/* Set SO_KEEPALIVE if requested. */
+	if (options.tcp_keep_alive &&
 	    setsockopt(sock, SOL_SOCKET, SO_KEEPALIVE, (void *)&on,
 	    sizeof(on)) < 0)
 		error("setsockopt SO_KEEPALIVE: %.100s", strerror(errno));
