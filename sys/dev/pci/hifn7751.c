@@ -1,4 +1,4 @@
-/*	$OpenBSD: hifn7751.c,v 1.13 2000/03/17 21:59:07 jason Exp $	*/
+/*	$OpenBSD: hifn7751.c,v 1.14 2000/03/18 02:41:45 jason Exp $	*/
 
 /*
  * Invertex AEON / Hi/fn 7751 driver
@@ -1162,7 +1162,7 @@ hifn_intr(arg)
 			if (HIFN_USING_MAC(cmd->flags) && (cmd->flags & HIFN_DECODE)) {
 				u_int8_t *result_buf = dma->result_bufs[wake_pos];
 	
-				cmd->result_status = (result_buf[8] & 0x2) ?
+				cmd->result_flags = (result_buf[8] & 0x2) ?
 				    HIFN_MAC_BAD : 0;
 				printf("%s: byte index 8 of result 0x%02x\n",
 				    sc->sc_dv.dv_xname, (u_int32_t) result_buf[8]);
