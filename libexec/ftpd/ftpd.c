@@ -1,4 +1,4 @@
-/*	$OpenBSD: ftpd.c,v 1.109 2001/12/04 21:18:04 millert Exp $	*/
+/*	$OpenBSD: ftpd.c,v 1.110 2001/12/07 18:45:32 mpech Exp $	*/
 /*	$NetBSD: ftpd.c,v 1.15 1995/06/03 22:46:47 mycroft Exp $	*/
 
 /*
@@ -73,7 +73,7 @@ static char copyright[] =
 #if 0
 static char sccsid[] = "@(#)ftpd.c	8.4 (Berkeley) 4/16/94";
 #else
-static char rcsid[] = "$OpenBSD: ftpd.c,v 1.109 2001/12/04 21:18:04 millert Exp $";
+static char rcsid[] = "$OpenBSD: ftpd.c,v 1.110 2001/12/07 18:45:32 mpech Exp $";
 #endif
 #endif /* not lint */
 
@@ -498,6 +498,7 @@ main(argc, argv, envp)
 
 	sa.sa_handler = sigurg;
 	sa.sa_flags = 0;		/* don't restart syscalls for SIGURG */
+	(void) sigaction(SIGURG, &sa, NULL);
 
 	addrlen = sizeof(ctrl_addr);
 	if (getsockname(0, (struct sockaddr *)&ctrl_addr, &addrlen) < 0) {
