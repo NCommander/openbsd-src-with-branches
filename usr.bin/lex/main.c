@@ -1,4 +1,4 @@
-/*	$OpenBSD: main.c,v 1.8 2002/05/31 22:49:29 deraadt Exp $	*/
+/*	$OpenBSD: main.c,v 1.9 2003/06/04 17:34:44 millert Exp $	*/
 
 /* flex - tool to generate fast lexical analyzers */
 
@@ -39,7 +39,7 @@ char copyright[] =
  All rights reserved.\n";
 #endif /* not lint */
 
-/* $Header: /cvs/src/usr.bin/lex/main.c,v 1.8 2002/05/31 22:49:29 deraadt Exp $ */
+/* $Header: /spare/open/cvs/src/usr.bin/lex/main.c,v 1.9 2003/06/04 17:34:44 millert Exp $ */
 
 
 #include "flexdef.h"
@@ -1013,7 +1013,7 @@ _( "Variable trailing context rules entail a large performance penalty\n" ) );
 
 	if ( C_plus_plus )
 		{
-		outn( "\n#include <g++/FlexLexer.h>" );
+		outn( "\n#include <FlexLexer.h>" );
 
 		if ( yyclass )
 			{
