@@ -1,6 +1,6 @@
-# $OpenBSD: Makefile,v 1.8 2001/06/27 17:54:43 art Exp $
+# $OpenBSD: Makefile,v 1.9 2002/06/11 17:24:00 hin Exp $
 
-SUBDIR	= usr.bin/asn1_compile lib usr.bin libexec usr.sbin doc
+SUBDIR	= lib usr.bin libexec usr.sbin doc
 
 build:
 	cd ../kerberosIV/lib/sl && exec ${MAKE}
