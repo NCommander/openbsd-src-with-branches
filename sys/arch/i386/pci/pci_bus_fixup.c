@@ -1,4 +1,4 @@
-/*	$OpenBSD: pci_bus_fixup.c,v 1.2 2000/03/27 08:35:21 brad Exp $	*/
+/*	$OpenBSD: pci_bus_fixup.c,v 1.3 2000/03/28 03:37:59 mickey Exp $	*/
 /*	$NetBSD: pci_bus_fixup.c,v 1.1 1999/11/17 07:32:58 thorpej Exp $  */
 
 /*
@@ -33,6 +33,7 @@
 #include <sys/param.h>
 #include <sys/systm.h>
 #include <sys/kernel.h>
+#include <sys/device.h>
 
 #include <machine/bus.h>
 
