@@ -1,4 +1,4 @@
-/*	$OpenBSD: trap.c,v 1.45 2002/05/16 21:11:16 miod Exp $ */
+/*	$OpenBSD: trap.c,v 1.46 2002/06/23 03:03:15 deraadt Exp $ */
 
 /*
  * Copyright (c) 1995 Theo de Raadt
@@ -225,7 +225,7 @@ again:
 	 * If any writeback fails, go back and attempt signal delivery.
 	 * unless we have already been here and attempted the writeback
 	 * (e.g. bad address with user ignoring SIGSEGV).  In that case
-	 * we just return to the user without sucessfully completing
+	 * we just return to the user without successfully completing
 	 * the writebacks.  Maybe we should just drop the sucker?
 	 */
 	if (mmutype == MMU_68040 && fp->f_format == FMT7) {

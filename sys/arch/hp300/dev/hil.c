@@ -1,4 +1,4 @@
-/*	$OpenBSD: hil.c,v 1.14 2001/11/01 12:13:46 art Exp $	*/
+/*	$OpenBSD: hil.c,v 1.15 2002/03/14 01:26:30 millert Exp $	*/
 /*	$NetBSD: hil.c,v 1.34 1997/04/02 22:37:32 scottr Exp $	*/
 
 /*
@@ -968,7 +968,7 @@ hilevent(hilp)
 		 * Copy data to queue.
 		 * If this is the first queue we construct the packet
 		 * with length, timestamp and poll buffer data.
-		 * For second and sucessive packets we just duplicate
+		 * For second and successive packets we just duplicate
 		 * the first packet.
 		 */
 		pp = (u_char *) &hq->hil_event[hq->hil_evqueue.tail];

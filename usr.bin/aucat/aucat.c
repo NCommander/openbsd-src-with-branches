@@ -1,4 +1,4 @@
-/*	$OpenBSD: aucat.c,v 1.3 1997/01/05 19:00:51 kstailey Exp $	*/
+/*	$OpenBSD: aucat.c,v 1.4 2000/07/01 19:54:36 millert Exp $	*/
 /*
  * Copyright (c) 1997 Kenneth Stailey.  All rights reserved.
  *
@@ -42,7 +42,7 @@
 
 /* function playfile: given a file which is positioned at the beginning
  * of what is assumed to be an .au data stream copy it out to the audio
- * device.  Return 0 on sucess, -1 on failure.
+ * device.  Return 0 on success, -1 on failure.
  */
 int
 playfile(fd, dev)
