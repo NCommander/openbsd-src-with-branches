@@ -1,4 +1,4 @@
-/*	$OpenBSD: vgafb.c,v 1.21 2002/06/11 22:56:37 jason Exp $	*/
+/*	$OpenBSD: vgafb.c,v 1.22 2002/07/24 15:36:38 jason Exp $	*/
 
 /*
  * Copyright (c) 2001 Jason L. Wright (jason@thought.net)
@@ -203,7 +203,7 @@ vgafbattach(parent, self, aux)
 		sc->sc_rasops.ri_stride = sc->sc_linebytes;
 	}
 
-	sc->sc_rasops.ri_flg = RI_CENTER;
+	sc->sc_rasops.ri_flg = RI_CENTER | RI_BSWAP;
 	sc->sc_rasops.ri_bits = (void *)bus_space_vaddr(sc->sc_mem_t,
 	    sc->sc_mem_h);
 	sc->sc_rasops.ri_width = sc->sc_width;
@@ -525,8 +525,8 @@ vgafb_mapregs(sc, pa)
 			} else {
 				if (hasmem)
 					continue;
-				if (bus_space_map2(pa->pa_memt, SBUS_BUS_SPACE,
-				    ba, bs, 0, NULL, &sc->sc_mem_h)) {
+				if (bus_space_map(pa->pa_memt, ba, bs,
+				    0, &sc->sc_mem_h)) {
 					printf(": can't map mem space\n");
 					continue;
 				}
