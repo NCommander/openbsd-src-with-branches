@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: locore.s,v 1.6 2001/09/04 16:51:18 jason Exp $	*/
 /*	$NetBSD: locore.s,v 1.137 2001/08/13 06:10:10 jdolecek Exp $	*/
 
 /*
@@ -6376,6 +6376,10 @@ _C_LABEL(sigcode):
 	mov	SYS_exit, %g1		! exit(errno)
 	t	ST_SYSCALL
 _C_LABEL(esigcode):
+#endif
+
+#ifdef COMPAT_NETBSD
+#include "sigcode_netbsd.s"
 #endif
 
 #if !defined(_LP64)
