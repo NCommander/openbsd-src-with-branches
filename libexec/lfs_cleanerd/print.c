@@ -1,4 +1,4 @@
-/*	$OpenBSD: print.c,v 1.3 2001/07/27 20:34:36 pvalchev Exp $	*/
+/*	$OpenBSD: print.c,v 1.4 2003/06/02 19:38:24 millert Exp $	*/
 
 /*-
  * Copyright (c) 1992, 1993
@@ -31,7 +31,7 @@
 
 #ifndef lint
 /*static char sccsid[] = "@(#)print.c	8.2 (Berkeley) 5/24/95";*/
-static char rcsid[] = "$OpenBSD: print.c,v 1.3 2001/07/27 20:34:36 pvalchev Exp $";
+static char rcsid[] = "$OpenBSD: print.c,v 1.4 2003/06/02 19:38:24 millert Exp $";
 #endif /* not lint */
 
 #include <sys/param.h>
@@ -52,11 +52,7 @@ static char rcsid[] = "$OpenBSD: print.c,v 1.3 2001/07/27 20:34:36 pvalchev Exp 
  * Returns a pointer to the array of inode addresses.
  */
 int
-dump_summary(lfsp, sp, flags, iaddrp)
-	struct lfs *lfsp;
-	SEGSUM *sp;
-	u_long flags;
-	daddr_t **iaddrp;
+dump_summary(struct lfs *lfsp, SEGSUM *sp, u_long flags, daddr_t **iaddrp)
 {
 	int i, j, numblocks;
 	daddr_t *dp;
@@ -131,8 +127,7 @@ dump_summary(lfsp, sp, flags, iaddrp)
 
 #ifdef VERBOSE
 void
-dump_cleaner_info(ipage)
-	void *ipage;
+dump_cleaner_info(void *ipage)
 {
 	CLEANERINFO *cip;
 
@@ -142,8 +137,7 @@ dump_cleaner_info(ipage)
 }
 
 void
-dump_super(lfsp)
-	struct lfs *lfsp;
+dump_super(struct lfs *lfsp)
 {
 	int i;
 

@@ -1,4 +1,4 @@
-/*	$OpenBSD: misc.c,v 1.4 2002/02/19 19:39:38 millert Exp $	*/
+/*	$OpenBSD: misc.c,v 1.5 2003/06/02 19:38:24 millert Exp $	*/
 
 /*-
  * Copyright (c) 1992, 1993
@@ -31,7 +31,7 @@
 
 #ifndef lint
 /*static char sccsid[] = "@(#)misc.c	8.1 (Berkeley) 6/4/93";*/
-static char rcsid[] = "$OpenBSD: misc.c,v 1.4 2002/02/19 19:39:38 millert Exp $";
+static char rcsid[] = "$OpenBSD: misc.c,v 1.5 2003/06/02 19:38:24 millert Exp $";
 #endif /* not lint */
 
 #include <sys/types.h>
@@ -62,11 +62,7 @@ err(const int fatal, const char *fmt, ...)
 }
 
 void
-get(fd, off, p, len)
-	int fd;
-	off_t off;
-	void *p;
-	size_t len;
+get(int fd, off_t off, void *p, size_t len)
 {
 	int rbytes;
 
