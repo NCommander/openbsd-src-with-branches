@@ -32,7 +32,7 @@
  */
 
 #if defined(LIBC_SCCS) && !defined(lint)
-static char rcsid[] = "$OpenBSD: opendir.c,v 1.4 1997/07/09 00:28:23 millert Exp $";
+static char rcsid[] = "$OpenBSD: opendir.c,v 1.5 1998/08/14 21:39:31 deraadt Exp $";
 #endif /* LIBC_SCCS and not lint */
 
 #include <sys/param.h>
@@ -144,6 +144,7 @@ __opendir2(name, flags)
 					close(fd);
 					return (NULL);
 				}
+				buf = nbuf;
 				ddptr = buf + (len - space);
 			}
 
