@@ -1,4 +1,4 @@
-/*	$OpenBSD: vfs_syscalls.c,v 1.51 1998/12/28 19:56:22 art Exp $	*/
+/*	$OpenBSD: vfs_syscalls.c,v 1.52 1999/01/10 22:47:08 art Exp $	*/
 /*	$NetBSD: vfs_syscalls.c,v 1.71 1996/04/23 10:29:02 mycroft Exp $	*/
 
 /*
@@ -2176,7 +2176,7 @@ sys_rmdir(p, v, retval)
 	 * No rmdir "." please.
 	 */
 	if (nd.ni_dvp == vp) {
-		error = EINVAL;
+		error = EBUSY;
 		goto out;
 	}
 	/*
