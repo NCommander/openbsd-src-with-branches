@@ -171,17 +171,18 @@ main(framep)
 	 */
 	p = &proc0;
 	curproc = p;
+
 	/*
 	 * Attempt to find console and initialize
 	 * in case of early panic or other messages.
 	 */
+	config_init();		/* init autoconfiguration data structures */
 	consinit();
 	printf(copyright);
 
 	vm_mem_init();
 	kmeminit();
 	disk_init();		/* must come before autoconfiguration */
-	config_init();		/* init autoconfiguration data structures */
 	cpu_startup();
 
 	/*

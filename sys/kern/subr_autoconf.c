@@ -91,7 +91,9 @@ struct devicelist alldevs;		/* list of all devices */
 struct evcntlist allevents;		/* list of all event counters */
 
 /*
- * Initialize autoconfiguration data structures.
+ * Initialize autoconfiguration data structures.  This occurs before console
+ * initialization as that might require use of this subsystem.  Furthermore
+ * this means that malloc et al. isn't yet available.
  */
 void
 config_init()
