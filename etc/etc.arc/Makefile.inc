@@ -1,10 +1,10 @@
-#	$OpenBSD: Makefile.inc,v 1.1 1997/01/24 00:15:06 deraadt Exp $
+#	$OpenBSD: Makefile.inc,v 1.2 1997/02/09 08:50:15 deraadt Exp $
 #
 #	etc.arc/Makefile.inc -- arc-specific etc Makefile targets
 
 .ifdef DESTDIR
 
-snap_md: binutils bsd
+snap_md: binutils bsd ramdisk
 
 binutils:
 	cd ${DESTDIR} && tar cf - usr/*openbsd* \
@@ -18,5 +18,9 @@ bsd:
 	    ${DESTDIR}/snapshot/bsd
 	cp ${.CURDIR}/../sys/arch/arc/compile/GENERIC/bsd.ecoff \
 	    ${DESTDIR}/snapshot/bsd.ecoff
+
+ramdisk:
+	cd ${.CURDIR}/../distrib/arc/ramdisk && make cleandir && \
+	    make && make install
 
 .endif
