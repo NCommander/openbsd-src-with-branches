@@ -1,4 +1,4 @@
-/*	$OpenBSD: cpu.c,v 1.19 1999/12/08 23:49:07 deraadt Exp $	*/
+/*	$OpenBSD: cpu.c,v 1.20 1999/12/09 21:35:29 art Exp $	*/
 /*	$NetBSD: cpu.c,v 1.56 1997/09/15 20:52:36 pk Exp $ */
 
 /*
@@ -79,6 +79,9 @@ char	*cpu_class = "sun4";
 char	cpu_model[130];
 char	cpu_hotfix[40];
 extern char mainbus_model[];		/* from autoconf.c */
+
+int	foundfpu;			/* from machine/cpu.h */
+struct proc *fpproc;			/* XXX - should be in cpuinfo */
 
 /* The CPU configuration driver. */
 void cpu_attach __P((struct device *, struct device *, void *));
