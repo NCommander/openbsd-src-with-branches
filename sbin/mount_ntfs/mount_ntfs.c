@@ -1,4 +1,4 @@
-/* $Id */
+/* $OpenBSD$ */
 /* $NetBSD: mount_ntfs.c,v 1.9 2003/05/03 15:37:08 christos Exp $ */
 
 /*
