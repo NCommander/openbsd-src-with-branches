@@ -25,7 +25,7 @@
  */
 
 #include "includes.h"
-RCSID("$OpenBSD: monitor.c,v 1.53 2003/11/18 10:53:07 djm Exp $");
+RCSID("$OpenBSD: monitor.c,v 1.54 2003/11/21 11:57:03 djm Exp $");
 
 #include <openssl/dh.h>
 
@@ -1525,6 +1525,7 @@ monitor_init(void)
 
 	mon = xmalloc(sizeof(*mon));
 
+	mon->m_pid = 0;
 	monitor_socketpair(pair);
 
 	mon->m_recvfd = pair[0];
