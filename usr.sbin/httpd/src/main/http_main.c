@@ -1,4 +1,4 @@
-/* $OpenBSD: http_main.c,v 1.22 2002/07/31 09:02:28 henning Exp $ */
+/* $OpenBSD: http_main.c,v 1.23 2002/09/04 12:28:42 henning Exp $ */
 
 /* ====================================================================
  * The Apache Software License, Version 1.1
@@ -203,6 +203,10 @@ long _stksize = 32768;
 #include <stdio.h>
 caddr_t create_shared_heap(const char *, size_t);
 caddr_t get_shared_heap(const char *);
+#endif
+
+#ifdef MOD_SSL
+#include <openssl/evp.h>
 #endif
 
 DEF_Explain
