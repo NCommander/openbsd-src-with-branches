@@ -1,4 +1,4 @@
-/*	$OpenBSD: kern_exec.c,v 1.21 1998/07/02 09:03:42 deraadt Exp $	*/
+/*	$OpenBSD: kern_exec.c,v 1.22 1998/07/08 22:28:56 deraadt Exp $	*/
 /*	$NetBSD: kern_exec.c,v 1.75 1996/02/09 18:59:28 christos Exp $	*/
 
 /*-
@@ -95,7 +95,7 @@ check_exec(p, epp)
 	int error, i;
 	struct vnode *vp;
 	struct nameidata *ndp;
-	int resid;
+	size_t resid;
 
 	ndp = epp->ep_ndp;
 	ndp->ni_cnd.cn_nameiop = LOOKUP;
