@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile.inc,v 1.1 2001/08/29 01:48:12 art Exp $
+#	$OpenBSD: Makefile.inc,v 1.2 2001/09/10 19:17:33 jason Exp $
 
 KMINCLUDES= arch/sparc64/SYS.h
 KMSRCS=	ffs.S strlen.S htonl.S htons.S \
@@ -33,3 +33,5 @@ urem.S: ${LIBCSRCDIR}/arch/sparc64/gen/divrem.m4
 	@(echo "define(NAME,\`.urem')define(OP,\`rem')define(S,\`false')"; \
 	 cat ${.ALLSRC}) | m4 > ${.TARGET}
 	@chmod 444 ${.TARGET}
+
+.include "${.CURDIR}/arch/sparc64/fpu/Makefile.inc"
