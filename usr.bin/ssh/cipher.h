@@ -32,7 +32,7 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-/* RCSID("$OpenBSD: cipher.h,v 1.27 2001/06/26 06:32:49 itojun Exp $"); */
+/* RCSID("$OpenBSD: cipher.h,v 1.28 2001/06/26 17:27:23 markus Exp $"); */
 
 #ifndef CIPHER_H
 #define CIPHER_H
@@ -85,7 +85,7 @@ struct CipherContext {
 			u_char iv[8];
 		} cast;
 		struct {
-			u4byte iv[4];
+			u_char iv[16];
 			rijndael_ctx enc;
 			rijndael_ctx dec;
 		} rijndael;
