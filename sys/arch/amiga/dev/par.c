@@ -1,4 +1,4 @@
-/*	$OpenBSD: par.c,v 1.2 1996/04/21 22:15:41 deraadt Exp $	*/
+/*	$OpenBSD: par.c,v 1.4 1997/01/16 09:25:09 niklas Exp $	*/
 /*	$NetBSD: par.c,v 1.16 1996/12/23 09:10:28 veego Exp $	*/
 
 /*
@@ -441,7 +441,7 @@ again:
   free(buf, M_DEVBUF);
 #ifdef DEBUG
   if (pardebug & (PDB_FOLLOW|PDB_IO))
-    printf("parrw: return %d, resid %d\n", error, uio->uio_resid);
+    printf("parrw: return %d, resid %u\n", error, uio->uio_resid);
 #endif
   return (error);
 }
