@@ -1,4 +1,4 @@
-/*	$OpenBSD: display.c,v 1.1 1999/01/29 07:30:33 d Exp $	*/
+/*	$OpenBSD: display.c,v 1.2 1999/02/01 06:53:55 d Exp $	*/
 
 /*
  * Display abstraction.
@@ -92,7 +92,11 @@ display_open()
 void
 display_beep()
 {
+#ifdef __STDC__
+	(void) putchar('\a');
+#else
 	(void) putchar(CTRL('G'));
+#endif
 }
 
 /*
