@@ -10,7 +10,7 @@
  */
 
 #include "includes.h"
-RCSID("$OpenBSD: auth-options.c,v 1.11 2001/01/21 19:05:41 markus Exp $");
+RCSID("$OpenBSD: auth-options.c,v 1.12 2001/02/03 10:08:36 markus Exp $");
 
 #include "packet.h"
 #include "xmalloc.h"
@@ -61,11 +61,12 @@ int
 auth_parse_options(struct passwd *pw, char *opts, char *file, u_long linenum)
 {
 	const char *cp;
-	if (!opts)
-		return 1;
 
 	/* reset options */
 	auth_clear_options();
+
+	if (!opts)
+		return 1;
 
 	while (*opts && *opts != ' ' && *opts != '\t') {
 		cp = "no-port-forwarding";
