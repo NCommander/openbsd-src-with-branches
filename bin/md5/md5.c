@@ -1,4 +1,4 @@
-/*	$OpenBSD: md5.c,v 1.24 2003/06/17 21:56:23 millert Exp $	*/
+/*	$OpenBSD: md5.c,v 1.25 2003/06/25 21:23:01 deraadt Exp $	*/
 
 /*
  * Copyright (c) 2001, 2003 Todd C. Miller <Todd.Miller@courtesan.com>
@@ -370,7 +370,7 @@ digest_test(struct hash_functions *hf)
 	union ANY_CTX context;
 	int i;
 	char digest[MAX_DIGEST_LEN + 1];
-	unsigned buf[1000];
+	unsigned char buf[1000];
 	char *test_strings[] = {
 		"",
 		"a",
