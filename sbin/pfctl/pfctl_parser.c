@@ -1,4 +1,4 @@
-/*	$OpenBSD: pfctl_parser.c,v 1.142 2003/02/12 12:48:40 mcbride Exp $ */
+/*	$OpenBSD: pfctl_parser.c,v 1.143 2003/02/13 10:28:58 henning Exp $ */
 
 /*
  * Copyright (c) 2001 Daniel Hartmeier
@@ -1228,7 +1228,7 @@ host_v4(const char *s)
 	int			 bits;
 
 	memset(&ina, 0, sizeof(struct in_addr));
-	if ((bits = inet_net_pton(AF_INET, s, &ina, sizeof(&ina))) > -1) {
+	if ((bits = inet_net_pton(AF_INET, s, &ina, sizeof(ina))) > -1) {
 		h = calloc(1, sizeof(struct node_host));
 		if (h == NULL)
 			err(1, "address: calloc");
