@@ -1,4 +1,4 @@
-/*	$OpenBSD: locore.s,v 1.9 1997/02/03 21:30:13 kstailey Exp $	*/
+/*	$OpenBSD: locore.s,v 1.10 1997/02/04 01:31:34 kstailey Exp $	*/
 /*	$NetBSD: locore.s,v 1.40 1996/11/06 20:19:54 cgd Exp $	*/
 
 /*
@@ -799,8 +799,6 @@ _esigcode:
  * Primitives
  */
 #include <machine/asm.h>
-
-/* XXX copypage(fromaddr, toaddr) */
 
 /*
  * non-local gotos
