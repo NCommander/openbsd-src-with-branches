@@ -1,4 +1,4 @@
-/*	$OpenBSD: sd.c,v 1.54 2002/08/12 06:59:46 fgsch Exp $	*/
+/*	$OpenBSD: sd.c,v 1.55 2002/09/04 23:07:28 tdeval Exp $	*/
 /*	$NetBSD: sd.c,v 1.111 1997/04/02 02:29:41 mycroft Exp $	*/
 
 /*-
@@ -390,6 +390,7 @@ sdopen(dev, flag, fmt, p)
 	} else {
 		/* Check that it is still responding and ok. */
 		error = scsi_test_unit_ready(sc_link,
+		    TEST_READY_RETRIES_DEFAULT,
 		    SCSI_IGNORE_ILLEGAL_REQUEST |
 		    SCSI_IGNORE_MEDIA_CHANGE |
 		    SCSI_IGNORE_NOT_READY);
