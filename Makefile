@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.51 1999/11/26 00:32:11 millert Exp $
+#	$OpenBSD: Makefile,v 1.52 1999/12/22 21:25:24 mickey Exp $
 
 #
 # For more information on building in tricky environments, please see
@@ -113,7 +113,6 @@ CROSSENV=	AR=${CROSSDIR}/usr/bin/ar AS=${CROSSDIR}/usr/bin/as \
 		LORDER=${CROSSDIR}/usr/bin/lorder \
 		RANLIB=${CROSSDIR}/usr/bin/ranlib \
 		SIZE=${CROSSDIR}/usr/bin/size STRIP=${CROSSDIR}/usr/bin/strip \
-		LORDER=${CROSSDIR}/usr/bin/lorder \
 		HOSTCC=cc
 
 cross-helpers:
