@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile.bsd-wrapper,v 1.8 1997/01/23 02:24:22 niklas Exp $
+#	$OpenBSD: Makefile.bsd-wrapper,v 1.9 1997/04/27 20:56:46 millert Exp $
 
 #
 # less config
@@ -99,4 +99,6 @@ tags:
 
 .include <bsd.obj.mk>
 .include <bsd.subdir.mk>
+.if !defined(NOMAN)
 .include <bsd.man.mk>
+.endif
