@@ -1,4 +1,4 @@
-/*	$OpenBSD: db_machdep.h,v 1.7 2001/03/09 05:44:40 smurph Exp $ */
+/*	$OpenBSD: db_machdep.h,v 1.8 2001/03/16 00:05:24 miod Exp $ */
 /*
  * Mach Operating System
  * Copyright (c) 1993-1991 Carnegie Mellon University
@@ -37,10 +37,9 @@
 #define  _M88K_DB_MACHDEP_H_
 
 #include <sys/types.h>
-#include <vm/vm_prot.h>
 #include <vm/vm_param.h>
 #include <vm/vm_inherit.h>
-/*#include <vm/lock.h>*/
+#include <uvm/uvm_extern.h>
 #include <machine/pcb.h>	/* m88100_saved_state */
 #include <machine/psl.h>
 #include <machine/trap.h>
