@@ -1,4 +1,4 @@
-/*	$OpenBSD: pmap.c,v 1.4 1996/09/14 15:58:17 pefo Exp $	*/
+/*	$OpenBSD: pmap.c,v 1.5 1996/09/24 19:37:25 pefo Exp $	*/
 /* 
  * Copyright (c) 1992, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -36,7 +36,7 @@
  * SUCH DAMAGE.
  *
  *	from: @(#)pmap.c	8.4 (Berkeley) 1/26/94
- *      $Id: pmap.c,v 1.4 1996/09/14 15:58:17 pefo Exp $
+ *      $Id: pmap.c,v 1.5 1996/09/24 19:37:25 pefo Exp $
  */
 
 /*
@@ -281,7 +281,9 @@ pmap_bootstrap(firstaddr)
 		pseg->first_page = nextpage;
 		nextpage += (pseg->end - pseg->start) / NBPG;
 		avail_remaining += (pseg->end - pseg->start) / NBPG;
+#if 0
 /*XXX*/	sprintf(pbuf,"segment = %d start 0x%x end 0x%x avail %d page %d\n", i, pseg->start, pseg->end, avail_remaining, nextpage); bios_putstring(pbuf);
+#endif
 		pseg++;
 	}
 
