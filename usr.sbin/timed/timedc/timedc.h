@@ -1,4 +1,4 @@
-/*	$Id$	*/
+/*	$OpenBSD: timedc.h,v 1.2 2001/04/07 20:02:09 ho Exp $	*/
 
 /*-
  * Copyright (c) 1985, 1993 The Regents of the University of California.

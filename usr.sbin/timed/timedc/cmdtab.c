@@ -1,4 +1,4 @@
-/*	$Id$	*/
+/*	$OpenBSD: cmdtab.c,v 1.2 2001/04/07 20:02:09 ho Exp $	*/
 
 /*
  * Copyright (c) 1983 Regents of the University of California.
