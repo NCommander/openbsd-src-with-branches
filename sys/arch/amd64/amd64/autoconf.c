@@ -1,4 +1,4 @@
-/*	$OpenBSD: autoconf.c,v 1.7 2004/10/23 08:21:26 mjc Exp $	*/
+/*	$OpenBSD: autoconf.c,v 1.8 2004/12/25 23:02:23 miod Exp $	*/
 /*	$NetBSD: autoconf.c,v 1.1 2003/04/26 18:39:26 fvdl Exp $	*/
 
 /*-
@@ -95,7 +95,7 @@ struct device * parsedisk(char *, int, int, dev_t *);
 int	cold = 1;	/* if 1, still working on cold-start */
 struct device *booted_device;
 int booted_partition;
-dev_t bootdev = 0;
+extern dev_t bootdev;
 
 #ifdef RAMDISK_HOOKS
 static struct device fakerdrootdev = { DV_DISK, {}, NULL, 0, "rd0", NULL };
