@@ -599,7 +599,7 @@ sys_mlock(p, v, retval)
 		return (error);
 #endif
 
-	error = vm_map_pageable(&p->p_vmspace->vm_map, addr, addr+size, FALSE);
+	error = vslock((caddr_t)addr, size);
 	return (error == KERN_SUCCESS ? 0 : ENOMEM);
 }
 
@@ -642,7 +642,7 @@ sys_munlock(p, v, retval)
 		return (error);
 #endif
 
-	error = vm_map_pageable(&p->p_vmspace->vm_map, addr, addr+size, TRUE);
+	error = vsunlock((caddr_t)addr, size);
 	return (error == KERN_SUCCESS ? 0 : ENOMEM);
 }
 
