@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.1.1.1 2001/08/18 15:51:10 jason Exp $
+#	$OpenBSD: Makefile,v 1.2 2001/08/22 10:20:41 art Exp $
 
 LIB=	sa
 
@@ -34,13 +34,11 @@ ${OBJS}:	${.CURDIR}/../Makefile.inc
 NOPROFILE=
 NOPIC=
 
-.NOPATH: machine
-beforedepend: machine
+.if !make(libdep) && !make(sadep) && !make(salibdir) && !make(kernlibdir) && !make(obj)
+.BEGIN:
+	@([ -h machine ] || ln -s ${.CURDIR}/../../include machine)
+.endif
 
 install:
 
 .include <bsd.lib.mk>
-
-machine:
-	rm -f machine
-	ln -s ${.CURDIR}/../../include machine
