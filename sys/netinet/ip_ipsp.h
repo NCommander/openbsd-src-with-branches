@@ -1,4 +1,4 @@
-/*	$OpenBSD: ip_ipsp.h,v 1.4 1997/02/28 02:55:33 angelos Exp $	*/
+/*	$OpenBSD: ip_ipsp.h,v 1.5 1997/06/20 05:41:53 provos Exp $	*/
 
 /*
  * The author of this code is John Ioannidis, ji@tla.org,
@@ -110,7 +110,7 @@ extern int encdebug;
 struct tdb *tdbh[TDB_HASHMOD];
 extern struct xformsw xformsw[], *xformswNXFORMSW;
 
-extern struct tdb *gettdb(u_long, struct in_addr);
+extern struct tdb *gettdb(u_int32_t, struct in_addr);
 extern void puttdb(struct tdb *);
 extern int tdb_delete(struct tdb *, int);
 
