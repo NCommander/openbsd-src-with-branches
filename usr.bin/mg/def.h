@@ -95,6 +95,7 @@ typedef int	(*PF)();	/* generally useful type */
 #define EFAUTO	0x0007		/* Some autocompleteion on	 */
 #define EFNEW	0x0008		/* New prompt.			 */
 #define EFCR	0x0010		/* Echo CR at end; last read.	 */
+#define EFDEF	0x0020		/* buffer contains default args	 */
 
 /*
  * Flags for "ldelete"/"kinsert"
