@@ -1,8 +1,12 @@
-#	$OpenBSD: Makefile.bsd-wrapper,v 1.2 1997/06/25 09:29:15 provos Exp $
+#	$OpenBSD: Makefile.bsd-wrapper,v 1.3 1997/06/28 01:45:22 downsj Exp $
 
 SUBDIR+=	mpn mpz mpf mpq
 
+.if (${MACHINE_ARCH} == "mips")
+GNUCFLAGS=	CFLAGS="${CFLAGS} ${COPTS} -Wa,-call_shared"
+.else
 GNUCFLAGS= 	CFLAGS="${CFLAGS} ${COPTS}"
+.endif
 
 all:	config.status
 	${MAKE} ${GNUCFLAGS} BISON=yacc CC=${CC} LDFLAGS=${LDSTATIC} \
