@@ -1,3 +1,4 @@
+/*	$OpenBSD$ */
 /*	$NetBSD: ehci_pci.c,v 1.15 2004/04/23 21:13:06 itojun Exp $	*/
 
 /*

@@ -1,3 +1,4 @@
+/*	$OpenBSD$ */
 /*	$NetBSD: ehci.c,v 1.54 2004/01/17 13:15:05 jdolecek Exp $	*/
 
 /*

@@ -1,3 +1,4 @@
+/*	$OpenBSD$ */
 /*	$NetBSD: ehcireg.h,v 1.14 2003/10/13 00:05:10 enami Exp $	*/
 
 /*
