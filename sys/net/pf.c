@@ -1,4 +1,4 @@
-/*	$OpenBSD: pf.c,v 1.426 2004/02/20 19:22:03 mcbride Exp $ */
+/*	$OpenBSD: pf.c,v 1.427 2004/02/24 06:53:30 mcbride Exp $ */
 
 /*
  * Copyright (c) 2001 Daniel Hartmeier
@@ -3544,9 +3544,6 @@ cleanup:
 		}
 		if (pf_insert_state(BOUND_IFACE(r, kif), s)) {
 			REASON_SET(&reason, PFRES_MEMORY);
-			if (r->log)
-				PFLOG_PACKET(kif, h, m, af, direction, reason,
-				    r, a, ruleset);
 			pf_src_tree_remove_state(s);
 			pool_put(&pf_state_pl, s);
 			return (PF_DROP);
