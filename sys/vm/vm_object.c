@@ -1,4 +1,4 @@
-/*	$OpenBSD: vm_object.c,v 1.3 1996/03/03 17:45:34 niklas Exp $	*/
+/*	$OpenBSD: vm_object.c,v 1.4 1996/04/19 16:10:51 niklas Exp $	*/
 /*	$NetBSD: vm_object.c,v 1.34 1996/02/28 22:35:35 gwr Exp $	*/
 
 /* 
@@ -1418,7 +1418,7 @@ void
 _vm_object_print(object, full, pr)
 	vm_object_t	object;
 	boolean_t	full;
-	void		(*pr) __P((const char *, ...));
+	int		(*pr) __P((const char *, ...));
 {
 	register vm_page_t	p;
 	extern indent;

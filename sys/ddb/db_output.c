@@ -201,7 +201,7 @@ db_print_position()
 extern int	db_radix;
 
 /*VARARGS1*/
-void
+int
 #if __STDC__
 db_printf(const char *fmt, ...)
 #else
