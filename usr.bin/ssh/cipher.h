@@ -32,7 +32,7 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-/* RCSID("$OpenBSD: cipher.h,v 1.24 2000/12/09 13:41:52 markus Exp $"); */
+/* RCSID("$OpenBSD: cipher.h,v 1.25 2000/12/19 23:17:56 markus Exp $"); */
 
 #ifndef CIPHER_H
 #define CIPHER_H
@@ -71,8 +71,9 @@ struct CipherContext {
 		struct {
 			des_key_schedule key1;
 			des_key_schedule key2;
-			des_cblock iv2;
 			des_key_schedule key3;
+			des_cblock iv1;
+			des_cblock iv2;
 			des_cblock iv3;
 		}       des3;
 		struct {
