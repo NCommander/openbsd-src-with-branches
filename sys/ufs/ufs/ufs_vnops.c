@@ -1,4 +1,4 @@
-/*	$OpenBSD: ufs_vnops.c,v 1.39 2001/11/21 21:23:56 csapuntz Exp $	*/
+/*	$OpenBSD: ufs_vnops.c,v 1.42 2001/12/19 08:58:07 art Exp $	*/
 /*	$NetBSD: ufs_vnops.c,v 1.18 1996/05/11 18:28:04 mycroft Exp $	*/
 
 /*
@@ -63,6 +63,7 @@
 #include <miscfs/specfs/specdev.h>
 #include <miscfs/fifofs/fifo.h>
 
+#include <ufs/ufs/extattr.h>
 #include <ufs/ufs/quota.h>
 #include <ufs/ufs/inode.h>
 #include <ufs/ufs/dir.h>

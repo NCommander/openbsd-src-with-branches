@@ -1,4 +1,4 @@
-/*	$OpenBSD: ufs_vfsops.c,v 1.7 2000/02/07 04:57:19 assar Exp $	*/
+/*	$OpenBSD: ufs_vfsops.c,v 1.8 2001/11/21 21:23:56 csapuntz Exp $	*/
 /*	$NetBSD: ufs_vfsops.c,v 1.4 1996/02/09 22:36:12 christos Exp $	*/
 
 /*
@@ -51,6 +51,7 @@
 
 #include <miscfs/specfs/specdev.h>
 
+#include <ufs/ufs/extattr.h>
 #include <ufs/ufs/quota.h>
 #include <ufs/ufs/inode.h>
 #include <ufs/ufs/ufsmount.h>

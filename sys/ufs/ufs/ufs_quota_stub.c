@@ -1,4 +1,4 @@
-/*	$OpenBSD: ufs_quota.c,v 1.7 1999/04/28 09:28:18 art Exp $	*/
+/*	$OpenBSD: ufs_quota_stub.c,v 1.1 2001/11/21 21:23:56 csapuntz Exp $	*/
 
 #include <sys/param.h>
 #include <sys/kernel.h>
@@ -10,6 +10,7 @@
 #include <sys/vnode.h>
 #include <sys/mount.h>
 
+#include <ufs/ufs/extattr.h>
 #include <ufs/ufs/quota.h>
 #include <ufs/ufs/inode.h>
 #include <ufs/ufs/ufsmount.h>
