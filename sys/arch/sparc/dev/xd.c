@@ -1,4 +1,4 @@
-/*	$OpenBSD: xd.c,v 1.16 2000/11/10 15:33:07 provos Exp $	*/
+/*	$OpenBSD: xd.c,v 1.17 2001/02/22 22:11:46 art Exp $	*/
 /*	$NetBSD: xd.c,v 1.37 1997/07/29 09:58:16 fair Exp $	*/
 
 /*
@@ -74,6 +74,7 @@
 #include <sys/syslog.h>
 #include <sys/dkbad.h>
 #include <sys/conf.h>
+#include <sys/timeout.h>
 
 #include <vm/vm.h>
 #include <vm/vm_kern.h>
@@ -509,7 +510,8 @@ xdcattach(parent, self, aux)
 	bootpath_store(1, NULL);
 
 	/* start the watchdog clock */
-	timeout(xdc_tick, xdc, XDC_TICKCNT);
+	timeout_set(&xdc->xdc_tick_tmo, xdc_tick, xdc);
+	timeout_add(&xdc->xdc_tick_tmo, XDC_TICKCNT);
 
 }
 
@@ -2156,7 +2158,7 @@ xdc_tick(arg)
 
 	/* until next time */
 
-	timeout(xdc_tick, xdcsc, XDC_TICKCNT);
+	timeout_add(&xdcsc->xdc_tick_tmo, XDC_TICKCNT);
 }
 
 /*
