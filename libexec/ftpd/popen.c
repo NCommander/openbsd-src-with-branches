@@ -107,11 +107,18 @@ ftpd_popen(program, type)
 
 		memset(&gl, 0, sizeof(gl));
 		if (glob(argv[argc], flags, NULL, &gl)) {
-			if (gargc < MAX_GARGV-1)
+			if (gargc < MAX_GARGV-1) {
 				gargv[gargc++] = strdup(argv[argc]);
+				if (gargv[gargc -1] == NULL)
+					fatal ("Out of memory");
+			}
+
 		} else
-			for (pop = gl.gl_pathv; *pop && gargc < MAX_GARGV-1; pop++)
+			for (pop = gl.gl_pathv; *pop && gargc < MAX_GARGV-1; pop++) {
 				gargv[gargc++] = strdup(*pop);
+				if (gargv[gargc - 1] == NULL)
+					fatal ("Out of memory");
+			}
 		globfree(&gl);
 	}
 	gargv[gargc] = NULL;
