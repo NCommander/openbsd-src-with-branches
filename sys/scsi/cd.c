@@ -1,4 +1,4 @@
-/*	$OpenBSD: cd.c,v 1.56 2001/06/22 14:35:42 deraadt Exp $	*/
+/*	$OpenBSD: cd.c,v 1.57 2001/10/25 12:59:21 drahn Exp $	*/
 /*	$NetBSD: cd.c,v 1.100 1997/04/02 02:29:30 mycroft Exp $	*/
 
 /*
@@ -515,18 +515,18 @@ cdstrategy(bp)
 	SC_DEBUG(cd->sc_link, SDEV_DB1,
 	    ("%ld bytes @ blk %d\n", bp->b_bcount, bp->b_blkno));
 	/*
+	 * If the device has been made invalid, error out
+	 * maybe the media changed, or no media loaded
+	 */
+	if ((cd->sc_link->flags & SDEV_MEDIA_LOADED) == 0) {
+		bp->b_error = EIO;
+		goto bad;
+	}
+	/*
 	 * The transfer must be a whole number of blocks.
 	 */
 	if ((bp->b_bcount % cd->sc_dk.dk_label->d_secsize) != 0) {
 		bp->b_error = EINVAL;
-		goto bad;
-	}
-	/*
-	 * If the device has been made invalid, error out
-	 * maybe the media changed
-	 */
-	if ((cd->sc_link->flags & SDEV_MEDIA_LOADED) == 0) {
-		bp->b_error = EIO;
 		goto bad;
 	}
 	/*
