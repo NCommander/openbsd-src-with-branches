@@ -1,4 +1,4 @@
-/*	$OpenBSD: print-icmp6.c,v 1.1 2000/04/26 21:35:40 jakob Exp $	*/
+/*	$OpenBSD: print-icmp6.c,v 1.2 2001/06/04 03:51:53 pvalchev Exp $	*/
 
 /*
  * Copyright (c) 1988, 1989, 1990, 1991, 1993, 1994
@@ -534,7 +534,7 @@ icmp6_opt_print(register const u_char *bp, int resid)
 		break;
 	default:
 		opts_len = op->nd_opt_len;
-		printf("(unknwon opt_type=%d, opt_len=%d)",
+		printf("(unknown opt_type=%d, opt_len=%d)",
 		       op->nd_opt_type, opts_len);
 		if (opts_len == 0)
 			opts_len = 1; /* XXX */
