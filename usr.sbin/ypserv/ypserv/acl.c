@@ -1,4 +1,4 @@
-/*	$OpenBSD: acl.c,v 1.4 1996/06/30 19:46:04 maja Exp $ */
+/*	$OpenBSD: acl.c,v 1.5 1997/08/05 09:26:55 maja Exp $ */
 
 /*
  * Copyright (c) 1994 Mats O Jansson <moj@stacken.kth.se>
@@ -32,7 +32,7 @@
  */
 
 #ifndef LINT
-static char rcsid[] = "$OpenBSD: acl.c,v 1.4 1996/06/30 19:46:04 maja Exp $";
+static char rcsid[] = "$OpenBSD: acl.c,v 1.5 1997/08/05 09:26:55 maja Exp $";
 #endif
 
 #include <sys/types.h>
@@ -42,6 +42,7 @@ static char rcsid[] = "$OpenBSD: acl.c,v 1.4 1996/06/30 19:46:04 maja Exp $";
 #include <stdio.h>
 #include <stdlib.h>
 #include <ctype.h>
+#include <string.h>
 #include <netdb.h>
 #include "acl.h"
 
