@@ -1,4 +1,4 @@
-/*	$OpenBSD: process.S,v 1.8 2001/03/09 05:44:42 smurph Exp $	*/
+/*	$OpenBSD: process.S,v 1.9 2001/05/20 05:53:10 miod Exp $	*/
 /*
  * Copyright (c) 1996 Nivas Madhur
  * All rights reserved.
@@ -92,7 +92,7 @@ ENTRY(switch_exit)
  * When no processes are on the runq, switch
  * idles here watiing for something to come ready.
  */
-LABEL(idle)
+ASGLOBAL(idle)
 	or.u	r10, r0, hi16(_curproc)
 	st	r0, r10, lo16(_curproc)	/* curproc = NULL */
 
