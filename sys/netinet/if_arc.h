@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_arc.h,v 1.4 2001/06/09 07:03:40 angelos Exp $	*/
+/*	$OpenBSD: if_arc.h,v 1.5 2002/03/14 01:27:11 millert Exp $	*/
 /*	$NetBSD: if_arc.h,v 1.5 1995/06/07 00:14:04 cgd Exp $	*/
 
 /*
@@ -111,7 +111,7 @@ struct	arccom {
 	struct ac_frag {
 		u_int8_t  af_maxflag;	/* from first packet */
 		u_int8_t  af_lastseen;	/* last split flag seen */
-		u_int16_t af_seqid;	
+		u_int16_t af_seqid;
 		struct mbuf *af_packet;
 	} ac_fragtab[256];		/* indexed by sender ll address */
 

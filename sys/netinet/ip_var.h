@@ -1,4 +1,4 @@
-/*	$OpenBSD: ip_var.h,v 1.23 2002/05/28 15:44:28 jasoni Exp $	*/
+/*	$OpenBSD: ip_var.h,v 1.24 2002/05/31 20:58:25 itojun Exp $	*/
 /*	$NetBSD: ip_var.h,v 1.16 1996/02/13 23:43:20 christos Exp $	*/
 
 /*
@@ -187,7 +187,7 @@ struct in_ifaddr *
 	 in_iawithaddr(struct in_addr, struct mbuf *);
 struct in_ifaddr *
 	 ip_rtaddr(struct in_addr);
-u_int16_t	
+u_int16_t
 	 ip_randomid(void);
 int	 ip_setmoptions(int, struct ip_moptions **, struct mbuf *);
 void	 ip_slowtimo(void);
