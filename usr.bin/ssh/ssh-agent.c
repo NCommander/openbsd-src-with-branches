@@ -1,4 +1,4 @@
-/*	$OpenBSD: ssh-agent.c,v 1.23 1999/11/24 19:53:51 markus Exp $	*/
+/*	$OpenBSD: ssh-agent.c,v 1.24 1999/12/15 19:43:10 markus Exp $	*/
 
 /*
  * Author: Tatu Ylonen <ylo@cs.hut.fi>
@@ -9,7 +9,7 @@
  */
 
 #include "includes.h"
-RCSID("$OpenBSD: ssh-agent.c,v 1.23 1999/11/24 19:53:51 markus Exp $");
+RCSID("$OpenBSD: ssh-agent.c,v 1.24 1999/12/15 19:43:10 markus Exp $");
 
 #include "ssh.h"
 #include "rsa.h"
@@ -636,6 +636,8 @@ main(int ac, char **av)
 	}
 	signal(SIGINT, SIG_IGN);
 	signal(SIGPIPE, SIG_IGN);
+	signal(SIGHUP, cleanup_exit);                                          
+	signal(SIGTERM, cleanup_exit);                                          
 	while (1) {
 		FD_ZERO(&readset);
 		FD_ZERO(&writeset);
