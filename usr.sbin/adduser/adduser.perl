@@ -1,6 +1,6 @@
 #!/usr/bin/perl
 #
-#	$OpenBSD: adduser.perl,v 1.33 2001/10/01 15:26:33 millert Exp $
+#	$OpenBSD: adduser.perl,v 1.34 2001/10/09 18:25:31 millert Exp $
 #
 # Copyright (c) 1995-1996 Wolfram Schneider <wosch@FreeBSD.org>. Berlin.
 # All rights reserved.
@@ -89,7 +89,7 @@ sub variables {
     $group = "/etc/group";
     $pwd_mkdb = "pwd_mkdb -p";	# program for building passwd database
     $encryptionmethod = "blowfish";
-    $rcsid = '$OpenBSD: adduser.perl,v 1.33 2001/10/01 15:26:33 millert Exp $';
+    $rcsid = '$OpenBSD: adduser.perl,v 1.34 2001/10/09 18:25:31 millert Exp $';
 
     # List of directories where shells located
     @path = ('/bin', '/usr/bin', '/usr/local/bin');
@@ -1530,6 +1530,7 @@ sub cleanup {
     local($sig) = @_;
 
     print STDERR "Caught signal SIG$sig -- cleaning up.\n";
+    system("stty", "echo");
     exit(0);
 }
 
