@@ -1,4 +1,4 @@
-/*	$OpenBSD: uipc_mbuf.c,v 1.61 2003/06/01 16:23:41 art Exp $	*/
+/*	$OpenBSD: uipc_mbuf.c,v 1.62 2003/06/02 23:28:06 millert Exp $	*/
 /*	$NetBSD: uipc_mbuf.c,v 1.15.4.1 1996/06/13 17:11:44 cgd Exp $	*/
 
 /*
@@ -433,7 +433,7 @@ m_copyback(m0, off, len, cp)
 	struct	mbuf *m0;
 	register int off;
 	register int len;
-	caddr_t cp;
+	const void *cp;
 {
 	register int mlen;
 	register struct mbuf *m = m0, *n;
