@@ -1,4 +1,4 @@
-/*	$OpenBSD: telnetd.c,v 1.18 1999/08/17 09:13:13 millert Exp $	*/
+/*	$OpenBSD: telnetd.c,v 1.19 1999/12/10 20:06:48 deraadt Exp $	*/
 /*	$NetBSD: telnetd.c,v 1.6 1996/03/20 04:25:57 tls Exp $	*/
 
 /*
@@ -45,7 +45,7 @@ static char copyright[] =
 static char sccsid[] = "@(#)telnetd.c	8.4 (Berkeley) 5/30/95";
 static char rcsid[] = "$NetBSD: telnetd.c,v 1.5 1996/02/28 20:38:23 thorpej Exp $";
 #else
-static char rcsid[] = "$OpenBSD: telnetd.c,v 1.18 1999/08/17 09:13:13 millert Exp $";
+static char rcsid[] = "$OpenBSD: telnetd.c,v 1.19 1999/12/10 20:06:48 deraadt Exp $";
 #endif
 #endif /* not lint */
 
@@ -875,7 +875,9 @@ doit(who)
 	    (u_int)((utmp_len < 0) ? -utmp_len : utmp_len))) {
 		host = hp->h_name;
 	} else if (getnameinfo(who, who->sa_len, hbuf, sizeof(hbuf), NULL, 0,
-	    NI_NUMERICHOST) != 0) {
+	    NI_NUMERICHOST) == 0) {
+		host = hbuf;
+	} else {
 		fatal(net, "getnameinfo");
 	}
 
