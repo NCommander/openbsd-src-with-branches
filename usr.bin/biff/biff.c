@@ -1,4 +1,4 @@
-/*	$OpenBSD: biff.c,v 1.3 1997/01/15 23:42:14 millert Exp $	*/
+/*	$OpenBSD: biff.c,v 1.4 1998/07/22 09:25:28 deraadt Exp $	*/
 /*	$NetBSD: biff.c,v 1.3 1995/03/26 02:34:22 glass Exp $	*/
 
 /*
@@ -44,7 +44,7 @@ static char copyright[] =
 #if 0
 static char sccsid[] = "@(#)biff.c	8.1 (Berkeley) 6/6/93";
 #else
-static char rcsid[] = "$OpenBSD: biff.c,v 1.3 1997/01/15 23:42:14 millert Exp $";
+static char rcsid[] = "$OpenBSD: biff.c,v 1.4 1998/07/22 09:25:28 deraadt Exp $";
 #endif
 #endif /* not lint */
 
@@ -60,6 +60,7 @@ static char rcsid[] = "$OpenBSD: biff.c,v 1.3 1997/01/15 23:42:14 millert Exp $"
 
 static void usage __P((void));
 
+int
 main(argc, argv)
 	int argc;
 	char *argv[];
