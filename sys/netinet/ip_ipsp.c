@@ -1,5 +1,5 @@
 
-/*	$OpenBSD: ip_ipsp.c,v 1.23 1997/11/04 09:11:15 provos Exp $	*/
+/*	$OpenBSD: ip_ipsp.c,v 1.24 1998/02/22 01:23:33 niklas Exp $	*/
 
 /*
  * The author of this code is John Ioannidis, ji@tla.org,
@@ -481,6 +481,10 @@ tdb_delete(struct tdb *tdbp, int delchain)
     /* If there was something before us in the chain, make it point nowhere */
     if (tdbp->tdb_inext)
       tdbp->tdb_inext->tdb_onext = NULL;
+
+    /* If there was something after us in the chain, make it point nowhere */
+    if (tdbp->tdb_onext)
+      tdbp->tdb_onext->tdb_inext = NULL;
 
     tdbpp = tdbp->tdb_onext;
 
