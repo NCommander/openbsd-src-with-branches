@@ -1,10 +1,10 @@
-#	$OpenBSD: connect-privsep.sh,v 1.1 2002/03/21 21:45:07 markus Exp $
+#	$OpenBSD: sftp.sh,v 1.1 2002/03/21 22:27:00 markus Exp $
 #	Placed in the Public Domain.
 
 tid="basic sftp put/get"
 
 DATA=/bin/ls
-LS=${OBJ}/copy
+COPY=${OBJ}/copy
 
 BUFFERSIZE="5 1000 32000 64000"
 REQUESTS="1 2 10"
