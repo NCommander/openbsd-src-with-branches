@@ -1,4 +1,4 @@
-/*	$PMDB: elf_syms.c,v 1.18 2002/03/11 23:39:49 art Exp $	*/
+/*	$OpenBSD: elf_syms.c,v 1.18 2002/03/11 23:39:49 art Exp $	*/
 /*
  * Copyright (c) 2002 Artur Grabowski <art@openbsd.org>
  * All rights reserved. 

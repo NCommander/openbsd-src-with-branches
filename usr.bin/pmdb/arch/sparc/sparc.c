@@ -1,4 +1,4 @@
-/*	$PMDB: sparc.c,v 1.4 2002/03/05 12:04:26 art Exp $	*/
+/*	$OpenBSD: sparc.c,v 1.4 2002/03/05 12:04:26 art Exp $	*/
 /*
  * Copyright (c) 2002 Federico Schwindt <fgsch@openbsd.org>
  * All rights reserved. 
