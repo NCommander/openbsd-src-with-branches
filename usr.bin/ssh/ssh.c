@@ -40,7 +40,7 @@
  */
 
 #include "includes.h"
-RCSID("$OpenBSD: ssh.c,v 1.186 2002/09/19 01:58:18 djm Exp $");
+RCSID("$OpenBSD: ssh.c,v 1.187 2002/11/21 23:04:33 markus Exp $");
 
 #include <openssl/evp.h>
 #include <openssl/err.h>
@@ -482,9 +482,9 @@ again:
 	av += optind;
 
 	if (ac > 0 && !host && **av != '-') {
-		if (strchr(*av, '@')) {
+		if (strrchr(*av, '@')) {
 			p = xstrdup(*av);
-			cp = strchr(p, '@');
+			cp = strrchr(p, '@');
 			if (cp == NULL || cp == p)
 				usage();
 			options.user = p;
