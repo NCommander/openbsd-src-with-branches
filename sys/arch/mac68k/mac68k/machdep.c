@@ -1,4 +1,4 @@
-/*	$OpenBSD: machdep.c,v 1.102 2003/01/04 22:11:47 miod Exp $	*/
+/*	$OpenBSD: machdep.c,v 1.103 2003/02/24 17:37:59 miod Exp $	*/
 /*	$NetBSD: machdep.c,v 1.207 1998/07/08 04:39:34 thorpej Exp $	*/
 
 /*
@@ -1143,7 +1143,9 @@ getenvvars(flag, buf)
 	char   *buf;
 {
 	extern u_long bootdev, videobitdepth, videosize;
+#if defined(DDB) || NKSYMS > 0
 	extern u_long end, esym;
+#endif
 	extern u_long macos_boottime, MacOSROMBase;
 	extern long macos_gmtbias;
 	int root_scsi_id;
