@@ -150,13 +150,17 @@
 } while (0)
 
 __BEGIN_DECLS
+u_int64_t	htobe64(u_int64_t);
 u_int32_t	htobe32(u_int32_t);
 u_int16_t	htobe16(u_int16_t);
+u_int64_t	betoh64(u_int64_t);
 u_int32_t	betoh32(u_int32_t);
 u_int16_t	betoh16(u_int16_t);
 
+u_int64_t	htole64(u_int64_t);
 u_int32_t	htole32(u_int32_t);
 u_int16_t	htole16(u_int16_t);
+u_int64_t	letoh64(u_int64_t);
 u_int32_t	letoh32(u_int32_t);
 u_int16_t	letoh16(u_int16_t);
 __END_DECLS
