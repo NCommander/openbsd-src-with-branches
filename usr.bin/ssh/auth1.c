@@ -10,7 +10,7 @@
  */
 
 #include "includes.h"
-RCSID("$OpenBSD: auth1.c,v 1.44 2002/09/26 11:38:43 markus Exp $");
+RCSID("$OpenBSD: auth1.c,v 1.45 2002/11/21 23:03:51 deraadt Exp $");
 
 #include "xmalloc.h"
 #include "rsa.h"
@@ -288,7 +288,6 @@ do_authloop(Authctxt *authctxt)
 			debug("rcvd SSH_CMSG_AUTH_TIS_RESPONSE");
 			if (options.challenge_response_authentication == 1) {
 				char *response = packet_get_string(&dlen);
-				debug("got response '%s'", response);
 				packet_check_eom();
 				authenticated = verify_response(authctxt, response);
 				memset(response, 'r', dlen);
