@@ -266,6 +266,9 @@ fifo_read(v)
 		rso->so_state &= ~SS_CANTRCVMORE;
 	if (ap->a_ioflag & IO_NDELAY)
 		rso->so_state &= ~SS_NBIO;
+	if ((ap->a_ioflag & IO_NDELAY) && error == EWOULDBLOCK &&
+	    ap->a_vp->v_fifoinfo->fi_writers == 0)
+		error = 0;
 	return (error);
 }
 
