@@ -1,4 +1,4 @@
-/*	$OpenBSD: com_pcmcia.c,v 1.7 1998/12/21 14:59:31 niklas Exp $	*/
+/*	$OpenBSD: com_pcmcia.c,v 1.8 1998/12/30 22:03:45 deraadt Exp $	*/
 /*	$NetBSD: com_pcmcia.c,v 1.15 1998/08/22 17:47:58 msaitoh Exp $	*/
 
 /*-
@@ -244,7 +244,7 @@ retry:
 			continue;
 
 		if (!pcmcia_io_alloc(pa->pf,
-		    autoalloc ? cfe->iospace[0].start : 0,
+		    autoalloc ? 0 : cfe->iospace[0].start,
 		    cfe->iospace[0].length, (1 << cfe->iomask),
 		    &psc->sc_pcioh)) {
 			goto found;
