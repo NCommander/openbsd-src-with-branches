@@ -1,7 +1,7 @@
-/*	$OpenBSD: lib_addstr.c,v 1.2 2000/06/19 03:53:38 millert Exp $	*/
+/*	$OpenBSD$	*/
 
 /****************************************************************************
- * Copyright (c) 1998,1999,2000 Free Software Foundation, Inc.              *
+ * Copyright (c) 2000 Free Software Foundation, Inc.                        *
  *                                                                          *
  * Permission is hereby granted, free of charge, to any person obtaining a  *
  * copy of this software and associated documentation files (the            *
@@ -29,77 +29,113 @@
  ****************************************************************************/
 
 /****************************************************************************
- *  Author: Zeyd M. Ben-Halim <zmbenhal@netcom.com> 1992,1995               *
- *     and: Eric S. Raymond <esr@snark.thyrsus.com>                         *
+ *  Author: Thomas E. Dickey                                                *
  ****************************************************************************/
 
 /*
-**	lib_addstr.c
-*
-**	The routines waddnstr(), waddchnstr().
-**
-*/
+**	lib_mvcur.c
+**/
 
 #include <curses.priv.h>
 
-MODULE_ID("$From: lib_addstr.c,v 1.18 2000/07/29 16:42:41 tom Exp $")
+MODULE_ID("$Id")
 
-int
-waddnstr(WINDOW *win, const char *const astr, int n)
+/****************************************************************************
+ * Useful string functions (especially for mvcur)
+ ****************************************************************************/
+
+#if !HAVE_STRSTR
+char *
+_nc_strstr(const char *haystack, const char *needle)
 {
-    unsigned const char *str = (unsigned const char *) astr;
-    int code = ERR;
+    size_t len1 = strlen(haystack);
+    size_t len2 = strlen(needle);
+    char *result = 0;
 
-    T((T_CALLED("waddnstr(%p,%s,%d)"), win, _nc_visbuf(astr), n));
-
-    if (win && (str != 0)) {
-	TR(TRACE_VIRTPUT | TRACE_ATTRS, ("... current %s", _traceattr(win->_attrs)));
-	TR(TRACE_VIRTPUT, ("str is not null"));
-	code = OK;
-	if (n < 0)
-	    n = (int) strlen(astr);
-
-	while ((n-- > 0) && (*str != '\0')) {
-	    TR(TRACE_VIRTPUT, ("*str = %#x", *str));
-	    if (_nc_waddch_nosync(win, (chtype) * str++) == ERR) {
-		code = ERR;
-		break;
-	    }
+    while ((len1 != 0) && (len1-- >= len2)) {
+	if (!strncmp(haystack, needle, len2)) {
+	    result = haystack;
+	    break;
 	}
-	_nc_synchook(win);
+	haystack++;
     }
-    TR(TRACE_VIRTPUT, ("waddnstr returns %d", code));
-    returnCode(code);
+    return result;
+}
+#endif
+
+/*
+ * Initialize the descriptor so we can append to it.
+ */
+string_desc *
+_nc_str_init(string_desc * dst, char *src, size_t len)
+{
+    if (dst != 0) {
+	dst->s_head = src;
+	dst->s_tail = src;
+	dst->s_size = len - 1;
+	if (src != 0)
+	    *src = 0;
+    }
+    return dst;
 }
 
-int
-waddchnstr(WINDOW *win, const chtype * const astr, int n)
+/*
+ * Initialize the descriptor for only tracking the amount of memory used.
+ */
+string_desc *
+_nc_str_null(string_desc * dst, size_t len)
 {
-    NCURSES_SIZE_T y = win->_cury;
-    NCURSES_SIZE_T x = win->_curx;
-    int code = OK;
-    struct ldat *line;
+    return _nc_str_init(dst, 0, len);
+}
 
-    T((T_CALLED("waddchnstr(%p,%p,%d)"), win, astr, n));
+/*
+ * Copy a descriptor
+ */
+string_desc *
+_nc_str_copy(string_desc * dst, string_desc * src)
+{
+    *dst = *src;
+    return dst;
+}
 
-    if (!win)
-	returnCode(ERR);
+/*
+ * Replaces strcat into a fixed buffer, returning false on failure.
+ */
+bool
+_nc_safe_strcat(string_desc * dst, const char *src)
+{
+    if (src != 0) {
+	size_t len = strlen(src);
 
-    if (n < 0) {
-	const chtype *str;
-	n = 0;
-	for (str = (const chtype *) astr; *str != 0; str++)
-	    n++;
+	if (len < dst->s_size) {
+	    if (dst->s_tail != 0) {
+		strcpy(dst->s_tail, src);
+		dst->s_tail += len;
+	    }
+	    dst->s_size -= len;
+	    return TRUE;
+	}
     }
-    if (n > win->_maxx - x + 1)
-	n = win->_maxx - x + 1;
-    if (n == 0)
-	returnCode(code);
+    return FALSE;
+}
 
-    line = &(win->_line[y]);
-    memcpy(line->text + x, astr, n * sizeof(*astr));
-    CHANGED_RANGE(line, x, x + n - 1);
+/*
+ * Replaces strcpy into a fixed buffer, returning false on failure.
+ */
+bool
+_nc_safe_strcpy(string_desc * dst, const char *src)
+{
+    if (src != 0) {
+	size_t len = strlen(src);
 
-    _nc_synchook(win);
-    returnCode(code);
+	if (len < dst->s_size) {
+	    if (dst->s_head != 0) {
+		strcpy(dst->s_head, src);
+		dst->s_tail = dst->s_head + len;
+	    }
+	    dst->s_size -= len;
+	    return TRUE;
+	}
+    }
+    return FALSE;
 }

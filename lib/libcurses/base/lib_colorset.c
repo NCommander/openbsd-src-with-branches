@@ -1,7 +1,7 @@
-/*	$OpenBSD: lib_colorset.c,v 1.1 1999/01/18 19:09:40 millert Exp $	*/
+/*	$OpenBSD: lib_colorset.c,v 1.2 1999/05/17 03:03:58 millert Exp $	*/
 
 /****************************************************************************
- * Copyright (c) 1998 Free Software Foundation, Inc.                        *
+ * Copyright (c) 1998,2000 Free Software Foundation, Inc.                   *
  *                                                                          *
  * Permission is hereby granted, free of charge, to any person obtaining a  *
  * copy of this software and associated documentation files (the            *
@@ -42,17 +42,19 @@
 #include <curses.priv.h>
 #include <ctype.h>
 
-MODULE_ID("$From: lib_colorset.c,v 1.5 1999/05/16 17:13:43 juergen Exp $")
+MODULE_ID("$From: lib_colorset.c,v 1.6 2000/07/29 16:37:19 tom Exp $")
 
-int wcolor_set(WINDOW *win, short color_pair_number, void *opts)
+int
+wcolor_set(WINDOW *win, short color_pair_number, void *opts)
 {
-	T((T_CALLED("wcolor_set(%p,%d)"), win, color_pair_number));
-	if (win && !opts && (color_pair_number >= 0) && (color_pair_number < COLOR_PAIRS)) {
-		T(("... current %ld", (long) PAIR_NUMBER(win->_attrs)));
-		toggle_attr_on(win->_attrs,COLOR_PAIR(color_pair_number));
-		returnCode(OK);
-	} else
-		returnCode(ERR);
+    T((T_CALLED("wcolor_set(%p,%d)"), win, color_pair_number));
+    if (win
+	&& !opts
+	&& (color_pair_number >= 0)
+	&& (color_pair_number < COLOR_PAIRS)) {
+	TR(TRACE_ATTRS, ("... current %ld", (long) PAIR_NUMBER(win->_attrs)));
+	toggle_attr_on(win->_attrs, COLOR_PAIR(color_pair_number));
+	returnCode(OK);
+    } else
+	returnCode(ERR);
 }
-
-
