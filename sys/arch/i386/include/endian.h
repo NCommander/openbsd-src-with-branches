@@ -56,7 +56,7 @@
 									\
 	__asm ("rorw $8, %w1" : "=r" (__swap16md_x) :			\
 	    "0" (__swap16md_x));					\
-	__x;								\
+	__swap16md_x;							\
 })
 
 /* Tell sys/endian.h we have MD variants of the swap macros.  */
