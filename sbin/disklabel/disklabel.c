@@ -1,4 +1,4 @@
-/*	$OpenBSD: disklabel.c,v 1.50 1998/03/12 19:35:55 millert Exp $	*/
+/*	$OpenBSD: disklabel.c,v 1.51 1998/04/25 07:17:12 deraadt Exp $	*/
 /*	$NetBSD: disklabel.c,v 1.30 1996/03/14 19:49:24 ghudson Exp $	*/
 
 /*
@@ -44,7 +44,7 @@ static char copyright[] =
 #endif /* not lint */
 
 #ifndef lint
-static char rcsid[] = "$OpenBSD: disklabel.c,v 1.50 1998/03/12 19:35:55 millert Exp $";
+static char rcsid[] = "$OpenBSD: disklabel.c,v 1.51 1998/04/25 07:17:12 deraadt Exp $";
 #endif /* not lint */
 
 #include <sys/param.h>
@@ -670,9 +670,10 @@ readlabel(f)
 			sectoffset = get_le(&dosdp->dp_start) * DEV_BSIZE;
 #endif
 		if (verbose)
-			printf("reading label from block %d (0x%x)\n",
+			printf("reading label from block %d, offset %d\n",
 			    (int)sectoffset/DEV_BSIZE,
-			    (int)sectoffset/DEV_BSIZE);
+			    (int)sectoffset/DEV_BSIZE +
+			    (LABELSECTOR * DEV_BSIZE) + LABELOFFSET);
 		if (lseek(f, sectoffset, SEEK_SET) < 0 ||
 		    read(f, bootarea, BBSIZE) < BBSIZE)
 			err(4, "%s", specname);
