@@ -1,4 +1,4 @@
-/*	$OpenBSD: pfvar.h,v 1.129 2003/01/07 00:21:07 dhartmei Exp $ */
+/*	$OpenBSD: pfvar.h,v 1.130 2003/01/09 10:40:45 cedric Exp $ */
 
 /*
  * Copyright (c) 2001 Daniel Hartmeier
@@ -1022,7 +1022,7 @@ int	pfr_tst_addrs(struct pfr_table *, struct pfr_addr *, int, int *,
 	    int);
 int	pfr_ina_begin(int *, int *, int);
 int	pfr_ina_commit(int, int *, int *, int);
-int     pfr_ina_define(struct pfr_table *, struct pfr_addr *, int, int *,
+int	pfr_ina_define(struct pfr_table *, struct pfr_addr *, int, int *,
 	    int *, int, int);
 
 extern struct pf_status	pf_status;
