@@ -1,4 +1,4 @@
-/*	$OpenBSD: disklabel.c,v 1.53 1998/06/07 05:00:23 deraadt Exp $	*/
+/*	$OpenBSD: disklabel.c,v 1.54 1998/09/10 06:56:47 deraadt Exp $	*/
 /*	$NetBSD: disklabel.c,v 1.30 1996/03/14 19:49:24 ghudson Exp $	*/
 
 /*
@@ -44,7 +44,7 @@ static char copyright[] =
 #endif /* not lint */
 
 #ifndef lint
-static char rcsid[] = "$OpenBSD: disklabel.c,v 1.53 1998/06/07 05:00:23 deraadt Exp $";
+static char rcsid[] = "$OpenBSD: disklabel.c,v 1.54 1998/09/10 06:56:47 deraadt Exp $";
 #endif /* not lint */
 
 #include <sys/param.h>
@@ -261,7 +261,7 @@ main(argc, argv)
 			usage();
 		if ((lp = readlabel(f)) == NULL)
 			exit(1);
-		error = editor(lp, f, dkname);
+		error = editor(lp, f, specname);
 		break;
 	case READ:
 		if (argc != 1)
