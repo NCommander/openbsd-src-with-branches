@@ -1,4 +1,4 @@
-/*	$OpenBSD: picabus.c,v 1.1.1.1 1996/06/24 09:07:18 pefo Exp $	*/
+/*	$OpenBSD: picabus.c,v 1.2 1996/07/16 07:46:18 pefo Exp $	*/
 /*	$NetBSD: tc.c,v 1.2 1995/03/08 00:39:05 cgd Exp $	*/
 
 /*
@@ -310,7 +310,7 @@ pica_clkintr(mask, pc, statusReg, causeReg)
 	struct clockframe cf;
 	int temp;
 
-	temp = inw(PICA_SYS_IT_STAT);
+	temp = inw(R4030_SYS_IT_STAT);
 	cf.pc = pc;
 	cf.sr = statusReg;
 	hardclock(&cf);
