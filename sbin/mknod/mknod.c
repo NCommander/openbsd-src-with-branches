@@ -1,4 +1,4 @@
-/*	$OpenBSD: mknod.c,v 1.10 2002/02/16 21:27:35 millert Exp $	*/
+/*	$OpenBSD: mknod.c,v 1.11 2002/06/09 08:13:07 todd Exp $	*/
 /*	$NetBSD: mknod.c,v 1.8 1995/08/11 00:08:18 jtc Exp $	*/
 
 /*
@@ -47,7 +47,7 @@ static char copyright[] =
 #if 0
 static char sccsid[] = "@(#)mknod.c	8.1 (Berkeley) 6/5/93";
 #else
-static char rcsid[] = "$OpenBSD: mknod.c,v 1.10 2002/02/16 21:27:35 millert Exp $";
+static char rcsid[] = "$OpenBSD: mknod.c,v 1.11 2002/06/09 08:13:07 todd Exp $";
 #endif
 #endif /* not lint */
 
@@ -67,9 +67,7 @@ int domkfifo(int, char **, mode_t);
 void usage(int);
 
 int
-main(argc, argv)
-	int argc;
-	char **argv;
+main(int argc, char *argv[])
 {
 	int ch, ismkfifo = 0;
 	void *set = NULL;
@@ -135,10 +133,7 @@ main(argc, argv)
 }
 
 int
-domknod(argc, argv, mode)
-	int argc;
-	char **argv;
-	mode_t mode;
+domknod(int argc, char **argv, mode_t mode)
 {
 	dev_t dev;
 	char *endp;
@@ -176,10 +171,7 @@ domknod(argc, argv, mode)
 }
 
 int
-domkfifo(argc, argv, mode)
-	int argc;
-	char **argv;
-	mode_t mode;
+domkfifo(int argc, char **argv, mode_t mode)
 {
 	int rv;
 
@@ -193,8 +185,7 @@ domkfifo(argc, argv, mode)
 }
 
 void
-usage(ismkfifo)
-	int ismkfifo;
+usage(int ismkfifo)
 {
 
 	if (ismkfifo == 1)

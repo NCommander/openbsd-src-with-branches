@@ -1,4 +1,4 @@
-/*	$OpenBSD: main.c,v 1.3 1997/09/14 10:37:58 deraadt Exp $	*/
+/*	$OpenBSD: main.c,v 1.4 2002/02/16 21:27:35 millert Exp $	*/
 
 /*
  * Copyright (c) 1996 Juergen Hannken-Illjes
@@ -41,7 +41,7 @@ extern void kbd_set(char *, int);
 extern char *__progname;
 
 static void
-usage()
+usage(void)
 {
 	fprintf(stderr, "usage: %s -l  or  %s [-q] name\n",
 		__progname, __progname);
@@ -49,9 +49,7 @@ usage()
 }
 
 int
-main(argc, argv)
-	int argc;
-	char **argv;
+main(int argc, char *argv[])
 {
 	char *optstring = "lq";
 	int ch, list_tables, verbose;

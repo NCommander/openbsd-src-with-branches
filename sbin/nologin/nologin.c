@@ -1,4 +1,4 @@
-/*	$OpenBSD: nologin.c,v 1.1 1997/02/16 04:15:32 downsj Exp $	*/
+/*	$OpenBSD: nologin.c,v 1.2 1997/04/04 16:51:37 millert Exp $	*/
 
 /*
  * Copyright (c) 1997, Jason Downs.  All rights reserved.
@@ -36,9 +36,7 @@
 #define DEFAULT_MESG	"This account is currently not available.\n"
 
 /*ARGSUSED*/
-int main(argc, argv)
-	int argc;
-	char *argv[];
+int main(int argc, char *argv[])
 {
 	int nfd, nrd;
 	char nbuf[128];

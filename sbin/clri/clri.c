@@ -1,4 +1,4 @@
-/*	$OpenBSD: clri.c,v 1.5 2001/06/04 14:59:47 mickey Exp $	*/
+/*	$OpenBSD: clri.c,v 1.6 2001/11/05 07:39:16 mpech Exp $	*/
 /*	$NetBSD: clri.c,v 1.9 1995/03/18 14:54:33 cgd Exp $	*/
 
 /*
@@ -47,7 +47,7 @@ static char copyright[] =
 #if 0
 static char sccsid[] = "@(#)clri.c	8.2 (Berkeley) 9/23/93";
 #else
-static char rcsid[] = "$OpenBSD: clri.c,v 1.5 2001/06/04 14:59:47 mickey Exp $";
+static char rcsid[] = "$OpenBSD: clri.c,v 1.6 2001/11/05 07:39:16 mpech Exp $";
 #endif
 #endif /* not lint */
 
@@ -66,9 +66,7 @@ static char rcsid[] = "$OpenBSD: clri.c,v 1.5 2001/06/04 14:59:47 mickey Exp $";
 #include <unistd.h>
 
 int
-main(argc, argv)
-	int argc;
-	char *argv[];
+main(int argc, char *argv[])
 {
 	struct fs *sbp;
 	struct dinode *ip;
