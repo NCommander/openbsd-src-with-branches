@@ -1,4 +1,4 @@
-/*	$OpenBSD: cron.c,v 1.21 2002/05/20 23:33:31 millert Exp $	*/
+/*	$OpenBSD: cron.c,v 1.22 2002/05/21 20:57:32 millert Exp $	*/
 /* Copyright 1988,1990,1993,1994 by Paul Vixie
  * All rights reserved
  */
@@ -21,7 +21,7 @@
  */
 
 #if !defined(lint) && !defined(LINT)
-static char rcsid[] = "$OpenBSD: cron.c,v 1.21 2002/05/20 23:33:31 millert Exp $";
+static char rcsid[] = "$OpenBSD: cron.c,v 1.22 2002/05/21 20:57:32 millert Exp $";
 #endif
 
 #define	MAIN_PROGRAM
@@ -39,6 +39,7 @@ static	void	usage(void),
 		sighup_handler(int),
 		sigchld_reaper(void),
 		check_sigs(int),
+		quit(int),
 		parse_args(int c, char *v[]);
 
 static	volatile sig_atomic_t	got_sighup, got_sigchld;
@@ -86,6 +87,9 @@ main(int argc, char *argv[]) {
 	sact.sa_handler = SIG_IGN;
 	(void) sigaction(SIGPIPE, &sact, NULL);
 	(void) sigaction(SIGUSR1, &sact, NULL);	/* XXX */
+	sact.sa_handler = quit;
+	(void) sigaction(SIGINT, &sact, NULL);
+	(void) sigaction(SIGTERM, &sact, NULL);
 
 	acquire_daemonlock(0);
 	set_cron_uid();
@@ -408,6 +412,16 @@ sighup_handler(int x) {
 static void
 sigchld_handler(int x) {
 	got_sigchld = 1;
+}
+
+static void
+quit(int x) {
+	char	pidfile[MAX_FNAME];
+
+	if (glue_strings(pidfile, sizeof pidfile, PIDDIR, PIDFILE, '/'))
+		(void) unlink(pidfile);
+
+	_exit(0);
 }
 
 static void
