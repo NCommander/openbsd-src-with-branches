@@ -14,7 +14,7 @@
  */
 
 #include "includes.h"
-RCSID("$OpenBSD: sshd.c,v 1.120 2000/06/26 21:59:18 markus Exp $");
+RCSID("$OpenBSD: sshd.c,v 1.121 2000/07/05 21:35:56 provos Exp $");
 
 #include "xmalloc.h"
 #include "rsa.h"
@@ -845,6 +845,7 @@ main(int ac, char **av)
 					close_listen_socks();
 					sock_in = newsock;
 					sock_out = newsock;
+					startup_pipe = -1;
 					pid = getpid();
 					break;
 				} else {
