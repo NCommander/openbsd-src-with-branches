@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.181 2003/03/24 18:15:27 drahn Exp $
+#	$OpenBSD: Makefile,v 1.182 2003/03/30 07:43:02 deraadt Exp $
 
 TZDIR=		/usr/share/zoneinfo
 LOCALTIME=	Canada/Mountain
@@ -103,17 +103,6 @@ distribution-etc-root-var: distrib-dirs
 		    ${DESTDIR}/etc/skel/.profile; \
 		${INSTALL} -c -o root -g wheel -m 600 dot.rhosts \
 		    ${DESTDIR}/etc/skel/.rhosts
-	cd kerberosIV; \
-		${INSTALL} -c -o root -g wheel -m 644 README \
-		    ${DESTDIR}/etc/kerberosIV; \
-		${INSTALL} -c -o root -g wheel -m 644 krb.conf \
-		    ${DESTDIR}/etc/kerberosIV; \
-		${INSTALL} -c -o root -g wheel -m 644 krb.realms \
-		    ${DESTDIR}/etc/kerberosIV; \
-		${INSTALL} -c -o root -g wheel -m 644 krb.extra \
-		    ${DESTDIR}/etc/kerberosIV; \
-		${INSTALL} -c -o root -g wheel -m 644 krb.equiv \
-		    ${DESTDIR}/etc/kerberosIV
 	cd kerberosV; \
 		${INSTALL} -c -o root -g wheel -m 644 README \
 		    ${DESTDIR}/etc/kerberosV; \

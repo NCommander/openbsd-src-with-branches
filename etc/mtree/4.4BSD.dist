@@ -1,4 +1,4 @@
-#	$OpenBSD: 4.4BSD.dist,v 1.152 2003/05/16 17:06:09 miod Exp $
+#	$OpenBSD: 4.4BSD.dist,v 1.153 2003/05/17 05:27:43 mho Exp $
 
 /set type=dir uname=root gname=wheel mode=0755
 # .
@@ -72,11 +72,6 @@ private		uname=root mode=0700
 ..
 
 # ./etc/isakmpd
-..
-
-# ./etc/kerberosIV
-kerberosIV
-# ./etc/kerberosIV
 ..
 
 # ./etc/kerberosV
