@@ -1,4 +1,4 @@
-/* $OpenBSD: error.h,v 1.2 2000/06/23 16:27:29 espie Exp $ */
+/* $OpenBSD: error.h,v 1.3 2000/09/14 13:32:06 espie Exp $ */
 
 /*-
  * Copyright (c) 1988, 1989, 1990, 1993
@@ -46,6 +46,7 @@ extern char *estrdup __P((const char *));
 extern void *erealloc __P((void *, size_t));
 extern void *ecalloc __P((size_t, size_t));
 extern int eunlink __P((const char *));
+extern void esetenv __P((const char *, const char *));
 
 /* efree(x) works when x==NULL. STDC behavior, may need some different
  * definition for cross-builds on deficient systems */

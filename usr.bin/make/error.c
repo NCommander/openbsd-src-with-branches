@@ -1,4 +1,4 @@
-/* $OpenBSD: error.c,v 1.2 2000/01/08 19:07:13 millert Exp $ */
+/* $OpenBSD: error.c,v 1.3 2000/06/23 16:27:29 espie Exp $ */
 
 /*
  * Copyright (c) 1988, 1989, 1990, 1993
@@ -142,9 +142,23 @@ void
 enomem(size)
 	size_t size;
 {
-	int myerr = errno;
+	fprintf(stderr, "make: %s (%lu)\n", strerror(errno), (u_long)size);
+	exit(2);
+}
 
-	fprintf(stderr, "make: %s (%lu)\n", strerror(myerr), (u_long)size);
+/*
+ * esetenv --
+ *	change environment, die on error.
+ */
+void
+esetenv(name, value)
+	const char *name;
+	const char *value;
+{
+	if (setenv(name, value, 1) == 0)
+	    return;
+
+	fprintf(stderr, "make: setenv failed (%s)\n", strerror(errno));
 	exit(2);
 }
 
