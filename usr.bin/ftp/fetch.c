@@ -1,4 +1,4 @@
-/*	$OpenBSD: fetch.c,v 1.38 2002/02/16 21:27:46 millert Exp $	*/
+/*	$OpenBSD: fetch.c,v 1.40 2002/11/08 03:30:17 fgsch Exp $	*/
 /*	$NetBSD: fetch.c,v 1.14 1997/08/18 10:20:20 lukem Exp $	*/
 
 /*-
@@ -38,7 +38,7 @@
  */
 
 #ifndef lint
-static char rcsid[] = "$OpenBSD: fetch.c,v 1.38 2002/02/16 21:27:46 millert Exp $";
+static char rcsid[] = "$OpenBSD: fetch.c,v 1.40 2002/11/08 03:30:17 fgsch Exp $";
 #endif /* not lint */
 
 /*
@@ -310,8 +310,9 @@ url_get(origline, proxyenv, outfile)
 	s = -1;
 	for (res = res0; res; res = res->ai_next) {
 		getnameinfo(res->ai_addr, res->ai_addrlen, pbuf, sizeof(pbuf),
-			NULL, 0, NI_NUMERICHOST);
-		fprintf(ttyout, "Trying %s...\n", pbuf);
+		    NULL, 0, NI_NUMERICHOST);
+		if (verbose)
+			fprintf(ttyout, "Trying %s...\n", pbuf);
 
 		s = socket(res->ai_family, res->ai_socktype, res->ai_protocol);
 		if (s == -1) {
