@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.5 1999/11/25 21:18:01 deraadt Exp $
+#	$OpenBSD: Makefile,v 1.6 2000/05/29 08:17:32 deraadt Exp $
 
 SUBDIR=	keycap cursor fontedit kcon loadfont scon \
 	userkeys vttest ispcvt pcvtdoc fed
@@ -15,6 +15,10 @@ includes:
 	-cd ${.CURDIR}; cmp -s ../pcvt_ioctl.h \
 	    ${DESTDIR}/usr/include/machine/pcvt_ioctl.h > /dev/null 2>&1 || \
 	    install -c -o ${BINOWN} -g ${BINGRP} -m 444 ../pcvt_ioctl.h \
+	    ${DESTDIR}/usr/include/machine
+	-cd ${.CURDIR}; cmp -s ../pcvt_mouse.h \
+	    ${DESTDIR}/usr/include/machine/pcvt_mouse.h > /dev/null 2>&1 || \
+	    install -c -o ${BINOWN} -g ${BINGRP} -m 444 ../pcvt_mouse.h \
 	    ${DESTDIR}/usr/include/machine
 
 .include <bsd.subdir.mk>
