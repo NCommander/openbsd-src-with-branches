@@ -1,3 +1,4 @@
+#	$OpenBSD$
 #	$NetBSD: Makefile,v 1.3 1996/03/27 03:56:22 scottr Exp $
 
 #	@(#)Makefile	7.3 (Berkeley) 6/9/91
