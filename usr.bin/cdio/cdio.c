@@ -98,7 +98,7 @@ struct cmdtab {
 { CMD_STOP,     "stop",         3, "" },
 { CMD_VOLUME,   "volume",       1, "<l> <r> | left | right | mute | mono | stereo" },
 { CMD_CDDB,   	"cddbinfo",     2, "[n]" },
-{ CMD_CDID,	"cdid",		2, "" },
+{ CMD_CDID,	"cdid",		3, "" },
 { 0, 0, 0, 0}
 };
 
