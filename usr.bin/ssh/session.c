@@ -8,7 +8,7 @@
  */
 
 #include "includes.h"
-RCSID("$OpenBSD: session.c,v 1.4 2000/04/14 10:30:33 markus Exp $");
+RCSID("$OpenBSD: session.c,v 1.5 2000/04/19 09:24:39 markus Exp $");
 
 #include "xmalloc.h"
 #include "ssh.h"
@@ -1402,6 +1402,5 @@ do_authenticated2(void)
 	 * authentication.
 	 */
 	alarm(0);
-	log("do_authenticated2");
 	server_loop2();
 }
