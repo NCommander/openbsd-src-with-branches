@@ -1,4 +1,4 @@
-/*	$OpenBSD: kern_malloc.c,v 1.30 2001/05/14 07:01:37 angelos Exp $	*/
+/*	$OpenBSD: kern_malloc.c,v 1.31 2001/05/14 08:03:13 angelos Exp $	*/
 /*	$NetBSD: kern_malloc.c,v 1.15.4.2 1996/06/13 17:10:56 cgd Exp $	*/
 
 /*
@@ -339,6 +339,12 @@ free(addr, type)
 #ifdef MALLOC_DEBUG
 	if (debug_free(addr, type))
 		return;
+#endif
+
+#ifdef DIAGNOSTIC
+	if (addr < (void *)kmembase || addr >= (void *)kmemlimit)
+		panic("free of non-malloced addr %p type %s", addr,
+		    memname[type]);
 #endif
 
 	kup = btokup(addr);
