@@ -12,7 +12,7 @@
  */
 
 #include "includes.h"
-RCSID("$OpenBSD: ssh-keygen.c,v 1.74 2001/08/01 23:33:09 markus Exp $");
+RCSID("$OpenBSD: ssh-keygen.c,v 1.75 2001/08/02 00:10:17 markus Exp $");
 
 #include <openssl/evp.h>
 #include <openssl/pem.h>
@@ -823,7 +823,7 @@ main(int ac, char **av)
 		exit(1);
 	}
 
-	while ((opt = getopt(ac, av, "deiqpclBRxXyb:f:t:u:D:P:N:C:")) != -1) {
+	while ((opt = getopt(ac, av, "deiqpclBRxXyb:f:t:U:D:P:N:C:")) != -1) {
 		switch (opt) {
 		case 'b':
 			bits = atoi(optarg);
@@ -885,7 +885,7 @@ main(int ac, char **av)
 			break;
 		case 'D':
 			download = 1;
-		case 'u':
+		case 'U':
 			reader_id = optarg;
 			break;
 		case '?':
