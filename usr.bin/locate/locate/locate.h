@@ -41,6 +41,7 @@
 #define	OFFSET		14		/* abs value of max likely diff */
 #define	PARITY		0200		/* parity bit */
 #define	SWITCH		30		/* switch code */
+#define UMLAUT          31              /* an 8 bit char followed */
 
 /* 	0-28	likeliest differential counts + offset to make nonnegative */
 #define LDC_MIN         0
