@@ -25,7 +25,7 @@ _SUBDIRUSE: .USE
 		fi; \
 		echo "===> $${_nextdir_}"; \
 		cd ${.CURDIR}/$${_newdir_}; \
-		${MAKE} $${_makefile_spec_} _THISDIR_="$${_nextdir_}" \
+		${MAKE} -${MAKEFLAGS} $${_makefile_spec_} _THISDIR_="$${_nextdir_}" \
 		    ${.TARGET:S/realinstall/install/:S/.depend/depend/}); \
 	done
 
@@ -41,7 +41,7 @@ ${SUBDIR}::
 	fi; \
 	echo "===> $${_newdir_}"; \
 	cd ${.CURDIR}/$${_newdir_}; \
-	${MAKE} $${_makefile_spec_} _THISDIR_="$${_newdir_}" all
+	${MAKE} -${MAKEFLAGS} $${_makefile_spec_} _THISDIR_="$${_newdir_}" all
 .endif
 
 .if !target(install)
