@@ -1,4 +1,4 @@
-/*	$OpenBSD: systrace.h,v 1.8 2002/07/13 08:54:10 provos Exp $	*/
+/*	$OpenBSD: systrace.h,v 1.9 2002/07/14 22:34:55 provos Exp $	*/
 /*
  * Copyright 2002 Niels Provos <provos@citi.umich.edu>
  * All rights reserved.
@@ -97,6 +97,7 @@ struct policy {
 #define POLICY_CHANGED		0x04
 
 #define PROCESS_INHERIT_POLICY	0x01	/* Process inherits policy */
+#define PROCESS_DETACH		0x02	/* Process gets detached */
 
 int systrace_initpolicy(char *);
 void systrace_initcb(void);

@@ -1,4 +1,4 @@
-/*	$OpenBSD: intercept.h,v 1.5 2002/07/09 20:46:18 provos Exp $	*/
+/*	$OpenBSD: intercept.h,v 1.6 2002/07/12 12:26:29 provos Exp $	*/
 /*
  * Copyright 2002 Niels Provos <provos@citi.umich.edu>
  * All rights reserved.
@@ -75,8 +75,15 @@ struct intercept_pid {
 	short policynr;
 	int execve_code;
 	short execve_policy;
-	char *name;
-	char *newname;
+	char *name;		/* name of current process image */
+	char *newname;		/* image name to be committed by execve */
+
+#define ICFLAGS_UIDKNOWN	0x01
+#define ICFLAGS_GIDKNOWN	0x02
+	int flags;
+
+	uid_t uid;		/* current uid */
+	gid_t gid;		/* current gid */
 
 	void *data;
 
