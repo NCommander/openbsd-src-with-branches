@@ -1065,6 +1065,7 @@ envvarok(varp)
 	return (strncmp(varp, "LD_", strlen("LD_")) &&
 		strncmp(varp, "_RLD_", strlen("_RLD_")) &&
 		strcmp(varp, "LIBPATH") &&
+		strcmp(varp, "ENV") &&
 		strcmp(varp, "IFS"));
 }
 
