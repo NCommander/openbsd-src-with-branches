@@ -148,15 +148,18 @@ cvs_commit_openmsg(const char *path)
 			}
 
 			sz = strlen(buf);
-			if ((sz == 0) || (sz > 2)) {
+			if ((sz == 0) || (sz > 2) ||
+			    ((buf[sz] != 'y') && (buf[sz] != 'n'))) {
+				fprintf(stderr, "invalid input\n");
 				continue;
 			}
-
+			else if (buf[sz] == 'y') 
+				break;
+			else if (buf[sz] == 'n') {
 				cvs_log(LP_ERR, "aborted by user");
 				return (NULL);
 			}
 
-			fprintf(stderr, "Invalid character\n");
 		} while (1);
 	}
 
