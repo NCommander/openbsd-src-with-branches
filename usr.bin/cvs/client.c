@@ -270,7 +270,7 @@ cvs_client_sendreq(u_int rid, const char *arg, int resp)
 		} while (ret == 0);
 	}
 
-	return (0);
+	return (ret);
 }
 
 
