@@ -1,4 +1,4 @@
-/*	$OpenBSD: token.h,v 1.2 2000/12/20 01:52:12 millert Exp $	*/
+/*	$OpenBSD: token.h,v 1.3 2002/07/16 12:38:40 jufi Exp $	*/
 
 /*-
  * Copyright (c) 1995 Migration Associates Corp. All Rights Reserved
@@ -61,7 +61,7 @@ struct token_types {
 	char	map[6];		/* how A-F map to decimal */
 	int	options;	/* various available options */
 	u_int	modes;		/* available modes */
-	u_int	defmode;	/* default mode (if none specified) */	
+	u_int	defmode;	/* default mode (if none specified) */
 };
 
 struct token_types *tt;		/* what type we are running as now */
