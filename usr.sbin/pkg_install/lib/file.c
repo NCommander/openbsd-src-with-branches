@@ -1,7 +1,7 @@
-/*	$OpenBSD: file.c,v 1.17 2003/04/19 10:46:16 henning Exp $	*/
+/*	$OpenBSD: file.c,v 1.18 2003/04/25 23:26:17 henning Exp $	*/
 
 #ifndef lint
-static const char *rcsid = "$OpenBSD: file.c,v 1.17 2003/04/19 10:46:16 henning Exp $";
+static const char *rcsid = "$OpenBSD: file.c,v 1.18 2003/04/25 23:26:17 henning Exp $";
 #endif
 
 /*
@@ -380,12 +380,7 @@ fileFindByPath(char *base, char *fname)
 
 		cp = strrchr(tmp, '/');
 		if (cp) {
-			*cp = '\0';	/* chop name */
-			cp = strrchr(tmp, '/');
-		}
-		if (cp) {
 			*(cp + 1) = '\0';
-			strlcat(tmp, "All/", sizeof tmp);
 			strlcat(tmp, ensure_tgz(fname), sizeof tmp);
 			if (ispkgpattern(tmp)) {
 				cp=findbestmatchingname(dirname_of(tmp),
