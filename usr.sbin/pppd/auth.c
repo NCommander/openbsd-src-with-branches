@@ -1,4 +1,4 @@
-/*	$OpenBSD: auth.c,v 1.14 1998/04/25 00:30:26 millert Exp $	*/
+/*	$OpenBSD: auth.c,v 1.15 1998/05/08 04:52:18 millert Exp $	*/
 
 /*
  * auth.c - PPP authentication and phase control.
@@ -38,7 +38,7 @@
 #if 0
 static char rcsid[] = "Id: auth.c,v 1.37 1998/03/26 04:46:03 paulus Exp $";
 #else
-static char rcsid[] = "$OpenBSD: auth.c,v 1.14 1998/04/25 00:30:26 millert Exp $";
+static char rcsid[] = "$OpenBSD: auth.c,v 1.15 1998/05/08 04:52:18 millert Exp $";
 #endif
 #endif
 
@@ -1491,7 +1491,7 @@ auth_script(script)
     if ((pw = getpwuid(getuid())) != NULL && pw->pw_name != NULL)
 	user_name = pw->pw_name;
     else {
-	sprintf(struid, "%d", getuid());
+	sprintf(struid, "%u", getuid());
 	user_name = struid;
     }
     sprintf(strspeed, "%d", baud_rate);
