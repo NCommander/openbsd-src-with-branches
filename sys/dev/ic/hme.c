@@ -1,4 +1,4 @@
-/*	$OpenBSD: hme.c,v 1.2 2001/08/23 05:12:59 jason Exp $	*/
+/*	$OpenBSD: hme.c,v 1.3 2001/08/23 05:27:01 jason Exp $	*/
 /*	$NetBSD: hme.c,v 1.21 2001/07/07 15:59:37 thorpej Exp $	*/
 
 /*-
@@ -162,6 +162,8 @@ hme_config(sc)
 	 *	sc_enaddr
 	 *
 	 */
+
+	bcopy(sc->sc_enaddr, sc->sc_arpcom.ac_enaddr, ETHER_ADDR_LEN);
 
 	/* Make sure the chip is stopped. */
 	hme_stop(sc);
