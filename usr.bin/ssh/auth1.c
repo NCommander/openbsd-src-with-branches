@@ -10,7 +10,7 @@
  */
 
 #include "includes.h"
-RCSID("$OpenBSD: auth1.c,v 1.35 2002/02/03 17:53:25 markus Exp $");
+RCSID("$OpenBSD: auth1.c,v 1.38 2002/03/18 17:50:31 provos Exp $");
 
 #include "xmalloc.h"
 #include "rsa.h"
@@ -24,7 +24,6 @@ RCSID("$OpenBSD: auth1.c,v 1.35 2002/02/03 17:53:25 markus Exp $");
 #include "auth.h"
 #include "channels.h"
 #include "session.h"
-#include "misc.h"
 #include "uidswap.h"
 #include "monitor_wrap.h"
 
@@ -323,7 +322,6 @@ Authctxt *
 do_authentication(void)
 {
 	Authctxt *authctxt;
-	struct passwd *pw = NULL, *pwent;
 	u_int ulen;
 	char *p, *user, *style = NULL;
 
@@ -346,28 +344,20 @@ do_authentication(void)
 	authctxt->style = style;
 
 	/* Verify that the user is a valid user. */
-	pwent = PRIVSEP(getpwnamallow(user));
-	if (pwent) {
+	if ((authctxt->pw = PRIVSEP(getpwnamallow(user))) != NULL)
 		authctxt->valid = 1;
-		pw = pwcopy(pwent);
-	} else {
+	else
 		debug("do_authentication: illegal user %s", user);
-		pw = NULL;
-	}
-	/* Free memory */
-	if (use_privsep && pwent != NULL)
-		pwfree(pwent);
 
-	authctxt->pw = pw;
-
-	setproctitle("%s%s", pw ? user : "unknown",
+	setproctitle("%s%s", authctxt->pw ? user : "unknown",
 	    use_privsep ? " [net]" : "");
 
 	/*
 	 * If we are not running as root, the user must have the same uid as
 	 * the server.
 	 */
-	if (!use_privsep && getuid() != 0 && pw && pw->pw_uid != getuid())
+	if (!use_privsep && getuid() != 0 && authctxt->pw &&
+	    authctxt->pw->pw_uid != getuid())
 		packet_disconnect("Cannot change user when server not running as root.");
 
 	/*
