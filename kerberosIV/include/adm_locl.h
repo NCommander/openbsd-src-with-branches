@@ -1,4 +1,4 @@
-/*	$OpenBSD: adm_locl.h,v 1.3 1997/12/17 10:25:41 art Exp $	*/
+/*	$OpenBSD: adm_locl.h,v 1.4 1998/02/18 11:53:33 art Exp $	*/
 
 /*-
  * Copyright 1987, 1988 by the Student Information Processing Board
@@ -37,6 +37,7 @@
 #include <fcntl.h>
 #include <signal.h>
 #include <errno.h>
+#include <err.h>
 
 #include <netinet/in.h>
 
