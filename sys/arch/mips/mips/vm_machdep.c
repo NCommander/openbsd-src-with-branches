@@ -1,4 +1,4 @@
-/*	$OpenBSD: vm_machdep.c,v 1.8 2000/06/05 11:03:00 art Exp $	*/
+/*	$OpenBSD: vm_machdep.c,v 1.9 2000/06/08 10:09:33 art Exp $	*/
 /*
  * Copyright (c) 1988 University of Utah.
  * Copyright (c) 1992, 1993
@@ -128,7 +128,7 @@ cpu_fork(p1, p2, stack, stacksize)
 	 * is started, to resume here, returning nonzero from setjmp.
 	 */
 #ifdef DIAGNOSTIC
-	if (p1 != curproc)
+	if (p1 != curproc && p1 != &proc0)
 		panic("cpu_fork: curproc");
 #endif
 	if (copykstack(up)) {
