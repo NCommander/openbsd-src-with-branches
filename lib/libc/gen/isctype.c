@@ -37,7 +37,7 @@
  */
 
 #if defined(LIBC_SCCS) && !defined(lint)
-static char rcsid[] = "$OpenBSD: isctype.c,v 1.3 2001/06/27 07:17:07 pjanzen Exp $";
+static char rcsid[] = "$OpenBSD: isctype.c,v 1.4 2002/12/13 22:39:27 millert Exp $";
 #endif /* LIBC_SCCS and not lint */
 
 #define _ANSI_LIBRARY
@@ -167,9 +167,7 @@ int
 isascii(c)
 	int c;
 {
-	if (c == EOF)
-		return(0);
-	return ((unsigned int)(c) <= 0177);
+	return ((unsigned int)c <= 0177);
 }
 
 #undef toascii
@@ -177,7 +175,7 @@ int
 toascii(c)
 	int c;
 {
-	return ((c) & 0177);
+	return (c & 0177);
 }
 
 #undef _toupper
