@@ -1,6 +1,6 @@
 #!/usr/bin/perl
 # ex:ts=8 sw=4:
-# $OpenBSD: pkg.pl,v 1.1 2001/04/02 10:11:16 espie Exp $
+# $OpenBSD: pkg.pl,v 1.2 2001/04/13 17:05:24 espie Exp $
 #
 # Copyright (c) 2001 Marc Espie.
 # 
@@ -150,6 +150,7 @@ sub check_flavor
 	# no flavor constraints
 	return 1 if $spec eq '';
 
+	$spec =~ s/^-//;
 	# retrieve all flavors
 	my %f = map +($_, 1), split /\-/, $f;
 
