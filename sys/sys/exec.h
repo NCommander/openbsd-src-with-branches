@@ -172,6 +172,7 @@ void	*copyargs		__P((struct exec_package *, struct ps_strings *,
 void	setregs			__P((struct proc *, struct exec_package *,
 				     u_long, register_t *));
 int	check_exec		__P((struct proc *, struct exec_package *));
+int	exec_setup_stack	__P((struct proc *, struct exec_package *));
 
 #ifdef DEBUG
 void	new_vmcmd __P((struct exec_vmcmd_set *evsp,
