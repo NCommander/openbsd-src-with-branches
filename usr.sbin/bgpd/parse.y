@@ -1,4 +1,4 @@
-/*	$OpenBSD: parse.y,v 1.37 2004/01/22 21:09:00 henning Exp $ */
+/*	$OpenBSD: parse.y,v 1.38 2004/01/24 19:26:12 mcbride Exp $ */
 
 /*
  * Copyright (c) 2002, 2003, 2004 Henning Brauer <henning@openbsd.org>
@@ -92,6 +92,7 @@ typedef struct {
 %token	REMOTEAS DESCR LOCALADDR MULTIHOP PASSIVE MAXPREFIX ANNOUNCE
 %token	DUMP MSG IN TABLE
 %token	LOG UPDATES
+%token	ERROR
 %token	<v.string>	STRING
 %type	<v.number>	number optnumber yesno
 %type	<v.string>	string
