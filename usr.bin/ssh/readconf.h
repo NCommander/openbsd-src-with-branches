@@ -1,4 +1,4 @@
-/*	$OpenBSD: readconf.h,v 1.59 2003/12/16 15:49:51 markus Exp $	*/
+/*	$OpenBSD: readconf.h,v 1.60 2004/03/05 10:53:58 markus Exp $	*/
 
 /*
  * Author: Tatu Ylonen <ylo@cs.hut.fi>
@@ -108,7 +108,7 @@ typedef struct {
 
 void     initialize_options(Options *);
 void     fill_default_options(Options *);
-int	 read_config_file(const char *, const char *, Options *);
+int	 read_config_file(const char *, const char *, Options *, int);
 
 int
 process_config_line(Options *, const char *, char *, const char *, int, int *);
