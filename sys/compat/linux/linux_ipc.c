@@ -1,4 +1,4 @@
-/*	$OpenBSD: linux_ipc.c,v 1.4 1997/11/26 09:17:41 deraadt Exp $	*/
+/*	$OpenBSD: linux_ipc.c,v 1.5 2000/07/23 22:35:38 jasoni Exp $	*/
 /*	$NetBSD: linux_ipc.c,v 1.10 1996/04/05 00:01:44 christos Exp $	*/
 
 /*
@@ -686,7 +686,7 @@ linux_shmctl(p, uap, retval)
 		linux_to_bsd_shmid_ds(&lseg, &bs);
 		sg = stackgap_init(p->p_emul);
 		bsp = stackgap_alloc(&sg, sizeof (struct shmid_ds));
-		if ((error = copyout((caddr_t) bsp, (caddr_t) &bs, sizeof bs)))
+		if ((error = copyout((caddr_t) &bs, (caddr_t) bsp, sizeof bs)))
 			return error;
 		SCARG(&bsa, shmid) = SCARG(uap, a1);
 		SCARG(&bsa, cmd) = IPC_SET;
