@@ -1,4 +1,4 @@
-/*	$OpenBSD: sd.c,v 1.31 2003/08/15 20:32:13 tedu Exp $	*/
+/*	$OpenBSD: sd.c,v 1.32 2003/11/03 05:34:43 david Exp $	*/
 /*	$NetBSD: sd.c,v 1.34 1997/07/10 18:14:10 kleink Exp $	*/
 
 /*
@@ -984,7 +984,8 @@ sdintr(arg, stat)
 		return;
 	}
 
-	disk_unbusy(&sc->sc_dkdev, (bp->b_bcount - bp->b_resid));
+	disk_unbusy(&sc->sc_dkdev, (bp->b_bcount - bp->b_resid),
+	    (bp->b_flags & B_READ));
 
 	if (stat) {
 #ifdef DEBUG
