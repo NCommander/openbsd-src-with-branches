@@ -1,4 +1,4 @@
-/*	$OpenBSD: machdep.c,v 1.131 2004/06/30 18:18:54 mickey Exp $	*/
+/*	$OpenBSD: machdep.c,v 1.132 2004/07/01 21:03:32 mickey Exp $	*/
 
 /*
  * Copyright (c) 1999-2003 Michael Shalayeff
@@ -894,6 +894,9 @@ btlb_insert(space, va, pa, lenp, prot)
 	static u_int32_t mask;
 	register vsize_t len;
 	register int error, i;
+
+	if (!pdc_btlb.min_size && !pdc_btlb.max_size)
+		return -(ENXIO);
 
 	/* align size */
 	for (len = pdc_btlb.min_size << PGSHIFT; len < *lenp; len <<= 1);
