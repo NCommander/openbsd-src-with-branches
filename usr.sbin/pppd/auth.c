@@ -1,4 +1,4 @@
-/*	$OpenBSD: auth.c,v 1.27 2003/04/04 20:25:07 deraadt Exp $	*/
+/*	$OpenBSD: auth.c,v 1.28 2003/04/16 01:39:27 deraadt Exp $	*/
 
 /*
  * auth.c - PPP authentication and phase control.
@@ -77,7 +77,7 @@
 #if 0
 static char rcsid[] = "Id: auth.c,v 1.37 1998/03/26 04:46:03 paulus Exp $";
 #else
-static char rcsid[] = "$OpenBSD: auth.c,v 1.27 2003/04/04 20:25:07 deraadt Exp $";
+static char rcsid[] = "$OpenBSD: auth.c,v 1.28 2003/04/16 01:39:27 deraadt Exp $";
 #endif
 #endif
 
@@ -1453,6 +1453,7 @@ scan_authfile(f, client, server, ipaddr, secret, addrs, filename)
 		break;
 	    wordlen = strlen(word);	/* NUL in struct wordlist */
 	    ap = (struct wordlist *) malloc(sizeof(struct wordlist) +
+		wordlen);
 
 	    if (ap == NULL)
 		novm("authorized addresses");
