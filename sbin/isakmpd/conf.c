@@ -1,4 +1,4 @@
-/* $OpenBSD: conf.c,v 1.75 2005/03/10 17:30:31 cloder Exp $	 */
+/* $OpenBSD: conf.c,v 1.76 2005/03/15 20:33:07 moritz Exp $	 */
 /* $EOM: conf.c,v 1.48 2000/12/04 02:04:29 angelos Exp $	 */
 
 /*
@@ -693,8 +693,8 @@ conf_get_str(char *section, char *tag)
 			return cb->value;
 		}
 	LOG_DBG((LOG_MISC, 95,
-	     "conf_get_str: configuration value not found [%s]:%s", section,
-	     tag));
+	    "conf_get_str: configuration value not found [%s]:%s", section,
+	    tag));
 	return 0;
 }
 

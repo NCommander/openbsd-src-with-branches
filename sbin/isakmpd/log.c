@@ -1,4 +1,4 @@
-/* $OpenBSD: log.c,v 1.50 2004/11/08 11:59:37 hshoexer Exp $	 */
+/* $OpenBSD: log.c,v 1.51 2005/02/27 13:12:12 hshoexer Exp $	 */
 /* $EOM: log.c,v 1.30 2000/09/29 08:19:23 niklas Exp $	 */
 
 /*
@@ -424,7 +424,7 @@ log_packet_init(char *newname)
 		/* Sanity checks.  */
 		if ((st.st_mode & S_IFMT) != S_IFREG) {
 			log_print("log_packet_init: existing capture file is "
-			     "not a regular file");
+			    "not a regular file");
 			return;
 		}
 		if ((st.st_mode & (S_IRWXG | S_IRWXO)) != 0) {

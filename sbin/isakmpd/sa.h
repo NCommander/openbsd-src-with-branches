@@ -1,4 +1,4 @@
-/* $OpenBSD: sa.h,v 1.42 2004/12/08 16:08:10 markus Exp $	 */
+/* $OpenBSD: sa.h,v 1.43 2005/03/04 16:20:07 hshoexer Exp $	 */
 /* $EOM: sa.h,v 1.58 2000/10/10 12:39:01 provos Exp $	 */
 
 /*
@@ -289,7 +289,7 @@ struct sa_kinfo {
 
 	u_int64_t	exp_timeout;
 	u_int64_t	soft_timeout;
-	
+
 	u_int64_t	first_use;
 	u_int64_t	established;
 	u_int64_t	soft_first_use;
