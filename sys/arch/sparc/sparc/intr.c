@@ -1,3 +1,4 @@
+/*	$OpenBSD: intr.c,v 1.20 1997/07/29 09:42:03 fair Exp $ */
 /*	$NetBSD: intr.c,v 1.20 1997/07/29 09:42:03 fair Exp $ */
 
 /*

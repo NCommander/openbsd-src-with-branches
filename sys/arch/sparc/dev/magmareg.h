@@ -1,3 +1,5 @@
+/*	$OpenBSD$	*/
+
 /* magmareg.h
  *
  *  Copyright (c) 1998 Iain Hibbert

@@ -1,3 +1,5 @@
+/*	$OpenBSD$	*/
+
 /* START: "system" */
 #include <clib/alib_protos.h>
 #include <clib/exec_protos.h>
