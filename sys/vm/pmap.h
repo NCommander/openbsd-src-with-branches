@@ -1,4 +1,4 @@
-/*	$OpenBSD: pmap.h,v 1.13 2000/03/13 16:05:24 art Exp $	*/
+/*	$OpenBSD: pmap.h,v 1.14 2001/03/22 23:36:52 niklas Exp $	*/
 /*	$NetBSD: pmap.h,v 1.16 1996/03/31 22:15:32 pk Exp $	*/
 
 /* 
@@ -147,7 +147,7 @@ struct pmap 	 *pmap_create __P((void));
 pmap_t		 pmap_create __P((vsize_t));
 #endif
 void		 pmap_destroy __P((pmap_t));
-#ifdef PMAP_NEW
+#if defined(PMAP_NEW) && defined(__i386__)
 #ifdef notyet
 int		 pmap_enter __P((pmap_t, vaddr_t, paddr_t, vm_prot_t, int));
 boolean_t	 pmap_extract __P((pmap_t, vaddr_t, paddr_t *));
