@@ -1,4 +1,4 @@
-/*	$OpenBSD: lpf.c,v 1.3 1997/01/17 16:12:33 millert Exp $	*/
+/*	$OpenBSD: lpf.c,v 1.4 1997/07/19 07:11:42 deraadt Exp $	*/
 
 /*
  * Copyright (c) 1983, 1993
@@ -34,16 +34,16 @@
  */
 
 #ifndef lint
-static char copyright[] =
+static const char copyright[] =
 "@(#) Copyright (c) 1983, 1993\n\
 	The Regents of the University of California.  All rights reserved.\n";
 #endif /* not lint */
 
 #ifndef lint
 #if 0
-static char sccsid[] = "@(#)lpf.c	8.1 (Berkeley) 6/6/93";
+static const char sccsid[] = "@(#)lpf.c	8.1 (Berkeley) 6/6/93";
 #else
-static char rcsid[] = "$OpenBSD: lpf.c,v 1.3 1997/01/17 16:12:33 millert Exp $";
+static const char rcsid[] = "$OpenBSD: lpf.c,v 1.4 1997/07/19 07:11:42 deraadt Exp $";
 #endif
 #endif /* not lint */
 
@@ -52,8 +52,6 @@ static char rcsid[] = "$OpenBSD: lpf.c,v 1.3 1997/01/17 16:12:33 millert Exp $";
  *	with ^H's to overwritten lines.  Thus this works like 'ul'
  *	but is much better: it can handle more than 2 overwrites
  *	and it is written with some style.
- *	modified by kls to use register references instead of arrays
- *	to try to gain a little speed.
  */
 
 #include <signal.h>
@@ -82,9 +80,9 @@ main(argc, argv)
 	int argc;
 	char *argv[];
 {
-	register FILE *p = stdin, *o = stdout;
-	register int i, col;
-	register char *cp;
+	FILE *p = stdin, *o = stdout;
+	int i, col;
+	char *cp;
 	int done, linedone, maxrep;
 	char ch, *limit;
 
