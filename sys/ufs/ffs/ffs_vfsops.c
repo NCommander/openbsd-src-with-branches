@@ -1,4 +1,4 @@
-/*	$OpenBSD: ffs_vfsops.c,v 1.45 2001/11/21 22:21:48 csapuntz Exp $	*/
+/*	$OpenBSD: ffs_vfsops.c,v 1.46 2001/11/27 05:27:12 art Exp $	*/
 /*	$NetBSD: ffs_vfsops.c,v 1.19 1996/02/09 22:22:26 christos Exp $	*/
 
 /*
@@ -94,6 +94,11 @@ struct inode_vtbl ffs_vtbl = {
 	ffs_inode_free,
 	ffs_balloc,
 	ffs_bufatoff
+};
+
+struct genfs_ops ffs_genfsops = {
+	ffs_gop_size,
+	ffs_gop_alloc,
 };
 
 extern u_long nextgennumber;
@@ -1182,6 +1187,8 @@ retry:
 	/*
 	 * Finish inode initialization now that aliasing has been resolved.
 	 */
+
+	genfs_node_init(vp, &ffs_genfsops);
 	ip->i_devvp = ump->um_devvp;
 	VREF(ip->i_devvp);
 	/*
