@@ -1,4 +1,4 @@
-/*	$OpenBSD: dev_i386.c,v 1.12 1997/06/06 16:26:57 kstailey Exp $	*/
+/*	$OpenBSD: dev_i386.c,v 1.13 1997/07/17 23:00:27 mickey Exp $	*/
 
 /*
  * Copyright (c) 1996 Michael Shalayeff
@@ -38,10 +38,11 @@
 extern int debug;
 
 /* XXX use slot for 'rd' for 'hd' pseudo-device */
-const char bdevs[19][4] = {
+const char bdevs[][4] = {
 	"wd", "", "fd", "wt", "sd", "st", "cd", "mcd",
 	"", "", "", "", "", "", "", "scd", "", "hd", "acd"
 };
+const int nbdevs = NENTS(bdevs);
 
 /* pass dev_t to the open routines */
 int
