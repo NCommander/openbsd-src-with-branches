@@ -54,5 +54,5 @@ XDR *xdrs;
 keydat *objp;
 {
 	return xdr_bytes(xdrs, (char **)&objp->keydat_val,
-			 (u_int *)&objp->keydat_len, YPMAXRECORD);
+	    (u_int *)&objp->keydat_len, YPMAXRECORD);
 }

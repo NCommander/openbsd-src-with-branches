@@ -64,6 +64,11 @@ yp_order(indomain, inmap, outorder)
 	struct timeval  tv;
 	int             r = 0;
 
+	if (indomain == NULL || *indomain == '\0' ||
+	    strlen(indomain) > YPMAXDOMAIN || inmap == NULL ||
+	    *inmap == '\0' || strlen(inmap) > YPMAXMAP || outorder == NULL)
+		return YPERR_BADARGS;
+
 again:
 	if (_yp_dobind(indomain, &ysd) != 0)
 		return YPERR_DOMAIN;
@@ -77,7 +82,7 @@ again:
 	(void)memset(&ypro, 0, sizeof ypro);
 
 	r = clnt_call(ysd->dom_client, YPPROC_ORDER,
-		      xdr_ypreq_nokey, &yprnk, xdr_ypresp_order, &ypro, tv);
+	    xdr_ypreq_nokey, &yprnk, xdr_ypresp_order, &ypro, tv);
 	/*
 	 * XXX
 	 * NIS+ YP emulation package does not impliment YPPROC_ORDER

@@ -54,5 +54,5 @@ XDR *xdrs;
 valdat *objp;
 {
 	return xdr_bytes(xdrs, (char **)&objp->valdat_val,
-			 (u_int *)&objp->valdat_len, YPMAXRECORD);
+	    (u_int *)&objp->valdat_len, YPMAXRECORD);
 }
