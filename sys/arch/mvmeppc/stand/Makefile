@@ -1,10 +1,10 @@
-#	$OpenBSD: Makefile,v 1.5 2000/12/28 21:21:25 smurph Exp $
-#.if ${MACHINE} == "mvmeppc"
+#	$OpenBSD: Makefile,v 1.1 2001/06/26 21:57:58 smurph Exp $
 
+.if ${MACHINE} == "mvmeppc"
 SUBDIR=  bugcrt libbug libsa libz bootsd bootxx bootst tftpboot
 #sboot XXX future
-#.endif
+.endif
 
-SUBDIR+=installboot
+#SUBDIR+=installboot
 
 .include <bsd.subdir.mk>
