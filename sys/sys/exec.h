@@ -1,4 +1,4 @@
-/*	$OpenBSD: exec.h,v 1.20 2002/12/03 21:27:05 markus Exp $	*/
+/*	$OpenBSD: exec.h,v 1.21 2003/06/02 23:28:21 millert Exp $	*/
 /*	$NetBSD: exec.h,v 1.59 1996/02/09 18:25:09 christos Exp $	*/
 
 /*-
@@ -104,6 +104,7 @@ typedef int (*exec_makecmds_fcn)(struct proc *, struct exec_package *);
 struct execsw {
 	u_int	es_hdrsz;		/* size of header for this format */
 	exec_makecmds_fcn es_check;	/* function to check exec format */
+	struct emul *es_emul;		/* emulation */
 };
 
 struct exec_vmcmd {
