@@ -23,26 +23,18 @@
  */
 
 #include "includes.h"
-RCSID("$OpenBSD: sshconnect2.c,v 1.92 2001/12/28 15:06:00 markus Exp $");
-
-#include <openssl/bn.h>
-#include <openssl/md5.h>
-#include <openssl/dh.h>
-#include <openssl/hmac.h>
+RCSID("$OpenBSD: sshconnect2.c,v 1.93 2002/01/13 17:57:37 markus Exp $");
 
 #include "ssh.h"
 #include "ssh2.h"
 #include "xmalloc.h"
-#include "rsa.h"
 #include "buffer.h"
 #include "packet.h"
-#include "uidswap.h"
 #include "compat.h"
 #include "bufaux.h"
 #include "cipher.h"
 #include "kex.h"
 #include "myproposal.h"
-#include "key.h"
 #include "sshconnect.h"
 #include "authfile.h"
 #include "dh.h"
