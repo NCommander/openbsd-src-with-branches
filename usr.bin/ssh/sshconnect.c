@@ -13,7 +13,7 @@
  */
 
 #include "includes.h"
-RCSID("$OpenBSD: sshconnect.c,v 1.125 2002/06/19 00:27:55 deraadt Exp $");
+RCSID("$OpenBSD: sshconnect.c,v 1.126 2002/06/23 03:30:17 deraadt Exp $");
 
 #include <openssl/bn.h>
 
@@ -472,7 +472,7 @@ confirm(const char *prompt)
 		    (p[0] == '\0') || (p[0] == '\n') ||
 		    strncasecmp(p, "no", 2) == 0)
 			ret = 0;
-		if (strncasecmp(p, "yes", 3) == 0)
+		if (p && strncasecmp(p, "yes", 3) == 0)
 			ret = 1;
 		if (p)
 			xfree(p);
