@@ -1,4 +1,4 @@
-/*	$OpenBSD: autoconf.c,v 1.32 2003/06/02 23:27:56 millert Exp $	*/
+/*	$OpenBSD: autoconf.c,v 1.33 2003/07/31 17:23:24 jason Exp $	*/
 /*	$NetBSD: autoconf.c,v 1.51 2001/07/24 19:32:11 eeh Exp $ */
 
 /*
@@ -225,7 +225,7 @@ bootstrap(nctx)
 	/* 
 	 * Initialize ddb first and register OBP callbacks.
 	 * We can do this because ddb_init() does not allocate anything,
-	 * just initialze some pointers to important things
+	 * just initializes some pointers to important things
 	 * like the symtab.
 	 *
 	 * By doing this first and installing the OBP callbacks
