@@ -370,6 +370,7 @@ cvs_file_getdir(CVSFILE *cf, int flags)
 	struct cvs_dir *cdp;
 	struct cvs_flist dirs;
 
+	ndirs = 0;
 	TAILQ_INIT(&dirs);
 	cdp = cf->cf_ddat;
 
