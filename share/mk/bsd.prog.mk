@@ -1,4 +1,4 @@
-#	$OpenBSD: bsd.prog.mk,v 1.31 2002/05/11 00:20:21 espie Exp $
+#	$OpenBSD: bsd.prog.mk,v 1.32 2002/06/25 15:33:18 millert Exp $
 #	$NetBSD: bsd.prog.mk,v 1.55 1996/04/08 21:19:26 jtc Exp $
 #	@(#)bsd.prog.mk	5.26 (Berkeley) 6/25/91
 
@@ -17,7 +17,7 @@ CXXFLAGS+=     ${CXXDIAGFLAGS}
 CFLAGS+=	${COPTS}
 CXXFLAGS+=     ${CXXOPTS}
 
-.if (${MACHINE_ARCH} == "powerpc") || (${MACHINE_ARCH} == "alpha") || (${MACHINE_ARCH} == "sparc64")
+.if (${ELF_TOOLCHAIN} == "yes") && (${MACHINE_ARCH} != "hppa")
 CRTBEGIN?=       ${DESTDIR}/usr/lib/crtbegin.o
 CRTEND?=         ${DESTDIR}/usr/lib/crtend.o
 .endif
