@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.5 1998/12/16 19:37:33 millert Exp $
+#	$OpenBSD: Makefile,v 1.6 1998/12/20 18:58:41 millert Exp $
 #
 # Take termcap/terminfo master file and generate termcap/terminfo .db files
 # master: http://www.tuxedo.org/~esr/terminfo/termtypes.master.gz
@@ -15,7 +15,7 @@ terminfo.src: termtypes.master
 	    > terminfo.src
 
 terminfo.db: terminfo.src
-	info_mkdb -f terminfo terminfo.src
+	cap_mkdb -i -f terminfo terminfo.src
 
 termcap.src: termtypes.master
 	tic -C ${.ALLSRC} | sed \
