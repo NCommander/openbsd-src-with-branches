@@ -1,4 +1,4 @@
-/*	$OpenBSD: mainbus.c,v 1.5 2001/03/29 22:54:37 drahn Exp $	*/
+/*	$OpenBSD: mainbus.c,v 1.6 2001/05/29 01:20:44 drahn Exp $	*/
 
 /*
  * Copyright (c) 1994, 1995 Carnegie-Mellon University.
@@ -56,13 +56,13 @@ void	mb_intr_disestablish __P((struct confargs *));
 caddr_t	mb_cvtaddr __P((struct confargs *));
 int	mb_matchname __P((struct confargs *, char *));
 
+/*ARGSUSED*/
 static int
 mbmatch(parent, cfdata, aux)
 	struct device *parent;
 	void *cfdata;
 	void *aux;
 {
-	struct cfdata *cf = cfdata;
 
 	/*
 	 * That one mainbus is always here.

@@ -1,4 +1,4 @@
-/*	$OpenBSD: macintr.c,v 1.8 2001/05/02 06:02:46 drahn Exp $	*/
+/*	$OpenBSD: macintr.c,v 1.9 2001/06/25 00:43:15 mickey Exp $	*/
 
 /*-
  * Copyright (c) 1995 Per Fogelstrom
@@ -162,7 +162,6 @@ macintr_attach(parent, self, aux)
 	void *aux;
 {
 	struct confargs *ca = aux;
-	struct macintr_softc *sc = (void *)self;
 	extern intr_establish_t *intr_establish_func;
 	extern intr_disestablish_t *intr_disestablish_func;
 
@@ -506,7 +505,7 @@ cntlzw(x)
 void
 mac_ext_intr()
 {
-	int i, irq = 0;
+	int irq = 0;
 	int o_imen, r_imen;
 	int pcpl;
 	struct intrhand *ih;
