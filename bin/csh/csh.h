@@ -1,4 +1,4 @@
-/*	$OpenBSD: csh.h,v 1.15 2003/06/25 21:12:39 deraadt Exp $	*/
+/*	$OpenBSD: csh.h,v 1.16 2005/02/25 16:08:18 deraadt Exp $	*/
 /*	$NetBSD: csh.h,v 1.9 1995/03/21 09:02:40 cgd Exp $	*/
 
 /*-
@@ -151,11 +151,11 @@ int	backpid;		/* Pid of the last background process */
 uid_t	uid, euid;		/* Invokers uid */
 gid_t	gid, egid;		/* Invokers gid */
 time_t  chktim;			/* Time mail last checked */
-int     shpgrp;			/* Pgrp of shell */
-int     tpgrp;			/* Terminal process group */
+pid_t	shpgrp;			/* Pgrp of shell */
+pid_t	tpgrp;			/* Terminal process group */
 
 /* If tpgrp is -1, leave tty alone! */
-int     opgrp;			/* Initial pgrp and tty pgrp */
+pid_t	opgrp;			/* Initial pgrp and tty pgrp */
 
 
 /*
