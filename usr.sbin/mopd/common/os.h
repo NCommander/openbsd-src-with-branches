@@ -1,4 +1,4 @@
-/*	$OpenBSD: os.h,v 1.4 2001/08/12 12:03:03 heko Exp $ */
+/*	$OpenBSD: os.h,v 1.5 2003/06/02 21:38:39 maja Exp $ */
 
 /*
  * Copyright (c) 1994-95 Mats O Jansson.  All rights reserved.
@@ -23,7 +23,7 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
- *	$OpenBSD: os.h,v 1.4 2001/08/12 12:03:03 heko Exp $
+ *	$OpenBSD: os.h,v 1.5 2003/06/02 21:38:39 maja Exp $
  *
  */
 
@@ -48,6 +48,7 @@
 #include <fcntl.h>
 #include <string.h>
 #include <unistd.h>
+#include <ifaddrs.h>
 
 #define  DEV_NEW_CONF
 
