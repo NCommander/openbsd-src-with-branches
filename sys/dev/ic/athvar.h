@@ -1,4 +1,4 @@
-/*      $OpenBSD: athvar.h,v 1.1 2004/11/02 02:45:37 reyk Exp $  */
+/*      $OpenBSD: athvar.h,v 1.2 2004/11/23 09:39:29 reyk Exp $  */
 /*	$NetBSD: athvar.h,v 1.10 2004/08/10 01:03:53 dyoung Exp $	*/
 
 /*-
@@ -377,7 +377,7 @@ struct ath_softc {
 #define	ATH_TXQ_UNLOCK(_sc)		mtx_unlock(&(_sc)->sc_txqlock)
 #define	ATH_TXQ_LOCK_ASSERT(_sc)	mtx_assert(&(_sc)->sc_txqlock, MA_OWNED)
 
-#define ATH_TICKS() (ticks)
+#define ATH_TICKS() (tick)
 #define ATH_CALLOUT_INIT(chp) callout_init((chp))
 #define ATH_TASK_INIT(task, func, context)	\
 	do {					\
