@@ -1,5 +1,5 @@
 /*
- * $OpenBSD: readlink.c,v 1.9 1997/08/18 20:27:53 kstailey Exp $
+ * $OpenBSD: readlink.c,v 1.10 1997/09/23 20:13:21 niklas Exp $
  *
  * Copyright (c) 1997
  *	Kenneth Stailey (hereinafter referred to as the author)
@@ -133,7 +133,8 @@ canonicalize(path, newpath)
 #ifdef DEBUG
 		fprintf(stderr, "%s\n", newpath);
 #endif
-		strcpy(target, newpath);
+		strncpy(target, newpath, sizeof target-1);
+		target[sizeof target-1] = '\0';
 		path = target;
 	}
 }
