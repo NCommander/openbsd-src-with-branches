@@ -1,4 +1,4 @@
-/*	$OpenBSD: swapgeneric.c,v 1.9 1997/05/29 01:18:18 niklas Exp $	*/
+/*	$OpenBSD: swapgeneric.c,v 1.10 1997/09/09 11:08:08 niklas Exp $	*/
 /*	$NetBSD: swapgeneric.c,v 1.27 1997/01/26 22:58:32 rat Exp $	*/
 
 /*
@@ -229,8 +229,8 @@ void
 gets(cp)
 	char *cp;
 {
-	register char *lp;
-	register c;
+	char *lp;
+	int c;
 
 	lp = cp;
 	for (;;) {
