@@ -1,4 +1,4 @@
-/*	$OpenBSD: uplcom.c,v 1.12 2004/05/26 22:25:54 markus Exp $	*/
+/*	$OpenBSD: uplcom.c,v 1.13 2004/07/08 22:18:44 deraadt Exp $	*/
 /*	$NetBSD: uplcom.c,v 1.29 2002/09/23 05:51:23 simonb Exp $	*/
 /*
  * Copyright (c) 2001 The NetBSD Foundation, Inc.
@@ -159,6 +159,7 @@ static const struct usb_devno uplcom_devs[] = {
 	{ USB_VENDOR_PROLIFIC, USB_PRODUCT_PROLIFIC_PL2303 },
 	/* ELECOM UC-SGT */
 	{ USB_VENDOR_ELECOM, USB_PRODUCT_ELECOM_UCSGT },
+	{ USB_VENDOR_ELECOM, USB_PRODUCT_ELECOM_UCSGT0 },
 	/* RATOC REX-USB60 */
 	{ USB_VENDOR_RATOC, USB_PRODUCT_RATOC_REXUSB60 },
 	/* TDK USB-PHS Adapter UHA6400 */
