@@ -28,7 +28,7 @@
  */
 
 #if defined(LIBC_SCCS) && !defined(lint)
-static char *rcsid = "$OpenBSD: pmap_prot.c,v 1.2 1996/07/20 06:12:33 deraadt Exp $";
+static char *rcsid = "$OpenBSD: pmap_prot.c,v 1.3 1996/08/19 08:31:39 tholo Exp $";
 #endif /* LIBC_SCCS and not lint */
 
 /*
@@ -50,8 +50,8 @@ xdr_pmap(xdrs, regs)
 {
 
 	if (xdr_u_long(xdrs, &regs->pm_prog) && 
-		xdr_u_long(xdrs, &regs->pm_vers) && 
-		xdr_u_long(xdrs, &regs->pm_prot))
+	    xdr_u_long(xdrs, &regs->pm_vers) && 
+	    xdr_u_long(xdrs, &regs->pm_prot))
 		return (xdr_u_long(xdrs, &regs->pm_port));
 	return (FALSE);
 }
