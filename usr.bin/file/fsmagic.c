@@ -1,4 +1,4 @@
-/*	$OpenBSD: fsmagic.c,v 1.3 1997/02/09 23:58:24 millert Exp $	*/
+/*	$OpenBSD: fsmagic.c,v 1.4 1998/07/10 15:05:22 mickey Exp $	*/
 
 /*
  * fsmagic - magic based on filesystem info - directory, special files, etc.
@@ -53,7 +53,7 @@
 #include "file.h"
 
 #ifndef	lint
-static char *moduleid = "$OpenBSD: fsmagic.c,v 1.3 1997/02/09 23:58:24 millert Exp $";
+static char *moduleid = "$OpenBSD: fsmagic.c,v 1.4 1998/07/10 15:05:22 mickey Exp $";
 #endif	/* lint */
 
 int
@@ -132,11 +132,13 @@ struct stat *sb;
 
 			    if ((tmp = strrchr(fn,  '/')) == NULL) {
 				tmp = buf; /* in current directory anyway */
-			    }
-			    else {
-				strcpy (buf2, fn);  /* take directory part */
+			    } else if (strlen(fn) + strlen(buf) > sizeof(buf2)-1) {
+				ckfprintf(stdout, "name too long %s", fn);
+				return 1;
+			    } else {
+				strcpy (buf2, fn);  /* ok; take directory part */
 				buf2[tmp-fn+1] = '\0';
-				strcat (buf2, buf); /* plus (relative) symlink */
+				strcat (buf2, buf); /* ok; plus (relative) symlink */
 				tmp = buf2;
 			    }
 			    if (stat(tmp, &tstatbuf) < 0) {

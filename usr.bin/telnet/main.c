@@ -1,4 +1,4 @@
-/*	$OpenBSD: main.c,v 1.6 1998/04/07 20:01:10 art Exp $	*/
+/*	$OpenBSD: main.c,v 1.7 1998/05/15 03:16:38 art Exp $	*/
 /*	$NetBSD: main.c,v 1.5 1996/02/28 21:04:05 thorpej Exp $	*/
 
 /*
@@ -277,7 +277,7 @@ main(argc, argv)
 		case 't':
 #if defined(TN3270) && defined(unix)
 			transcom = tline;
-			(void)strcpy(transcom, optarg);
+			(void)strlcpy(transcom, optarg, sizeof transcom);
 #else
 			fprintf(stderr,
 			   "%s: Warning: -t ignored, no TN3270 support.\n",
