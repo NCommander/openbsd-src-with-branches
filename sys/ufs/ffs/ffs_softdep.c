@@ -1,4 +1,4 @@
-/*	$OpenBSD: ffs_softdep.c,v 1.31 2001/12/19 08:58:07 art Exp $	*/
+/*	$OpenBSD: ffs_softdep.c,v 1.32 2002/01/23 21:24:02 millert Exp $	*/
 /*
  * Copyright 1998, 2000 Marshall Kirk McKusick. All Rights Reserved.
  *
@@ -478,7 +478,7 @@ softdep_queuefree(struct worklist *item)
 #else /* DEBUG */
 STATIC	void worklist_insert __P((struct workhead *, struct worklist *));
 STATIC	void worklist_remove __P((struct worklist *));
-STATIC	void workitem_free __P((struct worklist *, int));
+STATIC	void workitem_free __P((struct worklist *));
 
 #define WORKLIST_INSERT(head, item) worklist_insert(head, item)
 #define WORKLIST_REMOVE(item) worklist_remove(item)
