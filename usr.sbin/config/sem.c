@@ -725,7 +725,6 @@ newdevi(name, unit, d)
 	i->i_atdeva = NULL;
 	i->i_locs = NULL;
 	i->i_cfflags = 0;
-	i->i_cfindex = -1;
 	i->i_lineno = currentline();
 	if (unit >= d->d_umax)
 		d->d_umax = unit + 1;
