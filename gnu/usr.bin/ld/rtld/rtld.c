@@ -1,4 +1,4 @@
-/*	$OpenBSD: rtld.c,v 1.32 2002/12/11 23:24:39 millert Exp $	*/
+/*	$OpenBSD: rtld.c,v 1.33 2003/01/05 09:04:10 pvalchev Exp $	*/
 /*	$NetBSD: rtld.c,v 1.43 1996/01/14 00:35:17 pk Exp $	*/
 /*
  * Copyright (c) 1993 Paul Kranenburg
@@ -380,13 +380,30 @@ load_subs(struct so_map	*smp)
 
 			if ((newmap = map_object(sodp, smp)) == NULL) {
 				if (!ld_tracing) {
-					char *fmt = sodp->sod_library ?
-						"%s: lib%s.so.%d.%d" :
-						"%s: %s";
-					err(1, fmt, main_progname,
+				    if (smp != main_map)
+					if (sodp->sod_library)
+					    err(1, "%s(%s): lib%s.so.%d.%d",
+						main_progname,
+						smp->som_path,
 						sodp->sod_name+LM_LDBASE(smp),
 						sodp->sod_major,
 						sodp->sod_minor);
+					else
+					    err(1, "%s(%s): %s",
+						main_progname,
+						smp->som_path,
+						sodp->sod_name+LM_LDBASE(smp));
+				    else
+					if (sodp->sod_library)
+					    err(1, "%s: lib%s.so.%d.%d",
+						main_progname,
+						sodp->sod_name+LM_LDBASE(smp),
+						sodp->sod_major,
+						sodp->sod_minor);
+					else
+					    err(1, "%s: %s",
+						main_progname,
+						sodp->sod_name+LM_LDBASE(smp));
 				}
 				newmap = alloc_link_map(NULL, sodp, smp,
 				    0, 0, 0);
