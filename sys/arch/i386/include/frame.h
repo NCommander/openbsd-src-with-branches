@@ -1,4 +1,4 @@
-/*	$OpenBSD: frame.h,v 1.4 2000/08/05 22:07:31 niklas Exp $	*/
+/*	$OpenBSD: frame.h,v 1.5 2003/06/02 23:27:47 millert Exp $	*/
 /*	$NetBSD: frame.h,v 1.12 1995/10/11 04:20:08 mycroft Exp $	*/
 
 /*-
@@ -46,6 +46,8 @@
  * Exception/Trap Stack Frame
  */
 struct trapframe {
+	int	tf_fs;
+	int	tf_gs;
 	int	tf_es;
 	int	tf_ds;
 	int	tf_edi;
@@ -76,6 +78,8 @@ struct trapframe {
  */
 struct intrframe {
 	int	if_ppl;
+	int	if_fs;
+	int	if_gs;
 	int	if_es;
 	int	if_ds;
 	int	if_edi;
