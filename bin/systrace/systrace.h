@@ -1,4 +1,4 @@
-/*	$OpenBSD: systrace.h,v 1.6 2002/07/09 15:22:27 provos Exp $	*/
+/*	$OpenBSD: systrace.h,v 1.7 2002/07/11 12:57:41 provos Exp $	*/
 /*
  * Copyright 2002 Niels Provos <provos@citi.umich.edu>
  * All rights reserved.
@@ -170,6 +170,7 @@ extern struct intercept_translate oflags;
 extern struct intercept_translate modeflags;
 extern struct intercept_translate fdt;
 extern struct intercept_translate uidt;
+extern struct intercept_translate uname;
 extern struct intercept_translate gidt;
 
 extern struct intercept_translate linux_oflags;
