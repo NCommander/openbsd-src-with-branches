@@ -28,7 +28,7 @@
  */
 
 #if defined(LIBC_SCCS) && !defined(lint)
-static char *rcsid = "$OpenBSD: pmap_getmaps.c,v 1.5 1997/07/09 03:05:04 deraadt Exp $";
+static char *rcsid = "$OpenBSD: pmap_getmaps.c,v 1.6 1997/09/22 05:11:08 millert Exp $";
 #endif /* LIBC_SCCS and not lint */
 
 /*
@@ -63,7 +63,7 @@ pmap_getmaps(address)
 	struct pmaplist *head = (struct pmaplist *)NULL;
 	int sock = -1;
 	struct timeval minutetimeout;
-	register CLIENT *client;
+	CLIENT *client;
 
 	minutetimeout.tv_sec = 60;
 	minutetimeout.tv_usec = 0;
