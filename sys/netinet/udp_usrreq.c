@@ -1,4 +1,4 @@
-/*	$OpenBSD: udp_usrreq.c,v 1.25 1999/03/27 21:04:20 provos Exp $	*/
+/*	$OpenBSD: udp_usrreq.c,v 1.26 1999/06/06 23:34:20 deraadt Exp $	*/
 /*	$NetBSD: udp_usrreq.c,v 1.28 1996/03/16 23:54:03 christos Exp $	*/
 
 /*
@@ -485,9 +485,7 @@ udp_input(m, va_alist)
 				goto bad;
 			}
 			*ip = save_ip;
-			HTONS(ip->ip_len);
 			HTONS(ip->ip_id);
-			HTONS(ip->ip_off);
 			uh->uh_sum = savesum;
 #ifdef INET6
 			if (ipv6)
