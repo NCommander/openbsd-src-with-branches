@@ -1,4 +1,4 @@
-/*	$OpenBSD: dcm.c,v 1.14 2003/06/02 23:27:44 millert Exp $	*/
+/*	$OpenBSD: dcm.c,v 1.15 2003/08/15 20:32:13 tedu Exp $	*/
 /*	$NetBSD: dcm.c,v 1.41 1997/05/05 20:59:16 thorpej Exp $	*/
 
 /*
@@ -452,7 +452,6 @@ dcmopen(dev, flag, mode, p)
 	s = spltty();
 	if (sc->sc_tty[port] == NULL) {
 		tp = sc->sc_tty[port] = ttymalloc();
-		tty_attach(tp);
 	} else
 		tp = sc->sc_tty[port];
 	splx(s);
@@ -587,7 +586,6 @@ dcmclose(dev, flag, mode, p)
 	splx(s);
 	ttyclose(tp);
 #if 0
-	tty_detach(tp);
 	ttyfree(tp);
 	sc->sc_tty[port] == NULL;
 #endif

@@ -1,4 +1,4 @@
-/*	$OpenBSD: cz.c,v 1.7 2003/08/11 05:03:10 mickey Exp $ */
+/*	$OpenBSD: cz.c,v 1.8 2003/08/15 20:32:17 tedu Exp $ */
 /*	$NetBSD: cz.c,v 1.15 2001/01/20 19:10:36 thorpej Exp $	*/
 
 /*-
@@ -425,7 +425,6 @@ cz_attach(parent, self, aux)
 		    (cz->cz_dev.dv_unit * ZFIRM_MAX_CHANNELS) + i);
 		tp->t_oproc = czttystart;
 		tp->t_param = czttyparam;
-		tty_attach(tp);
 
 		sc->sc_tty = tp;
 

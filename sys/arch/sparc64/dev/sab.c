@@ -1,4 +1,4 @@
-/*	$OpenBSD: sab.c,v 1.13 2003/06/24 21:54:39 henric Exp $	*/
+/*	$OpenBSD: sab.c,v 1.14 2003/08/15 20:32:15 tedu Exp $	*/
 
 /*
  * Copyright (c) 2001 Jason L. Wright (jason@thought.net)
@@ -377,11 +377,6 @@ sabtty_attach(parent, self, aux)
 	int r;
 
 	sc->sc_tty = ttymalloc();
-	if (sc->sc_tty == NULL) {
-		printf(": failed to allocate tty\n");
-		return;
-	}
-	tty_attach(sc->sc_tty);
 	sc->sc_tty->t_oproc = sabtty_start;
 	sc->sc_tty->t_param = sabtty_param;
 

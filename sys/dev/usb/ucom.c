@@ -1,4 +1,4 @@
-/*	$OpenBSD: ucom.c,v 1.18 2003/05/19 00:33:00 nate Exp $ */
+/*	$OpenBSD: ucom.c,v 1.19 2003/08/15 20:32:18 tedu Exp $ */
 /*	$NetBSD: ucom.c,v 1.49 2003/01/01 00:10:25 thorpej Exp $	*/
 
 /*
@@ -211,8 +211,10 @@ USB_ATTACH(ucom)
 	tp->t_param = ucomparam;
 	sc->sc_tty = tp;
 
+#ifndef __OpenBSD__
 	DPRINTF(("ucom_attach: tty_attach %p\n", tp));
 	tty_attach(tp);
+#endif
 
 #if defined(__NetBSD__) && NRND > 0
 	rnd_attach_source(&sc->sc_rndsource, USBDEVNAME(sc->sc_dev),
@@ -271,7 +273,9 @@ USB_DETACH(ucom)
 
 	/* Detach and free the tty. */
 	if (tp != NULL) {
+#ifndef __OpenBSD__
 		tty_detach(tp);
+#endif
 		ttyfree(tp);
 		sc->sc_tty = NULL;
 	}

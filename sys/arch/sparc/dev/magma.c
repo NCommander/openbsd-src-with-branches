@@ -1,4 +1,4 @@
-/*	$OpenBSD: magma.c,v 1.15 2003/08/15 20:32:14 tedu Exp $	*/
+/*	$OpenBSD: magma.c,v 1.16 2003/09/23 16:51:11 millert Exp $	*/
 /*
  * magma.c
  *
@@ -845,8 +845,6 @@ int port, chip, chan;
 		mp->mp_channel = chan;
 
 		tp = ttymalloc();
-		if( tp == NULL ) break;
-		tty_attach(tp);
 		tp->t_oproc = mtty_start;
 		tp->t_param = mtty_param;
 

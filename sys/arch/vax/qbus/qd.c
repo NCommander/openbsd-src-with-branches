@@ -1,4 +1,4 @@
-/*	$OpenBSD: qd.c,v 1.6 2002/06/12 03:50:05 miod Exp $	*/
+/*	$OpenBSD: qd.c,v 1.7 2003/06/02 23:27:58 millert Exp $	*/
 /*	$NetBSD: qd.c,v 1.17 2000/01/24 02:40:29 matt Exp $	*/
 
 /*-
@@ -830,9 +830,6 @@ qdopen(dev, flag, mode, p)
 	       if (qd_tty[minor_dev] == NULL)
 		       qd_tty[minor_dev] = ttymalloc();
 	      
-	       if (qd_tty[minor_dev] == NULL)
-		       return ENXIO;
-	   
 	       /*
 		* this is the console 
 		*/
