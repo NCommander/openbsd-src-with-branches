@@ -19,3 +19,4 @@ file	compat/linux/linux_socket.c		compat_linux
 file	compat/linux/linux_syscalls.c		compat_linux
 file	compat/linux/linux_sysent.c		compat_linux
 file	compat/linux/linux_termios.c		compat_linux
+file	compat/linux/linux_mount.c		compat_linux
