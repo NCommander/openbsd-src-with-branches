@@ -1,4 +1,4 @@
-/*	$OpenBSD: dev_i386.c,v 1.5 1997/04/07 02:07:06 weingart Exp $	*/
+/*	$OpenBSD: dev_i386.c,v 1.6 1997/04/08 22:48:28 mickey Exp $	*/
 
 /*
  * Copyright (c) 1996 Michael Shalayeff
@@ -50,25 +50,28 @@ devopen(struct open_file *f, const char *fname, char **file)
 	*file = (char *)fname;
 
 #ifdef DEBUG
-	printf("devopen:");
+	if (debug)
+		printf("devopen:");
 #endif
 
 	for (i = 0; i < ndevs && rc != 0; dp++, i++) {
 #ifdef DEBUG
-		printf(" %s", dp->dv_name);
+		if (debug)
+			printf(" %s", dp->dv_name);
 #endif
 		if ((rc = (*dp->dv_open)(f, file)) == 0) {
 			f->f_dev = dp;
 			return 0;
 		}
 #ifdef DEBUG
-		else
+		else if (debug)
 			printf(":%d", rc);
 #endif
 			
 	}
 #ifdef DEBUG
-	putchar('\n');
+	if (debug)
+		putchar('\n');
 #endif
 
 	if ((f->f_flags & F_NODEV) == 0)
