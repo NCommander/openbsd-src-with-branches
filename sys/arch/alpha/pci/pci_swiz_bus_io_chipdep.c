@@ -1,4 +1,4 @@
-/*	$OpenBSD: pcs_bus_io_common.c,v 1.8 1997/07/07 07:15:41 niklas Exp $	*/
+/*	$OpenBSD: pcs_bus_io_common.c,v 1.9 2000/06/16 21:47:09 provos Exp $	*/
 /*	$NetBSD: pcs_bus_io_common.c,v 1.14 1996/12/02 22:19:35 cgd Exp $	*/
 
 /*

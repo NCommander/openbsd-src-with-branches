@@ -1,4 +1,4 @@
-/*	$OpenBSD: apecs_lca_bus_mem.c,v 1.4 1996/11/12 20:29:34 niklas Exp $	*/
+/*	$OpenBSD: apecs_lca_bus_mem.c,v 1.5 1996/12/08 00:20:33 niklas Exp $	*/
 /*	$NetBSD: apecs_lca_bus_mem.c,v 1.5 1996/08/27 16:29:24 cgd Exp $	*/
 
 /*
@@ -65,4 +65,4 @@
 #define	CHIP_S_MEM_W2_BASE(v)	APECS_PCI_SPARSE
 #define	CHIP_S_MEM_W2_MASK(v)	0x07ffffff
 
-#include "pcs_bus_mem_common.c"
+#include "pci_swiz_bus_mem_chipdep.c"
