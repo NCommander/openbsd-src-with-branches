@@ -1,4 +1,4 @@
-/*	$OpenBSD: kern_resource_43.c,v 1.2 1996/04/18 21:21:33 niklas Exp $	*/
+/*	$OpenBSD: kern_resource_43.c,v 1.3 2001/11/06 19:53:17 miod Exp $	*/
 /*	$NetBSD: kern_resource_43.c,v 1.4 1996/03/14 19:31:46 christos Exp $	*/
 
 /*-
@@ -62,12 +62,12 @@ compat_43_sys_getrlimit(p, v, retval)
 	register_t *retval;
 {
 	register struct compat_43_sys_getrlimit_args /* {
-		syscallarg(u_int) which;
+		syscallarg(int) which;
 		syscallarg(struct ogetrlimit *) rlp;
 	} */ *uap = v;
 	struct orlimit olim;
 
-	if (SCARG(uap, which) >= RLIM_NLIMITS)
+	if (SCARG(uap, which) < 0 || SCARG(uap, which) >= RLIM_NLIMITS)
 		return (EINVAL);
 	olim.rlim_cur = p->p_rlimit[SCARG(uap, which)].rlim_cur;
 	if (olim.rlim_cur == -1)
@@ -87,7 +87,7 @@ compat_43_sys_setrlimit(p, v, retval)
 	register_t *retval;
 {
 	struct compat_43_sys_setrlimit_args /* {
-		syscallarg(u_int) which;
+		syscallarg(int) which;
 		syscallarg(struct ogetrlimit *) rlp;
 	} */ *uap = v;
 	struct orlimit olim;
