@@ -1,4 +1,4 @@
-/*	$OpenBSD: set.c,v 1.5 2001/12/01 19:10:39 deraadt Exp $	*/
+/*	$OpenBSD: set.c,v 1.6 2002/02/16 21:27:06 millert Exp $	*/
 /*	$NetBSD: set.c,v 1.8 1995/03/21 18:35:52 mycroft Exp $	*/
 
 /*-
@@ -38,7 +38,7 @@
 #if 0
 static char sccsid[] = "@(#)set.c	8.1 (Berkeley) 5/31/93";
 #else
-static char rcsid[] = "$OpenBSD: set.c,v 1.5 2001/12/01 19:10:39 deraadt Exp $";
+static char rcsid[] = "$OpenBSD: set.c,v 1.6 2002/02/16 21:27:06 millert Exp $";
 #endif
 #endif /* not lint */
 
@@ -47,11 +47,7 @@ static char rcsid[] = "$OpenBSD: set.c,v 1.5 2001/12/01 19:10:39 deraadt Exp $";
 #ifndef SHORT_STRINGS
 #include <string.h>
 #endif /* SHORT_STRINGS */
-#ifdef __STDC__
-# include <stdarg.h>
-#else
-# include <varargs.h>
-#endif
+#include <stdarg.h>
 
 #include "csh.h"
 #include "extern.h"

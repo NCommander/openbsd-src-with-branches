@@ -1,4 +1,4 @@
-/*	$OpenBSD: quit.c,v 1.3 1997/04/01 07:35:15 todd Exp $	*/
+/*	$OpenBSD: quit.c,v 1.4 2001/04/29 21:52:15 millert Exp $	*/
 
 /*
  * Copyright (c) 1991 Carnegie Mellon University
@@ -49,25 +49,11 @@
 #include "supextern.h"
 
 void
-#ifdef __STDC__
 quit (int status, char * fmt, ...)
-#else
-quit (va_alist)
-va_dcl
-#endif
 {
 	va_list args;
-#ifdef __STDC__
+
 	va_start(args, fmt);
-#else
-	int status;
-	char *fmt;
-
-	va_start(args);
-	status = va_arg(args, int);
-	fmt = va_arg(args, char *);
-#endif
-
 	fflush(stdout);
 	(void) vfprintf(stderr, fmt, args);
 	va_end(args);

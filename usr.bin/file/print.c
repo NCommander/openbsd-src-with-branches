@@ -1,4 +1,4 @@
-/*	$OpenBSD: print.c,v 1.5 1997/08/24 18:33:12 millert Exp $	*/
+/*	$OpenBSD: print.c,v 1.6 1998/07/10 15:05:25 mickey Exp $	*/
 
 /*
  * print.c - debugging printout routines
@@ -30,11 +30,7 @@
 #include <stdio.h>
 #include <errno.h>
 #include <string.h>
-#ifdef __STDC__
-# include <stdarg.h>
-#else
-# include <varargs.h>
-#endif
+#include <stdarg.h>
 #include <stdlib.h>
 #include <unistd.h>
 #include <time.h>
@@ -42,7 +38,7 @@
 #include "file.h"
 
 #ifndef lint
-static char *moduleid = "$OpenBSD: print.c,v 1.5 1997/08/24 18:33:12 millert Exp $";
+static char *moduleid = "$OpenBSD: print.c,v 1.6 1998/07/10 15:05:25 mickey Exp $";
 #endif  /* lint */
 
 #define SZOF(a)	(sizeof(a) / sizeof(a[0]))
@@ -124,23 +120,11 @@ ckfputs(str, fil)
 
 /*VARARGS*/
 void
-#ifdef __STDC__
 ckfprintf(FILE *f, const char *fmt, ...)
-#else
-ckfprintf(va_alist)
-	va_dcl
-#endif
 {
 	va_list va;
-#ifdef __STDC__
+
 	va_start(va, fmt);
-#else
-	FILE *f;
-	const char *fmt;
-	va_start(va);
-	f = va_arg(va, FILE *);
-	fmt = va_arg(va, const char *);
-#endif
 	(void) vfprintf(f, fmt, va);
 	if (ferror(f))
 		err(1, "write failed");

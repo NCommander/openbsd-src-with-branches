@@ -32,34 +32,18 @@
  */
 
 #if defined(LIBC_SCCS) && !defined(lint)
-static char rcsid[] = "$OpenBSD: warnx.c,v 1.1 1996/04/15 23:45:44 jtc Exp $";
+static char rcsid[] = "$OpenBSD: warnx.c,v 1.2 1996/08/19 08:27:50 tholo Exp $";
 #endif /* LIBC_SCCS and not lint */
 
 #include <err.h>
-
-#ifdef __STDC__
 #include <stdarg.h>
-#else
-#include <varargs.h>
-#endif
 
 void
-#ifdef __STDC__
 _warnx(const char *fmt, ...)
-#else
-_warnx(va_alist)
-	va_dcl
-#endif
 {
 	va_list ap;
-#ifdef __STDC__
-	va_start(ap, fmt);
-#else
-	const char *fmt;
 
-	va_start(ap);
-	fmt = va_arg(ap, const char *);
-#endif
+	va_start(ap, fmt);
 	_vwarnx(fmt, ap);
 	va_end(ap);
 }

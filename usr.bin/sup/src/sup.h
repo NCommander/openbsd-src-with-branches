@@ -1,4 +1,4 @@
-/*	$OpenBSD: sup.h,v 1.7 2001/05/02 22:56:53 millert Exp $	*/
+/*	$OpenBSD: sup.h,v 1.8 2001/05/04 22:16:16 millert Exp $	*/
 
 /*
  * Copyright (c) 1992 Carnegie Mellon University
@@ -247,8 +247,4 @@ typedef struct tliststruct TREELIST;
 #define MAXCHILDREN 3			/* maximum number of children allowed
 					   to sup at the same time */
 
-#ifdef __STDC__
-# include <stdarg.h>
-#else
-# include <varargs.h>
-#endif
+#include <stdarg.h>

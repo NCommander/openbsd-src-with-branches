@@ -1,4 +1,4 @@
-/*	$OpenBSD: print-ip6.c,v 1.1 2000/04/26 21:35:41 jakob Exp $	*/
+/*	$OpenBSD: print-ip6.c,v 1.2 2001/11/07 07:40:13 deraadt Exp $	*/
 
 /*
  * Copyright (c) 1988, 1989, 1990, 1991, 1992, 1993, 1994
@@ -42,9 +42,7 @@ static const char rcsid[] =
 #include <netinet/tcp.h>
 
 #include <stdio.h>
-#ifdef __STDC__
 #include <stdlib.h>
-#endif
 #include <unistd.h>
 
 #include "interface.h"

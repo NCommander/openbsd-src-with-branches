@@ -1,4 +1,4 @@
-/*	$OpenBSD: nametoaddr.c,v 1.7 1999/07/20 04:49:55 deraadt Exp $	*/
+/*	$OpenBSD: nametoaddr.c,v 1.8 2000/04/26 21:25:53 jakob Exp $	*/
 
 /*
  * Copyright (c) 1990, 1991, 1992, 1993, 1994, 1995, 1996
@@ -26,7 +26,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-    "@(#) $Header: /cvs/src/lib/libpcap/nametoaddr.c,v 1.7 1999/07/20 04:49:55 deraadt Exp $ (LBL)";
+    "@(#) $Header: /cvs/src/lib/libpcap/nametoaddr.c,v 1.8 2000/04/26 21:25:53 jakob Exp $ (LBL)";
 #endif
 
 #include <sys/param.h>
@@ -34,10 +34,8 @@ static const char rcsid[] =
 #include <sys/socket.h>
 #include <sys/time.h>
 
-#ifdef __STDC__
 struct mbuf;
 struct rtentry;
-#endif
 
 #include <net/if.h>
 #include <netinet/in.h>
