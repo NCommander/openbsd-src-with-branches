@@ -1,4 +1,4 @@
-/*	$OpenBSD: clock.c,v 1.3 2001/11/06 22:45:54 miod Exp $	*/
+/*	$OpenBSD: clock.c,v 1.4 2002/03/14 01:26:41 millert Exp $	*/
 /*	$NetBSD: clock.c,v 1.1 1996/09/30 16:34:40 ws Exp $	*/
 
 /*
@@ -40,7 +40,10 @@
 #include <machine/intr.h>
 #include <machine/powerpc.h>
 
-void resettodr();
+void resettodr(void);
+void decr_intr(struct clockframe *);
+void calc_delayconst(void);
+
 /*
  * Initially we assume a processor with a bus frequency of 12.5 MHz.
  */
@@ -251,7 +254,7 @@ static unsigned cnt = 1001;
 #endif
 void
 decr_intr(frame)
-struct clockframe *frame;
+	struct clockframe *frame;
 {
 	int msr;
 	u_long tb;
@@ -343,7 +346,7 @@ calc_delayconst()
 }
 
 static inline u_quad_t
-mftb()
+mftb(void)
 {
 	u_long scratch;
 	u_quad_t tb;
