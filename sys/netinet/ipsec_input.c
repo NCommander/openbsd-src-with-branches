@@ -1,4 +1,4 @@
-/*	$OpenBSD: ipsec_input.c,v 1.48 2001/06/26 04:17:57 angelos Exp $	*/
+/*	$OpenBSD: ipsec_input.c,v 1.49 2001/07/05 16:45:55 jjbg Exp $	*/
 /*
  * The authors of this code are John Ioannidis (ji@tla.org),
  * Angelos D. Keromytis (kermit@csd.uch.gr) and
@@ -218,7 +218,8 @@ ipsec_common_input(struct mbuf *m, int skip, int protoff, int af, int sproto)
 		return ENXIO;
 	}
 
-	if (tdbp->tdb_dst.sa.sa_family == AF_INET) {
+	if (tdbp->tdb_dst.sa.sa_family == AF_INET && 
+	    sproto != IPPROTO_IPCOMP) {
 		/*
 		 * XXX The fragment conflicts with scoped nature of
 		 * IPv6, so do it for only for IPv4 for now.
