@@ -1,5 +1,4 @@
-#	$OpenBSD: Makefile,v 1.8 1997/07/14 22:23:08 deraadt Exp $
-#	$NetBSD: Makefile,v 1.6 1995/03/07 23:18:39 mycroft Exp $
+#	$OpenBSD: Makefile,v 1.9 1997/07/31 09:49:13 tqbf Exp $
 #
 #  Copyright (c) 1988, 1989, 1990, 1991, 1992, 1993, 1994
 # 	The Regents of the University of California.  All rights reserved.

@@ -1,4 +1,4 @@
-# $Id: Makefile,v 1.1 1996/04/29 13:08:42 hvozda Exp $
+#	$OpenBSD$
 
 SRCS=	apmd.c apmsubr.c
 

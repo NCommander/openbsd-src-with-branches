@@ -1,5 +1,4 @@
-#	from: @(#)Makefile	5.3 (Berkeley) 5/11/90
-#	$OpenBSD: Makefile,v 1.1.1.1 1995/10/18 08:48:07 deraadt Exp $
+#	$OpenBSD: Makefile,v 1.2 1997/03/26 00:45:56 deraadt Exp $
 
 PROG=	rwhod
 MAN=	rwhod.8

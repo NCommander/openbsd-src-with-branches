@@ -1,6 +1,4 @@
-#	$OpenBSD: Makefile.inc,v 1.4 1997/03/13 08:57:57 downsj Exp $
-#	$NetBSD: Makefile.inc,v 1.1 1996/02/02 15:25:35 mrg Exp $
-# from: $Id: Makefile.inc,v 8.3 1995/12/31 23:28:00 vixie Exp 
+#	$OpenBSD: Makefile.inc,v 1.5 1997/03/14 03:40:31 downsj Exp $
 
 BIND_DIR=	${.CURDIR}/..
 

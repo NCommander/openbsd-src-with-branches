@@ -1,4 +1,4 @@
-#	$Id$
+#	$OpenBSD$
 
 SUBDIR= ipsend ipresend iptest
 

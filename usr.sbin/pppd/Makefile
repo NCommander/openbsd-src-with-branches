@@ -1,5 +1,4 @@
-#	$OpenBSD: Makefile,v 1.9 1997/03/26 00:35:57 deraadt Exp $
-#	$NetBSD: Makefile,v 1.13 1996/12/18 16:54:57 christos Exp $
+#	$OpenBSD: Makefile,v 1.10 1997/09/05 04:32:32 millert Exp $
 
 PCAPDIR=${.CURDIR}/../../lib/libpcap
 

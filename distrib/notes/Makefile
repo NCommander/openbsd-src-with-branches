@@ -1,4 +1,4 @@
-#	$NetBSD: Makefile,v 1.3 1994/10/31 05:01:45 cgd Exp $
+#	$OpenBSD$
 
 NOPROG=
 NOMAN=
