@@ -1,4 +1,4 @@
-#	$OpenBSD: GENERIC,v 1.5 2004/08/10 13:47:45 pefo Exp $
+#	$OpenBSD: GENERIC,v 1.6 2004/08/10 19:08:17 deraadt Exp $
 #
 
 machine		sgi mips64
@@ -20,6 +20,9 @@ option		ARCBIOS		# We use arcbios for FW comminication.
 #option		APERTURE
 
 #option		WSDISPLAY_COMPAT_RAWKBD
+
+option		PCIVERBOSE
+option		USBVERBOSE
 
 #option		UVMHIST		# enable uvm history logging
 
