@@ -1,4 +1,4 @@
-/*	$OpenBSD: pckbd.c,v 1.12 1997/11/06 12:27:02 niklas Exp $	*/
+/*	$OpenBSD: pckbd.c,v 1.13 1998/02/05 16:47:59 deraadt Exp $	*/
 /*	$NetBSD: pckbd.c,v 1.14 1996/12/05 01:39:30 cgd Exp $	*/
 
 /*-
@@ -52,6 +52,9 @@
 #include <sys/systm.h>
 #include <sys/kernel.h>
 #include <sys/device.h>
+#ifdef DDB
+#include <ddb/db_var.h>
+#endif
 
 #include <machine/intr.h>
 #include <machine/bus.h>
