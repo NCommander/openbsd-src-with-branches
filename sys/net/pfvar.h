@@ -1,4 +1,4 @@
-/*	$OpenBSD: pfvar.h,v 1.188 2004/04/24 23:22:54 cedric Exp $ */
+/*	$OpenBSD: pfvar.h,v 1.189 2004/04/25 18:09:30 pb Exp $ */
 
 /*
  * Copyright (c) 2001 Daniel Hartmeier
@@ -666,6 +666,7 @@ struct pf_anchor {
 	char			 name[PF_ANCHOR_NAME_SIZE];
 	struct pf_rulesetqueue	 rulesets;
 	int			 tables;
+	int			 refcnt;	/* anchor rules */
 };
 
 TAILQ_HEAD(pf_anchorqueue, pf_anchor);
@@ -1306,7 +1307,6 @@ extern int			 pf_tbladdr_setup(struct pf_ruleset *,
 extern void			 pf_tbladdr_remove(struct pf_addr_wrap *);
 extern void			 pf_tbladdr_copyout(struct pf_addr_wrap *);
 extern void			 pf_calc_skip_steps(struct pf_rulequeue *);
-extern void			 pf_update_anchor_rules(void);
 extern struct pool		 pf_src_tree_pl, pf_rule_pl;
 extern struct pool		 pf_state_pl, pf_altq_pl, pf_pooladdr_pl;
 extern struct pool		 pf_state_scrub_pl;
