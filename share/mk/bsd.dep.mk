@@ -36,7 +36,7 @@ afterdepend:
 .if !target(tags)
 .if defined(SRCS)
 tags: ${SRCS} _SUBDIRUSE
-	-cd ${.CURDIR}; ctags -f /dev/stdout ${.ALLSRC:N*.h} | \
+	-cd ${.CURDIR}; ${CTAGS} -f /dev/stdout ${.ALLSRC:N*.h} | \
 	    sed "s;\${.CURDIR}/;;" > tags
 .else
 tags:
