@@ -44,7 +44,7 @@
 .Nm du
 .Op Fl H | Fl L | Fl P
 .Op Fl a | Fl s
-.Op Fl ckx
+.Op Fl ckrx
 .Op Ar file ...
 .Sh DESCRIPTION
 The
@@ -81,6 +81,11 @@ Partial numbers of blocks are rounded up.
 Display the grand total after all the arguments have been processed.
 .It Fl s
 Display only the grand total for the specified files.
+.It Fl r
+Generate messages about directories that cannot be read, files
+that cannot be opened, and so on.  This is the default case.
+This option exists solely for conformance with
+.St -xpg4 .
 .It Fl x
 Filesystem mount points are not traversed.
 .El
