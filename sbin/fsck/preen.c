@@ -252,7 +252,7 @@ finddisk(name)
 	const char *name;
 {
 	const char *p;
-	size_t len;
+	size_t len = 0;
 	struct diskentry *d;
 
 	for (p = name + strlen(name) - 1; p >= name; --p)

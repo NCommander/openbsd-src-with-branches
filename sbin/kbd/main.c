@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: main.c,v 1.2 1996/06/30 05:16:28 deraadt Exp $	*/
 
 /*
  * Copyright (c) 1996 Juergen Hannken-Illjes
@@ -48,6 +48,7 @@ usage()
 	exit(1);
 }
 
+int
 main(argc, argv)
 	int argc;
 	char **argv;
