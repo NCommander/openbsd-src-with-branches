@@ -1,4 +1,4 @@
-/*	$OpenBSD: scsi_base.c,v 1.21 1998/02/14 08:56:50 deraadt Exp $	*/
+/*	$OpenBSD: scsi_base.c,v 1.22 1998/12/19 01:32:26 deraadt Exp $	*/
 /*	$NetBSD: scsi_base.c,v 1.43 1997/04/02 02:29:36 mycroft Exp $	*/
 
 /*
@@ -1053,7 +1053,7 @@ scsi_print_sense(xs, verbosity)
 	 */
 	info = _4btol(&s[3]);
 	if (info)
-		printf("   INFO FIELD: %d\n", info);
+		printf("   INFO FIELD: %u\n", info);
 
 	/*
 	 * Now we check additional length to see whether there is
