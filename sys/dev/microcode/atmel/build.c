@@ -1,3 +1,5 @@
+/*	$OpenBSD$	*/
+
 /*
  * Copyright (c) 2004 Theo de Raadt <deraadt@openbsd.org>
  *
