@@ -1,4 +1,4 @@
-/* $OpenBSD: wsdisplay.c,v 1.29 2001/05/24 04:12:04 angelos Exp $ */
+/* $OpenBSD: wsdisplay.c,v 1.30 2001/06/29 20:16:22 mickey Exp $ */
 /* $NetBSD: wsdisplay.c,v 1.37.4.1 2000/06/30 16:27:53 simonb Exp $ */
 
 /*
@@ -2127,6 +2127,7 @@ motion_event(u_int type, int value)
 			mouse_zaxis(value);
 			break;
 		default:
+			break;
 	}
 }
 

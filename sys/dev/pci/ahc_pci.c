@@ -1,4 +1,4 @@
-/*	$OpenBSD: ahc_pci.c,v 1.21 2001/01/22 22:36:52 deraadt Exp $	*/
+/*	$OpenBSD: ahc_pci.c,v 1.22 2001/06/12 15:40:29 niklas Exp $	*/
 /*	$NetBSD: ahc_pci.c,v 1.9 1996/10/21 22:56:24 thorpej Exp $	*/
 
 /*
@@ -360,6 +360,7 @@ void *aux;
 			break;
 		default:
 			/* TTT */
+			break;
 		}
 	}
 
