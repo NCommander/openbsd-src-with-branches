@@ -1,4 +1,5 @@
-#	$OpenBSD: Makefile,v 1.4.4.4 1996/10/29 10:27:37 mickey Exp $
+
+#	$OpenBSD: Makefile,v 1.1.2.1 1996/12/03 13:16:56 mickey Exp $
 #	@(#)Makefile	7.9 (Berkeley) 5/8/91
 
 S	= ${.CURDIR}/../../../..
@@ -25,7 +26,7 @@ DEBUG+=	-DRPC_DEBUG
 CFLAGS=	-Wall -m386 -O2 -D_STANDALONE -DAT386 -O ${INCPATH}
 CPPFLAGS=	${DEBUG} ${INCPATH}
 
-SRCS=	boot.c conf.c biosdev.c bios.S ${ZLIB} version.c
+SRCS=	boot.c conf.c ${ZLIB} version.c
 
 OBJS=	boot.o zlib.o conf.o
 #clock.o
@@ -44,7 +45,7 @@ config:
 # getting booted from disc
 
 boot:	${OBJS} ${DPADD} version.o
-	${LD} -o $@ -e start -N -T 60000 ${OBJS} ${LDADD} version.o
+	${LD} -o $@ -e start -N -T 10000 ${OBJS} ${LDADD} version.o
 	size $@
 	ls -l $@
 

@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: installboot.c,v 1.1.2.1 1996/12/03 13:17:09 mickey Exp $	*/
 /*	$NetBSD: installboot.c,v 1.5 1995/11/17 23:23:50 gwr Exp $ */
 
 /*
@@ -380,9 +380,9 @@ int	devfd;
 	}
 
 	/* write out remaining piece */
-	bt += record_block(block_table_p, 0, 0, &dl);
+	bt += record_block(bt, 0, 0, &dl);
 	/* and again */
-	bt += record_block(block_table_p, 0, 0, &dl);
+	bt += record_block(bt, 0, 0, &dl);
 	*block_count_p = (bt - block_table_p) / 4;
 
 	if (verbose) {
@@ -418,21 +418,21 @@ record_block(bt, blk, bs, dl)
 
 		/* nsectors */
 		if ((ss % dl->d_nsectors + l) >= dl->d_nsectors)
-			bt[0] = dl->d_nsectors - s + 1;
+			bt[3] = dl->d_nsectors - s + 1;
 		else
-			bt[0] = l; /* non-contig or last block piece */
+			bt[3] = l; /* non-contig or last block piece */
 
-		bt[1] = (ss % dl->d_secpercyl) / dl->d_nsectors; /* head */
-		*(u_int16_t *)(bt + 2) = (s & 0x3f) | /* sect, cyl */
+		bt[2] = (ss % dl->d_secpercyl) / dl->d_nsectors; /* head */
+		*(u_int16_t *)bt = (s & 0x3f) | /* sect, cyl */
 			((c & 0xff) << 8) | ((c & 0x300) >> 2);
 
 		if (verbose)
 			printf("%2d: %2d @(%d %d %d) (%d-%d)\n",
-			       i, bt[0], c, bt[1], s, ss, ss + bt[0] - 1);
+			       i, bt[3], c, bt[2], s, ss, ss + bt[3] - 1);
 
 		if ((ss % dl->d_nsectors + l) >= dl->d_nsectors) {
-			ss += bt[0];
-			l -= bt[0];
+			ss += bt[3];
+			l -= bt[3];
 			l += bs;
 		} else {
 			ss = blk;

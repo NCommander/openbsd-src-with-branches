@@ -1,17 +1,21 @@
-/*	$OpenBSD: start.S,v 1.4.2.5 1996/10/28 12:14:29 mickey Exp $	*/
+/*	$OpenBSD: biosboot.S,v 1.1.2.1 1996/12/03 13:16:54 mickey Exp $	*/
 
 	.file	"bootbios.S"
 
 #include <machine/asm.h>
 #include <machine/specialreg.h>
+#define _LOCORE
+#include <machine/segments.h>
+#undef _LOCORE
 
 #define addr32  .byte 0x67
 #define data32  .byte 0x66
 
 #define	BLKCNT	48
 
-#define BOOTSEG		0x6000	/* boot placement */
-#define BOOTSTACK	0xfffc	/* boot stack */
+#define BIOSSEG		0x07c0	/* boot loaded here */
+#define BOOTSEG		0x1000	/* /boot placement */
+#define BOOTSTACK	0xfffc	/* /boot stack */
 
 #ifdef DEBUG
 #define DBGMSG(msg)		\
@@ -29,7 +33,7 @@ start:
 	# start (aka boot1) is loaded at 0x0:0x7c00 but we want 0x6c0:0x1000
 	# ljmp to the next instruction to adjust %cs
 	data32
-	ljmp $0x7c0, $2f
+	ljmp $BIOSSEG, $2f
 1:	.asciz	"loading /boot"
 
 2:	/* set up stack(%ss:%esp) */
@@ -42,12 +46,13 @@ start:
 	sti			/* we have stack, do ints */
 
 	/* set up %es, (where we will load /boot to) */
+	# decl	%ax
+	# decl	%ax		/* strip off a.out hdr (2par == 32 byte) */
 	movl	%ax, %es
 
 	/* set up %ds */
 	pushl	%cs
 	popl	%ds
-
 
 #ifdef SERIAL
 	# Initialize the serial port to 9600 baud, 8N1.
@@ -79,7 +84,7 @@ start:
 #       Call with       %ah = 0x2
 #                       %al = number of sectors
 #                       %ch = cylinder
-#                       %cl = sector
+#                       %cl = sector/cylinder(2 high bits)
 #                       %dh = head
 #                       %dl = drive (0x80 for hard disk, 0x0 for floppy disk)
 #                       %es:%bx = segment:offset of buffer
@@ -89,19 +94,16 @@ start:
 	movb	$'.', %al
 	data32
 	call	chr		/* show progress indicator */
-	# movb	(%si), %al
-	.byte   0x8a, 0x44, 0	/* # of sectors to load */
-	incl	%esi
-	# movb	(%si), %dh
-	.byte   0x8a, 0x74, 0	/* head */
-	incl	%esi
-	# movw	(%si), %cx
-	.byte   0x8b, 0x4c, 0	/* cylinder/sector */
-	incl	%esi
-	incl	%esi
+
+	lodsl	/* word */	/* cylinder/sector */
+	movl	%ax, %cx
+	lodsb			/* head */
+	movb	%al, %dh
+	lodsb			/* # of sectors to load */
 	movb	$0x2, %ah
 	int	$0x13
 	jnc	4f
+
 	/* read error */
        	data32
 	movl    $2f, %esi
@@ -111,6 +113,7 @@ start:
 	hlt
 2:	.ascii	"Read error"
 3:	.asciz	"\r\n"
+
 4:	/* read next block */
 	shll	$1, %ax
 	addb	%al, %bh
@@ -122,8 +125,10 @@ start:
 	data32
 	call	message
 
+	/* TODO: check /boot integrity */
+
 	/* change to protected mode */
-	/* guarantee that interrupt is disabled when in prot mode */
+	/* guarantee that interrupts are disabled when in prot mode */
 	cli
 
 	/* load the gdtr */
@@ -142,31 +147,27 @@ start:
 	 * reload CS register
 	 */
 	data32
-	ljmp	$0x18, $1f
+	ljmp	$8, $1f+(BIOSSEG << 4)
 
 1:	/*
-	 * USE16 mode
+	 * USE32 mode
 	 * set up the protected mode segment registers : DS, SS, ES
 	 */
-	movb	$0x10, %al
-	movzbl	%al, %eax
+	movl	$0x10, %eax
 	movl	%ax, %ds
 	movl	%ax, %ss
 	movl	%ax, %es
 
-	data32
-	movzbl	%dl, %edx	/* discard head (%dh) and random high bits */
-	data32
-	pushl	%edx
+	movb	%dl, %al	/* discard head (%dh) and random high bits */
+	pushl	%eax
 
-	/* jump to the /boot and switch in USE32 mode */
-	/* ljmp $0x08, _entry_point */
-	data32
-	.byte	0xea
+	hlt
+	/* jump to the /boot */
+	/* jmp _entry_point */
+	.byte	0xe9
 	.globl	_entry_point
 _entry_point:
 	.long	0	/* /boot entry point */
-	.word	0x0008	/* flat code */
 
 #
 #	chr: write the character in %al to console
@@ -234,32 +235,38 @@ message:
 	ret
 
 Gdtr:
-	.word	2f + 4 * 8 - 1
-	.long	2f
+	.word	3f - 1
+	.long	(BIOSSEG << 4) + 2f
 2:	/* Gdt */
-	.word	0, 0
-	.byte	0, 0, 0, 0		/* 0x0 : null */
-	.word	0xFFFF, 0
-	.byte	0, 0x9E, 0xCF, 0	/* 0x08 : flat code */
-		/* 0x9F? */
-	.word	0xFFFF, 0
-	.byte	0, 0x92, 0xCF, 0	/* 0x10 : flat data */
-		/* 0x93? */
-	.word	0xFFFF, 0x7c00
-	.byte	0, 0x9E, 0x00, 0	/* 0x18 : boot code 16 bits */
-
+		/* 0x00 : null */
+	.long	0, 0
+		/* 0x08 : flat code */
+	.word	0xFFFF			# lolimit
+	.word	0			# lobase
+	.byte	0			# midbase
+	.byte	SDT_MEMERAC | 0 | 0x80	# RWXAC, dpl = 0, present
+	.byte	0xf | 0 | 0x40 | 0x80	# hilimit, xx, 32bit, 4k granularity
+	.byte	0			# hibase
+		/* 0x10 : flat data */
+	.word	0xFFFF			# lolimit
+	.word	0			# lobase
+	.byte	0			# midbase
+	.byte	SDT_MEMRWA | 0 | 0x80	# RWA, dpl = 0, present
+	.byte	0xf | 0 | 0x40 | 0x80	# hilimit, xx, 32bit, 4k granularity
+	.byte	0			# hibase
+3:
 	.align	2
 	.globl	_block_table
 _block_table:
-	.byte	0	/* nsect */
-	.byte	0	/* head */
 	.word	0	/* cyllinder/sector */
+	.byte	0	/* head */
+	.byte	0	/* nsect */
 	. = _block_table + BLKCNT*4
 	.globl	_block_count
 _block_count:
 	.byte	BLKCNT	/* entries in _block_table */
 
-	/* a little signature */
 	. = 0x200 - 4
+	/* a little signature */
 	.ascii	"boot"
 
