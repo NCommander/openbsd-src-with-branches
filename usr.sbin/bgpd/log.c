@@ -1,4 +1,4 @@
-/*	$OpenBSD: log.c,v 1.26 2004/01/27 22:18:29 henning Exp $ */
+/*	$OpenBSD: log.c,v 1.27 2004/01/28 22:12:33 henning Exp $ */
 
 /*
  * Copyright (c) 2003, 2004 Henning Brauer <henning@openbsd.org>
@@ -125,10 +125,12 @@ log_fmt_peer(const struct peer_config *peer)
 void
 log_init(int n_debug)
 {
+	extern char	*__progname;
+
 	debug = n_debug;
 
 	if (!debug)
-		openlog("bgpd", LOG_PID | LOG_NDELAY, LOG_DAEMON);
+		openlog(__progname, LOG_PID | LOG_NDELAY, LOG_DAEMON);
 }
 
 void
