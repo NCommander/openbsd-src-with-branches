@@ -1,4 +1,4 @@
-/*	$OpenBSD: libsa.h,v 1.3 1997/03/31 23:06:29 mickey Exp $	*/
+/*	$OpenBSD: libsa.h,v 1.4 1997/04/06 19:52:46 mickey Exp $	*/
 
 /*
  * Copyright (c) 1996 Michael Shalayeff
@@ -40,5 +40,7 @@ void devboot __P((dev_t, char *));
 
 extern u_long	codeseg;
 extern int	boothowto;
+		/* XXX filled in assumption that last file opened is kernel */
+extern int	bootdev;
 extern u_int	cnvmem, extmem;
 extern const char bdevs[19][4];
