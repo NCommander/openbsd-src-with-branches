@@ -1,4 +1,4 @@
-/*	$OpenBSD: lpf.c,v 1.4 1997/07/19 07:11:42 deraadt Exp $	*/
+/*	$OpenBSD: lpf.c,v 1.5 2001/08/30 17:38:13 millert Exp $	*/
 
 /*
  * Copyright (c) 1983, 1993
@@ -43,7 +43,7 @@ static const char copyright[] =
 #if 0
 static const char sccsid[] = "@(#)lpf.c	8.1 (Berkeley) 6/6/93";
 #else
-static const char rcsid[] = "$OpenBSD: lpf.c,v 1.4 1997/07/19 07:11:42 deraadt Exp $";
+static const char rcsid[] = "$OpenBSD: lpf.c,v 1.5 2001/08/30 17:38:13 millert Exp $";
 #endif
 #endif /* not lint */
 
@@ -83,8 +83,8 @@ main(argc, argv)
 	FILE *p = stdin, *o = stdout;
 	int i, col;
 	char *cp;
-	int done, linedone, maxrep;
-	char ch, *limit;
+	int done, linedone, maxrep, ch;
+	char *limit;
 
 	while (--argc) {
 		if (*(cp = *++argv) == '-') {
