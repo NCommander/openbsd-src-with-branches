@@ -295,6 +295,8 @@ struct sockaddr_rtlabel {
 };
 
 const char	*rtlabel_id2name(u_int16_t);
+u_int16_t	 rtlabel_name2id(char *);
+void		 rtlabel_unref(u_int16_t);
 
 #ifdef _KERNEL
 #define	RTFREE(rt) do { \
