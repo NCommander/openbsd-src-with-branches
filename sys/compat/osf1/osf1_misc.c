@@ -1,4 +1,4 @@
-/*	$OpenBSD: osf1_misc.c,v 1.8 1996/10/30 16:37:19 niklas Exp $	*/
+/*	$OpenBSD: osf1_misc.c,v 1.9 1998/02/17 01:48:07 millert Exp $	*/
 /*	$NetBSD: osf1_misc.c,v 1.7 1995/10/07 06:53:04 mycroft Exp $	*/
 
 /*
@@ -799,7 +799,6 @@ osf1_sys_readv(p, v, retval)
 	struct osf1_iovec *oio;
 	struct iovec *nio;
 	int error, i;
-	extern char sigcode[], esigcode[];
 
 	if (SCARG(uap, iovcnt) > (STACKGAPLEN / sizeof (struct iovec)))
 		return (EINVAL);
@@ -854,7 +853,6 @@ osf1_sys_writev(p, v, retval)
 	struct osf1_iovec *oio;
 	struct iovec *nio;
 	int error, i;
-	extern char sigcode[], esigcode[];
 
 	if (SCARG(uap, iovcnt) > (STACKGAPLEN / sizeof (struct iovec)))
 		return (EINVAL);
