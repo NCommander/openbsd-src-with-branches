@@ -282,8 +282,7 @@ pf_tree_key_compare(struct pf_tree_key *a, struct pf_tree_key *b)
 
 	/*
 	 * could use memcmp(), but with the best manual order, we can
-	 * minimize the average number of substractions and jumps.
-	 * what is faster?
+	 * minimize the average number of compares. what is faster?
 	 */
 	if ((diff = a->proto - b->proto) != 0)
 		return (diff);
@@ -292,23 +291,50 @@ pf_tree_key_compare(struct pf_tree_key *a, struct pf_tree_key *b)
 	switch (a->af) {
 #ifdef INET
 	case AF_INET:
-		if ((diff = a->addr[0].addr32[0] - b->addr[0].addr32[0]) ||
-		    (diff = a->addr[1].addr32[0] - b->addr[1].addr32[0]))
-			return diff;
+		if (a->addr[0].addr32[0] > b->addr[0].addr32[0])
+			return 1;
+		if (a->addr[0].addr32[0] < b->addr[0].addr32[0])
+			return -1;
+		if (a->addr[1].addr32[0] > b->addr[1].addr32[0])
+			return 1;
+		if (a->addr[1].addr32[0] < b->addr[1].addr32[0])
+			return -1;
 		break;
 #endif /* INET */
 #ifdef INET6
 	case AF_INET6:
-		if ((diff = a->addr[0].addr32[0] - b->addr[0].addr32[0]) ||
-		    (diff = a->addr[0].addr32[1] - b->addr[0].addr32[1]) ||
-		    (diff = a->addr[0].addr32[2] - b->addr[0].addr32[2]) ||
-		    (diff = a->addr[0].addr32[3] - b->addr[0].addr32[3]) ||
-		    (diff = a->addr[1].addr32[0] - b->addr[1].addr32[0]) ||
-		    (diff = a->addr[1].addr32[1] - b->addr[1].addr32[1]) ||
-		    (diff = a->addr[1].addr32[2] - b->addr[1].addr32[2]) ||
-		    (diff = a->addr[1].addr32[3] - b->addr[1].addr32[3]))
-			return diff;
-
+		if (a->addr[0].addr32[0] > b->addr[0].addr32[0])
+			return 1;
+		if (a->addr[0].addr32[0] < b->addr[0].addr32[0])
+			return -1;
+		if (a->addr[0].addr32[1] > b->addr[0].addr32[1])
+			return 1;
+		if (a->addr[0].addr32[1] < b->addr[0].addr32[1])
+			return -1;
+		if (a->addr[0].addr32[2] > b->addr[0].addr32[2])
+			return 1;
+		if (a->addr[0].addr32[2] < b->addr[0].addr32[2])
+			return -1;
+		if (a->addr[0].addr32[3] > b->addr[0].addr32[3])
+			return 1;
+		if (a->addr[0].addr32[3] < b->addr[0].addr32[3])
+			return -1;
+		if (a->addr[1].addr32[0] > b->addr[1].addr32[0])
+			return 1;
+		if (a->addr[1].addr32[0] < b->addr[1].addr32[0])
+			return -1;
+		if (a->addr[1].addr32[1] > b->addr[1].addr32[1])
+			return 1;
+		if (a->addr[1].addr32[1] < b->addr[1].addr32[1])
+			return -1;
+		if (a->addr[1].addr32[2] > b->addr[1].addr32[2])
+			return 1;
+		if (a->addr[1].addr32[2] < b->addr[1].addr32[2])
+			return -1;
+		if (a->addr[1].addr32[3] > b->addr[1].addr32[3])
+			return 1;
+		if (a->addr[1].addr32[3] < b->addr[1].addr32[3])
+			return -1;
 		break;
 #endif /* INET6 */
 	}
