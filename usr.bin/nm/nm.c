@@ -1,4 +1,4 @@
-/*	$OpenBSD: nm.c,v 1.24 2004/04/29 13:34:37 miod Exp $	*/
+/*	$OpenBSD: nm.c,v 1.25 2004/05/04 23:09:07 deraadt Exp $	*/
 /*	$NetBSD: nm.c,v 1.7 1996/01/14 23:04:03 pk Exp $	*/
 
 /*
@@ -42,7 +42,7 @@ static const char copyright[] =
 #if 0
 static const char sccsid[] = "@(#)nm.c	8.1 (Berkeley) 6/6/93";
 #endif
-static const char rcsid[] = "$OpenBSD: nm.c,v 1.24 2004/04/29 13:34:37 miod Exp $";
+static const char rcsid[] = "$OpenBSD: nm.c,v 1.25 2004/05/04 23:09:07 deraadt Exp $";
 
 #include <sys/param.h>
 #include <sys/mman.h>
@@ -752,6 +752,7 @@ show_file(int count, int warn_fmt, const char *name, FILE *fp, off_t foff, union
 			free(names);
 			return(1);
 		}
+		stabsize = fix_long_order(stabsize, N_GETMID(head->aout));
 		MMAP(stab, stabsize, PROT_READ, MAP_PRIVATE|MAP_FILE,
 		    fileno(fp), staboff);
 		if (stab == MAP_FAILED) {
