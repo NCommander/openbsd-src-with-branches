@@ -1,4 +1,4 @@
-/*	$OpenBSD: dnssec.h,v 1.2 2001/01/27 12:03:32 niklas Exp $	*/
+/*	$OpenBSD: dnssec.h,v 1.3 2001/01/27 15:39:54 ho Exp $	*/
 
 /*
  * Copyright (c) 2001 Håkan Olsson.  All rights reserved.
@@ -32,3 +32,17 @@
 void *dns_get_key (int, struct message *, int *);
 int   dns_RSA_dns_to_x509 (u_int8_t *, int, RSA **);
 
+#ifndef DNS_KEYALG_RSA
+#define DNS_KEYALG_RSA 1
+#endif
+
+#ifndef DNS_KEYPROTO_IPSEC
+#define DNS_KEYPROTO_IPSEC 4
+#endif
+#ifndef DNS_KEYALG_RSA
+#define DNS_KEYALG_RSA 1
+#endif
+
+#ifndef DNS_KEYPROTO_IPSEC
+#define DNS_KEYPROTO_IPSEC 4
+#endif
