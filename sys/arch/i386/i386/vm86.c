@@ -1,4 +1,4 @@
-/*	$OpenBSD: vm86.c,v 1.15 1996/05/03 19:42:33 christos Exp $	*/
+/*	$OpenBSD: vm86.c,v 1.12 2001/07/04 08:57:48 niklas Exp $	*/
 /*	$NetBSD: vm86.c,v 1.15 1996/05/03 19:42:33 christos Exp $	*/
 
 /*-
@@ -41,7 +41,6 @@
 #include <sys/systm.h>
 #include <sys/signalvar.h>
 #include <sys/kernel.h>
-#include <sys/map.h>
 #include <sys/proc.h>
 #include <sys/user.h>
 #include <sys/exec.h>

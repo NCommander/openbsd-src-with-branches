@@ -1,4 +1,4 @@
-/*	$OpenBSD: uba.c,v 1.4 2001/11/06 19:53:17 miod Exp $	*/
+/*	$OpenBSD: uba.c,v 1.5 2002/01/10 00:11:14 nordin Exp $	*/
 /*	$NetBSD: uba.c,v 1.52 2000/06/04 02:14:12 matt Exp $	   */
 /*
  * Copyright (c) 1996 Jonathan Stone.
@@ -42,7 +42,6 @@
 #include <sys/types.h>
 #include <sys/time.h>
 #include <sys/systm.h>
-#include <sys/map.h>
 #include <sys/buf.h>
 #include <sys/proc.h>
 #include <sys/user.h>

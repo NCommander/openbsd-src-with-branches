@@ -1,4 +1,4 @@
-/*	$OpenBSD: machdep.c,v 1.74 2001/12/08 02:24:07 art Exp $	*/
+/*	$OpenBSD: machdep.c,v 1.75 2001/12/19 08:58:05 art Exp $	*/
 /*	$NetBSD: machdep.c,v 1.85 1997/09/12 08:55:02 pk Exp $ */
 
 /*
@@ -50,7 +50,6 @@
 #include <sys/signalvar.h>
 #include <sys/proc.h>
 #include <sys/user.h>
-#include <sys/map.h>
 #include <sys/buf.h>
 #include <sys/device.h>
 #include <sys/reboot.h>

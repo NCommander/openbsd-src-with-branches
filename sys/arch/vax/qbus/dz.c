@@ -1,4 +1,4 @@
-/*	$OpenBSD: dz.c,v 1.5 2001/08/19 23:54:27 miod Exp $	*/
+/*	$OpenBSD: dz.c,v 1.6 2001/08/25 13:33:37 hugh Exp $	*/
 /*	$NetBSD: dz.c,v 1.23 2000/06/04 02:14:12 matt Exp $	*/
 /*
  * Copyright (c) 1996  Ken C. Wellsch.  All rights reserved.
@@ -42,7 +42,6 @@
 #include <sys/ioctl.h>
 #include <sys/tty.h>
 #include <sys/proc.h>
-#include <sys/map.h>
 #include <sys/buf.h>
 #include <sys/conf.h>
 #include <sys/file.h>

@@ -1,4 +1,4 @@
-/*	$OpenBSD: dc.c,v 1.3 2000/07/19 13:53:30 art Exp $	*/
+/*	$OpenBSD: dc.c,v 1.4 2001/08/19 23:54:22 miod Exp $	*/
 /*	$NetBSD: dc.c,v 1.4 1996/10/13 03:36:10 christos Exp $	*/
 /*-
  * Copyright (c) 1992, 1993
@@ -68,7 +68,6 @@
 #include <sys/ioctl.h>
 #include <sys/tty.h>
 #include <sys/proc.h>
-#include <sys/map.h>
 #include <sys/buf.h>
 #include <sys/conf.h>
 #include <sys/file.h>

@@ -1,4 +1,4 @@
-/*	$OpenBSD: vm_machdep.c,v 1.45 2001/12/24 04:07:26 miod Exp $	*/
+/*	$OpenBSD: vm_machdep.c,v 1.46 2002/01/14 21:34:41 miod Exp $	*/
 
 /*
  * Copyright (c) 1998 Steve Murphree, Jr.
@@ -50,7 +50,6 @@
 #include <sys/proc.h>
 #include <sys/signalvar.h>
 #include <sys/malloc.h>
-#include <sys/map.h>
 #include <sys/buf.h>
 #include <sys/user.h>
 #include <sys/vnode.h>

@@ -1,4 +1,4 @@
-/*	$OpenBSD: kern_exit.c,v 1.36 2001/11/06 19:53:20 miod Exp $	*/
+/*	$OpenBSD: kern_exit.c,v 1.37 2001/11/12 01:26:09 art Exp $	*/
 /*	$NetBSD: kern_exit.c,v 1.39 1996/04/22 01:38:25 christos Exp $	*/
 
 /*
@@ -43,7 +43,6 @@
 
 #include <sys/param.h>
 #include <sys/systm.h>
-#include <sys/map.h>
 #include <sys/ioctl.h>
 #include <sys/proc.h>
 #include <sys/tty.h>

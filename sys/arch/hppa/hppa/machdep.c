@@ -1,4 +1,4 @@
-/*	$OpenBSD: machdep.c,v 1.46 2001/11/28 16:13:28 art Exp $	*/
+/*	$OpenBSD: machdep.c,v 1.47 2001/12/02 02:55:42 mickey Exp $	*/
 
 /*
  * Copyright (c) 1999-2000 Michael Shalayeff
@@ -35,7 +35,6 @@
 #include <sys/systm.h>
 #include <sys/signalvar.h>
 #include <sys/kernel.h>
-#include <sys/map.h>
 #include <sys/proc.h>
 #include <sys/buf.h>
 #include <sys/reboot.h>

@@ -1,4 +1,4 @@
-/*	$OpenBSD: kern_malloc.c,v 1.44 2001/12/05 17:49:06 art Exp $	*/
+/*	$OpenBSD: kern_malloc.c,v 1.45 2001/12/19 08:58:06 art Exp $	*/
 /*	$NetBSD: kern_malloc.c,v 1.15.4.2 1996/06/13 17:10:56 cgd Exp $	*/
 
 /*
@@ -38,7 +38,6 @@
 
 #include <sys/param.h>
 #include <sys/proc.h>
-#include <sys/map.h>
 #include <sys/kernel.h>
 #include <sys/malloc.h>
 #include <sys/systm.h>

@@ -1,4 +1,4 @@
-/*	$OpenBSD: init_main.c,v 1.89 2001/12/19 08:58:06 art Exp $	*/
+/*	$OpenBSD: init_main.c,v 1.90 2002/01/01 20:41:56 deraadt Exp $	*/
 /*	$NetBSD: init_main.c,v 1.84.4.1 1996/06/02 09:08:06 mrg Exp $	*/
 
 /*
@@ -50,7 +50,6 @@
 #include <sys/kernel.h>
 #include <sys/kthread.h>
 #include <sys/mount.h>
-#include <sys/map.h>
 #include <sys/proc.h>
 #include <sys/resourcevar.h>
 #include <sys/signalvar.h>

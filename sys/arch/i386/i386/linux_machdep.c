@@ -1,4 +1,4 @@
-/*	$OpenBSD: linux_machdep.c,v 1.16 2001/05/01 19:15:16 aaron Exp $	*/
+/*	$OpenBSD: linux_machdep.c,v 1.17 2001/07/27 06:10:38 csapuntz Exp $	*/
 /*	$NetBSD: linux_machdep.c,v 1.29 1996/05/03 19:42:11 christos Exp $	*/
 
 /*
@@ -36,7 +36,6 @@
 #include <sys/systm.h>
 #include <sys/signalvar.h>
 #include <sys/kernel.h>
-#include <sys/map.h>
 #include <sys/proc.h>
 #include <sys/user.h>
 #include <sys/buf.h>

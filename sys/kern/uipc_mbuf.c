@@ -1,4 +1,4 @@
-/*	$OpenBSD: uipc_mbuf.c,v 1.43 2001/11/28 16:13:29 art Exp $	*/
+/*	$OpenBSD: uipc_mbuf.c,v 1.44 2001/12/18 23:07:49 deraadt Exp $	*/
 /*	$NetBSD: uipc_mbuf.c,v 1.15.4.1 1996/06/13 17:11:44 cgd Exp $	*/
 
 /*
@@ -80,7 +80,6 @@
 #include <sys/systm.h>
 #include <sys/proc.h>
 #include <sys/malloc.h>
-#include <sys/map.h>
 #define MBTYPES
 #include <sys/mbuf.h>
 #include <sys/kernel.h>
