@@ -1,4 +1,4 @@
-/*	$OpenBSD: state.c,v 1.7 1998/03/25 18:43:46 art Exp $	*/
+/*	$OpenBSD: state.c,v 1.8 1998/07/10 08:06:21 deraadt Exp $	*/
 /*	$NetBSD: state.c,v 1.9 1996/02/28 20:38:19 thorpej Exp $	*/
 
 /*
@@ -39,7 +39,7 @@
 static char sccsid[] = "@(#)state.c	8.5 (Berkeley) 5/30/95";
 static char rcsid[] = "$NetBSD: state.c,v 1.9 1996/02/28 20:38:19 thorpej Exp $";
 #else
-static char rcsid[] = "$OpenBSD: state.c,v 1.7 1998/03/25 18:43:46 art Exp $";
+static char rcsid[] = "$OpenBSD: state.c,v 1.8 1998/07/10 08:06:21 deraadt Exp $";
 #endif
 #endif /* not lint */
 
@@ -134,6 +134,10 @@ telrcv()
 			 */
 			if ((c == '\r') && his_state_is_wont(TELOPT_BINARY)) {
 				int nc = *netip;
+#ifdef ENCRYPTION
+				if (decrypt_input)
+					nc = (*decrypt_input)(nc & 0xff);
+#endif
 #ifdef	LINEMODE
 				/*
 				 * If we are operating in linemode,
@@ -144,10 +148,6 @@ telrcv()
 					netip++; ncc--;
 					c = '\n';
 				} else
-#endif
-#ifdef ENCRYPTION
-				if (decrypt_input)
-					nc = (*decrypt_input)(nc & 0xff);
 #endif
 				{
 #ifdef ENCRYPTION
