@@ -1,5 +1,4 @@
-
-/* $OpenBSD: user.c,v 1.1 1997/09/29 22:58:19 weingart Exp $ */
+/*	$OpenBSD: user.c,v 1.2 1997/09/29 23:28:26 mickey Exp $	*/
 
 /*
  * Copyright (c) 1997 Tobias Weingartner

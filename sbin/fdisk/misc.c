@@ -1,5 +1,4 @@
-
-/* $OpenBSD$ */
+/*	$OpenBSD: misc.c,v 1.1 1997/09/29 22:58:17 weingart Exp $	*/
 
 /*
  * Copyright (c) 1997 Tobias Weingartner
