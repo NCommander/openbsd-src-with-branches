@@ -1,4 +1,4 @@
-#	$OpenBSD$
+#	$OpenBSD: Make.tags.inc,v 1.5 1997/02/24 14:19:55 niklas Exp $
 
 # Common files for "make tags".
 # Included by the Makefile for each architecture.
@@ -12,7 +12,6 @@ COMM=	/sys/adosfs/*.[ch] \
 	/sys/conf/*.[ch] \
 	/sys/ddb/*.[ch] \
 	/sys/dev/*.[ch] /sys/dev/*/*.[ch] \
-	/sys/gnu/*/*.[ch] \
 	/sys/isofs/*/*.[ch] \
 	/sys/kern/*.[ch] \
 	/sys/lib/libkern/*.[ch] \
