@@ -1,4 +1,4 @@
-/*	$OpenBSD: miivar.h,v 1.3 1999/07/16 14:59:07 jason Exp $	*/
+/*	$OpenBSD: miivar.h,v 1.4 1999/12/07 22:01:31 jason Exp $	*/
 /*	$NetBSD: miivar.h,v 1.7.6.1 1999/04/23 15:40:35 perry Exp $	*/
 
 /*-
@@ -179,6 +179,7 @@ void	mii_tick __P((struct mii_data *));
 void	mii_pollstat __P((struct mii_data *));
 void	mii_down __P((struct mii_data *));
 void	mii_phy_probe __P((struct device *, struct mii_data *, int));
+int	mii_detach __P((struct mii_softc *, int));
 void	mii_add_media __P((struct mii_softc *));
 
 void	mii_phy_setmedia __P((struct mii_softc *));
