@@ -1,9 +1,13 @@
+#	$OpenBSD$
+
 PROG=	awk
+LINKS=	${BINDIR}/awk ${BINDIR}/nawk
 SRCS=	awkgram.c awklex.c b.c main.c parse.c proctab.c tran.c lib.c run.c
 LDADD=	-ll -lm
 DPADD=	${LIBL} ${LIBM}
 CLEANFILES+=awkgram.c awkgram.h awklex.c awklex.h proctab.c maketab prevawkgram.h
 CFLAGS+=-I. -I${.CURDIR}
+MLINKS=	awk.1 nawk.1
 
 awkgram.c awkgram.h prevawkgram.h: awkgram.y
 	${YACC} -d ${.IMPSRC}
