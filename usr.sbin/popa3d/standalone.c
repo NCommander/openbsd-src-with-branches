@@ -1,4 +1,4 @@
-/* $OpenBSD: standalone.c,v 1.8 2004/07/20 17:07:34 millert Exp $ */
+/* $OpenBSD: standalone.c,v 1.9 2005/03/12 22:17:35 cloder Exp $ */
 
 /*
  * Standalone POP server: accepts connections, checks the anti-flood limits,
@@ -302,7 +302,8 @@ handle(int sock)
 	switch ((pid = fork())) {
 	case -1:
 		syslog(SYSLOG_PRI_ERROR, "%s: fork: %m", hbuf);
-		break;
+		close(new);
+		return -1;
 
 	case 0:
 #if DAEMON_LIBWRAP
