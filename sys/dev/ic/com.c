@@ -1,4 +1,4 @@
-/*	$OpenBSD: com.c,v 1.37 1998/02/05 16:49:24 deraadt Exp $	*/
+/*	$OpenBSD: com.c,v 1.38 1998/02/23 11:41:24 downsj Exp $	*/
 /*	$NetBSD: com.c,v 1.82.4.1 1996/06/02 09:08:00 mrg Exp $	*/
 
 /*-
@@ -1608,7 +1608,11 @@ comcnprobe(cp)
 #ifdef arc
 	bus_space_tag_t iot = &arc_bus_io;
 #else
-	bus_space_tag_t iot = 0;
+#ifdef power4e
+	bus_space_tag_t iot = &p4e_isa_io;
+#else
+        bus_space_tag_t iot = 0;
+#endif   
 #endif
 	bus_space_handle_t ioh;
 	int found;
