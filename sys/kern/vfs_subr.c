@@ -1,4 +1,4 @@
-/*	$OpenBSD: vfs_subr.c,v 1.80 2001/12/19 08:58:06 art Exp $	*/
+/*	$OpenBSD: vfs_subr.c,v 1.81 2002/01/23 00:39:48 art Exp $	*/
 /*	$NetBSD: vfs_subr.c,v 1.53 1996/04/22 01:39:13 christos Exp $	*/
 
 /*
@@ -254,7 +254,6 @@ int
 vfs_mountroot()
 {
 	struct vfsconf *vfsp;
-	extern int (*mountroot)(void);
 	int error;
 
 	if (mountroot != NULL)
