@@ -1,4 +1,4 @@
-/*	$OpenBSD: mfs_vfsops.c,v 1.5 1997/11/06 05:59:23 csapuntz Exp $	*/
+/*	$OpenBSD: mfs_vfsops.c,v 1.6 1998/02/08 22:41:52 tholo Exp $	*/
 /*	$NetBSD: mfs_vfsops.c,v 1.10 1996/02/09 22:31:28 christos Exp $	*/
 
 /*
@@ -270,9 +270,18 @@ mfs_start(mp, flags, p)
 		 * otherwise we will loop here, as tsleep will always return
 		 * EINTR/ERESTART.
 		 */
-		if (tsleep((caddr_t)vp, mfs_pri, "mfsidl", 0) &&
-		    dounmount(mp, 0, p) != 0)
-			CLRSIG(p, CURSIG(p));
+		if (tsleep((caddr_t)vp, mfs_pri, "mfsidl", 0)) {
+			/*
+			 * Don't attempt to unmount when MNT_UNMOUNT is set,
+			 * that means that someone is waiting for us to
+			 * finish our operations and it also means that
+			 * we will sleep until he is finished. deadlock.
+			 * XXX - there is a multiprocessor race here.
+			 */
+			if ((mp->mnt_flag & MNT_UNMOUNT) ||
+			    dounmount(mp, 0, p) != 0)
+				CLRSIG(p, CURSIG(p));
+		}
 	}
 	return (0);
 }
