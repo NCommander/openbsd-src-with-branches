@@ -1,4 +1,4 @@
-/*	$OpenBSD: parse.y,v 1.319 2003/02/16 15:11:09 henning Exp $	*/
+/*	$OpenBSD: parse.y,v 1.320 2003/02/16 15:19:42 henning Exp $	*/
 
 /*
  * Copyright (c) 2001 Markus Friedl.  All rights reserved.
@@ -27,7 +27,6 @@
 %{
 #include <sys/types.h>
 #include <sys/socket.h>
-#include <sys/ioctl.h>
 #include <net/if.h>
 #include <netinet/in.h>
 #include <netinet/in_systm.h>
