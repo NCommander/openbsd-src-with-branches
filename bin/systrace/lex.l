@@ -1,4 +1,4 @@
-/*	$OpenBSD: lex.l,v 1.13 2003/05/29 00:39:12 itojun Exp $	*/
+/*	$OpenBSD: lex.l,v 1.14 2003/06/16 06:36:40 itojun Exp $	*/
 
 /*
  * Copyright 2002 Niels Provos <provos@citi.umich.edu>
@@ -72,6 +72,7 @@ int quoteescape;
 %}
 
 %%
+ask		{ return ASK; }
 deny		{ return DENY; }
 permit		{ return PERMIT; }
 and		{ return AND; }
