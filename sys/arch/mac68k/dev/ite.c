@@ -1,4 +1,4 @@
-/*	$OpenBSD: ite.c,v 1.4 1996/06/08 16:21:10 briggs Exp $	*/
+/*	$OpenBSD: ite.c,v 1.5 1996/08/10 21:37:45 briggs Exp $	*/
 /*	$NetBSD: ite.c,v 1.24 1996/08/05 01:26:35 scottr Exp $	*/
 
 /*
@@ -67,6 +67,7 @@
 
 #include <machine/viareg.h>
 #include <machine/cpu.h>
+#include <machine/macinfo.h>
 #include <machine/frame.h>
 
 #define KEYBOARD_ARRAY

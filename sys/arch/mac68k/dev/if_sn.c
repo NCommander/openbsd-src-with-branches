@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_sn.c,v 1.6 1996/09/21 03:34:55 briggs Exp $	*/
+/*	$OpenBSD: if_sn.c,v 1.7 1996/10/19 10:02:53 niklas Exp $	*/
 
 /*
  * National Semiconductor  SONIC Driver
@@ -49,6 +49,7 @@
 typedef unsigned char uchar;
 
 #include <machine/cpu.h>
+#include <machine/macinfo.h>
 #include <machine/viareg.h>
 #include <mac68k/dev/if_sn.h>
 

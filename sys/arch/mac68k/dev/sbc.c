@@ -1,4 +1,4 @@
-/*	$OpenBSD: sbc.c,v 1.2 1996/06/08 16:21:12 briggs Exp $	*/
+/*	$OpenBSD: sbc.c,v 1.3 1996/06/23 16:06:32 briggs Exp $	*/
 /*	$NetBSD: sbc.c,v 1.9 1996/06/19 01:47:28 scottr Exp $	*/
 
 /*
@@ -67,6 +67,7 @@
 #include <dev/ic/ncr5380var.h>
 
 #include <machine/cpu.h>
+#include <machine/macinfo.h>
 #include <machine/viareg.h>
 
 #include "sbcreg.h"

@@ -1,4 +1,4 @@
-/*	$OpenBSD: zs.c,v 1.4 1996/06/09 03:17:48 briggs Exp $	*/
+/*	$OpenBSD: zs.c,v 1.5 1996/10/13 15:29:09 briggs Exp $	*/
 /*	$NetBSD: zs.c,v 1.10 1996/10/13 03:21:31 christos Exp $	*/
 
 /*
@@ -57,6 +57,7 @@
 
 #include <machine/autoconf.h>
 #include <machine/cpu.h>
+#include <machine/macinfo.h>
 #include <machine/viareg.h>
 
 /*
