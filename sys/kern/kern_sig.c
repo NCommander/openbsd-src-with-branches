@@ -1,4 +1,4 @@
-/*	$OpenBSD: kern_sig.c,v 1.59 2002/06/11 08:19:17 art Exp $	*/
+/*	$OpenBSD: kern_sig.c,v 1.60 2002/07/14 02:44:30 deraadt Exp $	*/
 /*	$NetBSD: kern_sig.c,v 1.54 1996/04/22 01:38:32 christos Exp $	*/
 
 /*
@@ -776,11 +776,11 @@ psignal(p, signum)
 	if ((u_int)signum >= NSIG || signum == 0)
 		panic("psignal signal number");
 
-	KNOTE(&p->p_klist, NOTE_SIGNAL | signum);
-
 	/* Ignore signal if we are exiting */
 	if (p->p_flag & P_WEXIT)
 		return;
+
+	KNOTE(&p->p_klist, NOTE_SIGNAL | signum);
 
 	mask = sigmask(signum);
 	prop = sigprop[signum];
