@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: syscall.c,v 1.1 2004/01/28 01:39:39 mickey Exp $	*/
 /*	$NetBSD: syscall.c,v 1.1 2003/04/26 18:39:32 fvdl Exp $	*/
 
 /*-
@@ -269,7 +269,7 @@ syscall_fancy(frame)
 #endif
 #ifdef KTRACE
 	if (KTRPOINT(p, KTR_SYSCALL))
-		ktrsyscall(p, code, argsize, args);
+		ktrsyscall(p, code, callp->sy_argsize, args);
 #endif
 
 	rval[0] = 0;
