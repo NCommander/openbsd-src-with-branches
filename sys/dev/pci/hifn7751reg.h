@@ -1,4 +1,4 @@
-/*	$OpenBSD: hifn7751reg.h,v 1.27 2001/06/27 03:33:53 angelos Exp $	*/
+/*	$OpenBSD: hifn7751reg.h,v 1.28 2001/07/08 18:05:42 brad Exp $	*/
 
 /*
  * Invertex AEON / Hifn 7751 driver
@@ -51,12 +51,12 @@
  * any command the driver implements.
  *
  * MAX_COMMAND = base command + mac command + encrypt command +
- *			mac-key + des-iv + 3des-key
+ *			mac-key + rc4-key
  * MAX_RESULT  = base result + mac result + mac + encrypt result
  *			
  *
  */
-#define	HIFN_MAX_COMMAND	(8 + 8 + 8 + 64 + 8 + 24)
+#define	HIFN_MAX_COMMAND	(8 + 8 + 8 + 64 + 260)
 #define	HIFN_MAX_RESULT		(8 + 4 + 20 + 4)
 
 /*
