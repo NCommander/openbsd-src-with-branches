@@ -1,4 +1,4 @@
-#	$Id$
+#	$OpenBSD$
 
 PROG=	grep
 SRCS=	binary.c file.c grep.c mmfile.c queue.c util.c
@@ -17,5 +17,6 @@ MLINKS= grep.1 egrep.1 \
 CFLAGS+= -Wall -pedantic
 
 LDADD=  -lz
+DPADD=	${LIBZ}
 
 .include <bsd.prog.mk>
