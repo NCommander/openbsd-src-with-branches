@@ -1,4 +1,4 @@
-/*	$OpenBSD: bgpd.h,v 1.157 2005/03/14 12:25:50 henning Exp $ */
+/*	$OpenBSD: bgpd.h,v 1.158 2005/03/14 17:32:04 claudio Exp $ */
 
 /*
  * Copyright (c) 2003, 2004 Henning Brauer <henning@openbsd.org>
@@ -43,6 +43,7 @@
 #define	MIN_HOLDTIME			3
 #define	READ_BUF_SIZE			65535
 #define	RT_BUF_SIZE			16384
+#define	MAX_RTSOCK_BUF			128 * 1024
 
 #define	BGPD_OPT_VERBOSE		0x0001
 #define	BGPD_OPT_VERBOSE2		0x0002
