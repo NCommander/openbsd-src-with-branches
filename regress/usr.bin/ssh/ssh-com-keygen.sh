@@ -1,4 +1,4 @@
-#	$OpenBSD: ssh-com-keygen.sh,v 1.2 2002/07/16 08:58:16 markus Exp $
+#	$OpenBSD: ssh-com-keygen.sh,v 1.3 2003/05/14 22:08:27 markus Exp $
 #	Placed in the Public Domain.
 
 tid="ssh.com key import"
@@ -22,6 +22,9 @@ VERSIONS="
 	3.2.0
 	3.2.2
 	3.2.3
+	3.2.5
+	3.2.9
+	3.2.9.1
 	3.3.0"
 
 COMPRV=${OBJ}/comkey

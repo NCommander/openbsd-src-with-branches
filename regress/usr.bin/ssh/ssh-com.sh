@@ -1,4 +1,4 @@
-#	$OpenBSD: ssh-com.sh,v 1.5 2003/05/14 22:08:27 markus Exp $
+#	$OpenBSD: ssh-com.sh,v 1.6 2003/11/07 10:16:44 jmc Exp $
 #	Placed in the Public Domain.
 
 tid="connect to ssh.com server"
@@ -20,6 +20,9 @@ VERSIONS="
 	3.2.0
 	3.2.2
 	3.2.3
+	3.2.5
+	3.2.9
+	3.2.9.1
 	3.3.0"
 # 2.0.10 does not support UserConfigDirectory
 # 2.3.1 requires a config in $HOME/.ssh2
