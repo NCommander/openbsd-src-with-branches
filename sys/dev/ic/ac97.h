@@ -72,6 +72,7 @@ struct ac97_codec_if {
 };
 
 int ac97_attach __P((struct ac97_host_if *));
+int ac97_set_rate __P((struct ac97_codec_if *, struct audio_params *, int));
 
 #define	AC97_REG_RESET			0x00
 #define	AC97_SOUND_ENHANCEMENT(reg)	(((reg) >> 10) & 0x1f)
