@@ -1,4 +1,5 @@
-/*	$OpenBSD: lpc.h,v 1.2 1997/01/17 16:12:38 millert Exp $	*/
+/*	$OpenBSD: lpc.h,v 1.3 2002/02/16 21:28:03 millert Exp $	*/
+/*	$NetBSD: lpc.h,v 1.2 1995/11/15 22:27:44 pk Exp $	*/
 
 /*
  * Copyright (c) 1983, 1993

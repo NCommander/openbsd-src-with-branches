@@ -1,9 +1,14 @@
-/*	$OpenBSD: cmdtab.c,v 1.3 2001/08/30 17:38:13 millert Exp $	*/
-/*	$NetBSD: cmdtab.c,v 1.4 1995/11/15 22:27:34 pk Exp $	*/
+/*	$OpenBSD$	*/
+/*	$NetBSD: common.c,v 1.15 1999/09/26 10:32:27 mrg Exp $	*/
 
 /*
  * Copyright (c) 1983, 1993
  *	The Regents of the University of California.  All rights reserved.
+ * (c) UNIX System Laboratories, Inc.
+ * All or some portions of this file are derived from material licensed
+ * to the University of California by American Telephone and Telegraph
+ * Co. or Unix System Laboratories, Inc. and are reproduced herein with
+ * the permission of UNIX System Laboratories, Inc.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -35,52 +40,18 @@
  */
 
 #ifndef lint
-#if 0
-static const char sccsid[] = "@(#)cmdtab.c	8.1 (Berkeley) 6/6/93";
-#else
-static const char rcsid[] = "$OpenBSD: cmdtab.c,v 1.3 2001/08/30 17:38:13 millert Exp $";
-#endif
+static const char rcsid[] = "$OpenBSD$";
 #endif /* not lint */
 
-#include <sys/cdefs.h>
+#include <sys/param.h>
 
-#include "lpc.h"
-#include "extern.h"
+#include "pathnames.h"
 
-/*
- * lpc -- command tables
- */
-char	aborthelp[] =	"terminate a spooling daemon immediately and disable printing";
-char	cleanhelp[] =	"remove cruft files from a queue";
-char	enablehelp[] =	"turn a spooling queue on";
-char	disablehelp[] =	"turn a spooling queue off";
-char	downhelp[] =	"do a 'stop' followed by 'disable' and put a message in status";
-char	helphelp[] =	"get help on commands";
-char	quithelp[] =	"exit lpc";
-char	restarthelp[] =	"kill (if possible) and restart a spooling daemon";
-char	starthelp[] =	"enable printing and start a spooling daemon";
-char	statushelp[] =	"show status of daemon and queue";
-char	stophelp[] =	"stop a spooling daemon after current job completes and disable printing";
-char	topqhelp[] =	"put job at top of printer queue";
-char	uphelp[] =	"enable everything and restart spooling daemon";
-
-struct cmd cmdtab[] = {
-	{ "abort",	aborthelp,	doabort,	1 },
-	{ "clean",	cleanhelp,	clean,		1 },
-	{ "enable",	enablehelp,	enable,		1 },
-	{ "exit",	quithelp,	quit,		0 },
-	{ "disable",	disablehelp,	disable,	1 },
-	{ "down",	downhelp,	down,		1 },
-	{ "help",	helphelp,	help,		0 },
-	{ "quit",	quithelp,	quit,		0 },
-	{ "restart",	restarthelp,	restart,	0 },
-	{ "start",	starthelp,	startcmd,	1 },
-	{ "status",	statushelp,	status,		0 },
-	{ "stop",	stophelp,	stop,		1 },
-	{ "topq",	topqhelp,	topq,		1 },
-	{ "up",		uphelp,		up,		1 },
-	{ "?",		helphelp,	help,		0 },
-	{ 0 },
-};
-
-int	NCMDS = sizeof (cmdtab) / sizeof (cmdtab[0]);
+char	*name;			/* program name */
+char	*printer;		/* printer name */
+char	host[MAXHOSTNAMELEN+1];	/* host machine name */
+char	*from = host;		/* client's machine name */
+char	*printcapdb[2] = { _PATH_PRINTCAP, 0 };
+char	*bp;			/* pointer into printcap buffer. */
+uid_t	uid, euid;		/* real and effective uids */
+u_int	wait_time = 300;	/* time out after 5 minutes by default */
