@@ -33,7 +33,7 @@
 
 #if defined(LIBC_SCCS)
 	.text
-	.asciz "$OpenBSD: modf.S,v 1.2 1996/08/19 08:18:28 tholo Exp $"
+	.asciz "$OpenBSD: modf.S,v 1.3 2001/03/18 07:29:04 bjc Exp $"
 #endif /* LIBC_SCCS */
 
 /*
@@ -47,8 +47,14 @@
 #include "DEFS.h"
 
 ENTRY(modf, R2)
+	cvtdl	4(ap),r2
+	bvs	0f
+	cvtld	r2,*12(ap)
+	subd3	*12(ap),4(ap),r0
+	ret
+0:
 	emodd	4(ap),$0,$0f1.0,r2,r0
-	jvs	1f			# integer overflow
+	bvs	1f			# integer overflow
 	cvtld	r2,*12(ap)
 	ret
 1:
