@@ -1,4 +1,4 @@
-/*	$OpenBSD: pf_table.c,v 1.24 2003/01/15 16:55:10 cedric Exp $	*/
+/*	$OpenBSD: pf_table.c,v 1.25 2003/02/12 20:10:08 henric Exp $	*/
 
 /*
  * Copyright (c) 2002 Cedric Berger
@@ -1618,7 +1618,7 @@ pfr_match_addr(struct pfr_ktable *kt, struct pf_addr *a, sa_family_t af)
 		ke = (struct pfr_kentry *)rn_match(&pfr_sin, kt->pfrkt_ip4);
 		break;
 	case AF_INET6:
-		bcopy(&a, &pfr_sin6.sin6_addr, sizeof(pfr_sin6.sin6_addr));
+		bcopy(a, &pfr_sin6.sin6_addr, sizeof(pfr_sin6.sin6_addr));
 		ke = (struct pfr_kentry *)rn_match(&pfr_sin6, kt->pfrkt_ip6);
 		break;
 	}
@@ -1642,7 +1642,7 @@ pfr_update_stats(struct pfr_ktable *kt, struct pf_addr *a, sa_family_t af,
 		ke = (struct pfr_kentry *)rn_match(&pfr_sin, kt->pfrkt_ip4);
 		break;
 	case AF_INET6:
-		bcopy(&a, &pfr_sin6.sin6_addr, sizeof(pfr_sin6.sin6_addr));
+		bcopy(a, &pfr_sin6.sin6_addr, sizeof(pfr_sin6.sin6_addr));
 		ke = (struct pfr_kentry *)rn_match(&pfr_sin6, kt->pfrkt_ip6);
 		break;
 	}
