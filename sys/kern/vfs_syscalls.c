@@ -1,4 +1,4 @@
-/*	$OpenBSD: vfs_syscalls.c,v 1.31 1997/11/18 06:59:59 millert Exp $	*/
+/*	$OpenBSD: vfs_syscalls.c,v 1.32 1997/11/20 07:15:38 millert Exp $	*/
 /*	$NetBSD: vfs_syscalls.c,v 1.71 1996/04/23 10:29:02 mycroft Exp $	*/
 
 /*
@@ -102,7 +102,9 @@ sys_mount(p, v, retval)
 	register struct vnode *vp;
 	register struct mount *mp;
 	int error, flag = 0;
+#if defined(COMPAT_09) || defined(COMPAT_43)
 	u_long fstypenum = 0;
+#endif
 	char fstypename[MFSNAMELEN];
 	struct vattr va;
 	struct nameidata nd;
