@@ -1,4 +1,4 @@
-/*	$OpenBSD: mount_portal.c,v 1.7 1997/03/23 03:52:14 millert Exp $	*/
+/*	$OpenBSD: mount_portal.c,v 1.8 1997/06/10 15:35:41 kstailey Exp $	*/
 /*	$NetBSD: mount_portal.c,v 1.8 1996/04/13 01:31:54 jtc Exp $	*/
 
 /*
@@ -47,7 +47,7 @@ char copyright[] =
 #if 0
 static char sccsid[] = "@(#)mount_portal.c	8.6 (Berkeley) 4/26/95";
 #else
-static char rcsid[] = "$OpenBSD: mount_portal.c,v 1.7 1997/03/23 03:52:14 millert Exp $";
+static char rcsid[] = "$OpenBSD: mount_portal.c,v 1.8 1997/06/10 15:35:41 kstailey Exp $";
 #endif
 #endif /* not lint */
 
@@ -175,6 +175,7 @@ main(argc, argv)
 		err(1, "socket(2)");
 
 	(void)unlink(un.sun_path);
+	/* XXX teeny race? */
 	if (bind(so, (struct sockaddr *) &un, sizeof(un)) < 0)
 		err(1, "bind(2)");
 	(void)unlink(un.sun_path);
