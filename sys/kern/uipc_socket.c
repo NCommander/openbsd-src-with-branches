@@ -1,4 +1,4 @@
-/*	$OpenBSD: uipc_socket.c,v 1.52 2004/04/01 23:56:05 tedu Exp $	*/
+/*	$OpenBSD: uipc_socket.c,v 1.53 2004/04/19 22:39:07 deraadt Exp $	*/
 /*	$NetBSD: uipc_socket.c,v 1.21 1996/02/04 02:17:52 christos Exp $	*/
 
 /*
@@ -725,6 +725,13 @@ dontblock:
 				m->m_next = 0;
 				m = so->so_rcv.sb_mb;
 			} else {
+				/*
+				 * Dispose of any SCM_RIGHTS message that went
+				 * through the read path rather than recv.
+				 */
+				if (pr->pr_domain->dom_dispose &&
+				    mtod(m, struct cmsghdr *)->cmsg_type == SCM_RIGHTS)
+					pr->pr_domain->dom_dispose(m);
 				MFREE(m, so->so_rcv.sb_mb);
 				m = so->so_rcv.sb_mb;
 			}
