@@ -1,7 +1,6 @@
-#	$OpenBSD: Makefile,v 1.2 1996/06/26 05:33:20 deraadt Exp $
+#	$OpenBSD: Makefile,v 1.3 1997/09/21 11:49:03 deraadt Exp $
 
 PROG=	fmt
-SRCS=	fmt.c head.c
-.PATH: ${.CURDIR}/../mail
+SRCS=	fmt.c
 
 .include <bsd.prog.mk>
