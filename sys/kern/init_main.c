@@ -1,4 +1,4 @@
-/*	$OpenBSD: init_main.c,v 1.57 2001/01/01 16:06:12 aaron Exp $	*/
+/*	$OpenBSD: init_main.c,v 1.58 2001/02/05 21:28:06 mickey Exp $	*/
 /*	$NetBSD: init_main.c,v 1.84.4.1 1996/06/02 09:08:06 mrg Exp $	*/
 
 /*
@@ -221,6 +221,9 @@ main(framep)
 	disk_init();		/* must come before autoconfiguration */
 	tty_init();		/* initialise tty's */
 	cpu_startup();
+
+	/* Initialize sysctls (must be done before any processes run) */
+	sysctl_init();
 
 	/*
 	 * Initialize process and pgrp structures.
