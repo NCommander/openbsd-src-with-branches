@@ -216,7 +216,7 @@ extern int ipe4_zeroize(struct tdb *);
 extern int ipe4_output(struct mbuf *, struct sockaddr_encap *, struct tdb *,
 		       struct mbuf **);
 extern void ipe4_input __P((struct mbuf *, ...));
-extern void ip4_input __P((struct mbuf *, int));
+extern void ip4_input __P((struct mbuf *, ...));
 
 /* XF_OLD_AH */
 extern int ah_old_attach(void);
