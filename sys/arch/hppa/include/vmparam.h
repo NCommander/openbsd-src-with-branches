@@ -1,4 +1,4 @@
-/*	$OpenBSD: vmparam.h,v 1.16 2001/08/12 20:06:11 miod Exp $	*/
+/*	$OpenBSD: vmparam.h,v 1.17 2001/09/22 18:00:09 miod Exp $	*/
 
 /* 
  * Copyright (c) 1988-1994, The University of Utah and
@@ -105,7 +105,7 @@
 #define	VM_FREELIST_DEFAULT	0
 #define	VM_FREELIST_FIRST16	1
 
-#ifdef _KERNEL
+#ifndef _LOCORE
 struct pmap_physseg {
 	struct pv_entry *pvent;
 };
