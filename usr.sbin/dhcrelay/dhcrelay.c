@@ -1,4 +1,4 @@
-/*	$OpenBSD: dhcrelay.c,v 1.16 2004/04/20 04:19:00 deraadt Exp $ */
+/*	$OpenBSD: dhcrelay.c,v 1.17 2004/04/20 20:56:47 canacar Exp $ */
 
 /*
  * Copyright (c) 2004 Henning Brauer <henning@cvs.openbsd.org>
@@ -151,7 +151,7 @@ main(int argc, char *argv[])
 		daemon(0, 0);
 
 	if ((pw = getpwnam("_dhcp")) == NULL)
-		error("getpwnam: %m");
+		error("user \"_dhcp\" not found");
 	if (chroot(_PATH_VAREMPTY) == -1)
 		error("chroot: %m");
 	if (chdir("/") == -1)
