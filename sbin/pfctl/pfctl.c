@@ -1,4 +1,4 @@
-/*	$OpenBSD: pfctl.c,v 1.131 2003/01/11 21:10:56 henning Exp $ */
+/*	$OpenBSD: pfctl.c,v 1.132 2003/01/15 12:13:02 cedric Exp $ */
 
 /*
  * Copyright (c) 2001 Daniel Hartmeier
@@ -1412,7 +1412,7 @@ main(int argc, char *argv[])
 	if ((opts & PF_OPT_NOACTION) == 0) {
 		dev = open("/dev/pf", mode);
 		if (dev == -1)
-			err(1, "open(\"/dev/pf\")");
+			err(1, "/dev/pf");
 		altqsupport = pfctl_test_altqsupport(dev, opts);
 	} else {
 		/* turn off options */
