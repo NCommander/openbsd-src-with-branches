@@ -1,4 +1,4 @@
-/*	$OpenBSD: kvm_alpha.c,v 1.10 2001/12/05 02:23:11 art Exp $	*/
+/*	$OpenBSD: kvm_alpha.c,v 1.11 2004/06/15 03:52:59 deraadt Exp $	*/
 /*	$NetBSD: kvm_alpha.c,v 1.5 1996/10/01 21:12:05 cgd Exp $	*/
 
 /*
@@ -97,6 +97,11 @@ _kvm_kvatop(kvm_t *kd, u_long va, u_long *pa)
 	int rv, page_off;
 	alpha_pt_entry_t pte;
 	off_t pteoff;
+
+	if (!kd->vmst) {
+		_kvm_err(kd, 0, "vatop called before initvtop");
+		return (0);
+	}
 
 	if (ISALIVE(kd)) {
 		_kvm_err(kd, 0, "vatop called in live kernel!");
