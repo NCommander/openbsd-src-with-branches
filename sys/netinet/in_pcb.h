@@ -1,4 +1,4 @@
-/*	$OpenBSD: in_pcb.h,v 1.20 1999/12/27 06:40:38 itojun Exp $	*/
+/*	$OpenBSD: in_pcb.h,v 1.21 2000/01/11 01:13:49 angelos Exp $	*/
 /*	$NetBSD: in_pcb.h,v 1.14 1996/02/13 23:42:00 christos Exp $	*/
 
 /*
@@ -66,9 +66,9 @@
  */
 
 #include <sys/queue.h>
-#include <netinet6/ip6.h>
+#include <netinet/ip6.h>
 #include <netinet6/ip6_var.h>
-#include <netinet6/icmp6.h>
+#include <netinet/icmp6.h>
 #include <netinet/ip_ipsp.h>
 
 union inpaddru {

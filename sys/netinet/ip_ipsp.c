@@ -1,4 +1,4 @@
-/*	$OpenBSD: ip_ipsp.c,v 1.76 2000/01/21 03:15:05 angelos Exp $	*/
+/*	$OpenBSD: ip_ipsp.c,v 1.77 2000/01/27 08:09:12 angelos Exp $	*/
 
 /*
  * The authors of this code are John Ioannidis (ji@tla.org),
@@ -63,7 +63,9 @@
 #endif /* INET */
 
 #ifdef INET6
-#include <netinet6/in6.h>
+#ifndef INET
+#include <netinet/in.h>
+#endif
 #include <netinet6/in6.h>
 #endif /* INET6 */
 

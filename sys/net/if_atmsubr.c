@@ -1,4 +1,4 @@
-/*      $OpenBSD: if_atmsubr.c,v 1.10 1998/04/16 07:36:41 deraadt Exp $       */
+/*      $OpenBSD: if_atmsubr.c,v 1.11 1999/02/04 00:04:18 deraadt Exp $       */
 
 /*
  *
@@ -78,7 +78,6 @@ didn't get a copy, you may request one from <license@ipv6.nrl.navy.mil>.
 #include <netnatm/natm.h>
 #endif
 #ifdef INET6
-#include <netinet6/in6.h>
 #include <netinet6/in6_var.h>
 #endif /* INET6 */
 
