@@ -23,7 +23,7 @@
  */
 
 #include "includes.h"
-RCSID("$OpenBSD: ssh-rsa.c,v 1.7 2001/03/27 10:34:08 markus Exp $");
+RCSID("$OpenBSD: ssh-rsa.c,v 1.8 2001/03/27 10:57:00 markus Exp $");
 
 #include <openssl/evp.h>
 #include <openssl/err.h>
@@ -103,7 +103,6 @@ ssh_rsa_sign(
 		*lenp = len;
 	if (sigp != NULL)
 		*sigp = ret;
-	debug2("ssh_rsa_sign: done");
 	return 0;
 }
 
