@@ -1,4 +1,4 @@
-/*	$OpenBSD: machdep.c,v 1.34 1998/10/15 21:29:59 imp Exp $	*/
+/*	$OpenBSD: machdep.c,v 1.35 1999/01/30 22:39:31 imp Exp $	*/
 /*
  * Copyright (c) 1988 University of Utah.
  * Copyright (c) 1992, 1993
@@ -38,7 +38,7 @@
  * SUCH DAMAGE.
  *
  *	from: @(#)machdep.c	8.3 (Berkeley) 1/12/94
- *      $Id: machdep.c,v 1.34 1998/10/15 21:29:59 imp Exp $
+ *      $Id: machdep.c,v 1.35 1999/01/30 22:39:31 imp Exp $
  */
 
 /* from: Utah Hdr: machdep.c 1.63 91/04/24 */
@@ -483,7 +483,6 @@ mips_init(argc, argv, envv)
 	valloc(cfree, struct cblock, nclist);
 #endif
 	valloc(callout, struct callout, ncallout);
-	valloc(swapmap, struct map, nswapmap = maxproc * 2);
 #ifdef SYSVSHM
 	valloc(shmsegs, struct shmid_ds, shminfo.shmmni);
 #endif

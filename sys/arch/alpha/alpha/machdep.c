@@ -1,4 +1,4 @@
-/*	$OpenBSD: machdep.c,v 1.25 1999/01/07 23:15:51 deraadt Exp $	*/
+/*	$OpenBSD: machdep.c,v 1.26 1999/03/24 22:56:13 alex Exp $	*/
 /*	$NetBSD: machdep.c,v 1.61 1996/12/07 01:54:49 cgd Exp $	*/
 
 /*
@@ -445,7 +445,6 @@ unknown_cputype:
 	valloc(cfree, struct cblock, nclist);
 #endif
 	valloc(callout, struct callout, ncallout);
-	valloc(swapmap, struct map, nswapmap = maxproc * 2);
 #ifdef SYSVSHM
 	valloc(shmsegs, struct shmid_ds, shminfo.shmmni);
 #endif

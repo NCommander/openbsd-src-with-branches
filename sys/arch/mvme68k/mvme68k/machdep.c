@@ -1,4 +1,4 @@
-/*	$OpenBSD: machdep.c,v 1.24 1999/01/07 23:16:01 deraadt Exp $ */
+/*	$OpenBSD: machdep.c,v 1.25 1999/02/04 23:00:26 niklas Exp $ */
 
 /*
  * Copyright (c) 1995 Theo de Raadt
@@ -264,7 +264,6 @@ again:
 	valloc(cfree, struct cblock, nclist);
 #endif
 	valloc(callout, struct callout, ncallout);
-	valloc(swapmap, struct map, nswapmap = maxproc * 2);
 #ifdef SYSVSHM
 	valloc(shmsegs, struct shmid_ds, shminfo.shmmni);
 #endif
