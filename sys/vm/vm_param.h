@@ -119,6 +119,8 @@ struct _ps_strings {
 	void	*val;
 };
 
+#define SWAPSKIPBYTES	8192	/* never use at the start of a swap space */
+
 /* 
  *	Return values from the VM routines.
  */
