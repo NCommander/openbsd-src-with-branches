@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.16 2002/07/27 13:19:26 art Exp $
+#	$OpenBSD: Makefile,v 1.17 2002/08/21 15:40:30 art Exp $
 
 SUBDIR=ldconfig ldd
 VPATH=${.CURDIR}/../../lib/libc/string:${.CURDIR}/../../sys/lib/libsa
@@ -13,7 +13,7 @@ MAN=	ld.so.8
 .PATH:	${.CURDIR}/${MACHINE_ARCH}
 
 CFLAGS += -Werror -Wall
-CFLAGS += -I${.CURDIR} -D__PIC__ -I${.CURDIR}/${MACHINE_ARCH} \
+CFLAGS += -I${.CURDIR} -I${.CURDIR}/${MACHINE_ARCH} \
 	-Dstrsep=_dl_strsep -Dstrtol=_dl_strtol
 INSTALL_STRIP=
 
