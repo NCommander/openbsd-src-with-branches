@@ -1,4 +1,3 @@
-/* $OpenBSD: xfs_msg_locl.h,v 1.3 1999/04/30 01:59:00 art Exp $ */
 /*
  * Copyright (c) 1995, 1996, 1997, 1998 Kungliga Tekniska Högskolan
  * (Royal Institute of Technology, Stockholm, Sweden).
@@ -37,6 +36,7 @@
  * SUCH DAMAGE.
  */
 
+/* $Id: xfs_msg_locl.h,v 1.3 1999/07/24 13:35:25 lha Exp $ */
 
 #ifndef _xfs_msg_locl_h
 #define _xfs_msg_locl_h
@@ -76,5 +76,17 @@ xfs_message_updatefid(int fd,
 		      struct xfs_message_updatefid * message,
 		      u_int size,
 		      struct proc *p);
+
+int
+xfs_message_gc_nodes(int fd,
+		     struct xfs_message_gc_nodes * message,
+		     u_int size,
+		     struct proc *p);
+
+int
+xfs_message_version(int fd,
+		    struct xfs_message_version *message,
+		    u_int size,
+		    struct proc *p);
 
 #endif				       /* _xfs_msg_locl_h */

@@ -1,4 +1,3 @@
-/* $OpenBSD: xfs_deb.h,v 1.3 1999/04/30 01:59:00 art Exp $ */
 /*
  * Copyright (c) 1995, 1996, 1997 Kungliga Tekniska Högskolan
  * (Royal Institute of Technology, Stockholm, Sweden).
@@ -37,6 +36,7 @@
  * SUCH DAMAGE.
  */
 
+/* $Id: xfs_deb.h,v 1.9 1998/12/22 13:16:19 lha Exp $ */
 
 #ifndef _xfs_deb_h
 #define _xfs_deb_h
