@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.3 1997/04/27 13:48:54 downsj Exp $
+#	$OpenBSD: Makefile,v 1.4 1997/07/07 22:50:56 downsj Exp $
 
 PROG=	newsyslog
 
@@ -13,5 +13,6 @@ CFLAGS+= -DQUAD_OFF_T
 BINOWN=	root
 
 MAN=	newsyslog.8
+MLINKS=	newsyslog.8 newsyslog.conf.5
 
 .include <bsd.prog.mk>
