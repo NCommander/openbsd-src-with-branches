@@ -1,4 +1,4 @@
-/*	$OpenBSD: ufs_extern.h,v 1.4 1997/10/06 20:21:45 deraadt Exp $	*/
+/*	$OpenBSD: ufs_extern.h,v 1.5 1997/11/06 05:59:26 csapuntz Exp $	*/
 /*	$NetBSD: ufs_extern.h,v 1.5 1996/02/09 22:36:03 christos Exp $	*/
 
 /*-
@@ -127,7 +127,7 @@ void ufs_dirbad __P((struct inode *, doff_t, char *));
 int ufs_dirbadentry __P((struct vnode *, struct direct *, int));
 void ufs_makedirentry __P((struct inode *, struct componentname *,
 			   struct direct *));
-int ufs_direnter __P((struct vnode *, struct direct *,
+int ufs_direnter __P((struct vnode *, struct vnode *, struct direct *,
 		      struct componentname *, struct buf *));
 int ufs_dirremove __P((struct vnode *, struct inode *, int, int));
 int ufs_dirrewrite __P((struct inode *, struct inode *,
