@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.93 2003/02/04 01:35:08 deraadt Exp $
+#	$OpenBSD: Makefile,v 1.94 2003/03/01 00:41:18 deraadt Exp $
 
 # not yet done: catman
 
@@ -17,8 +17,6 @@ SUBDIR=	ac accton adduser amd arp authpf \
 	sa sesd sliplogin slstats spppcontrol spray \
 	syslogd tcpdump timed tokenadm tokeninit traceroute trpt \
 	usbdevs user vipw vnconfig wsmoused zdump zic
-
-
 
 # IPv6
 SUBDIR+=faithd ndp rip6query route6d rtadvd rtsold traceroute6
