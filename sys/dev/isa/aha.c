@@ -1,4 +1,4 @@
-/*	$OpenBSD: aha.c,v 1.19 1996/05/26 00:27:09 deraadt Exp $	*/
+/*	$OpenBSD: aha.c,v 1.20 1996/05/27 01:11:44 deraadt Exp $	*/
 /*	$NetBSD: aha.c,v 1.11 1996/05/12 23:51:23 mycroft Exp $	*/
 
 #define AHADIAG
@@ -1393,3 +1393,4 @@ aha_timeout(arg)
 
 	splx(s);
 }
+
