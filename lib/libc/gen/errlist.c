@@ -32,7 +32,7 @@
  */
 
 #if defined(LIBC_SCCS) && !defined(lint)
-static char *rcsid = "$OpenBSD: errlist.c,v 1.4 2002/04/30 16:32:58 drahn Exp $";
+static char *rcsid = "$OpenBSD: errlist.c,v 1.5 2002/05/01 13:36:18 drahn Exp $";
 #endif /* LIBC_SCCS and not lint */
 
 #ifdef lint
@@ -125,7 +125,7 @@ const char *const
 /* quotas & mush */
 	"Too many processes",			/* 67 - EPROCLIM */
 	"Too many users",			/* 68 - EUSERS */
-	"Disc quota exceeded",			/* 69 - EDQUOT */
+	"Disk quota exceeded",			/* 69 - EDQUOT */
 
 /* Network File System */
 	"Stale NFS file handle",		/* 70 - ESTALE */
