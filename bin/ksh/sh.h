@@ -1,4 +1,4 @@
-/*	$OpenBSD: sh.h,v 1.9 1999/06/15 01:18:36 millert Exp $	*/
+/*	$OpenBSD: sh.h,v 1.10 1999/07/15 20:39:40 millert Exp $	*/
 
 /*
  * Public Domain Bourne/Korn shell
@@ -384,7 +384,7 @@ EXTERN	const char *safe_prompt; /* safe prompt if PS1 substitution fails */
  */
 
 typedef struct Area {
-	struct Block *freelist;	/* free list */
+	struct link *freelist;	/* free list */
 } Area;
 
 EXTERN	Area	aperm;		/* permanent object space */
