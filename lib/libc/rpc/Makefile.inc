@@ -1,3 +1,4 @@
+#	$OpenBSD: Makefile.inc,v 1.8 1995/02/25 03:01:33 cgd Exp $
 #	$NetBSD: Makefile.inc,v 1.8 1995/02/25 03:01:33 cgd Exp $
 
 # librpc sources
