@@ -1,4 +1,4 @@
-/*	$OpenBSD: fsdb.c,v 1.3 1996/04/21 23:46:22 deraadt Exp $	*/
+/*	$OpenBSD: fsdb.c,v 1.4 1997/01/16 04:04:19 millert Exp $	*/
 /*	$NetBSD: fsdb.c,v 1.7 1997/01/11 06:50:53 lukem Exp $	*/
 
 /*-
@@ -874,7 +874,7 @@ badformat:
 
 CMDFUNCSTART(chmtime)
 {
-    if (dotime(argv[1], &curinode->di_ctime, &curinode->di_ctimensec))
+    if (dotime(argv[1], &curinode->di_mtime, &curinode->di_mtimensec))
 	return 1;
     inodirty();
     printactive();
@@ -883,7 +883,7 @@ CMDFUNCSTART(chmtime)
 
 CMDFUNCSTART(chatime)
 {
-    if (dotime(argv[1], &curinode->di_ctime, &curinode->di_ctimensec))
+    if (dotime(argv[1], &curinode->di_atime, &curinode->di_atimensec))
 	return 1;
     inodirty();
     printactive();
