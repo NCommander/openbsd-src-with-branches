@@ -1,4 +1,4 @@
-/*      $OpenBSD: asm.h,v 1.2 1996/10/29 17:02:38 graichen Exp $	*/
+/*      $OpenBSD: asm.h,v 1.3 1997/05/11 16:12:12 pefo Exp $	*/
 
 /*
  * Copyright (c) 1992, 1993
@@ -92,7 +92,7 @@
 /*
  * Define -pg profile entry code.
  */
-#if defined(GPROF) || defined(PROF)
+#ifdef GPROF
 #define	MCOUNT			\
 	.set noreorder;		\
 	.set noat;		\
