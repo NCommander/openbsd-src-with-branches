@@ -1,4 +1,4 @@
-/* $OpenBSD: wsemul_vt100_subr.c,v 1.7 2001/07/10 11:07:25 espie Exp $ */
+/* $OpenBSD$ */
 /* $NetBSD: wsemul_vt100_subr.c,v 1.7 2000/04/28 21:56:16 mycroft Exp $ */
 
 /*
@@ -343,7 +343,7 @@ wsemul_vt100_handle_csi(edp, c)
 			wsdisplay_emulinput(edp->cbcookie, "\033P2$u", 5);
 			for (i = 0; i < edp->ncols; i++)
 				if (edp->tabs[i]) {
-					n = sprintf(buf, "%s%d",
+					n = snprintf(buf, sizeof buf, "%s%d",
 						    (ps ? "/" : ""), i + 1);
 					wsdisplay_emulinput(edp->cbcookie,
 							    buf, n);
@@ -566,7 +566,7 @@ wsemul_vt100_handle_csi(edp, c)
 				row = ROWS_ABOVE;
 			else
 				row = edp->crow;
-			n = sprintf(buf, "\033[%d;%dR",
+			n = snprintf(buf, sizeof buf, "\033[%d;%dR",
 				    row + 1, edp->ccol + 1);
 			wsdisplay_emulinput(edp->cbcookie, buf, n);
 			}

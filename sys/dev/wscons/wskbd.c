@@ -1,4 +1,4 @@
-/* $OpenBSD: wskbd.c,v 1.28 2001/10/30 05:15:37 mickey Exp $ */
+/* $OpenBSD$ */
 /* $NetBSD: wskbd.c,v 1.38 2000/03/23 07:01:47 thorpej Exp $ */
 
 /*
@@ -1038,13 +1038,13 @@ getkeyrepeat:
 			if (KB_VARIANT(enc) & ~KB_HANDLEDBYWSKBD)
 				return (EINVAL);
 		} else {
-		md = *(sc->id->t_keymap); /* structure assignment */
-			md.layout = enc;
-			error = wskbd_load_keymap(&md, &sc->sc_map,
-						  &sc->sc_maplen);
-			if (error)
-		return(error);
-	}
+			md = *(sc->id->t_keymap); /* structure assignment */
+				md.layout = enc;
+				error = wskbd_load_keymap(&md, &sc->sc_map,
+							  &sc->sc_maplen);
+				if (error)
+			return(error);
+		}
 		sc->sc_layout = enc;
 		wskbd_update_layout(sc->id, enc);
 		return (0);
