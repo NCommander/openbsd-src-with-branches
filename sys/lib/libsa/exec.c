@@ -1,4 +1,4 @@
-/*	$OpenBSD: exec.c,v 1.10 1997/03/25 20:30:41 niklas Exp $	*/
+/*	$OpenBSD: exec.c,v 1.11 1997/03/27 18:13:32 weingart Exp $	*/
 /*	$NetBSD: exec.c,v 1.15 1996/10/13 02:29:01 christos Exp $	*/
 
 /*-
@@ -147,7 +147,7 @@ exec(path, loadaddr, howto)
 		addr += i;
 	}
 
-	/* and that many bytes of (debug symbols?) */
+	/* and that many bytes of string table */
 	printf("+%d]", i);
 
 	close(io);
