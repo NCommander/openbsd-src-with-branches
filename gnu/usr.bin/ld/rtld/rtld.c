@@ -1,4 +1,4 @@
-/*	$OpenBSD: rtld.c,v 1.28 2002/07/27 22:06:06 deraadt Exp $	*/
+/*	$OpenBSD: rtld.c,v 1.29 2002/09/07 01:25:34 marc Exp $	*/
 /*	$NetBSD: rtld.c,v 1.43 1996/01/14 00:35:17 pk Exp $	*/
 /*
  * Copyright (c) 1993 Paul Kranenburg
@@ -58,6 +58,18 @@
 #endif
 
 #include "ld.h"
+
+/*
+ * Stack protector dummies.
+ * Ideally, a scheme to compile these stubs from libc should be used, but
+ * this would end up dragging too much code from libc here.
+ */
+long __guard[8] = {0,0,0,0,0,0,0,0};
+void
+__stack_smash_handler(char func[], int damaged)
+{
+	_exit(127);
+}
 
 #ifndef MAP_ANON
 #define MAP_ANON	0

@@ -1,7 +1,8 @@
-#	$OpenBSD: Makefile,v 1.3 1998/08/13 21:08:08 espie Exp $
+#	$OpenBSD: Makefile,v 1.4 1999/09/09 21:25:13 espie Exp $
 
 CC = gcc
 CFLAGS = -m68030 -Wall -O3 -fomit-frame-pointer -D__progname=program_name -msmall-code -resident 
+CFLAGS+=	-fno-stack-protector
 
 OBJS1 = loadbsd.o poolmem.o getopt.o sleep.o vers.o openlibs_stub.o
 OBJS2 = loadbsd.o poolmem.o vers_ixemul.o openlibs_ixemul.o
