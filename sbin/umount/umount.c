@@ -276,30 +276,19 @@ getmntname(name, what, type)
 {
 	struct statfs *mntbuf;
 	int i, mntsize;
-	char realonname[MAXPATHLEN], realfromname[MAXPATHLEN];
 
 	if ((mntsize = getmntinfo(&mntbuf, MNT_NOWAIT)) == 0) {
 		warn("getmntinfo");
 		return (NULL);
 	}
 	for (i = 0; i < mntsize; i++) {
-		/*
-		 * Translate the name in case the mount call wasn't done
-		 * with a translated name.
-		 * (but return the name as it is in the struct)
-		 */
-		if (realpath(mntbuf[i].f_mntfromname, realfromname) == NULL)
-			continue;
-		if (realpath(mntbuf[i].f_mntonname, realonname) == NULL)
-			continue;
-
-		if ((what == MNTON) && !strcmp(realfromname, name)) {
+		if ((what == MNTON) && !strcmp(mntbuf[i].f_mntfromname, name)) {
 			if (type)
 				memcpy(type, mntbuf[i].f_fstypename,
 				    sizeof(mntbuf[i].f_fstypename));
 			return (mntbuf[i].f_mntonname);
 		}
-		if ((what == MNTFROM) && !strcmp(realonname, name)) {
+		if ((what == MNTFROM) && !strcmp(mntbuf[i].f_mntonname, name)) {
 			if (type)
 				memcpy(type, mntbuf[i].f_fstypename,
 				    sizeof(mntbuf[i].f_fstypename));
