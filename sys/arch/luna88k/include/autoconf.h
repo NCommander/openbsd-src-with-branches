@@ -1,4 +1,4 @@
-/*	$OpenBSD: autoconf.h,v 1.1 2004/04/21 15:23:56 aoyama Exp $ */
+/*	$OpenBSD: autoconf.h,v 1.2 2004/07/23 15:31:34 miod Exp $ */
 /*
  * Copyright (c) 1999, Steve Murphree, Jr.
  * Copyright (c) 1996 Nivas Madhur
@@ -73,5 +73,6 @@ struct mainbus_attach_args {
         const char *ma_name;
         paddr_t    ma_addr;
         int        ma_ilvl;
+	int	   ma_machine;
 };
 #endif

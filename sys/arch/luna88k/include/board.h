@@ -1,4 +1,4 @@
-/*	$OpenBSD: board.h,v 1.3 2004/06/14 12:57:02 aoyama Exp $	*/
+/*	$OpenBSD: board.h,v 1.4 2004/08/02 08:33:29 miod Exp $	*/
 /*
  * Mach Operating System
  * Copyright (c) 1993-1991 Carnegie Mellon University
@@ -47,8 +47,8 @@
 #define UDEFINED
 
 /* machtype values */
-#define LUNA_88K	1
-#define LUNA_88K2	2
+#define LUNA_88K	0x1
+#define LUNA_88K2	0x2
 
 #define	SYSV_BASE	U(0x00000000) 	/* system virtual base */
 #define VEQR_ADDR	U(0x00000000)
