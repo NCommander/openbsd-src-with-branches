@@ -1,4 +1,4 @@
-/*	$OpenBSD: kern_resource.c,v 1.10 1999/11/05 01:18:01 mickey Exp $	*/
+/*	$OpenBSD: kern_resource.c,v 1.11 2000/03/03 11:31:43 art Exp $	*/
 /*	$NetBSD: kern_resource.c,v 1.38 1996/10/23 07:19:38 matthias Exp $	*/
 
 /*-
@@ -58,7 +58,6 @@
 #include <uvm/uvm_extern.h>
 #endif
 
-void limfree __P((struct plimit *));
 /*
  * Resource controls and accounting.
  */
