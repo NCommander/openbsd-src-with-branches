@@ -1,4 +1,4 @@
-/*	$OpenBSD: pciide_sis_reg.h,v 1.5 2003/09/28 21:01:43 grange Exp $	*/
+/*	$OpenBSD: pciide_sis_reg.h,v 1.6 2004/09/24 07:38:38 grange Exp $	*/
 /*	$NetBSD: pciide_sis_reg.h,v 1.6 2000/05/15 08:46:01 bouyer Exp $	*/
 
 /*
@@ -92,6 +92,11 @@
 #define SIS96x_REG_CBL_33 0x80
 
 #define SIS_PRODUCT_5518 0x5518
+
+/* Private data */
+struct pciide_sis {
+	u_int8_t sis_type;
+};
 
 /* timings values, mostly from FreeBSD */
 /* PIO timings, for all up to 133NEW */
