@@ -1,4 +1,4 @@
-/*	$OpenBSD: systrace.c,v 1.2 2002/06/04 19:07:04 provos Exp $	*/
+/*	$OpenBSD: systrace.c,v 1.3 2002/06/04 19:15:54 deraadt Exp $	*/
 /*
  * Copyright 2002 Niels Provos <provos@citi.umich.edu>
  * All rights reserved.
@@ -423,7 +423,8 @@ main(int argc, char **argv)
 	systrace_initpolicy(filename);
 	systrace_initcb();
 
-	X(fd = intercept_open());
+	if ((fd = intercept_open()) == -1)
+		exit(1);
 
 	pid = intercept_run(fd, args[0], args);
 	if (pid == -1)
