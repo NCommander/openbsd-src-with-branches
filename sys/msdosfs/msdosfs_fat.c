@@ -1,4 +1,4 @@
-/*	$OpenBSD: msdosfs_fat.c,v 1.4 1997/03/02 18:01:56 millert Exp $	*/
+/*	$OpenBSD: msdosfs_fat.c,v 1.5 1998/01/11 20:39:08 provos Exp $	*/
 /*	$NetBSD: msdosfs_fat.c,v 1.26 1997/10/17 11:24:02 ws Exp $	*/
 
 /*-
@@ -552,7 +552,7 @@ fatentry(function, pmp, cn, oldcontents, newcontents)
 			readcn = getulong(&bp->b_data[bo]);
 		else
 			readcn = getushort(&bp->b_data[bo]);
-		if (FAT12(pmp) & (cn & 1))
+		if (FAT12(pmp) && (cn & 1))
 			readcn >>= 4;
 		readcn &= pmp->pm_fatmask;
 		/* map reserved fat entries to same values for all fats */
