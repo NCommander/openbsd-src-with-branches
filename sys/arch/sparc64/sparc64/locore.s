@@ -1,4 +1,4 @@
-/*	$OpenBSD: locore.s,v 1.38 2003/05/17 07:48:19 mdw Exp $	*/
+/*	$OpenBSD: locore.s,v 1.39 2003/05/17 19:30:55 art Exp $	*/
 /*	$NetBSD: locore.s,v 1.137 2001/08/13 06:10:10 jdolecek Exp $	*/
 
 /*
@@ -402,7 +402,7 @@ _C_LABEL(cold):
  *
  *	We have a problem with v9 traps; we have no registers to put the
  *	trap type into.  But we do have a %tt register which already has
- *	that information.  Tryap types in these macros are all dummys.
+ *	that information.  Trap types in these macros are all dummys.
  */
 	/* regular vectored traps */
 #ifdef DEBUG
