@@ -1,4 +1,4 @@
-/*	$OpenBSD: db_sym.c,v 1.4 1996/02/20 13:35:42 mickey Exp $	*/
+/*	$OpenBSD: db_sym.c,v 1.5 1996/03/11 11:16:23 mickey Exp $	*/
 
 /* 
  * Mach Operating System
@@ -108,7 +108,7 @@ db_del_symbol_table(name)
 }
 
 /*
- *  db_qualify("vm_map", "netbsd") returns "netbsd:vm_map".
+ *  db_qualify("vm_map", "bsd") returns "bsd:vm_map".
  *
  *  Note: return value points to static data whose content is
  *  overwritten by each call... but in practice this seems okay.
