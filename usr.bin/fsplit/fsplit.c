@@ -1,4 +1,4 @@
-/*	$OpenBSD: fsplit.c,v 1.5 1999/12/06 00:34:26 deraadt Exp $	*/
+/*	$OpenBSD: fsplit.c,v 1.6 2000/01/30 02:28:37 espie Exp $	*/
 
 /*
  * Copyright (c) 1983, 1993
@@ -44,7 +44,7 @@ static char copyright[] =
 
 #ifndef lint
 /*static char sccsid[] = "from: @(#)fsplit.c	8.1 (Berkeley) 6/6/93";*/
-static char rcsid[] = "$OpenBSD: fsplit.c,v 1.5 1999/12/06 00:34:26 deraadt Exp $";
+static char rcsid[] = "$OpenBSD: fsplit.c,v 1.6 2000/01/30 02:28:37 espie Exp $";
 #endif				/* not lint */
 
 #include <ctype.h>
@@ -168,12 +168,12 @@ main(argc, argv)
 
 		fd = open(x, O_CREAT|O_EXCL|O_RDWR, 0666);
 		if (fd == -1)
-			err(1, x);
+			err(1, "%s", x);
 		ofp = fdopen(fd, "w");
 		if (ofp == NULL) {
 			close(fd);
 			unlink(x);
-			err(1, x);
+			err(1, "%s", x);
 		}
 		nflag = 0;
 		rv = 0;

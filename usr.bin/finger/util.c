@@ -1,4 +1,4 @@
-/*	$OpenBSD: util.c,v 1.10 1998/07/10 15:45:19 mickey Exp $	*/
+/*	$OpenBSD: util.c,v 1.11 1999/08/17 09:13:15 millert Exp $	*/
 
 /*
  * Copyright (c) 1989 The Regents of the University of California.
@@ -39,7 +39,7 @@
 
 #ifndef lint
 /*static char sccsid[] = "from: @(#)util.c	5.14 (Berkeley) 1/17/91";*/
-static char rcsid[] = "$OpenBSD: util.c,v 1.10 1998/07/10 15:45:19 mickey Exp $";
+static char rcsid[] = "$OpenBSD: util.c,v 1.11 1999/08/17 09:13:15 millert Exp $";
 #endif /* not lint */
 
 #include <sys/types.h>
@@ -114,7 +114,7 @@ userinfo(pn, pw)
 	pn->mailrecv = -1;		/* -1 == not_valid */
 	if (stat(tbuf, &sb) < 0) {
 		if (errno != ENOENT) {
-			warn(tbuf);
+			warn("%s", tbuf);
 			return;
 		}
 	} else if (sb.st_size != 0) {

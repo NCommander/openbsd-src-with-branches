@@ -1,4 +1,4 @@
-/*	$OpenBSD: fdformat.c,v 1.7 1998/07/13 22:35:52 deraadt Exp $	*/
+/*	$OpenBSD: fdformat.c,v 1.8 1998/08/13 05:36:56 deraadt Exp $	*/
 
 /*
  * Copyright (C) 1992-1994 by Joerg Wunsch, Dresden
@@ -247,7 +247,7 @@ main(argc, argv)
 		usage();
 
 	if ((fd = opendev(argv[optind], O_RDWR, OPENDEV_PART, &devname)) < 0)
-		err(1, devname);
+		err(1, "%s", devname);
 
 	if (ioctl(fd, FD_GTYPE, &fdt) < 0)
 		errx(1, "not a floppy disk: %s", devname);
