@@ -7,7 +7,7 @@ S=	${.CURDIR}/../../../..
 DEFS= -DSTANDALONE -DCOMPAT_NOLABEL # -DROMPRF
 INCPATH=-I${.CURDIR} -I${.CURDIR}/../../include -I${S} -I${S}/lib/libsa
 CFLAGS=	-O2 ${INCPATH} ${DEFS} ${COPTS}
-CLEANFILES+=sdboot bootsd bootsd.bug
+CLEANFILES+=sdboot bootsd bootsd.bug bootsd.bin
 
 #.PATH: ${S}/arch/${MACHINE_ARCH}/${MACHINE_ARCH}
 #.PATH: ${S}/lib/libsa
