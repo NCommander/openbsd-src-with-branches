@@ -1585,7 +1585,7 @@ lib-depends:
 .if !defined(NO_DEPENDS)
 .if (${MACHINE_ARCH} == "alpha")
 	@for i in ${LIB_DEPENDS}; do \
-		lib=`${ECHO} $$i | ${SED} -e 's/\\\.[0-9][0-9]*\\\.:.*//'`; \
+		lib=`${ECHO} $$i | ${SED} -e 's/\\\.[0-9][0-9]*\\\.[0-9]*:.*//'`; \
 		dir=`${ECHO} $$i | ${SED} -e 's/[^:]*://'`; \
 		if expr "$$dir" : '.*:' > /dev/null; then \
 			target=`${ECHO} $$dir | ${SED} -e 's/.*://'`; \
