@@ -1,4 +1,4 @@
-/*	$OpenBSD: kern_sig.c,v 1.35.2.14 2004/06/05 23:18:25 tedu Exp $	*/
+/*	$OpenBSD: kern_sig.c,v 1.35.2.15 2004/06/06 21:46:12 tedu Exp $	*/
 /*	$NetBSD: kern_sig.c,v 1.54 1996/04/22 01:38:32 christos Exp $	*/
 
 /*
@@ -1283,7 +1283,11 @@ postsig(signum)
 		 * mask from before the sigpause is what we want
 		 * restored after the signal processing is completed.
 		 */
+#ifdef MULTIPROCESSOR
 		s = splsched();
+#else
+		s = splhigh();
+#endif
 		if (ps->ps_flags & SAS_OLDMASK) {
 			returnmask = ps->ps_oldmask;
 			ps->ps_flags &= ~SAS_OLDMASK;
