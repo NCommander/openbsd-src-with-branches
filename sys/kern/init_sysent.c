@@ -32,12 +32,6 @@
 #define compat_10(func) sys_nosys
 #endif
 
-#ifdef COMPAT_22
-#define compat_22(func) __CONCAT(compat_22_,func)
-#else
-#define compat_22(func) sys_nosys
-#endif
-
 #define	s(type)	sizeof(type)
 
 struct sysent sysent[] = {
