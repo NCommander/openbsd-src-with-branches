@@ -1,4 +1,4 @@
-#	$OpenBSD: install.md,v 1.6 1998/09/12 20:05:28 rahnds Exp $
+#	$OpenBSD: install.md,v 1.7 1998/09/15 05:45:50 rahnds Exp $
 #
 #
 # Copyright rc) 1996 The NetBSD Foundation, Inc.
@@ -327,6 +327,7 @@ __md_prep_disklabel_1
 }
 
 md_copy_kernel() {
+	check_kernel
 }
 
 md_welcome_banner() {

@@ -1,4 +1,4 @@
-#	$OpenBSD: install.md,v 1.21 1998/09/11 22:55:45 millert Exp $
+#	$OpenBSD: install.md,v 1.22 1998/10/09 11:21:03 deraadt Exp $
 #	$NetBSD: install.md,v 1.3.2.5 1996/08/26 15:45:28 gwr Exp $
 #
 #
@@ -207,11 +207,7 @@ __md_prep_disklabel_1
 }
 
 md_copy_kernel() {
-	if [ -f /bsd ]; then
-		echo -n "Copying kernel..."
-		cp -p /bsd /mnt/bsd
-		echo "done."
-	fi
+	check_kernel
 }
 
 md_welcome_banner() {
