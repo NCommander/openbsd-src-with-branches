@@ -1,4 +1,4 @@
-/*	$OpenBSD: fd.c,v 1.20 1996/08/29 18:03:27 downsj Exp $	*/
+/*	$OpenBSD: fdc.c,v 1.1 1996/09/01 20:58:26 downsj Exp $	*/
 /*	$NetBSD: fd.c,v 1.90 1996/05/12 23:12:03 mycroft Exp $	*/
 
 /*-
@@ -366,6 +366,8 @@ fdcintr(arg)
 	struct fdc_softc *fdc = arg;
 
 #if NFD > 0
+	extern int fdintr __P((struct fdc_softc *));
+
 	/* Will switch on device type, shortly. */
 	return (fdintr(fdc));
 #else
