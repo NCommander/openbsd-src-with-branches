@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_cdce.c,v 1.5 2004/09/23 17:45:17 brad Exp $ */
+/*	$OpenBSD: if_cdce.c,v 1.6 2004/11/10 10:14:48 grange Exp $ */
 
 /*
  * Copyright (c) 1997, 1998, 1999, 2000-2003 Bill Paul <wpaul@windriver.com>
@@ -644,6 +644,13 @@ cdce_rxeof(usbd_xfer_handle xfer, usbd_private_handle priv, usbd_status status)
 	}
 
 	ifp->if_ipackets++;
+
+#ifdef __STRICT_ALIGNMENT
+	bcopy(m->m_data, m->m_data + ETHER_ALIGN,
+	    total_len);
+	m->m_data += ETHER_ALIGN;
+#endif
+
 	m->m_pkthdr.len = m->m_len = total_len;
 	m->m_pkthdr.rcvif = ifp;
 
