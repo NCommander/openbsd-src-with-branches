@@ -1,4 +1,4 @@
-/*	$OpenBSD: am7990.c,v 1.24 2001/06/24 04:48:02 fgsch Exp $	*/
+/*	$OpenBSD: am7990.c,v 1.25 2001/06/24 22:36:57 miod Exp $	*/
 /*	$NetBSD: am7990.c,v 1.22 1996/10/13 01:37:19 christos Exp $	*/
 
 /*-
@@ -148,6 +148,7 @@ am7990_config(sc)
 #ifdef LANCE_REVC_BUG
 	ifp->if_flags &= ~IFF_MULTICAST;
 #endif
+	IFQ_SET_READY(&ifp->if_snd);
 
 	/* Attach the interface. */
 	if_attach(ifp);
@@ -779,7 +780,7 @@ am7990_start(ifp)
 			    sc->sc_no_td, sc->sc_last_td);
 		}
 
-		IF_DEQUEUE(&ifp->if_snd, m);
+		IFQ_DEQUEUE(&ifp->if_snd, m);
 		if (m == 0)
 			break;
 

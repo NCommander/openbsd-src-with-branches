@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_cnw.c,v 1.7 2001/02/20 19:39:46 mickey Exp $	*/
+/*	$OpenBSD: if_cnw.c,v 1.8 2001/06/25 04:05:50 fgsch Exp $	*/
 /*-
  * Copyright (c) 1998 The NetBSD Foundation, Inc.
  * All rights reserved.
@@ -434,6 +434,7 @@ cnw_attach(parent, self, aux)
 	ifp->if_ioctl = cnw_ioctl;
 	ifp->if_watchdog = cnw_watchdog;
 	ifp->if_flags = IFF_BROADCAST | IFF_SIMPLEX | IFF_NOTRAILERS;
+	IFQ_SET_READY(&ifp->if_snd);
 
 	/* Attach the interface */
 	if_attach(ifp);
@@ -471,7 +472,7 @@ cnw_start(ifp)
 			return;
 		}
 
-		IF_DEQUEUE(&ifp->if_snd, m0);
+		IFQ_DEQUEUE(&ifp->if_snd, m0);
 		if (m0 == 0)
 			return;
 
