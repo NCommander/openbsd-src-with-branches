@@ -1,4 +1,4 @@
-/* $OpenBSD: keynote-sign.c,v 1.10 1999/11/03 03:17:58 angelos Exp $ */
+/* $OpenBSD: keynote-sign.c,v 1.11 2001/03/08 21:50:12 angelos Exp $ */
 /*
  * The author of this code is Angelos D. Keromytis (angelos@dsl.cis.upenn.edu)
  *
@@ -7,7 +7,7 @@
  *
  * Copyright (C) 1998, 1999 by Angelos D. Keromytis.
  *	
- * Permission to use, copy, and modify this software without fee
+ * Permission to use, copy, and modify this software with or without fee
  * is hereby granted, provided that this entire notice is included in
  * all copies of any software which is or includes a copy or
  * modification of this software. 
