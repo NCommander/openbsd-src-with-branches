@@ -1,4 +1,4 @@
-/*	$OpenBSD: cy.c,v 1.7 1996/12/03 11:08:28 deraadt Exp $	*/
+/*	$OpenBSD: cy.c,v 1.8 1997/08/04 09:57:19 dgregor Exp $	*/
 
 /*
  * cy.c
@@ -38,7 +38,6 @@
 #include <sys/proc.h>
 #include <sys/conf.h>
 #include <sys/user.h>
-#include <sys/ioctl.h>
 #include <sys/select.h>
 #include <sys/device.h>
 #include <sys/malloc.h>
