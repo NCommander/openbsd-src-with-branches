@@ -1,4 +1,4 @@
-/*	$OpenBSD: imsg.c,v 1.31 2004/09/16 17:36:29 henning Exp $ */
+/*	$OpenBSD: imsg.c,v 1.32 2004/09/16 17:58:13 henning Exp $ */
 
 /*
  * Copyright (c) 2003, 2004 Henning Brauer <henning@openbsd.org>
@@ -188,7 +188,7 @@ imsg_close(struct imsgbuf *ibuf, struct buf *msg)
 	int	n;
 
 	if ((n = buf_close(&ibuf->w, msg)) < 0) {
-			log_warnx("imsg_close: buf_add error");
+			log_warnx("imsg_close: buf_close error");
 			buf_free(msg);
 			return (-1);
 	}
