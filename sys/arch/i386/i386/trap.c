@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: trap.c,v 1.31.6.15 2004/02/19 10:48:42 niklas Exp $	*/
 /*	$NetBSD: trap.c,v 1.95 1996/05/05 06:50:02 mycroft Exp $	*/
 
 /*-
@@ -440,15 +440,6 @@ trap(frame)
 #else
 		if (__mp_lock_held(&sched_lock))
 #endif
-			goto we_re_toast;
-#endif
-
-#ifdef MULTIPROCESSOR
-		/*
-		 * process doing kernel-mode page fault must have
-		 * been running with big lock held
-		 */
-		if ((p->p_flag & P_BIGLOCK) == 0)
 			goto we_re_toast;
 #endif
 
