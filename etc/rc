@@ -1,4 +1,4 @@
-#	$OpenBSD: rc,v 1.122 1999/10/15 19:51:29 deraadt Exp $
+#	$OpenBSD: rc,v 1.123 1999/10/18 01:46:24 deraadt Exp $
 
 # System startup script run by init on autoboot
 # or after single-user.
@@ -409,6 +409,10 @@ fi
 
 if [ "X${ftpd_flags}" != X"NO" ]; then
 	echo -n ' ftpd';		/usr/libexec/ftpd ${ftpd_flags}
+fi
+
+if [ "X${identd_flags}" != X"NO" ]; then
+	echo -n ' identd';		/usr/libexec/identd ${identd_flags}
 fi
 
 # $smtpfwdd_flags is imported from /etc/rc.conf;
