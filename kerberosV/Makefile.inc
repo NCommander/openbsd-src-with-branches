@@ -1,6 +1,6 @@
-# $OpenBSD: Makefile.inc,v 1.1 2001/05/25 08:24:13 hin Exp $
+# $OpenBSD: Makefile.inc,v 1.2 2001/05/25 13:01:23 hin Exp $
 
-CFLAGS+=	-g
+CFLAGS+=	-g -Wall
 LDFLAGS+=	-g
 
 KRB5DIR	= ${.CURDIR}/${KRBDEPTH}
