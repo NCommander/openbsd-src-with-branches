@@ -1,4 +1,4 @@
-/*	$OpenBSD: db_trace.c,v 1.8 2001/11/06 19:53:13 miod Exp $	*/
+/*	$OpenBSD: db_trace.c,v 1.9 2002/03/14 01:26:26 millert Exp $	*/
 
 /*
  * Copyright (c) 1997 Niklas Hallqvist.  All rights reserverd.
@@ -293,7 +293,7 @@ trapframe:
 #else
 		db_printf(") at ");
 #endif
-		db_printsym(pc, DB_STGY_PROC);
+		db_printsym(pc, DB_STGY_PROC, db_printf);
 		db_printf("\n");
 
 		/*

@@ -1,4 +1,4 @@
-/*	$OpenBSD: db_disasm.c,v 1.4 1999/07/09 21:30:02 art Exp $	*/
+/*	$OpenBSD: db_disasm.c,v 1.5 2002/03/14 03:16:00 millert Exp $	*/
 /*	$NetBSD: db_disasm.c,v 1.9 1996/03/31 23:45:07 pk Exp $ */
 
 /*
@@ -908,17 +908,17 @@ db_disasm(loc, altfmt)
 		case 'm':
 			db_printsym(
 				(db_addr_t)(loc + (4 * (insn & 0x3fffff))),
-				DB_STGY_ANY);
+				DB_STGY_ANY, db_printf);
 			break;
 		case 'u':
 			db_printsym(
 				(db_addr_t)(loc + (4 * (insn & 0x7ffff))),
-				DB_STGY_ANY);
+				DB_STGY_ANY, db_printf);
 			break;
 		case 'n':
 			db_printsym(
 				(db_addr_t)(loc + (4 * (insn & 0x3fffffff))),
-				DB_STGY_PROC);
+				DB_STGY_PROC, db_printf);
 			break;
 		case 's':
 			db_printf("%%asi");
