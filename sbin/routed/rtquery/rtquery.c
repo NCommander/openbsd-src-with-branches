@@ -1,4 +1,4 @@
-/*	$OpenBSD: rtquery.c,v 1.8 1997/07/30 23:28:58 deraadt Exp $	*/
+/*	$OpenBSD: rtquery.c,v 1.9 1998/06/01 07:23:41 deraadt Exp $	*/
 
 /*-
  * Copyright (c) 1982, 1986, 1993
@@ -317,7 +317,7 @@ query_loop(char *argv[], int argc)
 	seen = 0;
 	while (0 > out(*argv++)) {
 		if (*argv == 0)
-			exit(-1);
+			exit(1);
 		answered++;
 	}
 
