@@ -1,4 +1,4 @@
-/*	$OpenBSD: exec.c,v 1.14 1997/03/31 04:57:36 weingart Exp $	*/
+/*	$OpenBSD: exec.c,v 1.15 1997/03/31 07:42:23 deraadt Exp $	*/
 /*	$NetBSD: exec.c,v 1.15 1996/10/13 02:29:01 christos Exp $	*/
 
 /*-
@@ -151,9 +151,8 @@ exec(path, loadaddr, howto)
 		/* and that many bytes of string table */
 		printf("+%d]", i);
 
-#define	round_to_size(x) \
-	(((int)(x) + sizeof(int) - 1) & ~(sizeof(int) - 1))
-	        esym = (char *)round_to_size(addr - (char *)loadaddr);
+#define	round_to_size(x) (((int)(x) + sizeof(int) - 1) & ~(sizeof(int) - 1))
+		esym = (char *)round_to_size(addr - (char *)loadaddr);
 #undef round_to_size
 	} else {
 		ssym = 0;
