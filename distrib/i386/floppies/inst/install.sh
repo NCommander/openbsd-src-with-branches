@@ -1,5 +1,5 @@
 #!/bin/sh
-#	$OpenBSD: install.sh,v 1.13 1996/09/30 23:53:04 deraadt Exp $
+#	$OpenBSD: install.sh,v 1.14 1996/10/07 18:48:23 deraadt Exp $
 #
 # Copyright (c) 1994 Christopher G. Demetriou
 # All rights reserved.
@@ -161,7 +161,7 @@ echo -n "View the boot messages again? [n] "
 getresp "n"
 case "$resp" in
 y*|Y*)
-	less /kern/msgbuf
+	less -rsS /kern/msgbuf
 	;;
 *)
 	echo	""
