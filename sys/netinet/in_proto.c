@@ -1,4 +1,4 @@
-/*	$OpenBSD: in_proto.c,v 1.40 2004/07/17 13:24:58 henning Exp $	*/
+/*	$OpenBSD: in_proto.c,v 1.41 2004/09/17 11:32:53 msf Exp $	*/
 /*	$NetBSD: in_proto.c,v 1.14 1996/02/18 18:58:32 christos Exp $	*/
 
 /*
@@ -292,7 +292,7 @@ struct protosw inetsw[] = {
 #endif /* NGRE > 0 */
 #if NCARP > 0
 { SOCK_RAW,	&inetdomain,	IPPROTO_CARP,	PR_ATOMIC|PR_ADDR,
-  carp_input,	rip_output,	0,		rip_ctloutput,
+  carp_proto_input,	rip_output,	0,		rip_ctloutput,
   rip_usrreq,
   0,		0,		0,		0,		carp_sysctl
 },
