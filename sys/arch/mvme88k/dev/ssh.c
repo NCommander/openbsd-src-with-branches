@@ -1,4 +1,4 @@
-/*	$OpenBSD: ssh.c,v 1.5 2001/08/26 02:37:07 miod Exp $	*/
+/*	$OpenBSD: ssh.c,v 1.6 2001/09/20 17:02:31 mpech Exp $	*/
 
 /*
  * Copyright (c) 1994 Michael L. Hitch
@@ -106,9 +106,6 @@ int ssh_reset_delay = 250;	/* delay after reset, in milleseconds */
 int ssh_cmd_wait = SCSI_CMD_WAIT;
 int ssh_data_wait = SCSI_DATA_WAIT;
 int ssh_init_wait = SCSI_INIT_WAIT;
-
-extern struct pmap	kernel_pmap_store;
-#define	pmap_kernel()		(&kernel_pmap_store)
 
 #ifdef DEBUG_SYNC
 /*
