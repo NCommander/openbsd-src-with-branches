@@ -37,12 +37,12 @@
 
 #if defined(SYSLIBC_SCCS)
 	.text
-	.asciz "$OpenBSD: syscall.S,v 1.1.1.1 1995/10/18 08:41:32 deraadt Exp $"
+	.asciz "$OpenBSD: syscall.S,v 1.2 1996/08/19 08:15:46 tholo Exp $"
 #endif /* SYSLIBC_SCCS */
 
 #include "SYS.h"
 
-ENTRY(syscall)
+SYSENTRY(syscall)
 	clrl	d0
 	trap	#0
 	jcs	err
