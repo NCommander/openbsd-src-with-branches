@@ -1,4 +1,4 @@
-/*	$OpenBSD: ip_ip4.c,v 1.24 1999/02/24 23:45:51 angelos Exp $	*/
+/*	$OpenBSD: ip_ip4.c,v 1.25 1999/02/25 19:21:09 angelos Exp $	*/
 
 /*
  * The authors of this code are John Ioannidis (ji@tla.org),
@@ -160,6 +160,10 @@ ip4_input(m, va_alist)
     m->m_len -= iphlen;
     m->m_pkthdr.len -= iphlen;
     m->m_data += iphlen;
+
+    /* tdbi is only set in esp or ah, if next protocol is udp or tcp */
+    if (m->m_flags & (M_CONF|M_AUTH))
+	m->m_pkthdr.tdbi = NULL;
 
     /*
      * Interface pointer stays the same; if no IPsec processing has
