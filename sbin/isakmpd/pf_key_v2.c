@@ -1,4 +1,4 @@
-/* $OpenBSD: pf_key_v2.c,v 1.150 2004/09/17 13:53:08 ho Exp $  */
+/* $OpenBSD: pf_key_v2.c,v 1.151 2004/12/27 11:02:03 hshoexer Exp $  */
 /* $EOM: pf_key_v2.c,v 1.79 2000/12/12 00:33:19 niklas Exp $	 */
 
 /*
@@ -157,10 +157,9 @@ pf_key_v2_register_sa_seq(u_int8_t *spi, size_t sz, u_int8_t proto,
 {
 	struct pf_key_v2_sa_seq *node = 0;
 
-	node = malloc(sizeof *node);
+	node = calloc(1, sizeof *node);
 	if (!node)
 		goto cleanup;
-	memset(node, '0', sizeof *node);
 	node->spi = malloc(sz);
 	if (!node->spi)
 		goto cleanup;
