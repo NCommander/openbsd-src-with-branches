@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile.inc,v 1.30 2001/10/31 14:21:09 fgsch Exp $
+#	$OpenBSD: Makefile.inc,v 1.31 2002/02/16 05:17:51 pvalchev Exp $
 
 # gen sources
 .PATH: ${LIBCSRCDIR}/arch/${MACHINE_ARCH}/gen ${LIBCSRCDIR}/gen
@@ -63,8 +63,8 @@ MLINKS+=auth_subr.3 auth_open.3 auth_subr.3 auth_call.3 auth_subr.3 \
 	auth_challenge.3 auth_subr.3 auth_check_change.3 auth_subr.3 \
 	auth_check_expire.3 auth_subr.3 auth_clean.3 auth_subr.3 auth_close.3 \
 	auth_subr.3 auth_clrenv.3 auth_subr.3 auth_clroption.3 auth_subr.3 \
-	auth_clroptions.3 auth_subr.3 auth_getitem.3 auth_subr.3 \
-	auth_getstate.3 auth_subr.3 auth_getvalue.3 auth_subr.3 \
+	auth_clroptions.3 auth_subr.3 auth_getitem.3 auth_subr.3 auth_getpwd.3 \
+	auth_subr.3 auth_getstate.3 auth_subr.3 auth_getvalue.3 auth_subr.3 \
 	auth_set_va_list.3 auth_subr.3 auth_setdata.3 auth_subr.3 \
 	auth_setenv.3 auth_subr.3 auth_setitem.3 auth_subr.3 auth_setoption.3 \
 	auth_subr.3 auth_setpwd.3 auth_subr.3 auth_setstate.3 \
