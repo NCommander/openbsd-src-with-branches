@@ -28,7 +28,7 @@
  */
 
 #if defined(LIBC_SCCS) && !defined(lint)
-static char *rcsid = "$OpenBSD: svc_run.c,v 1.11 1999/11/23 22:37:28 deraadt Exp $";
+static char *rcsid = "$OpenBSD: svc_run.c,v 1.12 2002/02/16 21:27:24 millert Exp $";
 #endif /* LIBC_SCCS and not lint */
 
 /*
@@ -56,7 +56,10 @@ svc_run()
 		if (__svc_fdset) {
 			int bytes = howmany(__svc_fdsetsize, NFDBITS) *
 			    sizeof(fd_mask);
-			fds = (fd_set *)malloc(bytes);	/* XXX */
+			if ((fds = (fd_set *)malloc(bytes)) == NULL) {
+				perror("svc_run");
+				return;
+			}
 			memcpy(fds, __svc_fdset, bytes);
 		} else
 			fds = NULL;
