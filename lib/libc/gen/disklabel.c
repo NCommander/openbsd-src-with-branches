@@ -32,7 +32,7 @@
  */
 
 #if defined(LIBC_SCCS) && !defined(lint)
-static char rcsid[] = "$OpenBSD: disklabel.c,v 1.2 1996/08/19 08:22:24 tholo Exp $";
+static char rcsid[] = "$OpenBSD: disklabel.c,v 1.3 1996/09/15 09:30:58 tholo Exp $";
 #endif /* LIBC_SCCS and not lint */
 
 #include <sys/param.h>
@@ -91,7 +91,7 @@ getdiskbyname(name)
 		dp->d_flags |= D_BADSECT;
 
 #define getnumdflt(field, dname, dflt) \
-        { long f; (field) = (cgetnum(buf, dname, &f) == -1) ? (dflt) : f; }
+	{ long f; (field) = (cgetnum(buf, dname, &f) == -1) ? (dflt) : f; }
 #define	getnum(field, dname) \
 	{ long f; cgetnum(buf, dname, &f); field = f; }
 

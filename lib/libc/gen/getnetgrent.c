@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: getnetgrent.c,v 1.5 1997/02/03 00:10:08 millert Exp $	*/
 
 /*
  * Copyright (c) 1994 Christos Zoulas
@@ -32,7 +32,7 @@
  */
 
 #if defined(LIBC_SCCS) && !defined(lint)
-static char *rcsid = "$OpenBSD: getnetgrent.c,v 1.3 1996/08/19 08:23:49 tholo Exp $";
+static char *rcsid = "$OpenBSD: getnetgrent.c,v 1.5 1997/02/03 00:10:08 millert Exp $";
 #endif /* LIBC_SCCS and not lint */
 
 #include <sys/types.h>
@@ -77,7 +77,7 @@ static int		 in_find __P((char *, struct stringlist *,
 static char		*in_lookup1 __P((const char *, const char *,
 					 const char *, int));
 static int		 in_lookup __P((const char *, const char *,
-				        const char *, const char *, int));
+					const char *, const char *, int));
 
 /*
  * _ng_sl_init(): Initialize a string list
@@ -253,8 +253,8 @@ lookup(ypdom, name, line, bywhat)
 	int		  bywhat;
 {
 #ifdef YP
-	int             i;
-	char           *map = NULL;
+	int		i;
+	char	       *map = NULL;
 #endif
 
 	if (_ng_db) {
@@ -344,8 +344,8 @@ _ng_parse(p, name, ng)
 			}
 			return _NG_GROUP;
 		} else {
-			char           *np;
-			int             i;
+			char	       *np;
+			int		i;
 
 			for (np = *p; **p && !_NG_ISSPACE(**p); (*p)++)
 				continue;
