@@ -1,4 +1,4 @@
-/*	$OpenBSD: pathnames.h,v 1.8 2001/06/22 21:55:49 markus Exp $	*/
+/*	$OpenBSD: pathnames.h,v 1.9 2001/06/23 02:34:30 markus Exp $	*/
 
 /*
  * Author: Tatu Ylonen <ylo@cs.hut.fi>
@@ -111,6 +111,9 @@
 
 /* xauth for X11 forwarding */
 #define _PATH_XAUTH			"/usr/X11R6/bin/xauth"
+
+/* UNIX domain socket for X11 server; displaynum will replace %u */
+#define _PATH_UNIX_X "/tmp/.X11-unix/X%u"
 
 /* for scp */
 #define _PATH_CP			"cp"
