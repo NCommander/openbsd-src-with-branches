@@ -1,4 +1,4 @@
-/*	$OpenBSD: input.c,v 1.4 1999/03/22 07:38:24 pjanzen Exp $	*/
+/*	$OpenBSD: input.c,v 1.5 2001/02/04 14:23:27 pjanzen Exp $	*/
 /*    $NetBSD: input.c,v 1.3 1996/02/06 22:47:33 jtc Exp $    */
 
 /*-
@@ -81,6 +81,8 @@ rwait(tvp)
 {
 	int i;
 	struct timeval starttv, endtv, *s;
+	fd_set fds;
+
 #define	NILTZ ((struct timezone *)0)
 
 	/*
@@ -95,8 +97,9 @@ rwait(tvp)
 	} else
 		s = NULL;
 again:
-	i = 1;
-	switch (select(1, (fd_set *)&i, (fd_set *)0, (fd_set *)0, s)) {
+	FD_ZERO(&fds);
+	FD_SET(STDIN_FILENO, &fds);
+	switch (select(STDIN_FILENO + 1, &fds, (fd_set *)0, (fd_set *)0, s)) {
 
 	case -1:
 		if (tvp == 0)
