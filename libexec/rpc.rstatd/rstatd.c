@@ -1,4 +1,4 @@
-/*	$OpenBSD: rstatd.c,v 1.16 2003/12/12 05:25:06 deraadt Exp $	*/
+/*	$OpenBSD: rstatd.c,v 1.17 2004/01/07 21:12:24 millert Exp $	*/
 
 /*-
  * Copyright (c) 1993, John Brezak
@@ -29,7 +29,7 @@
  */
 
 #ifndef lint
-static char rcsid[] = "$OpenBSD: rstatd.c,v 1.16 2003/12/12 05:25:06 deraadt Exp $";
+static char rcsid[] = "$OpenBSD: rstatd.c,v 1.17 2004/01/07 21:12:24 millert Exp $";
 #endif /* not lint */
 
 #include <sys/types.h>
@@ -71,7 +71,7 @@ main(int argc, char *argv[])
 	int sock = 0, proto = 0;
 	socklen_t fromlen;
 	struct passwd *pw;
-	struct sockaddr_in from;
+	struct sockaddr_storage from;
 	SVCXPRT *transp;
 
 	openlog("rpc.rstatd", LOG_NDELAY|LOG_CONS|LOG_PID, LOG_DAEMON);
