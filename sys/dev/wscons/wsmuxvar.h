@@ -1,4 +1,4 @@
-/*	$OpenBSD: wsmuxvar.h,v 1.2 2000/08/01 13:51:19 mickey Exp $	*/
+/*	$OpenBSD: wsmuxvar.h,v 1.3 2000/11/13 15:35:17 aaron Exp $	*/
 /*	$NetBSD: wsmuxvar.h,v 1.1 1999/07/29 18:20:43 augustss Exp $	*/
 
 /*
@@ -61,6 +61,7 @@ struct wsmuxops {
 	int (*ddispioctl) __P((struct device *, u_long, caddr_t, int, 
 			       struct proc *));
 	int (*dsetdisplay) __P((struct device *, struct wsmux_softc *));
+	int (*dissetdisplay) __P((struct device *));
 };
 
 
