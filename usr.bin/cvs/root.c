@@ -1,4 +1,4 @@
-/*	$OpenBSD: root.c,v 1.12 2004/12/06 21:03:13 deraadt Exp $	*/
+/*	$OpenBSD: root.c,v 1.13 2004/12/07 17:10:56 tedu Exp $	*/
 /*
  * Copyright (c) 2004 Jean-Francois Brousseau <jfb@openbsd.org>
  * All rights reserved.
@@ -140,6 +140,11 @@ cvsroot_parse(const char *str)
 				root->cr_method = i;
 				break;
 			}
+		}
+		if (i == CVS_NBMETHODS) {
+			cvs_log(LP_ERR, "unknown method `%s'", sp);
+			cvsroot_free(root);
+			return (NULL);
 		}
 	}
 
