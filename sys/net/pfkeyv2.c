@@ -1,3 +1,4 @@
+/* $OpenBSD$ */
 /*
 %%% copyright-nrl-97
 This software is Copyright 1997-1998 by Randall Atkinson, Ronald Lee,
