@@ -1,4 +1,4 @@
-/*	$OpenBSD: pfctl_parser.c,v 1.86 2002/06/11 01:58:00 henning Exp $ */
+/*	$OpenBSD: pfctl_parser.c,v 1.87 2002/06/11 02:12:37 dhartmei Exp $ */
 
 /*
  * Copyright (c) 2001 Daniel Hartmeier
@@ -648,8 +648,12 @@ print_rule(struct pf_rule *r)
 			else
 				printf(" ");
 		}
-	} else
-		printf("scrub ");
+	} else {
+		if ((r->rule_flag & PFRULE_FRAGCACHE) == 0)
+			printf("scrub ");
+		else
+			printf("scrub(fragcache) ");
+	}
 	if (r->direction == 0)
 		printf("in ");
 	else
