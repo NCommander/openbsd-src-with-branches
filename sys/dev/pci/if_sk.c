@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_sk.c,v 1.4 1999/10/22 07:14:42 deraadt Exp $	*/
+/*	$OpenBSD: if_sk.c,v 1.5 1999/12/08 00:38:08 aaron Exp $	*/
 
 /*
  * Copyright (c) 1997, 1998, 1999
@@ -717,8 +717,18 @@ sk_ioctl(ifp, command, data)
 		break;
 	case SIOCADDMULTI:
 	case SIOCDELMULTI:
-		sk_setmulti(sc_if);
-		error = 0;
+		error = (command == SIOCADDMULTI) ?
+		    ether_addmulti(ifr, &sc_if->arpcom) :
+		    ether_delmulti(ifr, &sc_if->arpcom);
+
+		if (error == ENETRESET) {
+			/*
+			 * Multicast list has changed; set the hardware
+			 * filter accordingly.
+			 */
+			sk_setmulti(sc_if);
+			error = 0;
+		}
 		break;
 	case SIOCGIFMEDIA:
 	case SIOCSIFMEDIA:
