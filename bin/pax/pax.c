@@ -1,4 +1,4 @@
-/*	$OpenBSD: pax.c,v 1.22 2002/10/16 19:20:02 millert Exp $	*/
+/*	$OpenBSD: pax.c,v 1.23 2003/06/02 23:32:09 millert Exp $	*/
 /*	$NetBSD: pax.c,v 1.5 1996/03/26 23:54:20 mrg Exp $	*/
 
 /*-
@@ -44,7 +44,7 @@ static const char copyright[] =
 #if 0
 static const char sccsid[] = "@(#)pax.c	8.2 (Berkeley) 4/18/94";
 #else
-static const char rcsid[] = "$OpenBSD: pax.c,v 1.22 2002/10/16 19:20:02 millert Exp $";
+static const char rcsid[] = "$OpenBSD: pax.c,v 1.23 2003/06/02 23:32:09 millert Exp $";
 #endif
 #endif /* not lint */
 
@@ -91,6 +91,7 @@ int	Lflag;			/* follow symlinks when writing */
 int	Xflag;			/* archive files with same device id only */
 int	Yflag;			/* same as Dflg except after name mode */
 int	Zflag;			/* same as uflg except after name mode */
+int	zeroflag;		/* use \0 as pathname terminator */
 int	vfpart;			/* is partial verbose output in progress */
 int	patime = 1;		/* preserve file access time */
 int	pmtime = 1;		/* preserve file modification times */
