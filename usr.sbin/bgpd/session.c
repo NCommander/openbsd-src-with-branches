@@ -1410,6 +1410,11 @@ session_dispatch_imsg(struct imsgbuf *ibuf, int idx)
 				bzero(&mrt_allin, sizeof(mrt_allin));
 			}
 			break;
+		case IMSG_CTL_KROUTE:
+		case IMSG_CTL_END:
+			if (idx != PFD_PIPE_MAIN)
+				fatalx("reconf request not from parent");
+			control_imsg_relay(&imsg);
 		default:
 			break;
 		}
@@ -1449,7 +1454,7 @@ session_up(struct peer *peer)
 }
 
 int
-imsg_compose_parent(int type, u_int32_t peerid, void *data, u_int16_t datalen)
+imsg_compose_parent(int type, pid_t pid, void *data, u_int16_t datalen)
 {
-	return (imsg_compose(&ibuf_main, type, peerid, data, datalen));
+	return (imsg_compose_pid(&ibuf_main, type, pid, data, datalen));
 }
