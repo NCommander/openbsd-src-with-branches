@@ -5,7 +5,6 @@ RAMDISK=RAMDISK_CD
 FLOPPYSIZE=288
 FLOPPYTYPE=floppy288
 XNAME=cdrom
-FLOPPYSECS=36
 
 .include "${.CURDIR}/../common/Makefile.inc"
 

@@ -22,7 +22,6 @@ PID!=		echo $$$$
 REALIMAGE!=	echo /var/tmp/image.${PID}
 BOOT=		${DESTDIR}/usr/mdec/boot
 FLOPPYSIZE?=	144
-FLOPPYSECS?=	18
 FLOPPYTYPE?=	floppy3
 
 all:	${FS}
