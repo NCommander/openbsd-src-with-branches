@@ -1,4 +1,4 @@
-/*	$OpenBSD: fbvar.h,v 1.12 2004/11/29 22:07:39 miod Exp $	*/
+/*	$OpenBSD: fbvar.h,v 1.13 2005/03/07 16:44:52 miod Exp $	*/
 /*	$NetBSD: fbvar.h,v 1.9 1997/07/07 23:31:30 pk Exp $ */
 
 /*
@@ -70,6 +70,7 @@ struct sunfb {
 	struct	rasops_info sf_ro;
 
 	struct	wsscreen_descr sf_wsd;
+	int	sf_nscreens;
 };
 
 /*
@@ -86,6 +87,5 @@ void	fbwscons_attach(struct sunfb *, struct wsdisplay_accessops *, int);
 
 #if defined(SUN4)
 int	fb_pfour_id(void *);
-int	fb_pfour_get_video(struct sunfb *);
-void	fb_pfour_set_video(struct sunfb *, int);
+void	fb_pfour_burner(void *, u_int, u_int);
 #endif
