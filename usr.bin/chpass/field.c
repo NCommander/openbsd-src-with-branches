@@ -1,4 +1,4 @@
-/*	$OpenBSD: field.c,v 1.4 2002/06/27 19:02:40 deraadt Exp $	*/
+/*	$OpenBSD: field.c,v 1.5 2003/06/03 02:56:06 millert Exp $	*/
 /*	$NetBSD: field.c,v 1.3 1995/03/26 04:55:28 glass Exp $	*/
 
 /*
@@ -34,7 +34,7 @@
 #if 0
 static char sccsid[] = "@(#)field.c	8.4 (Berkeley) 4/2/94";
 #else
-static char rcsid[] = "$OpenBSD: field.c,v 1.4 2002/06/27 19:02:40 deraadt Exp $";
+static char rcsid[] = "$OpenBSD: field.c,v 1.5 2003/06/03 02:56:06 millert Exp $";
 #endif
 #endif /* not lint */
 
@@ -44,6 +44,7 @@ static char rcsid[] = "$OpenBSD: field.c,v 1.4 2002/06/27 19:02:40 deraadt Exp $
 #include <err.h>
 #include <errno.h>
 #include <grp.h>
+#include <paths.h>
 #include <pwd.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -51,7 +52,6 @@ static char rcsid[] = "$OpenBSD: field.c,v 1.4 2002/06/27 19:02:40 deraadt Exp $
 #include <unistd.h>
 
 #include "chpass.h"
-#include "pathnames.h"
 
 /* ARGSUSED */
 int
