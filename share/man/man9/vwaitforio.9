@@ -1,4 +1,4 @@
-.\"     $OpenBSD: vwaitforio.9,v 1.5 2002/08/26 20:18:07 art Exp $
+.\"     $OpenBSD: vwaitforio.9,v 1.6 2002/12/20 06:16:34 art Exp $
 .\"
 .\" Copyright (c) 2001 Constantine Sapuntzakis
 .\" All rights reserved.
@@ -45,7 +45,8 @@ that the writes they initiated have completed.
 .Pp
 The
 .Fn vwaitforio
-call sleeps at PRIBIO + 1. The 
+call sleeps at PRIBIO + 1.
+The 
 .Nm slpflag ,
 .Nm wmesg , 
 and
