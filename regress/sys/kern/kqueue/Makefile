@@ -1,14 +1,16 @@
-#	$OpenBSD: Makefile,v 1.1 2002/01/07 00:01:00 provos Exp $
+#	$OpenBSD: Makefile,v 1.2 2002/02/27 17:11:51 art Exp $
 
 PROG=	kqueue-test
-SRCS= kqueue-pipe.c kqueue-fork.c main.c
+SRCS= kqueue-pipe.c kqueue-fork.c main.c kqueue-process.c
 
 kq-pipe: ${PROG}
 	./${PROG} -p
 kq-fork: ${PROG}
 	./${PROG} -f
+kq-process: ${PROG}
+	./${PROG} -P
 
-REGRESSTARGETS=kq-pipe kq-fork
+REGRESSTARGETS=kq-pipe kq-fork kq-process
 .PHONY: ${REGRESSTARGETS}
 
 .include <bsd.regress.mk>
