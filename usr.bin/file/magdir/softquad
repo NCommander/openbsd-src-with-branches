@@ -1,4 +1,4 @@
-# $OpenBSD: softquad,v 1.2 1995/12/14 03:30:25 deraadt Exp $
+#	$OpenBSD$
 
 #------------------------------------------------------------------------------
 # softquad:  file(1) magic for SoftQuad Publishing Software

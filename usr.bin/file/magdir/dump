@@ -1,3 +1,4 @@
+#	$OpenBSD$
 
 #------------------------------------------------------------------------------
 # dump:  file(1) magic for dump file format--for new and old dump filesystems
