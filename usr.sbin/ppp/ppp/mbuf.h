@@ -15,7 +15,7 @@
  * IMPLIED WARRANTIES, INCLUDING, WITHOUT LIMITATION, THE IMPLIED
  * WARRANTIES OF MERCHANTIBILITY AND FITNESS FOR A PARTICULAR PURPOSE.
  *
- * $OpenBSD: mbuf.h,v 1.7 2000/01/07 03:26:55 brian Exp $
+ * $OpenBSD: mbuf.h,v 1.8 2000/02/27 01:38:27 brian Exp $
  *
  *	TODO:
  */
@@ -83,7 +83,7 @@ struct mqueue {
 #define MB_UNKNOWN	38
 #define MB_MAX		MB_UNKNOWN
 
-#define M_MAXLEN	(4096 - sizeof(struct mbuf))
+#define M_MAXLEN	(4352 - sizeof(struct mbuf))	/* > HDLCSIZE */
 
 struct cmdargs;
 
