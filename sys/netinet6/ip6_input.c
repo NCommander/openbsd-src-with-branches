@@ -1,4 +1,4 @@
-/*	$OpenBSD: ip6_input.c,v 1.30 2001/05/11 17:20:12 aaron Exp $	*/
+/*	$OpenBSD: ip6_input.c,v 1.31 2001/06/09 06:43:38 angelos Exp $	*/
 /*	$KAME: ip6_input.c,v 1.188 2001/03/29 05:34:31 itojun Exp $	*/
 
 /*
@@ -274,6 +274,13 @@ ip6_input(m)
 	}
 
 	ip6stat.ip6s_nxthist[ip6->ip6_nxt]++;
+
+#ifdef ALTQ
+	if (altq_input != NULL && (*altq_input)(m, AF_INET6) == 0) {
+		/* packet is dropped by traffic conditioner */
+		return;
+	}
+#endif
 
 	/*
 	 * Scope check
