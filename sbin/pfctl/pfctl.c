@@ -1,4 +1,4 @@
-/*	$OpenBSD: pfctl.c,v 1.14 2001/06/26 20:50:26 dhartmei Exp $ */
+/*	$OpenBSD: pfctl.c,v 1.15 2001/06/26 22:18:17 provos Exp $ */
 
 /*
  * Copyright (c) 2001, Daniel Hartmeier
@@ -37,6 +37,7 @@
 #include <netinet/in.h>
 #include <net/pfvar.h>
 
+#include <err.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
