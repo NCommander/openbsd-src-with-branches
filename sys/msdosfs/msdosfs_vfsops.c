@@ -1,4 +1,4 @@
-/*	$OpenBSD: msdosfs_vfsops.c,v 1.21 2001/02/07 17:51:48 mickey Exp $	*/
+/*	$OpenBSD: msdosfs_vfsops.c,v 1.22 2001/02/20 01:50:11 assar Exp $	*/
 /*	$NetBSD: msdosfs_vfsops.c,v 1.48 1997/10/18 02:54:57 briggs Exp $	*/
 
 /*-
@@ -769,8 +769,6 @@ loop:
 	 * Force stale file system control information to be flushed.
 	 */
 	if (waitfor != MNT_LAZY) {
-		if (pmp->pm_mountp->mnt_flag & MNT_SOFTDEP)
-			waitfor = MNT_NOWAIT;
 		vn_lock(pmp->pm_devvp, LK_EXCLUSIVE | LK_RETRY, p);
 		if ((error = VOP_FSYNC(pmp->pm_devvp, cred, waitfor, p)) != 0)
 			allerror = error;
