@@ -39,7 +39,7 @@
  */
 
 #include "includes.h"
-RCSID("$OpenBSD: channels.c,v 1.185 2003/01/01 18:08:52 markus Exp $");
+RCSID("$OpenBSD: channels.c,v 1.186 2003/01/10 10:32:54 djm Exp $");
 
 #include "ssh.h"
 #include "ssh1.h"
@@ -1991,6 +1991,7 @@ channel_input_port_open(int type, u_int32_t seq, void *ctxt)
 		c->remote_id = remote_id;
 	}
 	if (c == NULL) {
+		xfree(originator_string);
 		packet_start(SSH_MSG_CHANNEL_OPEN_FAILURE);
 		packet_put_int(remote_id);
 		packet_send();
@@ -2575,6 +2576,7 @@ x11_input_open(int type, u_int32_t seq, void *ctxt)
 		/* Send refusal to the remote host. */
 		packet_start(SSH_MSG_CHANNEL_OPEN_FAILURE);
 		packet_put_int(remote_id);
+		xfree(remote_host);
 	} else {
 		/* Send a confirmation to the remote host. */
 		packet_start(SSH_MSG_CHANNEL_OPEN_CONFIRMATION);
