@@ -43,7 +43,7 @@
  */
 
 #include "includes.h"
-RCSID("$OpenBSD: ttymodes.c,v 1.16 2001/12/27 20:39:58 markus Exp $");
+RCSID("$OpenBSD: ttymodes.c,v 1.17 2002/03/19 10:49:35 markus Exp $");
 
 #include "packet.h"
 #include "log.h"
@@ -307,7 +307,6 @@ end:
 	else
 		packet_put_raw(buffer_ptr(&buf), buffer_len(&buf));
 	buffer_free(&buf);
-	return;
 }
 
 /*
@@ -457,5 +456,4 @@ set:
 	/* Set the new modes for the terminal. */
 	if (tcsetattr(fd, TCSANOW, &tio) == -1)
 		log("Setting tty modes failed: %.100s", strerror(errno));
-	return;
 }

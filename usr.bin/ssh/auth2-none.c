@@ -23,7 +23,7 @@
  */
 
 #include "includes.h"
-RCSID("$OpenBSD: auth2-none.c,v 1.1 2002/05/25 18:51:07 markus Exp $");
+RCSID("$OpenBSD: auth2-none.c,v 1.2 2002/05/31 11:35:15 markus Exp $");
 
 #include "auth.h"
 #include "xmalloc.h"
@@ -65,7 +65,7 @@ auth2_read_banner(void)
 		return (NULL);
 	}
 	banner[n] = '\0';
-	
+
 	return (banner);
 }
 
@@ -88,7 +88,6 @@ userauth_banner(void)
 done:
 	if (banner)
 		xfree(banner);
-	return;
 }
 
 static int
