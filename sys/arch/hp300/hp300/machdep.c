@@ -1,4 +1,4 @@
-/*	$OpenBSD: machdep.c,v 1.74 2001/12/06 18:53:01 millert Exp $	*/
+/*	$OpenBSD: machdep.c,v 1.75 2002/01/16 20:51:45 miod Exp $	*/
 /*	$NetBSD: machdep.c,v 1.121 1999/03/26 23:41:29 mycroft Exp $	*/
 
 /*
@@ -111,7 +111,6 @@
 char	machine[] = MACHINE;	/* from <machine/param.h> */
 
 struct vm_map *exec_map = NULL;  
-struct vm_map *mb_map = NULL;
 struct vm_map *phys_map = NULL;
 
 extern paddr_t avail_start, avail_end;

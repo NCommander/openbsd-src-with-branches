@@ -1,4 +1,4 @@
-/*	$OpenBSD: machdep.c,v 1.61 2001/12/08 02:24:06 art Exp $ */
+/*	$OpenBSD: machdep.c,v 1.62 2002/01/16 20:50:17 miod Exp $ */
 
 /*
  * Copyright (c) 1995 Theo de Raadt
@@ -124,7 +124,6 @@
 char machine[] = "mvme68k";		/* cpu "architecture" */
 
 struct vm_map *exec_map = NULL;
-struct vm_map *mb_map = NULL;
 struct vm_map *phys_map = NULL;
 
 extern vm_offset_t avail_end;

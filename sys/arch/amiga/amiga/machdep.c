@@ -1,4 +1,4 @@
-/*	$OpenBSD: machdep.c,v 1.62 2001/11/30 02:09:34 art Exp $	*/
+/*	$OpenBSD: machdep.c,v 1.63 2001/12/08 02:24:06 art Exp $	*/
 /*	$NetBSD: machdep.c,v 1.95 1997/08/27 18:31:17 is Exp $	*/
 
 /*
@@ -130,7 +130,6 @@ void fdintr __P((int));
 u_int16_t amiga_ttyspl = PSL_S|PSL_IPL4;
 
 struct vm_map *exec_map = NULL;
-struct vm_map *mb_map = NULL;
 struct vm_map *phys_map = NULL;
 
 /*
