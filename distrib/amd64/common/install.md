@@ -1,4 +1,4 @@
-#	$OpenBSD$
+#	$OpenBSD: install.md,v 1.1 2004/02/07 21:16:47 deraadt Exp $
 #
 #
 # Copyright (c) 1996 The NetBSD Foundation, Inc.
@@ -42,6 +42,7 @@
 MDFSTYPE=msdos
 MDFSOPTS=-s
 MDXAPERTURE=2
+MDSERIAL="com com tty0"
 ARCH=ARCH
 
 md_set_term() {
