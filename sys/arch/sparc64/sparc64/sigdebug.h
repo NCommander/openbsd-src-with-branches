@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /*	$NetBSD: sigdebug.h,v 1.1 1999/01/09 23:12:36 eeh Exp $	*/
 
 /*

@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /*	$NetBSD: idprom.h,v 1.2 1998/09/05 23:57:26 eeh Exp $ */
 
 /*

@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /*	$NetBSD: db_interface.c,v 1.61 2001/07/31 06:55:47 eeh Exp $ */
 
 /*

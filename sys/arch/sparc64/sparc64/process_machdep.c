@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /*	$NetBSD: process_machdep.c,v 1.10 2000/09/26 22:05:50 eeh Exp $ */
 
 /*

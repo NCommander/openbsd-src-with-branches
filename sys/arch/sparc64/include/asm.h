@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /*	$NetBSD: asm.h,v 1.15 2000/08/02 22:24:39 eeh Exp $ */
 
 /*

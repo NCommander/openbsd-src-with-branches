@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /*	$NetBSD: locore2.c,v 1.2 2000/05/26 21:20:21 thorpej Exp $ */
 
 /*

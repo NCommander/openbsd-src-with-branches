@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /*	$NetBSD: db_machdep.h,v 1.12 2001/07/07 15:16:13 eeh Exp $ */
 
 /*

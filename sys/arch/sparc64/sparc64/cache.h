@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /*	$NetBSD: cache.h,v 1.3 2000/08/01 00:28:02 eeh Exp $ */
 
 /*

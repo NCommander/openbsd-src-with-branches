@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /*	$NetBSD: timerreg.h,v 1.3 1999/06/05 05:10:01 mrg Exp $ */
 
 /*

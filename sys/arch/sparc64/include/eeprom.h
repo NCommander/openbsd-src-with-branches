@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /*	$NetBSD: eeprom.h,v 1.2 1999/12/30 16:25:17 eeh Exp $	*/
 
 /*

@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /*	$NetBSD: emul.c,v 1.8 2001/06/29 23:58:40 eeh Exp $	*/
 
 /*-

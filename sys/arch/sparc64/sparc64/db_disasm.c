@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /*	$NetBSD: db_disasm.c,v 1.9 2000/08/16 11:29:42 pk Exp $ */
 
 /*

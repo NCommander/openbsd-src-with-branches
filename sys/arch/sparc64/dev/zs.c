@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /*	$NetBSD: zs.c,v 1.29 2001/05/30 15:24:24 lukem Exp $	*/
 
 /*-

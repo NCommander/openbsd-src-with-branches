@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /*	$NetBSD: openfirm.c,v 1.13 2001/06/21 00:08:02 eeh Exp $	*/
 
 /*
