@@ -1,3 +1,5 @@
+/*	$OpenBSD: pf.c,v 1.121 2001/07/30 23:00:37 deraadt Exp $ */
+
 /**
  * rijndael-alg-fst.h
  *
