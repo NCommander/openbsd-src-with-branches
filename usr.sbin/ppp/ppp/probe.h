@@ -23,11 +23,16 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  *
- *	$OpenBSD: probe.h,v 1.2 1999/02/06 03:22:43 brian Exp $
+ *	$OpenBSD: probe.h,v 1.3 2000/02/27 01:38:28 brian Exp $
  */
 
 struct probe {
   unsigned select_changes_time : 1;
+#ifndef NOINET6
+  unsigned ipv6_available : 1;
+#endif
 };
 
-extern void probe_Init(struct probe *);
+extern struct probe probe;
+
+extern void probe_Init(void);

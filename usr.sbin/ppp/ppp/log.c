@@ -23,7 +23,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  *
- *	$OpenBSD: log.c,v 1.12 2000/11/02 00:54:34 brian Exp $
+ *	$OpenBSD: log.c,v 1.13 2001/06/13 11:46:14 markus Exp $
  */
 
 #include <sys/types.h>
@@ -42,7 +42,7 @@
 #include "descriptor.h"
 #include "prompt.h"
 
-static const char * const LogNames[] = {
+static const char *const LogNames[] = {
   "Async",
   "CBCP",
   "CCP",
@@ -55,6 +55,7 @@ static const char * const LogNames[] = {
   "HDLC",
   "ID0",
   "IPCP",
+  "IPV6CP",
   "LCP",
   "LQM",
   "Phase",
