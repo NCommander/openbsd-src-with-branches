@@ -715,7 +715,6 @@ ral_alloc_rx_ring(struct ral_softc *sc, struct ral_rx_ring *ring, int count)
 
 		MCLGET(data->m, M_DONTWAIT);
 		if (!(data->m->m_flags & M_EXT)) {
-			m_freem(data->m);
 			printf("%s: could not allocate rx mbuf cluster\n",
 			    sc->sc_dev.dv_xname);
 			error = ENOMEM;
