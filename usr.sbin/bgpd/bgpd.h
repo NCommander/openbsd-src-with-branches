@@ -1,4 +1,4 @@
-/*	$OpenBSD: bgpd.h,v 1.25 2003/12/25 17:07:24 henning Exp $ */
+/*	$OpenBSD: bgpd.h,v 1.26 2003/12/25 23:15:58 henning Exp $ */
 
 /*
  * Copyright (c) 2003 Henning Brauer <henning@openbsd.org>
@@ -213,7 +213,10 @@ enum imsg_type {
 	IMSG_MRT_MSG,
 	IMSG_MRT_END,
 	IMSG_KROUTE_CHANGE,
-	IMSG_KROUTE_DELETE
+	IMSG_KROUTE_DELETE,
+	IMSG_NEXTHOP_ADD,
+	IMSG_NEXTHOP_REMOVE,
+	IMSG_NEXTHOP_UPDATE
 };
 
 struct imsg_hdr {
