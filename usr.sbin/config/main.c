@@ -1,4 +1,4 @@
-/*	$OpenBSD: main.c,v 1.27 2002/06/14 21:35:01 todd Exp $	*/
+/*	$OpenBSD: main.c,v 1.28 2002/07/14 02:59:41 deraadt Exp $	*/
 /*	$NetBSD: main.c,v 1.22 1997/02/02 21:12:33 thorpej Exp $	*/
 
 /*
@@ -564,6 +564,7 @@ cfcrosscheck(cf, what, nv)
 		    cf->cf_name, what, nv->nv_str, nv->nv_str);
 		errs++;
 loop:
+		;
 	}
 	return (errs);
 }
