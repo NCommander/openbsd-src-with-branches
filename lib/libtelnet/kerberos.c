@@ -1,4 +1,4 @@
-/*     $OpenBSD: kerberos.c,v 1.5 2000/09/15 07:13:44 deraadt Exp $    */
+/*     $OpenBSD: kerberos.c,v 1.6 2001/05/25 10:23:07 hin Exp $    */
 
 /*-
  * Copyright (c) 1991, 1993
@@ -81,6 +81,7 @@
 #include <kerberosIV/krb.h>
 #include <pwd.h>
 #include <syslog.h>
+#include <err.h>
 #include "encrypt.h"
 #include "auth.h"
 #include "misc.h"
