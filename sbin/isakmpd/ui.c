@@ -1,4 +1,4 @@
-/*	$OpenBSD: ui.c,v 1.33 2003/06/03 14:28:16 ho Exp $	*/
+/*	$OpenBSD: ui.c,v 1.34 2003/10/13 13:57:51 ho Exp $	*/
 /*	$EOM: ui.c,v 1.43 2000/10/05 09:25:12 niklas Exp $	*/
 
 /*
@@ -137,7 +137,7 @@ static void
 ui_teardown_all (char *cmd)
 {
   /* Skip 'cmd' as arg. */
-  sa_teardown_all();
+  sa_teardown_all ();
 }
 
 /*
