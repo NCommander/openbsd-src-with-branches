@@ -1,4 +1,4 @@
-/*	$OpenBSD: parse.y,v 1.294 2003/01/19 10:19:15 camield Exp $	*/
+/*	$OpenBSD: parse.y,v 1.295 2003/01/20 18:37:52 camield Exp $	*/
 
 /*
  * Copyright (c) 2001 Markus Friedl.  All rights reserved.
@@ -745,8 +745,11 @@ antispoof_iflst	: if_item			{ $$ = $1; }
 tabledef	: TABLE PORTUNARY STRING PORTUNARY tableopts tableinit {
 			if ($2 != PF_OP_LT || $4 != PF_OP_GT)
 				YYERROR;
-			if (strlen($3) >= PF_TABLE_NAME_SIZE)
+			if (strlen($3) >= PF_TABLE_NAME_SIZE) {
+				yyerror("table name too long, max %d chars",
+				    PF_TABLE_NAME_SIZE - 1);
 				YYERROR;
+			}
 			pfctl_define_table($3, $5, $6);
 		}
 		;
