@@ -1,4 +1,4 @@
-/*	$OpenBSD: bios.c,v 1.50 2003/04/17 03:42:14 drahn Exp $	*/
+/*	$OpenBSD: bios.c,v 1.51 2003/06/03 20:10:31 mickey Exp $	*/
 
 /*
  * Copyright (c) 1997-2001 Michael Shalayeff
@@ -319,7 +319,9 @@ bios_getopt()
 #if NPCI > 0
 		case BOOTARG_PCIINFO:
 			bios_pciinfo = (bios_pciinfo_t *)q->ba_arg;
+#ifdef BIOS_DEBUG
 			printf(" pciinfo %p", bios_pciinfo);
+#endif
 			break;
 #endif
 		case BOOTARG_CONSDEV:
