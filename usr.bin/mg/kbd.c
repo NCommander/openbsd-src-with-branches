@@ -1,4 +1,4 @@
-/*	$OpenBSD: kbd.c,v 1.10 2001/05/24 03:05:23 mickey Exp $	*/
+/*	$OpenBSD: kbd.c,v 1.11 2002/02/13 22:36:58 vincent Exp $	*/
 
 /*
  *	Terminal independent keyboard handling.
@@ -100,7 +100,7 @@ getkey(flag)
 		c = pushedc;
 		pushed = FALSE;
 	} else
-		c = getkbd();
+		c = ttgetc();
 #ifdef BSMAP
 	if (bs_map)
 		if (c == CCHR('H'))
