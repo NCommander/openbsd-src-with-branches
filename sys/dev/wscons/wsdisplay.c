@@ -1,4 +1,4 @@
-/* $OpenBSD: wsdisplay.c,v 1.43 2002/04/30 23:01:55 mickey Exp $ */
+/* $OpenBSD: wsdisplay.c,v 1.44 2002/04/30 23:07:48 mickey Exp $ */
 /* $NetBSD: wsdisplay.c,v 1.37.4.1 2000/06/30 16:27:53 simonb Exp $ */
 
 /*
@@ -3199,8 +3199,10 @@ wsmoused_release(struct wsdisplay_softc *sc)
 		}
 
 		/* inject event to notify wsmoused(8) to close mouse device */
-		wsmouse_input(wsms_dev, 0, 0, 0, 0,
-		    WSMOUSE_INPUT_WSMOUSED_CLOSE);
+		if (wsms_dev != NULL) 
+			wsmouse_input(wsms_dev, 0, 0, 0, 0,
+				      WSMOUSE_INPUT_WSMOUSED_CLOSE);
+		
 	}
 #endif /* NWSMOUSE > 0 */
 }
