@@ -1,3 +1,4 @@
+#	$OpenBSD$
 # No man pages for regression tests.
 NOMAN=
 
