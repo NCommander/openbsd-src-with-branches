@@ -232,6 +232,31 @@ cvs_ent_addln(CVSENTRIES *ef, const char *line)
 
 
 /*
+ * cvs_ent_remove()
+ *
+ * Remove an entry from the Entries file <ef>.  The entry's name is given
+ * by <name>.
+ */
+
+int
+cvs_ent_remove(CVSENTRIES *ef, const char *name)
+{
+	struct cvs_ent *ent;
+
+	ent = cvs_ent_get(ef, name);
+	if (ent == NULL)
+		return (-1);
+
+	TAILQ_REMOVE(&(ef->cef_ent), ent, ce_list);
+	cvs_ent_free(ent);
+
+	ef->cef_flags &= ~CVS_ENTF_SYNC;
+
+	return (0);
+}
+
+
+/*
  * cvs_ent_get()
  *
  * Get the CVS entry from the Entries file <ef> whose 'name' portion matches
