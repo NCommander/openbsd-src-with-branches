@@ -1,4 +1,4 @@
-/*	$OpenBSD: rde_rib.c,v 1.44 2004/04/30 18:42:05 henning Exp $ */
+/*	$OpenBSD: rde_rib.c,v 1.45 2004/05/07 10:06:15 djm Exp $ */
 
 /*
  * Copyright (c) 2003, 2004 Claudio Jeker <claudio@openbsd.org>
@@ -440,7 +440,7 @@ prefix_remove(struct rde_peer *peer, struct bgpd_addr *prefix, int prefixlen)
 
 	rde_send_pftable(asp->flags.pftable, prefix, prefixlen, 1);
 	rde_send_pftable_commit();
-    
+
 	prefix_unlink(p);
 	prefix_free(p);
 
