@@ -1,4 +1,4 @@
-/*	$OpenBSD: word.c,v 1.4 2001/01/29 01:58:10 niklas Exp $	*/
+/*	$OpenBSD: word.c,v 1.5 2001/05/24 03:05:28 mickey Exp $	*/
 
 /*
  *		Word mode commands.
@@ -271,5 +271,5 @@ inword()
 {
 	/* can't use lgetc in ISWORD due to bug in OSK cpp */
 	return curwp->w_doto != llength(curwp->w_dotp) &&
-		ISWORD(curwp->w_dotp->l_text[curwp->w_doto]);
+	    ISWORD(curwp->w_dotp->l_text[curwp->w_doto]);
 }
