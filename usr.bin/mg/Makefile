@@ -1,4 +1,4 @@
-# $OpenBSD: Makefile,v 1.6 2000/09/01 14:59:08 millert Exp $
+# $OpenBSD: Makefile,v 1.7 2001/05/24 09:47:33 art Exp $
 
 PROG=	mg
 
@@ -23,5 +23,10 @@ SRCS=	cinfo.c fileio.c spawn.c ttyio.c tty.c ttykbd.c \
 	random.c region.c search.c version.c window.c word.c \
 	buffer.c display.c echo.c extend.c help.c kbd.c keymap.c \
 	macro.c main.c modes.c re_search.c funmap.c
+
+#
+# More or less standalone extensions.
+#
+SRCS+=	grep.c
 
 .include <bsd.prog.mk>
