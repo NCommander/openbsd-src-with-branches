@@ -84,6 +84,7 @@ initfiles()
 	unchecked = &allfiles;
 }
 
+#if 0
 static void
 showprev(pref, fi)
 	const char *pref;
@@ -94,6 +95,7 @@ showprev(pref, fi)
 	    "%sfile %s ...", pref, fi->fi_path);
 	errors--;
 }
+#endif
 
 void
 addfile(path, optx, flags, rule)
@@ -175,7 +177,7 @@ void
 checkfiles()
 {
 	register struct files *fi, *last;
-	register struct nvlist *nv;
+	/*register struct nvlist *nv;*/
 
 	last = NULL;
 	for (fi = *unchecked; fi != NULL; last = fi, fi = fi->fi_next)

@@ -1,4 +1,4 @@
-/*	$OpenBSD: sem.c,v 1.3 1996/04/21 23:40:25 deraadt Exp $	*/
+/*	$OpenBSD: sem.c,v 1.4 1996/07/07 22:02:21 maja Exp $	*/
 /*	$NetBSD: sem.c,v 1.8 1996/03/17 21:12:03 cgd Exp $	*/
 
 /*
@@ -856,7 +856,6 @@ findattachment:
 		if (!hit)
 			panic("adddev: can't figure out attachment");
 	}
-ok:
 	if ((i->i_locs = fixloc(name, attr, loclist)) == NULL)
 		goto bad;
 	if (i->i_unit == STAR && iba->d_vectors != NULL) {
