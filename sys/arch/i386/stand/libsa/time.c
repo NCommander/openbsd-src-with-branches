@@ -1,4 +1,4 @@
-/*	$OpenBSD: time.c,v 1.5 1997/07/17 23:00:27 mickey Exp $	*/
+/*	$OpenBSD: time.c,v 1.6 1997/08/12 19:05:55 mickey Exp $	*/
 
 /*
  * Copyright (c) 1997 Michael Shalayeff
@@ -171,7 +171,7 @@ sleep(i)
 
 	/* loop for that number of seconds, polling BIOS,
 	   so that it may handle interrupts */
-	for (t = getsecs() + i; getsecs() < t; );
+	for (t = getsecs() + i; getsecs() < t; cnischar());
 
 	return 0;
 }
