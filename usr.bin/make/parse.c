@@ -1,4 +1,4 @@
-/*	$OpenBSD: parse.c,v 1.10 1996/09/21 05:03:37 briggs Exp $	*/
+/*	$OpenBSD: parse.c,v 1.11 1996/11/30 21:09:02 millert Exp $	*/
 /*	$NetBSD: parse.c,v 1.27 1996/11/06 17:59:20 christos Exp $	*/
 
 /*
@@ -43,7 +43,7 @@
 #if 0
 static char sccsid[] = "@(#)parse.c	8.3 (Berkeley) 3/19/94";
 #else
-static char rcsid[] = "$OpenBSD: parse.c,v 1.25 1996/09/13 04:22:09 christos Exp $";
+static char rcsid[] = "$OpenBSD: parse.c,v 1.11 1996/11/30 21:09:02 millert Exp $";
 #endif
 #endif /* not lint */
 
@@ -2574,18 +2574,18 @@ Parse_End()
 Lst
 Parse_MainName()
 {
-    Lst           main;	/* result list */
+    Lst           listmain;	/* result list */
 
-    main = Lst_Init (FALSE);
+    listmain = Lst_Init (FALSE);
 
     if (mainNode == NILGNODE) {
 	Punt ("no target to make.");
     	/*NOTREACHED*/
     } else if (mainNode->type & OP_DOUBLEDEP) {
-	(void) Lst_AtEnd (main, (ClientData)mainNode);
-	Lst_Concat(main, mainNode->cohorts, LST_CONCNEW);
+	(void) Lst_AtEnd (listmain, (ClientData)mainNode);
+	Lst_Concat(listmain, mainNode->cohorts, LST_CONCNEW);
     }
     else
-	(void) Lst_AtEnd (main, (ClientData)mainNode);
-    return (main);
+	(void) Lst_AtEnd (listmain, (ClientData)mainNode);
+    return (listmain);
 }
