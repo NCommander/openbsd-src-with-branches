@@ -1,4 +1,4 @@
-/*	$OpenBSD: ldasm.S,v 1.9 2002/12/09 20:56:34 drahn Exp $ */
+/*	$OpenBSD: ldasm.S,v 1.10 2003/02/02 16:57:58 deraadt Exp $ */
 
 /*
  * Copyright (c) 1999 Dale Rahn
@@ -132,6 +132,7 @@ ENTRY(_dl_start)
 	mr 4, 21
 	mr 5, 22
 	mr 6, 23
+	li 7, 0
 
 
 	mtlr 27
