@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.6 2001/09/30 19:48:23 millert Exp $
+#	$OpenBSD: Makefile,v 1.7 2001/12/04 19:18:31 miod Exp $
 
 .if ${MACHINE} == "sparc" || ${MACHINE} == "sun3" || ${MACHINE} == "sparc64"
 PROG=	eeprom
@@ -10,8 +10,6 @@ SRCS=	eehandlers.c getdate.c main.c
 
 .  if ${MACHINE} == "sparc" || ${MACHINE} == "sparc64"
 SRCS+=	ophandlers.c
-DPADD=	${LIBKVM}
-LDADD=	-lkvm
 .  endif
 
 CLEANFILES+=getdate.c y.tab.h
