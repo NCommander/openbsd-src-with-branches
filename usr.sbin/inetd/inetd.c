@@ -513,6 +513,17 @@ main(argc, argv, envp)
 	}
 }
 
+int
+dg_badinput(sin)
+	struct sockaddr_in *sin;
+{
+	if (ntohs(sin->sin_port) < IPPORT_RESERVED)
+		return (1);
+	if (sin->sin_addr.s_addr == htonl(INADDR_BROADCAST))
+		return (1);
+	return (0);
+}
+
 void
 reapchild()
 {
@@ -1265,6 +1276,8 @@ echo_dg(s, sep)			/* Echo service -- echo data back */
 	size = sizeof(sa);
 	if ((i = recvfrom(s, buffer, sizeof(buffer), 0, &sa, &size)) < 0)
 		return;
+	if (dg_badinput((struct sockaddr_in *)&sa))
+		return;
 	(void) sendto(s, buffer, i, 0, &sa, sizeof(sa));
 }
 
@@ -1364,6 +1377,8 @@ chargen_dg(s, sep)		/* Character generator */
 	size = sizeof(sa);
 	if (recvfrom(s, text, sizeof(text), 0, &sa, &size) < 0)
 		return;
+	if (dg_badinput((struct sockaddr_in *)&sa))
+		return;
 
 	if ((len = endring - rs) >= LINESIZ)
 		bcopy(rs, text, LINESIZ);
@@ -1423,6 +1438,8 @@ machtime_dg(s, sep)
 	size = sizeof(sa);
 	if (recvfrom(s, (char *)&result, sizeof(result), 0, &sa, &size) < 0)
 		return;
+	if (dg_badinput((struct sockaddr_in *)&sa))
+		return;
 	result = machtime();
 	(void) sendto(s, (char *) &result, sizeof(result), 0, &sa, sizeof(sa));
 }
@@ -1457,6 +1474,8 @@ daytime_dg(s, sep)		/* Return human-readable time of day */
 
 	size = sizeof(sa);
 	if (recvfrom(s, buffer, sizeof(buffer), 0, &sa, &size) < 0)
+		return;
+	if (dg_badinput((struct sockaddr_in *)&sa))
 		return;
 	(void) sprintf(buffer, "%.24s\r\n", ctime(&clock));
 	(void) sendto(s, buffer, strlen(buffer), 0, &sa, sizeof(sa));
