@@ -29,7 +29,7 @@
 /* XXX: copy between two remote sites */
 
 #include "includes.h"
-RCSID("$OpenBSD: sftp-client.c,v 1.13 2001/03/14 08:57:14 markus Exp $");
+RCSID("$OpenBSD: sftp-client.c,v 1.14 2001/03/16 08:16:17 djm Exp $");
 
 #include "ssh.h"
 #include "buffer.h"
@@ -77,7 +77,9 @@ get_msg(int fd, Buffer *m)
 	unsigned char buf[4096];
 
 	len = atomicio(read, fd, buf, 4);
-	if (len != 4)
+	if (len == 0)
+		fatal("Connection closed");
+	else if (len == -1)
 		fatal("Couldn't read packet: %s", strerror(errno));
 
 	msg_len = GET_32BIT(buf);
@@ -86,7 +88,9 @@ get_msg(int fd, Buffer *m)
 
 	while (msg_len) {
 		len = atomicio(read, fd, buf, MIN(msg_len, sizeof(buf)));
-		if (len <= 0)
+		if (len == 0)
+			fatal("Connection closed");
+		else if (len == -1)
 			fatal("Couldn't read packet: %s", strerror(errno));
 
 		msg_len -= len;
