@@ -1,4 +1,4 @@
-/*     $OpenBSD: snoop.h,v 1.4 1998/01/26 04:16:44 dgregor Exp $     */
+/* $OpenBSD$ */
 /*
  * Copyright (C) 1993-1998 by Darren Reed.
  *
@@ -12,7 +12,7 @@
 
 /*
  * written to comply with the RFC (1761) from Sun.
- * $Id: snoop.h,v 1.4 1998/01/26 04:16:44 dgregor Exp $
+ * $Id: snoop.h,v 2.1 1999/08/04 17:30:19 darrenr Exp $
  */
 struct	snoophdr	{
 	char	s_id[8];

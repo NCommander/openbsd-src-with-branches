@@ -1,8 +1,8 @@
-#	$OpenBSD: Makefile,v 1.4 1998/09/15 09:57:29 pattonme Exp $
+#	$OpenBSD: Makefile,v 1.5 1999/02/07 00:48:29 deraadt Exp $
 
 PROG=	ipnat
 MAN=	ipnat.8 ipnat.4 ipnat.5
-SRCS=	ipnat.c kmem.c 
+SRCS=	ipnat.c kmem.c natparse.c
 .PATH:  ${.CURDIR}/../ipfstat
 CFLAGS+=-I${.CURDIR}/../../sbin/ipfstat
 
