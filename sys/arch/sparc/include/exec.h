@@ -1,4 +1,4 @@
-/*	$OpenBSD: exec.h,v 1.8 2001/01/22 14:51:06 art Exp $	*/
+/*	$OpenBSD: exec.h,v 1.9 2002/08/11 23:06:03 art Exp $	*/
 /*	$NetBSD: exec.h,v 1.7 1994/11/20 20:53:02 deraadt Exp $ */
 
 /*
@@ -120,7 +120,9 @@ struct relocation_info_sparc {
 #define	_NLIST_DO_AOUT
 #define	_NLIST_DO_ELF
 
+#ifdef COMPAT_SUNOS
 #define _KERN_DO_AOUT
+#endif
 #define _KERN_DO_ELF
 
 #endif  /* _SPARC_EXEC_H_ */
