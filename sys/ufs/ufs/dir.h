@@ -1,4 +1,4 @@
-/*	$OpenBSD: dir.h,v 1.2 1996/04/19 16:10:44 niklas Exp $	*/
+/*	$OpenBSD: dir.h,v 1.6 1997/05/30 08:34:56 downsj Exp $	*/
 /*	$NetBSD: dir.h,v 1.8 1996/03/09 19:42:41 scottr Exp $	*/
 
 /*
@@ -48,7 +48,7 @@
  * Theoretically, directories can be more than 2Gb in length, however, in
  * practice this seems unlikely. So, we define the type doff_t as a 32-bit
  * quantity to keep down the cost of doing lookup on a 32-bit machine.
-*/
+ */
 #define	doff_t		int32_t
 #define	MAXDIRSIZE	(0x7fffffff)
 
