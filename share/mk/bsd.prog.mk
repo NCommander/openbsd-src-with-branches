@@ -106,24 +106,28 @@ CLEANFILES+=strings
 
 .if defined(PROG)
 SRCS?=	${PROG}.c
-.  if !empty(SRCS:N*.h:N*.sh)
+.if !empty(SRCS:N*.h:N*.sh)
 OBJS+=	${SRCS:N*.h:N*.sh:R:S/$/.o/g}
 LOBJS+=	${LSRCS:.c=.ln} ${SRCS:M*.c:.c=.ln}
-.  endif
+.endif
 
-.  if defined(OBJS) && !empty(OBJS)
-.    if !empty(SRCS:M*.C) || !empty(SRCS:M*.cc) || !empty(SRCS:M*.cxx)
-${PROG}: ${LIBCRT0} ${OBJS} ${LIBC} ${CRTBEGIN} ${CRTEND} ${DPADD}
-	${CXX} ${LDFLAGS} ${LDSTATIC} -o ${.TARGET} -B${DESTDIR}/usr/lib ${OBJS} ${LDADD}
-.    else
-${PROG}: ${LIBCRT0} ${OBJS} ${LIBC} ${CRTBEGIN} ${CRTEND} ${DPADD}
-	${CC} ${LDFLAGS} ${LDSTATIC} -o ${.TARGET} -B${DESTDIR}/usr/lib ${OBJS} ${LDADD}
-.    endif
-.  endif	# defined(OBJS) && !empty(OBJS)
+.if defined(OBJS) && !empty(OBJS)
+.if defined(DESTDIR)
 
-.  if	!defined(MAN)
+${PROG}: ${LIBCRT0} ${OBJS} ${LIBC} ${CRTBEGIN} ${CRTEND} ${DPADD}
+	${CC} ${LDFLAGS} ${LDSTATIC} -o ${.TARGET} -nostdlib -L${DESTDIR}/usr/lib ${LIBCRT0} ${CRTBEGIN} ${OBJS} ${LDADD} -lgcc -lc -lgcc ${CRTEND}
+
+.else
+
+${PROG}: ${LIBCRT0} ${OBJS} ${LIBC} ${CRTBEGIN} ${CRTEND} ${DPADD}
+	${CC} ${LDFLAGS} ${LDSTATIC} -o ${.TARGET} ${OBJS} ${LDADD}
+
+.endif	# defined(DESTDIR)
+.endif	# defined(OBJS) && !empty(OBJS)
+
+.if	!defined(MAN)
 MAN=	${PROG}.1
-.  endif	# !defined(MAN)
+.endif	# !defined(MAN)
 .endif	# defined(PROG)
 
 .MAIN: all
