@@ -1,11 +1,9 @@
-#	$OpenBSD: Makefile,v 1.4 1997/04/27 20:55:46 millert Exp $
+#	$OpenBSD: Makefile,v 1.5 1997/09/21 11:36:21 deraadt Exp $
 
 PROG=	monop
 SRCS=	monop.c cards.c execute.c getinp.c houses.c jail.c misc.c morg.c \
 	print.c prop.c rent.c roll.c spec.c trade.c
 MAN=	monop.6
-DPADD+=	${LIBCOMPAT}
-LDADD+=	-lcompat
 HIDEGAME=hidegame
 CLEANFILES+=initdeck cards.pck
 
