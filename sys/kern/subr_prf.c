@@ -1,4 +1,4 @@
-/*	$OpenBSD: subr_prf.c,v 1.36 2001/11/15 07:57:29 niklas Exp $	*/
+/*	$OpenBSD: subr_prf.c,v 1.37 2001/12/02 02:03:13 deraadt Exp $	*/
 /*	$NetBSD: subr_prf.c,v 1.45 1997/10/24 18:14:25 chuck Exp $	*/
 
 /*-
@@ -55,6 +55,7 @@
 #include <sys/tprintf.h>
 #include <sys/syslog.h>
 #include <sys/malloc.h>
+#include <sys/pool.h>
 
 #include <dev/cons.h>
 
