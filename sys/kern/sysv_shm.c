@@ -1,4 +1,4 @@
-/*	$OpenBSD: sysv_shm.c,v 1.3 1996/03/03 17:20:08 niklas Exp $	*/
+/*	$OpenBSD: sysv_shm.c,v 1.4 1996/04/21 22:27:26 deraadt Exp $	*/
 /*	$NetBSD: sysv_shm.c,v 1.37 1996/03/16 23:17:13 christos Exp $	*/
 
 /*
@@ -178,6 +178,8 @@ sys_shmdt(p, v, retval)
 	int i;
 
 	shmmap_s = (struct shmmap_state *)p->p_vmspace->vm_shm;
+	if (shmmap_s == NULL)
+		return EINVAL;
 	for (i = 0; i < shminfo.shmseg; i++, shmmap_s++)
 		if (shmmap_s->shmid != -1 &&
 		    shmmap_s->va == (vm_offset_t)SCARG(uap, shmaddr))
