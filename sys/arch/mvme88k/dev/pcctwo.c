@@ -1,5 +1,5 @@
 
-/*	$OpenBSD: pcctwo.c,v 1.5 1996/11/23 21:46:00 kstailey Exp $ */
+/*	$OpenBSD: pcctwo.c,v 1.5 1998/12/15 05:52:30 smurph Exp $ */
 
 /*
  * Copyright (c) 1995 Theo de Raadt
@@ -87,7 +87,7 @@ pcctwomatch(parent, vcf, args)
 	struct pcctworeg *pcc2;
 
 	/* Bomb if wrong cpu */
-	if (cputyp != CPU_187){
+	if (!(cputyp == CPU_187 || cputyp == CPU_188)){
 	    printf("==> pcctwo: wrong CPU type %x.\n", cputyp);
 	    return (0);
 	}
