@@ -118,10 +118,10 @@ mkoneswap(cf)
 	if (fputs("\t{ NODEV, 0, 0 }\n};\n\n", fp) < 0)
 		goto wrerror;
 	mountroot =
-	    cf->cf_root->nv_str == s_nfs ? "nfs_mountroot" : "ffs_mountroot";
+	    cf->cf_root->nv_str == s_nfs ? "nfs_mountroot" : "dk_mountroot";
 	if (fprintf(fp, "extern int %s __P((void *));\n", mountroot) < 0)
 		goto wrerror;
-	if (fprintf(fp, "int (*mountroot) __P((void *)) = %s;\n", mountroot) < 0)
+	if (fprintf(fp, "int (*mountroot) __P((void)) = %s;\n", mountroot) < 0)
 		goto wrerror;
 
 	if (fclose(fp)) {
