@@ -1,4 +1,4 @@
-/*	$OpenBSD: networkdelta.c,v 1.3 2001/04/07 20:00:16 ho Exp $	*/
+/*	$OpenBSD: networkdelta.c,v 1.4 2001/05/05 05:10:04 mickey Exp $	*/
 
 /*-
  * Copyright (c) 1985, 1993 The Regents of the University of California.
@@ -36,10 +36,6 @@
 #ifndef lint
 static char sccsid[] = "@(#)networkdelta.c	5.1 (Berkeley) 5/11/93";
 #endif /* not lint */
-
-#ifdef sgi
-#ident "$Revision: 1.3 $"
-#endif
 
 #include "globals.h"
 
