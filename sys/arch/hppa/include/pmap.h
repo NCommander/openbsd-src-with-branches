@@ -1,4 +1,4 @@
-/* $OpenBSD: pmap.h,v 1.3 1998/09/12 03:14:49 mickey Exp $ */
+/* $OpenBSD: pmap.h,v 1.4 1998/11/23 03:28:22 mickey Exp $ */
 
 /*
  * Copyright 1996 1995 by Open Software Foundation, Inc.   
@@ -168,6 +168,7 @@ pmap_prot(struct pmap *pmap, int prot)
 }
 
 void pmap_bootstrap __P((vm_offset_t *, vm_offset_t *));
+void pmap_changebit __P((vm_offset_t, u_int, u_int));
 #endif /* _KERNEL */
 
 #endif /* _MACHINE_PMAP_H_ */
