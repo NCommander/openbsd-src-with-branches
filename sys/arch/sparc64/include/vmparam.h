@@ -1,4 +1,4 @@
-/*	$OpenBSD: vmparam.h,v 1.7 2002/02/17 22:59:53 maja Exp $	*/
+/*	$OpenBSD: vmparam.h,v 1.8 2002/03/14 01:26:45 millert Exp $	*/
 /*	$NetBSD: vmparam.h,v 1.18 2001/05/01 02:19:19 thorpej Exp $ */
 
 /*
@@ -57,12 +57,7 @@
  * is the top (end) of the user stack.
  */
 #define	USRTEXT		0x2000			/* Start of user text */
-#define USRSTACK32	0xffffe000L
-#ifdef __arch64__
 #define USRSTACK	0xffffffffffffe000L
-#else
-#define USRSTACK	USRSTACK32
-#endif
 
 /*
  * Virtual memory related constants, all in bytes

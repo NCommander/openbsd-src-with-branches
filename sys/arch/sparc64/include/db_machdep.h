@@ -1,4 +1,4 @@
-/*	$OpenBSD: db_machdep.h,v 1.5 2001/11/06 19:53:16 miod Exp $	*/
+/*	$OpenBSD: db_machdep.h,v 1.6 2002/03/14 01:26:45 millert Exp $	*/
 /*	$NetBSD: db_machdep.h,v 1.12 2001/07/07 15:16:13 eeh Exp $ */
 
 /*
@@ -144,16 +144,9 @@ int kdb_trap(int, struct trapframe64 *);
 /*
  * We will use elf symbols in DDB when they work.
  */
-#if 1
 #define	DB_ELF_SYMBOLS
-#ifdef __arch64__
 #define DB_ELFSIZE	64
-#else
-#define DB_ELFSIZE	32
-#endif
-#else
-#define DB_AOUT_SYMBOLS
-#endif
+
 /*
  * KGDB definitions
  */
