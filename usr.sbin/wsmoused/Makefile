@@ -1,6 +1,6 @@
-#	$OpenBSD: Makefile,v 1.1 2001/04/14 04:47:40 aaron Exp $	
+#	$OpenBSD: Makefile,v 1.2.6.1 2003/10/15 05:34:21 drahn Exp $	
 
-.if ${MACHINE} == "i386" || ${MACHINE} == "alpha"
+.if ${MACHINE} == "i386" || ${MACHINE} == "alpha" || ${MACHINE} == "pegasos"
 
 PROG=	wsmoused
 SRCS=	wsmoused.c mouse_protocols.c
