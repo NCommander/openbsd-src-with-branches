@@ -1,4 +1,6 @@
-/*	$OpenBSD: _atomic_lock.c,v 1.3 1998/12/21 07:58:45 d Exp $	*/
+/*	$OpenBSD: _atomic_lock.c,v 1.4 1999/03/10 09:45:40 d Exp $	*/
+/* David Leonard, <d@csee.uq.edu.au>. Public domain. */
+
 /*
  * Atomic lock for i386
  */
