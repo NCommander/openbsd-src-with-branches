@@ -1,4 +1,4 @@
-# $OpenBSD: PackingElement.pm,v 1.1.1.1 2003/10/16 17:43:34 espie Exp $
+# $OpenBSD: PackingElement.pm,v 1.2 2003/10/31 17:43:20 espie Exp $
 #
 # Copyright (c) 2003 Marc Espie.
 # 
@@ -408,6 +408,9 @@ sub destate
 {
 	my ($self, $state) = @_;
 	$state->{cwd} = $self->{name};
+	if (!defined $state->{prefix}) {
+		$state->{prefix} = $state->{cwd};
+	}
 }
 
 package OpenBSD::PackingElement::Owner;
