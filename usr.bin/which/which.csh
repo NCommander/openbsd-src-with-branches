@@ -1,4 +1,6 @@
 #!/bin/csh
+#	$OpenBSD$
+
 #
 # DO NOT USE "csh -f"
 #

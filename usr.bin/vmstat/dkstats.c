@@ -1,3 +1,4 @@
+/*	$OpenBSD: dkstats.c,v 1.1 1996/05/10 23:19:27 thorpej Exp $	*/
 /*	$NetBSD: dkstats.c,v 1.1 1996/05/10 23:19:27 thorpej Exp $	*/
 
 /*

@@ -1,3 +1,4 @@
+/*	$OpenBSD: tip.h,v 1.4 1995/10/29 00:49:43 pk Exp $	*/
 /*	$NetBSD: tip.h,v 1.4 1995/10/29 00:49:43 pk Exp $	*/
 
 /*

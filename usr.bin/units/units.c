@@ -1,3 +1,4 @@
+/*	$OpenBSD: units.c,v 1.6 1996/04/06 06:01:03 thorpej Exp $	*/
 /*	$NetBSD: units.c,v 1.6 1996/04/06 06:01:03 thorpej Exp $	*/
 
 /*

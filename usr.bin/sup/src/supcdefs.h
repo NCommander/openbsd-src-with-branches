@@ -1,3 +1,5 @@
+/*	$OpenBSD$	*/
+
 /*
  * Copyright (c) 1992 Carnegie Mellon University
  * All Rights Reserved.
@@ -33,6 +35,9 @@
  *	across the network to save BandWidth
  *
  * $Log: supcdefs.h,v $
+ * Revision 1.1  1995/12/16 11:46:55  deraadt
+ * add sup to the tree
+ *
  * Revision 1.2  1993/08/04 17:46:16  brezak
  * Changes from nate for gzip'ed sup
  *

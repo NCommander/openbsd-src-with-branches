@@ -1,4 +1,4 @@
-#	$Id: Makefile,v 1.1 1995/12/16 11:47:05 deraadt Exp $
+#	$OpenBSD: Makefile,v 1.2 1995/12/17 12:58:09 deraadt Exp $
 
 PROG=	sup
 MAN=	sup.1

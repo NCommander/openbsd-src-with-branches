@@ -1,3 +1,5 @@
+/*	$OpenBSD$	*/
+
 /*
  * Copyright (c) 1991 Carnegie Mellon University
  * All Rights Reserved.

@@ -1,3 +1,4 @@
+/*	$OpenBSD: string.h,v 1.3 1995/09/28 10:34:40 tls Exp $	*/
 /*	$NetBSD: string.h,v 1.3 1995/09/28 10:34:40 tls Exp $	*/
 
 /*

@@ -1,3 +1,5 @@
+/*	$OpenBSD$	*/
+
 /*
  * Copyright (c) 1992 Carnegie Mellon University
  * All Rights Reserved.
@@ -26,6 +28,9 @@
  **********************************************************************
  * HISTORY
  * $Log: supcvers.c,v $
+ * Revision 1.1  1995/12/16 11:46:59  deraadt
+ * add sup to the tree
+ *
  * Revision 1.1.1.1  1993/05/21 14:52:19  cgd
  * initial import of CMU's SUP to NetBSD
  *

@@ -1,3 +1,4 @@
+/*	$OpenBSD: tftp.c,v 1.5 1995/04/29 05:55:25 cgd Exp $	*/
 /*	$NetBSD: tftp.c,v 1.5 1995/04/29 05:55:25 cgd Exp $	*/
 
 /*
@@ -37,7 +38,7 @@
 #if 0
 static char sccsid[] = "@(#)tftp.c	8.1 (Berkeley) 6/6/93";
 #endif
-static char rcsid[] = "$NetBSD: tftp.c,v 1.5 1995/04/29 05:55:25 cgd Exp $";
+static char rcsid[] = "$OpenBSD: tftp.c,v 1.5 1995/04/29 05:55:25 cgd Exp $";
 #endif /* not lint */
 
 /* Many bug fixes are from Jim Guyton <guyton@rand-unix> */

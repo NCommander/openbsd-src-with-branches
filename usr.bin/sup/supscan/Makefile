@@ -1,4 +1,4 @@
-#	$Id: Makefile,v 1.2 1995/12/17 12:58:17 deraadt Exp $
+#	$OpenBSD: Makefile,v 1.3 1996/02/03 10:05:06 deraadt Exp $
 
 PROG=	supscan
 NOMAN=

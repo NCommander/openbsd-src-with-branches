@@ -1,3 +1,4 @@
+/*	$OpenBSD: xlint.c,v 1.3 1995/10/23 14:29:30 jpo Exp $	*/
 /*	$NetBSD: xlint.c,v 1.3 1995/10/23 14:29:30 jpo Exp $	*/
 
 /*
@@ -32,7 +33,7 @@
  */
 
 #ifndef lint
-static char rcsid[] = "$NetBSD: xlint.c,v 1.3 1995/10/23 14:29:30 jpo Exp $";
+static char rcsid[] = "$OpenBSD: xlint.c,v 1.3 1995/10/23 14:29:30 jpo Exp $";
 #endif
 
 #include <sys/param.h>

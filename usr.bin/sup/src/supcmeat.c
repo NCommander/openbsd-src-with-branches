@@ -1,3 +1,5 @@
+/*	$OpenBSD$	*/
+
 /*
  * Copyright (c) 1992 Carnegie Mellon University
  * All Rights Reserved.
@@ -32,6 +34,9 @@
  *	across the network to save BandWidth
  *
  * $Log: supcmeat.c,v $
+ * Revision 1.1  1995/12/16 11:46:56  deraadt
+ * add sup to the tree
+ *
  * Revision 1.6  1995/10/29 23:54:47  christos
  * - runio fails when result != 0 not only < 0
  * - print vis-encoded file in the scanner.

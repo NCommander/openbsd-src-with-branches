@@ -1,4 +1,4 @@
-#	$Id: Makefile,v 1.3 1996/02/03 10:05:04 deraadt Exp $
+#	$OpenBSD: Makefile,v 1.4 1996/02/15 05:47:09 etheisen Exp $
 
 PROG=	supfilesrv
 MAN=	supservers.8

@@ -1,3 +1,4 @@
+/*	$OpenBSD: ww.h,v 1.8 1996/02/08 21:48:51 mycroft Exp $	*/
 /*	$NetBSD: ww.h,v 1.8 1996/02/08 21:48:51 mycroft Exp $	*/
 
 /*
