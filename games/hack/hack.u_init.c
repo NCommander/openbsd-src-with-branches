@@ -1,4 +1,4 @@
-/*	$OpenBSD: hack.u_init.c,v 1.6 2003/04/06 18:50:37 deraadt Exp $	*/
+/*	$OpenBSD: hack.u_init.c,v 1.7 2003/05/19 06:30:56 pjanzen Exp $	*/
 
 /*
  * Copyright (c) 1985, Stichting Centrum voor Wiskunde en Informatica,
@@ -62,7 +62,7 @@
  */
 
 #ifndef lint
-static const char rcsid[] = "$OpenBSD$";
+static const char rcsid[] = "$OpenBSD: hack.u_init.c,v 1.7 2003/05/19 06:30:56 pjanzen Exp $";
 #endif /* not lint */
 
 #include <ctype.h>
@@ -244,8 +244,7 @@ beginner:
 
 got_suffix:
 
-	(void) strncpy(pl_character, roles[i], PL_CSIZ-1);
-	pl_character[PL_CSIZ-1] = 0;
+	(void) strlcpy(pl_character, roles[i], sizeof pl_character);
 	flags.beginner = 1;
 	u = zerou;
 	u.usym = '@';
