@@ -1,4 +1,4 @@
-/*	$OpenBSD: xlint.c,v 1.5 1997/04/04 18:41:36 deraadt Exp $	*/
+/*	$OpenBSD: xlint.c,v 1.6 1999/05/26 16:04:40 espie Exp $	*/
 /*	$NetBSD: xlint.c,v 1.3 1995/10/23 14:29:30 jpo Exp $	*/
 
 /*
@@ -33,7 +33,7 @@
  */
 
 #ifndef lint
-static char rcsid[] = "$OpenBSD: xlint.c,v 1.5 1997/04/04 18:41:36 deraadt Exp $";
+static char rcsid[] = "$OpenBSD: xlint.c,v 1.6 1999/05/26 16:04:40 espie Exp $";
 #endif
 
 #include <sys/param.h>
@@ -241,7 +241,7 @@ terminate(signo)
 	if (currfn != NULL)
 		(void)remove(currfn);
 
-	exit(signo != 0 ? 1 : 0);
+	_exit(signo != 0 ? 1 : 0);
 }
 
 /*
