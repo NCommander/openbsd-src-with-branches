@@ -20,6 +20,7 @@ realinstall:
 	     ${DESTDIR}${BINDIR}/misc/termcap
 	install -c -o ${BINOWN} -g ${BINGRP} -m 444 ${.CURDIR}/map3270 \
 	     ${DESTDIR}${BINDIR}/misc/map3270
+	ln -fs ${BINDIR}/misc/termcap ${DESTDIR}/etc/termcap
 
 CLEANFILES+= fixed
 
