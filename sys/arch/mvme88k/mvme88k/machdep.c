@@ -91,7 +91,7 @@
 #include <machine/kcore.h>
 #include <machine/locore.h>
 #include <machine/m88100.h>  		/* DMT_VALID        */
-#include <machine/m882xx.h>  		/* CMMU stuff       */
+#include <machine/m8820x.h>  		/* CMMU stuff       */
 #include <machine/prom.h>
 #include <machine/reg.h>
 #include <machine/trap.h>

@@ -67,7 +67,7 @@
 #include <machine/cpus.h>
 #include <machine/cpu_number.h>
 #ifdef M88100
-#include <machine/m882xx.h>
+#include <machine/m8820x.h>
 #endif /* defined(MVME187) || defined(MVME188) */
 #ifdef M88110
 #include <machine/m88110.h>
