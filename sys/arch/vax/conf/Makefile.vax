@@ -25,11 +25,11 @@
 .if ${MACHINE} != "vax"
 CROSSDIR?=	/usr/cross/vax
 
-all:
+.BEGIN:
 	CBIN=${CROSSDIR}/usr/bin; export CBIN; \
 	MACHINE=vax MACHINE_ARCH=vax AR=$$CBIN/ar AS=$$CBIN/as \
 	CC=$$CBIN/cc HOSTCC=cc LD=$$CBIN/ld NM=$$CBIN/nm \
-	RANLIB=$$CBIN/ranlib STRIP=$$CBIN/strip SIZE=$$CBIN/size ${MAKE}
+	RANLIB=$$CBIN/ranlib STRIP=$$CBIN/strip SIZE=$$CBIN/size ${MAKE} $@
 .else
 
 CC?=	cc
