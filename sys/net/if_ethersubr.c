@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_ethersubr.c,v 1.54 2001/07/30 21:48:58 jason Exp $	*/
+/*	$OpenBSD: if_ethersubr.c,v 1.55 2001/08/19 15:28:24 jason Exp $	*/
 /*	$NetBSD: if_ethersubr.c,v 1.19 1996/05/07 02:40:30 thorpej Exp $	*/
 
 /*
@@ -1046,7 +1046,7 @@ ether_ifattach(ifp)
 		((struct arpcom *)ifp)->ac_enaddr[2] = 0xe1;
 		((struct arpcom *)ifp)->ac_enaddr[3] = 0xba;
 		((struct arpcom *)ifp)->ac_enaddr[4] = 0xd0;
-		((struct arpcom *)ifp)->ac_enaddr[5] = (u_char)arc4random();
+		((struct arpcom *)ifp)->ac_enaddr[5] = (u_char)random() & 0xff;
 	}
 		
 	ifp->if_type = IFT_ETHER;
