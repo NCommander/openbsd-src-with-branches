@@ -1,4 +1,4 @@
-/*	$OpenBSD: ip_ip4.h,v 1.6 1997/06/25 07:53:27 provos Exp $	*/
+/*	$OpenBSD: ip_ip4.h,v 1.7 1997/07/01 22:12:50 provos Exp $	*/
 
 /*
  * The author of this code is John Ioannidis, ji@tla.org,
@@ -36,6 +36,8 @@ struct ip4stat
     u_int32_t	ip4s_badlen;
     u_int32_t	ip4s_notip4;
     u_int32_t	ip4s_qfull;
+    u_int64_t   ip4s_ibytes;
+    u_int64_t   ip4s_obytes;
 };
 
 #define IP4_DEFAULT_TTL    0

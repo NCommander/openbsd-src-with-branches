@@ -1,4 +1,4 @@
-/*	$OpenBSD: ip_esp.h,v 1.7 1997/06/25 07:53:24 provos Exp $	*/
+/*	$OpenBSD: ip_esp.h,v 1.8 1997/07/11 23:37:56 provos Exp $	*/
 
 /*
  * The author of this code is John Ioannidis, ji@tla.org,
@@ -69,6 +69,8 @@ struct espstat
     u_int32_t	esps_input;	/* Input ESP packets */
     u_int32_t 	esps_output;	/* Output ESP packets */
     u_int32_t	esps_invalid;   /* Trying to use an invalid TDB */
+    u_int64_t	esps_ibytes;	/* input bytes */
+    u_int64_t   esps_obytes;	/* output bytes */
 };
 
 struct esp_old_xdata
