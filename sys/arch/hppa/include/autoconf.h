@@ -1,4 +1,4 @@
-/*	$OpenBSD: autoconf.h,v 1.6 1999/02/25 17:28:58 mickey Exp $	*/
+/*	$OpenBSD: autoconf.h,v 1.7 1999/04/20 19:52:20 mickey Exp $	*/
 
 /*
  * Copyright (c) 1998 Michael Shalayeff
@@ -64,6 +64,7 @@ int	mbprint __P((void *, const char *));
 int	mbsubmatch __P((struct device *, void *, void *));
 void	*cpu_intr_establish __P((int pri, int, int (*handler) __P((void *)),
 				void *arg, const char *name));
+int	clock_intr __P((void *));
 
 void	configure	__P((void));
 void	dumpconf	__P((void));
