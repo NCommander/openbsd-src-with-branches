@@ -1,4 +1,4 @@
-/*	$OpenBSD: gscbus.c,v 1.12 2001/07/30 14:15:59 art Exp $	*/
+/*	$OpenBSD: gscbus.c,v 1.13 2001/08/01 20:32:04 miod Exp $	*/
 
 /*
  * Copyright (c) 1998 Michael Shalayeff
@@ -141,9 +141,10 @@ gscattach(parent, self, aux)
 	sc->sc_intrmask = 0;
 	bzero(sc->sc_intrvs, sizeof(sc->sc_intrvs));
 
+#ifdef USELEDS
 	if (machine_ledaddr)
 		printf(": %sleds", machine_ledword? "word" : "");
-
+#endif
 	printf ("\n");
 
 	sc->sc_ih = cpu_intr_establish(IPL_IO, ga->ga_irq,
