@@ -1,6 +1,6 @@
-#	$OpenBSD: Makefile,v 1.2 2000/07/02 02:07:11 mickey Exp $
+#	$OpenBSD: Makefile,v 1.3 2000/07/20 00:34:29 espie Exp $
 
-.if ${MACHINE} == "alpha" || ${MACHINE} == "hppa"
+.if ${MACHINE} == "i386" || ${MACHINE} == "alpha" || ${MACHINE} == "hppa"
 
 PROG=	wsfontload
 SRCS=	wsfontload.c
