@@ -1,4 +1,4 @@
-/*	$OpenBSD: mpcpcibus.c,v 1.12 2002/09/06 13:44:03 drahn Exp $ */
+/*	$OpenBSD: mpcpcibus.c,v 1.14 2002/09/15 09:01:59 deraadt Exp $ */
 
 /*
  * Copyright (c) 1997 Per Fogelstrom
@@ -367,8 +367,10 @@ mpcpcibrattach(parent, self, aux)
 
 				sc->sc_membus_space.bus_base = 0;
 				sc->sc_membus_space.bus_reverse = 1;
+				sc->sc_membus_space.bus_io = 0;
 				sc->sc_iobus_space.bus_base = 0;
 				sc->sc_iobus_space.bus_reverse = 1;
+				sc->sc_iobus_space.bus_io = 1;
 
 				/* find io(config) base, flag == 0x01000000 */
 				found = 0;
