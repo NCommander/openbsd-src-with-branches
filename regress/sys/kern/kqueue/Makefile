@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.3 2002/03/02 21:48:05 art Exp $
+#	$OpenBSD: Makefile,v 1.4 2002/06/19 03:05:07 mickey Exp $
 
 PROG=	kqueue-test
 SRCS=	kqueue-pipe.c kqueue-fork.c main.c kqueue-process.c kqueue-random.c
@@ -12,7 +12,7 @@ kq-process: ${PROG}
 kq-random: ${PROG}
 	./${PROG} -r
 
-REGRESSTARGETS=kq-pipe kq-fork kq-process kq-random
-.PHONY: ${REGRESSTARGETS}
+REGRESS_TARGETS=kq-pipe kq-fork kq-process kq-random
+.PHONY: ${REGRESS_TARGETS}
 
 .include <bsd.regress.mk>

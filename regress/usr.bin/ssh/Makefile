@@ -1,6 +1,6 @@
-#	$OpenBSD: Makefile,v 1.15 2002/06/24 12:48:06 wcobb Exp $
+#	$OpenBSD: Makefile,v 1.16 2002/07/16 09:14:06 markus Exp $
 
-REGRESSTARGETS=	t1 t2 t3 t4 t5 t6 t7
+REGRESS_TARGETS=	t1 t2 t3 t4 t5 t6 t7
 
 CLEANFILES+=	t2.out t6.out1 t6.out2 t7.out t7.out.pub copy.1 copy.2
 
@@ -67,7 +67,7 @@ t7: t7.out
 	ssh-keygen -Bf t7.out > /dev/null
 
 .for t in ${LTESTS}
-REGRESSTARGETS+=t-${t}
+REGRESS_TARGETS+=t-${t}
 t-${t}:
 	sh ${.CURDIR}/test-exec.sh ${.OBJDIR} ${.CURDIR}/${t}.sh
 .endfor

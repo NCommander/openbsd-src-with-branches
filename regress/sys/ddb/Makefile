@@ -1,8 +1,8 @@
-#	$OpenBSD$
+#	$OpenBSD: Makefile,v 1.1 2002/06/11 09:12:38 niklas Exp $
 
-REGRESSTARGETS=		comment
+REGRESS_TARGETS=		comment
 .if (${MACHINE} == "i386")
-REGRESSTARGETS+=	size
+REGRESS_TARGETS+=	size
 .endif
 
 SRC=		${.CURDIR}/../../..

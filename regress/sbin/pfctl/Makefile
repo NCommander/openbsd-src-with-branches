@@ -1,10 +1,10 @@
-# $OpenBSD: Makefile,v 1.26 2002/07/21 01:37:57 deraadt Exp $
+# $OpenBSD: Makefile,v 1.27 2002/07/30 15:01:41 henning Exp $
 
 PFTESTS=1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24
 PFFAIL=1 2 3 4 5 6 7 8 9 10 11 12 13
 
 .for n in ${PFFAIL}
-REGRESSTARGETS+=pfail${n}
+REGRESS_TARGETS+=pfail${n}
 
 pfail${n}:
 	if pfctl -nv -f - < ${.CURDIR}/pfail${n}.in > /dev/null 2>&1 ; then \
@@ -14,7 +14,7 @@ pfail${n}:
 .endfor
 
 .for n in ${PFTESTS}
-REGRESSTARGETS+=pf${n}
+REGRESS_TARGETS+=pf${n}
 
 pf${n}:
 	pfctl -nv -f - < ${.CURDIR}/pf${n}.in | \
@@ -22,6 +22,6 @@ pf${n}:
 
 .endfor
 
-.PHONY: ${REGRESSTARGETS}
+.PHONY: ${REGRESS_TARGETS}
 
 .include <bsd.regress.mk>

@@ -1,4 +1,4 @@
-# $OpenBSD: Makefile.inc,v 1.4 2002/04/20 00:15:36 art Exp $
+# $OpenBSD: Makefile.inc,v 1.5 2002/06/17 04:48:24 marc Exp $
 # Copyright (c) 1993 Chris Provenzano, proven@athena.mit.edu
 
 LIBC_R?=	/usr/lib/libc_r.a
@@ -22,4 +22,4 @@ CFLAGS+=	-I${.CURDIR}/../include
 
 NOMAN=
 
-REGRESSMAXTIME?=30
+REGRESS_MAXTIME?=30
