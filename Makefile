@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.109 2004/12/25 16:17:33 grange Exp $
+#	$OpenBSD: Makefile,v 1.110 2005/01/09 00:14:32 espie Exp $
 
 #
 # For more information on building in tricky environments, please see
@@ -261,6 +261,8 @@ ${CROSSBINUTILS}:	${CROSSINCLUDES}
     ${TARGET} == "i386" || \
     ${TARGET} == "sparc64" || ${TARGET} == "sgi"
 USE_GCC3=yes
+.else
+USE_GCC3=no
 .endif
 
 ${CROSSGCC}:		${CROSSBINUTILS}
