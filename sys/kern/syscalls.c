@@ -380,4 +380,5 @@ char *syscallnames[] = {
 	"setresuid",			/* 282 = setresuid */
 	"getresgid",			/* 283 = getresgid */
 	"setresgid",			/* 284 = setresgid */
+	"mquery",			/* 285 = mquery */
 };

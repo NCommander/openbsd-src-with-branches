@@ -668,4 +668,7 @@
 /* syscall: "setresgid" ret: "int" args: "gid_t" "gid_t" "gid_t" */
 #define	SYS_setresgid	284
 
-#define	SYS_MAXSYSCALL	285
+/* syscall: "mquery" ret: "int" args: "int" "void **" "size_t" "int" "off_t" */
+#define	SYS_mquery	285
+
+#define	SYS_MAXSYSCALL	286

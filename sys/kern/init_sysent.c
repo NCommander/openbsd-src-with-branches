@@ -746,5 +746,7 @@ struct sysent sysent[] = {
 	    sys_getresgid },			/* 283 = getresgid */
 	{ 3, s(struct sys_setresgid_args),
 	    sys_setresgid },			/* 284 = setresgid */
+	{ 5, s(struct sys_mquery_args),
+	    sys_mquery },			/* 285 = mquery */
 };
 
