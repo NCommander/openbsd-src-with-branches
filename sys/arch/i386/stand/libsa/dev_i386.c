@@ -1,4 +1,4 @@
-/*	$OpenBSD: dev_i386.c,v 1.10 1997/04/23 06:49:07 mickey Exp $	*/
+/*	$OpenBSD: dev_i386.c,v 1.11 1997/05/29 04:35:29 mickey Exp $	*/
 
 /*
  * Copyright (c) 1996 Michael Shalayeff
@@ -113,7 +113,7 @@ putchar(c)
 	static int pos = 0;
 
 	switch(c) {
-	case '\b':	/* BS erases */
+	case '\177':	/* DEL erases */
 		putc('\b');
 		putc(' ');
 		putc('\b');

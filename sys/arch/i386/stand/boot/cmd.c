@@ -1,4 +1,4 @@
-/*	$OpenBSD: cmd.c,v 1.13 1997/04/28 07:39:00 weingart Exp $	*/
+/*	$OpenBSD: cmd.c,v 1.15 1997/05/31 15:48:25 mickey Exp $	*/
 
 /*
  * Copyright (c) 1997 Michael Shalayeff
@@ -272,7 +272,7 @@ readline(buf, to)
 			break;
 		case '\b':
 			if (p > buf) {
-				putchar('\b');
+				putchar('\177');
 				p--;
 				pe--;
 			}
