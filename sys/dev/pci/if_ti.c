@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_ti.c,v 1.10 2000/02/15 02:28:15 jason Exp $	*/
+/*	$OpenBSD: if_ti.c,v 1.11 2000/02/15 03:54:29 jason Exp $	*/
 
 /*
  * Copyright (c) 1997, 1998, 1999
@@ -1815,7 +1815,8 @@ void ti_rxeof(sc)
 		 * to vlan_input() instead of ether_input().
 		 */
 		if (have_tag) {
-			vlan_input_tag(eh, m, vlan_tag);
+			if (vlan_input_tag(eh, m, vlan_tag) < 0)
+				ifp->if_data.ifi_noproto++;
 			have_tag = vlan_tag = 0;
 			continue;
 		}
