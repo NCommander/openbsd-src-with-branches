@@ -1,4 +1,4 @@
-/*	$OpenBSD: md.c,v 1.4 2002/07/15 21:05:57 marc Exp $  */
+/*	$OpenBSD: md.c,v 1.5 2002/07/19 19:28:12 marc Exp $  */
 /*	$NetBSD: md.c,v 1.6 1994/11/30 06:20:42 phil Exp $  */
 /*
  * Copyright (c) 1993 Paul Kranenburg
@@ -191,7 +191,7 @@ get_disp(unsigned char *addr, int n)
 		Ivalue = (Ivalue << 8) | *addr;
 		break;
 	default:
-		errx(1, "get_disp: invalid argument %d\n", n);
+		errx(1, "get_disp: invalid argument %d", n);
 	}
 	return Ivalue;
 }

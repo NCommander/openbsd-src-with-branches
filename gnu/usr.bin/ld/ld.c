@@ -1,4 +1,4 @@
-/*	$OpenBSD: ld.c,v 1.28 2002/09/07 01:25:34 marc Exp $	*/
+/*	$OpenBSD: ld.c,v 1.29 2003/04/16 02:15:10 deraadt Exp $	*/
 /*	$NetBSD: ld.c,v 1.52 1998/02/20 03:12:51 jonathan Exp $	*/
 
 /*-
@@ -2630,7 +2630,7 @@ write_header(void)
 		flags = 0;
 
 	if (oldmagic && (flags & EX_DPMASK))
-		warnx("Cannot set flag in old magic headers\n");
+		warnx("Cannot set flag in old magic headers");
 
 	N_SET_FLAG (outheader, flags);
 

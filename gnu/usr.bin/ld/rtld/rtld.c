@@ -1,4 +1,4 @@
-/*	$OpenBSD: rtld.c,v 1.36 2003/01/19 23:35:02 espie Exp $	*/
+/*	$OpenBSD: rtld.c,v 1.37 2003/05/08 16:30:52 millert Exp $	*/
 /*	$NetBSD: rtld.c,v 1.43 1996/01/14 00:35:17 pk Exp $	*/
 /*
  * Copyright (c) 1993 Paul Kranenburg
@@ -1305,11 +1305,11 @@ findhint(char *name, int major, int minor, char *prefered_path)
 	while (1) {
 		/* Sanity check */
 		if (bp->hi_namex >= hheader->hh_strtab_sz) {
-			warnx("Bad name index: %#x\n", bp->hi_namex);
+			warnx("Bad name index: %#x", bp->hi_namex);
 			break;
 		}
 		if (bp->hi_pathx >= hheader->hh_strtab_sz) {
-			warnx("Bad path index: %#x\n", bp->hi_pathx);
+			warnx("Bad path index: %#x", bp->hi_pathx);
 			break;
 		}
 
