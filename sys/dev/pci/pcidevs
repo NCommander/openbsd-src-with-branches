@@ -1,4 +1,4 @@
-$OpenBSD: pcidevs,v 1.165 1999/07/24 19:45:18 jason Exp $
+$OpenBSD: pcidevs,v 1.166 1999/07/24 23:44:05 deraadt Exp $
 
 /*	$NetBSD: pcidevs,v 1.30 1997/06/24 06:20:24 thorpej Exp $ 	*/
 
@@ -721,6 +721,9 @@ product BUSLOGIC FLASHPOINT	0x8130	FlashPoint
 
 /* c't Magazin products */
 product C4T GPPCI		0x6773	GPPCI
+
+/* CCUBE products */
+product	CCUBE CINEMASTER	0x8888	Cinemaster C 3.0 DVD Decoder
 
 /* Chips and Technologies products */
 product CHIPS 64310		0x00b8	64310
