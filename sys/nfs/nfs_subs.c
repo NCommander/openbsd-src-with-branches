@@ -1,4 +1,4 @@
-/*	$OpenBSD: nfs_subs.c,v 1.24 1999/01/16 13:28:25 niklas Exp $	*/
+/*	$OpenBSD: nfs_subs.c,v 1.25 1999/02/06 23:07:45 millert Exp $	*/
 /*	$NetBSD: nfs_subs.c,v 1.27.4.3 1996/07/08 20:34:24 jtc Exp $	*/
 
 /*
@@ -1313,7 +1313,11 @@ nfs_loadattrcache(vpp, mdp, dposp, vaper)
 					np->n_size = vap->va_size;
 			} else
 				np->n_size = vap->va_size;
+#if defined(UVM)
+			uvm_vnp_setsize(vp, np->n_size);
+#else
 			vnode_pager_setsize(vp, (u_long)np->n_size);
+#endif
 		} else
 			np->n_size = vap->va_size;
 	}
@@ -1384,7 +1388,11 @@ nfs_getattrcache(vp, vaper)
 					np->n_size = vap->va_size;
 			} else
 				np->n_size = vap->va_size;
+#if defined(UVM)
+			uvm_vnp_setsize(vp, np->n_size);
+#else
 			vnode_pager_setsize(vp, (u_long)np->n_size);
+#endif
 		} else
 			np->n_size = vap->va_size;
 	}
