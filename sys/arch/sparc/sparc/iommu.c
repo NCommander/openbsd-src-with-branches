@@ -1,4 +1,4 @@
-/*	$OpenBSD: iommu.c,v 1.17 2002/10/06 22:06:15 art Exp $	*/
+/*	$OpenBSD: iommu.c,v 1.18 2002/10/07 18:35:56 mickey Exp $	*/
 /*	$NetBSD: iommu.c,v 1.13 1997/07/29 09:42:04 fair Exp $ */
 
 /*
@@ -133,7 +133,6 @@ iommu_attach(parent, self, aux)
 	vaddr_t va;
 	paddr_t iopte_pa;
 
-/*XXX-GCC!*/mmupcrsave=0;
 	iommu_sc = sc;
 	/*
 	 * XXX there is only one iommu, for now -- do not know how to
