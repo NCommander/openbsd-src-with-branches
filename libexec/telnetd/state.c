@@ -1457,8 +1457,6 @@ suboption()
 			if (envvarok(varp)) {
 				if (valp)
 					/* XXX allocation failure? */
-					syslog(LOG_DEBUG, "Setting %=%", 
-					       varp, valp);
 					(void)setenv(varp, valp, 1);
 				else
 					unsetenv(varp);
@@ -1481,7 +1479,6 @@ suboption()
 	if (envvarok(varp)) {
 		if (valp)
 			/* XXX allocation failure? */
-			syslog 
 			(void)setenv(varp, valp, 1);
 		else
 			unsetenv(varp);
