@@ -1,4 +1,4 @@
-/*	$OpenBSD: xlreg.h,v 1.2 2000/04/18 14:32:49 aaron Exp $	*/
+/*	$OpenBSD: xlreg.h,v 1.3 2000/07/01 03:19:14 aaron Exp $	*/
 
 /*
  * Copyright (c) 1997, 1998
@@ -579,6 +579,7 @@ struct xl_softc {
 	struct xl_list_data	*xl_ldata;
 	struct xl_chain_data	xl_cdata;
 	void (*intr_ack)	__P((struct xl_softc *));
+	void *			sc_sdhook;
 };
 
 #define xl_rx_goodframes(x) \
@@ -720,3 +721,4 @@ struct xl_stats {
 
 extern int xl_intr __P((void *));
 extern void xl_attach __P((struct xl_softc *));
+extern int xl_detach __P((struct xl_softc *));
