@@ -1,4 +1,4 @@
-/*	$OpenBSD: uipc_mbuf.c,v 1.19 1999/12/31 23:37:08 provos Exp $	*/
+/*	$OpenBSD: uipc_mbuf.c,v 1.20 2000/03/02 21:40:49 angelos Exp $	*/
 /*	$NetBSD: uipc_mbuf.c,v 1.15.4.1 1996/06/13 17:11:44 cgd Exp $	*/
 
 /*
@@ -1023,4 +1023,3 @@ m_apply(m, off, len, f, fstate)
 
 	return (0);
 }
-
