@@ -1,4 +1,4 @@
-/*	$OpenBSD: conf.c,v 1.12 2002/06/08 15:47:34 miod Exp $ */
+/*	$OpenBSD: conf.c,v 1.13 2002/07/10 22:08:47 mickey Exp $ */
 
 /*
  * Copyright (c) 1997 Per Fogelstrom
@@ -116,8 +116,6 @@ cdev_decl(xfs_dev);
 
 #include "pf.h"
 
-#include <altq/altqconf.h>
-
 #include "systrace.h"
 
 struct cdevsw cdevsw[] = {
@@ -203,7 +201,6 @@ struct cdevsw cdevsw[] = {
 	cdev_notdef(),			/* 68: i4b phone device */
 	cdev_notdef(),			/* 69: i4b phone device */
 	cdev_notdef(),			/* 70: i4b phone device */
-	cdev_altq_init(NALTQ,altq),	/* 71: ALTQ control interface */
 };
 int nchrdev = sizeof cdevsw / sizeof cdevsw[0];
 
