@@ -8,7 +8,7 @@
  */
 
 #include "includes.h"
-RCSID("$OpenBSD: session.c,v 1.25 2000/08/17 20:06:34 markus Exp $");
+RCSID("$OpenBSD: session.c,v 1.28 2000/08/20 18:42:40 millert Exp $");
 
 #include "xmalloc.h"
 #include "ssh.h"
@@ -845,12 +845,11 @@ do_child(const char *command, struct passwd * pw, const char *term,
 		child_set_env(&env, &envsize, "LOGNAME", pw->pw_name);
 		child_set_env(&env, &envsize, "HOME", pw->pw_dir);
 #ifdef HAVE_LOGIN_CAP
-		cp = login_getcapstr(lc, "path", _PATH_STDPATH, _PATH_STDPATH);
+		(void) setusercontext(lc, pw, pw->pw_uid, LOGIN_SETPATH);
+		child_set_env(&env, &envsize, "PATH", getenv("PATH"));
 #else
-		cp = _PATH_STDPATH;
+		child_set_env(&env, &envsize, "PATH", _PATH_STDPATH);
 #endif
-		child_set_env(&env, &envsize, "PATH", cp);
-		cp = NULL;
 
 		snprintf(buf, sizeof buf, "%.200s/%.50s",
 			 _PATH_MAILDIR, pw->pw_name);
