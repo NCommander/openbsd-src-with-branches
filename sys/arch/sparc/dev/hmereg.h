@@ -1,4 +1,4 @@
-/*	$OpenBSD: hmereg.h,v 1.9 2003/06/02 18:40:59 jason Exp $	*/
+/*	$OpenBSD: hmereg.h,v 1.10 2003/11/03 07:01:33 david Exp $	*/
 
 /*
  * Copyright (c) 1998 Jason L. Wright (jason@thought.net)
@@ -30,10 +30,6 @@
 #define HME_DEFAULT_IPKT_GAP0	16
 #define HME_DEFAULT_IPKT_GAP1	8
 #define HME_DEFAULT_IPKT_GAP2	4
-
-#define MC_POLY_BE		0x04c11db7UL	/* mcast crc, big endian */
-#define MC_POLY_LE		0xedb88320UL	/* mcast crc, little endian */
-
 
 /* global registers */
 struct hme_gr {
