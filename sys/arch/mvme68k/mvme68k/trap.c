@@ -1,4 +1,4 @@
-/*	$OpenBSD: trap.c,v 1.32 2001/06/27 04:19:17 art Exp $ */
+/*	$OpenBSD: trap.c,v 1.33 2001/07/25 13:25:32 art Exp $ */
 
 /*
  * Copyright (c) 1995 Theo de Raadt
@@ -295,7 +295,7 @@ dopanic:
 		if (kdb_trap(type, &frame))
 			return;
 #endif
-		regdump(&frame, 128);
+		regdump(&(frame.F_t), 128);
 		type &= ~T_USER;
 		if ((unsigned)type < trap_types)
 			panic(trap_type[type]);
