@@ -1,4 +1,4 @@
-/*	$OpenBSD: ehci.c,v 1.32 2004/10/31 10:29:45 dlg Exp $ */
+/*	$OpenBSD: ehci.c,v 1.33 2004/12/29 01:52:27 dlg Exp $ */
 /*	$NetBSD: ehci.c,v 1.66 2004/06/30 03:11:56 mycroft Exp $	*/
 
 /*
@@ -1230,7 +1230,7 @@ ehci_dump_sqtds(ehci_soft_qtd_t *sqtd)
 		ehci_dump_sqtd(sqtd);
 		stop = sqtd->qtd.qtd_next & htole32(EHCI_LINK_TERMINATE);
 	}
-	if (sqtd)
+	if (!stop)
 		printf("dump aborted, too many TDs\n");
 }
 
