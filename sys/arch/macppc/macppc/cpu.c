@@ -1,4 +1,4 @@
-/*	$OpenBSD: cpu.c,v 1.4 2002/03/21 17:37:57 drahn Exp $ */
+/*	$OpenBSD: cpu.c,v 1.5 2002/04/29 00:00:02 drahn Exp $ */
 
 /*
  * Copyright (c) 1997 Per Fogelstrom
@@ -135,11 +135,10 @@ cpuattach(parent, dev, aux)
 		sprintf(cpu_model, "7410");
 		break;
 	case MPC7450:
-		if ((pvr & 0xf) < 3) {
+		if ((pvr & 0xf) < 3)
 			sprintf(cpu_model, "7450");
-		} else {
+		 else
 			sprintf(cpu_model, "7451");
-		}
 		break;
 	case MPC7455:
 		sprintf(cpu_model, "7455");
