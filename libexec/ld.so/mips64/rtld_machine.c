@@ -1,4 +1,4 @@
-/*	$OpenBSD: rtld_machine.c,v 1.15 2004/05/25 18:07:20 mickey Exp $ */
+/*	$OpenBSD: rtld_machine.c,v 1.16 2004/08/06 09:38:29 pefo Exp $ */
 
 /*
  * Copyright (c) 1998-2004 Opsycon AB, Sweden.

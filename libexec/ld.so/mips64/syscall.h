@@ -1,4 +1,4 @@
-/*	$OpenBSD: syscall.h,v 1.12 2003/07/06 20:04:00 deraadt Exp $ */
+/*	$OpenBSD: syscall.h,v 1.13 2004/08/06 09:40:44 pefo Exp $ */
 
 /*
  * Copyright (c) 1998-2002 Opsycon AB, Sweden.

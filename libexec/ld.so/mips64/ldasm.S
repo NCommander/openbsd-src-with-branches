@@ -1,4 +1,4 @@
-/*	$OpenBSD: ldasm.S,v 1.4 2003/02/02 16:57:58 deraadt Exp $ */
+/*	$OpenBSD: ldasm.S,v 1.5 2003/06/09 16:10:04 deraadt Exp $ */
 
 /*
  * Copyright (c) 1998-2002 Opsycon AB, Sweden.
