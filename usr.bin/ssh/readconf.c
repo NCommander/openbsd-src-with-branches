@@ -12,7 +12,7 @@
  */
 
 #include "includes.h"
-RCSID("$OpenBSD: readconf.c,v 1.131 2004/05/27 00:50:13 dtucker Exp $");
+RCSID("$OpenBSD: readconf.c,v 1.132 2004/06/13 15:03:02 djm Exp $");
 
 #include "ssh.h"
 #include "xmalloc.h"
@@ -770,7 +770,7 @@ parse_int:
 
 	case oControlMaster:
 		intptr = &options->control_master;
-		goto parse_flag;
+		goto parse_yesnoask;
 
 	case oDeprecated:
 		debug("%s line %d: Deprecated option \"%s\"",
