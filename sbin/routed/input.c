@@ -1,4 +1,4 @@
-/*	$OpenBSD: input.c,v 1.4 1996/09/05 14:31:27 mickey Exp $	*/
+/*	$OpenBSD: input.c,v 1.5 1996/09/06 13:05:52 deraadt Exp $	*/
 
 /*
  * Copyright (c) 1983, 1988, 1993
@@ -36,7 +36,7 @@
 #if !defined(lint)
 static char sccsid[] = "@(#)input.c	8.1 (Berkeley) 6/5/93";
 #else
-static char rcsid[] = "$OpenBSD: input.c,v 1.4 1996/09/05 14:31:27 mickey Exp $";
+static char rcsid[] = "$OpenBSD: input.c,v 1.5 1996/09/06 13:05:52 deraadt Exp $";
 #endif
 
 #include "defs.h"
@@ -196,7 +196,7 @@ input(struct sockaddr_in *from,		/* received from this IP address */
 			 *
 			 * Only answer a router if we are a supplier
 			 * to keep an unwary host that is just starting
-			 * from picking us an a router.
+			 * from picking us as a router.
 			 */
 			if (n->n_family == RIP_AF_UNSPEC
 			    && n->n_metric == HOPCNT_INFINITY
