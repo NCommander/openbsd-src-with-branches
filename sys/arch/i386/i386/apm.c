@@ -1,4 +1,4 @@
-/*	$OpenBSD: apm.c,v 1.43 2001/01/02 16:16:50 mickey Exp $	*/
+/*	$OpenBSD: apm.c,v 1.44 2001/02/06 00:15:01 mickey Exp $	*/
 
 /*-
  * Copyright (c) 1998-2000 Michael Shalayeff. All rights reserved.
@@ -351,6 +351,9 @@ apm_resume(sc, regs)
 	/* lower bit in cx means pccard was powered down */
 	dopowerhooks(PWR_RESUME);
 	apm_record_event(sc, regs->bx);
+	
+	/* acknowledge any rtc interrupt we may have missed */
+	rtcdrain(NULL);
 }
 
 int

@@ -1,4 +1,4 @@
-/*	$OpenBSD: cpu.h,v 1.32 2001/01/05 04:27:24 marc Exp $	*/
+/*	$OpenBSD: cpu.h,v 1.33 2001/01/25 18:49:34 mickey Exp $	*/
 /*	$NetBSD: cpu.h,v 1.35 1996/05/05 19:29:26 christos Exp $	*/
 
 /*-
@@ -200,6 +200,7 @@ void	proc_trampoline __P((void));
 /* clock.c */
 void	initrtclock __P((void));
 void	startrtclock __P((void));
+void	rtcdrain __P((void *));
 
 /* npx.c */
 void	npxdrop __P((void));
