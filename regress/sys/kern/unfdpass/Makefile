@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.2 2001/01/29 02:05:57 niklas Exp $
+#	$OpenBSD: Makefile,v 1.3 2002/01/03 02:30:23 art Exp $
 #	$NetBSD: Makefile,v 1.3 1998/03/02 21:57:38 cgd Exp $
 
 PROG=	unfdpass
@@ -6,7 +6,7 @@ PROG=	unfdpass
 CLEANFILES+=file1 file2 output test-sock
 REGRESSTARGETS=do-unfdpass
 
-do-unfdpass:
+do-unfdpass: ${PROG}
 	./unfdpass > output
 	cmp -s ${.CURDIR}/expected output
 
