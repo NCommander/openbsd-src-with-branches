@@ -37,8 +37,6 @@
 #ifndef _IF_WI_IEEE_H
 #define _IF_WI_IEEE_H
 
-#pragma pack(1)
-
 /*
  * This header defines a simple command interface to the FreeBSD
  * WaveLAN/IEEE driver (wi) driver, which is used to set certain
@@ -709,7 +707,5 @@ struct wi_scan_p2_hdr {
 #define WI_RID_CCA_TIME		0xFDC4 /* clear chan assess time */
 #define WI_RID_MAC_PROC_DELAY	0xFDC5 /* MAC processing delay time */
 #define WI_RID_DATA_RATES	0xFDC6 /* supported data rates */
-
-#pragma pack()
 
 #endif

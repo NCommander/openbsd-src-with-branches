@@ -34,8 +34,6 @@
  *	From: if_wireg.h,v 1.8.2.2 2001/08/25 00:48:25 nsayer Exp $
  */
 
-#pragma pack(1)
-
 #define WI_TIMEOUT	50000	/* 10x XXX just a guess at a good value.  */
 
 #define WI_PORT0	0
@@ -613,4 +611,3 @@ struct wi_frame {
 #define WI_SNAPHDR_LEN		0x6
 #define WI_FCS_LEN		0x4
 
-#pragma pack()
