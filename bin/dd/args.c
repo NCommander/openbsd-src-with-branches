@@ -1,4 +1,4 @@
-/*	$OpenBSD: args.c,v 1.8 1998/07/09 18:39:23 deraadt Exp $	*/
+/*	$OpenBSD: args.c,v 1.9 2001/08/07 14:39:27 hugh Exp $	*/
 /*	$NetBSD: args.c,v 1.7 1996/03/01 01:18:58 jtc Exp $	*/
 
 /*-
@@ -42,7 +42,7 @@
 #if 0
 static char sccsid[] = "@(#)args.c	8.3 (Berkeley) 4/2/94";
 #else
-static char rcsid[] = "$OpenBSD: args.c,v 1.8 1998/07/09 18:39:23 deraadt Exp $";
+static char rcsid[] = "$OpenBSD: args.c,v 1.9 2001/08/07 14:39:27 hugh Exp $";
 #endif
 #endif /* not lint */
 
@@ -212,8 +212,6 @@ f_count(arg)
 {
 
 	cpy_cnt = get_bsz(arg);
-	if (!cpy_cnt)
-		terminate(0);
 }
 
 static void
