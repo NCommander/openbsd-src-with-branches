@@ -23,11 +23,14 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  *
- *	$OpenBSD: tun.h,v 1.3 2000/02/27 01:34:05 brian Exp $
+ *	$OpenBSD: tun.h,v 1.4 2000/02/27 01:38:29 brian Exp $
  */
 
 struct tun_data {
-  u_int32_t family;
+  union {
+    u_int32_t family;
+    u_int32_t timeout;
+  } header;
   u_char data[MAX_MRU];
 };
 
