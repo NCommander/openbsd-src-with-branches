@@ -1,4 +1,4 @@
-/*	$OpenBSD: pthread_private.h,v 1.38 2002/11/12 20:12:45 marc Exp $	*/
+/*	$OpenBSD: pthread_private.h,v 1.39 2002/12/08 04:06:01 marc Exp $	*/
 /*
  * Copyright (c) 1995-1998 John Birrell <jb@cimlogic.com.au>.
  * All rights reserved.
@@ -1095,6 +1095,7 @@ void	_waitq_clearactive(void);
 __dead void _thread_exit(const char *, int, const char *) __attribute__((__noreturn__));
 void    *_thread_cleanup(pthread_t);
 void    _thread_cleanupspecific(void);
+void	_thread_dump_data(const void *, int);
 void    _thread_dump_info(void);
 void    _thread_init(void);
 void    _thread_kern_sched(struct sigcontext *);
