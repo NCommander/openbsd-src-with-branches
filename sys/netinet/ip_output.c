@@ -1,4 +1,4 @@
-/*	$OpenBSD: ip_output.c,v 1.132 2001/06/29 18:36:17 beck Exp $	*/
+/*	$OpenBSD: ip_output.c,v 1.133 2001/07/05 16:45:55 jjbg Exp $	*/
 /*	$NetBSD: ip_output.c,v 1.28 1996/02/13 23:43:07 christos Exp $	*/
 
 /*
@@ -51,10 +51,6 @@
 #include <net/if_enc.h>
 #include <net/route.h>
 
-#if NPF > 0
-#include <net/pfvar.h>
-#endif
-
 #include <netinet/in.h>
 #include <netinet/in_systm.h>
 #include <netinet/ip.h>
@@ -67,6 +63,10 @@
 #include <netinet/tcp_timer.h>
 #include <netinet/tcp_var.h>
 #include <netinet/udp_var.h>
+
+#if NPF > 0
+#include <net/pfvar.h>
+#endif
 
 #ifdef vax
 #include <machine/mtpr.h>
