@@ -294,7 +294,7 @@ time_t cvs_datesec    (const char *, int, int);
 int    cvs_modetostr  (mode_t, char *, size_t);
 int    cvs_strtomode  (const char *, mode_t *);
 int    cvs_splitpath  (const char *, char *, size_t, char **);
-int    cvs_mkadmin    (struct cvs_file *, mode_t);
+int    cvs_mkadmin    (CVSFILE *, mode_t);
 int    cvs_cksum      (const char *, char *, size_t);
 int    cvs_exec       (int, char **, int []);
 int    cvs_getargv    (const char *, char **, int);
