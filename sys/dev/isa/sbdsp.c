@@ -1,4 +1,4 @@
-/*	$OpenBSD: sbdsp.c,v 1.5 1996/05/07 07:37:41 deraadt Exp $	*/
+/*	$OpenBSD: sbdsp.c,v 1.6 1996/05/26 00:27:29 deraadt Exp $	*/
 /*	$NetBSD: sbdsp.c,v 1.26 1996/05/12 23:53:38 mycroft Exp $	*/
 
 /*
@@ -649,7 +649,7 @@ sbdsp_round_blocksize(addr, blk)
 			if (sc->sc_orate > 8000 || sc->sc_irate > 8000)
 				blk = NBPG/2;
 		} else {
-			if (sc->sc_otc > SB_8K || sc->sc_itc < SB_8K)
+			if (sc->sc_otc > SB_8K || sc->sc_itc > SB_8K)
 				blk = NBPG/2;
 		}
 	}
