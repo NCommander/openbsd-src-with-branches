@@ -1,4 +1,4 @@
-/*	$OpenBSD: newsyslog.c,v 1.13 1998/04/25 18:12:58 mickey Exp $	*/
+/*	$OpenBSD: newsyslog.c,v 1.14 1998/09/24 03:36:58 millert Exp $	*/
 
 /*
  * Copyright (c) 1997, Jason Downs.  All rights reserved.
@@ -61,7 +61,7 @@ provided "as is" without express or implied warranty.
  */
 
 #ifndef lint
-static char rcsid[] = "$OpenBSD: newsyslog.c,v 1.13 1998/04/25 18:12:58 mickey Exp $";
+static char rcsid[] = "$OpenBSD: newsyslog.c,v 1.14 1998/09/24 03:36:58 millert Exp $";
 #endif /* not lint */
 
 #ifndef CONF
@@ -130,7 +130,7 @@ int	monitor = 0;		/* Don't do monitoring by default */
 char    *conf = CONF;           /* Configuration file to use */
 time_t  timenow;
 #define MIN_PID		3
-#define MAX_PID		30000
+#define MAX_PID		99999
 char    hostname[MAXHOSTNAMELEN]; /* hostname */
 char    *daytime;               /* timenow in human readable form */
 
