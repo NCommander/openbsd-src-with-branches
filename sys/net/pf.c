@@ -1,4 +1,4 @@
-/*	$OpenBSD: pf.c,v 1.93 2001/07/01 23:31:31 dugsong Exp $ */
+/*	$OpenBSD: pf.c,v 1.94 2001/07/02 19:18:40 provos Exp $ */
 
 /*
  * Copyright (c) 2001, Daniel Hartmeier
@@ -1280,8 +1280,10 @@ pf_send_icmp(struct mbuf *m, u_int8_t type, u_int8_t code)
 	if (mtag == NULL)
 		return;
 	m0 = m_copy(m, 0, M_COPYALL);
-	if (m0 == NULL)
+	if (m0 == NULL) {
+		m_tag_free(mtag);
 		return;
+	}
 	m_tag_prepend(m0, mtag);
 	icmp_error(m0, type, code, 0, 0);
 }
