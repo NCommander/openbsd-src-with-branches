@@ -23,7 +23,7 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 #include "includes.h"
-RCSID("$OpenBSD: auth2-chall.c,v 1.8.2.3 2002/06/22 07:23:16 miod Exp $");
+RCSID("$OpenBSD: auth2-chall.c,v 1.20 2002/06/30 21:59:45 deraadt Exp $");
 
 #include "ssh2.h"
 #include "auth.h"
@@ -263,7 +263,7 @@ input_userauth_info_response(int type, u_int32_t seq, void *ctxt)
 	if (nresp > 100)
 		fatal("input_userauth_info_response: too many replies");
 	if (nresp > 0) {
-		response = xmalloc(nresp * sizeof(char*));
+		response = xmalloc(nresp * sizeof(char *));
 		for (i = 0; i < nresp; i++)
 			response[i] = packet_get_string(NULL);
 	}

@@ -24,7 +24,7 @@
  */
 
 #include "includes.h"
-RCSID("$OpenBSD: monitor_mm.c,v 1.4.4.1 2002/05/17 00:03:23 miod Exp $");
+RCSID("$OpenBSD: monitor_mm.c,v 1.8 2002/08/02 14:43:15 millert Exp $");
 
 #include <sys/mman.h>
 
@@ -36,7 +36,14 @@ RCSID("$OpenBSD: monitor_mm.c,v 1.4.4.1 2002/05/17 00:03:23 miod Exp $");
 static int
 mm_compare(struct mm_share *a, struct mm_share *b)
 {
-	return ((char *)a->address - (char *)b->address);
+	long diff = (char *)a->address - (char *)b->address;
+
+	if (diff == 0)
+		return (0);
+	else if (diff < 0)
+		return (-1);
+	else
+		return (1);
 }
 
 RB_GENERATE(mmtree, mm_share, next, mm_compare)
@@ -153,8 +160,10 @@ mm_malloc(struct mm_master *mm, size_t size)
 
 	if (size == 0)
 		fatal("mm_malloc: try to allocate 0 space");
+	if (size > SIZE_T_MAX - MM_MINSIZE + 1)
+		fatal("mm_malloc: size too big");
 
-	size = ((size + MM_MINSIZE - 1) / MM_MINSIZE) * MM_MINSIZE;
+	size = ((size + (MM_MINSIZE - 1)) / MM_MINSIZE) * MM_MINSIZE;
 
 	RB_FOREACH(mms, mmtree, &mm->rb_free) {
 		if (mms->size >= size)

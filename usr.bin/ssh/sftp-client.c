@@ -28,7 +28,7 @@
 /* XXX: copy between two remote sites */
 
 #include "includes.h"
-RCSID("$OpenBSD: sftp-client.c,v 1.18.2.3 2002/06/22 07:23:17 miod Exp $");
+RCSID("$OpenBSD: sftp-client.c,v 1.35 2002/09/11 22:41:49 djm Exp $");
 
 #include <sys/queue.h>
 
@@ -412,12 +412,6 @@ do_lsreaddir(struct sftp_conn *conn, char *path, int printflag,
 	xfree(handle);
 
 	return(0);
-}
-
-int
-do_ls(struct sftp_conn *conn, char *path)
-{
-	return(do_lsreaddir(conn, path, 1, NULL));
 }
 
 int
@@ -1091,7 +1085,7 @@ do_upload(struct sftp_conn *conn, char *local_path, char *remote_path,
 			debug3("In write loop, ack for %u %u bytes at %llu",
 			   ack->id, ack->len, (unsigned long long)ack->offset);
 			++ackid;
-			free(ack);
+			xfree(ack);
 		}
 		offset += len;
 	}
