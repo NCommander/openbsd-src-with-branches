@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_wi_obio.c,v 1.11 2004/10/20 13:41:51 deraadt Exp $	*/
+/*	$OpenBSD: if_wi_obio.c,v 1.12 2004/11/23 21:12:23 fgsch Exp $	*/
 
 /*
  * Copyright (c) 1997, 1998, 1999
@@ -61,6 +61,7 @@
 #endif
 
 #include <net80211/ieee80211.h>
+#include <net80211/ieee80211_ioctl.h>
 
 #include <machine/bus.h>
 #include <machine/autoconf.h>
