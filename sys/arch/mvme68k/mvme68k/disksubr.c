@@ -1,4 +1,4 @@
-/*	$OpenBSD: disksubr.c,v 1.9 1997/02/12 02:15:29 deraadt Exp $ */
+/*	$OpenBSD: disksubr.c,v 1.10 1997/02/15 14:47:59 rahnds Exp $ */
 
 /*
  * Copyright (c) 1995 Dale Rahn.
@@ -611,8 +611,8 @@ cputobsdlabel(lp, clp)
 
 		oldcksum = nlp->d_checksum;
 		nlp->d_checksum = 0;
-printf("old chksum = %x new %x\n", oldcksum, dkcksum(nlp));
 #ifdef DEBUG
+printf("old chksum = %x new %x\n", oldcksum, dkcksum(nlp));
 	printlp(nlp, "lp disklabel");
 	printclp(clp, "clp disklabel");
 #endif
