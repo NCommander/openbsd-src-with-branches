@@ -1,4 +1,4 @@
-/*	$OpenBSD: machdep.c,v 1.86 2002/10/24 19:37:00 fgsch Exp $	*/
+/*	$OpenBSD: machdep.c,v 1.87 2002/11/07 04:39:14 art Exp $	*/
 /*	$NetBSD: machdep.c,v 1.85 1997/09/12 08:55:02 pk Exp $ */
 
 /*
@@ -266,7 +266,8 @@ cpu_startup()
 	 */
 	dvma_base = CPU_ISSUN4M ? DVMA4M_BASE : DVMA_BASE;
 	dvma_end = CPU_ISSUN4M ? DVMA4M_END : DVMA_END;
-	phys_map = uvm_map_create(pmap_kernel(), dvma_base, dvma_end, 1);
+	phys_map = uvm_map_create(pmap_kernel(), dvma_base, dvma_end,
+	    VM_MAP_INTRSAFE);
 	if (phys_map == NULL)
 		panic("unable to create DVMA map");
 	/*

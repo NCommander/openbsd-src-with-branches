@@ -1,4 +1,4 @@
-/*	$OpenBSD: dvma.c,v 1.14 2001/11/06 19:53:16 miod Exp $	*/
+/*	$OpenBSD: dvma.c,v 1.15 2002/01/17 01:10:11 miod Exp $	*/
 /*	$NetBSD: dvma.c,v 1.5 1996/11/20 18:57:29 gwr Exp $	*/
 
 /*-
@@ -82,7 +82,7 @@ dvma_init()
 	 * remainder will be used as the DVMA page pool.
 	 */
 	phys_map = uvm_map_create(pmap_kernel(),
-		DVMA_SPACE_START, DVMA_SPACE_END, 1);
+	    DVMA_SPACE_START, DVMA_SPACE_END, VM_MAP_INTRSAFE);
 	if (phys_map == NULL)
 		panic("unable to create DVMA map");
 
