@@ -1,4 +1,4 @@
-/*	$OpenBSD: cp0access.S,v 1.3 2004/08/10 20:15:47 deraadt Exp $ */
+/*	$OpenBSD: cp0access.S,v 1.4 2004/09/10 08:58:27 pefo Exp $ */
 
 /*
  * Copyright (c) 2001-2003 Opsycon AB  (www.opsycon.se / www.opsycon.com)
@@ -165,6 +165,12 @@ LEAF(setsr, 0)
 	jr	ra
 	move	v0, a0
 END(setsr)
+
+LEAF(getsr, 0)
+	mfc0	v0, COP_0_STATUS_REG
+	jr	ra
+	nop
+END(getsr)
 
 LEAF(cp0_get_prid, 0)
 	mfc0	v0, COP_0_PRID

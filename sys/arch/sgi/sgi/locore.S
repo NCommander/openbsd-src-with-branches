@@ -1,4 +1,4 @@
-/*	$OpenBSD: locore.S,v 1.3 2004/08/10 19:16:18 deraadt Exp $ */
+/*	$OpenBSD: locore.S,v 1.4 2004/09/09 22:11:39 pefo Exp $ */
 
 /*
  * Copyright (c) 2001-2004 Opsycon AB  (www.opsycon.se / www.opsycon.com)
@@ -47,7 +47,11 @@ idle_stack:
 	.globl	kernel_text
 kernel_text = start
 start:
-	mtc0	zero, COP_0_STATUS_REG	# Disable interrupts
+	mfc0    v0, COP_0_STATUS_REG
+	li	v1, ~SR_INT_ENAB
+	and	v0, v1
+	mtc0    v0, COP_0_STATUS_REG    # disable all interrupts
+
 	mtc0	zero, COP_0_CAUSE_REG	# Clear soft interrupts
 
 /*
