@@ -1,11 +1,11 @@
 /*
-
-Shared versions of debug(), log(), etc.
-
+ * 
+ * Shared versions of debug(), log(), etc.
+ * 
 */
 
 #include "includes.h"
-RCSID("$OpenBSD: log.c,v 1.3 1999/11/22 21:02:38 markus Exp $");
+RCSID("$OpenBSD: log.c,v 1.4 1999/11/23 22:25:54 markus Exp $");
 
 #include "ssh.h"
 #include "xmalloc.h"
