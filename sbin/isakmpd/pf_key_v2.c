@@ -1,4 +1,4 @@
-/*      $OpenBSD: pf_key_v2.c,v 1.129 2003/05/15 00:28:53 ho Exp $  */
+/*      $OpenBSD: pf_key_v2.c,v 1.130 2003/05/18 18:16:34 ho Exp $  */
 /*	$EOM: pf_key_v2.c,v 1.79 2000/12/12 00:33:19 niklas Exp $	*/
 
 /*
@@ -623,7 +623,7 @@ pf_key_v2_open (void)
  cleanup:
   if (pf_key_v2_socket != -1)
     {
-      monitor_close (pf_key_v2_socket);
+      close (pf_key_v2_socket);
       pf_key_v2_socket = -1;
     }
   if (ret)
