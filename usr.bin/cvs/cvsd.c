@@ -636,8 +636,6 @@ static void
 cvsd_child_loop(void)
 {
 	int ret, timeout;
-	uid_t uid;
-	gid_t gid;
 	struct pollfd pfd[1];
 
 	pfd[0].fd = cvsd_privfd;
