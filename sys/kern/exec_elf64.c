@@ -1,4 +1,4 @@
-/*	$OpenBSD: exec_elf64.c,v 1.11 2001/01/22 14:25:03 art Exp $	*/
+/*	$OpenBSD: exec_elf64.c,v 1.12 2001/02/03 23:32:13 art Exp $	*/
 
 /*
  * Copyright (c) 1996 Per Fogelstrom
@@ -268,7 +268,7 @@ elf64_load_psection(vcset, vp, ph, addr, size, prot)
 	 */
 	if (*addr != ELF64_NO_ADDR) {
 		if (ph->p_align > 1) {
-			*addr = ELF_ROUND(*addr + ph->p_align, ph->p_align);
+			*addr = ELF_ROUND(*addr, ph->p_align);
 			uaddr = ELF_TRUNC(ph->p_vaddr, ph->p_align);
 		} else
 			uaddr = ph->p_vaddr;
