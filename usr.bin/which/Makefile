@@ -1,5 +1,7 @@
-#	$OpenBSD: Makefile,v 1.3 1996/12/08 14:32:39 downsj Exp $
+#	$OpenBSD: Makefile,v 1.4 1997/02/21 18:34:57 millert Exp $
 
 PROG=	which
+MAN=	which.1 whereis.1
+LINKS=	${BINDIR}/which ${BINDIR}/whereis
 
 .include <bsd.prog.mk>
