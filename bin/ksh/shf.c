@@ -1,4 +1,4 @@
-/*	$OpenBSD: shf.c,v 1.10 2004/12/18 22:35:41 millert Exp $	*/
+/*	$OpenBSD: shf.c,v 1.11 2004/12/20 11:34:26 otto Exp $	*/
 
 /*
  *  Shell file I/O routines
@@ -754,7 +754,7 @@ shf_smprintf(const char *fmt, ...)
 	return shf_sclose(&shf); /* null terminates */
 }
 
-#undef FP  			/* if you want floating point stuff */
+#undef FP			/* if you want floating point stuff */
 
 #define BUF_SIZE	128
 #define FPBUF_SIZE	(DMAXEXP+16)/* this must be >

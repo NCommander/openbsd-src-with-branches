@@ -1,4 +1,4 @@
-/*	$OpenBSD: emacs.c,v 1.34 2004/12/23 11:29:02 jsg Exp $	*/
+/*	$OpenBSD: emacs.c,v 1.35 2005/02/17 18:57:04 otto Exp $	*/
 
 /*
  *  Emacs-like command line editing and history
@@ -60,10 +60,11 @@ struct x_defbindings {
  * 1 = complete   M-Esc
  * 2 = list       M-?
  */
-typedef enum { CT_LIST, 	/* list the possible completions */
-		 CT_COMPLETE,	/* complete to longest prefix */
-		 CT_COMPLIST	/* complete and then list (if non-exact) */
-	} Comp_type;
+typedef enum {
+	CT_LIST,	/* list the possible completions */
+	CT_COMPLETE,	/* complete to longest prefix */
+	CT_COMPLIST	/* complete and then list (if non-exact) */
+} Comp_type;
 
 /* { from 4.9 edit.h */
 /*
