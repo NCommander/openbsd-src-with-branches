@@ -1,4 +1,4 @@
-/*	$OpenBSD: login.c,v 1.17 1997/01/27 20:44:14 dm Exp $	*/
+/*	$OpenBSD: login.c,v 1.18 1997/02/04 03:39:11 flipk Exp $	*/
 /*	$NetBSD: login.c,v 1.13 1996/05/15 23:50:16 jtc Exp $	*/
 
 /*-
@@ -44,7 +44,7 @@ static char copyright[] =
 #if 0
 static char sccsid[] = "@(#)login.c	8.4 (Berkeley) 4/2/94";
 #endif
-static char rcsid[] = "$OpenBSD: login.c,v 1.17 1997/01/27 20:44:14 dm Exp $";
+static char rcsid[] = "$OpenBSD: login.c,v 1.18 1997/02/04 03:39:11 flipk Exp $";
 #endif /* not lint */
 
 /*
@@ -372,7 +372,8 @@ main(argc, argv)
 		(void)printf("Logging in with home = \"/\".\n");
 	}
 
-	quietlog = access(_PATH_HUSHLOGIN, F_OK) == 0;
+	quietlog = ((strcmp(pwd->pw_shell, "/sbin/nologin") == 0) ||
+			(access(_PATH_HUSHLOGIN, F_OK) == 0));
 
 	seteuid(0);
 	setegid(0);	/* XXX use a saved gid instead? */
