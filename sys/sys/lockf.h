@@ -1,4 +1,4 @@
-/*	$OpenBSD: lockf.h,v 1.5 2003/06/02 23:28:21 millert Exp $	*/
+/*	$OpenBSD: lockf.h,v 1.6 2004/01/14 19:34:05 grange Exp $	*/
 /*	$NetBSD: lockf.h,v 1.5 1994/06/29 06:44:33 cgd Exp $	*/
 
 /*
@@ -53,6 +53,7 @@ struct lockf {
 	struct	lockf *lf_next;	 /* A pointer to the next lock on this inode */
 	struct	locklist lf_blkhd;	/* The list of blocked locks */
 	TAILQ_ENTRY(lockf) lf_block; /* A request waiting for a lock */
+	uid_t	lf_uid;		/* User ID responsible */
 };
 
 /* Maximum length of sleep chains to traverse to try and detect deadlock. */
