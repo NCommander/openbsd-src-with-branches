@@ -1,4 +1,4 @@
-/*	$OpenBSD: network.c,v 1.4 1997/12/16 22:07:38 deraadt Exp $	*/
+/*	$OpenBSD: network.c,v 1.5 1998/03/12 04:57:36 art Exp $	*/
 /*	$NetBSD: network.c,v 1.5 1996/02/28 21:04:06 thorpej Exp $	*/
 
 /*
@@ -35,6 +35,7 @@
  */
 
 #include "telnet_locl.h"
+#include <err.h>
 
 Ring		netoring, netiring;
 unsigned char	netobuf[2*BUFSIZ], netibuf[BUFSIZ];
