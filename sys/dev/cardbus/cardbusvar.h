@@ -1,4 +1,4 @@
-/*	$OpenBSD */
+/*	$OpenBSD$	*/
 /*	$NetBSD: cardbusvar.h,v 1.17 2000/04/02 19:11:37 mycroft Exp $	*/
 
 /*
