@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.6 2003/03/04 18:08:21 deraadt Exp $
+#	$OpenBSD: Makefile,v 1.7 2003/03/04 20:24:49 deraadt Exp $
 
 TOP=	${.CURDIR}/..
 
@@ -12,7 +12,7 @@ ${CDROM}:
 	-rm -rf ${.OBJDIR}/cd-dir
 	-@mkdir ${.OBJDIR}/cd-dir
 	mkhybrid -A "OpenBSD ${OSREV} sparc64 bootonly CD" \
-	    -P "Copyright (c) 2003 Theo de Raadt, The OpenBSD project" \
+	    -P "Copyright (c) 2004 Theo de Raadt, The OpenBSD project" \
 	    -p "Theo de Raadt <deraadt@openbsd.org>" \
 	    -V "OpenBSD/sparc64 ${OSREV} boot-only CD" \
 	    -o ${.OBJDIR}/${CDROM} ${.OBJDIR}/cd-dir
