@@ -1,4 +1,4 @@
-/*	$OpenBSD: kern_descrip.c,v 1.60 2002/10/15 01:27:31 nordin Exp $	*/
+/*	$OpenBSD: kern_descrip.c,v 1.61 2002/11/08 18:38:00 art Exp $	*/
 /*	$NetBSD: kern_descrip.c,v 1.42 1996/03/30 22:24:38 christos Exp $	*/
 
 /*
@@ -855,20 +855,22 @@ restart:
  * Build a new filedesc structure.
  */
 struct filedesc *
-fdinit(p)
-	struct proc *p;
+fdinit(struct proc *p)
 {
-	register struct filedesc0 *newfdp;
-	register struct filedesc *fdp = p->p_fd;
+	struct filedesc0 *newfdp;
 	extern int cmask;
 
 	newfdp = pool_get(&fdesc_pool, PR_WAITOK);
 	bzero(newfdp, sizeof(struct filedesc0));
-	newfdp->fd_fd.fd_cdir = fdp->fd_cdir;
-	VREF(newfdp->fd_fd.fd_cdir);
-	newfdp->fd_fd.fd_rdir = fdp->fd_rdir;
-	if (newfdp->fd_fd.fd_rdir)
-		VREF(newfdp->fd_fd.fd_rdir);
+	if (p != NULL) {
+		struct filedesc *fdp = p->p_fd;
+
+		newfdp->fd_fd.fd_cdir = fdp->fd_cdir;
+		VREF(newfdp->fd_fd.fd_cdir);
+		newfdp->fd_fd.fd_rdir = fdp->fd_rdir;
+		if (newfdp->fd_fd.fd_rdir)
+			VREF(newfdp->fd_fd.fd_rdir);
+	}
 	lockinit(&newfdp->fd_fd.fd_lock, PLOCK, "fdexpand", 0, 0);
 
 	/* Create the file descriptor table. */
