@@ -1,4 +1,4 @@
-/*	$OpenBSD: diffdir.c,v 1.8 2003/06/25 03:39:23 tedu Exp $	*/
+/*	$OpenBSD: diffdir.c,v 1.9 2003/06/25 03:44:49 deraadt Exp $	*/
 
 /*
  * Copyright (C) Caldera International Inc.  2001-2002.
@@ -105,7 +105,8 @@ diffdir(char **argv)
 		strlcat(title, diffargv[i], sizeof title);
 		strlcat(title, " ", sizeof title);
 	}
-	for (etitle = title; *etitle; etitle++);
+	for (etitle = title; *etitle; etitle++)
+		;
 	setfile(&file1, &efile1, file1);
 	setfile(&file2, &efile2, file2);
 	argv[0] = file1;
