@@ -1,4 +1,4 @@
-/*	$OpenBSD: pcvt_out.c,v 1.20 2000/04/02 00:03:11 aaron Exp $	*/
+/*	$OpenBSD: pcvt_out.c,v 1.24 2000/06/30 15:27:25 aaron Exp $	*/
 
 /*
  * Copyright (c) 1992, 1995 Hellmuth Michaelis and Joerg Wunsch.
@@ -216,12 +216,10 @@ sput (u_char *s, U_char kernel, int len, int page)
 			}
 			if(svsp->lnm) {
 				svsp->cur_offset -= svsp->col;
-				svsp->cur_offset += svsp->maxcol;
 				svsp->col = 0;
 			}
-			else {
-				svsp->cur_offset += svsp->maxcol;
-			}
+			svsp->row = svsp->cur_offset / svsp->maxcol;
+			svsp->cur_offset += svsp->maxcol;
 			check_scroll(svsp);
 			break;
 
@@ -358,6 +356,7 @@ sput (u_char *s, U_char kernel, int len, int page)
 			if (svsp->lastchar && svsp->m_awm &&
 			    (svsp->lastrow == svsp->row))
 			{
+				svsp->row = svsp->cur_offset / svsp->maxcol;
 				svsp->cur_offset++;
 				svsp->col = 0;
 				svsp->lastchar = 0;
@@ -1304,7 +1303,7 @@ check_scroll(struct video_state *svsp)
 	{
 		/* we write within scroll region */
 
-		if(svsp->cur_offset >= ((svsp->scrr_end + 1) * svsp->maxcol))
+		if(svsp->row + 1 == svsp->scrr_len)
 		{
 			/* the following piece of code has to be protected */
 			/* from trying to switch to another virtual screen */
