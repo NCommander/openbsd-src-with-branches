@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: srt0.S,v 1.1.2.2 1996/12/03 13:13:51 mickey Exp $	*/
 /*	$NetBSD: srt0.c,v 1.3 1994/10/27 04:21:59 cgd Exp $	*/
 
 /*-
@@ -75,15 +75,10 @@ _esym:		.long	0
 start:
 	pushl	%ebp
 	movl	%esp, %ebp
-	/* First, reset the PSL.
+
+	/* First, reset the PSL. */
 	pushl	$PSL_MBO
 	popfl
-	*/
-
-	movl	$0xb8000, %ebx
-	movl	$0x32323434, (%ebx)
-
-	hlt
 
 	movl    8(%ebp), %eax
 	movl	%eax, _boothowto
@@ -111,8 +106,9 @@ start:
 	movl	%esp,%eax
 	subl	%edx,%eax
 	pushl	%edx
+	pushl	0
 	pushl	%esp
-	call	_bzero
+	call	_memset
 
 	#call	_kbdreset	/* resets keyboard and gatea20 brain damage */
 	movl	%esi,%esp
