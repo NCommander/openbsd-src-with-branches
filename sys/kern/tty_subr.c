@@ -550,6 +550,21 @@ catq(from, to)
 {
 	int c;
 
+	if (from->c_cc == 0)	/* nothing to move */
+		return;
+
+	/*
+	 * if `to' queue is empty and the queues are the same max size,
+	 * it is more efficient to just swap the clist structures.
+	 */
+	if (to->c_cc == 0 && from->c_cn == to->c_cn) {
+		struct clist tmp;
+
+		tmp = *from;
+		*from = *to;
+		*to = tmp;
+	}
+
 	while ((c = getc(from)) != -1)
 		putc(c, to);
 }
