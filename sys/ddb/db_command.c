@@ -521,7 +521,7 @@ db_boot_sync_cmd(addr, haddr, count, modif)
 	db_expr_t count;
 	char *modif;
 {
-	boot(RB_AUTOBOOT);
+	boot(RB_AUTOBOOT | RB_TIMEBAD);
 }
 
 void
@@ -531,7 +531,7 @@ db_boot_crash_cmd(addr, haddr, count, modif)
 	db_expr_t count;
 	char *modif;
 {
-	boot(RB_NOSYNC | RB_DUMP);
+	boot(RB_NOSYNC | RB_DUMP | RB_TIMEBAD);
 }
 
 void
@@ -541,5 +541,5 @@ db_boot_dump_cmd(addr, haddr, count, modif)
 	db_expr_t count;
 	char *modif;
 {
-	boot(RB_DUMP);
+	boot(RB_DUMP | RB_TIMEBAD);
 }
