@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_atu.c,v 1.4 2004/11/09 21:08:49 dlg Exp $ */
+/*	$OpenBSD: if_atu.c,v 1.5 2004/11/10 21:45:23 dlg Exp $ */
 /*
  * Copyright (c) 2003, 2004
  *	Daan Vreeken <Danovitsch@Vitsch.net>.  All rights reserved.
@@ -1718,8 +1718,6 @@ USB_ATTACH(atu)
 			sc->atu_ed[ATU_ENDPT_TX] = ed->bEndpointAddress;
 		}
 	}
-
-	s = splnet();
 
 	/* read device config & get MAC address */
 	err = atu_get_card_config(sc);
