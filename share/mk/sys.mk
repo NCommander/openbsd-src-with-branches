@@ -1,6 +1,12 @@
-#	$OpenBSD: sys.mk,v 1.8 1996/11/23 00:28:38 niklas Exp $
+#	$OpenBSD: sys.mk,v 1.9 1996/11/24 02:47:42 niklas Exp $
 #	$NetBSD: sys.mk,v 1.27 1996/04/10 05:47:19 mycroft Exp $
 #	@(#)sys.mk	5.11 (Berkeley) 3/13/91
+
+.if defined(EXTRA_SYS_MK_INCLUDES)
+.for __SYS_MK_INCLUDE in ${EXTRA_SYS_MK_INCLUDES}
+.include ${__SYS_MK_INCLUDE}
+.endfor
+.endif
 
 unix=		We run OpenBSD.
 
