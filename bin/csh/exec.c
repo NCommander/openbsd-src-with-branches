@@ -1,4 +1,4 @@
-/*	$OpenBSD: exec.c,v 1.8 2002/02/16 21:27:06 millert Exp $	*/
+/*	$OpenBSD: exec.c,v 1.9 2002/02/19 19:39:35 millert Exp $	*/
 /*	$NetBSD: exec.c,v 1.9 1996/09/30 20:03:54 christos Exp $	*/
 
 /*-
@@ -38,7 +38,7 @@
 #if 0
 static char sccsid[] = "@(#)exec.c	8.3 (Berkeley) 5/23/95";
 #else
-static char rcsid[] = "$OpenBSD: exec.c,v 1.8 2002/02/16 21:27:06 millert Exp $";
+static char rcsid[] = "$OpenBSD: exec.c,v 1.9 2002/02/19 19:39:35 millert Exp $";
 #endif
 #endif /* not lint */
 
@@ -702,7 +702,7 @@ tellmewhat(lexp, str)
 	    if (str == NULL) {
 	    if (aliased)
 		    prlex(cshout, lexp);
-	    (void) fprintf(cshout, "%s: shell built-in command.\n", 
+	    (void) fprintf(cshout, "%s: shell built-in command.\n",
 			   vis_str(sp->word));
 	    }
 	    else

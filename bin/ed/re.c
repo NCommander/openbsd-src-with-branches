@@ -1,4 +1,4 @@
-/*	$OpenBSD: re.c,v 1.7 1998/01/21 03:51:50 millert Exp $	*/
+/*	$OpenBSD: re.c,v 1.8 2001/01/16 03:04:46 deraadt Exp $	*/
 /*	$NetBSD: re.c,v 1.14 1995/03/21 09:04:48 cgd Exp $	*/
 
 /* re.c: This file contains the regular expression interface routines for
@@ -33,7 +33,7 @@
 #if 0
 static char *rcsid = "@(#)re.c,v 1.6 1994/02/01 00:34:43 alm Exp";
 #else
-static char rcsid[] = "$OpenBSD: re.c,v 1.7 1998/01/21 03:51:50 millert Exp $";
+static char rcsid[] = "$OpenBSD: re.c,v 1.8 2001/01/16 03:04:46 deraadt Exp $";
 #endif
 #endif /* not lint */
 
@@ -44,7 +44,7 @@ extern int patlock;
 
 char errmsg[MAXPATHLEN + 40] = "";
 
-/* get_compiled_pattern: return pointer to compiled pattern from command 
+/* get_compiled_pattern: return pointer to compiled pattern from command
    buffer */
 pattern_t *
 get_compiled_pattern()

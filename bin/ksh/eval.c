@@ -1,4 +1,4 @@
-/*	$OpenBSD: eval.c,v 1.8 1999/01/10 17:55:02 millert Exp $	*/
+/*	$OpenBSD: eval.c,v 1.9 1999/06/15 01:18:33 millert Exp $	*/
 
 /*
  * Expansion - quoting, separation, substitution, globbing
@@ -430,7 +430,7 @@ expand(cp, wp, f)
 					char *s = Xrestpos(ds, dp, st->base);
 
 					errorf("%s: %s", st->var->name,
-					    dp == s ? 
+					    dp == s ?
 					      "parameter null or not set"
 					    : (debunk(s, s), s));
 				    }

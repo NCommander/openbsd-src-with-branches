@@ -1,4 +1,4 @@
-/*	$OpenBSD: syn.c,v 1.11 1998/10/29 04:09:21 millert Exp $	*/
+/*	$OpenBSD: syn.c,v 1.12 1999/06/15 01:18:36 millert Exp $	*/
 
 /*
  * shell parser (C version)
@@ -802,7 +802,7 @@ compile(s)
  *	a=[ab]
  *	$ x=typeset; $x a=[ab]; echo "$a"
  *	a=a
- *	$ 
+ *	$
  */
 static int
 assign_command(s)

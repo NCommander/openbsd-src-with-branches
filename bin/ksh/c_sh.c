@@ -1,4 +1,4 @@
-/*	$OpenBSD: c_sh.c,v 1.12 1999/06/15 01:18:33 millert Exp $	*/
+/*	$OpenBSD: c_sh.c,v 1.13 1999/07/14 13:37:23 millert Exp $	*/
 
 /*
  * built-in Bourne commands
@@ -603,7 +603,7 @@ c_brkcont(wp)
 		 */
 		if (n == quit) {
 			warningf(TRUE, "%s: cannot %s", wp[0], wp[0]);
-			return 0; 
+			return 0;
 		}
 		/* POSIX says if n is too big, the last enclosing loop
 		 * shall be used.  Doesn't say to print an error but we
@@ -850,7 +850,7 @@ c_exec(wp)
 				fd_clexec(i);
 #endif /* KSH */
 		}
-		e->savefd = NULL; 
+		e->savefd = NULL;
 	}
 	return 0;
 }

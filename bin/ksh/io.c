@@ -1,4 +1,4 @@
-/*	$OpenBSD: io.c,v 1.9 2000/08/20 22:14:32 millert Exp $	*/
+/*	$OpenBSD: io.c,v 1.10 2001/09/19 10:58:07 mpech Exp $	*/
 
 /*
  * shell buffered IO and formatted output
@@ -365,7 +365,7 @@ check_fd(name, mode, emsgp)
 		}
 		fl &= O_ACCMODE;
 #ifdef OS2
-		if (mode == W_OK ) { 
+		if (mode == W_OK ) {
 		       if (setmode(fd, O_TEXT) == -1) {
 				if (emsgp)
 					*emsgp = "couldn't set write mode";
@@ -375,7 +375,7 @@ check_fd(name, mode, emsgp)
 	      		if (setmode(fd, O_BINARY) == -1) {
 				if (emsgp)
 					*emsgp = "couldn't set read mode";
-				return -1; 
+				return -1;
 			}
 #else /* OS2 */
 		/* X_OK is a kludge to disable this check for dups (x<&1):

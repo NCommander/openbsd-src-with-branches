@@ -1,4 +1,4 @@
-/*	$OpenBSD: c_ulimit.c,v 1.7 1999/01/08 20:24:57 millert Exp $	*/
+/*	$OpenBSD: c_ulimit.c,v 1.8 1999/06/15 01:18:33 millert Exp $	*/
 
 /*
 	ulimit -- handle "ulimit" builtin
@@ -196,7 +196,7 @@ c_ulimit(wp)
 					val = limit.rlim_cur;
 				else if (how & HARD)
 					val = limit.rlim_max;
-			} else 
+			} else
 #endif /* HAVE_SETRLIMIT */
 #ifdef HAVE_ULIMIT
 			{

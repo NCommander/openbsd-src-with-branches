@@ -1,4 +1,4 @@
-/*	$OpenBSD: lex.c,v 1.14 1999/06/15 01:18:34 millert Exp $	*/
+/*	$OpenBSD: lex.c,v 1.15 2002/01/16 01:28:54 millert Exp $	*/
 
 /*
  * lexical analysis and source input
@@ -218,7 +218,7 @@ yylex(cf)
 				if (isalnum(c)) {
 					*wp++ = CHAR, *wp++ = '\\';
 					*wp++ = CHAR, *wp++ = c;
-				} else 
+				} else
 #endif
 				if (c) /* trailing \ is lost */
 					*wp++ = QCHAR, *wp++ = c;
