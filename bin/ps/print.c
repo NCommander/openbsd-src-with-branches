@@ -210,7 +210,7 @@ state(k, ve)
 		break;
 
 	case SSLEEP:
-		if (flag & P_SINTR)	/* interuptable (long) */
+		if (flag & P_SINTR)	/* interruptible (long) */
 			*cp = p->p_slptime >= MAXSLP ? 'I' : 'S';
 		else
 			*cp = 'D';
