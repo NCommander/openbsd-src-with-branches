@@ -1,4 +1,4 @@
-/*	$OpenBSD: pom.c,v 1.6 1998/09/06 12:29:25 pjanzen Exp $	*/
+/*	$OpenBSD: pom.c,v 1.7 2002/02/16 21:27:11 millert Exp $	*/
 /*    $NetBSD: pom.c,v 1.6 1996/02/06 22:47:29 jtc Exp $      */
 
 /*
@@ -46,7 +46,7 @@ static char copyright[] =
 #if 0
 static char sccsid[] = "@(#)pom.c	8.1 (Berkeley) 5/31/93";
 #else
-static char rcsid[] = "$OpenBSD: pom.c,v 1.6 1998/09/06 12:29:25 pjanzen Exp $";
+static char rcsid[] = "$OpenBSD: pom.c,v 1.7 2002/02/16 21:27:11 millert Exp $";
 #endif
 #endif /* not lint */
 
@@ -102,10 +102,6 @@ main(argc, argv)
 	double days, today, tomorrow;
 	int cnt;
 	char buf[1024];
-
-	/* revoke */
-	setegid(getgid());
-	setgid(getgid());
 
 	if (argc > 1) {
 		tmpt = parsetime(argv[1]);

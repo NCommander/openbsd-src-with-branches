@@ -1,4 +1,4 @@
-/*	$OpenBSD: morse.c,v 1.7 1998/12/13 07:53:03 pjanzen Exp $	*/
+/*	$OpenBSD: morse.c,v 1.8 2002/02/16 21:27:11 millert Exp $	*/
 
 /*
  * Copyright (c) 1988, 1993
@@ -43,7 +43,7 @@ static char copyright[] =
 #if 0
 static char sccsid[] = "@(#)morse.c	8.1 (Berkeley) 5/31/93";
 #else
-static char rcsid[] = "$OpenBSD: morse.c,v 1.7 1998/12/13 07:53:03 pjanzen Exp $";
+static char rcsid[] = "$OpenBSD: morse.c,v 1.8 2002/02/16 21:27:11 millert Exp $";
 #endif
 #endif /* not lint */
 
@@ -129,10 +129,6 @@ main(argc, argv)
 {
 	int ch;
 	char *p;
-
-	/* revoke */
-	setegid(getgid());
-	setgid(getgid());
 
 	while ((ch = getopt(argc, argv, "dsh")) != -1)
 		switch((char)ch) {

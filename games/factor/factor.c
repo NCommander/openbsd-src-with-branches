@@ -1,4 +1,4 @@
-/*	$OpenBSD: factor.c,v 1.11 2001/10/24 14:32:56 deraadt Exp $	*/
+/*	$OpenBSD: factor.c,v 1.12 2002/02/16 21:27:09 millert Exp $	*/
 /*	$NetBSD: factor.c,v 1.5 1995/03/23 08:28:07 cgd Exp $	*/
 
 /*
@@ -47,7 +47,7 @@ static char copyright[] =
 #if 0
 static char sccsid[] = "@(#)factor.c	8.4 (Berkeley) 5/4/95";
 #else
-static char rcsid[] = "$OpenBSD: factor.c,v 1.11 2001/10/24 14:32:56 deraadt Exp $";
+static char rcsid[] = "$OpenBSD: factor.c,v 1.12 2002/02/16 21:27:09 millert Exp $";
 #endif
 #endif /* not lint */
 
@@ -106,10 +106,6 @@ main(argc, argv)
 	u_int64_t val;
 	int ch;
 	char *p, buf[100];		/* > max number of digits. */
-
-	/* revoke privs */
-	setegid(getgid());
-	setgid(getgid());
 
 	while ((ch = getopt(argc, argv, "")) != -1)
 		switch (ch) {

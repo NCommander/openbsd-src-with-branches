@@ -1,4 +1,4 @@
-/*	$OpenBSD: driver.c,v 1.10 2001/02/13 11:55:10 pjanzen Exp $	*/
+/*	$OpenBSD: driver.c,v 1.11 2002/02/16 21:27:10 millert Exp $	*/
 /*	$NetBSD: driver.c,v 1.5 1997/10/20 00:37:16 lukem Exp $	*/
 /*
  *  Hunt
@@ -73,10 +73,6 @@ main(ac, av)
 	int		fd;
 
 	First_arg = av[0];
-
-	/* Revoke privs: */
-	setegid(getgid());
-	setgid(getgid());
 
 	config();
 

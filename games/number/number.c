@@ -1,4 +1,4 @@
-/*	$OpenBSD: number.c,v 1.7 1999/09/25 15:52:20 pjanzen Exp $	*/
+/*	$OpenBSD: number.c,v 1.8 2002/02/16 21:27:11 millert Exp $	*/
 
 /*
  * Copyright (c) 1988, 1993, 1994
@@ -43,7 +43,7 @@ static char copyright[] =
 #if 0
 static char sccsid[] = "@(#)number.c	8.3 (Berkeley) 5/4/95";
 #else
-static char rcsid[] = "$OpenBSD: number.c,v 1.7 1999/09/25 15:52:20 pjanzen Exp $";
+static char rcsid[] = "$OpenBSD: number.c,v 1.8 2002/02/16 21:27:11 millert Exp $";
 #endif
 #endif /* not lint */
 
@@ -98,10 +98,6 @@ main(argc, argv)
 {
 	int ch, first;
 	char line[LINELEN];
-
-	/* revoke */
-	setegid(getgid());
-	setgid(getgid());
 
 	lflag = 0;
 	while ((ch = getopt(argc, argv, "hl")) != -1)

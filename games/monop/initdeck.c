@@ -1,4 +1,4 @@
-/*	$OpenBSD: initdeck.c,v 1.8 2000/11/10 15:33:03 provos Exp $	*/
+/*	$OpenBSD: initdeck.c,v 1.9 2002/02/16 21:27:10 millert Exp $	*/
 /*	$NetBSD: initdeck.c,v 1.3 1995/03/23 08:34:43 cgd Exp $	*/
 
 /*
@@ -44,7 +44,7 @@ static char copyright[] =
 #if 0
 static char sccsid[] = "@(#)initdeck.c	8.1 (Berkeley) 5/31/93";
 #else
-static char rcsid[] = "$OpenBSD: initdeck.c,v 1.8 2000/11/10 15:33:03 provos Exp $";
+static char rcsid[] = "$OpenBSD: initdeck.c,v 1.9 2002/02/16 21:27:10 millert Exp $";
 #endif
 #endif /* not lint */
 
@@ -87,10 +87,6 @@ main(ac, av)
 	char	*av[];
 {
 	int n;
-
-	/* revoke */
-	setegid(getgid());
-	setgid(getgid());
 
 	getargs(ac, av);
 	if ((inf = fopen(infile, "r")) == NULL)
