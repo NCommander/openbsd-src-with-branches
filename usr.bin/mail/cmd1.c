@@ -1,4 +1,4 @@
-/*	$OpenBSD: cmd1.c,v 1.16 2000/06/30 16:00:18 millert Exp $	*/
+/*	$OpenBSD: cmd1.c,v 1.17 2001/01/16 05:36:08 millert Exp $	*/
 /*	$NetBSD: cmd1.c,v 1.9 1997/07/09 05:29:48 mikel Exp $	*/
 
 /*-
@@ -38,7 +38,7 @@
 #if 0
 static char sccsid[] = "@(#)cmd1.c	8.2 (Berkeley) 4/20/95";
 #else
-static char rcsid[] = "$OpenBSD: cmd1.c,v 1.16 2000/06/30 16:00:18 millert Exp $";
+static char rcsid[] = "$OpenBSD: cmd1.c,v 1.17 2001/01/16 05:36:08 millert Exp $";
 #endif
 #endif /* not lint */
 
@@ -344,14 +344,8 @@ type1(msgvec, cmd, doign, page)
 {
 	int nlines, *ip;
 	struct message *mp;
-	char *cp;
-	FILE *obuf;
-
-#if __GNUC__
-	/* Avoid siglongjmp clobbering */
-	(void)&cp;
-	(void)&obuf;
-#endif
+	char * volatile cp;
+	FILE * volatile obuf;
 
 	obuf = stdout;
 	if (sigsetjmp(pipestop, 1))
