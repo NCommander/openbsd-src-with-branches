@@ -1,4 +1,4 @@
-/*	$OpenBSD: i82365_isa.c,v 1.10 2000/06/23 16:53:08 aaron Exp $	*/
+/*	$OpenBSD: i82365_isa.c,v 1.11 2000/06/28 17:48:10 aaron Exp $	*/
 /*	$NetBSD: i82365_isa.c,v 1.11 1998/06/09 07:25:00 thorpej Exp $	*/
 
 /*
@@ -222,7 +222,7 @@ pcic_isa_attach(parent, self, aux)
 			}
 		}
 	} else
-		printf("%s: no irq, ");
+		printf("%s: no irq, ", sc->dev.dv_xname);
 
 	printf("polling enabled\n", sc->dev.dv_xname);
 	if (sc->poll_established == 0) {
