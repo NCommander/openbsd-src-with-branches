@@ -1,4 +1,4 @@
-/*	$OpenBSD: disksubr.c,v 1.5 1997/08/08 21:46:59 niklas Exp $	*/
+/*	$OpenBSD: disksubr.c,v 1.6 1997/10/02 00:59:12 deraadt Exp $	*/
 /*	$NetBSD: disksubr.c,v 1.21 1996/05/03 19:42:03 christos Exp $	*/
 
 /*
@@ -212,6 +212,7 @@ donot:
 				case DOSPTYP_FAT16S:
 				case DOSPTYP_FAT16B:
 				case DOSPTYP_FAT16C:
+				case DOSPTYP_FAT32:
 					pp->p_fstype = FS_MSDOS;
 					n++;
 					break;
