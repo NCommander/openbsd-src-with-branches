@@ -1,4 +1,4 @@
-/*	$OpenBSD: bwtwo.c,v 1.4 2002/08/12 16:18:59 jason Exp $	*/
+/*	$OpenBSD: bwtwo.c,v 1.5 2002/09/10 03:18:59 jason Exp $	*/
 
 /*
  * Copyright (c) 2002 Jason L. Wright (jason@thought.net)
@@ -291,6 +291,7 @@ fail_vid:
 	bus_space_unmap(sa->sa_bustag, sc->sc_ctrl_regs, BWTWO_CTRL_SIZE);
 fail_ctrl:
 fail:
+;
 }
 
 int
