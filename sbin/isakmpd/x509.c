@@ -1,4 +1,4 @@
-/*	$OpenBSD: x509.c,v 1.57 2001/06/07 07:35:15 angelos Exp $	*/
+/*	$OpenBSD: x509.c,v 1.58 2001/06/22 16:21:43 provos Exp $	*/
 /*	$EOM: x509.c,v 1.54 2001/01/16 18:42:16 ho Exp $	*/
 
 /*
@@ -233,7 +233,7 @@ x509_generate_kn (int id, X509 *cert)
   if (((tm = X509_get_notBefore (cert)) == NULL) ||
       (tm->type != V_ASN1_UTCTIME && tm->type != V_ASN1_GENERALIZEDTIME))
     {
-      tt = time ((time_t) NULL);
+      tt = time (0);
       strftime (before, 14, "%G%m%d%H%M%S", localtime (&tt));
       timecomp = "LocalTimeOfDay";
     }
