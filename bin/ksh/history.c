@@ -1,4 +1,4 @@
-/*	$OpenBSD: history.c,v 1.16 2002/11/27 20:53:25 pvalchev Exp $	*/
+/*	$OpenBSD: history.c,v 1.17 2003/02/28 09:45:09 jmc Exp $	*/
 
 /*
  * command history
@@ -93,8 +93,9 @@ c_fc(wp)
 			if (strcmp(p, "-") == 0)
 				sflag++;
 			else {
-				editor = str_nsave(p, strlen(p) + 4, ATEMP);
-				strcat(editor, " $_");
+				size_t len = strlen(p) + 4;
+				editor = str_nsave(p, len, ATEMP);
+				strlcat(editor, " $_", len);
 			}
 			break;
 		  case 'g': /* non-at&t ksh */
