@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.15 1998/07/01 01:58:05 deraadt Exp $
+#	$OpenBSD: Makefile,v 1.1 1998/11/09 06:16:07 millert Exp $
 
 TOP=		${.CURDIR}/..
 
@@ -20,10 +20,10 @@ STRIP?=		strip
 GZIP?=		gzip
 GZIPFLAGS?=	-9f
 
+.include "Makefile.inc"
+
 all: ${CBIN} ${IMAGE} bsd.rd
 	@echo "all done"
-
-.include "Makefile.inc"
 
 DISKTYPE=       rdroot
 NBLKS=          6144
