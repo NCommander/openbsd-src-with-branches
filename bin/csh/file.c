@@ -1,4 +1,4 @@
-/*	$OpenBSD: file.c,v 1.3 1996/12/04 17:46:07 millert Exp $	*/
+/*	$OpenBSD: file.c,v 1.4 1997/07/25 18:58:06 mickey Exp $	*/
 /*	$NetBSD: file.c,v 1.11 1996/11/08 19:34:37 christos Exp $	*/
 
 /*-
@@ -38,7 +38,7 @@
 #if 0
 static char sccsid[] = "@(#)file.c	8.2 (Berkeley) 3/19/94";
 #else
-static char rcsid[] = "$OpenBSD: file.c,v 1.3 1996/12/04 17:46:07 millert Exp $";
+static char rcsid[] = "$OpenBSD: file.c,v 1.4 1997/07/25 18:58:06 mickey Exp $";
 #endif
 #endif /* not lint */
 
@@ -642,7 +642,7 @@ tenex(inputline, inputline_size)
 	    --str_end;		/* wipeout trailing cmd Char */
 	*str_end = '\0';
 	/*
-	 * Find LAST occurence of a delimiter in the inputline. The word start
+	 * Find LAST occurrence of a delimiter in the inputline. The word start
 	 * is one Character past it.
 	 */
 	for (word_start = str_end; word_start > inputline; --word_start)
