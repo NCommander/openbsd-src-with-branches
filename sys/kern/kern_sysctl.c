@@ -60,7 +60,6 @@
 
 #include <sys/mount.h>
 #include <sys/syscallargs.h>
-#include <dev/rndvar.h>
 
 #ifdef DDB
 #include <ddb/db_var.h>
@@ -298,9 +297,6 @@ kern_sysctl(name, namelen, oldp, oldlenp, newp, newlen, p)
 		return (sysctl_int(oldp, oldlenp, newp, newlen, &sominconn));
 	case KERN_USERMOUNT:
 		return (sysctl_int(oldp, oldlenp, newp, newlen, &usermount));
-	case KERN_RND:
-		return (sysctl_rdstruct(oldp, oldlenp, newp, &rndstats,
-		    sizeof(rndstats)));
 	default:
 		return (EOPNOTSUPP);
 	}
