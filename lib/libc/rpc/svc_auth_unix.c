@@ -28,7 +28,7 @@
  */
 
 #if defined(LIBC_SCCS) && !defined(lint)
-static char *rcsid = "$OpenBSD: svc_auth_unix.c,v 1.2 1996/07/20 06:12:42 deraadt Exp $";
+static char *rcsid = "$OpenBSD: svc_auth_unix.c,v 1.3 1996/08/19 08:31:53 tholo Exp $";
 #endif /* LIBC_SCCS and not lint */
 
 /*
@@ -44,6 +44,7 @@ static char *rcsid = "$OpenBSD: svc_auth_unix.c,v 1.2 1996/07/20 06:12:42 deraad
 
 #include <stdio.h>
 #include <rpc/rpc.h>
+#include <string.h>
 
 /*
  * Unix longhand authenticator
