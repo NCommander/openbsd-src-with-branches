@@ -1,4 +1,4 @@
-/*	$OpenBSD: lcore_access.S,v 1.5 2004/09/09 22:11:38 pefo Exp $ */
+/*	$OpenBSD: lcore_access.S,v 1.6 2004/09/10 08:58:27 pefo Exp $ */
 
 /*
  * Copyright (c) 2001-2003 Opsycon AB  (www.opsycon.se / www.opsycon.com)
@@ -41,8 +41,6 @@
 	.set	mips3
 
 	.set	noreorder		# Noreorder is default style!
-
-#define	ITLBNOPFIX	nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;
 
 /*
  * Primitives

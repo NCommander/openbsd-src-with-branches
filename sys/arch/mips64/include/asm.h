@@ -1,4 +1,4 @@
-/*	$OpenBSD: asm.h,v 1.3 2004/08/10 21:10:56 pefo Exp $ */
+/*	$OpenBSD: asm.h,v 1.4 2004/09/09 22:21:41 pefo Exp $ */
 
 /*
  * Copyright (c) 2001-2002 Opsycon AB  (www.opsycon.se / www.opsycon.com)
@@ -29,6 +29,12 @@
 #define _MIPS64_ASM_H
 
 #include <machine/regdef.h>
+
+#ifdef NEED_OLD_RM7KFIX
+#define ITLBNOPFIX      nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;
+#else
+#define ITLBNOPFIX      nop
+#endif
 
 #define	_MIPS_ISA_MIPS1	1	/* R2000/R3000 */
 #define	_MIPS_ISA_MIPS2	2	/* R4000/R6000 */
