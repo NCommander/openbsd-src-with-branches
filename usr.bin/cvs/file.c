@@ -898,7 +898,7 @@ cvs_file_lget(const char *path, int flags, CVSFILE *parent)
 			cfp->cf_cvstat = CVS_FST_ADDED;
 		else {
 			/* check last modified time */
-			if (ent->ce_mtime == (time_t)st.st_mtime)
+			if (ent->ce_mtime >= (time_t)st.st_mtime)
 				cfp->cf_cvstat = CVS_FST_UPTODATE;
 			else
 				cfp->cf_cvstat = CVS_FST_MODIFIED;
