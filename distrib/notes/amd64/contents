@@ -1,4 +1,4 @@
-dnl	$OpenBSD: contents,v 1.10 2004/06/07 11:14:15 mickey Exp $
+dnl	$OpenBSD: contents,v 1.11 2004/06/22 00:42:11 matthieu Exp $
 TopPart
 
 dnl uncomment as stuff becomes available
@@ -41,7 +41,7 @@ dnl
 dnl In addition, the "tools/" directory contains some utilities that might be
 dnl useful for the installation.
 
-DistributionDescription(ten)
+DistributionDescription(eleven)
 
 OpenBSDbase(36412569,110755840,shared)
 
