@@ -1,4 +1,4 @@
-/*	$OpenBSD: who.c,v 1.5 1997/07/28 17:38:53 flipk Exp $	*/
+/*	$OpenBSD: who.c,v 1.6 1997/08/20 05:37:21 denny Exp $	*/
 /*	$NetBSD: who.c,v 1.4 1994/12/07 04:28:49 jtc Exp $	*/
 
 /*
@@ -47,7 +47,7 @@ static char copyright[] =
 #if 0
 static char sccsid[] = "@(#)who.c	8.1 (Berkeley) 6/6/93";
 #endif
-static char rcsid[] = "$OpenBSD: who.c,v 1.5 1997/07/28 17:38:53 flipk Exp $";
+static char rcsid[] = "$OpenBSD: who.c,v 1.6 1997/08/20 05:37:21 denny Exp $";
 #endif /* not lint */
 
 #include <sys/types.h>
@@ -232,7 +232,7 @@ output(up)
 		if (now == 0)
 			time(&now);
 		
-		strncpy (line, up->ut_line, sizeof (up->ut_line));
+		strncpy(line, up->ut_line, sizeof (up->ut_line));
 		line[sizeof (up->ut_line)] = '\0';
 
 		if (stat(line, &sb) == 0) {
