@@ -1,4 +1,4 @@
-/*	$OpenBSD: apm.c,v 1.20 1998/04/27 23:39:31 deraadt Exp $	*/
+/*	$OpenBSD: apm.c,v 1.21 1998/07/18 02:40:33 marc Exp $	*/
 
 /*-
  * Copyright (c) 1995 John T. Kohl.  All rights reserved.
@@ -208,6 +208,7 @@ apm_power_print (sc, regs)
 	struct apm_softc *sc;
 	struct apmregs *regs;
 {
+#if !defined(APM_NOPRINT)
 	sc->batt_life = BATT_LIFE(regs);
 	if (BATT_LIFE(regs) != APM_BATT_LIFE_UNKNOWN) {
 		printf("%s: battery life expectancy %d%%\n",
@@ -275,6 +276,7 @@ apm_power_print (sc, regs)
 	}
 
 	printf("\n");
+#endif
 }
 
 /*
