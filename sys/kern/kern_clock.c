@@ -1,5 +1,5 @@
 /*	$OpenBSD: kern_clock.c,v 1.9 1996/04/21 22:26:53 deraadt Exp $	*/
-/*	$NetBSD: kern_clock.c,v 1.31 1996/03/15 07:56:00 mycroft Exp $	*/
+/*	$NetBSD: kern_clock.c,v 1.33 1996/04/22 01:38:19 christos Exp $	*/
 
 /*-
  * Copyright (c) 1982, 1986, 1991, 1993
@@ -643,8 +643,7 @@ hardclock(frame)
 			clock_count = 0;
 			microtime(&clock_ext);
 			delta.tv_sec = clock_ext.tv_sec - newtime.tv_sec;
-			delta.tv_usec = clock_ext.tv_usec -
-			    newtime.tv_usec;
+			delta.tv_usec = clock_ext.tv_usec - newtime.tv_usec;
 			if (delta.tv_usec < 0)
 				delta.tv_sec--;
 			if (delta.tv_usec >= 500000) {
