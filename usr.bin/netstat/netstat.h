@@ -1,4 +1,4 @@
-/*	$OpenBSD: netstat.h,v 1.17 2001/05/18 02:41:38 provos Exp $	*/
+/*	$OpenBSD: netstat.h,v 1.18 2001/07/05 08:47:44 jjbg Exp $	*/
 /*	$NetBSD: netstat.h,v 1.6 1996/05/07 02:55:05 thorpej Exp $	*/
 
 /*
@@ -51,6 +51,7 @@ int	lflag;		/* show routing table with use and ref */
 int	mflag;		/* show memory stats */
 int	nflag;		/* show addresses numerically */
 int	pflag;		/* show given protocol */
+int	qflag;		/* only display non-zero values for output */
 int	rflag;		/* show routing tables (or routing stats) */
 int	sflag;		/* show protocol statistics */
 int	tflag;		/* show i/f watchdog timers */
