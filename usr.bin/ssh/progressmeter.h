@@ -1,5 +1,6 @@
+/*	$OpenBSD: progressmeter.h,v 1.1 2003/01/10 08:19:07 fgsch Exp $	*/
 /*
- * Copyright (c) 2002 Markus Friedl.  All rights reserved.
+ * Copyright (c) 2002 Nils Nordman.  All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -21,53 +22,6 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-#include "includes.h"
-RCSID("$OpenBSD: msg.c,v 1.5 2002/12/19 00:07:02 djm Exp $");
 
-#include "buffer.h"
-#include "getput.h"
-#include "log.h"
-#include "atomicio.h"
-#include "msg.h"
-
-void
-ssh_msg_send(int fd, u_char type, Buffer *m)
-{
-	u_char buf[5];
-	u_int mlen = buffer_len(m);
-
-	debug3("ssh_msg_send: type %u", (unsigned int)type & 0xff);
-
-	PUT_32BIT(buf, mlen + 1);
-	buf[4] = type;		/* 1st byte of payload is mesg-type */
-	if (atomicio(write, fd, buf, sizeof(buf)) != sizeof(buf))
-		fatal("ssh_msg_send: write");
-	if (atomicio(write, fd, buffer_ptr(m), mlen) != mlen)
-		fatal("ssh_msg_send: write");
-}
-
-int
-ssh_msg_recv(int fd, Buffer *m)
-{
-	u_char buf[4];
-	ssize_t res;
-	u_int msg_len;
-
-	debug3("ssh_msg_recv entering");
-
-	res = atomicio(read, fd, buf, sizeof(buf));
-	if (res != sizeof(buf)) {
-		if (res == 0)
-			return -1;
-		fatal("ssh_msg_recv: read: header %ld", (long)res);
-	}
-	msg_len = GET_32BIT(buf);
-	if (msg_len > 256 * 1024)
-		fatal("ssh_msg_recv: read: bad msg_len %u", msg_len);
-	buffer_clear(m);
-	buffer_append_space(m, msg_len);
-	res = atomicio(read, fd, buffer_ptr(m), msg_len);
-	if (res != msg_len)
-		fatal("ssh_msg_recv: read: %ld != msg_len", (long)res);
-	return 0;
-}
+void	start_progress_meter(char *, off_t, off_t *);
+void	stop_progress_meter(void);
