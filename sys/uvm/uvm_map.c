@@ -1,4 +1,4 @@
-/*	$OpenBSD: uvm_map.c,v 1.58 2003/04/17 03:50:54 drahn Exp $	*/
+/*	$OpenBSD: uvm_map.c,v 1.59 2003/05/05 17:54:59 drahn Exp $	*/
 /*	$NetBSD: uvm_map.c,v 1.86 2000/11/27 08:40:03 chs Exp $	*/
 
 /* 
@@ -319,7 +319,7 @@ _uvm_tree_sanity(vm_map_t map, const char *name)
 			goto error;
 		}
 		if (trtmp != NULL && trtmp->start >= tmp->start) {
-			printf("%s: corrupt: %p >= %p\n",
+			printf("%s: corrupt: 0x%lx >= 0x%lx\n",
 			    name, trtmp->start, tmp->start);
 			goto error;
 		}
