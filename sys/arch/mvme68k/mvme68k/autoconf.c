@@ -1,4 +1,4 @@
-/*	$OpenBSD: autoconf.c,v 1.12 2001/05/05 22:33:57 art Exp $ */
+/*	$OpenBSD: autoconf.c,v 1.13 2001/06/25 00:43:13 mickey Exp $ */
 
 /*
  * Copyright (c) 1995 Theo de Raadt
@@ -297,7 +297,7 @@ getdisk(str, len, defpart, devp)
 		for (dv = alldevs.tqh_first; dv != NULL;
 		    dv = dv->dv_list.tqe_next) {
 			if (dv->dv_class == DV_DISK)
-				printf(" %s[a-h]", dv->dv_xname);
+				printf(" %s[a-p]", dv->dv_xname);
 #ifdef NFSCLIENT
 			if (dv->dv_class == DV_IFNET)
 				printf(" %s", dv->dv_xname);
