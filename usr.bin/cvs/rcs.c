@@ -266,7 +266,6 @@ rcs_write(RCSFILE *rfp)
 	char buf[1024], numbuf[64], *cp;
 	size_t rlen, len;
 	struct rcs_sym *symp;
-	struct rcs_lock *lkp;
 	struct rcs_delta *rdp;
 
 	if (rfp->rf_flags & RCS_RF_SYNCED)
