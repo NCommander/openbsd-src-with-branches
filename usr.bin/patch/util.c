@@ -1,4 +1,4 @@
-/*	$OpenBSD: util.c,v 1.27 2003/10/31 20:20:45 millert Exp $	*/
+/*	$OpenBSD: util.c,v 1.28 2004/08/05 21:47:24 deraadt Exp $	*/
 
 /*
  * patch - a program to apply diffs to original files
@@ -27,7 +27,7 @@
  */
 
 #ifndef lint
-static const char rcsid[] = "$OpenBSD: util.c,v 1.27 2003/10/31 20:20:45 millert Exp $";
+static const char rcsid[] = "$OpenBSD: util.c,v 1.28 2004/08/05 21:47:24 deraadt Exp $";
 #endif /* not lint */
 
 #include <sys/param.h>
@@ -333,7 +333,7 @@ char *
 fetchname(const char *at, bool *exists, int strip_leading)
 {
 	char		*fullname, *name, *t;
-	int		sleading;
+	int		sleading, tab;
 	struct stat	filestat;
 
 	if (at == NULL || *at == '\0')
@@ -349,8 +349,10 @@ fetchname(const char *at, bool *exists, int strip_leading)
 		return NULL;
 	name = fullname = t = savestr(at);
 
+	tab = strchr(t, '\t') != NULL;
 	/* Strip off up to `strip_leading' path components and NUL terminate. */
-	for (sleading = strip_leading; *t != '\0' && !isspace(*t); t++) {
+	for (sleading = strip_leading; *t != '\0' && ((tab && *t != '\t') ||
+	    !isspace(*t)); t++) {
 		if (t[0] == '/' && t[1] != '/' && t[1] != '\0')
 			if (--sleading >= 0)
 				name = t + 1;
