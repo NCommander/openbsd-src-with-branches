@@ -1,4 +1,4 @@
-/*	$OpenBSD: ypserv_db.c,v 1.12 1997/05/01 22:14:48 niklas Exp $ */
+/*	$OpenBSD: ypserv_db.c,v 1.13 1997/08/09 23:10:12 maja Exp $ */
 
 /*
  * Copyright (c) 1994 Mats O Jansson <moj@stacken.kth.se>
@@ -34,7 +34,7 @@
  */
 
 #ifndef LINT
-static char rcsid[] = "$OpenBSD: ypserv_db.c,v 1.12 1997/05/01 22:14:48 niklas Exp $";
+static char rcsid[] = "$OpenBSD: ypserv_db.c,v 1.13 1997/08/09 23:10:12 maja Exp $";
 #endif
 
 /*
@@ -263,6 +263,7 @@ ypdb_open_db(domain, map, status, map_info)
 		CIRCLEQ_REMOVE(&maps, m, mapsq);	/* adjust LRU queue */
 		CIRCLEQ_INSERT_HEAD(&maps, m, mapsq);
 		*status = YP_TRUE;
+		if (map_info) *map_info = m;
 		return(m->db);
 	}
 
