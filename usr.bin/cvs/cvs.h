@@ -227,6 +227,7 @@ extern char *cvs_command;
 extern char *cvs_editor;
 
 extern int   cvs_cmdop;
+extern int   cvs_nocase;
 
 extern CVSFILE *cvs_files;
 
