@@ -40,10 +40,8 @@ int really_quiet = 0;
 int quiet = 0;
 int trace = 0;
 int noexec = 0;
-int readonlyfs = 0;
 int logoff = 0;
 mode_t cvsumask = UMASK_DFLT;
-char *RCS_citag = NULL;
 
 char *CurDir;
 
@@ -110,7 +108,7 @@ static const struct cmd
     { "rdiff",    "patch",    "pa",        patch },
     { "release",  "re",       "rel",       release },
     { "remove",   "rm",       "delete",    cvsremove },
-    { "status",   "st",       "stat",      status },
+    { "status",   "st",       "stat",      cvsstatus },
     { "rtag",     "rt",       "rfreeze",   rtag },
     { "tag",      "ta",       "freeze",    cvstag },
     { "unedit",   NULL,	      NULL,	   unedit },
@@ -446,10 +444,6 @@ main (argc, argv)
     }
     if (getenv (CVSREAD_ENV) != NULL)
 	cvswrite = 0;
-    if (getenv (CVSREADONLYFS_ENV)) {
-	readonlyfs = 1;
-	logoff = 1;
-    }
 
     /* Set this to 0 to force getopt initialization.  getopt() sets
        this to 1 internally.  */
@@ -817,7 +811,7 @@ Copyright (c) 1989-1998 Brian Berliner, david d `zoo' zuhn, \n\
 		}
 		(void) strcat (path, "/");
 		(void) strcat (path, CVSROOTADM_HISTORY);
-		if (readonlyfs == 0 && isfile (path) && !isaccessible (path, R_OK | W_OK))
+		if (isfile (path) && !isaccessible (path, R_OK | W_OK))
 		{
 		    save_errno = errno;
 		    error (0, 0, "Sorry, you don't have read/write access to the history file");
@@ -973,20 +967,37 @@ char *
 Make_Date (rawdate)
     char *rawdate;
 {
-    struct tm *ftm;
     time_t unixtime;
-    char date[MAXDATELEN];
-    char *ret;
 
     unixtime = get_date (rawdate, (struct timeb *) NULL);
     if (unixtime == (time_t) - 1)
 	error (1, 0, "Can't parse date/time: %s", rawdate);
+    return date_from_time_t (unixtime);
+}
+
+/* Convert a time_t to an RCS format date.  This is mainly for the
+   use of "cvs history", because the CVSROOT/history file contains
+   time_t format dates; most parts of CVS will want to avoid using
+   time_t's directly, and instead use RCS_datecmp, Make_Date, &c.
+   Assuming that the time_t is in GMT (as it generally should be),
+   then the result will be in GMT too.
+
+   Returns a newly malloc'd string.  */
+
+char *
+date_from_time_t (unixtime)
+    time_t unixtime;
+{
+    struct tm *ftm;
+    char date[MAXDATELEN];
+    char *ret;
 
     ftm = gmtime (&unixtime);
     if (ftm == NULL)
 	/* This is a system, like VMS, where the system clock is in local
 	   time.  Hopefully using localtime here matches the "zero timezone"
-	   hack I added to get_date.  */
+	   hack I added to get_date (get_date of course being the relevant
+	   issue for Make_Date, and for history.c too I think).  */
 	ftm = localtime (&unixtime);
 
     (void) sprintf (date, DATEFORM,
@@ -1004,5 +1015,5 @@ usage (cpp)
     (void) fprintf (stderr, *cpp++, program_name, command_name);
     for (; *cpp; cpp++)
 	(void) fprintf (stderr, *cpp);
-    error_exit();
+    error_exit ();
 }

@@ -243,7 +243,7 @@ Reader_Lock (xrepository)
     FILE *fp;
     char *tmp;
 
-    if (noexec || readonlyfs)
+    if (noexec)
 	return (0);
 
     /* we only do one directory at a time for read locks! */

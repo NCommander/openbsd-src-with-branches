@@ -256,8 +256,6 @@ extern int errno;
 #define	CVSREAD_ENV	"CVSREAD"	/* make files read-only */
 #define	CVSREAD_DFLT	0		/* writable files by default */
 
-#define	CVSREADONLYFS_ENV "CVSREADONLYFS" /* repository is read-only */
-
 #define	TMPDIR_ENV	"TMPDIR"	/* Temporary directory */
 /* #define	TMPDIR_DFLT		   Set by options.h */
 
@@ -365,7 +363,6 @@ extern int really_quiet, quiet;
 extern int use_editor;
 extern int cvswrite;
 extern mode_t cvsumask;
-extern char *RCS_citag;
 
 /* Access method specified in CVSroot. */
 typedef enum {
@@ -386,7 +383,6 @@ extern char *emptydir_name PROTO ((void));
 
 extern int trace;		/* Show all commands */
 extern int noexec;		/* Don't modify disk anywhere */
-extern int readonlyfs;		/* fail on all write locks; succeed all read locks */
 extern int logoff;		/* Don't write history entry */
 
 #ifdef AUTH_SERVER_SUPPORT
@@ -433,6 +429,8 @@ void Subdir_Register PROTO((List *, const char *, const char *));
 void Subdir_Deregister PROTO((List *, const char *, const char *));
 
 char *Make_Date PROTO((char *rawdate));
+char *date_from_time_t PROTO ((time_t));
+
 char *Name_Repository PROTO((char *dir, char *update_dir));
 char *Short_Repository PROTO((char *repository));
 void Sanitize_Repository_Name PROTO((char *repository));
@@ -480,7 +478,6 @@ int numdots PROTO((const char *s));
 char *increment_revnum PROTO ((const char *));
 int compare_revnums PROTO ((const char *, const char *));
 int unlink_file PROTO((const char *f));
-int link_file PROTO ((const char *from, const char *to));
 int unlink_file_dir PROTO((const char *f));
 int update PROTO((int argc, char *argv[]));
 int xcmp PROTO((const char *file1, const char *file2));
@@ -838,7 +835,7 @@ extern int patch PROTO((int argc, char **argv));
 extern int release PROTO((int argc, char **argv));
 extern int cvsremove PROTO((int argc, char **argv));
 extern int rtag PROTO((int argc, char **argv));
-extern int status PROTO((int argc, char **argv));
+extern int cvsstatus PROTO((int argc, char **argv));
 extern int cvstag PROTO((int argc, char **argv));
 
 extern unsigned long int lookup_command_attribute PROTO((char *));

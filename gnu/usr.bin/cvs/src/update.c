@@ -530,7 +530,6 @@ get_linkinfo_proc (callerdat, finfo)
 
     hlinfo->status = (Ctype) 0;	/* is this dumb? */
     hlinfo->checked_out = 0;
-    hlinfo->links = NULL;
 
     linkp->data = (char *) hlinfo;
 
@@ -1513,7 +1512,6 @@ patch_file (finfo, vers_ts, docheckout, file_info, checksum)
     int retval = 0;
     int retcode = 0;
     int fail;
-    long file_size;
     FILE *e;
     struct patch_file_data data;
 
@@ -1708,16 +1706,6 @@ patch_file (finfo, vers_ts, docheckout, file_info, checksum)
 		   patch can't handle that.  */
 		fail = 1;
 	    }
-	    else {
-		/*
-		 * Don't send a diff if just sending the entire file
-		 * would be smaller
-		 */
-		fseek(e, 0L, SEEK_END);
-		if (file_size < ftell(e))
-		    fail = 1;
-	    }
-
 	    fclose (e);
 	}
     }
@@ -2505,8 +2493,8 @@ special_file_mismatch (finfo, rev1, rev2)
     dev_t rev1_dev, rev2_dev;
     char *rev1_symlink = NULL;
     char *rev2_symlink = NULL;
-    char *rev1_hardlinks = NULL;
-    char *rev2_hardlinks = NULL;
+    List *rev1_hardlinks;
+    List *rev2_hardlinks;
     int check_uids, check_gids, check_modes;
     int result;
 
@@ -2544,7 +2532,7 @@ special_file_mismatch (finfo, rev1, rev2)
 	    if (S_ISBLK (rev1_mode) || S_ISCHR (rev1_mode))
 		rev1_dev = sb.st_rdev;
 	}
-	rev1_hardlinks = list_files_linked_to (finfo->file);
+	rev1_hardlinks = list_linked_files_on_disk (finfo->file);
     }
     else
     {
@@ -2580,7 +2568,7 @@ special_file_mismatch (finfo, rev1, rev2)
 	    else
 	    {
 		/* If the size of `ftype' changes, fix the sscanf call also */
-		char ftype[16+1];
+		char ftype[16];
 		if (sscanf (n->data, "%16s %lu", ftype,
 			    &dev_long) < 2)
 		    error (1, 0, "%s:%s has bad `special' newphrase %s",
@@ -2595,11 +2583,9 @@ special_file_mismatch (finfo, rev1, rev2)
 			   finfo->file, rev1, ftype);
 	    }
 
-	    n = findnode (vp->other_delta, "hardlinks");
-	    if (n == NULL)
-		rev1_hardlinks = xstrdup ("");
-	    else
-		rev1_hardlinks = xstrdup (n->data);
+	    rev1_hardlinks = vp->hardlinks;
+	    if (rev1_hardlinks == NULL)
+		rev1_hardlinks = getlist();
 	}
     }
 
@@ -2619,7 +2605,7 @@ special_file_mismatch (finfo, rev1, rev2)
 	    if (S_ISBLK (rev2_mode) || S_ISCHR (rev2_mode))
 		rev2_dev = sb.st_rdev;
 	}
-	rev2_hardlinks = list_files_linked_to (finfo->file);
+	rev2_hardlinks = list_linked_files_on_disk (finfo->file);
     }
     else
     {
@@ -2655,7 +2641,7 @@ special_file_mismatch (finfo, rev1, rev2)
 	    else
 	    {
 		/* If the size of `ftype' changes, fix the sscanf call also */
-		char ftype[16+1];
+		char ftype[16];
 		if (sscanf (n->data, "%16s %lu", ftype,
 			    &dev_long) < 2)
 		    error (1, 0, "%s:%s has bad `special' newphrase %s",
@@ -2670,11 +2656,9 @@ special_file_mismatch (finfo, rev1, rev2)
 			   finfo->file, rev2, ftype);
 	    }
 
-	    n = findnode (vp->other_delta, "hardlinks");
-	    if (n == NULL)
-		rev2_hardlinks = xstrdup ("");
-	    else
-		rev2_hardlinks = xstrdup (n->data);
+	    rev2_hardlinks = vp->hardlinks;
+	    if (rev2_hardlinks == NULL)
+		rev2_hardlinks = getlist();
 	}
     }
 
@@ -2755,7 +2739,7 @@ special_file_mismatch (finfo, rev1, rev2)
 	}
 
 	/* Compare hard links. */
-	if (strcmp (rev1_hardlinks, rev2_hardlinks) != 0)
+	if (compare_linkage_lists (rev1_hardlinks, rev2_hardlinks) == 0)
 	{
 	    error (0, 0, "%s: hard linkage of %s and %s do not match",
 		   finfo->file,
@@ -2770,9 +2754,9 @@ special_file_mismatch (finfo, rev1, rev2)
     if (rev2_symlink != NULL)
 	free (rev2_symlink);
     if (rev1_hardlinks != NULL)
-	free (rev1_hardlinks);
+	dellist (&rev1_hardlinks);
     if (rev2_hardlinks != NULL)
-	free (rev2_hardlinks);
+	dellist (&rev2_hardlinks);
 
     return result;
 #else
