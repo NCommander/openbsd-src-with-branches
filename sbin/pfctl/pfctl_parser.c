@@ -877,10 +877,8 @@ print_rule(struct pf_rule *r, const char *anchor_call, int verbose)
 			if (!opts)
 				printf(", ");
 			printf("overload <%s>", r->overload_tblname);
-			if (r->flush)
+			if (r->rule_flag & PFRULE_SRCTRACK_FLUSH)
 				printf(" flush");
-			if (r->flush & PF_FLUSH_GLOBAL)
-				printf(" global");
 		}
 		if (r->rule_flag & PFRULE_IFBOUND) {
 			if (!opts)
