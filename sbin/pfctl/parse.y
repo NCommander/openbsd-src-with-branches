@@ -1,4 +1,4 @@
-/*      $OpenBSD: parse.y,v 1.6 2001/07/17 21:54:27 provos Exp $ */
+/*      $OpenBSD: parse.y,v 1.7 2001/07/17 22:22:16 provos Exp $ */
 
 /*
  * Copyright (c) 2001 Markus Friedl.  All rights reserved.
@@ -362,7 +362,6 @@ keep:					{ $$ = 0; }
 
 minttl:					{ $$ = 0; }
 		| MINTTL NUMBER		{ $$ = $2; }
-		| MINTTL PORTUNARY NUMBER	{ $$ = $3; }
 		;
 
 nodf:					{ $$ = 0; }
