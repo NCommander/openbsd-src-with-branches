@@ -1,4 +1,4 @@
-/*	$OpenBSD: authpf.c,v 1.84 2004/06/14 20:38:19 cedric Exp $	*/
+/*	$OpenBSD: authpf.c,v 1.85 2004/08/08 00:05:09 deraadt Exp $	*/
 
 /*
  * Copyright (C) 1998 - 2002 Bob Beck (beck@openbsd.org).
@@ -282,7 +282,7 @@ main(int argc, char *argv[])
 	rewind(pidfp);
 	fprintf(pidfp, "%ld\n%s\n", (long)getpid(), luser);
 	fflush(pidfp);
-	(void) ftruncate(fileno(pidfp), ftell(pidfp));
+	(void) ftruncate(fileno(pidfp), ftello(pidfp));
 
 	if (change_filter(1, luser, ipsrc) == -1) {
 		printf("Unable to modify filters\r\n");
