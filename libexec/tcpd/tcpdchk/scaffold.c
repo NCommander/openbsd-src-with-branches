@@ -1,4 +1,4 @@
-/*	$OpenBSD: scaffold.c,v 1.5 2002/05/07 23:01:07 deraadt Exp $	*/
+/*	$OpenBSD: scaffold.c,v 1.6 2002/06/07 03:32:04 itojun Exp $	*/
 
  /*
   * Routines for testing only. Not really industrial strength.
@@ -10,7 +10,7 @@
 #if 0
 static char sccs_id[] = "@(#) scaffold.c 1.5 95/01/03 09:13:48";
 #else
-static char rcsid[] = "$OpenBSD: scaffold.c,v 1.5 2002/05/07 23:01:07 deraadt Exp $";
+static char rcsid[] = "$OpenBSD: scaffold.c,v 1.6 2002/06/07 03:32:04 itojun Exp $";
 #endif
 #endif
 
@@ -159,7 +159,7 @@ struct stat *st;
     if (st->st_mode & 002)
 	tcpd_warn("%s: world writable", path);
     if (path[0] == '/' && path[1] != 0) {
-	strrchr(strcpy(buf, path), '/')[0] = 0;
+	strrchr((strlcpy(buf, path, sizeof buf), buf), '/')[0] = 0;
 	(void) check_path(buf[0] ? buf : "/", &stbuf);
     }
     return (0);
