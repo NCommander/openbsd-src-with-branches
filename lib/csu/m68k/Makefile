@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.3 1997/04/27 20:56:01 millert Exp $
+#	$OpenBSD: Makefile,v 1.4 1999/08/20 14:11:35 niklas Exp $
 #	from: @(#)Makefile	5.5 (Berkeley) 5/21/91
 
 CFLAGS+=	-DLIBC_SCCS -I${.CURDIR}/..
@@ -25,7 +25,7 @@ scrt0.o: ${SRCS}
 	@${LD} -x -r ${.TARGET}.o -o ${.TARGET}
 	@rm -f ${.TARGET}.o
 
-install:
+realinstall:
 	${INSTALL} ${INSTALL_COPY} -o ${BINOWN} -g ${BINGRP} -m 444 ${OBJS} \
 	    ${DESTDIR}/usr/lib
 

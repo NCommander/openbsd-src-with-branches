@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.4 1997/07/24 14:24:42 deraadt Exp $
+#	$OpenBSD: Makefile,v 1.5 1999/08/20 14:11:34 niklas Exp $
 #	from: @(#)Makefile	5.5 (Berkeley) 5/21/91
 
 CFLAGS+=	-fno-omit-frame-pointer -DLIBC_SCCS -I${.CURDIR}/..
@@ -25,7 +25,7 @@ scrt0.o: ${SRCS}
 	@${LD} -x -r ${.TARGET}.o -o ${.TARGET}
 	@rm -f ${.TARGET}.o
 
-install:
+realinstall:
 	${INSTALL} ${INSTALL_COPY} -o ${BINOWN} -g ${BINGRP} -m 444 ${OBJS} \
 	    ${DESTDIR}/usr/lib
 
