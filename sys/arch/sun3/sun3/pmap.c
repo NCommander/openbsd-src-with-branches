@@ -1,4 +1,4 @@
-/*	$OpenBSD: pmap.c,v 1.20 2000/06/19 01:33:02 miod Exp $	*/
+/*	$OpenBSD: pmap.c,v 1.21 2001/05/09 15:31:27 art Exp $	*/
 /*	$NetBSD: pmap.c,v 1.64 1996/11/20 18:57:35 gwr Exp $	*/
 
 /*-
@@ -1486,7 +1486,7 @@ pmap_bootstrap()
 	/* Initialization for pmap_next_page() */
 	avail_next = avail_start;
 
-	PAGE_SIZE = NBPG;
+	cnt.v_page_size = PAGE_SIZE;
 	vm_set_page_size();
 
 	sun3_protection_init();
