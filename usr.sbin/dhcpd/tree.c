@@ -1,4 +1,4 @@
-/*	$Id: tree.c,v 1.6 2004/04/16 04:30:09 deraadt Exp $	*/
+/*	$OpenBSD$ */
 
 /* Routines for manipulating parse trees... */
 

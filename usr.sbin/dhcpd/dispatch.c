@@ -1,6 +1,4 @@
-/* dispatch.c
-
-   Network input dispatcher... */
+/*	$OpenBSD$ */
 
 /*
  * Copyright (c) 1995, 1996, 1997, 1998, 1999
