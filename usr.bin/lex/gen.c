@@ -605,18 +605,17 @@ int worry_about_NULs;
 	if ( worry_about_NULs && ! nultrans )
 		{
 		if ( useecs )
-			(void) snprintf( char_map, sizeof char_map,
+			(void) sprintf( char_map,
 				"(*yy_cp ? yy_ec[YY_SC_TO_UI(*yy_cp)] : %d)",
 					NUL_ec );
 		else
-			(void) snprintf( char_map, sizeof char_map,
+			(void) sprintf( char_map,
 				"(*yy_cp ? YY_SC_TO_UI(*yy_cp) : %d)", NUL_ec );
 		}
 
 	else
-		strlcpy( char_map, useecs ?
-			"yy_ec[YY_SC_TO_UI(*yy_cp)]" : "YY_SC_TO_UI(*yy_cp)",
-			sizeof char_map );
+		strcpy( char_map, useecs ?
+			"yy_ec[YY_SC_TO_UI(*yy_cp)]" : "YY_SC_TO_UI(*yy_cp)" );
 
 	if ( worry_about_NULs && nultrans )
 		{
@@ -713,7 +712,7 @@ void gen_NUL_trans()
 		{
 		char NUL_ec_str[20];
 
-		(void) snprintf( NUL_ec_str, sizeof NUL_ec_str, "%d", NUL_ec );
+		(void) sprintf( NUL_ec_str, "%d", NUL_ec );
 		gen_next_compressed_state( NUL_ec_str );
 
 		do_indent();
