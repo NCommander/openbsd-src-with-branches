@@ -1,4 +1,4 @@
-/*	$OpenBSD: OSFpal.c,v 1.5 1996/11/27 19:54:45 niklas Exp $	*/
+/*	$OpenBSD: OSFpal.c,v 1.6 2001/05/16 00:38:15 deraadt Exp $	*/
 /*	$NetBSD: OSFpal.c,v 1.4 1996/10/13 03:00:24 christos Exp $	*/
 
 /*
@@ -50,6 +50,5 @@ OSFpal()
 	    p->pcs_palrevisions[PALvar_OpenVMS],
 	    p->pcs_palrevisions[PALvar_OSF1]);
 	(void)switch_palcode();
-	printf("Switched to OSF PAL.\n");
 }
 
