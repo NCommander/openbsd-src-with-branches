@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: check_out.c,v 1.2 1998/08/19 07:41:16 pjanzen Exp $	*/
 /*	$NetBSD: check_out.c,v 1.3 1995/04/22 10:58:35 cgd Exp $	*/
 
 /*
@@ -38,7 +38,7 @@
 #if 0
 static char sccsid[] = "@(#)check_out.c	8.1 (Berkeley) 5/31/93";
 #else
-static char rcsid[] = "$OpenBSD$";
+static char rcsid[] = "$OpenBSD: check_out.c,v 1.2 1998/08/19 07:41:16 pjanzen Exp $";
 #endif
 #endif /* not lint */
 
@@ -60,7 +60,7 @@ int
 check_out(device)
 	int	device;
 {
-	register int	dev;
+	int	dev;
 
 	dev = device;
 

@@ -1,4 +1,4 @@
-/*	$OpenBSD: compkl.c,v 1.2 1998/08/19 07:41:18 pjanzen Exp $	*/
+/*	$OpenBSD: compkl.c,v 1.3 2002/02/16 21:27:12 millert Exp $	*/
 /*	$NetBSD: compkl.c,v 1.3 1995/04/22 10:58:38 cgd Exp $	*/
 
 /*
@@ -38,7 +38,7 @@
 #if 0
 static char sccsid[] = "@(#)compkl.c	8.1 (Berkeley) 5/31/93";
 #else
-static char rcsid[] = "$OpenBSD: compkl.c,v 1.2 1998/08/19 07:41:18 pjanzen Exp $";
+static char rcsid[] = "$OpenBSD: compkl.c,v 1.3 2002/02/16 21:27:12 millert Exp $";
 #endif
 #endif /* not lint */
 
@@ -62,9 +62,9 @@ void
 compkldist(f)
 	int	f;		/* set if new quadrant */
 {
-	register int		i, dx, dy;
-	double			d;
-	double			temp;
+	int		i, dx, dy;
+	double		d;
+	double		temp;
 
 	if (Etc.nkling == 0)
 		return;
@@ -104,8 +104,8 @@ compkldist(f)
 static void
 sortkl()
 {
-	struct kling		t;
-	register int		f, i, m;
+	struct kling	t;
+	int		f, i, m;
 
 	m = Etc.nkling - 1;
 	f = 1;
