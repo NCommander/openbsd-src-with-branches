@@ -84,11 +84,6 @@ static char rcsid[] = "$OpenBSD: cp.c,v 1.22 2003/03/13 09:09:20 deraadt Exp $";
 
 #include "extern.h"
 
-#define	STRIP_TRAILING_SLASH(p) {					\
-	while ((p).p_end > (p).p_path + 1 && (p).p_end[-1] == '/')	\
-		*--(p).p_end = '\0';					\
-}
-
 #define	fts_dne(_x)	(_x->fts_pointer != NULL)
 
 PATH_T to = { to.p_path, "" };
