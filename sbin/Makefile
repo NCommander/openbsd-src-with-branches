@@ -8,7 +8,7 @@ SUBDIR= atactl badsect brconfig ccdconfig disklabel dmesg fsck ifconfig init \
 	modunload mount mountd ncheck_ffs nfsd nologin pfctl pflogd \
 	photurisd ping \
 	quotacheck raidctl reboot route routed savecore scan_ffs scsi \
-	shutdown slattach startkey swapctl sysctl ttyflags umount
+	shutdown slattach swapctl sysctl ttyflags umount
 
 # support for various file systems
 SUBDIR+= mount_ados
