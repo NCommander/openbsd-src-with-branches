@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /*	$NetBSD: din-kbdmap.c,v 1.4.6.1 1996/06/08 16:03:59 is Exp $	*/
 
 #include "../../../dev/kbdmap.h"
