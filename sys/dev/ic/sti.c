@@ -1,4 +1,4 @@
-/*	$OpenBSD: sti.c,v 1.9 2001/12/08 02:24:07 art Exp $	*/
+/*	$OpenBSD: sti.c,v 1.10 2002/01/25 21:35:26 mickey Exp $	*/
 
 /*
  * Copyright (c) 2000-2001 Michael Shalayeff
@@ -48,8 +48,6 @@
 
 #include <dev/wscons/wsdisplayvar.h>
 #include <dev/wscons/wsconsio.h>
-
-#include <hppa/dev/cpudevs.h>
 
 #include <dev/ic/stireg.h>
 #include <dev/ic/stivar.h>
