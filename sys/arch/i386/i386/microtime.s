@@ -1,4 +1,4 @@
-/*	$OpenBSD: microtime.s,v 1.10 1997/12/30 23:35:19 mickey Exp $	*/
+/*	$OpenBSD: microtime.s,v 1.11 1998/05/13 19:49:25 mickey Exp $	*/
 /*	$NetBSD: microtime.s,v 1.16 1995/04/17 12:06:47 cgd Exp $	*/
 
 /*-
@@ -33,6 +33,8 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
+
+#include "opt_ntp.h"
 
 #include <machine/asm.h>
 #include <dev/isa/isareg.h>
