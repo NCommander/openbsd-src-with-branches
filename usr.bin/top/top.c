@@ -1,4 +1,4 @@
-/*	$OpenBSD: top.c,v 1.11 2001/09/05 06:25:39 deraadt Exp $	*/
+/*	$OpenBSD: top.c,v 1.12 2001/11/11 01:48:58 fgsch Exp $	*/
 
 const char copyright[] = "Copyright (c) 1984 through 1996, William LeFebvre";
 
@@ -65,9 +65,9 @@ static void tstop __P((int));
 static void winch __P((int));
 #endif
 
-sig_atomic_t leaveflag;
-sig_atomic_t tstopflag;
-sig_atomic_t winchflag;
+volatile sig_atomic_t leaveflag;
+volatile sig_atomic_t tstopflag;
+volatile sig_atomic_t winchflag;
 
 static void reset_display __P((void));
 

@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: rfc931.c,v 1.4 2001/02/16 02:15:59 beck Exp $	*/
 
 /* rfc1413 does an attempt at an ident query to a client. Originally written
  * by Wietse Venema, rewritten by Bob Beck <beck@openbsd.org> to avoid 
@@ -6,7 +6,7 @@
  */
 
 #ifndef lint
-static char rcsid[] = "$OpenBSD: rfc931.c,v 1.2 2000/10/14 00:56:15 itojun Exp $";
+static char rcsid[] = "$OpenBSD: rfc931.c,v 1.4 2001/02/16 02:15:59 beck Exp $";
 #endif
 
 #include <stdio.h>
@@ -27,7 +27,7 @@ static char rcsid[] = "$OpenBSD: rfc931.c,v 1.2 2000/10/14 00:56:15 itojun Exp $
 
 #define	IDENT_PORT	113
 
-static sig_atomic_t ident_timeout;
+static volatile sig_atomic_t ident_timeout;
 
 int rfc931_timeout = RFC931_TIMEOUT; /* global, legacy from tcpwrapper stuff */
 
