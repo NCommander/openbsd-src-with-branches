@@ -1,4 +1,4 @@
-/*	$OpenBSD: brconfig.c,v 1.12 2001/02/27 20:51:21 jason Exp $	*/
+/*	$OpenBSD: brconfig.c,v 1.13 2001/11/05 07:39:16 mpech Exp $	*/
 
 /*
  * Copyright (c) 1999, 2000 Jason L. Wright (jason@thought.net)
@@ -104,7 +104,7 @@ usage()
 {
 	fprintf(stderr, "usage: brconfig -a\n");
 	fprintf(stderr,
-	    "usage: brconfig interface [up] [down] [add if] [del if] ...\n");
+	    "       brconfig interface [up] [down] [add if] [del if] ...\n");
 }
 
 int
