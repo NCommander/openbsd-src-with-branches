@@ -32,7 +32,7 @@
  */
 
 #if defined(LIBC_SCCS) && !defined(lint)
-static char rcsid[] = "$OpenBSD: nice.c,v 1.2 1996/08/19 08:25:05 tholo Exp $";
+static char rcsid[] = "$OpenBSD: nice.c,v 1.3 1998/05/06 23:11:43 deraadt Exp $";
 #endif /* LIBC_SCCS and not lint */
 
 #include <sys/types.h>
@@ -42,7 +42,7 @@ static char rcsid[] = "$OpenBSD: nice.c,v 1.2 1996/08/19 08:25:05 tholo Exp $";
 #include <unistd.h>
 
 /*
- * Backwards compatible nice.
+ * Backwards compatible nice().
  */
 int
 nice(incr)
@@ -54,5 +54,8 @@ nice(incr)
 	prio = getpriority(PRIO_PROCESS, 0);
 	if (prio == -1 && errno)
 		return (-1);
-	return (setpriority(PRIO_PROCESS, 0, prio + incr));
+	prio += incr;
+	if (setpriority(PRIO_PROCESS, 0, prio) != 0)
+		return (-1);
+	return (prio);
 }
