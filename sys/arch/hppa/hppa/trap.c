@@ -1,4 +1,4 @@
-/*	$OpenBSD: trap.c,v 1.10 1999/08/16 04:05:38 mickey Exp $	*/
+/*	$OpenBSD: trap.c,v 1.11 1999/11/25 18:36:29 mickey Exp $	*/
 
 /*
  * Copyright (c) 1998,1999 Michael Shalayeff
@@ -369,7 +369,7 @@ return;
 			DONET(NETISR_IP, ipintr);
 #endif
 #ifdef INET6
-			DONET(NETISR_IPV6, ipv6intr);
+			DONET(NETISR_IPV6, ip6intr);
 #endif
 #ifdef NETATALK
 			DONET(NETISR_ATALK, atintr);
