@@ -140,7 +140,7 @@ pfkey_sendup(struct socket *socket, struct mbuf *packet, int more)
   int s;
 
   if (more) {
-    if (!(packet2 = m_copym(packet, 0, M_COPYALL, M_DONTWAIT)))
+    if (!(packet2 = m_copym2(packet, 0, M_COPYALL, M_DONTWAIT)))
       return ENOMEM;
   } else
     packet2 = packet;
