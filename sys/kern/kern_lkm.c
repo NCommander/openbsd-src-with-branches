@@ -1,4 +1,4 @@
-/*	$OpenBSD: kern_lkm.c,v 1.11 1996/09/27 14:41:16 briggs Exp $	*/
+/*	$OpenBSD: kern_lkm.c,v 1.12 1996/10/02 20:22:13 deraadt Exp $	*/
 /*	$NetBSD: kern_lkm.c,v 1.31 1996/03/31 21:40:27 christos Exp $	*/
 
 /*
@@ -99,7 +99,6 @@ static int _lkm_exec __P((struct lkm_table *, int));
 
 void lkminit __P((void));
 int lkmexists __P((struct lkm_table *));
-int lkmdispatch __P((struct lkm_table *, int));
 
 void
 lkminit()
