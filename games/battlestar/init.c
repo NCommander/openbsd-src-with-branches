@@ -1,4 +1,4 @@
-/*	$OpenBSD: init.c,v 1.7 2000/09/24 21:55:25 pjanzen Exp $	*/
+/*	$OpenBSD: init.c,v 1.8 2002/02/16 21:27:09 millert Exp $	*/
 /*	$NetBSD: init.c,v 1.4 1995/03/21 15:07:35 cgd Exp $	*/
 
 /*
@@ -38,7 +38,7 @@
 #if 0
 static char sccsid[] = "@(#)init.c	8.4 (Berkeley) 4/30/95";
 #else
-static char rcsid[] = "$OpenBSD: init.c,v 1.7 2000/09/24 21:55:25 pjanzen Exp $";
+static char rcsid[] = "$OpenBSD: init.c,v 1.8 2002/02/16 21:27:09 millert Exp $";
 #endif
 #endif /* not lint */
 
@@ -59,7 +59,7 @@ initialize(filename)
 	puts("First Adventure game written by His Lordship, the honorable");
 	puts("Admiral D.W. Riggle\n");
 	location = dayfile;
-	srandom(getpid());
+	srandomdev();
 	username = getutmp();
 	wordinit();
 	if (filename == NULL) {

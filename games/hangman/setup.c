@@ -1,4 +1,4 @@
-/*	$OpenBSD: setup.c,v 1.4 1999/09/25 20:51:54 pjanzen Exp $	*/
+/*	$OpenBSD: setup.c,v 1.5 2002/05/31 05:11:37 pjanzen Exp $	*/
 /*	$NetBSD: setup.c,v 1.3 1995/03/23 08:32:59 cgd Exp $	*/
 
 /*-
@@ -38,7 +38,7 @@
 #if 0
 static char sccsid[] = "@(#)setup.c	8.1 (Berkeley) 5/31/93";
 #else
-static char rcsid[] = "$OpenBSD: setup.c,v 1.4 1999/09/25 20:51:54 pjanzen Exp $";
+static char rcsid[] = "$OpenBSD: setup.c,v 1.5 2002/05/31 05:11:37 pjanzen Exp $";
 #endif
 #endif /* not lint */
 
@@ -70,7 +70,7 @@ setup()
 		addstr(*sp);
 	}
 
-	srandom(time(NULL) + getpid());
+	srandomdev();
 	if ((Dict = fopen(Dict_name, "r")) == NULL) {
 		endwin();
 		err(1, "fopen %s", Dict_name);

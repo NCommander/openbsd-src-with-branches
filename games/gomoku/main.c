@@ -1,4 +1,4 @@
-/*	$OpenBSD: main.c,v 1.11 2001/03/30 04:40:07 pjanzen Exp $	*/
+/*	$OpenBSD: main.c,v 1.12 2002/05/31 03:40:00 pjanzen Exp $	*/
 /*
  * Copyright (c) 1994
  *	The Regents of the University of California.  All rights reserved.
@@ -45,7 +45,7 @@ static char copyright[] =
 #if 0
 static char sccsid[] = "@(#)main.c	8.4 (Berkeley) 5/4/95";
 #else
-static char rcsid[] = "$OpenBSD: main.c,v 1.11 2001/03/30 04:40:07 pjanzen Exp $";
+static char rcsid[] = "$OpenBSD: main.c,v 1.12 2002/05/31 03:40:00 pjanzen Exp $";
 #endif
 #endif /* not lint */
 
@@ -154,7 +154,7 @@ main(argc, argv)
 #ifdef SVR4
 		srand(time(0));
 #else
-		srandom(time(0));
+		srandomdev();
 #endif
 	if (interactive)
 		cursinit();		/* initialize curses */

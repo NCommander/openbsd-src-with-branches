@@ -1,4 +1,4 @@
-/*	$OpenBSD: mach.c,v 1.4 2002/02/16 21:27:09 millert Exp $	*/
+/*	$OpenBSD: mach.c,v 1.5 2002/05/31 04:21:29 pjanzen Exp $	*/
 /*	$NetBSD: mach.c,v 1.5 1995/04/28 22:28:48 mycroft Exp $	*/
 
 /*-
@@ -41,7 +41,7 @@
 #if 0
 static char sccsid[] = "@(#)mach.c	8.1 (Berkeley) 6/11/93";
 #else
-static char rcsid[] = "$OpenBSD: mach.c,v 1.4 2002/02/16 21:27:09 millert Exp $";
+static char rcsid[] = "$OpenBSD: mach.c,v 1.5 2002/05/31 04:21:29 pjanzen Exp $";
 #endif
 #endif /* not lint */
 
@@ -87,20 +87,16 @@ static void	winch_catcher(int);
  * This is called once, when the program starts
  */
 int
-setup(sflag, seed)
-	int sflag;
-	time_t seed;
+setup(seed)
+	char *seed;
 {
-	extern int debug;
-
 	if (tty_setup() < 0)
 		return(-1);
 
-	if (!sflag)
-		time(&seed);
-	srandom(seed);
-	if (debug)
-		(void) printf("seed = %ld\n", (long) seed);
+	if (seed != NULL)
+		srandom(atol(seed));
+	else
+		srandomdev();
 	return(0);
 }
 

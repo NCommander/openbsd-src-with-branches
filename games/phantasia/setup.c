@@ -1,4 +1,4 @@
-/*	$OpenBSD: setup.c,v 1.5 2002/02/16 21:27:11 millert Exp $	*/
+/*	$OpenBSD: setup.c,v 1.6 2002/05/31 04:21:30 pjanzen Exp $	*/
 /*	$NetBSD: setup.c,v 1.4 1995/04/24 12:24:41 cgd Exp $	*/
 
 /*
@@ -26,7 +26,7 @@ void Error(char *, char *);
 / RETURN VALUE: none
 /
 / MODULES CALLED: time(), exit(), stat(), Error(), open(), close(), fopen(), 
-/	fgets(), floor(), srandom(), umask(), strcpy(),
+/	fgets(), floor(), srandomdev(), umask(), strcpy(),
 /	unlink(), fwrite(), fclose(), sscanf(), printf(), strlen(), fprintf()
 /
 / GLOBAL INPUTS: Curmonster, _iob[], Databuf[], *Monstfp, Enrgyvoid
@@ -82,7 +82,7 @@ main(argc, argv)
 	argc -= optind;
 	argv += optind;
 
-    srandom((unsigned) time(NULL));	/* prime random numbers */
+    srandomdev();	/* prime random numbers */
 
     umask(0117);		/* only owner can read/write created files */
 
