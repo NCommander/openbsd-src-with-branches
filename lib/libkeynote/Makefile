@@ -1,9 +1,9 @@
-#	$OpenBSD: Makefile,v 1.1.1.1 1999/05/23 22:11:04 angelos Exp $
+#	$OpenBSD: Makefile,v 1.2 1999/05/23 22:32:06 angelos Exp $
 
 LIB=	keynote
 MAN=	keynote.3 keynote.4
 
-CFLAGS+= -DCRYPTO -I. -I${.CURDIR}
+CFLAGS+= -Wall -DCRYPTO -I. -I${.CURDIR}
 LEXFLAGS = -Cr -Pkn -s -i
 YACCFLAGS = -d -p kn -b k
 
