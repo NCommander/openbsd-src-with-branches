@@ -1,4 +1,4 @@
-/*	$OpenBSD: exec_aout.c,v 1.2 2000/09/30 16:06:34 aaron Exp $ */
+/*	$OpenBSD: exec_aout.c,v 1.3 2001/12/05 10:11:23 deraadt Exp $ */
 
 /*
  * Copyright (c) 1999 Mats O Jansson.  All rights reserved.
@@ -30,7 +30,7 @@
  */
 
 #ifndef LINT
-static char rcsid[] = "$OpenBSD: exec_aout.c,v 1.2 2000/09/30 16:06:34 aaron Exp $";
+static char rcsid[] = "$OpenBSD: exec_aout.c,v 1.3 2001/12/05 10:11:23 deraadt Exp $";
 #endif
 
 #include <err.h>
@@ -104,7 +104,7 @@ aout_loadkernel(file)
 		errx(1, "can't read a.out header");
 
 	if (N_BADMAG(aout_ex))
-		errx(1, "bad a.out magic\n");
+		errx(1, "bad a.out magic");
 
 	(void)lseek(fd, (off_t)0, SEEK_SET);
 

@@ -1,4 +1,4 @@
-/*	$OpenBSD: xlint.c,v 1.7 2001/11/05 09:42:28 deraadt Exp $	*/
+/*	$OpenBSD: xlint.c,v 1.8 2002/02/16 21:27:59 millert Exp $	*/
 /*	$NetBSD: xlint.c,v 1.3 1995/10/23 14:29:30 jpo Exp $	*/
 
 /*
@@ -33,7 +33,7 @@
  */
 
 #ifndef lint
-static char rcsid[] = "$OpenBSD: xlint.c,v 1.7 2001/11/05 09:42:28 deraadt Exp $";
+static char rcsid[] = "$OpenBSD: xlint.c,v 1.8 2002/02/16 21:27:59 millert Exp $";
 #endif
 
 #include <sys/param.h>
@@ -541,7 +541,7 @@ fname(name, last)
 
 	if (strcmp(suff, "c") != 0 &&
 	    (strncmp(bn, "llib-l", 6) != 0 || bn != suff)) {
-		warnx("unknown file type: %s\n", name);
+		warnx("unknown file type: %s", name);
 		return;
 	}
 
