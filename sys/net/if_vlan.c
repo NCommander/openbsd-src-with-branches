@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_vlan.c,v 1.29 2001/12/11 05:13:37 jason Exp $ */
+/*	$OpenBSD: if_vlan.c,v 1.31 2002/03/24 18:55:43 niklas Exp $ */
 /*
  * Copyright 1998 Massachusetts Institute of Technology
  *
@@ -364,10 +364,11 @@ vlan_input(eh, m)
 	int i;
 	struct ifvlan *ifv;
 	u_int tag;
+	struct ifnet *ifp = m->m_pkthdr.rcvif;
 
 	if (m->m_len < EVL_ENCAPLEN &&
 	    (m = m_pullup(m, EVL_ENCAPLEN)) == NULL) {
-		m->m_pkthdr.rcvif->if_ierrors++;
+		ifp->if_ierrors++;
 		return (0);
 	}
 
