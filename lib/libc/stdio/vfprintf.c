@@ -35,7 +35,7 @@
  */
 
 #if defined(LIBC_SCCS) && !defined(lint)
-static char *rcsid = "$OpenBSD: vfprintf.c,v 1.1.1.1 1995/10/18 08:42:15 deraadt Exp $";
+static char *rcsid = "$OpenBSD: vfprintf.c,v 1.3 1996/09/24 20:02:14 michaels Exp $";
 #endif /* LIBC_SCCS and not lint */
 
 /*
@@ -49,6 +49,7 @@ static char *rcsid = "$OpenBSD: vfprintf.c,v 1.1.1.1 1995/10/18 08:42:15 deraadt
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <errno.h>
 
 #if __STDC__
 #include <stdarg.h>
@@ -297,8 +298,10 @@ vfprintf(fp, fmt0, ap)
 	*((type*)(argtable[nextarg++])) : (nextarg++, va_arg(ap, type)))
  
 	/* sorry, fprintf(read_only_file, "") returns EOF, not 0 */
-	if (cantwrite(fp))
+	if (cantwrite(fp)) {
+		errno = EBADF;
 		return (EOF);
+	}
 
 	/* optimise fprintf(stderr) (and other unbuffered Unix files) */
 	if ((fp->_flags & (__SNBF|__SWR|__SRW)) == (__SNBF|__SWR) &&
