@@ -1,4 +1,4 @@
-/*	$OpenBSD: fstat.c,v 1.13 1997/12/06 21:19:34 deraadt Exp $	*/
+/*	$OpenBSD: fstat.h,v 1.1 1998/06/25 06:21:36 deraadt Exp $	*/
 
 /*-
  * Copyright (c) 1988, 1993
@@ -49,5 +49,5 @@ struct  filestat {
 extern kvm_t *kd;
 
 extern int vflg;
-#define dprintf	if (vflg) fprintf
+#define dprintf	if (vflg) warnx
 
