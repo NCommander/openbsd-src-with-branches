@@ -1,3 +1,4 @@
+/*	$OpenBSD: fpu_mul.c,v 1.1 1995/11/03 04:47:16 briggs Exp $ */
 /*	$NetBSD: fpu_mul.c,v 1.1 1995/11/03 04:47:16 briggs Exp $ */
 
 /*

@@ -1,3 +1,4 @@
+/*	$OpenBSD: ieee.h,v 1.1 1995/11/03 04:47:21 briggs Exp $ */
 /*	$NetBSD: ieee.h,v 1.1 1995/11/03 04:47:21 briggs Exp $ */
 
 /*

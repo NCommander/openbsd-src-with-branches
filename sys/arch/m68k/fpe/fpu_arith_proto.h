@@ -1,3 +1,4 @@
+/*	$OpenBSD: fpu_arith_proto.h,v 1.1 1995/11/03 04:47:00 briggs Exp $	*/
 /*	$NetBSD: fpu_arith_proto.h,v 1.1 1995/11/03 04:47:00 briggs Exp $	*/
 
 /*
