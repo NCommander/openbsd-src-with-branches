@@ -1,4 +1,4 @@
-/*	$OpenBSD: spifreg.h,v 1.3 1999/02/04 15:43:22 jason Exp $	*/
+/*	$OpenBSD: spifreg.h,v 1.4 1999/02/23 23:47:48 jason Exp $	*/
 
 /*
  * Copyright (c) 1999 Jason L. Wright (jason@thought.net)
@@ -369,7 +369,7 @@ struct spifregs {
  * device selectors
  */
 #define SPIF_CARD(x)	((minor(x) >> 6) & 0x03)
-#define SPIF_PORT(x)	(minor(x) & 0x0f)
+#define SPIF_PORT(x)	(minor(x) & 0x07)
 #define STTY_DIALOUT(x) (minor(x) & 0x10)
 
 #define	STTY_RX_FIFO_THRESHOLD	6
