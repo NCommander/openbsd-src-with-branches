@@ -1103,6 +1103,12 @@ const struct usb_knowndev usb_knowndevs[] = {
 	    "USB CD-ROM Drive",
 	},
 	{
+	    USB_VENDOR_IIYAMA, USB_PRODUCT_IIYAMA_HUB,
+	    0,
+	    "Iiyama",
+	    "Hub",
+	},
+	{
 	    USB_VENDOR_INSIDEOUT, USB_PRODUCT_INSIDEOUT_EDGEPORT4,
 	    0,
 	    "Inside Out Networks",
@@ -2966,6 +2972,12 @@ const struct usb_knowndev usb_knowndevs[] = {
 	    USB_VENDOR_PANASONIC, 0,
 	    USB_KNOWNDEV_NOPROD,
 	    "Panasonic (Matsushita)",
+	    NULL,
+	},
+	{
+	    USB_VENDOR_IIYAMA, 0,
+	    USB_KNOWNDEV_NOPROD,
+	    "Iiyama",
 	    NULL,
 	},
 	{
