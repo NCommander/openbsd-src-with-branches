@@ -1,3 +1,5 @@
+#	$OpenBSD$
+
 # Initial exchanges which might be needed by NIS or NFS servers
 # accepted keywords are
 # dst=<ip-address>
