@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_dc_pci.c,v 1.41 2003/10/07 14:11:04 fgsch Exp $	*/
+/*	$OpenBSD: if_dc_pci.c,v 1.42 2003/10/21 21:48:07 deraadt Exp $	*/
 
 /*
  * Copyright (c) 1997, 1998, 1999
@@ -76,7 +76,9 @@
 #include <dev/ofw/openfirm.h>
 #endif
 
+#ifndef __hppa__
 #define DC_USEIOSPACE
+#endif
 
 #include <dev/ic/dcreg.h>
 
