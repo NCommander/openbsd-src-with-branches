@@ -1,4 +1,4 @@
-/*	$OpenBSD: isa_machdep.h,v 1.5 1998/06/29 05:32:53 downsj Exp $	*/
+/*	$OpenBSD: isa_machdep.h,v 1.6 2000/11/08 16:01:15 art Exp $	*/
 /*	$NetBSD: isa_machdep.h,v 1.3 1996/11/19 04:53:07 cgd Exp $	*/
 
 /*
@@ -59,4 +59,4 @@ struct alpha_isa_chipset {
  * alpha-specific ISA functions.
  * NOT TO BE USED DIRECTLY BY MACHINE INDEPENDENT CODE.
  */ 
-void    isa_display_console __P((bus_space_tag_t, bus_space_tag_t));
+int	isa_display_console __P((bus_space_tag_t, bus_space_tag_t));
