@@ -1,4 +1,4 @@
-/*	$OpenBSD: find.c,v 1.3 1996/10/24 03:46:04 tholo Exp $	*/
+/*	$OpenBSD: find.c,v 1.4 1997/06/17 20:58:08 kstailey Exp $	*/
 
 /*-
  * Copyright (c) 1991, 1993
@@ -38,7 +38,7 @@
 
 #ifndef lint
 /*static char sccsid[] = "from: @(#)find.c	8.1 (Berkeley) 6/6/93";*/
-static char rcsid[] = "$OpenBSD: find.c,v 1.3 1996/10/24 03:46:04 tholo Exp $";
+static char rcsid[] = "$OpenBSD: find.c,v 1.4 1997/06/17 20:58:08 kstailey Exp $";
 #endif /* not lint */
 
 #include <sys/types.h>
@@ -162,7 +162,7 @@ find_execute(plan, paths)
 	if (!(tree = fts_open(paths, ftsoptions, NULL)))
 		err(1, "ftsopen");
 
-	while (entry = fts_read(tree)) {
+	while ((entry = fts_read(tree))) {
 		switch(entry->fts_info) {
 		case FTS_D:
 			if (isdepth)
