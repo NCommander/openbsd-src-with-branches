@@ -119,7 +119,6 @@ struct nfsnode {
 	nfsfh_t			n_fh;		/* Small File Handle */
 	struct ucred		*n_rcred;
 	struct ucred		*n_wcred;
-	struct lock             n_lock;
 };
 
 #define n_atim		n_un1.nf_atim
@@ -188,9 +187,9 @@ int	nfs_readdir __P((void *));
 int	nfs_readlink __P((void *));
 int	nfs_inactive __P((void *));
 int	nfs_reclaim __P((void *));
-int     nfs_lock __P((void *));
-int     nfs_unlock __P((void *));
-int     nfs_islocked __P((void *));
+#define nfs_lock ((int (*) __P((void *)))vop_generic_lock)
+#define nfs_unlock ((int (*) __P((void *)))vop_generic_unlock)
+#define nfs_islocked ((int (*) __P((void *)))vop_generic_islocked)
 int	nfs_bmap __P((void *));
 int	nfs_strategy __P((void *));
 int	nfs_print __P((void *));

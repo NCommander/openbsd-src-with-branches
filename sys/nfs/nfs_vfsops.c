@@ -181,7 +181,7 @@ nfs_statfs(mp, sbp, p)
 	}
 	strncpy(&sbp->f_fstypename[0], mp->mnt_vfc->vfc_name, MFSNAMELEN);
 	nfsm_reqdone;
-	vput(vp);
+	vrele(vp);
 	crfree(cred);
 	return (error);
 }
