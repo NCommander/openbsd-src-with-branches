@@ -1,4 +1,4 @@
-/*	$OpenBSD: aout_syms.c,v 1.3 2002/03/15 17:49:51 art Exp $	*/
+/*	$OpenBSD: aout_syms.c,v 1.4 2002/03/19 21:17:52 fgsch Exp $	*/
 /*
  * Copyright (c) 2002 Federico Schwindt <fgsch@openbsd.org>
  * All rights reserved. 
@@ -89,7 +89,7 @@ sym_check_aout(const char *name, struct pstate *ps)
 #endif
 	}
 
-	if (N_BADMAG(ahdr)) {
+	if (!error && N_BADMAG(ahdr)) {
 		error = 1;
 	}
 
