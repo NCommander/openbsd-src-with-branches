@@ -1,4 +1,4 @@
-/*	$OpenBSD: diffreg.c,v 1.54 2003/11/22 18:02:44 millert Exp $	*/
+/*	$OpenBSD: diffreg.c,v 1.55 2004/01/07 17:18:32 otto Exp $	*/
 
 /*
  * Copyright (C) Caldera International Inc.  2001-2002.
@@ -65,7 +65,7 @@
  */
 
 #ifndef lint
-static const char rcsid[] = "$OpenBSD: diffreg.c,v 1.54 2003/11/22 18:02:44 millert Exp $";
+static const char rcsid[] = "$OpenBSD: diffreg.c,v 1.55 2004/01/07 17:18:32 otto Exp $";
 #endif /* not lint */
 
 #include <sys/param.h>
@@ -1008,8 +1008,8 @@ restart:
 			    format == D_CONTEXT ? "---" : "+++", file2,
 			    ctime(&stb2.st_mtime));
 			anychange = 1;
-		} else if (a > context_vec_ptr->b + (2 * context) &&
-		    c > context_vec_ptr->d + (2 * context)) {
+		} else if (a > context_vec_ptr->b + (2 * context) + 1 &&
+		    c > context_vec_ptr->d + (2 * context) + 1) {
 			/*
 			 * If this change is more than 'context' lines from the
 			 * previous change, dump the record and reset it.
