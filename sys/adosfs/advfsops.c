@@ -1,4 +1,4 @@
-/*	$OpenBSD: advfsops.c,v 1.17 2000/04/25 06:10:15 niklas Exp $	*/
+/*	$OpenBSD: advfsops.c,v 1.18 2001/02/20 01:50:08 assar Exp $	*/
 /*	$NetBSD: advfsops.c,v 1.24 1996/12/22 10:10:12 cgd Exp $	*/
 
 /*
@@ -243,8 +243,7 @@ adosfs_mountfs(devvp, mp, p)
 	/* allocate and load bitmap, set free space */
 	amp->bitmap = malloc(((amp->numblks + 31) / 32) * sizeof(*amp->bitmap),
 	    M_ADOSFSBITMAP, M_WAITOK);
-	if (amp->bitmap)
-		adosfs_loadbitmap(amp);
+	adosfs_loadbitmap(amp);
 	if (mp->mnt_flag & MNT_RDONLY && amp->bitmap) {
 		/*
 		 * Don't need the bitmap any more if it's read-only.
