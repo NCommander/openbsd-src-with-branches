@@ -1,0 +1,8 @@
+#	$OpenBSD$
+#
+#	MP_LOCKDEBUG - multiprocessor kernel for debugging locks
+#
+
+include "arch/i386/conf/GENERIC.MP"
+
+option		MP_LOCKDEBUG
