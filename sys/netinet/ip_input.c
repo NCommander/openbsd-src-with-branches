@@ -1,4 +1,4 @@
-/*	$OpenBSD: ip_input.c,v 1.61 2000/12/03 19:56:20 angelos Exp $	*/
+/*	$OpenBSD: ip_input.c,v 1.62 2001/03/03 01:00:19 itojun Exp $	*/
 /*	$NetBSD: ip_input.c,v 1.30 1996/03/16 23:53:58 christos Exp $	*/
 
 /*
@@ -1221,6 +1221,9 @@ ip_dooptions(m)
 				break;
 
 			default:
+				/* XXX can't take &ipt->ipt_flg */
+				code = (u_char *)&ipt.ipt_ptr -
+				    (u_char *)ip + 1;
 				goto bad;
 			}
 			ntime = iptime();
