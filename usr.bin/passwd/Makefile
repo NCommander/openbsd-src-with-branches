@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.21 2001/05/25 12:20:48 hin Exp $
+#	$OpenBSD: Makefile,v 1.22 2001/06/26 20:16:43 hin Exp $
 
 .include <bsd.own.mk>
 
@@ -28,7 +28,7 @@ LDADD+=	-lkrb5 -lcrypto -lasn1
 SRCS+= new_pwd.c krb_passwd.c des_rw.c
 CFLAGS+= -DKERBEROS
 DPADD+=	${LIBKRB} ${LIBDES}
-LDADD+=	-lkadm -lkrb -ldes -lcom_err
+LDADD+=	-lkadm -lkrb -ldes -lcom_err -lkafs
 .endif
 
 BINMODE=4555
