@@ -1,4 +1,4 @@
-/*	$OpenBSD: autoconf.c,v 1.25 1998/02/26 10:38:58 johns Exp $	*/
+/*	$OpenBSD: autoconf.c,v 1.26 1998/03/09 09:15:28 deraadt Exp $	*/
 /*	$NetBSD: autoconf.c,v 1.73 1997/07/29 09:41:53 fair Exp $ */
 
 /*
@@ -1074,6 +1074,7 @@ mainbus_attach(parent, dev, aux)
 	static const char *const oldmon_special[] = {
 		"vmel",
 		"vmes",
+		"led",
 		NULL
 	};
 #endif /* SUN4 */
