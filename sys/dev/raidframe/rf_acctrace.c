@@ -1,5 +1,5 @@
-/*	$OpenBSD: rf_acctrace.c,v 1.1 1999/01/11 14:28:58 niklas Exp $	*/
-/*	$NetBSD: rf_acctrace.c,v 1.3 1999/02/05 00:06:06 oster Exp $	*/
+/*	$OpenBSD: rf_acctrace.c,v 1.2 1999/02/16 00:02:21 niklas Exp $	*/
+/*	$NetBSD: rf_acctrace.c,v 1.4 1999/08/13 03:41:52 oster Exp $	*/
 /*
  * Copyright (c) 1995 Carnegie-Mellon University.
  * All rights reserved.
@@ -46,7 +46,6 @@
 #include "rf_etimer.h"
 #include "rf_hist.h"
 #include "rf_shutdown.h"
-#include "rf_sys.h"
 
 static long numTracesSoFar;
 static int accessTraceBufCount = 0;

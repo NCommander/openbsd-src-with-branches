@@ -1,5 +1,5 @@
-/*	$OpenBSD: rf_dagdegwr.c,v 1.1 1999/01/11 14:29:07 niklas Exp $	*/
-/*	$NetBSD: rf_dagdegwr.c,v 1.3 1999/02/05 00:06:07 oster Exp $	*/
+/*	$OpenBSD: rf_dagdegwr.c,v 1.2 1999/02/16 00:02:29 niklas Exp $	*/
+/*	$NetBSD: rf_dagdegwr.c,v 1.4 1999/08/13 03:41:53 oster Exp $	*/
 /*
  * Copyright (c) 1995 Carnegie-Mellon University.
  * All rights reserved.
@@ -44,7 +44,6 @@
 #include "rf_memchunk.h"
 #include "rf_general.h"
 #include "rf_dagdegwr.h"
-#include "rf_sys.h"
 
 
 /******************************************************************************
