@@ -1,4 +1,4 @@
-/*	$OpenBSD: db.c,v 1.2 2001/10/24 14:40:00 deraadt Exp $ */
+/*	$OpenBSD: db.c,v 1.3 2002/02/13 23:05:48 deraadt Exp $ */
 
 /*
  * Copyright (c) 1997 Mats O Jansson <moj@stacken.kth.se>
@@ -32,7 +32,7 @@
  */
 
 #ifndef LINT
-static char rcsid[] = "$OpenBSD: db.c,v 1.2 2001/10/24 14:40:00 deraadt Exp $";
+static char rcsid[] = "$OpenBSD: db.c,v 1.3 2002/02/13 23:05:48 deraadt Exp $";
 #endif
 
 #include <sys/types.h>
@@ -48,8 +48,8 @@ static char rcsid[] = "$OpenBSD: db.c,v 1.2 2001/10/24 14:40:00 deraadt Exp $";
  * by sendmail -bi.
  */
 
-int db_hash_list_database(database)
-char *database;
+int
+db_hash_list_database(char *database)
 {
 	DB *db;
 	int  status;
@@ -72,4 +72,3 @@ char *database;
 	}
 	return(0);
 }
-

@@ -1,4 +1,4 @@
-/*	$OpenBSD: acl.h,v 1.4 1996/06/30 19:46:05 maja Exp $ */
+/*	$OpenBSD: acl.h,v 1.5 2002/02/16 21:28:11 millert Exp $ */
 
 /*
  * Copyright (c) 1994 Mats O Jansson <moj@stacken.kth.se>
@@ -83,5 +83,3 @@ void		acl_reset(void);
 __END_DECLS
 
 #endif /* !_ACL_H_ */
-
-

@@ -1,4 +1,4 @@
-/*	$OpenBSD: yplib_host.h,v 1.5 2002/02/16 21:28:11 millert Exp $ */
+/*	$OpenBSD: yplib_host.h,v 1.6 2002/02/17 19:42:40 millert Exp $ */
 
 /*
  * Copyright (c) 1992, 1993 Theo de Raadt <deraadt@theos.com>
@@ -54,4 +54,3 @@ CLIENT *yp_bind_host(char *server, u_long program, u_long version,
 	    u_short port, int usetcp);
 
 #endif /* _YPLIB_HOST_H_ */
-
