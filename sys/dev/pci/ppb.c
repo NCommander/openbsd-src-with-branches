@@ -122,7 +122,6 @@ ppbattach(parent, self, aux)
 	pba.pba_memt = pa->pa_memt;
 	pba.pba_dmat = pa->pa_dmat;
 	pba.pba_pc = pc;
-	pba.pba_flags = pa->pa_flags;
 	pba.pba_bus = PPB_BUSINFO_SECONDARY(busdata);
 	pba.pba_intrswiz = pa->pa_intrswiz;
 	pba.pba_intrtag = pa->pa_intrtag;
