@@ -1,4 +1,4 @@
-/*	$OpenBSD: ppc1_machdep.c,v 1.7 2002/06/07 01:01:40 miod Exp $	*/
+/*	$OpenBSD: ppc1_machdep.c,v 1.8 2002/06/08 15:50:00 miod Exp $	*/
 /*	$NetBSD: ofw_machdep.c,v 1.1 1996/09/30 16:34:50 ws Exp $	*/
 
 /*
@@ -360,7 +360,5 @@ bootcnputc(dev, c)
 	dev_t dev;
 	char c;
 {
-	if (c == '\n')
-		mvmeprom_outchar('\r');
 	mvmeprom_outchar(c);
 }
