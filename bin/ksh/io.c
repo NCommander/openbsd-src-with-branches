@@ -1,4 +1,4 @@
-/*	$OpenBSD: io.c,v 1.15 2004/12/18 21:04:52 millert Exp $	*/
+/*	$OpenBSD: io.c,v 1.16 2004/12/18 21:25:44 millert Exp $	*/
 
 /*
  * shell buffered IO and formatted output
@@ -259,7 +259,7 @@ savefd(fd, noclose)
 			close(fd);
 	} else
 		nfd = fd;
-	fd_clexec(nfd);
+	fcntl(nfd, F_SETFD, FD_CLOEXEC);
 	return nfd;
 }
 
