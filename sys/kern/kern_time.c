@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: kern_time.c,v 1.16.2.10 2004/06/05 23:13:01 niklas Exp $	*/
 /*	$NetBSD: kern_time.c,v 1.20 1996/02/18 11:57:06 fvdl Exp $	*/
 
 /*
@@ -101,7 +101,6 @@ settime(struct timeval *tv)
 	s = splclock();
 	timersub(tv, &time, &delta);
 	time = *tv;
-	(void)spllowersoftclock();
 	timeradd(&boottime, &delta, &boottime);
 #ifdef MULTIPROCESSOR
 	/*
