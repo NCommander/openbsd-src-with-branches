@@ -1,4 +1,4 @@
-/*	$OpenBSD: bpf.c,v 1.17 1999/08/08 00:43:00 niklas Exp $	*/
+/*	$OpenBSD: bpf.c,v 1.18 1999/08/10 02:42:30 deraadt Exp $	*/
 /*	$NetBSD: bpf.c,v 1.33 1997/02/21 23:59:35 thorpej Exp $	*/
 
 /*
@@ -1390,6 +1390,7 @@ bpfdetach(ifp)
 		}
 		pbp = &bp->bif_next;
 	}
+	ifp->if_bpf = NULL;
 }
 
 #if BSD >= 199103
