@@ -1,4 +1,4 @@
-/*	$OpenBSD: vfs_vnops.c,v 1.15 1998/01/15 01:24:40 csapuntz Exp $	*/
+/*	$OpenBSD: vfs_vnops.c,v 1.16 1998/07/28 00:13:04 millert Exp $	*/
 /*	$NetBSD: vfs_vnops.c,v 1.20 1996/02/04 02:18:41 christos Exp $	*/
 
 /*
@@ -465,7 +465,7 @@ vn_lock(vp, flags, p)
 			tsleep((caddr_t)vp, PINOD, "vn_lock", 0);
 			error = ENOENT;
 		} else {
-			error = VOP_LOCK(vp, flags | LK_INTERLOCK, p);
+			error = VOP_LOCK(vp, flags | LK_INTERLOCK | LK_CANRECURSE, p);
 			if (error == 0)
 				return (error);
 		}

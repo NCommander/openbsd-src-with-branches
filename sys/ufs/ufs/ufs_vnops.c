@@ -1,4 +1,4 @@
-/*	$OpenBSD: ufs_vnops.c,v 1.18 1997/12/11 04:25:46 csapuntz Exp $	*/
+/*	$OpenBSD: ufs_vnops.c,v 1.19 1998/07/28 00:13:18 millert Exp $	*/
 /*	$NetBSD: ufs_vnops.c,v 1.18 1996/05/11 18:28:04 mycroft Exp $	*/
 
 /*
@@ -1610,24 +1610,6 @@ ufs_readlink(v)
 		return (0);
 	}
 	return (VOP_READ(vp, ap->a_uio, 0, ap->a_cred));
-}
-
-/*
- * Ufs abort op, called after namei() when a CREATE/DELETE isn't actually
- * done. If a buffer has been saved in anticipation of a CREATE, delete it.
- */
-/* ARGSUSED */
-int
-ufs_abortop(v)
-	void *v;
-{
-	struct vop_abortop_args /* {
-		struct vnode *a_dvp;
-		struct componentname *a_cnp;
-	} */ *ap = v;
-	if ((ap->a_cnp->cn_flags & (HASBUF | SAVESTART)) == HASBUF)
-		FREE(ap->a_cnp->cn_pnbuf, M_NAMEI);
-	return (0);
 }
 
 /*

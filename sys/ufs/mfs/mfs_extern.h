@@ -1,4 +1,4 @@
-/*	$OpenBSD: mfs_extern.h,v 1.5 1997/11/06 05:59:23 csapuntz Exp $	*/
+/*	$OpenBSD: mfs_extern.h,v 1.6 1998/02/08 22:41:52 tholo Exp $	*/
 /*	$NetBSD: mfs_extern.h,v 1.4 1996/02/09 22:31:27 christos Exp $	*/
 
 /*-
@@ -66,7 +66,7 @@ int	mfs_close	__P((void *));
 int	mfs_inactive	__P((void *));
 int	mfs_reclaim	__P((void *));
 int	mfs_print	__P((void *));
-#define	mfs_revoke vop_revoke
+#define	mfs_revoke vop_generic_revoke
 int	mfs_badop	__P((void *));
 
 __END_DECLS
