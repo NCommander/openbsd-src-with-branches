@@ -1,4 +1,4 @@
-/*	$OpenBSD: pk_subr.c,v 1.10 2003/12/21 15:30:21 miod Exp $	*/
+/*	$OpenBSD: pk_subr.c,v 1.11 2004/01/03 14:08:53 espie Exp $	*/
 /*	$NetBSD: pk_subr.c,v 1.12 1996/03/30 21:54:33 christos Exp $	*/
 
 /*
@@ -476,7 +476,7 @@ pk_assoc(pkp, lcp, sa)
 		sa->x25_opts.op_wsize = lcp->lcd_windowsize;
 	sa->x25_net = pkp->pk_xcp->xc_addr.x25_net;
 	lcp->lcd_flags |= sa->x25_opts.op_flags;
-	lcp->lcd_stime = time.tv_sec;
+	lcp->lcd_stime = time_second;
 }
 
 int
