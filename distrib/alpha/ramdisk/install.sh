@@ -1,5 +1,5 @@
 #!/bin/sh
-#	$OpenBSD: install.sh,v 1.2 1997/02/21 17:42:09 rahnds Exp $
+#	$OpenBSD: install.sh,v 1.1 1997/05/07 12:46:56 niklas Exp $
 #	$NetBSD: install.sh,v 1.5.2.8 1996/08/27 18:15:05 gwr Exp $
 #
 # Copyright (c) 1996 The NetBSD Foundation, Inc.
@@ -180,6 +180,20 @@ case "$resp" in
 		${EDITOR} ${FILESYSTEMS}
 		;;
 	*)
+		;;
+esac
+
+echo	""
+echo	"You are about to create new filesystems on your disk."
+echo	"This will *destroy* any existing data.  This is your"
+echo -n	"last chance to abort.  Continue? [y] "
+getresp "y"
+case "$resp" in
+	y*|Y*)
+		;;
+	*)
+		md_not_going_to_install
+		exit
 		;;
 esac
 
