@@ -1,4 +1,4 @@
-/*	$OpenBSD: atoo.c,v 1.2 1996/06/26 05:39:37 deraadt Exp $	*/
+/*	$OpenBSD: atoo.c,v 1.3 1997/04/01 07:34:57 todd Exp $	*/
 
 /*
  * Copyright (c) 1991 Carnegie Mellon University
@@ -43,16 +43,16 @@
 #include "supextern.h"
 
 unsigned int atoo(ap)
-char *ap;
+	char *ap;
 {
-	register unsigned int n;
-	register char *p;
+	unsigned int n;
+	char *p;
 
 	p = ap;
 	n = 0;
-	while(*p == ' ' || *p == '	')
+	while (*p == ' ' || *p == '\t')
 		p++;
-	while(*p >= '0' && *p <= '7')
+	while (*p >= '0' && *p <= '7')
 		n = n * 8 + *p++ - '0';
 	return(n);
 }
