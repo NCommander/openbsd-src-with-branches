@@ -1,4 +1,4 @@
-/*	$OpenBSD: control.c,v 1.12 2004/01/06 23:14:58 henning Exp $ */
+/*	$OpenBSD: control.c,v 1.14 2004/01/09 13:47:07 henning Exp $ */
 
 /*
  * Copyright (c) 2003, 2004 Henning Brauer <henning@openbsd.org>
@@ -267,8 +267,9 @@ control_dispatch_msg(struct pollfd *pfd, int i)
 				    "with wrong length");
 			break;
 		case IMSG_CTL_KROUTE:
+		case IMSG_CTL_KROUTE_ADDR:
 			c->ibuf.pid = imsg.hdr.pid;
-			imsg_compose_parent(IMSG_CTL_KROUTE, imsg.hdr.pid,
+			imsg_compose_parent(imsg.hdr.type, imsg.hdr.pid,
 			    imsg.data, imsg.hdr.len - IMSG_HEADER_SIZE);
 			break;
 		default:

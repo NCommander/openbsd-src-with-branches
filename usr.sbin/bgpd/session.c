@@ -1,4 +1,4 @@
-/*	$OpenBSD: session.c,v 1.74 2004/01/07 01:41:49 henning Exp $ */
+/*	$OpenBSD: session.c,v 1.76 2004/01/09 13:47:08 henning Exp $ */
 
 /*
  * Copyright (c) 2003, 2004 Henning Brauer <henning@openbsd.org>
@@ -1411,6 +1411,7 @@ session_dispatch_imsg(struct imsgbuf *ibuf, int idx)
 			}
 			break;
 		case IMSG_CTL_KROUTE:
+		case IMSG_CTL_KROUTE_ADDR:
 		case IMSG_CTL_END:
 			if (idx != PFD_PIPE_MAIN)
 				fatalx("reconf request not from parent");
