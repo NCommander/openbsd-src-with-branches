@@ -1,4 +1,4 @@
-/*	$OpenBSD: hd.c,v 1.7 1998/03/27 08:37:06 millert Exp $	*/
+/*	$OpenBSD: hd.c,v 1.8 1998/04/25 00:38:16 millert Exp $	*/
 /*	$NetBSD: rd.c,v 1.33 1997/07/10 18:14:08 kleink Exp $	*/
 
 /*
@@ -630,7 +630,7 @@ hdclose(dev, flag, mode, p)
 			sleep((caddr_t)&rs->sc_tab, PRIBIO);
 		}
 		splx(s);
-		rs->sc_flags &= ~(HDF_CLOSING|HDF_WLABEL);
+		rs->sc_flags &= ~(HDF_CLOSING);
 		wakeup((caddr_t)rs);
 	}
 	return(0);
