@@ -1,4 +1,4 @@
-/*	$OpenBSD: subr_prf.c,v 1.5 1996/05/02 13:12:20 deraadt Exp $	*/
+/*	$OpenBSD: subr_prf.c,v 1.6 1996/06/26 20:39:21 dm Exp $	*/
 /*	$NetBSD: subr_prf.c,v 1.25 1996/04/22 01:38:46 christos Exp $	*/
 
 /*-
@@ -114,7 +114,7 @@ panic(fmt, va_alist)
 	if (panicstr)
 		bootopt |= RB_NOSYNC;
 	else {
-		vsprintf (panicbuf, fmt, ap);
+		vsprintf(panicbuf, fmt, ap);
 		panicstr = panicbuf;
 	}
 
@@ -638,10 +638,10 @@ sprintf(buf, cfmt, va_alist)
 	va_list ap;
 	int ret;
 
-	va_start (ap, cfmt);
-	ret = vsprintf (buf, cfmt, ap);
-	va_end (ap);
-	return (ret);
+	va_start(ap, cfmt);
+	ret = vsprintf(buf, cfmt, ap);
+	va_end(ap);
+	return(ret);
 }
 
 /*
