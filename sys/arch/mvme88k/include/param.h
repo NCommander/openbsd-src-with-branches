@@ -1,4 +1,4 @@
-/*	$OpenBSD: param.h,v 1.28 2003/06/02 23:27:52 millert Exp $ */
+/*	$OpenBSD: param.h,v 1.29 2003/08/01 07:47:00 miod Exp $ */
 /*
  * Copyright (c) 1999 Steve Murphree, Jr.
  * Copyright (c) 1988 University of Utah.
@@ -157,7 +157,6 @@
 /*
  * Get interrupt glue.
  */
-#include <machine/psl.h>
 #include <machine/intr.h>
 
 #ifdef   _KERNEL
