@@ -1,4 +1,4 @@
-/* $OpenBSD: keynote-ver.y,v 1.8 2001/09/03 20:14:51 deraadt Exp $ */
+/* $OpenBSD: keynote-ver.y,v 1.9 2004/06/25 05:06:49 msf Exp $ */
 /*
  * The author of this code is Angelos D. Keromytis (angelos@dsl.cis.upenn.edu)
  *
@@ -31,6 +31,7 @@
 
 #include <sys/types.h>
 
+#include <regex.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>

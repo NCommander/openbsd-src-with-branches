@@ -1,4 +1,4 @@
-/* $OpenBSD: environment.c,v 1.17 2003/04/02 23:01:10 millert Exp $ */
+/* $OpenBSD: environment.c,v 1.18 2004/06/25 05:06:49 msf Exp $ */
 /*
  * The author of this code is Angelos D. Keromytis (angelos@dsl.cis.upenn.edu)
  *
@@ -25,12 +25,12 @@
 #include <ctype.h>
 #include <fcntl.h>
 #include <memory.h>
+#include <regex.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
 #include <unistd.h>
 
-#include "header.h"
 #include "keynote.h"
 #include "assertion.h"
 

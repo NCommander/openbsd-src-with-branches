@@ -1,4 +1,4 @@
-/* $OpenBSD: keynote-sign.c,v 1.14 2003/07/05 17:01:49 deraadt Exp $ */
+/* $OpenBSD: keynote-sign.c,v 1.15 2004/06/25 05:06:49 msf Exp $ */
 /*
  * The author of this code is Angelos D. Keromytis (angelos@dsl.cis.upenn.edu)
  *
@@ -23,6 +23,7 @@
 #include <sys/stat.h>
 
 #include <ctype.h>
+#include <regex.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
