@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.5 2000/06/05 16:39:51 art Exp $
+#	$OpenBSD: Makefile,v 1.6 2000/09/03 18:41:20 espie Exp $
 #
 # Makefile for OpenBSD top-3.4.
 
@@ -7,10 +7,8 @@ PROG=	top
 CFLAGS+=-I. -I${.CURDIR} -DORDER
 SRCS=	commands.c display.c machine.c screen.c top.c username.c utils.c \
 	version.c
-DPADD=	${LIBCURSES} ${LIBM} ${LIBKVM}
-LDADD=	-lcurses -lm -lkvm
-BINGRP=	kmem
-BINMODE=2555
+DPADD=	${LIBCURSES} ${LIBM}
+LDADD=	-lcurses -lm
 
 CLEANFILES+=	sigdesc.h
 
