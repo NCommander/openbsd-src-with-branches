@@ -1,4 +1,4 @@
-/*	$OpenBSD: misc.c,v 1.4 2001/02/28 17:52:54 deraadt Exp $	*/
+/*	$OpenBSD: cli.c,v 1.10 2001/03/01 03:38:33 deraadt Exp $	*/
 
 /*
  * Copyright (c) 2000 Markus Friedl.  All rights reserved.
@@ -25,7 +25,7 @@
  */
 
 #include "includes.h"
-RCSID("$OpenBSD: cli.c,v 1.9 2001/02/10 12:44:02 markus Exp $");
+RCSID("$OpenBSD: cli.c,v 1.10 2001/03/01 03:38:33 deraadt Exp $");
 
 #include "xmalloc.h"
 #include "log.h"
@@ -136,12 +136,16 @@ cli_read(char* buf, int size, int echo)
 {
 	char ch = 0;
 	int i = 0;
+	int n;
 
 	if (!echo)
 		cli_echo_disable();
 
 	while (ch != '\n') {
-		if (read(cli_input, &ch, 1) != 1)
+		n = read(cli_input, &ch, 1);
+		if (n == -1 && (errno == EAGAIN || errno == EINTR))
+			continue;
+		if (n != 1)
 			break;
 		if (ch == '\n' || intr != 0)
 			break;
