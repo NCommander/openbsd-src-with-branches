@@ -1,4 +1,4 @@
-/*	$OpenBSD: fault.c,v 1.4 2004/02/23 19:09:57 drahn Exp $	*/
+/*	$OpenBSD: fault.c,v 1.5 2004/08/04 20:20:18 miod Exp $	*/
 /*	$NetBSD: fault.c,v 1.46 2004/01/21 15:39:21 skrll Exp $	*/
 
 /*
@@ -105,6 +105,7 @@
 #endif
 #endif
 
+#include <arm/db_machdep.h>
 #include <arch/arm/arm/disassem.h>
 #include <arm/machdep.h>
  
