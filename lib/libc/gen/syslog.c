@@ -32,7 +32,7 @@
  */
 
 #if defined(LIBC_SCCS) && !defined(lint)
-static char rcsid[] = "$OpenBSD: syslog.c,v 1.15 2002/02/18 00:07:56 millert Exp $";
+static char rcsid[] = "$OpenBSD: syslog.c,v 1.16 2002/02/19 19:39:36 millert Exp $";
 #endif /* LIBC_SCCS and not lint */
 
 #include <sys/types.h>
@@ -206,7 +206,7 @@ vsyslog_r(pri, data, fmt, ap)
 		DEC();
 	}
 	if (data->log_stat & LOG_PID) {
-		prlen = snprintf(p, tbuf_left, "[%d]", getpid());
+		prlen = snprintf(p, tbuf_left, "[%ld]", (long)getpid());
 		DEC();
 	}
 	if (data->log_tag != NULL) {

@@ -1,4 +1,4 @@
-/*	$OpenBSD: login_chpass.c,v 1.5 2002/01/06 21:53:28 millert Exp $	*/
+/*	$OpenBSD: login_chpass.c,v 1.6 2002/02/16 21:27:30 millert Exp $	*/
 
 /*-
  * Copyright (c) 1995,1996 Berkeley Software Design, Inc. All rights reserved.
@@ -309,8 +309,8 @@ krb_chpass(username, instance, argv)
 	krb_get_default_principal(principal.name,
 	    principal.instance, principal.realm);
 
-	snprintf(tktstring, sizeof(tktstring), "%s.chpass.%s.%d",
-	    TKT_ROOT, username, getpid());
+	snprintf(tktstring, sizeof(tktstring), "%s.chpass.%s.%ld",
+	    TKT_ROOT, username, (long)getpid());
 	krb_set_tkt_string(tktstring);
 
 	(void)setpriority(PRIO_PROCESS, 0, -4);

@@ -1,4 +1,4 @@
-/*	$OpenBSD: ypserv.c,v 1.20 2002/02/18 22:20:55 deraadt Exp $ */
+/*	$OpenBSD: ypserv.c,v 1.21 2002/02/19 19:39:41 millert Exp $ */
 
 /*
  * Copyright (c) 1994 Mats O Jansson <moj@stacken.kth.se>
@@ -32,7 +32,7 @@
  */
 
 #ifndef LINT
-static char rcsid[] = "$OpenBSD: ypserv.c,v 1.20 2002/02/18 22:20:55 deraadt Exp $";
+static char rcsid[] = "$OpenBSD: ypserv.c,v 1.21 2002/02/19 19:39:41 millert Exp $";
 #endif
 
 #include <sys/types.h>
@@ -454,8 +454,8 @@ main(argc, argv)
 		openlog("ypserv", LOG_PID, LOG_DAEMON);
 	} else {
 #ifndef RPC_SVC_FG
-		int size;
-		int pid, i;
+		int size, i;
+		pid_t pid;
 
 		pid = fork();
 		if (pid < 0) {
