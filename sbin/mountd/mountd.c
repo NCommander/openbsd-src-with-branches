@@ -1,4 +1,4 @@
-/*	$OpenBSD: mountd.c,v 1.7 1996/06/25 15:57:20 deraadt Exp $	*/
+/*	$OpenBSD: mountd.c,v 1.8 1996/07/02 10:43:56 deraadt Exp $	*/
 /*	$NetBSD: mountd.c,v 1.31 1996/02/18 11:57:53 fvdl Exp $	*/
 
 /*
@@ -1377,7 +1377,8 @@ get_host(cp, grp, tgrp)
 
 	/* only insert each host onto the list once */
 	for (checkgrp = tgrp; checkgrp; checkgrp = checkgrp->gr_next) {
-		if (checkgrp->gr_ptr.gt_hostent != NULL &&
+		if (checkgrp->gr_type == GT_HOST &&
+		    checkgrp->gr_ptr.gt_hostent != NULL &&
 		    !strcmp(checkgrp->gr_ptr.gt_hostent->h_name, hp->h_name)) {
 			grp->gr_type = GT_IGNORE;
 			return (0);
