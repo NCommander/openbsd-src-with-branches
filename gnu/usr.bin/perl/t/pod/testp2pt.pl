@@ -42,15 +42,30 @@ BEGIN {
 sub catfile(@) { File::Spec->catfile(@_); }
 
 my $INSTDIR = abs_path(dirname $0);
-$INSTDIR = VMS::Filespec::unixpath($INSTDIR) if $^O eq 'VMS';
-$INSTDIR =~ s#/$## if $^O eq 'VMS';
-$INSTDIR = (dirname $INSTDIR) if (basename($INSTDIR) eq 'pod');
-$INSTDIR = (dirname $INSTDIR) if (basename($INSTDIR) eq 't');
+if ($^O eq 'VMS') { # clean up directory spec
+    $INSTDIR = VMS::Filespec::unixpath($INSTDIR);
+    $INSTDIR =~ s#/$##;
+    $INSTDIR =~ s#/000000/#/#;
+}
+
+if ($^O eq 'VMS') {
+  # File::Spec::VMS::splitdir doesn't work on Unix syntax filespecs, but
+  # on VMS syntax filespecs dirname returns (as documented) the directory
+  # part of the path (NOT the parent directory, as is assumed in this script).
+  $INSTDIR = (dirname $INSTDIR) if (basename($INSTDIR) eq 'pod');
+  $INSTDIR = (dirname $INSTDIR) if (basename($INSTDIR) eq 't');
+}
+else {
+  $INSTDIR = (dirname $INSTDIR) if ((File::Spec->splitdir($INSTDIR))[-1] eq 'pod');
+  $INSTDIR = (dirname $INSTDIR) if ((File::Spec->splitdir($INSTDIR))[-1] eq 't');
+}
+
 my @PODINCDIRS = ( catfile($INSTDIR, 'lib', 'Pod'),
                    catfile($INSTDIR, 'scripts'),
                    catfile($INSTDIR, 'pod'),
                    catfile($INSTDIR, 't', 'pod')
                  );
+print "PODINCDIRS = ",join(', ',@PODINCDIRS),"\n";
 
 ## Find the path to the file to =include
 sub findinclude {
@@ -106,7 +121,7 @@ sub begin_input {
 sub podinc2plaintext( $ $ ) {
     my ($infile, $outfile) = @_;
     local $_;
-    my $text_parser = $MYPKG->new;
+    my $text_parser = $MYPKG->new(quotes => "`'");
     $text_parser->parse_from_file($infile, $outfile);
 }
 
@@ -152,7 +167,7 @@ sub testpodplaintext( @ ) {
    for $podfile (@testpods) {
       ($testname, $_) = fileparse($podfile);
       $testdir ||=  $_;
-      $testname  =~ s/\.t$//;
+      $testname  =~ s/\..*$//;
       $cmpfile   =  $testdir . $testname . '.xr';
       $outfile   =  $testdir . $testname . '.OUT';
 

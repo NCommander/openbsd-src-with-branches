@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1997, 1998, 1999 Kungliga Tekniska Högskolan
+ * Copyright (c) 1997 - 2000 Kungliga Tekniska Högskolan
  * (Royal Institute of Technology, Stockholm, Sweden). 
  * All rights reserved. 
  *
@@ -31,7 +31,7 @@
  * SUCH DAMAGE. 
  */
 
-/* $KTH: krb-protos.h,v 1.24 1999/12/02 16:58:42 joda Exp $ */
+/* $KTH: krb-protos.h,v 1.33 2001/08/26 01:46:51 assar Exp $ */
 
 #ifndef __krb_protos_h__
 #define __krb_protos_h__
@@ -245,10 +245,18 @@ krb_get_config_string __P((const char *variable));
 
 int KRB_LIB_FUNCTION
 krb_get_cred __P((
-        char *service,
-        char *instance,
-        char *realm,
+        const char *service,
+        const char *instance,
+        const char *realm,
         CREDENTIALS *c));
+
+int KRB_LIB_FUNCTION
+krb_get_cred_kdc __P((
+	const char *service,
+	const char *sinstance,
+	const char *realm,
+	int lifetime,
+	CREDENTIALS *ret_cred));
 
 int KRB_LIB_FUNCTION
 krb_get_default_principal __P((
@@ -328,9 +336,9 @@ krb_get_lrealm __P((
 int KRB_LIB_FUNCTION
 krb_get_nir __P((
 	void *from,
-	char *name,
-	char *instance,
-	char *realm));
+	char *name, size_t name_len,
+	char *instance, size_t instance_len,
+	char *realm, size_t realm_len));
 
 char * KRB_LIB_FUNCTION
 krb_get_phost __P((const char *alias));
@@ -457,10 +465,16 @@ krb_mk_priv __P((
 int KRB_LIB_FUNCTION
 krb_mk_req __P((
 	KTEXT authent,
-	char *service,
-	char *instance,
-	char *realm,
+	const char *service,
+	const char *instance,
+	const char *realm,
 	int32_t checksum));
+
+int KRB_LIB_FUNCTION
+krb_get_credentials __P((const char *service, 
+			 const char *instance, 
+			 const char *realm, 
+			 CREDENTIALS *cred));
 
 int32_t KRB_LIB_FUNCTION
 krb_mk_safe __P((
@@ -712,6 +726,10 @@ save_credentials __P((
 	int32_t issue_date));
 
 int KRB_LIB_FUNCTION
+save_credentials_cred __P((
+	CREDENTIALS *cred));
+
+int KRB_LIB_FUNCTION
 send_to_kdc __P((
 	KTEXT pkt,
 	KTEXT rpkt,
@@ -755,6 +773,9 @@ int KRB_LIB_FUNCTION
 tf_put_pname __P((const char *p));
 
 int KRB_LIB_FUNCTION
+tf_replace_cred __P((CREDENTIALS *cred));
+
+int KRB_LIB_FUNCTION
 tf_save_cred __P((
 	char *service,
 	char *instance,
@@ -785,5 +806,17 @@ tkt_string __P((void));
 int KRB_LIB_FUNCTION
 krb_add_our_ip_for_realm __P((const char *user, const char *instance,
 			      const char *realm, const char *password));
+
+void KRB_LIB_FUNCTION
+encrypt_ktext __P((
+	KTEXT cip,
+	des_cblock *key,
+	int encrypt));
+
+int KRB_LIB_FUNCTION
+krb_get_our_ip_for_realm __P((const char *realm, struct in_addr *ip_addr));
+
+void KRB_LIB_FUNCTION
+krb_generate_random_block __P((void *, size_t));
 
 #endif /* __krb_protos_h__ */

@@ -1,6 +1,6 @@
 /* system.h - Get common system includes and various definitions and
    declarations based on autoconf macros.
-   Copyright (C) 1998, 1999 Free Software Foundation, Inc.
+   Copyright (C) 1998, 1999, 2000 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -21,6 +21,11 @@ Boston, MA 02111-1307, USA.  */
 
 #ifndef __GCC_SYSTEM_H__
 #define __GCC_SYSTEM_H__
+
+/* This is the location of the online document giving information how
+   to report bugs. If you change this string, also check for strings
+   not under control of the preprocessor.  */
+#define GCCBUGURL "<URL:http://www.gnu.org/software/gcc/bugs.html>"
 
 /* We must include stdarg.h/varargs.h before stdio.h. */
 #ifdef ANSI_PROTOTYPES
@@ -249,6 +254,9 @@ extern int errno;
 #ifndef WEXITSTATUS
 #define WEXITSTATUS(S) (((S) & 0xff00) >> 8)
 #endif
+#ifndef WSTOPSIG
+#define WSTOPSIG WEXITSTATUS
+#endif
 
 
 
@@ -330,6 +338,10 @@ extern char *getwd ();
 extern char *sbrk ();
 #endif
 
+#ifdef NEED_DECLARATION_STRSTR
+extern char *strstr ();
+#endif
+
 #ifdef HAVE_STRERROR
 # ifdef NEED_DECLARATION_STRERROR
 #  ifndef strerror
@@ -391,9 +403,9 @@ extern void fatal PVPROTO((const char *, ...)) ATTRIBUTE_PRINTF_1 ATTRIBUTE_NORE
 		       trim_filename (__FILE__), __LINE__)
 #else
 #define abort() fatal ("Internal compiler error in `%s', at %s:%d\n"	\
-  "Please submit a full bug report to `egcs-bugs@egcs.cygnus.com'.\n"	\
-  "See <URL:http://egcs.cygnus.com/faq.html#bugreport> for details.", \
-  __PRETTY_FUNCTION__, trim_filename (__FILE__), __LINE__)
+  "Please submit a full bug report.\n"	\
+  "See %s for instructions.", \
+  __PRETTY_FUNCTION__, trim_filename (__FILE__), __LINE__, GCCBUGURL)
 #endif /* recent gcc */
 
 /* trim_filename is in toplev.c.  Define a stub macro for files that

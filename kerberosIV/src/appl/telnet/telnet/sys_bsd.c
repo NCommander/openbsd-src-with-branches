@@ -33,7 +33,7 @@
 
 #include "telnet_locl.h"
 
-RCSID("$KTH: sys_bsd.c,v 1.23 1998/06/09 19:24:46 joda Exp $");
+RCSID("$KTH: sys_bsd.c,v 1.28.2.1 2002/02/06 03:41:45 assar Exp $");
 
 /*
  * The following routines try to encapsulate what is system dependent
@@ -118,9 +118,6 @@ TerminalAutoFlush(void)
 #endif	/* LNOFLSH */
 }
 
-#ifdef	KLUDGELINEMODE
-extern int kludgelinemode;
-#endif
 /*
  * TerminalSpecialChars()
  *
@@ -314,10 +311,10 @@ TerminalRestoreState()
 
 
 #ifdef	SIGTSTP
-static RETSIGTYPE susp();
+static RETSIGTYPE susp(int);
 #endif	/* SIGTSTP */
 #ifdef	SIGINFO
-static RETSIGTYPE ayt();
+static RETSIGTYPE ayt(int);
 #endif
 
 void
@@ -494,9 +491,8 @@ TerminalNewMode(int f)
 	}
     } else {
         sigset_t sm;
-#ifdef	SIGINFO
-	RETSIGTYPE ayt_status();
 
+#ifdef	SIGINFO
 	signal(SIGINFO, ayt_status);
 #endif
 #ifdef	SIGTSTP
@@ -655,10 +651,17 @@ deadpeer(int sig)
 	longjmp(peerdied, -1);
 }
 
+int intr_happened = 0;
+int intr_waiting = 0;
+
     /* ARGSUSED */
 static RETSIGTYPE
 intr(int sig)
 {
+    if (intr_waiting) {
+	intr_happened = 1;
+	return;
+    }
     if (localchars) {
 	intp();
 	return;
@@ -774,6 +777,11 @@ process_rings(int netin,
     int returnValue = 0;
     static struct timeval TimeValue = { 0 };
 
+    if (net >= FD_SETSIZE
+	|| tout >= FD_SETSIZE
+	|| tin >= FD_SETSIZE)
+	errx (1, "fd too large");
+
     if (netout) {
 	FD_SET(net, &obits);
     }
@@ -791,7 +799,7 @@ process_rings(int netin,
 	FD_SET(net, &xbits);
     }
 #endif
-    if ((c = select(16, &ibits, &obits, &xbits,
+    if ((c = select(FD_SETSIZE, &ibits, &obits, &xbits,
 			(poll == 0)? (struct timeval *)0 : &TimeValue)) < 0) {
 	if (c == -1) {
 		    /*

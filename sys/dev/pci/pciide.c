@@ -1,4 +1,4 @@
-/*	$OpenBSD: pciide.c,v 1.119 2003/03/28 23:49:48 millert Exp $	*/
+/*	$OpenBSD: pciide.c,v 1.116 2003/02/24 20:54:15 grange Exp $	*/
 /*	$NetBSD: pciide.c,v 1.127 2001/08/03 01:31:08 tsutsui Exp $	*/
 
 /*
@@ -497,10 +497,6 @@ const struct pciide_product_desc pciide_promise_products[] =  {
 	{ PCI_PRODUCT_PROMISE_PDC20277,
 	  IDE_PCI_CLASS_OVERRIDE,
 	  pdc202xx_chip_map,
-	},
-	{ PCI_PRODUCT_PROMISE_PDC20376,	/* PDC20376 SATA */
-	  IDE_PCI_CLASS_OVERRIDE,	/* XXX: subclass RAID */
-	  pdc202xx_chip_map,
 	}
 };
 
@@ -717,8 +713,10 @@ pciide_attach(parent, self, aux)
 	sc->sc_pc = pa->pa_pc;
 	sc->sc_tag = pa->pa_tag;
 
-	WDCDEBUG_PRINT((" sc_pc=%p, sc_tag=%p, pa_class=0x%x\n", sc->sc_pc,
-	    sc->sc_tag, pa->pa_class), DEBUG_PROBE);
+#ifdef WDCDEBUG
+       if (wdcdebug_pciide_mask & DEBUG_PROBE)
+               printf(" sc_pc %p, sc_tag %p\n", sc->sc_pc, sc->sc_tag);
+#endif
 
 	sc->sc_pp->chip_map(sc, pa);
 
@@ -3232,7 +3230,7 @@ sis_chip_map(sc, pa)
 		 * have problems with UDMA
 		 */
 		if (rev >= 0xd0 &&
-		    (PCI_PRODUCT(pchb_id) != PCI_PRODUCT_SIS_530 ||
+		    (PCI_PRODUCT(pchb_id) != PCI_PRODUCT_SIS_SiS530 ||
 		    PCI_REVISION(pchb_class) >= 0x03))
 			sc->sc_wdcdev.cap |= WDC_CAPABILITY_UDMA;
 	}
@@ -4037,8 +4035,7 @@ hpt_pci_intr(arg)
 	(sc)->sc_pp->ide_product == PCI_PRODUCT_PROMISE_PDC20271  ||	\
 	(sc)->sc_pp->ide_product == PCI_PRODUCT_PROMISE_PDC20275  ||	\
 	(sc)->sc_pp->ide_product == PCI_PRODUCT_PROMISE_PDC20276  ||	\
-	(sc)->sc_pp->ide_product == PCI_PRODUCT_PROMISE_PDC20277  ||	\
-	(sc)->sc_pp->ide_product == PCI_PRODUCT_PROMISE_PDC20376)
+	(sc)->sc_pp->ide_product == PCI_PRODUCT_PROMISE_PDC20277)
 #define PDC_IS_268(sc)							\
 	((sc)->sc_pp->ide_product == PCI_PRODUCT_PROMISE_PDC20268 ||	\
 	(sc)->sc_pp->ide_product == PCI_PRODUCT_PROMISE_PDC20268R ||	\
@@ -4046,15 +4043,13 @@ hpt_pci_intr(arg)
 	(sc)->sc_pp->ide_product == PCI_PRODUCT_PROMISE_PDC20271  ||	\
 	(sc)->sc_pp->ide_product == PCI_PRODUCT_PROMISE_PDC20275  ||	\
 	(sc)->sc_pp->ide_product == PCI_PRODUCT_PROMISE_PDC20276  ||	\
-	(sc)->sc_pp->ide_product == PCI_PRODUCT_PROMISE_PDC20277  ||	\
-	(sc)->sc_pp->ide_product == PCI_PRODUCT_PROMISE_PDC20376)
+	(sc)->sc_pp->ide_product == PCI_PRODUCT_PROMISE_PDC20277)
 #define PDC_IS_269(sc)							\
 	((sc)->sc_pp->ide_product == PCI_PRODUCT_PROMISE_PDC20269 ||	\
 	(sc)->sc_pp->ide_product == PCI_PRODUCT_PROMISE_PDC20271  ||	\
 	(sc)->sc_pp->ide_product == PCI_PRODUCT_PROMISE_PDC20275  ||	\
 	(sc)->sc_pp->ide_product == PCI_PRODUCT_PROMISE_PDC20276  ||	\
-	(sc)->sc_pp->ide_product == PCI_PRODUCT_PROMISE_PDC20277  ||	\
-	(sc)->sc_pp->ide_product == PCI_PRODUCT_PROMISE_PDC20376)
+	(sc)->sc_pp->ide_product == PCI_PRODUCT_PROMISE_PDC20277)
 
 static __inline u_int8_t
 pdc268_config_read(struct channel_softc *chp, int index)

@@ -39,7 +39,7 @@ print OUT <<'!NO!SUBS!';
 #############################################################################
 # podselect -- command to invoke the podselect function in Pod::Select
 #
-# Copyright (c) 1996-1999 by Bradford Appleton. All rights reserved.
+# Copyright (c) 1996-2000 by Bradford Appleton. All rights reserved.
 # This file is part of "PodParser". PodParser is free software;
 # you can redistribute it and/or modify it under the same terms
 # as Perl itself.
@@ -72,7 +72,7 @@ Print the manual page and exit.
 =item B<-section>S< >I<section-spec>
 
 Specify a section to include in the output.
-See L<Pod::Parser/"SECTION SPECIFICATIONS">
+See L<Pod::Select/"SECTION SPECIFICATIONS">
 for the format to use for I<section-spec>.
 This option may be given multiple times on the command line.
 

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1995, 1996, 1997 Kungliga Tekniska Högskolan
+ * Copyright (c) 1995 - 2000 Kungliga Tekniska Högskolan
  * (Royal Institute of Technology, Stockholm, Sweden).
  * All rights reserved.
  * 
@@ -33,10 +33,20 @@
 
 #include "krb_locl.h"
 
-RCSID("$KTH: rd_safe.c,v 1.26 1999/12/02 16:58:43 joda Exp $");
+RCSID("$KTH: rd_safe.c,v 1.28 2001/09/16 22:41:58 assar Exp $");
 
 /* application include files */
 #include "krb-archaeology.h"
+
+#ifndef DES_QUAD_GUESS
+/* Temporary fixes for krb_{rd,mk}_safe */
+#define DES_QUAD_GUESS 0
+#define DES_QUAD_NEW 1
+#define DES_QUAD_OLD 2
+
+#define DES_QUAD_DEFAULT DES_QUAD_GUESS
+
+#endif /* DES_QUAD_GUESS */
 
 /* Generate two checksums in the given byteorder of the data, one
  * new-form and one old-form. It has to be done this way to be
@@ -50,7 +60,7 @@ void
 fixup_quad_cksum(void *start, size_t len, des_cblock *key, 
 		 void *new_checksum, void *old_checksum, int little)
 {
-    des_quad_cksum((des_cblock*)start, (des_cblock*)new_checksum, len, 2, key);
+    des_quad_cksum(start, new_checksum, len, 2, key);
     if(HOST_BYTE_ORDER){
 	if(little){
 	    memcpy(old_checksum, new_checksum, 16);

@@ -33,7 +33,7 @@
 
 #include "telnetd.h"
 
-RCSID("$KTH: telnetd.c,v 1.63 2000/10/08 13:32:28 assar Exp $");
+RCSID("$KTH: telnetd.c,v 1.65 2001/08/29 00:45:23 assar Exp $");
 
 #ifdef _SC_CRAY_SECURE_SYS
 #include <sys/sysv.h>
@@ -138,6 +138,10 @@ char valid_opts[] = "Bd:hklnS:u:UL:y"
 
 static void doit(struct sockaddr*, int);
 
+#ifdef ENCRYPTION
+extern int des_check_key;
+#endif
+
 int
 main(int argc, char **argv)
 {
@@ -150,7 +154,6 @@ main(int argc, char **argv)
     int tos = -1;
 #endif
 #ifdef ENCRYPTION
-    extern int des_check_key;
     des_check_key = 1;	/* Kludge for Mac NCSA telnet 2.6 /bg */
 #endif
     pfrontp = pbackp = ptyobuf;
@@ -289,9 +292,14 @@ main(int argc, char **argv)
 #endif
 	    break;
 
-	case 'u':
-	    utmp_len = atoi(optarg);
+	case 'u': {
+	    char *eptr;
+
+	    utmp_len = strtol(optarg, &eptr, 0);
+	    if (optarg == eptr)
+		fprintf(stderr, "telnetd: unknown utmp len (%s)\n", optarg);
 	    break;
+	}
 
 	case 'U':
 	    registerd_host_only = 1;
@@ -490,7 +498,6 @@ int
 getterminaltype(char *name, size_t name_sz)
 {
     int retval = -1;
-    void _gettermname();
 
     settimer(baseline);
 #ifdef AUTHENTICATION
@@ -629,7 +636,7 @@ getterminaltype(char *name, size_t name_sz)
 }  /* end of getterminaltype */
 
 void
-_gettermname()
+_gettermname(void)
 {
     /*
      * If the client turned off the option,
@@ -653,9 +660,9 @@ terminaltypeok(char *s)
 }
 
 
-char *hostname;
 char host_name[MaxHostNameLen];
 char remote_host_name[MaxHostNameLen];
+char remote_utmp_name[MaxHostNameLen];
 
 /*
  * Get a pty, scan input lines.
@@ -663,12 +670,10 @@ char remote_host_name[MaxHostNameLen];
 static void
 doit(struct sockaddr *who, int who_len)
 {
-    char *host = NULL;
     int level;
     int ptynum;
     char user_name[256];
     int error;
-    char host_addr[256];
 
     /*
      * Find an available pty to use.
@@ -693,43 +698,42 @@ doit(struct sockaddr *who, int who_len)
     }
 #endif	/* _SC_CRAY_SECURE_SYS */
 
-    error = getnameinfo_verified (who, who_len, host_addr, sizeof(host_addr),
+    error = getnameinfo_verified (who, who_len,
+				  remote_host_name,
+				  sizeof(remote_host_name),
 				  NULL, 0, 
 				  registerd_host_only ? NI_NAMEREQD : 0);
     if (error)
 	fatal(net, "Couldn't resolve your address into a host name.\r\n\
 Please contact your net administrator");
 
-    /*
-     * We must make a copy because Kerberos is probably going
-     * to also do a gethost* and overwrite the static data...
-     */
-    strlcpy(remote_host_name, host_addr, sizeof(remote_host_name));
-    host = remote_host_name;
-
-    /* XXX - should be k_gethostname? */
     gethostname(host_name, sizeof (host_name));
-    hostname = host_name;
+
+    strlcpy (remote_utmp_name, remote_host_name, sizeof(remote_utmp_name));
 
     /* Only trim if too long (and possible) */
-    if (strlen(remote_host_name) > abs(utmp_len)) {
+    if (strlen(remote_utmp_name) > utmp_len) {
 	char *domain = strchr(host_name, '.');
-	char *p = strchr(remote_host_name, '.');
-	if (domain && p && (strcmp(p, domain) == 0))
-	    *p = 0; /* remove domain part */
+	char *p = strchr(remote_utmp_name, '.');
+	if (domain != NULL && p != NULL && (strcmp(p, domain) == 0))
+	    *p = '\0'; /* remove domain part */
     }
-
 
     /*
      * If hostname still doesn't fit utmp, use ipaddr.
      */
-    if (strlen(remote_host_name) > abs(utmp_len))
-	strlcpy(remote_host_name,
-		host_addr,
-		sizeof(remote_host_name));
+    if (strlen(remote_utmp_name) > utmp_len) {
+	error = getnameinfo (who, who_len,
+			     remote_utmp_name,
+			     sizeof(remote_utmp_name),
+			     NULL, 0,
+			     NI_NUMERICHOST);
+	if (error)
+	    fatal(net, "Couldn't get numeric address\r\n");
+    }
 
 #ifdef AUTHENTICATION
-    auth_encrypt_init(hostname, host, "TELNETD", 1);
+    auth_encrypt_init(host_name, remote_host_name, "TELNETD", 1);
 #endif
 
     init_env();
@@ -750,7 +754,8 @@ Please contact your net administrator");
 #endif	/* _SC_CRAY_SECURE_SYS */
 
     /* begin server processing */
-    my_telnet(net, ourpty, host, level, user_name);
+    my_telnet(net, ourpty, remote_host_name, remote_utmp_name,
+	      level, user_name);
     /*NOTREACHED*/
 }  /* end of doit */
 
@@ -777,7 +782,8 @@ show_issue(void)
  * hand data to telnet receiver finite state machine.
  */
 void
-my_telnet(int f, int p, char *host, int level, char *autoname)
+my_telnet(int f, int p, const char *host, const char *utmp_host,
+	  int level, char *autoname)
 {
     int on = 1;
     char *he;
@@ -960,7 +966,7 @@ my_telnet(int f, int p, char *host, int level, char *autoname)
            indefinitely */
 	if(!startslave_called && (!encrypt_delay() || timeout > time(NULL))){
 	    startslave_called = 1;
-	    startslave(host, level, autoname);
+	    startslave(host, utmp_host, level, autoname);
 	}
 
 	if (ncc < 0 && pcc < 0)

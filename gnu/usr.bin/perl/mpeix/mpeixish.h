@@ -34,7 +34,7 @@
   
 /* USEMYBINMODE
  *	This symbol, if defined, indicates that the program should
- *	use the routine my_binmode(FILE *fp, char iotype) to insure
+ *	use the routine my_binmode(FILE *fp, char iotype, int mode) to insure
  *	that a file is in "binary" mode -- that is, that no translation
  *	of bytes occurs on read or write operations.
  */
@@ -97,7 +97,7 @@
 #ifndef SIGILL
 #    define SIGILL 6         /* blech */
 #endif
-#define ABORT() kill(getpid(),SIGABRT);
+#define ABORT() kill(PerlProc_getpid(),SIGABRT);
 
 /*
  * fwrite1() should be a routine with the same calling sequence as fwrite(),
@@ -113,12 +113,7 @@
 #define Mkdir(path,mode)   mkdir((path),(mode))
 
 #ifndef PERL_SYS_INIT
-#ifdef PERL_SCO5
-/* this should be set in a hint file, not here */
-#  define PERL_SYS_INIT(c,v)	fpsetmask(0); MALLOC_INIT
-#else
-#  define PERL_SYS_INIT(c,v)	MALLOC_INIT
-#endif
+#  define PERL_SYS_INIT(c,v) PERL_FPU_INIT MALLOC_INIT
 #endif
 
 #ifndef PERL_SYS_TERM
@@ -137,3 +132,24 @@
 #undef PRPASSWD
 #undef PWAGE
 #undef PWCOMMENT
+
+/* various missing external function declarations */
+
+#include <sys/ipc.h>
+extern key_t ftok (char *pathname, char id);
+extern char *gcvt (double value, int ndigit, char *buf);
+extern int isnan (double value);
+extern void srand48(long int seedval);
+
+/* various missing constants -- define 'em */
+
+#define PF_UNSPEC 0
+
+/* declarations for wrappers in mpeix.c */
+
+#include <time.h>
+#include <sys/time.h>
+
+extern int ftruncate(int fd, long wantsize);
+extern int gettimeofday( struct timeval *tp, struct timezone *tpz );
+extern int truncate(const char *pathname, off_t length);

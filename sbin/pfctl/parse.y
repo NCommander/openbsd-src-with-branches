@@ -1,4 +1,4 @@
-/*	$OpenBSD: parse.y,v 1.347 2003/03/27 16:17:37 henning Exp $	*/
+/*	$OpenBSD: parse.y,v 1.342 2003/03/10 14:50:29 henning Exp $	*/
 
 /*
  * Copyright (c) 2001 Markus Friedl.  All rights reserved.
@@ -215,8 +215,8 @@ struct table_opts {
 	int			init_addr;
 } table_opts;
 
-int	yyerror(const char *, ...);
-int	disallow_table(struct node_host *, const char *);
+int	yyerror(char *, ...);
+int	disallow_table(struct node_host *, char *);
 int	rule_consistent(struct pf_rule *);
 int	filter_consistent(struct pf_rule *);
 int	nat_consistent(struct pf_rule *);
@@ -250,15 +250,14 @@ int	 yylex(void);
 int	 atoul(char *, u_long *);
 int	 getservice(char *);
 
-TAILQ_HEAD(symhead, sym)	 symhead = TAILQ_HEAD_INITIALIZER(symhead);
 struct sym {
-	TAILQ_ENTRY(sym)	 entries;
-	int			 used;
-	int			 persist;
-	char			*nam;
-	char			*val;
+	struct sym	*next;
+	int		 used;
+	int		 persist;
+	char		*nam;
+	char		*val;
 };
-
+struct sym	*symhead = NULL;
 
 int	 symset(const char *, const char *, int);
 char	*symget(const char *);
@@ -353,16 +352,17 @@ typedef struct {
 %token	NOROUTE FRAGMENT USER GROUP MAXMSS MAXIMUM TTL TOS DROP TABLE
 %token	FRAGNORM FRAGDROP FRAGCROP ANCHOR NATANCHOR RDRANCHOR BINATANCHOR
 %token	SET OPTIMIZATION TIMEOUT LIMIT LOGINTERFACE BLOCKPOLICY RANDOMID
-%token	REQUIREORDER
+%token	REQUIREORDER YES
 %token	ANTISPOOF FOR
 %token	BITMASK RANDOM SOURCEHASH ROUNDROBIN STATICPORT
 %token	ALTQ CBQ PRIQ BANDWIDTH TBRSIZE
 %token	QUEUE PRIORITY QLIMIT
+%token	DEFAULT BORROW RED ECN RIO
 %token	<v.string>		STRING
 %token	<v.i>			PORTUNARY PORTBINARY
 %type	<v.interface>		interface if_list if_item_not if_item
 %type	<v.number>		number icmptype icmp6type uid gid
-%type	<v.number>		tos not yesno
+%type	<v.number>		tos not
 %type	<v.i>			no dir log af fragcache
 %type	<v.i>			staticport
 %type	<v.b>			action nataction flags flag blockspec
@@ -454,11 +454,15 @@ option		: SET OPTIMIZATION STRING		{
 				YYERROR;
 			blockpolicy = PFRULE_RETURN;
 		}
-		| SET REQUIREORDER yesno {
+		| SET REQUIREORDER YES {
 			if (pf->opts & PF_OPT_VERBOSE)
-				printf("set require-order %s\n",
-				    $3 == 1 ? "yes" : "no");
-			require_order = $3;
+				printf("set require-order yes\n");
+			require_order = 1;
+		}
+		| SET REQUIREORDER NO {
+			if (pf->opts & PF_OPT_VERBOSE)
+				printf("set require-order no\n");
+			require_order = 0;
 		}
 		;
 
@@ -1024,42 +1028,21 @@ cbqflags_list	: cbqflags_item				{ $$ |= $1; }
 		| cbqflags_list comma cbqflags_item	{ $$ |= $3; }
 		;
 
-cbqflags_item	: STRING	{
-			if (!strcmp($1, "default"))
-				$$ = CBQCLF_DEFCLASS;
-			else if (!strcmp($1, "borrow"))
-				$$ = CBQCLF_BORROW;
-			else if (!strcmp($1, "red"))
-				$$ = CBQCLF_RED;
-			else if (!strcmp($1, "ecn"))
-				$$ = CBQCLF_RED|CBQCLF_ECN;
-			else if (!strcmp($1, "rio"))
-				$$ = CBQCLF_RIO;
-			else {
-				yyerror("unknown cbq flag \"%s\"", $1);
-				YYERROR;
-			}
-		}
+cbqflags_item	: DEFAULT	{ $$ = CBQCLF_DEFCLASS; }
+		| BORROW	{ $$ = CBQCLF_BORROW; }
+		| RED		{ $$ = CBQCLF_RED; }
+		| ECN		{ $$ = CBQCLF_RED|CBQCLF_ECN; }
+		| RIO		{ $$ = CBQCLF_RIO; }
 		;
 
 priqflags_list	: priqflags_item			{ $$ |= $1; }
 		| priqflags_list comma priqflags_item	{ $$ |= $3; }
 		;
 
-priqflags_item	: STRING	{
-			if (!strcmp($1, "default"))
-				$$ = PRCF_DEFAULTCLASS;
-			else if (!strcmp($1, "red"))
-				$$ = PRCF_RED;
-			else if (!strcmp($1, "ecn"))
-				$$ = PRCF_RED|PRCF_ECN;
-			else if (!strcmp($1, "rio"))
-				$$ = PRCF_RIO;
-			else {
-				yyerror("unknown priq flag \"%s\"", $1);
-				YYERROR;
-			}
-		}
+priqflags_item	: DEFAULT	{ $$ = PRCF_DEFAULTCLASS; }
+		| RED		{ $$ = PRCF_RED; }
+		| ECN		{ $$ = PRCF_RED|PRCF_ECN; }
+		| RIO		{ $$ = PRCF_RIO; }
 		;
 
 qassign		: /* empty */		{ $$ = NULL; }
@@ -2679,18 +2662,10 @@ comma		: ','
 		| /* empty */
 		;
 
-yesno		: NO			{ $$ = 0; }
-		| STRING		{
-			if (!strcmp($1, "yes"))
-				$$ = 1;
-			else
-				YYERROR;
-		}
-
 %%
 
 int
-yyerror(const char *fmt, ...)
+yyerror(char *fmt, ...)
 {
 	va_list		 ap;
 	extern char	*infile;
@@ -2705,7 +2680,7 @@ yyerror(const char *fmt, ...)
 }
 
 int
-disallow_table(struct node_host *h, const char *fmt)
+disallow_table(struct node_host *h, char *fmt)
 {
 	for (; h != NULL; h = h->next)
 		if (h->addr.type == PF_ADDR_TABLE) {
@@ -3455,12 +3430,15 @@ lookup(char *s)
 		{ "bitmask",		BITMASK},
 		{ "block",		BLOCK},
 		{ "block-policy",	BLOCKPOLICY},
+		{ "borrow",		BORROW},
 		{ "cbq",		CBQ},
 		{ "code",		CODE},
 		{ "crop",		FRAGCROP},
+		{ "default",		DEFAULT},
 		{ "drop",		DROP},
 		{ "drop-ovl",		FRAGDROP},
 		{ "dup-to",		DUPTO},
+		{ "ecn",		ECN},
 		{ "fastroute",		FASTROUTE},
 		{ "file",		FILENAME},
 		{ "flags",		FLAGS},
@@ -3504,12 +3482,14 @@ lookup(char *s)
 		{ "rdr",		RDR},
 		{ "rdr-anchor",		RDRANCHOR},
 		{ "reassemble",		FRAGNORM},
+		{ "red",		RED},
 		{ "reply-to",		REPLYTO},
 		{ "require-order",	REQUIREORDER},
 		{ "return",		RETURN},
 		{ "return-icmp",	RETURNICMP},
 		{ "return-icmp6",	RETURNICMP6},
 		{ "return-rst",		RETURNRST},
+		{ "rio",		RIO},
 		{ "round-robin",	ROUNDROBIN},
 		{ "route-to",		ROUTETO},
 		{ "scrub",		SCRUB},
@@ -3524,6 +3504,7 @@ lookup(char *s)
 		{ "tos",		TOS},
 		{ "ttl",		TTL},
 		{ "user",		USER},
+		{ "yes",		YES},
 	};
 	const struct keywords	*p;
 
@@ -3786,8 +3767,7 @@ parse_rules(FILE *input, struct pfctl *xpf)
 
 	/* Check which macros have not been used. */
 	if (pf->opts & PF_OPT_VERBOSE2)
-		for (sym = TAILQ_FIRST(&symhead); sym;
-		    sym = TAILQ_NEXT(sym, entries))
+		for (sym = symhead; sym; sym = sym->next)
 			if (!sym->used)
 				fprintf(stderr, "warning: macro '%s' not "
 				    "used\n", sym->nam);
@@ -3803,20 +3783,12 @@ symset(const char *nam, const char *val, int persist)
 {
 	struct sym	*sym;
 
-	for (sym = TAILQ_FIRST(&symhead); sym && strcmp(nam, sym->nam);
-	    sym = TAILQ_NEXT(sym, entries))
+	for (sym = symhead; sym && strcmp(nam, sym->nam); sym = sym->next)
 		;	/* nothing */
 
-	if (sym != NULL) {
-		if (sym->persist == 1)
-			return (0);
-		else {
-			free(sym->nam);
-			free(sym->val);
-			TAILQ_REMOVE(&symhead, sym, entries);
-			free(sym);
-		}
-	}
+	if (sym != NULL && sym->persist == 1)
+		return (0);
+
 	if ((sym = calloc(1, sizeof(*sym))) == NULL)
 		return (-1);
 
@@ -3831,9 +3803,10 @@ symset(const char *nam, const char *val, int persist)
 		free(sym);
 		return (-1);
 	}
+	sym->next = symhead;
 	sym->used = 0;
 	sym->persist = persist;
-	TAILQ_INSERT_TAIL(&symhead, sym, entries);
+	symhead = sym;
 	return (0);
 }
 
@@ -3862,7 +3835,7 @@ symget(const char *nam)
 {
 	struct sym	*sym;
 
-	TAILQ_FOREACH(sym, &symhead, entries)
+	for (sym = symhead; sym; sym = sym->next)
 		if (strcmp(nam, sym->nam) == 0) {
 			sym->used = 1;
 			return (sym->val);

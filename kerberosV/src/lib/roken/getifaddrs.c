@@ -33,7 +33,7 @@
 
 #ifdef HAVE_CONFIG_H
 #include <config.h>
-RCSID("$KTH: getifaddrs.c,v 1.4 2001/01/28 23:02:46 assar Exp $");
+RCSID("$KTH: getifaddrs.c,v 1.6 2001/07/31 01:15:41 assar Exp $");
 #endif
 #include "roken.h"
 
@@ -66,7 +66,6 @@ getifaddrs2(struct ifaddrs **ifap,
     size_t buf_size;
     char *buf;
     struct ifconf ifconf;
-    int num, j = 0;
     char *p;
     size_t sz;
     struct sockaddr sa_zero;
@@ -109,8 +108,6 @@ getifaddrs2(struct ifaddrs **ifap,
 	buf_size *= 2;
     }
 
-    num = ifconf.ifc_len / ifreq_sz;
-    j = 0;
     for (p = ifconf.ifc_buf;
 	 p < ifconf.ifc_buf + ifconf.ifc_len;
 	 p += sz) {
@@ -170,9 +167,11 @@ getifaddrs2(struct ifaddrs **ifap,
 	
     }
     *ifap = start;
+    close(fd);
     free(buf);
     return 0;
   error_out:
+    close(fd);
     free(buf);
     errno = ret;
     return -1;

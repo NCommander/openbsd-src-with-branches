@@ -1,4 +1,4 @@
-/*	$OpenBSD: machdep.c,v 1.223 2003/03/28 00:28:22 weingart Exp $	*/
+/*	$OpenBSD: machdep.c,v 1.221 2003/03/07 19:23:37 wilfried Exp $	*/
 /*	$NetBSD: machdep.c,v 1.214 1996/11/10 03:16:17 thorpej Exp $	*/
 
 /*-
@@ -194,10 +194,6 @@ char machine_arch[] = "i386";		/* machine == machine_arch */
  */
 #if NAPM > 0
 int	cpu_apmhalt = 0;	/* sysctl'd to 1 for halt -p hack */
-#endif
-
-#ifdef USER_LDT
-int	user_ldt_enable = 0;	/* sysctl'd to 1 to enable */
 #endif
 
 #ifdef	NBUF
@@ -1004,22 +1000,23 @@ winchip_cpu_setup(cpu_device, model, step)
  * Note, the VIA C3 Nehemia provides 4 internal 8-byte buffers, which
  * store random data, and can be accessed a lot quicker than waiting
  * for new data to be generated.  As we are using every 8th bit only
- * due to whitening. Since the RNG generates in excess of 21KB/s at
- * it's worst, collecting 64 bytes worth of entropy should not affect
- * things significantly.
+ * due to whitening, we only pull off 4 bytes worth of data here, to
+ * help prevent stalling, and allow the RNG to generate new data in
+ * parallel with anything else going on.
  *
- * Note, due to some weirdness in the RNG, we need at least 7 bytes
+ * Note, due to some weirdness in the RNG, we need at last 7 bytes
  * extra on the end of our buffer.  Also, there is an outside chance
  * that the VIA RNG can "wedge", as the generated bit-rate is variable.
- * We could do all sorts of startup testing and things, but
- * frankly, I don't really see the point.  If the RNG wedges, then the
- * chances of you having a defective CPU are very high.  Let it wedge.
+ * Since the RNG generates in excess of 21KB/s at it's worst, this is
+ * still significantly faster than the rate at which we are collecting
+ * from it.  We could do all sorts of startup testing and things, but
+ * frankly, I don't really see the point.
  *
  * Adding to the whole confusion, in order to access the RNG, we need
  * to have FXSR support enabled, and the correct FPU enable bits must
- * be there to enable the FPU in kernel.  It would be nice if all this
- * mumbo-jumbo was not needed in order to use the RNG.  Oh well, life
- * does go on...
+ * be there to enable the FPU.  It would be nice if all this mumbo-
+ * jumbo was not needed in order to use the RNG.  Oh well, life does
+ * go on...
  */
 #define VIAC3_RNG_BUFSIZ	16		/* 32bit words */
 struct timeout viac3_rnd_tmo;
@@ -2625,11 +2622,6 @@ cpu_sysctl(name, namelen, oldp, oldlenp, newp, newlen, p)
 		else
 			return (sysctl_int(oldp, oldlenp, newp, newlen, 
 			    &kbd_reset));
-#ifdef USER_LDT
-	case CPU_USERLDT:
-		return (sysctl_int(oldp, oldlenp, newp, newlen,
-		    &user_ldt_enable));
-#endif
 	default:
 		return EOPNOTSUPP;
 	}

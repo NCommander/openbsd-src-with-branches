@@ -1,4 +1,4 @@
-/*	$OpenBSD: pfctl.c,v 1.162 2003/03/27 18:01:57 henning Exp $ */
+/*	$OpenBSD: pfctl.c,v 1.160 2003/03/11 11:53:28 henning Exp $ */
 
 /*
  * Copyright (c) 2001 Daniel Hartmeier
@@ -76,15 +76,15 @@ int	 pfctl_debug(int, u_int32_t, int);
 int	 pfctl_clear_rule_counters(int, int);
 int	 pfctl_test_altqsupport(int, int);
 int	 pfctl_show_anchors(int, int);
-const char	*pfctl_lookup_option(char *, const char **);
+char	*pfctl_lookup_option(char *, char **);
 
-const char	*clearopt;
+char	*clearopt;
 char	*rulesopt;
-const char	*showopt;
-const char	*debugopt;
+char	*showopt;
+char	*debugopt;
 char	*anchoropt;
 char	*tableopt;
-const char	*tblcmdopt;
+char	*tblcmdopt;
 int	 state_killers;
 char	*state_kill[2];
 int	 loadopt = PFCTL_FLAG_ALL;
@@ -158,21 +158,21 @@ static const struct {
 	{ NULL,			NULL }
 };
 
-static const char *clearopt_list[] = {
+static char *clearopt_list[] = {
 	"nat", "queue", "rules", "state", "info", "Tables", "all", NULL
 };
 
-static const char *showopt_list[] = {
+static char *showopt_list[] = {
 	"nat", "queue", "rules", "Anchors", "state", "info", "labels",
 	"timeouts", "memory", "Tables", "all", NULL
 };
 
-static const char *tblcmdopt_list[] = {
+static char *tblcmdopt_list[] = {
 	"kill", "flush", "add", "delete", "load", "replace", "show",
 	"test", "zero", NULL
 };
 
-static const char *debugopt_list[] = {
+static char *debugopt_list[] = {
 	"none", "urgent", "misc", NULL
 };
 
@@ -429,7 +429,7 @@ pfctl_kill_states(int dev, int opts)
 			    ((struct sockaddr_in6 *)resp[0]->ai_addr)->
 			    sin6_addr;
 		else
-			errx(1, "Unknown address family %d", psk.psk_af);
+			errx(1, "Unknown address family!?!?!");
 
 		if (state_killers > 1) {
 			dests = 0;
@@ -464,8 +464,7 @@ pfctl_kill_states(int dev, int opts)
 					    ((struct sockaddr_in6 *)resp[1]->
 					    ai_addr)->sin6_addr;
 				else
-					errx(1, "Unknown address family %d",
-					    psk.psk_af);
+					errx(1, "Unknown address family!?!?!");
 
 				if (ioctl(dev, DIOCKILLSTATES, &psk))
 					err(1, "DIOCKILLSTATES");
@@ -980,11 +979,12 @@ pfctl_rules(int dev, char *filename, int opts)
 		fin = stdin;
 		infile = "stdin";
 	} else {
-		if ((fin = fopen(filename, "r")) == NULL) {
-			warn("%s", filename);
-			return (1);
-		}
+		fin = fopen(filename, "r");
 		infile = filename;
+	}
+	if (fin == NULL) {
+		warn("%s", filename);
+		return (1);
 	}
 	if ((opts & PF_OPT_NOACTION) == 0) {
 		if ((loadopt & (PFCTL_FLAG_NAT | PFCTL_FLAG_ALL)) != 0) {
@@ -1024,7 +1024,7 @@ pfctl_rules(int dev, char *filename, int opts)
 	}
 	pf.rule_nr = 0;
 	if (parse_rules(fin, &pf) < 0)
-		errx(1, "Syntax error in config file: pf rules not loaded");
+		errx(1, "Syntax error in file: pf rules not loaded");
 	if ((altqsupport && (loadopt & (PFCTL_FLAG_ALTQ | PFCTL_FLAG_ALL)) != 0))
 		if (check_commit_altq(dev, opts) != 0)
 			errx(1, "errors in altq config");
@@ -1291,8 +1291,8 @@ pfctl_show_anchors(int dev, int opts)
 	return (0);
 }
 
-const char *
-pfctl_lookup_option(char *cmd, const char **list)
+char *
+pfctl_lookup_option(char *cmd, char **list)
 {
 	if (cmd != NULL && *cmd)
 		for (; *list; list++)

@@ -1,4 +1,4 @@
-/*	$OpenBSD: pmdb.c,v 1.13 2003/03/28 23:33:27 mickey Exp $	*/
+/*	$OpenBSD: pmdb.c,v 1.11 2002/07/22 23:26:05 fgsch Exp $	*/
 /*
  * Copyright (c) 2002 Artur Grabowski <art@openbsd.org>
  * All rights reserved. 
@@ -45,14 +45,12 @@
 
 static int cmd_show_registers(int, char **, void *);
 static int cmd_show_backtrace(int, char **, void *);
-static int cmd_examine(int, char **, void *);
 static int cmd_quit(int, char **, void *);
 
 struct clit cmds[] = {
 	/* debugging info commands. */
 	{ "regs", "show registers", 0, 0, cmd_show_registers, (void *)-1 },
 	{ "trace", "show backtrace", 0, 0, cmd_show_backtrace, (void *)-1 },
-	{ "x", "examine memory", 1, 16, cmd_examine, (void *)-1 },
 
 	/* Process handling commands. */
 	{ "run", "run process", 0, 0, cmd_process_run, (void *)-1 },
@@ -249,7 +247,7 @@ cmd_show_registers(int argc, char **argv, void *arg)
 	if (ps->ps_state != STOPPED) {
 		if (ps->ps_flags & PSF_CORE) {
 			/* dump registers from core */
-			core_printregs(ps);
+			core_printregs(ps->ps_core);
 			return (0);
 		}
 		fprintf(stderr, "process not stopped\n");
@@ -332,36 +330,6 @@ cmd_quit(int argc, char **argv, void *arg)
 
 	ps->ps_state = TERMINATED;
 	return (1);
-}
-
-static int
-cmd_examine(int argc, char **argv, void *arg)
-{
-	struct pstate *ps = arg;
-	char buf[256];
-	reg addr, val;
-	int i;
-
-	for (i = 1; argv[i]; i++) {
-
-		addr = strtoul(argv[i], NULL, 0);
-		if (!addr) {	/* assume it's a symbol */
-			if (sym_lookup(ps, argv[i], &addr)) {
-				warn( "Can't find: %s", argv[i]);
-				return (0);
-			}
-		}
-
-        	if (process_read(ps, addr, &val, sizeof(val))) {
-			warn("Can't read process contents at 0x%lx", addr);
-			return (0);
-		}
-
-		printf("%s:\t%s\n", argv[i],
-		    sym_print(ps, val, buf, sizeof(buf)));
-	}
-
-	return (0);
 }
 
 /*
