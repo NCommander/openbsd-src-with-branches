@@ -1,4 +1,4 @@
-/*	$OpenBSD: tcp_output.c,v 1.22 1999/11/04 11:24:24 ho Exp $	*/
+/*	$OpenBSD: tcp_output.c,v 1.23 1999/11/15 05:50:59 hugh Exp $	*/
 /*	$NetBSD: tcp_output.c,v 1.16 1997/06/03 16:17:09 kml Exp $	*/
 
 /*
@@ -813,7 +813,7 @@ send:
 		}
 
 		/* XXX gettdb() should really be called at spltdb().      */
-		 * XXX this is splsoftnet(), currently they are the same. */
+		/* XXX this is splsoftnet(), currently they are the same. */
 		tdb = gettdb(0, &sa, IPPROTO_TCP);
 		if (tdb == NULL)
 			return (EPERM);
