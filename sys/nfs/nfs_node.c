@@ -1,4 +1,4 @@
-/*	$OpenBSD: nfs_node.c,v 1.16 2001/11/15 23:15:15 art Exp $	*/
+/*	$OpenBSD: nfs_node.c,v 1.17 2001/11/27 05:27:12 art Exp $	*/
 /*	$NetBSD: nfs_node.c,v 1.16 1996/02/18 11:53:42 fvdl Exp $	*/
 
 /*
@@ -177,6 +177,8 @@ loop:
 	 */
 	error = VOP_GETATTR(vp, &np->n_vattr, curproc->p_ucred, curproc);
 	if (error) {
+		lockmgr(&nfs_hashlock, LK_RELEASE, 0, p);
+		vrele(vp);
 		return error;
 	}
 	uvm_vnp_setsize(vp, np->n_vattr.va_size);
