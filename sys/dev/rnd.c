@@ -1,4 +1,4 @@
-/*	$OpenBSD: rnd.c,v 1.50 2001/09/24 02:23:44 mickey Exp $	*/
+/*	$OpenBSD: rnd.c,v 1.51 2001/12/29 17:22:41 mickey Exp $	*/
 
 /*
  * random.c -- A strong random number generator
@@ -862,8 +862,8 @@ extract_entropy(buf, nbytes)
 		MD5Init(&tmp);
 		s = splhigh();
 		MD5Update(&tmp, (u_int8_t*)rs->pool, sizeof(rs->pool));
-		if (rs->entropy_count / 8 > i)
-			rs->entropy_count -= i * 8;
+		if (rs->entropy_count / 8 > nbytes)
+			rs->entropy_count -= nbytes * 8;
 		else
 			rs->entropy_count = 0;
 		MD5Final(buffer, &tmp);
