@@ -1,4 +1,4 @@
-/*	$OpenBSD: hifn7751.c,v 1.119 2002/05/07 20:37:24 jason Exp $	*/
+/*	$OpenBSD: hifn7751.c,v 1.120 2002/05/17 00:33:34 deraadt Exp $	*/
 
 /*
  * Invertex AEON / Hifn 7751 driver
@@ -1824,7 +1824,7 @@ hifn_freesession(tid)
 {
 	struct hifn_softc *sc;
 	int card, session;
-	u_int32_t sid = ((u_int32_t) tid) & 0xffffffff;
+	u_int32_t sid = ((u_int32_t)tid) & 0xffffffff;
 
 	card = HIFN_CARD(sid);
 	if (card >= hifn_cd.cd_ndevs || hifn_cd.cd_devs[card] == NULL)
