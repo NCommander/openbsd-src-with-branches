@@ -1,5 +1,5 @@
-/*	$OpenBSD: uvm_fault_i.h,v 1.7 2001/11/05 22:14:54 art Exp $	*/
-/*	$NetBSD: uvm_fault_i.h,v 1.14 2001/06/26 17:55:15 thorpej Exp $	*/
+/*	$OpenBSD: uvm_fault_i.h,v 1.8 2001/11/28 19:28:14 art Exp $	*/
+/*	$NetBSD: uvm_fault_i.h,v 1.15 2001/09/15 20:36:45 chs Exp $	*/
 
 /*
  *
@@ -223,7 +223,7 @@ uvmfault_relock(ufi)
 	}
 
 	uvmexp.fltrelckok++;
-	return(TRUE);		/* got it! */
+	return(TRUE);
 }
 
 #endif /* _UVM_UVM_FAULT_I_H_ */

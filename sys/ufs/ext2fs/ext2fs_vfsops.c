@@ -1,4 +1,4 @@
-/*	$OpenBSD: ext2fs_vfsops.c,v 1.18 2001/12/10 02:19:34 art Exp $	*/
+/*	$OpenBSD: ext2fs_vfsops.c,v 1.19 2001/12/10 04:45:31 art Exp $	*/
 /*	$NetBSD: ext2fs_vfsops.c,v 1.40 2000/11/27 08:39:53 chs Exp $	*/
 
 /*
@@ -103,6 +103,7 @@ struct vfsops ext2fs_vfsops = {
 struct genfs_ops ext2fs_genfsops = {
 	genfs_size,
 	ext2fs_gop_alloc,
+	genfs_gop_write
 };
 
 struct pool ext2fs_inode_pool;

@@ -1,4 +1,4 @@
-/*	$OpenBSD: ffs_extern.h,v 1.18 2002/01/25 02:30:26 millert Exp $	*/
+/*	$OpenBSD: ffs_extern.h,v 1.16.2.1 2002/01/31 22:55:49 niklas Exp $	*/
 /*	$NetBSD: ffs_extern.h,v 1.4 1996/02/09 22:22:22 christos Exp $	*/
 
 /*-
@@ -153,6 +153,7 @@ int ffs_read __P((void *));
 int ffs_write __P((void *));
 int ffs_fsync __P((void *));
 int ffs_reclaim __P((void *));
+int ffs_getpages __P((void *));
 void ffs_gop_size __P((struct vnode *, off_t, off_t *));
 
 /*

@@ -1,4 +1,4 @@
-/*	$OpenBSD: uipc_mbuf.c,v 1.49 2002/01/25 15:50:22 art Exp $	*/
+/*	$OpenBSD: uipc_mbuf.c,v 1.44.2.1 2002/01/31 22:55:41 niklas Exp $	*/
 /*	$NetBSD: uipc_mbuf.c,v 1.15.4.1 1996/06/13 17:11:44 cgd Exp $	*/
 
 /*
@@ -148,8 +148,7 @@ mclpool_alloc(struct pool *pp, int flags)
 {
 	boolean_t waitok = (flags & PR_WAITOK) ? TRUE : FALSE;
 
-	return ((void *)uvm_km_alloc_poolpage1(mb_map, uvmexp.mb_object,
-	    waitok));
+	return ((void *)uvm_km_alloc_poolpage1(mb_map, NULL, waitok));
 }
 
 void
