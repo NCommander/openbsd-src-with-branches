@@ -1,4 +1,4 @@
-/*	$OpenBSD: autoconf.c,v 1.2 1997/11/06 19:42:42 millert Exp $	*/
+/*	$OpenBSD: autoconf.c,v 1.3 2003/06/02 23:27:46 millert Exp $	*/
 /*	$NetBSD: autoconf.c,v 1.12 1997/01/30 10:32:51 thorpej Exp $	*/
 
 /*
@@ -45,8 +45,7 @@
 #include "samachdep.h"
 #include "rominfo.h"
 #include "device.h"
-
-#include <hp300/dev/grfreg.h>
+#include "grfreg.h"
 
 /*
  * Mapping of ROM MSUS types to BSD major device numbers
