@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile.wgrisc,v 1.1.1.1 1997/02/06 16:02:45 pefo Exp $
+#	$OpenBSD: Makefile.wgrisc,v 1.2 1997/02/23 21:59:25 pefo Exp $
 
 #	@(#)Makefile.wgrisc	8.2 (Berkeley) 2/16/94
 #
@@ -113,8 +113,7 @@ clean::
 
 lint: /tmp param.c
 	@lint -hbxn -DGENERIC -Dvolatile= ${COPTS} ${PARAM} -UKGDB \
-	    ${WGRISC}/wgrisc/Locore.c ${CFILES} \
-	    ioconf.c param.c
+	    ${CFILES} ioconf.c param.c
 
 symbols.sort: ${WGRISC}/wgrisc/symbols.raw
 	grep -v '^#' ${WGRISC}/wgrisc/symbols.raw \
