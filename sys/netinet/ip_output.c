@@ -1,4 +1,4 @@
-/*	$OpenBSD: ip_output.c,v 1.71 2000/06/01 04:47:55 angelos Exp $	*/
+/*	$OpenBSD: ip_output.c,v 1.72 2000/06/17 23:50:45 angelos Exp $	*/
 /*	$NetBSD: ip_output.c,v 1.28 1996/02/13 23:43:07 christos Exp $	*/
 
 /*
@@ -944,7 +944,7 @@ ip_ctloutput(op, so, level, optname, mp)
 				error = EINVAL;
 				break;
 			}
-			optval = *mtod(m, u_char *);
+			optval = *mtod(m, int *);
 
 			if (optval < IPSEC_LEVEL_BYPASS || 
 			    optval > IPSEC_LEVEL_UNIQUE) {
@@ -1086,20 +1086,22 @@ ip_ctloutput(op, so, level, optname, mp)
 		case IP_ESP_TRANS_LEVEL:
 		case IP_ESP_NETWORK_LEVEL:
 #ifndef IPSEC
+			m->m_len = sizeof(int);
 			*mtod(m, int *) = IPSEC_LEVEL_NONE;
 #else
+			m->m_len = sizeof(int);
 			switch (optname) {
 			case IP_AUTH_LEVEL:
-				    optval = inp->inp_seclevel[SL_AUTH];
-				    break;
+				optval = inp->inp_seclevel[SL_AUTH];
+				break;
 
 			case IP_ESP_TRANS_LEVEL:
-				    optval = inp->inp_seclevel[SL_ESP_TRANS];
-				    break;
+				optval = inp->inp_seclevel[SL_ESP_TRANS];
+				break;
 
 			case IP_ESP_NETWORK_LEVEL:
-				    optval = inp->inp_seclevel[SL_ESP_NETWORK];
-				    break;
+				optval = inp->inp_seclevel[SL_ESP_NETWORK];
+				break;
 			}
 			*mtod(m, int *) = optval;
 #endif
