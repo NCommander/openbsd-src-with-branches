@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_gif.c,v 1.14 2001/02/20 13:50:53 itojun Exp $	*/
+/*	$OpenBSD: if_gif.c,v 1.15 2001/06/04 23:55:57 itojun Exp $	*/
 /*	$KAME: if_gif.c,v 1.43 2001/02/20 08:51:07 itojun Exp $	*/
 
 /*
@@ -70,8 +70,6 @@
 
 #include "bpfilter.h"
 #include "bridge.h"
-
-#include <net/net_osdep.h>
 
 extern int ifqmaxlen;
 
