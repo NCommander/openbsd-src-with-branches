@@ -1,8 +1,7 @@
-/*	$OpenBSD: exec.h,v 1.2 1996/08/02 20:35:30 niklas Exp $	*/
-/*	$NetBSD: exec.h,v 1.4 1994/10/25 23:03:22 deraadt Exp $	*/
+/*	$OpenBSD: linux_resource.h,v 1.1 2000/06/07 13:35:02 niklas Exp $	*/
 
 /*
- * Copyright (c) 1993 Theo de Raadt
+ * Copyright (c) 2000 Niklas Hallqvist
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -13,7 +12,10 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. The name of the author may not be used to endorse or promote products
+ * 3. All advertising materials mentioning features or use of this software
+ *    must display the following acknowledgement:
+ *      This product includes software developed by Niklas Hallqvist
+ * 4. The name of the author may not be used to endorse or promote products
  *    derived from this software without specific prior written permission
  *
  * THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR
@@ -28,22 +30,31 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef	_SUNOS_EXEC_H_
-#define	_SUNOS_EXEC_H_
+#ifndef _LINUX_RESOURCE_H_
+#define _LINUX_RESOURCE_H_
 
-struct sunos_exec {
-	u_char	a_dynamic:1;	/* has a __DYNAMIC */
-	u_char	a_toolversion:7;/* version of toolset used to create this file */
-	u_char	a_machtype;	/* machine type */
-	u_short	a_magic;	/* magic number */
+/*
+ * Resource limits
+ */
+#define	LINUX_RLIMIT_CPU	0	/* cpu time in milliseconds */
+#define	LINUX_RLIMIT_FSIZE	1	/* maximum file size */
+#define	LINUX_RLIMIT_DATA	2	/* data size */
+#define	LINUX_RLIMIT_STACK	3	/* stack size */
+#define	LINUX_RLIMIT_CORE	4	/* core file size */
+#define	LINUX_RLIMIT_RSS	5	/* resident set size */
+#define	LINUX_RLIMIT_NPROC	6	/* number of processes */
+#define	LINUX_RLIMIT_NOFILE	7	/* number of open files */
+#define	LINUX_RLIMIT_MEMLOCK	8	/* locked-in-memory address space */
+#define	LINUX_RLIMIT_AS		9	/* address space limit */
+
+#define	LINUX_RLIM_NLIMITS	10	/* number of resource limits */
+
+#define LINUX_RLIM_INFINITY	0xFFFFFFFF
+#define LINUX_OLD_RLIM_INFINITY	0x7FFFFFFF
+
+struct linux_rlimit {
+	u_long	rlim_cur;
+	u_long	rlim_max;
 };
-#define SUNOS_M_68020	2	/* runs only on 68020 */
-#define	SUNOS_M_SPARC	3	/* runs only on SPARC */
 
-#ifdef __sparc__
-#define SUNOS_M_NATIVE	SUNOS_M_SPARC
-#else
-#define SUNOS_M_NATIVE	SUNOS_M_68020
-#endif
-
-#endif /* !_SUNOS_EXEC_H_ */
+#endif /* !_LINUX_RESOURCE_H_ */
