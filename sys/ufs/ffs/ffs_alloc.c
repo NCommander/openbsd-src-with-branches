@@ -1,4 +1,4 @@
-/*	$OpenBSD: ffs_alloc.c,v 1.18 2000/01/14 19:23:34 art Exp $	*/
+/*	$OpenBSD: ffs_alloc.c,v 1.19 2001/02/21 23:24:30 csapuntz Exp $	*/
 /*	$NetBSD: ffs_alloc.c,v 1.11 1996/05/11 18:27:09 mycroft Exp $	*/
 
 /*
@@ -711,7 +711,7 @@ ffs_blkpref(ip, lbn, indx, bap)
 				fs->fs_cgrotor = cg;
 				return (fs->fs_fpg * cg + fs->fs_frag);
 			}
-		return (NULL);
+		return (0);
 	}
 	/*
 	 * One or more previous blocks have been laid out. If less
