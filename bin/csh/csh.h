@@ -1,4 +1,4 @@
-/*	$OpenBSD: csh.h,v 1.12 2003/05/12 04:11:18 jsyn Exp $	*/
+/*	$OpenBSD: csh.h,v 1.13 2003/06/02 23:32:07 millert Exp $	*/
 /*	$NetBSD: csh.h,v 1.9 1995/03/21 09:02:40 cgd Exp $	*/
 
 /*-
@@ -71,7 +71,7 @@ typedef char Char;
 #endif
 
 /*
- * Make sure a variable is not stored in a register by taking its address
+ * Make sure a variable is not stored in a by taking its address
  * This is used where variables might be clobbered by longjmp.
  */
 #define UNREGISTER(a)	(void) &a
