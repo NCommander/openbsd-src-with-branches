@@ -1,4 +1,4 @@
-/*	$OpenBSD: extern.h,v 1.27 2003/06/26 00:10:17 deraadt Exp $	*/
+/*	$OpenBSD: extern.h,v 1.28 2004/03/30 16:14:22 millert Exp $	*/
 /*	$NetBSD: extern.h,v 1.5 1996/03/26 23:54:16 mrg Exp $	*/
 
 /*-
@@ -271,7 +271,7 @@ void atdir_end(void);
 void add_atdir(char *, dev_t, ino_t, time_t, time_t);
 int get_atdir(dev_t, ino_t, time_t *, time_t *);
 int dir_start(void);
-void add_dir(char *, int, struct stat *, int);
+void add_dir(char *, struct stat *, int);
 void proc_dir(void);
 u_int st_hash(char *, int, int);
 
