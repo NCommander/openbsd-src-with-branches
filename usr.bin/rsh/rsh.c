@@ -1,4 +1,4 @@
-/*	$OpenBSD: rsh.c,v 1.14 1997/06/29 11:10:34 provos Exp $	*/
+/*	$OpenBSD: rsh.c,v 1.15 1997/07/25 21:05:39 mickey Exp $	*/
 
 /*-
  * Copyright (c) 1983, 1990 The Regents of the University of California.
@@ -41,7 +41,7 @@ char copyright[] =
 
 #ifndef lint
 /*static char sccsid[] = "from: @(#)rsh.c	5.24 (Berkeley) 7/1/91";*/
-static char rcsid[] = "$OpenBSD: rsh.c,v 1.14 1997/06/29 11:10:34 provos Exp $";
+static char rcsid[] = "$OpenBSD: rsh.c,v 1.15 1997/07/25 21:05:39 mickey Exp $";
 #endif /* not lint */
 
 #include <sys/types.h>
@@ -406,12 +406,15 @@ void
 sendsig(signo)
 	char signo;
 {
+	int save_errno = errno;
+
 #ifdef KERBEROS
 	if (doencrypt)
 		(void)des_write(rfd2, &signo, 1);
 	else
 #endif
 		(void)write(rfd2, &signo, 1);
+	errno = save_errno;
 }
 
 #ifdef KERBEROS
