@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_wivar.h,v 1.18 2002/07/09 11:00:27 fgsch Exp $	*/
+/*	$OpenBSD: if_wivar.h,v 1.19 2002/10/10 20:27:46 millert Exp $	*/
 
 /*
  * Copyright (c) 1997, 1998, 1999
@@ -78,6 +78,7 @@ struct wi_softc	{
 	struct ieee80211_nwid	wi_ibss_name;
 
 	int			wi_use_wep;
+	int			wi_crypto_algorithm;
 	int			wi_tx_key;
 	struct wi_ltv_keys	wi_keys;
 	struct wi_counters	wi_stats;
