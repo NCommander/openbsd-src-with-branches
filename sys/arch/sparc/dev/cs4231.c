@@ -1,4 +1,4 @@
-/*	$OpenBSD: cs4231.c,v 1.8 2002/01/11 16:51:14 jason Exp $	*/
+/*	$OpenBSD: cs4231.c,v 1.9 2002/01/11 22:12:18 jason Exp $	*/
 
 /*
  * Copyright (c) 1999 Jason L. Wright (jason@thought.net)
@@ -109,6 +109,8 @@
 
 /* cs4231 playback interrupt */
 #define CS_AFS_PI		0x10		/* playback interrupt */
+
+#define CS_TIMEOUT		90000		/* recalibration timeout */
 
 int	cs4231_match	__P((struct device *, void *, void *));
 void	cs4231_attach	__P((struct device *, struct device *, void *));
