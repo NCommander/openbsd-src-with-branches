@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.19 1997/07/29 03:37:03 kstailey Exp $
+#	$OpenBSD: Makefile,v 1.20 1997/07/29 04:07:35 kstailey Exp $
 #	$NetBSD: Makefile,v 1.25 1995/10/09 02:11:28 thorpej Exp $
 
 #
@@ -30,6 +30,10 @@ SUBDIR+= sys lkm
 
 .if (${KERBEROS} == "yes")
 SUBDIR+= kerberosIV
+.endif
+
+.if   make(clean) || make(cleandir) || make(obj)
+SUBDIR+= distrib
 .endif
 
 .if exists(regress)
