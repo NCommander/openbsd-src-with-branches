@@ -1,5 +1,5 @@
 /*	$NetBSD: mem.c,v 1.31 1996/05/03 19:42:19 christos Exp $	*/
-/*	$OpenBSD: mem.c,v 1.6 1998/02/18 18:00:16 millert Exp $ */
+/*	$OpenBSD: mem.c,v 1.7 1998/02/19 06:59:48 millert Exp $ */
 /*
  * Copyright (c) 1988 University of Utah.
  * Copyright (c) 1982, 1986, 1990, 1993
@@ -81,7 +81,7 @@ mmopen(dev, flag, mode, p)
 #ifdef COMPAT_10
 	/* This is done by i386_iopl(3) now. */
 	case 14:
-		if (flag & FWRITE) {
+		if (securelevel <= 0 && (flag & FWRITE)) {
 			struct trapframe *fp;
 			fp = curproc->p_md.md_regs;
 			fp->tf_eflags |= PSL_IOPL;
