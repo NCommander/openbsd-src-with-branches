@@ -1,4 +1,4 @@
-/*	$OpenBSD: paskha.c,v 1.1 1996/12/05 06:04:41 millert Exp $	*/
+/*	$OpenBSD: paskha.c,v 1.2 1998/12/13 07:31:08 pjanzen Exp $	*/
 
 /*
  * Copyright (C) 1993-1996 by Andrey A. Chernov, Moscow, Russia.
@@ -27,7 +27,7 @@
  */
 
 #ifndef lint
-static char rcsid[] = "$OpenBSD: paskha.c,v 1.1 1996/12/05 06:04:41 millert Exp $";
+static char rcsid[] = "$OpenBSD: paskha.c,v 1.2 1998/12/13 07:31:08 pjanzen Exp $";
 #endif /* not lint */
 
 #include <stdio.h>
@@ -35,6 +35,8 @@ static char rcsid[] = "$OpenBSD: paskha.c,v 1.1 1996/12/05 06:04:41 millert Exp 
 #include <string.h>
 #include <time.h>
 #include <tzfile.h>
+
+#include "calendar.h"
 
 /* return year day for Orthodox Easter using Gauss formula */
 /* (new style result); subtract 13 for old style */
