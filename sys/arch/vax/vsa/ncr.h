@@ -1,3 +1,4 @@
+/*	$OpenBSD: ncr.h,v 1.1 1996/07/20 18:55:15 ragge Exp $	*/
 /*	$NetBSD: ncr.h,v 1.1 1996/07/20 18:55:15 ragge Exp $	*/
 
 /*

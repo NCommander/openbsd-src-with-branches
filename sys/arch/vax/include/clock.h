@@ -1,3 +1,4 @@
+/*	$OpenBSD: clock.h,v 1.1 1996/07/20 17:35:42 ragge Exp $ */
 /*	$NetBSD: clock.h,v 1.1 1996/07/20 17:35:42 ragge Exp $ */
 /*
  * Copyright (c) 1996 Ludd, University of Lule}, Sweden.

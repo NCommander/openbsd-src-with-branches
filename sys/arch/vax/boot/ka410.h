@@ -1,3 +1,4 @@
+/*	$OpenBSD: ka410.h,v 1.1 1996/08/02 11:22:13 ragge Exp $ */
 /*	$NetBSD: ka410.h,v 1.1 1996/08/02 11:22:13 ragge Exp $ */
 /*
  * Copyright (c) 1996 Ludd, University of Lule}, Sweden.

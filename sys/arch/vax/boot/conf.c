@@ -1,3 +1,4 @@
+/*	$OpenBSD: conf.c,v 1.6 1996/08/02 11:21:56 ragge Exp $ */
 /*	$NetBSD: conf.c,v 1.6 1996/08/02 11:21:56 ragge Exp $ */
 /*
  * Copyright (c) 1994 Ludd, University of Lule}, Sweden.

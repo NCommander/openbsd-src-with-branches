@@ -1,3 +1,4 @@
+/*      $OpenBSD: pte.h,v 1.10 1996/02/23 17:54:33 ragge Exp $      */
 /*      $NetBSD: pte.h,v 1.10 1996/02/23 17:54:33 ragge Exp $      */
 
 /*

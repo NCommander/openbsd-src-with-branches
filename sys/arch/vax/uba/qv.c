@@ -1,3 +1,4 @@
+/*	$OpenBSD: qv.c,v 1.2 1996/09/02 06:44:28 mycroft Exp $	*/
 /*	$NetBSD: qv.c,v 1.2 1996/09/02 06:44:28 mycroft Exp $	*/
 
 /*-

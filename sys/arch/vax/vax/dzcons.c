@@ -1,3 +1,4 @@
+/*	$OpenBSD: dzcons.c,v 1.2 1996/09/02 06:44:30 mycroft Exp $	*/
 /*	$NetBSD: dzcons.c,v 1.2 1996/09/02 06:44:30 mycroft Exp $	*/
 /*
  * Copyright (c) 1994 Gordon W. Ross

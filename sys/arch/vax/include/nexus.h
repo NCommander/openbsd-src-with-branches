@@ -1,3 +1,4 @@
+/*	$OpenBSD: nexus.h,v 1.12 1996/08/20 14:19:43 ragge Exp $	*/
 /*	$NetBSD: nexus.h,v 1.12 1996/08/20 14:19:43 ragge Exp $	*/
 
 /*-

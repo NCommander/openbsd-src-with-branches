@@ -1,3 +1,4 @@
+/* $OpenBSD: bootxx.c,v 1.7 1996/08/02 11:21:53 ragge Exp $ */
 /* $NetBSD: bootxx.c,v 1.7 1996/08/02 11:21:53 ragge Exp $ */
 /*-
  * Copyright (c) 1982, 1986 The Regents of the University of California.

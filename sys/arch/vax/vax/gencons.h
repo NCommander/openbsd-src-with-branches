@@ -1,3 +1,4 @@
+/*	$OpenBSD: gencons.h,v 1.5 1996/04/08 18:32:37 ragge Exp $ */
 /*	$NetBSD: gencons.h,v 1.5 1996/04/08 18:32:37 ragge Exp $ */
 
 /*

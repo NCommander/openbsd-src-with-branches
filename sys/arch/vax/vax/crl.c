@@ -1,3 +1,4 @@
+/*	$OpenBSD: crl.c,v 1.5 1996/10/13 03:35:35 christos Exp $	*/
 /*	$NetBSD: crl.c,v 1.5 1996/10/13 03:35:35 christos Exp $	*/
 /*-
  * Copyright (c) 1982, 1986 The Regents of the University of California.

@@ -1,3 +1,4 @@
+/*	$OpenBSD: dhureg.h,v 1.2 1996/03/17 22:51:50 ragge Exp $	*/
 /*	$NetBSD: dhureg.h,v 1.2 1996/03/17 22:51:50 ragge Exp $	*/
 /*
  * Copyright (c) 1996  Ken C. Wellsch.  All rights reserved.

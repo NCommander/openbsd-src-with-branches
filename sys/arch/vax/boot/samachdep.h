@@ -1,3 +1,4 @@
+/*	$OpenBSD: samachdep.h,v 1.1 1996/08/02 11:22:28 ragge Exp $	*/
 /*	$NetBSD: samachdep.h,v 1.1 1996/08/02 11:22:28 ragge Exp $	*/
 
 /*

@@ -1,3 +1,4 @@
+/*	$OpenBSD: mbareg.h,v 1.3 1996/02/11 13:19:38 ragge Exp $ */
 /*	$NetBSD: mbareg.h,v 1.3 1996/02/11 13:19:38 ragge Exp $ */
 /*
  * Copyright (c) 1994 Ludd, University of Lule}, Sweden

@@ -1,3 +1,4 @@
+/*	$OpenBSD: ubavar.h,v 1.18 1996/08/20 13:38:04 ragge Exp $	*/
 /*	$NetBSD: ubavar.h,v 1.18 1996/08/20 13:38:04 ragge Exp $	*/
 
 /*

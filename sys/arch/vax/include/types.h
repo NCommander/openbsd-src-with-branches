@@ -1,3 +1,4 @@
+/*	$OpenBSD: types.h,v 1.10 1996/12/05 00:14:00 cgd Exp $	*/
 /*	$NetBSD: types.h,v 1.10 1996/12/05 00:14:00 cgd Exp $	*/
 
 /*-

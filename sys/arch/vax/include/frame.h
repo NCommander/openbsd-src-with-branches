@@ -1,3 +1,4 @@
+/*	$OpenBSD: frame.h,v 1.1 1995/11/12 15:07:30 ragge Exp $ */
 /*	$NetBSD: frame.h,v 1.1 1995/11/12 15:07:30 ragge Exp $ */
 /*
  * Copyright (c) 1995 Ludd, University of Lule}, Sweden.

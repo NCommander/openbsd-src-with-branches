@@ -1,3 +1,4 @@
+/*	$OpenBSD: mfm.c,v 1.1 1996/08/02 11:22:16 ragge Exp $	*/
 /*	$NetBSD: mfm.c,v 1.1 1996/08/02 11:22:16 ragge Exp $	*/
 /*
  * Copyright (c) 1996 Ludd, University of Lule}, Sweden.

@@ -1,3 +1,4 @@
+/*	$OpenBSD: sbi.c,v 1.14 1996/10/13 03:36:00 christos Exp $ */
 /*	$NetBSD: sbi.c,v 1.14 1996/10/13 03:36:00 christos Exp $ */
 /*
  * Copyright (c) 1994 Ludd, University of Lule}, Sweden.

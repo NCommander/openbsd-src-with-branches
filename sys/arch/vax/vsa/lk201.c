@@ -1,3 +1,5 @@
+/*	$OpenBSD$	*/
+
 /*
  * The LK201 keycode mapping routine is here, along with initialization
  * functions for the keyboard and mouse.

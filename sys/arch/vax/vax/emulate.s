@@ -1,3 +1,4 @@
+/*	$OpenBSD: emulate.s,v 1.1 1995/02/24 01:35:08 ragge Exp $ */
 /*	$NetBSD: emulate.s,v 1.1 1995/02/24 01:35:08 ragge Exp $ */
 /*
  * Copyright (c) 1986, 1987 The Regents of the University of California.

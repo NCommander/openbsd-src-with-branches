@@ -1,3 +1,4 @@
+/*	$OpenBSD: uvax_proto.c,v 1.3 1996/10/13 03:36:06 christos Exp $	*/
 /*	$NetBSD: uvax_proto.c,v 1.3 1996/10/13 03:36:06 christos Exp $	*/
 /*-
  * Copyright (c) 1982, 1988, 1990, 1993

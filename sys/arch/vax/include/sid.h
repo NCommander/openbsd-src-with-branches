@@ -1,3 +1,4 @@
+/*	$OpenBSD: sid.h,v 1.8 1996/08/20 14:19:41 ragge Exp $	*/
 /*	$NetBSD: sid.h,v 1.8 1996/08/20 14:19:41 ragge Exp $	*/
 
 /*

@@ -1,3 +1,4 @@
+/*	$OpenBSD: if_le.c,v 1.3 1996/10/13 03:34:53 christos Exp $	*/
 /*	$NetBSD: if_le.c,v 1.3 1996/10/13 03:34:53 christos Exp $	*/
 
 #define LEDEBUG	 1		/* debug-level: 0 or 1 */

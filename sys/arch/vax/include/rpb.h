@@ -1,3 +1,4 @@
+/*	$OpenBSD: rpb.h,v 1.2 1995/10/20 13:47:27 ragge Exp $ */
 /*	$NetBSD: rpb.h,v 1.2 1995/10/20 13:47:27 ragge Exp $ */
 /*
  * Copyright (c) 1995 Ludd, University of Lule}, Sweden.

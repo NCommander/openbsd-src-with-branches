@@ -1,3 +1,4 @@
+/*	$OpenBSD: crl.h,v 1.1 1996/03/08 12:32:53 ragge Exp $	*/
 /*	$NetBSD: crl.h,v 1.1 1996/03/08 12:32:53 ragge Exp $	*/
 /* 
  * @(#)crl.h	7.1 (Berkeley) 6/5/86

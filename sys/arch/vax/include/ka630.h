@@ -1,3 +1,4 @@
+/*	$OpenBSD: ka630.h,v 1.1 1996/07/20 17:58:17 ragge Exp $ */
 /*	$NetBSD: ka630.h,v 1.1 1996/07/20 17:58:17 ragge Exp $ */
 /*-
  * Copyright (c) 1986, 1988 The Regents of the University of California.

@@ -1,3 +1,4 @@
+/*	$OpenBSD: mscpreg.h,v 1.1 1996/07/01 20:41:37 ragge Exp $	*/
 /*	$NetBSD: mscpreg.h,v 1.1 1996/07/01 20:41:37 ragge Exp $	*/
 /*
  * Copyright (c) 1996 Ludd, University of Lule}, Sweden.

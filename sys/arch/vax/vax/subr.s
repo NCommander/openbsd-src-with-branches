@@ -1,3 +1,4 @@
+/*      $OpenBSD: subr.s,v 1.16 1996/03/17 22:56:18 ragge Exp $     */
 /*      $NetBSD: subr.s,v 1.16 1996/03/17 22:56:18 ragge Exp $     */
 
 /*

@@ -1,3 +1,4 @@
+/*	$OpenBSD: db_disasm.c,v 1.9 1996/10/13 03:35:38 christos Exp $ */
 /*	$NetBSD: db_disasm.c,v 1.9 1996/10/13 03:35:38 christos Exp $ */
 /*
  * Copyright (c) 1996 Ludd, University of Lule}, Sweden.

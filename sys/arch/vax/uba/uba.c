@@ -1,3 +1,4 @@
+/*	$OpenBSD: uba.c,v 1.29 1996/10/13 03:35:24 christos Exp $	   */
 /*	$NetBSD: uba.c,v 1.29 1996/10/13 03:35:24 christos Exp $	   */
 /*
  * Copyright (c) 1996 Jonathan Stone.

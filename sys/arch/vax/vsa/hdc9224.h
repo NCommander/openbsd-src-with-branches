@@ -1,3 +1,4 @@
+/*	$OpenBSD: hdc9224.h,v 1.1 1996/07/20 18:55:12 ragge Exp $ */
 /*	$NetBSD: hdc9224.h,v 1.1 1996/07/20 18:55:12 ragge Exp $ */
 /*
  * Copyright (c) 1996 Ludd, University of Lule}, Sweden.

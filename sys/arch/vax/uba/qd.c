@@ -1,3 +1,4 @@
+/*	$OpenBSD: qd.c,v 1.4 1996/10/13 03:35:17 christos Exp $	*/
 /*	$NetBSD: qd.c,v 1.4 1996/10/13 03:35:17 christos Exp $	*/
 
 /*-

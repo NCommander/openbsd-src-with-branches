@@ -1,3 +1,4 @@
+/*	$OpenBSD: dhu.c,v 1.9 1997/01/11 11:34:41 ragge Exp $	*/
 /*	$NetBSD: dhu.c,v 1.9 1997/01/11 11:34:41 ragge Exp $	*/
 /*
  * Copyright (c) 1996  Ken C. Wellsch.  All rights reserved.

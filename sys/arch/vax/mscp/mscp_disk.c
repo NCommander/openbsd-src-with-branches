@@ -1,3 +1,4 @@
+/*	$OpenBSD: mscp_disk.c,v 1.7 1997/01/11 11:20:32 ragge Exp $	*/
 /*	$NetBSD: mscp_disk.c,v 1.7 1997/01/11 11:20:32 ragge Exp $	*/
 /*
  * Copyright (c) 1996 Ludd, University of Lule}, Sweden.

@@ -1,3 +1,4 @@
+/*	$OpenBSD: scb.h,v 1.4 1995/12/13 18:54:56 ragge Exp $	*/
 /*	$NetBSD: scb.h,v 1.4 1995/12/13 18:54:56 ragge Exp $	*/
 
 /*

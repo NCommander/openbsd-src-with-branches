@@ -1,3 +1,4 @@
+/*	$OpenBSD: vsbus.h,v 1.1 1996/07/20 17:58:28 ragge Exp $ */
 /*	$NetBSD: vsbus.h,v 1.1 1996/07/20 17:58:28 ragge Exp $ */
 /*
  * Copyright (c) 1996 Ludd, University of Lule}, Sweden.

@@ -1,3 +1,4 @@
+/*	$OpenBSD: rsp.h,v 1.1 1996/02/17 18:14:50 ragge Exp $ */
 /*	$NetBSD: rsp.h,v 1.1 1996/02/17 18:14:50 ragge Exp $ */
 /*
  * Copyright (c) 1995 Ludd, University of Lule}, Sweden.

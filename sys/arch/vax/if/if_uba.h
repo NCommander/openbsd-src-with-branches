@@ -1,3 +1,4 @@
+/*	$OpenBSD: if_uba.h,v 1.6 1996/08/20 14:07:50 ragge Exp $	*/
 /*	$NetBSD: if_uba.h,v 1.6 1996/08/20 14:07:50 ragge Exp $	*/
 
 /*
