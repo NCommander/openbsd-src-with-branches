@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_strip.c,v 1.26 2003/08/15 20:32:19 tedu Exp $	*/
+/*	$OpenBSD: if_strip.c,v 1.27 2003/12/10 07:22:42 itojun Exp $	*/
 /*	$NetBSD: if_strip.c,v 1.2.4.3 1996/08/03 00:58:32 jtc Exp $	*/
 /*	from: NetBSD: if_sl.c,v 1.38 1996/02/13 22:00:23 christos Exp $	*/
 
@@ -1266,6 +1266,8 @@ stripinput(c, tp)
 		IF_DROP(&ipintrq);
 		sc->sc_if.if_ierrors++;
 		sc->sc_if.if_iqdrops++;
+		if (!ipintrq.ifq_congestion)
+			if_congestion(&ipintrq);
 		m_freem(m);
 	} else {
 		IF_ENQUEUE(&ipintrq, m);
