@@ -1,5 +1,4 @@
-/*	$OpenBSD: frame.h,v 1.2 1996/12/28 06:25:09 rahnds Exp $	*/
-/*	$NetBSD: frame.h,v 1.1 1996/09/30 16:34:25 ws Exp $	*/
+/*	$OpenBSD: frame.h,v 1.3 1997/02/05 01:33:51 rahnds Exp $	*/
 
 /*
  * Copyright (C) 1995, 1996 Wolfgang Solfrank.

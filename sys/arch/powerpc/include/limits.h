@@ -1,4 +1,4 @@
-/*	$OpenBSD: limits.h,v 1.2 1996/12/28 06:25:16 rahnds Exp $	*/
+/*	$OpenBSD: limits.h,v 1.3 1997/07/24 14:48:54 deraadt Exp $	*/
 /*	$NetBSD: limits.h,v 1.1 1996/09/30 16:34:28 ws Exp $	*/
 
 /*-
@@ -66,4 +66,16 @@
 #endif	/* !_POSIX_SOURCE && !_XOPEN_SOURCE */
 #endif	/* !_ANSI_SOURCE */
 
+#if (!defined(_ANSI_SOURCE)&&!defined(_POSIX_SOURCE)) || defined(_XOPEN_SOURCE)
+#define LONG_BIT	32
+#define WORD_BIT	32
+
+#define DBL_DIG		15
+#define DBL_MAX		1.797693134862316E+308
+#define DBL_MIN		2.225073858507201E-308
+
+#define FLT_DIG		6
+#define FLT_MAX		3.40282347E+38F
+#define FLT_MIN		1.17549435E-38F
+#endif
 #endif /* _MACHINE_LIMITS_H_ */

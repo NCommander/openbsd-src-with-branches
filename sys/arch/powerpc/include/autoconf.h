@@ -13,8 +13,8 @@
  *    documentation and/or other materials provided with the distribution.
  * 3. All advertising materials mentioning features or use of this software
  *    must display the following acknowledgement:
- *	This product includes software developed under OpenBSD by
- *	Per Fogelstrom, Opsycon AB, Sweden.
+ *	This product includes software developed under OpenBSD for RTMX inc
+ *      by Per Fogelstrom, Opsycon AB.
  * 4. The name of the author may not be used to endorse or promote products
  *    derived from this software without specific prior written permission.
  *
@@ -31,61 +31,56 @@
  * SUCH DAMAGE.
  *
  */
+/*
+ * Machine-dependent structures of autoconfiguration
+ */
 
-#ifndef	_MACHINE_ENDIAN_H_
-#define	_MACHINE_ENDIAN_H_
-
-#ifndef	_POSIX_SOURCE
-
-#define _QUAD_HIGHWORD	0
-#define _QUAD_LOWWORD	1
+#ifndef _MACHINE_AUTOCONF_H_
+#define _MACHINE_AUTOCONF_H_
 
 /*
- * Byte order definition. Byte numbers given in increasing address order.
+ *   System types.
  */
-#define	LITTLE_ENDIAN	1234	/* LSB first: i386, NS32K */
-#define	BIG_ENDIAN	4321	/* MSB first: M68K */
-#define	PDP_ENDIAN	3412	/* LSB first in word, MSW first in long */
+#define	POWER4e		1	/* V.I Power.4e board */
 
-#define	BYTE_ORDER	BIG_ENDIAN
+extern int system_type;
 
-#include <sys/cdefs.h>
+/**/
+struct confargs;
 
-typedef u_int32_t in_addr_t;                      
-typedef u_int16_t in_port_t;
+typedef int (*intr_handler_t) __P((void *));
 
-__BEGIN_DECLS
-u_int32_t       htonl __P((u_int32_t));
-u_int16_t       htons __P((u_int16_t));
-u_int32_t       ntohl __P((u_int32_t));
-u_int16_t       ntohs __P((u_int16_t));
-__END_DECLS
+typedef struct bushook {
+	struct	device *bh_dv;
+	int	bh_type;
+	void	(*bh_intr_establish)
+		    __P((struct confargs *, intr_handler_t, void *));
+	void	(*bh_intr_disestablish)
+		    __P((struct confargs *));
+	int	(*bh_matchname)	
+		    __P((struct confargs *, char *));
+} bushook_t;
 
-/*
- * Macros for network/external number representation conversion where
- * network/external is defined to be in BIG_ENDIAN byte order.
- *
- * *NOTE* That the macros are supposed to work on the arrgument (x) and
- * thus should *NOT* be used in assignments such as 'foo=HTONS(bar)'.
- */
-#if BYTE_ORDER == BIG_ENDIAN && !defined(lint)
-#define	ntohl(x)	(x)
-#define	ntohs(x)	(x)
-#define	htonl(x)	(x)
-#define	htons(x)	(x)
+#define	BUS_MAIN	1		/* mainbus */
+#define	BUS_ISABR	2		/* ISA Bridge Bus */
+#define	BUS_PCIBR	3		/* Algorithmics PCI bridge */
 
-#define	NTOHL(x)	(void) (x)
-#define	NTOHS(x)	(void) (x)
-#define	HTONL(x)	(void) (x)
-#define	HTONS(x)	(void) (x)
+#define	BUS_INTR_ESTABLISH(ca, handler, val)				\
+	    (*(ca)->ca_bus->bh_intr_establish)((ca), (handler), (val))
+#define	BUS_INTR_DISESTABLISH(ca)					\
+	    (*(ca)->ca_bus->bh_intr_establish)(ca)
+#define	BUS_CVTADDR(ca)							\
+	    (*(ca)->ca_bus->bh_cvtaddr)(ca)
+#define	BUS_MATCHNAME(ca, name)						\
+	    (*(ca)->ca_bus->bh_matchname)((ca), (name))
 
-#else
+struct confargs {
+	char	*ca_name;		/* Device name. */
+	bushook_t *ca_bus;		/* bus device resides on. */
+};
 
-#define	NTOHL(x)	(x) = ntohl((u_int32_t)x)
-#define	NTOHS(x)	(x) = ntohs((u_int16_t)x)
-#define	HTONL(x)	(x) = htonl((u_int32_t)x)
-#define	HTONS(x)	(x) = htons((u_int16_t)x)
-#endif
+void	set_clockintr __P((void (*)(struct clockframe *)));
+void	set_iointr __P((void (*)(void *, int)));
+int	badaddr			__P((void *, u_int64_t));
 
-#endif	/* _POSIX_SOURCE */
-#endif	/* _MACHINE_ENDIAN_H_ */
+#endif /* _MACHINE_AUTOCONF_H_ */
