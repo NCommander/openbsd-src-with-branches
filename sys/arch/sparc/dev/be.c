@@ -1,4 +1,4 @@
-/*	$OpenBSD: be.c,v 1.11 1998/09/08 03:05:52 jason Exp $	*/
+/*	$OpenBSD: be.c,v 1.12 1998/09/15 22:36:20 jason Exp $	*/
 
 /*
  * Copyright (c) 1998 Theo de Raadt and Jason L. Wright.
@@ -515,7 +515,7 @@ betint(sc)
 		if (sc->sc_no_td <= 0)
 			break;
 
-		bcopy(&sc->sc_desc->be_txd[bix], &txd, sizeof(txd));
+		txd.tx_flags = sc->sc_desc->be_txd[bix].tx_flags;
 
 		if (txd.tx_flags & BE_TXD_OWN)
 			break;
