@@ -1,6 +1,7 @@
 /*
  * David Leonard <d@openbsd.org>, 1999. Public Domain.
  *
+ * $OpenBSD$
  */
 #include <unistd.h>
 #include <errno.h>
