@@ -1,4 +1,4 @@
-/*	$OpenBSD: cleanerd.c,v 1.8 2002/02/17 19:42:26 millert Exp $	*/
+/*	$OpenBSD: cleanerd.c,v 1.9 2002/05/22 06:07:00 deraadt Exp $	*/
 
 /*-
  * Copyright (c) 1992, 1993
@@ -41,7 +41,7 @@ static char copyright[] =
 
 #ifndef lint
 /*static char sccsid[] = "@(#)cleanerd.c	8.5 (Berkeley) 6/10/95";*/
-static char rcsid[] = "$OpenBSD: cleanerd.c,v 1.8 2002/02/17 19:42:26 millert Exp $";
+static char rcsid[] = "$OpenBSD: cleanerd.c,v 1.9 2002/05/22 06:07:00 deraadt Exp $";
 #endif /* not lint */
 
 #include <sys/param.h>
@@ -236,7 +236,7 @@ main(argc, argv)
 		(void)printf("Cleaner going to sleep.\n");
 #endif
 		if (lfs_segwait(&fsid, &timeout) < 0)
-			err(0, "lfs_segwait: returned error\n");	
+			err(0, "lfs_segwait: returned error");
 #ifdef VERBOSE
 		(void)printf("Cleaner waking up.\n");
 #endif
