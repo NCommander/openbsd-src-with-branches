@@ -1,4 +1,4 @@
-/*	$OpenBSD: db_lex.h,v 1.3 1996/03/11 11:16:13 mickey Exp $	*/
+/*	$OpenBSD: db_lex.h,v 1.4 1996/04/21 22:19:04 deraadt Exp $	*/
 /*	$NetBSD: db_lex.h,v 1.7 1996/02/05 01:57:07 christos Exp $	*/
 
 /* 
@@ -42,7 +42,7 @@ int db_read_token __P((void));
 void db_flush_lex __P((void));
 int db_lex __P((void));
 
-int	db_tok_number;
+db_expr_t db_tok_number;
 #define	TOK_STRING_SIZE		120 
 char	db_tok_string[TOK_STRING_SIZE];
 int	db_radix;
