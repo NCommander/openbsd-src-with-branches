@@ -12,7 +12,7 @@
  */
 
 #include "includes.h"
-RCSID("$OpenBSD: readconf.c,v 1.122 2003/10/08 15:21:24 markus Exp $");
+RCSID("$OpenBSD: readconf.c,v 1.123 2003/10/11 08:24:07 markus Exp $");
 
 #include "ssh.h"
 #include "xmalloc.h"
@@ -183,11 +183,7 @@ static struct {
 #endif
 	{ "clearallforwardings", oClearAllForwardings },
 	{ "enablesshkeysign", oEnableSSHKeysign },
-#ifdef DNS
 	{ "verifyhostkeydns", oVerifyHostKeyDNS },
-#else
-	{ "verifyhostkeydns", oUnsupported },
-#endif
 	{ "nohostauthenticationforlocalhost", oNoHostAuthenticationForLocalhost },
 	{ "rekeylimit", oRekeyLimit },
 	{ "connecttimeout", oConnectTimeout },
