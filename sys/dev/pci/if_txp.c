@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_txp.c,v 1.59 2001/11/06 19:53:19 miod Exp $	*/
+/*	$OpenBSD: if_txp.c,v 1.60 2002/02/07 16:56:34 jason Exp $	*/
 
 /*
  * Copyright (c) 2001
@@ -1243,7 +1243,7 @@ txp_ioctl(ifp, command, data)
 		break;
 	}
 
-	(void)splx(s);
+	splx(s);
 
 	return(error);
 }

@@ -1,4 +1,4 @@
-/*	$OpenBSD: cl.c,v 1.21 2000/07/06 12:54:55 art Exp $ */
+/*	$OpenBSD: cl.c,v 1.22 2001/06/27 05:44:47 nate Exp $ */
 
 /*
  * Copyright (c) 1995 Dale Rahn. All rights reserved.
@@ -511,7 +511,7 @@ int clmctl (dev, bits, how)
 		}
 		break;
 	}
-	(void)splx(s);
+	splx(s);
 #if 0
 	bits = 0;
 	/* proper defaults? */
