@@ -1,4 +1,4 @@
-/*	$OpenBSD: server.c,v 1.5 1996/07/25 05:13:49 millert Exp $	*/
+/*	$OpenBSD: server.c,v 1.6 1996/08/22 20:33:24 millert Exp $	*/
 
 /*
  * Copyright (c) 1983, 1993
@@ -35,7 +35,7 @@
 
 #ifndef lint
 /* from: static char sccsid[] = "@(#)server.c	8.1 (Berkeley) 6/9/93"; */
-static char *rcsid = "$OpenBSD: server.c,v 1.5 1996/07/25 05:13:49 millert Exp $";
+static char *rcsid = "$OpenBSD: server.c,v 1.6 1996/08/22 20:33:24 millert Exp $";
 #endif /* not lint */
 
 #include <sys/wait.h>
@@ -1352,7 +1352,9 @@ dospecial(cmd)
 		(void) close(fd[0]);
 		(void) close(fd[1]);
 #if	defined(DIRECT_RCMD)
+		setegid(groupid);
 		setgid(groupid);
+		seteuid(userid);
 		setuid(userid);
 #endif	/* DIRECT_RCMD */
 		execl(_PATH_BSHELL, "sh", "-c", cmd, 0);

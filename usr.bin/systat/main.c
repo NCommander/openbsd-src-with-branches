@@ -1,4 +1,4 @@
-/*	$OpenBSD: main.c,v 1.6 1996/08/06 20:41:19 deraadt Exp $	*/
+/*	$OpenBSD: main.c,v 1.7 1996/08/08 10:41:01 niklas Exp $	*/
 /*	$NetBSD: main.c,v 1.8 1996/05/10 23:16:36 thorpej Exp $	*/
 
 /*-
@@ -44,7 +44,7 @@ static char copyright[] =
 #if 0
 static char sccsid[] = "@(#)main.c	8.1 (Berkeley) 6/6/93";
 #endif
-static char rcsid[] = "$OpenBSD: main.c,v 1.6 1996/08/06 20:41:19 deraadt Exp $";
+static char rcsid[] = "$OpenBSD: main.c,v 1.7 1996/08/08 10:41:01 niklas Exp $";
 #endif /* not lint */
 
 #include <sys/param.h>
@@ -119,8 +119,10 @@ main(argc, argv)
          * Discard setgid privileges if not the running kernel so that bad
          * guys can't print interesting stuff from kernel memory.
          */
-        if (nlistf != NULL || memf != NULL)
+        if (nlistf != NULL || memf != NULL) {
+		setegid(getgid());
                 setgid(getgid());
+	}
 
 	while (argc > 0) {
 		if (isdigit(argv[0][0])) {
