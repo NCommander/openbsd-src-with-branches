@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.37 1998/08/31 00:20:07 brian Exp $
+#	$OpenBSD: Makefile,v 1.38 1998/09/11 11:49:22 fgsch Exp $
 
 # not yet done: catman
 
@@ -15,6 +15,10 @@ SUBDIR=	ac accton adduser amd arp bootpd bootpgw bootpef bootptest \
 	sa sendmail sliplogin slstats spray sysctl \
 	syslogd tcpdump timed traceroute trpt trsp \
 	vipw vnconfig zdump zic
+
+.if (${AFS} == "yes")
+SUBDIR+=afs
+.endif
 
 .if (${YP} == "yes")
 SUBDIR+=ypbind yppoll ypset ypserv
