@@ -17,7 +17,7 @@
  * IMPLIED WARRANTIES, INCLUDING, WITHOUT LIMITATION, THE IMPLIED
  * WARRANTIES OF MERCHANTIBILITY AND FITNESS FOR A PARTICULAR PURPOSE.
  *
- * $OpenBSD: main.c,v 1.21 2000/04/09 18:27:25 brian Exp $
+ * $OpenBSD: main.c,v 1.22 2000/10/09 21:18:57 brian Exp $
  *
  *	TODO:
  */
@@ -168,8 +168,8 @@ BringDownServer(int signo)
 static void
 Usage(void)
 {
-  fprintf(stderr,
-	  "Usage: ppp [-auto | -foreground | -background | -direct | -dedicated | -ddial | -interactive]"
+  fprintf(stderr, "Usage: ppp [-auto | -foreground | -background | -direct |"
+          " -dedicated | -ddial | -interactive]"
 #ifndef NOALIAS
           " [-nat]"
 #endif

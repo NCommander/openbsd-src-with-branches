@@ -23,7 +23,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  *
- *	$OpenBSD: datalink.c,v 1.31 2000/06/13 09:57:51 brian Exp $
+ *	$OpenBSD: datalink.c,v 1.32 2000/07/19 11:06:32 brian Exp $
  */
 
 #include <sys/param.h>
@@ -474,7 +474,8 @@ datalink_Read(struct fdescriptor *d, struct bundle *bundle, const fd_set *fdset)
 }
 
 static int
-datalink_Write(struct fdescriptor *d, struct bundle *bundle, const fd_set *fdset)
+datalink_Write(struct fdescriptor *d, struct bundle *bundle,
+               const fd_set *fdset)
 {
   struct datalink *dl = descriptor2datalink(d);
   int result = 0;
