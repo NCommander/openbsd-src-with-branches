@@ -1,5 +1,5 @@
-/*	$OpenBSD: init_main.c,v 1.4 1996/03/03 17:19:39 niklas Exp $	*/
-/*	$NetBSD: init_main.c,v 1.83 1996/04/04 00:26:28 cgd Exp $	*/
+/*	$OpenBSD: init_main.c,v 1.5 1996/04/21 22:26:50 deraadt Exp $	*/
+/*	$NetBSD: init_main.c,v 1.84 1996/04/22 01:38:12 christos Exp $	*/
 
 /*
  * Copyright (c) 1995 Christopher G. Demetriou.  All rights reserved.
@@ -63,7 +63,6 @@
 #include <sys/protosw.h>
 #include <sys/reboot.h>
 #include <sys/user.h>
-#include <sys/cpu.h>
 #ifdef SYSVSHM
 #include <sys/shm.h>
 #endif
