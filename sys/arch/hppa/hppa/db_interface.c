@@ -1,4 +1,4 @@
-/*	$OpenBSD: db_interface.c,v 1.20 2002/05/16 20:16:15 mickey Exp $	*/
+/*	$OpenBSD: db_interface.c,v 1.21 2002/05/18 09:49:17 art Exp $	*/
 
 /*
  * Copyright (c) 1999-2000 Michael Shalayeff
@@ -132,8 +132,10 @@ int db_active = 0;
 void
 Debugger()
 {
-	__asm __volatile ("break	%0, %1"
-			  :: "i" (HPPA_BREAK_KERNEL), "i" (HPPA_BREAK_KGDB));
+	extern int kernelmapped;	/* from locore.S */
+	if (kernelmapped)
+		__asm __volatile ("break %0, %1"
+		    :: "i" (HPPA_BREAK_KERNEL), "i" (HPPA_BREAK_KGDB));
 }
 
 void
