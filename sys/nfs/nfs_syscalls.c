@@ -1,4 +1,4 @@
-/*	$OpenBSD: nfs_syscalls.c,v 1.25 2002/01/20 23:51:29 hugh Exp $	*/
+/*	$OpenBSD: nfs_syscalls.c,v 1.26 2002/02/05 16:02:27 art Exp $	*/
 /*	$NetBSD: nfs_syscalls.c,v 1.19 1996/02/18 11:53:52 fvdl Exp $	*/
 
 /*
@@ -781,7 +781,7 @@ nfsrv_zapsock(slp)
 	slp->ns_flag &= ~SLP_ALLFLAGS;
 	fp = slp->ns_fp;
 	if (fp) {
-		FILE_USE(fp);
+		FREF(fp);
 		slp->ns_fp = NULL;
 		so = slp->ns_so;
 		so->so_upcall = NULL;

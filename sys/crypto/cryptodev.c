@@ -1,4 +1,4 @@
-/*	$OpenBSD: cryptodev.c,v 1.27 2001/11/09 03:11:38 deraadt Exp $	*/
+/*	$OpenBSD: cryptodev.c,v 1.28 2001/11/13 17:45:46 deraadt Exp $	*/
 
 /*
  * Copyright (c) 2001 Theo de Raadt
@@ -541,7 +541,6 @@ cryptoioctl(dev, cmd, data, flag, p)
 		fcr->sesn = 0;
 
 		error = falloc(p, &f, &fd);
-
 		if (error) {
 			FREE(fcr, M_XDATA);
 			return (error);
