@@ -1,4 +1,4 @@
-/* $OpenBSD: base64.c,v 1.2 1999/05/31 20:09:58 angelos Exp $ */
+/* $OpenBSD$ */
 /*
  * Copyright (c) 1996 by Internet Software Consortium.
  *
@@ -57,6 +57,7 @@
 #endif /* !HAVE_STRCHR */
 #endif /* STDC_HEADERS */
 
+#include "header.h"
 #include "keynote.h"
 
 #if defined(HAVE___B64_NTOP)

@@ -57,6 +57,7 @@
 #include <string.h>
 #endif /* STDC_HEADERS */
 
+#include "header.h"
 #include "keynote.h"
 #include "assertion.h"
 

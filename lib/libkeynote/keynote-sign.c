@@ -43,8 +43,8 @@
 #include <unistd.h>
 #endif /* HAVE_IO_H */
 
-#include "keynote.h"
 #include "header.h"
+#include "keynote.h"
 
 void
 signusage(void)

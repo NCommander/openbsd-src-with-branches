@@ -1,5 +1,5 @@
-/* $OpenBSD$ */
-/* 
+/*  $OpenBSD$ */
+/*
  * The author of this code is Angelos D. Keromytis (angelos@dsl.cis.upenn.edu)
  *
  * This code was written by Angelos D. Keromytis in Philadelphia, PA, USA,
@@ -49,6 +49,7 @@
 #include <unistd.h>
 #endif /* HAVE_IO_H */
 
+#include "header.h"
 #include "keynote.h"
 #include "assertion.h"
 

@@ -47,6 +47,7 @@
 #endif
 
 #include "k.tab.h"
+#include "header.h"
 #include "keynote.h"
 #include "assertion.h"
 

@@ -40,6 +40,7 @@
 #include <limits.h>
 #endif /* HAVE_LIMITS_H */
 
+#include "header.h"
 #include "keynote.h"
 #include "assertion.h"
 #include "signature.h"
