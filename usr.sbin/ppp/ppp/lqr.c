@@ -25,10 +25,14 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  *
- * $OpenBSD$
+ * $OpenBSD: lqr.c,v 1.12 2001/06/13 21:33:41 brian Exp $
  */
 
 #include <sys/param.h>
+
+#ifdef __FreeBSD__
+#include <netinet/in.h>
+#endif
 #include <sys/un.h>
 
 #include <string.h>

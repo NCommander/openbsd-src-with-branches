@@ -23,7 +23,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  *
- *	$OpenBSD: throughput.c,v 1.8 2000/08/15 10:26:39 brian Exp $
+ *	$OpenBSD: throughput.c,v 1.9 2000/08/28 22:44:42 brian Exp $
  */
 
 #include <sys/types.h>
@@ -141,7 +141,7 @@ throughput_log(struct pppThroughput *t, int level, const char *title)
     log_Printf(level, "%s%sConnect time: %d secs: %llu octets in, %llu octets"
                " out\n", title, *title ? ": " : "", secs_up, t->OctetsIn,
                t->OctetsOut);
-    log_Printf(level, "%s%s: %llu packets in, %llu packets out\n",
+    log_Printf(level, "%s%s%llu packets in, %llu packets out\n",
                title, *title ? ": " : "",  t->PacketsIn, t->PacketsOut);
     if (secs_up == 0)
       secs_up = 1;

@@ -23,7 +23,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  *
- *	$OpenBSD: udp.c,v 1.13 2002/01/23 23:41:32 brian Exp $
+ *	$OpenBSD: udp.c,v 1.14 2002/03/31 02:38:49 brian Exp $
  */
 
 #include <sys/types.h>
@@ -167,6 +167,7 @@ static const struct device baseudpdevice = {
   udp_Recvfrom,
   udp_Sendto,
   udp_device2iov,
+  NULL,
   NULL,
   NULL
 };

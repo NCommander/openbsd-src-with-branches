@@ -23,7 +23,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  *
- *	$OpenBSD: chat.c,v 1.17 2001/11/23 11:17:03 brian Exp $
+ *	$OpenBSD: chat.c,v 1.18 2002/03/31 02:38:49 brian Exp $
  */
 
 #include <sys/param.h>
@@ -65,7 +65,6 @@
 #include "slcompress.h"
 #include "iplist.h"
 #include "ncpaddr.h"
-#include "ip.h"
 #include "ipcp.h"
 #include "filter.h"
 #include "cbcp.h"

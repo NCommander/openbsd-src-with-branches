@@ -23,20 +23,21 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  *
- * $FreeBSD$
+ * $OpenBSD$
  */
 
 #include <sys/types.h>
 #include <sys/socket.h>
+#ifdef __OpenBSD__
 #include <net/if_types.h>
 #include <net/route.h>
+#endif
 #include <netinet/in.h>
 #include <netinet/in_systm.h>
 #include <netinet/ip.h>
 #include <arpa/inet.h>
 #include <sys/un.h>
 
-#include <limits.h>
 #include <netdb.h>
 #include <stdio.h>
 #include <stdlib.h>

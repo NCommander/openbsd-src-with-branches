@@ -23,7 +23,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  *
- *	$OpenBSD: tun.c,v 1.13 2001/08/19 23:22:18 brian Exp $
+ *	$OpenBSD: tun.c,v 1.14 2002/01/16 14:13:06 brian Exp $
  */
 
 #include <sys/param.h>
@@ -64,7 +64,6 @@
 #include "iplist.h"
 #include "slcompress.h"
 #include "ncpaddr.h"
-#include "ip.h"
 #include "ipcp.h"
 #include "filter.h"
 #include "descriptor.h"
