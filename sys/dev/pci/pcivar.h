@@ -139,6 +139,10 @@ struct pci_attach_args {
  */
 #define	PCI_FLAGS_IO_ENABLED	0x01		/* I/O space is enabled */
 #define	PCI_FLAGS_MEM_ENABLED	0x02		/* memory space is enabled */
+#define	PCI_FLAGS_MRL_OKAY	0x04		/* Memory Read Line okay */
+#define	PCI_FLAGS_MRM_OKAY	0x08		/* Memory Read Multiple okay */
+#define	PCI_FLAGS_MWI_OKAY	0x10		/* Memory Write and Invalidate
+						   okay */
 
 /*
  *
