@@ -1,4 +1,4 @@
-/*	$OpenBSD: ping.c,v 1.44 2001/01/12 20:07:05 deraadt Exp $	*/
+/*	$OpenBSD: ping.c,v 1.45 2001/10/03 19:36:49 jakob Exp $	*/
 /*	$NetBSD: ping.c,v 1.20 1995/08/11 22:37:58 cgd Exp $	*/
 
 /*
@@ -47,7 +47,7 @@ static char copyright[] =
 #if 0
 static char sccsid[] = "@(#)ping.c	8.1 (Berkeley) 6/5/93";
 #else
-static char rcsid[] = "$OpenBSD: ping.c,v 1.44 2001/01/12 20:07:05 deraadt Exp $";
+static char rcsid[] = "$OpenBSD: ping.c,v 1.45 2001/10/03 19:36:49 jakob Exp $";
 #endif
 #endif /* not lint */
 
@@ -468,7 +468,7 @@ main(argc, argv)
 			err(1, "Cannot set the receive buffer size");
 	}
 	if (bufspace < DEFAULT_BUFSPACE)
-		warnx("Could only allocate a receive buffer of %i bytes (default %i)\n",
+		warnx("Could only allocate a receive buffer of %i bytes (default %i)",
 		    bufspace, DEFAULT_BUFSPACE);
 
 	if (to->sin_family == AF_INET)
