@@ -1,4 +1,4 @@
-/*	$OpenBSD: psl.h,v 1.4 2000/07/06 15:25:04 ho Exp $	*/
+/*	$OpenBSD: psl.h,v 1.5 2000/07/07 11:49:39 art Exp $	*/
 /*	$NetBSD: psl.h,v 1.12 1997/03/10 21:49:11 pk Exp $ */
 
 /*
@@ -201,6 +201,7 @@ SPLHOLD(spltty, PIL_TTY)
  * Memory allocation (must be as high as highest network, tty, or disk device)
  */
 SPLHOLD(splimp, 7)
+SPLHOLD(splvm, 7)
 
 /*
  * remove.

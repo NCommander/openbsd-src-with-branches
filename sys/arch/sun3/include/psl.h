@@ -1,4 +1,4 @@
-/*	$OpenBSD: psl.h,v 1.8 2000/07/14 14:24:54 miod Exp $	*/
+/*	$OpenBSD: psl.h,v 1.9 2001/01/03 01:48:07 miod Exp $	*/
 /*	$NetBSD: psl.h,v 1.14 1998/11/24 17:07:54 kleink Exp $	*/
 
 /*-
@@ -146,6 +146,7 @@ _splraise(int new)
  * use splraise to avoid enabling interrupts early.
  */
 #define splimp()        _splraise(PSL_S|PSL_IPL4)
+#define splvm()         _splraise(PSL_S|PSL_IPL4)
 
 /* Intersil clock hardware interrupts (hard-wired at 5) */
 #define splclock()      spl5()
