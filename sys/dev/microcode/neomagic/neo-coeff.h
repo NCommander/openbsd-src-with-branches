@@ -1,4 +1,4 @@
-/*      $OpenBSD: neo-coeff.h,v 1.1 2000/04/13 00:10:52 csapuntz Exp $       */
+/*      $OpenBSD: neo-coeff.h,v 1.2 2001/01/26 22:33:33 mickey Exp $       */
 
 /*
  * Copyright (c) 1999 Cameron Grant <gandalf@vilnya.demon.co.uk>
