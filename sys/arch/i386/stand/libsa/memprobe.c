@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: memprobe.c,v 1.2 1997/03/31 23:06:30 mickey Exp $	*/
 
 #include <sys/param.h>
 #include "libsa.h"
@@ -11,8 +11,7 @@ memprobe()
 {
 	int ram;
 
-	cnvmem = biosmem(0);
-	extmem = biosmem(1);
+	cnvmem = biosmem();
 
 	/* probe extended memory
 	 *
