@@ -1,4 +1,4 @@
-#	$OpenBSD: PETRA,v 1.16 1999/01/02 00:38:16 niklas Exp $
+#	$OpenBSD: PETRA,v 1.17 1999/11/26 20:24:32 niklas Exp $
 #
 #	PETRA -- everything that's currently supported with certain
 #		 changes for Applitron's fileserver petra, a 128 MB
@@ -10,7 +10,7 @@ machine		i386		# architecture, used by config; REQUIRED
 makeoptions	DEBUG="-g"	# make a bsd.gdb too
 
 #include "../../../conf/GENERIC"
-#	$OpenBSD: GENERIC,v 1.41 1998/12/04 21:52:24 downsj Exp $
+#	$OpenBSD: PETRA,v 1.17 1999/11/26 20:24:32 niklas Exp $
 #
 #	Machine-independent option; used by all architectures for their
 #	GENERIC kernel
@@ -331,9 +331,8 @@ xl*	at pci? dev ? function ?		# 3c9xx ethernet
 rl*	at pci? dev ? function ?		# RealTek 81[23]9 ethernet
 tx*	at pci? dev ? function ?		# SMC 83C170 EPIC ethernet
 tl*	at pci? dev ? function ?		# Compaq Thunderlan ethernet
-mx*	at pci? dev ? function ?		# Macronix PMAC ethernet
 vr*	at pci? dev ? function ?		# VIA Rhine ethernet
-pn*	at pci? dev ? function ?		# Lite-On PNIC ethernet
+dc*	at pci? dev ? function ?		# 21143, "tulip" clone ethernet
 wb*	at pci? dev ? function ?		# Winbond W89C840F ethernet
 ti*	at pci? dev ? function ?		# Alteon Tigon 1Gb ethernet
 ax*	at pci? dev ? function ?		# ASIX AX88140A ethernet
