@@ -1,4 +1,4 @@
-/*	$OpenBSD: mbuf.c,v 1.10 2002/01/15 22:41:01 art Exp $	*/
+/*	$OpenBSD: mbuf.c,v 1.11 2002/01/17 21:34:58 mickey Exp $	*/
 /*	$NetBSD: mbuf.c,v 1.9 1996/05/07 02:55:03 thorpej Exp $	*/
 
 /*
@@ -38,11 +38,9 @@
 #if 0
 static char sccsid[] = "from: @(#)mbuf.c	8.1 (Berkeley) 6/6/93";
 #else
-static char *rcsid = "$OpenBSD: mbuf.c,v 1.10 2002/01/15 22:41:01 art Exp $";
+static char *rcsid = "$OpenBSD: mbuf.c,v 1.11 2002/01/17 21:34:58 mickey Exp $";
 #endif
 #endif /* not lint */
-
-#define __POOL_EXPOSE
 
 #include <sys/param.h>
 #include <sys/protosw.h>
