@@ -1,4 +1,4 @@
-/*	$OpenBSD: uipc_syscalls.c,v 1.34 2000/11/16 20:02:19 provos Exp $	*/
+/*	$OpenBSD: uipc_syscalls.c,v 1.35 2001/02/09 00:04:16 itojun Exp $	*/
 /*	$NetBSD: uipc_syscalls.c,v 1.19 1996/02/09 19:00:48 christos Exp $	*/
 
 /*
@@ -401,7 +401,7 @@ sys_sendmsg(p, v, retval)
 	if (msg.msg_iovlen <= 0 || msg.msg_iovlen > IOV_MAX)
 		return (EMSGSIZE);
 	if (msg.msg_iovlen > UIO_SMALLIOV)
-		iov = malloc( sizeof(struct iovec) * msg.msg_iovlen,
+		iov = malloc(sizeof(struct iovec) * msg.msg_iovlen,
 		    M_IOV, M_WAITOK);
 	else
 		iov = aiov;
