@@ -1,6 +1,6 @@
-#	$OpenBSD: Makefile,v 1.1 2002/02/11 13:43:31 art Exp $
+#	$OpenBSD: Makefile,v 1.1 2002/02/17 05:11:14 art Exp $
 
-SUBDIR=rfmem
+SUBDIR=rfmem rfcfdg
 
 regress: _SUBDIRUSE
 
