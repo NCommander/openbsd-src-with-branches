@@ -1,4 +1,4 @@
-/*	$OpenBSD: xl.c,v 1.30 2001/08/19 18:07:33 jason Exp $	*/
+/*	$OpenBSD: xl.c,v 1.31 2001/11/06 19:53:18 miod Exp $	*/
 
 /*
  * Copyright (c) 1997, 1998, 1999
@@ -867,6 +867,7 @@ void xl_setmode(sc, media)
 
 void xl_reset(sc, hard)
 	struct xl_softc		*sc;
+	int hard;
 {
 	register int		i;
 
@@ -2698,6 +2699,7 @@ xl_detach(sc)
 	if_detach(ifp);
 
 	shutdownhook_disestablish(sc->sc_sdhook);
+	powerhook_disestablish(sc->sc_sdhook);
 
 	return (0);
 }
