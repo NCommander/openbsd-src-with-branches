@@ -1,4 +1,4 @@
-/*	$OpenBSD: rwalld.c,v 1.7 2002/06/28 01:04:15 deraadt Exp $	*/
+/*	$OpenBSD: rwalld.c,v 1.8 2002/09/05 00:21:24 deraadt Exp $	*/
 
 /*
  * Copyright (c) 1993 Christopher G. Demetriou
@@ -30,7 +30,7 @@
  */
 
 #ifndef lint
-static char rcsid[] = "$OpenBSD: rwalld.c,v 1.7 2002/06/28 01:04:15 deraadt Exp $";
+static char rcsid[] = "$OpenBSD: rwalld.c,v 1.8 2002/09/05 00:21:24 deraadt Exp $";
 #endif /* not lint */
 
 #include <sys/types.h>
@@ -67,7 +67,8 @@ cleanup(int signo)
 int
 main(int argc, char *argv[])
 {
-	int sock = 0, proto = 0, fromlen;
+	int sock = 0, proto = 0;
+	socklen_t fromlen;
 	struct sockaddr_in from;
 	SVCXPRT *transp;
 

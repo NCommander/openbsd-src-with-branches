@@ -1,4 +1,4 @@
-/*	$OpenBSD: comsat.c,v 1.24 2002/07/03 23:39:03 deraadt Exp $	*/
+/*	$OpenBSD: comsat.c,v 1.25 2002/08/22 17:45:16 pb Exp $	*/
 
 /*
  * Copyright (c) 1980, 1993
@@ -41,7 +41,7 @@ static char copyright[] =
 
 #ifndef lint
 /*static char sccsid[] = "from: @(#)comsat.c	8.1 (Berkeley) 6/4/93";*/
-static char rcsid[] = "$OpenBSD: comsat.c,v 1.24 2002/07/03 23:39:03 deraadt Exp $";
+static char rcsid[] = "$OpenBSD: comsat.c,v 1.25 2002/08/22 17:45:16 pb Exp $";
 #endif /* not lint */
 
 #include <sys/limits.h>
@@ -93,7 +93,7 @@ main(int argc, char *argv[])
 	struct sockaddr_storage from;
 	struct sigaction sa;
 	int cc;
-	int fromlen;
+	socklen_t fromlen;
 	char msgbuf[100];
 	sigset_t sigset;
 
