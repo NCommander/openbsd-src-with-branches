@@ -1,4 +1,4 @@
-/*	$OpenBSD: ssh.h,v 1.69 2002/05/11 20:24:48 stevesk Exp $	*/
+/*	$OpenBSD: ssh.h,v 1.70 2002/06/03 12:04:07 deraadt Exp $	*/
 
 /*
  * Author: Tatu Ylonen <ylo@cs.hut.fi>
@@ -51,8 +51,8 @@
 #define SSH_SERVICE_NAME	"ssh"
 
 /*
- * Name of the environment variable containing the pathname of the
- * authentication socket.
+ * Name of the environment variable containing the process ID of the
+ * authentication agent.
  */
 #define SSH_AGENTPID_ENV_NAME	"SSH_AGENT_PID"
 
