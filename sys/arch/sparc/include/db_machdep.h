@@ -1,4 +1,4 @@
-/*	$OpenBSD: db_machdep.h,v 1.7 2001/11/06 19:53:16 miod Exp $	*/
+/*	$OpenBSD: db_machdep.h,v 1.8 2002/03/14 01:26:43 millert Exp $	*/
 /*	$NetBSD: db_machdep.h,v 1.10 1997/08/31 21:23:40 pk Exp $ */
 
 /*
@@ -93,6 +93,8 @@ int kdb_trap(int, struct trapframe *);
  * We use a.out symbols in DDB.
  */
 #define	DB_AOUT_SYMBOLS
+#define DB_ELF_SYMBOLS
+#define DB_ELFSIZE	32
 
 
 /*
