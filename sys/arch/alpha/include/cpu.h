@@ -1,4 +1,4 @@
-/* $OpenBSD: cpu.h,v 1.7.12.7 2004/02/19 09:59:34 niklas Exp $ */
+/* $OpenBSD: cpu.h,v 1.7.12.8 2004/06/06 05:23:38 tedu Exp $ */
 /* $NetBSD: cpu.h,v 1.45 2000/08/21 02:03:12 thorpej Exp $ */
 
 /*-
@@ -269,11 +269,19 @@ struct clockframe {
  * Preempt the current process if in interrupt from user mode,
  * or after the current trap/syscall if in system mode.
  */
+#ifdef MULTIPROCESSOR
 #define	need_resched(ci)						\
 do {									\
 	ci->ci_want_resched = 1;					\
 	aston(curcpu());						\
 } while (/*CONSTCOND*/0)
+#else
+#define	need_resched(ci)						\
+do {									\
+	curcpu()->ci_want_resched = 1;					\
+	aston(curcpu());						\
+} while (/*CONSTCOND*/0)
+#endif
 
 /*
  * Give a profiling tick to the current process when the user profiling
