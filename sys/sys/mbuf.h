@@ -1,4 +1,4 @@
-/*	$OpenBSD: mbuf.h,v 1.52 2001/07/05 08:45:14 angelos Exp $	*/
+/*	$OpenBSD: mbuf.h,v 1.53 2001/08/24 14:31:58 angelos Exp $	*/
 /*	$NetBSD: mbuf.h,v 1.19 1996/02/09 18:25:14 christos Exp $	*/
 
 /*
@@ -531,7 +531,6 @@ struct mbstat {
 };
 
 #ifdef	_KERNEL
-extern	struct mbuf *mbutl;		/* virtual address of mclusters */
 struct	mbstat mbstat;
 extern	int nmbclusters;		/* limit on the # of clusters */
 extern	int mblowat;			/* mbuf low water mark */
