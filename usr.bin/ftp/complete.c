@@ -1,4 +1,4 @@
-/*	$OpenBSD: complete.c,v 1.13 2002/02/16 21:27:46 millert Exp $	*/
+/*	$OpenBSD: complete.c,v 1.14 2003/04/05 17:19:47 deraadt Exp $	*/
 /*	$NetBSD: complete.c,v 1.10 1997/08/18 10:20:18 lukem Exp $	*/
 
 /*-
@@ -39,7 +39,7 @@
 
 #ifndef SMALL
 #ifndef lint
-static char rcsid[] = "$OpenBSD: complete.c,v 1.13 2002/02/16 21:27:46 millert Exp $";
+static char rcsid[] = "$OpenBSD: complete.c,v 1.14 2003/04/05 17:19:47 deraadt Exp $";
 #endif /* not lint */
 
 /*
@@ -314,7 +314,8 @@ complete(el, ch)
 	len = lf->lastchar - lf->buffer;
 	if (len >= sizeof(line))
 		return (CC_ERROR);
-	(void)strlcpy(line, lf->buffer, len+1);
+	(void)memcpy(line, lf->buffer, len);
+	line[len] = '\0';
 	cursor_pos = line + (lf->cursor - lf->buffer);
 	lastc_argc = cursor_argc;	/* remember last cursor pos */
 	lastc_argo = cursor_argo;
