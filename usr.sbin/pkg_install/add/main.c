@@ -1,7 +1,7 @@
-/*	$OpenBSD: main.c,v 1.10 1999/02/28 18:55:24 deraadt Exp $	*/
+/*	$OpenBSD: main.c,v 1.11 1999/10/09 20:35:44 beck Exp $	*/
 
 #ifndef lint
-static char *rcsid = "$OpenBSD: main.c,v 1.10 1999/02/28 18:55:24 deraadt Exp $";
+static char *rcsid = "$OpenBSD: main.c,v 1.11 1999/10/09 20:35:44 beck Exp $";
 #endif
 
 /*
@@ -142,7 +142,7 @@ main(int argc, char **argv)
 		    tmp = realpath(s, pkgs[ch]);
 		    if (tmp == NULL) {
 		        perror("realpath failed");
-			fprintf(stderr, "failing path was %s", pkgs[ch]);
+			fprintf(stderr, "failing path was %s\n", pkgs[ch]);
 			exit(1);
 		    }
 		}
@@ -160,13 +160,13 @@ main(int argc, char **argv)
 		    tmp = realpath(s, pkgs[ch]);
 		    if (tmp == NULL) {
 		        perror("realpath failed");
-			fprintf(stderr, "failing path was %s", pkgs[ch]);
+			fprintf(stderr, "failing path was %s\n", pkgs[ch]);
 			exit(1);
 		    }
 		} else {
 		    /* look for the file(pattern) in the expected places */
 		    if (!(cp = fileFindByPath(NULL, *argv))) {
-		        fprintf(stderr, "can't find package '%s'", *argv);
+		        fprintf(stderr, "can't find package '%s'\n", *argv);
 			exit(1);
 		    }
 		    else {
