@@ -1,4 +1,4 @@
-/*	$OpenBSD: pmap.c,v 1.44 2001/08/11 11:45:27 art Exp $	*/
+/*	$OpenBSD: pmap.c,v 1.45 2001/09/19 20:50:56 mickey Exp $	*/
 /*	$NetBSD: pmap.c,v 1.91 2000/06/02 17:46:37 thorpej Exp $	*/
 
 /*
@@ -73,9 +73,6 @@
 #include <sys/malloc.h>
 #include <sys/pool.h>
 #include <sys/user.h>
-
-#include <vm/vm.h>
-#include <vm/vm_page.h>
 
 #include <uvm/uvm.h>
 

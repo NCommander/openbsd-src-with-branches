@@ -1,4 +1,4 @@
-/*	$OpenBSD: machdep.c,v 1.178 2001/10/04 21:25:03 mickey Exp $	*/
+/*	$OpenBSD: machdep.c,v 1.179 2001/11/05 17:25:57 art Exp $	*/
 /*	$NetBSD: machdep.c,v 1.214 1996/11/10 03:16:17 thorpej Exp $	*/
 
 /*-
@@ -119,8 +119,6 @@
 #include <dev/cons.h>
 #include <stand/boot/bootarg.h>
 
-#include <vm/vm.h>
-#include <vm/vm_page.h>
 #include <uvm/uvm_extern.h>
 
 #include <sys/sysctl.h>
