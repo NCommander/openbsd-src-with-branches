@@ -1,0 +1,7 @@
+#	$OpenBSD: GENERIC,v 1.248 2001/03/12 04:51:41 jason Exp $
+#
+#	GENERIC_NEW -- everything that's currently supported + PMAP_NEW
+#
+
+include "arch/i386/conf/GENERIC"
+option		PMAP_NEW	# use new pmap
