@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_wi.c,v 1.30 2001/04/08 21:44:36 mickey Exp $	*/
+/*	$OpenBSD: if_wi.c,v 1.1 2001/05/15 02:40:35 millert Exp $	*/
 
 /*
  * Copyright (c) 1997, 1998, 1999
@@ -120,7 +120,7 @@ u_int32_t	widebug = WIDEBUG;
 
 #if !defined(lint) && !defined(__OpenBSD__)
 static const char rcsid[] =
-	"$OpenBSD: if_wi.c,v 1.30 2001/04/08 21:44:36 mickey Exp $";
+	"$OpenBSD: if_wi.c,v 1.1 2001/05/15 02:40:35 millert Exp $";
 #endif	/* lint */
 
 #ifdef foo
@@ -169,10 +169,6 @@ wi_attach(sc)
 	struct ifnet		*ifp;
 
 	sc->wi_gone = 0;
-
-	/* Make sure interrupts are disabled. */
-	CSR_WRITE_2(sc, WI_INT_EN, 0);
-	CSR_WRITE_2(sc, WI_EVENT_ACK, 0xffff);
 
 	wi_reset(sc);
 
