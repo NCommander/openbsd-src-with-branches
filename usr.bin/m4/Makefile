@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.6 2001/01/02 23:51:52 smurph Exp $
+#	$OpenBSD: Makefile,v 1.7 2001/07/18 13:28:47 espie Exp $
 
 # -DEXTENDED 
 # 	if you want the paste & spaste macros.
@@ -12,7 +12,7 @@ CDIAGFLAGS=-W -Wall -Wstrict-prototypes \
 CFLAGS+=-O0
 .endif
 
-SRCS=	eval.c expr.c look.c main.c misc.c gnum4.c
+SRCS=	eval.c expr.c look.c main.c misc.c gnum4.c trace.c
 MAN=	m4.1
 
 .include <bsd.prog.mk>
