@@ -1,4 +1,4 @@
-/*	$OpenBSD: isadmavar.h,v 1.7 1997/09/24 22:28:14 niklas Exp $	*/
+/*	$OpenBSD: isadmavar.h,v 1.8 1997/11/04 10:32:51 provos Exp $	*/
 /*	$NetBSD: isadmavar.h,v 1.4 1996/03/01 04:08:46 mycroft Exp $	*/
 
 #define	DMAMODE_WRITE	0
@@ -26,6 +26,7 @@ void isadma_copyfrombuf __P((caddr_t, vm_size_t, int, struct isadma_seg *));
 
 int isadma_acquire __P((int));
 void isadma_release __P((int));
+int isadma_isdrqfree __P((int));
 void isadma_cascade __P((int));
 void isadma_start __P((caddr_t, vm_size_t, int, int));
 void isadma_abort __P((int));
