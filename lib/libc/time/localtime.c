@@ -5,7 +5,7 @@
 
 #if defined(LIBC_SCCS) && !defined(lint) && !defined(NOID)
 static char elsieid[] = "@(#)localtime.c	7.66";
-static char rcsid[] = "$OpenBSD: localtime.c,v 1.14 1998/11/20 11:18:55 d Exp $";
+static char rcsid[] = "$OpenBSD: localtime.c,v 1.15 1999/02/01 08:19:36 d Exp $";
 #endif /* LIBC_SCCS and not lint */
 
 /*
@@ -1438,7 +1438,7 @@ const int		do_norm_secs;
 				t += 2;
 				break;
 			}
-#endif
+#else
 				return WRONG;
 #endif
 			if (bits < 0)
