@@ -1,4 +1,4 @@
-/*	$OpenBSD: disklabel.c,v 1.55 1998/09/11 04:02:27 millert Exp $	*/
+/*	$OpenBSD: disklabel.c,v 1.56 1998/10/03 22:01:47 millert Exp $	*/
 /*	$NetBSD: disklabel.c,v 1.30 1996/03/14 19:49:24 ghudson Exp $	*/
 
 /*
@@ -44,7 +44,7 @@ static char copyright[] =
 #endif /* not lint */
 
 #ifndef lint
-static char rcsid[] = "$OpenBSD: disklabel.c,v 1.55 1998/09/11 04:02:27 millert Exp $";
+static char rcsid[] = "$OpenBSD: disklabel.c,v 1.56 1998/10/03 22:01:47 millert Exp $";
 #endif /* not lint */
 
 #include <sys/param.h>
@@ -1174,7 +1174,7 @@ edit(lp, f)
 int
 editit()
 {
-	int pid, xpid;
+	pid_t pid, xpid;
 	int stat;
 	extern char *getenv();
 	char *argp[] = {"sh", "-c", NULL, NULL};
