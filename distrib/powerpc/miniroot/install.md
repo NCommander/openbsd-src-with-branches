@@ -1,4 +1,4 @@
-#       $OpenBSD: install.md,v 1.2 1997/02/06 07:07:11 rahnds Exp $
+#       $OpenBSD: install.md,v 1.3 1997/02/21 17:42:07 rahnds Exp $
 # Copyright (c) 1996 The NetBSD Foundation, Inc.
 # All rights reserved.
 #
@@ -54,6 +54,10 @@ md_set_term() {
 	getresp "xterm"
 	TERM="$resp"
 	export TERM
+}
+
+md_machine_arch() {
+	cat /kern/machine
 }
 
 md_get_diskdevs() {
