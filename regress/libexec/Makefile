@@ -1,8 +1,6 @@
-#	$OpenBSD: Makefile,v 1.8 2002/01/04 22:40:04 art Exp $
+#	$OpenBSD: Makefile,v 1.1 2002/02/05 21:47:23 matthieu Exp $
 
 SUBDIR+= ld.so
-
-regress: _SUBDIRUSE
 
 install:
 
