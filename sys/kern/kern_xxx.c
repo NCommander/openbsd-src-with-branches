@@ -1,4 +1,4 @@
-/*	$OpenBSD: kern_xxx.c,v 1.7 2003/05/13 22:45:11 miod Exp $	*/
+/*	$OpenBSD: kern_xxx.c,v 1.8 2003/06/02 23:28:06 millert Exp $	*/
 /*	$NetBSD: kern_xxx.c,v 1.32 1996/04/22 01:38:41 christos Exp $	*/
 
 /*
@@ -54,7 +54,7 @@ sys_reboot(p, v, retval)
 	} */ *uap = v;
 	int error;
 
-	if ((error = suser(p->p_ucred, &p->p_acflag)) != 0)
+	if ((error = suser(p, 0)) != 0)
 		return (error);
 	boot(SCARG(uap, opt));
 	return (0);

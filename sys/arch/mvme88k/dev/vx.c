@@ -1,4 +1,4 @@
-/*	$OpenBSD: vx.c,v 1.20 2002/04/28 15:17:09 miod Exp $ */
+/*	$OpenBSD: vx.c,v 1.21 2003/06/03 21:09:01 deraadt Exp $ */
 /*
  * Copyright (c) 1999 Steve Murphree, Jr. 
  * All rights reserved.
@@ -778,7 +778,7 @@ vxioctl (dev, cmd, data, flag, p)
 		break;
 
 	case TIOCSFLAGS:
-		error = suser(p->p_ucred, &p->p_acflag); 
+		error = suser(p, 0); 
 		if (error != 0)
 			return (EPERM);
 

@@ -1,4 +1,4 @@
-/*	$OpenBSD: spif.c,v 1.8 2003/06/24 21:54:38 henric Exp $	*/
+/*	$OpenBSD: spif.c,v 1.9 2003/06/27 00:27:17 jason Exp $	*/
 
 /*
  * Copyright (c) 1999-2002 Jason L. Wright (jason@thought.net)
@@ -515,7 +515,7 @@ sttyioctl(dev, cmd, data, flags, p)
 		*((int *)data) = sp->sp_openflags;
 		break;
 	case TIOCSFLAGS:
-		if (suser(p->p_ucred, &p->p_acflag))
+		if (suser(p, 0))
 			error = EPERM;
 		else
 			sp->sp_openflags = *((int *)data) &

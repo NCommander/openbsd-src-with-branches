@@ -1,4 +1,4 @@
-/*	$OpenBSD: ucom.c,v 1.17 2002/11/11 02:32:32 nate Exp $ */
+/*	$OpenBSD: ucom.c,v 1.18 2003/05/19 00:33:00 nate Exp $ */
 /*	$NetBSD: ucom.c,v 1.49 2003/01/01 00:10:25 thorpej Exp $	*/
 
 /*
@@ -692,7 +692,7 @@ ucom_do_ioctl(struct ucom_softc *sc, u_long cmd, caddr_t data,
 		break;
 
 	case TIOCSFLAGS:
-		error = suser(p->p_ucred, &p->p_acflag);
+		error = suser(p, 0);
 		if (error)
 			break;
 		sc->sc_swflags = *(int *)data;

@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_tun.c,v 1.47 2003/05/03 21:15:11 deraadt Exp $	*/
+/*	$OpenBSD: if_tun.c,v 1.48 2003/06/12 10:49:17 henning Exp $	*/
 /*	$NetBSD: if_tun.c,v 1.24 1996/05/07 02:40:48 thorpej Exp $	*/
 
 /*
@@ -193,7 +193,7 @@ tunopen(dev, flag, mode, p)
 	struct ifnet	*ifp;
 	register int	unit, error;
 
-	if ((error = suser(p->p_ucred, &p->p_acflag)) != 0)
+	if ((error = suser(p, 0)) != 0)
 		return (error);
 
 	if ((unit = minor(dev)) >= ntun)

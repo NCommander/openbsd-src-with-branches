@@ -1,4 +1,4 @@
-/*	$OpenBSD: bugtty.c,v 1.13 2002/06/12 03:49:56 miod Exp $ */
+/*	$OpenBSD: bugtty.c,v 1.14 2003/06/03 21:09:01 deraadt Exp $ */
 
 /* Copyright (c) 1998 Steve Murphree, Jr. 
  * Copyright (c) 1995 Dale Rahn.
@@ -421,7 +421,7 @@ bugttyioctl(dev, cmd, data, flag, p)
 		*(int *)data = SWFLAGS(dev);
 		break;
 	case TIOCSFLAGS:
-		error = suser(p->p_ucred, &p->p_acflag); 
+		error = suser(p, 0); 
 		if (error != 0)
 			return (EPERM); 
 

@@ -1,4 +1,4 @@
-/*	$OpenBSD: magma.c,v 1.13 2002/04/30 01:12:29 art Exp $	*/
+/*	$OpenBSD: magma.c,v 1.14 2003/02/11 19:20:26 mickey Exp $	*/
 /*
  * magma.c
  *
@@ -1110,7 +1110,7 @@ int error;
 		break;
 
 	case TIOCSFLAGS:
-		if( suser(p->p_ucred, &p->p_acflag) )
+		if( suser(p, 0) )
 			error = EPERM;
 		else
 			mp->mp_openflags = *((int *)data) &

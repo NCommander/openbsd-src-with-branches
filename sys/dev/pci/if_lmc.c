@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_lmc.c,v 1.14 2002/06/02 22:50:00 deraadt Exp $ */
+/*	$OpenBSD: if_lmc.c,v 1.15 2002/06/30 13:04:36 itojun Exp $ */
 /*	$NetBSD: if_lmc.c,v 1.1 1999/03/25 03:32:43 explorer Exp $	*/
 
 /*-
@@ -1216,7 +1216,7 @@ lmc_ifioctl(struct ifnet * ifp, ioctl_cmd_t cmd, caddr_t data)
 		break;
 
 	case LMCIOCSINFO:
-		error = suser(p->p_ucred, &p->p_acflag);
+		error = suser(p, 0);
 		if (error)
 			goto out;
 

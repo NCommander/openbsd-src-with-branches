@@ -1,4 +1,4 @@
-/*	$OpenBSD: ufs_quota.c,v 1.13 2002/03/14 01:27:15 millert Exp $	*/
+/*	$OpenBSD: ufs_quota.c,v 1.14 2003/06/02 23:28:23 millert Exp $	*/
 /*	$NetBSD: ufs_quota.c,v 1.8 1996/02/09 22:36:09 christos Exp $	*/
 
 /*
@@ -1060,7 +1060,7 @@ ufs_quotactl(mp, cmds, uid, arg, p)
 			break;
 		/* fall through */
 	default:
-		if ((error = suser(p->p_ucred, &p->p_acflag)) != 0)
+		if ((error = suser(p, 0)) != 0)
 			return (error);
 	}
 

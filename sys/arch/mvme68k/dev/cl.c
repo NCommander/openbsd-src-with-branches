@@ -1,4 +1,4 @@
-/*	$OpenBSD: cl.c,v 1.29 2003/06/02 05:09:14 deraadt Exp $ */
+/*	$OpenBSD: cl.c,v 1.30 2003/06/03 21:09:01 deraadt Exp $ */
 
 /*
  * Copyright (c) 1995 Dale Rahn. All rights reserved.
@@ -896,7 +896,7 @@ clioctl(dev, cmd, data, flag, p)
 		*(int *)data = cl->cl_swflags;
 		break;
 	case TIOCSFLAGS:
-		error = suser(p->p_ucred, &p->p_acflag); 
+		error = suser(p, 0); 
 		if (error != 0)
 			return(EPERM); 
 

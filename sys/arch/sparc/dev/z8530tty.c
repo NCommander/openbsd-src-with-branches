@@ -1,4 +1,4 @@
-/*	$OpenBSD: z8530tty.c,v 1.1 2002/08/12 10:44:04 miod Exp $ */
+/*	$OpenBSD: z8530tty.c,v 1.2 2003/06/02 23:27:54 millert Exp $ */
 /*	$NetBSD: z8530tty.c,v 1.13 1996/10/16 20:42:14 gwr Exp $	*/
 
 /*-
@@ -749,7 +749,7 @@ zsioctl(dev, cmd, data, flag, p)
 		break;
 
 	case TIOCSFLAGS:
-		error = suser(p->p_ucred, &p->p_acflag);
+		error = suser(p, 0);
 		if (error != 0)
 			break;
 		zst->zst_swflags = *(int *)data;

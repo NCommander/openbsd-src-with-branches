@@ -1,4 +1,4 @@
-/*	$OpenBSD: dcm.c,v 1.13 2002/03/14 01:26:30 millert Exp $	*/
+/*	$OpenBSD: dcm.c,v 1.14 2003/06/02 23:27:44 millert Exp $	*/
 /*	$NetBSD: dcm.c,v 1.41 1997/05/05 20:59:16 thorpej Exp $	*/
 
 /*
@@ -1031,7 +1031,7 @@ dcmioctl(dev, cmd, data, flag, p)
 	case TIOCSFLAGS: {
 		int userbits;
 
-		error = suser(p->p_ucred, &p->p_acflag);
+		error = suser(p, 0);
 		if (error)
 			return (EPERM);
 

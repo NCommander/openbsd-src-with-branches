@@ -1,4 +1,4 @@
-/*	$OpenBSD: kern_acct.c,v 1.10 2001/11/02 21:42:15 art Exp $	*/
+/*	$OpenBSD: kern_acct.c,v 1.11 2003/06/02 23:28:05 millert Exp $	*/
 /*	$NetBSD: kern_acct.c,v 1.42 1996/02/04 02:15:12 christos Exp $	*/
 
 /*-
@@ -106,7 +106,7 @@ sys_acct(p, v, retval)
 	int error;
 
 	/* Make sure that the caller is root. */
-	if ((error = suser(p->p_ucred, &p->p_acflag)) != 0)
+	if ((error = suser(p, 0)) != 0)
 		return (error);
 
 	/*

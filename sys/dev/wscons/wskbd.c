@@ -1,4 +1,4 @@
-/* $OpenBSD: wskbd.c,v 1.34 2002/12/23 11:37:31 miod Exp $ */
+/* $OpenBSD: wskbd.c,v 1.35 2003/06/02 23:28:04 millert Exp $ */
 /* $NetBSD: wskbd.c,v 1.38 2000/03/23 07:01:47 thorpej Exp $ */
 
 /*
@@ -934,7 +934,7 @@ getbell:
 		return (0);
 
 	case WSKBDIO_SETDEFAULTBELL:
-		if ((error = suser(p->p_ucred, &p->p_acflag)) != 0)
+		if ((error = suser(p, 0)) != 0)
 			return (error);
 		kbdp = &wskbd_default_bell_data;
 		goto setbell;
@@ -977,7 +977,7 @@ getkeyrepeat:
 		return (0);
 
 	case WSKBDIO_SETDEFAULTKEYREPEAT:
-		if ((error = suser(p->p_ucred, &p->p_acflag)) != 0)
+		if ((error = suser(p, 0)) != 0)
 			return (error);
 		kkdp = &wskbd_default_keyrepeat_data;
 		goto setkeyrepeat;

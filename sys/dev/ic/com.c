@@ -1,4 +1,4 @@
-/*	$OpenBSD: com.c,v 1.90 2003/06/03 21:09:02 deraadt Exp $	*/
+/*	$OpenBSD: com.c,v 1.91 2003/07/15 03:15:58 jason Exp $	*/
 /*	$NetBSD: com.c,v 1.82.4.1 1996/06/02 09:08:00 mrg Exp $	*/
 
 /*
@@ -884,7 +884,7 @@ comioctl(dev, cmd, data, flag, p)
 	case TIOCSFLAGS: {
 		int userbits, driverbits = 0;
 
-		error = suser(p->p_ucred, &p->p_acflag);
+		error = suser(p, 0);
 		if (error != 0)
 			return(EPERM);
 

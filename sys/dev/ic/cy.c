@@ -1,4 +1,4 @@
-/*	$OpenBSD: cy.c,v 1.21 2003/01/05 22:41:35 deraadt Exp $	*/
+/*	$OpenBSD: cy.c,v 1.22 2003/08/05 16:14:47 markus Exp $	*/
 /*
  * Copyright (c) 1996 Timo Rossi.
  * All rights reserved.
@@ -589,7 +589,7 @@ cyioctl(dev, cmd, data, flag, p)
 		break;
 
 	case TIOCSFLAGS:
-		error = suser(p->p_ucred, &p->p_acflag);
+		error = suser(p, 0);
 		if (error != 0)
 			return (EPERM);
 

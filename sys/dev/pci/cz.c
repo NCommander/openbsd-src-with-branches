@@ -1,4 +1,4 @@
-/*	$OpenBSD: cz.c,v 1.6 2002/11/19 18:40:17 jason Exp $ */
+/*	$OpenBSD: cz.c,v 1.7 2003/08/11 05:03:10 mickey Exp $ */
 /*	$NetBSD: cz.c,v 1.15 2001/01/20 19:10:36 thorpej Exp $	*/
 
 /*-
@@ -1174,7 +1174,7 @@ czttyioctl(dev_t dev, u_long cmd, caddr_t data, int flag, struct proc *p)
 		break;
 
 	case TIOCSFLAGS:
-		error = suser(p->p_ucred, &p->p_acflag);
+		error = suser(p, 0);
 		if (error)
 			break;
 		sc->sc_swflags = *(int *)data;

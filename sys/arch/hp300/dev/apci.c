@@ -1,4 +1,4 @@
-/*	$OpenBSD: apci.c,v 1.12 2002/03/14 01:26:30 millert Exp $	*/
+/*	$OpenBSD: apci.c,v 1.13 2003/06/04 22:08:12 deraadt Exp $	*/
 /*	$NetBSD: apci.c,v 1.9 2000/11/02 00:35:05 eeh Exp $	*/
 
 /*-
@@ -674,7 +674,7 @@ apciioctl(dev, cmd, data, flag, p)
 	case TIOCSFLAGS: {
 		int userbits;
 
-		error = suser(p->p_ucred, &p->p_acflag);
+		error = suser(p, 0);
 		if (error)
 			return (EPERM);
 
