@@ -1896,8 +1896,7 @@ loop:
 		 * mbuf cluster or less; the upper layer protocols can then
 		 * figure out the length from their own length field(s).
 		 */
-		if (len <= (MCLBYTES > ETHER_MAX_LEN ? MCLBYTES :
-		    ETHER_MAX_LEN) &&
+		if (len <= MCLBYTES &&
 		    packet_hdr.next_packet >= sc->rec_page_start &&
 		    packet_hdr.next_packet < sc->rec_page_stop) {
 			/* Go get packet. */
