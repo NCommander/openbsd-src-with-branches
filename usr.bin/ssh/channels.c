@@ -39,7 +39,7 @@
  */
 
 #include "includes.h"
-RCSID("$OpenBSD: channels.c,v 1.169 2002/02/24 19:59:42 stevesk Exp $");
+RCSID("$OpenBSD: channels.c,v 1.170 2002/02/27 21:23:13 stevesk Exp $");
 
 #include "ssh.h"
 #include "ssh1.h"
@@ -146,7 +146,7 @@ channel_lookup(int id)
 {
 	Channel *c;
 
-	if (id < 0 || id > channels_alloc) {
+	if (id < 0 || id >= channels_alloc) {
 		log("channel_lookup: %d: bad id", id);
 		return NULL;
 	}
