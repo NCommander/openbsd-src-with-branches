@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: vm86.h,v 1.2 1996/04/17 05:19:04 mickey Exp $	*/
 /*	$NetBSD: vm86.h,v 1.4 1996/04/11 10:07:25 mycroft Exp $	*/
 
 #define	VM86_USE_VIF

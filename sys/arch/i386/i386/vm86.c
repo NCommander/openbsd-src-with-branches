@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: vm86.c,v 1.2 1996/04/17 05:18:59 mickey Exp $	*/
 /*	$NetBSD: vm86.c,v 1.8 1996/04/11 10:07:17 mycroft Exp $	*/
 
 /*-

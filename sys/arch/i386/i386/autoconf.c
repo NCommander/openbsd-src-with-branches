@@ -1,5 +1,5 @@
 /*	$OpenBSD: autoconf.c,v 1.5 1996/04/17 05:18:49 mickey Exp $	*/
-/*	$NetBSD: autoconf.c,v 1.14 1995/12/28 19:16:48 thorpej Exp $	*/
+/*	$NetBSD: autoconf.c,v 1.18 1996/03/04 03:26:18 cgd Exp $	*/
 
 /*-
  * Copyright (c) 1990 The Regents of the University of California.
@@ -78,9 +78,8 @@ configure()
 
 	startrtclock();
 
-	config_rootfound("isa", NULL);
-	config_rootfound("eisa", NULL);
-	config_rootfound("pci", NULL);
+	if (config_rootfound("mainbus", NULL) == NULL)
+		panic("configure: mainbus not configured");
 
 	printf("biomask %x netmask %x ttymask %x\n",
 	    (u_short)imask[IPL_BIO], (u_short)imask[IPL_NET],
