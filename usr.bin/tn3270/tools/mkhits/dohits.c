@@ -1,4 +1,4 @@
-/*	$OpenBSD: dohits.c,v 1.4 2001/11/19 19:02:17 mpech Exp $	*/
+/*	$OpenBSD: dohits.c,v 1.5 2003/04/04 22:13:10 deraadt Exp $	*/
 
 /*-
  * Copyright (c) 1988 The Regents of the University of California.
@@ -35,7 +35,7 @@
 
 #ifndef lint
 /*static char sccsid[] = "from: @(#)dohits.c	4.2 (Berkeley) 4/26/91";*/
-static char rcsid[] = "$OpenBSD: dohits.c,v 1.4 2001/11/19 19:02:17 mpech Exp $";
+static char rcsid[] = "$OpenBSD: dohits.c,v 1.5 2003/04/04 22:13:10 deraadt Exp $";
 #endif /* not lint */
 
 /*
@@ -107,8 +107,8 @@ int value;
     this->hits = NULL;
     *item = this;
     this->value = value;
-    strcpy(this->name, first);
-    strcpy(this->name+strlen(this->name), second);
+    strlcpy(this->name, first, sizeof this->name);
+    strlcpy(this->name+strlen(this->name), second, sizeof this->name);
 }
 
 void
