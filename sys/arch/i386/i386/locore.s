@@ -1,4 +1,4 @@
-/*	$OpenBSD: locore.s,v 1.48.6.2 2001/07/04 10:16:36 niklas Exp $	*/
+/*	$OpenBSD$	*/
 /*	$NetBSD: locore.s,v 1.145 1996/05/03 19:41:19 christos Exp $	*/
 
 /*-
@@ -1829,7 +1829,7 @@ sw1:	bsfl	%ecx,%ebx		# find a full q
 	movl	%eax,P_BACK(%edi)
 
 	/* Record new process. */
-	movl	%edi,_curproc
+	SET_CURPROC(%edi,%ecx)
 
 	/* It's okay to take interrupts here. */
 	sti
