@@ -578,6 +578,7 @@ LDCONFIG?=	/sbin/ldconfig
 LN?=		/bin/ln
 MKDIR?=		/bin/mkdir -p
 MV?=		/bin/mv
+READLINK?=	/usr/bin/readlink
 RM?=		/bin/rm
 RMDIR?=		/bin/rmdir
 SED?=		/usr/bin/sed
@@ -985,10 +986,13 @@ do-extract:
 .if !defined(NO_WRKDIR)
 .if defined(WRKOBJDIR)
 	@${RM} -rf ${WRKOBJDIR}/${PORTSUBDIR}
-	@${MKDIR} -p ${WRKOBJDIR}/${PORTSUBDIR}
-	@echo "${WRKDIR} -> ${WRKOBJDIR}/${PORTSUBDIR}"
-	@# XXX whatif a build is going on right now?  Is this wise?
-	@${LN} -sf ${WRKOBJDIR}/${PORTSUBDIR} ${WRKDIR}
+	@${MKDIR} ${WRKOBJDIR}/${PORTSUBDIR}
+	@if [ ! -L ${WRKDIR} ] || \
+	  [ X`${READLINK} ${WRKDIR}` != X${WRKOBJDIR}/${PORTSUBDIR} ]; then \
+		echo "${WRKDIR} -> ${WRKOBJDIR}/${PORTSUBDIR}"; \
+		${RM} -f ${WRKDIR}; \
+		${LN} -sf ${WRKOBJDIR}/${PORTSUBDIR} ${WRKDIR}; \
+	fi
 .else
 	@${RM} -rf ${WRKDIR}
 	@${MKDIR} ${WRKDIR}
