@@ -1,4 +1,4 @@
-/*	$OpenBSD: dl_printf.c,v 1.4 2002/02/17 19:42:26 millert Exp $	*/
+/*	$OpenBSD: dl_printf.c,v 1.5 2002/02/19 19:39:38 millert Exp $	*/
 
 /*-
  * Copyright (c) 1993
@@ -82,18 +82,6 @@ static void
 sputchar(int c)
 {
 	*sbuf++ = c;
-}
-
-void
-_dl_sprintf(char *buf, const char *fmt, ...)
-{
-	va_list ap;
-
-	sbuf = buf;
-	va_start(ap, fmt);
-	kdoprnt(sputchar, fmt, ap);
-	va_end(ap);
-	*sbuf = '\0';
 }
 
 void
