@@ -30,14 +30,13 @@
  */
 
 #if defined(LIBC_SCCS) && !defined(lint)
-static char rcsid[] = "$OpenBSD: setproctitle.c,v 1.6 1998/06/23 22:40:27 millert Exp $";
+static char rcsid[] = "$OpenBSD: setproctitle.c,v 1.7 1999/02/25 22:10:12 art Exp $";
 #endif /* LIBC_SCCS and not lint */
 
 #include <sys/param.h>
 #include <sys/types.h>
 #include <sys/exec.h>
 #include <sys/sysctl.h>
-#include <vm/vm.h>
 
 #include <stdio.h>
 #include <stdlib.h>
