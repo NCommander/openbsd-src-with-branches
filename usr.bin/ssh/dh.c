@@ -23,7 +23,7 @@
  */
 
 #include "includes.h"
-RCSID("$OpenBSD: dsa.c,v 1.11 2000/09/07 20:27:51 deraadt Exp $");
+RCSID("$OpenBSD: dh.c,v 1.1 2000/10/11 04:02:16 provos Exp $");
 
 #include "xmalloc.h"
 
@@ -96,7 +96,6 @@ choose_dh(int minbits)
 {
 	FILE *f;
 	char line[1024];
-	char *cp, *arg;
 	int best, bestcount, which;
 	int linenum;
 	struct dhgroup dhg;
