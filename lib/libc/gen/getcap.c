@@ -35,7 +35,7 @@
  */
 
 #if defined(LIBC_SCCS) && !defined(lint)
-static char rcsid[] = "$OpenBSD: getcap.c,v 1.8 1997/07/27 08:29:09 grr Exp $";
+static char rcsid[] = "$OpenBSD: getcap.c,v 1.10 1997/07/28 11:19:59 deraadt Exp $";
 #endif /* LIBC_SCCS and not lint */
 
 #include <sys/types.h>
@@ -741,7 +741,7 @@ cgetnext(bp, db_array)
 			}
 		}
 		rp = buf;
-		for(cp = nbuf; *cp != NULL; cp++)
+		for(cp = nbuf; *cp != '\0'; cp++)
 			if (*cp == '|' || *cp == ':')
 				break;
 			else
