@@ -1,4 +1,4 @@
-#	$OpenBSD: install.md,v 1.3 1997/05/14 21:39:18 millert Exp $
+#	$OpenBSD: install.md,v 1.4 1997/05/15 12:31:11 graichen Exp $
 #	$NetBSD: install.md,v 1.3.2.5 1996/08/26 15:45:28 gwr Exp $
 #
 #
@@ -241,7 +241,7 @@ __md_prep_disklabel_1
 # TTT   hack to workaround disklabel problems
 	disklabel ${_disk} > /tmp/tempdisklabel
 	disklabel -r -R ${_disk} /tmp/tempdisklabel 2> /dev/null
-	disklabel -e ${_disk}
+	disklabel -E ${_disk}
 # TTT   hack to workaround disklabel problems
 	disklabel ${_disk} > /tmp/tempdisklabel
 	disklabel -r -R ${_disk} /tmp/tempdisklabel 2> /dev/null
