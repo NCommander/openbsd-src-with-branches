@@ -55,7 +55,7 @@ void*        cvs_buf_release (BUF *);
 void         cvs_buf_empty   (BUF *);
 ssize_t      cvs_buf_copy    (BUF *, size_t, void *, size_t);
 int          cvs_buf_set     (BUF *, const void *, size_t, size_t);
-int          cvs_buf_append  (BUF *, const void *, size_t);
+ssize_t      cvs_buf_append  (BUF *, const void *, size_t);
 int          cvs_buf_fappend (BUF *, const char *, ...);
 int          cvs_buf_putc    (BUF *, int);
 size_t       cvs_buf_size    (BUF *);
