@@ -1,4 +1,4 @@
-/*	$OpenBSD: io.c,v 1.11 2002/06/09 05:47:27 todd Exp $	*/
+/*	$OpenBSD: io.c,v 1.12 2003/03/10 03:48:16 david Exp $	*/
 
 /*
  * shell buffered IO and formatted output
@@ -321,7 +321,7 @@ restfd(fd, ofd)
 		shf_flush(&shf_iob[fd]);
 	if (ofd < 0)		/* original fd closed */
 		close(fd);
-	else {
+	else if (fd != ofd) {
 		ksh_dup2(ofd, fd, TRUE); /* XXX: what to do if this fails? */
 		close(ofd);
 	}
