@@ -1,4 +1,4 @@
-#	$OpenBSD: genassym.cf,v 1.4 2002/01/16 20:50:14 miod Exp $
+#	$OpenBSD$
 
 # Copyright (c) 1994, 1995 Gordon W. Ross
 # Copyright (c) 1993 Adam Glass
@@ -119,6 +119,8 @@ member	P_MD_PCBPADDR	p_md.md_pcbpaddr
 struct	prochd
 member	ph_link
 member	ph_rlink
+
+export	SONPROC
 
 # offsets needed by cpu_switch() to switch mappings.
 define	VM_MAP_PMAP		offsetof(struct vmspace, vm_map.pmap) 

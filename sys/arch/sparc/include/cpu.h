@@ -1,4 +1,4 @@
-/*	$OpenBSD: cpu.h,v 1.19 2002/11/22 23:08:46 deraadt Exp $	*/
+/*	$OpenBSD$	*/
 /*	$NetBSD: cpu.h,v 1.24 1997/03/15 22:25:15 pk Exp $ */
 
 /*
@@ -129,7 +129,7 @@ extern void	raise(int, int);
  * or after the current trap/syscall if in system mode.
  */
 extern int	want_resched;		/* resched() was called */
-#define	need_resched()		(want_resched = 1, want_ast = 1)
+#define	need_resched(ci)		(want_resched = 1, want_ast = 1)
 extern int	want_ast;
 
 /*

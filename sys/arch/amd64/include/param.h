@@ -1,4 +1,4 @@
-/*	$OpenBSD: param.h,v 1.2 2004/02/27 17:41:25 deraadt Exp $	*/
+/*	$OpenBSD$	*/
 
 /*-
  * Copyright (c) 1990 The Regents of the University of California.
@@ -162,9 +162,3 @@
 #define btop(x)				x86_btop(x)
 #define ptob(x)				x86_ptob(x)
 #define round_pdr(x)			x86_round_pdr(x)
-
-/* XXX - oh, the horror.. Just for now. */
-#define KERNEL_PROC_LOCK(p)
-#define KERNEL_PROC_UNLOCK(p)
-#define KERNEL_LOCK(i)
-#define KERNEL_UNLOCK()

@@ -1,4 +1,4 @@
-#	$OpenBSD: GENERIC,v 1.369 2004/06/05 22:29:19 deraadt Exp $
+#	$OpenBSD$
 #
 #	GENERIC -- everything that's currently supported
 #
@@ -39,7 +39,8 @@ config		bsd	swap generic
 
 mainbus0 at root
 
-bios0	at mainbus0
+cpu0	at mainbus? apid ?
+bios0	at mainbus0 apid ?
 apm0	at bios0 flags 0x0000	# flags 0x0101 to force protocol version 1.1
 pcibios0 at bios0 flags 0x0000	# use 0x30 for a total verbose
 

@@ -1,4 +1,4 @@
-/*	$OpenBSD: gus.c,v 1.25 2003/04/27 11:22:53 ho Exp $	*/
+/*	$OpenBSD$	*/
 /*	$NetBSD: gus.c,v 1.51 1998/01/25 23:48:06 mycroft Exp $	*/
 
 /*-
@@ -119,7 +119,6 @@
 
 #include <dev/isa/isavar.h>
 #include <dev/isa/isadmavar.h>
-#include <i386/isa/icu.h>
 
 #include <dev/ic/ics2101reg.h>
 #include <dev/ic/cs4231reg.h>

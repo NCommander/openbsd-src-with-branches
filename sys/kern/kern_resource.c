@@ -1,4 +1,4 @@
-/*	$OpenBSD: kern_resource.c,v 1.25 2003/12/11 22:55:22 millert Exp $	*/
+/*	$OpenBSD$	*/
 /*	$NetBSD: kern_resource.c,v 1.38 1996/10/23 07:19:38 matthias Exp $	*/
 
 /*-
@@ -44,6 +44,7 @@
 #include <sys/resourcevar.h>
 #include <sys/pool.h>
 #include <sys/proc.h>
+#include <sys/sched.h>
 
 #include <sys/mount.h>
 #include <sys/syscallargs.h>
@@ -184,6 +185,7 @@ donice(curp, chgp, n)
 	register int n;
 {
 	register struct pcred *pcred = curp->p_cred;
+	int s;
 
 	if (pcred->pc_ucred->cr_uid && pcred->p_ruid &&
 	    pcred->pc_ucred->cr_uid != chgp->p_ucred->cr_uid &&
@@ -197,7 +199,9 @@ donice(curp, chgp, n)
 	if (n < chgp->p_nice && suser(curp, 0))
 		return (EACCES);
 	chgp->p_nice = n;
+	SCHED_LOCK(s);
 	(void)resetpriority(chgp);
+	SCHED_UNLOCK(s);
 	return (0);
 }
 

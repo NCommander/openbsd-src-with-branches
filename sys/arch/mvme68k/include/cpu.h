@@ -1,4 +1,4 @@
-/*	$OpenBSD: cpu.h,v 1.16 2003/06/02 23:27:50 millert Exp $ */
+/*	$OpenBSD$ */
 
 /*
  * Copyright (c) 1995 Theo de Raadt
@@ -127,7 +127,7 @@ struct clockframe {
  * or after the current trap/syscall if in system mode.
  */
 extern int want_resched;
-#define	need_resched()	{ want_resched = 1; aston(); }
+#define	need_resched(ci)	{ want_resched = 1; aston(); }
 
 /*
  * Give a profiling tick to the current process when the user profiling

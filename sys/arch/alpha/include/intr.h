@@ -1,4 +1,4 @@
-/* $OpenBSD: intr.h,v 1.15 2002/04/29 07:35:13 miod Exp $ */
+/* $OpenBSD$ */
 /* $NetBSD: intr.h,v 1.26 2000/06/03 20:47:41 thorpej Exp $ */
 
 /*-
@@ -159,6 +159,7 @@ extern	ipifunc_t ipifuncs[ALPHA_NIPIS];
 
 void	alpha_send_ipi(unsigned long, unsigned long);
 void	alpha_broadcast_ipi(unsigned long);
+void	alpha_multicast_ipi(unsigned long, unsigned long);
 
 /*
  * Alpha shared-interrupt-line common code.

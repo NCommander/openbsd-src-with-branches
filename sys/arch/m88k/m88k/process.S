@@ -1,4 +1,4 @@
-/*	$OpenBSD: process.S,v 1.29 2004/01/17 22:35:41 miod Exp $	*/
+/*	$OpenBSD$	*/
 /*
  * Copyright (c) 1996 Nivas Madhur
  * All rights reserved.
@@ -215,6 +215,8 @@ ASLOCAL(Ldoneloop)
 
 	or.u	r11, r0, hi16(_C_LABEL(curproc))
 	st	r9,  r11,lo16(_C_LABEL(curproc))	/* curproc = p */
+	or	r2, r0, SONPROC
+	st.b	r2, r9, P_STAT
 
 	/*  r9 is curproc */
 	st	r0, r9, P_BACK			/* p->p_back = 0 */

@@ -1,4 +1,4 @@
-/*	$OpenBSD: locore.S,v 1.132 2004/05/25 22:14:02 mickey Exp $	*/
+/*	$OpenBSD$	*/
 
 /*
  * Copyright (c) 1998-2004 Michael Shalayeff
@@ -2824,6 +2824,8 @@ link_ok
 	copy    arg1, t2
 kstack_ok
 #endif
+	ldi	SONPROC, t1
+	stb	t1, P_STAT(arg1)
 	/* Skip context switch if same process. */
 	comb,=,n arg1, arg2, switch_return
 

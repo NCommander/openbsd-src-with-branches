@@ -1,4 +1,4 @@
-/*	$OpenBSD: kern_ktrace.c,v 1.31 2003/09/01 18:06:03 henning Exp $	*/
+/*	$OpenBSD$	*/
 /*	$NetBSD: kern_ktrace.c,v 1.23 1996/02/09 18:59:36 christos Exp $	*/
 
 /*
@@ -37,6 +37,7 @@
 #include <sys/param.h>
 #include <sys/systm.h>
 #include <sys/proc.h>
+#include <sys/sched.h>
 #include <sys/file.h>
 #include <sys/namei.h>
 #include <sys/vnode.h>

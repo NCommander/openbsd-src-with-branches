@@ -1,4 +1,4 @@
-#	$OpenBSD: genassym.cf,v 1.2 2004/02/07 17:00:12 miod Exp $
+#	$OpenBSD$
 
 #	Written by Artur Grabowski art@openbsd.org, Public Domain
 
@@ -17,6 +17,7 @@ include <machine/vmparam.h>
 include <machine/intr.h>
 
 export	SRUN
+export	SONPROC
 
 export	L4_SLOT_KERNBASE
 define	L3_SLOT_KERNBASE	pl3_pi(KERNBASE)

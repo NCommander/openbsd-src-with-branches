@@ -1,4 +1,4 @@
-/*	$OpenBSD: sys_generic.c,v 1.46 2003/09/23 16:51:12 millert Exp $	*/
+/*	$OpenBSD$	*/
 /*	$NetBSD: sys_generic.c,v 1.24 1996/03/29 00:25:32 cgd Exp $	*/
 
 /*
@@ -55,6 +55,7 @@
 #ifdef KTRACE
 #include <sys/ktrace.h>
 #endif
+#include <sys/sched.h>
 
 #include <sys/mount.h>
 #include <sys/syscallargs.h>
@@ -852,7 +853,7 @@ selwakeup(sip)
 	p = pfind(sip->si_selpid);
 	sip->si_selpid = 0;
 	if (p != NULL) {
-		s = splhigh();
+		SCHED_LOCK(s);
 		if (p->p_wchan == (caddr_t)&selwait) {
 			if (p->p_stat == SSLEEP)
 				setrunnable(p);
@@ -860,7 +861,7 @@ selwakeup(sip)
 				unsleep(p);
 		} else if (p->p_flag & P_SELECT)
 			p->p_flag &= ~P_SELECT;
-		splx(s);
+		SCHED_UNLOCK(s);
 	}
 }
 

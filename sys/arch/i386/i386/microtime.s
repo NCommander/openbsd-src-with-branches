@@ -1,4 +1,4 @@
-/*	$OpenBSD: microtime.s,v 1.18 2003/05/27 23:52:01 fgsch Exp $	*/
+/*	$OpenBSD$	*/
 /*	$NetBSD: microtime.s,v 1.16 1995/04/17 12:06:47 cgd Exp $	*/
 
 /*-
@@ -42,7 +42,7 @@
  * overridden (i.e. it is 100Hz).
  */
 #ifndef HZ
-ENTRY(microtime)
+ENTRY(i8254_microtime)
 
 #if defined(I586_CPU) || defined(I686_CPU)
 	movl	_C_LABEL(pentium_mhz), %ecx

@@ -1,4 +1,4 @@
-/*	$OpenBSD: locore.S,v 1.9 2004/02/25 00:16:04 deraadt Exp $	*/
+/*	$OpenBSD$	*/
 /*	$NetBSD: locore.S,v 1.2 2003/04/26 19:34:45 fvdl Exp $	*/
 
 /*
@@ -848,9 +848,7 @@ switch_resume:
 	movq	%rax,P_BACK(%r12)
 
 	/* Record new proc. */
-#ifdef MULTIPROCESSOR
-	movb	$SONPROC,P_STAT(%r12)	# l->l_stat = SONPROC
-#endif
+	movb	$SONPROC,P_STAT(%r12)	# p->p_stat = SONPROC
 	SET_CURPROC(%r12,%rcx)
 
 	sti

@@ -1,4 +1,4 @@
-/*	$OpenBSD: db_machdep.h,v 1.8 2003/04/17 03:42:14 drahn Exp $	*/
+/*	$OpenBSD$	*/
 /*	$NetBSD: db_machdep.h,v 1.9 1996/05/03 19:23:59 christos Exp $	*/
 
 /* 
@@ -120,5 +120,13 @@ void		db_task_name(/* task_t */);
 int kdb_trap(int, int, db_regs_t *);
 
 void db_machine_init(void);
+void db_enter_ddb(void);
+void db_leave_ddb(void);
+void db_startcpu(int cpu);
+void db_stopcpu(int cpu);
+void db_movetocpu(int cpu);
+void i386_ipi_db(struct cpu_info *);
+
+extern struct SIMPLELOCK ddb_mp_slock;
 
 #endif	/* _I386_DB_MACHDEP_H_ */
