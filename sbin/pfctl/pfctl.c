@@ -1,4 +1,4 @@
-/*	$OpenBSD: pfctl.c,v 1.219 2004/07/19 22:04:00 dlg Exp $ */
+/*	$OpenBSD: pfctl.c,v 1.220 2004/07/23 10:20:42 jmc Exp $ */
 
 /*
  * Copyright (c) 2001 Daniel Hartmeier
@@ -1070,7 +1070,7 @@ _error:
 }
 
 FILE *
-pfctl_fopen(const char *name, const char *mode) 
+pfctl_fopen(const char *name, const char *mode)
 {
 	struct stat	 st;
 	FILE		*fp;

@@ -1,4 +1,4 @@
-/*	$OpenBSD: ncheck_ffs.c,v 1.21 2003/09/25 07:50:22 deraadt Exp $	*/
+/*	$OpenBSD: ncheck_ffs.c,v 1.22 2003/11/21 22:57:32 jmc Exp $	*/
 
 /*-
  * Copyright (c) 1995, 1996 SigmaSoft, Th. Lockert <tholo@sigmasoft.com>
@@ -26,7 +26,7 @@
  */
 
 #ifndef lint
-static const char rcsid[] = "$OpenBSD: ncheck_ffs.c,v 1.21 2003/09/25 07:50:22 deraadt Exp $";
+static const char rcsid[] = "$OpenBSD: ncheck_ffs.c,v 1.22 2003/11/21 22:57:32 jmc Exp $";
 #endif /* not lint */
 
 #include <sys/param.h>
@@ -534,7 +534,7 @@ format_entry(const char *path, struct direct *dp)
 		if (size <= dst - buf) {
 		    expand_buf:
 			nsize = size << 1;
-			
+
 			if ((newbuf = realloc(buf, nsize)) == NULL)
 				err(1, "realloc");
 			buf = newbuf;

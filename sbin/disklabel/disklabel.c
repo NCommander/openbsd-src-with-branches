@@ -1,4 +1,4 @@
-/*	$OpenBSD: disklabel.c,v 1.88 2004/05/20 23:23:46 marco Exp $	*/
+/*	$OpenBSD: disklabel.c,v 1.89 2004/08/03 09:30:11 otto Exp $	*/
 
 /*
  * Copyright (c) 1987, 1993
@@ -39,7 +39,7 @@ static const char copyright[] =
 #endif /* not lint */
 
 #ifndef lint
-static const char rcsid[] = "$OpenBSD: disklabel.c,v 1.88 2004/05/20 23:23:46 marco Exp $";
+static const char rcsid[] = "$OpenBSD: disklabel.c,v 1.89 2004/08/03 09:30:11 otto Exp $";
 #endif /* not lint */
 
 #include <sys/param.h>
@@ -1354,7 +1354,7 @@ getasciilabel(FILE *f, struct disklabel *lp)
 
 			for (i = 0; (cp = tp) && *cp != '\0' && i < NDDATA;) {
 				v = GETNUM(lp->d_drivedata[i], cp, 0, &errstr);
-				if (errstr) 
+				if (errstr)
 					warnx("line %d: bad drivedata %s",
 					   lineno, cp);
 				lp->d_drivedata[i++] = v;
