@@ -1,5 +1,5 @@
 /*	$OpenBSD: swapgeneric.c,v 1.3 1996/04/21 22:14:51 deraadt Exp $	*/
-/*	$NetBSD: swapgeneric.c,v 1.22 1996/04/21 21:07:12 veego Exp $	*/
+/*	$NetBSD: swapgeneric.c,v 1.24 1996/05/21 17:15:40 is Exp $	*/
 
 /*
  * Copyright (c) 1982, 1986 Regents of the University of California.
@@ -139,6 +139,7 @@ getgenconf(bp)
 	return(gc);
 }
 
+#ifdef GENERIC
 void
 setconf()
 {
@@ -203,7 +204,6 @@ setconf()
 	asm("stop #0x2700");
 	/*NOTREACHED*/
 found:
-
 	gc->gc_root = MAKEDISKDEV(major(gc->gc_root), unit, 0);
 	rootdev = gc->gc_root;
 #if NCD > 0
@@ -218,6 +218,7 @@ justdoswap:
 	if (swaponroot)
 		rootdev = dumpdev;
 }
+#endif
 
 void
 gets(cp)

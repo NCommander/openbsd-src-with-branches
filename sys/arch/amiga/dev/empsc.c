@@ -1,5 +1,5 @@
 /*	$OpenBSD: empsc.c,v 1.1 1996/04/21 22:15:02 deraadt Exp $ */
-/*	$NetBSD: empsc.c,v 1.5 1996/04/21 21:10:59 veego Exp $	*/
+/*	$NetBSD: empsc.c,v 1.7 1996/05/10 13:02:33 is Exp $	*/
 
 /*
 
