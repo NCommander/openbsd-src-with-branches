@@ -1,4 +1,4 @@
-# $OpenBSD: Makefile,v 1.9 2003/06/03 09:18:00 hin Exp $
+# $OpenBSD: Makefile,v 1.11 2003/07/14 16:15:32 mho Exp $
 
 KRB5DIR=	${.CURDIR}/../../kerberosV
 GENDIR=		${.CURDIR}/generated
@@ -84,8 +84,8 @@ includes:
 		echo
 
 
-SHLIB_LINKS	= kafs asn1
-ALIB_LINKS	= $(SHLIB_LINKS) hdb com_err
+SHLIB_LINKS	= kafs asn1 com_err
+ALIB_LINKS	= $(SHLIB_LINKS) hdb
 
 afterinstall:
 .if !defined(NOPIC)
