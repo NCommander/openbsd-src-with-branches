@@ -1,4 +1,4 @@
-/*	$OpenBSD: icu.s,v 1.12.2.10 2001/12/05 00:39:10 niklas Exp $	*/
+/*	$OpenBSD: icu.s,v 1.12.2.11 2003/05/13 19:42:08 ho Exp $	*/
 /*	$NetBSD: icu.s,v 1.45 1996/01/07 03:59:34 mycroft Exp $	*/
 
 /*-
@@ -140,7 +140,13 @@ IDTVEC(softtty)
 #if NPCCOM > 0
 	movl	IPL_SOFTTTY(%ebx),%eax
 	movl	%eax,CPL
+#ifdef MULTIPROCESSOR
+	call	_C_LABEL(i386_softintlock)
+#endif
 	call	_C_LABEL(comsoft)
+#ifdef MULTIPROCESSOR	
+	call	_C_LABEL(i386_softintunlock)
+#endif
 	movl	%ebx,CPL
 #endif
 	jmp	*%esi
@@ -155,9 +161,15 @@ IDTVEC(softtty)
 IDTVEC(softnet)
 	movl	$IPL_SOFTNET,%eax
 	movl	%eax,CPL
+#ifdef MULTIPROCESSOR
+	call	_C_LABEL(i386_softintlock)
+#endif
 	xorl	%edi,%edi
 	xchgl	_C_LABEL(netisr),%edi
 #include <net/netisr_dispatch.h>
+#ifdef MULTIPROCESSOR	
+	call	_C_LABEL(i386_softintunlock)
+#endif
  	movl	%ebx,CPL
 	jmp	*%esi
 #undef DONETISR
@@ -165,7 +177,13 @@ IDTVEC(softnet)
 IDTVEC(softclock)
 	movl	$IPL_SOFTCLOCK,%eax
 	movl	%eax,CPL
+#ifdef MULTIPROCESSOR
+	call	_C_LABEL(i386_softintlock)
+#endif
 	call	_C_LABEL(softclock)
+#ifdef MULTIPROCESSOR	
+	call	_C_LABEL(i386_softintunlock)
+#endif
 	movl	%ebx,CPL
 	jmp	*%esi
 
