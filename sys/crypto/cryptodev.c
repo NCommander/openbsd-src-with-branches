@@ -1,4 +1,4 @@
-/*	$OpenBSD: cryptodev.c,v 1.36 2002/04/08 17:49:42 jason Exp $	*/
+/*	$OpenBSD: cryptodev.c,v 1.37 2002/04/23 19:13:04 deraadt Exp $	*/
 
 /*
  * Copyright (c) 2001 Theo de Raadt
@@ -291,6 +291,9 @@ bail:
 		break;
 	case CIOCKEY:
 		error = cryptodev_key((struct crypt_kop *)data);
+		break;
+	case CIOCSYMFEAT:
+		error = crypto_getfeat((int *)data);
 		break;
 	default:
 		error = EINVAL;
