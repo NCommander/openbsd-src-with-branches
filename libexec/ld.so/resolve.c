@@ -1,4 +1,4 @@
-/*	$OpenBSD: resolve.c,v 1.9 2002/05/24 04:17:00 deraadt Exp $ */
+/*	$OpenBSD: resolve.c,v 1.10 2002/05/28 00:22:01 deraadt Exp $ */
 
 /*
  * Copyright (c) 1998 Per Fogelstrom, Opsycon AB
@@ -89,7 +89,7 @@ _dl_add_object(const char *objname, Elf_Dyn *dynp, const u_long *dl_data,
 
 	/*
 	 *  Now relocate all pointer to dynamic info, but only
-	 *  the ones which has pointer values.
+	 *  the ones which have pointer values.
 	 */
 	if (object->Dyn.info[DT_PLTGOT])
 		object->Dyn.info[DT_PLTGOT] += loff;
