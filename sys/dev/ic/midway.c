@@ -1,5 +1,5 @@
-/*	$OpenBSD: midway.c,v 1.13 1996/07/16 22:11:14 chuck Exp $	*/
-/*	(sync'd to midway.c 1.61)	*/
+/*	$OpenBSD: midway.c,v 1.14 1996/07/17 03:53:39 chuck Exp $	*/
+/*	(sync'd to midway.c 1.62)	*/
 
 /*
  *
@@ -557,12 +557,12 @@ struct en_softc *sc;
     for (check = MID_PROBEOFF ; check < lcv ; check += MID_PROBSIZE) {
       reg = EN_READ(sc, check);
       if (reg != check) {		/* found an alias! */
-	lcv -= MID_PROBSIZE;		/* take one step back */
 	goto done_probe;		/* and quit */
       }
     }
   }
 done_probe:
+  lcv -= MID_PROBSIZE;			/* take one step back */
   sc->en_obmemsz = (lcv + 4) - MID_RAMOFF;
 
   /*
