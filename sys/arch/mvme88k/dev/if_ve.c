@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_ve.c,v 1.14 2001/12/22 09:49:39 smurph Exp $ */
+/*	$OpenBSD: if_ve.c,v 1.15 2001/12/22 18:45:35 smurph Exp $ */
 /*-
  * Copyright (c) 1999 Steve Murphree, Jr.
  * Copyright (c) 1982, 1992, 1993
@@ -70,7 +70,6 @@
 
 #include <machine/autoconf.h>
 #include <machine/cpu.h>
-#include <machine/bugio.h>
 #include <machine/cmmu.h>	/* DMA_CACHE_SYNC, etc... */
 
 #include <mvme88k/dev/if_vereg.h>
