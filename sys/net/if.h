@@ -1,4 +1,4 @@
-/*	$OpenBSD: if.h,v 1.13 1999/08/08 00:43:00 niklas Exp $	*/
+/*	$OpenBSD: if.h,v 1.14 1999/12/08 06:50:17 itojun Exp $	*/
 /*	$NetBSD: if.h,v 1.23 1996/05/07 02:40:27 thorpej Exp $	*/
 
 /*
@@ -376,12 +376,13 @@ __END_DECLS
 #include <net/if_arp.h>
 
 #ifdef _KERNEL
-#define	IFAFREE(ifa) { \
+#define	IFAFREE(ifa) \
+do { \
 	if ((ifa)->ifa_refcnt <= 0) \
 		ifafree(ifa); \
 	else \
 		(ifa)->ifa_refcnt--; \
-	}
+} while (0)
 
 struct ifnet_head ifnet;
 struct ifnet **ifindex2ifnet;
