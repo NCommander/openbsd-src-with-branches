@@ -80,6 +80,7 @@ cvsroot_parse(const char *str)
 		cvs_log(LP_ERRNO, "failed to allocate CVS root data");
 		return (NULL);
 	}
+	memset(root, 0, sizeof(*root));
 
 	root->cr_method = CVS_METHOD_NONE;
 
