@@ -372,6 +372,8 @@ main(int argc, char **argv)
 	/* setup signal handlers */
 	signal(SIGCHLD, sigchld_hdlr);
 
+	cvs_file_init();
+
 	if (readrc)
 		cvs_readrc();
 

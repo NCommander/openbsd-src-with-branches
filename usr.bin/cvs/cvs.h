@@ -318,6 +318,7 @@ const char* cvs_req_getbyid    (int);
 int         cvs_req_getbyname  (const char *);
 char*       cvs_req_getvalid   (void);
 
+
 int         cvs_resp_handle    (char *);
 const char* cvs_resp_getbyid   (int);
 int         cvs_resp_getbyname (const char *);
@@ -343,6 +344,13 @@ int     cvs_client_senddir     (const char *);
 struct cvsroot*  cvsroot_parse (const char *);
 void             cvsroot_free  (struct cvsroot *);
 struct cvsroot*  cvsroot_get   (const char *);
+
+
+int     cvs_file_init       (void);
+int     cvs_file_ignore     (const char *);
+int     cvs_file_isignored  (const char *);
+char**  cvs_file_getv       (const char *, int *);
+void    cvs_file_free       (char **, int);
 
 
 /* Entries API */
