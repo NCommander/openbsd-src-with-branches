@@ -1,4 +1,4 @@
-/*	$OpenBSD: subr_userconf.c,v 1.26.4.1 2002/06/11 03:29:40 art Exp $	*/
+/*	$OpenBSD$	*/
 
 /*
  * Copyright (c) 1996-2001 Mats O Jansson <moj@stacken.kth.se>
@@ -183,7 +183,7 @@ void
 userconf_hist_int(val)
 	int val;
 {
-	sprintf(userconf_histbuf," %d",val);
+	snprintf(userconf_histbuf, sizeof userconf_histbuf, " %d",val);
 	if (userconf_histcur + strlen(userconf_histbuf) < userconf_histsz) {
 		bcopy(userconf_histbuf,
 		    &userconf_history[userconf_histcur],

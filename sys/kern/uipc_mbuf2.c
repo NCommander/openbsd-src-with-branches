@@ -1,4 +1,4 @@
-/*	$OpenBSD: uipc_mbuf2.c,v 1.15.4.1 2002/06/11 03:29:40 art Exp $	*/
+/*	$OpenBSD$	*/
 /*	$KAME: uipc_mbuf2.c,v 1.29 2001/02/14 13:42:10 itojun Exp $	*/
 /*	$NetBSD: uipc_mbuf.c,v 1.40 1999/04/01 00:23:25 thorpej Exp $	*/
 
@@ -72,10 +72,6 @@
 #include <sys/malloc.h>
 #include <sys/mbuf.h>
 
-#define M_SHAREDCLUSTER(m) \
-	(((m)->m_flags & M_EXT) != 0 && \
-	 ((m)->m_ext.ext_free || MCLISREFERENCED((m))))
-
 /* can't call it m_dup(), as freebsd[34] uses m_dup() with different arg */
 static struct mbuf *m_dup1(struct mbuf *, int, int, int);
 
@@ -122,7 +118,7 @@ m_pulldown(m, off, len, offp)
 		return (NULL);	/* mbuf chain too short */
 	}
 
-	sharedcluster = M_SHAREDCLUSTER(n);
+	sharedcluster = M_READONLY(n);
 
 	/*
 	 * the target data is on <n, off>.
@@ -263,6 +259,8 @@ m_dup1(m, off, len, wait)
 	if (copyhdr)
 		M_DUP_PKTHDR(n, m);
 	m_copydata(m, off, len, mtod(n, caddr_t));
+	n->m_len = len;
+
 	return (n);
 }
 

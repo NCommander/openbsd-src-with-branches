@@ -1,4 +1,4 @@
-/*	$OpenBSD: endian.h,v 1.7 2001/06/27 01:23:50 mickey Exp $	*/
+/*	$OpenBSD$	*/
 
 /*-
  * Copyright (c) 1997 Niklas Hallqvist.  All rights reserved.
@@ -94,7 +94,7 @@
     ((u_int32_t)(x) & 0xff000000) >> 24)
 
 #define __swap64gen(x)							\
-	(u_int64_t)(((u_int64_t)(x) & 0xff) << 56) |			\
+	(u_int64_t)((((u_int64_t)(x) & 0xff) << 56) |			\
 	    ((u_int64_t)(x) & 0xff00) << 40 |				\
 	    ((u_int64_t)(x) & 0xff0000) << 24 |				\
 	    ((u_int64_t)(x) & 0xff000000) << 8 |			\

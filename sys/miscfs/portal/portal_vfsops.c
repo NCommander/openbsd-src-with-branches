@@ -1,4 +1,4 @@
-/*	$OpenBSD: portal_vfsops.c,v 1.9.6.1 2002/06/11 03:30:20 art Exp $	*/
+/*	$OpenBSD$	*/
 /*	$NetBSD: portal_vfsops.c,v 1.14 1996/02/09 22:40:41 christos Exp $	*/
 
 /*
@@ -119,7 +119,7 @@ portal_mount(mp, path, data, ndp, p)
 		M_TEMP, M_WAITOK);
 
 	fmp = (struct portalmount *) malloc(sizeof(struct portalmount),
-				 M_UFSMNT, M_WAITOK);	/* XXX */
+				 M_MISCFSMNT, M_WAITOK);
 	rvp->v_type = VDIR;
 	rvp->v_flag |= VROOT;
 	VTOPORTAL(rvp)->pt_arg = 0;
@@ -158,7 +158,7 @@ portal_unmount(mp, mntflags, p)
 	int mntflags;
 	struct proc *p;
 {
-	struct vnode *rootvp = VFSTOPORTAL(mp)->pm_root;
+	struct vnode *rvp = VFSTOPORTAL(mp)->pm_root;
 	int error, flags = 0;
 
 	if (mntflags & MNT_FORCE) {
@@ -175,19 +175,19 @@ portal_unmount(mp, mntflags, p)
 	if (mntinvalbuf(mp, 1))
 		return (EBUSY);
 #endif
-	if (rootvp->v_usecount > 1)
+	if (rvp->v_usecount > 1)
 		return (EBUSY);
-	if ((error = vflush(mp, rootvp, flags)) != 0)
+	if ((error = vflush(mp, rvp, flags)) != 0)
 		return (error);
 
 	/*
 	 * Release reference on underlying root vnode
 	 */
-	vrele(rootvp);
+	vrele(rvp);
 	/*
 	 * And blow it away for future re-use
 	 */
-	vgone(rootvp);
+	vgone(rvp);
 	/*
 	 * Shutdown the socket.  This will cause the select in the
 	 * daemon to wake up, and then the accept will get ECONNABORTED
@@ -203,7 +203,7 @@ portal_unmount(mp, mntflags, p)
 	/*
 	 * Finally, throw away the portalmount structure
 	 */
-	free(mp->mnt_data, M_UFSMNT);	/* XXX */
+	free(mp->mnt_data, M_MISCFSMNT);
 	mp->mnt_data = 0;
 	return (0);
 }

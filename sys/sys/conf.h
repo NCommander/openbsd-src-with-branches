@@ -1,4 +1,4 @@
-/*	$OpenBSD: conf.h,v 1.50.2.2 2002/06/11 03:32:33 art Exp $	*/
+/*	$OpenBSD$	*/
 /*	$NetBSD: conf.h,v 1.33 1996/05/03 20:03:32 christos Exp $	*/
 
 /*-
@@ -40,6 +40,10 @@
  *
  *	@(#)conf.h	8.3 (Berkeley) 1/21/94
  */
+
+
+#ifndef _SYS_CONF_H_
+#define _SYS_CONF_H_
 
 /*
  * Definitions of device driver entry switches
@@ -446,6 +450,13 @@ void	randomattach(void);
 	dev_init(c,n,write), dev_init(c,n,ioctl), (dev_type_stop((*))) enodev, \
 	0, seltrue, (dev_type_mmap((*))) enodev }
 
+/* open, close, read, ioctl, mmap */
+#define cdev_bktr_init(c, n) { \
+	dev_init(c,n,open), dev_init(c,n,close), dev_init(c,n,read), \
+	(dev_type_write((*))) enodev, dev_init(c,n,ioctl), \
+	(dev_type_stop((*))) enodev, 0, seltrue, \
+	dev_init(c,n,mmap) }
+				 
 /* symbolic sleep message strings */
 extern char devopn[], devio[], devwait[], devin[], devout[];
 extern char devioc[], devcls[];
@@ -488,7 +499,11 @@ struct swdevt {
 
 #ifdef _KERNEL
 extern struct swdevt swdevt[];
+extern int chrtoblktbl[];
+extern int nchrtoblktbl;
 
+struct bdevsw *bdevsw_lookup(dev_t);
+struct cdevsw *cdevsw_lookup(dev_t);
 int	chrtoblk(dev_t);
 int	blktochr(dev_t);
 int	iskmemdev(dev_t);
@@ -587,6 +602,7 @@ cdev_decl(systrace);
 cdev_decl(bio);
 
 cdev_decl(gpr);
+cdev_decl(bktr);
 
 cdev_decl(usb);
 cdev_decl(ugen);
@@ -597,3 +613,5 @@ cdev_decl(uscanner);
 cdev_decl(urio);
 
 #endif
+
+#endif /* _SYS_CONF_H_ */
