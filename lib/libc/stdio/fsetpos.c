@@ -35,18 +35,18 @@
  */
 
 #if defined(LIBC_SCCS) && !defined(lint)
-static char rcsid[] = "$OpenBSD: fsetpos.c,v 1.5 1995/02/02 02:09:41 jtc Exp $";
+static char rcsid[] = "$OpenBSD: fsetpos.c,v 1.2 1996/08/19 08:32:47 tholo Exp $";
 #endif /* LIBC_SCCS and not lint */
 
 #include <stdio.h>
 
 /*
- * fsetpos: like fseek.
+ * fsetpos: like fseeko.
  */
 int
 fsetpos(iop, pos)
 	FILE *iop;
 	const fpos_t *pos;
 {
-	return (fseek(iop, (long)*pos, SEEK_SET));
+	return (fseeko(iop, (off_t)*pos, SEEK_SET));
 }
