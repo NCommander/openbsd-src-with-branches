@@ -1,5 +1,5 @@
 #	from: @(#)Makefile	8.1 (Berkeley) 6/10/93
-#	$OpenBSD: Makefile,v 1.8 2003/08/01 07:42:32 miod Exp $
+#	$OpenBSD: Makefile,v 1.9 2003/08/20 19:36:59 miod Exp $
 
 SIZE?=	size
 
@@ -30,7 +30,7 @@ all: ${ALL}
 
 bootst.bug:	${OBJS} ${SINGLE} ${LIBS}
 	${LD} ${LDFLAGS} ${SINGLE} -o $@ \
-	    ${OBJS} ${LIBS} `${CC} -print-libgcc-file-name`
+	    ${OBJS} ${LIBS}
 	@${SIZE} bootst.bug
 
 bootst stboot: bootst.bug ${WRTVID}
