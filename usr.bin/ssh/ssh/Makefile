@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.35 2001/06/28 02:32:32 hin Exp $
+#	$OpenBSD: Makefile,v 1.37 2002/03/05 00:49:51 deraadt Exp $
 
 .PATH:		${.CURDIR}/..
 
@@ -36,5 +36,5 @@ DPADD+=  ${LIBKRBAFS}
 
 .include <bsd.prog.mk>
 
-LDADD+=	-lcrypto -lz
+LDADD+=	-lcrypto -lz -ldes
 DPADD+=	${LIBCRYPTO} ${LIBZ}
