@@ -1,4 +1,4 @@
-/*	$OpenBSD: ip_input.c,v 1.59 2000/09/22 01:40:56 mickey Exp $	*/
+/*	$OpenBSD: ip_input.c,v 1.60 2000/10/13 02:01:10 itojun Exp $	*/
 /*	$NetBSD: ip_input.c,v 1.30 1996/03/16 23:53:58 christos Exp $	*/
 
 /*
@@ -417,6 +417,13 @@ ipv4_input(struct mbuf *m, ...)
 #ifdef IPSEC
 			if (tdbi)
 			        free(tdbi, M_TEMP);
+#endif /* IPSEC */
+			return;
+		}
+		if (m0 == 0) {  /* in case of 'fastroute' */
+#ifdef IPSEC
+			if (tdbi)
+				free (tdbi, M_TEMP);
 #endif /* IPSEC */
 			return;
 		}
