@@ -33,7 +33,7 @@
  * SUCH DAMAGE.
  *
  * $FreeBSD: src/sys/dev/aic7xxx/aic7xxx.c,v 1.40 2000/01/07 23:08:17 gibbs Exp $
- * $OpenBSD: aic7xxx.c,v 1.24 2000/12/06 15:46:51 mickey Exp $
+ * $OpenBSD: aic7xxx.c,v 1.25 2001/03/25 06:15:37 csapuntz Exp $
  */
 /*
  * A few notes on features of the driver.
@@ -122,7 +122,6 @@
 #define AHC_TMODE_ENABLE 0
 #endif
 #include <sys/kernel.h>
-#define offsetof(s, e) ((char *)&((s *)0)->e - (char *)((s *)0))
 
 #ifndef le32toh
 #define le32toh	letoh32  /* to match Free/Net macros */

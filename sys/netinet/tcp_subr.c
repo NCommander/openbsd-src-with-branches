@@ -1,4 +1,4 @@
-/*	$OpenBSD: tcp_subr.c,v 1.39 2001/02/16 16:00:54 itojun Exp $	*/
+/*	$OpenBSD: tcp_subr.c,v 1.40 2001/03/14 19:21:33 mickey Exp $	*/
 /*	$NetBSD: tcp_subr.c,v 1.22 1996/02/13 23:44:00 christos Exp $	*/
 
 /*
@@ -88,10 +88,6 @@ didn't get a copy, you may request one from <license@ipv6.nrl.navy.mil>.
 #ifdef TCP_SIGNATURE
 #include <sys/md5k.h>
 #endif /* TCP_SIGNATURE */
-
-#ifndef offsetof
-#define offsetof(type, member)	((size_t)(&((type *)0)->member))
-#endif
 
 /* patchable/settable parameters for tcp */
 int	tcp_mssdflt = TCP_MSS;

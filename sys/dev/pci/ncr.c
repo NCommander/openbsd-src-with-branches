@@ -1,4 +1,4 @@
-/*	$OpenBSD: ncr.c,v 1.52 2000/10/08 19:36:09 millert Exp $	*/
+/*	$OpenBSD: ncr.c,v 1.53 2001/01/25 03:50:51 todd Exp $	*/
 /*	$NetBSD: ncr.c,v 1.63 1997/09/23 02:39:15 perry Exp $	*/
 
 /**************************************************************************
@@ -210,8 +210,6 @@
 #else
 #include <stddef.h>
 #endif
-
-#define	offsetof(type, member)	((size_t)(&((type *)0)->member))
 
 #include <sys/param.h>
 #include <sys/time.h>
@@ -1466,7 +1464,7 @@ static	void	ncr_attach	(pcici_t tag, int unit);
 
 #if 0
 static char ident[] =
-	"\n$OpenBSD: ncr.c,v 1.52 2000/10/08 19:36:09 millert Exp $\n";
+	"\n$OpenBSD: ncr.c,v 1.53 2001/01/25 03:50:51 todd Exp $\n";
 #endif
 
 static const u_long	ncr_version = NCR_VERSION	* 11

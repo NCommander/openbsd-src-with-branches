@@ -1,4 +1,4 @@
-/*	$OpenBSD: ip_ether.c,v 1.24 2001/02/06 02:50:02 jason Exp $  */
+/*	$OpenBSD: ip_ether.c,v 1.25 2001/02/07 20:52:13 mickey Exp $  */
 
 /*
  * The author of this code is Angelos D. Keromytis (kermit@adk.gr)
@@ -65,10 +65,6 @@
 #define DPRINTF(x)	if (encdebug) printf x
 #else
 #define DPRINTF(x)
-#endif
-
-#ifndef offsetof
-#define offsetof(s, e) ((int)&((s *)0)->e)
 #endif
 
 /*

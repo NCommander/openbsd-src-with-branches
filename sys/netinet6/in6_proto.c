@@ -1,4 +1,4 @@
-/*	$OpenBSD: in6_proto.c,v 1.25 2000/10/10 15:53:09 itojun Exp $	*/
+/*	$OpenBSD: in6_proto.c,v 1.26 2000/12/11 08:04:56 itojun Exp $	*/
 /*	$KAME: in6_proto.c,v 1.66 2000/10/10 15:35:47 itojun Exp $	*/
 
 /*
@@ -108,8 +108,6 @@
 #endif
 
 #include <net/net_osdep.h>
-
-#define	offsetof(type, member)	((size_t)(&((type *)0)->member))
 
 /*
  * TCP/IP protocol family: IP6, ICMP6, UDP, TCP.
