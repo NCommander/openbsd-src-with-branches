@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_fxp_pci.c,v 1.13 2002/05/31 08:46:00 mpech Exp $	*/
+/*	$OpenBSD: if_fxp_pci.c,v 1.14 2002/06/28 11:35:30 markus Exp $	*/
 
 /*
  * Copyright (c) 1995, David Greenman
@@ -107,6 +107,7 @@ fxp_pci_match(parent, match, aux)
 	case PCI_PRODUCT_INTEL_82562:
 	case PCI_PRODUCT_INTEL_PRO_100_VE_0:
 	case PCI_PRODUCT_INTEL_PRO_100_VE_1:
+	case PCI_PRODUCT_INTEL_PRO_100_VE_2:
 	case PCI_PRODUCT_INTEL_PRO_100_VM_0:
 	case PCI_PRODUCT_INTEL_PRO_100_VM_1:
 	case PCI_PRODUCT_INTEL_PRO_100_VM_2:
@@ -183,6 +184,7 @@ fxp_pci_attach(parent, self, aux)
 		break;
 	case PCI_PRODUCT_INTEL_PRO_100_VE_0:
 	case PCI_PRODUCT_INTEL_PRO_100_VE_1:
+	case PCI_PRODUCT_INTEL_PRO_100_VE_2:
 	case PCI_PRODUCT_INTEL_PRO_100_VM_0:
 	case PCI_PRODUCT_INTEL_PRO_100_VM_1:
 	case PCI_PRODUCT_INTEL_PRO_100_VM_2:
