@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_xlreg.h,v 1.8 1998/11/23 19:56:51 jason Exp $	*/
+/*	$OpenBSD: if_xlreg.h,v 1.9 1999/02/27 23:54:42 jason Exp $	*/
 
 /*
  * Copyright (c) 1997, 1998
@@ -552,7 +552,7 @@ struct xl_softc {
 	volatile caddr_t	csr;		/* pointer to register map */
 #endif
 	struct xl_type		*xl_info;	/* 3Com adapter info */
-	struct xl_type		*xl_pinfo;	/* phy info */
+	u_int8_t		xl_hasmii;	/* whether we have mii or not */
 	u_int8_t		xl_unit;	/* interface number */
 	u_int8_t		xl_type;
 	u_int8_t		xl_phy_addr;	/* PHY address */
