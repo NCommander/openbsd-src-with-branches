@@ -1,4 +1,4 @@
-/*	$OpenBSD: dptreg.h,v 1.1 1999/11/30 07:55:56 cmetz Exp $	*/
+/*	$OpenBSD: dptreg.h,v 1.2 2001/01/25 03:50:50 todd Exp $	*/
 /*	$NetBSD: dptreg.h,v 1.4 1999/10/19 20:16:48 ad Exp $	*/
 
 /*
@@ -55,6 +55,11 @@
 #define SWAP16(x)	(x)
 #define RSWAP32(x)	bswap32((x))
 #define RSWAP16(x)	bswap16((x))
+#endif
+
+#ifdef __OpenBSD__
+#define	bswap16	swap16
+#define	bswap32	swap32
 #endif
 
 #define dpt_inb(x, o)	\
