@@ -1,4 +1,4 @@
-/*	$OpenBSD: fdcache.c,v 1.4 2002/07/17 17:00:25 henning Exp $ */
+/*	$OpenBSD: fdcache.c,v 1.5 2002/08/02 11:52:01 henning Exp $ */
 
 /*
  * Copyright (c) 2002 Henning Brauer
@@ -83,7 +83,7 @@ fdcache_closeall(void)
 {
     struct fdcache *fdcp = NULL, *tmp = NULL;
 
-    for (fdcp = fdc; fdcp; ) {
+    for (fdcp = fdc; fdcp != NULL; ) {
 	tmp = fdcp;
 	fdcp = tmp->next;
 	if (tmp->fd > 0)
