@@ -1,7 +1,7 @@
-#	$OpenBSD: Makefile,v 1.5 1996/11/30 21:08:48 millert Exp $
+#	$OpenBSD: Makefile,v 1.6 1997/09/21 11:49:52 deraadt Exp $
 
 PROG=	make
-CFLAGS+= -I${.CURDIR} -Wall -Wno-unused #-Wmissing-prototypes -Wstrict-prototypes
+CFLAGS+= -I${.CURDIR} -Wall -Wno-char-subscripts -Wno-unused #-Wmissing-prototypes -Wstrict-prototypes
 SRCS=	arch.c buf.c compat.c cond.c dir.c for.c hash.c job.c main.c \
 	make.c parse.c str.c suff.c targ.c var.c util.c
 SRCS+=	lstAppend.c lstAtEnd.c lstAtFront.c lstClose.c lstConcat.c \
