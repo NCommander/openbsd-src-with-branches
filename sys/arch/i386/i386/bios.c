@@ -1,4 +1,4 @@
-/*	$OpenBSD: bios.c,v 1.39 2001/01/21 20:23:22 mickey Exp $	*/
+/*	$OpenBSD: bios.c,v 1.40 2001/02/28 16:45:25 mickey Exp $	*/
 
 /*
  * Copyright (c) 1997-2001 Michael Shalayeff
@@ -241,9 +241,9 @@ biosattach(parent, self, aux)
 				printf("!");	/* stinking x20 again */
 
 			if (!str)
-				printf("%s: PROM list:",
+				printf("%s: ROM list:",
 				    str = sc->sc_dev.dv_xname);
-			printf(" %05x[%04x]", off, len);
+			printf(" 0x%05x/0x%x", off, len);
 
 			if ((i = extent_alloc_region(iomem_ex,
 			    (paddr_t)off, len, EX_NOWAIT)))
