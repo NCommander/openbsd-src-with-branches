@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: cgtwo.c,v 1.11 1997/08/08 08:24:55 downsj Exp $	*/
 /*	$NetBSD: cgtwo.c,v 1.22 1997/05/24 20:16:12 pk Exp $ */
 
 /*
@@ -429,6 +429,8 @@ cgtwommap(dev, off, prot)
 	if (off & PGOFSET)
 		panic("cgtwommap");
 
+	if (off < 0)
+		return (-1);
 	if ((unsigned)off >= sc->sc_fb.fb_type.fb_size)
 		return (-1);
 

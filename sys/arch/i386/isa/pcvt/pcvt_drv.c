@@ -1,4 +1,4 @@
-/*	$OpenBSD: pcvt_drv.c,v 1.20 1998/06/25 00:40:25 millert Exp $	*/
+/*	$OpenBSD: pcvt_drv.c,v 1.21 1998/06/30 20:51:08 millert Exp $	*/
 
 /*
  * Copyright (c) 1992, 1995 Hellmuth Michaelis and Joerg Wunsch.
@@ -521,7 +521,7 @@ do_standard:
 int
 pcmmap(Dev_t dev, int offset, int nprot)
 {
-	if (offset > 0x20000)
+	if ((u_int)offset > 0x20000)
 		return -1;
 	return i386_btop((0xa0000 + offset));
 }

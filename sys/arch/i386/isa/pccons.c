@@ -1,4 +1,4 @@
-/*	$OpenBSD: pccons.c,v 1.40 1998/03/16 09:12:39 downsj Exp $	*/
+/*	$OpenBSD: pccons.c,v 1.41 1998/07/09 18:22:25 deraadt Exp $	*/
 /*	$NetBSD: pccons.c,v 1.99.4.1 1996/06/04 20:03:53 cgd Exp $	*/
 
 /*-
@@ -1892,7 +1892,7 @@ pcmmap(dev, offset, nprot)
 	int nprot;
 {
 
-	if (offset > 0x20000)
+	if ((u_int)offset > 0x20000)
 		return -1;
 	return i386_btop(0xa0000 + offset);
 }

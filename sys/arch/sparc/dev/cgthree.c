@@ -1,4 +1,4 @@
-/*	$OpenBSD: cgthree.c,v 1.6 1997/08/08 08:24:53 downsj Exp $	*/
+/*	$OpenBSD: cgthree.c,v 1.7 1997/09/01 03:56:45 todd Exp $	*/
 /*	$NetBSD: cgthree.c,v 1.33 1997/05/24 20:16:11 pk Exp $ */
 
 /*
@@ -433,6 +433,9 @@ cgthreemmap(dev, off, prot)
 
 	if (off & PGOFSET)
 		panic("cgthreemmap");
+
+	if (off < 0)
+		return (-1);
 	if ((u_int)off >= NOOVERLAY)
 		off -= NOOVERLAY;
 	else if ((u_int)off >= START)
