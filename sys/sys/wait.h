@@ -91,7 +91,7 @@
 #define	WAIT_ANY	(-1)	/* any process */
 #define	WAIT_MYPGRP	0	/* any process in my process group */
 
-#include <machine/endian.h>
+#include <sys/types.h>
 
 /*
  * Deprecated:
