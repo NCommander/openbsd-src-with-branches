@@ -1,5 +1,4 @@
-#	$OpenBSD: Makefile.inc,v 1.2 1996/06/23 14:29:50 deraadt Exp $
-#	$NetBSD: Makefile.inc,v 1.10 1995/03/18 14:54:22 cgd Exp $
+#	$OpenBSD: Makefile.inc,v 1.3 1996/09/16 10:16:54 downsj Exp $
 
 BINDIR?=	/sbin
 LDSTATIC=	${STATIC}

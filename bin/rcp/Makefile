@@ -1,5 +1,4 @@
-#	$OpenBSD: Makefile,v 1.3 1996/06/23 14:20:55 deraadt Exp $
-#	$NetBSD: Makefile,v 1.6 1995/03/23 08:46:35 mycroft Exp $
+#	$OpenBSD: Makefile,v 1.4 1997/04/19 21:26:10 millert Exp $
 
 PROG=	rcp
 SRCS=	rcp.c util.c

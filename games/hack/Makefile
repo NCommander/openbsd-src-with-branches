@@ -1,5 +1,4 @@
-#	$OpenBSD: Makefile,v 1.7 1997/03/28 18:51:47 tholo Exp $
-#	@(#)Makefile	8.1 (Berkeley) 5/31/93
+#	$OpenBSD$
 
 PROG=	hack
 CFLAGS+=-I.
