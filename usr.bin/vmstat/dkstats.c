@@ -1,4 +1,4 @@
-/*	$OpenBSD: dkstats.c,v 1.4 1997/02/04 04:51:20 kstailey Exp $	*/
+/*	$OpenBSD: dkstats.c,v 1.5 1997/06/23 22:11:07 millert Exp $	*/
 /*	$NetBSD: dkstats.c,v 1.1 1996/05/10 23:19:27 thorpej Exp $	*/
 
 /*
@@ -257,7 +257,7 @@ deref_kptr(kptr, ptr, len)
 {
 	char buf[128];
 
-	if (kvm_read(kd, (u_long)kptr, (char *)ptr, len) != len) {
+	if (kvm_read(kd, (u_long)kptr, ptr, len) != len) {
 		bzero(buf, sizeof(buf));
 		snprintf(buf, (sizeof(buf) - 1),
 		     "can't dereference kptr 0x%lx", (u_long)kptr);
