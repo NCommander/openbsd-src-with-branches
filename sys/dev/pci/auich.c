@@ -1,4 +1,4 @@
-/*	$OpenBSD: auich.c,v 1.42 2004/09/20 17:27:53 grange Exp $	*/
+/*	$OpenBSD: auich.c,v 1.43 2004/11/30 22:30:47 mickey Exp $	*/
 
 /*
  * Copyright (c) 2000,2001 Michael Shalayeff
@@ -1160,7 +1160,7 @@ auich_intr(v)
 		bus_space_write_2(sc->iot, sc->aud_ioh,
 		    AUICH_PCMI + sc->sc_sts_reg, sts &
 		    (AUICH_LVBCI | AUICH_CELV | AUICH_BCIS | AUICH_FIFOE));
-		bus_space_write_2(sc->iot, sc->aud_ioh, AUICH_GSTS, AUICH_POINT);
+		bus_space_write_2(sc->iot, sc->aud_ioh, AUICH_GSTS, AUICH_PIINT);
 		ret++;
 	}
 
