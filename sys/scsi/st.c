@@ -1,4 +1,4 @@
-/*	$OpenBSD: st.c,v 1.39 2004/05/28 23:50:15 krw Exp $	*/
+/*	$OpenBSD: st.c,v 1.40 2004/06/22 00:43:25 marco Exp $	*/
 /*	$NetBSD: st.c,v 1.71 1997/02/21 23:03:49 thorpej Exp $	*/
 
 /*
@@ -394,7 +394,6 @@ stattach(parent, self, aux)
 	st->sc_link = sc_link;
 	sc_link->device = &st_switch;
 	sc_link->device_softc = st;
-	sc_link->openings = 1;
 
 	/*
 	 * Check if the drive is a known criminal and take
