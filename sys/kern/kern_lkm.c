@@ -1,4 +1,4 @@
-/*	$OpenBSD: kern_lkm.c,v 1.36 2002/01/09 19:05:17 ericj Exp $	*/
+/*	$OpenBSD: kern_lkm.c,v 1.37 2002/03/14 01:27:04 millert Exp $	*/
 /*	$NetBSD: kern_lkm.c,v 1.31 1996/03/31 21:40:27 christos Exp $	*/
 
 /*
@@ -165,6 +165,7 @@ lkmfree(struct lkm_table *p)
 
 	TAILQ_REMOVE(&lkmods, p, list);
 	free(p, M_DEVBUF);
+	curp = NULL;
 	nlkms--;
 }
 
