@@ -1,4 +1,4 @@
-/*	$OpenBSD: sys_pipe.c,v 1.46 2004/01/06 04:18:18 tedu Exp $	*/
+/*	$OpenBSD: sys_pipe.c,v 1.47 2004/06/24 19:35:24 tholo Exp $	*/
 
 /*
  * Copyright (c) 1996 John S. Dyson
@@ -285,7 +285,7 @@ pipe_read(fp, poff, uio, cred)
 
 	error = pipelock(rpipe);
 	if (error)
-		goto unlocked_error;
+		return (error);
 
 	++rpipe->pipe_busy;
 
