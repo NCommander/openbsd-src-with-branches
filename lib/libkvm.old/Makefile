@@ -1,8 +1,9 @@
-#	from: @(#)Makefile	8.1 (Berkeley) 6/4/93
 #	$OpenBSD$
+#	$NetBSD: Makefile,v 1.4 1996/05/13 02:30:20 thorpej Exp $
 
 LIB=	kvm
 CFLAGS+=-DLIBC_SCCS
+CFLAGS+=-I- -I${.CURDIR}
 
 # Try most specific name first.
 .if	exists(kvm_${MACHINE}.c)

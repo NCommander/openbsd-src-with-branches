@@ -1,5 +1,7 @@
 /*	$OpenBSD$	*/
 
+/*	$NetBSD: kvm_m68k.c,v 1.3 1996/05/14 21:59:57 scottr Exp $	*/
+
 /*-
  * Copyright (c) 1989, 1992, 1993
  *	The Regents of the University of California.  All rights reserved.
