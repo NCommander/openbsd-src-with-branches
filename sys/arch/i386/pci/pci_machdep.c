@@ -1,4 +1,4 @@
-/*	$OpenBSD: pci_machdep.c,v 1.22 2001/11/06 19:53:14 miod Exp $	*/
+/*	$OpenBSD: pci_machdep.c,v 1.23 2002/03/14 01:26:33 millert Exp $	*/
 /*	$NetBSD: pci_machdep.c,v 1.28 1997/06/06 23:29:17 thorpej Exp $	*/
 
 /*-
@@ -477,7 +477,7 @@ pci_intr_string(pc, ih)
 	if (ih.line == 0 || ih.line >= ICU_LEN || ih.line == 2)
 		panic("pci_intr_string: bogus handle 0x%x", ih.line);
 
-	sprintf(irqstr, "irq %d", ih.line);
+	snprintf(irqstr, sizeof irqstr, "irq %d", ih.line);
 	return (irqstr);
 	
 }
