@@ -29,7 +29,7 @@ static int
 ap_load(struct lkm_table *lkmtp, int cmd)
 {
     if (cmd == LKM_E_LOAD) {
-	printf("\n Aperture driver for XFree86 version %s.%s\n",
+	printf("Aperture driver for XFree86 version %s.%s\n",
 	       ap_major_version, ap_minor_version);
     }
     return(0);
