@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: quota.c,v 1.5 1996/06/26 05:38:01 deraadt Exp $	*/
 
 /*
  * Copyright (c) 1980, 1990, 1993
@@ -44,7 +44,7 @@ static char copyright[] =
 
 #ifndef lint
 /*static char sccsid[] = "from: @(#)quota.c	8.1 (Berkeley) 6/6/93";*/
-static char rcsid[] = "$OpenBSD: quota.c,v 1.4 1996/04/25 11:04:06 deraadt Exp $";
+static char rcsid[] = "$OpenBSD: quota.c,v 1.5 1996/06/26 05:38:01 deraadt Exp $";
 #endif /* not lint */
 
 /*
@@ -499,11 +499,13 @@ ufshasquota(fs, type, qfnamep)
 	char *opt, *cp;
 
 	if (!initname) {
-		sprintf(usrname, "%s%s", qfextension[USRQUOTA], qfname);
-		sprintf(grpname, "%s%s", qfextension[GRPQUOTA], qfname);
+		snprintf(usrname, sizeof usrname, "%s%s",
+		    qfextension[USRQUOTA], qfname);
+		snprintf(grpname, sizeof grpname, "%s%s",
+		    qfextension[GRPQUOTA], qfname);
 		initname = 1;
 	}
-	strcpy(buf, fs->fs_mntops);
+	strncpy(buf, sizeof buf, fs->fs_mntops);
 	for (opt = strtok(buf, ","); opt; opt = strtok(NULL, ",")) {
 		if (cp = index(opt, '='))
 			*cp++ = '\0';
@@ -518,7 +520,8 @@ ufshasquota(fs, type, qfnamep)
 		*qfnamep = cp;
 		return (1);
 	}
-	(void) sprintf(buf, "%s/%s.%s", fs->fs_file, qfname, qfextension[type]);
+	(void) snprintf(buf, sizeof buf, "%s/%s.%s",
+	    fs->fs_file, qfname, qfextension[type]);
 	*qfnamep = buf;
 	return (1);
 }
