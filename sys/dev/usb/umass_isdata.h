@@ -1,9 +1,7 @@
-/*	$OpenBSD: hid.h,v 1.4 2000/11/08 18:10:37 aaron Exp $ */
-/*	$NetBSD: hid.h,v 1.7 2001/12/28 17:32:36 augustss Exp $	*/
-/*	$FreeBSD: src/sys/dev/usb/hid.h,v 1.7 1999/11/17 22:33:40 n_hibma Exp $ */
+/*	$NetBSD: umass_isdata.h,v 1.1 2001/12/24 13:43:25 augustss Exp $	*/
 
 /*
- * Copyright (c) 1998 The NetBSD Foundation, Inc.
+ * Copyright (c) 2001 The NetBSD Foundation, Inc.
  * All rights reserved.
  *
  * This code is derived from software contributed to The NetBSD Foundation
@@ -39,58 +37,4 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-enum hid_kind { 
-	hid_input,
-	hid_output,
-	hid_feature,
-	hid_collection,
-	hid_endcollection,
-	hid_none
-};
-
-struct hid_location {
-	u_int32_t size;
-	u_int32_t count;
-	u_int32_t pos;
-};
-
-struct hid_item {
-	/* Global */
-	int32_t _usage_page;
-	int32_t logical_minimum;
-	int32_t logical_maximum;
-	int32_t physical_minimum;
-	int32_t physical_maximum;
-	int32_t unit_exponent;
-	int32_t unit;
-	int32_t report_ID;
-	/* Local */
-	int32_t usage;
-	int32_t usage_minimum;
-	int32_t usage_maximum;
-	int32_t designator_index;
-	int32_t designator_minimum;
-	int32_t designator_maximum;
-	int32_t string_index;
-	int32_t string_minimum;
-	int32_t string_maximum;
-	int32_t set_delimiter;
-	/* Misc */
-	int32_t collection;
-	int collevel;
-	enum hid_kind kind;
-	u_int32_t flags;
-	/* Location */
-	struct hid_location loc;
-	/* */
-	struct hid_item *next;
-};
-
-struct hid_data *hid_start_parse(void *d, int len, enum hid_kind kind);
-void hid_end_parse(struct hid_data *s);
-int hid_get_item(struct hid_data *s, struct hid_item *h);
-int hid_report_size(void *buf, int len, enum hid_kind k, u_int8_t id);
-int hid_locate(void *desc, int size, u_int32_t usage, u_int8_t id,
-	       enum hid_kind kind, struct hid_location *loc, u_int32_t *flags);
-u_long hid_get_data(u_char *buf, struct hid_location *loc);
-int hid_is_collection(void *desc, int size, u_int8_t id, u_int32_t usage);
+int umass_isdata_attach(struct umass_softc *sc);
