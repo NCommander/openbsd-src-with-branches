@@ -1,4 +1,4 @@
-/*	$OpenBSD: syslogd.c,v 1.40 2001/02/07 06:15:46 fgsch Exp $	*/
+/*	$OpenBSD: syslogd.c,v 1.41 2001/07/27 20:34:36 pvalchev Exp $	*/
 
 /*
  * Copyright (c) 1983, 1988, 1993, 1994
@@ -43,7 +43,7 @@ static char copyright[] =
 #if 0
 static char sccsid[] = "@(#)syslogd.c	8.3 (Berkeley) 4/4/94";
 #else
-static char rcsid[] = "$OpenBSD: syslogd.c,v 1.40 2001/02/07 06:15:46 fgsch Exp $";
+static char rcsid[] = "$OpenBSD: syslogd.c,v 1.41 2001/07/27 20:34:36 pvalchev Exp $";
 #endif
 #endif /* not lint */
 
@@ -260,7 +260,7 @@ main(argc, argv)
 				    optarg);
 			else if (strlen(optarg) >= sizeof(sunx.sun_path))
 				fprintf(stderr,
-				    "syslogd: path to long, ignoring %s\n",
+				    "syslogd: path too long, ignoring %s\n",
 				    optarg);
 			else
 				funixn[nfunix++] = optarg;
