@@ -1,4 +1,4 @@
-/*	$OpenBSD: signalvar.h,v 1.9 2002/03/14 01:27:14 millert Exp $	*/
+/*	$OpenBSD: signalvar.h,v 1.10 2003/06/02 23:28:21 millert Exp $	*/
 /*	$NetBSD: signalvar.h,v 1.17 1996/04/22 01:23:31 christos Exp $	*/
 
 /*
@@ -56,6 +56,8 @@ struct	sigacts {
 	struct	sigaltstack ps_sigstk;	/* sp & on stack state variable */
 	int	ps_sig;			/* for core dump/debugger XXX */
 	long	ps_code;		/* for core dump/debugger XXX */
+	int	ps_type;		/* for core dump/debugger XXX */
+	union sigval ps_sigval;		/* for core dump/debugger XXX */
 	sigset_t ps_usertramp;		/* SunOS compat; libc sigtramp XXX */
 	int	ps_refcnt;		/* reference count */
 };
