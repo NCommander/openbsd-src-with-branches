@@ -1,4 +1,4 @@
-/*	$OpenBSD: dump.h,v 1.5 1997/07/05 05:35:54 millert Exp $	*/
+/*	$OpenBSD: dump.h,v 1.6 1998/02/08 19:24:07 deraadt Exp $	*/
 /*	$NetBSD: dump.h,v 1.11 1997/06/05 11:13:20 lukem Exp $	*/
 
 /*-
@@ -149,6 +149,7 @@ void	interrupt __P((int signo));	/* in case operator bangs on console */
  *	Exit status codes
  */
 #define	X_FINOK		0	/* normal exit */
+#define	X_STARTUP	1	/* startup error */
 #define	X_REWRITE	2	/* restart writing from the check point */
 #define	X_ABORT		3	/* abort dump; don't attempt checkpointing */
 
