@@ -1,4 +1,4 @@
-#	$OpenBSD: bsd.own.mk,v 1.43 2001/05/05 15:20:28 millert Exp $
+#	$OpenBSD: bsd.own.mk,v 1.44 2001/05/08 17:30:42 aaron Exp $
 #	$NetBSD: bsd.own.mk,v 1.24 1996/04/13 02:08:09 thorpej Exp $
 
 # Host-specific overrides
@@ -104,7 +104,7 @@ STATIC?=	-static
 
 # don't try to generate PIC versions of libraries on machines
 # which don't support PIC.
-.if (${MACHINE_ARCH} == "alpha") || (${MACHINE_ARCH} == "vax") || \
+.if (${MACHINE_ARCH} == "vax") || \
     (${MACHINE_ARCH} == "hppa") || (${MACHINE_ARCH} == "m88k")
 NOPIC=
 .endif
