@@ -1,4 +1,4 @@
-/*	$OpenBSD: elf.c,v 1.10 2004/10/09 20:26:57 mickey Exp $	*/
+/*	$OpenBSD: elf.c,v 1.11 2004/10/10 16:41:18 mickey Exp $	*/
 
 /*
  * Copyright (c) 2003 Michael Shalayeff
@@ -25,6 +25,10 @@
  * IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
+
+#ifndef lint
+static const char rcsid[] = "$OpenBSD$";
+#endif /* not lint */
 
 #include <sys/param.h>
 #include <sys/mman.h>
