@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.5 2004/03/11 22:16:50 deraadt Exp $
+#	$OpenBSD: Makefile,v 1.6 2005/03/11 15:40:58 deraadt Exp $
 
 CBIN=		instbin
 ARCHDIR=	${.CURDIR}/..
@@ -60,6 +60,7 @@ ${CDROM}: bsd ${CDBOOT}
 	vnconfig -v -c ${VND} ${.OBJDIR}/${CDROM}
 	disklabel -w ${VND} fakecdrom "OpenBSD/hppa    "
 	vnconfig -u ${VND}
+	dd if=/dev/zero bs=64k count=1 >> ${.OBJDIR}/${CDROM}
 
 obsd:
 	cd ${SRCDIR}/sys/arch/${MACHINE}/conf && config ${KERNEL}
