@@ -12,7 +12,7 @@
  */
 
 #include "includes.h"
-RCSID("$OpenBSD: buffer.c,v 1.10 2001/01/21 19:05:45 markus Exp $");
+RCSID("$OpenBSD: buffer.c,v 1.11 2001/04/05 21:02:46 markus Exp $");
 
 #include "xmalloc.h"
 #include "buffer.h"
@@ -156,5 +156,5 @@ buffer_dump(Buffer *buffer)
 
 	for (i = buffer->offset; i < buffer->end; i++)
 		fprintf(stderr, " %02x", ucp[i]);
-	fprintf(stderr, "\n");
+	fprintf(stderr, "\r\n");
 }
