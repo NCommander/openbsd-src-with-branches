@@ -1,4 +1,4 @@
-/*	$OpenBSD: locore.s,v 1.17 1997/07/27 09:10:55 deraadt Exp $ */
+/*	$OpenBSD: locore.s,v 1.18 1998/03/01 00:37:41 niklas Exp $ */
 
 /*
  * Copyright (c) 1995 Theo de Raadt
@@ -72,6 +72,7 @@
  */
 
 #include "assym.h"
+#include "ksyms.h"
 #include <machine/asm.h>
 #include <machine/prom.h>
 
@@ -385,7 +386,7 @@ Lstart1:
 	movl	d1,a0@			| and physmem
 /* configure kernel and proc0 VA space so we can get going */
 	.globl	_Sysseg, _pmap_bootstrap, _avail_start
-#ifdef DDB
+#if defined(DDB) || NKSYMS > 0
 	RELOC(_esym,a0)			| end of static kernel test/data/syms
 	movl	a0@,d2
 	jne	Lstart2
