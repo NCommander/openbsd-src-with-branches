@@ -1,4 +1,4 @@
-#	$OpenBSD: files.isa,v 1.71 2001/10/04 21:48:56 gluk Exp $
+#	$OpenBSD: files.isa,v 1.72 2001/12/05 10:29:45 mickey Exp $
 #	$NetBSD: files.isa,v 1.21 1996/05/16 03:45:55 mycroft Exp $
 #
 # Config file and device description for machine-independent ISA code.
@@ -95,6 +95,10 @@ file	dev/isa/pcdisplay.c	pcdisplay	needs-flag
 device	bt: scsi, isa_dma
 attach	bt at isa
 file	dev/isa/bt.c			bt needs-count
+
+# 
+attach	bha at isa with bha_isa: isa_dma
+file	dev/isa/bha_isa.c		bha_isa
 
 # Adaptec AIC-6[32]60 ICs
 attach	aic at isa with aic_isa: isa_dma
