@@ -1,4 +1,4 @@
-#	$OpenBSD: GENERIC,v 1.156 2000/02/01 17:17:33 fgsch Exp $
+#	$OpenBSD: SIMPLE,v 1.1.2.1 2000/02/20 10:32:15 niklas Exp $
 #
 #	SIMPLE - Niklas Hallqvist's SMP box
 #
@@ -12,7 +12,7 @@ option		I486_CPU
 option		I586_CPU
 option		I686_CPU
 option		GPL_MATH_EMULATE	# floating point emulation
-option		SMP		# Multiple processor support
+option		MULTIPROCESSOR	# Multiple processor support
 
 option		VM86		# Virtual 8086 emulation
 option		UVM		# use the UVM virtual memory system
