@@ -152,8 +152,6 @@ ufs_mknod(v)
 				 } */ *ap = v;
 	struct vattr *vap = ap->a_vap;
         struct vnode **vpp = ap->a_vpp;
-	struct mount *mp;	
-	ino_t	     ino;
 	struct inode *ip;
 	int error;
 
@@ -179,11 +177,7 @@ ufs_mknod(v)
 	vput(*vpp);
 	(*vpp)->v_type = VNON;
 	vgone(*vpp);
-	error = VFS_VGET(mp, ino, vpp);
-	if (error != 0) {
-		*vpp = NULL;
-		return (error);
-	}
+	*vpp = 0;
 	return (0);
 }
 
@@ -1574,8 +1568,7 @@ ufs_symlink(v)
 		error = vn_rdwr(UIO_WRITE, vp, ap->a_target, len, (off_t)0,
 		    UIO_SYSSPACE, IO_NODELOCKED, ap->a_cnp->cn_cred, NULL,
 		    (struct proc *)0);
-	if (error)
-		vput(vp);
+	vput(vp);
 	return (error);
 }
 
