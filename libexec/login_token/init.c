@@ -1,4 +1,4 @@
-/*	$OpenBSD: init.c,v 1.1 2000/12/20 01:41:53 millert Exp $	*/
+/*	$OpenBSD: init.c,v 1.2 2003/07/10 00:04:28 david Exp $	*/
 
 /*-
  * Copyright (c) 1996 Berkeley Software Design, Inc. All rights reserved.
@@ -109,7 +109,6 @@ token_mode(char *mode)
 	for (i = 0; i < sizeof(modes)/sizeof(modes[0]); ++i)
 		if (strstr(mode, modes[i].name) != NULL)
 			return (tt->modes & modes[i].value);
-				return (0);
 	return (0);
 }
 
