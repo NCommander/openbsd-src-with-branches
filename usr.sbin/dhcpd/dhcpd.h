@@ -1,4 +1,4 @@
-/*	$OpenBSD: dhcpd.h,v 1.14 2004/09/16 09:35:24 claudio Exp $ */
+/*	$OpenBSD: dhcpd.h,v 1.15 2004/09/16 18:35:43 deraadt Exp $ */
 
 /*
  * Copyright (c) 1995, 1996, 1997, 1998, 1999
@@ -720,7 +720,6 @@ void maybe_setup_fallback(void);
 /* dispatch.c */
 extern struct interface_info *interfaces;
 extern struct protocol *protocols;
-extern int quiet_interface_discovery;
 extern void (*bootp_packet_handler)(struct interface_info *,
     struct dhcp_packet *, int, unsigned int, struct iaddr, struct hardware *);
 extern struct timeout *timeouts;
