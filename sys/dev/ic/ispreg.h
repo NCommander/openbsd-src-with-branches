@@ -1,4 +1,4 @@
-/* $OpenBSD: $ */
+/*	$OpenBSD: ispreg.h,v 1.2 1999/03/17 05:26:09 mjacob Exp $ */
 /* release_03_16_99 */
 /*
  * Machine Independent (well, as best as possible) register

@@ -1,4 +1,4 @@
-/* $OpenBSD: $ */
+/* 	$OpenBSD: isp.c,v 1.4 1999/03/17 05:26:08 mjacob Exp $ */
 /* release_03_16_99 */
 /*
  * Machine and OS Independent (well, as best as possible)
