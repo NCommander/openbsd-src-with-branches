@@ -1,4 +1,4 @@
-/*	$OpenBSD: ctu.c,v 1.4 2000/04/27 01:10:11 bjc Exp $ */
+/*	$OpenBSD: ctu.c,v 1.5 2002/03/14 01:26:48 millert Exp $ */
 /*	$NetBSD: ctu.c,v 1.10 2000/03/23 06:46:44 thorpej Exp $ */
 /*
  * Copyright (c) 1996 Ludd, University of Lule}, Sweden.
@@ -181,7 +181,9 @@ ctustrategy(bp)
 #endif
 
 	if (bp->b_blkno >= 512) {
+		s = splbio();
 		biodone(bp);
+		splx(s);
 		return;
 	}
 	bp->b_rawblkno = bp->b_blkno;
