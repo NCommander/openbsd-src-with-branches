@@ -1,4 +1,4 @@
-/*	$OpenBSD: bioscons.c,v 1.23 2003/07/07 07:42:51 weingart Exp $	*/
+/*	$OpenBSD: bioscons.c,v 1.24 2003/08/11 06:23:09 deraadt Exp $	*/
 
 /*
  * Copyright (c) 1997-1999 Michael Shalayeff
@@ -174,7 +174,7 @@ comspeed(dev_t dev, int sp)
 		err = -err;
 	if (err > COM_TOLERANCE)
 		return -1;
-#undef  divrnd(n, q)
+#undef  divrnd
 
 	if (cn_tab && cn_tab->cn_dev == dev && com_speed != sp)
 	{
