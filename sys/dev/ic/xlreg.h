@@ -1,4 +1,4 @@
-/*	$OpenBSD: xlreg.h,v 1.16 2003/06/29 16:39:02 jason Exp $	*/
+/*	$OpenBSD: xlreg.h,v 1.17 2003/10/21 18:58:50 jmc Exp $	*/
 
 /*
  * Copyright (c) 1997, 1998
@@ -723,10 +723,6 @@ struct xl_stats {
 #define XL_PSTATE_D3		0x0003
 #define XL_PME_EN		0x0010
 #define XL_PME_STATUS		0x8000
-
-#ifndef ETHER_ALIGN
-#define ETHER_ALIGN 2
-#endif
 
 extern int xl_intr(void *);
 extern void xl_attach(struct xl_softc *);
