@@ -1,4 +1,4 @@
-/* $OpenBSD: pfkeyv2.c,v 1.78 2002/01/23 00:39:48 art Exp $ */
+/* $OpenBSD: pfkeyv2.c,v 1.79 2002/01/23 01:33:07 art Exp $ */
 
 /*
  *	@(#)COPYRIGHT	1.1 (NRL) 17 January 1995
@@ -2015,8 +2015,8 @@ pfkeyv2_acquire(struct ipsec_policy *ipo, union sockaddr_union *gw,
             if (!strncasecmp(ipsec_def_comp, "deflate", sizeof("deflate")))
             {
                 sadb_comb->sadb_comb_encrypt = SADB_X_CALG_DEFLATE;
-                sadb_comb->sadb_comb_encrypt = 0;
-                sadb_comb->sadb_comb_encrypt = 0;
+                sadb_comb->sadb_comb_encrypt_minbits = 0;
+                sadb_comb->sadb_comb_encrypt_maxbits = 0;
             }
         }
 
