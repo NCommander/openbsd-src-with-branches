@@ -1,4 +1,4 @@
-/*	$OpenBSD: locore.S,v 1.57 2002/03/12 07:35:06 mickey Exp $	*/
+/*	$OpenBSD: locore.S,v 1.58 2002/03/12 21:36:47 mickey Exp $	*/
 
 /*
  * Copyright (c) 1998-2002 Michael Shalayeff
@@ -293,8 +293,9 @@ $qisnowon
 	nop
 
 $virtual_mode
+	addi	1, r0, t2
 	ldil	L%kernelmapped, t1
-	stw	t1, R%kernelmapped(t1)
+	stw	t2, R%kernelmapped(t1)
 
 #ifdef DDB
 	.import	Debugger, code
