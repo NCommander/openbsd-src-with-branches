@@ -1,4 +1,4 @@
-/*	$OpenBSD: pf.c,v 1.113 2001/07/15 23:05:04 dhartmei Exp $ */
+/*	$OpenBSD: pf_norm.c,v 1.1 2001/07/17 20:35:26 provos Exp $ */
 
 /*
  * Copyright 2001 Niels Provos <provos@citi.umich.edu>
@@ -510,6 +510,13 @@ pf_normalize_ip(struct mbuf **m0, int dir, struct ifnet *ifp, u_short *reason)
 	if (dir != PF_OUT)
 		return (PF_PASS);
 
+	/* At this point, only IP_DF is allowed in ip_off */
+	if (r->rule_flag & PFRULE_NODF)
+		h->ip_off = 0;
+	else
+		h->ip_off &= IP_DF;
+
+	
 	return (PF_PASS);
 
  drop:
