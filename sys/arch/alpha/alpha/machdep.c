@@ -1,4 +1,4 @@
-/* $OpenBSD: machdep.c,v 1.56 2001/11/06 19:53:13 miod Exp $ */
+/* $OpenBSD: machdep.c,v 1.57 2001/11/07 01:18:00 art Exp $ */
 /* $NetBSD: machdep.c,v 1.210 2000/06/01 17:12:38 thorpej Exp $ */
 
 /*-
@@ -1120,11 +1120,7 @@ boot(howto)
 	splhigh();
 
 	/* If rebooting and a dump is requested do it. */
-#if 0
-	if ((howto & (RB_DUMP | RB_HALT)) == RB_DUMP)
-#else
 	if (howto & RB_DUMP)
-#endif
 		dumpsys();
 
 haltsys:

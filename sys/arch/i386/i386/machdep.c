@@ -1,4 +1,4 @@
-/*	$OpenBSD: machdep.c,v 1.181 2001/11/07 01:18:00 art Exp $	*/
+/*	$OpenBSD: machdep.c,v 1.182 2001/11/09 15:25:55 art Exp $	*/
 /*	$NetBSD: machdep.c,v 1.214 1996/11/10 03:16:17 thorpej Exp $	*/
 
 /*-
@@ -1603,7 +1603,7 @@ boot(howto)
 	splhigh();
 
 	/* Do a dump if requested. */
-	if ((howto & (RB_DUMP | RB_HALT)) == RB_DUMP) {
+	if (howto & RB_DUMP) {
 		/* Save registers. */
 		savectx(&dumppcb);
 
