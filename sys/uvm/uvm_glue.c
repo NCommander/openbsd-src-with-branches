@@ -1,4 +1,4 @@
-/*	$OpenBSD: uvm_glue.c,v 1.31 2001/12/19 08:58:07 art Exp $	*/
+/*	$OpenBSD: uvm_glue.c,v 1.32 2002/03/14 01:27:18 millert Exp $	*/
 /*	$NetBSD: uvm_glue.c,v 1.44 2001/02/06 19:54:44 eeh Exp $	*/
 
 /* 
@@ -450,7 +450,7 @@ loop:
 	 * we have found swapped out process which we would like to bring
 	 * back in.
 	 *
-	 * XXX: this part is really bogus cuz we could deadlock on memory
+	 * XXX: this part is really bogus because we could deadlock on memory
 	 * despite our feeble check
 	 */
 	if (uvmexp.free > atop(USPACE)) {

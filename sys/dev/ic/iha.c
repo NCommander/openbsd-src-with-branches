@@ -1,4 +1,4 @@
-/*	$OpenBSD: iha.c,v 1.12 2001/11/11 21:59:19 krw Exp $ */
+/*	$OpenBSD: iha.c,v 1.13 2002/03/14 01:26:54 millert Exp $ */
 /*
  * Initio INI-9xxxU/UW SCSI Device Driver
  *
@@ -634,7 +634,7 @@ iha_find_pend_scb(sc)
 				/*
 				 * OK to do a non-tagged request sense
 				 * even if a non-tagged I/O has been
-				 * started, 'cuz we don't allow any
+				 * started, because we don't allow any
 				 * disconnect during a request sense op
 				 */
 				break;
