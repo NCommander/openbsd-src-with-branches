@@ -40,8 +40,6 @@
  *	@(#)union.h	8.9 (Berkeley) 12/10/94
  */
 
-struct vfsconf;
-
 struct union_args {
 	char		*target;	/* Target of loopback  */
 	int		mntflags;	/* Options on the mount */
@@ -131,7 +129,7 @@ extern void union_newsize __P((struct vnode *, off_t, off_t));
 extern int (**union_vnodeop_p) __P((void *));
 extern struct vfsops union_vfsops;
 
-int union_init __P((struct vfsconf *));
+void union_init __P((void));
 int union_freevp __P((struct vnode *));
 
 #endif /* _KERNEL */
