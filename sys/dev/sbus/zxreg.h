@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: zxreg.h,v 1.1 2003/03/09 01:46:37 miod Exp $	*/
 /*	$NetBSD: zxreg.h,v 1.1 2002/09/13 14:03:53 ad Exp $	*/
 
 /*
