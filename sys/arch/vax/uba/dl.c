@@ -1,3 +1,4 @@
+/*	$OpenBSD: dl.c,v 1.1 1997/02/04 19:13:18 ragge Exp $	*/
 /*	$NetBSD: dl.c,v 1.1 1997/02/04 19:13:18 ragge Exp $	*/
 /*
  * Copyright (c) 1997  Ben Harris.  All rights reserved.
