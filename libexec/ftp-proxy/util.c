@@ -1,4 +1,4 @@
-/*	$OpenBSD: util.c,v 1.11 2002/12/19 01:27:56 deraadt Exp $ */
+/*	$OpenBSD: util.c,v 1.13 2002/12/19 18:19:10 deraadt Exp $ */
 
 /*
  * Copyright (c) 1996-2001
@@ -53,7 +53,6 @@
 #include <stdarg.h>
 #include <sysexits.h>
 #include <syslog.h>
-#include <tcpd.h>
 #include <unistd.h>
 
 #include "util.h"
