@@ -1,4 +1,4 @@
-/*	$OpenBSD: echo.c,v 1.26 2003/04/16 17:30:49 millert Exp $	*/
+/*	$OpenBSD: echo.c,v 1.27 2004/01/21 00:46:38 vincent Exp $	*/
 
 /*
  *	Echo line reading and writing.
@@ -758,12 +758,12 @@ copy_list(LIST *lp)
 			for (current = last; current; current = nxt) {
 				nxt = current->l_next;
 				free(current);
-				return (NULL);
 			}
+			return (NULL);
 		}
 		current->l_next = last;
 		current->l_name = lp->l_name;
-		last = (LIST *)current;
+		last = current;
 		lp = lp->l_next;
 	}
 	return (last);
