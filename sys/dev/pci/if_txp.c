@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_txp.c,v 1.40 2001/06/05 02:15:19 jason Exp $	*/
+/*	$OpenBSD: if_txp.c,v 1.41 2001/06/12 15:40:31 niklas Exp $	*/
 
 /*
  * Copyright (c) 2001
@@ -1060,7 +1060,7 @@ txp_dma_malloc(sc, size, dma, mapflags)
 	struct txp_dma_alloc *dma;
 	int mapflags;
 {
-        int r;
+	int r;
 
 	if ((r = bus_dmamem_alloc(sc->sc_dmat, size, PAGE_SIZE, 0,
 	    &dma->dma_seg, 1, &dma->dma_nseg, 0)) != 0)
