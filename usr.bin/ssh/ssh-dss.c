@@ -23,7 +23,7 @@
  */
 
 #include "includes.h"
-RCSID("$OpenBSD: ssh-dss.c,v 1.16 2002/07/04 04:15:33 deraadt Exp $");
+RCSID("$OpenBSD: ssh-dss.c,v 1.17 2002/07/04 10:41:47 markus Exp $");
 
 #include <openssl/bn.h>
 #include <openssl/evp.h>
@@ -34,7 +34,6 @@ RCSID("$OpenBSD: ssh-dss.c,v 1.16 2002/07/04 04:15:33 deraadt Exp $");
 #include "compat.h"
 #include "log.h"
 #include "key.h"
-#include "ssh-dss.h"
 
 #define INTBLOB_LEN	20
 #define SIGBLOB_LEN	(2*INTBLOB_LEN)
