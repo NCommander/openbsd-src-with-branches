@@ -1,10 +1,10 @@
-#	$OpenBSD: Makefile,v 1.4.4.1 1996/10/16 08:51:13 mickey Exp $
+#	$OpenBSD: Makefile,v 1.4.4.2 1996/10/16 10:20:45 mickey Exp $
 #	@(#)Makefile	7.9 (Berkeley) 5/8/91
 
 S	= ${.CURDIR}/../../..
 I386	= ${.CURDIR}/..
 STAND=	/sys/stand
-INCPATH=-I. -I${SADIR} -I${S}
+INCPATH=-I${SADIR} -I${S} -I${.CURDIR}/libsa
 VPATH=	${STAND}
 STANDDIR= ${DESTDIR}/usr/mdec
 
@@ -28,10 +28,9 @@ SAREL=
 LDADD=		${SALIB}
 DPADD=		${SALIB}
 
-SRCS=	srt0.S boot.c fs.c dev.c biosdev.c bios.S ${ZLIB} version.c
+SRCS=	boot.c conf.c biosdev.c bios.S ${ZLIB} version.c
 
-OBJS=	srt0.o boot.o zlib.o
-OBJS+=	fs.o dev.o biosdev.o bios.o netif.o
+OBJS=	boot.o zlib.o conf.o
 #clock.o
 
 .PATH: ${S}/net
@@ -53,7 +52,7 @@ srt0.o: ${.CURDIR}/srt0.S
 # getting booted from disc
 
 boot:	${OBJS} ${DPADD} version.o
-	${LD} -o $@ -N -T 0x90000 ${OBJS} ${LDADD} version.o
+	${LD} -o $@ -N -T 0x10000 ${OBJS} ${LDADD} version.o
 	size $@
 	ls -l $@
 

@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: boot.c,v 1.3.4.2 1996/10/16 10:20:48 mickey Exp $	*/
 /*	$NetBSD: boot.c,v 1.6 1994/10/27 04:21:49 cgd Exp $	*/
 
 /*-
@@ -52,9 +52,10 @@ static char rcsid[] = "$NetBSD: boot.c,v 1.6 1994/10/27 04:21:49 cgd Exp $";
 
 #include <sys/param.h>
 #include <sys/reboot.h>
+#include <sys/stat.h>
 #include <a.out.h>
 #include <sys/disklabel.h>
-#include <stand.h>
+#include <libsa.h>
 
 /*
  * Boot program, loaded by boot block from remaing 7.5K of boot area.
@@ -70,11 +71,9 @@ char *kernels[] = { "bsd.z", "obsd.z", "bsd.old.z",
 
 int	retry = 0;
 extern struct disklabel disklabel;
-extern	int bootdev, boothowto, cyloffset;
-extern	int cnvmem, extmem;
 extern	char version[];
 static unsigned char *biosparams = (char *) 0x9ff00; /* XXX */
-int	esym;
+int	cnvmem, extmem;
 
 #ifndef HZ
 #define HZ 100
@@ -115,6 +114,8 @@ boot(dev, unit, off)
 		"use ? for file list, or carriage return for defaults\n"
 		"use hd(1,a)/bsd to boot sd0 when wd0 is also installed\n",
 		cnvmem, extmem, version);
+
+	asm("hlt");
 
 	if (lp->d_magic == DISKMAGIC) {
 	    /*
