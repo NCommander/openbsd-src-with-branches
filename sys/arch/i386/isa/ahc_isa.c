@@ -1,4 +1,4 @@
-/*	$OpenBSD: ahc_isa.c,v 1.11 2003/08/15 23:01:00 fgsch Exp $	*/
+/*	$OpenBSD: ahc_isa.c,v 1.12 2003/12/24 23:39:40 krw Exp $	*/
 /*	$NetBSD: ahc_isa.c,v 1.5 1996/10/21 22:27:39 thorpej Exp $	*/
 
 /*
@@ -397,7 +397,7 @@ ahc_isa_attach(parent, self, aux)
 	    ahc->pause & IRQMS ?  "Level Sensitive" : "Edge Triggered");
 #endif
 
-	if (ahc_reset(ahc) != 0)
+	if (ahc_reset(ahc, /*reinit*/FALSE) != 0)
 		return;
 	
 	/* See if we are edge triggered */

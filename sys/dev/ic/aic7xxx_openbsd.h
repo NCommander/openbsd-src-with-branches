@@ -1,4 +1,4 @@
-/*	$OpenBSD: aic7xxx_openbsd.h,v 1.10 2003/12/28 21:29:27 krw Exp $	*/
+/*	$OpenBSD: aic7xxx_openbsd.h,v 1.11 2004/01/17 14:40:55 krw Exp $	*/
 /*	$NetBSD: aic7xxx_osm.h,v 1.7 2003/11/02 11:07:44 wiz Exp $	*/
 
 /*
@@ -373,13 +373,6 @@ ahc_get_sense_bufsize(struct ahc_softc *ahc, struct scb *scb)
 static __inline void
 ahc_freeze_scb(struct scb *scb)
 {
-	struct scsi_xfer *xs = scb->xs;
-	int target;
-
-	target = xs->sc_link->target;
-	if (!(scb->flags & SCB_FREEZE_QUEUE)) {
-		scb->flags |= SCB_FREEZE_QUEUE;
-	}
 }
 
 static __inline void
