@@ -295,8 +295,7 @@ CondDoDefined (argLen, arg)
     } else {
 	result = FALSE;
     }
-    if (p1)
-	free(p1);
+    efree(p1);
     arg[argLen] = savec;
     return (result);
 }

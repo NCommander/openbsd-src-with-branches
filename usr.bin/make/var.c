@@ -1236,17 +1236,20 @@ VarModify (str, modProc, datum)
     Boolean 	  addSpace; 	    /* TRUE if need to add a space to the
 				     * buffer before adding the trimmed
 				     * word */
-    char **av;			    /* word list [first word does not count] */
+    char **av;			    /* word list */
+    char *as;			    /* word list memory */
     int ac, i;
 
     buf = Buf_Init (0);
     addSpace = FALSE;
 
-    av = brk_string(str, &ac, FALSE);
+    av = brk_string(str, &ac, FALSE, &as);
 
-    for (i = 1; i < ac; i++)
+    for (i = 0; i < ac; i++)
 	addSpace = (*modProc)(av[i], addSpace, buf, datum);
 
+    free(as);
+    free(av);
     Buf_AddByte (buf, '\0');
     str = (char *)Buf_GetAll (buf, (int *)NULL);
     Buf_Destroy (buf, FALSE);
@@ -1261,7 +1264,7 @@ VarModify (str, modProc, datum)
  *	uninterpreted) and 2) unescaped $'s that aren't before
  *	the delimiter (expand the variable substitution).
  *	Return the expanded string or NULL if the delimiter was missing
- *	If pattern is specified, handle escaped ampersants, and replace
+ *	If pattern is specified, handle escaped ampersands, and replace
  *	unescaped ampersands with the lhs of the pattern.
  *
  * Results:

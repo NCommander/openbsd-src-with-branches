@@ -129,7 +129,7 @@ MakeTimeStamp (pgn, cgn)
     ClientData pgn;	/* the current parent */
     ClientData cgn;	/* the child we've just examined */
 {
-    return (Make_TimeStamp((GNode *) pgn, (GNode *) cgn));
+    return Make_TimeStamp((GNode *) pgn, (GNode *) cgn);
 }
 
 /*-
@@ -376,7 +376,7 @@ MakeHandleUse (pgn, cgn)
     ClientData pgn;	/* the current parent */
     ClientData cgn;	/* the child we've just examined */
 {
-    return (Make_HandleUse((GNode *) pgn, (GNode *) cgn));
+    return Make_HandleUse((GNode *) pgn, (GNode *) cgn);
 }
 
 /*-
@@ -414,8 +414,7 @@ Make_Update (cgn)
     char *p1;
 
     cname = Var_Value (TARGET, cgn, &p1);
-    if (p1)
-	free(p1);
+    efree(p1);
 
     /*
      * If the child was actually made, see what its modification time is
@@ -544,8 +543,7 @@ Make_Update (cgn)
 		Var_Set (PREFIX, cpref, pgn);
 	    }
 	}
-	if (p1)
-	    free(p1);
+	efree(p1);
 	Lst_Close (cgn->iParents);
     }
 }
@@ -616,8 +614,7 @@ MakeAddAllSrc (cgnp, pgnp)
 	     */
 	    Var_Append(OODATE, child, pgn);
 	}
-	if (p1)
-	    free(p1);
+	efree(p1);
     }
     return (0);
 }
@@ -660,8 +657,7 @@ Make_DoAllVar (gn)
     if (gn->type & OP_JOIN) {
 	char *p1;
 	Var_Set (TARGET, Var_Value (ALLSRC, gn, &p1), gn);
-	if (p1)
-	    free(p1);
+	efree(p1);
     }
 }
 
@@ -906,7 +902,7 @@ Make_Run (targs)
 	(void)MakeStartJobs();
     }
 
-    errors = Job_End();
+    errors = Job_Finish();
 
     /*
      * Print the final status of each target. E.g. if it wasn't made
