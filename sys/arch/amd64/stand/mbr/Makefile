@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.1 2004/02/03 12:09:47 mickey Exp $
+#	$OpenBSD: Makefile,v 1.2 2004/05/17 22:49:46 drahn Exp $
 #
 
 PROG=	mbr
@@ -20,7 +20,7 @@ S=	${.CURDIR}/../../../..
 
 ${PROG}: $(OBJS) $(DPADD)
 	$(LD) $(LDFLAGS) -o $(PROG) $(OBJS) $(LDADD)
-	#@size $(PROG)
+	@size $(PROG)
 	@if [ -x ${.OBJDIR}/${PROG} ]; then \
 		objcopy -O binary ${PROG} ${.OBJDIR}/.tmp;\
 		mv -f ${.OBJDIR}/.tmp ${.OBJDIR}/${PROG}; \

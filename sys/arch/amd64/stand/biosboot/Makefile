@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.1 2004/02/03 12:09:47 mickey Exp $
+#	$OpenBSD: Makefile,v 1.2 2004/05/17 22:49:46 drahn Exp $
 
 MAN=	biosboot.8
 
@@ -14,7 +14,7 @@ SADIR=	${.CURDIR}/..
 ${PROG}: $(OBJS) $(DPADD)
 	@rm -f $(PROG)
 	$(LD) $(LDFLAGS) -o $(PROG) $(OBJS) $(LDADD)
-	#@size $(PROG)
+	@size $(PROG)
 
 CPPFLAGS+=-DLOADADDR=$(LOADADDR) -DLINKADDR=$(LINKADDR) -DBOOTMAGIC=$(BOOTMAGIC)
 CPPFLAGS+=${DEBUGFLAGS}
