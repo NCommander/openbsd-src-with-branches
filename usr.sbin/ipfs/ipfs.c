@@ -1,4 +1,4 @@
-/*	$OpenBSD: ipfs.c,v 1.1 2001/01/17 06:31:07 fgsch Exp $	*/
+/*	$OpenBSD: ipfs.c,v 1.2 2001/01/17 07:26:58 fgsch Exp $	*/
 
 /*
  * Copyright (C) 1999 by Darren Reed.
@@ -36,7 +36,7 @@
 #include <netdb.h>
 #include <arpa/nameser.h>
 #include <resolv.h>
-#include <netinet/ip_compat.h>
+#include <netinet/ip_fil_compat.h>
 #include <netinet/ip_fil.h>
 #include <netinet/ip_nat.h>
 #include <netinet/ip_state.h>
