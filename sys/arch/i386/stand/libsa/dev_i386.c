@@ -1,4 +1,4 @@
-/*	$OpenBSD: dev_i386.c,v 1.6 1997/04/08 22:48:28 mickey Exp $	*/
+/*	$OpenBSD: dev_i386.c,v 1.7 1997/04/15 03:31:06 mickey Exp $	*/
 
 /*
  * Copyright (c) 1996 Michael Shalayeff
@@ -34,6 +34,8 @@
 
 #include <libsa.h>
 #include "biosdev.h"
+
+extern int debug;
 
 const char bdevs[19][4] = {
 	"wd", "", "fd", "wt", "sd", "st", "cd", "mcd",
