@@ -3281,10 +3281,9 @@ pmap_physpage_alloc(int usage, paddr_t *pap)
 	 * properly initialize it in the constructor.
 	 */
 
-	pg = uvm_pagealloc(NULL, 0, NULL, UVM_PGA_USERESERVE);
+	pg = uvm_pagealloc(NULL, 0, NULL, usage == PGU_L1PT ?
+	    UVM_PGA_USERESERVE : UVM_PGA_USERESERVE|UVM_PGA_ZERO);
 	if (pg != NULL) {
-		if (usage != PGU_L1PT)
-			uvm_pagezero(pg);
 		pa = VM_PAGE_TO_PHYS(pg);
 
 		pvh = pa_to_pvh(pa);
