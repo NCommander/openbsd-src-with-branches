@@ -1202,7 +1202,7 @@ ccdioctl(dev, cmd, data, flag, p)
 		ccd.ccd_interleave = ccio->ccio_ileave;
 		ccd.ccd_flags = ccio->ccio_flags & CCDF_USERMASK;
 
-		/* XXX the new code is unstable yet */
+		/* XXX the new code is unstable still */
 		ccd.ccd_flags |= CCDF_OLD;
 
 		/*
