@@ -1,4 +1,4 @@
-/*	$OpenBSD: kern_prot.c,v 1.2 1996/03/03 17:19:52 niklas Exp $	*/
+/*	$OpenBSD: kern_prot.c,v 1.3 1996/08/01 05:26:02 tholo Exp $	*/
 /*	$NetBSD: kern_prot.c,v 1.33 1996/02/09 18:59:42 christos Exp $	*/
 
 /*
@@ -122,6 +122,18 @@ sys_geteuid(p, v, retval)
 {
 
 	*retval = p->p_ucred->cr_uid;
+	return (0);
+}
+
+/* ARGSUSED */
+int
+sys_issetugid(p, v, retval)
+	struct proc *p;
+	void *v;
+	register_t *retval;
+{
+	if (p->p_flag & P_SUGIDEXEC)
+		return (1);
 	return (0);
 }
 
