@@ -35,7 +35,7 @@
 
 #include "includes.h"
 #include <sys/queue.h>
-RCSID("$OpenBSD: ssh-agent.c,v 1.116 2003/11/21 11:57:03 djm Exp $");
+RCSID("$OpenBSD: ssh-agent.c,v 1.117 2003/12/02 17:01:15 markus Exp $");
 
 #include <openssl/evp.h>
 #include <openssl/md5.h>
@@ -50,7 +50,6 @@ RCSID("$OpenBSD: ssh-agent.c,v 1.116 2003/11/21 11:57:03 djm Exp $");
 #include "authfd.h"
 #include "compat.h"
 #include "log.h"
-#include "readpass.h"
 #include "misc.h"
 
 #ifdef SMARTCARD
