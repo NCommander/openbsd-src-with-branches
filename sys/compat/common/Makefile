@@ -1,10 +1,10 @@
-#	$OpenBSD$
+#	$OpenBSD: Makefile,v 1.3 1996/02/26 23:26:48 niklas Exp $
 #	$NetBSD: Makefile,v 1.7 1996/02/05 01:58:28 christos Exp $
 
 LIB=	compat
 NOPIC=
 
-CPPFLAGS=	${COMPATCPPFLAGS:S@-I.@-I${COMPATREL}.@g}
+CPPFLAGS=	${COMPATCPPFLAGS:S/-I./-I${COMPATREL}./g}
 
 .PATH:	${COMPATREL}${COMPATDIR}
 
