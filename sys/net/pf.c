@@ -1,4 +1,4 @@
-/*	$OpenBSD: pf.c,v 1.185 2002/01/23 00:39:48 art Exp $ */
+/*	$OpenBSD: pf.c,v 1.186 2002/02/11 16:21:26 dhartmei Exp $ */
 
 /*
  * Copyright (c) 2001 Daniel Hartmeier
@@ -176,8 +176,6 @@ struct pool		 pf_rdr_pl, pf_state_pl, pf_binat_pl;
 
 int			 pf_tree_key_compare(struct pf_tree_key *,
 			    struct pf_tree_key *);
-int			 pf_compare_addr(struct pf_addr *, struct pf_addr *,
-			    u_int8_t);
 void			 pf_addrcpy(struct pf_addr *, struct pf_addr *,
 			    u_int8_t);
 int			 pf_compare_rules(struct pf_rule *,
