@@ -1,4 +1,4 @@
-/*	$OpenBSD: update.c,v 1.13 2004/12/21 18:32:10 jfb Exp $	*/
+/*	$OpenBSD: update.c,v 1.14 2005/01/13 07:04:16 jfb Exp $	*/
 /*
  * Copyright (c) 2004 Jean-Francois Brousseau <jfb@openbsd.org>
  * All rights reserved.
@@ -177,7 +177,6 @@ cvs_update_file(CVSFILE *cf, void *arg)
 			break;
 		case CVS_FST_ADDED:
 		case CVS_FST_MODIFIED:
-			cvs_log(LP_TRACE, "Sending file `%s' to server", fname);
 			ret = cvs_sendreq(root, CVS_REQ_MODIFIED, fname);
 			if (ret == 0)
 				ret = cvs_sendfile(root, fpath);
