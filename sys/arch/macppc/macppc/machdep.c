@@ -1,4 +1,4 @@
-/*	$OpenBSD: machdep.c,v 1.10 2001/11/05 22:26:57 drahn Exp $	*/
+/*	$OpenBSD: machdep.c,v 1.11 2001/11/06 19:53:15 miod Exp $	*/
 /*	$NetBSD: machdep.c,v 1.4 1996/10/16 19:33:11 ws Exp $	*/
 
 /*
@@ -544,7 +544,7 @@ cpu_startup()
 	 */
 	sz = MAXBSIZE * nbuf;
 	if (uvm_map(kernel_map, (vaddr_t *) &buffers, round_page(sz),
-		    NULL, UVM_UNKNOWN_OFFSET,
+		    NULL, UVM_UNKNOWN_OFFSET, 0,
 		    UVM_MAPFLAG(UVM_PROT_NONE, UVM_PROT_NONE, UVM_INH_NONE,
 				UVM_ADV_NORMAL, 0)) != KERN_SUCCESS)
 		panic("cpu_startup: cannot allocate VM for buffers");
