@@ -1,4 +1,4 @@
-/*	$OpenBSD: wt.c,v 1.14 2001/11/06 00:30:38 art Exp $	*/
+/*	$OpenBSD: wt.c,v 1.15 2002/03/14 01:26:57 millert Exp $	*/
 /*	$NetBSD: wt.c,v 1.33 1996/05/12 23:54:22 mycroft Exp $	*/
 
 /*
@@ -613,7 +613,9 @@ errxit:
 		bp->b_error = EIO;
 	}
 xit:
+	s = splbio();
 	biodone(bp);
+	splx(s);
 	return;
 }
 
