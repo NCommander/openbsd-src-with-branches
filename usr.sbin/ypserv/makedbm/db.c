@@ -1,4 +1,4 @@
-/*	$OpenBSD: db.c,v 1.3 2002/02/13 23:05:48 deraadt Exp $ */
+/*	$OpenBSD: db.c,v 1.4 2002/07/19 02:38:40 deraadt Exp $ */
 
 /*
  * Copyright (c) 1997 Mats O Jansson <moj@stacken.kth.se>
@@ -32,7 +32,7 @@
  */
 
 #ifndef LINT
-static char rcsid[] = "$OpenBSD: db.c,v 1.3 2002/02/13 23:05:48 deraadt Exp $";
+static const char rcsid[] = "$OpenBSD: db.c,v 1.4 2002/07/19 02:38:40 deraadt Exp $";
 #endif
 
 #include <sys/types.h>
