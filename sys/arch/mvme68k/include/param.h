@@ -1,4 +1,4 @@
-/*	$Id$ */
+/*	$OpenBSD$ */
 
 /*
  * Copyright (c) 1988 University of Utah.
@@ -45,7 +45,9 @@
 /*
  * Machine dependent constants for mvme68k, based on HP9000 series 300.
  */
+#define	_MACHINE 	"mvme68k"
 #define	MACHINE 	"mvme68k"
+#define	_MACHINE_ARCH	"m68k"
 #define	MACHINE_ARCH	"m68k"
 #define	MID_MACHINE	MID_M68K
 
