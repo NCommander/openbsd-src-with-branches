@@ -1,4 +1,4 @@
-#	$OpenBSD: files.sgi,v 1.19 1998/05/05 05:44:41 imp Exp $
+#	$OpenBSD: files.sgi,v 1.1 2004/08/06 21:12:18 pefo Exp $
 #
 # maxpartitions must be first item in files.${ARCH}
 #
@@ -74,6 +74,11 @@ file	arch/sgi/localbus/com_lbus.c		com_localbus
 # PC parallel ports (XXX what chip?)
 attach	lpt at macebus with lpt_localbus
 file	arch/sgi/dev/lpt_lbus.c			lpt_localbus
+
+# MACE MAC-110 ethernet
+device	mec: ether, ifnet, ifmedia, mii
+attach	mec at macebus
+file	arch/sgi/dev/if_mec.c			mec
 
 # Raster operations
 include "dev/rasops/files.rasops"
