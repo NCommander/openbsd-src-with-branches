@@ -1,4 +1,4 @@
-/*	$OpenBSD: ftp.c,v 1.40 2001/06/23 22:48:44 millert Exp $	*/
+/*	$OpenBSD: ftp.c,v 1.41 2001/06/26 23:44:00 lebel Exp $	*/
 /*	$NetBSD: ftp.c,v 1.27 1997/08/18 10:20:23 lukem Exp $	*/
 
 /*
@@ -67,7 +67,7 @@
 #if 0
 static char sccsid[] = "@(#)ftp.c	8.6 (Berkeley) 10/27/94";
 #else
-static char rcsid[] = "$OpenBSD: ftp.c,v 1.40 2001/06/23 22:48:44 millert Exp $";
+static char rcsid[] = "$OpenBSD: ftp.c,v 1.41 2001/06/26 23:44:00 lebel Exp $";
 #endif
 #endif /* not lint */
 
@@ -422,9 +422,10 @@ getreply(expecteof)
 			if (dig > 4 && pflag == 1 && isdigit(c))
 				pflag = 2;
 			if (pflag == 2) {
-				if (c != '\r' && c != ')')
-					*pt++ = c;
-				else {
+				if (c != '\r' && c != ')') {
+					if (pt < &pasv[sizeof(pasv) - 1])
+						*pt++ = c;
+				} else {
 					*pt = '\0';
 					pflag = 3;
 				}
