@@ -1,4 +1,4 @@
-/*	$OpenBSD: xmphy.c,v 1.5 2002/03/14 01:26:58 millert Exp $	*/
+/*	$OpenBSD: xmphy.c,v 1.6 2002/05/04 11:30:06 fgsch Exp $	*/
 
 /*
  * Copyright (c) 2000
@@ -44,7 +44,6 @@
 #include <sys/systm.h>
 #include <sys/kernel.h>
 #include <sys/device.h>
-#include <sys/malloc.h>
 #include <sys/socket.h>
 #include <sys/errno.h>
 

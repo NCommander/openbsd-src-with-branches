@@ -1,4 +1,4 @@
-/*	$OpenBSD: amphy.c,v 1.4 2002/04/17 19:30:26 jason Exp $	*/
+/*	$OpenBSD: amphy.c,v 1.5 2004/08/06 09:57:16 pefo Exp $	*/
 
 /*
  * Copyright (c) 1997, 1998, 1999
@@ -44,7 +44,6 @@
 #include <sys/systm.h>
 #include <sys/kernel.h>
 #include <sys/device.h>
-#include <sys/malloc.h>
 #include <sys/socket.h>
 
 #include <net/if.h>

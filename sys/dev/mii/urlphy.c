@@ -1,4 +1,4 @@
-/*	$OpenBSD: urlphy.c,v 1.2 2002/05/07 19:50:01 nate Exp $ */
+/*	$OpenBSD: urlphy.c,v 1.3 2002/06/26 11:29:55 espie Exp $ */
 /*	$NetBSD: urlphy.c,v 1.1 2002/03/28 21:07:53 ichiro Exp $	*/
 /*
  * Copyright (c) 2001, 2002
@@ -41,7 +41,6 @@
 #include <sys/systm.h>
 #include <sys/kernel.h>
 #include <sys/device.h>
-#include <sys/malloc.h>
 #include <sys/socket.h>
 
 #include <net/if.h>

@@ -1,4 +1,4 @@
-/*	$OpenBSD: ukphy_subr.c,v 1.1 1998/11/11 19:34:51 jason Exp $	*/
+/*	$OpenBSD: ukphy_subr.c,v 1.2 1999/12/07 22:01:33 jason Exp $	*/
 /*	$NetBSD: ukphy_subr.c,v 1.2 1998/11/05 04:08:02 thorpej Exp $	*/
 
 /*-
@@ -46,7 +46,6 @@
 #include <sys/systm.h>
 #include <sys/kernel.h>
 #include <sys/device.h>
-#include <sys/malloc.h>
 #include <sys/socket.h>
 
 #include <net/if.h>

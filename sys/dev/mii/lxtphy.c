@@ -1,4 +1,4 @@
-/*	$OpenBSD: lxtphy.c,v 1.8 2002/03/14 01:26:57 millert Exp $	*/
+/*	$OpenBSD: lxtphy.c,v 1.9 2002/05/04 11:30:06 fgsch Exp $	*/
 /*	$NetBSD: lxtphy.c,v 1.19 2000/02/02 23:34:57 thorpej Exp $	*/
 
 /*-
@@ -76,7 +76,6 @@
 #include <sys/systm.h>
 #include <sys/kernel.h>
 #include <sys/device.h>
-#include <sys/malloc.h>
 #include <sys/socket.h>
 #include <sys/errno.h>
 

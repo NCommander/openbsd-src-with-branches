@@ -1,4 +1,4 @@
-/*	$OpenBSD: sqphy.c,v 1.7 2002/03/14 01:26:58 millert Exp $	*/
+/*	$OpenBSD: sqphy.c,v 1.8 2002/05/04 11:30:06 fgsch Exp $	*/
 /*	$NetBSD: sqphy.c,v 1.17 2000/02/02 23:34:57 thorpej Exp $	*/
 
 /*-
@@ -76,7 +76,6 @@
 #include <sys/systm.h>
 #include <sys/kernel.h>
 #include <sys/device.h>
-#include <sys/malloc.h>
 #include <sys/socket.h>
 #include <sys/errno.h>
 

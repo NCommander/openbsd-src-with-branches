@@ -1,4 +1,4 @@
-/*	$OpenBSD: tqphy.c,v 1.4 2002/03/14 01:26:58 millert Exp $	*/
+/*	$OpenBSD: tqphy.c,v 1.5 2002/05/04 11:30:06 fgsch Exp $	*/
 /*	$NetBSD: tqphy.c,v 1.9 2000/02/02 23:34:57 thorpej Exp $	*/
 
 /*
@@ -77,7 +77,6 @@
 #include <sys/systm.h>
 #include <sys/kernel.h>
 #include <sys/device.h>
-#include <sys/malloc.h>
 #include <sys/socket.h>
 
 #include <net/if.h>

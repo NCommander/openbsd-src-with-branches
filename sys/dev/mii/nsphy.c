@@ -1,4 +1,4 @@
-/*	$OpenBSD: nsphy.c,v 1.11 2002/03/14 01:26:58 millert Exp $	*/
+/*	$OpenBSD: nsphy.c,v 1.12 2003/10/22 09:39:29 jmc Exp $	*/
 /*	$NetBSD: nsphy.c,v 1.25 2000/02/02 23:34:57 thorpej Exp $	*/
 
 /*-
@@ -76,7 +76,6 @@
 #include <sys/systm.h>
 #include <sys/kernel.h>
 #include <sys/device.h>
-#include <sys/malloc.h>
 #include <sys/socket.h>
 #include <sys/errno.h>
 

@@ -1,4 +1,4 @@
-/*	$OpenBSD: inphy.c,v 1.7 2001/04/17 01:19:21 jason Exp $	*/
+/*	$OpenBSD: inphy.c,v 1.8 2002/03/14 01:26:57 millert Exp $	*/
 /*	$NetBSD: inphy.c,v 1.18 2000/02/02 23:34:56 thorpej Exp $	*/
 
 /*-
@@ -76,7 +76,6 @@
 #include <sys/systm.h>
 #include <sys/kernel.h>
 #include <sys/device.h>
-#include <sys/malloc.h>
 #include <sys/socket.h>
 #include <sys/errno.h>
 
