@@ -1,5 +1,5 @@
 /*	$OpenPackages$ */
-/*	$OpenBSD: error.c,v 1.9 2001/09/05 22:32:41 deraadt Exp $ */
+/*	$OpenBSD: error.c,v 1.10 2002/02/19 19:39:38 millert Exp $ */
 
 /*
  * Copyright (c) 2001 Marc Espie.
@@ -175,6 +175,6 @@ Parse_Error(int type, const char *fmt, ...)
 
 	va_start(ap, fmt);
 	ParseVErrorInternal(Parse_Getfilename(), Parse_Getlineno(), type, fmt, ap);
-	va_end(va);
+	va_end(ap);
 }
 
