@@ -1,4 +1,4 @@
-/*	$OpenBSD: ip_esp.c,v 1.75 2002/07/30 19:09:36 jason Exp $ */
+/*	$OpenBSD: ip_esp.c,v 1.76 2002/11/07 15:16:39 ho Exp $ */
 /*
  * The authors of this code are John Ioannidis (ji@tla.org),
  * Angelos D. Keromytis (kermit@csd.uch.gr) and
@@ -1117,6 +1117,7 @@ m_pad(struct mbuf *m, int n)
 
 	if (n <= 0) {  /* No stupid arguments. */
 		DPRINTF(("m_pad(): pad length invalid (%d)\n", n));
+		m_freem(m);
 		return NULL;
 	}
 
