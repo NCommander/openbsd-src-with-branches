@@ -52,6 +52,7 @@
 #include <sys/mount.h>
 #include <sys/namei.h>
 #include <sys/malloc.h>
+#include <sys/vmmeter.h>	/* for cnt */
 
 #include <miscfs/specfs/specdev.h>
 #include <miscfs/kernfs/kernfs.h>
@@ -257,6 +258,7 @@ kernfs_statfs(mp, sbp, p)
 	struct statfs *sbp;
 	struct proc *p;
 {
+	extern long numvnodes; /* XXX */
 
 #ifdef KERNFS_DIAGNOSTIC
 	printf("kernfs_statfs(mp = %x)\n", mp);
@@ -267,13 +269,13 @@ kernfs_statfs(mp, sbp, p)
 #else
 	sbp->f_type = 0;
 #endif
-	sbp->f_bsize = DEV_BSIZE;
-	sbp->f_iosize = DEV_BSIZE;
-	sbp->f_blocks = 2;		/* 1K to keep df happy */
-	sbp->f_bfree = 0;
+	sbp->f_bsize = cnt.v_page_size;
+	sbp->f_iosize = cnt.v_page_size;
+	sbp->f_blocks = physmem;
+	sbp->f_bfree = physmem - cnt.v_wire_count;
 	sbp->f_bavail = 0;
-	sbp->f_files = 0;
-	sbp->f_ffree = 0;
+	sbp->f_files = desiredvnodes;
+	sbp->f_ffree = desiredvnodes - numvnodes;
 	if (sbp != &mp->mnt_stat) {
 		bcopy(&mp->mnt_stat.f_fsid, &sbp->f_fsid, sizeof(sbp->f_fsid));
 		bcopy(mp->mnt_stat.f_mntonname, sbp->f_mntonname, MNAMELEN);
