@@ -1,4 +1,4 @@
-/*	$OpenBSD: machdep.c,v 1.20 2001/11/07 01:18:00 art Exp $	*/
+/*	$OpenBSD: machdep.c,v 1.21 2001/11/09 15:25:55 art Exp $	*/
 /*	$NetBSD: machdep.c,v 1.108 2001/07/24 19:30:14 eeh Exp $ */
 
 /*-
@@ -249,7 +249,7 @@ cpu_startup()
 	 */
 	printf(version);
 	/*identifycpu();*/
-	printf("total memory = %d\n", physmem * PAGE_SIZE);
+	printf("total memory = %ld\n", (long)physmem * PAGE_SIZE);
 
 	/*
 	 * Find out how much space we need, allocate it,
