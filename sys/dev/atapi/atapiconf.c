@@ -1,4 +1,4 @@
-/*	$OpenBSD: atapiconf.c,v 1.7 1996/08/09 01:33:57 niklas Exp $	*/
+/*	$OpenBSD: atapiconf.c,v 1.8 1996/09/04 00:51:13 downsj Exp $	*/
 
 /*
  * Copyright (c) 1996 Manuel Bouyer.  All rights reserved.
@@ -99,6 +99,8 @@ struct atapi_quirk_inquiry_pattern atapi_quirk_inquiry_patterns[] = {
 	{ATAPI_DEVICE_TYPE_DAD, ATAPI_REMOVABLE,
 	 "NEC                 CD-ROM DRIVE:260", "3.04", AQUIRK_CDROM},
 						/* NEC Multispin 2Vi */
+	{ATAPI_DEVICE_TYPE_CD, ATAPI_REMOVABLE,
+	"NEC                 CD-ROM DRIVE:273", "4.21", AQUIRK_TIMING},
 
 	{0, 0, NULL, NULL, 0}			/* The End */
 };
