@@ -1,7 +1,7 @@
-#	$OpenBSD: Makefile,v 1.3 1996/06/26 05:34:52 deraadt Exp $
+#	$OpenBSD: Makefile,v 1.4 1997/09/21 11:49:29 deraadt Exp $
 
 PROG=	lastcomm
-DPADD=	${LIBMATH}
+DPADD=	${LIBM}
 LDADD=	-lm
 
 .include <bsd.prog.mk>

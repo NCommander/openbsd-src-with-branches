@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.5 2000/05/25 21:49:02 deraadt Exp $
+#	$OpenBSD: Makefile,v 1.6 2001/09/06 19:09:29 espie Exp $
 #	$NetBSD: Makefile,v 1.11 1995/10/09 00:11:24 pk Exp $
 
 PROG=	ld.so
@@ -12,6 +12,7 @@ PICFLAG=-fpic -fno-function-cse
 CFLAGS+=-I$(LDDIR) -I$(.CURDIR) -I$(LDDIR)/$(MACHINE_ARCH) $(PICFLAG) -DRTLD -DLIBC_SCCS
 LDFLAGS+=-nostartfiles -nostdlib -Wl,-Bshareable,-Bsymbolic,-assert,nosymbolic
 ASFLAGS+=-k
+DPADD+= ${LIBC}
 LDADD+=	-lc_pic
 BINDIR= /usr/libexec
 

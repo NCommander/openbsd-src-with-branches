@@ -1,4 +1,4 @@
-# $OpenBSD: Makefile,v 1.1 2000/02/25 16:35:30 hin Exp $
+# $OpenBSD: Makefile,v 1.2 2001/01/09 02:41:20 angelos Exp $
 
 PROG	= kinit
 
@@ -8,6 +8,7 @@ KRBDEPTH=../..
 .PATH:	${KRBSRC}/kuser
 
 CFLAGS	+= -I.
+DPADD	+= ${LIBKRB} ${LIBKAFS} ${LIBDES}
 LDADD	+= ${LIBROKEN} -lkrb -lkafs -ldes
 
 SRCS	= kinit.c

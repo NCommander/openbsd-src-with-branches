@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.4 2002/03/15 16:45:10 drahn Exp $
+#	$OpenBSD: Makefile,v 1.5 2002/03/15 16:51:29 art Exp $
 
 .include <bsd.own.mk>
 
@@ -29,7 +29,7 @@ CPPFLAGS+=-DPMDB_AOUT
 .endif
 
 LDADD=-ledit -lcurses
-DPADD=${LIBEDIT} ${LIBTERMCAP}
+DPADD=${LIBEDIT} ${LIBCURSES}
 
 CPPFLAGS+=-I${.CURDIR}
 
