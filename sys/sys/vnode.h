@@ -134,6 +134,7 @@ struct vnode {
 #define	VTEXT		0x0002	/* vnode is a pure text prototype */
 #define	VSYSTEM		0x0004	/* vnode being used by kernel */
 #define	VISTTY		0x0008	/* vnode represents a tty */
+#define	VEXECMAP	0x0010	/* vnode has PROT_EXEC mappings */
 #define	VXLOCK		0x0100	/* vnode is locked to change underlying type */
 #define	VXWANT		0x0200	/* process is waiting for vnode */
 #define	VALIASED	0x0800	/* vnode has an alias */
@@ -471,7 +472,8 @@ int	vop_generic_mmap(void *);
 int	vn_stat(struct vnode *vp, struct stat *sb, struct proc *p);
 int	vn_statfile(struct file *fp, struct stat *sb, struct proc *p);
 int	vn_writechk(struct vnode *vp);
-void	vn_marktext(struct vnode *vp);
+void	vn_markexec(struct vnode *vp);
+int	vn_marktext(struct vnode *vp);
 void	vn_syncer_add_to_worklist(struct vnode *vp, int delay);
 void    sched_sync(struct proc *);
 

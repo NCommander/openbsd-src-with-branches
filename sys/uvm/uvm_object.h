@@ -1,4 +1,4 @@
-/*	$OpenBSD: uvm_object.h,v 1.7.2.1 2002/02/02 03:28:27 art Exp $	*/
+/*	$OpenBSD: uvm_object.h,v 1.7.2.2 2002/11/04 18:02:33 art Exp $	*/
 /*	$NetBSD: uvm_object.h,v 1.16 2002/06/20 15:05:29 chs Exp $	*/
 
 /*
@@ -81,7 +81,7 @@ extern struct uvm_pagerops aobj_pager;
 #define	UVM_OBJ_IS_VNODE(uobj)						\
 	((uobj)->pgops == &uvm_vnodeops)
 
-#ifdef notyet	/* XXXART */
+#if 1
 #define	UVM_OBJ_IS_VTEXT(uobj)						\
 	((uobj)->pgops == &uvm_vnodeops &&				\
 	 ((struct vnode *)uobj)->v_flag & VEXECMAP)
