@@ -1,18 +1,14 @@
 /*	$OpenBSD$	*/
-/*	$NetBSD: kgdb_proto.h,v 1.2 1994/10/26 07:25:40 cgd Exp $	*/
+/*	$NetBSD: leds.h,v 1.1 1997/05/05 20:54:36 thorpej Exp $	*/
 
-/*-
- * Copyright (c) 1991, 1993
+/*
+ * Copyright (c) 1992 University of Utah.
+ * Copyright (c) 1982, 1986, 1990, 1993
  *	The Regents of the University of California.  All rights reserved.
  *
- * This software was developed by the Computer Systems Engineering group
- * at Lawrence Berkeley Laboratory under DARPA contract BG 91-66 and
- * contributed to Berkeley.
- *
- * All advertising materials mentioning features or use of this software
- * must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Lawrence Berkeley Laboratories.
+ * This code is derived from software contributed to Berkeley by
+ * the Systems Programming Group of the University of Utah Computer
+ * Science Department.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -42,28 +38,19 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  *
- *	@(#)kgdb_proto.h	8.1 (Berkeley) 6/10/93
+ * from: Utah $Hdr: led.h 1.2 92/08/27$
+ *
+ *	@(#)led.h	8.1 (Berkeley) 6/10/93
  */
 
-/*
- * Message types.
- */
-#define KGDB_MEM_R	0x01
-#define KGDB_MEM_W	0x02
-#define KGDB_REG_R	0x03
-#define KGDB_REG_W	0x04
-#define KGDB_CONT	0x05
-#define KGDB_STEP	0x06
-#define KGDB_KILL	0x07
-#define KGDB_SIGNAL	0x08
-#define KGDB_EXEC	0x09
+#define	LED_ADDR	0x1FFFF		/* a ROM address--strange but true */
 
-#define KGDB_CMD(x) ((x) & 0x0f)
+#define	LED_LANXMT	0x80		/* for LAN transmit activity */
+#define	LED_LANRCV	0x40		/* for LAN receive activity */
+#define	LED_DISK	0x20		/* for disk activity */
+#define	LED_PULSE	0x10		/* heartbeat */
 
-/*
- * Message flags.
- */
-#define KGDB_ACK	0x80
-#define KGDB_DELTA	0x40
-#define KGDB_MORE	0x20
-#define KGDB_SEQ	0x10
+#if defined(_KERNEL) && !defined(_LOCORE)
+void	ledinit __P((void));
+void	ledcontrol __P((int, int, int));
+#endif
