@@ -1,4 +1,4 @@
-#	$OpenBSD: RAMDISK,v 1.1 1997/05/18 13:45:24 pefo Exp $
+#	$OpenBSD: RAMDISK,v 1.2 1997/05/19 10:34:54 pefo Exp $
 #
 #	Generic configuration file for MIPS R4x00 ARC Systems
 #
@@ -53,6 +53,7 @@ options 	INET		# Internet protocols
 #options 	EON		# OSI tunneling over IP
 #option         CCITT,LLC,HDLC	# X.25
 #option		IPFILTER	# IP packet filter for security
+#option		IPFILTER_LOG	# use /dev/ipl to log IPF
 
 #options 	TCP_COMPAT_42	# compatibility with 4.2BSD TCP/IP
 #options 	MULTICAST	# Multicast support
