@@ -1,4 +1,4 @@
-/* $OpenBSD: commands.c,v 1.12 2003/06/20 16:53:15 deraadt Exp $	 */
+/* $OpenBSD: commands.c,v 1.13 2003/09/19 10:32:24 jmc Exp $	 */
 
 /*
  *  Top users/processes display for Unix
@@ -121,7 +121,7 @@ next_field(char *str)
 	return (*str == '\0' ? NULL : str);
 }
 
-static int 
+static int
 scanint(char *str, int *intp)
 {
 	int val = 0;

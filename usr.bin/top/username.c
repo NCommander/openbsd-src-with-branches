@@ -1,4 +1,4 @@
-/* $OpenBSD: username.c,v 1.12 2003/06/19 22:40:45 millert Exp $	 */
+/* $OpenBSD: username.c,v 1.13 2003/07/07 21:36:52 deraadt Exp $	 */
 
 /*
  *  Top users/processes display for Unix
@@ -61,8 +61,8 @@ struct hash_el {
 	char	name[_PW_NAME_LEN + 1];
 };
 
-static int      enter_user(uid_t, char *, int);
-static int      get_user(uid_t);
+static int	enter_user(uid_t, char *, int);
+static int	get_user(uid_t);
 
 #define	is_empty_hash(x)	(hash_table[x].name[0] == 0)
 
