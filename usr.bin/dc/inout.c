@@ -1,4 +1,4 @@
-/*	$OpenBSD: inout.c,v 1.7 2003/10/22 12:03:54 otto Exp $	*/
+/*	$OpenBSD: inout.c,v 1.8 2003/11/14 20:18:47 otto Exp $	*/
 
 /*
  * Copyright (c) 2003, Otto Moerbeek <otto@drijf.net>
@@ -17,7 +17,7 @@
  */
 
 #ifndef lint
-static const char rcsid[] = "$OpenBSD: inout.c,v 1.7 2003/10/22 12:03:54 otto Exp $";
+static const char rcsid[] = "$OpenBSD: inout.c,v 1.8 2003/11/14 20:18:47 otto Exp $";
 #endif /* not lint */
 
 #include <ssl/ssl.h>
@@ -167,7 +167,7 @@ printwrap(FILE *f, const char *p)
 	char	buf[12];
 	char	*q = buf;
 
-	snprintf(buf, sizeof(buf), "%s", p);
+	strlcpy(buf, p, sizeof(buf));
 	while (*q)
 		putcharwrap(f, *q++);
 }
