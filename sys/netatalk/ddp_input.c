@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: ddp_input.c,v 1.1 1997/07/23 03:39:53 denny Exp $	*/
 
 /*
  * Copyright (c) 1990,1994 Regents of The University of Michigan.
@@ -263,8 +263,8 @@ ddp_input( m, ifp, elh, phase )
 		}
 		if (( ntohs( to.sat_addr.s_net ) < ntohs( aa->aa_firstnet ) ||
 			ntohs( to.sat_addr.s_net ) > ntohs( aa->aa_lastnet )) &&
-			( ntohs( to.sat_addr.s_net ) < ntohs( 0xff00 ) ||
-			ntohs( to.sat_addr.s_net ) > ntohs( 0xfffe ))) {
+			( ntohs( to.sat_addr.s_net ) < 0xff00 ||
+			ntohs( to.sat_addr.s_net ) > 0xfffe)) {
 		    continue;
 		}
 		if ( to.sat_addr.s_node != AA_SAT( aa )->sat_addr.s_node &&
