@@ -1,4 +1,4 @@
-/*	$OpenBSD: vm_mmap.c,v 1.15 1998/06/02 05:22:27 deraadt Exp $	*/
+/*	$OpenBSD: vm_mmap.c,v 1.16 2001/03/09 15:11:47 art Exp $	*/
 /*	$NetBSD: vm_mmap.c,v 1.47 1996/03/16 23:15:23 christos Exp $	*/
 
 /*
@@ -201,8 +201,8 @@ sys_mmap(p, v, retval)
 	 * There should really be a pmap call to determine a reasonable
 	 * location.  (To avoid VA cache alias problems, for example!)
 	 */
-	else if (addr < round_page(p->p_vmspace->vm_daddr + MAXDSIZ))
-		addr = round_page(p->p_vmspace->vm_daddr + MAXDSIZ);
+	else if (addr < round_page((vaddr_t)p->p_vmspace->vm_daddr + MAXDSIZ))
+		addr = round_page((vaddr_t)p->p_vmspace->vm_daddr + MAXDSIZ);
 
 	if ((flags & MAP_ANON) == 0) {
 		/*
