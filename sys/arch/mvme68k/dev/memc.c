@@ -1,4 +1,4 @@
-/*	$Id$ */
+/*	$OpenBSD$ */
 
 /*
  * Copyright (c) 1995 Theo de Raadt
@@ -65,9 +65,12 @@ struct memcsoftc {
 void memcattach __P((struct device *, struct device *, void *));
 int  memcmatch __P((struct device *, void *, void *));
 
-struct cfdriver memccd = {
-	NULL, "memc", memcmatch, memcattach,
-	DV_DULL, sizeof(struct memcsoftc), 0
+struct cfattach memc_ca = {
+	sizeof(struct memcsoftc), memcmatch, memcattach
+};
+
+struct cfdriver memc_cd = {
+	NULL, "memc", DV_DULL, 0
 };
 
 int memcintr __P((struct frame *frame));
