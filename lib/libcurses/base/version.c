@@ -1,7 +1,5 @@
-/*	$OpenBSD: p_delete.c,v 1.2 1998/07/24 17:08:08 millert Exp $	*/
-
 /****************************************************************************
- * Copyright (c) 1998 Free Software Foundation, Inc.                        *
+ * Copyright (c) 1999 Free Software Foundation, Inc.                        *
  *                                                                          *
  * Permission is hereby granted, free of charge, to any person obtaining a  *
  * copy of this software and associated documentation files (the            *
@@ -29,28 +27,22 @@
  ****************************************************************************/
 
 /****************************************************************************
- *  Author: Zeyd M. Ben-Halim <zmbenhal@netcom.com> 1995                    *
- *     and: Eric S. Raymond <esr@snark.thyrsus.com>                         *
+ *  Author: Thomas E. Dickey <dickey@clark.net> 1999                        *
  ****************************************************************************/
 
-/* p_delete.c
- * Remove a panel from stack, if in it, and free struct
- */
-#include "panel.priv.h"
+#include <curses.priv.h>
 
-MODULE_ID("$From: p_delete.c,v 1.4 1999/11/25 13:49:26 juergen Exp $")
+MODULE_ID("$From: version.c,v 1.1 1999/10/23 13:28:49 tom Exp $")
 
-int
-del_panel(PANEL *pan)
+const char *
+curses_version(void)
 {
-  int err = OK;
-  if(pan)
-    {
-      dBug(("--> del_panel %s", USER_PTR(pan->user)));
-      HIDE_PANEL(pan,err,FALSE);
-      free((void *)pan);
-    }
-  else
-    err = ERR;
-  return(err);
+    static char my_version[80];
+
+    T((T_CALLED("curses_version()")));
+    sprintf(my_version, "ncurses %d.%d.%d",
+	NCURSES_VERSION_MAJOR,
+	NCURSES_VERSION_MINOR,
+	NCURSES_VERSION_PATCH);
+    returnPtr(my_version);
 }
