@@ -1,4 +1,4 @@
-/*	$OpenBSD: in_gif.c,v 1.18 2001/06/08 03:53:45 angelos Exp $	*/
+/*	$OpenBSD: in_gif.c,v 1.19 2001/06/08 10:37:46 art Exp $	*/
 /*	$KAME: in_gif.c,v 1.50 2001/01/22 07:27:16 itojun Exp $	*/
 
 /*
@@ -197,7 +197,7 @@ in_gif_input(m, va_alist)
 
 	/* this code will be soon improved. */
 #define	satosin(sa)	((struct sockaddr_in *)(sa))	
-	for (i = 0, sc = gif; i < ngif; i++, sc++) {
+	for (i = 0, sc = gif_softc; i < ngif; i++, sc++) {
 		if (sc->gif_psrc == NULL
 		 || sc->gif_pdst == NULL
 		 || sc->gif_psrc->sa_family != AF_INET
