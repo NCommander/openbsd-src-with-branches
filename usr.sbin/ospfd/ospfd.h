@@ -1,4 +1,4 @@
-/*	$OpenBSD: ospfd.h,v 1.16 2005/03/15 22:03:56 claudio Exp $ */
+/*	$OpenBSD: ospfd.h,v 1.17 2005/03/22 22:13:48 norby Exp $ */
 
 /*
  * Copyright (c) 2004 Esben Norby <norby@openbsd.org>
@@ -70,7 +70,7 @@ struct msgbuf {
 struct buf_read {
 	u_char			 buf[READ_BUF_SIZE];
 	u_char			*rptr;
-	ssize_t			 wpos;
+	size_t			 wpos;
 };
 
 struct imsgbuf {
