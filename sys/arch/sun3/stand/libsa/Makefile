@@ -1,3 +1,4 @@
+#	$OpenBSD$
 #	$NetBSD: Makefile,v 1.9.4.1 1996/06/26 20:16:58 jtc Exp $
 
 LIB=sa
