@@ -1,4 +1,4 @@
-/*	$OpenBSD: misc.c,v 1.13 2001/12/05 10:06:12 deraadt Exp $	*/
+/*	$OpenBSD: misc.c,v 1.14 2001/12/19 07:18:56 deraadt Exp $	*/
 
 /*
  * Copyright (c) 2000 Markus Friedl.  All rights reserved.
@@ -25,7 +25,7 @@
  */
 
 #include "includes.h"
-RCSID("$OpenBSD: misc.c,v 1.13 2001/12/05 10:06:12 deraadt Exp $");
+RCSID("$OpenBSD: misc.c,v 1.14 2001/12/19 07:18:56 deraadt Exp $");
 
 #include "misc.h"
 #include "log.h"
@@ -90,6 +90,17 @@ unset_nonblock(int fd)
 		if (errno != ENODEV)
 			error("fcntl(%d, F_SETFL, O_NONBLOCK): %s",
 			    fd, strerror(errno));
+}
+
+/* disable nagle on socket */
+void
+set_nodelay(int fd)
+{
+	int on = 1;
+
+	debug("fd %d setting TCP_NODELAY", fd);
+	if (setsockopt(fd, IPPROTO_TCP, TCP_NODELAY, &on, sizeof on) == -1)
+		error("setsockopt TCP_NODELAY: %.100s", strerror(errno));
 }
 
 /* Characters considered whitespace in strsep calls. */
