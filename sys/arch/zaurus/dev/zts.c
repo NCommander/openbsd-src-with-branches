@@ -1,4 +1,4 @@
-/* $OpenBSD: zaurus_kbd.c,v 1.10 2005/01/18 17:57:13 drahn Exp $ */
+/* $OpenBSD: zts.c,v 1.1 2005/01/28 17:14:31 drahn Exp $ */
 /*
  * Copyright (c) 2005 Dale Rahn <drahn@openbsd.org>
  *
@@ -170,8 +170,10 @@ zts_irq(void *v)
 	down = pxa2x0_gpio_get_bit(IRQ_GPIO_TP_INT_C3K);
 
 	if (t0 != 0 && t1 != 0) {
+		/*
 		printf("zts: t0 %x t1 %x, x %x y %x int %d\n", t0, t1, x, y,
 		    down);
+		*/
 	}
 
 #ifdef DO_RELATIVE
