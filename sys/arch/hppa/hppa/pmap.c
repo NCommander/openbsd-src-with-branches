@@ -1,4 +1,4 @@
-/*	$OpenBSD: pmap.c,v 1.103 2003/10/31 21:24:19 mickey Exp $	*/
+/*	$OpenBSD: pmap.c,v 1.104 2003/11/24 19:27:03 mickey Exp $	*/
 
 /*
  * Copyright (c) 1998-2003 Michael Shalayeff
@@ -540,8 +540,10 @@ pmap_bootstrap(vstart)
 	 * lazy map only needed pieces (see bus_mem_add_mapping() for refs).
 	 */
 
-	/* takes about 16 per gig of initial kmem */
-	nkpdes = (totalphysmem >> 14);
+	/* takes about 16 per gig of initial kmem ... */
+	nkpdes = totalphysmem >> 14;
+	if (nkpdes < 4)
+		nkpdes = 4;	/* ... but no less than four */
 	npdes = nkpdes + (totalphysmem + btoc(PDE_SIZE) - 1) / btoc(PDE_SIZE);
 	uvm_page_physload(0, totalphysmem,
 	    atop(addr) + npdes, totalphysmem, VM_FREELIST_DEFAULT);
