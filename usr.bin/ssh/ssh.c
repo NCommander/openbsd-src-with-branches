@@ -40,7 +40,7 @@
  */
 
 #include "includes.h"
-RCSID("$OpenBSD: ssh.c,v 1.188 2002/11/27 17:53:35 markus Exp $");
+RCSID("$OpenBSD: ssh.c,v 1.189 2002/12/09 16:50:30 millert Exp $");
 
 #include <openssl/evp.h>
 #include <openssl/err.h>
@@ -585,6 +585,10 @@ again:
 
 	if (options.hostname != NULL)
 		host = options.hostname;
+
+	if (options.proxy_command != NULL &&
+	    strcmp(options.proxy_command, "none") == 0)
+		options.proxy_command = NULL;
 
 	/* Disable rhosts authentication if not running as root. */
 	if (original_effective_uid != 0 || !options.use_privileged_port) {
