@@ -1,4 +1,4 @@
-/*	$OpenBSD: nfs_syscalls.c,v 1.10 1997/10/06 20:20:50 deraadt Exp $	*/
+/*	$OpenBSD: nfs_syscalls.c,v 1.11 1997/11/06 05:59:03 csapuntz Exp $	*/
 /*	$NetBSD: nfs_syscalls.c,v 1.19 1996/02/18 11:53:52 fvdl Exp $	*/
 
 /*
@@ -938,7 +938,6 @@ nfssvc_iod(p)
 			nbp->b_flags |= (B_BUSY|B_ASYNC);
 			break;
 		    }
-		    splx(s);
 		    /*
 		     * For the delayed write, do the first part of nfs_bwrite()
 		     * up to, but not including nfs_strategy().
@@ -948,6 +947,8 @@ nfssvc_iod(p)
 			reassignbuf(nbp, nbp->b_vp);
 			nbp->b_vp->v_numoutput++;
 		    }
+		    splx(s);
+
 		    (void) nfs_doio(bp, bp->b_wcred, (struct proc *)0);
 		} while ((bp = nbp) != NULL);
 	    }
