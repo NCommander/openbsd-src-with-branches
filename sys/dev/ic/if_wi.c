@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_wi.c,v 1.9 2001/06/11 00:50:38 millert Exp $	*/
+/*	$OpenBSD: if_wi.c,v 1.10 2001/06/11 01:10:20 millert Exp $	*/
 
 /*
  * Copyright (c) 1997, 1998, 1999
@@ -120,7 +120,7 @@ u_int32_t	widebug = WIDEBUG;
 
 #if !defined(lint) && !defined(__OpenBSD__)
 static const char rcsid[] =
-	"$OpenBSD: if_wi.c,v 1.9 2001/06/11 00:50:38 millert Exp $";
+	"$OpenBSD: if_wi.c,v 1.10 2001/06/11 01:10:20 millert Exp $";
 #endif	/* lint */
 
 #ifdef foo
@@ -432,8 +432,7 @@ wi_rxeof(sc)
 #endif
 
 	/* Receive packet. */
-	m_adj(m, sizeof(struct ether_header));
-	ether_input(ifp, eh, m);
+	ether_input_mbuf(ifp, m);
 
 	return;
 }
