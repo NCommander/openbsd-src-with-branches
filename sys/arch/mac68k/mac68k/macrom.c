@@ -1,4 +1,4 @@
-/*	$OpenBSD: macrom.c,v 1.19 1998/05/03 07:16:50 gene Exp $	*/
+/*	$OpenBSD: macrom.c,v 1.20 1999/01/11 05:11:36 millert Exp $	*/
 /*	$NetBSD: macrom.c,v 1.31 1997/03/01 17:20:34 scottr Exp $	*/
 
 /*-
@@ -52,9 +52,6 @@
 #include <sys/lock.h>
 
 #include <vm/vm.h>
-#include <vm/vm_prot.h>
-#include <vm/vm_param.h>
-#include <vm/pmap.h>
 
 #include <machine/viareg.h>
 #include "macrom.h"
