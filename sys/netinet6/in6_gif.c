@@ -1,4 +1,4 @@
-/*	$OpenBSD: in6_gif.c,v 1.16 2001/06/09 06:43:37 angelos Exp $	*/
+/*	$OpenBSD: in6_gif.c,v 1.17 2001/07/27 15:48:38 itojun Exp $	*/
 /*	$KAME: in6_gif.c,v 1.43 2001/01/22 07:27:17 itojun Exp $	*/
 
 /*
@@ -250,7 +250,7 @@ int in6_gif_input(mp, offp, proto)
 	        m->m_pkthdr.rcvif = gifp;
 		gifp->if_ipackets++;
 		gifp->if_ibytes += m->m_pkthdr.len;
-		ipip_input(m, *offp);
+		ipip_input(m, *offp, gifp);
 		return IPPROTO_DONE;
 	}
 
