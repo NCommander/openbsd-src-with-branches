@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_ether.c,v 1.15 1999/07/18 21:36:40 ho Exp $	*/
+/*	$OpenBSD: if_ether.c,v 1.16 1999/08/02 22:51:15 deraadt Exp $	*/
 /*	$NetBSD: if_ether.c,v 1.31 1996/05/11 12:59:58 mycroft Exp $	*/
 
 /*
@@ -98,10 +98,10 @@ int	useloopback = 1;	/* use loopback interface for local traffic */
 int	arpinit_done = 0;
 
 /* revarp state */
-static struct	in_addr myip, srv_ip;
-static int	myip_initialized = 0;
-static int	revarp_in_progress = 0;
-static struct	ifnet *myip_ifp = NULL;
+static struct in_addr myip, srv_ip;
+static int myip_initialized = 0;
+static int revarp_in_progress = 0;
+struct ifnet *myip_ifp = NULL;
 
 static void arptimer __P((void *));
 static void arprequest __P((struct arpcom *, u_int32_t *, u_int32_t *,

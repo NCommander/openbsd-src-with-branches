@@ -1,4 +1,4 @@
-/*	$OpenBSD: ip_mroute.c,v 1.15 1999/04/20 20:06:12 niklas Exp $	*/
+/*	$OpenBSD: ip_mroute.c,v 1.16 1999/04/28 09:28:16 art Exp $	*/
 /*	$NetBSD: ip_mroute.c,v 1.27 1996/05/07 02:40:50 thorpej Exp $	*/
 
 /*
@@ -687,6 +687,24 @@ del_vif(m)
 		log(LOG_DEBUG, "del_vif %d, numvifs %d\n", *vifip, numvifs);
 	
 	return (0);
+}
+
+void
+vif_delete(ifp)
+	struct ifnet *ifp;
+{
+	int i;
+
+	for (i = 0; i < numvifs; i++) {
+		vifp = &viftable[i];
+		if (vifp->v_ifp == ifp)
+			bzero((caddr_t)vifp, sizeof *vifp);
+	}
+
+	for (i = numvifs; i > 0; i--)
+		if (viftable[i - 1].v_lcl_addr.s_addr != 0)
+			break;
+	numvifs = i;
 }
 
 static void
