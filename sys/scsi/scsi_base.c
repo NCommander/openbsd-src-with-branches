@@ -1,4 +1,4 @@
-/*	$OpenBSD: scsi_base.c,v 1.49 2004/01/08 17:30:52 krw Exp $	*/
+/*	$OpenBSD: scsi_base.c,v 1.50 2004/01/10 09:12:07 grange Exp $	*/
 /*	$NetBSD: scsi_base.c,v 1.43 1997/04/02 02:29:36 mycroft Exp $	*/
 
 /*
@@ -299,9 +299,16 @@ scsi_inquire(sc_link, inqbuf, flags)
 {
 	struct scsi_inquiry scsi_cmd;
 
-	bzero(&scsi_cmd, sizeof(scsi_cmd));
+	bzero(&scsi_cmd, sizeof scsi_cmd);
 	scsi_cmd.opcode = INQUIRY;
-	scsi_cmd.length = sizeof(struct scsi_inquiry_data);
+	scsi_cmd.length = sizeof *inqbuf;
+
+	bzero(inqbuf, sizeof *inqbuf);
+
+	memset(&inqbuf->vendor, ' ', sizeof inqbuf->vendor);
+	memset(&inqbuf->product, ' ', sizeof inqbuf->product);
+	memset(&inqbuf->revision, ' ', sizeof inqbuf->revision);
+	memset(&inqbuf->extra, ' ', sizeof inqbuf->extra);
 
 	return scsi_scsi_cmd(sc_link, (struct scsi_generic *) &scsi_cmd,
 	    sizeof(scsi_cmd), (u_char *) inqbuf,
