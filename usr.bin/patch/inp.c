@@ -1,7 +1,7 @@
-/*	$OpenBSD: inp.c,v 1.16 2003/07/22 17:18:49 otto Exp $	*/
+/*	$OpenBSD: inp.c,v 1.17 2003/07/22 17:52:20 deraadt Exp $	*/
 
 #ifndef lint
-static const char     rcsid[] = "$OpenBSD: inp.c,v 1.16 2003/07/22 17:18:49 otto Exp $";
+static const char     rcsid[] = "$OpenBSD: inp.c,v 1.17 2003/07/22 17:52:20 deraadt Exp $";
 #endif /* not lint */
 
 #include <sys/types.h>
@@ -328,7 +328,7 @@ ifetch(LINENUM line, int whichbuf)
 {
 	if (line < 1 || line > input_lines) {
 		say("No such line %ld in input file, ignoring\n", line);
-		return "";
+		return NULL;
 	}
 	if (using_plan_a)
 		return i_ptr[line];
