@@ -23,7 +23,7 @@
  */
 
 #include "includes.h"
-RCSID("$OpenBSD: auth2.c,v 1.36 2001/02/04 15:32:22 stevesk Exp $");
+RCSID("$OpenBSD: auth2.c,v 1.37 2001/02/07 22:35:46 markus Exp $");
 
 #include <openssl/evp.h>
 
@@ -437,7 +437,7 @@ userauth_pubkey(Authctxt *authctxt)
 				packet_put_string(pkblob, blen);
 				packet_send();
 				packet_write_wait();
-				authenticated = -1;
+				authctxt->postponed = 1;
 			}
 		}
 		if (authenticated != 1)
