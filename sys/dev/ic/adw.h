@@ -1,3 +1,4 @@
+/*	$OpenBSD$ */
 /*      $NetBSD: adw.h,v 1.5 2000/02/03 20:29:15 dante Exp $        */
 
 /*
