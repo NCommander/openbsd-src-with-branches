@@ -1,4 +1,4 @@
-/*	$OpenBSD: pcvt_kbd.c,v 1.9 1996/09/06 08:40:49 mickey Exp $	*/
+/*	$OpenBSD: pcvt_kbd.c,v 1.10 1997/05/30 01:43:05 mickey Exp $	*/
 
 /*
  * Copyright (c) 1992, 1995 Hellmuth Michaelis and Joerg Wunsch.
@@ -367,7 +367,7 @@ kbd_setmode(int mode)
 		cmd |= COMMAND_PCSCAN;	/*     yes, setup command */
 
 	kbc_8042cmd(CONTR_WRITE);
-	kbc_cmd(cmd);
+	kbd_cmd(cmd);
 	
 #endif /* PCVT_SCANSET > 1 */
 
