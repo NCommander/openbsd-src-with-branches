@@ -1,4 +1,4 @@
-/*	$OpenBSD: symtab.c,v 1.2 1996/06/23 14:32:19 deraadt Exp $	*/
+/*	$OpenBSD: symtab.c,v 1.3 1996/12/04 01:41:53 deraadt Exp $	*/
 /*	$NetBSD: symtab.c,v 1.9 1996/11/30 18:04:47 cgd Exp $	*/
 
 /*
@@ -38,7 +38,7 @@
 #if 0
 static char sccsid[] = "@(#)symtab.c	8.2 (Berkeley) 9/13/94";
 #else
-static char rcsid[] = "$OpenBSD: symtab.c,v 1.2 1996/06/23 14:32:19 deraadt Exp $";
+static char rcsid[] = "$OpenBSD: symtab.c,v 1.3 1996/12/04 01:41:53 deraadt Exp $";
 #endif
 #endif /* not lint */
 
@@ -157,8 +157,11 @@ lookupname(name)
 
 	cp = name;
 	for (ep = lookupino(ROOTINO); ep != NULL; ep = ep->e_entries) {
-		for (np = buf; *cp != '/' && *cp != '\0'; )
+		for (np = buf;
+		    *cp != '/' && *cp != '\0' && np < &buf[sizeof(buf)]; )
 			*np++ = *cp++;
+		if (np == &buf[sizeof(buf)])
+			break;
 		*np = '\0';
 		for ( ; ep != NULL; ep = ep->e_sibling)
 			if (strcmp(ep->e_name, buf) == 0)
