@@ -1,4 +1,4 @@
-/*	$OpenBSD: cy.c,v 1.1 1996/07/27 07:20:03 deraadt Exp $	*/
+/*	$OpenBSD: cy.c,v 1.2 1996/08/23 20:20:15 niklas Exp $	*/
 
 /*
  * cy.c
@@ -304,6 +304,14 @@ cyattach(parent, self, aux)
 /*
  * open routine. returns zero if successfull, else error code
  */
+int cyopen __P((dev_t, int, int, struct proc *));
+int cyclose __P((dev_t, int, int, struct proc *));
+int cyread __P((dev_t, struct uio *, int));
+int cywrite __P((dev_t, struct uio *, int));
+struct tty *cytty __P((dev_t));
+int cyioctl __P((dev_t, u_long, caddr_t, int, struct proc *));
+void cystop __P((struct tty *, int flag));
+
 int
 cyopen(dev, flag, mode, p)
      dev_t dev;
