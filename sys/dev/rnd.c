@@ -1,4 +1,4 @@
-/*	$OpenBSD: rnd.c,v 1.43 2000/08/21 01:52:18 jason Exp $	*/
+/*	$OpenBSD: rnd.c,v 1.44 2000/10/20 03:30:05 mickey Exp $	*/
 
 /*
  * random.c -- A strong random number generator
@@ -1061,7 +1061,6 @@ randomioctl(dev, cmd, data, flag, p)
 			ret = EPERM;
 		else {
 			cnt = *(u_int *)data;
-			printf("%d\n", cnt);
 			s = splhigh();
 			random_state.entropy_count += cnt;
 			if (random_state.entropy_count > POOLBITS)
