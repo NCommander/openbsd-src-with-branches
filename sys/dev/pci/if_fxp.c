@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_fxp.c,v 1.18 1998/12/30 03:02:47 millert Exp $	*/
+/*	$OpenBSD: if_fxp.c,v 1.19 1999/02/26 17:05:53 jason Exp $	*/
 /*	$NetBSD: if_fxp.c,v 1.2 1997/06/05 02:01:55 thorpej Exp $	*/
 
 /*
@@ -323,6 +323,7 @@ fxp_match(parent, match, aux)
 
 	switch (PCI_PRODUCT(pa->pa_id)) {
 	case PCI_PRODUCT_INTEL_82557:
+	case PCI_PRODUCT_INTEL_82559:
 		return (1);
 	}
 
