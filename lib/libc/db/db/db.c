@@ -1,4 +1,4 @@
-/*	$OpenBSD: db.c,v 1.6 2003/05/01 20:23:40 avsm Exp $	*/
+/*	$OpenBSD: db.c,v 1.7 2003/06/02 20:18:33 millert Exp $	*/
 
 /*-
  * Copyright (c) 1991, 1993
@@ -33,7 +33,7 @@
 #if 0
 static char sccsid[] = "@(#)db.c	8.4 (Berkeley) 2/21/94";
 #else
-static const char rcsid[] = "$OpenBSD: db.c,v 1.6 2003/05/01 20:23:40 avsm Exp $";
+static const char rcsid[] = "$OpenBSD: db.c,v 1.7 2003/06/02 20:18:33 millert Exp $";
 #endif
 #endif /* LIBC_SCCS and not lint */
 
@@ -45,6 +45,8 @@ static const char rcsid[] = "$OpenBSD: db.c,v 1.6 2003/05/01 20:23:40 avsm Exp $
 #include <stdio.h>
 
 #include <db.h>
+
+static int __dberr(void);
 
 DB *
 dbopen(fname, flags, mode, type, openinfo)
@@ -76,7 +78,7 @@ dbopen(fname, flags, mode, type, openinfo)
 }
 
 static int
-__dberr()
+__dberr(void)
 {
 	return (RET_ERROR);
 }

@@ -1,4 +1,4 @@
-/*	$OpenBSD: ndbm.c,v 1.15 2003/05/01 20:23:40 avsm Exp $	*/
+/*	$OpenBSD: ndbm.c,v 1.16 2003/06/02 20:18:34 millert Exp $	*/
 
 /*-
  * Copyright (c) 1990, 1993
@@ -36,7 +36,7 @@
 #if 0
 static char sccsid[] = "@(#)dbm.c	8.6 (Berkeley) 11/7/95";
 #else
-static const char rcsid[] = "$OpenBSD: ndbm.c,v 1.15 2003/05/01 20:23:40 avsm Exp $";
+static const char rcsid[] = "$OpenBSD: ndbm.c,v 1.16 2003/06/02 20:18:34 millert Exp $";
 #endif
 #endif /* LIBC_SCCS and not lint */
 
@@ -48,6 +48,7 @@ static const char rcsid[] = "$OpenBSD: ndbm.c,v 1.15 2003/05/01 20:23:40 avsm Ex
 #include <string.h>
 
 #include <ndbm.h>
+#include <dbm.h>
 #include "hash.h"
 
 /*

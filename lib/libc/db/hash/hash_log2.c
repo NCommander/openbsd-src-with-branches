@@ -1,4 +1,4 @@
-/*	$OpenBSD: hash_log2.c,v 1.5 2003/05/01 20:23:40 avsm Exp $	*/
+/*	$OpenBSD: hash_log2.c,v 1.6 2003/06/02 20:18:34 millert Exp $	*/
 
 /*-
  * Copyright (c) 1990, 1993, 1994
@@ -36,15 +36,17 @@
 #if 0
 static char sccsid[] = "@(#)hash_log2.c	8.4 (Berkeley) 11/7/95";
 #else
-static const char rcsid[] = "$OpenBSD: hash_log2.c,v 1.5 2003/05/01 20:23:40 avsm Exp $";
+static const char rcsid[] = "$OpenBSD: hash_log2.c,v 1.6 2003/06/02 20:18:34 millert Exp $";
 #endif
 #endif /* LIBC_SCCS and not lint */
 
 #include <db.h>
+#include "hash.h"
+#include "page.h"
+#include "extern.h"
 
 u_int32_t
-__log2(num)
-	u_int32_t num;
+__log2(u_int32_t num)
 {
 	u_int32_t i, limit;
 

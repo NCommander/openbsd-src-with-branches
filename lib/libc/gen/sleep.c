@@ -28,10 +28,11 @@
  */
 
 #if defined(LIBC_SCCS) && !defined(lint)
-static char rcsid[] = "$OpenBSD: sleep.c,v 1.7 1997/04/25 04:20:41 tholo Exp $";
+static char rcsid[] = "$OpenBSD: sleep.c,v 1.8 2003/06/02 20:18:35 millert Exp $";
 #endif /* LIBC_SCCS and not lint */
 
 #include <sys/time.h>
+#include <unistd.h>
 
 unsigned int
 sleep(seconds)

@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: pause.c,v 1.3 2001/09/04 23:35:58 millert Exp $	*/
 
 /*
  * Written by Todd C. Miller <Todd.Miller@courtesan.com>
@@ -6,10 +6,11 @@
  */
 
 #if defined(LIBC_SCCS) && !defined(lint)
-static const char rcsid[] = "$OpenBSD: pause.c,v 1.2 1996/08/19 08:25:16 tholo Exp $";
+static const char rcsid[] = "$OpenBSD: pause.c,v 1.3 2001/09/04 23:35:58 millert Exp $";
 #endif /* LIBC_SCCS and not lint */
 
 #include <signal.h>
+#include <unistd.h>
 
 /*
  * Backwards compatible pause(3).
