@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.7 2001/07/11 03:02:25 pvalchev Exp $
+#	$OpenBSD: Makefile,v 1.8 2001/09/07 20:08:27 jason Exp $
 
 PROG=	config
 BINDIR=	/usr/sbin
@@ -10,10 +10,6 @@ SRCS=	files.c gram.y hash.c main.c mkheaders.c mkioconf.c mkmakefile.c \
 CFLAGS+=-DELF_SUPPORT
 SRCS+=  exec_elf.c
 .else
-CFLAGS+=-DAOUT_SUPPORT
-SRCS+=  exec_aout.c
-.endif
-.if (${MACHINE} == "pmax")
 CFLAGS+=-DAOUT_SUPPORT
 SRCS+=  exec_aout.c
 .endif
