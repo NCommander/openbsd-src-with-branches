@@ -1,7 +1,8 @@
-#	$OpenBSD: Makefile,v 1.1 1996/06/11 10:37:34 deraadt Exp $
+#	$OpenBSD: Makefile,v 1.2 1996/11/12 23:33:01 niklas Exp $
 
 PROG=	md5
 SRCS=   md5.c
-COPTS+=	-Wall
+COPTS+=	-Wall -Wconversion -Wstrict-prototypes -Wmissing-prototypes -Werror \
+	-DPROTOTYPES
 
 .include <bsd.prog.mk>
