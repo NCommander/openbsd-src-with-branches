@@ -1,4 +1,4 @@
-/*	$OpenBSD: pcibios.c,v 1.24 2001/05/12 19:12:44 mickey Exp $	*/
+/*	$OpenBSD: pcibios.c,v 1.25 2002/03/14 01:26:33 millert Exp $	*/
 /*	$NetBSD: pcibios.c,v 1.5 2000/08/01 05:23:59 uch Exp $	*/
 
 /*
@@ -258,7 +258,13 @@ pcibios_pir_init(sc)
 		int i;
 
 		pirh = (struct pcibios_pir_header *)p = ISA_HOLE_VADDR(pa);
-		if (pirh->signature != BIOS32_MAKESIG('$', 'P', 'I', 'R'))
+		/*
+		 * Some laptops (such as the Toshiba Libretto L series)
+		 * use _PIR instead of the standard $PIR for the signature
+		 * so we check for that too.
+		 */
+		if (pirh->signature != BIOS32_MAKESIG('$', 'P', 'I', 'R') &&
+		    pirh->signature != BIOS32_MAKESIG('_', 'P', 'I', 'R'))
 			continue;
 		
 		cksum = 0;
