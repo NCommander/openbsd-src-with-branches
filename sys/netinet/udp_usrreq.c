@@ -1,4 +1,4 @@
-/*	$OpenBSD: udp_usrreq.c,v 1.3 1996/03/03 22:30:51 niklas Exp $	*/
+/*	$OpenBSD: udp_usrreq.c,v 1.4 1996/04/21 22:29:03 deraadt Exp $	*/
 /*	$NetBSD: udp_usrreq.c,v 1.28 1996/03/16 23:54:03 christos Exp $	*/
 
 /*
@@ -69,11 +69,7 @@
  * UDP protocol implementation.
  * Per RFC 768, August, 1980.
  */
-#ifndef	COMPAT_42
 int	udpcksum = 1;
-#else
-int	udpcksum = 0;		/* XXX */
-#endif
 
 struct	sockaddr_in udp_in = { sizeof(udp_in), AF_INET };
 
