@@ -414,11 +414,18 @@ copy(from_fd, from_name, to_fd, to_name, size)
 	 */
 	if (size <= 8 * 1048576) {
 		if ((p = mmap(NULL, (size_t)size, PROT_READ,
-		    0, from_fd, (off_t)0)) == (char *)-1)
-			err(EX_OSERR, "%s", from_name);
+		    0, from_fd, (off_t)0)) == (char *)-1) {
+			serrno = errno;
+			(void)unlink(to_name);
+			errx(EX_OSERR, "%s: %s", from_name, strerror(serrno));
+		}
 		siz = (size_t)size;
-		if (write(to_fd, p, siz) != siz)
-			err(EX_OSERR, "%s", to_name);
+		if ((nw = write(to_fd, p, siz)) != siz) {
+			serrno = errno;
+			(void)unlink(to_name);
+			errx(EX_OSERR, "%s: %s",
+			    to_name, strerror(nw > 0 ? EIO : serrno));
+		}
 		(void) munmap(p, (size_t)size);
 	} else {
 		while ((nr = read(from_fd, buf, sizeof(buf))) > 0)
