@@ -1,5 +1,4 @@
-/*	$OpenBSD: if_ether.c,v 1.4 1996/03/03 22:30:24 niklas Exp $	*/
-/*	$NetBSD: if_ether.c,v 1.29 1996/03/30 21:53:19 christos Exp $	*/
+/*	$NetBSD: if_arp.c,v 1.29 1996/03/30 21:53:19 christos Exp $	*/
 
 /*
  * Copyright (c) 1982, 1986, 1988, 1993
@@ -480,14 +479,14 @@ in_arpinput(m)
 	if (!bcmp((caddr_t)ea->arp_sha, (caddr_t)etherbroadcastaddr,
 	    sizeof (ea->arp_sha))) {
 		log(LOG_ERR,
-		    "arp: ether address is broadcast for IP address %s!\n",
-		    inet_ntoa(isaddr));
+		    "arp: ether address is broadcast for IP address %x!\n",
+		    ntohl(isaddr.s_addr));
 		goto out;
 	}
 	if (isaddr.s_addr == myaddr.s_addr) {
 		log(LOG_ERR,
-		   "duplicate IP address %s sent from ethernet address %s\n",
-		   inet_ntoa(isaddr), ether_sprintf(ea->arp_sha));
+		   "duplicate IP address %08x sent from ethernet address %s\n",
+		   ntohl(isaddr.s_addr), ether_sprintf(ea->arp_sha));
 		itaddr = myaddr;
 		goto reply;
 	}
@@ -495,8 +494,8 @@ in_arpinput(m)
 	if (la && (rt = la->la_rt) && (sdl = SDL(rt->rt_gateway))) {
 		if (sdl->sdl_alen &&
 		    bcmp((caddr_t)ea->arp_sha, LLADDR(sdl), sdl->sdl_alen))
-			log(LOG_INFO, "arp info overwritten for %s by %s\n",
-			    inet_ntoa(isaddr), ether_sprintf(ea->arp_sha));
+			log(LOG_INFO, "arp info overwritten for %08x by %s\n",
+			    ntohl(isaddr.s_addr), ether_sprintf(ea->arp_sha));
 		bcopy((caddr_t)ea->arp_sha, LLADDR(sdl),
 		    sdl->sdl_alen = sizeof(ea->arp_sha));
 		if (rt->rt_expire)
@@ -591,9 +590,7 @@ arplookup(addr, create, proxy)
 	if ((rt->rt_flags & RTF_GATEWAY) || (rt->rt_flags & RTF_LLINFO) == 0 ||
 	    rt->rt_gateway->sa_family != AF_LINK) {
 		if (create)
-			log(LOG_DEBUG,
-			    "arplookup: unable to enter address for %s\n",
-			    inet_ntoa(sin.sin_addr));
+			log(LOG_DEBUG, "arplookup: unable to enter address for %x\n", ntohl(addr));
 		return (0);
 	}
 	return ((struct llinfo_arp *)rt->rt_llinfo);

@@ -1,5 +1,5 @@
-/*	$OpenBSD: vm_glue.c,v 1.11 1996/03/24 17:05:35 tholo Exp $    */
-/*	$NetBSD: vm_glue.c,v 1.53 1996/02/18 22:53:43 mycroft Exp $	*/
+/*	$OpenBSD: vm_glue.c,v 1.13 1996/04/19 16:10:47 niklas Exp $    */
+/*	$NetBSD: vm_glue.c,v 1.54 1996/03/30 21:50:45 christos Exp $	*/
 
 /* 
  * Copyright (c) 1991, 1993
@@ -574,6 +574,6 @@ iprintf(pr, fmt /* , va_alist */)
 	while (--i >= 0)
 		(*pr)(" ");
 	va_start(ap, fmt);
-	(*pr)("%r", fmt, ap);
+	(*pr)("%:", fmt, ap);
 	va_end(ap);
 }

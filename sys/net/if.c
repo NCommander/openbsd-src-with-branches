@@ -1,4 +1,4 @@
-/*	$OpenBSD: if.c,v 1.5 1996/03/05 02:29:37 dm Exp $	*/
+/*	$OpenBSD: if.c,v 1.6 1996/03/14 08:35:35 tholo Exp $	*/
 /*	$NetBSD: if.c,v 1.24 1996/02/13 22:00:09 christos Exp $	*/
 
 /*
@@ -222,6 +222,7 @@ ifa_ifwithnet(addr)
 				ifa->ifa_netmask->sa_len;
 			while (cp3 < cplim)
 				if ((*cp++ ^ *cp2++) & *cp3++)
+				    /* want to continue for() loop */
 					goto next;
 			if (ifa_maybe == 0 ||
 			    rn_refines((caddr_t)ifa->ifa_netmask,

@@ -1,5 +1,5 @@
-/*	$OpenBSD: dirent.h,v 1.2 1996/03/03 12:11:32 niklas Exp $	*/
-/*	$NetBSD: dirent.h,v 1.11 1996/03/08 18:13:05 scottr Exp $	*/
+/*	$OpenBSD: dirent.h,v 1.3 1996/04/18 21:40:52 niklas Exp $	*/
+/*	$NetBSD: dirent.h,v 1.12 1996/04/09 20:55:25 cgd Exp $	*/
 
 /*-
  * Copyright (c) 1989, 1993
@@ -37,7 +37,7 @@
  */
 
 /*
- * The dirent structure defines the format of directory entries returned by 
+ * The dirent structure defines the format of directory entries returned by
  * the getdirentries(2) system call.
  *
  * A directory entry has a struct dirent at the front of it, containing its
