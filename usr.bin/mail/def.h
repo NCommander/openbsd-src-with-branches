@@ -1,4 +1,4 @@
-/*	$OpenBSD: def.h,v 1.9 2001/11/21 15:26:39 millert Exp $	*/
+/*	$OpenBSD: def.h,v 1.10 2002/02/16 21:27:48 millert Exp $	*/
 /*	$NetBSD: def.h,v 1.9 1996/12/28 07:11:00 tls Exp $	*/
 
 /*
@@ -34,7 +34,7 @@
  * SUCH DAMAGE.
  *
  *	@(#)def.h	8.4 (Berkeley) 4/20/95
- *	$OpenBSD: def.h,v 1.9 2001/11/21 15:26:39 millert Exp $
+ *	$OpenBSD: def.h,v 1.10 2002/02/16 21:27:48 millert Exp $
  */
 
 /*
@@ -58,6 +58,7 @@
 #include <string.h>
 #include <termios.h>
 #include <unistd.h>
+#include <vis.h>
 #include "pathnames.h"
 
 #define	APPEND				/* New mail goes to end of mailbox */
