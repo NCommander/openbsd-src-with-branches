@@ -4,7 +4,7 @@ PROG=	smrsh
 MAN=	smrsh.8
 ENVDEF=	-DNOT_SENDMAIL -DCMDDIR=\"/usr/libexec/sm.bin\"
 
-WANT_LIBSMUTIL=1
+WANT_LIBSM=1
 
-BINDIR?=        /usr/libexec
+.include "../../../../libexec/Makefile.inc"
 .include <bsd.prog.mk>

@@ -1,5 +1,5 @@
 divert(-1)
-#	$OpenBSD: waldorf.mc,v 1.6 1998/08/15 18:17:19 millert Exp $
+#	$OpenBSD: waldorf.mc,v 1.1 2000/04/02 19:48:14 millert Exp $
 #
 # Copyright (c) 1996 Niklas Hallqvist
 # All rights reserved.
@@ -32,7 +32,7 @@ divert(-1)
 # SUCH DAMAGE.
 #
 
-VERSIONID(`$OpenBSD: waldorf.mc,v 1.6 1998/08/15 18:17:19 millert Exp $')
+VERSIONID(`$OpenBSD: waldorf.mc,v 1.1 2000/04/02 19:48:14 millert Exp $')
 OSTYPE(openbsd)dnl
 
 MASQUERADE_AS(appli.se)
@@ -40,15 +40,13 @@ MASQUERADE_DOMAIN(appli.se)
 
 FEATURE(local_procmail)dnl
 
-MAILER(local)dnl
-MAILER(smtp)dnl
-
 FEATURE(limited_masquerade)dnl
 FEATURE(always_add_domain)dnl
 FEATURE(virtusertable)dnl
 FEATURE(use_cw_file)dnl
 
-define(`confAUTO_REBUILD', True)dnl
+MAILER(local)dnl
+MAILER(smtp)dnl
 
 LOCAL_RULE_0
 # We take care of all mail directed to either appli.se or *.appli.se
