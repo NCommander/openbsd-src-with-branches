@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.5 2002/09/02 20:01:44 avsm Exp $
+#	$OpenBSD: Makefile,v 1.6 2003/06/12 05:06:47 mickey Exp $
 
 PROG=	kqueue-test
 CFLAGS+=-Wall
@@ -6,7 +6,6 @@ SRCS=	kqueue-pipe.c kqueue-fork.c main.c kqueue-process.c kqueue-random.c \
 	kqueue-pty.c
 LDADD=	${LIBUTIL}
 DPADD=	${DPUTIL}
-SUDO=sudo
 
 kq-pipe: ${PROG}
 	./${PROG} -p
