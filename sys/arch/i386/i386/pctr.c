@@ -1,4 +1,4 @@
-/*	$OpenBSD: pctr.c,v 1.13 1999/11/20 18:51:59 espie Exp $	*/
+/*	$OpenBSD: pctr.c,v 1.13.2.1 2001/07/04 10:16:38 niklas Exp $	*/
 
 /*
  * Pentium performance counter driver for OpenBSD.
@@ -9,6 +9,7 @@
  * OpenBSD project by leaving this copyright notice intact.
  */
 
+#include <sys/param.h>
 #include <sys/types.h>
 #include <sys/errno.h>
 #include <sys/fcntl.h>

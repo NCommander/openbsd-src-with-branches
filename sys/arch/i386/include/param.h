@@ -1,4 +1,4 @@
-/*	$OpenBSD: param.h,v 1.9.2.2 2001/04/18 16:07:35 niklas Exp $	*/
+/*	$OpenBSD: param.h,v 1.9.2.3 2001/07/04 10:16:48 niklas Exp $	*/
 /*	$NetBSD: param.h,v 1.29 1996/03/04 05:04:26 cgd Exp $	*/
 
 /*-
@@ -92,7 +92,7 @@
 #define	USPACE		(UPAGES * NBPG)	/* total size of u-area */
 
 #ifndef MSGBUFSIZE
-#define MSGBUFSIZE	2*NBPG		/* default message buffer size */
+#define MSGBUFSIZE	4*NBPG		/* default message buffer size */
 #endif
 
 #define PMAP_NEW

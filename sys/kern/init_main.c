@@ -1,4 +1,4 @@
-/*	$OpenBSD: init_main.c,v 1.46.2.4 2001/05/14 22:32:39 niklas Exp $	*/
+/*	$OpenBSD: init_main.c,v 1.46.2.5 2001/07/04 10:48:14 niklas Exp $	*/
 /*	$NetBSD: init_main.c,v 1.84.4.1 1996/06/02 09:08:06 mrg Exp $	*/
 
 /*
@@ -195,6 +195,7 @@ main(framep)
 	 */
 	p = &proc0;
 	curproc = p;
+	/* XXX_SMP	p->p_cpu = curcpu(); */
 
 	/*
 	 * Attempt to find console and initialize

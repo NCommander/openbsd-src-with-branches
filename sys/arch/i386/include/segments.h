@@ -1,4 +1,4 @@
-/*	$OpenBSD: segments.h,v 1.8 2000/12/06 17:18:58 deraadt Exp $	*/
+/*	$OpenBSD: segments.h,v 1.6.10.1 2001/04/18 16:07:44 niklas Exp $	*/
 /*	$NetBSD: segments.h,v 1.23 1996/02/01 22:31:03 mycroft Exp $	*/
 
 /*-
@@ -136,6 +136,13 @@ void setgate __P((struct gate_descriptor *, void *, int, int, int, int));
 void setregion __P((struct region_descriptor *, void *, size_t));
 void setsegment __P((struct segment_descriptor *, void *, size_t, int, int,
     int, int));
+void unsetgate __P((struct gate_descriptor *));
+void cpu_init_idt __P((void));
+
+int idt_vec_alloc __P((int, int));
+void idt_vec_set __P((int, void (*)(void)));
+void idt_vec_free __P((int));
+
 #endif /* _KERNEL */
 
 #endif /* !_LOCORE */

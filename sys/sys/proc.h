@@ -1,4 +1,4 @@
-/*	$OpenBSD: proc.h,v 1.28.2.2 2001/05/14 22:45:03 niklas Exp $	*/
+/*	$OpenBSD: proc.h,v 1.28.2.3 2001/07/04 11:00:27 niklas Exp $	*/
 /*	$NetBSD: proc.h,v 1.44 1996/04/22 01:23:21 christos Exp $	*/
 
 /*-
@@ -205,6 +205,7 @@ struct	proc {
 	u_short	p_xstat;	/* Exit status for wait; also stop signal. */
 	u_short	p_acflag;	/* Accounting flags. */
 	struct	rusage *p_ru;	/* Exit information. XXX */
+	struct	cpu_info * __volatile p_cpu; /* CPU we're running on. */
 };
 
 #define	p_session	p_pgrp->pg_session
