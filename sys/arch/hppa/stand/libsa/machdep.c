@@ -1,4 +1,4 @@
-/*	$OpenBSD: machdep.c,v 1.5 1999/05/03 22:46:38 mickey Exp $	*/
+/*	$OpenBSD: machdep.c,v 1.6 2001/06/04 22:25:52 mickey Exp $	*/
 
 /*
  * Copyright (c) 1998 Michael Shalayeff
@@ -40,7 +40,8 @@
 #include "dev_hppa.h"
 
 extern struct	stable_storage sstor;	/* contents of Stable Storage */
-int howto, bootdev;
+int howto;
+dev_t bootdev;
 
 void
 machdep()
