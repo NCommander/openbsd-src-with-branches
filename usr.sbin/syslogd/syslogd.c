@@ -1,4 +1,4 @@
-/*	$OpenBSD: syslogd.c,v 1.58 2002/11/21 07:46:48 cloder Exp $	*/
+/*	$OpenBSD: syslogd.c,v 1.59 2002/12/22 17:19:42 mickey Exp $	*/
 
 /*
  * Copyright (c) 1983, 1988, 1993, 1994
@@ -43,7 +43,7 @@ static char copyright[] =
 #if 0
 static char sccsid[] = "@(#)syslogd.c	8.3 (Berkeley) 4/4/94";
 #else
-static char rcsid[] = "$OpenBSD: syslogd.c,v 1.58 2002/11/21 07:46:48 cloder Exp $";
+static char rcsid[] = "$OpenBSD: syslogd.c,v 1.59 2002/12/22 17:19:42 mickey Exp $";
 #endif
 #endif /* not lint */
 
@@ -500,9 +500,13 @@ printline(char *hname, char *msg)
 	if (pri &~ (LOG_FACMASK|LOG_PRIMASK))
 		pri = DEFUPRI;
 
-	/* don't allow users to log kernel messages */
+	/*
+	 * Don't allow users to log kernel messages.
+	 * NOTE: since LOG_KERN == 0 this will also match
+	 *       messages with no facility specified.
+	 */
 	if (LOG_FAC(pri) == LOG_KERN)
-		pri = LOG_MAKEPRI(LOG_USER, LOG_PRI(pri));
+		pri = LOG_USER | LOG_PRI(pri);
 
 	for (q = line; *p && q < &line[sizeof(line) - 4]; p++) {
 		if (*p == '\n')
