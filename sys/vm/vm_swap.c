@@ -1,4 +1,4 @@
-/*	$OpenBSD: vm_swap.c,v 1.4 1997/04/10 13:48:51 deraadt Exp $	*/
+/*	$OpenBSD: vm_swap.c,v 1.5 1997/05/22 07:26:53 deraadt Exp $	*/
 /*	$NetBSD: vm_swap.c,v 1.32 1996/02/05 01:54:09 christos Exp $	*/
 
 /*
@@ -399,9 +399,12 @@ swfree(p, index)
 			nswap += nblks;
 		}
 #else
-		perdev = nswap / nswdev;
-		if (nblks > perdev)
-			nblks = perdev;
+		if (nswap > 0) {
+			perdev = nswap / nswdev;
+			if (nblks > perdev)
+				nblks = perdev;
+		} else
+			nswap = nblks;
 #endif
 		sp->sw_nblks = nblks;
 	}
