@@ -1,4 +1,4 @@
-/*	$OpenBSD: init.c,v 1.9 2002/12/06 21:48:51 millert Exp $	*/
+/*	$OpenBSD: init.c,v 1.10 2003/06/03 03:01:38 millert Exp $	*/
 /*	$NetBSD: init.c,v 1.4 1995/03/21 15:07:35 cgd Exp $	*/
 
 /*
@@ -34,7 +34,7 @@
 #if 0
 static char sccsid[] = "@(#)init.c	8.4 (Berkeley) 4/30/95";
 #else
-static char rcsid[] = "$OpenBSD: init.c,v 1.9 2002/12/06 21:48:51 millert Exp $";
+static char rcsid[] = "$OpenBSD: init.c,v 1.10 2003/06/03 03:01:38 millert Exp $";
 #endif
 #endif /* not lint */
 
@@ -57,6 +57,8 @@ initialize(filename)
 	location = dayfile;
 	srandomdev();
 	username = getutmp();
+	if (username == NULL)
+		errx(1, "Don't know who you are.");
 	wordinit();
 	if (filename == NULL) {
 		direction = NORTH;
@@ -84,7 +86,7 @@ getutmp()
 
 	ptr = getpwuid(getuid());
 	if (ptr == NULL)
-		return("");
+		return(NULL);
 	else
 		return(strdup(ptr->pw_name));
 }
