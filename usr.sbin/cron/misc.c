@@ -1,4 +1,4 @@
-/*	$OpenBSD: misc.c,v 1.22 2002/07/15 19:13:29 millert Exp $	*/
+/*	$OpenBSD: misc.c,v 1.23 2002/08/08 18:17:50 millert Exp $	*/
 /* Copyright 1988,1990,1993,1994 by Paul Vixie
  * All rights reserved
  */
@@ -21,7 +21,7 @@
  */
 
 #if !defined(lint) && !defined(LINT)
-static char const rcsid[] = "$OpenBSD: misc.c,v 1.22 2002/07/15 19:13:29 millert Exp $";
+static char const rcsid[] = "$OpenBSD: misc.c,v 1.23 2002/08/08 18:17:50 millert Exp $";
 #endif
 
 /* vix 26jan87 [RCS has the rest of the log]
@@ -747,8 +747,8 @@ open_socket()
 		exit(ERROR_EXIT);
 	}
 	unlink(sun.sun_path);
-	sun.sun_len = strlen(sun.sun_path);
 	sun.sun_family = AF_UNIX;
+	sun.sun_len = SUN_LEN(&sun);
 
 	omask = umask(007);
 	if (bind(sock, (struct sockaddr *)&sun, sizeof(sun))) {
