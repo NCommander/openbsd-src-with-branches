@@ -2,7 +2,7 @@
  * The code in this file was written by Eivind Eklund <perhaps@yes.no>,
  * who places it in the public domain without restriction.
  *
- *	$OpenBSD: nat_cmd.c,v 1.5 2000/03/04 02:21:58 brian Exp $
+ *	$OpenBSD: nat_cmd.c,v 1.6 2000/03/19 12:38:19 brian Exp $
  */
 
 #include <sys/param.h>
@@ -424,7 +424,7 @@ nat_LayerPull(struct bundle *bundle, struct link *l, struct mbuf *bp,
       break;
 
     default:
-      log_Printf(LogWARN, "nat_LayerPull: Dropped a packet....\n");
+      log_Printf(LogWARN, "nat_LayerPull: Dropped a packet (%d)....\n", ret);
       m_freem(bp);
       bp = NULL;
       break;
