@@ -1,4 +1,4 @@
-#       $OpenBSD: install.md,v 1.22 1998/09/06 08:51:08 deraadt Exp $
+#       $OpenBSD: install.md,v 1.23 1998/09/11 22:55:46 millert Exp $
 #
 # Copyright (c) 1996 The NetBSD Foundation, Inc.
 # All rights reserved.
@@ -92,11 +92,11 @@ md_get_msgbuf() {
 }
 
 md_get_diskdevs() {
-	md_get_msgbuf | egrep "^[sw]d[0-9]+ " | sed 's/ .*//'
+	md_get_msgbuf | egrep "^[sw]d[0-9]+ " | cutword 1
 }
 
 md_get_cddevs() {
-	md_get_msgbuf | egrep "^a?cd[0-9]+ " | sed 's/ .*//'
+	md_get_msgbuf | egrep "^a?cd[0-9]+ " | cutword 1
 }
 
 md_get_partition_range() {
