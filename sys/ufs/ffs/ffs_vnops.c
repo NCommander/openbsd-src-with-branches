@@ -1,4 +1,4 @@
-/*	$OpenBSD: ffs_vnops.c,v 1.20 2001/11/06 19:53:21 miod Exp $	*/
+/*	$OpenBSD: ffs_vnops.c,v 1.21 2001/11/27 05:27:12 art Exp $	*/
 /*	$NetBSD: ffs_vnops.c,v 1.7 1996/05/11 18:27:24 mycroft Exp $	*/
 
 /*
@@ -111,6 +111,7 @@ struct vnodeopv_entry_desc ffs_vnodeop_entries[] = {
 	{ &vop_getpages_desc, genfs_getpages },
 	{ &vop_putpages_desc, genfs_putpages },
 	{ &vop_size_desc, ffs_size },
+	{ &vop_mmap_desc, ufs_mmap },
 	{ NULL, NULL }
 };
 

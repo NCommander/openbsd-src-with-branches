@@ -1,4 +1,4 @@
-/*	$OpenBSD: fifo.h,v 1.7 2001/03/01 20:54:34 provos Exp $	*/
+/*	$OpenBSD: fifo.h,v 1.8 2001/06/23 02:14:24 csapuntz Exp $	*/
 /*	$NetBSD: fifo.h,v 1.10 1996/02/09 22:40:15 christos Exp $	*/
 
 /*
@@ -80,6 +80,7 @@ int	fifo_pathconf	__P((void *));
 int	fifo_advlock	__P((void *));
 #define fifo_reallocblks fifo_badop
 #define fifo_bwrite	nullop
+#define fifo_mmap	fifo_badop
 
 void 	fifo_printinfo __P((struct vnode *));
 
