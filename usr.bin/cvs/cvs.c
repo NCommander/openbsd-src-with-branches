@@ -1,4 +1,4 @@
-/*	$OpenBSD: cvs.c,v 1.17 2004/12/07 06:33:10 jfb Exp $	*/
+/*	$OpenBSD: cvs.c,v 1.18 2004/12/07 17:10:56 tedu Exp $	*/
 /*
  * Copyright (c) 2004 Jean-Francois Brousseau <jfb@openbsd.org>
  * All rights reserved.
@@ -106,8 +106,8 @@ static struct cvs_cmd {
 		NULL,
 	},
 	{
-		CVS_OP_ANNOTATE, "annotate", { "ann"        }, NULL,
-		"",
+		CVS_OP_ANNOTATE, "annotate", { "ann"        }, cvs_annotate,
+		"[-FflR] [-D date | -r rev] file ...",
 		"",
 		"Show last revision where each line was modified",
 		NULL,
