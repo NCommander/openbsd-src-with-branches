@@ -1,4 +1,4 @@
-/*	$OpenBSD: exec_elf.c,v 1.46 2003/05/13 16:39:23 millert Exp $	*/
+/*	$OpenBSD: exec_elf.c,v 1.47 2003/05/17 14:02:06 grange Exp $	*/
 
 /*
  * Copyright (c) 1996 Per Fogelstrom
@@ -137,6 +137,7 @@ struct emul ELFNAMEEND(emul) = {
 	ELFNAME2(exec,fixup),
 	sigcode,
 	esigcode,
+	EMUL_ENABLED | EMUL_NATIVE,
 };
 
 /*
