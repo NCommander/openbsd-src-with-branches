@@ -1,4 +1,4 @@
-/*	$OpenBSD: ukc.c,v 1.1 1999/10/04 20:00:51 deraadt Exp $ */
+/*	$OpenBSD: ukc.c,v 1.2 1999/10/16 13:13:27 aaron Exp $ */
 
 /*
  * Copyright (c) 1999 Mats O Jansson.  All rights reserved.
@@ -30,7 +30,7 @@
  */
 
 #ifndef LINT
-static char rcsid[] = "$OpenBSD: ukc.c,v 1.1 1999/10/04 20:00:51 deraadt Exp $";
+static char rcsid[] = "$OpenBSD: ukc.c,v 1.2 1999/10/16 13:13:27 aaron Exp $";
 #endif
 
 #include <sys/types.h>
@@ -157,6 +157,7 @@ WARNING the commands add and change might not work.\n");
 		}
 		if (outfile == NULL)
 			outfile = file;
+		printf ("Saving modified kernel.\n");
 		savekernel(outfile);
 	}
 
