@@ -138,7 +138,7 @@ ipicscan(parent, child, args)
 		oca.ca_ipl = cf->cf_loc[2];
 		oca.ca_vec = cf->cf_loc[3];
 		if (oca.ca_ipl > 0 && oca.ca_vec == -1)
-			oca.ca_vec = intr_freevec();
+			oca.ca_vec = intr_findvec(255, 0);
 
 		oca.ca_master = (void *)sc;
 		oca.ca_name = cf->cf_driver->cd_name;
