@@ -1,4 +1,4 @@
-/*	$OpenBSD: route.c,v 1.29 2002/03/14 01:27:10 millert Exp $	*/
+/*	$OpenBSD: route.c,v 1.30 2002/05/31 05:00:26 itojun Exp $	*/
 /*	$NetBSD: route.c,v 1.14 1996/02/13 22:00:46 christos Exp $	*/
 
 /*
@@ -986,11 +986,8 @@ rt_timer_add(rt, func, queue)
 {
 	struct rttimer *r;
 	long current_time;
-	int s;
 
-	s = splclock();
 	current_time = mono_time.tv_sec;
-	splx(s);
 
 	/*
 	 * If there's already a timer with this action, destroy it before
@@ -1045,9 +1042,7 @@ rt_timer_timer(arg)
 	long current_time;
 	int s;
 
-	s = splclock();
 	current_time = mono_time.tv_sec;
-	splx(s);
 
 	s = splsoftnet();
 	for (rtq = LIST_FIRST(&rttimer_queue_head); rtq != NULL; 
