@@ -1,4 +1,4 @@
-/*	$OpenBSD: SYS.h,v 1.7 2000/03/01 17:31:22 todd Exp $	*/
+/*	$OpenBSD: SYS.h,v 1.8 2000/10/06 23:29:15 d Exp $	*/
 /*-
  * Copyright (c) 1994
  *	Andrew Cagney.  All rights reserved.
@@ -70,10 +70,15 @@
 				PSEUDO_PREFIX(_thread_sys_,x,x)
 #define PREFIX2(x,y)		ALIAS(_thread_sys_,x) \
 				PSEUDO_PREFIX(_thread_sys_,x,y)
+/* XXX - actually sets errno */
+#define	PSEUDO_NOERROR(x,y)	ALIAS(_thread_sys_,x) \
+				PSEUDO_PREFIX(_thread_sys_,x,y) ; \
+				sc ; \
+				PSEUDO_SUFFIX
+
 #define	PSEUDO(x,y)		ALIAS(_thread_sys_,x) \
 				PSEUDO_PREFIX(_thread_sys_,x,y) ; \
 				sc ; \
 				PSEUDO_SUFFIX
 
 #define RSYSCALL(x)		PSEUDO(x,x)
-
