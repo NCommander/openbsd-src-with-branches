@@ -1,5 +1,5 @@
-/*	$OpenBSD: uvm_swap.c,v 1.41 2001/11/15 23:15:15 art Exp $	*/
-/*	$NetBSD: uvm_swap.c,v 1.46 2001/02/18 21:19:08 chs Exp $	*/
+/*	$OpenBSD: uvm_swap.c,v 1.39 2001/11/10 18:42:32 art Exp $	*/
+/*	$NetBSD: uvm_swap.c,v 1.40 2000/11/17 11:39:39 mrg Exp $	*/
 
 /*
  * Copyright (c) 1995, 1996, 1997 Matthew R. Green
@@ -762,7 +762,7 @@ sys_swapctl(p, v, retval)
 	case SWAP_DUMPDEV:
 		if (vp->v_type != VBLK) {
 			error = ENOTBLK;
-			break;
+			goto out;
 		}
 		dumpdev = vp->v_rdev;
 		break;
@@ -867,7 +867,9 @@ sys_swapctl(p, v, retval)
 		/*
 		 * do the real work.
 		 */
-		error = swap_off(p, sdp);
+		if ((error = swap_off(p, sdp)) != 0)
+			goto out;
+
 		break;
 
 	default:
@@ -1059,19 +1061,15 @@ swap_on(p, sdp)
 		printf("leaving %d pages of swap\n", size);
 	}
 
-  	/*
-	 * try to add anons to reflect the new swap space.
-	 */
-
-	error = uvm_anon_add(size);
-	if (error) {
-		goto bad;
-	}
-
 	/*
 	 * add a ref to vp to reflect usage as a swap device.
 	 */
 	vref(vp);
+
+  	/*
+	 * add anons to reflect the new swap space
+	 */
+	uvm_anon_add(size);
 
 #ifdef UVM_SWAP_ENCRYPT
 	if (uvm_doswapencrypt)
@@ -1089,17 +1087,12 @@ swap_on(p, sdp)
 	simple_unlock(&uvm.swap_data_lock);
 	return (0);
 
-	/*
-	 * failure: clean up and return error.
-	 */
-
 bad:
-	if (sdp->swd_ex) {
-		extent_destroy(sdp->swd_ex);
-	}
-	if (vp != rootvp) {
+	/*
+	 * failure: close device if necessary and return error.
+	 */
+	if (vp != rootvp)
 		(void)VOP_CLOSE(vp, FREAD|FWRITE, p->p_ucred, p);
-	}
 	return (error);
 }
 
