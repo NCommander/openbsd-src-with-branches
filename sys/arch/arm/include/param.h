@@ -1,4 +1,4 @@
-/*	$OpenBSD: param.h,v 1.2 2004/02/06 17:30:38 drahn Exp $	*/
+/*	$OpenBSD: param.h,v 1.3 2004/04/19 22:55:48 deraadt Exp $	*/
 /*	$NetBSD: param.h,v 1.9 2002/03/24 03:37:23 thorpej Exp $	*/
 
 /*
@@ -107,7 +107,7 @@
     
 #ifdef _KERNEL
 #ifndef _LOCORE
-void	delay __P((unsigned));
+void	delay (unsigned);
 #define DELAY(x)	delay(x)
 #endif
 #endif
