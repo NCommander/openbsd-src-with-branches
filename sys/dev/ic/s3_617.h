@@ -1,3 +1,5 @@
+/*	$OpenBSD$	*/
+
 /*
  * Copyright (c) 1998 Constantine Paul Sapuntzakis
  * All rights reserved

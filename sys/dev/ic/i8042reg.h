@@ -1,3 +1,4 @@
+/*	$OpenBSD: i8042reg.h,v 1.7 1998/01/18 14:41:37 drochner Exp $	*/
 /*	$NetBSD: i8042reg.h,v 1.7 1998/01/18 14:41:37 drochner Exp $	*/
 
 #define	KBSTATP		4	/* kbd controller status port (I) */

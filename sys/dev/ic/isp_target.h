@@ -1,3 +1,5 @@
+/*	$OpenBSD$	*/
+
 /* @(#)isp_target.h 1.3 */
 /*
  * Qlogic Target Mode Structure and Flag Definitions
