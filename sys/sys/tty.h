@@ -1,4 +1,4 @@
-/*	$OpenBSD: tty.h,v 1.2 1996/03/03 12:12:32 niklas Exp $	*/
+/*	$OpenBSD: tty.h,v 1.4 1996/06/10 07:31:41 deraadt Exp $	*/
 /*	$NetBSD: tty.h,v 1.30.4.1 1996/06/02 09:08:13 mrg Exp $	*/
 
 /*-
@@ -44,6 +44,7 @@
 #include <sys/termios.h>
 #include <sys/select.h>		/* For struct selinfo. */
 #include <sys/queue.h>
+#include <sys/timeout.h>
 
 #ifndef REAL_CLISTS
 /*
@@ -112,6 +113,7 @@ struct tty {
 	short	t_hiwat;		/* High water mark. */
 	short	t_lowat;		/* Low water mark. */
 	short	t_gen;			/* Generation number. */
+	struct timeout t_rstrt_to;	/* restart timeout */
 };
 
 #define	t_cc		t_termios.c_cc
