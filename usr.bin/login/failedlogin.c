@@ -1,4 +1,4 @@
-/*	$OpenBSD: failedlogin.c,v 1.8 2000/03/01 18:33:49 deraadt Exp $	*/
+/*	$OpenBSD: failedlogin.c,v 1.9 2000/03/02 04:05:44 millert Exp $	*/
 
 /*
  * Copyright (c) 1996 Todd C. Miller <Todd.Miller@courtesan.com>
@@ -28,7 +28,7 @@
  */
 
 #ifndef lint                                                              
-static char rcsid[] = "$OpenBSD: failedlogin.c,v 1.8 2000/03/01 18:33:49 deraadt Exp $";
+static char rcsid[] = "$OpenBSD: failedlogin.c,v 1.9 2000/03/02 04:05:44 millert Exp $";
 #endif /* not lint */                                                        
 
 /*
@@ -57,6 +57,9 @@ struct badlogin {
 	time_t	bl_time;		/* time of the login attempt */
 	size_t	count;			/* number of bad logins */
 };
+
+void	 log_failedlogin __P((uid_t, char *, char *, char *));
+int	 check_failedlogin __P((uid_t));
 
 /*
  * Log a bad login to the failedlogin file.

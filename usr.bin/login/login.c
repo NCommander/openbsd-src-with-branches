@@ -1,4 +1,4 @@
-/*	$OpenBSD: login.c,v 1.39 2001/06/25 16:18:37 millert Exp $	*/
+/*	$OpenBSD: login.c,v 1.40 2001/06/28 22:49:42 millert Exp $	*/
 /*	$NetBSD: login.c,v 1.13 1996/05/15 23:50:16 jtc Exp $	*/
 
 /*-
@@ -77,7 +77,7 @@ static char copyright[] =
 #if 0
 static char sccsid[] = "@(#)login.c	8.4 (Berkeley) 4/2/94";
 #endif
-static char rcsid[] = "$OpenBSD: login.c,v 1.39 2001/06/25 16:18:37 millert Exp $";
+static char rcsid[] = "$OpenBSD: login.c,v 1.40 2001/06/28 22:49:42 millert Exp $";
 #endif /* not lint */
 
 /*
@@ -131,6 +131,7 @@ void	 sighup __P((int));
 void	 sleepexit __P((int));
 char	*stypeof __P((char *));
 void	 timedout __P((int));
+int	 main __P((int, char **));
 
 extern int check_failedlogin __P((uid_t));
 extern void log_failedlogin __P((uid_t, char *, char *, char *));
