@@ -1,4 +1,4 @@
-/*	$OpenBSD: privsep.c,v 1.12 2003/12/29 22:09:36 deraadt Exp $	*/
+/*	$OpenBSD: privsep.c,v 1.13 2004/01/04 08:28:49 djm Exp $	*/
 
 /*
  * Copyright (c) 2003 Anil Madhavapeddy <anil@recoil.org>
@@ -49,7 +49,7 @@
  *
  * This allows a HUP signal to the child to reopen its log files, and
  * the config file to be parsed if it hasn't been changed (this is still
- * useful to force resoluton of remote syslog servers again).
+ * useful to force resolution of remote syslog servers again).
  * If the config file has been modified, then the child dies, and
  * the priv parent restarts itself.
  */
