@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.3 1999/05/26 13:52:58 espie Exp $
+#	$OpenBSD: Makefile,v 1.2 2003/08/05 11:11:42 hin Exp $
 
 AFSTOPDIR=	../..
 .include <../../Makefile.inc>
@@ -16,7 +16,7 @@ MAN		=
 BINDIR		= ${DESTDIR}/usr/bin
 PROG		= ydr
 
-CFLAGS		+= -I${AFSSRC}/util -I.
+CFLAGS		+= -I${AFSSRC}/util -I${AFSSRC}/ydr -I.
 
 .PATH:	${AFSSRC}/ydr ${AFSSRC}/util
 
