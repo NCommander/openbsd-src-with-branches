@@ -1,7 +1,7 @@
-/*	$OpenBSD: file.c,v 1.9 1999/10/09 20:35:46 beck Exp $	*/
+/*	$OpenBSD: file.c,v 1.10 2000/03/24 00:20:04 espie Exp $	*/
 
 #ifndef lint
-static const char *rcsid = "$OpenBSD: file.c,v 1.9 1999/10/09 20:35:46 beck Exp $";
+static const char *rcsid = "$OpenBSD: file.c,v 1.10 2000/03/24 00:20:04 espie Exp $";
 #endif
 
 /*
@@ -708,4 +708,3 @@ format_cmd(char *buf, size_t size, const char *fmt,
 	    *buf = '\0';
 	return 1;
 }
-			
