@@ -142,7 +142,6 @@ static int ndvmamap;	/* # of entries in dvmamap */
 caddr_t allocsys __P((caddr_t));
 void	dumpsys __P((void));
 void	stackdump __P((void));
-void	identifycpu __P((void));
 
 /*
  * Machine-dependent startup code
@@ -172,7 +171,7 @@ cpu_startup()
 	 * Good {morning,afternoon,evening,night}.
 	 */
 	printf(version);
-	identifycpu();
+	/*identifycpu();*/
 #ifndef MACHINE_NONCONTIG
 	physmem = btoc(avail_end);
 #endif

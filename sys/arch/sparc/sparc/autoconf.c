@@ -1143,6 +1143,11 @@ mainbus_attach(parent, dev, aux)
 
 #if defined(SUN4)
 	if (CPU_ISSUN4) {
+		/* Configure the CPU. */
+		bzero(&oca, sizeof(oca));
+		oca.ca_ra.ra_name = "cpu";
+		(void)config_found(dev, (void *)&oca, mbprint);
+
 		/* Start at the beginning of the bootpath */
 		bzero(&oca, sizeof(oca));
 		oca.ca_ra.ra_bp = bootpath;
@@ -1171,6 +1176,33 @@ mainbus_attach(parent, dev, aux)
 				: openboot_special4c;
 
 	node = ca->ca_ra.ra_node;	/* i.e., the root node */
+
+	/* the first early device to be configured is the cpu */
+	if (CPU_ISSUN4M) {
+		/* XXX - what to do on multiprocessor machines? */
+		register const char *cp;
+
+		for (node = firstchild(node); node; node = nextsibling(node)) {
+			cp = getpropstring(node, "device_type");
+			if (strcmp(cp, "cpu") == 0) {
+				bzero(&oca, sizeof(oca));
+				oca.ca_ra.ra_node = node;
+				oca.ca_ra.ra_name = "cpu";
+				oca.ca_ra.ra_paddr = 0;
+				oca.ca_ra.ra_nreg = 0;
+				config_found(dev, (void *)&oca, mbprint);
+			}
+		}
+	} else if (CPU_ISSUN4C) {
+		bzero(&oca, sizeof(oca));
+		oca.ca_ra.ra_node = node;
+		oca.ca_ra.ra_name = "cpu";
+		oca.ca_ra.ra_paddr = 0;
+		oca.ca_ra.ra_nreg = 0;
+		config_found(dev, (void *)&oca, mbprint);
+	}
+
+	node = ca->ca_ra.ra_node;	/* re-init root node */
 
 	if (promvec->pv_romvec_vers <= 2)
 		/* remember which frame buffer, if any, is to be /dev/fb */
