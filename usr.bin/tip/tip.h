@@ -1,4 +1,4 @@
-/*	$OpenBSD: tip.h,v 1.11 2001/09/09 19:30:49 millert Exp $	*/
+/*	$OpenBSD: tip.h,v 1.12 2002/02/16 21:27:55 millert Exp $	*/
 /*	$NetBSD: tip.h,v 1.7 1997/04/20 00:02:46 mellon Exp $	*/
 
 /*
@@ -281,7 +281,7 @@ int	args(char *buf, char *a[], int num);
 int	escape(void);
 int	prompt(char *s, char *p, size_t sz);
 int	size(char *s);
-int	speed(int n);
+int	ttysetup(int speed);
 int	uu_lock(char *ttyname);
 int	uu_unlock(char *ttyname);
 int	vstring(char *s, char *v);
@@ -305,7 +305,6 @@ void	tipin(void);
 void	tipout(void);
 void	transfer(char *buf, int fd, char *eofchars);
 void	transmit(FILE *fd, char *eofchars, char *command);
-void	ttysetup(int speed);
 void	unraw(void);
 void	user_uid(void);
 void	vinit(void);
