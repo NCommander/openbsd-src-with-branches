@@ -1,6 +1,6 @@
-/*	$OpenBSD: closeall.c,v 1.2 1996/09/23 14:18:50 mickey Exp $	*/
+/*	$OpenBSD: closeall.c,v 1.1 1997/09/17 10:46:16 downsj Exp $	*/
 
 void
-closeall()
+closeall(void)
 {
 }
