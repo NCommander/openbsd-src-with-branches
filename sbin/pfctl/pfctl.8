@@ -1,4 +1,4 @@
-.\" $OpenBSD: pfctl.8,v 1.82 2003/02/20 11:08:06 cedric Exp $
+.\" $OpenBSD: pfctl.8,v 1.83 2003/02/20 22:09:27 deraadt Exp $
 .\"
 .\" Copyright (c) 2001 Kjell Wooding.  All rights reserved.
 .\"
@@ -309,8 +309,8 @@ The following commands configure the firewall and send 10 pings to the ftp
 server:
 .Pp
 .Bd -literal -offset indent
-.Ic # echo \&"table <test> { ftp.openbsd.org }\en\& "\e
-.Ic \  \  pass out to <test> keep state" Xo
+.Ic # printf \&"table <test> { ftp.openbsd.org }\en \e
+.Ic \  \  pass out to <test> keep state\en" Xo
 .Ic \&| pfctl -f-
 .Xc
 .Ic # ping -qc10 ftp.openbsd.org
