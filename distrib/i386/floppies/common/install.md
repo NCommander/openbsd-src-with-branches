@@ -1,4 +1,4 @@
-#	$OpenBSD: install.md,v 1.12 2001/03/13 21:22:50 deraadt Exp $
+#	$OpenBSD: install.md,v 1.13 2001/06/23 19:44:42 deraadt Exp $
 #
 #
 # Copyright rc) 1996 The NetBSD Foundation, Inc.
@@ -229,7 +229,6 @@ and rational way.  As a reminder, installing the 'etc' binary set is NOT
 recommended.  Once the rest of your system has been upgraded, you should
 manually merge any changes to files in the 'etc' set into those files which
 already exist on your system.
-
 __EOT
 	fi
 
