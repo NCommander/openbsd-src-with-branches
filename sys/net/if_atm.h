@@ -1,4 +1,4 @@
-/*      $OpenBSD: if_atm.h,v 1.5 1996/06/29 20:07:05 chuck Exp $       */
+/*      $OpenBSD: if_atm.h,v 1.7 1996/07/03 17:14:30 chuck Exp $       */
 
 /*
  *
@@ -95,7 +95,8 @@ struct atmllc {
   u_int8_t type[2];	/* "ethernet" type */
 };
 
-#define ATM_LLC_TYPE(X) (((X)->type[1] << 8) | ((X)->type[0]))
+/* ATM_LLC macros: note type code in host byte order */
+#define ATM_LLC_TYPE(X) (((X)->type[0] << 8) | ((X)->type[1]))
 #define ATM_LLC_SETTYPE(X,V) { \
 	(X)->type[1] = ((V) >> 8) & 0xff; \
 	(X)->type[0] = ((V) & 0xff); \
