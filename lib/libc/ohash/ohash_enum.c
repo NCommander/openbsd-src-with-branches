@@ -1,4 +1,4 @@
-/* $OpenBSD: hash_enum.c,v 1.2 2000/06/28 10:12:47 espie Exp $ */
+/* $OpenBSD: ohash_enum.c,v 1.1 2001/03/02 13:27:07 espie Exp $ */
 /* ex:ts=8 sw=4: 
  */
 
@@ -41,7 +41,7 @@ ohash_first(h, pos)
 }
 	
 void *
-hash_next(h, pos)
+ohash_next(h, pos)
 	struct ohash 	*h;
 	unsigned int 	*pos;
 {
