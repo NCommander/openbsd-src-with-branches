@@ -1,4 +1,4 @@
-/*	$OpenBSD: memprobe.c,v 1.26 1998/02/24 22:06:56 weingart Exp $	*/
+/*	$OpenBSD: memprobe.c,v 1.27 1998/04/18 07:39:54 deraadt Exp $	*/
 
 /*
  * Copyright (c) 1997 Tobias Weingartner, Michael Shalayeff
@@ -247,7 +247,7 @@ addrprobe(kloc)
  * routine, we are getting pretty desparate.  Hopefully nobody
  * has to rely on this after all the work above.
  *
- * XXX - Does not detect aliases memory.
+ * XXX - Does not detect aliased memory.
  * XXX - Could be destructive, as it does write.
  */
 static __inline bios_memmap_t *
@@ -307,7 +307,7 @@ memprobe()
 	/* XXX - Compatibility, remove later */
 	extmem = cnvmem = 0;
 	for(im = bios_memmap; im->type != BIOS_MAP_END; im++) {
-		/* Count only "good" memory chunks 4K an up in size */
+		/* Count only "good" memory chunks 4K and up in size */
 		if ((im->type == BIOS_MAP_FREE) && (im->size >= 4)) {
 			printf(" %luK", (u_long)im->size);
 
