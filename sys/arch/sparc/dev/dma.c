@@ -1,4 +1,4 @@
-/*	$OpenBSD: dma.c,v 1.14 1999/02/28 19:12:32 jason Exp $	*/
+/*	$OpenBSD: dma.c,v 1.15 1999/07/09 21:34:44 art Exp $	*/
 /*	$NetBSD: dma.c,v 1.46 1997/08/27 11:24:16 bouyer Exp $ */
 
 /*
@@ -468,7 +468,7 @@ dma_setup(sc, addr, len, datain, dmasize)
 		long bcnt = sc->sc_dmasize;
 		long eaddr = bcnt + (long)*sc->sc_dmaaddr;
 		if ((eaddr & PGOFSET) != 0)
-			bcnt = roundup(bcnt, NBPG);
+			bcnt = round_page(bcnt);
 		DMACNT(sc) = bcnt;
 	}
 	/* Setup DMA control register */
