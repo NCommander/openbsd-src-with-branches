@@ -1,6 +1,6 @@
 #!/bin/sh -
 #
-#	$OpenBSD: MAKEDEV,v 1.27 1997/05/14 00:11:07 deraadt Exp $
+#	$OpenBSD: MAKEDEV,v 1.28 1997/05/14 15:41:21 niklas Exp $
 #
 # Copyright (c) 1990 The Regents of the University of California.
 # All rights reserved.
@@ -178,7 +178,7 @@ floppy)
 
 ramdisk)
 	sh ${this} std random
-	sh ${this} fd0 sd0 sd1 rd0 cd0
+	sh ${this} fd0 sd0 sd1 sd2 sd3 rd0 cd0
 	;;
 
 std)
