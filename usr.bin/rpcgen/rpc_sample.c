@@ -1,4 +1,4 @@
-/*	$OpenBSD: rpc_sample.c,v 1.5 2001/07/18 22:26:00 deraadt Exp $	*/
+/*	$OpenBSD: rpc_sample.c,v 1.6 2001/11/07 18:44:28 deraadt Exp $	*/
 /*	$NetBSD: rpc_sample.c,v 1.2 1995/06/11 21:50:01 pk Exp $	*/
 /*
  * Sun RPC is a product of Sun Microsystems, Inc. and is provided for
@@ -188,7 +188,7 @@ write_sample_server(def)
 			  return_type(proc);
 			else
 			  f_print(fout, "char*" );  /* cannot have void type */
-			f_print(fout, " result;\n", proc->res_type);
+			f_print(fout, " result;\n");
 			f_print(fout, 
 				"\n\t/*\n\t * insert server code here\n\t */\n\n");
 			if( !streq( proc->res_type, "void") )
