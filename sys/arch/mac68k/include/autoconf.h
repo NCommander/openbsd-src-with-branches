@@ -1,4 +1,4 @@
-/*	$OpenBSD: autoconf.h,v 1.4 1997/01/24 01:35:40 briggs Exp $	*/
+/*	$OpenBSD: autoconf.h,v 1.5 1997/04/06 02:59:54 briggs Exp $	*/
 /*	$NetBSD: autoconf.h,v 1.5 1996/12/17 06:47:40 scottr Exp $	*/
 
 /*
@@ -33,11 +33,15 @@
  * SUCH DAMAGE.
  */
 
+#ifndef _MAC68K_AUTOCONF_H_
+#define _MAC68K_AUTOCONF_H_
+
 /*
  * Autoconfiguration information.
  * From sun3 port--adapted for mac68k platform by Allen Briggs.
  */
 
+#ifdef _KERNEL
 /* autoconf.c */
 void	setconf __P((void));
 void	configure __P((void));
@@ -63,3 +67,6 @@ void	startrtclock __P((void));
 
 /* macrom.c */
 void	mrg_init __P((void));
+#endif	/* _KERNEL */
+
+#endif	/* _MAC68K_AUTOCONF_H_ */
