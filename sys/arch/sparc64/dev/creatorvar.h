@@ -1,7 +1,8 @@
-/*	$OpenBSD: creator.c,v 1.11 2002/06/03 16:32:04 fgsch Exp $	*/
+/*	$OpenBSD: creatorvar.h,v 1.1 2002/06/11 06:53:03 fgsch Exp $	*/
 
 /*
- * Copyright (c) 2002 Jason L. Wright (jason@thought.net)
+ * Copyright (c) 2002 Jason L. Wright (jason@thought.net),
+ *  Federico G. Schwindt (fgsch@openbsd.org)
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
