@@ -1,8 +1,8 @@
-# $OpenBSD: Makefile,v 1.8 2001/09/06 18:45:13 jasoni Exp $
+# $OpenBSD: Makefile,v 1.9 2001/09/15 23:25:23 wilfried Exp $
 
 NOMAN=
 NOPROG=
-PFTESTS=1 2 3 4 5 6 7 8 9 10 11
+PFTESTS=1 2 3 4 5 6 7 8 9 10 11 12
 PFFAIL=1 2 3 4 5 6 7
 
 .for n in ${PFFAIL}
