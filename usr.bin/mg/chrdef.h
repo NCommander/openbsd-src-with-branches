@@ -1,4 +1,4 @@
-/*	$OpenBSD: chrdef.h,v 1.3 2001/01/29 01:58:06 niklas Exp $	*/
+/*	$OpenBSD: chrdef.h,v 1.4 2002/02/14 02:50:10 vincent Exp $	*/
 
 /*
  * sys/default/chardef.h: character set specific #defines for Mg 2a
@@ -10,9 +10,7 @@
  * and won't have the size problems.  Override in sysdef.h if no
  * unsigned char type.
  */
-#ifndef	CHARMASK
 #define	CHARMASK(c)	((unsigned char) (c))
-#endif
 
 /*
  * These flags, and the macros below them,
