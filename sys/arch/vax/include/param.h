@@ -1,4 +1,4 @@
-/*	$OpenBSD: param.h,v 1.11 1997/10/02 22:55:43 niklas Exp $ */
+/*	$OpenBSD: param.h,v 1.12 2000/04/26 03:08:42 bjc Exp $ */
 /*      $NetBSD: param.h,v 1.39 1999/10/22 21:14:34 ragge Exp $    */
 /*-
  * Copyright (c) 1990 The Regents of the University of California.
@@ -74,6 +74,7 @@
 #define	VAX_PGSHIFT	9
 #define	VAX_NBPG	(1 << VAX_PGSHIFT)
 #define	VAX_PGOFSET	(VAX_NBPG - 1)
+#define	VAX_NPTEPG	(VAX_NBPG / 4)
 
 #define	KERNBASE	0x80000000		/* start of kernel virtual */
 
@@ -207,9 +208,6 @@
 #define	spl5()		splx(0x15)
 #define	spl6()		splx(0x16)
 #define	spl7()		splx(0x17)
-
-#define vmapbuf(p,q)
-#define vunmapbuf(p,q)
 
 /* Prototype needed for delay() */
 #ifndef	_LOCORE
