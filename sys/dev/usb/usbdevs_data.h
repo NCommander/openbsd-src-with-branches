@@ -3329,6 +3329,12 @@ const struct usb_knowndev usb_knowndevs[] = {
 	    "ThumbDrive",
 	},
 	{
+	    USB_VENDOR_TRUMPION, USB_PRODUCT_TRUMPION_XXX1100,
+	    0,
+	    "Trumpion Microelectronics",
+	    "XXX 1100",
+	},
+	{
 	    USB_VENDOR_ULTIMA, USB_PRODUCT_ULTIMA_1200UBPLUS,
 	    0,
 	    "Ultima",
@@ -4892,6 +4898,12 @@ const struct usb_knowndev usb_knowndevs[] = {
 	    USB_VENDOR_AUDIOTECHNICA, 0,
 	    USB_KNOWNDEV_NOPROD,
 	    "Audio-Technica",
+	    NULL,
+	},
+	{
+	    USB_VENDOR_TRUMPION, 0,
+	    USB_KNOWNDEV_NOPROD,
+	    "Trumpion Microelectronics",
 	    NULL,
 	},
 	{
