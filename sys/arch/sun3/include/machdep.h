@@ -1,4 +1,4 @@
-/*	$OpenBSD: machdep.h,v 1.12 2001/05/05 22:34:22 art Exp $	*/
+/*	$OpenBSD: machdep.h,v 1.13 2001/06/25 00:43:17 mickey Exp $	*/
 
 /*
  * Copyright (c) 1994 Gordon W. Ross
@@ -94,9 +94,6 @@ void	dumpsys __P((void));
 void	fb_unblank __P((void));
 
 int 	fpu_emulate __P((struct frame *, struct fpframe *));
-
-int 	getdfc __P((void));
-int 	getsfc __P((void));
 
 /* Backward compatibility... */
 #define getsr	_getsr
