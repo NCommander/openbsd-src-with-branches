@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.24 2002/08/05 15:25:43 art Exp $
+#	$OpenBSD: Makefile,v 1.25 2003/07/22 17:15:12 brad Exp $
 
 REV=		${OSrev}
 
@@ -52,7 +52,7 @@ NEWFSOPTS_FD=	${NEWFSOPTS} -i 1048575 -c 256 -s ${FLOPPYSIZE}
 
 .ifndef DESTDIR
 all:
-	@echo setenv DESTDIR before makeing a ramdisk!
+	@echo setenv DESTDIR before making a ramdisk!
 	@false
 .else
 

@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.25 2002/08/05 15:25:43 art Exp $
+#	$OpenBSD: Makefile,v 1.26 2003/07/22 17:15:12 brad Exp $
 
 REV=		${OSrev}
 
@@ -35,7 +35,7 @@ RAWLABEL?=	-r
 
 .ifndef DESTDIR
 all:
-	@echo setenv DESTDIR before makeing a miniroot!
+	@echo setenv DESTDIR before making a miniroot!
 	@false
 .else
 
