@@ -1,4 +1,4 @@
-/* * $OpenBSD: skey.c,v 1.8 1996/11/03 18:57:14 millert Exp $*/
+/* * $OpenBSD: skey.c,v 1.9 1996/11/22 03:24:36 millert Exp $*/
 /*
  * S/KEY v1.1b (skey.c)
  *
@@ -149,6 +149,6 @@ void
 usage(s)
 	char   *s;
 {
-	(void)fprintf(stderr, "Usage: %s [-x] [-md4|-md5|-sha1] [-n count] [-p password] <sequence#>[/] key\n", s);
+	(void)fprintf(stderr, "Usage: %s [-x] [-md4|-md5|-sha1|-rmd160] [-n count] [-p password] <sequence#>[/] key\n", s);
 	exit(1);
 }
