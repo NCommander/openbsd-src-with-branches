@@ -1,4 +1,4 @@
-/*	$OpenBSD: sysdep-os.h,v 1.1 2001/03/23 16:14:35 markus Exp $	*/
+/*	$OpenBSD: sysdep-os.h,v 1.2 2001/04/09 12:23:55 markus Exp $	*/
 
 /*
  * Copyright (c) 1998, 1999 Niklas Hallqvist.  All rights reserved.
@@ -48,5 +48,13 @@
 			(vvp)->tv_usec += 1000000;			\
 		}							\
 	} while (0)
+
+#ifndef CPI_RESERVED_MIN
+/* Reserved CPI numbers */
+#define CPI_RESERVED_MIN        1
+#define CPI_RESERVED_MAX        255
+#define CPI_PRIVATE_MIN         61440
+#define CPI_PRIVATE_MAX         65535
+#endif
 
 #endif /* _SYSDEP_OS_H_ */
