@@ -1,4 +1,4 @@
-/*	$OpenBSD: intr.h,v 1.14 2002/04/29 07:35:18 miod Exp $	*/
+/*	$OpenBSD: intr.h,v 1.15 2002/05/22 18:43:45 art Exp $	*/
 /*	$NetBSD: intr.h,v 1.5 1996/05/13 06:11:28 mycroft Exp $	*/
 
 /*
@@ -80,6 +80,7 @@
 #define	IPL_IMP		MAKEIPL(6)	/* memory allocation */
 #define	IPL_AUDIO	MAKEIPL(7)	/* audio */
 #define	IPL_CLOCK	MAKEIPL(8)	/* clock */
+#define	IPL_STATCLOCK	MAKEIPL(9)	/* statclock */
 #define	IPL_HIGH	MAKEIPL(9)	/* everything */
 
 /* Interrupt sharing types. */
