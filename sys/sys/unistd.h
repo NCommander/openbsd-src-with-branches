@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /*	$NetBSD: unistd.h,v 1.10 1994/06/29 06:46:06 cgd Exp $	*/
 
 /*

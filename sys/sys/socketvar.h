@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /*	$NetBSD: socketvar.h,v 1.18 1996/02/09 18:25:38 christos Exp $	*/
 
 /*-

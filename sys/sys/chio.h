@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /*	$NetBSD: chio.h,v 1.7 1996/02/19 18:29:06 scottr Exp $	*/
 
 /*

@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /*	$NetBSD: queue.h,v 1.9 1994/12/13 15:04:28 mycroft Exp $	*/
 
 /* 

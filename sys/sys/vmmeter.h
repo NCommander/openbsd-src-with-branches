@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /*	$NetBSD: vmmeter.h,v 1.9 1995/03/26 20:25:04 jtc Exp $	*/
 
 /*-

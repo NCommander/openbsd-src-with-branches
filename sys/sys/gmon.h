@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /*	$NetBSD: gmon.h,v 1.4 1994/06/29 06:44:17 cgd Exp $	*/
 
 /*-

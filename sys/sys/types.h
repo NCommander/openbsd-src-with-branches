@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /*	$NetBSD: types.h,v 1.24 1995/12/29 01:15:13 jtc Exp $	*/
 
 /*-

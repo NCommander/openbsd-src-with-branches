@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /*	$NetBSD: dkstat.h,v 1.8 1995/12/28 19:16:31 thorpej Exp $	*/
 
 /*-

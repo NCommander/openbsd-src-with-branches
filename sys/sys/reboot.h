@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /*	$NetBSD: reboot.h,v 1.7 1994/12/13 15:01:22 mycroft Exp $	*/
 
 /*

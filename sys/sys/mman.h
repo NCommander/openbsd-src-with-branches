@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /*	$NetBSD: mman.h,v 1.11 1995/03/26 20:24:23 jtc Exp $	*/
 
 /*-

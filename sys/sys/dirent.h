@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /*	$NetBSD: dirent.h,v 1.9 1994/12/13 15:58:20 mycroft Exp $	*/
 
 /*-

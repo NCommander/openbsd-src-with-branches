@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /*	$NetBSD: dkio.h,v 1.1 1996/01/30 18:21:48 thorpej Exp $	*/
 
 /*

@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /*	$NetBSD: wait.h,v 1.10 1995/10/19 08:14:18 jtc Exp $	*/
 
 /*

@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /*	$NetBSD: exec_script.h,v 1.6 1995/03/26 20:24:11 jtc Exp $	*/
 
 /*

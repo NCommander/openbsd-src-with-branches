@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /*	$NetBSD: malloc.h,v 1.21 1995/11/21 01:00:25 cgd Exp $	*/
 
 /*

@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /*	$NetBSD: ttydefaults.h,v 1.7 1994/06/29 06:45:57 cgd Exp $	*/
 
 /*-

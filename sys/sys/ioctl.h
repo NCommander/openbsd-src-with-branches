@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /*	$NetBSD: ioctl.h,v 1.20 1996/01/30 18:21:47 thorpej Exp $	*/
 
 /*-

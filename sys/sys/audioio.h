@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /*	$NetBSD: audioio.h,v 1.4 1996/02/17 02:28:56 jtk Exp $	*/
 
 /*

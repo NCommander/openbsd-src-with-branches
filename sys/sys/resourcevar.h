@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /*	$NetBSD: resourcevar.h,v 1.12 1995/11/22 23:01:53 cgd Exp $	*/
 
 /*

@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /*	$NetBSD: scanio.h,v 1.1 1996/02/18 20:33:18 mycroft Exp $	*/
 
 /*

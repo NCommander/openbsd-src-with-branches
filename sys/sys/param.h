@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /*	$NetBSD: param.h,v 1.18.2.1 1995/10/12 05:42:01 jtc Exp $	*/
 
 /*-

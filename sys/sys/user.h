@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /*	$NetBSD: user.h,v 1.9 1995/03/26 20:25:03 jtc Exp $	*/
 
 /*

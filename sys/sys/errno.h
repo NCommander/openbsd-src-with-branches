@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /*	$NetBSD: errno.h,v 1.10 1996/01/20 01:33:53 jtc Exp $	*/
 
 /*
