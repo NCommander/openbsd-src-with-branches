@@ -1,4 +1,4 @@
-/*	$OpenBSD: pr.c,v 1.8 2000/11/10 15:33:12 provos Exp $	*/
+/*	$OpenBSD: pr.c,v 1.9 2001/02/05 01:57:12 deraadt Exp $	*/
 
 /*-
  * Copyright (c) 1991 Keith Muller.
@@ -45,7 +45,7 @@ static char copyright[] =
 
 #ifndef lint
 /* from: static char sccsid[] = "@(#)pr.c	8.1 (Berkeley) 6/6/93"; */
-static char *rcsid = "$OpenBSD: pr.c,v 1.8 2000/11/10 15:33:12 provos Exp $";
+static char *rcsid = "$OpenBSD: pr.c,v 1.9 2001/02/05 01:57:12 deraadt Exp $";
 #endif /* not lint */
 
 #include <sys/types.h>
@@ -1236,6 +1236,13 @@ otln(buf, cnt, svips, svops, mor)
 	     */
 	    while (ops < ips) {
 		/*
+		 * use one space if necessary
+		 */
+		if (ips - ops == 1) {
+			putchar(' ');
+			break;
+		}
+		/*
 		 * use as many ochar as will fit
 		 */
 		if ((tbps = ops + gap - (ops % gap)) > ips)
@@ -1281,6 +1288,13 @@ otln(buf, cnt, svips, svops, mor)
 	if (mor < 0) {
 	    while (ops < ips) {
 		/*
+		 * use one space if necessary
+		 */
+		if (ips - ops == 1) {
+			putchar(' ');
+			break;
+		}
+		/*
 		 * use as many ochar as will fit
 		 */
 		if ((tbps = ops + gap - (ops % gap)) > ips)
@@ -1291,6 +1305,7 @@ otln(buf, cnt, svips, svops, mor)
 		}
 		ops = tbps;
 	    }
+
 	    while (ops < ips) {
 		/*
 		 * finish off with spaces
