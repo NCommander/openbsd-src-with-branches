@@ -40,7 +40,6 @@ int really_quiet = FALSE;
 int quiet = FALSE;
 int trace = FALSE;
 int noexec = FALSE;
-int readonlyfs = FALSE;
 int logoff = FALSE;
 mode_t cvsumask = UMASK_DFLT;
 
@@ -400,24 +399,10 @@ main (argc, argv)
     }
     if (getenv (CVSREAD_ENV) != NULL)
 	cvswrite = FALSE;
-    if (getenv (CVSREADONLYFS_ENV)) {
-	readonlyfs = TRUE;
-	logoff = TRUE;
-    }
-    if ((cp = getenv (CVSUMASK_ENV)) != NULL)
-    {
-	/* FIXME: Should be accepting symbolic as well as numeric mask.  */
-	cvsumask = strtol (cp, &end, 8) & 0777;
-	if (*end != '\0')
-	    error (1, errno, "invalid umask value in %s (%s)",
-		CVSUMASK_ENV, cp);
-    }
 
-    /* This has the effect of setting getopt's ordering to REQUIRE_ORDER,
-       which is what we need to distinguish between global options and
-       command options.  FIXME: It would appear to be possible to do this
-       much less kludgily by passing "+" as the first character to the
-       option string we pass to getopt_long.  */
+    /* I'm not sure whether this needs to be 1 instead of 0 anymore.  Using
+       1 used to accomplish what passing "+" as the first character to
+       the option string does, but that reason doesn't exist anymore.  */
     optind = 1;
 
 
@@ -428,13 +413,13 @@ main (argc, argv)
     opterr = 0;
 
     while ((c = getopt_long
-            (argc, argv, "f", NULL, NULL))
+            (argc, argv, "+f", NULL, NULL))
            != EOF)
-      {
+    {
 	if (c == 'f')
 	    use_cvsrc = FALSE;
-      }
-    
+    }
+
     /*
      * Scan cvsrc file for global options.
      */
@@ -445,7 +430,7 @@ main (argc, argv)
     opterr = 1;
 
     while ((c = getopt_long
-            (argc, argv, "Qqrwtnlvb:T:e:d:Hfz:s:x", long_options, &option_index))
+            (argc, argv, "+Qqrwtnlvb:T:e:d:Hfz:s:x", long_options, &option_index))
            != EOF)
       {
 	switch (c)
@@ -744,13 +729,12 @@ main (argc, argv)
 		}
 		(void) strcat (path, "/");
 		(void) strcat (path, CVSROOTADM_HISTORY);
-		if (readonlyfs == 0 && isfile (path) && !isaccessible (path, R_OK | W_OK))
+		if (isfile (path) && !isaccessible (path, R_OK | W_OK))
 		{
 		    save_errno = errno;
 		    error (0, 0, "Sorry, you don't have read/write access to the history file");
 		    error (1, save_errno, "%s", path);
 		}
-		parseopts(CVSroot_directory);
 		free (path);
 	    }
 
@@ -921,67 +905,5 @@ usage (cpp)
     (void) fprintf (stderr, *cpp++, program_name, command_name);
     for (; *cpp; cpp++)
 	(void) fprintf (stderr, *cpp);
-    error_exit();
-}
-
-void
-parseopts(root)
-    const char *root;
-{
-    char path[PATH_MAX];
-    int save_errno;
-    char buf[1024];
-    const char *p;
-    char *q;
-    FILE *fp;
-
-    if (root == NULL) {
-	printf("no CVSROOT in parseopts\n");
-	return;
-    }
-    p = strchr (root, ':');
-    if (p)
-	p++;
-    else
-	p = root;
-    if (p == NULL) {
-	printf("mangled CVSROOT in parseopts\n");
-	return;
-    }
-    (void) sprintf (path, "%s/%s/%s", p, CVSROOTADM, CVSROOTADM_OPTIONS);
-    if ((fp = fopen(path, "r")) != NULL) {
-	while (fgets(buf, sizeof buf, fp) != NULL) {
-	    if (buf[0] == '#')
-		continue;
-	    q = strrchr(buf, '\n');
-	    if (q)
-		*q = '\0';
-
-	    if (!strncmp(buf, "tag=", 4)) {
-		char *RCS_citag = strdup(buf+4);
-		char *what = malloc(sizeof("RCSLOCALID")+1+strlen(RCS_citag));
-		
-		sprintf(what, "RCSLOCALID=%s", RCS_citag);
-		putenv(what);
-	    } else if (!strncmp(buf, "umask=", 6)) {
-		mode_t mode;
-
-		cvsumask = (mode_t)(strtol(buf+6, NULL, 8) & 0777);
-	    }
-	    else if (!strncmp(buf, "dlimit=", 7)) {
-#ifdef BSD
-#include <sys/resource.h>
-		struct rlimit rl;
-
-		if (getrlimit(RLIMIT_DATA, &rl) != -1) {
-			rl.rlim_cur = atoi(buf+7);
-			rl.rlim_cur *= 1024;
-
-			(void) setrlimit(RLIMIT_DATA, &rl);
-		}
-#endif /* BSD */
-	    }
-	}
-	fclose(fp);
-    }
+    error_exit ();
 }

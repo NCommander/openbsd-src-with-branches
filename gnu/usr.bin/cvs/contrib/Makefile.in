@@ -91,7 +91,7 @@ install: all installdirs
 .PHONY: install
 
 installdirs:
-	$(SHELL) $(top_srcdir)/mkinstalldirs $(libdir)/cvs/contrib
+	$(top_srcdir)/mkinstalldirs $(libdir)/cvs/contrib
 .PHONY: installdirs
 
 tags:

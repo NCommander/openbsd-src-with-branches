@@ -182,7 +182,6 @@ extern int errno;
 #define CVSROOTADM_READERS	"readers"
 #define CVSROOTADM_WRITERS	"writers"
 #define CVSROOTADM_PASSWD	"passwd"
-#define CVSROOTADM_OPTIONS	"options"
 
 #define CVSNULLREPOS		"Emptydir"	/* an empty directory */
 
@@ -256,8 +255,6 @@ extern int errno;
 #define	CVSREAD_ENV	"CVSREAD"	/* make files read-only */
 #define	CVSREAD_DFLT	FALSE		/* writable files by default */
 
-#define	CVSREADONLYFS_ENV "CVSREADONLYFS" /* repository is read-only */
-
 #define	RCSBIN_ENV	"RCSBIN"	/* RCS binary directory */
 /* #define	RCSBIN_DFLT		   Set by options.h */
 
@@ -328,6 +325,8 @@ struct stickydirtag
     int aflag;
     char *tag;
     char *date;
+    int nonbranch;
+
     /* This field is set by Entries_Open() if there was subdirectory
        information; Find_Directories() uses it to see whether it needs
        to scan the directory itself.  */
@@ -378,7 +377,6 @@ extern char *CVSroot_directory;	/* the directory name */
 
 extern int trace;		/* Show all commands */
 extern int noexec;		/* Don't modify disk anywhere */
-extern int readonlyfs;		/* fail on all write locks; succeed all read locks */
 extern int logoff;		/* Don't write history entry */
 
 #ifdef AUTH_SERVER_SUPPORT
@@ -397,8 +395,6 @@ int RCS_exec_setbranch PROTO((const char *, const char *));
 int RCS_exec_lock PROTO((const char *, const char *, int));
 int RCS_exec_unlock PROTO((const char *, const char *, int));
 int RCS_merge PROTO((const char *, const char *, const char *, const char *));
-int RCS_exec_checkout PROTO ((char *rcsfile, char *workfile, char *tag,
-			      char *options, char *sout));
 /* Flags used by RCS_* functions.  See the description of the individual
    functions for which flags mean what for each function.  */
 #define RCS_FLAGS_FORCE 1
@@ -452,7 +448,6 @@ int isabsolute PROTO((const char *filename));
 char *last_component PROTO((char *path));
 char *get_homedir PROTO ((void));
 char *cvs_temp_name PROTO ((void));
-void parseopts PROTO ((const char *root));
 
 int numdots PROTO((const char *s));
 int unlink_file PROTO((const char *f));
@@ -464,7 +459,8 @@ int yesno PROTO((void));
 void *valloc PROTO((size_t bytes));
 time_t get_date PROTO((char *date, struct timeb *now));
 void Create_Admin PROTO((char *dir, char *update_dir,
-			 char *repository, char *tag, char *date));
+			 char *repository, char *tag, char *date,
+			 int nonbranch));
 
 /* Locking subsystem (implemented in lock.c).  */
 
@@ -478,9 +474,10 @@ void lock_tree_for_write PROTO ((int argc, char **argv, int local, int aflag));
 /* See lock.c for description.  */
 extern void lock_dir_for_write PROTO ((char *));
 
-void ParseTag PROTO((char **tagp, char **datep));
 void Scratch_Entry PROTO((List * list, char *fname));
-void WriteTag PROTO((char *dir, char *tag, char *date));
+void ParseTag PROTO((char **tagp, char **datep, int *nonbranchp));
+void WriteTag PROTO ((char *dir, char *tag, char *date, int nonbranch,
+		      char *update_dir, char *repository));
 void cat_module PROTO((int status));
 void check_entries PROTO((char *dir));
 void close_module PROTO((DBM * db));
@@ -655,7 +652,9 @@ struct vers_ts
     char *vn_tag;
 
     /* This is the timestamp from stating the file in the working directory.
-       It is NULL if there is no file in the working directory.  */
+       It is NULL if there is no file in the working directory.  It is
+       "Is-modified" if we know the file is modified but don't have its
+       contents.  */
     char *ts_user;
     /* Timestamp from CVS/Entries.  For the server, ts_user and ts_rcs
        are computed in a slightly different way, but the fact remains that
@@ -678,6 +677,9 @@ struct vers_ts
     /* Date specified on the command line, or if none, date stored in
        CVS/Entries.  */
     char *date;
+    /* If this is 1, then tag is not a branch tag.  If this is 0, then
+       tag may or may not be a branch tag.  */
+    int nonbranch;
 
     /* Pointer to entries file node  */
     Entnode *entdata;
