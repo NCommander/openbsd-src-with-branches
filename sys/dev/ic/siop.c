@@ -1,4 +1,4 @@
-/*	$OpenBSD: siop.c,v 1.9 2001/06/24 22:00:01 krw Exp $ */
+/*	$OpenBSD: siop.c,v 1.10 2001/06/25 23:14:39 krw Exp $ */
 /*	$NetBSD: siop.c,v 1.39 2001/02/11 18:04:49 bouyer Exp $	*/
 
 /*
@@ -638,8 +638,8 @@ scintr:
 		 */
 		if ((irqcode & 0x80) == 0) {
 			if (siop_cmd == NULL) {
-				printf("%s: script interrupt (0x%x) with
-				    invalid DSA !!!\n", sc->sc_dev.dv_xname,
+				printf("%s: script interrupt (0x%x) with "
+				    "invalid DSA !!!\n", sc->sc_dev.dv_xname,
 				    irqcode);
 				goto reset;
 			}
