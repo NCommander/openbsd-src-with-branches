@@ -1,4 +1,4 @@
-/*	$OpenBSD: def.h,v 1.44 2002/07/24 14:08:33 vincent Exp $	*/
+/*	$OpenBSD: def.h,v 1.45 2003/01/06 17:04:09 deraadt Exp $	*/
 
 #include <sys/queue.h>
 
@@ -592,6 +592,9 @@ int	 undo(int, int);
 int	 auto_execute(int, int);
 PF	*find_autoexec(const char *);
 int	 add_autoexec(const char *, const char *);
+
+/* mail.c X */
+void	 mail_init(void);
 
 /*
  * Externals.
