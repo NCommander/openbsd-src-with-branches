@@ -1,4 +1,4 @@
-/*	$OpenBSD: bus.h,v 1.10 1998/01/20 18:40:09 niklas Exp $	*/
+/*	$OpenBSD: bus.h,v 1.11 2000/11/08 16:01:10 art Exp $	*/
 /*	$NetBSD: bus.h,v 1.10 1996/12/02 22:19:32 cgd Exp $	*/
 
 /*
@@ -235,6 +235,8 @@ struct alpha_bus_space {
 
 #define	BUS_BARRIER_READ	0x01
 #define	BUS_BARRIER_WRITE	0x02
+#define BUS_SPACE_BARRIER_READ	BUS_BARRIER_READ
+#define BUS_SPACE_BARRIER_WRITE	BUS_BARRIER_WRITE
 
 
 /*
