@@ -1,4 +1,4 @@
-#	$OpenBSD: GENERIC,v 1.28 1999/08/12 13:06:33 niklas Exp $
+#	$OpenBSD: GENERIC,v 1.29 1999/08/29 12:14:03 niklas Exp $
 #
 #	Generic configuration file for MIPS R4x00 ARC Systems
 #
@@ -93,3 +93,7 @@ cd*		at scsibus? target ? lun ?
 ch*		at scsibus? target ? lun ?
 ss*		at scsibus? target ? lun ?
 uk*		at scsibus? target ? lun ?
+
+# for IPv6
+pseudo-device	gif		4
+#pseudo-device	faith		1
