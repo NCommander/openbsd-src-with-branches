@@ -1,4 +1,4 @@
-/*	$OpenBSD: vfs_syscalls_43.c,v 1.9 1997/11/06 22:15:52 millert Exp $	*/
+/*	$OpenBSD: vfs_syscalls_43.c,v 1.10 2001/01/23 07:06:23 csapuntz Exp $	*/
 /*	$NetBSD: vfs_syscalls_43.c,v 1.4 1996/03/14 19:31:52 christos Exp $	*/
 
 /*
@@ -216,8 +216,7 @@ compat_43_sys_fstat(p, v, retval)
 #endif
 
 	default:
-		panic("ofstat");
-		/*NOTREACHED*/
+		return (EOPNOTSUPP);
 	}
 	cvtstat(&ub, &oub);
 	if (error == 0)
