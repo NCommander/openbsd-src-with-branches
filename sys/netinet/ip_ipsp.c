@@ -1,4 +1,4 @@
-/*	$OpenBSD: ip_ipsp.c,v 1.43 1999/05/20 12:52:35 niklas Exp $	*/
+/*	$OpenBSD: ip_ipsp.c,v 1.44 1999/05/23 09:04:46 niklas Exp $	*/
 
 /*
  * The authors of this code are John Ioannidis (ji@tla.org),
@@ -238,6 +238,7 @@ check_ipsec_policy(struct inpcb *inp, u_int32_t daddr)
 	    gw = (struct sockaddr_encap *) (re->re_rt->rt_gateway);
 	    
 	    if (gw->sen_type == SENT_IPSP) {
+		bzero(&sunion, sizeof(sunion));
 	        sunion.sin.sin_family = AF_INET;
 		sunion.sin.sin_len = sizeof(struct sockaddr_in);
 		sunion.sin.sin_addr = gw->sen_ipsp_dst;
