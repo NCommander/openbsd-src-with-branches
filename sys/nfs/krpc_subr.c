@@ -60,6 +60,7 @@
 #include <nfs/rpcv2.h>
 #include <nfs/krpc.h>
 #include <nfs/xdr_subs.h>
+#include <dev/rndvar.h>
 
 /*
  * Kernel support for Sun RPC
@@ -200,7 +201,8 @@ krpc_call(sa, prog, vers, func, data, from_p)
 	struct rpc_reply *reply;
 	struct uio auio;
 	int error, rcvflg, timo, secs, len;
-	static u_int32_t xid = ~0xFF;
+	static u_int32_t xid = 0;
+	u_int32_t newxid;
 	u_int16_t tport;
 
 	/*
@@ -296,7 +298,8 @@ krpc_call(sa, prog, vers, func, data, from_p)
 	mhead->m_len = sizeof(*call);
 	bzero((caddr_t)call, sizeof(*call));
 	/* rpc_call part */
-	xid++;
+	while ((newxid = arc4random()) == xid);
+	xid = newxid;
 	call->rp_xid = txdr_unsigned(xid);
 	/* call->rp_direction = 0; */
 	call->rp_rpcvers = txdr_unsigned(2);
