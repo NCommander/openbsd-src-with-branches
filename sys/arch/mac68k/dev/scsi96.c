@@ -1,3 +1,4 @@
+/*	$OpenBSD: scsi96.c,v 1.21 1996/10/13 03:21:29 christos Exp $	*/
 /*	$NetBSD: scsi96.c,v 1.21 1996/10/13 03:21:29 christos Exp $	*/
 
 /*

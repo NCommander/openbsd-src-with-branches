@@ -1,3 +1,4 @@
+/*	$OpenBSD: sbc_obio.c,v 1.1 1997/03/01 20:18:59 scottr Exp $	*/
 /*	$NetBSD: sbc_obio.c,v 1.1 1997/03/01 20:18:59 scottr Exp $	*/
 
 /*
