@@ -1,7 +1,7 @@
-/*	$OpenBSD: pen.c,v 1.9 2001/04/08 16:45:48 espie Exp $	*/
+/*	$OpenBSD: pen.c,v 1.10 2001/11/26 05:04:33 deraadt Exp $	*/
 
 #ifndef lint
-static const char *rcsid = "$OpenBSD: pen.c,v 1.9 2001/04/08 16:45:48 espie Exp $";
+static const char *rcsid = "$OpenBSD: pen.c,v 1.10 2001/11/26 05:04:33 deraadt Exp $";
 #endif
 
 /*
@@ -106,10 +106,6 @@ make_playpen(char *pen, size_t pensize, size_t sz)
     if (!mkdtemp(pen)) {
 	cleanup(0);
 	errx(2, "can't mkdtemp '%s'", pen);
-    }
-    if (chmod(pen, 0755) == FAIL) {
-	cleanup(0);
-	errx(2, "can't chmod '%s'", pen);
     }
     if (Verbose) {
 	if (sz)
