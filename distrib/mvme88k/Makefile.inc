@@ -1,7 +1,6 @@
-#	$OpenBSD: Makefile.inc,v 1.2 1997/09/21 11:45:57 deraadt Exp $
+#	$OpenBSD: Makefile.inc,v 1.1 1998/12/17 02:16:29 smurph Exp $
 
-# Revision is 1.2
-REV=12
+REV=${OSrev}
 
 LDSTATIC=-static
 
