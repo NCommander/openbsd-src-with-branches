@@ -1,9 +1,8 @@
-/*	$OpenBSD$ */
+/*	$OpenBSD: ypdb.h,v 1.3 1996/05/30 09:53:01 deraadt Exp $ */
 
 /*
  * Copyright (c) 1990, 1993
  *	The Regents of the University of California.  All rights reserved.
- * Copyright (c) 1994 Mats O Jansson <moj@stacken.kth.se>
  * All rights reserved.
  *
  * This code is derived from software contributed to Berkeley by
