@@ -52,12 +52,12 @@ bcmp(b1, b2, length)
 	const void *b1, *b2;
 	register size_t length;
 {
-	register char *p1, *p2;
+	register const char *p1, *p2;
 
 	if (length == 0)
 		return(0);
-	p1 = (char *)b1;
-	p2 = (char *)b2;
+	p1 = (const char *)b1;
+	p2 = (const char *)b2;
 	do
 		if (*p1++ != *p2++)
 			break;
