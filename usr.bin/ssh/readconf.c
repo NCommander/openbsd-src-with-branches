@@ -12,7 +12,7 @@
  */
 
 #include "includes.h"
-RCSID("$OpenBSD: readconf.c,v 1.135 2005/03/01 10:09:52 djm Exp $");
+RCSID("$OpenBSD: readconf.c,v 1.136 2005/03/01 10:40:26 djm Exp $");
 
 #include "ssh.h"
 #include "xmalloc.h"
@@ -773,6 +773,8 @@ parse_int:
 			if (strchr(arg, '=') != NULL)
 				fatal("%s line %d: Invalid environment name.",
 				    filename, linenum);
+			if (!*activep)
+				continue;
 			if (options->num_send_env >= MAX_SEND_ENV)
 				fatal("%s line %d: too many send env.",
 				    filename, linenum);
