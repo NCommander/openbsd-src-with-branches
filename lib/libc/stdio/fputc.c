@@ -35,14 +35,20 @@
  */
 
 #if defined(LIBC_SCCS) && !defined(lint)
-static char rcsid[] = "$OpenBSD: fputc.c,v 1.4 1995/02/02 02:09:30 jtc Exp $";
+static char rcsid[] = "$OpenBSD: fputc.c,v 1.2 1996/08/19 08:32:42 tholo Exp $";
 #endif /* LIBC_SCCS and not lint */
 
 #include <stdio.h>
+#include <errno.h>
+#include "local.h"
 
 fputc(c, fp)
 	int c;
 	register FILE *fp;
 {
+	if (cantwrite(fp)) {
+		errno = EBADF;
+		return (EOF);
+	}
 	return (putc(c, fp));
 }
