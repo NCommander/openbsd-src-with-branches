@@ -12,10 +12,10 @@
  * called by a name other than "ssh" or "Secure Shell".
  */
 
-/* RCSID("$OpenBSD: pty.h,v 1.7 2000/06/20 01:39:43 markus Exp $"); */
+/* RCSID("$OpenBSD: pty.h,v 1.8 2000/09/07 20:27:52 deraadt Exp $"); */
 
-#ifndef PTY_H
-#define PTY_H
+#ifndef SSHPTY_H
+#define SSHPTY_H
 
 /*
  * Allocates and opens a pty.  Returns 0 if no pty could be allocated, or
@@ -44,4 +44,4 @@ pty_change_window_size(int ptyfd, int row, int col,
 
 void	pty_setowner(struct passwd *pw, const char *ttyname);
 
-#endif				/* PTY_H */
+#endif				/* SSHPTY_H */

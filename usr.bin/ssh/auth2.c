@@ -23,14 +23,14 @@
  */
 
 #include "includes.h"
-RCSID("$OpenBSD: auth2.c,v 1.43 2001/02/22 21:59:44 markus Exp $");
+RCSID("$OpenBSD: auth2.c,v 1.44 2001/03/01 02:45:10 deraadt Exp $");
 
 #include <openssl/evp.h>
 
 #include "ssh2.h"
 #include "xmalloc.h"
 #include "rsa.h"
-#include "pty.h"
+#include "sshpty.h"
 #include "packet.h"
 #include "buffer.h"
 #include "log.h"
