@@ -1,4 +1,4 @@
-/*	$OpenBSD: xfs_common.c,v 1.1 1998/08/30 16:47:20 art Exp $	*/
+/*	$OpenBSD: xfs_common.c,v 1.2 1998/08/31 05:13:13 art Exp $	*/
 /*
  * Copyright (c) 1995, 1996, 1997 Kungliga Tekniska Högskolan
  * (Royal Institute of Technology, Stockholm, Sweden).
@@ -38,6 +38,8 @@
  */
 
 #ifdef DEBUG
+#include <sys/types.h>
+#include <sys/systm.h>
 #include <sys/malloc.h>
 #include <xfs/xfs_common.h>
 #include <xfs/xfs_deb.h>
