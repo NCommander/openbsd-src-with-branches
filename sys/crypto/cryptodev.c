@@ -1,4 +1,4 @@
-/*	$OpenBSD: cryptodev.c,v 1.13 2001/06/18 10:55:01 deraadt Exp $	*/
+/*	$OpenBSD: cryptodev.c,v 1.14 2001/06/23 01:29:40 pvalchev Exp $	*/
 
 /*
  * Copyright (c) 2001 Theo de Raadt
@@ -44,9 +44,8 @@
 #include <crypto/cast.h>
 #include <crypto/skipjack.h>
 #include <crypto/blf.h>
-#include <crypto/crypto.h>
-#include <crypto/xform.h>
 #include <crypto/cryptodev.h>
+#include <crypto/xform.h>
 
 struct csession {
 	TAILQ_ENTRY(csession) next;

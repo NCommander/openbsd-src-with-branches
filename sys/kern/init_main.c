@@ -1,4 +1,4 @@
-/*	$OpenBSD: init_main.c,v 1.66 2001/06/22 14:14:08 deraadt Exp $	*/
+/*	$OpenBSD: init_main.c,v 1.67 2001/06/23 06:04:34 art Exp $	*/
 /*	$NetBSD: init_main.c,v 1.84.4.1 1996/06/02 09:08:06 mrg Exp $	*/
 
 /*
@@ -98,7 +98,7 @@
 #include <net/raw_cb.h>
 
 #if defined(CRYPTO)
-#include <crypto/crypto.h>
+#include <crypto/cryptodev.h>
 #include <crypto/cryptosoft.h>
 #endif
 
