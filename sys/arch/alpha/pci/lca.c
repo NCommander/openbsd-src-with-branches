@@ -1,4 +1,4 @@
-/*	$OpenBSD: lca.c,v 1.9 2001/02/16 05:17:31 jason Exp $	*/
+/*	$OpenBSD: lca.c,v 1.10 2001/02/16 16:02:52 jason Exp $	*/
 /*	$NetBSD: lca.c,v 1.14 1996/12/05 01:39:35 cgd Exp $	*/
 
 /*-
@@ -166,6 +166,10 @@ lca_init(lcp, mallocsafe)
 	lcp->lc_mallocsafe = mallocsafe;
 
 	lca_pci_init(&lcp->lc_pc, lcp);
+	alpha_pci_chipset = &lcp->lc_pc;
+	alpha_pci_chipset->pc_name = "lca";
+	alpha_pci_chipset->pc_mem = LCA_PCI_SPARSE;
+	alpha_pci_chipset->pc_bwx = 0;
 
 	/*
 	 * Refer to ``DECchip 21066 and DECchip 21068 Alpha AXP Microprocessors
