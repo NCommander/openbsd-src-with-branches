@@ -1,4 +1,4 @@
-/*	$OpenBSD: misc.c,v 1.16 2003/06/26 19:47:09 deraadt Exp $	*/
+/*	$OpenBSD: misc.c,v 1.17 2004/05/02 17:55:53 millert Exp $	*/
 /*	$NetBSD: misc.c,v 1.4 1995/03/07 21:26:23 cgd Exp $	*/
 
 /*-
@@ -72,9 +72,7 @@ static KEY keylist[] = {
 };
 
 u_int
-parsekey(name, needvaluep)
-	char *name;
-	int *needvaluep;
+parsekey(char *name, int *needvaluep)
 {
 	KEY *k, tmp;
 	int keycompare(const void *, const void *);

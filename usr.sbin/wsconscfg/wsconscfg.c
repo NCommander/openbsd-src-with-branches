@@ -1,4 +1,4 @@
-/* $OpenBSD: wsconscfg.c,v 1.9 2004/07/09 16:22:04 deraadt Exp $ */
+/* $OpenBSD: wsconscfg.c,v 1.10 2004/07/30 23:13:48 jmc Exp $ */
 /* $NetBSD: wsconscfg.c,v 1.4 1999/07/29 18:24:10 augustss Exp $ */
 
 /*
@@ -62,9 +62,7 @@ usage(void)
 }
 
 int
-main(argc, argv)
-	int argc;
-	char **argv;
+main(int argc, char *argv[])
 {
 	char *wsdev;
 	int c, delete, kbd, idx, wsfd, res, mux;

@@ -1,4 +1,4 @@
-/*	$OpenBSD: crc.c,v 1.4 2003/06/03 02:56:06 millert Exp $	*/
+/*	$OpenBSD: crc.c,v 1.1 2004/05/02 17:55:53 millert Exp $	*/
 /*	$NetBSD: crc.c,v 1.7 1996/02/27 21:29:53 jtc Exp $	*/
 
 /*-
@@ -38,7 +38,7 @@
 static char sccsid[] = "@(#)crc.c	8.1 (Berkeley) 6/17/93";
 static char rcsid[] = "$NetBSD: crc.c,v 1.7 1996/02/27 21:29:53 jtc Exp $";
 #else
-static char rcsid[] = "$OpenBSD: crc.c,v 1.4 2003/06/03 02:56:06 millert Exp $";
+static char rcsid[] = "$OpenBSD: crc.c,v 1.1 2004/05/02 17:55:53 millert Exp $";
 #endif
 #endif /* not lint */
 
@@ -111,9 +111,7 @@ static const u_int32_t crctab[] = {
 u_int32_t crc_total = ~0;		/* The crc over a number of files. */
 
 int
-crc(fd, cval, clen)
-	int fd;
-	u_int32_t *cval, *clen;
+crc(int fd, u_int32_t *cval, u_int32_t *clen)
 {
 	u_char *p;
 	int nr;
