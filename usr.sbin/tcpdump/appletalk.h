@@ -1,5 +1,3 @@
-/*	$OpenBSD$	*/
-
 /*
  * Copyright (c) 1988, 1989, 1990, 1993, 1994, 1995, 1996
  *	The Regents of the University of California.  All rights reserved.
@@ -22,7 +20,7 @@
  *
  * AppleTalk protocol formats (courtesy Bill Croft of Stanford/SUMEX).
  *
- * @(#) Header: appletalk.h,v 1.12 96/06/03 02:54:24 leres Exp (LBL)
+ * @(#) $Header: appletalk.h,v 1.12 96/06/03 02:54:24 leres Exp $ (LBL)
  */
 
 struct LAP {

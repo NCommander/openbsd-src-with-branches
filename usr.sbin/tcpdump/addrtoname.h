@@ -1,5 +1,3 @@
-/*	$OpenBSD$	*/
-
 /*
  * Copyright (c) 1990, 1992, 1993, 1994, 1995
  *	The Regents of the University of California.  All rights reserved.
@@ -20,7 +18,7 @@
  * WARRANTIES, INCLUDING, WITHOUT LIMITATION, THE IMPLIED WARRANTIES OF
  * MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
  *
- * @(#) Header: addrtoname.h,v 1.13 95/05/04 17:52:44 mccanne Exp (LBL)
+ * @(#) $Header: addrtoname.h,v 1.13 95/05/04 17:52:44 mccanne Exp $ (LBL)
  */
 
 /* Name to address translation routines. */

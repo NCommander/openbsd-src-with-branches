@@ -1,6 +1,3 @@
-#	$OpenBSD: atime.awk,v 1.2 1995/03/06 19:09:52 mycroft Exp $
-#	$NetBSD: atime.awk,v 1.2 1995/03/06 19:09:52 mycroft Exp $
-
 $6 ~ /^ack/ && $5 !~ /[SFR]/ 	{
 	# given a tcpdump ftp trace, output one line for each ack
 	# in the form
