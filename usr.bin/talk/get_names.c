@@ -1,4 +1,4 @@
-/*	$OpenBSD: get_names.c,v 1.12 2003/06/03 02:56:17 millert Exp $	*/
+/*	$OpenBSD: get_names.c,v 1.13 2003/07/10 00:06:51 david Exp $	*/
 /*	$NetBSD: get_names.c,v 1.4 1994/12/09 02:14:16 jtc Exp $	*/
 
 /*
@@ -34,7 +34,7 @@
 #if 0
 static char sccsid[] = "@(#)get_names.c	8.1 (Berkeley) 6/6/93";
 #endif
-static char rcsid[] = "$OpenBSD: get_names.c,v 1.12 2003/06/03 02:56:17 millert Exp $";
+static char rcsid[] = "$OpenBSD: get_names.c,v 1.13 2003/07/10 00:06:51 david Exp $";
 #endif /* not lint */
 
 #include "talk.h"
@@ -93,6 +93,8 @@ get_names(argc, argv)
 	my_machine_name = hostname;
 	/* check for, and strip out, the machine name of the target */
 	names = strdup(argv[1]);
+	if (names == NULL)
+		errx(1, "out of memory");
 	for (cp = names; *cp && !strchr("@:!.", *cp); cp++)
 		;
 	if (*cp == '\0') {
