@@ -1,4 +1,4 @@
-/*	$OpenBSD: mainbus.c,v 1.4 2000/07/28 13:03:24 rahnds Exp $	*/
+/*	$OpenBSD: mainbus.c,v 1.1 2001/06/26 21:57:41 smurph Exp $	*/
 
 /*
  * Copyright (c) 1994, 1995 Carnegie-Mellon University.
@@ -64,8 +64,6 @@ mbmatch(parent, cfdata, aux)
 	void *cfdata;
 	void *aux;
 {
-	struct cfdata *cf = cfdata;
-
 	/*
 	 * That one mainbus is always here.
 	 */
@@ -84,7 +82,6 @@ mbattach(parent, self, aux)
 {
 	struct mainbus_softc *sc = (struct mainbus_softc *)self;
 	struct confargs nca;
-	extern int system_type;
 
 	printf("\n");
 

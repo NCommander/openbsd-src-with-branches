@@ -1,4 +1,4 @@
-/*	$OpenBSD: disklabel.h,v 1.13 1999/12/04 03:35:57 deraadt Exp $	*/
+/*	$OpenBSD: disklabel.h,v 1.1 2001/06/26 21:57:44 smurph Exp $	*/
 
 /*
  * Copyright (c) 1994 Christopher G. Demetriou
@@ -100,7 +100,6 @@ get_le(p)
 	void *p;
 #endif
 {
-	u_int32_t c;
 	u_int8_t *_p = (u_int8_t *)p;
 	int x;
 	x = _p[0];
