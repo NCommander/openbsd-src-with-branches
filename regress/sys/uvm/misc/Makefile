@@ -1,6 +1,11 @@
-#	$OpenBSD: Makefile,v 1.1 2002/02/16 17:31:10 art Exp $
+#	$OpenBSD: Makefile,v 1.2 2002/08/21 22:49:41 wcobb Exp $
 
 PROG=misc
 CLEANFILES=mapped_file
+
+REGRESS_ROOT_TARGETS=	run-regress-${PROG}
+
+run-regress-${PROG}: ${PROG}
+	${SUDO} ./${PROG}
 
 .include <bsd.regress.mk>
