@@ -365,6 +365,7 @@ fileFindByPath(char *base, char *fname)
 	if (ispkgpattern(fname)) {
 		if ((cp=findbestmatchingname(".",fname)) != NULL) {
 			strlcpy(tmp, cp, sizeof(tmp));
+			free(cp);
 			return tmp;
 		}
 	} else {
@@ -390,6 +391,7 @@ fileFindByPath(char *base, char *fname)
 					assert(s != NULL);
 					strlcpy(s+1, cp,
 						tmp + sizeof(tmp) - (s+1));
+					free(cp);
 					return tmp;
 				}
 			} else {
@@ -418,6 +420,7 @@ fileFindByPath(char *base, char *fname)
 				char *t;
 				t=strrchr(tmp, '/');
 				strlcpy(t+1, s, tmp + sizeof(tmp) - (t+1));
+				free(s);
 				return tmp;
 			}
 		} else {

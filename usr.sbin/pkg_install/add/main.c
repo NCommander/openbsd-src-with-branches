@@ -1,7 +1,7 @@
-/*	$OpenBSD: main.c,v 1.16 2003/04/03 19:42:53 avsm Exp $	*/
+/*	$OpenBSD: main.c,v 1.17 2003/07/04 17:31:19 avsm Exp $	*/
 
 #ifndef lint
-static const char rcsid[] = "$OpenBSD: main.c,v 1.16 2003/04/03 19:42:53 avsm Exp $";
+static const char rcsid[] = "$OpenBSD: main.c,v 1.17 2003/07/04 17:31:19 avsm Exp $";
 #endif
 
 /*
@@ -164,6 +164,7 @@ main(int argc, char **argv)
 			fprintf(stderr, "failing path was %s\n", pkgs[ch]);
 			exit(1);
 		    }
+		    free(s);
 		} else {
 		    /* look for the file(pattern) in the expected places */
 		    if (!(cp = fileFindByPath(NULL, *argv))) {
