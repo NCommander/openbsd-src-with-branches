@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: ether.c,v 1.2 1996/09/23 14:18:52 mickey Exp $	*/
 /*	$NetBSD: ether.c,v 1.6 1995/09/14 23:45:25 pk Exp $	*/
 
 /*
@@ -42,7 +42,6 @@
 
 #include <sys/param.h>
 #include <sys/socket.h>
-#include <string.h>
 
 #include <net/if.h>
 
