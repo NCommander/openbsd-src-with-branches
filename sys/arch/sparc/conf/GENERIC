@@ -1,4 +1,4 @@
-#	$OpenBSD: GENERIC,v 1.71 2003/06/25 17:40:00 miod Exp $
+#	$OpenBSD: GENERIC,v 1.72 2003/07/08 21:12:09 mickey Exp $
 # 	$NetBSD: GENERIC,v 1.48 1997/08/23 19:19:01 mjacob Exp $
 
 # Machine architecture; required by config(8)
@@ -23,7 +23,7 @@ option		SUN4M		# sun4m - SS10, SS20, Classic, etc.
 option		COMPAT_SUNOS	# compatibility with SunOS binaries
 option		COMPAT_SVR4	# compatibility with SVR4 binaries
 
-maxusers	18		# estimated number of users
+maxusers	20		# estimated number of users
 
 # Generic swap; second partition of root disk or network.
 config		bsd	swap generic
