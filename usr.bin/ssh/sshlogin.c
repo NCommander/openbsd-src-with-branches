@@ -39,7 +39,7 @@
  */
 
 #include "includes.h"
-RCSID("$OpenBSD: sshlogin.c,v 1.11 2004/08/11 11:59:22 djm Exp $");
+RCSID("$OpenBSD: sshlogin.c,v 1.12 2004/08/11 12:01:16 djm Exp $");
 
 #include <util.h>
 #include <utmp.h>
@@ -75,7 +75,7 @@ get_last_login_time(uid_t uid, const char *logname,
 	pos = (long) uid * sizeof(ll);
 	r = lseek(fd, pos, SEEK_SET);
 	if (r == -1) {
-		error("%s: llseek: %s", __func__, strerror(errno));
+		error("%s: lseek: %s", __func__, strerror(errno));
 		return (0);
 	}
 	if (r != pos) {
