@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: zs.c,v 1.7 1997/01/16 04:04:00 kstailey Exp $	*/
 /*	$NetBSD: zs.c,v 1.42 1996/11/20 18:57:03 gwr Exp $	*/
 
 /*-
@@ -690,7 +690,7 @@ zs_abort()
 		rr0 = zc->zc_csr;
 		ZS_DELAY();
 	} while (rr0 & ZSRR0_BREAK);
-
-	/* XXX - Always available, but may be the PROM monitor. */
+#ifdef DDB
 	Debugger();
+#endif
 }
