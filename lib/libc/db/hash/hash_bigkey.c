@@ -1,3 +1,5 @@
+/*	$OpenBSD$	*/
+
 /*-
  * Copyright (c) 1990, 1993, 1994
  *	The Regents of the University of California.  All rights reserved.
@@ -35,7 +37,11 @@
  */
 
 #if defined(LIBC_SCCS) && !defined(lint)
-static char rcsid[] = "$OpenBSD: hash_bigkey.c,v 1.4 1996/09/15 09:30:48 tholo Exp $";
+#if 0
+static char sccsid[] = "@(#)hash_bigkey.c	8.3 (Berkeley) 5/31/94";
+#else
+static char rcsid[] = "$OpenBSD: hash_bigkey.c,v 1.5 1998/03/19 00:29:56 millert Exp $";
+#endif
 #endif /* LIBC_SCCS and not lint */
 
 /*

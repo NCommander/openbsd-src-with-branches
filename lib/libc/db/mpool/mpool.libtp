@@ -1,6 +1,6 @@
 /******************************************************************************
 
-VERSION $Id: mpool.libtp,v 1.1 1996/05/07 09:02:01 deraadt Exp $
+VERSION $OpenBSD: mpool.libtp,v 1.2 1998/07/13 02:11:10 millert Exp $
 PACKAGE: 	User Level Shared Memory Manager
 
 DESCRIPTION: 	

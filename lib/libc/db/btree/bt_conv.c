@@ -1,3 +1,5 @@
+/*	$OpenBSD$	*/
+
 /*-
  * Copyright (c) 1990, 1993, 1994
  *	The Regents of the University of California.  All rights reserved.
@@ -35,7 +37,11 @@
  */
 
 #if defined(LIBC_SCCS) && !defined(lint)
-static char rcsid[] = "$OpenBSD: bt_conv.c,v 1.6 1996/05/03 21:50:39 cgd Exp $";
+#if 0
+static char sccsid[] = "@(#)bt_conv.c	8.5 (Berkeley) 8/17/94";
+#else
+static char rcsid[] = "$OpenBSD: bt_conv.c,v 1.3 1996/08/19 08:20:03 tholo Exp $";
+#endif
 #endif /* LIBC_SCCS and not lint */
 
 #include <sys/param.h>
