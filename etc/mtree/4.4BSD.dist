@@ -208,6 +208,12 @@ lint
 
 # ./usr/libdata/perl5
 perl5
+
+# ./usr/libdata/perl5/site_perl
+site_perl
+# ./usr/libdata/perl5/site_perl
+..
+
 # ./usr/libdata/perl5
 ..
 
@@ -800,9 +806,9 @@ usd
 # ./usr/share/doc/usd/28.bib
 ..
 
-# ./usr/share/doc/usd/29.pic
-29.pic
-# ./usr/share/doc/usd/29.pic
+# ./usr/share/doc/usd/29.diction
+29.diction
+# ./usr/share/doc/usd/29.diction
 ..
 
 # ./usr/share/doc/usd/30.rogue
