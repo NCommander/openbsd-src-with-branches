@@ -1,3 +1,4 @@
+#	$OpenBSD$
 #	$NetBSD: Makefile.inc,v 1.4 2000/11/01 19:37:20 thorpej Exp $
 
 SRCS+=  __main.c \

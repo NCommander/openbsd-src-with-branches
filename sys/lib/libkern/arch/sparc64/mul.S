@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /*	$NetBSD: mul.S,v 1.4 1998/11/26 19:08:21 eeh Exp $	*/
 
 /*

@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /*	$NetBSD: DEFS.h,v 1.1.1.1 1998/06/20 05:18:14 eeh Exp $	*/
 
 /*-
