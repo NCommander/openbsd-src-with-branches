@@ -57,7 +57,6 @@ extern	char	*index __P((const char *, int));
 #endif
 
 extern	char	*optarg;
-extern	int	optreset;
 
 void	zerostats __P((void));
 int	main __P((int, char *[]));
@@ -89,12 +88,6 @@ char *argv[];
 {
 	int c;
 
-	while ((c = getopt(argc, argv, OPTS)) != -1)
-		if (c == '?')
-			usage();
-
-	optreset = 1;
-	optind = 1;
 	while ((c = getopt(argc, argv, OPTS)) != -1) {
 		switch (c)
 		{
@@ -153,6 +146,9 @@ char *argv[];
 			break;
 		case 'Z' :
 			zerostats();
+			break;
+		default :
+			usage();
 			break;
 		}
 	}
