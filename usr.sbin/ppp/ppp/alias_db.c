@@ -25,7 +25,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  *
- * $OpenBSD: alias_db.c,v 1.20 2001/11/23 11:17:03 brian Exp $
+ * $OpenBSD: alias_db.c,v 1.21 2002/06/15 08:01:59 brian Exp $
  */
 
 /*
@@ -2226,7 +2226,7 @@ void
 SetProtocolFlags(struct alias_link *link, int pflags)
 {
 
-    link->pflags = pflags;;
+    link->pflags = pflags;
 }
 
 int

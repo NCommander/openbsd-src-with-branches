@@ -1,4 +1,4 @@
-/*	$OpenBSD: utils.c,v 1.22 2003/06/02 23:32:06 millert Exp $	*/
+/*	$OpenBSD: utils.c,v 1.23 2003/07/29 00:24:14 deraadt Exp $	*/
 /*	$NetBSD: utils.c,v 1.6 1997/02/26 14:40:51 cgd Exp $	*/
 
 /*-
@@ -34,7 +34,7 @@
 #if 0
 static char sccsid[] = "@(#)utils.c	8.3 (Berkeley) 4/1/94";
 #else
-static char rcsid[] = "$OpenBSD: utils.c,v 1.22 2003/06/02 23:32:06 millert Exp $";
+static char rcsid[] = "$OpenBSD: utils.c,v 1.23 2003/07/29 00:24:14 deraadt Exp $";
 #endif
 #endif /* not lint */
 
@@ -105,7 +105,7 @@ copy_file(FTSENT *entp, int dne)
 	if (to_fd == -1) {
 		warn("%s", to.p_path);
 		(void)close(from_fd);
-		return (1);;
+		return (1);
 	}
 
 	rval = 0;

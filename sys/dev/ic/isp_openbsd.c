@@ -1,4 +1,4 @@
-/* 	$OpenBSD: isp_openbsd.c,v 1.23 2002/05/17 01:32:35 mjacob Exp $ */
+/* 	$OpenBSD: isp_openbsd.c,v 1.24 2002/08/17 17:43:47 mjacob Exp $ */
 /*
  * Platform (OpenBSD) dependent common attachment code for Qlogic adapters.
  *
@@ -293,7 +293,7 @@ ispcmd(XS_T *xs)
 	timeout_set(&xs->stimeout, isp_wdog, isp);
 
 	if (XS_LUN(xs) >= isp->isp_maxluns) {
-		xs->error = XS_SELTIMEOUT;;
+		xs->error = XS_SELTIMEOUT;
 		return (COMPLETE);
 	}
 
@@ -690,7 +690,7 @@ isp_async(struct ispsoftc *isp, ispasync_t cmd, void *arg)
 		bus = (tgt >> 16) & 0xffff;
 		tgt &= 0xffff;
 		sdp += bus;
-		flags = sdp->isp_devparam[tgt].actv_flags;;
+		flags = sdp->isp_devparam[tgt].actv_flags;
 		period = sdp->isp_devparam[tgt].actv_period;
 
 		if ((flags & DPARM_SYNC) && period &&
