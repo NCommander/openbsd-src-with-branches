@@ -1,4 +1,4 @@
-/*	$OpenBSD: rnd.c,v 1.30 1997/06/24 02:45:00 mickey Exp $	*/
+/*	$OpenBSD: rnd.c,v 1.31 1997/06/28 07:05:22 deraadt Exp $	*/
 
 /*
  * random.c -- A strong random number generator
@@ -538,7 +538,7 @@ enqueue_randomness(state, val)
 	register struct timer_rand_state *state;
 	u_int	val;
 {
-	u_int	nbits;
+	u_int	nbits = 0;
 	struct timeval	tv;
 	register struct rand_event *rep;
 	int s;
