@@ -1,4 +1,4 @@
-/*	$OpenBSD: mount_msdos.c,v 1.8 1996/12/16 17:11:38 deraadt Exp $	*/
+/*	$OpenBSD: mount_msdos.c,v 1.9 1997/01/15 23:41:22 millert Exp $	*/
 /*	$NetBSD: mount_msdos.c,v 1.16 1996/10/24 00:12:50 cgd Exp $	*/
 
 /*
@@ -32,7 +32,7 @@
  */
 
 #ifndef lint
-static char rcsid[] = "$OpenBSD: mount_msdos.c,v 1.8 1996/12/16 17:11:38 deraadt Exp $";
+static char rcsid[] = "$OpenBSD: mount_msdos.c,v 1.9 1997/01/15 23:41:22 millert Exp $";
 #endif /* not lint */
 
 #include <sys/cdefs.h>
@@ -151,11 +151,8 @@ main(argc, argv)
 			errcause = "mount table full";
 			break;
 		case EINVAL:
-			if (mntflags & MNT_UPDATE)
-				errcause =
+			errcause =
 			    "specified device does not match mounted device";
-			else 
-				errcause = "incorrect super block";
 			break;
 		default:
 			errcause = strerror(errno);
