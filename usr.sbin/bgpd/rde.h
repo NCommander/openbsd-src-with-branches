@@ -1,4 +1,4 @@
-/*	$OpenBSD: rde.h,v 1.7 2003/12/25 23:22:13 claudio Exp $ */
+/*	$OpenBSD: rde.h,v 1.8 2003/12/26 21:30:20 henning Exp $ */
 
 /*
  * Copyright (c) 2003 Claudio Jeker <claudio@openbsd.org> and
@@ -170,7 +170,6 @@ struct rde_aspath {
 	 * currently we use the boolean nexthop state, this could be exchanged
 	 * with a variable coast with a max for unreachable.
 	 */
-	enum nexthop_state		 state;
 #if 0
 	u_int32_t			 nexthop_costs;
 #endif
