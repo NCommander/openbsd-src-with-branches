@@ -1,3 +1,5 @@
+/*	$OpenBSD$ */
+
 /*
  * Copyright (c) 1985, 1988 Regents of the University of California.
  * All rights reserved.
@@ -153,7 +155,6 @@ refill_buffer(register struct csiob *iobp)
  * This code is derived from the getline routine found in the UC Berkeley
  * ftpd code.
  *
- * thie 
  */
 
 int
