@@ -1,4 +1,4 @@
-/*	$OpenBSD: connection.c,v 1.16 2001/03/14 12:15:45 niklas Exp $	*/
+/*	$OpenBSD: connection.c,v 1.17 2001/03/14 21:13:24 tholo Exp $	*/
 /*	$EOM: connection.c,v 1.28 2000/11/23 12:21:18 niklas Exp $	*/
 
 /*
@@ -359,7 +359,7 @@ connection_record_passive (char *name)
       goto fail;
     }
 
-  /* XXX IPSec DOI-specific.  */
+  /* XXX IPsec DOI-specific.  */
   conn->local_id = ipsec_build_id (local_id, &conn->local_sz);
   if (!conn->local_id)
     goto fail;

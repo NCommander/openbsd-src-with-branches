@@ -1,4 +1,4 @@
-/*	$OpenBSD: ipsec.h,v 1.14 2000/08/03 07:24:48 niklas Exp $	*/
+/*	$OpenBSD: ipsec.h,v 1.15 2000/12/12 01:44:59 niklas Exp $	*/
 /*	$EOM: ipsec.h,v 1.42 2000/12/03 07:58:20 angelos Exp $	*/
 
 /*
@@ -50,7 +50,7 @@ struct proto;
 struct sa;
 
 /*
- * IPSEC-specific data to be linked into the exchange struct.
+ * IPsec-specific data to be linked into the exchange struct.
  * XXX Should probably be two different structs, one for phase 1 and one
  * for phase 2 parameters.
  */

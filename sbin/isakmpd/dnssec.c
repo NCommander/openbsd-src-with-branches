@@ -1,4 +1,4 @@
-/*	$OpenBSD: dnssec.c,v 1.1 2001/01/26 21:49:36 ho Exp $	*/
+/*	$OpenBSD: dnssec.c,v 1.3 2001/01/27 15:39:54 ho Exp $	*/
 
 /*
  * Copyright (c) 2001 Håkan Olsson.  All rights reserved.
@@ -164,7 +164,7 @@ dns_get_key (int type, struct message *msg, int *keylen)
 
       if (key_rr.protocol != DNS_KEYPROTO_IPSEC)
 	{
-	  LOG_DBG ((LOG_MISC, 50, "dns_get_key: ignored non-IPSEC key"));
+	  LOG_DBG ((LOG_MISC, 50, "dns_get_key: ignored non-IPsec key"));
 	  continue;
 	}
 
