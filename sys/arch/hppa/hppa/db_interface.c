@@ -1,4 +1,4 @@
-/*	$OpenBSD: db_interface.c,v 1.24 2002/08/13 03:44:48 mickey Exp $	*/
+/*	$OpenBSD: db_interface.c,v 1.25 2002/09/17 19:15:31 mickey Exp $	*/
 
 /*
  * Copyright (c) 1999-2002 Michael Shalayeff
@@ -222,7 +222,7 @@ kdb_trap(type, code, regs)
 	splx(s);
 
 	*regs = ddb_regs;
-	
+
 	return (1);
 }
 
