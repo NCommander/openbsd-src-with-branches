@@ -1,4 +1,4 @@
-/*	$OpenBSD: kern_ntptime.c,v 1.6 1998/02/08 22:41:35 tholo Exp $	*/
+/*	$OpenBSD: kern_ntptime.c,v 1.9 2001/02/13 20:59:15 art Exp $	*/
 /*	$NetBSD: kern_ntptime.c,v 1.2 1996/03/07 14:31:20 christos Exp $	*/
 
 /******************************************************************************
@@ -140,7 +140,7 @@ sys_ntp_gettime(p, v, retval)
 		ntv.time = atv;
 		ntv.maxerror = time_maxerror;
 		ntv.esterror = time_esterror;
-		(void) splx(s);
+		splx(s);
 
 		error = copyout((caddr_t)&ntv, (caddr_t)SCARG(uap, ntvp),
 		    sizeof (ntv));
@@ -265,7 +265,7 @@ sys_ntp_adjtime(p, v, retval)
 	ntv.jitcnt = pps_jitcnt;
 	ntv.stbcnt = pps_stbcnt;
 #endif /* PPS_SYNC */
-	(void)splx(s);
+	splx(s);
 
 	error = copyout((caddr_t)&ntv, (caddr_t)SCARG(uap, tp), sizeof(ntv));
 	if (!error) {

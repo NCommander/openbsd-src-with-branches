@@ -1,4 +1,4 @@
-/*	$OpenBSD: kern_proc.c,v 1.5 1998/03/02 07:19:11 todd Exp $	*/
+/*	$OpenBSD: kern_proc.c,v 1.8 2001/03/23 18:42:06 art Exp $	*/
 /*	$NetBSD: kern_proc.c,v 1.14 1996/02/09 18:59:41 christos Exp $	*/
 
 /*
@@ -52,6 +52,7 @@
 #include <sys/ioctl.h>
 #include <sys/tty.h>
 #include <sys/signalvar.h>
+#include <sys/pool.h>
 
 /*
  * Structure associated with user cacheing.
@@ -75,6 +76,18 @@ u_long pgrphash;
 struct proclist allproc;
 struct proclist zombproc;
 
+struct pool proc_pool;
+
+/*
+ * Locking of this proclist is special; it's accessed in a
+ * critical section of process exit, and thus locking it can't
+ * modify interrupt state.  We use a simple spin lock for this
+ * proclist.  Processes on this proclist are also on zombproc;
+ * we use the p_hash member to linkup to deadproc.
+ */
+struct simplelock deadproc_slock;
+struct proclist deadproc;		/* dead, but not yet undead */
+
 static void orphanpg __P((struct pgrp *));
 #ifdef DEBUG
 void pgrpdump __P((void));
@@ -89,9 +102,16 @@ procinit()
 
 	LIST_INIT(&allproc);
 	LIST_INIT(&zombproc);
+
+	LIST_INIT(&deadproc);
+	simple_lock_init(&deadproc_slock);
+
 	pidhashtbl = hashinit(maxproc / 4, M_PROC, M_WAITOK, &pidhash);
 	pgrphashtbl = hashinit(maxproc / 4, M_PROC, M_WAITOK, &pgrphash);
 	uihashtbl = hashinit(maxproc / 16, M_PROC, M_WAITOK, &uihash);
+
+	pool_init(&proc_pool, sizeof(struct proc), 0, 0, 0, "procpl",
+		0, pool_page_alloc_nointr, pool_page_free_nointr, M_PROC);
 }
 
 /*
@@ -325,7 +345,7 @@ fixjobc(p, pgrp, entering)
 	for (p = p->p_children.lh_first; p != 0; p = p->p_sibling.le_next)
 		if ((hispgrp = p->p_pgrp) != pgrp &&
 		    hispgrp->pg_session == mysession &&
-		    p->p_stat != SZOMB) {
+		    P_ZOMBIE(p) == 0) {
 			if (entering)
 				hispgrp->pg_jobc++;
 			else if (--hispgrp->pg_jobc == 0)

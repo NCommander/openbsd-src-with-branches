@@ -1,4 +1,4 @@
-/*	$OpenBSD: bootsect.h,v 1.2 1997/02/24 14:32:46 niklas Exp $	*/
+/*	$OpenBSD: bootsect.h,v 1.4 2000/11/10 15:33:10 provos Exp $	*/
 /*	$NetBSD: bootsect.h,v 1.8 1997/10/17 11:23:29 ws Exp $	*/
 
 /*
@@ -74,7 +74,7 @@ struct bootsector710 {
 #ifdef	atari
 /*
  * The boot sector on a gemdos fs is a little bit different from the msdos fs
- * format. Currently there is no need to declare a seperate structure, the
+ * format. Currently there is no need to declare a separate structure, the
  * bootsector33 struct will do.
  */
 #if 0

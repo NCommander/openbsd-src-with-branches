@@ -1,4 +1,4 @@
-/*	$OpenBSD: md5.c,v 1.5 1997/04/04 16:17:04 mickey Exp $	*/
+/*	$OpenBSD: md5.c,v 1.7 2000/11/08 15:26:40 art Exp $	*/
 
 /*
  * The rest of the code is derived from MD5C.C by RSADSI. Minor cosmetic
@@ -38,12 +38,12 @@ documentation and/or software.
  */
 
 #include <sys/param.h>
-#include <sys/systm.h>
 #include <sys/md5k.h>
 #ifdef _STANDALONE
 #include <stand.h>
+#else
+#include <sys/systm.h>
 #endif
-
 /* Constants for MD5Transform routine.
  */
 

@@ -1,4 +1,4 @@
-#	$OpenBSD: vnode_if.src,v 1.8 1998/08/08 03:53:30 csapuntz Exp $
+#	$OpenBSD: vnode_if.src,v 1.10 2001/03/01 20:54:34 provos Exp $
 #	$NetBSD: vnode_if.src,v 1.10 1996/05/11 18:26:27 mycroft Exp $
 #
 # Copyright (c) 1992, 1993
@@ -224,6 +224,14 @@ vop_select {
 	IN int fflags;
 	IN struct ucred *cred;
 	IN struct proc *p;
+};
+
+#
+#% kqfilter	vp	U U U
+#
+vop_kqfilter {
+	IN struct vnode *vp;
+	IN struct knote *kn;
 };
 
 #

@@ -1,4 +1,4 @@
-/*	$OpenBSD: cd9660_node.h,v 1.6 1997/11/08 17:21:07 niklas Exp $	*/
+/*	$OpenBSD: cd9660_node.h,v 1.9 2001/02/24 10:37:10 deraadt Exp $	*/
 /*	$NetBSD: cd9660_node.h,v 1.15 1997/04/11 21:52:01 kleink Exp $	*/
 
 /*-
@@ -40,6 +40,8 @@
  *
  *	@(#)cd9660_node.h	8.4 (Berkeley) 12/5/94
  */
+
+#include <sys/buf.h>
 
 /*
  * Theoretically, directories can be more than 2Gb in length,
@@ -94,6 +96,7 @@ struct iso_node {
 	long iso_start;		/* actual start of data of file (may be different */
 				/* from iso_extent, if file has extended attributes) */
 	ISO_RRIP_INODE  inode;
+	struct cluster_info i_ci; 
 };
 
 #define	i_forw		i_chain[0]
