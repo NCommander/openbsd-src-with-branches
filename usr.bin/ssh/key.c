@@ -32,7 +32,7 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 #include "includes.h"
-RCSID("$OpenBSD: key.c,v 1.42 2002/03/18 17:23:31 markus Exp $");
+RCSID("$OpenBSD: key.c,v 1.43 2002/03/19 10:49:35 markus Exp $");
 
 #include <openssl/evp.h>
 
@@ -779,6 +779,10 @@ key_sign(
 	}
 }
 
+/*
+ * key_verify returns 1 for a correct signature, 0 for an incorrect signature
+ * and -1 on error.
+ */
 int
 key_verify(
     Key *key,
