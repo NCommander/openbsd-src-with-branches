@@ -1,4 +1,4 @@
-/*	$OpenBSD: lexi.c,v 1.8 2001/06/25 04:58:31 pjanzen Exp $	*/
+/*	$OpenBSD: lexi.c,v 1.9 2003/06/12 01:07:27 deraadt Exp $	*/
 
 /*
  * Copyright (c) 1980, 1993
@@ -34,7 +34,7 @@
 
 #ifndef lint
 /*static char sccsid[] = "@(#)lexi.c	8.1 (Berkeley) 6/6/93";*/
-static char rcsid[] = "$OpenBSD: lexi.c,v 1.8 2001/06/25 04:58:31 pjanzen Exp $";
+static char rcsid[] = "$OpenBSD: lexi.c,v 1.9 2003/06/12 01:07:27 deraadt Exp $";
 #endif /* not lint */
 
 /*
@@ -589,10 +589,14 @@ addkey(key, val)
 	    err(1, NULL);
 	memmove(specials, specialsinit, sizeof specialsinit);
     } else if (nspecials >= maxspecials) {
-	maxspecials += maxspecials >> 2;
-	specials = realloc(specials, maxspecials * sizeof specials[0]);
-	if (specials == NULL)
+	int newspecials = maxspecials + maxspecials >> 2;
+	struct templ *specials2;
+
+	specials2 = realloc(specials, newspecials * sizeof specials[0]);
+	if (specials2 == NULL)
 	    err(1, NULL);
+	specials = specials2;
+	maxspecials = newspecials;
     }
 
     p = &specials[i];
