@@ -103,7 +103,6 @@ ether_ioctl(ifp, arp, cmd, data)
 	caddr_t data;
 {
 	struct ifaddr *ifa = (struct ifaddr *)data;
-	struct ifreq *ifr = (struct ifreq *)data;
 	int	error = 0;
 
 	switch (cmd) {
