@@ -1,4 +1,4 @@
-#	$Id: Makefile,v 1.2 1997/08/23 13:51:00 gingold Exp $
+#	$OpenBSD$
 
 RELOC=0xfff10000
 

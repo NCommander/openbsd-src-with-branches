@@ -835,7 +835,7 @@ tcp_signature_tdb_zeroize(tdbp)
 	return (0);
 }
 
-struct mbuf *
+int
 tcp_signature_tdb_input(m, tdbp, skip, protoff)
 	struct mbuf *m;
 	struct tdb *tdbp;

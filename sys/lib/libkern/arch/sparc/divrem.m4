@@ -57,7 +57,7 @@
  *
  * m4 parameters:
  *  NAME	name of function to generate
- *  NAME	secondary name of function to generate
+ *  NAME2	secondary name of function to generate
  *  OP		OP=div => %o0 / %o1; OP=rem => %o0 % %o1
  *  S		S=true => signed; S=false => unsigned
  *

@@ -1,4 +1,4 @@
-/*       $OpenBSD: vfs_sync.c,v 1.10 1999/12/05 07:19:28 art Exp $  */
+/*       $OpenBSD$  */
 
 /*
  *  Portions of this code are:
@@ -143,9 +143,6 @@ vn_syncer_add_to_worklist(vp, delay)
 /*
  * System filesystem synchronizer daemon.
  */
-
-
-extern int lbolt;
 
 void 
 sched_sync(p)

@@ -1,3 +1,4 @@
+/* $OpenBSD$ */
 /* $NetBSD: bcopy.S,v 1.1 1996/01/31 23:15:12 mark Exp $ */
 
 /*
@@ -43,7 +44,6 @@
  * Created      : 16/05/95
  * Last updated : 16/05/95
  *
- *    $Id: bcopy.S,v 1.1 1996/01/31 23:15:12 mark Exp $
  */
 
 sp	.req	r13

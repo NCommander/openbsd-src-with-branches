@@ -44,6 +44,10 @@
  *
  *	@(#)param.h	8.1 (Berkeley) 6/11/93
  */
+
+#ifndef _SPARC_PARAM_H_
+#define _SPARC_PARAM_H_
+
 /*
  * Sun4M support by Aaron Brown, Harvard University.
  * Changes Copyright (c) 1995 The President and Fellows of Harvard College.
@@ -296,3 +300,5 @@ extern int mmumod;
 #	define PGOFSET		pgofset
 #	define PGSHIFT		pgshift
 #endif
+
+#endif /* _SPARC_PARAM_H_ */

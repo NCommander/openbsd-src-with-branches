@@ -83,9 +83,9 @@
 #include <sys/user.h>
 #include <sys/tty.h>
 #include <sys/uio.h>
-#include <sys/callout.h>
 #include <sys/kernel.h>
 #include <sys/syslog.h>
+#include <sys/msgbuf.h>
 #include <sys/malloc.h>
 #include <sys/time.h>
 #ifdef DDB

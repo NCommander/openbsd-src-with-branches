@@ -1,4 +1,4 @@
-/*	$Id: gets.c,v 1.1 1997/08/23 13:51:04 gingold Exp $ */
+/*	$OpenBSD$ */
 
 /*-
  * Copyright (c) 1995 Theo de Raadt

@@ -1,4 +1,4 @@
-/*	$Id: clockreg.h,v 1.1 1997/07/27 12:21:04 gingold Exp $ */
+/*	$OpenBSD$ */
 
 /*
  * Copyright (c) 1992, 1993

@@ -1,3 +1,4 @@
+/* $OpenBSD$ */
 /* $NetBSD: mcount.S,v 1.1 1996/01/31 23:16:32 mark Exp $ */
 
 /*
@@ -30,7 +31,6 @@
  * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
- *	$Id: mcount.S,v 1.1 1996/01/31 23:16:32 mark Exp $
  */
 
 fp	.req	r11

@@ -1,4 +1,4 @@
-/*	$OpenBSD: limits.h,v 1.5 1998/03/22 21:15:22 millert Exp $	*/
+/*	$OpenBSD$	*/
 /*	$NetBSD: limits.h,v 1.1 1996/09/30 16:34:28 ws Exp $	*/
 
 /*-
@@ -75,8 +75,8 @@
 #define WORD_BIT	32
 
 #define DBL_DIG		15
-#define DBL_MAX		1.797693134862316E+308
-#define DBL_MIN		2.225073858507201E-308
+#define DBL_MAX		1.7976931348623157E+308
+#define DBL_MIN		2.2250738585072014E-308
 
 #define FLT_DIG		6
 #define FLT_MAX		3.40282347E+38F

@@ -1,4 +1,4 @@
-/*	$OpenBSD: ip_input.c,v 1.47 2000/01/10 04:30:52 angelos Exp $	*/
+/*	$OpenBSD$	*/
 /*	$NetBSD: ip_input.c,v 1.30 1996/03/16 23:53:58 christos Exp $	*/
 
 /*
@@ -738,8 +738,6 @@ insert:
 	 * Make header visible.
 	 */
 	ip->ip_len = next;
-	ip->ip_ttl = 0;	/* xxx */
-	ip->ip_sum = 0;
 	ip->ip_src = fp->ipq_src;
 	ip->ip_dst = fp->ipq_dst;
 	LIST_REMOVE(fp, ipq_q);

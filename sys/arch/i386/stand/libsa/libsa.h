@@ -1,4 +1,4 @@
-/*	$OpenBSD: libsa.h,v 1.28 1998/07/20 18:14:57 mickey Exp $	*/
+/*	$OpenBSD$	*/
 
 /*
  * Copyright (c) 1996-1999 Michael Shalayeff
@@ -47,8 +47,9 @@ void apmprobe __P((void));
 void apmcheck __P((void));
 void pciprobe __P((void));
 void dump_biosmem __P((bios_memmap_t *));
-int mem_delete __P((long, long));
 int mem_add __P((long, long));
+int mem_delete __P((long, long));
+void mem_pass __P((void));
 
 void devboot __P((dev_t, char *));
 void machdep __P((void));

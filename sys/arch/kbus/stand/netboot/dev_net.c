@@ -1,4 +1,4 @@
-/*	$Id: dev_net.c,v 1.1.1.1 1997/10/14 07:25:32 gingold Exp $ */
+/*	$OpenBSD$ */
 
 /*
  * Copyright (c) 1995 Gordon W. Ross

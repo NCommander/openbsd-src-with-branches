@@ -1,3 +1,4 @@
+/* $OpenBSD$ */
 /* $NetBSD: fiq.S,v 1.1 1996/01/31 23:15:55 mark Exp $ */
 
 /*
@@ -43,7 +44,6 @@
  * Created      : 27/09/94
  * Last updated : 28/11/94
  *
- *    $Id: fiq.S,v 1.1 1996/01/31 23:15:55 mark Exp $
  */
 
 #include <machine/cpu.h>

@@ -489,7 +489,7 @@ struct rr_result {		/* router renumbering result message */
  */
 
 struct icmp6_filter {
-	u_int32_t icmp6_filter[8];
+	u_int32_t icmp6_filt[8];
 };
 
 #ifdef _KERNEL
@@ -510,13 +510,13 @@ do {								\
 #endif /* _KERNEL */
 
 #define	ICMP6_FILTER_SETPASS(type, filterp) \
-	(((filterp)->icmp6_filter[(type) >> 5]) |= (1 << ((type) & 31)))
+	(((filterp)->icmp6_filt[(type) >> 5]) |= (1 << ((type) & 31)))
 #define	ICMP6_FILTER_SETBLOCK(type, filterp) \
-	(((filterp)->icmp6_filter[(type) >> 5]) &= ~(1 << ((type) & 31)))
+	(((filterp)->icmp6_filt[(type) >> 5]) &= ~(1 << ((type) & 31)))
 #define	ICMP6_FILTER_WILLPASS(type, filterp) \
-	((((filterp)->icmp6_filter[(type) >> 5]) & (1 << ((type) & 31))) != 0)
+	((((filterp)->icmp6_filt[(type) >> 5]) & (1 << ((type) & 31))) != 0)
 #define	ICMP6_FILTER_WILLBLOCK(type, filterp) \
-	((((filterp)->icmp6_filter[(type) >> 5]) & (1 << ((type) & 31))) == 0)
+	((((filterp)->icmp6_filt[(type) >> 5]) & (1 << ((type) & 31))) == 0)
 
 /*
  * Variables related to this implementation

@@ -173,7 +173,7 @@ sys___sysctl(p, v, retval)
 		memlock.sl_lock = 1;
 		if (dolock)
 #if defined(UVM)
-			uvm_vslock(p, SCARG(uap, old), oldlen);
+			uvm_vslock(p, SCARG(uap, old), oldlen, VM_PROT_NONE);
 #else
 			vslock(SCARG(uap, old), oldlen);
 #endif
@@ -717,10 +717,10 @@ sysctl_doproc(name, namelen, where, sizep)
 
 	if (namelen != 2 && !(namelen == 1 && name[0] == KERN_PROC_ALL))
 		return (EINVAL);
-	p = allproc.lh_first;
+	p = LIST_FIRST(&allproc);
 	doingzomb = 0;
 again:
-	for (; p != 0; p = p->p_list.le_next) {
+	for (; p != 0; p = LIST_NEXT(p, p_list)) {
 		/*
 		 * Skip embryonic processes.
 		 */
@@ -777,7 +777,7 @@ again:
 		needed += sizeof(struct kinfo_proc);
 	}
 	if (doingzomb == 0) {
-		p = zombproc.lh_first;
+		p = LIST_FIRST(&zombproc);
 		doingzomb++;
 		goto again;
 	}

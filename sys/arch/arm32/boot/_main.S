@@ -1,3 +1,4 @@
+/* $OpenBSD$ */
 /* $NetBSD: _main.S,v 1.1 1996/01/31 23:17:57 mark Exp $ */
 
 /* Copyright (c) 1994 Mark Brinicombe.
@@ -44,7 +45,6 @@
  *
  * Based on kate/boot/_main.s
  *
- *	$Id: _main.S,v 1.1 1996/01/31 23:17:57 mark Exp $
  */
 
 #include "regs.h"

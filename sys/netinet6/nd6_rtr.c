@@ -1223,7 +1223,10 @@ in6_ifadd(ifp, in6, addr, prefixlen)
 
 	bzero((caddr_t)ia, sizeof(*ia));
 	ia->ia_ifa.ifa_addr = (struct sockaddr *)&ia->ia_addr;
-	ia->ia_ifa.ifa_dstaddr = (struct sockaddr *)&ia->ia_dstaddr;
+	if (ifp->if_flags & IFF_POINTOPOINT)
+		ia->ia_ifa.ifa_dstaddr = (struct sockaddr *)&ia->ia_dstaddr;
+	else
+		ia->ia_ifa.ifa_dstaddr = NULL;
 	ia->ia_ifa.ifa_netmask = (struct sockaddr *)&ia->ia_prefixmask;
 	ia->ia_ifp = ifp;
 

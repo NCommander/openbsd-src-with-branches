@@ -269,12 +269,19 @@ kernfs_xread(kt, off, bufp, len)
 		 * message buffer header are corrupted, but that'll cause
 		 * the system to die anyway.
 		 */
-		if (off >= msgbufp->msg_bufs)
-			return (0);
-		n = msgbufp->msg_bufx + off;
-		if (n >= msgbufp->msg_bufs)
-			n -= msgbufp->msg_bufs;
-		len = min(msgbufp->msg_bufs - n, msgbufp->msg_bufs - off);
+		if (msgbufp->msg_bufl < msgbufp->msg_bufs) {
+			if (off >= msgbufp->msg_bufx)
+				return (0);
+			n = off;
+			len = msgbufp->msg_bufx - n;
+		} else {
+			if (off >= msgbufp->msg_bufs)
+				return (0);
+			n = msgbufp->msg_bufx + off;
+			if (n >= msgbufp->msg_bufs)
+				n -= msgbufp->msg_bufs;
+			len = min(msgbufp->msg_bufs - n, msgbufp->msg_bufs - off);
+		}
 		*bufp = msgbufp->msg_bufc + n;
 		return (len);
 	}

@@ -1,4 +1,4 @@
-/*	$OpenBSD: linux_machdep.c,v 1.11 1998/02/08 08:32:34 deraadt Exp $	*/
+/*	$OpenBSD$	*/
 /*	$NetBSD: linux_machdep.c,v 1.29 1996/05/03 19:42:11 christos Exp $	*/
 
 /*
@@ -43,7 +43,6 @@
 #include <sys/reboot.h>
 #include <sys/conf.h>
 #include <sys/file.h>
-#include <sys/callout.h>
 #include <sys/malloc.h>
 #include <sys/mbuf.h>
 #include <sys/msgbuf.h>

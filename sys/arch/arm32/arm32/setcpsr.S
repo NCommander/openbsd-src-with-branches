@@ -1,3 +1,4 @@
+/* $OpenBSD$ */
 /* $NetBSD: setcpsr.S,v 1.1 1996/01/31 23:16:54 mark Exp $ */
 
 /*
@@ -47,7 +48,6 @@
  *
  * Based of kate/display/setcpsr.s
  *
- *    $Id: setcpsr.S,v 1.1 1996/01/31 23:16:54 mark Exp $
  */
 
 fp      .req    r11

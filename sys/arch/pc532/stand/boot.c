@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /*	$NetBSD: boot.c,v 1.5 1995/11/30 00:59:06 jtc Exp $	*/
 
 /*-
@@ -36,7 +37,7 @@
  */
 
 #ifndef lint
-static char rcsid[] = "$NetBSD: boot.c,v 1.5 1995/11/30 00:59:06 jtc Exp $";
+static char rcsid[] = "$OpenBSD$";
 #endif /* not lint */
 
 #include <sys/param.h>
@@ -74,7 +75,7 @@ main()
 	cninit();
 	scsiinit();
 
-	printf("\n>> NetBSD BOOT pc532 [$Revision: 1.5 $]\n");
+	printf("\n>> NetBSD BOOT pc532 [$Revision$]\n");
 
 	bdev  = B_TYPE(bootdev);
 	bctlr = B_CONTROLLER(bootdev);
