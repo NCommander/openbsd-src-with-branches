@@ -17,7 +17,7 @@
  * IMPLIED WARRANTIES, INCLUDING, WITHOUT LIMITATION, THE IMPLIED
  * WARRANTIES OF MERCHANTIBILITY AND FITNESS FOR A PARTICULAR PURPOSE.
  *
- * $OpenBSD: main.c,v 1.23 2000/11/02 00:54:34 brian Exp $
+ * $OpenBSD: main.c,v 1.24 2001/01/26 01:41:04 brian Exp $
  *
  *	TODO:
  */
@@ -327,7 +327,7 @@ main(int argc, char **argv)
   if (ID0realuid() != 0) {
     char conf[200], *ptr;
 
-    snprintf(conf, sizeof conf, "%s/%s", _PATH_PPP, CONFFILE);
+    snprintf(conf, sizeof conf, "%s/%s", PPP_CONFDIR, CONFFILE);
     do {
       struct stat sb;
 

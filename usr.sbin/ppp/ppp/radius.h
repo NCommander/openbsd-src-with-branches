@@ -23,7 +23,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  *
- *	$OpenBSD: radius.h,v 1.3 2000/02/27 01:38:28 brian Exp $
+ *	$OpenBSD: radius.h,v 1.4 2000/08/28 22:44:42 brian Exp $
  */
 
 struct radius {
@@ -41,7 +41,7 @@ struct radius {
   unsigned long mtu;            /* FRAMED MTU */
   struct sticky_route *routes;  /* FRAMED Routes */
   struct {
-    char file[MAXPATHLEN];	/* Radius config file */
+    char file[PATH_MAX];	/* Radius config file */
   } cfg;
 };
 
