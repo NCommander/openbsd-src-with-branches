@@ -23,7 +23,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  *
- * $OpenBSD: alias_ftp.c,v 1.12 2001/10/24 10:01:07 brian Exp $
+ * $OpenBSD: alias_ftp.c,v 1.13 2001/11/23 11:17:03 brian Exp $
  */
 
 /*
@@ -482,11 +482,8 @@ NewFtpMessage(struct ip *pip,
         struct tcphdr *tc;
 
 #ifndef NO_FW_PUNCH
-	if (ftp_message_type == FTP_PORT_COMMAND ||
-	    ftp_message_type == FTP_EPRT_COMMAND) {
-	    /* Punch hole in firewall */
-	    PunchFWHole(ftp_link);
-	}
+	/* Punch hole in firewall */
+	PunchFWHole(ftp_link);
 #endif
 
 /* Calculate data length of TCP packet */
