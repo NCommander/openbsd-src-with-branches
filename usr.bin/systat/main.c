@@ -193,8 +193,7 @@ gethz(void)
 static void
 usage(void)
 {
-	fprintf(stderr,
-	    "usage: systat [-w wait] [iostat|mbufs|netstat|pigs|swap|vmstat]\n");
+	fprintf(stderr, "usage: systat [-w wait] [display] [refresh-interval]\n");
 	exit(1);
 }
 
