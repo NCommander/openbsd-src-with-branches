@@ -1,4 +1,4 @@
-/*	$OpenBSD: idrp_usrreq.c,v 1.3 2002/03/15 18:19:53 millert Exp $	*/
+/*	$OpenBSD: idrp_usrreq.c,v 1.4 2003/06/02 23:28:17 millert Exp $	*/
 /*	$NetBSD: idrp_usrreq.c,v 1.5 1996/02/13 22:09:33 christos Exp $	*/
 
 /*
@@ -114,7 +114,7 @@ int
 idrp_output(struct mbuf *m, ...)
 {
 	struct mbuf *addr;
-	register struct sockaddr_iso *siso;
+	struct sockaddr_iso *siso;
 	int             s = splsoftnet(), i;
 	va_list ap;
 	va_start(ap, m);

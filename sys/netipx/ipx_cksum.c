@@ -1,4 +1,4 @@
-/*	$OpenBSD: ipx_cksum.c,v 1.4 2001/09/23 10:22:13 mickey Exp $	*/
+/*	$OpenBSD: ipx_cksum.c,v 1.5 2003/06/02 23:28:16 millert Exp $	*/
 
 /*-
  *
@@ -56,10 +56,10 @@ ipx_cksum(m, len)
 	struct mbuf *m;
 	int len;
 {
-	register u_short *w;
-	register int sum = 0;
-	register int mlen = 0;
-	register int sum2;
+	u_short *w;
+	int sum = 0;
+	int mlen = 0;
+	int sum2;
 
 	union {
 		u_short s[2];

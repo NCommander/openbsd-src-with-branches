@@ -1,4 +1,4 @@
-/*      $OpenBSD: if_atm.c,v 1.9 2002/06/09 16:26:10 itojun Exp $       */
+/*      $OpenBSD: if_atm.c,v 1.10 2002/09/11 03:15:36 itojun Exp $       */
 
 /*
  *
@@ -78,10 +78,10 @@
 void
 atm_rtrequest(req, rt, info)
 	int req;
-	register struct rtentry *rt;
+	struct rtentry *rt;
 	struct rt_addrinfo *info;
 {
-	register struct sockaddr *gate = rt->rt_gateway;
+	struct sockaddr *gate = rt->rt_gateway;
 	struct atm_pseudoioctl api;
 #ifdef NATM
 	struct sockaddr_in *sin;

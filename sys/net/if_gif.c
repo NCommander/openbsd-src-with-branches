@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_gif.c,v 1.28 2003/05/03 21:15:11 deraadt Exp $	*/
+/*	$OpenBSD: if_gif.c,v 1.29 2003/12/03 14:51:05 markus Exp $	*/
 /*	$KAME: if_gif.c,v 1.43 2001/02/20 08:51:07 itojun Exp $	*/
 
 /*
@@ -191,7 +191,7 @@ gif_output(ifp, m, dst, rt)
 	struct sockaddr *dst;
 	struct rtentry *rt;	/* added in net2 */
 {
-	register struct gif_softc *sc = (struct gif_softc*)ifp;
+	struct gif_softc *sc = (struct gif_softc*)ifp;
 	int error = 0;
 	struct m_tag *mtag;
 
