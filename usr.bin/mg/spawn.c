@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: spawn.c,v 1.6 2001/01/29 01:58:09 niklas Exp $	*/
 
 /*
  * Spawn.  Actually just suspends Mg.
@@ -12,8 +12,8 @@
 #include <term.h>
 
 /*
- * This causes mg to send itself a stop signal.  It assumes the parent 
- * shell supports POSIX job control.  If the terminal supports an alternate 
+ * This causes mg to send itself a stop signal.  It assumes the parent
+ * shell supports POSIX job control.  If the terminal supports an alternate
  * screen, we will switch to it.
  */
 /* ARGSUSED */

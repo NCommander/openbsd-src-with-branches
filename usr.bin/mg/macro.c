@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: macro.c,v 1.4 2001/01/29 01:58:08 niklas Exp $	*/
 
 /*
  *	Keyboard macros.
@@ -60,7 +60,7 @@ executemacro(f, n)
 	int	 i, j, flag, num;
 	PF	 funct;
 
-	if (macrodef || 
+	if (macrodef ||
 	    (macrocount >= MAXMACRO && macro[MAXMACRO].m_funct != finishmacro))
 		return FALSE;
 

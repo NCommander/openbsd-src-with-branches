@@ -1,7 +1,7 @@
-/*	$OpenBSD: help.c,v 1.10 2001/05/23 22:20:35 art Exp $	*/
+/*	$OpenBSD: help.c,v 1.11 2001/05/23 23:29:47 mickey Exp $	*/
 
 /*
- * Help functions for Mg 2 
+ * Help functions for Mg 2
  */
 
 #include "def.h"
@@ -230,6 +230,6 @@ findbind(KEYMAP *map, PF fun, char *buf, size_t len)
 		}
 	}
 
-	return FALSE;	
+	return FALSE;
 }
 #endif /* !NO_HELP */
