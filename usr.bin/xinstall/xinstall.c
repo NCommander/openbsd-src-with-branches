@@ -354,7 +354,8 @@ install(from_name, to_name, fset, flags)
 			char backup[MAXPATHLEN];
 			(void)snprintf(backup, MAXPATHLEN, "%s%s", to_name,
 			    suffix);
-			if (rename(to_name, backup) < 0) {
+			/* It is ok for the target file not to exist. */
+			if (rename(to_name, backup) < 0 && errno != ENOENT) {
 				serrno = errno;
 				unlink(tempfile);
 				errx(EX_OSERR, "rename: %s to %s: %s", to_name,
@@ -662,8 +663,9 @@ create_newfile(path, sbp)
 
 	if (dobackup) {
 		(void)snprintf(backup, MAXPATHLEN, "%s%s", path, suffix);
-		if (rename(path, backup) < 0)
-			err(EX_OSERR, "rename: %s to %s", path, backup);
+		/* It is ok for the target file not to exist. */
+		if (rename(path, backup) < 0 && errno != ENOENT)
+			err(EX_OSERR, "rename: %s to %s (errno %d)", path, backup, errno);
 	} else
 		(void)unlink(path);
 
