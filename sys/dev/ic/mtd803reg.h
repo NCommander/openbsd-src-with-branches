@@ -1,3 +1,4 @@
+/* $OpenBSD$ */
 /* $NetBSD: mtd803reg.h,v 1.1 2002/11/07 21:56:59 martin Exp $ */
 
 /*-

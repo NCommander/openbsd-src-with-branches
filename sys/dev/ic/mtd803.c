@@ -1,3 +1,4 @@
+/* $OpenBSD$ */
 /* $NetBSD: mtd803.c,v 1.3 2003/07/14 15:47:12 lukem Exp $ */
 
 /*-
