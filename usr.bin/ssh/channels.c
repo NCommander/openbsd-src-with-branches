@@ -39,7 +39,7 @@
  */
 
 #include "includes.h"
-RCSID("$OpenBSD: channels.c,v 1.208 2004/07/11 17:48:47 deraadt Exp $");
+RCSID("$OpenBSD: channels.c,v 1.209 2004/08/11 21:43:04 avsm Exp $");
 
 #include "ssh.h"
 #include "ssh1.h"
@@ -2269,7 +2269,7 @@ channel_cancel_rport_listener(const char *host, u_short port)
 		if (c != NULL && c->type == SSH_CHANNEL_RPORT_LISTENER &&
 		    strncmp(c->path, host, sizeof(c->path)) == 0 &&
 		    c->listening_port == port) {
-			debug2("%s: close clannel %d", __func__, i);
+			debug2("%s: close channel %d", __func__, i);
 			channel_free(c);
 			found = 1;
 		}
