@@ -176,7 +176,7 @@ db_inputchar(c)
 		break;
 	    case CTRL('w'):
 		/* erase word back */
-		while (db_lc > db_lbuf_start && *db_lc != BLANK)
+		while (db_lc > db_lbuf_start && db_lc[-1] != BLANK)
 		    db_delete(1, DEL_BWD);
 		break;
 	    case CTRL('h'):
