@@ -1,4 +1,4 @@
-/*	$OpenBSD: crt0.c,v 1.6 2001/02/03 23:16:16 art Exp $	*/
+/*	$OpenBSD: crt0.c,v 1.1 2001/08/29 02:25:15 art Exp $	*/
 
 /*
  * Copyright (c) 1995 Christopher G. Demetriou
@@ -53,7 +53,7 @@ _start:
 __start:
 	clr	%g4
 	clr	%fp
-	add	%sp, 2047, %o0		/* stack */
+	add	%sp, 2175, %o0		/* stack */
 	ba,pt	%icc, ___start
 	 nop
 ");
