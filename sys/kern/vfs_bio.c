@@ -1,4 +1,4 @@
-/*	$OpenBSD: vfs_bio.c,v 1.57 2002/01/30 20:45:35 nordin Exp $	*/
+/*	$OpenBSD: vfs_bio.c,v 1.58 2002/03/14 01:27:06 millert Exp $	*/
 /*	$NetBSD: vfs_bio.c,v 1.44 1996/06/11 11:15:36 pk Exp $	*/
 
 /*-
@@ -1003,6 +1003,8 @@ biowait(bp)
  * to do async stuff to, and doesn't want the buffer brelse()'d.
  * (for swap pager, that puts swap buffers on the free lists (!!!),
  * for the vn device, that puts malloc'd buffers on the free lists!)
+ *
+ * Must be called at splbio().
  */
 void
 biodone(bp)
