@@ -1,4 +1,4 @@
-/*	$OpenBSD: akbd.c,v 1.8 2001/07/09 03:30:19 mickey Exp $	*/
+/*	$OpenBSD: akbd.c,v 1.9 2001/07/17 23:34:14 drahn Exp $	*/
 /*	$NetBSD: akbd.c,v 1.13 2001/01/25 14:08:55 tsubai Exp $	*/
 
 /*
@@ -236,6 +236,7 @@ akbdattach(parent, self, aux)
 		break;
 	case ADB_IBITISOKBD:
 		printf("iBook keyboard with inverted T (ISO layout)\n");
+		break;
 	default:
 		printf("mapped device (%d)\n", sc->handler_id);
 		break;
