@@ -1,9 +1,5 @@
-/* $OpenBSD$ */
-/* Public Domain */
 
-/*
- * libpthread's stronger functions
- */
+/* libpthread's stronger functions */
 
 #include <stdlib.h>
 #include <pthread.h>
