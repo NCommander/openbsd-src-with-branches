@@ -1,3 +1,99 @@
+1998-05-12  Jim Meyering  <meyering@ascend.com>
+
+	* Makefile.in (distclean): New rule to remove Makefile.
+
+1998-05-09  Jim Kingdon  <kingdon@harvey.cyclic.com>
+
+	* README.MacCVS: Be more discouraging about MacCVS 2.x; merely say
+	there are many more Mac clients rather than singling out MacCVS 3.x.
+
+1998-04-09  Jim Kingdon  <kingdon@harvey.cyclic.com>
+
+	* filesubr.c (link_file): Remove; no longer used.
+
+Tue Feb 17 02:29:50 1998  Noel Cragg  <noel@swish.red-bean.com>
+
+	* filesubr.c (last_component): return the top-level directory when
+ 	asked about the top-level directory.
+
+Tue Jan 13 13:17:33 1998  Jim Kingdon  <kingdon@harvey.cyclic.com>
+
+	* run.c (run_setup): Adjust for new calling convention.
+
+	* options.h (DIFF, RCSBIN_DFLT, CVS_LOGIN): Remove; no longer used.
+
+Wed Dec 31 15:24:39 1997  Jim Kingdon  <kingdon@harvey.cyclic.com>
+
+	* README.MacCVS: Mention web sites as place for MacCVS updates.
+
+Sat Dec 27 16:57:41 1997  Jim Kingdon  <kingdon@harvey.cyclic.com>
+
+	* options.h (HAVE_RCS5): Remove; no longer used.
+
+	* config.h (LINES_CRLF_TERMINATED): Remove; no longer used.
+
+Sun Nov 30 18:03:02 1997  Jim Kingdon  <kingdon@harvey.cyclic.com>
+
+	* run.c (run_args): Remove; nowhere used.
+
+Sat Nov 29 22:21:19 1997  Jim Kingdon  <kingdon@harvey.cyclic.com>
+
+	* options.h: Remove declaration of getwd; see lib/ChangeLog for
+	rationale.
+
+Fri May 30 22:11:52 1997  Jim Kingdon  <kingdon@harvey.cyclic.com>
+
+	* pwd.c: Remove $Header; we decided to get rid of these some time
+	ago.
+
+Wed Mar 12 16:10:01 1997  Jim Kingdon  <kingdon@harvey.cyclic.com>
+
+	* config.h (HAVE_SETVBUF): Removed; no longer used.
+
+Mon Mar 10 15:28:07 1997  Jim Kingdon  <kingdon@harvey.cyclic.com>
+
+	* Makefile.in (dist-dir): Don't distribute Makefile.  I don't know
+	why we were distributing it in the first place (aping the OS/2
+	port?  If so the two _are_ different; that OS/2 port uses Makefile
+	for builds).
+
+Sun Mar  2 21:56:28 1997  Jim Kingdon  <kingdon@harvey.cyclic.com>
+
+	* README.MacCVS: Be a little more explicit about what
+	MacCVS68k.sit.hqx and MacCVSPPC.sit.hqx are; at least one user got
+	confused and throught they were CVS executables.
+
+Wed Jan 29 18:26:09 1997  Jim Kingdon  <kingdon@harvey.cyclic.com>
+
+	* options.h (GREP): Removed; no longer used.
+
+Tue Jan 28 18:29:03 1997  Jim Kingdon  <kingdon@harvey.cyclic.com>
+
+	* config.h: Remove SIZEOF_INT and SIZEOF_LONG; no longer needed
+	with lib/md5.c changes.
+
+Thu Jan  2 13:42:14 1997  Jim Kingdon  <kingdon@harvey.cyclic.com>
+
+	* filesubr.c, pwd.c: Remove "675" paragraph;
+	see ../ChangeLog for rationale.
+
+Wed Jan  1 22:49:49 1997  Jim Kingdon  <kingdon@harvey.cyclic.com>
+
+	* options.h: Reword comment for TMPDIR_DFLT to make it clear that
+	this isn't specific to the pserver server.
+
+Mon Oct 28 09:22:09 1996  Jim Kingdon  <kingdon@harvey.cyclic.com>
+
+	* mac_init.c (macos_error_cleanup): Removed; SYSTEM_CLEANUP (aka
+	MacOS_Cleanup) now gets called in the cases in question.
+	(MacOS_Initialize): Don't call error_set_cleanup.
+	* README.MacCVS: Adjust description of problem which should be
+	fixed by above change.
+
+Tue Oct  8 12:37:25 1996  Ian Lance Taylor  <ian@cygnus.com>
+
+	* options.h (HAD_RCS4): Remove; no longer used.
+
 Mon Sept 30 13:17:07 1996  Mike Ladwig  <mike@twinpeaks.prc.com>
 
 	* ae_if.c (DoScript): Fixed bug cutting off the last character of
@@ -186,5 +282,5 @@ Wed Nov  29 09:33:16 1995  Mike Ladwig  <mike@twinpeaks.prc.com>
 	* Requires CW GUSI 1.6.4 and CodeWarrier 7
 	* 68k version is essentially untested, due to lack of a 68k machine
 	* 'release' doesn't work, due to cvs implementation approach
-	* Tons of obvious "TODOs", but at least the heavy stuff is done 
+	* Tons of obvious "TODOs", but at least the heavy stuff is done
 

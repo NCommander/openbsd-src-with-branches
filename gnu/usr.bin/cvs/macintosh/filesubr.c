@@ -11,11 +11,7 @@
    This program is distributed in the hope that it will be useful,
    but WITHOUT ANY WARRANTY; without even the implied warranty of
    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-   GNU General Public License for more details.
-
-   You should have received a copy of the GNU General Public License
-   along with this program; if not, write to the Free Software
-   Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
+   GNU General Public License for more details.  */
 
 /* These functions were moved out of subr.c because they need different
    definitions under operating systems (like, say, Windows NT) with different
@@ -384,33 +380,6 @@ rename_file (from, to)
 }
 
 /*
- * link a file, if possible.  Warning: the Windows NT version of this
- * function just copies the file, so only use this function in ways
- * that can deal with either a link or a copy.
- */
-int
-link_file (from, to)
-    const char *from;
-    const char *to;
-{
-    if (trace)
-#ifdef SERVER_SUPPORT
-	(void) fprintf (stderr, "%c-> link(%s,%s)\n",
-			(server_active) ? 'S' : ' ', from, to);
-#else
-	(void) fprintf (stderr, "-> link(%s,%s)\n", from, to);
-#endif
-    if (noexec)
-	return (0);
-
-#ifdef macintosh
-    return (symlink ( (char *)macos_fixpath(from), (char *)macos_fixpath(to)));
-#else
-    return (link (from, to));
-#endif
-}
-
-/*
  * unlink a file, if possible.
  */
 int
@@ -676,7 +645,7 @@ last_component (path)
 {
     char *last = strrchr (path, '/');
 
-    if (last)
+    if (last && (last != path))
         return last + 1;
     else
         return path;
