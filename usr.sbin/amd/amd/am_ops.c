@@ -36,7 +36,7 @@
  * SUCH DAMAGE.
  *
  *	from: @(#)am_ops.c	8.1 (Berkeley) 6/6/93
- *	$Id: am_ops.c,v 1.3 1994/06/13 20:46:57 mycroft Exp $
+ *	$Id: am_ops.c,v 1.4 2002/08/03 08:29:31 pvalchev Exp $
  */
 
 #include "am.h"
@@ -76,9 +76,8 @@ static am_ops *vops[] = {
 	0
 };
 
-void ops_showfstypes P((FILE *fp));
-void ops_showfstypes(fp)
-FILE *fp;
+void
+ops_showfstypes(FILE *fp)
 {
 	struct am_ops **ap;
 	int l = 0;
@@ -98,20 +97,17 @@ FILE *fp;
  * Construct an amd-style line and call the
  * normal amd matcher.
  */
-am_ops *sunos4_match(fo, key, g_key, path, keym, map)
-am_opts *fo;
-char *key;
-char *g_key;
-char *path;
-char *keym;
-char *map;
+am_ops *
+sunos4_match(am_opts *fo, char *key, char *g_key, char *path,
+    char *keym, char *map)
 {
 	char *host = key;
 	char *fs = strchr(host, ':');
 	char *sublink = fs ? strchr(fs+1, ':') : 0;
 	char keybuf[MAXPATHLEN];
 
-	sprintf(keybuf, "type:=nfs;rhost:=%s;rfs:=%s;sublink:=%s;opts:=%s", host,
+	snprintf(keybuf, sizeof(keybuf),
+		"type:=nfs;rhost:=%s;rfs:=%s;sublink:=%s;opts:=%s", host,
 		fs ? fs+1 : "",
 		sublink ? sublink+1  : "",
 		g_key);
@@ -120,13 +116,9 @@ char *map;
 #endif
 #endif /* SUNOS4_COMPAT */
 
-am_ops *ops_match(fo, key, g_key, path, keym, map)
-am_opts *fo;
-char *key;
-char *g_key;
-char *path;
-char *keym;
-char *map;
+am_ops *
+ops_match(am_opts *fo, char *key, char *g_key, char *path, char *keym,
+    char *map)
 {
 	am_ops **vp;
 	am_ops *rop = 0;
@@ -143,7 +135,7 @@ char *map;
 		/*
 		 * Next find the correct filesystem type
 		 */
-		for (vp = vops; rop = *vp; vp++)
+		for (vp = vops; (rop = *vp); vp++)
 			if (strcmp(rop->fs_type, fo->opt_type) == 0)
 				break;
 
@@ -166,9 +158,9 @@ char *map;
 	 * Check the filesystem is happy
 	 */
 	if (fo->fs_mtab)
-		free((voidp) fo->fs_mtab);
+		free((void *)fo->fs_mtab);
 
-	if (fo->fs_mtab = (*rop->fs_match)(fo))
+	if ((fo->fs_mtab = (*rop->fs_match)(fo)))
 		return rop;
 
 	/*

@@ -1,4 +1,5 @@
-/*	$NetBSD: kern_resource_43.c,v 1.3 1995/10/07 06:26:28 mycroft Exp $	*/
+/*	$OpenBSD: kern_resource_43.c,v 1.3 2001/11/06 19:53:17 miod Exp $	*/
+/*	$NetBSD: kern_resource_43.c,v 1.4 1996/03/14 19:31:46 christos Exp $	*/
 
 /*-
  * Copyright (c) 1982, 1986, 1991, 1993
@@ -51,7 +52,7 @@
 #include <sys/mount.h>
 #include <sys/syscallargs.h>
 
-#include <vm/vm.h>
+#include <uvm/uvm_extern.h>
 
 /* ARGSUSED */
 int
@@ -61,12 +62,12 @@ compat_43_sys_getrlimit(p, v, retval)
 	register_t *retval;
 {
 	register struct compat_43_sys_getrlimit_args /* {
-		syscallarg(u_int) which;
+		syscallarg(int) which;
 		syscallarg(struct ogetrlimit *) rlp;
 	} */ *uap = v;
 	struct orlimit olim;
 
-	if (SCARG(uap, which) >= RLIM_NLIMITS)
+	if (SCARG(uap, which) < 0 || SCARG(uap, which) >= RLIM_NLIMITS)
 		return (EINVAL);
 	olim.rlim_cur = p->p_rlimit[SCARG(uap, which)].rlim_cur;
 	if (olim.rlim_cur == -1)
@@ -86,15 +87,16 @@ compat_43_sys_setrlimit(p, v, retval)
 	register_t *retval;
 {
 	struct compat_43_sys_setrlimit_args /* {
-		syscallarg(u_int) which;
+		syscallarg(int) which;
 		syscallarg(struct ogetrlimit *) rlp;
 	} */ *uap = v;
 	struct orlimit olim;
 	struct rlimit lim;
 	int error;
 
-	if (error = copyin((caddr_t)SCARG(uap, rlp), (caddr_t)&olim,
-	    sizeof (struct orlimit)))
+	error = copyin((caddr_t)SCARG(uap, rlp), (caddr_t)&olim,
+	    sizeof (struct orlimit));
+	if (error)
 		return (error);
 	lim.rlim_cur = olim.rlim_cur;
 	lim.rlim_max = olim.rlim_max;

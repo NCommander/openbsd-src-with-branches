@@ -45,7 +45,7 @@ static char  *license_msg[] = {
  */
 
 #ifdef RCSID
-static char rcsid[] = "$Id: gzip.c,v 1.2 1993/10/15 23:05:39 jtc Exp $";
+static char rcsid[] = "$Id: gzip.c,v 1.5 2002/03/13 18:14:18 millert Exp $";
 #endif
 
 #include <ctype.h>
@@ -226,10 +226,10 @@ char **args = NULL;   /* argv pointer if GZIP env variable defined */
 char z_suffix[MAX_SUFFIX+1]; /* default suffix (can be set with --suffix) */
 int  z_len;           /* strlen(z_suffix) */
 
-long bytes_in;             /* number of input bytes */
-long bytes_out;            /* number of output bytes */
-long total_in = 0;         /* input bytes for all files */
-long total_out = 0;        /* output bytes for all files */
+off_t bytes_in;             /* number of input bytes */
+off_t bytes_out;            /* number of output bytes */
+off_t total_in = 0;         /* input bytes for all files */
+off_t total_out = 0;        /* output bytes for all files */
 char ifname[MAX_PATH_LEN]; /* input file name */
 char ofname[MAX_PATH_LEN]; /* output file name */
 int  remove_ofname = 0;	   /* remove output file on error */
@@ -521,7 +521,13 @@ int main (argc, argv)
             if (*optarg == '.') optarg++;
 #endif
             z_len = strlen(optarg);
-            strcpy(z_suffix, optarg);
+	    if (z_len > sizeof(z_suffix)-1) {
+		fprintf(stderr, "%s: -S suffix too long\n", progname);
+		usage();
+		do_exit(ERROR);
+	    }
+            strncpy(z_suffix, optarg, sizeof z_suffix-1);
+	    z_suffix[sizeof z_suffix-1] = '\0';
             break;
 	case 't':
 	    test = decompress = to_stdout = 1;
@@ -695,6 +701,9 @@ local void treat_stdin()
 	    fprintf(stderr, "\n");
 #endif
 	}
+	if (!test)
+		fprintf(stderr, "%lld bytes in, %lld bytes out\n",
+		    (long long)bytes_in, (long long)bytes_out);
     }
 }
 
@@ -844,6 +853,9 @@ local void treat_file(iname)
 	    fprintf(stderr, " -- replaced with %s", ofname);
 	}
 	fprintf(stderr, "\n");
+	if (!test)
+		fprintf(stderr, "%lld bytes in, %lld bytes out\n",
+		    (long long)bytes_in, (long long)bytes_out);
     }
     /* Copy modes, times, ownership, and remove the input file */
     if (!to_stdout) {
@@ -1005,6 +1017,15 @@ local int get_istat(iname, sbuf)
 #ifdef NO_MULTIPLE_DOTS
     char *dot; /* pointer to ifname extension, or NULL */
 #endif
+    int max_suffix_len = (z_len > 3 ? z_len : 3);
+
+    /* Make sure there is enough room in ifname for iname + suffix. */
+    if (strlen(iname) >= sizeof(ifname) - max_suffix_len) {
+	errno = ENAMETOOLONG;
+	perror(iname);
+	exit_code = ERROR;
+	return ERROR;
+    }
 
     strcpy(ifname, iname);
 
@@ -1342,10 +1363,10 @@ local void do_list(ifd, method)
     } else if (method < 0) {
 	if (total_in <= 0 || total_out <= 0) return;
 	if (verbose) {
-	    printf("                            %9lu %9lu ",
-		   total_in, total_out);
+	    printf("                            %9lld %9lld ",
+		   (long long)total_in, (long long)total_out);
 	} else if (!quiet) {
-	    printf("%9ld %9ld ", total_in, total_out);
+	    printf("%9lld %9lld ", (long long)total_in, (long long)total_out);
 	}
 	display_ratio(total_out-(total_in-header_bytes), total_out, stdout);
 	/* header_bytes is not meaningful but used to ensure the same
@@ -1366,7 +1387,7 @@ local void do_list(ifd, method)
          * Use "gunzip < foo.gz | wc -c" to get the uncompressed size if
          * you are not concerned about speed.
          */
-        bytes_in = (long)lseek(ifd, (off_t)(-8), SEEK_END);
+        bytes_in = lseek(ifd, (off_t)(-8), SEEK_END);
         if (bytes_in != -1L) {
             uch buf[8];
             bytes_in += 8L;
@@ -1383,7 +1404,7 @@ local void do_list(ifd, method)
     if (verbose) {
         printf("%5s %08lx %11s ", methods[method], crc, date);
     }
-    printf("%9ld %9ld ", bytes_in, bytes_out);
+    printf("%9lld %9lld ", (long long)bytes_in, (long long)bytes_out);
     if (bytes_in  == -1L) {
 	total_in = -1L;
 	bytes_in = bytes_out = header_bytes = 0;
@@ -1573,7 +1594,6 @@ local int check_ofname()
 	    return ERROR;
 	}
     }
-    (void) chmod(ofname, 0777);
     if (unlink(ofname)) {
 	fprintf(stderr, "%s: ", progname);
 	perror(ofname);
@@ -1633,7 +1653,6 @@ local void copy_stat(ifstat)
 #endif
     remove_ofname = 0;
     /* It's now safe to remove the input file: */
-    (void) chmod(ifname, 0777);
     if (unlink(ifname)) {
 	WARN((stderr, "%s: ", progname));
 	if (!quiet) perror(ifname);

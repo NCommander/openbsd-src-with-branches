@@ -1,3 +1,4 @@
+/*	$OpenBSD: comm.c,v 1.4 2000/11/21 18:06:45 aaron Exp $	*/
 /*	$NetBSD: comm.c,v 1.10 1995/09/05 19:57:43 jtc Exp $	*/
 
 /*
@@ -46,7 +47,7 @@ static char copyright[] =
 #if 0
 static char sccsid[] = "@(#)comm.c	8.4 (Berkeley) 5/4/95";
 #endif
-static char rcsid[] = "$NetBSD: comm.c,v 1.10 1995/09/05 19:57:43 jtc Exp $";
+static char rcsid[] = "$OpenBSD: comm.c,v 1.4 2000/11/21 18:06:45 aaron Exp $";
 #endif /* not lint */
 
 #include <err.h>
@@ -61,9 +62,9 @@ static char rcsid[] = "$NetBSD: comm.c,v 1.10 1995/09/05 19:57:43 jtc Exp $";
 
 char *tabs[] = { "", "\t", "\t\t" };
 
-FILE   *file __P((const char *));
-void	show __P((FILE *, char *, char *));
-void	usage __P((void));
+FILE   *file(const char *);
+void	show(FILE *, char *, char *);
+void	usage(void);
 
 int
 main(argc, argv)
@@ -75,11 +76,13 @@ main(argc, argv)
 	FILE *fp1, *fp2;
 	char *col1, *col2, *col3;
 	char **p, line1[MAXLINELEN], line2[MAXLINELEN];
+	int (*compare)(const char * ,const char *);
 
 	setlocale(LC_ALL, "");
 
 	flag1 = flag2 = flag3 = 1;
-	while ((ch = getopt(argc, argv, "123")) != -1)
+	compare = strcoll;
+	while ((ch = getopt(argc, argv, "123f")) != -1)
 		switch(ch) {
 		case '1':
 			flag1 = 0;
@@ -89,6 +92,9 @@ main(argc, argv)
 			break;
 		case '3':
 			flag3 = 0;
+			break;
+		case 'f':
+			compare = strcasecmp;
 			break;
 		case '?':
 		default:
@@ -133,7 +139,7 @@ main(argc, argv)
 		}
 
 		/* lines are the same */
-		if (!(comp = strcoll(line1, line2))) {
+		if (!(comp = compare(line1, line2))) {
 			read1 = read2 = 1;
 			if (col3)
 				if (printf("%s%s", col3, line1) < 0)
@@ -188,7 +194,6 @@ file(name)
 void
 usage()
 {
-
-	(void)fprintf(stderr, "usage: comm [-123] file1 file2\n");
+	(void)fprintf(stderr, "usage: comm [-123f] file1 file2\n");
 	exit(1);
 }

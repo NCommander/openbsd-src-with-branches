@@ -1,3 +1,4 @@
+/*	$OpenBSD: from.c,v 1.7 2001/07/12 05:17:06 deraadt Exp $	*/
 /*	$NetBSD: from.c,v 1.6 1995/09/01 01:39:10 jtc Exp $	*/
 
 /*
@@ -43,7 +44,7 @@ static char copyright[] =
 #if 0
 static char sccsid[] = "@(#)from.c	8.1 (Berkeley) 6/6/93";
 #endif
-static char rcsid[] = "$NetBSD: from.c,v 1.6 1995/09/01 01:39:10 jtc Exp $";
+static char rcsid[] = "$OpenBSD: from.c,v 1.7 2001/07/12 05:17:06 deraadt Exp $";
 #endif /* not lint */
 
 #include <sys/types.h>
@@ -53,7 +54,12 @@ static char rcsid[] = "$NetBSD: from.c,v 1.6 1995/09/01 01:39:10 jtc Exp $";
 #include <stdlib.h>
 #include <unistd.h>
 #include <paths.h>
+#include <string.h>
+#include <err.h>
 
+int	match(char *, char *);
+
+int
 main(argc, argv)
 	int argc;
 	char **argv;
@@ -70,7 +76,7 @@ main(argc, argv)
 #endif
 
 	file = sender = NULL;
-	while ((ch = getopt(argc, argv, "f:s:")) != EOF)
+	while ((ch = getopt(argc, argv, "f:s:")) != -1)
 		switch((char)ch) {
 		case 'f':
 			file = optarg;
@@ -98,28 +104,25 @@ main(argc, argv)
 	if (!file) {
 		if (!(file = *argv)) {
 			if (!(file = getenv("MAIL"))) {
-				if (!(pwd = getpwuid(getuid()))) {
-					(void)fprintf(stderr,
-				"from: no password file entry for you.\n");
-					exit(1);
-				}
-				if (file = getenv("USER")) {
-					(void)sprintf(buf, "%s/%s",
-					    _PATH_MAILDIR, file);
+				if (!(pwd = getpwuid(getuid())))
+					errx(1, "no password file entry for you");
+				if ((file = getenv("USER"))) {
+					(void)snprintf(buf, sizeof(buf),
+						"%s/%s", _PATH_MAILDIR, file);
 					file = buf;
 				} else
-					(void)sprintf(file = buf, "%s/%s",
-					    _PATH_MAILDIR, pwd->pw_name);
+					(void)snprintf(file = buf, sizeof(buf),
+						"%s/%s", _PATH_MAILDIR,
+					        pwd->pw_name);
 			}
 		} else {
-			(void)sprintf(buf, "%s/%s", _PATH_MAILDIR, file);
+			(void)snprintf(buf, sizeof(buf), "%s/%s",
+				_PATH_MAILDIR, file);
 			file = buf;
 		}
 	}
-	if (!freopen(file, "r", stdin)) {
-		(void)fprintf(stderr, "from: can't read %s.\n", file);
-		exit(1);
-	}
+	if (!freopen(file, "r", stdin))
+		err(1, "%s", file);
 	for (newline = 1; fgets(buf, sizeof(buf), stdin);) {
 		if (*buf == '\n') {
 			newline = 1;
@@ -133,10 +136,11 @@ main(argc, argv)
 	exit(0);
 }
 
+int
 match(line, sender)
-	register char *line, *sender;
+	char *line, *sender;
 {
-	register char ch, pch, first, *p, *t;
+	char ch, pch, first, *p, *t;
 
 	for (first = *sender++;;) {
 		if (isspace(ch = *line))

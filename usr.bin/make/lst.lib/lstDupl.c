@@ -1,8 +1,10 @@
-/*	$NetBSD: lstDupl.c,v 1.5 1995/06/14 15:21:02 christos Exp $	*/
+/*	$OpenPackages$ */
+/*	$OpenBSD: lstDupl.c,v 1.4 1998/12/05 00:06:31 espie Exp $	*/
+/*	$NetBSD: lstDupl.c,v 1.6 1996/11/06 17:59:37 christos Exp $	*/
 
 /*
- * Copyright (c) 1988, 1989, 1990 The Regents of the University of California.
- * All rights reserved.
+ * Copyright (c) 1988, 1989, 1990, 1993
+ *	The Regents of the University of California.  All rights reserved.
  *
  * This code is derived from software contributed to Berkeley by
  * Adam de Boor.
@@ -36,14 +38,6 @@
  * SUCH DAMAGE.
  */
 
-#ifndef lint
-#if 0
-static char sccsid[] = "@(#)lstDupl.c	5.3 (Berkeley) 6/1/90";
-#else
-static char rcsid[] = "$NetBSD: lstDupl.c,v 1.5 1995/06/14 15:21:02 christos Exp $";
-#endif
-#endif /* not lint */
-
 /*-
  * listDupl.c --
  *	Duplicate a list. This includes duplicating the individual
@@ -51,55 +45,37 @@ static char rcsid[] = "$NetBSD: lstDupl.c,v 1.5 1995/06/14 15:21:02 christos Exp
  */
 
 #include    "lstInt.h"
+#include <stddef.h>
 
 /*-
  *-----------------------------------------------------------------------
- * Lst_Duplicate --
- *	Duplicate an entire list. If a function to copy a ClientData is
+ * Lst_Clone --
+ *	Duplicate an entire list. If a function to copy a void * is
  *	given, the individual client elements will be duplicated as well.
  *
  * Results:
- *	The new Lst structure or NILLST if failure.
+ *	returns the new list.
  *
  * Side Effects:
- *	A new list is created.
+ *	The new list is created.
  *-----------------------------------------------------------------------
  */
 Lst
-Lst_Duplicate (l, copyProc)
-    Lst     	  l;	    	 /* the list to duplicate */
-    /* A function to duplicate each ClientData */
-    ClientData	  (*copyProc) __P((ClientData));
+Lst_Clone(nl, l, copyProc)
+    Lst 	  nl;
+    Lst 	  l;		 /* the list to duplicate */
+    DuplicateProc copyProc;    /* A function to duplicate each void * */
 {
-    register Lst 	nl;
-    register ListNode  	ln;
-    register List 	list = (List)l;
-    
-    if (!LstValid (l)) {
-	return (NILLST);
-    }
+    LstNode	  ln;
 
-    nl = Lst_Init (list->isCirc);
-    if (nl == NILLST) {
-	return (NILLST);
-    }
+    Lst_Init(nl);
 
-    ln = list->firstPtr;
-    while (ln != NilListNode) {
-	if (copyProc != NOCOPY) {
-	    if (Lst_AtEnd (nl, (*copyProc) (ln->datum)) == FAILURE) {
-		return (NILLST);
-	    }
-	} else if (Lst_AtEnd (nl, ln->datum) == FAILURE) {
-	    return (NILLST);
-	}
-
-	if (list->isCirc && ln == list->lastPtr) {
-	    ln = NilListNode;
-	} else {
-	    ln = ln->nextPtr;
-	}
+    for (ln = l->firstPtr; ln != NULL; ln = ln->nextPtr) {
+	if (copyProc != NOCOPY)
+	    Lst_AtEnd(nl, (*copyProc)(ln->datum));
+	else
+	    Lst_AtEnd(nl, ln->datum);
     }
-	
-    return (nl);
+    return nl;
 }
+

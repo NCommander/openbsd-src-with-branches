@@ -1,3 +1,5 @@
+/*	$OpenBSD$	*/
+
 /* te-sun3.h -- Sun-3 target environment declarations.
    Copyright (C) 1987, 1990, 1991, 1992 Free Software Foundation, Inc.
    

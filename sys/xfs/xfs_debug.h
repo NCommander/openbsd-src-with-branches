@@ -31,7 +31,7 @@
  * SUCH DAMAGE.
  */
 
-/* $Id: xfs_debug.h,v 1.1.1.1 2002/06/05 17:24:11 hin Exp $ */
+/* $Id: xfs_debug.h,v 1.3 2000/09/11 14:26:51 art Exp $ */
 
 #ifndef __XFS_DEBUG_H
 #define __XFS_DEBUG_H

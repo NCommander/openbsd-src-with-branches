@@ -1,4 +1,5 @@
-/*	$NetBSD: setmode.c,v 1.12 1995/03/23 19:51:13 jtc Exp $	*/
+/*	$OpenBSD: setmode.c,v 1.10 2002/02/16 21:27:23 millert Exp $	*/
+/*	$NetBSD: setmode.c,v 1.15 1997/02/07 22:21:06 christos Exp $	*/
 
 /*
  * Copyright (c) 1989, 1993, 1994
@@ -40,7 +41,7 @@
 #if 0
 static char sccsid[] = "@(#)setmode.c	8.2 (Berkeley) 3/25/94";
 #else
-static char rcsid[] = "$NetBSD: setmode.c,v 1.12 1995/03/23 19:51:13 jtc Exp $";
+static char rcsid[] = "$OpenBSD: setmode.c,v 1.10 2002/02/16 21:27:23 millert Exp $";
 #endif
 #endif /* LIBC_SCCS and not lint */
 
@@ -51,6 +52,7 @@ static char rcsid[] = "$NetBSD: setmode.c,v 1.12 1995/03/23 19:51:13 jtc Exp $";
 #include <errno.h>
 #include <signal.h>
 #include <stdlib.h>
+#include <unistd.h>
 
 #ifdef SETMODE_DEBUG
 #include <stdio.h>
@@ -71,10 +73,10 @@ typedef struct bitcmd {
 #define	CMD2_OBITS	0x08
 #define	CMD2_UBITS	0x10
 
-static BITCMD	*addcmd __P((BITCMD *, int, int, int, u_int));
-static int	 compress_mode __P((BITCMD *));
+static BITCMD	*addcmd(BITCMD *, int, int, int, u_int);
+static void	 compress_mode(BITCMD *);
 #ifdef SETMODE_DEBUG
-static void	 dumpmode __P((BITCMD *));
+static void	 dumpmode(BITCMD *);
 #endif
 
 /*
@@ -84,14 +86,12 @@ static void	 dumpmode __P((BITCMD *));
  * bits) followed by a '+' (set bits).
  */
 mode_t
-getmode(bbox, omode)
-	void *bbox;
-	mode_t omode;
+getmode(const void *bbox, mode_t omode)
 {
-	register BITCMD *set;
+	register const BITCMD *set;
 	register mode_t clrval, newmode, value;
 
-	set = (BITCMD *)bbox;
+	set = (const BITCMD *)bbox;
 	newmode = omode;
 	for (value = 0;; set++)
 		switch(set->cmd) {
@@ -158,8 +158,12 @@ common:			if (set->cmd2 & CMD2_CLR) {
 		register BITCMD *newset;				\
 		setlen += SET_LEN_INCR;					\
 		newset = realloc(saveset, sizeof(BITCMD) * setlen);	\
-		if (!saveset)						\
+		if (!newset) {						\
+			if (saveset)					\
+				free(saveset);				\
+			saveset = NULL;					\
 			return (NULL);					\
+		}							\
 		set = newset + (set - saveset);				\
 		saveset = newset;					\
 		endset = newset + (setlen - 2);				\
@@ -170,7 +174,7 @@ common:			if (set->cmd2 & CMD2_CLR) {
 
 void *
 setmode(p)
-	register char *p;
+	register const char *p;
 {
 	register int perm, who;
 	register char op;
@@ -178,6 +182,7 @@ setmode(p)
 	sigset_t sigset, sigoset;
 	mode_t mask;
 	int equalopdone, permXbits, setlen;
+	long perml;
 
 	if (!*p)
 		return (NULL);
@@ -189,10 +194,10 @@ setmode(p)
 	 * as best we can.
 	 */
 	sigfillset(&sigset);
-        (void)sigprocmask(SIG_BLOCK, &sigset, &sigoset);
+	(void)sigprocmask(SIG_BLOCK, &sigset, &sigoset);
 	(void)umask(mask = umask(0));
 	mask = ~mask;
-        (void)sigprocmask(SIG_SETMASK, &sigoset, NULL);
+	(void)sigprocmask(SIG_SETMASK, &sigoset, NULL);
 
 	setlen = SET_LEN + 2;
 	
@@ -206,11 +211,12 @@ setmode(p)
 	 * or illegal bits.
 	 */
 	if (isdigit(*p)) {
-		perm = (mode_t)strtol(p, NULL, 8);
-		if (perm & ~(STANDARD_BITS|S_ISTXT)) {
+		perml = strtol(p, NULL, 8);
+		if (perml < 0 || (perml & ~(STANDARD_BITS|S_ISTXT))) {
 			free(saveset);
 			return (NULL);
 		}
+		perm = (mode_t)perml;
 		while (*++p)
 			if (*p < '0' || *p > '7') {
 				free(saveset);
@@ -259,13 +265,19 @@ getop:		if ((op = *p++) != '+' && op != '-' && op != '=') {
 				perm |= S_IRUSR|S_IRGRP|S_IROTH;
 				break;
 			case 's':
-				/* If only "other" bits ignore set-id. */
-				if (who & ~S_IRWXO)
+				/*
+				 * If specific bits where requested and
+				 * only "other" bits ignore set-id.
+				 */
+				if (who == 0 || (who & ~S_IRWXO))
 					perm |= S_ISUID|S_ISGID;
 				break;
 			case 't':
-				/* If only "other" bits ignore sticky. */
-				if (who & ~S_IRWXO) {
+				/*
+				 * If specific bits where requested and
+				 * only "other" bits ignore sticky.
+				 */
+				if (who == 0 || (who & ~S_IRWXO)) {
 					who |= S_ISTXT;
 					perm |= S_ISTXT;
 				}
@@ -368,7 +380,7 @@ addcmd(set, op, who, oparg, mask)
 			set->cmd2 = ((who & S_IRUSR) ? CMD2_UBITS : 0) |
 				    ((who & S_IRGRP) ? CMD2_GBITS : 0) |
 				    ((who & S_IROTH) ? CMD2_OBITS : 0);
-			set->bits = ~0;
+			set->bits = (mode_t)~0;
 		} else {
 			set->cmd2 = CMD2_UBITS | CMD2_GBITS | CMD2_OBITS;
 			set->bits = mask;
@@ -404,10 +416,10 @@ dumpmode(set)
 /*
  * Given an array of bitcmd structures, compress by compacting consecutive
  * '+', '-' and 'X' commands into at most 3 commands, one of each.  The 'u',
- * 'g' and 'o' commands continue to be separate.  They could probably be 
+ * 'g' and 'o' commands continue to be separate.  They could probably be
  * compacted, but it's not worth the effort.
  */
-static int
+static void
 compress_mode(set)
 	register BITCMD *set;
 {

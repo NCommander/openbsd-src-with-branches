@@ -1,8 +1,6 @@
-#	$NetBSD: Makefile,v 1.9 1995/03/21 09:04:14 cgd Exp $
-#	@(#)Makefile	8.2 (Berkeley) 4/1/94
+#	$OpenBSD: Makefile,v 1.6 2003/02/19 07:32:03 tedu Exp $
 
 PROG=	df
-BINGRP=	operator
-BINMODE=2555
+SRCS=	df.c ffs_df.c ext2fs_df.c
 
 .include <bsd.prog.mk>

@@ -29,12 +29,11 @@
 .\" OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 .\" SUCH DAMAGE.
 .\"
-.\"     from: @(#)setuid.3	6.4 (Berkeley) 4/19/91
-.\"	$Id: setruid.3,v 1.1 1994/04/06 23:28:47 cgd Exp $
+.\"	$OpenBSD: setruid.3,v 1.5 1999/05/25 13:06:44 aaron Exp $
 .\"
 .Dd April 19, 1991
 .Dt SETRUID 3
-.Os BSD 4.2
+.Os
 .Sh NAME
 .Nm setruid ,
 .Nm setrgid
@@ -56,22 +55,30 @@ of the current process to the specified value.
 Upon success, these functions return 0;
 otherwise \-1 is returned.
 .Pp
-If the user is not the super user, or the uid (gid) specified is not
+If the user is not the super user, or the UID (GID) specified is not
 the real or effective ID of the process,
 these functions return \-1.
 .Sh SEE ALSO
-.Xr setuid 2 ,
-.Xr setgid 2 ,
-.Xr seteuid 2 ,
-.Xr setegid 2 ,
+.Xr getgid 2 ,
 .Xr getuid 2 ,
-.Xr getgid 2
+.Xr setegid 2 ,
+.Xr seteuid 2 ,
+.Xr setgid 2 ,
+.Xr setresgid 2 ,
+.Xr setresuid 2 ,
+.Xr setuid 2
 .Sh HISTORY
 The
 .Fn setruid
 and
 .Fn setrgid
-syscalls appeared in
-.Bx 4.2
-and were dropped in
+functions appeared in
+.Bx 4.2 .
+Semantically different versions appeared in
 .Bx 4.4 .
+The current versions, with the old semantics restored, are implemented via the
+.Xr setresgid 2
+and
+.Xr setresuid 2
+functions, which first appeared in
+.Ox 3.3 .

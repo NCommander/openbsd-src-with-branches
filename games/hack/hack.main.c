@@ -1,9 +1,68 @@
+/*	$OpenBSD: hack.main.c,v 1.8 2002/06/23 03:01:13 deraadt Exp $	*/
+
 /*
- * Copyright (c) Stichting Mathematisch Centrum, Amsterdam, 1985.
+ * Copyright (c) 1985, Stichting Centrum voor Wiskunde en Informatica,
+ * Amsterdam
+ * All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are
+ * met:
+ *
+ * - Redistributions of source code must retain the above copyright notice,
+ * this list of conditions and the following disclaimer.
+ *
+ * - Redistributions in binary form must reproduce the above copyright
+ * notice, this list of conditions and the following disclaimer in the
+ * documentation and/or other materials provided with the distribution.
+ *
+ * - Neither the name of the Stichting Centrum voor Wiskunde en
+ * Informatica, nor the names of its contributors may be used to endorse or
+ * promote products derived from this software without specific prior
+ * written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS
+ * IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED
+ * TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A
+ * PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER
+ * OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
+ * EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+ * PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR
+ * PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
+ * LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
+ * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ */
+
+/*
+ * Copyright (c) 1982 Jay Fenlason <hack@gnu.org>
+ * All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions
+ * are met:
+ * 1. Redistributions of source code must retain the above copyright
+ *    notice, this list of conditions and the following disclaimer.
+ * 2. Redistributions in binary form must reproduce the above copyright
+ *    notice, this list of conditions and the following disclaimer in the
+ *    documentation and/or other materials provided with the distribution.
+ * 3. The name of the author may not be used to endorse or promote products
+ *    derived from this software without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED ``AS IS'' AND ANY EXPRESS OR IMPLIED WARRANTIES,
+ * INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY
+ * AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.  IN NO EVENT SHALL
+ * THE AUTHOR BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
+ * EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+ * PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS;
+ * OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
+ * WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR
+ * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
+ * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
 #ifndef lint
-static char rcsid[] = "$NetBSD: hack.main.c,v 1.3 1995/03/23 08:30:35 cgd Exp $";
+static char rcsid[] = "$OpenBSD: hack.main.c,v 1.8 2002/06/23 03:01:13 deraadt Exp $";
 #endif /* not lint */
 
 #include <stdio.h>
@@ -83,7 +142,7 @@ char *argv[];
 
 	/*
 	 * Who am i? Algorithm: 1. Use name as specified in HACKOPTIONS
-	 *			2. Use $USER or $LOGNAME	(if 1. fails)
+	 *			2. Use $LOGNAME or $USER	(if 1. fails)
 	 *			3. Use getlogin()		(if 2. fails)
 	 * The resulting name is overridden by command line options.
 	 * If everything fails, or if the resulting name is some generic
@@ -95,12 +154,14 @@ char *argv[];
 	{ register char *s;
 
 	  initoptions();
-	  if(!*plname && (s = getenv("USER")))
-		(void) strncpy(plname, s, sizeof(plname)-1);
 	  if(!*plname && (s = getenv("LOGNAME")))
+		(void) strncpy(plname, s, sizeof(plname)-1);
+	  if(!*plname && (s = getenv("USER")))
 		(void) strncpy(plname, s, sizeof(plname)-1);
 	  if(!*plname && (s = getlogin()))
 		(void) strncpy(plname, s, sizeof(plname)-1);
+	  if(*plname)
+		plname[sizeof(plname)-1] = '\0';
 	}
 
 	/*
@@ -121,6 +182,7 @@ char *argv[];
 	 */
 	gettty();
 	setbuf(stdout,obuf);
+	umask(007);
 	setrandom();
 	startup();
 	cls();
@@ -162,12 +224,14 @@ char *argv[];
 			break;
 #endif
 		case 'u':
-			if(argv[0][2])
+			if(argv[0][2]) {
 			  (void) strncpy(plname, argv[0]+2, sizeof(plname)-1);
-			else if(argc > 1) {
+			  plname[sizeof(plname)-1] = '\0';
+			} else if(argc > 1) {
 			  argc--;
 			  argv++;
 			  (void) strncpy(plname, argv[0], sizeof(plname)-1);
+			  plname[sizeof(plname)-1] = '\0';
 			} else
 				printf("Player name expected after -u\n");
 			break;
@@ -175,6 +239,7 @@ char *argv[];
 			/* allow -T for Tourist, etc. */
 			(void) strncpy(pl_character, argv[0]+1,
 				sizeof(pl_character)-1);
+			plname[sizeof(pl_character)-1] = '\0';
 
 			/* printf("Unknown option: %s\n", *argv); */
 		}
@@ -231,7 +296,7 @@ char *argv[];
 				register char *gp = genocided;
 
 				while(pm < mons+CMNUM+2){
-					if(!index(sfoo, pm->mlet))
+					if(!strchr(sfoo, pm->mlet))
 						*gp++ = pm->mlet;
 					pm++;
 				}
@@ -243,9 +308,9 @@ char *argv[];
 	}
 #endif
 	setftty();
-	(void) sprintf(SAVEF, "save/%d%s", getuid(), plname);
+	(void) sprintf(SAVEF, "save/%u%s", getuid(), plname);
 	regularize(SAVEF+5);		/* avoid . or / in name */
-	if((fd = open(SAVEF,0)) >= 0 &&
+	if((fd = open(SAVEF, O_RDONLY)) >= 0 &&
 	   (uptodate(fd) || unlink(SAVEF) == 666)) {
 		(void) signal(SIGINT,done1);
 		pline("Restoring old save file...");
@@ -463,8 +528,9 @@ boolean wr;
 	       && strcmp(dir, HACKDIR)		/* and not the default? */
 #endif
 		) {
-		(void) setuid(getuid());		/* Ron Wessels */
-		(void) setgid(getgid());
+		/* revoke */
+		setegid(getgid());
+		setgid(getgid());
 	}
 #endif
 
@@ -486,7 +552,7 @@ boolean wr;
 
 	    if(dir == NULL)
 		dir = ".";
-	    if((fd = open(RECORD, 2)) < 0) {
+	    if((fd = open(RECORD, O_RDWR)) < 0) {
 		printf("Warning: cannot write %s/%s", dir, RECORD);
 		getret();
 	    } else

@@ -1,3 +1,5 @@
+/*	$OpenBSD: print.c,v 1.4 2002/05/22 00:33:39 deraadt Exp $	*/
+
 /*
  * Copyright (c) 1983 Regents of the University of California.
  * All rights reserved.
@@ -33,7 +35,7 @@
 
 #ifndef lint
 /*static char sccsid[] = "from: @(#)print.c	5.8 (Berkeley) 2/26/91";*/
-static char rcsid[] = "$Id: print.c,v 1.2 1993/08/01 18:29:35 mycroft Exp $";
+static char rcsid[] = "$Id: print.c,v 1.4 2002/05/22 00:33:39 deraadt Exp $";
 #endif /* not lint */
 
 /* debug print routines */
@@ -43,23 +45,25 @@ static char rcsid[] = "$Id: print.c,v 1.2 1993/08/01 18:29:35 mycroft Exp $";
 #include <protocols/talkd.h>
 #include <syslog.h>
 #include <stdio.h>
+#include "talkd.h"
 
 static	char *types[] =
     { "leave_invite", "look_up", "delete", "announce" };
-#define	NTYPES	(sizeof (types) / sizeof (types[0]))
+#define	NTYPES	(sizeof(types) / sizeof(types[0]))
 static	char *answers[] = 
     { "success", "not_here", "failed", "machine_unknown", "permission_denied",
       "unknown_request", "badversion", "badaddr", "badctladdr" };
-#define	NANSWERS	(sizeof (answers) / sizeof (answers[0]))
+#define	NANSWERS	(sizeof(answers) / sizeof(answers[0]))
 
+void
 print_request(cp, mp)
 	char *cp;
-	register CTL_MSG *mp;
+	CTL_MSG *mp;
 {
 	char tbuf[80], *tp;
 	
 	if (mp->type > NTYPES) {
-		(void)sprintf(tbuf, "type %d", mp->type);
+		(void)snprintf(tbuf, sizeof(tbuf), "type %d", mp->type);
 		tp = tbuf;
 	} else
 		tp = types[mp->type];
@@ -67,19 +71,20 @@ print_request(cp, mp)
 	    cp, tp, mp->id_num, mp->l_name, mp->r_name, mp->r_tty);
 }
 
+void
 print_response(cp, rp)
 	char *cp;
-	register CTL_RESPONSE *rp;
+	CTL_RESPONSE *rp;
 {
 	char tbuf[80], *tp, abuf[80], *ap;
 	
 	if (rp->type > NTYPES) {
-		(void)sprintf(tbuf, "type %d", rp->type);
+		(void)snprintf(tbuf, sizeof(tbuf), "type %d", rp->type);
 		tp = tbuf;
 	} else
 		tp = types[rp->type];
 	if (rp->answer > NANSWERS) {
-		(void)sprintf(abuf, "answer %d", rp->answer);
+		(void)snprintf(abuf, sizeof(abuf), "answer %d", rp->answer);
 		ap = abuf;
 	} else
 		ap = answers[rp->answer];

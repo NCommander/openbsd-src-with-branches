@@ -1,3 +1,4 @@
+/*	$OpenBSD: dol.c,v 1.10 2002/06/09 05:47:27 todd Exp $	*/
 /*	$NetBSD: dol.c,v 1.8 1995/09/27 00:38:38 jtc Exp $	*/
 
 /*-
@@ -37,7 +38,7 @@
 #if 0
 static char sccsid[] = "@(#)dol.c	8.1 (Berkeley) 5/31/93";
 #else
-static char rcsid[] = "$NetBSD: dol.c,v 1.8 1995/09/27 00:38:38 jtc Exp $";
+static char rcsid[] = "$OpenBSD: dol.c,v 1.10 2002/06/09 05:47:27 todd Exp $";
 #endif
 #endif /* not lint */
 
@@ -47,11 +48,7 @@ static char rcsid[] = "$NetBSD: dol.c,v 1.8 1995/09/27 00:38:38 jtc Exp $";
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
-#if __STDC__
-# include <stdarg.h>
-#else
-# include <varargs.h>
-#endif
+#include <stdarg.h>
 
 #include "csh.h"
 #include "extern.h"
@@ -90,17 +87,17 @@ static int dolnmod;		/* Number of modifiers */
 static int dolmcnt;		/* :gx -> 10000, else 1 */
 static int dolwcnt;		/* :wx -> 10000, else 1 */
 
-static void	 Dfix2 __P((Char **));
-static Char	*Dpack __P((Char *, Char *));
-static int	 Dword __P((void));
-static void	 dolerror __P((Char *));
-static int	 DgetC __P((int));
-static void	 Dgetdol __P((void));
-static void	 fixDolMod __P((void));
-static void	 setDolp __P((Char *));
-static void	 unDredc __P((int));
-static int	 Dredc __P((void));
-static void	 Dtestq __P((int));
+static void	 Dfix2(Char **);
+static Char	*Dpack(Char *, Char *);
+static int	 Dword(void);
+static void	 dolerror(Char *);
+static int	 DgetC(int);
+static void	 Dgetdol(void);
+static void	 fixDolMod(void);
+static void	 setDolp(Char *);
+static void	 unDredc(int);
+static int	 Dredc(void);
+static void	 Dtestq(int);
 
 
 /*
@@ -429,7 +426,7 @@ Dgetdol()
 	if (dimen || bitset)
 	    stderror(ERR_SYNTAX);
 	if (backpid != 0) {
-	    if (dolbang) 
+	    if (dolbang)
 		xfree((ptr_t) dolbang);
 	    setDolp(dolbang = putn(backpid));
 	}
@@ -473,7 +470,7 @@ Dgetdol()
 	break;
 
     case '*':
-	(void) Strcpy(name, STRargv);
+	(void) Strlcpy(name, STRargv, sizeof name/sizeof(Char));
 	vp = adrof(STRargv);
 	subscr = -1;		/* Prevent eating [...] */
 	break;
@@ -489,10 +486,8 @@ Dgetdol()
 		c = DgetC(0);
 	    } while (Isdigit(c));
 	    unDredc(c);
-	    if (subscr < 0) {
-		dolerror(vp->v_name);
-		return;
-	    }
+	    if (subscr < 0)
+		stderror(ERR_RANGE);
 	    if (subscr == 0) {
 		if (bitset) {
 		    dolp = ffile ? STR1 : STR0;
@@ -606,11 +601,12 @@ Dgetdol()
 	    stderror(ERR_SYNTAX);
     }
     else {
-	if (subscr > 0)
+	if (subscr > 0) {
 	    if (subscr > upb)
 		lwb = 1, upb = 0;
 	    else
 		lwb = upb = subscr;
+	}
 	unDredc(c);
     }
     if (dimen) {
@@ -649,13 +645,13 @@ fixDolMod()
 		    dolwcnt = 10000;
 		c = DgetC(0);
 	    }
-	    if ((c == 'g' && dolmcnt != 10000) || 
+	    if ((c == 'g' && dolmcnt != 10000) ||
 		(c == 'a' && dolwcnt != 10000)) {
 		if (c == 'g')
 		    dolmcnt = 10000;
 		else
 		    dolwcnt = 10000;
-		c = DgetC(0); 
+		c = DgetC(0);
 	    }
 
 	    if (c == 's') {	/* [eichin:19910926.0755EST] */
@@ -733,12 +729,12 @@ setDolp(cp)
 	    do {
 		dp = Strstr(cp, lhsub);
 		if (dp) {
-		    np = (Char *) xmalloc((size_t)
-					  ((Strlen(cp) + 1 - lhlen + rhlen) *
-					  sizeof(Char)));
-		    (void) Strncpy(np, cp, dp - cp);
-		    (void) Strcpy(np + (dp - cp), rhsub);
-		    (void) Strcpy(np + (dp - cp) + rhlen, dp + lhlen);
+		    size_t len = Strlen(cp) + 1 - lhlen + rhlen;
+
+		    np = (Char *) xmalloc(len * sizeof(Char));
+		    (void) Strlcpy(np, cp, len);
+		    (void) Strlcat(np, rhsub, len);
+		    (void) Strlcat(np, dp + lhlen, len);
 
 		    xfree((ptr_t) cp);
 		    dp = cp = np;
@@ -757,7 +753,7 @@ setDolp(cp)
 		dolmcnt--;
 	    else
 		break;
-        } else {
+	} else {
 	    int didmod = 0;
 
 	    do {
@@ -850,10 +846,9 @@ heredoc(term)
     register Char *lbp, *obp, *mbp;
     Char  **vp;
     bool    quoted;
-    char   *tmp;
+    char   tmp[] = "/tmp/sh.XXXXXXXX";
 
-    tmp = short2str(shtemp);
-    if (open(tmp, O_RDWR | O_CREAT | O_TRUNC, 0600) < 0)
+    if (mkstemp(tmp) < 0)
 	stderror(ERR_SYSTEM, tmp, strerror(errno));
     (void) unlink(tmp);		/* 0 0 inode! */
     Dv[0] = term;

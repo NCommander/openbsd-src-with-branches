@@ -1,4 +1,5 @@
-/*	$NetBSD: resource.h,v 1.13 1995/03/26 20:24:36 jtc Exp $	*/
+/*	$OpenBSD: resource.h,v 1.3 1997/03/21 21:27:22 millert Exp $	*/
+/*	$NetBSD: resource.h,v 1.14 1996/02/09 18:25:27 christos Exp $	*/
 
 /*
  * Copyright (c) 1982, 1986, 1993
@@ -60,7 +61,7 @@ struct	rusage {
 	struct timeval ru_stime;	/* system time used */
 	long	ru_maxrss;		/* max resident set size */
 #define	ru_first	ru_ixrss
-	long	ru_ixrss;		/* integral shared memory size */
+	long	ru_ixrss;		/* integral shared text memory size */
 	long	ru_idrss;		/* integral unshared data " */
 	long	ru_isrss;		/* integral unshared stack " */
 	long	ru_minflt;		/* page reclaims */
@@ -111,16 +112,18 @@ struct loadavg {
 
 #ifdef _KERNEL
 extern struct loadavg averunnable;
+int	dosetrlimit(struct proc *, u_int, struct rlimit *);
+int	donice(struct proc *, struct proc *, int);
 
 #else
 #include <sys/cdefs.h>
 
 __BEGIN_DECLS
-int	getpriority __P((int, int));
-int	getrlimit __P((int, struct rlimit *));
-int	getrusage __P((int, struct rusage *));
-int	setpriority __P((int, int, int));
-int	setrlimit __P((int, const struct rlimit *));
+int	getpriority(int, int);
+int	getrlimit(int, struct rlimit *);
+int	getrusage(int, struct rusage *);
+int	setpriority(int, int, int);
+int	setrlimit(int, const struct rlimit *);
 __END_DECLS
 
 #endif	/* _KERNEL */

@@ -1,9 +1,68 @@
+/*	$OpenBSD: hack.fight.c,v 1.4 2001/08/06 22:59:13 pjanzen Exp $	*/
+
 /*
- * Copyright (c) Stichting Mathematisch Centrum, Amsterdam, 1985.
+ * Copyright (c) 1985, Stichting Centrum voor Wiskunde en Informatica,
+ * Amsterdam
+ * All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are
+ * met:
+ *
+ * - Redistributions of source code must retain the above copyright notice,
+ * this list of conditions and the following disclaimer.
+ *
+ * - Redistributions in binary form must reproduce the above copyright
+ * notice, this list of conditions and the following disclaimer in the
+ * documentation and/or other materials provided with the distribution.
+ *
+ * - Neither the name of the Stichting Centrum voor Wiskunde en
+ * Informatica, nor the names of its contributors may be used to endorse or
+ * promote products derived from this software without specific prior
+ * written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS
+ * IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED
+ * TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A
+ * PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER
+ * OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
+ * EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+ * PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR
+ * PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
+ * LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
+ * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ */
+
+/*
+ * Copyright (c) 1982 Jay Fenlason <hack@gnu.org>
+ * All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions
+ * are met:
+ * 1. Redistributions of source code must retain the above copyright
+ *    notice, this list of conditions and the following disclaimer.
+ * 2. Redistributions in binary form must reproduce the above copyright
+ *    notice, this list of conditions and the following disclaimer in the
+ *    documentation and/or other materials provided with the distribution.
+ * 3. The name of the author may not be used to endorse or promote products
+ *    derived from this software without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED ``AS IS'' AND ANY EXPRESS OR IMPLIED WARRANTIES,
+ * INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY
+ * AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.  IN NO EVENT SHALL
+ * THE AUTHOR BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
+ * EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+ * PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS;
+ * OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
+ * WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR
+ * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
+ * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
 #ifndef lint
-static char rcsid[] = "$NetBSD: hack.fight.c,v 1.3 1995/03/23 08:30:12 cgd Exp $";
+static char rcsid[] = "$OpenBSD: hack.fight.c,v 1.4 2001/08/06 22:59:13 pjanzen Exp $";
 #endif /* not lint */
 
 #include	"hack.h"
@@ -20,7 +79,7 @@ register struct permonst *pa = magr->data, *pd = mdef->data;
 int hit;
 schar tmp;
 boolean vis;
-	if(index("Eauy", pa->mlet)) return(0);
+	if(strchr("Eauy", pa->mlet)) return(0);
 	if(magr->mfroz) return(0);		/* riv05!a3 */
 	tmp = pd->ac + pa->mlevel;
 	if(mdef->mconf || mdef->mfroz || mdef->msleep){
@@ -88,7 +147,7 @@ register struct permonst *pd = mdef->data;
 /* drop a rock and remove monster */
 monstone(mdef) register struct monst *mdef; {
 	extern char mlarge[];
-	if(index(mlarge, mdef->data->mlet))
+	if(strchr(mlarge, mdef->data->mlet))
 		mksobj_at(ENORMOUS_ROCK, mdef->mx, mdef->my);
 	else
 		mksobj_at(ROCK, mdef->mx, mdef->my);
@@ -151,7 +210,7 @@ register thrown;
 	    if(obj == uwep && (obj->otyp > SPEAR || obj->otyp < BOOMERANG))
 		tmp = rnd(2);
 	    else {
-		if(index(mlarge, mon->data->mlet)) {
+		if(strchr(mlarge, mon->data->mlet)) {
 			tmp = rnd(objects[obj->otyp].wldam);
 			if(obj->otyp == TWO_HANDED_SWORD) tmp += d(2,6);
 			else if(obj->otyp == FLAIL) tmp += rnd(4);
@@ -194,7 +253,7 @@ register thrown;
 			killed(mon);
 			return(FALSE);
 		case CLOVE_OF_GARLIC:		/* no effect against demons */
-			if(index(UNDEAD, mon->data->mlet))
+			if(strchr(UNDEAD, mon->data->mlet))
 				mon->mflee = 1;
 			tmp = 1;
 			break;
@@ -304,7 +363,7 @@ register struct monst *mtmp;
 		else if(uwep->otyp == DAGGER) tmp += 2;
 		else if(uwep->otyp == CRYSKNIFE) tmp += 3;
 		else if(uwep->otyp == SPEAR &&
-			index("XDne", mdat->mlet)) tmp += 2;
+			strchr("XDne", mdat->mlet)) tmp += 2;
 	}
 	if(mtmp->msleep) {
 		mtmp->msleep = 0;
@@ -338,7 +397,7 @@ register struct monst *mtmp;
 			if(mtmp->wormno)
 				cutworm(mtmp, u.ux+u.dx, u.uy+u.dy,
 					uwep ? uwep->otyp : 0);
-#endif NOWORM
+#endif /* NOWORM */
 		}
 		if(mdat->mlet == 'a') {
 			if(rn2(2)) {

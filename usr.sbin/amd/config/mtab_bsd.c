@@ -1,3 +1,5 @@
+/*	$OpenBSD: mtab_bsd.c,v 1.2 1996/03/25 15:54:52 niklas Exp $	*/
+
 /*
  * Copyright (c) 1990 Jan-Simon Pendry
  * Copyright (c) 1990 Imperial College of Science, Technology & Medicine
@@ -36,15 +38,11 @@
  * SUCH DAMAGE.
  *
  *	from: @(#)mtab_bsd.c	8.1 (Berkeley) 6/6/93
- *	$Id: mtab_bsd.c,v 1.5 1994/06/13 20:49:10 mycroft Exp $
- *
  */
 
 #include "am.h"
 
 #ifdef READ_MTAB_BSD_STYLE
-
-#include <sys/mount.h>
 
 static struct mntent *mnt_dup(mp)
 struct statfs *mp;
@@ -54,7 +52,7 @@ struct statfs *mp;
 
 	new_mp->mnt_fsname = strdup(mp->f_mntfromname);
 	new_mp->mnt_dir = strdup(mp->f_mntonname);
-#ifndef __NetBSD__
+#if !defined(__NetBSD__) && !defined(__OpenBSD__)
 	switch (mp->f_type) {
 	case MOUNT_UFS:  ty = MTAB_TYPE_UFS; break;
 	case MOUNT_NFS:  ty = MTAB_TYPE_NFS; break;

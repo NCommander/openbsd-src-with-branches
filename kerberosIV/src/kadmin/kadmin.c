@@ -346,7 +346,7 @@ clean_up()
 static int
 clean_up_cmd (int argc, char **argv)
 {
-    clean_up();
+    clean_up();		/* roughly said, signal safe */
     return 0;
 }
 
@@ -369,8 +369,6 @@ do_init(int argc, char **argv)
     int optind = 0;
     int ret;
 
-    setprogname (argv[0]);
-    
     if(getarg(args, num_args, argc, argv, &optind) < 0)
 	usage(1);
     if(help_flag)
@@ -430,8 +428,13 @@ do_init(int argc, char **argv)
 static void
 sigalrm(int sig)
 {
-    if(clean_up())
-	printf("\nTickets destroyed.\n");
+    int save_errno = errno;
+
+    if(clean_up()) {		/* roughly said, signal safe */
+	write(STDOUT_FILENO, "\nTickets destroyed.\n",
+	    strlen("\nTickets destroyed.\n"));
+    }
+    errno = save_errno;
 }
 
 int

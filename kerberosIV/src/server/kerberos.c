@@ -119,6 +119,8 @@ static char local_realm[REALM_SZ];
 static int max_age = -1;
 static int pause_int = -1;
 
+extern char *__progname;
+
 /*
  * Print usage message and exit.
  */
@@ -128,7 +130,7 @@ usage(void)
     fprintf(stderr, "Usage: %s [-s] [-m] [-n] [-p pause_seconds]"
 	    " [-a max_age] [-l log_file] [-i address_to_listen_on]"
 	    " [-r realm] [database_pathname]\n",
-	    getprogname());
+	    __progname);
     exit(1);
 }
 
@@ -721,8 +723,6 @@ main(int argc, char **argv)
     char *port_spec = "+";
 
     umask(077);		/* Create protected files */
-
-    setprogname (argv[0]);
 
 #if defined(HAVE_SRANDOMDEV)
     srandomdev();

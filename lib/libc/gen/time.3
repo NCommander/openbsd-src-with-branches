@@ -1,4 +1,4 @@
-.\"	$NetBSD: time.3,v 1.5 1995/02/27 05:53:51 cgd Exp $
+.\"	$OpenBSD: time.3,v 1.8 2000/12/24 00:30:52 aaron Exp $
 .\"
 .\" Copyright (c) 1989, 1991, 1993
 .\"	The Regents of the University of California.  All rights reserved.
@@ -35,11 +35,9 @@
 .\" OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 .\" SUCH DAMAGE.
 .\"
-.\"     @(#)time.3	8.1 (Berkeley) 6/4/93
-.\"
 .Dd June 4, 1993
 .Dt TIME 3
-.Os BSD 4
+.Os
 .Sh NAME
 .Nm time
 .Nd get time of day
@@ -50,24 +48,21 @@
 .Sh DESCRIPTION
 The
 .Fn time
-function
-returns the value of time in seconds since 0 hours, 0 minutes,
-0 seconds, January 1, 1970, Coordinated Universal Time.
+function returns the value of time in seconds since 0 hours, 0 minutes,
+0 seconds, January 1, 1970, Coordinated Universal Time (UTC).
 .Pp
 A copy of the time value may be saved to the area indicated by the
 pointer
 .Fa tloc .
 If
 .Fa tloc
-is a NULL pointer, no value is stored.
+is a null pointer, no value is stored.
 .Pp
 Upon successful completion,
 .Fn time
 returns the value of time.
 Otherwise a value of
-.Po
-.Po Fa time_t Pc \-1
-.Pc
+.Po Fa time_t Pc Ns -1
 is returned and the global variable
 .Va errno
 is set to indicate the error.
@@ -77,6 +72,7 @@ The following error codes may be set in
 .Bl -tag -width Er
 .It Bq Er EFAULT
 An argument address referenced invalid memory.
+.El
 .Sh SEE ALSO
 .Xr gettimeofday 2 ,
 .Xr ctime 3
@@ -84,4 +80,11 @@ An argument address referenced invalid memory.
 A
 .Fn time
 function appeared in
-.At v6 .
+.At v2
+and used to return time in sixtieths of a second in 32 bits,
+which was to guarantee a crisis every 2.26 years.
+Since the
+.At v6
+.Fn time
+scale was changed to seconds extending the pre-crisis stagnation
+period up to a total of 68 years.

@@ -1,4 +1,5 @@
-/*	$NetBSD: param.h,v 1.4 1995/07/23 18:14:41 ragge Exp $	*/
+/*	$OpenBSD: param.h,v 1.9 2002/03/23 23:28:30 miod Exp $	*/
+/*	$NetBSD: param.h,v 1.6 1996/04/01 21:47:57 mark Exp $	*/
 
 /*
  * Copyright (c) 1994, 1995 Jochen Pohl
@@ -66,7 +67,13 @@
 #elif __i386__
 #define PTRDIFF_IS_LONG		0
 #define SIZEOF_IS_ULONG		0
+#elif __hppa__
+#define PTRDIFF_IS_LONG		0
+#define SIZEOF_IS_ULONG		0
 #elif __m68k__
+#define PTRDIFF_IS_LONG		0
+#define SIZEOF_IS_ULONG		0
+#elif __mips__
 #define PTRDIFF_IS_LONG		0
 #define SIZEOF_IS_ULONG		0
 #elif __ns32k__
@@ -78,6 +85,15 @@
 #elif __vax__
 #define PTRDIFF_IS_LONG         0
 #define SIZEOF_IS_ULONG         0
+#elif __arm32__
+#define PTRDIFF_IS_LONG		0
+#define SIZEOF_IS_ULONG		0
+#elif __powerpc__
+#define PTRDIFF_IS_LONG		0
+#define SIZEOF_IS_ULONG		0
+#elif __m88k__
+#define PTRDIFF_IS_LONG		0
+#define SIZEOF_IS_ULONG		0
 #else
 #error unknown machine type
 #endif
@@ -98,23 +114,9 @@ typedef	long	quad_t;
 typedef	u_long	u_quad_t;
 #endif
 #endif
-
-
-/*
- * long double only in ANSI C.
- */
-#ifdef __STDC__
 typedef	long double ldbl_t;
-#else
-typedef	double	ldbl_t;
-#endif
 
 /*
- * Some traditional compilers are not able to assign structures.
+ * Modern compilers are able to assign structures.
  */
-#ifdef __STDC__
 #define STRUCT_ASSIGN(dest, src)	(dest) = (src)
-#else
-#define STRUCT_ASSIGN(dest, src)	(void)memcpy(&(dest), &(src), \
-						     sizeof (dest));
-#endif

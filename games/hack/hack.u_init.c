@@ -1,9 +1,68 @@
+/*	$OpenBSD: hack.u_init.c,v 1.4 2001/08/06 22:59:13 pjanzen Exp $	*/
+
 /*
- * Copyright (c) Stichting Mathematisch Centrum, Amsterdam, 1985.
+ * Copyright (c) 1985, Stichting Centrum voor Wiskunde en Informatica,
+ * Amsterdam
+ * All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are
+ * met:
+ *
+ * - Redistributions of source code must retain the above copyright notice,
+ * this list of conditions and the following disclaimer.
+ *
+ * - Redistributions in binary form must reproduce the above copyright
+ * notice, this list of conditions and the following disclaimer in the
+ * documentation and/or other materials provided with the distribution.
+ *
+ * - Neither the name of the Stichting Centrum voor Wiskunde en
+ * Informatica, nor the names of its contributors may be used to endorse or
+ * promote products derived from this software without specific prior
+ * written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS
+ * IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED
+ * TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A
+ * PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER
+ * OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
+ * EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+ * PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR
+ * PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
+ * LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
+ * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ */
+
+/*
+ * Copyright (c) 1982 Jay Fenlason <hack@gnu.org>
+ * All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions
+ * are met:
+ * 1. Redistributions of source code must retain the above copyright
+ *    notice, this list of conditions and the following disclaimer.
+ * 2. Redistributions in binary form must reproduce the above copyright
+ *    notice, this list of conditions and the following disclaimer in the
+ *    documentation and/or other materials provided with the distribution.
+ * 3. The name of the author may not be used to endorse or promote products
+ *    derived from this software without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED ``AS IS'' AND ANY EXPRESS OR IMPLIED WARRANTIES,
+ * INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY
+ * AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.  IN NO EVENT SHALL
+ * THE AUTHOR BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
+ * EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+ * PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS;
+ * OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
+ * WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR
+ * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
+ * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
 #ifndef lint
-static char rcsid[] = "$NetBSD: hack.u_init.c,v 1.4 1995/03/23 08:31:51 cgd Exp $";
+static char rcsid[] = "$OpenBSD: hack.u_init.c,v 1.4 2001/08/06 22:59:13 pjanzen Exp $";
 #endif /* not lint */
 
 #include "hack.h"
@@ -40,7 +99,7 @@ struct trobj Extra_objs[] = {
 	{ 0, 0, 0, 0, 0 },
 	{ 0, 0, 0, 0, 0 }
 };
-#endif WIZARD
+#endif /* WIZARD */
 
 struct trobj Cave_man[] = {
 	{ MACE, 1, WEAPON_SYM, 1, 1 },
@@ -117,12 +176,12 @@ extern char readchar();
 
 	printf("\nAre you an experienced player? [ny] ");
 
-	while(!index("ynYN \n\004", (exper = readchar())))
+	while(!strchr("ynYN \n\004", (exper = readchar())))
 		bell();
 	if(exper == '\004')		/* Give him an opportunity to get out */
 		end_of_input();
 	printf("%c\n", exper);		/* echo */
-	if(index("Nn \n", exper)) {
+	if(strchr("Nn \n", exper)) {
 		exper = 0;
 		goto beginner;
 	}
@@ -188,7 +247,7 @@ got_suffix:
 	init_uhunger();
 #ifdef QUEST
 	u.uhorizon = 6;
-#endif QUEST
+#endif /* QUEST */
 	uarm = uarm2 = uarmh = uarms = uarmg = uwep = uball = uchain =
 	uleft = uright = 0;
 
@@ -251,7 +310,7 @@ got_suffix:
 
 #ifdef WIZARD
 	if(wizard) wiz_inv();
-#endif WIZARD
+#endif /* WIZARD */
 
 	/* make sure he can carry all he has - especially for T's */
 	while(inv_weight() > 0 && u.ustr < 118)
@@ -308,7 +367,7 @@ extern struct obj *mkobj();
 			if(trop->trquan)
 				continue;	/* make a similar object */
 		}
-#endif PYRAMID_BUG
+#endif /* PYRAMID_BUG */
 		trop++;
 	}
 }
@@ -321,7 +380,7 @@ register char *ep = getenv("INVENT");
 register int type;
 	while(ep && *ep) {
 		type = atoi(ep);
-		ep = index(ep, ',');
+		ep = strchr(ep, ',');
 		if(ep) while(*ep == ',' || *ep == ' ') ep++;
 		if(type <= 0 || type > NROFOBJECTS) continue;
 		trop->trotyp = type;
@@ -339,11 +398,11 @@ register int type;
 	trop->trquan = 1;
 	ini_inv(trop);
 }
-#endif WIZARD
+#endif /* WIZARD */
 
 plnamesuffix() {
 register char *p;
-	if(p = rindex(plname, '-')) {
+	if(p = strrchr(plname, '-')) {
 		*p = 0;
 		pl_character[0] = p[1];
 		pl_character[1] = 0;
@@ -360,7 +419,7 @@ char pc;
 		/* so that rolesyms[] is defined */
 	register char *cp;
 
-	if(cp = index(rolesyms, pc))
+	if(cp = strchr(rolesyms, pc))
 		return(cp - rolesyms);
 	return(-1);
 }

@@ -1,3 +1,4 @@
+.\"	$OpenBSD: insque.3,v 1.5 2002/04/30 16:31:42 mpech Exp $
 .\" Copyright (c) 1993 John Brezak
 .\" All rights reserved.
 .\"
@@ -24,10 +25,10 @@
 .\" OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 .\" SUCH DAMAGE.
 .\"
-.\"	$Id: insque.3,v 1.4 1995/01/13 01:16:12 jtc Exp $
 .\"
 .Dd August 12, 1993
 .Dt INSQUE 3
+.Os
 .Sh NAME
 .Nm insque ,
 .Nm remque
@@ -45,7 +46,7 @@
 .Ft };
 .br
 .br
-.Ft void 
+.Ft void
 .Fn insque "struct qelem *elem" "struct qelem *pred"
 .Ft void
 .Fn remque "struct qelem *elem"
@@ -57,10 +58,10 @@ These interfaces are available from the compatibility library, libcompat.
 .Fn insque
 and
 .Fn remque
-manipulate queues built from doubly linked lists. Each element in the queue
+manipulate queues built from doubly linked lists.
+Each element in the queue
 must begin with a "struct qelem".
 .Sh DIAGNOSTICS
 These functions are not atomic unless that machine architecture allows it.
 .Sh HISTORY
 These are derived from the insque and remque instructions on a VAX.
-

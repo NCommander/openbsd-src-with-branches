@@ -33,7 +33,7 @@
 
 #include <xfs/xfs_locl.h>
 
-RCSID("$Id: xfs_vfsops-openbsd.c,v 1.1.1.1 2002/06/05 17:24:11 hin Exp $");
+RCSID("$Id: xfs_vfsops-openbsd.c,v 1.1.1.1 2002/06/07 03:33:00 hin Exp $");
 
 #include <xfs/xfs_common.h>
 #include <xfs/xfs_message.h>

@@ -33,21 +33,56 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  *
- *	from: @(#)SYS.h	8.1 (Berkeley) 6/4/93
- *      $Id: SYS.h,v 1.3 1994/12/15 17:24:44 mycroft Exp $ 
+ *      $OpenBSD: SYS.h,v 1.8 2002/02/19 19:39:36 millert Exp $ 
  */
 
 #include <sys/syscall.h>
-#include <machine/machAsmDefs.h>
+#include <machine/asm.h>
 
 #ifdef __STDC__
-#define RSYSCALL(x)     LEAF(x); li v0,SYS_ ## x; syscall; \
-			bne a3,zero,err; j ra; err: j _C_LABEL(cerror); END(x);
-#define PSEUDO(x,y)     LEAF(x); li v0,SYS_ ## y; syscall; \
-			bne a3,zero,err; j ra; err: j _C_LABEL(cerror); END(x);
+# define __ENTRY(p,x)	ENTRY(p ## x)
+# define __DO_SYSCALL(x)	\
+			li	v0,SYS_ ## x;	\
+			syscall
+# define __LEAF2(p,x)	LEAF(p ## x)
+# define __END2(p,x)	END(p ## x)
+# define __CLABEL2(p,x)	_C_LABEL(p ## x)
 #else
-#define RSYSCALL(x)     LEAF(x); li v0,SYS_/**/x; syscall; \
-			bne a3,zero,err; j ra; err: j _C_LABEL(cerror); END(x);
-#define PSEUDO(x,y)     LEAF(x); li v0,SYS_/**/y; syscall; \
-			bne a3,zero,err; j ra; err: j _C_LABEL(cerror); END(x);
+# define __ENTRY(p,x)	ENTRY(p/**/x)
+# define __DO_SYSCALL(x)	\
+			li	v0,SYS_/**/x;	\
+			syscall
+# define __LEAF2(p,x)	LEAF(p/**/x)
+# define __END2(p,x)	END(p/**/x)
+# define __CLABEL2(p,x)	_C_LABEL(p/**/x)
 #endif
+
+#define __PSEUDO_NOERROR(p,x,y)				\
+		__LEAF2(p,x);				\
+			__DO_SYSCALL(y);		\
+			j	ra;			\
+		__END2(p,x)
+
+#define __PSEUDO(p,x,y)   				\
+		__LEAF2(p,x);				\
+			__DO_SYSCALL(y);		\
+			bne	a3,zero,err;		\
+			j	ra;			\
+		err:	la	t9,_C_LABEL(cerror);	\
+			jr	t9;			\
+		__END2(p,x)
+
+#define __RSYSCALL(p,x)   __PSEUDO(p,x,x)
+
+#ifdef _THREAD_SAFE
+# define RSYSCALL(x)	__RSYSCALL(_thread_sys_,x)
+# define PSEUDO(x,y)	__PSEUDO(_thread_sys_,x,y)
+# define SYSLEAF(x)	__LEAF2(_thread_sys_,x)
+# define SYSEND(x)	__END2(_thread_sys_,x)
+#else /* _THREAD_SAFE */
+# define RSYSCALL(x)	__RSYSCALL(,x)
+# define PSEUDO(x,y)	__PSEUDO(,x,y)
+# define SYSLEAF(x)	__LEAF2(,x)
+# define SYSEND(x)	__END2(,x)
+#endif /* _THREAD_SAFE */
+

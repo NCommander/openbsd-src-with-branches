@@ -1,3 +1,4 @@
+/*	$OpenBSD: mkdir.c,v 1.13 2002/06/09 05:34:26 todd Exp $	*/
 /*	$NetBSD: mkdir.c,v 1.14 1995/06/25 21:59:21 mycroft Exp $	*/
 
 /*
@@ -43,7 +44,7 @@ static char copyright[] =
 #if 0
 static char sccsid[] = "@(#)mkdir.c	8.2 (Berkeley) 1/25/94";
 #else
-static char rcsid[] = "$NetBSD: mkdir.c,v 1.14 1995/06/25 21:59:21 mycroft Exp $";
+static char rcsid[] = "$OpenBSD: mkdir.c,v 1.13 2002/06/09 05:34:26 todd Exp $";
 #endif
 #endif /* not lint */
 
@@ -58,13 +59,13 @@ static char rcsid[] = "$NetBSD: mkdir.c,v 1.14 1995/06/25 21:59:21 mycroft Exp $
 #include <string.h>
 #include <unistd.h>
 
-int	mkpath __P((char *, mode_t, mode_t));
-void	usage __P((void));
+extern char *__progname;
+
+int	mkpath(char *, mode_t, mode_t);
+void	usage(void);
 
 int
-main(argc, argv)
-	int argc;
-	char *argv[];
+main(int argc, char *argv[])
 {
 	int ch, exitval, pflag;
 	mode_t *set;
@@ -91,8 +92,8 @@ main(argc, argv)
 			if ((set = setmode(optarg)) == NULL)
 				errx(1, "invalid file mode: %s", optarg);
 			mode = getmode(set, S_IRWXU | S_IRWXG | S_IRWXO);
+			free(set);
 			break;
-		case '?':
 		default:
 			usage();
 		}
@@ -101,9 +102,9 @@ main(argc, argv)
 
 	if (*argv == NULL)
 		usage();
-	
+
 	for (exitval = 0; *argv != NULL; ++argv) {
-		register char *slash;
+		char *slash;
 
 		/* Remove trailing slashes, per POSIX. */
 		slash = strrchr(*argv, '\0');
@@ -117,26 +118,35 @@ main(argc, argv)
 			if (mkdir(*argv, mode) < 0) {
 				warn("%s", *argv);
 				exitval = 1;
-			}
+		 	} else {
+                       		/*
+                 		 * The mkdir() and umask() calls both honor only the low
+                 		 * nine bits, so if you try to set a mode including the
+                 		 * sticky, setuid, setgid bits you lose them.  Don't do
+                 		 * this unless the user has specifically requested a mode
+                 		 * as chmod will (obviously) ignore the umask.
+                 		 */
+				if (mode > 0777 && chmod(*argv, mode) == -1) {
+					warn("%s", *argv);
+					exitval = 1;
+				}
+			}	
 		}
 	}
 	exit(exitval);
 }
 
 /*
- * mkpath -- create directories.  
+ * mkpath -- create directories.
  *	path     - path
  *	mode     - file mode of terminal directory
  *	dir_mode - file mode of intermediate directories
  */
 int
-mkpath(path, mode, dir_mode)
-	char *path;
-	mode_t mode;
-	mode_t dir_mode;
+mkpath(char *path, mode_t mode, mode_t dir_mode)
 {
 	struct stat sb;
-	register char *slash;
+	char *slash;
 	int done = 0;
 
 	slash = path;
@@ -149,15 +159,17 @@ mkpath(path, mode, dir_mode)
 		*slash = '\0';
 
 		if (stat(path, &sb)) {
-			if (errno != ENOENT || mkdir(path, dir_mode)) {
+			if (errno != ENOENT ||
+			    (mkdir(path, done ? mode : dir_mode) &&
+			    errno != EEXIST)) {
 				warn("%s", path);
 				return (-1);
 			}
 		} else if (!S_ISDIR(sb.st_mode)) {
-		        warnx("%s: %s", path, strerror(ENOTDIR));
+			warnx("%s: %s", path, strerror(ENOTDIR));
 			return (-1);
 		}
-		    
+
 		*slash = '/';
 	}
 
@@ -165,9 +177,8 @@ mkpath(path, mode, dir_mode)
 }
 
 void
-usage()
+usage(void)
 {
-
-	(void)fprintf(stderr, "usage: mkdir [-p] [-m mode] dirname ...\n");
+	(void)fprintf(stderr, "usage: %s [-p] [-m mode] dirname ...\n", __progname);
 	exit(1);
 }

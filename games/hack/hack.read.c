@@ -1,9 +1,68 @@
+/*	$OpenBSD: hack.read.c,v 1.4 2001/08/06 22:59:13 pjanzen Exp $	*/
+
 /*
- * Copyright (c) Stichting Mathematisch Centrum, Amsterdam, 1985.
+ * Copyright (c) 1985, Stichting Centrum voor Wiskunde en Informatica,
+ * Amsterdam
+ * All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are
+ * met:
+ *
+ * - Redistributions of source code must retain the above copyright notice,
+ * this list of conditions and the following disclaimer.
+ *
+ * - Redistributions in binary form must reproduce the above copyright
+ * notice, this list of conditions and the following disclaimer in the
+ * documentation and/or other materials provided with the distribution.
+ *
+ * - Neither the name of the Stichting Centrum voor Wiskunde en
+ * Informatica, nor the names of its contributors may be used to endorse or
+ * promote products derived from this software without specific prior
+ * written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS
+ * IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED
+ * TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A
+ * PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER
+ * OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
+ * EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+ * PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR
+ * PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
+ * LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
+ * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ */
+
+/*
+ * Copyright (c) 1982 Jay Fenlason <hack@gnu.org>
+ * All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions
+ * are met:
+ * 1. Redistributions of source code must retain the above copyright
+ *    notice, this list of conditions and the following disclaimer.
+ * 2. Redistributions in binary form must reproduce the above copyright
+ *    notice, this list of conditions and the following disclaimer in the
+ *    documentation and/or other materials provided with the distribution.
+ * 3. The name of the author may not be used to endorse or promote products
+ *    derived from this software without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED ``AS IS'' AND ANY EXPRESS OR IMPLIED WARRANTIES,
+ * INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY
+ * AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.  IN NO EVENT SHALL
+ * THE AUTHOR BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
+ * EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+ * PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS;
+ * OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
+ * WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR
+ * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
+ * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
 #ifndef lint
-static char rcsid[] = "$NetBSD: hack.read.c,v 1.3 1995/03/23 08:31:22 cgd Exp $";
+static char rcsid[] = "$OpenBSD: hack.read.c,v 1.4 2001/08/06 22:59:13 pjanzen Exp $";
 #endif /* not lint */
 
 #include "hack.h"
@@ -36,7 +95,7 @@ doread() {
 	case SCR_MAIL:
 		readmail(/* scroll */);
 		break;
-#endif MAIL
+#endif /* MAIL */
 	case SCR_ENCHANT_ARMOR:
 	    {	register struct obj *otmp = some_armor();
 		if(!otmp) {
@@ -195,9 +254,9 @@ doread() {
 	    pline("What monster do you want to genocide (Type the letter)? ");
 			getlin(buf);
 		} while(strlen(buf) != 1 || !monstersym(*buf));
-		if(!index(fut_geno, *buf))
+		if(!strchr(fut_geno, *buf))
 			charcat(fut_geno, *buf);
-		if(!index(genocided, *buf))
+		if(!strchr(genocided, *buf))
 			charcat(genocided, *buf);
 		else {
 			pline("Such monsters do not exist in this world.");
@@ -227,11 +286,11 @@ doread() {
 			register int oux = u.ux, ouy = u.uy;
 			tele();
 			if(dist(oux, ouy) > 100) known = TRUE;
-#else QUEST
+#else /* QUEST */
 			register int uroom = inroom(u.ux, u.uy);
 			tele();
 			if(uroom != inroom(u.ux, u.uy)) known = TRUE;
-#endif QUEST
+#endif /* QUEST */
 		}
 		break;
 	case SCR_GOLD_DETECTION:
@@ -353,7 +412,7 @@ doread() {
 				} else if(lev->seen) continue;
 #ifndef QUEST
 				if(num != ROOM)
-#endif QUEST
+#endif /* QUEST */
 				{
 				  lev->seen = lev->new = 1;
 				  if(lev->scrsym == ' ' || !lev->scrsym)
@@ -398,7 +457,7 @@ doread() {
 		for(mtmp = fmon; mtmp; mtmp = mtmp->nmon) {
 		    if(dist(mtmp->mx,mtmp->my) < 3) {
 			mtmp->mhp -= num;
-			if(index("FY", mtmp->data->mlet))
+			if(strchr("FY", mtmp->data->mlet))
 			    mtmp->mhp -= 3*num;	/* this might well kill 'F's */
 			if(mtmp->mhp < 1) {
 			    killed(mtmp);
@@ -475,7 +534,7 @@ register boolean on;
 #ifdef QUEST
 		pline("The cave lights up around you, then fades.");
 		return;
-#else QUEST
+#else /* QUEST */
 		if(levl[u.ux][u.uy].typ == CORR) {
 		    pline("The corridor lights up around you, then fades.");
 		    return;
@@ -484,13 +543,13 @@ register boolean on;
 		    return;
 		} else
 		    pline("The room is lit.");
-#endif QUEST
+#endif /* QUEST */
 	}
 
 do_it:
 #ifdef QUEST
 	return;
-#else QUEST
+#else /* QUEST */
 	if(levl[u.ux][u.uy].lit == on)
 		return;
 	if(levl[u.ux][u.uy].typ == DOOR) {
@@ -519,7 +578,7 @@ do_it:
 				if(on) prl(zx,zy); else nosee(zx,zy);
 		}
 	if(!on) seehx = 0;
-#endif	QUEST
+#endif /* QUEST */
 }
 
 /* Test whether we may genocide all monsters with symbol  ch  */
@@ -532,7 +591,7 @@ register char ch;
 	/*
 	 * can't genocide certain monsters
 	 */
-	if (index("12 &:", ch))
+	if (strchr("12 &:", ch))
 		return FALSE;
 
 	if (ch == pm_eel.mlet)

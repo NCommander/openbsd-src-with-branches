@@ -1,3 +1,5 @@
+/*	$OpenBSD$	*/
+
 /*-
  * Copyright (c) 1990 The Regents of the University of California.
  * All rights reserved.
@@ -33,13 +35,14 @@
 
 #ifndef lint
 /*static char sccsid[] = "from: @(#)yyerror.c	5.2 (Berkeley) 5/15/90";*/
-static char rcsid[] = "$Id: yyerror.c,v 1.2 1993/08/01 18:31:33 mycroft Exp $";
+static char rcsid[] = "$OpenBSD: yyerror.c,v 1.2 1997/06/21 12:33:15 deraadt Exp $";
 #endif /* not lint */
 
 #include <stdio.h>
 
+int
 yyerror(msg)
-char *msg;
+	char *msg;
 {
 	(void)fprintf(stderr, "%s\n", msg);
 	return(0);

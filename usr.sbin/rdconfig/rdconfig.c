@@ -39,11 +39,14 @@
 
 #include <fcntl.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <sys/mman.h>
 #include <sys/param.h>
+#include <sys/ioctl.h>
 
 #include <dev/ramdisk.h>
 
+int
 main(argc, argv)
 	int argc;
 	char **argv;
@@ -74,7 +77,7 @@ main(argc, argv)
 				PROT_READ | PROT_WRITE,
 				MAP_ANON | MAP_PRIVATE,
 				-1, 0);
-	if (rd.rd_addr == (caddr_t)-1) {
+	if (rd.rd_addr == MAP_FAILED) {
 		perror("mmap");
 		exit(1);
 	}

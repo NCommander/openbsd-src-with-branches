@@ -1,4 +1,4 @@
-/*	$PMDB: break.h,v 1.4 2002/03/11 23:39:49 art Exp $	*/
+/*	$OpenBSD: break.h,v 1.4 2002/03/11 23:39:49 art Exp $	*/
 /*
  * Copyright (c) 2002 Artur Grabowski <art@openbsd.org>
  * All rights reserved. 

@@ -1,3 +1,6 @@
+/*	$OpenBSD: vi.c,v 1.3 1997/03/14 05:13:11 millert Exp $	*/
+/*	$NetBSD: vi.c,v 1.2 1997/01/11 06:48:19 lukem Exp $	*/
+
 /*-
  * Copyright (c) 1992, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -35,7 +38,11 @@
  */
 
 #if !defined(lint) && !defined(SCCSID)
+#if 0
 static char sccsid[] = "@(#)vi.c	8.1 (Berkeley) 6/4/93";
+#else
+static char rcsid[] = "$OpenBSD: vi.c,v 1.3 1997/03/14 05:13:11 millert Exp $";
+#endif
 #endif /* not lint && not SCCSID */
 
 /*
@@ -44,7 +51,7 @@ static char sccsid[] = "@(#)vi.c	8.1 (Berkeley) 6/4/93";
 #include "sys.h"
 #include "el.h"
 
-private el_action_t cv_action __P((EditLine *, int));
+private el_action_t cv_action(EditLine *, int);
 
 /* cv_action():
  *	Handle vi actions.
@@ -111,7 +118,7 @@ cv_paste(el, c)
     char *ptr;
     c_undo_t *un = &el->el_chared.c_undo;
 #ifdef DEBUG_PASTE
-    (void) fprintf(el->el_errfile, "Paste: %x \"%s\" +%d -%d\n", 
+    (void)fprintf(el->el_errfile, "Paste: %x \"%s\" +%d -%d\n", 
 		   un->action, un->buf, un->isize, un->dsize);
 #endif
     if (un->isize == 0)
@@ -124,7 +131,7 @@ cv_paste(el, c)
     c_insert(el, un->isize);
     if (el->el_line.cursor + un->isize > el->el_line.lastchar)
 	return CC_ERROR;
-    (void) memcpy(ptr, un->buf, un->isize);
+    (void)memcpy(ptr, un->buf, un->isize);
     return CC_REFRESH;
 }
 
@@ -396,7 +403,7 @@ vi_substitute_line(el, c)
     EditLine *el;
     int c;
 {
-    (void) em_kill_line(el, 0);
+    (void)em_kill_line(el, 0);
     el->el_map.current = el->el_map.key;
     return CC_REFRESH;
 }
@@ -412,7 +419,7 @@ vi_change_to_eol(el, c)
     EditLine *el;
     int c;
 {
-    (void) ed_kill_line(el, 0);
+    (void)ed_kill_line(el, 0);
     el->el_map.current = el->el_map.key;
     return CC_REFRESH;
 }
@@ -570,7 +577,7 @@ vi_undo(el, c)
     c_undo_t *un = &el->el_chared.c_undo;
 
 #ifdef DEBUG_UNDO
-    (void) fprintf(el->el_errfile, "Undo: %x \"%s\" +%d -%d\n", 
+    (void)fprintf(el->el_errfile, "Undo: %x \"%s\" +%d -%d\n", 
 		   un->action, un->buf, un->isize, un->dsize);
 #endif
     switch (un->action) {
@@ -578,7 +585,7 @@ vi_undo(el, c)
 	if (un->dsize == 0) 
 	    return CC_NORM;
 
-	(void) memcpy(un->buf, un->ptr, un->dsize);
+	(void)memcpy(un->buf, un->ptr, un->dsize);
 	for (cp = un->ptr; cp <= el->el_line.lastchar; cp++)
 	    *cp = cp[un->dsize];
 

@@ -1,3 +1,5 @@
+/*	$OpenBSD: test-weof.c,v 1.2 2002/06/25 15:50:16 mickey Exp $	*/
+
 /*
  * Compile with:
  * cc -I/usr/local/include -o time-test time-test.c -L/usr/local/lib -levent
@@ -53,10 +55,10 @@ main (int argc, char **argv)
 	if (socketpair(AF_UNIX, SOCK_STREAM, 0, pair) == -1)
 		return (1);
 
-	/* Initalize the event library */
+	/* Initialize the event library */
 	event_init();
 
-	/* Initalize one event */
+	/* Initialize one event */
 	event_set(&ev, pair[1], EV_WRITE, write_cb, &ev);
 
 	event_add(&ev, NULL);

@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /*	$NetBSD: saioctl.h,v 1.2 1994/10/26 05:45:04 cgd Exp $	*/
 
 /*-

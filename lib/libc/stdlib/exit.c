@@ -32,15 +32,24 @@
  */
 
 #if defined(LIBC_SCCS) && !defined(lint)
-/*static char *sccsid = "from: @(#)exit.c	5.4 (Berkeley) 2/23/91";*/
-static char *rcsid = "$Id: exit.c,v 1.3 1993/08/26 00:47:56 jtc Exp $";
+static char *rcsid = "$OpenBSD: exit.c,v 1.7 2002/08/30 07:58:07 dhartmei Exp $";
 #endif /* LIBC_SCCS and not lint */
 
+#include <sys/types.h>
+#include <sys/mman.h>
 #include <stdlib.h>
 #include <unistd.h>
 #include "atexit.h"
+#include "thread_private.h"
 
-void (*__cleanup)();
+/*
+ * This variable is zero until a process has created a thread.
+ * It is used to avoid calling locking functions in libc when they
+ * are not required. By default, libc is intended to be(come)
+ * thread-safe, but without a (significant) penalty to non-threaded
+ * processes.
+ */
+int     __isthreaded    = 0;
 
 /*
  * Exit, flushing stdio buffers if necessary.
@@ -49,13 +58,20 @@ void
 exit(status)
 	int status;
 {
-	register struct atexit *p;
-	register int n;
+	register struct atexit *p, *q;
+	register int n, pgsize = getpagesize();
 
-	for (p = __atexit; p; p = p->next)
-		for (n = p->ind; --n >= 0;)
-			(*p->fns[n])();
-	if (__cleanup)
-		(*__cleanup)();
+	if (!__atexit_invalid) {
+		p = __atexit;
+		while (p != NULL) {
+			for (n = p->ind; --n >= 0;)
+				if (p->fns[n] != NULL)
+					(*p->fns[n])();
+			q = p;
+			p = p->next;
+			munmap(q, pgsize);
+		}
+	}
+	/* cleanup, if registered, was called through fns[0] in the last page */
 	_exit(status);
 }

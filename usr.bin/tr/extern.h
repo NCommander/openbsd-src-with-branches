@@ -1,4 +1,5 @@
-/*	$NetBSD: extern.h,v 1.3 1994/12/07 08:35:07 jtc Exp $	*/
+/*	$OpenBSD: extern.h,v 1.4 1997/07/25 21:14:03 mickey Exp $	*/
+/*	$NetBSD: extern.h,v 1.4 1995/11/01 00:45:22 pk Exp $	*/
 
 /*-
  * Copyright (c) 1991, 1993
@@ -42,12 +43,11 @@ typedef struct {
 	int	 lastch;		/* last character */
 	int	equiv[2];		/* equivalence set */
 	int	*set;			/* set of characters */
-	char	*str;			/* user's string */
+	unsigned char	*str;		/* user's string */
 } STR;
 
 #include <limits.h>
 #define	NCHARS	(UCHAR_MAX + 1)		/* Number of possible characters. */
 #define	OOBCH	(UCHAR_MAX + 1)		/* Out of band character value. */
 
-void	 err __P((const char *fmt, ...));
-int	 next __P((STR *));
+int	 next(STR *);

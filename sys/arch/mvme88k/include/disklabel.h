@@ -1,3 +1,4 @@
+/*	$OpenBSD: disklabel.h,v 1.8 2001/08/12 12:03:02 heko Exp $ */
 /*
  * Copyright (c) 1996 Nivas Madhur
  * Copyright (c) 1995 Dale Rahn.
@@ -29,27 +30,13 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */  
 
-#ifndef _MACHINE_DISKLABEL_H_
-#define _MACHINE_DISKLABEL_H_
-
-/* number of boot pieces , ie xxboot bootxx */
-#define NUMBOOT		2
-
-#define	PARTITIONSHIFT	4
+#ifndef __MACHINE_DISKLABEL_H__
+#define __MACHINE_DISKLABEL_H__
 
 #define LABELSECTOR     0                       /* sector containing label */
 #define LABELOFFSET	0			/* offset of label in sector */
-#define MAXPARTITIONS	(1 << PARTITIONSHIFT)	/* number of partitions */
+#define MAXPARTITIONS	16			/* number of partitions */
 #define RAW_PART	2			/* raw partition: xx?c */
-
-/* 
- * used to encode disk minor numbers
- * this should probably be moved to sys/disklabel.h
- */
-#define DISKUNIT(dev)	(minor(dev) / MAXPARTITIONS)
-#define DISKPART(dev)	(minor(dev) % MAXPARTITIONS)
-#define MAKEDISKDEV(maj, unit, part) \
-    (makedev((maj), ((unit) * MAXPARTITIONS) + (part)))
 
 /*
  * Note: this structure is exactly 512 bytes in size. If you move fields
@@ -133,4 +120,5 @@ struct cpu_disklabel {
 	u_long		magic2;
 	u_char		cfg_4[192];
 };
-#endif _MACHINE_DISKLABEL_H_
+
+#endif /* __MACHINE_DISKLABEL_H__ */

@@ -718,8 +718,6 @@ main(int argc, char **argv)
     const char *host, *user, *filename = NULL;
     char *pobox = NULL;
 
-    setprogname (argv[0]);
-
 #ifdef KRB5
     {
 	krb5_error_code ret;

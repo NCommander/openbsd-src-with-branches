@@ -1,3 +1,4 @@
+/*	$OpenBSD: tables.h,v 1.3 2001/05/16 03:04:58 mickey Exp $	*/
 /*	$NetBSD: tables.h,v 1.3 1995/03/21 09:07:47 cgd Exp $	*/
 
 /*-
@@ -46,7 +47,7 @@
 /*
  * Hash Table Sizes MUST BE PRIME, if set too small performance suffers.
  * Probably safe to expect 500000 inodes per tape. Assuming good key
- * distribution (inodes) chains of under 50 long (worse case) is ok.
+ * distribution (inodes) chains of under 50 long (worst case) is ok.
  */
 #define L_TAB_SZ	2503		/* hard link hash table size */
 #define F_TAB_SZ	50503		/* file time hash table size */
@@ -107,7 +108,7 @@ typedef struct namt {
  * this table. (When the inode field in the archive header are too small, we
  * remap the dev on writes to remove accidental collisions).
  *
- * The list is hashed by device number using chain collision resolution. Off of 
+ * The list is hashed by device number using chain collision resolution. Off of
  * each DEVT are linked the various remaps for this device based on those bits
  * in the inode which were truncated. For example if we are just remapping to
  * avoid a device number during an update append, off the DEVT we would have

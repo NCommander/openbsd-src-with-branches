@@ -1,3 +1,6 @@
+/*	$OpenBSD: sig.c,v 1.6 2001/12/06 04:26:00 deraadt Exp $	*/
+/*	$NetBSD: sig.c,v 1.3 1997/04/11 17:52:48 christos Exp $	*/
+
 /*-
  * Copyright (c) 1992, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -35,7 +38,11 @@
  */
 
 #if !defined(lint) && !defined(SCCSID)
+#if 0
 static char sccsid[] = "@(#)sig.c	8.1 (Berkeley) 6/4/93";
+#else
+static char rcsid[] = "$OpenBSD: sig.c,v 1.6 2001/12/06 04:26:00 deraadt Exp $";
+#endif
 #endif /* not lint && not SCCSID */
 
 /*
@@ -56,7 +63,7 @@ private int sighdl[] = {
     -1
 };
 
-private void sig_handler	__P((int));
+private void sig_handler(int);
 
 /* sig_handler():
  *	This is the handler called for all signals
@@ -67,27 +74,28 @@ private void
 sig_handler(signo)
     int signo;
 {
+    int save_errno = errno;
     int i;
     sigset_t nset, oset;
 
-    (void) sigemptyset(&nset);
-    (void) sigaddset(&nset, signo);
-    (void) sigprocmask(SIG_BLOCK, &nset, &oset);
+    (void)sigemptyset(&nset);
+    (void)sigaddset(&nset, signo);
+    (void)sigprocmask(SIG_BLOCK, &nset, &oset);
 
     switch (signo) {
     case SIGCONT:
-	tty_rawmode(sel);
-	if (ed_redisplay(sel, 0) == CC_REFRESH)
-	    re_refresh(sel);
-	term__flush();
+	tty_rawmode(sel);				/* XXX signal race */
+	if (ed_redisplay(sel, 0) == CC_REFRESH)		/* XXX signal race */
+	    re_refresh(sel);				/* XXX signal race */
+	term__flush();					/* XXX signal race */
 	break;
 
     case SIGWINCH:
-	el_resize(sel);
+	el_resize(sel);					/* XXX signal race */
 	break;
 
     default:
-	tty_cookedmode(sel);
+	tty_cookedmode(sel);				/* XXX signal race */
 	break;
     }
 
@@ -95,9 +103,10 @@ sig_handler(signo)
 	if (signo == sighdl[i])
 	    break;
 
-    (void) signal(signo, sel->el_signal[i]);
-    (void) sigprocmask(SIG_SETMASK, &oset, NULL);
-    (void) kill(0, signo);
+    (void)signal(signo, sel->el_signal[i]);
+    (void)sigprocmask(SIG_SETMASK, &oset, NULL);
+    (void)kill(0, signo);
+    errno = save_errno;
 }
 
 
@@ -111,19 +120,19 @@ sig_init(el)
     int i;
     sigset_t nset, oset;
 
-    (void) sigemptyset(&nset);
-#define _DO(a) (void) sigaddset(&nset, SIGWINCH);
+    (void)sigemptyset(&nset);
+#define _DO(a) (void)sigaddset(&nset, a);
     ALLSIGS
 #undef _DO
-    (void) sigprocmask(SIG_BLOCK, &nset, &oset);
+    (void)sigprocmask(SIG_BLOCK, &nset, &oset);
 
 #define SIGSIZE (sizeof(sighdl) / sizeof(sighdl[0]) * sizeof(sig_t))
 
     el->el_signal = (sig_t *) el_malloc(SIGSIZE);
     for (i = 0; sighdl[i] != -1; i++) 
-	el->el_signal[i] = BADSIG;
+	el->el_signal[i] = SIG_ERR;
 
-    (void) sigprocmask(SIG_SETMASK, &oset, NULL);
+    (void)sigprocmask(SIG_SETMASK, &oset, NULL);
 
     return 0;
 }
@@ -151,11 +160,11 @@ sig_set(el)
     int i;
     sigset_t nset, oset;
 
-    (void) sigemptyset(&nset);
-#define _DO(a) (void) sigaddset(&nset, SIGWINCH);
+    (void)sigemptyset(&nset);
+#define _DO(a) (void)sigaddset(&nset, a);
     ALLSIGS
 #undef _DO
-    (void) sigprocmask(SIG_BLOCK, &nset, &oset);
+    (void)sigprocmask(SIG_BLOCK, &nset, &oset);
 
     for (i = 0; sighdl[i] != -1; i++) {
 	sig_t s;
@@ -164,7 +173,7 @@ sig_set(el)
 	    el->el_signal[i] = s;
     }
     sel = el;
-    (void) sigprocmask(SIG_SETMASK, &oset, NULL);
+    (void)sigprocmask(SIG_SETMASK, &oset, NULL);
 }
 
 
@@ -178,16 +187,16 @@ sig_clr(el)
     int i;
     sigset_t nset, oset;
 
-    (void) sigemptyset(&nset);
-#define _DO(a) (void) sigaddset(&nset, SIGWINCH);
+    (void)sigemptyset(&nset);
+#define _DO(a) (void)sigaddset(&nset, a);
     ALLSIGS
 #undef _DO
-    (void) sigprocmask(SIG_BLOCK, &nset, &oset);
+    (void)sigprocmask(SIG_BLOCK, &nset, &oset);
 
     for (i = 0; sighdl[i] != -1; i++) 
-	if (el->el_signal[i] != BADSIG)
-	    (void) signal(sighdl[i], el->el_signal[i]);
+	if (el->el_signal[i] != SIG_ERR)
+	    (void)signal(sighdl[i], el->el_signal[i]);
 
     sel = NULL;	/* we are going to die if the handler is called */
-    (void) sigprocmask(SIG_SETMASK, &oset, NULL);
+    (void)sigprocmask(SIG_SETMASK, &oset, NULL);
 }

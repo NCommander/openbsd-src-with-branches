@@ -1,3 +1,4 @@
+/*	$OpenBSD: pathconf.c,v 1.5 2001/06/04 14:59:50 mickey Exp $	*/
 /*	$NetBSD: pathconf.c,v 1.2 1995/09/30 07:12:47 thorpej Exp $	*/
 
 /*
@@ -43,7 +44,7 @@ static char copyright[] =
 #if 0
 static char sccsid[] = "@(#)pathconf.c	8.1 (Berkeley) 6/6/93";
 #else
-static char rcsid[] = "$NetBSD: pathconf.c,v 1.2 1995/09/30 07:12:47 thorpej Exp $";
+static char rcsid[] = "$OpenBSD: pathconf.c,v 1.5 2001/06/04 14:59:50 mickey Exp $";
 #endif
 #endif /* not lint */
 
@@ -82,16 +83,12 @@ struct list pclist = { pcnames, PC_MAXID };
 int	Aflag, aflag, nflag, wflag, stdinflag;
 
 int
-main(argc, argv)
-	int argc;
-	char *argv[];
+main(int argc, char *argv[])
 {
-	extern char *optarg;
-	extern int optind;
 	char *path;
 	int ch;
 
-	while ((ch = getopt(argc, argv, "Aan")) != EOF) {
+	while ((ch = getopt(argc, argv, "Aan")) != -1) {
 		switch (ch) {
 
 		case 'A':
@@ -121,21 +118,19 @@ main(argc, argv)
 	argc--;
 	if (Aflag || aflag) {
 		listall(path, &pclist);
-		exit(0);
+		return (0);
 	}
 	if (argc == 0)
 		usage();
 	while (argc-- > 0)
 		parse(path, *argv, 1);
-	exit(0);
+	return (0);
 }
 
 /*
  * List all variables known to the system.
  */
-listall(path, lp)
-	char *path;
-	struct list *lp;
+listall(char *path, struct list *lp)
 {
 	int lvl2;
 
@@ -152,10 +147,7 @@ listall(path, lp)
  * Parse a name into an index.
  * Lookup and print out the attribute if it exists.
  */
-parse(pathname, string, flags)
-	char *pathname;
-	char *string;
-	int flags;
+parse(char *pathname, char *string, int flags)
 {
 	int indx, value;
 	char *bufp, buf[BUFSIZ];
@@ -200,11 +192,7 @@ parse(pathname, string, flags)
 /*
  * Scan a list of names searching for a particular name.
  */
-findname(string, level, bufp, namelist)
-	char *string;
-	char *level;
-	char **bufp;
-	struct list *namelist;
+findname(char *string, char *level, char **bufp, struct list *namelist)
 {
 	char *name;
 	int i;
@@ -225,7 +213,7 @@ findname(string, level, bufp, namelist)
 	return (i);
 }
 
-usage()
+usage(void)
 {
 
 	(void)fprintf(stderr, "usage:\t%s\n\t%s\n\t%s\n",

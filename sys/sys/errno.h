@@ -1,4 +1,5 @@
-/*	$NetBSD: errno.h,v 1.9 1995/03/26 20:24:04 jtc Exp $	*/
+/*	$OpenBSD: errno.h,v 1.9 2002/05/01 13:36:18 drahn Exp $	*/
+/*	$NetBSD: errno.h,v 1.10 1996/01/20 01:33:53 jtc Exp $	*/
 
 /*
  * Copyright (c) 1982, 1986, 1989, 1993
@@ -42,6 +43,13 @@
 
 #ifndef _KERNEL
 extern int errno;			/* global error number */
+
+#if !defined(_ANSI_SOURCE) && !defined(_POSIX_SOURCE) && !defined(__SYS_ERRLIST)
+#define __SYS_ERRLIST
+
+extern int sys_nerr;
+extern char *sys_errlist[];
+#endif
 #endif
 
 #define	EPERM		1		/* Operation not permitted */
@@ -136,7 +144,7 @@ extern int errno;			/* global error number */
 #ifndef _POSIX_SOURCE
 #define	EPROCLIM	67		/* Too many processes */
 #define	EUSERS		68		/* Too many users */
-#define	EDQUOT		69		/* Disc quota exceeded */
+#define	EDQUOT		69		/* Disk quota exceeded */
 
 /* Network File System */
 #define	ESTALE		70		/* Stale NFS file handle */
@@ -155,7 +163,9 @@ extern int errno;			/* global error number */
 #define	EFTYPE		79		/* Inappropriate file type or format */
 #define	EAUTH		80		/* Authentication error */
 #define	ENEEDAUTH	81		/* Need authenticator */
-#define	ELAST		81		/* Must be equal largest errno */
+#define	EIPSEC		82		/* IPsec processing failure */
+#define	ENOATTR		83		/* Attribute not found */
+#define	ELAST		83		/* Must be equal largest errno */
 #endif /* _POSIX_SOURCE */
 
 #ifdef _KERNEL

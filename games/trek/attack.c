@@ -1,3 +1,4 @@
+/*	$OpenBSD: attack.c,v 1.3 2002/05/31 04:21:30 pjanzen Exp $	*/
 /*	$NetBSD: attack.c,v 1.3 1995/04/22 10:58:26 cgd Exp $	*/
 
 /*
@@ -37,11 +38,13 @@
 #if 0
 static char sccsid[] = "@(#)attack.c	8.1 (Berkeley) 5/31/93";
 #else
-static char rcsid[] = "$NetBSD: attack.c,v 1.3 1995/04/22 10:58:26 cgd Exp $";
+static char rcsid[] = "$OpenBSD: attack.c,v 1.3 2002/05/31 04:21:30 pjanzen Exp $";
 #endif
 #endif /* not lint */
 
-# include	"trek.h"
+#include <stdio.h>
+#include <math.h>
+#include "trek.h"
 
 /*
 **  Klingon Attack Routine
@@ -73,15 +76,16 @@ static char rcsid[] = "$NetBSD: attack.c,v 1.3 1995/04/22 10:58:26 cgd Exp $";
 **	Casualties can also occur.
 */
 
+void
 attack(resting)
-int	resting;	/* set if attack while resting */
+	int	resting;	/* set if attack while resting */
 {
-	register int		hit, i, l;
-	int			maxhit, tothit, shldabsb;
-	double			chgfac, propor, extradm;
-	double			dustfac, tothe;
-	int			cas;
-	int			hitflag;
+	int	hit, i, l;
+	int	maxhit, tothit, shldabsb;
+	double	chgfac, propor, extradm;
+	double	dustfac, tothe;
+	int	cas;
+	int	hitflag;
 
 	if (Move.free)
 		return;
@@ -135,7 +139,7 @@ int	resting;	/* set if attack while resting */
 			Ship.shield -= shldabsb;
 		}
 		/* actually do the hit */
-		printf("HIT: %d units", hit);
+		printf("\aHIT: %d units", hit);
 		if (!damaged(SRSCAN))
 			printf(" from %d,%d", Etc.klingon[i].x, Etc.klingon[i].y);
 		cas = (shldabsb * 100) / hit;
@@ -152,7 +156,7 @@ int	resting;	/* set if attack while resting */
 		/* see if damages occurred */
 		if (hit >= (15 - Game.skill) * (25 - ranf(12)))
 		{
-			printf("CRITICAL HIT!!!\n");
+			printf("\aCRITICAL HIT!!!\a\n");
 			/* select a device from probability vector */
 			cas = ranf(1000);
 			for (l = 0; cas >= 0; l++)
@@ -189,6 +193,4 @@ int	resting;	/* set if attack while resting */
 
 	/* allow Klingons to move after attacking */
 	klmove(1);
-
-	return;
 }

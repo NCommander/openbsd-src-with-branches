@@ -1,5 +1,3 @@
-/*	$NetBSD: nice.c,v 1.5 1995/02/27 04:35:24 cgd Exp $	*/
-
 /*
  * Copyright (c) 1983, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -34,31 +32,30 @@
  */
 
 #if defined(LIBC_SCCS) && !defined(lint)
-#if 0
-static char sccsid[] = "@(#)nice.c	8.1 (Berkeley) 6/4/93";
-#else
-static char rcsid[] = "$NetBSD: nice.c,v 1.5 1995/02/27 04:35:24 cgd Exp $";
-#endif
+static char rcsid[] = "$OpenBSD: nice.c,v 1.3 1998/05/06 23:11:43 deraadt Exp $";
 #endif /* LIBC_SCCS and not lint */
 
 #include <sys/types.h>
 #include <sys/time.h>
 #include <sys/resource.h>
+#include <errno.h>
 #include <unistd.h>
 
 /*
- * Backwards compatible nice.
+ * Backwards compatible nice().
  */
 int
 nice(incr)
 	int incr;
 {
 	int prio;
-	extern int errno;
 
 	errno = 0;
 	prio = getpriority(PRIO_PROCESS, 0);
 	if (prio == -1 && errno)
 		return (-1);
-	return (setpriority(PRIO_PROCESS, 0, prio + incr));
+	prio += incr;
+	if (setpriority(PRIO_PROCESS, 0, prio) != 0)
+		return (-1);
+	return (prio);
 }

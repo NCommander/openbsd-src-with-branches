@@ -1,3 +1,4 @@
+/*	$OpenBSD: ieee.h,v 1.3 2001/01/14 20:25:24 smurph Exp $ */
 /*
  * Copyright (c) 1992, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -79,6 +80,8 @@
  *
  * -149 == -127 - 23 + 1.
  */
+#ifndef __MACHINE_IEEE_H__
+#define __MACHINE_IEEE_H__
 #define	SNG_EXPBITS	8
 #define	SNG_FRACBITS	23
 
@@ -140,3 +143,4 @@ struct ieee_ext {
 #define	SNG_EXP_BIAS	127
 #define	DBL_EXP_BIAS	1023
 #define	EXT_EXP_BIAS	16383
+#endif /* __MACHINE_IEEE_H__ */

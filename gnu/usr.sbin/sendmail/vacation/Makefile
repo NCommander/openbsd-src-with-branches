@@ -1,17 +1,11 @@
-#       $Sendmail: Makefile,v 8.5 1999/09/23 22:36:45 ca Exp $
+#	$OpenBSD: Makefile,v 1.3 2000/08/16 22:06:19 millert Exp $
 
-SHELL= /bin/sh
-BUILD=   ./Build
-OPTIONS= $(CONFIG) $(FLAGS)
+PROG=	vacation
+ENVDEF=	-DNOT_SENDMAIL
 
-all: FRC
-	$(SHELL) $(BUILD) $(OPTIONS) $@
-clean: FRC
-	$(SHELL) $(BUILD) $(OPTIONS) $@
-install: FRC
-	$(SHELL) $(BUILD) $(OPTIONS) $@
+WANT_LIBSM=1
+WANT_LIBSMDB=1
+WANT_LIBSMUTIL=1
 
-fresh: FRC
-	$(SHELL) $(BUILD) $(OPTIONS) -c
-
-FRC:
+.include "../../../usr.bin/Makefile.inc"
+.include <bsd.prog.mk>

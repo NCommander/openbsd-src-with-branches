@@ -1,4 +1,4 @@
-/*	$NetBSD$ */
+/*	$OpenBSD: autoconf.h,v 1.6 1997/03/31 00:23:58 downsj Exp $ */
 
 /*
  * Copyright (c) 1995 Theo de Raadt
@@ -14,7 +14,8 @@
  *    documentation and/or other materials provided with the distribution.
  * 3. All advertising materials mentioning features or use of this software
  *    must display the following acknowledgement:
- *      This product includes software developed by Theo de Raadt
+ *	This product includes software developed under OpenBSD by
+ *	Theo de Raadt for Willowglen Singapore.
  * 4. The name of the author may not be used to endorse or promote products
  *    derived from this software without specific prior written permission.
  *
@@ -29,6 +30,9 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+
+#ifndef _MVME68K_AUTOCONF_H_
+#define _MVME68K_AUTOCONF_H_
 
 struct confargs {
 	int	ca_bustype;
@@ -51,5 +55,18 @@ struct confargs {
 #define BUS_VMEL	6	/* 32 bit VME access */
 #define BUS_IP		7	/* VME162 IP module bus */
 
-caddr_t	mapiodev __P((caddr_t pa, int size));
-void	unmapiodev __P((caddr_t kva, int size));
+/* the following are from the prom/bootblocks */
+void	*bootaddr;	/* PA of boot device */
+int	bootctrllun;	/* ctrl_lun of boot device */
+int	bootdevlun;	/* dev_lun of boot device */
+int	bootpart;	/* boot partition (disk) */
+
+struct	device *bootdv; /* boot device */
+
+/* PARTITIONSHIFT from disklabel.h */
+#define PARTITIONMASK   ((1 << PARTITIONSHIFT) - 1) 
+
+void	*mapiodev(void *pa, int size);
+void	unmapiodev(void *kva, int size);
+
+#endif

@@ -1,3 +1,6 @@
+/*	$OpenBSD: sig.h,v 1.3 1997/03/14 05:13:03 millert Exp $	*/
+/*	$NetBSD: sig.h,v 1.2 1997/01/11 06:48:11 lukem Exp $	*/
+
 /*-
  * Copyright (c) 1992, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -62,9 +65,9 @@
 
 typedef sig_t *el_signal_t;
 
-protected void	sig_end		__P((EditLine*));
-protected int	sig_init	__P((EditLine*));
-protected void	sig_set		__P((EditLine*));
-protected void	sig_clr		__P((EditLine*));
+protected void	sig_end(EditLine*);
+protected int	sig_init(EditLine*);
+protected void	sig_set(EditLine*);
+protected void	sig_clr(EditLine*);
 
 #endif /* _h_el_sig */

@@ -1,3 +1,4 @@
+/*	$OpenBSD: str.c,v 1.6 2002/06/09 05:47:27 todd Exp $	*/
 /*	$NetBSD: str.c,v 1.6 1995/03/21 09:03:24 cgd Exp $	*/
 
 /*-
@@ -37,7 +38,7 @@
 #if 0
 static char sccsid[] = "@(#)str.c	8.1 (Berkeley) 5/31/93";
 #else
-static char rcsid[] = "$NetBSD: str.c,v 1.6 1995/03/21 09:03:24 cgd Exp $";
+static char rcsid[] = "$OpenBSD: str.c,v 1.6 2002/06/09 05:47:27 todd Exp $";
 #endif
 #endif /* not lint */
 
@@ -49,11 +50,7 @@ static char rcsid[] = "$NetBSD: str.c,v 1.6 1995/03/21 09:03:24 cgd Exp $";
  */
 
 #include <sys/types.h>
-#if __STDC__
-# include <stdarg.h>
-#else
-# include <varargs.h>
-#endif
+#include <stdarg.h>
 #include <vis.h>
 
 #include "csh.h"
@@ -176,6 +173,66 @@ s_strcpy(dst, src)
     return (sdst);
 }
 
+size_t
+s_strlcpy(dst, src, siz)
+        Char *dst;
+        const Char *src;
+        size_t siz;
+{
+        register Char *d = dst;
+        register const Char *s = src;
+        register size_t n = siz;
+
+        /* Copy as many bytes as will fit */
+        if (n != 0 && --n != 0) {
+                do {
+                        if ((*d++ = *s++) == 0)
+                                break;
+                } while (--n != 0);
+        }
+
+        /* Not enough room in dst, add NUL and traverse rest of src */
+        if (n == 0) {
+                if (siz != 0)
+                        *d = '\0';              /* NUL-terminate dst */
+                while (*s++)
+                        ;
+        }
+
+        return(s - src - 1);    /* count does not include NUL */
+}
+
+size_t
+s_strlcat(dst, src, siz)
+        Char *dst;
+        const Char *src;
+        size_t siz;
+{
+        register Char *d = dst;
+        register const Char *s = src;
+        register size_t n = siz;
+        size_t dlen;
+
+        /* Find the end of dst and adjust bytes left but don't go past end */
+        while (n-- != 0 && *d != '\0')
+                d++;
+        dlen = d - dst;
+        n = siz - dlen;
+
+        if (n == 0)
+                return(dlen + s_strlen((Char *)s));
+        while (*s != '\0') {
+                if (n != 1) {
+                        *d++ = *s;
+                        n--;
+                }
+                s++;
+        }
+        *d = '\0';
+
+        return(dlen + (s - src));       /* count does not include NUL */
+}
+
 Char   *
 s_strncpy(dst, src, n)
     register Char *dst, *src;
@@ -193,7 +250,8 @@ s_strncpy(dst, src, n)
 		*dst++ = '\0';
 	    return(sdst);
 	}
-    while (--n != 0);
+    while (--n != 0)
+	;
     return (sdst);
 }
 
@@ -249,7 +307,8 @@ s_strchr(str, ch)
     do
 	if (*str == ch)
 	    return (str);
-    while (*str++);
+    while (*str++)
+	;
     return (NULL);
 }
 
@@ -264,7 +323,8 @@ s_strrchr(str, ch)
     do
 	if (*str == ch)
 	    rstr = str;
-    while (*str++);
+    while (*str++)
+	;
     return (rstr);
 }
 
@@ -322,7 +382,7 @@ s_strncmp(str1, str2, n)
 		return (*str1 - *str2);
 	    break;
 	}
-        if (*str1 == '\0')
+	if (*str1 == '\0')
 	    return(0);
 	str1++, str2++;
     } while (--n != 0);
@@ -453,21 +513,21 @@ vis_str(cp)
 
     if (cp == NULL)
 	return (NULL);
-    
+
     for (dp = cp; *dp++;)
 	continue;
     n = ((dp - cp) << 2) + 1; /* 4 times + NULL */
     if (dstsize < n) {
-	sdst = (char *) (dstsize ? 
+	sdst = (char *) (dstsize ?
 			    xrealloc(sdst, (size_t) n * sizeof(char)) :
 			    xmalloc((size_t) n * sizeof(char)));
 	dstsize = n;
     }
-    /* 
+    /*
      * XXX: When we are in AsciiOnly we want all characters >= 0200 to
      * be encoded, but currently there is no way in vis to do that.
      */
     (void) strvis(sdst, short2str(cp), VIS_NOSLASH);
     return (sdst);
 }
-    
+

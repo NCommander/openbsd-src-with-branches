@@ -1,3 +1,4 @@
+/*	$OpenBSD: ffs.S,v 1.2 1994/10/26 06:39:57 cgd Exp $	*/
 /*	$NetBSD: ffs.S,v 1.2 1994/10/26 06:39:57 cgd Exp $	*/
 
 /*
@@ -43,7 +44,7 @@
 #ifdef notdef
 	.asciz "@(#)ffs.s	8.1 (Berkeley) 6/4/93"
 #endif
-	.asciz "$NetBSD: ffs.S,v 1.2 1994/10/26 06:39:57 cgd Exp $"
+	.asciz "$OpenBSD: ffs.S,v 1.2 1994/10/26 06:39:57 cgd Exp $"
 #endif  /* LIBC_SCCS and not lint */
 
 #include "DEFS.h"

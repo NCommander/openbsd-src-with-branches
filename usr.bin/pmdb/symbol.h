@@ -1,4 +1,4 @@
-/*	$PMDB: symbol.h,v 1.7 2002/03/07 14:27:08 art Exp $	*/
+/*	$OpenBSD: symbol.h,v 1.3 2002/03/15 17:49:51 art Exp $	*/
 /*
  * Copyright (c) 2002 Artur Grabowski <art@openbsd.org>
  * All rights reserved. 
@@ -30,6 +30,7 @@ struct sym_table {
 	TAILQ_ENTRY(sym_table) st_list;
 	char st_fname[MAXPATHLEN];
 	int st_flags;
+	reg st_offs;
 };
 
 /* Flags in st_flags */
@@ -51,7 +52,7 @@ int sym_lookup(struct pstate *, const char *, reg *);
 char *sym_print(struct pstate *, reg, char *, size_t);
 
 /* Internal for symbol handlers only. */
-struct sym_table *st_open(struct pstate *, const char *);
+struct sym_table *st_open(struct pstate *, const char *, reg);
 
 #ifdef PMDB_ELF
 int sym_check_elf(const char *, struct pstate *);
@@ -59,3 +60,5 @@ int sym_check_elf(const char *, struct pstate *);
 #ifdef PMDB_AOUT
 int sym_check_aout(const char *, struct pstate *);
 #endif
+
+int cmd_sym_load(int, char **, void *);

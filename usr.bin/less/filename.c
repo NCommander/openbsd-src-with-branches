@@ -1,3 +1,5 @@
+/*	$OpenBSD: filename.c,v 1.3 2001/11/19 19:02:14 mpech Exp $	*/
+
 /*
  * Copyright (c) 1984,1985,1989,1994,1995  Mark Nudelman
  * All rights reserved.
@@ -49,21 +51,21 @@ dirfile(dirname, filename)
 	char *filename;
 {
 	char *pathname;
-	int f;
+	int f, len;
 
 	if (dirname == NULL || *dirname == '\0')
 		return (NULL);
 	/*
 	 * Construct the full pathname.
 	 */
-	pathname = (char *) calloc(strlen(dirname) + strlen(filename) + 2, 
-					sizeof(char));
+	len = strlen(dirname) + strlen(filename) + 2;
+	pathname = (char *) calloc(len, sizeof(char));
 	if (pathname == NULL)
 		return (NULL);
 #if MSOFTC || OS2
 	sprintf(pathname, "%s\\%s", dirname, filename);
 #else
-	sprintf(pathname, "%s/%s", dirname, filename);
+	snprintf(pathname, len, "%s/%s", dirname, filename);
 #endif
 	/*
 	 * Make sure the file exists.
@@ -87,7 +89,7 @@ dirfile(dirname, filename)
 homefile(filename)
 	char *filename;
 {
-	register char *pathname;
+	char *pathname;
 
 	/*
 	 * Try $HOME/filename.
@@ -122,7 +124,7 @@ homefile(filename)
 	public char *
 find_helpfile()
 {
-	register char *helpfile;
+	char *helpfile;
 	
 	if ((helpfile = getenv("LESSHELP")) != NULL)
 		return (save(helpfile));
@@ -142,9 +144,9 @@ find_helpfile()
 fexpand(s)
 	char *s;
 {
-	register char *fr, *to;
-	register int n;
-	register char *e;
+	char *fr, *to;
+	int n;
+	char *e;
 
 	/*
 	 * Make one pass to see how big a buffer we 
@@ -237,7 +239,7 @@ fcomplete(s)
 		sprintf(fpat, "%s*", s);
 #else
 	fpat = (char *) ecalloc(strlen(s)+2, sizeof(char));
-	sprintf(fpat, "%s*", s);
+	snprintf(fpat, strlen(s)+2, "%s*", s);
 #endif
 	s = glob(fpat);
 	if (strcmp(s,fpat) == 0)
@@ -358,7 +360,7 @@ shellcmd(cmd, s1, s2)
 		(s1 == NULL ? 0 : strlen(s1)) + 
 		(s2 == NULL ? 0 : strlen(s2)) + 1;
 	scmd = (char *) ecalloc(len, sizeof(char));
-	sprintf(scmd, cmd, s1, s2);
+	snprintf(scmd, len, cmd, s1, s2);
 #if HAVE_SHELL
 	shell = getenv("SHELL");
 	if (shell != NULL && *shell != '\0')
@@ -366,9 +368,9 @@ shellcmd(cmd, s1, s2)
 		/*
 		 * Read the output of <$SHELL -c "cmd">.
 		 */
-		scmd2 = (char *) ecalloc(strlen(shell) + strlen(scmd) + 7,
-					sizeof(char));
-		sprintf(scmd2, "%s -c \"%s\"", shell, scmd);
+		len = strlen(shell) + strlen(scmd) + 7;
+		scmd2 = (char *) ecalloc(len, sizeof(char));
+		snprintf(scmd2, len, "%s -c \"%s\"", shell, scmd);
 		free(scmd);
 		scmd = scmd2;
 	}
@@ -540,10 +542,10 @@ close_altfile(altfilename, filename, pipefd)
 glob(filename)
 	char *filename;
 {
-	register char *gfilename;
-	register char *p;
-	register int len;
-	register int n;
+	char *gfilename;
+	char *p;
+	int len;
+	int n;
 	struct find_t fnd;
 	char drive[_MAX_DRIVE];
 	char dir[_MAX_DIR];
@@ -640,7 +642,7 @@ close_altfile(altfilename, filename)
 bad_file(filename)
 	char *filename;
 {
-	register char *m;
+	char *m;
 	struct stat statbuf;
 
 	if (stat(filename, &statbuf) < 0)

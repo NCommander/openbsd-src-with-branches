@@ -29,7 +29,7 @@ usage(void)
 {
     fprintf(stderr, 
 	    "Usage: %s [-n] [-r realm] instance [instance ...]\n",
-	    getprogname());
+	    __progname);
     StampOutSecrets();
     exit(1);
 }
@@ -39,7 +39,7 @@ FWrite(void *p, int size, int n, FILE *f)
 {
     if (fwrite(p, size, n, f) != n) {
         StampOutSecrets();
-	errx(1, "Error writing output file.  Terminating.\n");
+	errx(1, "Error writing output file.  Terminating.");
     }
 }
 
@@ -55,7 +55,6 @@ main(int argc, char **argv)
     int prompt = KDB_GET_PROMPT;
     int n, i;
     
-    setprogname (argv[0]);
     memset(realm, 0, sizeof(realm));
     
 #if defined(HAVE_ATEXIT)

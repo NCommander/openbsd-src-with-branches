@@ -1,3 +1,5 @@
+/*	$OpenBSD: charset.c,v 1.3 2001/11/19 19:02:14 mpech Exp $	*/
+
 /*
  * Copyright (c) 1984,1985,1989,1994,1995  Mark Nudelman
  * All rights reserved.
@@ -78,9 +80,9 @@ public int binattr = AT_STANDOUT;
 ichardef(s)
 	char *s;
 {
-	register char *cp;
-	register int n;
-	register char v;
+	char *cp;
+	int n;
+	char v;
 
 	n = 0;
 	v = 0;
@@ -133,9 +135,9 @@ ichardef(s)
  */
 	static int
 icharset(name)
-	register char *name;
+	char *name;
 {
-	register struct charset *p;
+	struct charset *p;
 
 	if (name == NULL || *name == '\0')
 		return (0);
@@ -161,7 +163,7 @@ icharset(name)
 	static void
 ilocale()
 {
-	register int c;
+	int c;
 
 	setlocale(LC_CTYPE, "");
 	for (c = 0;  c < sizeof(chardef);  c++)
@@ -209,7 +211,7 @@ setbinfmt(s)
 	public void
 init_charset()
 {
-	register char *s;
+	char *s;
 
 	s = getenv("LESSBINFMT");
 	setbinfmt(s);
@@ -276,12 +278,12 @@ prchar(c)
 
 	c &= 0377;
 	if (!control_char(c))
-		sprintf(buf, "%c", c);
+		snprintf(buf, sizeof buf, "%c", c);
 	else if (c == ESC)
-		sprintf(buf, "ESC");
+		snprintf(buf, sizeof buf, "ESC");
 	else if (c < 128 && !control_char(c ^ 0100))
-		sprintf(buf, "^%c", c ^ 0100);
+		snprintf(buf, sizeof buf, "^%c", c ^ 0100);
 	else
-		sprintf(buf, binfmt, c);
+		snprintf(buf, sizeof buf, binfmt, c);
 	return (buf);
 }

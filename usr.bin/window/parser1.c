@@ -1,3 +1,4 @@
+/*	$OpenBSD: parser1.c,v 1.3 1997/02/25 00:04:11 downsj Exp $	*/
 /*	$NetBSD: parser1.c,v 1.3 1995/09/28 10:34:31 tls Exp $	*/
 
 /*
@@ -40,7 +41,7 @@
 #if 0
 static char sccsid[] = "@(#)parser1.c	8.1 (Berkeley) 6/6/93";
 #else
-static char rcsid[] = "$NetBSD: parser1.c,v 1.3 1995/09/28 10:34:31 tls Exp $";
+static char rcsid[] = "$OpenBSD: parser1.c,v 1.3 1997/02/25 00:04:11 downsj Exp $";
 #endif
 #endif /* not lint */
 
@@ -190,7 +191,7 @@ char flag;
 }
 
 p_convstr(v)
-register struct value *v;
+struct value *v;
 {
 	if (v->v_type != V_NUM)
 		return 0;

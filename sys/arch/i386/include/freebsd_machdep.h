@@ -1,3 +1,4 @@
+/*	$OpenBSD: freebsd_machdep.h,v 1.5 2000/08/05 22:07:31 niklas Exp $	*/
 /*	$NetBSD: freebsd_machdep.h,v 1.1 1995/10/10 01:22:35 mycroft Exp $	*/
 
 /*
@@ -157,6 +158,8 @@ struct freebsd_ptrace_reg {
 /* sys/i386/include/exec.h */
 #define FREEBSD___LDPGSZ	4096
 
-void freebsd_sendsig __P((sig_t, int, int, u_long));
+#ifdef _KERNEL
+void freebsd_sendsig(sig_t, int, int, u_long, int, union sigval);
+#endif
 
 #endif /* _FREEBSD_MACHDEP_H */

@@ -1,3 +1,4 @@
+/*	$OpenBSD: retest.c,v 1.3 2002/02/24 01:24:24 pvalchev Exp $	*/
 /*	$NetBSD: retest.c,v 1.2 1994/11/17 08:28:18 jtc Exp $	*/
 
 /*
@@ -43,14 +44,14 @@ static char copyright[] =
 #if 0
 static char sccsid[] = "@(#)retest.c	8.1 (Berkeley) 6/6/93";
 #endif
-static char rcsid[] = "$NetBSD: retest.c,v 1.2 1994/11/17 08:28:18 jtc Exp $":
+static char rcsid[] = "$OpenBSD: retest.c,v 1.3 2002/02/24 01:24:24 pvalchev Exp $";
 #endif /* not lint */
 
 #include <ctype.h>
 
 int l_onecase = 0;
-char * _start;
-char * _escaped;
+char * x_start;
+char * x_escaped;
 char * convexp();
 char * expmatch();
 main()
@@ -60,7 +61,7 @@ main()
     char str[132];
     char *match;
     char matstr[132];
-    char c;
+    int c;
 
     while (1) {
 	printf ("\nexpr: ");
@@ -97,8 +98,8 @@ main()
 	    if (str[0] == '#')
 		break;
 	    matstr[0] = 0;
-	    _start = str;
-	    _escaped = 0;
+	    x_start = str;
+	    x_escaped = 0;
 	    match = expmatch (str, ireg, matstr);
 	    if (match == 0)
 		printf ("FAILED\n");

@@ -31,7 +31,7 @@
  * SUCH DAMAGE.
  */
 
-/* $Id: xfs_vfsops.h,v 1.1.1.1 2002/06/05 17:24:11 hin Exp $ */
+/* $Id: xfs_vfsops.h,v 1.3 2000/09/11 14:26:54 art Exp $ */
 
 #ifndef _xfs_vfsops_h
 #define _xfs_vfsops_h

@@ -1,4 +1,4 @@
-.\"	$PMDB: pmdb.1,v 1.2 2002/02/20 15:16:27 art Exp $
+.\"	$OpenBSD: pmdb.1,v 1.11 2003/03/06 04:07:37 david Exp $
 .\"
 .\" Copyright (c) 2002 Artur Grabowski <art@openbsd.org>
 .\" All rights reserved. 
@@ -23,14 +23,16 @@
 .\" OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
 .\" ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. 
 .\"
-.Dd Feb 20, 2002
+.Dd February 20, 2002
 .Dt PMDB 1
 .Os
 .Sh NAME
 .Nm pmdb
-.Nd debugger.
+.Nd debugger
 .Sh SYNOPSIS
 .Nm pmdb
+.Op Fl c Ar core
+.Op Fl p Ar pid
 .Ar program Op Ar ...
 .Sh DESCRIPTION
 The
@@ -39,8 +41,16 @@ utility can be used to see what is happening inside a running process or
 to catch program crashes and examine the state at the time of the crash.
 The only way to start
 .Nm
-at this moment is to specify the name of the prgram to be debugged and all
+at this moment is to specify the name of the program to be debugged and all
 its arguments on the command line.
+Optionally, 
+.Fl c
+can be used to specify a core file to examine.
+It is also possible to debug a process that is already running by specifying
+the process's PID to the
+.Fl p
+flag.  This causes the process to be put in STOPPED state until execution
+is resumed either by an explicit command to pmdb or by exiting pmdb.
 The program is controlled from a command line which usually gives the
 prompt "pmdb>".
 .Sh PROCESS STATES
@@ -59,7 +69,9 @@ When a process is
 the only way to affect it is through signals sent to it.
 Unless a signal is ignored with the
 .Ic signal ignore
-command, it will be catched by pmdb and the process will go into the
+command, it will be caught by
+.Nm 
+and the process will go into the
 .Ic STOPPED
 state.
 .It STOPPED
@@ -93,6 +105,26 @@ Sets the signal state for the specified signal to either ignore it and
 pass it to the process or to stop the process.
 .It sigstate
 Shows which signals are currently ignored.
+.It setenv Ar var Ar val
+Sets the environment variable
+.Ar var
+to the value
+.Ar val .
+.It break Ar symname|addr
+Sets a breakpoint at the symbol
+.Ar symname
+or the numerical address
+.Ar addr .
+.It step
+Resumes execution just like
+.Ic continue ,
+but stops it again as soon as possible after executing at least
+one instruction.
+.It sym_load Ar fname Ar offs
+Loads a symbol table from the file
+.Ar fname
+at the offset
+.Ar offs .
 .It help
 Shows a short help.
 .It quit
@@ -102,9 +134,15 @@ Kills the process (if necessary) and exits
 Alias for
 .Ic quit .
 .El
+.Sh SEE ALSO
+.Xr core 5
 .Sh HISTORY
 The
 .Nm
 debugger was written because the author believed that
 .Xr gdb 1
-was too to bloated and hairy to run on OpenBSD/sparc64.
+was too bloated and hairy to run on OpenBSD/sparc64.
+.Sh BUGS
+The command syntax is really poor and ad hoc at this moment. Most of the
+command names and arguments will change as soon as the command line interface
+is replaced.

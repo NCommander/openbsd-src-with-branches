@@ -1,9 +1,6 @@
-# $Id: Makefile,v 1.1 1994/05/29 22:34:42 jtc Exp $
+#	$OpenBSD$
 
 PROG=	gencat
-SRCS=	gencat.c genlib.c
-NOMAN=
-
-CFLAGS+= -I${.CURDIR}/../../lib/libc/nls
+MAN=	gencat.1
 
 .include <bsd.prog.mk>

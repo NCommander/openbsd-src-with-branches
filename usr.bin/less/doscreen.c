@@ -1,3 +1,5 @@
+/*	$OpenBSD: doscreen.c,v 1.2 2001/01/29 01:58:01 niklas Exp $	*/
+
 /*
  * Copyright (c) 1984,1985,1989,1994,1995  Mark Nudelman
  * All rights reserved.
@@ -103,7 +105,7 @@ scrsize(p_height, p_width)
 	int *p_height;
 	int *p_width;
 {
-	register char *s;
+	char *s;
 	struct videoconfig w;
 
 	_getvideoconfig(&w);

@@ -1,12 +1,15 @@
+/*	$OpenBSD: libyywrap.c,v 1.4 1996/12/10 22:22:03 millert Exp $	*/
+
 /* libyywrap - flex run-time support library "yywrap" function */
 
-/* $Header: /a/cvsroot/src/usr.bin/lex/libyywrap.c,v 1.3 1995/06/05 19:44:55 pk Exp $ */
+/* $Header: /cvs/src/usr.bin/lex/libyywrap.c,v 1.4 1996/12/10 22:22:03 millert Exp $ */
 
 #include <sys/cdefs.h>
 
-int yywrap __P((void));
+int yywrap(void);
 
-int yywrap()
+int
+yywrap()
 	{
 	return 1;
 	}

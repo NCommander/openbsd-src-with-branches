@@ -31,27 +31,27 @@
  * SUCH DAMAGE.
  */
 
-#if defined(SYSLIBC_SCCS) && !defined(lint)
-	/* .asciz "@(#)brk.s	8.1 (Berkeley) 6/4/93" */
-	.asciz "$NetBSD: brk.S,v 1.1 1995/04/17 12:23:58 ragge Exp $"
-#endif /* SYSLIBC_SCCS and not lint */
+#if defined(SYSLIBC_SCCS)
+	.text
+	.asciz "$OpenBSD: brk.S,v 1.3 1998/05/17 10:06:30 niklas Exp $"
+#endif /* SYSLIBC_SCCS */
 
 #include "SYS.h"
 
-	.globl	curbrk
+	.globl	__curbrk
 	.globl	minbrk
-ENTRY(_brk)
+ENTRY(_brk, 0)
 	jbr	ok
 
-ENTRY(brk)
+ENTRY(brk, 0)
 	cmpl	4(ap),minbrk
 	bgeq	ok
 	movl	minbrk,4(ap)
 ok:
 	chmk	$ SYS_break
 	jcs	err
-	movl	4(ap),curbrk
+	movl	4(ap),__curbrk
 	clrl	r0
 	ret
 err:
-	jmp	cerror
+	jmp	__cerror

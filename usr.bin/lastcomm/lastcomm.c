@@ -1,4 +1,5 @@
-/*	$NetBSD: lastcomm.c,v 1.7.2.1 1995/10/12 06:55:13 jtc Exp $	*/
+/*	$OpenBSD: lastcomm.c,v 1.9 2001/11/19 19:02:14 mpech Exp $	*/
+/*	$NetBSD: lastcomm.c,v 1.9 1995/10/22 01:43:42 ghudson Exp $	*/
 
 /*
  * Copyright (c) 1980, 1993
@@ -43,7 +44,7 @@ static char copyright[] =
 #if 0
 static char sccsid[] = "@(#)lastcomm.c	8.2 (Berkeley) 4/29/95";
 #endif
-static char rcsid[] = "$NetBSD: lastcomm.c,v 1.7.2.1 1995/10/12 06:55:13 jtc Exp $";
+static char rcsid[] = "$OpenBSD: lastcomm.c,v 1.9 2001/11/19 19:02:14 mpech Exp $";
 #endif /* not lint */
 
 #include <sys/param.h>
@@ -53,19 +54,21 @@ static char rcsid[] = "$NetBSD: lastcomm.c,v 1.7.2.1 1995/10/12 06:55:13 jtc Exp
 #include <ctype.h>
 #include <err.h>
 #include <fcntl.h>
+#include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <struct.h>
+#include <tzfile.h>
 #include <unistd.h>
 #include <utmp.h>
 #include "pathnames.h"
 
-time_t	 expand __P((u_int));
-char	*flagbits __P((int));
-char	*getdev __P((dev_t));
-int	 requested __P((char *[], struct acct *));
-void	 usage __P((void));
+time_t	 expand(u_int);
+char	*flagbits(int);
+char	*getdev(dev_t);
+int	 requested(char *[], struct acct *);
+void	 usage(void);
 char	*user_from_uid();
 
 int
@@ -73,17 +76,18 @@ main(argc, argv)
 	int argc;
 	char *argv[];
 {
-	register char *p;
+	char *p;
 	struct acct ab;
 	struct stat sb;
 	FILE *fp;
 	off_t size;
 	time_t t;
+	double delta;
 	int ch;
 	char *acctfile;
 
 	acctfile = _PATH_ACCT;
-	while ((ch = getopt(argc, argv, "f:")) != EOF)
+	while ((ch = getopt(argc, argv, "f:")) != -1)
 		switch((char)ch) {
 		case 'f':
 			acctfile = optarg;
@@ -121,13 +125,6 @@ main(argc, argv)
 		if (fread(&ab, sizeof(struct acct), 1, fp) != 1)
 			err(1, "%s", acctfile);
 
-		if (fseek(fp, 2 * -(long)sizeof(struct acct), SEEK_CUR) == -1)
-			err(1, "%s", acctfile);
-
-		if (size == 0)
-			break;
-		size -= sizeof(struct acct);
-
 		if (ab.ac_comm[0] == '\0') {
 			ab.ac_comm[0] = '?';
 			ab.ac_comm[1] = '\0';
@@ -136,15 +133,29 @@ main(argc, argv)
 			    p < &ab.ac_comm[fldsiz(acct, ac_comm)] && *p; ++p)
 				if (!isprint(*p))
 					*p = '?';
-		if (*argv && !requested(argv, &ab))
-			continue;
+		if (!*argv || requested(argv, &ab))
+		{
+			t = expand(ab.ac_utime) + expand(ab.ac_stime);
+			(void)printf("%-*.*s %-7s %-*.*s %-*.*s %6.2f secs %.16s",
+			    (int)fldsiz(acct, ac_comm),
+			    (int)fldsiz(acct, ac_comm),
+			    ab.ac_comm, flagbits(ab.ac_flag), UT_NAMESIZE,
+			    UT_NAMESIZE, user_from_uid(ab.ac_uid, 0),
+			    UT_LINESIZE, UT_LINESIZE, getdev(ab.ac_tty),
+			    t / (double)AHZ, ctime(&ab.ac_btime));
+			delta = expand(ab.ac_etime) / (double)AHZ;
+			printf(" (%1.0f:%02.0f:%05.2f)\n",
+			    delta / SECSPERHOUR,
+			    fmod(delta, SECSPERHOUR) / SECSPERMIN,
+			    fmod(delta, SECSPERMIN));
+		}
 
-		t = expand(ab.ac_utime) + expand(ab.ac_stime);
-		(void)printf("%-*.*s %-7s %-*.*s %-*.*s %6.2f secs %.16s\n",
-		    fldsiz(acct, ac_comm), fldsiz(acct, ac_comm), ab.ac_comm,
-		    flagbits(ab.ac_flag), UT_NAMESIZE, UT_NAMESIZE,
-		    user_from_uid(ab.ac_uid, 0), UT_LINESIZE, UT_LINESIZE,
-		    getdev(ab.ac_tty), t / (double)AHZ, ctime(&ab.ac_btime));
+		if (size == 0)
+			break;
+		/* seek to previous entry */
+		if (fseek(fp, 2 * -(long)sizeof(struct acct), SEEK_CUR) == -1)
+			err(1, "%s", acctfile);
+		size -= sizeof(struct acct);
 	}
 	exit(0);
 }
@@ -153,7 +164,7 @@ time_t
 expand(t)
 	u_int t;
 {
-	register time_t nt;
+	time_t nt;
 
 	nt = t & 017777;
 	t >>= 13;
@@ -166,7 +177,7 @@ expand(t)
 
 char *
 flagbits(f)
-	register int f;
+	int f;
 {
 	static char flags[20] = "-";
 	char *p;
@@ -185,8 +196,8 @@ flagbits(f)
 
 int
 requested(argv, acp)
-	register char *argv[];
-	register struct acct *acp;
+	char *argv[];
+	struct acct *acp;
 {
 	do {
 		if (!strcmp(user_from_uid(acp->ac_uid, 0), *argv))

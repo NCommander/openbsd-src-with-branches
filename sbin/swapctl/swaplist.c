@@ -1,3 +1,4 @@
+/*	$OpenBSD: swaplist.c,v 1.3 2000/02/26 04:06:23 hugh Exp $	*/
 /*	$NetBSD: swaplist.c,v 1.8 1998/10/08 10:00:31 mrg Exp $	*/
 
 /*
@@ -49,12 +50,7 @@
 #include "swapctl.h"
 
 void
-list_swap(pri, kflag, pflag, tflag, dolong)
-	int	pri;
-	int	kflag;
-	int	pflag;
-	int	tflag;
-	int	dolong;
+list_swap(int pri, int kflag, int pflag, int tflag, int dolong)
 {
 	struct	swapent *sep, *fsep;
 	long	blocksize;
@@ -120,7 +116,7 @@ list_swap(pri, kflag, pflag, tflag, dolong)
 		    (int)(dbtoqb(totalinuse) / (1024 * 1024)),
 		    (int)(dbtoqb(totalsize) / (1024 * 1024)));
 	else if (dolong == 0)
-		    printf("total: %ldk bytes allocated = %ldk used,"
+		    printf("total: %ldk bytes allocated = %ldk used, "
 			   "%ldk available\n",
 		    (long)(dbtoqb(totalsize) / 1024),
 		    (long)(dbtoqb(totalinuse) / 1024),

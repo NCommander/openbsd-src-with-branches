@@ -41,15 +41,11 @@
 #include <stds.h>
 #endif
 
-#ifndef __P
-#define __P(x) x
-#endif
-
-void acl_canonicalize_principal __P((char *principal, char *canon));
-int acl_initialize __P((char *acl_file, int perm));
-int acl_exact_match __P((char *acl, char *principal));
-int acl_check __P((char *acl, char *principal));
-int acl_add __P((char *acl, char *principal));
-int acl_delete __P((char *acl, char *principal));
+void acl_canonicalize_principal(char *principal, char *canon);
+int acl_initialize(char *acl_file, int perm);
+int acl_exact_match(char *acl, char *principal);
+int acl_check(char *acl, char *principal);
+int acl_add(char *acl, char *principal);
+int acl_delete(char *acl, char *principal);
 
 #endif /* __ACL_H */

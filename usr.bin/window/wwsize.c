@@ -1,4 +1,5 @@
-/*	$NetBSD: wwsize.c,v 1.3 1995/09/28 10:35:54 tls Exp $	*/
+/*	$OpenBSD: wwsize.c,v 1.6 1998/04/26 22:49:02 millert Exp $	*/
+/*	$NetBSD: wwsize.c,v 1.5 1996/02/08 20:45:11 mycroft Exp $	*/
 
 /*
  * Copyright (c) 1983, 1993
@@ -40,19 +41,20 @@
 #if 0
 static char sccsid[] = "@(#)wwsize.c	8.1 (Berkeley) 6/6/93";
 #else
-static char rcsid[] = "$NetBSD: wwsize.c,v 1.3 1995/09/28 10:35:54 tls Exp $";
+static char rcsid[] = "$OpenBSD: wwsize.c,v 1.6 1998/04/26 22:49:02 millert Exp $";
 #endif
 #endif /* not lint */
 
+#include <stdlib.h>
 #include "ww.h"
 
 /*
  * Resize a window.  Should be unattached.
  */
 wwsize(w, nrow, ncol)
-register struct ww *w;
+struct ww *w;
 {
-	register i, j;
+	int i, j;
 	int nline;
 	union ww_char **buf = 0;
 	char **win = 0;
@@ -78,7 +80,7 @@ register struct ww *w;
 		if (buf == 0)
 			goto bad;
 	}
-	nvis = (short *)malloc((unsigned) nrow * sizeof (short));
+	nvis = (short *)malloc(nrow * sizeof (short));
 	if (nvis == 0) {
 		wwerrno = WWE_NOMEM;
 		goto bad;
@@ -174,14 +176,14 @@ register struct ww *w;
 	/*
 	 * Put cursor back.
 	 */
-	if (w->ww_hascursor) {
-		w->ww_hascursor = 0;
+	if (ISSET(w->ww_wflags, WWW_HASCURSOR)) {
+		CLR(w->ww_wflags, WWW_HASCURSOR);
 		wwcursor(w, 1);
 	}
 	/*
 	 * Fool with pty.
 	 */
-	if (w->ww_ispty && w->ww_pty >= 0)
+	if (w->ww_type == WWT_PTY && w->ww_pty >= 0)
 		(void) wwsetttysize(w->ww_pty, nrow, ncol);
 	return 0;
 bad:

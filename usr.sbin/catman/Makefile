@@ -1,7 +1,6 @@
-#	$Id: Makefile,v 1.3 1994/12/22 11:33:22 cgd Exp $
+#	$OpenBSD: Makefile,v 1.2 1997/09/21 11:43:28 deraadt Exp $
 
-BINDIR=		/usr/sbin
-PROG=		catman
-MAN=		catman.8
+PROG=	catman
+MAN=	catman.8
 
 .include <bsd.prog.mk>

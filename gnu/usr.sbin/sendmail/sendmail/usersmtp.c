@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1998-2001 Sendmail, Inc. and its suppliers.
+ * Copyright (c) 1998-2003 Sendmail, Inc. and its suppliers.
  *	All rights reserved.
  * Copyright (c) 1983, 1995-1997 Eric P. Allman.  All rights reserved.
  * Copyright (c) 1988, 1993
@@ -13,7 +13,7 @@
 
 #include <sendmail.h>
 
-SM_RCSID("@(#)$Sendmail: usersmtp.c,v 8.418 2001/09/04 22:43:06 ca Exp $")
+SM_RCSID("@(#)$Sendmail: usersmtp.c,v 8.437.2.9 2003/03/15 23:57:52 gshapiro Exp $")
 
 #include <sysexits.h>
 
@@ -47,7 +47,7 @@ extern void	sm_sasl_free __P((void *));
 static char	SmtpMsgBuffer[MAXLINE];		/* buffer for commands */
 static char	SmtpReplyBuffer[MAXLINE];	/* buffer for replies */
 static bool	SmtpNeedIntro;		/* need "while talking" in transcript */
-/*
+/*
 **  SMTPINIT -- initialize SMTP.
 **
 **	Opens the connection and sends the initial protocol.
@@ -73,6 +73,7 @@ smtpinit(m, mci, e, onlyhelo)
 	bool onlyhelo;
 {
 	register int r;
+	int state;
 	register char *p;
 	register char *hn;
 	char *enhsc;
@@ -93,7 +94,8 @@ smtpinit(m, mci, e, onlyhelo)
 	if (CurHostName == NULL)
 		CurHostName = MyHostName;
 	SmtpNeedIntro = true;
-	switch (mci->mci_state)
+	state = mci->mci_state;
+	switch (state)
 	{
 	  case MCIS_MAIL:
 	  case MCIS_RCPT:
@@ -115,7 +117,7 @@ smtpinit(m, mci, e, onlyhelo)
 		/* FALLTHROUGH */
 
 	  case MCIS_CLOSED:
-		syserr("451 4.4.0 smtpinit: state CLOSED");
+		syserr("451 4.4.0 smtpinit: state CLOSED (was %d)", state);
 		return;
 
 	  case MCIS_OPENING:
@@ -125,6 +127,7 @@ smtpinit(m, mci, e, onlyhelo)
 		goto helo;
 
 	mci->mci_state = MCIS_OPENING;
+	clrsessenvelope(e);
 
 	/*
 	**  Get the greeting message.
@@ -220,13 +223,20 @@ tryhelo:
 		return;
 	}
 
-#if !_FFR_DEPRECATE_MAILER_FLAG_I
 	/*
 	**  If this is expected to be another sendmail, send some internal
 	**  commands.
 	*/
 
-	if (bitnset(M_INTERNAL, m->m_flags))
+	if (false
+# if !_FFR_DEPRECATE_MAILER_FLAG_I
+	    || bitnset(M_INTERNAL, m->m_flags)
+# endif /* !_FFR_DEPRECATE_MAILER_FLAG_I */
+# if _FFR_MSP_VERBOSE
+	    /* If we're running as MSP, "propagate" -v flag if possible. */
+	    || (UseMSP && Verbose && bitset(MCIF_VERB, mci->mci_flags))
+# endif /* _FFR_MSP_VERBOSE */
+	   )
 	{
 		/* tell it to be verbose */
 		smtpmessage("VERB", m, mci);
@@ -234,7 +244,6 @@ tryhelo:
 		if (r < 0)
 			goto tempfail1;
 	}
-#endif /* !_FFR_DEPRECATE_MAILER_FLAG_I */
 
 	if (mci->mci_state != MCIS_CLOSED)
 	{
@@ -245,17 +254,12 @@ tryhelo:
 	/* got a 421 error code during startup */
 
   tempfail1:
-	if (mci->mci_errno == 0)
-		mci->mci_errno = errno;
 	mci_setstat(mci, EX_TEMPFAIL, ENHSCN(enhsc, "4.4.2"), NULL);
 	if (mci->mci_state != MCIS_CLOSED)
 		smtpquit(m, mci, e);
 	return;
 
   tempfail2:
-	if (mci->mci_errno == 0)
-		mci->mci_errno = errno;
-
 	/* XXX should use code from other end iff ENHANCEDSTATUSCODES */
 	mci_setstat(mci, EX_TEMPFAIL, ENHSCN(enhsc, "4.5.0"),
 		    SmtpReplyBuffer);
@@ -264,12 +268,11 @@ tryhelo:
 	return;
 
   unavailable:
-	mci->mci_errno = errno;
 	mci_setstat(mci, EX_UNAVAILABLE, "5.5.0", SmtpReplyBuffer);
 	smtpquit(m, mci, e);
 	return;
 }
-/*
+/*
 **  ESMTP_CHECK -- check to see if this implementation likes ESMTP protocol
 **
 **	Parameters:
@@ -310,7 +313,7 @@ esmtp_check(line, firstline, m, mci, e)
 /* specify prototype so compiler can check calls */
 static char *str_union __P((char *, char *, SM_RPOOL_T *));
 
-/*
+/*
 **  STR_UNION -- create the union of two lists
 **
 **	Parameters:
@@ -380,7 +383,7 @@ str_union(s1, s2, rpool)
 }
 #endif /* SASL */
 
-/*
+/*
 **  HELO_OPTIONS -- process the options on a HELO line.
 **
 **	Parameters:
@@ -457,6 +460,8 @@ helo_options(line, firstline, m, mci, e)
 		mci->mci_flags |= MCIF_ENHSTAT;
 	else if (sm_strcasecmp(line, "pipelining") == 0)
 		mci->mci_flags |= MCIF_PIPELINED;
+	else if (sm_strcasecmp(line, "verb") == 0)
+		mci->mci_flags |= MCIF_VERB;
 #if STARTTLS
 	else if (sm_strcasecmp(line, "starttls") == 0)
 		mci->mci_flags |= MCIF_TLS;
@@ -527,7 +532,7 @@ static sasl_callback_t callbacks[] =
 	{	SASL_CB_LIST_END,	NULL,		NULL	}
 };
 
-/*
+/*
 **  INIT_SASL_CLIENT -- initialize client side of Cyrus-SASL
 **
 **	Parameters:
@@ -578,7 +583,7 @@ stop_sasl_client()
 	sasl_clt_init = false;
 	sasl_done();
 }
-/*
+/*
 **  GETSASLDATA -- process the challenges from the SASL protocol
 **
 **	This gets the relevant sasl response data out of the reply
@@ -607,7 +612,9 @@ getsasldata(line, firstline, m, mci, e)
 {
 	int len;
 	int result;
+# if SASL < 20000
 	char *out;
+# endif /* SASL < 20000 */
 
 	/* if not a continue we don't care about it */
 	len = strlen(line);
@@ -623,9 +630,29 @@ getsasldata(line, firstline, m, mci, e)
 	/* forget about "334 " */
 	line += 4;
 	len -= 4;
+# if SASL >= 20000
+	/* XXX put this into a macro/function? It's duplicated below */
+	if (mci->mci_sasl_string != NULL)
+	{
+		if (mci->mci_sasl_string_len <= len)
+		{
+			sm_free(mci->mci_sasl_string); /* XXX */
+			mci->mci_sasl_string = xalloc(len + 1);
+		}
+	}
+	else
+		mci->mci_sasl_string = xalloc(len + 1);
 
+	result = sasl_decode64(line, len, mci->mci_sasl_string, len + 1,
+			       (unsigned int *) &mci->mci_sasl_string_len);
+	if (result != SASL_OK)
+	{
+		mci->mci_sasl_string_len = 0;
+		*mci->mci_sasl_string = '\0';
+	}
+# else /* SASL >= 20000 */
 	out = (char *) sm_rpool_malloc_x(mci->mci_rpool, len + 1);
-	result = sasl_decode64(line, len, out, (unsigned int *)&len);
+	result = sasl_decode64(line, len, out, (unsigned int *) &len);
 	if (result != SASL_OK)
 	{
 		len = 0;
@@ -652,9 +679,10 @@ getsasldata(line, firstline, m, mci, e)
 	memcpy(mci->mci_sasl_string, out, len);
 	mci->mci_sasl_string[len] = '\0';
 	mci->mci_sasl_string_len = len;
+# endif /* SASL >= 20000 */
 	return;
 }
-/*
+/*
 **  READAUTH -- read auth values from a file
 **
 **	Parameters:
@@ -723,7 +751,7 @@ readauth(filename, safe, sai, rpool)
 			f = NULL;
 		else
 			f = sm_io_open(SmFtStdiofd, SM_TIME_DEFAULT,
-				       (void *) fd, SM_IO_RDONLY, NULL);
+				       (void *) &fd, SM_IO_RDONLY, NULL);
 	}
 	else
 #endif /* !_FFR_ALLOW_SASLINFO */
@@ -875,11 +903,12 @@ getauth(mci, e, sai)
 		}
 		l = strlen(pvp[i + 1]);
 
-		/* remove closing quote */
-		if (l > 3 && pvp[i + 1][l - 1] == '"')
-			pvp[i + 1][l - 1] = '\0';
-		else
+		/* check syntax */
+		if (l <= 3 || pvp[i + 1][l - 1] != '"')
 			goto fail;
+
+		/* remove closing quote */
+		pvp[i + 1][l - 1] = '\0';
 
 		/* remove "TD and " */
 		l -= 4;
@@ -897,21 +926,28 @@ getauth(mci, e, sai)
 			unsigned int len;
 
 			/* '=base64' (decode) */
-			r = sasl_decode64(pvp[i + 1] + 3,
+# if SASL >= 20000
+			ret = sasl_decode64(pvp[i + 1] + 3,
+					  (unsigned int) l, (*sai)[r],
+					  (unsigned int) l + 1, &len);
+# else /* SASL >= 20000 */
+			ret = sasl_decode64(pvp[i + 1] + 3,
 					  (unsigned int) l, (*sai)[r], &len);
-			if (r != SASL_OK)
+# endif /* SASL >= 20000 */
+			if (ret != SASL_OK)
 				goto fail;
 			got |= 1 << r;
 		}
 		else
 			goto fail;
 		if (tTd(95, 5))
-			sm_syslog(LOG_WARNING, NOQID, "getauth %s=%s",
+			sm_syslog(LOG_DEBUG, NOQID, "getauth %s=%s",
 				  sasl_info_name[r], (*sai)[r]);
 		++i;
 	}
 
 	/* did we get the expected data? */
+	/* XXX: EXTERNAL mechanism only requires (and only uses) SASL_USER */
 	if (!(bitset(SASL_USER_BIT|SASL_AUTHID_BIT, got) &&
 	      bitset(SASL_PASSWORD_BIT, got)))
 		goto fail;
@@ -952,7 +988,112 @@ getauth(mci, e, sai)
 		(*sai)[i] = NULL;	/* just clear; rpool */
 	return ret;
 }
-/*
+
+# if SASL >= 20000
+/*
+**  GETSIMPLE -- callback to get userid or authid
+**
+**	Parameters:
+**		context -- sai
+**		id -- what to do
+**		result -- (pointer to) result
+**		len -- (pointer to) length of result
+**
+**	Returns:
+**		OK/failure values
+*/
+
+static int
+getsimple(context, id, result, len)
+	void *context;
+	int id;
+	const char **result;
+	unsigned *len;
+{
+	SASL_AI_T *sai;
+
+	if (result == NULL || context == NULL)
+		return SASL_BADPARAM;
+	sai = (SASL_AI_T *) context;
+
+	switch (id)
+	{
+	  case SASL_CB_USER:
+		*result = (*sai)[SASL_USER];
+		if (tTd(95, 5))
+			sm_syslog(LOG_DEBUG, NOQID, "AUTH username '%s'",
+				  *result);
+		if (len != NULL)
+			*len = *result != NULL ? strlen(*result) : 0;
+		break;
+
+	  case SASL_CB_AUTHNAME:
+		*result = (*sai)[SASL_AUTHID];
+		if (tTd(95, 5))
+			sm_syslog(LOG_DEBUG, NOQID, "AUTH authid '%s'",
+				  *result);
+		if (len != NULL)
+			*len = *result != NULL ? strlen(*result) : 0;
+		break;
+
+	  case SASL_CB_LANGUAGE:
+		*result = NULL;
+		if (len != NULL)
+			*len = 0;
+		break;
+
+	  default:
+		return SASL_BADPARAM;
+	}
+	return SASL_OK;
+}
+/*
+**  GETSECRET -- callback to get password
+**
+**	Parameters:
+**		conn -- connection information
+**		context -- sai
+**		id -- what to do
+**		psecret -- (pointer to) result
+**
+**	Returns:
+**		OK/failure values
+*/
+
+static int
+getsecret(conn, context, id, psecret)
+	sasl_conn_t *conn;
+	SM_UNUSED(void *context);
+	int id;
+	sasl_secret_t **psecret;
+{
+	int len;
+	char *authpass;
+	MCI *mci;
+
+	if (conn == NULL || psecret == NULL || id != SASL_CB_PASS)
+		return SASL_BADPARAM;
+
+	mci = (MCI *) context;
+	authpass = mci->mci_sai[SASL_PASSWORD];
+	len = strlen(authpass);
+
+	/*
+	**  use an rpool because we are responsible for free()ing the secret,
+	**  but we can't free() it until after the auth completes
+	*/
+
+	*psecret = (sasl_secret_t *) sm_rpool_malloc(mci->mci_rpool,
+						     sizeof(sasl_secret_t) +
+						     len + 1);
+	if (*psecret == NULL)
+		return SASL_FAIL;
+	(void) sm_strlcpy((*psecret)->data, authpass, len + 1);
+	(*psecret)->len = (unsigned long) len;
+	return SASL_OK;
+}
+# else /* SASL >= 20000 */
+/*
 **  GETSIMPLE -- callback to get userid or authid
 **
 **	Parameters:
@@ -1016,7 +1157,7 @@ getsimple(context, id, result, len)
 		(void) sm_strlcpy(s, (*sai)[SASL_USER], l);
 		*result = s;
 		if (tTd(95, 5))
-			sm_syslog(LOG_WARNING, NOQID, "AUTH username '%s'",
+			sm_syslog(LOG_DEBUG, NOQID, "AUTH username '%s'",
 				  *result);
 		if (len != NULL)
 			*len = *result != NULL ? strlen(*result) : 0;
@@ -1028,27 +1169,45 @@ getsimple(context, id, result, len)
 		/* XXX maybe other mechanisms too?! */
 		addrealm = (*sai)[SASL_MECH] != NULL &&
 			   sm_strcasecmp((*sai)[SASL_MECH], "CRAM-MD5") == 0;
+
+		/*
+		**  Add realm to authentication id unless authid contains
+		**  '@' (i.e., a realm) or the default realm is empty.
+		*/
+
 		if (addrealm && h != NULL && strchr(h, '@') == NULL)
 		{
+			/* has this been done before? */
 			if ((*sai)[SASL_ID_REALM] == NULL)
 			{
 				char *realm;
 
 				realm = (*sai)[SASL_DEFREALM];
-				l = strlen(h) + strlen(realm) + 2;
 
-				/* should use rpool, but how to get it? */
-				authid = sm_sasl_malloc(l);
-				if (authid != NULL)
-				{
-					(void) sm_snprintf(authid, l, "%s@%s",
-							   h, realm);
-					(*sai)[SASL_ID_REALM] = authid;
-				}
-				else
+				/* do not add an empty realm */
+				if (*realm == '\0')
 				{
 					authid = h;
 					(*sai)[SASL_ID_REALM] = NULL;
+				}
+				else
+				{
+					l = strlen(h) + strlen(realm) + 2;
+
+					/* should use rpool, but from where? */
+					authid = sm_sasl_malloc(l);
+					if (authid != NULL)
+					{
+						(void) sm_snprintf(authid, l,
+								  "%s@%s",
+								   h, realm);
+						(*sai)[SASL_ID_REALM] = authid;
+					}
+					else
+					{
+						authid = h;
+						(*sai)[SASL_ID_REALM] = NULL;
+					}
 				}
 			}
 			else
@@ -1069,7 +1228,7 @@ getsimple(context, id, result, len)
 		(void) sm_strlcpy(s, authid, l);
 		*result = s;
 		if (tTd(95, 5))
-			sm_syslog(LOG_WARNING, NOQID, "AUTH authid '%s'",
+			sm_syslog(LOG_DEBUG, NOQID, "AUTH authid '%s'",
 				  *result);
 		if (len != NULL)
 			*len = authid ? strlen(authid) : 0;
@@ -1086,7 +1245,7 @@ getsimple(context, id, result, len)
 	}
 	return SASL_OK;
 }
-/*
+/*
 **  GETSECRET -- callback to get password
 **
 **	Parameters:
@@ -1124,7 +1283,9 @@ getsecret(conn, context, id, psecret)
 	(*psecret)->len = (unsigned long) len;
 	return SASL_OK;
 }
-/*
+# endif /* SASL >= 20000 */
+
+/*
 **  SAFESASLFILE -- callback for sasl: is file safe?
 **
 **	Parameters:
@@ -1146,9 +1307,17 @@ safesaslfile(context, file, type)
 safesaslfile(context, file)
 #endif /* SASL > 10515 */
 	void *context;
+# if SASL >= 20000
+	const char *file;
+# else /* SASL >= 20000 */
 	char *file;
+# endif /* SASL >= 20000 */
 #if SASL > 10515
+# if SASL >= 20000
+	sasl_verify_type_t type;
+# else /* SASL >= 20000 */
 	int type;
+# endif /* SASL >= 20000 */
 #endif /* SASL > 10515 */
 {
 	long sff;
@@ -1161,12 +1330,12 @@ safesaslfile(context, file)
 	if (file == NULL || *file == '\0')
 		return SASL_OK;
 	sff = SFF_SAFEDIRPATH|SFF_NOWLINK|SFF_NOWWFILES|SFF_ROOTOK;
+#if SASL <= 10515
 	if ((p = strrchr(file, '/')) == NULL)
 		p = file;
 	else
 		++p;
 
-#if SASL <= 10515
 	/* everything beside libs and .conf files must not be readable */
 	len = strlen(p);
 	if ((len <= 3 || strncmp(p, "lib", 3) != 0) &&
@@ -1190,7 +1359,7 @@ safesaslfile(context, file)
 	}
 #endif /* SASL <= 10515 */
 
-	p = file;
+	p = (char *) file;
 	if ((r = safefile(p, RunAsUid, RunAsGid, RunAsUserName, sff,
 			  S_IRUSR, NULL)) == 0)
 		return SASL_OK;
@@ -1253,7 +1422,7 @@ saslgetrealm(context, id, availrealms, result)
 	*result = r;
 	return SASL_OK;
 }
-/*
+/*
 **  ITEMINLIST -- does item appear in list?
 **
 **	Check whether item appears in list (which must be separated by a
@@ -1297,7 +1466,7 @@ iteminlist(item, list, delim)
 	}
 	return NULL;
 }
-/*
+/*
 **  REMOVEMECH -- remove item [rem] from list [list]
 **
 **	Parameters:
@@ -1361,7 +1530,7 @@ removemech(rem, list, rpool)
 		ret[(needle - list) - 1] = '\0';
 	return ret;
 }
-/*
+/*
 **  ATTEMPTAUTH -- try to AUTHenticate using one mechanism
 **
 **	Parameters:
@@ -1386,16 +1555,22 @@ attemptauth(m, mci, e, sai)
 	SASL_AI_T *sai;
 {
 	int saslresult, smtpresult;
+# if SASL >= 20000
+	sasl_ssf_t ssf;
+	const char *auth_id;
+	const char *out;
+# else /* SASL >= 20000 */
 	sasl_external_properties_t ssf;
-	sasl_interact_t *client_interact = NULL;
 	char *out;
+# endif /* SASL >= 20000 */
 	unsigned int outlen;
+	sasl_interact_t *client_interact = NULL;
 	char *mechusing;
 	sasl_security_properties_t ssp;
 	char in64[MAXOUTLEN];
-#if NETINET
+#if NETINET || (NETINET6 && SASL >= 20000)
 	extern SOCKADDR CurHostAddr;
-#endif /* NETINET */
+#endif /* NETINET || (NETINET6 && SASL >= 20000) */
 
 	/* no mechanism selected (yet) */
 	(*sai)[SASL_MECH] = NULL;
@@ -1405,9 +1580,16 @@ attemptauth(m, mci, e, sai)
 		sasl_dispose(&(mci->mci_conn));
 
 	/* make a new client sasl connection */
+# if SASL >= 20000
+	saslresult = sasl_client_new(bitnset(M_LMTP, m->m_flags) ? "lmtp"
+								 : "smtp",
+				     CurHostName, NULL, NULL, NULL, 0,
+				     &mci->mci_conn);
+# else /* SASL >= 20000 */
 	saslresult = sasl_client_new(bitnset(M_LMTP, m->m_flags) ? "lmtp"
 								 : "smtp",
 				     CurHostName, NULL, 0, &mci->mci_conn);
+# endif /* SASL >= 20000 */
 	if (saslresult != SASL_OK)
 		return EX_TEMPFAIL;
 
@@ -1428,22 +1610,96 @@ attemptauth(m, mci, e, sai)
 	if (saslresult != SASL_OK)
 		return EX_TEMPFAIL;
 
+# if SASL >= 20000
+	/* external security strength factor, authentication id */
+	ssf = 0;
+	auth_id = NULL;
+#  if STARTTLS
+	out = macvalue(macid("{cert_subject}"), e);
+	if (out != NULL && *out != '\0')
+		auth_id = out;
+	out = macvalue(macid("{cipher_bits}"), e);
+	if (out != NULL && *out != '\0')
+		ssf = atoi(out);
+#  endif /* STARTTLS */
+	saslresult = sasl_setprop(mci->mci_conn, SASL_SSF_EXTERNAL, &ssf);
+	if (saslresult != SASL_OK)
+		return EX_TEMPFAIL;
+	saslresult = sasl_setprop(mci->mci_conn, SASL_AUTH_EXTERNAL, auth_id);
+	if (saslresult != SASL_OK)
+		return EX_TEMPFAIL;
+
+#  if NETINET || NETINET6
+	/* set local/remote ipv4 addresses */
+	if (mci->mci_out != NULL && (
+#   if NETINET6
+		CurHostAddr.sa.sa_family == AF_INET6 ||
+#   endif /* NETINET6 */
+		CurHostAddr.sa.sa_family == AF_INET))
+	{
+		SOCKADDR_LEN_T addrsize;
+		SOCKADDR saddr_l;
+		char localip[60], remoteip[60];
+
+		switch (CurHostAddr.sa.sa_family)
+		{
+		  case AF_INET:
+			addrsize = sizeof(struct sockaddr_in);
+			break;
+#   if NETINET6
+		  case AF_INET6:
+			addrsize = sizeof(struct sockaddr_in6);
+			break;
+#   endif /* NETINET6 */
+		  default:
+			break;
+		}
+		if (iptostring(&CurHostAddr, addrsize,
+			       remoteip, sizeof remoteip))
+		{
+			if (sasl_setprop(mci->mci_conn, SASL_IPREMOTEPORT,
+					 remoteip) != SASL_OK)
+				return EX_TEMPFAIL;
+		}
+		addrsize = sizeof(saddr_l);
+		if (getsockname(sm_io_getinfo(mci->mci_out, SM_IO_WHAT_FD,
+					      NULL),
+				(struct sockaddr *) &saddr_l, &addrsize) == 0)
+		{
+			if (iptostring(&saddr_l, addrsize,
+				       localip, sizeof localip))
+			{
+				if (sasl_setprop(mci->mci_conn,
+						 SASL_IPLOCALPORT,
+						 localip) != SASL_OK)
+					return EX_TEMPFAIL;
+			}
+		}
+	}
+#  endif /* NETINET || NETINET6 */
+
+	/* start client side of sasl */
+	saslresult = sasl_client_start(mci->mci_conn, mci->mci_saslcap,
+				       &client_interact,
+				       &out, &outlen,
+				       (const char **) &mechusing);
+# else /* SASL >= 20000 */
 	/* external security strength factor, authentication id */
 	ssf.ssf = 0;
 	ssf.auth_id = NULL;
-#if STARTTLS
+#  if STARTTLS
 	out = macvalue(macid("{cert_subject}"), e);
 	if (out != NULL && *out != '\0')
 		ssf.auth_id = out;
 	out = macvalue(macid("{cipher_bits}"), e);
 	if (out != NULL && *out != '\0')
 		ssf.ssf = atoi(out);
-#endif /* STARTTLS */
+#  endif /* STARTTLS */
 	saslresult = sasl_setprop(mci->mci_conn, SASL_SSF_EXTERNAL, &ssf);
 	if (saslresult != SASL_OK)
 		return EX_TEMPFAIL;
 
-#if NETINET
+#  if NETINET
 	/* set local/remote ipv4 addresses */
 	if (mci->mci_out != NULL && CurHostAddr.sa.sa_family == AF_INET)
 	{
@@ -1464,13 +1720,14 @@ attemptauth(m, mci, e, sai)
 				return EX_TEMPFAIL;
 		}
 	}
-#endif /* NETINET */
+#  endif /* NETINET */
 
 	/* start client side of sasl */
 	saslresult = sasl_client_start(mci->mci_conn, mci->mci_saslcap,
 				       NULL, &client_interact,
 				       &out, &outlen,
-				       (const char **)&mechusing);
+				       (const char **) &mechusing);
+# endif /* SASL >= 20000 */
 
 	if (saslresult != SASL_OK && saslresult != SASL_CONTINUE)
 	{
@@ -1486,7 +1743,29 @@ attemptauth(m, mci, e, sai)
 	(*sai)[SASL_MECH] = mechusing;
 
 	/* send the info across the wire */
-	if (outlen > 0)
+	if (out == NULL
+#if _FFR_SASL_INITIAL_WORKAROUND
+		/* login and digest-md5 up to 1.5.28 set out="" */
+	    || (outlen == 0 &&
+		(sm_strcasecmp(mechusing, "LOGIN") == 0 ||
+		 sm_strcasecmp(mechusing, "DIGEST-MD5") == 0))
+#endif /* _FFR_SASL_INITIAL_WORKAROUND */
+	   )
+	{
+		/* no initial response */
+		smtpmessage("AUTH %s", m, mci, mechusing);
+	}
+	else if (outlen == 0)
+	{
+		/*
+		**  zero-length initial response, per RFC 2554 4.:
+		**  "Unlike a zero-length client answer to a 334 reply, a zero-
+		**  length initial response is sent as a single equals sign"
+		*/
+
+		smtpmessage("AUTH %s =", m, mci, mechusing);
+	}
+	else
 	{
 		saslresult = sasl_encode64(out, outlen, in64, MAXOUTLEN, NULL);
 		if (saslresult != SASL_OK) /* internal error */
@@ -1498,11 +1777,9 @@ attemptauth(m, mci, e, sai)
 		}
 		smtpmessage("AUTH %s %s", m, mci, mechusing, in64);
 	}
-	else
-	{
-		smtpmessage("AUTH %s", m, mci, mechusing);
-	}
+# if SASL < 20000
 	sm_sasl_free(out); /* XXX only if no rpool is used */
+# endif /* SASL < 20000 */
 
 	/* get the reply */
 	smtpresult = reply(m, mci, e, TimeOuts.to_auth, getsasldata, NULL);
@@ -1566,14 +1843,16 @@ attemptauth(m, mci, e, sai)
 		}
 		else
 			in64[0] = '\0';
+# if SASL < 20000
 		sm_sasl_free(out); /* XXX only if no rpool is used */
+# endif /* SASL < 20000 */
 		smtpmessage("%s", m, mci, in64);
 		smtpresult = reply(m, mci, e, TimeOuts.to_auth,
 				   getsasldata, NULL);
 	}
 	/* NOTREACHED */
 }
-/*
+/*
 **  SMTPAUTH -- try to AUTHenticate
 **
 **	This will try mechanisms in the order the sasl library decided until:
@@ -1645,17 +1924,20 @@ smtpauth(m, mci, e)
 		return EX_UNAVAILABLE;
 
 	/* set the context for the callback function to sai */
-	callbacks[CB_PASS_IDX].context = (void *)&mci->mci_sai;
-	callbacks[CB_USER_IDX].context = (void *)&mci->mci_sai;
-	callbacks[CB_AUTHNAME_IDX].context = (void *)&mci->mci_sai;
-	callbacks[CB_GETREALM_IDX].context = (void *)&mci->mci_sai;
+# if SASL >= 20000
+	callbacks[CB_PASS_IDX].context = (void *) mci;
+# else /* SASL >= 20000 */
+	callbacks[CB_PASS_IDX].context = (void *) &mci->mci_sai;
+# endif /* SASL >= 20000 */
+	callbacks[CB_USER_IDX].context = (void *) &mci->mci_sai;
+	callbacks[CB_AUTHNAME_IDX].context = (void *) &mci->mci_sai;
+	callbacks[CB_GETREALM_IDX].context = (void *) &mci->mci_sai;
 #if 0
-	callbacks[CB_SAFESASL_IDX].context = (void *)&mci->mci_sai;
+	callbacks[CB_SAFESASL_IDX].context = (void *) &mci->mci_sai;
 #endif /* 0 */
 
 	/* set default value for realm */
-	if ((mci->mci_sai)[SASL_DEFREALM] == NULL ||
-	    *(mci->mci_sai)[SASL_DEFREALM] == '\0')
+	if ((mci->mci_sai)[SASL_DEFREALM] == NULL)
 		(mci->mci_sai)[SASL_DEFREALM] = sm_rpool_strdup_x(e->e_rpool,
 							macvalue('j', CurEnv));
 
@@ -1694,7 +1976,7 @@ smtpauth(m, mci, e)
 }
 #endif /* SASL */
 
-/*
+/*
 **  SMTPMAILFROM -- send MAIL command
 **
 **	Parameters:
@@ -1719,6 +2001,18 @@ smtpmailfrom(m, mci, e)
 	if (tTd(18, 2))
 		sm_dprintf("smtpmailfrom: CurHost=%s\n", CurHostName);
 	enhsc = NULL;
+
+	/*
+	**  Check if connection is gone, if so
+	**  it's a tempfail and we use mci_errno
+	**  for the reason.
+	*/
+
+	if (mci->mci_state == MCIS_CLOSED)
+	{
+		errno = mci->mci_errno;
+		return EX_TEMPFAIL;
+	}
 
 	/* set up appropriate options to include */
 	if (bitset(MCIF_SIZE, mci->mci_flags) && e->e_msgsize > 0)
@@ -1878,17 +2172,12 @@ smtpmailfrom(m, mci, e)
 	if (r < 0)
 	{
 		/* communications failure */
-		mci->mci_errno = errno;
 		mci_setstat(mci, EX_TEMPFAIL, "4.4.2", NULL);
-		smtpquit(m, mci, e);
 		return EX_TEMPFAIL;
 	}
 	else if (r == SMTPCLOSING)
 	{
-		/* service shutting down */
-		mci_setstat(mci, EX_TEMPFAIL, ENHSCN(enhsc, "4.5.0"),
-			    SmtpReplyBuffer);
-		smtpquit(m, mci, e);
+		/* service shutting down: handled by reply() */
 		return EX_TEMPFAIL;
 	}
 	else if (REPLYTYPE(r) == 4)
@@ -1946,7 +2235,7 @@ smtpmailfrom(m, mci, e)
 	smtpquit(m, mci, e);
 	return EX_PROTOCOL;
 }
-/*
+/*
 **  SMTPRCPT -- designate recipient.
 **
 **	Parameters:
@@ -1981,7 +2270,7 @@ smtprcpt(to, m, mci, e, ctladdr, xstart)
 	*/
 
 	while (mci->mci_nextaddr != NULL &&
-	       sm_io_getinfo(mci->mci_in, SM_IO_IS_READABLE, NULL))
+	       sm_io_getinfo(mci->mci_in, SM_IO_IS_READABLE, NULL) > 0)
 	{
 		int r;
 
@@ -1995,6 +2284,18 @@ smtprcpt(to, m, mci, e, ctladdr, xstart)
 		mci->mci_nextaddr = mci->mci_nextaddr->q_pchain;
 	}
 #endif /* PIPELINING */
+
+	/*
+	**  Check if connection is gone, if so
+	**  it's a tempfail and we use mci_errno
+	**  for the reason.
+	*/
+
+	if (mci->mci_state == MCIS_CLOSED)
+	{
+		errno = mci->mci_errno;
+		return EX_TEMPFAIL;
+	}
 
 	optbuf[0] = '\0';
 	bufp = optbuf;
@@ -2080,7 +2381,7 @@ smtprcpt(to, m, mci, e, ctladdr, xstart)
 
 	return smtprcptstat(to, m, mci, e);
 }
-/*
+/*
 **  SMTPRCPTSTAT -- get recipient status
 **
 **	This is only called during SMTP pipelining
@@ -2103,10 +2404,24 @@ smtprcptstat(to, m, mci, e)
 	register ENVELOPE *e;
 {
 	int r;
+	int save_errno;
 	char *enhsc;
+
+	/*
+	**  Check if connection is gone, if so
+	**  it's a tempfail and we use mci_errno
+	**  for the reason.
+	*/
+
+	if (mci->mci_state == MCIS_CLOSED)
+	{
+		errno = mci->mci_errno;
+		return EX_TEMPFAIL;
+	}
 
 	enhsc = NULL;
 	r = reply(m, mci, e, TimeOuts.to_rcpt, NULL, &enhsc);
+	save_errno = errno;
 	to->q_rstatus = sm_rpool_strdup_x(e->e_rpool, SmtpReplyBuffer);
 	to->q_status = ENHSCN_RPOOL(enhsc, smtptodsn(r), e->e_rpool);
 	if (!bitnset(M_LMTP, m->m_flags))
@@ -2114,6 +2429,7 @@ smtprcptstat(to, m, mci, e)
 	if (r < 0 || REPLYTYPE(r) == 4)
 	{
 		mci->mci_retryrcpt = true;
+		errno = save_errno;
 		return EX_TEMPFAIL;
 	}
 	else if (REPLYTYPE(r) == 2)
@@ -2167,7 +2483,7 @@ smtprcptstat(to, m, mci, e)
 		    SmtpReplyBuffer);
 	return EX_PROTOCOL;
 }
-/*
+/*
 **  SMTPDATA -- send the data and clean up the transaction.
 **
 **	Parameters:
@@ -2195,6 +2511,18 @@ smtpdata(m, mci, e, ctladdr, xstart)
 	int xstat;
 	time_t timeout;
 	char *enhsc;
+
+	/*
+	**  Check if connection is gone, if so
+	**  it's a tempfail and we use mci_errno
+	**  for the reason.
+	*/
+
+	if (mci->mci_state == MCIS_CLOSED)
+	{
+		errno = mci->mci_errno;
+		return EX_TEMPFAIL;
+	}
 
 	enhsc = NULL;
 
@@ -2245,7 +2573,9 @@ smtpdata(m, mci, e, ctladdr, xstart)
 	r = reply(m, mci, e, TimeOuts.to_datainit, NULL, &enhsc);
 	if (r < 0 || REPLYTYPE(r) == 4)
 	{
-		smtpquit(m, mci, e);
+		if (r >= 0)
+			smtpquit(m, mci, e);
+		errno = mci->mci_errno;
 		return EX_TEMPFAIL;
 	}
 	else if (REPLYTYPE(r) == 5)
@@ -2347,7 +2677,7 @@ smtpdata(m, mci, e, ctladdr, xstart)
 #endif /* PIPELINING */
 
 #if _FFR_CATCH_BROKEN_MTAS
-	if (sm_io_getinfo(mci->mci_in, SM_IO_IS_READABLE, NULL))
+	if (sm_io_getinfo(mci->mci_in, SM_IO_IS_READABLE, NULL) > 0)
 	{
 		/* terminate the message */
 		(void) sm_io_fprintf(mci->mci_out, SM_TIME_DEFAULT, ".%s",
@@ -2395,10 +2725,7 @@ smtpdata(m, mci, e, ctladdr, xstart)
 		return EX_OK;
 	r = reply(m, mci, e, TimeOuts.to_datafinal, NULL, &enhsc);
 	if (r < 0)
-	{
-		smtpquit(m, mci, e);
 		return EX_TEMPFAIL;
-	}
 	mci->mci_state = MCIS_OPEN;
 	xstat = EX_NOTSTICKY;
 	if (r == 452)
@@ -2477,7 +2804,7 @@ datatimeout()
 	}
 	errno = save_errno;
 }
-/*
+/*
 **  SMTPGETSTAT -- get status code from DATA in LMTP
 **
 **	Parameters:
@@ -2496,6 +2823,7 @@ smtpgetstat(m, mci, e)
 	ENVELOPE *e;
 {
 	int r;
+	int off;
 	int status, xstat;
 	char *enhsc;
 
@@ -2504,10 +2832,7 @@ smtpgetstat(m, mci, e)
 	/* check for the results of the transaction */
 	r = reply(m, mci, e, TimeOuts.to_datafinal, NULL, &enhsc);
 	if (r < 0)
-	{
-		smtpquit(m, mci, e);
 		return EX_TEMPFAIL;
-	}
 	xstat = EX_NOTSTICKY;
 	if (REPLYTYPE(r) == 4)
 		status = EX_TEMPFAIL;
@@ -2520,13 +2845,12 @@ smtpgetstat(m, mci, e)
 	else
 		status = EX_PROTOCOL;
 	if (bitset(MCIF_ENHSTAT, mci->mci_flags) &&
-	    (r = isenhsc(SmtpReplyBuffer + 4, ' ')) > 0)
-		r += 5;
+	    (off = isenhsc(SmtpReplyBuffer + 4, ' ')) > 0)
+		off += 5;
 	else
-		r = 4;
-	e->e_statmsg = sm_rpool_strdup_x(e->e_rpool, &SmtpReplyBuffer[r]);
-	mci_setstat(mci, xstat, ENHSCN(enhsc, smtptodsn(r)),
-		    SmtpReplyBuffer);
+		off = 4;
+	e->e_statmsg = sm_rpool_strdup_x(e->e_rpool, &SmtpReplyBuffer[off]);
+	mci_setstat(mci, xstat, ENHSCN(enhsc, smtptodsn(r)), SmtpReplyBuffer);
 	if (LogLevel > 1 && status == EX_PROTOCOL)
 	{
 		sm_syslog(LOG_CRIT, e->e_id,
@@ -2536,7 +2860,7 @@ smtpgetstat(m, mci, e)
 	}
 	return status;
 }
-/*
+/*
 **  SMTPQUIT -- close the SMTP connection.
 **
 **	Parameters:
@@ -2561,6 +2885,9 @@ smtpquit(m, mci, e)
 	int rcode;
 	char *oldcurhost;
 
+	if (mci->mci_state == MCIS_CLOSED)
+		return;
+
 	oldcurhost = CurHostName;
 	CurHostName = mci->mci_host;		/* XXX UGLY XXX */
 	if (CurHostName == NULL)
@@ -2583,15 +2910,12 @@ smtpquit(m, mci, e)
 	if (mci->mci_state != MCIS_ERROR &&
 	    mci->mci_state != MCIS_QUITING)
 	{
-		int origstate = mci->mci_state;
-
 		SmtpPhase = "client QUIT";
 		mci->mci_state = MCIS_QUITING;
 		smtpmessage("QUIT", m, mci);
 		(void) reply(m, mci, e, TimeOuts.to_quit, NULL, NULL);
 		SuprErrs = oldSuprErrs;
-		if (mci->mci_state == MCIS_CLOSED ||
-		    origstate == MCIS_CLOSED)
+		if (mci->mci_state == MCIS_CLOSED)
 			goto end;
 	}
 
@@ -2619,7 +2943,7 @@ smtpquit(m, mci, e)
 	CurHostName = oldcurhost;
 	return;
 }
-/*
+/*
 **  SMTPRSET -- send a RSET (reset) command
 **
 **	Parameters:
@@ -2650,29 +2974,37 @@ smtprset(m, mci, e)
 	mci->mci_okrcpts = 0;
 #endif /* PIPELINING */
 
+	/*
+	**  Check if connection is gone, if so
+	**  it's a tempfail and we use mci_errno
+	**  for the reason.
+	*/
+
+	if (mci->mci_state == MCIS_CLOSED)
+	{
+		errno = mci->mci_errno;
+		return;
+	}
+
 	SmtpPhase = "client RSET";
 	smtpmessage("RSET", m, mci);
 	r = reply(m, mci, e, TimeOuts.to_rset, NULL, NULL);
 	if (r < 0)
-		mci->mci_state = MCIS_ERROR;
-	else
-	{
-		/*
-		**  Any response is deemed to be acceptable.
-		**  The standard does not state the proper action
-		**  to take when a value other than 250 is received.
-		**
-		**  However, if 421 is returned for the RSET, leave
-		**  mci_state as MCIS_SSD (set in reply()).
-		*/
-
-		if (mci->mci_state != MCIS_SSD)
-			mci->mci_state = MCIS_OPEN;
 		return;
-	}
-	smtpquit(m, mci, e);
+
+	/*
+	**  Any response is deemed to be acceptable.
+	**  The standard does not state the proper action
+	**  to take when a value other than 250 is received.
+	**
+	**  However, if 421 is returned for the RSET, leave
+	**  mci_state as MCIS_SSD (set in reply()).
+	*/
+
+	if (mci->mci_state != MCIS_SSD)
+		mci->mci_state = MCIS_OPEN;
 }
-/*
+/*
 **  SMTPPROBE -- check the connection state
 **
 **	Parameters:
@@ -2702,11 +3034,11 @@ smtpprobe(mci)
 	SmtpPhase = "client probe";
 	smtpmessage("RSET", m, mci);
 	r = reply(m, mci, e, TimeOuts.to_miscshort, NULL, NULL);
-	if (r < 0 || REPLYTYPE(r) != 2)
+	if (REPLYTYPE(r) != 2)
 		smtpquit(m, mci, e);
 	return r;
 }
-/*
+/*
 **  REPLY -- read arpanet reply
 **
 **	Parameters:
@@ -2773,6 +3105,24 @@ reply(m, mci, e, timeout, pfunc, enhstat)
 		if (mci->mci_state == MCIS_CLOSED)
 			return SMTPCLOSING;
 
+		/* don't try to read from a non-existant fd */
+		if (mci->mci_in == NULL)
+		{
+			if (mci->mci_errno == 0)
+				mci->mci_errno = EBADF;
+
+			/* errors on QUIT should be ignored */
+			if (strncmp(SmtpMsgBuffer, "QUIT", 4) == 0)
+			{
+				errno = mci->mci_errno;
+				return -1;
+			}
+			mci->mci_state = MCIS_ERROR;
+			smtpquit(m, mci, e);
+			errno = mci->mci_errno;
+			return -1;
+		}
+
 		if (mci->mci_out != NULL)
 			(void) sm_io_flush(mci->mci_out, SM_TIME_DEFAULT);
 
@@ -2786,24 +3136,31 @@ reply(m, mci, e, timeout, pfunc, enhstat)
 			bool oldholderrs;
 			extern char MsgBuf[];
 
+			/* errors on QUIT should be ignored */
+			if (strncmp(SmtpMsgBuffer, "QUIT", 4) == 0)
+				return -1;
+
 			/* if the remote end closed early, fake an error */
 			errno = save_errno;
 			if (errno == 0)
+			{
+				(void) sm_snprintf(SmtpReplyBuffer,
+						   sizeof SmtpReplyBuffer,
+						   "421 4.4.1 Connection reset by %s",
+						   CURHOSTNAME);
 #ifdef ECONNRESET
 				errno = ECONNRESET;
 #else /* ECONNRESET */
 				errno = EPIPE;
 #endif /* ECONNRESET */
+			}
 
 			mci->mci_errno = errno;
 			oldholderrs = HoldErrs;
 			HoldErrs = true;
 			usrerr("451 4.4.1 reply: read error from %s",
 			       CURHOSTNAME);
-
-			/* errors on QUIT should not be persistent */
-			if (strncmp(SmtpMsgBuffer, "QUIT", 4) != 0)
-				mci_setstat(mci, EX_TEMPFAIL, "4.4.2", MsgBuf);
+			mci_setstat(mci, EX_TEMPFAIL, "4.4.2", MsgBuf);
 
 			/* if debugging, pause so we can see state */
 			if (tTd(18, 100))
@@ -2903,7 +3260,8 @@ reply(m, mci, e, timeout, pfunc, enhstat)
 		(void) sm_strlcpy(SmtpError, SmtpReplyBuffer, sizeof SmtpError);
 
 	/* reply code 421 is "Service Shutting Down" */
-	if (r == SMTPCLOSING && mci->mci_state != MCIS_SSD)
+	if (r == SMTPCLOSING && mci->mci_state != MCIS_SSD &&
+	    mci->mci_state != MCIS_QUITING)
 	{
 		/* send the quit protocol */
 		mci->mci_state = MCIS_SSD;
@@ -2912,7 +3270,7 @@ reply(m, mci, e, timeout, pfunc, enhstat)
 
 	return r;
 }
-/*
+/*
 **  SMTPMESSAGE -- send message to server
 **
 **	Parameters:

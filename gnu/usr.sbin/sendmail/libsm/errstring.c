@@ -11,7 +11,7 @@
  */
 
 #include <sm/gen.h>
-SM_RCSID("@(#)$Sendmail: errstring.c,v 1.8 2001/08/27 12:59:34 ca Exp $")
+SM_RCSID("@(#)$Sendmail: errstring.c,v 1.12 2001/10/03 16:09:32 ca Exp $")
 
 #include <errno.h>
 #include <stdio.h>	/* sys_errlist, on some platforms */
@@ -30,6 +30,11 @@ SM_RCSID("@(#)$Sendmail: errstring.c,v 1.8 2001/08/27 12:59:34 ca Exp $")
 #endif /* LDAPMAP */
 
 /*
+**  Notice: this file is used by libmilter. Please try to avoid
+**	using libsm specific functions.
+*/
+
+/*
 **  SM_ERRSTRING -- return string description of error code
 **
 **	Parameters:
@@ -43,6 +48,8 @@ const char *
 sm_errstring(errnum)
 	int errnum;
 {
+	char *ret;
+
 	switch (errnum)
 	{
 	  case EPERM:
@@ -187,5 +194,13 @@ sm_errstring(errnum)
 		return ldap_err2string(errnum - E_LDAPBASE);
 #endif /* LDAPMAP */
 
-	return strerror(errnum);
+	ret = strerror(errnum);
+	if (ret == NULL)
+	{
+		static char buf[30];
+
+		(void) sm_snprintf(buf, sizeof buf, "Error %d", errnum);
+		return buf;
+	}
+	return ret;
 }

@@ -309,6 +309,9 @@ void ENGINE_load_sureware(void);
 void ENGINE_load_4758cca(void);
 void ENGINE_load_openbsd_dev_crypto(void);
 void ENGINE_load_builtin_engines(void);
+#ifdef __OpenBSD__
+void ENGINE_load_cryptodev(void);
+#endif	
 
 /* Get and set global flags (ENGINE_TABLE_FLAG_***) for the implementation
  * "registry" handling. */

@@ -1,3 +1,4 @@
+/*	$OpenBSD: stat.c,v 1.3 1996/09/23 14:19:05 mickey Exp $	*/
 /*	$NetBSD: stat.c,v 1.3 1994/10/26 05:45:07 cgd Exp $	*/
 
 /*-
@@ -38,38 +39,23 @@
 #include "stand.h"
 
 int
-fstat(fd, sb)
-	int fd;
-	struct stat *sb;
-{
-	register struct open_file *f = &files[fd];
-
-	if ((unsigned)fd >= SOPEN_MAX || f->f_flags == 0) {
-		errno = EBADF;
-		return (-1);
-	}
-
-	/* operation not defined on raw devices */
-	if (f->f_flags & F_RAW) {
-		errno = EOPNOTSUPP;
-		return (-1);
-	}
-
-	errno = (f->f_ops->stat)(f, sb);
-	return (0);
-}
-
-int
 stat(str, sb)
 	const char *str;
 	struct stat *sb;
 {
 	int fd, rv;
 
-	fd = open(str, 0);
-	if (fd < 0)
+#ifdef __INTERNAL_LIBSA_CREAD
+	if ((fd = oopen(str, 0)) < 0)
+#else
+	if ((fd = open(str, 0)) < 0)
+#endif
 		return (-1);
 	rv = fstat(fd, sb);
+#ifdef __INTERNAL_LIBSA_CREAD
+	(void)oclose(fd);
+#else
 	(void)close(fd);
+#endif
 	return (rv);
 }

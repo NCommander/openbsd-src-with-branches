@@ -32,19 +32,14 @@
  */
 
 #if defined(LIBC_SCCS) && !defined(lint)
-static char sccsid[] = "@(#)gethostid.c	8.1 (Berkeley) 6/2/93";
+static char *rcsid = "$OpenBSD: gethostid.c,v 1.3 1997/07/25 20:29:58 mickey Exp $";
 #endif /* LIBC_SCCS and not lint */
 
 #include <sys/param.h>
 #include <sys/sysctl.h>
 
-#if __STDC__
 long
 gethostid(void)
-#else
-long
-gethostid()
-#endif
 {
 	int mib[2];
 	size_t size;

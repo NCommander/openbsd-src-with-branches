@@ -36,7 +36,7 @@
  * SUCH DAMAGE.
  *
  *	from: @(#)mk-amd-map.c	8.1 (Berkeley) 6/28/93
- *	$Id: mk-amd-map.c,v 1.3 1994/06/13 20:50:42 mycroft Exp $
+ *	$Id: mk-amd-map.c,v 1.5 2002/07/18 10:10:56 pvalchev Exp $
  */
 
 /*
@@ -52,7 +52,7 @@ char copyright[] = "\
 #endif /* not lint */
 
 #ifndef lint
-static char rcsid[] = "$Id: mk-amd-map.c,v 1.3 1994/06/13 20:50:42 mycroft Exp $";
+static char rcsid[] = "$Id: mk-amd-map.c,v 1.5 2002/07/18 10:10:56 pvalchev Exp $";
 static char sccsid[] = "@(#)mk-amd-map.c	8.1 (Berkeley) 6/28/93";
 #endif /* not lint */
 
@@ -61,6 +61,7 @@ static char sccsid[] = "@(#)mk-amd-map.c	8.1 (Berkeley) 6/28/93";
 #ifndef SIGINT
 #include <signal.h>
 #endif
+#include <unistd.h>
 
 #ifdef OS_HAS_NDBM
 #define HAS_DATABASE
@@ -72,9 +73,8 @@ static char sccsid[] = "@(#)mk-amd-map.c	8.1 (Berkeley) 6/28/93";
 
 #define create_database(name) dbm_open(name, O_RDWR|O_CREAT, 0644)
 
-static int store_data(db, k, v)
-voidp db;
-char *k, *v;
+static int
+store_data(void *db, char *k, char *v)
 {
 	datum key, val;
 
@@ -90,10 +90,8 @@ char *k, *v;
 #include <fcntl.h>
 #include <ctype.h>
 
-static int read_line(buf, size, fp)
-char *buf;
-int size;
-FILE *fp;
+static int
+read_line(char *buf, int size, FILE *fp)
 {
 	int done = 0;
 
@@ -126,10 +124,8 @@ FILE *fp;
 /*
  * Read through a map
  */
-static int read_file(fp, map, db)
-FILE *fp;
-char *map;
-voidp db;
+static int
+read_file(FILE *fp, char *map, void *db)
 {
 	char key_val[2048];
 	int chuck = 0;
@@ -218,23 +214,22 @@ again:
 	return errs;
 }
 
-static int remove_file(f)
-char *f;
+static int
+remove_file(char *f)
 {
 	if (unlink(f) < 0 && errno != ENOENT)
 		return -1;
 	return 0;
 }
 
-main(argc, argv)
-int argc;
-char *argv[];
+int
+main(int argc, char *argv[])
 {
 	FILE *mapf;
 	char *map;
 	int rc = 0;
 	DBM *mapd;
-	static char maptmp[] = "dbmXXXXXX";
+	static char maptmp[] = "dbmXXXXXXXXXX";
 	char maptpag[16];
 	char *mappag;
 #ifndef USING_DB
@@ -248,7 +243,7 @@ char *argv[];
 	int ch;
 	extern int optind;
 
-	while ((ch = getopt(argc, argv, "p")) != EOF)
+	while ((ch = getopt(argc, argv, "p")) != -1)
 	switch (ch) {
 	case 'p':
 		printit = 1;
@@ -284,7 +279,7 @@ char *argv[];
 			exit(1);
 		}
 		mktemp(maptmp);
-		sprintf(maptpag, "%s%s", maptmp, DBM_SUFFIX);
+		snprintf(maptpag, sizeof(maptpag), "%s%s", maptmp, DBM_SUFFIX);
 		if (remove_file(maptpag) < 0) {
 			fprintf(stderr, "Can't remove existing temporary file");
 			perror(maptpag);
@@ -298,8 +293,8 @@ char *argv[];
 			exit(1);
 		}
 		mktemp(maptmp);
-		sprintf(maptpag, "%s.pag", maptmp);
-		sprintf(maptdir, "%s.dir", maptmp);
+		snprintf(maptpag, sizeof(maptpag), "%s.pag", maptmp);
+		snprintf(maptdir, sizeof(maptdir), "%s.dir", maptmp);
 		if (remove_file(maptpag) < 0 || remove_file(maptdir) < 0) {
 			fprintf(stderr, "Can't remove existing temporary files; %s and", maptpag);
 			perror(maptdir);
@@ -334,7 +329,7 @@ char *argv[];
 				rc = 1;
 			} else {
 #ifdef USING_DB
-				sprintf(mappag, "%s%s", map, DBM_SUFFIX);
+				snprintf(mappag, sizeof(mappag), "%s%s", map, DBM_SUFFIX);
 				if (rename(maptpag, mappag) < 0) {
 					fprintf(stderr, "Couldn't rename %s to ", maptpag);
 					perror(mappag);
@@ -343,8 +338,8 @@ char *argv[];
 					rc = 1;
 				}
 #else
-				sprintf(mappag, "%s.pag", map);
-				sprintf(mapdir, "%s.dir", map);
+				snprintf(mappag, sizeof(mappag), "%s.pag", map);
+				snprintf(mapdir, sizeof(mapdir), "%s.dir", map);
 				if (rename(maptpag, mappag) < 0) {
 					fprintf(stderr, "Couldn't rename %s to ", maptpag);
 					perror(mappag);

@@ -1,4 +1,5 @@
-/*	$Id: crypto.h,v 1.10 1998/08/05 13:14:03 niklas Exp $	*/
+/*	$OpenBSD: crypto.h,v 1.6 2002/08/23 18:17:17 ho Exp $	*/
+/*	$EOM: crypto.h,v 1.12 2000/10/15 21:56:41 niklas Exp $	*/
 
 /*
  * Copyright (c) 1998 Niels Provos.  All rights reserved.
@@ -36,9 +37,27 @@
 #ifndef _CRYPTO_H_
 #define _CRYPTO_H_
 
+#if defined (__APPLE__)
+
+#include <openssl/des.h>
+#ifdef USE_BLOWFISH
+#include <openssl/blowfish.h>
+#endif
+#ifdef USE_CAST
+#include <openssl/cast.h>
+#endif
+
+#else
+
 #include <des.h>
+#ifdef USE_BLOWFISH
 #include <blf.h>
+#endif
+#ifdef USE_CAST
 #include <cast.h>
+#endif
+
+#endif /* __APPLE__ */
 
 #define USE_32BIT
 #if defined (USE_64BIT)
@@ -49,7 +68,7 @@
 #elif defined (USE_32BIT)
 
 #define XOR64(x,y) *(u_int32_t *)(x) ^= *(u_int32_t *)(y); \
-   *(u_int32_t *)((u_int8_t *)(x) + 4) ^= *(u_int32_t *)((u_int8_t *)(y) + 4); 
+   *(u_int32_t *)((u_int8_t *)(x) + 4) ^= *(u_int32_t *)((u_int8_t *)(y) + 4);
 #define SET64(x,y) *(u_int32_t *)(x) = *(u_int32_t *)(y); \
    *(u_int32_t *)((u_int8_t *)(x) + 4) = *(u_int32_t *)((u_int8_t *)(y) + 4);
 
@@ -65,14 +84,14 @@
 #endif /* USE_64BIT */
 
 #define SET_32BIT_BIG(x,y) (x)[3]= (y); (x)[2]= (y) >> 8; \
-    (x)[1] = (y) >> 16; (x)[0]= (y) >> 24; 
+    (x)[1] = (y) >> 16; (x)[0]= (y) >> 24;
 #define GET_32BIT_BIG(x) (u_int32_t)(x)[3] | ((u_int32_t)(x)[2] << 8) | \
     ((u_int32_t)(x)[1] << 16)| ((u_int32_t)(x)[0] << 24);
 
-/* 
+/*
  * This is standard for all block ciphers we use at the moment.
  * Theoretically this could increase in future, e.g. for TwoFish.
- * Keep MAXBLK uptodate 
+ * Keep MAXBLK uptodate
  */
 #define BLOCKSIZE	8
 
@@ -88,8 +107,12 @@ struct keystate {
   u_int8_t	*riv, *liv;
   union {
     des_key_schedule desks[3];
+#ifdef USE_BLOWFISH
     blf_ctx blfks;
+#endif
+#ifdef USE_CAST
     cast_key castks;
+#endif
   } keydata;
 };
 
@@ -119,7 +142,7 @@ enum cryptoerr {
   EOKAY,			/* No error */
   ENOCRYPTO,			/* A none crypto related error, see errno */
   EWEAKKEY,			/* A weak key was found in key setup */
-  EKEYLEN,			/* The key length was invalid for the cipher */
+  EKEYLEN			/* The key length was invalid for the cipher */
 };
 
 struct crypto_xf {

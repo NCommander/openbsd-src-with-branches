@@ -1,8 +1,6 @@
-#	$NetBSD: Makefile,v 1.2 1995/04/20 22:38:24 cgd Exp $
+#	$OpenBSD: Makefile,v 1.10 2002/06/08 08:36:39 jason Exp $
 
-SUBDIR+= libc
-
-regress: _SUBDIRUSE
+SUBDIR+= libc libpthread csu libssl libm
 
 install:
 

@@ -162,8 +162,7 @@ main (int argc, char **argv)
     int port;
     int optind = 0;
 
-    setprogname (argv[0]);
-    roken_openlog(getprogname(), LOG_PID|LOG_CONS, LOG_DAEMON);
+    roken_openlog(__progname, LOG_PID|LOG_CONS, LOG_DAEMON);
 
     if (getarg (args, sizeof(args) / sizeof(args[0]), argc, argv,
 		&optind))

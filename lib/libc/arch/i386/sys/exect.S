@@ -32,18 +32,15 @@
  * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
- *
- *	from: @(#)exect.s	5.1 (Berkeley) 4/23/90
- *	$Id: exect.S,v 1.6 1994/10/26 19:49:46 mycroft Exp $
  */
-
-#if defined(SYSLIBC_SCCS) && !defined(lint)
-	.text
-	.asciz "$Id: exect.S,v 1.6 1994/10/26 19:49:46 mycroft Exp $"
-#endif /* SYSLIBC_SCCS and not lint */
 
 #include "SYS.h"
 #include <machine/psl.h>
+
+#if defined(SYSLIBC_SCCS)
+	.text
+	.asciz "$OpenBSD: exect.S,v 1.2 1996/08/19 08:13:31 tholo Exp $"
+#endif /* SYSLIB_SCCS */
 
 ENTRY(exect)
 	movl	$(SYS_execve),%eax
@@ -54,7 +51,7 @@ ENTRY(exect)
 	popf
 	int	$0x80
 #ifdef PIC
-	jmp	PIC_PLT(cerror)		/* exect(file, argv, env); */
+	jmp	PIC_PLT(__cerror)		/* exect(file, argv, env); */
 #else
-	jmp	cerror
+	jmp	__cerror
 #endif

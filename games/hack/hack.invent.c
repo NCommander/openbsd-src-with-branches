@@ -1,9 +1,68 @@
+/*	$OpenBSD: hack.invent.c,v 1.5 2001/08/06 22:59:13 pjanzen Exp $	*/
+
 /*
- * Copyright (c) Stichting Mathematisch Centrum, Amsterdam, 1985.
+ * Copyright (c) 1985, Stichting Centrum voor Wiskunde en Informatica,
+ * Amsterdam
+ * All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are
+ * met:
+ *
+ * - Redistributions of source code must retain the above copyright notice,
+ * this list of conditions and the following disclaimer.
+ *
+ * - Redistributions in binary form must reproduce the above copyright
+ * notice, this list of conditions and the following disclaimer in the
+ * documentation and/or other materials provided with the distribution.
+ *
+ * - Neither the name of the Stichting Centrum voor Wiskunde en
+ * Informatica, nor the names of its contributors may be used to endorse or
+ * promote products derived from this software without specific prior
+ * written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS
+ * IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED
+ * TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A
+ * PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER
+ * OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
+ * EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+ * PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR
+ * PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
+ * LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
+ * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ */
+
+/*
+ * Copyright (c) 1982 Jay Fenlason <hack@gnu.org>
+ * All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions
+ * are met:
+ * 1. Redistributions of source code must retain the above copyright
+ *    notice, this list of conditions and the following disclaimer.
+ * 2. Redistributions in binary form must reproduce the above copyright
+ *    notice, this list of conditions and the following disclaimer in the
+ *    documentation and/or other materials provided with the distribution.
+ * 3. The name of the author may not be used to endorse or promote products
+ *    derived from this software without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED ``AS IS'' AND ANY EXPRESS OR IMPLIED WARRANTIES,
+ * INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY
+ * AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.  IN NO EVENT SHALL
+ * THE AUTHOR BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
+ * EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+ * PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS;
+ * OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
+ * WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR
+ * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
+ * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
 #ifndef lint
-static char rcsid[] = "$NetBSD: hack.invent.c,v 1.4 1995/03/23 08:30:25 cgd Exp $";
+static char rcsid[] = "$OpenBSD: hack.invent.c,v 1.5 2001/08/06 22:59:13 pjanzen Exp $";
 #endif /* not lint */
 
 #include	"hack.h"
@@ -17,7 +76,7 @@ static char *xprname();
 #ifndef NOWORM
 #include	"def.wseg.h"
 extern struct wseg *wsegs[32];
-#endif NOWORM
+#endif /* NOWORM */
 
 #define	NOINVSYM	'#'
 
@@ -179,7 +238,7 @@ register x,y;
 	register struct monst *mtmp;
 #ifndef NOWORM
 	register struct wseg *wtmp;
-#endif NOWORM
+#endif /* NOWORM */
 
 	m_atseg = 0;
 	for(mtmp = fmon; mtmp; mtmp = mtmp->nmon){
@@ -193,7 +252,7 @@ register x,y;
 			return(mtmp);
 		    }
 		}
-#endif NOWORM
+#endif /* NOWORM */
 	}
 	return(0);
 }
@@ -321,7 +380,7 @@ register char *let,*word;
 
 	ilet = 'a';
 	for(otmp = invent; otmp; otmp = otmp->nobj){
-	    if(!*let || index(let, otmp->olet)) {
+	    if(!*let || strchr(let, otmp->olet)) {
 		bp[foo++] = flags.invlet_constant ? otmp->invlet : ilet;
 
 		/* ugly check: remove inappropriate things */
@@ -383,7 +442,7 @@ register char *let,*word;
 			pline("No count allowed with this command.");
 			continue;
 		}
-		if(index(quitchars,ilet))
+		if(strchr(quitchars,ilet))
 			return((struct obj *)0);
 		if(ilet == '-') {
 			return(allownone ? &zeroobj : (struct obj *) 0);
@@ -426,7 +485,7 @@ register char *let,*word;
 		}
 		break;
 	}
-	if(!allowall && let && !index(let,otmp->olet)) {
+	if(!allowall && let && !strchr(let,otmp->olet)) {
 		pline("That is a silly thing to %s.",word);
 		return(0);
 	}
@@ -469,7 +528,7 @@ xchar allowgold = (u.ugold && !strcmp(word, "drop")) ? 1 : 0;	/* BAH */
 		if(allowgold) ilets[iletct++] = '$';
 		ilets[iletct] = 0;
 		while(otmp) {
-			if(!index(ilets, otmp->olet)){
+			if(!strchr(ilets, otmp->olet)){
 				ilets[iletct++] = otmp->olet;
 				ilets[iletct] = 0;
 			}
@@ -501,8 +560,8 @@ xchar allowgold = (u.ugold && !strcmp(word, "drop")) ? 1 : 0;	/* BAH */
 		} else
 		if(sym == 'a' || sym == 'A') allflag = TRUE; else
 		if(sym == 'u' || sym == 'U') ckfn = ckunpaid; else
-		if(index("!%?[()=*/\"0", sym)){
-			if(!index(olets, sym)){
+		if(strchr("!%?[()=*/\"0", sym)){
+			if(!strchr(olets, sym)){
 				olets[oletct++] = sym;
 				olets[oletct] = 0;
 			}
@@ -536,7 +595,7 @@ register int cnt = 0;
 	for(otmp = objchn; otmp; otmp = otmp2){
 		if(ilet == 'z') ilet = 'A'; else ilet++;
 		otmp2 = otmp->nobj;
-		if(olets && *olets && !index(olets, otmp->olet)) continue;
+		if(olets && *olets && !strchr(olets, otmp->olet)) continue;
 		if(ckfn && !(*ckfn)(otmp)) continue;
 		if(!allflag) {
 			pline(xprname(otmp, ilet));
@@ -623,7 +682,7 @@ register char *lets;
 	ilet = 'a';
 	for(otmp = invent; otmp; otmp = otmp->nobj) {
 	    if(flags.invlet_constant) ilet = otmp->invlet;
-	    if(!lets || !*lets || index(lets, ilet)) {
+	    if(!lets || !*lets || strchr(lets, ilet)) {
 		    cornline(1, xprname(otmp, ilet));
 		    any[ct++] = ilet;
 	    }
@@ -634,7 +693,7 @@ register char *lets;
 }
 
 dotypeinv ()				/* free after Robert Viduya */
-/* Changed to one type only, so he doesnt have to type cr */
+/* Changed to one type only, so he doesn't have to type cr */
 {
     char c, ilet;
     char stuff[BUFSZ];
@@ -652,7 +711,7 @@ dotypeinv ()				/* free after Robert Viduya */
 	if(u.ugold) stuff[stct++] = '$';
 	stuff[stct] = 0;
 	for(otmp = invent; otmp; otmp = otmp->nobj) {
-	    if (!index (stuff, otmp->olet)) {
+	    if (!strchr (stuff, otmp->olet)) {
 		stuff[stct++] = otmp->olet;
 		stuff[stct] = 0;
 	    }
@@ -667,7 +726,7 @@ dotypeinv ()				/* free after Robert Viduya */
 	    pline ("What type of object [%s] do you want an inventory of? ",
 		stuff);
 	    c = readchar();
-	    if(index(quitchars,c)) return(0);
+	    if(strchr(quitchars,c)) return(0);
 	} else
 	    c = stuff[0];
 
@@ -777,7 +836,7 @@ merged(otmp,obj,lose) register struct obj *otmp, *obj; {
 	  obj->spe == otmp->spe &&
 	  obj->dknown == otmp->dknown &&
 	  obj->cursed == otmp->cursed &&
-	  (index("%*?!", obj->olet) ||
+	  (strchr("%*?!", obj->olet) ||
 	    (obj->known == otmp->known &&
 		(obj->olet == WEAPON_SYM && obj->otyp < BOOMERANG)))) {
 		otmp->quan += obj->quan;

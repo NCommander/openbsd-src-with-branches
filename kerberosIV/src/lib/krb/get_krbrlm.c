@@ -81,7 +81,7 @@ krb_get_lrealm_f(char *r, int n, const char *fname)
     /* Does more junk follow? */
     p += rlen;
     tlen = strspn(p, " \t\n");
-    if (p[tlen] == 0) {
+    if ((rstart[0] != '#') && (p[tlen] == 0)) {
 	strncpy(r, rstart, rlen);
 	r[rlen] = 0;
         ret = KSUCCESS;		/* This was a realm name only line. */
@@ -99,9 +99,14 @@ krb_get_lrealm(char *r, int n)
     int i;
     char file[MaxPathLen];
 
+    r[0] = '#';
+
     for (i = 0; krb_get_krbconf(i, file, sizeof(file)) == 0; i++)
 	if (krb_get_lrealm_f(r, n, file) == KSUCCESS)
 	    return KSUCCESS;
+
+    if (r[0] == '#')
+	return KFAILURE;
 
     /* When nothing else works try default realm */
     if (n == 1) {
@@ -114,7 +119,7 @@ krb_get_lrealm(char *r, int n)
       return KSUCCESS;
     }
     else
-	return(KFAILURE);
+	return KFAILURE;
 }
 
 /* Returns local realm if that can be figured out else NO.DEFAULT.REALM */

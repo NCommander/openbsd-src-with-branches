@@ -1,4 +1,5 @@
-/*	$NetBSD: fpu_subr.c,v 1.2 1994/11/20 20:52:47 deraadt Exp $ */
+/*	$OpenBSD$	*/
+/*	$NetBSD: fpu_subr.c,v 1.3 1996/03/14 19:42:01 christos Exp $ */
 
 /*
  * Copyright (c) 1992, 1993
@@ -49,11 +50,16 @@
  */
 
 #include <sys/types.h>
+#ifdef DIAGNOSTIC
+#include <sys/systm.h>
+#endif
 
 #include <machine/reg.h>
+#include <machine/instr.h>
 
 #include <sparc/fpu/fpu_arith.h>
 #include <sparc/fpu/fpu_emu.h>
+#include <sparc/fpu/fpu_extern.h>
 
 /*
  * Shift the given number right rsh bits.  Any bits that `fall off' will get

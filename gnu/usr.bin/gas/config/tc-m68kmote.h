@@ -1,3 +1,5 @@
+/*	$OpenBSD$	*/
+
 /* This file is tc-m68kmote.h
 
    Copyright (C) 1987-1992 Free Software Foundation, Inc.

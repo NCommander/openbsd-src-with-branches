@@ -1,3 +1,5 @@
+/*	$OpenBSD: signal-test.c,v 1.2 2002/06/25 15:50:16 mickey Exp $	*/
+
 /*
  * Compile with:
  * cc -I/usr/local/include -o time-test time-test.c -L/usr/local/lib -levent
@@ -37,10 +39,10 @@ main (int argc, char **argv)
 {
 	struct event signal_int;
  
-	/* Initalize the event library */
+	/* Initialize the event library */
 	event_init();
 
-	/* Initalize one event */
+	/* Initialize one event */
 	event_set(&signal_int, SIGINT, EV_SIGNAL|EV_PERSIST, signal_cb,
 	    &signal_int);
 

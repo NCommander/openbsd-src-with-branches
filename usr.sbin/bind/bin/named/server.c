@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 1999-2002  Internet Software Consortium.
+ * Copyright (C) 1999-2003  Internet Software Consortium.
  *
  * Permission to use, copy, modify, and distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -15,7 +15,7 @@
  * WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-/* $ISC: server.c,v 1.339.2.8 2002/07/10 04:27:23 marka Exp $ */
+/* $ISC: server.c,v 1.339.2.8.4.3 2003/02/18 03:27:58 marka Exp $ */
 
 #include <config.h>
 
@@ -163,6 +163,7 @@ configure_view_acl(cfg_obj_t *vconfig, cfg_obj_t *config,
 	return (result);
 }
 
+#ifdef ISC_RFC2335
 static isc_result_t
 configure_view_dnsseckey(cfg_obj_t *vconfig, cfg_obj_t *key,
 			 dns_keytable_t *keytable, isc_mem_t *mctx)
@@ -258,6 +259,7 @@ configure_view_dnsseckey(cfg_obj_t *vconfig, cfg_obj_t *key,
 
 	return (result);
 }
+#endif
 
 /*
  * Configure DNSSEC keys for a view.  Currently used only for
@@ -271,15 +273,21 @@ configure_view_dnsseckeys(cfg_obj_t *vconfig, cfg_obj_t *config,
 			  isc_mem_t *mctx, dns_keytable_t **target)
 {
 	isc_result_t result;
+#ifdef ISC_RFC2535
 	cfg_obj_t *keys = NULL;
 	cfg_obj_t *voptions = NULL;
 	cfg_listelt_t *element, *element2;
 	cfg_obj_t *keylist;
 	cfg_obj_t *key;
+#endif
 	dns_keytable_t *keytable = NULL;
 
 	CHECK(dns_keytable_create(mctx, &keytable));
 
+#ifndef ISC_RFC2535
+	UNUSED(vconfig);
+	UNUSED(config);
+#else
 	if (vconfig != NULL)
 		voptions = cfg_tuple_get(vconfig, "options");
 
@@ -303,7 +311,7 @@ configure_view_dnsseckeys(cfg_obj_t *vconfig, cfg_obj_t *config,
 						       keytable, mctx));
 		}
 	}
-
+#endif
 	dns_keytable_detach(target);
 	*target = keytable; /* Transfer ownership. */
 	keytable = NULL;
@@ -1800,7 +1808,7 @@ load_configuration(const char *filename, ns_server_t *server,
 			 * Not specified, use default.
 			 */
 			CHECK(ns_listenlist_default(ns_g_mctx, listen_port,
-						    ISC_FALSE, &listenon));
+						    ISC_TRUE, &listenon));
 		}
 		if (listenon != NULL) {
 			ns_interfacemgr_setlistenon6(server->interfacemgr,
@@ -1956,7 +1964,7 @@ load_configuration(const char *filename, ns_server_t *server,
 			const char *randomdev = cfg_obj_asstring(obj);
 			result = isc_entropy_createfilesource(ns_g_entropy,
 							      randomdev);
-			if (result != ISC_R_SUCCESS)
+			if (result != ISC_R_SUCCESS && ns_g_chrootdir == NULL) {
 				isc_log_write(ns_g_lctx,
 					      NS_LOGCATEGORY_GENERAL,
 					      NS_LOGMODULE_SERVER,
@@ -1965,6 +1973,22 @@ load_configuration(const char *filename, ns_server_t *server,
 					      "%s: %s",
 					      randomdev,
 					      isc_result_totext(result));
+			}
+#ifdef PATH_RANDOMDEV
+			if (result != ISC_R_SUCCESS && ns_g_chrootdir != NULL) {
+				isc_log_write(ns_g_lctx,
+					      NS_LOGCATEGORY_GENERAL,
+					      NS_LOGMODULE_SERVER,
+					      ISC_LOG_INFO,
+					      "using pre-chroot entropy source "
+					      "%s",
+					      PATH_RANDOMDEV);
+		  		isc_entropy_detach(&ns_g_entropy);
+				isc_entropy_attach(ns_g_fallbackentropy,
+						   &ns_g_entropy);
+
+			}
+#endif
 		}
 	}
 
@@ -2049,13 +2073,17 @@ load_configuration(const char *filename, ns_server_t *server,
 		}
 	}
 
-	obj = NULL;
-	if (ns_config_get(maps, "pid-file", &obj) == ISC_R_SUCCESS)
-		ns_os_writepidfile(cfg_obj_asstring(obj), first_time);
-	else if (ns_g_lwresdonly)
-		ns_os_writepidfile(lwresd_g_defaultpidfile, first_time);
-	else
-		ns_os_writepidfile(ns_g_defaultpidfile, first_time);
+	if (ns_g_pidfile != NULL) {
+		ns_os_writepidfile(ns_g_pidfile, first_time);
+	} else {
+		obj = NULL;
+		if (ns_config_get(maps, "pid-file", &obj) == ISC_R_SUCCESS)
+			ns_os_writepidfile(cfg_obj_asstring(obj), first_time);
+		else if (ns_g_lwresdonly)
+			ns_os_writepidfile(lwresd_g_defaultpidfile, first_time);
+		else
+			ns_os_writepidfile(ns_g_defaultpidfile, first_time);
+	}
 
 	obj = NULL;
 	result = ns_config_get(maps, "statistics-file", &obj);

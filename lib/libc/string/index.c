@@ -32,19 +32,17 @@
  */
 
 #if defined(LIBC_SCCS) && !defined(lint)
-/*static char *sccsid = "from: @(#)index.c	5.7 (Berkeley) 2/24/91";*/
-static char *rcsid = "$Id: index.c,v 1.4 1994/06/11 16:49:13 jtc Exp $";
+static char *rcsid = "$OpenBSD: index.c,v 1.2 1996/08/19 08:34:02 tholo Exp $";
 #endif /* LIBC_SCCS and not lint */
 
 #include <string.h>
 
 char *
 #ifdef STRCHR
-strchr(p, ch)
+strchr(const char *p, int ch)
 #else
-index(p, ch)
+index(const char *p, int ch)
 #endif
-	register const char *p, ch;
 {
 	for (;; ++p) {
 		if (*p == ch)

@@ -14,7 +14,7 @@
 
 @SET_MAKE@
 
-# $Id: Makefile.am,v 1.40 2002/03/22 21:58:07 karl Exp $
+# $Id: Makefile.in,v 1.5 2002/06/11 10:01:13 espie Exp $
 # Makefile.am for texinfo/doc.
 # Run automake in .. to produce Makefile.in from this.
 #
@@ -164,7 +164,7 @@ $(srcdir)/Makefile.in:  Makefile.am  $(top_srcdir)/configure.ac $(ACLOCAL_M4)
 Makefile:  $(srcdir)/Makefile.in  $(top_builddir)/config.status
 	cd $(top_builddir) && $(SHELL) ./config.status $(subdir)/$@ $(am__depfiles_maybe)
 
-$(srcdir)/version.texi:  $(srcdir)/stamp-vti
+$(srcdir)/version.texi:  #$(srcdir)/stamp-vti
 	@:
 $(srcdir)/stamp-vti: texinfo.txi $(top_srcdir)/configure.ac
 	@(set `$(SHELL) $(srcdir)/mdate-sh $(srcdir)/texinfo.txi`; \
@@ -187,7 +187,7 @@ maintainer-clean-vti:
 texinfo: texinfo.txi $(srcdir)/version.texi
 texinfo.dvi: texinfo.txi $(srcdir)/version.texi
 
-$(srcdir)/version-stnd.texi:  $(srcdir)/stamp-1
+$(srcdir)/version-stnd.texi:  #$(srcdir)/stamp-1
 	@:
 $(srcdir)/stamp-1: info-stnd.texi $(top_srcdir)/configure.ac
 	@(set `$(SHELL) $(srcdir)/mdate-sh $(srcdir)/info-stnd.texi`; \
@@ -245,13 +245,13 @@ DVIPS = dvips
 .dvi.ps:
 	$(DVIPS) $< -o $@
 
-#install-info: install-info-am
+install-info: install-info-am
 install-info-am: $(INFO_DEPS)
 	@$(NORMAL_INSTALL)
 	$(mkinstalldirs) $(DESTDIR)$(infodir)
 	@list='$(INFO_DEPS)'; \
 	for file in $$list; do \
-	  d=$(srcdir); \
+	  d=.; \
 	  for ifile in echo $$d/$$file $$d/$$file-[0-9] $$d/$$file-[0-9][0-9]; do \
 	    if test -f $$ifile; then \
 	      relfile=`expr "$$ifile" : "$$d/\(.*\)"`; \
@@ -463,7 +463,7 @@ info: info-am
 
 info-am: $(INFO_DEPS)
 
-install-data-am: install-data-local install-info-am install-man
+install-data-am: install-data-local install-info-am #install-man
 
 install-exec-am:
 

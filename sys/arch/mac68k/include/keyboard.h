@@ -1,4 +1,5 @@
-/*	$NetBSD: keyboard.h,v 1.4 1994/12/03 23:34:32 briggs Exp $	*/
+/*	$OpenBSD: keyboard.h,v 1.4 1997/04/09 14:34:29 briggs Exp $	*/
+/*	$NetBSD: keyboard.h,v 1.5 1996/02/23 05:43:48 scottr Exp $	*/
 
 /*-
  * Copyright (C) 1993	Allen K. Briggs, Chris P. Caputo,
@@ -32,6 +33,9 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+
+#ifndef _MAC68K_KEYBOARD_H_
+#define _MAC68K_KEYBOARD_H_
 
 #define ADBK_LEFT	0x3B
 #define ADBK_RIGHT	0x3C
@@ -98,12 +102,12 @@ unsigned char keyboard[128][3] = {
 	{	/*   0x13, */       '2',       '@',         0x00 },
 	{	/*   0x14, */       '3',       '#',         0x00 },
 	{	/*   0x15, */       '4',       '$',         0x00 },
-	{	/*   0x16, */       '6',       '^',         0x00 },
+	{	/*   0x16, */       '6',       '^',         0x1E },
 	{	/*   0x17, */       '5',       '%',         0x00 },
 	{	/*   0x18, */       '=',       '+',         0x00 },
 	{	/*   0x19, */       '9',       '(',         0x00 },
 	{	/*   0x1A, */       '7',       '&',         0x00 },
-	{	/*   0x1B, */       '-',       '_',         0x00 },
+	{	/*   0x1B, */       '-',       '_',         0x1F },
 	{	/*   0x1C, */       '8',       '*',         0x00 },
 	{	/*   0x1D, */       '0',       ')',         0x00 },
 	{	/*   0x1E, */       ']',       '}',         0x1D },
@@ -118,9 +122,9 @@ unsigned char keyboard[128][3] = {
 	{	/*   0x27, */      '\'',       '"',         0x00 },
 	{	/*   0x28, */       'k',       'K',         0x0B },
 	{	/*   0x29, */       ';',       ':',         0x00 },
-	{	/*   0x2A, */      '\\',       '|',         0x00 },
+	{	/*   0x2A, */      '\\',       '|',         0x1C },
 	{	/*   0x2B, */       ',',       '<',         0x00 },
-	{	/*   0x2C, */       '/',       '?',         0x1C },
+	{	/*   0x2C, */       '/',       '?',         0x00 },
 	{	/*   0x2D, */       'n',       'N',         0x0E },
 	{	/*   0x2E, */       'm',       'M',         0x0D },
 	{	/*   0x2F, */       '.',       '>',         0x00 },
@@ -206,3 +210,5 @@ unsigned char keyboard[128][3] = {
 	{	/*   0x7F, */      0x00,      0x00,         0x00 }
 };
 #endif /* KEYBOARD_ARRAY */
+
+#endif	/* _MAC68K_KEYBOARD_H_ */

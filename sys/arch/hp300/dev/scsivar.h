@@ -1,6 +1,8 @@
-/*	$NetBSD: scsivar.h,v 1.4 1994/10/26 07:25:01 cgd Exp $	*/
+/*	$OpenBSD: scsivar.h,v 1.5 1997/04/16 11:56:15 downsj Exp $	*/
+/*	$NetBSD: scsivar.h,v 1.7 1997/03/31 07:40:05 scottr Exp $	*/
 
 /*
+ * Copyright (c) 1997 Jason R. Thorpe.  All rights reserved.
  * Copyright (c) 1990, 1993
  *	The Regents of the University of California.  All rights reserved.
  *
@@ -38,22 +40,56 @@
  *	@(#)scsivar.h	8.1 (Berkeley) 6/10/93
  */
 
-struct	scsi_softc {
-	struct	hp_ctlr *sc_hc;
-	struct	devqueue sc_dq;
-	struct	devqueue sc_sq;
-	u_char	sc_flags;
-	u_char	sc_sync;
-	u_char	sc_scsi_addr;
-	u_char	sc_stat[2];
-	u_char	sc_msg[7];
+#include <sys/queue.h>
+
+/*
+ * A SCSI job queue entry.  Target drivers each have of of these,
+ * used to queue requests with the initiator.
+ */
+struct scsiqueue {
+	TAILQ_ENTRY(scsiqueue) sq_list;	/* entry on queue */
+	void	*sq_softc;		/* target's softc */
+	int	sq_target;		/* target on bus */
+	int	sq_lun;			/* lun on target */
+
+	/*
+	 * Callbacks used to start and stop the target driver.
+	 */
+	void	(*sq_start)(void *);
+	void	(*sq_go)(void *);
+	void	(*sq_intr)(void *, int);
 };
 
-/* sc_flags */
-#define	SCSI_IO		0x80	/* DMA I/O in progress */
-#define	SCSI_DMA32	0x40	/* 32-bit DMA should be used */
-#define	SCSI_HAVEDMA	0x04	/* controller has DMA channel */
-#ifdef DEBUG
-#define	SCSI_PAD	0x02	/* 'padded' transfer in progress */
+struct scsi_inquiry;
+struct scsi_fmt_cdb;
+
+struct oscsi_attach_args {
+	int	osa_target;	/* target */
+	int	osa_lun;	/* logical unit */
+				/* inquiry data */
+	struct	scsi_inquiry *osa_inqbuf;
+};
+
+#ifdef _KERNEL
+int	scsi_print(void *, const char *);
+
+void	scsi_delay(int);
+void	scsistart(void *);
+void	scsireset(int);
+int	scsi_test_unit_rdy(int, int, int);
+int	scsi_request_sense(int, int, int, u_char *, u_int);
+int	scsi_immed_command(int, int, int, struct scsi_fmt_cdb *,
+				u_char *, u_int, int);
+int	scsi_tt_read(int, int, int, u_char *, u_int, daddr_t, int);
+int	scsi_tt_write(int, int, int, u_char *, u_int, daddr_t, int);
+int	scsireq(struct device *, struct scsiqueue *);
+int	scsiustart(int);
+void	scsistart(void *);
+int	scsigo(int, int, int, struct buf *, struct scsi_fmt_cdb *, int);
+void	scsidone(void *);
+int	scsiintr(void *);
+void	scsifree(struct device *, struct scsiqueue *);
+int	scsi_tt_oddio(int, int, int, u_char *, u_int, int, int);
+void	scsi_str(char *, char *, size_t);
+int	scsi_probe_device(int, int, int, struct scsi_inquiry *, int);
 #endif
-#define	SCSI_ALIVE	0x01	/* controller initialized */

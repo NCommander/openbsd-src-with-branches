@@ -1,5 +1,3 @@
-/*	$NetBSD: sprintf.c,v 1.5 1995/02/02 02:10:37 jtc Exp $	*/
-
 /*-
  * Copyright (c) 1990, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -37,45 +35,28 @@
  */
 
 #if defined(LIBC_SCCS) && !defined(lint)
-#if 0
-static char sccsid[] = "@(#)sprintf.c	8.1 (Berkeley) 6/4/93";
-#endif
-static char rcsid[] = "$NetBSD: sprintf.c,v 1.5 1995/02/02 02:10:37 jtc Exp $";
+static char rcsid[] = "$OpenBSD: sprintf.c,v 1.4 1998/01/12 06:14:31 millert Exp $";
 #endif /* LIBC_SCCS and not lint */
 
 #include <stdio.h>
-#if __STDC__
 #include <stdarg.h>
-#else
-#include <varargs.h>
-#endif
 #include <limits.h>
 #include "local.h"
 
 int
-#if __STDC__
 sprintf(char *str, char const *fmt, ...)
-#else
-sprintf(str, fmt, va_alist)
-	char *str;
-	char *fmt;
-	va_dcl
-#endif
 {
 	int ret;
 	va_list ap;
 	FILE f;
 
+	f._file = -1;
 	f._flags = __SWR | __SSTR;
 	f._bf._base = f._p = (unsigned char *)str;
 	f._bf._size = f._w = INT_MAX;
-#if __STDC__
 	va_start(ap, fmt);
-#else
-	va_start(ap);
-#endif
 	ret = vfprintf(&f, fmt, ap);
 	va_end(ap);
-	*f._p = 0;
+	*f._p = '\0';
 	return (ret);
 }

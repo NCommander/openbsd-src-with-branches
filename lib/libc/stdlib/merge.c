@@ -35,8 +35,7 @@
  */
 
 #if defined(LIBC_SCCS) && !defined(lint)
-/*static char sccsid[] = "from: @(#)merge.c	8.2 (Berkeley) 2/14/94";*/
-static char *rcsid = "$Id: merge.c,v 1.2 1994/06/16 05:26:36 mycroft Exp $";
+static char *rcsid = "$OpenBSD: merge.c,v 1.4 2002/02/16 21:27:24 millert Exp $";
 #endif /* LIBC_SCCS and not lint */
 
 /*
@@ -59,8 +58,8 @@ static char *rcsid = "$Id: merge.c,v 1.2 1994/06/16 05:26:36 mycroft Exp $";
 #include <stdlib.h>
 #include <string.h>
 
-static void setup __P((u_char *, u_char *, size_t, size_t, int (*)()));
-static void insertionsort __P((u_char *, size_t, size_t, int (*)()));
+static void setup(u_char *, u_char *, size_t, size_t, int (*)());
+static void insertionsort(u_char *, size_t, size_t, int (*)());
 
 #define ISIZE sizeof(int)
 #define PSIZE sizeof(u_char *)
@@ -100,7 +99,7 @@ mergesort(base, nmemb, size, cmp)
 	void *base;
 	size_t nmemb;
 	register size_t size;
-	int (*cmp) __P((const void *, const void *));
+	int (*cmp)(const void *, const void *);
 {
 	register int i, sense;
 	int big, iflag;
@@ -148,7 +147,7 @@ mergesort(base, nmemb, size, cmp)
 	    			sense = 0;
 	    		}
 	    		if (!big) {	/* here i = 0 */
-LINEAR:	    			while ((b += size) < t && cmp(q, b) >sense)
+	    			while ((b += size) < t && cmp(q, b) >sense)
 	    				if (++i == 6) {
 	    					big = 1;
 	    					goto EXPONENTIAL;
@@ -169,7 +168,7 @@ EXPONENTIAL:	    		for (i = size; ; i <<= 1)
 	    					goto FASTCASE;
 	    				} else
 	    					b = p;
-SLOWCASE:	    		while (t > b+size) {
+		    		while (t > b+size) {
 	    				i = (((t - b) / size) >> 1) * size;
 	    				if ((*cmp)(q, p = b + i) <= sense)
 	    					t = p;
@@ -258,7 +257,7 @@ COPY:	    			b = t;
 void
 setup(list1, list2, n, size, cmp)
 	size_t n, size;
-	int (*cmp) __P((const void *, const void *));
+	int (*cmp)(const void *, const void *);
 	u_char *list1, *list2;
 {
 	int i, length, size2, tmp, sense;
@@ -333,7 +332,7 @@ static void
 insertionsort(a, n, size, cmp)
 	u_char *a;
 	size_t n, size;
-	int (*cmp) __P((const void *, const void *));
+	int (*cmp)(const void *, const void *);
 {
 	u_char *ai, *s, *t, *u, tmp;
 	int i;

@@ -1,6 +1,9 @@
+/*	$OpenBSD: hexdump.c,v 1.7 2001/12/30 08:17:32 pvalchev Exp $	*/
+/*	$NetBSD: hexdump.c,v 1.7 1997/10/19 02:34:06 lukem Exp $	*/
+
 /*
- * Copyright (c) 1989 The Regents of the University of California.
- * All rights reserved.
+ * Copyright (c) 1989, 1993
+ *	The Regents of the University of California.  All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -39,11 +42,12 @@ char copyright[] =
 
 #ifndef lint
 /*static char sccsid[] = "from: @(#)hexdump.c	5.5 (Berkeley) 6/1/90";*/
-static char rcsid[] = "$Id: hexdump.c,v 1.2 1993/08/01 18:14:48 mycroft Exp $";
+static char rcsid[] = "$OpenBSD: hexdump.c,v 1.7 2001/12/30 08:17:32 pvalchev Exp $";
 #endif /* not lint */
 
 #include <sys/types.h>
 #include <stdio.h>
+#include <string.h>
 #include "hexdump.h"
 
 FS *fshead;				/* head of format strings */
@@ -51,15 +55,17 @@ int blocksize;				/* data block size */
 int exitval;				/* final exit value */
 int length = -1;			/* max bytes to read */
 
+int	main(int, char **);
+
+int
 main(argc, argv)
 	int argc;
-	char **argv;
+	char *argv[];
 {
-	extern int errno;
-	register FS *tfs;
-	char *p, *rindex();
+	FS *tfs;
+	char *p;
 
-	if (!(p = rindex(argv[0], 'o')) || strcmp(p, "od"))
+	if (!(p = strrchr(argv[0], 'o')) || strcmp(p, "od"))
 		newsyntax(argc, &argv);
 	else
 		oldsyntax(argc, &argv);

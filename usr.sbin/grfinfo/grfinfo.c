@@ -1,3 +1,5 @@
+/*	$OpenBSD: grfinfo.c,v 1.5 2002/09/06 22:08:36 miod Exp $	*/
+
 /* 
  * Copyright (c) 1987-1993, The University of Utah and
  * the Center for Software Science at the University of Utah (CSS).
@@ -19,18 +21,21 @@
  * improvements that they make and grant CSS redistribution rights.
  *
  * 	from: Utah $Hdr: grfinfo.c 1.3 94/04/04$
- *	$Id: grfinfo.c,v 1.1 1994/04/04 21:53:25 cgd Exp $
  */
 
+#include <errno.h>
 #include <stdio.h>
+#include <unistd.h>
+#include <util.h>
 #include <sys/types.h>
 #include <sys/ioctl.h>
 #include <dev/grfioctl.h>
 
-int aflg = 0;
-int tflg = 1;
-char *pname;
-char *dname, *tname();
+int getinfo(char *);
+void printall(void);
+char *tname(void);
+void usage(void);
+
 struct grfinfo gi;
 
 struct grf_info {
@@ -40,79 +45,97 @@ struct grf_info {
 	GRFGATOR,	"gatorbox",
 	GRFBOBCAT,	"topcat",
 	GRFRBOX,	"renaissance",
+	GRFFIREEYE,	"fireeye",
+	GRFHYPERION,	"hyperion",
 	GRFDAVINCI,	"davinci",
 	-1,		"unknown",
 };
 
-main(argc, argv)
-	char **argv;
+int
+main(int argc, char *argv[])
 {
-	extern int optind, optopt;
-	extern char *optarg;
-	register int c;
+	int aflg, tflg;
+	int c;
+	char *dname;
 
-	pname = argv[0];
-	while ((c = getopt(argc, argv, "at")) != EOF)
+	aflg = tflg = 0;
+	while ((c = getopt(argc, argv, "at")) != -1) {
 		switch (c) {
-		/* everything */
 		case 'a':
+			if (tflg != 0)
+				usage();
 			aflg++;
 			break;
-		/* type */
 		case 't':
+			if (aflg != 0)
+				usage();
 			tflg++;
 			break;
-		/* bogon */
 		case '?':
+		default:
 			usage();
 		}
-	if (optind == argc)
+	}
+	argc -= optind;
+	argv += optind;
+
+	if (argc == 0)
 		usage();
-	dname = argv[optind];
-	getinfo();
-	if (aflg)
-		printall();
-	else if (tflg)
-		printf("%s\n", tname());
+	while (argc-- != 0) {
+		dname = *argv++;
+		if (getinfo(dname)) {
+			printf("%s: ", dname);
+			if (aflg)
+				printall();
+			else
+				printf("%s\n", tname());
+		}
+	}
 	exit(0);
 }
 
-getinfo()
+int
+getinfo(char *dname)
 {
 	int f;
 
-	f = open(dname, 0);
-	if (f < 0 || ioctl(f, GRFIOCGINFO, &gi) < 0) {
-		if (tflg)
-			printf("none\n");
-		else
-			perror(dname);
-		exit(1);
+	f = opendev(dname, 0, OPENDEV_BLCK, NULL);
+	if (f < 0) {
+		warn("open(%s)", dname);
+		return 0;
 	}
+	if (ioctl(f, GRFIOCGINFO, &gi) < 0) {
+		warn("ioctl(%s)", dname);
+		close(f);
+		return 0;
+	}
+
 	close(f);
+	return 1;
 }
 
-printall()
+void
+printall(void)
 {
-	printf("%s: %d x %d ", dname, gi.gd_dwidth, gi.gd_dheight);
+	printf("%d x %d, ", gi.gd_dwidth, gi.gd_dheight);
 	if (gi.gd_colors < 3)
-		printf("monochrome");
+		printf("monochrome, ");
 	else {
-		printf("%d color", gi.gd_colors);
+		printf("%d colors, ", gi.gd_colors);
 		if (gi.gd_planes)
-			printf(", %d plane", gi.gd_planes);
+			printf("%d planes, ", gi.gd_planes);
 	}
-	printf(" %s\n", tname());
+	printf("%s\n", tname());
 	printf("registers: 0x%x bytes at 0x%x\n",
-	       gi.gd_regsize, gi.gd_regaddr);
+	    gi.gd_regsize, gi.gd_regaddr);
 	printf("framebuf:  0x%x bytes at 0x%x (%d x %d)\n",
-	       gi.gd_fbsize, gi.gd_fbaddr, gi.gd_fbwidth, gi.gd_fbheight);
+	    gi.gd_fbsize, gi.gd_fbaddr, gi.gd_fbwidth, gi.gd_fbheight);
 }
 
 char *
-tname()
+tname(void)
 {
-	register struct grf_info *gp;
+	struct grf_info *gp;
 
 	for (gp = info; gp->grf_id >= 0; gp++)
 		if (gi.gd_id == gp->grf_id)
@@ -124,13 +147,16 @@ tname()
 	 */
 	if (gi.gd_id == GRFBOBCAT &&
 	    (gi.gd_dwidth == 1280 ||
-	     gi.gd_fbsize == 0x100000 && gi.gd_colors == 64))
+	    gi.gd_fbsize == 0x100000 && gi.gd_colors == 64))
 		return("catseye");
 	return(gp->grf_name);
 }
 
-usage()
+void
+usage(void)
 {
-	fprintf(stderr, "usage: %s [-at] device\n", pname);
+	extern char *__progname;
+
+	fprintf(stderr, "usage: %s [-at] device\n", __progname);
 	exit(1);
 }

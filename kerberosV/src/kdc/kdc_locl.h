@@ -43,7 +43,7 @@
 extern krb5_context context;
 
 extern int require_preauth;
-extern sig_atomic_t exit_flag;
+extern volatile sig_atomic_t exit_flag;
 extern size_t max_request;
 extern time_t kdc_warn_pwexpire;
 extern struct dbinfo {
@@ -67,6 +67,7 @@ extern krb5_boolean allow_anonymous;
 extern char *v4_realm;
 extern int enable_v4;
 extern int enable_524;
+extern int enable_v4_cross_realm;
 extern krb5_boolean enable_kaserver;
 #endif
 

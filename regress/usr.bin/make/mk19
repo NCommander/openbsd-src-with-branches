@@ -1,0 +1,5 @@
+# $OpenBSD$
+# Posix compliance test: variable SHELL shall not be taken from the environment
+
+a:
+	@echo ${SHELL}

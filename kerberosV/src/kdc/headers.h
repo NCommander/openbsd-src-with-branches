@@ -85,8 +85,9 @@
 #include <getarg.h>
 #include <base64.h>
 #include <parse_units.h>
+/* openssl/des.h does not have des_random_key, so we don't use it */
 #ifdef HAVE_OPENSSL
-#include <openssl/des.h>
+#include <des.h>
 #else
 #include <des.h>
 #endif

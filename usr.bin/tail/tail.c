@@ -1,3 +1,5 @@
+/*	$OpenBSD: tail.c,v 1.7 2001/11/19 19:02:16 mpech Exp $	*/
+
 /*-
  * Copyright (c) 1991, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -44,23 +46,27 @@ static char copyright[] =
 #if 0
 static char sccsid[] = "@(#)tail.c	8.1 (Berkeley) 6/6/93";
 #endif
-static char rcsid[] = "$NetBSD: tail.c,v 1.4 1994/11/23 07:42:16 jtc Exp $";
+static char rcsid[] = "$OpenBSD: tail.c,v 1.7 2001/11/19 19:02:16 mpech Exp $";
 #endif /* not lint */
 
 #include <sys/types.h>
 #include <sys/stat.h>
+
+#include <err.h>
 #include <errno.h>
-#include <unistd.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <unistd.h>
+
 #include "extern.h"
 
 int fflag, rflag, rval;
 char *fname;
+int is_stdin;
 
-static void obsolete __P((char **));
-static void usage __P((void));
+static void obsolete(char **);
+static void usage(void);
 
 int
 main(argc, argv)
@@ -69,7 +75,7 @@ main(argc, argv)
 {
 	struct stat sb;
 	FILE *fp;
-	long off;
+	long off = 0;
 	enum STYLE style;
 	int ch, first;
 	char *p;
@@ -91,7 +97,7 @@ main(argc, argv)
 		usage();						\
 	off = strtol(optarg, &p, 10) * (units);				\
 	if (*p)								\
-		err(1, "illegal offset -- %s", optarg);			\
+		errx(1, "illegal offset -- %s", optarg);		\
 	switch(optarg[0]) {						\
 	case '+':							\
 		if (off)						\
@@ -109,7 +115,7 @@ main(argc, argv)
 
 	obsolete(argv);
 	style = NOTSET;
-	while ((ch = getopt(argc, argv, "b:c:fn:r")) != EOF)
+	while ((ch = getopt(argc, argv, "b:c:fn:r")) != -1)
 		switch(ch) {
 		case 'b':
 			ARG(512, FBYTES, RBYTES);
@@ -134,7 +140,7 @@ main(argc, argv)
 	argv += optind;
 
 	if (fflag && argc > 1)
-		err(1, "-f option only appropriate for a single file");
+		errx(1, "-f option only appropriate for a single file");
 
 	/*
 	 * If displaying in reverse, don't permit follow option, and convert
@@ -153,7 +159,7 @@ main(argc, argv)
 	 * If style not specified, the default is the whole file for -r, and
 	 * the last 10 lines if not -r.
 	 */
-	if (style == NOTSET)
+	if (style == NOTSET) {
 		if (rflag) {
 			off = 0;
 			style = REVERSE;
@@ -161,9 +167,10 @@ main(argc, argv)
 			off = 10;
 			style = RLINES;
 		}
+	}
 
 	if (*argv)
-		for (first = 1; fname = *argv++;) {
+		for (first = 1; (fname = *argv++);) {
 			if ((fp = fopen(fname, "r")) == NULL ||
 			    fstat(fileno(fp), &sb)) {
 				ierr();
@@ -184,6 +191,7 @@ main(argc, argv)
 		}
 	else {
 		fname = "stdin";
+		is_stdin = 1;
 
 		if (fstat(fileno(stdin), &sb)) {
 			ierr();
@@ -217,11 +225,11 @@ static void
 obsolete(argv)
 	char *argv[];
 {
-	register char *ap, *p, *t;
+	char *ap, *p, *t;
 	int len;
 	char *start;
 
-	while (ap = *++argv) {
+	while ((ap = *++argv)) {
 		/* Return if "--" or not an option of any form. */
 		if (ap[0] != '-') {
 			if (ap[0] != '+')
@@ -237,7 +245,7 @@ obsolete(argv)
 			/* Malloc space for dash, new option and argument. */
 			len = strlen(*argv);
 			if ((start = p = malloc(len + 3)) == NULL)
-				err(1, "%s", strerror(errno));
+				err(1, NULL);
 			*p++ = '-';
 
 			/*
@@ -267,7 +275,7 @@ obsolete(argv)
 				*p++ = 'n';
 				break;
 			default:
-				err(1, "illegal option -- %s", *argv);
+				errx(1, "illegal option -- %s", *argv);
 			}
 			*p++ = *argv[0];
 			(void)strcpy(p, ap);

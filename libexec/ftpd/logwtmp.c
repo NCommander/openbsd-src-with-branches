@@ -1,3 +1,4 @@
+/*	$OpenBSD: logwtmp.c,v 1.4 2001/01/28 19:34:27 niklas Exp $	*/
 /*	$NetBSD: logwtmp.c,v 1.4 1995/04/11 02:44:58 cgd Exp $	*/
 
 /*
@@ -36,9 +37,10 @@
 
 #ifndef lint
 #if 0
-static char sccsid[] = "@(#)logwtmp.c	8.1 (Berkeley) 6/4/93";
+static const char sccsid[] = "@(#)logwtmp.c	8.1 (Berkeley) 6/4/93";
 #else
-static char rcsid[] = "$NetBSD: logwtmp.c,v 1.4 1995/04/11 02:44:58 cgd Exp $";
+static const char rcsid[] = 
+    "$OpenBSD: logwtmp.c,v 1.4 2001/01/28 19:34:27 niklas Exp $";
 #endif
 #endif /* not lint */
 
@@ -51,6 +53,8 @@ static char rcsid[] = "$NetBSD: logwtmp.c,v 1.4 1995/04/11 02:44:58 cgd Exp $";
 #include <unistd.h>
 #include <stdio.h>
 #include <string.h>
+
+#include <netinet/in.h>
 #include "extern.h"
 
 static int fd = -1;
@@ -61,7 +65,7 @@ static int fd = -1;
  * after login, but before logout).
  */
 void
-logwtmp(line, name, host)
+ftpdlogwtmp(line, name, host)
 	char *line, *name, *host;
 {
 	struct utmp ut;

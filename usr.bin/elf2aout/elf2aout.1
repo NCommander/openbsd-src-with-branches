@@ -1,7 +1,7 @@
-.\"	$OpenBSD: elf2aout.1,v 1.1 1996/10/02 21:52:32 pefo Exp $
+.\"	$OpenBSD: elf2aout.1,v 1.6 1999/07/02 20:11:44 aaron Exp $
 .\"
 .\" Copyright (c) 1996 Per Fogelstrom
-.\" 
+.\"
 .\" Redistribution and use in source and binary forms, with or without
 .\" modification, are permitted provided that the following conditions
 .\" are met:
@@ -30,7 +30,7 @@
 .\" SUCH DAMAGE.
 .\"
 .\"
-.Dd Octobert 2, 1996
+.Dd October 2, 1996
 .Dt ELF2AOUT 1
 .Os
 .Sh NAME
@@ -40,18 +40,19 @@
 .Nm elf2aout
 .Op Ar elfexec
 .Oo
-.Ar ecoffexec
+.Ar aoutexec
 .Oc
 .Sh DESCRIPTION
-.Nm elf2aout
-reads and convert the file specified as
+.Nm
+reads and converts the file specified as
 .Ar elfexec
 to a.out format, into file
-.Ar ecoffexec
-, suitable for bootstrapping certain
+.Ar aoutexec ,
+suitable for bootstrapping certain
 .Nm MIPS
-systems. Systems requiering this
-conversion is the
-.Nm pmax.
+systems.
+The systems currently requiring this
+conversion are:
+.Nm pmax .
 .Sh DIAGNOSTICS
 If the conversion fails a diagnostic message is printed to explain the cause.

@@ -1,3 +1,4 @@
+/*	$OpenBSD: snova.c,v 1.3 2002/05/31 04:21:30 pjanzen Exp $	*/
 /*	$NetBSD: snova.c,v 1.3 1995/04/22 10:59:29 cgd Exp $	*/
 
 /*
@@ -37,11 +38,13 @@
 #if 0
 static char sccsid[] = "@(#)snova.c	8.1 (Berkeley) 5/31/93";
 #else
-static char rcsid[] = "$NetBSD: snova.c,v 1.3 1995/04/22 10:59:29 cgd Exp $";
+static char rcsid[] = "$OpenBSD: snova.c,v 1.3 2002/05/31 04:21:30 pjanzen Exp $";
 #endif
 #endif /* not lint */
 
-# include	"trek.h"
+#include <stdio.h>
+#include <unistd.h>
+#include "trek.h"
 
 /*
 **  CAUSE SUPERNOVA TO OCCUR
@@ -64,15 +67,15 @@ static char rcsid[] = "$NetBSD: snova.c,v 1.3 1995/04/22 10:59:29 cgd Exp $";
 **	override mode.
 */
 
+void
 snova(x, y)
-int	x, y;
+	int	x, y;
 {
-	int			qx, qy;
-	register int		ix, iy;
-	int			f;
-	int			dx, dy;
-	int			n;
-	register struct quad	*q;
+	int		qx, qy;
+	int		ix, iy = 0;
+	int		f, n;
+	int		dx, dy;
+	struct quad	*q;
 
 	f = 0;
 	ix = x;
@@ -115,7 +118,7 @@ int	x, y;
 	if (f)
 	{
 		/* supernova is in same quadrant as Enterprise */
-		printf("\nRED ALERT: supernova occuring at %d,%d\n", ix, iy);
+		printf("\a\nRED ALERT: supernova occuring at %d,%d\n", ix, iy);
 		dx = ix - Ship.sectx;
 		dy = iy - Ship.secty;
 		if (dx * dx + dy * dy <= 2)
@@ -146,12 +149,12 @@ int	x, y;
 		/* Enterprise caused supernova */
 		Game.kills += dy;
 		if (q->bases)
-			killb(qx, qy, -1);
+			killb(qx, qy);
 		Game.killk += dx;
 	}
 	else
 		if (q->bases)
-			killb(qx, qy, 0);
+			killb(qx, qy);
 	killd(qx, qy, (x >= 0));
 	q->stars = -1;
 	q->klings = 0;
@@ -160,5 +163,4 @@ int	x, y;
 		printf("Lucky devil, that supernova destroyed the last klingon\n");
 		win();
 	}
-	return;
 }

@@ -1,4 +1,5 @@
-/*	$NetBSD: open.c,v 1.9 1995/09/19 09:16:52 thorpej Exp $	*/
+/*	$OpenBSD: open.c,v 1.6 1997/02/06 02:56:46 downsj Exp $	*/
+/*	$NetBSD: open.c,v 1.12 1996/09/30 16:01:21 ws Exp $	*/
 
 /*-
  * Copyright (c) 1993
@@ -65,6 +66,7 @@
  */
 
 #include "stand.h"
+
 struct open_file files[SOPEN_MAX];
 
 /*
@@ -72,7 +74,11 @@ struct open_file files[SOPEN_MAX];
  */
 
 int
+#ifndef __INTERNAL_LIBSA_CREAD
 open(fname, mode)
+#else
+oopen(fname, mode)
+#endif
 	const char *fname;
 	int mode;
 {
@@ -103,7 +109,7 @@ fnd:
 	/* see if we opened a raw device; otherwise, 'file' is the file name. */
 	if (file == (char *)0 || *file == '\0') {
 		f->f_flags |= F_RAW;
-		return (0);
+		return (fd);
 	}
 
 	/* pass file name to the different filesystem open routines */
@@ -114,51 +120,15 @@ fnd:
 			f->f_ops = &file_system[i];
 			return (fd);
 		}
+		if (error == ENOENT || error == ENOTDIR)
+			break;
 	}
 	if (!error)
 		error = ENOENT;
 
+	f->f_dev->dv_close(f);
 err:
 	f->f_flags = 0;
 	errno = error;
 	return (-1);
 }
-
-/*
- * Null filesystem
- */
-int	null_open (char *path, struct open_file *f)
-{
-	errno  = EIO;
-	return -1;
-}
-
-int	null_close(struct open_file *f)
-{
-	return 0;
-}
-
-ssize_t	null_read (struct open_file *f, void *buf, size_t size, size_t *resid)
-{
-	errno = EIO;
-	return -1;
-}
-
-ssize_t	null_write (struct open_file *f, void *buf, size_t size, size_t *resid)
-{
-	errno = EIO;
-	return -1;
-}
-
-off_t	null_seek (struct open_file *f, off_t offset, int where)
-{
-	errno = EIO;
-	return -1;
-}
-
-int	null_stat (struct open_file *f, struct stat *sb)
-{
-	errno = EIO;
-	return -1;
-}
-

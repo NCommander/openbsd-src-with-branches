@@ -1,4 +1,5 @@
-/*	$NetBSD: types.h,v 1.23 1995/05/28 03:06:34 jtc Exp $	*/
+/*	$OpenBSD: types.h,v 1.17 2001/06/23 19:43:53 millert Exp $	*/
+/*	$NetBSD: types.h,v 1.29 1996/11/15 22:48:25 jtc Exp $	*/
 
 /*-
  * Copyright (c) 1982, 1986, 1991, 1993
@@ -49,13 +50,16 @@
 #include <machine/ansi.h>
 #include <machine/endian.h>
 
-#ifndef _POSIX_SOURCE
+#if !defined(_POSIX_SOURCE) && !defined(_XOPEN_SOURCE)
 typedef	unsigned char	u_char;
 typedef	unsigned short	u_short;
 typedef	unsigned int	u_int;
 typedef	unsigned long	u_long;
+
+typedef unsigned char	unchar;		/* Sys V compatibility */
 typedef	unsigned short	ushort;		/* Sys V compatibility */
 typedef	unsigned int	uint;		/* Sys V compatibility */
+typedef unsigned long	ulong;		/* Sys V compatibility */
 #endif
 
 typedef	u_int64_t	u_quad_t;	/* quads */
@@ -71,35 +75,25 @@ typedef	u_int32_t	ino_t;		/* inode number */
 typedef	long		key_t;		/* IPC key (for Sys V IPC) */
 typedef	u_int16_t	mode_t;		/* permissions */
 typedef	u_int16_t	nlink_t;	/* link count */
-typedef	quad_t		off_t;		/* file offset */
 typedef	int32_t		pid_t;		/* process id */
 typedef quad_t		rlim_t;		/* resource limit */
 typedef	int32_t		segsz_t;	/* segment size */
 typedef	int32_t		swblk_t;	/* swap offset */
 typedef	u_int32_t	uid_t;		/* user id */
+typedef	u_int32_t	useconds_t;	/* microseconds */
+typedef	int32_t		suseconds_t;	/* microseconds (signed) */
 
 /*
- * These belong in unistd.h, but are placed here too to ensure that
- * long arguments will be promoted to off_t if the program fails to 
- * include that header or explicitly cast them to off_t.
+ * XPG4.2 states that inclusion of <netinet/in.h> must pull these
+ * in and that inclusion of <sys/socket.h> must pull in sa_family_t.
+ * We put there here because there are other headers that require
+ * these types and <sys/socket.h> and <netinet/in.h> will indirectly
+ * include <sys/types.h>.  Thus we are compliant without too many hoops.
  */
-#ifndef _POSIX_SOURCE
-#ifndef _KERNEL
-#include <sys/cdefs.h>
-__BEGIN_DECLS
-off_t	 lseek __P((int, off_t, int));
-int	 ftruncate __P((int, off_t));
-int	 truncate __P((const char *, off_t));
-__END_DECLS
-#endif /* !_KERNEL */
-#endif /* !_POSIX_SOURCE */
-
-#ifndef _POSIX_SOURCE
-/* Major, minor numbers, dev_t's. */
-#define	major(x)	((int32_t)(((u_int32_t)(x) >> 8) & 0xff))
-#define	minor(x)	((int32_t)((x) & 0xff))
-#define	makedev(x,y)	((dev_t)(((x) << 8) | (y)))
-#endif
+typedef u_int32_t	in_addr_t;	/* base type for internet address */
+typedef u_int16_t	in_port_t;	/* IP port type */
+typedef u_int8_t	sa_family_t;	/* sockaddr address family type */
+typedef u_int32_t	socklen_t;	/* length type for network syscalls */
 
 #ifdef	_BSD_CLOCK_T_
 typedef	_BSD_CLOCK_T_	clock_t;
@@ -121,7 +115,45 @@ typedef	_BSD_TIME_T_	time_t;
 #undef	_BSD_TIME_T_
 #endif
 
-#ifndef _POSIX_SOURCE
+#ifdef	_BSD_CLOCKID_T_
+typedef	_BSD_CLOCKID_T_	clockid_t;
+#undef	_BSD_CLOCKID_T_
+#endif
+
+#ifdef	_BSD_TIMER_T_
+typedef	_BSD_TIMER_T_	timer_t;
+#undef	_BSD_TIMER_T_
+#endif
+
+#ifdef	_BSD_OFF_T_
+typedef	_BSD_OFF_T_	off_t;
+#undef	_BSD_OFF_T_
+#endif
+
+/*
+ * These belong in unistd.h, but are placed here too to ensure that
+ * long arguments will be promoted to off_t if the program fails to
+ * include that header or explicitly cast them to off_t.
+ */
+#if !defined(_POSIX_SOURCE) && !defined(_XOPEN_SOURCE)
+#ifndef _KERNEL
+#include <sys/cdefs.h>
+__BEGIN_DECLS
+off_t	 lseek(int, off_t, int);
+int	 ftruncate(int, off_t);
+int	 truncate(const char *, off_t);
+__END_DECLS
+#endif /* !_KERNEL */
+#endif /* !defined(_POSIX_SOURCE) ... */
+
+#if !defined(_POSIX_SOURCE) && !defined(_XOPEN_SOURCE)
+/* Major, minor numbers, dev_t's. */
+#define	major(x)	((int32_t)(((u_int32_t)(x) >> 8) & 0xff))
+#define	minor(x)	((int32_t)((x) & 0xff) | (((x) & 0xffff0000) >> 8))
+#define	makedev(x,y)	((dev_t)((((x) & 0xff) << 8) | ((y) & 0xff) | (((y) & 0xffff00) << 8)))
+#endif
+
+#if !defined(_POSIX_SOURCE) && !defined(_XOPEN_SOURCE)
 #define	NBBY	8		/* number of bits in a byte */
 
 /*
@@ -148,8 +180,13 @@ typedef	struct fd_set {
 #define	FD_SET(n, p)	((p)->fds_bits[(n)/NFDBITS] |= (1 << ((n) % NFDBITS)))
 #define	FD_CLR(n, p)	((p)->fds_bits[(n)/NFDBITS] &= ~(1 << ((n) % NFDBITS)))
 #define	FD_ISSET(n, p)	((p)->fds_bits[(n)/NFDBITS] & (1 << ((n) % NFDBITS)))
+#ifdef _KERNEL
 #define	FD_COPY(f, t)	bcopy(f, t, sizeof(*(f)))
 #define	FD_ZERO(p)	bzero(p, sizeof(*(p)))
+#else
+#define	FD_COPY(f, t)	memcpy(t, f, sizeof(*(f)))
+#define	FD_ZERO(p)	memset(p, 0, sizeof(*(p)))
+#endif
 
 #if defined(__STDC__) && defined(_KERNEL)
 /*
@@ -167,5 +204,5 @@ struct	tty;
 struct	uio;
 #endif
 
-#endif /* !_POSIX_SOURCE */
+#endif /* !defined(_POSIX_SOURCE) ... */
 #endif /* !_SYS_TYPES_H_ */

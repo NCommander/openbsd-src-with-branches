@@ -1,5 +1,3 @@
-/*	$NetBSD: setvbuf.c,v 1.7 1995/02/02 02:10:34 jtc Exp $	*/
-
 /*-
  * Copyright (c) 1990, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -37,10 +35,7 @@
  */
 
 #if defined(LIBC_SCCS) && !defined(lint)
-#if 0
-static char sccsid[] = "@(#)setvbuf.c	8.2 (Berkeley) 11/16/93";
-#endif
-static char rcsid[] = "$NetBSD: setvbuf.c,v 1.7 1995/02/02 02:10:34 jtc Exp $";
+static char rcsid[] = "$OpenBSD: setvbuf.c,v 1.3 2001/07/09 06:57:44 deraadt Exp $";
 #endif /* LIBC_SCCS and not lint */
 
 #include <stdio.h>
@@ -51,6 +46,7 @@ static char rcsid[] = "$NetBSD: setvbuf.c,v 1.7 1995/02/02 02:10:34 jtc Exp $";
  * Set one of the three kinds of buffering, optionally including
  * a buffer.
  */
+int
 setvbuf(fp, buf, mode, size)
 	register FILE *fp;
 	char *buf;
@@ -159,7 +155,7 @@ nbf:
 		/* begin/continue reading, or stay in intermediate state */
 		fp->_w = 0;
 	}
-	__cleanup = _cleanup;
+	__atexit_register_cleanup(_cleanup);
 
 	return (ret);
 }

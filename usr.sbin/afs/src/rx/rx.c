@@ -2063,7 +2063,7 @@ rxi_ReceiveDataPacket(struct rx_call * call,
 	}
 	/*
 	 * If the sequence number is greater than what can be
-         * accomodated by the current window, then send a negative
+         * accommodated by the current window, then send a negative
          * acknowledge and drop the packet
 	 */
 	if ((call->rnext + call->rwind) <= np->header.seq) {
@@ -2399,7 +2399,7 @@ rxi_ReceiveAckPacket(struct rx_call * call, struct rx_packet * np)
 
 	rx_packetread(np, rx_AckDataSize(ap->nAcks), 4, &maxPacketSize);
 	maxPacketSize = (unsigned long) ntohl(maxPacketSize);
-	dpf(("maxPacketSize=%ul\n", maxPacketSize));
+	dpf(("maxPacketSize=%lu\n", maxPacketSize));
 
 	/*
 	 * sanity check - peer might have restarted with different params.
@@ -3027,7 +3027,7 @@ rxi_Start(struct rxevent * event, struct rx_call * call)
 		    int foo; /* XXX - ugly */
 		    /* Send off the prior packet */
 		    /*
-	             * Don't request an ack if it's a short packet, 'cuz the
+	             * Don't request an ack if it's a short packet, because the
 		     * peer will cut down its MTU as a result.
 	             */
 		    if (((lastPacket->header.flags & RX_LAST_PACKET) == 0)) {

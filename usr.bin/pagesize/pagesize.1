@@ -1,3 +1,4 @@
+.\"	$OpenBSD: pagesize.1,v 1.4 1998/09/27 16:57:49 aaron Exp $
 .\"	$NetBSD: pagesize.1,v 1.4 1995/08/31 23:38:50 jtc Exp $
 .\"
 .\" Copyright (c) 1983, 1990, 1993
@@ -35,21 +36,21 @@
 .\"
 .Dd June 6, 1993
 .Dt PAGESIZE 1
-.Os BSD 4.2
+.Os
 .Sh NAME
 .Nm pagesize
 .Nd print system page size
 .Sh SYNOPSIS
 .Nm pagesize
 .Sh DESCRIPTION
-.Nm Pagesize
+.Nm pagesize
 prints the size of a page of memory in bytes, as
 returned by
-.Xr getpagesize 2 .
+.Xr getpagesize 3 .
 This program is useful in constructing portable
 shell scripts.
 .Sh SEE ALSO
-.Xr getpagesize 2
+.Xr getpagesize 3
 .Sh HISTORY
 The
 .Nm pagesize

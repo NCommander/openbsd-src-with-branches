@@ -1,3 +1,4 @@
+/*	$OpenBSD: events.c,v 1.3 2001/08/23 14:17:08 aaron Exp $	*/
 /*	$NetBSD: events.c,v 1.3 1995/04/22 10:58:50 cgd Exp $	*/
 
 /*
@@ -37,11 +38,15 @@
 #if 0
 static char sccsid[] = "@(#)events.c	8.1 (Berkeley) 5/31/93";
 #else
-static char rcsid[] = "$NetBSD: events.c,v 1.3 1995/04/22 10:58:50 cgd Exp $";
+static char rcsid[] = "$OpenBSD: events.c,v 1.3 2001/08/23 14:17:08 aaron Exp $";
 #endif
 #endif /* not lint */
 
-# include	"trek.h"
+#include <stdio.h>
+#include <string.h>
+#include <math.h>
+#include "getpar.h"
+#include "trek.h"
 
 /*
 **  CAUSE TIME TO ELAPSE
@@ -51,22 +56,22 @@ static char rcsid[] = "$NetBSD: events.c,v 1.3 1995/04/22 10:58:50 cgd Exp $";
 **	and so on.
 */
 
-
+int
 events(warp)
-int	warp;		/* set if called in a time warp */
+	int	warp;		/* set if called in a time warp */
 {
-	register int		i;
-	int			j;
-	struct kling		*k;
-	double			rtime;
-	double			xdate;
-	double			idate;
-	struct event		*ev, *xsched(), *schedule();
-	int			ix, iy;
-	register struct quad	*q;
-	register struct event	*e;
-	int			evnum;
-	int			restcancel;
+	int		i, j;
+	char		*p;
+	struct kling	*k;
+	double		rtime;
+	double		xdate;
+	double		idate;
+	struct event	*ev = NULL;
+	int		ix, iy;
+	struct quad	*q;
+	struct event	*e;
+	int		evnum;
+	int		restcancel;
 
 	/* if nothing happened, just allow for any Klingons killed */
 	if (Move.time <= 0.0)
@@ -138,7 +143,7 @@ int	warp;		/* set if called in a time warp */
 
 		  case E_SNOVA:			/* supernova */
 			/* cause the supernova to happen */
-			snova(-1);
+			snova(-1, 0);
 			/* and schedule the next one */
 			xresched(e, E_SNOVA, 1);
 			break;
@@ -228,7 +233,7 @@ int	warp;		/* set if called in a time warp */
 			/* report it if we can */
 			if (!damaged(SSRADIO))
 			{
-				printf("\nUhura:  Captain, we have recieved a distress signal\n");
+				printf("\nUhura:  Captain, we have received a distress signal\n");
 				printf("  from the starbase in quadrant %d,%d.\n",
 					ix, iy);
 				restcancel++;
@@ -389,10 +394,12 @@ int	warp;		/* set if called in a time warp */
 
 		  case E_SNAP:		/* take a snapshot of the galaxy */
 			xresched(e, E_SNAP, 1);
-			i = (int) Etc.snapshot;
-			i = bmove(Quad, i, sizeof (Quad));
-			i = bmove(Event, i, sizeof (Event));
-			i = bmove(&Now, i, sizeof (Now));
+			p = (char *) Etc.snapshot;
+			memcpy(p, Quad, sizeof (Quad));
+			p += sizeof (Quad);
+			memcpy(p, Event, sizeof (Event));
+			p += sizeof (Event);
+			memcpy(p, &Now, sizeof (Now));
 			Game.snap = 1;
 			break;
 
@@ -447,7 +454,7 @@ int	warp;		/* set if called in a time warp */
 	}
 
 	/* unschedule an attack during a rest period */
-	if (e = Now.eventptr[E_ATTACK])
+	if ((e = Now.eventptr[E_ATTACK]))
 		unschedule(e);
 
 	if (!warp)

@@ -1,3 +1,4 @@
+/*	$OpenBSD: vis.c,v 1.4 2001/11/19 19:02:17 mpech Exp $	*/
 /*	$NetBSD: vis.c,v 1.4 1994/12/20 16:13:03 jtc Exp $	*/
 
 /*-
@@ -43,7 +44,7 @@ static char copyright[] =
 #if 0
 static char sccsid[] = "@(#)vis.c	8.1 (Berkeley) 6/6/93";
 #endif
-static char rcsid[] = "$NetBSD: vis.c,v 1.4 1994/12/20 16:13:03 jtc Exp $";
+static char rcsid[] = "$OpenBSD: vis.c,v 1.4 2001/11/19 19:02:17 mpech Exp $";
 #endif /* not lint */
 
 #include <stdio.h>
@@ -55,8 +56,8 @@ static char rcsid[] = "$NetBSD: vis.c,v 1.4 1994/12/20 16:13:03 jtc Exp $";
 
 int eflags, fold, foldwidth=80, none, markeol, debug;
 
-int foldit __P((char *, int, int));
-void process __P((FILE *, char *));
+int foldit(char *, int, int);
+void process(FILE *, char *);
 
 int
 main(argc, argv) 
@@ -66,7 +67,7 @@ main(argc, argv)
 	FILE *fp;
 	int ch;
 
-	while ((ch = getopt(argc, argv, "nwctsobfF:ld")) != EOF)
+	while ((ch = getopt(argc, argv, "nwctsobfF:ld")) != -1)
 		switch((char)ch) {
 		case 'n':
 			none++;
@@ -134,8 +135,8 @@ process(fp, filename)
 	char *filename;
 {
 	static int col = 0;
-	register char *cp = "\0"+1;	/* so *(cp-1) starts out != '\n' */
-	register int c, rachar; 
+	char *cp = "\0"+1;	/* so *(cp-1) starts out != '\n' */
+	int c, rachar; 
 	char buff[5];
 	
 	c = getc(fp);

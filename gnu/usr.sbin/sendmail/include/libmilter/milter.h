@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1999-2001 Sendmail, Inc. and its suppliers.
+ * Copyright (c) 1999-2002 Sendmail, Inc. and its suppliers.
  *	All rights reserved.
  *
  * By using this file, you agree to the terms and conditions set
@@ -7,7 +7,7 @@
  * the sendmail distribution.
  *
  *
- *	$Sendmail: milter.h,v 8.35 2001/06/27 21:46:44 gshapiro Exp $
+ *	$Sendmail: milter.h,v 8.37.2.1 2002/12/19 02:10:09 ca Exp $
  */
 
 /*
@@ -52,4 +52,4 @@ struct smfi_str
 	void		*ctx_privdata;	/* private data */
 };
 
-#endif /* !_LIBMILTER_MILTER_H */
+#endif /* ! _LIBMILTER_MILTER_H */

@@ -1,3 +1,4 @@
+/*	$OpenBSD: fs.h,v 1.11 2001/04/13 02:39:04 gluk Exp $	*/
 /*	$NetBSD: fs.h,v 1.6 1995/04/12 21:21:02 mycroft Exp $	*/
 
 /*
@@ -104,14 +105,19 @@
 #define MAXMNTLEN	512
 
 /*
- * The limit on the amount of summary information per file system
- * is defined by MAXCSBUFS. It is currently parameterized for a
- * size of 128 bytes (2 million cylinder groups on machines with
- * 32-bit pointers, and 1 million on 64-bit machines). One pointer
- * is taken away to point to an array of cluster sizes that is
- * computed as cylinder groups are inspected.
+ * There is a 128-byte region in the superblock reserved for in-core
+ * pointers to summary information. Originally this included an array
+ * of pointers to blocks of struct csum; now there are just three
+ * pointers and the remaining space is padded with fs_ocsp[].
+ *
+ * NOCSPTRS determines the size of this padding. One pointer (fs_csp)
+ * is taken away to point to a contiguous array of struct csum for
+ * all cylinder groups; a second (fs_maxcluster) points to an array
+ * of cluster sizes that is computed as cylinder groups are inspected,
+ * and the third points to an array that tracks the creation of new
+ * directories.
  */
-#define	MAXCSBUFS	((128 / sizeof(void *)) - 1)
+#define		NOCSPTRS	((128 / sizeof(void *)) - 3)
 
 /*
  * A summary of contiguous blocks of various sizes is maintained
@@ -137,13 +143,20 @@
 #define DEFAULTOPT	FS_OPTTIME
 
 /*
+ * The directory preference algorithm(dirpref) can be tuned by adjusting
+ * the following parameters which tell the system the average file size
+ * and the average number of files per directory. These defaults are well
+ * selected for typical filesystems, but may need to be tuned for odd
+ * cases like filesystems being used for sqiud caches or news spools.
+ */
+#define AVFILESIZ	16384	/* expected average file size */
+#define AFPDIR		64	/* expected number of files per directory */
+
+/*
  * Per cylinder group information; summarized in blocks allocated
  * from first cylinder group data blocks.  These blocks have to be
  * read in from fs_csaddr (size fs_cssize) in addition to the
  * super block.
- *
- * N.B. sizeof(struct csum) must be a power of two in order for
- * the ``fs_cs'' macro to work (see below).
  */
 struct csum {
 	int32_t	cs_ndir;		/* number of directories */
@@ -187,8 +200,8 @@ struct fs {
 	int32_t	 fs_fragshift;		/* block to frag shift */
 	int32_t	 fs_fsbtodb;		/* fsbtodb and dbtofsb shift constant */
 	int32_t	 fs_sbsize;		/* actual size of super block */
-	int32_t	 fs_csmask;		/* csum block offset */
-	int32_t	 fs_csshift;		/* csum block number */
+	int32_t	 fs_csmask;		/* csum block offset (now unused) */
+	int32_t	 fs_csshift;		/* csum block number (now unused) */
 	int32_t	 fs_nindir;		/* value of NINDIR */
 	int32_t	 fs_inopb;		/* value of INOPB */
 	int32_t	 fs_nspf;		/* value of NSPF */
@@ -198,8 +211,8 @@ struct fs {
 	int32_t	 fs_npsect;		/* # sectors/track including spares */
 	int32_t	 fs_interleave;		/* hardware sector interleave */
 	int32_t	 fs_trackskew;		/* sector 0 skew, per track */
-	int32_t	 fs_headswitch;		/* head switch time, usec */
-	int32_t	 fs_trkseek;		/* track-to-track seek, usec */
+/* fs_id takes the space of the unused fs_headswitch and fs_trkseek fields */
+	int32_t  fs_id[2];		/* unique filesystem id */
 /* sizes determined by number of cylinder groups and their sizes */
 	daddr_t  fs_csaddr;		/* blk addr of cyl grp summary area */
 	int32_t	 fs_cssize;		/* size of cyl grp summary area */
@@ -220,15 +233,20 @@ struct fs {
 	int8_t	 fs_fmod;		/* super block modified flag */
 	int8_t	 fs_clean;		/* file system is clean flag */
 	int8_t	 fs_ronly;		/* mounted read-only flag */
-	int8_t	 fs_flags;		/* currently unused flag */
+	int8_t	 fs_flags;		/* see FS_ below */
 	u_char	 fs_fsmnt[MAXMNTLEN];	/* name mounted on */
 /* these fields retain the current block allocation info */
 	int32_t	 fs_cgrotor;		/* last cg searched */
-	struct	csum *fs_csp[MAXCSBUFS];/* list of fs_cs info buffers */
-	int32_t	 *fs_maxcluster;	/* max cluster in each cyl group */
+	void    *fs_ocsp[NOCSPTRS];	/* padding; was list of fs_cs buffers */
+	u_int8_t *fs_contigdirs;	/* # of contiguously allocated dirs */
+	struct csum *fs_csp;		/* cg summary info buffer for fs_cs */
+	int32_t	*fs_maxcluster;		/* max cluster in each cyl group */
 	int32_t	 fs_cpc;		/* cyl per cycle in postbl */
 	int16_t	 fs_opostbl[16][8];	/* old rotation block list head */
-	int32_t	 fs_sparecon[49];	/* reserved for future constants */
+	int32_t  fs_snapinum[20];	/* reserved for snapshot inode nums */
+	int32_t	 fs_avgfilesize;	/* expected average file size */
+	int32_t	 fs_avgfpdir;		/* expected # of files per directory */
+	int32_t	 fs_sparecon[27];	/* reserved for future constants */
 	time_t	 fs_fscktime;		/* last time fsck(8)ed */
 	int32_t	 fs_contigsumsize;	/* size of cluster summary array */ 
 	int32_t	 fs_maxsymlinklen;	/* max length of an internal symlink */
@@ -266,6 +284,12 @@ struct fs {
 #define FS_OPTTIME	0	/* minimize allocation time */
 #define FS_OPTSPACE	1	/* minimize disk fragmentation */
 
+/* 
+ * Filesystem flags.
+ */
+#define FS_UNCLEAN    0x01   /* filesystem not clean at mount */
+#define FS_DOSOFTDEP  0x02   /* filesystem using soft dependencies */
+
 /*
  * Rotational layout table format types
  */
@@ -302,11 +326,8 @@ struct fs {
 
 /*
  * Convert cylinder group to base address of its global summary info.
- *
- * N.B. This macro assumes that sizeof(struct csum) is a power of two.
  */
-#define fs_cs(fs, indx) \
-	fs_csp[(indx) >> (fs)->fs_csshift][(indx) & ~(fs)->fs_csmask]
+#define fs_cs(fs, indx) fs_csp[indx]
 
 /*
  * Cylinder group block for a file system.
@@ -481,13 +502,19 @@ struct ocg {
  * Determining the size of a file block in the file system.
  */
 #define blksize(fs, ip, lbn) \
-	(((lbn) >= NDADDR || (ip)->i_size >= ((lbn) + 1) << (fs)->fs_bshift) \
+	(((lbn) >= NDADDR || (ip)->i_ffs_size >= ((lbn) + 1) << (fs)->fs_bshift) \
 	    ? (fs)->fs_bsize \
-	    : (fragroundup(fs, blkoff(fs, (ip)->i_size))))
+	    : (fragroundup(fs, blkoff(fs, (ip)->i_ffs_size))))
 #define dblksize(fs, dip, lbn) \
 	(((lbn) >= NDADDR || (dip)->di_size >= ((lbn) + 1) << (fs)->fs_bshift) \
 	    ? (fs)->fs_bsize \
 	    : (fragroundup(fs, blkoff(fs, (dip)->di_size))))
+
+#define sblksize(fs, size, lbn) \
+        (((lbn) >= NDADDR || (size) >= ((lbn) + 1) << (fs)->fs_bshift) \
+            ? (fs)->fs_bsize \
+            : (fragroundup(fs, blkoff(fs, (size)))))
+
 
 /*
  * Number of disk sectors per block/fragment; assumes DEV_BSIZE byte

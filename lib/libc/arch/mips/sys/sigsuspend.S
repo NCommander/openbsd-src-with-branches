@@ -36,12 +36,13 @@
 
 #include "SYS.h"
 
-#if defined(LIBC_SCCS) && !defined(lint)
-	ASMSTR("from: @(#)sigsuspend.s	8.1 (Berkeley) 6/4/93")
-	ASMSTR("$Id: sigsuspend.S,v 1.3 1994/12/15 17:25:20 mycroft Exp $")
-#endif /* LIBC_SCCS and not lint */
+#if defined(SYSLIBC_SCCS)
+	.text
+	.asciz "$OpenBSD: sigsuspend.S,v 1.4 1996/08/19 08:16:28 tholo Exp $"
+#endif /* SYSLIBC_SCCS */
 
-LEAF(sigsuspend)
+SYSLEAF(sigsuspend)
+	.set	reorder
 	lw	a0, 0(a0)		# indirect to mask arg
 	li	v0, SYS_sigsuspend
 	syscall
@@ -49,5 +50,6 @@ LEAF(sigsuspend)
 	move	v0, zero		# should not happen
 	j	ra
 1:
-	j	_C_LABEL(cerror)
-END(sigsuspend)
+	la	t9, _C_LABEL(cerror)
+	jr	t9
+SYSEND(sigsuspend)

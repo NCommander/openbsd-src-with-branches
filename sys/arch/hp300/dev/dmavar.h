@@ -1,6 +1,8 @@
-/*	$NetBSD: dmavar.h,v 1.5 1995/03/28 18:16:03 jtc Exp $	*/
+/*	$OpenBSD: dmavar.h,v 1.4 1997/04/16 11:56:01 downsj Exp $	*/
+/*	$NetBSD: dmavar.h,v 1.9 1997/04/01 03:10:59 scottr Exp $	*/
 
 /*
+ * Copyright (c) 1997 Jason R. Thorpe.  All rights reserved.
  * Copyright (c) 1982, 1990, 1993
  *	The Regents of the University of California.  All rights reserved.
  *
@@ -35,6 +37,8 @@
  *	@(#)dmavar.h	8.1 (Berkeley) 6/10/93
  */
 
+#include <sys/queue.h>
+
 /* dmago flags */
 #define	DMAGO_BYTE	0x00	/* do byte (8 bit) transfers */
 #define	DMAGO_WORD	0x01	/* do word (16 bit) transfers */
@@ -47,7 +51,29 @@
 #define	DMA0		0x1
 #define	DMA1		0x2
 
+/*
+ * A DMA queue entry.  Initiator drivers each have one of these,
+ * used to queue access to the DMA controller.
+ */
+struct dmaqueue {
+	TAILQ_ENTRY(dmaqueue) dq_list;	/* entry on the queue */
+	int	dq_chan;		/* OR of channels initiator can use */
+	void	*dq_softc;		/* initiator's softc */
+
+	/*
+	 * These functions are called to start the initiator when
+	 * it has been given the DMA controller, and to stop the
+	 * initiator when the DMA controller has stopped.
+	 */
+	void	(*dq_start)(void *);
+	void	(*dq_done)(void *);
+};
+
 #ifdef _KERNEL
-extern void	dmago(), dmafree();
-extern int	dmareq();
-#endif
+void	dmainit(void);
+void	dmago(int, char *, int, int);
+void	dmastop(int);
+void	dmafree(struct dmaqueue *);
+int	dmareq(struct dmaqueue *);
+void	dmacomputeipl(void);
+#endif /* _KERNEL */

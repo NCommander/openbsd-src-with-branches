@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1998-2001 Sendmail, Inc. and its suppliers.
+ * Copyright (c) 1998-2002 Sendmail, Inc. and its suppliers.
  *	All rights reserved.
  * Copyright (c) 1983, 1995-1997 Eric P. Allman.  All rights reserved.
  * Copyright (c) 1988, 1993
@@ -13,12 +13,12 @@
 
 #include <sendmail.h>
 
-SM_RCSID("@(#)$Sendmail: util.c,v 8.347 2001/09/04 22:43:06 ca Exp $")
+SM_RCSID("@(#)$Sendmail: util.c,v 8.363.2.5 2002/12/12 22:50:41 ca Exp $")
 
 #include <sysexits.h>
 #include <sm/xtrap.h>
 
-/*
+/*
 **  ADDQUOTES -- Adds quotes & quote bits to a string.
 **
 **	Runs through a string and adds backslashes and quote bits.
@@ -67,7 +67,39 @@ addquotes(s, rpool)
 	*q = '\0';
 	return r;
 }
-/*
+
+#if _FFR_STRIPBACKSL
+/*
+**  STRIPBACKSLASH -- Strip leading backslash from a string.
+**
+**	This is done in place.
+**
+**	Parameters:
+**		s -- the string to strip.
+**
+**	Returns:
+**		none.
+*/
+
+void
+stripbackslash(s)
+	char *s;
+{
+	char *p, *q, c;
+
+	if (s == NULL || *s == '\0')
+		return;
+	p = q = s;
+	while (*p == '\\' && (p[1] == '\\' || (isascii(p[1]) && isalnum(p[1]))))
+		p++;
+	do
+	{
+		c = *q++ = *p++;
+	} while (c != '\0');
+}
+#endif /* _FFR_STRIPBACKSL */
+
+/*
 **  RFC822_STRING -- Checks string for proper RFC822 string quoting.
 **
 **	Runs through a string and verifies RFC822 special characters
@@ -125,7 +157,7 @@ rfc822_string(s)
 	/* unbalanced '"' or '(' */
 	return !quoted && commentlev == 0;
 }
-/*
+/*
 **  SHORTEN_RFC822_STRING -- Truncate and rebalance an RFC822 string
 **
 **	Arbitrarily shorten (in place) an RFC822 string and rebalance
@@ -233,7 +265,7 @@ increment:
 	}
 	return modified;
 }
-/*
+/*
 **  FIND_CHARACTER -- find an unquoted character in an RFC822 string
 **
 **	Find an unquoted, non-commented character in an RFC822
@@ -302,8 +334,34 @@ find_character(string, character)
 	/* Return pointer to the character */
 	return string;
 }
+
+/*
+**  CHECK_BODYTYPE -- check bodytype parameter
+**
+**	Parameters:
+**		bodytype -- bodytype parameter
+**
+**	Returns:
+**		BODYTYPE_* according to parameter
+**
+*/
+
+int
+check_bodytype(bodytype)
+	char *bodytype;
+{
+	/* check body type for legality */
+	if (bodytype == NULL)
+		return BODYTYPE_NONE;
+	if (sm_strcasecmp(bodytype, "7BIT") == 0)
+		return BODYTYPE_7BIT;
+	if (sm_strcasecmp(bodytype, "8BITMIME") == 0)
+		return BODYTYPE_8BITMIME;
+	return BODYTYPE_ILLEGAL;
+}
+
 #if _FFR_BESTMX_BETTER_TRUNCATION || _FFR_DNSMAP_MULTI
-/*
+/*
 **  TRUNCATE_AT_DELIM -- truncate string at a delimiter and append "..."
 **
 **	Parameters:
@@ -346,7 +404,7 @@ truncate_at_delim(str, len, delim)
 		str[0] = '\0';
 }
 #endif /* _FFR_BESTMX_BETTER_TRUNCATION || _FFR_DNSMAP_MULTI */
-/*
+/*
 **  XALLOC -- Allocate memory, raise an exception on error
 **
 **	Parameters:
@@ -389,7 +447,7 @@ xalloc(sz)
 	}
 	return p;
 }
-/*
+/*
 **  COPYPLIST -- copy list of pointers.
 **
 **	This routine is the equivalent of strdup for lists of
@@ -432,7 +490,7 @@ copyplist(list, copycont, rpool)
 
 	return newvp;
 }
-/*
+/*
 **  COPYQUEUE -- copy address queue.
 **
 **	This routine is the equivalent of strdup for address queues;
@@ -471,7 +529,7 @@ copyqueue(addr, rpool)
 
 	return ret;
 }
-/*
+/*
 **  LOG_SENDMAIL_PID -- record sendmail pid and command line.
 **
 **	Parameters:
@@ -490,7 +548,7 @@ log_sendmail_pid(e)
 {
 	long sff;
 	SM_FILE_T *pidf;
-	char pidpath[MAXPATHLEN + 1];
+	char pidpath[MAXPATHLEN];
 	extern char *CommandLineArgs;
 
 	/* write the pid to the log file for posterity */
@@ -498,7 +556,7 @@ log_sendmail_pid(e)
 	if (TrustedUid != 0 && RealUid == TrustedUid)
 		sff |= SFF_OPENASROOT;
 	expand(PidFile, pidpath, sizeof pidpath, e);
-	pidf = safefopen(pidpath, O_WRONLY|O_TRUNC, 0644, sff);
+	pidf = safefopen(pidpath, O_WRONLY|O_TRUNC, FileMode, sff);
 	if (pidf == NULL)
 	{
 		sm_syslog(LOG_ERR, NOQID, "unable to write %s: %s",
@@ -524,7 +582,7 @@ log_sendmail_pid(e)
 	if (LogLevel > 9)
 		sm_syslog(LOG_INFO, NOQID, "started as: %s", CommandLineArgs);
 }
-/*
+/*
 **  SET_DELIVERY_MODE -- set and record the delivery mode
 **
 **	Parameters:
@@ -550,7 +608,7 @@ set_delivery_mode(mode, e)
 	buf[1] = '\0';
 	macdefine(&e->e_macro, A_TEMP, macid("{deliveryMode}"), buf);
 }
-/*
+/*
 **  SET_OP_MODE -- set and record the op mode
 **
 **	Parameters:
@@ -576,7 +634,7 @@ set_op_mode(mode)
 	buf[1] = '\0';
 	macdefine(&BlankEnvelope.e_macro, A_TEMP, MID_OPMODE, buf);
 }
-/*
+/*
 **  PRINTAV -- print argument vector.
 **
 **	Parameters:
@@ -603,7 +661,7 @@ printav(av)
 	}
 	(void) sm_io_putc(smioout, SM_TIME_DEFAULT, '\n');
 }
-/*
+/*
 **  XPUTS -- put string doing control escapes.
 **
 **	Parameters:
@@ -780,7 +838,7 @@ xputs(s)
 				     TermEscape.te_rv_off);
 	(void) sm_io_flush(smioout, SM_TIME_DEFAULT);
 }
-/*
+/*
 **  MAKELOWER -- Translate a line into lower case
 **
 **	Parameters:
@@ -806,7 +864,7 @@ makelower(p)
 		if (isascii(c) && isupper(c))
 			*p = tolower(c);
 }
-/*
+/*
 **  FIXCRLF -- fix <CR><LF> in line.
 **
 **	Looks for the <CR><LF> combination and turns it into the
@@ -841,7 +899,7 @@ fixcrlf(line, stripnl)
 		*p++ = '\n';
 	*p = '\0';
 }
-/*
+/*
 **  PUTLINE -- put a line like fputs obeying SMTP conventions
 **
 **	This routine always guarantees outputing a newline (or CRLF,
@@ -865,7 +923,7 @@ putline(l, mci)
 {
 	putxline(l, strlen(l), mci, PXLF_MAPFROM);
 }
-/*
+/*
 **  PUTXLINE -- putline with flags bits.
 **
 **	This routine always guarantees outputing a newline (or CRLF,
@@ -879,6 +937,7 @@ putline(l, mci)
 **		    PXLF_MAPFROM -- map From_ to >From_.
 **		    PXLF_STRIP8BIT -- strip 8th bit.
 **		    PXLF_HEADER -- map bare newline in header to newline space.
+**		    PXLF_NOADDEOL -- don't add an EOL if one wasn't present.
 **
 **	Returns:
 **		none
@@ -912,10 +971,15 @@ putxline(l, len, mci, pxflags)
 	end = l + len;
 	do
 	{
+		bool noeol = false;
+
 		/* find the end of the line */
 		p = memchr(l, '\n', end - l);
 		if (p == NULL)
+		{
 			p = end;
+			noeol = true;
+		}
 
 		if (TrafficLogFile != NULL)
 			(void) sm_io_fprintf(TrafficLogFile, SM_TIME_DEFAULT,
@@ -1071,7 +1135,8 @@ putxline(l, len, mci, pxflags)
 		if (TrafficLogFile != NULL)
 			(void) sm_io_putc(TrafficLogFile, SM_TIME_DEFAULT,
 					  '\n');
-		if (sm_io_fputs(mci->mci_out, SM_TIME_DEFAULT,
+		if ((!bitset(PXLF_NOADDEOL, pxflags) || !noeol) &&
+		    sm_io_fputs(mci->mci_out, SM_TIME_DEFAULT,
 				mci->mci_mailer->m_eol) == SM_IO_EOF)
 			break;
 		else
@@ -1103,7 +1168,7 @@ putxline(l, len, mci, pxflags)
 		DataProgress = true;
 	} while (l < end);
 }
-/*
+/*
 **  XUNLINK -- unlink a file, doing logging as appropriate.
 **
 **	Parameters:
@@ -1121,19 +1186,22 @@ xunlink(f)
 	char *f;
 {
 	register int i;
+	int save_errno;
 
 	if (LogLevel > 98)
 		sm_syslog(LOG_DEBUG, CurEnv->e_id, "unlink %s", f);
 
 	i = unlink(f);
+	save_errno = errno;
 	if (i < 0 && LogLevel > 97)
 		sm_syslog(LOG_DEBUG, CurEnv->e_id, "%s: unlink-fail %d",
 			  f, errno);
 	if (i >= 0)
 		SYNC_DIR(f, false);
+	errno = save_errno;
 	return i;
 }
-/*
+/*
 **  SFGETS -- "safe" fgets -- times out and ignores random interrupts.
 **
 **	Parameters:
@@ -1241,7 +1309,7 @@ sfgets(buf, siz, fp, timeout, during)
 	}
 	return buf;
 }
-/*
+/*
 **  FGETFOLDED -- like fgets, but knows about folded lines.
 **
 **	Parameters:
@@ -1330,7 +1398,7 @@ fgetfolded(buf, n, f)
 	*p = '\0';
 	return bp;
 }
-/*
+/*
 **  CURTIME -- return current time.
 **
 **	Parameters:
@@ -1348,7 +1416,7 @@ curtime()
 	(void) time(&t);
 	return t;
 }
-/*
+/*
 **  ATOBOOL -- convert a string representation to boolean.
 **
 **	Defaults to false
@@ -1369,7 +1437,7 @@ atobool(s)
 		return true;
 	return false;
 }
-/*
+/*
 **  ATOOCT -- convert a string representation to octal.
 **
 **	Parameters:
@@ -1390,7 +1458,7 @@ atooct(s)
 		i = (i << 3) | (*s++ - '0');
 	return i;
 }
-/*
+/*
 **  BITINTERSECT -- tell if two bitmaps intersect
 **
 **	Parameters:
@@ -1415,7 +1483,7 @@ bitintersect(a, b)
 	}
 	return false;
 }
-/*
+/*
 **  BITZEROP -- tell if a bitmap is all zero
 **
 **	Parameters:
@@ -1439,10 +1507,11 @@ bitzerop(map)
 	}
 	return true;
 }
-/*
+/*
 **  STRCONTAINEDIN -- tell if one string is contained in another
 **
 **	Parameters:
+**		icase -- ignore case?
 **		a -- possible substring.
 **		b -- possible superstring.
 **
@@ -1452,7 +1521,8 @@ bitzerop(map)
 */
 
 bool
-strcontainedin(a, b)
+strcontainedin(icase, a, b)
+	bool icase;
 	register char *a;
 	register char *b;
 {
@@ -1463,18 +1533,29 @@ strcontainedin(a, b)
 	la = strlen(a);
 	lb = strlen(b);
 	c = *a;
-	if (isascii(c) && isupper(c))
+	if (icase && isascii(c) && isupper(c))
 		c = tolower(c);
 	for (; lb-- >= la; b++)
 	{
-		if (*b != c && isascii(*b) && isupper(*b) && tolower(*b) != c)
-			continue;
-		if (sm_strncasecmp(a, b, la) == 0)
-			return true;
+		if (icase)
+		{
+			if (*b != c &&
+			    isascii(*b) && isupper(*b) && tolower(*b) != c)
+				continue;
+			if (sm_strncasecmp(a, b, la) == 0)
+				return true;
+		}
+		else
+		{
+			if (*b != c)
+				continue;
+			if (strncmp(a, b, la) == 0)
+				return true;
+		}
 	}
 	return false;
 }
-/*
+/*
 **  CHECKFD012 -- check low numbered file descriptors
 **
 **	File descriptors 0, 1, and 2 should be open at all times.
@@ -1498,7 +1579,7 @@ checkfd012(where)
 		fill_fd(i, where);
 #endif /* XDEBUG */
 }
-/*
+/*
 **  CHECKFDOPEN -- make sure file descriptor is open -- for extended debugging
 **
 **	Parameters:
@@ -1524,7 +1605,7 @@ checkfdopen(fd, where)
 	}
 #endif /* XDEBUG */
 }
-/*
+/*
 **  CHECKFDS -- check for new or missing file descriptors
 **
 **	Parameters:
@@ -1584,7 +1665,7 @@ checkfds(where)
 	}
 	errno = save_errno;
 }
-/*
+/*
 **  PRINTOPENFDS -- print the open file descriptors (for debugging)
 **
 **	Parameters:
@@ -1609,7 +1690,7 @@ printopenfds(logit)
 	for (fd = 0; fd < DtableSize; fd++)
 		dumpfd(fd, false, logit);
 }
-/*
+/*
 **  DUMPFD -- dump a file descriptor
 **
 **	Parameters:
@@ -1669,7 +1750,7 @@ dumpfd(fd, printclosed, logit)
 		return;
 	}
 
-	i = fcntl(fd, F_GETFL, NULL);
+	i = fcntl(fd, F_GETFL, 0);
 	if (i != -1)
 	{
 		(void) sm_snprintf(p, SPACELEFT(buf, p), "fl=0x%x, ", i);
@@ -1798,7 +1879,7 @@ printit:
 	else
 		(void) sm_io_fprintf(smioout, SM_TIME_DEFAULT, "%s\n", buf);
 }
-/*
+/*
 **  SHORTEN_HOSTNAME -- strip local domain information off of hostname.
 **
 **	Parameters:
@@ -1845,7 +1926,7 @@ shorten_hostname(host)
 	}
 	return NULL;
 }
-/*
+/*
 **  PROG_OPEN -- open a program for reading
 **
 **	Parameters:
@@ -1870,7 +1951,7 @@ prog_open(argv, pfd, e)
 	int ret;
 	int fdv[2];
 	char *p, *q;
-	char buf[MAXLINE + 1];
+	char buf[MAXPATHLEN];
 	extern int DtableSize;
 
 	if (pipe(fdv) < 0)
@@ -2024,7 +2105,7 @@ prog_open(argv, pfd, e)
 	_exit(EX_CONFIG);
 	return -1;	/* avoid compiler warning on IRIX */
 }
-/*
+/*
 **  GET_COLUMN -- look up a Column in a line buffer
 **
 **	Parameters:
@@ -2097,7 +2178,7 @@ get_column(line, col, delim, buf, buflen)
 	(void) sm_strlcpy(buf, begin, i + 1);
 	return buf;
 }
-/*
+/*
 **  CLEANSTRCPY -- copy string keeping out bogus characters
 **
 **	Parameters:
@@ -2134,7 +2215,7 @@ cleanstrcpy(t, f, l)
 	}
 	*t = '\0';
 }
-/*
+/*
 **  DENLSTRING -- convert newlines in a string to spaces
 **
 **	Parameters:
@@ -2190,7 +2271,41 @@ denlstring(s, strict, logattacks)
 
 	return bp;
 }
-/*
+
+/*
+**  STRREPLNONPRT -- replace "unprintable" characters in a string with subst
+**
+**	Parameters:
+**		s -- string to manipulate (in place)
+**		subst -- character to use as replacement
+**
+**	Returns:
+**		true iff string did not contain "unprintable" characters
+*/
+
+bool
+strreplnonprt(s, c)
+	char *s;
+	int c;
+{
+	bool ok;
+
+	ok = true;
+	if (s == NULL)
+		return ok;
+	while (*s != '\0')
+	{
+		if (!(isascii(*s) && isprint(*s)))
+		{
+			*s = c;
+			ok = false;
+		}
+		++s;
+	}
+	return ok;
+}
+
+/*
 **  STR2PRT -- convert "unprintable" characters in a string to \oct
 **
 **	Parameters:
@@ -2266,6 +2381,13 @@ str2prt(s)
 				break;
 			  default:
 				(void) sm_snprintf(h, l, "%03o", (int) c);
+
+				/*
+				**  XXX since l is unsigned this may
+				**  wrap around if the calculation is screwed
+				**  up...
+				*/
+
 				l -= 2;
 				h += 3;
 				break;
@@ -2276,7 +2398,7 @@ str2prt(s)
 	buf[len - 1] = '\0';
 	return buf;
 }
-/*
+/*
 **  PATH_IS_DIR -- check to see if file exists and is a directory.
 **
 **	There are some additional checks for security violations in
@@ -2325,7 +2447,7 @@ path_is_dir(pathname, createflag)
 	}
 	return true;
 }
-/*
+/*
 **  PROC_LIST_ADD -- add process id to list of our children
 **
 **	Parameters:
@@ -2422,7 +2544,7 @@ proc_list_add(pid, task, type, count, other)
 		CurChildren++;
 	}
 }
-/*
+/*
 **  PROC_LIST_SET -- set pid task in process list
 **
 **	Parameters:
@@ -2449,29 +2571,30 @@ proc_list_set(pid, task)
 		}
 	}
 }
-/*
+/*
 **  PROC_LIST_DROP -- drop pid from process list
 **
 **	Parameters:
 **		pid -- pid to drop
-**		count -- pointer to number of processes (return).
+**		st -- process status
 **		other -- storage for proc_other (return).
 **
 **	Returns:
-**		type of process
+**		none.
 **
 **	Side Effects:
-**		May decrease CurChildren.
+**		May decrease CurChildren, CurRunners, or
+**		set RestartRequest or ShutdownRequest.
 **
 **	NOTE:	THIS CAN BE CALLED FROM A SIGNAL HANDLER.  DO NOT ADD
 **		ANYTHING TO THIS ROUTINE UNLESS YOU KNOW WHAT YOU ARE
 **		DOING.
 */
 
-int
-proc_list_drop(pid, count, other)
+void
+proc_list_drop(pid, st, other)
 	pid_t pid;
-	int *count;
+	int st;
 	int *other;
 {
 	int i;
@@ -2483,8 +2606,6 @@ proc_list_drop(pid, count, other)
 		{
 			ProcListVec[i].proc_pid = NO_PID;
 			type = ProcListVec[i].proc_type;
-			if (count != NULL)
-				*count = ProcListVec[i].proc_count;
 			if (other != NULL)
 				*other = ProcListVec[i].proc_other;
 			break;
@@ -2494,9 +2615,24 @@ proc_list_drop(pid, count, other)
 		CurChildren--;
 
 
-	return type;
+	if (type == PROC_CONTROL && WIFEXITED(st))
+	{
+		/* if so, see if we need to restart or shutdown */
+		if (WEXITSTATUS(st) == EX_RESTART)
+			RestartRequest = "control socket";
+		else if (WEXITSTATUS(st) == EX_SHUTDOWN)
+			ShutdownRequest = "control socket";
+	}
+	else if (type == PROC_QUEUE_CHILD && !WIFSTOPPED(st) &&
+		 ProcListVec[i].proc_other > -1)
+	{
+		/* restart this persistent runner */
+		mark_work_group_restart(ProcListVec[i].proc_other, st);
+	}
+	else if (type == PROC_QUEUE)
+		CurRunners -= ProcListVec[i].proc_count;
 }
-/*
+/*
 **  PROC_LIST_CLEAR -- clear the process list
 **
 **	Parameters:
@@ -2519,7 +2655,7 @@ proc_list_clear()
 		ProcListVec[i].proc_pid = NO_PID;
 	CurChildren = 0;
 }
-/*
+/*
 **  PROC_LIST_PROBE -- probe processes in the list to see if they still exist
 **
 **	Parameters:
@@ -2557,7 +2693,7 @@ proc_list_probe()
 		CurChildren = 0;
 }
 
-/*
+/*
 **  PROC_LIST_DISPLAY -- display the process list
 **
 **	Parameters:

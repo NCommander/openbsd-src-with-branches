@@ -1,3 +1,5 @@
+.\" $OpenBSD: 7.t,v 1.3 2002/05/18 23:03:04 millert Exp $
+.\"
 .\" Copyright (c) 1983, 1993
 .\"	The Regents of the University of California.  All rights reserved.
 .\"
@@ -64,7 +66,7 @@ The connection to
 on the local machine failed. 
 This usually means the printer server started at
 boot time has died or is hung.  Check the local socket
-/dev/printer to be sure it still exists (if it does not exist,
+/var/run/printer to be sure it still exists (if it does not exist,
 there is no 
 .I lpd
 process running). 
@@ -72,19 +74,19 @@ Usually it is enough to get a super-user to type the following to
 restart
 .IR lpd .
 .DS
-% /usr/lib/lpd
+% /usr/sbin/lpd
 .DE
 You can also check the state of the master printer daemon with the following.
 .DS
-% ps l`cat /usr/spool/lpd.lock`
+% ps l`cat /var/run/lpd.pid`
 .DE
 .IP
 Another possibility is that the
 .I lpr
-program is not set-user-id to \fIroot\fP, set-group-id to group \fIdaemon\fP.
+program is not set-user-id to \fIdaemon\fP, set-group-id to group \fIdaemon\fP.
 This can be checked with
 .DS
-% ls \-lg /usr/ucb/lpr
+% ls \-l /usr/bin/lpr
 .DE
 .SH
 lpr: \fIprinter\fP\|: printer queue is disabled

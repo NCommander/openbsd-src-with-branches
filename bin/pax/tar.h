@@ -1,3 +1,4 @@
+/*	$OpenBSD: tar.h,v 1.5 1997/04/16 03:50:25 millert Exp $	*/
 /*	$NetBSD: tar.h,v 1.3 1995/03/21 09:07:51 cgd Exp $	*/
 
 /*-
@@ -65,6 +66,12 @@
 #define	CONTTYPE	'7'		/* high perf file */
 
 /*
+ * GNU tar compatibility;
+ */
+#define	LONGLINKTYPE	'K'		/* Long Symlink */
+#define	LONGNAMETYPE	'L'		/* Long File */
+
+/*
  * Mode field encoding of the different file types - values in octal
  */
 #define TSUID		04000		/* Set UID on execution */
@@ -113,12 +120,12 @@ typedef struct {
 /*
  * default device names
  */
-#define	DEV_0		"/dev/rmt0"
-#define	DEV_1		"/dev/rmt1"
-#define	DEV_4		"/dev/rmt4"
-#define	DEV_5		"/dev/rmt5"
-#define	DEV_7		"/dev/rmt7"
-#define	DEV_8		"/dev/rmt8"
+#define	DEV_0		"/dev/rst0"
+#define	DEV_1		"/dev/rst1"
+#define	DEV_4		"/dev/rst4"
+#define	DEV_5		"/dev/rst5"
+#define	DEV_7		"/dev/rst7"
+#define	DEV_8		"/dev/rst8"
 #endif /* _PAX_ */
 
 /*

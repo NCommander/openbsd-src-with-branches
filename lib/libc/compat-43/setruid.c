@@ -32,8 +32,7 @@
  */
 
 #if defined(LIBC_SCCS) && !defined(lint)
-/*static char *sccsid = "from: @(#)setruid.c	5.5 (Berkeley) 2/23/91";*/
-static char *rcsid = "$Id: setruid.c,v 1.6 1994/07/21 17:13:39 jtc Exp $";
+static char *rcsid = "$OpenBSD: setruid.c,v 1.8 2002/02/19 19:39:36 millert Exp $";
 #endif /* LIBC_SCCS and not lint */
 
 #include <sys/types.h>
@@ -42,12 +41,7 @@ static char *rcsid = "$Id: setruid.c,v 1.6 1994/07/21 17:13:39 jtc Exp $";
 __warn_references(setruid, "warning: this program uses setruid(), which is deprecated.");
 
 int
-#ifdef __STDC__
 setruid(uid_t ruid)
-#else
-setruid(ruid)
-	int ruid;
-#endif
 {
-	return (__setreuid(ruid, -1));
+	return (setresuid(ruid, (uid_t)-1, ruid));
 }

@@ -1,4 +1,5 @@
-/*	$NetBSD: math_emulate.c,v 1.15 1995/10/10 04:45:30 mycroft Exp $	*/
+/*	$OpenBSD: math_emulate.c,v 1.5 2002/03/14 03:15:53 millert Exp $	*/
+/*	$NetBSD: math_emulate.c,v 1.17 1996/05/03 19:42:17 christos Exp $	*/
 
 /*
  * expediant "port" of linux 8087 emulator to 386BSD, with apologies -wfj
@@ -68,7 +69,9 @@ static temp_real_unaligned * __st(int i);
 	I387.twd = 0x0000;		\
 } while (0)
 
-math_emulate(struct trapframe *info)
+int
+math_emulate(info)
+	struct trapframe *info;
 {
 	u_short code;
 	temp_real tmp;
@@ -91,7 +94,9 @@ math_emulate(struct trapframe *info)
 
 	I387.fip = oldeip = info->tf_eip;
 	info->tf_eip += 2;
-	code = htons(fusword((u_short *) oldeip)) & 0x7ff;
+	if (copyin((u_short *)oldeip, &code, sizeof(u_short)) != 0)
+		math_abort(info,SIGSEGV);
+	code = htons(code) & 0x7ff;
 	*((u_short *) &I387.fcs) = (u_short) info->tf_cs;
 	*((u_short *) &I387.fcs + 1) = code;
 
@@ -343,20 +348,23 @@ math_emulate(struct trapframe *info)
 		return(0);
 	case 0x24:
 		address = ea(info,code);
-		copyin((u_long *) address, (u_long *) &I387, 28);
+		if (copyin((u_long *) address, (u_long *) &I387, 28) != 0)
+			math_abort(info,SIGSEGV);
 		return(0);
 	case 0x25:
 		address = ea(info,code);
-		*(u_short *) &I387.cwd =
-			fusword((u_short *) address);
+		if (copyin((u_short *)address, &I387.cwd, sizeof(u_short)) != 0)
+			math_abort(info,SIGSEGV);
 		return(0);
 	case 0x26:
 		address = ea(info,code);
-		copyout((u_long *) &I387, (u_long *) address, 28);
+		if (copyout((u_long *) &I387, (u_long *) address, 28) != 0)
+			math_abort(info,SIGSEGV);
 		return(0);
 	case 0x27:
 		address = ea(info,code);
-		susword((u_short *) address, I387.cwd);
+		if (copyout(&I387.cwd, address, sizeof(int16_t)) != 0)
+			math_abort(info,SIGSEGV);
 		return(0);
 	case 0x62:
 		put_long_int(PST(0),info,code);
@@ -383,16 +391,19 @@ math_emulate(struct trapframe *info)
 		return(0);
 	case 0xa4:
 		address = ea(info,code);
-		copyin((u_long *) address, (u_long *) &I387, 108);
+		if (copyin((u_long *) address, (u_long *) &I387, 108) != 0)
+			math_abort(info,SIGSEGV);
 		return(0);
 	case 0xa6:
 		address = ea(info,code);
-		copyout((u_long *) &I387, (u_long *) address, 108);
+		if (copyout((u_long *) &I387, (u_long *) address, 108) != 0)
+			math_abort(info,SIGSEGV);
 		fninit();
 		return(0);
 	case 0xa7:
 		address = ea(info,code);
-		susword((u_short *) address, I387.swd);
+		if (copyout(&I387.swd, address, sizeof(int16_t)) != 0)
+			math_abort(info,SIGSEGV);
 		return(0);
 	case 0xe2:
 		put_short_int(PST(0),info,code);
@@ -533,11 +544,10 @@ static int __regoffset[] = {
 
 static char * sib(struct trapframe * info, int mod)
 {
-	u_char ss,index,base;
-	long offset = 0;
+	u_char ss, index, base;
+	long increment = 0, offset = 0;
 
-	base = fubyte((char *) info->tf_eip);
-	info->tf_eip++;
+	copyin(info->tf_eip++, &base, sizeof(u_char))
 	ss = base >> 6;
 	index = (base >> 3) & 7;
 	base &= 7;
@@ -549,10 +559,11 @@ static char * sib(struct trapframe * info, int mod)
 	if (mod || base != 5)
 		offset += REG(base);
 	if (mod == 1) {
-		offset += (signed char) fubyte((char *) info->tf_eip);
-		info->tf_eip++;
+		copyin(info->tf_eip++, &increment, sizeof(u_char));
+		offset += increment;
 	} else if (mod == 2 || base == 5) {
-		offset += (signed) fuword((u_long *) info->tf_eip);
+		copyin(info->tf_eip, &increment, sizeof(u_long));
+		offset += increment;
 		info->tf_eip += 4;
 	}
 	I387.foo = offset;
@@ -564,6 +575,7 @@ char * ea(struct trapframe * info, u_short code)
 {
 	u_char mod,rm;
 	long * tmp;
+	signed char tmp;
 	int offset = 0;
 
 	mod = (code >> 6) & 3;
@@ -571,21 +583,21 @@ char * ea(struct trapframe * info, u_short code)
 	if (rm == 4 && mod != 3)
 		return sib(info,mod);
 	if (rm == 5 && !mod) {
-		offset = fuword((u_long *) info->tf_eip);
+		copyin(info->tf_eip, &offset, sizeof(u_long));
 		info->tf_eip += 4;
 		I387.foo = offset;
 		I387.fos = 0x17;
 		return (char *) offset;
 	}
-	tmp = (long*)&REG(rm);
+	tmp = (long *)&REG(rm);
 	switch (mod) {
 		case 0: offset = 0; break;
 		case 1:
-			offset = (signed char) fubyte((char *) info->tf_eip);
-			info->tf_eip++;
+			copyin(info->tf_eip++, &tmp, sizeof(char));
+			offset = (signed char)tmp;
 			break;
 		case 2:
-			offset = (signed) fuword((u_long *) info->tf_eip);
+			copyin(info->tf_eip, &offset, sizeof(u_long));
 			info->tf_eip += 4;
 			break;
 #ifdef notyet
@@ -616,7 +628,7 @@ void get_short_real(temp_real * tmp,
 	short_real sr;
 
 	addr = ea(info,code);
-	sr = fuword((u_long *) addr);
+	copyin(addr, &sr, sizeof(u_long));
 	short_to_temp(&sr,tmp);
 }
 
@@ -627,8 +639,8 @@ void get_long_real(temp_real * tmp,
 	long_real lr;
 
 	addr = ea(info,code);
-	lr.a = fuword((u_long *) addr);
-	lr.b = fuword((u_long *) addr + 1);
+	copyin(addr, &lr.a, sizeof(u_long));
+	copyin(addr + sizeof(u_long), &lr.b, sizeof(u_long));
 	long_to_temp(&lr,tmp);
 }
 
@@ -638,9 +650,9 @@ void get_temp_real(temp_real * tmp,
 	char * addr;
 
 	addr = ea(info,code);
-	tmp->a = fuword((u_long *) addr);
-	tmp->b = fuword((u_long *) addr + 1);
-	tmp->exponent = fusword((u_short *) addr + 4);
+	copyin(addr, &tmp->a, sizeof(u_long));
+	copyin(addr + sizeof(u_long), &tmp->b, sizeof(u_long));
+	copyin(addr + sizeof(u_long) * 2, &tmp->exponent, sizeof(u_short));
 }
 
 void get_short_int(temp_real * tmp,
@@ -648,11 +660,13 @@ void get_short_int(temp_real * tmp,
 {
 	char * addr;
 	temp_int ti;
+	signed short tmp;
 
 	addr = ea(info,code);
-	ti.a = (signed short) fusword((u_short *) addr);
+	copyin(addr, &tmp, sizeof(signed short));
+	ti.a = (signed short)tmp;
 	ti.b = 0;
-	if (ti.sign = (ti.a < 0))
+	if ((ti.sign = (ti.a < 0)) != 0)
 		ti.a = - ti.a;
 	int_to_real(&ti,tmp);
 }
@@ -664,9 +678,9 @@ void get_long_int(temp_real * tmp,
 	temp_int ti;
 
 	addr = ea(info,code);
-	ti.a = fuword((u_long *) addr);
+	copyin(addr, &ti.a, sizeof(u_long));
 	ti.b = 0;
-	if (ti.sign = (ti.a < 0))
+	if ((ti.sign = (ti.a < 0)) != 0)
 		ti.a = - ti.a;
 	int_to_real(&ti,tmp);
 }
@@ -678,9 +692,9 @@ void get_longlong_int(temp_real * tmp,
 	temp_int ti;
 
 	addr = ea(info,code);
-	ti.a = fuword((u_long *) addr);
-	ti.b = fuword((u_long *) addr + 1);
-	if (ti.sign = (ti.b < 0))
+	copyin(addr, &ti.a, sizeof(u_long));
+	copyin(addr + sizeof(u_long), &ti.b, sizeof(u_long));
+	if ((ti.sign = (ti.b < 0)) != 0)
 		__asm__("notl %0 ; notl %1\n\t"
 			"addl $1,%0 ; adcl $0,%1"
 			:"=r" (ti.a),"=r" (ti.b)
@@ -710,10 +724,11 @@ void get_BCD(temp_real * tmp, struct trapframe * info, u_short code)
 
 	addr = ea(info,code);
 	addr += 9;
-	i.sign = 0x80 & fubyte(addr--);
+	copyin(addr--, &i.sign, sizeof(u_char));
+	i.sign &= 0x80;
 	i.a = i.b = 0;
 	for (k = 0; k < 9; k++) {
-		c = fubyte(addr--);
+		copyin(addr--, &c, sizeof(u_char));
 		MUL10(i.a, i.b);
 		ADD64((c>>4), i.a, i.b);
 		MUL10(i.a, i.b);
@@ -730,7 +745,7 @@ void put_short_real(const temp_real * tmp,
 
 	addr = ea(info,code);
 	temp_to_short(tmp,&sr);
-	suword((u_long *) addr,sr);
+	copyout(&sr, addr, sizeof(int32_t));
 }
 
 void put_long_real(const temp_real * tmp,
@@ -741,8 +756,8 @@ void put_long_real(const temp_real * tmp,
 
 	addr = ea(info,code);
 	temp_to_long(tmp,&lr);
-	suword((u_long *) addr, lr.a);
-	suword((u_long *) addr + 1, lr.b);
+	copyout(&lr.a, (u_long *)addr, sizeof(int32_t));
+	copyout(&lr.b, (u_long *)addr + 1, sizeof(int32_t));
 }
 
 void put_temp_real(const temp_real * tmp,
@@ -751,9 +766,9 @@ void put_temp_real(const temp_real * tmp,
 	char * addr;
 
 	addr = ea(info,code);
-	suword((u_long *) addr, tmp->a);
-	suword((u_long *) addr + 1, tmp->b);
-	susword((u_short *) addr + 4, tmp->exponent);
+	copyout(&tmp->a, (u_long *)addr, sizeof(int32_t));
+	copyout(&tmp->b, (u_long *)addr + 1, sizeof(int32_t));
+	copyout(&tmp->exponent, (u_short *)addr + 4, sizeof(int16_t));
 }
 
 void put_short_int(const temp_real * tmp,
@@ -766,7 +781,7 @@ void put_short_int(const temp_real * tmp,
 	real_to_int(tmp,&ti);
 	if (ti.sign)
 		ti.a = -ti.a;
-	susword((u_short *) addr,ti.a);
+	copyout(&ti.a, addr, sizeof(int16_t));
 }
 
 void put_long_int(const temp_real * tmp,
@@ -779,7 +794,7 @@ void put_long_int(const temp_real * tmp,
 	real_to_int(tmp,&ti);
 	if (ti.sign)
 		ti.a = -ti.a;
-	suword((u_long *) addr, ti.a);
+	copyout(&ti.a, addr, sizeof(int32_t));
 }
 
 void put_longlong_int(const temp_real * tmp,
@@ -795,8 +810,8 @@ void put_longlong_int(const temp_real * tmp,
 			"addl $1,%0 ; adcl $0,%1"
 			:"=r" (ti.a),"=r" (ti.b)
 			:"0" (ti.a),"1" (ti.b));
-	suword((u_long *) addr, ti.a);
-	suword((u_long *) addr + 1, ti.b);
+	copyout(&ti.a, (u_long *)addr, sizeof(int32_t));
+	copyout(&ti.b, (u_long *)addr + 1, sizeof(int32_t));
 }
 
 #define DIV10(low,high,rem) \
@@ -814,15 +829,16 @@ void put_BCD(const temp_real * tmp,struct trapframe * info, u_short code)
 	addr = ea(info,code);
 	real_to_int(tmp,&i);
 	if (i.sign)
-		subyte(addr+9,0x80);
+		c = 0x80;
 	else
-		subyte(addr+9,0x00);
+		c = 0;
+	copyout(&c, addr + 9, sizeof(char));
 	for (k = 0; k < 9; k++) {
 		DIV10(i.a,i.b,rem);
 		c = rem;
 		DIV10(i.a,i.b,rem);
 		c += rem<<4;
-		subyte(addr++,c);
+		copyout(&c, addr++, sizeof(char));
 	}
 }
 
@@ -909,7 +925,7 @@ void fmul(const temp_real * src1, const temp_real * src2, temp_real * result)
  * temporary real division routine.
  */
 
-#include "i386/i386/math_emu.h"
+#include <i386/i386/math_emu.h>
 
 static void shift_left(int * c)
 {

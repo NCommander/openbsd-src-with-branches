@@ -1,4 +1,5 @@
-/*	$NetBSD: wwinit.c,v 1.7 1995/09/28 10:35:33 tls Exp $	*/
+/*	$OpenBSD: wwinit.c,v 1.10 2000/04/15 05:22:14 millert Exp $	*/
+/*	$NetBSD: wwinit.c,v 1.11 1996/02/08 21:49:07 mycroft Exp $	*/
 
 /*
  * Copyright (c) 1983, 1993
@@ -40,10 +41,11 @@
 #if 0
 static char sccsid[] = "@(#)wwinit.c	8.2 (Berkeley) 4/28/95";
 #else
-static char rcsid[] = "$NetBSD: wwinit.c,v 1.7 1995/09/28 10:35:33 tls Exp $";
+static char rcsid[] = "$OpenBSD: wwinit.c,v 1.10 2000/04/15 05:22:14 millert Exp $";
 #endif
 #endif /* not lint */
 
+#include <stdlib.h>
 #include "ww.h"
 #include "tt.h"
 #include <sys/signal.h>
@@ -52,21 +54,25 @@ static char rcsid[] = "$NetBSD: wwinit.c,v 1.7 1995/09/28 10:35:33 tls Exp $";
 
 wwinit()
 {
-	register i, j;
+	int i, j;
 	char *kp;
-	int s;
+	sigset_t sigset, osigset;
 
 	wwdtablesize = 3;
 	wwhead.ww_forw = &wwhead;
 	wwhead.ww_back = &wwhead;
 
-	s = sigblock(sigmask(SIGIO) | sigmask(SIGCHLD) | sigmask(SIGALRM) |
-		sigmask(SIGHUP) | sigmask(SIGTERM));
-	if (signal(SIGIO, wwrint) == BADSIG ||
-	    signal(SIGCHLD, wwchild) == BADSIG ||
-	    signal(SIGHUP, wwquit) == BADSIG ||
-	    signal(SIGTERM, wwquit) == BADSIG ||
-	    signal(SIGPIPE, SIG_IGN) == BADSIG) {
+	sigemptyset(&sigset);
+	sigaddset(&sigset, SIGCHLD);
+	sigaddset(&sigset, SIGALRM);
+	sigaddset(&sigset, SIGHUP);
+	sigaddset(&sigset, SIGTERM);
+	sigprocmask(SIG_BLOCK, &sigset, &osigset);
+
+	if (signal(SIGCHLD, wwchild) == SIG_ERR ||
+	    signal(SIGHUP, wwquit) == SIG_ERR ||
+	    signal(SIGTERM, wwquit) == SIG_ERR ||
+	    signal(SIGPIPE, SIG_IGN) == SIG_ERR) {
 		wwerrno = WWE_SYS;
 		return -1;
 	}
@@ -115,7 +121,6 @@ wwinit()
 	wwnewtty.ww_termios.c_cc[VMIN] = 1;
 	wwnewtty.ww_termios.c_cc[VTIME] = 0;
 #endif
-	wwnewtty.ww_fflags = wwoldtty.ww_fflags | FASYNC;
 	if (wwsettty(0, &wwnewtty) < 0)
 		goto bad;
 
@@ -123,10 +128,17 @@ wwinit()
 		wwerrno = WWE_BADTERM;
 		goto bad;
 	}
+#ifdef TERMINFO
+	if (setupterm(wwterm, STDOUT_FILENO, NULL) != 0) {
+		wwerrno = WWE_BADTERM;
+		goto bad;
+	}
+#else
 	if (tgetent(wwtermcap, wwterm) != 1) {
 		wwerrno = WWE_BADTERM;
 		goto bad;
 	}
+#endif
 #ifdef OLD_TTY
 	wwospeed = wwoldtty.ww_sgttyb.sg_ospeed;
 #else
@@ -193,7 +205,7 @@ wwinit()
 		break;
 #ifdef B57600
 	case B57600:
-		wwbaud= 57600;
+		wwbaud = 57600;
 		break;
 #endif
 #ifdef B115200
@@ -215,12 +227,14 @@ wwinit()
 	else if (wwavailmodes & WWM_UL)
 		wwcursormodes = WWM_UL;
 
-	if ((wwib = malloc((unsigned) 512)) == 0)
+	if ((wwib = malloc(512)) == 0)
 		goto bad;
 	wwibe = wwib + 512;
 	wwibq = wwibp = wwib;
 
-	if ((wwsmap = wwalloc(0, 0, wwnrow, wwncol, sizeof (char))) == 0)
+	wwsmap = (unsigned char **)
+		wwalloc(0, 0, wwnrow, wwncol, sizeof (unsigned char));
+	if (wwsmap == 0)
 		goto bad;
 	for (i = 0; i < wwnrow; i++)
 		for (j = 0; j < wwncol; j++)
@@ -246,7 +260,7 @@ wwinit()
 			goto bad;
 	}
 
-	wwtouched = malloc((unsigned) wwnrow);
+	wwtouched = malloc(wwnrow);
 	if (wwtouched == 0) {
 		wwerrno = WWE_NOMEM;
 		goto bad;
@@ -254,7 +268,7 @@ wwinit()
 	for (i = 0; i < wwnrow; i++)
 		wwtouched[i] = 0;
 
-	wwupd = (struct ww_update *) malloc((unsigned) wwnrow * sizeof *wwupd);
+	wwupd = (struct ww_update *) malloc(wwnrow * sizeof *wwupd);
 	if (wwupd == 0) {
 		wwerrno = WWE_NOMEM;
 		goto bad;
@@ -315,33 +329,33 @@ wwinit()
 #endif
 
 	if (tt.tt_checkpoint)
-		if (signal(SIGALRM, wwalarm) == BADSIG) {
+		if (signal(SIGALRM, wwalarm) == SIG_ERR) {
 			wwerrno = WWE_SYS;
 			goto bad;
 		}
-	/* catch typeahead before ASYNC was set */
-	(void) kill(getpid(), SIGIO);
 	wwstart1();
-	(void) sigsetmask(s);
+
+	sigprocmask(SIG_SETMASK, &osigset, (sigset_t *)0);
 	return 0;
+
 bad:
 	/*
 	 * Don't bother to free storage.  We're supposed
 	 * to exit when wwinit fails anyway.
 	 */
 	(void) wwsettty(0, &wwoldtty);
-	(void) signal(SIGIO, SIG_DFL);
-	(void) sigsetmask(s);
+
+	sigprocmask(SIG_SETMASK, &osigset, (sigset_t *)0);
 	return -1;
 }
 
 wwaddcap(cap, kp)
-	register char *cap;
-	register char **kp;
+	char *cap;
+	char **kp;
 {
 	char tbuf[512];
 	char *tp = tbuf;
-	register char *str, *p;
+	char *str, *p;
 
 	if ((str = tgetstr(cap, &tp)) != 0) {
 		while (*(*kp)++ = *cap++)
@@ -358,8 +372,8 @@ wwaddcap(cap, kp)
 }
 
 wwaddcap1(cap, kp)
-	register char *cap;
-	register char **kp;
+	char *cap;
+	char **kp;
 {
 	while (*(*kp)++ = *cap++)
 		;
@@ -368,7 +382,7 @@ wwaddcap1(cap, kp)
 
 wwstart()
 {
-	register i;
+	int i;
 
 	(void) wwsettty(0, &wwnewtty);
 	for (i = 0; i < wwnrow; i++)
@@ -378,7 +392,7 @@ wwstart()
 
 wwstart1()
 {
-	register i, j;
+	int i, j;
 
 	for (i = 0; i < wwnrow; i++)
 		for (j = 0; j < wwncol; j++) {
@@ -397,7 +411,7 @@ wwstart1()
  */
 wwreset()
 {
-	register i;
+	int i;
 
 	xxreset();
 	for (i = 0; i < wwnrow; i++)

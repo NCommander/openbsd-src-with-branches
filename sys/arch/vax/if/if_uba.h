@@ -1,4 +1,5 @@
-/*	$NetBSD: if_uba.h,v 1.3 1995/05/11 16:53:12 jtc Exp $	*/
+/*	$OpenBSD: if_uba.h,v 1.4 1997/05/29 00:04:34 niklas Exp $	*/
+/*	$NetBSD: if_uba.h,v 1.6 1996/08/20 14:07:50 ragge Exp $	*/
 
 /*
  * Copyright (c) 1982, 1986 Regents of the University of California.
@@ -68,11 +69,11 @@
  * Information per interface.
  */
 struct	ifubinfo {
-	short	iff_uban;			/* uba number */
+	short	iff_flags;			/* used during uballoc's */
 	short	iff_hlen;			/* local net header length */
 	struct	uba_regs *iff_uba;		/* uba adaptor regs, in vm */
 	struct	pte *iff_ubamr;			/* uba map regs, in vm */
-	short	iff_flags;			/* used during uballoc's */
+	struct	uba_softc *iff_softc;		/* uba */
 };
 
 /*
@@ -116,7 +117,7 @@ struct ifuba {
 	struct	ifxmt ifu_xmt;
 };
 
-#define	ifu_uban	ifu_info.iff_uban
+#define	ifu_softc	ifu_info.iff_softc
 #define	ifu_hlen	ifu_info.iff_hlen
 #define	ifu_uba		ifu_info.iff_uba
 #define	ifu_ubamr	ifu_info.iff_ubamr
@@ -132,5 +133,12 @@ struct ifuba {
 		if_ubaget(&(ifu)->ifu_info, &(ifu)->ifu_r, totlen, off0, ifp)
 #define	if_wubaput(ifu, m) \
 		if_ubaput(&(ifu)->ifu_info, &(ifu)->ifu_xmt, m)
-struct	mbuf *if_ubaget();
+
+/* Prototypes */
+int	if_ubaminit(struct ifubinfo *, struct uba_softc *, int, int,
+	    struct ifrw *, int, struct ifxmt *, int);
+int	if_ubaput(struct ifubinfo *, struct ifxmt *, struct mbuf *);
+struct mbuf *if_ubaget(struct ifubinfo *, struct ifrw *, int,
+	struct ifnet *);
+
 #endif

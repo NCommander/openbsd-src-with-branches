@@ -33,28 +33,26 @@
  * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
- *
- * from: Header: sbrk.s,v 1.3 92/07/02 00:56:49 torek Exp
- * $Id: sbrk.S,v 1.2 1994/02/10 20:16:01 pk Exp $
  */
 
-#if defined(LIBC_SCCS) && !defined(lint)
-	.asciz "@(#)sbrk.s	8.1 (Berkeley) 6/4/93"
-#endif /* LIBC_SCCS and not lint */
+#if defined(SYSLIBC_SCCS) 
+	.text
+	.asciz "$OpenBSD: sbrk.S,v 1.2 1996/08/19 08:18:10 tholo Exp $"
+#endif /* SYSLIBC_SCCS */
 
 #include "SYS.h"
 
 	.globl	_end
-	.globl	curbrk
+	.globl	__curbrk
 
 	.data
-curbrk:	.long	_end
+__curbrk:	.long	_end
 	.text
 
 ENTRY(sbrk)
 #ifdef PIC
 	PIC_PROLOGUE(%o5,%o4)
-	ld	[%o5 + curbrk], %o2
+	ld	[%o5 + __curbrk], %o2
 	ld	[%o2], %o3			! %o3 = old break
 	add	%o3, %o0, %o4			! %o4 = new break
 	mov	%o4, %o0			! copy for syscall
@@ -67,8 +65,8 @@ ENTRY(sbrk)
 	retl					! and update curbrk
 	 st	%o4, [%o2]
 #else
-	sethi	%hi(curbrk), %o2
-	ld	[%o2 + %lo(curbrk)], %o3	! %o3 = old break
+	sethi	%hi(__curbrk), %o2
+	ld	[%o2 + %lo(__curbrk)], %o3	! %o3 = old break
 	add	%o3, %o0, %o4			! %o4 = new break
 	mov	%o4, %o0			! copy for syscall
 	mov	SYS_break, %g1
@@ -78,5 +76,5 @@ ENTRY(sbrk)
 	ERROR()
 1:
 	retl					! and update curbrk
-	 st	%o4, [%o2 + %lo(curbrk)]
+	 st	%o4, [%o2 + %lo(__curbrk)]
 #endif

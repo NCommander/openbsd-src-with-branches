@@ -1,4 +1,4 @@
-.\"	$OpenBSD$
+.\"	$OpenBSD: autest.1,v 1.2 2003/02/01 18:09:27 jason Exp $
 .\"
 .\" Copyright (c) 2002 Jason L. Wright (jason@thought.net)
 .\" All rights reserved.
@@ -37,11 +37,18 @@
 .Nd test audio encoding output
 .Sh SYNOPSIS
 .Nm autest
+.Op Fl f Ar device
 .Sh DESCRIPTION
 The
 .Nm
-utility opens
-.Ar /dev/sound
+utility opens the
+.Xr audio 4
+device specified with the
+.Fl f
+flag
+or
+.Pa /dev/sound
+if not specified,
 and iterates through all of the encodings supported by the device playing
 a 440Hz tone in the proper format.
 The tone should sound almost identical in each of the formats.
@@ -63,12 +70,12 @@ formats if supported by the device:
 .It Cm ulinear_be
 16 bit unsigned linear big endian
 .It Cm slinear
-8 bit signed linear
+8 bit signed linear (twos complement)
 .It Cm slinear_le
-16 bit signed linear little endian
+16 bit signed linear little endian (twos complement)
 .It Cm slinear_be
-16 bit signed linear big endian
+16 bit signed linear big endian (twos complement)
 .Sh SEE ALSO
 .Xr audio 4
 .Sh BUGS
-The ADPCM encoding sounds very noisy on CS4231 (it's probaly incorrect).
+The ADPCM encoding sounds very noisy on CS4231 (it's probably incorrect).

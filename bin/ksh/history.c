@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: history.c,v 1.16 2002/11/27 20:53:25 pvalchev Exp $	*/
 
 /*
  * command history
@@ -27,7 +27,7 @@
 #   ifdef OS2
 #    define HISTFILE "history.ksh"
 #   else /* OS2 */
-#    define HISTFILE ".pdksh_hist"
+#    define HISTFILE ".pdksh_history"
 #   endif /* OS2 */
 #  endif
 
@@ -67,7 +67,7 @@ static char   **hist_get_newest ARGS((int allow_cur));
 static char   **hist_get_oldest ARGS(());
 static void	histbackup ARGS((void));
 
-static char   **current;	/* current postition in history[] */
+static char   **current;	/* current position in history[] */
 static int	curpos;		/* current index in history[] */
 static char    *hname;		/* current name of history file */
 static int	hstarted;	/* set after hist_init() called */
@@ -225,8 +225,7 @@ c_fc(wp)
 
 	/* Run editor on selected lines, then run resulting commands */
 
-	tf = maketemp(ATEMP);
-	tf->next = e->temps; e->temps = tf;
+	tf = maketemp(ATEMP, TT_HIST_EDIT, &e->temps);
 	if (!(shf = tf->shf)) {
 		bi_errorf("cannot create temp file %s - %s",
 			tf->name, strerror(errno));
@@ -240,7 +239,8 @@ c_fc(wp)
 		return 1;
 	}
 
-	setstr(local("_", FALSE), tf->name);
+	/* Ignore setstr errors here (arbitrary) */
+	setstr(local("_", FALSE), tf->name, KSH_RETURN_ERROR);
 
 	/* XXX: source should not get trashed by this.. */
 	{
@@ -485,7 +485,7 @@ histnum(n)
 		current = histptr;
 		curpos = last;
 		return last;
-	}  else {
+	} else {
 		current = &history[n];
 		curpos = n;
 		return n;
@@ -493,7 +493,7 @@ histnum(n)
 }
 
 /*
- * This will become unecessary if hist_get is modified to allow
+ * This will become unnecessary if hist_get is modified to allow
  * searching from positions other than the end, and in either
  * direction.
  */
@@ -632,9 +632,9 @@ histsave(lno, cmd, dowrite)
  * commands
  */
 void
-histappend(cmd, nl_seperate)
+histappend(cmd, nl_separate)
 	const char *cmd;
-	int	nl_seperate;
+	int	nl_separate;
 {
 	int	hlen, clen;
 	char	*p;
@@ -645,7 +645,7 @@ histappend(cmd, nl_seperate)
 		clen--;
 	p = *histptr = (char *) aresize(*histptr, hlen + clen + 2, APERM);
 	p += hlen;
-	if (nl_seperate)
+	if (nl_separate)
 		*p++ = '\n';
 	memcpy(p, cmd, clen);
 	p[clen] = '\0';
@@ -860,8 +860,8 @@ hist_init(s)
 		/*
 		 * check on its validity
 		 */
-		if ((int)base == -1 || *base != HMAGIC1 || base[1] != HMAGIC2) {
-			if ((int)base !=  -1)
+		if (base == MAP_FAILED || *base != HMAGIC1 || base[1] != HMAGIC2) {
+			if (base != (unsigned char *)-1)
 				munmap((caddr_t)base, hsize);
 			hist_finish();
 			unlink(hname);
@@ -889,7 +889,7 @@ typedef enum state {
 	shdr,		/* expecting a header */
 	sline,		/* looking for a null byte to end the line */
 	sn1,		/* bytes 1 to 4 of a line no */
-	sn2, sn3, sn4,
+	sn2, sn3, sn4
 } State;
 
 static int
@@ -898,7 +898,7 @@ hist_count_lines(base, bytes)
 	register int bytes;
 {
 	State state = shdr;
-	register lines = 0;
+	int lines = 0;
 
 	while (bytes--) {
 		switch (state)
@@ -1107,7 +1107,7 @@ writehistfile(lno, cmd)
 			/* someone has added some lines */
 			bytes = sizenow - hsize;
 			base = (unsigned char *)mmap(0, sizenow, PROT_READ, MAP_FLAGS, histfd, 0);
-			if ((int)base == -1)
+			if (base == MAP_FAILED)
 				goto bad;
 			new = base + hsize;
 			if (*new != COMMAND) {

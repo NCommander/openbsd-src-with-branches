@@ -1,3 +1,5 @@
+/*	$OpenBSD: lesskey.c,v 1.2 2001/01/29 01:58:02 niklas Exp $	*/
+
 /*
  * Copyright (c) 1984,1985,1989,1994,1995  Mark Nudelman
  * All rights reserved.
@@ -317,9 +319,9 @@ init_tables()
 tchar(pp)
 	char **pp;
 {
-	register char *p;
-	register char ch;
-	register int i;
+	char *p;
+	char ch;
+	int i;
 
 	p = *pp;
 	switch (*p)
@@ -379,7 +381,7 @@ tchar(pp)
  */
 	public char *
 skipsp(s)
-	register char *s;
+	char *s;
 {
 	while (*s == ' ' || *s == '\t')	
 		s++;
@@ -391,7 +393,7 @@ skipsp(s)
  */
 	public char *
 skipnsp(s)
-	register char *s;
+	char *s;
 {
 	while (*s != '\0' && *s != ' ' && *s != '\t')
 		s++;
@@ -406,7 +408,7 @@ skipnsp(s)
 clean_line(s)
 	char *s;
 {
-	register int i;
+	int i;
 
 	s = skipsp(s);
 	for (i = 0;  s[i] != '\n' && s[i] != '\0';  i++)

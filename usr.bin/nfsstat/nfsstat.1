@@ -1,3 +1,6 @@
+.\"	$OpenBSD: nfsstat.1,v 1.8 2000/04/18 20:17:54 mickey Exp $
+.\"	$NetBSD: nfsstat.1,v 1.8 1996/03/03 17:21:28 thorpej Exp $
+.\"
 .\" Copyright (c) 1989, 1990, 1993
 .\"	The Regents of the University of California.  All rights reserved.
 .\"
@@ -30,11 +33,10 @@
 .\" SUCH DAMAGE.
 .\"
 .\"     from: @(#)nfsstat.1	8.1 (Berkeley) 6/6/93
-.\"	$Id: nfsstat.1,v 1.7 1995/09/27 19:23:13 jtc Exp $
 .\"
 .Dd June 6, 1993
 .Dt NFSSTAT 1
-.Os BSD 4.4
+.Os
 .Sh NAME
 .Nm nfsstat
 .Nd display
@@ -45,31 +47,47 @@ statistics
 .Op Fl M Ar core
 .Op Fl N Ar system
 .Op Fl w Ar wait
+.Op Fl s
+.Op Fl c
 .Sh DESCRIPTION
-.Nm Nfsstat
+.Nm
 displays statistics kept about
 .Tn NFS
 client and server activity.
+If niether
+.Fl M
+nor
+.Fl N
+option was specified statics will be obtained from the running system
+by calling
+.Xr sysctl 3
+routine. Otherwise specified core and system will be used to fetch
+data by means of
+.Xr kvm 3 .
 .Pp
 The options are as follows:
 .Bl -tag -width Ds
-.It Fl M
+.It Fl M Ar core
 Extract values associated with the name list from the specified core
 instead of the default
 .Pa /dev/kmem .
-.It Fl N
+.It Fl N Ar system
 Extract the name list from the specified system instead of the default
-.Pa /netbsd .
-.It Fl w
+.Pa /bsd .
+.It Fl w Ar wait
 Display a shorter summary of
 .Tn NFS
 activity for both the client and server at
 .Ar wait
 second intervals.
+.It Fl s
+Display server statistics only.
+.It Fl c
+Display client statistics only.
 .El
 .Sh FILES
 .Bl -tag -width /dev/kmem -compact
-.It Pa /netbsd
+.It Pa /bsd
 default kernel namelist
 .It Pa /dev/kmem
 default memory file
@@ -79,11 +97,13 @@ default memory file
 .Xr netstat 1 ,
 .Xr ps 1 ,
 .Xr systat 1 ,
+.Xr kvm 3 ,
+.Xr sysctl 3 ,
 .Xr iostat 8 ,
 .Xr pstat 8 ,
-.Xr vmstat 8 
+.Xr vmstat 8
 .Sh HISTORY
 The
-.Nm nfsstat
-command appears in
+.Nm
+command appeared in
 .Bx 4.4 .

@@ -32,8 +32,7 @@
  */
 
 #if defined(LIBC_SCCS) && !defined(lint)
-/* static char sccsid[] = "from: @(#)getopt.c	8.2 (Berkeley) 4/2/94"; */
-static char *rcsid = "$Id: getopt.c,v 1.7 1994/05/06 18:18:35 jtc Exp $";
+static char *rcsid = "$OpenBSD: getopt.c,v 1.3 2002/12/08 17:52:26 millert Exp $";
 #endif /* LIBC_SCCS and not lint */
 
 #include <stdio.h>
@@ -63,6 +62,9 @@ getopt(nargc, nargv, ostr)
 	extern char *__progname;
 	static char *place = EMSG;		/* option letter processing */
 	char *oli;				/* option letter list index */
+
+	if (ostr == NULL)
+		return (-1);
 
 	if (optreset || !*place) {		/* update scanning pointer */
 		optreset = 0;

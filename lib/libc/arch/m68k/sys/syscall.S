@@ -35,18 +35,17 @@
  * SUCH DAMAGE.
  */
 
-#if defined(LIBC_SCCS) && !defined(lint)
+#if defined(SYSLIBC_SCCS)
 	.text
-	/*.asciz "from: @(#)syscall.s	5.1 (Berkeley) 5/12/90"*/
-	.asciz "$Id: syscall.S,v 1.2 1994/08/04 05:02:49 chopps Exp $"
-#endif /* LIBC_SCCS and not lint */
+	.asciz "$OpenBSD: syscall.S,v 1.3 1999/01/06 23:14:18 d Exp $"
+#endif /* SYSLIBC_SCCS */
 
 #include "SYS.h"
 
-ENTRY(syscall)
+SYSENTRY(syscall)
 	clrl	d0
 	trap	#0
 	jcs	err
 	rts
 err:
-	jra	cerror
+	jra	__cerror

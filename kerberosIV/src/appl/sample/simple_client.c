@@ -160,7 +160,7 @@ static void
 usage (void)
 {
   fprintf (stderr, "Usage: %s [-s service] [-p port] hostname\n",
-	   getprogname());
+	   __progname);
   exit (1);
 }
 
@@ -172,8 +172,6 @@ main(int argc, char **argv)
   char service[SNAME_SZ];
   struct servent *serv;
   int c;
-
-  setprogname (argv[0]);
 
   strlcpy (service, SAMPLE_SERVICE, sizeof(service));
 

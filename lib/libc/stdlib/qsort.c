@@ -32,15 +32,14 @@
  */
 
 #if defined(LIBC_SCCS) && !defined(lint)
-/*static char sccsid[] = "from: @(#)qsort.c	8.1 (Berkeley) 6/4/93";*/
-static char *rcsid = "$Id: qsort.c,v 1.4 1994/06/16 05:26:39 mycroft Exp $";
+static char *rcsid = "$OpenBSD: qsort.c,v 1.6 2002/02/16 21:27:24 millert Exp $";
 #endif /* LIBC_SCCS and not lint */
 
 #include <sys/types.h>
 #include <stdlib.h>
 
-static inline char	*med3 __P((char *, char *, char *, int (*)()));
-static inline void	 swapfunc __P((char *, char *, int, int));
+static __inline char	*med3(char *, char *, char *, int (*)());
+static __inline void	 swapfunc(char *, char *, int, int);
 
 #define min(a, b)	(a) < (b) ? a : b
 
@@ -61,12 +60,12 @@ static inline void	 swapfunc __P((char *, char *, int, int));
 #define SWAPINIT(a, es) swaptype = ((char *)a - (char *)0) % sizeof(long) || \
 	es % sizeof(long) ? 2 : es == sizeof(long)? 0 : 1;
 
-static inline void
+static __inline void
 swapfunc(a, b, n, swaptype)
 	char *a, *b;
 	int n, swaptype;
 {
-	if(swaptype <= 1) 
+	if (swaptype <= 1) 
 		swapcode(long, a, b, n)
 	else
 		swapcode(char, a, b, n)
@@ -82,7 +81,7 @@ swapfunc(a, b, n, swaptype)
 
 #define vecswap(a, b, n) 	if ((n) > 0) swapfunc(a, b, n, swaptype)
 
-static inline char *
+static __inline char *
 med3(a, b, c, cmp)
 	char *a, *b, *c;
 	int (*cmp)();
@@ -93,27 +92,28 @@ med3(a, b, c, cmp)
 }
 
 void
-qsort(a, n, es, cmp)
-	void *a;
+qsort(aa, n, es, cmp)
+	void *aa;
 	size_t n, es;
 	int (*cmp)();
 {
 	char *pa, *pb, *pc, *pd, *pl, *pm, *pn;
 	int d, r, swaptype, swap_cnt;
+	register char *a = aa;
 
 loop:	SWAPINIT(a, es);
 	swap_cnt = 0;
 	if (n < 7) {
-		for (pm = a + es; pm < (char *) a + n * es; pm += es)
+		for (pm = (char *)a + es; pm < (char *) a + n * es; pm += es)
 			for (pl = pm; pl > (char *) a && cmp(pl - es, pl) > 0;
 			     pl -= es)
 				swap(pl, pl - es);
 		return;
 	}
-	pm = a + (n / 2) * es;
+	pm = (char *)a + (n / 2) * es;
 	if (n > 7) {
-		pl = a;
-		pn = a + (n - 1) * es;
+		pl = (char *)a;
+		pn = (char *)a + (n - 1) * es;
 		if (n > 40) {
 			d = (n / 8) * es;
 			pl = med3(pl, pl + d, pl + 2 * d, cmp);
@@ -123,9 +123,9 @@ loop:	SWAPINIT(a, es);
 		pm = med3(pl, pm, pn, cmp);
 	}
 	swap(a, pm);
-	pa = pb = a + es;
+	pa = pb = (char *)a + es;
 
-	pc = pd = a + (n - 1) * es;
+	pc = pd = (char *)a + (n - 1) * es;
 	for (;;) {
 		while (pb <= pc && (r = cmp(pb, a)) <= 0) {
 			if (r == 0) {
@@ -151,14 +151,14 @@ loop:	SWAPINIT(a, es);
 		pc -= es;
 	}
 	if (swap_cnt == 0) {  /* Switch to insertion sort */
-		for (pm = a + es; pm < (char *) a + n * es; pm += es)
+		for (pm = (char *) a + es; pm < (char *) a + n * es; pm += es)
 			for (pl = pm; pl > (char *) a && cmp(pl - es, pl) > 0; 
 			     pl -= es)
 				swap(pl, pl - es);
 		return;
 	}
 
-	pn = a + n * es;
+	pn = (char *)a + n * es;
 	r = min(pa - (char *)a, pb - pa);
 	vecswap(a, pb - r, r);
 	r = min(pd - pc, pn - pd - es);

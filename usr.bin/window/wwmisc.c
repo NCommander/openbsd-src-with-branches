@@ -1,4 +1,5 @@
-/*	$NetBSD: wwmisc.c,v 1.3 1995/09/28 10:35:40 tls Exp $	*/
+/*	$OpenBSD: wwmisc.c,v 1.4 1997/02/25 00:04:59 downsj Exp $	*/
+/*	$NetBSD: wwmisc.c,v 1.4 1996/02/08 20:45:10 mycroft Exp $	*/
 
 /*
  * Copyright (c) 1983, 1993
@@ -40,7 +41,7 @@
 #if 0
 static char sccsid[] = "@(#)wwmisc.c	8.1 (Berkeley) 6/6/93";
 #else
-static char rcsid[] = "$NetBSD: wwmisc.c,v 1.3 1995/09/28 10:35:40 tls Exp $";
+static char rcsid[] = "$OpenBSD: wwmisc.c,v 1.4 1997/02/25 00:04:59 downsj Exp $";
 #endif
 #endif /* not lint */
 
@@ -52,14 +53,14 @@ static char rcsid[] = "$NetBSD: wwmisc.c,v 1.3 1995/09/28 10:35:40 tls Exp $";
  * Sufficient but not necessary test for total visibility.
  */
 wwvisible(w)
-register struct ww *w;
+struct ww *w;
 {
-	register i;
-	register nvis = 0;
+	int i;
+	int nvis = 0;
 
 	for (i = w->ww_i.t; i < w->ww_i.b; i++)
 		nvis += w->ww_nvis[i];
-	if (w->ww_hascursor
+	if (ISSET(w->ww_wflags, WWW_HASCURSOR)
 	    && w->ww_cur.r >= w->ww_i.t && w->ww_cur.r < w->ww_i.b
 	    && w->ww_cur.c >= w->ww_i.l && w->ww_cur.c < w->ww_i.r
 	    && wwsmap[w->ww_cur.r][w->ww_cur.c] == w->ww_index)

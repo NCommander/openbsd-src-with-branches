@@ -1,3 +1,4 @@
+/*	$OpenBSD: ibcs2_wait.h,v 1.2 1994/10/26 02:53:16 cgd Exp $	*/
 /*	$NetBSD: ibcs2_wait.h,v 1.2 1994/10/26 02:53:16 cgd Exp $	*/
 
 /*

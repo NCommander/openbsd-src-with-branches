@@ -1,4 +1,5 @@
-/*	$NetBSD: bootp.c,v 1.7 1995/09/18 21:19:20 pk Exp $	*/
+/*	$OpenBSD: bootp.c,v 1.8 1999/12/18 16:42:19 deraadt Exp $	*/
+/*	$NetBSD: bootp.c,v 1.10 1996/10/13 02:28:59 christos Exp $	*/
 
 /*
  * Copyright (c) 1992 Regents of the University of California.
@@ -40,10 +41,9 @@
  */
 
 #include <sys/types.h>
+#include <sys/socket.h>
 #include <netinet/in.h>
 #include <netinet/in_systm.h>
-
-#include <string.h>
 
 #include "stand.h"
 #include "net.h"
@@ -58,10 +58,10 @@ static	char vm_rfc1048[4] = VM_RFC1048;
 static	char vm_cmu[4] = VM_CMU;
 
 /* Local forwards */
-static	ssize_t bootpsend __P((struct iodesc *, void *, size_t));
-static	ssize_t bootprecv __P((struct iodesc *, void *, size_t, time_t));
-static	void vend_cmu __P((u_char *));
-static	void vend_rfc1048 __P((u_char *, u_int));
+static	ssize_t bootpsend(struct iodesc *, void *, size_t);
+static	ssize_t bootprecv(struct iodesc *, void *, size_t, time_t);
+static	void vend_cmu(u_char *);
+static	void vend_rfc1048(u_char *, u_int);
 
 /* Fetch required bootp infomation */
 void
@@ -99,7 +99,7 @@ bootp(sock)
 	bzero(bp, sizeof(*bp));
 
 	bp->bp_op = BOOTREQUEST;
-	bp->bp_htype = 1;		/* 10Mb Ethernet (48 bits) */
+	bp->bp_htype = HTYPE_ETHERNET;	/* 10Mb Ethernet (48 bits) */
 	bp->bp_hlen = 6;
 	bp->bp_xid = htonl(d->xid);
 	MACPY(d->myea, bp->bp_chaddr);
@@ -161,7 +161,7 @@ bootprecv(d, pkt, len, tleft)
 #endif
 
 	n = readudp(d, pkt, len, tleft);
-	if (n == -1 || n < sizeof(struct bootp))
+	if (n < 0 || (size_t)n < sizeof(struct bootp))
 		goto bad;
 
 	bp = (struct bootp *)pkt;
@@ -174,7 +174,7 @@ bootprecv(d, pkt, len, tleft)
 	if (bp->bp_xid != htonl(d->xid)) {
 #ifdef BOOTP_DEBUG
 		if (debug) {
-			printf("bootprecv: expected xid 0x%x, got 0x%x\n",
+			printf("bootprecv: expected xid 0x%lx, got 0x%lx\n",
 			    d->xid, ntohl(bp->bp_xid));
 		}
 #endif
@@ -304,7 +304,7 @@ vend_rfc1048(cp, len)
 	ep = cp + len;
 
 	/* Step over magic cookie */
-	cp += sizeof(long);
+	cp += sizeof(int);
 
 	while (cp < ep) {
 		tag = *cp++;

@@ -1,4 +1,4 @@
-/*	$OpenBSD: test_fork.c,v 1.9 2001/03/13 00:09:10 d Exp $	*/
+/*	$OpenBSD: fork.c,v 1.2 2001/09/20 16:43:15 todd Exp $	*/
 /*
  * Copyright (c) 1993, 1994, 1995, 1996 by Chris Provenzano and contributors, 
  * proven@mit.edu All rights reserved.
@@ -44,6 +44,7 @@
 #include <fcntl.h>
 #include <sys/types.h>
 #include <unistd.h>
+#include <stdlib.h>
 #include <signal.h>
 #include <sys/wait.h>
 #include "test.h"
@@ -98,8 +99,18 @@ main()
 		ASSERT(getpid() != parent_pid);
 		/* Our sleeper thread should have disappeared */
 		printf("sleeper should have disappeared\n");
+
+		/*
+		 * The following is bogus.  The sleeper thread was
+		 * freed before the fork returned.   Calling pthread_join
+		 * dereferences the 'sleeper_thread' pointer which no
+		 * longer points to a valid thread structure.  If the
+		 * function returns ESRCH it's only because the freed
+		 * memory hasn't been reused yet.
 		ASSERT(ESRCH == pthread_join(sleeper_thread, &result));
 		printf("sleeper disappeared correctly\n");
+		 */
+
 		/* Test starting another thread */
 		CHECKr(pthread_create(&sleeper_thread, NULL, empty, NULL));
 		sleep(1);

@@ -1,3 +1,6 @@
+/*	$OpenBSD: yppoll.c,v 1.4 2002/05/30 19:09:06 deraadt Exp $ */
+/*	$NetBSD: yppoll.c,v 1.5 1996/05/13 02:46:36 thorpej Exp $	*/
+
 /*
  * Copyright (c) 1992, 1993 Theo de Raadt <deraadt@fsa.ca>
  * Copyright (c) 1992, 1993 John Brezak
@@ -33,7 +36,7 @@
  */
 
 #ifndef lint
-static char rcsid[] = "$Id: yppoll.c,v 1.4 1994/08/23 17:03:15 deraadt Exp $";
+static char rcsid[] = "$Id: yppoll.c,v 1.4 2002/05/30 19:09:06 deraadt Exp $";
 #endif /* not lint */
 
 #include <sys/param.h>
@@ -53,30 +56,25 @@ static char rcsid[] = "$Id: yppoll.c,v 1.4 1994/08/23 17:03:15 deraadt Exp $";
 #include <rpcsvc/ypclnt.h>
 
 void
-usage()
+usage(void)
 {
-	fprintf(stderr, "Usage:\n");
-	fprintf(stderr, "\typpoll [-h host] [-d domainname] mapname\n");
+	fprintf(stderr, "Usage: yppoll [-h host] [-d domainname] mapname\n");
 	exit(1);
 }
 
 int
-get_remote_info(indomain, inmap, server, outorder, outname)
-	char *indomain;
-	char *inmap;
-	char *server;
-	int *outorder;
-	char **outname;
+get_remote_info(char *indomain, char *inmap, char *server, int *outorder,
+    char **outname)
 {
 	struct ypresp_order ypro;
 	struct ypresp_master yprm;
 	struct ypreq_nokey yprnk;
 	struct timeval tv;
-	int r;
 	struct sockaddr_in rsrv_sin;
 	int rsrv_sock;
 	CLIENT *client;
 	struct hostent *h;
+	int r;
 
 	bzero((char *)&rsrv_sin, sizeof rsrv_sin);
 	rsrv_sin.sin_len = sizeof rsrv_sin;
@@ -89,9 +87,8 @@ get_remote_info(indomain, inmap, server, outorder, outname)
 			fprintf(stderr, "unknown host %s\n", server);
 			exit(1);
 		}
-	} else {
-		rsrv_sin.sin_addr.s_addr = *(u_long *)h->h_addr;
-	}
+	} else
+		rsrv_sin.sin_addr.s_addr = *(u_int32_t *)h->h_addr;
 
 	tv.tv_sec = 10;
 	tv.tv_usec = 0;
@@ -102,7 +99,7 @@ get_remote_info(indomain, inmap, server, outorder, outname)
 		    server);
 		exit(1);
 	}
-	
+
 	yprnk.domain = indomain;
 	yprnk.map = inmap;
 
@@ -134,17 +131,12 @@ get_remote_info(indomain, inmap, server, outorder, outname)
 }
 
 int
-main(argc, argv)
-	int  argc;
-	char **argv;
+main(int argc, char *argv[])
 {
-	char *domainname;
-	char *hostname = NULL;
-	char *inmap, *master;
-	int order;
+	char *domainname, *hostname = NULL, *inmap, *master;
 	extern char *optarg;
 	extern int optind;
-	int c, r;
+	int order, c, r;
 
 	yp_get_default_domain(&domainname);
 

@@ -1,4 +1,4 @@
-/*	$OpenBSD: test_setjmp.c,v 1.5 2000/01/06 06:58:34 d Exp $	*/
+/*	$OpenBSD: setjmp.c,v 1.1.1.1 2001/08/15 14:37:13 fgsch Exp $	*/
 /*
  * Copyright (c) 1993, 1994, 1995, 1996 by Chris Provenzano and contributors, 
  * proven@mit.edu All rights reserved.
@@ -33,6 +33,7 @@
  */ 
 
 #include <setjmp.h>
+#include <stdlib.h>
 #include "test.h"
 
 int reached;

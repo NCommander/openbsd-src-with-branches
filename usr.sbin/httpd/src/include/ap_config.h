@@ -1,3 +1,5 @@
+/*	$OpenBSD: ap_config.h,v 1.14 2002/09/06 19:21:13 henning Exp $ */
+
 /* ====================================================================
  * The Apache Software License, Version 1.1
  *
@@ -687,8 +689,7 @@ extern char *crypt();
 #define HAVE_MMAP 1
 #define USE_MMAP_SCOREBOARD
 #define USE_MMAP_FILES
-#define HAVE_FLOCK_SERIALIZED_ACCEPT
-#if defined(__OpenBSD__)
+#if defined __OpenBSD__
 #define HAVE_SYSVSEM_SERIALIZED_ACCEPT
 #define USE_SYSVSEM_SERIALIZED_ACCEPT
 #include <sys/param.h>
@@ -696,6 +697,7 @@ extern char *crypt();
 #define NET_SIZE_T socklen_t
 #endif
 #endif
+#define HAVE_FLOCK_SERIALIZED_ACCEPT
 #define SINGLE_LISTEN_UNSERIALIZED_ACCEPT
 
 #elif defined(UTS21)

@@ -1,3 +1,4 @@
+/*	$OpenBSD: unix.c,v 1.8 2002/02/16 21:27:50 millert Exp $	*/
 /*	$NetBSD: unix.c,v 1.13 1995/10/03 21:42:48 thorpej Exp $	*/
 
 /*-
@@ -37,7 +38,7 @@
 #if 0
 static char sccsid[] = "from: @(#)unix.c	8.1 (Berkeley) 6/6/93";
 #else
-static char *rcsid = "$NetBSD: unix.c,v 1.13 1995/10/03 21:42:48 thorpej Exp $";
+static char *rcsid = "$OpenBSD: unix.c,v 1.8 2002/02/16 21:27:50 millert Exp $";
 #endif
 #endif /* not lint */
 
@@ -59,22 +60,22 @@ struct proc;
 
 #include <netinet/in.h>
 
+#include <limits.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <kvm.h>
 #include "netstat.h"
 
-static	void unixdomainpr __P((struct socket *, caddr_t));
+static	void unixdomainpr(struct socket *, caddr_t);
 
 static struct	file *file, *fileNFILE;
 static int	nfiles;
 extern	kvm_t *kvmd;
 
 void
-unixpr(off)
-	u_long	off;
+unixpr(u_long off)
 {
-	register struct file *fp;
+	struct file *fp;
 	struct socket sock, *so = &sock;
 	char *filebuf;
 	struct protosw *unixsw = (struct protosw *)off;
@@ -102,13 +103,11 @@ static	char *socktype[] =
     { "#0", "stream", "dgram", "raw", "rdm", "seqpacket" };
 
 static void
-unixdomainpr(so, soaddr)
-	register struct socket *so;
-	caddr_t soaddr;
+unixdomainpr(struct socket *so, caddr_t soaddr)
 {
 	struct unpcb unpcb, *unp = &unpcb;
 	struct mbuf mbuf, *m;
-	struct sockaddr_un *sa;
+	struct sockaddr_un *sa = NULL;
 	static int first = 1;
 
 	if (kread((u_long)so->so_pcb, (char *)unp, sizeof (*unp)))
@@ -123,18 +122,19 @@ unixdomainpr(so, soaddr)
 	if (first) {
 		printf("Active UNIX domain sockets\n");
 		printf(
-"%-8.8s %-6.6s %-6.6s %-6.6s %8.8s %8.8s %8.8s %8.8s Addr\n",
-		    "Address", "Type", "Recv-Q", "Send-Q",
-		    "Inode", "Conn", "Refs", "Nextref");
+"%-*.*s %-6.6s %-6.6s %-6.6s %*.*s %*.*s %*.*s %*.*s Addr\n",
+		    PLEN, PLEN, "Address", "Type", "Recv-Q", "Send-Q",
+		    PLEN, PLEN, "Inode", PLEN, PLEN, "Conn",
+		    PLEN, PLEN, "Refs", PLEN, PLEN, "Nextref");
 		first = 0;
 	}
-	printf("%8x %-6.6s %6d %6d %8x %8x %8x %8x",
-	    soaddr, socktype[so->so_type], so->so_rcv.sb_cc, so->so_snd.sb_cc,
-	    unp->unp_vnode, unp->unp_conn,
-	    unp->unp_refs, unp->unp_nextref);
+	printf("%*p %-6.6s %6ld %6ld %*p %*p %*p %*p",
+	    PLEN, soaddr, socktype[so->so_type], so->so_rcv.sb_cc,
+	    so->so_snd.sb_cc, PLEN, unp->unp_vnode, PLEN, unp->unp_conn,
+	    PLEN, unp->unp_refs, PLEN, unp->unp_nextref);
 	if (m)
 		printf(" %.*s",
-		    m->m_len - (int)(sizeof(*sa) - sizeof(sa->sun_path)),
+		    (int)(m->m_len - (int)(sizeof(*sa) - sizeof(sa->sun_path))),
 		    sa->sun_path);
 	putchar('\n');
 }

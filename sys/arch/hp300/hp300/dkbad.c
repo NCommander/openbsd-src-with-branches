@@ -1,4 +1,5 @@
-/*	$NetBSD: dkbad.c,v 1.4 1994/10/26 07:25:33 cgd Exp $	*/
+/*	$OpenBSD: dkbad.c,v 1.4 1999/07/20 03:23:05 csapuntz Exp $	*/
+/*	$NetBSD: dkbad.c,v 1.5 1997/04/01 03:12:15 scottr Exp $	*/
 
 /*
  * Copyright (c) 1982, 1986, 1990, 1993
@@ -40,21 +41,24 @@
 #include <sys/buf.h>
 #include <sys/dkbad.h>
 
+int	isbad(struct dkbad *, int, int, int);
+
 /*
  * Search the bad sector table looking for
  * the specified sector.  Return index if found.
  * Return -1 if not found.
  */
 
+int
 isbad(bt, cyl, trk, sec)
-	register struct dkbad *bt;
+	struct dkbad *bt;
 	int cyl, trk, sec;
 {
-	register int i;
-	register long blk, bblk;
+	int i;
+	long blk, bblk;
 
 	blk = ((long)cyl << 16) + (trk << 8) + sec;
-	for (i = 0; i < 126; i++) {
+	for (i = 0; i < NBT_BAD; i++) {
 		bblk = ((long)bt->bt_bad[i].bt_cyl << 16) + bt->bt_bad[i].bt_trksec;
 		if (blk == bblk)
 			return (i);

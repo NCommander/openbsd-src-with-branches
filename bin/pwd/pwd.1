@@ -1,3 +1,4 @@
+.\"	$OpenBSD: pwd.1,v 1.7 1999/05/23 14:10:49 aaron Exp $
 .\"	$NetBSD: pwd.1,v 1.10 1995/09/07 06:47:30 jtc Exp $
 .\"
 .\" Copyright (c) 1990, 1993
@@ -38,31 +39,42 @@
 .\"
 .Dd April 28, 1995
 .Dt PWD 1
-.Os BSD 4
+.Os
 .Sh NAME
 .Nm pwd
 .Nd return working directory name
 .Sh SYNOPSIS
 .Nm pwd
 .Sh DESCRIPTION
-.Nm Pwd
-writes the absolute pathname of the current working directory to
+The
+.Nm
+utility prints the absolute pathname of the current working directory to
 the standard output.
+Both the Bourne shell
+.Pq Xr sh 1
+and Korn shell
+.Pq Xr ksh 1
+have their own built-in version of
+.Nm pwd .
 .Pp
-The pwd utility exits 0 on success, and >0 if an error occurs.
+The
+.Nm
+utility exits 0 on success or >0 if an error occurred.
 .Sh STANDARDS
 The
-.Nm pwd
+.Nm
 utility is expected to be
 .St -p1003.2
-compatible .
+compatible.
 .Sh SEE ALSO
 .Xr cd 1 ,
 .Xr csh 1 ,
+.Xr ksh 1 ,
+.Xr sh 1 ,
 .Xr getcwd 3
 .Sh BUGS
 In
-.Xr csh  1
+.Xr csh 1 ,
 the command
 .Ic dirs
 is always faster (although it can give a different answer in the rare case

@@ -1,23 +1,18 @@
-/*	$NetBSD: ialloc.c,v 1.2 1995/03/10 18:12:38 jtc Exp $	*/
+/*
+** This file is in the public domain, so clarified as of
+** Feb 14, 2003 by Arthur David Olson (arthur_david_olson@nih.gov).
+*/
 
-#ifndef lint
-#ifndef NOID
-static char	elsieid[] = "@(#)ialloc.c	8.28";
-#endif /* !defined NOID */
-#endif /* !defined lint */
+#if defined(LIBC_SCCS) && !defined(lint) && !defined(NOID)
+static char elsieid[] = "@(#)ialloc.c	8.29";
+static char rcsid[] = "$OpenBSD: ialloc.c,v 1.7 2003/02/14 18:24:53 millert Exp $";
+#endif /* LIBC_SCCS and not lint */
 
 /*LINTLIBRARY*/
 
 #include "private.h"
 
 #define nonzero(n)	(((n) == 0) ? 1 : (n))
-
-char *	icalloc P((int nelem, int elsize));
-char *	icatalloc P((char * old, const char * new));
-char *	icpyalloc P((const char * string));
-char *	imalloc P((int n));
-void *	irealloc P((void * pointer, int size));
-void	ifree P((char * pointer));
 
 char *
 imalloc(n)
@@ -41,9 +36,14 @@ irealloc(pointer, size)
 void * const	pointer;
 const int	size;
 {
+	void *p;
+
 	if (pointer == NULL)
 		return imalloc(size);
-	return realloc((void *) pointer, (size_t) nonzero(size));
+	p = realloc((void *) pointer, (size_t) nonzero(size));
+	if (p == NULL && pointer)
+		free(pointer);
+	return p;
 }
 
 char *
@@ -53,16 +53,21 @@ const char * const	new;
 {
 	register char *	result;
 	register int	oldsize, newsize;
+	int size;
 
 	newsize = (new == NULL) ? 0 : strlen(new);
 	if (old == NULL)
 		oldsize = 0;
 	else if (newsize == 0)
 		return old;
-	else	oldsize = strlen(old);
-	if ((result = irealloc(old, oldsize + newsize + 1)) != NULL)
+	else
+		oldsize = strlen(old);
+	size = oldsize + newsize + 1;
+	if ((result = irealloc(old, size)) != NULL)
 		if (new != NULL)
-			(void) strcpy(result + oldsize, new);
+			(void) strlcpy(result + oldsize, new, newsize + 1);
+	else
+		free(old);
 	return result;
 }
 

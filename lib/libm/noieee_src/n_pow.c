@@ -43,7 +43,7 @@ static char sccsid[] = "@(#)pow.c	8.1 (Berkeley) 6/4/93";
  * REVISED BY K.C. NG on 7/10/85.
  * KERNEL pow_P() REPLACED BY P. McILROY 7/22/92.
  * Required system supported functions:
- *      scalb(x,n)      
+ *      scalbn(x,n)      
  *      logb(x)         
  *	copysign(x,y)	
  *	finite(x)	
@@ -110,7 +110,7 @@ static char sccsid[] = "@(#)pow.c	8.1 (Berkeley) 6/4/93";
 
 #include "mathimpl.h"
 
-#if (defined(vax) || defined(tahoe))
+#if (defined(__vax__) || defined(tahoe))
 #define TRUNC(x)	x = (double) (float) x
 #define _IEEE		0
 #else
@@ -122,7 +122,7 @@ static char sccsid[] = "@(#)pow.c	8.1 (Berkeley) 6/4/93";
 
 const static double zero=0.0, one=1.0, two=2.0, negone= -1.0;
 
-static double pow_P __P((double, double));
+static double pow_P(double, double);
 
 double pow(x,y)  	
 double x,y;

@@ -1,3 +1,4 @@
+/*	$OpenBSD: misc.c,v 1.6 2002/02/16 21:27:06 millert Exp $	*/
 /*	$NetBSD: misc.c,v 1.6 1995/03/21 09:03:09 cgd Exp $	*/
 
 /*-
@@ -37,23 +38,19 @@
 #if 0
 static char sccsid[] = "@(#)misc.c	8.1 (Berkeley) 5/31/93";
 #else
-static char rcsid[] = "$NetBSD: misc.c,v 1.6 1995/03/21 09:03:09 cgd Exp $";
+static char rcsid[] = "$OpenBSD: misc.c,v 1.6 2002/02/16 21:27:06 millert Exp $";
 #endif
 #endif /* not lint */
 
 #include <sys/param.h>
 #include <stdlib.h>
 #include <unistd.h>
-#if __STDC__
-# include <stdarg.h>
-#else
-# include <varargs.h>
-#endif
+#include <stdarg.h>
 
 #include "csh.h"
 #include "extern.h"
 
-static int	renum __P((int, int));
+static int	renum(int, int);
 
 int
 any(s, c)
@@ -258,7 +255,7 @@ closem()
 {
     register int f;
 
-    for (f = 0; f < NOFILE; f++)
+    for (f = 0; f < sysconf(_SC_OPEN_MAX); f++)
 	if (f != SHIN && f != SHOUT && f != SHERR && f != OLDSTD &&
 	    f != FSHTTY)
 	    (void) close(f);
@@ -398,6 +395,19 @@ strip(cp)
 	return (cp);
     while ((*dp++ &= TRIM) != '\0')
 	continue;
+    return (cp);
+}
+
+Char   *
+quote(cp)
+    Char   *cp;
+{
+    register Char *dp = cp;
+
+    if (!cp)
+	return (cp);
+    while (*dp != '\0')
+	*dp++ |= QUOTE;
     return (cp);
 }
 

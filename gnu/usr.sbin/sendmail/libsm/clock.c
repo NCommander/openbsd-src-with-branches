@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1998-2001 Sendmail, Inc. and its suppliers.
+ * Copyright (c) 1998-2003 Sendmail, Inc. and its suppliers.
  *	All rights reserved.
  * Copyright (c) 1983, 1995-1997 Eric P. Allman.  All rights reserved.
  * Copyright (c) 1988, 1993
@@ -12,7 +12,7 @@
  */
 
 #include <sm/gen.h>
-SM_RCSID("@(#)$Sendmail: clock.c,v 1.30 2001/08/31 20:44:28 ca Exp $")
+SM_RCSID("@(#)$Sendmail: clock.c,v 1.35.2.3 2003/03/03 19:57:40 ca Exp $")
 #include <unistd.h>
 #include <time.h>
 #include <errno.h>
@@ -117,7 +117,7 @@ sm_sigsafe_seteventm(intvl, func, arg)
 	     evp = &ev->ev_link)
 	{
 #if SM_CONF_SETITIMER
-		if (timercmp(&(ev->ev_time), &nowi, >))
+		if (timercmp(&(ev->ev_time), &nowi, >=))
 #else /* SM_CONF_SETITIMER */
 		if (ev->ev_time >= nowi)
 #endif /* SM_CONF_SETITIMER */
@@ -160,16 +160,20 @@ sm_sigsafe_seteventm(intvl, func, arg)
 	timersub(&SmEventQueue->ev_time, &now, &itime.it_value);
 	itime.it_interval.tv_sec = 0;
 	itime.it_interval.tv_usec = 0;
+	if (itime.it_value.tv_sec < 0)
+		itime.it_value.tv_sec = 0;
+	if (itime.it_value.tv_sec == 0 && itime.it_value.tv_usec == 0)
+		itime.it_value.tv_usec = 1000;
 	(void) setitimer(ITIMER_REAL, &itime, NULL);
 # else /* SM_CONF_SETITIMER */
 	intvl = SmEventQueue->ev_time - now;
-	(void) alarm((unsigned) intvl < 1 ? 1 : intvl);
+	(void) alarm((unsigned) (intvl < 1 ? 1 : intvl));
 # endif /* SM_CONF_SETITIMER */
 	if (wasblocked == 0)
 		(void) sm_releasesignal(SIGALRM);
 	return ev;
 }
-/*
+/*
 **  SM_CLREVENT -- remove an event from the event queue.
 **
 **	Parameters:
@@ -234,7 +238,7 @@ sm_clrevent(ev)
 # endif /* SM_CONF_SETITIMER */
 	}
 }
-/*
+/*
 **  SM_CLEAR_EVENTS -- remove all events from the event queue.
 **
 **	Parameters:
@@ -253,9 +257,6 @@ sm_clear_events()
 #endif /* SM_CONF_SETITIMER */
 	int wasblocked;
 
-	if (SmEventQueue == NULL)
-		return;
-
 	/* nothing will be left in event queue, no need for an alarm */
 #if SM_CONF_SETITIMER
 	clr.it_interval.tv_sec = 0;
@@ -266,6 +267,10 @@ sm_clear_events()
 #else /* SM_CONF_SETITIMER */
 	(void) alarm(0);
 #endif /* SM_CONF_SETITIMER */
+
+	if (SmEventQueue == NULL)
+		return;
+
 	wasblocked = sm_blocksignal(SIGALRM);
 
 	/* find the end of the EventQueue */
@@ -282,7 +287,7 @@ sm_clear_events()
 	if (wasblocked == 0)
 		(void) sm_releasesignal(SIGALRM);
 }
-/*
+/*
 **  SM_TICK -- take a clock tick
 **
 **	Called by the alarm clock.  This routine runs events as needed.
@@ -377,7 +382,7 @@ sm_tick(sig)
 	while ((ev = SmEventQueue) != NULL &&
 	       (ev->ev_pid != mypid ||
 #if SM_CONF_SETITIMER
-		timercmp(&ev->ev_time, &now, <)
+		timercmp(&ev->ev_time, &now, <=)
 #else /* SM_CONF_SETITIMER */
 		ev->ev_time <= now
 #endif /* SM_CONF_SETITIMER */
@@ -410,6 +415,11 @@ sm_tick(sig)
 					 &clr.it_value);
 				clr.it_interval.tv_sec = 0;
 				clr.it_interval.tv_usec = 0;
+				if (clr.it_value.tv_sec < 0)
+					clr.it_value.tv_sec = 0;
+				if (clr.it_value.tv_sec == 0 &&
+				    clr.it_value.tv_usec == 0)
+					clr.it_value.tv_usec = 1000;
 				(void) setitimer(ITIMER_REAL, &clr, NULL);
 			}
 			else
@@ -450,6 +460,10 @@ sm_tick(sig)
 		timersub(&SmEventQueue->ev_time, &now, &clr.it_value);
 		clr.it_interval.tv_sec = 0;
 		clr.it_interval.tv_usec = 0;
+		if (clr.it_value.tv_sec < 0)
+			clr.it_value.tv_sec = 0;
+		if (clr.it_value.tv_sec == 0 && clr.it_value.tv_usec == 0)
+			clr.it_value.tv_usec = 1000;
 		(void) setitimer(ITIMER_REAL, &clr, NULL);
 #else /* SM_CONF_SETITIMER */
 		(void) alarm((unsigned) (SmEventQueue->ev_time - now));
@@ -458,7 +472,7 @@ sm_tick(sig)
 	errno = save_errno;
 	return SIGFUNC_RETURN;
 }
-/*
+/*
 **  SLEEP -- a version of sleep that works with this stuff
 **
 **	Because Unix sleep uses the alarm facility, I must reimplement

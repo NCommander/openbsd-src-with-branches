@@ -1,6 +1,12 @@
-#	$NetBSD: Makefile,v 1.3 1994/11/14 05:13:23 jtc Exp $
-#	@(#)Makefile	8.1 (Berkeley) 6/6/93
+#	$OpenBSD: Makefile,v 1.3 1997/09/21 11:52:04 deraadt Exp $
 
 PROG=	whois
+
+.if defined(SOCKS)
+CFLAGS+=-DSOCKS
+CFLAGS+=-Dconnect=Rconnect -Dgetsockname=Rgetsockname -Dlisten=Rlisten \
+	-Daccept=Raccept -Drcmd=Rrcmd -Dbind=Rbind -Dselect=Rselect
+LDADD+= -lsocks
+.endif
 
 .include <bsd.prog.mk>

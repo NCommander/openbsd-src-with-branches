@@ -1,9 +1,8 @@
 /*
- * Copyright (c) 1996, 1998, 1999 Todd C. Miller <Todd.Miller@courtesan.com>
+ * Copyright (c) 1996, 1998-2003 Todd C. Miller <Todd.Miller@courtesan.com>
  * All rights reserved.
  *
- * This code is derived from software contributed by Chris Jepeway
- * <jepeway@cs.utk.edu>.
+ * This code is derived from software contributed by Chris Jepeway.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -37,20 +36,30 @@
 
 #include "config.h"
 
+#include <sys/param.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <sys/socket.h>
 #include <stdio.h>
 #ifdef STDC_HEADERS
 # include <stdlib.h>
+# include <stddef.h>
+#else
+# ifdef HAVE_STDLIB_H
+#  include <stdlib.h>
+# endif
 #endif /* STDC_HEADERS */
+#ifdef HAVE_STRING_H
+# include <string.h>
+#else
+# ifdef HAVE_STRINGS_H
+#  include <strings.h>
+# endif
+#endif /* HAVE_STRING_H */
 #ifdef HAVE_UNISTD_H
 # include <unistd.h>
 #endif /* HAVE_UNISTD_H */
-#ifdef HAVE_STRING_H
-# include <string.h>
-#endif /* HAVE_STRING_H */
-#ifdef HAVE_STRINGS_H
-# include <strings.h>
-#endif /* HAVE_STRINGS_H */
-#if defined(HAVE_FNMATCH) && defined(HAVE_FNMATCH_H)
+#ifdef HAVE_FNMATCH
 # include <fnmatch.h>
 #endif /* HAVE_FNMATCH_H */
 #ifdef HAVE_NETGROUP_H
@@ -59,13 +68,9 @@
 #include <ctype.h>
 #include <pwd.h>
 #include <grp.h>
-#include <sys/param.h>
-#include <sys/types.h>
-#include <sys/socket.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
 #include <netdb.h>
-#include <sys/stat.h>
 #include <dirent.h>
 
 #include "sudo.h"
@@ -77,8 +82,16 @@
 #endif /* HAVE_FNMATCH */
 
 #ifndef lint
-static const char rcsid[] = "$Sudo: testsudoers.c,v 1.64 1999/09/08 08:06:19 millert Exp $";
+static const char rcsid[] = "$Sudo: testsudoers.c,v 1.79 2003/03/15 20:31:02 millert Exp $";
 #endif /* lint */
+
+
+/*
+ * Prototypes
+ */
+void init_parser	__P((void));
+void dumpaliases	__P((void));
+void set_perms_dummy	__P((int));
 
 /*
  * Globals
@@ -89,14 +102,9 @@ int parse_error = FALSE;
 int num_interfaces;
 struct interface *interfaces;
 struct sudo_user sudo_user;
+void (*set_perms) __P((int)) = set_perms_dummy;
 extern int clearaliases;
 extern int pedantic;
-
-/*
- * Prototypes for external functions
- */
-void init_parser	__P((void));
-void dumpaliases	__P((void));
 
 /*
  * Returns TRUE if "s" has shell meta characters in it,
@@ -106,7 +114,7 @@ int
 has_meta(s)
     char *s;
 {
-    register char *t;
+    char *t;
     
     for (t = s; *t; t++) {
 	if (*t == '\\' || *t == '?' || *t == '*' || *t == '[' || *t == ']')
@@ -190,8 +198,13 @@ addr_matches(n)
 	addr.s_addr = inet_addr(n);
 	if (strchr(m, '.'))
 	    mask.s_addr = inet_addr(m);
-	else
-	    mask.s_addr = (1 << atoi(m)) - 1;	/* XXX - better way? */
+	else {
+	    i = 32 - atoi(m);
+	    mask.s_addr = 0xffffffff;
+	    mask.s_addr >>= i;
+	    mask.s_addr <<= i;
+	    mask.s_addr = htonl(mask.s_addr);
+	}
 	*(m - 1) = '/';               
 
 	for (i = 0; i < num_interfaces; i++)
@@ -208,6 +221,25 @@ addr_matches(n)
     }
 
     return(FALSE);
+}
+
+int
+hostname_matches(shost, lhost, pattern)
+    char *shost;
+    char *lhost;
+    char *pattern;
+{
+    if (has_meta(pattern)) {  
+        if (strchr(pattern, '.'))   
+            return(fnmatch(pattern, lhost, FNM_CASEFOLD));
+        else
+            return(fnmatch(pattern, shost, FNM_CASEFOLD));
+    } else {
+        if (strchr(pattern, '.'))
+            return(strcasecmp(lhost, pattern));
+        else
+            return(strcasecmp(shost, pattern));
+    }
 }
 
 int
@@ -240,9 +272,10 @@ usergr_matches(group, user)
 }
 
 int
-netgr_matches(netgr, host, user)
+netgr_matches(netgr, host, shost, user)
     char *netgr;
     char *host;
+    char *shost;
     char *user;
 {
 #ifdef HAVE_GETDOMAINNAME
@@ -268,15 +301,30 @@ netgr_matches(netgr, host, user)
 #endif /* HAVE_GETDOMAINNAME */
 
 #ifdef HAVE_INNETGR
-    return(innetgr(netgr, host, user, domain));
-#else
-    return(FALSE);
+    if (innetgr(netgr, host, user, domain))
+	return(TRUE);
+    else if (host != shost && innetgr(netgr, shost, user, domain))
+	return(TRUE);
 #endif /* HAVE_INNETGR */
+
+    return(FALSE);
 }
 
 void
-set_perms(i, j)
-    int i, j;
+set_perms_dummy(i)
+    int i;
+{
+    return;
+}
+
+void
+set_fqdn()
+{
+    return;
+}
+
+void
+init_envtables()
 {
     return;
 }
@@ -329,17 +377,23 @@ main(argc, argv)
 
     /* Fill in cmnd_args from NewArgv. */
     if (NewArgc > 1) {
-	size_t size;
 	char *to, **from;
+	size_t size, n;
 
-	size = (size_t) NewArgv[NewArgc-1] + strlen(NewArgv[NewArgc-1]) -
-	       (size_t) NewArgv[1] + 1;
+	size = (size_t) (NewArgv[NewArgc-1] - NewArgv[1]) +
+		strlen(NewArgv[NewArgc-1]) + 1;
 	user_args = (char *) emalloc(size);
-	for (to = user_args, from = &NewArgv[1]; *from; from++) {
+	for (to = user_args, from = NewArgv + 1; *from; from++) {
+	    n = strlcpy(to, *from, size - (to - user_args));
+	    if (n >= size) {
+		(void) fprintf(stderr,
+		    "%s: internal error, init_vars() overflow\n", Argv[0]);
+		exit(1);
+	    }
+	    to += n;
 	    *to++ = ' ';
-	    (void) strcpy(to, *from);
-	    to += strlen(*from);
 	}
+	*--to = '\0';
     }
 
     /* Initialize default values. */

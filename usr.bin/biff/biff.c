@@ -1,3 +1,4 @@
+/*	$OpenBSD: biff.c,v 1.6 2000/06/30 16:00:11 millert Exp $	*/
 /*	$NetBSD: biff.c,v 1.3 1995/03/26 02:34:22 glass Exp $	*/
 
 /*
@@ -43,7 +44,7 @@ static char copyright[] =
 #if 0
 static char sccsid[] = "@(#)biff.c	8.1 (Berkeley) 6/6/93";
 #else
-static char rcsid[] = "$NetBSD: biff.c,v 1.3 1995/03/26 02:34:22 glass Exp $";
+static char rcsid[] = "$OpenBSD: biff.c,v 1.6 2000/06/30 16:00:11 millert Exp $";
 #endif
 #endif /* not lint */
 
@@ -57,8 +58,9 @@ static char rcsid[] = "$NetBSD: biff.c,v 1.3 1995/03/26 02:34:22 glass Exp $";
 #include <string.h>
 #include <unistd.h>
 
-static void usage __P((void));
+static void usage(void);
 
+int
 main(argc, argv)
 	int argc;
 	char *argv[];
@@ -68,7 +70,7 @@ main(argc, argv)
 	char *name;
 
 
-	while ((ch = getopt(argc, argv, "")) != EOF)
+	while ((ch = getopt(argc, argv, "")) != -1)
 		switch(ch) {
 		case '?':
 		default:
@@ -84,23 +86,23 @@ main(argc, argv)
 		err(2, "stat");
 
 	if (*argv == NULL) {
-		(void)printf("is %s\n", sb.st_mode&0100 ? "y" : "n");
-		exit(sb.st_mode & 0100 ? 0 : 1);
+		(void)printf("is %s\n", sb.st_mode & S_IXUSR ? "y" : "n");
+		exit(sb.st_mode & S_IXUSR ? 0 : 1);
 	}
 
 	switch(argv[0][0]) {
 	case 'n':
-		if (chmod(name, sb.st_mode & ~0100) < 0)
-			err(2, name);
+		if (chmod(name, sb.st_mode & ~S_IXUSR) < 0)
+			err(2, "%s", name);
 		break;
 	case 'y':
-		if (chmod(name, sb.st_mode | 0100) < 0)
-			err(2, name);
+		if (chmod(name, sb.st_mode | S_IXUSR) < 0)
+			err(2, "%s", name);
 		break;
 	default:
 		usage();
 	}
-	exit(sb.st_mode & 0100 ? 0 : 1);
+	exit(sb.st_mode & S_IXUSR ? 0 : 1);
 }
 
 static void

@@ -1,5 +1,3 @@
-/*	$NetBSD: gets.c,v 1.7 1995/02/02 02:09:57 jtc Exp $	*/
-
 /*-
  * Copyright (c) 1990, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -37,15 +35,13 @@
  */
 
 #if defined(LIBC_SCCS) && !defined(lint)
-#if 0
-static char sccsid[] = "@(#)gets.c	8.1 (Berkeley) 6/4/93";
-#endif
-static char rcsid[] = "$NetBSD: gets.c,v 1.7 1995/02/02 02:09:57 jtc Exp $";
+static char rcsid[] = "$OpenBSD: gets.c,v 1.4 1997/01/19 22:32:21 graichen Exp $";
 #endif /* LIBC_SCCS and not lint */
 
 #include <stdio.h>
 
-__warn_references(gets, "warning: this program uses gets(), which is unsafe.");
+__warn_references(gets,
+    "warning: gets() is very unsafe; consider using fgets()");
 
 char *
 gets(buf)

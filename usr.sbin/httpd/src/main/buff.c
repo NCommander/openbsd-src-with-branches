@@ -167,7 +167,7 @@ API_EXPORT(int) ap_sendwithtimeout(int sock, const char *buf, int len, int flags
 		FD_ZERO(&fdset);
 		FD_SET(sock, &fdset);
 		tv.tv_usec = 0;
-		rv = select(FD_SETSIZE, NULL, &fdset, NULL, &tv);
+		rv = select(sock + 1, NULL, &fdset, NULL, &tv);
 		if (rv == SOCKET_ERROR)
 		    err = WSAGetLastError();
 		else if (rv == 0) {
@@ -240,7 +240,7 @@ API_EXPORT(int) ap_recvwithtimeout(int sock, char *buf, int len, int flags)
                 FD_ZERO(&fdset);
                 FD_SET(sock, &fdset);
                 tv.tv_usec = 0;
-                rv = select(FD_SETSIZE, &fdset, NULL, NULL, &tv);
+                rv = select(sock + 1, &fdset, NULL, NULL, &tv);
                 if (rv == SOCKET_ERROR)
                     err = WSAGetLastError();
                 else if (rv == 0) {

@@ -1,3 +1,4 @@
+/*	$OpenBSD: mntopts.h,v 1.8 2002/02/16 21:27:35 millert Exp $	*/
 /*	$NetBSD: mntopts.h,v 1.3 1995/03/18 14:56:59 cgd Exp $	*/
 
 /*-
@@ -43,6 +44,8 @@ struct mntopt {
 
 /* User-visible MNT_ flags. */
 #define MOPT_ASYNC		{ "async",	0, MNT_ASYNC }
+#define MOPT_NOACCESSTIME	{ "accesstime",	1, MNT_NOATIME }
+#define MOPT_NOATIME		{ "atime",	1, MNT_NOATIME }
 #define MOPT_NODEV		{ "dev",	1, MNT_NODEV }
 #define MOPT_NOEXEC		{ "exec",	1, MNT_NOEXEC }
 #define MOPT_NOSUID		{ "suid",	1, MNT_NOSUID }
@@ -51,9 +54,10 @@ struct mntopt {
 #define MOPT_UNION		{ "union",	0, MNT_UNION }
 #define MOPT_USERQUOTA		{ "userquota",	0, 0 }
 #define MOPT_GROUPQUOTA		{ "groupquota",	0, 0 }
+#define MOPT_SOFTDEP		{ "softdep",	0, MNT_SOFTDEP }
 
 /* Control flags. */
-#define MOPT_FORCE		{ "force",	1, MNT_FORCE }
+#define MOPT_FORCE		{ "force",	0, MNT_FORCE }
 #define MOPT_UPDATE		{ "update",	0, MNT_UPDATE }
 #define MOPT_RELOAD		{ "reload",	0, MNT_RELOAD }
 
@@ -61,7 +65,7 @@ struct mntopt {
 #define MOPT_RO			{ "ro",		0, MNT_RDONLY }
 #define MOPT_RW			{ "rw",		1, MNT_RDONLY }
 
-/* This is parse by mount(8), but is ignored by specific mount_*(8)s. */
+/* This is parsed by mount(8), but is ignored by specific mount_*(8)s. */
 #define MOPT_AUTO		{ "auto",	0, 0 }
 
 #define MOPT_FSTAB_COMPAT						\
@@ -74,10 +78,12 @@ struct mntopt {
 	MOPT_USERQUOTA,							\
 	MOPT_GROUPQUOTA,						\
 	MOPT_FSTAB_COMPAT,						\
+	MOPT_NOACCESSTIME,						\
+	MOPT_NOATIME,							\
 	MOPT_NODEV,							\
 	MOPT_NOEXEC,							\
 	MOPT_NOSUID,							\
 	MOPT_RDONLY,							\
 	MOPT_UNION
 
-void getmntopts __P((const char *, const struct mntopt *, int *));
+void getmntopts(const char *, const struct mntopt *, int *);

@@ -52,15 +52,12 @@ if [ "x${LIB_PATH}" = "x" ] ; then
     case " $EMULATION_LIBPATH " in
       *" ${EMULATION_NAME} "*)
         # Native, and default or emulation requesting LIB_PATH.
-        LIB_PATH=/lib:/usr/lib
+        LIB_PATH=/usr/lib
         if [ -n "${NATIVE_LIB_DIRS}" ]; then
 	  LIB_PATH=${LIB_PATH}:${NATIVE_LIB_DIRS}
         fi
         if [ "${libdir}" != /usr/lib ]; then
 	  LIB_PATH=${LIB_PATH}:${libdir}
-        fi
-        if [ "${libdir}" != /usr/local/lib ] ; then
-	  LIB_PATH=${LIB_PATH}:/usr/local/lib
         fi
     esac
   fi
@@ -133,6 +130,12 @@ if test -n "$GENERATE_SHLIB_SCRIPT"; then
   (. ${srcdir}/scripttempl/${SCRIPT_NAME}.sc) | sed -e '/^ *$/d' > \
     ldscripts/${EMULATION_NAME}.xs
 fi
+
+LD_FLAG=Z
+DATA_ALIGNMENT=${DATA_ALIGNMENT_}
+RELOCATING=" "
+(. ${srcdir}/scripttempl/${SCRIPT_NAME}.sc) | sed -e '/^ *$/d' > \
+  ldscripts/${EMULATION_NAME}.xz
 
 for i in $EMULATION_LIBPATH ; do
   test "$i" = "$EMULATION_NAME" && COMPILE_IN=true

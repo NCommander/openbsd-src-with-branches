@@ -1,3 +1,4 @@
+/*	$OpenBSD: lex.c,v 1.7 2002/06/09 05:47:27 todd Exp $	*/
 /*	$NetBSD: lex.c,v 1.9 1995/09/27 00:38:46 jtc Exp $	*/
 
 /*-
@@ -37,7 +38,7 @@
 #if 0
 static char sccsid[] = "@(#)lex.c	8.1 (Berkeley) 5/31/93";
 #else
-static char rcsid[] = "$NetBSD: lex.c,v 1.9 1995/09/27 00:38:46 jtc Exp $";
+static char rcsid[] = "$OpenBSD: lex.c,v 1.7 2002/06/09 05:47:27 todd Exp $";
 #endif
 #endif /* not lint */
 
@@ -48,11 +49,7 @@ static char rcsid[] = "$NetBSD: lex.c,v 1.9 1995/09/27 00:38:46 jtc Exp $";
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
-#if __STDC__
-# include <stdarg.h>
-#else
-# include <varargs.h>
-#endif
+#include <stdarg.h>
 
 #include "csh.h"
 #include "extern.h"
@@ -63,24 +60,24 @@ static char rcsid[] = "$NetBSD: lex.c,v 1.9 1995/09/27 00:38:46 jtc Exp $";
  * of input buffering, and especially because of history substitution.
  */
 
-static Char	*word __P((void));
-static int	 getC1 __P((int));
-static void	 getdol __P((void));
-static void	 getexcl __P((int));
+static Char	*word(void);
+static int	 getC1(int);
+static void	 getdol(void);
+static void	 getexcl(int);
 static struct Hist
-		*findev __P((Char *, bool));
-static void	 setexclp __P((Char *));
-static int	 bgetc __P((void));
-static void	 bfree __P((void));
+		*findev(Char *, bool);
+static void	 setexclp(Char *);
+static int	 bgetc(void);
+static void	 bfree(void);
 static struct wordent
-		*gethent __P((int));
-static int	 matchs __P((Char *, Char *));
-static int	 getsel __P((int *, int *, int));
+		*gethent(int);
+static int	 matchs(Char *, Char *);
+static int	 getsel(int *, int *, int);
 static struct wordent
-		*getsub __P((struct wordent *));
-static Char	*subword __P((Char *, int, bool *));
+		*getsub(struct wordent *);
+static Char	*subword(Char *, int, bool *);
 static struct wordent
-		*dosub __P((int, struct wordent *, bool));
+		*dosub(int, struct wordent *, bool);
 
 /*
  * Peekc is a peek character for getC, peekread for readc.
@@ -638,10 +635,10 @@ addla(cp)
 	return;
     }
     if (lap)
-	(void) Strcpy(buf, lap);
-    (void) Strcpy(labuf, cp);
+	(void) Strlcpy(buf, lap, sizeof buf/sizeof(Char));
+    (void) Strlcpy(labuf, cp, sizeof labuf/sizeof(Char));
     if (lap)
-	(void) Strcat(labuf, buf);
+	(void) Strlcat(labuf, buf, sizeof labuf/sizeof(Char));
     lap = labuf;
 }
 
@@ -773,7 +770,7 @@ getsub(en)
 		seterror(ERR_NOSUBST);
 		return (en);
 	    }
-	    (void) Strcpy(lhsb, slhs);
+	    (void) Strlcpy(lhsb, slhs, sizeof(lhsb)/sizeof(Char));
 	    break;
 
 #ifdef notdef
@@ -819,7 +816,7 @@ getsub(en)
 		return (en);
 	    }
 	    cp = rhsb;
-	    (void) Strcpy(orhsb, cp);
+	    (void) Strlcpy(orhsb, cp, sizeof(orhsb)/sizeof(Char));
 	    for (;;) {
 		c = getC(0);
 		if (c == '\n') {
@@ -858,7 +855,7 @@ getsub(en)
 	    seterror(ERR_BADBANGMOD, c);
 	    return (en);
 	}
-	(void) Strcpy(slhs, lhsb);
+	(void) Strlcpy(slhs, lhsb, sizeof(slhs)/sizeof(Char));
 	if (exclc)
 	    en = dosub(sc, en, global);
     }
@@ -881,7 +878,7 @@ dosub(sc, en, global)
 
     wdp = hp;
     while (--i >= 0) {
-	register struct wordent *new = 
+	register struct wordent *new =
 		(struct wordent *) xcalloc(1, sizeof *wdp);
 
 	new->word = 0;
@@ -1330,7 +1327,7 @@ readc(wanteof)
     bool    wanteof;
 {
     register int c;
-    static  sincereal;
+    static int sincereal;
 
     aret = F_SEEK;
     if ((c = peekread) != '\0') {

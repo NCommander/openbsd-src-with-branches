@@ -1,4 +1,6 @@
+/*	$OpenBSD: param.h,v 1.26 2001/12/19 07:04:41 smurph Exp $ */
 /*
+ * Copyright (c) 1999 Steve Murphree, Jr.
  * Copyright (c) 1988 University of Utah.
  * Copyright (c) 1982, 1986, 1990 The Regents of the University of California.
  * All rights reserved.
@@ -38,35 +40,45 @@
  * from: Utah $Hdr: machparam.h 1.11 89/08/14$
  *
  *	@(#)param.h	7.8 (Berkeley) 6/28/91
- *	$Id: param.h,v 1.2 1996/04/02 12:36:29 build Exp build $
  */
 #ifndef _MACHINE_PARAM_H_
 #define _MACHINE_PARAM_H_
 
-#define	MACHINE		"m88k"
-#define MACHINE_ARCH	"m88k"
-#define MID_MACHINE	MID_M88K
+#ifdef _KERNEL
+#ifndef _LOCORE
+#include <machine/cpu.h>
+#endif	/* _LOCORE */
+#endif
+
+#define  _MACHINE       mvme88k
+#define  MACHINE        "mvme88k"
+#define  _MACHINE_ARCH  m88k
+#define  MACHINE_ARCH   "m88k"
+#define  MID_MACHINE    MID_M88K
+/* Older value for MID_MACHINE */
+#define	OLD_MID_MACHINE	151
 
 /*
- * Round p (pointer or byte index) up to a correctly-aligned value
+ * Round p (pointer or byte index) down to a correctly-aligned value
  * for all data types (int, long, ...).   The result is u_int and
  * must be cast to any desired pointer type. ALIGN() is used for
  * aligning stack, which needs to be on a double word boundary for
  * 88k.
  */
-#define ALIGNBYTES	(sizeof(int) - 1)
-#define	ALIGN(p)	(((u_int)(p) + (sizeof(double) - 1)) & ~(sizeof(double) - 1))
 
-#ifndef NBPG
-#define	NBPG		4096		/* bytes/page */
-#endif /* NBPG */
-#define	PGOFSET		(NBPG-1)	/* byte offset into page */
-#define	PGSHIFT		12		/* LOG2(NBPG) */
-#define	NPTEPG		(NBPG/(sizeof(u_int)))
+#define  ALIGNBYTES		15		/* 64 bit alignment */
+#define  ALIGN(p)		(((u_int)(p) + ALIGNBYTES) & ~ALIGNBYTES)
+#define  ALIGNED_POINTER(p,t)	((((u_long)(p)) & (sizeof(t)-1)) == 0)
 
-#define NBSEG		(1<<22)		/* bytes/segment */
-#define	SEGOFSET	(NBSEG-1)	/* byte offset into segment */
-#define	SEGSHIFT	22		/* LOG2(NBSEG) */
+#define NBPG		4096		/* bytes/page */
+#define PGOFSET		(NBPG-1)	/* byte offset into page */
+#define PGSHIFT		12		/* LOG2(NBPG) */
+
+#define	PAGE_SHIFT	12
+#define	PAGE_SIZE	(1 << PAGE_SHIFT)
+#define	PAGE_MASK	(PAGE_SIZE - 1)
+
+#define NPTEPG		(PAGE_SIZE / (sizeof(u_int)))
 
 /*
  * 187 Bug uses the bottom 64k. We allocate ptes to map this into the
@@ -74,73 +86,72 @@
  * past this 64k. How does this change KERNBASE? XXX
  */
 
-#define	KERNBASE	0x0		/* start of kernel virtual */
-#define	BTOPKERNBASE	((u_long)KERNBASE >> PGSHIFT)
+#define KERNBASE	0x0		/* start of kernel virtual */
+#define BTOPKERNBASE	((u_long)KERNBASE >> PGSHIFT)
 
-#define	DEV_BSIZE	512
-#define	DEV_BSHIFT	9		/* log2(DEV_BSIZE) */
+#define DEV_BSIZE	512
+#define DEV_BSHIFT	9		/* log2(DEV_BSIZE) */
 #define BLKDEV_IOSIZE	2048		/* Should this be changed? XXX */
-#define	MAXPHYS		(64 * 1024)	/* max raw I/O transfer size */
+#define MAXPHYS		(64 * 1024)	/* max raw I/O transfer size */
 
-#define	CLSIZE		1
-#define	CLSIZELOG2	0
-
-/* NOTE: SSIZE, SINCR and UPAGES must be multiples of CLSIZE */
-#define	SSIZE		1		/* initial stack size/NBPG */
-#define	SINCR		1		/* increment of stack/NBPG */
+#define SSIZE		1		/* initial stack size/NBPG */
+#define SINCR		1		/* increment of stack/NBPG */
 #define USPACE		ctob(UPAGES)
 
-#define	UPAGES		3		/* pages of u-area */
-#define	UADDR		0xEEE00000	/* address of u */
-#define	UVPN		(UADDR>>PGSHIFT)/* virtual page number of u */
-#define	KERNELSTACK	(UADDR+UPAGES*NBPG)	/* top of kernel stack */
+#define UPAGES		8		/* pages of u-area */
+#define UADDR		0xEEE00000	/* address of u */
+#define UVPN		(UADDR>>PGSHIFT)	/* virtual page number of u */
+#define KERNELSTACK	(UADDR+UPAGES*NBPG)	/* top of kernel stack */
 
-#define PHYSIO_MAP_START 	0xEEF00000
-#define PHYSIO_MAP_SIZE  	0x00100000
-#define IOMAP_MAP_START		0xEF000000 /* VME etc */
+#define PHYSIO_MAP_START	0xEEF00000
+#define PHYSIO_MAP_SIZE		0x00100000
+#define IOMAP_MAP_START		0xEF000000	/* VME etc */
 #define IOMAP_SIZE		0x018F0000
 #define NIOPMAP			32
 
 /*
  * Constants related to network buffer management.
- * MCLBYTES must be no larger than CLBYTES (the software page size), and,
+ * MCLBYTES must be no larger than the software page size, and,
  * on machines that exchange pages of input or output buffers with mbuf
  * clusters (MAPPED_MBUFS), MCLBYTES must also be an integral multiple
  * of the hardware page size.
  */
-#define	MSIZE		128		/* size of an mbuf */
-#define	MCLBYTES	1024
-#define	MCLSHIFT	10
-#define	MCLOFSET	(MCLBYTES - 1)
+#define MSIZE		256		/* size of an mbuf */
+#define MCLSHIFT	11		/* convert bytes to m_buf clusters */
+#define MCLBYTES	(1 << MCLSHIFT)	/* size of a m_buf cluster */
+#define MCLOFSET	(MCLBYTES - 1)	/* offset within a m_buf cluster */
+
 #ifndef NMBCLUSTERS
-#ifdef GATEWAY
-#define	NMBCLUSTERS	512		/* map size, max cluster allocation */
+#ifdef   GATEWAY
+#define NMBCLUSTERS	1024		/* map size, max cluster allocation */
 #else
-#define	NMBCLUSTERS	256		/* map size, max cluster allocation */
+#define NMBCLUSTERS	512		/* map size, max cluster allocation */
 #endif
 #endif
 
 /*
- * Size of kernel malloc arena in CLBYTES-sized logical pages
- */ 
-#ifndef NKMEMCLUSTERS
-#define	NKMEMCLUSTERS	(3072*1024/CLBYTES)
-#endif
+ * Minimum and maximum sizes of the kernel malloc arena in PAGE_SIZE-sized
+ * logical pages.
+ */
+#define	NKMEMPAGES_MIN_DEFAULT	((4 * 1024 * 1024) >> PAGE_SHIFT)
+#define	NKMEMPAGES_MAX_DEFAULT	((4 * 1024 * 1024) >> PAGE_SHIFT)
+
+#define MSGBUFSIZE	PAGE_SIZE
 
 /* pages ("clicks") to disk blocks */
-#define	ctod(x)	((x)<<(PGSHIFT-DEV_BSHIFT))
-#define	dtoc(x)	((x)>>(PGSHIFT-DEV_BSHIFT))
-#define	dtob(x)	((x)<<DEV_BSHIFT)
+#define ctod(x)			((x) << (PGSHIFT - DEV_BSHIFT))
+#define dtoc(x)			((x) >> (PGSHIFT - DEV_BSHIFT))
+#define dtob(x)			((x) << DEV_BSHIFT)
 
 /* pages to bytes */
-#define	ctob(x)	((x)<<PGSHIFT)
+#define ctob(x)			((x) << PGSHIFT)
 
 /* bytes to pages */
-#define	btoc(x)	(((unsigned)(x)+(NBPG-1))>>PGSHIFT)
+#define btoc(x)			(((unsigned)(x) + PAGE_MASK) >> PGSHIFT)
 
-#define	btodb(bytes)	 		/* calculates (bytes / DEV_BSIZE) */ \
+#define btodb(bytes)         /* calculates (bytes / DEV_BSIZE) */ \
 	((unsigned)(bytes) >> DEV_BSHIFT)
-#define	dbtob(db)			/* calculates (db * DEV_BSIZE) */ \
+#define dbtob(db)            /* calculates (db * DEV_BSIZE) */ \
 	((unsigned)(db) << DEV_BSHIFT)
 
 /*
@@ -149,19 +160,44 @@
  * field from the disk label.
  * For now though just use DEV_BSIZE.
  */
-#define	bdbtofsb(bn)	((bn) / (BLKDEV_IOSIZE/DEV_BSIZE))
+#define bdbtofsb(bn)		((bn) / (BLKDEV_IOSIZE/DEV_BSIZE))
+
+/*
+ * Get interrupt glue.
+ */
 #include <machine/psl.h>
+#include <machine/intr.h>
 
-#ifdef _KERNEL
-#define	DELAY(x)	delay(x)
-#endif
+#ifdef   _KERNEL
+extern int delay(int);
+#define  DELAY(x)             delay(x)
 
-#ifdef _KERNEL
 extern int cputyp;
+extern int brdtyp;
 extern int cpumod;
 #endif
+
+/*
+ * Values for the brdtyp variable.
+ */
+#define BRD_187		0x187
+#define BRD_188		0x188
+#define BRD_197		0x197
+#define BRD_8120	0x8120
+
 /*
  * Values for the cputyp variable.
  */
-#define CPU_187		0x187
+#define CPU_88100	0x100
+#define CPU_88110	0x110
+
+/*
+ * Values for the cpumod variable.
+ */
+#define MOD_LE		0x01
+#define MOD_SP		0x02
+#define MOD_DP		0x03
+
 #endif /* !_MACHINE_PARAM_H_ */
+
+

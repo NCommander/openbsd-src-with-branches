@@ -1,3 +1,6 @@
+/*	$OpenBSD: read.c,v 1.6 1997/08/20 03:30:13 millert Exp $	*/
+/*	$NetBSD: read.c,v 1.4 1997/04/11 17:52:47 christos Exp $	*/
+
 /*-
  * Copyright (c) 1992, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -35,9 +38,13 @@
  */
 
 #if !defined(lint) && !defined(SCCSID)
+#if 0
 static char sccsid[] = "@(#)read.c	8.1 (Berkeley) 6/4/93";
-
+#else
+static char rcsid[] = "$OpenBSD: read.c,v 1.6 1997/08/20 03:30:13 millert Exp $";
+#endif
 #endif /* not lint && not SCCSID */
+
 /*
  * read.c: Clean this junk up! This is horrible code.
  *	   Terminal read functions
@@ -51,9 +58,9 @@ extern int errno;
 
 #define OKCMD -1
 
-private int read__fixio		__P((int, int));
-private int read_preread	__P((EditLine *));
-private int read_getcmd		__P((EditLine *, el_action_t *, char *));
+private int read__fixio(int, int);
+private int read_preread(EditLine *);
+private int read_getcmd(EditLine *, el_action_t *, char *);
 
 #ifdef DEBUG_EDIT
 private void
@@ -62,15 +69,15 @@ read_debug(el)
 {
 
     if (el->el_line.cursor > el->el_line.lastchar)
-	(void) fprintf(el->el_errfile, "cursor > lastchar\r\n");
+	(void)fprintf(el->el_errfile, "cursor > lastchar\r\n");
     if (el->el_line.cursor < el->el_line.buffer)
-	(void) fprintf(el->el_errfile, "cursor < buffer\r\n");
+	(void)fprintf(el->el_errfile, "cursor < buffer\r\n");
     if (el->el_line.cursor > el->el_line.limit)
-	(void) fprintf(el->el_errfile, "cursor > limit\r\n");
+	(void)fprintf(el->el_errfile, "cursor > limit\r\n");
     if (el->el_line.lastchar > el->el_line.limit)
-	(void) fprintf(el->el_errfile, "lastchar > limit\r\n");
+	(void)fprintf(el->el_errfile, "lastchar > limit\r\n");
     if (el->el_line.limit != &el->el_line.buffer[EL_BUFSIZ - 2])
-	(void) fprintf(el->el_errfile, "limit != &buffer[EL_BUFSIZ-2]\r\n");
+	(void)fprintf(el->el_errfile, "limit != &buffer[EL_BUFSIZ-2]\r\n");
 }
 #endif /* DEBUG_EDIT */
 
@@ -86,13 +93,17 @@ read__fixio(fd, e)
 
 #ifdef EWOULDBLOCK
     case EWOULDBLOCK:
-# define TRY_AGAIN
+# ifndef TRY_AGAIN
+#  define TRY_AGAIN
+# endif
 #endif /* EWOULDBLOCK */
 
 #if defined(POSIX) && defined(EAGAIN)
 # if defined(EWOULDBLOCK) && EWOULDBLOCK != EAGAIN
     case EAGAIN:
-#  define TRY_AGAIN
+#  ifndef TRY_AGAIN
+#   define TRY_AGAIN
+#  endif
 # endif /* EWOULDBLOCK && EWOULDBLOCK != EAGAIN */
 #endif /* POSIX && EAGAIN */
 
@@ -145,7 +156,7 @@ read_preread(el)
 	return 0;
 
 #ifdef FIONREAD
-    (void) ioctl(el->el_infd, FIONREAD, (ioctl_t) &chrs);
+    (void)ioctl(el->el_infd, FIONREAD, (ioctl_t) &chrs);
     if (chrs > 0) {
 	char    buf[EL_BUFSIZ];
 
@@ -153,7 +164,7 @@ read_preread(el)
 	if (chrs > 0) {
 	    buf[chrs] = '\0';
 	    el->el_chared.c_macro.nline = strdup(buf);
-	    el_push(el->el_chared.c_macro.nline);
+	    el_push(el, el->el_chared.c_macro.nline);
 	}
     }
 #endif  /* FIONREAD */
@@ -276,13 +287,13 @@ el_getc(el, cp)
     }
 
 #ifdef DEBUG_READ
-    (void) fprintf(el->el_errfile, "Turning raw mode on\n");
+    (void)fprintf(el->el_errfile, "Turning raw mode on\n");
 #endif /* DEBUG_READ */
     if (tty_rawmode(el) < 0)	/* make sure the tty is set up correctly */
 	return 0;
 
 #ifdef DEBUG_READ
-    (void) fprintf(el->el_errfile, "Reading a character\n");
+    (void)fprintf(el->el_errfile, "Reading a character\n");
 #endif /* DEBUG_READ */
     while ((num_read = read(el->el_infd, (char *) &tcp, 1)) == -1)
 	if (!tried && read__fixio(el->el_infd, errno) == 0)
@@ -292,7 +303,7 @@ el_getc(el, cp)
 	    return -1;
 	}
 #ifdef DEBUG_READ
-    (void) fprintf(el->el_errfile, "Got it %c\n", tcp);
+    (void)fprintf(el->el_errfile, "Got it %c\n", tcp);
 #endif /* DEBUG_READ */
     *cp = tcp;
     return num_read;
@@ -309,6 +320,9 @@ el_gets(el, nread)
     el_action_t  cmdnum = 0;
     int     num;		/* how many chars we have read at NL */
     char    ch;
+#ifdef FIONREAD
+    c_macro_t *ma = &el->el_chared.c_macro;
+#endif /* FIONREAD */
 
     if (el->el_flags & HANDLE_SIGNALS)
 	sig_set(el);
@@ -318,9 +332,9 @@ el_gets(el, nread)
 
 #ifdef FIONREAD
     if (el->el_tty.t_mode == EX_IO && ma->level < 0) {
-	long    chrs = 0;
+	int    chrs = 0;
 
-	(void) ioctl(el->el_infd, FIONREAD, (ioctl_t) &chrs);
+	(void)ioctl(el->el_infd, FIONREAD, (ioctl_t) &chrs);
 	if (chrs == 0) {
 	    if (tty_rawmode(el) < 0) {
 		if (nread)
@@ -340,14 +354,14 @@ el_gets(el, nread)
 	/* if EOF or error */
 	if ((num = read_getcmd(el, &cmdnum, &ch)) != OKCMD) {
 #ifdef DEBUG_READ
-	    (void) fprintf(el->el_errfile, "Returning from el_gets %d\n", num);
+	    (void)fprintf(el->el_errfile, "Returning from el_gets %d\n", num);
 #endif /* DEBUG_READ */
 	    break;
 	}
 
 	if (cmdnum >= el->el_map.nfunc) {	/* BUG CHECK command */
 #ifdef DEBUG_EDIT
-	    (void) fprintf(el->el_errfile, 
+	    (void)fprintf(el->el_errfile, 
 			   "ERROR: illegal command from key 0%o\r\n", ch);
 #endif /* DEBUG_EDIT */
 	    continue;		/* try again */
@@ -361,9 +375,9 @@ el_gets(el, nread)
 		if (b->func == cmdnum)
 		    break;
 	    if (b->name)
-		(void) fprintf(el->el_errfile, "Executing %s\n", b->name);
+		(void)fprintf(el->el_errfile, "Executing %s\n", b->name);
 	    else
-		(void) fprintf(el->el_errfile, "Error command = %d\n", cmdnum);
+		(void)fprintf(el->el_errfile, "Error command = %d\n", cmdnum);
 	}
 #endif /* DEBUG_READ */
 	retval = (*el->el_map.func[cmdnum])(el, ch);
@@ -378,6 +392,11 @@ el_gets(el, nread)
 	    el->el_state.doingarg = 0;
 	    re_refresh_cursor(el);
 	    break;
+
+	case CC_REDISPLAY:
+	    re_clear_lines(el);
+	    re_clear_display(el);
+		/* FALLTHROUGH */
 
 	case CC_REFRESH:
 	    el->el_state.argument = 1;
@@ -404,7 +423,7 @@ el_gets(el, nread)
 
 	case CC_FATAL:		/* fatal error, reset to known state */
 #ifdef DEBUG_READ
-	    (void) fprintf(el->el_errfile, "*** editor fatal ERROR ***\r\n\n");
+	    (void)fprintf(el->el_errfile, "*** editor fatal ERROR ***\r\n\n");
 #endif /* DEBUG_READ */
 	    /* put (real) cursor in a known place */
 	    re_clear_display(el);	/* reset the display stuff */
@@ -417,7 +436,7 @@ el_gets(el, nread)
 	case CC_ERROR:
 	default:		/* functions we don't know about */
 #ifdef DEBUG_READ
-	    (void) fprintf(el->el_errfile, "*** editor ERROR ***\r\n\n");
+	    (void)fprintf(el->el_errfile, "*** editor ERROR ***\r\n\n");
 #endif /* DEBUG_READ */
 	    el->el_state.argument = 1;
 	    el->el_state.doingarg = 0;
@@ -427,7 +446,7 @@ el_gets(el, nread)
 	}
     }
 
-    (void) tty_cookedmode(el);	/* make sure the tty is set up correctly */
+    (void)tty_cookedmode(el);	/* make sure the tty is set up correctly */
     term__flush();		/* flush any buffered output */
     if (el->el_flags & HANDLE_SIGNALS)
 	sig_clr(el);

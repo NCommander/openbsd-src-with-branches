@@ -1,4 +1,5 @@
-/*	$NetBSD: ns_cksum.c,v 1.3 1994/10/27 04:15:39 cgd Exp $	*/
+/*	$OpenBSD: ns_cksum.c,v 1.4 1996/05/07 07:21:50 deraadt Exp $	*/
+/*	$NetBSD: ns_cksum.c,v 1.5 1996/05/03 19:42:20 christos Exp $	*/
 
 /*
  * Copyright (c) 1982, 1988 Regents of the University of California.
@@ -35,8 +36,9 @@
  *	@(#)ns_cksum.c	7.7 (Berkeley) 4/29/91
  */
 
-#include "sys/param.h"
-#include "sys/mbuf.h"
+#include <sys/param.h>
+#include <sys/mbuf.h>
+#include <netns/ns_var.h>
 
 /*
  * Checksum routine for Network Systems Protocol Packets (Big-Endian).
@@ -96,7 +98,7 @@ ns_cksum(m, len)
 		 * 32 bit arithmetic registers for adding,
 		 * with carries from the low added
 		 * into the high (by normal carry-chaining)
-		 * so long as we fold back before 16 carries have occured.
+		 * so long as we fold back before 16 carries have occurred.
 		 */
 		if (1 & (int) w)
 			goto uuuuglyy;

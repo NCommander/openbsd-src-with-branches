@@ -1,3 +1,5 @@
+/*	$OpenBSD: device.c,v 1.5 2002/06/10 21:05:25 maja Exp $ */
+
 /*
  * Copyright (c) 1993-95 Mats O Jansson.  All rights reserved.
  *
@@ -28,7 +30,7 @@
  */
 
 #ifndef LINT
-static char rcsid[] = "$Id: device.c,v 1.21 1996/08/08 00:00:59 moj Exp $";
+static char rcsid[] = "$OpenBSD: device.c,v 1.5 2002/06/10 21:05:25 maja Exp $";
 #endif
 
 #include "os.h"
@@ -39,16 +41,11 @@ struct	if_info *iflist;		/* Interface List		*/
 
 void mopReadDL();
 void mopReadRC();
-#ifdef NO__P
-int  mopOpenDL(/* struct if_info *, int */);
-int  mopOpenRC(/* struct if_info *, int */);
-#else
 int  mopOpenDL(struct if_info *, int);
 int  mopOpenRC(struct if_info *, int);
-#endif
-int pfTrans();
-int pfInit();
-int pfWrite();
+int  pfTrans();
+int  pfInit();
+int  pfWrite();
 
 #ifdef	DEV_NEW_CONF
 /*
@@ -111,7 +108,8 @@ deviceOpen(ifname, proto, trans)
 {
 	struct if_info *p, tmp;
 
-	strcpy(tmp.if_name,ifname);
+	strncpy(tmp.if_name,ifname,sizeof(tmp.if_name) - 1);
+	tmp.if_name[sizeof(tmp.if_name)-1] = 0;
 	tmp.iopen   = pfInit;
 	
 	switch (proto) {
@@ -138,7 +136,8 @@ deviceOpen(ifname, proto, trans)
 		p->next = iflist;
 		iflist = p;
 
-		strcpy(p->if_name,tmp.if_name);
+		strncpy(p->if_name,tmp.if_name, IFNAME_SIZE -1);
+		p->if_name[IFNAME_SIZE -1] = 0;
 		p->iopen   = tmp.iopen;
 		p->write   = pfWrite;
 		p->read    = tmp.read;
@@ -156,6 +155,16 @@ deviceOpen(ifname, proto, trans)
 		p->eaddr[5]= tmp.eaddr[5];
 #endif	/* DEV_NEW_CONF */
 	
+#ifdef LINUX2_PF
+		{
+			int s;
+
+			s = socket(AF_INET,SOCK_DGRAM,0);
+			pfEthAddr(s,p->if_name,&p->eaddr[0]);
+			(void) close(s);
+			
+		}	
+#endif
 	}
 }
 
@@ -185,12 +194,12 @@ deviceInitOne(ifname)
 	if ((strlen(dev) == 2) &&
 	    (dev[0] == 'e') &&
 	    ((dev[1] == 'n') || (dev[1] == 't'))) {
-		sprintf(interface,"ent%d\0",unit);
+		snprintf(interface,sizeof(interface),"ent%d\0",unit);
 	} else {
-		sprintf(interface,"%s%d\0",dev,unit);
+		snprintf(interface,sizeof(interface),"%s%d\0",dev,unit);
 	}
 #else
-	sprintf(interface,"%s",ifname);
+	snprintf(interface,sizeof(interface),"%s",ifname);
 #endif /* _AIX */
 
 	/* Ok, init it just once */

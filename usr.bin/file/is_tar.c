@@ -1,3 +1,5 @@
+/*	$OpenBSD: is_tar.c,v 1.4 2001/11/19 19:02:13 mpech Exp $	*/
+
 /*
  * is_tar() -- figure out whether file is a tar archive.
  *
@@ -5,7 +7,6 @@
  * Pubic Domain version written 26 Aug 1985 John Gilmore (ihnp4!hoptoad!gnu).
  *
  * @(#)list.c 1.18 9/23/86 Public Domain - gnu
- * $Id: is_tar.c,v 1.5 1995/04/28 19:23:54 christos Exp $
  *
  * Comments changed and some code/comments reformatted
  * for file command by Ian Darwin.
@@ -18,11 +19,7 @@
 
 #define	isodigit(c)	( ((c) >= '0') && ((c) <= '7') )
 
-#if	defined(__STDC__) || defined(__cplusplus)
-static long from_oct(int, char*);	/* Decode octal number */
-#else
-static long from_oct();
-#endif
+static int from_oct(int, char*);	/* Decode octal number */
 
 /*
  * Return 
@@ -35,10 +32,10 @@ is_tar(buf, nbytes)
 unsigned char *buf;
 int nbytes;
 {
-	register union record *header = (union record *)buf;
-	register int	i;
-	register long	sum, recsum;
-	register char	*p;
+	union record *header = (union record *)buf;
+	int	i;
+	int	sum, recsum;
+	char	*p;
 
 	if (nbytes < sizeof(union record))
 		return 0;
@@ -75,12 +72,12 @@ int nbytes;
  *
  * Result is -1 if the field is invalid (all blank, or nonoctal).
  */
-static long
+static int
 from_oct(digs, where)
-	register int	digs;
-	register char	*where;
+	int	digs;
+	char	*where;
 {
-	register long	value;
+	int	value;
 
 	while (isspace(*where)) {		/* Skip spaces */
 		where++;

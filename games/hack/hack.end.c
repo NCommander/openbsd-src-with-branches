@@ -1,9 +1,68 @@
+/*	$OpenBSD: hack.end.c,v 1.4 2001/08/06 22:59:13 pjanzen Exp $	*/
+
 /*
- * Copyright (c) Stichting Mathematisch Centrum, Amsterdam, 1985.
+ * Copyright (c) 1985, Stichting Centrum voor Wiskunde en Informatica,
+ * Amsterdam
+ * All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are
+ * met:
+ *
+ * - Redistributions of source code must retain the above copyright notice,
+ * this list of conditions and the following disclaimer.
+ *
+ * - Redistributions in binary form must reproduce the above copyright
+ * notice, this list of conditions and the following disclaimer in the
+ * documentation and/or other materials provided with the distribution.
+ *
+ * - Neither the name of the Stichting Centrum voor Wiskunde en
+ * Informatica, nor the names of its contributors may be used to endorse or
+ * promote products derived from this software without specific prior
+ * written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS
+ * IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED
+ * TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A
+ * PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER
+ * OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
+ * EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+ * PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR
+ * PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
+ * LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
+ * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ */
+
+/*
+ * Copyright (c) 1982 Jay Fenlason <hack@gnu.org>
+ * All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions
+ * are met:
+ * 1. Redistributions of source code must retain the above copyright
+ *    notice, this list of conditions and the following disclaimer.
+ * 2. Redistributions in binary form must reproduce the above copyright
+ *    notice, this list of conditions and the following disclaimer in the
+ *    documentation and/or other materials provided with the distribution.
+ * 3. The name of the author may not be used to endorse or promote products
+ *    derived from this software without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED ``AS IS'' AND ANY EXPRESS OR IMPLIED WARRANTIES,
+ * INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY
+ * AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.  IN NO EVENT SHALL
+ * THE AUTHOR BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
+ * EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+ * PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS;
+ * OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
+ * WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR
+ * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
+ * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
 #ifndef lint
-static char rcsid[] = "$NetBSD: hack.end.c,v 1.3 1995/03/23 08:30:05 cgd Exp $";
+static char rcsid[] = "$OpenBSD: hack.end.c,v 1.4 2001/08/06 22:59:13 pjanzen Exp $";
 #endif /* not lint */
 
 #include "hack.h"
@@ -83,7 +142,7 @@ register char *st1;
 		flags.botl = 1;
 		return;
 	}
-#endif WIZARD
+#endif /* WIZARD */
 	(void) signal(SIGINT, done_intr);
 	(void) signal(SIGQUIT, done_intr);
 	(void) signal(SIGHUP, done_hangup);
@@ -95,14 +154,14 @@ register char *st1;
 	if(*st1 == 'd' && st1[1] == 'r') killer = "drowning"; else
 	if(*st1 == 'p') killer = "panic"; else
 	if(*st1 == 't') killer = "trickery"; else
-	if(!index("bcd", *st1)) killer = st1;
+	if(!strchr("bcd", *st1)) killer = st1;
 	paybill();
 	clearlocks();
 	if(flags.toplin == 1) more();
-	if(index("bcds", *st1)){
+	if(strchr("bcds", *st1)){
 #ifdef WIZARD
 	    if(!wizard)
-#endif WIZARD
+#endif /* WIZARD */
 		savebones();
 		if(!flags.notombstone)
 			outrip();
@@ -194,7 +253,7 @@ register char *st1;
 	}
 #ifdef WIZARD
 	if(!wizard)
-#endif WIZARD
+#endif /* WIZARD */
 		topten();
 	if(done_stopprint) printf("\n\n");
 	exit(0);
@@ -297,7 +356,7 @@ topten(){
 	     t1->uid == t0->uid &&
 #else
 	     strncmp(t1->name, t0->name, NAMSZ) == 0 &&
-#endif PERS_IS_UID
+#endif /* PERS_IS_UID */
 	     t1->plchar == t0->plchar && --occ_cnt <= 0){
 		if(rank0 < 0){
 			rank0 = 0;
@@ -352,7 +411,7 @@ topten(){
 				  t1->uid != t0->uid ))
 #else
 				  strncmp(t1->name, t0->name, NAMSZ)))
-#endif PERS_IS_UID
+#endif /* PERS_IS_UID */
 	  	continue;
 	  if(rank == rank0-flags.end_around &&
 	     rank0 > flags.end_top+flags.end_around+1 &&
@@ -426,7 +485,7 @@ char linebuf[BUFSZ];
 	if(killed) Sprintf(eos(linebuf), " by %s%s",
 	  (!strncmp(t1->death, "trick", 5) || !strncmp(t1->death, "the ", 4))
 		? "" :
-	  index(vowels,*t1->death) ? "an " : "a ",
+	  strchr(vowels,*t1->death) ? "an " : "a ",
 	  t1->death);
 	Sprintf(eos(linebuf), ".");
 	if(t1->maxhp) {
@@ -485,7 +544,7 @@ hangup()
 	clearlocks();
 	exit(1);
 }
-#endif NOSAVEONHANGUP
+#endif /* NOSAVEONHANGUP */
 
 char *
 eos(s)
@@ -521,13 +580,13 @@ prscore(argc,argv) int argc; char **argv; {
 	long total_score = 0L;
 	char totchars[10];
 	int totcharct = 0;
-#endif nonsense
+#endif /* nonsense */
 	int outflg = (argc >= -1);
 #ifdef PERS_IS_UID
 	int uid = -1;
 #else
 	char *player0;
-#endif PERS_IS_UID
+#endif /* PERS_IS_UID */
 
 	if(!(rfile = fopen(recfile,"r"))){
 		puts("Cannot open record file!");
@@ -538,7 +597,7 @@ prscore(argc,argv) int argc; char **argv; {
 		if(!argv[1][2]){
 			argc--;
 			argv++;
-		} else if(!argv[1][3] && index("CFKSTWX", argv[1][2])) {
+		} else if(!argv[1][3] && strchr("CFKSTWX", argv[1][2])) {
 			argv[1]++;
 			argv[1][0] = '-';
 		} else	argv[1] += 2;
@@ -553,7 +612,7 @@ prscore(argc,argv) int argc; char **argv; {
 			player0 = "hackplayer";
 		playerct = 1;
 		players = &player0;
-#endif PERS_IS_UID
+#endif /* PERS_IS_UID */
 	} else {
 		playerct = --argc;
 		players = ++argv;
@@ -573,7 +632,7 @@ prscore(argc,argv) int argc; char **argv; {
 	  if(!playerct && t1->uid == uid)
 		flg++;
 	  else
-#endif PERS_IS_UID
+#endif /* PERS_IS_UID */
 	  for(i = 0; i < playerct; i++){
 		if(strcmp(players[i], "all") == 0 ||
 		   strncmp(t1->name, players[i], NAMSZ) == 0 ||
@@ -608,7 +667,7 @@ prscore(argc,argv) int argc; char **argv; {
 		if(!playerct && t1->uid == uid)
 			goto outwithit;
 		else
-#endif PERS_IS_UID
+#endif /* PERS_IS_UID */
 		for(i = 0; i < playerct; i++){
 			if(strcmp(players[i], "all") == 0 ||
 			   strncmp(t1->name, players[i], NAMSZ) == 0 ||
@@ -623,7 +682,7 @@ prscore(argc,argv) int argc; char **argv; {
 				total_score += t1->points;
 				if(totcharct < sizeof(totchars)-1)
 				    totchars[totcharct++] = t1->plchar;
-#endif nonsense
+#endif /* nonsense */
 				break;
 			}
 		}
@@ -638,10 +697,10 @@ prscore(argc,argv) int argc; char **argv; {
 	   .hacklog or something in his home directory. */
 	flags.beginner = (total_score < 6000);
 	for(i=0; i<6; i++)
-	    if(!index(totchars, "CFKSTWX"[i])) {
+	    if(!strchr(totchars, "CFKSTWX"[i])) {
 		flags.beginner = 1;
 		if(!pl_character[0]) pl_character[0] = "CFKSTWX"[i];
 		break;
 	}
-#endif nonsense
+#endif /* nonsense */
 }

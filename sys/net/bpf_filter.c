@@ -1,4 +1,5 @@
-/*	$NetBSD: bpf_filter.c,v 1.11 1995/04/22 13:26:39 cgd Exp $	*/
+/*	$OpenBSD: bpf_filter.c,v 1.7 2000/06/19 03:00:54 jason Exp $	*/
+/*	$NetBSD: bpf_filter.c,v 1.12 1996/02/13 22:00:00 christos Exp $	*/
 
 /*
  * Copyright (c) 1990, 1991, 1992, 1993
@@ -44,12 +45,7 @@
 #include <sys/types.h>
 #include <sys/time.h>
 
-#ifdef sun
-#include <netinet/in.h>
-#endif
-
-#if defined(sparc) || defined(mips) || defined(ibm032) || \
-    (defined(__NetBSD__) && !defined(UNALIGNED_ACCESS))
+#ifndef UNALIGNED_ACCESS
 #define BPF_ALIGN
 #endif
 
@@ -82,8 +78,11 @@
 	} \
 }
 
-static int
-m_xword(m, k, err)
+int	bpf_m_xword(struct mbuf *, int, int *);
+int	bpf_m_xhalf(struct mbuf *, int, int *);
+
+int
+bpf_m_xword(m, k, err)
 	register struct mbuf *m;
 	register int k, *err;
 {
@@ -118,8 +117,8 @@ m_xword(m, k, err)
 	return 0;
 }
 
-static int
-m_xhalf(m, k, err)
+int
+bpf_m_xhalf(m, k, err)
 	register struct mbuf *m;
 	register int k, *err;
 {
@@ -158,7 +157,7 @@ bpf_filter(pc, p, wirelen, buflen)
 	u_int wirelen;
 	register u_int buflen;
 {
-	register u_int32_t A, X;
+	register u_int32_t A = 0, X = 0;
 	register int k;
 	int32_t mem[BPF_MEMWORDS];
 
@@ -167,10 +166,6 @@ bpf_filter(pc, p, wirelen, buflen)
 		 * No filter means accept all.
 		 */
 		return (u_int)-1;
-#ifdef lint
-	A = 0;
-	X = 0;
-#endif
 	--pc;
 	while (1) {
 		++pc;
@@ -196,7 +191,7 @@ bpf_filter(pc, p, wirelen, buflen)
 
 				if (buflen != 0)
 					return 0;
-				A = m_xword((struct mbuf *)p, k, &merr);
+				A = bpf_m_xword((struct mbuf *)p, k, &merr);
 				if (merr != 0)
 					return 0;
 				continue;
@@ -215,7 +210,7 @@ bpf_filter(pc, p, wirelen, buflen)
 
 				if (buflen != 0)
 					return 0;
-				A = m_xhalf((struct mbuf *)p, k, &merr);
+				A = bpf_m_xhalf((struct mbuf *)p, k, &merr);
 				continue;
 #else
 				return 0;
@@ -260,7 +255,7 @@ bpf_filter(pc, p, wirelen, buflen)
 
 				if (buflen != 0)
 					return 0;
-				A = m_xword((struct mbuf *)p, k, &merr);
+				A = bpf_m_xword((struct mbuf *)p, k, &merr);
 				if (merr != 0)
 					return 0;
 				continue;
@@ -279,7 +274,7 @@ bpf_filter(pc, p, wirelen, buflen)
 
 				if (buflen != 0)
 					return 0;
-				A = m_xhalf((struct mbuf *)p, k, &merr);
+				A = bpf_m_xhalf((struct mbuf *)p, k, &merr);
 				if (merr != 0)
 					return 0;
 				continue;

@@ -1,7 +1,7 @@
-/*	$NetBSD: pcap.h,v 1.2 1995/03/06 11:39:07 mycroft Exp $	*/
+/*	$OpenBSD: pcap.h,v 1.10 2001/12/17 22:29:47 dugsong Exp $	*/
 
 /*
- * Copyright (c) 1993, 1994
+ * Copyright (c) 1993, 1994, 1995, 1996, 1997
  *	The Regents of the University of California.  All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -32,7 +32,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  *
- * @(#) Header: pcap.h,v 1.15 94/06/14 20:03:34 leres Exp (LBL)
+ * @(#) $Header: /cvs/src/lib/libpcap/pcap.h,v 1.10 2001/12/17 22:29:47 dugsong Exp $ (LBL)
  */
 
 #ifndef lib_pcap_h
@@ -55,8 +55,8 @@
  * predates the bpf typedefs for 64-bit support.
  */
 #if BPF_RELEASE - 0 < 199406
-typedef	long bpf_int32;
-typedef	u_long bpf_u_int32;
+typedef	int bpf_int32;
+typedef	u_int bpf_u_int32;
 #endif
 
 typedef struct pcap pcap_t;
@@ -65,7 +65,7 @@ typedef struct pcap_dumper pcap_dumper_t;
 /*
  * The first record in the file contains saved values for some
  * of the flags used in the printout phases of tcpdump.
- * Many fields here are longs so compilers won't insert unwanted
+ * Many fields here are 32 bit ints so compilers won't insert unwanted
  * padding; these files need to be interchangeable across architectures.
  */
 struct pcap_file_header {
@@ -84,7 +84,7 @@ struct pcap_file_header {
  * packet interfaces.
  */
 struct pcap_pkthdr {
-	struct timeval ts;	/* time stamp */
+	struct bpf_timeval ts;	/* time stamp */
 	bpf_u_int32 caplen;	/* length of portion present */
 	bpf_u_int32 len;	/* length this packet (off wire) */
 };
@@ -102,22 +102,25 @@ typedef void (*pcap_handler)(u_char *, const struct pcap_pkthdr *,
 			     const u_char *);
 
 char	*pcap_lookupdev(char *);
-int	pcap_lookupnet(char *, u_long *, u_long *, char *);
+int	pcap_lookupnet(char *, bpf_u_int32 *, bpf_u_int32 *, char *);
 pcap_t	*pcap_open_live(char *, int, int, int, char *);
-pcap_t	*pcap_open_offline(char *, char *);
+pcap_t	*pcap_open_offline(const char *, char *);
 void	pcap_close(pcap_t *);
 int	pcap_loop(pcap_t *, int, pcap_handler, u_char *);
 int	pcap_dispatch(pcap_t *, int, pcap_handler, u_char *);
 const u_char*
 	pcap_next(pcap_t *, struct pcap_pkthdr *);
 int	pcap_stats(pcap_t *, struct pcap_stat *);
+int	pcap_inject(pcap_t *, const void *, size_t);
 int	pcap_setfilter(pcap_t *, struct bpf_program *);
 void	pcap_perror(pcap_t *, char *);
 char	*pcap_strerror(int);
 char	*pcap_geterr(pcap_t *);
-int	pcap_compile(pcap_t *, struct bpf_program *, char *, int, u_long);
-/* XXX */
-int	pcap_freecode(pcap_t *, struct bpf_program *);
+int	pcap_compile(pcap_t *, struct bpf_program *, char *, int,
+	    bpf_u_int32);
+int	pcap_compile_nopcap(int, int, struct bpf_program *,
+	    char *, int, bpf_u_int32);
+void	pcap_freecode(struct bpf_program *);
 int	pcap_datalink(pcap_t *);
 int	pcap_snapshot(pcap_t *);
 int	pcap_is_swapped(pcap_t *);
@@ -128,12 +131,11 @@ int	pcap_minor_version(pcap_t *);
 FILE	*pcap_file(pcap_t *);
 int	pcap_fileno(pcap_t *);
 
-pcap_dumper_t *pcap_dump_open(pcap_t *, char *);
+pcap_dumper_t *pcap_dump_open(pcap_t *, const char *);
 void	pcap_dump_close(pcap_dumper_t *);
 void	pcap_dump(u_char *, const struct pcap_pkthdr *, const u_char *);
 
 /* XXX this guy lives in the bpf tree */
 u_int	bpf_filter(struct bpf_insn *, u_char *, u_int, u_int);
 char	*bpf_image(struct bpf_insn *, int);
-
 #endif

@@ -1,4 +1,5 @@
-/*	$NetBSD: dd.c,v 1.5 1995/10/08 23:01:24 gwr Exp $	*/
+/*	$OpenBSD: dd.c,v 1.11 2001/10/06 22:31:54 millert Exp $	*/
+/*	$NetBSD: dd.c,v 1.6 1996/02/20 19:29:06 jtc Exp $	*/
 
 /*-
  * Copyright (c) 1991, 1993, 1994
@@ -47,7 +48,7 @@ static char copyright[] =
 #if 0
 static char sccsid[] = "@(#)dd.c	8.5 (Berkeley) 4/2/94";
 #else
-static char rcsid[] = "$NetBSD: dd.c,v 1.5 1995/10/08 23:01:24 gwr Exp $";
+static char rcsid[] = "$OpenBSD: dd.c,v 1.11 2001/10/06 22:31:54 millert Exp $";
 #endif
 #endif /* not lint */
 
@@ -69,19 +70,19 @@ static char rcsid[] = "$NetBSD: dd.c,v 1.5 1995/10/08 23:01:24 gwr Exp $";
 #include "dd.h"
 #include "extern.h"
 
-static void dd_close __P((void));
-static void dd_in __P((void));
-static void getfdtype __P((IO *));
-static void setup __P((void));
+static void dd_close(void);
+static void dd_in(void);
+static void getfdtype(IO *);
+static void setup(void);
 
 IO	in, out;		/* input/output state */
 STAT	st;			/* statistics */
-void	(*cfunc) __P((void));	/* conversion function */
-u_long	cpy_cnt;		/* # of blocks to copy */
+void	(*cfunc)(void);		/* conversion function */
+size_t	cpy_cnt;		/* # of blocks to copy */
 u_int	ddflags;		/* conversion options */
-u_int	cbsz;			/* conversion block size */
-u_int	files_cnt = 1;		/* # of files to copy */
-u_char	*ctab;			/* conversion table */
+size_t	cbsz;			/* conversion block size */
+size_t	files_cnt = 1;		/* # of files to copy */
+const	u_char	*ctab;		/* conversion table */
 
 int
 main(argc, argv)
@@ -96,8 +97,10 @@ main(argc, argv)
 
 	atexit(summary);
 
-	while (files_cnt--)
-		dd_in();
+	if (cpy_cnt != (size_t)-1) {
+		while (files_cnt--)
+			dd_in();
+	}
 
 	dd_close();
 	exit(0);
@@ -151,12 +154,12 @@ setup()
 	 */
 	if (!(ddflags & (C_BLOCK|C_UNBLOCK))) {
 		if ((in.db = malloc(out.dbsz + in.dbsz - 1)) == NULL)
-			err(1, NULL);
+			err(1, "input buffer");
 		out.db = in.db;
 	} else if ((in.db =
 	    malloc((u_int)(MAX(in.dbsz, cbsz) + cbsz))) == NULL ||
 	    (out.db = malloc((u_int)(out.dbsz + cbsz))) == NULL)
-		err(1, NULL);
+		err(1, "output buffer");
 	in.dbp = in.db;
 	out.dbp = out.db;
 
@@ -170,8 +173,8 @@ setup()
 	 * Truncate the output file; ignore errors because it fails on some
 	 * kinds of output files, tapes, for example.
 	 */
-	if (ddflags & (C_OF | C_SEEK | C_NOTRUNC) == (C_OF | C_SEEK))
-		(void)ftruncate(out.fd, (off_t)out.offset * out.dbsz);
+	if ((ddflags & (C_OF | C_SEEK | C_NOTRUNC)) == (C_OF | C_SEEK))
+		(void)ftruncate(out.fd, out.offset * out.dbsz);
 
 	/*
 	 * If converting case at the same time as another conversion, build a
@@ -183,32 +186,30 @@ setup()
 		/* Should not get here, but just in case... */
 		errx(1, "case conv and -DNO_CONV");
 #else	/* NO_CONV */
-		if (ddflags & C_ASCII)
+		if (ddflags & C_ASCII || ddflags & C_EBCDIC) {
 			if (ddflags & C_LCASE) {
 				for (cnt = 0; cnt < 0377; ++cnt)
-					if (isupper(ctab[cnt]))
-						ctab[cnt] = tolower(ctab[cnt]);
+					casetab[cnt] = tolower(ctab[cnt]);
 			} else {
 				for (cnt = 0; cnt < 0377; ++cnt)
-					if (islower(ctab[cnt]))
-						ctab[cnt] = toupper(ctab[cnt]);
+					casetab[cnt] = toupper(ctab[cnt]);
 			}
-		else if (ddflags & C_EBCDIC)
+		} else {
 			if (ddflags & C_LCASE) {
 				for (cnt = 0; cnt < 0377; ++cnt)
-					if (isupper(cnt))
-						ctab[cnt] = ctab[tolower(cnt)];
+					casetab[cnt] = tolower(cnt);
 			} else {
 				for (cnt = 0; cnt < 0377; ++cnt)
-					if (islower(cnt))
-						ctab[cnt] = ctab[toupper(cnt)];
+					casetab[cnt] = toupper(cnt);
 			}
-		else
-			ctab = ddflags & C_LCASE ? u2l : l2u;
+		}
+
+		ctab = casetab;
 #endif	/* NO_CONV */
 	}
 
-	(void)time(&st.start);			/* Statistics timestamp. */
+	/* Statistics timestamp. */
+	(void)gettimeofday(&st.startv, (struct timezone *)NULL);
 }
 
 static void
@@ -229,22 +230,22 @@ getfdtype(io)
 static void
 dd_in()
 {
-	int flags, n;
+	ssize_t n;
 
-	for (flags = ddflags;;) {
+	for (;;) {
 		if (cpy_cnt && (st.in_full + st.in_part) >= cpy_cnt)
 			return;
 
 		/*
-		 * Zero the buffer first if trying to recover from errors so
-		 * lose the minimum amount of data.  If doing block operations
+		 * Zero the buffer first if sync; if doing block operations
 		 * use spaces.
 		 */
-		if ((flags & (C_NOERROR|C_SYNC)) == (C_NOERROR|C_SYNC))
-			if (flags & (C_BLOCK|C_UNBLOCK))
-				memset(in.dbp, ' ', in.dbsz);
+		if (ddflags & C_SYNC) {
+			if (ddflags & (C_BLOCK|C_UNBLOCK))
+				(void)memset(in.dbp, ' ', in.dbsz);
 			else
-				memset(in.dbp, 0, in.dbsz);
+				(void)memset(in.dbp, 0, in.dbsz);
+		}
 
 		n = read(in.fd, in.dbp, in.dbsz);
 		if (n == 0) {
@@ -258,7 +259,7 @@ dd_in()
 			 * If noerror not specified, die.  POSIX requires that
 			 * the warning message be followed by an I/O display.
 			 */
-			if (!(flags & C_NOERROR))
+			if (!(ddflags & C_NOERROR))
 				err(1, "%s", in.name);
 			warn("%s", in.name);
 			summary();
@@ -322,7 +323,7 @@ dd_in()
 }
 
 /*
- * Cleanup any remaining I/O and flush output.  If necesssary, output file
+ * Cleanup any remaining I/O and flush output.  If necessary, output file
  * is truncated.
  */
 static void
@@ -334,8 +335,11 @@ dd_close()
 		block_close();
 	else if (cfunc == unblock)
 		unblock_close();
-	if (ddflags & C_OSYNC && out.dbcnt < out.dbsz) {
-		memset(out.dbp, 0, out.dbsz - out.dbcnt);
+	if (ddflags & C_OSYNC && out.dbcnt && out.dbcnt < out.dbsz) {
+		if (ddflags & (C_BLOCK|C_UNBLOCK))
+			memset(out.dbp, ' ', out.dbsz - out.dbcnt);
+		else
+			memset(out.dbp, 0, out.dbsz - out.dbcnt);
 		out.dbcnt = out.dbsz;
 	}
 	if (out.dbcnt)
@@ -347,7 +351,8 @@ dd_out(force)
 	int force;
 {
 	static int warned;
-	int cnt, n, nw;
+	size_t cnt, n;
+	ssize_t nw;
 	u_char *outp;
 
 	/*
@@ -403,6 +408,6 @@ dd_out(force)
 
 	/* Reassemble the output block. */
 	if (out.dbcnt)
-		memmove(out.db, out.dbp - out.dbcnt, out.dbcnt);
+		(void)memmove(out.db, out.dbp - out.dbcnt, out.dbcnt);
 	out.dbp = out.db + out.dbcnt;
 }

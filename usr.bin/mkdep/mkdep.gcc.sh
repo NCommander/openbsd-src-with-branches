@@ -1,5 +1,6 @@
 #!/bin/sh -
 #
+#	$OpenBSD: mkdep.gcc.sh,v 1.10 2000/07/23 22:22:07 millert Exp $
 #	$NetBSD: mkdep.gcc.sh,v 1.9 1994/12/23 07:34:59 jtc Exp $
 #
 # Copyright (c) 1991, 1993
@@ -36,9 +37,6 @@
 #	@(#)mkdep.gcc.sh	8.1 (Berkeley) 6/6/93
 #
 
-PATH=/bin:/usr/bin:/usr/ucb
-export PATH
-
 D=.depend			# default dependency file is .depend
 append=0
 pflag=
@@ -70,14 +68,18 @@ if [ $# = 0 ] ; then
 	exit 1
 fi
 
-TMP=/tmp/mkdep$$
+um=`umask`
+umask 022
 
-trap 'rm -f $TMP ; exit 1' 1 2 3 13 15
+TMP=`mktemp /tmp/mkdep.XXXXXXXXXX` || exit 1
+
+umask $um
+trap 'rm -f $TMP ; trap 2 ; kill -2 $$' 1 2 3 13 15
 
 if [ x$pflag = x ]; then
-	gcc -M "$@" | sed -e 's; \./; ;g' > $TMP
+	${CC:-cc} -M "$@" | sed -e 's; \./; ;g' > $TMP
 else
-	gcc -M "$@" | sed -e 's;\.o :; :;' -e 's; \./; ;g' > $TMP
+	${CC:-cc} -M "$@" | sed -e 's;\.o[ ]*:; :;' -e 's; \./; ;g' > $TMP
 fi
 
 if [ $? != 0 ]; then
@@ -88,8 +90,19 @@ fi
 
 if [ $append = 1 ]; then
 	cat $TMP >> $D
-	rm -f $TMP
+	if [ $? != 0 ]; then
+		echo 'mkdep: append failed.'
+		rm -f $TMP
+		exit 1
+	fi
 else
-	mv $TMP $D
+	mv -f $TMP $D
+	if [ $? != 0 ]; then
+		echo 'mkdep: rename failed.'
+		rm -f $TMP
+		exit 1
+	fi
 fi
+
+rm -f $TMP
 exit 0

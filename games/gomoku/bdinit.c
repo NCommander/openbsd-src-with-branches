@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: bdinit.c,v 1.3 1998/03/26 21:16:43 pjanzen Exp $	*/
 /*
  * Copyright (c) 1994
  *	The Regents of the University of California.  All rights reserved.
@@ -36,18 +36,23 @@
  */
 
 #ifndef lint
+#if 0
 static char sccsid[] = "@(#)bdinit.c	8.2 (Berkeley) 5/3/95";
+#else
+static char rcsid[] = "$OpenBSD: bdinit.c,v 1.3 1998/03/26 21:16:43 pjanzen Exp $";
+#endif
 #endif /* not lint */
 
-#include <string.h>
 #include "gomoku.h"
+#include <string.h>
 
+void
 bdinit(bp)
 	struct spotstr *bp;
 {
-	register int i, j, r;
-	register struct spotstr *sp;
-	register struct combostr *cbp;
+	int i, j, r;
+	struct spotstr *sp;
+	struct combostr *cbp;
 
 	movenum = 1;
 
@@ -168,11 +173,12 @@ bdinit(bp)
  * As pieces are played, it can make frames not overlap if there are no
  * common open spaces shared between the two frames.
  */
+void
 init_overlap()
 {
-	register struct spotstr *sp1, *sp2;
-	register struct combostr *cbp;
-	register int i, f, r, n, d1, d2;
+	struct spotstr *sp1, *sp2;
+	struct combostr *cbp;
+	int i, f, r, n, d1, d2;
 	int mask, bmask, vertex, s;
 	u_char *str;
 	short *ip;

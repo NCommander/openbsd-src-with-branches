@@ -1,7 +1,35 @@
-/*	$NetBSD$ */
+/*	$OpenBSD: clock.c,v 1.5 2002/04/27 23:21:05 miod Exp $ */
 
 /*
  * Copyright (c) 1995 Theo de Raadt
+ * 
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions
+ * are met:
+ * 1. Redistributions of source code must retain the above copyright
+ *    notice, this list of conditions and the following disclaimer.
+ * 2. Redistributions in binary form must reproduce the above copyright
+ *    notice, this list of conditions and the following disclaimer in the
+ *    documentation and/or other materials provided with the distribution.
+ * 3. All advertising materials mentioning features or use of this software
+ *    must display the following acknowledgement:
+ *	This product includes software developed under OpenBSD by
+ *	Theo de Raadt for Willowglen Singapore.
+ * 4. The name of the author may not be used to endorse or promote products
+ *    derived from this software without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS
+ * OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ * ARE DISCLAIMED.  IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY
+ * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+ * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
+ * OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+ * HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+ * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
+ * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
+ * SUCH DAMAGE.
+ *
  * Copyright (c) 1992, 1993
  *      The Regents of the University of California.  All rights reserved.
  *
@@ -46,8 +74,9 @@
  */
 
 #include <sys/param.h>
-#include <sys/kernel.h>
 #include <sys/device.h>
+#include <sys/kernel.h>
+#include <sys/systm.h>
 
 #include <machine/psl.h>
 #include <machine/autoconf.h>
@@ -88,16 +117,19 @@ struct clocksoftc {
 	struct intrhand sc_statih;
 };
 
-void	clockattach __P((struct device *, struct device *, void *));
-int	clockmatch __P((struct device *, void *, void *));
+void	clockattach(struct device *, struct device *, void *);
+int	clockmatch(struct device *, void *, void *);
 
-struct cfdriver clockcd = {
-	NULL, "clock", clockmatch, clockattach,
-	DV_DULL, sizeof(struct clocksoftc), 0
+struct cfattach clock_ca = {
+	sizeof(struct clocksoftc), clockmatch, clockattach
 };
 
-int	clockintr __P((void *));
-int	statintr __P((void *));
+struct cfdriver clock_cd = {
+	NULL, "clock", DV_DULL, 0
+};
+
+int	clockintr(void *);
+int	statintr(void *);
 
 int	clockbus;
 u_char	stat_reset, prof_reset;
@@ -195,6 +227,7 @@ clockintr(arg)
  * Set up real-time clock; we don't have a statistics clock at
  * present.
  */
+void
 cpu_initclocks()
 {
 	register int statint, minint;
@@ -344,10 +377,13 @@ statintr(cap)
 	return (1);
 }
 
+void
 delay(us)
-	register int us;
+	int us;
 {
+#if (NPCC > 0) || (NPCCTWO > 0)
 	volatile register int c;
+#endif
 
 	switch (clockbus) {
 #if NPCC > 0
@@ -360,7 +396,7 @@ delay(us)
 		c = 2 * us;
 		while (--c > 0)
 			;
-		return (0);
+		break;
 #endif
 #if NMC > 0
 	case BUS_MC:
@@ -375,7 +411,7 @@ delay(us)
 
 		while (sys_mc->mc_t3count < us)
 			;
-		return (0);
+		break;
 #endif
 #if NPCCTWO > 0
 	case BUS_PCCTWO:
@@ -387,7 +423,7 @@ delay(us)
 		c = 4 * us;
 		while (--c > 0)
 			;
-		return (0);
+		break;
 #endif
 	}
 }

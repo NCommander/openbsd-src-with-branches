@@ -34,10 +34,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  *
- *	@(#)SYS.h	8.1 (Berkeley) 6/4/93
- *
- *	from: Header: SYS.h,v 1.2 92/07/03 18:57:00 torek Exp
- *	$Id: SYS.h,v 1.3 1994/02/10 20:15:31 pk Exp $
+ *	$OpenBSD: SYS.h,v 1.11 2002/02/19 22:12:37 millert Exp $
  */
 
 #include <machine/asm.h>
@@ -50,17 +47,21 @@
 #define _CAT(x,y) x/**/y
 #endif
 
+#define __ENTRY(p,x) ENTRY(_CAT(p,x)) ; .weak x ; x = _CAT(p,x)
+
 /*
- * ERROR branches to cerror.  This is done with a macro so that I can
- * change it to be position independent later, if need be.
+ * ERROR branches to cerror.
  */
 #ifdef PIC
 #define	ERROR() \
 	PIC_PROLOGUE(%g1,%g2); \
-	ld [%g1+cerror],%g2; jmp %g2; nop
+	ld [%g1+_C_LABEL(__cerror)],%g2; jmp %g2; nop
 #else
 #define	ERROR() \
-	sethi %hi(cerror),%g1; or %lo(cerror),%g1,%g1; jmp %g1; nop
+	sethi %hi(_C_LABEL(__cerror)),%g1; \
+	or %lo(_C_LABEL(__cerror)),%g1,%g1; \
+	jmp %g1; \
+	nop
 #endif
 
 /*
@@ -68,23 +69,36 @@
  * Note that it adds a `nop' over what we could do, if we only knew what
  * came at label 1....
  */
-#define	SYSCALL(x) \
-	ENTRY(x); mov _CAT(SYS_,x),%g1; t ST_SYSCALL; bcc 1f; nop; ERROR(); 1:
+#define	__SYSCALL(p,x) \
+	__ENTRY(p,x); mov _CAT(SYS_,x),%g1; t ST_SYSCALL; bcc 1f; nop; ERROR(); 1:
 
 /*
  * RSYSCALL is used when the system call should just return.  Here
  * we use the SYSCALL_G2RFLAG to put the `success' return address in %g2
  * and avoid a branch.
  */
-#define	RSYSCALL(x) \
-	ENTRY(x); mov (_CAT(SYS_,x))|SYSCALL_G2RFLAG,%g1; add %o7,8,%g2; \
+#define	__RSYSCALL(p,x) \
+	__ENTRY(p,x); mov (_CAT(SYS_,x))|SYSCALL_G2RFLAG,%g1; add %o7,8,%g2; \
 	t ST_SYSCALL; ERROR()
 
 /*
  * PSEUDO(x,y) is like RSYSCALL(y) except that the name is x.
  */
-#define	PSEUDO(x,y) \
-	ENTRY(x); mov (_CAT(SYS_,y))|SYSCALL_G2RFLAG,%g1; add %o7,8,%g2; \
+#define	__PSEUDO(p,x,y) \
+	__ENTRY(p,x); mov (_CAT(SYS_,y))|SYSCALL_G2RFLAG,%g1; add %o7,8,%g2; \
 	t ST_SYSCALL; ERROR()
 
-	.globl	cerror
+/*
+ * PSEUDO_NOERROR(x,y) is like PSEUDO(x,y) except that errno is not set.
+ */
+#define	__PSEUDO_NOERROR(p,x,y) \
+	__ENTRY(p,x); mov (_CAT(SYS_,y))|SYSCALL_G2RFLAG,%g1; add %o7,8,%g2; \
+	t ST_SYSCALL
+
+# define SYSCALL(x)		__SYSCALL(_thread_sys_,x)
+# define RSYSCALL(x)		__RSYSCALL(_thread_sys_,x)
+# define PSEUDO(x,y)		__PSEUDO(_thread_sys_,x,y)
+# define PSEUDO_NOERROR(x,y)	__PSEUDO_NOERROR(_thread_sys_,x,y)
+# define SYSENTRY(x)		__ENTRY(_thread_sys_,x)
+
+	.globl	_C_LABEL(__cerror)

@@ -165,6 +165,9 @@ arla_start (char *device_file, const char *cache_dir)
     if (chroot (cache_dir) < 0)
 	arla_err (1, ADEBERROR, errno, "chroot %s", cache_dir);
 
+	if (chdir ("/") < 0)
+	    arla_err (1, ADEBERROR, errno, "chdir /");
+
     if (fork_flag)
 	kill(getppid(), SIGUSR1);
     
@@ -234,8 +237,6 @@ main (int argc, char **argv)
 {
     int optind = 0;
     int ret;
-
-    set_progname (argv[0]);
 
     if (getarg (args, sizeof(args)/sizeof(*args), argc, argv, &optind))
 	usage (1);

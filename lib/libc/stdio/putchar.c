@@ -1,5 +1,3 @@
-/*	$NetBSD: putchar.c,v 1.4 1995/02/02 02:10:16 jtc Exp $	*/
-
 /*-
  * Copyright (c) 1990, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -37,23 +35,34 @@
  */
 
 #if defined(LIBC_SCCS) && !defined(lint)
-#if 0
-static char sccsid[] = "@(#)putchar.c	8.1 (Berkeley) 6/4/93";
-#endif
-static char rcsid[] = "$NetBSD: putchar.c,v 1.4 1995/02/02 02:10:16 jtc Exp $";
+static char rcsid[] = "$OpenBSD: putchar.c,v 1.3 2001/07/09 06:57:44 deraadt Exp $";
 #endif /* LIBC_SCCS and not lint */
 
 #include <stdio.h>
+
+#undef putchar_unlocked
+/*
+ * A subrouting version of the macro putchar_unlocked
+ */
+int
+putchar_unlocked(c)
+	int c;
+{
+	FILE *so = stdout;
+
+	return (putc_unlocked(c,so));
+}
 
 #undef putchar
 
 /*
  * A subroutine version of the macro putchar
  */
+int
 putchar(c)
 	int c;
 {
-	register FILE *so = stdout;
+	FILE *so = stdout;
 
-	return (__sputc(c, so));
+	return (putc(c, so));
 }

@@ -1,3 +1,4 @@
+/*	$OpenBSD: graphics.c,v 1.4 1999/09/01 00:27:07 pjanzen Exp $	*/
 /*	$NetBSD: graphics.c,v 1.3 1995/03/21 15:04:04 cgd Exp $	*/
 
 /*-
@@ -49,14 +50,12 @@
 #if 0
 static char sccsid[] = "@(#)graphics.c	8.1 (Berkeley) 5/31/93";
 #else
-static char rcsid[] = "$NetBSD: graphics.c,v 1.3 1995/03/21 15:04:04 cgd Exp $";
+static char rcsid[] = "$OpenBSD: graphics.c,v 1.4 1999/09/01 00:27:07 pjanzen Exp $";
 #endif
 #endif /* not lint */
 
+#include <err.h>
 #include "include.h"
-#ifdef SYSV
-#include <errno.h>
-#endif
 
 #define C_TOPBOTTOM		'-'
 #define C_LEFTRIGHT		'|'
@@ -68,19 +67,22 @@ static char rcsid[] = "$NetBSD: graphics.c,v 1.3 1995/03/21 15:04:04 cgd Exp $";
 
 WINDOW	*radar, *cleanradar, *credit, *input, *planes;
 
+int
 getAChar()
 {
+	int c;
 #ifdef BSD
-	return (getchar());
+	if ((c = getchar()) == EOF && feof(stdin))
+		quit(0);
+	return (c);
 #endif
 #ifdef SYSV
-	int c;
-
 	while ((c = getchar()) == -1 && errno == EINTR) ;
 	return(c);
 #endif
 }
 
+void
 erase_all()
 {
 	PLANE	*pp;
@@ -95,6 +97,7 @@ erase_all()
 	}
 }
 
+void
 draw_all()
 {
 	PLANE	*pp;
@@ -114,23 +117,29 @@ draw_all()
 	fflush(stdout);
 }
 
-init_gr()
+void
+setup_screen(scp)
+	const C_SCREEN	*scp;
 {
 	static char	buffer[BUFSIZ];
+	int	i, j;
+	char	str[3];
+	const char *airstr;
 
 	initscr();
+	/* size of screen depends on chosen game, but we need at least 80
+	 * columns for "Information area" to work. */
+	if (LINES < (INPUT_LINES + scp->height) ||
+	    COLS < (PLANE_COLS + 2 * scp->width) ||
+	    COLS < 80) {
+		endwin();
+		errx(1, "screen too small.");
+	}
 	setbuf(stdout, buffer);
 	input = newwin(INPUT_LINES, COLS - PLANE_COLS, LINES - INPUT_LINES, 0);
 	credit = newwin(INPUT_LINES, PLANE_COLS, LINES - INPUT_LINES, 
 		COLS - PLANE_COLS);
 	planes = newwin(LINES - INPUT_LINES, PLANE_COLS, 0, COLS - PLANE_COLS);
-}
-
-setup_screen(scp)
-	C_SCREEN	*scp;
-{
-	register int	i, j;
-	char		str[3], *airstr;
 
 	str[2] = '\0';
 
@@ -217,9 +226,11 @@ setup_screen(scp)
 	fflush(stdout);
 }
 
+void
 draw_line(w, x, y, lx, ly, s)
 	WINDOW	*w;
-	char	*s;
+	int	x, y, lx, ly;
+	const char	*s;
 {
 	int	dx, dy;
 
@@ -235,7 +246,9 @@ draw_line(w, x, y, lx, ly, s)
 	}
 }
 
+void
 ioclrtoeol(pos)
+	int pos;
 {
 	wmove(input, 0, pos);
 	wclrtoeol(input);
@@ -243,15 +256,19 @@ ioclrtoeol(pos)
 	fflush(stdout);
 }
 
+void
 iomove(pos)
+	int pos;
 {
 	wmove(input, 0, pos);
 	wrefresh(input);
 	fflush(stdout);
 }
 
+void
 ioaddstr(pos, str)
-	char	*str;
+	int		pos;
+	const char	*str;
 {
 	wmove(input, 0, pos);
 	waddstr(input, str);
@@ -259,6 +276,7 @@ ioaddstr(pos, str)
 	fflush(stdout);
 }
 
+void
 ioclrtobot()
 {
 	wclrtobot(input);
@@ -266,8 +284,10 @@ ioclrtobot()
 	fflush(stdout);
 }
 
+void
 ioerror(pos, len, str)
-	char	*str;
+	int		pos, len;
+	const char	*str;
 {
 	int	i;
 
@@ -280,7 +300,9 @@ ioerror(pos, len, str)
 	fflush(stdout);
 }
 
-quit()
+void
+quit(dummy)
+	int dummy;
 {
 	int			c, y, x;
 #ifdef BSD
@@ -317,13 +339,12 @@ quit()
 	wmove(input, y, x);
 	wrefresh(input);
 	fflush(stdout);
-	return;
 }
 
+void
 planewin()
 {
 	PLANE	*pp;
-	char	*command();
 	int	warning = 0;
 
 #ifdef BSD
@@ -363,9 +384,10 @@ planewin()
 	fflush(stdout);
 }
 
+void
 loser(p, s)
-	PLANE	*p;
-	char	*s;
+	const PLANE	*p;
+	const char	*s;
 {
 	int			c;
 #ifdef BSD
@@ -384,8 +406,11 @@ loser(p, s)
 
 	wmove(input, 0, 0);
 	wclrtobot(input);
-	wprintw(input, "Plane '%c' %s\n\nHit space for top players list...",
-		name(p), s);
+	if (p == NULL)
+		wprintw(input, "%s\n\nHit space for top players list...", s);
+	else
+		wprintw(input, "Plane '%c' %s\n\nHit space for top players list...",
+			name(p), s);
 	wrefresh(input);
 	fflush(stdout);
 	while ((c = getchar()) != EOF && c != ' ')
@@ -397,6 +422,7 @@ loser(p, s)
 	exit(0);
 }
 
+void
 redraw()
 {
 	clear();
@@ -415,7 +441,7 @@ redraw()
 	fflush(stdout);
 }
 
-
+void
 done_screen()
 {
 	clear();

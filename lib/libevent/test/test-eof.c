@@ -1,3 +1,5 @@
+/*	$OpenBSD: test-eof.c,v 1.2 2002/06/25 15:50:16 mickey Exp $	*/
+
 /*
  * Compile with:
  * cc -I/usr/local/include -o time-test time-test.c -L/usr/local/lib -levent
@@ -53,10 +55,10 @@ main (int argc, char **argv)
 	write(pair[0], test, strlen(test)+1);
 	shutdown(pair[0], SHUT_WR);
 
-	/* Initalize the event library */
+	/* Initialize the event library */
 	event_init();
 
-	/* Initalize one event */
+	/* Initialize one event */
 	event_set(&ev, pair[1], EV_READ, read_cb, &ev);
 
 	event_add(&ev, NULL);

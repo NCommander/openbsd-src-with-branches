@@ -29,7 +29,7 @@ static void
 usage (void)
 {
   fprintf (stderr, "Usage: %s [-s service] [-p port] hostname checksum\n",
-	   getprogname());
+	   __progname);
   exit (1);
 }
 
@@ -55,7 +55,6 @@ main(int argc, char **argv)
     struct servent *serv;
     char **h_addr_list;
 
-    setprogname (argv[0]);
     strlcpy (service, SAMPLE_SERVICE, sizeof(service));
     port = 0;
 

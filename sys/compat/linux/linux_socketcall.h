@@ -1,3 +1,4 @@
+/*	$OpenBSD: linux_socketcall.h,v 1.3 1999/02/10 08:02:38 deraadt Exp $	*/
 /*	$NetBSD: linux_socketcall.h,v 1.1 1995/02/28 23:26:05 fvdl Exp $	*/
 
 /*
@@ -53,6 +54,8 @@
 #define LINUX_SYS_shutdown	13
 #define LINUX_SYS_setsockopt	14
 #define LINUX_SYS_getsockopt	15
+#define LINUX_SYS_sendmsg	16
+#define LINUX_SYS_recvmsg	17
 
 /*
  * Structures for the arguments of the different system calls. This looks
@@ -66,13 +69,13 @@ struct linux_socket_args {
 
 struct linux_bind_args {
 	int s;
-	struct sockaddr *name;
+	struct osockaddr *name;
 	int namelen;
 };
 
 struct linux_connect_args {
 	int s;
-	struct sockaddr *name;
+	struct osockaddr *name;
 	int namelen;
 };
 
@@ -89,7 +92,7 @@ struct linux_accept_args {
 
 struct linux_getsockname_args {
 	int s;
-	struct sockaddr *addr;
+	struct osockaddr *addr;
 	int *namelen;
 };
 
@@ -125,7 +128,7 @@ struct linux_sendto_args {
 	void *msg;
 	int len;
 	int flags;
-	struct sockaddr *to;
+	struct osockaddr *to;
 	int tolen;
 };
 
@@ -134,7 +137,7 @@ struct linux_recvfrom_args {
 	void *buf;
 	int len;
 	int flags;
-	struct sockaddr *from;	
+	struct osockaddr *from;	
 	int *fromlen;
 };
 
@@ -157,6 +160,18 @@ struct linux_setsockopt_args {
 	int optname;
 	void *optval;
 	int optlen;
+};
+
+struct linux_sendmsg_args {
+	int s;
+	struct msghdr *msg;
+	int flags;
+};
+
+struct linux_recvmsg_args {
+	int s;
+	struct msghdr *msg;
+	int flags;
 };
 
 #endif /* _LINUX_SOCKETCALL_H */

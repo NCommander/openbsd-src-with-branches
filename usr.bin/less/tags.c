@@ -1,3 +1,5 @@
+/*	$OpenBSD: tags.c,v 1.2 2001/01/29 01:58:04 niklas Exp $	*/
+
 /*
  * Copyright (c) 1984,1985,1989,1994,1995  Mark Nudelman
  * All rights reserved.
@@ -49,12 +51,12 @@ extern int jump_sline;
  */
 	public void
 findtag(tag)
-	register char *tag;
+	char *tag;
 {
 	char *p;
 	char *q;
-	register FILE *f;
-	register int taglen;
+	FILE *f;
+	int taglen;
 	int search_char;
 	int err;
 	static char tline[200];

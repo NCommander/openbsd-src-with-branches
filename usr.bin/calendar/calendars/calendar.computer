@@ -1,3 +1,12 @@
+/*
+ * Computer
+ *
+ * $OpenBSD: calendar.computer,v 1.5 2001/01/08 16:36:33 pjanzen Exp $
+ */
+
+#ifndef _calendar_computer_
+#define _calendar_computer_
+
 01/01	AT&T officially divests its local Bell companies, 1984
 01/01	The Epoch (Time 0 for UNIX systems, Midnight GMT, 1970)
 01/03	Apple Computer founded, 1977
@@ -16,7 +25,7 @@
 02/15	ENIAC demonstrated, 1946
 03/01	First NPL (later PL/I) report published, 1964
 03/04	First Cray-1 shipped to Los Alamos
-03/09	"GOTO considered harmful" (E.J. Dikstra) published in CACM, 1968
+03/09	"GOTO considered harmful" (E.W. Dijkstra) published in CACM, 1968
 03/14	LISP introduced, 1960
 03/28	DEC announces PDP-11, 1970
 03/31	Eckert-Mauchly Computer Corp. founded, Phila, 1946
@@ -29,7 +38,7 @@
 05/06	EDSAC demonstrated, 1949
 05/01	First BASIC program run at Dartmouth, 1964
 05/16	First report on SNOBOL distributed (within BTL), 1963
-05/21	DEC announces PDP-8
+05/21	DEC announces PDP-8, 1965
 05/22	Ethernet first described, 1973
 05/27	First joint meeting of U.S. and European ALGOL definition cte., 1958
 05/28	First meeting of COBOL definition cte. (eventually CODASYL), 1959
@@ -41,7 +50,7 @@
 06/23	IBM unbundles software, 1969
 06/23	Turing's Birthday, 1912
 06/30	First advanced degree on computer related topic: to H. Karamanian,
-	Temple Univ., Phila, 1948, for symbolic diffentiation on the ENIAC
+	Temple Univ., Phila, 1948, for symbolic differentiation on the ENIAC
 07/08	Bell Telephone Co. formed (predecessor of AT&T), 1877
 07/08	CDC incorporated, 1957
 08/14	First Unix-based mallet created, 1954
@@ -57,6 +66,8 @@
 10/14	British Computer Society founded, 1957
 10/15	First FORTRAN Programmer's Reference Manual published
 10/20	Zurich ALGOL report published, 1958
-10/25	DEC announces VAX-11/780
+10/25	DEC announces VAX-11/780, 1978
 11/04	UNIVAC I program predicts Eisenhower victory based on 7% of votes, 1952
 12/08	First Ph.D. awarded by Computer Science Dept, Univ. of Penna, 1965
+
+#endif /* !_calendar_computer_ */

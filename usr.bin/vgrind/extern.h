@@ -1,3 +1,4 @@
+/*	$OpenBSD: extern.h,v 1.3 2002/02/16 21:27:56 millert Exp $	*/
 /*	$NetBSD: extern.h,v 1.2 1994/11/17 08:27:59 jtc Exp $	*/
 
 /*
@@ -38,8 +39,8 @@
 
 typedef int boolean;
 
-extern boolean	 _escaped;             /* if last character was an escape */
-extern char    *_start;                /* start of the current string */
+extern boolean	 x_escaped;             /* if last character was an escape */
+extern char    *x_start;                /* start of the current string */
 extern char    *l_acmbeg;              /* string introducing a comment */
 extern char    *l_acmend;              /* string ending a comment */
 extern char    *l_blkbeg;              /* string begining of a block */
@@ -60,8 +61,8 @@ extern char    *language;              /* the language indicator */
 #include <sys/cdefs.h>
 
 __BEGIN_DECLS
-extern int      STRNCMP __P((char *, char *, int));
-extern char    *convexp __P((char *));
-extern char    *expmatch __P((char *, char *, char *));
+extern int      STRNCMP(char *, char *, int);
+extern char    *convexp(char *);
+extern char    *expmatch(char *, char *, char *);
 __END_DECLS
 

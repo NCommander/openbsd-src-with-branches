@@ -547,8 +547,6 @@ main (int argc, char **argv)
     int optind = 0;
     krb5_deltat ticket_life = 0;
 
-    setprogname (argv[0]);
-    
     ret = krb5_init_context (&context);
     if (ret)
 	errx(1, "krb5_init_context failed: %d", ret);
@@ -620,7 +618,7 @@ main (int argc, char **argv)
 #ifdef KRB4
     if(get_v4_tgt == -1)
 	krb5_appdefault_boolean(context, "kinit", 
-				krb5_principal_get_realm(context, principal), 
+				(krb5_realm)krb5_principal_get_realm(context, principal), 
 				"krb4_get_tickets", TRUE, &get_v4_tgt);
 #endif
 
@@ -643,7 +641,23 @@ main (int argc, char **argv)
 	krb5_afslog(context, ccache, NULL, NULL);
 #endif
     if(argc > 1) {
-	simple_execvp(argv[1], argv+1);
+	pid_t pid = fork();
+	if(pid == 0) {
+	    execvp(argv[1], argv+1);
+	    exit(1);
+	}
+	while(1) {
+	    int status;
+	    while(waitpid(pid, &status, 0) < 0)
+		if(errno != EINTR)
+		    break;
+	    if(WIFSTOPPED(status))
+		continue;
+	    if(WIFEXITED(status))
+		break;
+	    if(WIFSIGNALED(status))
+		break;
+	}
 	krb5_cc_destroy(context, ccache);
 #ifdef KRB4
 	dest_tkt();

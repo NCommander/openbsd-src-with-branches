@@ -33,8 +33,7 @@
 .\" OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 .\" SUCH DAMAGE.
 .\"
-.\"     from: @(#)strtod.3	5.3 (Berkeley) 6/29/91
-.\"	$Id: strtod.3,v 1.4 1993/11/29 22:07:18 jtc Exp $
+.\"	$OpenBSD: strtod.3,v 1.6 2000/03/04 22:19:31 aaron Exp $
 .\"
 .Dd June 29, 1991
 .Dt STRTOD 3
@@ -51,20 +50,25 @@ string to double
 .Sh DESCRIPTION
 The
 .Fn strtod
-function converts the initial portion of the string 
-pointed to by
+function converts the initial portion of the string pointed to by
 .Fa nptr
 to
-.Em double
+.Li double
 representation.
 .Pp
-The expected form of the string is an optional plus (``+'') or minus
-sign (``-'') followed by a sequence of digits optionally containing
+The expected form of the string is an optional plus
+.Pq Ql +
+or minus sign
+.Pq Ql -
+followed by a sequence of digits optionally containing
 a decimal-point character, optionally followed by an exponent.
-An exponent consists of an ``E'' or ``e'', followed by an optional plus
-or minus sign, followed by a sequence of digits.
+An exponent consists of an
+.Sq E
+or
+.Sq e ,
+followed by an optional plus or minus sign, followed by a sequence of digits.
 .Pp
-Leading white-space characters in the string (as defined by the
+Leading whitespace characters in the string (as defined by the
 .Xr isspace 3
 function) are skipped.
 .Sh RETURN VALUES
@@ -88,18 +92,18 @@ is stored in the location referenced by
 If the correct value would cause overflow, plus or minus
 .Dv HUGE_VAL
 is returned (according to the sign of the value), and
-.Dv ERANGE
+.Er ERANGE
 is stored in
 .Va errno .
-If the correct value would cause underflow, zero is
-returned and
-.Dv ERANGE
-is stored in 
+If the correct value would cause underflow, zero is returned and
+.Er ERANGE
+is stored in
 .Va errno .
 .Sh ERRORS
 .Bl -tag -width Er
 .It Bq Er ERANGE
 Overflow or underflow occurred.
+.El
 .Sh SEE ALSO
 .Xr atof 3 ,
 .Xr atoi 3 ,
@@ -109,6 +113,5 @@ Overflow or underflow occurred.
 .Sh STANDARDS
 The
 .Fn strtod
-function
-conforms to
+function conforms to
 .St -ansiC .

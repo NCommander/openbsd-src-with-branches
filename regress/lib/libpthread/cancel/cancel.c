@@ -1,4 +1,4 @@
-/*	$OpenBSD: test_cancel.c,v 1.4 2001/01/16 21:47:12 brad Exp $	*/
+/*	$OpenBSD: cancel.c,v 1.4 2002/02/17 04:33:33 marc Exp $	*/
 /* David Leonard <d@openbsd.org>, 1999. Public Domain. */
 
 #include <pthread.h>
@@ -6,13 +6,15 @@
 #include <unistd.h>
 #include <stdio.h>
 #include <fcntl.h>
+#include <stdlib.h>
 #include "test.h"
 
 static pthread_cond_t cond;
 static pthread_mutex_t mutex;
 static struct timespec expiretime;
 
-static int pv_state = 0;
+static volatile int pv_state = 0;
+
 void p() {
 	CHECKr(pthread_mutex_lock(&mutex));
 	if (pv_state <= 0) {
@@ -34,9 +36,9 @@ void v() {
 }
 
 void
-c1handler(void *fd)
+c1handler(void *arg)
 {
-	CHECKe(close((int)fd));
+	CHECKe(close(*(int *)arg));
 	v();
 }
 
@@ -52,7 +54,7 @@ child1fn(arg)
 	CHECKr(pthread_setcanceltype(PTHREAD_CANCEL_ASYNCHRONOUS, NULL));
 	/* something that will block */
 	CHECKe(fd = open("/dev/tty", O_RDONLY));
-	pthread_cleanup_push(c1handler, (void *)fd);
+	pthread_cleanup_push(c1handler, (void *)&fd);
 	v();
 	while (1) {
 		CHECKe(len = read(fd, &buf, sizeof buf));
@@ -109,6 +111,7 @@ child2fn(arg)
 		message_seen++;
 		c2_in_test = 0;
 		ASSERT(message_seen == 1);
+		v();
 	}
 	PANIC("child 2");
 }
@@ -160,7 +163,7 @@ main()
 	p();
 
 	/* Give thread 2 a chance to go through its deferred loop once */
-	sleep(2);
+	p();
 	CHECKr(pthread_cancel(child2));
 	p();
 

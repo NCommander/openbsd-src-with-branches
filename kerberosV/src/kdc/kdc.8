@@ -1,4 +1,4 @@
-.\" $KTH: kdc.8,v 1.13 2001/06/08 21:35:32 joda Exp $
+.\" $Id: kdc.8,v 1.17.2.1 2003/03/17 06:47:03 assar Exp $
 .\"
 .Dd July 27, 1997
 .Dt KDC 8
@@ -7,7 +7,8 @@
 .Nm kdc
 .Nd Kerberos 5 server
 .Sh SYNOPSIS
-.Nm
+.Nm kdc
+.Bk -words
 .Oo Fl c Ar file \*(Ba Xo
 .Fl -config-file= Ns Ar file
 .Xc
@@ -19,6 +20,7 @@
 .Fl -v4-realm= Ns Ar string
 .Xc
 .Oc
+.Op Fl -kerberos4-cross-realm
 .Op Fl K | Fl -no-kaserver
 .Op Fl r Ar realm
 .Op Fl -v4-realm= Ns Ar realm
@@ -27,10 +29,11 @@
 .Xc
 .Oc
 .Op Fl -addresses= Ns Ar list of addresses
+.Ek
 .Sh DESCRIPTION
 .Nm
 serves requests for tickets. When it starts, it first checks the flags
-passed, any options that are not specified with a command line flag is
+passed; any options that are not specified with a command line flag are
 taken from a config file, or from a default compiled-in value.
 .Pp
 Options supported:
@@ -45,8 +48,8 @@ This is the only value that can't be specified in the config file.
 Turn off the requirement for pre-autentication in the initial AS-REQ
 for all principals. The use of pre-authentication makes it more
 difficult to do offline password attacks. You might want to turn it
-off if you have clients that doesn't do pre-authentication. Since the
-version 4 protocol doesn't support any pre-authentication, so serving
+off if you have clients that don't do pre-authentication. Since the
+version 4 protocol doesn't support any pre-authentication, serving
 version 4 clients is just about the same as not requiring
 pre-athentication. The default is to require
 pre-authentication. Adding the require-preauth per principal is a more
@@ -56,6 +59,12 @@ flexible way of handling this.
 .Xc
 Gives an upper limit on the size of the requests that the kdc is
 willing to handle.
+.It Xo
+.Fl -kerberos4-cross-realm
+.Xc
+respond to kerberos 4 requests from foreign realms.
+This is a known security hole and should not be enabled unless you
+understand the consequences and are willing to live with them.
 .It Xo
 .Fl H Ns ,
 .Fl -enable-http
@@ -89,8 +98,8 @@ will listen on all the locally configured addresses.  If only a subset
 is desired, or the automatic detection fails, this option might be used.
 .El
 .Pp
-All activities , are logged to one or more destinations, see 
-.Xr krb5.conf 5 ,
+All activities are logged to one or more destinations; see 
+.Xr krb5.conf 5
 and
 .Xr krb5_openlog 3 .
 The entity used for logging is
@@ -99,14 +108,14 @@ The entity used for logging is
 The configuration file has the same syntax as the 
 .Pa krb5.conf
 file (you can actually put the configuration in
-.Pa /etc/krb5.conf ,
+.Pa /etc/kerberosV/krb5.conf ,
 and then start the KDC with
-.Fl -config-file= Ns Ar /etc/krb5.conf ) .
+.Fl -config-file= Ns Ar /etc/kerberosV/krb5.conf ) .
 All options should be in a section called
 .Dq kdc .
 All the command-line options can preferably be added in the
 configuration file.  The only difference is the pre-authentication flag,
-that has to be specified as:
+which has to be specified as:
 .Pp
 .Dl require-preauth = no
 .Pp

@@ -1,5 +1,48 @@
+/*	$OpenBSD: closure.c,v 1.4 2001/07/16 06:29:43 pvalchev Exp $	*/
+/*	$NetBSD: closure.c,v 1.4 1996/03/19 03:21:29 jtc Exp $	*/
+
+/*
+ * Copyright (c) 1989 The Regents of the University of California.
+ * All rights reserved.
+ *
+ * This code is derived from software contributed to Berkeley by
+ * Robert Paul Corbett.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions
+ * are met:
+ * 1. Redistributions of source code must retain the above copyright
+ *    notice, this list of conditions and the following disclaimer.
+ * 2. Redistributions in binary form must reproduce the above copyright
+ *    notice, this list of conditions and the following disclaimer in the
+ *    documentation and/or other materials provided with the distribution.
+ * 3. All advertising materials mentioning features or use of this software
+ *    must display the following acknowledgement:
+ *	This product includes software developed by the University of
+ *	California, Berkeley and its contributors.
+ * 4. Neither the name of the University nor the names of its contributors
+ *    may be used to endorse or promote products derived from this software
+ *    without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE REGENTS AND CONTRIBUTORS ``AS IS'' AND
+ * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ * ARE DISCLAIMED.  IN NO EVENT SHALL THE REGENTS OR CONTRIBUTORS BE LIABLE
+ * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+ * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
+ * OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+ * HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+ * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
+ * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
+ * SUCH DAMAGE.
+ */
+
 #ifndef lint
-static char rcsid[] = "$Id: closure.c,v 1.3 1993/08/02 17:56:35 mycroft Exp $";
+#if 0
+static char sccsid[] = "@(#)closure.c	5.3 (Berkeley) 5/24/93";
+#else
+static char rcsid[] = "$OpenBSD: closure.c,v 1.4 2001/07/16 06:29:43 pvalchev Exp $";
+#endif
 #endif /* not lint */
 
 #include "defs.h"
@@ -12,14 +55,15 @@ static unsigned *first_derives;
 static unsigned *EFF;
 
 
+void
 set_EFF()
 {
-    register unsigned *row;
-    register int symbol;
-    register short *sp;
-    register int rowsize;
-    register int i;
-    register int rule;
+    unsigned *row;
+    int symbol;
+    short *sp;
+    int rowsize;
+    int i;
+    int rule;
 
     rowsize = WORDSIZE(nvars);
     EFF = NEW2(nvars * rowsize, unsigned);
@@ -48,14 +92,15 @@ set_EFF()
 }
 
 
+void
 set_first_derives()
 {
-    register unsigned *rrow;
-    register unsigned *vrow;
-    register int j;
-    register unsigned k;
-    register unsigned cword;
-    register short *rp;
+    unsigned *rrow;
+    unsigned *vrow;
+    int j;
+    unsigned k;
+    unsigned cword;
+    short *rp;
 
     int rule;
     int i;
@@ -103,17 +148,18 @@ set_first_derives()
 }
 
 
+void
 closure(nucleus, n)
 short *nucleus;
 int n;
 {
-    register int ruleno;
-    register unsigned word;
-    register unsigned i;
-    register short *csp;
-    register unsigned *dsp;
-    register unsigned *rsp;
-    register int rulesetsize;
+    int ruleno;
+    unsigned word;
+    unsigned i;
+    short *csp;
+    unsigned *dsp;
+    unsigned *rsp;
+    int rulesetsize;
 
     short *csend;
     unsigned *rsend;
@@ -173,6 +219,7 @@ int n;
 
 
 
+void
 finalize_closure()
 {
   FREE(itemset);
@@ -186,7 +233,7 @@ finalize_closure()
 print_closure(n)
 int n;
 {
-  register short *isp;
+  short *isp;
 
   printf("\n\nn = %d\n\n", n);
   for (isp = itemset; isp < itemsetend; isp++)
@@ -196,10 +243,10 @@ int n;
 
 print_EFF()
 {
-    register int i, j;
-    register unsigned *rowp;
-    register unsigned word;
-    register unsigned k;
+    int i, j;
+    unsigned *rowp;
+    unsigned word;
+    unsigned k;
 
     printf("\n\nEpsilon Free Firsts\n");
 
@@ -227,11 +274,11 @@ print_EFF()
 
 print_first_derives()
 {
-    register int i;
-    register int j;
-    register unsigned *rp;
-    register unsigned cword;
-    register unsigned k;
+    int i;
+    int j;
+    unsigned *rp;
+    unsigned cword;
+    unsigned k;
 
     printf("\n\n\nFirst Derives\n");
 

@@ -1,3 +1,5 @@
+/*	$OpenBSD: main.c,v 1.4 2001/01/29 01:58:03 niklas Exp $	*/
+
 /*
  * Copyright (c) 1984,1985,1989,1994,1995  Mark Nudelman
  * All rights reserved.
@@ -42,6 +44,7 @@ public int	any_display = FALSE;
 public int	wscroll;
 public char *	progname;
 public int	quitting;
+public int	more_mode = 0;
 
 extern int	quit_at_eof;
 extern int	cbufs;
@@ -77,6 +80,7 @@ main(argc, argv)
 	char *argv[];
 {
 	IFILE ifile;
+	extern char *__progname;
 
 #ifdef __EMX__
 	_response(&argc, &argv);
@@ -89,12 +93,22 @@ main(argc, argv)
 	 * Process command line arguments and LESS environment arguments.
 	 * Command line arguments override environment arguments.
 	 */
+	if (strcmp(__progname, "more") == 0)
+		more_mode = 1;
+
 	get_term();
 	init_cmds();
 	init_prompt();
 	init_charset();
 	init_option();
-	scan_option(getenv("LESS"));
+
+	if (more_mode) {
+		scan_option("-E");
+		scan_option("-m");
+		scan_option("-G");
+		scan_option(getenv("MORE"));
+	} else
+		scan_option(getenv("LESS"));
 
 #if GNU_OPTIONS
 	/*
@@ -109,8 +123,14 @@ main(argc, argv)
 	}
 #endif
 #define	isoptstring(s)	(((s)[0] == '-' || (s)[0] == '+') && (s)[1] != '\0')
-	while (--argc > 0 && (isoptstring(argv[0]) || isoptpending()))
+	while (--argc > 0 && (isoptstring(argv[0]) || isoptpending())) {
+		if (strcmp(argv[0], "--") == 0) {
+			argv++;
+			argc--;
+			break;
+		}
 		scan_option(*argv++);
+	}
 #undef isoptstring
 
 	if (isoptpending())
@@ -262,7 +282,7 @@ strtcpy(to, from, len)
 save(s)
 	char *s;
 {
-	register char *p;
+	char *p;
 
 	p = (char *) ecalloc(strlen(s)+1, sizeof(char));
 	strcpy(p, s);
@@ -278,7 +298,7 @@ ecalloc(count, size)
 	int count;
 	unsigned int size;
 {
-	register VOID_POINTER p;
+	VOID_POINTER p;
 
 	p = (VOID_POINTER) calloc(count, size);
 	if (p != NULL)
@@ -293,7 +313,7 @@ ecalloc(count, size)
  */
 	public char *
 skipsp(s)
-	register char *s;
+	char *s;
 {
 	while (*s == ' ' || *s == '\t')	
 		s++;
@@ -319,7 +339,7 @@ quit(status)
 		save_status = status;
 	quitting = 1;
 	edit((char*)NULL);
-	if (any_display)
+	if (is_tty && any_display)
 		clear_bot();
 	deinit();
 	flush();

@@ -1,3 +1,4 @@
+/*	$OpenBSD: stty.c,v 1.8 2001/05/20 08:15:03 mickey Exp $	*/
 /*	$NetBSD: stty.c,v 1.11 1995/03/21 09:11:30 cgd Exp $	*/
 
 /*-
@@ -43,7 +44,7 @@ static char copyright[] =
 #if 0
 static char sccsid[] = "@(#)stty.c	8.3 (Berkeley) 4/2/94";
 #else
-static char rcsid[] = "$NetBSD: stty.c,v 1.11 1995/03/21 09:11:30 cgd Exp $";
+static char rcsid[] = "$OpenBSD: stty.c,v 1.8 2001/05/20 08:15:03 mickey Exp $";
 #endif
 #endif /* not lint */
 
@@ -62,7 +63,7 @@ static char rcsid[] = "$NetBSD: stty.c,v 1.11 1995/03/21 09:11:30 cgd Exp $";
 #include "extern.h"
 
 int
-main(argc, argv) 
+main(argc, argv)
 	int argc;
 	char *argv[];
 {
@@ -91,7 +92,6 @@ main(argc, argv)
 		case 'g':
 			fmt = GFLAG;
 			break;
-		case '?':
 		default:
 			goto args;
 		}
@@ -99,10 +99,10 @@ main(argc, argv)
 args:	argc -= optind;
 	argv += optind;
 
-	if (ioctl(i.fd, TIOCGETD, &i.ldisc) < 0)
-		err(1, "TIOCGETD");
 	if (tcgetattr(i.fd, &i.t) < 0)
-		err(1, "tcgetattr");
+		errx(1, "not a terminal");
+	if (ioctl(i.fd, TIOCGETD, &i.ldisc) < 0	)
+		err(1, "TIOCGETD");
 	if (ioctl(i.fd, TIOCGWINSZ, &i.win) < 0)
 		warn("TIOCGWINSZ");
 
@@ -119,7 +119,7 @@ args:	argc -= optind;
 		gprint(&i.t, &i.win, i.ldisc);
 		break;
 	}
-	
+
 	for (i.set = i.wset = 0; *argv; ++argv) {
 		if (ksearch(&argv, &i))
 			continue;
@@ -154,13 +154,13 @@ args:	argc -= optind;
 		err(1, "tcsetattr");
 	if (i.wset && ioctl(i.fd, TIOCSWINSZ, &i.win) < 0)
 		warn("TIOCSWINSZ");
-	exit(0);
+	return (0);
 }
 
 void
 usage()
 {
-
-	(void)fprintf(stderr, "usage: stty: [-a|-e|-g] [-f file] [options]\n");
+	fprintf(stderr, "usage: %s [-a|-e|-g] [-f file] [operands]\n",
+	    __progname);
 	exit (1);
 }

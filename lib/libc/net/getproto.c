@@ -1,5 +1,3 @@
-/*	$NetBSD: getproto.c,v 1.4 1995/02/25 06:20:33 cgd Exp $	*/
-
 /*
  * Copyright (c) 1983, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -34,11 +32,7 @@
  */
 
 #if defined(LIBC_SCCS) && !defined(lint)
-#if 0
-static char sccsid[] = "@(#)getproto.c	8.1 (Berkeley) 6/4/93";
-#else
-static char rcsid[] = "$NetBSD: getproto.c,v 1.4 1995/02/25 06:20:33 cgd Exp $";
-#endif
+static char rcsid[] = "$OpenBSD: getproto.c,v 1.2 1996/08/19 08:28:49 tholo Exp $";
 #endif /* LIBC_SCCS and not lint */
 
 #include <netdb.h>
@@ -52,7 +46,7 @@ getprotobynumber(proto)
 	register struct protoent *p;
 
 	setprotoent(_proto_stayopen);
-	while (p = getprotoent())
+	while ((p = getprotoent()))
 		if (p->p_proto == proto)
 			break;
 	if (!_proto_stayopen)

@@ -1,3 +1,4 @@
+/*	$OpenBSD: pathnames.h,v 1.5 1996/11/09 20:17:18 millert Exp $	*/
 /*	$NetBSD: pathnames.h,v 1.4 1994/12/23 06:53:03 jtc Exp $	*/
 
 /*-
@@ -37,5 +38,7 @@
 
 #include <paths.h>
 
-#define	_PATH_HUSHLOGIN	".hushlogin"
-#define	_PATH_MOTDFILE	"/etc/motd"
+#define	_PATH_HUSHLOGIN		".hushlogin"
+#define	_PATH_MOTDFILE		"/etc/motd"
+#define	_PATH_FAILEDLOGIN	"/var/log/failedlogin"
+#define	_PATH_SU		"/usr/bin/su"

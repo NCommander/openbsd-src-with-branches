@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1998-2001 Sendmail, Inc. and its suppliers.
+ * Copyright (c) 1998-2003 Sendmail, Inc. and its suppliers.
  *	All rights reserved.
  * Copyright (c) 1986, 1995-1997 Eric P. Allman.  All rights reserved.
  * Copyright (c) 1988, 1993
@@ -14,9 +14,9 @@
 #include <sendmail.h>
 
 #if NAMED_BIND
-SM_RCSID("@(#)$Sendmail: domain.c,v 8.172 2001/09/04 22:43:03 ca Exp $ (with name server)")
+SM_RCSID("@(#)$Sendmail: domain.c,v 8.181.2.6 2003/01/15 19:17:15 ca Exp $ (with name server)")
 #else /* NAMED_BIND */
-SM_RCSID("@(#)$Sendmail: domain.c,v 8.172 2001/09/04 22:43:03 ca Exp $ (without name server)")
+SM_RCSID("@(#)$Sendmail: domain.c,v 8.181.2.6 2003/01/15 19:17:15 ca Exp $ (without name server)")
 #endif /* NAMED_BIND */
 
 #if NAMED_BIND
@@ -80,7 +80,7 @@ static char	*gethostalias __P((char *));
 static int	mxrand __P((char *));
 static int	fallbackmxrr __P((int, unsigned short *, char **));
 
-/*
+/*
 **  GETFALLBACKMXRR -- get MX resource records for fallback MX host.
 **
 **	We have to initialize this once before doing anything else.
@@ -139,7 +139,7 @@ getfallbackmxrr(host)
 	return NumFallBackMXHosts;
 }
 
-/*
+/*
 **  FALLBACKMXRR -- add MX resource records for fallback MX host to list.
 **
 **	Parameters:
@@ -174,7 +174,7 @@ fallbackmxrr(nmx, prefs, mxhosts)
 	return nmx;
 }
 
-/*
+/*
 **  GETMXRR -- get MX resource records for a domain
 **
 **	Parameters:
@@ -307,7 +307,7 @@ getmxrr(host, mxhosts, mxprefs, droplocalhost, rcode, tryfallback, pttl)
 			break;
 
 		  default:
-			syserr("getmxrr: res_search (%s) failed with impossible h_errno (%d)\n",
+			syserr("getmxrr: res_search (%s) failed with impossible h_errno (%d)",
 				host, h_errno);
 			*rcode = EX_OSERR;
 			break;
@@ -586,7 +586,7 @@ punt:
 	}
 	return nmx;
 }
-/*
+/*
 **  MXRAND -- create a randomizer for equal MX preferences
 **
 **	If two MX hosts have equal preferences we want to randomize
@@ -635,7 +635,7 @@ mxrand(host)
 		sm_dprintf(" = %d\n", hfunc);
 	return hfunc;
 }
-/*
+/*
 **  BESTMX -- find the best MX for a name
 **
 **	This is really a hack, but I don't see any obvious way
@@ -664,7 +664,7 @@ bestmx_map_lookup(map, name, av, statp)
 #endif /* _FFR_BESTMX_BETTER_TRUNCATION */
 
 	_res.options &= ~(RES_DNSRCH|RES_DEFNAMES);
-	nmx = getmxrr(name, mxhosts, NULL, false, statp, true, NULL);
+	nmx = getmxrr(name, mxhosts, NULL, false, statp, false, NULL);
 	_res.options = saveopts;
 	if (nmx <= 0)
 		return NULL;
@@ -747,7 +747,7 @@ bestmx_map_lookup(map, name, av, statp)
 #endif /* _FFR_BESTMX_BETTER_TRUNCATION */
 	return result;
 }
-/*
+/*
 **  DNS_GETCANONNAME -- get the canonical name for named host using DNS
 **
 **	This algorithm tries to be smart about wildcard MX records.
@@ -810,7 +810,7 @@ dns_getcanonname(host, hbsize, trymx, statp, pttl)
 	int loopcnt;
 	char *xp;
 	char nbuf[SM_MAX(MAXPACKET, MAXDNAME*2+2)];
-	char *searchlist[MAXDNSRCH+2];
+	char *searchlist[MAXDNSRCH + 2];
 
 	if (tTd(8, 2))
 		sm_dprintf("dns_getcanonname(%s, trymx=%d)\n", host, trymx);
@@ -918,17 +918,27 @@ cnameloop:
 				      answer.qb2, sizeof(answer.qb2));
 		if (ret <= 0)
 		{
+			int save_errno = errno;
+
 			if (tTd(8, 7))
 				sm_dprintf("\tNO: errno=%d, h_errno=%d\n",
-					errno, h_errno);
+					   save_errno, h_errno);
 
-			if (errno == ECONNREFUSED || h_errno == TRY_AGAIN)
+			if (save_errno == ECONNREFUSED || h_errno == TRY_AGAIN)
 			{
 				/*
 				**  the name server seems to be down or broken.
 				*/
 
 				SM_SET_H_ERRNO(TRY_AGAIN);
+# if _FFR_DONT_STOP_LOOKING
+				if (**dp == '\0')
+				{
+					if (*statp == EX_OK)
+						*statp = EX_TEMPFAIL;
+					goto nexttype;
+				}
+# endif /* _FFR_DONT_STOP_LOOKING */
 				*statp = EX_TEMPFAIL;
 
 				if (WorkAroundBrokenAAAA)
@@ -943,13 +953,16 @@ cnameloop:
 					**  didn't give an answer).
 					*/
 
-					if (errno != ETIMEDOUT)
+					if (save_errno != ETIMEDOUT)
 						return false;
 				}
 				else
 					return false;
 			}
 
+# if _FFR_DONT_STOP_LOOKING
+nexttype:
+# endif /* _FFR_DONT_STOP_LOOKING */
 			if (h_errno != HOST_NOT_FOUND)
 			{
 				/* might have another type of interest */

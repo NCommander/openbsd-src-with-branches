@@ -1,3 +1,4 @@
+/*	$OpenBSD: csh.c,v 1.18 2002/06/09 05:47:27 todd Exp $	*/
 /*	$NetBSD: csh.c,v 1.14 1995/04/29 23:21:28 mycroft Exp $	*/
 
 /*-
@@ -43,13 +44,14 @@ static char copyright[] =
 #if 0
 static char sccsid[] = "@(#)csh.c	8.2 (Berkeley) 10/12/93";
 #else
-static char rcsid[] = "$NetBSD: csh.c,v 1.14 1995/04/29 23:21:28 mycroft Exp $";
+static char rcsid[] = "$OpenBSD: csh.c,v 1.18 2002/06/09 05:47:27 todd Exp $";
 #endif
 #endif /* not lint */
 
 #include <sys/types.h>
 #include <sys/ioctl.h>
 #include <sys/stat.h>
+#include <sys/param.h>
 #include <fcntl.h>
 #include <errno.h>
 #include <pwd.h>
@@ -58,11 +60,7 @@ static char rcsid[] = "$NetBSD: csh.c,v 1.14 1995/04/29 23:21:28 mycroft Exp $";
 #include <locale.h>
 #include <unistd.h>
 #include <vis.h>
-#if __STDC__
-# include <stdarg.h>
-#else
-# include <varargs.h>
-#endif
+#include <stdarg.h>
 
 #include "csh.h"
 #include "proc.h"
@@ -102,16 +100,16 @@ bool    tellwhat = 0;
 
 extern char **environ;
 
-static int	readf __P((void *, char *, int));
-static fpos_t	seekf __P((void *, fpos_t, int));
-static int	writef __P((void *, const char *, int));
-static int	closef __P((void *));
-static int	srccat __P((Char *, Char *));
-static int	srcfile __P((char *, bool, bool));
-static void	phup __P((int));
-static void	srcunit __P((int, bool, bool));
-static void	mailchk __P((void));
-static Char   **defaultpath __P((void));
+static int	readf(void *, char *, int);
+static fpos_t	seekf(void *, fpos_t, int);
+static int	writef(void *, const char *, int);
+static int	closef(void *);
+static int	srccat(Char *, Char *);
+static int	srcfile(char *, bool, bool);
+static void	phup(int);
+static void	srcunit(int, bool, bool);
+static void	mailchk(void);
+static Char   **defaultpath(void);
 
 int
 main(argc, argv)
@@ -232,7 +230,7 @@ main(argc, argv)
      */
     set(STRstatus, Strsave(STR0));
 
-    if ((tcp = getenv("HOME")) != NULL)
+    if ((tcp = getenv("HOME")) != NULL && strlen(tcp) < MAXPATHLEN)
 	cp = SAVE(tcp);
     else
 	cp = NULL;
@@ -249,22 +247,21 @@ main(argc, argv)
      */
     if ((tcp = getenv("LOGNAME")) != NULL ||
 	(tcp = getenv("USER")) != NULL)
-	set(STRuser, SAVE(tcp));
+	set(STRuser, quote(SAVE(tcp)));
     if ((tcp = getenv("TERM")) != NULL)
-	set(STRterm, SAVE(tcp));
+	set(STRterm, quote(SAVE(tcp)));
 
     /*
      * Re-initialize path if set in environment
      */
     if ((tcp = getenv("PATH")) == NULL)
-	set1(STRpath, defaultpath(), &shvhed);
+	setq(STRpath, defaultpath(), &shvhed);
     else
-	importpath(SAVE(tcp));
+	importpath(str2short(tcp));
 
     set(STRshell, Strsave(STR_SHELLPATH));
 
     doldol = putn((int) getpid());	/* For $$ */
-    shtemp = Strspl(STRtmpsh, doldol);	/* For << */
 
     /*
      * Record the interrupt states from the parent process. If the parent is
@@ -520,6 +517,7 @@ notty:
      * start-up scripts.
      */
     reenter = setexit();	/* PWP */
+    exitset++;
     haderr = 0;			/* In case second time through */
     if (!fast && reenter == 0) {
 	/* Will have value(STRhome) here because set fast if don't */
@@ -557,7 +555,7 @@ notty:
 	if ((cp = value(STRhistfile)) != STRNULL)
 	    loadhist[2] = cp;
 	dosource(loadhist, NULL);
-        if (loginsh)
+	if (loginsh)
 	      (void) srccat(value(STRhome), STRsldotlogin);
     }
 
@@ -639,7 +637,7 @@ importpath(cp)
 	    dp++;
 	}
     pv[i] = 0;
-    set1(STRpath, pv, &shvhed);
+    setq(STRpath, pv, &shvhed);
 }
 
 /*
@@ -804,9 +802,9 @@ rechist()
 	 */
 	if ((shist = adrof(STRsavehist)) != NULL) {
 	    if (shist->vec[0][0] != '\0')
-		(void) Strcpy(hbuf, shist->vec[0]);
+		(void) Strlcpy(hbuf, shist->vec[0], sizeof hbuf/sizeof(Char));
 	    else if ((shist = adrof(STRhistory)) && shist->vec[0][0] != '\0')
-		(void) Strcpy(hbuf, shist->vec[0]);
+		(void) Strlcpy(hbuf, shist->vec[0], sizeof hbuf/sizeof(Char));
 	    else
 		return;
 	}
@@ -814,12 +812,13 @@ rechist()
   	    return;
 
   	if ((hfile = value(STRhistfile)) == STRNULL) {
-  	    hfile = Strcpy(buf, value(STRhome));
-  	    (void) Strcat(buf, STRsldthist);
+  	    Strlcpy(buf, value(STRhome), sizeof buf/sizeof(Char));
+	    hfile = buf;
+	    (void) Strlcat(buf, STRsldthist, sizeof buf/sizeof(Char));
   	}
 
   	if ((fp = open(short2str(hfile), O_WRONLY | O_CREAT | O_TRUNC,
-	    0600)) == -1) 
+	    0600)) == -1)
   	    return;
 
 	oldidfds = didfds;
@@ -879,18 +878,20 @@ static void
 phup(sig)
 int sig;
 {
+    /* XXX sigh, everything after this is a signal race */
+
     rechist();
 
     /*
      * We kill the last foreground process group. It then becomes
-     * responsible to propagate the SIGHUP to its progeny. 
+     * responsible to propagate the SIGHUP to its progeny.
      */
     {
 	struct process *pp, *np;
 
 	for (pp = proclist.p_next; pp; pp = pp->p_next) {
 	    np = pp;
-	    /* 
+	    /*
 	     * Find if this job is in the foreground. It could be that
 	     * the process leader has exited and the foreground flag
 	     * is cleared for it.
@@ -898,7 +899,7 @@ int sig;
 	    do
 		/*
 		 * If a process is in the foreground; we try to kill
-		 * it's process group. If we succeed, then the 
+		 * it's process group. If we succeed, then the
 		 * whole job is gone. Otherwise we keep going...
 		 * But avoid sending HUP to the shell again.
 		 */
@@ -928,7 +929,10 @@ void
 pintr(notused)
 	int notused;
 {
+    int save_errno = errno;
+
     pintr1(1);
+    errno = save_errno;
 }
 
 void
@@ -1136,6 +1140,7 @@ dosource(v, t)
     register Char *f;
     bool    hflg = 0;
     Char    buf[BUFSIZ];
+    char    sbuf[BUFSIZ];
 
     v++;
     if (*v && eq(*v, STRmh)) {
@@ -1143,12 +1148,12 @@ dosource(v, t)
 	    stderror(ERR_NAME | ERR_HFLAG);
 	hflg++;
     }
-    (void) Strcpy(buf, *v);
+    (void) Strlcpy(buf, *v, sizeof buf/sizeof(Char));
     f = globone(buf, G_ERROR);
-    (void) strcpy((char *) buf, short2str(f));
+    (void) strlcpy(sbuf, short2str(f), sizeof sbuf);
     xfree((ptr_t) f);
-    if (!srcfile((char *) buf, 0, hflg) && !hflg)
-	stderror(ERR_SYSTEM, (char *) buf, strerror(errno));
+    if (!srcfile(sbuf, 0, hflg) && !hflg)
+	stderror(ERR_SYSTEM, sbuf, strerror(errno));
 }
 
 /*
@@ -1205,8 +1210,9 @@ mailchk()
  * We write the home directory of the user back there.
  */
 int
-gethdir(home)
+gethdir(home, len)
     Char   *home;
+    int    len;
 {
     Char   *h;
     struct passwd *pw;
@@ -1216,7 +1222,8 @@ gethdir(home)
      */
     if (*home == '\0') {
 	if ((h = value(STRhome)) != NULL) {
-	    (void) Strcpy(home, h);
+	    if (Strlcpy(home, h, len) >= len)
+		return 1;
 	    return 0;
 	}
 	else
@@ -1224,7 +1231,8 @@ gethdir(home)
     }
 
     if ((pw = getpwnam(short2str(home))) != NULL) {
-	(void) Strcpy(home, str2short(pw->pw_dir));
+	if (Strlcpy(home, str2short(pw->pw_dir), len) >= len)
+	    return 1;
 	return 0;
     }
     else
@@ -1233,7 +1241,7 @@ gethdir(home)
 
 /*
  * When didfds is set, we do I/O from 0, 1, 2 otherwise from 15, 16, 17
- * We also check if the shell has already changed the decriptor to point to
+ * We also check if the shell has already changed the descriptor to point to
  * 0, 1, 2 when didfds is set.
  */
 #define DESC(a) (*((int *) (a)) - (didfds && *((int *) a) >= FSHIN ? FSHIN : 0))
@@ -1283,11 +1291,11 @@ vis_fputc(ch, fp)
     int ch;
     FILE *fp;
 {
-    char uenc[5];	/* 4 + NULL */
+    char uenc[5];	/* 4 + NUL */
 
-    if (ch & QUOTE) 
+    if (ch & QUOTE)
 	return fputc(ch & TRIM, fp);
-    /* 
+    /*
      * XXX: When we are in AsciiOnly we want all characters >= 0200 to
      * be encoded, but currently there is no way in vis to do that.
      */
@@ -1297,7 +1305,7 @@ vis_fputc(ch, fp)
 
 /*
  * Move the initial descriptors to their eventual
- * resting places, closin all other units.
+ * resting places, closing all other units.
  */
 void
 initdesc()

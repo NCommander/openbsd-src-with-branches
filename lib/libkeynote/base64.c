@@ -1,5 +1,4 @@
-/* $OpenBSD$ */
-
+/* $OpenBSD: base64.c,v 1.8 2000/10/03 01:33:55 angelos Exp $ */
 /*
  * Copyright (c) 1996 by Internet Software Consortium.
  *
@@ -42,14 +41,59 @@
  * IF IBM IS APPRISED OF THE POSSIBILITY OF SUCH DAMAGES.
  */
 
+#if HAVE_CONFIG_H
+#include "config.h"
+#endif /* HAVE_CONFIG_H */
+
 #include <sys/types.h>
-#include <ctype.h>
-#include <stdio.h>
 #include <stdlib.h>
+#include <stdio.h>
+#include <ctype.h>
+
+#if STDC_HEADERS
 #include <string.h>
+#if !defined(HAVE_STRCHR)
+#define strchr index
+#endif /* !HAVE_STRCHR */
+#endif /* STDC_HEADERS */
+
+#include "header.h"
 #include "keynote.h"
 
-#define Assert(Cond) if (!(Cond)) return -1;
+#if defined(HAVE___B64_NTOP)
+int __b64_ntop(unsigned char const *, size_t, char *, size_t);
+int __b64_pton(char const *, unsigned char *, size_t);
+
+int
+kn_encode_base64(src, srclength, target, targsize)
+unsigned char const *src;
+unsigned int srclength;
+char *target;
+unsigned int targsize;
+{
+    int i;
+
+    i = __b64_ntop(src, srclength, target, targsize);
+    if (i == -1)
+      keynote_errno = ERROR_SYNTAX;
+    return i;
+}
+
+int
+kn_decode_base64(src, target, targsize)
+char const *src;
+unsigned char *target;
+unsigned int targsize;
+{
+    int i;
+
+    i = __b64_pton(src, target, targsize);
+    if (i == -1)
+      keynote_errno = ERROR_SYNTAX;
+    return i;
+}
+#else /* HAVE___B64_NTOP */
+#define Assert(Cond) if (!(Cond)) { keynote_errno = ERROR_SYNTAX; return -1; }
 
 static const char Base64[] =
 "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
@@ -213,7 +257,7 @@ unsigned int targsize;
     tarindex = 0;
 
     while ((ch = *src++) != '\0') {
-	if (isspace(ch))	/* Skip whitespace anywhere. */
+	if (isspace((int) ch))	/* Skip whitespace anywhere. */
 	  continue;
 
 	if (ch == Pad64)
@@ -296,7 +340,7 @@ unsigned int targsize;
 	    case 2:		/* Valid, means one byte of info */
 		/* Skip any number of spaces. */
 		for (; ch != '\0'; ch = *src++)
-		  if (!isspace(ch))
+		  if (!isspace((int) ch))
 		    break;
 		/* Make sure there is another trailing = sign. */
 		if (ch != Pad64)
@@ -346,3 +390,4 @@ unsigned int targsize;
 
     return (tarindex);
 }
+#endif /* HAVE___B64_NTOP */

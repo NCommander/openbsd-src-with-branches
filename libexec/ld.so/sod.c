@@ -1,5 +1,6 @@
-/*      $OpenBSD: rtld.c,v 1.16 2000/02/03 17:19:07 millert Exp $       */
-/*  
+/*	$OpenBSD: sod.c,v 1.15 2002/07/29 22:43:36 art Exp $	*/
+
+/*
  * Copyright (c) 1993 Paul Kranenburg
  * All rights reserved.
  *
@@ -13,7 +14,7 @@
  *    documentation and/or other materials provided with the distribution.
  * 3. All advertising materials mentioning features or use of this software
  *    must display the following acknowledgement:
- *      This product includes software developed by Paul Kranenburg.
+ *	This product includes software developed by Paul Kranenburg.
  * 4. The name of the author may not be used to endorse or promote products
  *    derived from this software without specific prior written permission
  *
@@ -43,18 +44,18 @@
 #include <unistd.h>
 #include <syscall.h>
 
+#include "archdep.h"
+#include "util.h"
+#include "sod.h"
+
 #define PAGSIZ	__LDPGSZ
-char * _dl_strdup(const char *);
-void _dl_free(void *);
 int _dl_hinthash(char *cp, int vmajor, int vminor);
 
 /*
  * Populate sod struct for dlopen's call to map_object
  */
 void
-_dl_build_sod(name, sodp)
-	const char	*name;
-	struct sod	*sodp;
+_dl_build_sod(const char *name, struct sod *sodp)
 {
 	unsigned int	tuplet;
 	int		major, minor;
@@ -66,23 +67,24 @@ _dl_build_sod(name, sodp)
 	sodp->sod_major = sodp->sod_minor = 0;
 
 	/* does it look like /^lib/ ? */
-	if (strncmp((char *)sodp->sod_name, "lib", 3) != 0)
+	if (_dl_strncmp((char *)sodp->sod_name, "lib", 3) != 0)
 		return;
 
 	/* is this a filename? */
-	if (strchr((char *)sodp->sod_name, '/'))
+	if (_dl_strchr((char *)sodp->sod_name, '/'))
 		return;
 
 	/* skip over 'lib' */
 	cp = (char *)sodp->sod_name + 3;
 
 	/* dot guardian */
-	if ((strchr(cp, '.') == NULL) || (*(cp+strlen(cp)-1) == '.'))
+	if ((_dl_strchr(cp, '.') == NULL) || (*(cp+_dl_strlen(cp)-1) == '.'))
 		return;
 
 	/* default */
 	major = minor = -1;
 
+	realname = NULL;
 	/* loop through name - parse skipping name */
 	for (tuplet = 0; (tok = strsep(&cp, ".")) != NULL; tuplet++) {
 		switch (tuplet) {
@@ -92,7 +94,7 @@ _dl_build_sod(name, sodp)
 			break;
 		case 1:
 			/* 'so' extension */
-			if (strcmp(tok, "so") != 0)
+			if (_dl_strcmp(tok, "so") != 0)
 				goto backout;
 			break;
 		case 2:
@@ -112,6 +114,8 @@ _dl_build_sod(name, sodp)
 			goto backout;
 		}
 	}
+	if (realname == NULL)
+		goto backout;
 	cp = (char *)sodp->sod_name;
 	sodp->sod_name = (long)_dl_strdup(realname);
 	_dl_free(cp);
@@ -130,24 +134,24 @@ static long			hsize;
 static struct hints_header	*hheader = NULL;
 static struct hints_bucket	*hbuckets;
 static char			*hstrtab;
-static char			*hint_search_path = "";
+char				*_dl_hint_search_path = NULL;
 
 #define HINTS_VALID (hheader != NULL && hheader != (struct hints_header *)-1)
 
 void
-_dl_maphints()
+_dl_maphints(void)
 {
 	caddr_t		addr;
 
-	if ((hfd = _dl_open(_PATH_LD_HINTS, O_RDONLY)) == -1) {
+	if ((hfd = _dl_open(_PATH_LD_HINTS, O_RDONLY)) < 0) {
 		hheader = (struct hints_header *)-1;
 		return;
 	}
 
 	hsize = PAGSIZ;
-	addr = (void *) _dl_mmap(0, hsize, PROT_READ, MAP_COPY, hfd, 0);
+	addr = (void *) _dl_mmap(0, hsize, PROT_READ, MAP_PRIVATE, hfd, 0);
 
-	if (addr == (caddr_t)-1) {
+	if (addr == MAP_FAILED) {
 		_dl_close(hfd);
 		hheader = (struct hints_header *)-1;
 		return;
@@ -171,9 +175,8 @@ _dl_maphints()
 
 	if (hheader->hh_ehints > hsize) {
 		if ((caddr_t)_dl_mmap(addr+hsize, hheader->hh_ehints - hsize,
-				PROT_READ, MAP_COPY|MAP_FIXED,
-				hfd, hsize) != (caddr_t)(addr+hsize)) {
-
+		    PROT_READ, MAP_PRIVATE|MAP_FIXED,
+		    hfd, hsize) != (caddr_t)(addr+hsize)) {
 			_dl_munmap((caddr_t)hheader, hsize);
 			_dl_close(hfd);
 			hheader = (struct hints_header *)-1;
@@ -184,40 +187,28 @@ _dl_maphints()
 	hbuckets = (struct hints_bucket *)(addr + hheader->hh_hashtab);
 	hstrtab = (char *)(addr + hheader->hh_strtab);
 	if (hheader->hh_version >= LD_HINTS_VERSION_2)
-		hint_search_path = hstrtab + hheader->hh_dirlist;
-}
+		_dl_hint_search_path = hstrtab + hheader->hh_dirlist;
 
-void
-_dl_unmaphints()
-{
-
-	if (HINTS_VALID) {
-		_dl_munmap((caddr_t)hheader, hsize);
-		_dl_close(hfd);
-		hheader = (void *)-1;
-	}
+	/* close the file descriptor, leaving the hints mapped */
+	_dl_close(hfd);
 }
 
 char *
-_dl_findhint(name, major, minor, prefered_path)
-	char	*name;
-	int	major, minor;
-	char	*prefered_path;
+_dl_findhint(char *name, int major, int minor, char *prefered_path)
 {
 	struct hints_bucket	*bp;
 
-	/* If not mapped, and we have not tried before, try to map the
+	/*
+	 * If not mapped, and we have not tried before, try to map the
 	 * hints, if previous attempts failed hheader is -1 and we
 	 * do not wish to retry it.
 	 */
-	if (hheader == NULL) {
+	if (hheader == NULL)
 		_dl_maphints();
-	}
 
 	/* if it failed to map, return failure */
-	if (!(HINTS_VALID)) { 
+	if (!(HINTS_VALID))
 		return NULL;
-	}
 
 	bp = hbuckets + (_dl_hinthash(name, major, minor) % hheader->hh_nbucket);
 
@@ -234,16 +225,15 @@ _dl_findhint(name, major, minor, prefered_path)
 			break;
 		}
 
-		if (strcmp(name, hstrtab + bp->hi_namex) == 0) {
+		if (_dl_strcmp(name, hstrtab + bp->hi_namex) == 0) {
 			/* It's `name', check version numbers */
 			if (bp->hi_major == major &&
-				(bp->hi_ndewey < 2 || bp->hi_minor >= minor)) {
-					if (prefered_path == NULL ||
-					    strncmp(prefered_path,
-						hstrtab + bp->hi_pathx,
-						strlen(prefered_path)) == 0) {
-						return hstrtab + bp->hi_pathx;
-					}
+			    (bp->hi_ndewey < 2 || bp->hi_minor >= minor)) {
+				if (prefered_path == NULL ||
+				    _dl_strncmp(prefered_path,
+				    hstrtab + bp->hi_pathx,
+				    _dl_strlen(prefered_path)) == 0)
+					return hstrtab + bp->hi_pathx;
 			}
 		}
 
@@ -257,10 +247,9 @@ _dl_findhint(name, major, minor, prefered_path)
 	/* No hints available for name */
 	return NULL;
 }
+
 int
-_dl_hinthash(cp, vmajor, vminor)
-	char	*cp;
-	int	vmajor, vminor;
+_dl_hinthash(char *cp, int vmajor, int vminor)
 {
 	int	k = 0;
 

@@ -126,7 +126,7 @@ do_list(const char *keytab_string)
 	kie = &kp->next;
 	krb5_kt_free_entry(context, &entry);
     }
-    *kie = NULL; /* termiate list */
+    *kie = NULL; /* terminate list */
     ret = krb5_kt_end_seq_get(context, keytab, &cursor);
 
     printf("%-*s  %-*s  %-*s", max_version, "Vno", 
@@ -185,10 +185,10 @@ kt_list(int argc, char **argv)
     }
 
     if (keytab_string == NULL) {
-	do_list("FILE:/etc/krb5.keytab");
+	do_list("FILE:/etc/kerberosV/krb5.keytab");
 #ifdef KRB4
 	printf ("\n");
-	do_list("krb4:/etc/srvtab");
+	do_list("krb4:/etc/kerberosIV/srvtab");
 #endif
     } else {
 	do_list(keytab_string);

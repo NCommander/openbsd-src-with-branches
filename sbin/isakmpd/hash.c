@@ -1,7 +1,9 @@
-/*	$Id: hash.c,v 1.7 1998/07/25 22:04:35 niklas Exp $	*/
+/*	$OpenBSD: hash.c,v 1.11 2002/11/21 09:40:34 ho Exp $	*/
+/*	$EOM: hash.c,v 1.10 1999/04/17 23:20:34 niklas Exp $	*/
 
 /*
  * Copyright (c) 1998 Niels Provos.  All rights reserved.
+ * Copyright (c) 1999 Niklas Hallqvist.  All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -35,12 +37,20 @@
 
 #include <sys/param.h>
 #include <string.h>
+#if defined (__APPLE__)
+#include <openssl/md5.h>
+#include <openssl/sha.h>
+#else
 #include <md5.h>
 #include <sha1.h>
+#endif /* __APPLE__ */
+
+#include "sysdep.h"
 
 #include "hash.h"
+#include "log.h"
 
-void hmac_init (struct hash *, unsigned char *, int);
+void hmac_init (struct hash *, unsigned char *, unsigned int);
 void hmac_final (unsigned char *, struct hash *);
 
 /* Temporary hash contexts.  */
@@ -57,14 +67,14 @@ static unsigned char digest[HASH_MAX];
 static struct hash hashes[] = {
   { HASH_MD5, 5, MD5_SIZE, (void *)&Ctx.md5ctx, digest,
     sizeof (MD5_CTX), (void *)&Ctx2.md5ctx,
-    (void (*) (void *))MD5Init, 
-    (void (*) (void *, unsigned char *, unsigned int))MD5Update, 
+    (void (*) (void *))MD5Init,
+    (void (*) (void *, unsigned char *, unsigned int))MD5Update,
     (void (*) (unsigned char *, void *))MD5Final,
     hmac_init, hmac_final },
   { HASH_SHA1, 6, SHA1_SIZE, (void *)&Ctx.sha1ctx, digest,
     sizeof (SHA1_CTX), (void *)&Ctx2.sha1ctx,
-    (void (*) (void *))SHA1Init, 
-    (void (*) (void *, unsigned char *, unsigned int))SHA1Update, 
+    (void (*) (void *))SHA1Init,
+    (void (*) (void *, unsigned char *, unsigned int))SHA1Update,
     (void (*) (unsigned char *, void *))SHA1Final,
     hmac_init, hmac_final },
 };
@@ -74,11 +84,13 @@ hash_get (enum hashes hashtype)
 {
   int i;
 
+  LOG_DBG ((LOG_CRYPTO, 60, "hash_get: requested algorithm %d", hashtype));
+
   for (i = 0; i < sizeof hashes / sizeof hashes[0]; i++)
     if (hashtype == hashes[i].type)
       return &hashes[i];
 
-  return NULL;
+  return 0;
 }
 
 /*
@@ -88,12 +100,13 @@ hash_get (enum hashes hashtype)
  */
 
 void
-hmac_init (struct hash *hash, unsigned char *okey, int len)
+hmac_init (struct hash *hash, unsigned char *okey, unsigned int len)
 {
-  int i, blocklen = HMAC_BLOCKLEN;
+  unsigned int i, blocklen = HMAC_BLOCKLEN;
   unsigned char key[HMAC_BLOCKLEN];
 
-  if (len > blocklen) 
+  memset (key, 0, blocklen);
+  if (len > blocklen)
     {
       /* Truncate key down to blocklen */
       hash->Init (hash->ctx);
@@ -102,23 +115,22 @@ hmac_init (struct hash *hash, unsigned char *okey, int len)
     }
   else
     {
-      memset (key, 0, blocklen);
       memcpy (key, okey, len);
     }
 
   /* HMAC I and O pad computation */
-  for (i=0; i < blocklen; i++)
+  for (i = 0; i < blocklen; i++)
     key[i] ^= HMAC_IPAD_VAL;
 
   hash->Init (hash->ctx);
   hash->Update (hash->ctx, key, blocklen);
 
-  for (i=0; i < blocklen; i++)
+  for (i = 0; i < blocklen; i++)
     key[i] ^= (HMAC_IPAD_VAL ^ HMAC_OPAD_VAL);
 
   hash->Init (hash->ctx2);
   hash->Update (hash->ctx2, key, blocklen);
-  
+
   memset (key, 0, blocklen);
 }
 
@@ -127,9 +139,9 @@ hmac_init (struct hash *hash, unsigned char *okey, int len)
  */
 
 void
-hmac_final (unsigned char *digest, struct hash *hash)
+hmac_final (unsigned char *dgst, struct hash *hash)
 {
-  hash->Final (digest, hash->ctx);
-  hash->Update (hash->ctx2, digest, hash->hashsize);
-  hash->Final (digest, hash->ctx2);
+  hash->Final (dgst, hash->ctx);
+  hash->Update (hash->ctx2, dgst, hash->hashsize);
+  hash->Final (dgst, hash->ctx2);
 }

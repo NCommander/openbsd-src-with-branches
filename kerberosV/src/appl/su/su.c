@@ -51,7 +51,7 @@ RCSID("$KTH: su.c,v 1.22 2001/08/22 20:35:38 assar Exp $");
 #include <pwd.h>
 
 #ifdef HAVE_OPENSSL
-#include <openssl/des.h>
+#include <des.h>
 #else
 #include <des.h>
 #endif
@@ -291,8 +291,6 @@ main(int argc, char **argv)
 
     int ok = 0;
     int kerberos_error=1;
-
-    setprogname (argv[0]);
 
     if(getarg(args, sizeof(args) / sizeof(args[0]), argc, argv, &optind))
 	usage(1);

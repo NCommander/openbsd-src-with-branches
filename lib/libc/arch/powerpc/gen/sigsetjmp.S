@@ -1,3 +1,4 @@
+/*	$OpenBSD: sigsetjmp.S,v 1.2 2002/05/08 20:34:47 drahn Exp $	*/
 /*	$NetBSD$	*/
 
 /*-
@@ -37,11 +38,6 @@
  *
  *	from: @(#)setjmp.s	5.1 (Berkeley) 4/23/90"
  */
-#if 0
-#include <sys/syscall.h>
-
-#include <machine/asm.h>
-#endif
 
 #include "SYS.h"
 #include <machine/asm.h>
@@ -51,12 +47,7 @@
 	.asciz "$NetBSD$"
 #endif
 
-#if 1
 ENTRY(sigsetjmp)
-#else
-	.globl sigsetjmp
-sigsetjmp:
-#endif
 	mr	6,3
 	or.	7,4,4
 	beq	1f
@@ -74,12 +65,7 @@ sigsetjmp:
 	li	3,0
 	blr
 
-#if 1
 ENTRY(siglongjmp)
-#else
-	.globl siglongjmp
-siglongjmp:
-#endif
 	lmw	7,0(3)
 	mr	6,4
 	mtlr	11

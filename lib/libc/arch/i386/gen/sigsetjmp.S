@@ -32,18 +32,14 @@
  * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
- *
- *	from: @(#)setjmp.s	5.1 (Berkeley) 4/23/90"
- *	$Id: sigsetjmp.S,v 1.7 1994/12/24 01:05:44 jtc Exp $
  */
+
+#include <machine/asm.h>
 
 #if defined(LIBC_SCCS)
 	.text
-	.asciz "$Id: sigsetjmp.S,v 1.7 1994/12/24 01:05:44 jtc Exp $"
+	.asciz "$OpenBSD: sigsetjmp.S,v 1.3 1996/08/19 08:12:34 tholo Exp $"
 #endif
-
-#include "DEFS.h"
-#include "SYS.h"
 
 ENTRY(sigsetjmp)
 	movl	4(%esp),%ecx
@@ -53,9 +49,9 @@ ENTRY(sigsetjmp)
 	jz	1f
 	pushl	$0
 #ifdef PIC
-	call	PIC_PLT(_sigblock)
+	call	PIC_PLT(_C_LABEL(sigblock))
 #else
-	call	_sigblock
+	call	_C_LABEL(sigblock)
 #endif
 	addl	$4,%esp
 	movl	4(%esp),%ecx
@@ -76,9 +72,9 @@ ENTRY(siglongjmp)
 	jz	1f
 	pushl	24(%edx)
 #ifdef PIC
-	call	PIC_PLT(_sigsetmask)
+	call	PIC_PLT(_C_LABEL(sigsetmask))
 #else
-	call	_sigsetmask
+	call	_C_LABEL(sigsetmask)
 #endif
 	addl	$4,%esp
 1:	movl	4(%esp),%edx

@@ -1,4 +1,4 @@
-/*	$NetBSD: exec.h,v 1.5 1995/03/28 18:15:35 jtc Exp $	*/
+/*	$OpenBSD: exec.h,v 1.6 1997/03/31 00:24:01 downsj Exp $ */
 
 /*
  * Copyright (c) 1993 Christopher G. Demetriou
@@ -26,8 +26,8 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-#ifndef _MACHINE_EXEC_H_
-#define _MACHINE_EXEC_H_
+#ifndef _MVME68K_EXEC_H_
+#define _MVME68K_EXEC_H_
 
 #define __LDPGSZ	8192
 
@@ -45,4 +45,18 @@ struct relocation_info_m68k {
 };
 #define relocation_info	relocation_info_m68k
 
-#endif  /* _MACHINE_EXEC_H_ */
+#define ARCH_ELFSIZE		32
+
+#define ELF_TARG_CLASS		ELFCLASS32
+#define ELF_TARG_DATA		ELFDATA2MSB
+#define ELF_TARG_MACH		EM_68K
+
+#define _NLIST_DO_AOUT
+#define _NLIST_DO_ELF
+
+#define _KERN_DO_AOUT
+#if defined(COMPAT_LINUX) || defined(COMPAT_SVR4)
+#define _KERN_DO_ELF
+#endif
+
+#endif  /* _MVME68K_EXEC_H_ */

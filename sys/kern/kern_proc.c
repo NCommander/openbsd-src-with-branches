@@ -1,4 +1,5 @@
-/*	$NetBSD: kern_proc.c,v 1.12 1995/03/19 23:44:49 mycroft Exp $	*/
+/*	$OpenBSD: kern_proc.c,v 1.12 2002/01/25 15:00:26 art Exp $	*/
+/*	$NetBSD: kern_proc.c,v 1.14 1996/02/09 18:59:41 christos Exp $	*/
 
 /*
  * Copyright (c) 1982, 1986, 1989, 1991, 1993
@@ -37,7 +38,6 @@
 
 #include <sys/param.h>
 #include <sys/systm.h>
-#include <sys/map.h>
 #include <sys/kernel.h>
 #include <sys/proc.h>
 #include <sys/buf.h>
@@ -51,6 +51,7 @@
 #include <sys/ioctl.h>
 #include <sys/tty.h>
 #include <sys/signalvar.h>
+#include <sys/pool.h>
 
 /*
  * Structure associated with user cacheing.
@@ -74,6 +75,28 @@ u_long pgrphash;
 struct proclist allproc;
 struct proclist zombproc;
 
+struct pool proc_pool;
+struct pool rusage_pool;
+struct pool ucred_pool;
+struct pool pgrp_pool;
+struct pool session_pool;
+struct pool pcred_pool;
+
+/*
+ * Locking of this proclist is special; it's accessed in a
+ * critical section of process exit, and thus locking it can't
+ * modify interrupt state.  We use a simple spin lock for this
+ * proclist.  Processes on this proclist are also on zombproc;
+ * we use the p_hash member to linkup to deadproc.
+ */
+struct simplelock deadproc_slock;
+struct proclist deadproc;		/* dead, but not yet undead */
+
+static void orphanpg(struct pgrp *);
+#ifdef DEBUG
+void pgrpdump(void);
+#endif
+
 /*
  * Initialize global process hashing structures.
  */
@@ -83,9 +106,26 @@ procinit()
 
 	LIST_INIT(&allproc);
 	LIST_INIT(&zombproc);
-	pidhashtbl = hashinit(maxproc / 4, M_PROC, &pidhash);
-	pgrphashtbl = hashinit(maxproc / 4, M_PROC, &pgrphash);
-	uihashtbl = hashinit(maxproc / 16, M_PROC, &uihash);
+
+	LIST_INIT(&deadproc);
+	simple_lock_init(&deadproc_slock);
+
+	pidhashtbl = hashinit(maxproc / 4, M_PROC, M_WAITOK, &pidhash);
+	pgrphashtbl = hashinit(maxproc / 4, M_PROC, M_WAITOK, &pgrphash);
+	uihashtbl = hashinit(maxproc / 16, M_PROC, M_WAITOK, &uihash);
+
+	pool_init(&proc_pool, sizeof(struct proc), 0, 0, 0, "procpl",
+	    &pool_allocator_nointr);
+	pool_init(&rusage_pool, sizeof(struct rusage), 0, 0, 0, "zombiepl",
+	    &pool_allocator_nointr);
+	pool_init(&ucred_pool, sizeof(struct ucred), 0, 0, 0, "ucredpl",
+	    &pool_allocator_nointr);
+	pool_init(&pgrp_pool, sizeof(struct pgrp), 0, 0, 0, "pgrppl",
+	    &pool_allocator_nointr);
+	pool_init(&session_pool, sizeof(struct session), 0, 0, 0, "sessionpl",
+	    &pool_allocator_nointr);
+	pool_init(&pcred_pool, sizeof(struct pcred), 0, 0, 0, "pcredpl",
+	    &pool_allocator_nointr);
 }
 
 /*
@@ -197,18 +237,16 @@ enterpgrp(p, pgid, mksess)
 		if (p->p_pid != pgid)
 			panic("enterpgrp: new pgrp and pid != pgid");
 #endif
-		MALLOC(pgrp, struct pgrp *, sizeof(struct pgrp), M_PGRP,
-		    M_WAITOK);
 		if ((np = pfind(savepid)) == NULL || np != p)
 			return (ESRCH);
+		pgrp = pool_get(&pgrp_pool, PR_WAITOK);
 		if (mksess) {
 			register struct session *sess;
 
 			/*
 			 * new session
 			 */
-			MALLOC(sess, struct session *, sizeof(struct session),
-			    M_SESSION, M_WAITOK);
+			sess = pool_get(&session_pool, PR_WAITOK);
 			sess->s_leader = p;
 			sess->s_count = 1;
 			sess->s_ttyvp = NULL;
@@ -275,12 +313,9 @@ pgdelete(pgrp)
 	    pgrp->pg_session->s_ttyp->t_pgrp == pgrp)
 		pgrp->pg_session->s_ttyp->t_pgrp = NULL;
 	LIST_REMOVE(pgrp, pg_hash);
-	if (--pgrp->pg_session->s_count == 0)
-		FREE(pgrp->pg_session, M_SESSION);
-	FREE(pgrp, M_PGRP);
+	SESSRELE(pgrp->pg_session);
+	pool_put(&pgrp_pool, pgrp);
 }
-
-static void orphanpg();
 
 /*
  * Adjust pgrp jobc counters when specified process changes process group.
@@ -306,11 +341,12 @@ fixjobc(p, pgrp, entering)
 	 * group; if so, adjust count for p's process group.
 	 */
 	if ((hispgrp = p->p_pptr->p_pgrp) != pgrp &&
-	    hispgrp->pg_session == mysession)
+	    hispgrp->pg_session == mysession) {
 		if (entering)
 			pgrp->pg_jobc++;
 		else if (--pgrp->pg_jobc == 0)
 			orphanpg(pgrp);
+	}
 
 	/*
 	 * Check this process' children to see whether they qualify
@@ -320,11 +356,12 @@ fixjobc(p, pgrp, entering)
 	for (p = p->p_children.lh_first; p != 0; p = p->p_sibling.le_next)
 		if ((hispgrp = p->p_pgrp) != pgrp &&
 		    hispgrp->pg_session == mysession &&
-		    p->p_stat != SZOMB)
+		    P_ZOMBIE(p) == 0) {
 			if (entering)
 				hispgrp->pg_jobc++;
 			else if (--hispgrp->pg_jobc == 0)
 				orphanpg(hispgrp);
+		}
 }
 
 /* 
@@ -351,14 +388,15 @@ orphanpg(pg)
 }
 
 #ifdef DEBUG
+void
 pgrpdump()
 {
 	register struct pgrp *pgrp;
 	register struct proc *p;
-	register i;
+	register int i;
 
 	for (i = 0; i <= pgrphash; i++) {
-		if (pgrp = pgrphashtbl[i].lh_first) {
+		if ((pgrp = pgrphashtbl[i].lh_first) != NULL) {
 			printf("\tindx %d\n", i);
 			for (; pgrp != 0; pgrp = pgrp->pg_hash.le_next) {
 				printf("\tpgrp %p, pgid %d, sess %p, sesscnt %d, mem %p\n",

@@ -109,7 +109,7 @@ change_passwd(struct passwd  *who)
 	warn("fork /bin/passwd");
 	sleepexit(1);
     case 0:
-	execlp("/bin/passwd", "passwd", who->pw_name, (char *) 0);
+	execlp("/bin/passwd", "passwd", who->pw_name, (char *)NULL);
 	_exit(1);
     default:
 	waitpid(pid, &status, 0);
@@ -189,8 +189,6 @@ main(int argc, char **argv)
 	int mask = 022;		/* Default umask (set below) */
 	int maxtrys = 5;	/* Default number of allowed failed logins */
 
-	setprogname(argv[0]);
-
 	openlog("login", LOG_ODELAY, LOG_AUTH);
 
         /* Read defaults file and set the login timeout period. */
@@ -267,7 +265,7 @@ main(int argc, char **argv)
 			break;
 	        case 'r':
 			if (rflag || hflag) {
-				warnx("Only one of -r and -h allowed\n");
+				warnx("Only one of -r and -h allowed");
 				exit(1);
                         }
 			if (getuid()) {
@@ -844,11 +842,11 @@ main(int argc, char **argv)
 	    krb_afslog(0, 0);
 	}
 
-	execlp(pwd->pw_shell, tbuf, 0);
+	execlp(pwd->pw_shell, tbuf, (char *)NULL);
 	if (getuid() == 0) {
-		warnx("Can't exec %s, trying %s\n", 
+		warnx("Can't exec %s, trying %s", 
 		      pwd->pw_shell, _PATH_BSHELL);
-		execlp(_PATH_BSHELL, tbuf, 0);
+		execlp(_PATH_BSHELL, tbuf, (char *)NULL);
 		err(1, "%s", _PATH_BSHELL);
 	}
 	err(1, "%s", pwd->pw_shell);

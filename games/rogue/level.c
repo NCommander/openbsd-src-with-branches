@@ -1,3 +1,4 @@
+/*	$OpenBSD: level.c,v 1.3 1998/08/22 08:55:29 pjanzen Exp $	*/
 /*	$NetBSD: level.c,v 1.3 1995/04/22 10:27:37 cgd Exp $	*/
 
 /*
@@ -40,7 +41,7 @@
 #if 0
 static char sccsid[] = "@(#)level.c	8.1 (Berkeley) 5/31/93";
 #else
-static char rcsid[] = "$NetBSD: level.c,v 1.3 1995/04/22 10:27:37 cgd Exp $";
+static const char rcsid[] = "$OpenBSD$";
 #endif
 #endif /* not lint */
 
@@ -93,10 +94,7 @@ long level_points[MAX_EXP_LEVEL] = {
 
 short random_rooms[MAXROOMS] = {3, 7, 5, 2, 0, 6, 1, 4, 8};
 
-extern boolean being_held, wizard, detect_monster;
-extern boolean see_invisible;
-extern short bear_trap, levitate, extra_hp, less_hp, cur_room;
-
+void
 make_level()
 {
 	short i, j;
@@ -194,8 +192,9 @@ make_level()
 	}
 }
 
+void
 make_room(rn, r1, r2, r3)
-short rn, r1, r2, r3;
+	short rn, r1, r2, r3;
 {
 	short left_col, right_col, top_row, bottom_row;
 	short width, height;
@@ -264,6 +263,9 @@ short rn, r1, r2, r3;
 		right_col = get_rand(DCOLS-11, DCOLS-1);
 		rn = 0;
 		goto B;
+	default:
+		clean_up("failed makeroom()");
+		break;
 	}
 	height = get_rand(4, (bottom_row - top_row + 1));
 	width = get_rand(7, (right_col - left_col - 2));
@@ -303,8 +305,9 @@ END:
 	rooms[rn].right_col = right_col;
 }
 
+int
 connect_rooms(room1, room2)
-short room1, room2;
+	short room1, room2;
 {
 	short row1, col1, row2, col2, dir;
 
@@ -350,6 +353,7 @@ short room1, room2;
 	return(1);
 }
 
+void
 clear_level()
 {
 	short i, j;
@@ -376,10 +380,11 @@ clear_level()
 	clear();
 }
 
+void
 put_door(rm, dir, row, col)
-room *rm;
-short dir;
-short *row, *col;
+	room *rm;
+	short dir;
+	short *row, *col;
 {
 	short wall_width;
 
@@ -413,8 +418,9 @@ short *row, *col;
 	rm->doors[dir/2].door_col = *col;
 }
 
+void
 draw_simple_passage(row1, col1, row2, col2, dir)
-short row1, col1, row2, col2, dir;
+	short row1, col1, row2, col2, dir;
 {
 	short i, middle, t;
 
@@ -454,16 +460,21 @@ short row1, col1, row2, col2, dir;
 	}
 }
 
+int
 same_row(room1, room2)
+	int room1, room2;
 {
 	return((room1 / 3) == (room2 / 3));
 }
 
+int
 same_col(room1, room2)
+	int room1, room2;
 {
 	return((room1 % 3) == (room2 % 3));
 }
 
+void
 add_mazes()
 {
 	short i, j;
@@ -495,6 +506,7 @@ add_mazes()
 	}
 }
 
+void
 fill_out_level()
 {
 	short i, rn;
@@ -515,9 +527,10 @@ fill_out_level()
 	}
 }
 
+void
 fill_it(rn, do_rec_de)
-int rn;
-boolean do_rec_de;
+	int rn;
+	boolean do_rec_de;
 {
 	short i, tunnel_dir, door_dir, drow, dcol;
 	short target_room, rooms_found = 0;
@@ -576,10 +589,11 @@ boolean do_rec_de;
 	}
 }
 
+void
 recursive_deadend(rn, offsets, srow, scol)
-short rn;
-short *offsets;
-short srow, scol;
+	short rn;
+	short *offsets;
+	short srow, scol;
 {
 	short i, de;
 	short drow, dcol, tunnel_dir;
@@ -613,9 +627,9 @@ short srow, scol;
 
 boolean
 mask_room(rn, row, col, mask)
-short rn;
-short *row, *col;
-unsigned short mask;
+	short rn;
+	short *row, *col;
+	unsigned short mask;
 {
 	short i, j;
 
@@ -631,8 +645,9 @@ unsigned short mask;
 	return(0);
 }
 
+void
 make_maze(r, c, tr, br, lc, rc)
-short r, c, tr, br, lc, rc;
+	short r, c, tr, br, lc, rc;
 {
 	char dirs[4];
 	short i, t;
@@ -696,8 +711,9 @@ short r, c, tr, br, lc, rc;
 	}
 }
 
+void
 hide_boxed_passage(row1, col1, row2, col2, n)
-short row1, col1, row2, col2, n;
+	short row1, col1, row2, col2, n;
 {
 	short i, j, t;
 	short row, col, row_cut, col_cut;
@@ -731,8 +747,9 @@ short row1, col1, row2, col2, n;
 	}
 }
 
+void
 put_player(nr)
-short nr;		/* try not to put in this room */
+	short nr;		/* try not to put in this room */
 {
 	short rn = nr, misses;
 	short row, col;
@@ -757,12 +774,13 @@ short nr;		/* try not to put in this room */
 	rn = get_room_number(rogue.row, rogue.col);
 	wake_room(rn, 1, rogue.row, rogue.col);
 	if (new_level_message) {
-		message(new_level_message, 0);
-		new_level_message = 0;
+		messagef(0, "%s", new_level_message);
+		new_level_message = NULL;
 	}
 	mvaddch(rogue.row, rogue.col, rogue.fchar);
 }
 
+int
 drop_check()
 {
 	if (wizard) {
@@ -770,24 +788,25 @@ drop_check()
 	}
 	if (dungeon[rogue.row][rogue.col] & STAIRS) {
 		if (levitate) {
-			message("you're floating in the air!", 0);
+			messagef(0, "you're floating in the air!");
 			return(0);
 		}
 		return(1);
 	}
-	message("I see no way down", 0);
+	messagef(0, "I see no way down");
 	return(0);
 }
 
+int
 check_up()
 {
 	if (!wizard) {
 		if (!(dungeon[rogue.row][rogue.col] & STAIRS)) {
-			message("I see no way up", 0);
+			messagef(0, "I see no way up");
 			return(0);
 		}
 		if (!has_amulet()) {
-			message("your way is magically blocked", 0);
+			messagef(0, "your way is magically blocked");
 			return(0);
 		}
 	}
@@ -801,11 +820,11 @@ check_up()
 	return(0);
 }
 
+void
 add_exp(e, promotion)
-int e;
-boolean promotion;
+	int e;
+	boolean promotion;
 {
-	char mbuf[40];
 	short new_exp;
 	short i, hp;
 
@@ -817,8 +836,7 @@ boolean promotion;
 			rogue.exp_points = MAX_EXP + 1;
 		}
 		for (i = rogue.exp+1; i <= new_exp; i++) {
-			sprintf(mbuf, "welcome to level %d", i);
-			message(mbuf, 0);
+			messagef(0, "welcome to level %d", i);
 			if (promotion) {
 				hp = hp_raise();
 				rogue.hp_current += hp;
@@ -832,8 +850,9 @@ boolean promotion;
 	}
 }
 
+int
 get_exp_level(e)
-long e;
+	long e;
 {
 	short i;
 
@@ -845,6 +864,7 @@ long e;
 	return(i+1);
 }
 
+int
 hp_raise()
 {
 	int hp;
@@ -853,9 +873,9 @@ hp_raise()
 	return(hp);
 }
 
+void
 show_average_hp()
 {
-	char mbuf[80];
 	float real_average;
 	float effective_average;
 
@@ -867,11 +887,11 @@ show_average_hp()
 		effective_average = (float) (rogue.hp_max - INIT_HP) / (rogue.exp - 1);
 
 	}
-	sprintf(mbuf, "R-Hp: %.2f, E-Hp: %.2f (!: %d, V: %d)", real_average,
+	messagef(0, "R-Hp: %.2f, E-Hp: %.2f (!: %d, V: %d)", real_average,
 		effective_average, extra_hp, less_hp);
-	message(mbuf, 0);
 }
 
+void
 mix_random_rooms()
 {
 	short i, t;

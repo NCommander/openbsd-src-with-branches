@@ -1,3 +1,5 @@
+/*	$OpenBSD: operator.c,v 1.5 1999/12/04 22:42:32 millert Exp $	*/
+
 /*-
  * Copyright (c) 1990, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -36,10 +38,11 @@
 
 #ifndef lint
 /*static char sccsid[] = "from: @(#)operator.c	8.1 (Berkeley) 6/6/93";*/
-static char rcsid[] = "$Id: operator.c,v 1.3 1993/12/30 21:15:31 jtc Exp $";
+static char rcsid[] = "$OpenBSD: operator.c,v 1.5 1999/12/04 22:42:32 millert Exp $";
 #endif /* not lint */
 
 #include <sys/types.h>
+#include <sys/stat.h>
 
 #include <err.h>
 #include <fts.h>
@@ -74,7 +77,7 @@ static PLAN *
 yankexpr(planp)    
 	PLAN **planp;		/* pointer to top of plan (modified) */
 {
-	register PLAN *next;	/* temp node holding subexpression results */
+	PLAN *next;	/* temp node holding subexpression results */
 	PLAN *node;		/* pointer to returned node or expression */
 	PLAN *tail;		/* pointer to tail of subplan */
 	PLAN *subplan;		/* pointer to head of ( ) expression */
@@ -129,8 +132,8 @@ PLAN *
 paren_squish(plan)
 	PLAN *plan;		/* plan with ( ) nodes */
 {
-	register PLAN *expr;	/* pointer to next expression */
-	register PLAN *tail;	/* pointer to tail of result plan */
+	PLAN *expr;	/* pointer to next expression */
+	PLAN *tail;	/* pointer to tail of result plan */
 	PLAN *result;		/* pointer to head of result plan */
     
 	result = tail = NULL;
@@ -167,9 +170,9 @@ PLAN *
 not_squish(plan)
 	PLAN *plan;		/* plan to process */
 {
-	register PLAN *next;	/* next node being processed */
-	register PLAN *node;	/* temporary node used in N_NOT processing */
-	register PLAN *tail;	/* pointer to tail of result plan */
+	PLAN *next;	/* next node being processed */
+	PLAN *node;	/* temporary node used in N_NOT processing */
+	PLAN *tail;	/* pointer to tail of result plan */
 	PLAN *result;		/* pointer to head of result plan */
     
 	tail = result = next = NULL;
@@ -191,7 +194,7 @@ not_squish(plan)
 			int notlevel = 1;
 
 			node = yanknode(&plan);
-			while (node->type == N_NOT) {
+			while (node != NULL && node->type == N_NOT) {
 				++notlevel;
 				node = yanknode(&plan);
 			}
@@ -199,6 +202,8 @@ not_squish(plan)
 				errx(1, "!: no following expression");
 			if (node->type == N_OR)
 				errx(1, "!: nothing between ! and -o");
+			if (node->type == N_EXPR)
+				node = not_squish(node);
 			if (notlevel % 2 != 1)
 				next = node;
 			else
@@ -225,8 +230,8 @@ PLAN *
 or_squish(plan)
 	PLAN *plan;		/* plan with ors to be squished */
 {
-	register PLAN *next;	/* next node being processed */
-	register PLAN *tail;	/* pointer to tail of result plan */
+	PLAN *next;	/* next node being processed */
+	PLAN *tail;	/* pointer to tail of result plan */
 	PLAN *result;		/* pointer to head of result plan */
     
 	tail = result = next = NULL;

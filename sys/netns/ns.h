@@ -1,4 +1,5 @@
-/*	$NetBSD: ns.h,v 1.7 1995/06/13 08:37:01 mycroft Exp $	*/
+/*	$OpenBSD: ns.h,v 1.3 1998/05/11 06:06:01 deraadt Exp $	*/
+/*	$NetBSD: ns.h,v 1.8 1996/02/13 22:13:51 christos Exp $	*/
 
 /*
  * Copyright (c) 1984, 1985, 1986, 1987, 1993
@@ -61,7 +62,7 @@
 #define NSPORT_RE	3		/* Router Error */
 
 /*
- * Ports < NSPORT_RESERVED are reserved for priveleged
+ * Ports < NSPORT_RESERVED are reserved for privileged
  * processes (e.g. root).
  */
 #define NSPORT_RESERVED		3000
@@ -140,7 +141,6 @@ union ns_host ns_zerohost;
 union ns_host ns_broadhost;
 union ns_net ns_zeronet;
 union ns_net ns_broadnet;
-u_short ns_cksum();
 
 #define	satosns(sa)	((struct sockaddr_ns *)(sa))
 #define	snstosa(sns)	((struct sockaddr *)(sns))
@@ -149,8 +149,8 @@ u_short ns_cksum();
 #include <sys/cdefs.h>
 
 __BEGIN_DECLS
-extern struct ns_addr ns_addr __P((const char *));
-extern char *ns_ntoa __P((struct ns_addr));
+extern struct ns_addr ns_addr(const char *);
+extern char *ns_ntoa(struct ns_addr);
 __END_DECLS
 
 #endif

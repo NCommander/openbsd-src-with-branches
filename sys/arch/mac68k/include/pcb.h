@@ -1,4 +1,5 @@
-/*	$NetBSD: pcb.h,v 1.6 1995/06/21 03:10:44 briggs Exp $	*/
+/*	$OpenBSD: pcb.h,v 1.4 1997/11/30 06:12:32 gene Exp $	*/
+/*	$NetBSD: pcb.h,v 1.7 1996/05/05 06:17:51 briggs Exp $	*/
 
 /*
  * Copyright (c) 1988 University of Utah.
@@ -75,11 +76,13 @@
  *
  *	@(#)pcb.h	7.4 (Berkeley) 5/4/91
  */
+#ifndef	_MAC68K_PCB_H_
+#define	_MAC68K_PCB_H_
 
 #include <machine/frame.h>
 
 /*
- * MacII process control block
+ * mac68k process control block
  */
 struct pcb
 {
@@ -90,7 +93,6 @@ struct pcb
 	int	pcb_regs[12];	/* D2-D7, A2-A7 (+C) */
 	caddr_t	pcb_onfault;	/* for copyin/out faults */
 	struct	fpframe pcb_fpregs; /* 68881/2 context save area */
-	int	pcb_exec[16];	/* exec structure for core dumps */
 };
 
 /* flags */
@@ -103,3 +105,5 @@ struct pcb
 struct md_coredump {
 	int	md_exec[16];	/* Exec structure for HP-UX (sic) core dumps */
 };
+
+#endif /* _MAC68K_PCB_H_ */

@@ -32,19 +32,16 @@
  * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
- *
- *	from: @(#)syscall.s	5.1 (Berkeley) 4/23/90
- *	$Id: syscall.S,v 1.5 1994/10/26 19:49:52 mycroft Exp $
  */
-
-#if defined(SYSLIBC_SCCS) && !defined(lint)
-	.text
-	.asciz "$Id: syscall.S,v 1.5 1994/10/26 19:49:52 mycroft Exp $"
-#endif /* SYSLIBC_SCCS and not lint */
 
 #include "SYS.h"
 
-ENTRY(syscall)
+#if defined(SYSLIBC_SCCS)
+	.text
+	.asciz "$OpenBSD: syscall.S,v 1.3 1998/11/20 11:18:30 d Exp $"
+#endif /* SYSLIBC_SCCS */
+
+SYSENTRY(syscall)
 	pop	%ecx	/* rta */
 	pop	%eax	/* syscall number */
 	push	%ecx
@@ -54,7 +51,7 @@ ENTRY(syscall)
 	ret
 err:
 #ifdef PIC
-	jmp	PIC_PLT(cerror)
+	jmp	PIC_PLT(__cerror)
 #else
-	jmp	cerror
+	jmp	__cerror
 #endif

@@ -36,12 +36,13 @@
 
 #include "SYS.h"
 
-#if defined(LIBC_SCCS) && !defined(lint)
-	ASMSTR("from: @(#)fork.s	8.1 (Berkeley) 6/4/93")
-	ASMSTR("$Id: fork.S,v 1.3 1994/12/15 17:25:11 mycroft Exp $")
-#endif /* LIBC_SCCS and not lint */
+#if defined(SYSLIBC_SCCS)
+	.text
+	.asciz "$OpenBSD: fork.S,v 1.4 1996/08/19 08:16:22 tholo Exp $"
+#endif /* SYSLIBC_SCCS */
 
-LEAF(fork)
+SYSLEAF(fork)
+	.set	reorder
 	li	v0, SYS_fork	# pid = fork()
 	syscall
 	bne	a3, zero, 2f
@@ -50,5 +51,6 @@ LEAF(fork)
 1:
 	j	ra
 2:
-	j	_C_LABEL(cerror)
-END(fork)
+	la	t9, _C_LABEL(cerror)
+	jr	t9
+SYSEND(fork)

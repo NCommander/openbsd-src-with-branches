@@ -1,4 +1,6 @@
 #! /bin/sh
+#	$OpenBSD$
+
 # idea and sed lines taken straight from flex
 
 cat <<!EOF

@@ -1,3 +1,4 @@
+/*	$OpenBSD: badsect.c,v 1.9 2002/07/03 22:32:32 deraadt Exp $	*/
 /*	$NetBSD: badsect.c,v 1.10 1995/03/18 14:54:28 cgd Exp $	*/
 
 /*
@@ -43,7 +44,7 @@ static char copyright[] =
 #if 0
 static char sccsid[] = "@(#)badsect.c	8.1 (Berkeley) 6/5/93";
 #else
-static char rcsid[] = "$NetBSD: badsect.c,v 1.10 1995/03/18 14:54:28 cgd Exp $";
+static char rcsid[] = "$OpenBSD: badsect.c,v 1.9 2002/07/03 22:32:32 deraadt Exp $";
 #endif
 #endif /* not lint */
 
@@ -88,19 +89,18 @@ long	dev_bsize = 1;
 
 char buf[MAXBSIZE];
 
-void	rdfs __P((daddr_t, int, char *));
-int	chkuse __P((daddr_t, int));
+void	rdfs(daddr_t, int, char *);
+int	chkuse(daddr_t, int);
 
 int
-main(argc, argv)
-	int argc;
-	char *argv[];
+main(int argc, char *argv[])
 {
 	daddr_t number;
 	struct stat stbuf, devstat;
-	register struct direct *dp;
+	struct direct *dp;
 	DIR *dirp;
 	char name[BUFSIZ];
+	int len;
 
 	if (argc < 3) {
 		fprintf(stderr, "usage: badsect bbdir blkno [ blkno ]\n");
@@ -110,13 +110,14 @@ main(argc, argv)
 		perror(argv[1]);
 		exit(2);
 	}
-	strcpy(name, _PATH_DEV);
+	strlcpy(name, _PATH_DEV, sizeof name);
+	len = strlen(name);
 	if ((dirp = opendir(name)) == NULL) {
 		perror(name);
 		exit(3);
 	}
 	while ((dp = readdir(dirp)) != NULL) {
-		strcpy(&name[5], dp->d_name);
+		strcpy(&name[len], dp->d_name);
 		if (stat(name, &devstat) < 0) {
 			perror(name);
 			exit(4);
@@ -125,6 +126,16 @@ main(argc, argv)
 		    S_ISBLK(devstat.st_mode))
 			break;
 	}
+
+	/*
+	 * We've found the block device, but since the filesystem
+	 * is mounted, we must write to the raw (character) device
+	 * instead. This is not guaranteed to work if someone has a
+	 * /dev that doesn't follow standard naming conventions, but
+	 * it's all we've got.
+	 */
+	name[len] = 'r';
+	strcpy(&name[len+1], dp->d_name);
 	closedir(dirp);
 	if (dp == NULL) {
 		printf("Cannot find dev 0%o corresponding to %s\n",
@@ -153,9 +164,7 @@ main(argc, argv)
 }
 
 int
-chkuse(blkno, cnt)
-	daddr_t blkno;
-	int cnt;
+chkuse(daddr_t blkno, int cnt)
 {
 	int cg;
 	daddr_t fsbn, bn;
@@ -196,21 +205,18 @@ chkuse(blkno, cnt)
  * read a block from the file system
  */
 void
-rdfs(bno, size, bf)
-	daddr_t bno;
-	int size;
-	char *bf;
+rdfs(daddr_t bno, int size, char *bf)
 {
 	int n;
 
 	if (lseek(fsi, (off_t)bno * dev_bsize, SEEK_SET) < 0) {
-		printf("seek error: %ld\n", bno);
+		printf("seek error: %lld\n", (long long)bno);
 		perror("rdfs");
 		exit(1);
 	}
 	n = read(fsi, bf, size);
 	if (n != size) {
-		printf("read error: %ld\n", bno);
+		printf("read error: %lld\n", (long long)bno);
 		perror("rdfs");
 		exit(1);
 	}

@@ -1,3 +1,4 @@
+/*	$OpenBSD: dlfcn.h,v 1.5 2002/02/16 21:27:17 millert Exp $	*/
 /*	$NetBSD: dlfcn.h,v 1.2 1995/06/05 19:38:00 pk Exp $	*/
 
 /*
@@ -16,7 +17,7 @@
  *    must display the following acknowledgement:
  *      This product includes software developed by Paul Kranenburg.
  * 4. The name of the author may not be used to endorse or promote products
- *    derived from this software withough specific prior written permission
+ *    derived from this software without specific prior written permission
  *
  * THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR
  * IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
@@ -39,11 +40,11 @@
  * User interface to the run-time linker.
  */
 __BEGIN_DECLS
-extern void	*dlopen __P((char *, int));
-extern int	dlclose __P((void *));
-extern void	*dlsym __P((void *, char *));
-extern int	dlctl __P((void *, int, void *));
-extern char	*dlerror __P((void));
+extern void	*dlopen(const char *, int);
+extern int	dlclose(void *);
+extern void	*dlsym(void *, const char *);
+extern int	dlctl(void *, int, void *);
+extern const char	*dlerror(void);
 __END_DECLS
 
 /* Values for dlopen `mode'. */

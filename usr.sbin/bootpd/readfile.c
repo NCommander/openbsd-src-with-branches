@@ -21,7 +21,7 @@ SOFTWARE.
 ************************************************************************/
 
 #ifndef lint
-static char rcsid[] = "$Id: readfile.c,v 1.2 1994/08/22 22:15:04 gwr Exp $";
+static char rcsid[] = "$Id: readfile.c,v 1.7 2002/12/06 02:17:42 deraadt Exp $";
 #endif
 
 
@@ -330,7 +330,7 @@ readtab(force)
 	struct host *hp;
 	FILE *fp;
 	struct stat st;
-	unsigned hashcode, buflen;
+	unsigned int hashcode, buflen;
 	static char buffer[MAXENTRYLEN];
 
 	/*
@@ -344,7 +344,7 @@ readtab(force)
 #ifdef DEBUG
 	if (debug > 3) {
 		char timestr[28];
-		strcpy(timestr, ctime(&(st.st_mtime)));
+		strlcpy(timestr, ctime(&(st.st_mtime)), sizeof(timestr));
 		/* zap the newline */
 		timestr[24] = '\0';
 		report(LOG_INFO, "bootptab mtime: %s",
@@ -446,7 +446,7 @@ readtab(force)
 			if (hash_Insert(hwhashtable, hashcode, hwinscmp, hp, hp) < 0) {
 				report(LOG_NOTICE, "duplicate %s address: %s",
 					   netname(hp->htype),
-					   haddrtoa(hp->haddr, hp->htype));
+					   haddrtoa(hp->haddr, haddrlength(hp->htype)));
 				free_host((hash_datum *) hp);
 				continue;
 			}
@@ -510,7 +510,7 @@ PRIVATE void
 read_entry(fp, buffer, bufsiz)
 	FILE *fp;
 	char *buffer;
-	unsigned *bufsiz;
+	unsigned int *bufsiz;
 {
 	int c, length;
 
@@ -702,7 +702,7 @@ process_entry(host, src)
 		case E_BAD_VALUE:
 			msg = "bad value";
 		default:
-			msg = "unkown error";
+			msg = "unknown error";
 			break;
 		}						/* switch */
 		report(LOG_ERR, "in entry named \"%s\", symbol \"%s\": %s",
@@ -796,12 +796,11 @@ eval_symbol(symbol, hp)
 {
 	char tmpstr[MAXSTRINGLEN];
 	byte *tmphaddr;
-	struct shared_string *ss;
 	struct symbolmap *symbolptr;
 	u_int32 value;
 	int32 timeoff;
 	int i, numsymbols;
-	unsigned len;
+	unsigned int len;
 	int optype;					/* Indicates boolean, addition, or deletion */
 
 	eat_whitespace(symbol);
@@ -820,7 +819,7 @@ eval_symbol(symbol, hp)
 	if ((*symbol)[0] == 'T') {	/* generic symbol */
 		(*symbol)++;
 		value = get_u_long(symbol);
-		sprintf(current_tagname, "T%d", value);
+		snprintf(current_tagname, sizeof(current_tagname), "T%d", value);
 		eat_whitespace(symbol);
 		if ((*symbol)[0] != '=') {
 			return E_SYNTAX_ERROR;
@@ -1168,7 +1167,7 @@ eval_symbol(symbol, hp)
 PRIVATE char *
 get_string(src, dest, length)
 	char **src, *dest;
-	unsigned *length;
+	unsigned int *length;
 {
 	int n, len, quoteflag;
 
@@ -1223,15 +1222,16 @@ get_shared_string(src)
 {
 	char retstring[MAXSTRINGLEN];
 	struct shared_string *s;
-	unsigned length;
+	unsigned int length;
+	int len;
 
 	length = sizeof(retstring);
 	(void) get_string(src, retstring, &length);
 
-	s = (struct shared_string *) smalloc(sizeof(struct shared_string)
-										 + length);
+	len = sizeof(struct shared_string) + length;
+	s = (struct shared_string *) smalloc(len);
 	s->linkcount = 1;
-	strcpy(s->string, retstring);
+	strlcpy(s->string, retstring, len);
 
 	return s;
 }
@@ -1271,7 +1271,7 @@ process_generic(src, dest, tagvalue)
 	if ((*src)[0] == '"') {		/* ASCII data */
 		newlength = sizeof(tmpbuf) - 2;	/* Set maximum allowed length */
 		(void) get_string(src, (char *) str, &newlength);
-		newlength++;			/* null terminator */
+		/* Do NOT include the terminating null. */
 	} else {					/* Numeric data */
 		newlength = 0;
 		while (newlength < sizeof(tmpbuf) - 2) {
@@ -1314,7 +1314,7 @@ process_generic(src, dest, tagvalue)
 
 PRIVATE boolean
 goodname(hostname)
-	register char *hostname;
+	char *hostname;
 {
 	do {
 		if (!isalpha(*hostname++)) {	/* First character must be a letter */
@@ -1533,7 +1533,7 @@ PRIVATE void
 adjust(s)
 	char **s;
 {
-	register char *t;
+	char *t;
 
 	t = *s;
 	while (*t && (*t != ':')) {
@@ -1558,7 +1558,7 @@ PRIVATE void
 eat_whitespace(s)
 	char **s;
 {
-	register char *t;
+	char *t;
 
 	t = *s;
 	while (*t && isspace(*t)) {
@@ -1621,7 +1621,7 @@ get_addresses(src)
 	struct in_addr tmpaddrlist[MAXINADDRS];
 	struct in_addr *address1, *address2;
 	struct in_addr_list *result;
-	unsigned addrcount, totalsize;
+	unsigned int addrcount, totalsize;
 
 	address1 = tmpaddrlist;
 	for (addrcount = 0; addrcount < MAXINADDRS; addrcount++) {
@@ -1677,7 +1677,7 @@ prs_inetaddr(src, result)
 	u_int32 *result;
 {
 	char tmpstr[MAXSTRINGLEN];
-	register u_int32 value;
+	u_int32 value;
 	u_int32 parts[4], *pp;
 	int n;
 	char *s, *t;
@@ -1782,7 +1782,7 @@ prs_haddr(src, htype)
 	byte *hap;
 	char tmpstr[MAXSTRINGLEN];
 	u_int tmplen;
-	unsigned hal;
+	unsigned int hal;
 	char *p;
 
 	hal = haddrlength(htype);	/* Get length of this address type */
@@ -1807,7 +1807,7 @@ prs_haddr(src, htype)
 
 	hap = haddr;
 	while (hap < haddr + hal) {
-		if (*p == '.')
+		if ((*p == '.') || (*p == ':'))
 			p++;
 		if (interp_byte(&p, hap++) < 0) {
 			return NULL;
@@ -1866,7 +1866,7 @@ PRIVATE u_int32
 get_u_long(src)
 	char **src;
 {
-	register u_int32 value, base;
+	u_int32 value, base;
 	char c;
 
 	/*
@@ -2030,7 +2030,7 @@ del_bindata(dataptr)
 
 PRIVATE char *
 smalloc(nbytes)
-	unsigned nbytes;
+	unsigned int nbytes;
 {
 	char *retvalue;
 

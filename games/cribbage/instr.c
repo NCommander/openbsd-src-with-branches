@@ -1,4 +1,5 @@
-/*	$NetBSD: instr.c,v 1.3 1995/03/21 15:08:52 cgd Exp $	*/
+/*	$OpenBSD: instr.c,v 1.7 1999/06/10 22:58:19 pjanzen Exp $	*/
+/*	$NetBSD: instr.c,v 1.5 1997/07/10 06:47:30 mikel Exp $	*/
 
 /*-
  * Copyright (c) 1990, 1993
@@ -37,16 +38,19 @@
 #if 0
 static char sccsid[] = "@(#)instr.c	8.1 (Berkeley) 5/31/93";
 #else
-static char rcsid[] = "$NetBSD: instr.c,v 1.3 1995/03/21 15:08:52 cgd Exp $";
+static char rcsid[] = "$OpenBSD: instr.c,v 1.7 1999/06/10 22:58:19 pjanzen Exp $";
 #endif
 #endif /* not lint */
 
 #include <sys/types.h>
 #include <sys/wait.h>
-#include <sys/errno.h>
 #include <sys/stat.h>
 
 #include <curses.h>
+#include <err.h>
+#include <errno.h>
+#include <fcntl.h>
+#include <paths.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -59,35 +63,38 @@ static char rcsid[] = "$NetBSD: instr.c,v 1.3 1995/03/21 15:08:52 cgd Exp $";
 void
 instructions()
 {
-	extern int errno;
-	struct stat sb;
-	union wait pstat;
+	int pstat;
+	int fd;
 	pid_t pid;
-	char *pager, *path;
+	const char *pager;
 
-	if (stat(_PATH_INSTR, &sb)) {
-		(void)fprintf(stderr, "cribbage: %s: %s.\n", _PATH_INSTR,
-		    strerror(errno));
-		exit(1);
-	}
+	if ((fd = open(_PATH_INSTR, O_RDONLY)) == - 1)
+		errx(1, "can't open %s", _PATH_INSTR);
+
 	switch (pid = vfork()) {
 	case -1:
-		(void)fprintf(stderr, "cribbage: %s.\n", strerror(errno));
-		exit(1);
+		err(1, "vfork");
+		/* NOTREACHED */
 	case 0:
-		if (!(path = getenv("PAGER")))
-			path = _PATH_MORE;
-		if (pager = rindex(path, '/'))
-			++pager;
-		pager = path;
-		execlp(path, pager, _PATH_INSTR, (char *)NULL);
-		(void)fprintf(stderr, "cribbage: %s.\n", strerror(errno));
-		_exit(1);
+		setgid(getgid());
+		if (!isatty(1))
+			pager = "/bin/cat";
+		else {
+			if (!(pager = getenv("PAGER")) || (*pager == 0))
+				pager = _PATH_MORE;
+		}
+		if (dup2(fd, 0) == -1)
+			err(1, "dup2");
+		execl(_PATH_BSHELL, "sh", "-c", pager, (char *)NULL);
+		err(1, "exec sh -c %s", pager);
+		/* NOTREACHED */
 	default:
 		do {
-			pid = waitpid(pid, (int *)&pstat, 0);
+			pid = waitpid(pid, &pstat, 0);
 		} while (pid == -1 && errno == EINTR);
-		if (pid == -1 || pstat.w_status)
+		close(fd);
+		if (pid == -1 || WEXITSTATUS(pstat))
 			exit(1);
+		break;
 	}
 }

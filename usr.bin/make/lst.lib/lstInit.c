@@ -1,8 +1,10 @@
-/*	$NetBSD: lstInit.c,v 1.4 1995/06/14 15:21:18 christos Exp $	*/
+/*	$OpenPackages$ */
+/*	$OpenBSD: lstInit.c,v 1.4 1998/12/05 00:06:32 espie Exp $	*/
+/*	$NetBSD: lstInit.c,v 1.5 1996/11/06 17:59:43 christos Exp $	*/
 
 /*
- * Copyright (c) 1988, 1989, 1990 The Regents of the University of California.
- * All rights reserved.
+ * Copyright (c) 1988, 1989, 1990, 1993
+ *	The Regents of the University of California.  All rights reserved.
  *
  * This code is derived from software contributed to Berkeley by
  * Adam de Boor.
@@ -36,47 +38,25 @@
  * SUCH DAMAGE.
  */
 
-#ifndef lint
-#if 0
-static char sccsid[] = "@(#)lstInit.c	5.4 (Berkeley) 12/28/90";
-#else
-static char rcsid[] = "$NetBSD: lstInit.c,v 1.4 1995/06/14 15:21:18 christos Exp $";
-#endif
-#endif /* not lint */
-
 /*-
  * init.c --
  *	Initialize a new linked list.
  */
 
 #include	"lstInt.h"
+#include	<stddef.h>
 
 /*-
  *-----------------------------------------------------------------------
  * Lst_Init --
  *	Create and initialize a new list.
- *
- * Results:
- *	The created list.
- *
- * Side Effects:
- *	A list is created, what else?
- *
  *-----------------------------------------------------------------------
  */
-Lst
-Lst_Init(circ)
-    Boolean		circ;	/* TRUE if the list should be made circular */
+void
+Lst_Init(l)
+    Lst l;
 {
-    register List	nList;
-    
-    PAlloc (nList, List);
-    
-    nList->firstPtr = NilListNode;
-    nList->lastPtr = NilListNode;
-    nList->isOpen = FALSE;
-    nList->isCirc = circ;
-    nList->atEnd = Unknown;
-    
-    return ((Lst)nList);
+    l->firstPtr = NULL;
+    l->lastPtr = NULL;
 }
+

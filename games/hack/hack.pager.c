@@ -1,9 +1,68 @@
+/*	$OpenBSD: hack.pager.c,v 1.7 2001/08/06 22:59:13 pjanzen Exp $	*/
+
 /*
- * Copyright (c) Stichting Mathematisch Centrum, Amsterdam, 1985.
+ * Copyright (c) 1985, Stichting Centrum voor Wiskunde en Informatica,
+ * Amsterdam
+ * All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are
+ * met:
+ *
+ * - Redistributions of source code must retain the above copyright notice,
+ * this list of conditions and the following disclaimer.
+ *
+ * - Redistributions in binary form must reproduce the above copyright
+ * notice, this list of conditions and the following disclaimer in the
+ * documentation and/or other materials provided with the distribution.
+ *
+ * - Neither the name of the Stichting Centrum voor Wiskunde en
+ * Informatica, nor the names of its contributors may be used to endorse or
+ * promote products derived from this software without specific prior
+ * written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS
+ * IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED
+ * TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A
+ * PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER
+ * OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
+ * EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+ * PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR
+ * PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
+ * LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
+ * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ */
+
+/*
+ * Copyright (c) 1982 Jay Fenlason <hack@gnu.org>
+ * All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions
+ * are met:
+ * 1. Redistributions of source code must retain the above copyright
+ *    notice, this list of conditions and the following disclaimer.
+ * 2. Redistributions in binary form must reproduce the above copyright
+ *    notice, this list of conditions and the following disclaimer in the
+ *    documentation and/or other materials provided with the distribution.
+ * 3. The name of the author may not be used to endorse or promote products
+ *    derived from this software without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED ``AS IS'' AND ANY EXPRESS OR IMPLIED WARRANTIES,
+ * INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY
+ * AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.  IN NO EVENT SHALL
+ * THE AUTHOR BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
+ * EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+ * PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS;
+ * OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
+ * WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR
+ * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
+ * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
 #ifndef lint
-static char rcsid[] = "$NetBSD: hack.pager.c,v 1.4 1995/03/23 08:31:16 cgd Exp $";
+static char rcsid[] = "$OpenBSD: hack.pager.c,v 1.7 2001/08/06 22:59:13 pjanzen Exp $";
 #endif /* not lint */
 
 /* This file contains the command routine dowhatis() and a pager. */
@@ -36,7 +95,7 @@ dowhatis()
 		if(q != '\t')
 		while(fgets(buf,BUFSZ,fp))
 		    if(*buf == q) {
-			ep = index(buf, '\n');
+			ep = strchr(buf, '\n');
 			if(ep) *ep = 0;
 			/* else: bad data file */
 			/* Expand tab 'by hand' */
@@ -82,7 +141,7 @@ int strip;	/* nr of chars to be stripped from each line (0 or 1) */
 	bufr = (char *) alloc((unsigned) CO);
 	bufr[CO-1] = 0;
 	while(fgets(bufr,CO-1,fp) && (!strip || *bufr == '\t') && !got_intrup){
-		ep = index(bufr, '\n');
+		ep = strchr(bufr, '\n');
 		if(ep)
 			*ep = 0;
 		if(page_line(bufr+strip)) {
@@ -114,7 +173,7 @@ readnews() {
 	set_whole_screen();
 	return(ret);		/* report whether we did docrt() */
 }
-#endif NEWS
+#endif /* NEWS */
 
 set_pager(mode)
 register int mode;	/* 0: open  1: wait+close  2: close */
@@ -286,9 +345,9 @@ dohelp()
 	char c;
 
 	pline ("Long or short help? ");
-	while (((c = readchar ()) != 'l') && (c != 's') && !index(quitchars,c))
+	while (((c = readchar ()) != 'l') && (c != 's') && !strchr(quitchars,c))
 		bell ();
-	if (!index(quitchars, c))
+	if (!strchr(quitchars, c))
 		(void) page_file((c == 'l') ? HELP : SHELP, FALSE);
 	return(0);
 }
@@ -301,7 +360,7 @@ boolean silent;
       {
 	/* use external pager; this may give security problems */
 
-	register int fd = open(fnam, 0);
+	register int fd = open(fnam, O_RDONLY);
 
 	if(fd < 0) {
 		if(!silent) pline("Cannot open %s.", fnam);
@@ -324,7 +383,7 @@ boolean silent;
 	}
 	(void) close(fd);
       }
-#else DEF_PAGER
+#else /* DEF_PAGER */
       {
 	FILE *f;			/* free after Robert Viduya */
 
@@ -337,7 +396,7 @@ boolean silent;
 	}
 	page_more(f, 0);
       }
-#endif DEF_PAGER
+#endif /* DEF_PAGER */
 
 	return(1);
 }
@@ -356,7 +415,7 @@ register char *str;
 	}
 	return(0);
 }
-#endif SHELL
+#endif /* SHELL */
 
 #ifdef NOWAITINCLUDE
 union wait {		/* used only for the cast  (union wait *) 0  */
@@ -374,21 +433,26 @@ union wait {		/* used only for the cast  (union wait *) 0  */
 #include	<sys/wait.h>
 #else
 #include	<wait.h>
-#endif BSD
-#endif NOWAITINCLUDE
+#endif /* BSD */
+#endif /* NOWAITINCLUDE */
 
 child(wt) {
 	int status;
 	register int f;
+	char *home;
 
 	f = fork();
 	if(f == 0){		/* child */
 		settty((char *) 0);		/* also calls end_screen() */
-		(void) setuid(getuid());
-		(void) setgid(getgid());
+		/* revoke */
+		setegid(getgid());
+		setgid(getgid());
 #ifdef CHDIR
-		(void) chdir(getenv("HOME"));
-#endif CHDIR
+		home = getenv("HOME");
+		if (home == NULL || *home == '\0')
+			home = "/";
+		(void) chdir(home);
+#endif /* CHDIR */
 		return(1);
 	}
 	if(f == -1) {	/* cannot fork */
@@ -404,9 +468,9 @@ child(wt) {
 	(void) signal(SIGINT,done1);
 #ifdef WIZARD
 	if(wizard) (void) signal(SIGQUIT,SIG_DFL);
-#endif WIZARD
+#endif /* WIZARD */
 	if(wt) getret();
 	docrt();
 	return(0);
 }
-#endif UNIX
+#endif /* UNIX */

@@ -1,4 +1,5 @@
-/*	$NetBSD: auxreg.c,v 1.8 1995/02/22 21:13:01 pk Exp $ */
+/*	$OpenBSD: auxreg.c,v 1.8 2000/07/19 15:31:26 art Exp $	*/
+/*	$NetBSD: auxreg.c,v 1.21 1997/05/24 20:15:59 pk Exp $ */
 
 /*
  * Copyright (c) 1992, 1993
@@ -45,26 +46,48 @@
  */
 
 #include <sys/param.h>
+#include <sys/systm.h>
 #include <sys/device.h>
 #include <sys/kernel.h>
+#include <sys/timeout.h>
 
 #include <machine/autoconf.h>
 
 #include <sparc/sparc/vaddrs.h>
-#include <sparc/sparc/auxreg.h>
+#include <sparc/sparc/auxioreg.h>
 
-static int auxregmatch __P((struct device *, void *, void *));
-static void auxregattach __P((struct device *, struct device *, void *));
-struct cfdriver auxregcd =
-    { 0, "auxreg", auxregmatch, auxregattach, DV_DULL, sizeof(struct device) };
+static int auxregmatch(struct device *, void *, void *);
+static void auxregattach(struct device *, struct device *, void *);
 
-#ifdef BLINK
-static int
-blink(zero)
+struct cfattach auxreg_ca = {
+	sizeof(struct device), auxregmatch, auxregattach
+};
+
+struct cfdriver auxreg_cd = {
+	0, "auxreg", DV_DULL
+};
+
+extern int sparc_led_blink;	/* from machdep */
+struct timeout sparc_led_to;
+
+void
+led_blink(zero)
 	void *zero;
 {
-	register int s;
-	register fixpt_t lav;
+	int s;
+
+	/* Don't do anything if there's no auxreg, ok? */
+	if (auxio_reg == 0)
+		return;
+
+	if (!sparc_led_blink) {
+		/* If blink has been disabled, make sure it goes back on... */
+		s = splhigh();
+		LED_ON;
+		splx(s);
+	
+		return;
+	}
 
 	s = splhigh();
 	LED_FLIP;
@@ -76,25 +99,31 @@ blink(zero)
 	 *	full cycle every 3 seconds if loadav = 2
 	 * etc.
 	 */
-	s = (((averunnable[0] + FSCALE) * hz) >> (FSHIFT + 1));
-	timeout(blink, (caddr_t)0, s);
+	s = (((averunnable.ldavg[0] + FSCALE) * hz) >> (FSHIFT + 1));
+
+	timeout_add(&sparc_led_to, s);
 }
-#endif
 
 /*
  * The OPENPROM calls this "auxiliary-io".
  */
 static int
-auxregmatch(parent, vcf, aux)
+auxregmatch(parent, cf, aux)
 	struct device *parent;
-	void *aux, *vcf;
+	void *cf, *aux;
 {
 	register struct confargs *ca = aux;
-	struct cfdata *cf = vcf;
 
-	if (cputyp==CPU_SUN4)
+	switch (cputyp) {
+	    case CPU_SUN4:
 		return (0);
-	return (strcmp("auxiliary-io", ca->ca_ra.ra_name) == 0);
+	    case CPU_SUN4C:
+		return (strcmp("auxiliary-io", ca->ca_ra.ra_name) == 0);
+	    case CPU_SUN4M:
+		return (strcmp("auxio", ca->ca_ra.ra_name) == 0);
+	    default:
+		panic("auxregmatch");
+	}
 }
 
 /* ARGSUSED */
@@ -106,22 +135,39 @@ auxregattach(parent, self, aux)
 	struct confargs *ca = aux;
 	struct romaux *ra = &ca->ca_ra;
 
-	(void)mapdev(ra->ra_paddr, AUXREG_VA, sizeof(long), ca->ca_bustype);
-	auxio_reg = AUXIO_REG;
+	(void)mapdev(ra->ra_reg, AUXREG_VA, 0, sizeof(long));
+	if (CPU_ISSUN4M) {
+		auxio_reg = AUXIO4M_REG;
+		auxio_regval = *AUXIO4M_REG | AUXIO4M_MB1;
+	} else {
+		auxio_reg = AUXIO4C_REG;
+		auxio_regval = *AUXIO4C_REG | AUXIO4C_FEJ | AUXIO4C_MB1;
+	}
+
 	printf("\n");
-#ifdef BLINK
-	blink((caddr_t)0);
-#endif
+
+	timeout_set(&sparc_led_to, led_blink, NULL);
+	/* In case it's initialized to true... */
+	if (sparc_led_blink)
+		led_blink((caddr_t)0);
 }
 
 unsigned int
 auxregbisc(bis, bic)
+	int bis, bic;
 {
-	register int v, s = splhigh();
+	register int s;
 
-	v = *AUXIO_REG;
-	*AUXIO_REG = ((v | bis) & ~bic) | AUXIO_MB1;
+	if (auxio_reg == 0)
+		/*
+		 * Not all machines have an `aux' register; devices that
+		 * depend on it should not get configured if it's absent.
+		 */
+		panic("no aux register");
+
+	s = splhigh();
+	auxio_regval = (auxio_regval | bis) & ~bic;
+	*auxio_reg = auxio_regval;
 	splx(s);
-	return v;
+	return (auxio_regval);
 }
-

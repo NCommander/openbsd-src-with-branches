@@ -1,4 +1,5 @@
-/*	$NetBSD: fdesc_vfsops.c,v 1.20 1995/06/18 14:47:22 cgd Exp $	*/
+/*	$OpenBSD: fdesc_vfsops.c,v 1.10 2001/05/15 06:53:30 art Exp $	*/
+/*	$NetBSD: fdesc_vfsops.c,v 1.21 1996/02/09 22:40:07 christos Exp $	*/
 
 /*
  * Copyright (c) 1992, 1993
@@ -57,21 +58,31 @@
 #include <sys/malloc.h>
 #include <miscfs/fdesc/fdesc.h>
 
+int	fdesc_mount(struct mount *, const char *, void *,
+			 struct nameidata *, struct proc *);
+int	fdesc_start(struct mount *, int, struct proc *);
+int	fdesc_unmount(struct mount *, int, struct proc *);
+int	fdesc_root(struct mount *, struct vnode **);
+int	fdesc_quotactl(struct mount *, int, uid_t, caddr_t,
+			    struct proc *);
+int	fdesc_statfs(struct mount *, struct statfs *, struct proc *);
+int	fdesc_sync(struct mount *, int, struct ucred *, struct proc *);
+int	fdesc_vget(struct mount *, ino_t, struct vnode **);
+int	fdesc_fhtovp(struct mount *, struct fid *, struct vnode **);
+int	fdesc_vptofh(struct vnode *, struct fid *);
+
 /*
  * Mount the per-process file descriptors (/dev/fd)
  */
 int
 fdesc_mount(mp, path, data, ndp, p)
 	struct mount *mp;
-	char *path;
-	caddr_t data;
+	const char *path;
+	void *data;
 	struct nameidata *ndp;
 	struct proc *p;
 {
-	int error = 0;
 	size_t size;
-	struct fdescmount *fmp;
-	struct vnode *rvp;
 
 	/*
 	 * Update is a no-op
@@ -79,18 +90,8 @@ fdesc_mount(mp, path, data, ndp, p)
 	if (mp->mnt_flag & MNT_UPDATE)
 		return (EOPNOTSUPP);
 
-	error = fdesc_allocvp(Froot, FD_ROOT, mp, &rvp);
-	if (error)
-		return (error);
-
-	MALLOC(fmp, struct fdescmount *, sizeof(struct fdescmount),
-				M_UFSMNT, M_WAITOK);	/* XXX */
-	rvp->v_type = VDIR;
-	rvp->v_flag |= VROOT;
-	fmp->f_root = rvp;
 	mp->mnt_flag |= MNT_LOCAL;
-	mp->mnt_data = (qaddr_t)fmp;
-	getnewfsid(mp, makefstype(MOUNT_FDESC));
+	vfs_getnewfsid(mp);
 
 	(void) copyinstr(path, mp->mnt_stat.f_mntonname, MNAMELEN - 1, &size);
 	bzero(mp->mnt_stat.f_mntonname + size, MNAMELEN - size);
@@ -114,41 +115,17 @@ fdesc_unmount(mp, mntflags, p)
 	int mntflags;
 	struct proc *p;
 {
-	int error;
 	int flags = 0;
-	extern int doforce;
-	struct vnode *rootvp = VFSTOFDESC(mp)->f_root;
+	int error;
 
-	if (mntflags & MNT_FORCE) {
-		/* fdesc can never be rootfs so don't check for it */
-		if (!doforce)
-			return (EINVAL);
+	if (mntflags & MNT_FORCE) 
 		flags |= FORCECLOSE;
-	}
 
 	/*
-	 * Clear out buffer cache.  I don't think we
-	 * ever get anything cached at this level at the
-	 * moment, but who knows...
+	 * Flush out our vnodes.
 	 */
-	if (rootvp->v_usecount > 1)
-		return (EBUSY);
-	if (error = vflush(mp, rootvp, flags))
+	if ((error = vflush(mp, NULL, flags)) != 0)
 		return (error);
-
-	/*
-	 * Release reference on underlying root vnode
-	 */
-	vrele(rootvp);
-	/*
-	 * And blow it away for future re-use
-	 */
-	vgone(rootvp);
-	/*
-	 * Finally, throw away the fdescmount structure
-	 */
-	free(mp->mnt_data, M_UFSMNT);	/* XXX */
-	mp->mnt_data = 0;
 
 	return (0);
 }
@@ -159,27 +136,17 @@ fdesc_root(mp, vpp)
 	struct vnode **vpp;
 {
 	struct vnode *vp;
-
+	int error;
 	/*
 	 * Return locked reference to root.
 	 */
-	vp = VFSTOFDESC(mp)->f_root;
-	VREF(vp);
-	VOP_LOCK(vp);
+	error = fdesc_allocvp(Froot, FD_ROOT, mp, &vp);
+	if (error)
+		return (error);
+	vp->v_type = VDIR;
+	vp->v_flag |= VROOT;
 	*vpp = vp;
 	return (0);
-}
-
-int
-fdesc_quotactl(mp, cmd, uid, arg, p)
-	struct mount *mp;
-	int cmd;
-	uid_t uid;
-	caddr_t arg;
-	struct proc *p;
-{
-
-	return (EOPNOTSUPP);
 }
 
 int
@@ -215,11 +182,6 @@ fdesc_statfs(mp, sbp, p)
 	if (fdp->fd_nfiles < lim)
 		freefd += (lim - fdp->fd_nfiles);
 
-#ifdef COMPAT_09
-	sbp->f_type = 6;
-#else
-	sbp->f_type = 0;
-#endif
 	sbp->f_bsize = DEV_BSIZE;
 	sbp->f_iosize = DEV_BSIZE;
 	sbp->f_blocks = 2;		/* 1K to keep df happy */
@@ -232,54 +194,36 @@ fdesc_statfs(mp, sbp, p)
 		bcopy(mp->mnt_stat.f_mntonname, sbp->f_mntonname, MNAMELEN);
 		bcopy(mp->mnt_stat.f_mntfromname, sbp->f_mntfromname, MNAMELEN);
 	}
-	strncpy(sbp->f_fstypename, mp->mnt_op->vfs_name, MFSNAMELEN);
+	strncpy(sbp->f_fstypename, mp->mnt_vfc->vfc_name, MFSNAMELEN);
 	return (0);
 }
 
+/*ARGSUSED*/
 int
-fdesc_sync(mp, waitfor)
+fdesc_sync(mp, waitfor, uc, p)
 	struct mount *mp;
 	int waitfor;
+	struct ucred *uc;
+	struct proc *p;
 {
 
 	return (0);
 }
 
-/*
- * Fdesc flat namespace lookup.
- * Currently unsupported.
- */
-int
-fdesc_vget(mp, ino, vpp)
-	struct mount *mp;
-	ino_t ino;
-	struct vnode **vpp;
-{
-
-	return (EOPNOTSUPP);
-}
-
-int
-fdesc_fhtovp(mp, fhp, setgen, vpp)
-	struct mount *mp;
-	struct fid *fhp;
-	int setgen;
-	struct vnode **vpp;
-{
-	return (EOPNOTSUPP);
-}
-
-int
-fdesc_vptofh(vp, fhp)
-	struct vnode *vp;
-	struct fid *fhp;
-{
-
-	return (EOPNOTSUPP);
-}
+#define fdesc_fhtovp ((int (*)(struct mount *, struct fid *, \
+	    struct vnode **))eopnotsupp)
+#define fdesc_quotactl ((int (*)(struct mount *, int, uid_t, caddr_t, \
+	    struct proc *))eopnotsupp)
+#define fdesc_sysctl ((int (*)(int *, u_int, void *, size_t *, void *, \
+	    size_t, struct proc *))eopnotsupp)
+#define fdesc_vget ((int (*)(struct mount *, ino_t, struct vnode **)) \
+	    eopnotsupp)
+#define fdesc_vptofh ((int (*)(struct vnode *, struct fid *))eopnotsupp)
+ 
+#define fdesc_checkexp ((int (*)(struct mount *, struct mbuf *,	\
+	int *, struct ucred **))eopnotsupp)
 
 struct vfsops fdesc_vfsops = {
-	MOUNT_FDESC,
 	fdesc_mount,
 	fdesc_start,
 	fdesc_unmount,
@@ -291,4 +235,6 @@ struct vfsops fdesc_vfsops = {
 	fdesc_fhtovp,
 	fdesc_vptofh,
 	fdesc_init,
+	fdesc_sysctl,
+	fdesc_checkexp
 };

@@ -1,3 +1,5 @@
+/*	$OpenBSD: paste.c,v 1.9 2001/11/19 19:02:15 mpech Exp $	*/
+
 /*
  * Copyright (c) 1989 The Regents of the University of California.
  * All rights reserved.
@@ -42,18 +44,26 @@ char copyright[] =
 
 #ifndef lint
 /*static char sccsid[] = "from: @(#)paste.c	5.7 (Berkeley) 10/30/90";*/
-static char rcsid[] = "$Id: paste.c,v 1.2 1993/08/01 18:10:14 mycroft Exp $";
+static char rcsid[] = "$OpenBSD: paste.c,v 1.9 2001/11/19 19:02:15 mpech Exp $";
 #endif /* not lint */
 
 #include <sys/types.h>
 #include <errno.h>
 #include <limits.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
+#include <unistd.h>
 
 char *delim;
 int delimcnt;
 
+int	tr(char *);
+void	usage(void);
+void	parallel(char **);
+void	sequential(char **);
+
+int
 main(argc, argv)
 	int argc;
 	char **argv;
@@ -63,7 +73,7 @@ main(argc, argv)
 	int ch, seq;
 
 	seq = 0;
-	while ((ch = getopt(argc, argv, "d:s")) != EOF)
+	while ((ch = getopt(argc, argv, "d:s")) != -1)
 		switch(ch) {
 		case 'd':
 			delimcnt = tr(delim = optarg);
@@ -97,17 +107,19 @@ typedef struct _list {
 	char *name;
 } LIST;
 
+void
 parallel(argv)
 	char **argv;
 {
-	register LIST *lp;
-	register int cnt;
-	register char ch, *p;
+	LIST *lp;
+	int cnt;
+	char ch, *p;
 	LIST *head, *tmp;
 	int opencnt, output;
-	char buf[_POSIX2_LINE_MAX + 1], *malloc();
+	char *buf, *lbuf;
+	size_t len;
 
-	for (cnt = 0, head = NULL; p = *argv; ++argv, ++cnt) {
+	for (cnt = 0, head = NULL; (p = *argv); ++argv, ++cnt) {
 		if (!(lp = (LIST *)malloc((u_int)sizeof(LIST)))) {
 			(void)fprintf(stderr, "paste: %s.\n", strerror(ENOMEM));
 			exit(1);
@@ -132,13 +144,14 @@ parallel(argv)
 
 	for (opencnt = cnt; opencnt;) {
 		for (output = 0, lp = head; lp; lp = lp->next) {
+			lbuf = NULL;
 			if (!lp->fp) {
 				if (output && lp->cnt &&
 				    (ch = delim[(lp->cnt - 1) % delimcnt]))
 					putchar(ch);
 				continue;
 			}
-			if (!fgets(buf, sizeof(buf), lp->fp)) {
+			if (!(buf = fgetln(lp->fp, &len))) {
 				if (!--opencnt)
 					break;
 				lp->fp = NULL;
@@ -147,13 +160,15 @@ parallel(argv)
 					putchar(ch);
 				continue;
 			}
-			if (!(p = index(buf, '\n'))) {
-				(void)fprintf(stderr,
-				    "paste: %s: input line too long.\n",
-				    lp->name);
-				exit(1);
+			if (*(buf + len - 1) == '\n')
+				*(buf + len - 1) = '\0';
+			else {
+				if ((lbuf = malloc(len + 1)) == NULL)
+					err(1, NULL);
+				memcpy(lbuf, buf, len);
+				lbuf[len] = '\0';
+				buf = lbuf;
 			}
-			*p = '\0';
 			/*
 			 * make sure that we don't print any delimiters
 			 * unless there's a non-empty file.
@@ -161,26 +176,31 @@ parallel(argv)
 			if (!output) {
 				output = 1;
 				for (cnt = 0; cnt < lp->cnt; ++cnt)
-					if (ch = delim[cnt % delimcnt])
+					if ((ch = delim[cnt % delimcnt]))
 						putchar(ch);
-			} else if (ch = delim[(lp->cnt - 1) % delimcnt])
+			} else if ((ch = delim[(lp->cnt - 1) % delimcnt]))
 				putchar(ch);
 			(void)printf("%s", buf);
+			if (lbuf)
+				free(lbuf);
 		}
 		if (output)
 			putchar('\n');
 	}
 }
 
+void
 sequential(argv)
 	char **argv;
 {
-	register FILE *fp;
-	register int cnt;
-	register char ch, *p, *dp;
-	char buf[_POSIX2_LINE_MAX + 1];
+	FILE *fp;
+	int cnt;
+	char ch, *p, *dp;
+	char *buf, *lbuf;
+	size_t len;
 
-	for (; p = *argv; ++argv) {
+	for (; (p = *argv); ++argv) {
+		lbuf = NULL;
 		if (p[0] == '-' && !p[1])
 			fp = stdin;
 		else if (!(fp = fopen(p, "r"))) {
@@ -188,19 +208,21 @@ sequential(argv)
 			    strerror(errno));
 			continue;
 		}
-		if (fgets(buf, sizeof(buf), fp)) {
+		if ((buf = fgetln(fp, &len))) {
 			for (cnt = 0, dp = delim;;) {
-				if (!(p = index(buf, '\n'))) {
-					(void)fprintf(stderr,
-					    "paste: %s: input line too long.\n",
-					    *argv);
-					exit(1);
+				if (*(buf + len - 1) == '\n')
+					*(buf + len - 1) = '\0';
+				else {
+					if ((lbuf = malloc(len + 1)) == NULL)
+						err(1, NULL);
+					memcpy(lbuf, buf, len);
+					lbuf[len] = '\0';
+					buf = lbuf;
 				}
-				*p = '\0';
 				(void)printf("%s", buf);
-				if (!fgets(buf, sizeof(buf), fp))
+				if (!(buf = fgetln(fp, &len)))
 					break;
-				if (ch = *dp++)
+				if ((ch = *dp++))
 					putchar(ch);
 				if (++cnt == delimcnt) {
 					dp = delim;
@@ -211,14 +233,17 @@ sequential(argv)
 		}
 		if (fp != stdin)
 			(void)fclose(fp);
+		if (lbuf)
+			free(lbuf);
 	}
 }
 
+int
 tr(arg)
 	char *arg;
 {
-	register int cnt;
-	register char ch, *p;
+	int cnt;
+	char ch, *p;
 
 	for (p = arg, cnt = 0; (ch = *p++); ++arg, ++cnt)
 		if (ch == '\\')
@@ -245,6 +270,7 @@ tr(arg)
 	return(cnt);
 }
 
+void
 usage()
 {
 	(void)fprintf(stderr, "paste: [-s] [-d delimiters] file ...\n");

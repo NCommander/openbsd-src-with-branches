@@ -36,11 +36,12 @@
 
 #include "SYS.h"
 
-#if defined(LIBC_SCCS) && !defined(lint)
-	ASMSTR("from: @(#)syscall.s	8.1 (Berkeley) 6/4/93")
-	ASMSTR("$Id: syscall.S,v 1.1 1994/05/24 07:13:29 glass Exp $")
-#endif /* LIBC_SCCS and not lint */
+#if defined(SYSLIBC_SCCS)
+	.text
+	.asciz "$OpenBSD$"
+#endif /* SYSLIBC_SCCS */
 
 #define SYS_syscall	0
+
 
 RSYSCALL(syscall)

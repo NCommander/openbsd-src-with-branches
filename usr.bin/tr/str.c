@@ -1,3 +1,4 @@
+/*	$OpenBSD: str.c,v 1.6 2001/11/19 19:02:17 mpech Exp $	*/
 /*	$NetBSD: str.c,v 1.7 1995/08/31 22:13:47 jtc Exp $	*/
 
 /*-
@@ -37,7 +38,7 @@
 #if 0
 static char sccsid[] = "@(#)str.c	8.2 (Berkeley) 4/28/95";
 #endif
-static char rcsid[] = "$NetBSD: str.c,v 1.7 1995/08/31 22:13:47 jtc Exp $";
+static char rcsid[] = "$OpenBSD: str.c,v 1.6 2001/11/19 19:02:17 mpech Exp $";
 #endif /* not lint */
 
 #include <sys/cdefs.h>
@@ -49,22 +50,23 @@ static char rcsid[] = "$NetBSD: str.c,v 1.7 1995/08/31 22:13:47 jtc Exp $";
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
+#include <err.h>
 
 #include "extern.h"
 
-static int	backslash __P((STR *));
-static int	bracket __P((STR *));
-static int	c_class __P((const void *, const void *));
-static void	genclass __P((STR *));
-static void	genequiv __P((STR *));
-static int	genrange __P((STR *));
-static void	genseq __P((STR *));
+static int	backslash(STR *);
+static int	bracket(STR *);
+static int	c_class(const void *, const void *);
+static void	genclass(STR *);
+static void	genequiv(STR *);
+static int	genrange(STR *);
+static void	genseq(STR *);
 
 int
 next(s)
-	register STR *s;
+	STR *s;
 {
-	register int ch;
+	int ch;
 
 	switch (s->state) {
 	case EOS:
@@ -112,15 +114,17 @@ next(s)
 			return (next(s));
 		}
 		return (1);
+	default:
+		return 0;
 	}
 	/* NOTREACHED */
 }
 
 static int
 bracket(s)
-	register STR *s;
+	STR *s;
 {
-	register char *p;
+	char *p;
 
 	switch (s->str[1]) {
 	case ':':				/* "[:class:]" */
@@ -140,7 +144,7 @@ bracket(s)
 	default:				/* "[\###*n]" or "[#*n]" */
 		if ((p = strpbrk(s->str + 2, "*]")) == NULL)
 			return (0);
-		if (p[0] != '*' || index(p, ']') == NULL)
+		if (p[0] != '*' || strchr(p, ']') == NULL)
 			return (0);
 		s->str += 1;
 		genseq(s);
@@ -151,7 +155,7 @@ bracket(s)
 
 typedef struct {
 	char *name;
-	int (*func) __P((int));
+	int (*func)(int);
 	int *set;
 } CLASS;
 
@@ -163,7 +167,7 @@ static CLASS classes[] = {
 	{ "digit",  isdigit,  },
 	{ "graph",  isgraph,  },
 	{ "lower",  islower,  },
-	{ "print",  isupper,  },
+	{ "print",  isprint,  },
 	{ "punct",  ispunct,  },
 	{ "space",  isspace,  },
 	{ "upper",  isupper,  },
@@ -174,17 +178,17 @@ static void
 genclass(s)
 	STR *s;
 {
-	register int cnt, (*func) __P((int));
+	int cnt, (*func)(int);
 	CLASS *cp, tmp;
 	int *p;
 
 	tmp.name = s->str;
 	if ((cp = (CLASS *)bsearch(&tmp, classes, sizeof(classes) /
 	    sizeof(CLASS), sizeof(CLASS), c_class)) == NULL)
-		err("unknown class %s", s->str);
+		errx(1, "unknown class %s", s->str);
 
 	if ((cp->set = p = malloc((NCHARS + 1) * sizeof(int))) == NULL)
-		err("%s", strerror(errno));
+		errx(1, "no memory for a class");
 	bzero(p, (NCHARS + 1) * sizeof(int));
 	for (cnt = 0, func = cp->func; cnt < NCHARS; ++cnt)
 		if ((func)(cnt))
@@ -214,11 +218,11 @@ genequiv(s)
 	if (*s->str == '\\') {
 		s->equiv[0] = backslash(s);
 		if (*s->str != '=')
-			err("misplaced equivalence equals sign");
+			errx(1, "misplaced equivalence equals sign");
 	} else {
 		s->equiv[0] = s->str[0];
 		if (s->str[1] != '=')
-			err("misplaced equivalence equals sign");
+			errx(1, "misplaced equivalence equals sign");
 	}
 	s->str += 2;
 	s->cnt = 0;
@@ -252,14 +256,14 @@ genseq(s)
 	char *ep;
 
 	if (s->which == STRING1)
-		err("sequences only valid in string2");
+		errx(1, "sequences only valid in string2");
 
 	if (*s->str == '\\')
 		s->lastch = backslash(s);
 	else
 		s->lastch = *s->str++;
 	if (*s->str != '*')
-		err("misplaced sequence asterisk");
+		errx(1, "misplaced sequence asterisk");
 
 	switch (*++s->str) {
 	case '\\':
@@ -277,7 +281,7 @@ genseq(s)
 				break;
 			}
 		}
-		err("illegal sequence count");
+		errx(1, "illegal sequence count");
 		/* NOTREACHED */
 	}
 
@@ -290,9 +294,9 @@ genseq(s)
  */
 static int
 backslash(s)
-	register STR *s;
+	STR *s;
 {
-	register int ch, cnt, val;
+	int ch, cnt, val;
 
 	for (cnt = val = 0;;) {
 		ch = *++s->str;

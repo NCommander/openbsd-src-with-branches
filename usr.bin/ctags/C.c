@@ -1,3 +1,4 @@
+/*	$OpenBSD: C.c,v 1.6 2000/07/26 17:46:52 espie Exp $	*/
 /*	$NetBSD: C.c,v 1.3 1995/03/26 20:14:02 glass Exp $	*/
 
 /*
@@ -37,7 +38,7 @@
 #if 0
 static char sccsid[] = "@(#)C.c	8.4 (Berkeley) 4/2/94";
 #else
-static char rcsid[] = "$NetBSD: C.c,v 1.3 1995/03/26 20:14:02 glass Exp $";
+static char rcsid[] = "$OpenBSD: C.c,v 1.6 2000/07/26 17:46:52 espie Exp $";
 #endif
 #endif /* not lint */
 
@@ -47,10 +48,10 @@ static char rcsid[] = "$NetBSD: C.c,v 1.3 1995/03/26 20:14:02 glass Exp $";
 
 #include "ctags.h"
 
-static int	func_entry __P((void));
-static void	hash_entry __P((void));
-static void	skip_string __P((int));
-static int	str_entry __P((int));
+static int	func_entry(void);
+static void	hash_entry(void);
+static void	skip_string(int);
+static int	str_entry(int);
 
 /*
  * c_entries --
@@ -100,7 +101,7 @@ c_entries()
 			 * the above 3 cases are similar in that they
 			 * are special characters that also end tokens.
 			 */
-	endtok:			if (sp > tok) {
+endtok:			if (sp > tok) {
 				*sp = EOS;
 				token = YES;
 				sp = tok;
@@ -172,7 +173,7 @@ c_entries()
 		 * level as the typedef.  Ignoring "structs", they are
 		 * tricky, since you can find:
 		 *
-		 *	"typedef long time_t;"
+		 *	"typedef int time_t;"
 		 *	"typedef unsigned int u_int;"
 		 *	"typedef unsigned int u_int [10];"
 		 *
@@ -199,6 +200,21 @@ c_entries()
 		 * reserved words.
 		 */
 		default:
+			/*
+			 * to treat following function.
+			 * func      (arg) {
+			 * ....
+			 * }
+			 */
+			if (c == ' ' || c == '\t') {
+				int save = c;
+				while (GETC(!=, EOF) && (c == ' ' || c == '\t'))
+					;
+				if (c == EOF)
+					return;
+				(void)ungetc(c, inf);
+				c = save;
+			}
 	storec:		if (!intoken(c)) {
 				if (sp == tok)
 					break;
@@ -230,7 +246,11 @@ c_entries()
 				sp = tok;
 			}
 			else if (sp != tok || begtoken(c)) {
-				*sp++ = c;
+				/* hell... truncate it */
+				if (sp == tok + sizeof tok - 1)
+					*sp = EOS;
+				else 
+					*sp++ = c;
 				token = YES;
 			}
 			continue;
@@ -317,13 +337,25 @@ hash_entry()
 	char	*sp;			/* buffer pointer */
 	char	tok[MAXTOKEN];		/* storage buffer */
 
+	/*
+	 * to treat following macro.
+	 * #     macro(arg)        ....
+	 */
+	while (GETC(!=, EOF) && (c == ' ' || c == '\t'))
+		;
+	(void)ungetc(c, inf);
+
 	curline = lineno;
 	for (sp = tok;;) {		/* get next token */
 		if (GETC(==, EOF))
 			return;
 		if (iswhite(c))
 			break;
-		*sp++ = c;
+		/* hell... truncate it */
+		if (sp == tok + sizeof tok - 1)
+			*sp = EOS;
+		else 
+			*sp++ = c;
 	}
 	*sp = EOS;
 	if (memcmp(tok, "define", 6))	/* only interested in #define's */
@@ -335,7 +367,11 @@ hash_entry()
 			break;
 	}
 	for (sp = tok;;) {		/* get next token */
-		*sp++ = c;
+		/* hell... truncate it */
+		if (sp == tok + sizeof tok - 1)
+			*sp = EOS;
+		else 
+			*sp++ = c;
 		if (GETC(==, EOF))
 			return;
 		/*
@@ -377,7 +413,11 @@ str_entry(c)
 	if (c == '{')		/* it was "struct {" */
 		return (YES);
 	for (sp = tok;;) {		/* get next token */
-		*sp++ = c;
+		/* hell... truncate it */
+		if (sp == tok + sizeof tok - 1)
+			*sp = EOS;
+		else 
+			*sp++ = c;
 		if (GETC(==, EOF))
 			return (NO);
 		if (!intoken(c))

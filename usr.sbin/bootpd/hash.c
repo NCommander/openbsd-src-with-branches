@@ -21,7 +21,7 @@ SOFTWARE.
 ************************************************************************/
 
 #ifndef lint
-static char rcsid[] = "$Id: hash.c,v 1.2 1994/08/22 22:14:58 gwr Exp $";
+static char rcsid[] = "$Id: hash.c,v 1.3 2002/05/27 19:49:58 deraadt Exp $";
 #endif
 
 
@@ -78,7 +78,7 @@ PRIVATE void hashi_FreeMembers P((hash_member *, hash_freefp));
 /*
  * Hash table initialization routine.
  *
- * This routine creates and intializes a hash table of size "tablesize"
+ * This routine creates and initializes a hash table of size "tablesize"
  * entries.  Successful calls return a pointer to the hash table (which must
  * be passed to other hash routines to identify the hash table).  Failed
  * calls return NULL.
@@ -86,10 +86,10 @@ PRIVATE void hashi_FreeMembers P((hash_member *, hash_freefp));
 
 hash_tbl *
 hash_Init(tablesize)
-	unsigned tablesize;
+	unsigned int tablesize;
 {
-	register hash_tbl *hashtblptr;
-	register unsigned totalsize;
+	hash_tbl *hashtblptr;
+	unsigned int totalsize;
 
 	if (tablesize > 0) {
 		totalsize = sizeof(hash_tbl)
@@ -142,7 +142,7 @@ hash_Reset(hashtable, free_data)
 	hash_freefp free_data;
 {
 	hash_member **bucketptr;
-	unsigned i;
+	unsigned int i;
 
 	bucketptr = hashtable->table;
 	for (i = 0; i < hashtable->size; i++) {
@@ -175,12 +175,12 @@ hash_Reset(hashtable, free_data)
  * features of this package.
  */
 
-unsigned
+unsigned int
 hash_HashFunction(string, len)
 	unsigned char *string;
-	register unsigned len;
+	unsigned int len;
 {
-	register unsigned accum;
+	unsigned int accum;
 
 	accum = 0;
 	for (; len > 0; len--) {
@@ -200,11 +200,11 @@ hash_HashFunction(string, len)
 int
 hash_Exists(hashtable, hashcode, compare, key)
 	hash_tbl *hashtable;
-	unsigned hashcode;
+	unsigned int hashcode;
 	hash_cmpfp compare;
 	hash_datum *key;
 {
-	register hash_member *memberptr;
+	hash_member *memberptr;
 
 	memberptr = (hashtable->table)[hashcode % (hashtable->size)];
 	while (memberptr) {
@@ -231,7 +231,7 @@ hash_Exists(hashtable, hashcode, compare, key)
 int
 hash_Insert(hashtable, hashcode, compare, key, element)
 	hash_tbl *hashtable;
-	unsigned hashcode;
+	unsigned int hashcode;
 	hash_cmpfp compare;
 	hash_datum *key, *element;
 {
@@ -262,7 +262,7 @@ hash_Insert(hashtable, hashcode, compare, key, element)
 int
 hash_Delete(hashtable, hashcode, compare, key, free_data)
 	hash_tbl *hashtable;
-	unsigned hashcode;
+	unsigned int hashcode;
 	hash_cmpfp compare;
 	hash_datum *key;
 	hash_freefp free_data;
@@ -328,7 +328,7 @@ hash_Delete(hashtable, hashcode, compare, key, free_data)
 hash_datum *
 hash_Lookup(hashtable, hashcode, compare, key)
 	hash_tbl *hashtable;
-	unsigned hashcode;
+	unsigned int hashcode;
 	hash_cmpfp compare;
 	hash_datum *key;
 {
@@ -354,8 +354,8 @@ hash_datum *
 hash_NextEntry(hashtable)
 	hash_tbl *hashtable;
 {
-	register unsigned bucket;
-	register hash_member *memberptr;
+	unsigned int bucket;
+	hash_member *memberptr;
 
 	/*
 	 * First try to pick up where we left off.

@@ -1,4 +1,5 @@
-/*	$NetBSD: x25.h,v 1.6 1995/03/26 20:33:46 jtc Exp $	*/
+/*	$OpenBSD: x25.h,v 1.3 2001/01/19 06:37:37 itojun Exp $	*/
+/*	$NetBSD: x25.h,v 1.7 1996/02/13 22:05:51 christos Exp $	*/
 
 /*
  * Copyright (c) University of British Columbia, 1984
@@ -156,4 +157,29 @@ struct ifreq_x25 {
 };
 #define	SIOCSIFCONF_X25	_IOW('i', 12, struct ifreq_x25)	/* set ifnet config */
 #define	SIOCGIFCONF_X25	_IOWR('i',13, struct ifreq_x25)	/* get ifnet config */
+#endif
+
+#ifdef _KERNEL
+struct llinfo_x25;
+struct pklcd;
+struct sockaddr_in;
+struct x25_ifaddr;
+struct ifnet;
+struct rtentry;
+struct rt_addrinfo;
+
+void x25_lxfree(struct llinfo_x25 *);
+int x25_ifinput(struct mbuf *, void *);
+int x25_connect_callback(struct mbuf *, void *);
+int x25_dgram_incoming(struct mbuf *, void *);
+int x25_ifoutput(struct ifnet *, struct mbuf *, struct sockaddr *, struct rtentry *);
+void x25_iftimeout(struct ifnet *);
+void x25_rtrequest(int , struct rtentry *, struct rt_addrinfo *);
+void x25_rtinvert(int , struct sockaddr *, struct rtentry *);
+void x25_ddnip_to_ccitt(struct sockaddr *, struct rtentry *);
+void x25_dg_rtinit(struct sockaddr_x25 *, struct x25_ifaddr *, int );
+void pk_init(void);
+int pk_user_protolisten(u_char *);
+int pk_rtattach(struct socket *, struct mbuf *);
+int x25_rtattach(struct pklcd *, struct rtentry *);
 #endif

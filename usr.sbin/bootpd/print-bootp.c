@@ -24,7 +24,7 @@
  * There is an e-mail list for tcpdump: <tcpdump@ee.lbl.gov>
  */
 #ifndef lint
-static char rcsid[] = "$Id: print-bootp.c,v 1.2 1994/08/22 22:15:01 gwr Exp $";
+static char rcsid[] = "$Id: print-bootp.c,v 1.3 2002/03/14 16:44:24 mpech Exp $";
 /* 93/10/10 <gwr@mc.com> New data-driven option print routine. */
 #endif
 
@@ -47,6 +47,8 @@ static void cmu_print();
 static void other_print();
 static void dump_hex();
 
+extern int printfn(u_char *s, u_char *ep);
+
 /*
  * Print bootp requests
  */
@@ -54,7 +56,7 @@ void
 bootp_print(bp, length, sport, dport)
 	struct bootp *bp;
 	int length;
-	u_short sport, dport;
+	in_port_t sport, dport;
 {
 	static char tstr[] = " [|bootp]";
 	static unsigned char vm_cmu[4] = VM_CMU;
@@ -99,8 +101,8 @@ bootp_print(bp, length, sport, dport)
 
 	/* Client's Hardware address */
 	if (bp->bp_hlen) {
-		register struct ether_header *eh;
-		register char *e;
+		struct ether_header *eh;
+		char *e;
 
 		TCHECK(bp->bp_chaddr[0], 6);
 		eh = (struct ether_header *) packetp;
@@ -275,12 +277,12 @@ static void print_string();
 
 static void
 rfc1048_print(bp, length)
-	register u_char *bp;
+	u_char *bp;
 	int length;
 {
 	u_char tag;
 	u_char *ep;
-	register int len, j;
+	int len, j;
 	u_int32 ul;
 	u_short us;
 	struct in_addr ia;
@@ -377,7 +379,7 @@ rfc1048_print(bp, length)
 
 static void
 cmu_print(bp, length)
-	register u_char *bp;
+	u_char *bp;
 	int length;
 {
 	struct cmu_vend *v;
@@ -428,12 +430,12 @@ cmu_print(bp, length)
 
 static void
 other_print(bp, length)
-	register u_char *bp;
+	u_char *bp;
 	int length;
 {
 	u_char *ep;					/* end pointer */
 	u_char *zp;					/* points one past last non-zero byte */
-	register int i, j;
+	int i, j;
 
 	/* Setup end pointer */
 	ep = bp + length;

@@ -31,7 +31,7 @@
  * SUCH DAMAGE.
  */
 
-/* $Id: xfs_syscalls.h,v 1.1.1.1 2002/06/05 17:24:11 hin Exp $ */
+/* $Id: xfs_syscalls.h,v 1.5 2000/09/11 14:26:53 art Exp $ */
 
 #ifndef  __xfs_syscalls
 #define  __xfs_syscalls

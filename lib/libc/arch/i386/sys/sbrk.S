@@ -32,30 +32,27 @@
  * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
- *
- *	from: @(#)sbrk.s	5.1 (Berkeley) 4/23/90
- *	$Id: sbrk.S,v 1.7 1994/10/26 19:49:49 mycroft Exp $
  */
-
-#if defined(SYSLIBC_SCCS) && !defined(lint)
-	.text
-	.asciz "$Id: sbrk.S,v 1.7 1994/10/26 19:49:49 mycroft Exp $"
-#endif /* SYSLIBC_SCCS and not lint */
 
 #include "SYS.h"
 
+#if defined(SYSLIBC_SCCS)
+	.text
+	.asciz "$OpenBSD: sbrk.S,v 1.4 2002/10/06 23:24:13 art Exp $"
+#endif /* SYSLIBC_SCCS */
+
 	.globl	_end
-	.globl	curbrk
+	.globl	__curbrk
 
 	.data
-curbrk:	.long	_end
+__curbrk:	.long	_end
 	.text
 
 ENTRY(sbrk)
 #ifdef PIC
 	movl	4(%esp),%ecx
 	PIC_PROLOGUE
-	movl	PIC_GOT(curbrk),%edx
+	movl	PIC_GOT(__curbrk),%edx
 	PIC_EPILOGUE
 	movl	(%edx),%eax
 	addl	%eax,4(%esp)
@@ -63,25 +60,25 @@ ENTRY(sbrk)
 	int	$0x80
 	jc	err
 	PIC_PROLOGUE
-	movl	PIC_GOT(curbrk),%edx
+	movl	PIC_GOT(__curbrk),%edx
 	PIC_EPILOGUE
 	movl	(%edx),%eax
 	addl	%ecx,(%edx)
 	ret
 err:
-	jmp	PIC_PLT(cerror)
+	jmp	PIC_PLT(__cerror)
 
 #else
 
 	movl	4(%esp),%ecx
-	movl	curbrk,%eax
+	movl	__curbrk,%eax
 	addl	%eax,4(%esp)
 	movl	$(SYS_break),%eax
 	int	$0x80
 	jc	err
-	movl	curbrk,%eax
-	addl	%ecx,curbrk
+	movl	__curbrk,%eax
+	addl	%ecx,__curbrk
 	ret
 err:
-	jmp	cerror
+	jmp	__cerror
 #endif

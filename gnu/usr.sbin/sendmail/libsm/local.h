@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2000-2001 Sendmail, Inc. and its suppliers.
+ * Copyright (c) 2000-2002 Sendmail, Inc. and its suppliers.
  *      All rights reserved.
  * Copyright (c) 1990, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -11,7 +11,7 @@
  * forth in the LICENSE file which can be found at the top level of
  * the sendmail distribution.
  *
- *	$Sendmail: local.h,v 1.48 2001/05/14 20:42:29 gshapiro Exp $
+ *	$Sendmail: local.h,v 1.51.2.1 2002/09/09 21:38:08 gshapiro Exp $
  */
 
 /*
@@ -132,25 +132,9 @@ extern bool Sm_IO_DidInit;
 	(fp)->f_ub.smb_base = NULL;			\
 }
 
-/* Test for an fgetln() buffer. */
-#define HASLB(fp) ((fp)->f_lb.smb_base != NULL)
-#define FREELB(fp)				\
-{						\
-	sm_free((char *)(fp)->f_lb.smb_base);	\
-	(fp)->f_lb.smb_base = NULL;		\
-}
-
-struct sm_io_obj
-{
-	int file;
-};
-
 extern const char SmFileMagic[];
 
-#ifndef ALIGNBYTES
-# define ALIGNBYTES	(sizeof(long) - 1)
-# define ALIGN(p)	(((unsigned long)(p) + ALIGNBYTES) & ~ALIGNBYTES)
-#endif /* ALIGNBYTES */
+#define SM_ALIGN(p)	(((unsigned long)(p) + SM_ALIGN_BITS) & ~SM_ALIGN_BITS)
 
 #define sm_io_flockfile(fp)	((void) 0)
 #define sm_io_funlockfile(fp)	((void) 0)
@@ -294,6 +278,11 @@ extern const char SmFileMagic[];
 	{ \
 		sm_io_to.tv_sec = (to) / 1000; \
 		sm_io_to.tv_usec = ((to) - (sm_io_to.tv_sec * 1000)) * 10; \
+	} \
+	if (FD_SETSIZE > 0 && (fd) >= FD_SETSIZE) \
+	{ \
+		errno = EINVAL; \
+		return SM_IO_EOF; \
 	} \
 	FD_ZERO(&sm_io_to_mask); \
 	FD_SET((fd), &sm_io_to_mask); \

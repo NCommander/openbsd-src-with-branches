@@ -1,3 +1,4 @@
+/*	$OpenBSD: echo.c,v 1.4 1997/09/01 18:29:26 deraadt Exp $	*/
 /*	$NetBSD: echo.c,v 1.6 1995/03/21 09:04:27 cgd Exp $	*/
 
 /*
@@ -43,7 +44,7 @@ static char copyright[] =
 #if 0
 static char sccsid[] = "@(#)echo.c	8.1 (Berkeley) 5/31/93";
 #else
-static char rcsid[] = "$NetBSD: echo.c,v 1.6 1995/03/21 09:04:27 cgd Exp $";
+static char rcsid[] = "$OpenBSD: echo.c,v 1.4 1997/09/01 18:29:26 deraadt Exp $";
 #endif
 #endif /* not lint */
 
@@ -51,10 +52,9 @@ static char rcsid[] = "$NetBSD: echo.c,v 1.6 1995/03/21 09:04:27 cgd Exp $";
 #include <stdlib.h>
 #include <string.h>
 
+/* ARGSUSED */
 int
-main(argc, argv)
-	int argc;
-	char *argv[];
+main(int argc, char *argv[])
 {
 	int nflag;
 
@@ -67,11 +67,12 @@ main(argc, argv)
 		nflag = 0;
 
 	while (*argv) {
-		(void)printf("%s", *argv);
+		(void)fputs(*argv, stdout);
 		if (*++argv)
 			putchar(' ');
 	}
 	if (!nflag)
 		putchar('\n');
-	exit(0);
+
+	return 0;
 }

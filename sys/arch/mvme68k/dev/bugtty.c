@@ -1,4 +1,4 @@
-/*	$NetBSD$ */
+/*	$OpenBSD: bugtty.c,v 1.7 2002/04/27 23:21:05 miod Exp $ */
 
 /*
  * Copyright (c) 1995 Dale Rahn.
@@ -14,7 +14,7 @@
  *    documentation and/or other materials provided with the distribution.
  * 3. All advertising materials mentioning features or use of this software
  *    must display the following acknowledgement:
- *   This product includes software developed by Dale Rahn.
+ *	This product includes software developed by Dale Rahn.
  * 4. The name of the author may not be used to endorse or promote products
  *    derived from this software without specific prior written permission.
  *
@@ -36,37 +36,39 @@
 #include <sys/device.h>
 #include <sys/tty.h>
 #include <sys/proc.h>
-#include <sys/conf.h>
 #include <sys/uio.h>
 #include <sys/queue.h>
 #include <dev/cons.h>
 
 #include <machine/autoconf.h>
+#include <machine/bugio.h>
+#include <machine/conf.h>
 #include <machine/cpu.h>
 #include <machine/prom.h>
 
 #include "bugtty.h"
 
-int bugttymatch __P((struct device *parent, void *self, void *aux));
-void bugttyattach __P((struct device *parent, struct device *self, void *aux));
+int bugttymatch(struct device *parent, void *self, void *aux);
+void bugttyattach(struct device *parent, struct device *self, void *aux);
 
-struct cfdriver bugttycd = {
-	NULL, "bugtty", bugttymatch, bugttyattach,
-	DV_TTY, sizeof(struct device)
+struct cfattach bugtty_ca = {
+	sizeof(struct device), bugttymatch, bugttyattach
+};
+
+struct cfdriver bugtty_cd = {
+	NULL, "bugtty", DV_TTY, 0
 };
 
 /* prototypes */
-int bugttycnprobe __P((struct consdev *cp));
-int bugttycninit __P((struct consdev *cp));
-int bugttycngetc __P((dev_t dev));
-int bugttycnputc __P((dev_t dev, char c));
+int bugttycnprobe(struct consdev *cp);
+int bugttycninit(struct consdev *cp);
+int bugttycngetc(dev_t dev);
+void bugttycnputc(dev_t dev, char c);
 
-int bugttyopen __P((dev_t dev, int flag, int mode, struct proc *p));
-int bugttyclose __P((dev_t dev, int flag, int mode, struct proc *p));
-int bugttyread __P((dev_t dev, struct uio *uio, int flag));
-int bugttywrite __P((dev_t dev, struct uio *uio, int flag));
-int bugttyioctl __P((dev_t dev, int cmd, caddr_t data, int flag, struct proc *p));
-int bugttystop __P((struct tty *tp, int flag));
+struct tty *bugttytty(dev_t);
+int bugttymctl(dev_t, int, int);
+int bugttyparam(struct tty*, struct termios *);
+void bugtty_chkinput(void);
 
 #define DIALOUT(x) ((x) & 0x80)
 #define SWFLAGS(dev) (bugttyswflags | (DIALOUT(dev) ? TIOCFLAG_SOFTCAR : 0))
@@ -113,7 +115,7 @@ bugttyattach(parent, self, aux)
 	printf("\n");
 }
 
-void bugttyoutput __P((struct tty *tp));
+void bugttyoutput(struct tty *tp);
 
 int bugttydefaultrate = TTYDEF_SPEED;
 int bugttyswflags;
@@ -123,8 +125,8 @@ bugttymctl(dev, bits, how)
 	dev_t dev;
 	int bits, how;
 {
-	static int settings = TIOCM_DTR | TIOCM_RTS |
-	    TIOCM_CTS | TIOCM_CD | TIOCM_DSR;
+	/*static int settings = TIOCM_DTR | TIOCM_RTS |
+	    TIOCM_CTS | TIOCM_CD | TIOCM_DSR;*/
 	int s;
 
 	/*printf("mctl: dev %x, bits %x, how %x,",dev, bits, how);*/
@@ -141,7 +143,7 @@ bugttymctl(dev, bits, how)
 	case DMGET:
 		break;
 	}
-	(void)splx(s);
+	splx(s);
 
 	bits = 0;
 	/* proper defaults? */
@@ -174,6 +176,7 @@ bugttyopen(dev, flag, mode, p)
 		tp = bugtty_tty[unit];
 	} else {
 		tp = bugtty_tty[unit] = ttymalloc();
+		tty_attach(tp);
 	}
 	tp->t_oproc = bugttyoutput;
 	tp->t_param = NULL;
@@ -238,7 +241,9 @@ bugttyopen(dev, flag, mode, p)
 }
 
 int
-bugttyparam()
+bugttyparam(tp, tm)
+	struct tty*tp;
+	struct termios *tm;
 {
 	return (0);
 }
@@ -247,7 +252,7 @@ void
 bugttyoutput(tp)
 	struct tty *tp;
 {
-	int cc, s, unit, cnt ;
+	int cc, s, cnt;
 
 	/* only supports one unit */
 
@@ -298,6 +303,7 @@ bugttyread(dev, uio, flag)
 
 #if 1
 /* only to be called at splclk() */
+void
 bugtty_chkinput()
 {
 	struct tty *tp;
@@ -350,7 +356,7 @@ bugttywrite(dev, uio, flag)
 int
 bugttyioctl(dev, cmd, data, flag, p)
 	dev_t dev;
-	int cmd;
+	u_long cmd;
 	caddr_t data;
 	int flag;
 	struct proc *p;
@@ -476,6 +482,7 @@ int
 bugttycninit(cp)
 	struct consdev *cp;
 {
+	return (0);
 }
 
 int
@@ -485,12 +492,10 @@ bugttycngetc(dev)
 	return (bug_inchr());
 }
 
-int
+void
 bugttycnputc(dev, c)
 	dev_t dev;
 	char c;
 {
-	if (c == '\n')
-		bug_outchr('\r');
 	bug_outchr(c);
 }

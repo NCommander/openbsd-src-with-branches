@@ -1,4 +1,5 @@
-/*	$NetBSD: signal.h,v 1.7 1995/05/28 03:10:06 jtc Exp $	*/
+/*	$OpenBSD: signal.h,v 1.5 2002/02/16 21:27:17 millert Exp $	*/
+/*	$NetBSD: signal.h,v 1.8 1996/02/29 00:04:57 jtc Exp $	*/
 
 /*-
  * Copyright (c) 1991, 1993
@@ -38,7 +39,6 @@
 #ifndef _USER_SIGNAL_H
 #define _USER_SIGNAL_H
 
-#include <sys/cdefs.h>
 #include <sys/signal.h>
 
 #if !defined(_ANSI_SOURCE)
@@ -51,20 +51,20 @@ extern __const char *__const sys_siglist[_NSIG];
 #endif
 
 __BEGIN_DECLS
-int	raise __P((int));
+int	raise(int);
 #ifndef	_ANSI_SOURCE
-int	kill __P((pid_t, int));
-int	sigaction __P((int, const struct sigaction *, struct sigaction *));
-int	sigaddset __P((sigset_t *, int));
-int	sigdelset __P((sigset_t *, int));
-int	sigemptyset __P((sigset_t *));
-int	sigfillset __P((sigset_t *));
-int	sigismember __P((const sigset_t *, int));
-int	sigpending __P((sigset_t *));
-int	sigprocmask __P((int, const sigset_t *, sigset_t *));
-int	sigsuspend __P((const sigset_t *));
+int	kill(pid_t, int);
+int	sigaction(int, const struct sigaction *, struct sigaction *);
+int	sigaddset(sigset_t *, int);
+int	sigdelset(sigset_t *, int);
+int	sigemptyset(sigset_t *);
+int	sigfillset(sigset_t *);
+int	sigismember(const sigset_t *, int);
+int	sigpending(sigset_t *);
+int	sigprocmask(int, const sigset_t *, sigset_t *);
+int	sigsuspend(const sigset_t *);
 
-#if defined(__GNUC__) && defined(__STDC__)
+#if defined(__GNUC__)
 extern __inline int sigaddset(sigset_t *set, int signo) {
 	extern int errno;
 
@@ -103,15 +103,17 @@ extern __inline int sigismember(const sigset_t *set, int signo) {
 #define	sigfillset(set)		(*(set) = ~(sigset_t)0, 0)
 
 #ifndef _POSIX_SOURCE
-int	killpg __P((pid_t, int));
-int	sigblock __P((int));
-int	siginterrupt __P((int, int));
-int	sigpause __P((int));
-int	sigreturn __P((struct sigcontext *));
-int	sigsetmask __P((int));
-int	sigstack __P((const struct sigstack *, struct sigstack *));
-int	sigvec __P((int, struct sigvec *, struct sigvec *));
-void	psignal __P((unsigned int, const char *));
+int	killpg(pid_t, int);
+int	sigblock(int);
+int	siginterrupt(int, int);
+int	sigpause(int);
+int	sigreturn(struct sigcontext *);
+int	sigsetmask(int);
+int	sigstack(const struct sigstack *, struct sigstack *);
+int	sigaltstack(const struct sigaltstack *, struct sigaltstack *);
+int	sigvec(int, struct sigvec *, struct sigvec *);
+void	psignal(unsigned int, const char *);
+int	sigwait(const sigset_t *, int *);
 #endif	/* !_POSIX_SOURCE */
 #endif	/* !_ANSI_SOURCE */
 __END_DECLS

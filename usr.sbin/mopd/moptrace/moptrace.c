@@ -1,3 +1,5 @@
+/*	$OpenBSD: moptrace.c,v 1.5 2002/02/16 21:28:04 millert Exp $ */
+
 /*
  * Copyright (c) 1993-95 Mats O Jansson.  All rights reserved.
  *
@@ -28,7 +30,7 @@
  */
 
 #ifndef LINT
-static char rcsid[] = "$Id: moptrace.c,v 1.10 1996/08/05 07:49:14 moj Exp $";
+static char rcsid[] = "$OpenBSD: moptrace.c,v 1.5 2002/02/16 21:28:04 millert Exp $";
 #endif
 
 /*
@@ -54,15 +56,9 @@ static char rcsid[] = "$Id: moptrace.c,v 1.10 1996/08/05 07:49:14 moj Exp $";
  */
 struct if_info *iflist;
 
-#ifdef NO__P
-void   Loop	     (/* void */);
-void   Usage         (/* void */);
-void   mopProcess    (/* struct if_info *, u_char * */);
-#else
-void   Loop	     __P((void));
-void   Usage         __P((void));
-void   mopProcess    __P((struct if_info *, u_char *));
-#endif
+void   Loop(void);
+void   Usage(void);
+void   mopProcess(struct if_info *, u_char *);
 
 int     AllFlag = 0;		/* listen on "all" interfaces  */
 int     DebugFlag = 0;		/* print debugging messages    */
@@ -71,7 +67,7 @@ int	Not4Flag = 0;		/* Ignore MOP V4 messages      */
 int	promisc = 1;		/* Need promisc mode           */
 char	*Program;
 
-void
+int
 main(argc, argv)
 	int     argc;
 	char  **argv;
@@ -93,7 +89,7 @@ main(argc, argv)
 	openlog(Program, LOG_PID | LOG_CONS, LOG_DAEMON);
 
 	opterr = 0;
-	while ((op = getopt(argc, argv, "34ad")) != EOF) {
+	while ((op = getopt(argc, argv, "34ad")) != -1) {
 		switch (op) {
 		case '3':
 			Not3Flag++;

@@ -1,3 +1,4 @@
+/*	$OpenBSD: glob.c,v 1.8 2002/06/09 05:47:27 todd Exp $	*/
 /*	$NetBSD: glob.c,v 1.10 1995/03/21 09:03:01 cgd Exp $	*/
 
 /*-
@@ -37,7 +38,7 @@
 #if 0
 static char sccsid[] = "@(#)glob.c	8.1 (Berkeley) 5/31/93";
 #else
-static char rcsid[] = "$NetBSD: glob.c,v 1.10 1995/03/21 09:03:01 cgd Exp $";
+static char rcsid[] = "$OpenBSD: glob.c,v 1.8 2002/06/09 05:47:27 todd Exp $";
 #endif
 #endif /* not lint */
 
@@ -47,11 +48,7 @@ static char rcsid[] = "$NetBSD: glob.c,v 1.10 1995/03/21 09:03:01 cgd Exp $";
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
-#if __STDC__
-# include <stdarg.h>
-#else
-# include <varargs.h>
-#endif
+#include <stdarg.h>
 
 #include "csh.h"
 #include "extern.h"
@@ -88,15 +85,15 @@ long    pargc = 0;
  * handled in glob() which is part of the 4.4BSD libc.
  *
  */
-static Char	*globtilde __P((Char **, Char *));
-static Char	**libglob __P((Char **));
-static Char	**globexpand __P((Char **));
-static int	globbrace __P((Char *, Char *, Char ***));
-static void	expbrace __P((Char ***, Char ***, int));
-static int	pmatch __P((Char *, Char *));
-static void	pword __P((void));
-static void	psave __P((int));
-static void	backeval __P((Char *, bool));
+static Char	*globtilde(Char **, Char *);
+static Char	**libglob(Char **);
+static Char	**globexpand(Char **);
+static int	globbrace(Char *, Char *, Char ***);
+static void	expbrace(Char ***, Char ***, int);
+static int	pmatch(Char *, Char *);
+static void	pword(void);
+static void	psave(int);
+static void	backeval(Char *, bool);
 
 
 static Char *
@@ -113,7 +110,7 @@ globtilde(nv, s)
 	 *b++ = *s++)
 	 continue;
     *b = EOS;
-    if (gethdir(gstart)) {
+    if (gethdir(gstart, &gbuf[sizeof(gbuf)/sizeof(Char)] - gstart)) {
 	blkfree(nv);
 	if (*gstart)
 	    stderror(ERR_UNKUSER, vis_str(gstart));
@@ -198,8 +195,8 @@ globbrace(s, p, bl)
 		Char    savec = *pm;
 
 		*pm = EOS;
-		(void) Strcpy(lm, pl);
-		(void) Strcat(gbuf, pe + 1);
+		(void) Strlcpy(lm, pl, &gbuf[sizeof(gbuf)/sizeof(Char)] - lm);
+		(void) Strlcat(gbuf, pe + 1, MAXPATHLEN);
 		*pm = savec;
 		*vl++ = Strsave(gbuf);
 		len++;
@@ -374,7 +371,8 @@ handleone(str, vl, action)
 	    str = Strspl(cp, *vlp);
 	    xfree((ptr_t) cp);
 	}
-	while (*++vlp);
+	while (*++vlp)
+	    ;
 	blkfree(vl);
 	break;
     case G_IGNORE:
@@ -409,7 +407,7 @@ libglob(vl)
     do {
 	ptr = short2qstr(*vl);
 	switch (glob(ptr, gflgs, 0, &globv)) {
-	case GLOB_ABEND:
+	case GLOB_ABORTED:
 	    setname(vis_str(*vl));
 	    stderror(ERR_NAME | ERR_GLOB);
 	    /* NOTREACHED */
@@ -425,7 +423,8 @@ libglob(vl)
 	}
 	gflgs |= GLOB_APPEND;
     }
-    while (*++vl);
+    while (*++vl)
+	;
     vl = (globv.gl_pathc == 0 || (magic && !match && !nonomatch)) ?
 	NULL : blk2short(globv.gl_pathv);
     globfree(&globv);
@@ -578,7 +577,7 @@ tglob(t)
 	     */
 	    if (c == '`') {
 		gflag |= G_CSH;
-		while (*p && *p != '`') 
+		while (*p && *p != '`')
 		    if (*p++ == '\\') {
 			if (*p)		/* Quoted chars */
 			    p++;
@@ -707,7 +706,7 @@ backeval(cp, literal)
 	while (*cp)
 	    *cp++ &= TRIM;
 
-        /*
+	/*
 	 * In the child ``forget'' everything about current aliases or
 	 * eval vectors.
 	 */
@@ -810,7 +809,7 @@ pword()
     pnleft = MAXPATHLEN - 4;
 }
 
-int 
+int
 Gmatch(string, pattern)
     Char *string, *pattern;
 {
@@ -833,7 +832,7 @@ Gmatch(string, pattern)
 
     blkfree(blk);
     return(gres == gpol);
-} 
+}
 
 static int
 pmatch(string, pattern)
@@ -874,7 +873,7 @@ pmatch(string, pattern)
 			      (*(pattern-2) & TRIM) <= stringc);
 		    pattern++;
 		}
-		else 
+		else
 		    match = (stringc == (rangec & TRIM));
 	    }
 	    if (rangec == 0)
@@ -936,7 +935,7 @@ sortscmp(a, b)
 	return (-1);
 
 #if defined(NLS) && !defined(NOSTRCOLL)
-    (void) strcpy(buf, short2str(*(Char **)a));
+    (void) strlcpy(buf, short2str(*(Char **)a), sizeof buf);
     return ((int) strcoll(buf, short2str(*(Char **)b)));
 #else
     return ((int) Strcmp(*(Char **)a, *(Char **)b));

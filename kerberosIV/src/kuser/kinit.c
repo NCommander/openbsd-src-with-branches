@@ -39,7 +39,7 @@ get_input(char *s, int size, FILE *stream)
 static void
 usage(void)
 {
-    fprintf(stderr, "Usage: %s [-irvlp] [name]\n", getprogname());
+    fprintf(stderr, "Usage: %s [-irvlp] [name]\n", __progname);
     exit(1);
 }
 
@@ -54,8 +54,6 @@ main(int argc, char **argv)
     char   *username = NULL;
     int     iflag, rflag, vflag, lflag, pflag, lifetime, k_errno;
     int	    i;
-
-    setprogname (argv[0]);
 
     *inst = *realm = '\0';
     iflag = rflag = vflag = lflag = pflag = 0;

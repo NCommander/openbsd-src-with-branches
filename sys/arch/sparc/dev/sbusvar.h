@@ -1,4 +1,5 @@
-/*	$NetBSD: sbusvar.h,v 1.2 1994/11/20 20:52:27 deraadt Exp $ */
+/*	$OpenBSD: sbusvar.h,v 1.5 1998/11/11 00:26:01 jason Exp $	*/
+/*	$NetBSD: sbusvar.h,v 1.4 1996/04/22 02:35:05 abrown Exp $ */
 
 /*
  * Copyright (c) 1992, 1993
@@ -50,7 +51,7 @@
 struct sbusdev {
 	struct	device *sd_dev;		/* backpointer to generic */
 	struct	sbusdev *sd_bchain;	/* forward link in bus chain */
-	void	(*sd_reset) __P((struct device *));
+	void	(*sd_reset)(struct device *);
 };
 
 /*
@@ -67,7 +68,12 @@ struct sbus_softc {
 	struct	device sc_dev;		/* base device */
 	int	sc_clockfreq;		/* clock frequency (in Hz) */
 	struct	sbusdev *sc_sbdev;	/* list of all children */
+	struct	rom_range *sc_range;
+	int	sc_nrange;
+	int	sc_burst;		/* burst transfer sizes supported */
 };
 
-int	sbusdev_match __P((struct cfdata *, void *));
-void	sbus_establish __P((struct sbusdev *, struct device *));
+int	sbusdev_match(struct cfdata *, void *);
+void	sbus_establish(struct sbusdev *, struct device *);
+void	sbus_translate(struct device *, struct confargs *);
+int	sbus_testdma(struct sbus_softc *, struct confargs *);

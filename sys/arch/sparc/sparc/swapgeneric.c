@@ -1,4 +1,5 @@
-/*	$NetBSD: swapgeneric.c,v 1.7 1995/02/16 21:42:52 pk Exp $ */
+/*	$OpenBSD: swapgeneric.c,v 1.6 2001/09/29 18:40:32 miod Exp $ */
+/*	$NetBSD: swapgeneric.c,v 1.8 1996/03/14 21:09:32 christos Exp $ */
 
 /*-
  * Copyright (c) 1994
@@ -42,19 +43,12 @@
 #include <sys/param.h>
 #include <sys/conf.h>
 
-int (*mountroot)() = NULL;	/* tells autoconf.c that we are "generic" */
+int (*mountroot)(void) = NULL;	/* tells autoconf.c that we are "generic" */
 
 dev_t	rootdev = NODEV;
 dev_t	dumpdev = NODEV;
 
 struct	swdevt swdevt[] = {
-	{ makedev(7, 1), 0, 0 },	/* sd0b */
-	{ makedev(7, 9), 0, 0 },	/* sd1b */
-	{ makedev(7, 17), 0, 0 },	/* sd2b */
-	{ makedev(7, 25), 0, 0 },	/* sd3b */
-	{ makedev(7, 33), 0, 0 },	/* sd4b */
-	{ makedev(7, 41), 0, 0 },	/* sd5b */
-	{ makedev(7, 49), 0, 0 },	/* sd6b */
-	{ makedev(7, 57), 0, 0 },	/* sd7b */
+	{ NODEV, 0, 0 },	/* to be filled in */
 	{ NODEV, 0, 0 }
 };

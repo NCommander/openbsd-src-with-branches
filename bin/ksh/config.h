@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: config.h,v 1.6 2002/08/11 21:44:58 marc Exp $	*/
 
 /* config.h.  Generated automatically by configure.  */
 /* config.h.in.  Generated automatically from configure.in by autoheader.  */
@@ -186,17 +186,21 @@
 /* Define if you arg running OS2 with the EMX library */
 /* #undef OS2 */
 
-/* Define if you have a POSIX.1 compatiable <sys/wait.h> */
+/* Define if you have a POSIX.1 compatible <sys/wait.h> */
 #define POSIX_SYS_WAIT 1
 
 /* Define if your OS maps references to /dev/fd/n to file descriptor n */
 #define HAVE_DEV_FD 1
 
 /* Default PATH (see comments in configure.in for more details) */
-#define DEFAULT_PATH "/bin:/usr/bin:/usr/ucb"
+#define DEFAULT_PATH "/bin:/usr/bin:/sbin:/usr/sbin"
+
+/* Define if your C library's getwd/getcwd function dumps core in unreadable
+ * directories.  */
+/* #undef HPUX_GETWD_BUG */
 
 /* Include ksh features? (see comments in configure.in for more details) */
-#define KSH 1
+/* #define KSH 1 */
 
 /* Include emacs editing? (see comments in configure.in for more details) */
 #define EMACS 1
@@ -214,7 +218,7 @@
 #define HISTORY 1
 
 /* Include complex history? (see comments in configure.in for more details) */
-/* #undef COMPLEX_HISTORY */
+#define COMPLEX_HISTORY
 
 /* Strict POSIX behaviour? (see comments in configure.in for more details) */
 /* #undef POSIXLY_CORRECT */
@@ -247,8 +251,14 @@
 /* Define if you have the flock function.  */
 #define HAVE_FLOCK 1
 
+/* Define if you have the getcwd function.  */
+#define HAVE_GETCWD 1
+
 /* Define if you have the getgroups function.  */
 /* #undef HAVE_GETGROUPS */
+
+/* Define if you have the getpagesize function.  */
+#define HAVE_GETPAGESIZE 1
 
 /* Define if you have the getrusage function.  */
 /* #undef HAVE_GETRUSAGE */
@@ -285,6 +295,9 @@
 
 /* Define if you have the ulimit function.  */
 /* #undef HAVE_ULIMIT */
+
+/* Define if you have the valloc function.  */
+#define HAVE_VALLOC 1
 
 /* Define if you have the wait3 function.  */
 #define HAVE_WAIT3 1

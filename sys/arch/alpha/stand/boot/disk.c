@@ -1,4 +1,5 @@
-/*	$NetBSD: disk.c,v 1.2 1995/02/16 02:32:55 cgd Exp $	*/
+/*	$OpenBSD: disk.c,v 1.9 2001/01/25 03:50:46 todd Exp $	*/
+/*	$NetBSD: disk.c,v 1.6 1997/04/06 08:40:33 cgd Exp $	*/
 
 /*
  * Copyright (c) 1992, 1993
@@ -43,7 +44,10 @@
 #include <sys/param.h>
 #include <sys/disklabel.h>
 
+#include <machine/rpb.h>
 #include <machine/prom.h>
+
+#include "disk.h"
 
 struct	disk_softc {
 	int	sc_fd;			/* PROM channel number */
@@ -54,19 +58,24 @@ struct	disk_softc {
 };
 
 int
-diskstrategy(devdata, rw, bn, reqcnt, addr, cnt)
+diskstrategy(devdata, rw, bn, reqcnt, addrvoid, cnt)
 	void *devdata;
 	int rw;
 	daddr_t bn;
-	u_int reqcnt;
-	char *addr;
-	u_int *cnt;	/* out: number of bytes transfered */
+	size_t reqcnt;
+	void *addrvoid;
+	size_t *cnt;	/* out: number of bytes transferred */
 {
+	char *addr = addrvoid;
 	struct disk_softc *sc;
 	struct partition *pp;
 	prom_return_t ret;
 	int s;
 
+	if ((reqcnt & 0xffffff) != reqcnt ||
+	    reqcnt == 0)
+		asm("call_pal 0");
+	    
 	twiddle();
 
 	/* Partial-block transfers not handled. */
@@ -92,16 +101,12 @@ diskopen(f, ctlr, unit, part)
 {
 	struct disklabel *lp;
 	prom_return_t ret;
-	int cnt, devlen, i;
+	size_t cnt;
+	int devlen, i;
 	char *msg, buf[DEV_BSIZE], devname[32];
-	static struct disk_softc *sc;
+	struct disk_softc *sc;
 
-if (sc != NULL) {
-	f->f_devdata = (void *)sc;
-	return 0;
-}
-
-	if (unit >= 8 || part >= 8)
+	if (unit >= 16 || part >= MAXPARTITIONS)
 		return (ENXIO);
 	/* 
 	 * XXX
@@ -138,8 +143,15 @@ if (sc != NULL) {
 	if (i || cnt != DEV_BSIZE) {
 		printf("disk%d: error reading disk label\n", unit);
 		goto bad;
+	} else if (((struct disklabel *)(buf + LABELOFFSET))->d_magic !=
+		    DISKMAGIC) {
+		/* No label at all.  Fake all partitions as whole disk. */
+		for (i = 0; i < MAXPARTITIONS; i++) {
+			lp->d_partitions[part].p_offset = 0;
+			lp->d_partitions[part].p_size = 0x7fffffff;
+		}
 	} else {
-		msg = getdisklabel(buf, lp);
+		msg = getdisklabel(buf + LABELOFFSET, lp);
 		if (msg) {
 			printf("disk%d: %s\n", unit, msg);
 			goto bad;

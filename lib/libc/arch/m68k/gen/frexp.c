@@ -1,6 +1,12 @@
-/*-
- * Copyright (c) 1991 The Regents of the University of California.
- * All rights reserved.
+/*	$OpenBSD: frexp.c,v 1.3 1997/07/23 20:55:23 kstailey Exp $	*/
+
+/*
+ * Copyright (c) 1992, 1993
+ *	The Regents of the University of California.  All rights reserved.
+ *
+ * This software was developed by the Computer Systems Engineering group
+ * at Lawrence Berkeley Laboratory under DARPA contract BG 91-66 and
+ * contributed to Berkeley.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -32,35 +38,41 @@
  */
 
 #if defined(LIBC_SCCS) && !defined(lint)
-/*static char sccsid[] = "from: @(#)frexp.c	5.1 (Berkeley) 3/6/91";*/
-static char rcsid[] = "$Id: frexp.c,v 1.1 1993/11/25 23:37:04 paulus Exp $";
+static char rcsid[] = "$OpenBSD: frexp.c,v 1.3 1997/07/23 20:55:23 kstailey Exp $";
 #endif /* LIBC_SCCS and not lint */
 
 #include <sys/types.h>
-#include <math.h>
+#include <machine/ieee.h>
 
+/*
+ * Split the given value into a fraction in the range [0.5, 1.0) and
+ * an exponent, such that frac * (2^exp) == value.  If value is 0,
+ * return 0.
+ */
 double
 frexp(value, eptr)
 	double value;
 	int *eptr;
 {
 	union {
-                double v;
-                struct {
-                        u_int  u_sign :  1;
-			u_int   u_exp : 11;
-			u_int u_mant1 : 20;
-			u_int u_mant2 : 32;
-                } s;
-        } u;
+		double v;
+		struct ieee_double s;
+	} u;
 
 	if (value) {
+		/*
+		 * Fractions in [0.5..1.0) have an exponent of 2^-1.
+		 * Leave Inf and NaN alone, however.
+		 * WHAT ABOUT DENORMS?
+		 */
 		u.v = value;
-		*eptr = u.s.u_exp - 1022;
-		u.s.u_exp = 1022;
-		return(u.v);
+		if (u.s.dbl_exp != DBL_EXP_INFNAN) {
+			*eptr = u.s.dbl_exp - (DBL_EXP_BIAS - 1);
+			u.s.dbl_exp = DBL_EXP_BIAS - 1;
+		}
+		return (u.v);
 	} else {
 		*eptr = 0;
-		return((double)0);
+		return ((double)0);
 	}
 }

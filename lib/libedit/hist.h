@@ -1,3 +1,6 @@
+/*	$OpenBSD: hist.h,v 1.4 1997/03/14 05:12:49 millert Exp $	*/
+/*	$NetBSD: hist.h,v 1.3 1997/01/11 06:47:56 lukem Exp $	*/
+
 /*-
  * Copyright (c) 1992, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -44,7 +47,7 @@
 
 #include "histedit.h"
 
-typedef const HistEvent *	(*hist_fun_t) __P((ptr_t, int, ...));
+typedef const HistEvent *	(*hist_fun_t)(ptr_t, int, ...);
 
 typedef struct el_history_t {
     char *buf;				/* The history buffer		*/
@@ -65,11 +68,13 @@ typedef struct el_history_t {
 #define	HIST_LAST(el)		HIST_FUN(el, H_LAST, NULL)
 #define	HIST_PREV(el)		HIST_FUN(el, H_PREV, NULL)
 #define	HIST_EVENT(el, num)	HIST_FUN(el, H_EVENT, num)
+#define	HIST_LOAD(el, fname)	HIST_FUN(el, H_LOAD fname)
+#define	HIST_SAVE(el, fname)	HIST_FUN(el, H_SAVE fname)
 
-protected int 		hist_init	__P((EditLine *));
-protected void 		hist_end	__P((EditLine *));
-protected el_action_t	hist_get	__P((EditLine *));
-protected int		hist_set	__P((EditLine *, hist_fun_t, ptr_t));
-protected int		hist_list	__P((EditLine *, int, char **));
+protected int 		hist_init(EditLine *);
+protected void 		hist_end(EditLine *);
+protected el_action_t	hist_get(EditLine *);
+protected int		hist_set(EditLine *, hist_fun_t, ptr_t);
+protected int		hist_list(EditLine *, int, char **);
 
 #endif /* _h_el_hist */

@@ -1,3 +1,4 @@
+/*	$OpenBSD: dkcksum.c,v 1.2 1996/06/23 14:30:05 deraadt Exp $	*/
 /*	$NetBSD: dkcksum.c,v 1.6 1995/03/18 14:54:42 cgd Exp $	*/
 
 /*-
@@ -37,7 +38,7 @@
 #if 0
 static char sccsid[] = "@(#)dkcksum.c	8.1 (Berkeley) 6/5/93";
 #else
-static char rcsid[] = "$NetBSD: dkcksum.c,v 1.6 1995/03/18 14:54:42 cgd Exp $";
+static char rcsid[] = "$OpenBSD: dkcksum.c,v 1.2 1996/06/23 14:30:05 deraadt Exp $";
 #endif
 #endif /* not lint */
 
@@ -46,10 +47,10 @@ static char rcsid[] = "$NetBSD: dkcksum.c,v 1.6 1995/03/18 14:54:42 cgd Exp $";
 
 u_short
 dkcksum(lp)
-	register struct disklabel *lp;
+	struct disklabel *lp;
 {
-	register u_short *start, *end;
-	register u_short sum = 0;
+	u_short *start, *end;
+	u_short sum = 0;
 
 	start = (u_short *)lp;
 	end = (u_short *)&lp->d_partitions[lp->d_npartitions];

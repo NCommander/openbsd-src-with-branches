@@ -1,5 +1,3 @@
-/*	$NetBSD: isctype.c,v 1.13 1995/02/27 04:34:43 cgd Exp $	*/
-
 /*
  * Copyright (c) 1989 The Regents of the University of California.
  * All rights reserved.
@@ -39,22 +37,19 @@
  */
 
 #if defined(LIBC_SCCS) && !defined(lint)
-#if 0
-static char sccsid[] = "@(#)isctype.c	5.2 (Berkeley) 6/1/90";
-#else
-static char rcsid[] = "$NetBSD: isctype.c,v 1.13 1995/02/27 04:34:43 cgd Exp $";
-#endif
+static char rcsid[] = "$OpenBSD: isctype.c,v 1.6 2002/12/14 02:34:39 millert Exp $";
 #endif /* LIBC_SCCS and not lint */
 
 #define _ANSI_LIBRARY
 #include <ctype.h>
+#include <stdio.h>
 
 #undef isalnum
 int
 isalnum(c)
 	int c;
 {
-	return((_ctype_ + 1)[c] & (_U|_L|_N));
+	return (c == EOF ? 0 : ((_ctype_ + 1)[(unsigned char)(c & 0xff)] & (_U|_L|_N)));
 }
 
 #undef isalpha
@@ -62,7 +57,7 @@ int
 isalpha(c)
 	int c;
 {
-	return((_ctype_ + 1)[c] & (_U|_L));
+	return (c == EOF ? 0 : ((_ctype_ + 1)[(unsigned char)(c & 0xff)] & (_U|_L)));
 }
 
 #undef isblank
@@ -70,7 +65,7 @@ int
 isblank(c)
 	int c;
 {
-	return(c == ' ' || c == '\t');
+	return (c == ' ' || c == '\t');
 }
 
 #undef iscntrl
@@ -78,7 +73,7 @@ int
 iscntrl(c)
 	int c;
 {
-	return((_ctype_ + 1)[c] & _C);
+	return (c == EOF ? 0 : ((_ctype_ + 1)[(unsigned char)(c & 0xff)] & _C));
 }
 
 #undef isdigit
@@ -86,7 +81,7 @@ int
 isdigit(c)
 	int c;
 {
-	return((_ctype_ + 1)[c] & _N);
+	return (c == EOF ? 0 : ((_ctype_ + 1)[(unsigned char)(c & 0xff)] & _N));
 }
 
 #undef isgraph
@@ -94,7 +89,7 @@ int
 isgraph(c)
 	int c;
 {
-	return((_ctype_ + 1)[c] & (_P|_U|_L|_N));
+	return (c == EOF ? 0 : ((_ctype_ + 1)[(unsigned char)(c & 0xff)] & (_P|_U|_L|_N)));
 }
 
 #undef islower
@@ -102,7 +97,7 @@ int
 islower(c)
 	int c;
 {
-	return((_ctype_ + 1)[c] & _L);
+	return (c == EOF ? 0 : ((_ctype_ + 1)[(unsigned char)(c & 0xff)] & _L));
 }
 
 #undef isprint
@@ -110,7 +105,7 @@ int
 isprint(c)
 	int c;
 {
-	return((_ctype_ + 1)[c] & (_P|_U|_L|_N|_B));
+	return (c == EOF ? 0 : ((_ctype_ + 1)[(unsigned char)(c & 0xff)] & (_P|_U|_L|_N|_B)));
 }
 
 #undef ispunct
@@ -118,7 +113,7 @@ int
 ispunct(c)
 	int c;
 {
-	return((_ctype_ + 1)[c] & _P);
+	return (c == EOF ? 0 : ((_ctype_ + 1)[(unsigned char)(c & 0xff)] & _P));
 }
 
 #undef isspace
@@ -126,7 +121,7 @@ int
 isspace(c)
 	int c;
 {
-	return((_ctype_ + 1)[c] & _S);
+	return (c == EOF ? 0 : ((_ctype_ + 1)[(unsigned char)(c & 0xff)] & _S));
 }
 
 #undef isupper
@@ -134,7 +129,7 @@ int
 isupper(c)
 	int c;
 {
-	return((_ctype_ + 1)[c] & _U);
+	return (c == EOF ? 0 : ((_ctype_ + 1)[(unsigned char)(c & 0xff)] & _U));
 }
 
 #undef isxdigit
@@ -142,7 +137,7 @@ int
 isxdigit(c)
 	int c;
 {
-	return((_ctype_ + 1)[c] & (_N|_X));
+	return (c == EOF ? 0 : ((_ctype_ + 1)[(unsigned char)(c & 0xff)] & (_N|_X)));
 }
 
 #undef isascii
@@ -150,7 +145,7 @@ int
 isascii(c)
 	int c;
 {
-	return ((unsigned)(c) <= 0177);
+	return ((unsigned int)c <= 0177);
 }
 
 #undef toascii
@@ -158,7 +153,7 @@ int
 toascii(c)
 	int c;
 {
-	return ((c) & 0177);
+	return (c & 0177);
 }
 
 #undef _toupper

@@ -1,3 +1,4 @@
+/*	$OpenBSD: util.c,v 1.6 1999/05/05 07:06:01 deraadt Exp $	*/
 /*	$NetBSD: util.c,v 1.12 1995/09/07 06:43:02 jtc Exp $	*/
 
 /*
@@ -40,7 +41,7 @@
 #if 0
 static char sccsid[] = "@(#)util.c	8.5 (Berkeley) 4/28/95";
 #else
-static char rcsid[] = "$NetBSD: util.c,v 1.12 1995/09/07 06:43:02 jtc Exp $";
+static char rcsid[] = "$OpenBSD: util.c,v 1.6 1999/05/05 07:06:01 deraadt Exp $";
 #endif
 #endif /* not lint */
 
@@ -56,23 +57,22 @@ static char rcsid[] = "$NetBSD: util.c,v 1.12 1995/09/07 06:43:02 jtc Exp $";
 #include "ls.h"
 #include "extern.h"
 
-void
-prcopy(src, dest, len)
-	char *src, *dest;
-	int len;
+int
+putname(name)
+	char *name;
 {
-	int ch;
+	int len;
 
-	while (len--) {
-		ch = *src++;
-		*dest++ = isprint(ch) ? ch : '?';
-	}
+	for (len = 0; *name; len++, name++)
+		putchar((!isprint(*name) && f_nonprint) ? '?' : *name);
+	return len;
 }
 
 void
 usage()
 {
-	(void)fprintf(stderr, 
-	    "usage: ls [-1ACFLRSTWacdfikloqrstu] [file ...]\n");
+	(void)fprintf(stderr,
+	    "usage: %s [-1ACFLRSTWacdfiklmnopqrstux] [file ...]\n",
+             __progname);
 	exit(1);
 }

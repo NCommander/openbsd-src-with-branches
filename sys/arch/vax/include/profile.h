@@ -1,4 +1,5 @@
-/*      $NetBSD: profile.h,v 1.4 1995/05/11 16:53:15 jtc Exp $ */
+/*      $OpenBSD: profile.h,v 1.5 1997/05/29 00:04:47 niklas Exp $ */
+/*      $NetBSD: profile.h,v 1.5 1995/12/31 12:15:58 ragge Exp $ */
 /*
  * Copyright (c) 1992 The Regents of the University of California.
  * All rights reserved.
@@ -34,10 +35,19 @@
  *      @(#)profile.h   7.1 (Berkeley) 7/16/92
  */
 
-#define _MCOUNT_DECL static inline void _mcount
+/*
+ * _mcount can't be declared static, gcc will optimize it away then.
+ */
+#define _MCOUNT_DECL void _mcount
 
+/*
+ * Note here: the second argument to __mcount() is pc when mcount
+ * was called. Because it's already on the stack we only have to
+ * push previous pc _and_ tell calls that it is only one argument
+ * to __mcount, so that our return address won't get popped from stack.
+ */
 #define MCOUNT \
-asm(".text; .globl mcount; mcount: pushl 16(fp); calls $1,__mcount; rsb");
+__asm__(".text; .globl mcount; mcount: pushl 16(fp); calls $1,__mcount; rsb");
 
 #ifdef _KERNEL
 /*

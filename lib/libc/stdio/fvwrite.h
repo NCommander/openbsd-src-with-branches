@@ -1,4 +1,4 @@
-/*	$NetBSD: fvwrite.h,v 1.3 1995/02/02 02:09:47 jtc Exp $	*/
+/*	$OpenBSD: fvwrite.h,v 1.3 1997/07/25 20:30:10 mickey Exp $	*/
 
 /*-
  * Copyright (c) 1990, 1993
@@ -34,8 +34,6 @@
  * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
- *
- *	@(#)fvwrite.h	8.1 (Berkeley) 6/4/93
  */
 
 /*
@@ -51,8 +49,4 @@ struct __suio {
 	int	uio_resid;
 };
 
-#if __STDC__ || c_plusplus
 extern int __sfvwrite(FILE *, struct __suio *);
-#else
-extern int __sfvwrite();
-#endif

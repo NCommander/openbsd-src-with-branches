@@ -44,7 +44,7 @@ static char sccsid[] = "@(#)sinh.c	8.1 (Berkeley) 6/4/93";
  *
  * Required system supported functions :
  *	copysign(x,y)
- *	scalb(x,N)
+ *	scalbn(x,N)
  *
  * Required kernel functions:
  *	expm1(x)	...return exp(x)-1
@@ -92,11 +92,11 @@ ic(lnovfl, 7.0978271289338397310E2,     9, 1.62E42FEFA39EF)
 #define	lnovfl	vccast(lnovfl)
 #endif
 
-#if defined(vax)||defined(tahoe)
+#if defined(__vax__)||defined(tahoe)
 static max = 126                      ;
-#else	/* defined(vax)||defined(tahoe) */
+#else	/* defined(__vax__)||defined(tahoe) */
 static max = 1023                     ;
-#endif	/* defined(vax)||defined(tahoe) */
+#endif	/* defined(__vax__)||defined(tahoe) */
 
 
 double sinh(x)
@@ -104,9 +104,9 @@ double x;
 {
 	static const double  one=1.0, half=1.0/2.0 ;
 	double t, sign;
-#if !defined(vax)&&!defined(tahoe)
+#if !defined(__vax__)&&!defined(tahoe)
 	if(x!=x) return(x);	/* x is NaN */
-#endif	/* !defined(vax)&&!defined(tahoe) */
+#endif	/* !defined(__vax__)&&!defined(tahoe) */
 	sign=copysign(one,x);
 	x=copysign(x,one);
 	if(x<lnovfl)
@@ -115,7 +115,7 @@ double x;
 	else if(x <= lnovfl+0.7)
 		/* subtract x by ln(2^(max+1)) and return 2^max*exp(x) 
 	    		to avoid unnecessary overflow */
-	    return(copysign(scalb(one+expm1((x-mln2hi)-mln2lo),max),sign));
+	    return(copysign(scalbn(one+expm1((x-mln2hi)-mln2lo),max),sign));
 
 	else  /* sinh(+-INF) = +-INF, sinh(+-big no.) overflow to +-INF */
 	    return( expm1(x)*sign );

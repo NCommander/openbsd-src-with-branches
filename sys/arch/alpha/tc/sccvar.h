@@ -1,4 +1,5 @@
-/*	$NetBSD: sccvar.h,v 1.2 1995/08/03 00:52:23 cgd Exp $	*/
+/* $OpenBSD$ */
+/* $NetBSD: sccvar.h,v 1.7 2001/08/26 16:39:56 simonb Exp $ */
 
 /* 
  * Copyright (c) 1991,1990,1989,1994,1995 Carnegie Mellon University
@@ -95,9 +96,18 @@ typedef struct {
 } scc_regmap_t;
 
 #define	scc_get_datum(d, v) \
-	do { (v) = ((d) >> 8) & 0xff; } while (0)
+	do { (v) = ((d) >> 8) & 0xff; alpha_mb(); DELAY(5); } while (0)
 #define	scc_set_datum(d, v) \
-	do { (d) = (volatile unsigned int)(v) << 8; wbflush(); } while (0)
+	do { (d) = (volatile unsigned int)(v) << 8; alpha_mb(); DELAY(5); } while (0)
+
+/* From <pmax/dev/pdma.h>. */
+struct pdma {
+	void	*p_addr;
+	char	*p_mem;
+	char	*p_end;
+	int	p_arg;
+	void	(*p_fcn)(struct tty *tp);
+};
 
 /*
  * Minor device numbers for scc.  Weird because B channel comes first and
@@ -108,3 +118,5 @@ typedef struct {
 #define	SCCMOUSE_PORT	0x1
 #define	SCCCOMM3_PORT	0x2
 #define	SCCKBD_PORT	0x3
+
+int	alpha_donot_kludge_scc;

@@ -1,5 +1,3 @@
-/*	$NetBSD: wsetup.c,v 1.4 1995/02/02 02:10:59 jtc Exp $	*/
-
 /*-
  * Copyright (c) 1990, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -37,10 +35,7 @@
  */
 
 #if defined(LIBC_SCCS) && !defined(lint)
-#if 0
-static char sccsid[] = "@(#)wsetup.c	8.1 (Berkeley) 6/4/93";
-#endif
-static char rcsid[] = "$NetBSD: wsetup.c,v 1.4 1995/02/02 02:10:59 jtc Exp $";
+static char rcsid[] = "$OpenBSD: wsetup.c,v 1.3 2001/07/09 06:57:45 deraadt Exp $";
 #endif /* LIBC_SCCS and not lint */
 
 #include <stdio.h>
@@ -52,6 +47,7 @@ static char rcsid[] = "$NetBSD: wsetup.c,v 1.4 1995/02/02 02:10:59 jtc Exp $";
  * because either _flags does not include __SWR, or _buf is NULL.
  * _wsetup returns 0 if OK to write, nonzero otherwise.
  */
+int
 __swsetup(fp)
 	register FILE *fp;
 {
@@ -79,8 +75,11 @@ __swsetup(fp)
 	/*
 	 * Make a buffer if necessary, then set _w.
 	 */
-	if (fp->_bf._base == NULL)
+	if (fp->_bf._base == NULL) {
+		if ((fp->_flags & (__SSTR | __SALC)) == __SSTR)
+			return (EOF);
 		__smakebuf(fp);
+	}
 	if (fp->_flags & __SLBF) {
 		/*
 		 * It is line buffered, so make _lbfsize be -_bufsize

@@ -1,9 +1,68 @@
+/*	$OpenBSD: hack.pri.c,v 1.4 2001/08/06 22:59:13 pjanzen Exp $	*/
+
 /*
- * Copyright (c) Stichting Mathematisch Centrum, Amsterdam, 1985.
+ * Copyright (c) 1985, Stichting Centrum voor Wiskunde en Informatica,
+ * Amsterdam
+ * All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are
+ * met:
+ *
+ * - Redistributions of source code must retain the above copyright notice,
+ * this list of conditions and the following disclaimer.
+ *
+ * - Redistributions in binary form must reproduce the above copyright
+ * notice, this list of conditions and the following disclaimer in the
+ * documentation and/or other materials provided with the distribution.
+ *
+ * - Neither the name of the Stichting Centrum voor Wiskunde en
+ * Informatica, nor the names of its contributors may be used to endorse or
+ * promote products derived from this software without specific prior
+ * written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS
+ * IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED
+ * TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A
+ * PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER
+ * OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
+ * EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+ * PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR
+ * PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
+ * LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
+ * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ */
+
+/*
+ * Copyright (c) 1982 Jay Fenlason <hack@gnu.org>
+ * All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions
+ * are met:
+ * 1. Redistributions of source code must retain the above copyright
+ *    notice, this list of conditions and the following disclaimer.
+ * 2. Redistributions in binary form must reproduce the above copyright
+ *    notice, this list of conditions and the following disclaimer in the
+ *    documentation and/or other materials provided with the distribution.
+ * 3. The name of the author may not be used to endorse or promote products
+ *    derived from this software without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED ``AS IS'' AND ANY EXPRESS OR IMPLIED WARRANTIES,
+ * INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY
+ * AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.  IN NO EVENT SHALL
+ * THE AUTHOR BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
+ * EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+ * PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS;
+ * OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
+ * WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR
+ * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
+ * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
 #ifndef lint
-static char rcsid[] = "$NetBSD: hack.pri.c,v 1.4 1995/03/23 08:31:20 cgd Exp $";
+static char rcsid[] = "$OpenBSD: hack.pri.c,v 1.4 2001/08/06 22:59:13 pjanzen Exp $";
 #endif /* not lint */
 
 #include "hack.h"
@@ -49,8 +108,8 @@ char *str;
 #ifdef UNIX
 	if(!fork())
 		abort();	/* generate core dump */
-#endif UNIX
-#endif DEBUG
+#endif /* UNIX */
+#endif /* DEBUG */
 	more();			/* contains a fflush() */
 	done("panicked");
 }
@@ -99,7 +158,7 @@ static char let;
 		return;
 	}
 	if(prevx >= 0 && cansee(prevx,prevy)) {
-		delay_output();
+		delay_output(50);
 		prl(prevx, prevy);	/* in case there was a monster */
 		at(prevx, prevy, levl[prevx][prevy].scrsym);
 	}
@@ -141,7 +200,7 @@ register xx,yy;
 	}
 	/* normal call */
 	if(cansee(x,y)) {
-		if(cnt) delay_output();
+		if(cnt) delay_output(50);
 		at(x,y,let);
 		tc[cnt].x = x;
 		tc[cnt].y = y;
@@ -165,7 +224,7 @@ char ch;
 		impossible("At gets 0%o at %d %d.", ch, x, y);
 		return;
 	}
-#endif lint
+#endif /* lint */
 	if(!ch) {
 		impossible("At gets null at %d %d.", x, y);
 		return;
@@ -291,7 +350,7 @@ pru()
 #ifndef NOWORM
 #include	"def.wseg.h"
 extern struct wseg *m_atseg;
-#endif NOWORM
+#endif /* NOWORM */
 
 /* print a position that is visible for @ */
 prl(x,y)
@@ -315,7 +374,7 @@ prl(x,y)
 		if(m_atseg)
 			pwseg(m_atseg);
 		else
-#endif NOWORM
+#endif /* NOWORM */
 		pmon(mtmp);
 	}
 	else if((otmp = o_at(x,y)) && room->typ != POOL)
@@ -467,7 +526,7 @@ register x,y;
 		nosee(x+1,y);
 	}
 }
-#endif QUEST
+#endif /* QUEST */
 
 vism_at(x,y)
 register x,y;
@@ -499,7 +558,7 @@ register int show = (!obj->oinvis || See_invisible) &&
 		obj->ody = obj->oy;
 	}
 }
-#endif NEWSCR
+#endif /* NEWSCR */
 
 unpobj(obj) register struct obj *obj; {
 /* 	if(obj->odispl){
@@ -537,7 +596,7 @@ register struct monst *mtmp;
 		pmon(mtmp);
 #ifndef NOWORM
 		if(mtmp->wormno) wormsee(mtmp->wormno);
-#endif NOWORM
+#endif /* NOWORM */
 	}
 }
 
@@ -609,7 +668,7 @@ extern char *eos();
 	(void) sprintf(newbot,
 		"Level %-2d   Hp %3d(%d)   Ac %-2d   Str ",
 		dlevel,  u.uhp, u.uhpmax, u.uac);
-#endif GOLD_ON_BOTL
+#endif /* GOLD_ON_BOTL */
 	if(u.ustr>18) {
 	    if(u.ustr>117)
 		(void) strcat(newbot,"18/**");
@@ -621,7 +680,7 @@ extern char *eos();
 	(void) sprintf(eos(newbot), "  Exp %2d/%-5lu ", u.ulevel,u.uexp);
 #else
 	(void) sprintf(eos(newbot), "   Exp %2u  ", u.ulevel);
-#endif EXP_ON_BOTL
+#endif /* EXP_ON_BOTL */
 	(void) strcat(newbot, hu_stat[u.uhs]);
 	if(flags.time)
 	    (void) sprintf(eos(newbot), "  %ld", moves);
@@ -652,7 +711,7 @@ mstatusline(mtmp) register struct monst *mtmp; {
 	    mtmp->data->mlevel, mtmp->mgold, mtmp->mhp, mtmp->mhpmax,
 	    mtmp->data->ac, (mtmp->data->damn + 1) * (mtmp->data->damd + 1));
 }
-#endif WAN_PROBING
+#endif /* WAN_PROBING */
 
 cls(){
 	if(flags.toplin == 1)

@@ -1,16 +1,32 @@
-#	$NetBSD: Makefile,v 1.3 1994/10/31 05:01:45 cgd Exp $
+#	$OpenBSD: Makefile,v 1.17 2002/12/19 01:00:11 miod Exp $
 
-M?=	${MACHINE}
+NOPROG=
+NOMAN=
+
+M?=	$(MACHINE)
 
 TARG=	INSTALL.$M
-SRC=	${.CURDIR}/INSTALL
-DEP=	${SRC} ${.CURDIR}/mirrors ${.CURDIR}/$M/whatis ${.CURDIR}/$M/contents \
-	${.CURDIR}/$M/hardware ${.CURDIR}/$M/xfer ${.CURDIR}/$M/prep \
-	${.CURDIR}/$M/install ${.CURDIR}/$M/upgrade ${.CURDIR}/donations \
-	${.CURDIR}/legal.common ${.CURDIR}/$M/legal
+SRC=	$(.CURDIR)/INSTALL
+DEP=	$(SRC) $(.CURDIR)/mirrors $(.CURDIR)/$M/whatis $(.CURDIR)/$M/contents \
+	$(.CURDIR)/$M/hardware $(.CURDIR)/$M/xfer $(.CURDIR)/$M/prep \
+	$(.CURDIR)/$M/install $(.CURDIR)/$M/upgrade \
+	$(.CURDIR)/packages $(.CURDIR)/m4.common
 
-${TARG}: ${DEP}
-	cpp -I${.CURDIR}/$M -DMACHINE=$M -Uunix -U$M -C -P ${SRC} > $@
+all:	$(TARG)
+
+allarchs:
+	@cd $(.CURDIR); \
+	for arch in alpha hp300 hppa i386 mac68k macppc mvme68k sparc \
+	    sparc64 vax ; do ${MAKE} M=$$arch; done;
+
+$(TARG): $(DEP)
+	m4 -DOSREV=$(OSREV) -DOSrev=$(OSrev) -DINCLUDE=$(.CURDIR)/$M \
+	-DMACHINE=$M -Uunix $(SRC) > $@
 
 clean cleandir:
-	/bin/rm INSTALL.*
+	-/bin/rm -f INSTALL.*
+
+beforeinstall:
+	cp ${TARG} ${DESTDIR}/snapshot/
+
+.include <bsd.prog.mk>

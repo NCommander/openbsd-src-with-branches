@@ -1,4 +1,5 @@
-/*	$NetBSD: acvar.h,v 1.2 1994/10/26 07:23:27 cgd Exp $	*/
+/*	$OpenBSD: acvar.h,v 1.4 1997/04/16 11:55:56 downsj Exp $	*/
+/*	$NetBSD: acvar.h,v 1.4 1997/03/31 07:32:15 scottr Exp $	*/
 
 /*
  * Copyright (c) 1991 University of Utah.
@@ -43,14 +44,15 @@
  */
 
 struct	ac_softc {
-	struct	hp_device *sc_hd;
+	struct	device sc_dev;
+	int	sc_target;
+	int	sc_lun;
 	int	sc_flags;
 	struct	buf *sc_bp;
 	struct	scsi_fmt_cdb *sc_cmd;
 	struct	acinfo sc_einfo;
-	short	sc_punit;
 	short	sc_picker;
-	struct	devqueue sc_dq;
+	struct	scsiqueue sc_sq;
 };
 
 #define	ACF_ALIVE	0x01
@@ -85,3 +87,14 @@ struct	ac_restatdb {
 		ac_imp:1,	/* 1 == user inserted medium (IEE only) */
 		ac_full:1;	/* element contains media */
 };
+
+#ifdef _KERNEL
+int	accommand(dev_t, int, char *, int);
+
+void	acstart(void *);
+void	acgo(void *);
+void	acintr(void *, int);
+
+int	acgeteinfo(dev_t);
+void	acconvert(char *, char *, int);
+#endif /* _KERNEL */

@@ -1,3 +1,5 @@
+/*	$OpenBSD: timedc.c,v 1.7 2002/03/14 16:44:25 mpech Exp $	*/
+
 /*-
  * Copyright (c) 1985, 1993 The Regents of the University of California.
  * All rights reserved.
@@ -41,43 +43,57 @@ char copyright[] =
 static char sccsid[] = "@(#)timedc.c	5.1 (Berkeley) 5/11/93";
 #endif /* not lint */
 
-#ifdef sgi
-#ident "$Revision: 1.3 $"
-#endif
-
 #include "timedc.h"
-#include <strings.h>
+#include <string.h>
 #include <signal.h>
 #include <ctype.h>
-#include <setjmp.h>
 #include <unistd.h>
 #include <stdlib.h>
 #include <syslog.h>
 
-int trace = 0;
-FILE *fd = 0;
+int	trace = 0;
+FILE	*fd = NULL;
 int	margc;
 int	fromatty;
 char	*margv[20];
 char	cmdline[200];
-jmp_buf	toplevel;
+
 static struct cmd *getcmd(char *);
+volatile sig_atomic_t gotintr;
 
 int
 main(int argc, char *argv[])
 {
-	register struct cmd *c;
+	extern int sock_raw, sock;
+	struct sockaddr_in sin;
+	struct cmd *c;
+
+	sock_raw = socket(AF_INET, SOCK_RAW, IPPROTO_ICMP);
+	if (sock_raw < 0) {
+		perror("opening raw socket");
+		exit(1);
+	}
+
+	(void) seteuid(getuid());
+	(void) setuid(getuid());
 
 	openlog("timedc", LOG_ODELAY, LOG_AUTH);
 
-	/*
-	 * security dictates!
-	 */
-	if (priv_resources() < 0) {
-		fprintf(stderr, "Could not get privileged resources\n");
+	sock = socket(AF_INET, SOCK_DGRAM, 0);
+	if (sock < 0) {
+		perror("opening socket");
+		(void)close(sock_raw);
+		return (-1);
+	}
+
+	memset(&sin, 0, sizeof sin);
+	sin.sin_family = AF_INET;
+	sin.sin_addr.s_addr = INADDR_ANY;
+	if (bind(sock, (struct sockaddr *)&sin, sizeof(sin)) < 0) {
+		fprintf(stderr, "all reserved ports in use\n");
+		(void)close(sock_raw);
 		exit(1);
 	}
-	(void) setuid(getuid());
 
 	if (--argc > 0) {
 		c = getcmd(*++argv);
@@ -98,16 +114,27 @@ main(int argc, char *argv[])
 	}
 
 	fromatty = isatty(fileno(stdin));
-	if (setjmp(toplevel))
-		putchar('\n');
-	(void) signal(SIGINT, intr);
+	(void) signal(SIGINT, sigintr);
 	for (;;) {
+		if (gotintr) {
+			putchar('\n');
+			gotintr = 0;
+		}
 		if (fromatty) {
 			printf("timedc> ");
 			(void) fflush(stdout);
 		}
-		if (fgets(cmdline, sizeof(cmdline), stdin) == 0)
+
+		siginterrupt(SIGINT, 1);
+		if (fgets(cmdline, sizeof(cmdline), stdin) == NULL) {
+			if (errno == EINTR && gotintr) {
+				siginterrupt(SIGINT, 0);
+				continue;
+			}
 			quit();
+		}
+		siginterrupt(SIGINT, 0);
+
 		if (cmdline[0] == 0)
 			break;
 		makeargv();
@@ -132,21 +159,20 @@ main(int argc, char *argv[])
 }
 
 void
-intr(signo)
+sigintr(signo)
 	int signo;
 {
 	if (!fromatty)
-		exit(0);
-	longjmp(toplevel, 1);
+		_exit(0);
+	gotintr = 1;
 }
-
 
 static struct cmd *
 getcmd(char *name)
 {
-	register char *p, *q;
-	register struct cmd *c, *found;
-	register int nmatches, longest;
+	char *p, *q;
+	struct cmd *c, *found;
+	int nmatches, longest;
 	extern struct cmd cmdtab[];
 	extern int NCMDS;
 
@@ -157,7 +183,7 @@ getcmd(char *name)
 		p = c->c_name;
 		for (q = name; *q == *p++; q++)
 			if (*q == 0)		/* exact match? */
-				return(c);
+				return (c);
 		if (!*q) {			/* the name was a prefix */
 			if (q - name > longest) {
 				longest = q - name;
@@ -168,8 +194,8 @@ getcmd(char *name)
 		}
 	}
 	if (nmatches > 1)
-		return((struct cmd *)-1);
-	return(found);
+		return ((struct cmd *)-1);
+	return (found);
 }
 
 /*
@@ -178,8 +204,8 @@ getcmd(char *name)
 void
 makeargv()
 {
-	register char *cp;
-	register char **argp = margv;
+	char **argp = margv;
+	char *cp;
 
 	margc = 0;
 	for (cp = cmdline; *cp;) {
@@ -208,13 +234,13 @@ help(argc, argv)
 	int argc;
 	char *argv[];
 {
-	register struct cmd *c;
 	extern struct cmd cmdtab[];
+	struct cmd *c;
 
 	if (argc == 1) {
-		register int i, j, w;
 		int columns, width = 0, lines;
 		extern int NCMDS;
+		int i, j, w;
 
 		printf("Commands may be abbreviated.  Commands are:\n\n");
 		for (c = cmdtab; c < &cmdtab[NCMDS]; c++) {
@@ -246,7 +272,7 @@ help(argc, argv)
 		return;
 	}
 	while (--argc > 0) {
-		register char *arg;
+		char *arg;
 		arg = *++argv;
 		c = getcmd(arg);
 		if (c == (struct cmd *)-1)
@@ -255,6 +281,6 @@ help(argc, argv)
 			printf("?Invalid help command %s\n", arg);
 		else
 			printf("%-*s\t%s\n", (int)HELPINDENT,
-				c->c_name, c->c_help);
+			    c->c_name, c->c_help);
 	}
 }

@@ -1,3 +1,5 @@
+/*	$OpenBSD: pf-snit.c,v 1.3 2000/02/20 17:45:34 bitblt Exp $ */
+
 /*
  * Copyright (c) 1993-96 Mats O Jansson.  All rights reserved.
  *
@@ -28,7 +30,7 @@
  */
 
 #ifndef LINT
-static char rcsid[] = "$Id: pf-snit.c,v 1.1 1996/08/08 11:47:33 moj Exp $";
+static char rcsid[] = "$OpenBSD: pf-snit.c,v 1.3 2000/02/20 17:45:34 bitblt Exp $";
 #endif
 
 #include <stdio.h>
@@ -165,7 +167,7 @@ setup_pf(s, prot, trans)
 	u_short offset;
 
 	struct packetfilt pf;
-	register u_short *fwp = pf.Pf_Filter;
+	u_short *fwp = pf.Pf_Filter;
 	struct strioctl si;
 
 #define	s_offset(structp, element) (&(((structp)0)->element))
@@ -237,7 +239,8 @@ pfAddMulti(s, interface, addr)
 	struct ifreq ifr;
 	int fd;
 	
-	strcpy(ifr.ifr_name, interface);
+	strncpy(ifr.ifr_name, interface, sizeof (ifr.ifr_name) -1);
+	ifr.ifr_name[sizeof(ifr.ifr_name)] = 0;
 	
 	ifr.ifr_addr.sa_family = AF_UNSPEC;
 	bcopy(addr, ifr.ifr_addr.sa_data, 6);
@@ -272,7 +275,8 @@ char *interface, *addr;
 	struct ifreq ifr;
 	int fd;
 	
-	strcpy(ifr.ifr_name, interface);
+	strncpy(ifr.ifr_name, interface, sizeof (ifr.ifr_name) -1);
+	ifr.ifr_name[sizeof(ifr.ifr_name)] = 0;
 	
 	ifr.ifr_addr.sa_family = AF_UNSPEC;
 	bcopy(addr, ifr.ifr_addr.sa_data, 6);

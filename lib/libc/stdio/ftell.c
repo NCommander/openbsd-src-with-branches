@@ -1,5 +1,3 @@
-/*	$NetBSD: ftell.c,v 1.6 1995/03/22 18:19:51 jtc Exp $	*/
-
 /*-
  * Copyright (c) 1990, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -37,10 +35,7 @@
  */
 
 #if defined(LIBC_SCCS) && !defined(lint)
-#if 0
-static char sccsid[] = "@(#)ftell.c	8.1 (Berkeley) 6/4/93";
-#endif
-static char rcsid[] = "$NetBSD: ftell.c,v 1.6 1995/03/22 18:19:51 jtc Exp $";
+static char rcsid[] = "$OpenBSD: ftell.c,v 1.2 1996/08/19 08:32:47 tholo Exp $";
 #endif /* LIBC_SCCS and not lint */
 
 #include <stdio.h>
@@ -48,17 +43,17 @@ static char rcsid[] = "$NetBSD: ftell.c,v 1.6 1995/03/22 18:19:51 jtc Exp $";
 #include "local.h"
 
 /*
- * ftell: return current offset.
+ * ftello: return current offset.
  */
-long
-ftell(fp)
+off_t
+ftello(fp)
 	register FILE *fp;
 {
 	register fpos_t pos;
 
 	if (fp->_seek == NULL) {
 		errno = ESPIPE;			/* historic practice */
-		return (-1L);
+		return ((off_t)-1);
 	}
 
 	/*
@@ -92,3 +87,20 @@ ftell(fp)
 	}
 	return (pos);
 }
+
+/*
+ * ftell() returns a long and sizeof(off_t) != sizeof(long) on all arches
+ */
+#if defined(__alpha__) && defined(__indr_reference)
+__indr_reference(ftello, ftell);
+#else
+long
+ftell(fp)
+	register FILE *fp;
+{
+	long pos;
+
+	pos = (long)ftello(fp);
+	return(pos);
+}
+#endif

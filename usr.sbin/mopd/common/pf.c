@@ -1,3 +1,5 @@
+/*	$OpenBSD: pf.c,v 1.5 2002/07/13 10:13:27 deraadt Exp $ */
+
 /*
  * Copyright (c) 1993-95 Mats O Jansson.  All rights reserved.
  * Copyright (c) 1990 The Regents of the University of California.
@@ -32,7 +34,7 @@
  */
 
 #ifndef LINT
-static char rcsid[] = "$Id: pf.c,v 1.16 1996/08/06 14:19:48 moj Exp $";
+static char rcsid[] = "$OpenBSD: pf.c,v 1.5 2002/07/13 10:13:27 deraadt Exp $";
 #endif
 
 #include <stdio.h>
@@ -53,7 +55,7 @@ static char rcsid[] = "$Id: pf.c,v 1.16 1996/08/06 14:19:48 moj Exp $";
 
 #include <netdb.h>
 #include <ctype.h>
-#include <strings.h>
+#include <string.h>
 
 #include <syslog.h>
 #include <varargs.h>
@@ -114,7 +116,7 @@ pfInit(interface, mode, protocol, typ)
 	
   	/* Go through all the minors and find one that isn't in use. */
 	do {
-		(void) sprintf(device, "/dev/bpf%d", n++);
+		(void) snprintf(device, sizeof device, "/dev/bpf%d", n++);
 		fd = open(device, mode);
 	} while (fd < 0 && errno == EBUSY);
 
@@ -174,7 +176,8 @@ pfAddMulti(s, interface, addr)
 	struct ifreq ifr;
 	int	fd;
 	
-	strcpy(ifr.ifr_name, interface);
+	strncpy(ifr.ifr_name, interface,sizeof(ifr.ifr_name) - 1);
+	ifr.ifr_name[sizeof(ifr.ifr_name)-1] = 0;
 
 	ifr.ifr_addr.sa_family = AF_UNSPEC;
 	bcopy(addr, ifr.ifr_addr.sa_data, 6);
@@ -209,7 +212,8 @@ pfDelMulti(s, interface, addr)
 	struct ifreq ifr;
 	int	fd;
 	
-	strcpy(ifr.ifr_name, interface);
+	strncpy(ifr.ifr_name, interface, sizeof (ifr.ifr_name) - 1);
+	ifr.ifr_name[sizeof(ifr.ifr_name)-1] = 0;
 	
 	ifr.ifr_addr.sa_family = AF_UNSPEC;
 	bcopy(addr, ifr.ifr_addr.sa_data, 6);

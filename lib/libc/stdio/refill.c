@@ -1,5 +1,3 @@
-/*	$NetBSD: refill.c,v 1.4 1995/02/02 02:10:21 jtc Exp $	*/
-
 /*-
  * Copyright (c) 1990, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -37,10 +35,7 @@
  */
 
 #if defined(LIBC_SCCS) && !defined(lint)
-#if 0
-static char sccsid[] = "@(#)refill.c	8.1 (Berkeley) 6/4/93";
-#endif
-static char rcsid[] = "$NetBSD: refill.c,v 1.4 1995/02/02 02:10:21 jtc Exp $";
+static char rcsid[] = "$OpenBSD: refill.c,v 1.4 1999/08/07 17:35:58 millert Exp $";
 #endif /* LIBC_SCCS and not lint */
 
 #include <errno.h>
@@ -48,12 +43,12 @@ static char rcsid[] = "$NetBSD: refill.c,v 1.4 1995/02/02 02:10:21 jtc Exp $";
 #include <stdlib.h>
 #include "local.h"
 
-static
+static int
 lflush(fp)
 	FILE *fp;
 {
 
-	if ((fp->_flags & (__SLBF|__SWR)) == __SLBF|__SWR)
+	if ((fp->_flags & (__SLBF|__SWR)) == (__SLBF|__SWR))
 		return (__sflush(fp));
 	return (0);
 }
@@ -62,6 +57,7 @@ lflush(fp)
  * Refill a stdio buffer.
  * Return EOF on eof or error, 0 otherwise.
  */
+int
 __srefill(fp)
 	register FILE *fp;
 {
@@ -80,6 +76,7 @@ __srefill(fp)
 	if ((fp->_flags & __SRD) == 0) {
 		if ((fp->_flags & __SRW) == 0) {
 			errno = EBADF;
+			fp->_flags |= __SERR;
 			return (EOF);
 		}
 		/* switch to reading */

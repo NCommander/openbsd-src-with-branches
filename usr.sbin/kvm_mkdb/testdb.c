@@ -1,3 +1,5 @@
+/*	$OpenBSD: testdb.c,v 1.3 1998/08/19 06:47:55 millert Exp $	*/
+
 /*-
  * Copyright (c) 1992, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -32,8 +34,11 @@
  */
 
 #ifndef lint
-/*static char sccsid[] = "from: @(#)testdb.c	8.1 (Berkeley) 6/6/93";*/
-static char *rcsid = "$Id: testdb.c,v 1.2 1994/06/11 07:57:42 mycroft Exp $";
+#if 0
+static char sccsid[] = "from: @(#)testdb.c	8.1 (Berkeley) 6/6/93";
+#else
+static char *rcsid = "$OpenBSD: testdb.c,v 1.3 1998/08/19 06:47:55 millert Exp $";
+#endif
 #endif /* not lint */
 
 #include <sys/param.h>
@@ -51,14 +56,14 @@ static char *rcsid = "$Id: testdb.c,v 1.2 1994/06/11 07:57:42 mycroft Exp $";
 
 /* Return true if the db file is valid, else false */
 int
-testdb()
+testdb(dbname)
+	char *dbname;
 {
-	register DB *db;
-	register int cc, kd, ret, dbversionlen;
-	register char *cp, *uf;
+	DB *db;
+	int cc, kd, ret, dbversionlen;
 	DBT rec;
 	struct nlist nitem;
-	char dbname[MAXPATHLEN], dbversion[_POSIX2_LINE_MAX];
+	char dbversion[_POSIX2_LINE_MAX];
 	char kversion[_POSIX2_LINE_MAX];
 
 	ret = 0;
@@ -67,10 +72,6 @@ testdb()
 	if ((kd = open(_PATH_KMEM, O_RDONLY, 0)) < 0)
 		goto close;
 
-	uf = _PATH_UNIX;
-	if ((cp = rindex(uf, '/')) != 0)
-		uf = cp + 1;
-	(void) snprintf(dbname, sizeof(dbname), "%skvm_%s.db", _PATH_VARDB, uf);
 	if ((db = dbopen(dbname, O_RDONLY, 0, DB_HASH, NULL)) == NULL)
 		goto close;
 
@@ -79,9 +80,9 @@ testdb()
 	rec.size = sizeof(VRS_KEY) - 1;
 	if ((db->get)(db, &rec, &rec, 0))
 		goto close;
-	if (rec.data == 0 || rec.size > sizeof(dbversion))
+	if (rec.data == 0 || rec.size == 0 || rec.size > sizeof(dbversion))
 		goto close;
-	bcopy(rec.data, dbversion, rec.size);
+	(void)memcpy(dbversion, rec.data, rec.size);
 	dbversionlen = rec.size;
 
 	/* Read version string from kernel memory */
@@ -91,7 +92,7 @@ testdb()
 		goto close;
 	if (rec.data == 0 || rec.size != sizeof(struct nlist))
 		goto close;
-	bcopy(rec.data, &nitem, sizeof(nitem));
+	(void)memcpy(&nitem, rec.data, sizeof(nitem));
 	/*
 	 * Theoretically possible for lseek to be seeking to -1.  Not
 	 * that it's something to lie awake nights about, however.
@@ -104,7 +105,7 @@ testdb()
 		goto close;
 
 	/* If they match, we win */
-	ret = bcmp(dbversion, kversion, dbversionlen) == 0;
+	ret = memcmp(kversion, dbversion, dbversionlen) == 0;
 
 close:	if (kd >= 0)
 		(void)close(kd);

@@ -30,8 +30,21 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  *
- *	from: @(#)auth.h	8.1 (Berkeley) 6/4/93
- *	$Id: auth.h,v 1.4 1995/06/05 19:46:56 pk Exp $
+ *     from: @(#)auth.h        8.1 (Berkeley) 6/4/93
+ *     $OpenBSD: auth.h,v 1.3 1998/03/12 04:48:46 art Exp $
+ *     $NetBSD: auth.h,v 1.5 1996/02/24 01:15:18 jtk Exp $
+ */
+
+/*
+ * This source code is no longer held under any constraint of USA
+ * `cryptographic laws' since it was exported legally.  The cryptographic
+ * functions were removed from the code and a "Bones" distribution was
+ * made.  A Commodity Jurisdiction Request #012-94 was filed with the
+ * USA State Department, who handed it to the Commerce department.  The
+ * code was determined to fall under General License GTDA under ECCN 5D96G,
+ * and hence exportable.  The cryptographic interfaces were re-added by Eric
+ * Young, and then KTH proceeded to maintain the code in the free world.
+ *
  */
 
 /*
@@ -54,6 +67,8 @@
  * or implied warranty.
  */
 
+/* $KTH: auth.h,v 1.4 1998/06/09 19:24:41 joda Exp $ */
+
 #ifndef	__AUTH__
 #define	__AUTH__
 
@@ -66,15 +81,15 @@
 typedef struct XauthP {
 	int	type;
 	int	way;
-	int	(*init) __P((struct XauthP *, int));
-	int	(*send) __P((struct XauthP *));
-	void	(*is) __P((struct XauthP *, unsigned char *, int));
-	void	(*reply) __P((struct XauthP *, unsigned char *, int));
-	int	(*status) __P((struct XauthP *, char *, int));
-	void	(*printsub) __P((unsigned char *, int, unsigned char *, int));
+	int	(*init) (struct XauthP *, int);
+	int	(*send) (struct XauthP *);
+	void	(*is) (struct XauthP *, unsigned char *, int);
+	void	(*reply) (struct XauthP *, unsigned char *, int);
+	int	(*status) (struct XauthP *, char *, size_t, int);
+	void	(*printsub) (unsigned char *, int, unsigned char *, int);
 } Authenticator;
 
 #include "auth-proto.h"
 
-extern auth_debug_mode;
+extern int auth_debug_mode;
 #endif
