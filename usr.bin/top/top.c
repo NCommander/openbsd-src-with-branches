@@ -1,4 +1,4 @@
-/*	$OpenBSD: top.c,v 1.29 2003/09/19 10:32:24 jmc Exp $	*/
+/*	$OpenBSD: top.c,v 1.30 2003/11/01 20:20:57 deraadt Exp $	*/
 
 /*
  *  Top users/processes display for Unix
@@ -561,7 +561,8 @@ rundisplay(void)
 	 * wait for either input or the end
 	 * of the delay period
 	 */
-	if (poll(pfd, 1, delay * 1000) > 0) {
+	if (poll(pfd, 1, delay * 1000) > 0 &&
+	    !(pfd[0].revents & (POLLERR|POLLHUP|POLLNVAL))) {
 		char *errmsg;
 		ssize_t len;
 		int newval;
