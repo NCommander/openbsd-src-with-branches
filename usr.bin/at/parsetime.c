@@ -1,6 +1,6 @@
-/*	$OpenBSD: parsetime.c,v 1.12 2002/06/14 21:35:00 todd Exp $	*/
+/*	$OpenBSD: parsetime.c,v 1.13 2003/02/20 20:38:08 millert Exp $	*/
 
-/* 
+/*
  * parsetime.c - parse time for at(1)
  * Copyright (C) 1993, 1994  Thomas Koenig
  *
@@ -141,7 +141,7 @@ static int sc_tokid;	/* scanner - token id */
 static int sc_tokplur;	/* scanner - is token plural? */
 
 #ifndef lint
-static const char rcsid[] = "$OpenBSD: parsetime.c,v 1.12 2002/06/14 21:35:00 todd Exp $";
+static const char rcsid[] = "$OpenBSD: parsetime.c,v 1.13 2003/02/20 20:38:08 millert Exp $";
 #endif
 
 /*
@@ -266,7 +266,7 @@ plonk(int tok)
 }
 
 
-/* 
+/*
  * expect() gets a token and returns -1 if it's not the token we want
  */
 static int
@@ -467,7 +467,7 @@ assign_date(struct tm *tm, int mday, int mon, int year)
 }
 
 
-/* 
+/*
  * month() picks apart a month specification
  *
  *  /[<month> NUMBER [NUMBER]]           \
