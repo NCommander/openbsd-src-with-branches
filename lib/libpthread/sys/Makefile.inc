@@ -1,10 +1,10 @@
-#	$OpenBSD: Makefile.inc,v 1.14 2004/04/02 15:34:48 mickey Exp $
+#	$OpenBSD: Makefile.inc,v 1.15 2004/04/09 23:56:05 brad Exp $
 
 .PATH:	 ${SRCDIR}/sys ${SRCDIR}/arch/${MACHINE_ARCH}
 
 SRCS+=	uthread_error.c
 
-.if (${MACHINE_ARCH} == "mips")
+.if (${MACHINE_ARCH} == "mips64")
 SRCS+=	slow_atomic_lock.c
 .endif
 
