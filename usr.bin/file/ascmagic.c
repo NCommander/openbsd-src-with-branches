@@ -1,4 +1,5 @@
-/*	$OpenBSD: ascmagic.c,v 1.1.1.1 1995/10/18 08:45:08 deraadt Exp $	*/
+/*	$OpenBSD: ascmagic.c,v 1.2 1996/06/26 05:32:54 deraadt Exp $	*/
+
 /*
  * ASCII magic -- file types that we know based on keywords
  * that can appear anywhere in the file.
@@ -36,7 +37,7 @@
 #include "names.h"
 
 #ifndef	lint
-static char *moduleid = "$OpenBSD$";
+static char *moduleid = "$OpenBSD: ascmagic.c,v 1.2 1996/06/26 05:32:54 deraadt Exp $";
 #endif	/* lint */
 
 			/* an optimisation over plain strcmp() */
@@ -88,6 +89,13 @@ int nbytes;	/* size actually read */
 		return 1;
 	}
 
+
+	/* Make sure we are dealing with ascii text before looking for tokens */
+	for (i = 0; i < nbytes; i++) {
+		if (!isascii(buf[i]))
+			return 0;	/* not all ASCII */
+	}
+
 	/* look for tokens from names.h - this is expensive! */
 	/* make a copy of the buffer here because strtok() will destroy it */
 	s = (unsigned char*) memcpy(nbuf, buf, nbytes);
@@ -104,12 +112,6 @@ int nbytes;	/* size actually read */
 				return 1;
 			}
 		}
-	}
-
-
-	for (i = 0; i < nbytes; i++) {
-		if (!isascii(buf[i]))
-			return 0;	/* not all ASCII */
 	}
 
 	/* all else fails, but it is ASCII... */
