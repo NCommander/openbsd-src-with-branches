@@ -1,4 +1,4 @@
-/*	$OpenBSD: disksubr.c,v 1.5 1997/08/08 21:46:45 niklas Exp $	*/
+/*	$OpenBSD: disksubr.c,v 1.6 1997/08/20 20:57:32 deraadt Exp $	*/
 /*	$NetBSD: disksubr.c,v 1.14 1996/05/05 06:18:22 briggs Exp $	*/
 
 /*
@@ -486,10 +486,6 @@ readdisklabel(dev, strat, lp, osdep)
 	}
 	bp = geteblk((int)lp->d_secsize * MAXPARTITIONS);
 
-i am breaking this code here to ensure that this will not compile until
-cd9660 disklabel spoofing is added to the code.
-
-
 	bp->b_dev = dev;
 	bp->b_blkno = 0;
 	bp->b_resid = 0;
@@ -514,6 +510,11 @@ cd9660 disklabel spoofing is added to the code.
 			}
 		}
 	}
+
+#if defined(CD9660)
+	if (msg && iso_disklabelspoof(dev, strat, lp) == 0)
+		msg = NULL;
+#endif
 
 	bp->b_flags = B_INVAL | B_AGE | B_READ;
 	brelse(bp);
