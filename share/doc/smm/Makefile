@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.4 2003/11/10 20:32:17 otto Exp $
+#	$OpenBSD: Makefile,v 1.5 2004/02/10 07:28:36 jmc Exp $
 #	from: @(#)Makefile	8.1 (Berkeley) 6/10/93
 
 # Missing or not installed:
@@ -23,9 +23,13 @@ SUBDIR+= 09.sendmail
 
 Title.ps: ${FILES}
 	groff Title > ${.TARGET}
+Title.txt: ${FILES}
+	groff -Tascii Title > ${.TARGET}
 
 contents.ps: ${FILES}
 	groff -ms 00.contents > ${.TARGET}
+contents.txt: ${FILES}
+	groff -Tascii -ms 00.contents > ${.TARGET}
 
 beforeinstall:
 	install -c -o ${DOCOWN} -g ${DOCGRP} -m ${DOCMODE} ${FILES} \
