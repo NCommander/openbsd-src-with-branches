@@ -44,6 +44,9 @@ static const char *const kernels[] = {
 	NULL
 };
 
+char prog_ident[40];
+char *progname = "BOOT";
+
 extern	const char version[];
 struct cmd_state cmd;
 int bootprompt = 1;
@@ -57,7 +60,9 @@ boot(dev_t bootdev)
 
 	machdep();
 
-	printf(">> OpenBSD/" MACHINE " BOOT %s\n", version);
+	snprintf(prog_ident, sizeof(prog_ident),
+	    ">> OpenBSD/" MACHINE " %s %s", progname, version);
+	printf("%s\n", prog_ident);
 
 	devboot(bootdev, cmd.bootdev);
 	strlcpy(cmd.image, bootfile, sizeof(cmd.image));
