@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: outstr.c,v 1.2 2001/07/04 08:09:28 niklas Exp $	*/
 
 /*
  * bug routines -- assumes that the necessary sections of memory
@@ -6,6 +6,7 @@
  */
 #include <sys/types.h>
 #include <machine/prom.h>
+#include "prom.h"
 
 void
 mvmeprom_outstr(start, end)

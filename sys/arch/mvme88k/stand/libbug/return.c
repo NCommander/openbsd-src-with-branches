@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: return.c,v 1.2 2001/07/04 08:09:29 niklas Exp $	*/
 
 /*
  * bug routines -- assumes that the necessary sections of memory
@@ -7,7 +7,7 @@
 #include <sys/types.h>
 #include <machine/prom.h>
 #include "stand.h"
-#include "libbug.h"
+#include "prom.h"
 
 /* BUG - return to bug routine */
 void

@@ -1,4 +1,4 @@
-/*	$OpenBSD: putchar.c,v 1.1 1998/08/22 07:39:56 smurph Exp $ */
+/*	$OpenBSD: putchar.c,v 1.2 1998/12/15 06:32:34 smurph Exp $ */
 
 /*
  * putchar: easier to do this with outstr than to add more macros to
@@ -9,7 +9,7 @@
 #include <machine/prom.h>
 
 #include "stand.h"
-#include "libbug.h"
+#include "prom.h"
 
 void
 putchar(c)
