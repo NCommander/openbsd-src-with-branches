@@ -39,7 +39,7 @@
  */
 
 #include "includes.h"
-RCSID("$OpenBSD: channels.c,v 1.204 2004/06/13 15:03:02 djm Exp $");
+RCSID("$OpenBSD: channels.c,v 1.205 2004/06/14 01:44:38 djm Exp $");
 
 #include "ssh.h"
 #include "ssh1.h"
@@ -486,7 +486,7 @@ channel_find_open(void)
 
 	for (i = 0; i < channels_alloc; i++) {
 		c = channels[i];
-		if (c == NULL)
+		if (c == NULL || c->remote_id < 0)
 			continue;
 		switch (c->type) {
 		case SSH_CHANNEL_CLOSED:
