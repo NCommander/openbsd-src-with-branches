@@ -466,7 +466,9 @@ wi_rxeof(sc)
 	struct ifnet		*ifp;
 	struct ether_header	*eh;
 	struct mbuf		*m;
+	caddr_t			olddata;
 	u_int16_t		msg_type;
+	int			maxlen;
 	int			id;
 
 	ifp = &sc->sc_arpcom.ac_if;
@@ -589,11 +591,13 @@ wi_rxeof(sc)
 			return;
 		}
 
+		olddata = m->m_data;
 		/* Align the data after the ethernet header */
 		m->m_data = (caddr_t)ALIGN(m->m_data +
 		    sizeof(struct ether_header)) - sizeof(struct ether_header);
 
 		eh = mtod(m, struct ether_header *);
+		maxlen = MCLBYTES - (m->m_data - olddata);
 		m->m_pkthdr.rcvif = ifp;
 
 		if (msg_type == WI_STAT_MGMT &&
@@ -601,7 +605,7 @@ wi_rxeof(sc)
 
 			u_int16_t rxlen = letoh16(rx_frame.wi_dat_len);
 
-			if ((WI_802_11_OFFSET_RAW + rxlen + 2) > MCLBYTES) {
+			if ((WI_802_11_OFFSET_RAW + rxlen + 2) > maxlen) {
 				printf("%s: oversized mgmt packet received in "
 				    "hostap mode (wi_dat_len=%d, "
 				    "wi_status=0x%x)\n", sc->sc_dev.dv_xname,
@@ -639,7 +643,7 @@ wi_rxeof(sc)
 		case WI_STAT_TUNNEL:
 		case WI_STAT_WMP_MSG:
 			if ((letoh16(rx_frame.wi_dat_len) + WI_SNAPHDR_LEN) >
-			    MCLBYTES) {
+			    maxlen) {
 				printf(WI_PRT_FMT ": oversized packet received "
 				    "(wi_dat_len=%d, wi_status=0x%x)\n",
 				    WI_PRT_ARG(sc),
@@ -669,7 +673,7 @@ wi_rxeof(sc)
 			break;
 		default:
 			if ((letoh16(rx_frame.wi_dat_len) +
-			    sizeof(struct ether_header)) > MCLBYTES) {
+			    sizeof(struct ether_header)) > maxlen) {
 				printf(WI_PRT_FMT ": oversized packet received "
 				    "(wi_dat_len=%d, wi_status=0x%x)\n",
 				    WI_PRT_ARG(sc),
