@@ -1,4 +1,4 @@
-/*	$OpenBSD: machdep.c,v 1.71 2001/11/28 16:13:28 art Exp $	*/
+/*	$OpenBSD: machdep.c,v 1.72 2001/11/29 22:50:03 millert Exp $	*/
 /*	$NetBSD: machdep.c,v 1.121 1999/03/26 23:41:29 mycroft Exp $	*/
 
 /*
@@ -990,17 +990,6 @@ void
 initcpu()
 {
 
-#ifdef MAPPEDCOPY
-	/*
-	 * Initialize lower bound for doing copyin/copyout using
-	 * page mapping (if not already set).  We don't do this on
-	 * VAC machines as it loses big time.
-	 */
-	if (ectype == EC_VIRT)
-		mappedcopysize = -1;	/* in case it was patched */
-	else
-		mappedcopysize = NBPG;
-#endif
 	parityenable();
 #ifdef USELEDS
 	ledinit();
