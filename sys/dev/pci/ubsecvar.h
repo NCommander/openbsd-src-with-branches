@@ -52,7 +52,6 @@ struct ubsec_q {
 
 	struct ubsec_softc		*q_sc;
 	struct mbuf 		      	*q_src_m, *q_dst_m;
-	struct criov			*q_src, *q_dst;
 
 	long				q_src_packp[MAX_SCATTER];
 	int				q_src_packl[MAX_SCATTER];
