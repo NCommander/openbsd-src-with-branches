@@ -1,4 +1,4 @@
-/*	$OpenBSD: syslogd.c,v 1.76 2004/04/15 18:13:07 millert Exp $	*/
+/*	$OpenBSD: syslogd.c,v 1.77 2004/05/25 23:51:30 djm Exp $	*/
 
 /*
  * Copyright (c) 1983, 1988, 1993, 1994
@@ -39,7 +39,7 @@ static const char copyright[] =
 #if 0
 static const char sccsid[] = "@(#)syslogd.c	8.3 (Berkeley) 4/4/94";
 #else
-static const char rcsid[] = "$OpenBSD: syslogd.c,v 1.76 2004/04/15 18:13:07 millert Exp $";
+static const char rcsid[] = "$OpenBSD: syslogd.c,v 1.77 2004/05/25 23:51:30 djm Exp $";
 #endif
 #endif /* not lint */
 
@@ -1142,7 +1142,7 @@ init(void)
 			p++;
 			while (isspace(*p))
 				p++;
-			if (!*p) {
+			if (!*p || (*p == '*' && (!p[1] || isspace(p[1])))) {
 				strlcpy(prog, "*", sizeof(prog));
 				continue;
 			}
