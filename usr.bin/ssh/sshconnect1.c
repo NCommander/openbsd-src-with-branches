@@ -13,17 +13,17 @@
  */
 
 #include "includes.h"
-RCSID("$OpenBSD: sshconnect1.c,v 1.17 2001/01/19 15:55:12 markus Exp $");
+RCSID("$OpenBSD: sshconnect1.c,v 1.18 2001/01/21 19:06:00 markus Exp $");
 
 #include <openssl/bn.h>
 #include <openssl/evp.h>
 
 #ifdef KRB4
 #include <krb.h>
-#include "radix.h"
 #endif
 #ifdef AFS
 #include <kafs.h>
+#include "radix.h"
 #endif
 
 #include "ssh.h"
