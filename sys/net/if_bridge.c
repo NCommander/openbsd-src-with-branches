@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_bridge.c,v 1.128 2003/12/16 21:35:28 henning Exp $	*/
+/*	$OpenBSD: if_bridge.c,v 1.129 2003/12/17 13:08:41 markus Exp $	*/
 
 /*
  * Copyright (c) 1999, 2000 Jason L. Wright (jason@thought.net)
@@ -2075,7 +2075,9 @@ bridge_filterrule(struct brl_head *h, struct ether_header *eh, struct mbuf *m)
 	return (BRL_ACTION_PASS);
 
 return_action:
+#if NPF > 0
 	pf_tag_packet(m, NULL, n->brl_tag);
+#endif
 	return (n->brl_action);
 }
 
