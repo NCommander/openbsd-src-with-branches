@@ -165,12 +165,14 @@ netbsd_sys_getdents(p, v, retval)
 
 	if ((error = getvnode(p->p_fd, SCARG(uap, fd), &fp)) != 0)
 		return (error);
-	if ((fp->f_flag & FREAD) == 0)
-		return (EBADF);
-	FREF(fp);
+	if ((fp->f_flag & FREAD) == 0) {
+		error = EBADF;
+		goto bad;
+	}
 	error = netbsd_vn_readdir(fp, SCARG(uap, buf), UIO_USERSPACE,
 			SCARG(uap, count), &done, p, 0, 0);
 	*retval = done;
+bad:
 	FRELE(fp);
 	return (error);
 }

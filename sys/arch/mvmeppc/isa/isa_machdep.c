@@ -137,6 +137,7 @@
 
 void	*i8259_intr_establish( void * lcv, int irq, int type, int level,
 		int (*ih_fun)(void *), void *ih_arg, char *name);
+void openpic_intr_disestablish(void *, void *);
 
 int isa_has_been_seen = 0;
 

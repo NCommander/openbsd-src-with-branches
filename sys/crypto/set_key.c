@@ -152,9 +152,9 @@ int des_set_key(key, schedule)
 des_cblock (*key);
 des_key_schedule schedule;
 	{
-	register unsigned long c,d,t,s;
+	register u_int32_t c,d,t,s;
 	register unsigned char *in;
-	register unsigned long *k;
+	register u_int32_t *k;
 	register int i;
 
 	if (des_check_key)
@@ -166,7 +166,7 @@ des_key_schedule schedule;
 			return(-2);
 		}
 
-	k=(unsigned long *)schedule;
+	k=(u_int32_t *)schedule;
 	in=(unsigned char *)key;
 
 	c2l(in,c);

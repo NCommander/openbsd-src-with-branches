@@ -161,6 +161,13 @@ member	pcb_wcookie
 # interrupt enable register PTE
 define	IE_REG_PTE_PG	(PG_V | PG_W | PG_S | PG_NC | PG_OBIO)
 
+# intrhand fields.
+struct	intrhand
+member	ih_fun
+member	ih_arg
+member	ih_ipl
+member	ih_next
+
 ifdef notyet
 # ZSCC interrupt fields
 struct	zs_softc	Z

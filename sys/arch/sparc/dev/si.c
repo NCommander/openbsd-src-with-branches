@@ -408,7 +408,7 @@ si_attach(parent, self, args)
 		break;
 
 	default:
-		panic("\nsi_attach: impossible bus type 0x%x", ca->ca_bustype);
+		panic("si_attach: impossible bus type 0x%x", ca->ca_bustype);
 		/* NOTREACHED */
 	}
 
@@ -448,7 +448,7 @@ si_attach(parent, self, args)
 		/*
 		 * This will be an "sw" controller.
 		 */
-		intr_establish(ra->ra_intr[0].int_pri, &sc->sc_ih);
+		intr_establish(ra->ra_intr[0].int_pri, &sc->sc_ih, IPL_BIO);
 		break;
 
 	case BUS_VME16:
@@ -456,7 +456,7 @@ si_attach(parent, self, args)
 		 * This will be an "si" controller.
 		 */
 		vmeintr_establish(ra->ra_intr[0].int_vec,
-		    ra->ra_intr[0].int_pri, &sc->sc_ih);
+		    ra->ra_intr[0].int_pri, &sc->sc_ih, IPL_BIO);
 		sc->sc_adapter_iv_am =
 		    VME_SUPV_DATA_24 | (ra->ra_intr[0].int_vec & 0xFF);
 		break;

@@ -194,6 +194,7 @@
 #define VAX_STYP_48	0x000001	/* VAXstation 4000 VLC */
 #define VAX_VTYP_48	0x00000002	/* VAXstation 4000 VLC */
 #define VAX_BTYP_550	0x14000007	/* VAXft model 410, 610 */
+#define VAX_BTYP_VXT	0x14000008	/* VXT 2000+ */
  
 /*
  * NVAX+ chip series (1991)

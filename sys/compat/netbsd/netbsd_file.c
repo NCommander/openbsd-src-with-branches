@@ -597,7 +597,6 @@ netbsd_sys_fstatfs(p, v, retval)
 		return (error);
 	mp = ((struct vnode *)fp->f_data)->v_mount;
 	sp = &mp->mnt_stat;
-	FREF(fp);
 	error = VFS_STATFS(mp, sp, p);
 	FRELE(fp);
 	if (error)

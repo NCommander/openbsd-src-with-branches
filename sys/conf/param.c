@@ -107,6 +107,8 @@ int	mcllowat = MCLLOWAT;
 
 int	fscale = FSCALE;	/* kernel uses `FSCALE', user uses `fscale' */
 
+int	shmseg = 8;
+int 	shmmaxpgs = SHMMAXPGS;
 /*
  * Values in support of System V compatible shared memory.	XXX
  */
@@ -157,12 +159,6 @@ struct	msginfo msginfo = {
 	MSGSEG		/* number of message segments */
 };
 #endif
-
-/*
- * These are initialized at bootstrap time
- * to values dependent on memory size
- */
-int	nbuf;
 
 /*
  * These have to be allocated somewhere; allocating

@@ -620,7 +620,7 @@ ubasetup(uh, bp, flags)
 				return (0);
 			}
 			uh->uh_bdpwant++;
-			sleep((caddr_t)&uh->uh_bdpwant, PSWP);
+			tsleep((caddr_t)&uh->uh_bdpwant, PSWP, "ubasetup", 0);
 		}
 		uh->uh_bdpfree &= ~(1 << (bdp-1));
 	} else if (flags & UBA_HAVEBDP)

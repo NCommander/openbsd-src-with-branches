@@ -1339,6 +1339,7 @@ extern int _divreplace, _divreplace_end, _div;
 extern int _udivreplace, _udivreplace_end, _udiv;
 extern int _remreplace, _remreplace_end, _rem;
 extern int _uremreplace, _uremreplace_end, _urem;
+int	v8mul;	/* flag whether cpu has hardware mul, div, and rem */
 
 struct replace {
 	void *from, *frome, *to;
@@ -1366,4 +1367,5 @@ replacemul()
 		bcopy(ireplace[i].from, ireplace[i].to,
 		    ireplace[i].frome - ireplace[i].from);
 	splx(s);
+	v8mul = 1;
 }

@@ -45,7 +45,7 @@ int netif_debug;
 /*
  * Boot device is derived from ROM provided information.
  */
-const char		progname[] = "bootxx";
+char		progname[] = "bootxx";
 struct open_file	io;
 
 /*

@@ -93,6 +93,8 @@ int kdb_trap(int, struct trapframe *);
  * We use a.out symbols in DDB.
  */
 #define	DB_AOUT_SYMBOLS
+#define DB_ELF_SYMBOLS
+#define DB_ELFSIZE	32
 
 
 /*

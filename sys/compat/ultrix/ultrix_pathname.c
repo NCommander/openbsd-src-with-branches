@@ -284,7 +284,7 @@ ultrix_sys_fstatfs(p, v, retval)
 
 	if ((error = getvnode(p->p_fd, SCARG(uap, fd), &fp)) != 0)
 		return (error);
-	FREF(fp);
+
 	mp = ((struct vnode *)fp->f_data)->v_mount;
 	sp = &mp->mnt_stat;
 	error = VFS_STATFS(mp, sp, p);

@@ -40,7 +40,10 @@
 #include <machine/intr.h>
 #include <machine/powerpc.h>
 
-void resettodr();
+void resettodr(void);
+void decr_intr(struct clockframe *);
+void calc_delayconst(void);
+
 /*
  * Initially we assume a processor with a bus frequency of 12.5 MHz.
  */
@@ -251,7 +254,7 @@ static unsigned cnt = 1001;
 #endif
 void
 decr_intr(frame)
-struct clockframe *frame;
+	struct clockframe *frame;
 {
 	int msr;
 	u_long tb;
@@ -343,7 +346,7 @@ calc_delayconst()
 }
 
 static inline u_quad_t
-mftb()
+mftb(void)
 {
 	u_long scratch;
 	u_quad_t tb;

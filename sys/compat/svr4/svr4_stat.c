@@ -654,9 +654,11 @@ svr4_sys_systeminfo(p, v, retval)
 		return 0;
 
 	if (len > rlen) {
+		char nul = 0;
+
 		/* if str overruns buffer, put NUL in last place */
 		len = rlen - 1;
-		if (subyte(SCARG(uap, buf) + len, 0) < 0)
+		if (copyout(&nul, SCARG(uap, buf), sizeof(char)) != 0)
 			return EFAULT;
 	}
 

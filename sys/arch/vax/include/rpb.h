@@ -125,5 +125,5 @@ struct rpb {		/* size		description */
 #define	BDEV_NET 	BDEV_QE		/* first network BDEV */
 
 #ifdef _KERNEL
-extern struct rpb *rpb;
+extern struct rpb rpb;
 #endif

@@ -719,7 +719,7 @@ static char *cntlr_msgs[] = {
 	unknown_msg,
 	"serdes overrun",	/* 1 = Serialiser/Deserialiser Overrun */
 	"edc",			/* 2 = Error Detection Code? */
-	"inconsistant internal data struct",/* 3 = Internal Error */
+	"inconsistent internal data struct",/* 3 = Internal Error */
 };
 
 /*

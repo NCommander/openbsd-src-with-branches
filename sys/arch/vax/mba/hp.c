@@ -208,7 +208,9 @@ hpstrategy(bp)
 
 done:
 	bp->b_resid = bp->b_bcount;
+	s = splbio();
 	biodone(bp);
+	splx(s);
 }
 
 /*

@@ -62,12 +62,12 @@ compat_43_sys_getrlimit(p, v, retval)
 	register_t *retval;
 {
 	register struct compat_43_sys_getrlimit_args /* {
-		syscallarg(u_int) which;
+		syscallarg(int) which;
 		syscallarg(struct ogetrlimit *) rlp;
 	} */ *uap = v;
 	struct orlimit olim;
 
-	if (SCARG(uap, which) >= RLIM_NLIMITS)
+	if (SCARG(uap, which) < 0 || SCARG(uap, which) >= RLIM_NLIMITS)
 		return (EINVAL);
 	olim.rlim_cur = p->p_rlimit[SCARG(uap, which)].rlim_cur;
 	if (olim.rlim_cur == -1)
@@ -87,7 +87,7 @@ compat_43_sys_setrlimit(p, v, retval)
 	register_t *retval;
 {
 	struct compat_43_sys_setrlimit_args /* {
-		syscallarg(u_int) which;
+		syscallarg(int) which;
 		syscallarg(struct ogetrlimit *) rlp;
 	} */ *uap = v;
 	struct orlimit olim;

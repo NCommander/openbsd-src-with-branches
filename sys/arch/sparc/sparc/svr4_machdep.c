@@ -452,8 +452,6 @@ svr4_sendsig(catcher, sig, mask, code, type, val)
 	struct svr4_sigframe *fp, frame;
 	struct sigacts *psp = p->p_sigacts;
 	int oonstack, oldsp, newsp, caddr;
-	extern char svr4_sigcode[], svr4_esigcode[];
-
 
 	tf = (struct trapframe *)p->p_md.md_tf;
 	oldsp = tf->tf_out[6];
@@ -498,7 +496,8 @@ svr4_sendsig(catcher, sig, mask, code, type, val)
 	write_user_windows();
 
 	if (rwindow_save(p) || copyout(&frame, fp, sizeof(frame)) != 0 ||
-	    suword(&((struct rwindow *)newsp)->rw_in[6], oldsp)) {
+	    copyout(&oldsp, &((struct rwindow *)newsp)->rw_in[6],
+	      sizeof(register_t)) != 0) {
 		/*
 		 * Process has trashed its stack; give it an illegal
 		 * instruction to halt it in its tracks.
@@ -514,7 +513,7 @@ svr4_sendsig(catcher, sig, mask, code, type, val)
 	/*
 	 * Build context to run handler in.
 	 */
-	caddr = (int)PS_STRINGS - (svr4_esigcode - svr4_sigcode);
+	caddr = p->p_sigcode;
 	tf->tf_global[1] = (int)catcher;
 
 	tf->tf_pc = caddr;

@@ -181,7 +181,9 @@ ctustrategy(bp)
 #endif
 
 	if (bp->b_blkno >= 512) {
+		s = splbio();
 		biodone(bp);
+		splx(s);
 		return;
 	}
 	bp->b_rawblkno = bp->b_blkno;

@@ -573,7 +573,7 @@ leattach(parent, self, aux)
 		lesc->sc_ih.ih_fun = myleintr;
 #endif
 	lesc->sc_ih.ih_arg = sc;
-	intr_establish(pri, &lesc->sc_ih);
+	intr_establish(pri, &lesc->sc_ih, IPL_NET);
 
 	/* now initialize DMA */
 	lehwreset(sc);

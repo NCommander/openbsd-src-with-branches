@@ -57,9 +57,9 @@ des_key_schedule ks2;
 des_key_schedule ks3;
 int encrypt;
 	{
-	register unsigned long l0,l1;
+	register u_int32_t l0,l1;
 	register unsigned char *in,*out;
-	unsigned long ll[2];
+	u_int32_t ll[2];
 
 	in=(unsigned char *)input;
 	out=(unsigned char *)output;

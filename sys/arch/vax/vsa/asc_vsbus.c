@@ -1,4 +1,4 @@
-/*	$OpenBSD: asc_vsbus.c,v 1.3.4.1 2001/05/14 21:39:15 niklas Exp $	*/
+/*	$OpenBSD$	*/
 /*	$NetBSD: asc_vsbus.c,v 1.22 2001/02/04 20:36:32 ragge Exp $	*/
 
 /*-
@@ -280,7 +280,7 @@ asc_vsbus_attach(struct device *parent, struct device *self, void *aux)
 
 	sc->sc_freq = ASC_FREQUENCY;
 
-	/* gimme Mhz */
+	/* gimme MHz */
 	sc->sc_freq /= 1000000;
 
 	scb_vecalloc(va->va_cvec, (void (*)(void *)) ncr53c9x_intr,
@@ -317,7 +317,7 @@ asc_vsbus_attach(struct device *parent, struct device *self, void *aux)
 	 * formula: 4 * period = (1000 / freq) * 4
 	 */
 	sc->sc_minsync = (1000 / sc->sc_freq);
-	sc->sc_maxxfer = 63 * 1024;
+	sc->sc_maxxfer = 64 * 1024;
 
 	printf("\n%s", self->dv_xname);	/* Pretty print */
 

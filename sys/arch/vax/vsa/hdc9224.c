@@ -445,7 +445,9 @@ done:
 	 * Correctly set the buf to indicate a completed xfer
 	 */
 	bp->b_resid = 0;	/* ??? bertram */
+	s = splbio();
 	biodone(bp);
+	splx(s);
 }
 
 int

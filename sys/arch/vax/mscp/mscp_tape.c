@@ -257,6 +257,7 @@ mtstrategy(bp)
 {
 	int unit;
 	struct mt_softc *mt;
+	int s;
 
 	/*
 	 * Make sure this is a reasonable drive to use.
@@ -273,7 +274,9 @@ mtstrategy(bp)
 
 bad:
 	bp->b_flags |= B_ERROR;
+	s = splbio();
 	biodone(bp);
+	splx(s);
 }
 
 int
@@ -299,8 +302,11 @@ mtiodone(usc, bp)
 	struct device *usc;
 	struct buf *bp;
 {
+	int s;
 
+	s = splbio();
 	biodone(bp);
+	splx(s);
 }
 
 /*

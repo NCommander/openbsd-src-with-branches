@@ -225,10 +225,8 @@
 125	NOARGS		{ int compat_43_sys_recvfrom(int s, caddr_t buf, \
 			    size_t len, int flags, caddr_t from, \
 			    int *fromlenaddr); } orecvfrom
-126	NOARGS		{ int compat_43_sys_setreuid(int ruid, int euid); } \
-			    osetreuid
-127	NOARGS		{ int compat_43_sys_setregid(int rgid, int egid); } \
-			    osetregid
+126	NOARGS		{ int sys_setreuid(uid_t ruid, uid_t euid); }
+127	NOARGS		{ int sys_setregid(gid_t rgid, gid_t egid); }
 128	NOARGS		{ int sys_rename(char *from, char *to); }
 129	NOARGS		{ int compat_43_sys_truncate(char *path, \
 			    long length); } otruncate

@@ -481,27 +481,3 @@ si_dma_stop(ncr_sc)
 	if (sc->onlyscsi == 0)
 		vsbus_dma_intr(); /* Try to start more transfers */
 }
-
-int 
-sd_getdev (adaptor, controller, part, unit, uname) 
-	int adaptor, controller, part, unit;
-	char **uname;
-{
-	struct sd_softc *sd;
-	struct scsi_link *sl;
-	int i;
-
-	for (i = 0; i < sd_cd.cd_ndevs; i++) {
-		if ((sd = sd_cd.cd_devs[i]) == 0)
-			continue;
-
-		sl = sd->sc_link;
-		if (sl->target == unit && sl->scsibus == adaptor && 
-			sl->lun == part) {
-			*uname = sd->sc_dev.dv_xname;
-			return i;
-		}
-	}
-	return -1;
-}
-

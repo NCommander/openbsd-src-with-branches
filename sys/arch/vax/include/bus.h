@@ -922,6 +922,8 @@ struct vax_bus_dma_segment {
 };
 typedef struct vax_bus_dma_segment	bus_dma_segment_t;
 
+struct proc;
+
 /*
  *	bus_dma_tag_t
  *

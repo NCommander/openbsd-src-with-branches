@@ -168,6 +168,12 @@ readdisklabel(dev, strat, lp, osdep, spoofonly)
 			*lp = *dlp;
 		}
 	}
+
+#if defined(CD9660)
+	if (msg && iso_disklabelspoof(dev, strat, lp) == 0)
+		msg = NULL;
+#endif
+
 	bp->b_flags = B_INVAL | B_AGE | B_READ;
 	brelse(bp);
 	return (msg);

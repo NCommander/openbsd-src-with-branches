@@ -86,7 +86,7 @@
 #define	DEV_BSIZE	(1 << DEV_BSHIFT)
 
 #define BLKDEV_IOSIZE	2048
-#define	MAXPHYS		(63 * 1024)	/* max raw I/O transfer size */
+#define	MAXPHYS		(64 * 1024)	/* max raw I/O transfer size */
 #define	MAXBSIZE	0x4000		/* max FS block size - XXX */
 
 #define	UPAGES		2		/* pages of u-area */
@@ -164,6 +164,10 @@
 #define       ovbcopy(x,y,z)  bcopy(x, y, z)
 
 #ifdef _KERNEL
+
+/* SPL asserts */
+#define	splassert(wantipl)	/* nothing */
+
 #ifndef lint
 #define splx(reg)						\
 ({								\

@@ -118,10 +118,6 @@ struct device;
 /* Some low-level prototypes */
 int	badaddr(caddr_t, int);
 void	cpu_swapin(struct proc *);
-int	hp_getdev(int, int, struct device **);
-int	sd_getdev(int, int, int, int, char **);
-int	ra_getdev(int, int, int, char **);
-int	bdevtomaj(int);
 void	dumpconf(void);
 void	dumpsys(void);
 void	swapconf(void);

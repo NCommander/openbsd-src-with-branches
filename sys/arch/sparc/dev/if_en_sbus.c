@@ -161,7 +161,7 @@ void *aux;
   }
   scs->sc_ih.ih_fun = en_intr;
   scs->sc_ih.ih_arg = sc;
-  intr_establish(EN_IPL, &scs->sc_ih);
+  intr_establish(EN_IPL, &scs->sc_ih, IPL_NET);
 
   /*
    * done SBUS specific stuff

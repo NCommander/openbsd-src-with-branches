@@ -1,4 +1,4 @@
-/*	$OpenBSD: version.c,v 1.1 1997/09/17 10:46:20 downsj Exp $	*/
+/*	$OpenBSD$	*/
 /*	$NetBSD: version.c,v 1.4 1995/09/16 23:20:39 pk Exp $ */
 
 /*
@@ -41,6 +41,7 @@
  *
  *	2.0	OpenBSD reorganization.
  *	2.1	Bumped RELOC
+ *	2.2	ELF support added.
  */
 
-char *version = "2.1";
+char *version = "2.2";

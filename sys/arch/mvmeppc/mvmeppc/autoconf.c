@@ -61,6 +61,7 @@
 #include <sys/device.h>
 
 #include <machine/autoconf.h>
+#include <machine/bugio.h>
 
 struct  device *parsedisk(char *, int, int, dev_t *);
 void    setroot(void);
@@ -73,7 +74,8 @@ struct device * getdevunit(char *, int);
 static struct devmap * findtype(char **);
 void makebootdev(char *cp);
 int getpno(char **);
-void diskconf();
+void diskconf(void);
+void calc_delayconst(void);	/* clock.c */
 
 /*
  * The following several variables are related to

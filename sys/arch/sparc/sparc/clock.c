@@ -692,7 +692,6 @@ clockintr(cap)
 {
 	volatile int discard;
 	int s;
-	extern int rom_console_input;
 
 	/*
 	 * Protect the clearing of the clock interrupt.  If we don't
@@ -727,8 +726,6 @@ forward:
 	splx(s);
 
 	hardclock((struct clockframe *)cap);
-	if (rom_console_input && cnrom())
-		setsoftint();
 
 	return (1);
 }

@@ -158,7 +158,7 @@ freebsd_elf_probe(p, epp, itp, pos, os)
 	size_t len;
 
 	brand = elf32_check_brand(eh);
-	if (brand == NULL || strcmp(brand, "FreeBSD"))
+	if ((brand == NULL || strcmp(brand, "FreeBSD")) && eh->e_ident[EI_PAD] != 9)
 		return (EINVAL);
 	if (itp[0]) {
 		if ((error = emul_find(p, NULL, freebsd_emul_path, itp, &bp, 0)))

@@ -61,17 +61,20 @@ id=`basename ${d}`
 #		VERSION
 #	src/etc/root/root.mail
 #		VERSION and other bits
+#	src/sys/arch/macppc/stand/tbxidata/bsd.tbxi
+#		change	/X.X/macppc/bsd.rd
 
 ost="OpenBSD"
-osr="3.0"
+osr="3.3"
 
 cat >vers.c <<eof
 const char ostype[] = "${ost}";
 const char osrelease[] = "${osr}";
 const char osversion[] = "${id}#${v}";
-const char sccs[8] = { ' ', ' ', ' ', ' ', '@', '(', '#', ')' };
+const char sccs[] =
+    "    @(#)${ost} ${osr} (${id}) #${v}: ${t}\n";
 const char version[] =
-    "${ost} ${osr}-current (${id}) #${v}: ${t}\n    ${u}@${h}:${d}\n";
+    "${ost} ${osr} (${id}) #${v}: ${t}\n    ${u}@${h}:${d}\n";
 eof
 
 expr ${v} + 1 > version

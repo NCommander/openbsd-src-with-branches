@@ -151,8 +151,9 @@ svr4_sys_ioctl(p, v, retval)
 		error = 0;	/* XXX: really ENOSYS */
 		goto out;
 	}
+	FREF(fp);
 	error = (*fun)(fp, p, retval, SCARG(uap, fd), cmd, SCARG(uap, data));
-out:
 	FRELE(fp);
+out:
 	return (error);
 }
