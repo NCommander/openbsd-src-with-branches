@@ -35,7 +35,7 @@
  */
 
 #include "includes.h"
-RCSID("$OpenBSD: authfd.c,v 1.32 2000/12/20 19:37:21 markus Exp $");
+RCSID("$OpenBSD: authfd.c,v 1.33 2001/01/21 19:05:44 markus Exp $");
 
 #include <openssl/evp.h>
 
@@ -52,7 +52,6 @@ RCSID("$OpenBSD: authfd.c,v 1.32 2000/12/20 19:37:21 markus Exp $");
 #include "compat.h"
 #include "log.h"
 #include "atomicio.h"
-#include "authfd.h"
 
 /* helper */
 int	decode_reply(int type);
