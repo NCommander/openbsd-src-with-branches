@@ -1,4 +1,4 @@
-/*	$OpenBSD: ffs.S,v 1.1.1.1 1998/06/23 18:56:53 mickey Exp $	*/
+/*	$OpenBSD: ffs.S,v 1.1 1998/08/28 20:59:42 mickey Exp $	*/
 
 /* 
  * Copyright (c) 1990, 1991, 1992, 1994, The University of Utah and
@@ -21,6 +21,12 @@
  */
 
 #include <machine/asm.h>
+
+#ifdef SYSLIBC_SCCS
+	.text
+	.asciz "$OpenBSD$"
+	.align	4
+#endif
 
 /*
  * ffs(bitmask)

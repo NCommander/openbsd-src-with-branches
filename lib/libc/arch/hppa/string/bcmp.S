@@ -1,4 +1,4 @@
-/*	$OpenBSD: bcmp.S,v 1.1 1998/06/24 18:02:18 mickey Exp $	*/
+/*	$OpenBSD: bcmp.S,v 1.1 1998/08/28 20:59:41 mickey Exp $	*/
 
 /*
  * Copyright 1996 1995 by Open Software Foundation, Inc.   
@@ -45,10 +45,16 @@
  * CSL requests users of this software to return to csl-dist@cs.utah.edu any
  * improvements that they make and grant CSL redistribution rights.
  *
- * 	Utah $Hdr: movc.s 1.26 94/12/14$
+ * 	Utah Hdr: movc.s 1.26 94/12/14
  */
 
 #include <machine/asm.h>
+
+#ifdef SYSLIBC_SCCS
+	.text
+	.asciz "$OpenBSD$"
+	.align	4
+#endif
 
 /*
  * int
