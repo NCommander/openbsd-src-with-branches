@@ -75,7 +75,7 @@
  */
 
 #include "includes.h"
-RCSID("$OpenBSD: scp.c,v 1.79 2001/08/06 19:47:05 stevesk Exp $");
+RCSID("$OpenBSD: scp.c,v 1.80 2001/08/13 23:38:54 stevesk Exp $");
 
 #include "xmalloc.h"
 #include "atomicio.h"
@@ -1010,6 +1010,7 @@ allocbuf(bp, fd, blksize)
 		bp->buf = xmalloc(size);
 	else
 		bp->buf = xrealloc(bp->buf, size);
+	memset(bp->buf, 0, size);
 	bp->cnt = size;
 	return (bp);
 }
