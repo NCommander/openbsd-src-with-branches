@@ -1,4 +1,4 @@
-/*	$OpenBSD: fxp.c,v 1.10 2000/10/16 17:08:07 aaron Exp $	*/
+/*	$OpenBSD: fxp.c,v 1.11 2001/02/20 19:39:38 mickey Exp $	*/
 /*	$NetBSD: if_fxp.c,v 1.2 1997/06/05 02:01:55 thorpej Exp $	*/
 
 /*
@@ -665,7 +665,8 @@ tbdinit:
 
 			/*
 			 * We ran out of segments. We have to recopy this mbuf
-			 * chain first. Bail out if we can't get the new buffers.
+			 * chain first. Bail out if we can't get the new
+			 * buffers.
 			 */
 			MGETHDR(mn, M_DONTWAIT, MT_DATA);
 			if (mn == NULL) {
