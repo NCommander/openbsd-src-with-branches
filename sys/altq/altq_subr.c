@@ -1,4 +1,4 @@
-/*	$OpenBSD: altq_subr.c,v 1.5 2002/02/13 08:11:48 kjc Exp $	*/
+/*	$OpenBSD: altq_subr.c,v 1.6 2002/03/14 01:26:26 millert Exp $	*/
 /*	$KAME: altq_subr.c,v 1.11 2002/01/11 08:11:49 kjc Exp $	*/
 
 /*
@@ -1520,7 +1520,7 @@ init_machclk(void)
 #endif
 #elif defined(__NetBSD__)
 	machclk_freq = (u_int32_t)cpu_tsc_freq;
-#elif defined(__OpenBSD__)
+#elif defined(__OpenBSD__) && (defined(I586_CPU) || defined(I686_CPU))
 	machclk_freq = pentium_mhz * 1000000;
 #endif
 #elif defined(__alpha__)
