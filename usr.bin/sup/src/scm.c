@@ -1,4 +1,4 @@
-/*	$OpenBSD: scm.c,v 1.4 1997/04/01 07:35:22 todd Exp $	*/
+/*	$OpenBSD: scm.c,v 1.5 1997/07/25 21:05:42 mickey Exp $	*/
 
 /*
  * Copyright (c) 1992 Carnegie Mellon University
@@ -432,7 +432,8 @@ char *myhost ()		/* find my host name */
 			return (NULL);
 		if ((h = gethostbyname (name)) == NULL)
 			return (NULL);
-		(void) strcpy (name,h->h_name);
+		(void) strncpy (name,h->h_name,sizeof name-1);
+		name[sizeof name-1] = '\0';
 	}
 	return (name);
 }

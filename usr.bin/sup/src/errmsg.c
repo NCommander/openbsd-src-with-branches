@@ -1,4 +1,4 @@
-/*	$OpenBSD: errmsg.c,v 1.2 1996/06/26 05:39:39 deraadt Exp $	*/
+/*	$OpenBSD: errmsg.c,v 1.3 1997/04/01 07:34:59 todd Exp $	*/
 
 /*
  * Copyright (c) 1991 Carnegie Mellon University
@@ -65,7 +65,8 @@ int cod;
 	if((cod >= 0) && (cod < sys_nerr))
 	    return(sys_errlist[cod]);
 
-	strcpy(unk,unkmsg);
+	strncpy(unk,unkmsg,sizeof unk-1);
+	unk[sizeof unk-1] = '\0';
 	*itoa(&unk[sizeof(unkmsg)-1],cod) = '\0';
 
 	return(unk);
