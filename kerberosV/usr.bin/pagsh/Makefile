@@ -1,15 +1,18 @@
-# $OpenBSD: Makefile,v 1.4 2002/06/11 15:30:16 hin Exp $
+# $OpenBSD: Makefile,v 1.5 2003/05/17 01:31:21 hin Exp $
 
 KRBDEPTH=../..
 .include <${.CURDIR}/../../Makefile.inc>
 
 PROG=	pagsh
 
-.PATH:	${KRB5SRC}/appl/afsutil
+SRCS=	pagsh.c
+SRCS+=	${PRINTVER}
+SRCS+=	esetenv.c k_getpwuid.c
 
-CFLAGS+=-I${KRB5SRC}/lib/roken
-DPADD+=	${LIBKRB5} ${LIBDES} ${LIBKAFS} ${LIBKRB} ${LIBASN1} ${LIBCRYPTO} \
-	${LIBCOM_ERR}
-LDADD+=	-lkrb5 -ldes ${LIBROKEN} -lasn1 -lcrypto -lcom_err
+.PATH:	${KRB5SRC}/appl/afsutil
+.PATH:	${ROKENSRC}
+
+DPADD+=	${LIBKRB5} ${LIBDES} ${LIBCRYPTO}
+LDADD+=	-lkrb5 -ldes -lcrypto
 
 .include <bsd.prog.mk>
