@@ -1,4 +1,4 @@
-/*	$OpenBSD: ne2000.c,v 1.12 2002/03/14 01:26:55 millert Exp $	*/
+/*	$OpenBSD: ne2000.c,v 1.13 2003/10/21 18:58:49 jmc Exp $	*/
 /*	$NetBSD: ne2000.c,v 1.12 1998/06/10 01:15:50 thorpej Exp $	*/
 
 /*-
@@ -621,7 +621,7 @@ ne2000_write_mbuf(sc, m, buf)
 }
 
 /*
- * Given a source and destination address, copy 'amout' of a packet from
+ * Given a source and destination address, copy 'amount' of a packet from
  * the ring buffer into a linear destination buffer.  Takes into account
  * ring-wrap.
  */
