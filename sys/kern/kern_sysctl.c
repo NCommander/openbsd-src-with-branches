@@ -1,5 +1,5 @@
-/*	$OpenBSD: kern_sysctl.c,v 1.3 1996/03/30 04:51:32 mickey Exp $	*/
-/*	$NetBSD: kern_sysctl.c,v 1.15 1996/02/27 04:20:40 jonathan Exp $	*/
+/*	$OpenBSD: kern_sysctl.c,v 1.4 1996/04/19 16:08:59 niklas Exp $	*/
+/*	$NetBSD: kern_sysctl.c,v 1.16 1996/04/12 23:21:37 thorpej Exp $	*/
 
 /*-
  * Copyright (c) 1982, 1986, 1989, 1993
@@ -174,8 +174,7 @@ sys___sysctl(p, v, retval)
 		return (error);
 	if (SCARG(uap, oldlenp))
 		error = copyout(&oldlen, SCARG(uap, oldlenp), sizeof(oldlen));
-	*retval = oldlen;
-	return (0);
+	return (error);
 }
 
 /*
