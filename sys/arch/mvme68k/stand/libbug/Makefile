@@ -5,12 +5,19 @@ LIB=bug
 NOPIC=
 NOPROFILE=
 
-CFLAGS+=-I${.CURDIR}/../../include
+CLEANFILES+=machine
+
+CFLAGS+=-I${.OBJDIR}
 
 SRCS=	delay.c diskrd.c diskwr.c getbrdid.c instat.c outln.c outstr.c \
 	return.c rtc_rd.c
 .PATH:    ${.CURDIR}/../../../../lib/libc_sa
 
+all:	machine libbug.a
+
 install:
+
+machine:
+	rm -f machine; ln -s ${.CURDIR}/../../include machine
 
 .include <bsd.lib.mk>
