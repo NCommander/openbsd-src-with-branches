@@ -1,7 +1,7 @@
 /*
  * OpenBSD/m68k machine-dependent thread macros
  *
- * $OpenBSD: uthread_machdep.h,v 1.1 1998/11/20 11:15:36 d Exp $
+ * $OpenBSD: uthread_machdep.h,v 1.2 1999/01/17 23:49:49 d Exp $
  */
 
 /* save the floating point state of a thread */
@@ -23,8 +23,8 @@
 	    /* entry */					\
 	    (thr)->saved_jmp_buf[5] = (long) entry;	\
 	    /* stack */					\
-	    (thr)->saved_jmp_buf[2] = (long) (thr)->stack \
-				+ (pattr)->stacksize_attr \
+	    (thr)->saved_jmp_buf[2] = (long) (thr)->stack->base \
+				+ (thr)->stack->size	\
 				- sizeof(double);	\
 	}
 

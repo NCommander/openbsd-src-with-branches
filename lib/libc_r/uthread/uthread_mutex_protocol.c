@@ -30,6 +30,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  *
+ * $FreeBSD: uthread_mutex_protocol.c,v 1.3 1999/08/28 00:03:41 peter Exp $
  */
 #include <string.h>
 #include <stdlib.h>

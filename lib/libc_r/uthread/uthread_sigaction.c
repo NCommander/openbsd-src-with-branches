@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /*
  * Copyright (c) 1995-1998 John Birrell <jb@cimlogic.com.au>
  * All rights reserved.
@@ -20,7 +21,7 @@
  * THIS SOFTWARE IS PROVIDED BY JOHN BIRRELL AND CONTRIBUTORS ``AS IS'' AND
  * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
  * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
- * ARE DISCLAIMED.  IN NO EVENT SHALL THE REGENTS OR CONTRIBUTORS BE LIABLE
+ * ARE DISCLAIMED.  IN NO EVENT SHALL THE AUTHOR OR CONTRIBUTORS BE LIABLE
  * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
  * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
  * OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
@@ -29,7 +30,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  *
- * $OpenBSD: uthread_sigaction.c,v 1.3 1999/01/06 05:29:27 d Exp $
+ * $FreeBSD: uthread_sigaction.c,v 1.8 1999/08/28 00:03:48 peter Exp $
  */
 #include <signal.h>
 #include <errno.h>
@@ -77,6 +78,9 @@ sigaction(int sig, const struct sigaction * act, struct sigaction * oact)
 			/* Initialise the global signal action structure: */
 			gact.sa_mask = act->sa_mask;
 			gact.sa_flags = 0;
+
+			/* Ensure the scheduling signal is masked: */
+			sigaddset(&gact.sa_mask, _SCHED_SIGNAL);
 
 			/*
 			 * Check if the signal handler is being set to

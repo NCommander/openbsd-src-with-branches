@@ -40,6 +40,10 @@
 
 #include <sys/types.h>	/* For pid_t */
 
+#ifndef KERNEL
+#include <time.h>		/* Per P1003.4 */
+#endif
+
 /* Scheduling policies
  */
 #define SCHED_FIFO  1
@@ -53,8 +57,6 @@ struct sched_param
 
 #ifndef KERNEL
 #include <sys/cdefs.h>
-#include <time.h>		/* Per P1003.4 */
-#include <sys/time.h>
 
 __BEGIN_DECLS
 int sched_setparam __P((pid_t, const struct sched_param *));

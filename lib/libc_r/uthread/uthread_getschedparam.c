@@ -30,6 +30,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  *
+ * $FreeBSD: uthread_getschedparam.c,v 1.3 1999/08/28 00:03:35 peter Exp $
  */
 #include <errno.h>
 #ifdef _THREAD_SAFE

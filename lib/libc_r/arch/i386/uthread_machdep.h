@@ -1,7 +1,7 @@
 /*
  * OpenBSD/i386 machine-dependent thread macros
  *
- * $OpenBSD: uthread_machdep.h,v 1.4 1999/01/17 23:49:49 d Exp $
+ * $OpenBSD: uthread_machdep.h,v 1.5 1999/03/10 09:50:33 d Exp $
  */
 
 #include <machine/reg.h>
@@ -59,9 +59,10 @@ struct _machdep_struct {
 	    /* entry */						\
 	    (thr)->saved_jmp_buf.mjb_eip = (long) entry;	\
 	    /* stack */						\
-	    (thr)->saved_jmp_buf.mjb_esp = (long) (thr)->stack	\
-				+ (pattr)->stacksize_attr 	\
-				- sizeof(double);		\
+	    (thr)->saved_jmp_buf.mjb_esp = 	 		\
+		(long) (thr)->stack->base +			\
+		(thr)->stack->size 				\
+		- sizeof(double);				\
 	}
 
 static __inline int
