@@ -1,4 +1,4 @@
-/*	$OpenBSD: spx_usrreq.c,v 1.12.2.1 2001/07/04 10:55:32 niklas Exp $	*/
+/*	$OpenBSD$	*/
 
 /*-
  *
@@ -469,7 +469,7 @@ update_window:
 			} /* else queue this packet; */
 		} else {
 			/*register struct socket *so = cb->s_ipxpcb->ipxp_socket;
-			if (so->so_state && SS_NOFDREF) {
+			if (so->so_state & SS_NOFDREF) {
 				m_freem(m0);
 				(void)spx_close(cb);
 			} else
@@ -810,7 +810,6 @@ spx_output(cb, m0)
 			if (m0->m_len < sizeof(*sh)) {
 				if((m0 = m_pullup(m0, sizeof(*sh))) == NULL) {
 					(void) m_free(m);
-					m_freem(m0);
 					return (EINVAL);
 				}
 				m->m_next = m0;

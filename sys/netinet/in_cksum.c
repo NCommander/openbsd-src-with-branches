@@ -1,4 +1,4 @@
-/*	$OpenBSD: in_cksum.c,v 1.11 1996/04/08 19:55:37 jonathan Exp $	*/
+/*	$OpenBSD$	*/
 /*	$NetBSD: in_cksum.c,v 1.11 1996/04/08 19:55:37 jonathan Exp $	*/
 
 /*
@@ -80,7 +80,7 @@ in_cksum(m, len)
 			 * of a word spanning between this mbuf and the
 			 * last mbuf.
 			 *
-			 * s_util.c[0] is already saved when scanning previous 
+			 * s_util.c[0] is already saved when scanning previous
 			 * mbuf.
 			 */
 			s_util.c[1] = *(u_int8_t *)w;

@@ -125,7 +125,7 @@ void		 pmap_collect(pmap_t);
 void		 pmap_copy(pmap_t, pmap_t, vaddr_t, vsize_t, vaddr_t);
 #endif
 #if !defined(pmap_copy_page)
-void		 pmap_copy_page(paddr_t, paddr_t);
+void		 pmap_copy_page(struct vm_page *, struct vm_page *);
 #endif
 struct pmap 	 *pmap_create(void);
 void		 pmap_destroy(pmap_t);
@@ -164,7 +164,7 @@ void		 pmap_remove(pmap_t, vaddr_t, vaddr_t);
 void		 pmap_update(void);
 #endif
 #if !defined(pmap_zero_page)
-void		 pmap_zero_page(paddr_t);
+void		 pmap_zero_page(struct vm_page *);
 #endif
 
 void		 pmap_virtual_space(vaddr_t *, vaddr_t *);

@@ -67,7 +67,7 @@ struct igmpstat {
 };
 
 #ifdef _KERNEL
-struct igmpstat igmpstat;
+extern struct igmpstat igmpstat;
 
 /*
  * Macro to compute a random timer value between 1 and (IGMP_MAX_REPORTING_

@@ -468,7 +468,7 @@ tpip_output_dg(struct mbuf *m0, ...)
 	}
 #endif
 
-	error = ip_output(m, (struct mbuf *) 0, ro, IP_ALLOWBROADCAST, NULL);
+	error = ip_output(m, (struct mbuf *)0, ro, IP_ALLOWBROADCAST, (void *)NULL, (void *)NULL);
 
 #ifdef ARGO_DEBUG
 	if (argo_debug[D_EMIT]) {
@@ -588,7 +588,6 @@ discard:
 		tptrace(TPPTmisc, "tpip_input DISCARD m", m, 0, 0, 0);
 	}
 #endif
-		m_freem(m);
 	IncStat(ts_recv_drop);
 	splx(s);
 }

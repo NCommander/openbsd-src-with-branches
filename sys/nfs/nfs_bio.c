@@ -565,8 +565,8 @@ nfs_asyncio(bp)
 	 */
 	s = splbio();
 	buf_dirty(bp);
-	splx(s);
 	biodone(bp);
+	splx(s);
 	return (0);
 }
 
@@ -726,6 +726,8 @@ nfs_doio(bp, p)
 	bp->b_resid = uiop->uio_resid;
 	if (must_commit)
 		nfs_clearcommit(vp->v_mount);
+	s = splbio();
 	biodone(bp);
+	splx(s);
 	return (error);
 }

@@ -138,7 +138,7 @@ uvm_io(map, uio)
 		 */
 
 		vm_map_lock(kernel_map);
-		(void)uvm_unmap_remove(kernel_map, kva, kva+chunksz,
+		uvm_unmap_remove(kernel_map, kva, kva+chunksz,
 		    &dead_entries);
 		vm_map_unlock(kernel_map);
 

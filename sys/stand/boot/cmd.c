@@ -249,8 +249,10 @@ readline(buf, n, to)
 	while (1) {
 		switch ((ch = getchar())) {
 		case CTRL('u'):
-			while (p-- > buf)
+			while (p > buf) {
 				putchar('\177');
+				p--;
+			}
 			continue;
 		case '\n':
 		case '\r':

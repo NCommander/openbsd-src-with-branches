@@ -436,7 +436,7 @@ ssopen(dev, flag, mode, p)
 	 * consider paper to be a changeable media
 	 *
 	 */
-	error = scsi_test_unit_ready(sc_link,
+	error = scsi_test_unit_ready(sc_link, TEST_READY_RETRIES_DEFAULT,
 	    SCSI_IGNORE_MEDIA_CHANGE | SCSI_IGNORE_ILLEGAL_REQUEST |
 	    (ssmode == MODE_CONTROL ? SCSI_IGNORE_NOT_READY : 0));
 	if (error)
@@ -605,7 +605,9 @@ done:
 	 * Correctly set the buf to indicate a completed xfer
 	 */
 	bp->b_resid = bp->b_bcount;
+	s = splbio();
 	biodone(bp);
+	splx(s);
 }
 
 /*

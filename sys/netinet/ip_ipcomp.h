@@ -50,6 +50,7 @@ struct ipcompstat {
 					 * IP_MAXPACKET */
 	u_int32_t	ipcomps_pdrops;	/* Packet blocked due to policy */
 	u_int32_t	ipcomps_crypto;	/* "Crypto" processing failure */
+	u_int32_t	ipcomps_minlen;	/* packets too short for compress */
 };
 
 /* IPCOMP header */
@@ -76,6 +77,6 @@ struct ipcomp {
 
 #ifdef _KERNEL
 extern int ipcomp_enable;
-struct ipcompstat ipcompstat;
+extern struct ipcompstat ipcompstat;
 #endif				/* _KERNEL */
 #endif	/* _NETINET_IP_IPCOMP_H_ */

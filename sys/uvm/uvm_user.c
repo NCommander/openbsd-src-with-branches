@@ -50,7 +50,7 @@
  * uvm_deallocate: deallocate memory (unmap)
  */
 
-int
+void
 uvm_deallocate(map, start, size)
 	vm_map_t map;
 	vaddr_t start;
@@ -60,9 +60,8 @@ uvm_deallocate(map, start, size)
 	if (map == NULL)
 		panic("uvm_deallocate with null map");
 
-	if (size == (vaddr_t) 0)
-		return (KERN_SUCCESS);
+	if (size == 0)
+		return;
 
-	return(uvm_unmap(map, trunc_page(start), round_page(start+size)));
-
+	uvm_unmap(map, trunc_page(start), round_page(start+size));
 }

@@ -181,6 +181,8 @@ struct m_ext2fs {
 
 #define EXT2F_INCOMPAT_COMP		0x0001
 #define EXT2F_INCOMPAT_FTYPE		0x0002
+#define EXT2F_INCOMPAT_RECOVER		0x0004
+#define EXT2F_INCOMPAT_JOURNAL_DEV	0x0008
 
 /* features supported in this implementation */
 #define EXT2F_COMPAT_SUPP		0x0000

@@ -954,7 +954,17 @@ amap_pp_adjref(amap, curslot, slotlen, adjval)
 		}
 		prevlcv = lcv;
 	}
-	pp_getreflen(ppref, prevlcv, &prevref, &prevlen);
+	if (lcv != 0)
+		pp_getreflen(ppref, prevlcv, &prevref, &prevlen);
+	else {
+		/* Ensure that the "prevref == ref" test below always
+		 * fails, since we're starting from the beginning of
+		 * the ppref array; that is, there is no previous
+		 * chunk.  
+		 */
+		prevref = -1;
+		prevlen = 0;
+	}
 
 	/*
 	 * now adjust reference counts in range.  merge the first

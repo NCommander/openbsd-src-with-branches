@@ -282,7 +282,7 @@ uvm_pagezero(pg)
 {
 
 	pg->flags &= ~PG_CLEAN;
-	pmap_zero_page(VM_PAGE_TO_PHYS(pg));
+	pmap_zero_page(pg);
 }
 
 /*
@@ -298,7 +298,7 @@ uvm_pagecopy(src, dst)
 {
 
 	dst->flags &= ~PG_CLEAN;
-	pmap_copy_page(VM_PAGE_TO_PHYS(src), VM_PAGE_TO_PHYS(dst));
+	pmap_copy_page(src, dst);
 }
 
 /*

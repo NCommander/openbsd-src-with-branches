@@ -177,7 +177,7 @@ struct inode_vtbl {
 
 #ifndef _KERNEL
 /*
- * These are here purely for backwards compatibilty for userland.
+ * These are here purely for backwards compatibility for userland.
  * They allow direct references to FFS structures using the old names.
  */
 

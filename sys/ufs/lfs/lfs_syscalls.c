@@ -123,6 +123,8 @@ lfs_markv(p, v, retval)
 		return (EINVAL);
 
 	cnt = SCARG(uap, blkcnt);
+	if (cnt > SIZE_T_MAX / sizeof(BLOCK_INFO))
+		return (EINVAL);
 	start = malloc(cnt * sizeof(BLOCK_INFO), M_SEGMENT, M_WAITOK);
 	error = copyin(SCARG(uap, blkiov), start, cnt * sizeof(BLOCK_INFO));
 	if (error)

@@ -203,7 +203,7 @@ loop:
 			} else if (rp->rc_flag & RC_REPSTATUS) {
 				nfsstats.srvcache_nonidemdonehits++;
 				nfs_rephead(0, nd, slp, rp->rc_status,
-				   0, (u_quad_t *)0, repp, &mb, &bpos);
+				   (u_quad_t *)0, repp, &mb, &bpos);
 				ret = RC_REPLY;
 			} else if (rp->rc_flag & RC_REPMBUF) {
 				nfsstats.srvcache_nonidemdonehits++;

@@ -334,7 +334,9 @@ uvm_aiodone_daemon(void *arg)
 				uvmexp.paging -= bp->b_bufsize >> PAGE_SHIFT;
 			}
 			nbp = TAILQ_NEXT(bp, b_freelist);
+			s = splbio();	/* b_iodone must by called at splbio */
 			(*bp->b_iodone)(bp);
+			splx(s);
 			bp = nbp;
 		}
 		if (free <= uvmexp.reserve_kernel) {

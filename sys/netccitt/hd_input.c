@@ -569,7 +569,7 @@ valid_nr(hdp, nr, finalbit)
 
 	/*
 	 * This section validates the frame's  N(R) value.  It's N(R) value
-	 * must be  in syncronization  with  our V(S)  value and  our "last
+	 * must be  in synchronization  with  our V(S)  value and  our "last
 	 * received nr" variable. If it is correct then we are able to send
 	 * more IFRAME's, else frame reject condition is entered.
 	 */

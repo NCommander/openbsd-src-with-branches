@@ -548,7 +548,7 @@ tp_mss(tpcb, nhdr_size)
 	 * While we're here, check if there's an initial rtt
 	 * or rttvar.  Convert from the route-table units
 	 * to hz ticks for the smoothed timers and slow-timeout units
-	 * for other inital variables.
+	 * for other initial variables.
 	 */
 	if (tpcb->tp_rtt == 0 && (rtt = rt->rt_rmx.rmx_rtt)) {
 		tpcb->tp_rtt = rtt * hz / RTM_RTTUNIT;
@@ -644,7 +644,7 @@ punt_route:
  *  possibly other E* returned from cons_netcmd()
  *
  * SIDE EFFECTS:
- *   Determines recommended tpdusize, buffering and intial delays
+ *   Determines recommended tpdusize, buffering and initial delays
  *	 based on information cached on the route.
  */
 int
@@ -814,7 +814,7 @@ tp0_stash(tpcb, e)
 	}
 #endif
 	if (tpcb->tp_netservice != ISO_CONS)
-		printf("tp0_stash: tp running over something wierd\n");
+		printf("tp0_stash: tp running over something weird\n");
 	else {
 		register struct pklcd *lcp = (struct pklcd *) isop->isop_chan;
 		pk_flowcontrol(lcp, sbspace(sb) <= 0, 1);
@@ -827,7 +827,7 @@ tp0_openflow(tpcb)
 {
 	register struct isopcb *isop = (struct isopcb *) tpcb->tp_npcb;
 	if (tpcb->tp_netservice != ISO_CONS)
-		printf("tp0_openflow: tp running over something wierd\n");
+		printf("tp0_openflow: tp running over something weird\n");
 	else {
 		register struct pklcd *lcp = (struct pklcd *) isop->isop_chan;
 		if (lcp->lcd_rxrnr_condition)

@@ -99,7 +99,7 @@ ufs_inactive(v)
 	if (ip->i_ffs_mode == 0)
 		goto out;
 	if (ip->i_ffs_nlink <= 0 && (vp->v_mount->mnt_flag & MNT_RDONLY) == 0) {
-		if (getinoquota(ip) != 0)
+		if (getinoquota(ip) == 0)
 			(void)ufs_quota_free_inode(ip, NOCRED);
 
 		(void) UFS_TRUNCATE(ip, (off_t)0, 0, NOCRED);

@@ -461,7 +461,7 @@ update_window:
 			} /* else queue this packet; */
 		} else {
 			/*register struct socket *so = cb->s_nspcb->nsp_socket;
-			if (so->so_state && SS_NOFDREF) {
+			if (so->so_state & SS_NOFDREF) {
 				ns_error(dtom(si), NS_ERR_NOSOCK, 0);
 				(void)spp_close(cb);
 			} else
@@ -848,7 +848,6 @@ spp_output(struct mbuf *m0, ...)
 			if (m0->m_len < sizeof (*sh)) {
 				if((m0 = m_pullup(m0, sizeof(*sh))) == NULL) {
 					(void) m_free(m);
-					m_freem(m0);
 					return (EINVAL);
 				}
 				m->m_next = m0;

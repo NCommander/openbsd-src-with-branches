@@ -824,7 +824,7 @@ pk_flowcontrol(lcp, inhibit, forced)
 }
 
 /*
- * This procedure sends a RESET request packet. It re-intializes virtual
+ * This procedure sends a RESET request packet. It re-initializes virtual
  * circuit.
  */
 

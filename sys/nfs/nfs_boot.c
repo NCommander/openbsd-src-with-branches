@@ -67,10 +67,11 @@ nfs_boot_init(nd, procp)
 }
 
 int
-nfs_boot_getfh(bpsin, key, ndmntp)
+nfs_boot_getfh(bpsin, key, ndmntp, retries)
 	struct sockaddr_in *bpsin;
 	char *key;
 	struct nfs_dlmount *ndmntp;
+	int retries;
 {
 	/* can not get here */
 	return (EOPNOTSUPP);

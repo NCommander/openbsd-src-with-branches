@@ -277,6 +277,7 @@ pk_usrreq(so, req, m, nam, control)
 			if (n && n->m_type == MT_OOBDATA) {
 				unsigned        len = n->m_pkthdr.len;
 				so->so_rcv.sb_mb = n->m_nextpkt;
+				SB_EMPTY_FIXUP(&so->so_rcv);
 				if (len != n->m_len &&
 				    (n = m_pullup(n, len)) == 0)
 					break;

@@ -1789,5 +1789,5 @@ ffs_fserr(fs, uid, cp)
 	char *cp;
 {
 
-	log(LOG_ERR, "uid %d on %s: %s\n", uid, fs->fs_fsmnt, cp);
+	log(LOG_ERR, "uid %u on %s: %s\n", uid, fs->fs_fsmnt, cp);
 }

@@ -232,7 +232,7 @@ iso_pcbbind(v, nam)
 		bcopy(TSEL(siso), suf.data, sizeof(suf.data));
 		suf.s = ntohs(suf.s);
 		if ((suf.s < ISO_PORT_RESERVED) &&
-		    (isop->isop_socket->so_state && SS_PRIV) == 0)
+		    (isop->isop_socket->so_state & SS_PRIV) == 0)
 			return EACCES;
 	} else {
 		register char  *cp;

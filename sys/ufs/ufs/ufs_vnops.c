@@ -1738,6 +1738,7 @@ ufs_strategy(v)
 	struct vnode *vp = bp->b_vp;
 	struct inode *ip;
 	int error;
+	int s;
 
 	ip = VTOI(vp);
 	if (vp->v_type == VBLK || vp->v_type == VCHR)
@@ -1748,14 +1749,18 @@ ufs_strategy(v)
 		if (error) {
 			bp->b_error = error;
 			bp->b_flags |= B_ERROR;
+			s = splbio();
 			biodone(bp);
+			splx(s);
 			return (error);
 		}
 		if ((long)bp->b_blkno == -1)
 			clrbuf(bp);
 	}
 	if ((long)bp->b_blkno == -1) {
+		s = splbio();
 		biodone(bp);
+		splx(s);
 		return (0);
 	}
 	vp = ip->i_devvp;

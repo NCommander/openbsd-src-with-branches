@@ -81,12 +81,6 @@ in_gif_output(ifp, family, m, rt)
 		return EAFNOSUPPORT;
 	}
 
-	/* multi-destination mode is not supported */
-	if (ifp->if_flags & IFF_LINK0) {
-		m_freem(m);
-		return ENETUNREACH;
-	}
-
 	/* setup dummy tdb.  it highly depends on ipipoutput() code. */
 	bzero(&tdb, sizeof(tdb));
 	bzero(&xfs, sizeof(xfs));
@@ -162,7 +156,7 @@ in_gif_output(ifp, family, m, rt)
 	m_copyback(m, offsetof(struct ip, ip_len), sizeof(u_int16_t),
 		   (caddr_t) &plen);
 
-	return ip_output(m, NULL, NULL, 0, NULL, NULL);
+	return ip_output(m, (void *)NULL, (void *)NULL, 0, (void *)NULL, (void *)NULL);
 }
 
 void
@@ -186,29 +180,19 @@ in_gif_input(struct mbuf *m, ...)
 	ip = mtod(m, struct ip *);
 
 	/* this code will be soon improved. */
-#define	satosin(sa)	((struct sockaddr_in *)(sa))	
+#define	satosin(sa)	((struct sockaddr_in *)(sa))
 	for (i = 0, sc = gif_softc; i < ngif; i++, sc++) {
-		if (sc->gif_psrc == NULL
-		 || sc->gif_pdst == NULL
-		 || sc->gif_psrc->sa_family != AF_INET
-		 || sc->gif_pdst->sa_family != AF_INET) {
+		if (sc->gif_psrc == NULL || sc->gif_pdst == NULL ||
+		    sc->gif_psrc->sa_family != AF_INET ||
+		    sc->gif_pdst->sa_family != AF_INET) {
 			continue;
 		}
 
 		if ((sc->gif_if.if_flags & IFF_UP) == 0)
 			continue;
 
-		if ((sc->gif_if.if_flags & IFF_LINK0)
-		 && satosin(sc->gif_psrc)->sin_addr.s_addr == ip->ip_dst.s_addr
-		 && satosin(sc->gif_pdst)->sin_addr.s_addr == INADDR_ANY) {
-			gifp = &sc->gif_if;
-			continue;
-		}
-
-		if (satosin(sc->gif_psrc)->sin_addr.s_addr ==
-		    ip->ip_dst.s_addr
-		 && satosin(sc->gif_pdst)->sin_addr.s_addr ==
-		    ip->ip_src.s_addr)
+		if (in_hosteq(satosin(sc->gif_psrc)->sin_addr, ip->ip_dst) &&
+		    in_hosteq(satosin(sc->gif_pdst)->sin_addr, ip->ip_src))
 		{
 			gifp = &sc->gif_if;
 			break;

@@ -246,7 +246,7 @@ ufs_getlbns(vp, bn, ap, nump)
 
 #ifdef DIAGNOSTIC
 	if (realbn < 0 && realbn > -NDADDR) {
-		panic ("ufs_getlbns: Invalid indirect block %d specified\n",
+		panic ("ufs_getlbns: Invalid indirect block %d specified",
 		    realbn);
 	}
 #endif

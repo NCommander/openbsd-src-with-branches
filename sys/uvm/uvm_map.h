@@ -348,9 +348,9 @@ int		uvm_map_reserve(vm_map_t, vsize_t, vaddr_t, vsize_t,
 void		uvm_map_setup(vm_map_t, vaddr_t, vaddr_t, int);
 int		uvm_map_submap(vm_map_t, vaddr_t, vaddr_t, vm_map_t);
 MAP_INLINE
-int		uvm_unmap(vm_map_t, vaddr_t, vaddr_t);
+void		uvm_unmap(vm_map_t, vaddr_t, vaddr_t);
 void		uvm_unmap_detach(vm_map_entry_t,int);
-int		uvm_unmap_remove(vm_map_t, vaddr_t, vaddr_t,
+void		uvm_unmap_remove(vm_map_t, vaddr_t, vaddr_t,
 				      vm_map_entry_t *);
 
 #endif /* _KERNEL */
@@ -439,7 +439,6 @@ vm_map_lock(map)
 	    &map->flags_lock, curproc);
 
 	if (error) {
-		KASSERT(error == ENOLCK);
 		goto try_again;
 	}
 

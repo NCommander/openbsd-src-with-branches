@@ -126,6 +126,8 @@ scsi_user_done(xs)
 	scsireq_t *screq;
 	struct scsi_link *sc_link;
 
+	splassert(IPL_BIO);
+
 	bp = xs->bp;
 	if (!bp) {	/* ALL user requests must have a buf */
 		sc_print_addr(xs->sc_link);
@@ -267,7 +269,9 @@ scsistrategy(bp)
 bad:
 	bp->b_flags |= B_ERROR;
 	bp->b_error = error;
+	s = splbio();
 	biodone(bp);
+	splx(s);
 }
 
 /*

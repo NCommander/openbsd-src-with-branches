@@ -72,7 +72,7 @@
 	"user",		/* USRQUOTA */ \
 	"group",	/* GRPQUOTA */ \
 	"undefined", \
-};
+}
 #define	QUOTAFILENAME	"quota"
 #define	QUOTAGROUP	"operator"
 
@@ -112,12 +112,12 @@ struct dqblk {
 
 #ifdef _KERNEL
 /*
- * Flargs to ufs_quota_{alloc,free}_{blocks,inode}2
+ * Flags to ufs_quota_{alloc,free}_{blocks,inode}2
  */
 enum ufs_quota_flags {
-	UFS_QUOTA_NOUID = 0x1,       /* Don't change UID quota */
-	UFS_QUOTA_NOGID = 0x2,       /* Don't change GID quota */
-	UFS_QUOTA_FORCE = 0x1000,    /* don't check limits - just change it */
+	UFS_QUOTA_NOUID = 0x1,		/* Don't change UID quota */
+	UFS_QUOTA_NOGID = 0x2,		/* Don't change GID quota */
+	UFS_QUOTA_FORCE = 0x1000	/* don't check limits - just change it */
 };     /* Change GID */
 
 #include <sys/cdefs.h>

@@ -114,7 +114,7 @@ lfs_mount(mp, path, data, ndp, p)
 		return (error);
 
 	/* Until LFS can do NFS right.		XXX */
-	if (args.export.ex_flags & MNT_EXPORTED)
+	if (args.export_info.ex_flags & MNT_EXPORTED)
 		return (EINVAL);
 
 	/*
@@ -144,7 +144,8 @@ lfs_mount(mp, path, data, ndp, p)
 			/*
 			 * Process export requests.
 			 */
-			return (vfs_export(mp, &ump->um_export, &args.export));
+			return (vfs_export(mp, &ump->um_export, 
+			    &args.export_info));
 		}
 	}
 	/*

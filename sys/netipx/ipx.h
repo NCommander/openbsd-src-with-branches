@@ -193,7 +193,7 @@ struct ipx {
 	{ 0, 0 }, \
 	{ 0, 0 }, \
 	{ "spx", CTLTYPE_NODE }, \
-};
+}
 
 #ifdef _KERNEL
 

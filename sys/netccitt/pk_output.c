@@ -212,7 +212,8 @@ nextpk(lcp)
 			return (NULL);
 
 		sb->sb_mb = m->m_nextpkt;
-		m->m_act = 0;
+		SB_EMPTY_FIXUP(sb);
+		m->m_nextpkt = 0;
 		for (n = m; n; n = n->m_next)
 			sbfree(sb, n);
 	}
