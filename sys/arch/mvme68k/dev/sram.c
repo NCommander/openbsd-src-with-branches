@@ -1,4 +1,4 @@
-/*	$OpenBSD: sram.c,v 1.5.10.3 2003/03/27 23:32:16 niklas Exp $ */
+/*	$OpenBSD$ */
 
 /*
  * Copyright (c) 1995 Theo de Raadt
@@ -63,7 +63,7 @@ struct cfattach sram_ca = {
 };
 
 struct cfdriver sram_cd = {
-	NULL, "sram", DV_DULL, 0
+	NULL, "sram", DV_DULL
 };
 
 int

@@ -79,7 +79,7 @@ struct dos_mbr {
 	u_int8_t		dmbr_boot[DOSPARTOFF];
 	struct dos_partition	dmbr_parts[NDOSPART];
 	u_int16_t		dmbr_sign;
-} __attribute__((__packed__));
+} __packed;
 
 #define DOSMBR_SIGNATURE	(0xaa55)
 #define DOSMBR_SIGNATURE_OFF	(0x1fe)

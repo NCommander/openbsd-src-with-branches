@@ -424,7 +424,7 @@ svr4_sys_fchroot(p, v, retval)
 	struct file	*fp;
 	int		 error;
 
-	if ((error = suser(p->p_ucred, &p->p_acflag)) != 0)
+	if ((error = suser(p, 0)) != 0)
 		return error;
 	if ((error = getvnode(fdp, SCARG(uap, fd), &fp)) != 0)
 		return error;

@@ -1,4 +1,4 @@
-/*	$OpenBSD: z8530tty.c,v 1.1 2002/08/12 10:44:04 miod Exp $ */
+/*	$OpenBSD$ */
 /*	$NetBSD: z8530tty.c,v 1.13 1996/10/16 20:42:14 gwr Exp $	*/
 
 /*-
@@ -343,7 +343,6 @@ zstty_attach(parent, self, aux)
 	tp->t_oproc = zsstart;
 	tp->t_param = zsparam;
 	tp->t_hwiflow = zshwiflow;
-	tty_attach(tp);
 
 	zst->zst_tty = tp;
 	zst->zst_rbuf = malloc(zstty_rbuf_size << 1, M_DEVBUF, M_WAITOK);
@@ -749,7 +748,7 @@ zsioctl(dev, cmd, data, flag, p)
 		break;
 
 	case TIOCSFLAGS:
-		error = suser(p->p_ucred, &p->p_acflag);
+		error = suser(p, 0);
 		if (error != 0)
 			break;
 		zst->zst_swflags = *(int *)data;

@@ -72,7 +72,7 @@
  * and Chris Torek for bits of insight needed along the way.  Thanks to
  * David Gilbert and Andrew Gillham who risked filesystem life-and-limb
  * for the sake of testing.  Andrew Gillham helped work out the bugs
- * the the 4/100 DMA code.
+ * in the 4/100 DMA code.
  */
 
 /*

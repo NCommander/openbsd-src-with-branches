@@ -270,7 +270,7 @@ ibcs2_sys_utssys(p, v, retval)
 		bcopy(hostname, sut.nodename, sizeof(sut.nodename));
 		sut.nodename[sizeof(sut.nodename)-1] = '\0';
 		bcopy(osrelease, sut.release, sizeof(sut.release) - 1);
-		bcopy("1", sut.version, sizeof(sut.version) - 1);
+		strlcpy(sut.version, "1", sizeof(sut.version));
 		bcopy(machine, sut.machine, sizeof(sut.machine) - 1);
 
 		return copyout((caddr_t)&sut, (caddr_t)SCARG(uap, a1),

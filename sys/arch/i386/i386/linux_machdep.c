@@ -635,7 +635,7 @@ linux_sys_iopl(p, v, retval)
 #endif
 	struct trapframe *fp = p->p_md.md_regs;
 
-	if (suser(p->p_ucred, &p->p_acflag) != 0)
+	if (suser(p, 0) != 0)
 		return EPERM;
 	if (securelevel > 0)
 		return EPERM;
@@ -661,7 +661,7 @@ linux_sys_ioperm(p, v, retval)
 	} */ *uap = v;
 	struct trapframe *fp = p->p_md.md_regs;
 
-	if (suser(p->p_ucred, &p->p_acflag) != 0)
+	if (suser(p, 0) != 0)
 		return EPERM;
 	if (securelevel > 0)
 		return EPERM;

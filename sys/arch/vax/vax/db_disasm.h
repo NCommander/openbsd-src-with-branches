@@ -63,7 +63,7 @@
  *	w: operand is written only
  *	m: operand is modified (both R and W)
  *	b: no operand reference. Branch displacement is specified. 
- *	a: calculate the adress of the specified operand
+ *	a: calculate the address of the specified operand
  *	v: if not "Rn", same as a. If "RN," R[n+1]R[n]
  * Arguments (Data-Types):
  *	b: Byte

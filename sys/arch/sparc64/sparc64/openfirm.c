@@ -33,8 +33,8 @@
  */
 #include <sys/param.h>
 #include <sys/systm.h>
+#include <sys/stdarg.h>
 #include <machine/psl.h>
-#include <machine/stdarg.h>
 
 #include <machine/openfirm.h>
 

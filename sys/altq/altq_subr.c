@@ -37,7 +37,6 @@
 #include <sys/kernel.h>
 #include <sys/errno.h>
 #include <sys/syslog.h>
-#include <uvm/uvm_extern.h>
 #include <sys/sysctl.h>
 #include <sys/queue.h>
 
@@ -77,7 +76,7 @@ int pfaltq_running;	/* keep track of running state */
  * alternate queueing support routines
  */
 
-/* look up the queue state by the interface name and the queuing type. */
+/* look up the queue state by the interface name and the queueing type. */
 void *
 altq_lookup(name, type)
 	char *name;

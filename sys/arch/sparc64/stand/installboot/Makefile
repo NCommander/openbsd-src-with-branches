@@ -4,7 +4,7 @@
 .include <bsd.own.mk>
 
 MAN=	installboot.8
-MANSUBDIR=/sparc64
+MANSUBDIR=sparc64
 
 .if ${MACHINE} == "sparc64"
 PROG=	installboot
@@ -29,6 +29,6 @@ LDSTATIC?=	-static
 CLEANFILES+= machine sparc
 .endif
 
-CFLAGS+= -U_STANDALONE
+STANDALONE=
 
 .include <bsd.prog.mk>

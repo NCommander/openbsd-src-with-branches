@@ -176,7 +176,6 @@ pconsopen(dev, flag, mode, p)
 		return ENXIO;
 	if (!(tp = sc->of_tty)) {
 		sc->of_tty = tp = ttymalloc();
-		tty_attach(tp);
 	}
 	tp->t_oproc = pconsstart;
 	tp->t_param = pconsparam;
@@ -191,7 +190,7 @@ pconsopen(dev, flag, mode, p)
 		tp->t_ispeed = tp->t_ospeed = TTYDEF_SPEED;
 		pconsparam(tp, &tp->t_termios);
 		ttsetwater(tp);
-	} else if ((tp->t_state&TS_XCLUDE) && suser(p->p_ucred, &p->p_acflag))
+	} else if ((tp->t_state&TS_XCLUDE) && suser(p, 0))
 		return EBUSY;
 	tp->t_state |= TS_CARR_ON;
 	

@@ -1,4 +1,4 @@
-/*	$OpenBSD: nvramreg.h,v 1.1 2001/06/26 21:57:41 smurph Exp $ */
+/*	$OpenBSD$ */
 
 /*
  * Copyright (c) 1992, 1993
@@ -59,9 +59,12 @@
  *	1ff8-1fff	TOD clock
  */
 
-#define NVRAM_S0		0x80000074
-#define NVRAM_S1		0x80000075
-#define NVRAM_DATA		0x80000077
+#define	NVRAM_BASE		0x80000000	/* access thrugh ISA space! */
+#define NVRAM_S0		0x00000074
+#define NVRAM_S1		0x00000075
+#define NVRAM_DATA		0x00000077
+
+#define	NVRAM_SIZE		0x2000
 
 #define RTC_SECONDS		0x1FF9
 #define RTC_MINUTES		0x1FFA

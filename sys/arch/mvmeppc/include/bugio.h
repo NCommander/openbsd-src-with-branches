@@ -1,4 +1,4 @@
-/*	$OpenBSD: bugio.h,v 1.1 2002/06/08 15:47:33 miod Exp $	*/
+/*	$OpenBSD$	*/
 /*
  * Copyright (c) 2002, Miodrag Vallat.
  * All rights reserved.
@@ -41,5 +41,7 @@ void mvmeprom_outchar(int);
 void mvmeprom_return(void);
 void mvmeprom_rtc_rd(struct mvmeprom_time *);
 struct bugenviron *mvmeprom_envrd(void);
+
+void buginit(void);
 
 #endif /* _MACHINE_BUGIO_H_ */

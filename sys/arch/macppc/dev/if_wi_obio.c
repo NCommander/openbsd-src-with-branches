@@ -129,7 +129,7 @@ wi_obio_attach(parent, self, aux)
 
 	wi_obio_enable(sc);
 
-	wi_attach(sc);
+	wi_attach(sc, &wi_func_io);
 }
 
 int

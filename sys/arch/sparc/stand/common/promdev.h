@@ -61,9 +61,11 @@ extern int	debug;
 extern void	prom_init(void);
 
 /* Note: dvma_*() routines are for "oldmon" machines only */
+extern void	dvma_init(void);	
 extern char	*dvma_mapin(char *, size_t);
 extern char	*dvma_mapout(char *, size_t);
 extern char	*dvma_alloc(int);
+extern void	dvma_free(char *, int);
 
 /*
  * duplicates from pmap.c for mapping device on "oldmon" machines.

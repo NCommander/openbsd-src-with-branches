@@ -1,4 +1,4 @@
-/*	$OpenBSD: srt0.S,v 1.10.8.1 2003/05/13 19:42:09 ho Exp $	*/
+/*	$OpenBSD$	*/
 
 /*
  * Copyright (c) 1997 Michael Shalayeff
@@ -35,6 +35,7 @@
 	.globl	_C_LABEL(edata)
 	.globl	_C_LABEL(boot)
 	.globl	_C_LABEL(_rtt)
+	.globl	_C_LABEL(bios_bootdev)
 	.globl	_ASM_LABEL(pmm_init)
 	.globl	Gdtr
 
@@ -47,7 +48,7 @@ _start:
 	je	1f
 #ifdef DEBUG
 	movl	$0xb80a0, %ebx
-	movl	$0x07420742, (%ebx)
+	addr32 movl $0x07420742, (%ebx)
 #endif
 1:
 	popl %edx
@@ -69,6 +70,7 @@ _start:
 	mov	%ax,%gs
 	movl	$BOOTSTACK,%esp
 	pushl	%edx
+	movl	%edx, _C_LABEL(bios_bootdev)
 
 	/* Now do it all */
 	call	_ASM_LABEL(pmm_init)

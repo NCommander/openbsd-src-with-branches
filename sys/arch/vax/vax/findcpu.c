@@ -53,11 +53,13 @@ int vax_cpudata = 0;	/* contents of the SID register */
 int vax_siedata = 0;	/* contents of the SIE register */
 int vax_confdata;	/* machine dependend, configuration/setup data */
 
+void	findcpu(void);
+
 /*
  * Try to figure out which type of system this is.
  */
 void
-findcpu()
+findcpu(void)
 {
 	vax_cpudata = mfpr(PR_SID);
 	vax_cputype = vax_cpudata >> 24;

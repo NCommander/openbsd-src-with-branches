@@ -1,4 +1,4 @@
-/*	$OpenBSD: machdep.c,v 1.28.4.4 2003/05/13 19:42:09 ho Exp $	*/
+/*	$OpenBSD$	*/
 
 /*
  * Copyright (c) 1997-1999 Michael Shalayeff
@@ -44,7 +44,7 @@ extern int debug;
 int ps2model;
 
 void
-machdep()
+machdep(void)
 {
 	/* here */	CKPT('0');
 	printf("probing:");

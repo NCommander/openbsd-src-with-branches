@@ -6,6 +6,7 @@
  */
 #include <sys/types.h>
 #include <machine/prom.h>
+#include "prom.h"
 
 /* returns 0 if no characters ready to read */
 int

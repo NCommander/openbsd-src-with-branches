@@ -884,7 +884,7 @@ mtintr(arg)
 			if (i == 0)
 				sc->sc_flags |= MTF_HITEOF;
 			bp->b_resid = bp->b_bcount - i;
-			dlog(LOG_DEBUG, "%s intr: bcount %ld, resid %ld",
+			dlog(LOG_DEBUG, "%s intr: bcount %ld, resid %d",
 			    sc->sc_dev.dv_xname, bp->b_bcount, bp->b_resid);
 		} else {
 			tprintf(sc->sc_ttyp,

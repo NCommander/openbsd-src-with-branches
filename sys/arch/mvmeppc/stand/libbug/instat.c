@@ -5,7 +5,8 @@
  * are preserved.
  */
 #include <sys/types.h>
-#include <machine/prom.h>
+
+#include "libbug.h"
 
 /* returns 0 if no characters ready to read */
 int

@@ -1,4 +1,4 @@
-/*	$OpenBSD: mgx.c,v 1.2 2003/05/15 04:59:50 miod Exp $	*/
+/*	$OpenBSD$	*/
 /*
  * Copyright (c) 2003, Miodrag Vallat.
  * All rights reserved.
@@ -204,7 +204,7 @@ mgxattach(struct device *parent, struct device *self, void *args)
 	    0, round_page(sc->sc_sunfb.sf_fbsize));
 	sc->sc_sunfb.sf_ro.ri_hw = sc;
 
-	fbwscons_init(&sc->sc_sunfb, isconsole);
+	fbwscons_init(&sc->sc_sunfb, isconsole ? 0 : RI_CLEAR);
 
 	bzero(sc->sc_cmap, sizeof(sc->sc_cmap));
 	fbwscons_setcolormap(&sc->sc_sunfb, mgx_setcolor);

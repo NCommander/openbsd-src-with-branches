@@ -1,4 +1,4 @@
-/*	$OpenBSD: mkboot.c,v 1.7.4.5 2003/05/13 19:41:05 ho Exp $	*/
+/*	$OpenBSD$	*/
 
 /*
  * Copyright (c) 1990, 1993
@@ -39,7 +39,7 @@ static char copyright[] =
 #endif /* not lint */
 
 #ifndef lint
-static char rcsid[] = "$OpenBSD: mkboot.c,v 1.7.4.5 2003/05/13 19:41:05 ho Exp $";
+static char rcsid[] = "$OpenBSD$";
 #endif /* not lint */
 #endif
 
@@ -97,8 +97,7 @@ char *__progname = "mkboot";
  *	sector 32-:	LIF file 0, LIF file 1, etc.
  */
 int
-main(argc, argv)
-	char **argv;
+main(int argc, char **argv)
 {
 	int to;
 	register int n, pos, c;

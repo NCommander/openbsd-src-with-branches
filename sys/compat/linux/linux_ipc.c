@@ -538,7 +538,7 @@ linux_shmat(p, v, retval)
 	SCARG(&bsa, shmaddr) = SCARG(uap, ptr);
 	SCARG(&bsa, shmflg) = SCARG(uap, a2);
 
-	if ((error = sys_shmat(p, &bsa, retval)))
+	if ((error = sys_shmat1(p, &bsa, retval, 1)))
 		return error;
 
 	if ((error = copyout(&retval[0], (caddr_t) SCARG(uap, a3),

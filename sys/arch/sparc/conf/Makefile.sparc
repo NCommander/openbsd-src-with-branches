@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile.sparc,v 1.18.4.4 2003/05/16 00:29:40 niklas Exp $
+#	$OpenBSD$
 # 	$NetBSD: Makefile.sparc,v 1.32.4.1 1996/06/12 20:26:32 pk Exp $
 
 # Makefile for OpenBSD
@@ -48,6 +48,7 @@ CMACHFLAGS=
 .if ${IDENT:M-DNO_PROPOLICE}
 CMACHFLAGS+=	-fno-stack-protector
 .endif
+CMACHFLAGS+=	-fno-builtin-printf -fno-builtin-log
 
 CFLAGS=		${DEBUG} -O2 ${CDIAGFLAGS} ${CMACHFLAGS} ${COPTS} ${PIPE}
 # add `-mno-fpu' to work around gcc (last noticed in v2.7.2) bug
@@ -172,6 +173,10 @@ depend:: .depend
 .if !empty(SFILES)
 	${MKDEP} -a ${AFLAGS} ${CPPFLAGS} ${SFILES}
 .endif
+	sh $S/kern/genassym.sh ${MKDEP} -f assym.dep ${CFLAGS} \
+	    ${CPPFLAGS} < ${SPARC}/sparc/genassym.cf
+	@sed -e 's/.*\.o:.* /assym.h: /' < assym.dep >> .depend
+	@rm -f assym.dep
 
 
 # depend on root or device configuration

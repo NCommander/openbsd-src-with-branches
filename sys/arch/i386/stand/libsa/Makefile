@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.36.4.3 2003/05/13 19:42:09 ho Exp $
+#	$OpenBSD$
 
 .include "${.CURDIR}/../Makefile.inc"
 
@@ -59,7 +59,7 @@ install:
 .include <bsd.lib.mk>
 
 CPPFLAGS+=-DLINKADDR=${LINKADDR} -DHEAP_LIMIT=${HEAP_LIMIT} ${DEBUGFLAGS}
-CPPFLAGS+=-I${S}/stand/boot -DCOMPAT_UFS
+CPPFLAGS+=-I${S}/stand/boot #-DCOMPAT_UFS
 CFLAGS+=${SACFLAGS} -D__INTERNAL_LIBSA_CREAD
 #AS=cat ; 
 #AS+=	-R

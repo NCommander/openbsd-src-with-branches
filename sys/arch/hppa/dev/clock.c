@@ -55,7 +55,14 @@
 void
 cpu_initclocks()
 {
-	CPU_CLOCKUPDATE();
+	extern volatile u_long cpu_itmr;
+	extern u_long cpu_hzticks;
+	u_long __itmr;
+
+	mfctl(CR_ITMR, __itmr);
+	cpu_itmr = __itmr;
+	__itmr += cpu_hzticks;
+	mtctl(__itmr, CR_ITMR);
 }
 
 /*
@@ -105,7 +112,7 @@ resettodr()
 
 	if ((error = pdc_call((iodcio_t)pdc, 1, PDC_TOD, PDC_TOD_WRITE,
 	    time.tv_sec, time.tv_usec)))
-		printf("clock: failed to save (%d)\n");
+		printf("clock: failed to save (%d)\n", error);
 }
 
 void

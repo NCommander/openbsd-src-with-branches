@@ -6,6 +6,7 @@
  */
 #include <sys/types.h>
 #include <machine/prom.h>
+#include "prom.h"
 
 void
 mvmeprom_rtc_rd(ptime)

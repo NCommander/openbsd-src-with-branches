@@ -283,6 +283,8 @@ intr_dispatch(evec)
 		printf("intr_dispatch: stray level %d interrupt\n", ipl);
 }
 
+int netisr;
+
 void
 netintr()
 {

@@ -43,8 +43,8 @@
 /*
  * the following MD ELF values defenitions are from the:
  * "Processor-Specific ELF Supplement for PA-RISC.
- *  Including HP and HP-UX Extensions. Version 1.43. October 6, 1998"
- *	http://www.software.hp.com/STK/partner/elf-pa.pdf
+ *  Including HP and HP-UX Extensions. Version 1.43. October 6, 1997"
+ *	http://devrsrc1.external.hp.com/STK/partner/elf-pa.pdf
  *
  */
 

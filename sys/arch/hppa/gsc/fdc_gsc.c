@@ -66,7 +66,7 @@ fdc_gsc_probe(parent, match, aux)
 	    ca->ca_type.iodc_sv_model != HPPA_FIO_GPCFD)
 		return 0;
 
-	/* Map the i/o space. */
+	/* Map the I/O space. */
 	if (bus_space_map(ca->ca_iot, ca->ca_hpa, IOMOD_HPASIZE, 0, &ioh))
 		return 0;
 

@@ -375,7 +375,9 @@ zs_attach(zsc, zsd, pri)
 	 * to the interrupt handlers aren't used.  Note, we only do this
 	 * once since both SCCs interrupt at the same level and vector.
 	 */
-	bus_intr_establish(zsc->zsc_bustag, pri, IPL_SERIAL, 0, zshard, zsc);
+	if (bus_intr_establish(zsc->zsc_bustag, pri, IPL_SERIAL, 0, zshard,
+	    zsc, zsc->zsc_dev.dv_xname) == NULL)
+		panic("zsattach: could not establish interrupt");
 	if (!(zsc->zsc_softintr = softintr_establish(softpri, zssoft, zsc)))
 		panic("zsattach: could not establish soft interrupt");
 

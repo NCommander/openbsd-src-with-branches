@@ -1,4 +1,4 @@
-/*	$OpenBSD: wdsc.c,v 1.5.14.2 2003/03/27 23:32:16 niklas Exp $ */
+/*	$OpenBSD$ */
 
 /*
  * Copyright (c) 1996 Steve Woodford
@@ -76,7 +76,7 @@ struct cfattach wdsc_ca = {
 };
 
 struct cfdriver wdsc_cd = {
-    NULL, "wdsc", DV_DULL, NULL, 0 
+	NULL, "wdsc", DV_DULL
 };
 
 /*

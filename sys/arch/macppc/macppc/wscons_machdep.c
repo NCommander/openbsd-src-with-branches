@@ -1,4 +1,4 @@
-/*	$OpenBSD: wscons_machdep.c,v 1.1.4.2 2002/03/28 10:36:01 niklas Exp $ */
+/*	$OpenBSD$ */
 
 /*
  * Copyright (c) 2001 Aaron Campbell
@@ -50,8 +50,7 @@ int wscngetc(dev_t);
 void wscnpollc(dev_t, int);
 
 void
-wscnprobe(cp)
-	struct consdev *cp;
+wscnprobe(struct consdev *cp)
 {
 	int maj;
 
@@ -71,31 +70,25 @@ wscnprobe(cp)
 }
 
 void
-wscninit(cp)
-	struct consdev *cp;
+wscninit(struct consdev *cp)
 {
 	return;
 }
 
 void
-wscnputc(dev, i)
-	dev_t dev;
-	char i;
+wscnputc(dev_t dev, char i)
 {
 	wsdisplay_cnputc(dev, (int)i);
 }
 
 int
-wscngetc(dev)
-	dev_t dev;
+wscngetc(dev_t dev)
 {
 	return (wskbd_cngetc(dev));
 }
 
 void
-wscnpollc(dev, on)
-	dev_t dev;
-	int on;
+wscnpollc(dev_t dev, int on)
 {
 	wskbd_cnpollc(dev, on);
 }

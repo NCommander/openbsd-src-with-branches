@@ -743,7 +743,7 @@ adosfs_init(struct vfsconf *vfsp)
 /*
  * vfs generic function call table
  */
-struct vfsops adosfs_vfsops = {
+const struct vfsops adosfs_vfsops = {
 	adosfs_mount,
 	adosfs_start,
 	adosfs_unmount,

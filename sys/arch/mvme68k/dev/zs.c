@@ -1,4 +1,4 @@
-/*	$OpenBSD: zs.c,v 1.8.2.3 2003/03/27 23:32:16 niklas Exp $ */
+/*	$OpenBSD$ */
 
 /*
  * Copyright (c) 2000 Steve Murphree, Jr.
@@ -150,7 +150,7 @@ struct cfattach zs_ca = {
 };
 
 struct cfdriver zs_cd = {
-	NULL, "zs", DV_TTY, 0
+	NULL, "zs", DV_TTY
 };
 
 void	zs_ttydef(struct zs *);
@@ -364,7 +364,6 @@ zsopen(dev, flag, mode, p)
 	zp = &sc->sc_zs[zsside(dev)];
 	if (zp->tty == NULL) {
 		zp->tty = ttymalloc();
-		tty_attach(zp->tty);
 		zs_ttydef(zp);
 		if (minor(dev) < NZSLINE)
 			zs_tty[minor(dev)] = zp->tty;

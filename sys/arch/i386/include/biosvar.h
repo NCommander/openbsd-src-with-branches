@@ -1,4 +1,4 @@
-/*	$OpenBSD: biosvar.h,v 1.32.2.6 2002/03/28 10:31:04 niklas Exp $	*/
+/*	$OpenBSD$	*/
 
 /*
  * Copyright (c) 1997-1999 Michael Shalayeff
@@ -201,7 +201,7 @@ typedef struct _bios_consdev {
 #else
 #define	DOINT(n)	"int $0x20+(" #n ")"
 
-extern struct BIOS_regs {
+extern volatile struct BIOS_regs {
 	u_int32_t	biosr_ax;
 	u_int32_t	biosr_cx;
 	u_int32_t	biosr_dx;

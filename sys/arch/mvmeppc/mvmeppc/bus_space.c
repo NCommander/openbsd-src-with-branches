@@ -44,6 +44,8 @@
 #include <sys/extent.h>
 #include <sys/mbuf.h>
 
+#include <uvm/uvm_extern.h>
+
 #include <machine/bus.h>
 
 static int prep_memio_map(bus_space_tag_t, bus_addr_t, bus_size_t, int,
@@ -130,12 +132,11 @@ prep_memio_map(t, bpa, size, flags, bshp)
          * Before we go any further, let's make sure that this
          * region is available.
          */
-        error = extent_alloc_region(ex, bpa, size,
-            EX_NOWAIT | (ioport_malloc_safe ? EX_MALLOCOK : 0));
-        if (error)
+        if ((error = extent_alloc_region(ex, bpa, size,
+            EX_NOWAIT | (ioport_malloc_safe ? EX_MALLOCOK : 0))) != 0)
                 return (error);
 
-        *bshp = t->pbs_base + bpa;
+	*bshp = (bus_space_handle_t)mapiodev(t->pbs_base + bpa, size);
 
         return (0);
 }
@@ -159,7 +160,8 @@ prep_memio_unmap(t, bsh, size)
         else
                 panic("prep_memio_unmap: bad bus space tag");
 
-        bpa = bsh - t->pbs_base;
+	pmap_extract(pmap_kernel(), (vaddr_t)bsh, (paddr_t *)&bpa);
+	unmapiodev((void *)bsh, size);
 
         if (extent_free(ex, bpa, size,
             EX_NOWAIT | (ioport_malloc_safe ? EX_MALLOCOK : 0))) {

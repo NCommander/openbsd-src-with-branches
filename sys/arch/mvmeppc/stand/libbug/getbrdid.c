@@ -5,7 +5,8 @@
  * are preserved.
  */
 #include <sys/types.h>
-#include <machine/prom.h>
+
+#include "libbug.h"
 
 /* BUG - query board routines */
 struct mvmeprom_brdid *

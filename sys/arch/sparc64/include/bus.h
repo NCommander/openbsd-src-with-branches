@@ -221,7 +221,8 @@ struct sparc_bus_space_tag {
 	void	*(*sparc_intr_establish)(bus_space_tag_t,
 		bus_space_tag_t,
 		int, int, int,
-		int (*)(void *), void *);
+		int (*)(void *), void *,
+		const char *);
 
 };
 
@@ -282,7 +283,18 @@ void	       *bus_intr_establish(
 							  see machine/intr.h*/
 				int,			/*flags*/
 				int (*)(void *),	/*handler*/
-				void *);		/*handler arg*/
+				void *,			/*handler arg*/
+				const char *);		/*what*/
+void	       *bus_intr_allocate(
+				bus_space_tag_t,
+				int (*)(void *),	/*handler*/
+				void *,			/*handler arg*/
+				int,			/*number*/
+				int,			/*pil*/
+				volatile u_int64_t *,	/*map*/
+				volatile u_int64_t *,	/*clr*/
+				const char *);		/*what*/
+void		bus_intr_free(void *);
 void		bus_space_render_tag(
 				bus_space_tag_t,
 				char *,

@@ -1,4 +1,4 @@
-/*	$OpenBSD: cmd_i386.c,v 1.22.4.1 2002/03/28 10:31:05 niklas Exp $	*/
+/*	$OpenBSD$	*/
 
 /*
  * Copyright (c) 1997-1999 Michael Shalayeff
@@ -60,7 +60,7 @@ const struct cmd_table cmd_machine[] = {
 };
 
 int
-Xdiskinfo()
+Xdiskinfo(void)
 {
 #ifndef _TEST
 	dump_diskinfo();
@@ -70,7 +70,7 @@ Xdiskinfo()
 
 #ifdef DEBUG
 int
-Xregs()
+Xregs(void)
 {
 	DUMP_REGS;
 	return 0;
@@ -78,7 +78,7 @@ Xregs()
 #endif
 
 int
-Xboot()
+Xboot(void)
 {
 #ifndef _TEST
 	int dev, part, st;
@@ -140,7 +140,7 @@ bad:
 }
 
 int
-Xmemory()
+Xmemory(void)
 {
 	if (cmd.argc >= 2) {
 		int i;

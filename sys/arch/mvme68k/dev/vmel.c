@@ -1,4 +1,4 @@
-/*	$OpenBSD: vmel.c,v 1.5.14.3 2003/03/27 23:32:16 niklas Exp $ */
+/*	$OpenBSD$ */
 
 /*
  * Copyright (c) 1995 Theo de Raadt
@@ -54,7 +54,7 @@ struct cfattach vmel_ca = {
 };
 
 struct cfdriver vmel_cd = {
-	NULL, "vmel", DV_DULL, 0
+	NULL, "vmel", DV_DULL
 };
 
 int
@@ -162,10 +162,12 @@ vmelmmap(dev, off, prot)
 {
 	int unit = minor(dev);
 	struct vmelsoftc *sc = (struct vmelsoftc *) vmel_cd.cd_devs[unit];
-	void * pa;
+	void *pa;
 
 	pa = vmepmap(sc->sc_vme, (void *)(int)off, NBPG, BUS_VMEL);
-	printf("vmel %x pa %x\n", off, pa);
+#ifdef DEBUG
+	printf("vmel %llx pa %p\n", off, pa);
+#endif
 	if (pa == NULL)
 		return (-1);
 	return (m68k_btop(pa));

@@ -5,7 +5,8 @@
  * are preserved.
  */
 #include <sys/types.h>
-#include <machine/prom.h>
+
+#include "libbug.h"
 
 void
 mvmeprom_outchr(a)

@@ -62,7 +62,7 @@ long *bootregs;
  */
 
 void
-autoconf()
+autoconf(void)
 {
 	int copyrpb = 1;
 	int fromnet = (bootregs[12] != -1);
@@ -127,7 +127,7 @@ autoconf()
 volatile int tickcnt;
 
 int
-getsecs()
+getsecs(void)
 {
 	return tickcnt/100;
 }
@@ -152,7 +152,7 @@ mcheck(void *arg)
  * to detect unwanted interrupts.
  */
 void
-scbinit()
+scbinit(void)
 {
 	int i;
 

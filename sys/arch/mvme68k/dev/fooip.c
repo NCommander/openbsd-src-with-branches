@@ -1,4 +1,4 @@
-/*	$OpenBSD: fooip.c,v 1.3.16.2 2002/03/28 10:34:05 niklas Exp $ */
+/*	$OpenBSD$ */
 
 /*
  * Copyright (c) 1995 Theo de Raadt
@@ -66,7 +66,7 @@ struct cfattach fooip_ca = {
 };
 
 struct cfdriver fooip_cd = {
-	NULL, "fooip", DV_DULL, 0
+	NULL, "fooip", DV_DULL
 };
 
 int  fooipintr(void *);

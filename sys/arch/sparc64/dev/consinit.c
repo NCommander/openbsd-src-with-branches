@@ -161,9 +161,7 @@ prom_cnpollc(dev, on)
 {
 	if (on) {
                 /* Entering debugger. */
-#if NFB > 0
                 fb_unblank();
-#endif  
 	} else {
                 /* Resuming kernel. */
 	}

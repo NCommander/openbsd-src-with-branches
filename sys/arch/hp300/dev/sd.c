@@ -1,4 +1,4 @@
-/*	$OpenBSD: sd.c,v 1.21.8.5 2003/05/13 19:41:02 ho Exp $	*/
+/*	$OpenBSD$	*/
 /*	$NetBSD: sd.c,v 1.34 1997/07/10 18:14:10 kleink Exp $	*/
 
 /*
@@ -320,7 +320,7 @@ sdgetcapacity(sc, dev)
 			return (-1);
 		}
 		/*
-		 * XXX assume unformatted or non-existant media
+		 * XXX assume unformatted or non-existent media
 		 */
 		sc->sc_blks = 0;
 		sc->sc_blksize = DEV_BSIZE;
@@ -1109,7 +1109,7 @@ sdioctl(dev, cmd, data, flag, p)
 
 	case SDIOCSFORMAT:
 		/* take this device into or out of "format" mode */
-		if (suser(p->p_ucred, &p->p_acflag))
+		if (suser(p, 0))
 			return(EPERM);
 
 		if (*(int *)data) {

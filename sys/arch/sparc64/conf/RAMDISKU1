@@ -4,7 +4,6 @@
 machine		sparc64
 
 option		SUN4U
-option		_LP64
 
 # maxusers means mostly "let's get small" in terms of kernel malloc's
 maxusers	2

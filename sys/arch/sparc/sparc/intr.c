@@ -1,4 +1,4 @@
-/*	$OpenBSD: intr.c,v 1.12.2.6 2003/03/27 23:49:26 niklas Exp $ */
+/*	$OpenBSD$ */
 /*	$NetBSD: intr.c,v 1.20 1997/07/29 09:42:03 fair Exp $ */
 
 /*
@@ -103,6 +103,8 @@ strayintr(fp)
 static struct intrhand level10 = { clockintr, NULL, (IPL_CLOCK << 8) };
 static struct intrhand level14 = { statintr, NULL, (IPL_STATCLOCK << 8) };
 union sir sir;
+int netisr;
+
 /*
  * Level 1 software interrupt (could also be Sbus level 1 interrupt).
  * Three possible reasons:
@@ -355,6 +357,7 @@ intr_fasttrap(level, vec)
 	instrp = (char *)instr;
 	for (i = 0; i < sizeof(int) * 3; i++, instrp++, tvp++)
 		pmap_writetext(tvp, *instrp);
+	fastvec |= 1 << level;
 	splx(s);
 }
 

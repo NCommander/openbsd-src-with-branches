@@ -44,7 +44,7 @@
 #define	DB_ELFSIZE	32
 
 typedef	vm_offset_t	db_addr_t;	/* address - unsigned */
-typedef	int		db_expr_t;	/* expression - signed */
+typedef	long		db_expr_t;	/* expression - signed */
 struct powerpc_saved_state {
 	struct trapframe tf;
 };

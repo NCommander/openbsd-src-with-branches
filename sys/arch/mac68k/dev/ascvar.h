@@ -47,5 +47,5 @@ int	ascclose(dev_t dev, int flag, int mode, struct proc *p);
 int	ascread(dev_t, struct uio *, int);
 int	ascwrite(dev_t, struct uio *, int);
 int	ascioctl(dev_t, int, caddr_t, int, struct proc *p);
-int	ascselect(dev_t dev, int rw, struct proc *p);
+int	ascpoll(dev_t dev, int rw, struct proc *p);
 paddr_t	ascmmap(dev_t dev, off_t off, int prot);

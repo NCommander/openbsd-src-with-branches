@@ -1,4 +1,4 @@
-/*	$OpenBSD: process_machdep.c,v 1.7.4.2 2002/03/28 10:36:03 niklas Exp $ */
+/*	$OpenBSD$ */
 
 /*
  * Copyright (c) 1993 The Regents of the University of California.
@@ -71,7 +71,6 @@
 #include <machine/frame.h>
 #endif
 #include <sys/ptrace.h>
-/* NOTE: struct reg == struct trapframe */
 
 int
 process_read_regs(p, regs)
@@ -130,10 +129,6 @@ process_set_pc(p, addr)
 	regs = USER_REGS(p);
 	regs->sxip = (u_int)addr;
 	regs->snip = (u_int)addr + 4;
-	/*
-	p->p_md.md_tf->sxip = (u_int)addr;
-	     p->p_md.md_tf->snip = (u_int)addr + 4;
-	*/
 	return (0);
 }
 

@@ -64,6 +64,7 @@ struct vgafb_config {
 	bus_size_t	mmiosize;
 
 	int vc_backlight_on;
+	int nscreens;
 };
 
 int	vgafb_common_probe(bus_space_tag_t, bus_space_tag_t,

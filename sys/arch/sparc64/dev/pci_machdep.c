@@ -1,4 +1,4 @@
-/*	$OpenBSD: pci_machdep.c,v 1.6.4.4 2003/05/13 19:41:09 ho Exp $	*/
+/*	$OpenBSD$	*/
 /*	$NetBSD: pci_machdep.c,v 1.22 2001/07/20 00:07:13 eeh Exp $	*/
 
 /*
@@ -460,7 +460,7 @@ pci_intr_establish(pc, ih, level, func, arg, what)
 
 	DPRINTF(SPDB_INTR, ("pci_intr_establish: ih %lu; level %d",
 	    (u_long)ih, level));
-	cookie = bus_intr_establish(pp->pp_memt, ih, level, 0, func, arg);
+	cookie = bus_intr_establish(pp->pp_memt, ih, level, 0, func, arg, what);
 
 	DPRINTF(SPDB_INTR, ("; returning handle %p\n", cookie));
 	return (cookie);

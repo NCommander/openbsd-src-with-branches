@@ -1,4 +1,4 @@
-/*	$OpenBSD: frame.h,v 1.5.12.1 2001/04/18 16:09:59 niklas Exp $	*/
+/*	$OpenBSD$	*/
 /*	$NetBSD: frame.h,v 1.15 1997/05/03 12:49:05 mycroft Exp $	*/
 
 /*
@@ -51,7 +51,7 @@ struct frame {
 		u_int	tf_pc;
 		u_short	tf_format:4,
 			tf_vector:12;
-	} __attribute__((__packed__)) F_t;
+	} __packed F_t;
 	union F_u {
 		struct fmt2 {
 			u_int	f_iaddr;

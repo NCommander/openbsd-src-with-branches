@@ -36,7 +36,7 @@
 
 /* Event queue definitions */
 #ifndef AED_MAX_EVENTS
-#define AED_MAX_EVENTS 200	/* Maximum events to be kept in queue */  
+#define AED_MAX_EVENTS 200	/* Maximum events to be kept in queue */
 				/* maybe should be higher for slower macs? */
 #endif				/* AED_MAX_EVENTS */
 

@@ -82,7 +82,7 @@ int svr4_netattach(int);
 static int svr4_soo_close(struct file *fp, struct proc *p);
 
 static struct fileops svr4_netops = {
-	soo_read, soo_write, soo_ioctl, soo_select, soo_kqfilter,
+	soo_read, soo_write, soo_ioctl, soo_poll, soo_kqfilter,
 	soo_stat, svr4_soo_close
 };
 

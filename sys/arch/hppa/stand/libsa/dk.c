@@ -1,4 +1,4 @@
-/*	$OpenBSD: dk.c,v 1.5.4.2 2003/03/27 23:26:54 niklas Exp $	*/
+/*	$OpenBSD$	*/
 
 /*
  * Copyright 1996 1995 by Open Software Foundation, Inc.   
@@ -33,9 +33,7 @@
 #include "dev_hppa.h"
 
 const char *
-dk_disklabel(dp, label)
-	struct hppa_dev *dp;
-	struct disklabel *label;
+dk_disklabel(struct hppa_dev *dp, struct disklabel *label)
 {
 	char buf[DEV_BSIZE];
 	int ret;

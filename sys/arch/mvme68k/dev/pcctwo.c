@@ -1,5 +1,5 @@
 
-/*	$OpenBSD: pcctwo.c,v 1.6.2.3 2003/03/27 23:32:16 niklas Exp $ */
+/*	$OpenBSD$ */
 
 /*
  * Copyright (c) 1995 Theo de Raadt
@@ -64,7 +64,7 @@ struct cfattach pcctwo_ca = {
 };
 
 struct cfdriver pcctwo_cd = {
-	NULL, "pcctwo", DV_DULL, 0
+	NULL, "pcctwo", DV_DULL
 };
 
 struct pcctworeg *sys_pcc2 = NULL;
@@ -108,11 +108,6 @@ pcctwo_scan(parent, child, args)
 	struct cfdata *cf = child;
 	struct pcctwosoftc *sc = (struct pcctwosoftc *)parent;
 	struct confargs oca;
-
-	if (parent->dv_cfdata->cf_driver->cd_indirect) {
-                printf(" indirect devices not supported\n");
-                return 0;
-        }
 
 	bzero(&oca, sizeof oca);
 	oca.ca_offset = cf->cf_loc[0];

@@ -159,7 +159,6 @@ isr	.reg	%cr20
 ior	.reg	%cr21
 ipsw	.reg	%cr22
 eirr	.reg	%cr23
-hptmask	.reg	%cr24
 tr0	.reg	%cr24
 vtop	.reg	%cr25
 tr1	.reg	%cr25

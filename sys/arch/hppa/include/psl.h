@@ -93,7 +93,7 @@
 #define	PSL_R	(1 << (31-PSL_R_POS))	/* Recover Counter Enable */
 #define	PSL_Q	(1 << (31-PSL_Q_POS))	/* Interrupt State Collection Enable */
 #define	PSL_P	(1 << (31-PSL_P_POS))	/* Protection Identifier Validation Enable */
-#define	PSL_D	(1 << (31-PSL_D_POS))	/* Data Adress Translation Enable */
+#define	PSL_D	(1 << (31-PSL_D_POS))	/* Data Address Translation Enable */
 #define	PSL_I	(1 << (31-PSL_I_POS))	/* External Interrupt, Power Failure
 					   Interrupt, and Low-Priority Machine
 					   Check Interrupt unmask */

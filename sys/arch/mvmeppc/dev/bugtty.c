@@ -53,7 +53,7 @@ struct cfattach bugtty_ca = {
 };      
 
 struct cfdriver bugtty_cd = {
-        NULL, "bugtty", DV_TTY, 0
+        NULL, "bugtty", DV_TTY
 };
 
 /* prototypes */
@@ -383,7 +383,7 @@ bugttyioctl(dev, cmd, data, flag, p)
 		*(int *)data = SWFLAGS(dev);
 		break;
 	case TIOCSFLAGS:
-		error = suser(p->p_ucred, &p->p_acflag); 
+		error = suser(p, 0); 
 		if (error != 0)
 			return (EPERM); 
 

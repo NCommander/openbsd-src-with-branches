@@ -131,7 +131,7 @@ extern	unsigned short hp300_impipl;
 #define	IPL_TTYNOBUF	4 /* XXX */
 #define	IPL_CLOCK	6
 #define	IPL_STATCLOCK	6
-#define	IPL_HIGH	6
+#define	IPL_HIGH	7
 
 /* These spl calls are _not_ to be used by machine-independent code. */
 #define	splhil()	_splraise(PSL_S|PSL_IPL1)

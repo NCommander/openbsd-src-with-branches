@@ -171,5 +171,5 @@ lpt_gsc_attach(parent, self, aux)
 	lpt_attach_common(sc);
 
 	sc->sc_ih = gsc_intr_establish((struct gsc_softc *)parent, IPL_TTY,
-				       ga->ga_irq, lptintr, sc, &sc->sc_dev);
+	    ga->ga_irq, lptintr, sc, sc->sc_dev.dv_xname);
 }

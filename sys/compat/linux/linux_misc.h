@@ -40,6 +40,24 @@
 #ifndef _LINUX_MISC_H
 #define _LINUX_MISC_H
 
+/* This looks very unportable to me, but this is how Linux defines it. */
+struct linux_sysinfo {
+	long uptime;
+	unsigned long loads[3];
+#define LINUX_SYSINFO_LOADS_SCALE 65536
+	unsigned long totalram;
+	unsigned long freeram;
+	unsigned long sharedram;
+	unsigned long bufferram;
+	unsigned long totalswap;
+	unsigned long freeswap;
+	unsigned short procs;
+	unsigned long totalbig;
+	unsigned long freebig;
+	unsigned int mem_unit;
+	char _f[20-2*sizeof(long)-sizeof(int)];
+};
+
 /*
  * Options passed to the Linux wait4() system call.
  */

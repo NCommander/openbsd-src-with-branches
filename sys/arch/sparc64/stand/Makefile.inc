@@ -9,12 +9,15 @@ AFLAGS+= -Wa,-Av9a
 
 BINDIR=		/usr/mdec
 
+STANDALONE?=	-D_STANDALONE
+
 .if ${MACHINE} == "sparc64"
-CPPFLAGS+=	-D_STANDALONE -DSUN4U
+CPPFLAGS+=	${STANDALONE} -DSUN4U
 CPPFLAGS+=	-I.
 
 CFLAGS+=	-fno-stack-protector
 CFLAGS+=	-msoft-float
+CFLAGS+=	-fno-builtin-vprintf -fno-builtin-printf -fno-builtin-putchar
 .endif
 
 

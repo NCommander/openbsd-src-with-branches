@@ -1,4 +1,4 @@
-/*	$OpenBSD: netbsd_stat.c,v 1.5.4.4 2002/03/28 11:28:06 niklas Exp $	*/
+/*	$OpenBSD$	*/
 /*
  * Copyright (c) 1989, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -123,7 +123,7 @@ netbsd_sys___stat13(p, v, retval)
 	if (error)
 		return (error);
 	/* Don't let non-root see generation numbers (for NFS security) */
-	if (suser(p->p_ucred, &p->p_acflag))
+	if (suser(p, 0))
 		sb.st_gen = 0;
 	openbsd_to_netbsd_stat(&sb, &nsb);
 	error = copyout(&nsb, SCARG(uap, ub), sizeof(nsb));
@@ -160,7 +160,7 @@ netbsd_sys___lstat13(p, v, retval)
 	if (error)
 		return (error);
 	/* Don't let non-root see generation numbers (for NFS security) */
-	if (suser(p->p_ucred, &p->p_acflag))
+	if (suser(p, 0))
 		sb.st_gen = 0;
 	openbsd_to_netbsd_stat(&sb, &nsb);
 	error = copyout(&nsb, SCARG(uap, ub), sizeof(nsb));

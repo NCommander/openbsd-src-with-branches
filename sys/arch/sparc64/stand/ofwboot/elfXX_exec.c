@@ -51,13 +51,7 @@
 #if 0
 int	CAT3(elf,ELFSIZE,_exec)(int, CAT3(Elf,ELFSIZE,_Ehdr) *, u_int64_t *, void **, void **);
 #endif
-#if defined(ELFSIZE) && (ELFSIZE == 32)
-#define ELF_ALIGN(x)	(((x)+3)&(~3))
-#elif defined(ELFSIZE) && (ELFSIZE == 64)
 #define ELF_ALIGN(x)	(((x)+7)&(~7))
-#else
-#error ELFSIZE must be either 32 or 64!
-#endif
 
 int
 CAT3(elf, ELFSIZE, _exec)(fd, elf, entryp, ssymp, esymp)

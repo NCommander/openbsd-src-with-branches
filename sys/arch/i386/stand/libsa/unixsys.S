@@ -1,4 +1,4 @@
-/*	$OpenBSD: unixsys.S,v 1.2 1997/05/29 04:38:39 mickey Exp $	*/
+/*	$OpenBSD$	*/
 
 /*
  * Copyright (c) 1997 Michael Shalayeff
@@ -31,10 +31,17 @@
 #include <sys/syscall.h>
 
 
+#ifdef __STDC__
+#define RSYSCALL(x) \
+	ENTRY(u##x); \
+		movl	 $(SYS_##x), %eax; \
+		jmp	 1f
+#else
 #define RSYSCALL(x) \
 	ENTRY(u/**/x); \
 		movl	 $(SYS_/**/x), %eax; \
 		jmp	 1f
+#endif
 
 	.globl	_errno
 

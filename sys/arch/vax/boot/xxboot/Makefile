@@ -40,7 +40,7 @@ machine-links:
 	@[ -h machine ] || ln -s ${S}/arch/${MACHINE}/include machine
 	@[ -h ${MACHINE_ARCH} ] || ln -s ${S}/arch/${MACHINE_ARCH}/include ${MACHINE_ARCH}
 .NOPATH: machine ${MACHINE_ARCH}
-CLEANFILES+= machine ${MACHINE_ARCH}
+CLEANFILES+= machine ${MACHINE_ARCH} ${PROG}.out
 .endif
 
 ${PROG}: ${OBJS} ${LIBSA} ${LIBZ} ${LIBKERN}

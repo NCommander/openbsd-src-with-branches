@@ -874,9 +874,6 @@ linux_sys_pread(p, v, retval)
 		syscallarg(linux_off_t) offset;
 	} */ *uap = v;
 	struct sys_pread_args pra;
-	caddr_t sg;
-
-	sg = stackgap_init(p->p_emul);
 	
 	SCARG(&pra, fd) = SCARG(uap, fd);
 	SCARG(&pra, buf) = SCARG(uap, buf);
@@ -902,9 +899,6 @@ linux_sys_pwrite(p, v, retval)
 		syscallarg(linux_off_t) offset;
 	} */ *uap = v;
 	struct sys_pwrite_args pra;
-	caddr_t sg;
-
-	sg = stackgap_init(p->p_emul);
 
 	SCARG(&pra, fd) = SCARG(uap, fd);
 	SCARG(&pra, buf) = SCARG(uap, buf);

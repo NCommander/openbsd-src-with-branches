@@ -2144,7 +2144,7 @@ coprDasm(i, ofs, w)
 	register u_int uid = Uid(w);
 	register int load = 0;
 	register char *pfx = uid > 1 ? "c" : "f";
-	register int dreg;
+	register int dreg = 0;
 
 	if (Match("copr")) {
 		if (uid) {

@@ -1,4 +1,4 @@
-/*	$OpenBSD: exec_mvme.c,v 1.4.4.4 2002/03/28 10:36:03 niklas Exp $	*/
+/*	$OpenBSD$	*/
 
 
 /*-
@@ -187,8 +187,8 @@ exec_mvme(file, flag)
 	printf("=0x%x\n", cp - loadaddr);
 	close(io);
 
-	printf("Start @ 0x%x ...\n", (int)entry);
-	printf("Controler Address @ %x ...\n", bugargs.ctrl_addr);
+	printf("Start @ 0x%x\n", (int)entry);
+	printf("Controller Address 0x%x\n", bugargs.ctrl_addr);
 	if (flag & RB_HALT) mvmeprom_return();
 
 	bootdev = (bugargs.ctrl_lun << 8) | (bugargs.dev_lun & 0xFF);

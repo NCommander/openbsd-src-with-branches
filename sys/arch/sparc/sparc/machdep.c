@@ -1,4 +1,4 @@
-/*	$OpenBSD: machdep.c,v 1.43.2.12 2003/03/27 23:49:26 niklas Exp $	*/
+/*	$OpenBSD$	*/
 /*	$NetBSD: machdep.c,v 1.85 1997/09/12 08:55:02 pk Exp $ */
 
 /*
@@ -729,8 +729,9 @@ haltsys:
 #if NTCTRL > 0
 			tadpole_powerdown();
 #endif
-			printf("WARNING: powerdown failed!\n");
 #endif /* NPOWER || MTCTRL */
+			rominterpret("power-off");
+			printf("WARNING: powerdown failed!\n");
 		}
 #endif /* SUN4M */
 		printf("halted\n\n");
@@ -861,7 +862,7 @@ dumpsys()
 			blkno += btodb(NBPG);
 		}
 
-		printf("@%p:",maddr);
+		printf("@0x%x:", maddr);
 
 		for (; i < mp->len; i += n) {
 			n = mp->len - i;

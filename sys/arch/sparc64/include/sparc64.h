@@ -52,24 +52,6 @@ int prom_free_phys(paddr_t paddr, int len);
 paddr_t prom_get_msgbuf(int len, int align);
 
 /*
- * Compatibility stuff.
- */
-#define OF_findroot()	OF_peer(0)
-#define OF_fd_phandle(x) OF_instance_to_package(x)
-
-/*
- * These two functions get used solely in boot() in machdep.c.
- *
- * Not sure whether boot itself should be implementation dependent instead.	XXX
- */
-void ppc_exit(void) __attribute__((__noreturn__));
-void ppc_boot(char *bootspec) __attribute__((__noreturn__));
-
-int dk_match(char *name);
-
-void ofrootfound(void);
-
-/*
  * Debug
  */
 void prom_printf(const char *, ...);

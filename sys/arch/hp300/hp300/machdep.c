@@ -1,4 +1,4 @@
-/*	$OpenBSD: machdep.c,v 1.38.4.10 2003/05/13 19:41:03 ho Exp $	*/
+/*	$OpenBSD$	*/
 /*	$NetBSD: machdep.c,v 1.121 1999/03/26 23:41:29 mycroft Exp $	*/
 
 /*
@@ -342,8 +342,8 @@ cpu_startup()
 #ifdef DEBUG
 	pmapdebug = opmapdebug;
 #endif
-	printf("avail mem = %lu (%uK)\n", ptoa(uvmexp.free),
-	    ptoa(uvmexp.free)/1024);
+	printf("avail mem = %lu (%luK)\n", ptoa(uvmexp.free),
+	    ptoa(uvmexp.free) / 1024);
 	printf("using %d buffers containing %u bytes (%uK) of memory\n",
 		nbuf, bufpages * PAGE_SIZE, bufpages * PAGE_SIZE / 1024);
 
@@ -515,6 +515,9 @@ identifycpu()
 	const char *t;
 	char mc, *td;
 	int len;
+#ifdef FPSP
+	extern u_long fpvect_tab, fpvect_end, fpsp_tab;
+#endif
 
 	/*
 	 * Map machineid to model name.
@@ -677,6 +680,13 @@ identifycpu()
 	default:
 		break;
 	}
+
+#ifdef FPSP
+	if (cputype == CPU_68040) {
+		bcopy(&fpsp_tab, &fpvect_tab,
+		    (&fpvect_end - &fpvect_tab) * sizeof (fpvect_tab));
+	}
+#endif
 
 	return;
 lose:

@@ -1028,6 +1028,7 @@ sunos_sys_fcntl(p, v, retval)
 		return (EOPNOTSUPP);
 
 	default:
+		break;
 	}
 
 	ret = sys_fcntl(p, uap, retval);
@@ -1043,6 +1044,7 @@ sunos_sys_fcntl(p, v, retval)
 		}
 		break;
 	default:
+		break;
 	}
 
 	return (ret);

@@ -58,7 +58,7 @@ int	adbclose(dev_t dev, int flag, int mode, struct proc *p);
 int	adbread(dev_t dev, struct uio *uio, int flag);
 int	adbwrite(dev_t dev, struct uio *uio, int flag);
 int	adbioctl(dev_t , int , caddr_t , int , struct proc *);
-int	adbselect(dev_t dev, int rw, struct proc *p);
+int	adbpoll(dev_t dev, int rw, struct proc *p);
 
 /* adbsysadm.s */
 void	extdms_complete(void);

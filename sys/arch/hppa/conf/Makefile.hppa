@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile.hppa,v 1.8.2.5 2003/05/13 19:41:03 ho Exp $
+#	$OpenBSD$
 
 # Makefile for OpenBSD
 #
@@ -39,11 +39,11 @@ CPPFLAGS=	${INCLUDES} ${IDENT} ${PARAM} -D_KERNEL \
 CWARNFLAGS=	-Werror -Wall -Wstrict-prototypes -Wno-uninitialized \
 		-Wno-format -Wno-main
 CMACHFLAGS=	-mfast-indirect-calls -mportable-runtime -mno-space-regs \
-		-fno-stack-protector
+		-fno-stack-protector -fno-builtin-printf -fno-builtin-log
 COPTS?=		-Os
 CFLAGS=		${DEBUG} ${COPTS} ${CWARNFLAGS} ${CMACHFLAGS} ${PIPE}
 AFLAGS=		-x assembler-with-cpp -traditional-cpp -D_LOCORE
-LINKFLAGS=	-X -T ${HPPA}/conf/ld.script -Ttext 80000 -Map bsd.map
+LINKFLAGS=	-X -T ${HPPA}/conf/ld.script -Ttext 80000 --warn-common
 STRIPFLAGS=	-g -x
 
 .if ${IDENT:M-DDDB} != ""
@@ -181,7 +181,7 @@ SRCS=	${HPPA}/hppa/locore.S \
 	fi
 	sh $S/kern/genassym.sh ${MKDEP} -f assym.dep ${CFLAGS} \
 	    ${CPPFLAGS} < ${HPPA}/hppa/genassym.cf
-	@sed -e 's/.*\.o:.*\.c/assym.h:/' < assym.dep >> .depend
+	@sed -e 's/.*\.o:.* /assym.h: /' < assym.dep >> .depend
 	@rm -f assym.dep
 
 # depend on root or device configuration

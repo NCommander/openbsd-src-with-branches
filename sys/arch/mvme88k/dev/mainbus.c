@@ -7,6 +7,7 @@
 #include <sys/device.h>
 #include <sys/disklabel.h>
 
+#include <machine/cmmu.h>
 #include <machine/cpu.h>
 #include <machine/autoconf.h>
 
@@ -20,7 +21,7 @@ struct cfattach mainbus_ca = {
 };
 
 struct cfdriver mainbus_cd = {
-	NULL, "mainbus", DV_DULL, 0
+	NULL, "mainbus", DV_DULL
 };
 
 int
@@ -69,7 +70,14 @@ mainbus_attach(parent, self, args)
 	struct device *parent, *self;
 	void *args;
 {
-	printf (" machine type MVME%x\n", brdtyp);
+	extern char cpu_model[];
+
+	printf(": %s\n", cpu_model);
+
+	/*
+	 * Display cpu/mmu details. Only for the master CPU so far.
+	 */
+	cpu_configuration_print(1);
 
 	/* XXX
 	 * should have a please-attach-first list for mainbus,

@@ -1,4 +1,4 @@
-/*	$OpenBSD: netbsd_signal.h,v 1.2.4.1 2002/03/28 11:28:06 niklas Exp $	*/
+/*	$OpenBSD$	*/
 /*	$NetBSD: signal.h,v 1.42 1998/12/21 10:35:00 drochner Exp $	*/
 
 /*
@@ -52,12 +52,6 @@ struct	netbsd_sigaction {
 	void	(*netbsd_sa_handler)(int);/* signal handler */
 	netbsd_sigset_t netbsd_sa_mask;		/* signal mask to apply */
 	int	netbsd_sa_flags;		/* see signal options below */
-};
-
-struct netbsd_sigaltstack {
-	void	*netbsd_ss_sp;		/* signal stack base */
-	size_t	netbsd_ss_size;		/* signal stack length */
-	int	netbsd_ss_flags;	/* SS_DISABLE and/or SS_ONSTACK */
 };
 
 #endif	/* !_NETBSD_SYS_SIGNAL_H_ */

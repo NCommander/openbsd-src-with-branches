@@ -6,6 +6,7 @@
  */
 #include <sys/types.h>
 #include <machine/prom.h>
+#include "prom.h"
 
 /* BUG - query board routines */
 struct mvmeprom_brdid *

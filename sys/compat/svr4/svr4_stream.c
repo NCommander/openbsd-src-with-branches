@@ -153,6 +153,9 @@ show_ioc(str, ioc)
 	if (len > 1024)
 		len = 1024;
 
+	if (len <= 0)
+		return 0;
+
 	ptr = (u_char *) malloc(len, M_TEMP, M_WAITOK);	
 	uprintf("%s cmd = %ld, timeout = %d, len = %d, buf = %p { ",
 	    str, ioc->cmd, ioc->timeout, ioc->len, ioc->buf);

@@ -1,4 +1,4 @@
-/*	$OpenBSD: fbvar.h,v 1.3.12.4 2003/05/16 00:29:40 niklas Exp $	*/
+/*	$OpenBSD$	*/
 /*	$NetBSD: fbvar.h,v 1.9 1997/07/07 23:31:30 pk Exp $ */
 
 /*
@@ -61,6 +61,8 @@ struct sunfb {
 	int	sf_linebytes;
 
 	int	sf_fbsize;		/* sf_height * sf_linebytes */
+
+	int	*sf_crowp, *sf_ccolp;	/* PROM cursor position */
 
 	int	sf_flags;
 	volatile u_int32_t* sf_pfour;	/* P4 register when applicable */

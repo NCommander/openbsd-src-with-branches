@@ -1,4 +1,4 @@
-/*	$OpenBSD: scsi.c,v 1.10.12.3 2003/05/13 19:41:02 ho Exp $	*/
+/*	$OpenBSD$	*/
 /*	$NetBSD: scsi.c,v 1.21 1997/05/05 21:08:26 thorpej Exp $	*/
 
 /*
@@ -950,7 +950,7 @@ finishxfer(hs, hd, target)
 	 * The following delay is definitely needed when trying to
 	 * write on a write protected disk (in the optical jukebox anyways),
 	 * but we shall see if other unexplained machine freezeups
-	 * also stop occuring...  A value of 5 seems to work but
+	 * also stop occurring...  A value of 5 seems to work but
 	 * 10 seems safer considering the potential consequences.
 	 */
 	DELAY(10);

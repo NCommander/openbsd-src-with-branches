@@ -36,8 +36,8 @@
 # compile it and execute the result.
 
 awk=${AWK:-awk}
-TMP1=`mktemp /tmp/genassym1.XXXXXX` || exit 1
-TMP2=`mktemp /tmp/genassym2.XXXXXX` || {
+TMP1=`mktemp /tmp/genassym1.XXXXXXXXXX` || exit 1
+TMP2=`mktemp /tmp/genassym2.XXXXXXXXXX` || {
 	rm -f $TMP1
 	exit 1
 }

@@ -149,4 +149,4 @@ void		 adosfs_aremhash(struct anode *);
 
 int		 adosfs_lookup(void *);
 
-int		(**adosfs_vnodeop_p)(void *);
+extern int	(**adosfs_vnodeop_p)(void *);

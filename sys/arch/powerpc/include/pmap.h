@@ -71,7 +71,9 @@ typedef u_int sr_t;
 #define VP_IDX2_MASK	(VP_IDX2_SIZE-1)
 #define VP_IDX2_POS 	12
 
-void pmap_kenter_cache( vaddr_t va, paddr_t pa, vm_prot_t prot, int cacheable);
+/* functions used by the bus layer for device accesses */
+void pmap_kenter_cache(vaddr_t va, paddr_t pa, vm_prot_t prot, int cacheable);
+void pmap_kremove_pg(vaddr_t va);
 
 /* cache flags */
 #define PMAP_CACHE_DEFAULT	0 	/* WB cache managed mem, devices not */

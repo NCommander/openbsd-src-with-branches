@@ -2169,7 +2169,7 @@ mrg_pmintr(void)	/* we don't do this yet */
 }
 #endif
 
-/* caller should really use machine-independant version: getPramTime */
+/* caller should really use machine-independent version: getPramTime */
 /* this version does pseudo-adb access only */
 int 
 adb_read_date_time(unsigned long *time)
@@ -2223,7 +2223,7 @@ adb_read_date_time(unsigned long *time)
 	}
 }
 
-/* caller should really use machine-independant version: setPramTime */
+/* caller should really use machine-independent version: setPramTime */
 /* this version does pseudo-adb access only */
 int 
 adb_set_date_time(unsigned long time)

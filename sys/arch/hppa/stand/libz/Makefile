@@ -7,4 +7,4 @@ SADIR=${.CURDIR}/..
 .PATH: ${S}/lib/libz
 
 .include "${S}/lib/libz/Makefile"
-CFLAGS+=${SACFLAGS} -I${S}/lib/libsa -DDYNAMIC_CRC_TABLE
+CFLAGS+=${SACFLAGS} -I${S}/lib/libsa

@@ -143,7 +143,7 @@ com_ebus_attach(parent, self, aux)
 
 	for (i = 0; i < ea->ea_nintrs; i++)
 		bus_intr_establish(sc->sc_iot, ea->ea_intrs[i],
-		    IPL_TTY, 0, comintr, sc);
+		    IPL_TTY, 0, comintr, sc, self->dv_xname);
 
 	/* Figure out if we're the console. */
 	com_is_input = (ea->ea_node == OF_instance_to_package(OF_stdin()));

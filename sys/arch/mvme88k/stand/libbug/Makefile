@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.4 1998/08/22 07:39:51 smurph Exp $
+#	$OpenBSD$
 
 LIB=bug
 
@@ -8,10 +8,10 @@ NOPROFILE=
 S=${.CURDIR}/../../../..
 DIR_SA=$S/lib/libsa
 
-CFLAGS+=-O2 -I${.CURDIR}/../../include -I${DIR_SA}
+CFLAGS+=-I${.CURDIR}/../../include -I${DIR_SA}
 
-SRCS=	delay.c diskrd.c diskwr.c getbrdid.c inchr.c instat.c outln.c \
-	outstr.c putchar.c return.c rtc_rd.c
+SRCS=	delay.c diskrd.c diskwr.c getbrdid.c inchr.c instat.c \
+	netfopen.c netfread.c outln.c outstr.c putchar.c return.c rtc_rd.c
 
 install:
 

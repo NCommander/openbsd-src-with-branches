@@ -1,4 +1,4 @@
-/*	$OpenBSD: lp.c,v 1.3.16.3 2003/03/27 23:32:16 niklas Exp $ */
+/*	$OpenBSD$ */
 
 /*
  * Copyright (c) 1995 Theo de Raadt
@@ -57,7 +57,7 @@ struct cfattach lp_ca = {
 };
 
 struct cfdriver lp_cd = {
-	NULL, "lp", DV_DULL, 0
+	NULL, "lp", DV_DULL
 };
 
 int lpintr(void *);

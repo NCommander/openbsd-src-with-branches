@@ -48,7 +48,7 @@
  * The cpu_softc structure. This structure maintains information about one
  * currently installed CPU (there may be several of these if the machine
  * supports multiple CPUs, as on some Sun4m architectures). The information
- * in this structure supercedes the old "cpumod", "mmumod", and similar
+ * in this structure supersedes the old "cpumod", "mmumod", and similar
  * fields.
  */
 

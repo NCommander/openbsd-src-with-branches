@@ -23,6 +23,7 @@ INCLUDES+=	-I$(S)/lib/libsa
 DEFS+=		-DSTANDALONE -DFIREPOWERBUGS
 CFLAGS+=	$(INCLUDES) $(DEFS) $(EXTRACFLAGS)
 CFLAGS+=	-fno-stack-protector
+CFLAGS+=	-fno-builtin-vprintf -fno-builtin-printf -fno-builtin-putchar
 LDFLAGS?=	-X -N -Ttext $(RELOC) -e $(ENTRY)
 
 cleandir:

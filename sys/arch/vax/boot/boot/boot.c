@@ -1,4 +1,4 @@
-/*	$OpenBSD: boot.c,v 1.5.4.4 2003/03/27 23:52:19 niklas Exp $ */
+/*	$OpenBSD$ */
 /*	$NetBSD: boot.c,v 1.18 2002/05/31 15:58:26 ragge Exp $ */
 /*-
  * Copyright (c) 1982, 1986 The Regents of the University of California.
@@ -283,7 +283,7 @@ load:
 
 
 void
-loadpcs()
+loadpcs(void)
 {
 	static int pcsdone = 0;
 	int mid = mfpr(PR_SID);

@@ -1,8 +1,8 @@
-#	$OpenBSD: Makefile,v 1.4.4.1 2001/05/14 21:37:21 niklas Exp $
+#	$OpenBSD$
 
 
 MAN=	installboot.8
-MANSUBDIR=/sparc
+MANSUBDIR=sparc
 LDSTATIC=-static
 
 .if ${MACHINE} == "sparc"

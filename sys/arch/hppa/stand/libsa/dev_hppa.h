@@ -1,4 +1,4 @@
-/*	$OpenBSD: dev_hppa.h,v 1.3.4.2 2003/03/27 23:26:54 niklas Exp $	*/
+/*	$OpenBSD$	*/
 
 
 #define IOPGSHIFT	11
@@ -39,3 +39,5 @@ extern pdcio_t pdc;
 extern int pdcbuf[];			/* PDC returns, pdc.c */
 
 int iodc_rw(char *, u_int, u_int, int func, struct pz_device *);
+const char *dk_disklabel(struct hppa_dev *dp, struct disklabel *label);
+

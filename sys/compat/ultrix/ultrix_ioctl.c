@@ -675,7 +675,7 @@ ultrix_sys_ioctl(p, v, retval)
 #define IFREQ_INOUT(a) { \
 	struct ifreq ifreq; \
 	if ((error = copyin (SCARG(uap, data), (caddr_t)&ifreq, sizeof (ifreq))) != 0) \
-		goto out;; \
+		goto out; \
 	if ((error = (*ctl)(fp, a, (caddr_t)&ifreq, p)) != 0) \
 		goto out; \
 	error = copyout ((caddr_t)&ifreq, SCARG(uap, data), sizeof (ifreq)); \

@@ -56,7 +56,7 @@
 #include <arch/vax/if/sgecvar.h>
 
 /*
- * Adresses.
+ * Addresses.
  */
 #define SGECADDR        0x20008000
 #define NISA_ROM        0x20084000

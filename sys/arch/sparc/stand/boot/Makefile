@@ -15,7 +15,7 @@ CFLAGS=	-O2 -I${.CURDIR}/../common -I${.CURDIR}/../../../../arch \
 	-I${.CURDIR}/../../../.. -I${.CURDIR}/../../../../lib/libsa ${DEFS} \
 	-DSPARC_BOOT_AOUT -DSPARC_BOOT_ELF
 
-CLEANFILES+=${PROG}.aout ${PROG}.elf
+CLEANFILES+=${PROG}.aout ${PROG}.elf elfclean
 LIBS=${LIBSA} ${LIBKERN} ${LIBZ}
 
 elfclean: clean-elf.c

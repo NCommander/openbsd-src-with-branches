@@ -51,7 +51,7 @@
 #define SA_MAX_VA	(SA_MIN_VA + DVMA_MAPLEN)
 
 void
-dvma_init()
+dvma_init(void)
 {
 	register int segva, dmava;
 

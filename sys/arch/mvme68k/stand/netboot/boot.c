@@ -1,4 +1,4 @@
-/*	$OpenBSD: boot.c,v 1.7 2000/01/06 03:21:44 smurph Exp $ */
+/*	$OpenBSD$ */
 
 /*-
  * Copyright (c) 1995 Theo de Raadt
@@ -70,7 +70,7 @@
 extern   char *version;
 char  line[80];
 
-main()
+main(int argc, char *argv[])
 {
 	char *cp, *file;
 	int ask = 0, howto, ret;

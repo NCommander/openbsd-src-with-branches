@@ -1,4 +1,4 @@
-/*	$OpenBSD: memc.c,v 1.4.16.3 2003/03/27 23:32:16 niklas Exp $ */
+/*	$OpenBSD$ */
 
 /*
  * Copyright (c) 1995 Theo de Raadt
@@ -63,7 +63,7 @@ struct cfattach memc_ca = {
 };
 
 struct cfdriver memc_cd = {
-	NULL, "memc", DV_DULL, 0
+	NULL, "memc", DV_DULL
 };
 
 int memcintr(struct frame *frame);

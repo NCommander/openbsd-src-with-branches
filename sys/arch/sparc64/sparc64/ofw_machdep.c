@@ -1,4 +1,4 @@
-/*	$OpenBSD: ofw_machdep.c,v 1.3.4.4 2003/03/27 23:42:37 niklas Exp $	*/
+/*	$OpenBSD$	*/
 /*	$NetBSD: ofw_machdep.c,v 1.16 2001/07/20 00:07:14 eeh Exp $	*/
 
 /*
@@ -53,7 +53,7 @@
  * Note that stdarg.h and the ANSI style va_start macro is used for both
  * ANSI and traditional C compilers.
  */
-#include <machine/stdarg.h>
+#include <sys/stdarg.h>
 
 #include <machine/sparc64.h>
 

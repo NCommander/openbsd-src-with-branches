@@ -7,7 +7,7 @@
 #include <sys/types.h>
 #include <machine/prom.h>
 #include "stand.h"
-#include "libbug.h"
+#include "prom.h"
 
 /* BUG - return to bug routine */
 void

@@ -1,4 +1,4 @@
-/*	$OpenBSD: nvram.c,v 1.5.6.4 2003/03/27 23:32:16 niklas Exp $ */
+/*	$OpenBSD$ */
 
 /*
  * Copyright (c) 1995 Theo de Raadt
@@ -65,7 +65,7 @@ struct cfattach nvram_ca = {
 };
 
 struct cfdriver nvram_cd = {
-	NULL, "nvram", DV_DULL, 0
+	NULL, "nvram", DV_DULL
 };
 
 int

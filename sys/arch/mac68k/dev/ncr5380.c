@@ -1877,9 +1877,9 @@ ncr_tprint(SC_REQ *reqp, char *fmt, ...)
 {
 	va_list	ap;
 
-	va_start(ap, fmt);
 	sc_print_addr(reqp->xs->sc_link);
-	printf("%:", fmt, ap);
+	va_start(ap, fmt);
+	vprintf(fmt, ap);
 	va_end(ap);
 }
 
@@ -1891,8 +1891,9 @@ ncr_aprint(struct ncr_softc *sc, char *fmt, ...)
 {
 	va_list	ap;
 
+	printf("%s: ", sc->sc_dev.dv_xname);
 	va_start(ap, fmt);
-	printf("%s : %:", sc->sc_dev.dv_xname, fmt, ap);
+	vprintf(fmt, ap);
 	va_end(ap);
 }
 /****************************************************************************

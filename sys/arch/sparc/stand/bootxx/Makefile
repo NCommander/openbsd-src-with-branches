@@ -9,7 +9,7 @@ NOMAN=	noman
 INSTALL_STRIP=
 
 SRCS=	srt0.S bootxx.c closeall.c dvma.c promdev.c
-CLEANFILES+=${PROG}.aout ${PROG}.elf
+CLEANFILES+=${PROG}.aout ${PROG}.elf elfclean elf
 
 # pre-built bits of libkern
 KOBJS=	__main.o bzero.o urem.o udiv.o

@@ -1,4 +1,4 @@
-/*	$OpenBSD: vectors.s,v 1.4.16.3 2003/03/27 23:32:17 niklas Exp $ */
+/*	$OpenBSD$ */
 
 | Copyright (c) 1995 Theo de Raadt
 |
@@ -161,11 +161,11 @@ GLOBAL(fpvect_end)
 	 * 68040: this chunk of vectors is copied into the fpfault zone
 	 */
 GLOBAL(fpsp_tab)
-	ASVECTOR(bsun)		/* 48: FPCP branch/set on unordered cond */
+	ASVECTOR(fpsp_bsun)	/* 48: FPCP branch/set on unordered cond */
 	ASVECTOR(inex)		/* 49: FPCP inexact result */
 	ASVECTOR(dz)		/* 50: FPCP divide by zero */
-	ASVECTOR(unfl)		/* 51: FPCP underflow */
-	ASVECTOR(operr)		/* 52: FPCP operand error */
-	ASVECTOR(ovfl)		/* 53: FPCP overflow */
-	ASVECTOR(snan)		/* 54: FPCP signalling NAN */
+	ASVECTOR(fpsp_unfl)	/* 51: FPCP underflow */
+	ASVECTOR(fpsp_operr)	/* 52: FPCP operand error */
+	ASVECTOR(fpsp_ovfl)	/* 53: FPCP overflow */
+	ASVECTOR(fpsp_snan)	/* 54: FPCP signalling NAN */
 #endif /* FPSP */

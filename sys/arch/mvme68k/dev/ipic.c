@@ -1,4 +1,4 @@
-/*	$OpenBSD: ipic.c,v 1.6.2.3 2003/03/27 23:32:16 niklas Exp $ */
+/*	$OpenBSD$ */
 
 /*
  * Copyright (c) 1995 Theo de Raadt
@@ -57,7 +57,7 @@ struct cfattach ipic_ca = {
 };
 
 struct cfdriver ipic_cd = {
-	NULL, "ipic", DV_DULL, 0
+	NULL, "ipic", DV_DULL
 };
 
 int
@@ -100,14 +100,6 @@ ipicscan(parent, child, args)
 	int slot, n = 0;
 	caddr_t ipv, ipp;
 	struct ipid *ipid;
-
-#if 0
-/* XXX all these are indirect!! how to fix? */
-	if (parent->dv_cfdata->cf_driver->cd_indirect) {
-		printf(" indirect devices not supported\n");
-		return 0;
-	}
-#endif
 
 	/* XXX can we determine IPIC_IPSPACE automatically? */
 	for (slot = 0; slot < sc->sc_nip; slot++) {

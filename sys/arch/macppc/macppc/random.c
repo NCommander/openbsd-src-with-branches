@@ -79,10 +79,9 @@ random()
 	value = 16807 * _randseed;
 	p = value & (long long) (0xffffffff);
 	q = (value >> 32) & (long long) (0xffffffff);
-	if (((long long) p + q) < 0x3fffffff) {
+	if (((long long) p + q) < 0x3fffffff)
 		_randseed = p + q;
-	} else {
+	else
 		_randseed = (int)(((long long)p + q ) & 0x3ffffffe) +1;
-	}
 	return _randseed;
 }

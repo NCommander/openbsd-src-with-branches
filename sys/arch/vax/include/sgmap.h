@@ -56,7 +56,7 @@
  */
 struct vax_sgmap {
 	struct extent *aps_ex;		/* extent map to manage sgva space */
-	struct pte *aps_pt;		/* page table */
+	pt_entry_t *aps_pt;		/* page table */
 	bus_addr_t aps_sgvabase;	/* base of the sgva space */
 	bus_size_t aps_sgvasize;	/* size of the sgva space */
 	bus_addr_t aps_pa;		/* Address in region */
@@ -64,7 +64,7 @@ struct vax_sgmap {
 };
 
 void	vax_sgmap_init(bus_dma_tag_t, struct vax_sgmap *,
-	    const char *, bus_addr_t, bus_size_t, struct pte *, bus_size_t);
+	    const char *, bus_addr_t, bus_size_t, pt_entry_t *, bus_size_t);
 
 int	vax_sgmap_alloc(bus_dmamap_t, bus_size_t,
 	    struct vax_sgmap *, int);

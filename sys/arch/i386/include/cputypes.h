@@ -69,6 +69,7 @@
 #define CPUVENDOR_TRANSMETA	6
 #define CPUVENDOR_NS		7
 #define CPUVENDOR_VIA		8
+#define CPUVENDOR_SIS		9
 
 /*
  * Some other defines, dealing with values returned by cpuid.

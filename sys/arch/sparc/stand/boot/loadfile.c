@@ -1,4 +1,4 @@
-/*	$OpenBSD: loadfile.c,v 1.2.4.1 2003/05/13 19:41:09 ho Exp $	*/
+/*	$OpenBSD$	*/
 /*	$NetBSD: loadfile.c,v 1.3 1997/04/06 08:40:59 cgd Exp $	*/
 
 /*
@@ -176,8 +176,7 @@ shread:
  * Emulate forward moves with reads, and give up on backwards moves.
  * bsd.rd ought to be correctly ordered.
  */
-int elf_seek(int, off_t);
-int
+static int
 elf_seek(int fd, off_t relpos)
 {
 #define DUMBBUFSIZE	4096

@@ -1,7 +1,7 @@
 #	$OpenBSD$
 
 MAN=	mkboot.8
-MANSUBDIR=/hppa
+MANSUBDIR=hppa
 
 .if ${MACHINE} == "hppa"
 PROG=	mkboot

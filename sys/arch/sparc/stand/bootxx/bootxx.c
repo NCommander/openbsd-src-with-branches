@@ -50,7 +50,7 @@ struct open_file	io;
 
 /*
  * The contents of the block_* variables below is set by installboot(8)
- * to hold the the filesystem data of the second-stage boot program
+ * to hold the filesystem data of the second-stage boot program
  * (typically `/boot'): filesystem block size, # of filesystem blocks and
  * the block numbers themselves.
  */
@@ -63,7 +63,7 @@ daddr_t			block_table[MAXBLOCKNUM] = { 0 };
 void	loadboot(struct open_file *, caddr_t);
 
 int
-main()
+main(int argc, char *argv[])
 {
 	char	*dummy;
 	size_t	n;

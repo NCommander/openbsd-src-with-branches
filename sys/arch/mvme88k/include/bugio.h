@@ -15,5 +15,6 @@ void bugoutstr(char *, char *);
 void bugrtcrd(struct mvmeprom_time *);
 void bugreturn(void);
 void bugbrdid(struct mvmeprom_brdid *);
+void bugdiskrd(struct mvmeprom_dskio *);
 
 #endif /* __MACHINE_BUGIO_H__ */

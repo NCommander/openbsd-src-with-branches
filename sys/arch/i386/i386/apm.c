@@ -1,4 +1,4 @@
-/*	$OpenBSD: apm.c,v 1.33.2.8 2003/05/13 19:42:07 ho Exp $	*/
+/*	$OpenBSD$	*/
 
 /*-
  * Copyright (c) 1998-2001 Michael Shalayeff. All rights reserved.
@@ -849,6 +849,8 @@ apmattach(parent, self, aux)
 		    ap->apm_entry, apm_ep.seg, ap->apm_entry+ch32,
 		    sc->sc_dev.dv_xname));
 
+		apm_set_ver(sc);
+
 		if (apm_flags & APM_BIOS_PM_DISABLED)
 			apm_powmgt_enable(1);
 		/*
@@ -856,8 +858,6 @@ apmattach(parent, self, aux)
 		 * on all devices (v1.1).
 		 */
 		apm_powmgt_engage(1, APM_DEV_ALLDEVS);
-
-		apm_set_ver(sc);
 
 		bzero(&regs, sizeof(regs));
 		if (apm_get_powstat(&regs) == 0) {

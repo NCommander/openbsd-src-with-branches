@@ -76,6 +76,7 @@
 #include <sys/param.h>
 #include <sys/device.h>
 #include <sys/fcntl.h>
+#include <sys/poll.h>
 #include <sys/timeout.h>
 
 #include <uvm/uvm_extern.h>
@@ -104,7 +105,7 @@ struct cfattach asc_ca = {
 };
 
 struct cfdriver asc_cd = {
-	NULL, "asc", DV_DULL, NULL, 0
+	NULL, "asc", DV_DULL
 };
 
 static int
@@ -255,21 +256,13 @@ ascioctl(dev, cmd, data, flag, p)
 }
 
 int
-ascselect(dev, rw, p)
+ascpoll(dev, events, p)
 	dev_t dev;
-	int rw;
+	int events;
 	struct proc *p;
 {
-	switch (rw) {
-	case FREAD:
-		break;
-
-	case FWRITE:
-		return (1);	/* always fails => never blocks */
-		break;
-	}
-
-	return (0);
+	/* always fails => never blocks */
+	return (events & (POLLOUT | POLLWRNORM));
 }
 
 paddr_t

@@ -210,7 +210,7 @@ grfmv_attach(parent, self, aux)
 		if (strncmp(cardname, "Samsung 768", 11) == 0)
 			sc->card_id = NUBUS_DRHW_SAM768;
 		else if (strncmp(cardname, "Toby frame", 10) != 0)
-			printf("%s: card masquaredes as Toby Framebuffer",
+			printf("%s: card masquerades as Toby Framebuffer",
 			    sc->sc_dev.dv_xname);
 	}
 

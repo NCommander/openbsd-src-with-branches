@@ -217,7 +217,7 @@ struct cdevsw cdevsw[] = {
 	cdev_usbdev_init(NUHID,uhid),	/* 62: USB generic HID */
 	cdev_usbdev_init(NUGEN,ugen),	/* 63: USB generic driver */
 	cdev_ulpt_init(NULPT,ulpt),	/* 64: USB printers */
-	cdev_usbdev_init(NURIO,urio),	/* 65: USB Diamond Rio 500 */
+	cdev_urio_init(NURIO,urio),	/* 65: USB Diamond Rio 500 */
 	cdev_tty_init(NUCOM,ucom),	/* 66: USB tty */
 	cdev_wsdisplay_init(NWSDISPLAY,	/* 67: frame buffers, etc. */
 		wsdisplay),
@@ -250,8 +250,7 @@ dev_t swapdev = makedev(1, 0);
  * Check whether dev is /dev/mem or /dev/kmem.
  */
 int
-iskmemdev(dev)
-	dev_t dev;
+iskmemdev(dev_t dev)
 {
 	return major(dev) == mem_no && minor(dev) < 2;
 }
@@ -260,8 +259,7 @@ iskmemdev(dev)
  * Check whether dev is /dev/zero.
  */
 int
-iszerodev(dev)
-	dev_t dev;
+iszerodev(dev_t dev)
 {
 	return major(dev) == mem_no && minor(dev) == 12;
 }

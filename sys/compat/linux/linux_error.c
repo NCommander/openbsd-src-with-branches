@@ -117,7 +117,8 @@ int linux_error[] = {
 	-LINUX_ENOSYS,		/* not mapped (EFTYPE) */
 	-LINUX_ENOSYS,		/* not mapped (EAUTH) */
 	-LINUX_ENOSYS,		/* not mapped (ENEEDAUTH) */
-	-LINUX_ENOSYS,		/* not mapped (ELAST) */
+	-LINUX_ENOSYS,		/* not mapped (EIPSEC) */
+	-LINUX_EOPNOTSUPP,	/* what is ENOATTR? */
 
 	/*
 	 * The rest of the list consists of errors that only

@@ -1,4 +1,4 @@
-/*	$OpenBSD: sunos_misc.c,v 1.22.2.7 2003/03/27 23:53:48 niklas Exp $	*/
+/*	$OpenBSD$	*/
 /*	$NetBSD: sunos_misc.c,v 1.65 1996/04/22 01:44:31 christos Exp $	*/
 
 /*
@@ -588,7 +588,7 @@ sunos_sys_fchroot(p, v, retval)
 	struct file *fp;
 	int error;
 
-	if ((error = suser(p->p_ucred, &p->p_acflag)) != 0)
+	if ((error = suser(p, 0)) != 0)
 		return (error);
 	if ((error = getvnode(fdp, SCARG(uap, fd), &fp)) != 0)
 		return (error);
@@ -1055,7 +1055,7 @@ sunos_sys_reboot(p, v, retval)
 	struct sunos_howto_conv *convp;
 	int error, bsd_howto, sun_howto;
 
-	if ((error = suser(p->p_ucred, &p->p_acflag)) != 0)
+	if ((error = suser(p, 0)) != 0)
 		return (error);
 
 	/*
@@ -1169,7 +1169,7 @@ sunos_sys_ostime(p, v, retval)
 	struct timeval tv;
 	int error;
 
-	if ((error = suser(p->p_ucred, &p->p_acflag)) != 0)
+	if ((error = suser(p, 0)) != 0)
 		return (error);
 
 	tv.tv_sec = SCARG(uap, time);

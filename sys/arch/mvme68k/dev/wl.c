@@ -1,4 +1,4 @@
-/*	$OpenBSD: wl.c,v 1.3.14.5 2003/03/27 23:32:16 niklas Exp $ */
+/*	$OpenBSD$ */
 
 /*
  * Copyright (c) 1995 Dale Rahn. All rights reserved.
@@ -194,7 +194,7 @@ struct cfattach wl_ca = {
 };
 
 struct cfdriver wl_cd = {
-	NULL, "wl", DV_TTY, 0
+	NULL, "wl", DV_TTY
 };
 
 #define CLCDBUF 80
@@ -518,7 +518,6 @@ wlopen(dev, flag, mode, p)
 		tp = cl->tty;
 	} else {
 		tp = cl->tty = ttymalloc();
-		tty_attach(tp);
 	}
 	tp->t_oproc = clstart;
 	tp->t_param = clparam;
@@ -789,7 +788,7 @@ wlioctl(dev, cmd, data, flag, p)
 		*(int *)data = cl->cl_swflags;
 		break;
 	case TIOCSFLAGS:
-		error = suser(p->p_ucred, &p->p_acflag); 
+		error = suser(p, 0); 
 		if (error != 0)
 			return(EPERM); 
 

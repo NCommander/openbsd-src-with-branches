@@ -221,11 +221,36 @@ linux_sys_truncate64(p, v, retval)
 		syscallarg(char *) path;
 		syscallarg(off_t) length;
 	} */ *uap = v;
+	struct sys_truncate_args ta;
 	caddr_t sg = stackgap_init(p->p_emul);
 
 	LINUX_CHECK_ALT_EXIST(p, &sg, SCARG(uap, path));
 
-	return sys_truncate(p, uap, retval);
+	SCARG(&ta, path) = SCARG(uap, path);
+	SCARG(&ta, length) = SCARG(uap, length);
+
+	return sys_truncate(p, &ta, retval);
+}
+
+/*
+ * This is needed due to padding in OpenBSD's sys_ftruncate_args
+ */
+int
+linux_sys_ftruncate64(p, v, retval)
+	struct proc *p;
+	void *v;
+	register_t *retval;
+{
+	struct linux_sys_ftruncate64_args /* {
+		syscallarg(int) fd;
+		syscallarg(off_t) length;
+        } */ *uap = v;
+	struct sys_ftruncate_args fta;
+
+	SCARG(&fta, fd) = SCARG(uap, fd);
+	SCARG(&fta, length) = SCARG(uap, length);
+
+	return sys_ftruncate(p, &fta, retval);
 }
 
 /*

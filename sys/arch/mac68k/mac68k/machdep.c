@@ -1,4 +1,4 @@
-/*	$OpenBSD: machdep.c,v 1.64.2.11 2003/05/13 19:41:05 ho Exp $	*/
+/*	$OpenBSD$	*/
 /*	$NetBSD: machdep.c,v 1.207 1998/07/08 04:39:34 thorpej Exp $	*/
 
 /*
@@ -436,8 +436,8 @@ cpu_startup(void)
 	phys_map = uvm_km_suballoc(kernel_map, &minaddr, &maxaddr,
 	    VM_PHYS_SIZE, 0, FALSE, NULL);
 
-	printf("avail mem = %lu (%uK)\n", ptoa(uvmexp.free),
-	    ptoa(uvmexp.free)/1024);
+	printf("avail mem = %lu (%luK)\n", ptoa(uvmexp.free),
+	    ptoa(uvmexp.free) / 1024);
 	printf("using %d buffers containing %u bytes (%uK) of memory\n",
 	    nbuf, bufpages * PAGE_SIZE, bufpages * PAGE_SIZE / 1024);
 
@@ -523,6 +523,9 @@ initcpu()
 #ifdef M68040
 	void buserr40(void);
 #endif
+#ifdef FPSP
+	extern u_long fpvect_tab, fpvect_end, fpsp_tab;
+#endif
 
 	switch (cputype) {
 #ifdef M68060
@@ -535,11 +538,16 @@ initcpu()
 	case CPU_68040:
 		vectab[2] = buserr40;
 		vectab[3] = addrerr4060;
+#ifdef FPSP
+		bcopy(&fpsp_tab, &fpvect_tab,
+		    (&fpvect_end - &fpvect_tab) * sizeof (fpvect_tab));
+#endif
 		break;
 #endif
 	default:
 		break;
 	}
+
 	DCIS();
 }
 
@@ -1020,6 +1028,8 @@ badladdr(addr)
 	nofault = (int *)0;
 	return (0);
 }
+
+int netisr;
 
 void
 netintr()

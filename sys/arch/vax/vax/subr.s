@@ -315,7 +315,7 @@ xxd:
 	addl3	r0,$IFTRAP,pcbtrap	# Save for copy* functions.
 
 #
-# Nice routine to get physical from virtual adresses.
+# Nice routine to get physical from virtual addresses.
 #
 	extzv	$9,$21,r0,r1		# extract offset
 	movl	*_Sysmap[r1],r2		# get pte

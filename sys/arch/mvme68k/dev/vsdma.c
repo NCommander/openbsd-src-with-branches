@@ -84,7 +84,7 @@ struct cfattach vs_ca = {
 };    
  
 struct cfdriver vs_cd = {
-        NULL, "vs", DV_DULL, 0 
+        NULL, "vs", DV_DULL
 }; 
 
 int
@@ -115,6 +115,7 @@ vsattach(parent, self, auxp)
 	sc->sc_link.adapter_target = 7;
 	sc->sc_link.adapter = &vs_scsiswitch;
 	sc->sc_link.device = &vs_scsidev;
+	sc->sc_link.luns = 1;
 	sc->sc_link.openings = 1;
 
 	sc->sc_ih_n.ih_fn = vs_nintr;

@@ -134,4 +134,4 @@ enum {
 #define PMU_PWR_AC_PRESENT	(1 << 0)
 #define PMU_PWR_BATT_PRESENT	(1 << 2)
 
-#endif 
+#endif

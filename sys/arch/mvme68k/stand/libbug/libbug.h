@@ -20,4 +20,4 @@ void	mvmeprom_rtc_rd(struct mvmeprom_time *);
 
 extern struct mvmeprom_args bugargs;
 
-void	bugexec(void (*)());
+void	bugexec(void (*)(void));
