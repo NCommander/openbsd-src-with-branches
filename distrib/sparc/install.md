@@ -1,4 +1,4 @@
-#	$OpenBSD: install.md,v 1.30 1999/10/13 02:47:42 jason Exp $
+#	$OpenBSD: install.md,v 1.31 2000/03/11 02:29:03 deraadt Exp $
 #	$NetBSD: install.md,v 1.3.2.5 1996/08/26 15:45:28 gwr Exp $
 #
 #
@@ -91,8 +91,8 @@ __EOT
 md_get_msgbuf() {
         # Only want to see one boot's worth of info
         sed -n -f /dev/stdin $MSGBUF <<- OOF
-                /^Copyright (c)/h
-                /^Copyright (c)/!H
+                /^OpenBSD /h
+                /^OpenBSD /!H
                 \${
                         g
                         p
