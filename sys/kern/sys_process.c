@@ -1,4 +1,4 @@
-/*	$OpenBSD: sys_process.c,v 1.10 2001/04/09 07:14:18 tholo Exp $	*/
+/*	$OpenBSD: sys_process.c,v 1.11 2001/06/18 08:17:46 deraadt Exp $	*/
 /*	$NetBSD: sys_process.c,v 1.55 1996/05/15 06:17:47 tls Exp $	*/
 
 /*-
@@ -408,13 +408,4 @@ sys_ptrace(p, v, retval)
 	panic("ptrace: impossible");
 #endif
 	return 0;
-}
-
-int
-trace_req(a1)
-	struct proc *a1;
-{
-
-	/* just return 1 to keep other parts of the system happy */
-	return (1);
 }
