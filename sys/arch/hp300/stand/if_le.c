@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_le.c,v 1.5 1997/01/17 08:32:46 downsj Exp $	*/
+/*	$OpenBSD: if_le.c,v 1.6 1997/02/03 04:48:05 downsj Exp $	*/
 /*	$NetBSD: if_le.c,v 1.9 1997/01/30 10:32:54 thorpej Exp $	*/
 
 /*
@@ -44,7 +44,7 @@
 #include <hp300/stand/device.h>
 #include <hp300/stand/if_lereg.h>
 
-#include "samachdep.h"
+#include <hp300/stand/samachdep.h>
 
 #ifndef NLE
 #define NLE 1
