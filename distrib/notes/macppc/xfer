@@ -1,9 +1,9 @@
-dnl	$OpenBSD: xfer,v 1.6 2002/04/07 22:51:25 miod Exp $
+dnl	$OpenBSD: xfer,v 1.7 2003/03/24 11:33:57 miod Exp $
 Installation is supported from several media types, including:
 
 	CD-ROM
 	FFS partitions
-	HFS partitions (bootloader/kernel only, using another media for D/L)
+	HFS partitions (bootloader/kernel only, using another media for d/l)
 	Tape
 	FTP
 	HTTP
