@@ -1,5 +1,5 @@
 # ex:ts=8 sw=4:
-# $OpenBSD: Ustar.pm,v 1.7 2004/02/15 15:33:59 espie Exp $
+# $OpenBSD: Ustar.pm,v 1.8 2004/08/06 07:51:17 espie Exp $
 #
 # Copyright (c) 2002-2004 Marc Espie <espie@openbsd.org>
 #
@@ -20,10 +20,6 @@
 use strict;
 use warnings;
 package OpenBSD::Ustar;
-# helps autoloader
-sub DESTROY
-{
-}
 
 use constant FILE => "\0";
 use constant FILE1 => '0';
