@@ -1,4 +1,4 @@
-/*	$OpenBSD: dc.c,v 1.63 2003/09/25 21:45:11 mickey Exp $	*/
+/*	$OpenBSD: dc.c,v 1.64 2003/09/29 18:53:58 mickey Exp $	*/
 
 /*
  * Copyright (c) 1997, 1998, 1999
@@ -2109,7 +2109,7 @@ dc_rx_resync(sc)
 	if (i == DC_RX_LIST_CNT)
 		return (0);
 
-	/* We've fallen behing the chip: catch it. */
+	/* We've fallen behind the chip: catch it. */
 	sc->dc_cdata.dc_rx_prod = pos;
 
 	return (EAGAIN);

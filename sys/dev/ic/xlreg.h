@@ -1,4 +1,4 @@
-/*	$OpenBSD: xlreg.h,v 1.15 2002/12/02 22:04:39 jason Exp $	*/
+/*	$OpenBSD: xlreg.h,v 1.16 2003/06/29 16:39:02 jason Exp $	*/
 
 /*
  * Copyright (c) 1997, 1998
@@ -482,7 +482,7 @@ struct xl_chain_data {
 	struct xl_chain		*xl_tx_tail;
 	struct xl_chain		*xl_tx_free;
 
-	/* 3c90xB "cyclone/hurricane/tornade" stuff */
+	/* 3c90xB "cyclone/hurricane/tornado" stuff */
 	int			xl_tx_prod;
 	int			xl_tx_cons;
 	int			xl_tx_cnt;

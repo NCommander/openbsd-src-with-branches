@@ -1,4 +1,4 @@
-/*	$OpenBSD: ncr53c9xvar.h,v 1.12 2003/04/27 11:22:52 ho Exp $	*/
+/*	$OpenBSD: ncr53c9xvar.h,v 1.13 2003/06/05 12:27:02 deraadt Exp $	*/
 /*	$NetBSD: ncr53c9xvar.h,v 1.13 1998/05/26 23:17:34 thorpej Exp $	*/
 
 /*-
@@ -424,7 +424,7 @@ struct ncr53c9x_softc {
 
 /*
  * Macro to convert the chip register Clock Per Byte value to
- * Sunchronous Transfer Period.
+ * Synchronous Transfer Period.
  */
 #define	ncr53c9x_cpb2stp(sc, cpb)	\
 	((250 * (cpb)) / (sc)->sc_freq)

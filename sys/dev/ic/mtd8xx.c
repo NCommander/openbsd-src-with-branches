@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: mtd8xx.c,v 1.1 2003/09/25 22:05:59 mickey Exp $	*/
 
 /*
  * Copyright (c) 2003 Oleg Safiullin <form@pdp11.org.ru>
@@ -1010,7 +1010,7 @@ mtd_rx_resync(sc)
 	if (i == MTD_RX_LIST_CNT)
 		return (0);
 
-	/* We've fallen behing the chip: catch it. */
+	/* We've fallen behind the chip: catch it. */
 	sc->mtd_cdata.mtd_rx_prod = pos;
 
 	return (EAGAIN);

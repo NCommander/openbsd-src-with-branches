@@ -1,4 +1,4 @@
-/*	$OpenBSD: i82596.c,v 1.20 2003/01/27 20:03:35 jason Exp $	*/
+/*	$OpenBSD: i82596.c,v 1.21 2003/08/09 03:11:47 mickey Exp $	*/
 /*	$NetBSD: i82586.c,v 1.18 1998/08/15 04:42:42 mycroft Exp $	*/
 
 /*-
@@ -1527,7 +1527,7 @@ i82596_setup_bufs(sc)
 
 	sc->nrxbuf = sc->nframes * B_PER_F;
 
-	/* The receice frame descriptors */
+	/* The receive frame descriptors */
 	ptr += cl;
 	sc->rframes = ptr - 2;
 	ptr += sc->nframes * 64;

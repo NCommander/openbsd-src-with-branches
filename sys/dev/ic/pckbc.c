@@ -1,4 +1,4 @@
-/* $OpenBSD: pckbc.c,v 1.5 2002/06/09 00:58:03 nordin Exp $ */
+/* $OpenBSD: pckbc.c,v 1.6 2003/03/13 01:06:58 drahn Exp $ */
 /* $NetBSD: pckbc.c,v 1.5 2000/06/09 04:58:35 soda Exp $ */
 
 /*
@@ -743,7 +743,7 @@ pckbc_start(t, slot)
 }
 
 /*
- * Handle command responses coming in asynchonously,
+ * Handle command responses coming in asynchronously,
  * return nonzero if valid response.
  * to be called at spltty()
  */

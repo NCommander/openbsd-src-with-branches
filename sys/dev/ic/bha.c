@@ -1,4 +1,4 @@
-/*	$OpenBSD: bha.c,v 1.4 2002/06/03 12:04:08 deraadt Exp $	*/
+/*	$OpenBSD: bha.c,v 1.5 2003/04/27 11:22:52 ho Exp $	*/
 /*	$NetBSD: bha.c,v 1.27 1998/11/19 21:53:00 thorpej Exp $	*/
 
 #undef BHADEBUG
@@ -431,7 +431,7 @@ AGAIN:
 		case BHA_MBI_UNKNOWN:
 			/*
 			 * Even if the CCB wasn't found, we clear it anyway.
-			 * See preceeding comment.
+			 * See preceding comment.
 			 */
 			break;
 
@@ -475,7 +475,7 @@ bha_intr(arg)
 #endif /* BHADEBUG */
 
 	/*
-	 * First acknowlege the interrupt, Then if it's not telling about
+	 * First acknowledge the interrupt, Then if it's not telling about
 	 * a completed operation just return.
 	 */
 	sts = bus_space_read_1(iot, ioh, BHA_INTR_PORT);
