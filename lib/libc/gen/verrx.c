@@ -32,13 +32,20 @@
  */
 
 #if defined(LIBC_SCCS) && !defined(lint)
-static char rcsid[] = "$OpenBSD: verrx.c,v 1.2 1996/08/19 08:27:32 tholo Exp $";
+static char rcsid[] = "$OpenBSD: verrx.c,v 1.3 2002/02/19 19:39:36 millert Exp $";
 #endif /* LIBC_SCCS and not lint */
 
+#include <sys/cdefs.h>
 #include <err.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdarg.h>
+
+#ifdef __indr_reference
+__indr_reference(_verrx, verrx);
+#else
+__weak_alias(verrx, _verrx);
+#endif
 
 extern char *__progname;		/* Program name, from crt0. */
 
