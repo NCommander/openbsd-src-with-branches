@@ -1,5 +1,4 @@
-/*	$OpenBSD$	*/
-/*	$NOWHERE: ipx_usrreq.c,v 1.2 1996/05/07 09:49:50 mickey Exp $	*/
+/*	$OpenBSD: ipx_usrreq.c,v 1.1 1996/08/16 09:16:02 mickey Exp $	*/
 
 /*-
  *

@@ -1,5 +1,4 @@
-/*	$OpenBSD$	*/
-/*	$NOWHERE: spx.h,v 1.2 1996/05/07 09:49:52 mickey Exp $	*/
+/*	$OpenBSD: spx.h,v 1.1 1996/08/16 09:16:03 mickey Exp $	*/
 
 /*-
  *

@@ -1,5 +1,4 @@
 /*	$OpenBSD: ipx_ip.c,v 1.1 1996/08/16 09:16:00 mickey Exp $	*/
-/*	$NOWHERE: ipx_ip.c,v 1.2 1996/05/07 09:49:43 mickey Exp $	*/
 
 /*-
  *
