@@ -188,7 +188,7 @@ tx*	at pci? dev ? function ?		# SMC 83C170 EPIC ethernet cards
 
 # Media Independent Interface (mii) drivers
 #exphy*	at mii? phy ?				# 3Com internal PHYs
-#inphy*	at mii? phy ?				# Intel 82555 PHYs
+inphy*	at mii? phy ?				# Intel 82555 PHYs
 #nsphy*	at mii? phy ?				# NS and compatible PHYs
 #qsphy*	at mii? phy ?				# Quality Semi QS6612 PHYs
 
