@@ -1,4 +1,4 @@
-/*	$OpenBSD: spec_vnops.c,v 1.2 1996/02/27 08:05:15 niklas Exp $	*/
+/*	$OpenBSD: spec_vnops.c,v 1.3 1996/05/02 13:20:19 deraadt Exp $	*/
 /*	$NetBSD: spec_vnops.c,v 1.29 1996/04/22 01:42:38 christos Exp $	*/
 
 /*
@@ -707,8 +707,9 @@ int
 spec_advlock(v)
 	void *v;
 {
+	extern int ufs_advlock __P((void *v));
 
-	return (EOPNOTSUPP);
+	return (ufs_advlock(v));
 }
 
 /*
