@@ -1,4 +1,4 @@
-/*	$OpenBSD: ftp-proxy.c,v 1.35 2004/03/14 21:51:44 dhartmei Exp $ */
+/*	$OpenBSD: ftp-proxy.c,v 1.36 2004/07/06 19:49:11 dhartmei Exp $ */
 
 /*
  * Copyright (c) 1996-2001
@@ -177,7 +177,7 @@ usage(void)
 	syslog(LOG_NOTICE,
 	    "usage: %s [-AnrVw] [-a address] [-D debuglevel [-g group]"
 	    " [-M maxport] [-m minport] [-t timeout] [-u user]"
-	    " [-R addr[:port]] [-S addr]", __progname);
+	    " [-R address[:port]] [-S address]", __progname);
 	exit(EX_USAGE);
 }
 
