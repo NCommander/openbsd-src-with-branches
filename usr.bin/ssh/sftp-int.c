@@ -27,7 +27,7 @@
 /* XXX: recursive operations */
 
 #include "includes.h"
-RCSID("$OpenBSD$");
+RCSID("$OpenBSD: sftp-int.c,v 1.1 2001/02/04 11:11:54 djm Exp $");
 
 #include "buffer.h"
 #include "xmalloc.h"
@@ -72,12 +72,12 @@ struct CMD {
 const struct CMD cmds[] = {
 	{ I_CHDIR,	"CD" },
 	{ I_CHDIR,	"CHDIR" },
-	{ I_CHDIR,	"LCD" },
 	{ I_CHGRP,	"CHGRP" },
 	{ I_CHMOD,	"CHMOD" },
 	{ I_CHOWN,	"CHOWN" },
 	{ I_HELP,	"HELP" },
 	{ I_GET,	"GET" },
+	{ I_LCHDIR,	"LCD" },
 	{ I_LCHDIR,	"LCHDIR" },
 	{ I_LLS,	"LLS" },
 	{ I_LMKDIR,	"LMKDIR" },
