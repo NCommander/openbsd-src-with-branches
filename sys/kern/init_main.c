@@ -169,7 +169,6 @@ main(framep)
 	register int i;
 	int s;
 	register_t rval[2];
-	extern int (*mountroot) __P((void));
 	extern struct pdevinit pdevinit[];
 	extern void roundrobin __P((void *));
 	extern void schedcpu __P((void *));
