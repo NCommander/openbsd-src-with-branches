@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.68 2000/09/01 05:59:12 aaron Exp $
+#	$OpenBSD: Makefile,v 1.69 2000/09/03 18:41:22 espie Exp $
 
 # not yet done: catman
 
@@ -26,7 +26,7 @@ SUBDIR+=eeprom screenblank grfinfo hilinfo
 SUBDIR+=wsconscfg wsfontload
 
 .if (${AFS:L} == "yes")
-SUBDIR+=afs
+#SUBDIR+=afs
 .endif
 
 .if (${YP:L} == "yes")
