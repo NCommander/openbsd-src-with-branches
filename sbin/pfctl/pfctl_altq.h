@@ -1,4 +1,4 @@
-/*	$OpenBSD: pfctl_altq.h,v 1.1 2002/11/18 22:49:15 henning Exp $	*/
+/*	$OpenBSD: pfctl_altq.h,v 1.2 2002/11/27 15:49:17 henning Exp $	*/
 /*
  * Copyright (C) 2002
  *	Sony Computer Science Laboratories Inc.  All rights reserved.
@@ -77,6 +77,7 @@
 
 #ifndef DEFAULT_PRIORITY
 #define DEFAULT_PRIORITY	1
+#define DEFAULT_QLIMIT		50
 #endif
 
 struct pf_altq_node {
