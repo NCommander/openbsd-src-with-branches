@@ -1,4 +1,4 @@
-/*	$OpenBSD: gprof.c,v 1.4 1998/08/11 02:54:08 deraadt Exp $	*/
+/*	$OpenBSD: gprof.c,v 1.5 1999/06/16 15:23:53 deraadt Exp $	*/
 /*	$NetBSD: gprof.c,v 1.8 1995/04/19 07:15:59 cgd Exp $	*/
 
 /*
@@ -44,7 +44,7 @@ static char copyright[] =
 #if 0
 static char sccsid[] = "@(#)gprof.c	8.1 (Berkeley) 6/6/93";
 #else
-static char rcsid[] = "$OpenBSD: gprof.c,v 1.4 1998/08/11 02:54:08 deraadt Exp $";
+static char rcsid[] = "$OpenBSD: gprof.c,v 1.5 1999/06/16 15:23:53 deraadt Exp $";
 #endif
 #endif /* not lint */
 
@@ -559,7 +559,7 @@ readsamples(pfile)
     if (i != nsamples) {
 	fprintf(stderr,
 	    "%s: unexpected EOF after reading %d/%d samples\n",
-		whoami , --i , nsamples );
+		whoami , i , nsamples );
 	done();
     }
 }
