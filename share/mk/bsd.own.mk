@@ -1,4 +1,4 @@
-#	$OpenBSD: bsd.own.mk,v 1.63 2002/12/07 22:31:00 millert Exp $
+#	$OpenBSD: bsd.own.mk,v 1.64 2003/04/17 03:50:24 drahn Exp $
 #	$NetBSD: bsd.own.mk,v 1.24 1996/04/13 02:08:09 thorpej Exp $
 
 # Host-specific overrides
@@ -25,7 +25,8 @@ TCP_WRAPPERS?=	yes
 .if (${MACHINE_ARCH} == "m88k")
 AFS?=		no
 .else
-AFS?=		yes
+# AFS needs updating to work w/o krb4 - disable for now.
+AFS?=		no
 .endif
 # Set `DEBUGLIBS' to `yes' to build libraries with debugging symbols
 DEBUGLIBS?=	no
