@@ -1,3 +1,5 @@
+/* $OpenBSD$ */
+
 #ifndef APACHE_MULTITHREAD_H
 #define APACHE_MULTITHREAD_H
 

@@ -1,3 +1,5 @@
+/* $OpenBSD$ */
+
 /* DON'T EVEN THINK ABOUT EDITING THIS, go see regex/Makefile,
  * search for mkh */
 #ifndef _REGEX_H_
