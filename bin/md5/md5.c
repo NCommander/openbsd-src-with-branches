@@ -1,5 +1,5 @@
 /*
- * $OpenBSD$
+ * $OpenBSD: md5.c,v 1.1 1996/06/03 22:08:27 niklas Exp $
  *
  * Derived from:
  */
