@@ -1,4 +1,4 @@
-/*	$OpenBSD: vgafb.c,v 1.15 2002/07/21 16:31:15 drahn Exp $	*/
+/*	$OpenBSD: vgafb.c,v 1.16 2002/08/02 16:13:07 millert Exp $	*/
 /*	$NetBSD: vga.c,v 1.3 1996/12/02 22:24:54 cgd Exp $	*/
 
 /*
@@ -404,7 +404,7 @@ vgafb_cnprobe(cp)
 		return;
 	} 
 
-	cp->cn_pri = CN_REMOTE;
+	cp->cn_pri = CN_INTERNAL;
 }
 
 void
