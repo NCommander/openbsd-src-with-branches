@@ -1,4 +1,4 @@
-.\"     $OpenBSD: qec.4,v 1.2 2002/02/19 06:59:13 jason Exp $
+.\"     $OpenBSD: qec.4,v 1.3 2002/03/20 01:31:52 jason Exp $
 .\"
 .\" Copyright (c) 1998 Jason L. Wright (jason@thought.net)
 .\" All rights reserved.
@@ -37,6 +37,8 @@
 .Nd SPARC64 Quad Ethernet Controller
 .Sh SYNOPSIS
 .Cd "qec* at sbus? slot ? offset ?"
+.Cd "be* at qec?"
+.Cd "qe* at qec?"
 .Sh DESCRIPTION
 The
 .Nm
