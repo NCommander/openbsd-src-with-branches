@@ -1,4 +1,4 @@
-/*	$OpenBSD: macrom.c,v 1.15 1997/04/14 18:48:01 gene Exp $	*/
+/*	$OpenBSD: macrom.c,v 1.16 1997/04/23 00:29:15 gene Exp $	*/
 /*	$NetBSD: macrom.c,v 1.31 1997/03/01 17:20:34 scottr Exp $	*/
 
 /*-
@@ -49,10 +49,10 @@
 #include <sys/param.h>
 #include <sys/systm.h>
 #include <sys/queue.h>
+#include <sys/lock.h>
 
 #include <vm/vm_prot.h>
 #include <vm/vm_param.h>
-#include <vm/lock.h>
 #include <vm/pmap.h>
 
 #include <machine/viareg.h>
