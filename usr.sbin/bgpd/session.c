@@ -1,4 +1,4 @@
-/*	$OpenBSD: session.c,v 1.197 2004/11/02 10:56:48 henning Exp $ */
+/*	$OpenBSD: session.c,v 1.198 2004/11/10 14:48:25 claudio Exp $ */
 
 /*
  * Copyright (c) 2003, 2004 Henning Brauer <henning@openbsd.org>
@@ -2546,6 +2546,7 @@ addr2sa(struct bgpd_addr *addr, u_int16_t port)
 		memcpy(&sa_in6->sin6_addr, &addr->v6,
 		    sizeof(sa_in6->sin6_addr));
 		sa_in6->sin6_port = htons(port);
+		sa_in6->sin6_scope_id = addr->scope_id;
 		break;
 	}
 
