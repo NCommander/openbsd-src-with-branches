@@ -1,4 +1,4 @@
-/*	$OpenBSD: kern_exit.c,v 1.26 2000/06/05 14:55:16 art Exp $	*/
+/*	$OpenBSD: kern_exit.c,v 1.27 2000/06/06 18:50:32 art Exp $	*/
 /*	$NetBSD: kern_exit.c,v 1.39 1996/04/22 01:38:25 christos Exp $	*/
 
 /*
@@ -262,6 +262,11 @@ exit1(p, rv)
 	 * clear %cpu usage during swap
 	 */
 	p->p_pctcpu = 0;
+
+	/*
+	 * notify interested parties of our demise.
+	 */
+	KNOTE(&p->p_klist, NOTE_EXIT);
 
 	/*
 	 * Notify parent that we're gone.  If we have P_NOZOMBIE or parent has

@@ -1,4 +1,4 @@
-/*	$OpenBSD: tcfs_keytab.h,v 1.3 2000/06/17 20:25:55 provos Exp $	*/
+/*	$OpenBSD: tcfs_keytab.h,v 1.4 2000/06/18 16:23:10 provos Exp $	*/
 /*
  * Copyright 2000 The TCFS Project at http://tcfs.dia.unisa.it/
  * All rights reserved.
@@ -79,6 +79,7 @@ typedef struct _kn {
 	unsigned int	 kn_type;
 
 	void *kn_key;
+#undef kn_data
 	tcfs_grp_data *kn_data;
 
 	struct _kn *kn_n;
