@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /*	$NetBSD: bcopy.c,v 1.5 1995/04/22 13:46:50 cgd Exp $	*/
 
 /*-

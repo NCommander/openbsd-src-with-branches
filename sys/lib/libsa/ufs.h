@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /*	$NetBSD: ufs.h,v 1.5 1995/10/20 01:35:25 cgd Exp $	*/
 
 /*-

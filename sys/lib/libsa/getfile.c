@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /*	$NetBSD: getfile.c,v 1.3 1994/10/26 05:44:45 cgd Exp $	*/
 
 /*-

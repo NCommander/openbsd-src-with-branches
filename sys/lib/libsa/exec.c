@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /*	$NetBSD: exec.c,v 1.12.4.1 1996/06/02 12:08:48 ragge Exp $	*/
 
 /*-

@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /*	$NetBSD: lseek.c,v 1.2 1994/10/26 05:44:51 cgd Exp $	*/
 
 /*-

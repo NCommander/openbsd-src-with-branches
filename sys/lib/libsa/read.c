@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /*	$NetBSD: read.c,v 1.5 1995/09/14 23:45:35 pk Exp $	*/
 
 /*-

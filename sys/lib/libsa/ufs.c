@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /*	$NetBSD: ufs.c,v 1.14.4.1 1996/06/02 12:08:45 ragge Exp $	*/
 
 /*-

@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /*	$NetBSD: strerror.c,v 1.8 1995/09/17 00:49:47 pk Exp $	*/
 
 /*-

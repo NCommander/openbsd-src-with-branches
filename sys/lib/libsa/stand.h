@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /*	$NetBSD: stand.h,v 1.13 1996/01/13 22:25:42 leo Exp $	*/
 
 /*-

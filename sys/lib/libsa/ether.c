@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /*	$NetBSD: ether.c,v 1.6 1995/09/14 23:45:25 pk Exp $	*/
 
 /*

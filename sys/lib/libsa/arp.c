@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /*	$NetBSD: arp.c,v 1.13 1995/12/08 04:12:53 gwr Exp $	*/
 
 /*
