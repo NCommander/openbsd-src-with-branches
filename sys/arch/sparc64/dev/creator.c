@@ -184,7 +184,7 @@ creator_attach(parent, self, aux)
 		goto fail;
 	}
 
-	for (i = 0; i < ma->ma_nreg; i++) {
+	for (i = 0; i < FFB_NREGS; i++) {
 		sc->sc_addrs[i] = ma->ma_reg[i].ur_paddr;
 		sc->sc_sizes[i] = ma->ma_reg[i].ur_len;
 	}
