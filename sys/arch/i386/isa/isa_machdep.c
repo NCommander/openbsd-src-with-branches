@@ -1,4 +1,4 @@
-/*	$OpenBSD: isa_machdep.c,v 1.20 1997/04/17 03:44:52 tholo Exp $	*/
+/*	$OpenBSD: isa_machdep.c,v 1.22 1997/09/24 22:28:16 niklas Exp $	*/
 /*	$NetBSD: isa_machdep.c,v 1.14 1996/05/12 23:06:18 mycroft Exp $	*/
 
 /*-
@@ -62,7 +62,6 @@
 /* default interrupt vector table entries */
 typedef (*vector) __P((void));
 extern vector IDTVEC(intr)[], IDTVEC(fast)[];
-extern struct gate_descriptor idt[];
 void isa_strayintr __P((int));
 void intr_calculatemasks __P((void));
 int fakeintr __P((void *));
