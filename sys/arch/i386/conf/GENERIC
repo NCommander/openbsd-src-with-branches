@@ -1,5 +1,4 @@
-#	$OpenBSD: GENERIC,v 1.358 2004/04/14 23:48:36 pvalchev Exp $
-#	$NetBSD: GENERIC,v 1.48 1996/05/20 18:17:23 mrg Exp $
+#	$OpenBSD: GENERIC,v 1.359 2004/05/08 05:11:00 grange Exp $
 #
 #	GENERIC -- everything that's currently supported
 #
