@@ -1,4 +1,4 @@
-/*	$OpenBSD: log.c,v 1.10 2005/02/16 15:33:37 jfb Exp $	*/
+/*	$OpenBSD: log.c,v 1.11 2005/02/22 16:22:10 jfb Exp $	*/
 /*
  * Copyright (c) 2004 Jean-Francois Brousseau <jfb@openbsd.org>
  * All rights reserved.
@@ -204,7 +204,7 @@ cvs_vlog(u_int level, const char *fmt, va_list vap)
 	char prefix[64], buf[1024], ebuf[32];
 	FILE *out;
 
-	if (level > LP_MAX)
+	if (level >= LP_MAX)
 		return (-1);
 
 	/* apply any filters */

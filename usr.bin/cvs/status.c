@@ -1,4 +1,4 @@
-/*	$OpenBSD: status.c,v 1.7 2005/01/06 20:39:27 jfb Exp $	*/
+/*	$OpenBSD: status.c,v 1.8 2005/02/27 00:22:08 jfb Exp $	*/
 /*
  * Copyright (c) 2004 Jean-Francois Brousseau <jfb@openbsd.org>
  * All rights reserved.
@@ -196,7 +196,8 @@ cvs_status_file(CVSFILE *cfp, void *arg)
 
 		rf = rcs_open(rcspath, RCS_READ);
 		if (rf == NULL) {
-			cvs_ent_free(entp);
+			if (entp != NULL)
+				cvs_ent_free(entp);
 			return (-1);
 		}
 
