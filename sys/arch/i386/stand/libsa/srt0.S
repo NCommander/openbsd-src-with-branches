@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /*	$NetBSD: srt0.c,v 1.3 1994/10/27 04:21:59 cgd Exp $	*/
 
 /*-
@@ -54,8 +55,7 @@
 	.globl	_bootdev
 	.globl	_boothowto
 	.globl	_cyloffset
-	.globl	_cnvmem
-	.globl	_extmem
+
 	.data
 	.globl	_Gdtr
 _Gdtr:
@@ -73,20 +73,25 @@ _esym:		.long	0
 	.globl	start
 
 start:
-	/* First, reset the PSL. */
+	pushl	%ebp
+	movl	%esp, %ebp
+	/* First, reset the PSL.
 	pushl	$PSL_MBO
 	popfl
+	*/
 
-	#cmpl	8, (%esp)
-	#jne	1f
+	movl	$0xb8000, %ebx
+	movl	$0x32323434, (%ebx)
 
-	movl    4(%esp), %eax
+	hlt
+
+	movl    8(%ebp), %eax
 	movl	%eax, _boothowto
-	movl    8(%esp),%eax
+	movl    12(%ebp),%eax
 	movl    %eax, _bootdev
-	movl    12(%esp),%eax
+	movl    16(%ebp),%eax
 	movl    %eax, _cyloffset
-	movl    16(%esp),%eax
+	movl    20(%ebp),%eax
 	movl    %eax, _esym
 
 	/* save old stack state */

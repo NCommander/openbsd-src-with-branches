@@ -1,4 +1,4 @@
-/*	$OpenBSD: bioskbd.S,v 1.1.2.1 1996/10/29 09:22:57 mickey Exp $	*/
+/*	$OpenBSD: bioskbd.S,v 1.1.2.2 1996/10/29 10:27:40 mickey Exp $	*/
 
 /*
  * Ported to boot 386BSD by Julian Elischer (julian@tfs.com) Sept 1992
@@ -100,7 +100,6 @@ ENTRY(kbd_putc)
 	ret
 
 
-#ifndef	STRIPPED
 /*
 # BIOS call "INT 16H Function 00H" to read character from the keyboard
 #	Call with	%ah = 0x00
@@ -169,4 +168,3 @@ ENTRY(kbd_ischar)
 	popl	%ebx
 	popl	%ebp
 	ret
-#endif

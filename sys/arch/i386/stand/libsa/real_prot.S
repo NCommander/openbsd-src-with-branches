@@ -1,4 +1,4 @@
-/*	$OpenBSD: real_prot.S,v 1.1.2.1 1996/10/29 09:23:17 mickey Exp $	*/
+/*	$OpenBSD: real_prot.S,v 1.1.2.2 1996/10/29 10:27:41 mickey Exp $	*/
 
 /*
  * Mach Operating System
@@ -26,7 +26,7 @@
  * the rights to redistribute these changes.
  *
  *	from: Mach, Revision 2.2  92/04/04  11:34:13  rpd
- *	$Id: real_prot.S,v 1.1.2.1 1996/10/29 09:23:17 mickey Exp $
+ *	$Id: real_prot.S,v 1.1.2.2 1996/10/29 10:27:41 mickey Exp $
  */
 
 
@@ -60,10 +60,17 @@ WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 #define addr32  .byte 0x67
 #define data32  .byte 0x66
 
-.globl	_ourseg
+	.data
+
+	.globl	_ourseg
 _ourseg:
-	.long	_ourseg
-.globl	_Gdtr
+	.long	0
+	.globl	_Gdtr
+#ifndef NO_IDTR
+	.globl	_Idtr_prot
+	.globl	_Idtr_real
+#endif
+
 	.text
 
 /*
@@ -92,14 +99,14 @@ ENTRY(real_to_prot)
 	 * reload CS register
 	 */
 	data32
-	ljmp	$0x18, $1f
+	ljmp	$0x08, $1f
 
 1:
 	/*
 	 * we are in USE32 mode now
 	 * set up the protected mode segment registers : DS, SS, ES
 	 */
-	movl	$0x20, %eax
+	movl	$0x10, %eax
 	movl	%ax, %ds
 	movl	%ax, %ss
 	movl	%ax, %es
@@ -129,7 +136,7 @@ ENTRY(prot_to_real)
 	movw	%ax, 2f-2
 
 	/* Change to use16 mode. */
-	ljmp	$0x28, $1f
+	ljmp	$0x18, $1f
 
 1:
 	/* clear the PE bit of CR0 */

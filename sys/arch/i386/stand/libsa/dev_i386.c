@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: dev_i386.c,v 1.1.2.1 1996/10/29 09:23:02 mickey Exp $	*/
 
 /*
  * Copyright (c) 1996 Michael Shalayeff
@@ -131,7 +131,6 @@ putchar(c)
 	putc(c);
 }
 
-#ifndef	STRIPPED
 int
 getchar()
 {
@@ -155,4 +154,3 @@ wait(n)
 	while (n-- && !ischar())
 		usleep(10);
 }
-#endif
