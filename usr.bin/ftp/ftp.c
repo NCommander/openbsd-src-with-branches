@@ -1,4 +1,4 @@
-/*	$OpenBSD: ftp.c,v 1.49 2002/07/04 10:08:00 jakob Exp $	*/
+/*	$OpenBSD: ftp.c,v 1.50 2003/03/11 04:01:11 itojun Exp $	*/
 /*	$NetBSD: ftp.c,v 1.27 1997/08/18 10:20:23 lukem Exp $	*/
 
 /*
@@ -67,7 +67,7 @@
 #if 0
 static char sccsid[] = "@(#)ftp.c	8.6 (Berkeley) 10/27/94";
 #else
-static char rcsid[] = "$OpenBSD: ftp.c,v 1.49 2002/07/04 10:08:00 jakob Exp $";
+static char rcsid[] = "$OpenBSD: ftp.c,v 1.50 2003/03/11 04:01:11 itojun Exp $";
 #endif
 #endif /* not lint */
 
@@ -131,7 +131,7 @@ hookup(host, port)
 	int s, len, tos, error;
 	static char hostnamebuf[MAXHOSTNAMELEN];
 	struct addrinfo hints, *res, *res0;
-	char hbuf[MAXHOSTNAMELEN];
+	char hbuf[NI_MAXHOST];
 	char *cause = "unknown";
 
 	epsv4bad = 0;
