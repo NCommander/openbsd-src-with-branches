@@ -23,7 +23,7 @@ documentation and/or software.
  */
 
 #if defined(LIBC_SCCS) && !defined(lint)
-static char rcsid[] = "$OpenBSD: md5c.c,v 1.7 1997/01/06 00:18:23 niklas Exp $";
+static char rcsid[] = "$OpenBSD: md5c.c,v 1.8 1997/01/07 10:09:00 niklas Exp $";
 #endif /* LIBC_SCCS and not lint */
 
 #include <string.h>
@@ -205,7 +205,7 @@ MD5_CTX *context;                                       /* context */
 
   /* Save number of bits */
   hi = context->count >> 32;
-  lo = context->count & 0xffffffff;
+  lo = (u_int32_t)context->count & 0xffffffff;
   Encode (bits, &lo, 4);
   Encode (bits + 4, &hi, 4);
 
