@@ -1,4 +1,4 @@
-/*	$OpenBSD: pf.c,v 1.436 2004/04/24 23:22:54 cedric Exp $ */
+/*	$OpenBSD: pf.c,v 1.437 2004/04/25 00:34:08 dhartmei Exp $ */
 
 /*
  * Copyright (c) 2001 Daniel Hartmeier
@@ -5762,6 +5762,9 @@ pf_test6(int dir, struct ifnet *ifp, struct mbuf **m0)
 	default:
 		action = pf_test_state_other(&s, dir, kif, &pd);
 		if (action == PF_PASS) {
+#if NPFSYNC
+			pfsync_update_state(s);
+#endif
 			r = s->rule.ptr;
 			a = s->anchor.ptr;
 			log = s->log;
