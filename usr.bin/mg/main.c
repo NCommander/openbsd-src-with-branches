@@ -1,4 +1,4 @@
-/*	$OpenBSD: main.c,v 1.18 2002/02/21 15:27:29 deraadt Exp $	*/
+/*	$OpenBSD: main.c,v 1.19 2002/03/18 01:45:55 vincent Exp $	*/
 
 /*
  *	Mainline.
@@ -103,7 +103,7 @@ main(int argc, char **argv)
  * Initialize default buffer and window.
  */
 static void
-edinit()
+edinit(void)
 {
 	BUFFER	*bp;
 	MGWIN	*wp;
@@ -135,8 +135,7 @@ edinit()
  */
 /* ARGSUSED */
 int
-quit(f, n)
-	int f, n;
+quit(int f, int n)
 {
 	int	 s;
 
@@ -159,8 +158,7 @@ quit(f, n)
  */
 /* ARGSUSED */
 int
-ctrlg(f, n)
-	int f, n;
+ctrlg(int f, int n)
 {
 	return ABORT;
 }

@@ -1,4 +1,4 @@
-/*	$OpenBSD: extend.c,v 1.25 2002/05/29 12:28:45 vincent Exp $	*/
+/*	$OpenBSD: extend.c,v 1.26 2002/06/21 05:37:20 vincent Exp $	*/
 
 /*
  *	Extended (M-X) commands, rebinding, and	startup file processing.
@@ -507,8 +507,7 @@ unbindtokey(int f, int n)
 }
 
 int
-localunbind(f, n)
-	int f, n;
+localunbind(int f, int n)
 {
 	return dobind(curbp->b_modes[curbp->b_nmodes]->p_map,
 	    "Local unset key: ", TRUE);
