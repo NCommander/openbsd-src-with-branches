@@ -1,3 +1,4 @@
+/*	$OpenBSD:$	*/
 /*	$NetBSD: ofwmagic.S,v 1.1 1997/04/16 21:19:00 thorpej Exp $	*/
 
 /*-
