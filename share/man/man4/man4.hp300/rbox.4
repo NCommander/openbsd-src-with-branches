@@ -1,7 +1,11 @@
-.\"	$OpenBSD: mem.4,v 1.5 2003/03/03 06:47:43 jmc Exp $
+.\"	$OpenBSD: rb.4,v 1.6 2002/10/01 07:12:30 miod Exp $
 .\"
 .\" Copyright (c) 1990, 1991, 1993
 .\"	The Regents of the University of California.  All rights reserved.
+.\"
+.\" This code is derived from software contributed to Berkeley by
+.\" the Systems Programming Group of the University of Utah Computer
+.\" Science Department.
 .\"
 .\" Redistribution and use in source and binary forms, with or without
 .\" modification, are permitted provided that the following conditions
@@ -31,61 +35,52 @@
 .\" OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 .\" SUCH DAMAGE.
 .\"
-.\"     from: @(#)mem.4	8.1 (Berkeley) 6/5/93
+.\"     from: @(#)rb.4	8.1 (Berkeley) 6/9/93
 .\"
-.Dd June 5, 1993
-.Dt MEM 4 hp300
+.Dd March 16, 2003
+.Dt RBOX 4 hp300
 .Os
 .Sh NAME
-.Nm mem ,
-.Nm kmem
-.Nd memory files
+.Nm rbox
+.Nd
+.Tn HP98720
+.Dq Renaissance
+frame buffer
 .Sh DESCRIPTION
-The file
-.Pa /dev/mem
-is an interface to the physical memory of the
-computer.
-Byte offsets in this file are interpreted as physical memory addresses.
-Reading and writing this file is equivalent to reading and writing
-memory itself.
-An error will be returned if an attempt is made to reference
-an offset outside of
-.Pa /dev/mem .
-.Pp
-Kernel virtual memory is accessed via the file
-.Pa /dev/kmem
-in the same manner as
-.Pa /dev/mem .
-Only kernel virtual addresses that are currently mapped to memory are allowed.
-.Sh HP300
-On the
-.Tn HP300 ,
-the last byte of physical memory is always
-.Li 0xFFFFFFFF .
-Therefore, on an
-.Tn HP300
-with
-8Mb of memory, physical memory would start
-at
-.Li 0xFF800000 .
-The kernel virtual memory runs from
-.Li 0
-to about
-.Li 0x2400000 .
-.Pp
-Writeability of these devices is controlled by the system
-.Xr securelevel 7 .
-.Sh FILES
-.Bl -tag -width /dev/kmem -compact
-.It /dev/mem
-.It /dev/kmem
-.El
-.Sh SEE ALSO
-.Xr securelevel 7
-.Sh HISTORY
 The
-.Pa /dev/mem
+.Tn HP98720
 and
-.Pa /dev/kmem
-files appeared in
-.At v6 .
+.Tn HP98721
+are stackable 4-bit color frame buffers,
+also known as the Renaissance.
+By adding up to 7
+.Tn HP98722A
+frame buffer extensions, it is possible to add overlay planes.
+.Pp
+The
+.Nm
+driver provides a frame buffer abstraction to the
+.Xr grf 4
+driver, and the associated
+.Xr ite 4
+console framework.
+.Pp
+The Renaissance can be configured at either the ``internal'' address
+(frame buffer address 0x200000, control register space address 0x560000)
+or at an external select code less than 32.
+At the internal address it will be the ``preferred'' console device
+(see
+.Xr cons 4 ) .
+The hardware installation manual describes the procedure for
+setting these values.
+.Sh SEE ALSO
+.Xr ioctl 2 ,
+.Xr dvbox 4 ,
+.Xr gbox 4 ,
+.Xr grf 4 ,
+.Xr hyper 4 ,
+.Xr intro 4 ,
+.Xr topcat 4
+.Sh BUGS
+This driver has not been tested with all possible
+combinations of frame buffer boards and scan boards installed in the device.
