@@ -1,7 +1,7 @@
-#	$OpenBSD: Makefile,v 1.2 1996/12/08 15:22:25 downsj Exp $
+#	$OpenBSD: Makefile,v 1.3 1997/04/27 20:56:07 millert Exp $
 
 LIB=	com_err
-SRCS=	com_err.c error_message.c et_name.c init_et.c
+SRCS=	com_err.c error.c
 CFLAGS+=-I${.CURDIR}
 MAN=	com_err.3
 
