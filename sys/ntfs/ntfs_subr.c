@@ -1,4 +1,4 @@
-/*	$Id$	*/
+/*	$OpenBSD: ntfs_subr.c,v 1.1 2003/05/20 03:03:27 tedu Exp $	*/
 /*	$NetBSD: ntfs_subr.c,v 1.4 2003/04/10 21:37:32 jdolecek Exp $	*/
 
 /*-
