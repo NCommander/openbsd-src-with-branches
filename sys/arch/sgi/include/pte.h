@@ -1,4 +1,4 @@
-/*	$OpenBSD: pte.h,v 1.1 2004/08/06 21:12:19 pefo Exp $	*/
+/*	$OpenBSD: pte.h,v 1.2 2004/08/10 19:16:18 deraadt Exp $	*/
 
 /*
  * Copyright (c) 1988 University of Utah.
@@ -91,7 +91,7 @@ typedef union pt_entry {
 #define vad_to_pfn64(x) (((quad_t)(x) >> PG_SHIFT) & PG_FRAME)
 #define vad_to_vpn(x) ((int)((unsigned)(x) & PG_SVPN))
 #define vpn_to_vad(x) ((int)((x) & PG_SVPN))
-/* User viritual to pte page entry */
+/* User virtual to pte page entry */
 #define uvtopte(adr) (((adr) >> PGSHIFT) & (NPTEPG -1))
 
 #define	PG_SIZE_4K	0x00000000
