@@ -1,4 +1,4 @@
-/*	$OpenBSD: lpr.c,v 1.10 1996/11/03 23:24:12 millert Exp $ */
+/*	$OpenBSD: lpr.c,v 1.11 1996/11/04 18:13:38 millert Exp $ */
 /*	$NetBSD: lpr.c,v 1.10 1996/03/21 18:12:25 jtc Exp $	*/
 
 /*
@@ -47,7 +47,11 @@ static char copyright[] =
 #endif /* not lint */
 
 #ifndef lint
+#if 0
 static char sccsid[] = "@(#)lpr.c	8.4 (Berkeley) 4/28/95";
+#else
+static char rcsid[] = "$OpenBSD: $";
+#endif
 #endif /* not lint */
 
 /*

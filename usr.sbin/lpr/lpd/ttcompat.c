@@ -1,3 +1,5 @@
+/*	$OpenBSD: $	*/
+
 /*
  * Copyright (c) 1995
  *	The Regents of the University of California.  All rights reserved.
@@ -36,6 +38,10 @@
  * ttcompat.c -- convert sgtty flags to termios
  *	originally from /sys/kern/tty_compat.c
  */
+
+#ifndef lint
+static char rcsid[] = "$OpenBSD: $";
+#endif /* not lint */
 
 #include <sys/param.h>
 #include <sys/types.h>
