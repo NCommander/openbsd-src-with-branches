@@ -1,4 +1,4 @@
-/*	$OpenBSD: file.c,v 1.26 2003/10/13 02:29:29 vincent Exp $	*/
+/*	$OpenBSD: file.c,v 1.27 2003/11/08 19:17:29 jmc Exp $	*/
 
 /*
  *	File commands.
@@ -299,7 +299,7 @@ doneread:
 		}
 	}
 endoffile:
-	undo_add_insert(olp, opos, siz);
+	undo_add_insert(olp, opos, siz-1);
 
 	/* ignore errors */
 	ffclose(NULL);
