@@ -1,4 +1,4 @@
-/*	$OpenBSD: trap.c,v 1.20 2000/06/08 21:11:58 niklas Exp $	*/
+/*	$OpenBSD: trap.c,v 1.20 2000/06/08 22:25:19 niklas Exp $	*/
 
 /*
  * Copyright (c) 1998-2000 Michael Shalayeff
@@ -454,7 +454,7 @@ return;
 #endif
 #include "bridge.h"
 #if NBRIDGE > 0
-			DONET(NETISR_BRIDGE, bridgeintr)
+			DONET(NETISR_BRIDGE, bridgeintr);
 #endif
 		}
 		splx(s);
