@@ -1,4 +1,4 @@
-/*	$OpenBSD: activate.c,v 1.2 1996/06/23 14:31:30 deraadt Exp $	*/
+/*	$OpenBSD: activate.c,v 1.3 1997/03/23 03:52:13 millert Exp $	*/
 /*	$NetBSD: activate.c,v 1.5 1995/04/23 10:33:18 cgd Exp $	*/
 
 /*
@@ -154,7 +154,7 @@ send_reply(so, fd, error)
 	/*
 	 * Send to kernel...
 	 */
-	if ((n = sendmsg(so, &msg, MSG_EOR)) < 0)
+	if ((n = sendmsg(so, &msg, 0)) < 0)
 		syslog(LOG_ERR, "send: %m");
 #ifdef DEBUG
 	(void)fprintf(stderr, "sent %d bytes\n", n);
