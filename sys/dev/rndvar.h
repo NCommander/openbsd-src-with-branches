@@ -63,6 +63,9 @@ struct rndstats {
 	u_long rnd_deqs;  /* dequeue calls */
 	u_long rnd_drops; /* queue-full drops */
 	u_long rnd_drople;/* queue low watermark low entropy drops */
+
+	u_int rnd_asleep; /* sleeping for the data */
+	u_int rnd_queued; /* queued for processing */
 };
 
 #ifdef _KERNEL
