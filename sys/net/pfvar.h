@@ -1,4 +1,4 @@
-/*	$OpenBSD: pfvar.h,v 1.102 2002/11/23 05:16:58 mcbride Exp $ */
+/*	$OpenBSD: pfvar.h,v 1.103 2002/11/23 09:37:02 deraadt Exp $ */
 
 /*
  * Copyright (c) 2001 Daniel Hartmeier
@@ -808,7 +808,7 @@ struct pfioc_qstats {
 #define DIOCADDADDR	_IOWR('D', 52, struct pfioc_pooladdr)
 #define DIOCGETADDRS	_IOWR('D', 53, struct pfioc_pooladdr)
 #define DIOCGETADDR	_IOWR('D', 54, struct pfioc_pooladdr)
-#define DIOCCHANGEADDR	_IOWR('D', 55, struct pfioc_pooladdr)
+#define DIOCCHANGEADDR	_IOWR('D', 55, struct pfioc_changeaddr)
 
 
 #ifdef _KERNEL
