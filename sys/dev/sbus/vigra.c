@@ -1,4 +1,4 @@
-/*	$OpenBSD: vigra.c,v 1.6 2005/03/06 23:04:04 miod Exp $	*/
+/*	$OpenBSD: vigra.c,v 1.7 2005/03/07 16:44:53 miod Exp $	*/
 
 /*
  * Copyright (c) 2002, 2003, Miodrag Vallat.
@@ -314,7 +314,7 @@ vigraattach(struct device *parent, struct device *self, void *args)
 	if ((sc->sc_ih = bus_intr_establish(sa->sa_bustag, sa->sa_pri,
 	    IPL_TTY, 0, vigra_intr, sc, self->dv_xname)) == NULL) {
 		printf("%s: couldn't establish interrupt, pri %d\n",
-		    self->dv_xname, sa->sa_pri);
+		    self->dv_xname, INTLEV(sa->sa_pri));
 	}
 
 	/*
