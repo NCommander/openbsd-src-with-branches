@@ -1,7 +1,7 @@
-/*	$OpenBSD: file.c,v 1.22 2003/07/04 17:31:19 avsm Exp $	*/
+/*	$OpenBSD: file.c,v 1.23 2003/07/30 17:03:55 tedu Exp $	*/
 
 #ifndef lint
-static const char rcsid[] = "$OpenBSD: file.c,v 1.22 2003/07/04 17:31:19 avsm Exp $";
+static const char rcsid[] = "$OpenBSD: file.c,v 1.23 2003/07/30 17:03:55 tedu Exp $";
 #endif
 
 /*
@@ -296,7 +296,7 @@ fileGetURL(char *base, char *spec)
 	    cp = strrchr(fname, '/');
 	    if (cp) {
 		*(cp + 1) = '\0';
-		strlcat(cp, ensure_tgz(spec), sizeof(fname));
+		strlcat(fname, ensure_tgz(spec), sizeof(fname));
 	    }
 	    else
 		return NULL;
