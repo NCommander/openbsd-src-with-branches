@@ -165,7 +165,7 @@ vmelmmap(dev, off, prot)
 	struct vmelsoftc *sc = (struct vmelsoftc *) vmel_cd.cd_devs[unit];
 	void * pa;
 
-	pa = vmepmap(sc->sc_vme, (void *)off, NBPG, BUS_VMEL);
+	pa = vmepmap(sc->sc_vme, (void *)(int)off, NBPG, BUS_VMEL);
 	printf("vmel %x pa %x\n", off, pa);
 	if (pa == NULL)
 		return (-1);

@@ -165,7 +165,7 @@ vmesmmap(dev, off, prot)
 	struct vmessoftc *sc = (struct vmessoftc *) vmes_cd.cd_devs[unit];
 	void * pa;
 
-	pa = vmepmap(sc->sc_vme, (void *)off, NBPG, BUS_VMES);
+	pa = vmepmap(sc->sc_vme, (void *)(int)off, NBPG, BUS_VMES);
 	if (pa == NULL)
 		return (-1);
 	return (m68k_btop(pa));
