@@ -1,4 +1,4 @@
-/*	$OpenBSD: identd.c,v 1.39 2004/09/14 22:14:29 deraadt Exp $	*/
+/*	$OpenBSD: identd.c,v 1.40 2004/09/16 08:25:05 deraadt Exp $	*/
 
 /*
  * This program is in the public domain and may be used freely by anyone
@@ -109,11 +109,7 @@ char *
 gethost6(struct sockaddr_in6 *addr)
 {
 	static char hbuf[2][NI_MAXHOST];
-#ifdef NI_WITHSCOPEID
-	const int niflags = NI_NUMERICHOST | NI_WITHSCOPEID;
-#else
 	const int niflags = NI_NUMERICHOST;
-#endif
 	static int bb = 0;
 	int error;
 

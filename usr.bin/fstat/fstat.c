@@ -1,4 +1,4 @@
-/*	$OpenBSD: fstat.c,v 1.48 2003/09/09 04:46:44 jmc Exp $	*/
+/*	$OpenBSD: fstat.c,v 1.49 2004/01/08 19:28:56 millert Exp $	*/
 
 /*-
  * Copyright (c) 1988, 1993
@@ -37,7 +37,7 @@ static char copyright[] =
 
 #ifndef lint
 /*static char sccsid[] = "from: @(#)fstat.c	8.1 (Berkeley) 6/6/93";*/
-static char *rcsid = "$OpenBSD: fstat.c,v 1.48 2003/09/09 04:46:44 jmc Exp $";
+static char *rcsid = "$OpenBSD: fstat.c,v 1.49 2004/01/08 19:28:56 millert Exp $";
 #endif /* not lint */
 
 #include <sys/param.h>
@@ -828,11 +828,7 @@ inet6_addrstr(struct in6_addr *p)
 {
 	struct sockaddr_in6 sin6;
 	static char hbuf[NI_MAXHOST];
-#ifdef NI_WITHSCOPEID
-	const int niflags = NI_NUMERICHOST | NI_WITHSCOPEID;
-#else
-	const int niflags = NI_NUMERICHOST
-#endif
+	const int niflags = NI_NUMERICHOST;
 
 	memset(&sin6, 0, sizeof(sin6));
 	sin6.sin6_family = AF_INET6;
