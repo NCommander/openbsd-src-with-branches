@@ -1,4 +1,4 @@
-/*	$OpenBSD: ftp.c,v 1.24 1997/12/17 16:03:03 millert Exp $	*/
+/*	$OpenBSD: ftp.c,v 1.25 1998/02/10 02:13:10 weingart Exp $	*/
 /*	$NetBSD: ftp.c,v 1.27 1997/08/18 10:20:23 lukem Exp $	*/
 
 /*
@@ -38,7 +38,7 @@
 #if 0
 static char sccsid[] = "@(#)ftp.c	8.6 (Berkeley) 10/27/94";
 #else
-static char rcsid[] = "$OpenBSD: ftp.c,v 1.24 1997/12/17 16:03:03 millert Exp $";
+static char rcsid[] = "$OpenBSD: ftp.c,v 1.25 1998/02/10 02:13:10 weingart Exp $";
 #endif
 #endif /* not lint */
 
@@ -1256,9 +1256,11 @@ void
 psummary(notused)
 	int notused;
 {
+	int save_errno = errno;
 
 	if (bytes > 0)
 		ptransfer(1);
+	errno = save_errno;
 }
 
 void
