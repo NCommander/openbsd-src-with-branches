@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.19 1996/07/31 12:29:16 deraadt Exp $
+#	$OpenBSD: Makefile,v 1.20 1996/08/03 20:44:17 millert Exp $
 
 TZDIR=		/usr/share/zoneinfo
 LOCALTIME=	US/Pacific
@@ -109,6 +109,8 @@ distribution: distrib-dirs
 		${DESTDIR}/var/log/maillog
 	install -c -o ${BINOWN} -g ${BINGRP} -m 664 /dev/null \
 		${DESTDIR}/var/log/messages
+	install -c -o ${BINOWN} -g ${BINGRP} -m 664 /dev/null \
+		${DESTDIR}/var/log/ftpd
 	install -c -o ${BINOWN} -g ${BINGRP} -m 664 /dev/null \
 		${DESTDIR}/var/log/wtmp
 	install -c -o daemon -g staff -m 664 /dev/null \
