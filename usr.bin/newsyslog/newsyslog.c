@@ -1,4 +1,4 @@
-/*	$OpenBSD: newsyslog.c,v 1.66 2003/06/03 01:52:41 millert Exp $	*/
+/*	$OpenBSD: newsyslog.c,v 1.67 2003/06/03 21:09:02 deraadt Exp $	*/
 
 /*
  * Copyright (c) 1999, 2002, 2003 Todd C. Miller <Todd.Miller@courtesan.com>
@@ -68,7 +68,7 @@
  */
 
 #ifndef lint
-static const char rcsid[] = "$OpenBSD: newsyslog.c,v 1.66 2003/06/03 01:52:41 millert Exp $";
+static const char rcsid[] = "$OpenBSD: newsyslog.c,v 1.67 2003/06/03 21:09:02 deraadt Exp $";
 #endif /* not lint */
 
 #ifndef CONF
@@ -106,6 +106,7 @@ static const char rcsid[] = "$OpenBSD: newsyslog.c,v 1.66 2003/06/03 01:52:41 mi
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <time.h>
 #include <unistd.h>
 
 #define CE_ROTATED	0x01		/* Log file has been rotated */
