@@ -1,4 +1,4 @@
-/*	$OpenBSD: npx.c,v 1.14 1997/04/17 03:44:52 tholo Exp $	*/
+/*	$OpenBSD: npx.c,v 1.15 1998/02/22 22:06:11 niklas Exp $	*/
 /*	$NetBSD: npx.c,v 1.57 1996/05/12 23:12:24 mycroft Exp $	*/
 
 #if 0
@@ -52,6 +52,11 @@
 #include <sys/user.h>
 #include <sys/ioctl.h>
 #include <sys/device.h>
+
+#if defined(UVM)
+#include <vm/vm.h>
+#include <uvm/uvm_extern.h>
+#endif
 
 #include <machine/cpu.h>
 #include <machine/intr.h>
@@ -378,7 +383,11 @@ npxintr(arg)
 	int code;
 	union sigval sv;
 
+#if defined(UVM)
+	uvmexp.traps++;
+#else
 	cnt.v_trap++;
+#endif
 	iprintf(("Intr"));
 
 	if (p == 0 || npx_type == NPX_NONE) {
