@@ -1,4 +1,4 @@
-/*	$OpenBSD: tree.h,v 1.3 1998/06/25 19:02:25 millert Exp $	*/
+/*	$OpenBSD: tree.h,v 1.4 1998/10/29 04:09:21 millert Exp $	*/
 
 /*
  * command trees for compile/execute
@@ -106,6 +106,7 @@ struct ioword {
 #define	XCCLOSE	BIT(7)		/* exchild: close close_fd in child */
 #define XERROK	BIT(8)		/* non-zero exit ok (for set -e) */
 #define XCOPROC BIT(9)		/* starting a co-process */
+#define XINTACT BIT(10)		/* OS2: proc started from interactive session */
 
 /*
  * flags to control expansion of words (assumed by t->evalflags to fit

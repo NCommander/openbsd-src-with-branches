@@ -1,4 +1,4 @@
-/*	$OpenBSD: trap.c,v 1.8 1998/12/21 05:53:27 deraadt Exp $	*/
+/*	$OpenBSD: trap.c,v 1.9 1999/01/08 20:25:02 millert Exp $	*/
 
 /*
  * signal handling
@@ -253,6 +253,9 @@ runtrap(p)
 		p->trap = (char *) 0;
 	}
 	oexstat = exstat;
+	/* Note: trapstr is fully parsed before anything is executed, thus
+	 * no problem with afree(p->trap) in settrap() while still in use.
+	 */
 	command(trapstr);
 	exstat = oexstat;
 	if (i == SIGEXIT_ || i == SIGERR_) {

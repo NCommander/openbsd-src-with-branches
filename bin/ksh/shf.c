@@ -1,4 +1,4 @@
-/*	$OpenBSD: shf.c,v 1.3 1997/06/19 13:58:46 kstailey Exp $	*/
+/*	$OpenBSD: shf.c,v 1.4 1998/10/29 04:09:21 millert Exp $	*/
 
 /*
  *  Shell file I/O routines
@@ -558,6 +558,14 @@ shf_getse(buf, bsize, shf)
 		shf->rnleft -= ncopy;
 		buf += ncopy;
 		bsize -= ncopy;
+#ifdef OS2
+		if (end && buf > orig_buf + 1 && buf[-2] == '\r') {
+			buf--;
+			bsize++;
+			buf[-1] = '\n';
+		}
+#endif
+
 	} while (!end && bsize);
 	*buf = '\0';
 	return buf;
