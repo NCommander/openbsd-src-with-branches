@@ -1,4 +1,4 @@
-/*	$OpenBSD: be.c,v 1.7 2001/11/28 19:47:54 jason Exp $	*/
+/*	$OpenBSD: be.c,v 1.8 2002/03/14 01:27:02 millert Exp $	*/
 /*	$NetBSD: be.c,v 1.26 2001/03/20 15:39:20 pk Exp $	*/
 
 /*-
@@ -402,7 +402,7 @@ beattach(parent, self, aux)
 #endif
 			if (child->mii_phy != BE_PHY_EXTERNAL ||
 			    child->mii_inst > 0) {
-				printf("%s: cannot accomodate MII device %s"
+				printf("%s: cannot accommodate MII device %s"
 				    " at phy %d, instance %d\n",
 				    sc->sc_dev.dv_xname,
 				    child->mii_dev.dv_xname,

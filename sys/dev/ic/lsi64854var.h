@@ -1,4 +1,4 @@
-/*	$OpenBSD: lsi64854var.h,v 1.2 2001/08/25 14:58:32 jason Exp $	*/
+/*	$OpenBSD: lsi64854var.h,v 1.3 2002/03/14 01:26:54 millert Exp $	*/
 /*	$NetBSD: lsi64854var.h,v 1.4 2001/03/29 02:58:39 petrov Exp $ */
 
 /*-
@@ -44,7 +44,7 @@ struct lsi64854_softc {
 
 	bus_space_handle_t	sc_regs;	/* the registers */
 	u_int			sc_rev;		/* revision */
-	int			sc_burst;	/* max suported burst size */
+	int			sc_burst;	/* max supported burst size */
 
 	int			sc_channel;
 #define L64854_CHANNEL_SCSI	1

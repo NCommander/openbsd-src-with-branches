@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_wi_ieee.h,v 1.7 2002/04/20 03:56:37 millert Exp $	*/
+/*	$OpenBSD: if_wi_ieee.h,v 1.8 2002/06/02 16:11:41 millert Exp $	*/
 
 /*
  * Copyright (c) 1997, 1998, 1999
@@ -380,7 +380,7 @@ struct wi_ltv_keys {
  */
 
 /*
- * standard hermes recieve frame used by wavelan/prism2 cards
+ * standard hermes receive frame used by wavelan/prism2 cards
  */
 struct wi_rx_frame {
 	/*

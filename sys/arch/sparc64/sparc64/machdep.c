@@ -1,4 +1,4 @@
-/*	$OpenBSD: machdep.c,v 1.41 2002/03/27 15:12:22 jason Exp $	*/
+/*	$OpenBSD: machdep.c,v 1.42 2002/06/14 04:17:59 art Exp $	*/
 /*	$NetBSD: machdep.c,v 1.108 2001/07/24 19:30:14 eeh Exp $ */
 
 /*-
@@ -1637,7 +1637,7 @@ _bus_dmamem_map(t, segs, nsegs, size, kvap, flags)
 	size = round_page(size);
 
 	/*
-	 * Find a region of kernel virtual addresses that can accomodate
+	 * Find a region of kernel virtual addresses that can accommodate
 	 * our aligment requirements.
 	 */
 	oversize = size + align - PAGE_SIZE;

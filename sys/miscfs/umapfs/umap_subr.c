@@ -1,4 +1,4 @@
-/*	$OpenBSD: umap_subr.c,v 1.12 1999/04/28 09:28:15 art Exp $	*/
+/*	$OpenBSD: umap_subr.c,v 1.13 2002/03/14 01:27:08 millert Exp $	*/
 /*	$NetBSD: umap_subr.c,v 1.8 1996/03/05 02:35:39 thorpej Exp $	*/
 
 /*
@@ -291,7 +291,7 @@ loop:
 
 
 /*
- * Try to find an existing umap_node vnode refering
+ * Try to find an existing umap_node vnode referring
  * to it, otherwise make a new umap_node vnode which
  * contains a reference to the target vnode.
  */

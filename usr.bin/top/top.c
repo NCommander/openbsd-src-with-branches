@@ -1,4 +1,4 @@
-/*	$OpenBSD: top.c,v 1.15 2002/02/16 21:27:55 millert Exp $	*/
+/*	$OpenBSD: top.c,v 1.16 2002/04/21 18:52:33 hugh Exp $	*/
 
 const char copyright[] = "Copyright (c) 1984 through 1996, William LeFebvre";
 
@@ -544,7 +544,7 @@ restart:
 	{
 	    /* determine number of processes to actually display */
 	    /* this number will be the smallest of:  active processes,
-	       number user requested, number current screen accomodates */
+	       number user requested, number current screen accommodates */
 	    active_procs = system_info.p_active;
 	    if (active_procs > topn)
 	    {

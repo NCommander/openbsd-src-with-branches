@@ -1,4 +1,4 @@
-/*	$OpenBSD: altq_red.c,v 1.3 2002/03/14 01:26:26 millert Exp $	*/
+/*	$OpenBSD: altq_red.c,v 1.4 2002/05/17 07:16:26 kjc Exp $	*/
 /*	$KAME: altq_red.c,v 1.10 2002/04/03 05:38:51 kjc Exp $	*/
 
 /*
@@ -146,7 +146,7 @@
 #define	TH_MIN		5	/* min threshold */
 #define	TH_MAX		15	/* max threshold */
 
-#define	RED_LIMIT	60	/* default max queue lenght */
+#define	RED_LIMIT	60	/* default max queue length */
 #define	RED_STATS		/* collect statistics */
 
 /*
