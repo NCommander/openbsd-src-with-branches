@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /*	$NetBSD: binpatch.c,v 1.6 1995/08/18 15:28:28 chopps Exp $	*/
 
 /* Author: Markus Wild mw@eunet.ch ???   */
