@@ -1,4 +1,4 @@
-/*	$OpenBSD: pf.c,v 1.299 2003/01/06 10:08:36 deraadt Exp $ */
+/*	$OpenBSD: pf.c,v 1.300 2003/01/07 00:21:07 dhartmei Exp $ */
 
 /*
  * Copyright (c) 2001 Daniel Hartmeier
@@ -526,6 +526,15 @@ pf_tbladdr_remove(struct pf_addr_wrap *aw)
 		return;
 	pfr_detach_table(aw->p.tbl);
 	aw->p.tbl = NULL;
+}
+
+void
+pf_tbladdr_copyout(struct pf_addr_wrap *aw)
+{
+	if (aw->type != PF_ADDR_TABLE || aw->p.tbl == NULL)
+		return;
+	aw->p.tblcnt = (aw->p.tbl->pfrkt_flags & PFR_TFLAG_ACTIVE) ?
+		aw->p.tbl->pfrkt_cnt : -1;
 }
 
 int
