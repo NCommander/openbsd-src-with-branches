@@ -163,9 +163,8 @@ crypto_get_driverid(void)
     if (crypto_drivers_num == 0)
     {
 	crypto_drivers_num = CRYPTO_DRIVERS_INITIAL;
-	MALLOC(crypto_drivers, struct cryptocap *, 
-	       crypto_drivers_num * sizeof(struct cryptocap), M_XDATA,
-	       M_NOWAIT);
+	crypto_drivers = malloc(crypto_drivers_num * sizeof(struct cryptocap),
+				M_XDATA, M_NOWAIT);
 	if (crypto_drivers == NULL)
 	{
 	    crypto_drivers_num = 0;
@@ -188,9 +187,8 @@ crypto_get_driverid(void)
 	if (2 * crypto_drivers_num <= crypto_drivers_num)
 	  return -1;
 
-	MALLOC(newdrv, struct cryptocap *,
-	       2 * crypto_drivers_num * sizeof(struct cryptocap),
-	       M_XDATA, M_NOWAIT);
+	newdrv = malloc(2 * crypto_drivers_num * sizeof(struct cryptocap),
+			M_XDATA, M_NOWAIT);
 	if (newdrv == NULL)
 	  return -1;
 
