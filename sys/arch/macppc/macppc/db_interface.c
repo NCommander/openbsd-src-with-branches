@@ -1,4 +1,4 @@
-/*	$OpenBSD: db_interface.c,v 1.4 2002/06/09 04:13:13 drahn Exp $	*/
+/*	$OpenBSD: db_interface.c,v 1.6 2002/09/15 09:01:58 deraadt Exp $	*/
 /*      $NetBSD: db_interface.c,v 1.12 2001/07/22 11:29:46 wiz Exp $ */
 
 #include <sys/param.h>
@@ -19,8 +19,7 @@ Debugger()
 }
 
 int
-ddb_trap_glue(frame)
-	struct trapframe *frame;
+ddb_trap_glue(struct trapframe *frame)
 {
 	if (!(frame->srr1 & PSL_PR)
 	    && (frame->exc == EXC_TRC
