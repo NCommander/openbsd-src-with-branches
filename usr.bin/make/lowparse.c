@@ -443,7 +443,7 @@ Parse_Getfilename()
 void
 LowParse_Init()
 {
-    Static_Lst_Init(&input_stack);
+    Lst_Init(&input_stack);
     current = NULL;
 }
 

@@ -19,7 +19,7 @@ SRCS=	arch.c buf.c cmd_exec.c compat.c cond.c dir.c error.c for.c \
 	var.c varmodifiers.c varname.c
 SRCS+=	lstAddNew.c lstAppend.c lstConcat.c lstConcatDestroy.c \
 	lstDeQueue.c lstDestroy.c lstDupl.c lstFindFrom.c lstForEachFrom.c \
-	lstInsert.c lstMember.c lstRemove.c lstReplace.c lstSucc.c
+	lstInit.c lstInsert.c lstMember.c lstRemove.c lstReplace.c lstSucc.c
 .PATH:	${.CURDIR}/lst.lib
 
 

@@ -320,7 +320,7 @@ Dir_Init()
 {
     char *dotname = ".";
 
-    Static_Lst_Init(dirSearchPath);
+    Lst_Init(dirSearchPath);
     ohash_init(&openDirectories, 4, &dir_info);
     ohash_init(&mtimes, 4, &stamp_info);
 

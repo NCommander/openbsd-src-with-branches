@@ -587,10 +587,10 @@ main(argc, argv)
 	esetenv("PWD", objdir);
 	unsetenv("CDPATH");
 
-	Static_Lst_Init(create);
-	Static_Lst_Init(&makefiles);
-	Static_Lst_Init(&varstoprint);
-	Static_Lst_Init(&targs);
+	Lst_Init(create);
+	Lst_Init(&makefiles);
+	Lst_Init(&varstoprint);
+	Lst_Init(&targs);
 
 	beSilent = false;		/* Print commands as executed */
 	ignoreErrors = false;		/* Pay attention to non-zero returns */

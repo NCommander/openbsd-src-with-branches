@@ -2348,8 +2348,8 @@ Job_Init(maxproc, maxlocal)
     else
 	(void)close(tfd);
 
-    Static_Lst_Init(&jobs);
-    Static_Lst_Init(&stoppedJobs);
+    Lst_Init(&jobs);
+    Lst_Init(&stoppedJobs);
     maxJobs =	  maxproc;
     maxLocal =	  maxlocal;
     nJobs =	  0;

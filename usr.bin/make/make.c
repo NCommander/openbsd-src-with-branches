@@ -781,7 +781,7 @@ Make_Run(targs)
     LIST	    examine;	/* List of targets to examine */
     int 	    errors;	/* Number of errors the Job module reports */
 
-    Static_Lst_Init(&toBeMade);
+    Lst_Init(&toBeMade);
 
     Lst_Clone(&examine, targs, NOCOPY);
     numNodes = 0;

@@ -1591,14 +1591,14 @@ void
 Parse_Init()
 {
     mainNode = NULL;
-    Static_Lst_Init(parseIncPath);
-    Static_Lst_Init(sysIncPath);
+    Lst_Init(parseIncPath);
+    Lst_Init(sysIncPath);
     Array_Init(&gsources, SOURCES_SIZE);
     Array_Init(&gtargets, TARGETS_SIZE);
     
     LowParse_Init();
 #ifdef CLEANUP
-    Static_Lst_Init(&targCmds);
+    Lst_Init(&targCmds);
 #endif
 }
 

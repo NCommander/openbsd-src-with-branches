@@ -1984,12 +1984,12 @@ Suff_SetNull(name)
 void
 Suff_Init()
 {
-    Static_Lst_Init(&sufflist);
+    Lst_Init(&sufflist);
 #ifdef CLEANUP
-    Static_Lst_Init(&suffClean);
+    Lst_Init(&suffClean);
 #endif
-    Static_Lst_Init(&srclist);
-    Static_Lst_Init(&transforms);
+    Lst_Init(&srclist);
+    Lst_Init(&transforms);
 
     sNum = 0;
     /*

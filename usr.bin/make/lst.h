@@ -81,10 +81,7 @@ typedef void *(*DuplicateProc)(void *);
  * Creation/destruction functions
  */
 /* Create a new list */
-#define Lst_Init(l)	(l)->firstPtr = (l)->lastPtr = NULL
-/* Static lists are already okay */
-#define Static_Lst_Init(l)
-
+extern void		Lst_Init(LIST *);
 /* Duplicate an existing list */
 extern Lst		Lst_Clone(Lst, Lst, DuplicateProc);
 /* Destroy an old one */
