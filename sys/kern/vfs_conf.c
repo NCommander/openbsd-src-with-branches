@@ -1,4 +1,4 @@
-/*	$OpenBSD: vfs_conf.c,v 1.22 2003/08/14 07:46:39 mickey Exp $	*/
+/*	$OpenBSD: vfs_conf.c,v 1.23 2004/04/13 00:15:28 tedu Exp $	*/
 /*	$NetBSD: vfs_conf.c,v 1.21.4.1 1995/11/01 00:06:26 jtc Exp $	*/
 
 /*
@@ -60,6 +60,7 @@
 #endif
 
 #ifdef NFSCLIENT
+#include <sys/rwlock.h>		/*  XXX*/
 #include <nfs/rpcv2.h>
 #include <nfs/nfsproto.h>
 #include <nfs/nfsnode.h>
