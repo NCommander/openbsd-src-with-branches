@@ -1,4 +1,4 @@
-/*	$OpenBSD: ip6_output.c,v 1.79 2003/11/07 22:32:47 itojun Exp $	*/
+/*	$OpenBSD: ip6_output.c,v 1.80 2003/12/10 03:30:21 itojun Exp $	*/
 /*	$KAME: ip6_output.c,v 1.172 2001/03/25 09:55:56 itojun Exp $	*/
 
 /*
@@ -92,6 +92,7 @@
 #endif
 
 #ifdef IPSEC
+#include <netinet/ip_ipsp.h>
 #include <netinet/ip_ah.h>
 #include <netinet/ip_esp.h>
 #include <netinet/udp.h>
