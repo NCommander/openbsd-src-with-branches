@@ -1,4 +1,4 @@
-/*	$OpenBSD: buffer.c,v 1.1 2005/01/28 14:05:40 claudio Exp $ */
+/*	$OpenBSD: buffer.c,v 1.2 2005/02/01 21:25:18 claudio Exp $ */
 
 /*
  * Copyright (c) 2003, 2004 Henning Brauer <henning@openbsd.org>
@@ -109,6 +109,16 @@ buf_reserve(struct buf *buf, size_t len)
 	b = buf->buf + buf->wpos;
 	buf->wpos += len;
 	return (b);
+}
+
+void *
+buf_seek(struct buf *buf, size_t pos, size_t len)
+{
+	/* only allowed to seek in already written parts */
+	if (pos + len > buf->wpos)
+		return (NULL);
+
+	return (buf->buf + pos);
 }
 
 int
