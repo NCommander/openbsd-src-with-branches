@@ -1,4 +1,4 @@
-/*	$OpenBSD: parse.y,v 1.207 2002/11/23 18:32:29 henning Exp $	*/
+/*	$OpenBSD: parse.y,v 1.208 2002/11/23 22:57:54 henning Exp $	*/
 
 /*
  * Copyright (c) 2001 Markus Friedl.  All rights reserved.
@@ -437,7 +437,7 @@ scrubrule	: SCRUB dir interface af fromto nodf minttl maxmss fragcache
 
 			if ($3) {
 				if ($3->not) {
-					yyerror("scrub rules don't support "
+					yyerror("scrub rules do not support "
 					    "'! <if>'");
 					YYERROR;
 				}
@@ -2768,7 +2768,7 @@ expand_nat(struct pf_nat *n,
 
 		TAILQ_INIT(&n->rpool.list);
 		for (h = rpool_hosts; h; h = h->next) {
-			pa = calloc(1, sizeof(struct pf_pooladdr));	
+			pa = calloc(1, sizeof(struct pf_pooladdr));
 			if (pa == NULL) {
 				yyerror("calloc");
 				error++;
