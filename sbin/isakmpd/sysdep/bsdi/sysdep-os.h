@@ -1,4 +1,4 @@
-/*	$OpenBSD: sysdep-os.h,v 1.1 2001/01/26 11:34:06 niklas Exp $	*/
+/*	$OpenBSD: sysdep-os.h,v 1.1 2001/03/23 16:14:35 markus Exp $	*/
 
 /*
  * Copyright (c) 1998, 1999 Niklas Hallqvist.  All rights reserved.
@@ -39,7 +39,7 @@
 /* in_port_t */
 #include <netinet/in.h>
 
-#define	timersub (tvp, uvp, vvp)					\
+#define	timersub(tvp, uvp, vvp)						\
 	do {								\
 		(vvp)->tv_sec = (tvp)->tv_sec - (uvp)->tv_sec;		\
 		(vvp)->tv_usec = (tvp)->tv_usec - (uvp)->tv_usec;	\
