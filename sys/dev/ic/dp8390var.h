@@ -1,4 +1,4 @@
-/*	$OpenBSD: dp8390var.h,v 1.6 2001/08/18 16:50:03 aaron Exp $	*/
+/*	$OpenBSD: dp8390var.h,v 1.7 2002/03/14 01:26:54 millert Exp $	*/
 /*	$NetBSD: dp8390var.h,v 1.8 1998/08/12 07:19:09 scottr Exp $	*/
 
 /*
@@ -106,9 +106,9 @@ struct dp8390_softc {
  * Compile-time config flags
  */
 /*
- * This sets the default for enabling/disablng the tranceiver.
+ * This sets the default for enabling/disablng the transceiver.
  */
-#define DP8390_DISABLE_TRANCEIVER	0x0001
+#define DP8390_DISABLE_TRANSCEIVER	0x0001
 
 /*
  * This forces the board to be used in 8/16-bit mode even if it autoconfigs
