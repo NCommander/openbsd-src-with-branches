@@ -1,4 +1,4 @@
-/*	$OpenBSD: siop_pci_common.c,v 1.10 2003/09/06 22:24:14 krw Exp $ */
+/*	$OpenBSD: siop_pci_common.c,v 1.11 2003/09/29 18:53:58 mickey Exp $ */
 /*	$NetBSD: siop_pci_common.c,v 1.17 2002/05/04 18:11:06 bouyer Exp $ */
 
 /*
@@ -299,9 +299,6 @@ siop_pci_attach_common(pci_sc, siop_sc, pa, intr)
 		return 0;
 	}
 
-#ifdef __hppa__
-	siop_sc->features &= ~SF_CHIP_RAM;
-#endif
 	if (siop_sc->features & SF_CHIP_RAM) {
 		int bar;
 		switch (memtype) {
