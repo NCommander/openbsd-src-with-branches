@@ -70,6 +70,7 @@ struct fxp_softc {
 	int phy_primary_addr;		/* address of primary PHY */
 	int phy_primary_device;		/* device type of primary PHY */
 	int phy_10Mbps_only;		/* PHY is 10Mbps-only device */
+	int phy_settings;		/* previous PHY bits */
 };
 
 /* Macros to ease CSR access. */
