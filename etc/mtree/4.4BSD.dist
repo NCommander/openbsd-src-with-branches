@@ -1,4 +1,4 @@
-#	$OpenBSD: 4.4BSD.dist,v 1.128 2002/06/07 08:53:42 beck Exp $
+#	$OpenBSD: 4.4BSD.dist,v 1.129 2002/06/08 02:21:53 millert Exp $
 
 /set type=dir uname=root gname=wheel mode=0755
 # .
@@ -34,7 +34,7 @@ amd
 ..
 
 # ./etc/authpf
-authpf		uname=root mode=0700
+authpf		uname=root mode=0755
 # ./etc/authpf
 ..
 
