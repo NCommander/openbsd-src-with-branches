@@ -1,4 +1,4 @@
-/* $OpenBSD: if_wx.c,v 1.17 2001/10/06 22:42:53 mjacob Exp $ */
+/* $OpenBSD: if_wx.c,v 1.18 2001/10/24 18:25:55 mjacob Exp $ */
 /*
  * Principal Author: Matthew Jacob <mjacob@feral.com>
  * Copyright (c) 1999, 2001 by Traakan Software
@@ -276,6 +276,7 @@ wx_attach(struct device *parent, struct device *self, void *aux)
 	ifp->if_ioctl = wx_ioctl;
 	ifp->if_start = wx_start;
 	ifp->if_watchdog = wx_txwatchdog;
+	IFQ_SET_READY(&ifp->if_snd);
 
 	/*
 	 * Attach the interface.
@@ -740,7 +741,7 @@ wx_start(struct ifnet *ifp)
 		int gctried = 0;
 		struct mbuf *m, *mb_head;
 
-		IF_DEQUEUE(&ifp->if_snd, mb_head);
+		IFQ_DEQUEUE(&ifp->if_snd, mb_head);
 		if (mb_head == NULL) {
 			break;
 		}
