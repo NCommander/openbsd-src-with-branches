@@ -1,4 +1,4 @@
-/*	$OpenBSD: machdep.c,v 1.23 1998/02/24 22:06:55 weingart Exp $	*/
+/*	$OpenBSD: machdep.c,v 1.24 1998/03/11 02:12:03 deraadt Exp $	*/
 
 /*
  * Copyright (c) 1997 Michael Shalayeff
@@ -44,6 +44,8 @@ struct BIOS_regs	BIOS_regs;
 #else
 #define CKPT(c) /* c */
 #endif
+
+extern int debug;
 
 void
 machdep()
