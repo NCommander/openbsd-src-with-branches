@@ -1,4 +1,4 @@
-/*	$OpenBSD: lndir.c,v 1.9 2002/05/29 18:33:39 deraadt Exp $	*/
+/*	$OpenBSD: lndir.c,v 1.10 2002/06/17 07:06:39 deraadt Exp $	*/
 /* $XConsortium: lndir.c /main/15 1995/08/30 10:56:18 gildea $ */
 
 /* 
@@ -296,6 +296,7 @@ dodir(char *fn, struct stat *fs, struct stat *ts, int rel)
 				warn("%s", dp->d_name);
 		}
 next:
+	;
 	}
 
 	closedir(df);

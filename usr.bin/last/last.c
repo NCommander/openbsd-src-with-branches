@@ -1,4 +1,4 @@
-/*	$OpenBSD: last.c,v 1.18 2002/02/04 17:40:59 mickey Exp $	*/
+/*	$OpenBSD: last.c,v 1.19 2002/02/16 21:27:47 millert Exp $	*/
 /*	$NetBSD: last.c,v 1.6 1994/12/24 16:49:02 cgd Exp $	*/
 
 /*
@@ -44,7 +44,7 @@ static char copyright[] =
 #if 0
 static char sccsid[] = "@(#)last.c	8.2 (Berkeley) 4/2/94";
 #endif
-static char rcsid[] = "$OpenBSD: last.c,v 1.18 2002/02/04 17:40:59 mickey Exp $";
+static char rcsid[] = "$OpenBSD: last.c,v 1.19 2002/02/16 21:27:47 millert Exp $";
 #endif /* not lint */
 
 #include <sys/param.h>
@@ -223,6 +223,7 @@ checkargs()
 			    "Warning: Ignoring username[s]\n");
 			break;
 		default:
+			break;
 			/* PRINT NOTHING */
 		}
 }

@@ -1,4 +1,4 @@
-/*	$OpenBSD: strings.c,v 1.6 2001/11/19 19:02:16 mpech Exp $	*/
+/*	$OpenBSD: strings.c,v 1.7 2002/02/16 21:27:53 millert Exp $	*/
 /*	$NetBSD: strings.c,v 1.7 1995/02/15 15:49:19 jtc Exp $	*/
 
 /*
@@ -44,7 +44,7 @@ static char copyright[] =
 #if 0
 static char sccsid[] = "@(#)strings.c	8.2 (Berkeley) 1/28/94";
 #endif
-static char rcsid[] = "$OpenBSD: strings.c,v 1.6 2001/11/19 19:02:16 mpech Exp $";
+static char rcsid[] = "$OpenBSD: strings.c,v 1.7 2002/02/16 21:27:53 millert Exp $";
 #endif /* not lint */
 
 #include <sys/types.h>
@@ -244,6 +244,7 @@ start:
 						putchar((char)ch);
 				putchar('\n');
 			out:
+				;
 			}
 			cnt = 0;
 		}
