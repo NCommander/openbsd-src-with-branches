@@ -1,4 +1,4 @@
-/*	$OpenBSD: audio.c,v 1.23 2000/07/19 09:04:37 csapuntz Exp $	*/
+/*	$OpenBSD: audio.c,v 1.24 2000/11/09 21:31:33 mickey Exp $	*/
 /*	$NetBSD: audio.c,v 1.105 1998/09/27 16:43:56 christos Exp $	*/
 
 /*
@@ -2998,6 +2998,7 @@ mixer_ioctl(dev, cmd, addr, flag, p)
 		
 	case AUDIO_MIXER_DEVINFO:
 		DPRINTF(("AUDIO_MIXER_DEVINFO\n"));
+		((mixer_devinfo_t *)addr)->un.v.delta = 0; /* default */
 		error = hw->query_devinfo(sc->hw_hdl, (mixer_devinfo_t *)addr);
 		break;
 
