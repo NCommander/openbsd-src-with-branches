@@ -1,4 +1,4 @@
-/*	$OpenBSD: advnops.c,v 1.28 2003/11/13 17:19:40 drahn Exp $	*/
+/*	$OpenBSD: advnops.c,v 1.29 2003/11/13 17:23:57 drahn Exp $	*/
 /*	$NetBSD: advnops.c,v 1.32 1996/10/13 02:52:09 christos Exp $	*/
 
 /*
@@ -303,7 +303,7 @@ adosfs_read(v)
 				error = EIO; /* OFS needs the complete block */
 			else if (adoswordn(bp, 0) != BPT_DATA) {
 #ifdef DIAGNOSTIC
-				printf("adosfs: bad primary type blk %ld\n",
+				printf("adosfs: bad primary type blk %d\n",
 				    bp->b_blkno / amp->secsperblk);
 #endif
 				error=EINVAL;
