@@ -1,7 +1,7 @@
 /*
  * Public Domain 2003 Dale Rahn
  *
- * $OpenBSD$
+ * $OpenBSD: ab.C,v 1.1 2003/02/01 19:56:17 drahn Exp $
  */
 
 #include "iostream.h"
@@ -13,7 +13,7 @@ extern int a;
 BB::BB(char *str)
 {
 	if (a == 0) {
-		cout << "A not intialized in B constructors " << a << "\n";
+		cout << "A not initialized in B constructors " << a << "\n";
 		exit(1);
 	}
 }
