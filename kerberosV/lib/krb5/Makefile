@@ -1,8 +1,9 @@
-# $OpenBSD: Makefile,v 1.19 2002/02/06 09:13:34 hin Exp $
+# $OpenBSD: Makefile,v 1.21 2002/05/18 16:43:36 deraadt Exp $
 
 KRBDEPTH=../..
 .include <${.CURDIR}/../../Makefile.inc>
 
+CFLAGS+= -DROKEN_RENAME
 LIB=	krb5
 
 INCLUDE_FILES=	${KRB5SRC}/lib/krb5/{krb5.h,krb5-protos.h,krb5-private.h} \
@@ -238,14 +239,12 @@ SRCS+=	base64.c		\
 	getaddrinfo_hostspec.c	\
 	getarg.c		\
 	get_window_size.c	\
-	getprogname.c \
 	parse_time.c		\
 	parse_units.c		\
 	resolve.c		\
 	roken_gethostby.c	\
 	roken_net_write.c	\
 	roken_net_read.c	\
-	setprogname.c \
 	strupr.c 		\
 	strlwr.c		\
 	strsep_copy.c		\

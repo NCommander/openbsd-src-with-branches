@@ -1,4 +1,4 @@
-# $OpenBSD: Makefile,v 1.10 2001/07/11 09:26:22 hin Exp $
+# $OpenBSD: Makefile,v 1.3 2002/06/10 18:03:08 hin Exp $
 
 LIB	= kafs
 
@@ -7,7 +7,7 @@ KRBDEPTH=../..
 
 INCLUDE_FILES	= ${KRB5SRC}/lib/kafs/kafs.h
 
-CFLAGS += -I${KRB5SRC}/lib/kafs
+CFLAGS += -I${KRB5SRC}/lib/kafs -DROKEN_RENAME
 
 .PATH:	${KRB5SRC}/lib/kafs ${KRB5SRC}/man
 
