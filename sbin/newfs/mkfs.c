@@ -1,4 +1,4 @@
-/*	$OpenBSD: mkfs.c,v 1.36 2003/11/06 08:53:58 tedu Exp $	*/
+/*	$OpenBSD: mkfs.c,v 1.37 2003/12/05 00:40:29 mickey Exp $	*/
 /*	$NetBSD: mkfs.c,v 1.25 1995/06/18 21:35:38 cgd Exp $	*/
 
 /*
@@ -34,7 +34,7 @@
 #if 0
 static char sccsid[] = "@(#)mkfs.c	8.3 (Berkeley) 2/3/94";
 #else
-static char rcsid[] = "$OpenBSD: mkfs.c,v 1.36 2003/11/06 08:53:58 tedu Exp $";
+static char rcsid[] = "$OpenBSD: mkfs.c,v 1.37 2003/12/05 00:40:29 mickey Exp $";
 #endif
 #endif /* not lint */
 
@@ -384,8 +384,10 @@ recalc:
 	 */
 	sblock.fs_cpg = cpg;
 	if (sblock.fs_cpg % mincpc != 0) {
-		printf("%s groups must have a multiple of %ld cylinders\n",
-			cpgflg ? "Cylinder" : "Warning: cylinder", mincpc);
+		if (!quiet)
+			printf("%s groups must have a multiple of %ld "
+			    "cylinders\n", cpgflg ? "Cylinder" :
+			    "Warning: cylinder", mincpc);
 		sblock.fs_cpg = roundup(sblock.fs_cpg, mincpc);
 		if (!cpgflg)
 			cpg = sblock.fs_cpg;
@@ -552,7 +554,7 @@ next:
 		fssize = fsbtodb(&sblock, sblock.fs_size);
 		warn = 0;
 	}
-	if (warn && !mfs) {
+	if (!quiet && warn && !mfs) {
 		printf("Warning: %d sector(s) in last cylinder unallocated\n",
 		    sblock.fs_spc -
 		    (dbtofsb(&sblock, fssize) * NSPF(&sblock) -
