@@ -1,4 +1,4 @@
-/*	$OpenBSD: abtn.c,v 1.3 2001/07/09 03:30:19 mickey Exp $	*/
+/*	$OpenBSD: abtn.c,v 1.1 2001/09/01 15:50:00 drahn Exp $	*/
 /*	$NetBSD: abtn.c,v 1.1 1999/07/12 17:48:26 tsubai Exp $	*/
 
 /*-
@@ -31,8 +31,8 @@
 #include <sys/device.h>
 #include <sys/systm.h>
 
-#include <macppc/mac/adbvar.h>
-#include <macppc/mac/pm_direct.h>
+#include <macppc/dev/adbvar.h>
+#include <macppc/dev/pm_direct.h>
 
 #define NVRAM_BRIGHTNESS 0x140e
 #define ABTN_HANDLER_ID 31

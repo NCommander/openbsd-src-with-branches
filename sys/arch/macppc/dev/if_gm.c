@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_gm.c,v 1.19 2001/08/25 10:13:29 art Exp $	*/
+/*	$OpenBSD: if_gm.c,v 1.1 2001/09/01 15:50:00 drahn Exp $	*/
 /*	$NetBSD: if_gm.c,v 1.2 2000/03/04 11:17:00 tsubai Exp $	*/
 
 /*-
@@ -67,7 +67,7 @@
 #include <dev/pci/pcidevs.h>
 
 #include <dev/ofw/openfirm.h>
-#include <macppc/mac/if_gmreg.h>
+#include <macppc/dev/if_gmreg.h>
 #include <machine/pio.h>
 
 #define NTXBUF 4

@@ -1,4 +1,4 @@
-/*	$OpenBSD: awacs.c,v 1.7 2001/07/09 03:30:19 mickey Exp $	*/
+/*	$OpenBSD: awacs.c,v 1.1 2001/09/01 15:50:00 drahn Exp $	*/
 /*	$NetBSD: awacs.c,v 1.4 2001/02/26 21:07:51 wiz Exp $	*/
 
 /*-
@@ -44,7 +44,7 @@
 
 #include <machine/autoconf.h>
 #include <machine/pio.h>
-#include <macppc/mac/dbdma.h>
+#include <macppc/dev/dbdma.h>
 
 #ifdef AWACS_DEBUG
 # define DPRINTF printf

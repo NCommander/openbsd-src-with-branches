@@ -1,4 +1,4 @@
-/*	$OpenBSD: ams.c,v 1.4 2001/07/09 03:30:19 mickey Exp $	*/
+/*	$OpenBSD: ams.c,v 1.1 2001/09/01 15:50:00 drahn Exp $	*/
 /*	$NetBSD: ams.c,v 1.11 2000/12/19 03:13:40 tsubai Exp $	*/
 
 /*
@@ -45,10 +45,10 @@
 #include <dev/wscons/wsconsio.h>
 #include <dev/wscons/wsmousevar.h>
 
-#include <macppc/mac/adbvar.h>
-#include <macppc/mac/aedvar.h>
-#include <macppc/mac/amsvar.h>
-#include <macppc/mac/adb_direct.h>
+#include <macppc/dev/adbvar.h>
+#include <macppc/dev/aedvar.h>
+#include <macppc/dev/amsvar.h>
+#include <macppc/dev/adb_direct.h>
 
 #include "aed.h"
 
