@@ -1,4 +1,4 @@
-/*	$OpenBSD: sysdep.c,v 1.5 2001/02/24 03:59:57 angelos Exp $	*/
+/*	$OpenBSD: sysdep.c,v 1.6 2001/05/05 00:51:48 angelos Exp $	*/
 
 /*
  * Copyright (c) 1998, 1999 Niklas Hallqvist.  All rights reserved.
@@ -120,8 +120,7 @@ sysdep_connection_check (char *name)
  */
 u_int8_t *
 sysdep_ipsec_get_spi (size_t *sz, u_int8_t proto, struct sockaddr *src,
-		      int srclen, struct sockaddr *dst, int dstlen,
-                      u_int32_t seq)
+		      struct sockaddr *dst, u_int32_t seq)
 {
   if (app_none)
     {
@@ -130,7 +129,7 @@ sysdep_ipsec_get_spi (size_t *sz, u_int8_t proto, struct sockaddr *src,
       return strdup ("\x12\x34\x56\x78");
     }
 
-  return klips_get_spi (sz, proto, src, srclen, dst, dstlen, seq);
+  return klips_get_spi (sz, proto, src, dst, seq);
 }
 
 int
