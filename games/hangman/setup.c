@@ -1,4 +1,4 @@
-/*	$OpenBSD: setup.c,v 1.3 1999/04/20 22:54:56 pjanzen Exp $	*/
+/*	$OpenBSD: setup.c,v 1.4 1999/09/25 20:51:54 pjanzen Exp $	*/
 /*	$NetBSD: setup.c,v 1.3 1995/03/23 08:32:59 cgd Exp $	*/
 
 /*-
@@ -38,7 +38,7 @@
 #if 0
 static char sccsid[] = "@(#)setup.c	8.1 (Berkeley) 5/31/93";
 #else
-static char rcsid[] = "$OpenBSD: setup.c,v 1.3 1999/04/20 22:54:56 pjanzen Exp $";
+static char rcsid[] = "$OpenBSD: setup.c,v 1.4 1999/09/25 20:51:54 pjanzen Exp $";
 #endif
 #endif /* not lint */
 
@@ -56,7 +56,7 @@ setup()
 	static struct stat	sbuf;
 
 	noecho();
-	crmode();
+	cbreak();
 
 	mvaddstr(PROMPTY, PROMPTX, "Guess:");
 	mvaddstr(GUESSY, GUESSX, "Guessed:");
