@@ -1,6 +1,6 @@
 #!/bin/sh -
 #
-#	@(#)weekly	5.14 (Berkeley) 6/23/91
+#	$OpenBSD$
 #
 
 PATH=/bin:/sbin:/usr/sbin:/usr/bin:/usr/libexec

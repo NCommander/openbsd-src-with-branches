@@ -1,7 +1,6 @@
 #	$OpenBSD$
-#	$NetBSD: crontab,v 1.10 1996/02/18 12:08:26 mycroft Exp $
 #
-# /var/cron/tabs/root - root's crontab for NetBSD
+# /var/cron/tabs/root - root's crontab
 #
 SHELL=/bin/sh
 PATH=/etc:/bin:/sbin:/usr/bin:/usr/sbin

@@ -1,8 +1,7 @@
 #
 # site-specific startup actions, daemons
 #
-#	From: @(#)rc.local	5.4 (Berkeley) 12/14/90
-#	$Id: rc.local,v 1.13 1995/08/02 19:29:30 cgd Exp $
+#	$OpenBSD$
 #
 
 if [ ! -f /etc/motd ]; then
