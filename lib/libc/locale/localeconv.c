@@ -4,7 +4,7 @@
  */
 
 #if defined(LIBC_SCCS) && !defined(lint)
-static char *rcsid = "$OpenBSD: localeconv.c,v 1.2 1996/08/19 08:28:20 tholo Exp $";
+static char *rcsid = "$OpenBSD: localeconv.c,v 1.3 1997/07/23 21:14:40 kstailey Exp $";
 #endif /* LIBC_SCCS and not lint */
 
 #include <sys/localedef.h>
@@ -26,7 +26,7 @@ int __nlocale_changed = 1;
  * Return the current locale conversion.
  */
 struct lconv *
-localeconv()
+localeconv(void)
 {
     static struct lconv ret;
 
