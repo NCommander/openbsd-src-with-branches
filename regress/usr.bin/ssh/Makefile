@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.33 2004/10/29 23:59:22 djm Exp $
+#	$OpenBSD: Makefile,v 1.34 2004/12/10 01:31:30 fgsch Exp $
 
 REGRESS_TARGETS=	t1 t2 t3 t4 t5 t6 t7
 
@@ -86,7 +86,7 @@ t7: t7.out
 .for t in ${LTESTS}
 REGRESS_TARGETS+=t-${t}
 t-${t}:
-	sh ${.CURDIR}/test-exec.sh ${.OBJDIR} ${.CURDIR}/${t}.sh
+	env SUDO=${SUDO} sh ${.CURDIR}/test-exec.sh ${.OBJDIR} ${.CURDIR}/${t}.sh
 .endfor
 
 .include <bsd.regress.mk>
