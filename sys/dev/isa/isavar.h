@@ -1,4 +1,4 @@
-/*	$OpenBSD: isavar.h,v 1.42.4.1 2002/06/11 03:42:21 art Exp $	*/
+/*	$OpenBSD$	*/
 /*	$NetBSD: isavar.h,v 1.26 1997/06/06 23:43:57 thorpej Exp $	*/
 
 /*-
@@ -148,7 +148,7 @@ struct isabus_attach_args;
 #endif 
 #endif
 #ifdef __hppa__
-#include <hppa/isa/isa_machdep.h>
+#include <hppa/include/isa_machdep.h>
 #endif
 
 #include "isapnp.h"

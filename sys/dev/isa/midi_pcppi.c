@@ -1,4 +1,4 @@
-/*	$OpenBSD: midi_pcppi.c,v 1.1 1999/01/02 00:02:42 niklas Exp $	*/
+/*	$OpenBSD$	*/
 /*	$NetBSD: midi_pcppi.c,v 1.4 1998/11/25 22:17:06 augustss Exp $	*/
 
 /*
@@ -121,7 +121,7 @@ midi_pcppi_attach(parent, self, aux)
 
 	ms = &sc->sc_midisyn;
 	ms->mets = &midi_pcppi_hw;
-	strcpy(ms->name, "PC speaker");
+	strlcpy(ms->name, "PC speaker", sizeof ms->name);
 	ms->nvoice = 1;
 	ms->flags = MS_DOALLOC | MS_FREQXLATE;
 	ms->data = pa->pa_cookie;

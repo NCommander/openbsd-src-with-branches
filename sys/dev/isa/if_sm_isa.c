@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_sm_isa.c,v 1.1 1998/09/26 19:09:15 fgsch Exp $	*/
+/*	$OpenBSD$	*/
 /*	$NetBSD: if_sm_isa.c,v 1.4 1998/07/05 06:49:14 jonathan Exp $	*/
 
 /*-
@@ -191,7 +191,7 @@ sm_isa_attach(parent, self, aux)
 
 	/* XXX Should get Ethernet address from EEPROM!! */
 
-	/* Perform generic intialization. */
+	/* Perform generic initialization. */
 	smc91cxx_attach(sc, NULL);
 
 	/* Establish the interrupt handler. */

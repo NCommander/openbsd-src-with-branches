@@ -1,4 +1,4 @@
-/*	$OpenBSD: isapnp.c,v 1.31.4.1 2002/06/11 03:42:21 art Exp $	*/
+/*	$OpenBSD$	*/
 /*	$NetBSD: isapnp.c,v 1.9.4.3 1997/10/29 00:40:43 thorpej Exp $	*/
 
 /*
@@ -862,7 +862,8 @@ isapnp_match(parent, match, aux)
 
 	sc.sc_iot = ia->ia_iot;
 	sc.sc_ncards = 0;
-	(void) strcpy(sc.sc_dev.dv_xname, "(isapnp probe)");
+	(void) strlcpy(sc.sc_dev.dv_xname, "(isapnp probe)",
+	     sizeof sc.sc_dev.dv_xname);
 
 	if (isapnp_map(&sc))
 		return 0;
