@@ -1,4 +1,4 @@
-/*	$OpenBSD: cfl.c,v 1.2 2000/04/27 01:10:11 bjc Exp $	*/
+/*	$OpenBSD: cfl.c,v 1.3 2002/03/14 01:26:48 millert Exp $	*/
 /*	$NetBSD: cfl.c,v 1.2 1998/04/13 12:10:26 ragge Exp $	*/
 /*-
  * Copyright (c) 1996 Ludd, University of Lule}, Sweden.
@@ -138,7 +138,7 @@ cflrw(dev, uio, flag)
 		return (0);
 	s = spl4();
 	while (cfltab.cfl_state == BUSY)
-		sleep((caddr_t)&cfltab, PRIBIO);
+		tsleep((caddr_t)&cfltab, PRIBIO, "cflrw", 0);
 	cfltab.cfl_state = BUSY;
 	splx(s);
 
@@ -160,7 +160,7 @@ cflrw(dev, uio, flag)
 		s = spl4(); 
 		cflstart();
 		while ((bp->b_flags & B_DONE) == 0)
-			sleep((caddr_t)bp, PRIBIO);	
+			tsleep((caddr_t)bp, PRIBIO, "cflrw", 0);	
 		splx(s);
 		if (bp->b_flags & B_ERROR) {
 			error = EIO;
