@@ -1,4 +1,4 @@
-/*	$OpenBSD: ssh.h,v 1.65 2002/03/20 19:12:25 stevesk Exp $	*/
+/*	$OpenBSD: ssh.h,v 1.69 2002/05/11 20:24:48 stevesk Exp $	*/
 
 /*
  * Author: Tatu Ylonen <ylo@cs.hut.fi>
@@ -87,10 +87,10 @@
 
 /*
  * unprivileged user when UsePrivilegeSeparation=yes;
- * sshd will change its pivileges to this user and its
+ * sshd will change its privileges to this user and its
  * primary group.
  */
-#define SSH_PRIVSEP_USER		"nobody"
+#define SSH_PRIVSEP_USER		"sshd"
 
 /* Minimum modulus size (n) for RSA keys. */
 #define SSH_RSA_MINIMUM_MODULUS_SIZE	768
