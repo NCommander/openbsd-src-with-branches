@@ -91,9 +91,13 @@ mii_phy_probe(parent, mii, capmask)
 			 * ARGH!!  3Com internal PHYs report 0/0 in their
 			 * ID registers!  If we spot this, check to see
 			 * if the BMSR has reasonable data in it.
+			 * And if that wasn't enough there are PHYs
+			 * reporting 0xffff/0xffff too.
 			 */
-			if (MII_OUI(ma.mii_id1, ma.mii_id2) == 0 &&
-			    MII_MODEL(ma.mii_id2) == 0) {
+			if ((MII_OUI(ma.mii_id1, ma.mii_id2) == 0 &&
+			    MII_MODEL(ma.mii_id2) == 0) ||
+			    (MII_OUI(ma.mii_id1, ma.mii_id2) == 0x3fffff &&
+			    MII_MODEL(ma.mii_id2) == 0x3f)) {
 				int bmsr = (*mii->mii_readreg)(parent,
 				    ma.mii_phyno, MII_BMSR);
 				if (bmsr == 0 || bmsr == 0xffff ||
