@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.3 1997/03/01 23:40:08 millert Exp $
+#	$OpenBSD: Makefile,v 1.4 1997/09/21 11:48:22 deraadt Exp $
 
 PROG=	at
 SRCS=	at.c panic.c parsetime.c perm.c
@@ -9,7 +9,12 @@ MLINKS=	at.1 batch.1 \
 	at.1 atq.1 \
 	at.1 atrm.1
 
-BINOWN=	root
-BINMODE= 4555
+BINGRP=	crontab
+BINMODE= 2555
+
+afterinstall:
+	test -f ${DESTDIR}/var/at/.SEQ || touch ${DESTDIR}/var/at/.SEQ
+	chown ${BINOWN}:${BINGRP} ${DESTDIR}/var/at/.SEQ; \
+	chmod 0660 ${DESTDIR}/var/at/.SEQ; \
 
 .include <bsd.prog.mk>
