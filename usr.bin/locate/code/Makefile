@@ -1,10 +1,11 @@
-#	$OpenBSD: Makefile,v 1.3 1996/08/16 22:00:11 michaels Exp $
+#	$OpenBSD: Makefile,v 1.4 1996/08/17 04:45:39 deraadt Exp $
 #
 #	@(#)Makefile	8.1 (Berkeley) 6/6/93
 
 PROG=	locate.code
 CFLAGS+= -I${.CURDIR}/../locate 
 NOMAN=	noman
-BINDIR=	/usr/libexec
+BINDIR=	${LIBEXECDIR}
 
+.include "../Makefile.inc"
 .include <bsd.prog.mk>
