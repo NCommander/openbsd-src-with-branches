@@ -1,4 +1,4 @@
-/*	$OpenBSD: sb_isapnp.c,v 1.2 1997/12/26 09:35:38 deraadt Exp $	*/
+/*	$OpenBSD: sb_isapnp.c,v 1.3 1998/04/26 21:02:58 provos Exp $	*/
 /*	$NetBSD: sb_isa.c,v 1.3 1997/03/20 11:03:11 mycroft Exp $	*/
 
 /*
@@ -112,10 +112,8 @@ sb_isapnp_attach(parent, self, aux)
          */
         sc->sc_isa = parent->dv_parent;
 
-	if (!sbmatch(sc)) {
-		printf("%s: sbmatch failed\n", sc->sc_dev.dv_xname);
+	if (!sbmatch(sc))
 		return;
-	}
 
 	sbattach(sc);
 }
