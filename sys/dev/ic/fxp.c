@@ -1,4 +1,4 @@
-/*	$OpenBSD: fxp.c,v 1.44 2003/12/23 15:16:44 mickey Exp $	*/
+/*	$OpenBSD: fxp.c,v 1.45 2003/12/29 23:06:55 brad Exp $	*/
 /*	$NetBSD: if_fxp.c,v 1.2 1997/06/05 02:01:55 thorpej Exp $	*/
 
 /*
@@ -413,7 +413,7 @@ fxp_attach_common(sc, enaddr, intrstr)
 
 	/*
 	 * Add shutdown hook so that DMA is disabled prior to reboot. Not
-	 * doing do could allow DMA to corrupt kernel memory during the
+	 * doing so could allow DMA to corrupt kernel memory during the
 	 * reboot before the driver initializes.
 	 */
 	sc->sc_sdhook = shutdownhook_establish(fxp_shutdown, sc);
