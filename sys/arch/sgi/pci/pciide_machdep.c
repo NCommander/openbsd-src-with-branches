@@ -1,8 +1,8 @@
-/*	$OpenBSD$ */
+/*	$OpenBSD: pciide_machdep.c,v 1.1 2004/08/06 21:12:19 pefo Exp $ */
 
 /*
  * Copyright (c) 2003-2004 Opsycon AB  (www.opsycon.se / www.opsycon.com)
- * 
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
  * are met:

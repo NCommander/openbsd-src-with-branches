@@ -1,8 +1,8 @@
-/*	$OpenBSD: locore.S,v 1.1 2004/08/06 21:12:19 pefo Exp $ */
+/*	$OpenBSD: locore.S,v 1.2 2004/08/09 14:57:26 pefo Exp $ */
 
 /*
  * Copyright (c) 2001-2004 Opsycon AB  (www.opsycon.se / www.opsycon.com)
- * 
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
  * are met:
