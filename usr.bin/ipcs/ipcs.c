@@ -1,4 +1,4 @@
-/*	$OpenBSD: ipcs.c,v 1.6 1996/12/22 03:25:54 tholo Exp $	*/
+/*	$OpenBSD: ipcs.c,v 1.7 1997/01/15 23:42:37 millert Exp $	*/
 /*	$NetBSD: ipcs.c,v 1.10.6.1 1996/06/07 01:53:47 thorpej Exp $	*/
 
 /*
@@ -198,6 +198,9 @@ main(argc, argv)
 	}
 	if ((kd = kvm_open(namelist, core, NULL, O_RDONLY, "ipcs")) == NULL)
 		exit(1);
+
+	setegid(getgid());
+	setgid(getgid());
 
 	switch (kvm_nlist(kd, symbols)) {
 	case 0:

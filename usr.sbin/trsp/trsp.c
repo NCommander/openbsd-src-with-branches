@@ -1,4 +1,4 @@
-/*	$OpenBSD: trsp.c,v 1.5 1997/09/08 09:23:17 deraadt Exp $	*/
+/*	$OpenBSD: trsp.c,v 1.6 1997/09/12 04:07:23 millert Exp $	*/
 
 /*-
  * Copyright (c) 1997 The NetBSD Foundation, Inc.
@@ -211,6 +211,9 @@ main(argc, argv)
 	    errbuf);
 	if (kd == NULL)
 		errx(1, "can't open kmem: %s", errbuf);
+
+	setegid(getgid());
+	setgid(getgid());
 
 	if (kvm_nlist(kd, nl))
 		errx(2, "%s: no namelist", system ? system : _PATH_UNIX);
