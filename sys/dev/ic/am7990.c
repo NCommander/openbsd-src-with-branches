@@ -537,10 +537,8 @@ am7990_rint(sc)
 			ifp->if_ierrors++;
 		} else if ((rmd.rmd1_bits & (LE_R1_STP | LE_R1_ENP)) !=
 		    (LE_R1_STP | LE_R1_ENP)) {
-#ifdef LEDEBUG
 			printf("%s: dropping chained buffer\n",
 			    sc->sc_dev.dv_xname);
-#endif
 			ifp->if_ierrors++;
 		} else {
 #ifdef LEDEBUG1
