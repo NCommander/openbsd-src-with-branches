@@ -1,4 +1,4 @@
-/*	$OpenBSD: db_memrw.c,v 1.4 2001/05/11 23:24:57 millert Exp $	*/
+/*	$OpenBSD: db_memrw.c,v 1.5 2001/06/05 16:13:14 millert Exp $	*/
 /*	$NetBSD: db_memrw.c,v 1.5 1997/06/10 18:48:47 veego Exp $	*/
 
 /*-
@@ -65,7 +65,6 @@
 #include <machine/pte.h>
 #include <machine/db_machdep.h>
 #include <machine/cpu.h>
-#include <machine/hp300spu.h>
 
 #include <ddb/db_access.h>
 

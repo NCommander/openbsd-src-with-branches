@@ -1,4 +1,4 @@
-/*	$OpenBSD: pmap.c,v 1.27 2001/07/25 13:25:31 art Exp $	*/
+/*	$OpenBSD: pmap.c,v 1.28 2001/09/19 20:50:56 mickey Exp $	*/
 /*	$NetBSD: pmap.c,v 1.80 1999/09/16 14:52:06 chs Exp $	*/
 
 /*-
@@ -130,8 +130,6 @@
  *	to which processors are currently using which maps,
  *	and to when physical maps must be made correct.
  */
-
-#include <machine/hp300spu.h>	/* XXX param.h includes cpu.h */
 
 #include <sys/param.h>
 #include <sys/systm.h>

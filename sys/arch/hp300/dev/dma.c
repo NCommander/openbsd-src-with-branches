@@ -1,4 +1,4 @@
-/*	$OpenBSD: dma.c,v 1.9 2001/05/01 16:51:08 millert Exp $	*/
+/*	$OpenBSD: dma.c,v 1.10 2001/05/11 23:24:56 millert Exp $	*/
 /*	$NetBSD: dma.c,v 1.19 1997/05/05 21:02:39 thorpej Exp $	*/
 
 /*
@@ -41,8 +41,6 @@
 /*
  * DMA driver
  */
-
-#include <machine/hp300spu.h>	/* XXX param.h includes cpu.h */
 
 #include <sys/param.h>
 #include <sys/systm.h>
