@@ -1,5 +1,5 @@
-/*	$OpenBSD: nfs_node.c,v 1.22 2002/02/22 20:19:14 csapuntz Exp $	*/
-/*	$NetBSD: nfs_node.c,v 1.16 1996/02/18 11:53:42 fvdl Exp $	*/
+/*	$OpenBSD: nfs_node.c,v 1.18.2.4 2002/10/29 00:36:49 art Exp $	*/
+/*	$NetBSD: nfs_node.c,v 1.53 2002/03/16 23:05:25 chs Exp $	*/
 
 /*
  * Copyright (c) 1989, 1993
@@ -71,6 +71,7 @@ extern int prtactive;
 
 void nfs_gop_size(struct vnode *, off_t, off_t *);
 int nfs_gop_alloc(struct vnode *, off_t, off_t, int, struct ucred *);
+int nfs_gop_write(struct vnode *, struct vm_page **, int, int);
 
 struct genfs_ops nfs_genfsops = {
 	nfs_gop_size,
@@ -168,10 +169,9 @@ loop:
 	np->n_fhsize = fhsize;
 
 	lockmgr(&nfs_hashlock, LK_RELEASE, 0, p);
-
 	error = VOP_GETATTR(vp, &np->n_vattr, curproc->p_ucred, p);
 	if (error) {
-		vrele(vp);
+		vput(vp);
 		return error;
 	}
 	uvm_vnp_setsize(vp, np->n_vattr.va_size);
@@ -287,4 +287,15 @@ nfs_gop_alloc(struct vnode *vp, off_t off, off_t len, int flags,
     struct ucred *cred)
 {
 	return 0;
+}
+
+int
+nfs_gop_write(struct vnode *vp, struct vm_page **pgs, int npages, int flags)
+{
+	int i;
+
+	for (i = 0; i < npages; i++) {
+		pmap_page_protect(pgs[i], VM_PROT_READ);
+	}
+	return genfs_gop_write(vp, pgs, npages, flags);
 }

@@ -1,4 +1,4 @@
-/*	$OpenBSD: ffs_vfsops.c,v 1.47.2.3 2002/06/11 03:32:50 art Exp $	*/
+/*	$OpenBSD: ffs_vfsops.c,v 1.47.2.4 2002/10/29 00:36:50 art Exp $	*/
 /*	$NetBSD: ffs_vfsops.c,v 1.19 1996/02/09 22:22:26 christos Exp $	*/
 
 /*
@@ -646,6 +646,7 @@ ffs_mountfs(devvp, mp, p)
 	if (vcount(devvp) > 1 && devvp != rootvp)
 		return (EBUSY);
 	vn_lock(devvp, LK_EXCLUSIVE | LK_RETRY, p);
+
 	error = vinvalbuf(devvp, V_SAVE, cred, p, 0, 0);
 	VOP_UNLOCK(devvp, 0, p);
 	if (error)

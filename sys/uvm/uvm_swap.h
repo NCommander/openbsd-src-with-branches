@@ -1,5 +1,5 @@
-/*	$OpenBSD: uvm_swap.h,v 1.10 2001/11/10 18:42:32 art Exp $	*/
-/*	$NetBSD: uvm_swap.h,v 1.5 2000/01/11 06:57:51 chs Exp $	*/
+/*	$OpenBSD: uvm_swap.h,v 1.10.2.1 2002/06/11 03:33:04 art Exp $	*/
+/*	$NetBSD: uvm_swap.h,v 1.6 2002/03/18 11:43:01 manu Exp $	*/
 
 /*
  * Copyright (c) 1997 Matthew R. Green
@@ -38,11 +38,15 @@
 
 #ifdef _KERNEL
 
+struct swapent;
+
 int			uvm_swap_get(struct vm_page *, int, int);
 int			uvm_swap_put(int, struct vm_page **, int, int);
 int			uvm_swap_alloc(int *, boolean_t);
 void			uvm_swap_free(int, int);
 void			uvm_swap_markbad(int, int);
+void			uvm_swap_stats(int, struct swapent *,
+			    int, register_t *);
 #ifdef UVM_SWAP_ENCRYPT
 void			uvm_swap_initcrypt_all(void);
 void			uvm_swap_freepages(struct vm_page **, int);

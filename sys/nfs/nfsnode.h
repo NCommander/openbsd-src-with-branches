@@ -1,4 +1,4 @@
-/*	$OpenBSD: nfsnode.h,v 1.14 2002/02/22 20:19:14 csapuntz Exp $	*/
+/*	$OpenBSD: nfsnode.h,v 1.12.2.3 2002/10/29 18:31:52 art Exp $	*/
 /*	$NetBSD: nfsnode.h,v 1.16 1996/02/18 11:54:04 fvdl Exp $	*/
 
 /*
@@ -153,6 +153,7 @@ struct nfsnode {
 #define	NACC		0x0100	/* Special file accessed */
 #define	NUPD		0x0200	/* Special file updated */
 #define	NCHG		0x0400	/* Special file times changed */
+#define NTRUNCDELAYED	0x1000	/* Should be truncated later */
 
 /*
  * Convert between nfsnode pointers and vnode pointers

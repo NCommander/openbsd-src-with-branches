@@ -1,5 +1,5 @@
-/*	$OpenBSD: uvm_pmap.h,v 1.6.2.1 2002/06/11 03:33:04 art Exp $	*/
-/*	$NetBSD: uvm_pmap.h,v 1.1 2000/06/27 09:00:14 mrg Exp $	*/
+/*	$OpenBSD: uvm_pmap.h,v 1.6.2.2 2002/10/29 00:36:50 art Exp $	*/
+/*	$NetBSD: uvm_pmap.h,v 1.11 2002/09/22 07:17:25 chs Exp $	*/
 
 /*
  * Copyright (c) 1991, 1993
