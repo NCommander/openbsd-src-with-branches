@@ -229,7 +229,9 @@ cvs_strtomode(const char *str, mode_t *mode)
 		if (ep != NULL)
 			*ep = '\0';
 
-		if (sscanf(sp, "%c=%3s", &type, ms) != 2) {
+		memset(ms, 0, sizeof ms);
+		if (sscanf(sp, "%c=%3s", &type, ms) != 2 &&
+			sscanf(sp, "%c=", &type) != 1) {
 			cvs_log(LP_WARN, "failed to scan mode string `%s'", sp);
 			continue;
 		}
