@@ -14,7 +14,7 @@
  */
 
 #include "includes.h"
-RCSID("$OpenBSD: auth-rsa.c,v 1.40 2001/04/06 21:00:07 markus Exp $");
+RCSID("$OpenBSD: auth-rsa.c,v 1.41 2001/05/20 17:20:35 markus Exp $");
 
 #include <openssl/rsa.h>
 #include <openssl/md5.h>
@@ -211,9 +211,7 @@ auth_rsa(struct passwd *pw, BIGNUM *client_n)
 
 		/* Parse the key from the line. */
 		if (!auth_rsa_read_key(&cp, &bits, pk->e, pk->n)) {
-			debug("%.100s, line %lu: bad key syntax",
-			    file, linenum);
-			packet_send_debug("%.100s, line %lu: bad key syntax",
+			debug("%.100s, line %lu: non ssh1 key syntax",
 			    file, linenum);
 			continue;
 		}
