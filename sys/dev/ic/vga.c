@@ -1,4 +1,4 @@
-/* $OpenBSD: vga.c,v 1.24 2001/05/08 16:16:10 mickey Exp $ */
+/* $OpenBSD: vga.c,v 1.25 2001/05/08 22:28:43 mickey Exp $ */
 /* $NetBSD: vga.c,v 1.28.2.1 2000/06/30 16:27:47 simonb Exp $ */
 
 /*
@@ -519,7 +519,9 @@ vga_extended_attach(self, iot, memt, type, map)
 		vc = &vga_console_vc;
 		vga_console_attached = 1;
 	} else {
-		vc = malloc(sizeof(struct vga_config), M_DEVBUF, M_WAITOK);
+		vc = malloc(sizeof(struct vga_config), M_DEVBUF, M_NOWAIT);
+		if (vc == NULL)
+			return;
 		bzero(vc, sizeof(struct vga_config));
 		vga_init(vc, iot, memt);
 	}
