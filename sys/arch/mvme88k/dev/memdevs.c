@@ -1,4 +1,4 @@
-/*	$OpenBSD: memdevs.c,v 1.3 2001/03/08 00:03:13 miod Exp $ */
+/*	$OpenBSD: memdevs.c,v 1.4 2003/06/04 04:11:37 deraadt Exp $ */
 
 /*
  * Copyright (c) 1995 Theo de Raadt
@@ -46,9 +46,9 @@ memdevrw(base, len, uio, flags)
 	struct uio *uio;
 	int flags;
 {
-	register vm_offset_t v;
-	register int c;
-	register struct iovec *iov;
+	vaddr_t v;
+	int c;
+	struct iovec *iov;
 	int error = 0;
 
 	while (uio->uio_resid > 0 && error == 0) {
