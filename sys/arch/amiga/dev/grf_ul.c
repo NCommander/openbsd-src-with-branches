@@ -1,4 +1,4 @@
-/*	$OpenBSD: grf_ul.c,v 1.13 1997/09/18 13:39:54 niklas Exp $	*/
+/*	$OpenBSD: grf_ul.c,v 1.14 2002/03/14 01:26:29 millert Exp $	*/
 /*	$NetBSD: grf_ul.c,v 1.24 1997/07/29 17:50:01 veego Exp $	*/
 
 #define UL_DEBUG
@@ -799,7 +799,7 @@ ul_getcmap (gp, cmap, dev)
 	if (cmap->count == 0 || cmap->index >= mxidx)
 		return 0;
 
-	if (cmap->index + cmap->count > mxidx)
+	if (cmap->count > mxidx - cmap->index)
 		cmap->count = mxidx - cmap->index;
 
 	/* just copyout from the shadow color map */
@@ -842,7 +842,7 @@ ul_putcmap (gp, cmap, dev)
 	if (cmap->count == 0 || cmap->index >= mxidx)
 		return 0;
 
-	if (cmap->index + cmap->count > mxidx)
+	if (cmap->count > mxidx - cmap->index)
 		cmap->count = mxidx - cmap->index;
 
 	/* first copyin to our shadow color map */

@@ -1,4 +1,4 @@
-/*	$OpenBSD: bt_subr.c,v 1.5 2001/05/10 10:34:42 art Exp $	*/
+/*	$OpenBSD: bt_subr.c,v 1.6 2001/11/06 19:53:16 miod Exp $	*/
 /*	$NetBSD: bt_subr.c,v 1.5 1996/03/14 19:44:32 christos Exp $ */
 
 /*
@@ -77,7 +77,7 @@ bt_getcmap(p, cm, cmsize)
 
 	start = p->index;
 	count = p->count;
-	if (start >= cmsize || start + count > cmsize)
+	if (start >= cmsize || count > cmsize - start)
 		return (EINVAL);
 	if (!uvm_useracc(p->red, count, B_WRITE) ||
 	    !uvm_useracc(p->green, count, B_WRITE) ||
@@ -105,7 +105,7 @@ bt_putcmap(p, cm, cmsize)
 
 	start = p->index;
 	count = p->count;
-	if (start >= cmsize || start + count > cmsize)
+	if (start >= cmsize || count > cmsize - start)
 		return (EINVAL);
 	if (!uvm_useracc(p->red, count, B_READ) ||
 	    !uvm_useracc(p->green, count, B_READ) ||
