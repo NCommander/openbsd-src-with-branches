@@ -91,21 +91,9 @@ static int  cvs_resp_modxpand  (int, char *);
 
 
 static const char *cvs_months[] = {
-	"Jan",
-	"Feb",
-	"Mar",
-	"Apr",
-	"May",
-	"June",
-	"July",
-	"Aug",
-	"Sep",
-	"Oct",
-	"Nov",
-	"Dec"
+	"Jan", "Feb", "Mar", "Apr", "May", "Jun",
+	"Jul", "Aug", "Sep", "Oct", "Nov", "Dec"
 };
-
-
 
 
 
@@ -651,9 +639,15 @@ cvs_resp_statdir(int type, char *line)
 static int
 cvs_resp_sticky(int type, char *line)
 {
+	size_t len;
 	char rpath[MAXPATHLEN];
 	struct stat st;
 	CVSFILE *cf;
+
+	/* remove trailing slash */
+	len = strlen(line);
+	if ((len > 0) && (line[len - 1] == '/'))
+		line[--len] = '\0';
 
 	/* get the remote path */
 	cvs_client_getln(rpath, sizeof(rpath));
@@ -763,13 +757,14 @@ cvs_resp_modtime(int type, char *line)
 	struct tm cvs_tm;
 
 	memset(&cvs_tm, 0, sizeof(cvs_tm));
-	sscanf(line, "%d %8s %d %2d:%2d:%2d %5s", &cvs_tm.tm_mday, mon,
+	sscanf(line, "%d %3s %d %2d:%2d:%2d %5s", &cvs_tm.tm_mday, mon,
 	    &cvs_tm.tm_year, &cvs_tm.tm_hour, &cvs_tm.tm_min,
 	    &cvs_tm.tm_sec, gmt);
 	cvs_tm.tm_year -= 1900;
+	cvs_tm.tm_isdst = -1;
 
 	if (*gmt == '-') {
-		sscanf("%c%2s%2s", &sign, hr, min);
+		sscanf(gmt, "%c%2s%2s", &sign, hr, min);
 		cvs_tm.tm_gmtoff = strtol(hr, &ep, 10);
 		if ((cvs_tm.tm_gmtoff == LONG_MIN) ||
 		    (cvs_tm.tm_gmtoff == LONG_MAX) ||
