@@ -422,6 +422,9 @@ main(int argc, char **argv)
 		    cmdp->cmd_synopsis);
 	}
 
+	if (cvs_files != NULL)
+		cvs_file_free(cvs_files);
+
 	return (ret);
 }
 
