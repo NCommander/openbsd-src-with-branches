@@ -1,4 +1,4 @@
-/*	$OpenBSD: debug_i386.S,v 1.5 1997/07/18 00:34:42 mickey Exp $	*/
+/*	$OpenBSD: debug_i386.S,v 1.6 1997/09/02 17:03:25 mickey Exp $	*/
 
 /*
  * Copyright (c) 1997 Michael Shalayeff
@@ -59,8 +59,8 @@ alltraps:
 	addl	$' ', %al
 	movb	$0x17, %ah
 	movl	%ax, (%edi)
-#endif
 	hlt
+#endif
 	call	_check_regs
 1:
 #ifdef DEBUG
