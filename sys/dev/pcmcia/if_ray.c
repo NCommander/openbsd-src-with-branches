@@ -691,7 +691,10 @@ ray_activate(dev, act)
 	case DVACT_DEACTIVATE:
 		if (ifp->if_flags & IFF_RUNNING)
 			ray_disable(sc);
-		pcmcia_intr_disestablish(sc->sc_pf, sc->sc_ih);
+		if (sc->sc_ih) {
+			pcmcia_intr_disestablish(sc->sc_pf, sc->sc_ih);
+			sc->sc_ih = NULL;
+		}
 		pcmcia_function_disable(sc->sc_pf);
 		break;
 	}
@@ -778,7 +781,7 @@ ray_disable(sc)
 
 	if (sc->sc_ih)
 		pcmcia_intr_disestablish(sc->sc_pf, sc->sc_ih);
-	sc->sc_ih = 0;
+	sc->sc_ih = NULL;
 }
 
 /*
