@@ -1,4 +1,4 @@
-/*	$OpenBSD: linux_socket.h,v 1.3 1997/12/10 01:51:24 deraadt Exp $	*/
+/*	$OpenBSD: linux_socket.h,v 1.4 1997/12/14 20:51:16 deraadt Exp $	*/
 /*	$NetBSD: linux_socket.h,v 1.3 1995/05/28 10:16:34 mycroft Exp $	*/
 
 /*
@@ -37,7 +37,7 @@
 
 /*
  * Various Linux socket defines. Everything that is not re-defined here
- * is the same as in NetBSD.
+ * is the same as in OpenBSD.
  *
  * COMPAT_43 is assumed, and the osockaddr struct is used (it is what
  * Linux uses)
