@@ -1,4 +1,4 @@
-/*	$OpenBSD: extern.h,v 1.4 2002/02/16 21:27:06 millert Exp $	*/
+/*	$OpenBSD: extern.h,v 1.5 2002/02/17 19:42:18 millert Exp $	*/
 /*	$NetBSD: extern.h,v 1.8 1996/10/31 23:50:54 christos Exp $	*/
 
 /*-
@@ -41,7 +41,7 @@
 /*
  * csh.c
  */
-int	gethdir(Char *);
+int	gethdir(Char *, int);
 void	dosource(Char **, struct command *);
 void	exitstat(void);
 void	goodbye(void);
