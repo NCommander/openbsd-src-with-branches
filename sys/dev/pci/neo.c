@@ -1,4 +1,4 @@
-/*      $OpenBSD: neo.c,v 1.3 2000/04/14 03:56:50 csapuntz Exp $       */
+/*      $OpenBSD: neo.c,v 1.4 2000/07/19 09:04:37 csapuntz Exp $       */
 
 /*
  * Copyright (c) 1999 Cameron Grant <gandalf@vilnya.demon.co.uk>
@@ -724,7 +724,7 @@ enum ac97_host_flags
 neo_flags_codec(sc)
 	void *sc;
 {
-	return (AC97_HOST_DONT_READ);
+	return (AC97_HOST_DONT_READANY);
 }
 
 int
