@@ -1,4 +1,4 @@
-/*	$OpenBSD: pfvar.h,v 1.56 2001/11/26 16:50:26 jasoni Exp $ */
+/*	$OpenBSD: pfvar.h,v 1.57 2001/12/10 18:08:11 dhartmei Exp $ */
 
 /*
  * Copyright (c) 2001 Daniel Hartmeier
@@ -555,6 +555,7 @@ struct pfioc_tm {
 #define DIOCGETBINATS	_IOWR('D', 34, struct pfioc_binat)
 #define DIOCGETBINAT	_IOWR('D', 35, struct pfioc_binat)
 #define DIOCCHANGEBINAT	_IOWR('D', 36, struct pfioc_changebinat)
+#define DIOCADDSTATE	_IOWR('D', 37, struct pfioc_state)
 
 #ifdef _KERNEL
 
