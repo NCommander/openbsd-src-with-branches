@@ -38,6 +38,8 @@
  */
 
 #include <sys/param.h>
+#include <sys/systm.h>
+#include <sys/queue.h>
 #include <sys/socket.h>
 #include <sys/protosw.h>
 #include <sys/domain.h>
