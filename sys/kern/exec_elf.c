@@ -636,7 +636,7 @@ native:
 #endif
 
 	free((char *)ph, M_TEMP);
-	epp->ep_vp->v_flag |= VTEXT;
+	vn_marktext(epp->ep_vp);
 	return (exec_setup_stack(p, epp));
 
 bad:

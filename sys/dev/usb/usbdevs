@@ -831,6 +831,7 @@ product NETGEAR EA101X		0x1001	Ethernet
 
 /* Nikon products */
 product NIKON E990		0x0102	Digital Camera E990
+product NIKON E880		0x0103	Digital Camera E880
 
 /* Olympus products */
 product OLYMPUS C700		0x0105	C-700 Ultra Zoom

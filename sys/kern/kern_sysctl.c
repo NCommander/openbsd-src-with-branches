@@ -187,12 +187,14 @@ sys___sysctl(p, v, retval)
 	if (SCARG(uap, old) != NULL) {
 		if ((error = lockmgr(&sysctl_lock, LK_EXCLUSIVE, NULL, p)) != 0)
 			return (error);
-		if (dolock)
-			if (uvm_vslock(p, SCARG(uap, old), oldlen,
-			    VM_PROT_READ|VM_PROT_WRITE) != KERN_SUCCESS) {
+		if (dolock) {
+			error = uvm_vslock(p, SCARG(uap, old), oldlen,
+			    VM_PROT_READ|VM_PROT_WRITE);
+			if (error) {
 				lockmgr(&sysctl_lock, LK_RELEASE, NULL, p);
-				return EFAULT;
+				return (error);
 			}
+		}
 		savelen = oldlen;
 	}
 	error = (*fn)(name + 1, SCARG(uap, namelen) - 1, SCARG(uap, old),

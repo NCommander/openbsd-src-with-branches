@@ -265,8 +265,10 @@ ip6_input(m)
         /*
          * Packet filter
          */
-        if (pf_test6(PF_IN, m->m_pkthdr.rcvif, &m) != PF_PASS)
-                goto bad;
+	if (pf_test6(PF_IN, m->m_pkthdr.rcvif, &m) != PF_PASS)
+		goto bad;
+	if (m == NULL)
+		goto bad;
 #endif
 
 	if (m->m_len < sizeof(struct ip6_hdr)) {

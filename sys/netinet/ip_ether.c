@@ -1,4 +1,4 @@
-/*	$OpenBSD: ip_ether.c,v 1.6.2.2 2001/07/04 10:54:42 niklas Exp $  */
+/*	$OpenBSD$  */
 /*
  * The author of this code is Angelos D. Keromytis (kermit@adk.gr)
  *
@@ -270,7 +270,6 @@ etherip_input(m, va_alist)
 	return;
 }
 
-#ifdef IPSEC
 int
 etherip_output(struct mbuf *m, struct tdb *tdb, struct mbuf **mp, int skip,
 	       int protoff)
@@ -410,7 +409,6 @@ etherip_output(struct mbuf *m, struct tdb *tdb, struct mbuf **mp, int skip,
 
 	return 0;
 }
-#endif /* IPSEC */
 
 int
 etherip_sysctl(name, namelen, oldp, oldlenp, newp, newlen)

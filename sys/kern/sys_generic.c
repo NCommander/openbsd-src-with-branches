@@ -1,4 +1,4 @@
-/*	$OpenBSD: sys_generic.c,v 1.22.2.2 2001/07/04 10:48:33 niklas Exp $	*/
+/*	$OpenBSD$	*/
 /*	$NetBSD: sys_generic.c,v 1.24 1996/03/29 00:25:32 cgd Exp $	*/
 
 /*
@@ -889,6 +889,9 @@ pollscan(p, pl, nfd, retval)
 		if (pl[i].fd >= fdp->fd_nfiles) {
 			pl[i].revents = POLLNVAL;
 			n++;
+			continue;
+		} else if (pl[i].fd < 0) {
+			pl[i].revents = 0;
 			continue;
 		}
 

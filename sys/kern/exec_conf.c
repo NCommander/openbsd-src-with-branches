@@ -1,4 +1,4 @@
-/*	$OpenBSD: exec_conf.c,v 1.10 1999/09/10 12:24:27 kstailey Exp $	*/
+/*	$OpenBSD$	*/
 /*	$NetBSD: exec_conf.c,v 1.16 1995/12/09 05:34:47 cgd Exp $	*/
 
 /*
@@ -71,6 +71,10 @@
 #include <compat/m68k4k/m68k4k_exec.h>
 #endif
 
+#ifdef COMPAT_VAX1K
+#include <compat/vax1k/vax1k_exec.h>
+#endif
+
 struct execsw execsw[] = {
 #ifdef LKM
 	{ 0, NULL, },					/* entries for LKMs */
@@ -110,6 +114,9 @@ struct execsw execsw[] = {
 #endif
 #ifdef COMPAT_M68K4K
 	{ sizeof(struct exec), exec_m68k4k_makecmds, },	/* m68k4k a.out */
+#endif
+#ifdef COMPAT_VAX1K
+	{ sizeof(struct exec), exec_vax1k_makecmds, },	/* vax1k a.out */
 #endif
 };
 int nexecs = (sizeof execsw / sizeof(*execsw));

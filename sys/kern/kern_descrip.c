@@ -90,6 +90,7 @@ filedesc_init()
 		0, pool_page_alloc_nointr, pool_page_free_nointr, M_PROC);
 	pool_init(&fdesc_pool, sizeof(struct filedesc0), 0, 0, 0, "fdescpl",
 		0, pool_page_alloc_nointr, pool_page_free_nointr, M_FILEDESC);
+	LIST_INIT(&filehead);
 }
 
 static __inline int

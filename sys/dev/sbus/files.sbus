@@ -51,3 +51,7 @@ file	dev/sbus/cs4231.c		audiocs
 
 attach	isp at sbus with isp_sbus
 file	dev/sbus/isp_sbus.c		isp_sbus
+
+device	cgsix: wsemuldisplaydev, wsrasteremulops
+attach	cgsix at sbus
+file	dev/sbus/cgsix.c		cgsix

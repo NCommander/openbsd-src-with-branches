@@ -560,7 +560,8 @@ pf_normalize_tcp(int dir, struct ifnet *ifp, struct mbuf *m, int ipoff,
 {
 	struct pf_rule *r, *rm = NULL;
 	struct tcphdr *th = pd->hdr.tcp;
-	int rewrite = 0, reason;
+	int rewrite = 0;
+	u_short reason;
 	u_int8_t flags, af = pd->af;
 
 	r = TAILQ_FIRST(pf_rules_active);

@@ -150,6 +150,7 @@ check_exec(p, epp)
 		goto bad1;
 
 	/* now we have the file, get the exec header */
+	uvn_attach(vp, VM_PROT_READ);
 	error = vn_rdwr(UIO_READ, vp, epp->ep_hdr, epp->ep_hdrlen, 0,
 	    UIO_SYSSPACE, IO_NODELOCKED, p->p_ucred, &resid, p);
 	if (error)

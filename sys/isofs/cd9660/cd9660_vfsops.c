@@ -359,6 +359,8 @@ iso_mountfs(devvp, mp, p, argp)
 	mp->mnt_stat.f_fsid.val[1] = mp->mnt_vfc->vfc_typenum;
 	mp->mnt_maxsymlinklen = 0;
 	mp->mnt_flag |= MNT_LOCAL;
+	mp->mnt_dev_bshift = iso_bsize;
+	mp->mnt_fs_bshift = isomp->im_bshift;
 	isomp->im_mountp = mp;
 	isomp->im_dev = dev;
 	isomp->im_devvp = devvp;
@@ -925,7 +927,9 @@ retry:
 	case VSOCK:
 	case VDIR:
 	case VBAD:
+		break;
 	case VREG:
+		uvm_vnp_setsize(vp, ip->i_size);
 		break;
 	}
 	

@@ -2987,7 +2987,7 @@ void
 mouse_paste(void)
 {
 	unsigned short len;
-	char *current = Copybuffer;
+	unsigned char *current = Copybuffer;
 
 	if (Paste_avail) {
 		for (len = strlen(Copybuffer) ; len > 0; len--) {

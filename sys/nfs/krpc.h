@@ -5,7 +5,7 @@
 
 int krpc_call __P((struct sockaddr_in *sin,
 	u_int prog, u_int vers, u_int func,
-	struct mbuf **data, struct mbuf **from));
+	struct mbuf **data, struct mbuf **from, int retries));
 
 int krpc_portmap __P((struct sockaddr_in *sin,
 	u_int prog, u_int vers, u_int16_t *portp));
