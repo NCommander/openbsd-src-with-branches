@@ -1,4 +1,4 @@
-/*	$OpenBSD: conf.c,v 1.29 2003/12/09 04:25:56 mickey Exp $	*/
+/*	$OpenBSD: conf.c,v 1.30 2004/02/10 01:31:21 millert Exp $	*/
 
 /*-
  * Copyright (c) 1991 The Regents of the University of California.
@@ -186,7 +186,7 @@ int mem_no = 2;		/* major device number of memory special file */
  * confuse, e.g. the hashing routines. Instead, /dev/drum is
  * provided as a character (raw) device.
  */
-dev_t   swapdev = makedev(1, 0);
+dev_t   swapdev = makedev(0, 0);
 
 int chrtoblktbl[] = {
 	/* XXXX This needs to be dynamic for LKMs. */
