@@ -1,4 +1,4 @@
-/*	$OpenBSD: npx.c,v 1.26 2003/04/17 03:42:14 drahn Exp $	*/
+/*	$OpenBSD: npx.c,v 1.27 2003/06/02 23:27:47 millert Exp $	*/
 /*	$NetBSD: npx.c,v 1.57 1996/05/12 23:12:24 mycroft Exp $	*/
 
 #if 0
@@ -230,7 +230,10 @@ npxprobe1(ia)
 			return 1;
 		}
 	}
+#else
+	npx_intrs_while_probing = npx_traps_while_probing = 0;
 #endif
+
 	/*
 	 * Probe failed.  There is no usable FPU.
 	 */
