@@ -53,11 +53,11 @@ int printf __P((const char *, ...));			/* libc_sa */
 void puts __P((char *));
 void putchar __P((char));
 char cngetc __P((void));
-void ngets __P((char *, int));
+char *ngets __P((char *, int));
 
 /* sboot */
 void callrom __P((void));
-void do_cmd __P((char *));
+void do_cmd __P((char *, char*));
 
 /* le */
 #define LANCE_ADDR 0xfffe0778
