@@ -1,5 +1,5 @@
 # ex:ts=8 sw=4:
-# $OpenBSD: PackingElement.pm,v 1.25 2004/09/18 08:14:40 espie Exp $
+# $OpenBSD: PackingElement.pm,v 1.26 2004/09/18 13:28:19 espie Exp $
 #
 # Copyright (c) 2003-2004 Marc Espie <espie@openbsd.org>
 #
@@ -581,13 +581,6 @@ our @ISA=qw(OpenBSD::PackingElement);
 __PACKAGE__->setKeyword('pkgdep');
 sub keyword() { "pkgdep" }
 sub category() { "pkgdep" }
-
-package OpenBSD::PackingElement::PkgConflict;
-our @ISA=qw(OpenBSD::PackingElement);
-
-__PACKAGE__->setKeyword('pkgcfl');
-sub keyword() { "pkgcfl" }
-sub category() { "pkgcfl" }
 
 package OpenBSD::PackingElement::Conflict;
 our @ISA=qw(OpenBSD::PackingElement);
