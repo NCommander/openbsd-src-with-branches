@@ -1,4 +1,4 @@
-/*	$OpenBSD: ypserv_db.c,v 1.10 1997/03/11 09:12:25 maja Exp $ */
+/*	$OpenBSD: ypserv_db.c,v 1.11 1997/04/12 16:53:06 deraadt Exp $ */
 
 /*
  * Copyright (c) 1994 Mats O Jansson <moj@stacken.kth.se>
@@ -34,7 +34,7 @@
  */
 
 #ifndef LINT
-static char rcsid[] = "$OpenBSD: ypserv_db.c,v 1.10 1997/03/11 09:12:25 maja Exp $";
+static char rcsid[] = "$OpenBSD: ypserv_db.c,v 1.11 1997/04/12 16:53:06 deraadt Exp $";
 #endif
 
 /*
@@ -652,7 +652,7 @@ ypdb_get_order(domain, map)
 	  } else {
 	    strncpy(order, v.dptr, v.dsize);
 	    order[v.dsize] = '\0';
-	    res.ordernum = (u_int) atol(order);
+	    res.ordernum = (u_int32_t)atol(order);
 	  }
 	}
 
