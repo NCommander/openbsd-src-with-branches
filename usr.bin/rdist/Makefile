@@ -1,10 +1,10 @@
-#	$OpenBSD: Makefile,v 1.9 1997/07/22 06:59:37 millert Exp $
+#	$OpenBSD: Makefile,v 1.10 1997/09/21 11:50:32 deraadt Exp $
 
 
 PROG=	rdist
 CFLAGS+=-I. -DOS_H=\"os-openbsd.h\"
 SRCS=	gram.y child.c client.c common.c distopt.c docmd.c expand.c \
-	isexec.c lookup.c message.c rdist.c signal.c
+	isexec.c lookup.c message.c rdist.c
 CLEANFILES+=gram.c y.tab.h
 
 LDADD=	-lcompat
