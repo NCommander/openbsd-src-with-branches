@@ -1,7 +1,7 @@
-/*	$OpenBSD: buf.c,v 1.14 2003/06/11 23:42:12 deraadt Exp $	*/
+/*	$OpenBSD: buf.c,v 1.15 2003/08/07 22:13:43 millert Exp $	*/
 /*	$NetBSD: buf.c,v 1.15 1995/04/23 10:07:28 cgd Exp $	*/
 
-/* buf.c: This file contains the scratch-file buffer rountines for the
+/* buf.c: This file contains the scratch-file buffer routines for the
    ed line editor. */
 /*-
  * Copyright (c) 1993 Andrew Moore, Talke Studio.
@@ -33,7 +33,7 @@
 #if 0
 static char *rcsid = "@(#)buf.c,v 1.4 1994/02/01 00:34:35 alm Exp";
 #else
-static char rcsid[] = "$OpenBSD: buf.c,v 1.14 2003/06/11 23:42:12 deraadt Exp $";
+static char rcsid[] = "$OpenBSD: buf.c,v 1.15 2003/08/07 22:13:43 millert Exp $";
 #endif
 #endif /* not lint */
 
