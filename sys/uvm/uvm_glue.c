@@ -1,4 +1,4 @@
-/*	$OpenBSD: uvm_glue.c,v 1.18 2001/08/06 14:03:04 art Exp $	*/
+/*	$OpenBSD: uvm_glue.c,v 1.19 2001/08/11 10:57:22 art Exp $	*/
 /*	$NetBSD: uvm_glue.c,v 1.36 2000/06/18 05:20:27 simonb Exp $	*/
 
 /* 
@@ -83,7 +83,6 @@
 
 #include <vm/vm.h>
 #include <vm/vm_page.h>
-#include <vm/vm_kern.h>
 
 #include <uvm/uvm.h>
 

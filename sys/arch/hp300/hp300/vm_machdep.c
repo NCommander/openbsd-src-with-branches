@@ -1,4 +1,4 @@
-/*	$OpenBSD: vm_machdep.c,v 1.28 2001/07/18 10:47:04 art Exp $	*/
+/*	$OpenBSD: vm_machdep.c,v 1.29 2001/07/25 13:25:31 art Exp $	*/
 /*	$NetBSD: vm_machdep.c,v 1.47 1999/03/26 23:41:29 mycroft Exp $	*/
 
 /*
@@ -60,8 +60,6 @@
 #include <machine/reg.h>
 
 #include <vm/vm.h>
-#include <vm/vm_kern.h>
-
 #include <uvm/uvm_extern.h>
 
 /*

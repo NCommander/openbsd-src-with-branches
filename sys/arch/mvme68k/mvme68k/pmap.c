@@ -1,4 +1,4 @@
-/*	$OpenBSD: pmap.c,v 1.26 2001/07/22 19:58:14 miod Exp $ */
+/*	$OpenBSD: pmap.c,v 1.27 2001/07/25 13:25:32 art Exp $ */
 
 /* 
  * Copyright (c) 1995 Theo de Raadt
@@ -132,7 +132,6 @@
 #include <machine/pte.h>
 
 #include <vm/vm.h>
-#include <vm/vm_kern.h>
 #include <vm/vm_page.h>
 
 #include <uvm/uvm.h>

@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: iommu.c,v 1.2 2001/08/18 21:30:00 jason Exp $	*/
 /*	$NetBSD: iommu.c,v 1.37 2001/08/06 22:02:58 eeh Exp $	*/
 
 /*
@@ -120,7 +120,6 @@
 #include <sys/device.h>
 
 #include <vm/vm.h>
-#include <vm/vm_kern.h>
 #include <uvm/uvm_extern.h>
 
 #include <machine/bus.h>

@@ -1,4 +1,4 @@
-/*	$OpenBSD: vm_machdep.c,v 1.23 2001/06/10 02:55:43 mickey Exp $	*/
+/*	$OpenBSD: vm_machdep.c,v 1.24 2001/07/25 13:25:31 art Exp $	*/
 
 /*
  * Copyright (c) 1999-2000 Michael Shalayeff
@@ -49,7 +49,6 @@
 #include <machine/pcb.h>
 
 #include <vm/vm.h>
-#include <vm/vm_kern.h>
 #include <uvm/uvm.h>
 
 

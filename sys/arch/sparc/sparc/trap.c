@@ -1,4 +1,4 @@
-/*	$OpenBSD: trap.c,v 1.30 2001/06/25 00:43:17 mickey Exp $	*/
+/*	$OpenBSD: trap.c,v 1.31 2001/09/14 09:39:53 art Exp $	*/
 /*	$NetBSD: trap.c,v 1.58 1997/09/12 08:55:01 pk Exp $ */
 
 /*
@@ -66,7 +66,7 @@
 #endif
 
 #include <vm/vm.h>
-#include <vm/vm_kern.h>
+#include <uvm/uvm_extern.h>
 
 #include <sparc/sparc/asm.h>
 #include <machine/cpu.h>

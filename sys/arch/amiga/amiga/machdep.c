@@ -1,4 +1,4 @@
-/*	$OpenBSD: machdep.c,v 1.52 2001/08/23 14:01:02 art Exp $	*/
+/*	$OpenBSD: machdep.c,v 1.53 2001/09/12 00:23:33 art Exp $	*/
 /*	$NetBSD: machdep.c,v 1.95 1997/08/27 18:31:17 is Exp $	*/
 
 /*
@@ -80,7 +80,7 @@
 #define	MAXMEM	64*1024	/* XXX - from cmap.h */
 
 #include <vm/vm.h>
-#include <vm/vm_kern.h>
+#include <uvm/uvm_extern.h>
 
 #include <machine/db_machdep.h>
 #include <ddb/db_sym.h>

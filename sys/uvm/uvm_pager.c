@@ -1,4 +1,4 @@
-/*	$OpenBSD: uvm_pager.c,v 1.13 2001/08/06 14:03:05 art Exp $	*/
+/*	$OpenBSD: uvm_pager.c,v 1.14 2001/08/11 10:57:22 art Exp $	*/
 /*	$NetBSD: uvm_pager.c,v 1.30 2000/05/20 03:36:06 thorpej Exp $	*/
 
 /*
@@ -46,7 +46,6 @@
 
 #include <vm/vm.h>
 #include <vm/vm_page.h>
-#include <vm/vm_kern.h>
 
 #define UVM_PAGER
 #include <uvm/uvm.h>
