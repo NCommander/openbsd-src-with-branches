@@ -1,4 +1,4 @@
-/*	$OpenBSD: commands.c,v 1.5 1996/07/03 14:01:55 niklas Exp $	*/
+/*	$OpenBSD: commands.c,v 1.6 1996/09/05 09:10:02 deraadt Exp $	*/
 /*	$NetBSD: commands.c,v 1.14 1996/03/24 22:03:48 jtk Exp $	*/
 
 /*
@@ -39,7 +39,7 @@
 static char sccsid[] = "@(#)commands.c	8.4 (Berkeley) 5/30/95";
 static char rcsid[] = "$NetBSD: commands.c,v 1.14 1996/03/24 22:03:48 jtk Exp $";
 #else
-static char rcsid[] = "$OpenBSD: commands.c,v 1.5 1996/07/03 14:01:55 niklas Exp $";
+static char rcsid[] = "$OpenBSD: commands.c,v 1.6 1996/09/05 09:10:02 deraadt Exp $";
 #endif
 #endif /* not lint */
 
@@ -2636,7 +2636,7 @@ cmdrc(m1, m2)
 
     if (rcname == 0) {
 	rcname = getenv("HOME");
-	if (rcname)
+	if (rcname && (strlen(rcname) + 10) < sizeof(rcbuf))
 	    strcpy(rcbuf, rcname);
 	else
 	    rcbuf[0] = '\0';
