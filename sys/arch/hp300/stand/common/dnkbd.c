@@ -1,4 +1,4 @@
-/*	$OpenBSD: dnkbd.c,v 1.2 1997/07/13 07:21:47 downsj Exp $	*/
+/*	$OpenBSD: dnkbd.c,v 1.1 1997/07/14 08:14:12 downsj Exp $	*/
 /*	$NetBSD: dnkbd.c,v 1.3 1997/05/12 07:47:03 thorpej Exp $	*/
 
 /*-
@@ -46,7 +46,7 @@
 #include <sys/param.h>
 
 #include <hp300/dev/frodoreg.h>		/* for apci offsets */
-#include <hp300/dev/dcareg.h>		/* for the register bit defintions */
+#include <hp300/dev/dcareg.h>		/* for the register bit definitions */
 #include <hp300/dev/apcireg.h>		/* for the apci registers */
 
 #include "samachdep.h"
