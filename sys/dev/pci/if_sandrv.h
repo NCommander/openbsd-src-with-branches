@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_sandrv.h,v 1.2 2004/06/26 20:17:23 mcbride Exp $	*/
+/*	$OpenBSD: if_sandrv.h,v 1.3 2004/07/16 15:11:45 alex Exp $	*/
 
 /*-
  * Copyright (c) 2001-2004 Sangoma Technologies (SAN)
@@ -296,7 +296,7 @@ typedef struct sdla_hw_type_cnt
 }sdla_hw_type_cnt_t;
 
 /****** Function Prototypes *************************************************/
-extern int san_dev_attach(void*, u_int8_t*);
+extern int san_dev_attach(void*, u_int8_t*, int);
 
 /* Hardware interface function */
 extern int sdladrv_init(void);

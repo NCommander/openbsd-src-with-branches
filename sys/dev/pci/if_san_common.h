@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_san_common.h,v 1.5 2004/12/07 06:10:24 mcbride Exp $	*/
+/*	$OpenBSD: if_san_common.h,v 1.6 2005/03/01 18:37:06 mcbride Exp $	*/
 
 /*-
  * Copyright (c) 2001-2004 Sangoma Technologies (SAN)
@@ -304,7 +304,7 @@ typedef struct wan_udp_hdr{
 	if (a){							\
 		log(LOG_INFO, "%s:%d: Critical Error!\n",	\
 				__FUNCTION__,__LINE__);		\
-		return (-EINVAL);				\
+		return (EINVAL);				\
 	}
 
 /****** Data Structures *****************************************************/
