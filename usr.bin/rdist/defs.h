@@ -1,4 +1,4 @@
-/*	$OpenBSD: defs.h,v 1.10 1999/02/04 23:18:57 millert Exp $	*/
+/*	$OpenBSD: defs.h,v 1.11 2001/08/23 14:17:08 aaron Exp $	*/
 
 #ifndef __DEFS_H__
 #define __DEFS_H__
@@ -52,6 +52,7 @@
 #include <errno.h>
 #include <pwd.h>
 #include <grp.h>
+#include <regex.h>
 #include <syslog.h>
 #include <setjmp.h>
 #include <sys/types.h>
@@ -257,6 +258,7 @@
  */
 struct namelist {		/* for making lists of strings */
 	char	*n_name;
+	regex_t	*n_regex;
 	struct	namelist *n_next;
 };
 
