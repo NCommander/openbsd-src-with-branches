@@ -1,4 +1,4 @@
-/*	$OpenBSD: ami.c,v 1.21 2003/04/27 11:22:52 ho Exp $	*/
+/*	$OpenBSD: ami.c,v 1.22 2003/06/02 19:24:22 mickey Exp $	*/
 
 /*
  * Copyright (c) 2001 Michael Shalayeff
@@ -819,7 +819,7 @@ ami_stimeout(v)
 		break;
 	case AMI_CCB_FREE:
 	case AMI_CCB_READY:
-		panic("ami_stimeout(%p) botch", cmd->acc_id);
+		panic("ami_stimeout(%d) botch", cmd->acc_id);
 	}
 	AMI_UNLOCK_AMI(sc, lock);
 }
