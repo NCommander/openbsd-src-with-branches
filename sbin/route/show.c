@@ -1,4 +1,4 @@
-/*	$OpenBSD: show.c,v 1.32 2004/06/25 01:26:01 henning Exp $	*/
+/*	$OpenBSD: show.c,v 1.34 2004/09/15 23:34:48 deraadt Exp $	*/
 /*	$NetBSD: show.c,v 1.1 1996/11/15 18:01:41 gwr Exp $	*/
 
 /*
@@ -34,7 +34,7 @@
 #if 0
 static char sccsid[] = "from: @(#)route.c	8.3 (Berkeley) 3/9/94";
 #else
-static const char rcsid[] = "$OpenBSD: show.c,v 1.32 2004/06/25 01:26:01 henning Exp $";
+static const char rcsid[] = "$OpenBSD: show.c,v 1.34 2004/09/15 23:34:48 deraadt Exp $";
 #endif
 #endif /* not lint */
 
@@ -306,18 +306,6 @@ pr_family(af)
 		printf("\n%s:\n", afname);
 	else
 		printf("\nProtocol Family %d:\n", af);
-}
-
-void
-p_addr(struct sockaddr *sa, struct sockaddr *mask, int flags)
-{
-	p_sockaddr(sa, mask, flags, WID_DST(sa->sa_family));
-}
-
-void
-p_gwaddr(struct sockaddr *sa, int af)
-{
-	p_sockaddr(sa, 0, RTF_HOST, WID_GW(af));
 }
 
 void
