@@ -1,4 +1,4 @@
-/*	$OpenBSD: bwtwo.c,v 1.1 2002/06/04 19:42:53 jason Exp $	*/
+/*	$OpenBSD: bwtwo.c,v 1.2 2002/07/25 19:04:46 miod Exp $	*/
 
 /*
  * Copyright (c) 2002 Jason L. Wright (jason@thought.net)
@@ -245,7 +245,8 @@ bwtwoattach(parent, self, aux)
 
 	sc->sc_rasops.ri_depth = sc->sc_depth;
 	sc->sc_rasops.ri_stride = sc->sc_linebytes;
-	sc->sc_rasops.ri_flg = RI_CENTER;
+	sc->sc_rasops.ri_flg = RI_CENTER |
+	    (console ? 0 : RI_CLEAR);
 	sc->sc_rasops.ri_bits = (void *)bus_space_vaddr(sc->sc_bustag,
 	    sc->sc_vid_regs);
 	sc->sc_rasops.ri_width = sc->sc_width;
