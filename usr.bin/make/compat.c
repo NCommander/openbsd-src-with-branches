@@ -367,9 +367,12 @@ CompatMake (gnp, pgnp)
     GNode *gn = (GNode *) gnp;
     GNode *pgn = (GNode *) pgnp;
 
-    if (gn->type & OP_USE) {
-	Make_HandleUse(gn, pgn);
-    } else if (gn->made == UNMADE) {
+    if (pgn->type & OP_MADE) {
+	(void) Dir_MTime(gn);
+	gn->made = UPTODATE;
+    }
+
+    if (gn->made == UNMADE) {
 	/*
 	 * First mark ourselves to be made, then apply whatever transformations
 	 * the suffix module thinks are necessary. Once that's done, we can
@@ -627,6 +630,12 @@ Compat_Run(targs)
             }
 	}
     }
+
+    /*
+     * Expand .USE nodes right now, because they can modify the structure
+     * of the tree.
+     */
+    Lst_Destroy(Make_ExpandUse(targs), NOFREE);
 
     /*
      * For each entry in the list of targets to create, call CompatMake on
