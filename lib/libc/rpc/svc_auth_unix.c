@@ -28,7 +28,7 @@
  */
 
 #if defined(LIBC_SCCS) && !defined(lint)
-static char *rcsid = "$OpenBSD: svc_auth_unix.c,v 1.3 1996/08/19 08:31:53 tholo Exp $";
+static char *rcsid = "$OpenBSD: svc_auth_unix.c,v 1.4 1996/11/14 06:33:11 etheisen Exp $";
 #endif /* LIBC_SCCS and not lint */
 
 /*
@@ -64,8 +64,8 @@ _svcauth_unix(rqst, msg)
 		int area_gids[NGRPS];
 	} *area;
 	u_int auth_len;
-	int str_len, gid_len;
-	register int i;
+	u_int str_len, gid_len;
+	register u_int i;
 
 	area = (struct area *) rqst->rq_clntcred;
 	aup = &area->area_aup;
