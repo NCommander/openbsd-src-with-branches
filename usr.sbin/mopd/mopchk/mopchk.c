@@ -1,4 +1,4 @@
-/*	$OpenBSD: mopchk.c,v 1.2 1996/09/21 19:12:18 maja Exp $
+/*	$OpenBSD: mopchk.c,v 1.3 1997/01/15 23:44:27 millert Exp $
 
 /*
  * Copyright (c) 1995-96 Mats O Jansson.  All rights reserved.
@@ -30,7 +30,7 @@
  */
 
 #ifndef LINT
-static char rcsid[] = "$OpenBSD: mopchk.c,v 1.2 1996/09/21 19:12:18 maja Exp $";
+static char rcsid[] = "$OpenBSD: mopchk.c,v 1.3 1997/01/15 23:44:27 millert Exp $";
 #endif
 
 /*
@@ -64,9 +64,9 @@ int     AllFlag = 0;		/* listen on "all" interfaces  */
 int	VersionFlag = 0;	/* Show version */
 int	promisc = 0;		/* promisc mode not needed */
 char	*Program;
-char	version[];
+extern char version[];
 
-void
+int
 main(argc, argv)
 	int     argc;
 	char  **argv;
@@ -157,7 +157,7 @@ main(argc, argv)
 			};
 		}
 	}
-
+	return 0;
 }
 
 void
