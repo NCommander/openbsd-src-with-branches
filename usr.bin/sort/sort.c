@@ -1,4 +1,4 @@
-/*	$OpenBSD: sort.c,v 1.14 2000/06/30 16:00:23 millert Exp $	*/
+/*	$OpenBSD: sort.c,v 1.15 2001/01/19 17:58:18 deraadt Exp $	*/
 
 /*-
  * Copyright (c) 1993
@@ -46,7 +46,7 @@ static char copyright[] =
 #if 0
 static char sccsid[] = "@(#)sort.c	8.1 (Berkeley) 6/6/93";
 #else
-static char rcsid[] = "$OpenBSD: sort.c,v 1.14 2000/06/30 16:00:23 millert Exp $";
+static char rcsid[] = "$OpenBSD: sort.c,v 1.15 2001/01/19 17:58:18 deraadt Exp $";
 #endif
 #endif /* not lint */
 
@@ -62,6 +62,7 @@ static char rcsid[] = "$OpenBSD: sort.c,v 1.14 2000/06/30 16:00:23 millert Exp $
 
 #include <sys/types.h>
 #include <sys/stat.h>
+#include <locale.h>
 #include <paths.h>
 #include <signal.h>
 #include <stdlib.h>
@@ -118,6 +119,8 @@ main(argc, argv)
 	union f_handle filelist;
 	FILE *outfp = NULL;
 	void *p;
+
+	setlocale(LC_ALL, "");
 
 	if ((clist = calloc((ND+1)*2, sizeof(struct coldesc))) == NULL ||
 	    (ftpos = fldtab = calloc(ND+2, sizeof(struct field))) == NULL)
@@ -331,7 +334,7 @@ usage(msg)
 {
 	extern char *__progname;
 
-	if (msg)
+	if (msg != NULL)
 		warnx("%s", msg);
 	(void)fprintf(stderr, "usage: %s [-T dir] [-o output] [-cmubdfinrH] "
 	    "[-t char] [-R char] [-k keydef] ... [files]\n", __progname);
