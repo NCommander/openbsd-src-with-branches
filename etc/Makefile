@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.193 2004/01/28 02:24:28 mickey Exp $
+#	$OpenBSD: Makefile,v 1.194 2004/01/30 03:02:26 dtucker Exp $
 
 TZDIR=		/usr/share/zoneinfo
 LOCALTIME=	Canada/Mountain
@@ -366,14 +366,14 @@ distrib:
 
 DHSIZE=1024 1536 2048 3072 4096
 update-moduli:
-    ( \
-        echo '#    $$OpenBSD: $$'; \
-        echo '# Time Type Tests Tries Size Generator Modulus'; \
-            ( for i in ${DHSIZE}; do \
-                ssh-keygen -b $$i -G /dev/stdout; \
-            done) | \
-        ssh-keygen -T /dev/stdout \
-        ) > moduli
+	( \
+		echo '#    $$OpenBSD: Makefile,v 1.194 2004/01/30 03:02:26 dtucker Exp $$'; \
+		echo '# Time Type Tests Tries Size Generator Modulus'; \
+		( for i in ${DHSIZE}; do \
+			ssh-keygen -b $$i -G /dev/stdout; \
+		done) | \
+		ssh-keygen -T /dev/stdout \
+	) > moduli
 
 .PHONY: distribution-etc-root-var distribution distrib-dirs \
 	release snapshot allarchs snap_pre snap_tar snap_md m4
