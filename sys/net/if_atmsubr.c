@@ -1,4 +1,4 @@
-/*      $OpenBSD: if_atmsubr.c,v 1.15 2001/06/15 03:38:33 itojun Exp $       */
+/*      $OpenBSD: if_atmsubr.c,v 1.16 2001/06/27 06:07:38 kjc Exp $       */
 
 /*
  *
@@ -359,10 +359,9 @@ atm_ifattach(ifp)
 	ifp->if_output = atm_output;
 
 #if defined(__NetBSD__) || defined(__OpenBSD__)
-	for (ifa = ifp->if_addrlist.tqh_first; ifa != 0;
-	    ifa = ifa->ifa_list.tqe_next)
+	TAILQ_FOREACH(ifa, &ifp->if_addrlist, ifa_list) {
 #elif defined(__FreeBSD__) || defined(__bsdi__)
-	for (ifa = ifp->if_addrlist; ifa; ifa = ifa->ifa_next) 
+	for (ifa = ifp->if_addrlist; ifa; ifa = ifa->ifa_next)  {
 #endif
 
 		if ((sdl = (struct sockaddr_dl *)ifa->ifa_addr) &&
@@ -374,4 +373,5 @@ atm_ifattach(ifp)
 #endif
 			break;
 		}
+	}
 }
