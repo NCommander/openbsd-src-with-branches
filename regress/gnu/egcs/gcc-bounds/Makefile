@@ -1,4 +1,4 @@
-# $OpenBSD: Makefile,v 1.5 2004/04/23 21:36:14 avsm Exp $
+# $OpenBSD: Makefile,v 1.6 2004/04/23 21:50:08 avsm Exp $
 
 C_MODULES?=	strlcpy strlcat getcwd memcpy fread memcpy declare \
 		sscanf vararray md builtins
@@ -9,7 +9,7 @@ C_STRLCAT=	1 2 3 4 5 6
 C_GETCWD=	1 2 3 4
 C_MEMCPY=	1 2 3 4 5 6
 C_FREAD=	1 2 3 4
-C_DECLARE=	1 2 3 4 5 6 7 8 9 10 11 12 13
+C_DECLARE=	1 2 3 4 5 6 7 8 9 10 11 12 13 14 15
 C_SSCANF=	1 2 3 4 5
 C_VARARRAY=	1 2
 C_MD=		1 2 3 4 5 6
