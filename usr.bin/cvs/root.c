@@ -233,6 +233,8 @@ cvsroot_free(struct cvsroot *root)
 			free(root->cr_str);
 		if (root->cr_buf != NULL)
 			free(root->cr_buf);
+		if (root->cr_version != NULL)
+			free(root->cr_version);
 		free(root);
 	}
 }
