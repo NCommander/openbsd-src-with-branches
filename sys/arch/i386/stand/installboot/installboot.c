@@ -1,4 +1,4 @@
-/*	$OpenBSD: installboot.c,v 1.13 1997/09/24 23:10:03 mickey Exp $	*/
+/*	$OpenBSD: installboot.c,v 1.14 1997/09/30 21:59:43 millert Exp $	*/
 /*	$NetBSD: installboot.c,v 1.5 1995/11/17 23:23:50 gwr Exp $ */
 
 /*
@@ -142,7 +142,7 @@ main(argc, argv)
 	size = sizeof(int);
 
 	if ((nheads == -1 || nsectors == -1) &&
-	    sysctl(mib, 2, &biosdev, &size, NULL, 0) != -1) {
+	    sysctl(mib, 3, &biosdev, &size, NULL, 0) != -1) {
 
 		if (biosdev & 0x80) {
 			int geo;
@@ -150,7 +150,7 @@ main(argc, argv)
 			mib[2] = BIOS_GEOMETRY;
 			size = sizeof(int);
 
-			if (sysctl(mib, 2, &geo, &size, NULL, 0) == -1)
+			if (sysctl(mib, 3, &geo, &size, NULL, 0) == -1)
 				err(1, "sysctl");
 
 			if (nheads == -1)
