@@ -1,4 +1,4 @@
-/*	$OpenBSD: file.c,v 1.43 2004/12/13 19:38:22 jfb Exp $	*/
+/*	$OpenBSD: file.c,v 1.44 2004/12/14 21:23:44 jfb Exp $	*/
 /*
  * Copyright (c) 2004 Jean-Francois Brousseau <jfb@openbsd.org>
  * All rights reserved.
@@ -64,20 +64,30 @@ static const char *cvs_ign_std[] = {
 	"..",
 	"*.o",
 	"*.so",
+	"*.a",
 	"*.bak",
 	"*.orig",
 	"*.rej",
+	"*.old",
 	"*.exe",
 	"*.depend",
+	"*.obj",
+	"*.elc",
+	"*.ln",
+	"*.olb",
 	"CVS",
 	"core",
 	".#*",
+	"*~",
+	"_$*",
+	"*$",
 #ifdef OLD_SMELLY_CRUFT
 	"RCSLOG",
 	"tags",
 	"TAGS",
 	"RCS",
 	"SCCS",
+	"cvslog.*",	/* to ignore CVS_CLIENT_LOG output */
 	"#*",
 	",*",
 #endif
