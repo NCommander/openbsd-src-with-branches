@@ -31,11 +31,11 @@
  */
 
 /*
- * $OpenBSD: /cvs/src/sbin/ipsec/photurisd/errlog.c,v 1.4 1997/08/24 18:30:33 millert Exp $
+ * $OpenBSD: errlog.c,v 1.5 1997/09/03 08:44:41 provos Exp $
  */
 
 #ifndef lint
-static char rcsid[] = "$Id: errlog.c,v 1.4 1997/08/24 18:30:33 millert Exp $";
+static char rcsid[] = "$Id: errlog.c,v 1.5 1997/09/03 08:44:41 provos Exp $";
 #endif
 
 #define _ERRLOG_C_
@@ -88,6 +88,7 @@ crit_error(flag, fmt, va_alist)
 	va_start(ap, fmt);
 #else
 	va_start(ap);
+	fmt = va_arg (ap, char *);
 #endif
 	_log_error(flag, fmt, ap);
 	va_end(ap);
@@ -114,6 +115,7 @@ log_error(flag, fmt, va_alist)
      va_start(ap, fmt);
 #else
      va_start(ap);
+     fmt = va_arg (ap, char *);
 #endif
      _log_error(flag, fmt, ap);
      va_end(ap);
