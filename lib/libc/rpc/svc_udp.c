@@ -28,7 +28,7 @@
  */
 
 #if defined(LIBC_SCCS) && !defined(lint)
-static char *rcsid = "$OpenBSD: svc_udp.c,v 1.10 2001/09/15 13:51:01 deraadt Exp $";
+static char *rcsid = "$OpenBSD: svc_udp.c,v 1.11 2002/02/16 21:27:24 millert Exp $";
 #endif /* LIBC_SCCS and not lint */
 
 /*
@@ -103,7 +103,7 @@ svcudp_bufcreate(sock, sendsz, recvsz)
 	SVCXPRT *xprt;
 	struct svcudp_data *su;
 	struct sockaddr_in addr;
-	int len = sizeof(struct sockaddr_in);
+	socklen_t len = sizeof(struct sockaddr_in);
 
 	if (sock == RPC_ANYSOCK) {
 		if ((sock = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP)) < 0) {
