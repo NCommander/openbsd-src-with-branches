@@ -1497,6 +1497,10 @@ NENTRY(remrunqueue)
  * something to come ready.
  */
 ENTRY(idle)
+	/* Skip context saving if we have none. */
+	testl %esi,%esi
+	jz	1f
+
 	/*
 	 * idling:	save old context.
 	 *
@@ -1560,7 +1564,8 @@ ENTRY(idle)
 
 	xorl	%esi,%esi
 	sti
-	
+
+1:
 #if defined(MULTIPROCESSOR) || defined(LOCKDEBUG)	
 	call	_C_LABEL(sched_unlock_idle)
 #endif
