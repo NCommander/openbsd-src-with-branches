@@ -1,4 +1,4 @@
-/*	$OpenBSD: udp.c,v 1.29 2001/04/09 22:09:53 ho Exp $	*/
+/*	$OpenBSD: udp.c,v 1.30 2001/06/07 08:14:21 angelos Exp $	*/
 /*	$EOM: udp.c,v 1.57 2001/01/26 10:09:57 niklas Exp $	*/
 
 /*
@@ -89,8 +89,8 @@ static int udp_fd_isset (struct transport *, fd_set *);
 static void udp_handle_message (struct transport *);
 static struct transport *udp_make (struct sockaddr_in *);
 static int udp_send_message (struct message *);
-static void udp_get_dst (struct transport *, struct sockaddr **, int *);
-static void udp_get_src (struct transport *, struct sockaddr **, int *);
+static void udp_get_dst (struct transport *, struct sockaddr **);
+static void udp_get_src (struct transport *, struct sockaddr **);
 static char *udp_decode_ids (struct transport *);
 
 static struct transport_vtbl udp_transport_vtbl = {
@@ -575,24 +575,22 @@ udp_send_message (struct message *msg)
 
 /*
  * Get transport T's peer address and stuff it into the sockaddr pointed
- * to by DST.  Put its length into DST_LEN.
+ * to by DST.
  */
 static void
-udp_get_dst (struct transport *t, struct sockaddr **dst, int *dst_len)
+udp_get_dst (struct transport *t, struct sockaddr **dst)
 {
   *dst = (struct sockaddr *)&((struct udp_transport *)t)->dst;
-  *dst_len = sizeof ((struct udp_transport *)t)->dst;
 }
 
 /*
  * Get transport T's local address and stuff it into the sockaddr pointed
- * to by SRC.  Put its length into SRC_LEN.
+ * to by SRC.
  */
 static void
-udp_get_src (struct transport *t, struct sockaddr **src, int *src_len)
+udp_get_src (struct transport *t, struct sockaddr **src)
 {
   *src = (struct sockaddr *)&((struct udp_transport *)t)->src;
-  *src_len = sizeof ((struct udp_transport *)t)->src;
 }
 
 static char *
