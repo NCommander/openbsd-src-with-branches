@@ -5,9 +5,16 @@
 
 #include <machine/asm.h>
 
+#if defined(APIWARN)
+#APP
+	.stabs "warning: strcpy() is almost always misused, consider using strlcpy()",30,0,0,0
+	.stabs "_strcpy",1,0,0,0
+#NO_APP
+#endif
+
 #if defined(LIBC_SCCS)
 	.text
-	.asciz "$OpenBSD: strcpy.S,v 1.2 1996/08/19 08:13:17 tholo Exp $"
+	.asciz "$OpenBSD: strcpy.S,v 1.4 2003/06/11 21:07:03 deraadt Exp $"
 #endif
 
 /*

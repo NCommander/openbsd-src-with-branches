@@ -33,9 +33,16 @@
 
 #include "DEFS.h"
 
+#if defined(APIWARN)
+#APP
+	.stabs "warning: strcat() is almost always misused, consider using strlcat()",30,0,0,0
+	.stabs "_strcat",1,0,0,0
+#NO_APP
+#endif
+
 #if defined(LIBC_SCCS)
 	.text
-	.asciz "$OpenBSD: strcat.S,v 1.3 2003/06/02 20:18:31 millert Exp $"
+	.asciz "$OpenBSD: strcat.S,v 1.5 2003/06/11 21:06:33 deraadt Exp $"
 #endif /* LIBC_SCCS */
 
 ENTRY(strcat)
