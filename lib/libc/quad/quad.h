@@ -30,7 +30,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  *
- *	$OpenBSD: quad.h,v 1.4 2003/06/02 20:18:36 millert Exp $
+ *	$OpenBSD: quad.h,v 1.5 2004/04/27 17:46:46 otto Exp $
  */
 
 /*
@@ -53,7 +53,7 @@
 #if !defined(_KERNEL) && !defined(_STANDALONE)
 #include <limits.h>
 #else
-#include <machine/limits.h>
+#include <sys/limits.h>
 #endif
 
 /*
