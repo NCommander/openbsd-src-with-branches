@@ -260,9 +260,9 @@ checkfilesys(filesys, mntpt, auxdata, child)
 	 */
 	n_ffree = sblock.fs_cstotal.cs_nffree;
 	n_bfree = sblock.fs_cstotal.cs_nbfree;
-	pwarn("%d files, %d used, %d free\n",
+	pwarn("%d files, %d used, %d free ",
 	    n_files, n_blks, n_ffree + sblock.fs_frag * n_bfree);
-	pwarn("(%d frags, %d blocks, %d.%d%% fragmentation)\n",
+	printf("(%d frags, %d blocks, %d.%d%% fragmentation)\n",
 	    n_ffree, n_bfree, (n_ffree * 100) / sblock.fs_dsize,
 	    ((n_ffree * 1000 + sblock.fs_dsize / 2) / sblock.fs_dsize) % 10);
 	if (debug &&
