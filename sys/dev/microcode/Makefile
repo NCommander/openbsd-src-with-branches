@@ -1,5 +1,5 @@
-#	$OpenBSD: Makefile,v 1.9 2002/06/06 16:46:36 provos Exp $
+#	$OpenBSD: Makefile,v 1.1 2004/11/16 23:26:43 deraadt Exp $
 
-SUBDIR=	atmel
+SUBDIR=	atmel tigon
 
 .include <bsd.subdir.mk>
