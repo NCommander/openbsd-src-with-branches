@@ -1,4 +1,4 @@
-/*	$OpenBSD: ibcs2_exec.c,v 1.13 2002/03/14 01:26:50 millert Exp $	*/
+/*	$OpenBSD: ibcs2_exec.c,v 1.14 2002/08/22 22:04:42 art Exp $	*/
 /*	$NetBSD: ibcs2_exec.c,v 1.12 1996/10/12 02:13:52 thorpej Exp $	*/
 
 /*
@@ -616,6 +616,8 @@ exec_ibcs2_xout_prep_nmagic(p, epp, xp, xep)
 	struct xseg *xs;
 
 	/* read in segment table */
+	if (xep->xe_segsize > 16 * sizeof(*xs))
+		return (ENOEXEC);
 	xs = (struct xseg *)malloc(xep->xe_segsize, M_TEMP, M_WAITOK);
 	error = vn_rdwr(UIO_READ, epp->ep_vp, (caddr_t)xs,
 			xep->xe_segsize, xep->xe_segpos,
