@@ -1,4 +1,4 @@
-# $OpenBSD$
+# $OpenBSD: Makefile.inc,v 1.9 2000/02/25 16:35:23 hin Exp $
 
 KRBVERSION = "krb4-1.0"
 
@@ -17,3 +17,8 @@ LIBSL	= -L${KRBDEPTH}/lib/sl -lsl
 
 COMPILE_ET	= /usr/bin/compile_et
 
+.if (${MACHINE_ARCH} != "mips")
+COM_ERR=	-lcom_err_pic
+.else
+COM_ERR=	-lcom_err
+.endif
