@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_wbreg.h,v 1.5 2001/02/03 05:37:18 mickey Exp $	*/
+/*	$OpenBSD: if_wbreg.h,v 1.4.2.1 2001/05/14 22:25:48 niklas Exp $	*/
 
 /*
  * Copyright (c) 1997, 1998
@@ -457,9 +457,6 @@ struct wb_softc {
 #define WB_PME_EN		0x0010
 #define WB_PME_STATUS		0x8000
 
-#ifndef ETHER_CRC_LEN
-#define	ETHER_CRC_LEN 4
-#endif
 #ifndef ETHER_ALIGN
 #define	ETHER_ALIGN 2
 #endif

@@ -1,4 +1,4 @@
-/*	$OpenBSD: svr4_syscallargs.h,v 1.30 2000/08/23 19:32:55 fgsch Exp $	*/
+/*	$OpenBSD: svr4_syscallargs.h,v 1.26.4.1 2001/05/14 22:05:29 niklas Exp $	*/
 
 /*
  * System call argument lists.

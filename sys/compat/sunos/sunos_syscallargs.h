@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: sunos_syscallargs.h,v 1.11 1999/06/07 07:18:36 deraadt Exp $	*/
 
 /*
  * System call argument lists.

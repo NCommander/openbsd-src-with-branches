@@ -1,4 +1,4 @@
-/*	$OpenBSD: cy.c,v 1.12 2001/03/25 11:54:00 art Exp $	*/
+/*	$OpenBSD: cy.c,v 1.9.2.1 2001/05/14 22:23:39 niklas Exp $	*/
 
 /*
  * cy.c
@@ -908,7 +908,6 @@ cy_modem_control(cy, bits, howto)
 /* does not manipulate RTS if it is used for flow control */
     switch(howto) {
       case DMGET:
-        splx(s);
 	bits = 0;
 	if(cy->cy_channel_control & CD1400_CCR_RCVEN)
 	  bits |= TIOCM_LE;

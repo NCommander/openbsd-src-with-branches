@@ -1,4 +1,4 @@
-/*	$OpenBSD: kern_info_09.c,v 1.5 1997/10/06 20:19:26 deraadt Exp $	*/
+/*	$OpenBSD: kern_info_09.c,v 1.6 1997/11/06 05:58:02 csapuntz Exp $	*/
 /*	$NetBSD: kern_info_09.c,v 1.5 1996/02/21 00:10:59 cgd Exp $	*/
 
 /*
@@ -48,6 +48,11 @@
 
 #include <sys/mount.h>
 #include <sys/syscallargs.h>
+
+/*
+ * Note that while we no longer have a COMPAT_09 kernel option,
+ * there are other COMPAT_* options that need these old functions.
+ */
 
 /* ARGSUSED */
 int

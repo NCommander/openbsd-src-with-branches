@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: ibcs2_syscalls.c,v 1.6 1999/06/07 07:18:35 deraadt Exp $	*/
 
 /*
  * System call names.

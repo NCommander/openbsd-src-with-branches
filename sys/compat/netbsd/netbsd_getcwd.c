@@ -1,4 +1,4 @@
-/* $OpenBSD: netbsd_getcwd.c,v 1.2 1999/09/14 01:05:25 kstailey Exp $ */
+/* $OpenBSD: netbsd_getcwd.c,v 1.3 1999/09/26 11:15:43 kstailey Exp $ */
 /* $NetBSD: vfs_getcwd.c,v 1.3.2.3 1999/07/11 10:24:09 sommerfeld Exp $ */
 
 /*-
@@ -579,8 +579,6 @@ int netbsd_sys___getcwd(p, v, retval)
 		return ERANGE;
 
 	path = (char *)malloc(len, M_TEMP, M_WAITOK);
-	if (!path)
-		return ENOMEM;
 
 	bp = &path[len];
 	bend = bp;

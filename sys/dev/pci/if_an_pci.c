@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_an_pci.c,v 1.2 2000/04/10 18:09:46 millert Exp $	*/
+/*	$OpenBSD: if_an_pci.c,v 1.2.8.1 2001/05/14 22:25:43 niklas Exp $	*/
 
 /*
  * Copyright (c) 1997, 1998, 1999
@@ -95,7 +95,8 @@ an_pci_match(parent, match, aux)
 	struct pci_attach_args *pa = aux;
 
 	if (PCI_VENDOR(pa->pa_id) == PCI_VENDOR_AIRONET &&
-	    (PCI_PRODUCT(pa->pa_id) == PCI_PRODUCT_AIRONET_PC4500 ||
+	    (PCI_PRODUCT(pa->pa_id) == PCI_PRODUCT_AIRONET_PCI352 ||
+	     PCI_PRODUCT(pa->pa_id) == PCI_PRODUCT_AIRONET_PC4500 ||
 	     PCI_PRODUCT(pa->pa_id) == PCI_PRODUCT_AIRONET_PC4800))
 		return(1);
 
@@ -119,7 +120,7 @@ an_pci_attach(parent, self, aux)
 
 	/* Map the I/O ports. */
 	if (pci_mapreg_map(pa, AN_PCI_LOIO, PCI_MAPREG_TYPE_IO, 0,
-	    &iot, &ioh, NULL, NULL) != 0) {
+	    &iot, &ioh, NULL, NULL, 0) != 0) {
 		printf(": can't map I/O space\n");
 		return;
 	}

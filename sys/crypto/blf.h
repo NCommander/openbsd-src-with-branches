@@ -1,4 +1,5 @@
-/* $OpenBSD$ */
+/*	$OpenBSD$	*/
+
 /*
  * Blowfish - a fast block cipher designed by Bruce Schneier
  *

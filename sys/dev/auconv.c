@@ -1,3 +1,4 @@
+/*	$OpenBSD$ */
 /*	$NetBSD: auconv.c,v 1.3 1999/11/01 18:12:19 augustss Exp $	*/
 
 /*

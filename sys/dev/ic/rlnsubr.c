@@ -1,4 +1,4 @@
-/*	$OpenBSD: rlnsubr.c,v 1.2 1999/08/19 06:16:32 d Exp $	*/
+/*	$OpenBSD: rlnsubr.c,v 1.3 1999/08/26 22:28:15 d Exp $	*/
 /*
  * David Leonard <d@openbsd.org>, 1999. Public Domain.
  *
@@ -829,9 +829,6 @@ rln_mbox_wait(sc, seq, timeo)
 	int			s;
 	int			ret;
 	volatile struct rln_mbox * mb = &sc->sc_mbox[seq];
-#if defined(RLN_TSLEEP)
-	extern int		cold;
-#endif
 
 	dprintf(" <wait %d", seq);
 

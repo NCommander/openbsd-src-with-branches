@@ -1,3 +1,4 @@
+/*	$OpenBSD$ */
 /*	$NetBSD: bt463reg.h,v 1.1 1998/08/18 07:43:09 thorpej Exp $	*/
 
 /*-
