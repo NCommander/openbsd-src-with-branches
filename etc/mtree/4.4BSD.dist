@@ -1,4 +1,4 @@
-#	$OpenBSD: 4.4BSD.dist,v 1.155 2003/08/19 09:34:16 markus Exp $
+#	$OpenBSD: 4.4BSD.dist,v 1.155.4.1 2003/10/10 17:04:13 drahn Exp $
 
 /set type=dir uname=root gname=wheel mode=0755
 # .
@@ -1059,6 +1059,8 @@ mvme88k
 ..
 mvmeppc
 ..
+pegasos
+..
 sparc
 ..
 sparc64
@@ -1106,6 +1108,8 @@ mvme88k
 ..
 mvmeppc
 ..
+pegasos
+..
 sparc
 ..
 sparc64
@@ -1141,6 +1145,8 @@ mvme68k
 mvme88k
 ..
 mvmeppc
+..
+pegasos
 ..
 sparc
 ..
@@ -1214,6 +1220,8 @@ mvme88k
 ..
 mvmeppc
 ..
+pegasos
+..
 sparc
 ..
 sparc64
@@ -1245,6 +1253,8 @@ mvme88k
 ..
 mvmeppc
 ..
+pegasos
+..
 sparc
 ..
 sparc64
@@ -1275,6 +1285,8 @@ mvme68k
 mvme88k
 ..
 mvmeppc
+..
+pegasos
 ..
 sparc
 ..
@@ -1325,6 +1337,8 @@ mvme88k
 ..
 mvmeppc
 ..
+pegasos
+..
 sparc
 ..
 sparc64
@@ -1361,6 +1375,8 @@ mvme88k
 ..
 mvmeppc
 ..
+pegasos
+..
 sparc
 ..
 sparc64
@@ -1391,6 +1407,8 @@ mvme68k
 mvme88k
 ..
 mvmeppc
+..
+pegasos
 ..
 sparc
 ..
@@ -1433,6 +1451,8 @@ mvme88k
 ..
 mvmeppc
 ..
+pegasos
+..
 sparc
 ..
 sparc64
@@ -1464,6 +1484,8 @@ mvme88k
 ..
 mvmeppc
 ..
+pegasos
+..
 sparc
 ..
 sparc64
@@ -1494,6 +1516,8 @@ mvme68k
 mvme88k
 ..
 mvmeppc
+..
+pegasos
 ..
 sparc
 ..
@@ -1541,6 +1565,8 @@ mvme88k
 ..
 mvmeppc
 ..
+pegasos
+..
 sparc
 ..
 sparc64
@@ -1586,6 +1612,8 @@ mvme68k
 mvme88k
 ..
 mvmeppc
+..
+pegasos
 ..
 sparc
 ..

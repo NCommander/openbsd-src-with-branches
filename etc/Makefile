@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.185 2003/09/23 21:37:11 millert Exp $
+#	$OpenBSD: Makefile,v 1.186 2003/10/08 20:30:04 grange Exp $
 
 TZDIR=		/usr/share/zoneinfo
 LOCALTIME=	Canada/Mountain
@@ -24,7 +24,8 @@ BIN1=	bootptab changelist ccd.conf csh.cshrc csh.login csh.logout \
 
 .if (${MACHINE} == "alpha" || ${MACHINE} == "hppa" || \
      ${MACHINE} == "i386" || ${MACHINE} == "macppc" || \
-     ${MACHINE} == "sparc" || ${MACHINE} == "sparc64")
+     ${MACHINE} == "pegasos" || ${MACHINE} == "sparc" || \
+     ${MACHINE} == "sparc64")
 BIN1+=	wsconsctl.conf
 .endif
 
