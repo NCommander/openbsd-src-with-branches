@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: radix_mpath.c,v 1.1 2004/04/25 02:48:03 itojun Exp $	*/
 /*	$KAME: radix_mpath.c,v 1.13 2002/10/28 21:05:59 itojun Exp $	*/
 
 /*
@@ -116,10 +116,11 @@ rt_mpath_matchgate(rt, gate)
  * check if we have the same key/mask/gateway on the table already.
  */
 int
-rt_mpath_conflict(rnh, rt, netmask)
+rt_mpath_conflict(rnh, rt, netmask, mpathok)
 	struct radix_node_head *rnh;
 	struct rtentry *rt;
 	struct sockaddr *netmask;
+	int mpathok;
 {
 	struct radix_node *rn, *rn1;
 	struct rtentry *rt1;
@@ -190,7 +191,9 @@ rt_mpath_conflict(rnh, rt, netmask)
 		goto different;
 	}
 
- maskmatched:;
+ maskmatched:
+	if (!mpathok)
+		return EEXIST;
 
 	/* key/mask were the same.  compare gateway for all multipaths */
 	do {

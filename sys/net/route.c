@@ -1,4 +1,4 @@
-/*	$OpenBSD: route.c,v 1.40 2004/04/25 02:48:04 itojun Exp $	*/
+/*	$OpenBSD: route.c,v 1.41 2004/06/06 16:49:09 cedric Exp $	*/
 /*	$NetBSD: route.c,v 1.14 1996/02/13 22:00:46 christos Exp $	*/
 
 /*
@@ -769,7 +769,7 @@ rtrequest1(req, info, ret_nrt)
 #ifndef SMALL_KERNEL
 		/* do not permit exactly the same dst/mask/gw pair */
 		if (rn_mpath_capable(rnh) &&
-		    rt_mpath_conflict(rnh, rt, netmask)) {
+		    rt_mpath_conflict(rnh, rt, netmask, flags & RTF_MPATH)) {
 			if (rt->rt_gwroute)
 				rtfree(rt->rt_gwroute);
 			Free(rt_key(rt));

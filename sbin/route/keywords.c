@@ -33,6 +33,7 @@ struct keytab keywords[] = {
 	{"lockrest", K_LOCKREST},
 	{"mask", K_MASK},
 	{"monitor", K_MONITOR},
+	{"mpath", K_MPATH},
 	{"mtu", K_MTU},
 	{"net", K_NET},
 	{"netmask", K_NETMASK},
