@@ -7,7 +7,7 @@
  */
 
 #include "includes.h"
-RCSID("$OpenBSD: ssh-keyscan.c,v 1.45 2003/09/19 11:30:39 markus Exp $");
+RCSID("$OpenBSD: ssh-keyscan.c,v 1.46 2003/11/23 23:17:34 djm Exp $");
 
 #include <sys/queue.h>
 #include <errno.h>
@@ -476,7 +476,7 @@ conrecycle(int s)
 static void
 congreet(int s)
 {
-	int remote_major, remote_minor, n = 0;
+	int remote_major = 0, remote_minor = 0, n = 0;
 	char buf[256], *cp;
 	char remote_version[sizeof buf];
 	size_t bufsiz;
