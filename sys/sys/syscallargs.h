@@ -1018,7 +1018,7 @@ struct sys_rfork_args {
 
 struct sys_poll_args {
 	syscallarg(struct pollfd *) fds;
-	syscallarg(unsigned long) nfds;
+	syscallarg(int) nfds;
 	syscallarg(int) timeout;
 };
 

@@ -13,6 +13,8 @@
 #include <sys/mount.h>
 #include <sys/syscallargs.h>
 #include <sys/poll.h>
+#include <sys/event.h>
+#include <xfs/xfs_pioctl.h>
 
 #ifdef COMPAT_43
 #define compat_43(func) __CONCAT(compat_43_,func)

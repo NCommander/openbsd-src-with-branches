@@ -567,7 +567,7 @@
 /* syscall: "rfork" ret: "int" args: "int" */
 #define	SYS_rfork	251
 
-/* syscall: "poll" ret: "int" args: "struct pollfd *" "unsigned long" "int" */
+/* syscall: "poll" ret: "int" args: "struct pollfd *" "int" "int" */
 #define	SYS_poll	252
 
 /* syscall: "issetugid" ret: "int" args: */
