@@ -1,4 +1,4 @@
-/*	$OpenBSD: policy.c,v 1.11 2000/04/07 22:50:02 niklas Exp $	*/
+/*	$OpenBSD: policy.c,v 1.12 2000/05/02 14:35:27 niklas Exp $	*/
 /*	$EOM: policy.c,v 1.26 2000/05/01 19:52:50 niklas Exp $ */
 
 /*
@@ -146,7 +146,7 @@ my_inet_ntop4 (const in_addr_t *src, char *dst, size_t size, int normalize)
   return dst;
 }
 
-static char *
+char *
 policy_callback (char *name)
 {
   struct proto *proto;
