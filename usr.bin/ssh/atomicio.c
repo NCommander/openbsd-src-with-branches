@@ -49,7 +49,7 @@ atomicio(f, fd, _s, n)
 			if (errno == EINTR || errno == EAGAIN)
 				continue;
 		case 0:
-			return (pos);
+			return (res);
 		default:
 			pos += res;
 		}
