@@ -1,4 +1,4 @@
-/*	$OpenBSD: kern_time.c,v 1.31 2002/07/25 22:18:27 nordin Exp $	*/
+/*	$OpenBSD: kern_time.c,v 1.32 2002/10/02 17:43:38 nordin Exp $	*/
 /*	$NetBSD: kern_time.c,v 1.20 1996/02/18 11:57:06 fvdl Exp $	*/
 
 /*
@@ -46,12 +46,6 @@
 
 #include <sys/mount.h>
 #include <sys/syscallargs.h>
-
-#if defined(NFSCLIENT) || defined(NFSSERVER)
-#include <nfs/rpcv2.h>
-#include <nfs/nfsproto.h>
-#include <nfs/nfs_var.h>
-#endif
 
 #include <machine/cpu.h>
 
