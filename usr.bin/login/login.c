@@ -1,4 +1,4 @@
-/*	$OpenBSD: login.c,v 1.41 2001/07/06 18:12:06 pvalchev Exp $	*/
+/*	$OpenBSD: login.c,v 1.42 2001/07/09 07:04:49 deraadt Exp $	*/
 /*	$NetBSD: login.c,v 1.13 1996/05/15 23:50:16 jtc Exp $	*/
 
 /*-
@@ -77,7 +77,7 @@ static char copyright[] =
 #if 0
 static char sccsid[] = "@(#)login.c	8.4 (Berkeley) 4/2/94";
 #endif
-static char rcsid[] = "$OpenBSD: login.c,v 1.41 2001/07/06 18:12:06 pvalchev Exp $";
+static char rcsid[] = "$OpenBSD: login.c,v 1.42 2001/07/09 07:04:49 deraadt Exp $";
 #endif /* not lint */
 
 /*
@@ -297,7 +297,7 @@ main(argc, argv)
 			if (!uid)
 				syslog(LOG_ERR, "invalid flag %c", ch);
 			(void)fprintf(stderr,
-			    "usage: login [-fp] [-h hostname] [-L lipaddr] [-R ripaddr] [username]\n");
+			    "usage: login [-fp] [-h hostname] [-L lipaddr] [-R ripaddr] [-u username] [user]\n");
 			quickexit(1);
 		}
 	argc -= optind;
