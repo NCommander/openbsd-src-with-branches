@@ -1,4 +1,4 @@
-/*      $OpenBSD: profile.h,v 1.1.1.1 1996/06/24 09:07:18 pefo Exp $	*/
+/*      $OpenBSD: profile.h,v 1.2 1996/07/30 20:24:28 pefo Exp $	*/
 
 /*
  * Copyright (c) 1992, 1993
@@ -40,6 +40,8 @@
 
 #define	_MCOUNT_DECL static void ___mcount
 
+/*XXX The cprestore instruction is a "dummy" to shut up as(1). */
+
 #define	MCOUNT \
 	__asm(".globl _mcount;"		\
 	".type _mcount,@function;"	\
@@ -47,6 +49,7 @@
 	".set noreorder;"		\
 	".set noat;"			\
 	".cpload $25;"			\
+	".cprestore 4;"			\
 	"sw $4,8($29);"			\
 	"sw $5,12($29);"		\
 	"sw $6,16($29);"		\
