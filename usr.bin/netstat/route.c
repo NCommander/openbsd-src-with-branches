@@ -1,4 +1,4 @@
-/*	$OpenBSD: route.c,v 1.38 2000/09/19 03:18:46 angelos Exp $	*/
+/*	$OpenBSD: route.c,v 1.39 2000/12/11 17:33:07 provos Exp $	*/
 /*	$NetBSD: route.c,v 1.15 1996/05/07 02:55:06 thorpej Exp $	*/
 
 /*
@@ -38,7 +38,7 @@
 #if 0
 static char sccsid[] = "from: @(#)route.c	8.3 (Berkeley) 3/9/94";
 #else
-static char *rcsid = "$OpenBSD: route.c,v 1.38 2000/09/19 03:18:46 angelos Exp $";
+static char *rcsid = "$OpenBSD: route.c,v 1.39 2000/12/11 17:33:07 provos Exp $";
 #endif
 #endif /* not lint */
 
@@ -110,6 +110,7 @@ struct bits {
 	{ RTF_STATIC,	'S' },
 	{ RTF_PROTO1,	'1' },
 	{ RTF_PROTO2,	'2' },
+	{ RTF_PROTO3,	'3' },
 	{ 0 }
 };
 
