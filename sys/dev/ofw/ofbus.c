@@ -1,4 +1,4 @@
-/*	$OpenBSD: ofbus.c,v 1.6 1999/10/28 04:25:25 rahnds Exp $	*/
+/*	$OpenBSD: ofbus.c,v 1.9 2000/10/16 00:18:01 drahn Exp $	*/
 /*	$NetBSD: ofbus.c,v 1.3 1996/10/13 01:38:11 christos Exp $	*/
 
 /*
@@ -78,11 +78,16 @@ ofbprint(aux, name)
 		l = sizeof child - 1;
 	child[l] = 0;
 	
-	if (name)
+	if (name) {
+		/* Dont print anything here, be quiet
 		printf("%s at %s", child, name);
-	else
+		return UNCONF;
+		*/
+		return QUIET;
+	} else {
 		printf(" (%s)", child);
-	return UNCONF;
+	return QUIET;
+	}
 }
 
 int
@@ -104,7 +109,7 @@ ofrattach(parent, dev, aux)
 	void *aux;
 {
 	int child;
-	char name[5];
+	char name[64];
 	struct ofprobe *ofp = aux;
 	struct ofprobe probe;
 	int units;
@@ -156,13 +161,16 @@ ofbprobe(parent, cf, aux)
 	return 1;
 }
 
+#ifdef __powerpc__
+void uni_n_config(int);
+#endif /* __powerpc__ */
 void
 ofbattach(parent, dev, aux)
 	struct device *parent, *dev;
 	void *aux;
 {
 	int child;
-	char name[5];
+	char name[20];
 	struct ofprobe *ofp = aux;
 	struct ofprobe probe;
 	int units;
@@ -191,6 +199,11 @@ ofbattach(parent, dev, aux)
 #else 
 			units = 2;
 #endif
+
+#ifdef __powerpc__
+		} else if (!strcmp(name, "uni-n")) {
+			uni_n_config(ofp->phandle);
+#endif /* __powerpc__ */
 		}
 	}
 	for (child = OF_child(ofp->phandle); child; child = OF_peer(child)) {

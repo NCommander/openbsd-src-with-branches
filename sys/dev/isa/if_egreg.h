@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_egreg.h,v 1.3 1995/07/23 21:14:35 mycroft Exp $	*/
+/*	$OpenBSD: if_egreg.h,v 1.3 2000/06/05 20:56:20 niklas Exp $	*/
 /*	$NetBSD: if_egreg.h,v 1.3 1995/07/23 21:14:35 mycroft Exp $	*/
 
 /*
@@ -38,6 +38,8 @@
 #define EG_STATUS	0x02
 #define EG_DATA		0x04
 #define EG_CONTROL	0x06
+
+#define EG_IO_PORTS	8
 
 /*
  * Host Control Register bits

@@ -1,4 +1,4 @@
-/*	$OpenBSD$ */
+/*	$OpenBSD: rcons_kern.c,v 1.4 2000/07/19 13:55:07 art Exp $ */
 /*	$NetBSD: rcons_kern.c,v 1.4 1996/03/14 19:02:33 christos Exp $ */
 
 /*
@@ -100,7 +100,7 @@ rcons_output(tp)
 	/* Come back if there's more to do */
 	if (tp->t_outq.c_cc) {
 		tp->t_state |= TS_TIMEOUT;
-		timeout(ttrstrt, tp, 1);
+		timeout_add(&tp->t_rstrt_to, 1);
 	}
 	if (tp->t_outq.c_cc <= tp->t_lowat) {
 		if (tp->t_state&TS_ASLEEP) {

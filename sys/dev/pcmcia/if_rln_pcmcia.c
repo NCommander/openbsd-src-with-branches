@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_rln_pcmcia.c,v 1.8 2000/02/03 18:42:42 angelos Exp $	*/
+/*	$OpenBSD: if_rln_pcmcia.c,v 1.11 2000/12/16 21:47:49 mickey Exp $	*/
 /*
  * David Leonard <d@openbsd.org>, 1999. Public domain.
  *
@@ -107,7 +107,8 @@ rln_pcmcia_product_lookup(pa)
 		for (j = 0; j < 4; j++) {
 			if (rpp->cis[j] == NULL)
 				return rpp;
-			if (strcmp(pa->card->cis1_info[j], rpp->cis[j]) != 0)
+			if (pa->card->cis1_info[j] &&
+			    strcmp(pa->card->cis1_info[j], rpp->cis[j]) != 0)
 				break;
 		}
 		if (j == 4)
@@ -285,8 +286,8 @@ rln_pcmcia_activate(dev, act)
 		ifp->if_timer = 0;
 		if (ifp->if_flags & IFF_RUNNING)
 			rlnstop(sc);
-		pcmcia_function_disable(psc->psc_pf);
 		pcmcia_intr_disestablish(psc->psc_pf, psc->psc_ih);
+		pcmcia_function_disable(psc->psc_pf);
 		break;
 	}
 	splx(s);
