@@ -1,4 +1,4 @@
-/*	$OpenBSD: ext.h,v 1.6 2001/09/19 10:58:07 mpech Exp $	*/
+/*	$OpenBSD: ext.h,v 1.7 2002/02/16 21:27:34 millert Exp $	*/
 /*	$NetBSD: ext.h,v 1.5 1997/10/17 11:19:48 ws Exp $	*/
 
 /*
@@ -94,7 +94,7 @@ int readfat(int, struct bootblock *, int, struct fatEntry **);
 
 /*
  * Check two FAT copies for consistency and merge changes into the
- * first if neccessary.
+ * first if necessary.
  */
 int comparefat(struct bootblock *, struct fatEntry *, struct fatEntry *, int);
 

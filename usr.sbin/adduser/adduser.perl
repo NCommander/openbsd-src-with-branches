@@ -1,6 +1,6 @@
 #!/usr/bin/perl
 #
-#	$OpenBSD: adduser.perl,v 1.38 2002/06/14 21:35:01 todd Exp $
+#	$OpenBSD: adduser.perl,v 1.39 2002/07/10 19:57:31 millert Exp $
 #
 # Copyright (c) 1995-1996 Wolfram Schneider <wosch@FreeBSD.org>. Berlin.
 # All rights reserved.
@@ -71,7 +71,7 @@ exit(!&batch(@batch)) if $#batch >= 0; # batch mode
 
 
 # Set adduser "default" variables internally before groking config file
-# Adduser.conf supercedes these
+# Adduser.conf supersedes these
 sub variables {
     $verbose = 1;		# verbose = [0-2]
     $defaultpasswd = "yes";	# use password for new users
@@ -89,7 +89,7 @@ sub variables {
     $group = "/etc/group";
     $pwd_mkdb = "pwd_mkdb -p";	# program for building passwd database
     $encryptionmethod = "blowfish";
-    $rcsid = '$OpenBSD: adduser.perl,v 1.38 2002/06/14 21:35:01 todd Exp $';
+    $rcsid = '$OpenBSD: adduser.perl,v 1.39 2002/07/10 19:57:31 millert Exp $';
 
     # List of directories where shells located
     @path = ('/bin', '/usr/bin', '/usr/local/bin');
