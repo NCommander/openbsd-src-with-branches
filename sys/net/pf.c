@@ -1,4 +1,4 @@
-/*	$OpenBSD: pf.c,v 1.287 2002/12/27 21:43:58 mcbride Exp $ */
+/*	$OpenBSD: pf.c,v 1.288 2002/12/29 20:07:34 cedric Exp $ */
 
 /*
  * Copyright (c) 2001 Daniel Hartmeier
@@ -233,7 +233,7 @@ int			 pf_socket_lookup(uid_t *, gid_t *, int, sa_family_t,
 			    int, struct pf_pdesc *);
 
 struct pf_pool_limit pf_pool_limits[PF_LIMIT_MAX] =
-    { { &pf_state_pl, UINT_MAX }, { &pf_frent_pl, PFFRAG_FRENT_HIWAT } };
+    { { &pf_state_pl, 10000 }, { &pf_frent_pl, PFFRAG_FRENT_HIWAT } };
 
 #define	STATE_TRANSLATE(s) \
 	(s)->lan.addr.addr32[0] != (s)->gwy.addr.addr32[0] || \
