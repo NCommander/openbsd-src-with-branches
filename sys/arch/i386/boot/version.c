@@ -4,6 +4,9 @@
 /*
  *	NOTE ANY CHANGES YOU MAKE TO THE BOOTBLOCKS HERE.
  *
+ *	1.29 -> 1.30
+ *		works w/ os-bs as far as acting as a MBR. lots of cleanup.
+ *
  *	1.28 -> 1.29
  *		adding program for booting from DOS file.
  *		implement 'list files' (Luke Mewburn <lukem@telstra.com.au>)
@@ -59,4 +62,4 @@
  *		look in boot.c revision logs
  */
 
-char version[] = "1.29";
+char version[] = "1.30";
