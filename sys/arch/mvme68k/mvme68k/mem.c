@@ -160,9 +160,13 @@ mmrw(dev, uio, flags)
 				goto unlock;
 			}
 #endif
-			pmap_enter(pmap_kernel(), (vm_offset_t)vmmap,
-			    trunc_page(v), uio->uio_rw == UIO_READ ?
-			    VM_PROT_READ : VM_PROT_WRITE, TRUE, 0);
+			
+         pmap_enter(pmap_kernel(), (vm_offset_t)vmmap,
+			    trunc_page(v), 
+             uio->uio_rw == UIO_READ ? VM_PROT_READ : VM_PROT_WRITE, 
+             TRUE, 
+             uio->uio_rw == UIO_READ ? VM_PROT_READ : VM_PROT_WRITE); 
+
 			o = uio->uio_offset & PGOFSET;
 			c = min(uio->uio_resid, (int)(NBPG - o));
 			error = uiomove((caddr_t)vmmap + o, c, uio);

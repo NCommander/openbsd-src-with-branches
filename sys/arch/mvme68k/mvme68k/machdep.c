@@ -1,4 +1,4 @@
-/*	$OpenBSD: machdep.c,v 1.27 1999/05/24 23:09:04 jason Exp $ */
+/*	$OpenBSD: machdep.c,v 1.25 1999/02/04 23:00:26 niklas Exp $ */
 
 /*
  * Copyright (c) 1995 Theo de Raadt
@@ -226,10 +226,11 @@ cpu_startup()
 	 * avail_end was pre-decremented in pmap_bootstrap to compensate.
 	 */
 	for (i = 0; i < btoc(sizeof (struct msgbuf)); i++)
-		pmap_enter(pmap_kernel(), (vm_offset_t)msgbufp,
-		    avail_end + i * NBPG, VM_PROT_READ|VM_PROT_WRITE, TRUE,
-		    VM_PROT_READ|VM_PROT_WRITE);
-	msgbufmapped = 1;
+      pmap_enter(pmap_kernel(), (vm_offset_t)msgbufp,
+			avail_end + i * NBPG, VM_PROT_READ|VM_PROT_WRITE,
+			TRUE, VM_PROT_READ|VM_PROT_WRITE);
+	
+   msgbufmapped = 1;
 
 	/*
 	 * Good {morning,afternoon,evening,night}.
@@ -903,13 +904,6 @@ netintr()
 	if (netisr & (1 << NETISR_PPP)) {
 		netisr &= ~(1 << NETISR_PPP);
 		pppintr();
-	}
-#endif
-#include "bridge.h"
-#if NBRIDGE > 0
-	if (netisr & (1 << NETISR_BRIDGE)) {
-		netisr &= ~(1 << NETISR_BRIDGE);
-		bridgeintr();
 	}
 #endif
 }
