@@ -1,4 +1,4 @@
-/*	$OpenBSD: pfctl_qstats.c,v 1.21 2003/06/06 17:53:05 henning Exp $ */
+/*	$OpenBSD: pfctl_qstats.c,v 1.22 2003/06/20 16:53:48 deraadt Exp $ */
 
 /*
  * Copyright (c) Henning Brauer <henning@openbsd.org>
@@ -93,6 +93,7 @@ pfctl_show_altq(int dev, int opts, int verbose2)
 
 	while (verbose2) {
 		printf("\n");
+		fflush(stdout);
 		sleep(STAT_INTERVAL);
 		if (pfctl_update_qstats(dev, &root))
 			return (-1);
