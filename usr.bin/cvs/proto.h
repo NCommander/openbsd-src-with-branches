@@ -32,6 +32,11 @@
 #include "buf.h"
 #include "file.h"
 
+
+#define CVS_PROTO_MAXARG   256
+
+
+
 #define CVS_REQ_TIMEOUT    300
 
 
@@ -181,6 +186,7 @@ char*            cvs_resp_getvalid  (void);
 
 int         cvs_sendreq     (struct cvsroot *, u_int, const char *);
 int         cvs_getresp     (struct cvsroot *);
+int         cvs_sendresp    (u_int, const char *);
 int         cvs_getln       (struct cvsroot *, char *, size_t);
 int         cvs_senddir     (struct cvsroot *, CVSFILE *);
 int         cvs_sendarg     (struct cvsroot *, const char *, int);
