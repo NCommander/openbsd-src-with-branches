@@ -1,4 +1,4 @@
-/*	$OpenBSD: line.c,v 1.2 2001/01/29 01:58:02 niklas Exp $	*/
+/*	$OpenBSD: line.c,v 1.3 2001/11/19 19:02:14 mpech Exp $	*/
 
 /*
  * Copyright (c) 1984,1985,1989,1994,1995  Mark Nudelman
@@ -103,7 +103,7 @@ plinenum(pos)
 	 */
 	lno = find_linenum(pos);
 
-	sprintf(&linebuf[curr], "%6d", lno);
+	snprintf(&linebuf[curr], sizeof linebuf - curr, "%6d", lno);
 	n = strlen(&linebuf[curr]);
 	column += n;
 	for (i = 0;  i < n;  i++)
