@@ -1,4 +1,4 @@
-/*	$OpenBSD: subr_pool.c,v 1.19 2002/01/10 18:56:03 art Exp $	*/
+/*	$OpenBSD: subr_pool.c,v 1.20 2002/01/23 00:39:47 art Exp $	*/
 /*	$NetBSD: subr_pool.c,v 1.61 2001/09/26 07:14:56 chs Exp $	*/
 
 /*-
@@ -575,9 +575,6 @@ pool_destroy(struct pool *pp)
 	if ((pp->pr_roflags & PR_LOGGING) != 0)
 		free(pp->pr_log, M_TEMP);
 #endif
-
-	if (pp->pr_roflags & PR_FREEHEADER)
-		free(pp, M_POOL);
 }
 
 static __inline struct pool_item_header *
