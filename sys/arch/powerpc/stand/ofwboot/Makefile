@@ -1,10 +1,11 @@
+#	$OpenBSD:$
 #	$NetBSD: Makefile,v 1.2 1997/04/17 07:46:24 thorpej Exp $
 
 S=	${.CURDIR}/../../../..
 R=../
 
 PROG=		ofwboot
-SRCS=		Locore.c boot.c ofdev.c net.c netif_of.c alloc.c cache.c
+SRCS=		Locore.c boot.c ofdev.c net.c netif_of.c alloc.c cache.c hfs.c
 .PATH:		${S}/arch/powerpc/stand
 SRCS+=		ofwmagic.S
 #CFLAGS+=	-DDEBUG -DNETIF_DEBUG

@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.5 1999/11/09 06:30:15 rahnds Exp $
+#	$OpenBSD: Makefile,v 1.7 2001/02/09 05:09:15 drahn Exp $
 #       $NetBSD: Makefile,v 1.1 1996/09/30 16:35:05 ws Exp $
 
 R=              ..
@@ -6,7 +6,7 @@ R=              ..
 RELOC=		6c0000
 ENTRY=		_entry
 PROG=           boot.mac
-SRCS=           Locore.c boot.c ofdev.c net.c netif_of.c alloc.c
+SRCS=           Locore.c boot.c ofdev.c net.c netif_of.c alloc.c hfs.c
 CFLAGS+=        -DDEBUG -DNETIF_DEBUG
 CFLAGS+=	-DXCOFF_GLUE
 NOMAN=
