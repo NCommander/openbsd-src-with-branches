@@ -1,4 +1,4 @@
-/*	$OpenBSD: brgphyreg.h,v 1.5 2001/10/05 17:45:10 nate Exp $	*/
+/*	$OpenBSD: brgphyreg.h,v 1.6 2002/04/08 20:55:29 nate Exp $	*/
 
 /*
  * Copyright (c) 2000
@@ -226,8 +226,8 @@
 #define BRGPHY_RES_100FD	0x0500	/* 100baseT full duplex */
 #define BRGPHY_RES_100T4	0x0400	/* 100baseT4 */
 #define BRGPHY_RES_100HD	0x0300	/* 100baseT half duplex */
-#define BRGPHY_RES_10HD		0x0200	/* 10baseT full duplex */
-#define BRGPHY_RES_10FD		0x0100	/* 10baseT half duplex */
+#define BRGPHY_RES_10FD		0x0200	/* 10baseT full duplex */
+#define BRGPHY_RES_10HD		0x0100	/* 10baseT half duplex */
 
 #define BRGPHY_MII_ISR		0x1A	/* interrupt status */
 #define BRGPHY_ISR_PSERR	0x4000	/* Pair swap error */
