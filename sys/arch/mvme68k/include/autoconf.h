@@ -1,4 +1,4 @@
-/*	$OpenBSD: autoconf.h,v 1.7 2002/03/14 01:26:37 millert Exp $ */
+/*	$OpenBSD: autoconf.h,v 1.8 2003/06/02 05:09:14 deraadt Exp $ */
 
 /*
  * Copyright (c) 1995 Theo de Raadt
@@ -37,8 +37,6 @@ struct confargs {
 	int	ca_ipl;
 	int	ca_vec;
 	char	*ca_name;
-
-	void	*ca_master;	/* points to bus-dependent data */
 };
 
 #define BUS_MAIN	1

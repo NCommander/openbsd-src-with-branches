@@ -1,4 +1,4 @@
-/*	$OpenBSD: fooip.c,v 1.6 2003/06/02 05:09:14 deraadt Exp $ */
+/*	$OpenBSD: fooip.c,v 1.7 2004/01/14 20:50:48 miod Exp $ */
 
 /*
  * Copyright (c) 1995 Theo de Raadt
@@ -88,7 +88,7 @@ fooipattach(parent, self, args)
 	struct fooipsoftc *sc = (struct fooipsoftc *)self;
 	struct confargs *ca = args;
 
-	sc->sc_ipicsc = (struct ipicsoftc *)ca->ca_master;
+	sc->sc_ipicsc = (struct ipicsoftc *)parent;
 	sc->sc_regs = (struct fooipregs *)(ca->ca_vaddr +
 	    IPIC_IP_REGOFFSET);
 	sc->sc_slot = ca->ca_offset;
