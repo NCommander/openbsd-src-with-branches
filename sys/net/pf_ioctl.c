@@ -1,7 +1,8 @@
-/*	$OpenBSD: pf_ioctl.c,v 1.97 2003/12/31 11:18:25 cedric Exp $ */
+/*	$OpenBSD: pf_ioctl.c,v 1.98 2003/12/31 22:14:42 deraadt Exp $ */
 
 /*
  * Copyright (c) 2001 Daniel Hartmeier
+ * Copyright (c) 2002,2003 Henning Brauer
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -1230,7 +1231,9 @@ pfioctl(dev_t dev, u_long cmd, caddr_t addr, int flags, struct proc *p)
 		pf_purge_expired_states();
 		pf_status.states = 0;
 		splx(s);
+#if NPFSYNC
 		pfsync_clear_states(pf_status.hostid);
+#endif
 		break;
 	}
 
