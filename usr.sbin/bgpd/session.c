@@ -1,4 +1,4 @@
-/*	$OpenBSD: session.c,v 1.114 2004/02/17 20:48:05 henning Exp $ */
+/*	$OpenBSD: session.c,v 1.115 2004/02/17 21:59:09 henning Exp $ */
 
 /*
  * Copyright (c) 2003, 2004 Henning Brauer <henning@openbsd.org>
@@ -363,7 +363,7 @@ init_conf(struct bgpd_config *c)
 void
 init_peer(struct peer *p)
 {
-	p->sock = -1;
+	p->sock = p->wbuf.sock = -1;
 
 	change_state(p, STATE_IDLE, EVNT_NONE);
 	p->IdleHoldTimer = time(NULL);	/* start ASAP */
