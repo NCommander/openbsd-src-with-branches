@@ -1,4 +1,4 @@
-/*	$OpenBSD: ace.c,v 1.1.1.1 1996/06/24 09:07:19 pefo Exp $	*/
+/*	$OpenBSD: ace.c,v 1.2 1996/06/24 20:05:35 pefo Exp $	*/
 /*	$NetBSD: com.c,v 1.82.4.1 1996/06/02 09:08:00 mrg Exp $	*/
 
 /*-
@@ -1212,7 +1212,7 @@ comparam(tp, t)
 	 * Set the FIFO threshold based on the receive speed, if we are
 	 * changing it.
 	 */
-#if 1
+#if 0 /* XXX CHECK WHY SPEED IS NOT INIT CORRECTLY */
 	if (tp->t_ispeed != t->c_ispeed) {
 #else
 	if (1) {
