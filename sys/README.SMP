@@ -63,7 +63,7 @@ you mainly need to carry out the following procedure.
   checked out.
 
   $ fixup() {
-  >   cvs -qd cvs.openbsd.org:/cvs ci -m'dummy message' $1
+  >   cvs -qd cvs.openbsd.org:/cvs ci -m'add file to SMP branch' $1
   >   ssh cvs.openbsd.org 'rcs -u /cvs/src/sys/'$1',v'
   >   rm $1
   >   cvs -qd cvs.openbsd.org:/cvs up -dP -rSMP -kk $1
