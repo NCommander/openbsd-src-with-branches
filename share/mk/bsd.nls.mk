@@ -32,8 +32,8 @@ nlsinstall:
 	@for msg in ${NLSALL}; do \
 		NLSLANG=`basename $$msg .cat`; \
 		dir=${DESTDIR}${NLSDIR}/$${NLSLANG}; \
-		install -d $$dir; \
-		install ${COPY} -o ${NLSOWN} -g ${NLSGRP} -m ${NLSMODE} $$msg $$dir/${NLSNAME}.cat; \
+		${INSTALL} -d $$dir; \
+		${INSTALL} ${COPY} -o ${NLSOWN} -g ${NLSGRP} -m ${NLSMODE} $$msg $$dir/${NLSNAME}.cat; \
 	done
 .endif
 
