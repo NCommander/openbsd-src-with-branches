@@ -1,4 +1,4 @@
-/*	$OpenBSD: fmsradio.c,v 1.2 2002/05/09 14:52:28 mickey Exp $	*/
+/*	$OpenBSD: fmsradio.c,v 1.3 2002/05/28 04:19:53 mickey Exp $	*/
 
 /*
  * Copyright (c) 2002 Vladimir Popov <jumbo@narod.ru>
@@ -166,6 +166,7 @@ fmsradio_attach(struct fms_softc *sc)
 		return TUNER_UNKNOWN;
 	}
 
+	sc->radio = r;
 	r->tea.iot = sc->sc_iot;
 	r->tea.ioh = sc->sc_ioh;
 	r->tea.offset = FM_IO_CTL;
