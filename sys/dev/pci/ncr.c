@@ -1,4 +1,4 @@
-/*	$OpenBSD: ncr.c,v 1.41 1998/08/07 16:48:19 pefo Exp $	*/
+/*	$OpenBSD: ncr.c,v 1.42 1999/01/11 01:51:58 millert Exp $	*/
 /*	$NetBSD: ncr.c,v 1.63 1997/09/23 02:39:15 perry Exp $	*/
 
 /**************************************************************************
@@ -130,10 +130,11 @@
 /*
 **    The maximum number of tags per logic unit.
 **    Used only for disk devices that support tags.
+**    To enable tagged queuing set this to be >= 4.
 */
 
 #ifndef SCSI_NCR_DFLT_TAGS
-#define SCSI_NCR_DFLT_TAGS    (4)
+#define SCSI_NCR_DFLT_TAGS    (0)
 #endif /* SCSI_NCR_DFLT_TAGS */
 
 /*==========================================================
@@ -1465,7 +1466,7 @@ static	void	ncr_attach	(pcici_t tag, int unit);
 
 #if 0
 static char ident[] =
-	"\n$OpenBSD: ncr.c,v 1.41 1998/08/07 16:48:19 pefo Exp $\n";
+	"\n$OpenBSD: ncr.c,v 1.42 1999/01/11 01:51:58 millert Exp $\n";
 #endif
 
 static const u_long	ncr_version = NCR_VERSION	* 11
