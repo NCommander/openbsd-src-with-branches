@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_ethersubr.c,v 1.38 2000/09/07 04:48:58 deraadt Exp $	*/
+/*	$OpenBSD: if_ethersubr.c,v 1.39 2000/10/18 16:16:33 jason Exp $	*/
 /*	$NetBSD: if_ethersubr.c,v 1.19 1996/05/07 02:40:30 thorpej Exp $	*/
 
 /*
@@ -87,6 +87,7 @@ didn't get a copy, you may request one from <license@ipv6.nrl.navy.mil>.
 #include <sys/ioctl.h>
 #include <sys/errno.h>
 #include <sys/syslog.h>
+#include <sys/timeout.h>
 
 #include <machine/cpu.h>
 
