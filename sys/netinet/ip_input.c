@@ -1,4 +1,4 @@
-/*	$OpenBSD: ip_input.c,v 1.96 2001/12/10 12:05:40 ho Exp $	*/
+/*	$OpenBSD: ip_input.c,v 1.97 2002/01/23 00:39:48 art Exp $	*/
 /*	$NetBSD: ip_input.c,v 1.30 1996/03/16 23:53:58 christos Exp $	*/
 
 /*
@@ -262,12 +262,9 @@ struct	route ipforward_rt;
 void
 ipintr()
 {
-	register struct mbuf *m;
+	struct mbuf *m;
 	int s;
 
-	if (needqueuedrain)
-		m_reclaim();
-	
 	while (1) {
 		/*
 		 * Get next datagram off input queue and get IP header
