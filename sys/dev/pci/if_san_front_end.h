@@ -1,3 +1,5 @@
+/*	$OpenBSD$	*/
+
 /*-
  * Copyright (c) 2001-2004 Sangoma Technologies (SAN)
  * All rights reserved.  www.sangoma.com
