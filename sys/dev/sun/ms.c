@@ -544,10 +544,13 @@ ms_stint(cs)
 
 	ms = cs->cs_private;
 
-	cs->cs_rr0_new = zs_read_csr(cs);
+	rr0 = zs_read_csr(cs);
 	zs_write_csr(cs, ZSWR0_RESET_STATUS);
 
+	cs->cs_rr0_delta |= (cs->cs_rr0 ^ rr0);
+	cs->cs_rr0 = rr0;
 	ms->ms_intr_flags |= INTR_ST_CHECK;
+
 	/* Ask for softint() call. */
 	cs->cs_softreq = 1;
 }
@@ -615,7 +618,7 @@ ms_softint(cs)
 		 */
 		log(LOG_ERR, "%s: status interrupt?\n",
 		    ms->ms_dev.dv_xname);
-		cs->cs_rr0 = cs->cs_rr0_new;
+		cs->cs_rr0_delta = 0;
 	}
 
 	splx(s);
