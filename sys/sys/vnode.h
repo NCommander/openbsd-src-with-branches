@@ -1,4 +1,4 @@
-/*	$OpenBSD: vnode.h,v 1.30 2001/02/26 00:18:32 csapuntz Exp $	*/
+/*	$OpenBSD: vnode.h,v 1.31 2001/02/26 00:24:38 csapuntz Exp $	*/
 /*	$NetBSD: vnode.h,v 1.38 1996/02/29 20:59:05 cgd Exp $	*/
 
 /*
@@ -450,6 +450,7 @@ int	vop_generic_unlock __P((void *));
 int	vop_generic_revoke __P((void *));
 
 int	vn_stat __P((struct vnode *vp, struct stat *sb, struct proc *p));
+int	vn_statfile __P((struct file *fp, struct stat *sb, struct proc *p));
 int	vn_writechk __P((struct vnode *vp));
 void	vn_syncer_add_to_worklist __P((struct vnode *vp, int delay));
 void    sched_sync __P((struct proc *));
