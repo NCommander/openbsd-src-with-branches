@@ -1,4 +1,4 @@
-/*	$OpenBSD: cd9660_vnops.c,v 1.30 2004/05/14 04:00:34 tedu Exp $	*/
+/*	$OpenBSD: cd9660_vnops.c,v 1.31 2004/05/17 05:04:17 brad Exp $	*/
 /*	$NetBSD: cd9660_vnops.c,v 1.42 1997/10/16 23:56:57 christos Exp $	*/
 
 /*-
@@ -421,7 +421,7 @@ cd9660_poll(v)
 	/*
 	 * We should really check to see if I/O is possible.
 	 */
-	return (seltrue(ap->a_vp->v_rdev, ap->a_events, ap->a_p));
+	return (ap->a_events & (POLLIN | POLLOUT | POLLRDNORM | POLLWRNORM));
 }
 
 /*
