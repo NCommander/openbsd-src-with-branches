@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.14 1999/02/26 00:15:54 art Exp $
+#	$OpenBSD: Makefile,v 1.15 1999/12/08 13:15:21 itojun Exp $
 #	$NetBSD: Makefile,v 1.13 1996/02/16 02:07:41 cgd Exp $
 #	@(#)Makefile	8.2 (Berkeley) 4/4/94
 
@@ -30,7 +30,7 @@ DPADD+= ${LIBSKEY}
 SRCS+= klogin.c
 .PATH:	${.CURDIR}/../../usr.bin/login
 CFLAGS+= -DKERBEROS
-LDADD+= -lkrb -ldes -lkafs
+LDADD+= -lkafs -lkrb -ldes
 DPADD+= ${LIBKRB} ${LIBKRB} ${LIBKAFS}
 .endif
 
