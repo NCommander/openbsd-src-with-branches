@@ -1,4 +1,4 @@
-/*	$OpenBSD: display.c,v 1.17 2002/08/22 23:28:19 deraadt Exp $	*/
+/*	$OpenBSD: display.c,v 1.18 2002/08/29 22:45:22 vincent Exp $	*/
 
 /*
  * The functions in this file handle redisplay. The
@@ -58,7 +58,7 @@ typedef struct {
  * trace trajectory, and the cost of redisplay, when
  * the dynamic programming redisplay code is used.
  * If no fancy redisplay, this isn't used. The trace index
- * fields can be "char", and the score a "short", but
+ * fields can be "char", and the cost a "short", but
  * this makes the code worse on the VAX.
  */
 typedef struct {
