@@ -35,8 +35,8 @@
  *
  */
 
-#ifndef _AUDIOIO_H_
-#define _AUDIOIO_H_
+#ifndef _SYS_AUDIOIO_H_
+#define _SYS_AUDIOIO_H_
 
 /*
  * Audio device
@@ -253,4 +253,4 @@ typedef struct mixer_ctrl {
 #define AudioCMonitor	"Monitor"
 #define AudioCEqualization	"Equalization"
 
-#endif /* _AUDIOIO_H_ */
+#endif /* _SYS_AUDIOIO_H_ */
