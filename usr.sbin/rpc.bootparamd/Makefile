@@ -1,9 +1,14 @@
-#	$OpenBSD: Makefile,v 1.4 1997/09/21 11:44:16 deraadt Exp $
+#	$OpenBSD: Makefile,v 1.5 2000/09/03 18:41:22 espie Exp $
 
 .include <bsd.own.mk>
 
 .if (${YP:L} == "yes")
 CFLAGS+=-DYP
+.endif
+
+.if (${MACHINE_ARCH} == vax)
+bootparam_prot_svc.o:
+	${CC} ${CFLAGS} ${CPPFLAGS} -O0 -c $<
 .endif
 
 PROG=	rpc.bootparamd
