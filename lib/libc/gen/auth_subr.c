@@ -1,4 +1,4 @@
-/*	$OpenBSD: auth_subr.c,v 1.20 2002/11/22 19:47:03 deraadt Exp $	*/
+/*	$OpenBSD: auth_subr.c,v 1.21 2002/11/22 23:27:45 millert Exp $	*/
 
 /*-
  * Copyright (c) 1995,1996,1997 Berkeley Software Design, Inc.
@@ -277,7 +277,7 @@ auth_close(auth_session_t *as)
 }
 
 /*
- * Request a challange for the session.
+ * Request a challenge for the session.
  * The name and style must have already been specified
  */
 char *
