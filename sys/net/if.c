@@ -1,4 +1,4 @@
-/*	$OpenBSD: if.c,v 1.30 2000/03/22 11:28:42 itojun Exp $	*/
+/*	$OpenBSD: if.c,v 1.38 2000/10/07 03:43:16 itojun Exp $	*/
 /*	$NetBSD: if.c,v 1.35 1996/05/07 05:26:04 thorpej Exp $	*/
 
 /*
@@ -100,6 +100,7 @@
 #include <netinet/in.h>
 #endif
 #include <netinet6/in6_ifattach.h>
+#include <netinet6/in6_var.h>
 #endif
 
 #ifdef IPFILTER
@@ -728,12 +729,18 @@ ifioctl(so, cmd, data, p)
 		break;
 	}
 
+	case SIOCSIFPHYADDR:
+#ifdef INET6
+	case SIOCSIFPHYADDR_IN6:
+#endif
 	case SIOCADDMULTI:
 	case SIOCDELMULTI:
 	case SIOCSIFMEDIA:
 		if ((error = suser(p->p_ucred, &p->p_acflag)) != 0)
 			return (error);
 		/* FALLTHROUGH */
+	case SIOCGIFPSRCADDR:
+	case SIOCGIFPDSTADDR:
 	case SIOCGIFMEDIA:
 		if (ifp->if_ioctl == 0)
 			return (EOPNOTSUPP);
