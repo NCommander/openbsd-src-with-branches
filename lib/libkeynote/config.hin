@@ -26,6 +26,9 @@
 /* Define if you have the close function.  */
 #undef HAVE_CLOSE
 
+/* Define if you have the <crypto.h> header file.  */
+#undef HAVE_CRYPTO_H
+
 /* Define if you have the getopt function.  */
 #undef HAVE_GETOPT
 
