@@ -1,4 +1,4 @@
-# $OpenBSD: Ustar.pm,v 1.1.1.1 2003/10/16 17:43:34 espie Exp $
+# $OpenBSD: Ustar.pm,v 1.2 2003/10/31 09:30:10 espie Exp $
 #
 # Copyright (c) 2002 Marc Espie.
 # 
@@ -188,6 +188,7 @@ sub set_modes
 	my $self = shift;
 	chown $self->{uid}, $self->{gid}, $self->{name};
 	chmod $self->{mode}, $self->{name};
+	utime $self->{mtime}, $self->{mtime}, $self->{name};
 }
 
 sub make_basedir
@@ -259,7 +260,6 @@ sub create
 		print "Can't write to ", $self->{name}, "\n";
 		return;
 	}
-	$self->SUPER::set_modes();
 	my $buffer;
 	my $toread = $self->{size};
 	while ($toread > 0) {
@@ -271,6 +271,7 @@ sub create
 		$toread -= $maxread;
 	}
 	$out->close();
+	$self->SUPER::set_modes();
 }
 
 sub isFile() { 1 }
