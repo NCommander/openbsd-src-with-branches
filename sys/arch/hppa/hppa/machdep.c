@@ -1,4 +1,4 @@
-/*	$OpenBSD: machdep.c,v 1.67 2002/04/21 22:30:46 mickey Exp $	*/
+/*	$OpenBSD: machdep.c,v 1.68 2002/04/22 00:19:59 mickey Exp $	*/
 
 /*
  * Copyright (c) 1999-2002 Michael Shalayeff
@@ -622,7 +622,6 @@ cpu_startup()
 	buffers = (caddr_t)minaddr;
 	base = bufpages / nbuf;
 	residual = bufpages % nbuf;
-printf("base=%d res=%d\n", base, residual);
 	for (i = 0; i < nbuf; i++) {
 		vaddr_t curbuf;
 		int cbpgs;
