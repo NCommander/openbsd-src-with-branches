@@ -1,4 +1,4 @@
-#	$OpenBSD: install.md,v 1.25 2004/05/24 15:47:00 tom Exp $
+#	$OpenBSD: install.md,v 1.26 2004/07/18 01:14:04 deraadt Exp $
 #
 #
 # Copyright (c) 1996 The NetBSD Foundation, Inc.
@@ -80,7 +80,7 @@ disk partitioned with an MBR partition table.
 
 __EOT
 
-	while : ; do
+	while :; do
 		ask "Use HFS or MBR partition table?" HFS
 		_resp=$resp
 		case $_resp in

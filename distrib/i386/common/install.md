@@ -1,4 +1,4 @@
-#	$OpenBSD: install.md,v 1.23 2004/06/26 20:10:17 krw Exp $
+#	$OpenBSD: install.md,v 1.24 2004/09/12 21:01:27 deraadt Exp $
 #
 #
 # Copyright (c) 1996 The NetBSD Foundation, Inc.
@@ -52,7 +52,7 @@ md_set_term() {
 	ask_yn "Do you wish to select a keyboard encoding table?"
 	[[ $resp == n ]] && return
 
-	while : ; do
+	while :; do
 		ask "Select your keyboard type: (P)C-AT/XT, (U)SB or 'done'" P
 		case $resp in
 		P*|p*)  _tables="be br de dk es fr it jp lt no pt ru sf sg sv ua uk us"
@@ -70,7 +70,7 @@ md_set_term() {
 
 	[ -z "$_tables" ] && return
 
-	while : ; do
+	while :; do
 		cat << __EOT
 The available keyboard encoding tables are:
 

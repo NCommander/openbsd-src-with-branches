@@ -1,4 +1,4 @@
-#	$OpenBSD: install.md,v 1.6 2005/02/27 08:57:01 david Exp $
+#	$OpenBSD: install.md,v 1.7 2005/02/27 09:01:34 david Exp $
 #
 #
 # Copyright (c) 1996 The NetBSD Foundation, Inc.
@@ -62,7 +62,7 @@ It is more a question of firmware compatibility disk portability.
 (Once we can figure out what filesystems ABLE can boot)
 __EOT
 
-	while : ; do
+	while :; do
 		ask "Use BSD or MBR partition table?" BSD
 		_resp=$resp
 		case $_resp in
