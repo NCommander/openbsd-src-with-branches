@@ -24,7 +24,7 @@
 
 #include "includes.h"
 
-RCSID("$OpenBSD: sftp.c,v 1.18 2001/06/23 15:12:20 itojun Exp $");
+RCSID("$OpenBSD: sftp.c,v 1.19 2001/09/17 17:57:57 stevesk Exp $");
 
 /* XXX: commandline mode */
 /* XXX: short-form remote directory listings (like 'ls -C') */
@@ -88,8 +88,8 @@ static void
 usage(void)
 {
 	fprintf(stderr,
-	    "usage: sftp [-1vC] [-b batchfile] [-F config] [-o option]\n"
-	    "            [user@]host[:file [file]]\n");
+	    "usage: sftp [-1Cv] [-b batchfile] [-F config] [-o option] [-s subsystem|path]\n"
+	    "            [-S program] [user@]host[:file [file]]\n");
 	exit(1);
 }
 
