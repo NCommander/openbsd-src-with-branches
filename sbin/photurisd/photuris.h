@@ -46,7 +46,6 @@
 #endif
 
 #define PHOTURIS_DIR         "/etc/photuris"
-#define PHOTURIS_FIFO        "photuris.pipe"
 #define PHOTURIS_STARTUP     "photuris.startup"
 #define PHOTURIS_CONFIG      "photuris.conf"
 #define PHOTURIS_SECRET      "secrets.conf"

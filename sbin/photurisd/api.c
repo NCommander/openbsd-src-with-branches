@@ -63,62 +63,6 @@ static char rcsid[] = "$OpenBSD: api.c,v 1.4 2000/12/15 02:50:37 provos Exp $";
 #include "server.h"
 #include "packet.h"
 
-
-/*
- * process_api:
- * process requests from user processes or kernel notify
- */
-
-void
-process_api(int fd, int sendsock)
-{
-        struct stateob *st;
-	int sz, i;
-
-#ifdef DEBUG
-	printf("Entering API.\n");
-#endif
-
-	bzero(buffer, BUFFER_SIZE);
-
-	if ((sz = read(fd, buffer, BUFFER_SIZE)) == -1)
-	     log_fatal("read() in process_api()");
-
-	buffer[sz >= BUFFER_SIZE ? BUFFER_SIZE -1 : sz] = 0;
-
-	if (!sz)
-	     return;
-
-	/* Set up a new state object */
-	if ((st = state_new()) == NULL) {
-	     log_error("state_new() in process_api()");
-	     return;
-	}
-
-	startup_parse(st, buffer);
-
-#ifndef DEBUG
-	if (addresses != (char **) NULL && strlen(st->address))
-	     for (i = 0; i < num_ifs; i++) {
-		  if (addresses[i] == (char *)NULL)
-		       continue;
-		  if (!strcmp(addresses[i], st->address)) {
-		       /* XXX Code to notify kernel of failure here */
-		       log_print("discarded request to initiate KES with localhost");
-		       state_value_reset(st);
-		       free(st);
-		       return;
-		  }
-	     }
-#endif
-
-	startup_end(st);
-
-#ifdef DEBUG
-	printf("API finished.\n");
-#endif
-}
-
 int
 start_exchange(int sd, struct stateob *st, char *address, int port)
 {
