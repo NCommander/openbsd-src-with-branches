@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.3 1996/09/21 19:22:25 tholo Exp $
+#	$OpenBSD: Makefile,v 1.4 1996/10/12 03:08:24 tholo Exp $
 #
 # Copyright (c) 1996 SigmaSoft, Th. Lockert <tholo@sigmasoft.com>
 # All rights reserved.
@@ -68,7 +68,7 @@ binaries.h:	mkinfo Capabilities
 includes:	${HDRS}
 	@for i in ${HDRS}; do \
 	    cmp -s $$i ${DESTDIR}/usr/include/$$i || \
-		install -c -o ${BINOWN} -g ${BINGRP} -m 444 $$i \
+		${INSTALL} ${COPY} -o ${BINOWN} -g ${BINGRP} -m 444 $$i \
 		${DESTDIR}/usr/include; \
 	done
 

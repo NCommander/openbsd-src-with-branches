@@ -16,18 +16,18 @@ all:		${HDRS}
 beforedepend:	${HDRS}
 
 includes:	${HDRS}
-	install -d -o ${BINOWN} -g ${BINGRP} -m 755 \
+	${INSTALL} -d -o ${BINOWN} -g ${BINGRP} -m 755 \
 		${DESTDIR}/usr/include/rpcsvc
 	@echo installing rpc .h and .x files
 	@for i in $(HDRS); do \
 	    cmp -s $$i ${DESTDIR}/usr/include/rpcsvc/$$i || \
-		{ j="install -c -o ${BINOWN} -g ${BINGRP} -m 444 $$i \
+		{ j="${INSTALL} ${COPY} -o ${BINOWN} -g ${BINGRP} -m 444 $$i \
 		${DESTDIR}/usr/include/rpcsvc"; \
 		echo $$j; $$j; } \
 	done
 	@cd ${.CURDIR}; for i in $(RPCSRCS); do \
 	    cmp -s $(.CURDIR)/$$i ${DESTDIR}/usr/include/rpcsvc/$$i || \
-		{ j="install -c -o ${BINOWN} -g ${BINGRP} -m 444 $$i \
+		{ j="${INSTALL} ${COPY} -o ${BINOWN} -g ${BINGRP} -m 444 $$i \
 		${DESTDIR}/usr/include/rpcsvc"; \
 		echo $$j; $$j; } \
 	done
