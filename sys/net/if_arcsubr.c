@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_arcsubr.c,v 1.11 2002/06/30 13:04:35 itojun Exp $	*/
+/*	$OpenBSD: if_arcsubr.c,v 1.12 2002/09/11 05:38:47 itojun Exp $	*/
 /*	$NetBSD: if_arcsubr.c,v 1.8 1996/05/07 02:40:29 thorpej Exp $	*/
 
 /*
@@ -551,8 +551,6 @@ void
 arc_ifattach(ifp)
 	register struct ifnet *ifp;
 {
-	register struct ifaddr *ifa;
-	register struct sockaddr_dl *sdl;
 	register struct arccom *ac;
 
 	ifp->if_type = IFT_ARCNET;
