@@ -1,4 +1,4 @@
-/*	$OpenBSD: optimize.c,v 1.4 1996/07/12 13:19:10 mickey Exp $	*/
+/*	$OpenBSD: optimize.c,v 1.5 1996/09/16 02:33:07 tholo Exp $	*/
 
 /*
  * Copyright (c) 1988, 1989, 1990, 1991, 1993, 1994, 1995, 1996
@@ -23,25 +23,24 @@
  *  Optimization module for tcpdump intermediate representation.
  */
 #ifndef lint
-static char rcsid[] =
-    "@(#) Header: optimize.c,v 1.58 96/06/16 22:36:59 leres Exp (LBL)";
+static const char rcsid[] =
+    "@(#) $Header: optimize.c,v 1.60 96/09/26 23:28:14 leres Exp $ (LBL)";
 #endif
 
 #include <sys/types.h>
 #include <sys/time.h>
 
-#include <net/bpf.h>
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <memory.h>
 
+#include "pcap-int.h"
+
+#include "gencode.h"
+
 #ifdef HAVE_OS_PROTO_H
 #include "os-proto.h"
 #endif
-
-#include "pcap-int.h"
-#include "gencode.h"
 
 #ifdef BDEBUG
 extern int dflag;
