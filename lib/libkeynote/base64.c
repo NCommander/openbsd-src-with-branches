@@ -61,8 +61,8 @@
 #include "keynote.h"
 
 #if defined(HAVE___B64_NTOP)
-int __b64_ntop __P((u_char const *, size_t, char *, size_t));
-int __b64_pton __P((char const *, u_char *, size_t));
+int __b64_ntop __P((unsigned char const *, size_t, char *, size_t));
+int __b64_pton __P((char const *, unsigned char *, size_t));
 
 int
 kn_encode_base64(src, srclength, target, targsize)

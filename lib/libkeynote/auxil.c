@@ -343,7 +343,7 @@ int
 keynote_add_htable(struct assertion *as, int which)
 {
     char *hashname;
-    u_int i;
+    unsigned int i;
 
     if (as == (struct assertion *) NULL)
     {
@@ -515,8 +515,8 @@ keynote_free_assertion(struct assertion *as)
     free(as);
 }
 
-u_int 
-keynote_stringhash(char *name, u_int size)
+unsigned int 
+keynote_stringhash(char *name, unsigned int size)
 {
     unsigned int hash_val = 0;
     unsigned int i;
