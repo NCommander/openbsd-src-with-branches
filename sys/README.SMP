@@ -34,7 +34,7 @@ you mainly need to carry out the following procedure:
   last synchronization.  Say you have a clean standard trunk checkout in $STD
   and your clean SMP checkout is in $SMP:
 
-  $ cd $STD/src/sys
+  $ cd $STD/src/sys
   $ find . -type d \! -name CVS \! -path "*/compile/*" |sort>/tmp/stddirs
   $ cd $SMP/src/sys
   $ find . -type d \! -name CVS \! -path "*/compile/*" |sort>/tmp/smpdirs
