@@ -1,4 +1,4 @@
-/*	$OpenBSD: bootxx.c,v 1.6 1996/11/27 19:54:47 niklas Exp $	*/
+/*	$OpenBSD: bootxx.c,v 1.7 1997/05/05 06:01:46 millert Exp $	*/
 /*	$NetBSD: bootxx.c,v 1.4 1997/01/18 00:28:59 cgd Exp $	*/
 
 /*
@@ -128,7 +128,7 @@ puts("\b");
 	return (rv);
 }
 
-void
+int
 main()
 {
 	struct bbinfo *bbinfop;
