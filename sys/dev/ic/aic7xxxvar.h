@@ -31,7 +31,7 @@
  * SUCH DAMAGE.
  *
  * $FreeBSD: src/sys/dev/aic7xxx/aic7xxx.h,v 1.15 2000/01/07 23:08:18 gibbs Exp $
- * $OpenBSD: aic7xxxvar.h,v 1.13 2000/07/03 22:18:36 smurph Exp $
+ * $OpenBSD: aic7xxxvar.h,v 1.14 2002/03/14 01:26:54 millert Exp $
  */
 
 #ifndef _AIC7XXXVAR_H_
@@ -342,7 +342,6 @@ struct tmode_tstate {
 	u_int16_t		 ultraenb;	/* Using ultra sync rate  */
 	u_int16_t	 	 discenable;	/* Disconnection allowed  */
 	u_int16_t		 tagenable;	/* Tagged Queuing allowed */
-	u_int16_t		 tagdisable;	/* Tagged Queuing NOT allowed */
 };
 
 #define ALL_TARGETS -1
