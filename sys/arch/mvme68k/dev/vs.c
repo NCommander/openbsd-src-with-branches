@@ -1,4 +1,4 @@
-/*	$OpenBSD: vs.c,v 1.2 2000/06/10 19:53:23 deraadt Exp $ */
+/*	$OpenBSD: vs.c,v 1.3 2001/05/16 12:49:47 ho Exp $ */
 
 /*
  * Copyright (c) 1999 Steve Murphree, Jr.
@@ -78,7 +78,6 @@ void vs_scsidone         __P((struct scsi_xfer *, int));
 M328_CQE  * vs_getcqe    __P((struct vs_softc *));
 M328_IOPB * vs_getiopb   __P((struct vs_softc *));
 
-extern int cold;
 extern u_int   kvtop();
 /* 
  * 16 bit 's' memory functions.  MVME328 is a D16 board.

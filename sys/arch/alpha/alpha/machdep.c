@@ -1,4 +1,4 @@
-/* $OpenBSD: machdep.c,v 1.45 2001/05/05 22:33:23 art Exp $ */
+/* $OpenBSD: machdep.c,v 1.46 2001/05/17 18:41:47 provos Exp $ */
 /* $NetBSD: machdep.c,v 1.206 2000/05/23 05:12:54 thorpej Exp $ */
 
 /*-
@@ -1113,8 +1113,6 @@ void
 boot(howto)
 	int howto;
 {
-	extern int cold;
-
 #if defined(MULTIPROCESSOR)
 #if 0 /* XXX See below. */
 	u_long cpu_id;

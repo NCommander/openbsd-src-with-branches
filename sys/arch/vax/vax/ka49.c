@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: ka49.c,v 1.1 2000/04/27 01:10:10 bjc Exp $	*/
 /*
  * Copyright (c) 1999 Ludd, University of Lule}, Sweden.
  * All rights reserved.
@@ -49,8 +49,6 @@ static	void	ka49_hardmem __P((void *));
 static	void	ka49_steal_pages __P((void));
 static	void	ka49_cache_enable __P((void));
 static	void	ka49_halt __P((void));
-
-extern int cold;		/* cold-start flag */
 
 /* 
  * Declaration of 49-specific calls.

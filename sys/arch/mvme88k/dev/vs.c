@@ -1,4 +1,4 @@
-/*	$OpenBSD: vs.c,v 1.6 2001/05/16 12:49:47 ho Exp $ */
+/*	$OpenBSD: vs.c,v 1.7 2001/06/14 21:30:35 miod Exp $ */
 
 /*
  * Copyright (c) 1999 Steve Murphree, Jr.
@@ -82,7 +82,6 @@ M328_IOPB * vs_getiopb   __P((struct vs_softc *));
 
 static __inline__ void vs_clear_return_info __P((struct vs_softc *));
 
-extern int cold;
 extern u_int   kvtop();
 
 /* 

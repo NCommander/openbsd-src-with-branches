@@ -1,4 +1,4 @@
-/*	$OpenBSD: vx.c,v 1.5 2001/03/07 23:45:52 miod Exp $ */
+/*	$OpenBSD: vx.c,v 1.6 2001/03/09 05:44:39 smurph Exp $ */
 /*
  * Copyright (c) 1999 Steve Murphree, Jr. 
  * All rights reserved.
@@ -93,8 +93,6 @@ struct vxsoftc {
 	struct envelope   *elist_head, *elist_tail;
 	struct packet     *plist_head, *plist_tail;
 };
-
-extern int cold;  /* var in autoconf.c that is set in machdep.c when booting */
 
 /* prototypes */
 

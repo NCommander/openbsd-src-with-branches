@@ -1,4 +1,4 @@
-/*	$OpenBSD: autoconf.c,v 1.13 2001/04/01 06:25:33 mickey Exp $	*/
+/*	$OpenBSD: autoconf.c,v 1.14 2001/05/05 22:33:39 art Exp $	*/
 
 /*
  * Copyright (c) 1998-2001 Michael Shalayeff
@@ -86,8 +86,6 @@ extern int hz;
 void
 cpu_configure()
 {
-	extern int cold;
-
 	splhigh();
 	if (config_rootfound("mainbus", "mainbus") == NULL)
 		panic("no mainbus found");

@@ -1,4 +1,4 @@
-/*	$OpenBSD: mscp.c,v 1.3 1997/09/12 09:25:47 maja Exp $	*/
+/*	$OpenBSD: mscp.c,v 1.4 2000/04/27 03:14:45 bjc Exp $	*/
 /*	$NetBSD: mscp.c,v 1.11 1999/06/06 19:16:18 ragge Exp $	*/
 
 /*
@@ -140,7 +140,6 @@ mscp_dorsp(mi)
 	struct mscp_xi *mxi;
 	int nextrsp;
 	int st, error;
-	extern int cold;
 	extern struct mscp slavereply;
 
 	nextrsp = mi->mi_rsp.mri_next;

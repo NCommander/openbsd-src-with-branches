@@ -1,4 +1,4 @@
-/*	$OpenBSD: machdep.c,v 1.65 2001/06/24 05:14:38 drahn Exp $	*/
+/*	$OpenBSD: machdep.c,v 1.66 2001/06/24 22:00:12 drahn Exp $	*/
 /*	$NetBSD: machdep.c,v 1.4 1996/10/16 19:33:11 ws Exp $	*/
 
 /*
@@ -95,7 +95,6 @@ struct pmap *curpm;
 struct proc *fpuproc;
 
 extern struct user *proc0paddr;
-extern int cold;
 
 /* 
  * Declare these as initialized data so we can patch them.
