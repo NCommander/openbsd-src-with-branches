@@ -1,10 +1,10 @@
-#	$OpenBSD$
+#	$OpenBSD: Makefile.inc,v 1.7 1997/09/17 10:46:08 downsj Exp $
 #	$NetBSD: Makefile.inc,v 1.5 1996/02/01 22:33:01 mycroft Exp $
 
 BINDIR=	/usr/mdec
 
 RELOC_SUN4=	0x240000
-RELOC_SUN4C=	0x340000
+RELOC_SUN4C=	0x380000
 RELOC_SUN4M=	0x440000
 
 # Note: a `RELOC' value of 0x340000 seems to work on most machines
