@@ -1,5 +1,5 @@
 #
-#	$OpenBSD: Makefile.inc,v 1.1 1997/05/07 12:46:51 niklas Exp $
+#	$OpenBSD: Makefile.inc,v 1.2 1997/05/10 23:09:32 millert Exp $
 #
 
 # TOP is assumed to be defined by Makefile including this one.
@@ -9,7 +9,7 @@ COMMONDIR=	${TOP}/inst-common
 
 MOUNT_POINT?=	${TOP}/${BASE}/fs
 
-LISTS=		${COMMONDIR}/list ${.CURDIR}/list
+LISTS=		${COMMONDIR}/list ${.CURDIR}/list ${.CURDIR}/../common/list
 CRUNCHCONF?=	${COMMONDIR}/${CBIN}.conf
 MTREE=		${COMMONDIR}/mtree.conf
 
