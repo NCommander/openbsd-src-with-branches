@@ -1,4 +1,4 @@
-/*	$OpenBSD: w.c,v 1.22 1997/12/24 19:57:11 deraadt Exp $	*/
+/*	$OpenBSD: w.c,v 1.23 1998/01/16 17:50:43 millert Exp $	*/
 
 /*-
  * Copyright (c) 1980, 1991, 1993, 1994
@@ -43,7 +43,7 @@ static char copyright[] =
 #if 0
 static char sccsid[] = "@(#)w.c	8.4 (Berkeley) 4/16/94";
 #else
-static char *rcsid = "$OpenBSD$";
+static char *rcsid = "$OpenBSD: w.c,v 1.23 1998/01/16 17:50:43 millert Exp $";
 #endif
 #endif /* not lint */
 
@@ -479,6 +479,6 @@ usage(wcmd)
 		(void)fprintf(stderr,
 		    "usage: w: [-hia] [-M core] [-N system] [user]\n");
 	else
-		(void)fprintf(stderr, "uptime\n");
+		(void)fprintf(stderr, "usage: uptime\n");
 	exit (1);
 }
