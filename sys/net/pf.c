@@ -1,4 +1,4 @@
-/*	$OpenBSD: pf.c,v 1.242 2002/08/12 16:41:25 dhartmei Exp $ */
+/*	$OpenBSD: pf.c,v 1.243 2002/08/28 15:43:02 pefo Exp $ */
 
 /*
  * Copyright (c) 2001 Daniel Hartmeier
@@ -3150,7 +3150,7 @@ pf_test_state_icmp(struct pf_state **state, int direction, struct ifnet *ifp,
 					    sizeof(opt6), NULL, NULL, pd2.af)) {
 						DPFPRINTF(PF_DEBUG_MISC,
 						    ("pf: ICMPv6 short opt\n"));
-						return(PF_DROP);
+						return (PF_DROP);
 					}
 					if (pd2.proto == IPPROTO_AH)
 						off2 += (opt6.ip6e_len + 2) * 4;
