@@ -1,4 +1,4 @@
-/*	$OpenBSD: Locore.c,v 1.3 1996/12/28 06:21:33 rahnds Exp $	*/
+/*	$OpenBSD: Locore.c,v 1.5 1997/10/13 13:42:52 pefo Exp $	*/
 
 /*
  * Copyright (C) 1995, 1996 Wolfgang Solfrank.
@@ -38,6 +38,7 @@
 
 #include <sys/param.h>
 #include <sys/proc.h>
+#include <sys/systm.h>
 
 int whichqs;
 

@@ -1,4 +1,4 @@
-/* $OpenBSD: m88100_fp.S,v 1.8 2001/03/09 05:44:41 smurph Exp $	*/
+/* $OpenBSD: m88100_fp.S,v 1.6.4.1 2001/04/18 16:11:36 niklas Exp $	*/
 /*
  * Mach Operating System
  * Copyright (c) 1991 Carnegie Mellon University
@@ -27,11 +27,7 @@
  */
 
 /* Floating point trouble routines */
-#ifndef ASSEMBLER
-#define	ASSEMBLER
-#endif /* ASSEMBLER */
-
-#include "assym.s"
+#include "assym.h"
 #include <machine/trap.h>
 #include <machine/asm.h>
 

@@ -1,4 +1,4 @@
-/*	$OpenBSD: process.S,v 1.8 2001/03/09 05:44:42 smurph Exp $	*/
+/*	$OpenBSD: process.S,v 1.5.6.1 2001/04/18 16:11:40 niklas Exp $	*/
 /*
  * Copyright (c) 1996 Nivas Madhur
  * All rights reserved.
@@ -30,14 +30,10 @@
  *
  */
 
-#ifndef ASSEMBLER
-#define	ASSEMBLER
-#endif /* ASSEMBLER */
-
-#include "assym.s"
-#include "machine/asm.h"
-#include "machine/psl.h"
-#include "machine/intr.h"
+#include "assym.h"
+#include <machine/asm.h>
+#include <machine/psl.h>
+#include <machine/intr.h>
 
 	data
 	align 4

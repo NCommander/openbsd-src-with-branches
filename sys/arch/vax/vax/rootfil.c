@@ -1,4 +1,4 @@
-/*	$OpenBSD: rootfil.c,v 1.10 2001/04/09 00:59:30 hugh Exp $	*/
+/*	$OpenBSD: rootfil.c,v 1.7.12.1 2001/05/14 21:39:09 niklas Exp $	*/
 /*	$NetBSD: rootfil.c,v 1.14 1996/10/13 03:35:58 christos Exp $	*/
 
 /*
@@ -82,11 +82,8 @@ void
 setroot()
 {
 	int  majdev, mindev, unit, part, controller, adaptor;
-	dev_t temp = 0, orootdev;
-	struct ngcconf *nc;
-	extern struct ngcconf ngcconf[];
+	dev_t orootdev;
 	extern int boothowto;
-	char name[128];
 	char *uname;
 
 	if ((bootdev & B_MAGICMASK) != (u_long)B_DEVMAGIC) {

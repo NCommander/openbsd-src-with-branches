@@ -1,4 +1,4 @@
-/*      $OpenBSD: cpu.h,v 1.10 2000/04/26 03:08:40 bjc Exp $      */
+/*      $OpenBSD: cpu.h,v 1.9.6.1 2001/05/14 21:37:58 niklas Exp $      */
 /*      $NetBSD: cpu.h,v 1.41 1999/10/21 20:01:36 ragge Exp $      */
 
 /*
@@ -47,8 +47,6 @@
 #define	cpu_wait(p)
 #define	cpu_swapout(p)
 #define	cpu_number()			0
-
-void configure       __P((void));
 
 /*
  * All cpu-dependent info is kept in this struct. Pointer to the

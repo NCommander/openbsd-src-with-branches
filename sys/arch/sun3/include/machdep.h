@@ -1,4 +1,4 @@
-/*	$OpenBSD: machdep.h,v 1.11 2001/01/03 01:48:07 miod Exp $	*/
+/*	$OpenBSD: machdep.h,v 1.8.10.2 2001/05/14 21:37:30 niklas Exp $	*/
 
 /*
  * Copyright (c) 1994 Gordon W. Ross
@@ -60,7 +60,6 @@ struct trapframe;
 struct pmap;
 
 extern int cache_size;
-extern int cold;
 extern int fputype;
 
 extern label_t *nofault;
@@ -87,7 +86,6 @@ int 	cachectl __P((int req, caddr_t addr, int len));
 
 void	child_return __P((void *));
 
-void	configure __P((void));
 void	cninit __P((void));
 
 void	dumpconf __P((void));
