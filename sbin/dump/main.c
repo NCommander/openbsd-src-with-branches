@@ -1,4 +1,4 @@
-/*	$OpenBSD: main.c,v 1.13 1997/02/04 10:06:20 deraadt Exp $	*/
+/*	$OpenBSD: main.c,v 1.14 1997/02/10 04:19:55 millert Exp $	*/
 /*	$NetBSD: main.c,v 1.8 1996/03/15 22:39:32 scottr Exp $	*/
 
 /*-
@@ -145,6 +145,7 @@ main(argc, argv)
 				    maxbsize/1024);
 				exit(X_ABORT);
 			}
+			bflag = 1;
 			break;
 
 		case 'c':		/* Tape is cart. not 9-track */
