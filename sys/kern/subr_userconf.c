@@ -1,4 +1,4 @@
-/*	$OpenBSD: subr_userconf.c,v 1.20 2000/05/19 17:07:05 maja Exp $	*/
+/*	$OpenBSD: subr_userconf.c,v 1.21 2000/07/06 00:59:01 todd Exp $	*/
 
 /*
  * Copyright (c) 1996 Mats O Jansson <moj@stacken.kth.se>
@@ -293,7 +293,7 @@ userconf_pdev(devno)
 		ln++;
 		userconf_pnum(*l++);
 	}
-	printf("\n");
+	printf(" flags 0x%x\n", cd->cf_flags);
 }
 
 int
@@ -499,6 +499,8 @@ userconf_change(devno)
 				ln++;
 				l++;
 			}
+			userconf_modify("flags", &cd->cf_flags);
+			userconf_hist_int(cd->cf_flags);
 
 			if (share) {
 				if (bcmp(cd->cf_loc, lk, sizeof(int) * i))
