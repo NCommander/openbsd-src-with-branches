@@ -41,6 +41,7 @@ MAILER(local)dnl
 MAILER(smtp)dnl
 FEATURE(always_add_domain)dnl
 FEATURE(allmasquerade)dnl
+FEATURE(local_procmail)dnl
 define(`confAUTO_REBUILD', True)dnl
 LOCAL_RULE_0
 # We take care of all mail directed to either appli.se or *.appli.se
