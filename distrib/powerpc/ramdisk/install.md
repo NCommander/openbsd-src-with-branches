@@ -1,4 +1,4 @@
-#	$OpenBSD: install.md,v 1.20 2001/03/25 06:30:41 drahn Exp $
+#	$OpenBSD: install.md,v 1.21 2001/04/13 01:29:24 krw Exp $
 #
 #
 # Copyright rc) 1996 The NetBSD Foundation, Inc.
@@ -362,7 +362,7 @@ __md_prep_disklabel_1
 	getresp ""
 	if [[ $disklabeltype = "HFS" ]] 
 	then
-		disklabel -f /tmp/fstab.${_disk} -E ${_disk}
+		disklabel -c -f /tmp/fstab.${_disk} -E ${_disk}
 	elif [[ $disklabeltype = "MBR" ]] 
 	then
 		disklabel -W ${_disk}
