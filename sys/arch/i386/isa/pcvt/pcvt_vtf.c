@@ -1,4 +1,4 @@
-/*	$OpenBSD: pcvt_vtf.c,v 1.7 1999/10/16 18:56:36 aaron Exp $	*/
+/*	$OpenBSD: pcvt_vtf.c,v 1.8 1999/10/20 19:15:52 deraadt Exp $	*/
 
 /*
  * Copyright (c) 1992, 1995 Hellmuth Michaelis and Joerg Wunsch.
@@ -286,6 +286,9 @@ vt_cuu(struct video_state *svsp)
 		return;
 
 	svsp->cur_offset -= (svsp->maxcol * p);
+
+	if (svsp->scr_offset >= p)
+		svsp->scr_offset -= p;
 }
 
 /*---------------------------------------------------------------------------*
