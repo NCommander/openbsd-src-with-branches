@@ -1,7 +1,7 @@
-/*	$OpenBSD: perform.c,v 1.12 2003/04/04 08:56:01 avsm Exp $	*/
+/*	$OpenBSD: perform.c,v 1.13 2003/07/04 17:23:15 avsm Exp $	*/
 
 #ifndef lint
-static const char *rcsid = "$OpenBSD: perform.c,v 1.12 2003/04/04 08:56:01 avsm Exp $";
+static const char rcsid[] = "$OpenBSD: perform.c,v 1.13 2003/07/04 17:23:15 avsm Exp $";
 #endif
 
 /* This is OpenBSD pkg_install, based on:
