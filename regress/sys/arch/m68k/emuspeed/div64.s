@@ -1,3 +1,5 @@
+/*	$OpenBSD$	*/
+
 /*
  * stack:
  * + 8: count

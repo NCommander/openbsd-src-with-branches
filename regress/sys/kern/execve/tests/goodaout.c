@@ -1,3 +1,4 @@
+/*	$OpenBSD: goodaout.c,v 1.3 1995/04/20 22:44:20 cgd Exp $	*/
 /*	$NetBSD: goodaout.c,v 1.3 1995/04/20 22:44:20 cgd Exp $	*/
 
 /*

@@ -1,3 +1,4 @@
+/*	$OpenBSD: emuspeed.c,v 1.3 1998/06/15 14:43:25 is Exp $	*/
 /*	$NetBSD: emuspeed.c,v 1.3 1998/06/15 14:43:25 is Exp $	*/
 
 #include <setjmp.h>

@@ -1,3 +1,4 @@
+#	$OpenBSD: Makefile,v 1.2 1998/01/09 08:03:55 perry Exp $
 #	$NetBSD: Makefile,v 1.2 1998/01/09 08:03:55 perry Exp $
 #
 PROG=emuspeed

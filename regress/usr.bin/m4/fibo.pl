@@ -1,4 +1,6 @@
 #! /usr/bin/perl
+#	$OpenBSD$
+
 my $n=shift;
 
 $fibo[0] = 'a';

@@ -1,3 +1,5 @@
+#	$OpenBSD$
+
 # This Makefile should fail, the syntax is bogus
 
 A=1
