@@ -55,10 +55,10 @@ static caddr_t ksym_syms;
 static size_t ksym_head_size;
 static size_t ksym_syms_size;
 
-void	ksymsattach __P((int));
-int	ksymsopen __P((dev_t, int, int));
-int	ksymsclose __P((dev_t, int, int));
-int	ksymsread __P((dev_t, struct uio *, int));
+void	ksymsattach(int);
+int	ksymsopen(dev_t, int, int);
+int	ksymsclose(dev_t, int, int);
+int	ksymsread(dev_t, struct uio *, int);
 
 /*
  * We assume __LDPGSZ is a multiple of PAGE_SIZE (it is)

@@ -57,7 +57,7 @@
 /* Traditional POSIX base year */
 #define	POSIX_BASE_YEAR	1970
 
-static inline int leapyear __P((int year));
+static inline int leapyear(int year);
 #define FEBRUARY	2
 #define	days_in_year(a) 	(leapyear(a) ? 366 : 365)
 #define	days_in_month(a) 	(month_days[(a) - 1])

@@ -60,9 +60,9 @@
 
 #define	BHA_EISA_IOCONF		0x0c
 
-int	bha_eisa_address __P((bus_space_tag_t, bus_space_handle_t, int *));
-int	bha_eisa_match __P((struct device *, void *, void *));
-void	bha_eisa_attach __P((struct device *, struct device *, void *));
+int	bha_eisa_address(bus_space_tag_t, bus_space_handle_t, int *);
+int	bha_eisa_match(struct device *, void *, void *);
+void	bha_eisa_attach(struct device *, struct device *, void *);
 
 struct cfattach bha_eisa_ca = {
 	sizeof(struct bha_softc), bha_eisa_match, bha_eisa_attach
