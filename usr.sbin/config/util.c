@@ -71,6 +71,7 @@ emalloc(size)
 
 	if ((p = malloc(size)) == NULL)
 		nomem();
+	memset(p, 0, size);
 	return (p);
 }
 
