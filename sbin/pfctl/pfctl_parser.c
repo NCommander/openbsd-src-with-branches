@@ -1,4 +1,4 @@
-/*	$OpenBSD: pfctl_parser.c,v 1.55 2001/12/01 16:44:45 frantzen Exp $ */
+/*	$OpenBSD: pfctl_parser.c,v 1.56 2001/12/10 18:08:12 dhartmei Exp $ */
 
 /*
  * Copyright (c) 2001 Daniel Hartmeier
@@ -369,7 +369,7 @@ print_nat(struct pf_nat *n)
 	}
 	if (n->proto) {
 		struct protoent *p = getprotobynumber(n->proto);
-		if (n != NULL)
+		if (p != NULL)
 			printf("proto %s ", p->p_name);
 		else
 			printf("proto %u ", n->proto);
