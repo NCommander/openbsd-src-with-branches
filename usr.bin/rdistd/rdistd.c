@@ -34,8 +34,13 @@
  */
 
 #ifndef lint
+#if 0
 static char RCSid[] = 
-"$OpenBSD: rdistd.c,v 1.2 1996/03/05 03:16:20 dm Exp $";
+"$From: rdistd.c,v 6.22 1995/12/11 23:37:35 mcooper Exp $";
+#else
+static char RCSid[] = 
+"$OpenBSD$";
+#endif
 
 static char sccsid[] = "@(#)rdistd.c";
 
@@ -61,6 +66,7 @@ char	localmsglist[] = "syslog=ferror";
 /*
  * The Beginning
  */
+int
 main(argc, argv, envp)
 	int argc;
 	char **argv;
@@ -102,7 +108,7 @@ main(argc, argv, envp)
 	rem_w = fileno(stdout);
 
 	/* Set logging */
-	if (cp = msgparseopts(localmsglist, TRUE))
+	if ((cp = msgparseopts(localmsglist, TRUE)))
 		fatalerr("Bad message logging option (%s): %s", 
 			 localmsglist, cp);
 

@@ -34,8 +34,13 @@
  */
 
 #ifndef lint
+#if 0
 static char RCSid[] = 
-"$OpenBSD: distopt.c,v 1.2 1996/03/05 03:16:02 dm Exp $";
+"$From: distopt.c,v 6.10 1996/01/30 01:52:07 mcooper Exp $";
+#else
+static char RCSid[] = 
+"$OpenBSD$";
+#endif
 
 static char sccsid[] = "@(#)distopt.c";
 
@@ -89,7 +94,7 @@ extern DISTOPTINFO *getdistopt(name)
 		if (strcasecmp(name, distoptinfo[i].do_name) == 0)
 			return(&distoptinfo[i]);
 
-	return((DISTOPTINFO *) NULL);
+	return(NULL);
 }
 
 /*
@@ -110,7 +115,7 @@ extern int parsedistopts(str, optptr, doerrs)
 	string = strdup(str);
 
 	for (optstr = strtok(string, ","); optstr;
-	     optstr = strtok((char *) NULL, ",")) {
+	     optstr = strtok(NULL, ",")) {
 		if (strncasecmp(optstr, "no", 2) == 0)
 			negate = TRUE;
 		else
@@ -121,7 +126,7 @@ extern int parsedistopts(str, optptr, doerrs)
 		 * and the option starts with "no", strip "no"
 		 * from option and retry lookup.
 		 */
-		if (distopt = getdistopt(optstr)) {
+		if ((distopt = getdistopt(optstr))) {
 			FLAG_ON(*optptr, distopt->do_value);
 			continue;
 		}

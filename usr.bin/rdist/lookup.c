@@ -1,4 +1,4 @@
-/*	$OpenBSD: lookup.c,v 1.6 1996/07/12 07:23:59 mickey Exp $	*/
+/*	$OpenBSD$	*/
 
 /*
  * Copyright (c) 1983 Regents of the University of California.
@@ -34,8 +34,13 @@
  */
 
 #ifndef lint
+#if 0
 static char RCSid[] = 
-"$OpenBSD: lookup.c,v 1.6 1996/07/12 07:23:59 mickey Exp $";
+"$From: lookup.c,v 6.8 1996/07/19 16:49:55 michaelc Exp $";
+#else
+static char RCSid[] = 
+"$OpenBSD$";
+#endif
 
 static char sccsid[] = "@(#)lookup.c	5.1 (Berkeley) 6/6/85";
 
@@ -62,6 +67,7 @@ static struct syment *hashtab[HASHSIZE];
 /*
  * Define a variable from a command line argument.
  */
+void
 define(name)
 	char *name;
 {

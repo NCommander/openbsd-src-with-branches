@@ -1,4 +1,5 @@
-/* * $OpenBSD: filesys.h,v 1.2 1996/03/05 03:16:18 dm Exp $*/
+/*	$OpenBSD$	*/
+
 /*
  * Copyright (c) 1983 Regents of the University of California.
  * All rights reserved.
@@ -33,6 +34,7 @@
  */
 
 /*
+ * $From: filesys.h,v 6.19 1995/12/12 00:46:46 mcooper Exp $
  * @(#)filesys.h
  */
 
@@ -111,7 +113,7 @@
 	typedef struct statvfs		statfs_t;
 #	define statfs(mp,sb)		statvfs(mp,sb)
 #else
-#if defined(BSD386) || defined(__bsdi__) || defined(FREEBSD) || STATFS_TYPE == STATFS_OSF1
+#if defined(BSD386) || defined(__bsdi__) || defined(__OpenBSD__) || defined(FREEBSD) || STATFS_TYPE == STATFS_OSF1
 	typedef struct statfs		statfs_t;
 #else
 #	include <sys/vfs.h>

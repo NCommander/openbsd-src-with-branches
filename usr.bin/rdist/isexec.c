@@ -33,8 +33,13 @@
  * SUCH DAMAGE.
  */
 #ifndef lint
+#if 0
 static char RCSid[] = 
-"$OpenBSD: isexec.c,v 1.2 1996/03/05 03:16:06 dm Exp $";
+"$From: isexec.c,v 6.21 1994/04/01 23:44:10 mcooper Exp $";
+#else
+static char RCSid[] = 
+"$OpenBSD$";
+#endif
 
 static char sccsid[] = "@(#)client.c";
 

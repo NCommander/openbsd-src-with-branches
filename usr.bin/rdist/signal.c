@@ -34,8 +34,13 @@
  */
 
 #ifndef lint
+#if 0
 static char RCSid[] = 
-"$OpenBSD: signal.c,v 1.2 1996/03/05 03:16:13 dm Exp $";
+"$From: signal.c,v 6.1 1993/07/15 22:47:30 mcooper Exp mcooper $";
+#else
+static char RCSid[] = 
+"$OpenBSD$";
+#endif
 
 static char sccsid[] = "@(#)signal.c";
 
