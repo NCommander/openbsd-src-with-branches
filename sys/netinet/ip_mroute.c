@@ -1,4 +1,4 @@
-/*	$OpenBSD: ip_mroute.c,v 1.2 1996/03/03 22:30:39 niklas Exp $	*/
+/*	$OpenBSD: ip_mroute.c,v 1.5 1997/02/20 01:08:04 deraadt Exp $	*/
 /*	$NetBSD: ip_mroute.c,v 1.27 1996/05/07 02:40:50 thorpej Exp $	*/
 
 /*
@@ -1447,7 +1447,9 @@ ipip_input(m, va_alist)
 	register int s;
 	register struct ifqueue *ifq;
 	register struct vif *vifp;
+#ifdef IPSEC
 	int isencaped = 0;
+#endif
 	va_list ap;
 
 	va_start(ap, m);
@@ -1500,7 +1502,9 @@ ipip_input(m, va_alist)
 	} else
 		vifp = last_encap_vif;
 
+#ifdef IPSEC
 acceptedhere:
+#endif
 	m->m_data += hlen;
 	m->m_len -= hlen;
 	m->m_pkthdr.len -= hlen;
