@@ -1,8 +1,11 @@
-#	$OpenBSD: Makefile,v 1.3 2000/04/04 04:58:35 millert Exp $
+#	$OpenBSD: Makefile,v 1.4 2001/09/11 19:02:47 millert Exp $
 
 # We only use these libs internally
 .if !make(install)
 SUBDIR= libsmutil libsmdb libsm
+.if defined(WANT_LIBMILTER)
+SUBDIR+= libmilter
+.endif
 .else
 SUBDIR=
 .endif
