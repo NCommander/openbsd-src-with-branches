@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.48 1999/02/02 08:53:32 imp Exp $
+#	$OpenBSD: Makefile,v 1.49 1999/03/02 21:47:32 niklas Exp $
 
 #
 # For more information on building in tricky environments, please see
@@ -57,7 +57,7 @@ regression-tests:
 .endif
 
 includes:
-	(cd ${.CURDIR}/include; ${MAKE} includes)	
+	(cd ${.CURDIR}/include; ${MAKE} prereq; ${MAKE} includes)
 
 beforeinstall:
 .ifndef DESTDIR
