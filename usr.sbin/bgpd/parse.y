@@ -1,4 +1,4 @@
-/*	$OpenBSD: parse.y,v 1.85 2004/04/26 19:11:01 henning Exp $ */
+/*	$OpenBSD: parse.y,v 1.86 2004/04/26 20:07:43 henning Exp $ */
 
 /*
  * Copyright (c) 2002, 2003, 2004 Henning Brauer <henning@openbsd.org>
@@ -397,7 +397,7 @@ neighbor	: {	curpeer = new_peer(); }
 
 			curpeer->next = peer_l;
 			peer_l = curpeer;
-			curpeer = NULL;
+			curpeer = curgroup;
 		}
 		;
 
