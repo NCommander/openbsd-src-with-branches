@@ -1,4 +1,4 @@
-/*	$OpenBSD: readpass.h,v 1.5 2001/06/26 06:32:58 itojun Exp $	*/
+/*	$OpenBSD: readpass.h,v 1.6 2001/06/26 17:27:24 markus Exp $	*/
 
 /*
  * Author: Tatu Ylonen <ylo@cs.hut.fi>
@@ -14,5 +14,6 @@
 
 #define RP_ECHO			0x0001
 #define RP_ALLOW_STDIN		0x0002
+#define RP_ALLOW_EOF		0x0004
 
 char	*read_passphrase(const char *, int);
