@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.15 1998/07/01 01:58:05 deraadt Exp $
+#	$OpenBSD: Makefile,v 1.16 1998/12/19 18:31:51 deraadt Exp $
 
 TOP=		${.CURDIR}/..
 
@@ -37,7 +37,7 @@ NBLKS=          6144
 
 # old format, minfree, opt, b/i  trks, sects, cpg
 NEWFSARGS=	-t ffs -m 0 -o space
-NEWFSARGS_RD=	-i 524288 -c 80
+NEWFSARGS_RD=	-i 131072 -c 80
 NEWFSARGS_FD=	-i 524288 -c 80
 
 ${FLOPPY}:	bsd.gz
@@ -92,6 +92,7 @@ do_prep:
 do_mount:
 	newfs ${NEWFSARGS} ${NEWFSARGS_RD} -s ${NBLKS} ${VND_RDEV}
 	mount ${VND_DEV} ${MOUNT_POINT}
+	df -i ${MOUNT_POINT}
  
 do_umount:
 	@echo ""
