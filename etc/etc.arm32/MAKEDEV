@@ -96,7 +96,7 @@ case $i in
 
 all)
 	sh $this std fd fd0 fd1 wd0 wd1 rd0 rd1 sd0 sd1 sd2 tty0 tty1 pty0 pty1
-	sh $this st0 st1 ch0 cd0 cd1 vnd0 vnd1 ccd0 ccd1 uk0 uk1 ss0
+	sh $this st0 st1 ch0 cd0 cd1 vnd0 vnd1 ccd0 ccd1 uk0 uk1 ss0 xfs0
 	sh $this ttyv0 ttyv1 ttyv2 ttyv3 ttyv4 ttyv5 ttyv6 ttyv7 ttyv8 ttyv9
 	sh $this bpf0 bpf1 bpf2 bpf3 bpf4 bpf5 bpf6 bpf7 bpf8 bpf9
 	sh $this lpa0 lpt0 tun0 tun1 tun2 random
