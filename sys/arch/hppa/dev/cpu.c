@@ -1,4 +1,4 @@
-/*	$OpenBSD: cpu.c,v 1.17 2002/05/08 03:16:08 mickey Exp $	*/
+/*	$OpenBSD: cpu.c,v 1.18 2002/05/23 16:03:39 mickey Exp $	*/
 
 /*
  * Copyright (c) 1998-2002 Michael Shalayeff
@@ -186,7 +186,7 @@ cpuattach(parent, self, aux)
 	/* sanity against lusers amongst config editors */
 	if (ca->ca_irq == 31)
 		sc->sc_ih = cpu_intr_establish(IPL_CLOCK, ca->ca_irq,
-		    clock_intr, NULL /*trapframe*/, &sc->sc_dev);
+		    (int (*)(void *))hardclock, NULL /*frame*/, &sc->sc_dev);
 	else
 		printf ("%s: bad irq %d\n", sc->sc_dev.dv_xname, ca->ca_irq);
 }
