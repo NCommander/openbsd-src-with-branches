@@ -229,8 +229,7 @@ cvs_connect(struct cvsroot *root)
 	}
 	if (pid == 0) {
 		if ((dup2(infd[0], STDIN_FILENO) == -1) ||
-		    (dup2(outfd[1], STDOUT_FILENO) == -1) ||
-		    (dup2(errfd[1], STDERR_FILENO) == -1)) {
+		    (dup2(outfd[1], STDOUT_FILENO) == -1)) {
 			cvs_log(LP_ERRNO,
 			    "failed to setup standard streams for cvs server");
 			return (-1);
