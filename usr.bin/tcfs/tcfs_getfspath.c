@@ -1,4 +1,5 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: tcfs_getfspath.c,v 1.1.1.1 2000/06/18 22:07:24 provos Exp $	*/
+
 /*
  *	Transparent Cryptographic File System (TCFS) for NetBSD 
  *	Author and mantainer: 	Luigi Catuogno [luicat@tcfs.unisa.it]
