@@ -13,7 +13,7 @@
  */
 
 #include "includes.h"
-RCSID("$OpenBSD: sshconnect.c,v 1.112 2001/10/06 00:14:50 markus Exp $");
+RCSID("$OpenBSD: sshconnect.c,v 1.113 2001/10/06 11:18:19 markus Exp $");
 
 #include <openssl/bn.h>
 
@@ -200,7 +200,7 @@ ssh_create_socket(struct passwd *pw, int privileged, int family)
 		return sock;
 
 	memset(&hints, 0, sizeof(hints));
-	hints.ai_family = IPv4or6;
+	hints.ai_family = family;
 	hints.ai_socktype = SOCK_STREAM;
 	hints.ai_flags = AI_PASSIVE;
 	gaierr = getaddrinfo(options.bind_address, "0", &hints, &res);
