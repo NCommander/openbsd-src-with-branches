@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.22 2001/06/26 20:16:43 hin Exp $
+#	$OpenBSD: Makefile,v 1.23 2001/07/19 18:21:50 deraadt Exp $
 
 .include <bsd.own.mk>
 
@@ -35,6 +35,6 @@ BINMODE=4555
 BINOWN=root
 
 getpwent.o: getpwent.c
-	${COMPILE.c} -UYP ${.IMPSRC}
+	${COMPILE.c} -UYP ${.CURDIR}/../../lib/libc/gen/getpwent.c
 
 .include <bsd.prog.mk>
