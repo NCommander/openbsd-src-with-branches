@@ -1,4 +1,4 @@
-/*	$OpenBSD: smc90cx6.c,v 1.9 2004/06/21 23:50:35 tholo Exp $ */
+/*	$OpenBSD: smc90cx6.c,v 1.10 2004/06/24 19:35:23 tholo Exp $ */
 /*	$NetBSD: smc90cx6.c,v 1.17 1996/05/07 01:43:18 thorpej Exp $ */
 
 /*
@@ -1167,6 +1167,7 @@ bah_ioctl(ifp, command, data)
 			bah_init(sc);
 			break;
 		}
+		break;
 
 	case SIOCSIFFLAGS:
 		if ((ifp->if_flags & IFF_UP) == 0 &&
