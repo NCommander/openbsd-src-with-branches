@@ -26,7 +26,7 @@
 #include "includes.h"
 #include "uuencode.h"
 
-RCSID("$OpenBSD: radix.c,v 1.20 2002/04/23 12:58:26 markus Exp $");
+RCSID("$OpenBSD: radix.c,v 1.21 2002/06/19 00:27:55 deraadt Exp $");
 
 #ifdef AFS
 #include <krb.h>
@@ -93,9 +93,10 @@ int
 radix_to_creds(const char *buf, CREDENTIALS *creds)
 {
 	Buffer b;
-	char c, version, *space, *p;
-	u_int endTime;
-	int len, blen, ret;
+	u_char *space;
+	char c, version, *p;
+	u_int endTime, len;
+	int blen, ret;
 
 	ret = 0;
 	blen = strlen(buf);

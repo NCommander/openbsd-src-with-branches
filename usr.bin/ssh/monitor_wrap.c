@@ -25,7 +25,7 @@
  */
 
 #include "includes.h"
-RCSID("$OpenBSD: monitor_wrap.c,v 1.16 2002/07/04 10:41:47 markus Exp $");
+RCSID("$OpenBSD: monitor_wrap.c,v 1.17 2002/09/09 06:48:06 itojun Exp $");
 
 #include <openssl/bn.h>
 #include <openssl/dh.h>
@@ -597,7 +597,7 @@ int
 mm_pty_allocate(int *ptyfd, int *ttyfd, char *namebuf, int namebuflen)
 {
 	Buffer m;
-	u_char *p;
+	char *p;
 	int success = 0;
 
 	buffer_init(&m);
