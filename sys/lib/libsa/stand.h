@@ -1,4 +1,4 @@
-/*	$OpenBSD: stand.h,v 1.24 1997/05/30 23:06:28 mickey Exp $	*/
+/*	$OpenBSD: stand.h,v 1.25 1997/05/30 23:09:10 mickey Exp $	*/
 /*	$NetBSD: stand.h,v 1.18 1996/11/30 04:35:51 gwr Exp $	*/
 
 /*-
@@ -105,8 +105,8 @@ struct consw {
 	int	(*cn_ischar) __P((void));	/* check input */
 };
 
-extern struct consw consw[];
-extern int ncons;
+extern const struct consw consw[];
+extern const int ncons;
 
 struct open_file {
 	int		f_flags;	/* see F_* below */
