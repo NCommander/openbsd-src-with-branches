@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /*	$NetBSD: print-ppp.c,v 1.3 1995/03/06 19:11:27 mycroft Exp $	*/
 
 /*

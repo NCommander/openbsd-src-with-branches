@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /*	$NetBSD: nfsfh.h,v 1.2 1995/03/06 19:10:39 mycroft Exp $	*/
 
 /*

@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /*	$NetBSD: md.h,v 1.2 1995/03/06 19:10:33 mycroft Exp $	*/
 
 /*

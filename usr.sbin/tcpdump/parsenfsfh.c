@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /*	$NetBSD: parsenfsfh.c,v 1.2 1995/03/06 19:11:00 mycroft Exp $	*/
 
 #ifndef lint

@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /*	$NetBSD: decnet.h,v 1.2 1995/03/06 19:09:58 mycroft Exp $	*/
 
 /*

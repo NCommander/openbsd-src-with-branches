@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /*	$NetBSD: print-ospf.c,v 1.3 1995/03/06 19:11:25 mycroft Exp $	*/
 
 /*

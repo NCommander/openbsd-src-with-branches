@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /*	$NetBSD: print-arp.c,v 1.2 1995/03/06 19:11:02 mycroft Exp $	*/
 
 /*

@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /*	$NetBSD: addrtoname.h,v 1.2 1995/03/06 19:09:50 mycroft Exp $	*/
 
 /*

@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /*	$NetBSD: print-nfs.c,v 1.4 1995/04/24 13:27:45 cgd Exp $	*/
 
 /*
