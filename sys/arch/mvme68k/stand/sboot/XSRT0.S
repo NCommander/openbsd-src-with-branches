@@ -71,3 +71,21 @@ Ldoit:		movl	#0x00006ff0,sp
 
 		.globl	___main
 ___main:	rts
+
+Lname:
+	.ascii "sboot\0"
+
+.globl  _go
+_go:
+	clrl	d0		| dev lun
+	clrl	d1		| ctrl lun
+	movl	#0x2c, d4	| flags for IPL
+	movl	#0xfffe1800, a0	| address of "disk" ctrl
+	movl	sp@(4), a1	| entry point of loaded program
+	movl	d0, a2		| media config block (NULL)
+	movl	sp@(8), a3	| nb args (start)
+	movl	sp@(12), a4	| nb end args
+	movl	#Lname, a5	| args
+	movl	#Lname+5, a6	| end args
+				| SRT0 will set stack
+	jmp	a1@		| GO!
