@@ -1,4 +1,4 @@
-/*	$OpenBSD: udp.c,v 1.28 2001/03/06 22:17:21 angelos Exp $	*/
+/*	$OpenBSD: udp.c,v 1.29 2001/04/09 22:09:53 ho Exp $	*/
 /*	$EOM: udp.c,v 1.57 2001/01/26 10:09:57 niklas Exp $	*/
 
 /*
@@ -334,7 +334,7 @@ udp_bind_if (struct ifreq *ifrp, void *arg)
   if (!t)
     {
       log_print ("udp_bind_if: failed to create a socket on %s:%d",
-		 inet_ntoa (*((struct in_addr *)&if_addr)), port);
+		 inet_ntoa (*((struct in_addr *)&if_addr)), ntohs (port));
       return;
     }
   LIST_INSERT_HEAD (&udp_listen_list, (struct udp_transport *)t, link);
