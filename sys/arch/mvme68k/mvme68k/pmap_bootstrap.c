@@ -1,4 +1,4 @@
-/*	$OpenBSD: pmap_bootstrap.c,v 1.7 2001/04/05 20:39:40 deraadt Exp $ */
+/*	$OpenBSD: pmap_bootstrap.c,v 1.8 2001/11/06 19:53:15 miod Exp $ */
 
 /* 
  * Copyright (c) 1995 Theo de Raadt
@@ -327,10 +327,6 @@ register vm_offset_t firstpa;
 
 	/*
 	 * Finally, validate the internal IO space PTEs (RW+CI).
-	 * We do this here since the 320/350 MMU registers (also
-	 * used, but to a lesser extent, on other models) are mapped
-	 * in this range and it would be nice to be able to access
-	 * them after the MMU is turned on.
 	 */
 	pte = (u_int *)iiopa;
 	epte = (u_int *)eiopa;
@@ -754,10 +750,6 @@ register vm_offset_t firstpa;
 
 	/*
 	 * Finally, validate the internal IO space PTEs (RW+CI).
-	 * We do this here since the 320/350 MMU registers (also
-	 * used, but to a lesser extent, on other models) are mapped
-	 * in this range and it would be nice to be able to access
-	 * them after the MMU is turned on.
 	 */
 	pte = (u_int *)iiopa;
 	epte = (u_int *)eiopa;
