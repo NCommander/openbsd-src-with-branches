@@ -1,7 +1,8 @@
-#	$OpenBSD: Makefile,v 1.1.1.1 1996/09/21 13:49:17 maja Exp $
+#	$OpenBSD: Makefile,v 1.2 1996/09/21 19:12:32 maja Exp $
 
 PROG=	mopprobe
-SRCS=	mopprobe.c device.c get.c cmp.c mopdef.c version.c pf.c loop-bsd.c
+SRCS=	mopprobe.c device.c get.c cmp.c mopdef.c version.c pf.c loop-bsd.c \
+	print.c nma.c
 CFLAGS+= -I${.CURDIR} -I${.CURDIR}/.. -I${.CURDIR}/../common -DNODL
 CLEANFILES= version.c version.h
 LDADD=	-lkvm
