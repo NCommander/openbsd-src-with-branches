@@ -42,7 +42,7 @@
  */
 
 #include "includes.h"
-RCSID("$OpenBSD: sshd.c,v 1.236 2002/03/20 21:08:08 stevesk Exp $");
+RCSID("$OpenBSD: sshd.c,v 1.237 2002/03/21 21:23:34 markus Exp $");
 
 #include <openssl/dh.h>
 #include <openssl/bn.h>
@@ -579,6 +579,7 @@ privsep_preauth(void)
 		/* Demote the child */
 		if (getuid() == 0 || geteuid() == 0)
 			privsep_preauth_child();
+		setproctitle("%s", "[net]");
 	}
 	return (NULL);
 }
