@@ -1,4 +1,4 @@
-#	$OpenBSD$
+#	$OpenBSD: Makefile,v 1.4 1998/07/23 21:10:24 millert Exp $
 
 CFLAGS+=#-DTFILE=\"/dev/ttyp0\"
 CFLAGS+=-D_CURSES_PRIVATE -I${.CURDIR}
@@ -26,7 +26,7 @@ includes:
 afterinstall:
 	-cd ${DESTDIR}/usr/lib; \
 	for i in ${_LIBS}; do \
-	    ln -f $$i `echo $$i | sed 's/ocurses/termcap/'`; \
+	    ln -f $$i `echo $$i | sed 's/ocurses/otermcap/'`; \
 	done
 
 .include <bsd.lib.mk>
