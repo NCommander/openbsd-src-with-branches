@@ -1,4 +1,4 @@
-/*	$OpenBSD: db_hangman.c,v 1.20 2002/03/14 01:26:51 millert Exp $	*/
+/*	$OpenBSD: db_hangman.c,v 1.21 2002/06/11 07:54:22 jason Exp $	*/
 
 /*
  * Copyright (c) 1996 Theo de Raadt, Michael Shalayeff
@@ -170,7 +170,7 @@ db_hangon(void)
 {
 	static size_t	len;
 	static size_t	tries;
-	static char	*word = NULL;
+	static char	*word;
 	static char	abc[26+1];	/* for '\0' */
 
 	if (word == NULL) {
