@@ -1,4 +1,4 @@
-/*	$OpenBSD: kvm.c,v 1.21 2001/05/17 21:03:55 miod Exp $ */
+/*	$OpenBSD: kvm.c,v 1.22 2001/05/18 09:08:36 art Exp $ */
 /*	$NetBSD: kvm.c,v 1.43 1996/05/05 04:31:59 gwr Exp $	*/
 
 /*-
@@ -42,7 +42,7 @@
 #if 0
 static char sccsid[] = "@(#)kvm.c	8.2 (Berkeley) 2/13/94";
 #else
-static char *rcsid = "$OpenBSD: kvm.c,v 1.21 2001/05/17 21:03:55 miod Exp $";
+static char *rcsid = "$OpenBSD: kvm.c,v 1.22 2001/05/18 09:08:36 art Exp $";
 #endif
 #endif /* LIBC_SCCS and not lint */
 
@@ -59,7 +59,6 @@ static char *rcsid = "$OpenBSD: kvm.c,v 1.21 2001/05/17 21:03:55 miod Exp $";
 
 #include <vm/vm.h>
 #include <vm/vm_param.h>
-#include <vm/swap_pager.h>
 
 #include <ctype.h>
 #include <db.h>
