@@ -1,4 +1,4 @@
-/*	$OpenBSD: exec_aout.c,v 1.4 2002/03/14 06:51:42 mpech Exp $ */
+/*	$OpenBSD: exec_aout.c,v 1.5 2003/03/12 21:04:04 miod Exp $ */
 
 /*
  * Copyright (c) 1999 Mats O Jansson.  All rights reserved.
@@ -11,11 +11,6 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by Mats O Jansson.
- * 4. The name of the author may not be used to endorse or promote products
- *    derived from this software without specific prior written permission.
  *
  * THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR
  * IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
@@ -30,7 +25,7 @@
  */
 
 #ifndef LINT
-static char rcsid[] = "$OpenBSD: exec_aout.c,v 1.4 2002/03/14 06:51:42 mpech Exp $";
+static char rcsid[] = "$OpenBSD: exec_aout.c,v 1.5 2003/03/12 21:04:04 miod Exp $";
 #endif
 
 #include <err.h>
