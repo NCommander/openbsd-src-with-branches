@@ -1,4 +1,4 @@
-/*	$OpenBSD: rpc.c,v 1.7 1996/12/08 15:15:56 niklas Exp $	*/
+/*	$OpenBSD: rpc.c,v 1.8 1996/12/12 08:35:38 mickey Exp $	*/
 /*	$NetBSD: rpc.c,v 1.16 1996/10/13 02:29:06 christos Exp $	*/
 
 /*
@@ -258,7 +258,7 @@ recvrpc(d, pkt, len, tleft)
 	if (x != rpc_xid) {
 #ifdef RPC_DEBUG
 		if (debug)
-			printf("recvrpc: rp_xid %ld != xid %d\n", x, rpc_xid);
+			printf("recvrpc: rp_xid %d != xid %d\n", x, rpc_xid);
 #endif
 		return -1;
 	}
@@ -267,7 +267,7 @@ recvrpc(d, pkt, len, tleft)
 	if (x != RPC_REPLY) {
 #ifdef RPC_DEBUG
 		if (debug)
-			printf("recvrpc: rp_direction %ld != REPLY\n", x);
+			printf("recvrpc: rp_direction %d != REPLY\n", x);
 #endif
 		return -1;
 	}
