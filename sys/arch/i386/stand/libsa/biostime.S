@@ -1,4 +1,4 @@
-/*	$OpenBSD: biostime.S,v 1.6 1997/04/28 07:39:01 weingart Exp $	*/
+/*	$OpenBSD: biostime.S,v 1.7 1997/04/29 00:16:13 mickey Exp $	*/
 
 /*
  * Copyright (c) 1997 Michael Shalayeff
@@ -45,7 +45,7 @@
  *	returns nonzero if failed
  */
 ENTRY(usleep)
-	pushl	%ecx
+	pushl	%ebx
 
 	movl	8(%esp), %ecx
 	movw	%cx, %dx
@@ -58,7 +58,7 @@ ENTRY(usleep)
 	movl	%ah, %al
 1:	movzbl	%al, %eax
 
-	popl	%ecx
+	popl	%ebx
 	ret
 
 
