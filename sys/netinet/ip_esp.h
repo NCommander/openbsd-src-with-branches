@@ -1,4 +1,4 @@
-/*	$OpenBSD: ip_esp.h,v 1.25 1999/12/06 00:43:20 angelos Exp $	*/
+/*	$OpenBSD: ip_esp.h,v 1.26 1999/12/09 00:33:29 angelos Exp $	*/
 
 /*
  * The authors of this code are John Ioannidis (ji@tla.org),
@@ -97,7 +97,7 @@ int	esp_output __P((struct mbuf *, struct tdb *, struct mbuf **));
 int	esp_sysctl __P((int *, u_int, void *, size_t *, void *, size_t));
 
 #ifdef INET6
-void	esp6_input __P((struct mbuf *, ...));
+int	esp6_input __P((struct mbuf *, ...));
 #endif /* INET6 */
 
 extern int esp_enable;
