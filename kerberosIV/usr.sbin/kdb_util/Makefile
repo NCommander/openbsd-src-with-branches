@@ -8,7 +8,7 @@ KRBDEPTH=../..
 .PATH:	${KRBSRC}/admin
 
 CFLAGS	+= -I. -I${KRBSRC}/lib/kadm -I${KRBSRC}/lib/kdb
-LDADD	+= ${LIBROKEN} -lkafs -lkdb -lkrb -ldes
+LDADD	+= -lkafs -lkrb5 -lkrb -lkdb -ldes -lcrypto -lasn1 ${LIBROKEN}
 
 SRCS	= kdb_util.c
 

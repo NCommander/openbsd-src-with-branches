@@ -8,7 +8,8 @@ KRBDEPTH=../..
 .PATH:	${KRBSRC}/appl/kauth
 
 CFLAGS	+= -I. -I${KRBSRC}/lib/kadm -I${KRBSRC}/lib/acl
-LDADD	+= ${LIBROKEN} -lkrb -ldes
+LDADD	+= -lkafs -lkrb5 -lkrb -lkdb -lkadm -ldes -lasn1 -lcom_err \
+	    -lacl -lcrypto ${LIBROKEN}
 
 SRCS	= kauthd.c marshall.c encdata.c
 

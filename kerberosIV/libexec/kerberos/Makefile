@@ -8,8 +8,8 @@ KRBDEPTH=../..
 .PATH:	${KRBSRC}/server
 
 CFLAGS	+= -I. -I${KRBSRC}/lib/kadm -I${KRBSRC}/lib/acl -I${KRBSRC}/lib/kdb
-LDADD	+= ${LIBROKEN} -lkafs -lkdb -lkrb -lkadm -ldes -lasn1 -lcom_err \
-	    -lacl
+LDADD	+= -lkafs -lkrb5 -lkrb -lkdb -lkadm -ldes -lasn1 -lcom_err \
+	    -lacl -lcrypto ${LIBROKEN}
 
 SRCS	= kerberos.c
 
