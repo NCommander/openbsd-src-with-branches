@@ -1,4 +1,4 @@
-/*	$OpenBSD: tcp_usrreq.c,v 1.55 2002/01/14 03:11:55 provos Exp $	*/
+/*	$OpenBSD: tcp_usrreq.c,v 1.56 2002/02/15 20:45:32 nordin Exp $	*/
 /*	$NetBSD: tcp_usrreq.c,v 1.20 1996/02/13 23:44:16 christos Exp $	*/
 
 /*
@@ -929,6 +929,9 @@ tcp_sysctl(name, namelen, oldp, oldlenp, newp, newlen)
 	case TCPCTL_RSTPPSLIMIT:
 		return (sysctl_int(oldp, oldlenp, newp, newlen,
 		    &tcp_rst_ppslim));
+	case TCPCTL_ACK_ON_PUSH:
+		return (sysctl_int(oldp, oldlenp, newp, newlen,
+		    &tcp_ack_on_push));
 	default:
 		return (ENOPROTOOPT);
 	}
