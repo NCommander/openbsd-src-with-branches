@@ -1,4 +1,4 @@
-/* $OpenBSD: ipsecadm.c,v 1.54 2001/05/30 16:44:41 angelos Exp $ */
+/* $OpenBSD: ipsecadm.c,v 1.55 2001/06/05 00:17:47 niklas Exp $ */
 /*
  * The authors of this code are John Ioannidis (ji@tla.org),
  * Angelos D. Keromytis (kermit@csd.uch.gr) and 
@@ -333,7 +333,7 @@ main(int argc, char **argv)
     sprotocol2.sadb_protocol_len = 1;
     sprotocol2.sadb_protocol_exttype = SADB_X_EXT_FLOW_TYPE;
     sprotocol2.sadb_protocol_direction = IPSP_DIRECTION_OUT;
-
+    sprotocol2.sadb_protocol_flags = SADB_X_POLICYFLAGS_POLICY;
     sprotocol.sadb_protocol_exttype = SADB_X_EXT_PROTOCOL;
     sprotocol.sadb_protocol_len = 1;
 
