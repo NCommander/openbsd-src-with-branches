@@ -1,6 +1,6 @@
-#	$OpenBSD: Makefile,v 1.12 1998/02/22 08:32:58 deraadt Exp $
+#	$OpenBSD: Makefile,v 1.13 1998/03/08 00:27:00 deraadt Exp $
 
-REV=		23
+REV=		${OSrev}
 
 CBIN=		instbin
 ARCHDIR=	${.CURDIR}/../${MACHINE}/ramdisk
