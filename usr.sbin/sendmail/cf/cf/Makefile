@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.11 1997/05/29 00:18:12 mickey Exp $
+#	$OpenBSD: Makefile,v 1.12 1997/06/09 09:45:37 grr Exp $
 #	@(#)Makefile	8.19 (Berkeley) 1/14/97
 
 #
@@ -26,7 +26,7 @@ RM=	rm -f
 ALL=	boat-anchor.cf trinity.cf \
 	clientproto.cf openbsd-proto.cf tcpproto.cf uucpproto.cf \
 	gandalf.cf saruman.cf alatar.cf nettan.cf waldorf.cf \
-	lucifier.cf
+	lucifier.cf elbereth.cf
 
 all: $(ALL)
 
