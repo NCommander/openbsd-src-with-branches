@@ -16,7 +16,7 @@
 
 #include "includes.h"
 
-RCSID("$OpenBSD: sftp.c,v 1.54 2004/06/22 01:16:39 djm Exp $");
+RCSID("$OpenBSD: sftp.c,v 1.55 2004/06/25 23:21:38 djm Exp $");
 
 #include <glob.h>
 
@@ -1323,8 +1323,8 @@ connect_to_server(char *path, char **args, int *in, int *out)
 
 		/*
 		 * The underlying ssh is in the same process group, so we must
-		 * ignore SIGINT if we want to gracefully abort commands, 
-		 * otherwise the signal will make it to the ssh process and 
+		 * ignore SIGINT if we want to gracefully abort commands,
+		 * otherwise the signal will make it to the ssh process and
 		 * kill it too
 		 */
 		signal(SIGINT, SIG_IGN);
@@ -1409,7 +1409,7 @@ main(int argc, char **argv)
 				fatal("Batch file already specified.");
 
 			/* Allow "-" as stdin */
-			if (strcmp(optarg, "-") != 0 && 
+			if (strcmp(optarg, "-") != 0 &&
 			   (infile = fopen(optarg, "r")) == NULL)
 				fatal("%s (%s).", strerror(errno), optarg);
 			showprogress = 0;

@@ -10,7 +10,7 @@
  */
 
 #include "includes.h"
-RCSID("$OpenBSD: servconf.c,v 1.133 2004/05/23 23:59:53 dtucker Exp $");
+RCSID("$OpenBSD: servconf.c,v 1.134 2004/06/24 19:30:54 djm Exp $");
 
 #include "ssh.h"
 #include "log.h"
@@ -915,7 +915,7 @@ load_server_config(const char *filename, Buffer *conf)
 	while (fgets(line, sizeof(line), f)) {
 		/*
 		 * Trim out comments and strip whitespace
-		 * NB - preserve newlines, they are needed to reproduce 
+		 * NB - preserve newlines, they are needed to reproduce
 		 * line numbers later for error messages
 		 */
 		if ((cp = strchr(line, '#')) != NULL)

@@ -12,7 +12,7 @@
  */
 
 #include "includes.h"
-RCSID("$OpenBSD: ssh-keygen.c,v 1.115 2004/05/09 00:06:47 djm Exp $");
+RCSID("$OpenBSD: ssh-keygen.c,v 1.116 2004/06/21 17:36:31 avsm Exp $");
 
 #include <openssl/evp.h>
 #include <openssl/pem.h>
@@ -890,7 +890,7 @@ main(int ac, char **av)
 			if (log_level == SYSLOG_LEVEL_INFO)
 				log_level = SYSLOG_LEVEL_DEBUG1;
 			else {
-				if (log_level >= SYSLOG_LEVEL_DEBUG1 && 
+				if (log_level >= SYSLOG_LEVEL_DEBUG1 &&
 				    log_level < SYSLOG_LEVEL_DEBUG3)
 					log_level++;
 			}

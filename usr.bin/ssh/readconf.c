@@ -12,7 +12,7 @@
  */
 
 #include "includes.h"
-RCSID("$OpenBSD: readconf.c,v 1.132 2004/06/13 15:03:02 djm Exp $");
+RCSID("$OpenBSD: readconf.c,v 1.133 2004/06/17 15:10:14 djm Exp $");
 
 #include "ssh.h"
 #include "xmalloc.h"
@@ -802,7 +802,7 @@ parse_int:
  */
 
 int
-read_config_file(const char *filename, const char *host, Options *options, 
+read_config_file(const char *filename, const char *host, Options *options,
     int checkperm)
 {
 	FILE *f;
@@ -816,7 +816,7 @@ read_config_file(const char *filename, const char *host, Options *options,
 
 	if (checkperm) {
 		struct stat sb;
-		
+
 		if (fstat(fileno(f), &sb) == -1)
 			fatal("fstat %s: %s", filename, strerror(errno));
 		if (((sb.st_uid != 0 && sb.st_uid != getuid()) ||

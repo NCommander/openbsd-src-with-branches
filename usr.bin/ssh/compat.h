@@ -1,4 +1,4 @@
-/*	$OpenBSD: compat.h,v 1.36 2003/08/29 10:03:15 markus Exp $	*/
+/*	$OpenBSD: compat.h,v 1.37 2003/11/02 11:01:03 markus Exp $	*/
 
 /*
  * Copyright (c) 1999, 2000, 2001 Markus Friedl.  All rights reserved.
@@ -27,7 +27,7 @@
 #ifndef COMPAT_H
 #define COMPAT_H
 
-#define	SSH_PROTO_UNKNOWN 	0x00
+#define	SSH_PROTO_UNKNOWN	0x00
 #define	SSH_PROTO_1		0x01
 #define	SSH_PROTO_1_PREFERRED	0x02
 #define	SSH_PROTO_2		0x04

@@ -33,7 +33,7 @@
  */
 
 #include "includes.h"
-RCSID("$OpenBSD: session.c,v 1.176 2004/06/21 17:53:03 djm Exp $");
+RCSID("$OpenBSD: session.c,v 1.177 2004/06/30 08:36:59 djm Exp $");
 
 #include "ssh.h"
 #include "ssh1.h"
@@ -798,7 +798,7 @@ do_setup_env(Session *s, const char *shell)
 	if (!options.use_login) {
 		/* Set basic environment. */
 		for (i = 0; i < s->num_env; i++)
-			child_set_env(&env, &envsize, s->env[i].name, 
+			child_set_env(&env, &envsize, s->env[i].name,
 			    s->env[i].val);
 
 		child_set_env(&env, &envsize, "USER", pw->pw_name);
@@ -1019,7 +1019,7 @@ do_pwchange(Session *s)
 {
 	fprintf(stderr, "WARNING: Your password has expired.\n");
 	if (s->ttyfd != -1) {
-	    	fprintf(stderr,
+		fprintf(stderr,
 		    "You must change your password now and login again!\n");
 		execl(_PATH_PASSWD_PROG, "passwd", (char *)NULL);
 		perror("passwd");
