@@ -1,4 +1,4 @@
-/*	$OpenBSD: rlogin.c,v 1.10 1996/12/22 03:26:01 tholo Exp $	*/
+/*	$OpenBSD: rlogin.c,v 1.11 1997/01/15 23:43:06 millert Exp $	*/
 /*	$NetBSD: rlogin.c,v 1.8 1995/10/05 09:07:22 mycroft Exp $	*/
 
 /*
@@ -44,7 +44,7 @@ static char copyright[] =
 #if 0
 static char sccsid[] = "@(#)rlogin.c	8.1 (Berkeley) 6/6/93";
 #else
-static char rcsid[] = "$OpenBSD: rlogin.c,v 1.10 1996/12/22 03:26:01 tholo Exp $";
+static char rcsid[] = "$OpenBSD: rlogin.c,v 1.11 1997/01/15 23:43:06 millert Exp $";
 #endif
 #endif /* not lint */
 
@@ -164,7 +164,7 @@ main(argc, argv)
 	one = 1;
 	host = user = NULL;
 
-	if (p = rindex(argv[0], '/'))
+	if (p = strrchr(argv[0], '/'))
 		++p;
 	else
 		p = argv[0];

@@ -1,4 +1,4 @@
-/*	$OpenBSD: rusers.c,v 1.3 1996/06/26 05:38:56 deraadt Exp $	*/
+/*	$OpenBSD: rusers.c,v 1.4 1996/08/16 22:24:18 deraadt Exp $	*/
 
 /*-
  *  Copyright (c) 1993 John Brezak
@@ -29,7 +29,7 @@
  */
 
 #ifndef lint
-static char rcsid[] = "$OpenBSD: rusers.c,v 1.3 1996/06/26 05:38:56 deraadt Exp $";
+static char rcsid[] = "$OpenBSD: rusers.c,v 1.4 1996/08/16 22:24:18 deraadt Exp $";
 #endif /* not lint */
 
 #include <sys/types.h>
@@ -237,7 +237,7 @@ main(int argc, char *argv[])
 	int ch;
 	extern int optind;
 	
-	if (!(argv0 = rindex(argv[0], '/')))
+	if (!(argv0 = strrchr(argv[0], '/')))
 		argv0 = argv[0];
 	else
 		argv0++;

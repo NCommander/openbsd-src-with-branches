@@ -1,4 +1,4 @@
-/*	$OpenBSD: main.c,v 1.6 1996/02/08 20:45:01 mycroft Exp $	*/
+/*	$OpenBSD: main.c,v 1.4 1996/06/26 05:43:17 deraadt Exp $	*/
 /*	$NetBSD: main.c,v 1.6 1996/02/08 20:45:01 mycroft Exp $	*/
 
 /*
@@ -47,7 +47,7 @@ char copyright[] =
 #if 0
 static char sccsid[] = "@(#)main.c	8.2 (Berkeley) 4/2/94";
 #else
-static char rcsid[] = "$OpenBSD: main.c,v 1.6 1996/02/08 20:45:01 mycroft Exp $";
+static char rcsid[] = "$OpenBSD: main.c,v 1.4 1996/06/26 05:43:17 deraadt Exp $";
 #endif
 #endif /* not lint */
 
@@ -72,7 +72,7 @@ char **argv;
 	char tflag = 0;
 
 	escapec = ESCAPEC;	
-	if (p = rindex(*argv, '/'))
+	if (p = strrchr(*argv, '/'))
 		p++;
 	else
 		p = *argv;
@@ -118,7 +118,7 @@ char **argv;
 		(void) fprintf(stderr, "Out of memory.\n");
 		exit(1);
 	}
-	if (p = rindex(default_shellfile, '/'))
+	if (p = strrchr(default_shellfile, '/'))
 		p++;
 	else
 		p = default_shellfile;
