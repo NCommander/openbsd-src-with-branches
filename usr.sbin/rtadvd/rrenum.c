@@ -1,4 +1,4 @@
-/*	$OpenBSD: rrenum.c,v 1.6 2001/01/15 11:06:27 itojun Exp $	*/
+/*	$OpenBSD: rrenum.c,v 1.7 2001/01/21 15:42:36 itojun Exp $	*/
 /*	$KAME: rrenum.c,v 1.10 2001/01/21 15:32:16 itojun Exp $	*/
 
 /*
@@ -92,7 +92,7 @@ rr_pco_check(int len, struct rr_pco_match *rpm)
 		return 1;
 	}
 	/* rpm->rpm_code must be valid value */
-	switch(rpm->rpm_code) {
+	switch (rpm->rpm_code) {
 	case RPM_PCO_ADD:
 	case RPM_PCO_CHANGE:
 	case RPM_PCO_SETGLOBAL:
