@@ -33,7 +33,7 @@
  */
 
 #include "includes.h"
-RCSID("$OpenBSD: session.c,v 1.91 2001/06/19 14:09:45 markus Exp $");
+RCSID("$OpenBSD: session.c,v 1.92 2001/06/19 15:40:45 markus Exp $");
 
 #include "ssh.h"
 #include "ssh1.h"
@@ -505,7 +505,6 @@ do_exec(Session *s, const char *command)
 	if (forced_command) {
 		original_command = command;
 		command = forced_command;
-		forced_command = NULL;
 		debug("Forced command '%.900s'", command);
 	}
 
