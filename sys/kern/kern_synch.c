@@ -1,4 +1,4 @@
-/*	$OpenBSD: kern_synch.c,v 1.41 2002/03/08 07:25:29 mickey Exp $	*/
+/*	$OpenBSD: kern_synch.c,v 1.42 2002/03/14 01:27:04 millert Exp $	*/
 /*	$NetBSD: kern_synch.c,v 1.37 1996/04/22 01:38:37 christos Exp $	*/
 
 /*-
@@ -696,10 +696,12 @@ preempt(newp)
 void
 mi_switch()
 {
-	register struct proc *p = curproc;	/* XXX */
-	register struct rlimit *rlim;
-	register long s, u;
+	struct proc *p = curproc;	/* XXX */
+	struct rlimit *rlim;
+	long s, u;
 	struct timeval tv;
+
+	splassert(IPL_STATCLOCK);
 
 	/*
 	 * Compute the amount of time during which the current
