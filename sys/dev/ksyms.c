@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: ksyms.c,v 1.6 2001/02/03 21:25:26 art Exp $	*/
 /*
  * Copyright (c) 1998 Todd C. Miller <Todd.Miller@courtesan.com>
  * Copyright (c) 2001 Artur Grabowski <art@openbsd.org>
@@ -97,7 +97,6 @@ ksymsattach(num)
 		if (i == elf->e_shnum)
 			break;
 
-		printf("symbols at: %p\n", symtab);
 		/*
 		 * No additional header.
 		 */
