@@ -1,4 +1,4 @@
-/*	$OpenBSD: read_bsd_terminfo.c,v 1.10 2002/02/16 21:27:26 millert Exp $	*/
+/*	$OpenBSD: read_bsd_terminfo.c,v 1.11 2003/03/17 21:57:57 millert Exp $	*/
 
 /*
  * Copyright (c) 1998, 1999, 2000 Todd C. Miller <Todd.Miller@courtesan.com>
@@ -28,7 +28,7 @@
  */
 
 #ifndef lint
-static char rcsid[] = "$OpenBSD: read_bsd_terminfo.c,v 1.10 2002/02/16 21:27:26 millert Exp $";
+static const char rcsid[] = "$OpenBSD: read_bsd_terminfo.c,v 1.11 2003/03/17 21:57:57 millert Exp $";
 #endif
 
 #include <curses.priv.h>
