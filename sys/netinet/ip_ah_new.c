@@ -1,4 +1,4 @@
-/*	$OpenBSD: ip_ah_new.c,v 1.10 1997/10/02 02:31:03 deraadt Exp $	*/
+/*	$OpenBSD: ip_ah_new.c,v 1.11 1997/11/04 09:11:01 provos Exp $	*/
 
 /*
  * The author of this code is John Ioannidis, ji@tla.org,
@@ -245,7 +245,11 @@ ah_new_zeroize(struct tdb *tdbp)
     if (encdebug)
       printf("ah_new_zeroize(): freeing memory\n");
 #endif /* ENCDEBUG */
-    FREE(tdbp->tdb_xdata, M_XDATA);
+    if (tdbp->tdb_xdata)
+    {
+    	FREE(tdbp->tdb_xdata, M_XDATA);
+	tdbp->tdb_xdata = NULL;
+    }
     return 0;
 }
 

@@ -1,4 +1,4 @@
-/*	$OpenBSD: encap.c,v 1.17 1997/10/02 02:31:01 deraadt Exp $	*/
+/*	$OpenBSD: encap.c,v 1.18 1997/11/04 09:10:53 provos Exp $	*/
 
 /*
  * The author of this code is John Ioannidis, ji@tla.org,
@@ -364,7 +364,10 @@ va_dcl
 
 	    error = tdb_init(tdbp, m);
 	    if (error)
-	      SENDERR(EINVAL);
+	    {
+		tdb_delete(tdbp, 0);
+	      	SENDERR(EINVAL);
+	    }
 	    
 	    break;
 		
