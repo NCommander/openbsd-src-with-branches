@@ -118,7 +118,7 @@ usage(void)
 {
 	fprintf(stderr,
 	    "usage: %s [-4] [-6] [-a] [-c config-file] [-d] [-D class=level]\n"
-	    "          [-f fifo] [-i pid-file] [-n] [-p listen-port]\n"
+	    "          [-f fifo] [-i pid-file] [-K] [-n] [-p listen-port]\n"
 	    "          [-P local-port] [-L] [-l packetlog-file] [-r seed]\n"
 	    "          [-R report-file] [-v]\n",
 	    sysdep_progname());
@@ -135,7 +135,7 @@ parse_args(int argc, char *argv[])
 	int             do_packetlog = 0;
 #endif
 
-	while ((ch = getopt(argc, argv, "46ac:dD:f:i:np:P:Ll:r:R:v")) != -1) {
+	while ((ch = getopt(argc, argv, "46ac:dD:f:i:Knp:P:Ll:r:R:v")) != -1) {
 		switch (ch) {
 		case '4':
 			bind_family |= BIND_FAMILY_INET4;
@@ -179,6 +179,12 @@ parse_args(int argc, char *argv[])
 		case 'i':
 			pid_file = optarg;
 			break;
+
+#ifdef USE_POLICY
+		case 'K':
+			ignore_policy++;
+			break;
+#endif
 
 		case 'n':
 			app_none++;
