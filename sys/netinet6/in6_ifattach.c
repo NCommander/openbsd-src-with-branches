@@ -1,4 +1,4 @@
-/*	$OpenBSD: in6_ifattach.c,v 1.11 2000/10/02 04:45:03 itojun Exp $	*/
+/*	$OpenBSD: in6_ifattach.c,v 1.12 2000/10/18 18:49:39 itojun Exp $	*/
 /*	$KAME: in6_ifattach.c,v 1.68 2000/10/18 18:44:24 itojun Exp $	*/
 
 /*
@@ -589,6 +589,7 @@ in6_ifattach(ifp, altifp)
 	/* some of the interfaces are inherently not IPv6 capable */
 	switch (ifp->if_type) {
 	case IFT_BRIDGE:
+	case IFT_ENC:
 		return;
 	case IFT_PROPVIRTUAL:
 		if (strncmp("bridge", ifp->if_xname, sizeof("bridge")) == 0 &&
