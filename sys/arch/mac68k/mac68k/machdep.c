@@ -1,4 +1,4 @@
-/*	$OpenBSD: machdep.c,v 1.104 2003/02/26 22:59:32 miod Exp $	*/
+/*	$OpenBSD: machdep.c,v 1.105 2003/04/06 18:54:19 ho Exp $	*/
 /*	$NetBSD: machdep.c,v 1.207 1998/07/08 04:39:34 thorpej Exp $	*/
 
 /*
@@ -352,7 +352,8 @@ cpu_startup(void)
 	for (i = 0; i < btoc(MSGBUFSIZE); i++)
 		pmap_enter(pmap_kernel(), (vaddr_t)msgbufp + i * NBPG,
 		    high[numranges - 1] + i * NBPG,
-		    VM_PROT_ALL, VM_PROT_ALL|PMAP_WIRED);
+		    VM_PROT_READ|VM_PROT_WRITE,
+		    VM_PROT_READ|VM_PROT_WRITE|PMAP_WIRED);
 	pmap_update(pmap_kernel());
 	initmsgbuf((caddr_t)msgbufp, round_page(MSGBUFSIZE));
 
