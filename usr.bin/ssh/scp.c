@@ -75,7 +75,7 @@
  */
 
 #include "includes.h"
-RCSID("$OpenBSD: scp.c,v 1.91 2002/06/19 00:27:55 deraadt Exp $");
+RCSID("$OpenBSD: scp.c,v 1.92 2002/11/07 22:35:38 markus Exp $");
 
 #include "xmalloc.h"
 #include "atomicio.h"
@@ -552,7 +552,6 @@ syserr:			run_err("%s: %s", name, strerror(errno));
 		    (long long)stb.st_size, last);
 		if (verbose_mode) {
 			fprintf(stderr, "Sending file modes: %s", buf);
-			fflush(stderr);
 		}
 		(void) atomicio(write, remout, buf, strlen(buf));
 		if (response() < 0)
