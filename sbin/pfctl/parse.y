@@ -1,4 +1,4 @@
-/*	$OpenBSD: parse.y,v 1.124 2002/07/19 12:36:48 dhartmei Exp $	*/
+/*	$OpenBSD: parse.y,v 1.125 2002/07/19 13:23:37 henning Exp $	*/
 
 /*
  * Copyright (c) 2001 Markus Friedl.  All rights reserved.
@@ -2235,12 +2235,7 @@ lgetc(FILE *fin)
 		return (pushback_buffer[--pushback_index]);
 
 	while ((c = getc(fin)) == '\\') {
-		while ((next = getc(fin)) == ' ')
-			;
-		if (next == '#')
-			do
-				next = getc(fin);
-			while (next != '\n' && next != EOF);
+		next = getc(fin);
 		if (next != '\n') {
 			ungetc(next, fin);
 			break;
@@ -2340,10 +2335,6 @@ top:
 				*p = '\0';
 				break;
 			}
-			if (c == '#')
-				do
-					c = lgetc(fin);
-				while (c != '\n' && c != EOF);
 			if (c == '\n')
 				continue;
 			if (p + 1 >= buf + sizeof(buf) - 1) {
