@@ -1,4 +1,4 @@
-/*	$OpenBSD: util.c,v 1.35 2003/06/03 02:56:08 millert Exp $	*/
+/*	$OpenBSD: util.c,v 1.36 2003/10/31 08:47:31 otto Exp $	*/
 /*	$NetBSD: util.c,v 1.12 1997/08/18 10:20:27 lukem Exp $	*/
 
 /*-
@@ -70,9 +70,9 @@
  * SUCH DAMAGE.
  */
 
-#ifndef lint
-static char rcsid[] = "$OpenBSD: util.c,v 1.35 2003/06/03 02:56:08 millert Exp $";
-#endif /* not lint */
+#if !defined(lint) && !defined(SMALL)
+static char rcsid[] = "$OpenBSD: util.c,v 1.36 2003/10/31 08:47:31 otto Exp $";
+#endif /* not lint and not SMALL */
 
 /*
  * FTP User Program -- Misc support routines

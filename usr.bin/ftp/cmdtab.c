@@ -1,4 +1,4 @@
-/*	$OpenBSD: cmdtab.c,v 1.15 2001/10/04 22:49:55 pjanzen Exp $	*/
+/*	$OpenBSD: cmdtab.c,v 1.16 2003/06/03 02:56:08 millert Exp $	*/
 /*	$NetBSD: cmdtab.c,v 1.17 1997/08/18 10:20:17 lukem Exp $	*/
 
 /*
@@ -30,13 +30,9 @@
  * SUCH DAMAGE.
  */
 
-#ifndef lint
-#if 0
-static char sccsid[] = "@(#)cmdtab.c	8.4 (Berkeley) 10/9/94";
-#else
-static char rcsid[] = "$OpenBSD: cmdtab.c,v 1.15 2001/10/04 22:49:55 pjanzen Exp $";
-#endif
-#endif /* not lint */
+#if !defined(lint) && !defined(SMALL)
+static char rcsid[] = "$OpenBSD: cmdtab.c,v 1.16 2003/06/03 02:56:08 millert Exp $";
+#endif /* not lint and not SMALL */
 
 #include <stdio.h>
 #include "ftp_var.h"
