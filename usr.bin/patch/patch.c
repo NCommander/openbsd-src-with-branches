@@ -784,10 +784,8 @@ void
 init_output(name)
 char *name;
 {
-    int ofd;
-
-    if ((ofd = open(name, O_CREAT|O_EXCL|O_WRONLY, 0600)) < 0 ||
-	(ofp = fdopen(ofd, "w")) == Nullfp)
+    ofp = fopen(name, "w");
+    if (ofp == Nullfp)
 	pfatal2("can't create %s", name);
 }
 
@@ -797,10 +795,8 @@ void
 init_reject(name)
 char *name;
 {
-    int rejfd;
-
-    if ((rejfd = open(name, O_CREAT|O_EXCL|O_WRONLY, 0600)) < 0 ||
-	(rejfp = fdopen(rejfd, "w")) == Nullfp)
+    rejfp = fopen(name, "w");
+    if (rejfp == Nullfp)
 	pfatal2("can't create %s", name);
 }
 
