@@ -1,4 +1,4 @@
-/*	$OpenBSD: autoconf.c,v 1.10 1996/06/01 11:54:31 deraadt Exp $	*/
+/*	$OpenBSD: autoconf.c,v 1.11 1996/06/16 01:14:56 deraadt Exp $	*/
 /*	$NetBSD: autoconf.c,v 1.20 1996/05/03 19:41:56 christos Exp $	*/
 
 /*-
@@ -204,8 +204,8 @@ setroot()
 #if NWDC > 0
 extern	struct cfdriver wd_cd;
 #endif
-#include "fdc.h"
-#if NFDC > 0
+#include "fd.h"
+#if NFD > 0
 extern	struct cfdriver fd_cd;
 #endif
 #include "sd.h"
