@@ -1,4 +1,4 @@
-# $OpenBSD: Makefile,v 1.1 2001/05/25 08:18:53 hin Exp $
+# $OpenBSD: Makefile,v 1.3 2001/06/05 10:38:33 hin Exp $
 
 KRBDEPTH=../..
 .include <${.CURDIR}/../../Makefile.inc>
@@ -13,7 +13,7 @@ NOPIC=
 NOPROFILE=
 
 ASN1_SRC = asn1_Key.c asn1_Event.c asn1_HDBFlags.c asn1_hdb_entry.c \
-        asn1_Salt.c hdb_asn1.h
+        asn1_Salt.c hdb_asn1.h asn1_GENERATION.c
 
 SRCS=	${ASN1_SRC} \
 	keytab.c \
