@@ -417,7 +417,23 @@ macro()
 			break;
 
 		default:
-			chrsave(t);			/* stack the char */
+			if (LOOK_AHEAD(t, scommt)) {
+				char *p;
+				for (p = scommt; *p; p++)
+					chrsave(*p);
+				for(;;) {
+					t = gpbc();
+					if (LOOK_AHEAD(t, ecommt)) {
+						for (p = ecommt; *p; p++)
+							chrsave(*p);
+						break;
+					}
+					if (t == EOF)
+					    break;
+					chrsave(t);
+				}
+			} else
+				chrsave(t);		/* stack the char */
 			break;
 		}
 	}
