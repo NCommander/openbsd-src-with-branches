@@ -1,3 +1,5 @@
+/*	$OpenBSD$ */
+
 /*
  * bug routines -- assumes that the necessary sections of memory
  * are preserved.
@@ -5,10 +7,10 @@
 #include <sys/types.h>
 #include <machine/prom.h>
 
-/* BUG - return to bug routine */
 void
-mvmeprom_return()
+mvmeprom_rtc_rd(ptime)
+	struct mvmeprom_time *ptime;
 {
-	MVMEPROM_CALL(MVMEPROM_EXIT);
-	/*NOTREACHED*/
+	MVMEPROM_ARG1(ptime);
+	MVMEPROM_CALL(MVMEPROM_RTC_RD);
 }

@@ -7,10 +7,11 @@
 #include <sys/types.h>
 #include <machine/prom.h>
 
+/* BUG - timing routine */
 void
-mvmeprom_rtc_rd(ptime)
-	struct mvmeprom_time *ptime;
+mvmeprom_delay(msec)
+	int msec;
 {
-	asm volatile ("movel %0,sp@-" :  :"a" (ptime));
-	MVMEPROM_CALL(MVMEPROM_RTC_RD);
+	MVMEPROM_ARG1(msec);
+	MVMEPROM_CALL(MVMEPROM_DELAY);
 }

@@ -11,7 +11,7 @@ void
 mvmeprom_outstr(start, end)
 	char *start, *end;
 {
-	asm volatile ("movl %0, sp@-" : "=a" (start));
-	asm volatile ("movl %0, sp@-" : "=a" (end));
+	MVMEPROM_ARG1(start);
+	MVMEPROM_ARG2(end);
 	MVMEPROM_CALL(MVMEPROM_OUTSTR);
 }

@@ -14,8 +14,7 @@ mvmeprom_diskrd(arg)
 {
 	int ret;
 
-	asm volatile ("movel %0, sp@-"::"d" (arg));
+	MVMEPROM_ARG1(arg);
 	MVMEPROM_CALL(MVMEPROM_DSKRD);
-	asm volatile ("movew ccr,%0": "=d" (ret));
-	return (!(ret & 0x4));
+	MVMEPROM_STATRET(ret);
 }

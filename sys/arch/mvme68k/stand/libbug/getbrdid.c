@@ -13,8 +13,7 @@ mvmeprom_getbrdid()
 {
 	struct mvmeprom_brdid *id;
 
-	asm volatile ("clrl sp@-");
+	MVMEPROM_NOARG();
 	MVMEPROM_CALL(MVMEPROM_GETBRDID);
-	asm volatile ("movel sp@+,%0": "=d" (id):);
-	return (id);
+	MVMEPROM_RETURN(id);
 }

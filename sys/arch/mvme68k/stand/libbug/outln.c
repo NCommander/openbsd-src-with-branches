@@ -7,11 +7,11 @@
 #include <sys/types.h>
 #include <machine/prom.h>
 
-/* BUG - timing routine */
 void
-mvmeprom_delay(msec)
-	int msec;
+mvmeprom_outln(start, end)
+	char *start, *end;
 {
-	asm volatile ("movel %0,sp@-" :  :"d" (msec));
-	MVMEPROM_CALL(MVMEPROM_DELAY);
+	MVMEPROM_ARG1(start);
+	MVMEPROM_ARG1(end);
+	MVMEPROM_CALL(MVMEPROM_OUTSTRCRLF);
 }
