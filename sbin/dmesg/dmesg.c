@@ -1,4 +1,4 @@
-/*	$OpenBSD: dmesg.c,v 1.8 1995/03/18 14:54:49 cgd Exp $	*/
+/*	$OpenBSD: dmesg.c,v 1.2 1996/06/23 14:30:08 deraadt Exp $	*/
 /*	$NetBSD: dmesg.c,v 1.8 1995/03/18 14:54:49 cgd Exp $	*/
 
 /*-
@@ -44,7 +44,7 @@ static char copyright[] =
 #if 0
 static char sccsid[] = "@(#)dmesg.c	8.1 (Berkeley) 6/5/93";
 #else
-static char rcsid[] = "$OpenBSD: dmesg.c,v 1.8 1995/03/18 14:54:49 cgd Exp $";
+static char rcsid[] = "$OpenBSD: dmesg.c,v 1.2 1996/06/23 14:30:08 deraadt Exp $";
 #endif
 #endif /* not lint */
 
@@ -105,8 +105,10 @@ main(argc, argv)
 	 * Discard setgid privileges if not the running kernel so that bad
 	 * guys can't print interesting stuff from kernel memory.
 	 */
-	if (memf != NULL || nlistf != NULL)
+	if (memf != NULL || nlistf != NULL) {
+		setegid(getgid());
 		setgid(getgid());
+	}
 
 	/* Read in kernel message buffer, do sanity checks. */
 	if ((kd = kvm_open(nlistf, memf, NULL, O_RDONLY, "dmesg")) == NULL)
