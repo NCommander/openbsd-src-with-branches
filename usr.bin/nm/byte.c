@@ -1,4 +1,4 @@
-/* $OpenBSD: byte.c,v 1.4 2003/11/07 04:43:14 mickey Exp $ */
+/* $OpenBSD: byte.c,v 1.5 2004/01/28 18:05:10 deraadt Exp $ */
 /*
  * Copyright (c) 1999
  *	Marc Espie.  All rights reserved.
@@ -64,7 +64,7 @@ fix_header_order(struct exec *h)
 }
 
 static long
-fix_long_order(long l, int mid)
+fix_32_order(u_int32_t l, int mid)
 {
 	if (byte_sex(mid) != BYTE_ORDER)
 		return swap32(l);
