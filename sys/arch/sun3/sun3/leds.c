@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: leds.c,v 1.1 1997/01/13 00:29:24 kstailey Exp $	*/
 
 #include <sys/types.h>
 #include <sys/uio.h>
@@ -6,7 +6,7 @@
 #include <sys/errno.h>
 #include <machine/psl.h>
 
-#include "leds-extern.h"
+#include "ledsvar.h"
 
 #define MAXPVLEN 10240
 #define MAXCDOWN 128
