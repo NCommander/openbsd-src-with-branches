@@ -1,4 +1,4 @@
-/*	$OpenBSD: kern_prot.c,v 1.19 2002/01/12 22:56:55 art Exp $	*/
+/*	$OpenBSD: kern_prot.c,v 1.20 2002/01/23 15:46:48 art Exp $	*/
 /*	$NetBSD: kern_prot.c,v 1.33 1996/02/09 18:59:42 christos Exp $	*/
 
 /*
@@ -230,7 +230,7 @@ sys_getgroups(p, v, retval)
 	register_t *retval;
 {
 	struct sys_getgroups_args /* {
-		syscallarg(u_int) gidsetsize;
+		syscallarg(int) gidsetsize;
 		syscallarg(gid_t *) gidset;
 	} */ *uap = v;
 	struct pcred *pc = p->p_cred;
@@ -490,7 +490,7 @@ sys_setgroups(p, v, retval)
 	register_t *retval;
 {
 	struct sys_setgroups_args /* {
-		syscallarg(u_int) gidsetsize;
+		syscallarg(int) gidsetsize;
 		syscallarg(gid_t *) gidset;
 	} */ *uap = v;
 	struct pcred *pc = p->p_cred;
