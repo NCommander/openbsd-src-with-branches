@@ -11,11 +11,6 @@
 
 #include "cvs.h"
 
-#ifndef lint
-static const char rcsid[] = "$CVSid: @(#)release.c 1.23 94/09/21 $";
-USE(rcsid);
-#endif
-
 static void release_delete PROTO((char *dir));
 
 static const char *const release_usage[] =
@@ -25,7 +20,22 @@ static const char *const release_usage[] =
     NULL
 };
 
-static short delete;
+static short delete_flag;
+
+/* FIXME: This implementation is cheezy in quite a few ways:
+
+   1.  The whole "cvs update" junk could be checked locally with a
+   fairly simple start_recursion/classify_file loop--a win for
+   portability, performance, and cleanliness.
+
+   2.  Should be like edit/unedit in terms of working well if disconnected
+   from the network, and then sending a delayed notification.
+
+   3.  Way too many network turnarounds.  More than one for each argument.
+   Puh-leeze.
+
+   4.  Oh, and as a purely stylistic nit, break this out into separate
+   functions for client/local and for server.  Those #ifdefs are a mess.  */
 
 int
 release (argc, argv)
@@ -38,6 +48,7 @@ release (argc, argv)
     char line[PATH_MAX], update_cmd[PATH_MAX];
     char *thisarg;
     int arg_start_idx;
+    int err = 0;
 
 #ifdef SERVER_SUPPORT
     if (!server_active)
@@ -62,7 +73,7 @@ release (argc, argv)
                          command_name);
 		break;
               case 'd':
-		delete++;
+		delete_flag++;
 		break;
               case '?':
               default:
@@ -82,7 +93,7 @@ release (argc, argv)
      */
     /* Construct the update command. */
     sprintf (update_cmd, "%s -n -q -d %s update",
-             program_name, CVSroot);
+             program_path, CVSroot_original);
 
 #ifdef CLIENT_SUPPORT
     /* Start the server; we'll close it after looping. */
@@ -100,8 +111,8 @@ release (argc, argv)
     if (server_active)
       arg_start_idx = 1;
     else
-      arg_start_idx = 0;
 #endif /* SERVER_SUPPORT */
+      arg_start_idx = 0;
 
     for (i = arg_start_idx; i < argc; i++)
     {
@@ -126,7 +137,7 @@ release (argc, argv)
          */
         if (isdir (thisarg))
         {
-          if (chdir (thisarg) < 0)
+          if ( CVS_CHDIR (thisarg) < 0)
           {
             if (!really_quiet)
               error (0, 0, "can't chdir to: %s", thisarg);
@@ -157,11 +168,8 @@ release (argc, argv)
            * the user, telling her how many files have been
            * modified, and asking if she still wants to do the
            * release.
-           *
-           * This is "popen()" instead of "Popen()" since we
-           * wouldn't want the `noexec' flag to stop it.
            */
-          fp = popen (update_cmd, "r");
+          fp = run_popen (update_cmd, "r");
           c = 0;
 
           while (fgets (line, sizeof (line), fp))
@@ -185,7 +193,7 @@ release (argc, argv)
           (void) printf ("You have [%d] altered files in this repository.\n",
                          c);
           (void) printf ("Are you sure you want to release %smodule `%s': ",
-                         delete ? "(and delete) " : "", thisarg);
+                         delete_flag ? "(and delete) " : "", thisarg);
           c = !yesno ();
           if (c)			/* "No" */
           {
@@ -196,13 +204,33 @@ release (argc, argv)
           }
 	}
 
+	if (1
+#ifdef SERVER_SUPPORT
+	    && !server_active
+#endif
+#ifdef CLIENT_SUPPORT
+	    && !(client_active
+		 && (!supported_request ("noop")
+		     || !supported_request ("Notify")))
+#endif
+	    )
+	{
+	  /* We are chdir'ed into the directory in question.  
+	     So don't pass args to unedit.  */
+	  int argc = 1;
+	  char *argv[3];
+	  argv[0] = "dummy";
+	  argv[1] = NULL;
+	  err += unedit (argc, argv);
+	}
+
 #ifdef CLIENT_SUPPORT
         if (client_active)
         {
-          if (fprintf (to_server, "Argument %s\n", thisarg) < 0)
-	    error (1, errno, "writing to server");
-          if (fprintf (to_server, "release\n") < 0)
-	    error (1, errno, "writing to server");
+          send_to_server ("Argument ", 0);
+          send_to_server (thisarg, 0);
+          send_to_server ("\012", 1);
+          send_to_server ("release\012", 0);
         }
         else
         {
@@ -213,7 +241,7 @@ release (argc, argv)
 #endif /* CLIENT_SUPPORT */
         
         free (repository);
-        if (delete) release_delete (thisarg);
+        if (delete_flag) release_delete (thisarg);
         
 #ifdef CLIENT_SUPPORT
         if (client_active)
@@ -226,6 +254,7 @@ release (argc, argv)
       } /* else server not active */
 #endif  /* SERVER_SUPPORT */
     }   /* `for' loop */
+    return err;
 }
 
 
@@ -237,12 +266,11 @@ release_delete (dir)
 {
     struct stat st;
     ino_t ino;
-    int retcode = 0;
 
-    (void) stat (".", &st);
+    (void) CVS_STAT (".", &st);
     ino = st.st_ino;
-    (void) chdir ("..");
-    (void) stat (dir, &st);
+    (void) CVS_CHDIR ("..");
+    (void) CVS_STAT (dir, &st);
     if (ino != st.st_ino)
     {
 	error (0, 0,
@@ -253,9 +281,6 @@ release_delete (dir)
      * XXX - shouldn't this just delete the CVS-controlled files and, perhaps,
      * the files that would normally be ignored and leave everything else?
      */
-    run_setup ("%s -fr", RM);
-    run_arg (dir);
-    if ((retcode = run_exec (RUN_TTY, RUN_TTY, RUN_TTY, RUN_NORMAL)) != 0)
-	error (0, retcode == -1 ? errno : 0, 
-	       "deletion of module %s failed.", dir);
+    if (unlink_file_dir (dir) < 0)
+	error (0, errno, "deletion of directory %s failed", dir);
 }

@@ -51,7 +51,9 @@ static void
 fileattr_delproc (node)
     Node *node;
 {
+    assert (node->data != NULL);
     free (node->data);
+    node->data = NULL;
 }
 
 /* Read all the attributes for the current directory into memory.  */
@@ -82,7 +84,7 @@ fileattr_read ()
     strcat (fname, CVSREP_FILEATTR);
 
     attr_read_attempted = 1;
-    fp = fopen (fname, "r");
+    fp = CVS_FOPEN (fname, FOPEN_BINARY_READ);
     if (fp == NULL)
     {
 	if (!existence_error (errno))
@@ -135,8 +137,8 @@ fileattr_read ()
 
 char *
 fileattr_get (filename, attrname)
-    char *filename;
-    char *attrname;
+    const char *filename;
+    const char *attrname;
 {
     Node *node;
     size_t attrname_len = strlen (attrname);
@@ -149,12 +151,18 @@ fileattr_get (filename, attrname)
 	   an error message.  */
 	return NULL;
 
-    node = findnode (attrlist, filename);
-    if (node == NULL)
-	/* A file not mentioned has no attributes.  */
-	return NULL;
-    p = node->data;
-    while (1) {
+    if (filename == NULL)
+	p = fileattr_default_attrs;
+    else
+    {
+	node = findnode (attrlist, filename);
+	if (node == NULL)
+	    /* A file not mentioned has no attributes.  */
+	    return NULL;
+	p = node->data;
+    }
+    while (p)
+    {
 	if (strncmp (attrname, p, attrname_len) == 0
 	    && p[attrname_len] == '=')
 	{
@@ -172,8 +180,8 @@ fileattr_get (filename, attrname)
 
 char *
 fileattr_get0 (filename, attrname)
-    char *filename;
-    char *attrname;
+    const char *filename;
+    const char *attrname;
 {
     char *cp;
     char *cpend;
@@ -194,8 +202,8 @@ fileattr_get0 (filename, attrname)
 char *
 fileattr_modify (list, attrname, attrval, namevalsep, entsep)
     char *list;
-    char *attrname;
-    char *attrval;
+    const char *attrname;
+    const char *attrval;
     int namevalsep;
     int entsep;
 {
@@ -290,9 +298,9 @@ fileattr_modify (list, attrname, attrval, namevalsep, entsep)
 
 void
 fileattr_set (filename, attrname, attrval)
-    char *filename;
-    char *attrname;
-    char *attrval;
+    const char *filename;
+    const char *attrname;
+    const char *attrval;
 {
     Node *node;
     char *p;
@@ -338,16 +346,18 @@ fileattr_set (filename, attrname, attrval)
     }
 
     p = fileattr_modify (node->data, attrname, attrval, '=', ';');
-    free (node->data);
     if (p == NULL)
 	delnode (node);
     else
+    {
+	free (node->data);
 	node->data = p;
+    }
 }
 
 void
 fileattr_newfile (filename)
-    char *filename;
+    const char *filename;
 {
     Node *node;
 
@@ -384,7 +394,7 @@ writeattr_proc (node, data)
     fputs (node->key, fp);
     fputs ("\t", fp);
     fputs (node->data, fp);
-    fputs ("\n", fp);
+    fputs ("\012", fp);
     return 0;
 }
 
@@ -431,7 +441,7 @@ fileattr_write ()
 	strcpy (fname, fileattr_stored_repos);
 	strcat (fname, "/");
 	strcat (fname, CVSREP);
-	if (rmdir (fname) < 0)
+	if (CVS_RMDIR (fname) < 0)
 	{
 	    if (errno != ENOTEMPTY
 
@@ -447,7 +457,7 @@ fileattr_write ()
     }
 
     omask = umask (cvsumask);
-    fp = fopen (fname, "w");
+    fp = CVS_FOPEN (fname, FOPEN_BINARY_WRITE);
     if (fp == NULL)
     {
 	if (existence_error (errno))
@@ -472,7 +482,7 @@ fileattr_write ()
 	    }
 	    free (repname);
 
-	    fp = fopen (fname, "w");
+	    fp = CVS_FOPEN (fname, FOPEN_BINARY_WRITE);
 	}
 	if (fp == NULL)
 	{
@@ -487,7 +497,7 @@ fileattr_write ()
     {
 	fputs ("D\t", fp);
 	fputs (fileattr_default_attrs, fp);
-	fputs ("\n", fp);
+	fputs ("\012", fp);
     }
     if (fclose (fp) < 0)
 	error (0, errno, "cannot close %s", fname);

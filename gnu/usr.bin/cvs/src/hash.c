@@ -8,11 +8,7 @@
  */
 
 #include "cvs.h"
-
-#ifndef lint
-static const char rcsid[] = "$CVSid: @(#)hash.c 1.19 94/09/23 $";
-USE(rcsid);
-#endif
+#include <assert.h>
 
 /* global caches */
 static List *listcache = NULL;
@@ -28,9 +24,13 @@ hashp (key)
     unsigned int h = 0;
     unsigned int g;
 
+    assert(key != NULL);
+    
     while (*key != 0)
     {
-	h = (h << 4) + *key++;
+	unsigned int c = *key++;
+	/* The FOLD_FN_CHAR is so that findnode_fn works.  */
+	h = (h << 4) + FOLD_FN_CHAR (c);
 	if ((g = h & 0xf0000000) != 0)
 	    h = (h ^ (g >> 24)) ^ g;
     }
@@ -247,10 +247,9 @@ addnode (list, p)
     return (0);
 }
 
-/*
- * look up an entry in hash list table and return a pointer to the
- * node.  Return NULL on error or not found.
- */
+/* Look up an entry in hash list table and return a pointer to the
+   node.  Return NULL if not found.  Abort with a fatal error for
+   errors.  */
 Node *
 findnode (list, key)
     List *list;
@@ -258,15 +257,49 @@ findnode (list, key)
 {
     Node *head, *p;
 
+    /* This probably should be "assert (list != NULL)" (or if not we
+       should document the current behavior), but only if we check all
+       the callers to see if any are relying on this behavior.  */
+    if ((list == (List *) NULL))
+	return ((Node *) NULL);
+
+    assert (key != NULL);
+
+    head = list->hasharray[hashp (key)];
+    if (head == (Node *) NULL)
+	/* Not found.  */
+	return ((Node *) NULL);
+
+    for (p = head->hashnext; p != head; p = p->hashnext)
+	if (strcmp (p->key, key) == 0)
+	    return (p);
+    return ((Node *) NULL);
+}
+
+/*
+ * Like findnode, but for a filename.
+ */
+Node *
+findnode_fn (list, key)
+    List *list;
+    const char *key;
+{
+    Node *head, *p;
+
+    /* This probably should be "assert (list != NULL)" (or if not we
+       should document the current behavior), but only if we check all
+       the callers to see if any are relying on this behavior.  */
     if (list == (List *) NULL)
 	return ((Node *) NULL);
+
+    assert (key != NULL);
 
     head = list->hasharray[hashp (key)];
     if (head == (Node *) NULL)
 	return ((Node *) NULL);
 
     for (p = head->hashnext; p != head; p = p->hashnext)
-	if (strcmp (p->key, key) == 0)
+	if (fncmp (p->key, key) == 0)
 	    return (p);
     return ((Node *) NULL);
 }
@@ -290,6 +323,13 @@ walklist (list, proc, closure)
     for (p = head->next; p != head; p = p->next)
 	err += proc (p, closure);
     return (err);
+}
+
+int
+list_isempty (list)
+    List *list;
+{
+    return list == NULL || list->list->next == list->list;
 }
 
 /*
@@ -358,6 +398,9 @@ nodetypestring (type)
     case UPDATE:	return("UPDATE");
     case LOCK:		return("LOCK");
     case NDBMNODE:	return("NDBMNODE");
+    case FILEATTR:	return("FILEATTR");
+    case VARIABLE:	return("VARIABLE");
+    case RCSFIELD:	return("RCSFIELD");
     }
 
     return("<trash>");

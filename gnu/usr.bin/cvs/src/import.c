@@ -17,12 +17,7 @@
  */
 
 #include "cvs.h"
-#include "save-cwd.h"
-
-#ifndef lint
-static const char rcsid[] = "$CVSid: @(#)import.c 1.63 94/09/30 $";
-USE(rcsid);
-#endif
+#include "savecwd.h"
 
 #define	FILE_HOLDER	".#cvsxxx"
 
@@ -30,8 +25,9 @@ static char *get_comment PROTO((char *user));
 static int add_rcs_file PROTO((char *message, char *rcs, char *user, char *vtag,
 		         int targc, char *targv[]));
 static int expand_at_signs PROTO((char *buf, off_t size, FILE *fp));
-static int add_rev PROTO((char *message, char *rcs, char *vfile, char *vers));
-static int add_tags PROTO((char *rcs, char *vfile, char *vtag, int targc,
+static int add_rev PROTO((char *message, RCSNode *rcs, char *vfile,
+			  char *vers));
+static int add_tags PROTO((RCSNode *rcs, char *vfile, char *vtag, int targc,
 		     char *targv[]));
 static int import_descend PROTO((char *message, char *vtag, int targc, char *targv[]));
 static int import_descend_dir PROTO((char *message, char *dir, char *vtag,
@@ -70,11 +66,12 @@ import (argc, argv)
     char **argv;
 {
     char *message = NULL;
-    char tmpfile[L_tmpnam+1];
+    char *tmpfile;
     char *cp;
     int i, c, msglen, err;
     List *ulist;
     Node *p;
+    struct logfile_info *li;
 
     if (argc == -1)
 	usage (import_usage);
@@ -120,7 +117,7 @@ import (argc, argv)
 		/* RCS_check_kflag returns strings of the form -kxx.  We
 		   only use it for validation, so we can free the value
 		   as soon as it is returned. */
-		free (RCS_check_kflag(optarg));	
+		free (RCS_check_kflag (optarg));
 		keyword_opt = optarg;
 		break;
 	    case 'W':
@@ -143,14 +140,14 @@ import (argc, argv)
     /* XXX - this should be a module, not just a pathname */
     if (! isabsolute (argv[0]))
     {
-	if (CVSroot == NULL)
+	if (CVSroot_directory == NULL)
 	{
 	    error (0, 0, "missing CVSROOT environment variable\n");
 	    error (1, 0, "Set it or specify the '-d' option to %s.",
 		   program_name);
 	}
-	(void) sprintf (repository, "%s/%s", CVSroot, argv[0]);
-	repos_len = strlen (CVSroot);
+	(void) sprintf (repository, "%s/%s", CVSroot_directory, argv[0]);
+	repos_len = strlen (CVSroot_directory);
     }
     else
     {
@@ -176,9 +173,8 @@ import (argc, argv)
 #ifdef CLIENT_SUPPORT
     if (client_active)
     {
-	/* Do this now; don't ask for a log message if we can't talk to the
-	   server.  But if there is a syntax error in the options, give
-	   an error message without connecting.  */
+	/* For rationale behind calling start_server before do_editor, see
+	   commit.c  */
 	start_server ();
     }
 #endif
@@ -186,7 +182,7 @@ import (argc, argv)
     if (use_editor)
     {
 	do_editor ((char *) NULL, &message, repository,
-		   (List *) NULL); 
+		   (List *) NULL);
     }
 
     msglen = message == NULL ? 0 : strlen (message);
@@ -207,8 +203,6 @@ import (argc, argv)
     {
 	int err;
 
-	ign_setup ();
-
 	if (use_file_modtime)
 	    send_arg("-d");
 
@@ -218,6 +212,15 @@ import (argc, argv)
 	    option_with_arg ("-m", message);
 	if (keyword_opt != NULL)
 	    option_with_arg ("-k", keyword_opt);
+	/* The only ignore processing which takes place on the server side
+	   is the CVSROOT/cvsignore file.  But if the user specified -I !,
+	   the documented behavior is to not process said file.  */
+	if (ign_inhibit_server)
+	{
+	    send_arg ("-I");
+	    send_arg ("!");
+	}
+	wrap_send ();
 
 	{
 	    int i;
@@ -229,8 +232,7 @@ import (argc, argv)
 	client_import_setup (repository);
 	err = import_descend (message, argv[1], argc - 2, argv + 2);
 	client_import_done ();
-	if (fprintf (to_server, "import\n") < 0)
-	    error (1, errno, "writing to server");
+	send_to_server ("import\012", 0);
 	err += get_responses_and_close ();
 	return err;
     }
@@ -240,13 +242,14 @@ import (argc, argv)
      * Make all newly created directories writable.  Should really use a more
      * sophisticated security mechanism here.
      */
-    (void) umask (2);
+    (void) umask (cvsumask);
     make_directories (repository);
 
     /* Create the logfile that will be logged upon completion */
-    if ((logfp = fopen (tmpnam (tmpfile), "w+")) == NULL)
+    tmpfile = cvs_temp_name ();
+    if ((logfp = CVS_FOPEN (tmpfile, "w+")) == NULL)
 	error (1, errno, "cannot create temporary file `%s'", tmpfile);
-    (void) unlink (tmpfile);		/* to be sure it goes away */
+    (void) CVS_UNLINK (tmpfile);		/* to be sure it goes away */
     (void) fprintf (logfp, "\nVendor Tag:\t%s\n", argv[1]);
     (void) fprintf (logfp, "Release Tags:\t");
     for (i = 2; i < argc; i++)
@@ -259,11 +262,21 @@ import (argc, argv)
     {
 	if (!really_quiet)
 	{
-	    (void) printf ("\n%d conflicts created by this import.\n",
-			   conflicts);
-	    (void) printf ("Use the following command to help the merge:\n\n");
-	    (void) printf ("\t%s checkout -j%s:yesterday -j%s %s\n\n",
-			   program_name, argv[1], argv[1], argv[0]);
+	    char buf[80];
+	    sprintf (buf, "\n%d conflicts created by this import.\n",
+		     conflicts);
+	    cvs_output (buf, 0);
+	    cvs_output ("Use the following command to help the merge:\n\n",
+			0);
+	    cvs_output ("\t", 1);
+	    cvs_output (program_name, 0);
+	    cvs_output (" checkout -j", 0);
+	    cvs_output (argv[1], 0);
+	    cvs_output (":yesterday -j", 0);
+	    cvs_output (argv[1], 0);
+	    cvs_output (" ", 1);
+	    cvs_output (argv[0], 0);
+	    cvs_output ("\n\n", 0);
 	}
 
 	(void) fprintf (logfp, "\n%d conflicts created by this import.\n",
@@ -276,7 +289,7 @@ import (argc, argv)
     else
     {
 	if (!really_quiet)
-	    (void) printf ("\nNo conflicts created by this import\n\n");
+	    cvs_output ("\nNo conflicts created by this import\n\n", 0);
 	(void) fprintf (logfp, "\nNo conflicts created by this import\n\n");
     }
 
@@ -288,15 +301,19 @@ import (argc, argv)
     p->type = UPDATE;
     p->delproc = update_delproc;
     p->key = xstrdup ("- Imported sources");
-    p->data = (char *) T_TITLE;
+    li = (struct logfile_info *) xmalloc (sizeof (struct logfile_info));
+    li->type = T_TITLE;
+    li->tag = xstrdup (vbranch);
+    p->data = (char *) li;
     (void) addnode (ulist, p);
-    Update_Logfile (repository, message, vbranch, logfp, ulist);
+    Update_Logfile (repository, message, logfp, ulist);
     dellist (&ulist);
     (void) fclose (logfp);
 
     /* Make sure the temporary file goes away, even on systems that don't let
        you delete a file that's in use.  */
-    unlink (tmpfile);
+    CVS_UNLINK (tmpfile);
+    free (tmpfile);
 
     if (message)
 	free (message);
@@ -323,7 +340,7 @@ import_descend (message, vtag, targc, targv)
     ign_add_file (CVSDOTIGNORE, 1);
     wrap_add_file (CVSDOTWRAPPER, 1);
 
-    if ((dirp = opendir (".")) == NULL)
+    if ((dirp = CVS_OPENDIR (".")) == NULL)
     {
 	err++;
     }
@@ -333,16 +350,15 @@ import_descend (message, vtag, targc, targv)
 	{
 	    if (strcmp (dp->d_name, ".") == 0 || strcmp (dp->d_name, "..") == 0)
 		continue;
+#ifdef SERVER_SUPPORT
+	    /* CVS directories are created in the temp directory by
+	       server.c because it doesn't special-case import.  So
+	       don't print a message about them, regardless of -I!.  */
+	    if (server_active && strcmp (dp->d_name, CVSADM) == 0)
+		continue;
+#endif
 	    if (ign_name (dp->d_name))
 	    {
-#ifdef SERVER_SUPPORT
-		/* CVS directories are created by server.c because it doesn't
-		   special-case import.  So don't print a message about them.
-		   Do print a message about other ignored files (although
-		   most of these will get ignored on the client side).  */
-		if (server_active && strcmp (dp->d_name, CVSADM) == 0)
-		    continue;
-#endif
 		add_log ('I', dp->d_name);
 		continue;
 	    }
@@ -356,7 +372,7 @@ import_descend (message, vtag, targc, targv)
 #endif
 		&& !wrap_name_has (dp->d_name, WRAP_TOCVS)
 		)
-            {	
+	    {
 		Node *n;
 
 		if (dirlist == NULL)
@@ -368,7 +384,7 @@ import_descend (message, vtag, targc, targv)
 	    }
 	    else if (
 #ifdef DT_DIR
-		dp->d_type == DT_LNK || dp->d_type == DT_UNKNOWN && 
+		dp->d_type == DT_LNK || dp->d_type == DT_UNKNOWN &&
 #endif
 		islink (dp->d_name))
 	    {
@@ -391,7 +407,7 @@ import_descend (message, vtag, targc, targv)
 	(void) closedir (dirp);
     }
 
-    if (dirlist != NULL) 
+    if (dirlist != NULL)
     {
 	Node *head, *p;
 
@@ -462,27 +478,27 @@ update_rcs_file (message, vfile, vtag, targc, targv, inattic)
     Vers_TS *vers;
     int letter;
     int ierrno;
-    char *tmpdir;
     char *tocvsPath;
+    struct file_info finfo;
 
-    vers = Version_TS (repository, (char *) NULL, vbranch, (char *) NULL, vfile,
-		       1, 0, (List *) NULL, (List *) NULL);
-#ifdef DEATH_SUPPORT
+    memset (&finfo, 0, sizeof finfo);
+    finfo.file = vfile;
+    /* Not used, so don't worry about it.  */
+    finfo.update_dir = NULL;
+    finfo.fullname = finfo.file;
+    finfo.repository = repository;
+    finfo.entries = NULL;
+    finfo.rcs = NULL;
+    vers = Version_TS (&finfo, (char *) NULL, vbranch, (char *) NULL,
+		       1, 0);
     if (vers->vn_rcs != NULL
 	&& !RCS_isdead(vers->srcfile, vers->vn_rcs))
-#else
-    if (vers->vn_rcs != NULL)
-#endif
     {
 	char xtmpfile[PATH_MAX];
 	int different;
 	int retcode = 0;
 
-	tmpdir = getenv ("TMPDIR");
-	if (tmpdir == NULL || tmpdir[0] == '\0') 
-	  tmpdir = "/tmp";
-
-	(void) sprintf (xtmpfile, "%s/cvs-imp%d", tmpdir, getpid());
+	(void) sprintf (xtmpfile, "%s/cvs-imp%ld", Tmpdir, (long) getpid());
 
 	/*
 	 * The rcs file does have a revision on the vendor branch. Compare
@@ -493,14 +509,15 @@ update_rcs_file (message, vfile, vtag, targc, targv, inattic)
 	 * This is to try to cut down the number of "C" conflict messages for
 	 * locally modified import source files.
 	 */
+	retcode = RCS_checkout (vers->srcfile, (char *) NULL, vers->vn_rcs,
+				(char *) NULL,
 #ifdef HAVE_RCS5
-	run_setup ("%s%s -q -f -r%s -p -ko", Rcsbin, RCS_CO, vers->vn_rcs);
+				"-ko",
 #else
-	run_setup ("%s%s -q -f -r%s -p", Rcsbin, RCS_CO, vers->vn_rcs);
+				NULL,
 #endif
-	run_arg (vers->srcfile->path);
-	if ((retcode = run_exec (RUN_TTY, xtmpfile, RUN_TTY,
-				 RUN_NORMAL|RUN_REALLY)) != 0)
+				xtmpfile);
+	if (retcode != 0)
 	{
 	    ierrno = errno;
 	    fperror (logfp, 0, retcode == -1 ? ierrno : 0,
@@ -529,7 +546,7 @@ update_rcs_file (message, vfile, vtag, targc, targv, inattic)
 	     * "U", signifying that the file has changed, but needs no
 	     * attention, and we're done.
 	     */
-	    if (add_tags (vers->srcfile->path, vfile, vtag, targc, targv))
+	    if (add_tags (vers->srcfile, vfile, vtag, targc, targv))
 		retval = 1;
 	    add_log ('U', vfile);
 	    freevers_ts (&vers);
@@ -539,8 +556,8 @@ update_rcs_file (message, vfile, vtag, targc, targv, inattic)
 
     /* We may have failed to parse the RCS file; check just in case */
     if (vers->srcfile == NULL ||
-	add_rev (message, vers->srcfile->path, vfile, vers->vn_rcs) ||
-	add_tags (vers->srcfile->path, vfile, vtag, targc, targv))
+	add_rev (message, vers->srcfile, vfile, vers->vn_rcs) ||
+	add_tags (vers->srcfile, vfile, vtag, targc, targv))
     {
 	freevers_ts (&vers);
 	return (1);
@@ -566,13 +583,12 @@ update_rcs_file (message, vfile, vtag, targc, targv, inattic)
 static int
 add_rev (message, rcs, vfile, vers)
     char *message;
-    char *rcs;
+    RCSNode *rcs;
     char *vfile;
     char *vers;
 {
     int locked, status, ierrno;
     char *tocvsPath;
-    struct stat vfile_stat;
 
     if (noexec)
 	return (0);
@@ -591,38 +607,48 @@ add_rev (message, rcs, vfile, vers)
 	locked = 1;
     }
     tocvsPath = wrap_tocvs_process_file (vfile);
+    if (tocvsPath == NULL)
+    {
+	/* We play with hard links rather than passing -u to ci to avoid
+	   expanding RCS keywords (see test 106.5 in sanity.sh).  */
+	if (link_file (vfile, FILE_HOLDER) < 0)
+	{
+	    if (errno == EEXIST)
+	    {
+		(void) unlink_file (FILE_HOLDER);
+		(void) link_file (vfile, FILE_HOLDER);
+	    }
+	    else
+	    {
+		ierrno = errno;
+		fperror (logfp, 0, ierrno,
+			 "ERROR: cannot create link to %s", vfile);
+		error (0, ierrno, "ERROR: cannot create link to %s", vfile);
+		return (1);
+	    }
+	}
+    }
 
-    /* We used to deposit the revision with -r; RCS would delete the
-       working file, but we'd keep a hard link to it, and rename it
-       back after running RCS (ooh, atomicity).  However, that
-       strategy doesn't work on operating systems without hard links
-       (like Windows NT).  Instead, let's deposit it using -u, and
-       restore its permission bits afterwards.  This also means the
-       file always exists under its own name.  */
-    if (! tocvsPath)
-        stat (vfile, &vfile_stat);
-
-    run_setup ("%s%s -q -f %s%s", Rcsbin, RCS_CI, 
-	       (tocvsPath ? "-r" : "-u"),
-	       vbranch);
-    run_args ("-m%s", make_message_rcslegal (message));
-    if (use_file_modtime)
-	run_arg ("-d");
-    run_arg (tocvsPath == NULL ? vfile : tocvsPath);
-    run_arg (rcs);
-    status = run_exec (RUN_TTY, RUN_TTY, RUN_TTY, RUN_NORMAL);
+    status = RCS_checkin (rcs->path, tocvsPath == NULL ? vfile : tocvsPath,
+			  message, vbranch,
+			  (RCS_FLAGS_QUIET
+			   | (use_file_modtime ? RCS_FLAGS_MODTIME : 0)));
     ierrno = errno;
 
-    /* Restore the permissions on vfile.  */
-    if (! tocvsPath)
-        chmod (vfile, vfile_stat.st_mode);
+    if (tocvsPath == NULL)
+	rename_file (FILE_HOLDER, vfile);
+    else
+	if (unlink_file_dir (tocvsPath) < 0)
+		error (0, errno, "cannot remove %s", tocvsPath);
 
     if (status)
     {
 	if (!noexec)
 	{
-	    fperror (logfp, 0, status == -1 ? ierrno : 0, "ERROR: Check-in of %s failed", rcs);
-	    error (0, status == -1 ? ierrno : 0, "ERROR: Check-in of %s failed", rcs);
+	    fperror (logfp, 0, status == -1 ? ierrno : 0,
+		     "ERROR: Check-in of %s failed", rcs->path);
+	    error (0, status == -1 ? ierrno : 0,
+		   "ERROR: Check-in of %s failed", rcs->path);
 	}
 	if (locked)
 	{
@@ -641,7 +667,7 @@ add_rev (message, rcs, vfile, vers)
  */
 static int
 add_tags (rcs, vfile, vtag, targc, targv)
-    char *rcs;
+    RCSNode *rcs;
     char *vfile;
     char *vtag;
     int targc;
@@ -650,6 +676,7 @@ add_tags (rcs, vfile, vtag, targc, targv)
     int i, ierrno;
     Vers_TS *vers;
     int retcode = 0;
+    struct file_info finfo;
 
     if (noexec)
 	return (0);
@@ -657,23 +684,33 @@ add_tags (rcs, vfile, vtag, targc, targv)
     if ((retcode = RCS_settag(rcs, vtag, vbranch)) != 0)
     {
 	ierrno = errno;
-	fperror (logfp, 0, retcode == -1 ? ierrno : 0, 
-		 "ERROR: Failed to set tag %s in %s", vtag, rcs);
+	fperror (logfp, 0, retcode == -1 ? ierrno : 0,
+		 "ERROR: Failed to set tag %s in %s", vtag, rcs->path);
 	error (0, retcode == -1 ? ierrno : 0,
-	       "ERROR: Failed to set tag %s in %s", vtag, rcs);
+	       "ERROR: Failed to set tag %s in %s", vtag, rcs->path);
 	return (1);
     }
-    vers = Version_TS (repository, (char *) NULL, vtag, (char *) NULL, vfile,
-		       1, 0, (List *) NULL, (List *) NULL);
+
+    memset (&finfo, 0, sizeof finfo);
+    finfo.file = vfile;
+    /* Not used, so don't worry about it.  */
+    finfo.update_dir = NULL;
+    finfo.fullname = finfo.file;
+    finfo.repository = repository;
+    finfo.entries = NULL;
+    finfo.rcs = NULL;
+    vers = Version_TS (&finfo, NULL, vtag, NULL, 1, 0);
     for (i = 0; i < targc; i++)
     {
 	if ((retcode = RCS_settag (rcs, targv[i], vers->vn_rcs)) != 0)
 	{
 	    ierrno = errno;
-	    fperror (logfp, 0, retcode == -1 ? ierrno : 0, 
-		     "WARNING: Couldn't add tag %s to %s", targv[i], rcs);
+	    fperror (logfp, 0, retcode == -1 ? ierrno : 0,
+		     "WARNING: Couldn't add tag %s to %s", targv[i],
+		     rcs->path);
 	    error (0, retcode == -1 ? ierrno : 0,
-		   "WARNING: Couldn't add tag %s to %s", targv[i], rcs);
+		   "WARNING: Couldn't add tag %s to %s", targv[i],
+		   rcs->path);
 	}
     }
     freevers_ts (&vers);
@@ -697,12 +734,17 @@ static const struct compair comtable[] =
  * table is used to guess the proper comment leader from the working file's
  * suffix during initial ci (see InitAdmin()). Comment leaders are needed for
  * languages without multiline comments; for others they are optional.
+ *
+ * I believe that the comment leader is unused if you are using RCS 5.7, which
+ * decides what leader to use based on the text surrounding the $Log keyword
+ * rather than a specified comment leader.
  */
     {"a", "-- "},			/* Ada		 */
     {"ada", "-- "},
     {"adb", "-- "},
     {"asm", ";; "},			/* assembler (MS-DOS) */
     {"ads", "-- "},			/* Ada		 */
+    {"bas", "' "},    			/* Visual Basic code */
     {"bat", ":: "},			/* batch (MS-DOS) */
     {"body", "-- "},			/* Ada		 */
     {"c", " * "},			/* C		 */
@@ -716,12 +758,14 @@ static const struct compair comtable[] =
     {"cmf", "c "},			/* CM Fortran	 */
     {"cs", " * "},			/* C*		 */
     {"csh", "# "},			/* shell	 */
+    {"dlg", " * "},   			/* MS Windows dialog file */
     {"e", "# "},			/* efl		 */
     {"epsf", "% "},			/* encapsulated postscript */
     {"epsi", "% "},			/* encapsulated postscript */
     {"el", "; "},			/* Emacs Lisp	 */
     {"f", "c "},			/* Fortran	 */
     {"for", "c "},
+    {"frm", "' "},    			/* Visual Basic form */
     {"h", " * "},			/* C-header	 */
     {"hh", "// "},			/* C++ header	 */
     {"hpp", "// "},
@@ -731,6 +775,7 @@ static const struct compair comtable[] =
 					 * franzlisp) */
     {"mac", ";; "},			/* macro (DEC-10, MS-DOS, PDP-11,
 					 * VMS, etc) */
+    {"mak", "# "},    			/* makefile, e.g. Visual C++ */
     {"me", ".\\\" "},			/* me-macros	t/nroff	 */
     {"ml", "; "},			/* mocklisp	 */
     {"mm", ".\\\" "},			/* mm-macros	t/nroff	 */
@@ -752,6 +797,7 @@ static const struct compair comtable[] =
     {"psw", "% "},			/* postscript wrap */
     {"pswm", "% "},			/* postscript wrap */
     {"r", "# "},			/* ratfor	 */
+    {"rc", " * "},			/* Microsoft Windows resource file */
     {"red", "% "},			/* psl/rlisp	 */
 #ifdef sparc
     {"s", "! "},			/* assembler	 */
@@ -776,9 +822,6 @@ static const struct compair comtable[] =
     {"y", " * "},			/* yacc		 */
     {"ye", " * "},			/* yacc-efl	 */
     {"yr", " * "},			/* yacc-ratfor	 */
-#ifdef SYSTEM_COMMENT_TABLE
-    SYSTEM_COMMENT_TABLE
-#endif
     {"", "# "},				/* default for empty suffix	 */
     {NULL, "# "}			/* default for unknown suffix;	 */
 /* must always be last		 */
@@ -835,32 +878,38 @@ add_rcs_file (message, rcs, user, vtag, targc, targv)
 #ifndef HAVE_RCS5
     char altdate2[50];
 #endif
-    char *author, *buf;
+    char *author;
     int i, ierrno, err = 0;
     mode_t mode;
     char *tocvsPath;
     char *userfile;
+    char *local_opt = keyword_opt;
+    char *free_opt = NULL;
 
     if (noexec)
 	return (0);
 
-#ifdef LINES_CRLF_TERMINATED
-    /* There exits a port of RCS to such a system that stores files with
-       straight newlines.  If we ever reach this point on such a system,
-       we'll need to decide what to do with the open_file call below.  */
-    abort ();
-#endif
+    if (local_opt == NULL)
+    {
+	if (wrap_name_has (user, WRAP_RCSOPTION))
+	{
+	    local_opt = free_opt = wrap_rcsoption (user, 0);
+	}
+    }
+
     tocvsPath = wrap_tocvs_process_file (user);
     userfile = (tocvsPath == NULL ? user : tocvsPath);
-    fpuser = fopen (userfile, "r");
-    if (fpuser == NULL) {
+    fpuser = CVS_FOPEN (userfile, "r");
+    if (fpuser == NULL)
+    {
 	/* not fatal, continue import */
 	fperror (logfp, 0, errno, "ERROR: cannot read file %s", userfile);
 	error (0, errno, "ERROR: cannot read file %s", userfile);
 	goto read_error;
     }
-    fprcs = fopen (rcs, "w+");
-    if (fprcs == NULL) {
+    fprcs = CVS_FOPEN (rcs, "w+b");
+    if (fprcs == NULL)
+    {
 	ierrno = errno;
 	goto write_error_noclose;
     }
@@ -868,9 +917,9 @@ add_rcs_file (message, rcs, user, vtag, targc, targv)
     /*
      * putadmin()
      */
-    if (fprintf (fprcs, "head     %s;\n", vhead) < 0 ||
-	fprintf (fprcs, "branch   %s;\n", vbranch) < 0 ||
-	fprintf (fprcs, "access   ;\n") < 0 ||
+    if (fprintf (fprcs, "head     %s;\012", vhead) < 0 ||
+	fprintf (fprcs, "branch   %s;\012", vbranch) < 0 ||
+	fprintf (fprcs, "access   ;\012") < 0 ||
 	fprintf (fprcs, "symbols  ") < 0)
     {
 	goto write_error;
@@ -880,21 +929,23 @@ add_rcs_file (message, rcs, user, vtag, targc, targv)
 	if (fprintf (fprcs, "%s:%s.1 ", targv[i], vbranch) < 0)
 	    goto write_error;
 
-    if (fprintf (fprcs, "%s:%s;\n", vtag, vbranch) < 0 ||
-	fprintf (fprcs, "locks    ; strict;\n") < 0 ||
+    if (fprintf (fprcs, "%s:%s;\012", vtag, vbranch) < 0 ||
+	fprintf (fprcs, "locks    ; strict;\012") < 0 ||
 	/* XXX - make sure @@ processing works in the RCS file */
-	fprintf (fprcs, "comment  @%s@;\n", get_comment (user)) < 0)
+	fprintf (fprcs, "comment  @%s@;\012", get_comment (user)) < 0)
     {
 	goto write_error;
     }
 
-    if (keyword_opt != NULL)
-      if (fprintf (fprcs, "expand   @%s@;\n", keyword_opt) < 0)
+    if (local_opt != NULL)
+    {
+	if (fprintf (fprcs, "expand   @%s@;\012", local_opt) < 0)
 	{
-	  goto write_error;
+	    goto write_error;
 	}
+    }
 
-    if (fprintf (fprcs, "\n") < 0)
+    if (fprintf (fprcs, "\012") < 0)
       goto write_error;
 
     /*
@@ -931,53 +982,56 @@ add_rcs_file (message, rcs, user, vtag, targc, targv)
 #endif
     author = getcaller ();
 
-    if (fprintf (fprcs, "\n%s\n", vhead) < 0 ||
-	fprintf (fprcs, "date     %s;  author %s;  state Exp;\n",
+    if (fprintf (fprcs, "\012%s\012", vhead) < 0 ||
+	fprintf (fprcs, "date     %s;  author %s;  state Exp;\012",
 		 altdate1, author) < 0 ||
-	fprintf (fprcs, "branches %s.1;\n", vbranch) < 0 ||
-	fprintf (fprcs, "next     ;\n") < 0 ||
-	fprintf (fprcs, "\n%s.1\n", vbranch) < 0 ||
-	fprintf (fprcs, "date     %s;  author %s;  state Exp;\n",
+	fprintf (fprcs, "branches %s.1;\012", vbranch) < 0 ||
+	fprintf (fprcs, "next     ;\012") < 0 ||
+	fprintf (fprcs, "\012%s.1\012", vbranch) < 0 ||
+	fprintf (fprcs, "date     %s;  author %s;  state Exp;\012",
 		 altdate2, author) < 0 ||
-	fprintf (fprcs, "branches ;\n") < 0 ||
-	fprintf (fprcs, "next     ;\n\n") < 0 ||
+	fprintf (fprcs, "branches ;\012") < 0 ||
+	fprintf (fprcs, "next     ;\012\012") < 0 ||
 	/*
 	 * putdesc()
 	 */
-	fprintf (fprcs, "\ndesc\n") < 0 ||
-	fprintf (fprcs, "@@\n\n\n") < 0 ||
+	fprintf (fprcs, "\012desc\012") < 0 ||
+	fprintf (fprcs, "@@\012\012\012") < 0 ||
 	/*
 	 * putdelta()
 	 */
-	fprintf (fprcs, "\n%s\n", vhead) < 0 ||
-	fprintf (fprcs, "log\n") < 0 ||
-	fprintf (fprcs, "@Initial revision\n@\n") < 0 ||
-	fprintf (fprcs, "text\n@") < 0)
+	fprintf (fprcs, "\012%s\012", vhead) < 0 ||
+	fprintf (fprcs, "log\012") < 0 ||
+	fprintf (fprcs, "@Initial revision\012@\012") < 0 ||
+	fprintf (fprcs, "text\012@") < 0)
     {
 	goto write_error;
     }
 
-    if (sb.st_size > 0)
+    /* Now copy over the contents of the file, expanding at signs.  */
     {
-	off_t size;
+	char buf[8192];
+	unsigned int len;
 
-	size = sb.st_size;
-	buf = xmalloc ((int) size);
-	if (fread (buf, (int) size, 1, fpuser) != 1)
-	    error (1, errno, "cannot read file %s for copying", user);
-	if (expand_at_signs (buf, size, fprcs) < 0)
+	while (1)
 	{
-	    free (buf);
-	    goto write_error;
+	    len = fread (buf, 1, sizeof buf, fpuser);
+	    if (len == 0)
+	    {
+		if (ferror (fpuser))
+		    error (1, errno, "cannot read file %s for copying", user);
+		break;
+	    }
+	    if (expand_at_signs (buf, len, fprcs) < 0)
+		goto write_error;
 	}
-	free (buf);
     }
-    if (fprintf (fprcs, "@\n\n") < 0 ||
-	fprintf (fprcs, "\n%s.1\n", vbranch) < 0 ||
-	fprintf (fprcs, "log\n@") < 0 ||
+    if (fprintf (fprcs, "@\012\012") < 0 ||
+	fprintf (fprcs, "\012%s.1\012", vbranch) < 0 ||
+	fprintf (fprcs, "log\012@") < 0 ||
 	expand_at_signs (message, (off_t) strlen (message), fprcs) < 0 ||
-	fprintf (fprcs, "@\ntext\n") < 0 ||
-	fprintf (fprcs, "@@\n") < 0)
+	fprintf (fprcs, "@\012text\012") < 0 ||
+	fprintf (fprcs, "@@\012") < 0)
     {
 	goto write_error;
     }
@@ -989,11 +1043,16 @@ add_rcs_file (message, rcs, user, vtag, targc, targv)
     (void) fclose (fpuser);
 
     /*
-     * Fix the modes on the RCS files.  They must maintain the same modes as
-     * the original user file, except that all write permissions must be
+     * Fix the modes on the RCS files.  The user modes of the original
+     * user file are propagated to the group and other modes as allowed
+     * by the repository umask, except that all write permissions are
      * turned off.
      */
-    mode = sb.st_mode & ~(S_IWRITE | S_IWGRP | S_IWOTH);
+    mode = (sb.st_mode |
+	    (sb.st_mode & S_IRWXU) >> 3 |
+	    (sb.st_mode & S_IRWXU) >> 6) &
+	   ~cvsumask &
+	   ~(S_IWRITE | S_IWGRP | S_IWOTH);
     if (chmod (rcs, mode) < 0)
     {
 	ierrno = errno;
@@ -1005,6 +1064,8 @@ add_rcs_file (message, rcs, user, vtag, targc, targv)
     if (tocvsPath)
 	if (unlink_file_dir (tocvsPath) < 0)
 		error (0, errno, "cannot remove %s", tocvsPath);
+    if (free_opt != NULL)
+	free (free_opt);
     return (err);
 
 write_error:
@@ -1016,7 +1077,7 @@ write_error_noclose:
     error (0, ierrno, "ERROR: cannot write file %s", rcs);
     if (ierrno == ENOSPC)
     {
-	(void) unlink (rcs);
+	(void) CVS_UNLINK (rcs);
 	fperror (logfp, 0, 0, "ERROR: out of space - aborting");
 	error (1, 0, "ERROR: out of space - aborting");
     }
@@ -1024,6 +1085,9 @@ read_error:
     if (tocvsPath)
 	if (unlink_file_dir (tocvsPath) < 0)
 	    error (0, errno, "cannot remove %s", tocvsPath);
+
+    if (free_opt != NULL)
+	free (free_opt);
 
     return (err + 1);
 }
@@ -1041,14 +1105,15 @@ expand_at_signs (buf, size, fp)
 {
     char *cp, *end;
 
+    errno = 0;
     for (cp = buf, end = buf + size; cp < end; cp++)
     {
 	if (*cp == '@')
 	{
-	    if (putc ('@', fp) == EOF)
+	    if (putc ('@', fp) == EOF && errno != 0)
 		return EOF;
 	}
-	if (putc (*cp, fp) == EOF)
+	if (putc (*cp, fp) == EOF && errno != 0)
 	    return (EOF);
     }
     return (1);
@@ -1064,12 +1129,22 @@ add_log (ch, fname)
 {
     if (!really_quiet)			/* write to terminal */
     {
+	char buf[2];
+	buf[0] = ch;
+	buf[1] = ' ';
+	cvs_output (buf, 2);
 	if (repos_len)
-	    (void) printf ("%c %s/%s\n", ch, repository + repos_len + 1, fname);
-	else if (repository[0])
-	    (void) printf ("%c %s/%s\n", ch, repository, fname);
-	else
-	    (void) printf ("%c %s\n", ch, fname);
+	{
+	    cvs_output (repository + repos_len + 1, 0);
+	    cvs_output ("/", 1);
+	}
+	else if (repository[0] != '\0')
+	{
+	    cvs_output (repository, 0);
+	    cvs_output ("/", 1);
+	}
+	cvs_output (fname, 0);
+	cvs_output ("\n", 1);
     }
 
     if (repos_len)			/* write to logfile */
@@ -1119,16 +1194,9 @@ import_descend_dir (message, dir, vtag, targc, targv)
 #else
     if (!quiet)
 #endif
-#ifdef SERVER_SUPPORT
-	/* Needs to go on stdout, not stderr, to avoid being interspersed
-	   with the add_log messages.  */
-	printf ("%s %s: Importing %s\n",
-		program_name, command_name, repository);
-#else
 	error (0, 0, "Importing %s", repository);
-#endif
 
-    if (chdir (dir) < 0)
+    if ( CVS_CHDIR (dir) < 0)
     {
 	ierrno = errno;
 	fperror (logfp, 0, ierrno, "ERROR: cannot chdir to %s", repository);
@@ -1142,7 +1210,10 @@ import_descend_dir (message, dir, vtag, targc, targv)
     if (!isdir (repository))
 #endif
     {
-	if (isfile (repository))
+	char rcs[PATH_MAX];
+
+	(void) sprintf (rcs, "%s%s", repository, RCSEXT);
+	if (isfile (repository) || isfile(rcs))
 	{
 	    fperror (logfp, 0, 0, "ERROR: %s is a file, should be a directory!",
 		     repository);
@@ -1169,7 +1240,7 @@ import_descend_dir (message, dir, vtag, targc, targv)
     else
 	repository[0] = '\0';
     if (restore_cwd (&cwd, NULL))
-      exit (1);
+      exit (EXIT_FAILURE);
     free_cwd (&cwd);
     return (err);
 }

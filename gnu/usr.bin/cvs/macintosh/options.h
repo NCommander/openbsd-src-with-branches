@@ -80,23 +80,6 @@
 #endif
 
 /*
- * The "rm" program to execute when pruning directories that are not part of
- * a release.  This "rm" must support the "-fr" options.  Specify a full
- * pathname if your site wants to use a particular rm.
- */
-#ifndef RM
-#define	RM	"rm"
-#endif
-
-/*
- * The "sort" program to execute when displaying the module database. Specify
- * a full pathname if your site wants to use a particular sort.
- */
-#ifndef SORT
-#define	SORT	"sort"
-#endif
-
-/*
  * The "patch" program to run when using the CVS server and accepting
  * patches across the network.  Specify a full pathname if your site
  * wants to use a particular patch.
@@ -119,6 +102,19 @@
  */
 #ifndef RCSBIN_DFLT
 #define	RCSBIN_DFLT	""
+#endif
+
+/*
+ * The password-authenticating server creates a temporary checkout of
+ * the affected files.  The variable TMPDIR_DFLT (or even better, the
+ * command-line option "-T" in the line for CVS in /etc/inetd.conf)
+ * can be used to specify the used directory.  This directory will
+ * also be used for other temporary files.
+ *
+ * I have no idea what the right default for this is on the Mac.
+ */
+#ifndef TMPDIR_DFLT
+#define	TMPDIR_DFLT	"/tmp"
 #endif
 
 /*
