@@ -1,4 +1,4 @@
-/*	$OpenBSD: grep.c,v 1.5 2002/03/18 01:22:31 vincent Exp $	*/
+/*	$OpenBSD: grep.c,v 1.6 2002/07/01 14:33:44 vincent Exp $	*/
 /*
  * Copyright (c) 2001 Artur Grabowski <art@openbsd.org>.  All rights reserved.
  *
@@ -213,6 +213,8 @@ retry:
 	free(line);
 
 	adjf = adjustname(fname);
+	if (adjf == NULL)
+		return (FALSE);
 	if ((bp = findbuffer(adjf)) == NULL)
 		return FALSE;
 	if ((wp = popbuf(bp)) == NULL)
