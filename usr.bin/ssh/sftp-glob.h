@@ -1,5 +1,7 @@
+/* $OpenBSD: sftp-glob.h,v 1.1 2001/03/13 22:42:54 djm Exp $ */
+
 /*
- * Copyright (c) 2000 Markus Friedl.  All rights reserved.
+ * Copyright (c) 2001 Damien Miller.  All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -21,25 +23,10 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-#ifndef DSA_H
-#define DSA_H
 
-Key	*dsa_key_from_blob(char *blob, int blen);
-int	dsa_make_key_blob(Key *key, unsigned char **blobp, unsigned int *lenp);
+/* Remote sftp filename globbing */
 
 int
-dsa_sign(
-    Key *key,
-    unsigned char **sigp, int *lenp,
-    unsigned char *data, int datalen);
+remote_glob(int fd_in, int fd_out, const char *pattern, int flags, 
+    const int (*errfunc)(const char *, int), glob_t *pglob);
 
-int
-dsa_verify(
-    Key *key,
-    unsigned char *signature, int signaturelen,
-    unsigned char *data, int datalen);
-
-Key *
-dsa_generate_key(unsigned int bits);
-
-#endif
