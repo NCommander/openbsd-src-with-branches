@@ -1,4 +1,4 @@
-#	$OpenBSD: HERMES,v 1.17 1999/02/28 15:54:31 kstailey Exp $
+#	$OpenBSD: HERMES,v 1.18 1999/08/15 00:05:33 kstailey Exp $
 #
 #	HERMES -- 450MHz Pentium II PCI, APM, PnP
 #
@@ -159,5 +159,5 @@ pseudo-device	ppp	1		# PPP
 pseudo-device	pty	32		# pseudo-terminals
 #pseudo-device	tb	1		# tablet line discipline
 pseudo-device	vnd	2		# paging to files; mount floppy images
-#pseudo-device	ksyms	1		# kernel symbols device
+pseudo-device	ksyms	1		# kernel symbols device
 pseudo-device	sequencer 1
