@@ -1,13 +1,4 @@
 /*	$OpenBSD$ */
-/*
- * Ashura Project
- */
-/*
- * HISTORY
- *
- * Original SCCS ID in ISEDL 
- * @(#)mmu.h 1.22		 90/09/20 19:13:34
- */
 
 /*
  * This file bears almost no resemblance to the original m68k file,
