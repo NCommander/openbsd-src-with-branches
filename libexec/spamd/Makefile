@@ -1,8 +1,8 @@
-#	$OpenBSD: Makefile,v 1.7 2002/07/16 10:16:10 deraadt Exp $
+#	$OpenBSD: Makefile,v 1.1 2002/12/21 01:41:54 deraadt Exp $
 
 PROG=	spamd
 SRCS=	spamd.c
-MAN=	spamd.8
+MAN=	spamd.8 spamd-setup.8
 
 CFLAGS+= -Wall -Werror 
 
