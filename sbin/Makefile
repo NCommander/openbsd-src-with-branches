@@ -1,11 +1,11 @@
-#	$OpenBSD: Makefile,v 1.53 2000/06/18 00:25:50 provos Exp $
+#	$OpenBSD: Makefile,v 1.54 2000/07/02 02:12:14 mickey Exp $
 
 # Not ported: XNSrouted enpload scsiformat startslip
 # Missing: icheck
 
 SUBDIR= atactl badsect brconfig ccdconfig disklabel dmesg fsck ifconfig init \
-	ipf ipfstat ipnat ipsecadm isakmpd kbd mknod modload modunload \
-	mount mountd ncheck_ffs nfsd nologin photurisd ping \
+	ipf ipfstat ipnat ipsecadm isakmpd kbd lmccontrol mknod modload \
+	modunload mount mountd ncheck_ffs nfsd nologin photurisd ping \
 	quotacheck raidctl reboot route routed savecore scan_ffs scsi \
 	shutdown slattach startkey swapctl sysctl ttyflags umount
 
