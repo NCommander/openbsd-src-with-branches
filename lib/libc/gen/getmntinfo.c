@@ -32,11 +32,10 @@
  */
 
 #if defined(LIBC_SCCS) && !defined(lint)
-static char rcsid[] = "$OpenBSD: getmntinfo.c,v 1.2 1996/08/19 08:23:45 tholo Exp $";
+static char rcsid[] = "$OpenBSD: getmntinfo.c,v 1.3 1999/01/08 11:09:21 art Exp $";
 #endif /* LIBC_SCCS and not lint */
 
 #include <sys/param.h>
-#include <sys/ucred.h>
 #include <sys/mount.h>
 #include <stdlib.h>
 
@@ -50,7 +49,7 @@ getmntinfo(mntbufp, flags)
 {
 	static struct statfs *mntbuf;
 	static int mntsize;
-	static long bufsize;
+	static size_t bufsize;
 
 	if (mntsize <= 0 && (mntsize = getfsstat(0, 0, MNT_NOWAIT)) < 0)
 		return (0);
