@@ -1,4 +1,4 @@
-/*	$OpenBSD: def.h,v 1.25 2002/02/13 03:03:49 vincent Exp $	*/
+/*	$OpenBSD: def.h,v 1.26 2002/02/13 22:36:58 vincent Exp $	*/
 
 /*
  * This file is the general header file for all parts
@@ -81,7 +81,7 @@ typedef int	(*PF)();	/* generally useful type */
  * Flags for keyboard invoked functions.
  */
 #define FFUNIV		1	/* universal argument		 */
-#define FFNEGARG	2	/* negitive only argument	 */
+#define FFNEGARG	2	/* negative only argument	 */
 #define FFOTHARG	4	/* other argument		 */
 #define FFARG		7	/* any argument			 */
 #define FFRAND		8	/* Called by other function	 */
