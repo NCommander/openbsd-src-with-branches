@@ -1,4 +1,4 @@
-/*	$OpenBSD: atrun.c,v 1.9 2000/08/20 18:42:37 millert Exp $	*/
+/*	$OpenBSD: atrun.c,v 1.10 2000/12/05 19:41:29 deraadt Exp $	*/
 
 /*
  *  atrun.c - run jobs queued by at; run with root privileges.
@@ -68,7 +68,7 @@
 /* File scope variables */
 
 static char *namep;
-static char rcsid[] = "$OpenBSD: atrun.c,v 1.9 2000/08/20 18:42:37 millert Exp $";
+static char rcsid[] = "$OpenBSD: atrun.c,v 1.10 2000/12/05 19:41:29 deraadt Exp $";
 static int debug = 0;
 
 /* Local functions */
@@ -113,7 +113,7 @@ run_file(filename, uid, gid)
 	gid_t gid;
 {
 	/*
-	 * Run a file by by spawning off a process which redirects I/O,
+	 * Run a file by spawning off a process which redirects I/O,
 	 * spawns a subshell, then waits for it to complete and spawns another
 	 * process to send mail to the user.
 	 */
