@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/* $OpenBSD$ */
 /* $RuOBSD: radiovar.h,v 1.3 2001/09/29 17:10:16 pva Exp $ */
 
 /*
