@@ -1,4 +1,4 @@
-/*	$OpenBSD: pfctl_table.c,v 1.36 2003/03/07 15:16:33 cedric Exp $ */
+/*	$OpenBSD: pfctl_table.c,v 1.37 2003/03/27 18:01:57 henning Exp $ */
 
 /*
  * Copyright (c) 2002 Cedric Berger
@@ -439,7 +439,7 @@ append_addr(char *s, int test)
 	if (strlcpy(buf, r, sizeof(buf)) >= sizeof(buf))
 		errx(1, "address too long");
 
-	if ((n = host(buf, -1)) == NULL)
+	if ((n = host(buf)) == NULL)
 		exit (1);
 
 	do {
