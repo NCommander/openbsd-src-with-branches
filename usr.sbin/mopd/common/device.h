@@ -1,4 +1,4 @@
-/*	$OpenBSD: device.h,v 1.2 1996/09/21 19:11:24 maja Exp $ */
+/*	$OpenBSD: device.h,v 1.3 2002/02/16 21:28:04 millert Exp $ */
 
 /*
  * Copyright (c) 1993-95 Mats O Jansson.  All rights reserved.
@@ -28,7 +28,7 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
- *	$OpenBSD: device.h,v 1.2 1996/09/21 19:11:24 maja Exp $
+ *	$OpenBSD: device.h,v 1.3 2002/02/16 21:28:04 millert Exp $
  *
  */
 
@@ -51,4 +51,4 @@ void	deviceInitAll(void);
 __END_DECLS
 #endif
 
-#endif _DEVICE_H_
+#endif /* _DEVICE_H_ */
