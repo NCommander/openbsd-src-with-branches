@@ -1,4 +1,4 @@
-#	$OpenBSD: RAMDISK,v 1.5 2001/04/09 00:53:53 hugh Exp $
+#	$OpenBSD: RAMDISK,v 1.6 2001/05/17 00:57:59 pvalchev Exp $
 
 machine 	vax			# machine type
 
@@ -41,7 +41,6 @@ option		NFSCLIENT	# Network File System client
 option		CD9660		# ISO 9660 + Rock Ridge file system
 option		MSDOSFS		# MS-DOS file system
 option		FIFO		# FIFOs; RECOMMENDED
-option		KERNFS		# /kern
 
 option		INET		# IP + ICMP + TCP + UDP
 
