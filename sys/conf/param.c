@@ -1,4 +1,4 @@
-/*	$OpenBSD: param.c,v 1.3 1997/05/28 22:39:59 mickey Exp $	*/
+/*	$OpenBSD: param.c,v 1.4 1998/05/20 22:29:08 downsj Exp $	*/
 /*	$NetBSD: param.c,v 1.16 1996/03/12 03:08:40 mrg Exp $	*/
 
 /*
@@ -40,6 +40,8 @@
  *
  *	@(#)param.c	7.20 (Berkeley) 6/27/91
  */
+
+#include "opt_timezone.h"
 
 #include <sys/param.h>
 #include <sys/systm.h>
