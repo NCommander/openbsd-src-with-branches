@@ -1,7 +1,7 @@
-/*	$OpenBSD: perform.c,v 1.8 2000/04/28 21:08:16 espie Exp $	*/
+/*	$OpenBSD: perform.c,v 1.9 2001/04/08 16:45:47 espie Exp $	*/
 
 #ifndef lint
-static const char *rcsid = "$OpenBSD: perform.c,v 1.8 2000/04/28 21:08:16 espie Exp $";
+static const char *rcsid = "$OpenBSD: perform.c,v 1.9 2001/04/08 16:45:47 espie Exp $";
 #endif
 
 /*
@@ -134,7 +134,7 @@ try_again:
 	if (trim_end(pkg))
 	    goto try_again;
 	else {
-	    pwarnx("no such package '%s' installed", pkg);
+	    pwarnx("no such package installed");
 	    return 1;
 	}
     }
