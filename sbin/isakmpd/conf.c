@@ -1,5 +1,5 @@
-/*	$OpenBSD: conf.c,v 1.7 1999/03/02 15:35:12 niklas Exp $	*/
-/*	$EOM: conf.c,v 1.17 1999/04/05 08:30:41 niklas Exp $	*/
+/*	$OpenBSD: conf.c,v 1.8 1999/04/05 21:00:40 niklas Exp $	*/
+/*	$EOM: conf.c,v 1.18 1999/05/01 20:21:07 niklas Exp $	*/
 
 /*
  * Copyright (c) 1998, 1999 Niklas Hallqvist.  All rights reserved.
@@ -248,11 +248,6 @@ conf_init (void)
 
   LIST_INIT (&conf_bindings);
   conf_parse ();
-
-#ifdef NEED_SYSDEP_APP
-  /* Let the application layer record on-demand keyed connections.  */
-  app_conf_init_hook ();
-#endif
 }
 
 /*
