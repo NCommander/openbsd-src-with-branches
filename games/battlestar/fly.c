@@ -1,4 +1,4 @@
-/*	$OpenBSD: fly.c,v 1.5 1997/12/16 07:54:25 angelos Exp $	*/
+/*	$OpenBSD: fly.c,v 1.6 1998/09/13 01:30:32 pjanzen Exp $	*/
 /*	$NetBSD: fly.c,v 1.3 1995/03/21 15:07:28 cgd Exp $	*/
 
 /*
@@ -36,9 +36,9 @@
 
 #ifndef lint
 #if 0
-static char sccsid[] = "@(#)fly.c	8.1 (Berkeley) 5/31/93";
+static char sccsid[] = "@(#)fly.c	8.2 (Berkeley) 4/28/95";
 #else
-static char rcsid[] = "$OpenBSD$";
+static char rcsid[] = "$OpenBSD: fly.c,v 1.6 1998/09/13 01:30:32 pjanzen Exp $";
 #endif
 #endif /* not lint */
 
