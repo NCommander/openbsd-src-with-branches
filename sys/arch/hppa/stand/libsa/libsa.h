@@ -1,4 +1,4 @@
-/*	$OpenBSD: libsa.h,v 1.6 1999/05/06 02:26:15 mickey Exp $	*/
+/*	$OpenBSD: libsa.h,v 1.7 1999/12/23 04:07:47 mickey Exp $	*/
 
 /*
  * Copyright (c) 1998 Michael Shalayeff
@@ -83,3 +83,5 @@ int	som_load __P((int, struct x_param *));
 int	som_ldsym __P((int, struct x_param *));
 
 extern int debug;
+
+#define	MACHINE_CMD	cmd_machine	/* we have hppa specific commands */
