@@ -1,4 +1,4 @@
-# $OpenBSD: PackingList.pm,v 1.8 2004/05/19 13:05:16 espie Exp $
+# $OpenBSD: PackingList.pm,v 1.9 2004/07/05 09:22:40 espie Exp $
 #
 # Copyright (c) 2003 Marc Espie.
 # 
@@ -107,7 +107,9 @@ MAINLOOP:
 		if (m/^\@shared\b/) {
 			&$cont($_);
 			while(<$fh>) {
-				redo MAINLOOP unless m/^\@md5\b/ || m/^\@size\b/;
+				redo MAINLOOP unless m/^\@md5\b/ || 
+				    m/^\@size\b/ || m/^\@symlink\b/ || 
+				    m/^\@link\b/;
 				&$cont($_);
 			}
 		} else {
