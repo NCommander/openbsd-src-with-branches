@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: biostime.S,v 1.1.2.1 1996/10/29 09:22:59 mickey Exp $	*/
 
 /*
  * Ported to boot 386BSD by Julian Elischer (julian@tfs.com) Sept 1992
@@ -85,8 +85,7 @@ ENTRY(usleep)
 	data32
 	call	_C_LABEL(real_to_prot)
 
-	xorl	%eax, %eax
-	movb	%bl, %al
+	movzbl	%bl, %eax
 
 	popl	%ebx
 	popl	%ebp

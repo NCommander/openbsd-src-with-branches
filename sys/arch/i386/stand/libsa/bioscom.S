@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: bioscom.S,v 1.1.2.1 1996/10/29 09:22:47 mickey Exp $	*/
 
 /*
  * Mach Operating System
@@ -26,7 +26,7 @@
  * the rights to redistribute these changes.
  *
  *	from: Mach, Revision 2.2  92/04/04  11:34:26  rpd
- *	$Id: serial.S,v 1.3 1995/04/21 16:30:18 bde Exp $
+ *	$Id: bioscom.S,v 1.1.2.1 1996/10/29 09:22:47 mickey Exp $
  */
 
 /*
@@ -72,7 +72,7 @@ WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 #include <machine/asm.h>
 
 port:
-	.word	0x3f8
+	.long	0x3f8
 
 	.text
 
@@ -94,8 +94,47 @@ port:
  *	probe com[0-3] ports and store first found in 'port' variable
  */
 ENTRY(com_probe)
+	push	%ebp
+	mov	%esp, %ebp
 
-	mov	1, %eax		/* present (: */
+	/*
+	 * void init_serial(void)
+	 * 	initialize the serial console port to 9600 Bd, 8 bpc
+	 */
+	movl	$port, %edx	# line control reg
+	addb	5, %dl
+	movl	$0x80, %eax
+	outb	%al, %dx	# enable DLAB
+
+	subb	$3, %dl		# divisor latch, low byte
+	movb	$12, %al	# divisor 12: 9600 Bd
+	outb	%al, %dx
+	incl	%edx		# divisor latch, high byte
+	movb	%ah, %al
+	outb	%al, %dx
+
+	addb	$2, %dl		# line control reg
+	movb	$0x13, %al
+	outb	%al, %dx	# 8 bit, no parity, 1 stop bit
+
+	incl	%edx		# modem control reg
+	movb	$3, %al
+	outb	%al, %dx	# enable DTR/RTS
+
+	/* now finally, flush the input buffer */
+	incl	%edx		# line status reg
+1:
+	inb	%dx, %al
+	testb	$0x01, %al
+	jz	2f		# no more characters buffered
+	subb	$5, %dl		# rx buffer reg
+	inb	%dx, %al	# throw away
+	addb	$5, %dl
+	jmp	1b
+2:
+	xorl	%eax, %eax	# is present (:
+	incl	%eax
+	popl	%ebp
 	ret
 
 /*
@@ -105,23 +144,21 @@ ENTRY(com_probe)
  */
 
 ENTRY(com_putc)
-	push	%ebp
-	mov	%esp, %ebp
-	push	%edx
+	pushl	%ebp
+	movl	%esp, %ebp
 
-	mov	$port, %edx	# line status reg
+	movl	$port, %edx	# line status reg
 	add	5, %edx
 1:	inb	%dx, %al
 	test	$0x20, %al
 	jz	1b		# TX buffer not empty
 
-	movb	0x8(%ebp), %al
+	movb	8(%ebp), %al
 
 	sub	$5, %edx	# TX output reg
 	outb	%al, %dx	# send this one
 
-	pop	%edx
-	pop	%ebp
+	popl	%ebp
 	ret
 
 /*
@@ -131,27 +168,25 @@ ENTRY(com_putc)
 
 ENTRY(com_getc)
 	push	%ebp
-	mov	%esp, %ebp
-	push	%edx
+	movl	%esp, %ebp
 
-	mov	$port, %edx	# line status reg
-	add	5, %edx
+	movl	$port, %edx	# line status reg
+	addl	5, %edx
 1:
 	inb	%dx, %al
 	testb	$0x01, %al
 	jz	1b		# no RX char available
 
-	xor	%eax, %eax
-	sub	$5, %edx	# RX buffer reg
+	xorl	%eax, %eax
+	subl	$5, %edx	# RX buffer reg
 	inb	%dx, %al	# fetch (first) character
 
-	and	$0x7F, %eax	# remove any parity bits we get
-	cmp	$0x7F, %eax	# make DEL...
+	andb	$0x7F, %eax	# remove any parity bits we get
+	cmpb	$0x7F, %eax	# make DEL...
 	jne	2f
-	mov	$0x08, %eax	# look like BS
+	movb	$0x08, %eax	# look like BS
 2:
-	pop	%edx
-	pop	%ebp
+	popl	%ebp
 	ret
 
 /*
@@ -161,58 +196,13 @@ ENTRY(com_getc)
 ENTRY(com_ischar)
 	push	%ebp
 	mov	%esp, %ebp
-	push	%edx
 
 	xorl	%eax, %eax
-	mov	$port, %edx	# line status reg
+	movl	$port, %edx	# line status reg
 	addl	5, %edx
 	inb	%dx, %al
 	andb	$0x01, %al		# RX char available?
 
-	pop	%edx
 	pop	%ebp
 	ret
 
-/*
- * void init_serial(void)
- * 	initialize the serial console port to 9600 Bd, 8 bpc
- */
-ENTRY(init_serial)
-	push	%ebp
-	mov	%esp, %ebp
-	push	%edx
-
-	mov	$port, %edx	# line control reg
-	add	5, %edx
-	movb	$0x80, %al
-	outb	%al, %dx	# enable DLAB
-
-	sub	$3, %edx	# divisor latch, low byte
-	mov	$12, %ax	# divisor 12: 9600 Bd
-	outb	%al, %dx
-	inc	%edx		# divisor latch, high byte
-	movb	%ah, %al
-	outb	%al, %dx
-
-	add	$2, %edx	# line control reg
-	movb	$0x13, %al
-	outb	%al, %dx	# 8 bit, no parity, 1 stop bit
-
-	inc	%edx		# modem control reg
-	mov	$3, %al
-	outb	%al, %dx	# enable DTR/RTS
-
-	/* now finally, flush the input buffer */
-	inc	%edx		# line status reg
-1:
-	inb	%dx, %al
-	testb	$0x01, %al
-	jz	2f		# no more characters buffered
-	sub	$5, %edx	# rx buffer reg
-	inb	%dx, %al	# throw away
-	add	$5, %edx
-	jmp	1b
-2:
-	pop	%edx
-	pop	%ebp
-	ret

@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: memsize.S,v 1.1.2.1 1996/10/29 09:23:12 mickey Exp $	*/
 
 /*
  * Ported to boot 386BSD by Julian Elischer (julian@tfs.com) Sept 1992
@@ -68,35 +68,31 @@ WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 ENTRY(memsize)
 	pushl	%ebp
 	movl	%esp, %ebp
-	pushl	%ebx
 	pushl	%esi
 	pushl	%edi
 
-	movl	8(%ebp), %ebx
+	movl	8(%ebp), %edx
 
 	call	_C_LABEL(prot_to_real)	# enter real mode
 
-	testb	%bl, %bl
-	data32
-	jnz	xext
+	testb	%dl, %dl
+	jnz	1f
 	
 	int	$0x12
-	data32
-	jmp	xdone
+	jmp	2f
 
-xext:
+1:
 	movb	$0x88, %ah
 	int	$0x15
 
-xdone:
-	movl	%eax, %ebx
+2:
+	movl	%eax, %edx
 
 	data32
 	call	_C_LABEL(real_to_prot)
 
-	movl	%ebx, %eax
+	movl	%edx, %eax
 	popl	%edi
 	popl	%esi
-	popl	%ebx
 	popl	%ebp
 	ret

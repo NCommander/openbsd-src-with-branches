@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: conf.c,v 1.1.2.1 1996/10/29 09:15:47 mickey Exp $	*/
 
 /*
  * Copyright (c) 1996 Michael Shalayeff
@@ -58,8 +58,8 @@ struct devsw	devsw[] = {
 };
 int	ndevsw = NENTS(devsw);
 
-struct netif_driver	netif_drivers[] = {
-	{ NULL }
+struct netif_driver	*netif_drivers[] = {
+	NULL
 };
 int n_netif_drivers = NENTS(netif_drivers);
 

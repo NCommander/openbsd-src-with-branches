@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: biosdisk.S,v 1.1.2.1 1996/10/29 09:22:55 mickey Exp $	*/
 
 /*
  * Ported to boot 386BSD by Julian Elischer (julian@tfs.com) Sept 1992
@@ -137,13 +137,13 @@ ENTRY(biosdinfo)
 	 * Guess it's a 15-sector floppy.  Initialize all the registers for
 	 * documentation, although we only need head and sector counts.
 	 */
-	subb	%ah, %ah		# %ax = 0
-	movb	%ah, %bh		# %bh = 0
-	movb	$2, %bl			# %bl bits 0-3 = drive type, 2 = 1.2M
+	xorl	%bx, %bx		# %bh = 0
+	incw %bx; incw %bx		# %bl bits 0-3 = drive type, 2 = 1.2M
 	movb	$79, %ch		# max track
 	movb	$15, %cl		# max sector
-	movb	$1, %dh			# max head
-	movb	$1, %dl			# # floppy drives installed
+	xorl	%dx, %dx
+	incw	%dx			# floppy drives installed
+	movb	%dl, %dh		# max head
 	# es:di = parameter table
 	# carry = 0
 
@@ -153,7 +153,7 @@ ok:
 
 	xorl	%eax, %eax
 
-	/*form a longword representing all this gunk*/
+	/* form a longword representing all this gunk */
 	movb	%dh, %ah		# max head
 	andb	$0x3f, %cl		# mask of cylinder gunk
 	movb	%cl, %al		# max sector (and # sectors)

@@ -1,4 +1,4 @@
-/*	$OpenBSD: real_prot.S,v 1.1.2.1 1996/10/16 08:51:19 mickey Exp $	*/
+/*	$OpenBSD: real_prot.S,v 1.1.2.1 1996/10/29 09:23:17 mickey Exp $	*/
 
 /*
  * Mach Operating System
@@ -26,7 +26,7 @@
  * the rights to redistribute these changes.
  *
  *	from: Mach, Revision 2.2  92/04/04  11:34:13  rpd
- *	$Id: real_prot.S,v 1.1.2.1 1996/10/16 08:51:19 mickey Exp $
+ *	$Id: real_prot.S,v 1.1.2.1 1996/10/29 09:23:17 mickey Exp $
  */
 
 
@@ -52,29 +52,6 @@ LOSS OF USE, DATA OR PROFITS, WHETHER IN ACTION OF CONTRACT,
 NEGLIGENCE, OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION
 WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 */
-
-/*
- * LP (Laptop Package)
- *
- * Copyright (C) 1994 by HOSOKAWA, Tatsumi <hosokawa@mt.cs.keio.ac.jp>
- *
- * This software may be used, modified, copied, and distributed, in
- * both source and binary form provided that the above copyright and
- * these terms are retained. Under no circumstances is the author 
- * responsible for the proper functioning of this software, nor does 
- * the author assume any responsibility for damages incurred with its 
- * use.
- *
- * Sep., 1994	Implemented on FreeBSD 1.1.5.1R (Toshiba AVS001WD)
- * Oct., 1994	NetBSD port (1.0 BETA 10/2) by ukai
- */
-
-/*
- * Modified for APM BIOS initializer by HOSOKAWA Tatsumi
- *
- * See also locore.s. It supports these functions works correctly.
- */
-
 	.file "real_prot.S"
 
 #include <machine/asm.h>
@@ -126,9 +103,10 @@ ENTRY(real_to_prot)
 	movl	%ax, %ds
 	movl	%ax, %ss
 	movl	%ax, %es
-#if 0
+
+#ifndef NO_IDTR
 	/* load idtr so we can debug */
-	lidt	EXT(Idtr_prot)
+	lidt	_Idtr_prot
 #endif
 	ret
 
@@ -175,15 +153,15 @@ ENTRY(prot_to_real)
 	 * we are in real mode now
 	 * set up the real mode segment registers : DS, SS, ES
 	 */
-	movw	%cs, %ax
-	movw	%ax, %ds
-	movw	%ax, %ss
-	movw	%ax, %es
-#if 0
+	movl	%cs, %ax
+	movl	%ax, %ds
+	movl	%ax, %ss
+	movl	%ax, %es
+#ifndef	NO_IDTR
 	/* load idtr so we can debug */
 	addr32
 	data32
-	lidt	EXT(Idtr_real)
+	lidt	_Idtr_real
 #endif
 	sti
 	data32

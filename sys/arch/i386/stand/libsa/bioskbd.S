@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: bioskbd.S,v 1.1.2.1 1996/10/29 09:22:57 mickey Exp $	*/
 
 /*
  * Ported to boot 386BSD by Julian Elischer (julian@tfs.com) Sept 1992
@@ -86,8 +86,8 @@ ENTRY(kbd_putc)
 	movb	%cl, %al
 
 	movb	$0x0e, %ah
-	data32
-	movl	$0x0001, %ebx
+	xorl	%ebx, %ebx
+	incl	%ebx
 	int	$0x10		# display a byte
 
 	data32
@@ -116,7 +116,7 @@ ENTRY(kbd_getc)
 
 	call	_C_LABEL(prot_to_real)
 
-	movb	$0x00, %ah
+	xorl	%eax, %eax
 	int	$0x16
 
 	movb	%al, %bl	# real_to_prot uses %eax
@@ -124,8 +124,7 @@ ENTRY(kbd_getc)
 	data32
 	call	_C_LABEL(real_to_prot)
 
-	xorl	%eax, %eax
-	movb	%bl, %al
+	movzbl	%bl, %eax
 
 	popl	%edi
 	popl	%esi
@@ -163,8 +162,7 @@ ENTRY(kbd_ischar)
 	data32
 	call	_C_LABEL(real_to_prot)
 
-	xorl	%eax, %eax
-	movb	%bl, %al
+	movzbl	%bl, %eax
 
 	popl	%edi
 	popl	%esi

@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.4.4.2 1996/10/16 10:20:45 mickey Exp $
+#	$OpenBSD: Makefile,v 1.4.4.3 1996/10/29 09:15:45 mickey Exp $
 #	@(#)Makefile	7.9 (Berkeley) 5/8/91
 
 S	= ${.CURDIR}/../../..
@@ -21,7 +21,7 @@ DEBUG+=	-DRPC_DEBUG
 
 # AFLAGS=	-v -Wa,-a
 CFLAGS=	-Wall -m386 -O2 -D_STANDALONE -DAT386 -O ${INCPATH}
-CPPFLAGS=	${DEBUG} ${INCPATH} -DRELOC=0x${RELOC}
+CPPFLAGS=	${DEBUG} ${INCPATH} -DRELOC=0x${RELOC} -DNO_IDTR
 
 SAREL=
 .include "${S}/lib/libsa/Makefile.inc"
