@@ -1,4 +1,4 @@
-/*	$OpenBSD: misc.c,v 1.2 1996/06/23 14:19:26 deraadt Exp $	*/
+/*	$OpenBSD: misc.c,v 1.3 1996/06/29 19:10:00 deraadt Exp $	*/
 /*	$NetBSD: misc.c,v 1.6 1995/03/21 09:03:09 cgd Exp $	*/
 
 /*-
@@ -38,7 +38,7 @@
 #if 0
 static char sccsid[] = "@(#)misc.c	8.1 (Berkeley) 5/31/93";
 #else
-static char rcsid[] = "$OpenBSD: misc.c,v 1.2 1996/06/23 14:19:26 deraadt Exp $";
+static char rcsid[] = "$OpenBSD: misc.c,v 1.3 1996/06/29 19:10:00 deraadt Exp $";
 #endif
 #endif /* not lint */
 
@@ -399,6 +399,19 @@ strip(cp)
 	return (cp);
     while ((*dp++ &= TRIM) != '\0')
 	continue;
+    return (cp);
+}
+
+Char   *
+quote(cp)
+    Char   *cp;
+{
+    register Char *dp = cp;
+
+    if (!cp)
+	return (cp);
+    while (*dp != '\0')
+	*dp++ |= QUOTE;
     return (cp);
 }
 
