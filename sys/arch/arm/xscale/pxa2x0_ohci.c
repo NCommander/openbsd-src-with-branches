@@ -1,4 +1,4 @@
-/*	$OpenBSD: pxa2x0_ohci.c,v 1.16 2005/03/30 14:40:47 dlg Exp $ */
+/*	$OpenBSD: pxa2x0_ohci.c,v 1.17 2005/04/03 23:47:36 uwe Exp $ */
 
 /*
  * Copyright (c) 2005 David Gwynne <dlg@openbsd.org>
@@ -144,7 +144,7 @@ pxaohci_detach(struct device *self, int flags)
 	bus_space_write_4(sc->sc.iot, sc->sc.ioh, USBHC_HR,
 	    (hr & USBHC_HR_MASK) | USBHC_HR_FHR);
 
-	DELAY(mstohz(USBHC_RST_WAIT));
+	DELAY(USBHC_RST_WAIT);
 
 	hr = bus_space_read_4(sc->sc.iot, sc->sc.ioh, USBHC_HR);
 	bus_space_write_4(sc->sc.iot, sc->sc.ioh, USBHC_HR,
@@ -197,7 +197,7 @@ pxaohci_enable(struct pxaohci_softc *sc)
 	bus_space_write_4(sc->sc.iot, sc->sc.ioh, USBHC_HR,
 	    (hr & USBHC_HR_MASK) | USBHC_HR_FHR);
 
-	DELAY(mstohz(USBHC_RST_WAIT));
+	DELAY(USBHC_RST_WAIT);
 
 	hr = bus_space_read_4(sc->sc.iot, sc->sc.ioh, USBHC_HR);
 	bus_space_write_4(sc->sc.iot, sc->sc.ioh, USBHC_HR,
