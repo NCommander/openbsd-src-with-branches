@@ -1,4 +1,4 @@
-/*	$OpenBSD: mem.c,v 1.9 2001/06/27 04:29:20 art Exp $ */
+/*	$OpenBSD: mem.c,v 1.10 2001/07/25 13:25:32 art Exp $ */
 
 /*
  * Copyright (c) 1988 University of Utah.
@@ -57,6 +57,12 @@
 #include <uvm/uvm_extern.h>
 
 caddr_t zeropage;
+
+int mmopen __P((dev_t, int, int));
+int mmclose __P((dev_t, int, int));
+int mmrw __P((dev_t, struct uio *, int));
+int mmmmap __P((dev_t, int, int));
+int mmioctl __P((dev_t, u_long, caddr_t, int, struct proc *));
 
 /*ARGSUSED*/
 int

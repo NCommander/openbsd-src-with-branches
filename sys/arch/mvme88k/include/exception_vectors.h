@@ -1,4 +1,4 @@
-/*	$OpenBSD: exception_vectors.h,v 1.7 2001/01/14 20:25:23 smurph Exp $ */
+/*	$OpenBSD: exception_vectors.h,v 1.8 2001/08/12 12:03:02 heko Exp $ */
 /*
  * Mach Operating System
  * Copyright (c) 1991, 1992 Carnegie Mellon University
@@ -165,7 +165,7 @@
 /* vector 0x82 (#130) */  word   break
 /* vector 0x83 (#131) */  word   trace
 /* vector 0x84 (#132) */  word   _entry
-#if defined(RAW_PRINTF) && RAW_PRINTF
+#if defined(RAW_PRINTF)
 /* vector 0x85 (#133) */  word   user_raw_putstr /* for USER raw_printf() */
 /* vector 0x85 (#134) */  word   user_raw_xpr 	 /* for USER raw_xpr() */
 #endif
