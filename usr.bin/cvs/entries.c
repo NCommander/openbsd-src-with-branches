@@ -99,7 +99,7 @@ cvs_ent_open(const char *dir, int flags)
 	}
 	memset(ep, 0, sizeof(*ep));
 
-	ep->cef_path = strdup(dir);
+	ep->cef_path = strdup(entpath);
 	if (ep->cef_path == NULL) {
 		cvs_log(LP_ERRNO, "failed to copy Entries path");
 		free(ep);
