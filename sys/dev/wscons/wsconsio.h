@@ -1,4 +1,4 @@
-/* $OpenBSD: wsconsio.h,v 1.14 2002/01/16 14:55:38 jason Exp $ */
+/* $OpenBSD: wsconsio.h,v 1.15 2002/03/27 18:54:09 jbm Exp $ */
 /* $NetBSD: wsconsio.h,v 1.31.2.1 2000/07/07 09:49:17 hannken Exp $ */
 
 /*
@@ -314,6 +314,7 @@ struct wsdisplay_cursor {
 #define	WSDISPLAYIO_SMODE	_IOW('W', 76, u_int)
 #define		WSDISPLAYIO_MODE_EMUL	0	/* emulation (text) mode */
 #define		WSDISPLAYIO_MODE_MAPPED	1	/* mapped (graphics) mode */
+#define		WSDISPLAYIO_MODE_DUMBFB	2	/* mapped (graphics) fb mode */
 
 struct wsdisplay_font {
 	char name[WSFONT_NAME_SIZE];
