@@ -1,4 +1,5 @@
-#	@(#)Makefile	8.2 (Berkeley) 4/20/94
+#	$OpenBSD$
+
 
 # The following modules do not build/install:
 # 08.mh

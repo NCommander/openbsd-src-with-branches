@@ -1,4 +1,5 @@
-#	@(#)Makefile	8.2 (Berkeley) 2/28/1994
+#	$OpenBSD$
+
 
 DIR=	smm/09.sendmail
 SRCS=	intro.me
