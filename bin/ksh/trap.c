@@ -1,4 +1,4 @@
-/*	$OpenBSD: trap.c,v 1.6 1997/09/01 18:30:13 deraadt Exp $	*/
+/*	$OpenBSD: trap.c,v 1.7 1998/10/29 04:09:21 millert Exp $	*/
 
 /*
  * signal handling
@@ -98,7 +98,9 @@ gettrap(name)
 		return NULL;
 	}
 	for (p = sigtraps, i = SIGNALS+1; --i >= 0; p++)
-		if (p->name && strcasecmp(p->name, name) == 0)
+		if (p->name && (strcasecmp(p->name, name) == 0 ||
+		    (strlen(name) > 3 && !strncasecmp("SIG", p->name, 3) &&
+		    !strcasecmp(p->name, name + 3))))
 			return p;
 	return NULL;
 }
