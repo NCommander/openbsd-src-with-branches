@@ -7,7 +7,7 @@
 #if 0
 static char	elsieid[] = "@(#)localtime.c	7.59";
 #else
-static char rcsid[] = "$OpenBSD: localtime.c,v 1.7 1996/10/30 00:20:14 tholo Exp $";
+static char rcsid[] = "$OpenBSD: localtime.c,v 1.8 1997/01/14 03:16:47 millert Exp $";
 #endif
 #endif /* LIBC_SCCS and not lint */
 
@@ -294,7 +294,7 @@ register struct state * const	sp;
 		if (!doaccess && issetugid() == 0) {
 			if ((p = TZDIR) == NULL)
 				return -1;
-			if ((strlen(p) + strlen(name) + 2) >= sizeof fullname)
+			if ((strlen(p) + strlen(name) + 1) >= sizeof fullname)
 				return -1;
 			(void) strcpy(fullname, p);
 			(void) strcat(fullname, "/");
