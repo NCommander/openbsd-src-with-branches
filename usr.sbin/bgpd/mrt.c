@@ -1,4 +1,4 @@
-/*	$OpenBSD: mrt.c,v 1.17 2004/01/06 10:51:14 claudio Exp $ */
+/*	$OpenBSD: mrt.c,v 1.18 2004/01/06 21:48:07 claudio Exp $ */
 
 /*
  * Copyright (c) 2003, 2004 Claudio Jeker <claudio@openbsd.org>
@@ -342,7 +342,7 @@ mrt_close(struct mrt *mrt)
 	if (msgbuf_unbounded(&mrt->msgbuf))
 		return (0);
 
-	if (mrt->msgbuf.sock == -1) {
+	if (mrt->msgbuf.sock != -1) {
 		close(mrt->msgbuf.sock);
 		mrt->msgbuf.sock = -1;
 	}
