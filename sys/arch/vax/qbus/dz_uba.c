@@ -1,4 +1,4 @@
-/*	$OpenBSD: dz_uba.c,v 1.2 2001/08/25 13:33:37 hugh Exp $	*/
+/*	$OpenBSD: dz_uba.c,v 1.3 2002/01/16 20:50:17 miod Exp $	*/
 /*	$NetBSD: dz_uba.c,v 1.11 2000/06/04 06:17:02 matt Exp $ */
 /*
  * Copyright (c) 1998 Ludd, University of Lule}, Sweden. All rights reserved.
@@ -54,8 +54,8 @@
 #include <arch/vax/qbus/dzreg.h>
 #include <arch/vax/qbus/dzvar.h>
 
-static	int	dz_uba_match __P((struct device *, struct cfdata *, void *));
-static	void	dz_uba_attach __P((struct device *, struct device *, void *));
+static	int	dz_uba_match(struct device *, struct cfdata *, void *);
+static	void	dz_uba_attach(struct device *, struct device *, void *);
 
 struct	cfattach dz_uba_ca = {
 	sizeof(struct dz_softc), (cfmatch_t)dz_uba_match, dz_uba_attach

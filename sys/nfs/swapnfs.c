@@ -1,4 +1,4 @@
-/*	$OpenBSD: swapnfs.c,v 1.2 1996/04/17 04:50:43 mickey Exp $	*/
+/*	$OpenBSD: swapnfs.c,v 1.3 2002/02/04 19:38:20 miod Exp $	*/
 /*	$NetBSD: swapnfs.c,v 1.9 1995/04/30 07:03:13 cgd Exp $	*/
 
 /*
@@ -56,4 +56,4 @@ struct	swdevt swdevt[] = {
         { NODEV, 0, 0 }
 };
 
-int (*mountroot) __P((void)) = nfs_mountroot;
+int (*mountroot)(void) = nfs_mountroot;

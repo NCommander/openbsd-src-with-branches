@@ -1,4 +1,4 @@
-/*	$OpenBSD: sram.c,v 1.6 2001/12/16 23:49:46 miod Exp $ */
+/*	$OpenBSD: sram.c,v 1.7 2001/12/19 07:04:41 smurph Exp $ */
 
 /*
  * Copyright (c) 1995 Theo de Raadt
@@ -52,8 +52,8 @@ struct sramsoftc {
 	int		sc_len;
 };
 
-void sramattach __P((struct device *, struct device *, void *));
-int  srammatch __P((struct device *, void *, void *));
+void sramattach(struct device *, struct device *, void *);
+int  srammatch(struct device *, void *, void *);
 
 struct cfattach sram_ca = {
 	sizeof(struct sramsoftc), srammatch, sramattach

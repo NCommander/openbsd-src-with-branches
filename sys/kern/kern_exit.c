@@ -1,4 +1,4 @@
-/*	$OpenBSD: kern_exit.c,v 1.39 2002/01/23 15:46:48 art Exp $	*/
+/*	$OpenBSD: kern_exit.c,v 1.40 2002/01/25 15:00:26 art Exp $	*/
 /*	$NetBSD: kern_exit.c,v 1.39 1996/04/22 01:38:25 christos Exp $	*/
 
 /*
@@ -78,7 +78,7 @@
 
 #include <uvm/uvm_extern.h>
 
-void proc_zap __P((struct proc *));
+void proc_zap(struct proc *);
 
 /*
  * exit --

@@ -1,4 +1,4 @@
-/*	$OpenBSD: param.h,v 1.19 2001/12/20 19:02:27 miod Exp $	*/
+/*	$OpenBSD: param.h,v 1.20 2002/01/10 21:10:46 miod Exp $	*/
 /*	$NetBSD: param.h,v 1.35 1997/07/10 08:22:38 veego Exp $	*/
 
 /*
@@ -82,7 +82,7 @@
 #define	delay(us)	_delay((us) << 8)
 #define DELAY(us)	delay(us)
 
-void	_delay __P((u_int));
+void	_delay(u_int);
 #endif /* _KERNEL && !_LOCORE */
 
 #endif	/* !_MACHINE_PARAM_H_ */

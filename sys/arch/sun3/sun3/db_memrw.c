@@ -1,4 +1,4 @@
-/*	$OpenBSD: db_memrw.c,v 1.8 2001/06/11 01:30:13 miod Exp $	*/
+/*	$OpenBSD: db_memrw.c,v 1.9 2001/11/06 19:53:16 miod Exp $	*/
 /*	$NetBSD: db_memrw.c,v 1.13 1996/11/20 18:57:28 gwr Exp $	*/
 
 /*-
@@ -67,7 +67,7 @@
 #include <ddb/db_access.h>
 
 
-static void db_write_text __P((vm_offset_t, size_t size, char *));
+static void db_write_text(vm_offset_t, size_t size, char *);
 
 /*
  * Read bytes from kernel address space for debugger.

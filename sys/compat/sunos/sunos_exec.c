@@ -1,4 +1,4 @@
-/*	$OpenBSD: sunos_exec.c,v 1.14 2001/11/06 19:53:17 miod Exp $	*/
+/*	$OpenBSD: sunos_exec.c,v 1.15 2001/11/15 06:22:30 art Exp $	*/
 /*	$NetBSD: sunos_exec.c,v 1.11 1996/05/05 12:01:47 briggs Exp $	*/
 
 /*
@@ -60,10 +60,10 @@
 #define	sunos_exec_aout_prep_omagic exec_aout_prep_omagic
 #endif
 
-int sunos_exec_aout_makecmds __P((struct proc *, struct exec_package *));
-int sunos_exec_aout_prep_zmagic __P((struct proc *, struct exec_package *));
-int sunos_exec_aout_prep_nmagic __P((struct proc *, struct exec_package *));
-int sunos_exec_aout_prep_omagic __P((struct proc *, struct exec_package *));
+int sunos_exec_aout_makecmds(struct proc *, struct exec_package *);
+int sunos_exec_aout_prep_zmagic(struct proc *, struct exec_package *);
+int sunos_exec_aout_prep_nmagic(struct proc *, struct exec_package *);
+int sunos_exec_aout_prep_omagic(struct proc *, struct exec_package *);
 
 extern int nsunos_sysent;
 extern struct sysent sunos_sysent[];

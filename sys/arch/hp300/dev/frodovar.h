@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: frodovar.h,v 1.1 1997/07/06 08:01:51 downsj Exp $	*/
 /*	$NetBSD: frodovar.h,v 1.1 1997/05/12 08:03:50 thorpej Exp $	*/
 
 /*
@@ -46,4 +46,4 @@ struct frodo_attach_args {
 
 void	frodo_intr_establish __P((struct device *, int (*func)(void *),
 	    void *, int, int));
-void	frodo_intr_disestablish __P((struct device *, int));
+void	frodo_intr_disestablish(struct device *, int);

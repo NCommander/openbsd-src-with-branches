@@ -1,4 +1,4 @@
-/*	$OpenBSD: altq_afmap.c,v 1.1 2001/06/27 05:28:34 kjc Exp $	*/
+/*	$OpenBSD: altq_afmap.c,v 1.2 2001/08/09 14:32:59 deraadt Exp $	*/
 /*	$KAME: altq_afmap.c,v 1.7 2000/12/14 08:12:45 thorpej Exp $	*/
 
 /*
@@ -57,9 +57,9 @@
 
 LIST_HEAD(, afm_head) afhead_chain;
 
-static struct afm *afm_match4 __P((struct afm_head *, struct flowinfo_in *));
+static struct afm *afm_match4(struct afm_head *, struct flowinfo_in *);
 #ifdef INET6
-static struct afm *afm_match6 __P((struct afm_head *, struct flowinfo_in6 *));
+static struct afm *afm_match6(struct afm_head *, struct flowinfo_in6 *);
 #endif
 
 /*

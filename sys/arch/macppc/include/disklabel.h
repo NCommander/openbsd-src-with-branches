@@ -1,4 +1,4 @@
-/*	$OpenBSD: disklabel.h,v 1.15 2001/06/24 04:54:21 drahn Exp $	*/
+/*	$OpenBSD: disklabel.h,v 1.1 2001/09/01 15:49:06 drahn Exp $	*/
 
 /*
  * Copyright (c) 1994 Christopher G. Demetriou
@@ -84,7 +84,7 @@ struct dos_partition {
 #define	DPSECT(s)	((s) & 0x3f)
 #define	DPCYL(c, s)	((c) + (((s) & 0xc0) << 2))
 
-static __inline u_int32_t get_le __P((void *p));
+static __inline u_int32_t get_le(void *p);
 
 static __inline u_int32_t
 #ifdef __cplusplus

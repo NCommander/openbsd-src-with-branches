@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_tokensubr.c,v 1.4 2001/06/27 06:07:45 kjc Exp $	*/
+/*	$OpenBSD: if_tokensubr.c,v 1.5 2001/12/09 13:09:13 jason Exp $	*/
 /*	$NetBSD: if_tokensubr.c,v 1.7 1999/05/30 00:39:07 bad Exp $	*/
 
 /*
@@ -123,8 +123,8 @@ extern struct ifqueue pkintrq;
 #define llc_snap	llc_un.type_snap
 #endif
 
-int	token_output __P((struct ifnet *, struct mbuf *, struct sockaddr *,
-	struct rtentry *)); 
+int	token_output(struct ifnet *, struct mbuf *, struct sockaddr *,
+	struct rtentry *); 
 
 /*
  * Token Ring output routine.

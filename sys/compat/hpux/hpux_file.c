@@ -1,4 +1,4 @@
-/*	$OpenBSD: hpux_file.c,v 1.10 2002/02/14 22:57:18 pvalchev Exp $	*/
+/*	$OpenBSD: hpux_file.c,v 1.11 2002/02/16 15:45:04 miod Exp $	*/
 /*	$NetBSD: hpux_file.c,v 1.5 1997/04/27 21:40:48 thorpej Exp $	*/
 
 /*
@@ -85,9 +85,9 @@
 
 #include <machine/hpux_machdep.h>
 
-static int	hpux_stat1 __P((struct proc *, void *, register_t *, int));
-static void	bsd_to_hpux_stat __P((struct stat *, struct hpux_stat *));
-static void	bsd_to_hpux_ostat __P((struct stat *, struct hpux_ostat *));
+static int	hpux_stat1(struct proc *, void *, register_t *, int);
+static void	bsd_to_hpux_stat(struct stat *, struct hpux_stat *);
+static void	bsd_to_hpux_ostat(struct stat *, struct hpux_ostat *);
 
 /*
  * HP-UX creat(2) system call.

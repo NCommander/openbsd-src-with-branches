@@ -1,4 +1,4 @@
-/*	$OpenBSD: pchb.c,v 1.2 2001/07/04 08:31:33 niklas Exp $	*/
+/*	$OpenBSD: pchb.c,v 1.3 2001/11/06 22:46:00 miod Exp $	*/
 /*	$NetBSD: pchb.c,v 1.4 2000/01/25 07:19:11 tsubai Exp $	*/
 
 /*-
@@ -48,8 +48,8 @@
 #include <dev/pci/pcireg.h>
 #include <dev/pci/pcidevs.h>
 
-int	pchbmatch __P((struct device *, void *, void *));
-void	pchbattach __P((struct device *, struct device *, void *));
+int	pchbmatch(struct device *, void *, void *);
+void	pchbattach(struct device *, struct device *, void *);
 
 struct cfattach pchb_ca = {
 	sizeof(struct device), pchbmatch, pchbattach

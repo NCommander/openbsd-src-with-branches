@@ -1,4 +1,4 @@
-/*	$OpenBSD: debug.c,v 1.6 1998/04/18 22:24:25 deraadt Exp $	*/
+/*	$OpenBSD: debug.c,v 1.7 1998/06/09 13:45:07 mickey Exp $	*/
 
 /*
  * Copyright (c) 1997 Michael Shalayeff
@@ -44,7 +44,7 @@ struct reg reg;
 u_int32_t *const reg_values[] = { REG_VALUES(reg) };
 char *const trap_names[] = { TRAP_NAMES };
 
-void d_putc __P((dev_t, int));
+void d_putc(dev_t, int);
 
 #ifdef DEBUG_DEBUG
 #define	CKPT(c)	(*(u_short volatile *)(VBASE+160) = (0x1700 | (c)))

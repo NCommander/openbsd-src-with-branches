@@ -1,4 +1,4 @@
-/*	$OpenBSD: db_machdep.c,v 1.9 2000/10/11 06:13:40 bjc Exp $	*/
+/*	$OpenBSD: db_machdep.c,v 1.10 2001/11/06 19:53:17 miod Exp $	*/
 /*	$NetBSD: db_machdep.c,v 1.17 1999/06/20 00:58:23 ragge Exp $	*/
 
 /* 
@@ -63,7 +63,7 @@
 
 extern	label_t	*db_recover;
 
-void	kdbprinttrap __P((int, int));
+void	kdbprinttrap(int, int);
 
 int	db_active = 0;
 

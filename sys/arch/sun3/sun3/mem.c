@@ -1,4 +1,4 @@
-/*	$OpenBSD: mem.c,v 1.17 2001/11/06 19:53:16 miod Exp $	*/
+/*	$OpenBSD: mem.c,v 1.18 2001/12/08 02:24:07 art Exp $	*/
 /*	$NetBSD: mem.c,v 1.19 1995/08/08 21:09:01 gwr Exp $	*/
 
 /*
@@ -64,7 +64,7 @@
 #include <machine/pte.h>
 #include <machine/pmap.h>
 
-extern int ledrw __P((struct uio *));
+extern int ledrw(struct uio *);
 
 static caddr_t devzeropage;
 

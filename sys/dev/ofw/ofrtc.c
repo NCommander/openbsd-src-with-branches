@@ -1,4 +1,4 @@
-/*	$OpenBSD: ofrtc.c,v 1.3 1998/06/28 06:37:15 rahnds Exp $	*/
+/*	$OpenBSD: ofrtc.c,v 1.4 2000/08/08 22:34:24 deraadt Exp $	*/
 /*	$NetBSD: ofrtc.c,v 1.3 1996/10/13 01:38:14 christos Exp $	*/
 
 /*
@@ -43,8 +43,8 @@ struct ofrtc_softc {
 	int sc_ihandle;
 };
 
-static int ofrtcprobe __P((struct device *, void *, void *));
-static void ofrtcattach __P((struct device *, struct device *, void *));
+static int ofrtcprobe(struct device *, void *, void *);
+static void ofrtcattach(struct device *, struct device *, void *);
 
 struct cfattach ofrtc_ca = {
 	sizeof(struct ofrtc_softc), ofrtcprobe, ofrtcattach

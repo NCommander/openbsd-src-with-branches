@@ -1,4 +1,4 @@
-/*	$OpenBSD: float.h,v 1.4 2001/01/14 20:25:24 smurph Exp $	*/
+/*	$OpenBSD: float.h,v 1.5 2001/08/12 12:03:02 heko Exp $	*/
 
 /*
  * Copyright (c) 1989 Regents of the University of California.
@@ -41,7 +41,7 @@
 #include <sys/cdefs.h>
 
 __BEGIN_DECLS
-int __flt_rounds __P((void));
+int __flt_rounds(void);
 __END_DECLS
 
 #define FLT_RADIX	2		/* b */

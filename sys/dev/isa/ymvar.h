@@ -1,4 +1,4 @@
-/*	$OpenBSD: ymvar.h,v 1.3 1999/07/20 16:36:06 deraadt Exp $	*/
+/*	$OpenBSD: ymvar.h,v 1.4 1999/10/06 12:48:33 fgsch Exp $	*/
 /*	$NetBSD: wssvar.h,v 1.1 1998/01/19 22:18:25 augustss Exp $	*/
 
 /*
@@ -98,4 +98,4 @@ struct ym_softc {
 #endif
 };
 
-void    ym_attach __P((struct ym_softc *));
+void    ym_attach(struct ym_softc *);

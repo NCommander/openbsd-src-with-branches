@@ -1,4 +1,4 @@
-/*	$OpenBSD: reboot.h,v 1.9 1998/03/18 12:10:14 pefo Exp $	*/
+/*	$OpenBSD: reboot.h,v 1.10 2002/02/28 22:06:55 mickey Exp $	*/
 /*	$NetBSD: reboot.h,v 1.9 1996/04/22 01:23:25 christos Exp $	*/
 
 /*
@@ -97,7 +97,7 @@
 
 __BEGIN_DECLS
 
-void	boot __P((int))
+void	boot(int)
     __attribute__((__noreturn__));
 
 __END_DECLS

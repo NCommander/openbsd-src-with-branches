@@ -1,4 +1,4 @@
-/*	$OpenBSD: pmap_bootstrap.c,v 1.1 2002/02/23 04:58:28 miod Exp $	*/
+/*	$OpenBSD: pmap_bootstrap.c,v 1.2 2002/02/27 20:51:01 miod Exp $	*/
 
 /* 
  * Copyright (c) 1995 Theo de Raadt
@@ -100,7 +100,7 @@ extern vsize_t mem_size;
 extern int pmap_aliasmask;
 #endif
 
-void  pmap_bootstrap __P((paddr_t, paddr_t));
+void  pmap_bootstrap(paddr_t, paddr_t);
 
 
 /*

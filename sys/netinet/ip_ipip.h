@@ -1,4 +1,4 @@
-/*	$OpenBSD: ip_ipip.h,v 1.2 2000/09/19 03:20:58 angelos Exp $ */
+/*	$OpenBSD: ip_ipip.h,v 1.3 2001/06/25 05:11:58 angelos Exp $ */
 /*
  * The authors of this code are John Ioannidis (ji@tla.org),
  * Angelos D. Keromytis (kermit@csd.uch.gr) and 
@@ -72,7 +72,7 @@ struct ipipstat
 }
 
 #ifdef _KERNEL
-int	ipip_sysctl __P((int *, u_int, void *, size_t *, void *, size_t));
+int	ipip_sysctl(int *, u_int, void *, size_t *, void *, size_t);
 
 extern int ipip_allow;
 extern struct ipipstat ipipstat;

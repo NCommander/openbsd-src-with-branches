@@ -1,4 +1,4 @@
-/*	$OpenBSD: vfs_default.c,v 1.17 2002/02/22 20:37:45 drahn Exp $  */
+/*	$OpenBSD: vfs_default.c,v 1.18 2002/02/26 05:47:47 fgsch Exp $  */
 
 /*
  *    Portions of this code are:
@@ -54,8 +54,8 @@
 
 extern struct simplelock spechash_slock;
 
-int filt_generic_readwrite __P((struct knote *kn, long hint));
-void filt_generic_detach __P((struct knote *kn));
+int filt_generic_readwrite(struct knote *kn, long hint);
+void filt_generic_detach(struct knote *kn);
 
 /*
  * Eliminate all activity associated with  the requested vnode

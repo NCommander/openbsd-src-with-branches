@@ -1,4 +1,4 @@
-/*	$OpenBSD: ami_pci.c,v 1.7 2001/06/23 21:43:07 mickey Exp $	*/
+/*	$OpenBSD: ami_pci.c,v 1.8 2001/08/25 10:13:29 art Exp $	*/
 
 /*
  * Copyright (c) 2001 Michael Shalayeff
@@ -65,8 +65,8 @@
 #define		AMI_SGL_LHC	0x00000299
 #define		AMI_SGL_HLC	0x00000199
 
-int	ami_pci_match __P((struct device *, void *, void *));
-void	ami_pci_attach __P((struct device *, struct device *, void *));
+int	ami_pci_match(struct device *, void *, void *);
+void	ami_pci_attach(struct device *, struct device *, void *);
 
 struct cfattach ami_pci_ca = {
 	sizeof(struct ami_softc), ami_pci_match, ami_pci_attach

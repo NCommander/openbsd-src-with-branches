@@ -1,4 +1,4 @@
-/*	$OpenBSD: mc.c,v 1.7 2000/01/29 04:11:25 smurph Exp $ */
+/*	$OpenBSD: mc.c,v 1.8 2000/03/26 23:31:59 deraadt Exp $ */
 
 /*
  * Copyright (c) 1995 Theo de Raadt
@@ -60,9 +60,9 @@ struct mcsoftc {
 	struct intrhand	sc_nmiih;
 };
 
-void mcattach __P((struct device *, struct device *, void *));
-int  mcmatch __P((struct device *, void *, void *));
-int  mcabort __P((struct frame *));
+void mcattach(struct device *, struct device *, void *);
+int  mcmatch(struct device *, void *, void *);
+int  mcabort(struct frame *);
 
 struct cfattach mc_ca = {
 	sizeof(struct mcsoftc), mcmatch, mcattach

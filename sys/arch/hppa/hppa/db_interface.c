@@ -1,4 +1,4 @@
-/*	$OpenBSD: db_interface.c,v 1.15 2001/01/30 21:45:32 mickey Exp $	*/
+/*	$OpenBSD: db_interface.c,v 1.16 2001/03/22 23:31:45 mickey Exp $	*/
 
 /*
  * Copyright (c) 1999-2000 Michael Shalayeff
@@ -51,7 +51,7 @@
 
 #include <dev/cons.h>
 
-void kdbprinttrap __P((int, int));
+void kdbprinttrap(int, int);
 
 extern label_t *db_recover;
 extern int db_active;

@@ -1,4 +1,4 @@
-/*	$OpenBSD: linux_hdio.c,v 1.3 2002/02/08 00:03:46 art Exp $	*/
+/*	$OpenBSD: linux_hdio.c,v 1.4 2002/02/13 19:08:06 art Exp $	*/
 /*	$NetBSD: linux_hdio.c,v 1.1 2000/12/10 14:12:17 fvdl Exp $	*/
 
 /*
@@ -68,7 +68,7 @@ linux_ioctl_hdio(struct proc *p, struct linux_sys_ioctl_args *uap,
 	caddr_t sg;
 	struct filedesc *fdp;
 	struct file *fp;
-	int (*ioctlf) __P((struct file *, u_long, caddr_t, struct proc *));
+	int (*ioctlf)(struct file *, u_long, caddr_t, struct proc *);
 	struct ataparams *atap, ata;
 	struct atareq req;
 	struct disklabel label, *labp;

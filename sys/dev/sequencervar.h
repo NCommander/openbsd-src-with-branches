@@ -1,4 +1,4 @@
-/*	$OpenBSD: sequencervar.h,v 1.1 1999/01/02 00:02:39 niklas Exp $	*/
+/*	$OpenBSD: sequencervar.h,v 1.2 2000/06/26 22:43:45 art Exp $	*/
 /*	$NetBSD: sequencervar.h,v 1.5 1998/11/25 22:17:07 augustss Exp $	*/
 
 /*
@@ -105,7 +105,7 @@ struct sequencer_softc {
 	u_long	input_stamp;
 };
 
-void seq_event_intr __P((void *, seq_event_rec *));
+void seq_event_intr(void *, seq_event_rec *);
 
 #define SEQUENCERUNIT(d) ((d) & 0x7f)
 #define SEQ_IS_OLD(d) ((d) & 0x80)

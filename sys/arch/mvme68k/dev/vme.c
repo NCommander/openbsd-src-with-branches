@@ -1,4 +1,4 @@
-/*	$OpenBSD: vme.c,v 1.10 2000/01/24 05:20:54 smurph Exp $ */
+/*	$OpenBSD: vme.c,v 1.11 2000/03/26 23:31:59 deraadt Exp $ */
 
 /*
  * Copyright (c) 1995 Theo de Raadt
@@ -62,13 +62,13 @@
 #include <mvme68k/dev/pcctworeg.h>
 #endif
 
-int  vmematch __P((struct device *, void *, void *));
-void vmeattach __P((struct device *, struct device *, void *));
+int  vmematch(struct device *, void *, void *);
+void vmeattach(struct device *, struct device *, void *);
 
-int vme1chip_init __P((struct vmesoftc *sc));
-int vme2chip_init __P((struct vmesoftc *sc));
-u_long vme2chip_map __P((u_long base, int len, int dwidth));
-int vme2abort __P((struct frame *frame));
+int vme1chip_init(struct vmesoftc *sc);
+int vme2chip_init(struct vmesoftc *sc);
+u_long vme2chip_map(u_long base, int len, int dwidth);
+int vme2abort(struct frame *frame);
 
 static int vmebustype;
 

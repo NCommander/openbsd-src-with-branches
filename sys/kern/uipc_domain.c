@@ -1,4 +1,4 @@
-/*	$OpenBSD: uipc_domain.c,v 1.11 2000/09/12 16:39:14 deraadt Exp $	*/
+/*	$OpenBSD: uipc_domain.c,v 1.12 2001/11/06 19:53:20 miod Exp $	*/
 /*	$NetBSD: uipc_domain.c,v 1.14 1996/02/09 19:00:44 christos Exp $	*/
 
 /*
@@ -49,10 +49,10 @@
 #include <sys/sysctl.h>
 #include <sys/timeout.h>
 
-void	pffasttimo __P((void *));
-void	pfslowtimo __P((void *));
+void	pffasttimo(void *);
+void	pfslowtimo(void *);
 #if defined (KEY) || defined (IPSEC)
-int pfkey_init __P((void));
+int pfkey_init(void);
 #endif /* KEY || IPSEC */
 
 #define	ADDDOMAIN(x)	{ \

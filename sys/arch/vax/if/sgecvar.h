@@ -1,4 +1,4 @@
-/*	$OpenBSD: sgecvar.h,v 1.1 2000/04/27 03:14:44 bjc Exp $	*/
+/*	$OpenBSD: sgecvar.h,v 1.2 2001/08/25 13:33:36 hugh Exp $	*/
 /*      $NetBSD: sgecvar.h,v 1.2 2000/06/04 02:14:14 matt Exp $ */
 /*
  * Copyright (c) 1999 Ludd, University of Lule}, Sweden. All rights reserved.
@@ -65,5 +65,5 @@ struct	ze_softc {
 	int		sc_setup;	/* Setup packet in queue	*/
 };
 
-void	sgec_attach __P((struct ze_softc *));
-int	sgec_intr __P((struct ze_softc *));
+void	sgec_attach(struct ze_softc *);
+int	sgec_intr(struct ze_softc *);

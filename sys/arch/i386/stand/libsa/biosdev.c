@@ -1,4 +1,4 @@
-/*	$OpenBSD: biosdev.c,v 1.51 1998/04/18 07:39:42 deraadt Exp $	*/
+/*	$OpenBSD: biosdev.c,v 1.52 1998/06/11 02:30:57 mickey Exp $	*/
 
 /*
  * Copyright (c) 1996 Michael Shalayeff
@@ -43,8 +43,8 @@
 #include "libsa.h"
 #include "biosdev.h"
 
-static const char *biosdisk_err __P((u_int));
-static int biosdisk_errno __P((u_int));
+static const char *biosdisk_err(u_int);
+static int biosdisk_errno(u_int);
 
 extern int debug;
 

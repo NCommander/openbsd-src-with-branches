@@ -1,4 +1,4 @@
-/*	$OpenBSD: db_machdep.h,v 1.6 2001/05/15 01:43:14 millert Exp $	*/
+/*	$OpenBSD: db_machdep.h,v 1.7 2001/11/06 00:30:38 art Exp $	*/
 /*	$NetBSD: db_machdep.h,v 1.20 1997/06/26 01:26:58 thorpej Exp $	*/
 
 /* 
@@ -96,9 +96,9 @@ typedef long kgdb_reg_t;
 
 #ifdef _KERNEL
 
-void	Debugger __P((void));	/* XXX */
-void	kdb_kintr __P((db_regs_t *));
-int 	kdb_trap __P((int, db_regs_t *));
+void	Debugger(void);	/* XXX */
+void	kdb_kintr(db_regs_t *);
+int 	kdb_trap(int, db_regs_t *);
 
 #endif /* _KERNEL */
 
