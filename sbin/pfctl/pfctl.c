@@ -1,4 +1,4 @@
-/*	$OpenBSD: pfctl.c,v 1.211 2004/03/03 02:00:23 deraadt Exp $ */
+/*	$OpenBSD: pfctl.c,v 1.212 2004/03/15 15:25:44 dhartmei Exp $ */
 
 /*
  * Copyright (c) 2001 Daniel Hartmeier
@@ -170,7 +170,7 @@ static const char *clearopt_list[] = {
 
 static const char *showopt_list[] = {
 	"nat", "queue", "rules", "Anchors", "Sources", "state", "info",
-	"Interfaces", "labels", "timeouts", "memory", "Tables", "ospf",
+	"Interfaces", "labels", "timeouts", "memory", "Tables", "osfp",
 	"all", NULL
 };
 
