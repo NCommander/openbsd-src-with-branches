@@ -1,4 +1,4 @@
-/*	$OpenBSD: exception.S,v 1.4 2004/09/09 22:11:38 pefo Exp $ */
+/*	$OpenBSD: exception.S,v 1.5 2004/09/10 08:58:27 pefo Exp $ */
 
 /*
  * Copyright (c) 2002-2003 Opsycon AB  (www.opsycon.se / www.opsycon.com)
@@ -351,6 +351,7 @@ LEAF(set_sint, 0)
 	or	v0, a0
 	sc	v0, 0(v1)
 	beqz	v0, 1b
+	nop
 	j	ra
 	nop
 END(set_sint)
