@@ -1,4 +1,4 @@
-.\"	$OpenBSD: isp.4,v 1.16 2004/03/21 19:50:44 miod Exp $
+.\"	$OpenBSD: isp.4,v 1.17 2004/09/30 19:59:24 mickey Exp $
 .\"
 .\" Copyright (c) 1998, 1999
 .\" 	Matthew Jacob, for NASA/Ames Research Center
@@ -62,10 +62,10 @@ Command tagging is supported for all (in fact,
 requires tagging).
 .Sh CONFIGURATION
 Adding
-.Tn option ISP_COMPILE_FW=1
+.Tn option ISP_COMPILE_FW
 to the kernel configuration file ensures that known good firmware
 will be downloaded to the driver at attach time.
-This is the default setting on sparc and sparc64 platforms,
+This is the default setting on sparc, sparc64 and macppc platforms,
 and is also recommended on platforms where the card's bios may not be
 initialized upon power-up.
 .Sh SEE ALSO
