@@ -1,4 +1,4 @@
-/*	$OpenBSD: syslogd.c,v 1.42 2001/08/03 19:09:26 deraadt Exp $	*/
+/*	$OpenBSD: syslogd.c,v 1.43 2001/08/03 20:24:16 millert Exp $	*/
 
 /*
  * Copyright (c) 1983, 1988, 1993, 1994
@@ -43,7 +43,7 @@ static char copyright[] =
 #if 0
 static char sccsid[] = "@(#)syslogd.c	8.3 (Berkeley) 4/4/94";
 #else
-static char rcsid[] = "$OpenBSD: syslogd.c,v 1.42 2001/08/03 19:09:26 deraadt Exp $";
+static char rcsid[] = "$OpenBSD: syslogd.c,v 1.43 2001/08/03 20:24:16 millert Exp $";
 #endif
 #endif /* not lint */
 
@@ -97,7 +97,6 @@ static char rcsid[] = "$OpenBSD: syslogd.c,v 1.42 2001/08/03 19:09:26 deraadt Ex
 #include <err.h>
 #include <fcntl.h>
 #include <paths.h>
-#include <setjmp.h>
 #include <signal.h>
 #include <stdio.h>
 #include <stdlib.h>
