@@ -1,4 +1,4 @@
-/*	$OpenBSD: mount_nfs.c,v 1.19 2001/05/11 18:09:08 mickey Exp $	*/
+/*	$OpenBSD: mount_nfs.c,v 1.20 2001/06/24 17:03:19 csapuntz Exp $	*/
 /*	$NetBSD: mount_nfs.c,v 1.12.4.1 1996/05/25 22:48:05 fvdl Exp $	*/
 
 /*
@@ -134,11 +134,11 @@ const struct mntopt mopts[] = {
 
 struct nfs_args nfsdefargs = {
 	NFS_ARGSVERSION,
-	(struct sockaddr *)0,
+	NULL,
 	sizeof (struct sockaddr_in),
 	SOCK_DGRAM,
 	0,
-	(u_char *)0,
+	NULL,
 	0,
 	NFSMNT_NFSV3,
 	NFS_WSIZE,
@@ -148,7 +148,13 @@ struct nfs_args nfsdefargs = {
 	NFS_RETRANS,
 	NFS_MAXGRPS,
 	NFS_DEFRAHEAD,
-	(char *)0,
+	0,
+	0,
+	NULL,
+	0,
+	0,
+	0,
+	0
 };
 
 struct nfhret {
