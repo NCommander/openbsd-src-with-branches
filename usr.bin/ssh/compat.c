@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1999 Markus Friedl.  All rights reserved.
+ * Copyright (c) 1999,2000 Markus Friedl.  All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -23,7 +23,7 @@
  */
 
 #include "includes.h"
-RCSID("$OpenBSD: compat.c,v 1.21 2000/08/27 18:18:04 markus Exp $");
+RCSID("$OpenBSD: compat.c,v 1.22 2000/09/07 20:27:50 deraadt Exp $");
 
 #include "ssh.h"
 #include "packet.h"

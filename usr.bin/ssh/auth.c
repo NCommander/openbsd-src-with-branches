@@ -33,7 +33,7 @@
  */
 
 #include "includes.h"
-RCSID("$OpenBSD: auth.c,v 1.8 2000/08/04 20:30:07 markus Exp $");
+RCSID("$OpenBSD: auth.c,v 1.9 2000/09/07 20:27:49 deraadt Exp $");
 
 #include "xmalloc.h"
 #include "rsa.h"
@@ -55,7 +55,6 @@ RCSID("$OpenBSD: auth.c,v 1.8 2000/08/04 20:30:07 markus Exp $");
 
 /* import */
 extern ServerOptions options;
-extern char *forced_command;
 
 /*
  * Check if the user is allowed to log in via ssh. If user is listed in
