@@ -3,6 +3,8 @@
 .if ${MACHINE}=="hp300"
 PROG=	hilinfo
 CFLAGS+= -I${.CURDIR}/../../sys/arch/hp300
+DPADD=	${LIBUTIL}
+LDADD=	-lutil
 .else
 NOPROG=yes
 .endif

@@ -25,6 +25,7 @@
 #include <errno.h>
 #include <stdio.h>
 #include <unistd.h>
+#include <util.h>
 #include <sys/types.h>
 #include <sys/ioctl.h>
 #include <dev/hilioctl.h>
@@ -100,7 +101,7 @@ getinfo(dname)
 {
 	int f;
 
-	f = open(dname, 0);
+	f = opendev(dname, 0, OPENDEV_BLCK, NULL);
 	if (f < 0) {
 		warn("open(%s)", dname);
 		return 0;
