@@ -50,6 +50,7 @@ typedef struct pool pool_t;
 # include <errno.h>
 # include <stdio.h>
 # include <stdlib.h>
+# include <string.h>
 # define pool_t			int
 # define pool_get(pool, flags)	malloc(*(pool))
 # define pool_put(pool, item)	free(item)
