@@ -1,4 +1,4 @@
-/*	$OpenBSD: loop.c,v 1.3 1998/07/07 17:32:44 art Exp $ */
+/*	$OpenBSD: loop.c,v 1.4 2003/06/02 21:38:40 maja Exp $ */
 
 /*
  * Copyright (c) 1993-95 Mats O Jansson.  All rights reserved.
@@ -25,7 +25,7 @@
  */
 
 #ifndef LINT
-static char rcsid[] = "$OpenBSD: loop.c,v 1.3 1998/07/07 17:32:44 art Exp $";
+static const char rcsid[] = "$OpenBSD: loop.c,v 1.4 2003/06/02 21:38:40 maja Exp $";
 #endif
 
 #include "os.h"

@@ -1,4 +1,4 @@
-/*	$OpenBSD: pf.c,v 1.6 2002/09/07 08:09:49 maja Exp $ */
+/*	$OpenBSD: pf.c,v 1.7 2003/06/04 04:43:56 deraadt Exp $ */
 
 /*
  * Copyright (c) 1993-95 Mats O Jansson.  All rights reserved.
@@ -29,7 +29,7 @@
  */
 
 #ifndef LINT
-static char rcsid[] = "$OpenBSD: pf.c,v 1.6 2002/09/07 08:09:49 maja Exp $";
+static const char rcsid[] = "$OpenBSD: pf.c,v 1.7 2003/06/04 04:43:56 deraadt Exp $";
 #endif
 
 #include <stdio.h>

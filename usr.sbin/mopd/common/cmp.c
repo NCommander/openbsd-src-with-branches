@@ -1,4 +1,4 @@
-/*	$OpenBSD: cmp.c,v 1.4 2002/03/14 16:44:25 mpech Exp $ */
+/*	$OpenBSD: cmp.c,v 1.5 2003/06/02 21:38:39 maja Exp $ */
 
 /*
  * Copyright (c) 1993-95 Mats O Jansson.  All rights reserved.
@@ -25,7 +25,7 @@
  */
 
 #ifndef LINT
-static char rcsid[] = "$OpenBSD: cmp.c,v 1.4 2002/03/14 16:44:25 mpech Exp $";
+static const char rcsid[] = "$OpenBSD: cmp.c,v 1.5 2003/06/02 21:38:39 maja Exp $";
 #endif
 
 #include "os.h"

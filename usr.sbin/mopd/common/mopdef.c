@@ -1,4 +1,4 @@
-/*	$OpenBSD: mopdef.c,v 1.3 2002/09/07 07:58:21 maja Exp $ */
+/*	$OpenBSD: mopdef.c,v 1.4 2003/06/02 21:38:39 maja Exp $ */
 
 /*
  * Copyright (c) 1995 Mats O Jansson.  All rights reserved.
@@ -25,7 +25,7 @@
  */
 
 #ifndef LINT
-static char rcsid[] = "$OpenBSD: mopdef.c,v 1.3 2002/09/07 07:58:21 maja Exp $";
+static const char rcsid[] = "$OpenBSD: mopdef.c,v 1.4 2003/06/02 21:38:39 maja Exp $";
 #endif
 
 #include <sys/types.h>
