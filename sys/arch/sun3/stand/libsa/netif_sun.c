@@ -1,4 +1,4 @@
-/*	$OpenBSD: netif_sun.c,v 1.5 2001/07/04 08:33:51 niklas Exp $	*/
+/*	$OpenBSD: netif_sun.c,v 1.6 2002/03/14 01:26:47 millert Exp $	*/
 /*	$NetBSD: netif_sun.c,v 1.4 1996/01/29 23:41:07 gwr Exp $	*/
 
 /*
@@ -92,8 +92,8 @@ sun3_getether(ea)
 	int len, x;
 
 	if (sun3_idprom.idp_format == 0) {
-		dst = (char*)&sun3_idprom;
-		src = (char*)IDPROM_BASE;
+		dst = (char *)&sun3_idprom;
+		src = (char *)IDPROM_BASE;
 		len = IDPROM_SIZE;
 		do {
 			x = get_control_byte(src++);

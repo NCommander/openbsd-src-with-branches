@@ -1,4 +1,4 @@
-/*	$OpenBSD: ext2fs_extern.h,v 1.13 2001/12/19 08:58:07 art Exp $	*/
+/*	$OpenBSD: ext2fs_extern.h,v 1.14 2002/03/14 01:27:14 millert Exp $	*/
 /*	$NetBSD: ext2fs_extern.h,v 1.1 1997/06/11 09:33:55 bouyer Exp $	*/
 
 /*-
@@ -140,10 +140,10 @@ int ext2fs_rmdir(void *);
 int ext2fs_symlink(void *);
 int ext2fs_readlink(void *);
 int ext2fs_advlock(void *);
-int ext2fs_vinit __P((struct mount *, int (**specops)(void *),
-                      int (**fifoops)(void *), struct vnode **));
+int ext2fs_vinit(struct mount *, int (**specops)(void *),
+                 int (**fifoops)(void *), struct vnode **);
 int ext2fs_makeinode(int, struct vnode *, struct vnode **,
-                          struct componentname *cnp);
+                     struct componentname *cnp);
 int ext2fs_fsync(void *);
 int ext2fs_reclaim(void *);
 

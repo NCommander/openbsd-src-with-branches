@@ -1,4 +1,4 @@
-/*	$OpenBSD: ka860.c,v 1.5 2000/04/27 01:10:13 bjc Exp $	*/
+/*	$OpenBSD: ka860.c,v 1.6 2002/03/14 01:26:48 millert Exp $	*/
 /*	$NetBSD: ka860.c,v 1.15 1999/08/07 10:36:49 ragge Exp $	*/
 /*
  * Copyright (c) 1986, 1988 Regents of the University of California.
@@ -339,7 +339,7 @@ ka86_reboot(howto)
 
 static	int abus_print(void *, const char *);
 static  int abus_match(struct device *, struct cfdata *, void *);
-static  void abus_attach(struct device *, struct device *, void*);
+static  void abus_attach(struct device *, struct device *, void *);
 
 struct  cfattach abus_ca = {
         sizeof(struct device), abus_match, abus_attach

@@ -1,4 +1,4 @@
-/*	$OpenBSD: rlnvar.h,v 1.4 2000/12/13 15:58:39 mickey Exp $	*/
+/*	$OpenBSD: rlnvar.h,v 1.5 2002/03/14 01:26:55 millert Exp $	*/
 /*
  * David Leonard <d@openbsd.org>, 1999. Public domain.
  *
@@ -119,7 +119,7 @@ void		rln_mbox_unlock(struct rln_softc *, u_int8_t, size_t);
 #define dprintf(fmt, args...) printf(fmt , ## args)
 	/* log(LOG_DEBUG, fmt , ## args) */
 #define dprinthex(buf, len)	do {				\
-	unsigned char *_b = (unsigned char*)(buf);		\
+	unsigned char *_b = (unsigned char *)(buf);		\
 	int _i, _l=(len); 					\
 	printf("{");						\
 	for(_i = 0; _i < _l; _i++) {				\

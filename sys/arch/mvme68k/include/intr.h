@@ -1,4 +1,4 @@
-/*	$OpenBSD: intr.h,v 1.4 2001/11/23 00:47:46 miod Exp $	*/
+/*	$OpenBSD: intr.h,v 1.5 2002/03/14 01:26:37 millert Exp $	*/
 /*
  * Copyright (C) 2000 Steve Murphree, Jr.
  * All rights reserved.
@@ -42,7 +42,7 @@ extern unsigned char ssir;
 #define setsoftint(x)	ssir |= (x)
 #define setsoftnet()	ssir |= SIR_NET
 #define setsoftclock()	ssir |= SIR_CLOCK
-u_long	allocate_sir __P((void (*proc)(), void *arg));
+u_long	allocate_sir(void (*proc)(), void *arg);
 
 #define _spl(s) \
 ({ \

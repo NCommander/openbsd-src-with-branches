@@ -1,4 +1,4 @@
-/*	$OpenBSD: machdep.c,v 1.94 2002/01/23 17:51:52 art Exp $	*/
+/*	$OpenBSD: machdep.c,v 1.95 2002/03/14 01:26:36 millert Exp $	*/
 /*	$NetBSD: machdep.c,v 1.207 1998/07/08 04:39:34 thorpej Exp $	*/
 
 /*
@@ -239,7 +239,7 @@ static u_long	get_physical(u_int, u_long *);
 
 void	initcpu(void);
 int	cpu_dumpsize(void);
-int	cpu_dump __P((int (*)(dev_t, daddr_t, caddr_t, size_t), daddr_t *));
+int	cpu_dump(int (*)(dev_t, daddr_t, caddr_t, size_t), daddr_t *);
 void	cpu_init_kcore_hdr(void);
 
 /* functions called from locore.s */

@@ -1,4 +1,4 @@
-/*	$OpenBSD: arp.c,v 1.7 1999/01/11 05:12:25 millert Exp $	*/
+/*	$OpenBSD: arp.c,v 1.8 2002/03/14 01:27:07 millert Exp $	*/
 /*	$NetBSD: arp.c,v 1.15 1996/10/13 02:28:58 christos Exp $	*/
 
 /*
@@ -107,7 +107,7 @@ arpwhohas(d, addr)
  	    printf("arpwhohas: send request for %s\n", inet_ntoa(addr));
 #endif
 
-	bzero((char*)&wbuf.data, sizeof(wbuf.data));
+	bzero((char *)&wbuf.data, sizeof(wbuf.data));
 	ah = &wbuf.data.arp;
 	ah->arp_hrd = htons(ARPHRD_ETHER);
 	ah->arp_pro = htons(ETHERTYPE_IP);

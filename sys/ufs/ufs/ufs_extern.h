@@ -1,4 +1,4 @@
-/*	$OpenBSD: ufs_extern.h,v 1.16 2001/12/19 08:58:07 art Exp $	*/
+/*	$OpenBSD: ufs_extern.h,v 1.17 2002/03/14 01:27:15 millert Exp $	*/
 /*	$NetBSD: ufs_extern.h,v 1.5 1996/02/09 22:36:03 christos Exp $	*/
 
 /*-
@@ -144,10 +144,10 @@ int ufs_check_export(struct mount *, struct mbuf *, int *,
 		struct ucred **);
 
 /* ufs_vnops.c */
-int ufs_vinit __P((struct mount *, int (**)(void *),
-		   int (**)(void *), struct vnode **));
+int ufs_vinit(struct mount *, int (**)(void *),
+	      int (**)(void *), struct vnode **);
 int ufs_makeinode(int, struct vnode *, struct vnode **,
-		       struct componentname *);
+		  struct componentname *);
 
  
 /*

@@ -1,4 +1,4 @@
-/*	$OpenBSD: cpu.h,v 1.22 2001/11/06 18:41:09 art Exp $	*/
+/*	$OpenBSD: cpu.h,v 1.23 2002/03/14 01:26:35 millert Exp $	*/
 /*	$NetBSD: cpu.h,v 1.45 1997/02/10 22:13:40 scottr Exp $	*/
 
 /*
@@ -297,7 +297,7 @@ struct fpframe;
 struct pcb;
 
 /* machdep.c */
-void	mac68k_set_bell_callback __P((int (*)(void *, int, int, int), void *));
+void	mac68k_set_bell_callback(int (*)(void *, int, int, int), void *);
 int	mac68k_ring_bell(int, int, int);
 u_int	get_mapping(void);
 

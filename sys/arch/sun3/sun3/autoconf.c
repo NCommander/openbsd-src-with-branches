@@ -1,4 +1,4 @@
-/*	$OpenBSD: autoconf.c,v 1.20 2002/01/16 20:50:17 miod Exp $	*/
+/*	$OpenBSD: autoconf.c,v 1.21 2002/03/14 01:26:47 millert Exp $	*/
 /*	$NetBSD: autoconf.c,v 1.37 1996/11/20 18:57:22 gwr Exp $	*/
 
 /*-
@@ -291,7 +291,7 @@ bus_mapin(bustype, paddr, sz)
 #endif
 	pmap_update(pmap_kernel());
 
-	return ((char*)retval);
+	return ((char *)retval);
 }
 
 /* from hp300: badaddr() */

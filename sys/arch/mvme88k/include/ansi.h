@@ -1,4 +1,4 @@
-/*	$OpenBSD: ansi.h,v 1.10 2001/01/14 20:25:23 smurph Exp $	*/
+/*	$OpenBSD: ansi.h,v 1.11 2001/08/11 23:51:28 miod Exp $	*/
 /*-
  * Copyright (c) 1990, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -55,7 +55,7 @@
 #define	_BSD_TIMER_T_	int
 
 #if 0
-#define	_BSD_VA_LIST_	char*			/* va_list */
+#define	_BSD_VA_LIST_	char *			/* va_list */
 #endif
 
 #include "va-m88k.h"

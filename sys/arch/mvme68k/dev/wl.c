@@ -1,4 +1,4 @@
-/*	$OpenBSD: wl.c,v 1.6 2002/02/15 20:45:30 nordin Exp $ */
+/*	$OpenBSD: wl.c,v 1.7 2002/03/14 01:26:37 millert Exp $ */
 
 /*
  * Copyright (c) 1995 Dale Rahn. All rights reserved.
@@ -197,7 +197,7 @@ int wlstop(struct tty *tp, int flag);
 static void cl_initchannel(struct wlsoftc *sc, int channel);
 static void clputc(struct wlsoftc *sc, int unit, u_char c);
 static u_char clgetc(struct wlsoftc *sc, int *channel);
-static void cloutput __P( (struct tty *tp));
+static void cloutput(struct tty *tp);
 
 struct cfattach wl_ca = {
 	sizeof(struct wlsoftc), wlprobe, wlattach

@@ -1,4 +1,4 @@
-/*	$OpenBSD: ad1848var.h,v 1.10 2002/01/20 19:56:53 ericj Exp $	*/
+/*	$OpenBSD: ad1848var.h,v 1.11 2002/03/14 01:26:56 millert Exp $	*/
 /*	$NetBSD: ad1848var.h,v 1.22 1998/01/19 22:18:26 augustss Exp $	*/
 
 /*
@@ -196,8 +196,8 @@ int	ad1848_round_blocksize(void *, int);
 
 int	ad1848_dma_init_output(void *, void *, int);
 int	ad1848_dma_init_input(void *, void *, int);
-int	ad1848_dma_output __P((void *, void *, int, void (*)(void *), void*));
-int	ad1848_dma_input __P((void *, void *, int, void (*)(void *), void*));
+int	ad1848_dma_output(void *, void *, int, void (*)(void *), void *);
+int	ad1848_dma_input(void *, void *, int, void (*)(void *), void *);
 
 int	ad1848_commit_settings(void *);
 

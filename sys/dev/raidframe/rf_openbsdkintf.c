@@ -1,4 +1,4 @@
-/* $OpenBSD: rf_openbsdkintf.c,v 1.14 2002/03/06 11:28:27 tdeval Exp $	*/
+/* $OpenBSD: rf_openbsdkintf.c,v 1.15 2002/03/14 01:27:01 millert Exp $	*/
 /* $NetBSD: rf_netbsdkintf.c,v 1.109 2001/07/27 03:30:07 oster Exp $	*/
 /*-
  * Copyright (c) 1996, 1997, 1998 The NetBSD Foundation, Inc.
@@ -173,9 +173,9 @@ static RF_SparetWait_t *rf_sparet_resp_queue;
 
 /* prototypes */
 void	rf_KernelWakeupFunc(struct buf *);
-void	rf_InitBP __P((struct buf *, struct vnode *, unsigned, dev_t,
+void	rf_InitBP(struct buf *, struct vnode *, unsigned, dev_t,
 	    RF_SectorNum_t, RF_SectorCount_t, caddr_t, void (*)(struct buf *),
-	    void *, int, struct proc *));
+	    void *, int, struct proc *);
 void raidinit(RF_Raid_t *);
 
 void	raidattach(int);

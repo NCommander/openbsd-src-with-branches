@@ -1,4 +1,4 @@
-/*	$OpenBSD: tcfs_keytab.h,v 1.5 2000/11/16 20:02:21 provos Exp $	*/
+/*	$OpenBSD: tcfs_keytab.h,v 1.6 2002/03/14 01:27:08 millert Exp $	*/
 /*
  * Copyright 2000 The TCFS Project at http://tcfs.dia.unisa.it/
  * All rights reserved.
@@ -94,7 +94,7 @@ typedef struct 	_kt {
 #define	NIL	((tcfs_keytab_node*)0)
 
 #ifdef _HAVE_HASH_
-int		_tcfs_keytab_hash __P(unsigned int));
+int		_tcfs_keytab_hash(unsigned int);
 #define		tcfs_keytab_hash(x)	_tcfs_keytab_hash((unsigned int)(x))
 #else
 #define		tcfs_keytab_hash(u)	((u)%KEYTABSIZE)

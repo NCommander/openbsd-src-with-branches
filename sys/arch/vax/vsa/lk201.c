@@ -1,4 +1,4 @@
-/*	$OpenBSD: lk201.c,v 1.3 1999/01/11 05:12:09 millert Exp $	*/
+/*	$OpenBSD: lk201.c,v 1.4 2002/03/14 01:26:49 millert Exp $	*/
 
 /*
  * The LK201 keycode mapping routine is here, along with initialization
@@ -19,7 +19,7 @@
 /* Exported functions */
 extern int kbdMapChar(int keycode);
 
-extern void KBDReset __P(( dev_t dev, void (*putc) (dev_t, int) ));
+extern void KBDReset(dev_t dev, void (*putc)(dev_t, int));
 
 /*
  * Keyboard to Ascii, unshifted.

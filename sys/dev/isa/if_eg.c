@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_eg.c,v 1.21 2001/06/27 06:34:45 kjc Exp $	*/
+/*	$OpenBSD: if_eg.c,v 1.22 2002/03/14 01:26:56 millert Exp $	*/
 /*	$NetBSD: if_eg.c,v 1.26 1996/05/12 23:52:27 mycroft Exp $	*/
 
 /*
@@ -651,13 +651,13 @@ egintr(arg)
 			dprintf(("Receive Packets %d\n", i));
 			bcopy(&sc->eg_pcb[6], &i, sizeof(i));
 			dprintf(("Transmit Packets %d\n", i));
-			dprintf(("CRC errors %d\n", *(short*)&sc->eg_pcb[10]));
+			dprintf(("CRC errors %d\n", *(short *)&sc->eg_pcb[10]));
 			dprintf(("alignment errors %d\n",
-			    *(short*)&sc->eg_pcb[12]));
+			    *(short *)&sc->eg_pcb[12]));
 			dprintf(("no resources errors %d\n",
-			    *(short*)&sc->eg_pcb[14]));
+			    *(short *)&sc->eg_pcb[14]));
 			dprintf(("overrun errors %d\n",
-			    *(short*)&sc->eg_pcb[16]));
+			    *(short *)&sc->eg_pcb[16]));
 			break;
 			
 		default:

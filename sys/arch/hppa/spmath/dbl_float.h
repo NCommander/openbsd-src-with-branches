@@ -1,4 +1,4 @@
-/*	$OpenBSD: dbl_float.h,v 1.5 2001/03/29 03:58:17 mickey Exp $	*/
+/*	$OpenBSD: dbl_float.h,v 1.6 2002/03/14 01:26:32 millert Exp $	*/
 
 /*
  * Copyright 1996 1995 by Open Software Foundation, Inc.
@@ -552,13 +552,13 @@
     }
 
 
-int dbl_fadd(dbl_floating_point *, dbl_floating_point*, dbl_floating_point*, unsigned int *);
-int dbl_fcmp(dbl_floating_point *, dbl_floating_point*, unsigned int, unsigned int *);
+int dbl_fadd(dbl_floating_point *, dbl_floating_point *, dbl_floating_point *, unsigned int *);
+int dbl_fcmp(dbl_floating_point *, dbl_floating_point *, unsigned int, unsigned int *);
 int dbl_fdiv(dbl_floating_point *, dbl_floating_point *, dbl_floating_point *, unsigned int *);
-int dbl_fmpy(dbl_floating_point *, dbl_floating_point *, dbl_floating_point*, unsigned int *);
-int dbl_frem(dbl_floating_point *, dbl_floating_point *, dbl_floating_point*, unsigned int *);
+int dbl_fmpy(dbl_floating_point *, dbl_floating_point *, dbl_floating_point *, unsigned int *);
+int dbl_frem(dbl_floating_point *, dbl_floating_point *, dbl_floating_point *, unsigned int *);
 int dbl_fsqrt(dbl_floating_point *, dbl_floating_point *, unsigned int *);
-int dbl_fsub(dbl_floating_point *, dbl_floating_point *, dbl_floating_point*, unsigned int *);
+int dbl_fsub(dbl_floating_point *, dbl_floating_point *, dbl_floating_point *, unsigned int *);
 
 dbl_floating_point dbl_setoverflow(unsigned int);
 
