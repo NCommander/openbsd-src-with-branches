@@ -1,4 +1,4 @@
-/*	$OpenBSD: tty.c,v 1.15 1996/11/05 04:49:16 tholo Exp $	*/
+/*	$OpenBSD: tty.c,v 1.16 1996/11/06 08:37:39 deraadt Exp $	*/
 /*	$NetBSD: tty.c,v 1.68.4.2 1996/06/06 16:04:52 thorpej Exp $	*/
 
 /*-
@@ -669,7 +669,7 @@ ttioctl(tp, cmd, data, flag, p)
 	case  TIOCSETP:
 	case  TIOCSLTC:
 #endif
-		while (isbackground(curproc, tp) &&
+		while (isbackground(p, tp) &&
 		    p->p_pgrp->pg_jobc && (p->p_flag & P_PPWAIT) == 0 &&
 		    (p->p_sigignore & sigmask(SIGTTOU)) == 0 &&
 		    (p->p_sigmask & sigmask(SIGTTOU)) == 0) {
