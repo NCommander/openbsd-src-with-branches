@@ -1,4 +1,4 @@
-# $OpenBSD: Makefile.common.inc,v 1.1 2003/05/14 09:05:59 hin Exp $
+# $OpenBSD: Makefile.common.inc,v 1.2 2003/05/17 05:20:18 mho Exp $
 
 KRB5SRC	= ${KRB5DIR}/src
 
@@ -15,5 +15,3 @@ CFLAGS	+= -DHAVE_DLOPEN
 .endif
 
 .PATH:	${KRB5SRC}/man
-
-COM_ERR=	-lcom_err_pic
