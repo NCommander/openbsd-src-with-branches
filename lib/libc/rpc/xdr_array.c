@@ -28,7 +28,7 @@
  */
 
 #if defined(LIBC_SCCS) && !defined(lint)
-static char *rcsid = "$OpenBSD: xdr_array.c,v 1.4 2001/09/15 13:51:01 deraadt Exp $";
+static char *rcsid = "$OpenBSD: xdr_array.c,v 1.4.2.1 2002/07/30 07:30:28 miod Exp $";
 #endif /* LIBC_SCCS and not lint */
 
 /*
@@ -76,7 +76,7 @@ xdr_array(xdrs, addrp, sizep, maxsize, elsize, elproc)
 		return (FALSE);
 	}
 	c = *sizep;
-	if ((c > maxsize && UINT_MAX/elsize < c) &&
+	if ((c > maxsize || c > UINT_MAX/elsize) &&
 	    (xdrs->x_op != XDR_FREE)) {
 		return (FALSE);
 	}
