@@ -1,8 +1,7 @@
-/*	$OpenBSD: rde_prefix.c,v 1.4 2003/12/24 11:39:43 henning Exp $ */
+/*	$OpenBSD: rde_prefix.c,v 1.5 2003/12/26 18:07:33 henning Exp $ */
 
 /*
- * Copyright (c) 2003 Claudio Jeker <cjeker@diehard.n-r-g.com>
- *
+ * Copyright (c) 2003, 2004 Claudio Jeker <claudio@openbsd.org>
  *
  * Permission to use, copy, modify, and distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
