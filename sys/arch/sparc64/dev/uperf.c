@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: uperf.c,v 1.1 2002/01/30 23:58:02 jason Exp $	*/
 
 /*
  * Copyright (c) 2002 Jason L. Wright (jason@thought.net)
@@ -43,6 +43,7 @@
 
 #include <machine/conf.h>
 
+#include <dev/sun/uperfio.h>
 #include <arch/sparc64/dev/uperfvar.h>
 
 struct cfdriver uperf_cd = {

@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: uperf_sbus.c,v 1.1 2002/01/30 23:58:03 jason Exp $	*/
 
 /*
  * Copyright (c) 2002 Jason L. Wright (jason@thought.net)
@@ -44,6 +44,7 @@
 #include <machine/autoconf.h>
 
 #include <arch/sparc64/dev/uperfvar.h>
+#include <dev/sun/uperfio.h>
 #include <dev/sbus/sbusvar.h>
 #include <dev/sbus/uperf_sbusreg.h>
 
