@@ -1,4 +1,4 @@
-/*	$OpenBSD: asm_macro.h,v 1.5 1999/02/09 12:49:38 deraadt Exp $ */
+/*	$OpenBSD: asm_macro.h,v 1.6 1999/09/27 20:46:16 smurph Exp $ */
 /*
  * Mach Operating System
  * Copyright (c) 1993-1991 Carnegie Mellon University
@@ -26,8 +26,8 @@
  * rights to redistribute these changes.
  */
 
-#ifndef __M88K_ASM_MACRO_H__
-#define __M88K_ASM_MACRO_H__
+#ifndef __MACHINE_M88K_ASM_MACRO_H__
+#define __MACHINE_M88K_ASM_MACRO_H__
 
 /*
  ** Various compiler macros used for speed and efficiency.
@@ -101,4 +101,4 @@ static inline void flush_pipeline()
 }
 #define db_flush_pipeline flush_pipeline
 
-#endif /* __M88K_ASM_MACRO_H__ */
+#endif __MACHINE_M88K_ASM_MACRO_H__

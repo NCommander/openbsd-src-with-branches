@@ -1,4 +1,4 @@
-/*	$OpenBSD: m88110.h,v 1.4 1999/02/09 06:36:26 smurph Exp $ */
+/*	$OpenBSD: m88110.h,v 1.1 1999/09/27 20:46:18 smurph Exp $ */
 
 #ifndef	__MACHINE_M88110_H__
 #define	__MACHINE_M88110_H__
@@ -226,4 +226,4 @@ unsigned get_dpar (void);
 
 #endif	/* ASSEMBLER */
 
-#endif	/* __MACHINE_M88110_H__ */
+#endif __MACHINE_M88110_H__

@@ -1,4 +1,4 @@
-/*	$OpenBSD: signal.h,v 1.1 1998/12/15 04:45:50 smurph Exp $ */
+/*	$OpenBSD: signal.h,v 1.4 1999/02/09 06:36:27 smurph Exp $ */
 /*
  * Copyright (c) 1996 Nivas Madhur
  * All rights reserved.
@@ -29,6 +29,8 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
  */
+#ifndef __MACHINE_SIGNAL_H__
+#define __MACHINE_SIGNAL_H__
 typedef int sig_atomic_t;
 
 /*
@@ -73,3 +75,4 @@ struct  sigcontext {
 	int	sc_fpit;
 	int	sc_xxxx;	/* padd to double word boundary */
 };
+#endif __MACHINE_SIGNAL_H__
