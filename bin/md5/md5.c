@@ -1,5 +1,5 @@
 /*
- * $OpenBSD: md5.c,v 1.5 1997/07/12 21:09:02 millert Exp $
+ * $OpenBSD: md5.c,v 1.6 1997/07/17 05:45:01 millert Exp $
  *
  * Derived from:
  *	MDDRIVER.C - test driver for MD2, MD4 and MD5
@@ -115,7 +115,7 @@ main(argc, argv)
 			else {
 				p = MDFile(argv[i], buf);
 				if (!p)
-					warnx(argv[i]);
+					warn(argv[i]);
 				else
 					(void)printf("%s (%s) = %s\n", MDType,
 					    argv[i], p);
