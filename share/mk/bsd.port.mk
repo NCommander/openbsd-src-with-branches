@@ -1588,7 +1588,8 @@ lib-depends:
 		else \
 			target=${DEPENDS_TARGET}; \
 		fi; \
-		if ${LD} -r -o /dev/null -l$$lib; then \
+		tmp=`mktemp /tmp/bpmXXXXXXXXXX`; \
+		if ${LD} -r -o $$tmp -l$$lib; then \
 			${ECHO_MSG} "===>  ${PKGNAME} depends on library: $$lib - found"; \
 		else \
 			${ECHO_MSG} "===>  ${PKGNAME} depends on library: $$lib - not found"; \
@@ -1600,6 +1601,7 @@ lib-depends:
 				${ECHO_MSG} "===>  Returning to build of ${PKGNAME}"; \
 			fi; \
 		fi; \
+		${RM} -f $$tmp; \
 	done
 .else
 	@for i in ${LIB_DEPENDS}; do \
