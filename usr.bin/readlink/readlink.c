@@ -1,5 +1,5 @@
 /*
- * $OpenBSD: readlink.c,v 1.7 1997/06/29 19:20:31 kstailey Exp $
+ * $OpenBSD: readlink.c,v 1.8 1997/07/01 15:09:36 kstailey Exp $
  *
  * Copyright (c) 1997
  *	Kenneth Stailey (hereinafter referred to as the author)
@@ -27,7 +27,7 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <sys/syslimits.h>
+#include <limits.h>
 #include <stdio.h>
 #include <unistd.h>
 
