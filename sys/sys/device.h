@@ -1,4 +1,4 @@
-/*	$OpenBSD: device.h,v 1.5 1996/04/29 14:17:53 hvozda Exp $	*/
+/*	$OpenBSD: device.h,v 1.6 1996/06/16 10:29:55 deraadt Exp $	*/
 /*	$NetBSD: device.h,v 1.15 1996/04/09 20:55:24 cgd Exp $	*/
 
 /*
@@ -100,6 +100,8 @@ struct cfdata {
 #define FSTATE_NOTFOUND	0	/* has not been found */
 #define	FSTATE_FOUND	1	/* has been found */
 #define	FSTATE_STAR	2	/* duplicable */
+#define FSTATE_DNOTFOUND 3	/* has not been found, and is disabled */
+#define FSTATE_DSTAR	4	/* duplicable, and is disabled */
 
 typedef int (*cfmatch_t) __P((struct device *, void *, void *));
 typedef void (*cfscan_t) __P((struct device *, void *));
