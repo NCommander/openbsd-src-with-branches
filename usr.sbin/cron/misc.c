@@ -1,4 +1,4 @@
-/*	$OpenBSD: misc.c,v 1.32 2004/07/09 16:22:02 deraadt Exp $	*/
+/*	$OpenBSD: misc.c,v 1.33 2004/07/22 16:36:28 millert Exp $	*/
 
 /* Copyright 1988,1990,1993,1994 by Paul Vixie
  * All rights reserved
@@ -22,7 +22,7 @@
  */
 
 #if !defined(lint) && !defined(LINT)
-static char const rcsid[] = "$OpenBSD: misc.c,v 1.32 2004/07/09 16:22:02 deraadt Exp $";
+static char const rcsid[] = "$OpenBSD: misc.c,v 1.33 2004/07/22 16:36:28 millert Exp $";
 #endif
 
 /* vix 26jan87 [RCS has the rest of the log]
@@ -317,7 +317,7 @@ acquire_daemonlock(int closeflag) {
 	snprintf(buf, sizeof(buf), "%ld\n", (long)getpid());
 	(void) lseek(fd, (off_t)0, SEEK_SET);
 	num = write(fd, buf, strlen(buf));
-	(void) ftruncate(fd, num);
+	(void) ftruncate(fd, (off_t)num);
 
 	/* abandon fd even though the file is open. we need to keep
 	 * it open and locked, but we don't need the handles elsewhere.
