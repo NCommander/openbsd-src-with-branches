@@ -1,4 +1,4 @@
-/*	$OpenBSD: linux_mount.c,v 1.1 1996/04/28 07:38:23 etheisen Exp $	*/
+/*	$OpenBSD: linux_mount.c,v 1.2 1996/08/03 12:24:25 deraadt Exp $	*/
 
 /*
  * Copyright (c) 1996 Erik Theisen
@@ -34,6 +34,7 @@
 #include <sys/ioctl.h>
 #include <sys/tty.h>
 #include <sys/file.h>
+#include <sys/mount.h>
 #include <sys/filedesc.h>
 
 #include <sys/syscallargs.h>
