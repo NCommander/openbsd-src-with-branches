@@ -1,4 +1,4 @@
-/*	$OpenBSD: msgs.c,v 1.13 1999/05/13 12:59:29 aaron Exp $	*/
+/*	$OpenBSD: msgs.c,v 1.14 1999/06/10 22:38:03 pjanzen Exp $	*/
 /*	$NetBSD: msgs.c,v 1.7 1995/09/28 06:57:40 tls Exp $	*/
 
 /*-
@@ -44,7 +44,7 @@ static char copyright[] =
 #if 0
 static char sccsid[] = "@(#)msgs.c	8.2 (Berkeley) 4/28/95";
 #else
-static char rcsid[] = "$OpenBSD: msgs.c,v 1.13 1999/05/13 12:59:29 aaron Exp $";
+static char rcsid[] = "$OpenBSD: msgs.c,v 1.14 1999/06/10 22:38:03 pjanzen Exp $";
 #endif
 #endif /* not lint */
 
@@ -76,11 +76,11 @@ static char rcsid[] = "$OpenBSD: msgs.c,v 1.13 1999/05/13 12:59:29 aaron Exp $";
 
 #include <sys/param.h>
 #include <sys/ioctl.h>
-#include <sys/file.h>
 #include <sys/stat.h>
 #include <dirent.h>
 #include <ctype.h>
 #include <errno.h>
+#include <fcntl.h>
 #include <pwd.h>
 #include <setjmp.h>
 #include <signal.h>

@@ -1,4 +1,4 @@
-/* *	$OpenBSD: defs.h,v 1.6 1997/02/09 19:24:55 deraadt Exp $*/
+/* *	$OpenBSD: defs.h,v 1.7 1998/04/27 03:13:51 deraadt Exp $*/
 /*
  * Copyright (c) 1983, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -38,11 +38,11 @@
 #include <sys/dir.h>
 #include <sys/stat.h>
 #include <sys/time.h>
-#include <sys/file.h>
 
 #include <netinet/in.h>
 
 #include <errno.h>
+#include <fcntl.h>
 #include <pwd.h>
 #include <grp.h>
 #include <stdio.h>
