@@ -79,6 +79,8 @@
 #define CVSD_SET_CHMAX       3
 #define CVSD_SET_ADDR        4
 #define CVSD_SET_SOCK        5
+#define CVSD_SET_USER        6
+#define CVSD_SET_GROUP       7
 
 
 #define CVSD_ST_UNKNOWN      0
@@ -114,9 +116,6 @@ struct cvsd_addr {
 };
 
 
-
-extern volatile sig_atomic_t running;
-extern volatile sig_atomic_t restart;
 
 extern uid_t    cvsd_uid;
 extern gid_t    cvsd_gid;
