@@ -1,4 +1,4 @@
-/*	$OpenBSD: channels.h,v 1.69 2002/06/23 21:06:41 deraadt Exp $	*/
+/*	$OpenBSD: channels.h,v 1.70 2002/06/24 14:33:27 markus Exp $	*/
 
 /*
  * Author: Tatu Ylonen <ylo@cs.hut.fi>
@@ -213,7 +213,6 @@ void	 deny_input_open(int, u_int32_t, void *);
 /* agent forwarding */
 
 void	 auth_request_forwarding(void);
-void	 auth_input_open_request(int, u_int32_t, void *);
 
 /* channel close */
 
