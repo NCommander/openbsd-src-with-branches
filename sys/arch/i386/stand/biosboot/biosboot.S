@@ -1,4 +1,4 @@
-/*	$OpenBSD: biosboot.S,v 1.1.2.3 1996/12/16 15:19:29 mickey Exp $	*/
+/*	$OpenBSD: biosboot.S,v 1.1.2.4 1997/01/03 21:44:32 mickey Exp $	*/
 
 	.file	"bootbios.S"
 
@@ -11,18 +11,24 @@
 #define addr32  .byte 0x67
 #define data32  .byte 0x66
 
-#define	BLKCNT	40
+#ifdef	DEBUG
+#define	BLKCNT	32
+#else
+#define	BLKCNT	48
+#endif
 
 #define BIOSSEG		0x07c0	/* boot loaded here */
 #define BOOTSEG		0x1000	/* /boot placement */
 #define BOOTSTACK	0xfffc	/* /boot stack */
-#define OMAGIC		0x0701	/* OMAGIC */
+#define ZMAGIC		0x0b01	/* ZMAGIC */
 
 #ifdef DEBUG
 #define DBGMSG(msg)		\
 	movb    $msg, %al;	\
 	data32;			\
 	call    chr
+#define CHAR_M	'M'	/* magic check */
+#define CHAR_P	'P'	/* switch to protected mode */
 #else /* !DEBUG */
 #define DBGMSG(msg)
 #endif /* !DEBUG */
@@ -31,7 +37,7 @@
 
 	.globl	start
 start:
-	# start (aka boot1) is loaded at 0x0:0x7c00 but we want 0x6c0:0x1000
+	# start (aka boot1) is loaded at 0x0:0x7c00 but we want 0x7c0:0x0
 	# ljmp to the next instruction to adjust %cs
 	data32
 	ljmp $BIOSSEG, $2f
@@ -40,7 +46,7 @@ start:
 2:	/* set up stack(%ss:%esp) */
 	cli			/* disable interrupts w/o stack */
 	data32
-	movl	$BOOTSEG, %ax
+	movl	$BOOTSEG+0x1000, %ax
 	movl	%ax, %ss
 	data32
 	movl	$BOOTSTACK, %esp
@@ -57,7 +63,8 @@ start:
 	# Initialize the serial port to 9600 baud, 8N1.
 	pushl	%dx
 	movl	$0x00e3, %ax
-	movl	SERIAL, %dx
+	data32
+	movl	SERIAL, %edx
 	int	$0x14
 	popl	%dx
 #endif
@@ -94,12 +101,14 @@ start:
 	data32
 	call	chr		/* show progress indicator */
 
+	cld
 	lodsl	/* word */	/* cylinder/sector */
 	movl	%ax, %cx
 	lodsb			/* head */
 	movb	%al, %dh
 	lodsb			/* # of sectors to load */
 	movb	$0x2, %ah
+	pushl	%ax
 	int	$0x13
 	jnc	3f
 
@@ -107,24 +116,32 @@ start:
        	data32
 	movl    $2f, %esi
 	jmp	halt
-2:	.asciz	"Read error\r\n"
+2:	.asciz	"\r\nRead error\r\n"
 
 3:	/* read next block */
+	popl	%ax
+	data32
+	movzbl	%al, %eax
 	shll	$9, %ax		/* 512 bytes sectors */
 	addl	%ax, %bx
 	popl	%ecx
 	loop	1b
 
 	data32
-	xorl	%esi, %esi
+	movl    $2f, %esi	/* new line */
 	data32
-	xorl	%eax, %eax
+	call	message
 
+	DBGMSG(CHAR_M)
+
+	cld
+	data32
+	xorl	%esi, %esi
 	/* check /boot integrity */
 	es;lodsl;es;lodsl	/* no need for high word */
-	# cmpw	$OMAGIC, %ax
+	# cmpw	$ZMAGIC, %ax
 	.byte	0x3d
-	.word	OMAGIC
+	.word	ZMAGIC
 	je	3f
 
 	data32
@@ -132,28 +149,19 @@ start:
 	jmp	halt
 1:	.ascii	"Bad magic"
 2:	.asciz	"\r\n"
-
-3:	data32
-	movl    $2b, %esi	/* new line */
-	data32
-	call	message
-
+3:
 #if 0
 	data32;es;lodsl	/* text size */
 	data32;es;lodsl	/* data size */
 	data32;es;lodsl	/* bss  size */
 	data32;es;lodsl	/* syms size */
-#else
-	data32
-	addl	$16, %esi
 #endif
+	es;data32;addr32
+	movl	16(%esi), %edi	/* entry */
 	data32
-	es;lodsl		/* entry */
-	data32
-	addl	$0x20, %eax	/* struct exec */
-	data32
-	addr32
-	movl	%eax, entry_point
+	addl	32, %edi	/* struct exec */
+
+	DBGMSG(CHAR_P)
 
 	/* change to protected mode */
 	/* guarantee that interrupts are disabled when in prot mode */
@@ -184,21 +192,24 @@ start:
 	movl	$0x10, %eax
 	movl	%ax, %ds
 	movl	%ax, %ss
-	movl	%ax, %es
+	movl	$(BOOTSEG << 4) + 0x10000 + BOOTSTACK, %eax
+	movl	%eax, %esp
 
-	movb	%dl, %al	/* discard head (%dh) and random high bits */
+	movzbl	%dl, %eax	/* discard head (%dh) and random high bits */
 	pushl	%eax
 
+#ifdef	DEBUG
+	movl	$0xb8000, %ebx
+	movw	$0x4740, (%ebx)
+#endif
+
 	/* call	/boot */
-	.byte	0x9a
-entry_point:
-	.long	0
-	.word	8
+	call	(%edi)
+	jmp	1f
 halt:
 	call	message
-	cli
+1:	cli
 	hlt
-
 #
 #	chr: write the character in %al to console
 #
@@ -264,11 +275,11 @@ message:
 	data32
 	ret
 
-Gdtr:
-	.word	3f - 1
+	.align	2
+Gdtr:	.word	3 * 8 - 1
 	.long	(BIOSSEG << 4) + 2f
-2:	/* Gdt */
-		/* 0x00 : null */
+	.align	3
+2:		/* 0x00 : null */
 	.long	0, 0
 		/* 0x08 : flat code */
 	.word	0xFFFF			# lolimit
@@ -284,8 +295,7 @@ Gdtr:
 	.byte	SDT_MEMRWA | 0 | 0x80	# RWA, dpl = 0, present
 	.byte	0xf | 0 | 0x40 | 0x80	# hilimit, xx, 32bit, 4k granularity
 	.byte	0			# hibase
-3:
-	.align	2
+
 	.globl	_block_table
 _block_table:
 	.word	0	/* cyllinder/sector */
