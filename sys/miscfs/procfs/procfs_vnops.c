@@ -1,4 +1,4 @@
-/*	$OpenBSD: procfs_vnops.c,v 1.15 2000/08/12 04:29:24 jasoni Exp $	*/
+/*	$OpenBSD: procfs_vnops.c,v 1.16 2001/04/09 07:14:23 tholo Exp $	*/
 /*	$NetBSD: procfs_vnops.c,v 1.40 1996/03/16 23:52:55 christos Exp $	*/
 
 /*
@@ -755,7 +755,7 @@ procfs_lookup(v)
 	struct vnode *fvp;
 	pid_t pid;
 	struct pfsnode *pfs;
-	struct proc *p;
+	struct proc *p = NULL;
 	int i, error, iscurproc = 0, isself = 0;
 
 	*vpp = NULL;
