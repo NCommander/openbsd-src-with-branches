@@ -1,4 +1,4 @@
-/*	$OpenBSD: memprobe.c,v 1.33 1999/09/30 06:29:57 downsj Exp $	*/
+/*	$OpenBSD: memprobe.c,v 1.33.4.1 2000/02/19 17:53:10 niklas Exp $	*/
 
 /*
  * Copyright (c) 1997-1999 Michael Shalayeff
@@ -349,7 +349,7 @@ memprobe()
 	extmem /= 1024;
 
 	/* Check if gate A20 is on */
-	printf("a20=o%s] ", checkA20()? "n" : "ff!");
+	printf("a20=o%s]", checkA20()? "n" : "ff!");
 }
 #endif
 
