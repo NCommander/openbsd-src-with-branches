@@ -24,7 +24,7 @@
 
 #ifdef SMARTCARD
 #include "includes.h"
-RCSID("$OpenBSD: scard.c,v 1.24 2002/03/25 17:34:27 markus Exp $");
+RCSID("$OpenBSD: scard.c,v 1.25 2002/03/26 18:46:59 rees Exp $");
 
 #include <openssl/evp.h>
 #include <sectok.h>
@@ -191,7 +191,7 @@ sc_read_pubkey(Key * k)
 
 	status = 0;
 	p = key_fingerprint(k, SSH_FP_MD5, SSH_FP_HEX);
-	debug("fingerprint %d %s", key_size(k), p);
+	debug("fingerprint %u %s", key_size(k), p);
 	xfree(p);
 
 err:
