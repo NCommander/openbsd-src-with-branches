@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.2 2001/01/29 01:58:22 niklas Exp $
+#	$OpenBSD: Makefile,v 1.3 2001/03/03 23:59:39 markus Exp $
 
 .PATH:		${.CURDIR}/..
 
@@ -14,5 +14,5 @@ SRCS=	ssh-keyscan.c
 
 .include <bsd.prog.mk>
 
-LDADD+=	-lcrypto
-DPADD+=	${LIBCRYPTO}
+LDADD+= -lcrypto -lz
+DPADD+= ${LIBCRYPTO} ${LIBZ}
