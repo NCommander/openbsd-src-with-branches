@@ -1,4 +1,4 @@
-/*	$OpenBSD: mtree.c,v 1.9 1998/12/28 21:22:46 deraadt Exp $	*/
+/*	$OpenBSD: mtree.c,v 1.10 1999/01/24 10:26:54 rohee Exp $	*/
 /*	$NetBSD: mtree.c,v 1.7 1996/09/05 23:29:22 thorpej Exp $	*/
 
 /*-
@@ -44,7 +44,7 @@ static char copyright[] =
 #if 0
 static char sccsid[] = "@(#)mtree.c	8.1 (Berkeley) 6/6/93";
 #else
-static char rcsid[] = "$OpenBSD: mtree.c,v 1.9 1998/12/28 21:22:46 deraadt Exp $";
+static char rcsid[] = "$OpenBSD: mtree.c,v 1.10 1999/01/24 10:26:54 rohee Exp $";
 #endif
 #endif /* not lint */
 
@@ -152,7 +152,7 @@ main(argc, argv)
 		error("%s: %s", dir, strerror(errno));
 
 	if ((cflag || sflag) && !getcwd(fullpath, sizeof fullpath))
-		error("%s", fullpath);
+		error("getcwd: %s", strerror(errno));
 
 	if (cflag) {
 		cwalk();
