@@ -1,4 +1,4 @@
-/*	$OpenBSD: hpux_compat.c,v 1.26 2004/06/22 23:52:17 jfb Exp $	*/
+/*	$OpenBSD: hpux_compat.c,v 1.27 2004/06/24 19:35:23 tholo Exp $	*/
 /*	$NetBSD: hpux_compat.c,v 1.35 1997/05/08 16:19:48 mycroft Exp $	*/
 
 /*
@@ -1043,6 +1043,8 @@ hpux_sys_lockf(p, v, retval)
 	return (0);
 }
 
+
+#ifndef __hppa__
 int
 hpux_sys_getaccess(p, v, retval)
 	struct proc *p;
@@ -1142,8 +1144,7 @@ hpux_sys_getaccess(p, v, retval)
 	crfree(cred);
 	return (error);
 }
-
-/* hpux_to_bsd_uoff() is found in hpux_machdep.c */
+#endif
 
 /*
  * Ancient HP-UX system calls.  Some 9.x executables even use them!
