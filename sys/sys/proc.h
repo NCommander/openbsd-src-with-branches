@@ -1,4 +1,4 @@
-/*	$OpenBSD: proc.h,v 1.28.2.19 2004/06/05 23:13:09 niklas Exp $	*/
+/*	$OpenBSD: proc.h,v 1.28.2.20 2004/06/06 05:21:59 tedu Exp $	*/
 /*	$NetBSD: proc.h,v 1.44 1996/04/22 01:23:21 christos Exp $	*/
 
 /*-
@@ -363,13 +363,6 @@ extern struct proclist allproc;		/* List of all processes. */
 extern struct proclist zombproc;	/* List of zombie processes. */
 
 extern struct proclist deadproc;	/* List of dead processes. */
-#ifndef MULTIPROCESSOR
-/*
- * XXX SIMPLELOCK not yet defined.  deadproc_slock is defined in mplock.h
- * for MULTIPROCESSOR.
- */
-extern struct SIMPLELOCK deadproc_slock;
-#endif
 
 extern struct proc *initproc;		/* Process slots for init, pager. */
 extern struct proc *syncerproc;		/* filesystem syncer daemon */
