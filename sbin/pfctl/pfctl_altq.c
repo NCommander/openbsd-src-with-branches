@@ -1,4 +1,4 @@
-/*	$OpenBSD: pfctl_altq.c,v 1.25 2002/12/17 20:06:05 henning Exp $	*/
+/*	$OpenBSD: pfctl_altq.c,v 1.26 2002/12/23 15:56:24 henning Exp $	*/
 
 /*
  * Copyright (C) 2002
@@ -536,6 +536,8 @@ print_cbq_opts(const struct pf_altq *a)
 			printf(" root");
 		if (opts->flags & CBQCLF_DEFCLASS)
 			printf(" default");
+		if (opts->flags & CBQCLF_CTLCLASS)
+			printf(" control");
 		printf(" ) ");
 	}
 }
