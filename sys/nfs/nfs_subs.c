@@ -1,4 +1,4 @@
-/*	$OpenBSD: nfs_subs.c,v 1.31 2001/06/25 03:28:10 csapuntz Exp $	*/
+/*	$OpenBSD: nfs_subs.c,v 1.32 2001/06/27 04:58:46 art Exp $	*/
 /*	$NetBSD: nfs_subs.c,v 1.27.4.3 1996/07/08 20:34:24 jtc Exp $	*/
 
 /*
@@ -1050,7 +1050,7 @@ nfs_init()
 {
 	static struct timeout nfs_timer_to;
 
-#if !defined(alpha) && defined(DIAGNOSTIC)
+#if !defined(__alpha__) && !defined(__sparc64__) && defined(DIAGNOSTIC)
 	/*
 	 * Check to see if major data structures haven't bloated.
 	 */
