@@ -35,7 +35,7 @@
  */
 
 #include "includes.h"
-RCSID("$OpenBSD: ssh-add.c,v 1.60 2002/06/15 01:27:48 markus Exp $");
+RCSID("$OpenBSD: ssh-add.c,v 1.61 2002/06/19 00:27:55 deraadt Exp $");
 
 #include <openssl/evp.h>
 
@@ -258,7 +258,7 @@ lock_agent(AuthenticationConnection *ac, int lock)
 		fprintf(stderr, "Failed to %slock agent.\n", lock ? "" : "un");
 	memset(p1, 0, strlen(p1));
 	xfree(p1);
-	return -1;
+	return (ret);
 }
 
 static int
