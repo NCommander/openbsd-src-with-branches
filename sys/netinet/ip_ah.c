@@ -1,4 +1,4 @@
-/*	$OpenBSD: ip_ah.c,v 1.18 1999/02/24 23:45:46 angelos Exp $	*/
+/*	$OpenBSD: ip_ah.c,v 1.19 1999/03/27 21:04:19 provos Exp $	*/
 
 /*
  * The authors of this code are John Ioannidis (ji@tla.org),
@@ -248,9 +248,8 @@ ah_input(register struct mbuf *m, int iphlen)
 	    {
 		DPRINTF(("ah_input(): mbuf is not a packet header!\n"));
 	    }
-	    if (!tdbi || !(m->m_flags & (M_CONF|M_AUTH)))
-	      MALLOC(tdbi, struct tdb_ident *, sizeof(struct tdb_ident),
-		     M_TEMP, M_NOWAIT);
+	    MALLOC(tdbi, struct tdb_ident *, sizeof(struct tdb_ident),
+		   M_TEMP, M_NOWAIT);
 
 	    if (!tdbi)
 	      goto no_mem;
@@ -260,9 +259,10 @@ ah_input(register struct mbuf *m, int iphlen)
 	    tdbi->proto = tdbp->tdb_bind_out->tdb_sproto;
 	}
 
-	m->m_pkthdr.tdbi = tdbi;
     no_mem:
-    }
+	m->m_pkthdr.tdbi = tdbi;
+    } else
+        m->m_pkthdr.tdbi = NULL;
 
     /* Packet is authentic */
     m->m_flags |= M_AUTH;
