@@ -1,3 +1,5 @@
+/*	$OpenBSD$	*/
+
 #include <stdio.h>
 
 char magic[2] = { 1, 0xb };

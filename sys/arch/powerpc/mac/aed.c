@@ -1,3 +1,4 @@
+/*	$OpenBSD: aed.c,v 1.5 2000/03/23 06:40:33 thorpej Exp $	*/
 /*	$NetBSD: aed.c,v 1.5 2000/03/23 06:40:33 thorpej Exp $	*/
 
 /*

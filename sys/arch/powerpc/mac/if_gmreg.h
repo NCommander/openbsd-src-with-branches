@@ -1,3 +1,4 @@
+/*	$OpenBSD: if_gmreg.h,v 1.1 2000/02/27 18:00:55 tsubai Exp $	*/
 /*	$NetBSD: if_gmreg.h,v 1.1 2000/02/27 18:00:55 tsubai Exp $	*/
 
 /*-

@@ -1,3 +1,4 @@
+/*	$OpenBSD: pchb.c,v 1.4 2000/01/25 07:19:11 tsubai Exp $	*/
 /*	$NetBSD: pchb.c,v 1.4 2000/01/25 07:19:11 tsubai Exp $	*/
 
 /*-

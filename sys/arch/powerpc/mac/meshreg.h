@@ -1,3 +1,4 @@
+/*	$OpenBSD: meshreg.h,v 1.1 1999/02/19 13:06:03 tsubai Exp $	*/
 /*	$NetBSD: meshreg.h,v 1.1 1999/02/19 13:06:03 tsubai Exp $	*/
 
 /*-

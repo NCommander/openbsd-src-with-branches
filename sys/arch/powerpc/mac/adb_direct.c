@@ -1,3 +1,4 @@
+/*	$OpenBSD: adb_direct.c,v 1.14 2000/06/08 22:10:45 tsubai Exp $	*/
 /*	$NetBSD: adb_direct.c,v 1.14 2000/06/08 22:10:45 tsubai Exp $	*/
 
 /* From: adb_direct.c 2.02 4/18/97 jpw */

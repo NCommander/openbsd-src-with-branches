@@ -1,3 +1,4 @@
+/*	$OpenBSD: obio.c,v 1.6 1999/05/01 10:36:08 tsubai Exp $	*/
 /*	$NetBSD: obio.c,v 1.6 1999/05/01 10:36:08 tsubai Exp $	*/
 
 /*-

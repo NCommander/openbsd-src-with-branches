@@ -1,3 +1,5 @@
+#	$OpenBSD$
+
 NOPROG=	noprog
 NOMAN=	noman
 

@@ -1,3 +1,4 @@
+/*	$OpenBSD: viareg.h,v 1.2 1998/10/20 14:56:30 tsubai Exp $	*/
 /*	$NetBSD: viareg.h,v 1.2 1998/10/20 14:56:30 tsubai Exp $	*/
 
 /*-

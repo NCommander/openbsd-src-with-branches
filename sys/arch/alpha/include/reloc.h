@@ -1,3 +1,5 @@
+/*	$OpenBSD$	*/
+
 #ifndef	_MACH_RELOC_H_
 #define	_MACH_RELOC_H_
 

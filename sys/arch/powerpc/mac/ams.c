@@ -1,3 +1,4 @@
+/*	$OpenBSD: ams.c,v 1.11 2000/12/19 03:13:40 tsubai Exp $	*/
 /*	$NetBSD: ams.c,v 1.11 2000/12/19 03:13:40 tsubai Exp $	*/
 
 /*

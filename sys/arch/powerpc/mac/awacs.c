@@ -1,3 +1,4 @@
+/*	$OpenBSD: awacs.c,v 1.4 2001/02/26 21:07:51 wiz Exp $	*/
 /*	$NetBSD: awacs.c,v 1.4 2001/02/26 21:07:51 wiz Exp $	*/
 
 /*-

@@ -1,3 +1,4 @@
+/*	$OpenBSD: adb_direct.h,v 1.1 1998/05/15 10:15:47 tsubai Exp $	*/
 /*	$NetBSD: adb_direct.h,v 1.1 1998/05/15 10:15:47 tsubai Exp $	*/
 
 /*
