@@ -1,4 +1,4 @@
-/*	$OpenBSD: SYS.h,v 1.4 1999/01/06 06:10:12 d Exp $	*/
+/*	$OpenBSD: SYS.h,v 1.5 2001/06/13 11:42:10 art Exp $	*/
 /*	$NetBSD: SYS.h,v 1.4 1996/10/17 03:03:53 cgd Exp $	*/
 
 /*
@@ -56,7 +56,7 @@ __LEAF(p,name,0);			/* XXX # of args? */	\
 
 
 #define __RSYSCALL(p,name)					\
-	__SYSCALL(p,name);						\
+	__SYSCALL(p,name);					\
 	RET;							\
 __END(p,name)
 
