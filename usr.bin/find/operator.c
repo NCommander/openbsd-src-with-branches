@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: operator.c,v 1.2 1996/06/26 05:33:12 deraadt Exp $	*/
 
 /*-
  * Copyright (c) 1990, 1993
@@ -38,7 +38,7 @@
 
 #ifndef lint
 /*static char sccsid[] = "from: @(#)operator.c	8.1 (Berkeley) 6/6/93";*/
-static char rcsid[] = "$OpenBSD: operator.c,v 1.1.1.1 1995/10/18 08:45:14 deraadt Exp $";
+static char rcsid[] = "$OpenBSD: operator.c,v 1.2 1996/06/26 05:33:12 deraadt Exp $";
 #endif /* not lint */
 
 #include <sys/types.h>
@@ -193,7 +193,7 @@ not_squish(plan)
 			int notlevel = 1;
 
 			node = yanknode(&plan);
-			while (node->type == N_NOT) {
+			while (node != NULL && node->type == N_NOT) {
 				++notlevel;
 				node = yanknode(&plan);
 			}
