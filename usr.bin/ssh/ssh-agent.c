@@ -1,4 +1,4 @@
-/*	$OpenBSD: ssh-agent.c,v 1.77 2001/12/29 21:56:01 stevesk Exp $	*/
+/*	$OpenBSD: ssh-agent.c,v 1.78 2002/01/13 17:27:07 provos Exp $	*/
 
 /*
  * Author: Tatu Ylonen <ylo@cs.hut.fi>
@@ -37,7 +37,7 @@
 
 #include "includes.h"
 #include <sys/queue.h>
-RCSID("$OpenBSD: ssh-agent.c,v 1.77 2001/12/29 21:56:01 stevesk Exp $");
+RCSID("$OpenBSD: ssh-agent.c,v 1.78 2002/01/13 17:27:07 provos Exp $");
 
 #include <openssl/evp.h>
 #include <openssl/md5.h>
@@ -201,7 +201,7 @@ process_authentication_challenge1(SocketEntry *e)
 	/* Only protocol 1.1 is supported */
 	if (buffer_len(&e->input) == 0)
 		goto failure;
-	buffer_get(&e->input, (char *) session_id, 16);
+	buffer_get(&e->input, session_id, 16);
 	response_type = buffer_get_int(&e->input);
 	if (response_type != 1)
 		goto failure;
