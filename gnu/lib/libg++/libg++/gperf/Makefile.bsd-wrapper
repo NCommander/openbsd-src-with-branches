@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile.bsd-wrapper,v 1.10 1998/03/03 21:40:28 millert Exp $
+#	$OpenBSD: Makefile.bsd-wrapper,v 1.11 1998/07/24 00:10:47 millert Exp $
 
 .if defined(OBJMACHINE)
 OBJDIR=	obj.${MACHINE}
@@ -54,6 +54,8 @@ $(STD_OBJDIR)/libstdc++.a:
 
 $(GXX_OBJDIR)/libg++.a:
 	cd $(GXX_DIR); $(MAKE) -f Makefile.bsd-wrapper SUBDIR=
+
+.include <bsd.own.mk>	# for NOMAN if it's there
 
 .if !defined(NOMAN)
 install: maninstall 
