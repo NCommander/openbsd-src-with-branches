@@ -1,4 +1,4 @@
-/*	$OpenBSD: lex.c,v 1.33 2004/12/30 21:34:24 otto Exp $	*/
+/*	$OpenBSD: lex.c,v 1.34 2005/01/10 17:52:04 millert Exp $	*/
 
 /*
  * lexical analysis and source input
@@ -1278,11 +1278,7 @@ dopprompt(const char *sp, int ntruncate, const char **spp, int doprint)
 				strftime(strbuf, sizeof strbuf, "%R", tm);
 				break;
 			case 'u':	/* '\' 'u' username */
-				p = getlogin();
-				if (p)
-					strlcpy(strbuf, p, sizeof strbuf);
-				else
-					strbuf[0] = '\0';
+				strlcpy(strbuf, username, sizeof strbuf);
 				break;
 			case 'v':	/* '\' 'v' version (short) */
 				p = strchr(ksh_version, ' ');
