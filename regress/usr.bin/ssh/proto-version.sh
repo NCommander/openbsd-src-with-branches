@@ -1,4 +1,4 @@
-#	$OpenBSD: $
+#	$OpenBSD: proto-version.sh,v 1.2 2002/02/16 01:09:47 markus Exp $
 #	Placed in the Public Domain.
 
 tid="sshd version with different protocol combinations"
@@ -8,7 +8,7 @@ check_version ()
 {
 	version=$1
 	expect=$2
-	banner=`echo -n | sshd -o "Protocol=${version}" -i -f ${OBJ}/sshd_proxy`
+	banner=`echo -n | ${SSHD} -o "Protocol=${version}" -i -f ${OBJ}/sshd_proxy`
 	case ${banner} in
 	SSH-1.99-*)
 		proto=199

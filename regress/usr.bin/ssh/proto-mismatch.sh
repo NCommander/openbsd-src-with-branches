@@ -1,4 +1,4 @@
-#	$OpenBSD: $
+#	$OpenBSD: proto-mismatch.sh,v 1.2 2002/02/16 01:09:47 markus Exp $
 #	Placed in the Public Domain.
 
 tid="protocol version mismatch"
@@ -7,7 +7,7 @@ mismatch ()
 {
 	server=$1
 	client=$2
-	banner=`echo ${client} | sshd -o "Protocol=${server}" -i -f ${OBJ}/sshd_proxy`
+	banner=`echo ${client} | ${SSHD} -o "Protocol=${server}" -i -f ${OBJ}/sshd_proxy`
 	r=$?
 	trace "sshd prints ${banner}"
 	if [ $r -ne 255 ]; then
