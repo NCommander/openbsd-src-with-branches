@@ -92,7 +92,7 @@ u_long	bufhash;
 TAILQ_HEAD(bqueues, buf) bufqueues[BQUEUES];
 int needbuffer;
 int nobuffers;
-extern struct bio_ops bioops;
+struct bio_ops bioops;
 
 /*
  * Buffer pool for I/O buffers.
