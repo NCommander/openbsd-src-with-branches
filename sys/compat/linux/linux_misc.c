@@ -1,4 +1,4 @@
-/*	$OpenBSD: linux_misc.c,v 1.42 2002/03/14 20:31:31 mickey Exp $	*/
+/*	$OpenBSD: linux_misc.c,v 1.43 2002/06/05 19:43:25 jasoni Exp $	*/
 /*	$NetBSD: linux_misc.c,v 1.27 1996/05/20 01:59:21 fvdl Exp $	*/
 
 /*
@@ -1483,9 +1483,9 @@ linux_sys_stime(p, v, retval)
 	atv.tv_sec = tt;
 	atv.tv_usec = 0;
 
-	settime(&atv);
+	error = settime(&atv);
 
-	return 0;
+	return (error);
 }
 
 int
