@@ -1,4 +1,4 @@
-/*	$OpenBSD: simplelock.h,v 1.5 1997/11/14 23:40:03 csapuntz Exp $	*/
+/*	$OpenBSD: simplelock.h,v 1.6 1998/12/28 19:13:01 art Exp $	*/
 
 #ifndef _SIMPLELOCK_H_
 #define _SIMPLELOCK_H_
@@ -22,10 +22,6 @@ struct simplelock {
 #endif
 
 #if NCPUS == 1
-
-#if defined(DEBUG) && !defined(SIMPLELOCK_DEBUG)
-#define SIMPLELOCK_DEBUG
-#endif
 
 #if !defined(SIMPLELOCK_DEBUG)
 #define	simple_lock(alp)
