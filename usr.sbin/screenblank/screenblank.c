@@ -78,7 +78,7 @@ static	void add_dev __P((char *, int));
 static	void change_state __P((int));
 static	void cvt_arg __P((char *, struct timeval *));
 static	void logpid __P((void));
-static	void sighandler __P((int, int, struct sigcontext *));
+static	void sighandler __P((int));
 static	void usage __P((void));
 
 int
@@ -242,9 +242,8 @@ add_dev(path, isfb)
 
 /* ARGSUSED */
 static void
-sighandler(sig, code, context)
-	int sig, code;
-	struct sigcontext *context;
+sighandler(sig)
+	int sig;
 {
 
 	/* Kill the pid file and re-enable the framebuffer before exit. */
