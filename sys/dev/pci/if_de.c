@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_de.c,v 1.52 2001/11/06 19:53:19 miod Exp $	*/
+/*	$OpenBSD: if_de.c,v 1.53 2002/03/14 03:16:06 millert Exp $	*/
 /*	$NetBSD: if_de.c,v 1.45 1997/06/09 00:34:18 thorpej Exp $	*/
 
 /*-
@@ -5236,7 +5236,7 @@ tulip_pci_probe(
 	    || PCI_CHIPID(pa->pa_id) == CHIPID_21041
 	    || PCI_CHIPID(pa->pa_id) == CHIPID_21140
 	    || PCI_CHIPID(pa->pa_id) == CHIPID_21142)
-	return 1;
+	return 2;
 
     return 0;
 }
