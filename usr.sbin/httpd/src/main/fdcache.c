@@ -1,7 +1,7 @@
-/*	$OpenBSD: fdcache.c,v 1.6 2003/05/12 17:20:47 henning Exp $ */
+/*	$OpenBSD: fdcache.c,v 1.7 2003/05/12 17:23:21 henning Exp $ */
 
 /*
- * Copyright (c) 2002 Henning Brauer
+ * Copyright (c) 2002, 2003 Henning Brauer
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
