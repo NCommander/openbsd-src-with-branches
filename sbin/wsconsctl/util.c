@@ -70,7 +70,8 @@ static const struct nameint kbtype_tab[] = {
 	{ WSKBD_TYPE_SUN5,	"sun5" },
 	{ WSKBD_TYPE_HIL,	"hil" },
 	{ WSKBD_TYPE_GSC,	"hp-ps2" },
-	{ WSKBD_TYPE_LUNA,	"luna" }
+	{ WSKBD_TYPE_LUNA,	"luna" },
+	{ WSKBD_TYPE_ZAURUS,	"zaurus" }
 };
 
 static const struct nameint mstype_tab[] = {
