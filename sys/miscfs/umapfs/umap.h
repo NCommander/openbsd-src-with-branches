@@ -1,4 +1,4 @@
-/*	$OpenBSD: umap.h,v 1.2 1996/02/26 07:20:03 mickey Exp $	*/
+/*	$OpenBSD: umap.h,v 1.3 1996/02/29 13:08:04 niklas Exp $	*/
 /*	$NetBSD: umap.h,v 1.6 1996/02/09 22:41:00 christos Exp $	*/
 
 /*
@@ -91,6 +91,6 @@ extern struct vnode *umap_checkvp __P((struct vnode *vp, char *fil, int lno));
 extern int (**umap_vnodeop_p) __P((void *));
 extern struct vfsops umap_vfsops;
 
-int umapfs_init __P((void));
+void umapfs_init __P((void));
 
 #endif /* _KERNEL */
