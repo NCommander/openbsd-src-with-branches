@@ -1,4 +1,4 @@
-/*	$OpenBSD: procfs_subr.c,v 1.3 1996/06/21 12:49:56 mickey Exp $	*/
+/*	$OpenBSD: procfs_subr.c,v 1.4 1996/07/02 06:52:03 niklas Exp $	*/
 /*	$NetBSD: procfs_subr.c,v 1.15 1996/02/12 15:01:42 christos Exp $	*/
 
 /*
@@ -302,7 +302,8 @@ vfs_findname(nm, buf, buflen)
 {
 
 	for (; nm->nm_name; nm++)
-		if (bcmp(buf, (char *) nm->nm_name, buflen+1) == 0)
+		if (bcmp((const void *) buf, (const void *) nm->nm_name,
+		    buflen + 1) == 0)
 			return (nm);
 
 	return (0);
