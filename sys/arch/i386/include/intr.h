@@ -185,9 +185,9 @@ softintr(sir, vec)
 }
 
 #define	setsoftast()	(astpending = 1)
-#define	setsoftclock()	softintr(1 << SIR_CLOCK,IPL_CLOCK)
-#define	setsoftnet()	softintr(1 << SIR_NET,IPL_NET)
-#define	setsofttty()	softintr(1 << SIR_TTY,IPL_TTY)
+#define	setsoftclock()	softintr(1 << SIR_CLOCK,IPL_SOFTCLOCK)
+#define	setsoftnet()	softintr(1 << SIR_NET,IPL_SOFTNET)
+#define	setsofttty()	softintr(1 << SIR_TTY,IPL_SOFTTTY)
 
 #define I386_IPI_HALT	0x00000001
 #define I386_IPI_TLB	0x00000002
