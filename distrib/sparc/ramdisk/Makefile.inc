@@ -1,7 +1,7 @@
-#	$OpenBSD: Makefile.inc,v 1.10 1997/09/19 06:07:18 deraadt Exp $
-#	$OpenBSD: Makefile.inc,v 1.10 1997/09/19 06:07:18 deraadt Exp $
+#	$OpenBSD: Makefile.inc,v 1.11 1998/02/18 22:46:51 deraadt Exp $
+#	$OpenBSD: Makefile.inc,v 1.11 1998/02/18 22:46:51 deraadt Exp $
 
-IMAGESIZE?=		4352 # 2Mb & change in 512 byte blocks
+IMAGESIZE?=		5352
 GZIP?=			gzip
 GZIPFLAGS?=		-9v
 GZIPEXT?=		.gz

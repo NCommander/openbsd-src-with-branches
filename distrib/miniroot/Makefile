@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.21 1998/03/08 00:26:22 deraadt Exp $
+#	$OpenBSD: Makefile,v 1.22 1998/06/27 20:52:08 todd Exp $
 
 REV=		${OSrev}
 
@@ -17,7 +17,7 @@ DISKTYPE=	miniroot
 PID!=		echo $$$$
 REALIMAGE!=	echo /var/tmp/image.${PID}
 IMAGE?=		miniroot${REV}.fs
-IMAGESIZE?=	10240 # 5Mb in 512 byte blocks
+IMAGESIZE?=	10240 # 5MB in 512 byte blocks
 NEWFSOPTS?=
 NEWFS_WILL_FAIL?=false
 CRUNCHGENOPTS?=
