@@ -1,4 +1,4 @@
-/*	$OpenBSD: emacs.c,v 1.33 2004/12/22 17:14:34 millert Exp $	*/
+/*	$OpenBSD: emacs.c,v 1.34 2004/12/23 11:29:02 jsg Exp $	*/
 
 /*
  *  Emacs-like command line editing and history
@@ -795,6 +795,10 @@ x_newline(int c)
 static int
 x_end_of_text(int c)
 {
+	x_zotc(edchars.eof);
+	x_putc('\r');
+	x_putc('\n');
+	x_flush();
 	return KEOL;
 }
 
