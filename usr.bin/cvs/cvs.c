@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: cvs.c,v 1.14 2004/11/09 23:06:01 krapht Exp $	*/
 /*
  * Copyright (c) 2004 Jean-Francois Brousseau <jfb@openbsd.org>
  * All rights reserved. 
@@ -517,8 +517,7 @@ cvs_readrc(void)
 		*(lp++) = '\0';
 		if (strcmp(linebuf, "cvs") == 0) {
 			/* global options */
-		}
-		else {
+		} else {
 			cmdp = cvs_findcmd(linebuf);
 			if (cmdp == NULL) {
 				cvs_log(LP_NOTICE,
