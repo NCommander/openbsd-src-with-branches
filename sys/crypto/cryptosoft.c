@@ -762,7 +762,7 @@ swcr_process(struct cryptop *crp)
 	for (crd = crp->crp_desc; crd->crd_next; crd = crd->crd_next)
 	  crd->CRD_INI.cri_next = &(crd->crd_next->CRD_INI);
 
-	if (crypto_newsession(&nid, &(crp->crp_desc->CRD_INI)) == 0)
+	if (crypto_newsession(&nid, &(crp->crp_desc->CRD_INI), 0) == 0)
 	  crp->crp_sid = nid;
     }
 

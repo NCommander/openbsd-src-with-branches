@@ -1,4 +1,4 @@
-/*	$OpenBSD: ubsecvar.h,v 1.12 2001/01/29 00:39:21 jason Exp $	*/
+/*	$OpenBSD: ubsecvar.h,v 1.10 2001/01/11 18:52:53 deraadt Exp $	*/
 
 /*
  * Copyright (c) 2000 Theo de Raadt
@@ -61,6 +61,7 @@ struct ubsec_q {
 
 	struct ubsec_softc		*q_sc;
 	struct mbuf 		      	*q_src_m, *q_dst_m;
+	struct criov			*q_src, *q_dst;
 
 	long				q_src_packp[MAX_SCATTER];
 	int				q_src_packl[MAX_SCATTER];

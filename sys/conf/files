@@ -283,6 +283,7 @@ pseudo-device sppp: ifnet
 pseudo-device faith: ifnet
 pseudo-device gif: ifnet
 pseudo-device gre: ifnet
+pseudo-device crypto: ifnet
 
 pseudo-device sequencer
 
@@ -624,6 +625,8 @@ file crypto/ecb_enc.c			(inet & ipsec) | crypto | tcfs
 file crypto/set_key.c			(inet & ipsec) | crypto | tcfs
 file crypto/ecb3_enc.c			(inet & ipsec) | crypto | tcfs
 file crypto/crypto.c			(inet & ipsec) | crypto
+file crypto/cryptodev.c			((inet & ipsec) | crypto)	needs-flag
+file crypto/criov.c			(inet & ipsec) | crypto
 file crypto/cryptosoft.c		(inet & ipsec) | crypto
 file crypto/mbuf.c			(inet & ipsec) | crypto
 file crypto/xform.c			(inet & ipsec) | crypto
