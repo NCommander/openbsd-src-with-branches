@@ -23,7 +23,7 @@
  */
 
 #include "includes.h"
-RCSID("$OpenBSD: auth-chall.c,v 1.5 2001/03/02 18:54:30 deraadt Exp $");
+RCSID("$OpenBSD: auth-chall.c,v 1.6 2001/03/20 18:57:04 markus Exp $");
 
 #include "auth.h"
 #include "log.h"
@@ -50,8 +50,8 @@ get_challenge(Authctxt *authctxt, char *devs)
 	debug3("bsd auth: devs %s", devs ? devs : "<default>");
 	authctxt->as = auth_userchallenge(authctxt->user, devs, "auth-ssh",
 	    &challenge);
-        if (authctxt->as == NULL)
-                return NULL;
+	if (authctxt->as == NULL)
+		return NULL;
 	debug2("get_challenge: <%s>", challenge ? challenge : "EMPTY");
 	return challenge;
 }

@@ -12,7 +12,7 @@
  */
 
 #include "includes.h"
-RCSID("$OpenBSD: ssh-keygen.c,v 1.53 2001/03/26 23:23:24 markus Exp $");
+RCSID("$OpenBSD: ssh-keygen.c,v 1.54 2001/04/03 13:56:11 stevesk Exp $");
 
 #include <openssl/evp.h>
 #include <openssl/pem.h>
@@ -114,7 +114,7 @@ try_load_pem_key(char *filename)
 	char *pass;
 	Key *prv;
 
- 	prv = key_load_private(filename, "", NULL);
+	prv = key_load_private(filename, "", NULL);
 	if (prv == NULL) {
 		pass = read_passphrase("Enter passphrase: ", 1);
 		prv = key_load_private(filename, pass, NULL);
