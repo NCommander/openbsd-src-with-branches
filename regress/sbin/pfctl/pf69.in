@@ -1,3 +1,0 @@
-nat on lo0 inet all tag regress -> lo0
-pass out quick on lo0 keep state tagged regress
-

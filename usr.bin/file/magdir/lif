@@ -1,8 +1,0 @@
-#	$OpenBSD$
-
-#------------------------------------------------------------------------------
-# lif:  file(1) magic for lif
-#
-# (Daniel Quinlan <quinlan@yggdrasil.com>)
-#
-0	beshort		0x8000		lif file
