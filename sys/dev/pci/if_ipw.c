@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_ipw.c,v 1.44 2005/03/17 20:08:13 damien Exp $	*/
+/*	$OpenBSD: if_ipw.c,v 1.45 2005/03/23 14:14:30 damien Exp $	*/
 
 /*-
  * Copyright (c) 2004, 2005
@@ -148,7 +148,7 @@ ipw_match(struct device *parent, void *match, void *aux)
 	struct pci_attach_args *pa = aux;
 
 	if (PCI_VENDOR (pa->pa_id) == PCI_VENDOR_INTEL &&
-	    PCI_PRODUCT(pa->pa_id) == PCI_PRODUCT_INTEL_PRO_2100_3B)
+	    PCI_PRODUCT(pa->pa_id) == PCI_PRODUCT_INTEL_PRO_WL_2100)
 		return 1;
 
 	return 0;
