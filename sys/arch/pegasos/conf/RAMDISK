@@ -1,4 +1,4 @@
-#	$OpenBSD: RAMDISK,v 1.1.2.2 2003/10/11 22:21:17 drahn Exp $
+#	$OpenBSD: RAMDISK,v 1.1 2003/10/31 03:54:33 drahn Exp $
 #
 # PPC RAMDISK config file
 #
@@ -25,7 +25,8 @@ option		MFS		# memory file system
 option		CD9660		# ISO 9660 + Rock Ridge file system
 option		MSDOSFS		# MS-DOS file system
 option		INET		# IP + ICMP + TCP + UDP
-option		DDB		# IP + ICMP + TCP + UDP
+option		INET6		# IPv6 (needs INET)
+option		DDB		# kernel debugger
 
 config		bsd	root on rd0a swap on rd0b
 
