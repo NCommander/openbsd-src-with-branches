@@ -752,7 +752,7 @@ apciparam(tp, t)
 		apci->ap_ier = (ospeed >> 8) & 0xff;
 		apci->ap_cfcr = cfcr;
 	} else
-		apci->ap_cfcr;
+		apci->ap_cfcr = cfcr;
 
 	/* and copy to tty */
 	tp->t_ispeed = t->c_ispeed;
