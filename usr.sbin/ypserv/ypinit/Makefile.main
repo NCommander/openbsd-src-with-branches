@@ -1,7 +1,0 @@
-#	$OpenBSD$
-
-SUBDIR=	
-
-passwd group hosts networks rpc services protocols netid: _SUBDIRUSE
-
-.include <bsd.subdir.mk>
