@@ -1,4 +1,4 @@
-/*	$OpenBSD: pcivar.h,v 1.18 2000/06/09 16:09:09 chris Exp $	*/
+/*	$OpenBSD: pcivar.h,v 1.19 2001/06/12 15:40:33 niklas Exp $	*/
 /*	$NetBSD: pcivar.h,v 1.23 1997/06/06 23:48:05 thorpej Exp $	*/
 
 /*
@@ -107,6 +107,7 @@ struct pci_attach_args {
 	int		pa_flags;	/* flags; see below */
 
 	u_int		pa_device;
+	u_int           pa_bus;
 	u_int		pa_function;
 	pcitag_t	pa_tag;
 	pcireg_t	pa_id, pa_class;
