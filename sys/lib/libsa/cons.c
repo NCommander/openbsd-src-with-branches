@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: cons.c,v 1.1 1996/10/23 09:02:53 mickey Exp $	*/
 
 /*
  * Copyright (c) 1996 Michael Shalayeff
@@ -35,6 +35,18 @@
 #include <stand.h>
 
 struct consw *console = &consw[0];
+
+int
+cons_probe()
+{
+	int i;
+	for (i = 0; i < ncons; i++) {
+		if ((consw[i].cn_probe)() != 0)
+			printf("%s present\n", consw[i].name);
+	}
+	printf("using %s console\n", console->name);
+	return 1;
+}
 
 void
 putc(c)
