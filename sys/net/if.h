@@ -1,4 +1,4 @@
-/*	$OpenBSD: if.h,v 1.8 1998/09/03 06:24:20 jason Exp $	*/
+/*	$OpenBSD: if.h,v 1.9 1999/01/07 06:03:28 deraadt Exp $	*/
 /*	$NetBSD: if.h,v 1.23 1996/05/07 02:40:27 thorpej Exp $	*/
 
 /*
@@ -119,6 +119,7 @@ struct ifnet {				/* and the entries */
 	char	if_xname[IFNAMSIZ];	/* external name (name + unit) */
 	int	if_pcount;		/* number of promiscuous listeners */
 	caddr_t	if_bpf;			/* packet filter structure */
+	caddr_t	if_bridge;		/* bridge structure */
 	u_short	if_index;		/* numeric abbreviation for this if */
 	short	if_timer;		/* time 'til if_watchdog called */
 	short	if_flags;		/* up/down, broadcast, etc. */
