@@ -1,4 +1,4 @@
-/*	$OpenBSD: pf_ioctl.c,v 1.109 2004/03/09 21:44:41 mcbride Exp $ */
+/*	$OpenBSD: pf_ioctl.c,v 1.110 2004/03/15 10:59:07 henning Exp $ */
 
 /*
  * Copyright (c) 2001 Daniel Hartmeier
@@ -1359,7 +1359,7 @@ pfioctl(dev_t dev, u_long cmd, caddr_t addr, int flags, struct proc *p)
 		}
 		bcopy(&ps->state, state, sizeof(struct pf_state));
 		bzero(&state->u, sizeof(state->u));
-		state->rule.ptr = NULL;
+		state->rule.ptr = &pf_default_rule;
 		state->nat_rule.ptr = NULL;
 		state->anchor.ptr = NULL;
 		state->rt_kif = NULL;
