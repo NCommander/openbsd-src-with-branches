@@ -1,4 +1,4 @@
-/*	$OpenBSD: kdump.c,v 1.18 2002/07/06 19:14:20 nordin Exp $	*/
+/*	$OpenBSD: kdump.c,v 1.19 2002/10/17 17:20:49 mickey Exp $	*/
 
 /*-
  * Copyright (c) 1988, 1993
@@ -43,7 +43,7 @@ static char copyright[] =
 #if 0
 static char sccsid[] = "@(#)kdump.c	8.4 (Berkeley) 4/28/95";
 #endif
-static char *rcsid = "$OpenBSD: kdump.c,v 1.18 2002/07/06 19:14:20 nordin Exp $";
+static char *rcsid = "$OpenBSD: kdump.c,v 1.19 2002/10/17 17:20:49 mickey Exp $";
 #endif /* not lint */
 
 #include <sys/param.h>
@@ -551,7 +551,7 @@ usage(void)
 	extern char *__progname;
 	fprintf(stderr, "usage: %s "
 	    "[-dnlRT] [-e emulation] [-p pid] [-f trfile] [-m maxdata] "
-	    "[-t [cnis]]\n", __progname);
+	    "[-t [ceinsw]]\n", __progname);
 	exit(1);
 }
 
