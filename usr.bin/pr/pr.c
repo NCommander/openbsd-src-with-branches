@@ -1,4 +1,4 @@
-/*	$OpenBSD: pr.c,v 1.19 2003/08/04 17:06:45 deraadt Exp $	*/
+/*	$OpenBSD: pr.c,v 1.20 2003/11/09 20:13:57 otto Exp $	*/
 
 /*-
  * Copyright (c) 1991 Keith Muller.
@@ -41,7 +41,7 @@ static char copyright[] =
 
 #ifndef lint
 /* from: static char sccsid[] = "@(#)pr.c	8.1 (Berkeley) 6/6/93"; */
-static char *rcsid = "$OpenBSD: pr.c,v 1.19 2003/08/04 17:06:45 deraadt Exp $";
+static char *rcsid = "$OpenBSD: pr.c,v 1.20 2003/11/09 20:13:57 otto Exp $";
 #endif /* not lint */
 
 #include <sys/types.h>
@@ -842,7 +842,7 @@ ferrout(char *fmt, ...)
     char *p;
 
     va_start(ap, fmt);
-    if (ferr == NULL)
+    if (ferr == 0)
         vfprintf(stderr, fmt, ap);
     else {
 	sigemptyset(&block);
