@@ -81,6 +81,8 @@ static const char *cvs_modestr[8] = {
 
 
 
+pid_t cvs_exec_pid;
+
 
 /*
  * cvs_readrepo()
@@ -522,4 +524,29 @@ cvs_mkadmin(struct cvs_file *cdir, mode_t mode)
 	}
 
 	return (0);
+}
+
+
+/*
+ * cvs_exec()
+ */
+
+int
+cvs_exec(int argc, char **argv, int fds[3])
+{
+	int ret;
+	pid_t pid;
+
+	if ((pid = fork()) == -1) {
+		cvs_log(LP_ERRNO, "failed to fork");
+		return (-1);
+	} else if (pid == 0) {
+		execvp(argv[0], argv);
+		err(1, "failed to exec %s", argv[0]);
+	}
+
+	if (waitpid(pid, &ret, 0) == -1)
+		warn("failed to waitpid");
+
+	return (ret);
 }
