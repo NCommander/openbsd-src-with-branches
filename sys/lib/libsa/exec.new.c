@@ -1,4 +1,4 @@
-/*	$OpenBSD: exec.c,v 1.21 1998/04/27 18:38:25 millert Exp $	*/
+/*	$OpenBSD: exec.new.c,v 1.1 1998/07/14 03:29:08 mickey Exp $	*/
 
 /*
  * Copyright (c) 1998 Michael Shalayeff
@@ -136,7 +136,7 @@ exec(path, loadaddr, howto)
 		printf("+%u]", sz);
 	}
 
-	param.xp_end = (u_int)(pa + sz);
+	param.xp_end = ((u_int)(pa + sz) + sizeof(int) -1) & ~(sizeof(int) -1);
 
 	printf(" total=0x%x start=0x%x\n", param.xp_end, param.xp_entry);
 
