@@ -1,4 +1,4 @@
-/*	$OpenBSD: tparm.c,v 1.1.1.1 1996/05/31 05:40:02 tholo Exp $	*/
+/*	$OpenBSD: tparm.c,v 1.2 1996/06/02 23:47:51 tholo Exp $	*/
 
 /*
  * Copyright (c) 1996 SigmaSoft, Th. Lockert <tholo@sigmasoft.com>
@@ -31,7 +31,7 @@
  */
 
 #ifndef lint
-static char rcsid[] = "$OpenBSD: tparm.c,v 1.1.1.1 1996/05/31 05:40:02 tholo Exp $";
+static char rcsid[] = "$OpenBSD: tparm.c,v 1.2 1996/06/02 23:47:51 tholo Exp $";
 #endif
 
 #include <stdio.h>
@@ -345,9 +345,11 @@ tparm(va_alist)
     va_start(ap);
     str = va_arg(ap, const char *);
 #else
+    /* LINTED pointer casts may be troublesome */
     va_start(ap, str);
 #endif
     p = _tparm(str, buf, ap);
+    /* LINTED expression has no effect */
     va_end(ap);
     return(p);
 }
