@@ -294,13 +294,10 @@ extract()
 		/*
 		 * if required, chdir around.
 		 */
-		if ((arcn->pat != NULL) && (arcn->pat->chdnam != NULL)) {
-			if (chdir(arcn->pat->chdnam) < 0) {
+		if ((arcn->pat != NULL) && (arcn->pat->chdname != NULL))
+			if (chdir(arcn->pat->chdname) != 0)
 				syswarn(1, errno, "Cannot chdir to %s",
-				    arcn->pat->chdnam);
-				return;
-			}
-		}
+				    arcn->pat->chdname);
 
 		/*
 		 * all ok, extract this member based on type
@@ -351,12 +348,9 @@ extract()
 		/*
 		 * if required, chdir around.
 		 */
-		if ((arcn->pat != NULL) && (arcn->pat->chdnam != NULL)) {
-			if (chdir(cwdpt) < 0) {
-				syswarn(0, errno, "Can't chdir to %s", cwdpt);
-				return;
-			}
-		}
+		if ((arcn->pat != NULL) && (arcn->pat->chdname != NULL))
+			if (chdir(cwdpt) != 0)
+				syswarn(1, errno, "Can't chdir to %s", cwdpt);
 	}
 
 	/*

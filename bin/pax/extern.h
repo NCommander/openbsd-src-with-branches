@@ -192,6 +192,7 @@ void options __P((register int, register char **));
 OPLIST * opt_next __P((void));
 int opt_add __P((register char *));
 int bad_opt __P((void));
+char *chdname;
 
 /*
  * pat_rep.c

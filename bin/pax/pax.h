@@ -166,7 +166,7 @@ typedef struct {
 typedef struct pattern {
 	char		*pstr;		/* pattern to match, user supplied */
 	char		*pend;		/* end of a prefix match */
-	char		*chdnam;
+	char		*chdname;	/* the dir to change to if not NULL.  */
 	int		plen;		/* length of pstr */
 	int		flgs;		/* processing/state flags */
 #define MTCH		0x1		/* pattern has been matched */
