@@ -1,4 +1,4 @@
-/*	$OpenBSD: intr.c,v 1.3 2002/09/23 06:11:47 mickey Exp $	*/
+/*	$OpenBSD: intr.c,v 1.4 2002/12/17 21:54:25 mickey Exp $	*/
 
 /*
  * Copyright (c) 2002 Michael Shalayeff
@@ -141,10 +141,12 @@ cpu_intr_init()
 	mfctl(CR_ITMR, mask);
 	mtctl(mask - 1, CR_ITMR);
 
+	mtctl(cpu_mask, CR_EIEM);
+	mtctl((1 << 31), CR_EIRR);
+
 	cold = 0;
 
-	/* in spl*() we trust, clock is enabled in initclocks() */
-	mtctl(cpu_mask, CR_EIEM);
+	/* in spl*() we trust, clock is started in initclocks() */
 	kpsw |= PSL_I;
 	__asm __volatile("ssm %0, %%r0" :: "i" (PSL_I));
 }
