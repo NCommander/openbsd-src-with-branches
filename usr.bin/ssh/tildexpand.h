@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: tildexpand.h,v 1.2 2001/01/29 01:58:19 niklas Exp $	*/
 
 /*
  * Author: Tatu Ylonen <ylo@cs.hut.fi>
@@ -16,4 +16,4 @@
  * Expands tildes in the file name.  Returns data allocated by xmalloc.
  * Warning: this calls getpw*.
  */
-char   *tilde_expand_filename(const char *filename, uid_t my_uid);
+char   *tilde_expand_filename(const char *, uid_t);
