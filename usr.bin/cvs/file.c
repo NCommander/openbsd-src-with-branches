@@ -294,11 +294,6 @@ cvs_file_getspec(char **fspec, int fsn, int flags)
 	char common[MAXPATHLEN], *cp;
 	CVSFILE *cfp;
 
-	/* first load the common subdirectory */
-	cfp = cvs_file_get(common, flags);
-	for (i = 0; i < fsn; i++) {
-	}
-
 	return (cfp);
 }
 
