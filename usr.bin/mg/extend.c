@@ -1,4 +1,4 @@
-/*	$OpenBSD: extend.c,v 1.22 2002/03/10 13:22:56 ho Exp $	*/
+/*	$OpenBSD: extend.c,v 1.23 2002/03/11 13:02:56 vincent Exp $	*/
 
 /*
  *	Extended (M-X) commands, rebinding, and	startup file processing.
@@ -699,7 +699,6 @@ excline(char *line)
 	}
 	if (argp != NULL) {
 		f = FFARG;
-		errno = 0;
 		nl = strtol(argp, &tmp, 10);
 		if (*tmp != '\0')
 			return FALSE;
