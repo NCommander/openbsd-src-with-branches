@@ -1,4 +1,4 @@
-/*	$OpenBSD: pdc.c,v 1.20 2002/02/05 03:46:23 mickey Exp $	*/
+/*	$OpenBSD: pdc.c,v 1.21 2002/02/08 20:43:14 miod Exp $	*/
 
 /*
  * Copyright (c) 1998-2002 Michael Shalayeff
@@ -88,6 +88,11 @@ static int pdc_speeds[] = {
 	B4800,
 	B7200,
 	B9600,
+	B19200,
+	B38400,
+	B57600,
+	B115200,
+	B230400,
 };
 
 void
