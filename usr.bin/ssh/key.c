@@ -32,7 +32,7 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 #include "includes.h"
-RCSID("$OpenBSD: key.c,v 1.28 2001/06/25 08:25:37 markus Exp $");
+RCSID("$OpenBSD: key.c,v 1.29 2001/06/26 20:14:10 markus Exp $");
 
 #include <openssl/evp.h>
 
@@ -653,7 +653,7 @@ key_names_valid2(const char *names)
 }
 
 Key *
-key_from_blob(char *blob, int blen)
+key_from_blob(u_char *blob, int blen)
 {
 	Buffer b;
 	char *ktype;
