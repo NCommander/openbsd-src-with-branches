@@ -1,4 +1,4 @@
-/*	$OpenBSD: exec_i386.c,v 1.13 1997/08/22 20:13:43 mickey Exp $	*/
+/*	$OpenBSD: exec_i386.c,v 1.14 1997/09/04 19:58:14 mickey Exp $	*/
 
 /*
  * Copyright (c) 1997 Michael Shalayeff
@@ -48,7 +48,7 @@ machdep_start(startaddr, howto, loadaddr, ssym, esym)
 	char *startaddr, *loadaddr, *ssym, *esym;
 	int howto;
 {
-#ifdef DEBUG
+#ifdef EXEC_DEBUG
 	struct exec *x;
 
 	x = (void *)loadaddr;
