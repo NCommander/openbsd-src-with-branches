@@ -1,4 +1,4 @@
-/*	$OpenBSD: clock.c,v 1.10 2001/05/29 01:20:44 drahn Exp $	*/
+/*	$OpenBSD: clock.c,v 1.11 2001/06/02 16:49:18 drahn Exp $	*/
 /*	$NetBSD: clock.c,v 1.1 1996/09/30 16:34:40 ws Exp $	*/
 
 /*
@@ -229,9 +229,11 @@ decr_intr(frame)
 
 	pri = splclock();
 
-	if (pri & SPL_CLOCK)
+	if (pri & SPL_CLOCK) {
 		tickspending += nticks;
-	else {
+	} else {
+		nticks += tickspending;
+		tickspending = 0;
 		/*
 		 * Reenable interrupts
 		 */
