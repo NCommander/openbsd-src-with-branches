@@ -1,4 +1,4 @@
-/*	$OpenBSD: ultrix_misc.c,v 1.8 1996/08/10 12:09:24 deraadt Exp $	*/
+/*	$OpenBSD: ultrix_misc.c,v 1.9 1996/08/25 12:20:02 deraadt Exp $	*/
 /*	$NetBSD: ultrix_misc.c,v 1.23 1996/04/07 17:23:04 jonathan Exp $	*/
 
 /*
@@ -157,6 +157,7 @@ struct emul emul_ultrix = {
 	0,
 	copyargs,
 	ULTRIX_EXEC_SETREGS,
+	NULL,
 	sigcode,
 	esigcode,
 };

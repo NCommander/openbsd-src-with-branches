@@ -96,6 +96,7 @@ struct emul emul_sunos = {
 	0,
 	copyargs,
 	setregs,
+	NULL,
 	sigcode,
 	esigcode,
 };

@@ -1,4 +1,4 @@
-/*	$OpenBSD: hpux_exec.c,v 1.3 1996/08/02 20:34:54 niklas Exp $	*/
+/*	$OpenBSD: hpux_exec.c,v 1.4 1996/08/25 12:19:48 deraadt Exp $	*/
 /*	$NetBSD: hpux_exec.c,v 1.3 1996/01/06 12:44:13 thorpej Exp $	*/
 
 /*
@@ -84,6 +84,7 @@ struct emul emul_hpux = {
 	0,
 	copyargs,
 	setregs,
+	NULL,
 	sigcode,
 	esigcode,
 };

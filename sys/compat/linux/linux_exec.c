@@ -89,6 +89,7 @@ struct emul emul_linux_aout = {
 	LINUX_AOUT_AUX_ARGSIZ,
 	linux_aout_copyargs,
 	setregs,
+	NULL,
 	linux_sigcode,
 	linux_esigcode,
 };
@@ -104,6 +105,7 @@ struct emul emul_linux_elf = {
 	LINUX_ELF_AUX_ARGSIZ,
 	elf_copyargs,
 	setregs,
+	exec_elf_fixup,
 	linux_sigcode,
 	linux_esigcode,
 };

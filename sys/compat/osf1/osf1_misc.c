@@ -1,4 +1,4 @@
-2/*	$OpenBSD: osf1_misc.c,v 1.3 1996/08/23 11:46:51 niklas Exp $	*/
+2/*	$OpenBSD: osf1_misc.c,v 1.4 1996/08/25 12:19:53 deraadt Exp $	*/
 /*	$NetBSD: osf1_misc.c,v 1.7 1995/10/07 06:53:04 mycroft Exp $	*/
 
 /*
@@ -72,6 +72,7 @@ struct emul emul_osf1 = {
 	0,
 	copyargs,
 	cpu_exec_ecoff_setregs,
+	NULL,
 	sigcode,
 	esigcode,
 };
