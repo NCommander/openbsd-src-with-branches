@@ -1,4 +1,4 @@
-/* $OpenBSD: ym.c,v 1.5 1999/01/24 15:58:54 mickey Exp $ */
+/* $OpenBSD: ym.c,v 1.6 1999/07/20 16:36:05 deraadt Exp $ */
 
 
 /*
@@ -130,9 +130,9 @@ int
 ym_intr(v)
 	void   *v;
 {
+#if NMIDI > 0
 	struct ym_softc *sc = v;
 
-#if NMIDI > 0
 	if ( /* XXX && */ sc->sc_hasmpu)
 		mpu_intr(&sc->sc_mpu_sc);
 #endif
