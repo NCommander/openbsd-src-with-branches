@@ -1,4 +1,4 @@
-/*	$OpenBSD: gscbus.c,v 1.3 1999/04/20 21:12:24 mickey Exp $	*/
+/*	$OpenBSD: gscbus.c,v 1.4 1999/07/07 20:03:27 mickey Exp $	*/
 
 /*
  * Copyright (c) 1998 Michael Shalayeff
@@ -44,6 +44,7 @@
  * f0108100 -- pms0
  * f010a000 -- fdc0
  * f010c000 -- *lasi0
+ * f0200000 -- wax0
  * f8000000 -- sti0
  * fffbe000 -- cpu0
  * fffbf000 -- mem0
