@@ -134,6 +134,9 @@ struct exec_package {
 	int	ep_fd;			/* a file descriptor we're holding */
 	struct  emul *ep_emul;		/* os emulation */
 	void	*ep_emul_arg;		/* emulation argument */
+	void	*ep_emul_argp;		/* emulation argument pointer */
+	char	*ep_interp;		/* name of interpreter if any */
+	u_long	ep_interp_pos;		/* interpreter load position */
 };
 #define	EXEC_INDIR	0x0001		/* script handling already done */
 #define	EXEC_HASFD	0x0002		/* holding a shell script */
