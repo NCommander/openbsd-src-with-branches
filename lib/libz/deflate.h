@@ -1,6 +1,6 @@
-/*	$OpenBSD: deflate.h,v 1.2 1998/08/08 20:57:13 millert Exp $	*/
+/*	$OpenBSD: deflate.h,v 1.3 2000/03/02 00:29:51 todd Exp $	*/
 /* deflate.h -- internal compression state
- * Copyright (C) 1995-1998 Jean-loup Gailly
+ * Copyright (C) 1995-2002 Jean-loup Gailly
  * For conditions of distribution and use, see copyright notice in zlib.h 
  */
 
