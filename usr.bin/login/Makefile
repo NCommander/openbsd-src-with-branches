@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.14 2000/03/01 18:33:56 deraadt Exp $
+#	$OpenBSD: Makefile,v 1.15 2000/09/03 18:41:18 espie Exp $
 
 PROG=	login
 SRCS=	login.c failedlogin.c
@@ -14,12 +14,14 @@ LDADD+=	-lskey
 DPADD+=	${LIBSKEY}
 .endif
 
-.if (${KERBEROS5:L} == "yes")
-CFLAGS+= -DKERBEROS5
-SRCS+=	k5login.c
-LDADD+=	-lkrb5 -lcrypto
-DPADD+=	${LIBKRB5} ${LIBCRYPTO}
-.elif (${KERBEROS:L} == "yes")
+#.if (${KERBEROS5:L} == "yes")
+#CFLAGS+= -DKERBEROS5
+#SRCS+=	k5login.c
+#LDADD+=	-lkrb5 -lcrypto
+#DPADD+=	${LIBKRB5} ${LIBCRYPTO}
+#.endif
+
+.if (${KERBEROS:L} == "yes")
 CFLAGS+= -DKERBEROS
 SRCS+=	klogin.c
 LDADD+=	-lkafs -lkrb -ldes
