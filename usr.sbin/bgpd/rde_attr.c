@@ -1,4 +1,4 @@
-/*	$OpenBSD: rde_attr.c,v 1.27 2004/04/08 16:08:21 henning Exp $ */
+/*	$OpenBSD: rde_attr.c,v 1.28 2004/04/30 05:47:50 deraadt Exp $ */
 
 /*
  * Copyright (c) 2004 Claudio Jeker <claudio@openbsd.org>
@@ -354,7 +354,9 @@ attr_compare(struct attr_flags *a, struct attr_flags *b)
 		return (1);
 	if (a->lpref < b->lpref)
 		return (-1);
-	r = aspath_compare(a->aspath, b->aspath);
+	r = strcmp(a->pftable, b->pftable);
+	if (r == 0)
+		r = aspath_compare(a->aspath, b->aspath);
 	if (r > 0)
 		return (1);
 	if (r < 0)
