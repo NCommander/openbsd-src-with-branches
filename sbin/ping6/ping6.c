@@ -1,4 +1,4 @@
-/*	$OpenBSD: ping6.c,v 1.38 2001/11/05 07:54:44 itojun Exp $	*/
+/*	$OpenBSD: ping6.c,v 1.39 2001/11/17 19:54:57 deraadt Exp $	*/
 /*	$KAME: ping6.c,v 1.129 2001/06/22 13:16:02 itojun Exp $	*/
 
 /*
@@ -1095,7 +1095,7 @@ main(argc, argv)
 }
 
 void
-onsignal(sig)
+onsignal(signo)
 	int signo;
 {
 	switch (signo) {
