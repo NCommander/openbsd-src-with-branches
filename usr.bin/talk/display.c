@@ -78,7 +78,7 @@ display(win, text, size)
 	char cch;
 
 	for (i = 0; i < size; i++) {
-		if (*text == '\n') {
+		if (*text == '\n' || *text == '\r') {
 			xscroll(win, 0);
 			text++;
 			continue;
