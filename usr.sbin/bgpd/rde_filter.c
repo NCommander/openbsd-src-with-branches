@@ -1,4 +1,4 @@
-/*	$OpenBSD: rde_filter.c,v 1.19 2004/09/28 12:09:31 claudio Exp $ */
+/*	$OpenBSD: rde_filter.c,v 1.20 2004/09/28 14:08:38 henning Exp $ */
 
 /*
  * Copyright (c) 2004 Claudio Jeker <claudio@openbsd.org>
@@ -45,7 +45,9 @@ rde_filter(struct rde_peer *peer, struct rde_aspath *asp,
 		    f->peer.peerid != peer->conf.id)
 			continue;
 		if (rde_filter_match(f, asp, prefix, prefixlen)) {
-			rde_apply_set(asp, &f->set, prefix->af, asp->peer, dir);
+			if (asp != NULL)
+				rde_apply_set(asp, &f->set, prefix->af,
+				    asp->peer, dir);
 			if (f->action != ACTION_NONE)
 				action = f->action;
 			if (f->quick)
