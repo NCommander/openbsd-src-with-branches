@@ -1,4 +1,4 @@
-/* $OpenBSD: bt463.c,v 1.6 2002/03/14 01:26:54 millert Exp $ */
+/* $OpenBSD: bt463.c,v 1.7 2002/03/14 03:16:04 millert Exp $ */
 /* $NetBSD: bt463.c,v 1.2 2000/06/13 17:21:06 nathanw Exp $ */
 
 /*-
@@ -132,6 +132,7 @@ struct ramdac_funcs bt463_funcsstruct = {
 	bt463_check_curcmap,
 	bt463_set_curcmap,
 	bt463_get_curcmap,
+	NULL,
 };
 
 /*
