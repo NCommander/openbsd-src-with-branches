@@ -1,8 +1,8 @@
-#	$OpenBSD: Makefile,v 1.8 2003/07/02 20:54:17 deraadt Exp $
+#	$OpenBSD: Makefile,v 1.9 2004/06/07 20:36:07 mickey Exp $
 
 LDSTATIC=${STATIC}
 PROG=	kdump
-CFLAGS+=-I${.CURDIR}/../ktrace -I${.CURDIR}
+CFLAGS+=-I${.CURDIR}/../ktrace -I${.CURDIR} -I${.CURDIR}/../../sys
 SRCS=	kdump.c ioctl.c subr.c
 .PATH:	${.CURDIR}/../ktrace
 CLEANFILES+=ioctl.c

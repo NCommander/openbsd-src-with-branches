@@ -1,7 +1,7 @@
-#	$OpenBSD: Makefile,v 1.11 2004/01/05 02:55:28 espie Exp $
+#	$OpenBSD: Makefile,v 1.12 2004/01/23 20:51:18 sturm Exp $
 
 PROG=	systrace
-CFLAGS+=-I. -I${.CURDIR}
+CFLAGS+=-I. -I${.CURDIR} -I${.CURDIR}/../../sys
 CFLAGS+=-Wall -Wstrict-prototypes -Wmissing-prototypes -Wpointer-arith \
 	-Wno-uninitialized
 CFLAGS+=-DYY_NO_UNPUT
