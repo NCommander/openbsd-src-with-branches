@@ -1,4 +1,4 @@
-/*	$OpenBSD: arp.c,v 1.14 1999/05/16 00:43:44 ho Exp $ */
+/*	$OpenBSD: arp.c,v 1.15 2000/09/24 22:12:25 miod Exp $ */
 /*	$NetBSD: arp.c,v 1.12 1995/04/24 13:25:18 cgd Exp $ */
 
 /*
@@ -436,7 +436,7 @@ dump(addr)
 			if (sin->sin_addr.s_addr == 0xffffffff)
 				(void)printf(" published");
 			if (sin->sin_len != 8)
-				(void)printf("(wierd)");
+				(void)printf("(weird)");
 		}
 		(void)printf("\n");
 	}
