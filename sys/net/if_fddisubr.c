@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_fddisubr.c,v 1.28 2001/12/18 23:07:49 deraadt Exp $	*/
+/*	$OpenBSD: if_fddisubr.c,v 1.29 2002/06/30 13:04:36 itojun Exp $	*/
 /*	$NetBSD: if_fddisubr.c,v 1.5 1996/05/07 23:20:21 christos Exp $	*/
 
 /*
@@ -185,7 +185,6 @@ fddi_output(ifp, m0, dst, rt0)
 	struct mbuf *mcopy = (struct mbuf *)0;
 	register struct fddi_header *fh;
 	struct arpcom *ac = (struct arpcom *)ifp;
-	ALTQ_DECL(struct altq_pktattr pktattr;)
 	short mflags;
 
 	if ((ifp->if_flags & (IFF_UP|IFF_RUNNING)) != (IFF_UP|IFF_RUNNING))
@@ -212,12 +211,6 @@ fddi_output(ifp, m0, dst, rt0)
 			    time.tv_sec < rt->rt_rmx.rmx_expire)
 				senderr(rt == rt0 ? EHOSTDOWN : EHOSTUNREACH);
 	}
-
-	/*
-	 * If the queueing discipline needs packet classification,
-	 * do it before prepending link headers.
-	 */
-	IFQ_CLASSIFY(&ifp->if_snd, m, dst->sa_family, &pktattr);
 
 	switch (dst->sa_family) {
 
@@ -471,7 +464,7 @@ fddi_output(ifp, m0, dst, rt0)
 	 * Queue message on interface, and start output if interface
 	 * not yet active.
 	 */
-	IFQ_ENQUEUE(&ifp->if_snd, m, &pktattr, error);
+	IFQ_ENQUEUE(&ifp->if_snd, m, NULL, error);
 	if (error) {
 		/* mbuf is already freed */
 		splx(s);

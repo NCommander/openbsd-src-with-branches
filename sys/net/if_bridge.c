@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_bridge.c,v 1.106 2002/12/09 22:32:01 jason Exp $	*/
+/*	$OpenBSD: if_bridge.c,v 1.107 2003/01/03 15:57:56 jason Exp $	*/
 
 /*
  * Copyright (c) 1999, 2000 Jason L. Wright (jason@thought.net)
@@ -2605,15 +2605,10 @@ bridge_ifenqueue(sc, ifp, m)
 {
 	int error, len;
 	short mflags;
-	ALTQ_DECL(struct altq_pktattr pktattr;)
 
 	len = m->m_pkthdr.len;
 	mflags = m->m_flags;
-#ifdef ALTQ
-	if (ALTQ_IS_ENABLED(&ifp->if_snd))
-		altq_etherclassify(&ifp->if_snd, m, &pktattr);
-#endif
-	IFQ_ENQUEUE(&ifp->if_snd, m, &pktattr, error);
+	IFQ_ENQUEUE(&ifp->if_snd, m, NULL, error);
 	if (error) {
 		sc->sc_if.if_oerrors++;
 		return (error);
