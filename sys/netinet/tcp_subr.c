@@ -1,4 +1,4 @@
-/*	$OpenBSD: tcp_subr.c,v 1.14 1999/02/17 00:14:26 deraadt Exp $	*/
+/*	$OpenBSD: tcp_subr.c,v 1.15 1999/07/02 20:39:08 cmetz Exp $	*/
 /*	$NetBSD: tcp_subr.c,v 1.22 1996/02/13 23:44:00 christos Exp $	*/
 
 /*
@@ -171,7 +171,7 @@ tcp_template(tp)
 		if (m == NULL)
 			return (0);
 
-#ifdef defined(INET) && defined(INET6)
+#if defined(INET) && defined(INET6)
 		switch (tp->pf) {
 #else /* defined(INET) && defined(INET6) */
 		switch (0) {
@@ -204,7 +204,7 @@ tcp_template(tp)
 		}
 	}
 
-#ifdef defined(INET) && defined(INET6)
+#if defined(INET) && defined(INET6)
 	switch(tp->pf) {
 #else /* defined(INET) && defined(INET6) */
 	switch(0) {
