@@ -1,4 +1,4 @@
-/*	$OpenBSD: db_disasm.c,v 1.13 2002/07/24 20:17:03 mickey Exp $	*/
+/*	$OpenBSD: db_disasm.c,v 1.14 2002/08/13 07:00:50 mickey Exp $	*/
 
 /*
  * Copyright (c) 1999 Michael Shalayeff
@@ -2144,7 +2144,7 @@ coprDasm(i, ofs, w)
 	register u_int uid = Uid(w);
 	register int load = 0;
 	register char *pfx = uid > 1 ? "c" : "f";
-	register int dreg;
+	register int dreg = 0;
 
 	if (Match("copr")) {
 		if (uid) {

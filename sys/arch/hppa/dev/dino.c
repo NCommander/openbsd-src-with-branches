@@ -1,4 +1,4 @@
-/*	$OpenBSD: dino.c,v 1.1 2003/09/29 19:30:23 mickey Exp $	*/
+/*	$OpenBSD: dino.c,v 1.2 2003/10/30 19:25:12 mickey Exp $	*/
 
 /*
  * Copyright (c) 2003 Michael Shalayeff
@@ -218,7 +218,7 @@ dino_intr_string(void *v, pci_intr_handle_t ih)
 {
 	static char buf[32];
 
-	snprintf(buf, 32, "irq %d", ih);
+	snprintf(buf, 32, "irq %ld", ih);
 
 	return (buf);
 }
