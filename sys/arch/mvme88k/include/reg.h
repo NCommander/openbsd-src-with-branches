@@ -1,4 +1,4 @@
-/*	$OpenBSD: reg.h,v 1.10 2001/12/16 23:49:46 miod Exp $ */
+/*	$OpenBSD: reg.h,v 1.11 2001/12/20 06:20:26 smurph Exp $ */
 /*
  * Copyright (c) 1999 Steve Murphree, Jr.
  * Copyright (c) 1996 Nivas Madhur
@@ -36,7 +36,6 @@
 /* This must always be an even number of words long */
 struct reg {
     unsigned r[32];  /* 0 - 31 */
-#define   tf_sp r[31]
     unsigned epsr;   /* 32 */
     unsigned fpsr;
     unsigned fpcr;
