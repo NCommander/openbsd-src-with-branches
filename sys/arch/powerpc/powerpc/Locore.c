@@ -1,3 +1,4 @@
+/*	$OpenBSD:$	*/
 /*	$NetBSD: Locore.c,v 1.2 1996/11/06 20:19:50 cgd Exp $	*/
 
 /*
