@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: bluetooth.h,v 1.1 2005/01/14 12:04:02 grange Exp $	*/
 
 /*
  * bluetooth.h
@@ -27,7 +27,6 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  *
- * $Id: ng_bluetooth.h,v 1.4 2003/04/26 22:32:34 max Exp $
  * $FreeBSD: src/sys/netgraph/bluetooth/include/ng_bluetooth.h,v 1.3 2003/11/14 03:45:29 emax Exp $
  */
 
