@@ -1,4 +1,4 @@
-/*	$OpenBSD: machdep.c,v 1.2 2001/06/27 04:32:46 art Exp $	*/
+/*	$OpenBSD: machdep.c,v 1.3 2001/07/06 05:14:30 smurph Exp $	*/
 /*	$NetBSD: machdep.c,v 1.4 1996/10/16 19:33:11 ws Exp $	*/
 
 /*
@@ -1215,7 +1215,7 @@ bus_mem_add_mapping(bpa, size, cacheable, bshp)
 #else
 		pmap_enter(pmap_kernel(), vaddr, spa,
 #endif
-			VM_PROT_READ | VM_PROT_WRITE, TRUE, 0/* XXX */);
+			VM_PROT_READ | VM_PROT_WRITE, PMAP_WIRED /* XXX */);
 		spa += NBPG;
 		vaddr += NBPG;
 	}
@@ -1253,7 +1253,7 @@ mapiodev(pa, len)
 #else
 		pmap_enter(pmap_kernel(), vaddr, spa,
 #endif
-			VM_PROT_READ | VM_PROT_WRITE, TRUE, 0/* XXX */);
+			VM_PROT_READ | VM_PROT_WRITE, PMAP_WIRED/* XXX */);
 		spa += NBPG;
 		vaddr += NBPG;
 	}

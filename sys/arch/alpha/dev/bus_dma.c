@@ -1,4 +1,4 @@
-/* $OpenBSD: bus_dma.c,v 1.1 2001/03/21 17:26:38 art Exp $ */
+/* $OpenBSD: bus_dma.c,v 1.2 2001/06/08 08:08:39 art Exp $ */
 /* $NetBSD: bus_dma.c,v 1.40 2000/07/17 04:47:56 thorpej Exp $ */
 
 /*-
@@ -602,8 +602,8 @@ _bus_dmamem_map(t, segs, nsegs, size, kvap, flags)
 			if (size == 0)
 				panic("_bus_dmamem_map: size botch");
 			pmap_enter(pmap_kernel(), va, addr,
-			    VM_PROT_READ | VM_PROT_WRITE, 1,
-			    VM_PROT_READ | VM_PROT_WRITE);
+			    VM_PROT_READ | VM_PROT_WRITE,
+			    VM_PROT_READ | VM_PROT_WRITE | PMAP_WIRED);
 		}
 	}
 
