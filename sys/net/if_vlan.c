@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_vlan.c,v 1.20 2001/06/23 23:01:26 jason Exp $ */
+/*	$OpenBSD: if_vlan.c,v 1.21 2001/06/24 22:52:07 jason Exp $ */
 /*
  * Copyright 1998 Massachusetts Institute of Technology
  *
@@ -247,11 +247,9 @@ vlan_start(struct ifnet *ifp)
 				continue;
 			}
 
-			if (m0->m_flags & M_PKTHDR) {
+			if (m0->m_flags & M_PKTHDR)
 				M_COPY_PKTHDR(m0, m);
-				m->m_flags &= ~M_PKTHDR;
-				m_tag_init(m);
-			}
+
 			m0->m_flags &= ~M_PROTO1;
 			m0->m_next = m;
 			m0->m_len = sizeof(struct ether_vlan_header);
