@@ -1,4 +1,4 @@
-/* $OpenBSD: if_wi_pcmcia.c,v 1.38 2002/07/09 11:00:27 fgsch Exp $ */
+/* $OpenBSD: if_wi_pcmcia.c,v 1.39 2002/11/19 18:36:18 jason Exp $ */
 /* $NetBSD: if_wi_pcmcia.c,v 1.14 2001/11/26 04:34:56 ichiro Exp $ */
 
 /*
@@ -268,6 +268,11 @@ static const struct wi_pcmcia_product {
 	  PCMCIA_PRODUCT_NETGEAR2_MA401RA,
 	  PCMCIA_CIS_NETGEAR2_MA401RA,
 	  "Netgear MA401RA Wireless LAN PC CARD",
+	},
+	{ PCMCIA_VENDOR_AIRVAST,
+	  PCMCIA_PRODUCT_AIRVAST_WN_100,
+	  PCMCIA_CIS_AIRVAST_WN_100,
+	  "AirVast WN-100 Wireless LAN PC CARD",
 	},
 	{ 0,
 	  0,
