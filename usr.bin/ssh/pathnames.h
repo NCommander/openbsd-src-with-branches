@@ -1,4 +1,4 @@
-/*	$OpenBSD: pathnames.h,v 1.11 2002/02/09 17:37:34 deraadt Exp $	*/
+/*	$OpenBSD: pathnames.h,v 1.9.2.1 2002/03/07 17:37:47 jason Exp $	*/
 
 /*
  * Author: Tatu Ylonen <ylo@cs.hut.fi>
@@ -13,7 +13,7 @@
  */
 
 #define ETCDIR				"/etc"
-#define SSHDIR				ETCDIR "/ssh"
+#define SSHDIR				ETCDIR
 #define _PATH_SSH_PIDDIR		"/var/run"
 
 /*

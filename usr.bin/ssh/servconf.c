@@ -10,7 +10,7 @@
  */
 
 #include "includes.h"
-RCSID("$OpenBSD: servconf.c,v 1.101 2002/02/04 12:15:25 markus Exp $");
+RCSID("$OpenBSD: servconf.c,v 1.89.2.2 2002/03/07 17:37:47 jason Exp $");
 
 #if defined(KRB4) || defined(KRB5)
 #include <krb.h>
@@ -818,7 +818,7 @@ parse_flag:
 	 * These options can contain %X options expanded at
 	 * connect time, so that you can specify paths like:
 	 *
-	 * AuthorizedKeysFile	/etc/ssh_keys/%u
+	 * AuthorizedKeysFile	/etc_keys/%u
 	 */
 	case sAuthorizedKeysFile:
 	case sAuthorizedKeysFile2:
