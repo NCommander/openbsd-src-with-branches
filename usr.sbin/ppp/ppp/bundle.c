@@ -23,7 +23,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  *
- *	$OpenBSD: bundle.c,v 1.39 2000/06/23 09:47:30 brian Exp $
+ *	$OpenBSD: bundle.c,v 1.40 2000/07/07 14:47:53 brian Exp $
  */
 
 #include <sys/param.h>
@@ -592,7 +592,7 @@ bundle_DescriptorRead(struct fdescriptor *d, struct bundle *bundle,
        * *not* be UP and we can't receive data
        */
       pri = PacketCheck(bundle, tun.data, n, &bundle->filter.dial, NULL);
-      if (pri > 0)
+      if (pri >= 0)
         bundle_Open(bundle, NULL, PHYS_AUTO, 0);
       else
         /*
