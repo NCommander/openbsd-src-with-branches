@@ -1,4 +1,4 @@
-/*	$OpenBSD: telnetd.c,v 1.22 2000/08/18 03:26:10 itojun Exp $	*/
+/*	$OpenBSD: telnetd.c,v 1.23 2000/09/15 07:13:48 deraadt Exp $	*/
 /*	$NetBSD: telnetd.c,v 1.6 1996/03/20 04:25:57 tls Exp $	*/
 
 /*
@@ -45,7 +45,7 @@ static char copyright[] =
 static char sccsid[] = "@(#)telnetd.c	8.4 (Berkeley) 5/30/95";
 static char rcsid[] = "$NetBSD: telnetd.c,v 1.5 1996/02/28 20:38:23 thorpej Exp $";
 #else
-static char rcsid[] = "$OpenBSD: telnetd.c,v 1.22 2000/08/18 03:26:10 itojun Exp $";
+static char rcsid[] = "$OpenBSD: telnetd.c,v 1.23 2000/09/15 07:13:48 deraadt Exp $";
 #endif
 #endif /* not lint */
 
@@ -552,9 +552,6 @@ usage()
 	" [-debug]"
 #ifdef DIAGNOSTICS
 	" [-D (options|report|exercise|netdata|ptydata)]\n\t"
-#endif
-#ifdef	AUTHENTICATION
-	" [-edebug]"
 #endif
 	" [-h]"
 #if	defined(CRAY) && defined(NEWINIT)
