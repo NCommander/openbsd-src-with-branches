@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_eon.c,v 1.4 1996/05/10 12:31:22 deraadt Exp $	*/
+/*	$OpenBSD: if_eon.c,v 1.5 1996/05/22 12:02:42 deraadt Exp $	*/
 /*	$NetBSD: if_eon.c,v 1.15 1996/05/09 22:29:37 scottr Exp $	*/
 
 /*-
@@ -78,7 +78,6 @@ SOFTWARE.
 #include <sys/param.h>
 #include <sys/systm.h>
 #include <sys/mbuf.h>
-#include <sys/buf.h>
 #include <sys/protosw.h>
 #include <sys/socket.h>
 #include <sys/ioctl.h>
