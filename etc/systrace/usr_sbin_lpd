@@ -1,5 +1,8 @@
+# $OpenBSD$
+#
 # Policy for lpd.
 # This policy works for the default configuration of lpd.
+#
 Policy: /usr/sbin/lpd, Emulation: native
 	native-__sysctl: permit
 	native-accept: permit
