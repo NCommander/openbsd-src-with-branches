@@ -119,7 +119,7 @@ extern nfstype nfsv2_type[9];
 extern nfstype nfsv3_type[9];
 extern struct nfssvc_sock *nfs_udpsock, *nfs_cltpsock;
 extern int nfsd_waiting;
-extern struct nfsstats nfsstats;
+struct nfsstats nfsstats;
 
 
 #define TRUE	1
