@@ -1,4 +1,4 @@
-/*	$OpenBSD: machdep.c,v 1.33 1999/05/24 23:08:58 jason Exp $	*/
+/*	$OpenBSD: machdep.c,v 1.28 1999/05/24 23:08:55 jason Exp $	*/
 /*	$NetBSD: machdep.c,v 1.95 1997/08/27 18:31:17 is Exp $	*/
 
 /*
@@ -108,7 +108,6 @@
 #include "ser.h"
 #include "ether.h"
 #include "ppp.h"
-#include "bridge.h"
 
 #include <net/if.h>
 
@@ -1205,7 +1204,7 @@ netintr()
 #ifdef INET6
 	if (netisr & (1 << NETISR_IPV6)) {
 		netisr &= ~(1 << NETISR_IPV6);
-		ipv6intr();
+		ip6intr();
 	}
 #endif
 #ifdef NETATALK

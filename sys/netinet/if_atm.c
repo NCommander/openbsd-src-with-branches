@@ -1,4 +1,4 @@
-/*      $OpenBSD: if_atm.c,v 1.5 1996/07/03 17:14:31 chuck Exp $       */
+/*      $OpenBSD: if_atm.c,v 1.6 1997/09/28 23:09:55 deraadt Exp $       */
 
 /*
  *
@@ -36,7 +36,7 @@
  * IP <=> ATM address resolution.
  */
 
-#ifdef INET
+#if defined(INET) || defined(INET6)
 
 #include <sys/param.h>
 #include <sys/systm.h>
