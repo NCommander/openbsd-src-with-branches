@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_rl_cardbus.c,v 1.3 2002/10/12 01:09:44 krw Exp $ */
+/*	$OpenBSD: if_rl_cardbus.c,v 1.4 2003/09/27 19:40:23 fgsch Exp $ */
 /*	$NetBSD: if_rl_cardbus.c,v 1.3.8.3 2001/11/14 19:14:02 nathanw Exp $	*/
 
 /*
@@ -262,7 +262,7 @@ rl_cardbus_detach(self, flags)
 	if (rv)
 		return (rv);
 	/*
-	 * Unhook the interrut handler.
+	 * Unhook the interrupt handler.
 	 */
 	if (csc->sc_ih != NULL)
 		cardbus_intr_disestablish(ct->ct_cc, ct->ct_cf, csc->sc_ih);
