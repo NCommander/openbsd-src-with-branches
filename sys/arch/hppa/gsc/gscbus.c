@@ -1,4 +1,4 @@
-/*	$OpenBSD: gscbus.c,v 1.9 2000/02/09 05:04:22 mickey Exp $	*/
+/*	$OpenBSD: gscbus.c,v 1.10 2001/01/31 22:39:41 jason Exp $	*/
 
 /*
  * Copyright (c) 1998 Michael Shalayeff
@@ -257,7 +257,7 @@ gsc_intr(v)
 			s = splx(iv->pri);
 			ret = (iv->handler)(iv->arg);
 			splx(s);
-#ifdef DEBUG
+#ifdef GSCDEBUG_INTR
 			if (!ret)
 				printf ("%s: can't handle interrupt\n",
 					iv->evcnt.ev_name);
