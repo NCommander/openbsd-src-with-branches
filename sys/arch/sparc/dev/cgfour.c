@@ -1,4 +1,4 @@
-/*	$OpenBSD: cgfour.c,v 1.9 1998/11/20 15:57:21 deraadt Exp $	*/
+/*	$OpenBSD$	*/
 /*	$NetBSD: cgfour.c,v 1.13 1997/05/24 20:16:06 pk Exp $	*/
 
 /*
@@ -69,7 +69,7 @@
 #include <sys/tty.h>
 #include <sys/conf.h>
 
-#include <vm/vm.h>
+#include <uvm/uvm_extern.h>
 
 #include <machine/fbio.h>
 #include <machine/autoconf.h>
@@ -381,10 +381,11 @@ cgfourioctl(dev, cmd, data, flags, p)
  * As well, mapping at an offset of 0x04000000 causes the cg4 to map
  * only it's colour plane, at 0.
  */
-int
+paddr_t
 cgfourmmap(dev, off, prot)
 	dev_t dev;
-	int off, prot;
+	off_t off;
+	int prot;
 {
 	register struct cgfour_softc *sc = cgfour_cd.cd_devs[minor(dev)];
 	int poff;

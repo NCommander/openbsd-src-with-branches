@@ -41,8 +41,7 @@
 #include <sys/queue.h>
 #include <sys/systm.h>
 
-#include <vm/vm.h>
-
+#include <uvm/uvm_extern.h>
 
 #include <scsi/scsi_all.h>
 #include <scsi/scsiconf.h>

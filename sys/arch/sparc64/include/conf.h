@@ -99,6 +99,8 @@ cdev_decl(scsibus);
 bdev_decl(wd);
 cdev_decl(wd);
 
+cdev_decl(sabtty);
+
 cdev_decl(pcons);
 
 cdev_decl(com);

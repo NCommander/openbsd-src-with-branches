@@ -32,7 +32,7 @@
 #include <machine/board.h>
 #include <sys/param.h>
 #include <machine/m882xx.h>		/* CMMU stuff */
-#include <vm/vm.h>
+#include <uvm/uvm_extern.h>
 #include <machine/pmap_table.h>		/* pmap_table.h*/
 
 #define R VM_PROT_READ

@@ -1,4 +1,4 @@
-/*	$OpenBSD: sig_machdep.c,v 1.2.12.1 2001/04/18 16:10:01 niklas Exp $	*/
+/*	$OpenBSD$	*/
 /*	$NetBSD: sig_machdep.c,v 1.3 1997/04/30 23:28:03 gwr Exp $	*/
 
 /*
@@ -84,7 +84,6 @@
 #include <sys/malloc.h>
 #include <sys/buf.h>
 
-#include <vm/vm.h>
 #include <uvm/uvm_extern.h>
 
 #include <sys/syscallargs.h>

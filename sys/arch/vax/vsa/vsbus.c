@@ -1,4 +1,4 @@
-/*	$OpenBSD: vsbus.c,v 1.3.12.1 2001/05/14 21:39:22 niklas Exp $ */
+/*	$OpenBSD$ */
 /*	$NetBSD: vsbus.c,v 1.29 2000/06/29 07:14:37 mrg Exp $ */
 /*
  * Copyright (c) 1996, 1999 Ludd, University of Lule}, Sweden.
@@ -48,7 +48,6 @@
 #include <sys/syslog.h>
 #include <sys/stat.h>
 
-#include <vm/vm.h>
 #include <uvm/uvm_extern.h>
 
 #define _VAX_BUS_DMA_PRIVATE

@@ -1,4 +1,4 @@
-/*	$OpenBSD: cpu.h,v 1.6.4.2 2001/07/04 10:20:03 niklas Exp $ */
+/*	$OpenBSD$ */
 /*
  * Copyright (c) 1996 Nivas Madhur
  * Copyright (c) 1992, 1993
@@ -66,8 +66,6 @@
  * definitions of cpu-dependent requirements
  * referenced in generic code
  */
-#define	COPY_SIGCODE		/* copy sigcode above user stack in exec */
-
 #define	cpu_exec(p)	/* nothing */
 #define	cpu_wait(p)	/* nothing */
 #define	cpu_swapout(p)	/* nothing */

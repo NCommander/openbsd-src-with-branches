@@ -1,4 +1,4 @@
-/* $OpenBSD: cpu.h,v 1.7.12.1 2001/04/18 16:00:48 niklas Exp $ */
+/* $OpenBSD$ */
 /* $NetBSD: cpu.h,v 1.45 2000/08/21 02:03:12 thorpej Exp $ */
 
 /*-
@@ -114,7 +114,6 @@ int	alpha_pa_access(u_long);
 void	ast(struct trapframe *);
 int	badaddr(void *, size_t);
 int	badaddr_read(void *, size_t, void *);
-void	child_return(void *);
 u_int64_t console_restart(struct trapframe *);
 void	do_sir(void);
 void	dumpconf(void);
@@ -317,6 +316,8 @@ do {									\
 #define CPU_CHIPSET_BWX		2	/* PCI supports BWX */
 #define CPU_CHIPSET_TYPE	3	/* PCI chipset name */
 #define CPU_CHIPSET_DENSE	4	/* PCI chipset dense memory addr */
+#define CPU_CHIPSET_PORTS	5	/* PCI port address */
+#define CPU_CHIPSET_HAE_MASK	6	/* PCI chipset mask for HAE register */
 
 #define	CTL_MACHDEP_NAMES { \
 	{ 0, 0 }, \

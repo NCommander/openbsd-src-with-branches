@@ -1,4 +1,4 @@
-/* $OpenBSD: tsc.c,v 1.2.2.1 2001/04/18 16:01:32 niklas Exp $ */
+/* $OpenBSD$ */
 /* $NetBSD: tsc.c,v 1.3 2000/06/25 19:17:40 thorpej Exp $ */
 
 /*-
@@ -234,6 +234,8 @@ tsp_init(mallocsafe, n)
 	alpha_pci_chipset = &pcp->pc_pc;
 	alpha_pci_chipset->pc_name = "tsunami";
 	alpha_pci_chipset->pc_mem = TS_P0(0);
+	alpha_pci_chipset->pc_ports = P_PCI_IO;
+	alpha_pci_chipset->pc_hae_mask = 0;
 	alpha_pci_chipset->pc_dense = TS_P0(0);
 	alpha_pci_chipset->pc_bwx = 1;
 	pcp->pc_initted = 1;

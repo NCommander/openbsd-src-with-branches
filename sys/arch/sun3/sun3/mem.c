@@ -1,4 +1,4 @@
-/*	$OpenBSD: mem.c,v 1.8.2.2 2001/07/04 10:24:14 niklas Exp $	*/
+/*	$OpenBSD$	*/
 /*	$NetBSD: mem.c,v 1.19 1995/08/08 21:09:01 gwr Exp $	*/
 
 /*
@@ -55,7 +55,7 @@
 #include <sys/proc.h>
 #include <sys/uio.h>
 
-#include <vm/vm.h>
+#include <uvm/uvm_extern.h>
 
 #include <machine/conf.h>
 #include <machine/cpu.h>
@@ -262,10 +262,11 @@ unlock:
 	return (error);
 }
 
-int
+paddr_t
 mmmmap(dev, off, prot)
 	dev_t dev;
-	int off, prot;
+	off_t off;
+	int prot;
 {
 	register int v = off;
 

@@ -1,4 +1,4 @@
-/*	$OpenBSD: cpu.c,v 1.1 2001/06/26 21:57:41 smurph Exp $ */
+/*	$OpenBSD$ */
 
 /*
  * Copyright (c) 1997 Per Fogelstrom
@@ -78,9 +78,11 @@ cpuattach(parent, dev, aux)
 	void *aux;
 {
 	int cpu, pvr;
+#ifdef OFW
 	char name[32];
 	int qhandle, phandle;
 	unsigned int clock_freq = 0;
+#endif
 
 	__asm__ ("mfpvr %0" : "=r"(pvr));
 	cpu = pvr >> 16;

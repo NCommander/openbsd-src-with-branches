@@ -1,4 +1,4 @@
-/*	$OpenBSD: mba.c,v 1.5.12.1 2001/05/14 21:38:11 niklas Exp $ */
+/*	$OpenBSD$ */
 /*	$NetBSD: mba.c,v 1.18 2000/01/24 02:40:36 matt Exp $ */
 /*
  * Copyright (c) 1994, 1996 Ludd, University of Lule}, Sweden.
@@ -45,7 +45,7 @@
 #include <sys/buf.h>
 #include <sys/proc.h>
 
-#include <vm/vm.h>
+#include <uvm/uvm_extern.h>
 
 #include <machine/trap.h>
 #include <machine/scb.h>

@@ -1,4 +1,4 @@
-/*	$OpenBSD: mem.c,v 1.1 2001/06/26 21:57:41 smurph Exp $	*/
+/*	$OpenBSD$	*/
 /*	$NetBSD: mem.c,v 1.1 1996/09/30 16:34:50 ws Exp $ */
 
 /*
@@ -52,7 +52,7 @@
 #include <sys/uio.h>
 #include <sys/malloc.h>
 
-#include <vm/vm.h>
+#include <uvm/uvm_extern.h>
 
 /*ARGSUSED*/
 int
@@ -89,7 +89,7 @@ mmrw(dev, uio, flags)
 	struct uio *uio;
 	int flags;
 {
-	vm_offset_t o, v;
+	vm_offset_t v;
 	u_int c;
 	struct iovec *iov;
 	int error = 0;
@@ -155,10 +155,11 @@ mmrw(dev, uio, flags)
 	return error;
 }
 
-int
+paddr_t
 mmmmap(dev, off, prot)
         dev_t dev;
-        int off, prot;
+        off_t off;
+	int prot;
 {
 	return (-1);
 }

@@ -1,4 +1,4 @@
-/*	$OpenBSD: amiga_init.c,v 1.16.10.1 2001/04/18 16:01:54 niklas Exp $	*/
+/*	$OpenBSD$	*/
 /*	$NetBSD: amiga_init.c,v 1.56 1997/06/10 18:22:24 veego Exp $	*/
 
 /*
@@ -34,7 +34,7 @@
 #include <sys/param.h>
 #include <sys/systm.h>
 #include <sys/proc.h>
-#include <vm/vm.h>
+#include <uvm/uvm_extern.h>
 #include <sys/user.h>
 #include <sys/ioctl.h>
 #include <sys/select.h>
@@ -48,7 +48,7 @@
 #include <sys/dkbad.h>
 #include <sys/reboot.h>
 #include <sys/exec.h>
-#include <vm/pmap.h>
+#include <uvm/uvm_pmap.h>
 #include <machine/vmparam.h>
 #include <machine/pte.h>
 #include <machine/cpu.h>

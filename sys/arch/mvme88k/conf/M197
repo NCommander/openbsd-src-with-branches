@@ -1,4 +1,4 @@
-#	$OpenBSD: M197,v 1.1.4.2 2001/07/04 10:19:50 niklas Exp $
+#	$OpenBSD$
 
 machine mvme88k
 
@@ -64,6 +64,3 @@ scsibus* at ssh?
 sd*	at scsibus? target ? lun ?
 st*	at scsibus? target ? lun ?
 cd*	at scsibus? target ? lun ?
-
-# ------------------------------ pseudo devices ------------------------
-pseudo-device	rd 	2

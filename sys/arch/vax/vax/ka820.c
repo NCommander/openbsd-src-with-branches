@@ -1,4 +1,4 @@
-/*	$OpenBSD: ka820.c,v 1.3.12.1 2001/05/14 21:39:03 niklas Exp $	*/
+/*	$OpenBSD$	*/
 /*	$NetBSD: ka820.c,v 1.22 2000/06/04 02:19:27 matt Exp $	*/
 /*
  * Copyright (c) 1988 Regents of the University of California.
@@ -49,7 +49,7 @@
 #include <sys/device.h>
 #include <sys/systm.h>
 
-#include <vm/vm.h> 
+#include <uvm/uvm_extern.h> 
 
 #include <machine/ka820.h>
 #include <machine/cpu.h>

@@ -43,7 +43,7 @@
 #include <sys/stat.h>
 #include <sys/systm.h>
 
-#include <vm/vm.h>
+#include <uvm/uvm_extern.h>
 
 #include <machine/powerpc.h>
 #include <machine/autoconf.h>

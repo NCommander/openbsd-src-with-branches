@@ -1,4 +1,4 @@
-/* $OpenBSD: ncr.c,v 1.4.6.1 2001/05/14 21:39:20 niklas Exp $ */
+/* $OpenBSD$ */
 /*	$NetBSD: ncr.c,v 1.32 2000/06/25 16:00:43 ragge Exp $	*/
 
 /*-
@@ -60,7 +60,7 @@
 #include <sys/proc.h>
 #include <sys/user.h>
 
-#include <vm/vm.h>
+#include <uvm/uvm_extern.h>
 
 #include <scsi/scsi_all.h>
 #include <scsi/scsi_debug.h>

@@ -1,4 +1,4 @@
-/*	$OpenBSD: flsc.c,v 1.8 1997/01/18 12:26:28 niklas Exp $	*/
+/*	$OpenBSD$	*/
 /*	$NetBSD: flsc.c,v 1.14 1996/12/23 09:10:00 veego Exp $	*/
 
 /*
@@ -44,9 +44,7 @@
 #include <sys/device.h>
 #include <scsi/scsi_all.h>
 #include <scsi/scsiconf.h>
-#include <vm/vm.h>
-#include <vm/vm_page.h>
-#include <machine/pmap.h>
+#include <uvm/uvm_extern.h>
 #include <amiga/amiga/custom.h>
 #include <amiga/amiga/cc.h>
 #include <amiga/amiga/device.h>

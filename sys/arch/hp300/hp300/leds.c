@@ -1,4 +1,4 @@
-/*	$OpenBSD: leds.c,v 1.2.4.1 2001/07/04 10:15:43 niklas Exp $	*/
+/*	$OpenBSD$	*/
 /*	$NetBSD: leds.c,v 1.1 1997/05/05 20:54:35 thorpej Exp $	*/
 
 /*
@@ -45,7 +45,7 @@
 
 #include <sys/param.h>
 
-#include <vm/vm.h>
+#include <uvm/uvm_extern.h>
 
 #include <arch/hp300/hp300/leds.h>
 

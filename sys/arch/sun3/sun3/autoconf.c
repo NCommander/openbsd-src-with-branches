@@ -1,4 +1,4 @@
-/*	$OpenBSD: autoconf.c,v 1.8.2.2 2001/07/04 10:24:06 niklas Exp $	*/
+/*	$OpenBSD$	*/
 /*	$NetBSD: autoconf.c,v 1.37 1996/11/20 18:57:22 gwr Exp $	*/
 
 /*-
@@ -59,7 +59,6 @@
 #include <scsi/scsi_all.h>
 #include <scsi/scsiconf.h>
 
-#include <vm/vm.h>
 #include <uvm/uvm_extern.h>
 
 #include <machine/autoconf.h>

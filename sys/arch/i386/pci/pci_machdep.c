@@ -1,4 +1,4 @@
-/*	$OpenBSD: pci_machdep.c,v 1.14.6.4 2001/07/16 21:41:55 niklas Exp $	*/
+/*	$OpenBSD$	*/
 /*	$NetBSD: pci_machdep.c,v 1.28 1997/06/06 23:29:17 thorpej Exp $	*/
 
 /*-
@@ -87,7 +87,7 @@
 #include <sys/errno.h>
 #include <sys/device.h>
 
-#include <vm/vm.h>
+#include <uvm/uvm_extern.h>
 
 #define _I386_BUS_DMA_PRIVATE
 #include <machine/bus.h>

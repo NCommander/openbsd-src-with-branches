@@ -94,7 +94,7 @@
 #include <sys/buf.h>
 #include <sys/kgdb.h>
 
-#include <vm/vm.h>
+#include <uvm/uvm_extern.h>
 
 #include <machine/ctlreg.h>
 #include <machine/psl.h>

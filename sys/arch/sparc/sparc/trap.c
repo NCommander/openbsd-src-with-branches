@@ -1,4 +1,4 @@
-/*	$OpenBSD: trap.c,v 1.21.2.3 2001/07/04 10:23:48 niklas Exp $	*/
+/*	$OpenBSD$	*/
 /*	$NetBSD: trap.c,v 1.58 1997/09/12 08:55:01 pk Exp $ */
 
 /*
@@ -65,7 +65,6 @@
 #include <sys/ktrace.h>
 #endif
 
-#include <vm/vm.h>
 #include <uvm/uvm_extern.h>
 
 #include <sparc/sparc/asm.h>
@@ -1150,9 +1149,10 @@ syscall(code, tf, pc)
  * Process the tail end of a fork() for the child.
  */
 void
-child_return(p)
-	struct proc *p;
+child_return(arg)
+	void *arg;
 {
+	struct proc *p = arg;
 
 	/*
 	 * Return values in the frame set by cpu_fork().

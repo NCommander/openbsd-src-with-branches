@@ -39,7 +39,7 @@
 #include <netinet/if_ether.h>
 #endif
 
-#include <vm/vm.h>
+#include <uvm/uvm_extern.h>
 
 #include "bpfilter.h"
 #if NBPFILTER > 0

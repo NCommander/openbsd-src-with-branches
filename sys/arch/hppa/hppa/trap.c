@@ -1,7 +1,7 @@
-/*	$OpenBSD: trap.c,v 1.19.2.2 2001/07/04 10:16:05 niklas Exp $	*/
+/*	$OpenBSD$	*/
 
 /*
- * Copyright (c) 1998-2000 Michael Shalayeff
+ * Copyright (c) 1998-2001 Michael Shalayeff
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -47,7 +47,6 @@
 
 #include <net/netisr.h>
 
-#include <vm/vm.h>
 #include <uvm/uvm.h>
 
 #include <machine/iomod.h>
@@ -436,9 +435,10 @@ if (kdb_trap (type, va, frame))
 }
 
 void
-child_return(p)
-	struct proc *p;
+child_return(arg)
+	void *arg;
 {
+	struct proc *p = (struct proc *)arg;
 	userret(p, p->p_md.md_regs->tf_iioq_head, 0);
 #ifdef KTRACE
 	if (KTRPOINT(p, KTR_SYSRET))

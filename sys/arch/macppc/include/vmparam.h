@@ -62,7 +62,7 @@
  * Size of shared memory map
  */
 #ifndef	SHMMAXPGS
-#define	SHMMAXPGS	1024
+#define	SHMMAXPGS       4096
 #endif
 
 /*

@@ -1,4 +1,4 @@
-/*	$OpenBSD: sshdma.c,v 1.3.2.2 2001/07/04 10:19:57 niklas Exp $	*/
+/*	$OpenBSD$	*/
 
 /*
  * Copyright (c) 1996 Nivas Madhur
@@ -43,9 +43,8 @@
 #include <sys/kernel.h>
 #include <sys/device.h>
 
-#include <vm/vm.h>
-#include <vm/pmap.h>
 #include <uvm/uvm_extern.h>
+#include <uvm/uvm_pmap.h>
 
 #include <machine/autoconf.h>
 #include <machine/board.h>

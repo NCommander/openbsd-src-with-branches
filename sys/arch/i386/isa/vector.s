@@ -221,11 +221,12 @@ _Xintr/**/irq_num/**/:							;\
 	movl	_C_LABEL(ilevel) + (irq_num) * 4, %eax			;\
 	movzbl	CPL,%ebx						;\
 	cmpl	%eax,%ebx						;\
-	jnz	_Xhold/**/irq_num	/* currently masked; hold it */	;\
+	/* XXX not jae? */						;\
+	jnz	_C_LABEL(Xhold/**/irq_num)/* currently masked; hold it */;\
 _Xresume/**/irq_num/**/:						;\
 	movzbl	CPL,%eax		/* cpl to restore on exit */	;\
 	pushl	%eax							;\
-	movl	_C_LABEL(ilevel) + (irq_num) * 4, %eax	/* XXXtuneme */	;\
+	movl	_C_LABEL(ilevel) + (irq_num) * 4,%eax			;\
 	movl	%eax,CPL		/* add in this intr's mask */	;\
 	sti				/* safe to take intrs now */	;\
 	movl	_C_LABEL(intrhand) + (irq_num) * 4,%ebx	/* head of chain */ ;\

@@ -1,4 +1,4 @@
-/*	$OpenBSD: cgfourteen.c,v 1.4.4.1 2001/07/04 10:23:21 niklas Exp $	*/
+/*	$OpenBSD$	*/
 /*	$NetBSD: cgfourteen.c,v 1.7 1997/05/24 20:16:08 pk Exp $ */
 
 /*
@@ -88,7 +88,7 @@
 #include <sys/tty.h>
 #include <sys/conf.h>
 
-#include <vm/vm.h>
+#include <uvm/uvm_extern.h>
 
 #include <machine/fbio.h>
 #include <machine/autoconf.h>
@@ -560,10 +560,11 @@ cgfourteenunblank(dev)
  * tell the chip to ignore the X channel. XXX where does it get the X value
  * to use?
  */
-int
+paddr_t
 cgfourteenmmap(dev, off, prot)
 	dev_t dev;
-	int off, prot;
+	off_t off;
+	int prot;
 {
 	register struct cgfourteen_softc *sc = cgfourteen_cd.cd_devs[minor(dev)];
 	

@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_ve.c,v 1.1.4.1 2001/04/18 16:10:56 niklas Exp $ */
+/*	$OpenBSD$ */
 /*-
  * Copyright (c) 1999 Steve Murphree, Jr.
  * Copyright (c) 1982, 1992, 1993
@@ -66,7 +66,7 @@
 #include <net/bpfdesc.h>
 #endif
 
-#include <vm/vm.h>
+#include <uvm/uvm_extern.h>
 
 #include <machine/autoconf.h>
 #include <machine/cpu.h>

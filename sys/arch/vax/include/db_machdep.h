@@ -1,4 +1,4 @@
-/*	$OpenBSD: db_machdep.h,v 1.7 2000/04/26 03:08:41 bjc Exp $	*/
+/*	$OpenBSD$	*/
 /*	$NetBSD: db_machdep.h,v 1.6 1998/08/10 14:33:33 ragge Exp $	*/
 
 /* 
@@ -36,7 +36,7 @@
  */
 
 #include <sys/param.h>
-#include <vm/vm.h>
+#include <uvm/uvm_extern.h>
 #include <machine/trap.h>
 #include <machine/psl.h>
 

@@ -1,4 +1,4 @@
-/*	$OpenBSD: mem.c,v 1.6.2.1 2001/05/14 21:39:06 niklas Exp $	*/
+/*	$OpenBSD$	*/
 /*	$NetBSD: mem.c,v 1.15 1999/03/24 05:51:17 mrg Exp $	*/
 
 /*
@@ -56,7 +56,7 @@
 #include <machine/pte.h>
 #include <machine/mtpr.h>
 
-#include <vm/vm.h>
+#include <uvm/uvm_extern.h>
 
 extern unsigned int avail_end;
 caddr_t zeropage;
@@ -64,7 +64,7 @@ caddr_t zeropage;
 int	mmopen __P((dev_t, int, int));
 int	mmclose __P((dev_t, int, int));
 int	mmrw __P((dev_t, struct uio *, int));
-int	mmmmap __P((dev_t, int, int));
+paddr_t	mmmmap __P((dev_t, off_t, int));
 
 
 /*ARGSUSED*/
@@ -172,10 +172,11 @@ mmrw(dev, uio, flags)
 	return (error);
 }
 
-int
+paddr_t
 mmmmap(dev, off, prot)
 	dev_t dev;
-	int off, prot;
+	off_t off;
+	int prot;
 {
 
 	return (-1);

@@ -36,8 +36,6 @@
 
 #include <powerpc/cpu.h>
 
-void	child_return __P((struct proc *));
-
 #define	CACHELINESIZE	32			/* For now		XXX */
 
 static __inline void

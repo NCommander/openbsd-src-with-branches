@@ -1,4 +1,4 @@
-/*	$OpenBSD: tcx.c,v 1.2 1998/11/20 15:57:24 deraadt Exp $	*/
+/*	$OpenBSD$	*/
 /*	$NetBSD: tcx.c,v 1.8 1997/07/29 09:58:14 fair Exp $ */
 
 /* 
@@ -61,7 +61,7 @@
 #include <sys/syslog.h>
 #endif
 
-#include <vm/vm.h>
+#include <uvm/uvm_extern.h>
 
 #include <machine/autoconf.h>
 #include <machine/pmap.h>
@@ -437,10 +437,11 @@ struct mmo {
  *
  * XXX	needs testing against `demanding' applications (e.g., aviator)
  */
-int
+paddr_t
 tcxmmap(dev, off, prot)
 	dev_t dev;
-	int off, prot;
+	off_t off;
+	int prot;
 {
 	register struct tcx_softc *sc = tcx_cd.cd_devs[minor(dev)];
 	register struct mmo *mo;

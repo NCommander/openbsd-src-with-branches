@@ -1,4 +1,4 @@
-/*	$OpenBSD: sys_machdep.c,v 1.7.2.1 2001/04/18 16:10:41 niklas Exp $ */
+/*	$OpenBSD$ */
 
 /*
  * Copyright (c) 1982, 1986, 1993
@@ -47,7 +47,7 @@
 #include <sys/mtio.h>
 #include <sys/buf.h>
 
-#include <vm/vm.h>
+#include <uvm/uvm_extern.h>
 
 #include <machine/cpu.h>
 

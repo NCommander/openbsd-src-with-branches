@@ -1,4 +1,4 @@
-/*	$OpenBSD: locore.c,v 1.9.12.1 2001/05/14 21:39:04 niklas Exp $	*/
+/*	$OpenBSD$	*/
 /*	$NetBSD: locore.c,v 1.43 2000/03/26 11:39:45 ragge Exp $	*/
 /*
  * Copyright (c) 1994, 1998 Ludd, University of Lule}, Sweden.
@@ -39,7 +39,7 @@
 #include <sys/systm.h>
 #include <sys/user.h>
 
-#include <vm/vm.h>
+#include <uvm/uvm_extern.h>
 
 #include <machine/cpu.h>
 #include <machine/sid.h>

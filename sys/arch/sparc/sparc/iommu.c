@@ -1,4 +1,4 @@
-/*	$OpenBSD: iommu.c,v 1.6.2.1 2001/07/04 10:23:42 niklas Exp $	*/
+/*	$OpenBSD$	*/
 /*	$NetBSD: iommu.c,v 1.13 1997/07/29 09:42:04 fair Exp $ */
 
 /*
@@ -41,7 +41,6 @@
 #include <sys/systm.h>
 #include <sys/device.h>
 
-#include <vm/vm.h>
 #include <uvm/uvm.h>
 
 #include <machine/pmap.h>

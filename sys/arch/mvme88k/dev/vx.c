@@ -1,4 +1,4 @@
-/*	$OpenBSD: vx.c,v 1.1.4.2 2001/07/04 10:20:01 niklas Exp $ */
+/*	$OpenBSD$ */
 /*
  * Copyright (c) 1999 Steve Murphree, Jr. 
  * All rights reserved.
@@ -47,12 +47,12 @@
 
 #include <dev/cons.h>
 
+#include <mvme88k/dev/vme.h>
 #include <mvme88k/dev/vxreg.h>
 
 #include "pcctwo.h"
 #if NPCCTWO > 0
 #include <mvme88k/dev/pcctworeg.h>
-#include <mvme88k/dev/vme.h>
 #endif
 
 #ifdef	DDB

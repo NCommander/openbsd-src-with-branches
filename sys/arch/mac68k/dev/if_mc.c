@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_mc.c,v 1.2.4.1 2001/04/18 16:10:06 niklas Exp $	*/
+/*	$OpenBSD$	*/
 /*	$NetBSD: if_mc.c,v 1.4 1998/01/12 19:22:09 thorpej Exp $	*/
 
 /*-
@@ -70,7 +70,7 @@
 #include <netccitt/pk_extern.h>
 #endif
 
-#include <vm/vm.h>
+#include <uvm/uvm_extern.h>
 
 #include "bpfilter.h"
 #if NBPFILTER > 0

@@ -1,4 +1,4 @@
-/*	$OpenBSD: installboot.c,v 1.33 1998/12/16 03:04:09 mickey Exp $	*/
+/*	$OpenBSD$	*/
 /*	$NetBSD: installboot.c,v 1.5 1995/11/17 23:23:50 gwr Exp $ */
 
 /*
@@ -44,7 +44,7 @@
 #include <ufs/ffs/fs.h>
 #include <sys/reboot.h>
 
-#include <vm/vm.h>
+#include <uvm/uvm_extern.h>
 #include <sys/sysctl.h>
 
 #include <machine/cpu.h>

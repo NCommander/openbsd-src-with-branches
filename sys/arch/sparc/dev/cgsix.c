@@ -1,4 +1,4 @@
-/*	$OpenBSD: cgsix.c,v 1.12.4.2 2001/07/04 10:23:22 niklas Exp $	*/
+/*	$OpenBSD$	*/
 /*	$NetBSD: cgsix.c,v 1.33 1997/08/07 19:12:30 pk Exp $ */
 
 /*
@@ -69,7 +69,7 @@
 #include <sys/syslog.h>
 #endif
 
-#include <vm/vm.h>
+#include <uvm/uvm_extern.h>
 
 #include <machine/autoconf.h>
 #include <machine/pmap.h>
@@ -718,10 +718,11 @@ struct mmo {
  *
  * XXX	needs testing against `demanding' applications (e.g., aviator)
  */
-int
+paddr_t
 cgsixmmap(dev, off, prot)
 	dev_t dev;
-	int off, prot;
+	off_t off;
+	int prot;
 {
 	register struct cgsix_softc *sc = cgsix_cd.cd_devs[minor(dev)];
 	register struct mmo *mo;

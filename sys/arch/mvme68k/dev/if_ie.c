@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_ie.c,v 1.11.2.2 2001/07/04 10:19:24 niklas Exp $ */
+/*	$OpenBSD$ */
 
 /*-
  * Copyright (c) 1999 Steve Murphree, Jr. 
@@ -128,7 +128,7 @@ Mode of operation:
 #include <netinet/if_ether.h>
 #endif
 
-#include <vm/vm.h>
+#include <uvm/uvm_extern.h>
 
 #include <machine/autoconf.h>
 #include <machine/cpu.h>

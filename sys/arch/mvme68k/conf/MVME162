@@ -1,4 +1,4 @@
-#	$OpenBSD: MVME162,v 1.12.2.2 2001/07/04 10:19:20 niklas Exp $
+#	$OpenBSD$
 
 machine		mvme68k m68k
 
@@ -62,8 +62,6 @@ cd*	at scsibus? target ? lun ?
 ch*	at scsibus? target ? lun ?
 ss*	at scsibus? target ? lun ?
 uk*	at scsibus? target ? lun ?
-
-pseudo-device	rd 2
 
 #si0	at vmes0 addr 0xff200000 ipl 2 vec 0x40
 #nxdc0	at vmes0 addr 0xff00ee80 ipl 2 vec 0x44

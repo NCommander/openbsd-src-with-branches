@@ -1,4 +1,4 @@
-/*	$OpenBSD: pfour.c,v 1.5 1995/12/15 13:56:26 deraadt Exp $ */
+/*	$OpenBSD$ */
 
 /*
  * Copyright (c) 1995 Theo de Raadt
@@ -39,7 +39,7 @@
 #include <sys/syslog.h>
 #endif
 
-#include <vm/vm.h>
+#include <uvm/uvm_extern.h>
 
 #include <machine/autoconf.h>
 #include <machine/pmap.h>

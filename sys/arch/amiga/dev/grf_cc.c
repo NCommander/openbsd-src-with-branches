@@ -1,4 +1,4 @@
-/*	$OpenBSD: grf_cc.c,v 1.7 2000/05/27 21:32:47 art Exp $	*/
+/*	$OpenBSD$	*/
 /*	$NetBSD: grf_cc.c,v 1.23 1996/12/23 09:10:02 veego Exp $	*/
 
 /*
@@ -44,7 +44,7 @@
 #include <sys/queue.h>
 #include <sys/device.h>
 #include <sys/systm.h>
-#include <vm/vm_param.h>
+#include <uvm/uvm_param.h>
 #include <machine/cpu.h>
 #include <amiga/amiga/color.h>	/* DEBUG */
 #include <amiga/amiga/device.h>
@@ -58,7 +58,7 @@
 
 #include <sys/conf.h>
 #include <machine/conf.h>
-#include <vm/vm.h>
+#include <uvm/uvm_extern.h>
 
 #include "view.h" 
 

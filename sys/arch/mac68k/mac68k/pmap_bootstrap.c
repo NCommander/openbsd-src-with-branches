@@ -45,7 +45,7 @@
 #include <sys/msgbuf.h>
 #include <sys/reboot.h>
 
-#include <vm/vm.h>
+#include <uvm/uvm_extern.h>
 
 #include <machine/pte.h>
 #include <mac68k/mac68k/clockreg.h>

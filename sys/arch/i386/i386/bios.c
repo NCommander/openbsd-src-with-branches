@@ -1,4 +1,4 @@
-/*	$OpenBSD: bios.c,v 1.25.2.5 2001/07/04 10:16:32 niklas Exp $	*/
+/*	$OpenBSD$	*/
 
 /*
  * Copyright (c) 1997-2001 Michael Shalayeff
@@ -43,7 +43,6 @@
 #include <sys/reboot.h>
 #include <sys/extent.h>
 
-#include <vm/vm.h>
 #include <uvm/uvm_extern.h>
 #include <sys/sysctl.h>
 

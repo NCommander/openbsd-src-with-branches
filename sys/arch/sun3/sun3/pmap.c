@@ -1,4 +1,4 @@
-/*	$OpenBSD: pmap.c,v 1.18.2.3 2001/07/04 10:24:14 niklas Exp $	*/
+/*	$OpenBSD$	*/
 /*	$NetBSD: pmap.c,v 1.64 1996/11/20 18:57:35 gwr Exp $	*/
 
 /*-
@@ -77,9 +77,6 @@
 #include <sys/malloc.h>
 #include <sys/user.h>
 #include <sys/queue.h>
-
-#include <vm/vm.h>
-#include <vm/vm_page.h>
 
 #include <uvm/uvm.h>
 
@@ -409,6 +406,8 @@ extern int pmap_page_index __P((paddr_t));
 extern u_int pmap_free_pages __P((void));
 extern int pmap_next_page __P((vm_offset_t *));
 
+void pmap_pinit __P((struct pmap *));
+void pmap_release __P((struct pmap *));
 
 /*
  * Debugging support.

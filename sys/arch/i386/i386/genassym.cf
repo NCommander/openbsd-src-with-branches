@@ -1,4 +1,4 @@
-#	$OpenBSD: genassym.cf,v 1.7.6.3 2001/07/14 10:02:24 ho Exp $
+#	$OpenBSD$
 #
 # Copyright (c) 1982, 1990 The Regents of the University of California.
 # All rights reserved.
@@ -42,8 +42,6 @@ include <sys/user.h>
 ifdef INET
 include <sys/mbuf.h>
 endif
-
-include <vm/vm.h>
 
 include <uvm/uvm_extern.h>
 

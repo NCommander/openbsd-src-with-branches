@@ -34,7 +34,6 @@
 #include <sys/device.h>
 #include <sys/buf.h>
 
-#include <vm/vm.h>
 #include <uvm/uvm_extern.h>
 
 #include <machine/bus.h>

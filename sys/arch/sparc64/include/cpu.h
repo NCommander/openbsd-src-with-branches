@@ -292,7 +292,6 @@ void	remrq __P((struct proc *));
 /* trap.c */
 void	kill_user_windows __P((struct proc *));
 int	rwindow_save __P((struct proc *));
-void	child_return __P((struct proc *));
 /* amd7930intr.s */
 void	amd7930_trap __P((void));
 /* cons.c */

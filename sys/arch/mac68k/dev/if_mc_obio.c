@@ -47,7 +47,7 @@
 #include <netinet/in.h>
 #include <netinet/if_ether.h>
 
-#include <vm/vm.h>
+#include <uvm/uvm_extern.h>
 
 #include <machine/bus.h>
 #include <machine/cpu.h>

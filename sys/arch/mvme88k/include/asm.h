@@ -136,11 +136,14 @@
  * will never actually take the trap).
  */
 #if 0
-#define FLUSH_PIPELINE	tcnd	ne0, r0, 0
+#define	FLUSH_PIPELINE		tcnd	ne0, r0, 0
+#define	FLUSH_PIPELINE_STRING	"tcnd	ne0, r0, 0"
 #else
-#define FLUSH_PIPELINE	tb1 0, r0, 0
+#define	FLUSH_PIPELINE		tb1	0, r0, 0
+#define	FLUSH_PIPELINE_STRING	"tb1	0, r0, 0"
 #endif
-#define NOP		or r0, r0, r0
+#define	NOP			or	r0, r0, r0
+#define	NOP_STRING		"or	r0, r0, r0"
 
 /*
  * Useful in some situations.

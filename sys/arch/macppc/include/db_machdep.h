@@ -34,7 +34,7 @@
 #define	_PPC_DB_MACHDEP_H_
 
 #include <sys/types.h>
-#include <vm/vm_param.h>
+#include <uvm/uvm_param.h>
 #include <machine/trap.h>
 
 /*

@@ -34,7 +34,6 @@
  * Machine-dependent defines for new kernel debugger.
  */
 
-#include <vm/vm.h>
 #include <uvm/uvm_extern.h>
 
 #include <machine/frame.h>

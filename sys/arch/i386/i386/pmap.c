@@ -1,4 +1,4 @@
-/*	$OpenBSD: pmap.c,v 1.34.2.5 2001/07/15 13:38:16 ho Exp $	*/
+/*	$OpenBSD$	*/
 /*	$NetBSD: pmap.c,v 1.91 2000/06/02 17:46:37 thorpej Exp $	*/
 
 /*
@@ -73,9 +73,6 @@
 #include <sys/malloc.h>
 #include <sys/pool.h>
 #include <sys/user.h>
-
-#include <vm/vm.h>
-#include <vm/vm_page.h>
 
 #include <uvm/uvm.h>
 
@@ -2116,7 +2113,7 @@ pmap_zero_page(pa)
  * pmap_zero_page_uncached: the same, except uncached.
  */
 
-void
+boolean_t
 pmap_zero_page_uncached(pa)
 	paddr_t pa;
 {
@@ -2132,6 +2129,8 @@ pmap_zero_page_uncached(pa)
 	*zero_pte = 0;					/* zap! */
 	pmap_update_pg((vaddr_t)zerop);			/* flush TLB */
 	simple_unlock(&pmap_zero_page_lock);
+
+	return (TRUE);
 }
 
 /*

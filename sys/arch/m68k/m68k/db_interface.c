@@ -1,4 +1,4 @@
-/*	$OpenBSD: db_interface.c,v 1.9 1997/03/21 00:36:39 niklas Exp $	*/
+/*	$OpenBSD$	*/
 /*	$NetBSD: db_interface.c,v 1.24 1997/02/18 22:27:32 gwr Exp $	*/
 
 /* 
@@ -35,7 +35,7 @@
 #include <sys/reboot.h>
 #include <sys/systm.h> /* just for boothowto --eichin */
 
-#include <vm/vm.h>
+#include <uvm/uvm_extern.h>
 
 #include <dev/cons.h>
 

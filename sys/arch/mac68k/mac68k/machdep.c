@@ -1,4 +1,4 @@
-/*	$OpenBSD: machdep.c,v 1.64.2.4 2001/07/04 10:18:38 niklas Exp $	*/
+/*	$OpenBSD$	*/
 /*	$NetBSD: machdep.c,v 1.207 1998/07/08 04:39:34 thorpej Exp $	*/
 
 /*
@@ -129,7 +129,6 @@
 void netintr __P((void));
 
 #define	MAXMEM	64*1024	/* XXX - from cmap.h */
-#include <vm/vm.h>
 #include <uvm/uvm_extern.h>
 
 #include <sys/sysctl.h>
@@ -188,7 +187,6 @@ vm_map_t phys_map = NULL;
 /*
  * Declare these as initialized data so we can patch them.
  */
-int	nswbuf = 0;
 #ifdef	NBUF
 int	nbuf = NBUF;
 #else
@@ -429,11 +427,6 @@ again:
 			nbuf = 16;
 	}
 
-	if (nswbuf == 0) {
-		nswbuf = (nbuf * 3 / 4) & ~1;	/* force even */
-		if (nswbuf > 256)
-			nswbuf = 256;	/* sanity */
-	}
 	valloc(buf, struct buf, nbuf);
 
 	/*
@@ -458,8 +451,8 @@ again:
 	 */
 	size = MAXBSIZE * nbuf;
 	if (uvm_map(kernel_map, (vm_offset_t *) &buffers, round_page(size),
-	    NULL, UVM_UNKNOWN_OFFSET, UVM_MAPFLAG(UVM_PROT_NONE, UVM_PROT_NONE,
-	    UVM_INH_NONE, UVM_ADV_NORMAL, 0)) != KERN_SUCCESS)
+	    NULL, UVM_UNKNOWN_OFFSET, 0, UVM_MAPFLAG(UVM_PROT_NONE,
+	    UVM_PROT_NONE, UVM_INH_NONE, UVM_ADV_NORMAL, 0)) != KERN_SUCCESS)
 		panic("startup: cannot allocate VM for buffers");
 	minaddr = (vm_offset_t)buffers;
 	base = bufpages / nbuf;

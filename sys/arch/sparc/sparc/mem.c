@@ -1,4 +1,4 @@
-/*	$OpenBSD: mem.c,v 1.11.2.3 2001/07/04 10:23:45 niklas Exp $	*/
+/*	$OpenBSD$	*/
 /*	$NetBSD: mem.c,v 1.13 1996/03/30 21:12:16 christos Exp $ */
 
 /*
@@ -57,7 +57,6 @@
 #include <machine/eeprom.h>
 #include <machine/conf.h>
 
-#include <vm/vm.h>
 #include <uvm/uvm_extern.h>
 
 extern vaddr_t prom_vstart;
@@ -218,10 +217,11 @@ unlock:
 	return (error);
 }
 
-int
+paddr_t
 mmmmap(dev, off, prot)
         dev_t dev;
-        int off, prot;
+        off_t off;
+	int prot;
 {
 
 	return (-1);

@@ -93,7 +93,7 @@
 #include <sys/user.h>
 #include <machine/cpu.h>
 
-#include <vm/vm.h>
+#include <uvm/uvm_extern.h>
 
 #include <compat/netbsd/netbsd_types.h>
 #include <compat/netbsd/netbsd_signal.h>

@@ -1,4 +1,4 @@
-/*	$OpenBSD: db_interface.c,v 1.4.6.2 2001/07/04 10:19:52 niklas Exp $	*/
+/*	$OpenBSD$	*/
 /*
  * Mach Operating System
  * Copyright (c) 1993-1991 Carnegie Mellon University
@@ -35,7 +35,7 @@
 #include <sys/proc.h>
 #include <sys/reboot.h>
 
-#include <vm/vm.h>
+#include <uvm/uvm_extern.h>
 
 #include <machine/m882xx.h>		 /* CMMU defs		        */
 #include <machine/trap.h>		 /* current_thread()            */
@@ -87,6 +87,8 @@ int	quiet_db_read_bytes = 0;
 /************************/
 /* 	DB_REGISTERS ****/
 /************************/
+
+db_regs_t	ddb_regs;
 
 /*
  *

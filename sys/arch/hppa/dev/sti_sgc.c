@@ -1,4 +1,4 @@
-/*	$OpenBSD: sti_sgc.c,v 1.5.2.1 2001/04/18 16:06:01 niklas Exp $	*/
+/*	$OpenBSD$	*/
 
 /*
  * Copyright (c) 2000 Michael Shalayeff
@@ -40,7 +40,6 @@
 #include <sys/systm.h>
 #include <sys/device.h>
 
-#include <vm/vm.h>
 #include <uvm/uvm.h>
 
 #include <machine/bus.h>

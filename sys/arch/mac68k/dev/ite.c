@@ -1,4 +1,4 @@
-/*	$OpenBSD: ite.c,v 1.17 1998/05/03 07:12:58 gene Exp $	*/
+/*	$OpenBSD$	*/
 /*	$NetBSD: ite.c,v 1.32 1997/02/20 00:23:25 scottr Exp $	*/
 
 /*
@@ -76,8 +76,8 @@
 #include <machine/iteioctl.h>
 #include <machine/grfioctl.h>
 
-#include <vm/vm.h>
-#include <vm/pmap.h>
+#include <uvm/uvm_extern.h>
+#include <uvm/uvm_pmap.h>
 
 #include "../mac68k/macrom.h"
 

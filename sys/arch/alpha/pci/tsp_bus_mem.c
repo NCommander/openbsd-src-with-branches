@@ -1,4 +1,4 @@
-/* $OpenBSD: tsp_bus_mem.c,v 1.2 2001/04/14 22:19:56 mjacob Exp $ */
+/* $OpenBSD$ */
 /* $NetBSD: tsp_bus_mem.c,v 1.4 2000/06/26 19:46:25 thorpej Exp $ */
 
 /*-
@@ -38,7 +38,6 @@
 #include <sys/syslog.h>
 #include <sys/device.h>
 
-#include <vm/vm.h>
 #include <uvm/uvm_extern.h>
 
 #include <machine/bus.h>

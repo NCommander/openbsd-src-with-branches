@@ -1,4 +1,4 @@
-/*	$OpenBSD: trap.h,v 1.5.4.1 2001/04/18 16:11:27 niklas Exp $ */
+/*	$OpenBSD$ */
 /* 
  * Mach Operating System
  * Copyright (c) 1992 Carnegie Mellon University
@@ -77,7 +77,6 @@ void panictrap(int type, struct m88100_saved_state *frame);
 void test_trap(struct m88100_saved_state *frame);
 void error_fault(struct m88100_saved_state *frame);
 void error_reset(struct m88100_saved_state *frame);
-void child_return(struct proc *p);
 unsigned ss_get_value(struct proc *p, unsigned addr, int size);
 int ss_put_value(struct proc *p, unsigned addr, unsigned value, int size);
 unsigned ss_branch_taken(unsigned inst, unsigned pc, 

@@ -1,4 +1,4 @@
-/*	$OpenBSD: ka650.c,v 1.6.12.1 2001/05/14 21:39:00 niklas Exp $	*/
+/*	$OpenBSD$	*/
 /*	$NetBSD: ka650.c,v 1.25 2001/04/27 15:02:37 ragge Exp $	*/
 /*
  * Copyright (c) 1988 The Regents of the University of California.
@@ -47,7 +47,7 @@
 #include <sys/kernel.h>
 #include <sys/systm.h>
 #include <sys/device.h>
-#include <vm/vm.h>
+#include <uvm/uvm_extern.h>
 
 #include <machine/ka650.h>
 #include <machine/clock.h>

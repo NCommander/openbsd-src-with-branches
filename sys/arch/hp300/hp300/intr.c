@@ -48,7 +48,6 @@
 #include <sys/malloc.h>
 #include <sys/vmmeter.h>
 
-#include <vm/vm.h>
 #include <uvm/uvm_extern.h>
 
 #include <net/netisr.h>

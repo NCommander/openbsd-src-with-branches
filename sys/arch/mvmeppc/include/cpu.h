@@ -1,4 +1,4 @@
-/*	$OpenBSD: cpu.h,v 1.1 2001/06/26 21:57:44 smurph Exp $	*/
+/*	$OpenBSD$	*/
 /*	$NetBSD: cpu.h,v 1.1 1996/09/30 16:34:21 ws Exp $	*/
 
 /*
@@ -38,10 +38,8 @@
 
 #define	CACHELINESIZE	32			/* For now		XXX */
 
-extern __inline void
-syncicache(from, len)
-	void *from;
-	int len;
+static __inline void
+syncicache(void *from, int len)
 {
 	int l = len;
 	char *p = from;
@@ -60,10 +58,8 @@ syncicache(from, len)
 	__asm__ __volatile__ ("isync");
 }
 
-extern __inline void
-invdcache(from, len)
-	void *from;
-	int len;
+static __inline void
+invdcache(void *from, int len)
 {
 	int l = len;
 	char *p = from;

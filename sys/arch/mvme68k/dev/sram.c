@@ -1,4 +1,4 @@
-/*	$OpenBSD: sram.c,v 1.4 1996/06/11 10:15:24 deraadt Exp $ */
+/*	$OpenBSD$ */
 
 /*
  * Copyright (c) 1995 Theo de Raadt
@@ -50,7 +50,7 @@
 #include <mvme68k/dev/mcreg.h>
 #endif
 
-#include <vm/vm.h>
+#include <uvm/uvm_extern.h>
 
 struct sramsoftc {
 	struct device	sc_dev;
@@ -217,10 +217,11 @@ sramwrite(dev, uio, flags)
 	return (memdevrw(sc->sc_vaddr, sc->sc_len, uio, flags));
 }
 
-int
+paddr_t
 srammmap(dev, off, prot)
 	dev_t dev;
-	int off, prot;
+	off_t off;
+	int prot;
 {
 	int unit = minor(dev);
 	struct sramsoftc *sc = (struct sramsoftc *) sram_cd.cd_devs[unit];

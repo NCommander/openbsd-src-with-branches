@@ -1,4 +1,4 @@
-/*	$OpenBSD: cgeight.c,v 1.9 1998/11/20 15:57:21 deraadt Exp $	*/
+/*	$OpenBSD$	*/
 /*	$NetBSD: cgeight.c,v 1.13 1997/05/24 20:16:04 pk Exp $	*/
 
 /*
@@ -65,7 +65,7 @@
 #include <sys/tty.h>
 #include <sys/conf.h>
 
-#include <vm/vm.h>
+#include <uvm/uvm_extern.h>
 
 #include <machine/fbio.h>
 #include <machine/autoconf.h>
@@ -381,10 +381,11 @@ cgeightioctl(dev, cmd, data, flags, p)
  * goes. Starting at 8MB, it maps the ramdac for NBPG, then the p4
  * register for NBPG, then the bootrom for 0x40000.
  */
-int
+paddr_t
 cgeightmmap(dev, off, prot)
 	dev_t dev;
-	int off, prot;
+	off_t off;
+	int prot;
 {
 	register struct cgeight_softc *sc = cgeight_cd.cd_devs[minor(dev)];
 	int poff;

@@ -1,4 +1,4 @@
-/*	$OpenBSD: mem.c,v 1.9.2.2 2001/07/04 10:19:40 niklas Exp $ */
+/*	$OpenBSD$ */
 
 /*
  * Copyright (c) 1995 Theo de Raadt
@@ -82,7 +82,6 @@
 
 #include <machine/cpu.h>
 
-#include <vm/vm.h>
 #include <uvm/uvm_extern.h>
 
 extern u_int lowram;
@@ -232,10 +231,11 @@ unlock:
 	return (error);
 }
 
-int
+paddr_t
 mmmmap(dev, off, prot)
 	dev_t dev;
-	int off, prot;
+	off_t off;
+	int prot;
 {
 	/*
 	 * /dev/mem is the only one that makes sense through this

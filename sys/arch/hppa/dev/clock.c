@@ -1,4 +1,4 @@
-/*	$OpenBSD: clock.c,v 1.8.2.1 2001/04/18 16:05:54 niklas Exp $	*/
+/*	$OpenBSD$	*/
 
 /*
  * Copyright (c) 1998,1999 Michael Shalayeff
@@ -46,7 +46,7 @@
 #include <machine/autoconf.h>
 
 #if defined(DDB)
-#include <vm/vm.h>
+#include <uvm/uvm_extern.h>
 #include <machine/db_machdep.h>
 #include <ddb/db_sym.h>
 #include <ddb/db_extern.h>

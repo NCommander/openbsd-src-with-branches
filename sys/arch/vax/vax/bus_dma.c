@@ -1,4 +1,4 @@
-/*	$OpenBSD: bus_dma.c,v 1.1.8.2 2001/07/04 10:24:33 niklas Exp $	*/
+/*	$OpenBSD$	*/
 /*	$NetBSD: bus_dma.c,v 1.5 1999/11/13 00:32:20 thorpej Exp $	*/
 
 /*-
@@ -55,9 +55,6 @@
 #include <sys/mbuf.h>
 #include <sys/vnode.h>
 #include <sys/device.h>
-
-#include <vm/vm.h>
-#include <vm/vm_page.h>
 
 #include <uvm/uvm_extern.h>
 

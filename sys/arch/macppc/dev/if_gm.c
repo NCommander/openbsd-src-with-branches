@@ -41,7 +41,7 @@
 #include <sys/socket.h>
 #include <sys/systm.h>
 
-#include <vm/vm.h>
+#include <uvm/uvm_extern.h>
 
 #include <net/if.h>
 #include <netinet/in.h>

@@ -76,9 +76,6 @@
 #include <sys/device.h>
 #include <sys/malloc.h>
 
-#include <vm/vm.h>
-#include <vm/vm_page.h>
-
 #include <machine/bus.h>
 #include <machine/psl.h>
 
@@ -447,6 +444,7 @@ ioapic_enable(void)
 	isa_nodefaultirq();
 #endif
 
+	lapic_set_softvectors();
 	lapic_set_lvt();
 
 	for (a = 0; a < 16; a++) {

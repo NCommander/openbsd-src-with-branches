@@ -43,7 +43,7 @@
 #include <sys/malloc.h>
 #include <sys/device.h>
 #include <sys/proc.h>
-#include <vm/vm.h>
+#include <uvm/uvm_extern.h>
 
 #include <machine/autoconf.h>
 #include <machine/bat.h>

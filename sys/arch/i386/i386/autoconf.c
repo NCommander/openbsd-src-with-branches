@@ -93,9 +93,8 @@ cpu_configure()
 	if (config_rootfound("mainbus", NULL) == NULL)
 		panic("cpu_configure: mainbus not configured");
 
-	printf("biomask %x netmask %x ttymask %x\n",
-	    (u_short)IMASK(IPL_BIO), (u_short)IMASK(IPL_NET),
-	    (u_short)IMASK(IPL_TTY));
+	printf("biomask %x netmask %x ttymask %x\n", (u_short)IMASK(IPL_BIO),
+	    (u_short)IMASK(IPL_NET), (u_short)IMASK(IPL_TTY));
 
 #if NIOAPIC > 0
 	ioapic_enable();

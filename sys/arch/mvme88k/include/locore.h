@@ -1,9 +1,9 @@
-/*	$OpenBSD: locore.h,v 1.5.6.1 2001/04/18 16:11:21 niklas Exp $	*/
+/*	$OpenBSD$	*/
 
 #ifndef _MACHINE_LOCORE_H_
 #define _MACHINE_LOCORE_H_
 
-#include <vm/vm_param.h>
+#include <uvm/uvm_param.h>
 
 /*
  * C prototypes for various routines defined in locore_* and friends

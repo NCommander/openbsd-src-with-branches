@@ -39,7 +39,6 @@
 #include <sys/core.h>
 #include <sys/kcore.h>
 
-#include <vm/vm.h>
 #include <uvm/uvm.h>
 
 #include <machine/pcb.h>
@@ -247,6 +246,9 @@ static struct pool pv_pool;
 extern void	pmap_remove_pv __P((struct pmap *pm, vaddr_t va, paddr_t pa));
 extern void	pmap_enter_pv __P((struct pmap *pm, vaddr_t va, paddr_t pa));
 extern void	pmap_page_cache __P((struct pmap *pm, paddr_t pa, int mode));
+
+void	pmap_pinit __P((struct pmap *));
+void	pmap_release __P((struct pmap *));
 
 /*
  * First and last managed physical addresses.  XXX only used for dumping the system.

@@ -1,4 +1,4 @@
-/*	$OpenBSD: rbus_machdep.c,v 1.7.2.2 2001/07/04 10:16:42 niklas Exp $ */
+/*	$OpenBSD$ */
 /*	$NetBSD: rbus_machdep.c,v 1.2 1999/10/15 06:43:06 haya Exp $	*/
 
 /*
@@ -36,9 +36,6 @@
 #include <sys/param.h>
 #include <sys/systm.h>
 #include <sys/extent.h>
-
-#include <vm/vm.h>
-#include <vm/vm_page.h>
 
 #include <uvm/uvm_extern.h>
 

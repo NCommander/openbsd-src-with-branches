@@ -1,4 +1,4 @@
-/*	$OpenBSD: vmes.c,v 1.5 1996/12/11 21:04:15 deraadt Exp $ */
+/*	$OpenBSD$ */
 
 /*
  * Copyright (c) 1995 Theo de Raadt
@@ -155,17 +155,17 @@ vmeswrite(dev, uio, flags)
 	return (vmerw(sc->sc_vme, uio, flags, BUS_VMES));
 }
 
-int
+paddr_t
 vmesmmap(dev, off, prot)
 	dev_t dev;
-	int off;
+	off_t off;
 	int prot;
 {
 	int unit = minor(dev);
 	struct vmessoftc *sc = (struct vmessoftc *) vmes_cd.cd_devs[unit];
 	void * pa;
 
-	pa = vmepmap(sc->sc_vme, (void *)off, NBPG, BUS_VMES);
+	pa = vmepmap(sc->sc_vme, (void *)(int)off, NBPG, BUS_VMES);
 	if (pa == NULL)
 		return (-1);
 	return (m68k_btop(pa));

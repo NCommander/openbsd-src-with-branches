@@ -1,4 +1,4 @@
-/*	$OpenBSD: clock.c,v 1.13 1999/09/29 13:54:03 art Exp $	*/
+/*	$OpenBSD$	*/
 /*	$NetBSD: clock.c,v 1.52 1997/05/24 20:16:05 pk Exp $ */
 
 /*
@@ -71,7 +71,7 @@
 #include <sys/gmon.h>
 #endif
 
-#include <vm/vm.h>
+#include <uvm/uvm_extern.h>
 
 #include <machine/autoconf.h>
 #include <machine/eeprom.h>

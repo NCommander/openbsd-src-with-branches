@@ -1,4 +1,4 @@
-/*	$OpenBSD: kdb.c,v 1.2.12.1 2001/05/14 21:37:38 niklas Exp $ */
+/*	$OpenBSD$ */
 /*	$NetBSD: kdb.c,v 1.5 1997/01/11 11:34:39 ragge Exp $ */
 /*
  * Copyright (c) 1996 Ludd, University of Lule}, Sweden.
@@ -47,7 +47,7 @@
 #include <sys/proc.h>
 #include <sys/malloc.h>
 
-#include <vm/vm.h>
+#include <uvm/uvm_extern.h>
 
 #include <machine/sid.h>
 #include <machine/pte.h>

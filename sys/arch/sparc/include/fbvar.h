@@ -60,7 +60,7 @@ struct fbdriver {
 	int	(*fbd_open) __P((dev_t, int, int, struct proc *));
 	int	(*fbd_close) __P((dev_t, int, int, struct proc *));
 	int	(*fbd_ioctl) __P((dev_t, u_long, caddr_t, int, struct proc *));
-	int	(*fbd_mmap) __P((dev_t, int, int));
+	paddr_t	(*fbd_mmap) __P((dev_t, off_t, int));
 #ifdef notyet
 	void	(*fbd_wrrop)();		/* `write region' rasterop */
 	void	(*fbd_cprop)();		/* `copy region' rasterop */

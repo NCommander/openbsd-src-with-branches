@@ -112,10 +112,11 @@ fbioctl(dev, cmd, data, flags, p)
 	return (fbioctlfb(devfb, cmd, data));
 }
 
-int
+paddr_t
 fbmmap(dev, off, prot)
 	dev_t dev;
-	int off, prot;
+	off_t off;
+	int prot;
 {
 	return ((*devfb->fb_driver->fbd_mmap)(dev, off, prot));
 }

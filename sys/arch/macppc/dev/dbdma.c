@@ -27,7 +27,7 @@
 #include <sys/malloc.h>
 #include <sys/systm.h>
 
-#include <vm/vm.h>
+#include <uvm/uvm_extern.h>
 
 #include <machine/bus.h>
 #include <macppc/dev/dbdma.h>

@@ -52,11 +52,10 @@
 #include <sys/device.h>
 #include <sys/systm.h>
 
-#include <vm/vm.h>
-
+#include <machine/cpufunc.h>
+#include <machine/cpuvar.h>
 #include <machine/intr.h>
 #include <machine/atomic.h>
-#include <machine/cpuvar.h>
 #include <machine/i82093var.h>
 
 void i386_ipi_halt(void);

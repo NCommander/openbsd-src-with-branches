@@ -57,7 +57,6 @@
 #include <machine/conf.h>
 #include <machine/ctlreg.h>
 
-#include <vm/vm.h>
 #include <uvm/uvm_extern.h>
 
 vaddr_t prom_vstart = 0xf000000;
@@ -266,10 +265,10 @@ unlock:
 	return (error);
 }
 
-int
+paddr_t
 mmmmap(dev, off, prot)
 	dev_t dev;
-	int off;
+	off_t off;
 	int prot;
 {
 

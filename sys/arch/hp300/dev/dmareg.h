@@ -1,4 +1,4 @@
-/*	$OpenBSD: dmareg.h,v 1.5 1997/04/16 11:56:00 downsj Exp $	*/
+/*	$OpenBSD$	*/
 /*	$NetBSD: dmareg.h,v 1.12 1997/05/05 21:02:40 thorpej Exp $	*/
 
 /*
@@ -37,7 +37,6 @@
  */
 
 #include <hp300/dev/iotypes.h>		/* XXX */
-#include <machine/hp300spu.h>
 
 /*
  * Hardware layout for the 98620[ABC]:

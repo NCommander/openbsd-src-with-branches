@@ -42,7 +42,7 @@
 #include <sys/device.h>
 #include <sys/malloc.h>
 
-#include <vm/vm.h>
+#include <uvm/uvm_extern.h>
 
 #include <machine/bus.h>
 #include <machine/autoconf.h>

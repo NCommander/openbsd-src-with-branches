@@ -1,4 +1,4 @@
-/*	$OpenBSD: view.c,v 1.3 1997/01/16 09:25:30 niklas Exp $	*/
+/*	$OpenBSD$	*/
 /*	$NetBSD: view.c,v 1.16 1996/10/13 03:07:35 christos Exp $	*/
 
 /*
@@ -386,10 +386,11 @@ view_set_colormap(vu, ucm)
 }
 
 /*ARGSUSED*/
-int
+paddr_t
 viewmmap(dev, off, prot)
         dev_t dev;
-	int off, prot;
+	off_t off;
+	int prot;
 {
 	struct view_softc *vu;
 	bmap_t *bm;

@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_ie.c,v 1.11.4.1 2001/05/14 21:37:26 niklas Exp $	*/
+/*	$OpenBSD$	*/
 /*	$NetBSD: if_ie.c,v 1.15 1996/10/30 00:24:33 gwr Exp $ */
 
 /*-
@@ -134,7 +134,7 @@
 #include <netns/ns_if.h>
 #endif
 
-#include <vm/vm.h>
+#include <uvm/uvm_extern.h>
 
 /*
  * ugly byte-order hack for SUNs

@@ -42,7 +42,7 @@
 #include <sys/proc.h>
 #include <sys/systm.h>
 
-#include <vm/vm.h>
+#include <uvm/uvm_extern.h>
 
 #include <machine/db_machdep.h>
 #include <machine/pcb.h>

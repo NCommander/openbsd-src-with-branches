@@ -52,7 +52,7 @@
 #include <net/bpfdesc.h>
 #endif
 
-#include <vm/vm.h>
+#include <uvm/uvm_extern.h>
 
 #include <dev/mii/mii.h>
 #include <dev/mii/miivar.h>

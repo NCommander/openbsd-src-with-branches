@@ -68,7 +68,7 @@
 #include <sys/tty.h>
 #include <sys/conf.h>
 
-#include <vm/vm.h>
+#include <uvm/uvm_extern.h>
 
 #include <machine/conf.h>
 #include <machine/cpu.h>
@@ -305,10 +305,10 @@ cg4ioctl(dev, cmd, data, flags, p)
  * 	1920k gap
  * 	1024k color memory
  */
-int
+paddr_t
 cg4mmap(dev, off, prot)
 	dev_t dev;
-	register int off;
+	off_t off;
 	int prot;
 {
 	struct cg4_softc *sc = cgfour_cd.cd_devs[minor(dev)];

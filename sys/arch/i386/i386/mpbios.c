@@ -113,9 +113,8 @@
 #include <sys/device.h>
 #include <sys/malloc.h>
 
-#include <vm/vm.h>
-#include <vm/vm_param.h>
-#include <vm/pmap.h>
+#include <uvm/uvm_extern.h>
+
 #include <machine/specialreg.h>
 #include <machine/cputypes.h>
 #include <machine/cpuvar.h>

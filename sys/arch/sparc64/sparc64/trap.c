@@ -67,7 +67,6 @@
 #include <sys/ktrace.h>
 #endif
 
-#include <vm/vm.h>
 #include <uvm/uvm_extern.h>
 
 #include <machine/cpu.h>
@@ -1415,9 +1414,10 @@ syscall(tf, code, pc)
  * Process the tail end of a fork() for the child.
  */
 void
-child_return(p)
-	struct proc *p;
+child_return(arg)
+	void *arg;
 {
+	struct proc *p = (struct proc *)arg;
 
 	/*
 	 * Return values in the frame set by cpu_fork().

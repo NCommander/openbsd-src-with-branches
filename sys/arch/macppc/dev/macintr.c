@@ -47,7 +47,6 @@
 #include <sys/socket.h>
 #include <sys/systm.h>
 
-#include <vm/vm.h>
 #include <uvm/uvm.h>
 
 #include <machine/autoconf.h>

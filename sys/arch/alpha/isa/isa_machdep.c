@@ -1,4 +1,4 @@
-/* $OpenBSD: isa_machdep.c,v 1.6.10.1 2001/04/18 16:01:01 niklas Exp $ */
+/* $OpenBSD$ */
 /* $NetBSD: isa_machdep.c,v 1.12 1998/08/07 10:26:39 drochner Exp $ */
 
 /*
@@ -39,7 +39,6 @@
 #include <sys/errno.h>
 #include <sys/device.h>
 
-#include <vm/vm.h>
 #include <uvm/uvm_extern.h>
 
 #include <dev/isa/isavar.h>

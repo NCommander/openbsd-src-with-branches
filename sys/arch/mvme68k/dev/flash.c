@@ -1,4 +1,4 @@
-/*	$OpenBSD: flash.c,v 1.6.2.1 2001/04/18 16:10:21 niklas Exp $ */
+/*	$OpenBSD$ */
 
 /*
  * Copyright (c) 1995 Theo de Raadt
@@ -474,10 +474,11 @@ tryerase:
 	return (error);
 }
 
-int
+paddr_t
 flashmmap(dev, off, prot)
 	dev_t dev;
-	int off, prot;
+	off_t off;
+	int prot;
 {
 	int unit = minor(dev);
 	struct flashsoftc *sc = (struct flashsoftc *) flash_cd.cd_devs[unit];
