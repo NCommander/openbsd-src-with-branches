@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /*	$NetBSD: fdreg.h,v 1.8 1995/06/28 04:30:57 cgd Exp $	*/
 
 /*-
