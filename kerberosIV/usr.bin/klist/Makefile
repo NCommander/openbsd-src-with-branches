@@ -1,4 +1,4 @@
-# $OpenBSD$
+# $OpenBSD: Makefile,v 1.1 2000/02/25 16:35:30 hin Exp $
 
 PROG	= klist
 
@@ -8,7 +8,7 @@ KRBDEPTH=../..
 .PATH:	${KRBSRC}/kuser
 
 CFLAGS	+= -I.
-LDADD	+= ${LIBROKEN} -lkrb -lkafs
+LDADD	+= ${LIBROKEN} -lkrb -lkafs -ldes
 
 SRCS	= klist.c
 
