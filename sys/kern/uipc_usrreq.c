@@ -1,4 +1,4 @@
-/*	$OpenBSD: uipc_usrreq.c,v 1.26 2004/04/01 23:56:05 tedu Exp $	*/
+/*	$OpenBSD: uipc_usrreq.c,v 1.27 2004/06/24 19:35:24 tholo Exp $	*/
 /*	$NetBSD: uipc_usrreq.c,v 1.18 1996/02/09 19:00:50 christos Exp $	*/
 
 /*
@@ -654,7 +654,7 @@ unp_externalize(rights)
 #endif
 
 restart:
-	fdplock(p->p_fd, p);
+	fdplock(p->p_fd);
 	if (error != 0) {
 		rp = ((struct file **)CMSG_DATA(cm));
 		for (i = 0; i < nfds; i++) {
