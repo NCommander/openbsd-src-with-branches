@@ -1,10 +1,8 @@
-/* ==== test_execve.c ============================================================
+/*	$OpenBSD$	*/
+/*
  * Copyright (c) 1994 by Chris Provenzano, proven@athena.mit.edu
  *
- * Description : Test execve() and dup2() calls.
- *
- *  1.00 94/04/29 proven
- *      -Started coding this file.
+ * Test execve() and dup2() calls.
  */
 
 #include <pthread.h>
