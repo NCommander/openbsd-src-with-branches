@@ -1,4 +1,4 @@
-/*	$OpenBSD: dhcpd.c,v 1.11 2004/04/15 23:20:42 henning Exp $ */
+/*	$OpenBSD: dhcpd.c,v 1.12 2004/04/16 04:30:09 deraadt Exp $ */
 
 /*
  * Copyright (c) 2004 Henning Brauer <henning@cvs.openbsd.org>
@@ -107,9 +107,6 @@ main(int argc, char *argv[])
 
 	argc -= optind;
 	argv += optind;
-
-	if (!argc)
-		usage();
 
 	while (argc > 0) {
 		struct interface_info *tmp = calloc(1, sizeof(*tmp));
