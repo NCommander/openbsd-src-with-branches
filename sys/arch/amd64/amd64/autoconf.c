@@ -1,4 +1,4 @@
-/*	$OpenBSD: autoconf.c,v 1.2 2004/02/03 12:09:47 mickey Exp $	*/
+/*	$OpenBSD: autoconf.c,v 1.3 2004/02/08 03:15:04 deraadt Exp $	*/
 /*	$NetBSD: autoconf.c,v 1.1 2003/04/26 18:39:26 fvdl Exp $	*/
 
 /*-
@@ -117,10 +117,10 @@ cpu_configure(void)
 
 	x86_64_proc0_tss_ldt_init();
 
+	startrtclock();
+
 	if (config_rootfound("mainbus", NULL) == NULL)
 		panic("configure: mainbus not configured");
-
-	startrtclock();
 
 	intr_printconfig();
 
