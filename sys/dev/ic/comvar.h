@@ -1,4 +1,4 @@
-/*	$OpenBSD: comvar.h,v 1.1 1996/11/30 13:39:31 niklas Exp $	*/
+/*	$OpenBSD: comvar.h,v 1.6 1996/12/10 22:28:31 deraadt Exp $	*/
 /*	$NetBSD: comvar.h,v 1.5 1996/05/05 19:50:47 christos Exp $	*/
 
 /*
@@ -109,6 +109,7 @@ int	comcngetc	__P((dev_t));
 void	comcnputc	__P((dev_t, int));
 void	comcnpollc	__P((dev_t, int));
 
+extern int comdefaultrate;
 extern int comconsaddr;
 extern int comconsinit;
 extern int comconsattached;
