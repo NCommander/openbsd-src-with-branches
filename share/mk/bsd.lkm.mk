@@ -1,4 +1,4 @@
-#	$OpenBSD: bsd.lkm.mk,v 1.16 2001/04/03 23:00:09 espie Exp $
+#	$OpenBSD: bsd.lkm.mk,v 1.17 2001/07/18 13:23:03 espie Exp $
 
 .if exists(${.CURDIR}/../Makefile.inc)
 .include "${.CURDIR}/../Makefile.inc"
@@ -19,6 +19,7 @@ CFLAGS+=	${COPTS} -D_KERNEL -D_LKM -I/sys -I/sys/arch
 .if ${WARNINGS:L} == "yes"
 CFLAGS+=	${CDIAGFLAGS}
 .endif
+CFLAGS+=	-fno-stack-protector 
 
 LDFLAGS+= -r
 .if defined(LKM)
