@@ -1,4 +1,4 @@
-/*	$OpenBSD: diff.c,v 1.5 2003/06/25 07:26:59 tedu Exp $	*/
+/*	$OpenBSD: diff.c,v 1.6 2003/06/25 17:49:22 millert Exp $	*/
 
 /*
  * Copyright (C) Caldera International Inc.  2001-2002.
@@ -65,7 +65,7 @@ main(int argc, char **argv)
 	status = 2;
 	diffargv = argv;
 
-	while ((ch = getopt(argc, argv, "bC:cDefhilnrS:stw")) != -1) {
+	while ((ch = getopt(argc, argv, "bC:cD:efhilnrS:stw")) != -1) {
 		switch (ch) {
 		case 'b':
 			bflag++;
