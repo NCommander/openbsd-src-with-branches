@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /*	$NetBSD: crt0.c,v 1.6 2002/01/01 01:31:06 thorpej Exp $	*/
 
 /*
