@@ -1,4 +1,4 @@
-/*	$OpenBSD$ */
+/*	$OpenBSD: sboot.c,v 1.5 1996/05/29 15:30:44 chuck Exp $ */
 
 /*
  * Copyright (c) 1995 Theo de Raadt
@@ -136,7 +136,7 @@ do_cmd(buf, ebuf)
 			printf("received secondary boot program.\n");
 		}
 		if (*++buf == '\0')
-			buf = "bsd";
+			buf = " bsd";
 		go(LOAD_ADDR, buf+1, ebuf);
 		break;
 	case 'h':
