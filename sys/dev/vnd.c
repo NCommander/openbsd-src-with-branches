@@ -1,4 +1,4 @@
-/*	$OpenBSD: vnd.c,v 1.34 2002/05/24 13:10:52 art Exp $	*/
+/*	$OpenBSD: vnd.c,v 1.35 2003/02/25 09:13:35 tedu Exp $	*/
 /*	$NetBSD: vnd.c,v 1.26 1996/03/30 23:06:11 christos Exp $	*/
 
 /*
@@ -429,7 +429,7 @@ vndstrategy(bp)
 	}
 	if (DISKPART(bp->b_dev) != RAW_PART &&
 	    bounds_check_with_label(bp, vnd->sc_dk.dk_label,
-	    vnd->sc_dk.dk_cpulabel, 1) == 0) {
+	    vnd->sc_dk.dk_cpulabel, 1) <= 0) {
 		s = splbio();
 		biodone(bp);
 		splx(s);
