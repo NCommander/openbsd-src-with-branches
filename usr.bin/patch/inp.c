@@ -1,7 +1,7 @@
-/*	$OpenBSD: inp.c,v 1.7 1998/11/25 00:30:25 espie Exp $	*/
+/*	$OpenBSD: inp.c,v 1.8 1999/01/03 05:33:48 millert Exp $	*/
 
 #ifndef lint
-static char rcsid[] = "$OpenBSD: inp.c,v 1.7 1998/11/25 00:30:25 espie Exp $";
+static char rcsid[] = "$OpenBSD: inp.c,v 1.8 1999/01/03 05:33:48 millert Exp $";
 #endif /* not lint */
 
 #include "EXTERN.h"
@@ -288,6 +288,8 @@ char *filename;
     lines_per_buf = BUFFERSIZE / maxlen;
     tireclen = maxlen;
     tibuf[0] = malloc((MEM)(BUFFERSIZE + 1));
+    if (tibuf[0] == Nullch)
+	fatal1("out of memory\n");
     tibuf[1] = malloc((MEM)(BUFFERSIZE + 1));
     if (tibuf[1] == Nullch)
 	fatal1("out of memory\n");
