@@ -1,4 +1,4 @@
-/*	$OpenBSD: wskbdutil.c,v 1.2 2001/04/14 04:48:01 aaron Exp $	*/
+/*	$OpenBSD: wskbdutil.c,v 1.3 2002/03/14 01:27:03 millert Exp $	*/
 /*	$NetBSD: wskbdutil.c,v 1.7 1999/12/21 11:59:13 drochner Exp $	*/
 
 /*-
@@ -72,6 +72,8 @@ static struct compose_tab_s {
 	{ { KS_dead_grave,		KS_space },		KS_grave },
 	{ { KS_dead_tilde,		KS_space },		KS_asciitilde },
 	{ { KS_dead_circumflex,		KS_space },		KS_asciicircum },
+	{ { KS_dead_diaeresis,		KS_space },		KS_quotedbl },
+	{ { KS_dead_cedilla,		KS_space },		KS_cedilla },
 	{ { KS_dead_circumflex,		KS_A },			KS_Acircumflex },
 	{ { KS_dead_diaeresis,		KS_A },			KS_Adiaeresis },
 	{ { KS_dead_grave,		KS_A },			KS_Agrave },
