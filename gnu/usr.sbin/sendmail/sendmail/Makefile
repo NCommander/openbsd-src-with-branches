@@ -1,9 +1,12 @@
-#	$OpenBSD: Makefile,v 1.7 2000/06/11 20:43:22 millert Exp $
+#	$OpenBSD: Makefile,v 1.8 2000/08/01 12:57:47 millert Exp $
 
 PROG=	sendmail
 
 WANT_LIBWRAP=1
 WANT_LIBSMUTIL=1
+
+# To casue sendmail to drop privs in test mode (-bt) uncomment the following
+#ENVDEF+= -D_FFR_TESTMODE_DROP_PRIVS
 
 SRCS=	main.c alias.c arpadate.c bf_torek.c clock.c collect.c \
 	conf.c control.c convtime.c daemon.c deliver.c domain.c \
