@@ -1,4 +1,4 @@
-/*	$OpenBSD: policy.c,v 1.8 2002/06/09 04:18:56 itojun Exp $	*/
+/*	$OpenBSD: policy.c,v 1.9 2002/06/11 05:30:28 provos Exp $	*/
 /*
  * Copyright 2002 Niels Provos <provos@citi.umich.edu>
  * All rights reserved.
@@ -31,9 +31,9 @@
 
 #include <sys/types.h>
 #include <sys/param.h>
-
 #include <sys/stat.h>
 #include <sys/tree.h>
+#include <limits.h>
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
@@ -365,7 +365,7 @@ systrace_readpolicy(char *filename)
 {
 	FILE *fp;
 	struct policy *policy;
-	char line[1024], *p;
+	char line[_POSIX2_LINE_MAX], *p;
 	int linenumber = 0;
 	char *name, *emulation, *rule;
 	struct filter *filter, *parsed;
