@@ -1,4 +1,4 @@
-/*	$OpenBSD: vsbus.h,v 1.6 2001/08/25 13:33:36 hugh Exp $ */
+/*	$OpenBSD: vsbus.h,v 1.7 2002/03/14 01:26:48 millert Exp $ */
 /*	$NetBSD: vsbus.h,v 1.13 2000/06/25 16:00:46 ragge Exp $ */
 /*
  * Copyright (c) 1996 Ludd, University of Lule}, Sweden.
@@ -92,7 +92,7 @@ struct	vsbus_attach_args {
 	void	*va_vecarg;		/* Interrupt routine argument */
 
 	short	va_br;			/* Interrupt level */
-	short	va_cvec;		/* Interrupt vector address */
+	int	va_cvec;		/* Interrupt vector address */
 	u_char	va_maskno;		/* Interrupt vector in mask */
 	vaddr_t	va_dmaaddr;		/* DMA area address */
 	vsize_t	va_dmasize;		/* DMA area size */
