@@ -1,4 +1,4 @@
-/*	$OpenBSD: machdep.c,v 1.66 2004/02/19 18:46:18 miod Exp $	*/
+/*	$OpenBSD: machdep.c,v 1.67 2004/03/10 23:02:54 tom Exp $	*/
 /*	$NetBSD: machdep.c,v 1.108 2001/07/24 19:30:14 eeh Exp $ */
 
 /*-
@@ -1907,7 +1907,7 @@ bus_intr_allocate(bus_space_tag_t t, int (*handler)(void *), void *arg,
 	if (ih == NULL)
 		return (NULL);
 
-	memset(ih, 0, sizeof(struct intrhand) + namelen);
+	memset(ih, 0, sizeof(struct intrhand) + namelen - 1);
 
 	ih->ih_fun = handler;
 	ih->ih_arg = arg;
