@@ -1,4 +1,5 @@
-/*	$OpenBSD: spinlock.h,v 1.3 1999/01/27 04:46:06 imp Exp $	*/
+/*	$OpenBSD: spinlock.h,v 1.1 2004/08/06 20:56:02 pefo Exp $	*/
+ /* Public domain */
 
 #ifndef _MIPS_SPINLOCK_H_
 #define _MIPS_SPINLOCK_H_

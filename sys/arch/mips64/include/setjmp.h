@@ -1,8 +1,6 @@
-/*	$OpenBSD: setjmp.h,v 1.2 1999/01/27 04:46:06 imp Exp $	*/
+/*	$OpenBSD: setjmp.h,v 1.1 2004/08/06 20:56:02 pefo Exp $	*/
 
-/*
- * mips/setjmp.h: machine dependent setjmp-related information.
- */
+/* Public domain */
 
 #ifndef _MIPS_SETJMP_H_
 #define _MIPS_SETJMP_H_
