@@ -1,4 +1,4 @@
-/*	$OpenBSD: mkfs.c,v 1.19 2001/07/07 18:26:16 deraadt Exp $	*/
+/*	$OpenBSD: mkfs.c,v 1.20 2001/11/05 07:39:17 mpech Exp $	*/
 /*	$NetBSD: mkfs.c,v 1.25 1995/06/18 21:35:38 cgd Exp $	*/
 
 /*
@@ -38,7 +38,7 @@
 #if 0
 static char sccsid[] = "@(#)mkfs.c	8.3 (Berkeley) 2/3/94";
 #else
-static char rcsid[] = "$OpenBSD: mkfs.c,v 1.19 2001/07/07 18:26:16 deraadt Exp $";
+static char rcsid[] = "$OpenBSD: mkfs.c,v 1.20 2001/11/05 07:39:17 mpech Exp $";
 #endif
 #endif /* not lint */
 
@@ -662,7 +662,7 @@ next:
 		initcg(cylno, utime);
 		if (quiet)
 			continue;
-		j = sprintf(tmpbuf, " %ld,",
+		j = snprintf(tmpbuf, sizeof tmpbuf, " %ld,",
 		    fsbtodb(&sblock, cgsblock(&sblock, cylno)));
 		if (i+j >= width) {
 			printf("\n");
