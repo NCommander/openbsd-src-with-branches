@@ -28,7 +28,7 @@
  */
 
 #if defined(LIBC_SCCS) && !defined(lint)
-static char rcsid[] = "$OpenBSD: getgrouplist.c,v 1.7 1997/08/19 19:13:27 deraadt Exp $";
+static char rcsid[] = "$OpenBSD: getgrouplist.c,v 1.8 2003/06/02 20:18:34 millert Exp $";
 #endif /* LIBC_SCCS and not lint */
 
 /*
@@ -36,6 +36,7 @@ static char rcsid[] = "$OpenBSD: getgrouplist.c,v 1.7 1997/08/19 19:13:27 deraad
  */
 #include <sys/types.h>
 #include <string.h>
+#include <unistd.h>
 #include <grp.h>
 
 int
