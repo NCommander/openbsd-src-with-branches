@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_le.c,v 1.22 2003/09/29 09:08:17 miod Exp $ */
+/*	$OpenBSD: if_le.c,v 1.23 2003/10/13 13:17:21 miod Exp $ */
 
 /*-
  * Copyright (c) 1982, 1992, 1993
@@ -215,9 +215,11 @@ vlereset(sc)
 {
 	register struct vlereg1 *reg1 = (struct vlereg1 *)((struct le_softc *)sc)->sc_r1;
 	RESET_HW;
+#ifdef LEDEBUG
 	if (sc->sc_debug) {
 		printf("\nle: hardware reset\n");
 	}
+#endif
 	SYSFAIL_CL;
 	return;
 }
