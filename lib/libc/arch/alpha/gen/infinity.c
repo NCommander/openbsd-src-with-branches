@@ -1,4 +1,4 @@
-/*	$OpenBSD: infinity.c,v 1.1 1995/02/10 17:50:23 cgd Exp $	*/
+/*	$OpenBSD: infinity.c,v 1.3 1996/11/13 21:20:18 niklas Exp $	*/
 /*	$NetBSD: infinity.c,v 1.1 1995/02/10 17:50:23 cgd Exp $	*/
 
 /*
@@ -29,10 +29,11 @@
  */
 
 #if defined(LIBC_SCCS) && !defined(lint)
-static char *rcsid = "$OpenBSD: infinity.c,v 1.2 1996/08/19 08:10:38 tholo Exp $";
+static char *rcsid = "$OpenBSD: infinity.c,v 1.3 1996/11/13 21:20:18 niklas Exp $";
 #endif /* LIBC_SCCS and not lint */
 
 #include <math.h>
 
 /* bytes for +Infinity on an Alpha (IEEE double format) */
-char __infinity[] = { 0, 0, 0, 0, 0, 0, 0xf0, 0x7f };
+char __infinity[] __attribute__((__aligned__(sizeof(double)))) =
+					{ 0, 0, 0, 0, 0, 0, 0xf0, 0x7f };
