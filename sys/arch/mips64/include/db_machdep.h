@@ -1,4 +1,4 @@
-/*	$OpenBSD: db_machdep.h,v 1.3 2004/08/10 20:28:13 deraadt Exp $ */
+/*	$OpenBSD: db_machdep.h,v 1.4 2004/09/09 22:21:41 pefo Exp $ */
 
 /*
  * Copyright (c) 1998-2003 Opsycon AB (www.opsycon.se)
@@ -38,7 +38,7 @@
 #define	DB_NO_AOUT		/* For crying out loud! */
 
 typedef struct trap_frame db_regs_t;
-db_regs_t		ddb_regs;
+extern db_regs_t	ddb_regs;
 
 typedef	long		db_expr_t;
 typedef vaddr_t		db_addr_t;
