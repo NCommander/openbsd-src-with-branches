@@ -1,4 +1,4 @@
-/*	$OpenBSD: ospfd.h,v 1.21 2005/03/26 11:06:49 claudio Exp $ */
+/*	$OpenBSD: ospfd.h,v 1.22 2005/03/26 13:35:16 claudio Exp $ */
 
 /*
  * Copyright (c) 2004 Esben Norby <norby@openbsd.org>
@@ -152,7 +152,7 @@ struct area {
 	u_int32_t		 stub_default_cost;
 	u_int32_t		 num_spf_calc;
 	u_int32_t		 dead_interval;
-	u_int16_t		 transfer_delay;
+	u_int16_t		 transmit_delay;
 	u_int16_t		 hello_interval;
 	u_int16_t		 rxmt_interval;
 	u_int16_t		 metric;
@@ -289,7 +289,7 @@ struct iface {
 	int			 state;
 	int			 mtu;
 	u_int16_t		 flags;
-	u_int16_t		 transfer_delay;
+	u_int16_t		 transmit_delay;
 	u_int16_t		 hello_interval;
 	u_int16_t		 rxmt_interval;
 	u_int16_t		 metric;
@@ -367,7 +367,7 @@ struct ctl_iface {
 	int			 mtu;
 	int			 nbr_cnt;
 	int			 adj_cnt;
-	u_int16_t		 transfer_delay;
+	u_int16_t		 transmit_delay;
 	u_int16_t		 hello_interval;
 	u_int16_t		 flags;
 	u_int16_t		 metric;
