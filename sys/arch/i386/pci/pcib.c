@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: pcib.c,v 1.5.2.2 2002/03/28 10:31:05 niklas Exp $	*/
 /*	$NetBSD: pcib.c,v 1.6 1997/06/06 23:29:16 thorpej Exp $	*/
 
 /*-
@@ -86,6 +86,7 @@ pcibmatch(parent, match, aux)
 		case PCI_PRODUCT_INTEL_SIO:
 		case PCI_PRODUCT_INTEL_82371MX:
 		case PCI_PRODUCT_INTEL_82371AB_ISA:
+		case PCI_PRODUCT_INTEL_82440MX_ISA:
 			/* The above bridges mis-identify themselves */
 			return (1);
 		}

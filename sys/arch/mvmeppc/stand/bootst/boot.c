@@ -1,9 +1,8 @@
-/*	$OpenBSD$	*/
-/*	$NetBSD: swapgeneric.c,v 1.1 1996/09/30 16:34:55 ws Exp $	*/
-
+/*	$OpenBSD: boot.c,v 1.1 2001/06/26 21:58:00 smurph Exp $ */
 /*-
- * Copyright (c) 1994
- *      The Regents of the University of California.  All rights reserved.
+ * Changes Copyright (c) 1998 steve Murphree, Jr.
+ * Copyright (c) 1982, 1986, 1990, 1993
+ *	The Regents of the University of California.  All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -13,11 +12,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *      This product includes software developed by the University of
- *      California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -33,22 +28,45 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  *
- *      @(#)swapgeneric.c       8.2 (Berkeley) 3/21/94
- */
-
-/*
- * fake swapgeneric.c -- should do this differently.
+ * 	@(#)boot.c	8.1 (Berkeley) 6/10/93
  */
 
 #include <sys/param.h>
-#include <sys/conf.h>
+#include <sys/reboot.h>
+#include <machine/prom.h>
 
-int (*mountroot)(void *) = NULL;	/* tells autoconf.c that we are "generic" */
+#include "stand.h"
+#include "libsa.h"
 
-dev_t	rootdev = NODEV;
-dev_t	dumpdev = NODEV;
+#define LOADADDR	0x10000
 
-struct	swdevt swdevt[] = {
-	{ NODEV, 0, 0 },	/* to be filled in */
-	{ NODEV, 0, 0 }
-};
+extern char *version;
+extern int errno;
+
+int main()
+{
+	static char dnm[32] = "2";
+	char line[80];
+	char *cp, *filename;
+	int bflag = 0;
+	
+	bootdev_type = BUGDEV_TAPE;
+	
+	printf(">> OpenBSD/mvme88k tapeboot [%s]\n", version);
+
+	*bugargs.arg_end = 0; /* ensure */
+	parse_args(&filename, &bflag);
+	filename = dnm;	/* override */
+
+	if (bflag & RB_ASKNAME) {
+		printf("tapeboot: segment? [%s] ", dnm);
+		gets(line);
+		if (line[0])
+			filename = line;
+	}
+
+	exec_mvme(filename, bflag);
+
+	printf("tapeboot: %s: %s\n", filename, strerror(errno));
+	return(0);
+}

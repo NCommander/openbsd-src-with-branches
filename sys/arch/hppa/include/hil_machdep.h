@@ -1,9 +1,13 @@
-/*	$OpenBSD$	*/
-/*	$NetBSD: swapgeneric.c,v 1.1 1996/09/30 16:34:55 ws Exp $	*/
+/*	$OpenBSD: hil_machdep.h,v 1.1 2003/02/11 19:43:33 miod Exp $	*/
 
-/*-
- * Copyright (c) 1994
- *      The Regents of the University of California.  All rights reserved.
+/*
+ * Copyright (c) 1988 University of Utah.
+ * Copyright (c) 1990, 1993
+ *	The Regents of the University of California.  All rights reserved.
+ *
+ * This code is derived from software contributed to Berkeley by
+ * the Systems Programming Group of the University of Utah Computer
+ * Science Department.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -13,11 +17,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *      This product includes software developed by the University of
- *      California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -33,22 +33,21 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  *
- *      @(#)swapgeneric.c       8.2 (Berkeley) 3/21/94
+ * from: Utah $Hdr: hilreg.h 1.10 92/01/21$
+ *
+ *	@(#)hilreg.h	8.1 (Berkeley) 6/10/93
  */
 
 /*
- * fake swapgeneric.c -- should do this differently.
+ * HP 9000/700-series specific HIL definitions
  */
 
-#include <sys/param.h>
-#include <sys/conf.h>
+#define	HILP_RSTHOLD	0	/* (W) reset hold (and serial #3) */
+#define	HILP_DATA	2048	/* (R/W) data port */
+#define	HILP_CMD	2049	/* (R/W) status and control port */
+#define	HILP_STAT	HILP_CMD
+#define	HILP_RSTREL	3072	/* (W) reset release (and serial #3) */
 
-int (*mountroot)(void *) = NULL;	/* tells autoconf.c that we are "generic" */
+#define	HILMAPSIZE	4096	/* size for bus_space_map() call */
 
-dev_t	rootdev = NODEV;
-dev_t	dumpdev = NODEV;
-
-struct	swdevt swdevt[] = {
-	{ NODEV, 0, 0 },	/* to be filled in */
-	{ NODEV, 0, 0 }
-};
+#define	HILBUFSIZE	40	/* size of interrupt poll buffer */

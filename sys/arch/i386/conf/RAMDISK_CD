@@ -1,4 +1,4 @@
-#	$OpenBSD$
+#	$OpenBSD: RAMDISK_CD,v 1.11.2.6 2003/03/27 23:26:55 niklas Exp $
 
 machine		i386		# architecture, used by config; REQUIRED
 

@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile.hppa,v 1.8.2.4 2003/03/27 23:26:53 niklas Exp $
+#	$OpenBSD: Makefile.hppa,v 1.8.2.5 2003/05/13 19:41:03 ho Exp $
 
 # Makefile for OpenBSD
 #
@@ -157,7 +157,7 @@ clean::
 
 lint:
 	@lint -hbxncez -DGENERIC -Dvolatile= ${CPPFLAGS} -UKGDB \
-	    ${CFILES} ${HPPA}/hppa/swapgeneric.c ioconf.c param.c | \
+	    ${CFILES} ioconf.c param.c | \
 	    grep -v 'static function .* unused'
 
 tags:

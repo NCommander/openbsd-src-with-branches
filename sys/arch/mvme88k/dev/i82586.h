@@ -1,4 +1,4 @@
-/*	$OpenBSD: i82586.h,v 1.3 1996/04/28 11:03:20 deraadt Exp $ */
+/*	$OpenBSD: i82586.h,v 1.2 1998/12/15 05:52:30 smurph Exp $ */
 
 /*-
  * Copyright (c) 1998 Steve Murphree, Jr. 
@@ -19,9 +19,6 @@
  *    must display the following acknowledgement:
  *	This product includes software developed by the University of
  *	Vermont and State Agricultural College and Garrett A. Wollman.
- *    and
- *      This product includes software developed under OpenBSD by
- *	Theo de Raadt for Willowglen Singapore.
  * 4. Neither the name of the University nor the name of the author
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
