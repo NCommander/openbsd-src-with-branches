@@ -1,4 +1,4 @@
-/*	$OpenBSD: failedlogin.c,v 1.1 1996/11/09 20:17:15 millert Exp $	*/
+/*	$OpenBSD: failedlogin.c,v 1.2 1996/12/04 04:04:41 millert Exp $	*/
 
 /*
  * Copyright (c) 1996 Todd C. Miller <Todd.Miller@courtesan.com>
@@ -31,7 +31,7 @@
  */
 
 #ifndef lint                                                              
-static char rcsid[] = "$OpenBSD: failedlogin.c,v 1.1 1996/11/09 20:17:15 millert Exp $";
+static char rcsid[] = "$OpenBSD: failedlogin.c,v 1.2 1996/12/04 04:04:41 millert Exp $";
 #endif /* not lint */                                                        
 
 /*
@@ -129,7 +129,7 @@ check_failedlogin(uid)
 			(void)printf(" on %.*s",
 			    (int)sizeof(failedlogin.bl_line),
 			    failedlogin.bl_line); 
-			if (*failedlogin.bl_host != '\0')
+			if (*failedlogin.bl_host != '\0') {
 				if (*failedlogin.bl_name != '\0')
 					(void)printf(" from %.*s@%.*s",
 					    (int)sizeof(failedlogin.bl_name),
@@ -140,6 +140,7 @@ check_failedlogin(uid)
 					(void)printf(" from %.*s",
 					    (int)sizeof(failedlogin.bl_host),
 					    failedlogin.bl_host);
+			}
 			(void)putchar('\n');
 
 			/* Reset since this is a good login and write record */
