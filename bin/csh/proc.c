@@ -1,4 +1,4 @@
-/*	$OpenBSD: proc.c,v 1.18 2003/06/02 23:32:07 millert Exp $	*/
+/*	$OpenBSD: proc.c,v 1.19 2003/06/11 21:09:50 deraadt Exp $	*/
 /*	$NetBSD: proc.c,v 1.9 1995/04/29 23:21:33 mycroft Exp $	*/
 
 /*-
@@ -34,7 +34,7 @@
 #if 0
 static char sccsid[] = "@(#)proc.c	8.1 (Berkeley) 5/31/93";
 #else
-static char rcsid[] = "$OpenBSD: proc.c,v 1.18 2003/06/02 23:32:07 millert Exp $";
+static char rcsid[] = "$OpenBSD: proc.c,v 1.19 2003/06/11 21:09:50 deraadt Exp $";
 #endif
 #endif /* not lint */
 
@@ -969,7 +969,7 @@ dokill(Char **v, struct command *t)
 	}
 	if (Isdigit(v[0][1])) {
 	    signum = atoi(short2str(v[0] + 1));
-	    if (signum < 0 || signum > NSIG)
+	    if (signum < 0 || signum >= NSIG)
 		stderror(ERR_NAME | ERR_BADSIG);
 	}
 	else {
