@@ -1,4 +1,4 @@
-/*	$OpenBSD: screen.c,v 1.1 1997/08/14 14:00:24 downsj Exp $	*/
+/*	$OpenBSD: screen.c,v 1.2 1997/08/22 07:16:29 downsj Exp $	*/
 
 /*
  *  Top users/processes display for Unix
@@ -24,6 +24,7 @@
 #include <sys/ioctl.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <term.h>
 #include <termios.h>
 #include <unistd.h>
