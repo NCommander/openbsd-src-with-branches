@@ -1,4 +1,4 @@
-/*	$OpenBSD: main.c,v 1.5 1996/12/22 20:01:16 deraadt Exp $	*/
+/*	$OpenBSD: main.c,v 1.6 1997/01/15 23:40:49 millert Exp $	*/
 /*
  * Copyright (c) 1994
  *	The Regents of the University of California.  All rights reserved.
@@ -511,6 +511,20 @@ log(str)
 		dislog(str);
 	else
 		printf("%s\n", str);
+}
+
+/*
+ * Deal with a fatal error.
+ */
+void
+qlog(str)
+	char *str;
+{
+	dlog(str);
+	if (interactive)
+		beep();
+	sleep(5);
+	quit(0);
 }
 
 /* ARGSUSED */
