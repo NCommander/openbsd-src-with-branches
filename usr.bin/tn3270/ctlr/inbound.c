@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: inbound.c,v 1.2 1996/06/26 05:41:19 deraadt Exp $	*/
 
 /*-
  * Copyright (c) 1988 The Regents of the University of California.
@@ -35,7 +35,7 @@
 
 #ifndef lint
 /*static char sccsid[] = "from: @(#)inbound.c	4.3 (Berkeley) 4/26/91";*/
-static char rcsid[] = "$OpenBSD: inbound.c,v 1.1.1.1 1995/10/18 08:46:21 deraadt Exp $";
+static char rcsid[] = "$OpenBSD: inbound.c,v 1.2 1996/06/26 05:41:19 deraadt Exp $";
 #endif /* not lint */
 
 #include <stdio.h>
@@ -998,7 +998,7 @@ unsigned int
 
 	case FCN_DISC:
 	    StopScreen(1);
-	    suspend();
+	    telnetsuspend();
 	    setconnmode();
 	    ConnectScreen();
 	    break;
