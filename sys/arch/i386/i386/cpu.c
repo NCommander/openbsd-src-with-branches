@@ -1,4 +1,4 @@
-/*	$OpenBSD: cpu.c,v 1.1.2.14 2004/04/06 13:30:48 niklas Exp $	*/
+/*	$OpenBSD: cpu.c,v 1.1.2.15 2004/06/06 18:11:04 grange Exp $	*/
 /* $NetBSD: cpu.c,v 1.1.2.7 2000/06/26 02:04:05 sommerfeld Exp $ */
 
 /*-
@@ -112,10 +112,12 @@
 int     cpu_match __P((struct device *, void *, void *));
 void    cpu_attach __P((struct device *, struct device *, void *));
 
+#ifdef MULTIPROCESSOR
 int mp_cpu_start(struct cpu_info *); 
 void mp_cpu_start_cleanup(struct cpu_info *);
 struct cpu_functions mp_cpu_funcs =
     { mp_cpu_start, NULL, mp_cpu_start_cleanup };
+#endif
 
 /*
  * Statically-allocated CPU info for the primary CPU (or the only
@@ -528,6 +530,7 @@ cpu_set_tss_gates(struct cpu_info *ci)
 }
 #endif
 
+#ifdef MULTIPROCESSOR
 int
 mp_cpu_start(struct cpu_info *ci)
 {
@@ -592,3 +595,4 @@ mp_cpu_start_cleanup(struct cpu_info *ci)
 	outb(IO_RTC, NVRAM_RESET);
 	outb(IO_RTC+1, NVRAM_RESET_RST);
 }
+#endif
