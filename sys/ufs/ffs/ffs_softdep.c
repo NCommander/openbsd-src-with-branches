@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /*
  * Copyright 1998 Marshall Kirk McKusick. All Rights Reserved.
  *
