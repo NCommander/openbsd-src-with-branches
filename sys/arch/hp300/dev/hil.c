@@ -1,4 +1,4 @@
-/*	$OpenBSD: hil.c,v 1.10 1997/04/16 11:56:07 downsj Exp $	*/
+/*	$OpenBSD: hil.c,v 1.11 1998/03/06 17:33:30 millert Exp $	*/
 /*	$NetBSD: hil.c,v 1.34 1997/04/02 22:37:32 scottr Exp $	*/
 
 /*
@@ -1556,11 +1556,12 @@ hiliddev(hilp)
 	hilp->hl_cmdbp = hilp->hl_cmdbuf;
 	hilp->hl_cmddev = 0;
 #ifdef DEBUG
-	if (hildebug & HDB_IDMODULE)
+	if (hildebug & HDB_IDMODULE) {
 		if (i <= hilp->hl_maxdev)
 			printf("found at %d\n", i);
 		else
 			printf("not found\n");
+	}
 #endif
 	return(i <= hilp->hl_maxdev ? i : 0);
 }
