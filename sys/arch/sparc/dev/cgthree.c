@@ -1,4 +1,4 @@
-/*	$OpenBSD: cgthree.c,v 1.20 2003/06/02 18:40:59 jason Exp $	*/
+/*	$OpenBSD: cgthree.c,v 1.21 2003/06/02 23:27:54 millert Exp $	*/
 /*	$NetBSD: cgthree.c,v 1.33 1997/05/24 20:16:11 pk Exp $ */
 
 /*
@@ -198,11 +198,6 @@ cgthreematch(parent, vcf, aux)
 	struct confargs *ca = aux;
 	struct romaux *ra = &ca->ca_ra;
 
-	/*
-	 * Mask out invalid flags from the user.
-	 */
-	cf->cf_flags &= FB_USERMASK;
-
 	if (strcmp(cf->cf_driver->cd_name, ra->ra_name) &&
 	    strcmp("cgRDI", ra->ra_name))
 		return (0);
@@ -229,8 +224,6 @@ cgthreeattach(parent, self, args)
 	volatile struct bt_regs *bt;
 	int isconsole = 0, sbus = 1;
 	char *nam = NULL;
-
-	sc->sc_sunfb.sf_flags = self->dv_cfdata->cf_flags;
 
 	switch (ca->ca_bustype) {
 	case BUS_OBIO:
