@@ -1,4 +1,4 @@
-/*	$OpenBSD: boot.c,v 1.3.4.2 1996/10/16 10:20:48 mickey Exp $	*/
+/*	$OpenBSD: boot.c,v 1.3.4.3 1996/10/29 09:15:46 mickey Exp $	*/
 /*	$NetBSD: boot.c,v 1.6 1994/10/27 04:21:49 cgd Exp $	*/
 
 /*-
@@ -66,7 +66,6 @@ static char rcsid[] = "$NetBSD: boot.c,v 1.6 1994/10/27 04:21:49 cgd Exp $";
 
 char *kernels[] = { "bsd.z", "obsd.z", "bsd.old.z",
 		  "bsd", "obsd", "bsd.old",
-		  "vmunix", "ovmunix", "vmunix.old",
 		  NULL };
 
 int	retry = 0;
@@ -97,17 +96,20 @@ boot(dev, unit, off)
 	register char **bootfile = kernels;
 	int howto = 0;
 
+	*((int *)0xb8004) = 0xa55a5aa5;
+	asm("hlt");
+
 	/* init system clock */
 	/* startrtclock(); */
-
-	/* are we a disk, if so look at disklabel and do things */
-	lp = &disklabel;
 
 #ifdef	DEBUG
 	printf("cyl %x %x hd %x sect %x ",
 		biosparams[0], biosparams[1], biosparams[2], biosparams[0xe]);
 	printf("dev %x unit %x off %d\n", dev, unit, off);
 #endif
+
+	/* are we a disk, if so look at disklabel and do things */
+	lp = &disklabel;
 
 	printf("\n"
 		">> OpenBSD BOOT: %d/%d k [%s]\n"
