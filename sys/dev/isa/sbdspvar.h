@@ -1,4 +1,4 @@
-/*	$OpenBSD: sbdspvar.h,v 1.8 1998/04/26 21:03:01 provos Exp $	*/
+/*	$OpenBSD: sbdspvar.h,v 1.9 1999/01/02 00:02:47 niklas Exp $	*/
 /*	$NetBSD: sbdspvar.h,v 1.37 1998/08/10 00:20:39 mycroft Exp $	*/
 
 /*
@@ -178,7 +178,7 @@ struct sbdsp_softc {
 
 #if NMIDI > 0
 	int	sc_hasmpu;
-	struct	mpu401_softc sc_mpu_sc;	/* MPU401 Uart state */
+	struct	mpu_softc sc_mpu_sc;	/* MPU401 Uart state */
 #endif
 };
 

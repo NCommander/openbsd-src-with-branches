@@ -1,4 +1,4 @@
-/*	$OpenBSD: sbdsp.c,v 1.12 1998/04/26 21:02:59 provos Exp $	*/
+/*	$OpenBSD: sbdsp.c,v 1.13 1999/01/02 00:02:47 niklas Exp $	*/
 
 /*
  * Copyright (c) 1991-1993 Regents of the University of California.
@@ -1477,7 +1477,7 @@ sbdsp_intr(arg)
 	}
 #if NMIDI > 0
 	if ((irq & SBP_IRQ_MPU401) && sc->sc_hasmpu) {
-		mpu401_intr(&sc->sc_mpu_sc);
+		mpu_intr(&sc->sc_mpu_sc);
 	}
 #endif
 	return 1;
