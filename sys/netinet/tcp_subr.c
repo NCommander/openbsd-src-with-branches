@@ -1,4 +1,4 @@
-/*	$OpenBSD: tcp_subr.c,v 1.7 1996/07/29 22:01:50 niklas Exp $	*/
+/*	$OpenBSD: tcp_subr.c,v 1.8 1997/02/05 15:48:25 deraadt Exp $	*/
 /*	$NetBSD: tcp_subr.c,v 1.22 1996/02/13 23:44:00 christos Exp $	*/
 
 /*
@@ -64,8 +64,8 @@
 #include <dev/rndvar.h>
 
 /* patchable/settable parameters for tcp */
-int 	tcp_mssdflt = TCP_MSS;
-int 	tcp_rttdflt = TCPTV_SRTTDFLT / PR_SLOWHZ;
+int	tcp_mssdflt = TCP_MSS;
+int	tcp_rttdflt = TCPTV_SRTTDFLT / PR_SLOWHZ;
 
 /*
  * Configure kernel with options "TCP_DO_RFC1323=0" to disable RFC1323 stuff.
