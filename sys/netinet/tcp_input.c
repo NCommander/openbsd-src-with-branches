@@ -1385,9 +1385,7 @@ trimthenstep6:
 	 *	Close the tcb.
 	 */
 	if (tiflags & TH_RST) {
-		if ((th->th_seq != tp->rcv_nxt) &&
-		    (th->th_ack && ((SEQ_GT(th->th_ack, tp->snd_nxt) ||
-		      SEQ_LT(th->th_ack, (tp->snd_nxt - tp->snd_wnd))))))
+		if (ti->ti_seq != tp->last_ack_sent)
 			goto drop;
 
 		switch (tp->t_state) {
