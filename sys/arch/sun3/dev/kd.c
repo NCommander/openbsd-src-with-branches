@@ -1,4 +1,4 @@
-/*	$OpenBSD: kd.c,v 1.8 2000/07/06 15:42:49 ho Exp $	*/
+/*	$OpenBSD: kd.c,v 1.9 2001/04/17 04:30:49 aaron Exp $	*/
 /*	$NetBSD: kd.c,v 1.21 1996/11/20 18:56:55 gwr Exp $	*/
 
 /*-
@@ -278,6 +278,7 @@ kdstop(tp, flag)
 
 static void kd_later(void*);
 static void kd_putfb(struct tty *);
+static struct timeout kd_timeout;
 
 void
 kdstart(tp)
@@ -302,7 +303,8 @@ kdstart(tp)
 				tp->t_state &= ~TS_BUSY;
 			} else {
 				/* called at interrupt level - do it later */
-				timeout(kd_later, (void*)tp, 0);
+				timeout_set(&kd_timeout, kd_later, tp);
+				timeout_add(&kd_timeout, 0);
 			}
 		} else {
 			/*
