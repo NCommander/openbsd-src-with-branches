@@ -119,7 +119,7 @@ nsipattach()
 	 * XXX Emulate the side effect of incrementing nsipif.if_unit
 	 * XXX in the days before if_xname.
 	 */
-	bzero(nsipif.if_xname, sizeof(nsipif.if_xname))
+	bzero(nsipif.if_xname, sizeof(nsipif.if_xname));
 	sprintf(nsipif.if_xname, "nsip%d", nsipif_unit);
 
 	return (m);
