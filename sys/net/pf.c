@@ -1,4 +1,4 @@
-/*	$OpenBSD: pf.c,v 1.184 2002/01/12 01:34:49 jasoni Exp $ */
+/*	$OpenBSD: pf.c,v 1.185 2002/01/23 00:39:48 art Exp $ */
 
 /*
  * Copyright (c) 2001 Daniel Hartmeier
@@ -293,10 +293,6 @@ pf_tree_key_compare(struct pf_tree_key *a, struct pf_tree_key *b)
 {
 	register int diff;
 
-	/*
-	 * could use memcmp(), but with the best manual order, we can
-	 * minimize the average number of compares. what is faster?
-	 */
 	if ((diff = a->proto - b->proto) != 0)
 		return (diff);
 	if ((diff = a->af - b->af) != 0)
