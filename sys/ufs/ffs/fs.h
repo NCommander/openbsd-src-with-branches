@@ -1,4 +1,4 @@
-/*	$OpenBSD: fs.h,v 1.6 1997/10/06 20:21:39 deraadt Exp $	*/
+/*	$OpenBSD: fs.h,v 1.7 1997/11/06 05:59:21 csapuntz Exp $	*/
 /*	$NetBSD: fs.h,v 1.6 1995/04/12 21:21:02 mycroft Exp $	*/
 
 /*
@@ -268,7 +268,7 @@ struct fs {
 #define FS_OPTSPACE	1	/* minimize disk fragmentation */
 
 /* 
- * Filesystem falgs.
+ * Filesystem flags.
  */
 #define FS_UNCLEAN    0x01   /* filesystem not clean at mount */
 #define FS_DOSOFTDEP  0x02   /* filesystem using soft dependencies */
