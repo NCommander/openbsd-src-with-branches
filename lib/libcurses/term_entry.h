@@ -1,4 +1,4 @@
-/*	$OpenBSD: term_entry.h,v 1.6 1999/02/24 06:31:07 millert Exp $	*/
+/*	$OpenBSD: term_entry.h,v 1.7 1999/03/02 06:23:27 millert Exp $	*/
 
 /****************************************************************************
  * Copyright (c) 1998 Free Software Foundation, Inc.                        *
@@ -125,6 +125,9 @@ extern void _nc_copy_termtype(TERMTYPE *, TERMTYPE *);
 
 /* free_ttype.c: elementary allocation code */
 extern void _nc_free_termtype(TERMTYPE *);
+
+/* lib_acs.c */
+extern void _nc_init_acs(void);	/* corresponds to traditional 'init_acs()' */
 
 /* parse_entry.c: entry-parsing code */
 #if NCURSES_XNAMES
