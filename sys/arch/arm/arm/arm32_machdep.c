@@ -1,5 +1,5 @@
-/*	$OpenBSD: arm32_machdep.c,v 1.3 2004/01/29 16:17:16 drahn Exp $	*/
-/*^I$NetBSD: arm32_machdep.c,v 1.42 2003/12/30 12:33:15 pk Exp $^I*/$
+/*	$OpenBSD: arm32_machdep.c,v 1.1 2004/02/01 05:09:48 drahn Exp $	*/
+/*	$NetBSD: arm32_machdep.c,v 1.42 2003/12/30 12:33:15 pk Exp $	*/
 
 /*
  * Copyright (c) 1994-1998 Mark Brinicombe.

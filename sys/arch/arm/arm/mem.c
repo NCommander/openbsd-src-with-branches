@@ -1,5 +1,5 @@
-/*	$OpenBSD: mem.c,v 1.2 2004/01/29 16:17:16 drahn Exp $	*/
-/*^I$NetBSD: mem.c,v 1.11 2003/10/16 12:02:58 jdolecek Exp $^I*/$
+/*	$OpenBSD: mem.c,v 1.1 2004/02/01 05:09:48 drahn Exp $	*/
+/*	$NetBSD: mem.c,v 1.11 2003/10/16 12:02:58 jdolecek Exp $	*/
 
 /*
  * Copyright (c) 1982, 1986, 1990, 1993

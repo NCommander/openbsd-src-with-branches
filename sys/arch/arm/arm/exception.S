@@ -1,5 +1,5 @@
-/*	$OpenBSD: exception.S,v 1.2 2004/01/29 16:17:16 drahn Exp $	*/
-/*^I$NetBSD: exception.S,v 1.13 2003/10/31 16:30:15 scw Exp $^I*/$
+/*	$OpenBSD: exception.S,v 1.1 2004/02/01 05:09:48 drahn Exp $	*/
+/*	$NetBSD: exception.S,v 1.13 2003/10/31 16:30:15 scw Exp $	*/
 
 /*
  * Copyright (c) 1994-1997 Mark Brinicombe.
