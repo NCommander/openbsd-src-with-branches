@@ -1,4 +1,4 @@
-/*	$OpenBSD: kern_synch.c,v 1.32 2001/03/15 21:18:30 art Exp $	*/
+/*	$OpenBSD: kern_synch.c,v 1.33 2001/03/25 18:09:17 csapuntz Exp $	*/
 /*	$NetBSD: kern_synch.c,v 1.37 1996/04/22 01:38:37 christos Exp $	*/
 
 /*-
@@ -783,7 +783,6 @@ setrunnable(p)
 	case SSLEEP:
 		unsleep(p);		/* e.g. when sending signals */
 		break;
-
 	case SIDL:
 		break;
 	}
