@@ -1,4 +1,4 @@
-/*	$OpenBSD$ */
+/*	$OpenBSD: get.c,v 1.2 1996/09/21 19:11:35 maja Exp $ */
 
 /*
  * Copyright (c) 1993-95 Mats O Jansson.  All rights reserved.
@@ -30,7 +30,7 @@
  */
 
 #ifndef LINT
-static char rcsid[] = "$OpenBSD: get.c,v 1.1.1.1 1996/09/21 13:49:16 maja Exp $";
+static char rcsid[] = "$OpenBSD: get.c,v 1.2 1996/09/21 19:11:35 maja Exp $";
 #endif
 
 #include <sys/types.h>
@@ -38,8 +38,8 @@ static char rcsid[] = "$OpenBSD: get.c,v 1.1.1.1 1996/09/21 13:49:16 maja Exp $"
 
 u_char
 mopGetChar(pkt, index)
-	register u_char *pkt;
-	register int    *index;
+	u_char *pkt;
+	int    *index;
 {
         u_char ret;
 
@@ -50,8 +50,8 @@ mopGetChar(pkt, index)
 
 u_short
 mopGetShort(pkt, index)
-	register u_char *pkt;
-	register int    *index;
+	u_char *pkt;
+	int    *index;
 {
         u_short ret;
 	
@@ -62,8 +62,8 @@ mopGetShort(pkt, index)
 
 u_long
 mopGetLong(pkt, index)
-	register u_char *pkt;
-	register int    *index;
+	u_char *pkt;
+	int    *index;
 {
         u_long ret;
 	
@@ -77,8 +77,8 @@ mopGetLong(pkt, index)
 
 void
 mopGetMulti(pkt, index, dest, size)
-	register u_char *pkt,*dest;
-	register int    *index,size;
+	u_char *pkt,*dest;
+	int    *index,size;
 {
 	int i;
 

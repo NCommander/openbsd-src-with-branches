@@ -1,4 +1,4 @@
-/*	$OpenBSD: yplog.c,v 1.5 1997/08/09 22:44:04 maja Exp $ */
+/*	$OpenBSD: yplog.c,v 1.6 2002/02/19 19:39:41 millert Exp $ */
 
 /*
  * Copyright (c) 1996 Charles D. Cranor
@@ -66,7 +66,7 @@ yplog(const char *fmt, ...)
 
 void
 vyplog(fmt, ap)
-	register const char *fmt;
+	const char *fmt;
 	va_list ap;
 {
         time_t t;

@@ -1,4 +1,4 @@
-/*	$OpenBSD: fdformat.c,v 1.8 1998/08/13 05:36:56 deraadt Exp $	*/
+/*	$OpenBSD: fdformat.c,v 1.9 2000/06/30 16:00:25 millert Exp $	*/
 
 /*
  * Copyright (C) 1992-1994 by Joerg Wunsch, Dresden
@@ -62,7 +62,7 @@ format_track(fd, cyl, secs, head, rate, gaplen, secsize, fill, interleave)
 	int fill, interleave;
 {
 	struct fd_formb f;
-	register int i,j;
+	int i,j;
 	int il[FD_MAX_NSEC + 1];
 
 	memset(il,0,sizeof il);

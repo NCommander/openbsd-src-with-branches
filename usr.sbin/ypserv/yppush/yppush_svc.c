@@ -1,4 +1,4 @@
-/*	$OpenBSD: yppush_svc.c,v 1.5 2001/11/19 04:21:41 deraadt Exp $ */
+/*	$OpenBSD: yppush_svc.c,v 1.6 2002/02/19 19:39:41 millert Exp $ */
 
 /*
  * Copyright (c) 1996 Mats O Jansson <moj@stacken.kth.se>
@@ -32,7 +32,7 @@
  */
 
 #ifndef lint
-static char rcsid[] = "$OpenBSD: yppush_svc.c,v 1.5 2001/11/19 04:21:41 deraadt Exp $";
+static char rcsid[] = "$OpenBSD: yppush_svc.c,v 1.6 2002/02/19 19:39:41 millert Exp $";
 #endif /* not lint */
 
 #include "yppush.h"
@@ -73,7 +73,7 @@ void _msgout(msg)
 void
 yppush_xfrrespprog_1(rqstp, transp)
 	struct svc_req *rqstp;
-	register SVCXPRT *transp;
+	SVCXPRT *transp;
 {
 	union {
 		int fill;

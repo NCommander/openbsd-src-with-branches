@@ -1,4 +1,4 @@
-/*	$OpenBSD: pf-snit.c,v 1.2 1996/09/21 19:12:50 maja Exp $ */
+/*	$OpenBSD: pf-snit.c,v 1.3 2000/02/20 17:45:34 bitblt Exp $ */
 
 /*
  * Copyright (c) 1993-96 Mats O Jansson.  All rights reserved.
@@ -30,7 +30,7 @@
  */
 
 #ifndef LINT
-static char rcsid[] = "$OpenBSD: pf-snit.c,v 1.2 1996/09/21 19:12:50 maja Exp $";
+static char rcsid[] = "$OpenBSD: pf-snit.c,v 1.3 2000/02/20 17:45:34 bitblt Exp $";
 #endif
 
 #include <stdio.h>
@@ -167,7 +167,7 @@ setup_pf(s, prot, trans)
 	u_short offset;
 
 	struct packetfilt pf;
-	register u_short *fwp = pf.Pf_Filter;
+	u_short *fwp = pf.Pf_Filter;
 	struct strioctl si;
 
 #define	s_offset(structp, element) (&(((structp)0)->element))
