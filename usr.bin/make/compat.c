@@ -1,5 +1,5 @@
 /*	$OpenPackages$ */
-/*	$OpenBSD: compat.c,v 1.46 2002/01/16 01:28:54 millert Exp $	*/
+/*	$OpenBSD: compat.c,v 1.47 2002/06/12 06:07:15 mpech Exp $	*/
 /*	$NetBSD: compat.c,v 1.14 1996/11/06 17:59:01 christos Exp $	*/
 
 /*
@@ -283,7 +283,7 @@ CompatRunCommand(cmdp, gnp)
     local = true;
 
     /* Fork and execute the single command. If the fork fails, we abort.  */
-    cpid = vfork();
+    cpid = fork();
     if (cpid == -1)
 	Fatal("Could not fork");
     if (cpid == 0) {

@@ -1,5 +1,5 @@
 /*	$OpenPackages$ */
-/*	$OpenBSD: job.c,v 1.50 2002/03/19 00:08:31 espie Exp $	*/
+/*	$OpenBSD: job.c,v 1.51 2002/06/12 06:07:16 mpech Exp $	*/
 /*	$NetBSD: job.c,v 1.16 1996/11/06 17:59:08 christos Exp $	*/
 
 /*
@@ -1219,7 +1219,7 @@ JobExec(job, argv)
 	lastNode = job->node;
     }
 
-    if ((cpid = vfork()) == -1) {
+    if ((cpid = fork()) == -1) {
 	Punt("Cannot fork");
     } else if (cpid == 0) {
 

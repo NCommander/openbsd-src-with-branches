@@ -1,5 +1,5 @@
 /*	$OpenPackages$ */
-/*	$OpenBSD: main.c,v 1.15 1999/01/09 16:45:02 espie Exp $ */
+/*	$OpenBSD: cmd_exec.c,v 1.1 2001/05/23 12:34:40 espie Exp $ */
 /*
  * Copyright (c) 2001 Marc Espie.
  *
@@ -69,7 +69,7 @@ Cmd_Exec(cmd, err)
     }
 
     /* Fork */
-    switch (cpid = vfork()) {
+    switch (cpid = fork()) {
     case 0:
 	/* Close input side of pipe */
 	(void)close(fds[0]);
