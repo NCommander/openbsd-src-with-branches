@@ -1,5 +1,4 @@
-#	$OpenBSD: Makefile,v 1.3 1996/12/08 14:32:40 downsj Exp $
-#	$NetBSD: Makefile,v 1.7 1994/12/22 12:31:39 cgd Exp $
+#	$OpenBSD: Makefile,v 1.4 1997/04/27 20:56:59 millert Exp $
 
 PROG=	xinstall
 SRCS=	stat_flags.c xinstall.c

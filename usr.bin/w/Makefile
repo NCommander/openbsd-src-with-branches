@@ -1,5 +1,4 @@
-#	$OpenBSD$
-
+#	$OpenBSD: Makefile,v 1.2 1996/06/26 05:42:42 deraadt Exp $
 
 PROG=	w
 SRCS=	fmt.c pr_time.c proc_compare.c w.c

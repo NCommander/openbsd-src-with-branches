@@ -1,5 +1,4 @@
-#	$OpenBSD: Makefile,v 1.6 1997/04/27 20:56:49 millert Exp $
-#	$NetBSD: Makefile,v 1.8 1996/06/08 19:48:09 christos Exp $
+#	$OpenBSD: Makefile,v 1.7 1997/07/28 10:01:12 deraadt Exp $
 
 PROG=	mail
 SRCS=	version.c aux.c cmd1.c cmd2.c cmd3.c cmdtab.c collect.c \

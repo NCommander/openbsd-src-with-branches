@@ -1,4 +1,4 @@
-# $OpenBSD: Makefile,v 1.4 1996/09/27 15:49:03 millert Exp $
+#	$OpenBSD$
 
 PROG= skeyinit
 BINOWN=root

@@ -1,5 +1,4 @@
-#	$OpenBSD: Makefile,v 1.6 1996/12/08 14:32:31 downsj Exp $
-#	@(#)Makefile	5.11 (Berkeley) 6/25/90
+#	$OpenBSD: Makefile,v 1.7 1997/04/27 20:56:51 millert Exp $
 
 PROG=	more
 DPADD=	${LIBTERM} ${LIBCOMPAT}

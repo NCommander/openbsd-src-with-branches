@@ -1,5 +1,4 @@
-#	$OpenBSD: Makefile,v 1.2 1996/06/26 05:31:26 deraadt Exp $
-#	$NetBSD: Makefile,v 1.2 1995/03/25 18:13:27 glass Exp $
+#	$OpenBSD: Makefile,v 1.3 1997/03/01 23:40:08 millert Exp $
 
 PROG=	at
 SRCS=	at.c panic.c parsetime.c perm.c

@@ -1,5 +1,4 @@
-#	$OpenBSD: Makefile.boot,v 1.3 1996/11/30 21:08:48 millert Exp $
-#	$NetBSD: Makefile.boot,v 1.8 1996/12/31 17:52:23 christos Exp $
+#	$OpenBSD: Makefile.boot,v 1.4 1997/04/01 07:28:02 millert Exp $
 #
 # a very simple makefile...
 #

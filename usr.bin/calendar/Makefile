@@ -1,5 +1,4 @@
-#	$OpenBSD: Makefile,v 1.4 1996/12/08 14:32:16 downsj Exp $
-#	from: @(#)Makefile	8.1 (Berkeley) 6/6/93
+#	$OpenBSD: Makefile,v 1.5 1997/04/27 20:56:40 millert Exp $
 
 PROG=	calendar
 SRCS=   calendar.c io.c day.c ostern.c paskha.c

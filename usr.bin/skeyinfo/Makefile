@@ -1,4 +1,4 @@
-# $OpenBSD$
+#	$OpenBSD$
 
 PROG=	skeyinfo
 BINOWN=	root

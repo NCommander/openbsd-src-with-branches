@@ -1,5 +1,4 @@
-#	$OpenBSD: Makefile,v 1.3 1996/12/08 14:32:35 downsj Exp $
-#	$NetBSD: Makefile,v 1.3 1994/12/07 08:49:07 jtc Exp $
+#	$OpenBSD: Makefile,v 1.4 1997/03/07 21:54:48 gene Exp $
 
 PROG=	tput
 DPADD=	${LIBTERMCAP}

@@ -1,5 +1,4 @@
-#	$OpenBSD: Makefile,v 1.1 1996/08/08 18:47:01 dm Exp $
-#	$NetBSD: Makefile,v 1.7 1995/09/28 06:24:35 perry Exp $
+#	$OpenBSD: Makefile,v 1.1 1996/08/14 22:31:47 dm Exp $
 
 PROG=	pctr
 NOMAN=	yes

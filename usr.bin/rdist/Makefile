@@ -1,6 +1,5 @@
-#	$OpenBSD: Makefile,v 1.8 1997/04/27 13:01:27 downsj Exp $
-#
-#	from: @(#)Makefile	5.11 (Berkeley) 3/12/91
+#	$OpenBSD: Makefile,v 1.9 1997/07/22 06:59:37 millert Exp $
+
 
 PROG=	rdist
 CFLAGS+=-I. -DOS_H=\"os-openbsd.h\"
