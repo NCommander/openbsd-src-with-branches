@@ -1,4 +1,4 @@
-/*	$OpenBSD: interface.c,v 1.2 2005/01/28 17:53:33 norby Exp $ */
+/*	$OpenBSD: interface.c,v 1.3 2005/02/02 19:15:07 henning Exp $ */
 
 /*
  * Copyright (c) 2005 Claudio Jeker <claudio@openbsd.org>
@@ -462,7 +462,7 @@ start:
 		bdr = NULL;
 	}
 
-	/* 
+	/*
 	 * if we are involved in the election (e.g. new DR or no
 	 * longer BDR) redo the election
 	 */
